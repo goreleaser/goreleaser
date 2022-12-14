@@ -14,12 +14,15 @@ import (
 	"github.com/goreleaser/goreleaser/pkg/config"
 	"github.com/goreleaser/goreleaser/pkg/context"
 	"github.com/ory/dockertest/v3"
+	"github.com/ory/dockertest/v3/docker"
 	"github.com/stretchr/testify/require"
 )
 
 var (
-	registry    string
-	altRegistry string
+	registryPort    = "5050"
+	registry        = fmt.Sprintf("localhost:%s/", registryPort)
+	altRegistryPort = "5051"
+	altRegistry     = fmt.Sprintf("localhost:%s/", altRegistryPort)
 )
 
 func start(tb testing.TB) {
@@ -30,16 +33,30 @@ func start(tb testing.TB) {
 	require.NoError(tb, err)
 	require.NoError(tb, pool.Client.Ping())
 
-	registry1 := startRegistry(tb, pool)
-	registry2 := startRegistry(tb, pool)
+	registry1 := startRegistry(tb, pool, "registry", registryPort)
+	registry2 := startRegistry(tb, pool, "alt_registry", altRegistryPort)
 
 	registry = fmt.Sprintf("localhost:%s/", registry1.GetPort("5000/tcp"))
 	altRegistry = fmt.Sprintf("localhost:%s/", registry2.GetPort("5000/tcp"))
 }
 
-func startRegistry(tb testing.TB, pool *dockertest.Pool) *dockertest.Resource {
+func startRegistry(tb testing.TB, pool *dockertest.Pool, name, port string) *dockertest.Resource {
 	tb.Helper()
-	resource, err := pool.Run("registry", "2", nil)
+
+	if trash, ok := pool.ContainerByName(name); ok {
+		require.NoError(tb, pool.Purge(trash))
+	}
+
+	resource, err := pool.RunWithOptions(&dockertest.RunOptions{
+		Name:       name,
+		Repository: "registry",
+		Tag:        "2",
+		PortBindings: map[docker.Port][]docker.PortBinding{
+			docker.Port("5000/tcp"): {{HostPort: port}},
+		},
+	}, func(hc *docker.HostConfig) {
+		hc.AutoRemove = true
+	})
 	require.NoError(tb, err)
 	tb.Cleanup(func() {
 		require.NoError(tb, pool.Purge(resource))
@@ -923,7 +940,7 @@ func TestRunPipe(t *testing.T) {
 		"nfpm and multiple binaries": {
 			dockers: []config.Docker{
 				{
-					ImageTemplates: []string{registry + "goreleaser/nfpm:latest"},
+					ImageTemplates: []string{registry + "goreleaser/test_nfpm:latest"},
 					Goos:           "linux",
 					Goarch:         "amd64",
 					IDs:            []string{"mybin", "anotherbin"},
@@ -935,13 +952,13 @@ func TestRunPipe(t *testing.T) {
 			pubAssertError:      shouldNotErr,
 			manifestAssertError: shouldNotErr,
 			expect: []string{
-				registry + "goreleaser/nfpm:latest",
+				registry + "goreleaser/test_nfpm:latest",
 			},
 		},
 		"nfpm and multiple binaries on arm64": {
 			dockers: []config.Docker{
 				{
-					ImageTemplates: []string{registry + "goreleaser/nfpm_arm:latest"},
+					ImageTemplates: []string{registry + "goreleaser/test_nfpm_arm:latest"},
 					Goos:           "linux",
 					Goarch:         "arm64",
 					IDs:            []string{"mybin", "anotherbin"},
@@ -953,7 +970,7 @@ func TestRunPipe(t *testing.T) {
 			pubAssertError:      shouldNotErr,
 			manifestAssertError: shouldNotErr,
 			expect: []string{
-				registry + "goreleaser/nfpm_arm:latest",
+				registry + "goreleaser/test_nfpm_arm:latest",
 			},
 		},
 	}

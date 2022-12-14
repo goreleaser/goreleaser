@@ -31,7 +31,7 @@ var (
 func TestMain(m *testing.M) {
 	prepareEnv()
 
-	exitOnErr := func(err error) {
+	requireNoErr := func(err error) {
 		if err == nil {
 			return
 		}
@@ -41,13 +41,13 @@ func TestMain(m *testing.M) {
 
 	var err error
 	pool, err = dockertest.NewPool("")
-	exitOnErr(err)
-	exitOnErr(pool.Client.Ping())
+	requireNoErr(err)
+	requireNoErr(pool.Client.Ping())
 
-	oldRes, ok := pool.ContainerByName(containerName)
-	if ok {
-		_ = pool.Purge(oldRes)
+	if trash, ok := pool.ContainerByName(containerName); ok {
+		requireNoErr(pool.Purge(trash))
 	}
+
 	resource, err := pool.RunWithOptions(&dockertest.RunOptions{
 		Name:       containerName,
 		Repository: "minio/minio",
@@ -61,8 +61,8 @@ func TestMain(m *testing.M) {
 	}, func(hc *docker.HostConfig) {
 		hc.AutoRemove = true
 	})
-	exitOnErr(err)
-	exitOnErr(pool.Retry(func() error {
+	requireNoErr(err)
+	requireNoErr(pool.Retry(func() error {
 		_, err := http.Get(fmt.Sprintf("http://localhost:%s/minio/health/ready", resource.GetPort("9000/tcp")))
 		return err
 	}))
@@ -70,7 +70,7 @@ func TestMain(m *testing.M) {
 
 	code := m.Run()
 
-	exitOnErr(pool.Purge(resource))
+	requireNoErr(pool.Purge(resource))
 	os.Exit(code)
 }
 
