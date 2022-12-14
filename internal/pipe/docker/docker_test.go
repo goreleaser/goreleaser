@@ -18,11 +18,11 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-var (
+const (
 	registryPort    = "5050"
-	registry        = fmt.Sprintf("localhost:%s/", registryPort)
+	registry        = "localhost:5050/"
 	altRegistryPort = "5051"
-	altRegistry     = fmt.Sprintf("localhost:%s/", altRegistryPort)
+	altRegistry     = "localhost:5051/"
 )
 
 func start(tb testing.TB) {
@@ -33,14 +33,11 @@ func start(tb testing.TB) {
 	require.NoError(tb, err)
 	require.NoError(tb, pool.Client.Ping())
 
-	registry1 := startRegistry(tb, pool, "registry", registryPort)
-	registry2 := startRegistry(tb, pool, "alt_registry", altRegistryPort)
-
-	registry = fmt.Sprintf("localhost:%s/", registry1.GetPort("5000/tcp"))
-	altRegistry = fmt.Sprintf("localhost:%s/", registry2.GetPort("5000/tcp"))
+	startRegistry(tb, pool, "registry", registryPort)
+	startRegistry(tb, pool, "alt_registry", altRegistryPort)
 }
 
-func startRegistry(tb testing.TB, pool *dockertest.Pool, name, port string) *dockertest.Resource {
+func startRegistry(tb testing.TB, pool *dockertest.Pool, name, port string) {
 	tb.Helper()
 
 	if trash, ok := pool.ContainerByName(name); ok {
@@ -58,10 +55,10 @@ func startRegistry(tb testing.TB, pool *dockertest.Pool, name, port string) *doc
 		hc.AutoRemove = true
 	})
 	require.NoError(tb, err)
+
 	tb.Cleanup(func() {
 		require.NoError(tb, pool.Purge(resource))
 	})
-	return resource
 }
 
 // TODO: this test is too big... split in smaller tests? Mainly the manifest ones...
