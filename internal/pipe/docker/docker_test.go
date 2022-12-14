@@ -33,8 +33,8 @@ func start(tb testing.TB) {
 	registry1 := startRegistry(tb, pool)
 	registry2 := startRegistry(tb, pool)
 
-	registry = "localhost:" + registry1.GetPort("5000/tcp")
-	altRegistry = "localhost:" + registry2.GetPort("5000/tcp")
+	registry = fmt.Sprintf("localhost:%s/", registry1.GetPort("5000/tcp"))
+	altRegistry = fmt.Sprintf("localhost:%s/", registry2.GetPort("5000/tcp"))
 }
 
 func startRegistry(tb testing.TB, pool *dockertest.Pool) *dockertest.Resource {
