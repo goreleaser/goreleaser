@@ -175,6 +175,9 @@
 						},
 						"type": "array"
 					},
+					"builds_info": {
+						"$ref": "#/$defs/FileInfo"
+					},
 					"name_template": {
 						"type": "string"
 					},
@@ -919,8 +922,7 @@
 										"type": "integer"
 									},
 									"mtime": {
-										"type": "string",
-										"format": "date-time"
+										"type": "string"
 									}
 								},
 								"additionalProperties": false,
@@ -963,8 +965,7 @@
 								"type": "integer"
 							},
 							"mtime": {
-								"type": "string",
-								"format": "date-time"
+								"type": "string"
 							}
 						},
 						"additionalProperties": false,
