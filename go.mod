@@ -5,7 +5,7 @@ go 1.19
 require (
 	code.gitea.io/sdk/gitea v0.15.1
 	github.com/Masterminds/semver/v3 v3.2.0
-	github.com/atc0005/go-teams-notify/v2 v2.6.1
+	github.com/atc0005/go-teams-notify/v2 v2.7.0
 	github.com/caarlos0/ctrlc v1.2.0
 	github.com/caarlos0/env/v6 v6.10.1
 	github.com/caarlos0/go-reddit/v3 v3.0.1
