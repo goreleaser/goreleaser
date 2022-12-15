@@ -4,6 +4,7 @@ import (
 	"fmt"
 
 	goteamsnotify "github.com/atc0005/go-teams-notify/v2"
+	"github.com/atc0005/go-teams-notify/v2/messagecard"
 	"github.com/caarlos0/env/v6"
 	"github.com/caarlos0/log"
 	"github.com/goreleaser/goreleaser/internal/tmpl"
@@ -60,12 +61,12 @@ func (p Pipe) Announce(ctx *context.Context) error {
 
 	log.Infof("posting: '%s'", msg)
 
-	client := goteamsnotify.NewClient()
-	msgCard := goteamsnotify.NewMessageCard()
+	client := goteamsnotify.NewTeamsClient()
+	msgCard := messagecard.NewMessageCard()
 	msgCard.Summary = title
 	msgCard.ThemeColor = ctx.Config.Announce.Teams.Color
 
-	messageCardSection := goteamsnotify.NewMessageCardSection()
+	messageCardSection := messagecard.NewSection()
 	messageCardSection.ActivityTitle = title
 	messageCardSection.ActivityText = msg
 	messageCardSection.Markdown = true
