@@ -1,7 +1,6 @@
 package docker
 
 import (
-	"flag"
 	"fmt"
 	"os"
 	"os/exec"
@@ -9,61 +8,50 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/caarlos0/log"
 	"github.com/goreleaser/goreleaser/internal/artifact"
 	"github.com/goreleaser/goreleaser/internal/pipe"
 	"github.com/goreleaser/goreleaser/internal/testlib"
 	"github.com/goreleaser/goreleaser/pkg/config"
 	"github.com/goreleaser/goreleaser/pkg/context"
+	"github.com/ory/dockertest/v3"
+	"github.com/ory/dockertest/v3/docker"
 	"github.com/stretchr/testify/require"
 )
 
-var (
-	it              = flag.Bool("it", false, "push images to docker hub")
-	debug           = flag.Bool("debug", false, "enable debug logs")
+const (
 	registryPort    = "5050"
-	registry        = fmt.Sprintf("localhost:%s/", registryPort)
+	registry        = "localhost:5050/"
 	altRegistryPort = "5051"
-	altRegistry     = fmt.Sprintf("localhost:%s/", altRegistryPort)
+	altRegistry     = "localhost:5051/"
 )
 
-func TestMain(m *testing.M) {
-	flag.Parse()
-	if *it {
-		registry = "docker.io/"
-	}
-	if *debug {
-		log.SetLevel(log.DebugLevel)
-	}
-	os.Exit(m.Run())
+func start(tb testing.TB) {
+	tb.Helper()
+	tb.Log("starting registries")
+	startRegistry(tb, "registry", registryPort)
+	startRegistry(tb, "alt_registry", altRegistryPort)
 }
 
-func start(t *testing.T) {
-	t.Helper()
-	if *it {
-		return
-	}
-	t.Log("starting registries")
-	for _, line := range []string{
-		fmt.Sprintf("run -d -p %s:5000 --name registry registry:2", registryPort),
-		fmt.Sprintf("run -d -p %s:5000 --name alt_registry registry:2", altRegistryPort),
-	} {
-		if out, err := exec.Command("docker", strings.Fields(line)...).CombinedOutput(); err != nil {
-			t.Log("failed to start docker registry", string(out), err)
-			t.FailNow()
-		}
-	}
-}
+func startRegistry(tb testing.TB, name, port string) {
+	tb.Helper()
 
-func killAndRm(t *testing.T) {
-	t.Helper()
-	if *it {
-		return
-	}
-	t.Log("killing registries")
-	for _, registry := range []string{"registry", "alt_registry"} {
-		_ = exec.Command("docker", "rm", "--force", registry).Run()
-	}
+	pool := testlib.MustDockerPool(tb)
+	testlib.MustKillContainer(tb, name)
+	resource, err := pool.RunWithOptions(&dockertest.RunOptions{
+		Name:       name,
+		Repository: "registry",
+		Tag:        "2",
+		PortBindings: map[docker.Port][]docker.PortBinding{
+			docker.Port("5000/tcp"): {{HostPort: port}},
+		},
+	}, func(hc *docker.HostConfig) {
+		hc.AutoRemove = true
+	})
+	require.NoError(tb, err)
+
+	tb.Cleanup(func() {
+		require.NoError(tb, pool.Purge(resource))
+	})
 }
 
 // TODO: this test is too big... split in smaller tests? Mainly the manifest ones...
@@ -942,7 +930,7 @@ func TestRunPipe(t *testing.T) {
 		"nfpm and multiple binaries": {
 			dockers: []config.Docker{
 				{
-					ImageTemplates: []string{registry + "goreleaser/nfpm:latest"},
+					ImageTemplates: []string{registry + "goreleaser/test_nfpm:latest"},
 					Goos:           "linux",
 					Goarch:         "amd64",
 					IDs:            []string{"mybin", "anotherbin"},
@@ -954,13 +942,13 @@ func TestRunPipe(t *testing.T) {
 			pubAssertError:      shouldNotErr,
 			manifestAssertError: shouldNotErr,
 			expect: []string{
-				registry + "goreleaser/nfpm:latest",
+				registry + "goreleaser/test_nfpm:latest",
 			},
 		},
 		"nfpm and multiple binaries on arm64": {
 			dockers: []config.Docker{
 				{
-					ImageTemplates: []string{registry + "goreleaser/nfpm_arm:latest"},
+					ImageTemplates: []string{registry + "goreleaser/test_nfpm_arm:latest"},
 					Goos:           "linux",
 					Goarch:         "arm64",
 					IDs:            []string{"mybin", "anotherbin"},
@@ -972,14 +960,12 @@ func TestRunPipe(t *testing.T) {
 			pubAssertError:      shouldNotErr,
 			manifestAssertError: shouldNotErr,
 			expect: []string{
-				registry + "goreleaser/nfpm_arm:latest",
+				registry + "goreleaser/test_nfpm_arm:latest",
 			},
 		},
 	}
 
-	killAndRm(t)
 	start(t)
-	defer killAndRm(t)
 
 	for name, docker := range table {
 		for imager := range imagers {

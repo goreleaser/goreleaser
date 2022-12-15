@@ -4,17 +4,17 @@ import (
 	"fmt"
 	"io"
 	"log"
-	"net"
+	"net/http"
 	"os"
-	"os/exec"
 	"path/filepath"
-	"strings"
 	"testing"
-	"time"
 
 	"github.com/goreleaser/goreleaser/internal/artifact"
+	"github.com/goreleaser/goreleaser/internal/testlib"
 	"github.com/goreleaser/goreleaser/pkg/config"
 	"github.com/goreleaser/goreleaser/pkg/context"
+	"github.com/ory/dockertest/v3"
+	"github.com/ory/dockertest/v3/docker"
 	"github.com/stretchr/testify/require"
 	"gocloud.dev/blob"
 )
@@ -28,26 +28,40 @@ const (
 var listen string
 
 func TestMain(m *testing.M) {
-	listener, err := net.Listen("tcp", "127.0.0.1:0")
-	if err != nil {
-		fmt.Println(err)
-		os.Exit(1)
-	}
-	listener.Close()
-	listen = listener.Addr().String()
-
-	cleanup, err := start(listen)
-	if err != nil {
-		fmt.Println(err)
-		os.Exit(1)
-	}
 	prepareEnv()
 
-	code := m.Run()
-	if err := cleanup(); err != nil {
-		fmt.Println(err)
-		os.Exit(1)
+	requireNoErr := func(err error) {
+		if err != nil {
+			log.Fatal(err)
+		}
 	}
+
+	pool := testlib.MustDockerPool(log.Default())
+	testlib.MustKillContainer(log.Default(), containerName)
+
+	resource, err := pool.RunWithOptions(&dockertest.RunOptions{
+		Name:       containerName,
+		Repository: "minio/minio",
+		Tag:        "latest",
+		Env: []string{
+			"MINIO_ROOT_USER=" + minioUser,
+			"MINIO_ROOT_PASSWORD=" + minioPwd,
+		},
+		ExposedPorts: []string{"9000", "9001"},
+		Cmd:          []string{"server", "/data", "--console-address", ":9001"},
+	}, func(hc *docker.HostConfig) {
+		hc.AutoRemove = true
+	})
+	requireNoErr(err)
+	requireNoErr(pool.Retry(func() error {
+		_, err := http.Get(fmt.Sprintf("http://localhost:%s/minio/health/ready", resource.GetPort("9000/tcp")))
+		return err
+	}))
+	listen = "localhost:" + resource.GetPort("9000/tcp")
+
+	code := m.Run()
+
+	requireNoErr(pool.Purge(resource))
 	os.Exit(code)
 }
 
@@ -131,7 +145,7 @@ func TestMinioUpload(t *testing.T) {
 		},
 	})
 
-	setupBucket(t, name)
+	setupBucket(t, testlib.MustDockerPool(t), name)
 	require.NoError(t, Pipe{}.Default(ctx))
 	require.NoError(t, Pipe{}.Publish(ctx))
 
@@ -178,7 +192,7 @@ func TestMinioUploadCustomBucketID(t *testing.T) {
 		Path: debpath,
 	})
 
-	setupBucket(t, name)
+	setupBucket(t, testlib.MustDockerPool(t), name)
 	require.NoError(t, Pipe{}.Default(ctx))
 	require.NoError(t, Pipe{}.Publish(ctx))
 }
@@ -214,7 +228,7 @@ func TestMinioUploadRootFolder(t *testing.T) {
 		Path: debpath,
 	})
 
-	setupBucket(t, name)
+	setupBucket(t, testlib.MustDockerPool(t), name)
 	require.NoError(t, Pipe{}.Default(ctx))
 	require.NoError(t, Pipe{}.Publish(ctx))
 }
@@ -258,75 +272,24 @@ func prepareEnv() {
 	os.Setenv("AWS_REGION", "us-east-1")
 }
 
-func start(listen string) (func() error, error) {
-	data := filepath.Join(os.TempDir(), containerName)
+func setupBucket(tb testing.TB, pool *dockertest.Pool, name string) {
+	tb.Helper()
 
-	fn := func() error {
-		if out, err := exec.Command("docker", "stop", containerName).CombinedOutput(); err != nil {
-			return fmt.Errorf("failed to stop minio: %s: %w", out, err)
-		}
-		if err := os.RemoveAll(data); err != nil {
-			log.Println("failed to remove", data)
+	res, err := pool.RunWithOptions(&dockertest.RunOptions{
+		Repository: "minio/mc",
+		Links:      []string{containerName},
+		Env:        []string{fmt.Sprintf("MC_HOST_local=http://%s:%s@%s:9000", minioUser, minioPwd, containerName)},
+		Cmd:        []string{"mb", "local/" + name},
+	}, func(hc *docker.HostConfig) {
+		hc.AutoRemove = true
+	})
+	require.NoError(tb, err)
+	require.NoError(tb, pool.Retry(func() error {
+		if _, ok := pool.ContainerByName(res.Container.Name); ok {
+			return fmt.Errorf("still running: %s", res.Container.Name)
 		}
 		return nil
-	}
-
-	// stop container if it is running (likely from previous test)
-	_, _ = exec.Command("docker", "stop", containerName).CombinedOutput()
-
-	if out, err := exec.Command(
-		"docker", "run", "-d", "--rm",
-		"-v", data+":/data",
-		"--name", containerName,
-		"-p", listen+":9000",
-		"-e", "MINIO_ROOT_USER="+minioUser,
-		"-e", "MINIO_ROOT_PASSWORD="+minioPwd,
-		"--health-interval", "1s",
-		"--health-cmd=curl --silent --fail http://localhost:9000/minio/health/ready || exit 1",
-		"minio/minio",
-		"server", "/data", "--console-address", ":9001",
-	).CombinedOutput(); err != nil {
-		return fn, fmt.Errorf("failed to start minio: %s: %w", out, err)
-	}
-
-	for range time.Tick(time.Second) {
-		out, err := exec.Command("docker", "inspect", "--format='{{json .State.Health}}'", containerName).CombinedOutput()
-		if err != nil {
-			return fn, fmt.Errorf("failed to check minio status: %s: %w", string(out), err)
-		}
-		if strings.Contains(string(out), `"Status":"healthy"`) {
-			log.Println("minio is healthy")
-			break
-		}
-		log.Println("waiting for minio to be healthy")
-	}
-
-	return fn, nil
-}
-
-func setupBucket(tb testing.TB, name string) {
-	tb.Helper()
-	mc(tb, "mc mb local/"+name)
-	tb.Cleanup(func() {
-		mc(tb, "mc rb --force local/"+name)
-	})
-}
-
-func mc(tb testing.TB, cmd string) {
-	tb.Helper()
-
-	if out, err := exec.Command(
-		"docker", "run", "--rm",
-		"--link", containerName,
-		"--entrypoint", "sh",
-		"minio/mc",
-		"-c", fmt.Sprintf(
-			"mc config host add local http://%s:9000 %s %s; %s",
-			containerName, minioUser, minioPwd, cmd,
-		),
-	).CombinedOutput(); err != nil {
-		tb.Fatalf("failed to create test bucket: %s", string(out))
-	}
+	}))
 }
 
 func getFiles(t *testing.T, ctx *context.Context, cfg config.Blob) []string {
