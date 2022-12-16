@@ -176,7 +176,7 @@ builds:
     # Set the modified timestamp on the output binary, typically
     # you would do this to ensure a build was reproducible. Pass
     # empty string to skip modifying the output.
-    # Default is empty string.
+    # Default is empty string, which will be the compile time.
     mod_timestamp: '{{ .CommitTimestamp }}'
 
     # Hooks can be used to customize the final binary,
@@ -426,8 +426,9 @@ GoReleaser:
 * Modify `ldflags`: by default `main.Date` is set to the time GoReleaser is run
   (`{{.Date}}`), you can set this to `{{.CommitDate}}` or just not pass the
   variable.
-* Modify `mod_timestamp`: by default this is empty string, set to
-  `{{.CommitTimestamp}}` or a constant value instead.
+* Modify `mod_timestamp`: by default this is empty string — which means it'll be
+  the compilation time, set to `{{.CommitTimestamp}}` or a constant value
+  instead.
 * If you do not run your builds from a consistent directory structure, pass
   `-trimpath` to `flags`.
 * Remove uses of the `time` template function. This function returns a new value
