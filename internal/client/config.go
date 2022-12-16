@@ -30,15 +30,15 @@ func TemplateRef(apply func(s string) (string, error), ref config.RepoRef) (conf
 	if err != nil {
 		return ref, err
 	}
-	git_url, err := apply(ref.GitURL)
+	gitUrl, err := apply(ref.GitURL)
 	if err != nil {
 		return ref, err
 	}
-	private_key, err := apply(ref.PrivateKey)
+	privateKey, err := apply(ref.PrivateKey)
 	if err != nil {
 		return ref, err
 	}
-	git_ssh_command, err := apply(ref.GitSSHCommand)
+	gitSSHCommand, err := apply(ref.GitSSHCommand)
 	if err != nil {
 		return ref, err
 	}
@@ -47,8 +47,8 @@ func TemplateRef(apply func(s string) (string, error), ref config.RepoRef) (conf
 		Name:          name,
 		Token:         ref.Token,
 		Branch:        branch,
-		GitURL:        git_url,
-		GitSSHCommand: git_ssh_command,
-		PrivateKey:    private_key,
+		GitURL:        gitUrl,
+		GitSSHCommand: gitSSHCommand,
+		PrivateKey:    privateKey,
 	}, nil
 }

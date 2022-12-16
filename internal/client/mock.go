@@ -21,6 +21,17 @@ func NewMock() *Mock {
 	return &Mock{}
 }
 
+func IsMockClient(cl interface{}) bool {
+	switch cl.(type) {
+	case Mock:
+		return true
+	case *Mock:
+		return true
+	default:
+		return false
+	}
+}
+
 type Mock struct {
 	CreatedFile          bool
 	Content              string

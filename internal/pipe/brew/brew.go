@@ -22,9 +22,7 @@ import (
 	"github.com/goreleaser/goreleaser/pkg/context"
 )
 
-const (
-	brewConfigExtra = "BrewConfig"
-)
+const brewConfigExtra = "BrewConfig"
 
 var (
 	// ErrNoArchivesFound happens when 0 archives are found.
@@ -136,7 +134,6 @@ func doPublish(ctx *context.Context, formula *artifact.Artifact, cl client.Clien
 	}
 
 	cl, err = getClient(ctx, brew, cl, brew.Tap.Token)
-
 	if err != nil {
 		return err
 	}
@@ -156,11 +153,10 @@ func doPublish(ctx *context.Context, formula *artifact.Artifact, cl client.Clien
 }
 
 func getClient(ctx *context.Context, brew config.Homebrew, cl client.Client, token string) (client.Client, error) {
-	cl, err := client.NewIfToken(ctx, cl, brew.Tap.Token)
-	if len(brew.Tap.GitURL) > 0 && ctx.TokenType != context.TokenTypeGitLab {
-		cl, err = client.NewGitUploadClient(ctx)
+	if len(brew.Tap.GitURL) > 0 && !client.IsMockClient(cl) {
+		return client.NewGitUploadClient(ctx)
 	}
-	return cl, err
+	return client.NewIfToken(ctx, cl, brew.Tap.Token)
 }
 
 func doRun(ctx *context.Context, brew config.Homebrew, cl client.Client) error {

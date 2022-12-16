@@ -381,7 +381,7 @@ func doPublish(ctx *context.Context, pkgs []*artifact.Artifact) error {
 		}
 		err = cl.CreateFile(ctx, cfg.CommitAuthor, repo, content, pkg.Name, cfg.CommitMessageTemplate)
 		if err != nil {
-			return pipe.Skip(err.Error())
+			return err
 		}
 	}
 

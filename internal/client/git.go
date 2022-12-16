@@ -65,8 +65,6 @@ func (gc *gitClient) CreateFile(ctx *context.Context, commitAuthor config.Commit
 		return err
 	}
 
-	fmt.Printf("%v\n", commitAuthor)
-
 	author, err := commitauthor.Get(ctx, commitAuthor)
 	if err != nil {
 		return err
