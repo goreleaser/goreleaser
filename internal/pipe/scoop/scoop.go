@@ -21,8 +21,9 @@ import (
 	"github.com/goreleaser/goreleaser/pkg/context"
 )
 
-// ErrNoWindows when there is no build for windows (goos doesn't contain windows).
-var ErrNoWindows = errors.New("scoop requires a windows build and archive")
+// ErrNoWindows when there is no build for windows (goos doesn't contain
+// windows) or archive.format is binary.
+var ErrNoWindows = errors.New("scoop requires a windows archive\nLearn more at https://goreleaser.com/errors/scoop-archive\n")
 
 const scoopConfigExtra = "ScoopConfig"
 

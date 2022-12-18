@@ -155,6 +155,7 @@ nav:
   - errors/resource-not-accessible-by-integration.md
   - errors/no-history.md
   - errors/multiple-binaries-archive.md
+  - errors/scoop-archive.md
 - deprecations.md
 - Cookbooks:
   - About: cookbooks/index.md
