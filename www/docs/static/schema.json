@@ -1970,7 +1970,7 @@
 						},
 						"type": "array"
 					},
-					"chocolatey": {
+					"chocolateys": {
 						"items": {
 							"$ref": "#/$defs/Chocolatey"
 						},
