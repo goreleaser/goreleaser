@@ -7,5 +7,5 @@ things up.
 [This cookbook](/cookbooks/cgo-and-crosscompiling/) contains more information.
 
 Tools like `xgo` are not natively supported, and we make no promises about
-whether or how well they work withing GoReleaser or not.
+whether or how well they work within GoReleaser or not.
 
