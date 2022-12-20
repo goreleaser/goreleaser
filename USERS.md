@@ -38,6 +38,7 @@ Here's a running list of some organizations using GoReleaser[^1]:
 1. [NATS](https://nats.io)
 1. [Numary](https://numary.com)
 1. [OpenFeature](https://openfeature.dev)
+1. [Optimus Mine](https://optimusmine.com)
 1. [Planetscale](https://planetscale.com)
 1. [Pulumi](https://pulumi.com)
 1. [prestd](https://prestd.com)
