@@ -140,7 +140,7 @@ func TestPublishPipe(t *testing.T) {
 						WorkingDir: "./testdata/app/",
 						BaseImage:  "cgr.dev/chainguard/static",
 						Repository: fmt.Sprintf("%s/goreleasertest", registry),
-						Platforms:  []string{"linux/amd64"},
+						Platforms:  []string{"linux/amd64", "linux/arm64"},
 						Tags:       []string{table.Name},
 						SBOM:       table.SBOM,
 					},
