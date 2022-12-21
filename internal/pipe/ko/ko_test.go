@@ -106,6 +106,7 @@ func TestPublishPipeSuccess(t *testing.T) {
 		Name      string
 		SBOM      string
 		BaseImage string
+		Platforms []string
 	}{
 		{
 			Name: "sbom-spdx",
@@ -126,6 +127,10 @@ func TestPublishPipeSuccess(t *testing.T) {
 		{
 			Name:      "base-image-is-not-index",
 			BaseImage: "alpine:latest@sha256:c0d488a800e4127c334ad20d61d7bc21b4097540327217dfab52262adc02380c",
+		},
+		{
+			Name:      "multiple-platforms",
+			Platforms: []string{"linux/amd64", "linux/arm64"},
 		},
 	}
 
@@ -149,7 +154,7 @@ func TestPublishPipeSuccess(t *testing.T) {
 						WorkingDir: "./testdata/app/",
 						BaseImage:  table.BaseImage,
 						Repository: fmt.Sprintf("%s/goreleasertest", registry),
-						Platforms:  []string{"linux/amd64", "linux/arm64"},
+						Platforms:  table.Platforms,
 						Tags:       []string{table.Name},
 						SBOM:       table.SBOM,
 					},

@@ -3,7 +3,7 @@
 package ko
 
 import (
-	stdcontext "context"
+	stdctx "context"
 	"fmt"
 	"io"
 	"path/filepath"
@@ -140,18 +140,18 @@ type buildOptions struct {
 	baseImportPaths      bool
 }
 
-func (o *buildOptions) makeBuilder(ctx stdcontext.Context) (*build.Caching, error) {
+func (o *buildOptions) makeBuilder(ctx *context.Context) (*build.Caching, error) {
 	buildOptions := []build.Option{
 		build.WithConfig(map[string]build.Config{
 			o.importPath: {
 				Ldflags: o.ldflags,
-				Main:    o.main,
 				Flags:   o.flags,
+				Main:    o.main,
 				Env:     o.env,
 			},
 		}),
 		build.WithPlatforms(o.platforms...),
-		build.WithBaseImages(func(ctx stdcontext.Context, s string) (name.Reference, build.Result, error) {
+		build.WithBaseImages(func(ctx stdctx.Context, s string) (name.Reference, build.Result, error) {
 			ref, err := name.ParseReference(o.baseImage)
 			if err != nil {
 				return nil, nil, err
@@ -203,19 +203,16 @@ func (o *buildOptions) makeBuilder(ctx stdcontext.Context) (*build.Caching, erro
 
 func doBuild(ctx *context.Context, ko config.Ko) func() error {
 	return func() error {
-		ctxBackground, cancel := stdcontext.WithCancel(stdcontext.Background())
-		defer cancel()
-
 		opts, err := buildBuildOptions(ctx, ko)
 		if err != nil {
 			return err
 		}
 
-		b, err := opts.makeBuilder(ctxBackground)
+		b, err := opts.makeBuilder(ctx)
 		if err != nil {
 			return fmt.Errorf("makeBuilder: %w", err)
 		}
-		r, err := b.Build(ctxBackground, opts.importPath)
+		r, err := b.Build(ctx, opts.importPath)
 		if err != nil {
 			return fmt.Errorf("build: %w", err)
 		}
@@ -237,7 +234,7 @@ func doBuild(ctx *context.Context, ko config.Ko) func() error {
 			return fmt.Errorf("newDefault: %w", err)
 		}
 		defer func() { _ = p.Close() }()
-		if _, err = p.Publish(ctxBackground, r, opts.importPath); err != nil {
+		if _, err = p.Publish(ctx, r, opts.importPath); err != nil {
 			return fmt.Errorf("publish: %w", err)
 		}
 		if err := p.Close(); err != nil {
