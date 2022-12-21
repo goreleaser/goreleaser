@@ -61,36 +61,94 @@ func TestDescription(t *testing.T) {
 	require.NotEmpty(t, Pipe{}.String())
 }
 
+func TestSkip(t *testing.T) {
+	t.Run("skip ko set", func(t *testing.T) {
+		ctx := context.New(config.Project{
+			Kos: []config.Ko{{}},
+		})
+		ctx.SkipKo = true
+		require.True(t, Pipe{}.Skip(ctx))
+	})
+	t.Run("skip no kos", func(t *testing.T) {
+		ctx := context.New(config.Project{})
+		require.True(t, Pipe{}.Skip(ctx))
+	})
+	t.Run("dont skip", func(t *testing.T) {
+		ctx := context.New(config.Project{
+			Kos: []config.Ko{{}},
+		})
+		require.False(t, Pipe{}.Skip(ctx))
+	})
+}
+
+func TestPublishPipeNoMatchingBuild(t *testing.T) {
+	ctx := context.New(config.Project{
+		Builds: []config.Build{
+			{
+				ID: "doesnt matter",
+			},
+		},
+		Kos: []config.Ko{
+			{
+				ID:    "default",
+				Build: "wont match nothing",
+			},
+		},
+	})
+
+	require.EqualError(t, Pipe{}.Default(ctx), `no builds with id "wont match nothing"`)
+}
+
 func TestPublishPipe(t *testing.T) {
 	testlib.StartRegistry(t, "ko_registry", registryPort)
 
-	ctx := &context.Context{
-		Parallelism: 1,
-		Config: config.Project{
-			Builds: []config.Build{
-				{
-					ID: "foo",
-					BuildDetails: config.BuildDetails{
-						Ldflags: []string{"-s", "-w"},
-						Flags:   []string{"-tags", "netgo"},
-						Env:     []string{"GOCACHE=" + t.TempDir()},
-					},
-				},
-			},
-			Kos: []config.Ko{
-				{
-					ID:         "default",
-					Build:      "foo",
-					WorkingDir: "./testdata/app/",
-					BaseImage:  "cgr.dev/chainguard/static",
-					Repository: fmt.Sprintf("%s/goreleasertest", registry),
-					Platforms:  []string{"linux/amd64"},
-					Tags:       []string{"latest"},
-				},
-			},
+	table := []struct {
+		Name string
+		SBOM string
+	}{
+		{
+			Name: "sbom-spdx",
+			SBOM: "spdx",
+		},
+		{
+			Name: "sbom-cyclonedx",
+			SBOM: "cyclonedx",
+		},
+		{
+			Name: "sbom-go.version-m",
+			SBOM: "go.version-m",
 		},
 	}
 
-	require.NoError(t, Pipe{}.Default(ctx))
-	require.NoError(t, Pipe{}.Publish(ctx))
+	for _, table := range table {
+		t.Run(table.Name, func(t *testing.T) {
+			ctx := context.New(config.Project{
+				Builds: []config.Build{
+					{
+						ID: "foo",
+						BuildDetails: config.BuildDetails{
+							Ldflags: []string{"-s", "-w"},
+							Flags:   []string{"-tags", "netgo"},
+							Env:     []string{"GOCACHE=" + t.TempDir()},
+						},
+					},
+				},
+				Kos: []config.Ko{
+					{
+						ID:         "default",
+						Build:      "foo",
+						WorkingDir: "./testdata/app/",
+						BaseImage:  "cgr.dev/chainguard/static",
+						Repository: fmt.Sprintf("%s/goreleasertest", registry),
+						Platforms:  []string{"linux/amd64"},
+						Tags:       []string{table.Name},
+						SBOM:       table.SBOM,
+					},
+				},
+			})
+
+			require.NoError(t, Pipe{}.Default(ctx))
+			require.NoError(t, Pipe{}.Publish(ctx))
+		})
+	}
 }

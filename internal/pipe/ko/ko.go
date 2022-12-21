@@ -253,7 +253,7 @@ func findBuild(ctx *context.Context, ko config.Ko) (config.Build, error) {
 			return build, nil
 		}
 	}
-	return config.Build{}, fmt.Errorf("no builds with id %s", ko.Build)
+	return config.Build{}, fmt.Errorf("no builds with id %q", ko.Build)
 }
 
 func buildBuildOptions(ctx *context.Context, cfg config.Ko) (*buildOptions, error) {
@@ -298,7 +298,7 @@ func buildBuildOptions(ctx *context.Context, cfg config.Ko) (*buildOptions, erro
 	}
 
 	if len(cfg.Env) > 0 {
-		env, err := applyTemplate(cfg.Env, ctx)
+		env, err := applyTemplate(ctx, cfg.Env)
 		if err != nil {
 			return nil, err
 		}
@@ -306,7 +306,7 @@ func buildBuildOptions(ctx *context.Context, cfg config.Ko) (*buildOptions, erro
 	}
 
 	if len(cfg.Flags) > 0 {
-		flags, err := applyTemplate(cfg.Flags, ctx)
+		flags, err := applyTemplate(ctx, cfg.Flags)
 		if err != nil {
 			return nil, err
 		}
@@ -314,7 +314,7 @@ func buildBuildOptions(ctx *context.Context, cfg config.Ko) (*buildOptions, erro
 	}
 
 	if len(cfg.Ldflags) > 0 {
-		ldflags, err := applyTemplate(cfg.Ldflags, ctx)
+		ldflags, err := applyTemplate(ctx, cfg.Ldflags)
 		if err != nil {
 			return nil, err
 		}
@@ -323,7 +323,7 @@ func buildBuildOptions(ctx *context.Context, cfg config.Ko) (*buildOptions, erro
 	return opts, nil
 }
 
-func applyTemplate(templateable []string, ctx *context.Context) ([]string, error) {
+func applyTemplate(ctx *context.Context, templateable []string) ([]string, error) {
 	var templated []string
 	for _, t := range templateable {
 		tlf, err := tmpl.New(ctx).Apply(t)
