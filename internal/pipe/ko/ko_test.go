@@ -99,16 +99,21 @@ func TestPublishPipeNoMatchingBuild(t *testing.T) {
 	require.EqualError(t, Pipe{}.Default(ctx), `no builds with id "wont match nothing"`)
 }
 
-func TestPublishPipe(t *testing.T) {
+func TestPublishPipeSuccess(t *testing.T) {
 	testlib.StartRegistry(t, "ko_registry", registryPort)
 
 	table := []struct {
-		Name string
-		SBOM string
+		Name      string
+		SBOM      string
+		BaseImage string
 	}{
 		{
 			Name: "sbom-spdx",
 			SBOM: "spdx",
+		},
+		{
+			Name: "sbom-none",
+			SBOM: "none",
 		},
 		{
 			Name: "sbom-cyclonedx",
@@ -117,6 +122,10 @@ func TestPublishPipe(t *testing.T) {
 		{
 			Name: "sbom-go.version-m",
 			SBOM: "go.version-m",
+		},
+		{
+			Name:      "base-image-is-not-index",
+			BaseImage: "alpine:latest@sha256:c0d488a800e4127c334ad20d61d7bc21b4097540327217dfab52262adc02380c",
 		},
 	}
 
@@ -138,7 +147,7 @@ func TestPublishPipe(t *testing.T) {
 						ID:         "default",
 						Build:      "foo",
 						WorkingDir: "./testdata/app/",
-						BaseImage:  "cgr.dev/chainguard/static",
+						BaseImage:  table.BaseImage,
 						Repository: fmt.Sprintf("%s/goreleasertest", registry),
 						Platforms:  []string{"linux/amd64", "linux/arm64"},
 						Tags:       []string{table.Name},
@@ -151,6 +160,38 @@ func TestPublishPipe(t *testing.T) {
 			require.NoError(t, Pipe{}.Publish(ctx))
 		})
 	}
+}
+
+func TestPublishPipeError(t *testing.T) {
+	makeCtx := func() *context.Context {
+		return context.New(config.Project{
+			Builds: []config.Build{
+				{ID: "foo"},
+			},
+			Kos: []config.Ko{
+				{
+					ID:         "default",
+					Build:      "foo",
+					WorkingDir: "./testdata/app/",
+					Repository: "fakerepo:8080/",
+				},
+			},
+		})
+	}
+
+	t.Run("invalid base image", func(t *testing.T) {
+		ctx := makeCtx()
+		ctx.Config.Kos[0].BaseImage = "not a valid image hopefully"
+		require.NoError(t, Pipe{}.Default(ctx))
+		require.EqualError(t, Pipe{}.Publish(ctx), `build: could not parse reference: not a valid image hopefully`)
+	})
+
+	t.Run("invalid sbom", func(t *testing.T) {
+		ctx := makeCtx()
+		ctx.Config.Kos[0].SBOM = "nope"
+		require.NoError(t, Pipe{}.Default(ctx))
+		require.EqualError(t, Pipe{}.Publish(ctx), `makeBuilder: unknown sbom type: "nope"`)
+	})
 }
 
 func TestApplyTemplate(t *testing.T) {

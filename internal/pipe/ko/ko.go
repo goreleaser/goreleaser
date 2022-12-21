@@ -196,7 +196,7 @@ func (o *buildOptions) makeBuilder(ctx stdcontext.Context) (*build.Caching, erro
 
 	b, err := build.NewGo(ctx, o.workingDir, buildOptions...)
 	if err != nil {
-		return nil, fmt.Errorf("newGo: %v", err)
+		return nil, fmt.Errorf("newGo: %w", err)
 	}
 	return build.NewCaching(b)
 }
@@ -213,11 +213,11 @@ func doBuild(ctx *context.Context, ko config.Ko) func() error {
 
 		b, err := opts.makeBuilder(ctxBackground)
 		if err != nil {
-			return fmt.Errorf("makeBuilder: %v", err)
+			return fmt.Errorf("makeBuilder: %w", err)
 		}
 		r, err := b.Build(ctxBackground, opts.importPath)
 		if err != nil {
-			return fmt.Errorf("build: %v", err)
+			return fmt.Errorf("build: %w", err)
 		}
 
 		namer := options.MakeNamer(&options.PublishOptions{
@@ -234,14 +234,14 @@ func doBuild(ctx *context.Context, ko config.Ko) func() error {
 			publish.WithAuthFromKeychain(authn.DefaultKeychain),
 		)
 		if err != nil {
-			return fmt.Errorf("newDefault: %v", err)
+			return fmt.Errorf("newDefault: %w", err)
 		}
 		defer func() { _ = p.Close() }()
 		if _, err = p.Publish(ctxBackground, r, opts.importPath); err != nil {
-			return fmt.Errorf("publish: %v", err)
+			return fmt.Errorf("publish: %w", err)
 		}
 		if err := p.Close(); err != nil {
-			return fmt.Errorf("close: %v", err)
+			return fmt.Errorf("close: %w", err)
 		}
 		return nil
 	}
