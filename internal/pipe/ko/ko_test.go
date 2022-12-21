@@ -152,3 +152,17 @@ func TestPublishPipe(t *testing.T) {
 		})
 	}
 }
+
+func TestApplyTemplate(t *testing.T) {
+	t.Run("success", func(t *testing.T) {
+		foo, err := applyTemplate(context.New(config.Project{
+			Env: []string{"FOO=bar"},
+		}), []string{"{{ .Env.FOO }}"})
+		require.NoError(t, err)
+		require.Equal(t, []string{"bar"}, foo)
+	})
+	t.Run("error", func(t *testing.T) {
+		_, err := applyTemplate(context.New(config.Project{}), []string{"{{ .Nope}}"})
+		require.Error(t, err)
+	})
+}
