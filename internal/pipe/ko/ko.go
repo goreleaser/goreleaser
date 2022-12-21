@@ -29,6 +29,19 @@ import (
 
 const chainguardStatic = "cgr.dev/chainguard/static"
 
+var (
+	baseImages     sync.Map
+	amazonKeychain authn.Keychain = authn.NewKeychainFromHelper(ecr.NewECRHelper(ecr.WithLogger(io.Discard)))
+	azureKeychain  authn.Keychain = authn.NewKeychainFromHelper(credhelper.NewACRCredentialsHelper())
+	keychain                      = authn.NewMultiKeychain(
+		amazonKeychain,
+		authn.DefaultKeychain,
+		google.Keychain,
+		github.Keychain,
+		azureKeychain,
+	)
+)
+
 // Pipe that build OCI compliant images with ko.
 type Pipe struct{}
 
@@ -127,20 +140,6 @@ type buildOptions struct {
 	baseImportPaths      bool
 }
 
-var baseImages sync.Map
-
-var (
-	amazonKeychain authn.Keychain = authn.NewKeychainFromHelper(ecr.NewECRHelper(ecr.WithLogger(io.Discard)))
-	azureKeychain  authn.Keychain = authn.NewKeychainFromHelper(credhelper.NewACRCredentialsHelper())
-	keychain                      = authn.NewMultiKeychain(
-		amazonKeychain,
-		authn.DefaultKeychain,
-		google.Keychain,
-		github.Keychain,
-		azureKeychain,
-	)
-)
-
 func (o *buildOptions) makeBuilder(ctx stdcontext.Context) (*build.Caching, error) {
 	buildOptions := []build.Option{
 		build.WithConfig(map[string]build.Config{
@@ -207,7 +206,7 @@ func doBuild(ctx *context.Context, ko config.Ko) func() error {
 		ctxBackground, cancel := stdcontext.WithCancel(stdcontext.Background())
 		defer cancel()
 
-		opts, err := fromConfig(ctx, ko)
+		opts, err := buildBuildOptions(ctx, ko)
 		if err != nil {
 			return err
 		}
@@ -257,7 +256,7 @@ func findBuild(ctx *context.Context, ko config.Ko) (config.Build, error) {
 	return config.Build{}, fmt.Errorf("no builds with id %s", ko.Build)
 }
 
-func fromConfig(ctx *context.Context, cfg config.Ko) (*buildOptions, error) {
+func buildBuildOptions(ctx *context.Context, cfg config.Ko) (*buildOptions, error) {
 	localImportPath := "./..."
 
 	dir := filepath.Clean(cfg.WorkingDir)
