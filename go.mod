@@ -13,9 +13,10 @@ require (
 	github.com/caarlos0/log v0.2.1
 	github.com/charmbracelet/keygen v0.3.0
 	github.com/charmbracelet/lipgloss v0.6.0
+	github.com/chrismellard/docker-credential-acr-env v0.0.0-20220327082430-c57b701bfc08
 	github.com/dghubble/go-twitter v0.0.0-20211115160449-93a8679adecb
 	github.com/dghubble/oauth1 v0.7.2
-	github.com/disgoorg/disgo v0.14.0
+	github.com/disgoorg/disgo v0.14.1
 	github.com/disgoorg/snowflake/v2 v2.0.1
 	github.com/distribution/distribution/v3 v3.0.0-20221021092657-c47a966fded8
 	github.com/go-telegram-bot-api/telegram-bot-api v4.6.4+incompatible
@@ -36,7 +37,7 @@ require (
 	github.com/muesli/termenv v0.13.0
 	github.com/ory/dockertest/v3 v3.9.1
 	github.com/phayes/freeport v0.0.0-20220201140144-74d24b5ae9f5
-	github.com/slack-go/slack v0.11.4
+	github.com/slack-go/slack v0.12.0
 	github.com/spf13/cobra v1.6.1
 	github.com/stretchr/testify v1.8.1
 	github.com/ulikunitz/xz v0.5.11
@@ -51,8 +52,6 @@ require (
 	gopkg.in/mail.v2 v2.3.1
 	gopkg.in/yaml.v3 v3.0.1
 )
-
-require github.com/chrismellard/docker-credential-acr-env v0.0.0-20220327082430-c57b701bfc08
 
 require (
 	cloud.google.com/go v0.103.0 // indirect
