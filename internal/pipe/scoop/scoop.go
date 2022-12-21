@@ -23,7 +23,8 @@ import (
 
 // ErrNoWindows when there is no build for windows (goos doesn't contain
 // windows) or archive.format is binary.
-var ErrNoWindows = errors.New("scoop requires a windows archive\nLearn more at https://goreleaser.com/errors/scoop-archive\n")
+
+var ErrNoWindows = errors.New("scoop requires a windows archive\nLearn more at https://goreleaser.com/errors/scoop-archive\n") // nolint: revive
 
 const scoopConfigExtra = "ScoopConfig"
 
