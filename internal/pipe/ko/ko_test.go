@@ -192,6 +192,40 @@ func TestPublishPipeError(t *testing.T) {
 		require.NoError(t, Pipe{}.Default(ctx))
 		require.EqualError(t, Pipe{}.Publish(ctx), `makeBuilder: unknown sbom type: "nope"`)
 	})
+
+	t.Run("invalid build", func(t *testing.T) {
+		ctx := makeCtx()
+		ctx.Config.Kos[0].WorkingDir = t.TempDir()
+		require.NoError(t, Pipe{}.Default(ctx))
+		require.EqualError(t, Pipe{}.Publish(ctx), `build: exit status 1`)
+	})
+
+	t.Run("invalid env tmpl", func(t *testing.T) {
+		ctx := makeCtx()
+		ctx.Config.Builds[0].Env = []string{"{{.Nope}}"}
+		require.NoError(t, Pipe{}.Default(ctx))
+		testlib.RequireTemplateError(t, Pipe{}.Publish(ctx))
+	})
+
+	t.Run("invalid ldflags tmpl", func(t *testing.T) {
+		ctx := makeCtx()
+		ctx.Config.Builds[0].Ldflags = []string{"{{.Nope}}"}
+		require.NoError(t, Pipe{}.Default(ctx))
+		testlib.RequireTemplateError(t, Pipe{}.Publish(ctx))
+	})
+
+	t.Run("invalid flags tmpl", func(t *testing.T) {
+		ctx := makeCtx()
+		ctx.Config.Builds[0].Flags = []string{"{{.Nope}}"}
+		require.NoError(t, Pipe{}.Default(ctx))
+		testlib.RequireTemplateError(t, Pipe{}.Publish(ctx))
+	})
+
+	t.Run("publish fail", func(t *testing.T) {
+		ctx := makeCtx()
+		require.NoError(t, Pipe{}.Default(ctx))
+		require.EqualError(t, Pipe{}.Publish(ctx), `build: exit status 1`)
+	})
 }
 
 func TestApplyTemplate(t *testing.T) {
