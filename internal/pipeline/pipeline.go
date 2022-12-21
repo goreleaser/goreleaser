@@ -20,7 +20,6 @@ import (
 	"github.com/goreleaser/goreleaser/internal/pipe/env"
 	"github.com/goreleaser/goreleaser/internal/pipe/git"
 	"github.com/goreleaser/goreleaser/internal/pipe/gomod"
-	"github.com/goreleaser/goreleaser/internal/pipe/ko"
 	"github.com/goreleaser/goreleaser/internal/pipe/krew"
 	"github.com/goreleaser/goreleaser/internal/pipe/metadata"
 	"github.com/goreleaser/goreleaser/internal/pipe/nfpm"
@@ -106,8 +105,6 @@ var Pipeline = append(
 	brew.Pipe{},
 	// krew plugins
 	krew.Pipe{},
-	// ko
-	ko.Pipe{},
 	// create scoop buckets
 	scoop.Pipe{},
 	// create chocolatey pkg and publish

@@ -5,28 +5,29 @@ package ko
 import (
 	stdcontext "context"
 	"fmt"
-	"github.com/chrismellard/docker-credential-acr-env/pkg/credhelper"
-	"github.com/google/go-containerregistry/pkg/authn/github"
-	"github.com/google/go-containerregistry/pkg/v1/google"
 	"io"
-	"os"
 	"path/filepath"
 	"sync"
 
-	"github.com/goreleaser/goreleaser/internal/semerrgroup"
-	"golang.org/x/tools/go/packages"
-
+	"github.com/awslabs/amazon-ecr-credential-helper/ecr-login"
+	"github.com/chrismellard/docker-credential-acr-env/pkg/credhelper"
 	"github.com/google/go-containerregistry/pkg/authn"
+	"github.com/google/go-containerregistry/pkg/authn/github"
 	"github.com/google/go-containerregistry/pkg/name"
+	"github.com/google/go-containerregistry/pkg/v1/google"
 	"github.com/google/go-containerregistry/pkg/v1/remote"
 	"github.com/google/ko/pkg/build"
 	"github.com/google/ko/pkg/commands/options"
 	"github.com/google/ko/pkg/publish"
 	"github.com/goreleaser/goreleaser/internal/ids"
+	"github.com/goreleaser/goreleaser/internal/semerrgroup"
 	"github.com/goreleaser/goreleaser/internal/tmpl"
 	"github.com/goreleaser/goreleaser/pkg/config"
 	"github.com/goreleaser/goreleaser/pkg/context"
+	"golang.org/x/tools/go/packages"
 )
+
+const chainguardStatic = "cgr.dev/chainguard/static"
 
 // Pipe that build OCI compliant images with ko.
 type Pipe struct{}
@@ -39,31 +40,68 @@ func (Pipe) Skip(ctx *context.Context) bool {
 // Default sets the Pipes defaults.
 func (Pipe) Default(ctx *context.Context) error {
 	ids := ids.New("kos")
-	for _, ko := range ctx.Config.Kos {
-		if err := setConfigDefaults(&ko); err != nil {
+	for i := range ctx.Config.Kos {
+		ko := &ctx.Config.Kos[i]
+		if ko.ID == "" {
+			ko.ID = "default"
+		}
+
+		if ko.Build == "" {
+			ko.Build = ko.ID
+		}
+
+		build, err := findBuild(ctx, *ko)
+		if err != nil {
 			return err
 		}
+
+		if len(ko.Ldflags) == 0 {
+			ko.Ldflags = build.Ldflags
+		}
+
+		if len(ko.Flags) == 0 {
+			ko.Flags = build.Flags
+		}
+
+		if len(ko.Env) == 0 {
+			ko.Env = build.Env
+		}
+
+		if ko.WorkingDir == "" {
+			ko.WorkingDir = "."
+		}
+
+		if ko.BaseImage == "" {
+			ko.BaseImage = chainguardStatic
+		}
+
+		if repo := ctx.Env["KO_DOCKER_REPO"]; repo != "" {
+			ko.Repository = repo
+		}
+
+		if repo := ctx.Env["COSIGN_REPOSITORY"]; repo != "" {
+			ko.CosignRepository = repo
+		}
+
+		if len(ko.Platforms) == 0 {
+			ko.Platforms = []string{"linux/amd64"}
+		}
+
+		if len(ko.Tags) == 0 {
+			ko.Tags = []string{"latest"}
+		}
+
+		if ko.SBOM == "" {
+			ko.SBOM = "spdx"
+		}
+
 		ids.Inc(ko.ID)
 	}
 	return ids.Validate()
 }
 
-func setConfigDefaults(cfg *config.Ko) error {
-	cfg.Push = true
-
-	if cfg.ID == "" {
-		cfg.ID = "default"
-	}
-
-	if cfg.BaseImage == "" {
-		cfg.BaseImage = "cgr.dev/chainguard/static" // TODO: we can discuss on this
-	}
-
-	return nil
-}
-
-// Run executes the Pipe.
-func (Pipe) Run(ctx *context.Context) error {
+// Publish executes the Pipe.
+func (Pipe) Publish(ctx *context.Context) error {
 	g := semerrgroup.New(ctx.Parallelism)
 	for _, ko := range ctx.Config.Kos {
 		g.Go(doBuild(ctx, ko))
@@ -72,7 +110,7 @@ func (Pipe) Run(ctx *context.Context) error {
 }
 
 type buildOptions struct {
-	ip                   string
+	importPath           string
 	main                 string
 	flags                []string
 	env                  []string
@@ -104,9 +142,9 @@ var (
 )
 
 func (o *buildOptions) makeBuilder(ctx stdcontext.Context) (*build.Caching, error) {
-	bo := []build.Option{
+	buildOptions := []build.Option{
 		build.WithConfig(map[string]build.Config{
-			o.ip: {
+			o.importPath: {
 				Ldflags: o.ldflags,
 				Main:    o.main,
 				Flags:   o.flags,
@@ -124,8 +162,10 @@ func (o *buildOptions) makeBuilder(ctx stdcontext.Context) (*build.Caching, erro
 				return ref, cached.(build.Result), nil
 			}
 
-			desc, err := remote.Get(ref,
-				remote.WithAuthFromKeychain(keychain))
+			desc, err := remote.Get(
+				ref,
+				remote.WithAuthFromKeychain(keychain),
+			)
 			if err != nil {
 				return nil, nil, err
 			}
@@ -144,18 +184,18 @@ func (o *buildOptions) makeBuilder(ctx stdcontext.Context) (*build.Caching, erro
 	}
 	switch o.sbom {
 	case "spdx":
-		bo = append(bo, build.WithSPDX("devel"))
+		buildOptions = append(buildOptions, build.WithSPDX("devel"))
 	case "cyclonedx":
-		bo = append(bo, build.WithCycloneDX())
+		buildOptions = append(buildOptions, build.WithCycloneDX())
 	case "go.version-m":
-		bo = append(bo, build.WithGoVersionSBOM())
+		buildOptions = append(buildOptions, build.WithGoVersionSBOM())
 	case "none":
 		// don't do anything.
 	default:
 		return nil, fmt.Errorf("unknown sbom type: %q", o.sbom)
 	}
 
-	b, err := build.NewGo(ctx, o.workingDir, bo...)
+	b, err := build.NewGo(ctx, o.workingDir, buildOptions...)
 	if err != nil {
 		return nil, fmt.Errorf("newGo: %v", err)
 	}
@@ -166,6 +206,7 @@ func doBuild(ctx *context.Context, ko config.Ko) func() error {
 	return func() error {
 		ctxBackground, cancel := stdcontext.WithCancel(stdcontext.Background())
 		defer cancel()
+
 		opts, err := fromConfig(ctx, ko)
 		if err != nil {
 			return err
@@ -175,7 +216,7 @@ func doBuild(ctx *context.Context, ko config.Ko) func() error {
 		if err != nil {
 			return fmt.Errorf("makeBuilder: %v", err)
 		}
-		r, err := b.Build(ctxBackground, opts.ip)
+		r, err := b.Build(ctxBackground, opts.importPath)
 		if err != nil {
 			return fmt.Errorf("build: %v", err)
 		}
@@ -187,120 +228,99 @@ func doBuild(ctx *context.Context, ko config.Ko) func() error {
 			BaseImportPaths:     opts.baseImportPaths,
 		})
 
-		p, err := publish.NewDefault(opts.dockerRepo,
+		p, err := publish.NewDefault(
+			opts.dockerRepo,
 			publish.WithTags(opts.tags),
 			publish.WithNamer(namer),
-			publish.WithAuthFromKeychain(authn.DefaultKeychain))
+			publish.WithAuthFromKeychain(authn.DefaultKeychain),
+		)
 		if err != nil {
 			return fmt.Errorf("newDefault: %v", err)
 		}
-		_, err = p.Publish(ctxBackground, r, opts.ip)
-		if err != nil {
+		defer func() { _ = p.Close() }()
+		if _, err = p.Publish(ctxBackground, r, opts.importPath); err != nil {
 			return fmt.Errorf("publish: %v", err)
+		}
+		if err := p.Close(); err != nil {
+			return fmt.Errorf("close: %v", err)
 		}
 		return nil
 	}
 }
 
+func findBuild(ctx *context.Context, ko config.Ko) (config.Build, error) {
+	for _, build := range ctx.Config.Builds {
+		if build.ID == ko.Build {
+			return build, nil
+		}
+	}
+	return config.Build{}, fmt.Errorf("no builds with id %s", ko.Build)
+}
+
 func fromConfig(ctx *context.Context, cfg config.Ko) (*buildOptions, error) {
-	var ldflags []string
-	// find the matching build id with the Ko config
-	buildID := cfg.Build
-	for _, b := range ctx.Config.Builds {
-		if b.ID == buildID {
-			ldflags = append(ldflags, b.Ldflags...)
-			cfg.WorkingDir = b.Dir
-			cfg.Main = b.Main
-
-			ft, err := applyTemplate(b.Flags, ctx)
-			if err != nil {
-				return nil, err
-			}
-			cfg.Flags = ft
-
-			et, err := applyTemplate(b.Env, ctx)
-			if err != nil {
-				return nil, err
-			}
-			cfg.Env = et
-		}
-	}
-
-	if cfg.WorkingDir == "" {
-		wd, err := os.Getwd()
-		if err != nil {
-			return nil, err
-		}
-
-		cfg.WorkingDir = wd
-	}
-
-	localImportPath := fmt.Sprint(".", string(filepath.Separator), ".")
+	localImportPath := "./..."
 
 	dir := filepath.Clean(cfg.WorkingDir)
 	if dir == "." {
 		dir = ""
 	}
 
-	pkgs, err := packages.Load(&packages.Config{Mode: packages.NeedName, Dir: dir}, localImportPath)
+	pkgs, err := packages.Load(&packages.Config{
+		Mode: packages.NeedName,
+		Dir:  dir,
+	}, localImportPath)
 	if err != nil {
-		return nil, fmt.Errorf("'builds': %s does not contain a valid local import path (%s) for directory (%s): %w", cfg.ID, localImportPath, cfg.WorkingDir, err)
+		return nil, fmt.Errorf(
+			"ko: %s does not contain a valid local import path (%s) for directory (%s): %w",
+			cfg.ID, localImportPath, cfg.WorkingDir, err,
+		)
 	}
 
 	if len(pkgs) != 1 {
-		return nil, fmt.Errorf("'builds': %s results in %d local packages, only 1 is expected", cfg.ID, len(pkgs))
+		return nil, fmt.Errorf(
+			"ko: %s results in %d local packages, only 1 is expected",
+			cfg.ID, len(pkgs),
+		)
 	}
 
 	opts := &buildOptions{
-		ip:                   pkgs[0].PkgPath,
+		importPath:           pkgs[0].PkgPath,
 		workingDir:           cfg.WorkingDir,
 		bare:                 cfg.Bare,
 		preserverImportPaths: cfg.PreserveImportPaths,
 		baseImportPaths:      cfg.BaseImportPaths,
-		baseImage:            "cgr.dev/chainguard/static",
-		platforms:            []string{"linux/amd64"},
-		tags:                 []string{"latest"},
-		sbom:                 "spdx",
-		ldflags:              []string{},
+		baseImage:            cfg.BaseImage,
+		platforms:            cfg.Platforms,
+		tags:                 cfg.Tags,
+		sbom:                 cfg.SBOM,
+		ldflags:              cfg.Ldflags,
+		dockerRepo:           cfg.Repository,
+		cosignRepo:           cfg.CosignRepository,
 	}
 
-	if cfg.BaseImage != "" {
-		opts.baseImage = cfg.BaseImage
-	}
-
-	if cfg.Platforms != nil {
-		opts.platforms = cfg.Platforms
-	}
-
-	if cfg.Tags != nil {
-		opts.tags = cfg.Tags
-	}
-
-	if cfg.SBOM != "" {
-		opts.sbom = cfg.SBOM
-	}
-
-	if ctx.Env["KO_DOCKER_REPO"] != "" {
-		opts.dockerRepo = ctx.Env["KO_DOCKER_REPO"]
-	} else {
-		opts.dockerRepo = cfg.Repository
-	}
-
-	if ctx.Env["COSIGN_REPOSITORY"] != "" {
-		opts.cosignRepo = ctx.Env["COSIGN_REPOSITORY"]
-	} else {
-		opts.cosignRepo = cfg.CosignRepository
-	}
-
-	if len(cfg.LDFlags) != 0 {
-		ll, err := applyTemplate(cfg.LDFlags, ctx)
+	if len(cfg.Env) > 0 {
+		env, err := applyTemplate(cfg.Env, ctx)
 		if err != nil {
 			return nil, err
 		}
-		ldflags = append(ldflags, ll...)
-		opts.ldflags = ldflags
+		opts.env = env
 	}
 
+	if len(cfg.Flags) > 0 {
+		flags, err := applyTemplate(cfg.Flags, ctx)
+		if err != nil {
+			return nil, err
+		}
+		opts.flags = flags
+	}
+
+	if len(cfg.Ldflags) > 0 {
+		ldflags, err := applyTemplate(cfg.Ldflags, ctx)
+		if err != nil {
+			return nil, err
+		}
+		opts.ldflags = ldflags
+	}
 	return opts, nil
 }
 

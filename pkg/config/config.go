@@ -211,8 +211,7 @@ type Ko struct {
 	Platforms           []string `yaml:"platforms,omitempty" json:"platforms,omitempty"`
 	Tags                []string `yaml:"tags,omitempty" json:"tags,omitempty"`
 	SBOM                string   `yaml:"sbom,omitempty" json:"sbom,omitempty"`
-	Push                bool     `yaml:"push,omitempty" json:"push,omitempty"`
-	LDFlags             []string `yaml:"ldflags,omitempty" json:"ldflags,omitempty"`
+	Ldflags             []string `yaml:"ldflags,omitempty" json:"ldflags,omitempty"`
 	Flags               []string `yaml:"flags,omitempty" json:"flags,omitempty"`
 	Env                 []string `yaml:"env,omitempty" json:"env,omitempty"`
 	Bare                bool     `yaml:"bare,omitempty" json:"bare,omitempty"`
