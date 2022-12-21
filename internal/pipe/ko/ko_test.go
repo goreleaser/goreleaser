@@ -224,7 +224,7 @@ func TestPublishPipeError(t *testing.T) {
 	t.Run("publish fail", func(t *testing.T) {
 		ctx := makeCtx()
 		require.NoError(t, Pipe{}.Default(ctx))
-		require.EqualError(t, Pipe{}.Publish(ctx), `build: exit status 1`)
+		require.EqualError(t, Pipe{}.Publish(ctx), `publish: writing sbom: Get "https://fakerepo:8080/v2/": dial tcp: lookup fakerepo: Temporary failure in name resolution`)
 	})
 }
 
