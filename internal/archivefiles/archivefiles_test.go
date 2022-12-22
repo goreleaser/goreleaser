@@ -14,10 +14,46 @@ import (
 func TestEval(t *testing.T) {
 	now := time.Now().Truncate(time.Second)
 	ctx := context.New(config.Project{
-		Env: []string{"OWNER=carlos"},
+		Env: []string{"OWNER=carlos", "FOLDER=d"},
 	})
 	ctx.Git.CommitDate = now
 	tmpl := tmpl.New(ctx)
+
+	t.Run("invalid glob", func(t *testing.T) {
+		_, err := Eval(tmpl, []config.File{
+			{
+				Source:      "../testdata/**/nope.txt",
+				Destination: "var/foobar/d.txt",
+			},
+		})
+		require.Error(t, err)
+	})
+
+	t.Run("templated src", func(t *testing.T) {
+		result, err := Eval(tmpl, []config.File{
+			{
+				Source:      "./testdata/**/{{ .Env.FOLDER }}.txt",
+				Destination: "var/foobar/d.txt",
+			},
+		})
+		require.NoError(t, err)
+		require.Equal(t, []config.File{
+			{
+				Source:      "testdata/a/b/c/d.txt",
+				Destination: "var/foobar/d.txt/testdata/a/b/c/d.txt",
+			},
+		}, result)
+	})
+
+	t.Run("templated src error", func(t *testing.T) {
+		_, err := Eval(tmpl, []config.File{
+			{
+				Source:      "./testdata/**/{{ .Env.NOPE }}.txt",
+				Destination: "var/foobar/d.txt",
+			},
+		})
+		testlib.RequireTemplateError(t, err)
+	})
 
 	t.Run("templated info", func(t *testing.T) {
 		result, err := Eval(tmpl, []config.File{
