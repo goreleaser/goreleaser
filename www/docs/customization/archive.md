@@ -89,9 +89,19 @@ archives:
       # a more complete example, check the globbing deep dive below
       - src: '*.md'
         dst: docs
+
         # Strip parent folders when adding files to the archive.
         # Default: false
         strip_parent: true
+
+        # This will make the destination paths be relative to the longest common
+        # prefix between all the files matched and the source glob.
+        # Enabling this essentially mimic the behavior of nfpm's contents section.
+        #
+        # Default: false
+        # Since: v1.14.
+        relative: true
+
         # File info.
         # Not all fields are supported by all formats available formats.
         # Defaults to the file info of the actual file if not provided.
