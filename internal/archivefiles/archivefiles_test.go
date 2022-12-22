@@ -288,3 +288,16 @@ func TestEval(t *testing.T) {
 		}, result)
 	})
 }
+
+func TestStrlcp(t *testing.T) {
+	for k, v := range map[string][2]string{
+		"/var/":       {"/var/lib/foo", "/var/share/aaa"},
+		"/var/lib/":   {"/var/lib/foo", "/var/lib/share/aaa"},
+		"/usr/share/": {"/usr/share/lib", "/usr/share/bin"},
+		"/usr/":       {"/usr/share/lib", "/usr/bin"},
+	} {
+		t.Run(k, func(t *testing.T) {
+			require.Equal(t, k, strlcp(v[0], v[1]))
+		})
+	}
+}
