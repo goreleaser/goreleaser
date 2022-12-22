@@ -107,6 +107,20 @@ func TestEval(t *testing.T) {
 		}, result)
 	})
 
+	t.Run("relativeparent is set", func(t *testing.T) {
+		result, err := Eval(tmpl, []config.File{{
+			Source:         "./testdata/a/**/*",
+			Destination:    "foo/bar",
+			RelativeParent: true,
+		}})
+
+		require.NoError(t, err)
+		require.Equal(t, []config.File{
+			{Source: "testdata/a/b/a.txt", Destination: "foo/bar/a.txt"},
+			{Source: "testdata/a/b/c/d.txt", Destination: "foo/bar/c/d.txt"},
+		}, result)
+	})
+
 	t.Run("strip parent plays nicely with destination omitted", func(t *testing.T) {
 		result, err := Eval(tmpl, []config.File{{Source: "./testdata/a/b", StripParent: true}})
 
