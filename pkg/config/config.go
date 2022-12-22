@@ -420,11 +420,12 @@ type FormatOverride struct {
 
 // File is a file inside an archive.
 type File struct {
-	Source         string   `yaml:"src,omitempty" json:"src,omitempty"`
-	Destination    string   `yaml:"dst,omitempty" json:"dst,omitempty"`
-	StripParent    bool     `yaml:"strip_parent,omitempty" json:"strip_parent,omitempty"`
-	RelativeParent bool     `yaml:"relative,omitempty" json:"relative,omitempty"`
-	Info           FileInfo `yaml:"info,omitempty" json:"info,omitempty"`
+	Source      string   `yaml:"src,omitempty" json:"src,omitempty"`
+	Destination string   `yaml:"dst,omitempty" json:"dst,omitempty"`
+	Info        FileInfo `yaml:"info,omitempty" json:"info,omitempty"`
+
+	StripParent               bool `yaml:"strip_parent,omitempty" json:"strip_parent,omitempty"`
+	RelativeLongestCommonPath bool `yaml:"rlcp,omitempty" json:"rlcp,omitempty"`
 }
 
 // FileInfo is the file info of a file.

@@ -101,7 +101,7 @@ func destinationFor(f config.File, prefix, path string) (string, error) {
 		return filepath.Join(f.Destination, filepath.Base(path)), nil
 	}
 
-	if f.RelativeParent {
+	if f.RelativeLongestCommonPath {
 		relpath, err := filepath.Rel(prefix, path)
 		if err != nil {
 			// since prefix is a prefix of src a relative path should always be found

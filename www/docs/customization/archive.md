@@ -95,12 +95,12 @@ archives:
         strip_parent: true
 
         # This will make the destination paths be relative to the longest common
-        # prefix between all the files matched and the source glob.
+        # path prefix between all the files matched and the source glob.
         # Enabling this essentially mimic the behavior of nfpm's contents section.
         #
         # Default: false
         # Since: v1.14.
-        relative: true
+        rlcp: true
 
         # File info.
         # Not all fields are supported by all formats available formats.

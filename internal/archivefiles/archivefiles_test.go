@@ -145,9 +145,9 @@ func TestEval(t *testing.T) {
 
 	t.Run("relativeparent is set", func(t *testing.T) {
 		result, err := Eval(tmpl, []config.File{{
-			Source:         "./testdata/a/**/*",
-			Destination:    "foo/bar",
-			RelativeParent: true,
+			Source:                    "./testdata/a/**/*",
+			Destination:               "foo/bar",
+			RelativeLongestCommonPath: true,
 		}})
 
 		require.NoError(t, err)
@@ -159,9 +159,9 @@ func TestEval(t *testing.T) {
 
 	t.Run("relativeparent no results", func(t *testing.T) {
 		result, err := Eval(tmpl, []config.File{{
-			Source:         "./testdata/abc/**/*",
-			Destination:    "foo/bar",
-			RelativeParent: true,
+			Source:                    "./testdata/abc/**/*",
+			Destination:               "foo/bar",
+			RelativeLongestCommonPath: true,
 		}})
 
 		require.NoError(t, err)
