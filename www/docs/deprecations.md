@@ -61,6 +61,7 @@ enable this option and test it out with
 === "After"
     ``` yaml
     archives:
+    -
       rlcp: true
     ```
 
