@@ -18,8 +18,8 @@ builds:
     - CGO_ENABLED=0
   goos:
     - linux
-    - darwin
-    - windows
+    # - darwin
+    # - windows
   goarch:
     - "386"
     - amd64
@@ -256,17 +256,17 @@ nfpms:
         - statically-linked-binary
         - changelog-file-missing-in-native-package
 
-snapcrafts:
-  - name_template: '{{ .ProjectName }}_{{ .Arch }}{{ if .Arm }}v{{ .Arm }}{{ end }}'
-    summary: Deliver Go binaries as fast and easily as possible
-    description: |
-      GoReleaser builds Go binaries for several platforms, creates a GitHub
-      release and then pushes a Homebrew formula to a repository. All that
-      wrapped in your favorite CI.
-    grade: stable
-    confinement: classic
-    publish: true
-
+# snapcrafts:
+#   - name_template: '{{ .ProjectName }}_{{ .Arch }}{{ if .Arm }}v{{ .Arm }}{{ end }}'
+#     summary: Deliver Go binaries as fast and easily as possible
+#     description: |
+#       GoReleaser builds Go binaries for several platforms, creates a GitHub
+#       release and then pushes a Homebrew formula to a repository. All that
+#       wrapped in your favorite CI.
+#     grade: stable
+#     confinement: classic
+#     publish: true
+#
 sboms:
   - artifacts: archive
 

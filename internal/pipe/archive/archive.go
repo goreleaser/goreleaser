@@ -49,7 +49,9 @@ func (Pipe) String() string {
 func (Pipe) Default(ctx *context.Context) error {
 	ids := ids.New("archives")
 	if len(ctx.Config.Archives) == 0 {
-		ctx.Config.Archives = append(ctx.Config.Archives, config.Archive{})
+		ctx.Config.Archives = append(ctx.Config.Archives, config.Archive{
+			RLCP: true,
+		})
 	}
 	for i := range ctx.Config.Archives {
 		archive := &ctx.Config.Archives[i]
