@@ -36,6 +36,46 @@ Description.
 
 -->
 
+
+### archives.rlcp
+
+> since 2022-12-23 (v1.14.0)
+
+This is not so much a deprecation property (yet), as it is a default behavior
+change.
+
+The usage of relative longest common path (`rlcp`) on the destination side of
+archive files will be enabled by default by June 2023. Then, this option will be
+deprecated, and you will have another 6 months (until December 2023) to remove
+it.
+
+For now, if you want to keep the old behavior, no action is required, but it
+would be nice to have your opinion [here][rlcp-discuss].
+
+[rlcp-discuss]: https://github.com/goreleaser/goreleaser/discussions/3659
+
+If you want to make sure your releases will keep working properly, you can
+enable this option and test it out with
+`goreleaser release --snapshot --rm-dist`.
+
+=== "After"
+    ``` yaml
+    archives:
+      rlcp: true
+    ```
+
+### source.rlcp
+
+> since 2022-12-23 (v1.14.0)
+
+Same as [`archives.rlcp`](#archivesrlcp).
+
+=== "After"
+    ``` yaml
+    source:
+      rlcp: true
+    ```
+
 ### archives.replacements
 
 > since 2022-11-24 (v1.14.0)

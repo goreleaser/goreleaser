@@ -78,6 +78,9 @@ func (Pipe) Default(ctx *context.Context) error {
 		if len(archive.Replacements) != 0 {
 			deprecate.Notice(ctx, "archives.replacements")
 		}
+		if !archive.RLCP {
+			deprecate.NoticeCustom(ctx, "archives.rclp", "`{{ .Property }}` will be the default soon, check {{ .URL }} for more info")
+		}
 		ids.Inc(archive.ID)
 	}
 	return ids.Validate()
@@ -185,7 +188,7 @@ func doCreate(ctx *context.Context, arch config.Archive, binaries []*artifact.Ar
 	a = NewEnhancedArchive(a, wrap)
 	defer a.Close()
 
-	files, err := archivefiles.Eval(template, arch.Files)
+	files, err := archivefiles.Eval(template, arch.RLCP, arch.Files)
 	if err != nil {
 		return fmt.Errorf("failed to find files to archive: %w", err)
 	}

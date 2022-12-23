@@ -20,7 +20,7 @@ func TestEval(t *testing.T) {
 	tmpl := tmpl.New(ctx)
 
 	t.Run("invalid glob", func(t *testing.T) {
-		_, err := Eval(tmpl, []config.File{
+		_, err := Eval(tmpl, false, []config.File{
 			{
 				Source:      "../testdata/**/nope.txt",
 				Destination: "var/foobar/d.txt",
@@ -30,7 +30,7 @@ func TestEval(t *testing.T) {
 	})
 
 	t.Run("templated src", func(t *testing.T) {
-		result, err := Eval(tmpl, []config.File{
+		result, err := Eval(tmpl, false, []config.File{
 			{
 				Source:      "./testdata/**/{{ .Env.FOLDER }}.txt",
 				Destination: "var/foobar/d.txt",
@@ -46,7 +46,7 @@ func TestEval(t *testing.T) {
 	})
 
 	t.Run("templated src error", func(t *testing.T) {
-		_, err := Eval(tmpl, []config.File{
+		_, err := Eval(tmpl, false, []config.File{
 			{
 				Source:      "./testdata/**/{{ .Env.NOPE }}.txt",
 				Destination: "var/foobar/d.txt",
@@ -56,7 +56,7 @@ func TestEval(t *testing.T) {
 	})
 
 	t.Run("templated info", func(t *testing.T) {
-		result, err := Eval(tmpl, []config.File{
+		result, err := Eval(tmpl, false, []config.File{
 			{
 				Source:      "./testdata/**/d.txt",
 				Destination: "var/foobar/d.txt",
@@ -85,7 +85,7 @@ func TestEval(t *testing.T) {
 
 	t.Run("template info errors", func(t *testing.T) {
 		t.Run("owner", func(t *testing.T) {
-			_, err := Eval(tmpl, []config.File{{
+			_, err := Eval(tmpl, false, []config.File{{
 				Source:      "./testdata/**/d.txt",
 				Destination: "var/foobar/d.txt",
 				Info: config.FileInfo{
@@ -95,7 +95,7 @@ func TestEval(t *testing.T) {
 			testlib.RequireTemplateError(t, err)
 		})
 		t.Run("group", func(t *testing.T) {
-			_, err := Eval(tmpl, []config.File{{
+			_, err := Eval(tmpl, false, []config.File{{
 				Source:      "./testdata/**/d.txt",
 				Destination: "var/foobar/d.txt",
 				Info: config.FileInfo{
@@ -105,7 +105,7 @@ func TestEval(t *testing.T) {
 			testlib.RequireTemplateError(t, err)
 		})
 		t.Run("mtime", func(t *testing.T) {
-			_, err := Eval(tmpl, []config.File{{
+			_, err := Eval(tmpl, false, []config.File{{
 				Source:      "./testdata/**/d.txt",
 				Destination: "var/foobar/d.txt",
 				Info: config.FileInfo{
@@ -115,7 +115,7 @@ func TestEval(t *testing.T) {
 			testlib.RequireTemplateError(t, err)
 		})
 		t.Run("mtime format", func(t *testing.T) {
-			_, err := Eval(tmpl, []config.File{{
+			_, err := Eval(tmpl, false, []config.File{{
 				Source:      "./testdata/**/d.txt",
 				Destination: "var/foobar/d.txt",
 				Info: config.FileInfo{
@@ -127,7 +127,7 @@ func TestEval(t *testing.T) {
 	})
 
 	t.Run("single file", func(t *testing.T) {
-		result, err := Eval(tmpl, []config.File{
+		result, err := Eval(tmpl, false, []config.File{
 			{
 				Source:      "./testdata/**/d.txt",
 				Destination: "var/foobar/d.txt",
@@ -143,11 +143,10 @@ func TestEval(t *testing.T) {
 		}, result)
 	})
 
-	t.Run("relativeparent is set", func(t *testing.T) {
-		result, err := Eval(tmpl, []config.File{{
-			Source:                    "./testdata/a/**/*",
-			Destination:               "foo/bar",
-			RelativeLongestCommonPath: true,
+	t.Run("rlcp is set", func(t *testing.T) {
+		result, err := Eval(tmpl, true, []config.File{{
+			Source:      "./testdata/a/**/*",
+			Destination: "foo/bar",
 		}})
 
 		require.NoError(t, err)
@@ -157,11 +156,10 @@ func TestEval(t *testing.T) {
 		}, result)
 	})
 
-	t.Run("relativeparent no results", func(t *testing.T) {
-		result, err := Eval(tmpl, []config.File{{
-			Source:                    "./testdata/abc/**/*",
-			Destination:               "foo/bar",
-			RelativeLongestCommonPath: true,
+	t.Run("rlcp no results", func(t *testing.T) {
+		result, err := Eval(tmpl, true, []config.File{{
+			Source:      "./testdata/abc/**/*",
+			Destination: "foo/bar",
 		}})
 
 		require.NoError(t, err)
@@ -169,7 +167,7 @@ func TestEval(t *testing.T) {
 	})
 
 	t.Run("strip parent plays nicely with destination omitted", func(t *testing.T) {
-		result, err := Eval(tmpl, []config.File{{Source: "./testdata/a/b", StripParent: true}})
+		result, err := Eval(tmpl, false, []config.File{{Source: "./testdata/a/b", StripParent: true}})
 
 		require.NoError(t, err)
 		require.Equal(t, []config.File{
@@ -179,7 +177,7 @@ func TestEval(t *testing.T) {
 	})
 
 	t.Run("strip parent plays nicely with destination as an empty string", func(t *testing.T) {
-		result, err := Eval(tmpl, []config.File{{Source: "./testdata/a/b", Destination: "", StripParent: true}})
+		result, err := Eval(tmpl, false, []config.File{{Source: "./testdata/a/b", Destination: "", StripParent: true}})
 
 		require.NoError(t, err)
 		require.Equal(t, []config.File{
@@ -189,7 +187,7 @@ func TestEval(t *testing.T) {
 	})
 
 	t.Run("match multiple files within tree without destination", func(t *testing.T) {
-		result, err := Eval(tmpl, []config.File{{Source: "./testdata/a"}})
+		result, err := Eval(tmpl, false, []config.File{{Source: "./testdata/a"}})
 
 		require.NoError(t, err)
 		require.Equal(t, []config.File{
@@ -200,7 +198,7 @@ func TestEval(t *testing.T) {
 	})
 
 	t.Run("match multiple files within tree specific destination", func(t *testing.T) {
-		result, err := Eval(tmpl, []config.File{
+		result, err := Eval(tmpl, false, []config.File{
 			{
 				Source:      "./testdata/a",
 				Destination: "usr/local/test",
@@ -249,7 +247,7 @@ func TestEval(t *testing.T) {
 	})
 
 	t.Run("match multiple files within tree specific destination stripping parents", func(t *testing.T) {
-		result, err := Eval(tmpl, []config.File{
+		result, err := Eval(tmpl, false, []config.File{
 			{
 				Source:      "./testdata/a",
 				Destination: "usr/local/test",

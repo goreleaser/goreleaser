@@ -17,7 +17,7 @@ import (
 )
 
 // Eval evaluates the given list of files to their final form.
-func Eval(template *tmpl.Template, files []config.File) ([]config.File, error) {
+func Eval(template *tmpl.Template, rlcp bool, files []config.File) ([]config.File, error) {
 	var result []config.File
 	for _, f := range files {
 		replaced, err := template.Apply(f.Source)
@@ -56,7 +56,7 @@ func Eval(template *tmpl.Template, files []config.File) ([]config.File, error) {
 		}
 
 		for _, file := range files {
-			dst, err := destinationFor(f, prefix, file)
+			dst, err := destinationFor(f, prefix, file, rlcp)
 			if err != nil {
 				return nil, err
 			}
@@ -96,12 +96,12 @@ func unique(in []config.File) []config.File {
 	return result
 }
 
-func destinationFor(f config.File, prefix, path string) (string, error) {
+func destinationFor(f config.File, prefix, path string, rlcp bool) (string, error) {
 	if f.StripParent {
 		return filepath.Join(f.Destination, filepath.Base(path)), nil
 	}
 
-	if f.RelativeLongestCommonPath {
+	if rlcp {
 		relpath, err := filepath.Rel(prefix, path)
 		if err != nil {
 			// since prefix is a prefix of src a relative path should always be found

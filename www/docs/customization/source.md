@@ -24,6 +24,15 @@ source:
   # Defaults to empty
   prefix_template: '{{ .ProjectName }}-{{ .Version }}/'
 
+  # This will make the destination paths be relative to the longest common
+  # path prefix between all the files matched and the source glob.
+  # Enabling this essentially mimic the behavior of nfpm's contents section.
+  # It will be the default by June 2023.
+  #
+  # Default: false
+  # Since: v1.14.
+  rlcp: true
+
   # Additional files/template/globs you want to add to the source archive.
   #
   # Default: empty.
@@ -42,14 +51,6 @@ source:
       # Strip parent folders when adding files to the archive.
       # Default: false
       strip_parent: true
-
-      # This will make the destination paths be relative to the longest common
-      # path prefix between all the files matched and the source glob.
-      # Enabling this essentially mimic the behavior of nfpm's contents section.
-      #
-      # Default: false
-      # Since: v1.14.
-      rlcp: true
 
       # File info.
       # Not all fields are supported by all formats available formats.
