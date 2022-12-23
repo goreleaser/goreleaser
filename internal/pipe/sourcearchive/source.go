@@ -113,7 +113,7 @@ func (Pipe) Default(ctx *context.Context) error {
 		archive.NameTemplate = "{{ .ProjectName }}-{{ .Version }}"
 	}
 
-	if !archive.RLCP {
+	if archive.Enabled && !archive.RLCP {
 		deprecate.NoticeCustom(ctx, "source.rclp", "`{{ .Property }}` will be the default soon, check {{ .URL }} for more info")
 	}
 	return nil

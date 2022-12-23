@@ -143,7 +143,7 @@ func TestEval(t *testing.T) {
 		}, result)
 	})
 
-	t.Run("rlcp is set", func(t *testing.T) {
+	t.Run("rlcp", func(t *testing.T) {
 		result, err := Eval(tmpl, true, []config.File{{
 			Source:      "./testdata/a/**/*",
 			Destination: "foo/bar",
@@ -153,6 +153,18 @@ func TestEval(t *testing.T) {
 		require.Equal(t, []config.File{
 			{Source: "testdata/a/b/a.txt", Destination: "foo/bar/a.txt"},
 			{Source: "testdata/a/b/c/d.txt", Destination: "foo/bar/c/d.txt"},
+		}, result)
+	})
+
+	t.Run("rlcp empty destination", func(t *testing.T) {
+		result, err := Eval(tmpl, true, []config.File{{
+			Source: "./testdata/a/**/*",
+		}})
+
+		require.NoError(t, err)
+		require.Equal(t, []config.File{
+			{Source: "testdata/a/b/a.txt", Destination: "testdata/a/b/a.txt"},
+			{Source: "testdata/a/b/c/d.txt", Destination: "testdata/a/b/c/d.txt"},
 		}, result)
 	})
 

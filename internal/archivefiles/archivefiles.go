@@ -101,7 +101,7 @@ func destinationFor(f config.File, prefix, path string, rlcp bool) (string, erro
 		return filepath.Join(f.Destination, filepath.Base(path)), nil
 	}
 
-	if rlcp {
+	if rlcp && f.Destination != "" {
 		relpath, err := filepath.Rel(prefix, path)
 		if err != nil {
 			// since prefix is a prefix of src a relative path should always be found

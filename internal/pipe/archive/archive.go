@@ -78,7 +78,7 @@ func (Pipe) Default(ctx *context.Context) error {
 		if len(archive.Replacements) != 0 {
 			deprecate.Notice(ctx, "archives.replacements")
 		}
-		if !archive.RLCP {
+		if !archive.RLCP && archive.Format != "binary" {
 			deprecate.NoticeCustom(ctx, "archives.rclp", "`{{ .Property }}` will be the default soon, check {{ .URL }} for more info")
 		}
 		ids.Inc(archive.ID)
