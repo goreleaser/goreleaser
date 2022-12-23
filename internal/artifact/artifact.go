@@ -294,11 +294,12 @@ func (artifacts Artifacts) List() []*Artifact {
 		if item.Name == "" {
 			continue
 		}
-		if names[item.Name] {
+		plat := item.Goos + item.Goarch + item.Goarm + item.Gomips + item.Goamd64
+		if names[item.Name+"_"+plat] {
 			log.WithField("name", item.Name).
 				Warn("multiple artifacts with the same name: this may cause errors")
 		}
-		names[item.Name] = true
+		names[item.Name+"_"+plat] = true
 	}
 	return artifacts.items
 }
