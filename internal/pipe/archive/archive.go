@@ -49,9 +49,7 @@ func (Pipe) String() string {
 func (Pipe) Default(ctx *context.Context) error {
 	ids := ids.New("archives")
 	if len(ctx.Config.Archives) == 0 {
-		ctx.Config.Archives = append(ctx.Config.Archives, config.Archive{
-			RLCP: true,
-		})
+		ctx.Config.Archives = append(ctx.Config.Archives, config.Archive{})
 	}
 	for i := range ctx.Config.Archives {
 		archive := &ctx.Config.Archives[i]
@@ -60,6 +58,9 @@ func (Pipe) Default(ctx *context.Context) error {
 		}
 		if archive.ID == "" {
 			archive.ID = "default"
+		}
+		if !archive.RLCP && archive.Format != "binary" && len(archive.Files) > 0 {
+			deprecate.NoticeCustom(ctx, "archives.rclp", "`{{ .Property }}` will be the default soon, check {{ .URL }} for more info")
 		}
 		if len(archive.Files) == 0 {
 			archive.Files = []config.File{
@@ -79,9 +80,6 @@ func (Pipe) Default(ctx *context.Context) error {
 		}
 		if len(archive.Replacements) != 0 {
 			deprecate.Notice(ctx, "archives.replacements")
-		}
-		if !archive.RLCP && archive.Format != "binary" {
-			deprecate.NoticeCustom(ctx, "archives.rclp", "`{{ .Property }}` will be the default soon, check {{ .URL }} for more info")
 		}
 		ids.Inc(archive.ID)
 	}
