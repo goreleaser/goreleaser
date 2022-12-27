@@ -60,7 +60,7 @@ func (Pipe) Default(ctx *context.Context) error {
 			archive.ID = "default"
 		}
 		if !archive.RLCP && archive.Format != "binary" && len(archive.Files) > 0 {
-			deprecate.NoticeCustom(ctx, "archives.rclp", "`{{ .Property }}` will be the default soon, check {{ .URL }} for more info")
+			deprecate.NoticeCustom(ctx, "archives.rlcp", "`{{ .Property }}` will be the default soon, check {{ .URL }} for more info")
 		}
 		if len(archive.Files) == 0 {
 			archive.Files = []config.File{

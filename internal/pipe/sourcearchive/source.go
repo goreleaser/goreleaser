@@ -114,7 +114,7 @@ func (Pipe) Default(ctx *context.Context) error {
 	}
 
 	if archive.Enabled && !archive.RLCP {
-		deprecate.NoticeCustom(ctx, "source.rclp", "`{{ .Property }}` will be the default soon, check {{ .URL }} for more info")
+		deprecate.NoticeCustom(ctx, "source.rlcp", "`{{ .Property }}` will be the default soon, check {{ .URL }} for more info")
 	}
 	return nil
 }
