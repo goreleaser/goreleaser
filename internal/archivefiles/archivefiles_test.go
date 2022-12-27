@@ -14,13 +14,49 @@ import (
 func TestEval(t *testing.T) {
 	now := time.Now().Truncate(time.Second)
 	ctx := context.New(config.Project{
-		Env: []string{"OWNER=carlos"},
+		Env: []string{"OWNER=carlos", "FOLDER=d"},
 	})
 	ctx.Git.CommitDate = now
 	tmpl := tmpl.New(ctx)
 
+	t.Run("invalid glob", func(t *testing.T) {
+		_, err := Eval(tmpl, false, []config.File{
+			{
+				Source:      "../testdata/**/nope.txt",
+				Destination: "var/foobar/d.txt",
+			},
+		})
+		require.Error(t, err)
+	})
+
+	t.Run("templated src", func(t *testing.T) {
+		result, err := Eval(tmpl, false, []config.File{
+			{
+				Source:      "./testdata/**/{{ .Env.FOLDER }}.txt",
+				Destination: "var/foobar/d.txt",
+			},
+		})
+		require.NoError(t, err)
+		require.Equal(t, []config.File{
+			{
+				Source:      "testdata/a/b/c/d.txt",
+				Destination: "var/foobar/d.txt/testdata/a/b/c/d.txt",
+			},
+		}, result)
+	})
+
+	t.Run("templated src error", func(t *testing.T) {
+		_, err := Eval(tmpl, false, []config.File{
+			{
+				Source:      "./testdata/**/{{ .Env.NOPE }}.txt",
+				Destination: "var/foobar/d.txt",
+			},
+		})
+		testlib.RequireTemplateError(t, err)
+	})
+
 	t.Run("templated info", func(t *testing.T) {
-		result, err := Eval(tmpl, []config.File{
+		result, err := Eval(tmpl, false, []config.File{
 			{
 				Source:      "./testdata/**/d.txt",
 				Destination: "var/foobar/d.txt",
@@ -49,7 +85,7 @@ func TestEval(t *testing.T) {
 
 	t.Run("template info errors", func(t *testing.T) {
 		t.Run("owner", func(t *testing.T) {
-			_, err := Eval(tmpl, []config.File{{
+			_, err := Eval(tmpl, false, []config.File{{
 				Source:      "./testdata/**/d.txt",
 				Destination: "var/foobar/d.txt",
 				Info: config.FileInfo{
@@ -59,7 +95,7 @@ func TestEval(t *testing.T) {
 			testlib.RequireTemplateError(t, err)
 		})
 		t.Run("group", func(t *testing.T) {
-			_, err := Eval(tmpl, []config.File{{
+			_, err := Eval(tmpl, false, []config.File{{
 				Source:      "./testdata/**/d.txt",
 				Destination: "var/foobar/d.txt",
 				Info: config.FileInfo{
@@ -69,7 +105,7 @@ func TestEval(t *testing.T) {
 			testlib.RequireTemplateError(t, err)
 		})
 		t.Run("mtime", func(t *testing.T) {
-			_, err := Eval(tmpl, []config.File{{
+			_, err := Eval(tmpl, false, []config.File{{
 				Source:      "./testdata/**/d.txt",
 				Destination: "var/foobar/d.txt",
 				Info: config.FileInfo{
@@ -79,7 +115,7 @@ func TestEval(t *testing.T) {
 			testlib.RequireTemplateError(t, err)
 		})
 		t.Run("mtime format", func(t *testing.T) {
-			_, err := Eval(tmpl, []config.File{{
+			_, err := Eval(tmpl, false, []config.File{{
 				Source:      "./testdata/**/d.txt",
 				Destination: "var/foobar/d.txt",
 				Info: config.FileInfo{
@@ -91,7 +127,7 @@ func TestEval(t *testing.T) {
 	})
 
 	t.Run("single file", func(t *testing.T) {
-		result, err := Eval(tmpl, []config.File{
+		result, err := Eval(tmpl, false, []config.File{
 			{
 				Source:      "./testdata/**/d.txt",
 				Destination: "var/foobar/d.txt",
@@ -107,8 +143,43 @@ func TestEval(t *testing.T) {
 		}, result)
 	})
 
+	t.Run("rlcp", func(t *testing.T) {
+		result, err := Eval(tmpl, true, []config.File{{
+			Source:      "./testdata/a/**/*",
+			Destination: "foo/bar",
+		}})
+
+		require.NoError(t, err)
+		require.Equal(t, []config.File{
+			{Source: "testdata/a/b/a.txt", Destination: "foo/bar/a.txt"},
+			{Source: "testdata/a/b/c/d.txt", Destination: "foo/bar/c/d.txt"},
+		}, result)
+	})
+
+	t.Run("rlcp empty destination", func(t *testing.T) {
+		result, err := Eval(tmpl, true, []config.File{{
+			Source: "./testdata/a/**/*",
+		}})
+
+		require.NoError(t, err)
+		require.Equal(t, []config.File{
+			{Source: "testdata/a/b/a.txt", Destination: "testdata/a/b/a.txt"},
+			{Source: "testdata/a/b/c/d.txt", Destination: "testdata/a/b/c/d.txt"},
+		}, result)
+	})
+
+	t.Run("rlcp no results", func(t *testing.T) {
+		result, err := Eval(tmpl, true, []config.File{{
+			Source:      "./testdata/abc/**/*",
+			Destination: "foo/bar",
+		}})
+
+		require.NoError(t, err)
+		require.Empty(t, result)
+	})
+
 	t.Run("strip parent plays nicely with destination omitted", func(t *testing.T) {
-		result, err := Eval(tmpl, []config.File{{Source: "./testdata/a/b", StripParent: true}})
+		result, err := Eval(tmpl, false, []config.File{{Source: "./testdata/a/b", StripParent: true}})
 
 		require.NoError(t, err)
 		require.Equal(t, []config.File{
@@ -118,7 +189,7 @@ func TestEval(t *testing.T) {
 	})
 
 	t.Run("strip parent plays nicely with destination as an empty string", func(t *testing.T) {
-		result, err := Eval(tmpl, []config.File{{Source: "./testdata/a/b", Destination: "", StripParent: true}})
+		result, err := Eval(tmpl, false, []config.File{{Source: "./testdata/a/b", Destination: "", StripParent: true}})
 
 		require.NoError(t, err)
 		require.Equal(t, []config.File{
@@ -128,7 +199,7 @@ func TestEval(t *testing.T) {
 	})
 
 	t.Run("match multiple files within tree without destination", func(t *testing.T) {
-		result, err := Eval(tmpl, []config.File{{Source: "./testdata/a"}})
+		result, err := Eval(tmpl, false, []config.File{{Source: "./testdata/a"}})
 
 		require.NoError(t, err)
 		require.Equal(t, []config.File{
@@ -139,7 +210,7 @@ func TestEval(t *testing.T) {
 	})
 
 	t.Run("match multiple files within tree specific destination", func(t *testing.T) {
-		result, err := Eval(tmpl, []config.File{
+		result, err := Eval(tmpl, false, []config.File{
 			{
 				Source:      "./testdata/a",
 				Destination: "usr/local/test",
@@ -188,7 +259,7 @@ func TestEval(t *testing.T) {
 	})
 
 	t.Run("match multiple files within tree specific destination stripping parents", func(t *testing.T) {
-		result, err := Eval(tmpl, []config.File{
+		result, err := Eval(tmpl, false, []config.File{
 			{
 				Source:      "./testdata/a",
 				Destination: "usr/local/test",
@@ -226,4 +297,17 @@ func TestEval(t *testing.T) {
 			},
 		}, result)
 	})
+}
+
+func TestStrlcp(t *testing.T) {
+	for k, v := range map[string][2]string{
+		"/var/":       {"/var/lib/foo", "/var/share/aaa"},
+		"/var/lib/":   {"/var/lib/foo", "/var/lib/share/aaa"},
+		"/usr/share/": {"/usr/share/lib", "/usr/share/bin"},
+		"/usr/":       {"/usr/share/lib", "/usr/bin"},
+	} {
+		t.Run(k, func(t *testing.T) {
+			require.Equal(t, k, strlcp(v[0], v[1]))
+		})
+	}
 }

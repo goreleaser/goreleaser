@@ -508,6 +508,7 @@ type Archive struct {
 	FormatOverrides           []FormatOverride  `yaml:"format_overrides,omitempty" json:"format_overrides,omitempty"`
 	WrapInDirectory           string            `yaml:"wrap_in_directory,omitempty" json:"wrap_in_directory,omitempty" jsonschema:"oneof_type=string;boolean"`
 	StripParentBinaryFolder   bool              `yaml:"strip_parent_binary_folder,omitempty" json:"strip_parent_binary_folder,omitempty"`
+	RLCP                      bool              `yaml:"rlcp,omitempty" json:"rlcp,omitempty"`
 	Files                     []File            `yaml:"files,omitempty" json:"files,omitempty"`
 	Meta                      bool              `yaml:"meta,omitempty" json:"meta,omitempty"`
 	AllowDifferentBinaryCount bool              `yaml:"allow_different_binary_count,omitempty" json:"allow_different_binary_count,omitempty"`
@@ -923,6 +924,7 @@ type Source struct {
 	Enabled        bool   `yaml:"enabled,omitempty" json:"enabled,omitempty"`
 	PrefixTemplate string `yaml:"prefix_template,omitempty" json:"prefix_template,omitempty"`
 	Files          []File `yaml:"files,omitempty" json:"files,omitempty"`
+	RLCP           bool   `yaml:"rlcp,omitempty" json:"rlcp,omitempty"`
 }
 
 // Project includes all project configuration.
