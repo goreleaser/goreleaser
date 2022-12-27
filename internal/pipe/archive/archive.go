@@ -59,6 +59,9 @@ func (Pipe) Default(ctx *context.Context) error {
 		if archive.ID == "" {
 			archive.ID = "default"
 		}
+		if !archive.RLCP && archive.Format != "binary" && len(archive.Files) > 0 {
+			deprecate.NoticeCustom(ctx, "archives.rlcp", "`{{ .Property }}` will be the default soon, check {{ .URL }} for more info")
+		}
 		if len(archive.Files) == 0 {
 			archive.Files = []config.File{
 				{Source: "license*"},
@@ -185,7 +188,7 @@ func doCreate(ctx *context.Context, arch config.Archive, binaries []*artifact.Ar
 	a = NewEnhancedArchive(a, wrap)
 	defer a.Close()
 
-	files, err := archivefiles.Eval(template, arch.Files)
+	files, err := archivefiles.Eval(template, arch.RLCP, arch.Files)
 	if err != nil {
 		return fmt.Errorf("failed to find files to archive: %w", err)
 	}

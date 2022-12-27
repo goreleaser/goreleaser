@@ -24,6 +24,15 @@ source:
   # Defaults to empty
   prefix_template: '{{ .ProjectName }}-{{ .Version }}/'
 
+  # This will make the destination paths be relative to the longest common
+  # path prefix between all the files matched and the source glob.
+  # Enabling this essentially mimic the behavior of nfpm's contents section.
+  # It will be the default by June 2023.
+  #
+  # Default: false
+  # Since: v1.14.
+  rlcp: true
+
   # Additional files/template/globs you want to add to the source archive.
   #
   # Default: empty.
@@ -38,9 +47,11 @@ source:
     # a more complete example, check the globbing deep dive below
     - src: '*.md'
       dst: docs
+
       # Strip parent folders when adding files to the archive.
       # Default: false
       strip_parent: true
+
       # File info.
       # Not all fields are supported by all formats available formats.
       # Defaults to the file info of the actual file if not provided.
@@ -50,7 +61,6 @@ source:
         mode: 0644
         # format is `time.RFC3339Nano`
         mtime: 2008-01-02T15:04:05Z
-
 ```
 
 !!! tip
