@@ -207,7 +207,6 @@ type Ko struct {
 	WorkingDir          string   `yaml:"working_dir,omitempty" json:"working_dir,omitempty"`
 	BaseImage           string   `yaml:"base_image,omitempty" json:"base_image,omitempty"`
 	Repository          string   `yaml:"repository,omitempty" json:"repository,omitempty"`
-	CosignRepository    string   `yaml:"cosign_repository,omitempty" json:"cosign_repository,omitempty"`
 	Platforms           []string `yaml:"platforms,omitempty" json:"platforms,omitempty"`
 	Tags                []string `yaml:"tags,omitempty" json:"tags,omitempty"`
 	SBOM                string   `yaml:"sbom,omitempty" json:"sbom,omitempty"`

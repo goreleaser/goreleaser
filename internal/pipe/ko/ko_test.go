@@ -42,18 +42,17 @@ func TestDefault(t *testing.T) {
 	})
 	require.NoError(t, Pipe{}.Default(ctx))
 	require.Equal(t, config.Ko{
-		ID:               "default",
-		Build:            "default",
-		BaseImage:        chainguardStatic,
-		Repository:       registry,
-		CosignRepository: registry,
-		Platforms:        []string{"linux/amd64"},
-		SBOM:             "spdx",
-		Tags:             []string{"latest"},
-		WorkingDir:       ".",
-		Ldflags:          []string{"{{.Env.LDFLAGS}}"},
-		Flags:            []string{"{{.Env.FLAGS}}"},
-		Env:              []string{"SOME_ENV={{.Env.LE_ENV}}"},
+		ID:         "default",
+		Build:      "default",
+		BaseImage:  chainguardStatic,
+		Repository: registry,
+		Platforms:  []string{"linux/amd64"},
+		SBOM:       "spdx",
+		Tags:       []string{"latest"},
+		WorkingDir: ".",
+		Ldflags:    []string{"{{.Env.LDFLAGS}}"},
+		Flags:      []string{"{{.Env.FLAGS}}"},
+		Env:        []string{"SOME_ENV={{.Env.LE_ENV}}"},
 	}, ctx.Config.Kos[0])
 }
 
@@ -169,7 +168,7 @@ func TestPublishPipeSuccess(t *testing.T) {
 
 func TestPublishPipeError(t *testing.T) {
 	makeCtx := func() *context.Context {
-		return context.New(config.Project{
+		ctx := context.New(config.Project{
 			Builds: []config.Build{
 				{ID: "foo"},
 			},
@@ -179,9 +178,12 @@ func TestPublishPipeError(t *testing.T) {
 					Build:      "foo",
 					WorkingDir: "./testdata/app/",
 					Repository: "fakerepo:8080/",
+					Tags:       []string{"latest", "{{.Tag}}"},
 				},
 			},
 		})
+		ctx.Git.CurrentTag = "v1.0.0"
+		return ctx
 	}
 
 	t.Run("invalid base image", func(t *testing.T) {
@@ -203,6 +205,13 @@ func TestPublishPipeError(t *testing.T) {
 		ctx.Config.Kos[0].WorkingDir = t.TempDir()
 		require.NoError(t, Pipe{}.Default(ctx))
 		require.EqualError(t, Pipe{}.Publish(ctx), `build: exit status 1`)
+	})
+
+	t.Run("invalid tags tmpl", func(t *testing.T) {
+		ctx := makeCtx()
+		ctx.Config.Kos[0].Tags = []string{"{{.Nope}}"}
+		require.NoError(t, Pipe{}.Default(ctx))
+		testlib.RequireTemplateError(t, Pipe{}.Publish(ctx))
 	})
 
 	t.Run("invalid env tmpl", func(t *testing.T) {

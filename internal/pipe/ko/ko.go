@@ -80,8 +80,12 @@ func (Pipe) Default(ctx *context.Context) error {
 			ko.Env = build.Env
 		}
 
+		if ko.Main == "" {
+			ko.Main = build.Main
+		}
+
 		if ko.WorkingDir == "" {
-			ko.WorkingDir = "."
+			ko.WorkingDir = build.Dir
 		}
 
 		if ko.BaseImage == "" {
@@ -90,10 +94,6 @@ func (Pipe) Default(ctx *context.Context) error {
 
 		if repo := ctx.Env["KO_DOCKER_REPO"]; repo != "" {
 			ko.Repository = repo
-		}
-
-		if repo := ctx.Env["COSIGN_REPOSITORY"]; repo != "" {
-			ko.CosignRepository = repo
 		}
 
 		if len(ko.Platforms) == 0 {
@@ -123,21 +123,20 @@ func (Pipe) Publish(ctx *context.Context) error {
 }
 
 type buildOptions struct {
-	importPath           string
-	main                 string
-	flags                []string
-	env                  []string
-	workingDir           string
-	dockerRepo           string
-	cosignRepo           string
-	platforms            []string
-	baseImage            string
-	tags                 []string
-	sbom                 string
-	ldflags              []string
-	bare                 bool
-	preserverImportPaths bool
-	baseImportPaths      bool
+	importPath          string
+	main                string
+	flags               []string
+	env                 []string
+	workingDir          string
+	dockerRepo          string
+	platforms           []string
+	baseImage           string
+	tags                []string
+	sbom                string
+	ldflags             []string
+	bare                bool
+	preserveImportPaths bool
+	baseImportPaths     bool
 }
 
 func (o *buildOptions) makeBuilder(ctx *context.Context) (*build.Caching, error) {
@@ -220,7 +219,7 @@ func doBuild(ctx *context.Context, ko config.Ko) func() error {
 		namer := options.MakeNamer(&options.PublishOptions{
 			DockerRepo:          opts.dockerRepo,
 			Bare:                opts.bare,
-			PreserveImportPaths: opts.preserverImportPaths,
+			PreserveImportPaths: opts.preserveImportPaths,
 			BaseImportPaths:     opts.baseImportPaths,
 		})
 
@@ -280,19 +279,22 @@ func buildBuildOptions(ctx *context.Context, cfg config.Ko) (*buildOptions, erro
 	}
 
 	opts := &buildOptions{
-		importPath:           pkgs[0].PkgPath,
-		workingDir:           cfg.WorkingDir,
-		bare:                 cfg.Bare,
-		preserverImportPaths: cfg.PreserveImportPaths,
-		baseImportPaths:      cfg.BaseImportPaths,
-		baseImage:            cfg.BaseImage,
-		platforms:            cfg.Platforms,
-		tags:                 cfg.Tags,
-		sbom:                 cfg.SBOM,
-		ldflags:              cfg.Ldflags,
-		dockerRepo:           cfg.Repository,
-		cosignRepo:           cfg.CosignRepository,
+		importPath:          pkgs[0].PkgPath,
+		workingDir:          cfg.WorkingDir,
+		bare:                cfg.Bare,
+		preserveImportPaths: cfg.PreserveImportPaths,
+		baseImportPaths:     cfg.BaseImportPaths,
+		baseImage:           cfg.BaseImage,
+		platforms:           cfg.Platforms,
+		sbom:                cfg.SBOM,
+		dockerRepo:          cfg.Repository,
 	}
+
+	tags, err := applyTemplate(ctx, cfg.Tags)
+	if err != nil {
+		return nil, err
+	}
+	cfg.Tags = tags
 
 	if len(cfg.Env) > 0 {
 		env, err := applyTemplate(ctx, cfg.Env)
