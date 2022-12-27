@@ -202,6 +202,9 @@
 					"strip_parent_binary_folder": {
 						"type": "boolean"
 					},
+					"rlcp": {
+						"type": "boolean"
+					},
 					"files": {
 						"items": {
 							"$ref": "#/$defs/File"
@@ -2683,6 +2686,9 @@
 							"$ref": "#/$defs/File"
 						},
 						"type": "array"
+					},
+					"rlcp": {
+						"type": "boolean"
 					}
 				},
 				"additionalProperties": false,
