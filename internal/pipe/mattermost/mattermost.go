@@ -51,17 +51,17 @@ func (Pipe) Default(ctx *context.Context) error {
 func (Pipe) Announce(ctx *context.Context) error {
 	msg, err := tmpl.New(ctx).Apply(ctx.Config.Announce.Mattermost.MessageTemplate)
 	if err != nil {
-		return fmt.Errorf("announce: failed to announce to mattermost: %w", err)
+		return fmt.Errorf("failed to announce to mattermost: %w", err)
 	}
 
 	title, err := tmpl.New(ctx).Apply(ctx.Config.Announce.Mattermost.TitleTemplate)
 	if err != nil {
-		return fmt.Errorf("announce: failed to announce to teams: %w", err)
+		return fmt.Errorf("failed to announce to teams: %w", err)
 	}
 
 	var cfg Config
 	if err := env.Parse(&cfg); err != nil {
-		return fmt.Errorf("announce: failed to announce to mattermost: %w", err)
+		return fmt.Errorf("failed to announce to mattermost: %w", err)
 	}
 
 	log.Infof("posting: %q", msg)
@@ -82,7 +82,7 @@ func (Pipe) Announce(ctx *context.Context) error {
 
 	err = postWebhook(ctx, cfg.Webhook, wm)
 	if err != nil {
-		return fmt.Errorf("announce: failed to announce to mattermost: %w", err)
+		return fmt.Errorf("failed to announce to mattermost: %w", err)
 	}
 
 	return nil
@@ -102,7 +102,7 @@ func postWebhook(ctx *context.Context, url string, msg *incomingWebhookRequest) 
 
 	r, err := http.DefaultClient.Do(req)
 	if err != nil {
-		return fmt.Errorf("announce: failed to announce to mattermost: %w", err)
+		return fmt.Errorf("failed to announce to mattermost: %w", err)
 	}
 	closeBody(r)
 

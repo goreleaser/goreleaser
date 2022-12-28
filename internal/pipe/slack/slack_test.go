@@ -30,7 +30,7 @@ func TestAnnounceInvalidTemplate(t *testing.T) {
 			},
 		},
 	})
-	require.EqualError(t, Pipe{}.Announce(ctx), `announce: failed to announce to slack: template: tmpl:1: unexpected "}" in operand`)
+	require.EqualError(t, Pipe{}.Announce(ctx), `failed to announce to slack: template: tmpl:1: unexpected "}" in operand`)
 }
 
 func TestAnnounceMissingEnv(t *testing.T) {
@@ -40,7 +40,7 @@ func TestAnnounceMissingEnv(t *testing.T) {
 		},
 	})
 	require.NoError(t, Pipe{}.Default(ctx))
-	require.EqualError(t, Pipe{}.Announce(ctx), `announce: failed to announce to slack: env: environment variable "SLACK_WEBHOOK" should not be empty`)
+	require.EqualError(t, Pipe{}.Announce(ctx), `failed to announce to slack: env: environment variable "SLACK_WEBHOOK" should not be empty`)
 }
 
 func TestSkip(t *testing.T) {

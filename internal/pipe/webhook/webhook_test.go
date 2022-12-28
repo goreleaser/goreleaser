@@ -25,7 +25,7 @@ func TestNoEndpoint(t *testing.T) {
 			Webhook: config.Webhook{},
 		},
 	})
-	require.EqualError(t, Pipe{}.Announce(ctx), `announce: failed to announce to webhook: no endpoint url`)
+	require.EqualError(t, Pipe{}.Announce(ctx), `failed to announce to webhook: no endpoint url`)
 }
 
 func TestMalformedEndpoint(t *testing.T) {
@@ -36,7 +36,7 @@ func TestMalformedEndpoint(t *testing.T) {
 			},
 		},
 	})
-	require.EqualError(t, Pipe{}.Announce(ctx), `announce: failed to announce to webhook: Post "httxxx://example.com": unsupported protocol scheme "httxxx"`)
+	require.EqualError(t, Pipe{}.Announce(ctx), `failed to announce to webhook: Post "httxxx://example.com": unsupported protocol scheme "httxxx"`)
 }
 
 func TestAnnounceInvalidMessageTemplate(t *testing.T) {
@@ -48,7 +48,7 @@ func TestAnnounceInvalidMessageTemplate(t *testing.T) {
 			},
 		},
 	})
-	require.EqualError(t, Pipe{}.Announce(ctx), `announce: failed to announce to webhook: template: tmpl:1: unexpected "}" in operand`)
+	require.EqualError(t, Pipe{}.Announce(ctx), `failed to announce to webhook: template: tmpl:1: unexpected "}" in operand`)
 }
 
 type WebHookServerMockMessage struct {

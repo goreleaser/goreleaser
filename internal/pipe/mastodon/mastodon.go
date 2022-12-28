@@ -36,12 +36,12 @@ func (Pipe) Default(ctx *context.Context) error {
 func (Pipe) Announce(ctx *context.Context) error {
 	msg, err := tmpl.New(ctx).Apply(ctx.Config.Announce.Mastodon.MessageTemplate)
 	if err != nil {
-		return fmt.Errorf("announce: failed to announce to mastodon: %w", err)
+		return fmt.Errorf("failed to announce to mastodon: %w", err)
 	}
 
 	var cfg Config
 	if err := env.Parse(&cfg); err != nil {
-		return fmt.Errorf("announce: failed to announce to mastodon: %w", err)
+		return fmt.Errorf("failed to announce to mastodon: %w", err)
 	}
 
 	client := mastodon.NewClient(&mastodon.Config{
@@ -55,7 +55,7 @@ func (Pipe) Announce(ctx *context.Context) error {
 	if _, err := client.PostStatus(ctx, &mastodon.Toot{
 		Status: msg,
 	}); err != nil {
-		return fmt.Errorf("announce: failed to announce to mastodon: %w", err)
+		return fmt.Errorf("failed to announce to mastodon: %w", err)
 	}
 	return nil
 }

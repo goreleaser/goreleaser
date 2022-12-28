@@ -40,12 +40,12 @@ func (Pipe) Default(ctx *context.Context) error {
 func (Pipe) Announce(ctx *context.Context) error {
 	title, err := tmpl.New(ctx).Apply(ctx.Config.Announce.Reddit.TitleTemplate)
 	if err != nil {
-		return fmt.Errorf("announce: failed to announce to reddit: %w", err)
+		return fmt.Errorf("failed to announce to reddit: %w", err)
 	}
 
 	url, err := tmpl.New(ctx).Apply(ctx.Config.Announce.Reddit.URLTemplate)
 	if err != nil {
-		return fmt.Errorf("announce: failed to announce to reddit: %w", err)
+		return fmt.Errorf("failed to announce to reddit: %w", err)
 	}
 
 	linkRequest := reddit.SubmitLinkRequest{
@@ -56,21 +56,21 @@ func (Pipe) Announce(ctx *context.Context) error {
 
 	var cfg Config
 	if err := env.Parse(&cfg); err != nil {
-		return fmt.Errorf("announce: failed to announce to reddit: %w", err)
+		return fmt.Errorf("failed to announce to reddit: %w", err)
 	}
 
 	credentials := reddit.Credentials{ID: ctx.Config.Announce.Reddit.ApplicationID, Secret: cfg.Secret, Username: ctx.Config.Announce.Reddit.Username, Password: cfg.Password}
 	client, err := reddit.NewClient(credentials)
 	if err != nil {
-		return fmt.Errorf("announce: failed to announce to reddit: %w", err)
+		return fmt.Errorf("failed to announce to reddit: %w", err)
 	}
 
 	post, _, err := client.Post.SubmitLink(ctx, linkRequest)
 	if err != nil {
-		return fmt.Errorf("announce: failed to announce to reddit: %w", err)
+		return fmt.Errorf("failed to announce to reddit: %w", err)
 	}
 
-	log.Infof("announce: The text post is available at: %s\n", post.URL)
+	log.Infof("The text post is available at: %s\n", post.URL)
 
 	return nil
 }

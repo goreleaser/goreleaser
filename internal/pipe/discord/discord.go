@@ -49,24 +49,24 @@ func (p Pipe) Default(ctx *context.Context) error {
 func (p Pipe) Announce(ctx *context.Context) error {
 	msg, err := tmpl.New(ctx).Apply(ctx.Config.Announce.Discord.MessageTemplate)
 	if err != nil {
-		return fmt.Errorf("announce: failed to announce to discord: %w", err)
+		return fmt.Errorf("failed to announce to discord: %w", err)
 	}
 
 	var cfg Config
 	if err = env.Parse(&cfg); err != nil {
-		return fmt.Errorf("announce: failed to announce to discord: %w", err)
+		return fmt.Errorf("failed to announce to discord: %w", err)
 	}
 
 	log.Infof("posting: '%s'", msg)
 
 	webhookID, err := snowflake.Parse(cfg.WebhookID)
 	if err != nil {
-		return fmt.Errorf("announce: failed to announce to discord: %w", err)
+		return fmt.Errorf("failed to announce to discord: %w", err)
 	}
 
 	color, err := strconv.Atoi(ctx.Config.Announce.Discord.Color)
 	if err != nil {
-		return fmt.Errorf("announce: failed to announce to discord: %w", err)
+		return fmt.Errorf("failed to announce to discord: %w", err)
 	}
 	if _, err = webhook.New(webhookID, cfg.WebhookToken).CreateMessage(discord.WebhookMessageCreate{
 		Embeds: []discord.Embed{
@@ -80,7 +80,7 @@ func (p Pipe) Announce(ctx *context.Context) error {
 			},
 		},
 	}); err != nil {
-		return fmt.Errorf("announce: failed to announce to discord: %w", err)
+		return fmt.Errorf("failed to announce to discord: %w", err)
 	}
 	return nil
 }
