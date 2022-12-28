@@ -61,7 +61,7 @@ func (Pipe) Announce(ctx *context.Context) error {
 
 	var cfg Config
 	if err := env.Parse(&cfg); err != nil {
-		return fmt.Errorf("failed to announce to mattermost: %w", err)
+		return fmt.Errorf("mattermost: %w", err)
 	}
 
 	log.Infof("posting: %q", msg)
@@ -82,7 +82,7 @@ func (Pipe) Announce(ctx *context.Context) error {
 
 	err = postWebhook(ctx, cfg.Webhook, wm)
 	if err != nil {
-		return fmt.Errorf("failed to announce to mattermost: %w", err)
+		return fmt.Errorf("mattermost: %w", err)
 	}
 
 	return nil
@@ -102,7 +102,7 @@ func postWebhook(ctx *context.Context, url string, msg *incomingWebhookRequest) 
 
 	r, err := http.DefaultClient.Do(req)
 	if err != nil {
-		return fmt.Errorf("failed to announce to mattermost: %w", err)
+		return fmt.Errorf("mattermost: %w", err)
 	}
 	closeBody(r)
 

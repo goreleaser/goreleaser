@@ -36,7 +36,7 @@ func TestAnnounceMissingEnv(t *testing.T) {
 		},
 	})
 	require.NoError(t, Pipe{}.Default(ctx))
-	require.EqualError(t, Pipe{}.Announce(ctx), `failed to announce to mastodon: env: environment variable "MASTODON_CLIENT_ID" should not be empty; environment variable "MASTODON_CLIENT_SECRET" should not be empty; environment variable "MASTODON_ACCESS_TOKEN" should not be empty`)
+	require.EqualError(t, Pipe{}.Announce(ctx), `mastodon: env: environment variable "MASTODON_CLIENT_ID" should not be empty; environment variable "MASTODON_CLIENT_SECRET" should not be empty; environment variable "MASTODON_ACCESS_TOKEN" should not be empty`)
 }
 
 func TestSkip(t *testing.T) {

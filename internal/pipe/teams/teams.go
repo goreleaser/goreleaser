@@ -51,12 +51,12 @@ func (p Pipe) Announce(ctx *context.Context) error {
 
 	msg, err := tmpl.New(ctx).Apply(ctx.Config.Announce.Teams.MessageTemplate)
 	if err != nil {
-		return fmt.Errorf("failed to announce to teams: %w", err)
+		return fmt.Errorf("teams: %w", err)
 	}
 
 	var cfg Config
 	if err := env.Parse(&cfg); err != nil {
-		return fmt.Errorf("failed to announce to teams: %w", err)
+		return fmt.Errorf("teams: %w", err)
 	}
 
 	log.Infof("posting: '%s'", msg)
@@ -73,11 +73,11 @@ func (p Pipe) Announce(ctx *context.Context) error {
 	messageCardSection.ActivityImage = ctx.Config.Announce.Teams.IconURL
 	err = msgCard.AddSection(messageCardSection)
 	if err != nil {
-		return fmt.Errorf("failed to announce to teams: %w", err)
+		return fmt.Errorf("teams: %w", err)
 	}
 	err = client.Send(cfg.Webhook, msgCard)
 	if err != nil {
-		return fmt.Errorf("failed to announce to teams: %w", err)
+		return fmt.Errorf("teams: %w", err)
 	}
 	return nil
 }
