@@ -140,6 +140,7 @@ func checkErrors(ctx *context.Context, noTokens, noTokenErrs bool, gitlabTokenEr
 func loadEnv(env, path string) (string, error) {
 	val := os.Getenv(env)
 	if val != "" {
+		log.Infof("using token from %q", "$"+env)
 		return val, nil
 	}
 	path, err := homedir.Expand(path)
@@ -154,6 +155,7 @@ func loadEnv(env, path string) (string, error) {
 		return "", err
 	}
 	defer f.Close()
+	log.Infof("using token from %q", path)
 	bts, _, err := bufio.NewReader(f).ReadLine()
 	return string(bts), err
 }
