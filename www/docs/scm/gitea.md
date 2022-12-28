@@ -16,6 +16,9 @@ env_files:
   gitea_token: ~/.path/to/my/gitea_token
 ```
 
+Note that the environment variable will be used if available, regardless of the
+`gitea_token` file.
+
 ## URLs
 
 You can use GoReleaser with Gitea by providing its URLs in

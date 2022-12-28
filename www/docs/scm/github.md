@@ -2,19 +2,24 @@
 
 ## API Token
 
-GoReleaser requires an API token with the `repo` scope selected to deploy the artifacts to GitHub.
-You can create one [here](https://github.com/settings/tokens/new).
+GoReleaser requires an API token with the `repo` scope selected to deploy the
+artifacts to GitHub. You can create one
+[here](https://github.com/settings/tokens/new).
 
 This token should be added to the environment variables as `GITHUB_TOKEN`.
 
-Alternatively, you can provide the GitHub token in a file.
-GoReleaser will check `~/.config/goreleaser/github_token` by default, but you can change that in the `.goreleaser.yaml` file:
+Alternatively, you can provide the GitHub token in a file. GoReleaser will check
+`~/.config/goreleaser/github_token` by default, but you can change that in the
+`.goreleaser.yaml` file:
 
 ```yaml
 # .goreleaser.yaml
 env_files:
   github_token: ~/.path/to/my/github_token
 ```
+
+Note that the environment variable will be used if available, regardless of the
+`github_token` file.
 
 ## GitHub Enterprise
 
