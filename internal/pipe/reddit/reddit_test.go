@@ -26,7 +26,7 @@ func TestAnnounceInvalidURLTemplate(t *testing.T) {
 			},
 		},
 	})
-	require.EqualError(t, Pipe{}.Announce(ctx), `failed to announce to reddit: template: tmpl:1: unexpected "}" in operand`)
+	require.EqualError(t, Pipe{}.Announce(ctx), `reddit: template: tmpl:1: unexpected "}" in operand`)
 }
 
 func TestAnnounceInvalidTitleTemplate(t *testing.T) {
@@ -37,7 +37,7 @@ func TestAnnounceInvalidTitleTemplate(t *testing.T) {
 			},
 		},
 	})
-	require.EqualError(t, Pipe{}.Announce(ctx), `failed to announce to reddit: template: tmpl:1: unexpected "}" in operand`)
+	require.EqualError(t, Pipe{}.Announce(ctx), `reddit: template: tmpl:1: unexpected "}" in operand`)
 }
 
 func TestAnnounceMissingEnv(t *testing.T) {
@@ -47,7 +47,7 @@ func TestAnnounceMissingEnv(t *testing.T) {
 		},
 	})
 	require.NoError(t, Pipe{}.Default(ctx))
-	require.EqualError(t, Pipe{}.Announce(ctx), `failed to announce to reddit: env: environment variable "REDDIT_SECRET" should not be empty; environment variable "REDDIT_PASSWORD" should not be empty`)
+	require.EqualError(t, Pipe{}.Announce(ctx), `reddit: env: environment variable "REDDIT_SECRET" should not be empty; environment variable "REDDIT_PASSWORD" should not be empty`)
 }
 
 func TestSkip(t *testing.T) {

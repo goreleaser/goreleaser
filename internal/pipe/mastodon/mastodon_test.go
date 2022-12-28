@@ -26,7 +26,7 @@ func TestAnnounceInvalidTemplate(t *testing.T) {
 			},
 		},
 	})
-	require.EqualError(t, Pipe{}.Announce(ctx), `failed to announce to mastodon: template: tmpl:1: unexpected "}" in operand`)
+	require.EqualError(t, Pipe{}.Announce(ctx), `mastodon: template: tmpl:1: unexpected "}" in operand`)
 }
 
 func TestAnnounceMissingEnv(t *testing.T) {

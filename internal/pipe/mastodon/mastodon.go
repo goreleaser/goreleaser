@@ -36,7 +36,7 @@ func (Pipe) Default(ctx *context.Context) error {
 func (Pipe) Announce(ctx *context.Context) error {
 	msg, err := tmpl.New(ctx).Apply(ctx.Config.Announce.Mastodon.MessageTemplate)
 	if err != nil {
-		return fmt.Errorf("failed to announce to mastodon: %w", err)
+		return fmt.Errorf("mastodon: %w", err)
 	}
 
 	var cfg Config

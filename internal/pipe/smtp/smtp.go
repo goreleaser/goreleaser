@@ -43,12 +43,12 @@ func (Pipe) Default(ctx *context.Context) error {
 func (Pipe) Announce(ctx *context.Context) error {
 	subject, err := tmpl.New(ctx).Apply(ctx.Config.Announce.SMTP.SubjectTemplate)
 	if err != nil {
-		return fmt.Errorf("failed to announce to SMTP: %w", err)
+		return fmt.Errorf("SMTP: %w", err)
 	}
 
 	body, err := tmpl.New(ctx).Apply(ctx.Config.Announce.SMTP.BodyTemplate)
 	if err != nil {
-		return fmt.Errorf("failed to announce to SMTP: %w", err)
+		return fmt.Errorf("SMTP: %w", err)
 	}
 
 	m := gomail.NewMessage()
@@ -68,7 +68,7 @@ func (Pipe) Announce(ctx *context.Context) error {
 
 	var cfg Config
 	if err := env.Parse(&cfg); err != nil {
-		return fmt.Errorf("failed to announce to SMTP: %w", err)
+		return fmt.Errorf("SMTP: %w", err)
 	}
 
 	// Settings for SMTP server
@@ -80,7 +80,7 @@ func (Pipe) Announce(ctx *context.Context) error {
 
 	// Now send E-Mail
 	if err := d.DialAndSend(m); err != nil {
-		return fmt.Errorf("failed to announce to SMTP: %w", err)
+		return fmt.Errorf("SMTP: %w", err)
 	}
 
 	log.Infof("The mail has been send from %s to %s\n", ctx.Config.Announce.SMTP.From, receivers)

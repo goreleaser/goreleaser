@@ -47,7 +47,7 @@ func (p Pipe) Default(ctx *context.Context) error {
 func (p Pipe) Announce(ctx *context.Context) error {
 	var cfg Config
 	if err := env.Parse(&cfg); err != nil {
-		return fmt.Errorf("failed to announce to webhook: %w", err)
+		return fmt.Errorf("webhook: %w", err)
 	}
 
 	endpointURLConfig, err := tmpl.New(ctx).Apply(ctx.Config.Announce.Webhook.EndpointURL)

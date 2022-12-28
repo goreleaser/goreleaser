@@ -46,7 +46,7 @@ func (p Pipe) Default(ctx *context.Context) error {
 func (p Pipe) Announce(ctx *context.Context) error {
 	title, err := tmpl.New(ctx).Apply(ctx.Config.Announce.Teams.TitleTemplate)
 	if err != nil {
-		return fmt.Errorf("failed to announce to teams: %w", err)
+		return fmt.Errorf("teams: %w", err)
 	}
 
 	msg, err := tmpl.New(ctx).Apply(ctx.Config.Announce.Teams.MessageTemplate)

@@ -31,12 +31,12 @@ func (Pipe) Default(ctx *context.Context) error {
 func (Pipe) Announce(ctx *context.Context) error {
 	message, err := tmpl.New(ctx).Apply(ctx.Config.Announce.LinkedIn.MessageTemplate)
 	if err != nil {
-		return fmt.Errorf("failed to announce to linkedin: %w", err)
+		return fmt.Errorf("linkedin: %w", err)
 	}
 
 	var cfg Config
 	if err := env.Parse(&cfg); err != nil {
-		return fmt.Errorf("failed to announce to linkedin: %w", err)
+		return fmt.Errorf("linkedin: %w", err)
 	}
 
 	c, err := createLinkedInClient(oauthClientConfig{
@@ -44,12 +44,12 @@ func (Pipe) Announce(ctx *context.Context) error {
 		AccessToken: cfg.AccessToken,
 	})
 	if err != nil {
-		return fmt.Errorf("failed to announce to linkedin: %w", err)
+		return fmt.Errorf("linkedin: %w", err)
 	}
 
 	url, err := c.Share(message)
 	if err != nil {
-		return fmt.Errorf("failed to announce to linkedin: %w", err)
+		return fmt.Errorf("linkedin: %w", err)
 	}
 
 	log.Infof("The text post is available at: %s\n", url)
