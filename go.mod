@@ -22,6 +22,7 @@ require (
 	github.com/google/uuid v1.3.0
 	github.com/goreleaser/fileglob v1.3.0
 	github.com/goreleaser/nfpm/v2 v2.22.2
+	github.com/hashicorp/go-multierror v1.1.1
 	github.com/imdario/mergo v0.3.13
 	github.com/invopop/jsonschema v0.7.0
 	github.com/jarcoal/httpmock v1.2.0
@@ -132,6 +133,7 @@ require (
 	github.com/googleapis/gax-go/v2 v2.4.0 // indirect
 	github.com/goreleaser/chglog v0.2.2 // indirect
 	github.com/gorilla/websocket v1.5.0 // indirect
+	github.com/hashicorp/errwrap v1.1.0 // indirect
 	github.com/hashicorp/go-cleanhttp v0.5.2 // indirect
 	github.com/hashicorp/go-retryablehttp v0.7.1 // indirect
 	github.com/hashicorp/go-version v1.2.1 // indirect

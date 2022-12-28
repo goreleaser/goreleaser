@@ -1,10 +1,12 @@
 package announce
 
 import (
+	"errors"
 	"testing"
 
 	"github.com/goreleaser/goreleaser/pkg/config"
 	"github.com/goreleaser/goreleaser/pkg/context"
+	"github.com/hashicorp/go-multierror"
 	"github.com/stretchr/testify/require"
 )
 
@@ -18,9 +20,17 @@ func TestAnnounce(t *testing.T) {
 			Twitter: config.Twitter{
 				Enabled: true,
 			},
+			Mastodon: config.Mastodon{
+				Enabled: true,
+				Server:  "https://localhost:1234/",
+			},
 		},
 	})
-	require.Error(t, Pipe{}.Run(ctx))
+	err := Pipe{}.Run(ctx)
+	require.Error(t, err)
+	merr := &multierror.Error{}
+	require.True(t, errors.As(err, &merr), "must be a multierror")
+	require.Len(t, merr.Errors, 2)
 }
 
 func TestAnnounceAllDisabled(t *testing.T) {

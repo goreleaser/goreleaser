@@ -47,28 +47,28 @@ func (p Pipe) Default(ctx *context.Context) error {
 func (p Pipe) Announce(ctx *context.Context) error {
 	var cfg Config
 	if err := env.Parse(&cfg); err != nil {
-		return fmt.Errorf("announce: failed to announce to webhook: %w", err)
+		return fmt.Errorf("webhook: %w", err)
 	}
 
 	endpointURLConfig, err := tmpl.New(ctx).Apply(ctx.Config.Announce.Webhook.EndpointURL)
 	if err != nil {
-		return fmt.Errorf("announce: failed to announce to webhook: %w", err)
+		return fmt.Errorf("webhook: %w", err)
 	}
 	if len(endpointURLConfig) == 0 {
-		return errors.New("announce: failed to announce to webhook: no endpoint url")
+		return errors.New("webhook: no endpoint url")
 	}
 
 	if _, err := url.ParseRequestURI(endpointURLConfig); err != nil {
-		return fmt.Errorf("announce: failed to announce to webhook: %w", err)
+		return fmt.Errorf("webhook: %w", err)
 	}
 	endpointURL, err := url.Parse(endpointURLConfig)
 	if err != nil {
-		return fmt.Errorf("announce: failed to announce to webhook: %w", err)
+		return fmt.Errorf("webhook: %w", err)
 	}
 
 	msg, err := tmpl.New(ctx).Apply(ctx.Config.Announce.Webhook.MessageTemplate)
 	if err != nil {
-		return fmt.Errorf("announce: failed to announce to webhook: %s", err)
+		return fmt.Errorf("webhook: %s", err)
 	}
 
 	log.Infof("posting: '%s'", msg)
@@ -84,7 +84,7 @@ func (p Pipe) Announce(ctx *context.Context) error {
 
 	req, err := http.NewRequest(http.MethodPost, endpointURL.String(), strings.NewReader(msg))
 	if err != nil {
-		return fmt.Errorf("announce: failed to announce to webhook: %w", err)
+		return fmt.Errorf("webhook: %w", err)
 	}
 	req.Header.Add(ContentTypeHeaderKey, ctx.Config.Announce.Webhook.ContentType)
 	req.Header.Add(UserAgentHeaderKey, UserAgentHeaderValue)
@@ -103,7 +103,7 @@ func (p Pipe) Announce(ctx *context.Context) error {
 	}
 	resp, err := client.Do(req)
 	if err != nil {
-		return fmt.Errorf("announce: failed to announce to webhook: %w", err)
+		return fmt.Errorf("webhook: %w", err)
 	}
 	defer resp.Body.Close()
 
