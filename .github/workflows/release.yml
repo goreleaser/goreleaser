@@ -22,7 +22,7 @@ jobs:
           repo: goreleaser/goreleaser
           ref: main
           token: ${{ secrets.GH_PAT }}
-          workflow: generate.yml
+          workflow: generate-releases.yml
   goreleaser-check-pkgs:
     runs-on: ubuntu-latest
     env:
