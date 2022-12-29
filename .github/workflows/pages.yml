@@ -22,6 +22,6 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       - uses: peaceiris/actions-gh-pages@v3
         with:
-          deploy_key: ${{ secrets.GH_PAT }}
+          github_token: ${{ secrets.GH_PAT }}
           external_repository: goreleaser/goreleaser.github.io
           publish_dir: ./www/site
