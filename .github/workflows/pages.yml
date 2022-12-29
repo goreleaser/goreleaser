@@ -19,6 +19,8 @@ jobs:
           repo-token: ${{ secrets.GITHUB_TOKEN }}
       - run: task docs:build
       - run: ./scripts/vercel/build.sh
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       - uses: peaceiris/actions-gh-pages@v3
         with:
           deploy_key: ${{ secrets.GH_PAT }}
