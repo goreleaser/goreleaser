@@ -58,7 +58,7 @@ var fakeInfo = context.GitInfo{
 
 func getInfo(ctx *context.Context) (context.GitInfo, error) {
 	if !git.IsRepo(ctx) && ctx.Snapshot {
-		log.Warn("accepting to run without a git repo because this is a snapshot")
+		log.Warn("accepting to run without a git repository because this is a snapshot")
 		return fakeInfo, nil
 	}
 	if !git.IsRepo(ctx) {
@@ -90,7 +90,7 @@ func getGitInfo(ctx *context.Context) (context.GitInfo, error) {
 	}
 	first, err := getFirstCommit(ctx)
 	if err != nil {
-		return context.GitInfo{}, fmt.Errorf("could not get first commit: %w", err)
+		return context.GitInfo{}, fmt.Errorf("couldn't get first commit: %w", err)
 	}
 	date, err := getCommitDate(ctx)
 	if err != nil {
