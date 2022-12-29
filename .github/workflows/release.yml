@@ -13,12 +13,21 @@ permissions:
   packages: write
 
 jobs:
+  trigger-generate:
+    runs-on: ubuntu-latest
+    needs: [ goreleaser ]
+    steps:
+      - uses: benc-uk/workflow-dispatch@v1
+        with:
+          repo: goreleaser/goreleaser
+          ref: main
+          token: ${{ secrets.GH_PAT }}
+          workflow: generate.yml
   goreleaser-check-pkgs:
     runs-on: ubuntu-latest
     env:
       DOCKER_CLI_EXPERIMENTAL: "enabled"
-    needs:
-      - goreleaser
+    needs: [ goreleaser ]
     if: github.ref == 'refs/heads/main'
     strategy:
       matrix:

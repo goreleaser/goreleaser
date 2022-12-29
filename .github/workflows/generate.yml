@@ -9,6 +9,7 @@ on:
       - pkg/config/config.go
       - CONTRIBUTING.md
       - USERS.md
+  workflow_dispatch:
 
 permissions:
   contents: read
