@@ -37,6 +37,7 @@ type Mock struct {
 	FailToCloseMilestone bool
 	Changes              string
 	ReleaseNotes         string
+	ReleaseNotesParams   []string
 }
 
 func (c *Mock) Changelog(ctx *context.Context, repo Repo, prev, current string) (string, error) {
@@ -48,6 +49,7 @@ func (c *Mock) Changelog(ctx *context.Context, repo Repo, prev, current string) 
 
 func (c *Mock) GenerateReleaseNotes(ctx *context.Context, repo Repo, prev, current string) (string, error) {
 	if c.ReleaseNotes != "" {
+		c.ReleaseNotesParams = []string{prev, current}
 		return c.ReleaseNotes, nil
 	}
 	return "", ErrNotImplemented

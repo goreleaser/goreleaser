@@ -9,6 +9,7 @@ import (
 	"github.com/stretchr/testify/require"
 
 	"github.com/goreleaser/goreleaser/internal/client"
+	"github.com/goreleaser/goreleaser/internal/git"
 	"github.com/goreleaser/goreleaser/internal/testlib"
 	"github.com/goreleaser/goreleaser/pkg/config"
 	"github.com/goreleaser/goreleaser/pkg/context"
@@ -51,6 +52,7 @@ func TestTemplatedChangelogProvidedViaFlag(t *testing.T) {
 	ctx.ReleaseNotesFile = "testdata/changes.md"
 	ctx.ReleaseNotesTmpl = "testdata/changes-templated.md"
 	ctx.Git.CurrentTag = "v0.0.1"
+	ctx.Git.FirstCommit = firstCommit(t)
 	require.NoError(t, Pipe{}.Run(ctx))
 	require.Equal(t, "c0ff33 coffeee v0.0.1\n", ctx.ReleaseNotes)
 }
@@ -59,6 +61,7 @@ func TestTemplatedChangelogProvidedViaFlagResultIsEmpty(t *testing.T) {
 	ctx := context.New(config.Project{})
 	ctx.ReleaseNotesTmpl = "testdata/changes-templated-empty.md"
 	ctx.Git.CurrentTag = "v0.0.1"
+	ctx.Git.FirstCommit = firstCommit(t)
 	require.NoError(t, Pipe{}.Run(ctx))
 	require.Equal(t, "\n\n", ctx.ReleaseNotes)
 }
@@ -260,6 +263,7 @@ func TestChangelogOfFirstRelease(t *testing.T) {
 	testlib.GitTag(t, "v0.0.1")
 	ctx := context.New(config.Project{})
 	ctx.Git.CurrentTag = "v0.0.1"
+	ctx.Git.FirstCommit = firstCommit(t)
 	require.NoError(t, Pipe{}.Run(ctx))
 	require.Contains(t, ctx.ReleaseNotes, "## Changelog")
 	for _, msg := range msgs {
@@ -313,6 +317,7 @@ func TestChangelogOnBranchWithSameNameAsTag(t *testing.T) {
 	testlib.GitCheckoutBranch(t, "v0.0.1")
 	ctx := context.New(config.Project{})
 	ctx.Git.CurrentTag = "v0.0.1"
+	ctx.Git.FirstCommit = firstCommit(t)
 	require.NoError(t, Pipe{}.Run(ctx))
 	require.Contains(t, ctx.ReleaseNotes, "## Changelog")
 	for _, msg := range msgs {
@@ -339,6 +344,7 @@ func TestChangeLogWithReleaseHeader(t *testing.T) {
 	testlib.GitCheckoutBranch(t, "v0.0.1")
 	ctx := context.New(config.Project{})
 	ctx.Git.CurrentTag = "v0.0.1"
+	ctx.Git.FirstCommit = firstCommit(t)
 	ctx.ReleaseHeaderFile = "testdata/release-header.md"
 	require.NoError(t, Pipe{}.Run(ctx))
 	require.Contains(t, ctx.ReleaseNotes, "## Changelog")
@@ -364,6 +370,7 @@ func TestChangeLogWithTemplatedReleaseHeader(t *testing.T) {
 	testlib.GitCheckoutBranch(t, "v0.0.1")
 	ctx := context.New(config.Project{})
 	ctx.Git.CurrentTag = "v0.0.1"
+	ctx.Git.FirstCommit = firstCommit(t)
 	ctx.ReleaseHeaderTmpl = "testdata/release-header-templated.md"
 	require.NoError(t, Pipe{}.Run(ctx))
 	require.Contains(t, ctx.ReleaseNotes, "## Changelog")
@@ -389,6 +396,7 @@ func TestChangeLogWithReleaseFooter(t *testing.T) {
 	testlib.GitCheckoutBranch(t, "v0.0.1")
 	ctx := context.New(config.Project{})
 	ctx.Git.CurrentTag = "v0.0.1"
+	ctx.Git.FirstCommit = firstCommit(t)
 	ctx.ReleaseFooterFile = "testdata/release-footer.md"
 	require.NoError(t, Pipe{}.Run(ctx))
 	require.Contains(t, ctx.ReleaseNotes, "## Changelog")
@@ -415,6 +423,7 @@ func TestChangeLogWithTemplatedReleaseFooter(t *testing.T) {
 	testlib.GitCheckoutBranch(t, "v0.0.1")
 	ctx := context.New(config.Project{})
 	ctx.Git.CurrentTag = "v0.0.1"
+	ctx.Git.FirstCommit = firstCommit(t)
 	ctx.ReleaseFooterTmpl = "testdata/release-footer-templated.md"
 	require.NoError(t, Pipe{}.Run(ctx))
 	require.Contains(t, ctx.ReleaseNotes, "## Changelog")
@@ -441,6 +450,7 @@ func TestChangeLogWithoutReleaseFooter(t *testing.T) {
 	testlib.GitCheckoutBranch(t, "v0.0.1")
 	ctx := context.New(config.Project{})
 	ctx.Git.CurrentTag = "v0.0.1"
+	ctx.Git.FirstCommit = firstCommit(t)
 	require.NoError(t, Pipe{}.Run(ctx))
 	require.Contains(t, ctx.ReleaseNotes, "## Changelog")
 	require.Equal(t, rune(ctx.ReleaseNotes[len(ctx.ReleaseNotes)-1]), '\n')
@@ -463,7 +473,12 @@ func TestGetChangelogGitHub(t *testing.T) {
 			Name:  "goreleaser",
 		},
 	}
-	log, err := l.Log(ctx, "v0.180.1", "v0.180.2")
+
+	ctx.Git = context.GitInfo{
+		CurrentTag:  "v0.180.2",
+		PreviousTag: "v0.180.1",
+	}
+	log, err := l.Log(ctx)
 	require.NoError(t, err)
 	require.Equal(t, expected, log)
 }
@@ -490,9 +505,45 @@ func TestGetChangelogGitHubNative(t *testing.T) {
 			Name:  "goreleaser",
 		},
 	}
-	log, err := l.Log(ctx, "v0.180.1", "v0.180.2")
+	ctx.Git = context.GitInfo{
+		CurrentTag:  "v0.180.2",
+		PreviousTag: "v0.180.1",
+	}
+	log, err := l.Log(ctx)
 	require.NoError(t, err)
 	require.Equal(t, expected, log)
+	require.Equal(t, []string{"v0.180.1", "v0.180.2"}, mock.ReleaseNotesParams)
+}
+
+func TestGetChangelogGitHubNativeFirstRelease(t *testing.T) {
+	ctx := context.New(config.Project{
+		Changelog: config.Changelog{
+			Use: useGitHubNative,
+		},
+	})
+
+	expected := `## What's changed
+
+* Foo bar test
+
+**Full Changelog**: https://github.com/gorelease/goreleaser/commits/v0.1.0
+`
+	mock := client.NewMock()
+	mock.ReleaseNotes = expected
+	l := githubNativeChangeloger{
+		client: mock,
+		repo: client.Repo{
+			Owner: "goreleaser",
+			Name:  "goreleaser",
+		},
+	}
+	ctx.Git = context.GitInfo{
+		CurrentTag: "v0.1.0",
+	}
+	log, err := l.Log(ctx)
+	require.NoError(t, err)
+	require.Equal(t, expected, log)
+	require.Equal(t, []string{"", "v0.1.0"}, mock.ReleaseNotesParams)
 }
 
 func TestGetChangeloger(t *testing.T) {
@@ -659,6 +710,7 @@ func TestGroup(t *testing.T) {
 		},
 	})
 	ctx.Git.CurrentTag = "v0.0.2"
+	ctx.Git.FirstCommit = firstCommit(t)
 	require.NoError(t, Pipe{}.Run(ctx))
 	require.Contains(t, ctx.ReleaseNotes, "## Changelog")
 	require.Contains(t, ctx.ReleaseNotes, "### Bots")
@@ -686,6 +738,7 @@ func TestGroupBadRegex(t *testing.T) {
 		},
 	})
 	ctx.Git.CurrentTag = "v0.0.2"
+	ctx.Git.FirstCommit = firstCommit(t)
 	require.EqualError(t, Pipe{}.Run(ctx), "failed to group into \"Something\": error parsing regexp: missing closing ]: `[a-z`")
 }
 
@@ -796,6 +849,8 @@ func TestAbbrev(t *testing.T) {
 			Changelog: config.Changelog{},
 		})
 		ctx.Git.CurrentTag = "v0.0.2"
+		ctx.Git.FirstCommit = firstCommit(t)
+
 		require.NoError(t, Pipe{}.Run(ctx))
 		ensureCommitHashLen(t, ctx.ReleaseNotes, 7)
 	})
@@ -808,6 +863,7 @@ func TestAbbrev(t *testing.T) {
 			},
 		})
 		ctx.Git.CurrentTag = "v0.0.2"
+		ctx.Git.FirstCommit = firstCommit(t)
 		require.NoError(t, Pipe{}.Run(ctx))
 	})
 
@@ -819,6 +875,7 @@ func TestAbbrev(t *testing.T) {
 			},
 		})
 		ctx.Git.CurrentTag = "v0.0.2"
+		ctx.Git.FirstCommit = firstCommit(t)
 		require.NoError(t, Pipe{}.Run(ctx))
 		ensureCommitHashLen(t, ctx.ReleaseNotes, 3)
 	})
@@ -831,6 +888,7 @@ func TestAbbrev(t *testing.T) {
 			},
 		})
 		ctx.Git.CurrentTag = "v0.0.2"
+		ctx.Git.FirstCommit = firstCommit(t)
 		require.NoError(t, Pipe{}.Run(ctx))
 		ensureCommitHashLen(t, ctx.ReleaseNotes, 7)
 	})
@@ -843,6 +901,7 @@ func TestAbbrev(t *testing.T) {
 			},
 		})
 		ctx.Git.CurrentTag = "v0.0.2"
+		ctx.Git.FirstCommit = firstCommit(t)
 		require.NoError(t, Pipe{}.Run(ctx))
 		ensureCommitHashLen(t, ctx.ReleaseNotes, 7)
 	})
@@ -858,4 +917,11 @@ func ensureCommitHashLen(tb testing.TB, log string, l int) {
 		commit := strings.TrimPrefix(parts[1], "* ")
 		require.Len(tb, commit, l)
 	}
+}
+
+func firstCommit(tb testing.TB) string {
+	tb.Helper()
+	s, err := git.Clean(git.Run(context.New(config.Project{}), "rev-list", "--max-parents=0", "HEAD"))
+	require.NoError(tb, err)
+	return s
 }

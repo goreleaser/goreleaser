@@ -88,6 +88,10 @@ func getGitInfo(ctx *context.Context) (context.GitInfo, error) {
 	if err != nil {
 		return context.GitInfo{}, fmt.Errorf("couldn't get current commit: %w", err)
 	}
+	first, err := getFirstCommit(ctx)
+	if err != nil {
+		return context.GitInfo{}, fmt.Errorf("could not get first commit: %w", err)
+	}
 	date, err := getCommitDate(ctx)
 	if err != nil {
 		return context.GitInfo{}, fmt.Errorf("couldn't get commit date: %w", err)
@@ -117,6 +121,7 @@ func getGitInfo(ctx *context.Context) (context.GitInfo, error) {
 			Commit:      full,
 			FullCommit:  full,
 			ShortCommit: short,
+			FirstCommit: first,
 			CommitDate:  date,
 			URL:         gitURL,
 			CurrentTag:  "v0.0.0",
@@ -152,6 +157,7 @@ func getGitInfo(ctx *context.Context) (context.GitInfo, error) {
 		Commit:      full,
 		FullCommit:  full,
 		ShortCommit: short,
+		FirstCommit: first,
 		CommitDate:  date,
 		URL:         gitURL,
 		Summary:     summary,
@@ -219,6 +225,10 @@ func getShortCommit(ctx *context.Context) (string, error) {
 
 func getFullCommit(ctx *context.Context) (string, error) {
 	return git.Clean(git.Run(ctx, "show", "--format=%H", "HEAD", "--quiet"))
+}
+
+func getFirstCommit(ctx *context.Context) (string, error) {
+	return git.Clean(git.Run(ctx, "rev-list", "--max-parents=0", "HEAD"))
 }
 
 func getSummary(ctx *context.Context) (string, error) {
