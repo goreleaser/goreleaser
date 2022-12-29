@@ -211,6 +211,9 @@
 					"strip_parent_binary_folder": {
 						"type": "boolean"
 					},
+					"rlcp": {
+						"type": "boolean"
+					},
 					"files": {
 						"items": {
 							"$ref": "#/$defs/File"
@@ -2131,7 +2134,7 @@
 						},
 						"type": "array"
 					},
-					"chocolatey": {
+					"chocolateys": {
 						"items": {
 							"$ref": "#/$defs/Chocolatey"
 						},
@@ -2868,6 +2871,9 @@
 							"$ref": "#/$defs/File"
 						},
 						"type": "array"
+					},
+					"rlcp": {
+						"type": "boolean"
 					}
 				},
 				"additionalProperties": false,

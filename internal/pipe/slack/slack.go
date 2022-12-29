@@ -38,12 +38,12 @@ func (Pipe) Default(ctx *context.Context) error {
 func (Pipe) Announce(ctx *context.Context) error {
 	msg, err := tmpl.New(ctx).Apply(ctx.Config.Announce.Slack.MessageTemplate)
 	if err != nil {
-		return fmt.Errorf("announce: failed to announce to slack: %w", err)
+		return fmt.Errorf("slack: %w", err)
 	}
 
 	var cfg Config
 	if err := env.Parse(&cfg); err != nil {
-		return fmt.Errorf("announce: failed to announce to slack: %w", err)
+		return fmt.Errorf("slack: %w", err)
 	}
 
 	log.Infof("posting: '%s'", msg)
@@ -68,7 +68,7 @@ func (Pipe) Announce(ctx *context.Context) error {
 
 	err = slack.PostWebhook(cfg.Webhook, wm)
 	if err != nil {
-		return fmt.Errorf("announce: failed to announce to slack: %w", err)
+		return fmt.Errorf("slack: %w", err)
 	}
 
 	return nil
@@ -80,7 +80,7 @@ func parseAdvancedFormatting(ctx *context.Context) (*slack.Blocks, []slack.Attac
 		blocks = &slack.Blocks{BlockSet: make([]slack.Block, 0, len(in))}
 
 		if err := unmarshal(ctx, in, blocks); err != nil {
-			return nil, nil, fmt.Errorf("announce: slack blocks: %w", err)
+			return nil, nil, fmt.Errorf("slack blocks: %w", err)
 		}
 	}
 
@@ -89,7 +89,7 @@ func parseAdvancedFormatting(ctx *context.Context) (*slack.Blocks, []slack.Attac
 		attachments = make([]slack.Attachment, 0, len(in))
 
 		if err := unmarshal(ctx, in, &attachments); err != nil {
-			return nil, nil, fmt.Errorf("announce: slack attachments: %w", err)
+			return nil, nil, fmt.Errorf("slack attachments: %w", err)
 		}
 	}
 
@@ -99,16 +99,16 @@ func parseAdvancedFormatting(ctx *context.Context) (*slack.Blocks, []slack.Attac
 func unmarshal(ctx *context.Context, in interface{}, target interface{}) error {
 	jazon, err := json.Marshal(in)
 	if err != nil {
-		return fmt.Errorf("announce: failed to marshal input as JSON: %w", err)
+		return fmt.Errorf("failed to marshal input as JSON: %w", err)
 	}
 
 	tplApplied, err := tmpl.New(ctx).Apply(string(jazon))
 	if err != nil {
-		return fmt.Errorf("announce: failed to evaluate template: %w", err)
+		return fmt.Errorf("failed to evaluate template: %w", err)
 	}
 
 	if err = json.Unmarshal([]byte(tplApplied), target); err != nil {
-		return fmt.Errorf("announce: failed to unmarshal into target: %w", err)
+		return fmt.Errorf("failed to unmarshal into target: %w", err)
 	}
 
 	return nil
