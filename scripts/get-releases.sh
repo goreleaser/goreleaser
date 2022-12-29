@@ -23,10 +23,18 @@ generate() {
 	if test "$last_page" -eq "1"; then
 		cp -f "$tmp"/1.json "$file"
 	else
-		jq --compact-output -s 'add' "$tmp"/*.json >"$file"
+		jq -s 'add' "$tmp"/*.json >"$file"
 	fi
 	du -hs "$file"
 }
 
+latest() {
+	local url="$1"
+	local file="$2"
+	curl -sfL "$url/latest" | jq -r ".tag_name" >"$file"
+}
+
+latest "https://api.github.com/repos/goreleaser/goreleaser/releases" "www/docs/static/latest"
+latest "https://api.github.com/repos/goreleaser/goreleaser-pro/releases" "www/docs/static/latest-pro"
 generate "https://api.github.com/repos/goreleaser/goreleaser/releases" "www/docs/static/releases.json"
 generate "https://api.github.com/repos/goreleaser/goreleaser-pro/releases" "www/docs/static/releases-pro.json"
