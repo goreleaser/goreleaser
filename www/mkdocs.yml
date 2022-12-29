@@ -137,14 +137,21 @@ nav:
       - customization/announce/twitter.md
       - customization/announce/webhook.md
 - Command Line Usage:
-    - goreleaser: cmd/goreleaser.md
-    - goreleaser init: cmd/goreleaser_init.md
-    - goreleaser check: cmd/goreleaser_check.md
-    - goreleaser changelog: cmd/goreleaser_changelog.md
-    - goreleaser build: cmd/goreleaser_build.md
-    - goreleaser release: cmd/goreleaser_release.md
-    - goreleaser completion: cmd/goreleaser_completion.md
-    - goreleaser jsonschema: cmd/goreleaser_jsonschema.md
+    - cmd/goreleaser.md
+    - cmd/goreleaser_init.md
+    - cmd/goreleaser_check.md
+    - cmd/goreleaser_changelog.md
+    - cmd/goreleaser_build.md
+    - cmd/goreleaser_release.md
+    - cmd/goreleaser_continue.md
+    - cmd/goreleaser_publish.md
+    - cmd/goreleaser_announce.md
+    - cmd/goreleaser_completion.md
+    - cmd/goreleaser_completion_bash.md
+    - cmd/goreleaser_completion_fish.md
+    - cmd/goreleaser_completion_powershell.md
+    - cmd/goreleaser_completion_zsh.md
+    - cmd/goreleaser_jsonschema.md
 - Common errors:
   - errors/dirty.md
   - errors/multiple-tokens.md
