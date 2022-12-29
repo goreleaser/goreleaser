@@ -375,10 +375,13 @@ type changeloger interface {
 
 type gitChangeloger struct{}
 
+var validSHA1 = regexp.MustCompile(`^[a-fA-F0-9]{40}$`)
+
 func (g gitChangeloger) Log(ctx *context.Context) (string, error) {
 	args := []string{"log", "--pretty=oneline", "--abbrev-commit", "--no-decorate", "--no-color"}
-	if ctx.Git.PreviousTag == "" {
-		args = append(args, ctx.Git.FirstCommit, ctx.Git.CurrentTag)
+	prev, current := comparePair(ctx)
+	if validSHA1.MatchString(prev) {
+		args = append(args, prev, current)
 	} else {
 		args = append(args, fmt.Sprintf("tags/%s..tags/%s", ctx.Git.PreviousTag, ctx.Git.CurrentTag))
 	}
@@ -391,10 +394,8 @@ type scmChangeloger struct {
 }
 
 func (c *scmChangeloger) Log(ctx *context.Context) (string, error) {
-	if ctx.Git.PreviousTag == "" {
-		return c.client.Changelog(ctx, c.repo, ctx.Git.FirstCommit, ctx.Git.PreviousTag)
-	}
-	return c.client.Changelog(ctx, c.repo, ctx.Git.PreviousTag, ctx.Git.PreviousTag)
+	prev, current := comparePair(ctx)
+	return c.client.Changelog(ctx, c.repo, prev, current)
 }
 
 type githubNativeChangeloger struct {
@@ -404,4 +405,13 @@ type githubNativeChangeloger struct {
 
 func (c *githubNativeChangeloger) Log(ctx *context.Context) (string, error) {
 	return c.client.GenerateReleaseNotes(ctx, c.repo, ctx.Git.PreviousTag, ctx.Git.CurrentTag)
+}
+
+func comparePair(ctx *context.Context) (prev string, current string) {
+	prev = ctx.Git.PreviousTag
+	current = ctx.Git.CurrentTag
+	if prev == "" {
+		prev = ctx.Git.FirstCommit
+	}
+	return
 }
