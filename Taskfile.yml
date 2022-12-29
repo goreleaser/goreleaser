@@ -94,6 +94,16 @@ tasks:
       - www/docs/eula.md
       - www/docs/security.md
 
+  docs:releases:
+    desc: Generate docs
+    cmds:
+      - ./scripts/get-releases.sh
+    generates:
+      - www/docs/static/releases.json
+      - www/docs/static/releases-pro.json
+      - www/docs/static/latest
+      - www/docs/static/latest-pro
+
   docs:imgs:
     desc: Download and resize images
     cmds:
