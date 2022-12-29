@@ -220,7 +220,11 @@ func checkSortDirection(mode string) error {
 }
 
 func buildChangelog(ctx *context.Context) ([]string, error) {
-	log, err := getChangelog(ctx, ctx.Git.CurrentTag)
+	l, err := getChangeloger(ctx)
+	if err != nil {
+		return nil, err
+	}
+	log, err := l.Log(ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -278,27 +282,6 @@ func remove(filter *regexp.Regexp, entries []string) (result []string) {
 
 func extractCommitInfo(line string) string {
 	return strings.Join(strings.Split(line, " ")[1:], " ")
-}
-
-func getChangelog(ctx *context.Context, tag string) (string, error) {
-	prev := ctx.Git.PreviousTag
-	if prev == "" {
-		// get first commit
-		result, err := git.Clean(git.Run(ctx, "rev-list", "--max-parents=0", "HEAD"))
-		if err != nil {
-			return "", err
-		}
-		prev = result
-	}
-	return doGetChangelog(ctx, prev, tag)
-}
-
-func doGetChangelog(ctx *context.Context, prev, tag string) (string, error) {
-	l, err := getChangeloger(ctx)
-	if err != nil {
-		return "", err
-	}
-	return l.Log(ctx, prev, tag)
 }
 
 func getChangeloger(ctx *context.Context) (changeloger, error) {
@@ -387,19 +370,17 @@ func loadContent(ctx *context.Context, fileName, tmplName string) (string, error
 }
 
 type changeloger interface {
-	Log(ctx *context.Context, prev, current string) (string, error)
+	Log(ctx *context.Context) (string, error)
 }
 
 type gitChangeloger struct{}
 
-var validSHA1 = regexp.MustCompile(`^[a-fA-F0-9]{40}$`)
-
-func (g gitChangeloger) Log(ctx *context.Context, prev, current string) (string, error) {
+func (g gitChangeloger) Log(ctx *context.Context) (string, error) {
 	args := []string{"log", "--pretty=oneline", "--abbrev-commit", "--no-decorate", "--no-color"}
-	if validSHA1.MatchString(prev) {
-		args = append(args, prev, current)
+	if ctx.Git.PreviousTag == "" {
+		args = append(args, ctx.Git.FirstCommit, ctx.Git.CurrentTag)
 	} else {
-		args = append(args, fmt.Sprintf("tags/%s..tags/%s", prev, current))
+		args = append(args, fmt.Sprintf("tags/%s..tags/%s", ctx.Git.PreviousTag, ctx.Git.CurrentTag))
 	}
 	return git.Run(ctx, args...)
 }
@@ -409,8 +390,11 @@ type scmChangeloger struct {
 	repo   client.Repo
 }
 
-func (c *scmChangeloger) Log(ctx *context.Context, prev, current string) (string, error) {
-	return c.client.Changelog(ctx, c.repo, prev, current)
+func (c *scmChangeloger) Log(ctx *context.Context) (string, error) {
+	if ctx.Git.PreviousTag == "" {
+		return c.client.Changelog(ctx, c.repo, ctx.Git.FirstCommit, ctx.Git.PreviousTag)
+	}
+	return c.client.Changelog(ctx, c.repo, ctx.Git.PreviousTag, ctx.Git.PreviousTag)
 }
 
 type githubNativeChangeloger struct {
@@ -418,6 +402,6 @@ type githubNativeChangeloger struct {
 	repo   client.Repo
 }
 
-func (c *githubNativeChangeloger) Log(ctx *context.Context, prev, current string) (string, error) {
-	return c.client.GenerateReleaseNotes(ctx, c.repo, prev, current)
+func (c *githubNativeChangeloger) Log(ctx *context.Context) (string, error) {
+	return c.client.GenerateReleaseNotes(ctx, c.repo, ctx.Git.PreviousTag, ctx.Git.CurrentTag)
 }
