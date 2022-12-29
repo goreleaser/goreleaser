@@ -15,16 +15,12 @@ generate() {
 	last_page="$(get_last_page "$url")"
 	tmp="$(mktemp -d)"
 
-	for i in $(seq 1 "$last_page"); do
+	for i in $(seq -w 1 "$last_page"); do
 		echo "page: $i"
 		curl -H "Authorization: Bearer $GITHUB_TOKEN" -sSf "$url?page=$i" | jq 'map({tag_name: .tag_name})' >"$tmp/$i.json"
 	done
 
-	if test "$last_page" -eq "1"; then
-		cp -f "$tmp"/1.json "$file"
-	else
-		jq -s 'add' "$tmp"/*.json >"$file"
-	fi
+	jq -s 'add' "$tmp"/*.json >"$file"
 	du -hs "$file"
 }
 
