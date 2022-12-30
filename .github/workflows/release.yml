@@ -17,7 +17,7 @@ jobs:
     runs-on: ubuntu-latest
     needs: [ goreleaser ]
     steps:
-      - uses: benc-uk/workflow-dispatch@v1
+      - uses: benc-uk/workflow-dispatch@v121
         with:
           repo: goreleaser/goreleaser
           ref: main
