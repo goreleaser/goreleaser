@@ -125,12 +125,6 @@ tasks:
       - task: docs:generate
       - '{{.DOCKER}} run --rm -v ${PWD}/www:/docs docker.io/squidfunk/mkdocs-material build'
 
-  docs:vercel:build:
-    desc: Build documentation for deploying to Vercel
-    cmds:
-      - scripts/vercel/install.sh
-      - scripts/vercel/build.sh
-
   release:
     desc: Create a new tag
     vars:
