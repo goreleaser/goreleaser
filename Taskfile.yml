@@ -95,7 +95,7 @@ tasks:
       - www/docs/security.md
 
   docs:releases:
-    desc: Generate docs
+    desc: Generate releases.json and latest files
     cmds:
       - ./scripts/get-releases.sh
     generates:
