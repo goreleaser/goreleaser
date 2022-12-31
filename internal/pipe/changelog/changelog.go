@@ -209,14 +209,11 @@ func loadFromFile(file string) (string, error) {
 
 func checkSortDirection(mode string) error {
 	switch mode {
-	case "":
-		fallthrough
-	case "asc":
-		fallthrough
-	case "desc":
+	case "", "asc", "desc":
 		return nil
+	default:
+		return ErrInvalidSortDirection
 	}
-	return ErrInvalidSortDirection
 }
 
 func buildChangelog(ctx *context.Context) ([]string, error) {
