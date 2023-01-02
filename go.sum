@@ -898,8 +898,8 @@ github.com/goreleaser/chglog v0.2.2 h1:V7nf07baXtGAgGevvqgW2MM4kZ6gOr12vKNSAU3VI
 github.com/goreleaser/chglog v0.2.2/go.mod h1:2s5JwtCOWjZa8AIneL+xdUl9SRuigCjRHNHsX30dupE=
 github.com/goreleaser/fileglob v1.3.0 h1:/X6J7U8lbDpQtBvGcwwPS6OpzkNVlVEsFUVRx9+k+7I=
 github.com/goreleaser/fileglob v1.3.0/go.mod h1:Jx6BoXv3mbYkEzwm9THo7xbr5egkAraxkGorbJb4RxU=
-github.com/goreleaser/nfpm/v2 v2.22.2 h1:K/how1xpNJC4xHpgMKQwE46iJp8+h0iTxWhhMYizhAA=
-github.com/goreleaser/nfpm/v2 v2.22.2/go.mod h1:nW+gTJ38KmCvVlceNVFmCiNteF/WU22VpXee7PhDukY=
+github.com/goreleaser/nfpm/v2 v2.23.0 h1:ZcurGlXkaaY2XFHP7XvstjiJ+aGBGsYfKufxwYZnjkk=
+github.com/goreleaser/nfpm/v2 v2.23.0/go.mod h1:Tpqen33Ol5R31AY1uYBJv/dinpifuoMtvp3V0eqDpbU=
 github.com/gorilla/context v1.1.1/go.mod h1:kBGZzfjB9CEq2AlWe17Uuf7NDRt0dE0s8S51q0aT7Yg=
 github.com/gorilla/handlers v0.0.0-20150720190736-60c7bfde3e33/go.mod h1:Qkdc/uu4tH4g6mTK6auzZ766c4CA0Ng8+o/OAirnOIQ=
 github.com/gorilla/mux v1.6.2/go.mod h1:1lud6UwP+6orDFRuTfBEV8e9/aOM/c4fVVCaMa2zaAs=
@@ -1094,8 +1094,8 @@ github.com/klauspost/compress v1.11.3/go.mod h1:aoV0uJVorq1K+umq18yTdKaF57EivdYs
 github.com/klauspost/compress v1.11.13/go.mod h1:aoV0uJVorq1K+umq18yTdKaF57EivdYsUV+/s2qKfXs=
 github.com/klauspost/compress v1.13.6/go.mod h1:/3/Vjq9QcHkK5uEr5lBEmyoZ1iFhe47etQ6QUkpK6sk=
 github.com/klauspost/compress v1.15.1/go.mod h1:/3/Vjq9QcHkK5uEr5lBEmyoZ1iFhe47etQ6QUkpK6sk=
-github.com/klauspost/compress v1.15.12 h1:YClS/PImqYbn+UILDnqxQCZ3RehC9N318SU3kElDUEM=
-github.com/klauspost/compress v1.15.12/go.mod h1:QPwzmACJjUTFsnSHH934V6woptycfrDDJnH7hvFVbGM=
+github.com/klauspost/compress v1.15.13 h1:NFn1Wr8cfnenSJSA46lLq4wHCcBzKTSjnBIexDMMOV0=
+github.com/klauspost/compress v1.15.13/go.mod h1:QPwzmACJjUTFsnSHH934V6woptycfrDDJnH7hvFVbGM=
 github.com/klauspost/pgzip v1.2.5 h1:qnWYvvKqedOF2ulHpMG72XQol4ILEJ8k2wwRl/Km8oE=
 github.com/klauspost/pgzip v1.2.5/go.mod h1:Ch1tH69qFZu15pkjo5kYi6mth2Zzwzt50oCQKQE9RUs=
 github.com/kolo/xmlrpc v0.0.0-20201022064351-38db28db192b/go.mod h1:pcaDhQK0/NJZEvtCO0qQPPropqV0sJOJ6YW7X+9kRwM=
