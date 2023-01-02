@@ -16,8 +16,12 @@ generate() {
 	tmp="$(mktemp -d)"
 
 	for i in $(seq -w 1 "$last_page"); do
-		echo "page: $i"
-		curl -H "Authorization: Bearer $GITHUB_TOKEN" -sSf "$url?page=$i" | jq 'map({tag_name: .tag_name})' >"$tmp/$i.json"
+		page="$(echo "$i" | awk '$0*=1')" # removes leading zeroes
+		echo "page: $page file: $tmp/$i.json"
+		curl \
+			-H "Authorization: Bearer $GITHUB_TOKEN" \
+			-sSf "$url?page=$page" |
+				jq 'map({tag_name: .tag_name})' >"$tmp/$i.json"
 	done
 
 	jq -s 'add' "$tmp"/*.json >"$file"
