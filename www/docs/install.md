@@ -2,7 +2,8 @@
 
 There are two GoReleaser distributions: OSS and [Pro](/pro/).
 
-You can install the pre-compiled binary (in several ways), use Docker or compile from source (when on OSS).
+You can install the pre-compiled binary (in several ways), use Docker or compile
+from source (when on OSS).
 
 Below you can find the steps for each of them.
 
@@ -310,6 +311,10 @@ and iterate from that.
 [pro-releases]: https://github.com/goreleaser/goreleaser-pro/releases
 [nightly-pro-releases]: https://github.com/goreleaser/goreleaser-pro/releases/nightly
 [cosign]: https://github.com/sigstore/cosign
+
+## Packaging status
+
+[![Packaging status](https://repology.org/badge/vertical-allrepos/goreleaser.svg)](https://repology.org/project/goreleaser/versions)
 
 ## Compiling from source
 
