@@ -502,7 +502,13 @@
 						"$ref": "#/$defs/Filters"
 					},
 					"sort": {
-						"type": "string"
+						"type": "string",
+						"enum": [
+							"asc",
+							"desc",
+							""
+						],
+						"default": ""
 					},
 					"skip": {
 						"type": "boolean"
