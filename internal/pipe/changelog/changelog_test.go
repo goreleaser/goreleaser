@@ -817,7 +817,6 @@ func TestChangelogFormat(t *testing.T) {
 				)
 				require.NoError(t, err)
 				require.Equal(t, `## Changelog
-
 ### catch-all
 * aea123 foo
 * aef653 bar`, out)
