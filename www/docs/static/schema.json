@@ -338,14 +338,7 @@
 						"type": "string"
 					},
 					"skip": {
-						"oneOf": [
-							{
-								"type": "string"
-							},
-							{
-								"type": "boolean"
-							}
-						]
+						"type": "boolean"
 					},
 					"gobinary": {
 						"type": "string"
@@ -2743,7 +2736,14 @@
 						"type": "string"
 					},
 					"chat_id": {
-						"type": "integer"
+						"oneOf": [
+							{
+								"type": "string"
+							},
+							{
+								"type": "integer"
+							}
+						]
 					}
 				},
 				"additionalProperties": false,
