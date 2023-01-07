@@ -829,12 +829,12 @@ type Changelog struct {
 	Sort    string           `yaml:"sort,omitempty" json:"sort,omitempty" jsonschema:"enum=asc,enum=desc,enum=,default="`
 	Skip    bool             `yaml:"skip,omitempty" json:"skip,omitempty"` // TODO(caarlos0): rename to Disable to match other pipes
 	Use     string           `yaml:"use,omitempty" json:"use,omitempty" jsonschema:"enum=git,enum=github,enum=github-native,enum=gitlab,default=git"`
-	Groups  []ChangeLogGroup `yaml:"groups,omitempty" json:"groups,omitempty"`
+	Groups  []ChangelogGroup `yaml:"groups,omitempty" json:"groups,omitempty"`
 	Abbrev  int              `yaml:"abbrev,omitempty" json:"abbrev,omitempty"`
 }
 
-// ChangeLogGroup holds the grouping criteria for the changelog.
-type ChangeLogGroup struct {
+// ChangelogGroup holds the grouping criteria for the changelog.
+type ChangelogGroup struct {
 	Title  string `yaml:"title,omitempty" json:"title,omitempty"`
 	Regexp string `yaml:"regexp,omitempty" json:"regexp,omitempty"`
 	Order  int    `yaml:"order,omitempty" json:"order,omitempty"`

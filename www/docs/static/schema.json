@@ -450,21 +450,6 @@
 				"additionalProperties": false,
 				"type": "object"
 			},
-			"ChangeLogGroup": {
-				"properties": {
-					"title": {
-						"type": "string"
-					},
-					"regexp": {
-						"type": "string"
-					},
-					"order": {
-						"type": "integer"
-					}
-				},
-				"additionalProperties": false,
-				"type": "object"
-			},
 			"Changelog": {
 				"properties": {
 					"filters": {
@@ -494,11 +479,26 @@
 					},
 					"groups": {
 						"items": {
-							"$ref": "#/$defs/ChangeLogGroup"
+							"$ref": "#/$defs/ChangelogGroup"
 						},
 						"type": "array"
 					},
 					"abbrev": {
+						"type": "integer"
+					}
+				},
+				"additionalProperties": false,
+				"type": "object"
+			},
+			"ChangelogGroup": {
+				"properties": {
+					"title": {
+						"type": "string"
+					},
+					"regexp": {
+						"type": "string"
+					},
+					"order": {
 						"type": "integer"
 					}
 				},
