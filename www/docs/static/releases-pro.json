@@ -90,9 +90,6 @@
     "tag_name": "v1.6.1-pro"
   },
   {
-    "tag_name": "v1.6.0-pro"
-  },
-  {
     "tag_name": "v1.5.0-pro"
   },
   {
@@ -103,9 +100,6 @@
   },
   {
     "tag_name": "v1.3.1-pro"
-  },
-  {
-    "tag_name": "v1.3.0-pro"
   },
   {
     "tag_name": "v1.2.5-pro"
@@ -150,9 +144,6 @@
     "tag_name": "v0.181.0-pro"
   },
   {
-    "tag_name": "v0.180.3-pro"
-  },
-  {
     "tag_name": "v0.180.2-pro"
   },
   {
@@ -178,6 +169,15 @@
   },
   {
     "tag_name": "v0.174.2-pro"
+  },
+  {
+    "tag_name": "v0.174.1-pro"
+  },
+  {
+    "tag_name": "v0.174.0-pro"
+  },
+  {
+    "tag_name": "v0.173.1-pro"
   },
   {
     "tag_name": "v0.174.1-pro"
