@@ -23,6 +23,21 @@ jobs:
           ref: main
           token: ${{ secrets.GH_PAT }}
           workflow: generate-releases.yml
+  notify-goreleaser-cross:
+    runs-on: ubuntu-latest
+    needs: [ trigger-generate ]
+    steps:
+      - name: get version
+        if: startsWith(github.ref, 'refs/tags/v')
+        run: echo "RELEASE_TAG=${GITHUB_REF#refs/tags/}" >> $GITHUB_ENV
+      - name: notify goreleaser-cross with new release
+        if: startsWith(github.ref, 'refs/tags/v')
+        uses: benc-uk/workflow-dispatch@v121
+        with:
+          token: ${{ secrets.GH_PAT }}
+          repo: goreleaser/goreleaser-cross
+          workflow: goreleaser-bump
+          inputs: '{ "tag" : "${{ env.RELEASE_TAG }}" }'
   goreleaser-check-pkgs:
     runs-on: ubuntu-latest
     env:
