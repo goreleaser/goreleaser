@@ -20,7 +20,7 @@ jobs:
     uses: caarlos0/meta/.github/workflows/govulncheck.yml@main
     with:
       cache: true
-      go-version: '>=1.19.4'
+      go-version: '>=1.19.5'
   semgrep:
     uses: caarlos0/meta/.github/workflows/semgrep.yml@main
   ruleguard:
