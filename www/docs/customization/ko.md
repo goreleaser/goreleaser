@@ -103,4 +103,4 @@ kos:
 
 Refer to the [Ko Build][ko] project page for more information.
 
-[ko]: https://github.com/ko-build/ko
+[ko]: https://ko.build
