@@ -22,7 +22,7 @@ announce:
 
     # Integer representation of your channel
     #
-    # Templeateable. (since v1.15)
+    # Templateable. (since v1.15)
     chat_id: 123456
 
     # Message template to use while publishing.

@@ -359,7 +359,10 @@ nfpms:
         # The name of the signing key. When verifying a package, the signature
         # is matched to the public key store in /etc/apk/keys/<key_name>.rsa.pub.
         # If unset, it defaults to the maintainer email address.
+        #
+        # Templateable. (since v1.15)
         key_name: origin
+
     archlinux:
       # Archlinux-specific scripts
       scripts:
