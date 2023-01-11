@@ -1,6 +1,6 @@
 # Docker Images with Ko
 
-> Since v1.14.0.
+> Since v1.15.
 
 You can also use [ko][] to build and publish Docker container images.
 
