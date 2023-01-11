@@ -44,6 +44,7 @@ func writeMetadata(ctx *context.Context) error {
 func writeArtifacts(ctx *context.Context) error {
 	_ = ctx.Artifacts.Visit(func(a *artifact.Artifact) error {
 		a.TypeS = a.Type.String()
+		a.Path = filepath.ToSlash(filepath.Clean(a.Path))
 		return nil
 	})
 	return writeJSON(ctx, ctx.Artifacts.List(), "artifacts.json")
