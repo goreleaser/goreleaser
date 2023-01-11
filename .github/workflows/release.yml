@@ -18,6 +18,7 @@ jobs:
     needs: [ goreleaser ]
     steps:
       - uses: benc-uk/workflow-dispatch@v121
+        if: startsWith(github.ref, 'refs/tags/v')
         with:
           repo: goreleaser/goreleaser
           ref: main
