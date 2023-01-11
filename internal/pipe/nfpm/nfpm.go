@@ -212,7 +212,7 @@ func create(ctx *context.Context, fpm config.NFPM, format string, binaries []*ar
 	if err != nil {
 		return err
 	}
-	
+
 	apkKeyName, err := t.Apply(overridden.APK.Signature.KeyName)
 	if err != nil {
 		return err

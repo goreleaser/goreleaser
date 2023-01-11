@@ -557,6 +557,12 @@ func TestInvalidTemplate(t *testing.T) {
 		testlib.RequireTemplateError(t, Pipe{}.Run(ctx))
 	})
 
+	t.Run("apk key name", func(t *testing.T) {
+		ctx := makeCtx()
+		ctx.Config.NFPMs[0].APK.Signature.KeyName = "{{ .NOPE_KEY_FILE }}"
+		testlib.RequireTemplateError(t, Pipe{}.Run(ctx))
+	})
+
 	t.Run("bindir", func(t *testing.T) {
 		ctx := makeCtx()
 		ctx.Config.NFPMs[0].Bindir = "/usr/{{ .NOPE }}"
