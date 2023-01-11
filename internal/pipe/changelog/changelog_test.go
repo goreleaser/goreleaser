@@ -681,7 +681,7 @@ func TestGroup(t *testing.T) {
 	ctx := context.New(config.Project{
 		Dist: folder,
 		Changelog: config.Changelog{
-			Groups: []config.ChangeLogGroup{
+			Groups: []config.ChangelogGroup{
 				{
 					Title:  "Bots",
 					Regexp: ".*bot.*",
@@ -729,7 +729,7 @@ func TestGroupBadRegex(t *testing.T) {
 	ctx := context.New(config.Project{
 		Dist: folder,
 		Changelog: config.Changelog{
-			Groups: []config.ChangeLogGroup{
+			Groups: []config.ChangelogGroup{
 				{
 					Title:  "Something",
 					Regexp: "^.*feat[a-z", // unterminated regex
@@ -785,7 +785,7 @@ func TestChangelogFormat(t *testing.T) {
 			return config.Project{
 				Changelog: config.Changelog{
 					Use: u,
-					Groups: []config.ChangeLogGroup{
+					Groups: []config.ChangelogGroup{
 						{Title: "catch-all"},
 					},
 				},
@@ -817,7 +817,6 @@ func TestChangelogFormat(t *testing.T) {
 				)
 				require.NoError(t, err)
 				require.Equal(t, `## Changelog
-
 ### catch-all
 * aea123 foo
 * aef653 bar`, out)

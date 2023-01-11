@@ -3,6 +3,7 @@ package telegram
 import (
 	"testing"
 
+	"github.com/goreleaser/goreleaser/internal/testlib"
 	"github.com/goreleaser/goreleaser/pkg/config"
 	"github.com/goreleaser/goreleaser/pkg/context"
 	"github.com/stretchr/testify/require"
@@ -19,20 +20,48 @@ func TestDefault(t *testing.T) {
 }
 
 func TestAnnounceInvalidTemplate(t *testing.T) {
-	ctx := context.New(config.Project{
-		Announce: config.Announce{
-			Telegram: config.Telegram{
-				MessageTemplate: "{{ .Foo }",
+	t.Run("message", func(t *testing.T) {
+		ctx := context.New(config.Project{
+			Announce: config.Announce{
+				Telegram: config.Telegram{
+					MessageTemplate: "{{ .Foo }",
+				},
 			},
-		},
+		})
+		testlib.RequireTemplateError(t, Pipe{}.Announce(ctx))
 	})
-	require.EqualError(t, Pipe{}.Announce(ctx), `telegram: template: tmpl:1: unexpected "}" in operand`)
+	t.Run("chatid", func(t *testing.T) {
+		ctx := context.New(config.Project{
+			Announce: config.Announce{
+				Telegram: config.Telegram{
+					MessageTemplate: "test",
+					ChatID:          "{{ .Foo }",
+				},
+			},
+		})
+		testlib.RequireTemplateError(t, Pipe{}.Announce(ctx))
+	})
+	t.Run("chatid not int", func(t *testing.T) {
+		ctx := context.New(config.Project{
+			Env: []string{"CHAT_ID=test"},
+			Announce: config.Announce{
+				Telegram: config.Telegram{
+					MessageTemplate: "test",
+					ChatID:          "{{ .Env.CHAT_ID }}",
+				},
+			},
+		})
+		require.EqualError(t, Pipe{}.Announce(ctx), "telegram: strconv.ParseInt: parsing \"test\": invalid syntax")
+	})
 }
 
 func TestAnnounceMissingEnv(t *testing.T) {
 	ctx := context.New(config.Project{
+		Env: []string{"CHAT_ID=10"},
 		Announce: config.Announce{
-			Telegram: config.Telegram{},
+			Telegram: config.Telegram{
+				ChatID: "{{ .Env.CHAT_ID }}",
+			},
 		},
 	})
 	require.NoError(t, Pipe{}.Default(ctx))

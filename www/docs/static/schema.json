@@ -338,14 +338,7 @@
 						"type": "string"
 					},
 					"skip": {
-						"oneOf": [
-							{
-								"type": "string"
-							},
-							{
-								"type": "boolean"
-							}
-						]
+						"type": "boolean"
 					},
 					"gobinary": {
 						"type": "string"
@@ -457,28 +450,19 @@
 				"additionalProperties": false,
 				"type": "object"
 			},
-			"ChangeLogGroup": {
-				"properties": {
-					"title": {
-						"type": "string"
-					},
-					"regexp": {
-						"type": "string"
-					},
-					"order": {
-						"type": "integer"
-					}
-				},
-				"additionalProperties": false,
-				"type": "object"
-			},
 			"Changelog": {
 				"properties": {
 					"filters": {
 						"$ref": "#/$defs/Filters"
 					},
 					"sort": {
-						"type": "string"
+						"type": "string",
+						"enum": [
+							"asc",
+							"desc",
+							""
+						],
+						"default": ""
 					},
 					"skip": {
 						"type": "boolean"
@@ -495,11 +479,26 @@
 					},
 					"groups": {
 						"items": {
-							"$ref": "#/$defs/ChangeLogGroup"
+							"$ref": "#/$defs/ChangelogGroup"
 						},
 						"type": "array"
 					},
 					"abbrev": {
+						"type": "integer"
+					}
+				},
+				"additionalProperties": false,
+				"type": "object"
+			},
+			"ChangelogGroup": {
+				"properties": {
+					"title": {
+						"type": "string"
+					},
+					"regexp": {
+						"type": "string"
+					},
+					"order": {
 						"type": "integer"
 					}
 				},
@@ -2737,7 +2736,14 @@
 						"type": "string"
 					},
 					"chat_id": {
-						"type": "integer"
+						"oneOf": [
+							{
+								"type": "string"
+							},
+							{
+								"type": "integer"
+							}
+						]
 					}
 				},
 				"additionalProperties": false,

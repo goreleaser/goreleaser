@@ -137,18 +137,18 @@ nfpms:
     # GoReleaser will automatically add the binaries.
     contents:
       # Basic file that applies to all packagers
-      - src: path/to/local/foo
-        dst: /usr/local/bin/foo
+      - src: path/to/foo
+        dst: /usr/bin/foo
 
       # Simple config file
-      - src: path/to/local/foo.conf
+      - src: path/to/foo.conf
         dst: /etc/foo.conf
         type: config
 
       # Simple symlink.
       # Corresponds to `ln -s /sbin/foo /usr/local/bin/foo`
       - src: /sbin/foo
-        dst: /usr/local/bin/foo
+        dst: /usr/bin/foo
         type: "symlink"
 
       # Corresponds to `%config(noreplace)` if the packager is rpm, otherwise it
@@ -359,7 +359,10 @@ nfpms:
         # The name of the signing key. When verifying a package, the signature
         # is matched to the public key store in /etc/apk/keys/<key_name>.rsa.pub.
         # If unset, it defaults to the maintainer email address.
+        #
+        # Templateable. (since v1.15)
         key_name: origin
+
     archlinux:
       # Archlinux-specific scripts
       scripts:

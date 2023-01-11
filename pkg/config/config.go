@@ -335,7 +335,7 @@ type Build struct {
 	Hooks           BuildHookConfig `yaml:"hooks,omitempty" json:"hooks,omitempty"`
 	Builder         string          `yaml:"builder,omitempty" json:"builder,omitempty"`
 	ModTimestamp    string          `yaml:"mod_timestamp,omitempty" json:"mod_timestamp,omitempty"`
-	Skip            bool            `yaml:"skip,omitempty" json:"skip,omitempty" jsonschema:"oneof_type=string;boolean"`
+	Skip            bool            `yaml:"skip,omitempty" json:"skip,omitempty"`
 	GoBinary        string          `yaml:"gobinary,omitempty" json:"gobinary,omitempty"`
 	Command         string          `yaml:"command,omitempty" json:"command,omitempty"`
 	NoUniqueDistDir bool            `yaml:"no_unique_dist_dir,omitempty" json:"no_unique_dist_dir,omitempty"`
@@ -845,15 +845,15 @@ type Filters struct {
 // Changelog Config.
 type Changelog struct {
 	Filters Filters          `yaml:"filters,omitempty" json:"filters,omitempty"`
-	Sort    string           `yaml:"sort,omitempty" json:"sort,omitempty"`
+	Sort    string           `yaml:"sort,omitempty" json:"sort,omitempty" jsonschema:"enum=asc,enum=desc,enum=,default="`
 	Skip    bool             `yaml:"skip,omitempty" json:"skip,omitempty"` // TODO(caarlos0): rename to Disable to match other pipes
 	Use     string           `yaml:"use,omitempty" json:"use,omitempty" jsonschema:"enum=git,enum=github,enum=github-native,enum=gitlab,default=git"`
-	Groups  []ChangeLogGroup `yaml:"groups,omitempty" json:"groups,omitempty"`
+	Groups  []ChangelogGroup `yaml:"groups,omitempty" json:"groups,omitempty"`
 	Abbrev  int              `yaml:"abbrev,omitempty" json:"abbrev,omitempty"`
 }
 
-// ChangeLogGroup holds the grouping criteria for the changelog.
-type ChangeLogGroup struct {
+// ChangelogGroup holds the grouping criteria for the changelog.
+type ChangelogGroup struct {
 	Title  string `yaml:"title,omitempty" json:"title,omitempty"`
 	Regexp string `yaml:"regexp,omitempty" json:"regexp,omitempty"`
 	Order  int    `yaml:"order,omitempty" json:"order,omitempty"`
@@ -1086,7 +1086,7 @@ type LinkedIn struct {
 type Telegram struct {
 	Enabled         bool   `yaml:"enabled,omitempty" json:"enabled,omitempty"`
 	MessageTemplate string `yaml:"message_template,omitempty" json:"message_template,omitempty"`
-	ChatID          int64  `yaml:"chat_id,omitempty" json:"chat_id,omitempty"`
+	ChatID          string `yaml:"chat_id,omitempty" json:"chat_id,omitempty" jsonschema:"oneof_type=string;integer"`
 }
 
 // Load config file.

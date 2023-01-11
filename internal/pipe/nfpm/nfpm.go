@@ -213,6 +213,11 @@ func create(ctx *context.Context, fpm config.NFPM, format string, binaries []*ar
 		return err
 	}
 
+	apkKeyName, err := t.Apply(overridden.APK.Signature.KeyName)
+	if err != nil {
+		return err
+	}
+
 	contents := files.Contents{}
 	for _, content := range overridden.Contents {
 		src, err := t.Apply(content.Source)
@@ -353,7 +358,7 @@ func create(ctx *context.Context, fpm config.NFPM, format string, binaries []*ar
 						KeyFile:       apkKeyFile,
 						KeyPassphrase: getPassphraseFromEnv(ctx, "APK", fpm.ID),
 					},
-					KeyName: overridden.APK.Signature.KeyName,
+					KeyName: apkKeyName,
 				},
 				Scripts: nfpm.APKScripts{
 					PreUpgrade:  overridden.APK.Scripts.PreUpgrade,
