@@ -28,7 +28,8 @@ func TestDefault(t *testing.T) {
 		},
 		Builds: []config.Build{
 			{
-				ID: "default",
+				ID:  "default",
+				Dir: "./foo",
 				BuildDetails: config.BuildDetails{
 					Ldflags: []string{"{{.Env.LDFLAGS}}"},
 					Flags:   []string{"{{.Env.FLAGS}}"},
@@ -49,7 +50,7 @@ func TestDefault(t *testing.T) {
 		Platforms:  []string{"linux/amd64"},
 		SBOM:       "spdx",
 		Tags:       []string{"latest"},
-		WorkingDir: ".",
+		WorkingDir: "./foo",
 		Ldflags:    []string{"{{.Env.LDFLAGS}}"},
 		Flags:      []string{"{{.Env.FLAGS}}"},
 		Env:        []string{"SOME_ENV={{.Env.LE_ENV}}"},
