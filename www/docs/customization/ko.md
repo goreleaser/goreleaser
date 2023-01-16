@@ -104,3 +104,32 @@ kos:
 Refer to the [Ko Build][ko] project page for more information.
 
 [ko]: https://ko.build
+
+## Example
+
+Here's a minimal example:
+
+```yaml
+# .goreleaser.yml
+before:
+  hooks:
+    - go mod tidy
+builds:
+  - env: [ "CGO_ENABLED=1" ]
+    binary: test
+    goos: [linux]
+    goarch:
+    - amd64
+    - arch64
+
+kos:
+  - repository: ghcr.io/caarlos0/test-ko
+    tags:
+      - '{{.Version}}'
+      - latest
+    bare: true
+    preserve_import_paths: false
+    platforms:
+      - linux/amd64
+      - linux/arm64
+```
