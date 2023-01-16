@@ -59,7 +59,7 @@ func (Pipe) Default(ctx *context.Context) error {
 	for i := range ctx.Config.Kos {
 		ko := &ctx.Config.Kos[i]
 		if ko.ID == "" {
-			ko.ID = "default"
+			ko.ID = ctx.Config.ProjectName
 		}
 
 		if ko.Build == "" {
@@ -267,7 +267,7 @@ func findBuild(ctx *context.Context, ko config.Ko) (config.Build, error) {
 }
 
 func buildBuildOptions(ctx *context.Context, cfg config.Ko) (*buildOptions, error) {
-	localImportPath := "./..."
+	localImportPath := cfg.Main
 
 	dir := filepath.Clean(cfg.WorkingDir)
 	if dir == "." {
@@ -301,7 +301,6 @@ func buildBuildOptions(ctx *context.Context, cfg config.Ko) (*buildOptions, erro
 		baseImage:           cfg.BaseImage,
 		platforms:           cfg.Platforms,
 		sbom:                cfg.SBOM,
-		tags:                cfg.Tags,
 		imageRepo:           cfg.Repository,
 		fromEnv:             cfg.RepositoryFromEnv,
 	}
@@ -310,7 +309,7 @@ func buildBuildOptions(ctx *context.Context, cfg config.Ko) (*buildOptions, erro
 	if err != nil {
 		return nil, err
 	}
-	cfg.Tags = tags
+	opts.tags = tags
 
 	if len(cfg.Env) > 0 {
 		env, err := applyTemplate(ctx, cfg.Env)
