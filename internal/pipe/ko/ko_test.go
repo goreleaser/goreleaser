@@ -28,8 +28,7 @@ func TestDefault(t *testing.T) {
 		},
 		Builds: []config.Build{
 			{
-				ID:  "default",
-				Dir: "./foo",
+				ID: "default",
 				BuildDetails: config.BuildDetails{
 					Ldflags: []string{"{{.Env.LDFLAGS}}"},
 					Flags:   []string{"{{.Env.FLAGS}}"},
@@ -50,7 +49,7 @@ func TestDefault(t *testing.T) {
 		Platforms:  []string{"linux/amd64"},
 		SBOM:       "spdx",
 		Tags:       []string{"latest"},
-		WorkingDir: "./foo",
+		WorkingDir: ".",
 		Ldflags:    []string{"{{.Env.LDFLAGS}}"},
 		Flags:      []string{"{{.Env.FLAGS}}"},
 		Env:        []string{"SOME_ENV={{.Env.LE_ENV}}"},
@@ -239,7 +238,7 @@ func TestPublishPipeError(t *testing.T) {
 	t.Run("publish fail", func(t *testing.T) {
 		ctx := makeCtx()
 		require.NoError(t, Pipe{}.Default(ctx))
-		require.EqualError(t, Pipe{}.Publish(ctx), `publish: writing sbom: Get "https://fakerepo:8080/v2/": dial tcp: lookup fakerepo: Temporary failure in name resolution`)
+		require.EqualError(t, Pipe{}.Publish(ctx), `publish: writing sbom: Get "https://fakerepo:8080/v2/": dial tcp: lookup fakerepo: no such host`)
 	})
 }
 
