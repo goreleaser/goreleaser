@@ -7,7 +7,6 @@ import (
 	"errors"
 	"fmt"
 	"io"
-	"os"
 	"path/filepath"
 	"sync"
 
@@ -42,6 +41,8 @@ var (
 		github.Keychain,
 		azureKeychain,
 	)
+
+	errNoRepository = errors.New("ko: missing repository: please set either the repository field or a $KO_DOCKER_REPO environment variable")
 )
 
 // Pipe that build OCI compliant images with ko.
@@ -106,6 +107,15 @@ func (Pipe) Default(ctx *context.Context) error {
 			ko.SBOM = "spdx"
 		}
 
+		if repo := ctx.Env["KO_DOCKER_REPO"]; repo != "" {
+			ko.Repository = repo
+			ko.RepositoryFromEnv = true
+		}
+
+		if ko.Repository == "" {
+			return errNoRepository
+		}
+
 		ids.Inc(ko.ID)
 	}
 	return ids.Validate()
@@ -126,8 +136,8 @@ type buildOptions struct {
 	flags               []string
 	env                 []string
 	imageRepo           string
+	fromEnv             bool
 	workingDir          string
-	dockerRepo          string
 	platforms           []string
 	baseImage           string
 	tags                []string
@@ -206,10 +216,6 @@ func doBuild(ctx *context.Context, ko config.Ko) func() error {
 			return err
 		}
 
-		if opts.dockerRepo == "" && opts.imageRepo == "" {
-			return errors.New("one of KO_DOCKER_REPO env var, or provider `docker_repo` or `repo`, or image resource `repo` must be set")
-		}
-
 		b, err := opts.makeBuilder(ctx)
 		if err != nil {
 			return fmt.Errorf("makeBuilder: %w", err)
@@ -222,7 +228,9 @@ func doBuild(ctx *context.Context, ko config.Ko) func() error {
 		po := []publish.Option{publish.WithTags(opts.tags), publish.WithAuthFromKeychain(keychain)}
 
 		var repo string
-		if opts.imageRepo != "" {
+		if opts.fromEnv {
+			repo = opts.imageRepo
+		} else {
 			// image resource's `repo` takes precedence if set, and selects the
 			// `--bare` namer so the image is named exactly `repo`.
 			repo = opts.imageRepo
@@ -232,8 +240,6 @@ func doBuild(ctx *context.Context, ko config.Ko) func() error {
 				PreserveImportPaths: opts.preserveImportPaths,
 				BaseImportPaths:     opts.baseImportPaths,
 			})))
-		} else {
-			repo = opts.dockerRepo
 		}
 
 		p, err := publish.NewDefault(repo, po...)
@@ -297,9 +303,8 @@ func buildBuildOptions(ctx *context.Context, cfg config.Ko) (*buildOptions, erro
 		sbom:                cfg.SBOM,
 		tags:                cfg.Tags,
 		imageRepo:           cfg.Repository,
+		fromEnv:             cfg.RepositoryFromEnv,
 	}
-
-	opts.dockerRepo = os.Getenv("KO_DOCKER_REPO")
 
 	tags, err := applyTemplate(ctx, cfg.Tags)
 	if err != nil {

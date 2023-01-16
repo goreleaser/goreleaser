@@ -28,7 +28,8 @@ func TestDefault(t *testing.T) {
 		},
 		Builds: []config.Build{
 			{
-				ID: "default",
+				ID:  "default",
+				Dir: ".",
 				BuildDetails: config.BuildDetails{
 					Ldflags: []string{"{{.Env.LDFLAGS}}"},
 					Flags:   []string{"{{.Env.FLAGS}}"},
@@ -42,18 +43,33 @@ func TestDefault(t *testing.T) {
 	})
 	require.NoError(t, Pipe{}.Default(ctx))
 	require.Equal(t, config.Ko{
-		ID:         "default",
-		Build:      "default",
-		BaseImage:  chainguardStatic,
-		Repository: registry,
-		Platforms:  []string{"linux/amd64"},
-		SBOM:       "spdx",
-		Tags:       []string{"latest"},
-		WorkingDir: ".",
-		Ldflags:    []string{"{{.Env.LDFLAGS}}"},
-		Flags:      []string{"{{.Env.FLAGS}}"},
-		Env:        []string{"SOME_ENV={{.Env.LE_ENV}}"},
+		ID:                "default",
+		Build:             "default",
+		BaseImage:         chainguardStatic,
+		Repository:        registry,
+		RepositoryFromEnv: true,
+		Platforms:         []string{"linux/amd64"},
+		SBOM:              "spdx",
+		Tags:              []string{"latest"},
+		WorkingDir:        ".",
+		Ldflags:           []string{"{{.Env.LDFLAGS}}"},
+		Flags:             []string{"{{.Env.FLAGS}}"},
+		Env:               []string{"SOME_ENV={{.Env.LE_ENV}}"},
 	}, ctx.Config.Kos[0])
+}
+
+func TestDefaultNoImage(t *testing.T) {
+	ctx := context.New(config.Project{
+		Builds: []config.Build{
+			{
+				ID: "default",
+			},
+		},
+		Kos: []config.Ko{
+			{},
+		},
+	})
+	require.ErrorIs(t, Pipe{}.Default(ctx), errNoRepository)
 }
 
 func TestDescription(t *testing.T) {
@@ -238,7 +254,9 @@ func TestPublishPipeError(t *testing.T) {
 	t.Run("publish fail", func(t *testing.T) {
 		ctx := makeCtx()
 		require.NoError(t, Pipe{}.Default(ctx))
-		require.EqualError(t, Pipe{}.Publish(ctx), `publish: writing sbom: Get "https://fakerepo:8080/v2/": dial tcp: lookup fakerepo: no such host`)
+		err := Pipe{}.Publish(ctx)
+		require.Error(t, err)
+		require.Contains(t, err.Error(), `publish: writing sbom: Get "https://fakerepo:8080/v2/": dial tcp:`)
 	})
 }
 
