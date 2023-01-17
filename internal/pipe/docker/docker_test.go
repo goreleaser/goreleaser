@@ -13,8 +13,6 @@ import (
 	"github.com/goreleaser/goreleaser/internal/testlib"
 	"github.com/goreleaser/goreleaser/pkg/config"
 	"github.com/goreleaser/goreleaser/pkg/context"
-	"github.com/ory/dockertest/v3"
-	"github.com/ory/dockertest/v3/docker"
 	"github.com/stretchr/testify/require"
 )
 
@@ -28,30 +26,8 @@ const (
 func start(tb testing.TB) {
 	tb.Helper()
 	tb.Log("starting registries")
-	startRegistry(tb, "registry", registryPort)
-	startRegistry(tb, "alt_registry", altRegistryPort)
-}
-
-func startRegistry(tb testing.TB, name, port string) {
-	tb.Helper()
-
-	pool := testlib.MustDockerPool(tb)
-	testlib.MustKillContainer(tb, name)
-	resource, err := pool.RunWithOptions(&dockertest.RunOptions{
-		Name:       name,
-		Repository: "registry",
-		Tag:        "2",
-		PortBindings: map[docker.Port][]docker.PortBinding{
-			docker.Port("5000/tcp"): {{HostPort: port}},
-		},
-	}, func(hc *docker.HostConfig) {
-		hc.AutoRemove = true
-	})
-	require.NoError(tb, err)
-
-	tb.Cleanup(func() {
-		require.NoError(tb, pool.Purge(resource))
-	})
+	testlib.StartRegistry(tb, "registry", registryPort)
+	testlib.StartRegistry(tb, "alt_registry", altRegistryPort)
 }
 
 // TODO: this test is too big... split in smaller tests? Mainly the manifest ones...

@@ -14,6 +14,7 @@ import (
 	"github.com/goreleaser/goreleaser/internal/pipe/chocolatey"
 	"github.com/goreleaser/goreleaser/internal/pipe/custompublishers"
 	"github.com/goreleaser/goreleaser/internal/pipe/docker"
+	"github.com/goreleaser/goreleaser/internal/pipe/ko"
 	"github.com/goreleaser/goreleaser/internal/pipe/krew"
 	"github.com/goreleaser/goreleaser/internal/pipe/milestone"
 	"github.com/goreleaser/goreleaser/internal/pipe/release"
@@ -40,6 +41,7 @@ var publishers = []Publisher{
 	custompublishers.Pipe{},
 	docker.Pipe{},
 	docker.ManifestPipe{},
+	ko.Pipe{},
 	sign.DockerPipe{},
 	snapcraft.Pipe{},
 	// This should be one of the last steps

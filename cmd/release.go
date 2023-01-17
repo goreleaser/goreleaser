@@ -36,6 +36,7 @@ type releaseOpts struct {
 	skipAnnounce       bool
 	skipSBOMCataloging bool
 	skipDocker         bool
+	skipKo             bool
 	skipBefore         bool
 	rmDist             bool
 	deprecated         bool
@@ -77,6 +78,7 @@ func newReleaseCmd() *releaseCmd {
 	cmd.Flags().BoolVar(&root.opts.skipSign, "skip-sign", false, "Skips signing artifacts")
 	cmd.Flags().BoolVar(&root.opts.skipSBOMCataloging, "skip-sbom", false, "Skips cataloging artifacts")
 	cmd.Flags().BoolVar(&root.opts.skipDocker, "skip-docker", false, "Skips Docker Images/Manifests builds")
+	cmd.Flags().BoolVar(&root.opts.skipKo, "skip-ko", false, "Skips Ko builds")
 	cmd.Flags().BoolVar(&root.opts.skipBefore, "skip-before", false, "Skips global before hooks")
 	cmd.Flags().BoolVar(&root.opts.skipValidate, "skip-validate", false, "Skips git checks")
 	cmd.Flags().BoolVar(&root.opts.rmDist, "rm-dist", false, "Removes the dist folder")
@@ -137,6 +139,7 @@ func setupReleaseContext(ctx *context.Context, options releaseOpts) {
 	ctx.SkipSign = options.skipSign
 	ctx.SkipSBOMCataloging = options.skipSBOMCataloging
 	ctx.SkipDocker = options.skipDocker
+	ctx.SkipKo = options.skipKo
 	ctx.SkipBefore = options.skipBefore
 	ctx.RmDist = options.rmDist
 

@@ -106,6 +106,7 @@ nav:
     - customization/chocolatey.md
     - customization/docker.md
     - customization/docker_manifest.md
+    - customization/ko.md
   - customization/sbom.md
   - Signing:
     - Checksums and artifacts: customization/sign.md
