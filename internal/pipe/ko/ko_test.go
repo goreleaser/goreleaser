@@ -26,9 +26,10 @@ func TestDefault(t *testing.T) {
 			"FLAGS=barfoo",
 			"LE_ENV=test",
 		},
+		ProjectName: "test",
 		Builds: []config.Build{
 			{
-				ID:  "default",
+				ID:  "test",
 				Dir: ".",
 				BuildDetails: config.BuildDetails{
 					Ldflags: []string{"{{.Env.LDFLAGS}}"},
@@ -43,8 +44,8 @@ func TestDefault(t *testing.T) {
 	})
 	require.NoError(t, Pipe{}.Default(ctx))
 	require.Equal(t, config.Ko{
-		ID:                "default",
-		Build:             "default",
+		ID:                "test",
+		Build:             "test",
 		BaseImage:         chainguardStatic,
 		Repository:        registry,
 		RepositoryFromEnv: true,
@@ -60,9 +61,10 @@ func TestDefault(t *testing.T) {
 
 func TestDefaultNoImage(t *testing.T) {
 	ctx := context.New(config.Project{
+		ProjectName: "test",
 		Builds: []config.Build{
 			{
-				ID: "default",
+				ID: "test",
 			},
 		},
 		Kos: []config.Ko{
@@ -186,7 +188,10 @@ func TestPublishPipeError(t *testing.T) {
 	makeCtx := func() *context.Context {
 		ctx := context.New(config.Project{
 			Builds: []config.Build{
-				{ID: "foo"},
+				{
+					ID:   "foo",
+					Main: "./...",
+				},
 			},
 			Kos: []config.Ko{
 				{
