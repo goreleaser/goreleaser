@@ -6,7 +6,8 @@ You can also use [ko][] to build and publish Docker container images.
 
 Please notice that ko will build your binary again.
 That shouldn't increase the release times too much, as it'll use the same build
-options as the [build][] pipe when possible, so the results will probably be cached.
+options as the [build][] pipe when possible, so the results will probably be
+cached.
 
 !!! warning
     Ko only runs on the publish phase, so it might be a bit hard to test — you
@@ -127,13 +128,13 @@ builds:
 kos:
   - repository: ghcr.io/caarlos0/test-ko
     tags:
-      - '{{.Version}}'
-      - latest
+    - '{{.Version}}'
+    - latest
     bare: true
     preserve_import_paths: false
     platforms:
-      - linux/amd64
-      - linux/arm64
+    - linux/amd64
+    - linux/arm64
 ```
 
 This will build the binaries for `linux/arm64`, `linux/amd64`, `darwin/amd64`
