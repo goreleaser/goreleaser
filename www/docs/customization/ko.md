@@ -103,7 +103,6 @@ kos:
 
 Refer to the [Ko Build][ko] project page for more information.
 
-[ko]: https://ko.build
 
 ## Example
 
@@ -133,3 +132,7 @@ kos:
       - linux/amd64
       - linux/arm64
 ```
+
+
+[ko]: https://ko.build
+[build]: /customization/build/
