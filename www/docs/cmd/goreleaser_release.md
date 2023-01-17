@@ -28,6 +28,7 @@ goreleaser release [flags]
       --skip-before                  Skips global before hooks
       --skip-docker                  Skips Docker Images/Manifests builds
       --skip-fury                    Skips Fury publishing
+      --skip-ko                      Skips Ko builds
       --skip-publish                 Skips publishing artifacts (implies --skip-announce)
       --skip-sbom                    Skips cataloging artifacts
       --skip-sign                    Skips signing artifacts

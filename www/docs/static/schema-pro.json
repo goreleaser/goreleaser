@@ -1371,6 +1371,72 @@
 				"additionalProperties": false,
 				"type": "object"
 			},
+			"Ko": {
+				"properties": {
+					"id": {
+						"type": "string"
+					},
+					"build": {
+						"type": "string"
+					},
+					"main": {
+						"type": "string"
+					},
+					"working_dir": {
+						"type": "string"
+					},
+					"base_image": {
+						"type": "string"
+					},
+					"repository": {
+						"type": "string"
+					},
+					"platforms": {
+						"items": {
+							"type": "string"
+						},
+						"type": "array"
+					},
+					"tags": {
+						"items": {
+							"type": "string"
+						},
+						"type": "array"
+					},
+					"sbom": {
+						"type": "string"
+					},
+					"ldflags": {
+						"items": {
+							"type": "string"
+						},
+						"type": "array"
+					},
+					"flags": {
+						"items": {
+							"type": "string"
+						},
+						"type": "array"
+					},
+					"env": {
+						"items": {
+							"type": "string"
+						},
+						"type": "array"
+					},
+					"bare": {
+						"type": "boolean"
+					},
+					"preserve_import_paths": {
+						"type": "boolean"
+					},
+					"base_import_paths": {
+						"type": "boolean"
+					}
+				},
+				"additionalProperties": false,
+				"type": "object"
+			},
 			"Krew": {
 				"properties": {
 					"ids": {
@@ -2040,6 +2106,12 @@
 					"krews": {
 						"items": {
 							"$ref": "#/$defs/Krew"
+						},
+						"type": "array"
+					},
+					"kos": {
+						"items": {
+							"$ref": "#/$defs/Ko"
 						},
 						"type": "array"
 					},
