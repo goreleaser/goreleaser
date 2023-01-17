@@ -4,7 +4,7 @@
 
 You can also use [ko][] to build and publish Docker container images.
 
-Please notice that Ko will build your binary again.
+Please notice that ko will build your binary again.
 That shouldn't increase the release times too much, as it'll use the same build
 options as the [build][] pipe when possible, so the results will probably be cached.
 
@@ -101,7 +101,7 @@ kos:
   base_import_paths: true
 ```
 
-Refer to the [Ko Build][ko] project page for more information.
+Refer to [ko's project page][ko] for more information.
 
 
 ## Example
@@ -113,10 +113,13 @@ Here's a minimal example:
 before:
   hooks:
     - go mod tidy
+
 builds:
   - env: [ "CGO_ENABLED=1" ]
     binary: test
-    goos: [linux]
+    goos:
+    - darwin
+    - linux
     goarch:
     - amd64
     - arch64
@@ -133,6 +136,8 @@ kos:
       - linux/arm64
 ```
 
+This will build the binaries for `linux/arm64`, `linux/amd64`, `darwin/amd64`
+and `darwin/arm64`, as well as the Docker images and manifest for Linux.
 
 [ko]: https://ko.build
 [build]: /customization/build/
