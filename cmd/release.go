@@ -38,7 +38,7 @@ type releaseOpts struct {
 	skipDocker         bool
 	skipKo             bool
 	skipBefore         bool
-	rmDist             bool
+	clean              bool
 	deprecated         bool
 	parallelism        int
 	timeout            time.Duration
@@ -81,11 +81,14 @@ func newReleaseCmd() *releaseCmd {
 	cmd.Flags().BoolVar(&root.opts.skipKo, "skip-ko", false, "Skips Ko builds")
 	cmd.Flags().BoolVar(&root.opts.skipBefore, "skip-before", false, "Skips global before hooks")
 	cmd.Flags().BoolVar(&root.opts.skipValidate, "skip-validate", false, "Skips git checks")
-	cmd.Flags().BoolVar(&root.opts.rmDist, "rm-dist", false, "Removes the dist folder")
+	cmd.Flags().BoolVar(&root.opts.clean, "clean", false, "Removes the dist folder")
+	cmd.Flags().BoolVar(&root.opts.clean, "rm-dist", false, "Removes the dist folder")
 	cmd.Flags().IntVarP(&root.opts.parallelism, "parallelism", "p", 0, "Amount tasks to run concurrently (default: number of CPUs)")
 	cmd.Flags().DurationVar(&root.opts.timeout, "timeout", 30*time.Minute, "Timeout to the entire release process")
 	cmd.Flags().BoolVar(&root.opts.deprecated, "deprecated", false, "Force print the deprecation message - tests only")
 	_ = cmd.Flags().MarkHidden("deprecated")
+	_ = cmd.Flags().MarkHidden("rm-dist")
+	_ = cmd.Flags().MarkDeprecated("rm-dist", "please use --clean instead")
 	_ = cmd.Flags().SetAnnotation("config", cobra.BashCompFilenameExt, []string{"yaml", "yml"})
 
 	root.cmd = cmd
@@ -141,7 +144,7 @@ func setupReleaseContext(ctx *context.Context, options releaseOpts) {
 	ctx.SkipDocker = options.skipDocker
 	ctx.SkipKo = options.skipKo
 	ctx.SkipBefore = options.skipBefore
-	ctx.RmDist = options.rmDist
+	ctx.RmDist = options.clean
 
 	// test only
 	ctx.Deprecated = options.deprecated

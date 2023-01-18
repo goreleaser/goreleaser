@@ -27,7 +27,7 @@ goreleaser init
 Now, lets run a "local-only" release to see if it works using the [release](/cmd/goreleaser_release/) command:
 
 ```sh
-goreleaser release --snapshot --rm-dist
+goreleaser release --snapshot --clean
 ```
 
 At this point, you can [customize](/customization/) the generated `.goreleaser.yaml` or leave it as-is, it's up to you.
