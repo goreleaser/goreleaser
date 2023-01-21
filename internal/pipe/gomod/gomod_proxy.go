@@ -39,18 +39,7 @@ func (ProxyPipe) Run(ctx *context.Context) error {
 	return nil
 }
 
-const goModTpl = `
-module {{ .BuildID }}
-
-require {{ .ModulePath }} {{ .Tag }}
-`
-
-const mainGoTpl = `
-// +build main
-package main
-
-import _ "{{ .Main }}"
-`
+const goModTpl = `module {{ .BuildID }}`
 
 // ErrProxy happens when something goes wrong while proxying the current go module.
 type ErrProxy struct {
@@ -102,20 +91,11 @@ func proxyBuild(ctx *context.Context, build *config.Build) error {
 		return newErrProxy(err)
 	}
 
-	main, err := template.Apply(mainGoTpl)
-	if err != nil {
-		return newErrProxy(err)
-	}
-
 	dir := filepath.Join(ctx.Config.Dist, "proxy", build.ID)
 
 	log.Debugf("creating needed files")
 
 	if err := os.MkdirAll(dir, 0o755); err != nil {
-		return newErrProxy(err)
-	}
-
-	if err := os.WriteFile(filepath.Join(dir, "main.go"), []byte(main), 0o666); err != nil {
 		return newErrProxy(err)
 	}
 
@@ -128,7 +108,7 @@ func proxyBuild(ctx *context.Context, build *config.Build) error {
 	}
 
 	log.Debugf("tidying")
-	cmd := exec.CommandContext(ctx, ctx.Config.GoMod.GoBinary, "mod", "tidy")
+	cmd := exec.CommandContext(ctx, ctx.Config.GoMod.GoBinary, "get", ctx.ModulePath+"@"+ctx.Git.CurrentTag)
 	cmd.Dir = dir
 	cmd.Env = append(ctx.Config.GoMod.Env, os.Environ()...)
 	if out, err := cmd.CombinedOutput(); err != nil {
