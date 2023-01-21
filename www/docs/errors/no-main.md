@@ -35,3 +35,17 @@ For more info, check the [builds documentation](/customization/build/).
 ## If you ran goreleaser outside the root of the project
 
 Run goreleaser in the root of the project.
+
+## If you are building in `plugin`, `c-shared` or `c-archive` build modes
+
+You can set `no_main_check` to `true`:
+
+```yaml
+# .goreleaser.yaml
+builds:
+- main: ./path/...
+  buildmode: plugin
+  no_main_check: true
+```
+
+For more info, check the [builds documentation](/customization/build/).

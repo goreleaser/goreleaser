@@ -31,7 +31,7 @@ steps:
     stage: release
     image: 'goreleaser/goreleaser'
     commands:
-      - goreleaser --rm-dist
+      - goreleaser --clean
 ```
 
 You need to pass the variable `GITHUB_TOKEN` in the Codefresh UI that
