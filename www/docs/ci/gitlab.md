@@ -45,7 +45,7 @@ release:
     # generate a changelog.
     GIT_DEPTH: 0
   script:
-    - goreleaser release --clean
+    - goreleaser release --rm-dist
 ```
 
 Notice that `entrypoint` is intentionally blank. See the
@@ -99,7 +99,7 @@ release:
       -v /var/run/docker.sock:/var/run/docker.sock \
       -e DOCKER_USERNAME -e DOCKER_PASSWORD -e DOCKER_REGISTRY  \
       -e GITLAB_TOKEN \
-      goreleaser/goreleaser release --clean
+      goreleaser/goreleaser release --rm-dist
 ```
 
 In GitLab CI settings, add variables for `DOCKER_REGISTRY`, `DOCKER_USERNAME`,

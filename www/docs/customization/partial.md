@@ -19,9 +19,9 @@ This feature can help in some areas:
 You don't really need to set anything up. To get started, run:
 
 ```bash
-goreleaser release --clean --split
-GOOS=darwin goreleaser release --clean --split
-GGOOS=windows goreleaser release --clean --split
+goreleaser release --rm-dist --split
+GOOS=darwin goreleaser release --rm-dist --split
+GGOOS=windows goreleaser release --rm-dist --split
 ```
 
 Note that this step will push your Docker images as well.

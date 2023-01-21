@@ -170,7 +170,7 @@ Use it for testing out new features only.
 === "Pro"
     ```bash
     curl -sfL https://goreleaser.com/static/run |
-      VERSION=nightly DISTRIBUTION=pro bash -s -- release --clean
+      VERSION=nightly DISTRIBUTION=pro bash -s -- release --rm-dist
     ```
 
 #### docker

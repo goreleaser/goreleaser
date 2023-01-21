@@ -10,7 +10,7 @@ You can, though, leverage other tools to do the work for you, like for example
 ```bash
 git tag "$(svu next)"
 git push --tags
-goreleaser --clean
+goreleaser --rm-dist
 ```
 
 ## Example: semantic-release
@@ -27,7 +27,7 @@ plugins:
   - - "@semantic-release/exec"
     - publishCmd: |
         echo "${nextRelease.notes}" > /tmp/release-notes.md
-        goreleaser release --release-notes /tmp/release-notes.md --clean
+        goreleaser release --release-notes /tmp/release-notes.md --rm-dist
 ```
 
 ```bash
