@@ -33,7 +33,7 @@ Action like the following:
         with:
           distribution: goreleaser
           version: latest
-          args: release --clean
+          args: release --rm-dist
        env:
          REGISTRY: ${{ env.REGISTRY }}
          IMAGE: ${{ env.IMAGE_NAME }}

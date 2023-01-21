@@ -41,7 +41,7 @@ Description.
 
 > since 2023-01-17 (v1.15.0)
 
-`--rm-dist` has been deprecated in favor of `--clean`.
+`--rm-dist` has been deprecated in favor of `--rm-dist`.
 
 === "Before"
 
@@ -51,7 +51,7 @@ Description.
 
 === "After"
     ```bash
-    goreleaser --clean
+    goreleaser --rm-dist
     ```
 
 ### archives.rlcp
@@ -73,7 +73,7 @@ would be nice to have your opinion [here][rlcp-discuss].
 
 If you want to make sure your releases will keep working properly, you can
 enable this option and test it out with
-`goreleaser release --snapshot --clean`.
+`goreleaser release --snapshot --rm-dist`.
 
 === "After"
     ``` yaml
