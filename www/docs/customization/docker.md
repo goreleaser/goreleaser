@@ -75,7 +75,7 @@ dockers:
     image_templates:
     - "myuser/myimage:latest"
     - "myuser/myimage:{{ .Tag }}"
-    - "myuser/myimage:{{ .Tag }}-{{ .Env.GO_VERSION }}"
+    - "myuser/myimage:{{ .Tag }}-{{ .Env.FOOBAR }}"
     - "myuser/myimage:v{{ .Major }}"
     - "gcr.io/myuser/myimage:latest"
 
