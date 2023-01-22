@@ -531,8 +531,8 @@ type Release struct {
 	Draft                  bool        `yaml:"draft,omitempty" json:"draft,omitempty"`
 	ReplaceExistingDraft   bool        `yaml:"replace_existing_draft,omitempty" json:"replace_existing_draft,omitempty"`
 	TargetCommitish        string      `yaml:"target_commitish,omitempty" json:"target_commitish,omitempty"`
-	Disable                bool        `yaml:"disable,omitempty" json:"disable,omitempty"`
-	SkipUpload             bool        `yaml:"skip_upload,omitempty" json:"skip_upload,omitempty"`
+	Disable                string      `yaml:"disable,omitempty" json:"disable,omitempty" jsonschema:"oneof_type=string;boolean"`
+	SkipUpload             string      `yaml:"skip_upload,omitempty" json:"skip_upload,omitempty" jsonschema:"oneof_type=string;boolean"`
 	Prerelease             string      `yaml:"prerelease,omitempty" json:"prerelease,omitempty"`
 	NameTemplate           string      `yaml:"name_template,omitempty" json:"name_template,omitempty"`
 	IDs                    []string    `yaml:"ids,omitempty" json:"ids,omitempty"`

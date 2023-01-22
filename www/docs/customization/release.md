@@ -25,6 +25,7 @@ release:
 
   # If set to true, will not auto-publish the release.
   # Available only for GitHub and Gitea.
+  #
   # Default is false.
   draft: true
 
@@ -95,6 +96,7 @@ release:
   # URL, for instance, homebrew taps.
   #
   # Defaults to false.
+  # Templateable since: v1.15.
   disable: true
 
   # Set this to true if you want to disable just the artifact upload to the SCM.
@@ -103,6 +105,7 @@ release:
   #
   # Default: false.
   # Since: v1.11.
+  # Templateable since: v1.15.
   skip_upload: true
 
   # You can add extra pre-existing files to the release.

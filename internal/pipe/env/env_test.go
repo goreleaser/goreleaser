@@ -213,7 +213,7 @@ func TestInvalidEnvReleaseDisabled(t *testing.T) {
 	ctx := &context.Context{
 		Config: config.Project{
 			Release: config.Release{
-				Disable: true,
+				Disable: "true",
 			},
 		},
 	}
