@@ -31,7 +31,7 @@ func (Pipe) String() string { return "scm releases" }
 func (Pipe) Skip(ctx *context.Context) bool {
 	d, err := tmpl.New(ctx).Apply(ctx.Config.Release.Disable)
 	if err != nil {
-		log.WithError(err).Error("will assume false")
+		log.WithError(err).Error("could not execute release.disable template, will assume false")
 		return false
 	}
 	return strings.ToLower(d) == "true"

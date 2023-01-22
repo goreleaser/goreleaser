@@ -622,6 +622,15 @@ func TestSkip(t *testing.T) {
 		require.True(t, Pipe{}.Skip(ctx))
 	})
 
+	t.Run("skip tmpl err", func(t *testing.T) {
+		ctx := context.New(config.Project{
+			Release: config.Release{
+				Disable: "{{ .Env.FOO }}",
+			},
+		})
+		require.False(t, Pipe{}.Skip(ctx))
+	})
+
 	t.Run("skip upload", func(t *testing.T) {
 		ctx := context.New(config.Project{
 			Env: []string{"FOO=true"},
