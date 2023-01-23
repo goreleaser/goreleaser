@@ -122,7 +122,7 @@ func (Pipe) Default(ctx *context.Context) error {
 			switch snap.Grade {
 			case "devel":
 				snap.ChannelTemplates = []string{"edge", "beta"}
-			case "stable":
+			default:
 				snap.ChannelTemplates = []string{"edge", "beta", "candidate", "stable"}
 			}
 		}

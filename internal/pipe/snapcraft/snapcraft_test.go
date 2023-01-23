@@ -495,14 +495,8 @@ func TestExtraFile(t *testing.T) {
 
 func TestDefault(t *testing.T) {
 	ctx := context.New(config.Project{
-		Builds: []config.Build{
-			{
-				ID: "foo",
-			},
-		},
-		Snapcrafts: []config.Snapcraft{
-			{},
-		},
+		Builds:     []config.Build{{ID: "foo"}},
+		Snapcrafts: []config.Snapcraft{{}},
 	})
 	require.NoError(t, Pipe{}.Default(ctx))
 	require.Equal(t, defaultNameTemplate, ctx.Config.Snapcrafts[0].NameTemplate)
@@ -513,17 +507,9 @@ func TestDefault(t *testing.T) {
 
 func TestDefaultGradeTmpl(t *testing.T) {
 	ctx := context.New(config.Project{
-		Env: []string{"Grade=devel"},
-		Builds: []config.Build{
-			{
-				ID: "foo",
-			},
-		},
-		Snapcrafts: []config.Snapcraft{
-			{
-				Grade: "{{.Env.Grade}}",
-			},
-		},
+		Env:        []string{"Grade=devel"},
+		Builds:     []config.Build{{ID: "foo"}},
+		Snapcrafts: []config.Snapcraft{{Grade: "{{.Env.Grade}}"}},
 	})
 	require.NoError(t, Pipe{}.Default(ctx))
 	require.Equal(t, defaultNameTemplate, ctx.Config.Snapcrafts[0].NameTemplate)
@@ -534,16 +520,8 @@ func TestDefaultGradeTmpl(t *testing.T) {
 
 func TestDefaultGradeTmplError(t *testing.T) {
 	ctx := context.New(config.Project{
-		Builds: []config.Build{
-			{
-				ID: "foo",
-			},
-		},
-		Snapcrafts: []config.Snapcraft{
-			{
-				Grade: "{{.Env.Grade}}",
-			},
-		},
+		Builds:     []config.Build{{ID: "foo"}},
+		Snapcrafts: []config.Snapcraft{{Grade: "{{.Env.Grade}}"}},
 	})
 	testlib.RequireTemplateError(t, Pipe{}.Default(ctx))
 }
