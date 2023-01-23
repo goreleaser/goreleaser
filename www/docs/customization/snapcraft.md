@@ -54,6 +54,8 @@ snapcrafts:
     # * `devel` = ["edge", "beta"]
     # More info about channels here:
     # https://snapcraft.io/docs/reference/channels
+    #
+    # Templateable since v1.15.
     channel_templates:
       - edge
       - beta
