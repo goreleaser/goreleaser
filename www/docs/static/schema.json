@@ -2159,10 +2159,24 @@
 						"type": "string"
 					},
 					"disable": {
-						"type": "boolean"
+						"oneOf": [
+							{
+								"type": "string"
+							},
+							{
+								"type": "boolean"
+							}
+						]
 					},
 					"skip_upload": {
-						"type": "boolean"
+						"oneOf": [
+							{
+								"type": "string"
+							},
+							{
+								"type": "boolean"
+							}
+						]
 					},
 					"prerelease": {
 						"type": "string"
