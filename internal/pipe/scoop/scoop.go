@@ -189,6 +189,11 @@ type Manifest struct {
 	Persist      []string            `json:"persist,omitempty"`      // Persist data between updates
 	PreInstall   []string            `json:"pre_install,omitempty"`  // An array of strings, of the commands to be executed before an application is installed.
 	PostInstall  []string            `json:"post_install,omitempty"` // An array of strings, of the commands to be executed after an application is installed.
+	Autoupdate   Autoupdate          `json:"autoupdate"`
+}
+
+type Autoupdate struct {
+	Architecture map[string]Resource `json:"architecture"` // `architecture`: If the app has 32- and 64-bit versions, architecture can be used to wrap the differences.
 }
 
 // Resource represents a combination of a url and a binary name for an architecture.
@@ -212,6 +217,7 @@ func dataFor(ctx *context.Context, cl client.Client, artifacts []*artifact.Artif
 	manifest := Manifest{
 		Version:      ctx.Version,
 		Architecture: map[string]Resource{},
+		Autoupdate:   Autoupdate{map[string]Resource{}},
 		Homepage:     ctx.Config.Scoop.Homepage,
 		License:      ctx.Config.Scoop.License,
 		Description:  ctx.Config.Scoop.Description,
@@ -265,11 +271,13 @@ func dataFor(ctx *context.Context, cl client.Client, artifacts []*artifact.Artif
 			return manifest, err
 		}
 
-		manifest.Architecture[arch] = Resource{
+		res := Resource{
 			URL:  url,
 			Bin:  binaries,
 			Hash: sum,
 		}
+		manifest.Architecture[arch] = res
+		manifest.Autoupdate.Architecture[arch] = res
 	}
 
 	return manifest, nil
