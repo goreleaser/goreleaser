@@ -142,7 +142,11 @@ func doPublish(ctx *context.Context, cl client.Client) error {
 	if ctx.Config.Release.Draft {
 		return pipe.Skip("release is marked as draft")
 	}
-	if ctx.Config.Release.Disable {
+	d, err := tmpl.New(ctx).Apply(ctx.Config.Release.Disable)
+	if err != nil {
+		return err
+	}
+	if strings.ToLower(d) == "true" {
 		return pipe.Skip("release is disabled")
 	}
 
