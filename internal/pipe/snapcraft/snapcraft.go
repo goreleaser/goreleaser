@@ -110,6 +110,14 @@ func (Pipe) Default(ctx *context.Context) error {
 		if snap.NameTemplate == "" {
 			snap.NameTemplate = defaultNameTemplate
 		}
+		grade, err := tmpl.New(ctx).Apply(snap.Grade)
+		if err != nil {
+			return err
+		}
+		snap.Grade = grade
+		if snap.Grade == "" {
+			snap.Grade = "stable"
+		}
 		if len(snap.ChannelTemplates) == 0 {
 			switch snap.Grade {
 			case "devel":
