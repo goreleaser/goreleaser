@@ -10,6 +10,7 @@ goreleaser release [flags]
 
 ```
       --auto-snapshot                Automatically sets --snapshot if the repository is dirty
+      --clean                        Removes the dist folder
   -f, --config string                Load configuration from file
   -h, --help                         help for release
   -k, --key string                   GoReleaser Pro license key [$GORELEASER_KEY]
@@ -22,7 +23,6 @@ goreleaser release [flags]
       --release-header-tmpl string   Load custom release notes header from a templated markdown file (overrides --release-header)
       --release-notes string         Load custom release notes from a markdown file (will skip GoReleaser changelog generation)
       --release-notes-tmpl string    Load custom release notes from a templated markdown file (overrides --release-notes)
-      --clean                      Removes the dist folder
       --skip-after                   Skips global after hooks
       --skip-announce                Skips announcing releases (implies --skip-validate)
       --skip-before                  Skips global before hooks
