@@ -1127,8 +1127,8 @@ github.com/digitalocean/godo v1.88.0/go.mod h1:NRpFznZFvhHjBoqZAaOD3khVzsJ3EibzK
 github.com/dimchansky/utfbom v1.1.0/go.mod h1:rO41eb7gLfo8SF1jd9F8HplJm1Fewwi4mQvIirEdv+8=
 github.com/dimchansky/utfbom v1.1.1 h1:vV6w1AhK4VMnhBno/TPVCoK9U/LP0PkLCS9tbxHdi/U=
 github.com/dimchansky/utfbom v1.1.1/go.mod h1:SxdoEBH5qIqFocHMyGOXVAybYJdr71b1Q/j0mACtrfE=
-github.com/disgoorg/disgo v0.14.1 h1:J1GoRZfbCPFcNd3OH+W3XbAVEdvV3kVAoNqJrPjzY1I=
-github.com/disgoorg/disgo v0.14.1/go.mod h1:YiVpXSmyXLRalYQHTHUFWEQvolCNzw0zh6nfug07b/M=
+github.com/disgoorg/disgo v0.15.0 h1:OTYlhyQ/frPtqY9dGRSaBpo7GJtTQj+8dah2ml+LPHM=
+github.com/disgoorg/disgo v0.15.0/go.mod h1:j7MCI6foUipYNozxwttr2hcaEQa3gNEbcwgLnyLUf6E=
 github.com/disgoorg/json v1.0.0 h1:kDhSM661fgIuNoZF3BO5/odaR5NSq80AWb937DH+Pdo=
 github.com/disgoorg/json v1.0.0/go.mod h1:BHDwdde0rpQFDVsRLKhma6Y7fTbQKub/zdGO5O9NqqA=
 github.com/disgoorg/log v1.2.0 h1:sqlXnu/ZKAlIlHV9IO+dbMto7/hCQ474vlIdMWk8QKo=
@@ -3157,6 +3157,7 @@ golang.org/x/exp v0.0.0-20200207192155-f17229e696bd/go.mod h1:J/WKrq2StrnmMY6+EH
 golang.org/x/exp v0.0.0-20200224162631-6cc2880d07d6/go.mod h1:3jZMyOhIsHpP37uCMkUooju7aAi5cS1Q23tOzKc+0MU=
 golang.org/x/exp v0.0.0-20200331195152-e8c3332aa8e5/go.mod h1:4M0jN8W1tt0AVLNr8HDosyJCDCDuyL9N9+3m7wDWgKw=
 golang.org/x/exp v0.0.0-20210126221216-84987778548c/go.mod h1:I6l2HNBLBZEcrOoCpyKLdY2lHoRZ8lI4x60KMCQDft4=
+golang.org/x/exp v0.0.0-20221031165847-c99f073a8326 h1:QfTh0HpN6hlw6D3vu8DAwC8pBIwikq0AI1evdm+FksE=
 golang.org/x/exp v0.0.0-20221031165847-c99f073a8326/go.mod h1:CxIveKay+FTh1D0yPZemJVgC/95VzuuOLq5Qi4xnoYc=
 golang.org/x/image v0.0.0-20190227222117-0694c2d4d067/go.mod h1:kZ7UVZpmo3dzQBMxlp+ypCbDeSB+sBbTgSJuh5dn5js=
 golang.org/x/image v0.0.0-20190802002840-cff245a6509b/go.mod h1:FeLwcggjj3mMvU+oOTbSwawSJRM1uh48EjtB4UJZlP0=
