@@ -495,18 +495,35 @@ func TestExtraFile(t *testing.T) {
 
 func TestDefault(t *testing.T) {
 	ctx := context.New(config.Project{
-		Builds: []config.Build{
-			{
-				ID: "foo",
-			},
-		},
-		Snapcrafts: []config.Snapcraft{
-			{},
-		},
+		Builds:     []config.Build{{ID: "foo"}},
+		Snapcrafts: []config.Snapcraft{{}},
 	})
 	require.NoError(t, Pipe{}.Default(ctx))
 	require.Equal(t, defaultNameTemplate, ctx.Config.Snapcrafts[0].NameTemplate)
 	require.Equal(t, []string{"foo"}, ctx.Config.Snapcrafts[0].Builds)
+	require.Equal(t, []string{"edge", "beta", "candidate", "stable"}, ctx.Config.Snapcrafts[0].ChannelTemplates)
+	require.Equal(t, "stable", ctx.Config.Snapcrafts[0].Grade)
+}
+
+func TestDefaultGradeTmpl(t *testing.T) {
+	ctx := context.New(config.Project{
+		Env:        []string{"Grade=devel"},
+		Builds:     []config.Build{{ID: "foo"}},
+		Snapcrafts: []config.Snapcraft{{Grade: "{{.Env.Grade}}"}},
+	})
+	require.NoError(t, Pipe{}.Default(ctx))
+	require.Equal(t, defaultNameTemplate, ctx.Config.Snapcrafts[0].NameTemplate)
+	require.Equal(t, []string{"foo"}, ctx.Config.Snapcrafts[0].Builds)
+	require.Equal(t, []string{"edge", "beta"}, ctx.Config.Snapcrafts[0].ChannelTemplates)
+	require.Equal(t, "devel", ctx.Config.Snapcrafts[0].Grade)
+}
+
+func TestDefaultGradeTmplError(t *testing.T) {
+	ctx := context.New(config.Project{
+		Builds:     []config.Build{{ID: "foo"}},
+		Snapcrafts: []config.Snapcraft{{Grade: "{{.Env.Grade}}"}},
+	})
+	testlib.RequireTemplateError(t, Pipe{}.Default(ctx))
 }
 
 func TestPublish(t *testing.T) {

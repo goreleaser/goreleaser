@@ -64,6 +64,27 @@ changelog:
       order: 1
     - title: Others
       order: 999
+      # A group can have subgroups.
+      # If you use this, all the commits that match the parent group will also
+      # be checked against its subgroups. If some of them matches, it'll be
+      # grouped there, otherwise they'll remain ungrouped.
+      #
+      # The title is optional - you can think of groups as a way to order
+      # commits within a group.
+      #
+      # There can only be one level of subgroups, i.e. a subgroup cannot have
+      # subgroups.
+      #
+      # This feature is only available in GoReleaser Pro.
+      #
+      # Since: v1.15.0-pro
+      subgroups:
+        - title: 'Docs'
+          regex: '.*docs.*'
+          order: 1
+        - title: 'CI'
+          regex: '.*build.*'
+          order: 2
 
   filters:
     # Commit messages matching the regexp listed here will be removed from

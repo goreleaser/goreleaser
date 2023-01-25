@@ -47,7 +47,7 @@ Installing it in your machine is entirely up to you, but still possible.
 
 ## Usage
 
-Your entire release process is customized through a `.goreleaser.yml` file.
+Your entire release process is customized through a `.goreleaser.yaml` file.
 
 Once you set it up, every time you want to create a new release, all you need to
 do is push a git tag and run `goreleaser release`:

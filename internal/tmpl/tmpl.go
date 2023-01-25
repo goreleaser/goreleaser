@@ -14,6 +14,8 @@ import (
 	"github.com/goreleaser/goreleaser/internal/artifact"
 	"github.com/goreleaser/goreleaser/pkg/build"
 	"github.com/goreleaser/goreleaser/pkg/context"
+	"golang.org/x/text/cases"
+	"golang.org/x/text/language"
 )
 
 // Template holds data that can be applied to a template string.
@@ -117,7 +119,10 @@ func New(ctx *context.Context) *Template {
 func (t *Template) WithEnvS(envs []string) *Template {
 	result := map[string]string{}
 	for _, env := range envs {
-		k, v, _ := strings.Cut(env, "=")
+		k, v, ok := strings.Cut(env, "=")
+		if !ok || k == "" {
+			continue
+		}
 		result[k] = v
 	}
 	return t.WithEnv(result)
@@ -138,13 +143,29 @@ func (t *Template) WithExtraFields(f Fields) *Template {
 	return t
 }
 
-// WithArtifact populates Fields from the artifact and replacements.
-func (t *Template) WithArtifact(a *artifact.Artifact, replacements map[string]string) *Template {
+// WithArtifactReplacements populates Fields from the artifact and replacements.
+//
+// Deprecated: use WithArtifact instead.
+func (t *Template) WithArtifactReplacements(a *artifact.Artifact, replacements map[string]string) *Template {
 	t.fields[osKey] = replace(replacements, a.Goos)
 	t.fields[arch] = replace(replacements, a.Goarch)
 	t.fields[arm] = replace(replacements, a.Goarm)
 	t.fields[mips] = replace(replacements, a.Gomips)
 	t.fields[amd64] = replace(replacements, a.Goamd64)
+	t.fields[binary] = artifact.ExtraOr(*a, binary, t.fields[projectName].(string))
+	t.fields[artifactName] = a.Name
+	t.fields[artifactExt] = artifact.ExtraOr(*a, artifact.ExtraExt, "")
+	t.fields[artifactPath] = a.Path
+	return t
+}
+
+// WithArtifact populates Fields from the artifact.
+func (t *Template) WithArtifact(a *artifact.Artifact) *Template {
+	t.fields[osKey] = a.Goos
+	t.fields[arch] = a.Goarch
+	t.fields[arm] = a.Goarm
+	t.fields[mips] = a.Gomips
+	t.fields[amd64] = a.Goamd64
 	t.fields[binary] = artifact.ExtraOr(*a, binary, t.fields[projectName].(string))
 	t.fields[artifactName] = a.Name
 	t.fields[artifactExt] = artifact.ExtraOr(*a, artifact.ExtraExt, "")
@@ -185,6 +206,7 @@ func (t *Template) Apply(s string) (string, error) {
 			"trim":          strings.TrimSpace,
 			"trimprefix":    strings.TrimPrefix,
 			"trimsuffix":    strings.TrimSuffix,
+			"title":         cases.Title(language.English).String,
 			"dir":           filepath.Dir,
 			"abs":           filepath.Abs,
 			"incmajor":      incMajor,
@@ -237,6 +259,7 @@ func (t *Template) ApplySingleEnvOnly(s string) (string, error) {
 	return out.String(), err
 }
 
+// deprecated: will be removed soon.
 func replace(replacements map[string]string, original string) string {
 	result := replacements[original]
 	if result == "" {

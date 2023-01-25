@@ -302,9 +302,7 @@ func dataFor(ctx *context.Context, cl client.Client, choco config.Chocolatey, ar
 			return result, err
 		}
 
-		url, err := tmpl.New(ctx).
-			WithArtifact(artifact, map[string]string{}).
-			Apply(choco.URLTemplate)
+		url, err := tmpl.New(ctx).WithArtifact(artifact).Apply(choco.URLTemplate)
 		if err != nil {
 			return result, err
 		}

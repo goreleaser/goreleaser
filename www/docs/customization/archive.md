@@ -40,15 +40,18 @@ archives:
     #   - `{{ .Binary }}_{{ .Version }}_{{ .Os }}_{{ .Arch }}{{ with .Arm }}v{{ . }}{{ end }}{{ with .Mips }}_{{ . }}{{ end }}{{ if not (eq .Amd64 "v1") }}{{ .Amd64 }}{{ end }}`
     name_template: "{{ .ProjectName }}_{{ .Version }}_{{ .Os }}_{{ .Arch }}"
 
-    # Replacements for GOOS and GOARCH in the archive name.
-    # Keys should be valid GOOSs or GOARCHs.
-    # Values are the respective replacements.
-    # Default is empty.
-    replacements:
-      amd64: 64-bit
-      386: 32-bit
-      darwin: macOS
-      linux: Tux
+    # Sets the given file info to all the binaries included from the `builds`.
+    #
+    # Default is to use the actual binary properties.
+    #
+    # Since: v1.14.0.
+    builds_info:
+      group: root
+      owner: root
+      mode: 0644
+      # format is `time.RFC3339Nano`
+      mtime: 2008-01-02T15:04:05Z
+
 
     # Set this to true if you want all files in the archive to be in a single directory.
     # If set to true and you extract the archive 'goreleaser_Linux_arm64.tar.gz',
@@ -65,6 +68,16 @@ archives:
     # Default: false.
     # Since: v1.11.
     strip_parent_binary_folder: true
+
+
+    # This will make the destination paths be relative to the longest common
+    # path prefix between all the files matched and the source glob.
+    # Enabling this essentially mimic the behavior of nfpm's contents section.
+    # It will be the default by June 2023.
+    #
+    # Default: false
+    # Since: v1.14.
+    rlcp: true
 
     # Can be used to change the archive formats for specific GOOSs.
     # Most common use case is to archive as zip on Windows.
@@ -86,18 +99,27 @@ archives:
       # a more complete example, check the globbing deep dive below
       - src: '*.md'
         dst: docs
+
         # Strip parent folders when adding files to the archive.
         # Default: false
         strip_parent: true
+
         # File info.
         # Not all fields are supported by all formats available formats.
         # Defaults to the file info of the actual file if not provided.
         info:
+          # Templateable (since v1.14.0)
           owner: root
+
+          # Templateable (since v1.14.0)
           group: root
+
+          # Must be in time.RFC3339Nano format.
+          # Templateable (since v1.14.0)
+          mtime: '{{ .CommitDate }}'
+
+          # File mode.
           mode: 0644
-          # format is `time.RFC3339Nano`
-          mtime: 2008-01-02T15:04:05Z
 
     # Before and after hooks for each archive.
     # Skipped if archive format is binary.

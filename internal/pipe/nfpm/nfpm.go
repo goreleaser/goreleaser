@@ -59,6 +59,9 @@ func (Pipe) Default(ctx *context.Context) error {
 		if fpm.Maintainer == "" {
 			deprecate.NoticeCustom(ctx, "nfpms.maintainer", "`{{ .Property }}` should always be set, check {{ .URL }} for more info")
 		}
+		if len(fpm.Replacements) != 0 {
+			deprecate.Notice(ctx, "nfpms.replacements")
+		}
 		ids.Inc(fpm.ID)
 	}
 
@@ -166,8 +169,9 @@ func create(ctx *context.Context, fpm config.NFPM, format string, binaries []*ar
 	if err != nil {
 		return err
 	}
+	// nolint:staticcheck
 	t := tmpl.New(ctx).
-		WithArtifact(binaries[0], overridden.Replacements).
+		WithArtifactReplacements(binaries[0], overridden.Replacements).
 		WithExtraFields(tmpl.Fields{
 			"Release":     fpm.Release,
 			"Epoch":       fpm.Epoch,
@@ -205,6 +209,11 @@ func create(ctx *context.Context, fpm config.NFPM, format string, binaries []*ar
 	}
 
 	apkKeyFile, err := t.Apply(overridden.APK.Signature.KeyFile)
+	if err != nil {
+		return err
+	}
+
+	apkKeyName, err := t.Apply(overridden.APK.Signature.KeyName)
 	if err != nil {
 		return err
 	}
@@ -349,7 +358,7 @@ func create(ctx *context.Context, fpm config.NFPM, format string, binaries []*ar
 						KeyFile:       apkKeyFile,
 						KeyPassphrase: getPassphraseFromEnv(ctx, "APK", fpm.ID),
 					},
-					KeyName: overridden.APK.Signature.KeyName,
+					KeyName: apkKeyName,
 				},
 				Scripts: nfpm.APKScripts{
 					PreUpgrade:  overridden.APK.Scripts.PreUpgrade,
@@ -406,7 +415,7 @@ func create(ctx *context.Context, fpm config.NFPM, format string, binaries []*ar
 	defer w.Close()
 
 	if err := packager.Package(info, w); err != nil {
-		return fmt.Errorf("nfpm failed: %w", err)
+		return fmt.Errorf("nfpm failed for %s: %w", name, err)
 	}
 	if err := w.Close(); err != nil {
 		return fmt.Errorf("could not close package file: %w", err)

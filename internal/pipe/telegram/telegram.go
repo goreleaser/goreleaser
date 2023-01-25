@@ -2,6 +2,7 @@ package telegram
 
 import (
 	"fmt"
+	"strconv"
 
 	"github.com/caarlos0/env/v6"
 	"github.com/caarlos0/log"
@@ -29,27 +30,37 @@ func (Pipe) Default(ctx *context.Context) error {
 }
 
 func (Pipe) Announce(ctx *context.Context) error {
-	msg, err := tmpl.New(ctx).Apply(ctx.Config.Announce.Telegram.MessageTemplate)
+	tpl := tmpl.New(ctx)
+	msg, err := tpl.Apply(ctx.Config.Announce.Telegram.MessageTemplate)
 	if err != nil {
-		return fmt.Errorf("announce: failed to announce to telegram: %w", err)
+		return fmt.Errorf("telegram: %w", err)
+	}
+
+	chatIDStr, err := tpl.Apply(ctx.Config.Announce.Telegram.ChatID)
+	if err != nil {
+		return fmt.Errorf("telegram: %w", err)
+	}
+	chatID, err := strconv.ParseInt(chatIDStr, 10, 64)
+	if err != nil {
+		return fmt.Errorf("telegram: %w", err)
 	}
 
 	var cfg Config
 	if err := env.Parse(&cfg); err != nil {
-		return fmt.Errorf("announce: failed to announce to telegram: %w", err)
+		return fmt.Errorf("telegram: %w", err)
 	}
 
 	log.Infof("posting: '%s'", msg)
 	bot, err := api.NewBotAPI(cfg.ConsumerToken)
 	if err != nil {
-		return fmt.Errorf("announce: failed to announce to telegram: %w", err)
+		return fmt.Errorf("telegram: %w", err)
 	}
 
-	tm := api.NewMessage(ctx.Config.Announce.Telegram.ChatID, msg)
+	tm := api.NewMessage(chatID, msg)
 	tm.ParseMode = "MarkdownV2"
 	_, err = bot.Send(tm)
 	if err != nil {
-		return fmt.Errorf("announce: failed to announce to telegram: %w", err)
+		return fmt.Errorf("telegram: %w", err)
 	}
 	log.Debug("message sent")
 	return nil

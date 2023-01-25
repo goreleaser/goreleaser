@@ -26,10 +26,10 @@ func TestDockerSignDefault(t *testing.T) {
 	}
 	err := DockerPipe{}.Default(ctx)
 	require.NoError(t, err)
-	require.Equal(t, ctx.Config.DockerSigns[0].Cmd, "cosign")
-	require.Equal(t, ctx.Config.DockerSigns[0].Signature, "")
-	require.Equal(t, ctx.Config.DockerSigns[0].Args, []string{"sign", "--key=cosign.key", "${artifact}@${digest}"})
-	require.Equal(t, ctx.Config.DockerSigns[0].Artifacts, "none")
+	require.Equal(t, "cosign", ctx.Config.DockerSigns[0].Cmd)
+	require.Equal(t, "", ctx.Config.DockerSigns[0].Signature)
+	require.Equal(t, []string{"sign", "--key=cosign.key", "${artifact}@${digest}"}, ctx.Config.DockerSigns[0].Args)
+	require.Equal(t, "none", ctx.Config.DockerSigns[0].Artifacts)
 }
 
 func TestDockerSignDisabled(t *testing.T) {

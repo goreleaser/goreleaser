@@ -36,6 +36,183 @@ Description.
 
 -->
 
+
+### --rm-dist
+
+> since 2023-01-17 (v1.15.0)
+
+`--rm-dist` has been deprecated in favor of `--rm-dist`.
+
+=== "Before"
+
+    ```bash
+    goreleaser --rm-dist
+    ```
+
+=== "After"
+    ```bash
+    goreleaser --rm-dist
+    ```
+
+### archives.rlcp
+
+> since 2022-12-23 (v1.14.0)
+
+This is not so much a deprecation property (yet), as it is a default behavior
+change.
+
+The usage of relative longest common path (`rlcp`) on the destination side of
+archive files will be enabled by default by June 2023. Then, this option will be
+deprecated, and you will have another 6 months (until December 2023) to remove
+it.
+
+For now, if you want to keep the old behavior, no action is required, but it
+would be nice to have your opinion [here][rlcp-discuss].
+
+[rlcp-discuss]: https://github.com/goreleaser/goreleaser/discussions/3659
+
+If you want to make sure your releases will keep working properly, you can
+enable this option and test it out with
+`goreleaser release --snapshot --rm-dist`.
+
+=== "After"
+    ``` yaml
+    archives:
+    -
+      rlcp: true
+    ```
+
+### source.rlcp
+
+> since 2022-12-23 (v1.14.0)
+
+Same as [`archives.rlcp`](#archivesrlcp).
+
+=== "After"
+    ``` yaml
+    source:
+      rlcp: true
+    ```
+
+### archives.replacements
+
+> since 2022-11-24 (v1.14.0)
+
+The `replacements` will be removed soon from the archives section, as it was
+never handled correctly when multiple archives were being used, and it also
+causes confusion in other places.
+
+You can still get the same features by abusing the `name_template` property.
+
+=== "Before"
+
+    ``` yaml
+    archives:
+      - id: foo
+        name_template: '{{ .ProjectName }}_{{ .Os }}_{{ .Arch }}{{ if .Arm }}v{{ .Arm }}{{ end }}'
+        replacements:
+          darwin: Darwin
+          linux: Linux
+          windows: Windows
+          386: i386
+          amd64: x86_64
+    ```
+
+=== "After"
+    ``` yaml
+    archives:
+      - id: foo
+        name_template: >-
+          {{ .ProjectName }}_
+          {{- title .Os }}_
+          {{- if eq .Arch "amd64" }}x86_64
+          {{- else if eq .Arch "386" }}i386
+          {{- else }}{{ .Arch }}{{ end }}
+    ```
+
+Those two configurations will yield the same results.
+
+
+### nfpms.replacements
+
+> since 2022-11-24 (v1.14.0)
+
+The `replacements` will be removed soon from the nFPMs section.
+
+You can still get the same features by abusing the `file_name_template` property.
+
+=== "Before"
+
+    ``` yaml
+    nfpms:
+      - id: foo
+        file_name_template: '{{ .ProjectName }}_{{ .Os }}_{{ .Arch }}{{ if .Arm }}v{{ .Arm }}{{ end }}'
+        replacements:
+          darwin: Darwin
+          linux: Linux
+          windows: Windows
+          386: i386
+          amd64: x86_64
+    ```
+
+=== "After"
+    ``` yaml
+    nfpms:
+      - id: foo
+        file_name_template: >-
+          {{ .ProjectName }}_
+          {{- title .Os }}_
+          {{- if eq .Arch "amd64" }}x86_64
+          {{- else if eq .Arch "386" }}i386
+          {{- else }}{{ .Arch }}{{ end }}
+    ```
+
+Those two configurations will yield the same results.
+
+Generally speaking, is probably best to use `{{ .ConventionalFileName }}`
+instead of custom templates.
+
+### snapcrafts.replacements
+
+> since 2022-11-24 (v1.14.0)
+
+The `replacements` will be removed soon from the Snapcrafts section.
+
+You can still get the same features by abusing the `name_template` property.
+
+=== "Before"
+
+    ``` yaml
+    snapcrafts:
+      - id: foo
+        name_template: '{{ .ProjectName }}_{{ .Os }}_{{ .Arch }}{{ if .Arm }}v{{ .Arm }}{{ end }}'
+        replacements:
+          darwin: Darwin
+          linux: Linux
+          windows: Windows
+          386: i386
+          amd64: x86_64
+    ```
+
+=== "After"
+    ``` yaml
+    snapcrafts:
+      - id: foo
+        name_template: >-
+          {{ .ProjectName }}_
+          {{- title .Os }}_
+          {{- if eq .Arch "amd64" }}x86_64
+          {{- else if eq .Arch "386" }}i386
+          {{- else }}{{ .Arch }}{{ end }}
+    ```
+
+Those two configurations will yield the same results.
+
+Generally speaking, is probably best to use `{{ .ConventionalFileName }}`
+instead of custom templates.
+
+
+
 ### nfpms.maintainer
 
 > since 2022-05-07 (v1.9.0)

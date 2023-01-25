@@ -419,7 +419,7 @@ func Test_doRun(t *testing.T) {
 					ctx := context.New(config.Project{
 						ProjectName: "run-pipe",
 						Release: config.Release{
-							Disable: true,
+							Disable: "true",
 						},
 						Scoop: config.Scoop{
 							Bucket: config.RepoRef{

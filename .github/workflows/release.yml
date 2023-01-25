@@ -13,18 +13,43 @@ permissions:
   packages: write
 
 jobs:
+  trigger-generate:
+    runs-on: ubuntu-latest
+    needs: [ goreleaser ]
+    steps:
+      - uses: benc-uk/workflow-dispatch@v121
+        if: startsWith(github.ref, 'refs/tags/v')
+        with:
+          repo: goreleaser/goreleaser
+          ref: main
+          token: ${{ secrets.GH_PAT }}
+          workflow: generate-releases.yml
+  notify-goreleaser-cross:
+    runs-on: ubuntu-latest
+    needs: [ trigger-generate ]
+    steps:
+      - name: get version
+        if: startsWith(github.ref, 'refs/tags/v')
+        run: echo "RELEASE_TAG=${GITHUB_REF#refs/tags/}" >> $GITHUB_ENV
+      - name: notify goreleaser-cross with new release
+        if: startsWith(github.ref, 'refs/tags/v')
+        uses: benc-uk/workflow-dispatch@v121
+        with:
+          token: ${{ secrets.GH_PAT }}
+          repo: goreleaser/goreleaser-cross
+          workflow: goreleaser-bump
+          inputs: '{ "tag" : "${{ env.RELEASE_TAG }}" }'
   goreleaser-check-pkgs:
     runs-on: ubuntu-latest
     env:
       DOCKER_CLI_EXPERIMENTAL: "enabled"
-    needs:
-      - goreleaser
+    needs: [ goreleaser ]
     if: github.ref == 'refs/heads/main'
     strategy:
       matrix:
         format: [ deb, rpm, apk ]
     steps:
-      - uses: actions/checkout@93ea575cb5d8a053eaa0ac8fa3b40d7e05a33cc8 # v3
+      - uses: actions/checkout@ac593985615ec2ede58e132d2e21d2b1cbd6127c # v3
         with:
           fetch-depth: 0
       - uses: arduino/setup-task@d665c6beebae46ff3f699d7b2fd3f1959de7153c # v1
@@ -32,7 +57,7 @@ jobs:
           version: 3.x
           repo-token: ${{ secrets.GITHUB_TOKEN }}
       - uses: docker/setup-qemu-action@e81a89b1732b9c48d79cd809d8d81d79c4647a18 # v2
-      - uses: actions/cache@9b0c1fce7a93df8e3bb8926b0d6e9d89e92f20a7 # v3
+      - uses: actions/cache@58c146cc91c5b9e778e71775dfe9bf1442ad9a12 # v3
         with:
           path: |
             ./dist/*.deb
@@ -45,7 +70,7 @@ jobs:
     env:
       DOCKER_CLI_EXPERIMENTAL: "enabled"
     steps:
-      - uses: actions/checkout@93ea575cb5d8a053eaa0ac8fa3b40d7e05a33cc8 # v3
+      - uses: actions/checkout@ac593985615ec2ede58e132d2e21d2b1cbd6127c # v3
         with:
           fetch-depth: 0
       - uses: arduino/setup-task@d665c6beebae46ff3f699d7b2fd3f1959de7153c # v1
@@ -61,11 +86,11 @@ jobs:
           sudo apt-get -yq --no-install-suggests --no-install-recommends install snapcraft
           mkdir -p $HOME/.cache/snapcraft/download
           mkdir -p $HOME/.cache/snapcraft/stage-packages
-      - uses: actions/setup-go@c4a742cab115ed795e34d4513e2cf7d472deb55f # v3
+      - uses: actions/setup-go@6edd4406fa81c3da01a34fa6f6343087c207a568 # v3
         with:
-          go-version: '>=1.19.3'
+          go-version: '>=1.19.5'
           cache: true
-      - uses: actions/cache@9b0c1fce7a93df8e3bb8926b0d6e9d89e92f20a7 # v3
+      - uses: actions/cache@58c146cc91c5b9e778e71775dfe9bf1442ad9a12 # v3
         with:
           path: |
             ./dist/*.deb
@@ -97,6 +122,9 @@ jobs:
           TWITTER_CONSUMER_SECRET: ${{ secrets.TWITTER_CONSUMER_SECRET }}
           TWITTER_ACCESS_TOKEN: ${{ secrets.TWITTER_ACCESS_TOKEN }}
           TWITTER_ACCESS_TOKEN_SECRET: ${{ secrets.TWITTER_ACCESS_TOKEN_SECRET }}
+          MASTODON_CLIENT_ID: ${{ secrets.MASTODON_CLIENT_ID }}
+          MASTODON_CLIENT_SECRET: ${{ secrets.MASTODON_CLIENT_SECRET }}
+          MASTODON_ACCESS_TOKEN: ${{ secrets.MASTODON_ACCESS_TOKEN }}
           COSIGN_PWD: ${{ secrets.COSIGN_PWD }}
           FURY_TOKEN: ${{ secrets.FURY_TOKEN }}
           DISCORD_WEBHOOK_ID: ${{ secrets.DISCORD_WEBHOOK_ID }}

@@ -323,3 +323,33 @@ func TestReleaseNotes(t *testing.T) {
 	require.NoError(t, err)
 	require.Equal(t, "**Full Changelog**: https://github.com/someone/something/compare/v1.0.0...v1.1.0", log)
 }
+
+func TestCloseMilestone(t *testing.T) {
+	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		defer r.Body.Close()
+		t.Log(r.URL.Path)
+
+		if r.URL.Path == "/repos/someone/something/milestones" {
+			r, err := os.Open("testdata/github/milestones.json")
+			require.NoError(t, err)
+			_, err = io.Copy(w, r)
+			require.NoError(t, err)
+			return
+		}
+	}))
+	defer srv.Close()
+
+	ctx := context.New(config.Project{
+		GitHubURLs: config.GitHubURLs{
+			API: srv.URL + "/",
+		},
+	})
+	client, err := NewGitHub(ctx, "test-token")
+	require.NoError(t, err)
+	repo := Repo{
+		Owner: "someone",
+		Name:  "something",
+	}
+
+	require.NoError(t, client.CloseMilestone(ctx, repo, "v1.13.0"))
+}

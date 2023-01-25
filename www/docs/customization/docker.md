@@ -75,9 +75,21 @@ dockers:
     image_templates:
     - "myuser/myimage:latest"
     - "myuser/myimage:{{ .Tag }}"
-    - "myuser/myimage:{{ .Tag }}-{{ .Env.GO_VERSION }}"
+    - "myuser/myimage:{{ .Tag }}-{{ .Env.FOOBAR }}"
     - "myuser/myimage:v{{ .Major }}"
     - "gcr.io/myuser/myimage:latest"
+
+
+    # Skips the docker build.
+    # Could be useful if you want to skip building the windows docker image on
+    # linux, for example.
+    #
+    # This field allows templates.
+    # Since: v1.14.0-pro.
+    # This option is only available on GoReleaser Pro.
+    #
+    # Defaults to false.
+    skip_build: false
 
     # Skips the docker push.
     # Could be useful if you also do draft releases.
@@ -94,8 +106,11 @@ dockers:
     dockerfile: '{{ .Env.DOCKERFILE }}'
 
     # Set the "backend" for the Docker pipe.
+    #
     # Valid options are: docker, buildx, podman.
-    # podman is a GoReleaser Pro feature and is only available on Linux.
+    #
+    # Podman is a GoReleaser Pro feature and is only available on Linux.
+    #
     # Defaults to docker.
     use: docker
 

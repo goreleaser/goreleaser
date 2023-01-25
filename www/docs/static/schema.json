@@ -121,6 +121,9 @@
 					"twitter": {
 						"$ref": "#/$defs/Twitter"
 					},
+					"mastodon": {
+						"$ref": "#/$defs/Mastodon"
+					},
 					"reddit": {
 						"$ref": "#/$defs/Reddit"
 					},
@@ -163,6 +166,9 @@
 						},
 						"type": "array"
 					},
+					"builds_info": {
+						"$ref": "#/$defs/FileInfo"
+					},
 					"name_template": {
 						"type": "string"
 					},
@@ -194,6 +200,9 @@
 						]
 					},
 					"strip_parent_binary_folder": {
+						"type": "boolean"
+					},
+					"rlcp": {
 						"type": "boolean"
 					},
 					"files": {
@@ -329,14 +338,7 @@
 						"type": "string"
 					},
 					"skip": {
-						"oneOf": [
-							{
-								"type": "string"
-							},
-							{
-								"type": "boolean"
-							}
-						]
+						"type": "boolean"
 					},
 					"gobinary": {
 						"type": "string"
@@ -448,28 +450,19 @@
 				"additionalProperties": false,
 				"type": "object"
 			},
-			"ChangeLogGroup": {
-				"properties": {
-					"title": {
-						"type": "string"
-					},
-					"regexp": {
-						"type": "string"
-					},
-					"order": {
-						"type": "integer"
-					}
-				},
-				"additionalProperties": false,
-				"type": "object"
-			},
 			"Changelog": {
 				"properties": {
 					"filters": {
 						"$ref": "#/$defs/Filters"
 					},
 					"sort": {
-						"type": "string"
+						"type": "string",
+						"enum": [
+							"asc",
+							"desc",
+							""
+						],
+						"default": ""
 					},
 					"skip": {
 						"type": "boolean"
@@ -486,11 +479,26 @@
 					},
 					"groups": {
 						"items": {
-							"$ref": "#/$defs/ChangeLogGroup"
+							"$ref": "#/$defs/ChangelogGroup"
 						},
 						"type": "array"
 					},
 					"abbrev": {
+						"type": "integer"
+					}
+				},
+				"additionalProperties": false,
+				"type": "object"
+			},
+			"ChangelogGroup": {
+				"properties": {
+					"title": {
+						"type": "string"
+					},
+					"regexp": {
+						"type": "string"
+					},
+					"order": {
 						"type": "integer"
 					}
 				},
@@ -641,7 +649,16 @@
 						"type": "string"
 					},
 					"type": {
-						"type": "string"
+						"type": "string",
+						"enum": [
+							"symlink",
+							"ghost",
+							"config",
+							"config|noreplace",
+							"dir",
+							""
+						],
+						"default": ""
 					},
 					"packager": {
 						"type": "string"
@@ -651,7 +668,10 @@
 					}
 				},
 				"additionalProperties": false,
-				"type": "object"
+				"type": "object",
+				"required": [
+					"dst"
+				]
 			},
 			"ContentFileInfo": {
 				"properties": {
@@ -864,8 +884,7 @@
 										"type": "integer"
 									},
 									"mtime": {
-										"type": "string",
-										"format": "date-time"
+										"type": "string"
 									}
 								},
 								"additionalProperties": false,
@@ -908,8 +927,7 @@
 								"type": "integer"
 							},
 							"mtime": {
-								"type": "string",
-								"format": "date-time"
+								"type": "string"
 							}
 						},
 						"additionalProperties": false,
@@ -948,6 +966,15 @@
 						"type": "string"
 					},
 					"format": {
+						"type": "string"
+					}
+				},
+				"additionalProperties": false,
+				"type": "object"
+			},
+			"Git": {
+				"properties": {
+					"tag_sort": {
 						"type": "string"
 					}
 				},
@@ -1218,6 +1245,72 @@
 				"additionalProperties": false,
 				"type": "object"
 			},
+			"Ko": {
+				"properties": {
+					"id": {
+						"type": "string"
+					},
+					"build": {
+						"type": "string"
+					},
+					"main": {
+						"type": "string"
+					},
+					"working_dir": {
+						"type": "string"
+					},
+					"base_image": {
+						"type": "string"
+					},
+					"repository": {
+						"type": "string"
+					},
+					"platforms": {
+						"items": {
+							"type": "string"
+						},
+						"type": "array"
+					},
+					"tags": {
+						"items": {
+							"type": "string"
+						},
+						"type": "array"
+					},
+					"sbom": {
+						"type": "string"
+					},
+					"ldflags": {
+						"items": {
+							"type": "string"
+						},
+						"type": "array"
+					},
+					"flags": {
+						"items": {
+							"type": "string"
+						},
+						"type": "array"
+					},
+					"env": {
+						"items": {
+							"type": "string"
+						},
+						"type": "array"
+					},
+					"bare": {
+						"type": "boolean"
+					},
+					"preserve_import_paths": {
+						"type": "boolean"
+					},
+					"base_import_paths": {
+						"type": "boolean"
+					}
+				},
+				"additionalProperties": false,
+				"type": "object"
+			},
 			"Krew": {
 				"properties": {
 					"ids": {
@@ -1291,6 +1384,24 @@
 				},
 				"additionalProperties": false,
 				"type": "object"
+			},
+			"Mastodon": {
+				"properties": {
+					"enabled": {
+						"type": "boolean"
+					},
+					"message_template": {
+						"type": "string"
+					},
+					"server": {
+						"type": "string"
+					}
+				},
+				"additionalProperties": false,
+				"type": "object",
+				"required": [
+					"server"
+				]
 			},
 			"Mattermost": {
 				"properties": {
@@ -1819,6 +1930,12 @@
 						},
 						"type": "array"
 					},
+					"kos": {
+						"items": {
+							"$ref": "#/$defs/Ko"
+						},
+						"type": "array"
+					},
 					"scoop": {
 						"$ref": "#/$defs/Scoop"
 					},
@@ -1927,11 +2044,14 @@
 						},
 						"type": "array"
 					},
-					"chocolatey": {
+					"chocolateys": {
 						"items": {
 							"$ref": "#/$defs/Chocolatey"
 						},
 						"type": "array"
+					},
+					"git": {
+						"$ref": "#/$defs/Git"
 					},
 					"universal_binaries": {
 						"items": {
@@ -2039,10 +2159,24 @@
 						"type": "string"
 					},
 					"disable": {
-						"type": "boolean"
+						"oneOf": [
+							{
+								"type": "string"
+							},
+							{
+								"type": "boolean"
+							}
+						]
 					},
 					"skip_upload": {
-						"type": "boolean"
+						"oneOf": [
+							{
+								"type": "string"
+							},
+							{
+								"type": "boolean"
+							}
+						]
 					},
 					"prerelease": {
 						"type": "string"
@@ -2272,7 +2406,18 @@
 						"type": "string"
 					},
 					"artifacts": {
-						"type": "string"
+						"type": "string",
+						"enum": [
+							"all",
+							"manifests",
+							"images",
+							"checksum",
+							"source",
+							"package",
+							"archive",
+							"binary",
+							"sbom"
+						]
 					},
 					"ids": {
 						"items": {
@@ -2626,6 +2771,9 @@
 							"$ref": "#/$defs/File"
 						},
 						"type": "array"
+					},
+					"rlcp": {
+						"type": "boolean"
 					}
 				},
 				"additionalProperties": false,
@@ -2674,7 +2822,14 @@
 						"type": "string"
 					},
 					"chat_id": {
-						"type": "integer"
+						"oneOf": [
+							{
+								"type": "string"
+							},
+							{
+								"type": "integer"
+							}
+						]
 					}
 				},
 				"additionalProperties": false,

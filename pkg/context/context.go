@@ -25,6 +25,7 @@ type GitInfo struct {
 	Commit      string
 	ShortCommit string
 	FullCommit  string
+	FirstCommit string
 	CommitDate  time.Time
 	URL         string
 	Summary     string
@@ -95,6 +96,7 @@ type Context struct {
 	SkipSign           bool
 	SkipValidate       bool
 	SkipSBOMCataloging bool
+	SkipKo             bool
 	SkipDocker         bool
 	SkipBefore         bool
 	RmDist             bool

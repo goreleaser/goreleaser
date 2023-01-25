@@ -4,6 +4,7 @@ import (
 	"fmt"
 
 	goteamsnotify "github.com/atc0005/go-teams-notify/v2"
+	"github.com/atc0005/go-teams-notify/v2/messagecard"
 	"github.com/caarlos0/env/v6"
 	"github.com/caarlos0/log"
 	"github.com/goreleaser/goreleaser/internal/tmpl"
@@ -45,38 +46,38 @@ func (p Pipe) Default(ctx *context.Context) error {
 func (p Pipe) Announce(ctx *context.Context) error {
 	title, err := tmpl.New(ctx).Apply(ctx.Config.Announce.Teams.TitleTemplate)
 	if err != nil {
-		return fmt.Errorf("announce: failed to announce to teams: %w", err)
+		return fmt.Errorf("teams: %w", err)
 	}
 
 	msg, err := tmpl.New(ctx).Apply(ctx.Config.Announce.Teams.MessageTemplate)
 	if err != nil {
-		return fmt.Errorf("announce: failed to announce to teams: %w", err)
+		return fmt.Errorf("teams: %w", err)
 	}
 
 	var cfg Config
 	if err := env.Parse(&cfg); err != nil {
-		return fmt.Errorf("announce: failed to announce to teams: %w", err)
+		return fmt.Errorf("teams: %w", err)
 	}
 
 	log.Infof("posting: '%s'", msg)
 
-	client := goteamsnotify.NewClient()
-	msgCard := goteamsnotify.NewMessageCard()
+	client := goteamsnotify.NewTeamsClient()
+	msgCard := messagecard.NewMessageCard()
 	msgCard.Summary = title
 	msgCard.ThemeColor = ctx.Config.Announce.Teams.Color
 
-	messageCardSection := goteamsnotify.NewMessageCardSection()
+	messageCardSection := messagecard.NewSection()
 	messageCardSection.ActivityTitle = title
 	messageCardSection.ActivityText = msg
 	messageCardSection.Markdown = true
 	messageCardSection.ActivityImage = ctx.Config.Announce.Teams.IconURL
 	err = msgCard.AddSection(messageCardSection)
 	if err != nil {
-		return fmt.Errorf("announce: failed to announce to teams: %w", err)
+		return fmt.Errorf("teams: %w", err)
 	}
 	err = client.Send(cfg.Webhook, msgCard)
 	if err != nil {
-		return fmt.Errorf("announce: failed to announce to teams: %w", err)
+		return fmt.Errorf("teams: %w", err)
 	}
 	return nil
 }

@@ -114,8 +114,17 @@ func (Pipe) Run(ctx *context.Context) error {
 	return nil
 }
 
+func isSkipRelease(ctx *context.Context) bool {
+	d, err := tmpl.New(ctx).Apply(ctx.Config.Release.Disable)
+	if err != nil {
+		log.WithError(err).Error("could not execute release.disable template, will assume false")
+		return false
+	}
+	return strings.ToLower(d) == "true"
+}
+
 func checkErrors(ctx *context.Context, noTokens, noTokenErrs bool, gitlabTokenErr, githubTokenErr, giteaTokenErr error) error {
-	if ctx.SkipTokenCheck || ctx.SkipPublish || ctx.Config.Release.Disable {
+	if ctx.SkipTokenCheck || ctx.SkipPublish || isSkipRelease(ctx) {
 		return nil
 	}
 
@@ -140,6 +149,7 @@ func checkErrors(ctx *context.Context, noTokens, noTokenErrs bool, gitlabTokenEr
 func loadEnv(env, path string) (string, error) {
 	val := os.Getenv(env)
 	if val != "" {
+		log.Infof("using token from %q", "$"+env)
 		return val, nil
 	}
 	path, err := homedir.Expand(path)
@@ -154,6 +164,7 @@ func loadEnv(env, path string) (string, error) {
 		return "", err
 	}
 	defer f.Close()
+	log.Infof("using token from %q", path)
 	bts, _, err := bufio.NewReader(f).ReadLine()
 	return string(bts), err
 }

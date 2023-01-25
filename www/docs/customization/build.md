@@ -71,13 +71,26 @@ builds:
 
     # Custom environment variables to be set during the builds.
     #
+    # This field is templateable. Since v1.14.
+    #
+    # Invalid environment variables will be ignored.
+    #
     # Default: `os.Environ()` merged with what you set the root `env` section.
     env:
       - CGO_ENABLED=0
+      # complex, templated envs (v1.14+):
+      - >-
+        {{- if eq .Os "darwin" }}
+          {{- if eq .Arch "amd64"}}CC=o64-clang{{- end }}
+          {{- if eq .Arch "arm64"}}CC=aarch64-apple-darwin20.2-clang{{- end }}
+        {{- end }}
+        {{- if eq .Os "windows" }}
+          {{- if eq .Arch "amd64" }}CC=x86_64-w64-mingw32-gcc{{- end }}
+        {{- end }}
 
     # GOOS list to build for.
     # For more info refer to: https://golang.org/doc/install/source#environment
-    # Defaults are darwin and linux.
+    # Defaults are darwin, linux, and windows.
     goos:
       - freebsd
       - windows
@@ -163,7 +176,7 @@ builds:
     # Set the modified timestamp on the output binary, typically
     # you would do this to ensure a build was reproducible. Pass
     # empty string to skip modifying the output.
-    # Default is empty string.
+    # Default is empty string, which will be the compile time.
     mod_timestamp: '{{ .CommitTimestamp }}'
 
     # Hooks can be used to customize the final binary,
@@ -413,8 +426,9 @@ GoReleaser:
 * Modify `ldflags`: by default `main.Date` is set to the time GoReleaser is run
   (`{{.Date}}`), you can set this to `{{.CommitDate}}` or just not pass the
   variable.
-* Modify `mod_timestamp`: by default this is empty string, set to
-  `{{.CommitTimestamp}}` or a constant value instead.
+* Modify `mod_timestamp`: by default this is empty string — which means it'll be
+  the compilation time, set to `{{.CommitTimestamp}}` or a constant value
+  instead.
 * If you do not run your builds from a consistent directory structure, pass
   `-trimpath` to `flags`.
 * Remove uses of the `time` template function. This function returns a new value
@@ -555,4 +569,84 @@ builds:
 
     # Configure the buildmode flag to output a shared library
     buildmode: "c-shared"  # or "c-archive" for a static library
+```
+
+## Complex templated environment variables
+
+> Since v1.14.0.
+
+Builds environment variables are templateable.
+
+You can leverage that to have a single build configuration with different
+environment variables for each platform, for example.
+
+A common example of this is the variables `CC` and `CCX`.
+
+Here are two different examples:
+
+### Using multiple envs
+
+This example creates once `CC_` and `CCX_` variable for each platform, and then
+set `CC` and `CCX` to the right one:
+
+```yaml
+# .goreleaser.yml
+builds:
+- id: mybin
+  binary: mybin
+  main: .
+  goos:
+    - linux
+    - darwin
+    - windows
+  goarch:
+    - amd64
+    - arm64
+  env:
+    - CGO_ENABLED=0
+    - CC_darwin_amd64=o64-clang
+    - CCX_darwin_amd64=o64-clang+
+    - CC_darwin_arm64=aarch64-apple-darwin20.2-clang
+    - CCX_darwin_arm64=aarch64-apple-darwin20.2-clang++
+    - CC_windows_amd64=x86_64-w64-mingw32-gc
+    - CCX_windows_amd64=x86_64-w64-mingw32-g++
+    - 'CC={{ index .Env (print "CC_" .Os "_" .Arch) }}'
+    - 'CCX={{ index .Env (print "CCX_" .Os "_" .Arch) }}'
+```
+
+### Using `if` statements
+
+This example uses `if` statements to set `CC` and `CCX`:
+
+```yaml
+# .goreleaser.yml
+builds:
+- id: mybin
+  binary: mybin
+  main: .
+  goos:
+    - linux
+    - darwin
+    - windows
+  goarch:
+    - amd64
+    - arm64
+  env:
+    - CGO_ENABLED=0
+    - >-
+        {{- if eq .Os "darwin" }}
+          {{- if eq .Arch "amd64"}}CC=o64-clang{{- end }}
+          {{- if eq .Arch "arm64"}}CC=aarch64-apple-darwin20.2-clang{{- end }}
+        {{- end }}
+        {{- if eq .Os "windows" }}
+          {{- if eq .Arch "amd64" }}CC=x86_64-w64-mingw32-gcc{{- end }}
+        {{- end }}
+    - >-
+        {{- if eq .Os "darwin" }}
+          {{- if eq .Arch "amd64"}}CXX=o64-clang+{{- end }}
+          {{- if eq .Arch "arm64"}}CXX=aarch64-apple-darwin20.2-clang++{{- end }}
+        {{- end }}
+        {{- if eq .Os "windows" }}
+          {{- if eq .Arch "amd64" }}CXX=x86_64-w64-mingw32-g++{{- end }}
+        {{- end }}
 ```

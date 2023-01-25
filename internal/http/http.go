@@ -386,10 +386,13 @@ func resolveTargetTemplate(ctx *context.Context, upload *config.Upload, artifact
 	replacements := map[string]string{}
 	if upload.Mode == ModeBinary {
 		// TODO: multiple archives here
+		// will be removed soon anyway
 		replacements = ctx.Config.Archives[0].Replacements
 	}
+
+	// nolint:staticcheck
 	return tmpl.New(ctx).
-		WithArtifact(artifact, replacements).
+		WithArtifactReplacements(artifact, replacements).
 		Apply(upload.Target)
 }
 
@@ -399,9 +402,11 @@ func resolveHeaderTemplate(ctx *context.Context, upload *config.Upload, artifact
 	replacements := map[string]string{}
 	if upload.Mode == ModeBinary {
 		// TODO: multiple archives here
+		// will be removed soon anyway
 		replacements = ctx.Config.Archives[0].Replacements
 	}
+	// nolint:staticcheck
 	return tmpl.New(ctx).
-		WithArtifact(artifact, replacements).
+		WithArtifactReplacements(artifact, replacements).
 		Apply(headerValue)
 }

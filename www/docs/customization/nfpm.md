@@ -29,16 +29,6 @@ nfpms:
       - foo
       - bar
 
-    # Replacements for GOOS and GOARCH in the package name.
-    # Keys should be valid GOOSs or GOARCHs.
-    # Values are the respective replacements.
-    # Default is empty.
-    replacements:
-      amd64: 64-bit
-      386: 32-bit
-      darwin: macOS
-      linux: Tux
-
     # Your app's vendor.
     # Default is empty.
     vendor: Drum Roll Inc.
@@ -67,7 +57,7 @@ nfpms:
       - deb
       - rpm
       - termux.deb # Since GoReleaser v1.11.
-      - archlinux
+      - archlinux  # Since GoReleaser v1.13.
 
     # Packages your package depends on. (overridable)
     dependencies:
@@ -147,18 +137,18 @@ nfpms:
     # GoReleaser will automatically add the binaries.
     contents:
       # Basic file that applies to all packagers
-      - src: path/to/local/foo
-        dst: /usr/local/bin/foo
+      - src: path/to/foo
+        dst: /usr/bin/foo
 
       # Simple config file
-      - src: path/to/local/foo.conf
+      - src: path/to/foo.conf
         dst: /etc/foo.conf
         type: config
 
       # Simple symlink.
       # Corresponds to `ln -s /sbin/foo /usr/local/bin/foo`
       - src: /sbin/foo
-        dst: /usr/local/bin/foo
+        dst: /usr/bin/foo
         type: "symlink"
 
       # Corresponds to `%config(noreplace)` if the packager is rpm, otherwise it
@@ -213,6 +203,11 @@ nfpms:
           mtime: 2008-01-02T15:04:05Z
           owner: notRoot
           group: notRoot
+
+      # If `dst` ends with a `/`, it'll create the given path and copy the given
+      # `src` into it, the same way `cp` works with and without trailing `/`.
+      - src: ./foo/bar/*
+        dst: /usr/local/myapp/
 
       # Using the type 'dir', empty directories can be created. When building
       # RPMs, however, this type has another important purpose: Claiming
@@ -364,7 +359,10 @@ nfpms:
         # The name of the signing key. When verifying a package, the signature
         # is matched to the public key store in /etc/apk/keys/<key_name>.rsa.pub.
         # If unset, it defaults to the maintainer email address.
+        #
+        # Templateable. (since v1.15)
         key_name: origin
+
     archlinux:
       # Archlinux-specific scripts
       scripts:
@@ -372,7 +370,7 @@ nfpms:
         preupgrade: ./scripts/preupgrade.sh
         # The postupgrade script runs after pacman upgrades the package.
         postupgrade: ./scripts/postupgrade.sh
-      
+
       # The pkgbase can be used to explicitly specify the name to be used to refer
       # to a group of packages. See: https://wiki.archlinux.org/title/PKGBUILD#pkgbase.
       pkgbase: foo

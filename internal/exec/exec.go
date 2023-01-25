@@ -155,16 +155,19 @@ func resolveCommand(ctx *context.Context, publisher config.Publisher, artifact *
 
 	replacements := make(map[string]string)
 	// TODO: Replacements should be associated only with relevant artifacts/archives
+	// this is pretty much all wrong and will be removed soon.
 	archives := ctx.Config.Archives
 	if len(archives) > 0 {
 		replacements = archives[0].Replacements
 	}
 
 	dir := publisher.Dir
+
+	// nolint:staticcheck
+	tpl := tmpl.New(ctx).
+		WithArtifactReplacements(artifact, replacements)
 	if dir != "" {
-		dir, err = tmpl.New(ctx).
-			WithArtifact(artifact, replacements).
-			Apply(dir)
+		dir, err = tpl.Apply(dir)
 		if err != nil {
 			return nil, err
 		}
@@ -172,9 +175,7 @@ func resolveCommand(ctx *context.Context, publisher config.Publisher, artifact *
 
 	cmd := publisher.Cmd
 	if cmd != "" {
-		cmd, err = tmpl.New(ctx).
-			WithArtifact(artifact, replacements).
-			Apply(cmd)
+		cmd, err = tpl.Apply(cmd)
 		if err != nil {
 			return nil, err
 		}
@@ -187,9 +188,7 @@ func resolveCommand(ctx *context.Context, publisher config.Publisher, artifact *
 
 	env := make([]string, len(publisher.Env))
 	for i, e := range publisher.Env {
-		e, err = tmpl.New(ctx).
-			WithArtifact(artifact, replacements).
-			Apply(e)
+		e, err = tpl.Apply(e)
 		if err != nil {
 			return nil, err
 		}

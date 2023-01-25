@@ -200,7 +200,6 @@ func (c *githubClient) CreateFile(
 }
 
 func (c *githubClient) CreateRelease(ctx *context.Context, body string) (string, error) {
-	var release *github.RepositoryRelease
 	title, err := tmpl.New(ctx).Apply(ctx.Config.Release.NameTemplate)
 	if err != nil {
 		return "", err
@@ -237,35 +236,58 @@ func (c *githubClient) CreateRelease(ctx *context.Context, body string) (string,
 		}
 	}
 
-	release, _, err = c.client.Repositories.GetReleaseByTag(
+	release, err := c.createOrUpdateRelease(ctx, data, body)
+	if err != nil {
+		return "", fmt.Errorf("could not release: %w", err)
+	}
+
+	return strconv.FormatInt(release.GetID(), 10), nil
+}
+
+func (c *githubClient) createOrUpdateRelease(ctx *context.Context, data *github.RepositoryRelease, body string) (*github.RepositoryRelease, error) {
+	release, _, err := c.client.Repositories.GetReleaseByTag(
 		ctx,
 		ctx.Config.Release.GitHub.Owner,
 		ctx.Config.Release.GitHub.Name,
 		data.GetTagName(),
 	)
 	if err != nil {
-		release, _, err = c.client.Repositories.CreateRelease(
+		release, resp, err := c.client.Repositories.CreateRelease(
 			ctx,
 			ctx.Config.Release.GitHub.Owner,
 			ctx.Config.Release.GitHub.Name,
 			data,
 		)
-	} else {
-		data.Body = github.String(getReleaseNotes(release.GetBody(), body, ctx.Config.Release.ReleaseNotesMode))
-		release, _, err = c.client.Repositories.EditRelease(
-			ctx,
-			ctx.Config.Release.GitHub.Owner,
-			ctx.Config.Release.GitHub.Name,
-			release.GetID(),
-			data,
-		)
-	}
-	if err != nil {
-		log.WithField("url", release.GetHTMLURL()).Info("release updated")
+		if err == nil {
+			log.WithFields(log.Fields{
+				"name":       data.GetName(),
+				"release-id": release.GetID(),
+				"request-id": resp.Header.Get("X-GitHub-Request-Id"),
+			}).Info("release created")
+		}
+		return release, err
 	}
 
-	githubReleaseID := strconv.FormatInt(release.GetID(), 10)
-	return githubReleaseID, err
+	data.Body = github.String(getReleaseNotes(release.GetBody(), body, ctx.Config.Release.ReleaseNotesMode))
+	return c.updateRelease(ctx, release.GetID(), data)
+}
+
+func (c *githubClient) updateRelease(ctx *context.Context, id int64, data *github.RepositoryRelease) (*github.RepositoryRelease, error) {
+	release, resp, err := c.client.Repositories.EditRelease(
+		ctx,
+		ctx.Config.Release.GitHub.Owner,
+		ctx.Config.Release.GitHub.Name,
+		id,
+		data,
+	)
+	if err == nil {
+		log.WithFields(log.Fields{
+			"name":       data.GetName(),
+			"release-id": release.GetID(),
+			"request-id": resp.Header.Get("X-GitHub-Request-Id"),
+		}).Info("release updated")
+	}
+	return release, err
 }
 
 func (c *githubClient) ReleaseURLTemplate(ctx *context.Context) (string, error) {
@@ -302,6 +324,17 @@ func (c *githubClient) Upload(
 		},
 		file,
 	)
+	if err != nil {
+		requestID := ""
+		if resp != nil {
+			requestID = resp.Header.Get("X-GitHub-Request-Id")
+		}
+		log.WithFields(log.Fields{
+			"name":       artifact.Name,
+			"release-id": releaseID,
+			"request-id": requestID,
+		}).Warn("upload failed")
+	}
 	if err == nil {
 		return nil
 	}

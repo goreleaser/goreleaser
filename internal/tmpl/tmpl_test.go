@@ -80,7 +80,7 @@ func TestWithArtifact(t *testing.T) {
 		expect := expect
 		t.Run(expect, func(t *testing.T) {
 			t.Parallel()
-			result, err := New(ctx).WithArtifact(
+			result, err := New(ctx).WithArtifactReplacements(
 				&artifact.Artifact{
 					Name:    "not-this-binary",
 					Path:    "/tmp/foo.exe",
@@ -103,7 +103,7 @@ func TestWithArtifact(t *testing.T) {
 
 	t.Run("artifact without binary name", func(t *testing.T) {
 		t.Parallel()
-		result, err := New(ctx).WithArtifact(
+		result, err := New(ctx).WithArtifactReplacements(
 			&artifact.Artifact{
 				Name:   "another-binary",
 				Goarch: "amd64",
@@ -159,12 +159,21 @@ func TestWithEnv(t *testing.T) {
 		"FOO": "BAR",
 	}
 	ctx.Git.CurrentTag = "v1.2.3"
-	out, err := New(ctx).WithEnvS([]string{
+	tpl := New(ctx).WithEnvS([]string{
 		"FOO=foo",
 		"BAR=bar",
-	}).Apply("{{ .Env.FOO }}-{{ .Env.BAR }}")
+		"NOVAL=",
+		"=NOKEY",
+		"=",
+		"NOTHING",
+	})
+	out, err := tpl.Apply("{{ .Env.FOO }}-{{ .Env.BAR }}")
 	require.NoError(t, err)
 	require.Equal(t, "foo-bar", out)
+
+	out, err = tpl.Apply(`{{ range $idx, $key := .Env }}{{ $idx }},{{ end }}`)
+	require.NoError(t, err)
+	require.Equal(t, "BAR,FOO,NOVAL,", out)
 }
 
 func TestFuncMap(t *testing.T) {
@@ -226,6 +235,11 @@ func TestFuncMap(t *testing.T) {
 			Template: `{{ trimsuffix .GitURL ".git" }}`,
 			Name:     "trimsuffix",
 			Expected: "https://github.com/foo/bar",
+		},
+		{
+			Template: `{{ title "file" }}`,
+			Name:     "title",
+			Expected: "File",
 		},
 		{
 			Template: `{{ .ReleaseURL }}`,

@@ -5,8 +5,10 @@ package zip
 import (
 	"archive/zip"
 	"compress/flate"
+	"fmt"
 	"io"
 	"os"
+	"path/filepath"
 
 	"github.com/goreleaser/goreleaser/pkg/config"
 )
@@ -47,8 +49,8 @@ func (a Archive) Add(f config.File) error {
 	}
 	header.Name = f.Destination
 	header.Method = zip.Deflate
-	if !f.Info.MTime.IsZero() {
-		header.Modified = f.Info.MTime
+	if !f.Info.ParsedMTime.IsZero() {
+		header.Modified = f.Info.ParsedMTime
 	}
 	if f.Info.Mode != 0 {
 		header.SetMode(f.Info.Mode)
@@ -57,8 +59,16 @@ func (a Archive) Add(f config.File) error {
 	if err != nil {
 		return err
 	}
-	if info.IsDir() || info.Mode()&os.ModeSymlink != 0 {
+	if info.IsDir() {
 		return nil
+	}
+	if info.Mode()&os.ModeSymlink != 0 {
+		link, err := os.Readlink(f.Source) // #nosec
+		if err != nil {
+			return fmt.Errorf("%s: %w", f.Source, err)
+		}
+		_, err = io.WriteString(w, filepath.ToSlash(link))
+		return err
 	}
 	file, err := os.Open(f.Source) // #nosec
 	if err != nil {

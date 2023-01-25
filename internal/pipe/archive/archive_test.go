@@ -82,8 +82,12 @@ func TestRunPipe(t *testing.T) {
 					ProjectName: "foobar",
 					Archives: []config.Archive{
 						{
-							ID:                      "myid",
-							Builds:                  []string{"default"},
+							ID:     "myid",
+							Builds: []string{"default"},
+							BuildsInfo: config.FileInfo{
+								Owner: "root",
+								Group: "root",
+							},
 							NameTemplate:            defaultNameTemplate,
 							StripParentBinaryFolder: dets.Strip,
 							Files: []config.File{
@@ -233,6 +237,11 @@ func TestRunPipe(t *testing.T) {
 						},
 						tarFiles(t, filepath.Join(dist, name)),
 					)
+
+					header := tarInfo(t, filepath.Join(dist, name), expectBin)
+					require.Equal(t, "root", header.Uname)
+					require.Equal(t, "root", header.Gname)
+
 				}
 			}
 			if format == "zip" {
@@ -361,6 +370,27 @@ func zipFiles(t *testing.T, path string) []string {
 		paths[i] = zf.Name
 	}
 	return paths
+}
+
+func tarInfo(t *testing.T, path, name string) *tar.Header {
+	t.Helper()
+	f, err := os.Open(path)
+	require.NoError(t, err)
+	defer f.Close()
+	gr, err := gzip.NewReader(f)
+	require.NoError(t, err)
+	defer gr.Close()
+	r := tar.NewReader(gr)
+	for {
+		next, err := r.Next()
+		if err == io.EOF {
+			break
+		}
+		if next.Name == name {
+			return next
+		}
+	}
+	return nil
 }
 
 func tarFiles(t *testing.T, path string) []string {
@@ -741,6 +771,7 @@ func TestDefault(t *testing.T) {
 	require.NotEmpty(t, ctx.Config.Archives[0].NameTemplate)
 	require.Equal(t, "tar.gz", ctx.Config.Archives[0].Format)
 	require.NotEmpty(t, ctx.Config.Archives[0].Files)
+	require.False(t, ctx.Config.Archives[0].RLCP)
 }
 
 func TestDefaultSet(t *testing.T) {
@@ -761,7 +792,23 @@ func TestDefaultSet(t *testing.T) {
 	require.NoError(t, Pipe{}.Default(ctx))
 	require.Equal(t, "foo", ctx.Config.Archives[0].NameTemplate)
 	require.Equal(t, "zip", ctx.Config.Archives[0].Format)
+	require.False(t, ctx.Config.Archives[0].RLCP)
 	require.Equal(t, config.File{Source: "foo"}, ctx.Config.Archives[0].Files[0])
+}
+
+func TestDefaultNoFiles(t *testing.T) {
+	ctx := &context.Context{
+		Config: config.Project{
+			Archives: []config.Archive{
+				{
+					Format: "tar.gz",
+				},
+			},
+		},
+	}
+	require.NoError(t, Pipe{}.Default(ctx))
+	require.Equal(t, defaultNameTemplate, ctx.Config.Archives[0].NameTemplate)
+	require.False(t, ctx.Config.Archives[0].RLCP)
 }
 
 func TestDefaultFormatBinary(t *testing.T) {
@@ -776,6 +823,7 @@ func TestDefaultFormatBinary(t *testing.T) {
 	}
 	require.NoError(t, Pipe{}.Default(ctx))
 	require.Equal(t, defaultBinaryNameTemplate, ctx.Config.Archives[0].NameTemplate)
+	require.False(t, ctx.Config.Archives[0].RLCP)
 }
 
 func TestFormatFor(t *testing.T) {

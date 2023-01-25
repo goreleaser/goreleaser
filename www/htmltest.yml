@@ -13,7 +13,9 @@ IgnoreURLs:
 - https://github.com/goreleaser/goreleaser/pkgs
 - https://iron.security
 - https://marketplace.visualstudio.com
-- https://linkedin.com
+- linkedin.com
+- repology.org
+- reddit.com
 - docs.github.com
 - help.github.com
 IgnoreDirs:

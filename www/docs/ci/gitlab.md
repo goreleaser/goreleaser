@@ -110,6 +110,19 @@ Add a variable `GITLAB_TOKEN` if you are using [GitLab
 releases](https://docs.gitlab.com/ce/user/project/releases/). The value should
 be an API token with `api` scope for a user that has access to the project.
 
+Alternatively, you can provide the gitlab token in a file. GoReleaser will check
+`~/.config/goreleaser/gitlab_token` by default, but you can change that in the
+`.goreleaser.yaml` file:
+
+```yaml
+# .goreleaser.yaml
+env_files:
+  gitlab_token: ~/.path/to/my/gitlab_token
+```
+
+Note that the environment variable will be used if available, regardless of the
+`gitlab_token` file.
+
 The secret variables, `DOCKER_PASSWORD` and `GITLAB_TOKEN`, should be masked.
 Optionally, you might want to protect them if the job that uses them will only
 be run on protected branches or tags.

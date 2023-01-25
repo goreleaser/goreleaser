@@ -15,6 +15,7 @@ import (
 	"github.com/caarlos0/log"
 	"github.com/goreleaser/goreleaser/internal/archivefiles"
 	"github.com/goreleaser/goreleaser/internal/artifact"
+	"github.com/goreleaser/goreleaser/internal/deprecate"
 	"github.com/goreleaser/goreleaser/internal/ids"
 	"github.com/goreleaser/goreleaser/internal/semerrgroup"
 	"github.com/goreleaser/goreleaser/internal/tmpl"
@@ -58,6 +59,9 @@ func (Pipe) Default(ctx *context.Context) error {
 		if archive.ID == "" {
 			archive.ID = "default"
 		}
+		if !archive.RLCP && archive.Format != "binary" && len(archive.Files) > 0 {
+			deprecate.NoticeCustom(ctx, "archives.rlcp", "`{{ .Property }}` will be the default soon, check {{ .URL }} for more info")
+		}
 		if len(archive.Files) == 0 {
 			archive.Files = []config.File{
 				{Source: "license*"},
@@ -73,6 +77,9 @@ func (Pipe) Default(ctx *context.Context) error {
 			if archive.Format == "binary" {
 				archive.NameTemplate = defaultBinaryNameTemplate
 			}
+		}
+		if len(archive.Replacements) != 0 {
+			deprecate.Notice(ctx, "archives.replacements")
 		}
 		ids.Inc(archive.ID)
 	}
@@ -138,7 +145,8 @@ func createMeta(ctx *context.Context, arch config.Archive) error {
 }
 
 func create(ctx *context.Context, arch config.Archive, binaries []*artifact.Artifact) error {
-	template := tmpl.New(ctx).WithArtifact(binaries[0], arch.Replacements)
+	// nolint:staticcheck
+	template := tmpl.New(ctx).WithArtifactReplacements(binaries[0], arch.Replacements)
 	format := packageFormat(arch, binaries[0].Goos)
 	return doCreate(ctx, arch, binaries, format, template)
 }
@@ -180,7 +188,7 @@ func doCreate(ctx *context.Context, arch config.Archive, binaries []*artifact.Ar
 	a = NewEnhancedArchive(a, wrap)
 	defer a.Close()
 
-	files, err := archivefiles.Eval(template, arch.Files)
+	files, err := archivefiles.Eval(template, arch.RLCP, arch.Files)
 	if err != nil {
 		return fmt.Errorf("failed to find files to archive: %w", err)
 	}
@@ -201,6 +209,7 @@ func doCreate(ctx *context.Context, arch config.Archive, binaries []*artifact.Ar
 		if err := a.Add(config.File{
 			Source:      binary.Path,
 			Destination: dst,
+			Info:        arch.BuildsInfo,
 		}); err != nil {
 			return fmt.Errorf("failed to add: '%s' -> '%s': %w", binary.Path, dst, err)
 		}
@@ -244,8 +253,9 @@ func wrapFolder(a config.Archive) string {
 
 func skip(ctx *context.Context, archive config.Archive, binaries []*artifact.Artifact) error {
 	for _, binary := range binaries {
+		// nolint:staticcheck
 		name, err := tmpl.New(ctx).
-			WithArtifact(binary, archive.Replacements).
+			WithArtifactReplacements(binary, archive.Replacements).
 			Apply(archive.NameTemplate)
 		if err != nil {
 			return err

@@ -5,16 +5,15 @@ if test "$DISTRIBUTION" = "pro"; then
 	echo "Using Pro distribution..."
 	RELEASES_URL="https://github.com/goreleaser/goreleaser-pro/releases"
 	FILE_BASENAME="goreleaser-pro"
+	LATEST="$(curl -sf https://goreleaser.com/static/latest-pro)"
 else
 	echo "Using the OSS distribution..."
 	RELEASES_URL="https://github.com/goreleaser/goreleaser/releases"
 	FILE_BASENAME="goreleaser"
+	LATEST="$(curl -sf https://goreleaser.com/static/latest)"
 fi
 
-test -z "$VERSION" && VERSION="$(curl -sfL -o /dev/null -w %{url_effective} "$RELEASES_URL/latest" |
-		rev |
-		cut -f1 -d'/'|
-		rev)"
+test -z "$VERSION" && VERSION="$LATEST"
 
 test -z "$VERSION" && {
 	echo "Unable to get goreleaser version." >&2

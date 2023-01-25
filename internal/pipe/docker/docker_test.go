@@ -1,7 +1,6 @@
 package docker
 
 import (
-	"flag"
 	"fmt"
 	"os"
 	"os/exec"
@@ -9,7 +8,6 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/caarlos0/log"
 	"github.com/goreleaser/goreleaser/internal/artifact"
 	"github.com/goreleaser/goreleaser/internal/pipe"
 	"github.com/goreleaser/goreleaser/internal/testlib"
@@ -18,52 +16,18 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-var (
-	it              = flag.Bool("it", false, "push images to docker hub")
-	debug           = flag.Bool("debug", false, "enable debug logs")
+const (
 	registryPort    = "5050"
-	registry        = fmt.Sprintf("localhost:%s/", registryPort)
+	registry        = "localhost:5050/"
 	altRegistryPort = "5051"
-	altRegistry     = fmt.Sprintf("localhost:%s/", altRegistryPort)
+	altRegistry     = "localhost:5051/"
 )
 
-func TestMain(m *testing.M) {
-	flag.Parse()
-	if *it {
-		registry = "docker.io/"
-	}
-	if *debug {
-		log.SetLevel(log.DebugLevel)
-	}
-	os.Exit(m.Run())
-}
-
-func start(t *testing.T) {
-	t.Helper()
-	if *it {
-		return
-	}
-	t.Log("starting registries")
-	for _, line := range []string{
-		fmt.Sprintf("run -d -p %s:5000 --name registry registry:2", registryPort),
-		fmt.Sprintf("run -d -p %s:5000 --name alt_registry registry:2", altRegistryPort),
-	} {
-		if out, err := exec.Command("docker", strings.Fields(line)...).CombinedOutput(); err != nil {
-			t.Log("failed to start docker registry", string(out), err)
-			t.FailNow()
-		}
-	}
-}
-
-func killAndRm(t *testing.T) {
-	t.Helper()
-	if *it {
-		return
-	}
-	t.Log("killing registries")
-	for _, registry := range []string{"registry", "alt_registry"} {
-		_ = exec.Command("docker", "rm", "--force", registry).Run()
-	}
+func start(tb testing.TB) {
+	tb.Helper()
+	tb.Log("starting registries")
+	testlib.StartRegistry(tb, "registry", registryPort)
+	testlib.StartRegistry(tb, "alt_registry", altRegistryPort)
 }
 
 // TODO: this test is too big... split in smaller tests? Mainly the manifest ones...
@@ -942,7 +906,7 @@ func TestRunPipe(t *testing.T) {
 		"nfpm and multiple binaries": {
 			dockers: []config.Docker{
 				{
-					ImageTemplates: []string{registry + "goreleaser/nfpm:latest"},
+					ImageTemplates: []string{registry + "goreleaser/test_nfpm:latest"},
 					Goos:           "linux",
 					Goarch:         "amd64",
 					IDs:            []string{"mybin", "anotherbin"},
@@ -954,13 +918,13 @@ func TestRunPipe(t *testing.T) {
 			pubAssertError:      shouldNotErr,
 			manifestAssertError: shouldNotErr,
 			expect: []string{
-				registry + "goreleaser/nfpm:latest",
+				registry + "goreleaser/test_nfpm:latest",
 			},
 		},
 		"nfpm and multiple binaries on arm64": {
 			dockers: []config.Docker{
 				{
-					ImageTemplates: []string{registry + "goreleaser/nfpm_arm:latest"},
+					ImageTemplates: []string{registry + "goreleaser/test_nfpm_arm:latest"},
 					Goos:           "linux",
 					Goarch:         "arm64",
 					IDs:            []string{"mybin", "anotherbin"},
@@ -972,14 +936,12 @@ func TestRunPipe(t *testing.T) {
 			pubAssertError:      shouldNotErr,
 			manifestAssertError: shouldNotErr,
 			expect: []string{
-				registry + "goreleaser/nfpm_arm:latest",
+				registry + "goreleaser/test_nfpm_arm:latest",
 			},
 		},
 	}
 
-	killAndRm(t)
 	start(t)
-	defer killAndRm(t)
 
 	for name, docker := range table {
 		for imager := range imagers {
@@ -1093,10 +1055,15 @@ func TestRunPipe(t *testing.T) {
 					require.NoError(t, rmi(img), "could not delete image %s", img)
 				}
 
-				_ = ctx.Artifacts.Filter(artifact.ByType(artifact.DockerImage)).Visit(func(a *artifact.Artifact) error {
+				_ = ctx.Artifacts.Filter(
+					artifact.Or(
+						artifact.ByType(artifact.DockerImage),
+						artifact.ByType(artifact.DockerManifest),
+					),
+				).Visit(func(a *artifact.Artifact) error {
 					digest, err := artifact.Extra[string](*a, artifact.ExtraDigest)
 					require.NoError(t, err)
-					require.NotEmpty(t, digest)
+					require.NotEmpty(t, digest, "missing digest for "+a.Name)
 					return nil
 				})
 			})
@@ -1427,25 +1394,26 @@ func TestSkip(t *testing.T) {
 func TestWithDigest(t *testing.T) {
 	artifacts := artifact.New()
 	artifacts.Add(&artifact.Artifact{
-		Name: "owner/img:t1",
+		Name: "localhost:5050/owner/img:t1",
 		Type: artifact.DockerImage,
 		Extra: artifact.Extras{
 			artifact.ExtraDigest: "sha256:d1",
 		},
 	})
 	artifacts.Add(&artifact.Artifact{
-		Name: "owner/img:t2",
+		Name: "localhost:5050/owner/img:t2",
 		Type: artifact.DockerImage,
 		Extra: artifact.Extras{
 			artifact.ExtraDigest: "sha256:d2",
 		},
 	})
 	artifacts.Add(&artifact.Artifact{
-		Name: "owner/img:t3",
+		Name: "localhost:5050/owner/img:t3",
 		Type: artifact.DockerImage,
 	})
 
 	for _, use := range []string{useDocker, useBuildx} {
+		use := use
 		t.Run(use, func(t *testing.T) {
 			t.Run("good", func(t *testing.T) {
 				require.Equal(t, "localhost:5050/owner/img:t1@sha256:d1", withDigest(use, "localhost:5050/owner/img:t1", artifacts.List()))

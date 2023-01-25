@@ -21,8 +21,10 @@ import (
 	"github.com/goreleaser/goreleaser/pkg/context"
 )
 
-// ErrNoWindows when there is no build for windows (goos doesn't contain windows).
-var ErrNoWindows = errors.New("scoop requires a windows build and archive")
+// ErrNoWindows when there is no build for windows (goos doesn't contain
+// windows) or archive.format is binary.
+
+var ErrNoWindows = errors.New("scoop requires a windows archive\nLearn more at https://goreleaser.com/errors/scoop-archive\n") // nolint: revive
 
 const scoopConfigExtra = "ScoopConfig"
 
@@ -140,7 +142,11 @@ func doPublish(ctx *context.Context, cl client.Client) error {
 	if ctx.Config.Release.Draft {
 		return pipe.Skip("release is marked as draft")
 	}
-	if ctx.Config.Release.Disable {
+	d, err := tmpl.New(ctx).Apply(ctx.Config.Release.Disable)
+	if err != nil {
+		return err
+	}
+	if strings.ToLower(d) == "true" {
 		return pipe.Skip("release is disabled")
 	}
 
@@ -241,9 +247,7 @@ func dataFor(ctx *context.Context, cl client.Client, artifacts []*artifact.Artif
 			continue
 		}
 
-		url, err := tmpl.New(ctx).
-			WithArtifact(artifact, map[string]string{}).
-			Apply(ctx.Config.Scoop.URLTemplate)
+		url, err := tmpl.New(ctx).WithArtifact(artifact).Apply(ctx.Config.Scoop.URLTemplate)
 		if err != nil {
 			return manifest, err
 		}

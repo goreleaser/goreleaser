@@ -34,6 +34,7 @@ func TestSingleCommit(t *testing.T) {
 	require.Equal(t, "v0.0.1", ctx.Git.Summary)
 	require.Equal(t, "commit1", ctx.Git.TagSubject)
 	require.Equal(t, "commit1", ctx.Git.TagContents)
+	require.NotEmpty(t, ctx.Git.FirstCommit)
 }
 
 func TestAnnotatedTags(t *testing.T) {
@@ -172,6 +173,24 @@ func TestShallowClone(t *testing.T) {
 	})
 }
 
+func TestTagSortOrder(t *testing.T) {
+	testlib.Mktmp(t)
+	testlib.GitInit(t)
+	testlib.GitRemoteAdd(t, "git@github.com:foo/bar.git")
+	testlib.GitCommit(t, "commit1")
+	testlib.GitCommit(t, "commit2")
+	testlib.GitCommit(t, "commit3")
+	testlib.GitTag(t, "v0.0.1-rc.2")
+	testlib.GitTag(t, "v0.0.1")
+	ctx := context.New(config.Project{
+		Git: config.Git{
+			TagSort: "-version:creatordate",
+		},
+	})
+	require.NoError(t, Pipe{}.Run(ctx))
+	require.Equal(t, "v0.0.1", ctx.Git.CurrentTag)
+}
+
 func TestTagIsNotLastCommit(t *testing.T) {
 	testlib.Mktmp(t)
 	testlib.GitInit(t)
@@ -200,6 +219,7 @@ func TestValidState(t *testing.T) {
 	require.Equal(t, "v0.0.2", ctx.Git.PreviousTag)
 	require.Equal(t, "v0.0.3", ctx.Git.CurrentTag)
 	require.Equal(t, "git@github.com:foo/bar.git", ctx.Git.URL)
+	require.NotEmpty(t, ctx.Git.FirstCommit)
 }
 
 func TestSnapshotNoTags(t *testing.T) {
@@ -213,6 +233,7 @@ func TestSnapshotNoTags(t *testing.T) {
 	testlib.AssertSkipped(t, Pipe{}.Run(ctx))
 	require.Equal(t, fakeInfo.CurrentTag, ctx.Git.CurrentTag)
 	require.Empty(t, ctx.Git.PreviousTag)
+	require.NotEmpty(t, ctx.Git.FirstCommit)
 }
 
 func TestSnapshotNoCommits(t *testing.T) {
@@ -298,6 +319,7 @@ func TestNoPreviousTag(t *testing.T) {
 	require.NoError(t, Pipe{}.Run(ctx))
 	require.Equal(t, "v0.0.1", ctx.Git.CurrentTag)
 	require.Empty(t, ctx.Git.PreviousTag, "should be empty")
+	require.NotEmpty(t, ctx.Git.FirstCommit, "should not be empty")
 }
 
 func TestPreviousTagFromCI(t *testing.T) {

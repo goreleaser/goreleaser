@@ -34,13 +34,13 @@ docker_manifests:
 
   # Name template for the manifest.
   # Defaults to empty.
-  name_template: foo/bar:{{ .Version }}
+  name_template: "foo/bar:{{ .Version }}"
 
   # Image name templates to be added to this manifest.
   # Defaults to empty.
   image_templates:
-  - foo/bar:{{ .Version }}-amd64
-  - foo/bar:{{ .Version }}-arm64v8
+  - "foo/bar:{{ .Version }}-amd64"
+  - "foo/bar:{{ .Version }}-arm64v8"
 
   # Extra flags to be passed down to the manifest create command.
   # Defaults to empty.
@@ -53,10 +53,10 @@ docker_manifests:
   - --insecure
 
   # Skips the Docker manifest.
-  # If you set this to 'false' or 'auto' on your source Docker configs,
+  # If you set this to `false` or `auto` on your source Docker configs,
   #  you'll probably want to do the same here.
   #
-  # If set to 'auto', the manifest will not be created in case there is an
+  # If set to `auto`, the manifest will not be created in case there is an
   #  indicator of a prerelease in the tag, e.g. v1.0.0-rc1.
   #
   # Defaults to false.
@@ -130,10 +130,10 @@ dockers:
   build_flag_templates:
   - "--platform=linux/arm64/v8"
 docker_manifests:
-- name_template: foo/bar:{{ .Version }}
+- name_template: "foo/bar:{{ .Version }}"
   image_templates:
-  - foo/bar:{{ .Version }}-amd64
-  - foo/bar:{{ .Version }}-arm64v8
+  - "foo/bar:{{ .Version }}-amd64"
+  - "foo/bar:{{ .Version }}-arm64v8"
 ```
 
 !!! warning
@@ -153,10 +153,10 @@ to `podman` on your configuration:
 ```yaml
 # .goreleaser.yaml
 docker_manifests:
-- name_template: foo/bar:{{ .Version }}
+- name_template: "foo/bar:{{ .Version }}"
   image_templates:
-  - foo/bar:{{ .Version }}-amd64
-  - foo/bar:{{ .Version }}-arm64v8
+  - "foo/bar:{{ .Version }}-amd64"
+  - "foo/bar:{{ .Version }}-arm64v8"
   use: podman
 ```
 

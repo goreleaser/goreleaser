@@ -27,7 +27,7 @@ func TestAnnounceInvalidTemplate(t *testing.T) {
 			},
 		},
 	})
-	require.EqualError(t, Pipe{}.Announce(ctx), `announce: failed to announce to teams: template: tmpl:1: unexpected "}" in operand`)
+	require.EqualError(t, Pipe{}.Announce(ctx), `teams: template: tmpl:1: unexpected "}" in operand`)
 }
 
 func TestAnnounceMissingEnv(t *testing.T) {
@@ -39,7 +39,7 @@ func TestAnnounceMissingEnv(t *testing.T) {
 		},
 	})
 	require.NoError(t, Pipe{}.Default(ctx))
-	require.EqualError(t, Pipe{}.Announce(ctx), `announce: failed to announce to teams: env: environment variable "TEAMS_WEBHOOK" should not be empty`)
+	require.EqualError(t, Pipe{}.Announce(ctx), `teams: env: environment variable "TEAMS_WEBHOOK" should not be empty`)
 }
 
 func TestSkip(t *testing.T) {

@@ -10,6 +10,7 @@ import (
 	"github.com/caarlos0/log"
 	"github.com/goreleaser/goreleaser/internal/archivefiles"
 	"github.com/goreleaser/goreleaser/internal/artifact"
+	"github.com/goreleaser/goreleaser/internal/deprecate"
 	"github.com/goreleaser/goreleaser/internal/git"
 	"github.com/goreleaser/goreleaser/internal/tmpl"
 	"github.com/goreleaser/goreleaser/pkg/archive"
@@ -68,7 +69,11 @@ func (Pipe) Run(ctx *context.Context) (err error) {
 			Source: f,
 		})
 	}
-	files, err := archivefiles.Eval(tmpl.New(ctx), append(ff, ctx.Config.Source.Files...))
+	files, err := archivefiles.Eval(
+		tmpl.New(ctx),
+		ctx.Config.Source.RLCP,
+		append(ff, ctx.Config.Source.Files...),
+	)
 	if err != nil {
 		return err
 	}
@@ -106,6 +111,10 @@ func (Pipe) Default(ctx *context.Context) error {
 
 	if archive.NameTemplate == "" {
 		archive.NameTemplate = "{{ .ProjectName }}-{{ .Version }}"
+	}
+
+	if archive.Enabled && !archive.RLCP {
+		deprecate.NoticeCustom(ctx, "source.rlcp", "`{{ .Property }}` will be the default soon, check {{ .URL }} for more info")
 	}
 	return nil
 }

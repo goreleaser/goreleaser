@@ -1,7 +1,7 @@
 package static
 
 import (
-	"strings"
+	"bytes"
 	"testing"
 
 	"github.com/goreleaser/goreleaser/pkg/config"
@@ -9,6 +9,7 @@ import (
 )
 
 func TestExampleConfig(t *testing.T) {
-	_, err := config.LoadReader(strings.NewReader(ExampleConfig))
+	_, err := config.LoadReader(bytes.NewReader(ExampleConfig))
 	require.NoError(t, err)
+	require.NotEmpty(t, ExampleConfig)
 }

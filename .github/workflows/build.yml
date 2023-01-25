@@ -20,21 +20,21 @@ jobs:
     uses: caarlos0/meta/.github/workflows/govulncheck.yml@main
     with:
       cache: true
-      go-version: '>=1.19.3'
+      go-version: '>=1.19.5'
   semgrep:
     uses: caarlos0/meta/.github/workflows/semgrep.yml@main
   ruleguard:
     uses: caarlos0/meta/.github/workflows/ruleguard.yml@main
     with:
       cache: true
-      go-version: '>=1.19.3'
+      go-version: '>=1.19.4'
       args: '-disable largeloopcopy'
   test:
     runs-on: ubuntu-latest
     env:
       DOCKER_CLI_EXPERIMENTAL: "enabled"
     steps:
-      - uses: actions/checkout@93ea575cb5d8a053eaa0ac8fa3b40d7e05a33cc8 # v3
+      - uses: actions/checkout@ac593985615ec2ede58e132d2e21d2b1cbd6127c # v3
         with:
           fetch-depth: 0
       - uses: arduino/setup-task@d665c6beebae46ff3f699d7b2fd3f1959de7153c # v1
@@ -50,9 +50,9 @@ jobs:
           sudo apt-get -yq --no-install-suggests --no-install-recommends install snapcraft
           mkdir -p $HOME/.cache/snapcraft/download
           mkdir -p $HOME/.cache/snapcraft/stage-packages
-      - uses: actions/setup-go@c4a742cab115ed795e34d4513e2cf7d472deb55f # v3
+      - uses: actions/setup-go@6edd4406fa81c3da01a34fa6f6343087c207a568 # v3
         with:
-          go-version: '>=1.19.3'
+          go-version: '>=1.19.4'
           cache: true
       - uses: sigstore/cosign-installer@v2.8.1
       - uses: anchore/sbom-action/download-syft@v0.13.1

@@ -94,6 +94,16 @@ tasks:
       - www/docs/eula.md
       - www/docs/security.md
 
+  docs:releases:
+    desc: Generate releases.json and latest files
+    cmds:
+      - ./scripts/get-releases.sh
+    generates:
+      - www/docs/static/releases.json
+      - www/docs/static/releases-pro.json
+      - www/docs/static/latest
+      - www/docs/static/latest-pro
+
   docs:imgs:
     desc: Download and resize images
     cmds:
@@ -114,12 +124,6 @@ tasks:
     cmds:
       - task: docs:generate
       - '{{.DOCKER}} run --rm -v ${PWD}/www:/docs docker.io/squidfunk/mkdocs-material build'
-
-  docs:vercel:build:
-    desc: Build documentation for deploying to Vercel
-    cmds:
-      - scripts/vercel/install.sh
-      - scripts/vercel/build.sh
 
   release:
     desc: Create a new tag
@@ -156,11 +160,6 @@ tasks:
           Platform: 'arm64'
           Image: fedora
           Cmd: '{{.rpm}} goreleaser-*.aarch64.rpm'
-      - task: goreleaser:test:pkg
-        vars:
-          Platform: 'arm/7'
-          Image: fedora
-          Cmd: '{{.rpm}} goreleaser-*.armv7hl.rpm'
 
   goreleaser:test:deb:
     desc: Tests deb packages
@@ -224,4 +223,4 @@ tasks:
       SNAPSHOT:
         sh: 'if [[ $GITHUB_REF != refs/tags/v* ]]; then echo "--snapshot"; fi'
     cmds:
-      - ./goreleaser release --rm-dist {{.SNAPSHOT}}
+      - ./goreleaser release --clean {{.SNAPSHOT}}

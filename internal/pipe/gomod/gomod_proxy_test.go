@@ -39,8 +39,7 @@ func TestGoModProxy(t *testing.T) {
 
 		fakeGoModAndSum(t, ctx.ModulePath)
 		require.NoError(t, ProxyPipe{}.Run(ctx))
-		requireGoMod(t, ctx.ModulePath, ctx.Git.CurrentTag)
-		requireMainGo(t, ctx.ModulePath)
+		requireGoMod(t)
 		require.Equal(t, ctx.ModulePath, ctx.Config.Builds[0].Main)
 		require.Equal(t, ".", ctx.Config.Builds[0].UnproxiedMain)
 		require.Equal(t, filepath.Join(dist, "proxy", "foo"), ctx.Config.Builds[0].Dir)
@@ -72,8 +71,7 @@ func TestGoModProxy(t *testing.T) {
 		ctx.ModulePath = "github.com/goreleaser/nfpm/v2"
 		fakeGoModAndSum(t, ctx.ModulePath)
 		require.NoError(t, ProxyPipe{}.Run(ctx))
-		requireGoMod(t, ctx.ModulePath, ctx.Git.CurrentTag)
-		requireMainGo(t, ctx.ModulePath+"/cmd/nfpm")
+		requireGoMod(t)
 		require.Equal(t, ctx.ModulePath+"/cmd/nfpm", ctx.Config.Builds[0].Main)
 		require.Equal(t, filepath.Join(dist, "proxy", "foo"), ctx.Config.Builds[0].Dir)
 		require.Equal(t, ctx.ModulePath, ctx.ModulePath)
@@ -102,8 +100,7 @@ func TestGoModProxy(t *testing.T) {
 		ctx.ModulePath = "github.com/goreleaser/example-mod-proxy"
 		fakeGoMod(t, ctx.ModulePath)
 		require.NoError(t, ProxyPipe{}.Run(ctx))
-		requireGoMod(t, ctx.ModulePath, ctx.Git.CurrentTag)
-		requireMainGo(t, ctx.ModulePath)
+		requireGoMod(t)
 		require.Equal(t, ctx.ModulePath, ctx.Config.Builds[0].Main)
 		require.Equal(t, filepath.Join(dist, "proxy", "foo"), ctx.Config.Builds[0].Dir)
 		require.Equal(t, ctx.ModulePath, ctx.ModulePath)
@@ -113,7 +110,6 @@ func TestGoModProxy(t *testing.T) {
 		for file, mode := range map[string]os.FileMode{
 			"go.mod":          0o500,
 			"go.sum":          0o500,
-			"main.go":         0o500,
 			"../../../go.sum": 0o300,
 		} {
 			t.Run(file, func(t *testing.T) {
@@ -171,8 +167,7 @@ func TestGoModProxy(t *testing.T) {
 
 		fakeGoModAndSum(t, ctx.ModulePath)
 		require.NoError(t, ProxyPipe{}.Run(ctx))
-		requireGoMod(t, ctx.ModulePath, ctx.Git.CurrentTag)
-		requireMainGo(t, ctx.ModulePath)
+		requireGoMod(t)
 		require.Equal(t, ctx.ModulePath, ctx.Config.Builds[0].Main)
 		require.Equal(t, filepath.Join(dist, "proxy", "foo"), ctx.Config.Builds[0].Dir)
 		require.Equal(t, ctx.ModulePath, ctx.ModulePath)
@@ -220,30 +215,15 @@ func TestSkip(t *testing.T) {
 	})
 }
 
-func requireGoMod(tb testing.TB, module, version string) {
+func requireGoMod(tb testing.TB) {
 	tb.Helper()
 
 	mod, err := os.ReadFile("dist/proxy/foo/go.mod")
 	require.NoError(tb, err)
-	require.Contains(tb, string(mod), fmt.Sprintf(`module foo
+	require.Contains(tb, string(mod), `module foo
 
 go 1.19
-
-require %s %s
-`, module, version))
-}
-
-func requireMainGo(tb testing.TB, module string) {
-	tb.Helper()
-
-	main, err := os.ReadFile("dist/proxy/foo/main.go")
-	require.NoError(tb, err)
-	require.Equal(tb, fmt.Sprintf(`
-// +build main
-package main
-
-import _ "%s"
-`, module), string(main))
+`)
 }
 
 func fakeGoModAndSum(tb testing.TB, module string) {

@@ -25,7 +25,7 @@ func (Pipe) Run(ctx *context.Context) (err error) {
 		return mkdir(ctx)
 	}
 	if ctx.RmDist {
-		log.Info("--rm-dist is set, cleaning it up")
+		log.Infof("cleaning %s", ctx.Config.Dist)
 		err = os.RemoveAll(ctx.Config.Dist)
 		if err == nil {
 			err = mkdir(ctx)
@@ -39,7 +39,7 @@ func (Pipe) Run(ctx *context.Context) (err error) {
 	if len(files) != 0 {
 		log.Debugf("there are %d files on %s", len(files), ctx.Config.Dist)
 		return fmt.Errorf(
-			"%s is not empty, remove it before running goreleaser or use the --rm-dist flag",
+			"%s is not empty, remove it before running goreleaser or use the --clean flag",
 			ctx.Config.Dist,
 		)
 	}
