@@ -145,7 +145,11 @@ func create(ctx *context.Context, fpm config.NFPM, format string, binaries []*ar
 	arch := infoArch + binaries[0].Goamd64                                  // unique arch key
 	infoPlatform := binaries[0].Goos
 	if infoPlatform == "ios" {
-		infoPlatform = "iphoneos-arm64"
+		if format == "deb" {
+			infoPlatform = "iphoneos-arm64"
+		} else {
+			return nil
+		}
 	}
 
 	bindDir := fpm.Bindir
