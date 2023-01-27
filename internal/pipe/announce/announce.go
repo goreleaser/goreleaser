@@ -4,7 +4,6 @@ package announce
 import (
 	"fmt"
 
-	"github.com/caarlos0/log"
 	"github.com/goreleaser/goreleaser/internal/middleware/errhandler"
 	"github.com/goreleaser/goreleaser/internal/middleware/logging"
 	"github.com/goreleaser/goreleaser/internal/middleware/skip"
@@ -54,16 +53,7 @@ func (Pipe) Skip(ctx *context.Context) bool {
 	if ctx.SkipAnnounce {
 		return true
 	}
-	if ctx.Config.Announce.Skip == "" {
-		return false
-	}
-	skip, err := tmpl.New(ctx).Apply(ctx.Config.Announce.Skip)
-	if err != nil {
-		log.Error("invalid announce.skip template, will skip the announcing step")
-		return true
-	}
-	log.Debugf("announce.skip evaluated from %q to %q", ctx.Config.Announce.Skip, skip)
-	return skip == "true"
+	return tmpl.Must(tmpl.New(ctx).Bool(ctx.Config.Announce.Skip))
 }
 
 // Run the pipe.

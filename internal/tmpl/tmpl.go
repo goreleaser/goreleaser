@@ -11,6 +11,7 @@ import (
 	"time"
 
 	"github.com/Masterminds/semver/v3"
+	"github.com/caarlos0/log"
 	"github.com/goreleaser/goreleaser/internal/artifact"
 	"github.com/goreleaser/goreleaser/pkg/build"
 	"github.com/goreleaser/goreleaser/pkg/context"
@@ -74,6 +75,16 @@ const (
 	path   = "Path"
 	target = "Target"
 )
+
+// Must returns false and logs if err != nil, or else, returns the given result.
+func Must[T any](result T, err error) T {
+	var t T
+	if err != nil {
+		log.WithError(err).Warn("failed to eval template")
+		return t
+	}
+	return result
+}
 
 // New Template.
 func New(ctx *context.Context) *Template {
@@ -188,6 +199,12 @@ func buildOptsToFields(opts build.Options) Fields {
 		arm:    opts.Goarm,
 		mips:   opts.Gomips,
 	}
+}
+
+// Bool Apply the given string, and converts it to a bool.
+func (t *Template) Bool(s string) (bool, error) {
+	r, err := t.Apply(s)
+	return strings.TrimSpace(strings.ToLower(r)) == "true", err
 }
 
 // Apply applies the given string against the Fields stored in the template.

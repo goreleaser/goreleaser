@@ -114,17 +114,8 @@ func (Pipe) Run(ctx *context.Context) error {
 	return nil
 }
 
-func isSkipRelease(ctx *context.Context) bool {
-	d, err := tmpl.New(ctx).Apply(ctx.Config.Release.Disable)
-	if err != nil {
-		log.WithError(err).Error("could not execute release.disable template, will assume false")
-		return false
-	}
-	return strings.ToLower(d) == "true"
-}
-
 func checkErrors(ctx *context.Context, noTokens, noTokenErrs bool, gitlabTokenErr, githubTokenErr, giteaTokenErr error) error {
-	if ctx.SkipTokenCheck || ctx.SkipPublish || isSkipRelease(ctx) {
+	if ctx.SkipTokenCheck || ctx.SkipPublish || tmpl.Must(tmpl.New(ctx).Bool(ctx.Config.Release.Disable)) {
 		return nil
 	}
 
