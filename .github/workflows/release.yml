@@ -98,7 +98,7 @@ jobs:
             ./dist/*.apk
           key: ${{ github.ref }}
       - uses: sigstore/cosign-installer@v2.8.1
-      - uses: anchore/sbom-action/download-syft@v0.13.2
+      - uses: anchore/sbom-action/download-syft@v0.13.3
       - name: dockerhub-login
         if: startsWith(github.ref, 'refs/tags/v')
         uses: docker/login-action@f4ef78c080cd8ba55a85445d5b36e214a81df20a # v1
