@@ -38,7 +38,7 @@ func TestPopulatedDistExists(t *testing.T) {
 		},
 	}
 	require.Error(t, Pipe{}.Run(ctx))
-	ctx.RmDist = true
+	ctx.Clean = true
 	require.NoError(t, Pipe{}.Run(ctx))
 	_, err = os.Stat(dist)
 	require.False(t, os.IsExist(err))
