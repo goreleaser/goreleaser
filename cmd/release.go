@@ -6,6 +6,7 @@ import (
 
 	"github.com/caarlos0/ctrlc"
 	"github.com/caarlos0/log"
+	"github.com/goreleaser/goreleaser/internal/deprecate"
 	"github.com/goreleaser/goreleaser/internal/middleware/errhandler"
 	"github.com/goreleaser/goreleaser/internal/middleware/logging"
 	"github.com/goreleaser/goreleaser/internal/middleware/skip"
@@ -39,6 +40,7 @@ type releaseOpts struct {
 	skipKo             bool
 	skipBefore         bool
 	clean              bool
+	rmDist             bool
 	deprecated         bool
 	parallelism        int
 	timeout            time.Duration
@@ -82,7 +84,7 @@ func newReleaseCmd() *releaseCmd {
 	cmd.Flags().BoolVar(&root.opts.skipBefore, "skip-before", false, "Skips global before hooks")
 	cmd.Flags().BoolVar(&root.opts.skipValidate, "skip-validate", false, "Skips git checks")
 	cmd.Flags().BoolVar(&root.opts.clean, "clean", false, "Removes the dist folder")
-	cmd.Flags().BoolVar(&root.opts.clean, "rm-dist", false, "Removes the dist folder")
+	cmd.Flags().BoolVar(&root.opts.rmDist, "rm-dist", false, "Removes the dist folder")
 	cmd.Flags().IntVarP(&root.opts.parallelism, "parallelism", "p", 0, "Amount tasks to run concurrently (default: number of CPUs)")
 	cmd.Flags().DurationVar(&root.opts.timeout, "timeout", 30*time.Minute, "Timeout to the entire release process")
 	cmd.Flags().BoolVar(&root.opts.deprecated, "deprecated", false, "Force print the deprecation message - tests only")
@@ -120,6 +122,7 @@ func releaseProject(options releaseOpts) (*context.Context, error) {
 }
 
 func setupReleaseContext(ctx *context.Context, options releaseOpts) {
+	ctx.Deprecated = options.deprecated // test only
 	ctx.Parallelism = runtime.NumCPU()
 	if options.parallelism > 0 {
 		ctx.Parallelism = options.parallelism
@@ -144,8 +147,9 @@ func setupReleaseContext(ctx *context.Context, options releaseOpts) {
 	ctx.SkipDocker = options.skipDocker
 	ctx.SkipKo = options.skipKo
 	ctx.SkipBefore = options.skipBefore
-	ctx.RmDist = options.clean
+	ctx.Clean = options.clean || options.rmDist
 
-	// test only
-	ctx.Deprecated = options.deprecated
+	if options.rmDist {
+		deprecate.NoticeCustom(ctx, "-rm-dist", "--rm-dist was deprecated in favor of --clean, check {{ .URL }} for more details")
+	}
 }

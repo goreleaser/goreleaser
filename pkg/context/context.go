@@ -99,7 +99,7 @@ type Context struct {
 	SkipKo             bool
 	SkipDocker         bool
 	SkipBefore         bool
-	RmDist             bool
+	Clean              bool
 	PreRelease         bool
 	Deprecated         bool
 	Parallelism        int

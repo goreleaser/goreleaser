@@ -165,7 +165,7 @@ func TestBuildFlags(t *testing.T) {
 	t.Run("rm dist", func(t *testing.T) {
 		require.True(t, setup(buildOpts{
 			clean: true,
-		}).RmDist)
+		}).Clean)
 	})
 
 	t.Run("single-target", func(t *testing.T) {

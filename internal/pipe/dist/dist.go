@@ -24,7 +24,7 @@ func (Pipe) Run(ctx *context.Context) (err error) {
 		log.Debugf("%s doesn't exist, creating empty folder", ctx.Config.Dist)
 		return mkdir(ctx)
 	}
-	if ctx.RmDist {
+	if ctx.Clean {
 		log.Infof("cleaning %s", ctx.Config.Dist)
 		err = os.RemoveAll(ctx.Config.Dist)
 		if err == nil {
