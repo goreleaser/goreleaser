@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"io/fs"
 	"os"
-	"strings"
 	"time"
 
 	"github.com/caarlos0/log"
@@ -28,13 +27,9 @@ var ErrMultipleReleases = errors.New("multiple releases are defined. Only one is
 type Pipe struct{}
 
 func (Pipe) String() string { return "scm releases" }
-func (Pipe) Skip(ctx *context.Context) bool {
-	d, err := tmpl.New(ctx).Apply(ctx.Config.Release.Disable)
-	if err != nil {
-		log.WithError(err).Error("could not execute release.disable template, will assume false")
-		return false
-	}
-	return strings.ToLower(d) == "true"
+
+func (Pipe) Skip(ctx *context.Context) (bool, error) {
+	return tmpl.New(ctx).Bool(ctx.Config.Release.Disable)
 }
 
 // Default sets the pipe defaults.
@@ -125,11 +120,11 @@ func doPublish(ctx *context.Context, client client.Client) error {
 		return err
 	}
 
-	d, err := tmpl.New(ctx).Apply(ctx.Config.Release.SkipUpload)
+	skipUpload, err := tmpl.New(ctx).Bool(ctx.Config.Release.SkipUpload)
 	if err != nil {
 		return err
 	}
-	if strings.ToLower(d) == "true" {
+	if skipUpload {
 		return pipe.Skip("release.skip_upload is set")
 	}
 

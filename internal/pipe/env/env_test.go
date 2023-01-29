@@ -5,6 +5,7 @@ import (
 	"os"
 	"testing"
 
+	"github.com/goreleaser/goreleaser/internal/testlib"
 	"github.com/goreleaser/goreleaser/pkg/config"
 	"github.com/goreleaser/goreleaser/pkg/context"
 	"github.com/stretchr/testify/require"
@@ -247,7 +248,7 @@ func TestInvalidEnvReleaseDisabled(t *testing.T) {
 				Disable: "{{ .Env.FOO }}",
 			},
 		})
-		require.EqualError(t, Pipe{}.Run(ctx), ErrMissingToken.Error())
+		testlib.RequireTemplateError(t, Pipe{}.Run(ctx))
 	})
 }
 
