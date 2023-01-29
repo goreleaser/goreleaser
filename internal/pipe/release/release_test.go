@@ -609,7 +609,9 @@ func TestSkip(t *testing.T) {
 				Disable: "true",
 			},
 		})
-		require.True(t, Pipe{}.Skip(ctx))
+		b, err := Pipe{}.Skip(ctx)
+		require.NoError(t, err)
+		require.True(t, b)
 	})
 
 	t.Run("skip tmpl", func(t *testing.T) {
@@ -619,16 +621,19 @@ func TestSkip(t *testing.T) {
 				Disable: "{{ .Env.FOO }}",
 			},
 		})
-		require.True(t, Pipe{}.Skip(ctx))
+		b, err := Pipe{}.Skip(ctx)
+		require.NoError(t, err)
+		require.True(t, b)
 	})
 
-	t.Run("skip tmpl err", func(t *testing.T) {
+	t.Run("tmpl err", func(t *testing.T) {
 		ctx := context.New(config.Project{
 			Release: config.Release{
 				Disable: "{{ .Env.FOO }}",
 			},
 		})
-		require.False(t, Pipe{}.Skip(ctx))
+		_, err := Pipe{}.Skip(ctx)
+		require.Error(t, err)
 	})
 
 	t.Run("skip upload", func(t *testing.T) {
@@ -657,6 +662,8 @@ func TestSkip(t *testing.T) {
 	})
 
 	t.Run("dont skip", func(t *testing.T) {
-		require.False(t, Pipe{}.Skip(context.New(config.Project{})))
+		b, err := Pipe{}.Skip(context.New(config.Project{}))
+		require.NoError(t, err)
+		require.False(t, b)
 	})
 }

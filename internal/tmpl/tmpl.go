@@ -11,7 +11,6 @@ import (
 	"time"
 
 	"github.com/Masterminds/semver/v3"
-	"github.com/caarlos0/log"
 	"github.com/goreleaser/goreleaser/internal/artifact"
 	"github.com/goreleaser/goreleaser/pkg/build"
 	"github.com/goreleaser/goreleaser/pkg/context"
@@ -75,16 +74,6 @@ const (
 	path   = "Path"
 	target = "Target"
 )
-
-// Must returns false and logs if err != nil, or else, returns the given result.
-func Must[T any](result T, err error) T {
-	var t T
-	if err != nil {
-		log.WithError(err).Warn("failed to eval template")
-		return t
-	}
-	return result
-}
 
 // New Template.
 func New(ctx *context.Context) *Template {

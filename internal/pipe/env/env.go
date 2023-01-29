@@ -115,8 +115,11 @@ func (Pipe) Run(ctx *context.Context) error {
 }
 
 func checkErrors(ctx *context.Context, noTokens, noTokenErrs bool, gitlabTokenErr, githubTokenErr, giteaTokenErr error) error {
-	if ctx.SkipTokenCheck || ctx.SkipPublish || tmpl.Must(tmpl.New(ctx).Bool(ctx.Config.Release.Disable)) {
+	if ctx.SkipTokenCheck || ctx.SkipPublish {
 		return nil
+	}
+	if b, err := tmpl.New(ctx).Bool(ctx.Config.Release.Disable); err != nil || b {
+		return err
 	}
 
 	if noTokens && noTokenErrs {

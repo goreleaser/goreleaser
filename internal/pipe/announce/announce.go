@@ -49,11 +49,11 @@ type Pipe struct{}
 
 func (Pipe) String() string { return "announcing" }
 
-func (Pipe) Skip(ctx *context.Context) bool {
+func (Pipe) Skip(ctx *context.Context) (bool, error) {
 	if ctx.SkipAnnounce {
-		return true
+		return true, nil
 	}
-	return tmpl.Must(tmpl.New(ctx).Bool(ctx.Config.Announce.Skip))
+	return tmpl.New(ctx).Bool(ctx.Config.Announce.Skip)
 }
 
 // Run the pipe.

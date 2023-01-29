@@ -1,7 +1,6 @@
 package tmpl
 
 import (
-	"fmt"
 	"os"
 	"path/filepath"
 	"runtime"
@@ -395,28 +394,5 @@ func TestBool(t *testing.T) {
 				require.False(t, b)
 			})
 		}
-	})
-}
-
-func TestMust(t *testing.T) {
-	t.Run("bool", func(t *testing.T) {
-		for _, b := range []bool{true, false} {
-			ctx := context.New(config.Project{Env: []string{fmt.Sprintf("FOO=%v", b)}})
-			require.Equal(t, b, Must(New(ctx).Bool("{{.Env.FOO}}")))
-		}
-		t.Run("error", func(t *testing.T) {
-			ctx := context.New(config.Project{})
-			require.False(t, Must(New(ctx).Bool("{{.Env.FOO}}")))
-		})
-	})
-	t.Run("string", func(t *testing.T) {
-		for _, b := range []string{"Hi", "Hello"} {
-			ctx := context.New(config.Project{Env: []string{"FOO=" + b}})
-			require.Equal(t, b, Must(New(ctx).Apply("{{.Env.FOO}}")))
-		}
-		t.Run("error", func(t *testing.T) {
-			ctx := context.New(config.Project{})
-			require.Empty(t, Must(New(ctx).Apply("{{.Env.FOO}}")))
-		})
 	})
 }
