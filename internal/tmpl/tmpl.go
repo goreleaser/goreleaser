@@ -190,6 +190,12 @@ func buildOptsToFields(opts build.Options) Fields {
 	}
 }
 
+// Bool Apply the given string, and converts it to a bool.
+func (t *Template) Bool(s string) (bool, error) {
+	r, err := t.Apply(s)
+	return strings.TrimSpace(strings.ToLower(r)) == "true", err
+}
+
 // Apply applies the given string against the Fields stored in the template.
 func (t *Template) Apply(s string) (string, error) {
 	var out bytes.Buffer
