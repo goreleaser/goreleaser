@@ -41,7 +41,7 @@ Description.
 
 > since 2023-01-17 (v1.15.0)
 
-`--rm-dist` has been deprecated in favor of `--rm-dist`.
+`--rm-dist` has been deprecated in favor of `--clean`.
 
 === "Before"
 
@@ -50,8 +50,9 @@ Description.
     ```
 
 === "After"
+
     ```bash
-    goreleaser --rm-dist
+    goreleaser --clean
     ```
 
 ### archives.rlcp
