@@ -49,7 +49,7 @@ changelog:
 
   # Group commits messages by given regex and title.
   # Order value defines the order of the groups.
-  # Proving no regex means all commits will be grouped under the default group.
+  # Providing no regex means all commits will be grouped under the default group.
   # Groups are disabled when using github-native, as it already groups things by itself.
   # Matches are performed against strings of the form: "<abbrev-commit>[:] <title-commit>".
   # Regex use RE2 syntax as defined here: https://github.com/google/re2/wiki/Syntax.

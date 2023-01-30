@@ -34,10 +34,12 @@ func NoticeCustom(ctx *context.Context, property, tmpl string) {
 		" ", "-",
 	).Replace(property)
 	var out bytes.Buffer
-	if err := template.Must(template.New("deprecation").Parse("DEPRECATED: "+tmpl)).Execute(&out, templateData{
-		URL:      url,
-		Property: property,
-	}); err != nil {
+	if err := template.
+		Must(template.New("deprecation").Parse("DEPRECATED: "+tmpl)).
+		Execute(&out, templateData{
+			URL:      url,
+			Property: property,
+		}); err != nil {
 		panic(err) // this should never happen
 	}
 

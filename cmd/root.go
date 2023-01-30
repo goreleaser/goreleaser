@@ -123,7 +123,7 @@ func shouldPrependRelease(cmd *cobra.Command, args []string) bool {
 
 func deprecateWarn(ctx *context.Context) {
 	if ctx.Deprecated {
-		log.Warn(boldStyle.Render("your config is using deprecated properties, check logs above for details"))
+		log.Warn(boldStyle.Render("you are using deprecated options, check the output above for details"))
 	}
 }
 

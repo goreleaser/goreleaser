@@ -360,3 +360,39 @@ func TestWithExtraFields(t *testing.T) {
 	}).Apply("{{ .MyCustomField }}")
 	require.Equal(t, "foo", out)
 }
+
+func TestBool(t *testing.T) {
+	t.Run("true", func(t *testing.T) {
+		for _, v := range []string{
+			" TruE   ",
+			"true",
+			"TRUE",
+		} {
+			t.Run(v, func(t *testing.T) {
+				ctx := context.New(config.Project{
+					Env: []string{"FOO=" + v},
+				})
+				b, err := New(ctx).Bool("{{.Env.FOO}}")
+				require.NoError(t, err)
+				require.True(t, b)
+			})
+		}
+	})
+	t.Run("false", func(t *testing.T) {
+		for _, v := range []string{
+			"    ",
+			"",
+			"false",
+			"yada yada",
+		} {
+			t.Run(v, func(t *testing.T) {
+				ctx := context.New(config.Project{
+					Env: []string{"FOO=" + v},
+				})
+				b, err := New(ctx).Bool("{{.Env.FOO}}")
+				require.NoError(t, err)
+				require.False(t, b)
+			})
+		}
+	})
+}

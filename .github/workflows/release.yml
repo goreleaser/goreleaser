@@ -78,7 +78,7 @@ jobs:
           version: 3.x
           repo-token: ${{ secrets.GITHUB_TOKEN }}
       - uses: docker/setup-qemu-action@e81a89b1732b9c48d79cd809d8d81d79c4647a18 # v2
-      - uses: docker/setup-buildx-action@8c0edbc76e98fa90f69d9a2c020dcb50019dc325 # v2
+      - uses: docker/setup-buildx-action@5e716dcfd653738c2d1db099bfba194a84158be4 # v2
       - name: setup-snapcraft
         # FIXME: the mkdirs are a hack for https://github.com/goreleaser/goreleaser/issues/1715
         run: |
@@ -98,7 +98,7 @@ jobs:
             ./dist/*.apk
           key: ${{ github.ref }}
       - uses: sigstore/cosign-installer@v2.8.1
-      - uses: anchore/sbom-action/download-syft@v0.13.1
+      - uses: anchore/sbom-action/download-syft@v0.13.3
       - name: dockerhub-login
         if: startsWith(github.ref, 'refs/tags/v')
         uses: docker/login-action@f4ef78c080cd8ba55a85445d5b36e214a81df20a # v1

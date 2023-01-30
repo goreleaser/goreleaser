@@ -237,16 +237,16 @@ nfpms:
     # All fields above marked as `overridable` can be overridden for a given
     # package format in this section.
     overrides:
-      # The depends override can for example be used to provide version
+      # The dependencies override can for example be used to provide version
       # constraints for dependencies where  different package formats use
       # different versions or for dependencies that are named differently.
       deb:
-        depends:
+        dependencies:
           - baz (>= 1.2.3-0)
           - some-lib-dev
         # ...
       rpm:
-        depends:
+        dependencies:
           - baz >= 1.2.3-0
           - some-lib-devel
         # ...

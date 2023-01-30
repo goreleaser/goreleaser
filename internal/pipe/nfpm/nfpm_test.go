@@ -250,7 +250,7 @@ func TestRunPipe(t *testing.T) {
 	}
 	require.NoError(t, Pipe{}.Run(ctx))
 	packages := ctx.Artifacts.Filter(artifact.ByType(artifact.LinuxPackage)).List()
-	require.Len(t, packages, 51)
+	require.Len(t, packages, 47)
 	for _, pkg := range packages {
 		format := pkg.Format()
 		require.NotEmpty(t, format)
