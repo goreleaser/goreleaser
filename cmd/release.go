@@ -40,7 +40,7 @@ type releaseOpts struct {
 	skipKo             bool
 	skipBefore         bool
 	clean              bool
-	rmDist             bool
+	rmDist             bool // deprecated
 	deprecated         bool
 	parallelism        int
 	timeout            time.Duration
