@@ -74,7 +74,7 @@ would be nice to have your opinion [here][rlcp-discuss].
 
 If you want to make sure your releases will keep working properly, you can
 enable this option and test it out with
-`goreleaser release --snapshot --rm-dist`.
+`goreleaser release --snapshot --clean`.
 
 === "After"
     ``` yaml

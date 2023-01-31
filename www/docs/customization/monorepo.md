@@ -33,7 +33,7 @@ monorepo:
 Then, you can release with (from the project's root directory):
 
 ```bash
-goreleaser release --rm-dist -f ./subproj1/.goreleaser.yaml
+goreleaser release --clean -f ./subproj1/.goreleaser.yaml
 ```
 
 Then, the following is different from a "regular" run:
@@ -69,7 +69,7 @@ monorepo:
 Then, you can release with:
 
 ```bash
-goreleaser release --rm-dist
+goreleaser release --clean
 ```
 
 GoReleaser will then ignore the tags that are not prefixed with `v`, and it
