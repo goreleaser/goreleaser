@@ -109,7 +109,6 @@ func (Pipe) Default(ctx *context.Context) error {
 
 		if repo := ctx.Env["KO_DOCKER_REPO"]; repo != "" {
 			ko.Repository = repo
-			ko.RepositoryFromEnv = true
 		}
 
 		if ko.Repository == "" {
@@ -136,7 +135,6 @@ type buildOptions struct {
 	flags               []string
 	env                 []string
 	imageRepo           string
-	fromEnv             bool
 	workingDir          string
 	platforms           []string
 	baseImage           string
@@ -293,7 +291,6 @@ func buildBuildOptions(ctx *context.Context, cfg config.Ko) (*buildOptions, erro
 		platforms:           cfg.Platforms,
 		sbom:                cfg.SBOM,
 		imageRepo:           cfg.Repository,
-		fromEnv:             cfg.RepositoryFromEnv,
 	}
 
 	tags, err := applyTemplate(ctx, cfg.Tags)
