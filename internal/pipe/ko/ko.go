@@ -109,7 +109,6 @@ func (Pipe) Default(ctx *context.Context) error {
 
 		if repo := ctx.Env["KO_DOCKER_REPO"]; repo != "" {
 			ko.Repository = repo
-			ko.RepositoryFromEnv = true
 		}
 
 		if ko.Repository == "" {
@@ -136,7 +135,6 @@ type buildOptions struct {
 	flags               []string
 	env                 []string
 	imageRepo           string
-	fromEnv             bool
 	workingDir          string
 	platforms           []string
 	baseImage           string
@@ -225,24 +223,15 @@ func doBuild(ctx *context.Context, ko config.Ko) func() error {
 			return fmt.Errorf("build: %w", err)
 		}
 
-		po := []publish.Option{publish.WithTags(opts.tags), publish.WithAuthFromKeychain(keychain)}
+		po := []publish.Option{publish.WithTags(opts.tags), publish.WithNamer(options.MakeNamer(&options.PublishOptions{
+			DockerRepo:          opts.imageRepo,
+			Bare:                opts.bare,
+			PreserveImportPaths: opts.preserveImportPaths,
+			BaseImportPaths:     opts.baseImportPaths,
+			Tags:                opts.tags,
+		})), publish.WithAuthFromKeychain(keychain)}
 
-		var repo string
-		if opts.fromEnv {
-			repo = opts.imageRepo
-		} else {
-			// image resource's `repo` takes precedence if set, and selects the
-			// `--bare` namer so the image is named exactly `repo`.
-			repo = opts.imageRepo
-			po = append(po, publish.WithNamer(options.MakeNamer(&options.PublishOptions{
-				DockerRepo:          opts.imageRepo,
-				Bare:                opts.bare,
-				PreserveImportPaths: opts.preserveImportPaths,
-				BaseImportPaths:     opts.baseImportPaths,
-			})))
-		}
-
-		p, err := publish.NewDefault(repo, po...)
+		p, err := publish.NewDefault(opts.imageRepo, po...)
 		if err != nil {
 			return fmt.Errorf("newDefault: %w", err)
 		}
@@ -302,7 +291,6 @@ func buildBuildOptions(ctx *context.Context, cfg config.Ko) (*buildOptions, erro
 		platforms:           cfg.Platforms,
 		sbom:                cfg.SBOM,
 		imageRepo:           cfg.Repository,
-		fromEnv:             cfg.RepositoryFromEnv,
 	}
 
 	tags, err := applyTemplate(ctx, cfg.Tags)

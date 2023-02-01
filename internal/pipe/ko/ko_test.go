@@ -44,18 +44,17 @@ func TestDefault(t *testing.T) {
 	})
 	require.NoError(t, Pipe{}.Default(ctx))
 	require.Equal(t, config.Ko{
-		ID:                "test",
-		Build:             "test",
-		BaseImage:         chainguardStatic,
-		Repository:        registry,
-		RepositoryFromEnv: true,
-		Platforms:         []string{"linux/amd64"},
-		SBOM:              "spdx",
-		Tags:              []string{"latest"},
-		WorkingDir:        ".",
-		Ldflags:           []string{"{{.Env.LDFLAGS}}"},
-		Flags:             []string{"{{.Env.FLAGS}}"},
-		Env:               []string{"SOME_ENV={{.Env.LE_ENV}}"},
+		ID:         "test",
+		Build:      "test",
+		BaseImage:  chainguardStatic,
+		Repository: registry,
+		Platforms:  []string{"linux/amd64"},
+		SBOM:       "spdx",
+		Tags:       []string{"latest"},
+		WorkingDir: ".",
+		Ldflags:    []string{"{{.Env.LDFLAGS}}"},
+		Flags:      []string{"{{.Env.FLAGS}}"},
+		Env:        []string{"SOME_ENV={{.Env.LE_ENV}}"},
 	}, ctx.Config.Kos[0])
 }
 
