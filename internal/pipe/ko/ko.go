@@ -225,7 +225,7 @@ func doBuild(ctx *context.Context, ko config.Ko) func() error {
 			return fmt.Errorf("build: %w", err)
 		}
 
-		po := []publish.Option{publish.WithNamer(options.MakeNamer(&options.PublishOptions{
+		po := []publish.Option{publish.WithTags(opts.tags), publish.WithNamer(options.MakeNamer(&options.PublishOptions{
 			DockerRepo:          opts.imageRepo,
 			Bare:                opts.bare,
 			PreserveImportPaths: opts.preserveImportPaths,
