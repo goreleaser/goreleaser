@@ -234,13 +234,14 @@ func doBuild(ctx *context.Context, ko config.Ko) func() error {
 			// image resource's `repo` takes precedence if set, and selects the
 			// `--bare` namer so the image is named exactly `repo`.
 			repo = opts.imageRepo
-			po = append(po, publish.WithNamer(options.MakeNamer(&options.PublishOptions{
-				DockerRepo:          opts.imageRepo,
-				Bare:                opts.bare,
-				PreserveImportPaths: opts.preserveImportPaths,
-				BaseImportPaths:     opts.baseImportPaths,
-			})))
 		}
+		// irrespective of opts.fromEnv set other ko options, fixes issue-3472
+		po = append(po, publish.WithNamer(options.MakeNamer(&options.PublishOptions{
+			DockerRepo:          opts.imageRepo,
+			Bare:                opts.bare,
+			PreserveImportPaths: opts.preserveImportPaths,
+			BaseImportPaths:     opts.baseImportPaths,
+		})))
 
 		p, err := publish.NewDefault(repo, po...)
 		if err != nil {
