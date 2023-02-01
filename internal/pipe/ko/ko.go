@@ -225,25 +225,15 @@ func doBuild(ctx *context.Context, ko config.Ko) func() error {
 			return fmt.Errorf("build: %w", err)
 		}
 
-		po := []publish.Option{publish.WithTags(opts.tags), publish.WithAuthFromKeychain(keychain)}
-
-		var repo string
-		if opts.fromEnv {
-			repo = opts.imageRepo
-		} else {
-			// image resource's `repo` takes precedence if set, and selects the
-			// `--bare` namer so the image is named exactly `repo`.
-			repo = opts.imageRepo
-		}
-		// irrespective of opts.fromEnv set other ko options, fixes issue-3472
-		po = append(po, publish.WithNamer(options.MakeNamer(&options.PublishOptions{
+		po := []publish.Option{publish.WithNamer(options.MakeNamer(&options.PublishOptions{
 			DockerRepo:          opts.imageRepo,
 			Bare:                opts.bare,
 			PreserveImportPaths: opts.preserveImportPaths,
 			BaseImportPaths:     opts.baseImportPaths,
-		})))
+			Tags:                opts.tags,
+		})), publish.WithAuthFromKeychain(keychain)}
 
-		p, err := publish.NewDefault(repo, po...)
+		p, err := publish.NewDefault(opts.imageRepo, po...)
 		if err != nil {
 			return fmt.Errorf("newDefault: %w", err)
 		}
