@@ -54,6 +54,9 @@ require (
 	gopkg.in/yaml.v3 v3.0.1
 )
 
+// DO NOT UPDATE THIS!! needs to be v0.0.0-20210512092938-c05353c2d58c
+require github.com/ProtonMail/go-crypto v0.0.0-20210512092938-c05353c2d58c // indirect
+
 require (
 	cloud.google.com/go v0.107.0 // indirect
 	cloud.google.com/go/compute v1.13.0 // indirect
@@ -86,7 +89,6 @@ require (
 	github.com/Masterminds/sprig v2.22.0+incompatible // indirect
 	github.com/Microsoft/go-winio v0.6.0 // indirect
 	github.com/Nvveen/Gotty v0.0.0-20120604004816-cd527374f1e5 // indirect
-	github.com/ProtonMail/go-crypto v0.0.0-20210512092938-c05353c2d58c // indirect
 	github.com/acomagu/bufpipe v1.0.3 // indirect
 	github.com/alessio/shellescape v1.4.1 // indirect
 	github.com/asaskevich/govalidator v0.0.0-20210307081110-f21760c49a8d // indirect
