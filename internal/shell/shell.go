@@ -27,8 +27,8 @@ func Run(ctx *context.Context, dir string, command, env []string, output bool) e
 	var b bytes.Buffer
 	w := gio.Safe(&b)
 
-	cmd.Stderr = io.MultiWriter(logext.NewConditionalWriter(fields, logext.Error, output), w)
-	cmd.Stdout = io.MultiWriter(logext.NewConditionalWriter(fields, logext.Info, output), w)
+	cmd.Stderr = io.MultiWriter(logext.NewConditionalWriter(output), w)
+	cmd.Stdout = io.MultiWriter(logext.NewConditionalWriter(output), w)
 
 	if dir != "" {
 		cmd.Dir = dir
