@@ -102,8 +102,8 @@ func executeCommand(c *command, artifact *artifact.Artifact) error {
 	}
 	var b bytes.Buffer
 	w := gio.Safe(&b)
-	cmd.Stderr = io.MultiWriter(logext.NewWriter(fields, logext.Error), w)
-	cmd.Stdout = io.MultiWriter(logext.NewWriter(fields, logext.Info), w)
+	cmd.Stderr = io.MultiWriter(logext.NewWriter(), w)
+	cmd.Stdout = io.MultiWriter(logext.NewWriter(), w)
 
 	log.WithFields(fields).Info("publishing")
 	if err := cmd.Run(); err != nil {

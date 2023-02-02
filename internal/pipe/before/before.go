@@ -43,8 +43,8 @@ func (Pipe) Run(ctx *context.Context) error {
 		var b bytes.Buffer
 		w := gio.Safe(&b)
 		fields := log.Fields{"hook": step}
-		cmd.Stderr = io.MultiWriter(logext.NewWriter(fields, logext.Error), w)
-		cmd.Stdout = io.MultiWriter(logext.NewWriter(fields, logext.Info), w)
+		cmd.Stderr = io.MultiWriter(logext.NewWriter(), w)
+		cmd.Stdout = io.MultiWriter(logext.NewWriter(), w)
 
 		log.WithFields(fields).Info("running")
 		if err := cmd.Run(); err != nil {

@@ -191,8 +191,8 @@ func catalogArtifact(ctx *context.Context, cfg config.SBOM, a *artifact.Artifact
 
 	var b bytes.Buffer
 	w := gio.Safe(&b)
-	cmd.Stderr = io.MultiWriter(logext.NewWriter(fields, logext.Error), w)
-	cmd.Stdout = io.MultiWriter(logext.NewWriter(fields, logext.Info), w)
+	cmd.Stderr = io.MultiWriter(logext.NewWriter(), w)
+	cmd.Stdout = io.MultiWriter(logext.NewWriter(), w)
 
 	log.WithFields(fields).Info("cataloging")
 	if err := cmd.Run(); err != nil {
