@@ -23,6 +23,6 @@ announce:
     title_template: 'Release of {{ .Tag }}'
 
     # Message template to use while publishing. It can be HTML!
-    # Defaults to `{{ .ProjectName }} {{ .Tag }} is out! Check it out at <a href="{{ .ReleaseURL }}">{{ .ReleaseURL }}</a>`
+    # Defaults to `{{ .ProjectName }} {{ .Tag }} is out!<br/>Check it out at <a href="{{ .ReleaseURL }}">{{ .ReleaseURL }}</a>`
     message_template: 'Awesome project {{.Tag}} is out!'
 ```
