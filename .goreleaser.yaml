@@ -65,6 +65,9 @@ changelog:
     - title: 'Documentation updates'
       regexp: ^.*?doc(\([[:word:]]+\))??!?:.+$
       order: 400
+    - title: 'Build process updates'
+      regexp: ^.*?build(\([[:word:]]+\))??!?:.+$
+      order: 400
     - title: Other work
       order: 9999
 
