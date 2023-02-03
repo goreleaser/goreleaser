@@ -319,7 +319,7 @@ release:
 
 announce:
   twitter:
-    enabled: true
+    enabled: false
     message_template: 'GoReleaser {{ .Tag }} is out! Check it out: https://github.com/goreleaser/goreleaser/releases/tag/{{ .Tag }}'
 
   mastodon:
