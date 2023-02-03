@@ -59,10 +59,19 @@ func (Pipe) Announce(ctx *context.Context) error {
 
 	id, err := createUpdate(ctx, title, html, ctx.Config.Announce.OpenCollective.Slug, cfg.Token)
 	if err != nil {
-		return err
+		return fmt.Errorf("opencollective: %w", err)
 	}
 
-	return publishUpdate(ctx, id, cfg.Token)
+	if err := publishUpdate(ctx, id, cfg.Token); err != nil {
+		return fmt.Errorf("opencollective: %w", err)
+	}
+
+	return nil
+}
+
+type payload struct {
+	Query     string         `json:"query"`
+	Variables map[string]any `json:"variables"`
 }
 
 func createUpdate(ctx *context.Context, title, html, slug, token string) (string, error) {
@@ -73,38 +82,24 @@ func createUpdate(ctx *context.Context, title, html, slug, token string) (string
     id
   }
 }`
-	payload, err := json.Marshal(struct {
-		Query     string         `json:"query"`
-		Variables map[string]any `json:"variables"`
-	}{
+	payload := payload{
 		Query: mutation,
 		Variables: map[string]any{
-			"title": title,
-			"html":  html,
-			"account": map[string]any{
-				"slug": slug,
+			"update": map[string]any{
+				"title": title,
+				"html":  html,
+				"account": map[string]any{
+					"slug": slug,
+				},
 			},
 		},
-	})
-	if err != nil {
-		return "", fmt.Errorf("could not marshal opencollective mutation: %w", err)
 	}
 
-	req, err := http.NewRequestWithContext(ctx, http.MethodPost, endpoint, bytes.NewReader(payload))
-	if err != nil {
-		return "", err
-	}
-	req.Header.Set("Personal-Token", token)
-
-	resp, err := http.DefaultClient.Do(req)
+	resp, err := doMutation(ctx, payload, token)
 	if err != nil {
 		return "", err
 	}
 	defer resp.Body.Close()
-
-	if resp.StatusCode != http.StatusOK {
-		return "", fmt.Errorf("incorrect response from opencollective: %s", resp.Status)
-	}
 
 	var envelope struct {
 		Data struct {
@@ -114,7 +109,7 @@ func createUpdate(ctx *context.Context, title, html, slug, token string) (string
 		} `json:"data"`
 	}
 	if err := json.NewDecoder(resp.Body).Decode(&envelope); err != nil {
-		return "", err
+		return "", fmt.Errorf("could not decode JSON response: %w", err)
 	}
 
 	return envelope.Data.CreateUpdate.ID, nil
@@ -129,35 +124,40 @@ func publishUpdate(ctx *context.Context, id, token string) error {
     id
   }
 }`
-	payload, err := json.Marshal(struct {
-		Query     string         `json:"query"`
-		Variables map[string]any `json:"variables"`
-	}{
+	payload := payload{
 		Query: mutation,
 		Variables: map[string]any{
 			"id":       id,
 			"audience": "ALL",
 		},
-	})
-	if err != nil {
-		return fmt.Errorf("could not marshal opencollective mutation: %w", err)
 	}
 
-	req, err := http.NewRequestWithContext(ctx, http.MethodPost, endpoint, bytes.NewReader(payload))
+	resp, err := doMutation(ctx, payload, token)
+	defer resp.Body.Close()
+
+	return err
+}
+
+func doMutation(ctx *context.Context, payload payload, token string) (*http.Response, error) {
+	p, err := json.Marshal(payload)
 	if err != nil {
-		return err
+		return nil, fmt.Errorf("could not marshal payload: %w", err)
+	}
+
+	req, err := http.NewRequestWithContext(ctx, http.MethodPost, endpoint, bytes.NewReader(p))
+	if err != nil {
+		return nil, fmt.Errorf("could not create request: %w", err)
 	}
 	req.Header.Set("Personal-Token", token)
 
 	resp, err := http.DefaultClient.Do(req)
 	if err != nil {
-		return err
+		return nil, fmt.Errorf("could not send request to opencollective: %w", err)
 	}
-	defer resp.Body.Close()
 
 	if resp.StatusCode != http.StatusOK {
-		return fmt.Errorf("incorrect response from opencollective: %s", resp.Status)
+		return resp, fmt.Errorf("incorrect response from opencollective: %s", resp.Status)
 	}
 
-	return nil
+	return resp, nil
 }
