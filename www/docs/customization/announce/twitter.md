@@ -1,5 +1,11 @@
 # Twitter
 
+!!! warning
+    Twitter has [announced][tw] that API usage will no longer be free starting
+    Feb 9, 2023.
+
+[tw]: https://twitter.com/TwitterDev/status/1621026986784337922
+
 For it to work, you'll need to [create a new Twitter app](https://developer.twitter.com/en/portal/apps/new), and set
 some environment variables on your pipeline:
 
