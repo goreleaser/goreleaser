@@ -14,7 +14,7 @@ import (
 
 const (
 	defaultTitleTemplate   = `{{ .Tag }}`
-	defaultMessageTemplate = `{{ .ProjectName }} {{ .Tag }} is out! Check it out at <a href="{{ .ReleaseURL }}">{{ .ReleaseURL }}</a>`
+	defaultMessageTemplate = `{{ .ProjectName }} {{ .Tag }} is out!<br/>Check it out at <a href="{{ .ReleaseURL }}">{{ .ReleaseURL }}</a>`
 	endpoint               = "https://api.opencollective.com/graphql/v2"
 )
 
@@ -149,6 +149,7 @@ func doMutation(ctx *context.Context, payload payload, token string) (*http.Resp
 		return nil, fmt.Errorf("could not create request: %w", err)
 	}
 	req.Header.Set("Personal-Token", token)
+	req.Header.Set("Content-Type", "application/json")
 
 	resp, err := http.DefaultClient.Do(req)
 	if err != nil {
