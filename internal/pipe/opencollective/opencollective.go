@@ -101,6 +101,7 @@ func createUpdate(ctx *context.Context, title, html, slug, token string) (string
 	}
 	defer resp.Body.Close()
 
+	//nolint:tagliatelle
 	var envelope struct {
 		Data struct {
 			CreateUpdate struct {
@@ -133,6 +134,9 @@ func publishUpdate(ctx *context.Context, id, token string) error {
 	}
 
 	resp, err := doMutation(ctx, payload, token)
+	if err != nil {
+		return err
+	}
 	defer resp.Body.Close()
 
 	return err
