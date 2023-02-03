@@ -97,4 +97,9 @@ changelog:
 ```
 
 !!! warning
-    Note that using the `github-native` changelog does not support `sort` and `filter`.
+    Some things to keep an eye on:
+
+    * The `github-native` changelog does not support `sort` and `filter`.
+    * When releasing a [nightly][], `use` will fallback to `git`.
+
+[nightly]: /customization/nightly
