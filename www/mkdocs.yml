@@ -133,6 +133,7 @@ nav:
       - customization/announce/linkedin.md
       - customization/announce/mastodon.md
       - customization/announce/mattermost.md
+      - customization/announce/opencollective.md
       - customization/announce/reddit.md
       - customization/announce/slack.md
       - customization/announce/smtp.md

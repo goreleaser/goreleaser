@@ -23,6 +23,7 @@ import (
 	"github.com/goreleaser/goreleaser/internal/pipe/mattermost"
 	"github.com/goreleaser/goreleaser/internal/pipe/milestone"
 	"github.com/goreleaser/goreleaser/internal/pipe/nfpm"
+	"github.com/goreleaser/goreleaser/internal/pipe/opencollective"
 	"github.com/goreleaser/goreleaser/internal/pipe/project"
 	"github.com/goreleaser/goreleaser/internal/pipe/reddit"
 	"github.com/goreleaser/goreleaser/internal/pipe/release"
@@ -90,4 +91,5 @@ var Defaulters = []Defaulter{
 	telegram.Pipe{},
 	webhook.Pipe{},
 	chocolatey.Pipe{},
+	opencollective.Pipe{},
 }
