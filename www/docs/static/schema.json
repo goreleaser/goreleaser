@@ -2060,7 +2060,8 @@
 						"type": "array"
 					},
 					"build": {
-						"$ref": "#/$defs/Build"
+						"$ref": "#/$defs/Build",
+						"description": "deprecated: use builds instead"
 					},
 					"github_urls": {
 						"$ref": "#/$defs/GitHubURLs"
