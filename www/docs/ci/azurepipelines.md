@@ -72,7 +72,7 @@ trigger:
       - refs/tags/*
 
 variables:
-  GO_VERSION: "1.19"
+  GO_VERSION: "1.20"
 
 pool:
   vmImage: ubuntu-latest

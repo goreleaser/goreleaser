@@ -36,7 +36,7 @@ jobs:
       - run: git fetch --force --tags
       - uses: actions/setup-go@v3
         with:
-          go-version: '>=1.19.5'
+          go-version: '>=1.20.0'
           cache: true
       # More assembly might be required: Docker logins, GPG, etc. It all depends
       # on your needs.
