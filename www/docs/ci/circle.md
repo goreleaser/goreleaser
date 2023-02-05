@@ -18,7 +18,7 @@ workflows:
 jobs:
   release:
     docker:
-      - image: cimg/go:1.19
+      - image: cimg/go:1.20
     steps:
       - checkout
       - run: curl -sfL https://goreleaser.com/static/run | bash

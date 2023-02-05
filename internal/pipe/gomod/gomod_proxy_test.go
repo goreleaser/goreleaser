@@ -222,7 +222,7 @@ func requireGoMod(tb testing.TB) {
 	require.NoError(tb, err)
 	require.Contains(tb, string(mod), `module foo
 
-go 1.19
+go 1.20
 `)
 }
 
