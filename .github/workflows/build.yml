@@ -10,7 +10,7 @@ on:
       - '**/*.go'
       - 'Taskfile.yml'
       - 'Dockerfile'
-      - '.github/workflows/build.yml'
+      - '.github/workflows/*.yml'
 
 permissions:
   contents: read
