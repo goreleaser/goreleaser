@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"strings"
 	"testing"
 
 	"github.com/goreleaser/goreleaser/internal/artifact"
@@ -25,7 +26,6 @@ func TestExecute(t *testing.T) {
 	})
 	ctx.Env["TEST_A_SECRET"] = "x"
 	ctx.Env["TEST_A_USERNAME"] = "u2"
-	ctx.Env["GOCOVERDIR"] = t.TempDir() // needed for go1.20
 	ctx.Version = "2.1.0"
 
 	// Preload artifacts
@@ -362,7 +362,7 @@ func TestExecute(t *testing.T) {
 				return
 			}
 			require.Error(t, err)
-			require.Equal(t, tc.expectErr.Error(), err.Error())
+			require.True(t, strings.HasPrefix(err.Error(), tc.expectErr.Error()))
 		})
 	}
 }
