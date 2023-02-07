@@ -326,6 +326,60 @@ func TestGitLabCreateReleaseReleaseNotExists(t *testing.T) {
 	}
 }
 
+func TestGitLabCreateReleaseReleaseExists(t *testing.T) {
+	totalRequests := 0
+	createdRelease := false
+	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		defer r.Body.Close()
+		totalRequests++
+
+		if !strings.Contains(r.URL.Path, "releases") {
+			w.WriteHeader(http.StatusOK)
+			fmt.Fprint(w, "{}")
+			return
+		}
+
+		// Check if release exists
+		if r.Method == http.MethodGet {
+			w.WriteHeader(200)
+			require.NoError(t, json.NewEncoder(w).Encode(map[string]string{
+				"description": "original description",
+			}))
+			return
+		}
+
+		// Update release
+		if r.Method == http.MethodPut {
+			createdRelease = true
+			var resBody map[string]string
+			require.NoError(t, json.NewDecoder(r.Body).Decode(&resBody))
+			require.Equal(t, "original description", resBody["description"])
+			w.WriteHeader(http.StatusOK)
+			fmt.Fprint(w, "{}")
+			return
+		}
+
+		require.FailNow(t, "should not reach here")
+	}))
+	defer srv.Close()
+
+	ctx := context.New(config.Project{
+		GitLabURLs: config.GitLabURLs{
+			API: srv.URL,
+		},
+		Release: config.Release{
+			ReleaseNotesMode: config.ReleaseNotesModeKeepExisting,
+		},
+	})
+	client, err := NewGitLab(ctx, "test-token")
+	require.NoError(t, err)
+
+	_, err = client.CreateRelease(ctx, "body")
+	require.NoError(t, err)
+	require.True(t, createdRelease)
+	require.Equal(t, 3, totalRequests)
+}
+
 func TestGitLabCreateReleaseUnkownHTTPError(t *testing.T) {
 	totalRequests := 0
 	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
