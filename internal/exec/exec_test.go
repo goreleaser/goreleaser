@@ -25,6 +25,7 @@ func TestExecute(t *testing.T) {
 	})
 	ctx.Env["TEST_A_SECRET"] = "x"
 	ctx.Env["TEST_A_USERNAME"] = "u2"
+	ctx.Env["GOCOVERDIR"] = t.TempDir() // needed for go1.20
 	ctx.Version = "2.1.0"
 
 	// Preload artifacts
