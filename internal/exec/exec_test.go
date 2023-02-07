@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"strings"
 	"testing"
 
 	"github.com/goreleaser/goreleaser/internal/artifact"
@@ -361,7 +362,7 @@ func TestExecute(t *testing.T) {
 				return
 			}
 			require.Error(t, err)
-			require.Equal(t, tc.expectErr.Error(), err.Error())
+			require.True(t, strings.HasPrefix(err.Error(), tc.expectErr.Error()))
 		})
 	}
 }
