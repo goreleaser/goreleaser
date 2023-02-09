@@ -6,10 +6,12 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"reflect"
 	"strings"
 
 	"github.com/caarlos0/go-shellwords"
 	"github.com/caarlos0/log"
+	"github.com/goreleaser/goreleaser/internal/deprecate"
 	"github.com/goreleaser/goreleaser/internal/ids"
 	"github.com/goreleaser/goreleaser/internal/semerrgroup"
 	"github.com/goreleaser/goreleaser/internal/shell"
@@ -45,6 +47,10 @@ func (Pipe) Run(ctx *context.Context) error {
 
 // Default sets the pipe defaults.
 func (Pipe) Default(ctx *context.Context) error {
+	if !reflect.DeepEqual(ctx.Config.SingleBuild, config.Build{}) {
+		deprecate.Notice(ctx, "build")
+	}
+
 	ids := ids.New("builds")
 	for i, build := range ctx.Config.Builds {
 		build, err := buildWithDefaults(ctx, build)

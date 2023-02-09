@@ -965,7 +965,7 @@ type Project struct {
 	UniversalBinaries []UniversalBinary `yaml:"universal_binaries,omitempty" json:"universal_binaries,omitempty"`
 
 	// this is a hack ¯\_(ツ)_/¯
-	SingleBuild Build `yaml:"build,omitempty" json:"build,omitempty"`
+	SingleBuild Build `yaml:"build,omitempty" json:"build,omitempty" jsonschema_description:"deprecated: use builds instead"` // deprecated
 
 	// should be set if using github enterprise
 	GitHubURLs GitHubURLs `yaml:"github_urls,omitempty" json:"github_urls,omitempty"`
