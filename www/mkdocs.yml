@@ -43,6 +43,7 @@ plugins:
         twitter.md: https://twitter.com/goreleaser
         mastodon.md: https://fosstodon.org/@goreleaser
         linkedin.md: https://www.linkedin.com/company/goreleaser/
+        'customization/build.md': customization/builds.md
   - minify:
       minify_html: true
 
@@ -93,7 +94,7 @@ nav:
     - customization/project.md
     - customization/git.md
   - Build:
-    - customization/build.md
+    - customization/builds.md
     - customization/verifiable_builds.md
     - customization/monorepo.md
     - customization/universalbinaries.md

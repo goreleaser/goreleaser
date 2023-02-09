@@ -33,7 +33,7 @@ const (
 )
 
 func TestMain(m *testing.M) {
-	rand.Seed(time.Now().UnixNano())
+	rand := rand.New(rand.NewSource(time.Now().UnixNano()))
 	keyring = fmt.Sprintf("/tmp/gorel_gpg_test.%d", rand.Int())
 	fmt.Println("copying", originKeyring, "to", keyring)
 	if err := exec.Command("cp", "-Rf", originKeyring, keyring).Run(); err != nil {
