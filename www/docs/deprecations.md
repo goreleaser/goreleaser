@@ -39,7 +39,7 @@ Description.
 
 ### build
 
-> since 2023-02-05
+> since 2023-02-09 (v1.16.0)
 
 This option was still being supported, even though undocumented, for a couple
 of years now. It's finally time to sunset it.
