@@ -11,6 +11,7 @@ import (
 	"github.com/goreleaser/goreleaser/internal/pipe/linkedin"
 	"github.com/goreleaser/goreleaser/internal/pipe/mastodon"
 	"github.com/goreleaser/goreleaser/internal/pipe/mattermost"
+	"github.com/goreleaser/goreleaser/internal/pipe/opencollective"
 	"github.com/goreleaser/goreleaser/internal/pipe/reddit"
 	"github.com/goreleaser/goreleaser/internal/pipe/slack"
 	"github.com/goreleaser/goreleaser/internal/pipe/smtp"
@@ -35,6 +36,7 @@ var announcers = []Announcer{
 	linkedin.Pipe{},
 	mastodon.Pipe{},
 	mattermost.Pipe{},
+	opencollective.Pipe{},
 	reddit.Pipe{},
 	slack.Pipe{},
 	smtp.Pipe{},

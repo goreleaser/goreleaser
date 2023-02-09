@@ -985,18 +985,19 @@ type GoMod struct {
 }
 
 type Announce struct {
-	Skip       string     `yaml:"skip,omitempty" json:"skip,omitempty" jsonschema:"oneof_type=string;boolean"`
-	Twitter    Twitter    `yaml:"twitter,omitempty" json:"twitter,omitempty"`
-	Mastodon   Mastodon   `yaml:"mastodon,omitempty" json:"mastodon,omitempty"`
-	Reddit     Reddit     `yaml:"reddit,omitempty" json:"reddit,omitempty"`
-	Slack      Slack      `yaml:"slack,omitempty" json:"slack,omitempty"`
-	Discord    Discord    `yaml:"discord,omitempty" json:"discord,omitempty"`
-	Teams      Teams      `yaml:"teams,omitempty" json:"teams,omitempty"`
-	SMTP       SMTP       `yaml:"smtp,omitempty" json:"smtp,omitempty"`
-	Mattermost Mattermost `yaml:"mattermost,omitempty" json:"mattermost,omitempty"`
-	LinkedIn   LinkedIn   `yaml:"linkedin,omitempty" json:"linkedin,omitempty"`
-	Telegram   Telegram   `yaml:"telegram,omitempty" json:"telegram,omitempty"`
-	Webhook    Webhook    `yaml:"webhook,omitempty" json:"webhook,omitempty"`
+	Skip           string         `yaml:"skip,omitempty" json:"skip,omitempty" jsonschema:"oneof_type=string;boolean"`
+	Twitter        Twitter        `yaml:"twitter,omitempty" json:"twitter,omitempty"`
+	Mastodon       Mastodon       `yaml:"mastodon,omitempty" json:"mastodon,omitempty"`
+	Reddit         Reddit         `yaml:"reddit,omitempty" json:"reddit,omitempty"`
+	Slack          Slack          `yaml:"slack,omitempty" json:"slack,omitempty"`
+	Discord        Discord        `yaml:"discord,omitempty" json:"discord,omitempty"`
+	Teams          Teams          `yaml:"teams,omitempty" json:"teams,omitempty"`
+	SMTP           SMTP           `yaml:"smtp,omitempty" json:"smtp,omitempty"`
+	Mattermost     Mattermost     `yaml:"mattermost,omitempty" json:"mattermost,omitempty"`
+	LinkedIn       LinkedIn       `yaml:"linkedin,omitempty" json:"linkedin,omitempty"`
+	Telegram       Telegram       `yaml:"telegram,omitempty" json:"telegram,omitempty"`
+	Webhook        Webhook        `yaml:"webhook,omitempty" json:"webhook,omitempty"`
+	OpenCollective OpenCollective `yaml:"opencollective,omitempty" json:"opencolletive,omitempty"`
 }
 
 type Webhook struct {
@@ -1087,6 +1088,13 @@ type Telegram struct {
 	Enabled         bool   `yaml:"enabled,omitempty" json:"enabled,omitempty"`
 	MessageTemplate string `yaml:"message_template,omitempty" json:"message_template,omitempty"`
 	ChatID          string `yaml:"chat_id,omitempty" json:"chat_id,omitempty" jsonschema:"oneof_type=string;integer"`
+}
+
+type OpenCollective struct {
+	Enabled         bool   `yaml:"enabled,omitempty" json:"enabled,omitempty"`
+	Slug            string `yaml:"slug,omitempty" json:"slug,omitempty"`
+	TitleTemplate   string `yaml:"title_template,omitempty" json:"title_template,omitempty"`
+	MessageTemplate string `yaml:"message_template,omitempty" json:"message_template,omitempty"`
 }
 
 // Load config file.
