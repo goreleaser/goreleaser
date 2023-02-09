@@ -150,6 +150,9 @@
 					},
 					"webhook": {
 						"$ref": "#/$defs/Webhook"
+					},
+					"opencolletive": {
+						"$ref": "#/$defs/OpenCollective"
 					}
 				},
 				"additionalProperties": false,
@@ -1886,6 +1889,24 @@
 						"type": "string"
 					},
 					"postremove": {
+						"type": "string"
+					}
+				},
+				"additionalProperties": false,
+				"type": "object"
+			},
+			"OpenCollective": {
+				"properties": {
+					"enabled": {
+						"type": "boolean"
+					},
+					"slug": {
+						"type": "string"
+					},
+					"title_template": {
+						"type": "string"
+					},
+					"message_template": {
 						"type": "string"
 					}
 				},
