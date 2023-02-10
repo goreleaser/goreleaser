@@ -1,12 +1,16 @@
 package blob
 
 import (
+	"errors"
 	"fmt"
 	"io"
 	"net/url"
 	"os"
 	"path"
 	"strings"
+
+	"github.com/aws/aws-sdk-go/aws"
+	"github.com/aws/aws-sdk-go/service/s3/s3manager"
 
 	"github.com/caarlos0/log"
 	"github.com/goreleaser/goreleaser/internal/artifact"
@@ -53,7 +57,11 @@ func urlFor(ctx *context.Context, conf config.Blob) (string, error) {
 	}
 	if endpoint != "" {
 		query.Add("endpoint", endpoint)
-		query.Add("s3ForcePathStyle", "true")
+		if conf.S3ForcePathStyle == nil {
+			query.Add("s3ForcePathStyle", "true")
+		} else {
+			query.Add("s3ForcePathStyle", fmt.Sprintf("%t", *conf.S3ForcePathStyle))
+		}
 	}
 
 	region, err := tmpl.New(ctx).Apply(conf.Region)
@@ -105,7 +113,7 @@ func doUpload(ctx *context.Context, conf config.Blob) error {
 	}
 
 	up := &productionUploader{}
-	if err := up.Open(ctx, bucketURL); err != nil {
+	if err := up.Open(ctx, bucketURL, &conf); err != nil {
 		return handleError(err, bucketURL)
 	}
 	defer up.Close()
@@ -204,13 +212,14 @@ func getData(ctx *context.Context, conf config.Blob, path string) ([]byte, error
 // uploader implements upload.
 type uploader interface {
 	io.Closer
-	Open(ctx *context.Context, url string) error
+	Open(ctx *context.Context, url string, conf *config.Blob) error
 	Upload(ctx *context.Context, path string, data []byte) error
 }
 
 // productionUploader actually do upload to.
 type productionUploader struct {
 	bucket *blob.Bucket
+	conf   *config.Blob
 }
 
 func (u *productionUploader) Close() error {
@@ -220,7 +229,7 @@ func (u *productionUploader) Close() error {
 	return u.bucket.Close()
 }
 
-func (u *productionUploader) Open(ctx *context.Context, bucket string) error {
+func (u *productionUploader) Open(ctx *context.Context, bucket string, conf *config.Blob) error {
 	log.WithFields(log.Fields{
 		"bucket": bucket,
 	}).Debug("uploading")
@@ -230,15 +239,27 @@ func (u *productionUploader) Open(ctx *context.Context, bucket string) error {
 		return err
 	}
 	u.bucket = conn
+	u.conf = conf
 	return nil
 }
 
 func (u *productionUploader) Upload(ctx *context.Context, filepath string, data []byte) error {
 	log.WithField("path", filepath).Info("uploading")
-
 	opts := &blob.WriterOptions{
 		ContentDisposition: "attachment; filename=" + path.Base(filepath),
 	}
+	if u.conf.ACL != "" {
+		opts.BeforeWrite = func(asFunc func(interface{}) bool) error {
+			req := &s3manager.UploadInput{}
+			ok := asFunc(&req)
+			if !ok {
+				return errors.New("invalid s3 type")
+			}
+			req.ACL = aws.String(u.conf.ACL)
+			return nil
+		}
+	}
+
 	w, err := u.bucket.NewWriter(ctx, filepath, opts)
 	if err != nil {
 		return err

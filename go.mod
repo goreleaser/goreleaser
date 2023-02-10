@@ -6,6 +6,7 @@ require (
 	code.gitea.io/sdk/gitea v0.15.1
 	github.com/Masterminds/semver/v3 v3.2.0
 	github.com/atc0005/go-teams-notify/v2 v2.7.0
+	github.com/aws/aws-sdk-go v1.44.151
 	github.com/awslabs/amazon-ecr-credential-helper/ecr-login v0.0.0-20220517224237-e6f29200ae04
 	github.com/caarlos0/ctrlc v1.2.0
 	github.com/caarlos0/env/v6 v6.10.1
@@ -92,7 +93,6 @@ require (
 	github.com/acomagu/bufpipe v1.0.3 // indirect
 	github.com/alessio/shellescape v1.4.1 // indirect
 	github.com/asaskevich/govalidator v0.0.0-20210307081110-f21760c49a8d // indirect
-	github.com/aws/aws-sdk-go v1.44.151 // indirect
 	github.com/aws/aws-sdk-go-v2 v1.17.1 // indirect
 	github.com/aws/aws-sdk-go-v2/aws/protocol/eventstream v1.4.9 // indirect
 	github.com/aws/aws-sdk-go-v2/config v1.18.3 // indirect

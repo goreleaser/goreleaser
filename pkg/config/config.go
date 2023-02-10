@@ -874,15 +874,17 @@ type Before struct {
 
 // Blob contains config for GO CDK blob.
 type Blob struct {
-	Bucket     string      `yaml:"bucket,omitempty" json:"bucket,omitempty"`
-	Provider   string      `yaml:"provider,omitempty" json:"provider,omitempty"`
-	Region     string      `yaml:"region,omitempty" json:"region,omitempty"`
-	DisableSSL bool        `yaml:"disableSSL,omitempty" json:"disableSSL,omitempty"` // nolint:tagliatelle // TODO(caarlos0): rename to disable_ssl
-	Folder     string      `yaml:"folder,omitempty" json:"folder,omitempty"`
-	KMSKey     string      `yaml:"kmskey,omitempty" json:"kmskey,omitempty"`
-	IDs        []string    `yaml:"ids,omitempty" json:"ids,omitempty"`
-	Endpoint   string      `yaml:"endpoint,omitempty" json:"endpoint,omitempty"` // used for minio for example
-	ExtraFiles []ExtraFile `yaml:"extra_files,omitempty" json:"extra_files,omitempty"`
+	Bucket           string      `yaml:"bucket,omitempty" json:"bucket,omitempty"`
+	Provider         string      `yaml:"provider,omitempty" json:"provider,omitempty"`
+	Region           string      `yaml:"region,omitempty" json:"region,omitempty"`
+	DisableSSL       bool        `yaml:"disableSSL,omitempty" json:"disableSSL,omitempty"` // nolint:tagliatelle // TODO(caarlos0): rename to disable_ssl
+	Folder           string      `yaml:"folder,omitempty" json:"folder,omitempty"`
+	KMSKey           string      `yaml:"kmskey,omitempty" json:"kmskey,omitempty"`
+	IDs              []string    `yaml:"ids,omitempty" json:"ids,omitempty"`
+	Endpoint         string      `yaml:"endpoint,omitempty" json:"endpoint,omitempty"` // used for minio for example
+	S3ForcePathStyle *bool       `yaml:"s3ForcePathStyle,omitempty" json:"s3ForcePathStyle,omitempty"`
+	ExtraFiles       []ExtraFile `yaml:"extra_files,omitempty" json:"extra_files,omitempty"`
+	ACL              string      `yaml:"acl,omitempty" json:"acl,omitempty"`
 }
 
 // Upload configuration.
