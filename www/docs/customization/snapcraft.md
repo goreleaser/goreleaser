@@ -261,7 +261,7 @@ snapcrafts:
         # confined space, declare them here.
         # You can read the documentation about the available plugs and the
         # things they allow:
-        # https://snapcraft.io/docs/reference/interfaces.
+        # https://snapcraft.io/docs/supported-interfaces.
         plugs: ["home", "network", "personal-files"]
 
         # Sets a command to run from inside the snap after a service stops.
