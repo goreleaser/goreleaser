@@ -159,6 +159,9 @@
 					},
 					"webhook": {
 						"$ref": "#/$defs/Webhook"
+					},
+					"opencolletive": {
+						"$ref": "#/$defs/OpenCollective"
 					}
 				},
 				"additionalProperties": false,
@@ -2048,6 +2051,24 @@
 				"additionalProperties": false,
 				"type": "object"
 			},
+			"OpenCollective": {
+				"properties": {
+					"enabled": {
+						"type": "boolean"
+					},
+					"slug": {
+						"type": "string"
+					},
+					"title_template": {
+						"type": "string"
+					},
+					"message_template": {
+						"type": "string"
+					}
+				},
+				"additionalProperties": false,
+				"type": "object"
+			},
 			"Partial": {
 				"properties": {
 					"by": {
@@ -2242,7 +2263,8 @@
 						"type": "array"
 					},
 					"build": {
-						"$ref": "#/$defs/Build"
+						"$ref": "#/$defs/Build",
+						"description": "deprecated: use builds instead"
 					},
 					"github_urls": {
 						"$ref": "#/$defs/GitHubURLs"
