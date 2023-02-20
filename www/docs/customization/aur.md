@@ -56,6 +56,8 @@ aurs:
     # The SSH private key that should be used to commit to the Git repository.
     # This can either be a path or the key contents.
     #
+    # IMPORTANT: the key must not be password-protected.
+    #
     # WARNING: do not expose your private key in the configuration file!
     private_key: '{{ .Env.AUR_KEY }}'
 
