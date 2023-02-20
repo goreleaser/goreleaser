@@ -458,7 +458,13 @@ func keyPath(key string) (string, error) {
 	}
 
 	path := key
-	if _, err := ssh.ParsePrivateKey([]byte(key)); err == nil {
+
+	_, err := ssh.ParsePrivateKey([]byte(key))
+	if isPasswordError(err) {
+		return "", fmt.Errorf("key is password-protected")
+	}
+
+	if err == nil {
 		// if it can be parsed as a valid private key, we write it to a
 		// temp file and use that path on GIT_SSH_COMMAND.
 		f, err := os.CreateTemp("", "id_*")
@@ -492,6 +498,11 @@ func keyPath(key string) (string, error) {
 	}
 
 	return path, nil
+}
+
+func isPasswordError(err error) bool {
+	var kerr *ssh.PassphraseMissingError
+	return errors.As(err, &kerr)
 }
 
 func runGitCmds(ctx *context.Context, cwd string, env []string, cmds [][]string) error {
