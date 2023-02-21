@@ -1246,32 +1246,40 @@ func TestDefaultNoDockers(t *testing.T) {
 	require.Empty(t, ctx.Config.Dockers)
 }
 
-func TestDefaultFilesDot(t *testing.T) {
-	ctx := &context.Context{
-		Config: config.Project{
-			Dist: "/tmp/distt",
-			Dockers: []config.Docker{
-				{
-					Files: []string{"./lala", "./lolsob", "."},
+func TestForbiddenFilesDestinations(t *testing.T) {
+	testcases := []string{
+		".", "./", "./tmp/dist", "./tmp/dist/", "tmp/dist/", "tmp/dist/asdasd/asd",
+	}
+
+	for _, tc := range testcases {
+		ctx := &context.Context{
+			Config: config.Project{
+				Dist: "./tmp/dist",
+				Dockers: []config.Docker{
+					{Files: []string{tc}},
 				},
 			},
-		},
+		}
+		require.Errorf(t, Pipe{}.Default(ctx), `invalid docker.files: can't be . or inside dist folder: %s`, tc)
 	}
-	require.EqualError(t, Pipe{}.Default(ctx), `invalid docker.files: can't be . or inside dist folder: .`)
 }
 
-func TestDefaultFilesDis(t *testing.T) {
-	ctx := &context.Context{
-		Config: config.Project{
-			Dist: "/tmp/dist",
-			Dockers: []config.Docker{
-				{
-					Files: []string{"./fooo", "/tmp/dist/asdasd/asd", "./bar"},
+func TestAllowedFilesDestinations(t *testing.T) {
+	testcases := []string{
+		"./fooo", "./bar", "./lala", "./lolsob", "tmp/dist_files", "tmp/dist_files/baz", "./tmp/dist_files/", "./tmp/dist_files/baz",
+	}
+
+	for _, tc := range testcases {
+		ctx := &context.Context{
+			Config: config.Project{
+				Dist: "./tmp/dist",
+				Dockers: []config.Docker{
+					{Files: []string{tc}},
 				},
 			},
-		},
+		}
+		require.NoError(t, Pipe{}.Default(ctx))
 	}
-	require.EqualError(t, Pipe{}.Default(ctx), `invalid docker.files: can't be . or inside dist folder: /tmp/dist/asdasd/asd`)
 }
 
 func TestDefaultSet(t *testing.T) {

@@ -61,8 +61,10 @@ func (Pipe) Default(ctx *context.Context) error {
 		if err := validateImager(docker.Use); err != nil {
 			return err
 		}
+		distPath := filepath.Clean(ctx.Config.Dist) + "/"
 		for _, f := range docker.Files {
-			if f == "." || strings.HasPrefix(f, ctx.Config.Dist) {
+			file := filepath.Clean(f) + "/"
+			if file == "./" || strings.HasPrefix(file, distPath) {
 				return fmt.Errorf("invalid docker.files: can't be . or inside dist folder: %s", f)
 			}
 		}
