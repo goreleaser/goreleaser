@@ -77,6 +77,11 @@ scoop:
   # Default is empty.
   post_install: ["Write-Host 'Running postinstall command'"]
 
+  # An array of dependencies.
+  # Defaults to empty.
+  # Since GoReleaser v1.16.0.
+  depends: ["git", "foo"]
+
   # GOAMD64 to specify which amd64 version to use if there are multiple versions
   # from the build section.
   # Default is v1.
