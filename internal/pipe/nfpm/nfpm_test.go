@@ -36,6 +36,42 @@ func TestRunPipeNoFormats(t *testing.T) {
 	testlib.AssertSkipped(t, Pipe{}.Run(ctx))
 }
 
+func TestDefaultsDeprecated(t *testing.T) {
+	t.Run("replacements", func(t *testing.T) {
+		ctx := context.New(config.Project{
+			NFPMs: []config.NFPM{
+				{
+					NFPMOverridables: config.NFPMOverridables{
+						Replacements: map[string]string{
+							"linux": "Tux",
+						},
+					},
+				},
+			},
+		})
+		require.NoError(t, Pipe{}.Default(ctx))
+		require.True(t, ctx.Deprecated)
+	})
+
+	t.Run("replacements overrides", func(t *testing.T) {
+		ctx := context.New(config.Project{
+			NFPMs: []config.NFPM{
+				{
+					Overrides: map[string]config.NFPMOverridables{
+						"apk": {
+							Replacements: map[string]string{
+								"linux": "Tux",
+							},
+						},
+					},
+				},
+			},
+		})
+		require.NoError(t, Pipe{}.Default(ctx))
+		require.True(t, ctx.Deprecated)
+	})
+}
+
 func TestRunPipeError(t *testing.T) {
 	ctx := context.New(config.Project{
 		Dist: t.TempDir(),

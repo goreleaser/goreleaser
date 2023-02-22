@@ -62,6 +62,11 @@ func (Pipe) Default(ctx *context.Context) error {
 		if len(fpm.Replacements) != 0 {
 			deprecate.Notice(ctx, "nfpms.replacements")
 		}
+		for _, rfpm := range fpm.Overrides {
+			if len(rfpm.Replacements) != 0 {
+				deprecate.Notice(ctx, "nfpms.replacements")
+			}
+		}
 		ids.Inc(fpm.ID)
 	}
 

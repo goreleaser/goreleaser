@@ -194,6 +194,7 @@ type Manifest struct {
 	Persist      []string            `json:"persist,omitempty"`      // Persist data between updates
 	PreInstall   []string            `json:"pre_install,omitempty"`  // An array of strings, of the commands to be executed before an application is installed.
 	PostInstall  []string            `json:"post_install,omitempty"` // An array of strings, of the commands to be executed after an application is installed.
+	Depends      []string            `json:"depends,omitempty"`      // A string or an array of strings.
 }
 
 // Resource represents a combination of a url and a binary name for an architecture.
@@ -223,6 +224,7 @@ func dataFor(ctx *context.Context, cl client.Client, artifacts []*artifact.Artif
 		Persist:      ctx.Config.Scoop.Persist,
 		PreInstall:   ctx.Config.Scoop.PreInstall,
 		PostInstall:  ctx.Config.Scoop.PostInstall,
+		Depends:      ctx.Config.Scoop.Depends,
 	}
 
 	if ctx.Config.Scoop.URLTemplate == "" {
