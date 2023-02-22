@@ -17,6 +17,16 @@ func TestSkip(t *testing.T) {
 		require.True(t, Pipe{}.Skip(context.New(config.Project{})))
 	})
 
+	t.Run("skip on skip-publish", func(t *testing.T) {
+		ctx := context.New(config.Project{
+			Publishers: []config.Publisher{
+				{},
+			},
+		})
+		ctx.SkipPublish = true
+		require.True(t, Pipe{}.Skip(ctx))
+	})
+
 	t.Run("dont skip", func(t *testing.T) {
 		ctx := context.New(config.Project{
 			Publishers: []config.Publisher{
