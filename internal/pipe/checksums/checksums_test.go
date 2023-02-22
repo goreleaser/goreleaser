@@ -151,9 +151,7 @@ func TestPipeFileNotExist(t *testing.T) {
 		Path: "/nope",
 		Type: artifact.UploadableBinary,
 	})
-	err := Pipe{}.Run(ctx)
-	require.Error(t, err)
-	require.Contains(t, err.Error(), "/nope: no such file or directory")
+	require.ErrorIs(t, Pipe{}.Run(ctx), os.ErrNotExist)
 }
 
 func TestPipeInvalidNameTemplate(t *testing.T) {

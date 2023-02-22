@@ -45,6 +45,7 @@ func TestRunPipeMissingInfo(t *testing.T) {
 
 func TestRunPipe(t *testing.T) {
 	testlib.CheckPath(t, "snapcraft")
+	testlib.CheckOS(t)
 	folder := t.TempDir()
 	dist := filepath.Join(folder, "dist")
 	require.NoError(t, os.Mkdir(dist, 0o755))

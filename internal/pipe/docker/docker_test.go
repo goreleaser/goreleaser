@@ -25,6 +25,7 @@ const (
 
 func start(tb testing.TB) {
 	tb.Helper()
+	testlib.CheckPath(tb, "docker")
 	tb.Log("starting registries")
 	testlib.StartRegistry(tb, "registry", registryPort)
 	testlib.StartRegistry(tb, "alt_registry", altRegistryPort)

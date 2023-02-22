@@ -3,6 +3,7 @@ package testlib
 import (
 	"os"
 	"os/exec"
+	"runtime"
 	"testing"
 )
 
@@ -15,5 +16,11 @@ func CheckPath(tb testing.TB, cmd string) {
 	}
 	if _, err := exec.LookPath(cmd); err != nil {
 		tb.Skipf("%s not in PATH", cmd)
+	}
+}
+
+func CheckOS(tb testing.TB) {
+	if runtime.GOOS == "windows" {
+		tb.Skipf("skipping on windows")
 	}
 }

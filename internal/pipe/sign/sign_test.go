@@ -91,11 +91,12 @@ func TestSignArtifacts(t *testing.T) {
 		signatureNames   []string
 		certificateNames []string
 		expectedErrMsg   string
+		expectedErrIs    error
 		user             string
 	}{
 		{
-			desc:           "sign cmd not found",
-			expectedErrMsg: `sign: not-a-valid-cmd failed: exec: "not-a-valid-cmd": executable file not found in $PATH: `,
+			desc:          "sign cmd not found",
+			expectedErrIs: exec.ErrNotFound,
 			ctx: context.New(
 				config.Project{
 					Signs: []config.Sign{
@@ -561,12 +562,12 @@ func TestSignArtifacts(t *testing.T) {
 		}
 
 		t.Run(test.desc, func(t *testing.T) {
-			testSign(t, test.ctx, test.certificateNames, test.signaturePaths, test.signatureNames, test.user, test.expectedErrMsg)
+			testSign(t, test.ctx, test.certificateNames, test.signaturePaths, test.signatureNames, test.user, test.expectedErrMsg, test.expectedErrIs)
 		})
 	}
 }
 
-func testSign(tb testing.TB, ctx *context.Context, certificateNames, signaturePaths, signatureNames []string, user, expectedErrMsg string) {
+func testSign(tb testing.TB, ctx *context.Context, certificateNames, signaturePaths, signatureNames []string, user, expectedErrMsg string, expectedErrIs error) {
 	tb.Helper()
 	tmpdir := tb.TempDir()
 
@@ -662,15 +663,21 @@ func testSign(tb testing.TB, ctx *context.Context, certificateNames, signaturePa
 		)
 	}
 
+	err := Pipe{}.Run(ctx)
+
 	// run the pipeline
 	if expectedErrMsg != "" {
-		err := Pipe{}.Run(ctx)
 		require.Error(tb, err)
 		require.Contains(tb, err.Error(), expectedErrMsg)
 		return
 	}
 
-	require.NoError(tb, Pipe{}.Run(ctx))
+	if expectedErrIs != nil {
+		require.ErrorIs(tb, err, expectedErrIs)
+		return
+	}
+
+	require.NoError(tb, err)
 
 	// ensure all artifacts have an ID
 	for _, arti := range ctx.Artifacts.Filter(

@@ -300,14 +300,14 @@ func TestRun(t *testing.T) {
 		ctx := ctx5
 		ctx.Config.UniversalBinaries[0].Hooks.Pre = []config.Hook{{Cmd: "exit 1"}}
 		ctx.Config.UniversalBinaries[0].Hooks.Post = []config.Hook{{Cmd: "echo post"}}
-		require.EqualError(t, Pipe{}.Run(ctx), "pre hook failed: failed to run 'exit 1': exec: \"exit\": executable file not found in $PATH")
+		require.ErrorIs(t, Pipe{}.Run(ctx), exec.ErrNotFound)
 	})
 
 	t.Run("failing post-hook", func(t *testing.T) {
 		ctx := ctx5
 		ctx.Config.UniversalBinaries[0].Hooks.Pre = []config.Hook{{Cmd: "echo pre"}}
 		ctx.Config.UniversalBinaries[0].Hooks.Post = []config.Hook{{Cmd: "exit 1"}}
-		require.EqualError(t, Pipe{}.Run(ctx), "post hook failed: failed to run 'exit 1': exec: \"exit\": executable file not found in $PATH")
+		require.ErrorIs(t, Pipe{}.Run(ctx), exec.ErrNotFound)
 	})
 
 	t.Run("hook with env tmpl", func(t *testing.T) {

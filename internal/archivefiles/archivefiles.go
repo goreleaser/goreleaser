@@ -61,8 +61,8 @@ func Eval(template *tmpl.Template, rlcp bool, files []config.File) ([]config.Fil
 				return nil, err
 			}
 			result = append(result, config.File{
-				Source:      file,
-				Destination: dst,
+				Source:      filepath.ToSlash(file),
+				Destination: filepath.ToSlash(dst),
 				Info:        f.Info,
 			})
 		}

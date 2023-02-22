@@ -7,6 +7,7 @@ import (
 	"os"
 	"path/filepath"
 	"sync"
+	"syscall"
 	"testing"
 
 	"github.com/goreleaser/goreleaser/internal/artifact"
@@ -340,9 +341,7 @@ func TestRunPipe_ArtifactoryDown(t *testing.T) {
 	})
 
 	require.NoError(t, Pipe{}.Default(ctx))
-	err = Pipe{}.Publish(ctx)
-	require.Error(t, err)
-	require.Contains(t, err.Error(), "connection refused")
+	require.ErrorIs(t, Pipe{}.Publish(ctx), syscall.ECONNREFUSED)
 }
 
 func TestRunPipe_TargetTemplateError(t *testing.T) {

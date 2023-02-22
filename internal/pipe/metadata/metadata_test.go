@@ -18,7 +18,7 @@ func TestRunWithError(t *testing.T) {
 		Dist:        "testadata/nope",
 		ProjectName: "foo",
 	})
-	require.EqualError(t, Pipe{}.Run(ctx), `open testadata/nope/artifacts.json: no such file or directory`)
+	require.ErrorIs(t, Pipe{}.Run(ctx), os.ErrNotExist)
 }
 
 func TestRun(t *testing.T) {

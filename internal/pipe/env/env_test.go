@@ -3,6 +3,7 @@ package env
 import (
 	"fmt"
 	"os"
+	"syscall"
 	"testing"
 
 	"github.com/goreleaser/goreleaser/internal/testlib"
@@ -197,7 +198,7 @@ func TestEmptyGiteaEnvFile(t *testing.T) {
 			},
 		},
 	}
-	require.EqualError(t, Pipe{}.Run(ctx), fmt.Sprintf("failed to load gitea token: open %s: permission denied", f.Name()))
+	require.ErrorIs(t, Pipe{}.Run(ctx), syscall.EACCES)
 }
 
 func TestInvalidEnvChecksSkipped(t *testing.T) {

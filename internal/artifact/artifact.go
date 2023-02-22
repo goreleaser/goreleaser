@@ -15,6 +15,7 @@ import (
 	"hash/crc32"
 	"io"
 	"os"
+	"path/filepath"
 	"sync"
 
 	"github.com/caarlos0/log"
@@ -319,6 +320,7 @@ func (artifacts Artifacts) GroupByPlatform() map[string][]*Artifact {
 func (artifacts *Artifacts) Add(a *Artifact) {
 	artifacts.lock.Lock()
 	defer artifacts.lock.Unlock()
+	a.Path = filepath.ToSlash(a.Path)
 	log.WithFields(log.Fields{
 		"name": a.Name,
 		"path": a.Path,
