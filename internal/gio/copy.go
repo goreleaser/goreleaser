@@ -18,16 +18,19 @@ func Copy(src, dst string) error {
 // CopyWithMode recursively copies src into dst with the given mode.
 // The given mode applies only to files. Their parent dirs will have the same mode as their src counterparts.
 func CopyWithMode(src, dst string, mode os.FileMode) error {
+	src = filepath.ToSlash(src)
+	dst = filepath.ToSlash(dst)
 	return filepath.Walk(src, func(path string, info os.FileInfo, err error) error {
 		if err != nil {
 			return fmt.Errorf("failed to copy %s to %s: %w", src, dst, err)
 		}
+		path = filepath.ToSlash(path)
 		// We have the following:
 		// - src = "a/b"
 		// - dst = "dist/linuxamd64/b"
 		// - path = "a/b/c.txt"
 		// So we join "a/b" with "c.txt" and use it as the destination.
-		dst := filepath.Join(dst, strings.Replace(path, src, "", 1))
+		dst := filepath.ToSlash(filepath.Join(dst, strings.Replace(path, src, "", 1)))
 		log.WithFields(log.Fields{
 			"src": path,
 			"dst": dst,
