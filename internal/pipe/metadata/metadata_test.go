@@ -3,6 +3,7 @@ package metadata
 import (
 	"os"
 	"path/filepath"
+	"runtime"
 	"testing"
 	"time"
 
@@ -66,5 +67,9 @@ func requireEqualJSONFile(tb testing.TB, tmp, s string) {
 
 	info, err := os.Stat(path)
 	require.NoError(tb, err)
-	require.Equal(tb, "-rw-r--r--", info.Mode().String())
+	if runtime.GOOS == "windows" {
+		require.Equal(tb, "-rw-rw-rw-", info.Mode().String())
+	} else {
+		require.Equal(tb, "-rw-r--r--", info.Mode().String())
+	}
 }

@@ -5,6 +5,7 @@ import (
 	"os"
 	"path/filepath"
 	"runtime"
+	"syscall"
 	"testing"
 
 	"github.com/goreleaser/goreleaser/internal/testlib"
@@ -138,7 +139,7 @@ func TestGoModProxy(t *testing.T) {
 
 				// change perms of a file and run again, which should now fail on that file.
 				require.NoError(t, os.Chmod(filepath.Join(dist, "proxy", "foo", file), mode))
-				require.ErrorAs(t, ProxyPipe{}.Run(ctx), &ErrProxy{})
+				require.ErrorIs(t, ProxyPipe{}.Run(ctx), syscall.EACCES)
 			})
 		}
 	})

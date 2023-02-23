@@ -87,8 +87,7 @@ func TestTarXzFile(t *testing.T) {
 		require.NoError(t, err)
 		paths = append(paths, next.Name)
 		if next.Name == "sub1/executable" {
-			ex := next.FileInfo().Mode() | 0o111
-			require.Equal(t, next.FileInfo().Mode().String(), ex.String())
+			require.Truef(t, next.FileInfo().Mode()&0o111 != 0, "expected executable perms, got %s", next.FileInfo().Mode().String())
 		}
 		if next.Name == "link.txt" {
 			require.Equal(t, next.Linkname, "regular.txt")

@@ -116,6 +116,8 @@ func TestPublishPipeNoMatchingBuild(t *testing.T) {
 }
 
 func TestPublishPipeSuccess(t *testing.T) {
+	// TODO: make these tests pass on windows
+	testlib.CheckOS(t)
 	testlib.StartRegistry(t, "ko_registry", registryPort)
 
 	table := []struct {

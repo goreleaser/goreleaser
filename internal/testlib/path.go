@@ -20,6 +20,7 @@ func CheckPath(tb testing.TB, cmd string) {
 }
 
 func CheckOS(tb testing.TB) {
+	tb.Helper()
 	if runtime.GOOS == "windows" {
 		tb.Skipf("skipping on windows")
 	}

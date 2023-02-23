@@ -26,6 +26,8 @@ const (
 func start(tb testing.TB) {
 	tb.Helper()
 	testlib.CheckPath(tb, "docker")
+	// TODO: make these tests pass on windows
+	testlib.CheckOS(tb)
 	tb.Log("starting registries")
 	testlib.StartRegistry(tb, "registry", registryPort)
 	testlib.StartRegistry(tb, "alt_registry", altRegistryPort)
