@@ -427,7 +427,7 @@ func TestBuild(t *testing.T) {
 	require.ElementsMatch(t, ctx.Artifacts.List(), []*artifact.Artifact{
 		{
 			Name:   "bin/foo-v5.6.7",
-			Path:   filepath.Join(folder, "dist", "linux_amd64", "bin", "foo-v5.6.7"),
+			Path:   filepath.ToSlash(filepath.Join(folder, "dist", "linux_amd64", "bin", "foo-v5.6.7")),
 			Goos:   "linux",
 			Goarch: "amd64",
 			Type:   artifact.Binary,
@@ -440,7 +440,7 @@ func TestBuild(t *testing.T) {
 		},
 		{
 			Name:   "bin/foo-v5.6.7",
-			Path:   filepath.Join(folder, "dist", "linux_mips_softfloat", "bin", "foo-v5.6.7"),
+			Path:   filepath.ToSlash(filepath.Join(folder, "dist", "linux_mips_softfloat", "bin", "foo-v5.6.7")),
 			Goos:   "linux",
 			Goarch: "mips",
 			Gomips: "softfloat",
@@ -454,7 +454,7 @@ func TestBuild(t *testing.T) {
 		},
 		{
 			Name:   "bin/foo-v5.6.7",
-			Path:   filepath.Join(folder, "dist", "linux_mips64le_softfloat", "bin", "foo-v5.6.7"),
+			Path:   filepath.ToSlash(filepath.Join(folder, "dist", "linux_mips64le_softfloat", "bin", "foo-v5.6.7")),
 			Goos:   "linux",
 			Goarch: "mips64le",
 			Gomips: "softfloat",
@@ -468,7 +468,7 @@ func TestBuild(t *testing.T) {
 		},
 		{
 			Name:   "bin/foo-v5.6.7",
-			Path:   filepath.Join(folder, "dist", "darwin_amd64", "bin", "foo-v5.6.7"),
+			Path:   filepath.ToSlash(filepath.Join(folder, "dist", "darwin_amd64", "bin", "foo-v5.6.7")),
 			Goos:   "darwin",
 			Goarch: "amd64",
 			Type:   artifact.Binary,
@@ -481,7 +481,7 @@ func TestBuild(t *testing.T) {
 		},
 		{
 			Name:   "bin/foo-v5.6.7",
-			Path:   filepath.Join(folder, "dist", "linux_arm_6", "bin", "foo-v5.6.7"),
+			Path:   filepath.ToSlash(filepath.Join(folder, "dist", "linux_arm_6", "bin", "foo-v5.6.7")),
 			Goos:   "linux",
 			Goarch: "arm",
 			Goarm:  "6",
@@ -495,7 +495,7 @@ func TestBuild(t *testing.T) {
 		},
 		{
 			Name:   "bin/foo-v5.6.7.exe",
-			Path:   filepath.Join(folder, "dist", "windows_amd64", "bin", "foo-v5.6.7.exe"),
+			Path:   filepath.ToSlash(filepath.Join(folder, "dist", "windows_amd64", "bin", "foo-v5.6.7.exe")),
 			Goos:   "windows",
 			Goarch: "amd64",
 			Type:   artifact.Binary,
@@ -508,7 +508,7 @@ func TestBuild(t *testing.T) {
 		},
 		{
 			Name:   "bin/foo-v5.6.7.wasm",
-			Path:   filepath.Join(folder, "dist", "js_wasm", "bin", "foo-v5.6.7.wasm"),
+			Path:   filepath.ToSlash(filepath.Join(folder, "dist", "js_wasm", "bin", "foo-v5.6.7.wasm")),
 			Goos:   "js",
 			Goarch: "wasm",
 			Type:   artifact.Binary,
@@ -565,7 +565,7 @@ func TestBuildInvalidEnv(t *testing.T) {
 	err := Default.Build(ctx, build, api.Options{
 		Target: runtimeTarget,
 		Name:   build.Binary,
-		Path:   filepath.Join(folder, "dist", runtimeTarget, build.Binary),
+		Path:   filepath.ToSlash(filepath.Join(folder, "dist", runtimeTarget, build.Binary)),
 		Ext:    "",
 	})
 	testlib.RequireTemplateError(t, err)
@@ -573,7 +573,7 @@ func TestBuildInvalidEnv(t *testing.T) {
 
 func TestBuildCodeInSubdir(t *testing.T) {
 	folder := testlib.Mktmp(t)
-	subdir := filepath.Join(folder, "bar")
+	subdir := filepath.ToSlash(filepath.Join(folder, "bar"))
 	err := os.Mkdir(subdir, 0o755)
 	require.NoError(t, err)
 	writeGoodMain(t, subdir)
@@ -600,7 +600,7 @@ func TestBuildCodeInSubdir(t *testing.T) {
 	err = Default.Build(ctx, build, api.Options{
 		Target: runtimeTarget,
 		Name:   build.Binary,
-		Path:   filepath.Join(folder, "dist", runtimeTarget, build.Binary),
+		Path:   filepath.ToSlash(filepath.Join(folder, "dist", runtimeTarget, build.Binary)),
 		Ext:    "",
 	})
 	require.NoError(t, err)
@@ -630,7 +630,7 @@ func TestBuildWithDotGoDir(t *testing.T) {
 	require.NoError(t, Default.Build(ctx, build, api.Options{
 		Target: runtimeTarget,
 		Name:   build.Binary,
-		Path:   filepath.Join(folder, "dist", runtimeTarget, build.Binary),
+		Path:   filepath.ToSlash(filepath.Join(folder, "dist", runtimeTarget, build.Binary)),
 		Ext:    "",
 	}))
 }
@@ -1082,7 +1082,7 @@ func TestBuildModTimestamp(t *testing.T) {
 		err := Default.Build(ctx, build, api.Options{
 			Target: target,
 			Name:   bin + ext,
-			Path:   filepath.Join(folder, "dist", target, bin+ext),
+			Path:   filepath.ToSlash(filepath.Join(folder, "dist", target, bin+ext)),
 			Ext:    ext,
 		})
 		require.NoError(t, err)

@@ -30,7 +30,7 @@ func TestCopySymlink(t *testing.T) {
 
 	l, err := os.Readlink(c)
 	require.NoError(t, err)
-	require.Equal(t, a, l)
+	require.Equal(t, filepath.ToSlash(a), filepath.ToSlash(l))
 }
 
 func TestEqualFilesModeChanged(t *testing.T) {
