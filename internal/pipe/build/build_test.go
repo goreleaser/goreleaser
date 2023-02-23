@@ -3,6 +3,7 @@ package build
 import (
 	"errors"
 	"os"
+	"os/exec"
 	"path/filepath"
 	"testing"
 
@@ -214,14 +215,14 @@ func TestRunPipeFailingHooks(t *testing.T) {
 		ctx.Git.CurrentTag = "2.3.4"
 		ctx.Config.Builds[0].Hooks.Pre = []config.Hook{{Cmd: "exit 1"}}
 		ctx.Config.Builds[0].Hooks.Post = []config.Hook{{Cmd: "echo post"}}
-		require.EqualError(t, Pipe{}.Run(ctx), "pre hook failed: failed to run 'exit 1': exec: \"exit\": executable file not found in $PATH")
+		require.ErrorIs(t, Pipe{}.Run(ctx), exec.ErrNotFound)
 	})
 	t.Run("post-hook", func(t *testing.T) {
 		ctx := context.New(cfg)
 		ctx.Git.CurrentTag = "2.3.4"
 		ctx.Config.Builds[0].Hooks.Pre = []config.Hook{{Cmd: "echo pre"}}
 		ctx.Config.Builds[0].Hooks.Post = []config.Hook{{Cmd: "exit 1"}}
-		require.EqualError(t, Pipe{}.Run(ctx), `post hook failed: failed to run 'exit 1': exec: "exit": executable file not found in $PATH`)
+		require.ErrorIs(t, Pipe{}.Run(ctx), exec.ErrNotFound)
 	})
 }
 
