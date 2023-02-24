@@ -92,7 +92,10 @@ func (Pipe) Run(ctx *context.Context) error {
 	for i, archive := range ctx.Config.Archives {
 		archive := archive
 		if archive.Meta {
-			return createMeta(ctx, archive)
+			g.Go(func() error {
+				return createMeta(ctx, archive)
+			})
+			continue
 		}
 
 		filter := []artifact.Filter{artifact.Or(
