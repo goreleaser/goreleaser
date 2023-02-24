@@ -1148,3 +1148,32 @@ func TestInvalidFormat(t *testing.T) {
 	})
 	require.EqualError(t, Pipe{}.Run(ctx), "invalid archive format: 7z")
 }
+
+func TestIssue3803(t *testing.T) {
+	ctx := context.New(config.Project{
+		Dist: t.TempDir(),
+		Archives: []config.Archive{
+			{
+				ID:           "foo",
+				NameTemplate: "foo",
+				Meta:         true,
+				Format:       "zip",
+				Files: []config.File{
+					{Source: "./testdata/a/a.txt"},
+				},
+			},
+			{
+				ID:           "foobar",
+				NameTemplate: "foobar",
+				Meta:         true,
+				Format:       "zip",
+				Files: []config.File{
+					{Source: "./testdata/a/b/a.txt"},
+				},
+			},
+		},
+	})
+	require.NoError(t, Pipe{}.Run(ctx))
+	archives := ctx.Artifacts.List()
+	require.Len(t, archives, 2)
+}
