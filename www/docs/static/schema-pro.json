@@ -510,6 +510,9 @@
 						},
 						"type": "array"
 					},
+					"divider": {
+						"type": "string"
+					},
 					"abbrev": {
 						"type": "integer"
 					},
@@ -2604,6 +2607,12 @@
 						"type": "array"
 					},
 					"post_install": {
+						"items": {
+							"type": "string"
+						},
+						"type": "array"
+					},
+					"depends": {
 						"items": {
 							"type": "string"
 						},

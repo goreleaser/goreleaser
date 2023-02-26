@@ -50,6 +50,7 @@ Key                   |Description
 `.TagBody`            |the annotated tag message's body, or the message's body of the commit it points out[^git-tag-body]. Since v1.2.
 `.Runtime.Goos`       |equivalent to `runtime.GOOS`. Since v1.5.
 `.Runtime.Goarch`     |equivalent to `runtime.GOARCH`. Since v1.5.
+`.Artifacts`        |the current artifact list. See table bellow for fields. Since v1.16-pro.
 
 [^version-prefix]: The `v` prefix is stripped, and it might be changed in
   `snapshot` and `nightly` builds.
@@ -62,6 +63,26 @@ Key                   |Description
   format will be `{Tag}-$N-{CommitSHA}`
 [^git-tag-subject]: As reported by `git tag -l --format='%(contents:subject)'`
 [^git-tag-body]: As reported by `git tag -l --format='%(contents)'`
+
+## Artifacts
+
+If you use the `.Artifacts` field, it evaluates to an
+[`artifact.Artifact` list](https://pkg.go.dev/github.com/goreleaser/goreleaser@main/internal/artifact#Artifact).
+You should be able to use all its fields on each item:
+
+- `.Name`
+- `.Path`
+- `.Goos`
+- `.Goarch`
+- `.Goarm`
+- `.Gomips`
+- `.Goamd64`
+- `.Type`
+- `.Extra`
+
+
+!!! success "GoReleaser Pro"
+    The `.Artifacts` template variable is [GoReleaser Pro feature](/pro/).
 
 ## Single-artifact extra fields
 
