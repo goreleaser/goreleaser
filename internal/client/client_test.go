@@ -10,7 +10,7 @@ import (
 )
 
 func TestClientEmpty(t *testing.T) {
-	ctx := &context.Context{}
+	ctx := context.New(config.Project{})
 	client, err := New(ctx)
 	require.Nil(t, client)
 	require.EqualError(t, err, `invalid client token type: ""`)

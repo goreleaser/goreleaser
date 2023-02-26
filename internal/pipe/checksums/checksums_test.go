@@ -223,19 +223,15 @@ func TestPipeCouldNotOpenChecksumsTxt(t *testing.T) {
 }
 
 func TestPipeWhenNoArtifacts(t *testing.T) {
-	ctx := &context.Context{
-		Artifacts: artifact.New(),
-	}
+	ctx := context.New(config.Project{})
 	require.NoError(t, Pipe{}.Run(ctx))
 	require.Len(t, ctx.Artifacts.List(), 0)
 }
 
 func TestDefault(t *testing.T) {
-	ctx := &context.Context{
-		Config: config.Project{
-			Checksum: config.Checksum{},
-		},
-	}
+	ctx := context.New(config.Project{
+		Checksum: config.Checksum{},
+	})
 	require.NoError(t, Pipe{}.Default(ctx))
 	require.Equal(
 		t,
@@ -246,13 +242,11 @@ func TestDefault(t *testing.T) {
 }
 
 func TestDefaultSet(t *testing.T) {
-	ctx := &context.Context{
-		Config: config.Project{
-			Checksum: config.Checksum{
-				NameTemplate: "checksums.txt",
-			},
+	ctx := context.New(config.Project{
+		Checksum: config.Checksum{
+			NameTemplate: "checksums.txt",
 		},
-	}
+	})
 	require.NoError(t, Pipe{}.Default(ctx))
 	require.Equal(t, "checksums.txt", ctx.Config.Checksum.NameTemplate)
 }

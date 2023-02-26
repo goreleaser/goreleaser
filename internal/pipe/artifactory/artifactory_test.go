@@ -692,17 +692,15 @@ func TestArtifactoriesWithInvalidMode(t *testing.T) {
 }
 
 func TestDefault(t *testing.T) {
-	ctx := &context.Context{
-		Config: config.Project{
-			Artifactories: []config.Upload{
-				{
-					Name:     "production",
-					Target:   "http://artifacts.company.com/example-repo-local/{{ .ProjectName }}/{{ .Os }}/{{ .Arch }}{{ if .Arm }}v{{ .Arm }}{{ end }}",
-					Username: "deployuser",
-				},
+	ctx := context.New(config.Project{
+		Artifactories: []config.Upload{
+			{
+				Name:     "production",
+				Target:   "http://artifacts.company.com/example-repo-local/{{ .ProjectName }}/{{ .Os }}/{{ .Arch }}{{ if .Arm }}v{{ .Arm }}{{ end }}",
+				Username: "deployuser",
 			},
 		},
-	}
+	})
 
 	require.NoError(t, Pipe{}.Default(ctx))
 	require.Len(t, ctx.Config.Artifactories, 1)
@@ -711,26 +709,22 @@ func TestDefault(t *testing.T) {
 }
 
 func TestDefaultNoArtifactories(t *testing.T) {
-	ctx := &context.Context{
-		Config: config.Project{
-			Artifactories: []config.Upload{},
-		},
-	}
+	ctx := context.New(config.Project{
+		Artifactories: []config.Upload{},
+	})
 	require.NoError(t, Pipe{}.Default(ctx))
 	require.Empty(t, ctx.Config.Artifactories)
 }
 
 func TestDefaultSet(t *testing.T) {
-	ctx := &context.Context{
-		Config: config.Project{
-			Artifactories: []config.Upload{
-				{
-					Mode:           "custom",
-					ChecksumHeader: "foo",
-				},
+	ctx := context.New(config.Project{
+		Artifactories: []config.Upload{
+			{
+				Mode:           "custom",
+				ChecksumHeader: "foo",
 			},
 		},
-	}
+	})
 	require.NoError(t, Pipe{}.Default(ctx))
 	require.Len(t, ctx.Config.Artifactories, 1)
 	artifactory := ctx.Config.Artifactories[0]

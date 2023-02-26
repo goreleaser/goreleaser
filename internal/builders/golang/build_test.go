@@ -1017,7 +1017,7 @@ func TestProcessFlags(t *testing.T) {
 }
 
 func TestProcessFlagsInvalid(t *testing.T) {
-	ctx := &context.Context{}
+	ctx := context.New(config.Project{})
 
 	source := []string{
 		"{{.Version}",

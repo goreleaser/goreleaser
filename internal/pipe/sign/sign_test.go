@@ -50,11 +50,9 @@ func TestDescription(t *testing.T) {
 }
 
 func TestSignDefault(t *testing.T) {
-	ctx := &context.Context{
-		Config: config.Project{
-			Signs: []config.Sign{{}},
-		},
-	}
+	ctx := context.New(config.Project{
+		Signs: []config.Sign{{}},
+	})
 	err := Pipe{}.Default(ctx)
 	require.NoError(t, err)
 	require.Equal(t, ctx.Config.Signs[0].Cmd, "gpg")
@@ -748,18 +746,16 @@ func verifySignature(tb testing.TB, ctx *context.Context, sig string, user strin
 }
 
 func TestSeveralSignsWithTheSameID(t *testing.T) {
-	ctx := &context.Context{
-		Config: config.Project{
-			Signs: []config.Sign{
-				{
-					ID: "a",
-				},
-				{
-					ID: "a",
-				},
+	ctx := context.New(config.Project{
+		Signs: []config.Sign{
+			{
+				ID: "a",
+			},
+			{
+				ID: "a",
 			},
 		},
-	}
+	})
 	require.EqualError(t, Pipe{}.Default(ctx), "found 2 signs with the ID 'a', please fix your config")
 }
 

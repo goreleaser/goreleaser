@@ -145,11 +145,9 @@ func TestSBOMCatalogDefault(t *testing.T) {
 	for _, test := range tests {
 		t.Run(fmt.Sprintf("artifact=%q", test.configs[0].Artifacts), func(t *testing.T) {
 			testlib.CheckPath(t, "syft")
-			ctx := &context.Context{
-				Config: config.Project{
-					SBOMs: test.configs,
-				},
-			}
+			ctx := context.New(config.Project{
+				SBOMs: test.configs,
+			})
 			err := Pipe{}.Default(ctx)
 			if test.err {
 				require.Error(t, err)
@@ -175,18 +173,16 @@ func TestSBOMCatalogInvalidArtifacts(t *testing.T) {
 }
 
 func TestSeveralSBOMsWithTheSameID(t *testing.T) {
-	ctx := &context.Context{
-		Config: config.Project{
-			SBOMs: []config.SBOM{
-				{
-					ID: "a",
-				},
-				{
-					ID: "a",
-				},
+	ctx := context.New(config.Project{
+		SBOMs: []config.SBOM{
+			{
+				ID: "a",
+			},
+			{
+				ID: "a",
 			},
 		},
-	}
+	})
 	require.EqualError(t, Pipe{}.Default(ctx), "found 2 sboms with the ID 'a', please fix your config")
 }
 

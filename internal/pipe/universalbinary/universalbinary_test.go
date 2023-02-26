@@ -22,14 +22,12 @@ func TestDescription(t *testing.T) {
 
 func TestDefault(t *testing.T) {
 	t.Run("empty", func(t *testing.T) {
-		ctx := &context.Context{
-			Config: config.Project{
-				ProjectName: "proj",
-				UniversalBinaries: []config.UniversalBinary{
-					{},
-				},
+		ctx := context.New(config.Project{
+			ProjectName: "proj",
+			UniversalBinaries: []config.UniversalBinary{
+				{},
 			},
-		}
+		})
 		require.NoError(t, Pipe{}.Default(ctx))
 		require.Equal(t, config.UniversalBinary{
 			ID:           "proj",
@@ -39,14 +37,12 @@ func TestDefault(t *testing.T) {
 	})
 
 	t.Run("given ids", func(t *testing.T) {
-		ctx := &context.Context{
-			Config: config.Project{
-				ProjectName: "proj",
-				UniversalBinaries: []config.UniversalBinary{
-					{IDs: []string{"foo"}},
-				},
+		ctx := context.New(config.Project{
+			ProjectName: "proj",
+			UniversalBinaries: []config.UniversalBinary{
+				{IDs: []string{"foo"}},
 			},
-		}
+		})
 		require.NoError(t, Pipe{}.Default(ctx))
 		require.Equal(t, config.UniversalBinary{
 			ID:           "proj",
@@ -56,14 +52,12 @@ func TestDefault(t *testing.T) {
 	})
 
 	t.Run("given id", func(t *testing.T) {
-		ctx := &context.Context{
-			Config: config.Project{
-				ProjectName: "proj",
-				UniversalBinaries: []config.UniversalBinary{
-					{ID: "foo"},
-				},
+		ctx := context.New(config.Project{
+			ProjectName: "proj",
+			UniversalBinaries: []config.UniversalBinary{
+				{ID: "foo"},
 			},
-		}
+		})
 		require.NoError(t, Pipe{}.Default(ctx))
 		require.Equal(t, config.UniversalBinary{
 			ID:           "foo",
@@ -73,14 +67,12 @@ func TestDefault(t *testing.T) {
 	})
 
 	t.Run("given name", func(t *testing.T) {
-		ctx := &context.Context{
-			Config: config.Project{
-				ProjectName: "proj",
-				UniversalBinaries: []config.UniversalBinary{
-					{NameTemplate: "foo"},
-				},
+		ctx := context.New(config.Project{
+			ProjectName: "proj",
+			UniversalBinaries: []config.UniversalBinary{
+				{NameTemplate: "foo"},
 			},
-		}
+		})
 		require.NoError(t, Pipe{}.Default(ctx))
 		require.Equal(t, config.UniversalBinary{
 			ID:           "proj",
@@ -90,15 +82,13 @@ func TestDefault(t *testing.T) {
 	})
 
 	t.Run("duplicated ids", func(t *testing.T) {
-		ctx := &context.Context{
-			Config: config.Project{
-				ProjectName: "proj",
-				UniversalBinaries: []config.UniversalBinary{
-					{ID: "foo"},
-					{ID: "foo"},
-				},
+		ctx := context.New(config.Project{
+			ProjectName: "proj",
+			UniversalBinaries: []config.UniversalBinary{
+				{ID: "foo"},
+				{ID: "foo"},
 			},
-		}
+		})
 		require.EqualError(t, Pipe{}.Default(ctx), `found 2 universal_binaries with the ID 'foo', please fix your config`)
 	})
 }

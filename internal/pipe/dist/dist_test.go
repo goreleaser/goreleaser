@@ -13,16 +13,7 @@ import (
 func TestDistDoesNotExist(t *testing.T) {
 	folder := t.TempDir()
 	dist := filepath.Join(folder, "dist")
-	require.NoError(
-		t,
-		Pipe{}.Run(
-			&context.Context{
-				Config: config.Project{
-					Dist: dist,
-				},
-			},
-		),
-	)
+	require.NoError(t, Pipe{}.Run(context.New(config.Project{Dist: dist})))
 }
 
 func TestPopulatedDistExists(t *testing.T) {
@@ -32,11 +23,7 @@ func TestPopulatedDistExists(t *testing.T) {
 	f, err := os.Create(filepath.Join(dist, "mybin"))
 	require.NoError(t, err)
 	require.NoError(t, f.Close())
-	ctx := &context.Context{
-		Config: config.Project{
-			Dist: dist,
-		},
-	}
+	ctx := context.New(config.Project{Dist: dist})
 	require.Error(t, Pipe{}.Run(ctx))
 	ctx.Clean = true
 	require.NoError(t, Pipe{}.Run(ctx))
@@ -48,11 +35,7 @@ func TestEmptyDistExists(t *testing.T) {
 	folder := t.TempDir()
 	dist := filepath.Join(folder, "dist")
 	require.NoError(t, os.Mkdir(dist, 0o755))
-	ctx := &context.Context{
-		Config: config.Project{
-			Dist: dist,
-		},
-	}
+	ctx := context.New(config.Project{Dist: dist})
 	require.NoError(t, Pipe{}.Run(ctx))
 	_, err := os.Stat(dist)
 	require.False(t, os.IsNotExist(err))

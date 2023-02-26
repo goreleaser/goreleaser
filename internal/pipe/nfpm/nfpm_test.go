@@ -736,14 +736,12 @@ func TestInvalidConfig(t *testing.T) {
 }
 
 func TestDefault(t *testing.T) {
-	ctx := &context.Context{
-		Config: config.Project{
-			ProjectName: "foobar",
-			NFPMs: []config.NFPM{
-				{},
-			},
+	ctx := context.New(config.Project{
+		ProjectName: "foobar",
+		NFPMs: []config.NFPM{
+			{},
 		},
-	}
+	})
 	require.NoError(t, Pipe{}.Default(ctx))
 	require.Equal(t, "/usr/bin", ctx.Config.NFPMs[0].Bindir)
 	require.Empty(t, ctx.Config.NFPMs[0].Builds)
@@ -752,19 +750,17 @@ func TestDefault(t *testing.T) {
 }
 
 func TestDefaultSet(t *testing.T) {
-	ctx := &context.Context{
-		Config: config.Project{
-			NFPMs: []config.NFPM{
-				{
-					Builds: []string{"foo"},
-					Bindir: "/bin",
-					NFPMOverridables: config.NFPMOverridables{
-						FileNameTemplate: "foo",
-					},
+	ctx := context.New(config.Project{
+		NFPMs: []config.NFPM{
+			{
+				Builds: []string{"foo"},
+				Bindir: "/bin",
+				NFPMOverridables: config.NFPMOverridables{
+					FileNameTemplate: "foo",
 				},
 			},
 		},
-	}
+	})
 	require.NoError(t, Pipe{}.Default(ctx))
 	require.Equal(t, "/bin", ctx.Config.NFPMs[0].Bindir)
 	require.Equal(t, "foo", ctx.Config.NFPMs[0].FileNameTemplate)
@@ -773,23 +769,21 @@ func TestDefaultSet(t *testing.T) {
 }
 
 func TestOverrides(t *testing.T) {
-	ctx := &context.Context{
-		Config: config.Project{
-			NFPMs: []config.NFPM{
-				{
-					Bindir: "/bin",
-					NFPMOverridables: config.NFPMOverridables{
-						FileNameTemplate: "foo",
-					},
-					Overrides: map[string]config.NFPMOverridables{
-						"deb": {
-							FileNameTemplate: "bar",
-						},
+	ctx := context.New(config.Project{
+		NFPMs: []config.NFPM{
+			{
+				Bindir: "/bin",
+				NFPMOverridables: config.NFPMOverridables{
+					FileNameTemplate: "foo",
+				},
+				Overrides: map[string]config.NFPMOverridables{
+					"deb": {
+						FileNameTemplate: "bar",
 					},
 				},
 			},
 		},
-	}
+	})
 	require.NoError(t, Pipe{}.Default(ctx))
 	merged, err := mergeOverrides(ctx.Config.NFPMs[0], "deb")
 	require.NoError(t, err)
@@ -1204,18 +1198,16 @@ func TestAPKSpecificScriptsConfig(t *testing.T) {
 }
 
 func TestSeveralNFPMsWithTheSameID(t *testing.T) {
-	ctx := &context.Context{
-		Config: config.Project{
-			NFPMs: []config.NFPM{
-				{
-					ID: "a",
-				},
-				{
-					ID: "a",
-				},
+	ctx := context.New(config.Project{
+		NFPMs: []config.NFPM{
+			{
+				ID: "a",
+			},
+			{
+				ID: "a",
 			},
 		},
-	}
+	})
 	require.EqualError(t, Pipe{}.Default(ctx), "found 2 nfpms with the ID 'a', please fix your config")
 }
 

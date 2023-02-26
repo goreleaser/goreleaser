@@ -297,10 +297,8 @@ func TestPublish(t *testing.T) {
 				cmd = stdCmd{}
 			})
 
-			ctx := &context.Context{
-				SkipPublish: tt.skip,
-				Artifacts:   artifact.New(),
-			}
+			ctx := context.New(config.Project{})
+			ctx.SkipPublish = tt.skip
 
 			for _, artifact := range tt.artifacts {
 				ctx.Artifacts.Add(&artifact)

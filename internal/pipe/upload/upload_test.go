@@ -667,17 +667,15 @@ func TestPutsWithInvalidMode(t *testing.T) {
 }
 
 func TestDefault(t *testing.T) {
-	ctx := &context.Context{
-		Config: config.Project{
-			Uploads: []config.Upload{
-				{
-					Name:     "production",
-					Target:   "http://artifacts.company.com/example-repo-local/{{ .ProjectName }}/{{ .Os }}/{{ .Arch }}{{ if .Arm }}v{{ .Arm }}{{ end }}",
-					Username: "deployuser",
-				},
+	ctx := context.New(config.Project{
+		Uploads: []config.Upload{
+			{
+				Name:     "production",
+				Target:   "http://artifacts.company.com/example-repo-local/{{ .ProjectName }}/{{ .Os }}/{{ .Arch }}{{ if .Arm }}v{{ .Arm }}{{ end }}",
+				Username: "deployuser",
 			},
 		},
-	}
+	})
 	require.NoError(t, Pipe{}.Default(ctx))
 	require.Len(t, ctx.Config.Uploads, 1)
 	upload := ctx.Config.Uploads[0]
@@ -686,26 +684,22 @@ func TestDefault(t *testing.T) {
 }
 
 func TestDefaultNoPuts(t *testing.T) {
-	ctx := &context.Context{
-		Config: config.Project{
-			Uploads: []config.Upload{},
-		},
-	}
+	ctx := context.New(config.Project{
+		Uploads: []config.Upload{},
+	})
 	require.NoError(t, Pipe{}.Default(ctx))
 	require.Empty(t, ctx.Config.Uploads)
 }
 
 func TestDefaultSet(t *testing.T) {
-	ctx := &context.Context{
-		Config: config.Project{
-			Uploads: []config.Upload{
-				{
-					Method: h.MethodPost,
-					Mode:   "custom",
-				},
+	ctx := context.New(config.Project{
+		Uploads: []config.Upload{
+			{
+				Method: h.MethodPost,
+				Mode:   "custom",
 			},
 		},
-	}
+	})
 	require.NoError(t, Pipe{}.Default(ctx))
 	require.Len(t, ctx.Config.Uploads, 1)
 	upload := ctx.Config.Uploads[0]

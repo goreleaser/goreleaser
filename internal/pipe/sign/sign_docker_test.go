@@ -19,11 +19,9 @@ func TestDockerSignDescription(t *testing.T) {
 }
 
 func TestDockerSignDefault(t *testing.T) {
-	ctx := &context.Context{
-		Config: config.Project{
-			DockerSigns: []config.Sign{{}},
-		},
-	}
+	ctx := context.New(config.Project{
+		DockerSigns: []config.Sign{{}},
+	})
 	err := DockerPipe{}.Default(ctx)
 	require.NoError(t, err)
 	require.Equal(t, "cosign", ctx.Config.DockerSigns[0].Cmd)

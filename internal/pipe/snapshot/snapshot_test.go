@@ -14,23 +14,19 @@ func TestStringer(t *testing.T) {
 }
 
 func TestDefault(t *testing.T) {
-	ctx := &context.Context{
-		Config: config.Project{
-			Snapshot: config.Snapshot{},
-		},
-	}
+	ctx := context.New(config.Project{
+		Snapshot: config.Snapshot{},
+	})
 	require.NoError(t, Pipe{}.Default(ctx))
 	require.Equal(t, "{{ .Version }}-SNAPSHOT-{{ .ShortCommit }}", ctx.Config.Snapshot.NameTemplate)
 }
 
 func TestDefaultSet(t *testing.T) {
-	ctx := &context.Context{
-		Config: config.Project{
-			Snapshot: config.Snapshot{
-				NameTemplate: "snap",
-			},
+	ctx := context.New(config.Project{
+		Snapshot: config.Snapshot{
+			NameTemplate: "snap",
 		},
-	}
+	})
 	require.NoError(t, Pipe{}.Default(ctx))
 	require.Equal(t, "snap", ctx.Config.Snapshot.NameTemplate)
 }
