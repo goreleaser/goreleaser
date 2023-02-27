@@ -13,7 +13,6 @@ import (
 	"github.com/goreleaser/goreleaser/internal/testctx"
 	"github.com/goreleaser/goreleaser/internal/testlib"
 	"github.com/goreleaser/goreleaser/pkg/config"
-	"github.com/goreleaser/goreleaser/pkg/context"
 	"github.com/stretchr/testify/require"
 )
 
@@ -96,11 +95,11 @@ func TestDefault(t *testing.T) {
 
 func TestSkip(t *testing.T) {
 	t.Run("skip", func(t *testing.T) {
-		require.True(t, Pipe{}.Skip(context.New(config.Project{})))
+		require.True(t, Pipe{}.Skip(testctx.New()))
 	})
 
 	t.Run("dont skip", func(t *testing.T) {
-		ctx := context.New(config.Project{
+		ctx := testctx.NewWithCfg(config.Project{
 			UniversalBinaries: []config.UniversalBinary{{}},
 		})
 		require.False(t, Pipe{}.Skip(ctx))
@@ -129,9 +128,9 @@ func TestRun(t *testing.T) {
 			},
 		},
 	}
-	ctx1 := context.New(cfg)
+	ctx1 := testctx.NewWithCfg(cfg)
 
-	ctx2 := context.New(config.Project{
+	ctx2 := testctx.NewWithCfg(config.Project{
 		Dist: dist,
 		UniversalBinaries: []config.UniversalBinary{
 			{
@@ -142,7 +141,7 @@ func TestRun(t *testing.T) {
 		},
 	})
 
-	ctx3 := context.New(config.Project{
+	ctx3 := testctx.NewWithCfg(config.Project{
 		Dist: dist,
 		UniversalBinaries: []config.UniversalBinary{
 			{
@@ -153,7 +152,7 @@ func TestRun(t *testing.T) {
 		},
 	})
 
-	ctx4 := context.New(config.Project{
+	ctx4 := testctx.NewWithCfg(config.Project{
 		Dist: dist,
 		UniversalBinaries: []config.UniversalBinary{
 			{
@@ -164,7 +163,7 @@ func TestRun(t *testing.T) {
 		},
 	})
 
-	ctx5 := context.New(config.Project{
+	ctx5 := testctx.NewWithCfg(config.Project{
 		Dist: dist,
 		UniversalBinaries: []config.UniversalBinary{
 			{
@@ -184,7 +183,7 @@ func TestRun(t *testing.T) {
 		},
 	})
 
-	ctx6 := context.New(config.Project{
+	ctx6 := testctx.NewWithCfg(config.Project{
 		Dist: dist,
 		UniversalBinaries: []config.UniversalBinary{
 			{
@@ -259,7 +258,7 @@ func TestRun(t *testing.T) {
 	})
 
 	t.Run("bad template", func(t *testing.T) {
-		testlib.RequireTemplateError(t, Pipe{}.Run(context.New(config.Project{
+		testlib.RequireTemplateError(t, Pipe{}.Run(testctx.NewWithCfg(config.Project{
 			UniversalBinaries: []config.UniversalBinary{
 				{
 					NameTemplate: "{{.Name}",

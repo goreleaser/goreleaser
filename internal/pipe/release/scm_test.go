@@ -6,7 +6,6 @@ import (
 	"github.com/goreleaser/goreleaser/internal/git"
 	"github.com/goreleaser/goreleaser/internal/testctx"
 	"github.com/goreleaser/goreleaser/pkg/config"
-	"github.com/goreleaser/goreleaser/pkg/context"
 	"github.com/stretchr/testify/require"
 )
 
@@ -42,7 +41,7 @@ func TestSetupGitLab(t *testing.T) {
 
 	t.Run("with invalid templates", func(t *testing.T) {
 		t.Run("owner", func(t *testing.T) {
-			ctx := context.New(config.Project{
+			ctx := testctx.NewWithCfg(config.Project{
 				Release: config.Release{
 					GitLab: config.Repo{
 						Name:  "foo",
@@ -55,7 +54,7 @@ func TestSetupGitLab(t *testing.T) {
 		})
 
 		t.Run("name", func(t *testing.T) {
-			ctx := context.New(config.Project{
+			ctx := testctx.NewWithCfg(config.Project{
 				Release: config.Release{
 					GitLab: config.Repo{
 						Name: "{{.Env.NOPE}}",
@@ -98,7 +97,7 @@ func TestSetupGitea(t *testing.T) {
 
 	t.Run("with invalid templates", func(t *testing.T) {
 		t.Run("owner", func(t *testing.T) {
-			ctx := context.New(config.Project{
+			ctx := testctx.NewWithCfg(config.Project{
 				Release: config.Release{
 					Gitea: config.Repo{
 						Name:  "foo",
@@ -111,7 +110,7 @@ func TestSetupGitea(t *testing.T) {
 		})
 
 		t.Run("name", func(t *testing.T) {
-			ctx := context.New(config.Project{
+			ctx := testctx.NewWithCfg(config.Project{
 				Release: config.Release{
 					Gitea: config.Repo{
 						Name: "{{.Env.NOPE}}",
@@ -154,7 +153,7 @@ func TestSetupGitHub(t *testing.T) {
 
 	t.Run("with invalid templates", func(t *testing.T) {
 		t.Run("owner", func(t *testing.T) {
-			ctx := context.New(config.Project{
+			ctx := testctx.NewWithCfg(config.Project{
 				Release: config.Release{
 					GitHub: config.Repo{
 						Name:  "foo",
@@ -167,7 +166,7 @@ func TestSetupGitHub(t *testing.T) {
 		})
 
 		t.Run("name", func(t *testing.T) {
-			ctx := context.New(config.Project{
+			ctx := testctx.NewWithCfg(config.Project{
 				Release: config.Release{
 					GitHub: config.Repo{
 						Name: "{{.Env.NOPE}}",

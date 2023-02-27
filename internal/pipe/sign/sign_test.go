@@ -89,171 +89,149 @@ func TestSignArtifacts(t *testing.T) {
 		{
 			desc:           "sign cmd not found",
 			expectedErrMsg: `sign: not-a-valid-cmd failed: exec: "not-a-valid-cmd": executable file not found in $PATH: `,
-			ctx: context.New(
-				config.Project{
-					Signs: []config.Sign{
-						{
-							Artifacts: "all",
-							Cmd:       "not-a-valid-cmd",
-						},
+			ctx: testctx.NewWithCfg(config.Project{
+				Signs: []config.Sign{
+					{
+						Artifacts: "all",
+						Cmd:       "not-a-valid-cmd",
 					},
 				},
-			),
+			}),
 		},
 		{
 			desc:           "sign errors",
 			expectedErrMsg: "sign: exit failed",
-			ctx: context.New(
-				config.Project{
-					Signs: []config.Sign{
-						{
-							Artifacts: "all",
-							Cmd:       "exit",
-							Args:      []string{"1"},
-						},
+			ctx: testctx.NewWithCfg(config.Project{
+				Signs: []config.Sign{
+					{
+						Artifacts: "all",
+						Cmd:       "exit",
+						Args:      []string{"1"},
 					},
 				},
-			),
+			}),
 		},
 		{
 			desc:           "invalid certificate template",
 			expectedErrMsg: `sign failed: artifact1: template: tmpl:1:3: executing "tmpl" at <.blah>: map has no entry for key "blah"`,
-			ctx: context.New(
-				config.Project{
-					Signs: []config.Sign{
-						{
-							Artifacts:   "all",
-							Cmd:         "exit",
-							Certificate: "{{ .blah }}",
-						},
+			ctx: testctx.NewWithCfg(config.Project{
+				Signs: []config.Sign{
+					{
+						Artifacts:   "all",
+						Cmd:         "exit",
+						Certificate: "{{ .blah }}",
 					},
 				},
-			),
+			}),
 		},
 		{
 			desc:           "invalid signature template",
 			expectedErrMsg: `sign failed: artifact1: template: tmpl:1:3: executing "tmpl" at <.blah>: map has no entry for key "blah"`,
-			ctx: context.New(
-				config.Project{
-					Signs: []config.Sign{
-						{
-							Artifacts: "all",
-							Cmd:       "exit",
-							Signature: "{{ .blah }}",
-						},
+			ctx: testctx.NewWithCfg(config.Project{
+				Signs: []config.Sign{
+					{
+						Artifacts: "all",
+						Cmd:       "exit",
+						Signature: "{{ .blah }}",
 					},
 				},
-			),
+			}),
 		},
 		{
 			desc:           "invalid args template",
 			expectedErrMsg: `sign failed: artifact1: template: tmpl:1: unexpected "}" in operand`,
-			ctx: context.New(
-				config.Project{
-					Signs: []config.Sign{
-						{
-							Artifacts: "all",
-							Cmd:       "exit",
-							Args:      []string{"${FOO}-{{ .foo }{{}}{"},
-						},
-					},
-					Env: []string{
-						"FOO=BAR",
+			ctx: testctx.NewWithCfg(config.Project{
+				Signs: []config.Sign{
+					{
+						Artifacts: "all",
+						Cmd:       "exit",
+						Args:      []string{"${FOO}-{{ .foo }{{}}{"},
 					},
 				},
-			),
+				Env: []string{
+					"FOO=BAR",
+				},
+			}),
 		},
 		{
 			desc:           "invalid env template",
 			expectedErrMsg: `sign failed: artifact1: template: tmpl:1:5: executing "tmpl" at <.blah>: map has no entry for key "blah"`,
-			ctx: context.New(
-				config.Project{
-					Signs: []config.Sign{
-						{
-							Artifacts: "all",
-							Cmd:       "exit",
-							Env:       []string{"A={{ .blah }}"},
-						},
+			ctx: testctx.NewWithCfg(config.Project{
+				Signs: []config.Sign{
+					{
+						Artifacts: "all",
+						Cmd:       "exit",
+						Env:       []string{"A={{ .blah }}"},
 					},
 				},
-			),
+			}),
 		},
 		{
 			desc: "sign all artifacts",
-			ctx: context.New(
-				config.Project{
-					Signs: []config.Sign{
-						{
-							Artifacts: "all",
-						},
+			ctx: testctx.NewWithCfg(config.Project{
+				Signs: []config.Sign{
+					{
+						Artifacts: "all",
 					},
 				},
-			),
+			}),
 			signaturePaths: []string{"artifact1.sig", "artifact2.sig", "artifact3.sig", "checksum.sig", "checksum2.sig", "linux_amd64/artifact4.sig", "artifact5.tar.gz.sig", "artifact5.tar.gz.sbom.sig", "package1.deb.sig"},
 			signatureNames: []string{"artifact1.sig", "artifact2.sig", "artifact3_1.0.0_linux_amd64.sig", "checksum.sig", "checksum2.sig", "artifact4_1.0.0_linux_amd64.sig", "artifact5.tar.gz.sig", "artifact5.tar.gz.sbom.sig", "package1.deb.sig"},
 		},
 		{
 			desc: "sign archives",
-			ctx: context.New(
-				config.Project{
-					Signs: []config.Sign{
-						{
-							Artifacts: "archive",
-						},
+			ctx: testctx.NewWithCfg(config.Project{
+				Signs: []config.Sign{
+					{
+						Artifacts: "archive",
 					},
 				},
-			),
+			}),
 			signaturePaths: []string{"artifact1.sig", "artifact2.sig"},
 			signatureNames: []string{"artifact1.sig", "artifact2.sig"},
 		},
 		{
 			desc: "sign packages",
-			ctx: context.New(
-				config.Project{
-					Signs: []config.Sign{
-						{
-							Artifacts: "package",
-						},
+			ctx: testctx.NewWithCfg(config.Project{
+				Signs: []config.Sign{
+					{
+						Artifacts: "package",
 					},
 				},
-			),
+			}),
 			signaturePaths: []string{"package1.deb.sig"},
 			signatureNames: []string{"package1.deb.sig"},
 		},
 		{
 			desc: "sign binaries",
-			ctx: context.New(
-				config.Project{
-					Signs: []config.Sign{
-						{
-							Artifacts: "binary",
-						},
+			ctx: testctx.NewWithCfg(config.Project{
+				Signs: []config.Sign{
+					{
+						Artifacts: "binary",
 					},
 				},
-			),
+			}),
 			signaturePaths: []string{"artifact3.sig", "linux_amd64/artifact4.sig"},
 			signatureNames: []string{"artifact3_1.0.0_linux_amd64.sig", "artifact4_1.0.0_linux_amd64.sig"},
 		},
 		{
 			desc: "multiple sign configs",
-			ctx: context.New(
-				config.Project{
-					Env: []string{
-						"GPG_KEY_ID=" + fakeGPGKeyID,
+			ctx: testctx.NewWithCfg(config.Project{
+				Env: []string{
+					"GPG_KEY_ID=" + fakeGPGKeyID,
+				},
+				Signs: []config.Sign{
+					{
+						ID:        "s1",
+						Artifacts: "checksum",
 					},
-					Signs: []config.Sign{
-						{
-							ID:        "s1",
-							Artifacts: "checksum",
-						},
-						{
-							ID:        "s2",
-							Artifacts: "archive",
-							Signature: "${artifact}.{{ .Env.GPG_KEY_ID }}.sig",
-						},
+					{
+						ID:        "s2",
+						Artifacts: "archive",
+						Signature: "${artifact}.{{ .Env.GPG_KEY_ID }}.sig",
 					},
 				},
-			),
+			}),
 			signaturePaths: []string{
 				"artifact1." + fakeGPGKeyID + ".sig",
 				"artifact2." + fakeGPGKeyID + ".sig",
@@ -269,279 +247,251 @@ func TestSignArtifacts(t *testing.T) {
 		},
 		{
 			desc: "sign filtered artifacts",
-			ctx: context.New(
-				config.Project{
-					Signs: []config.Sign{
-						{
-							Artifacts: "all",
-							IDs:       []string{"foo"},
-						},
+			ctx: testctx.NewWithCfg(config.Project{
+				Signs: []config.Sign{
+					{
+						Artifacts: "all",
+						IDs:       []string{"foo"},
 					},
 				},
-			),
+			}),
 			signaturePaths: []string{"artifact1.sig", "artifact3.sig", "checksum.sig", "checksum2.sig", "artifact5.tar.gz.sig", "package1.deb.sig"},
 			signatureNames: []string{"artifact1.sig", "artifact3_1.0.0_linux_amd64.sig", "checksum.sig", "checksum2.sig", "artifact5.tar.gz.sig", "package1.deb.sig"},
 		},
 		{
 			desc: "sign only checksums",
-			ctx: context.New(
-				config.Project{
-					Signs: []config.Sign{
-						{
-							Artifacts: "checksum",
-						},
+			ctx: testctx.NewWithCfg(config.Project{
+				Signs: []config.Sign{
+					{
+						Artifacts: "checksum",
 					},
 				},
-			),
+			}),
 			signaturePaths: []string{"checksum.sig", "checksum2.sig"},
 			signatureNames: []string{"checksum.sig", "checksum2.sig"},
 		},
 		{
 			desc: "sign only filtered checksums",
-			ctx: context.New(
-				config.Project{
-					Signs: []config.Sign{
-						{
-							Artifacts: "checksum",
-							IDs:       []string{"foo"},
-						},
+			ctx: testctx.NewWithCfg(config.Project{
+				Signs: []config.Sign{
+					{
+						Artifacts: "checksum",
+						IDs:       []string{"foo"},
 					},
 				},
-			),
+			}),
 			signaturePaths: []string{"checksum.sig", "checksum2.sig"},
 			signatureNames: []string{"checksum.sig", "checksum2.sig"},
 		},
 		{
 			desc: "sign only source",
-			ctx: context.New(
-				config.Project{
-					Signs: []config.Sign{
-						{
-							Artifacts: "source",
-						},
+			ctx: testctx.NewWithCfg(config.Project{
+				Signs: []config.Sign{
+					{
+						Artifacts: "source",
 					},
 				},
-			),
+			}),
 			signaturePaths: []string{"artifact5.tar.gz.sig"},
 			signatureNames: []string{"artifact5.tar.gz.sig"},
 		},
 		{
 			desc: "sign only source filter by id",
-			ctx: context.New(
-				config.Project{
-					Signs: []config.Sign{
-						{
-							Artifacts: "source",
-							IDs:       []string{"should-not-be-used"},
-						},
+			ctx: testctx.NewWithCfg(config.Project{
+				Signs: []config.Sign{
+					{
+						Artifacts: "source",
+						IDs:       []string{"should-not-be-used"},
 					},
 				},
-			),
+			}),
 			signaturePaths: []string{"artifact5.tar.gz.sig"},
 			signatureNames: []string{"artifact5.tar.gz.sig"},
 		},
 		{
 			desc: "sign only sbom",
-			ctx: context.New(
-				config.Project{
-					Signs: []config.Sign{
-						{
-							Artifacts: "sbom",
-						},
+			ctx: testctx.NewWithCfg(config.Project{
+				Signs: []config.Sign{
+					{
+						Artifacts: "sbom",
 					},
 				},
-			),
+			}),
 			signaturePaths: []string{"artifact5.tar.gz.sbom.sig"},
 			signatureNames: []string{"artifact5.tar.gz.sbom.sig"},
 		},
 		{
 			desc: "sign all artifacts with env",
-			ctx: context.New(
-				config.Project{
-					Signs: []config.Sign{
-						{
-							Artifacts: "all",
-							Args: []string{
-								"-u",
-								"${TEST_USER}",
-								"--output",
-								"${signature}",
-								"--detach-sign",
-								"${artifact}",
-							},
+			ctx: testctx.NewWithCfg(config.Project{
+				Signs: []config.Sign{
+					{
+						Artifacts: "all",
+						Args: []string{
+							"-u",
+							"${TEST_USER}",
+							"--output",
+							"${signature}",
+							"--detach-sign",
+							"${artifact}",
 						},
 					},
-					Env: []string{
-						fmt.Sprintf("TEST_USER=%s", user),
-					},
 				},
-			),
+				Env: []string{
+					fmt.Sprintf("TEST_USER=%s", user),
+				},
+			}),
 			signaturePaths: []string{"artifact1.sig", "artifact2.sig", "artifact3.sig", "checksum.sig", "checksum2.sig", "linux_amd64/artifact4.sig", "artifact5.tar.gz.sig", "artifact5.tar.gz.sbom.sig", "package1.deb.sig"},
 			signatureNames: []string{"artifact1.sig", "artifact2.sig", "artifact3_1.0.0_linux_amd64.sig", "checksum.sig", "checksum2.sig", "artifact4_1.0.0_linux_amd64.sig", "artifact5.tar.gz.sig", "artifact5.tar.gz.sbom.sig", "package1.deb.sig"},
 		},
 		{
 			desc: "sign all artifacts with template",
-			ctx: context.New(
-				config.Project{
-					Signs: []config.Sign{
-						{
-							Artifacts: "all",
-							Args: []string{
-								"-u",
-								"{{ .Env.SOME_TEST_USER }}",
-								"--output",
-								"${signature}",
-								"--detach-sign",
-								"${artifact}",
-							},
+			ctx: testctx.NewWithCfg(config.Project{
+				Signs: []config.Sign{
+					{
+						Artifacts: "all",
+						Args: []string{
+							"-u",
+							"{{ .Env.SOME_TEST_USER }}",
+							"--output",
+							"${signature}",
+							"--detach-sign",
+							"${artifact}",
 						},
 					},
-					Env: []string{
-						fmt.Sprintf("SOME_TEST_USER=%s", user),
-					},
 				},
-			),
+				Env: []string{
+					fmt.Sprintf("SOME_TEST_USER=%s", user),
+				},
+			}),
 			signaturePaths: []string{"artifact1.sig", "artifact2.sig", "artifact3.sig", "checksum.sig", "checksum2.sig", "linux_amd64/artifact4.sig", "artifact5.tar.gz.sig", "artifact5.tar.gz.sbom.sig", "package1.deb.sig"},
 			signatureNames: []string{"artifact1.sig", "artifact2.sig", "artifact3_1.0.0_linux_amd64.sig", "checksum.sig", "checksum2.sig", "artifact4_1.0.0_linux_amd64.sig", "artifact5.tar.gz.sig", "artifact5.tar.gz.sbom.sig", "package1.deb.sig"},
 		},
 		{
 			desc: "sign single with password from stdin",
-			ctx: context.New(
-				config.Project{
-					Signs: []config.Sign{
-						{
-							Artifacts: "all",
-							Args: []string{
-								"-u",
-								passwordUser,
-								"--batch",
-								"--pinentry-mode",
-								"loopback",
-								"--passphrase-fd",
-								"0",
-								"--output",
-								"${signature}",
-								"--detach-sign",
-								"${artifact}",
-							},
-							Stdin: &stdin,
+			ctx: testctx.NewWithCfg(config.Project{
+				Signs: []config.Sign{
+					{
+						Artifacts: "all",
+						Args: []string{
+							"-u",
+							passwordUser,
+							"--batch",
+							"--pinentry-mode",
+							"loopback",
+							"--passphrase-fd",
+							"0",
+							"--output",
+							"${signature}",
+							"--detach-sign",
+							"${artifact}",
 						},
+						Stdin: &stdin,
 					},
 				},
-			),
+			}),
 			signaturePaths: []string{"artifact1.sig", "artifact2.sig", "artifact3.sig", "checksum.sig", "checksum2.sig", "linux_amd64/artifact4.sig", "artifact5.tar.gz.sig", "artifact5.tar.gz.sbom.sig", "package1.deb.sig"},
 			signatureNames: []string{"artifact1.sig", "artifact2.sig", "artifact3_1.0.0_linux_amd64.sig", "checksum.sig", "checksum2.sig", "artifact4_1.0.0_linux_amd64.sig", "artifact5.tar.gz.sig", "artifact5.tar.gz.sbom.sig", "package1.deb.sig"},
 			user:           passwordUser,
 		},
 		{
 			desc: "sign single with password from templated stdin",
-			ctx: context.New(
-				config.Project{
-					Env: []string{"GPG_PASSWORD=" + stdin},
-					Signs: []config.Sign{
-						{
-							Artifacts: "all",
-							Args: []string{
-								"-u",
-								passwordUser,
-								"--batch",
-								"--pinentry-mode",
-								"loopback",
-								"--passphrase-fd",
-								"0",
-								"--output",
-								"${signature}",
-								"--detach-sign",
-								"${artifact}",
-							},
-							Stdin: &tmplStdin,
+			ctx: testctx.NewWithCfg(config.Project{
+				Env: []string{"GPG_PASSWORD=" + stdin},
+				Signs: []config.Sign{
+					{
+						Artifacts: "all",
+						Args: []string{
+							"-u",
+							passwordUser,
+							"--batch",
+							"--pinentry-mode",
+							"loopback",
+							"--passphrase-fd",
+							"0",
+							"--output",
+							"${signature}",
+							"--detach-sign",
+							"${artifact}",
 						},
+						Stdin: &tmplStdin,
 					},
 				},
-			),
+			}),
 			signaturePaths: []string{"artifact1.sig", "artifact2.sig", "artifact3.sig", "checksum.sig", "checksum2.sig", "linux_amd64/artifact4.sig", "artifact5.tar.gz.sig", "artifact5.tar.gz.sbom.sig", "package1.deb.sig"},
 			signatureNames: []string{"artifact1.sig", "artifact2.sig", "artifact3_1.0.0_linux_amd64.sig", "checksum.sig", "checksum2.sig", "artifact4_1.0.0_linux_amd64.sig", "artifact5.tar.gz.sig", "artifact5.tar.gz.sbom.sig", "package1.deb.sig"},
 			user:           passwordUser,
 		},
 		{
 			desc: "sign single with password from stdin_file",
-			ctx: context.New(
-				config.Project{
-					Signs: []config.Sign{
-						{
-							Artifacts: "all",
-							Args: []string{
-								"-u",
-								passwordUser,
-								"--batch",
-								"--pinentry-mode",
-								"loopback",
-								"--passphrase-fd",
-								"0",
-								"--output",
-								"${signature}",
-								"--detach-sign",
-								"${artifact}",
-							},
-							StdinFile: filepath.Join(keyring, passwordUser),
+			ctx: testctx.NewWithCfg(config.Project{
+				Signs: []config.Sign{
+					{
+						Artifacts: "all",
+						Args: []string{
+							"-u",
+							passwordUser,
+							"--batch",
+							"--pinentry-mode",
+							"loopback",
+							"--passphrase-fd",
+							"0",
+							"--output",
+							"${signature}",
+							"--detach-sign",
+							"${artifact}",
 						},
+						StdinFile: filepath.Join(keyring, passwordUser),
 					},
 				},
-			),
+			}),
 			signaturePaths: []string{"artifact1.sig", "artifact2.sig", "artifact3.sig", "checksum.sig", "checksum2.sig", "linux_amd64/artifact4.sig", "artifact5.tar.gz.sig", "artifact5.tar.gz.sbom.sig", "package1.deb.sig"},
 			signatureNames: []string{"artifact1.sig", "artifact2.sig", "artifact3_1.0.0_linux_amd64.sig", "checksum.sig", "checksum2.sig", "artifact4_1.0.0_linux_amd64.sig", "artifact5.tar.gz.sig", "artifact5.tar.gz.sbom.sig", "package1.deb.sig"},
 			user:           passwordUser,
 		},
 		{
 			desc: "missing stdin_file",
-			ctx: context.New(
-				config.Project{
-					Signs: []config.Sign{
-						{
-							Artifacts: "all",
-							Args: []string{
-								"--batch",
-								"--pinentry-mode",
-								"loopback",
-								"--passphrase-fd",
-								"0",
-							},
-							StdinFile: "/tmp/non-existing-file",
+			ctx: testctx.NewWithCfg(config.Project{
+				Signs: []config.Sign{
+					{
+						Artifacts: "all",
+						Args: []string{
+							"--batch",
+							"--pinentry-mode",
+							"loopback",
+							"--passphrase-fd",
+							"0",
 						},
+						StdinFile: "/tmp/non-existing-file",
 					},
 				},
-			),
+			}),
 			expectedErrMsg: `sign failed: cannot open file /tmp/non-existing-file: open /tmp/non-existing-file: no such file or directory`,
 		},
 		{
 			desc: "sign creating certificate",
-			ctx: context.New(
-				config.Project{
-					Signs: []config.Sign{
-						{
-							Certificate: "${artifact}.pem",
-							Artifacts:   "checksum",
-						},
+			ctx: testctx.NewWithCfg(config.Project{
+				Signs: []config.Sign{
+					{
+						Certificate: "${artifact}.pem",
+						Artifacts:   "checksum",
 					},
 				},
-			),
+			}),
 			signaturePaths:   []string{"checksum.sig", "checksum2.sig"},
 			signatureNames:   []string{"checksum.sig", "checksum2.sig"},
 			certificateNames: []string{"checksum.pem", "checksum2.pem"},
 		},
 		{
 			desc: "sign all artifacts with env and certificate",
-			ctx: context.New(
-				config.Project{
-					Signs: []config.Sign{
-						{
-							Env:         []string{"NOT_HONK=honk", "HONK={{ .Env.NOT_HONK }}"},
-							Certificate: `{{ trimsuffix (trimsuffix .Env.artifact ".tar.gz") ".deb" }}_${HONK}.pem`,
-							Artifacts:   "all",
-						},
+			ctx: testctx.NewWithCfg(config.Project{
+				Signs: []config.Sign{
+					{
+						Env:         []string{"NOT_HONK=honk", "HONK={{ .Env.NOT_HONK }}"},
+						Certificate: `{{ trimsuffix (trimsuffix .Env.artifact ".tar.gz") ".deb" }}_${HONK}.pem`,
+						Artifacts:   "all",
 					},
 				},
-			),
+			}),
 			signaturePaths:   []string{"artifact1.sig", "artifact2.sig", "artifact3.sig", "checksum.sig", "checksum2.sig", "linux_amd64/artifact4.sig", "artifact5.tar.gz.sig", "artifact5.tar.gz.sbom.sig", "package1.deb.sig"},
 			signatureNames:   []string{"artifact1.sig", "artifact2.sig", "artifact3_1.0.0_linux_amd64.sig", "checksum.sig", "checksum2.sig", "artifact4_1.0.0_linux_amd64.sig", "artifact5.tar.gz.sig", "artifact5.tar.gz.sbom.sig", "package1.deb.sig"},
 			certificateNames: []string{"artifact1_honk.pem", "artifact2_honk.pem", "artifact3_1.0.0_linux_amd64_honk.pem", "checksum_honk.pem", "checksum2_honk.pem", "artifact4_1.0.0_linux_amd64_honk.pem", "artifact5_honk.pem", "artifact5.tar.gz.sbom_honk.pem", "package1_honk.pem"},
@@ -756,7 +706,7 @@ func TestSeveralSignsWithTheSameID(t *testing.T) {
 
 func TestSkip(t *testing.T) {
 	t.Run("skip", func(t *testing.T) {
-		require.True(t, Pipe{}.Skip(context.New(config.Project{})))
+		require.True(t, Pipe{}.Skip(testctx.New()))
 	})
 
 	t.Run("skip sign", func(t *testing.T) {

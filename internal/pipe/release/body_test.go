@@ -32,14 +32,16 @@ func TestDontEscapeHTML(t *testing.T) {
 
 func TestDescribeBodyWithHeaderAndFooter(t *testing.T) {
 	changelog := "feature1: description\nfeature2: other description"
-	ctx := context.New(config.Project{
-		Release: config.Release{
-			Header: "## Yada yada yada\nsomething\n",
-			Footer: "\n---\n\nGet images at docker.io/foo/bar:{{.Tag}}\n\n---\n\nGet GoReleaser Pro at https://goreleaser.com/pro",
+	ctx := testctx.NewWithCfg(
+		config.Project{
+			Release: config.Release{
+				Header: "## Yada yada yada\nsomething\n",
+				Footer: "\n---\n\nGet images at docker.io/foo/bar:{{.Tag}}\n\n---\n\nGet GoReleaser Pro at https://goreleaser.com/pro",
+			},
 		},
-	})
-	ctx.ReleaseNotes = changelog
-	ctx.Git = context.GitInfo{CurrentTag: "v1.0"}
+		testctx.WithCurrentTag("v1.0"),
+		func(ctx *context.Context) { ctx.ReleaseNotes = changelog },
+	)
 	out, err := describeBody(ctx)
 	require.NoError(t, err)
 
@@ -47,7 +49,7 @@ func TestDescribeBodyWithHeaderAndFooter(t *testing.T) {
 }
 
 func TestDescribeBodyWithInvalidHeaderTemplate(t *testing.T) {
-	ctx := context.New(config.Project{
+	ctx := testctx.NewWithCfg(config.Project{
 		Release: config.Release{
 			Header: "## {{ .Nop }\n",
 		},
@@ -57,7 +59,7 @@ func TestDescribeBodyWithInvalidHeaderTemplate(t *testing.T) {
 }
 
 func TestDescribeBodyWithInvalidFooterTemplate(t *testing.T) {
-	ctx := context.New(config.Project{
+	ctx := testctx.NewWithCfg(config.Project{
 		Release: config.Release{
 			Footer: "{{ .Nops }",
 		},

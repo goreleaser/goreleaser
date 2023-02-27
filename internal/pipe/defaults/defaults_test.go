@@ -43,7 +43,7 @@ func TestFillPartial(t *testing.T) {
 	testlib.GitInit(t)
 	testlib.GitRemoteAdd(t, "git@github.com:goreleaser/goreleaser.git")
 
-	ctx := context.New(config.Project{
+	ctx := testctx.NewWithCfg(config.Project{
 		GitHubURLs: config.GitHubURLs{
 			Download: "https://github.company.com",
 		},
@@ -96,12 +96,11 @@ func TestFillPartial(t *testing.T) {
 	require.Equal(t, "disttt", ctx.Config.Dist)
 	require.NotEqual(t, "https://github.com", ctx.Config.GitHubURLs.Download)
 
-	ctx = context.New(config.Project{
+	ctx = testctx.NewWithCfg(config.Project{
 		GiteaURLs: config.GiteaURLs{
 			API: "https://gitea.com/api/v1/",
 		},
-	})
-	ctx.TokenType = context.TokenTypeGitea
+	}, testctx.WithTokenType(context.TokenTypeGitea))
 
 	require.NoError(t, Pipe{}.Run(ctx))
 	require.Equal(t, "https://gitea.com", ctx.Config.GiteaURLs.Download)
@@ -134,16 +133,12 @@ func TestGiteaTemplateDownloadURL(t *testing.T) {
 	}
 
 	for _, tt := range tests {
-		ctx := context.New(config.Project{
+		ctx := testctx.NewWithCfg(config.Project{
+			Env: []string{"GORELEASER_TEST_GITEA_URLS_API=https://gitea.com/api/v1"},
 			GiteaURLs: config.GiteaURLs{
 				API: tt.apiURL,
 			},
-		})
-
-		ctx.TokenType = context.TokenTypeGitea
-		ctx.Env = context.Env{
-			"GORELEASER_TEST_GITEA_URLS_API": "https://gitea.com/api/v1",
-		}
+		}, testctx.WithTokenType(context.TokenTypeGitea))
 
 		err := Pipe{}.Run(ctx)
 		if tt.wantErr {
