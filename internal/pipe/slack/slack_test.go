@@ -67,27 +67,20 @@ func TestParseRichText(t *testing.T) {
 
 	t.Run("parse only - full slack config with blocks and attachments", func(t *testing.T) {
 		t.Parallel()
-
 		var project config.Project
 		require.NoError(t, yaml.Unmarshal(goodRichSlackConf(), &project))
-
-		ctx := testctx.New(testctx.WithVersion(testVersion))
-
+		ctx := testctx.NewWithCfg(project, testctx.WithVersion(testVersion))
 		blocks, attachments, err := parseAdvancedFormatting(ctx)
 		require.NoError(t, err)
-
 		require.Len(t, blocks.BlockSet, 4)
 		require.Len(t, attachments, 2)
 	})
 
 	t.Run("parse only - slack config with bad blocks", func(t *testing.T) {
 		t.Parallel()
-
 		var project config.Project
 		require.NoError(t, yaml.Unmarshal(badBlocksSlackConf(), &project))
-
-		ctx := testctx.New(testctx.WithVersion(testVersion))
-
+		ctx := testctx.NewWithCfg(project, testctx.WithVersion(testVersion))
 		_, _, err := parseAdvancedFormatting(ctx)
 		require.Error(t, err)
 		require.ErrorContains(t, err, "json")
@@ -95,12 +88,9 @@ func TestParseRichText(t *testing.T) {
 
 	t.Run("parse only - slack config with bad attachments", func(t *testing.T) {
 		t.Parallel()
-
 		var project config.Project
 		require.NoError(t, yaml.Unmarshal(badAttachmentsSlackConf(), &project))
-
-		ctx := testctx.New(testctx.WithVersion(testVersion))
-
+		ctx := testctx.NewWithCfg(project, testctx.WithVersion(testVersion))
 		_, _, err := parseAdvancedFormatting(ctx)
 		require.Error(t, err)
 		require.ErrorContains(t, err, "json")
@@ -114,23 +104,17 @@ func TestRichText(t *testing.T) {
 	t.Run("e2e - full slack config with blocks and attachments", func(t *testing.T) {
 		t.SkipNow() // requires a valid webhook for integration testing
 		t.Parallel()
-
 		var project config.Project
 		require.NoError(t, yaml.Unmarshal(goodRichSlackConf(), &project))
-
-		ctx := testctx.New(testctx.WithVersion(testVersion))
-
+		ctx := testctx.NewWithCfg(project, testctx.WithVersion(testVersion))
 		require.NoError(t, Pipe{}.Announce(ctx))
 	})
 
 	t.Run("slack config with bad blocks", func(t *testing.T) {
 		t.Parallel()
-
 		var project config.Project
 		require.NoError(t, yaml.Unmarshal(badBlocksSlackConf(), &project))
-
-		ctx := testctx.New(testctx.WithVersion(testVersion))
-
+		ctx := testctx.NewWithCfg(project, testctx.WithVersion(testVersion))
 		err := Pipe{}.Announce(ctx)
 		require.Error(t, err)
 		require.ErrorContains(t, err, "json")
@@ -156,14 +140,11 @@ func TestUnmarshall(t *testing.T) {
 
 	t.Run("unmarshal happy to resolve template", func(t *testing.T) {
 		t.Parallel()
-
 		var project config.Project
 		require.NoError(t, yaml.Unmarshal(goodTemplateSlackConf(), &project))
-		ctx := testctx.New(testctx.WithVersion(testVersion))
-
+		ctx := testctx.NewWithCfg(project, testctx.WithVersion(testVersion))
 		var blocks slack.Blocks
 		require.NoError(t, unmarshal(ctx, ctx.Config.Announce.Slack.Blocks, &blocks))
-
 		require.Len(t, blocks.BlockSet, 1)
 		header, ok := blocks.BlockSet[0].(*slack.HeaderBlock)
 		require.True(t, ok)
@@ -172,11 +153,9 @@ func TestUnmarshall(t *testing.T) {
 
 	t.Run("unmarshal fails on resolve template", func(t *testing.T) {
 		t.Parallel()
-
 		var project config.Project
 		require.NoError(t, yaml.Unmarshal(badTemplateSlackConf(), &project))
-		ctx := testctx.New(testctx.WithVersion(testVersion))
-
+		ctx := testctx.NewWithCfg(project, testctx.WithVersion(testVersion))
 		var blocks slack.Blocks
 		require.Error(t, unmarshal(ctx, ctx.Config.Announce.Slack.Blocks, &blocks))
 	})
