@@ -9,12 +9,6 @@ import (
 
 type Opt func(ctx *context.Context)
 
-func WithConfig(c config.Project) Opt {
-	return func(ctx *context.Context) {
-		ctx.Config = c
-	}
-}
-
 func WithTokenType(t context.TokenType) Opt {
 	return func(ctx *context.Context) {
 		ctx.TokenType = t
@@ -70,13 +64,13 @@ func SkipSign(ctx *context.Context) {
 }
 
 func NewWithCfg(c config.Project, opts ...Opt) *context.Context {
-	return New(append(opts, WithConfig(c))...)
-}
-
-func New(opts ...Opt) *context.Context {
-	ctx := context.New(config.Project{})
+	ctx := context.New(c)
 	for _, opt := range opts {
 		opt(ctx)
 	}
 	return ctx
+}
+
+func New(opts ...Opt) *context.Context {
+	return NewWithCfg(config.Project{}, opts...)
 }
