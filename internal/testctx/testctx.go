@@ -55,6 +55,10 @@ func SkipPublish(ctx *context.Context) {
 	ctx.SkipPublish = true
 }
 
+func SkipValidate(ctx *context.Context) {
+	ctx.SkipValidate = true
+}
+
 func Snapshot(ctx *context.Context) {
 	ctx.Snapshot = true
 }

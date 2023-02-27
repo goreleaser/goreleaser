@@ -462,13 +462,14 @@ func TestExtOthers(t *testing.T) {
 }
 
 func TestTemplate(t *testing.T) {
-	ctx := context.New(config.Project{})
-	ctx.Git = context.GitInfo{
-		CurrentTag: "v1.2.3",
-		Commit:     "123",
-	}
-	ctx.Version = "1.2.3"
-	ctx.Env = map[string]string{"FOO": "123"}
+	ctx := testctx.New(
+		testctx.WithEnv(map[string]string{"FOO": "123"}),
+		testctx.WithVersion("1.2.3"),
+		testctx.WithGitInfo(context.GitInfo{
+			CurrentTag: "v1.2.3",
+			Commit:     "123",
+		}),
+	)
 	binary, err := tmpl.New(ctx).
 		Apply(`-s -w -X main.version={{.Version}} -X main.tag={{.Tag}} -X main.date={{.Date}} -X main.commit={{.Commit}} -X "main.foo={{.Env.FOO}}"`)
 	require.NoError(t, err)

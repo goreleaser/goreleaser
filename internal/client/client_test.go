@@ -73,8 +73,6 @@ func TestCheckBodyMaxLength(t *testing.T) {
 	for i := range b {
 		b[i] = letters[rand.Intn(len(letters))]
 	}
-	ctx := context.New(config.Project{})
-	ctx.ReleaseNotes = string(b)
 	out := truncateReleaseBody(string(b))
 	require.Len(t, out, maxReleaseBodyLength)
 }
@@ -83,9 +81,7 @@ func TestNewIfToken(t *testing.T) {
 	t.Run("valid", func(t *testing.T) {
 		ctx := testctx.New(
 			testctx.WithTokenType(context.TokenTypeGitLab),
-			func(ctx *context.Context) {
-				ctx.Token = "gitlabtoken"
-			},
+			func(ctx *context.Context) { ctx.Token = "gitlabtoken" },
 		)
 
 		client, err := New(ctx)
@@ -100,9 +96,7 @@ func TestNewIfToken(t *testing.T) {
 				},
 			},
 			testctx.WithTokenType(context.TokenTypeGitea),
-			func(ctx *context.Context) {
-				ctx.Token = "giteatoken"
-			},
+			func(ctx *context.Context) { ctx.Token = "giteatoken" },
 			testctx.WithEnv(map[string]string{"VAR": "token"}),
 		)
 		client, err = NewIfToken(ctx, client, "{{ .Env.VAR }}")
@@ -114,9 +108,7 @@ func TestNewIfToken(t *testing.T) {
 	t.Run("empty", func(t *testing.T) {
 		ctx := testctx.New(
 			testctx.WithTokenType(context.TokenTypeGitLab),
-			func(ctx *context.Context) {
-				ctx.Token = "gitlabtoken"
-			},
+			func(ctx *context.Context) { ctx.Token = "gitlabtoken" },
 		)
 
 		client, err := New(ctx)
@@ -131,9 +123,7 @@ func TestNewIfToken(t *testing.T) {
 	t.Run("invalid tmpl", func(t *testing.T) {
 		ctx := testctx.New(
 			testctx.WithTokenType(context.TokenTypeGitLab),
-			func(ctx *context.Context) {
-				ctx.Token = "gitlabtoken"
-			},
+			func(ctx *context.Context) { ctx.Token = "gitlabtoken" },
 		)
 
 		_, err := NewIfToken(ctx, nil, "nope")

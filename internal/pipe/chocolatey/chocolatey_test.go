@@ -21,7 +21,7 @@ func TestDescription(t *testing.T) {
 }
 
 func TestSkip(t *testing.T) {
-	ctx := context.New(config.Project{})
+	ctx := testctx.New()
 	require.True(t, Pipe{}.Skip(ctx))
 }
 

@@ -6,6 +6,7 @@ import (
 	"testing"
 
 	"github.com/goreleaser/goreleaser/internal/pipeline"
+	"github.com/goreleaser/goreleaser/internal/testctx"
 	"github.com/goreleaser/goreleaser/pkg/config"
 	"github.com/goreleaser/goreleaser/pkg/context"
 	"github.com/stretchr/testify/require"
@@ -46,7 +47,7 @@ func TestSetupPipeline(t *testing.T) {
 		require.Equal(
 			t,
 			pipeline.BuildCmdPipeline,
-			setupPipeline(context.New(config.Project{}), buildOpts{}),
+			setupPipeline(testctx.New(), buildOpts{}),
 		)
 	})
 
@@ -54,7 +55,7 @@ func TestSetupPipeline(t *testing.T) {
 		require.Equal(
 			t,
 			pipeline.BuildCmdPipeline,
-			setupPipeline(context.New(config.Project{}), buildOpts{
+			setupPipeline(testctx.New(), buildOpts{
 				singleTarget: true,
 			}),
 		)
@@ -64,7 +65,7 @@ func TestSetupPipeline(t *testing.T) {
 		require.Equal(
 			t,
 			pipeline.BuildCmdPipeline,
-			setupPipeline(context.New(config.Project{}), buildOpts{
+			setupPipeline(testctx.New(), buildOpts{
 				singleTarget: true,
 				ids:          []string{"foo"},
 			}),
@@ -75,7 +76,7 @@ func TestSetupPipeline(t *testing.T) {
 		require.Equal(
 			t,
 			append(pipeline.BuildCmdPipeline, withOutputPipe{"foobar"}),
-			setupPipeline(context.New(config.Project{}), buildOpts{
+			setupPipeline(testctx.New(), buildOpts{
 				singleTarget: true,
 				ids:          []string{"foo"},
 				output:       ".",
@@ -88,7 +89,7 @@ func TestSetupPipeline(t *testing.T) {
 			t,
 			pipeline.BuildCmdPipeline,
 			setupPipeline(
-				context.New(config.Project{
+				testctx.NewWithCfg(config.Project{
 					Builds: []config.Build{{}},
 				}),
 				buildOpts{
@@ -103,7 +104,7 @@ func TestSetupPipeline(t *testing.T) {
 			t,
 			append(pipeline.BuildCmdPipeline, withOutputPipe{"foobar"}),
 			setupPipeline(
-				context.New(config.Project{}),
+				testctx.New(),
 				buildOpts{
 					singleTarget: true,
 					ids:          []string{"foo"},
@@ -118,7 +119,7 @@ func TestSetupPipeline(t *testing.T) {
 			t,
 			append(pipeline.BuildCmdPipeline, withOutputPipe{"zaz"}),
 			setupPipeline(
-				context.New(config.Project{
+				testctx.NewWithCfg(config.Project{
 					Builds: []config.Build{{}},
 				}),
 				buildOpts{
@@ -132,7 +133,7 @@ func TestSetupPipeline(t *testing.T) {
 
 func TestBuildFlags(t *testing.T) {
 	setup := func(opts buildOpts) *context.Context {
-		ctx := context.New(config.Project{})
+		ctx := testctx.New()
 		require.NoError(t, setupBuildContext(ctx, opts))
 		return ctx
 	}
@@ -194,7 +195,7 @@ func TestBuildFlags(t *testing.T) {
 
 	t.Run("id", func(t *testing.T) {
 		t.Run("match", func(t *testing.T) {
-			ctx := context.New(config.Project{
+			ctx := testctx.NewWithCfg(config.Project{
 				Builds: []config.Build{
 					{
 						ID: "default",
@@ -210,7 +211,7 @@ func TestBuildFlags(t *testing.T) {
 		})
 
 		t.Run("match-multiple", func(t *testing.T) {
-			ctx := context.New(config.Project{
+			ctx := testctx.NewWithCfg(config.Project{
 				Builds: []config.Build{
 					{
 						ID: "default",
@@ -226,7 +227,7 @@ func TestBuildFlags(t *testing.T) {
 		})
 
 		t.Run("match-partial", func(t *testing.T) {
-			ctx := context.New(config.Project{
+			ctx := testctx.NewWithCfg(config.Project{
 				Builds: []config.Build{
 					{
 						ID: "default",
@@ -242,7 +243,7 @@ func TestBuildFlags(t *testing.T) {
 		})
 
 		t.Run("dont match", func(t *testing.T) {
-			ctx := context.New(config.Project{
+			ctx := testctx.NewWithCfg(config.Project{
 				Builds: []config.Build{
 					{
 						ID: "foo",
@@ -258,14 +259,14 @@ func TestBuildFlags(t *testing.T) {
 		})
 
 		t.Run("default config", func(t *testing.T) {
-			ctx := context.New(config.Project{})
+			ctx := testctx.New()
 			require.NoError(t, setupBuildContext(ctx, buildOpts{
 				ids: []string{"aaa"},
 			}))
 		})
 
 		t.Run("single build config", func(t *testing.T) {
-			ctx := context.New(config.Project{
+			ctx := testctx.NewWithCfg(config.Project{
 				Builds: []config.Build{
 					{
 						ID: "foo",
@@ -280,7 +281,7 @@ func TestBuildFlags(t *testing.T) {
 }
 
 func TestBuildSingleTargetWithSpecificTargets(t *testing.T) {
-	ctx := context.New(config.Project{
+	ctx := testctx.NewWithCfg(config.Project{
 		ProjectName: "test",
 		Builds: []config.Build{
 			{
@@ -303,7 +304,7 @@ func TestBuildSingleTargetWithSpecificTargets(t *testing.T) {
 }
 
 func TestBuildSingleTargetRemoveOtherOptions(t *testing.T) {
-	ctx := context.New(config.Project{
+	ctx := testctx.NewWithCfg(config.Project{
 		ProjectName: "test",
 		Builds: []config.Build{
 			{

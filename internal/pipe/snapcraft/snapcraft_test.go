@@ -526,7 +526,7 @@ func TestDefaultGradeTmplError(t *testing.T) {
 }
 
 func TestPublish(t *testing.T) {
-	ctx := context.New(config.Project{})
+	ctx := testctx.New()
 	ctx.Artifacts.Add(&artifact.Artifact{
 		Name:   "mybin",
 		Path:   "nope.snap",
@@ -542,8 +542,7 @@ func TestPublish(t *testing.T) {
 }
 
 func TestPublishSkip(t *testing.T) {
-	ctx := context.New(config.Project{})
-	ctx.SkipPublish = true
+	ctx := testctx.New(testctx.SkipPublish)
 	ctx.Artifacts.Add(&artifact.Artifact{
 		Name:   "mybin",
 		Path:   "nope.snap",
@@ -558,7 +557,7 @@ func TestPublishSkip(t *testing.T) {
 }
 
 func TestDefaultSet(t *testing.T) {
-	ctx := context.New(config.Project{
+	ctx := testctx.NewWithCfg(config.Project{
 		Snapcrafts: []config.Snapcraft{
 			{
 				ID:           "devel",
@@ -579,40 +578,40 @@ func TestDefaultSet(t *testing.T) {
 }
 
 func Test_processChannelsTemplates(t *testing.T) {
-	ctx := testctx.NewWithCfg(config.Project{
-		Builds: []config.Build{
-			{
-				ID: "default",
+	ctx := testctx.NewWithCfg(
+		config.Project{
+			Builds: []config.Build{
+				{
+					ID: "default",
+				},
 			},
-		},
-		Snapcrafts: []config.Snapcraft{
-			{
-				Name: "mybin",
-				ChannelTemplates: []string{
-					"{{.Major}}.{{.Minor}}/stable",
-					"stable",
+			Snapcrafts: []config.Snapcraft{
+				{
+					Name: "mybin",
+					ChannelTemplates: []string{
+						"{{.Major}}.{{.Minor}}/stable",
+						"stable",
+					},
 				},
 			},
 		},
-	})
-
-	ctx.SkipPublish = true
-	ctx.Env = map[string]string{
-		"FOO": "123",
-	}
-	ctx.Version = "1.0.0"
-	ctx.Git = context.GitInfo{
-		CurrentTag: "v1.0.0",
-		Commit:     "a1b2c3d4",
-	}
-	ctx.Semver = context.Semver{
-		Major: 1,
-		Minor: 0,
-		Patch: 0,
-	}
+		testctx.SkipPublish,
+		testctx.WithEnv(map[string]string{
+			"FOO": "123",
+		}),
+		testctx.WithGitInfo(context.GitInfo{
+			CurrentTag: "v1.0.0",
+			Commit:     "a1b2c3d4",
+		}),
+		testctx.WithSemver(context.Semver{
+			Major: 1,
+			Minor: 0,
+			Patch: 0,
+		}),
+		testctx.WithVersion("1.0.0"),
+	)
 
 	require.NoError(t, Pipe{}.Default(ctx))
-
 	snap := ctx.Config.Snapcrafts[0]
 	require.Equal(t, "mybin", snap.Name)
 
@@ -711,11 +710,11 @@ func Test_isValidArch(t *testing.T) {
 
 func TestSkip(t *testing.T) {
 	t.Run("skip", func(t *testing.T) {
-		require.True(t, Pipe{}.Skip(context.New(config.Project{})))
+		require.True(t, Pipe{}.Skip(testctx.New()))
 	})
 
 	t.Run("dont skip", func(t *testing.T) {
-		ctx := context.New(config.Project{
+		ctx := testctx.NewWithCfg(config.Project{
 			Snapcrafts: []config.Snapcraft{
 				{},
 			},
