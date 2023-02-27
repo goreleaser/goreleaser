@@ -8,7 +8,6 @@ import (
 	"github.com/goreleaser/goreleaser/internal/testctx"
 	"github.com/goreleaser/goreleaser/internal/yaml"
 	"github.com/goreleaser/goreleaser/pkg/config"
-	"github.com/goreleaser/goreleaser/pkg/context"
 	"github.com/slack-go/slack"
 	"github.com/stretchr/testify/require"
 )
@@ -24,7 +23,7 @@ func TestDefault(t *testing.T) {
 }
 
 func TestAnnounceInvalidTemplate(t *testing.T) {
-	ctx := context.New(config.Project{
+	ctx := testctx.NewWithCfg(config.Project{
 		Announce: config.Announce{
 			Slack: config.Slack{
 				MessageTemplate: "{{ .Foo }",
@@ -35,7 +34,7 @@ func TestAnnounceInvalidTemplate(t *testing.T) {
 }
 
 func TestAnnounceMissingEnv(t *testing.T) {
-	ctx := context.New(config.Project{
+	ctx := testctx.NewWithCfg(config.Project{
 		Announce: config.Announce{
 			Slack: config.Slack{},
 		},
@@ -46,11 +45,11 @@ func TestAnnounceMissingEnv(t *testing.T) {
 
 func TestSkip(t *testing.T) {
 	t.Run("skip", func(t *testing.T) {
-		require.True(t, Pipe{}.Skip(context.New(config.Project{})))
+		require.True(t, Pipe{}.Skip(testctx.New()))
 	})
 
 	t.Run("dont skip", func(t *testing.T) {
-		ctx := context.New(config.Project{
+		ctx := testctx.NewWithCfg(config.Project{
 			Announce: config.Announce{
 				Slack: config.Slack{
 					Enabled: true,
@@ -72,8 +71,7 @@ func TestParseRichText(t *testing.T) {
 		var project config.Project
 		require.NoError(t, yaml.Unmarshal(goodRichSlackConf(), &project))
 
-		ctx := context.New(project)
-		ctx.Version = testVersion
+		ctx := testctx.New(testctx.WithVersion(testVersion))
 
 		blocks, attachments, err := parseAdvancedFormatting(ctx)
 		require.NoError(t, err)
@@ -88,8 +86,7 @@ func TestParseRichText(t *testing.T) {
 		var project config.Project
 		require.NoError(t, yaml.Unmarshal(badBlocksSlackConf(), &project))
 
-		ctx := context.New(project)
-		ctx.Version = testVersion
+		ctx := testctx.New(testctx.WithVersion(testVersion))
 
 		_, _, err := parseAdvancedFormatting(ctx)
 		require.Error(t, err)
@@ -102,8 +99,7 @@ func TestParseRichText(t *testing.T) {
 		var project config.Project
 		require.NoError(t, yaml.Unmarshal(badAttachmentsSlackConf(), &project))
 
-		ctx := context.New(project)
-		ctx.Version = testVersion
+		ctx := testctx.New(testctx.WithVersion(testVersion))
 
 		_, _, err := parseAdvancedFormatting(ctx)
 		require.Error(t, err)
@@ -122,8 +118,7 @@ func TestRichText(t *testing.T) {
 		var project config.Project
 		require.NoError(t, yaml.Unmarshal(goodRichSlackConf(), &project))
 
-		ctx := context.New(project)
-		ctx.Version = testVersion
+		ctx := testctx.New(testctx.WithVersion(testVersion))
 
 		require.NoError(t, Pipe{}.Announce(ctx))
 	})
@@ -134,8 +129,7 @@ func TestRichText(t *testing.T) {
 		var project config.Project
 		require.NoError(t, yaml.Unmarshal(badBlocksSlackConf(), &project))
 
-		ctx := context.New(project)
-		ctx.Version = testVersion
+		ctx := testctx.New(testctx.WithVersion(testVersion))
 
 		err := Pipe{}.Announce(ctx)
 		require.Error(t, err)
@@ -165,8 +159,7 @@ func TestUnmarshall(t *testing.T) {
 
 		var project config.Project
 		require.NoError(t, yaml.Unmarshal(goodTemplateSlackConf(), &project))
-		ctx := context.New(project)
-		ctx.Version = testVersion
+		ctx := testctx.New(testctx.WithVersion(testVersion))
 
 		var blocks slack.Blocks
 		require.NoError(t, unmarshal(ctx, ctx.Config.Announce.Slack.Blocks, &blocks))
@@ -182,8 +175,7 @@ func TestUnmarshall(t *testing.T) {
 
 		var project config.Project
 		require.NoError(t, yaml.Unmarshal(badTemplateSlackConf(), &project))
-		ctx := context.New(project)
-		ctx.Version = testVersion
+		ctx := testctx.New(testctx.WithVersion(testVersion))
 
 		var blocks slack.Blocks
 		require.Error(t, unmarshal(ctx, ctx.Config.Announce.Slack.Blocks, &blocks))

@@ -19,7 +19,7 @@ const (
 )
 
 func TestDefault(t *testing.T) {
-	ctx := context.New(config.Project{
+	ctx := testctx.NewWithCfg(config.Project{
 		Env: []string{
 			"KO_DOCKER_REPO=" + registry,
 			"COSIGN_REPOSITORY=" + registry,
@@ -60,7 +60,7 @@ func TestDefault(t *testing.T) {
 }
 
 func TestDefaultNoImage(t *testing.T) {
-	ctx := context.New(config.Project{
+	ctx := testctx.NewWithCfg(config.Project{
 		ProjectName: "test",
 		Builds: []config.Build{
 			{
@@ -80,7 +80,7 @@ func TestDescription(t *testing.T) {
 
 func TestSkip(t *testing.T) {
 	t.Run("skip ko set", func(t *testing.T) {
-		ctx := context.New(config.Project{
+		ctx := testctx.NewWithCfg(config.Project{
 			Kos: []config.Ko{{}},
 		})
 		ctx.SkipKo = true
@@ -91,7 +91,7 @@ func TestSkip(t *testing.T) {
 		require.True(t, Pipe{}.Skip(ctx))
 	})
 	t.Run("dont skip", func(t *testing.T) {
-		ctx := context.New(config.Project{
+		ctx := testctx.NewWithCfg(config.Project{
 			Kos: []config.Ko{{}},
 		})
 		require.False(t, Pipe{}.Skip(ctx))
@@ -99,7 +99,7 @@ func TestSkip(t *testing.T) {
 }
 
 func TestPublishPipeNoMatchingBuild(t *testing.T) {
-	ctx := context.New(config.Project{
+	ctx := testctx.NewWithCfg(config.Project{
 		Builds: []config.Build{
 			{
 				ID: "doesnt matter",
@@ -153,7 +153,7 @@ func TestPublishPipeSuccess(t *testing.T) {
 
 	for _, table := range table {
 		t.Run(table.Name, func(t *testing.T) {
-			ctx := context.New(config.Project{
+			ctx := testctx.NewWithCfg(config.Project{
 				Builds: []config.Build{
 					{
 						ID: "foo",
@@ -186,7 +186,7 @@ func TestPublishPipeSuccess(t *testing.T) {
 
 func TestPublishPipeError(t *testing.T) {
 	makeCtx := func() *context.Context {
-		ctx := context.New(config.Project{
+		return testctx.NewWithCfg(config.Project{
 			Builds: []config.Build{
 				{
 					ID:   "foo",
@@ -202,9 +202,7 @@ func TestPublishPipeError(t *testing.T) {
 					Tags:       []string{"latest", "{{.Tag}}"},
 				},
 			},
-		})
-		ctx.Git.CurrentTag = "v1.0.0"
-		return ctx
+		}, testctx.WithCurrentTag("v1.0.0"))
 	}
 
 	t.Run("invalid base image", func(t *testing.T) {
@@ -267,14 +265,14 @@ func TestPublishPipeError(t *testing.T) {
 
 func TestApplyTemplate(t *testing.T) {
 	t.Run("success", func(t *testing.T) {
-		foo, err := applyTemplate(context.New(config.Project{
+		foo, err := applyTemplate(testctx.NewWithCfg(config.Project{
 			Env: []string{"FOO=bar"},
 		}), []string{"{{ .Env.FOO }}"})
 		require.NoError(t, err)
 		require.Equal(t, []string{"bar"}, foo)
 	})
 	t.Run("error", func(t *testing.T) {
-		_, err := applyTemplate(context.New(config.Project{}), []string{"{{ .Nope}}"})
+		_, err := applyTemplate(testctx.New(), []string{"{{ .Nope}}"})
 		require.Error(t, err)
 	})
 }

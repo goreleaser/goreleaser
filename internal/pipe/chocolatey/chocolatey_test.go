@@ -283,7 +283,7 @@ func TestPublish(t *testing.T) {
 				cmd = stdCmd{}
 			})
 
-			ctx := testctx.New(testctx.SkipPublish)
+			ctx := testctx.New(func(ctx *context.Context) { ctx.SkipPublish = tt.skip })
 			for _, artifact := range tt.artifacts {
 				ctx.Artifacts.Add(&artifact)
 			}

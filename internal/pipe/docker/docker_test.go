@@ -966,24 +966,25 @@ func TestRunPipe(t *testing.T) {
 					require.NoError(t, f.Close())
 				}
 
-				ctx := context.New(config.Project{
-					ProjectName:     "mybin",
-					Dist:            dist,
-					Dockers:         docker.dockers,
-					DockerManifests: docker.manifests,
-				})
-				ctx.Parallelism = 1
-				ctx.Env = docker.env
-				ctx.Version = "1.0.0"
-				ctx.Git = context.GitInfo{
-					CurrentTag: "v1.0.0",
-					Commit:     "a1b2c3d4",
-				}
-				ctx.Semver = context.Semver{
-					Major: 1,
-					Minor: 0,
-					Patch: 0,
-				}
+				ctx := testctx.NewWithCfg(
+					config.Project{
+						ProjectName:     "mybin",
+						Dist:            dist,
+						Dockers:         docker.dockers,
+						DockerManifests: docker.manifests,
+					},
+					testctx.WithEnv(docker.env),
+					testctx.WithVersion("1.0.0"),
+					testctx.WithGitInfo(context.GitInfo{
+						CurrentTag: "v1.0.0",
+						Commit:     "a1b2c3d4",
+					}),
+					testctx.WithSemver(context.Semver{
+						Major: 1,
+						Minor: 0,
+						Patch: 0,
+					}),
+				)
 				for _, os := range []string{"linux", "darwin"} {
 					for _, arch := range []string{"amd64", "386", "arm64"} {
 						for _, bin := range []string{"mybin", "anotherbin"} {
@@ -1117,7 +1118,7 @@ func TestDescription(t *testing.T) {
 }
 
 func TestNoDockerWithoutImageName(t *testing.T) {
-	testlib.AssertSkipped(t, Pipe{}.Run(context.New(config.Project{
+	testlib.AssertSkipped(t, Pipe{}.Run(testctx.NewWithCfg(config.Project{
 		Dockers: []config.Docker{
 			{
 				Goos: "linux",
@@ -1218,13 +1219,11 @@ func TestDefaultDockerfile(t *testing.T) {
 }
 
 func TestDraftRelease(t *testing.T) {
-	ctx := context.New(
-		config.Project{
-			Release: config.Release{
-				Draft: true,
-			},
+	ctx := testctx.NewWithCfg(config.Project{
+		Release: config.Release{
+			Draft: true,
 		},
-	)
+	})
 
 	require.False(t, pipe.IsSkip(Pipe{}.Publish(ctx)))
 }
@@ -1282,38 +1281,37 @@ func TestDefaultSet(t *testing.T) {
 }
 
 func Test_processImageTemplates(t *testing.T) {
-	ctx := testctx.NewWithCfg(config.Project{
-		Builds: []config.Build{
-			{
-				ID: "default",
-			},
-		},
-		Dockers: []config.Docker{
-			{
-				Dockerfile: "Dockerfile.foo",
-				ImageTemplates: []string{
-					"user/image:{{.Tag}}",
-					"gcr.io/image:{{.Tag}}-{{.Env.FOO}}",
-					"gcr.io/image:v{{.Major}}.{{.Minor}}",
+	ctx := testctx.NewWithCfg(
+		config.Project{
+			Builds: []config.Build{
+				{
+					ID: "default",
 				},
-				SkipPush: "true",
+			},
+			Dockers: []config.Docker{
+				{
+					Dockerfile: "Dockerfile.foo",
+					ImageTemplates: []string{
+						"user/image:{{.Tag}}",
+						"gcr.io/image:{{.Tag}}-{{.Env.FOO}}",
+						"gcr.io/image:v{{.Major}}.{{.Minor}}",
+					},
+					SkipPush: "true",
+				},
 			},
 		},
-	})
-
-	ctx.Env = map[string]string{
-		"FOO": "123",
-	}
-	ctx.Version = "1.0.0"
-	ctx.Git = context.GitInfo{
-		CurrentTag: "v1.0.0",
-		Commit:     "a1b2c3d4",
-	}
-	ctx.Semver = context.Semver{
-		Major: 1,
-		Minor: 0,
-		Patch: 0,
-	}
+		testctx.WithEnv(map[string]string{"FOO": "123"}),
+		testctx.WithVersion("1.0.0"),
+		testctx.WithGitInfo(context.GitInfo{
+			CurrentTag: "v1.0.0",
+			Commit:     "a1b2c3d4",
+		}),
+		testctx.WithSemver(context.Semver{
+			Major: 1,
+			Minor: 0,
+			Patch: 0,
+		}),
+	)
 
 	require.NoError(t, Pipe{}.Default(ctx))
 	require.Len(t, ctx.Config.Dockers, 1)
@@ -1333,11 +1331,11 @@ func Test_processImageTemplates(t *testing.T) {
 func TestSkip(t *testing.T) {
 	t.Run("image", func(t *testing.T) {
 		t.Run("skip", func(t *testing.T) {
-			require.True(t, Pipe{}.Skip(context.New(config.Project{})))
+			require.True(t, Pipe{}.Skip(testctx.New()))
 		})
 
 		t.Run("skip docker", func(t *testing.T) {
-			ctx := context.New(config.Project{
+			ctx := testctx.NewWithCfg(config.Project{
 				Dockers: []config.Docker{{}},
 			})
 			ctx.SkipDocker = true
@@ -1345,7 +1343,7 @@ func TestSkip(t *testing.T) {
 		})
 
 		t.Run("dont skip", func(t *testing.T) {
-			ctx := context.New(config.Project{
+			ctx := testctx.NewWithCfg(config.Project{
 				Dockers: []config.Docker{{}},
 			})
 			require.False(t, Pipe{}.Skip(ctx))
@@ -1354,19 +1352,18 @@ func TestSkip(t *testing.T) {
 
 	t.Run("manifest", func(t *testing.T) {
 		t.Run("skip", func(t *testing.T) {
-			require.True(t, ManifestPipe{}.Skip(context.New(config.Project{})))
+			require.True(t, ManifestPipe{}.Skip(testctx.New()))
 		})
 
 		t.Run("skip docker", func(t *testing.T) {
-			ctx := context.New(config.Project{
+			ctx := testctx.NewWithCfg(config.Project{
 				DockerManifests: []config.DockerManifest{{}},
-			})
-			ctx.SkipDocker = true
+			}, testctx.SkipDocker)
 			require.True(t, ManifestPipe{}.Skip(ctx))
 		})
 
 		t.Run("dont skip", func(t *testing.T) {
-			ctx := context.New(config.Project{
+			ctx := testctx.NewWithCfg(config.Project{
 				DockerManifests: []config.DockerManifest{{}},
 			})
 			require.False(t, ManifestPipe{}.Skip(ctx))

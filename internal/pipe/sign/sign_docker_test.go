@@ -11,7 +11,6 @@ import (
 	"github.com/goreleaser/goreleaser/internal/testctx"
 	"github.com/goreleaser/goreleaser/internal/testlib"
 	"github.com/goreleaser/goreleaser/pkg/config"
-	"github.com/goreleaser/goreleaser/pkg/context"
 	"github.com/stretchr/testify/require"
 )
 
@@ -212,7 +211,7 @@ func TestDockerSignArtifacts(t *testing.T) {
 
 func TestDockerSkip(t *testing.T) {
 	t.Run("skip", func(t *testing.T) {
-		require.True(t, DockerPipe{}.Skip(context.New(config.Project{})))
+		require.True(t, DockerPipe{}.Skip(testctx.New()))
 	})
 
 	t.Run("skip sign", func(t *testing.T) {

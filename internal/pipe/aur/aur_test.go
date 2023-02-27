@@ -101,7 +101,7 @@ func createTemplateData() templateData {
 
 func TestFullAur(t *testing.T) {
 	data := createTemplateData()
-	pkg, err := applyTemplate(context.New(config.Project{
+	pkg, err := applyTemplate(testctx.NewWithCfg(config.Project{
 		ProjectName: "foo",
 	}), aurTemplateData, data)
 	require.NoError(t, err)
@@ -110,7 +110,7 @@ func TestFullAur(t *testing.T) {
 }
 
 func TestAurSimple(t *testing.T) {
-	pkg, err := applyTemplate(context.New(config.Project{}), aurTemplateData, createTemplateData())
+	pkg, err := applyTemplate(testctx.New(), aurTemplateData, createTemplateData())
 	require.NoError(t, err)
 	require.Contains(t, pkg, `# Maintainer: Ciclano <ciclano@example.com>`)
 	require.Contains(t, pkg, `# Maintainer: Cicrano <cicrano@example.com>`)
@@ -126,7 +126,7 @@ func TestAurSimple(t *testing.T) {
 func TestFullSrcInfo(t *testing.T) {
 	data := createTemplateData()
 	data.License = "MIT"
-	pkg, err := applyTemplate(context.New(config.Project{
+	pkg, err := applyTemplate(testctx.NewWithCfg(config.Project{
 		ProjectName: "foo",
 	}), srcInfoTemplate, data)
 	require.NoError(t, err)
@@ -135,7 +135,7 @@ func TestFullSrcInfo(t *testing.T) {
 }
 
 func TestSrcInfoSimple(t *testing.T) {
-	pkg, err := applyTemplate(context.New(config.Project{}), srcInfoTemplate, createTemplateData())
+	pkg, err := applyTemplate(testctx.New(), srcInfoTemplate, createTemplateData())
 	require.NoError(t, err)
 	require.Contains(t, pkg, `pkgbase = test-bin`)
 	require.Contains(t, pkg, `pkgname = test-bin`)
@@ -242,33 +242,31 @@ func TestFullPipe(t *testing.T) {
 			key := makeKey(t, keygen.Ed25519, nil)
 
 			folder := t.TempDir()
-			ctx := context.New(config.Project{
-				Dist:        folder,
-				ProjectName: name,
-				AURs: []config.AUR{
-					{
-						Name:        name,
-						IDs:         []string{"foo"},
-						PrivateKey:  key,
-						License:     "MIT",
-						GitURL:      url,
-						Description: "A run pipe test fish food and FOO={{ .Env.FOO }}",
+			ctx := testctx.NewWithCfg(
+				config.Project{
+					Dist:        folder,
+					ProjectName: name,
+					AURs: []config.AUR{
+						{
+							Name:        name,
+							IDs:         []string{"foo"},
+							PrivateKey:  key,
+							License:     "MIT",
+							GitURL:      url,
+							Description: "A run pipe test fish food and FOO={{ .Env.FOO }}",
+						},
 					},
 				},
-			})
-			ctx.Git = context.GitInfo{
-				CurrentTag: "v1.0.1-foo",
-			}
-			ctx.Semver = context.Semver{
-				Major:      1,
-				Minor:      0,
-				Patch:      1,
-				Prerelease: "foo",
-			}
-			ctx.Version = "1.0.1-foo"
-			ctx.Env = map[string]string{
-				"FOO": "foo_is_bar",
-			}
+				testctx.WithGitInfo(context.GitInfo{CurrentTag: "v1.0.1-foo"}),
+				testctx.WithSemver(context.Semver{
+					Major:      1,
+					Minor:      0,
+					Patch:      1,
+					Prerelease: "foo",
+				}),
+				testctx.WithVersion("1.0.1-foo"),
+				testctx.WithEnv(map[string]string{"FOO": "foo_is_bar"}),
+			)
 
 			tt.prepare(ctx)
 			ctx.Artifacts.Add(&artifact.Artifact{
@@ -341,44 +339,42 @@ func TestRunPipe(t *testing.T) {
 	key := makeKey(t, keygen.Ed25519, nil)
 
 	folder := t.TempDir()
-	ctx := context.New(config.Project{
-		Dist:        folder,
-		ProjectName: "foo",
-		AURs: []config.AUR{
-			{
-				License:     "MIT",
-				Description: "A run pipe test aur and FOO={{ .Env.FOO }}",
-				Homepage:    "https://github.com/goreleaser",
-				IDs:         []string{"foo"},
-				GitURL:      url,
-				PrivateKey:  key,
+	ctx := testctx.NewWithCfg(
+		config.Project{
+			Dist:        folder,
+			ProjectName: "foo",
+			AURs: []config.AUR{
+				{
+					License:     "MIT",
+					Description: "A run pipe test aur and FOO={{ .Env.FOO }}",
+					Homepage:    "https://github.com/goreleaser",
+					IDs:         []string{"foo"},
+					GitURL:      url,
+					PrivateKey:  key,
+				},
+			},
+			GitHubURLs: config.GitHubURLs{
+				Download: "https://github.com",
+			},
+			Release: config.Release{
+				GitHub: config.Repo{
+					Owner: "test",
+					Name:  "test",
+				},
 			},
 		},
-		GitHubURLs: config.GitHubURLs{
-			Download: "https://github.com",
-		},
-		Release: config.Release{
-			GitHub: config.Repo{
-				Owner: "test",
-				Name:  "test",
-			},
-		},
-	})
-
-	ctx.TokenType = context.TokenTypeGitHub
-	ctx.Git = context.GitInfo{
-		CurrentTag: "v1.0.1",
-	}
-	ctx.Semver = context.Semver{
-		Major: 1,
-		Minor: 0,
-		Patch: 1,
-	}
-	ctx.Version = "1.0.1"
-	ctx.Artifacts = artifact.New()
-	ctx.Env = map[string]string{
-		"FOO": "foo_is_bar",
-	}
+		testctx.WithTokenType(context.TokenTypeGitHub),
+		testctx.WithCurrentTag("v1.0.1"),
+		testctx.WithSemver(context.Semver{
+			Major: 1,
+			Minor: 0,
+			Patch: 1,
+		}),
+		testctx.WithVersion("1.0.1"),
+		testctx.WithEnv(map[string]string{
+			"FOO": "foo_is_bar",
+		}),
+	)
 
 	for _, a := range []struct {
 		name   string
@@ -470,13 +466,10 @@ func TestRunPipe(t *testing.T) {
 }
 
 func TestRunPipeNoBuilds(t *testing.T) {
-	ctx := context.New(
-		config.Project{
-			ProjectName: "foo",
-			AURs:        []config.AUR{{}},
-		},
-	)
-	ctx.TokenType = context.TokenTypeGitHub
+	ctx := testctx.NewWithCfg(config.Project{
+		ProjectName: "foo",
+		AURs:        []config.AUR{{}},
+	}, testctx.WithTokenType(context.TokenTypeGitHub))
 	client := client.NewMock()
 	require.NoError(t, Pipe{}.Default(ctx))
 	require.Equal(t, ErrNoArchivesFound, runAll(ctx, client))
@@ -487,24 +480,23 @@ func TestRunPipeBinaryRelease(t *testing.T) {
 	url := makeBareRepo(t)
 	key := makeKey(t, keygen.Ed25519, nil)
 	folder := t.TempDir()
-	ctx := context.New(config.Project{
-		Dist:        folder,
-		ProjectName: "foo",
-		AURs: []config.AUR{{
-			GitURL:     url,
-			PrivateKey: key,
-		}},
-	})
-
-	ctx.Git = context.GitInfo{
-		CurrentTag: "v1.2.1",
-	}
-	ctx.Semver = context.Semver{
-		Major: 1,
-		Minor: 2,
-		Patch: 1,
-	}
-	ctx.Version = "1.2.1"
+	ctx := testctx.NewWithCfg(
+		config.Project{
+			Dist:        folder,
+			ProjectName: "foo",
+			AURs: []config.AUR{{
+				GitURL:     url,
+				PrivateKey: key,
+			}},
+		},
+		testctx.WithVersion("1.2.1"),
+		testctx.WithGitInfo(context.GitInfo{CurrentTag: "v1.2.1"}),
+		testctx.WithSemver(context.Semver{
+			Major: 1,
+			Minor: 2,
+			Patch: 1,
+		}),
+	)
 
 	path := filepath.Join(folder, "dist/foo_linux_amd64/foo")
 	ctx.Artifacts.Add(&artifact.Artifact{
@@ -536,19 +528,21 @@ func TestRunPipeBinaryRelease(t *testing.T) {
 
 func TestRunPipeNoUpload(t *testing.T) {
 	folder := t.TempDir()
-	ctx := context.New(config.Project{
-		Dist:        folder,
-		ProjectName: "foo",
-		Release:     config.Release{},
-		AURs:        []config.AUR{{}},
-	})
-	ctx.TokenType = context.TokenTypeGitHub
-	ctx.Git = context.GitInfo{CurrentTag: "v1.0.1"}
-	ctx.Semver = context.Semver{
-		Major: 1,
-		Minor: 0,
-		Patch: 1,
-	}
+	ctx := testctx.NewWithCfg(
+		config.Project{
+			Dist:        folder,
+			ProjectName: "foo",
+			Release:     config.Release{},
+			AURs:        []config.AUR{{}},
+		},
+		testctx.WithTokenType(context.TokenTypeGitHub),
+		testctx.WithGitInfo(context.GitInfo{CurrentTag: "v1.0.1"}),
+		testctx.WithSemver(context.Semver{
+			Major: 1,
+			Minor: 0,
+			Patch: 1,
+		}),
+	)
 
 	path := filepath.Join(folder, "whatever.tar.gz")
 	f, err := os.Create(path)
@@ -591,20 +585,22 @@ func TestRunPipeNoUpload(t *testing.T) {
 
 func TestRunEmptyTokenType(t *testing.T) {
 	folder := t.TempDir()
-	ctx := context.New(config.Project{
-		Dist:        folder,
-		ProjectName: "foo",
-		Release:     config.Release{},
-		AURs: []config.AUR{
-			{},
+	ctx := testctx.NewWithCfg(
+		config.Project{
+			Dist:        folder,
+			ProjectName: "foo",
+			Release:     config.Release{},
+			AURs: []config.AUR{
+				{},
+			},
 		},
-	})
-	ctx.Git = context.GitInfo{CurrentTag: "v1.0.1"}
-	ctx.Semver = context.Semver{
-		Major: 1,
-		Minor: 0,
-		Patch: 1,
-	}
+		testctx.WithGitInfo(context.GitInfo{CurrentTag: "v1.0.1"}),
+		testctx.WithSemver(context.Semver{
+			Major: 1,
+			Minor: 0,
+			Patch: 1,
+		}),
+	)
 	path := filepath.Join(folder, "whatever.tar.gz")
 	f, err := os.Create(path)
 	require.NoError(t, err)
@@ -703,11 +699,11 @@ func TestDefault(t *testing.T) {
 
 func TestSkip(t *testing.T) {
 	t.Run("skip", func(t *testing.T) {
-		require.True(t, Pipe{}.Skip(context.New(config.Project{})))
+		require.True(t, Pipe{}.Skip(testctx.New()))
 	})
 
 	t.Run("dont skip", func(t *testing.T) {
-		ctx := context.New(config.Project{
+		ctx := testctx.NewWithCfg(config.Project{
 			AURs: []config.AUR{
 				{},
 			},
@@ -778,7 +774,7 @@ func makeBareRepo(tb testing.TB) string {
 	tb.Helper()
 	dir := tb.TempDir()
 	_, err := git.Run(
-		context.New(config.Project{}),
+		testctx.New(),
 		"-C", dir,
 		"-c", "init.defaultBranch=master",
 		"init",
@@ -802,7 +798,7 @@ func makeKey(tb testing.TB, algo keygen.KeyType, pass []byte) string {
 func requireEqualRepoFiles(tb testing.TB, folder, name, url string) {
 	tb.Helper()
 	dir := tb.TempDir()
-	_, err := git.Run(context.New(config.Project{}), "-C", dir, "clone", url, "repo")
+	_, err := git.Run(testctx.New(), "-C", dir, "clone", url, "repo")
 	require.NoError(tb, err)
 
 	for reponame, ext := range map[string]string{

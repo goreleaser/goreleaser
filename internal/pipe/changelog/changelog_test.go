@@ -99,7 +99,7 @@ func TestChangelog(t *testing.T) {
 	testlib.GitCommit(t, "Merge pull request #999 from goreleaser/some-branch")
 	testlib.GitCommit(t, "this is not a Merge pull request")
 	testlib.GitTag(t, "v0.0.2")
-	ctx := context.New(config.Project{
+	ctx := testctx.NewWithCfg(config.Project{
 		Dist: folder,
 		Changelog: config.Changelog{
 			Use: "git",
@@ -112,9 +112,10 @@ func TestChangelog(t *testing.T) {
 				},
 			},
 		},
-	})
-	ctx.Git.PreviousTag = "v0.0.1"
-	ctx.Git.CurrentTag = "v0.0.2"
+	}, testctx.WithGitInfo(context.GitInfo{
+		PreviousTag: "v0.0.1",
+		CurrentTag:  "v0.0.2",
+	}))
 	require.NoError(t, Pipe{}.Run(ctx))
 	require.Contains(t, ctx.ReleaseNotes, "## Changelog")
 	require.NotContains(t, ctx.ReleaseNotes, "first")
@@ -151,22 +152,26 @@ func TestChangelogForGitlab(t *testing.T) {
 	testlib.GitCommit(t, "Merge pull request #999 from goreleaser/some-branch")
 	testlib.GitCommit(t, "this is not a Merge pull request")
 	testlib.GitTag(t, "v0.0.2")
-	ctx := context.New(config.Project{
-		Dist: folder,
-		Changelog: config.Changelog{
-			Filters: config.Filters{
-				Exclude: []string{
-					"docs:",
-					"ignored:",
-					"(?i)cars",
-					"^Merge pull request",
+	ctx := testctx.NewWithCfg(
+		config.Project{
+			Dist: folder,
+			Changelog: config.Changelog{
+				Filters: config.Filters{
+					Exclude: []string{
+						"docs:",
+						"ignored:",
+						"(?i)cars",
+						"^Merge pull request",
+					},
 				},
 			},
 		},
-	})
-	ctx.TokenType = context.TokenTypeGitLab
-	ctx.Git.PreviousTag = "v0.0.1"
-	ctx.Git.CurrentTag = "v0.0.2"
+		testctx.WithTokenType(context.TokenTypeGitLab),
+		testctx.WithGitInfo(context.GitInfo{
+			PreviousTag: "v0.0.1",
+			CurrentTag:  "v0.0.2",
+		}),
+	)
 	require.NoError(t, Pipe{}.Run(ctx))
 	require.Contains(t, ctx.ReleaseNotes, "## Changelog")
 	require.NotContains(t, ctx.ReleaseNotes, "first")
@@ -191,11 +196,12 @@ func TestChangelogSort(t *testing.T) {
 	testlib.GitCommit(t, "a: commit")
 	testlib.GitCommit(t, "b: commit")
 	testlib.GitTag(t, "v1.0.0")
-	ctx := context.New(config.Project{
+	ctx := testctx.NewWithCfg(config.Project{
 		Changelog: config.Changelog{},
-	})
-	ctx.Git.PreviousTag = "v0.9.9"
-	ctx.Git.CurrentTag = "v1.0.0"
+	}, testctx.WithGitInfo(context.GitInfo{
+		PreviousTag: "v0.9.9",
+		CurrentTag:  "v1.0.0",
+	}))
 
 	for _, cfg := range []struct {
 		Sort    string
@@ -241,7 +247,7 @@ func TestChangelogSort(t *testing.T) {
 }
 
 func TestChangelogInvalidSort(t *testing.T) {
-	ctx := context.New(config.Project{
+	ctx := testctx.NewWithCfg(config.Project{
 		Changelog: config.Changelog{
 			Sort: "dope",
 		},
@@ -280,7 +286,7 @@ func TestChangelogFilterInvalidRegex(t *testing.T) {
 	testlib.GitTag(t, "v0.0.3")
 	testlib.GitCommit(t, "commitzzz")
 	testlib.GitTag(t, "v0.0.4")
-	ctx := context.New(config.Project{
+	ctx := testctx.NewWithCfg(config.Project{
 		Changelog: config.Changelog{
 			Filters: config.Filters{
 				Exclude: []string{
@@ -459,11 +465,14 @@ func TestChangeLogWithoutReleaseFooter(t *testing.T) {
 }
 
 func TestGetChangelogGitHub(t *testing.T) {
-	ctx := context.New(config.Project{
+	ctx := testctx.NewWithCfg(config.Project{
 		Changelog: config.Changelog{
 			Use: useGitHub,
 		},
-	})
+	}, testctx.WithGitInfo(context.GitInfo{
+		CurrentTag:  "v0.180.2",
+		PreviousTag: "v0.180.1",
+	}))
 
 	expected := "c90f1085f255d0af0b055160bfff5ee40f47af79: fix: do not skip any defaults (#2521) (@caarlos0)"
 	mock := client.NewMock()
@@ -476,21 +485,20 @@ func TestGetChangelogGitHub(t *testing.T) {
 		},
 	}
 
-	ctx.Git = context.GitInfo{
-		CurrentTag:  "v0.180.2",
-		PreviousTag: "v0.180.1",
-	}
 	log, err := l.Log(ctx)
 	require.NoError(t, err)
 	require.Equal(t, expected, log)
 }
 
 func TestGetChangelogGitHubNative(t *testing.T) {
-	ctx := context.New(config.Project{
+	ctx := testctx.NewWithCfg(config.Project{
 		Changelog: config.Changelog{
 			Use: useGitHubNative,
 		},
-	})
+	}, testctx.WithGitInfo(context.GitInfo{
+		CurrentTag:  "v0.180.2",
+		PreviousTag: "v0.180.1",
+	}))
 
 	expected := `## What's changed
 
@@ -507,10 +515,6 @@ func TestGetChangelogGitHubNative(t *testing.T) {
 			Name:  "goreleaser",
 		},
 	}
-	ctx.Git = context.GitInfo{
-		CurrentTag:  "v0.180.2",
-		PreviousTag: "v0.180.1",
-	}
 	log, err := l.Log(ctx)
 	require.NoError(t, err)
 	require.Equal(t, expected, log)
@@ -518,11 +522,11 @@ func TestGetChangelogGitHubNative(t *testing.T) {
 }
 
 func TestGetChangelogGitHubNativeFirstRelease(t *testing.T) {
-	ctx := context.New(config.Project{
+	ctx := testctx.NewWithCfg(config.Project{
 		Changelog: config.Changelog{
 			Use: useGitHubNative,
 		},
-	})
+	}, testctx.WithCurrentTag("v0.1.0"))
 
 	expected := `## What's changed
 
@@ -539,9 +543,6 @@ func TestGetChangelogGitHubNativeFirstRelease(t *testing.T) {
 			Name:  "goreleaser",
 		},
 	}
-	ctx.Git = context.GitInfo{
-		CurrentTag: "v0.1.0",
-	}
 	log, err := l.Log(ctx)
 	require.NoError(t, err)
 	require.Equal(t, expected, log)
@@ -550,13 +551,13 @@ func TestGetChangelogGitHubNativeFirstRelease(t *testing.T) {
 
 func TestGetChangeloger(t *testing.T) {
 	t.Run("default", func(t *testing.T) {
-		c, err := getChangeloger(context.New(config.Project{}))
+		c, err := getChangeloger(testctx.New())
 		require.NoError(t, err)
 		require.IsType(t, c, gitChangeloger{})
 	})
 
 	t.Run(useGit, func(t *testing.T) {
-		c, err := getChangeloger(context.New(config.Project{
+		c, err := getChangeloger(testctx.NewWithCfg(config.Project{
 			Changelog: config.Changelog{
 				Use: useGit,
 			},
@@ -566,24 +567,22 @@ func TestGetChangeloger(t *testing.T) {
 	})
 
 	t.Run(useGitHub, func(t *testing.T) {
-		ctx := context.New(config.Project{
+		ctx := testctx.NewWithCfg(config.Project{
 			Changelog: config.Changelog{
 				Use: useGitHub,
 			},
-		})
-		ctx.TokenType = context.TokenTypeGitHub
+		}, testctx.WithTokenType(context.TokenTypeGitHub))
 		c, err := getChangeloger(ctx)
 		require.NoError(t, err)
 		require.IsType(t, c, &scmChangeloger{})
 	})
 
 	t.Run(useGitHubNative, func(t *testing.T) {
-		ctx := context.New(config.Project{
+		ctx := testctx.NewWithCfg(config.Project{
 			Changelog: config.Changelog{
 				Use: useGitHubNative,
 			},
-		})
-		ctx.TokenType = context.TokenTypeGitHub
+		}, testctx.WithTokenType(context.TokenTypeGitHub))
 		c, err := getChangeloger(ctx)
 		require.NoError(t, err)
 		require.IsType(t, c, &githubNativeChangeloger{})
@@ -593,24 +592,22 @@ func TestGetChangeloger(t *testing.T) {
 		testlib.Mktmp(t)
 		testlib.GitInit(t)
 		testlib.GitRemoteAdd(t, "https://gist.github.com/")
-		ctx := context.New(config.Project{
+		ctx := testctx.NewWithCfg(config.Project{
 			Changelog: config.Changelog{
 				Use: useGitHubNative,
 			},
-		})
-		ctx.TokenType = context.TokenTypeGitHub
+		}, testctx.WithTokenType(context.TokenTypeGitHub))
 		c, err := getChangeloger(ctx)
 		require.EqualError(t, err, "unsupported repository URL: https://gist.github.com/")
 		require.Nil(t, c)
 	})
 
 	t.Run(useGitLab, func(t *testing.T) {
-		ctx := context.New(config.Project{
+		ctx := testctx.NewWithCfg(config.Project{
 			Changelog: config.Changelog{
 				Use: useGitLab,
 			},
-		})
-		ctx.TokenType = context.TokenTypeGitLab
+		}, testctx.WithTokenType(context.TokenTypeGitLab))
 		c, err := getChangeloger(ctx)
 		require.NoError(t, err)
 		require.IsType(t, c, &scmChangeloger{})
@@ -620,19 +617,18 @@ func TestGetChangeloger(t *testing.T) {
 		testlib.Mktmp(t)
 		testlib.GitInit(t)
 		testlib.GitRemoteAdd(t, "https://gist.github.com/")
-		ctx := context.New(config.Project{
+		ctx := testctx.NewWithCfg(config.Project{
 			Changelog: config.Changelog{
 				Use: useGitHub,
 			},
-		})
-		ctx.TokenType = context.TokenTypeGitHub
+		}, testctx.WithTokenType(context.TokenTypeGitHub))
 		c, err := getChangeloger(ctx)
 		require.EqualError(t, err, "unsupported repository URL: https://gist.github.com/")
 		require.Nil(t, c)
 	})
 
 	t.Run("invalid", func(t *testing.T) {
-		c, err := getChangeloger(context.New(config.Project{
+		c, err := getChangeloger(testctx.NewWithCfg(config.Project{
 			Changelog: config.Changelog{
 				Use: "nope",
 			},
@@ -679,7 +675,7 @@ func TestGroup(t *testing.T) {
 	testlib.GitCommit(t, "bug: Merge pull request #999 from goreleaser/some-branch")
 	testlib.GitCommit(t, "this is not a Merge pull request")
 	testlib.GitTag(t, "v0.0.2")
-	ctx := context.New(config.Project{
+	ctx := testctx.NewWithCfg(config.Project{
 		Dist: folder,
 		Changelog: config.Changelog{
 			Groups: []config.ChangelogGroup{
@@ -709,9 +705,10 @@ func TestGroup(t *testing.T) {
 				},
 			},
 		},
-	})
-	ctx.Git.CurrentTag = "v0.0.2"
-	ctx.Git.FirstCommit = firstCommit(t)
+	}, testctx.WithGitInfo(context.GitInfo{
+		CurrentTag:  "v0.0.2",
+		FirstCommit: firstCommit(t),
+	}))
 	require.NoError(t, Pipe{}.Run(ctx))
 	require.Contains(t, ctx.ReleaseNotes, "## Changelog")
 	require.Contains(t, ctx.ReleaseNotes, "### Bots")
@@ -727,7 +724,7 @@ func TestGroupBadRegex(t *testing.T) {
 	testlib.GitCommit(t, "first")
 	testlib.GitTag(t, "v0.0.1")
 	testlib.GitTag(t, "v0.0.2")
-	ctx := context.New(config.Project{
+	ctx := testctx.NewWithCfg(config.Project{
 		Dist: folder,
 		Changelog: config.Changelog{
 			Groups: []config.ChangelogGroup{
@@ -737,9 +734,10 @@ func TestGroupBadRegex(t *testing.T) {
 				},
 			},
 		},
-	})
-	ctx.Git.CurrentTag = "v0.0.2"
-	ctx.Git.FirstCommit = firstCommit(t)
+	}, testctx.WithGitInfo(context.GitInfo{
+		CurrentTag:  "v0.0.2",
+		FirstCommit: firstCommit(t),
+	}))
 	require.EqualError(t, Pipe{}.Run(ctx), "failed to group into \"Something\": error parsing regexp: missing closing ]: `[a-z`")
 }
 
@@ -752,7 +750,7 @@ func TestChangelogFormat(t *testing.T) {
 		for _, use := range []string{useGit, useGitHub, useGitLab} {
 			t.Run(use, func(t *testing.T) {
 				out, err := formatChangelog(
-					context.New(makeConf(use)),
+					testctx.NewWithCfg(makeConf(use)),
 					[]string{
 						"aea123 foo",
 						"aef653 bar",
@@ -767,7 +765,7 @@ func TestChangelogFormat(t *testing.T) {
 
 		t.Run(useGitHubNative, func(t *testing.T) {
 			out, err := formatChangelog(
-				context.New(makeConf(useGitHubNative)),
+				testctx.NewWithCfg(makeConf(useGitHubNative)),
 				[]string{
 					"# What's changed",
 					"* aea123 foo",
@@ -795,7 +793,7 @@ func TestChangelogFormat(t *testing.T) {
 
 		t.Run(useGitHubNative, func(t *testing.T) {
 			out, err := formatChangelog(
-				context.New(makeConf(useGitHubNative)),
+				testctx.NewWithCfg(makeConf(useGitHubNative)),
 				[]string{
 					"# What's changed",
 					"* aea123 foo",
@@ -810,7 +808,7 @@ func TestChangelogFormat(t *testing.T) {
 		for _, use := range []string{useGit, useGitHub, useGitLab} {
 			t.Run(use, func(t *testing.T) {
 				out, err := formatChangelog(
-					context.New(makeConf(use)),
+					testctx.NewWithCfg(makeConf(use)),
 					[]string{
 						"aea123 foo",
 						"aef653 bar",
@@ -844,64 +842,69 @@ func TestAbbrev(t *testing.T) {
 	testlib.GitTag(t, "v0.0.2")
 
 	t.Run("no abbrev", func(t *testing.T) {
-		ctx := context.New(config.Project{
+		ctx := testctx.NewWithCfg(config.Project{
 			Dist:      folder,
 			Changelog: config.Changelog{},
-		})
-		ctx.Git.CurrentTag = "v0.0.2"
-		ctx.Git.FirstCommit = firstCommit(t)
+		}, testctx.WithGitInfo(context.GitInfo{
+			CurrentTag:  "v0.0.2",
+			FirstCommit: firstCommit(t),
+		}))
 
 		require.NoError(t, Pipe{}.Run(ctx))
 		ensureCommitHashLen(t, ctx.ReleaseNotes, 7)
 	})
 
 	t.Run("abbrev -1", func(t *testing.T) {
-		ctx := context.New(config.Project{
+		ctx := testctx.NewWithCfg(config.Project{
 			Dist: folder,
 			Changelog: config.Changelog{
 				Abbrev: -1,
 			},
-		})
-		ctx.Git.CurrentTag = "v0.0.2"
-		ctx.Git.FirstCommit = firstCommit(t)
+		}, testctx.WithGitInfo(context.GitInfo{
+			CurrentTag:  "v0.0.2",
+			FirstCommit: firstCommit(t),
+		}))
 		require.NoError(t, Pipe{}.Run(ctx))
 	})
 
 	t.Run("abbrev 3", func(t *testing.T) {
-		ctx := context.New(config.Project{
+		ctx := testctx.NewWithCfg(config.Project{
 			Dist: folder,
 			Changelog: config.Changelog{
 				Abbrev: 3,
 			},
-		})
-		ctx.Git.CurrentTag = "v0.0.2"
-		ctx.Git.FirstCommit = firstCommit(t)
+		}, testctx.WithGitInfo(context.GitInfo{
+			CurrentTag:  "v0.0.2",
+			FirstCommit: firstCommit(t),
+		}))
 		require.NoError(t, Pipe{}.Run(ctx))
 		ensureCommitHashLen(t, ctx.ReleaseNotes, 3)
 	})
 
 	t.Run("abbrev 7", func(t *testing.T) {
-		ctx := context.New(config.Project{
+		ctx := testctx.NewWithCfg(config.Project{
 			Dist: folder,
 			Changelog: config.Changelog{
 				Abbrev: 7,
 			},
-		})
-		ctx.Git.CurrentTag = "v0.0.2"
-		ctx.Git.FirstCommit = firstCommit(t)
+		}, testctx.WithGitInfo(context.GitInfo{
+			CurrentTag:  "v0.0.2",
+			FirstCommit: firstCommit(t),
+		}))
 		require.NoError(t, Pipe{}.Run(ctx))
 		ensureCommitHashLen(t, ctx.ReleaseNotes, 7)
 	})
 
 	t.Run("abbrev 40", func(t *testing.T) {
-		ctx := context.New(config.Project{
+		ctx := testctx.NewWithCfg(config.Project{
 			Dist: folder,
 			Changelog: config.Changelog{
 				Abbrev: 40,
 			},
-		})
-		ctx.Git.CurrentTag = "v0.0.2"
-		ctx.Git.FirstCommit = firstCommit(t)
+		}, testctx.WithGitInfo(context.GitInfo{
+			CurrentTag:  "v0.0.2",
+			FirstCommit: firstCommit(t),
+		}))
 		require.NoError(t, Pipe{}.Run(ctx))
 		ensureCommitHashLen(t, ctx.ReleaseNotes, 7)
 	})
@@ -921,7 +924,7 @@ func ensureCommitHashLen(tb testing.TB, log string, l int) {
 
 func firstCommit(tb testing.TB) string {
 	tb.Helper()
-	s, err := git.Clean(git.Run(context.New(config.Project{}), "rev-list", "--max-parents=0", "HEAD"))
+	s, err := git.Clean(git.Run(testctx.New(), "rev-list", "--max-parents=0", "HEAD"))
 	require.NoError(tb, err)
 	return s
 }
