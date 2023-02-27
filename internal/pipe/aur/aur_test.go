@@ -12,6 +12,7 @@ import (
 	"github.com/goreleaser/goreleaser/internal/client"
 	"github.com/goreleaser/goreleaser/internal/git"
 	"github.com/goreleaser/goreleaser/internal/golden"
+	"github.com/goreleaser/goreleaser/internal/testctx"
 	"github.com/goreleaser/goreleaser/internal/testlib"
 	"github.com/goreleaser/goreleaser/pkg/config"
 	"github.com/goreleaser/goreleaser/pkg/context"
@@ -626,15 +627,12 @@ func TestRunEmptyTokenType(t *testing.T) {
 
 func TestDefault(t *testing.T) {
 	t.Run("empty", func(t *testing.T) {
-		ctx := &context.Context{
-			TokenType: context.TokenTypeGitHub,
-			Config: config.Project{
-				ProjectName: "myproject",
-				AURs: []config.AUR{
-					{},
-				},
+		ctx := testctx.NewWithCfg(config.Project{
+			ProjectName: "myproject",
+			AURs: []config.AUR{
+				{},
 			},
-		}
+		}, testctx.WithTokenType(context.TokenTypeGitHub))
 		require.NoError(t, Pipe{}.Default(ctx))
 		require.Equal(t, config.AUR{
 			Name:                  "myproject-bin",
@@ -652,17 +650,14 @@ func TestDefault(t *testing.T) {
 	})
 
 	t.Run("name-without-bin-suffix", func(t *testing.T) {
-		ctx := &context.Context{
-			TokenType: context.TokenTypeGitHub,
-			Config: config.Project{
-				ProjectName: "myproject",
-				AURs: []config.AUR{
-					{
-						Name: "foo",
-					},
+		ctx := testctx.NewWithCfg(config.Project{
+			ProjectName: "myproject",
+			AURs: []config.AUR{
+				{
+					Name: "foo",
 				},
 			},
-		}
+		}, testctx.WithTokenType(context.TokenTypeGitHub))
 		require.NoError(t, Pipe{}.Default(ctx))
 		require.Equal(t, config.AUR{
 			Name:                  "foo-bin",
@@ -680,18 +675,15 @@ func TestDefault(t *testing.T) {
 	})
 
 	t.Run("partial", func(t *testing.T) {
-		ctx := &context.Context{
-			TokenType: context.TokenTypeGitHub,
-			Config: config.Project{
-				ProjectName: "myproject",
-				AURs: []config.AUR{
-					{
-						Conflicts: []string{"somethingelse"},
-						Goamd64:   "v3",
-					},
+		ctx := testctx.NewWithCfg(config.Project{
+			ProjectName: "myproject",
+			AURs: []config.AUR{
+				{
+					Conflicts: []string{"somethingelse"},
+					Goamd64:   "v3",
 				},
 			},
-		}
+		}, testctx.WithTokenType(context.TokenTypeGitHub))
 		require.NoError(t, Pipe{}.Default(ctx))
 		require.Equal(t, config.AUR{
 			Name:                  "myproject-bin",

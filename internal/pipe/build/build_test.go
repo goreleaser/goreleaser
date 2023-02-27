@@ -8,6 +8,7 @@ import (
 
 	"github.com/goreleaser/goreleaser/internal/artifact"
 	"github.com/goreleaser/goreleaser/internal/semerrgroup"
+	"github.com/goreleaser/goreleaser/internal/testctx"
 	"github.com/goreleaser/goreleaser/internal/testlib"
 	"github.com/goreleaser/goreleaser/internal/tmpl"
 	api "github.com/goreleaser/goreleaser/pkg/build"
@@ -78,15 +79,15 @@ func TestBuild(t *testing.T) {
 			},
 		},
 	}
-	ctx := &context.Context{
-		Artifacts: artifact.New(),
-		Git: context.GitInfo{
+
+	ctx := testctx.NewWithCfg(
+		config,
+		testctx.WithVersion("1.2.3"),
+		testctx.WithGitInfo(context.GitInfo{
 			CurrentTag: "v1.2.3",
 			Commit:     "123",
-		},
-		Version: "1.2.3",
-		Config:  config,
-	}
+		}),
+	)
 	opts, err := buildOptionsForTarget(ctx, ctx.Config.Builds[0], "darwin_amd64")
 	require.NoError(t, err)
 	error := doBuild(ctx, ctx.Config.Builds[0], *opts)
@@ -95,7 +96,7 @@ func TestBuild(t *testing.T) {
 
 func TestRunPipe(t *testing.T) {
 	folder := testlib.Mktmp(t)
-	config := config.Project{
+	ctx := testctx.NewWithCfg(config.Project{
 		Dist: folder,
 		Builds: []config.Build{
 			{
@@ -108,9 +109,7 @@ func TestRunPipe(t *testing.T) {
 				Targets: []string{"linux_amd64"},
 			},
 		},
-	}
-	ctx := context.New(config)
-	ctx.Git.CurrentTag = "2.4.5"
+	}, testctx.WithCurrentTag("2.4.5"))
 	require.NoError(t, Pipe{}.Run(ctx))
 	require.Equal(t, ctx.Artifacts.List(), []*artifact.Artifact{{
 		Name: "testing",
@@ -226,9 +225,7 @@ func TestRunPipeFailingHooks(t *testing.T) {
 }
 
 func TestDefaultNoBuilds(t *testing.T) {
-	ctx := &context.Context{
-		Config: config.Project{},
-	}
+	ctx := testctx.New()
 	require.NoError(t, Pipe{}.Default(ctx))
 }
 
@@ -249,33 +246,29 @@ func TestDefaultFail(t *testing.T) {
 
 func TestDefaultExpandEnv(t *testing.T) {
 	require.NoError(t, os.Setenv("XBAR", "FOOBAR"))
-	ctx := &context.Context{
-		Config: config.Project{
-			Builds: []config.Build{
-				{
-					BuildDetails: config.BuildDetails{
-						Env: []string{
-							"XFOO=bar_$XBAR",
-						},
+	ctx := testctx.NewWithCfg(config.Project{
+		Builds: []config.Build{
+			{
+				BuildDetails: config.BuildDetails{
+					Env: []string{
+						"XFOO=bar_$XBAR",
 					},
 				},
 			},
 		},
-	}
+	})
 	require.NoError(t, Pipe{}.Default(ctx))
 	env := ctx.Config.Builds[0].Env[0]
 	require.Equal(t, "XFOO=bar_FOOBAR", env)
 }
 
 func TestDefaultEmptyBuild(t *testing.T) {
-	ctx := &context.Context{
-		Config: config.Project{
-			ProjectName: "foo",
-			Builds: []config.Build{
-				{},
-			},
+	ctx := testctx.NewWithCfg(config.Project{
+		ProjectName: "foo",
+		Builds: []config.Build{
+			{},
 		},
-	}
+	})
 	require.NoError(t, Pipe{}.Default(ctx))
 	build := ctx.Config.Builds[0]
 	require.Equal(t, ctx.Config.ProjectName, build.ID)
@@ -292,19 +285,17 @@ func TestDefaultEmptyBuild(t *testing.T) {
 }
 
 func TestDefaultBuildID(t *testing.T) {
-	ctx := &context.Context{
-		Config: config.Project{
-			ProjectName: "foo",
-			Builds: []config.Build{
-				{
-					Binary: "{{.Env.FOO}}",
-				},
-				{
-					Binary: "bar",
-				},
+	ctx := testctx.NewWithCfg(config.Project{
+		ProjectName: "foo",
+		Builds: []config.Build{
+			{
+				Binary: "{{.Env.FOO}}",
+			},
+			{
+				Binary: "bar",
 			},
 		},
-	}
+	})
 	require.EqualError(t, Pipe{}.Default(ctx), "found 2 builds with the ID 'foo', please fix your config")
 	build1 := ctx.Config.Builds[0].ID
 	build2 := ctx.Config.Builds[1].ID
@@ -313,45 +304,41 @@ func TestDefaultBuildID(t *testing.T) {
 }
 
 func TestSeveralBuildsWithTheSameID(t *testing.T) {
-	ctx := &context.Context{
-		Config: config.Project{
-			Builds: []config.Build{
-				{
-					ID:     "a",
-					Binary: "bar",
-				},
-				{
-					ID:     "a",
-					Binary: "foo",
-				},
+	ctx := testctx.NewWithCfg(config.Project{
+		Builds: []config.Build{
+			{
+				ID:     "a",
+				Binary: "bar",
+			},
+			{
+				ID:     "a",
+				Binary: "foo",
 			},
 		},
-	}
+	})
 	require.EqualError(t, Pipe{}.Default(ctx), "found 2 builds with the ID 'a', please fix your config")
 }
 
 func TestDefaultPartialBuilds(t *testing.T) {
-	ctx := &context.Context{
-		Config: config.Project{
-			Builds: []config.Build{
-				{
-					ID:     "build1",
-					Binary: "bar",
-					Goos:   []string{"linux"},
-					Main:   "./cmd/main.go",
+	ctx := testctx.NewWithCfg(config.Project{
+		Builds: []config.Build{
+			{
+				ID:     "build1",
+				Binary: "bar",
+				Goos:   []string{"linux"},
+				Main:   "./cmd/main.go",
+			},
+			{
+				ID:     "build2",
+				Binary: "foo",
+				Dir:    "baz",
+				BuildDetails: config.BuildDetails{
+					Ldflags: []string{"-s -w"},
 				},
-				{
-					ID:     "build2",
-					Binary: "foo",
-					Dir:    "baz",
-					BuildDetails: config.BuildDetails{
-						Ldflags: []string{"-s -w"},
-					},
-					Goarch: []string{"386"},
-				},
+				Goarch: []string{"386"},
 			},
 		},
-	}
+	})
 	// Create any 'Dir' paths necessary for builds.
 	cwd, err := os.Getwd()
 	require.NoError(t, err)
@@ -391,14 +378,12 @@ func TestDefaultPartialBuilds(t *testing.T) {
 func TestDefaultFillSingleBuild(t *testing.T) {
 	testlib.Mktmp(t)
 
-	ctx := &context.Context{
-		Config: config.Project{
-			ProjectName: "foo",
-			SingleBuild: config.Build{
-				Main: "testreleaser",
-			},
+	ctx := testctx.NewWithCfg(config.Project{
+		ProjectName: "foo",
+		SingleBuild: config.Build{
+			Main: "testreleaser",
 		},
-	}
+	})
 	require.NoError(t, Pipe{}.Default(ctx))
 	require.Len(t, ctx.Config.Builds, 1)
 	require.Equal(t, ctx.Config.Builds[0].Binary, "foo")

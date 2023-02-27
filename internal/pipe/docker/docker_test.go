@@ -10,6 +10,7 @@ import (
 
 	"github.com/goreleaser/goreleaser/internal/artifact"
 	"github.com/goreleaser/goreleaser/internal/pipe"
+	"github.com/goreleaser/goreleaser/internal/testctx"
 	"github.com/goreleaser/goreleaser/internal/testlib"
 	"github.com/goreleaser/goreleaser/pkg/config"
 	"github.com/goreleaser/goreleaser/pkg/context"
@@ -1126,24 +1127,22 @@ func TestNoDockerWithoutImageName(t *testing.T) {
 }
 
 func TestDefault(t *testing.T) {
-	ctx := &context.Context{
-		Config: config.Project{
-			Dockers: []config.Docker{
-				{
-					IDs: []string{"aa"},
-				},
-				{
-					Use: useBuildx,
-				},
+	ctx := testctx.NewWithCfg(config.Project{
+		Dockers: []config.Docker{
+			{
+				IDs: []string{"aa"},
 			},
-			DockerManifests: []config.DockerManifest{
-				{},
-				{
-					Use: useDocker,
-				},
+			{
+				Use: useBuildx,
 			},
 		},
-	}
+		DockerManifests: []config.DockerManifest{
+			{},
+			{
+				Use: useDocker,
+			},
+		},
+	})
 	require.NoError(t, Pipe{}.Default(ctx))
 	require.Len(t, ctx.Config.Dockers, 2)
 	docker := ctx.Config.Dockers[0]
@@ -1162,41 +1161,37 @@ func TestDefault(t *testing.T) {
 }
 
 func TestDefaultDuplicateID(t *testing.T) {
-	ctx := &context.Context{
-		Config: config.Project{
-			Dockers: []config.Docker{
-				{ID: "foo"},
-				{ /* empty */ },
-				{ID: "bar"},
-				{ID: "foo"},
-			},
-			DockerManifests: []config.DockerManifest{
-				{ID: "bar"},
-				{ /* empty */ },
-				{ID: "bar"},
-				{ID: "foo"},
-			},
+	ctx := testctx.NewWithCfg(config.Project{
+		Dockers: []config.Docker{
+			{ID: "foo"},
+			{ /* empty */ },
+			{ID: "bar"},
+			{ID: "foo"},
 		},
-	}
+		DockerManifests: []config.DockerManifest{
+			{ID: "bar"},
+			{ /* empty */ },
+			{ID: "bar"},
+			{ID: "foo"},
+		},
+	})
 	require.EqualError(t, Pipe{}.Default(ctx), "found 2 dockers with the ID 'foo', please fix your config")
 	require.EqualError(t, ManifestPipe{}.Default(ctx), "found 2 docker_manifests with the ID 'bar', please fix your config")
 }
 
 func TestDefaultInvalidUse(t *testing.T) {
-	ctx := &context.Context{
-		Config: config.Project{
-			Dockers: []config.Docker{
-				{
-					Use: "something",
-				},
-			},
-			DockerManifests: []config.DockerManifest{
-				{
-					Use: "something",
-				},
+	ctx := testctx.NewWithCfg(config.Project{
+		Dockers: []config.Docker{
+			{
+				Use: "something",
 			},
 		},
-	}
+		DockerManifests: []config.DockerManifest{
+			{
+				Use: "something",
+			},
+		},
+	})
 	err := Pipe{}.Default(ctx)
 	require.Error(t, err)
 	require.True(t, strings.HasPrefix(err.Error(), `docker: invalid use: something, valid options are`))
@@ -1207,17 +1202,15 @@ func TestDefaultInvalidUse(t *testing.T) {
 }
 
 func TestDefaultDockerfile(t *testing.T) {
-	ctx := &context.Context{
-		Config: config.Project{
-			Builds: []config.Build{
-				{},
-			},
-			Dockers: []config.Docker{
-				{},
-				{},
-			},
+	ctx := testctx.NewWithCfg(config.Project{
+		Builds: []config.Build{
+			{},
 		},
-	}
+		Dockers: []config.Docker{
+			{},
+			{},
+		},
+	})
 	require.NoError(t, Pipe{}.Default(ctx))
 	require.Len(t, ctx.Config.Dockers, 2)
 	require.Equal(t, "Dockerfile", ctx.Config.Dockers[0].Dockerfile)
@@ -1237,56 +1230,48 @@ func TestDraftRelease(t *testing.T) {
 }
 
 func TestDefaultNoDockers(t *testing.T) {
-	ctx := &context.Context{
-		Config: config.Project{
-			Dockers: []config.Docker{},
-		},
-	}
+	ctx := testctx.NewWithCfg(config.Project{
+		Dockers: []config.Docker{},
+	})
 	require.NoError(t, Pipe{}.Default(ctx))
 	require.Empty(t, ctx.Config.Dockers)
 }
 
 func TestDefaultFilesDot(t *testing.T) {
-	ctx := &context.Context{
-		Config: config.Project{
-			Dist: "/tmp/distt",
-			Dockers: []config.Docker{
-				{
-					Files: []string{"./lala", "./lolsob", "."},
-				},
+	ctx := testctx.NewWithCfg(config.Project{
+		Dist: "/tmp/distt",
+		Dockers: []config.Docker{
+			{
+				Files: []string{"./lala", "./lolsob", "."},
 			},
 		},
-	}
+	})
 	require.EqualError(t, Pipe{}.Default(ctx), `invalid docker.files: can't be . or inside dist folder: .`)
 }
 
 func TestDefaultFilesDis(t *testing.T) {
-	ctx := &context.Context{
-		Config: config.Project{
-			Dist: "/tmp/dist",
-			Dockers: []config.Docker{
-				{
-					Files: []string{"./fooo", "/tmp/dist/asdasd/asd", "./bar"},
-				},
+	ctx := testctx.NewWithCfg(config.Project{
+		Dist: "/tmp/dist",
+		Dockers: []config.Docker{
+			{
+				Files: []string{"./fooo", "/tmp/dist/asdasd/asd", "./bar"},
 			},
 		},
-	}
+	})
 	require.EqualError(t, Pipe{}.Default(ctx), `invalid docker.files: can't be . or inside dist folder: /tmp/dist/asdasd/asd`)
 }
 
 func TestDefaultSet(t *testing.T) {
-	ctx := &context.Context{
-		Config: config.Project{
-			Dockers: []config.Docker{
-				{
-					IDs:        []string{"foo"},
-					Goos:       "windows",
-					Goarch:     "i386",
-					Dockerfile: "Dockerfile.foo",
-				},
+	ctx := testctx.NewWithCfg(config.Project{
+		Dockers: []config.Docker{
+			{
+				IDs:        []string{"foo"},
+				Goos:       "windows",
+				Goarch:     "i386",
+				Dockerfile: "Dockerfile.foo",
 			},
 		},
-	}
+	})
 	require.NoError(t, Pipe{}.Default(ctx))
 	require.Len(t, ctx.Config.Dockers, 1)
 	docker := ctx.Config.Dockers[0]
@@ -1297,26 +1282,24 @@ func TestDefaultSet(t *testing.T) {
 }
 
 func Test_processImageTemplates(t *testing.T) {
-	ctx := &context.Context{
-		Config: config.Project{
-			Builds: []config.Build{
-				{
-					ID: "default",
-				},
-			},
-			Dockers: []config.Docker{
-				{
-					Dockerfile: "Dockerfile.foo",
-					ImageTemplates: []string{
-						"user/image:{{.Tag}}",
-						"gcr.io/image:{{.Tag}}-{{.Env.FOO}}",
-						"gcr.io/image:v{{.Major}}.{{.Minor}}",
-					},
-					SkipPush: "true",
-				},
+	ctx := testctx.NewWithCfg(config.Project{
+		Builds: []config.Build{
+			{
+				ID: "default",
 			},
 		},
-	}
+		Dockers: []config.Docker{
+			{
+				Dockerfile: "Dockerfile.foo",
+				ImageTemplates: []string{
+					"user/image:{{.Tag}}",
+					"gcr.io/image:{{.Tag}}-{{.Env.FOO}}",
+					"gcr.io/image:v{{.Major}}.{{.Minor}}",
+				},
+				SkipPush: "true",
+			},
+		},
+	})
 
 	ctx.Env = map[string]string{
 		"FOO": "123",

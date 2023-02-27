@@ -12,6 +12,7 @@ import (
 
 	"github.com/goreleaser/goreleaser/internal/artifact"
 	"github.com/goreleaser/goreleaser/internal/pipe"
+	"github.com/goreleaser/goreleaser/internal/testctx"
 	"github.com/goreleaser/goreleaser/internal/testlib"
 	"github.com/goreleaser/goreleaser/pkg/config"
 	"github.com/goreleaser/goreleaser/pkg/context"
@@ -584,11 +585,8 @@ func TestDescription(t *testing.T) {
 }
 
 func TestPutsWithoutTarget(t *testing.T) {
-	ctx := &context.Context{
-		Env: map[string]string{
-			"UPLOAD_PRODUCTION_SECRET": "deployuser-secret",
-		},
-		Config: config.Project{
+	ctx := testctx.NewWithCfg(
+		config.Project{
 			Uploads: []config.Upload{
 				{
 					Method:   h.MethodPut,
@@ -597,17 +595,17 @@ func TestPutsWithoutTarget(t *testing.T) {
 				},
 			},
 		},
-	}
+		testctx.WithEnv(map[string]string{
+			"UPLOAD_PRODUCTION_SECRET": "deployuser-secret",
+		}),
+	)
 
 	require.True(t, pipe.IsSkip(Pipe{}.Publish(ctx)))
 }
 
 func TestPutsWithoutUsername(t *testing.T) {
-	ctx := &context.Context{
-		Env: map[string]string{
-			"UPLOAD_PRODUCTION_SECRET": "deployuser-secret",
-		},
-		Config: config.Project{
+	ctx := testctx.NewWithCfg(
+		config.Project{
 			Uploads: []config.Upload{
 				{
 					Method: h.MethodPut,
@@ -616,7 +614,10 @@ func TestPutsWithoutUsername(t *testing.T) {
 				},
 			},
 		},
-	}
+		testctx.WithEnv(map[string]string{
+			"UPLOAD_PRODUCTION_SECRET": "deployuser-secret",
+		}),
+	)
 
 	require.True(t, pipe.IsSkip(Pipe{}.Publish(ctx)))
 }
@@ -647,11 +648,8 @@ func TestPutsWithoutSecret(t *testing.T) {
 }
 
 func TestPutsWithInvalidMode(t *testing.T) {
-	ctx := &context.Context{
-		Env: map[string]string{
-			"UPLOAD_PRODUCTION_SECRET": "deployuser-secret",
-		},
-		Config: config.Project{
+	ctx := testctx.NewWithCfg(
+		config.Project{
 			Uploads: []config.Upload{
 				{
 					Method:   h.MethodPut,
@@ -662,22 +660,23 @@ func TestPutsWithInvalidMode(t *testing.T) {
 				},
 			},
 		},
-	}
+		testctx.WithEnv(map[string]string{
+			"UPLOAD_PRODUCTION_SECRET": "deployuser-secret",
+		}),
+	)
 	require.Error(t, Pipe{}.Publish(ctx))
 }
 
 func TestDefault(t *testing.T) {
-	ctx := &context.Context{
-		Config: config.Project{
-			Uploads: []config.Upload{
-				{
-					Name:     "production",
-					Target:   "http://artifacts.company.com/example-repo-local/{{ .ProjectName }}/{{ .Os }}/{{ .Arch }}{{ if .Arm }}v{{ .Arm }}{{ end }}",
-					Username: "deployuser",
-				},
+	ctx := testctx.NewWithCfg(config.Project{
+		Uploads: []config.Upload{
+			{
+				Name:     "production",
+				Target:   "http://artifacts.company.com/example-repo-local/{{ .ProjectName }}/{{ .Os }}/{{ .Arch }}{{ if .Arm }}v{{ .Arm }}{{ end }}",
+				Username: "deployuser",
 			},
 		},
-	}
+	})
 	require.NoError(t, Pipe{}.Default(ctx))
 	require.Len(t, ctx.Config.Uploads, 1)
 	upload := ctx.Config.Uploads[0]
@@ -686,26 +685,22 @@ func TestDefault(t *testing.T) {
 }
 
 func TestDefaultNoPuts(t *testing.T) {
-	ctx := &context.Context{
-		Config: config.Project{
-			Uploads: []config.Upload{},
-		},
-	}
+	ctx := testctx.NewWithCfg(config.Project{
+		Uploads: []config.Upload{},
+	})
 	require.NoError(t, Pipe{}.Default(ctx))
 	require.Empty(t, ctx.Config.Uploads)
 }
 
 func TestDefaultSet(t *testing.T) {
-	ctx := &context.Context{
-		Config: config.Project{
-			Uploads: []config.Upload{
-				{
-					Method: h.MethodPost,
-					Mode:   "custom",
-				},
+	ctx := testctx.NewWithCfg(config.Project{
+		Uploads: []config.Upload{
+			{
+				Method: h.MethodPost,
+				Mode:   "custom",
 			},
 		},
-	}
+	})
 	require.NoError(t, Pipe{}.Default(ctx))
 	require.Len(t, ctx.Config.Uploads, 1)
 	upload := ctx.Config.Uploads[0]

@@ -8,6 +8,7 @@ import (
 
 	"github.com/goreleaser/goreleaser/internal/artifact"
 	"github.com/goreleaser/goreleaser/internal/gio"
+	"github.com/goreleaser/goreleaser/internal/testctx"
 	"github.com/goreleaser/goreleaser/internal/testlib"
 	"github.com/goreleaser/goreleaser/pkg/config"
 	"github.com/goreleaser/goreleaser/pkg/context"
@@ -19,11 +20,9 @@ func TestDockerSignDescription(t *testing.T) {
 }
 
 func TestDockerSignDefault(t *testing.T) {
-	ctx := &context.Context{
-		Config: config.Project{
-			DockerSigns: []config.Sign{{}},
-		},
-	}
+	ctx := testctx.NewWithCfg(config.Project{
+		DockerSigns: []config.Sign{{}},
+	})
 	err := DockerPipe{}.Default(ctx)
 	require.NoError(t, err)
 	require.Equal(t, "cosign", ctx.Config.DockerSigns[0].Cmd)

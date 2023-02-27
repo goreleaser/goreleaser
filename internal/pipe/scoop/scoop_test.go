@@ -1,7 +1,6 @@
 package scoop
 
 import (
-	ctx "context"
 	"os"
 	"path/filepath"
 	"testing"
@@ -9,6 +8,7 @@ import (
 	"github.com/goreleaser/goreleaser/internal/artifact"
 	"github.com/goreleaser/goreleaser/internal/client"
 	"github.com/goreleaser/goreleaser/internal/golden"
+	"github.com/goreleaser/goreleaser/internal/testctx"
 	"github.com/goreleaser/goreleaser/internal/testlib"
 	"github.com/goreleaser/goreleaser/pkg/config"
 	"github.com/goreleaser/goreleaser/pkg/context"
@@ -22,10 +22,10 @@ func TestDescription(t *testing.T) {
 func TestDefault(t *testing.T) {
 	testlib.Mktmp(t)
 
-	ctx := &context.Context{
-		TokenType: context.TokenTypeGitHub,
-		Config:    config.Project{ProjectName: "barr"},
-	}
+	ctx := testctx.NewWithCfg(
+		config.Project{ProjectName: "barr"},
+		testctx.WithTokenType(context.TokenTypeGitHub),
+	)
 	require.NoError(t, Pipe{}.Default(ctx))
 	require.Equal(t, ctx.Config.ProjectName, ctx.Config.Scoop.Name)
 	require.NotEmpty(t, ctx.Config.Scoop.CommitAuthor.Name)
@@ -574,15 +574,8 @@ func Test_buildManifest(t *testing.T) {
 	}{
 		{
 			"common",
-			&context.Context{
-				Context:   ctx.Background(),
-				TokenType: context.TokenTypeGitHub,
-				Git: context.GitInfo{
-					CurrentTag: "v1.0.1",
-				},
-				Version:   "1.0.1",
-				Artifacts: artifact.New(),
-				Config: config.Project{
+			testctx.NewWithCfg(
+				config.Project{
 					GitHubURLs: config.GitHubURLs{
 						Download: "https://github.com",
 					},
@@ -603,19 +596,15 @@ func Test_buildManifest(t *testing.T) {
 						Persist:     []string{"data", "config", "test.ini"},
 					},
 				},
-			},
+				testctx.WithTokenType(context.TokenTypeGitHub),
+				testctx.WithCurrentTag("v1.0.1"),
+				testctx.WithVersion("1.0.1"),
+			),
 		},
 		{
 			"pre-post-install",
-			&context.Context{
-				Context:   ctx.Background(),
-				TokenType: context.TokenTypeGitHub,
-				Git: context.GitInfo{
-					CurrentTag: "v1.0.1",
-				},
-				Version:   "1.0.1",
-				Artifacts: artifact.New(),
-				Config: config.Project{
+			testctx.NewWithCfg(
+				config.Project{
 					GitHubURLs: config.GitHubURLs{
 						Download: "https://github.com",
 					},
@@ -638,19 +627,15 @@ func Test_buildManifest(t *testing.T) {
 						PostInstall: []string{"Write-Host 'Running postinstall command'"},
 					},
 				},
-			},
+				testctx.WithTokenType(context.TokenTypeGitHub),
+				testctx.WithCurrentTag("v1.0.1"),
+				testctx.WithVersion("1.0.1"),
+			),
 		},
 		{
 			"url template",
-			&context.Context{
-				Context:   ctx.Background(),
-				TokenType: context.TokenTypeGitHub,
-				Git: context.GitInfo{
-					CurrentTag: "v1.0.1",
-				},
-				Version:   "1.0.1",
-				Artifacts: artifact.New(),
-				Config: config.Project{
+			testctx.NewWithCfg(
+				config.Project{
 					GitHubURLs: config.GitHubURLs{
 						Download: "https://github.com",
 					},
@@ -667,19 +652,17 @@ func Test_buildManifest(t *testing.T) {
 						Persist:               []string{"data.cfg", "etc"},
 					},
 				},
-			},
+				testctx.WithGitInfo(context.GitInfo{
+					CurrentTag: "v1.0.1",
+				}),
+				testctx.WithTokenType(context.TokenTypeGitHub),
+				testctx.WithVersion("1.0.1"),
+			),
 		},
 		{
 			"gitlab url template",
-			&context.Context{
-				Context:   ctx.Background(),
-				TokenType: context.TokenTypeGitLab,
-				Git: context.GitInfo{
-					CurrentTag: "v1.0.1",
-				},
-				Version:   "1.0.1",
-				Artifacts: artifact.New(),
-				Config: config.Project{
+			testctx.NewWithCfg(
+				config.Project{
 					GitLabURLs: config.GitLabURLs{
 						Download: "https://gitlab.com",
 					},
@@ -696,7 +679,12 @@ func Test_buildManifest(t *testing.T) {
 						Persist:               []string{"data.cfg", "etc"},
 					},
 				},
-			},
+				testctx.WithGitInfo(context.GitInfo{
+					CurrentTag: "v1.0.1",
+				}),
+				testctx.WithTokenType(context.TokenTypeGitHub),
+				testctx.WithVersion("1.0.1"),
+			),
 		},
 	}
 
@@ -772,13 +760,8 @@ func Test_buildManifest(t *testing.T) {
 }
 
 func getScoopPipeSkipCtx(folder string) (*context.Context, string) {
-	ctx := &context.Context{
-		Git: context.GitInfo{
-			CurrentTag: "v1.0.1",
-		},
-		Version:   "1.0.1",
-		Artifacts: artifact.New(),
-		Config: config.Project{
+	ctx := testctx.NewWithCfg(
+		config.Project{
 			Dist:        folder,
 			ProjectName: "run-pipe",
 			Scoop: config.Scoop{
@@ -791,7 +774,9 @@ func getScoopPipeSkipCtx(folder string) (*context.Context, string) {
 				Name:        "run-pipe",
 			},
 		},
-	}
+		testctx.WithCurrentTag("v1.0.1"),
+		testctx.WithVersion("1.0.1"),
+	)
 
 	path := filepath.Join(folder, "bin.tar.gz")
 
@@ -846,14 +831,9 @@ func TestWrapInDirectory(t *testing.T) {
 	folder := t.TempDir()
 	file := filepath.Join(folder, "archive")
 	require.NoError(t, os.WriteFile(file, []byte("lorem ipsum"), 0o644))
-	ctx := &context.Context{
-		TokenType: context.TokenTypeGitLab,
-		Git: context.GitInfo{
-			CurrentTag: "v1.0.1",
-		},
-		Version:   "1.0.1",
-		Artifacts: artifact.New(),
-		Config: config.Project{
+
+	ctx := testctx.NewWithCfg(
+		config.Project{
 			GitLabURLs: config.GitLabURLs{
 				Download: "https://gitlab.com",
 			},
@@ -870,7 +850,11 @@ func TestWrapInDirectory(t *testing.T) {
 				Persist:               []string{"data.cfg", "etc"},
 			},
 		},
-	}
+		testctx.WithCurrentTag("v1.0.1"),
+		testctx.WithVersion("1.0.1"),
+		testctx.WithTokenType(context.TokenTypeGitLab),
+	)
+
 	require.NoError(t, Pipe{}.Default(ctx))
 	cl, err := client.New(ctx)
 	require.NoError(t, err)

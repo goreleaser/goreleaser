@@ -9,6 +9,7 @@ import (
 	"github.com/goreleaser/goreleaser/internal/artifact"
 	"github.com/goreleaser/goreleaser/internal/gio"
 	"github.com/goreleaser/goreleaser/internal/pipe"
+	"github.com/goreleaser/goreleaser/internal/testctx"
 	"github.com/goreleaser/goreleaser/internal/testlib"
 	"github.com/goreleaser/goreleaser/internal/yaml"
 	"github.com/goreleaser/goreleaser/pkg/config"
@@ -31,13 +32,11 @@ func TestRunPipeMissingInfo(t *testing.T) {
 		pipe.Skip("no summary nor description were provided"): {},
 	} {
 		t.Run(fmt.Sprintf("testing if %v happens", eerr), func(t *testing.T) {
-			ctx := &context.Context{
-				Config: config.Project{
-					Snapcrafts: []config.Snapcraft{
-						snap,
-					},
+			ctx := testctx.NewWithCfg(config.Project{
+				Snapcrafts: []config.Snapcraft{
+					snap,
 				},
-			}
+			})
 			require.Equal(t, eerr, Pipe{}.Run(ctx))
 		})
 	}
@@ -580,24 +579,22 @@ func TestDefaultSet(t *testing.T) {
 }
 
 func Test_processChannelsTemplates(t *testing.T) {
-	ctx := &context.Context{
-		Config: config.Project{
-			Builds: []config.Build{
-				{
-					ID: "default",
-				},
+	ctx := testctx.NewWithCfg(config.Project{
+		Builds: []config.Build{
+			{
+				ID: "default",
 			},
-			Snapcrafts: []config.Snapcraft{
-				{
-					Name: "mybin",
-					ChannelTemplates: []string{
-						"{{.Major}}.{{.Minor}}/stable",
-						"stable",
-					},
+		},
+		Snapcrafts: []config.Snapcraft{
+			{
+				Name: "mybin",
+				ChannelTemplates: []string{
+					"{{.Major}}.{{.Minor}}/stable",
+					"stable",
 				},
 			},
 		},
-	}
+	})
 
 	ctx.SkipPublish = true
 	ctx.Env = map[string]string{
@@ -679,18 +676,16 @@ func addBinaries(t *testing.T, ctx *context.Context, name, dist string) {
 }
 
 func TestSeveralSnapssWithTheSameID(t *testing.T) {
-	ctx := &context.Context{
-		Config: config.Project{
-			Snapcrafts: []config.Snapcraft{
-				{
-					ID: "a",
-				},
-				{
-					ID: "a",
-				},
+	ctx := testctx.NewWithCfg(config.Project{
+		Snapcrafts: []config.Snapcraft{
+			{
+				ID: "a",
+			},
+			{
+				ID: "a",
 			},
 		},
-	}
+	})
 	require.EqualError(t, Pipe{}.Default(ctx), "found 2 snapcrafts with the ID 'a', please fix your config")
 }
 

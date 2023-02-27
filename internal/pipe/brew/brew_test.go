@@ -9,6 +9,7 @@ import (
 	"github.com/goreleaser/goreleaser/internal/artifact"
 	"github.com/goreleaser/goreleaser/internal/client"
 	"github.com/goreleaser/goreleaser/internal/golden"
+	"github.com/goreleaser/goreleaser/internal/testctx"
 	"github.com/goreleaser/goreleaser/internal/testlib"
 	"github.com/goreleaser/goreleaser/pkg/config"
 	"github.com/goreleaser/goreleaser/pkg/context"
@@ -258,16 +259,8 @@ func TestFullPipe(t *testing.T) {
 	} {
 		t.Run(name, func(t *testing.T) {
 			folder := t.TempDir()
-			ctx := &context.Context{
-				Git: context.GitInfo{
-					CurrentTag: "v1.0.1",
-				},
-				Version:   "1.0.1",
-				Artifacts: artifact.New(),
-				Env: map[string]string{
-					"FOO": "foo_is_bar",
-				},
-				Config: config.Project{
+			ctx := testctx.NewWithCfg(
+				config.Project{
 					Dist:        folder,
 					ProjectName: name,
 					Brews: []config.Homebrew{
@@ -293,7 +286,12 @@ func TestFullPipe(t *testing.T) {
 						},
 					},
 				},
-			}
+				testctx.WithVersion("1.0.1"),
+				testctx.WithCurrentTag("v1.0.1"),
+				testctx.WithEnv(map[string]string{
+					"FOO": "foo_is_bar",
+				}),
+			)
 			tt.prepare(ctx)
 			ctx.Artifacts.Add(&artifact.Artifact{
 				Name:    "bar_bin.tar.gz",
@@ -374,16 +372,8 @@ func TestFullPipe(t *testing.T) {
 
 func TestRunPipeNameTemplate(t *testing.T) {
 	folder := t.TempDir()
-	ctx := &context.Context{
-		Git: context.GitInfo{
-			CurrentTag: "v1.0.1",
-		},
-		Version:   "1.0.1",
-		Artifacts: artifact.New(),
-		Env: map[string]string{
-			"FOO_BAR": "is_bar",
-		},
-		Config: config.Project{
+	ctx := testctx.NewWithCfg(
+		config.Project{
 			Dist:        folder,
 			ProjectName: "foo",
 			Brews: []config.Homebrew{
@@ -403,7 +393,12 @@ func TestRunPipeNameTemplate(t *testing.T) {
 				},
 			},
 		},
-	}
+		testctx.WithVersion("1.0.1"),
+		testctx.WithCurrentTag("v1.0.1"),
+		testctx.WithEnv(map[string]string{
+			"FOO_BAR": "is_bar",
+		}),
+	)
 	path := filepath.Join(folder, "bin.tar.gz")
 	ctx.Artifacts.Add(&artifact.Artifact{
 		Name:    "bin.tar.gz",
@@ -435,17 +430,8 @@ func TestRunPipeNameTemplate(t *testing.T) {
 
 func TestRunPipeMultipleBrewsWithSkip(t *testing.T) {
 	folder := t.TempDir()
-	ctx := &context.Context{
-		Git: context.GitInfo{
-			CurrentTag: "v1.0.1",
-		},
-		Version:   "1.0.1",
-		Artifacts: artifact.New(),
-		Env: map[string]string{
-			"FOO_BAR":     "is_bar",
-			"SKIP_UPLOAD": "true",
-		},
-		Config: config.Project{
+	ctx := testctx.NewWithCfg(
+		config.Project{
 			Dist:        folder,
 			ProjectName: "foo",
 			Brews: []config.Homebrew{
@@ -498,7 +484,13 @@ func TestRunPipeMultipleBrewsWithSkip(t *testing.T) {
 				},
 			},
 		},
-	}
+		testctx.WithEnv(map[string]string{
+			"FOO_BAR":     "is_bar",
+			"SKIP_UPLOAD": "true",
+		}),
+		testctx.WithVersion("1.0.1"),
+		testctx.WithCurrentTag("v1.0.1"),
+	)
 	path := filepath.Join(folder, "bin.tar.gz")
 	ctx.Artifacts.Add(&artifact.Artifact{
 		Name:    "bin.tar.gz",
@@ -546,17 +538,8 @@ func TestRunPipeForMultipleAmd64Versions(t *testing.T) {
 	} {
 		t.Run(name, func(t *testing.T) {
 			folder := t.TempDir()
-			ctx := &context.Context{
-				TokenType: context.TokenTypeGitHub,
-				Git: context.GitInfo{
-					CurrentTag: "v1.0.1",
-				},
-				Version:   "1.0.1",
-				Artifacts: artifact.New(),
-				Env: map[string]string{
-					"FOO": "foo_is_bar",
-				},
-				Config: config.Project{
+			ctx := testctx.NewWithCfg(
+				config.Project{
 					Dist:        folder,
 					ProjectName: name,
 					Brews: []config.Homebrew{
@@ -581,7 +564,13 @@ func TestRunPipeForMultipleAmd64Versions(t *testing.T) {
 						},
 					},
 				},
-			}
+				testctx.WithTokenType(context.TokenTypeGitHub),
+				testctx.WithVersion("1.0.1"),
+				testctx.WithCurrentTag("v1.0.1"),
+				testctx.WithEnv(map[string]string{
+					"FOO": "foo_is_bar",
+				}),
+			)
 			fn(ctx)
 			for _, a := range []struct {
 				name    string
@@ -671,17 +660,8 @@ func TestRunPipeForMultipleArmVersions(t *testing.T) {
 	} {
 		t.Run(name, func(t *testing.T) {
 			folder := t.TempDir()
-			ctx := &context.Context{
-				TokenType: context.TokenTypeGitHub,
-				Git: context.GitInfo{
-					CurrentTag: "v1.0.1",
-				},
-				Version:   "1.0.1",
-				Artifacts: artifact.New(),
-				Env: map[string]string{
-					"FOO": "foo_is_bar",
-				},
-				Config: config.Project{
+			ctx := testctx.NewWithCfg(
+				config.Project{
 					Dist:        folder,
 					ProjectName: name,
 					Brews: []config.Homebrew{
@@ -711,7 +691,13 @@ func TestRunPipeForMultipleArmVersions(t *testing.T) {
 						},
 					},
 				},
-			}
+				testctx.WithTokenType(context.TokenTypeGitHub),
+				testctx.WithVersion("1.0.1"),
+				testctx.WithCurrentTag("v1.0.1"),
+				testctx.WithEnv(map[string]string{
+					"FOO": "foo_is_bar",
+				}),
+			)
 			fn(ctx)
 			for _, a := range []struct {
 				name   string
@@ -949,13 +935,8 @@ func TestRunPipeMultipleArchivesSameOsBuild(t *testing.T) {
 
 func TestRunPipeBinaryRelease(t *testing.T) {
 	folder := t.TempDir()
-	ctx := &context.Context{
-		Git: context.GitInfo{
-			CurrentTag: "v1.2.1",
-		},
-		Version:   "1.2.1",
-		Artifacts: artifact.New(),
-		Config: config.Project{
+	ctx := testctx.NewWithCfg(
+		config.Project{
 			Dist:        folder,
 			ProjectName: "foo",
 			Brews: []config.Homebrew{
@@ -970,8 +951,9 @@ func TestRunPipeBinaryRelease(t *testing.T) {
 				},
 			},
 		},
-	}
-
+		testctx.WithVersion("1.2.1"),
+		testctx.WithCurrentTag("v1.2.1"),
+	)
 	path := filepath.Join(folder, "dist/foo_darwin_all/foo")
 	ctx.Artifacts.Add(&artifact.Artifact{
 		Name:   "foo_macos",
@@ -1099,16 +1081,15 @@ func TestRunEmptyTokenType(t *testing.T) {
 
 func TestDefault(t *testing.T) {
 	testlib.Mktmp(t)
-
-	ctx := &context.Context{
-		TokenType: context.TokenTypeGitHub,
-		Config: config.Project{
+	ctx := testctx.NewWithCfg(
+		config.Project{
 			ProjectName: "myproject",
 			Brews: []config.Homebrew{
 				{},
 			},
 		},
-	}
+		testctx.WithTokenType(context.TokenTypeGitHub),
+	)
 	require.NoError(t, Pipe{}.Default(ctx))
 	require.Equal(t, ctx.Config.ProjectName, ctx.Config.Brews[0].Name)
 	require.NotEmpty(t, ctx.Config.Brews[0].CommitAuthor.Name)
@@ -1217,13 +1198,8 @@ func TestInstalls(t *testing.T) {
 
 func TestRunPipeUniversalBinary(t *testing.T) {
 	folder := t.TempDir()
-	ctx := &context.Context{
-		Git: context.GitInfo{
-			CurrentTag: "v1.0.1",
-		},
-		Version:   "1.0.1",
-		Artifacts: artifact.New(),
-		Config: config.Project{
+	ctx := testctx.NewWithCfg(
+		config.Project{
 			Dist:        folder,
 			ProjectName: "unibin",
 			Brews: []config.Homebrew{
@@ -1242,7 +1218,9 @@ func TestRunPipeUniversalBinary(t *testing.T) {
 				},
 			},
 		},
-	}
+		testctx.WithCurrentTag("v1.0.1"),
+		testctx.WithVersion("1.0.1"),
+	)
 	path := filepath.Join(folder, "bin.tar.gz")
 	ctx.Artifacts.Add(&artifact.Artifact{
 		Name:   "bin.tar.gz",
@@ -1275,13 +1253,8 @@ func TestRunPipeUniversalBinary(t *testing.T) {
 
 func TestRunPipeUniversalBinaryNotReplacing(t *testing.T) {
 	folder := t.TempDir()
-	ctx := &context.Context{
-		Git: context.GitInfo{
-			CurrentTag: "v1.0.1",
-		},
-		Version:   "1.0.1",
-		Artifacts: artifact.New(),
-		Config: config.Project{
+	ctx := testctx.NewWithCfg(
+		config.Project{
 			Dist:        folder,
 			ProjectName: "unibin",
 			Brews: []config.Homebrew{
@@ -1301,7 +1274,10 @@ func TestRunPipeUniversalBinaryNotReplacing(t *testing.T) {
 				},
 			},
 		},
-	}
+
+		testctx.WithCurrentTag("v1.0.1"),
+		testctx.WithVersion("1.0.1"),
+	)
 	path := filepath.Join(folder, "bin.tar.gz")
 	ctx.Artifacts.Add(&artifact.Artifact{
 		Name:    "bin_amd64.tar.gz",

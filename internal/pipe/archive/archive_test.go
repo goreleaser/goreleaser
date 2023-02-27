@@ -11,6 +11,7 @@ import (
 	"testing"
 
 	"github.com/goreleaser/goreleaser/internal/artifact"
+	"github.com/goreleaser/goreleaser/internal/testctx"
 	"github.com/goreleaser/goreleaser/internal/testlib"
 	"github.com/goreleaser/goreleaser/pkg/archive"
 	"github.com/goreleaser/goreleaser/pkg/config"
@@ -762,11 +763,9 @@ func TestRunPipeWrap(t *testing.T) {
 }
 
 func TestDefault(t *testing.T) {
-	ctx := &context.Context{
-		Config: config.Project{
-			Archives: []config.Archive{},
-		},
-	}
+	ctx := testctx.NewWithCfg(config.Project{
+		Archives: []config.Archive{},
+	})
 	require.NoError(t, Pipe{}.Default(ctx))
 	require.NotEmpty(t, ctx.Config.Archives[0].NameTemplate)
 	require.Equal(t, "tar.gz", ctx.Config.Archives[0].Format)
@@ -775,20 +774,18 @@ func TestDefault(t *testing.T) {
 }
 
 func TestDefaultSet(t *testing.T) {
-	ctx := &context.Context{
-		Config: config.Project{
-			Archives: []config.Archive{
-				{
-					Builds:       []string{"default"},
-					NameTemplate: "foo",
-					Format:       "zip",
-					Files: []config.File{
-						{Source: "foo"},
-					},
+	ctx := testctx.NewWithCfg(config.Project{
+		Archives: []config.Archive{
+			{
+				Builds:       []string{"default"},
+				NameTemplate: "foo",
+				Format:       "zip",
+				Files: []config.File{
+					{Source: "foo"},
 				},
 			},
 		},
-	}
+	})
 	require.NoError(t, Pipe{}.Default(ctx))
 	require.Equal(t, "foo", ctx.Config.Archives[0].NameTemplate)
 	require.Equal(t, "zip", ctx.Config.Archives[0].Format)
@@ -797,52 +794,46 @@ func TestDefaultSet(t *testing.T) {
 }
 
 func TestDefaultNoFiles(t *testing.T) {
-	ctx := &context.Context{
-		Config: config.Project{
-			Archives: []config.Archive{
-				{
-					Format: "tar.gz",
-				},
+	ctx := testctx.NewWithCfg(config.Project{
+		Archives: []config.Archive{
+			{
+				Format: "tar.gz",
 			},
 		},
-	}
+	})
 	require.NoError(t, Pipe{}.Default(ctx))
 	require.Equal(t, defaultNameTemplate, ctx.Config.Archives[0].NameTemplate)
 	require.False(t, ctx.Config.Archives[0].RLCP)
 }
 
 func TestDefaultFormatBinary(t *testing.T) {
-	ctx := &context.Context{
-		Config: config.Project{
-			Archives: []config.Archive{
-				{
-					Format: "binary",
-				},
+	ctx := testctx.NewWithCfg(config.Project{
+		Archives: []config.Archive{
+			{
+				Format: "binary",
 			},
 		},
-	}
+	})
 	require.NoError(t, Pipe{}.Default(ctx))
 	require.Equal(t, defaultBinaryNameTemplate, ctx.Config.Archives[0].NameTemplate)
 	require.False(t, ctx.Config.Archives[0].RLCP)
 }
 
 func TestFormatFor(t *testing.T) {
-	ctx := &context.Context{
-		Config: config.Project{
-			Archives: []config.Archive{
-				{
-					Builds: []string{"default"},
-					Format: "tar.gz",
-					FormatOverrides: []config.FormatOverride{
-						{
-							Goos:   "windows",
-							Format: "zip",
-						},
+	ctx := testctx.NewWithCfg(config.Project{
+		Archives: []config.Archive{
+			{
+				Builds: []string{"default"},
+				Format: "tar.gz",
+				FormatOverrides: []config.FormatOverride{
+					{
+						Goos:   "windows",
+						Format: "zip",
 					},
 				},
 			},
 		},
-	}
+	})
 	require.Equal(t, "zip", packageFormat(ctx.Config.Archives[0], "windows"))
 	require.Equal(t, "tar.gz", packageFormat(ctx.Config.Archives[0], "linux"))
 }
@@ -1036,18 +1027,16 @@ func TestWrapInDirectory(t *testing.T) {
 }
 
 func TestSeveralArchivesWithTheSameID(t *testing.T) {
-	ctx := &context.Context{
-		Config: config.Project{
-			Archives: []config.Archive{
-				{
-					ID: "a",
-				},
-				{
-					ID: "a",
-				},
+	ctx := testctx.NewWithCfg(config.Project{
+		Archives: []config.Archive{
+			{
+				ID: "a",
+			},
+			{
+				ID: "a",
 			},
 		},
-	}
+	})
 	require.EqualError(t, Pipe{}.Default(ctx), "found 2 archives with the ID 'a', please fix your config")
 }
 

@@ -7,6 +7,7 @@ import (
 	"testing"
 
 	"github.com/goreleaser/goreleaser/internal/artifact"
+	"github.com/goreleaser/goreleaser/internal/testctx"
 	"github.com/goreleaser/goreleaser/pkg/config"
 	"github.com/goreleaser/goreleaser/pkg/context"
 	"github.com/stretchr/testify/require"
@@ -223,19 +224,15 @@ func TestPipeCouldNotOpenChecksumsTxt(t *testing.T) {
 }
 
 func TestPipeWhenNoArtifacts(t *testing.T) {
-	ctx := &context.Context{
-		Artifacts: artifact.New(),
-	}
+	ctx := testctx.New()
 	require.NoError(t, Pipe{}.Run(ctx))
 	require.Len(t, ctx.Artifacts.List(), 0)
 }
 
 func TestDefault(t *testing.T) {
-	ctx := &context.Context{
-		Config: config.Project{
-			Checksum: config.Checksum{},
-		},
-	}
+	ctx := testctx.NewWithCfg(config.Project{
+		Checksum: config.Checksum{},
+	})
 	require.NoError(t, Pipe{}.Default(ctx))
 	require.Equal(
 		t,
@@ -246,13 +243,11 @@ func TestDefault(t *testing.T) {
 }
 
 func TestDefaultSet(t *testing.T) {
-	ctx := &context.Context{
-		Config: config.Project{
-			Checksum: config.Checksum{
-				NameTemplate: "checksums.txt",
-			},
+	ctx := testctx.NewWithCfg(config.Project{
+		Checksum: config.Checksum{
+			NameTemplate: "checksums.txt",
 		},
-	}
+	})
 	require.NoError(t, Pipe{}.Default(ctx))
 	require.Equal(t, "checksums.txt", ctx.Config.Checksum.NameTemplate)
 }

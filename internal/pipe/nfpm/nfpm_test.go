@@ -7,6 +7,7 @@ import (
 	"testing"
 
 	"github.com/goreleaser/goreleaser/internal/artifact"
+	"github.com/goreleaser/goreleaser/internal/testctx"
 	"github.com/goreleaser/goreleaser/internal/testlib"
 	"github.com/goreleaser/goreleaser/pkg/config"
 	"github.com/goreleaser/goreleaser/pkg/context"
@@ -20,25 +21,22 @@ func TestDescription(t *testing.T) {
 }
 
 func TestRunPipeNoFormats(t *testing.T) {
-	ctx := &context.Context{
-		Version: "1.0.0",
-		Git: context.GitInfo{
-			CurrentTag: "v1.0.0",
-		},
-		Config: config.Project{
+	ctx := testctx.NewWithCfg(
+		config.Project{
 			NFPMs: []config.NFPM{
 				{},
 			},
 		},
-		Parallelism: runtime.NumCPU(),
-	}
+		testctx.WithCurrentTag("v1.0.1"),
+		testctx.WithVersion("1.0.1"),
+	)
 	require.NoError(t, Pipe{}.Default(ctx))
 	testlib.AssertSkipped(t, Pipe{}.Run(ctx))
 }
 
 func TestDefaultsDeprecated(t *testing.T) {
 	t.Run("replacements", func(t *testing.T) {
-		ctx := context.New(config.Project{
+		ctx := testctx.NewWithCfg(config.Project{
 			NFPMs: []config.NFPM{
 				{
 					NFPMOverridables: config.NFPMOverridables{
@@ -495,11 +493,8 @@ func TestRunPipeConventionalNameTemplate(t *testing.T) {
 
 func TestInvalidTemplate(t *testing.T) {
 	makeCtx := func() *context.Context {
-		ctx := &context.Context{
-			Version:     "1.2.3",
-			Parallelism: runtime.NumCPU(),
-			Artifacts:   artifact.New(),
-			Config: config.Project{
+		ctx := testctx.NewWithCfg(
+			config.Project{
 				ProjectName: "test",
 				NFPMs: []config.NFPM{
 					{
@@ -508,7 +503,8 @@ func TestInvalidTemplate(t *testing.T) {
 					},
 				},
 			},
-		}
+			testctx.WithVersion("1.2.3"),
+		)
 		ctx.Artifacts.Add(&artifact.Artifact{
 			Name:   "mybin",
 			Goos:   "linux",
@@ -607,27 +603,23 @@ func TestInvalidTemplate(t *testing.T) {
 }
 
 func TestRunPipeInvalidContentsSourceTemplate(t *testing.T) {
-	ctx := &context.Context{
-		Parallelism: runtime.NumCPU(),
-		Artifacts:   artifact.New(),
-		Config: config.Project{
-			NFPMs: []config.NFPM{
-				{
-					NFPMOverridables: config.NFPMOverridables{
-						PackageName: "foo",
-						Contents: []*files.Content{
-							{
-								Source:      "{{.asdsd}",
-								Destination: "testfile",
-							},
+	ctx := testctx.NewWithCfg(config.Project{
+		NFPMs: []config.NFPM{
+			{
+				NFPMOverridables: config.NFPMOverridables{
+					PackageName: "foo",
+					Contents: []*files.Content{
+						{
+							Source:      "{{.asdsd}",
+							Destination: "testfile",
 						},
 					},
-					Formats: []string{"deb"},
-					Builds:  []string{"default"},
 				},
+				Formats: []string{"deb"},
+				Builds:  []string{"default"},
 			},
 		},
-	}
+	})
 	ctx.Artifacts.Add(&artifact.Artifact{
 		Name:   "mybin",
 		Goos:   "linux",
@@ -641,18 +633,14 @@ func TestRunPipeInvalidContentsSourceTemplate(t *testing.T) {
 }
 
 func TestNoBuildsFound(t *testing.T) {
-	ctx := &context.Context{
-		Parallelism: runtime.NumCPU(),
-		Artifacts:   artifact.New(),
-		Config: config.Project{
-			NFPMs: []config.NFPM{
-				{
-					Formats: []string{"deb"},
-					Builds:  []string{"nope"},
-				},
+	ctx := testctx.NewWithCfg(config.Project{
+		NFPMs: []config.NFPM{
+			{
+				Formats: []string{"deb"},
+				Builds:  []string{"nope"},
 			},
 		},
-	}
+	})
 	ctx.Artifacts.Add(&artifact.Artifact{
 		Name:   "mybin",
 		Goos:   "linux",
@@ -736,14 +724,12 @@ func TestInvalidConfig(t *testing.T) {
 }
 
 func TestDefault(t *testing.T) {
-	ctx := &context.Context{
-		Config: config.Project{
-			ProjectName: "foobar",
-			NFPMs: []config.NFPM{
-				{},
-			},
+	ctx := testctx.NewWithCfg(config.Project{
+		ProjectName: "foobar",
+		NFPMs: []config.NFPM{
+			{},
 		},
-	}
+	})
 	require.NoError(t, Pipe{}.Default(ctx))
 	require.Equal(t, "/usr/bin", ctx.Config.NFPMs[0].Bindir)
 	require.Empty(t, ctx.Config.NFPMs[0].Builds)
@@ -752,19 +738,17 @@ func TestDefault(t *testing.T) {
 }
 
 func TestDefaultSet(t *testing.T) {
-	ctx := &context.Context{
-		Config: config.Project{
-			NFPMs: []config.NFPM{
-				{
-					Builds: []string{"foo"},
-					Bindir: "/bin",
-					NFPMOverridables: config.NFPMOverridables{
-						FileNameTemplate: "foo",
-					},
+	ctx := testctx.NewWithCfg(config.Project{
+		NFPMs: []config.NFPM{
+			{
+				Builds: []string{"foo"},
+				Bindir: "/bin",
+				NFPMOverridables: config.NFPMOverridables{
+					FileNameTemplate: "foo",
 				},
 			},
 		},
-	}
+	})
 	require.NoError(t, Pipe{}.Default(ctx))
 	require.Equal(t, "/bin", ctx.Config.NFPMs[0].Bindir)
 	require.Equal(t, "foo", ctx.Config.NFPMs[0].FileNameTemplate)
@@ -773,23 +757,21 @@ func TestDefaultSet(t *testing.T) {
 }
 
 func TestOverrides(t *testing.T) {
-	ctx := &context.Context{
-		Config: config.Project{
-			NFPMs: []config.NFPM{
-				{
-					Bindir: "/bin",
-					NFPMOverridables: config.NFPMOverridables{
-						FileNameTemplate: "foo",
-					},
-					Overrides: map[string]config.NFPMOverridables{
-						"deb": {
-							FileNameTemplate: "bar",
-						},
+	ctx := testctx.NewWithCfg(config.Project{
+		NFPMs: []config.NFPM{
+			{
+				Bindir: "/bin",
+				NFPMOverridables: config.NFPMOverridables{
+					FileNameTemplate: "foo",
+				},
+				Overrides: map[string]config.NFPMOverridables{
+					"deb": {
+						FileNameTemplate: "bar",
 					},
 				},
 			},
 		},
-	}
+	})
 	require.NoError(t, Pipe{}.Default(ctx))
 	merged, err := mergeOverrides(ctx.Config.NFPMs[0], "deb")
 	require.NoError(t, err)
@@ -1204,18 +1186,16 @@ func TestAPKSpecificScriptsConfig(t *testing.T) {
 }
 
 func TestSeveralNFPMsWithTheSameID(t *testing.T) {
-	ctx := &context.Context{
-		Config: config.Project{
-			NFPMs: []config.NFPM{
-				{
-					ID: "a",
-				},
-				{
-					ID: "a",
-				},
+	ctx := testctx.NewWithCfg(config.Project{
+		NFPMs: []config.NFPM{
+			{
+				ID: "a",
+			},
+			{
+				ID: "a",
 			},
 		},
-	}
+	})
 	require.EqualError(t, Pipe{}.Default(ctx), "found 2 nfpms with the ID 'a', please fix your config")
 }
 

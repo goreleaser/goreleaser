@@ -15,6 +15,7 @@ import (
 	"github.com/stretchr/testify/assert"
 
 	"github.com/goreleaser/goreleaser/internal/artifact"
+	"github.com/goreleaser/goreleaser/internal/testctx"
 	"github.com/goreleaser/goreleaser/pkg/config"
 	"github.com/goreleaser/goreleaser/pkg/context"
 	"github.com/stretchr/testify/require"
@@ -50,11 +51,9 @@ func TestDescription(t *testing.T) {
 }
 
 func TestSignDefault(t *testing.T) {
-	ctx := &context.Context{
-		Config: config.Project{
-			Signs: []config.Sign{{}},
-		},
-	}
+	ctx := testctx.NewWithCfg(config.Project{
+		Signs: []config.Sign{{}},
+	})
 	err := Pipe{}.Default(ctx)
 	require.NoError(t, err)
 	require.Equal(t, ctx.Config.Signs[0].Cmd, "gpg")
@@ -748,18 +747,16 @@ func verifySignature(tb testing.TB, ctx *context.Context, sig string, user strin
 }
 
 func TestSeveralSignsWithTheSameID(t *testing.T) {
-	ctx := &context.Context{
-		Config: config.Project{
-			Signs: []config.Sign{
-				{
-					ID: "a",
-				},
-				{
-					ID: "a",
-				},
+	ctx := testctx.NewWithCfg(config.Project{
+		Signs: []config.Sign{
+			{
+				ID: "a",
+			},
+			{
+				ID: "a",
 			},
 		},
-	}
+	})
 	require.EqualError(t, Pipe{}.Default(ctx), "found 2 signs with the ID 'a', please fix your config")
 }
 
