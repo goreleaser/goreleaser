@@ -1,6 +1,8 @@
 package testctx
 
 import (
+	"time"
+
 	"github.com/goreleaser/goreleaser/pkg/config"
 	"github.com/goreleaser/goreleaser/pkg/context"
 )
@@ -25,6 +27,12 @@ func WithVersion(v string) Opt {
 	}
 }
 
+func WithSemver(v context.Semver) Opt {
+	return func(ctx *context.Context) {
+		ctx.Semver = v
+	}
+}
+
 func WithGitInfo(git context.GitInfo) Opt {
 	return func(ctx *context.Context) {
 		ctx.Git = git
@@ -40,6 +48,12 @@ func WithCurrentTag(tag string) Opt {
 func WithEnv(env map[string]string) Opt {
 	return func(ctx *context.Context) {
 		ctx.Env = env
+	}
+}
+
+func WithDate(t time.Time) Opt {
+	return func(ctx *context.Context) {
+		ctx.Date = t
 	}
 }
 

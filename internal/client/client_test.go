@@ -4,30 +4,33 @@ import (
 	"math/rand"
 	"testing"
 
+	"github.com/goreleaser/goreleaser/internal/testctx"
 	"github.com/goreleaser/goreleaser/pkg/config"
 	"github.com/goreleaser/goreleaser/pkg/context"
 	"github.com/stretchr/testify/require"
 )
 
 func TestClientEmpty(t *testing.T) {
-	ctx := &context.Context{}
+	ctx := testctx.New()
 	client, err := New(ctx)
 	require.Nil(t, client)
 	require.EqualError(t, err, `invalid client token type: ""`)
 }
 
 func TestClientNewGitea(t *testing.T) {
-	ctx := &context.Context{
-		Config: config.Project{
+	ctx := testctx.NewWithCfg(
+		config.Project{
 			GiteaURLs: config.GiteaURLs{
 				// TODO: use a mocked http server to cover version api
 				API:      "https://gitea.com/api/v1",
 				Download: "https://gitea.com",
 			},
 		},
-		TokenType: context.TokenTypeGitea,
-		Token:     "giteatoken",
-	}
+		testctx.WithTokenType(context.TokenTypeGitea),
+		func(ctx *context.Context) {
+			ctx.Token = "giteatoken"
+		},
+	)
 	client, err := New(ctx)
 	require.NoError(t, err)
 	_, ok := client.(*giteaClient)
@@ -35,25 +38,29 @@ func TestClientNewGitea(t *testing.T) {
 }
 
 func TestClientNewGiteaInvalidURL(t *testing.T) {
-	ctx := &context.Context{
-		Config: config.Project{
+	ctx := testctx.NewWithCfg(
+		config.Project{
 			GiteaURLs: config.GiteaURLs{
 				API: "://gitea.com/api/v1",
 			},
 		},
-		TokenType: context.TokenTypeGitea,
-		Token:     "giteatoken",
-	}
+		testctx.WithTokenType(context.TokenTypeGitea),
+		func(ctx *context.Context) {
+			ctx.Token = "giteatoken"
+		},
+	)
 	client, err := New(ctx)
 	require.Error(t, err)
 	require.Nil(t, client)
 }
 
 func TestClientNewGitLab(t *testing.T) {
-	ctx := &context.Context{
-		TokenType: context.TokenTypeGitLab,
-		Token:     "gitlabtoken",
-	}
+	ctx := testctx.New(
+		testctx.WithTokenType(context.TokenTypeGitLab),
+		func(ctx *context.Context) {
+			ctx.Token = "gitlabtoken"
+		},
+	)
 	client, err := New(ctx)
 	require.NoError(t, err)
 	_, ok := client.(*gitlabClient)
@@ -74,27 +81,30 @@ func TestCheckBodyMaxLength(t *testing.T) {
 
 func TestNewIfToken(t *testing.T) {
 	t.Run("valid", func(t *testing.T) {
-		ctx := &context.Context{
-			TokenType: context.TokenTypeGitLab,
-			Token:     "gitlabtoken",
-		}
+		ctx := testctx.New(
+			testctx.WithTokenType(context.TokenTypeGitLab),
+			func(ctx *context.Context) {
+				ctx.Token = "gitlabtoken"
+			},
+		)
 
 		client, err := New(ctx)
 		require.NoError(t, err)
 		_, ok := client.(*gitlabClient)
 		require.True(t, ok)
 
-		ctx = &context.Context{
-			Config: config.Project{
+		ctx = testctx.NewWithCfg(
+			config.Project{
 				GiteaURLs: config.GiteaURLs{
 					API: "https://gitea.com/api/v1",
 				},
 			},
-			TokenType: context.TokenTypeGitea,
-			Token:     "giteatoken",
-			Env:       map[string]string{"VAR": "token"},
-		}
-
+			testctx.WithTokenType(context.TokenTypeGitea),
+			func(ctx *context.Context) {
+				ctx.Token = "giteatoken"
+			},
+			testctx.WithEnv(map[string]string{"VAR": "token"}),
+		)
 		client, err = NewIfToken(ctx, client, "{{ .Env.VAR }}")
 		require.NoError(t, err)
 		_, ok = client.(*giteaClient)
@@ -102,10 +112,12 @@ func TestNewIfToken(t *testing.T) {
 	})
 
 	t.Run("empty", func(t *testing.T) {
-		ctx := &context.Context{
-			TokenType: context.TokenTypeGitLab,
-			Token:     "gitlabtoken",
-		}
+		ctx := testctx.New(
+			testctx.WithTokenType(context.TokenTypeGitLab),
+			func(ctx *context.Context) {
+				ctx.Token = "gitlabtoken"
+			},
+		)
 
 		client, err := New(ctx)
 		require.NoError(t, err)
@@ -117,10 +129,12 @@ func TestNewIfToken(t *testing.T) {
 	})
 
 	t.Run("invalid tmpl", func(t *testing.T) {
-		ctx := &context.Context{
-			TokenType: context.TokenTypeGitLab,
-			Token:     "gitlabtoken",
-		}
+		ctx := testctx.New(
+			testctx.WithTokenType(context.TokenTypeGitLab),
+			func(ctx *context.Context) {
+				ctx.Token = "gitlabtoken"
+			},
+		)
 
 		_, err := NewIfToken(ctx, nil, "nope")
 		require.EqualError(t, err, `expected {{ .Env.VAR_NAME }} only (no plain-text or other interpolation)`)
@@ -129,10 +143,10 @@ func TestNewIfToken(t *testing.T) {
 
 func TestNewWithToken(t *testing.T) {
 	t.Run("gitlab", func(t *testing.T) {
-		ctx := &context.Context{
-			TokenType: context.TokenTypeGitLab,
-			Env:       map[string]string{"TK": "token"},
-		}
+		ctx := testctx.New(
+			testctx.WithTokenType(context.TokenTypeGitLab),
+			testctx.WithEnv(map[string]string{"TK": "token"}),
+		)
 
 		cli, err := newWithToken(ctx, "{{ .Env.TK }}")
 		require.NoError(t, err)
@@ -142,15 +156,15 @@ func TestNewWithToken(t *testing.T) {
 	})
 
 	t.Run("gitea", func(t *testing.T) {
-		ctx := &context.Context{
-			TokenType: context.TokenTypeGitea,
-			Env:       map[string]string{"TK": "token"},
-			Config: config.Project{
+		ctx := testctx.NewWithCfg(
+			config.Project{
 				GiteaURLs: config.GiteaURLs{
 					API: "https://gitea.com/api/v1",
 				},
 			},
-		}
+			testctx.WithTokenType(context.TokenTypeGitea),
+			testctx.WithEnv(map[string]string{"TK": "token"}),
+		)
 
 		cli, err := newWithToken(ctx, "{{ .Env.TK }}")
 		require.NoError(t, err)
@@ -160,11 +174,10 @@ func TestNewWithToken(t *testing.T) {
 	})
 
 	t.Run("invalid", func(t *testing.T) {
-		ctx := &context.Context{
-			TokenType: context.TokenType("nope"),
-			Env:       map[string]string{"TK": "token"},
-		}
-
+		ctx := testctx.New(
+			testctx.WithTokenType(context.TokenType("nope")),
+			testctx.WithEnv(map[string]string{"TK": "token"}),
+		)
 		cli, err := newWithToken(ctx, "{{ .Env.TK }}")
 		require.EqualError(t, err, `invalid client token type: "nope"`)
 		require.Nil(t, cli)

@@ -11,6 +11,7 @@ import (
 
 	"code.gitea.io/sdk/gitea"
 	"github.com/goreleaser/goreleaser/internal/artifact"
+	"github.com/goreleaser/goreleaser/internal/testctx"
 	"github.com/goreleaser/goreleaser/pkg/config"
 	"github.com/goreleaser/goreleaser/pkg/context"
 	"github.com/jarcoal/httpmock"
@@ -157,9 +158,8 @@ func (s *GiteaReleasesTestSuite) SetupTest() {
 	s.commit = "some commit hash"
 	s.isDraft = false
 	s.isPrerelease = true
-	s.ctx = &context.Context{
-		Version: "6.6.6",
-		Config: config.Project{
+	s.ctx = testctx.NewWithCfg(
+		config.Project{
 			ProjectName: "project",
 			Release: config.Release{
 				NameTemplate: "{{ .ProjectName }}_{{ .Version }}",
@@ -170,20 +170,22 @@ func (s *GiteaReleasesTestSuite) SetupTest() {
 				Draft: s.isDraft,
 			},
 		},
-		Env: context.Env{},
-		Semver: context.Semver{
-			Major: 6,
-			Minor: 6,
-			Patch: 6,
-		},
-		Git: context.GitInfo{
+		testctx.WithVersion("6.6.6"),
+		testctx.WithGitInfo(context.GitInfo{
 			CurrentTag:  s.tag,
 			Commit:      s.commit,
 			ShortCommit: s.commit[0:2],
 			URL:         "https://gitea.com/goreleaser/goreleaser.git",
+		}),
+		func(ctx *context.Context) {
+			ctx.PreRelease = s.isPrerelease
 		},
-		PreRelease: s.isPrerelease,
-	}
+		testctx.WithSemver(context.Semver{
+			Major: 6,
+			Minor: 6,
+			Patch: 6,
+		}),
+	)
 	s.releaseID = 666
 	s.releaseURL = fmt.Sprintf("%v/%v", s.releasesURL, s.releaseID)
 	httpmock.RegisterResponder("GET", fmt.Sprintf("%s/api/v1/version", s.url), httpmock.NewStringResponder(200, "{\"version\":\"1.12.0\"}"))

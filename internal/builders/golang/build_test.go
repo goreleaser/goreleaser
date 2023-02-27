@@ -11,6 +11,7 @@ import (
 	"time"
 
 	"github.com/goreleaser/goreleaser/internal/artifact"
+	"github.com/goreleaser/goreleaser/internal/testctx"
 	"github.com/goreleaser/goreleaser/internal/testlib"
 	"github.com/goreleaser/goreleaser/internal/tmpl"
 	api "github.com/goreleaser/goreleaser/pkg/build"
@@ -933,17 +934,16 @@ func TestRunPipeWithMainFuncNotInMainGoFile(t *testing.T) {
 func TestLdFlagsFullTemplate(t *testing.T) {
 	run := time.Now().UTC()
 	commit := time.Now().AddDate(-1, 0, 0)
-
-	ctx := &context.Context{
-		Git: context.GitInfo{
+	ctx := testctx.New(
+		testctx.WithGitInfo(context.GitInfo{
 			CurrentTag: "v1.2.3",
 			Commit:     "123",
 			CommitDate: commit,
-		},
-		Date:    run,
-		Version: "1.2.3",
-		Env:     map[string]string{"FOO": "123"},
-	}
+		}),
+		testctx.WithVersion("1.2.3"),
+		testctx.WithEnv(map[string]string{"FOO": "123"}),
+		testctx.WithDate(run),
+	)
 	artifact := &artifact.Artifact{Goarch: "amd64"}
 	flags, err := tmpl.New(ctx).WithArtifact(artifact).
 		Apply(`-s -w -X main.version={{.Version}} -X main.tag={{.Tag}} -X main.date={{.Date}} -X main.commit={{.Commit}} -X "main.foo={{.Env.FOO}}" -X main.time={{ time "20060102" }} -X main.arch={{.Arch}} -X main.commitDate={{.CommitDate}}`)
@@ -975,10 +975,10 @@ func TestInvalidTemplate(t *testing.T) {
 }
 
 func TestProcessFlags(t *testing.T) {
-	ctx := &context.Context{
-		Version: "1.2.3",
-	}
-	ctx.Git.CurrentTag = "5.6.7"
+	ctx := testctx.New(
+		testctx.WithVersion("1.2.3"),
+		testctx.WithCurrentTag("5.6.7"),
+	)
 
 	artifact := &artifact.Artifact{
 		Name:   "name",
@@ -1017,12 +1017,10 @@ func TestProcessFlags(t *testing.T) {
 }
 
 func TestProcessFlagsInvalid(t *testing.T) {
-	ctx := &context.Context{}
-
+	ctx := testctx.New()
 	source := []string{
 		"{{.Version}",
 	}
-
 	flags, err := processFlags(ctx, &artifact.Artifact{}, []string{}, source, "-testflag=")
 	testlib.RequireTemplateError(t, err)
 	require.Nil(t, flags)
