@@ -10,6 +10,7 @@ import (
 
 	"github.com/goreleaser/goreleaser/internal/client"
 	"github.com/goreleaser/goreleaser/internal/git"
+	"github.com/goreleaser/goreleaser/internal/testctx"
 	"github.com/goreleaser/goreleaser/internal/testlib"
 	"github.com/goreleaser/goreleaser/pkg/config"
 	"github.com/goreleaser/goreleaser/pkg/context"
@@ -20,35 +21,35 @@ func TestDescription(t *testing.T) {
 }
 
 func TestChangelogProvidedViaFlag(t *testing.T) {
-	ctx := context.New(config.Project{})
+	ctx := testctx.New()
 	ctx.ReleaseNotesFile = "testdata/changes.md"
 	require.NoError(t, Pipe{}.Run(ctx))
 	require.Equal(t, "c0ff33 coffeee\n", ctx.ReleaseNotes)
 }
 
 func TestChangelogProvidedViaFlagIsAWhitespaceOnlyFile(t *testing.T) {
-	ctx := context.New(config.Project{})
+	ctx := testctx.New()
 	ctx.ReleaseNotesFile = "testdata/changes-empty.md"
 	require.NoError(t, Pipe{}.Run(ctx))
 	require.Equal(t, "\n", ctx.ReleaseNotes)
 }
 
 func TestChangelogProvidedViaFlagIsReallyEmpty(t *testing.T) {
-	ctx := context.New(config.Project{})
+	ctx := testctx.New()
 	ctx.ReleaseNotesFile = "testdata/changes-really-empty.md"
 	require.NoError(t, Pipe{}.Run(ctx))
 	require.Equal(t, "", ctx.ReleaseNotes)
 }
 
 func TestChangelogTmplProvidedViaFlagIsReallyEmpty(t *testing.T) {
-	ctx := context.New(config.Project{})
+	ctx := testctx.New()
 	ctx.ReleaseNotesTmpl = "testdata/changes-really-empty.md"
 	require.NoError(t, Pipe{}.Run(ctx))
 	require.Equal(t, "", ctx.ReleaseNotes)
 }
 
 func TestTemplatedChangelogProvidedViaFlag(t *testing.T) {
-	ctx := context.New(config.Project{})
+	ctx := testctx.New()
 	ctx.ReleaseNotesFile = "testdata/changes.md"
 	ctx.ReleaseNotesTmpl = "testdata/changes-templated.md"
 	ctx.Git.CurrentTag = "v0.0.1"
@@ -58,7 +59,7 @@ func TestTemplatedChangelogProvidedViaFlag(t *testing.T) {
 }
 
 func TestTemplatedChangelogProvidedViaFlagResultIsEmpty(t *testing.T) {
-	ctx := context.New(config.Project{})
+	ctx := testctx.New()
 	ctx.ReleaseNotesTmpl = "testdata/changes-templated-empty.md"
 	ctx.Git.CurrentTag = "v0.0.1"
 	ctx.Git.FirstCommit = firstCommit(t)
@@ -67,19 +68,19 @@ func TestTemplatedChangelogProvidedViaFlagResultIsEmpty(t *testing.T) {
 }
 
 func TestChangelogProvidedViaFlagDoesntExist(t *testing.T) {
-	ctx := context.New(config.Project{})
+	ctx := testctx.New()
 	ctx.ReleaseNotesFile = "testdata/changes.nope"
 	require.EqualError(t, Pipe{}.Run(ctx), "open testdata/changes.nope: no such file or directory")
 }
 
 func TestReleaseHeaderProvidedViaFlagDoesntExist(t *testing.T) {
-	ctx := context.New(config.Project{})
+	ctx := testctx.New()
 	ctx.ReleaseHeaderFile = "testdata/header.nope"
 	require.EqualError(t, Pipe{}.Run(ctx), "open testdata/header.nope: no such file or directory")
 }
 
 func TestReleaseFooterProvidedViaFlagDoesntExist(t *testing.T) {
-	ctx := context.New(config.Project{})
+	ctx := testctx.New()
 	ctx.ReleaseFooterFile = "testdata/footer.nope"
 	require.EqualError(t, Pipe{}.Run(ctx), "open testdata/footer.nope: no such file or directory")
 }
@@ -261,9 +262,10 @@ func TestChangelogOfFirstRelease(t *testing.T) {
 		testlib.GitCommit(t, msg)
 	}
 	testlib.GitTag(t, "v0.0.1")
-	ctx := context.New(config.Project{})
-	ctx.Git.CurrentTag = "v0.0.1"
-	ctx.Git.FirstCommit = firstCommit(t)
+	ctx := testctx.New(testctx.WithGitInfo(context.GitInfo{
+		CurrentTag:  "v0.0.1",
+		FirstCommit: firstCommit(t),
+	}))
 	require.NoError(t, Pipe{}.Run(ctx))
 	require.Contains(t, ctx.ReleaseNotes, "## Changelog")
 	for _, msg := range msgs {
@@ -296,7 +298,7 @@ func TestChangelogNoTags(t *testing.T) {
 	testlib.Mktmp(t)
 	testlib.GitInit(t)
 	testlib.GitCommit(t, "first")
-	ctx := context.New(config.Project{})
+	ctx := testctx.New()
 	require.Error(t, Pipe{}.Run(ctx))
 	require.Empty(t, ctx.ReleaseNotes)
 }
@@ -315,7 +317,7 @@ func TestChangelogOnBranchWithSameNameAsTag(t *testing.T) {
 	}
 	testlib.GitTag(t, "v0.0.1")
 	testlib.GitCheckoutBranch(t, "v0.0.1")
-	ctx := context.New(config.Project{})
+	ctx := testctx.New()
 	ctx.Git.CurrentTag = "v0.0.1"
 	ctx.Git.FirstCommit = firstCommit(t)
 	require.NoError(t, Pipe{}.Run(ctx))
@@ -342,7 +344,7 @@ func TestChangeLogWithReleaseHeader(t *testing.T) {
 	}
 	testlib.GitTag(t, "v0.0.1")
 	testlib.GitCheckoutBranch(t, "v0.0.1")
-	ctx := context.New(config.Project{})
+	ctx := testctx.New()
 	ctx.Git.CurrentTag = "v0.0.1"
 	ctx.Git.FirstCommit = firstCommit(t)
 	ctx.ReleaseHeaderFile = "testdata/release-header.md"
@@ -368,7 +370,7 @@ func TestChangeLogWithTemplatedReleaseHeader(t *testing.T) {
 	}
 	testlib.GitTag(t, "v0.0.1")
 	testlib.GitCheckoutBranch(t, "v0.0.1")
-	ctx := context.New(config.Project{})
+	ctx := testctx.New()
 	ctx.Git.CurrentTag = "v0.0.1"
 	ctx.Git.FirstCommit = firstCommit(t)
 	ctx.ReleaseHeaderTmpl = "testdata/release-header-templated.md"
@@ -394,7 +396,7 @@ func TestChangeLogWithReleaseFooter(t *testing.T) {
 	}
 	testlib.GitTag(t, "v0.0.1")
 	testlib.GitCheckoutBranch(t, "v0.0.1")
-	ctx := context.New(config.Project{})
+	ctx := testctx.New()
 	ctx.Git.CurrentTag = "v0.0.1"
 	ctx.Git.FirstCommit = firstCommit(t)
 	ctx.ReleaseFooterFile = "testdata/release-footer.md"
@@ -421,7 +423,7 @@ func TestChangeLogWithTemplatedReleaseFooter(t *testing.T) {
 	}
 	testlib.GitTag(t, "v0.0.1")
 	testlib.GitCheckoutBranch(t, "v0.0.1")
-	ctx := context.New(config.Project{})
+	ctx := testctx.New()
 	ctx.Git.CurrentTag = "v0.0.1"
 	ctx.Git.FirstCommit = firstCommit(t)
 	ctx.ReleaseFooterTmpl = "testdata/release-footer-templated.md"
@@ -448,7 +450,7 @@ func TestChangeLogWithoutReleaseFooter(t *testing.T) {
 	}
 	testlib.GitTag(t, "v0.0.1")
 	testlib.GitCheckoutBranch(t, "v0.0.1")
-	ctx := context.New(config.Project{})
+	ctx := testctx.New()
 	ctx.Git.CurrentTag = "v0.0.1"
 	ctx.Git.FirstCommit = firstCommit(t)
 	require.NoError(t, Pipe{}.Run(ctx))
@@ -642,13 +644,12 @@ func TestGetChangeloger(t *testing.T) {
 
 func TestSkip(t *testing.T) {
 	t.Run("skip on snapshot", func(t *testing.T) {
-		ctx := context.New(config.Project{})
-		ctx.Snapshot = true
+		ctx := testctx.New(testctx.Snapshot)
 		require.True(t, Pipe{}.Skip(ctx))
 	})
 
 	t.Run("skip", func(t *testing.T) {
-		ctx := context.New(config.Project{
+		ctx := testctx.NewWithCfg(config.Project{
 			Changelog: config.Changelog{
 				Skip: true,
 			},
@@ -657,7 +658,7 @@ func TestSkip(t *testing.T) {
 	})
 
 	t.Run("dont skip", func(t *testing.T) {
-		ctx := context.New(config.Project{})
+		ctx := testctx.New()
 		require.False(t, Pipe{}.Skip(ctx))
 	})
 }

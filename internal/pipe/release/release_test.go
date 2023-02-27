@@ -8,6 +8,7 @@ import (
 
 	"github.com/goreleaser/goreleaser/internal/artifact"
 	"github.com/goreleaser/goreleaser/internal/client"
+	"github.com/goreleaser/goreleaser/internal/testctx"
 	"github.com/goreleaser/goreleaser/internal/testlib"
 	"github.com/goreleaser/goreleaser/pkg/config"
 	"github.com/goreleaser/goreleaser/pkg/context"
@@ -344,10 +345,15 @@ func TestDefault(t *testing.T) {
 	testlib.GitInit(t)
 	testlib.GitRemoteAdd(t, "git@github.com:goreleaser/goreleaser.git")
 
-	ctx := context.New(config.Project{})
-	ctx.TokenType = context.TokenTypeGitHub
-	ctx.Config.GitHubURLs.Download = "https://github.com"
-	ctx.Git.CurrentTag = "v1.0.0"
+	ctx := testctx.NewWithCfg(
+		config.Project{
+			GitHubURLs: config.GitHubURLs{
+				Download: "https://github.com",
+			},
+		},
+		testctx.WithTokenType(context.TokenTypeGitHub),
+		testctx.WithCurrentTag("v1.0.0"),
+	)
 	require.NoError(t, Pipe{}.Default(ctx))
 	require.Equal(t, "goreleaser", ctx.Config.Release.GitHub.Name)
 	require.Equal(t, "goreleaser", ctx.Config.Release.GitHub.Owner)
@@ -358,11 +364,15 @@ func TestDefaultInvalidURL(t *testing.T) {
 	testlib.Mktmp(t)
 	testlib.GitInit(t)
 	testlib.GitRemoteAdd(t, "git@github.com:goreleaser.git")
-
-	ctx := context.New(config.Project{})
-	ctx.TokenType = context.TokenTypeGitHub
-	ctx.Config.GitHubURLs.Download = "https://github.com"
-	ctx.Git.CurrentTag = "v1.0.0"
+	ctx := testctx.NewWithCfg(
+		config.Project{
+			GitHubURLs: config.GitHubURLs{
+				Download: "https://github.com",
+			},
+		},
+		testctx.WithTokenType(context.TokenTypeGitHub),
+		testctx.WithCurrentTag("v1.0.0"),
+	)
 	require.Error(t, Pipe{}.Default(ctx))
 }
 
@@ -371,10 +381,15 @@ func TestDefaultWithGitlab(t *testing.T) {
 	testlib.GitInit(t)
 	testlib.GitRemoteAdd(t, "git@gitlab.com:gitlabowner/gitlabrepo.git")
 
-	ctx := context.New(config.Project{})
-	ctx.TokenType = context.TokenTypeGitLab
-	ctx.Config.GitLabURLs.Download = "https://gitlab.com"
-	ctx.Git.CurrentTag = "v1.0.0"
+	ctx := testctx.NewWithCfg(
+		config.Project{
+			GitLabURLs: config.GitLabURLs{
+				Download: "https://gitlab.com",
+			},
+		},
+		testctx.WithTokenType(context.TokenTypeGitLab),
+		testctx.WithCurrentTag("v1.0.0"),
+	)
 	require.NoError(t, Pipe{}.Default(ctx))
 	require.Equal(t, "gitlabrepo", ctx.Config.Release.GitLab.Name)
 	require.Equal(t, "gitlabowner", ctx.Config.Release.GitLab.Owner)
@@ -385,11 +400,15 @@ func TestDefaultWithGitlabInvalidURL(t *testing.T) {
 	testlib.Mktmp(t)
 	testlib.GitInit(t)
 	testlib.GitRemoteAdd(t, "git@gitlab.com:gitlabrepo.git")
-
-	ctx := context.New(config.Project{})
-	ctx.TokenType = context.TokenTypeGitLab
-	ctx.Config.GitLabURLs.Download = "https://gitlab.com"
-	ctx.Git.CurrentTag = "v1.0.0"
+	ctx := testctx.NewWithCfg(
+		config.Project{
+			GitLabURLs: config.GitLabURLs{
+				Download: "https://gitlab.com",
+			},
+		},
+		testctx.WithTokenType(context.TokenTypeGitLab),
+		testctx.WithCurrentTag("v1.0.0"),
+	)
 	require.Error(t, Pipe{}.Default(ctx))
 }
 
@@ -398,10 +417,15 @@ func TestDefaultWithGitea(t *testing.T) {
 	testlib.GitInit(t)
 	testlib.GitRemoteAdd(t, "git@gitea.example.com:giteaowner/gitearepo.git")
 
-	ctx := context.New(config.Project{})
-	ctx.TokenType = context.TokenTypeGitea
-	ctx.Config.GiteaURLs.Download = "https://git.honk.com"
-	ctx.Git.CurrentTag = "v1.0.0"
+	ctx := testctx.NewWithCfg(
+		config.Project{
+			GiteaURLs: config.GiteaURLs{
+				Download: "https://git.honk.com",
+			},
+		},
+		testctx.WithTokenType(context.TokenTypeGitea),
+		testctx.WithCurrentTag("v1.0.0"),
+	)
 	require.NoError(t, Pipe{}.Default(ctx))
 	require.Equal(t, "gitearepo", ctx.Config.Release.Gitea.Name)
 	require.Equal(t, "giteaowner", ctx.Config.Release.Gitea.Owner)
@@ -412,11 +436,15 @@ func TestDefaultWithGiteaInvalidURL(t *testing.T) {
 	testlib.Mktmp(t)
 	testlib.GitInit(t)
 	testlib.GitRemoteAdd(t, "git@gitea.example.com:gitearepo.git")
-
-	ctx := context.New(config.Project{})
-	ctx.TokenType = context.TokenTypeGitea
-	ctx.Config.GiteaURLs.Download = "https://git.honk.com"
-	ctx.Git.CurrentTag = "v1.0.0"
+	ctx := testctx.NewWithCfg(
+		config.Project{
+			GiteaURLs: config.GiteaURLs{
+				Download: "https://git.honk.com",
+			},
+		},
+		testctx.WithTokenType(context.TokenTypeGitea),
+		testctx.WithCurrentTag("v1.0.0"),
+	)
 	require.Error(t, Pipe{}.Default(ctx))
 }
 

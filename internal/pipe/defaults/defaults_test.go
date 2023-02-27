@@ -3,6 +3,7 @@ package defaults
 import (
 	"testing"
 
+	"github.com/goreleaser/goreleaser/internal/testctx"
 	"github.com/goreleaser/goreleaser/internal/testlib"
 	"github.com/goreleaser/goreleaser/pkg/config"
 	"github.com/goreleaser/goreleaser/pkg/context"
@@ -17,10 +18,7 @@ func TestFillBasicData(t *testing.T) {
 	testlib.Mktmp(t)
 	testlib.GitInit(t)
 	testlib.GitRemoteAdd(t, "git@github.com:goreleaser/goreleaser.git")
-
-	ctx := context.New(config.Project{})
-	ctx.TokenType = context.TokenTypeGitHub
-
+	ctx := testctx.New(testctx.WithTokenType(context.TokenTypeGitHub))
 	require.NoError(t, Pipe{}.Run(ctx))
 	require.Equal(t, "goreleaser", ctx.Config.Release.GitHub.Owner)
 	require.Equal(t, "goreleaser", ctx.Config.Release.GitHub.Name)

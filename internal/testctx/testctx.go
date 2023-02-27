@@ -61,6 +61,14 @@ func SkipPublish(ctx *context.Context) {
 	ctx.SkipPublish = true
 }
 
+func Snapshot(ctx *context.Context) {
+	ctx.Snapshot = true
+}
+
+func SkipSign(ctx *context.Context) {
+	ctx.SkipSign = true
+}
+
 func NewWithCfg(c config.Project, opts ...Opt) *context.Context {
 	return New(append(opts, WithConfig(c))...)
 }

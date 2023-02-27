@@ -3,6 +3,7 @@ package twitter
 import (
 	"testing"
 
+	"github.com/goreleaser/goreleaser/internal/testctx"
 	"github.com/goreleaser/goreleaser/pkg/config"
 	"github.com/goreleaser/goreleaser/pkg/context"
 	"github.com/stretchr/testify/require"
@@ -13,7 +14,7 @@ func TestStringer(t *testing.T) {
 }
 
 func TestDefault(t *testing.T) {
-	ctx := context.New(config.Project{})
+	ctx := testctx.New()
 	require.NoError(t, Pipe{}.Default(ctx))
 	require.Equal(t, ctx.Config.Announce.Twitter.MessageTemplate, defaultMessageTemplate)
 }

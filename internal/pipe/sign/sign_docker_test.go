@@ -32,19 +32,21 @@ func TestDockerSignDefault(t *testing.T) {
 }
 
 func TestDockerSignDisabled(t *testing.T) {
-	ctx := context.New(config.Project{})
-	ctx.Config.DockerSigns = []config.Sign{
-		{Artifacts: "none"},
-	}
+	ctx := testctx.NewWithCfg(config.Project{
+		DockerSigns: []config.Sign{
+			{Artifacts: "none"},
+		},
+	})
 	err := DockerPipe{}.Publish(ctx)
 	require.EqualError(t, err, "artifact signing is disabled")
 }
 
 func TestDockerSignInvalidArtifacts(t *testing.T) {
-	ctx := context.New(config.Project{})
-	ctx.Config.DockerSigns = []config.Sign{
-		{Artifacts: "foo"},
-	}
+	ctx := testctx.NewWithCfg(config.Project{
+		DockerSigns: []config.Sign{
+			{Artifacts: "foo"},
+		},
+	})
 	err := DockerPipe{}.Publish(ctx)
 	require.EqualError(t, err, "invalid list of artifacts to sign: foo")
 }
@@ -153,8 +155,9 @@ func TestDockerSignArtifacts(t *testing.T) {
 		// TODO: keyless test?
 	} {
 		t.Run(name, func(t *testing.T) {
-			ctx := context.New(config.Project{})
-			ctx.Config.DockerSigns = cfg.Signs
+			ctx := testctx.NewWithCfg(config.Project{
+				DockerSigns: cfg.Signs,
+			})
 			wd, err := os.Getwd()
 			require.NoError(t, err)
 			tmp := testlib.Mktmp(t)
@@ -213,13 +216,12 @@ func TestDockerSkip(t *testing.T) {
 	})
 
 	t.Run("skip sign", func(t *testing.T) {
-		ctx := context.New(config.Project{})
-		ctx.SkipSign = true
+		ctx := testctx.New(testctx.SkipSign)
 		require.True(t, DockerPipe{}.Skip(ctx))
 	})
 
 	t.Run("dont skip", func(t *testing.T) {
-		ctx := context.New(config.Project{
+		ctx := testctx.NewWithCfg(config.Project{
 			DockerSigns: []config.Sign{
 				{},
 			},

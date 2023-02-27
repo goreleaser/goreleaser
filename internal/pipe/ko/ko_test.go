@@ -6,6 +6,7 @@ import (
 
 	_ "github.com/distribution/distribution/v3/registry/auth/htpasswd"
 	_ "github.com/distribution/distribution/v3/registry/storage/driver/inmemory"
+	"github.com/goreleaser/goreleaser/internal/testctx"
 	"github.com/goreleaser/goreleaser/internal/testlib"
 	"github.com/goreleaser/goreleaser/pkg/config"
 	"github.com/goreleaser/goreleaser/pkg/context"
@@ -86,7 +87,7 @@ func TestSkip(t *testing.T) {
 		require.True(t, Pipe{}.Skip(ctx))
 	})
 	t.Run("skip no kos", func(t *testing.T) {
-		ctx := context.New(config.Project{})
+		ctx := testctx.New()
 		require.True(t, Pipe{}.Skip(ctx))
 	})
 	t.Run("dont skip", func(t *testing.T) {

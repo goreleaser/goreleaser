@@ -5,6 +5,7 @@ import (
 	"os"
 	"testing"
 
+	"github.com/goreleaser/goreleaser/internal/testctx"
 	"github.com/goreleaser/goreleaser/internal/yaml"
 	"github.com/goreleaser/goreleaser/pkg/config"
 	"github.com/goreleaser/goreleaser/pkg/context"
@@ -17,7 +18,7 @@ func TestStringer(t *testing.T) {
 }
 
 func TestDefault(t *testing.T) {
-	ctx := context.New(config.Project{})
+	ctx := testctx.New()
 	require.NoError(t, Pipe{}.Default(ctx))
 	require.Equal(t, ctx.Config.Announce.Slack.MessageTemplate, defaultMessageTemplate)
 }
@@ -147,20 +148,14 @@ func TestUnmarshall(t *testing.T) {
 
 	t.Run("happy unmarshal", func(t *testing.T) {
 		t.Parallel()
-
-		ctx := context.New(config.Project{})
-		ctx.Version = testVersion
-
+		ctx := testctx.New(testctx.WithVersion(testVersion))
 		var blocks slack.Blocks
 		require.NoError(t, unmarshal(ctx, []interface{}{map[string]interface{}{"type": "divider"}}, &blocks))
 	})
 
 	t.Run("unmarshal fails on MarshalJSON", func(t *testing.T) {
 		t.Parallel()
-
-		ctx := context.New(config.Project{})
-		ctx.Version = testVersion
-
+		ctx := testctx.New(testctx.WithVersion(testVersion))
 		var blocks slack.Blocks
 		require.Error(t, unmarshal(ctx, []interface{}{map[string]interface{}{"type": func() {}}}, &blocks))
 	})

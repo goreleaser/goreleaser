@@ -68,8 +68,7 @@ func TestSkip(t *testing.T) {
 	})
 
 	t.Run("dont skip", func(t *testing.T) {
-		ctx := context.New(config.Project{})
-		ctx.Snapshot = true
+		ctx := testctx.New(testctx.Snapshot)
 		require.False(t, Pipe{}.Skip(ctx))
 	})
 }

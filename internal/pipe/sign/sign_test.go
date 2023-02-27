@@ -63,19 +63,13 @@ func TestSignDefault(t *testing.T) {
 }
 
 func TestSignDisabled(t *testing.T) {
-	ctx := context.New(config.Project{})
-	ctx.Config.Signs = []config.Sign{
-		{Artifacts: "none"},
-	}
+	ctx := testctx.NewWithCfg(config.Project{Signs: []config.Sign{{Artifacts: "none"}}})
 	err := Pipe{}.Run(ctx)
 	require.EqualError(t, err, "artifact signing is disabled")
 }
 
 func TestSignInvalidArtifacts(t *testing.T) {
-	ctx := context.New(config.Project{})
-	ctx.Config.Signs = []config.Sign{
-		{Artifacts: "foo"},
-	}
+	ctx := testctx.NewWithCfg(config.Project{Signs: []config.Sign{{Artifacts: "foo"}}})
 	err := Pipe{}.Run(ctx)
 	require.EqualError(t, err, "invalid list of artifacts to sign: foo")
 }
@@ -766,13 +760,12 @@ func TestSkip(t *testing.T) {
 	})
 
 	t.Run("skip sign", func(t *testing.T) {
-		ctx := context.New(config.Project{})
-		ctx.SkipSign = true
+		ctx := testctx.New(testctx.SkipSign)
 		require.True(t, Pipe{}.Skip(ctx))
 	})
 
 	t.Run("dont skip", func(t *testing.T) {
-		ctx := context.New(config.Project{
+		ctx := testctx.NewWithCfg(config.Project{
 			Signs: []config.Sign{
 				{},
 			},

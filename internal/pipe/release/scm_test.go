@@ -4,6 +4,7 @@ import (
 	"testing"
 
 	"github.com/goreleaser/goreleaser/internal/git"
+	"github.com/goreleaser/goreleaser/internal/testctx"
 	"github.com/goreleaser/goreleaser/pkg/config"
 	"github.com/goreleaser/goreleaser/pkg/context"
 	"github.com/stretchr/testify/require"
@@ -11,10 +12,8 @@ import (
 
 func TestSetupGitLab(t *testing.T) {
 	t.Run("no repo", func(t *testing.T) {
-		ctx := context.New(config.Project{})
-
+		ctx := testctx.New()
 		require.NoError(t, setupGitLab(ctx))
-
 		repo, err := git.ExtractRepoFromConfig(ctx)
 		require.NoError(t, err)
 		require.Equal(t, repo.Owner, ctx.Config.Release.GitLab.Owner)
@@ -22,7 +21,7 @@ func TestSetupGitLab(t *testing.T) {
 	})
 
 	t.Run("with templates", func(t *testing.T) {
-		ctx := context.New(config.Project{
+		ctx := testctx.NewWithCfg(config.Project{
 			Env: []string{"NAME=foo", "OWNER=bar"},
 			GitLabURLs: config.GitLabURLs{
 				Download: "https://{{ .Env.OWNER }}/download",
@@ -71,15 +70,14 @@ func TestSetupGitLab(t *testing.T) {
 
 func TestSetupGitea(t *testing.T) {
 	t.Run("no repo", func(t *testing.T) {
-		ctx := context.New(config.Project{})
-
+		ctx := testctx.New()
 		require.NoError(t, setupGitea(ctx))
 		require.Equal(t, "goreleaser", ctx.Config.Release.Gitea.Owner)
 		require.Equal(t, "goreleaser", ctx.Config.Release.Gitea.Name)
 	})
 
 	t.Run("with templates", func(t *testing.T) {
-		ctx := context.New(config.Project{
+		ctx := testctx.NewWithCfg(config.Project{
 			Env: []string{"NAME=foo", "OWNER=bar"},
 			GiteaURLs: config.GiteaURLs{
 				Download: "https://{{ .Env.OWNER }}/download",
@@ -128,15 +126,14 @@ func TestSetupGitea(t *testing.T) {
 
 func TestSetupGitHub(t *testing.T) {
 	t.Run("no repo", func(t *testing.T) {
-		ctx := context.New(config.Project{})
-
+		ctx := testctx.New()
 		require.NoError(t, setupGitHub(ctx))
 		require.Equal(t, "goreleaser", ctx.Config.Release.GitHub.Owner)
 		require.Equal(t, "goreleaser", ctx.Config.Release.GitHub.Name)
 	})
 
 	t.Run("with templates", func(t *testing.T) {
-		ctx := context.New(config.Project{
+		ctx := testctx.NewWithCfg(config.Project{
 			Env: []string{"NAME=foo", "OWNER=bar"},
 			GitHubURLs: config.GitHubURLs{
 				Download: "https://{{ .Env.OWNER }}/download",

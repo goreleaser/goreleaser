@@ -4,6 +4,7 @@ import (
 	"testing"
 
 	"github.com/goreleaser/goreleaser/internal/golden"
+	"github.com/goreleaser/goreleaser/internal/testctx"
 	"github.com/goreleaser/goreleaser/pkg/config"
 	"github.com/goreleaser/goreleaser/pkg/context"
 	"github.com/stretchr/testify/require"
@@ -11,7 +12,7 @@ import (
 
 func TestDescribeBody(t *testing.T) {
 	changelog := "feature1: description\nfeature2: other description"
-	ctx := context.New(config.Project{})
+	ctx := testctx.New()
 	ctx.ReleaseNotes = changelog
 	out, err := describeBody(ctx)
 	require.NoError(t, err)
@@ -21,7 +22,7 @@ func TestDescribeBody(t *testing.T) {
 
 func TestDontEscapeHTML(t *testing.T) {
 	changelog := "<h1>test</h1>"
-	ctx := context.New(config.Project{})
+	ctx := testctx.New()
 	ctx.ReleaseNotes = changelog
 
 	out, err := describeBody(ctx)
