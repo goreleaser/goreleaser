@@ -7,8 +7,7 @@ import (
 	"net/http/httptest"
 	"testing"
 
-	"github.com/goreleaser/goreleaser/pkg/config"
-	"github.com/goreleaser/goreleaser/pkg/context"
+	"github.com/goreleaser/goreleaser/internal/testctx"
 	"github.com/stretchr/testify/require"
 )
 
@@ -21,7 +20,7 @@ func TestCreateLinkedInClient(t *testing.T) {
 		{
 			"non-empty context and access token",
 			oauthClientConfig{
-				Context:     context.New(config.Project{}),
+				Context:     testctx.New(),
 				AccessToken: "foo",
 			},
 			nil,
@@ -37,7 +36,7 @@ func TestCreateLinkedInClient(t *testing.T) {
 		{
 			"empty access token",
 			oauthClientConfig{
-				Context:     context.New(config.Project{}),
+				Context:     testctx.New(),
 				AccessToken: "",
 			},
 			fmt.Errorf("empty access token"),
@@ -67,7 +66,7 @@ func TestClient_Share(t *testing.T) {
 	defer server.Close()
 
 	c, err := createLinkedInClient(oauthClientConfig{
-		Context:     context.New(config.Project{}),
+		Context:     testctx.New(),
 		AccessToken: "foo",
 	})
 	if err != nil {

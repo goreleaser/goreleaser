@@ -167,7 +167,7 @@ func TestRunPipe_ModeBinary(t *testing.T) {
 		  }`)
 	})
 
-	ctx := context.New(config.Project{
+	ctx := testctx.NewWithCfg(config.Project{
 		ProjectName: "mybin",
 		Dist:        dist,
 		Artifactories: []config.Upload{
@@ -187,11 +187,10 @@ func TestRunPipe_ModeBinary(t *testing.T) {
 		Archives: []config.Archive{
 			{},
 		},
-	})
-	ctx.Env = map[string]string{
+	}, testctx.WithEnv(map[string]string{
 		"ARTIFACTORY_PRODUCTION-US_SECRET": "deployuser-secret",
 		"ARTIFACTORY_PRODUCTION-EU_SECRET": "productionuser-apikey",
-	}
+	}))
 	for _, goos := range []string{"linux", "darwin"} {
 		ctx.Artifacts.Add(&artifact.Artifact{
 			Name:   "mybin",
@@ -218,7 +217,7 @@ func TestRunPipe_ModeArchive(t *testing.T) {
 	require.NoError(t, err)
 	require.NoError(t, debfile.Close())
 
-	ctx := context.New(config.Project{
+	ctx := testctx.NewWithCfg(config.Project{
 		ProjectName: "goreleaser",
 		Dist:        folder,
 		Artifactories: []config.Upload{
@@ -232,11 +231,9 @@ func TestRunPipe_ModeArchive(t *testing.T) {
 		Archives: []config.Archive{
 			{},
 		},
-	})
-	ctx.Env = map[string]string{
+	}, testctx.WithEnv(map[string]string{
 		"ARTIFACTORY_PRODUCTION_SECRET": "deployuser-secret",
-	}
-	ctx.Version = "1.0.0"
+	}), testctx.WithVersion("1.0.0"))
 	ctx.Artifacts.Add(&artifact.Artifact{
 		Type: artifact.UploadableArchive,
 		Name: "bin.tar.gz",
@@ -318,22 +315,24 @@ func TestRunPipe_ArtifactoryDown(t *testing.T) {
 	require.NoError(t, err)
 	require.NoError(t, tarfile.Close())
 
-	ctx := context.New(config.Project{
-		ProjectName: "goreleaser",
-		Dist:        folder,
-		Artifactories: []config.Upload{
-			{
-				Name:     "production",
-				Mode:     "archive",
-				Target:   "http://localhost:1234/example-repo-local/{{ .ProjectName }}/{{ .Version }}/",
-				Username: "deployuser",
+	ctx := testctx.NewWithCfg(
+		config.Project{
+			ProjectName: "goreleaser",
+			Dist:        folder,
+			Artifactories: []config.Upload{
+				{
+					Name:     "production",
+					Mode:     "archive",
+					Target:   "http://localhost:1234/example-repo-local/{{ .ProjectName }}/{{ .Version }}/",
+					Username: "deployuser",
+				},
 			},
 		},
-	})
-	ctx.Version = "2.0.0"
-	ctx.Env = map[string]string{
-		"ARTIFACTORY_PRODUCTION_SECRET": "deployuser-secret",
-	}
+		testctx.WithVersion("2.0.0"),
+		testctx.WithEnv(map[string]string{
+			"ARTIFACTORY_PRODUCTION_SECRET": "deployuser-secret",
+		}),
+	)
 	ctx.Artifacts.Add(&artifact.Artifact{
 		Type: artifact.UploadableArchive,
 		Name: "bin.tar.gz",
@@ -351,7 +350,7 @@ func TestRunPipe_TargetTemplateError(t *testing.T) {
 	dist := filepath.Join(folder, "dist")
 	binPath := filepath.Join(dist, "mybin", "mybin")
 
-	ctx := context.New(config.Project{
+	ctx := testctx.NewWithCfg(config.Project{
 		ProjectName: "mybin",
 		Dist:        dist,
 		Artifactories: []config.Upload{
@@ -366,10 +365,9 @@ func TestRunPipe_TargetTemplateError(t *testing.T) {
 		Archives: []config.Archive{
 			{},
 		},
-	})
-	ctx.Env = map[string]string{
+	}, testctx.WithEnv(map[string]string{
 		"ARTIFACTORY_PRODUCTION_SECRET": "deployuser-secret",
-	}
+	}))
 	ctx.Artifacts.Add(&artifact.Artifact{
 		Name:   "mybin",
 		Path:   binPath,
@@ -410,7 +408,7 @@ func TestRunPipe_BadCredentials(t *testing.T) {
 		  }`)
 	})
 
-	ctx := context.New(config.Project{
+	ctx := testctx.NewWithCfg(config.Project{
 		ProjectName: "mybin",
 		Dist:        dist,
 		Artifactories: []config.Upload{
@@ -424,10 +422,9 @@ func TestRunPipe_BadCredentials(t *testing.T) {
 		Archives: []config.Archive{
 			{},
 		},
-	})
-	ctx.Env = map[string]string{
+	}, testctx.WithEnv(map[string]string{
 		"ARTIFACTORY_PRODUCTION_SECRET": "deployuser-secret",
-	}
+	}))
 	ctx.Artifacts.Add(&artifact.Artifact{
 		Name:   "mybin",
 		Path:   binPath,

@@ -3,8 +3,8 @@ package custompublishers
 import (
 	"testing"
 
+	"github.com/goreleaser/goreleaser/internal/testctx"
 	"github.com/goreleaser/goreleaser/pkg/config"
-	"github.com/goreleaser/goreleaser/pkg/context"
 	"github.com/stretchr/testify/require"
 )
 
@@ -14,21 +14,20 @@ func TestDescription(t *testing.T) {
 
 func TestSkip(t *testing.T) {
 	t.Run("skip", func(t *testing.T) {
-		require.True(t, Pipe{}.Skip(context.New(config.Project{})))
+		require.True(t, Pipe{}.Skip(testctx.New()))
 	})
 
 	t.Run("skip on skip-publish", func(t *testing.T) {
-		ctx := context.New(config.Project{
+		ctx := testctx.NewWithCfg(config.Project{
 			Publishers: []config.Publisher{
 				{},
 			},
-		})
-		ctx.SkipPublish = true
+		}, testctx.SkipPublish)
 		require.True(t, Pipe{}.Skip(ctx))
 	})
 
 	t.Run("dont skip", func(t *testing.T) {
-		ctx := context.New(config.Project{
+		ctx := testctx.NewWithCfg(config.Project{
 			Publishers: []config.Publisher{
 				{},
 			},
@@ -38,7 +37,7 @@ func TestSkip(t *testing.T) {
 }
 
 func TestPublish(t *testing.T) {
-	require.NoError(t, Pipe{}.Publish(context.New(config.Project{
+	require.NoError(t, Pipe{}.Publish(testctx.NewWithCfg(config.Project{
 		Publishers: []config.Publisher{
 			{
 				Cmd: "echo",

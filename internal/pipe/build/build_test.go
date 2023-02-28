@@ -148,8 +148,7 @@ func TestRunFullPipe(t *testing.T) {
 		},
 		Dist: folder,
 	}
-	ctx := context.New(config)
-	ctx.Git.CurrentTag = "2.4.5"
+	ctx := testctx.NewWithCfg(config, testctx.WithCurrentTag("2.4.5"))
 	require.NoError(t, Pipe{}.Default(ctx))
 	require.NoError(t, Pipe{}.Run(ctx))
 	require.Equal(t, ctx.Artifacts.List(), []*artifact.Artifact{{
@@ -188,8 +187,7 @@ func TestRunFullPipeFail(t *testing.T) {
 			},
 		},
 	}
-	ctx := context.New(config)
-	ctx.Git.CurrentTag = "2.4.5"
+	ctx := testctx.NewWithCfg(config, testctx.WithCurrentTag("2.4.5"))
 	require.EqualError(t, Pipe{}.Run(ctx), errFailedBuild.Error())
 	require.Empty(t, ctx.Artifacts.List())
 	require.FileExists(t, pre)
@@ -209,15 +207,13 @@ func TestRunPipeFailingHooks(t *testing.T) {
 		},
 	}
 	t.Run("pre-hook", func(t *testing.T) {
-		ctx := context.New(cfg)
-		ctx.Git.CurrentTag = "2.3.4"
+		ctx := testctx.NewWithCfg(cfg, testctx.WithCurrentTag("2.4.5"))
 		ctx.Config.Builds[0].Hooks.Pre = []config.Hook{{Cmd: "exit 1"}}
 		ctx.Config.Builds[0].Hooks.Post = []config.Hook{{Cmd: "echo post"}}
 		require.EqualError(t, Pipe{}.Run(ctx), "pre hook failed: failed to run 'exit 1': exec: \"exit\": executable file not found in $PATH")
 	})
 	t.Run("post-hook", func(t *testing.T) {
-		ctx := context.New(cfg)
-		ctx.Git.CurrentTag = "2.3.4"
+		ctx := testctx.NewWithCfg(cfg, testctx.WithCurrentTag("2.4.5"))
 		ctx.Config.Builds[0].Hooks.Pre = []config.Hook{{Cmd: "echo pre"}}
 		ctx.Config.Builds[0].Hooks.Post = []config.Hook{{Cmd: "exit 1"}}
 		require.EqualError(t, Pipe{}.Run(ctx), `post hook failed: failed to run 'exit 1': exec: "exit": executable file not found in $PATH`)
@@ -239,7 +235,7 @@ func TestDefaultFail(t *testing.T) {
 			},
 		},
 	}
-	ctx := context.New(config)
+	ctx := testctx.NewWithCfg(config)
 	require.EqualError(t, Pipe{}.Default(ctx), errFailedDefault.Error())
 	require.Empty(t, ctx.Artifacts.List())
 }
@@ -397,7 +393,7 @@ func TestDefaultFailSingleBuild(t *testing.T) {
 			Builder: "fakeFailDefault",
 		},
 	}
-	ctx := context.New(config)
+	ctx := testctx.NewWithCfg(config)
 	require.EqualError(t, Pipe{}.Default(ctx), errFailedDefault.Error())
 	require.Empty(t, ctx.Artifacts.List())
 }
@@ -412,8 +408,7 @@ func TestSkipBuild(t *testing.T) {
 			},
 		},
 	}
-	ctx := context.New(config)
-	ctx.Git.CurrentTag = "2.4.5"
+	ctx := testctx.NewWithCfg(config, testctx.WithCurrentTag("2.4.5"))
 	require.NoError(t, Pipe{}.Run(ctx))
 	require.Len(t, ctx.Artifacts.List(), 0)
 }
@@ -501,7 +496,7 @@ func TestBuild_hooksKnowGoosGoarch(t *testing.T) {
 		},
 	}
 
-	ctx := context.New(config.Project{
+	ctx := testctx.NewWithCfg(config.Project{
 		Builds: []config.Build{
 			build,
 		},
@@ -533,7 +528,7 @@ func TestPipeOnBuild_hooksRunPerTarget(t *testing.T) {
 			},
 		},
 	}
-	ctx := context.New(config.Project{
+	ctx := testctx.NewWithCfg(config.Project{
 		Builds: []config.Build{
 			build,
 		},
@@ -557,7 +552,7 @@ func TestPipeOnBuild_invalidBinaryTpl(t *testing.T) {
 			"linux_amd64",
 		},
 	}
-	ctx := context.New(config.Project{
+	ctx := testctx.NewWithCfg(config.Project{
 		Builds: []config.Build{
 			build,
 		},
@@ -689,7 +684,7 @@ func TestBuildOptionsForTarget(t *testing.T) {
 
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
-			ctx := context.New(config.Project{
+			ctx := testctx.NewWithCfg(config.Project{
 				Dist:   tmpDir,
 				Builds: []config.Build{tc.build},
 			})
@@ -725,8 +720,7 @@ func TestRunHookFailWithLogs(t *testing.T) {
 			},
 		},
 	}
-	ctx := context.New(config)
-	ctx.Git.CurrentTag = "2.4.5"
+	ctx := testctx.NewWithCfg(config, testctx.WithCurrentTag("2.4.5"))
 	require.EqualError(t, Pipe{}.Run(ctx), "pre hook failed: failed to run 'sh -c echo foo; exit 1': exit status 1")
 	require.Empty(t, ctx.Artifacts.List())
 }

@@ -47,8 +47,7 @@ func TestRunPipeWithoutIDsThenDoesNotFilter(t *testing.T) {
 			},
 		},
 	}
-	ctx := context.New(config)
-	ctx.Git = context.GitInfo{CurrentTag: "v1.0.0"}
+	ctx := testctx.NewWithCfg(config, testctx.WithCurrentTag("v1.0.0"))
 	ctx.Artifacts.Add(&artifact.Artifact{
 		Type: artifact.UploadableArchive,
 		Name: "bin.tar.gz",
@@ -156,8 +155,7 @@ func TestRunPipeWithIDsThenFilters(t *testing.T) {
 			},
 		},
 	}
-	ctx := context.New(config)
-	ctx.Git = context.GitInfo{CurrentTag: "v1.0.0"}
+	ctx := testctx.NewWithCfg(config, testctx.WithCurrentTag("v1.0.0"))
 	ctx.Artifacts.Add(&artifact.Artifact{
 		Type: artifact.UploadableArchive,
 		Name: "bin.tar.gz",
@@ -210,8 +208,7 @@ func TestRunPipeReleaseCreationFailed(t *testing.T) {
 			},
 		},
 	}
-	ctx := context.New(config)
-	ctx.Git = context.GitInfo{CurrentTag: "v1.0.0"}
+	ctx := testctx.NewWithCfg(config, testctx.WithCurrentTag("v1.0.0"))
 	client := &client.Mock{
 		FailToCreateRelease: true,
 	}
@@ -229,8 +226,7 @@ func TestRunPipeWithFileThatDontExist(t *testing.T) {
 			},
 		},
 	}
-	ctx := context.New(config)
-	ctx.Git = context.GitInfo{CurrentTag: "v1.0.0"}
+	ctx := testctx.NewWithCfg(config, testctx.WithCurrentTag("v1.0.0"))
 	ctx.Artifacts.Add(&artifact.Artifact{
 		Type: artifact.UploadableArchive,
 		Name: "bin.tar.gz",
@@ -254,8 +250,7 @@ func TestRunPipeUploadFailure(t *testing.T) {
 			},
 		},
 	}
-	ctx := context.New(config)
-	ctx.Git = context.GitInfo{CurrentTag: "v1.0.0"}
+	ctx := testctx.NewWithCfg(config, testctx.WithCurrentTag("v1.0.0"))
 	ctx.Artifacts.Add(&artifact.Artifact{
 		Type: artifact.UploadableArchive,
 		Name: "bin.tar.gz",
@@ -282,8 +277,7 @@ func TestRunPipeExtraFileNotFound(t *testing.T) {
 			},
 		},
 	}
-	ctx := context.New(config)
-	ctx.Git = context.GitInfo{CurrentTag: "v1.0.0"}
+	ctx := testctx.NewWithCfg(config, testctx.WithCurrentTag("v1.0.0"))
 	client := &client.Mock{}
 	require.EqualError(t, doPublish(ctx, client), "globbing failed for pattern ./nope: matching \"./nope\": file does not exist")
 	require.True(t, client.CreatedRelease)
@@ -303,8 +297,7 @@ func TestRunPipeExtraOverride(t *testing.T) {
 			},
 		},
 	}
-	ctx := context.New(config)
-	ctx.Git = context.GitInfo{CurrentTag: "v1.0.0"}
+	ctx := testctx.NewWithCfg(config, testctx.WithCurrentTag("v1.0.0"))
 	client := &client.Mock{}
 	require.NoError(t, doPublish(ctx, client))
 	require.True(t, client.CreatedRelease)
@@ -325,8 +318,7 @@ func TestRunPipeUploadRetry(t *testing.T) {
 			},
 		},
 	}
-	ctx := context.New(config)
-	ctx.Git = context.GitInfo{CurrentTag: "v1.0.0"}
+	ctx := testctx.NewWithCfg(config, testctx.WithCurrentTag("v1.0.0"))
 	ctx.Artifacts.Add(&artifact.Artifact{
 		Type: artifact.UploadableArchive,
 		Name: "bin.tar.gz",
