@@ -55,6 +55,10 @@ func SkipPublish(ctx *context.Context) {
 	ctx.SkipPublish = true
 }
 
+func SkipAnnounce(ctx *context.Context) {
+	ctx.SkipAnnounce = true
+}
+
 func SkipDocker(ctx *context.Context) {
 	ctx.SkipDocker = true
 }

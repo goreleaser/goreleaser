@@ -47,7 +47,7 @@ func TestRunPipe(t *testing.T) {
 	folder := t.TempDir()
 	dist := filepath.Join(folder, "dist")
 	require.NoError(t, os.Mkdir(dist, 0o755))
-	ctx := context.New(config.Project{
+	ctx := testctx.NewWithCfg(config.Project{
 		ProjectName: "mybin",
 		Dist:        dist,
 		Snapcrafts: []config.Snapcraft{
@@ -76,9 +76,7 @@ func TestRunPipe(t *testing.T) {
 				ChannelTemplates: []string{"stable"},
 			},
 		},
-	})
-	ctx.Git.CurrentTag = "v1.2.3"
-	ctx.Version = "1.2.3"
+	}, testctx.WithCurrentTag("v1.2.3"), testctx.WithVersion("1.2.3"))
 	addBinaries(t, ctx, "foo", filepath.Join(dist, "foo"))
 	addBinaries(t, ctx, "bar", filepath.Join(dist, "bar"))
 	require.NoError(t, Pipe{}.Run(ctx))
@@ -91,7 +89,7 @@ func TestBadTemolate(t *testing.T) {
 	folder := t.TempDir()
 	dist := filepath.Join(folder, "dist")
 	require.NoError(t, os.Mkdir(dist, 0o755))
-	ctx := context.New(config.Project{
+	ctx := testctx.NewWithCfg(config.Project{
 		ProjectName: "mybin",
 		Dist:        dist,
 		Snapcrafts: []config.Snapcraft{
@@ -102,9 +100,7 @@ func TestBadTemolate(t *testing.T) {
 				ChannelTemplates: []string{"stable"},
 			},
 		},
-	})
-	ctx.Git.CurrentTag = "v1.2.3"
-	ctx.Version = "1.2.3"
+	}, testctx.WithCurrentTag("v1.2.3"), testctx.WithVersion("1.2.3"))
 	addBinaries(t, ctx, "foo", filepath.Join(dist, "foo"))
 
 	t.Run("description", func(t *testing.T) {
@@ -125,7 +121,7 @@ func TestRunPipeInvalidNameTemplate(t *testing.T) {
 	folder := t.TempDir()
 	dist := filepath.Join(folder, "dist")
 	require.NoError(t, os.Mkdir(dist, 0o755))
-	ctx := context.New(config.Project{
+	ctx := testctx.NewWithCfg(config.Project{
 		ProjectName: "foo",
 		Dist:        dist,
 		Snapcrafts: []config.Snapcraft{
@@ -137,9 +133,7 @@ func TestRunPipeInvalidNameTemplate(t *testing.T) {
 				ChannelTemplates: []string{"stable"},
 			},
 		},
-	})
-	ctx.Git.CurrentTag = "v1.2.3"
-	ctx.Version = "1.2.3"
+	}, testctx.WithCurrentTag("v1.2.3"), testctx.WithVersion("1.2.3"))
 	addBinaries(t, ctx, "foo", dist)
 	testlib.RequireTemplateError(t, Pipe{}.Run(ctx))
 }
@@ -149,7 +143,7 @@ func TestRunPipeWithName(t *testing.T) {
 	folder := t.TempDir()
 	dist := filepath.Join(folder, "dist")
 	require.NoError(t, os.Mkdir(dist, 0o755))
-	ctx := context.New(config.Project{
+	ctx := testctx.NewWithCfg(config.Project{
 		ProjectName: "testprojectname",
 		Dist:        dist,
 		Snapcrafts: []config.Snapcraft{
@@ -164,9 +158,7 @@ func TestRunPipeWithName(t *testing.T) {
 				ChannelTemplates: []string{"stable"},
 			},
 		},
-	})
-	ctx.Git.CurrentTag = "v1.2.3"
-	ctx.Version = "1.2.3"
+	}, testctx.WithCurrentTag("v1.2.3"), testctx.WithVersion("1.2.3"))
 	addBinaries(t, ctx, "foo", dist)
 	require.NoError(t, Pipe{}.Run(ctx))
 	yamlFile, err := os.ReadFile(filepath.Join(dist, "foo_amd64", "prime", "meta", "snap.yaml"))
@@ -185,7 +177,7 @@ func TestRunPipeMetadata(t *testing.T) {
 	folder := t.TempDir()
 	dist := filepath.Join(folder, "dist")
 	require.NoError(t, os.Mkdir(dist, 0o755))
-	ctx := context.New(config.Project{
+	ctx := testctx.NewWithCfg(config.Project{
 		ProjectName: "testprojectname",
 		Dist:        dist,
 		Snapcrafts: []config.Snapcraft{
@@ -258,9 +250,7 @@ func TestRunPipeMetadata(t *testing.T) {
 				ChannelTemplates: []string{"stable"},
 			},
 		},
-	})
-	ctx.Git.CurrentTag = "v1.2.3"
-	ctx.Version = "1.2.3"
+	}, testctx.WithCurrentTag("v1.2.3"), testctx.WithVersion("1.2.3"))
 	addBinaries(t, ctx, "foo", dist)
 	require.NoError(t, Pipe{}.Run(ctx))
 	yamlFile, err := os.ReadFile(filepath.Join(dist, "foo_amd64", "prime", "meta", "snap.yaml"))
@@ -330,7 +320,7 @@ func TestNoSnapcraftInPath(t *testing.T) {
 		require.NoError(t, os.Setenv("PATH", path))
 	}()
 	require.NoError(t, os.Setenv("PATH", ""))
-	ctx := context.New(config.Project{
+	ctx := testctx.NewWithCfg(config.Project{
 		Snapcrafts: []config.Snapcraft{
 			{
 				Summary:     "dummy",
@@ -346,7 +336,7 @@ func TestRunNoArguments(t *testing.T) {
 	folder := t.TempDir()
 	dist := filepath.Join(folder, "dist")
 	require.NoError(t, os.Mkdir(dist, 0o755))
-	ctx := context.New(config.Project{
+	ctx := testctx.NewWithCfg(config.Project{
 		ProjectName: "testprojectname",
 		Dist:        dist,
 		Snapcrafts: []config.Snapcraft{
@@ -364,9 +354,7 @@ func TestRunNoArguments(t *testing.T) {
 				ChannelTemplates: []string{"stable"},
 			},
 		},
-	})
-	ctx.Git.CurrentTag = "v1.2.3"
-	ctx.Version = "1.2.3"
+	}, testctx.WithCurrentTag("v1.2.3"), testctx.WithVersion("1.2.3"))
 	addBinaries(t, ctx, "foo", dist)
 	require.NoError(t, Pipe{}.Run(ctx))
 	yamlFile, err := os.ReadFile(filepath.Join(dist, "foo_amd64", "prime", "meta", "snap.yaml"))
@@ -382,7 +370,7 @@ func TestCompleter(t *testing.T) {
 	folder := t.TempDir()
 	dist := filepath.Join(folder, "dist")
 	require.NoError(t, os.Mkdir(dist, 0o755))
-	ctx := context.New(config.Project{
+	ctx := testctx.NewWithCfg(config.Project{
 		ProjectName: "testprojectname",
 		Dist:        dist,
 		Snapcrafts: []config.Snapcraft{
@@ -401,9 +389,7 @@ func TestCompleter(t *testing.T) {
 				ChannelTemplates: []string{"stable"},
 			},
 		},
-	})
-	ctx.Git.CurrentTag = "v1.2.3"
-	ctx.Version = "1.2.3"
+	}, testctx.WithCurrentTag("v1.2.3"), testctx.WithVersion("1.2.3"))
 	addBinaries(t, ctx, "foo", dist)
 	addBinaries(t, ctx, "bar", dist)
 	require.NoError(t, Pipe{}.Run(ctx))
@@ -421,7 +407,7 @@ func TestCommand(t *testing.T) {
 	folder := t.TempDir()
 	dist := filepath.Join(folder, "dist")
 	require.NoError(t, os.Mkdir(dist, 0o755))
-	ctx := context.New(config.Project{
+	ctx := testctx.NewWithCfg(config.Project{
 		ProjectName: "testprojectname",
 		Dist:        dist,
 		Snapcrafts: []config.Snapcraft{
@@ -440,9 +426,7 @@ func TestCommand(t *testing.T) {
 				ChannelTemplates: []string{"stable"},
 			},
 		},
-	})
-	ctx.Git.CurrentTag = "v1.2.3"
-	ctx.Version = "1.2.3"
+	}, testctx.WithCurrentTag("v1.2.3"), testctx.WithVersion("1.2.3"))
 	addBinaries(t, ctx, "foo", dist)
 	require.NoError(t, Pipe{}.Run(ctx))
 	yamlFile, err := os.ReadFile(filepath.Join(dist, "foo_amd64", "prime", "meta", "snap.yaml"))
@@ -458,7 +442,7 @@ func TestExtraFile(t *testing.T) {
 	folder := t.TempDir()
 	dist := filepath.Join(folder, "dist")
 	require.NoError(t, os.Mkdir(dist, 0o755))
-	ctx := context.New(config.Project{
+	ctx := testctx.NewWithCfg(config.Project{
 		ProjectName: "testprojectname",
 		Dist:        dist,
 		Snapcrafts: []config.Snapcraft{
@@ -480,9 +464,7 @@ func TestExtraFile(t *testing.T) {
 				ChannelTemplates: []string{"stable"},
 			},
 		},
-	})
-	ctx.Git.CurrentTag = "v1.2.3"
-	ctx.Version = "1.2.3"
+	}, testctx.WithCurrentTag("v1.2.3"), testctx.WithVersion("1.2.3"))
 	addBinaries(t, ctx, "foo", dist)
 	require.NoError(t, Pipe{}.Run(ctx))
 
@@ -493,7 +475,7 @@ func TestExtraFile(t *testing.T) {
 }
 
 func TestDefault(t *testing.T) {
-	ctx := context.New(config.Project{
+	ctx := testctx.NewWithCfg(config.Project{
 		Builds:     []config.Build{{ID: "foo"}},
 		Snapcrafts: []config.Snapcraft{{}},
 	})
@@ -505,7 +487,7 @@ func TestDefault(t *testing.T) {
 }
 
 func TestDefaultGradeTmpl(t *testing.T) {
-	ctx := context.New(config.Project{
+	ctx := testctx.NewWithCfg(config.Project{
 		Env:        []string{"Grade=devel"},
 		Builds:     []config.Build{{ID: "foo"}},
 		Snapcrafts: []config.Snapcraft{{Grade: "{{.Env.Grade}}"}},
@@ -518,7 +500,7 @@ func TestDefaultGradeTmpl(t *testing.T) {
 }
 
 func TestDefaultGradeTmplError(t *testing.T) {
-	ctx := context.New(config.Project{
+	ctx := testctx.NewWithCfg(config.Project{
 		Builds:     []config.Build{{ID: "foo"}},
 		Snapcrafts: []config.Snapcraft{{Grade: "{{.Env.Grade}}"}},
 	})

@@ -13,8 +13,9 @@ func TestTemplate(t *testing.T) {
 		{Glob: "./testdata/file{{ .Env.ONE }}.golden"},
 	}
 
-	ctx := testctx.New()
-	ctx.Env["ONE"] = "1"
+	ctx := testctx.NewWithCfg(config.Project{
+		Env: []string{"ONE=1"},
+	})
 	files, err := Find(ctx, globs)
 	require.NoError(t, err)
 	require.Len(t, files, 1)
@@ -103,8 +104,7 @@ func TestTargetName(t *testing.T) {
 		},
 	}
 
-	ctx := testctx.New()
-	ctx.Git.CurrentTag = "v1.0.0"
+	ctx := testctx.New(testctx.WithCurrentTag("v1.0.0"))
 	files, err := Find(ctx, globs)
 	require.NoError(t, err)
 	require.Len(t, files, 1)
