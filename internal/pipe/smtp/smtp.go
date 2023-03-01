@@ -68,6 +68,9 @@ func (Pipe) Announce(ctx *context.Context) error {
 	m.SetBody("text/plain", body)
 
 	cfg, err := getConfig(ctx.Config.Announce.SMTP)
+	if err != nil {
+		return err
+	}
 
 	// Settings for SMTP server
 	d := gomail.NewDialer(cfg.Host, cfg.Port, cfg.Username, cfg.Password)
