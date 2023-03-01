@@ -1,6 +1,6 @@
 # Docker Images with Ko
 
-> Since v1.15.
+> Since v1.15.0.
 
 You can also use [ko][] to build and publish Docker container images.
 
@@ -10,9 +10,9 @@ options as the [build][] pipe when possible, so the results will probably be
 cached.
 
 !!! warning
-    Ko only runs on the publish phase, so it might be a bit hard to test — you
-    might need to push to a fake repository (or a fake tag) when playing around
-    with its configuration.
+    Ko only runs on the publishing phase, so it might be a bit hard to test —
+    you might need to push to a fake repository (or a fake tag) when playing
+    around with its configuration.
 
 ```yaml
 # .goreleaser.yaml
