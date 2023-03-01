@@ -353,12 +353,7 @@ func Test_doRun(t *testing.T) {
 						testctx.WithTokenType(context.TokenTypeGitHub),
 						testctx.WithCurrentTag("v1.0.1-pre.1"),
 						testctx.WithVersion("1.0.1-pre.1"),
-						testctx.WithSemver(context.Semver{
-							Major:      1,
-							Minor:      0,
-							Patch:      1,
-							Prerelease: "-pre.1",
-						}),
+						testctx.WithSemver(1, 0, 0, "pre.1"),
 					)
 				},
 				client.NewMock(),

@@ -21,9 +21,14 @@ func WithVersion(v string) Opt {
 	}
 }
 
-func WithSemver(v context.Semver) Opt {
+func WithSemver(major, minor, patch uint64, prerelease string) Opt {
 	return func(ctx *context.Context) {
-		ctx.Semver = v
+		ctx.Semver = context.Semver{
+			Major:      major,
+			Minor:      minor,
+			Patch:      patch,
+			Prerelease: prerelease,
+		}
 	}
 }
 
@@ -36,6 +41,12 @@ func WithGitInfo(git context.GitInfo) Opt {
 func WithCurrentTag(tag string) Opt {
 	return func(ctx *context.Context) {
 		ctx.Git.CurrentTag = tag
+	}
+}
+
+func WithCommit(commig string) Opt {
+	return func(ctx *context.Context) {
+		ctx.Git.Commit = commig
 	}
 }
 
@@ -54,6 +65,13 @@ func WithEnv(env map[string]string) Opt {
 func WithDate(t time.Time) Opt {
 	return func(ctx *context.Context) {
 		ctx.Date = t
+	}
+}
+
+func WithFakeRuntime(ctx *context.Context) {
+	ctx.Runtime = context.Runtime{
+		Goos:   "fakeos",
+		Goarch: "fakearch",
 	}
 }
 

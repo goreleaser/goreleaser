@@ -585,11 +585,7 @@ func Test_processChannelsTemplates(t *testing.T) {
 			CurrentTag: "v1.0.0",
 			Commit:     "a1b2c3d4",
 		}),
-		testctx.WithSemver(context.Semver{
-			Major: 1,
-			Minor: 0,
-			Patch: 0,
-		}),
+		testctx.WithSemver(1, 0, 0, ""),
 		testctx.WithVersion("1.0.0"),
 	)
 

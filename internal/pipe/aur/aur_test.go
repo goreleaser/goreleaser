@@ -258,12 +258,7 @@ func TestFullPipe(t *testing.T) {
 					},
 				},
 				testctx.WithGitInfo(context.GitInfo{CurrentTag: "v1.0.1-foo"}),
-				testctx.WithSemver(context.Semver{
-					Major:      1,
-					Minor:      0,
-					Patch:      1,
-					Prerelease: "foo",
-				}),
+				testctx.WithSemver(1, 0, 1, "foo"),
 				testctx.WithVersion("1.0.1-foo"),
 				testctx.WithEnv(map[string]string{"FOO": "foo_is_bar"}),
 			)
@@ -365,11 +360,7 @@ func TestRunPipe(t *testing.T) {
 		},
 		testctx.WithTokenType(context.TokenTypeGitHub),
 		testctx.WithCurrentTag("v1.0.1"),
-		testctx.WithSemver(context.Semver{
-			Major: 1,
-			Minor: 0,
-			Patch: 1,
-		}),
+		testctx.WithSemver(1, 0, 0, ""),
 		testctx.WithVersion("1.0.1"),
 		testctx.WithEnv(map[string]string{
 			"FOO": "foo_is_bar",
@@ -491,11 +482,7 @@ func TestRunPipeBinaryRelease(t *testing.T) {
 		},
 		testctx.WithVersion("1.2.1"),
 		testctx.WithGitInfo(context.GitInfo{CurrentTag: "v1.2.1"}),
-		testctx.WithSemver(context.Semver{
-			Major: 1,
-			Minor: 2,
-			Patch: 1,
-		}),
+		testctx.WithSemver(1, 2, 1, ""),
 	)
 
 	path := filepath.Join(folder, "dist/foo_linux_amd64/foo")
@@ -537,11 +524,7 @@ func TestRunPipeNoUpload(t *testing.T) {
 		},
 		testctx.WithTokenType(context.TokenTypeGitHub),
 		testctx.WithGitInfo(context.GitInfo{CurrentTag: "v1.0.1"}),
-		testctx.WithSemver(context.Semver{
-			Major: 1,
-			Minor: 0,
-			Patch: 1,
-		}),
+		testctx.WithSemver(1, 0, 1, ""),
 	)
 
 	path := filepath.Join(folder, "whatever.tar.gz")
@@ -595,11 +578,7 @@ func TestRunEmptyTokenType(t *testing.T) {
 			},
 		},
 		testctx.WithGitInfo(context.GitInfo{CurrentTag: "v1.0.1"}),
-		testctx.WithSemver(context.Semver{
-			Major: 1,
-			Minor: 0,
-			Patch: 1,
-		}),
+		testctx.WithSemver(1, 0, 1, ""),
 	)
 	path := filepath.Join(folder, "whatever.tar.gz")
 	f, err := os.Create(path)

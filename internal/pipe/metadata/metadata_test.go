@@ -10,7 +10,6 @@ import (
 	"github.com/goreleaser/goreleaser/internal/golden"
 	"github.com/goreleaser/goreleaser/internal/testctx"
 	"github.com/goreleaser/goreleaser/pkg/config"
-	"github.com/goreleaser/goreleaser/pkg/context"
 	"github.com/stretchr/testify/require"
 )
 
@@ -29,19 +28,12 @@ func TestRun(t *testing.T) {
 			Dist:        tmp,
 			ProjectName: "name",
 		},
-		testctx.WithGitInfo(context.GitInfo{
-			CurrentTag:  "v1.2.3",
-			PreviousTag: "v1.2.2",
-			Commit:      "aef34a",
-		}),
+		testctx.WithPreviousTag("v1.2.2"),
+		testctx.WithCurrentTag("v1.2.3"),
+		testctx.WithCommit("aef34a"),
 		testctx.WithVersion("1.2.3"),
-		func(ctx *context.Context) {
-			ctx.Runtime = context.Runtime{
-				Goos:   "fakeos",
-				Goarch: "fakearch",
-			}
-			ctx.Date = time.Date(2022, 0o1, 22, 10, 12, 13, 0, time.UTC)
-		},
+		testctx.WithDate(time.Date(2022, 0o1, 22, 10, 12, 13, 0, time.UTC)),
+		testctx.WithFakeRuntime,
 	)
 	ctx.Artifacts.Add(&artifact.Artifact{
 		Name:   "foo",

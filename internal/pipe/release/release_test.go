@@ -484,11 +484,7 @@ func TestDefaultPreRelease(t *testing.T) {
 				},
 			},
 			testctx.WithTokenType(context.TokenTypeGitHub),
-			testctx.WithSemver(context.Semver{
-				Major: 1,
-				Minor: 0,
-				Patch: 0,
-			}),
+			testctx.WithSemver(1, 0, 0, ""),
 		)
 		require.NoError(t, Pipe{}.Default(ctx))
 		require.Equal(t, false, ctx.PreRelease)
@@ -502,12 +498,7 @@ func TestDefaultPreRelease(t *testing.T) {
 				},
 			},
 			testctx.WithTokenType(context.TokenTypeGitHub),
-			testctx.WithSemver(context.Semver{
-				Major:      1,
-				Minor:      0,
-				Patch:      0,
-				Prerelease: "rc1",
-			}),
+			testctx.WithSemver(1, 0, 0, "rc1"),
 		)
 		require.NoError(t, Pipe{}.Default(ctx))
 		require.Equal(t, true, ctx.PreRelease)
@@ -525,12 +516,7 @@ func TestDefaultPreRelease(t *testing.T) {
 				},
 			},
 			testctx.WithTokenType(context.TokenTypeGitHub),
-			testctx.WithSemver(context.Semver{
-				Major:      1,
-				Minor:      0,
-				Patch:      0,
-				Prerelease: "rc1",
-			}),
+			testctx.WithSemver(1, 0, 0, ""),
 		)
 		require.NoError(t, Pipe{}.Default(ctx))
 		require.Equal(t, true, ctx.PreRelease)

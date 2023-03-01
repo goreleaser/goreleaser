@@ -975,15 +975,9 @@ func TestRunPipe(t *testing.T) {
 					},
 					testctx.WithEnv(docker.env),
 					testctx.WithVersion("1.0.0"),
-					testctx.WithGitInfo(context.GitInfo{
-						CurrentTag: "v1.0.0",
-						Commit:     "a1b2c3d4",
-					}),
-					testctx.WithSemver(context.Semver{
-						Major: 1,
-						Minor: 0,
-						Patch: 0,
-					}),
+					testctx.WithCurrentTag("v1.0.0"),
+					testctx.WithCommit("a1b2c3d4"),
+					testctx.WithSemver(1, 0, 0, ""),
 				)
 				for _, os := range []string{"linux", "darwin"} {
 					for _, arch := range []string{"amd64", "386", "arm64"} {
@@ -1302,15 +1296,9 @@ func Test_processImageTemplates(t *testing.T) {
 		},
 		testctx.WithEnv(map[string]string{"FOO": "123"}),
 		testctx.WithVersion("1.0.0"),
-		testctx.WithGitInfo(context.GitInfo{
-			CurrentTag: "v1.0.0",
-			Commit:     "a1b2c3d4",
-		}),
-		testctx.WithSemver(context.Semver{
-			Major: 1,
-			Minor: 0,
-			Patch: 0,
-		}),
+		testctx.WithCurrentTag("v1.0.0"),
+		testctx.WithCommit("a1b2c3d4"),
+		testctx.WithSemver(1, 0, 0, ""),
 	)
 
 	require.NoError(t, Pipe{}.Default(ctx))

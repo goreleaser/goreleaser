@@ -36,11 +36,7 @@ func TestWithArtifact(t *testing.T) {
 			"FOO":       "bar",
 			"MULTILINE": "something with\nmultiple lines\nremove this\nto test things",
 		}),
-		testctx.WithSemver(context.Semver{
-			Major: 1,
-			Minor: 2,
-			Patch: 3,
-		}),
+		testctx.WithSemver(1, 2, 3, ""),
 		func(ctx *context.Context) {
 			ctx.ModulePath = "github.com/goreleaser/goreleaser"
 			ctx.ReleaseNotes = "test release notes"

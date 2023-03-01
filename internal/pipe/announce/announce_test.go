@@ -6,7 +6,6 @@ import (
 
 	"github.com/goreleaser/goreleaser/internal/testctx"
 	"github.com/goreleaser/goreleaser/pkg/config"
-	"github.com/goreleaser/goreleaser/pkg/context"
 	"github.com/hashicorp/go-multierror"
 	"github.com/stretchr/testify/require"
 )
@@ -52,7 +51,7 @@ func TestSkip(t *testing.T) {
 			Announce: config.Announce{
 				Skip: "{{gt .Patch 0}}",
 			},
-		}, testctx.WithSemver(context.Semver{Patch: 1}))
+		}, testctx.WithSemver(0, 0, 1, ""))
 		b, err := Pipe{}.Skip(ctx)
 		require.NoError(t, err)
 		require.True(t, b)
@@ -63,7 +62,7 @@ func TestSkip(t *testing.T) {
 			Announce: config.Announce{
 				Skip: "{{if eq .Patch 123}",
 			},
-		}, testctx.WithSemver(context.Semver{Patch: 1}))
+		}, testctx.WithSemver(0, 0, 1, ""))
 		_, err := Pipe{}.Skip(ctx)
 		require.Error(t, err)
 	})
