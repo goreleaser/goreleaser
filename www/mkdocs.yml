@@ -88,12 +88,12 @@ nav:
   - Basics:
     - customization/includes.md
     - customization/templates.md
+    - customization/templatefiles.md
     - customization/env.md
     - customization/hooks.md
     - customization/dist.md
     - customization/project.md
     - customization/git.md
-    - customization/templatefiles.md
   - Build:
     - customization/builds.md
     - customization/verifiable_builds.md
