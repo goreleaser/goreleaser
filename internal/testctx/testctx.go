@@ -39,6 +39,12 @@ func WithCurrentTag(tag string) Opt {
 	}
 }
 
+func WithPreviousTag(tag string) Opt {
+	return func(ctx *context.Context) {
+		ctx.Git.PreviousTag = tag
+	}
+}
+
 func WithEnv(env map[string]string) Opt {
 	return func(ctx *context.Context) {
 		ctx.Env = env
