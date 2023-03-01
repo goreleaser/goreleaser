@@ -717,7 +717,7 @@ func TestRunPipeForMultipleArmVersions(t *testing.T) {
 }
 
 func TestRunPipeNoBuilds(t *testing.T) {
-	ctx := context.New(
+	ctx := testctx.NewWithCfg(
 		config.Project{
 			Krews: []config.Krew{
 				{
@@ -731,8 +731,8 @@ func TestRunPipeNoBuilds(t *testing.T) {
 				},
 			},
 		},
+		testctx.WithTokenType(context.TokenTypeGitHub),
 	)
-	ctx.TokenType = context.TokenTypeGitHub
 	client := client.NewMock()
 	require.Equal(t, ErrNoArchivesFound, runAll(ctx, client))
 	require.False(t, client.CreatedFile)
@@ -740,7 +740,7 @@ func TestRunPipeNoBuilds(t *testing.T) {
 
 func TestRunPipeNoUpload(t *testing.T) {
 	folder := t.TempDir()
-	ctx := context.New(config.Project{
+	ctx := testctx.NewWithCfg(config.Project{
 		Dist:        folder,
 		ProjectName: "foo",
 		Release:     config.Release{},
@@ -755,9 +755,7 @@ func TestRunPipeNoUpload(t *testing.T) {
 				},
 			},
 		},
-	})
-	ctx.TokenType = context.TokenTypeGitHub
-	ctx.Git = context.GitInfo{CurrentTag: "v1.0.1"}
+	}, testctx.WithTokenType(context.TokenTypeGitHub), testctx.WithCurrentTag("v1.0.1"))
 	path := filepath.Join(folder, "whatever.tar.gz")
 	f, err := os.Create(path)
 	require.NoError(t, err)
@@ -798,7 +796,7 @@ func TestRunPipeNoUpload(t *testing.T) {
 
 func TestRunEmptyTokenType(t *testing.T) {
 	folder := t.TempDir()
-	ctx := context.New(config.Project{
+	ctx := testctx.NewWithCfg(config.Project{
 		Dist:        folder,
 		ProjectName: "foo",
 		Release:     config.Release{},
@@ -813,8 +811,7 @@ func TestRunEmptyTokenType(t *testing.T) {
 				},
 			},
 		},
-	})
-	ctx.Git = context.GitInfo{CurrentTag: "v1.0.1"}
+	}, testctx.WithCurrentTag("v1.0.1"))
 	path := filepath.Join(folder, "whatever.tar.gz")
 	f, err := os.Create(path)
 	require.NoError(t, err)
@@ -839,7 +836,7 @@ func TestRunEmptyTokenType(t *testing.T) {
 
 func TestRunMultipleBinaries(t *testing.T) {
 	folder := t.TempDir()
-	ctx := context.New(config.Project{
+	ctx := testctx.NewWithCfg(config.Project{
 		Dist:        folder,
 		ProjectName: "foo",
 		Release:     config.Release{},
@@ -854,8 +851,7 @@ func TestRunMultipleBinaries(t *testing.T) {
 				},
 			},
 		},
-	})
-	ctx.Git = context.GitInfo{CurrentTag: "v1.0.1"}
+	}, testctx.WithCurrentTag("v1.0.1"))
 	path := filepath.Join(folder, "whatever.tar.gz")
 	f, err := os.Create(path)
 	require.NoError(t, err)
@@ -904,11 +900,11 @@ func TestGHFolder(t *testing.T) {
 
 func TestSkip(t *testing.T) {
 	t.Run("skip", func(t *testing.T) {
-		require.True(t, Pipe{}.Skip(context.New(config.Project{})))
+		require.True(t, Pipe{}.Skip(testctx.New()))
 	})
 
 	t.Run("dont skip", func(t *testing.T) {
-		ctx := context.New(config.Project{
+		ctx := testctx.NewWithCfg(config.Project{
 			Krews: []config.Krew{
 				{},
 			},
@@ -918,7 +914,7 @@ func TestSkip(t *testing.T) {
 }
 
 func TestRunSkipNoName(t *testing.T) {
-	ctx := context.New(config.Project{
+	ctx := testctx.NewWithCfg(config.Project{
 		Krews: []config.Krew{{}},
 	})
 

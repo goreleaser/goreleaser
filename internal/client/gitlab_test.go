@@ -13,8 +13,8 @@ import (
 	"text/template"
 
 	"github.com/goreleaser/goreleaser/internal/artifact"
+	"github.com/goreleaser/goreleaser/internal/testctx"
 	"github.com/goreleaser/goreleaser/pkg/config"
-	"github.com/goreleaser/goreleaser/pkg/context"
 	"github.com/stretchr/testify/require"
 )
 
@@ -66,7 +66,7 @@ func TestGitLabReleaseURLTemplate(t *testing.T) {
 	}
 
 	for _, tt := range tests {
-		ctx := context.New(config.Project{
+		ctx := testctx.NewWithCfg(config.Project{
 			Env: []string{
 				"GORELEASER_TEST_GITLAB_URLS_DOWNLOAD=https://gitlab.mycompany.com",
 			},
@@ -118,7 +118,7 @@ func TestGitLabURLsAPITemplate(t *testing.T) {
 				gitlabURLs.API = "{{ .Env.GORELEASER_TEST_GITLAB_URLS_API }}"
 			}
 
-			ctx := context.New(config.Project{
+			ctx := testctx.NewWithCfg(config.Project{
 				Env:        envs,
 				GitLabURLs: gitlabURLs,
 			})
@@ -134,7 +134,7 @@ func TestGitLabURLsAPITemplate(t *testing.T) {
 	}
 
 	t.Run("no_env_specified", func(t *testing.T) {
-		ctx := context.New(config.Project{
+		ctx := testctx.NewWithCfg(config.Project{
 			GitLabURLs: config.GitLabURLs{
 				API: "{{ .Env.GORELEASER_NOT_EXISTS }}",
 			},
@@ -145,7 +145,7 @@ func TestGitLabURLsAPITemplate(t *testing.T) {
 	})
 
 	t.Run("invalid_template", func(t *testing.T) {
-		ctx := context.New(config.Project{
+		ctx := testctx.NewWithCfg(config.Project{
 			GitLabURLs: config.GitLabURLs{
 				API: "{{.dddddddddd",
 			},
@@ -190,7 +190,7 @@ func TestGitLabURLsDownloadTemplate(t *testing.T) {
 		},
 		{
 			name:               "url_registry",
-			wantURL:            "/api/v4/projects/test%2Ftest/packages/generic/projectname/v1%2E0%2E0/test",
+			wantURL:            "/api/v4/projects/test%2Ftest/packages/generic/projectname/1%2E0%2E0/test",
 			usePackageRegistry: true,
 		},
 	}
@@ -219,7 +219,7 @@ func TestGitLabURLsDownloadTemplate(t *testing.T) {
 			}))
 			defer srv.Close()
 
-			ctx := context.New(config.Project{
+			ctx := testctx.NewWithCfg(config.Project{
 				ProjectName: "projectname",
 				Env: []string{
 					"GORELEASER_TEST_GITLAB_URLS_DOWNLOAD=https://gitlab.mycompany.com",
@@ -235,9 +235,7 @@ func TestGitLabURLsDownloadTemplate(t *testing.T) {
 					Download:           tt.downloadURL,
 					UsePackageRegistry: tt.usePackageRegistry,
 				},
-			})
-
-			ctx.Version = "v1.0.0"
+			}, testctx.WithVersion("1.0.0"))
 
 			tmpFile, err := os.CreateTemp(t.TempDir(), "")
 			require.NoError(t, err)
@@ -256,7 +254,7 @@ func TestGitLabURLsDownloadTemplate(t *testing.T) {
 }
 
 func TestGitLabCreateReleaseUknownHost(t *testing.T) {
-	ctx := context.New(config.Project{
+	ctx := testctx.NewWithCfg(config.Project{
 		Release: config.Release{
 			GitLab: config.Repo{
 				Owner: "owner",
@@ -310,7 +308,7 @@ func TestGitLabCreateReleaseReleaseNotExists(t *testing.T) {
 			}))
 			defer srv.Close()
 
-			ctx := context.New(config.Project{
+			ctx := testctx.NewWithCfg(config.Project{
 				GitLabURLs: config.GitLabURLs{
 					API: srv.URL,
 				},
@@ -363,7 +361,7 @@ func TestGitLabCreateReleaseReleaseExists(t *testing.T) {
 	}))
 	defer srv.Close()
 
-	ctx := context.New(config.Project{
+	ctx := testctx.NewWithCfg(config.Project{
 		GitLabURLs: config.GitLabURLs{
 			API: srv.URL,
 		},
@@ -391,7 +389,7 @@ func TestGitLabCreateReleaseUnkownHTTPError(t *testing.T) {
 	}))
 	defer srv.Close()
 
-	ctx := context.New(config.Project{
+	ctx := testctx.NewWithCfg(config.Project{
 		GitLabURLs: config.GitLabURLs{
 			API: srv.URL,
 		},
@@ -416,7 +414,7 @@ func TestGitlabGetDefaultBranch(t *testing.T) {
 	}))
 	defer srv.Close()
 
-	ctx := context.New(config.Project{
+	ctx := testctx.NewWithCfg(config.Project{
 		GitLabURLs: config.GitLabURLs{
 			API: srv.URL,
 		},
@@ -444,7 +442,7 @@ func TestGitlabGetDefaultBranchErr(t *testing.T) {
 	}))
 	defer srv.Close()
 
-	ctx := context.New(config.Project{
+	ctx := testctx.NewWithCfg(config.Project{
 		GitLabURLs: config.GitLabURLs{
 			API: srv.URL,
 		},
@@ -474,7 +472,7 @@ func TestGitlabChangelog(t *testing.T) {
 	}))
 	defer srv.Close()
 
-	ctx := context.New(config.Project{
+	ctx := testctx.NewWithCfg(config.Project{
 		GitLabURLs: config.GitLabURLs{
 			API: srv.URL,
 		},
@@ -521,7 +519,7 @@ func TestGitlabCreateFile(t *testing.T) {
 	}))
 	defer srv.Close()
 
-	ctx := context.New(config.Project{
+	ctx := testctx.NewWithCfg(config.Project{
 		GitLabURLs: config.GitLabURLs{
 			API: srv.URL,
 		},
@@ -580,7 +578,7 @@ func TestCloseMileston(t *testing.T) {
 	}))
 	defer srv.Close()
 
-	ctx := context.New(config.Project{
+	ctx := testctx.NewWithCfg(config.Project{
 		GitLabURLs: config.GitLabURLs{
 			API: srv.URL,
 		},
@@ -646,7 +644,7 @@ func TestCheckUseJobToken(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			t.Setenv("CI_JOB_TOKEN", tt.ciToken)
-			ctx := context.New(config.Project{
+			ctx := testctx.NewWithCfg(config.Project{
 				GitLabURLs: config.GitLabURLs{
 					UseJobToken: tt.useJobToken,
 				},
