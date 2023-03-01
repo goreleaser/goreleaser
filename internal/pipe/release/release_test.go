@@ -516,7 +516,7 @@ func TestDefaultPreRelease(t *testing.T) {
 				},
 			},
 			testctx.WithTokenType(context.TokenTypeGitHub),
-			testctx.WithSemver(1, 0, 0, ""),
+			testctx.WithSemver(1, 0, 0, "rc1"),
 		)
 		require.NoError(t, Pipe{}.Default(ctx))
 		require.Equal(t, true, ctx.PreRelease)

@@ -360,7 +360,7 @@ func TestRunPipe(t *testing.T) {
 		},
 		testctx.WithTokenType(context.TokenTypeGitHub),
 		testctx.WithCurrentTag("v1.0.1"),
-		testctx.WithSemver(1, 0, 0, ""),
+		testctx.WithSemver(1, 0, 1, ""),
 		testctx.WithVersion("1.0.1"),
 		testctx.WithEnv(map[string]string{
 			"FOO": "foo_is_bar",
