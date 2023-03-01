@@ -7,7 +7,7 @@ import (
 	"io"
 	"net/http"
 
-	"github.com/caarlos0/env/v6"
+	"github.com/caarlos0/env/v7"
 	"github.com/caarlos0/log"
 
 	"github.com/goreleaser/goreleaser/internal/tmpl"
