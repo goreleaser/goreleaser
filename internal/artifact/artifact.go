@@ -278,22 +278,22 @@ type Artifacts struct {
 }
 
 // New return a new list of artifacts.
-func New() Artifacts {
-	return Artifacts{
+func New() *Artifacts {
+	return &Artifacts{
 		items: []*Artifact{},
 		lock:  &sync.Mutex{},
 	}
 }
 
 // List return the actual list of artifacts.
-func (artifacts Artifacts) List() []*Artifact {
+func (artifacts *Artifacts) List() []*Artifact {
 	artifacts.lock.Lock()
 	defer artifacts.lock.Unlock()
 	return artifacts.items
 }
 
 // GroupByID groups the artifacts by their ID.
-func (artifacts Artifacts) GroupByID() map[string][]*Artifact {
+func (artifacts *Artifacts) GroupByID() map[string][]*Artifact {
 	result := map[string][]*Artifact{}
 	for _, a := range artifacts.List() {
 		id := a.ID()
@@ -306,7 +306,7 @@ func (artifacts Artifacts) GroupByID() map[string][]*Artifact {
 }
 
 // GroupByPlatform groups the artifacts by their platform.
-func (artifacts Artifacts) GroupByPlatform() map[string][]*Artifact {
+func (artifacts *Artifacts) GroupByPlatform() map[string][]*Artifact {
 	result := map[string][]*Artifact{}
 	for _, a := range artifacts.List() {
 		plat := a.Goos + a.Goarch + a.Goarm + a.Gomips + a.Goamd64
@@ -442,7 +442,7 @@ func ByExt(exts ...string) Filter {
 // deduplicating artifacts by path (preferring UploadableBinary over all others). Note: this filter is unique in the
 // sense that it cannot act in isolation of the state of other artifacts; the filter requires the whole list of
 // artifacts in advance to perform deduplication.
-func ByBinaryLikeArtifacts(arts Artifacts) Filter {
+func ByBinaryLikeArtifacts(arts *Artifacts) Filter {
 	// find all of the paths for any uploadable binary artifacts
 	uploadableBins := arts.Filter(ByType(UploadableBinary)).List()
 	uploadableBinPaths := map[string]struct{}{}
@@ -500,9 +500,9 @@ func And(filters ...Filter) Filter {
 // There are some pre-defined filters but anything of the Type Filter
 // is accepted.
 // You can compose filters by using the And and Or filters.
-func (artifacts *Artifacts) Filter(filter Filter) Artifacts {
+func (artifacts *Artifacts) Filter(filter Filter) *Artifacts {
 	if filter == nil {
-		return *artifacts
+		return artifacts
 	}
 
 	result := New()
@@ -515,7 +515,7 @@ func (artifacts *Artifacts) Filter(filter Filter) Artifacts {
 }
 
 // Paths returns the artifact.Path of the current artifact list.
-func (artifacts Artifacts) Paths() []string {
+func (artifacts *Artifacts) Paths() []string {
 	var result []string
 	for _, artifact := range artifacts.List() {
 		result = append(result, artifact.Path)
@@ -527,7 +527,7 @@ func (artifacts Artifacts) Paths() []string {
 type VisitFn func(a *Artifact) error
 
 // Visit executes the given function for each artifact in the list.
-func (artifacts Artifacts) Visit(fn VisitFn) error {
+func (artifacts *Artifacts) Visit(fn VisitFn) error {
 	for _, artifact := range artifacts.List() {
 		if err := fn(artifact); err != nil {
 			return err

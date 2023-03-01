@@ -78,7 +78,7 @@ type Context struct {
 	TokenType          TokenType
 	Git                GitInfo
 	Date               time.Time
-	Artifacts          artifact.Artifacts
+	Artifacts          *artifact.Artifacts
 	ReleaseURL         string
 	ReleaseNotes       string
 	ReleaseNotesFile   string
