@@ -30,7 +30,7 @@ A common one here is when your `archives.name` is not specific enough.
 You can run your release locally (e.g. `goreleaser release --snapshot`) and
 check the `./dist/*.json` files to debug.
 
-### 2. You are running GoReleaser multiple times against the same tag
+### 3. You are running GoReleaser multiple times against the same tag
 
 This one is easier to fix: make sure you are running GoReleaser only on tags,
 and only one time per tag.
