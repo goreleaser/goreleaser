@@ -117,7 +117,6 @@ type Semver struct {
 	Major      uint64
 	Minor      uint64
 	Patch      uint64
-	RawVersion string
 	Prerelease string
 }
 
