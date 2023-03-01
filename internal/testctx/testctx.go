@@ -73,13 +73,18 @@ func WithCommit(commig string) Opt {
 	}
 }
 
+func WithCommitDate(d time.Time) Opt {
+	return func(ctx *context.Context) {
+		ctx.Git.CommitDate = d
+	}
+}
+
 func WithPreviousTag(tag string) Opt {
 	return func(ctx *context.Context) {
 		ctx.Git.PreviousTag = tag
 	}
 }
 
-// Deprecated: do not use
 func WithEnv(env map[string]string) Opt {
 	return func(ctx *context.Context) {
 		ctx.Env = env

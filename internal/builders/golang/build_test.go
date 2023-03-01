@@ -907,11 +907,9 @@ func TestLdFlagsFullTemplate(t *testing.T) {
 	run := time.Now().UTC()
 	commit := time.Now().AddDate(-1, 0, 0)
 	ctx := testctx.New(
-		testctx.WithGitInfo(context.GitInfo{
-			CurrentTag: "v1.2.3",
-			Commit:     "123",
-			CommitDate: commit,
-		}),
+		testctx.WithCurrentTag("v1.2.3"),
+		testctx.WithCommit("123"),
+		testctx.WithCommitDate(commit),
 		testctx.WithVersion("1.2.3"),
 		testctx.WithEnv(map[string]string{"FOO": "123"}),
 		testctx.WithDate(run),

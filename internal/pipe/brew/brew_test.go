@@ -285,12 +285,10 @@ func TestFullPipe(t *testing.T) {
 							Goamd64:     "v1",
 						},
 					},
+					Env: []string{"FOO=foo_is_bar"},
 				},
 				testctx.WithVersion("1.0.1"),
 				testctx.WithCurrentTag("v1.0.1"),
-				testctx.WithEnv(map[string]string{
-					"FOO": "foo_is_bar",
-				}),
 			)
 			tt.prepare(ctx)
 			ctx.Artifacts.Add(&artifact.Artifact{
@@ -392,12 +390,10 @@ func TestRunPipeNameTemplate(t *testing.T) {
 					},
 				},
 			},
+			Env: []string{"FOO=foo_is_bar"},
 		},
 		testctx.WithVersion("1.0.1"),
 		testctx.WithCurrentTag("v1.0.1"),
-		testctx.WithEnv(map[string]string{
-			"FOO_BAR": "is_bar",
-		}),
 	)
 	path := filepath.Join(folder, "bin.tar.gz")
 	ctx.Artifacts.Add(&artifact.Artifact{
@@ -483,11 +479,11 @@ func TestRunPipeMultipleBrewsWithSkip(t *testing.T) {
 					SkipUpload: "{{ .Env.SKIP_UPLOAD }}",
 				},
 			},
+			Env: []string{
+				"FOO_BAR=is_bar",
+				"SKIP_UPLOAD=true",
+			},
 		},
-		testctx.WithEnv(map[string]string{
-			"FOO_BAR":     "is_bar",
-			"SKIP_UPLOAD": "true",
-		}),
 		testctx.WithVersion("1.0.1"),
 		testctx.WithCurrentTag("v1.0.1"),
 	)

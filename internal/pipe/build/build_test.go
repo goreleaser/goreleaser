@@ -460,10 +460,8 @@ func TestTemplate(t *testing.T) {
 	ctx := testctx.New(
 		testctx.WithEnv(map[string]string{"FOO": "123"}),
 		testctx.WithVersion("1.2.3"),
-		testctx.WithGitInfo(context.GitInfo{
-			CurrentTag: "v1.2.3",
-			Commit:     "123",
-		}),
+		testctx.WithCurrentTag("v1.2.3"),
+		testctx.WithCommit("123"),
 	)
 	binary, err := tmpl.New(ctx).
 		Apply(`-s -w -X main.version={{.Version}} -X main.tag={{.Tag}} -X main.date={{.Date}} -X main.commit={{.Commit}} -X "main.foo={{.Env.FOO}}"`)

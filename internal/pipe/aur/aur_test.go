@@ -256,11 +256,11 @@ func TestFullPipe(t *testing.T) {
 							Description: "A run pipe test fish food and FOO={{ .Env.FOO }}",
 						},
 					},
+					Env: []string{"FOO=foo_is_bar"},
 				},
-				testctx.WithGitInfo(context.GitInfo{CurrentTag: "v1.0.1-foo"}),
+				testctx.WithCurrentTag("v1.0.1-foo"),
 				testctx.WithSemver(1, 0, 1, "foo"),
 				testctx.WithVersion("1.0.1-foo"),
-				testctx.WithEnv(map[string]string{"FOO": "foo_is_bar"}),
 			)
 
 			tt.prepare(ctx)

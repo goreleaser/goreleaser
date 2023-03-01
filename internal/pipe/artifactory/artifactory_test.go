@@ -183,13 +183,12 @@ func TestRunPipe_ModeBinary(t *testing.T) {
 				Username: "productionuser",
 			},
 		},
-		Archives: []config.Archive{
-			{},
+		Archives: []config.Archive{{}},
+		Env: []string{
+			"ARTIFACTORY_PRODUCTION-US_SECRET=deployuser-secret",
+			"ARTIFACTORY_PRODUCTION-EU_SECRET=productionuser-apikey",
 		},
-	}, testctx.WithEnv(map[string]string{
-		"ARTIFACTORY_PRODUCTION-US_SECRET": "deployuser-secret",
-		"ARTIFACTORY_PRODUCTION-EU_SECRET": "productionuser-apikey",
-	}))
+	})
 	for _, goos := range []string{"linux", "darwin"} {
 		ctx.Artifacts.Add(&artifact.Artifact{
 			Name:   "mybin",
@@ -227,12 +226,9 @@ func TestRunPipe_ModeArchive(t *testing.T) {
 				Username: "deployuser",
 			},
 		},
-		Archives: []config.Archive{
-			{},
-		},
-	}, testctx.WithEnv(map[string]string{
-		"ARTIFACTORY_PRODUCTION_SECRET": "deployuser-secret",
-	}), testctx.WithVersion("1.0.0"))
+		Archives: []config.Archive{{}},
+		Env:      []string{"ARTIFACTORY_PRODUCTION_SECRET=deployuser-secret"},
+	}, testctx.WithVersion("1.0.0"))
 	ctx.Artifacts.Add(&artifact.Artifact{
 		Type: artifact.UploadableArchive,
 		Name: "bin.tar.gz",
@@ -314,24 +310,19 @@ func TestRunPipe_ArtifactoryDown(t *testing.T) {
 	require.NoError(t, err)
 	require.NoError(t, tarfile.Close())
 
-	ctx := testctx.NewWithCfg(
-		config.Project{
-			ProjectName: "goreleaser",
-			Dist:        folder,
-			Artifactories: []config.Upload{
-				{
-					Name:     "production",
-					Mode:     "archive",
-					Target:   "http://localhost:1234/example-repo-local/{{ .ProjectName }}/{{ .Version }}/",
-					Username: "deployuser",
-				},
+	ctx := testctx.NewWithCfg(config.Project{
+		ProjectName: "goreleaser",
+		Dist:        folder,
+		Artifactories: []config.Upload{
+			{
+				Name:     "production",
+				Mode:     "archive",
+				Target:   "http://localhost:1234/example-repo-local/{{ .ProjectName }}/{{ .Version }}/",
+				Username: "deployuser",
 			},
 		},
-		testctx.WithVersion("2.0.0"),
-		testctx.WithEnv(map[string]string{
-			"ARTIFACTORY_PRODUCTION_SECRET": "deployuser-secret",
-		}),
-	)
+		Env: []string{"ARTIFACTORY_PRODUCTION_SECRET=deployuser-secret"},
+	}, testctx.WithVersion("2.0.0"))
 	ctx.Artifacts.Add(&artifact.Artifact{
 		Type: artifact.UploadableArchive,
 		Name: "bin.tar.gz",
@@ -361,12 +352,9 @@ func TestRunPipe_TargetTemplateError(t *testing.T) {
 				Username: "deployuser",
 			},
 		},
-		Archives: []config.Archive{
-			{},
-		},
-	}, testctx.WithEnv(map[string]string{
-		"ARTIFACTORY_PRODUCTION_SECRET": "deployuser-secret",
-	}))
+		Archives: []config.Archive{{}},
+		Env:      []string{"ARTIFACTORY_PRODUCTION_SECRET=deployuser-secret"},
+	})
 	ctx.Artifacts.Add(&artifact.Artifact{
 		Name:   "mybin",
 		Path:   binPath,
@@ -418,12 +406,9 @@ func TestRunPipe_BadCredentials(t *testing.T) {
 				Username: "deployuser",
 			},
 		},
-		Archives: []config.Archive{
-			{},
-		},
-	}, testctx.WithEnv(map[string]string{
-		"ARTIFACTORY_PRODUCTION_SECRET": "deployuser-secret",
-	}))
+		Archives: []config.Archive{{}},
+		Env:      []string{"ARTIFACTORY_PRODUCTION_SECRET=deployuser-secret"},
+	})
 	ctx.Artifacts.Add(&artifact.Artifact{
 		Name:   "mybin",
 		Path:   binPath,
@@ -594,9 +579,8 @@ func TestArtifactoriesWithoutTarget(t *testing.T) {
 				Username: "deployuser",
 			},
 		},
-	}, testctx.WithEnv(map[string]string{
-		"ARTIFACTORY_PRODUCTION_SECRET": "deployuser-secret",
-	}))
+		Env: []string{"ARTIFACTORY_PRODUCTION_SECRET=deployuser-secret"},
+	})
 	require.NoError(t, Pipe{}.Default(ctx))
 	testlib.AssertSkipped(t, Pipe{}.Publish(ctx))
 }
@@ -609,9 +593,8 @@ func TestArtifactoriesWithoutUsername(t *testing.T) {
 				Target: "http://artifacts.company.com/example-repo-local/{{ .ProjectName }}/{{ .Os }}/{{ .Arch }}{{ if .Arm }}v{{ .Arm }}{{ end }}",
 			},
 		},
-	}, testctx.WithEnv(map[string]string{
-		"ARTIFACTORY_PRODUCTION_SECRET": "deployuser-secret",
-	}))
+		Env: []string{"ARTIFACTORY_PRODUCTION_SECRET=deployuser-secret"},
+	})
 	require.NoError(t, Pipe{}.Default(ctx))
 	testlib.AssertSkipped(t, Pipe{}.Publish(ctx))
 }
@@ -653,9 +636,8 @@ func TestArtifactoriesWithInvalidMode(t *testing.T) {
 				Username: "deployuser",
 			},
 		},
-	}, testctx.WithEnv(map[string]string{
-		"ARTIFACTORY_PRODUCTION_SECRET": "deployuser-secret",
-	}))
+		Env: []string{"ARTIFACTORY_PRODUCTION_SECRET=deployuser-secret"},
+	})
 	require.NoError(t, Pipe{}.Default(ctx))
 	require.Error(t, Pipe{}.Publish(ctx))
 }

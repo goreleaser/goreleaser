@@ -17,9 +17,7 @@ import (
 func TestWithArtifact(t *testing.T) {
 	t.Parallel()
 	ctx := testctx.NewWithCfg(
-		config.Project{
-			ProjectName: "proj",
-		},
+		config.Project{ProjectName: "proj"},
 		testctx.WithVersion("1.2.3"),
 		testctx.WithGitInfo(context.GitInfo{
 			PreviousTag: "v1.2.2",

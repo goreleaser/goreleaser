@@ -59,9 +59,9 @@ func TestPipe(t *testing.T) {
 						Algorithm:    "sha256",
 						IDs:          tt.ids,
 					},
+					Env: []string{"FOO=bar"},
 				},
 				testctx.WithCurrentTag("1.2.3"),
-				testctx.WithEnv(map[string]string{"FOO": "bar"}),
 			)
 			ctx.Artifacts.Add(&artifact.Artifact{
 				Name: binary,
@@ -106,18 +106,15 @@ func TestRefreshModifying(t *testing.T) {
 	folder := t.TempDir()
 	file := filepath.Join(folder, binary)
 	require.NoError(t, os.WriteFile(file, []byte("some string"), 0o644))
-	ctx := testctx.NewWithCfg(
-		config.Project{
-			Dist:        folder,
-			ProjectName: binary,
-			Checksum: config.Checksum{
-				NameTemplate: "{{ .ProjectName }}_{{ .Env.FOO }}_checksums.txt",
-				Algorithm:    "sha256",
-			},
+	ctx := testctx.NewWithCfg(config.Project{
+		Dist:        folder,
+		ProjectName: binary,
+		Checksum: config.Checksum{
+			NameTemplate: "{{ .ProjectName }}_{{ .Env.FOO }}_checksums.txt",
+			Algorithm:    "sha256",
 		},
-		testctx.WithCurrentTag("1.2.3"),
-		testctx.WithEnv(map[string]string{"FOO": "bar"}),
-	)
+		Env: []string{"FOO=bar"},
+	}, testctx.WithCurrentTag("1.2.3"))
 	ctx.Artifacts.Add(&artifact.Artifact{
 		Name: binary,
 		Path: file,

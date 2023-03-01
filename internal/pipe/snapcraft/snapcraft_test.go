@@ -576,15 +576,11 @@ func Test_processChannelsTemplates(t *testing.T) {
 					},
 				},
 			},
+			Env: []string{"FOO=123"},
 		},
 		testctx.SkipPublish,
-		testctx.WithEnv(map[string]string{
-			"FOO": "123",
-		}),
-		testctx.WithGitInfo(context.GitInfo{
-			CurrentTag: "v1.0.0",
-			Commit:     "a1b2c3d4",
-		}),
+		testctx.WithCommit("a1b2c3d4"),
+		testctx.WithCurrentTag("v1.0.0"),
 		testctx.WithSemver(1, 0, 0, ""),
 		testctx.WithVersion("1.0.0"),
 	)

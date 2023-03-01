@@ -232,13 +232,10 @@ func TestFullPipe(t *testing.T) {
 							ShortDescription: "short desc {{.Env.BAR}}",
 						},
 					},
+					Env: []string{"FOO=foo_is_bar", "BAR=honk"},
 				},
 				testctx.WithCurrentTag("v1.0.1"),
 				testctx.WithVersion("1.0.1"),
-				testctx.WithEnv(map[string]string{
-					"FOO": "foo_is_bar",
-					"BAR": "honk",
-				}),
 			)
 			tt.prepare(ctx)
 			ctx.Artifacts.Add(&artifact.Artifact{
@@ -472,12 +469,10 @@ func TestRunPipeNameTemplate(t *testing.T) {
 					},
 				},
 			},
+			Env: []string{"FOO_BAR=" + t.Name()},
 		},
 		testctx.WithCurrentTag("v1.0.1"),
 		testctx.WithVersion("1.0.1"),
-		testctx.WithEnv(map[string]string{
-			"FOO_BAR": t.Name(),
-		}),
 	)
 	path := filepath.Join(folder, "bin.tar.gz")
 	ctx.Artifacts.Add(&artifact.Artifact{
@@ -557,12 +552,10 @@ func TestRunPipeMultipleKrewWithSkip(t *testing.T) {
 					SkipUpload: "true",
 				},
 			},
+			Env: []string{"FOO_BAR=is_bar"},
 		},
 		testctx.WithCurrentTag("v1.0.1"),
 		testctx.WithVersion("1.0.1"),
-		testctx.WithEnv(map[string]string{
-			"FOO_BAR": "is_bar",
-		}),
 	)
 	path := filepath.Join(folder, "bin.tar.gz")
 	ctx.Artifacts.Add(&artifact.Artifact{

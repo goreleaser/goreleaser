@@ -553,39 +553,31 @@ func TestDescription(t *testing.T) {
 }
 
 func TestPutsWithoutTarget(t *testing.T) {
-	ctx := testctx.NewWithCfg(
-		config.Project{
-			Uploads: []config.Upload{
-				{
-					Method:   h.MethodPut,
-					Name:     "production",
-					Username: "deployuser",
-				},
+	ctx := testctx.NewWithCfg(config.Project{
+		Uploads: []config.Upload{
+			{
+				Method:   h.MethodPut,
+				Name:     "production",
+				Username: "deployuser",
 			},
 		},
-		testctx.WithEnv(map[string]string{
-			"UPLOAD_PRODUCTION_SECRET": "deployuser-secret",
-		}),
-	)
+		Env: []string{"UPLOAD_PRODUCTION_SECRET=deployuser-secret"},
+	})
 
 	require.True(t, pipe.IsSkip(Pipe{}.Publish(ctx)))
 }
 
 func TestPutsWithoutUsername(t *testing.T) {
-	ctx := testctx.NewWithCfg(
-		config.Project{
-			Uploads: []config.Upload{
-				{
-					Method: h.MethodPut,
-					Name:   "production",
-					Target: "http://artifacts.company.com/example-repo-local/{{ .ProjectName }}/{{ .Os }}/{{ .Arch }}{{ if .Arm }}v{{ .Arm }}{{ end }}",
-				},
+	ctx := testctx.NewWithCfg(config.Project{
+		Uploads: []config.Upload{
+			{
+				Method: h.MethodPut,
+				Name:   "production",
+				Target: "http://artifacts.company.com/example-repo-local/{{ .ProjectName }}/{{ .Os }}/{{ .Arch }}{{ if .Arm }}v{{ .Arm }}{{ end }}",
 			},
 		},
-		testctx.WithEnv(map[string]string{
-			"UPLOAD_PRODUCTION_SECRET": "deployuser-secret",
-		}),
-	)
+		Env: []string{"UPLOAD_PRODUCTION_SECRET=deployuser-secret"},
+	})
 
 	require.True(t, pipe.IsSkip(Pipe{}.Publish(ctx)))
 }
@@ -616,22 +608,18 @@ func TestPutsWithoutSecret(t *testing.T) {
 }
 
 func TestPutsWithInvalidMode(t *testing.T) {
-	ctx := testctx.NewWithCfg(
-		config.Project{
-			Uploads: []config.Upload{
-				{
-					Method:   h.MethodPut,
-					Name:     "production",
-					Mode:     "does-not-exists",
-					Target:   "http://artifacts.company.com/example-repo-local/{{ .ProjectName }}/{{ .Os }}/{{ .Arch }}{{ if .Arm }}v{{ .Arm }}{{ end }}",
-					Username: "deployuser",
-				},
+	ctx := testctx.NewWithCfg(config.Project{
+		Uploads: []config.Upload{
+			{
+				Method:   h.MethodPut,
+				Name:     "production",
+				Mode:     "does-not-exists",
+				Target:   "http://artifacts.company.com/example-repo-local/{{ .ProjectName }}/{{ .Os }}/{{ .Arch }}{{ if .Arm }}v{{ .Arm }}{{ end }}",
+				Username: "deployuser",
 			},
 		},
-		testctx.WithEnv(map[string]string{
-			"UPLOAD_PRODUCTION_SECRET": "deployuser-secret",
-		}),
-	)
+		Env: []string{"UPLOAD_PRODUCTION_SECRET=deployuser-secret"},
+	})
 	require.Error(t, Pipe{}.Publish(ctx))
 }
 
