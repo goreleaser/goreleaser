@@ -8,7 +8,7 @@ require (
 	github.com/atc0005/go-teams-notify/v2 v2.7.0
 	github.com/awslabs/amazon-ecr-credential-helper/ecr-login v0.0.0-20220517224237-e6f29200ae04
 	github.com/caarlos0/ctrlc v1.2.0
-	github.com/caarlos0/env/v6 v6.10.1
+	github.com/caarlos0/env/v7 v7.0.0
 	github.com/caarlos0/go-reddit/v3 v3.0.1
 	github.com/caarlos0/go-shellwords v1.0.12
 	github.com/caarlos0/log v0.2.1
@@ -40,7 +40,7 @@ require (
 	github.com/ory/dockertest/v3 v3.9.1
 	github.com/slack-go/slack v0.12.1
 	github.com/spf13/cobra v1.6.1
-	github.com/stretchr/testify v1.8.1
+	github.com/stretchr/testify v1.8.2
 	github.com/ulikunitz/xz v0.5.11
 	github.com/withfig/autocomplete-tools/integrations/cobra v1.2.1
 	github.com/xanzy/go-gitlab v0.80.2

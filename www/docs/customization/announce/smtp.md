@@ -14,10 +14,12 @@ announce:
     # Defaults to false.
     enabled: true
 
-    # SMTP Host
+    # SMTP Host.
+    # Default from $SMTP_HOST.
     host: "smtp.gmail.com"
 
     # SMTP Port
+    # Default from $SMTP_PORT.
     port: 587
 
     # Sender of the email
@@ -29,6 +31,7 @@ announce:
       - ""
 
     # Owner of the email
+    # Default from $SMTP_USERNAME.
     username: ""
 
     # Body template to use within the email.

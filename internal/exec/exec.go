@@ -109,7 +109,7 @@ func executeCommand(c *command, artifact *artifact.Artifact) error {
 	return nil
 }
 
-func filterArtifacts(artifacts artifact.Artifacts, publisher config.Publisher) []*artifact.Artifact {
+func filterArtifacts(artifacts *artifact.Artifacts, publisher config.Publisher) []*artifact.Artifact {
 	filters := []artifact.Filter{
 		artifact.ByType(artifact.UploadableArchive),
 		artifact.ByType(artifact.UploadableFile),

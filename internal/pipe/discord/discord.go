@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"strconv"
 
-	"github.com/caarlos0/env/v6"
+	"github.com/caarlos0/env/v7"
 	"github.com/caarlos0/log"
 	"github.com/disgoorg/disgo/discord"
 	"github.com/disgoorg/disgo/webhook"

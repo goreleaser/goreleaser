@@ -2259,6 +2259,12 @@
 					"git": {
 						"$ref": "#/$defs/Git"
 					},
+					"template_files": {
+						"items": {
+							"$ref": "#/$defs/TemplateFile"
+						},
+						"type": "array"
+					},
 					"universal_binaries": {
 						"items": {
 							"$ref": "#/$defs/UniversalBinary"
@@ -3071,6 +3077,28 @@
 				},
 				"additionalProperties": false,
 				"type": "object"
+			},
+			"TemplateFile": {
+				"properties": {
+					"id": {
+						"type": "string"
+					},
+					"src": {
+						"type": "string"
+					},
+					"dst": {
+						"type": "string"
+					},
+					"mode": {
+						"type": "integer"
+					}
+				},
+				"additionalProperties": false,
+				"type": "object",
+				"required": [
+					"src",
+					"dst"
+				]
 			},
 			"Twitter": {
 				"properties": {

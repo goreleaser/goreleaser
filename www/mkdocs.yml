@@ -93,6 +93,7 @@ nav:
     - customization/dist.md
     - customization/project.md
     - customization/git.md
+    - customization/templatefiles.md
   - Build:
     - customization/builds.md
     - customization/verifiable_builds.md
