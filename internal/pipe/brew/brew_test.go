@@ -107,7 +107,7 @@ func TestFullFormulae(t *testing.T) {
 	data.PostInstall = []string{`touch "/tmp/foo"`, `system "echo", "done"`}
 	data.CustomBlock = []string{"devel do", `  url "https://github.com/caarlos0/test/releases/download/v0.1.3/test_Darwin_x86_64.tar.gz"`, `  sha256 "1633f61598ab0791e213135923624eb342196b3494909c91899bcd0560f84c68"`, "end"}
 	data.Tests = []string{`system "#{bin}/{{.ProjectName}}", "-version"`}
-	formulae, err := doBuildFormula(context.New(config.Project{
+	formulae, err := doBuildFormula(testctx.NewWithCfg(config.Project{
 		ProjectName: "foo",
 	}), data)
 	require.NoError(t, err)
@@ -118,7 +118,7 @@ func TestFullFormulae(t *testing.T) {
 func TestFullFormulaeLinuxOnly(t *testing.T) {
 	data := defaultTemplateData
 	data.MacOSPackages = []releasePackage{}
-	formulae, err := doBuildFormula(context.New(config.Project{
+	formulae, err := doBuildFormula(testctx.NewWithCfg(config.Project{
 		ProjectName: "foo",
 	}), data)
 	require.NoError(t, err)
@@ -129,7 +129,7 @@ func TestFullFormulaeLinuxOnly(t *testing.T) {
 func TestFullFormulaeMacOSOnly(t *testing.T) {
 	data := defaultTemplateData
 	data.LinuxPackages = []releasePackage{}
-	formulae, err := doBuildFormula(context.New(config.Project{
+	formulae, err := doBuildFormula(testctx.NewWithCfg(config.Project{
 		ProjectName: "foo",
 	}), data)
 	require.NoError(t, err)
@@ -138,7 +138,7 @@ func TestFullFormulaeMacOSOnly(t *testing.T) {
 }
 
 func TestFormulaeSimple(t *testing.T) {
-	formulae, err := doBuildFormula(context.New(config.Project{}), defaultTemplateData)
+	formulae, err := doBuildFormula(testctx.NewWithCfg(config.Project{}), defaultTemplateData)
 	require.NoError(t, err)
 	assertDefaultTemplateData(t, formulae)
 	require.NotContains(t, formulae, "def caveats")
@@ -768,7 +768,7 @@ func TestRunPipeForMultipleArmVersions(t *testing.T) {
 }
 
 func TestRunPipeNoBuilds(t *testing.T) {
-	ctx := context.New(
+	ctx := testctx.NewWithCfg(
 		config.Project{
 			Brews: []config.Homebrew{
 				{
@@ -779,15 +779,15 @@ func TestRunPipeNoBuilds(t *testing.T) {
 				},
 			},
 		},
+		testctx.WithTokenType(context.TokenTypeGitHub),
 	)
-	ctx.TokenType = context.TokenTypeGitHub
 	client := client.NewMock()
 	require.Equal(t, ErrNoArchivesFound, runAll(ctx, client))
 	require.False(t, client.CreatedFile)
 }
 
 func TestRunPipeMultipleArchivesSameOsBuild(t *testing.T) {
-	ctx := context.New(
+	ctx := testctx.NewWithCfg(
 		config.Project{
 			Brews: []config.Homebrew{
 				{
@@ -798,9 +798,9 @@ func TestRunPipeMultipleArchivesSameOsBuild(t *testing.T) {
 				},
 			},
 		},
+		testctx.WithTokenType(context.TokenTypeGitHub),
 	)
 
-	ctx.TokenType = context.TokenTypeGitHub
 	f, err := os.CreateTemp(t.TempDir(), "")
 	require.NoError(t, err)
 	t.Cleanup(func() {
@@ -982,7 +982,7 @@ func TestRunPipeBinaryRelease(t *testing.T) {
 
 func TestRunPipeNoUpload(t *testing.T) {
 	folder := t.TempDir()
-	ctx := context.New(config.Project{
+	ctx := testctx.NewWithCfg(config.Project{
 		Dist:        folder,
 		ProjectName: "foo",
 		Release:     config.Release{},
@@ -995,12 +995,8 @@ func TestRunPipeNoUpload(t *testing.T) {
 				Goamd64: "v1",
 			},
 		},
-	})
-	ctx.Env = map[string]string{
-		"SKIP_UPLOAD": "true",
-	}
-	ctx.TokenType = context.TokenTypeGitHub
-	ctx.Git = context.GitInfo{CurrentTag: "v1.0.1"}
+		Env: []string{"SKIP_UPLOAD=true"},
+	}, testctx.WithCurrentTag("v1.0.1"), testctx.WithTokenType(context.TokenTypeGitHub))
 	path := filepath.Join(folder, "whatever.tar.gz")
 	f, err := os.Create(path)
 	require.NoError(t, err)
@@ -1044,7 +1040,7 @@ func TestRunPipeNoUpload(t *testing.T) {
 
 func TestRunEmptyTokenType(t *testing.T) {
 	folder := t.TempDir()
-	ctx := context.New(config.Project{
+	ctx := testctx.NewWithCfg(config.Project{
 		Dist:        folder,
 		ProjectName: "foo",
 		Release:     config.Release{},
@@ -1057,8 +1053,7 @@ func TestRunEmptyTokenType(t *testing.T) {
 				Goamd64: "v1",
 			},
 		},
-	})
-	ctx.Git = context.GitInfo{CurrentTag: "v1.0.1"}
+	}, testctx.WithCurrentTag("v1.0.0"))
 	path := filepath.Join(folder, "whatever.tar.gz")
 	f, err := os.Create(path)
 	require.NoError(t, err)
@@ -1104,11 +1099,11 @@ func TestGHFolder(t *testing.T) {
 
 func TestSkip(t *testing.T) {
 	t.Run("skip", func(t *testing.T) {
-		require.True(t, Pipe{}.Skip(context.New(config.Project{})))
+		require.True(t, Pipe{}.Skip(testctx.New()))
 	})
 
 	t.Run("dont skip", func(t *testing.T) {
-		ctx := context.New(config.Project{
+		ctx := testctx.NewWithCfg(config.Project{
 			Brews: []config.Homebrew{
 				{},
 			},
@@ -1118,7 +1113,7 @@ func TestSkip(t *testing.T) {
 }
 
 func TestRunSkipNoName(t *testing.T) {
-	ctx := context.New(config.Project{
+	ctx := testctx.NewWithCfg(config.Project{
 		Brews: []config.Homebrew{{}},
 	})
 
@@ -1129,7 +1124,7 @@ func TestRunSkipNoName(t *testing.T) {
 func TestInstalls(t *testing.T) {
 	t.Run("provided", func(t *testing.T) {
 		install, err := installs(
-			context.New(config.Project{}),
+			testctx.New(),
 			config.Homebrew{Install: "bin.install \"foo\"\nbin.install \"bar\""},
 			&artifact.Artifact{},
 		)
@@ -1142,8 +1137,7 @@ func TestInstalls(t *testing.T) {
 
 	t.Run("from archives", func(t *testing.T) {
 		install, err := installs(
-			context.New(config.Project{}),
-
+			testctx.New(),
 			config.Homebrew{},
 			&artifact.Artifact{
 				Type: artifact.UploadableArchive,
@@ -1161,7 +1155,7 @@ func TestInstalls(t *testing.T) {
 
 	t.Run("from binary", func(t *testing.T) {
 		install, err := installs(
-			context.New(config.Project{}),
+			testctx.New(),
 			config.Homebrew{},
 			&artifact.Artifact{
 				Name: "foo_macos",
@@ -1179,7 +1173,7 @@ func TestInstalls(t *testing.T) {
 
 	t.Run("from template", func(t *testing.T) {
 		install, err := installs(
-			context.New(config.Project{}),
+			testctx.New(),
 			config.Homebrew{
 				Install: `bin.install "foo_{{.Os}}" => "foo"`,
 			},
