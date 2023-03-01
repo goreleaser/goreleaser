@@ -4,16 +4,16 @@ import (
 	"testing"
 	"time"
 
+	"github.com/goreleaser/goreleaser/internal/testctx"
 	"github.com/goreleaser/goreleaser/internal/testlib"
 	"github.com/goreleaser/goreleaser/internal/tmpl"
 	"github.com/goreleaser/goreleaser/pkg/config"
-	"github.com/goreleaser/goreleaser/pkg/context"
 	"github.com/stretchr/testify/require"
 )
 
 func TestEval(t *testing.T) {
 	now := time.Now().Truncate(time.Second)
-	ctx := context.New(config.Project{
+	ctx := testctx.NewWithCfg(config.Project{
 		Env: []string{"OWNER=carlos", "FOLDER=d"},
 	})
 	ctx.Git.CommitDate = now

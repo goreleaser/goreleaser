@@ -30,7 +30,6 @@ func TestExecute(t *testing.T) {
 	}, testctx.WithVersion("2.1.0"))
 
 	// Preload artifacts
-	ctx.Artifacts = artifact.New()
 	folder := t.TempDir()
 	for _, a := range []struct {
 		id  string
