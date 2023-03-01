@@ -5,7 +5,6 @@ import (
 
 	"github.com/goreleaser/goreleaser/internal/testctx"
 	"github.com/goreleaser/goreleaser/pkg/config"
-	"github.com/goreleaser/goreleaser/pkg/context"
 	"github.com/stretchr/testify/require"
 )
 
@@ -16,7 +15,7 @@ func TestDescription(t *testing.T) {
 func TestPublish(t *testing.T) {
 	ctx := testctx.NewWithCfg(config.Project{
 		Release: config.Release{Disable: "true"},
-	}, testctx.WithTokenType(context.TokenTypeGitHub))
+	}, testctx.GitHubTokenType)
 	require.NoError(t, Pipe{}.Run(ctx))
 }
 

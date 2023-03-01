@@ -7,7 +7,6 @@ import (
 	"github.com/goreleaser/goreleaser/internal/testctx"
 	"github.com/goreleaser/goreleaser/internal/testlib"
 	"github.com/goreleaser/goreleaser/pkg/config"
-	"github.com/goreleaser/goreleaser/pkg/context"
 	"github.com/stretchr/testify/require"
 )
 
@@ -25,7 +24,7 @@ func TestDefaultWithRepoConfig(t *testing.T) {
 				},
 			},
 		},
-	}, testctx.WithTokenType(context.TokenTypeGitHub))
+	}, testctx.GitHubTokenType)
 	require.NoError(t, Pipe{}.Default(ctx))
 	require.Equal(t, "configrepo", ctx.Config.Milestones[0].Repo.Name)
 	require.Equal(t, "configowner", ctx.Config.Milestones[0].Repo.Owner)
@@ -38,7 +37,7 @@ func TestDefaultWithInvalidRemote(t *testing.T) {
 
 	ctx := testctx.NewWithCfg(config.Project{
 		Milestones: []config.Milestone{{}},
-	}, testctx.WithTokenType(context.TokenTypeGitHub))
+	}, testctx.GitHubTokenType)
 	require.Error(t, Pipe{}.Default(ctx))
 }
 
@@ -49,7 +48,7 @@ func TestDefaultWithRepoRemote(t *testing.T) {
 
 	ctx := testctx.NewWithCfg(config.Project{
 		Milestones: []config.Milestone{{}},
-	}, testctx.WithTokenType(context.TokenTypeGitHub))
+	}, testctx.GitHubTokenType)
 	require.NoError(t, Pipe{}.Default(ctx))
 	require.Equal(t, "githubrepo", ctx.Config.Milestones[0].Repo.Name)
 	require.Equal(t, "githubowner", ctx.Config.Milestones[0].Repo.Owner)
@@ -71,7 +70,7 @@ func TestDefaultWithoutGitRepo(t *testing.T) {
 	testlib.Mktmp(t)
 	ctx := testctx.NewWithCfg(config.Project{
 		Milestones: []config.Milestone{{}},
-	}, testctx.WithTokenType(context.TokenTypeGitHub))
+	}, testctx.GitHubTokenType)
 	require.EqualError(t, Pipe{}.Default(ctx), "current folder is not a git repository")
 	require.Empty(t, ctx.Config.Milestones[0].Repo.String())
 }
@@ -80,7 +79,7 @@ func TestDefaultWithoutGitRepoOrigin(t *testing.T) {
 	testlib.Mktmp(t)
 	ctx := testctx.NewWithCfg(config.Project{
 		Milestones: []config.Milestone{{}},
-	}, testctx.WithTokenType(context.TokenTypeGitHub))
+	}, testctx.GitHubTokenType)
 	testlib.GitInit(t)
 	require.EqualError(t, Pipe{}.Default(ctx), "no remote configured to list refs from")
 	require.Empty(t, ctx.Config.Milestones[0].Repo.String())
@@ -90,7 +89,7 @@ func TestDefaultWithoutGitRepoSnapshot(t *testing.T) {
 	testlib.Mktmp(t)
 	ctx := testctx.NewWithCfg(config.Project{
 		Milestones: []config.Milestone{{}},
-	}, testctx.WithTokenType(context.TokenTypeGitHub), testctx.Snapshot)
+	}, testctx.GitHubTokenType, testctx.Snapshot)
 	require.NoError(t, Pipe{}.Default(ctx))
 	require.Empty(t, ctx.Config.Milestones[0].Repo.String())
 }

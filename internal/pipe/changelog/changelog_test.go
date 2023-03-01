@@ -159,7 +159,7 @@ func TestChangelogForGitlab(t *testing.T) {
 				},
 			},
 		},
-		testctx.WithTokenType(context.TokenTypeGitLab),
+		testctx.GitLabTokenType,
 		testctx.WithCurrentTag("v0.0.2"),
 		testctx.WithPreviousTag("v0.0.1"),
 	)
@@ -538,7 +538,7 @@ func TestGetChangeloger(t *testing.T) {
 			Changelog: config.Changelog{
 				Use: useGitHub,
 			},
-		}, testctx.WithTokenType(context.TokenTypeGitHub))
+		}, testctx.GitHubTokenType)
 		c, err := getChangeloger(ctx)
 		require.NoError(t, err)
 		require.IsType(t, c, &scmChangeloger{})
@@ -549,7 +549,7 @@ func TestGetChangeloger(t *testing.T) {
 			Changelog: config.Changelog{
 				Use: useGitHubNative,
 			},
-		}, testctx.WithTokenType(context.TokenTypeGitHub))
+		}, testctx.GitHubTokenType)
 		c, err := getChangeloger(ctx)
 		require.NoError(t, err)
 		require.IsType(t, c, &githubNativeChangeloger{})
@@ -563,7 +563,7 @@ func TestGetChangeloger(t *testing.T) {
 			Changelog: config.Changelog{
 				Use: useGitHubNative,
 			},
-		}, testctx.WithTokenType(context.TokenTypeGitHub))
+		}, testctx.GitHubTokenType)
 		c, err := getChangeloger(ctx)
 		require.EqualError(t, err, "unsupported repository URL: https://gist.github.com/")
 		require.Nil(t, c)
@@ -574,7 +574,7 @@ func TestGetChangeloger(t *testing.T) {
 			Changelog: config.Changelog{
 				Use: useGitLab,
 			},
-		}, testctx.WithTokenType(context.TokenTypeGitLab))
+		}, testctx.GitHubTokenType)
 		c, err := getChangeloger(ctx)
 		require.NoError(t, err)
 		require.IsType(t, c, &scmChangeloger{})
@@ -588,7 +588,7 @@ func TestGetChangeloger(t *testing.T) {
 			Changelog: config.Changelog{
 				Use: useGitHub,
 			},
-		}, testctx.WithTokenType(context.TokenTypeGitHub))
+		}, testctx.GitHubTokenType)
 		c, err := getChangeloger(ctx)
 		require.EqualError(t, err, "unsupported repository URL: https://gist.github.com/")
 		require.Nil(t, c)

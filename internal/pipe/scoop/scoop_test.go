@@ -24,7 +24,7 @@ func TestDefault(t *testing.T) {
 
 	ctx := testctx.NewWithCfg(
 		config.Project{ProjectName: "barr"},
-		testctx.WithTokenType(context.TokenTypeGitHub),
+		testctx.GitHubTokenType,
 	)
 	require.NoError(t, Pipe{}.Default(ctx))
 	require.Equal(t, ctx.Config.ProjectName, ctx.Config.Scoop.Name)
@@ -85,7 +85,7 @@ func Test_doRun(t *testing.T) {
 								Homepage:    "https://github.com/goreleaser",
 							},
 						},
-						testctx.WithTokenType(context.TokenTypeGitHub),
+						testctx.GitHubTokenType,
 						testctx.WithCurrentTag("v1.0.1"),
 						testctx.WithVersion("1.0.1"),
 					)
@@ -119,7 +119,7 @@ func Test_doRun(t *testing.T) {
 								Homepage:    "https://github.com/goreleaser",
 							},
 						},
-						testctx.WithTokenType(context.TokenTypeGitHub),
+						testctx.GitHubTokenType,
 						testctx.WithCurrentTag("v1.0.1"),
 						testctx.WithVersion("1.0.1"),
 					)
@@ -168,7 +168,7 @@ func Test_doRun(t *testing.T) {
 								Homepage:    "https://github.com/goreleaser",
 							},
 						},
-						testctx.WithTokenType(context.TokenTypeGitHub),
+						testctx.GitHubTokenType,
 						testctx.WithCurrentTag("v1.0.1"),
 						testctx.WithVersion("1.0.1"),
 					)
@@ -202,7 +202,7 @@ func Test_doRun(t *testing.T) {
 								Homepage:    "https://gitlab.com/goreleaser",
 							},
 						},
-						testctx.WithTokenType(context.TokenTypeGitLab),
+						testctx.GitHubTokenType,
 						testctx.WithCurrentTag("v1.0.1"),
 						testctx.WithVersion("1.0.1"),
 					)
@@ -245,7 +245,7 @@ func Test_doRun(t *testing.T) {
 								Homepage:    "https://gitlab.com/goreleaser",
 							},
 						},
-						testctx.WithTokenType(context.TokenTypeGitHub),
+						testctx.GitHubTokenType,
 						testctx.WithCurrentTag("v1.0.1"),
 						testctx.WithVersion("1.0.1"),
 					)
@@ -287,7 +287,7 @@ func Test_doRun(t *testing.T) {
 								Homepage:    "https://github.com/goreleaser",
 							},
 						},
-						testctx.WithTokenType(context.TokenTypeGitHub),
+						testctx.GitHubTokenType,
 						testctx.WithCurrentTag("v1.0.1"),
 						testctx.WithVersion("1.0.1"),
 					)
@@ -318,7 +318,7 @@ func Test_doRun(t *testing.T) {
 								Homepage:    "https://github.com/goreleaser",
 							},
 						},
-						testctx.WithTokenType(context.TokenTypeGitHub),
+						testctx.GitHubTokenType,
 						testctx.WithCurrentTag("v1.0.1"),
 						testctx.WithVersion("1.0.1"),
 					)
@@ -350,7 +350,7 @@ func Test_doRun(t *testing.T) {
 								Homepage:    "https://github.com/goreleaser",
 							},
 						},
-						testctx.WithTokenType(context.TokenTypeGitHub),
+						testctx.GitHubTokenType,
 						testctx.WithCurrentTag("v1.0.1-pre.1"),
 						testctx.WithVersion("1.0.1-pre.1"),
 						testctx.WithSemver(1, 0, 0, "pre.1"),
@@ -383,7 +383,7 @@ func Test_doRun(t *testing.T) {
 								Homepage:    "https://github.com/goreleaser",
 							},
 						},
-						testctx.WithTokenType(context.TokenTypeGitHub),
+						testctx.GitHubTokenType,
 						testctx.WithCurrentTag("v1.0.1"),
 						testctx.WithVersion("1.0.1"),
 					)
@@ -417,7 +417,7 @@ func Test_doRun(t *testing.T) {
 								Homepage:    "https://github.com/goreleaser",
 							},
 						},
-						testctx.WithTokenType(context.TokenTypeGitHub),
+						testctx.GitHubTokenType,
 						testctx.WithCurrentTag("v1.0.1"),
 						testctx.WithVersion("1.0.1"),
 					)
@@ -448,7 +448,7 @@ func Test_doRun(t *testing.T) {
 								Homepage:    "https://github.com/goreleaser",
 							},
 						},
-						testctx.WithTokenType(context.TokenTypeGitHub),
+						testctx.GitHubTokenType,
 						testctx.WithCurrentTag("v1.0.1"),
 						testctx.WithVersion("1.0.1"),
 					)
@@ -477,7 +477,7 @@ func Test_doRun(t *testing.T) {
 								Homepage:    "https://github.com/goreleaser",
 							},
 						},
-						testctx.WithTokenType(context.TokenTypeGitHub),
+						testctx.GitHubTokenType,
 						testctx.WithCurrentTag("v1.0.1"),
 						testctx.WithVersion("1.0.1"),
 					)
@@ -510,7 +510,7 @@ func Test_doRun(t *testing.T) {
 								Homepage:    "https://github.com/goreleaser",
 							},
 						},
-						testctx.WithTokenType(context.TokenTypeGitHub),
+						testctx.GitHubTokenType,
 						testctx.WithCurrentTag("v1.0.1"),
 						testctx.WithVersion("1.0.1"),
 					)
@@ -577,7 +577,7 @@ func Test_buildManifest(t *testing.T) {
 						Persist:     []string{"data", "config", "test.ini"},
 					},
 				},
-				testctx.WithTokenType(context.TokenTypeGitHub),
+				testctx.GitHubTokenType,
 				testctx.WithCurrentTag("v1.0.1"),
 				testctx.WithVersion("1.0.1"),
 			),
@@ -608,7 +608,7 @@ func Test_buildManifest(t *testing.T) {
 						PostInstall: []string{"Write-Host 'Running postinstall command'"},
 					},
 				},
-				testctx.WithTokenType(context.TokenTypeGitHub),
+				testctx.GitHubTokenType,
 				testctx.WithCurrentTag("v1.0.1"),
 				testctx.WithVersion("1.0.1"),
 			),
@@ -633,10 +633,8 @@ func Test_buildManifest(t *testing.T) {
 						Persist:               []string{"data.cfg", "etc"},
 					},
 				},
-				testctx.WithGitInfo(context.GitInfo{
-					CurrentTag: "v1.0.1",
-				}),
-				testctx.WithTokenType(context.TokenTypeGitHub),
+				testctx.WithCurrentTag("v1.0.1"),
+				testctx.GitHubTokenType,
 				testctx.WithVersion("1.0.1"),
 			),
 		},
@@ -660,10 +658,8 @@ func Test_buildManifest(t *testing.T) {
 						Persist:               []string{"data.cfg", "etc"},
 					},
 				},
-				testctx.WithGitInfo(context.GitInfo{
-					CurrentTag: "v1.0.1",
-				}),
-				testctx.WithTokenType(context.TokenTypeGitHub),
+				testctx.GitHubTokenType,
+				testctx.WithCurrentTag("v1.0.1"),
 				testctx.WithVersion("1.0.1"),
 			),
 		},
@@ -831,9 +827,9 @@ func TestWrapInDirectory(t *testing.T) {
 				Persist:               []string{"data.cfg", "etc"},
 			},
 		},
+		testctx.GitHubTokenType,
 		testctx.WithCurrentTag("v1.0.1"),
 		testctx.WithVersion("1.0.1"),
-		testctx.WithTokenType(context.TokenTypeGitLab),
 	)
 
 	require.NoError(t, Pipe{}.Default(ctx))

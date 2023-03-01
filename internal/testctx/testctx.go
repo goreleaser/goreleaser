@@ -1,3 +1,4 @@
+// Package testctx provides a test context to be used in unit tests.
 package testctx
 
 import (
@@ -7,11 +8,33 @@ import (
 	"github.com/goreleaser/goreleaser/pkg/context"
 )
 
+// Opt is an option for a test context.
 type Opt func(ctx *context.Context)
+
+func GitHubTokenType(ctx *context.Context) {
+	WithTokenType(context.TokenTypeGitHub)(ctx)
+	WithToken("githubtoken")(ctx)
+}
+
+func GitLabTokenType(ctx *context.Context) {
+	WithTokenType(context.TokenTypeGitLab)(ctx)
+	WithToken("gitlabtoken")(ctx)
+}
+
+func GiteaTokenType(ctx *context.Context) {
+	WithTokenType(context.TokenTypeGitea)(ctx)
+	WithToken("giteatoken")(ctx)
+}
 
 func WithTokenType(t context.TokenType) Opt {
 	return func(ctx *context.Context) {
 		ctx.TokenType = t
+	}
+}
+
+func WithToken(t string) Opt {
+	return func(ctx *context.Context) {
+		ctx.Token = t
 	}
 }
 
@@ -56,6 +79,7 @@ func WithPreviousTag(tag string) Opt {
 	}
 }
 
+// Deprecated: do not use
 func WithEnv(env map[string]string) Opt {
 	return func(ctx *context.Context) {
 		ctx.Env = env

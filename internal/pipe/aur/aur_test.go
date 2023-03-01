@@ -357,14 +357,12 @@ func TestRunPipe(t *testing.T) {
 					Name:  "test",
 				},
 			},
+			Env: []string{"FOO=foo_is_bar"},
 		},
-		testctx.WithTokenType(context.TokenTypeGitHub),
+		testctx.GitHubTokenType,
 		testctx.WithCurrentTag("v1.0.1"),
 		testctx.WithSemver(1, 0, 1, ""),
 		testctx.WithVersion("1.0.1"),
-		testctx.WithEnv(map[string]string{
-			"FOO": "foo_is_bar",
-		}),
 	)
 
 	for _, a := range []struct {
@@ -460,7 +458,7 @@ func TestRunPipeNoBuilds(t *testing.T) {
 	ctx := testctx.NewWithCfg(config.Project{
 		ProjectName: "foo",
 		AURs:        []config.AUR{{}},
-	}, testctx.WithTokenType(context.TokenTypeGitHub))
+	}, testctx.GitHubTokenType)
 	client := client.NewMock()
 	require.NoError(t, Pipe{}.Default(ctx))
 	require.Equal(t, ErrNoArchivesFound, runAll(ctx, client))
@@ -481,7 +479,7 @@ func TestRunPipeBinaryRelease(t *testing.T) {
 			}},
 		},
 		testctx.WithVersion("1.2.1"),
-		testctx.WithGitInfo(context.GitInfo{CurrentTag: "v1.2.1"}),
+		testctx.WithCurrentTag("v1.2.1"),
 		testctx.WithSemver(1, 2, 1, ""),
 	)
 
@@ -522,8 +520,8 @@ func TestRunPipeNoUpload(t *testing.T) {
 			Release:     config.Release{},
 			AURs:        []config.AUR{{}},
 		},
-		testctx.WithTokenType(context.TokenTypeGitHub),
-		testctx.WithGitInfo(context.GitInfo{CurrentTag: "v1.0.1"}),
+		testctx.GitHubTokenType,
+		testctx.WithCurrentTag("v1.0.1"),
 		testctx.WithSemver(1, 0, 1, ""),
 	)
 
@@ -604,10 +602,8 @@ func TestDefault(t *testing.T) {
 	t.Run("empty", func(t *testing.T) {
 		ctx := testctx.NewWithCfg(config.Project{
 			ProjectName: "myproject",
-			AURs: []config.AUR{
-				{},
-			},
-		}, testctx.WithTokenType(context.TokenTypeGitHub))
+			AURs:        []config.AUR{{}},
+		}, testctx.GitHubTokenType)
 		require.NoError(t, Pipe{}.Default(ctx))
 		require.Equal(t, config.AUR{
 			Name:                  "myproject-bin",
@@ -632,7 +628,7 @@ func TestDefault(t *testing.T) {
 					Name: "foo",
 				},
 			},
-		}, testctx.WithTokenType(context.TokenTypeGitHub))
+		}, testctx.GitHubTokenType)
 		require.NoError(t, Pipe{}.Default(ctx))
 		require.Equal(t, config.AUR{
 			Name:                  "foo-bin",
@@ -658,7 +654,7 @@ func TestDefault(t *testing.T) {
 					Goamd64:   "v3",
 				},
 			},
-		}, testctx.WithTokenType(context.TokenTypeGitHub))
+		}, testctx.GitHubTokenType)
 		require.NoError(t, Pipe{}.Default(ctx))
 		require.Equal(t, config.AUR{
 			Name:                  "myproject-bin",

@@ -343,7 +343,7 @@ func TestDefault(t *testing.T) {
 				Download: "https://github.com",
 			},
 		},
-		testctx.WithTokenType(context.TokenTypeGitHub),
+		testctx.GitHubTokenType,
 		testctx.WithCurrentTag("v1.0.0"),
 	)
 	require.NoError(t, Pipe{}.Default(ctx))
@@ -362,7 +362,7 @@ func TestDefaultInvalidURL(t *testing.T) {
 				Download: "https://github.com",
 			},
 		},
-		testctx.WithTokenType(context.TokenTypeGitHub),
+		testctx.GitHubTokenType,
 		testctx.WithCurrentTag("v1.0.0"),
 	)
 	require.Error(t, Pipe{}.Default(ctx))
@@ -379,7 +379,7 @@ func TestDefaultWithGitlab(t *testing.T) {
 				Download: "https://gitlab.com",
 			},
 		},
-		testctx.WithTokenType(context.TokenTypeGitLab),
+		testctx.GitHubTokenType,
 		testctx.WithCurrentTag("v1.0.0"),
 	)
 	require.NoError(t, Pipe{}.Default(ctx))
@@ -398,7 +398,7 @@ func TestDefaultWithGitlabInvalidURL(t *testing.T) {
 				Download: "https://gitlab.com",
 			},
 		},
-		testctx.WithTokenType(context.TokenTypeGitLab),
+		testctx.GitHubTokenType,
 		testctx.WithCurrentTag("v1.0.0"),
 	)
 	require.Error(t, Pipe{}.Default(ctx))
@@ -415,7 +415,7 @@ func TestDefaultWithGitea(t *testing.T) {
 				Download: "https://git.honk.com",
 			},
 		},
-		testctx.WithTokenType(context.TokenTypeGitea),
+		testctx.GitHubTokenType,
 		testctx.WithCurrentTag("v1.0.0"),
 	)
 	require.NoError(t, Pipe{}.Default(ctx))
@@ -434,7 +434,7 @@ func TestDefaultWithGiteaInvalidURL(t *testing.T) {
 				Download: "https://git.honk.com",
 			},
 		},
-		testctx.WithTokenType(context.TokenTypeGitea),
+		testctx.GitHubTokenType,
 		testctx.WithCurrentTag("v1.0.0"),
 	)
 	require.Error(t, Pipe{}.Default(ctx))
@@ -483,7 +483,7 @@ func TestDefaultPreRelease(t *testing.T) {
 					Prerelease: "auto",
 				},
 			},
-			testctx.WithTokenType(context.TokenTypeGitHub),
+			testctx.GitHubTokenType,
 			testctx.WithSemver(1, 0, 0, ""),
 		)
 		require.NoError(t, Pipe{}.Default(ctx))
@@ -497,7 +497,7 @@ func TestDefaultPreRelease(t *testing.T) {
 					Prerelease: "auto",
 				},
 			},
-			testctx.WithTokenType(context.TokenTypeGitHub),
+			testctx.GitHubTokenType,
 			testctx.WithSemver(1, 0, 0, "rc1"),
 		)
 		require.NoError(t, Pipe{}.Default(ctx))
@@ -515,7 +515,7 @@ func TestDefaultPreRelease(t *testing.T) {
 					Prerelease: "auto",
 				},
 			},
-			testctx.WithTokenType(context.TokenTypeGitHub),
+			testctx.GitHubTokenType,
 			testctx.WithSemver(1, 0, 0, "rc1"),
 		)
 		require.NoError(t, Pipe{}.Default(ctx))
@@ -560,14 +560,14 @@ func TestDefaultFilled(t *testing.T) {
 
 func TestDefaultNotAGitRepo(t *testing.T) {
 	testlib.Mktmp(t)
-	ctx := testctx.New(testctx.WithTokenType(context.TokenTypeGitHub))
+	ctx := testctx.New(testctx.GitHubTokenType)
 	require.EqualError(t, Pipe{}.Default(ctx), "current folder is not a git repository")
 	require.Empty(t, ctx.Config.Release.GitHub.String())
 }
 
 func TestDefaultGitRepoWithoutOrigin(t *testing.T) {
 	testlib.Mktmp(t)
-	ctx := testctx.New(testctx.WithTokenType(context.TokenTypeGitHub))
+	ctx := testctx.New(testctx.GitHubTokenType)
 	testlib.GitInit(t)
 	require.EqualError(t, Pipe{}.Default(ctx), "no remote configured to list refs from")
 	require.Empty(t, ctx.Config.Release.GitHub.String())
@@ -575,14 +575,14 @@ func TestDefaultGitRepoWithoutOrigin(t *testing.T) {
 
 func TestDefaultNotAGitRepoSnapshot(t *testing.T) {
 	testlib.Mktmp(t)
-	ctx := testctx.New(testctx.WithTokenType(context.TokenTypeGitHub), testctx.Snapshot)
+	ctx := testctx.New(testctx.GitHubTokenType, testctx.Snapshot)
 	require.NoError(t, Pipe{}.Default(ctx))
 	require.Empty(t, ctx.Config.Release.GitHub.String())
 }
 
 func TestDefaultGitRepoWithoutRemote(t *testing.T) {
 	testlib.Mktmp(t)
-	ctx := testctx.New(testctx.WithTokenType(context.TokenTypeGitHub))
+	ctx := testctx.New(testctx.GitHubTokenType)
 	require.Error(t, Pipe{}.Default(ctx))
 	require.Empty(t, ctx.Config.Release.GitHub.String())
 }

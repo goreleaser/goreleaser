@@ -33,7 +33,7 @@ func TestDefault(t *testing.T) {
 		Chocolateys: []config.Chocolatey{
 			{},
 		},
-	}, testctx.WithTokenType(context.TokenTypeGitHub))
+	}, testctx.GitHubTokenType)
 
 	require.NoError(t, Pipe{}.Default(ctx))
 	require.Equal(t, ctx.Config.ProjectName, ctx.Config.Chocolateys[0].Name)

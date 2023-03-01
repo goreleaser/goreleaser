@@ -635,13 +635,11 @@ func TestRunPipeForMultipleArmVersions(t *testing.T) {
 							Name:  "test",
 						},
 					},
+					Env: []string{"FOO=foo_is_bar"},
 				},
-				testctx.WithTokenType(context.TokenTypeGitHub),
+				testctx.GitHubTokenType,
 				testctx.WithVersion("1.0.1"),
 				testctx.WithCurrentTag("v1.0.1"),
-				testctx.WithEnv(map[string]string{
-					"FOO": "foo_is_bar",
-				}),
 			)
 			fn(ctx)
 			for _, a := range []struct {
@@ -717,22 +715,19 @@ func TestRunPipeForMultipleArmVersions(t *testing.T) {
 }
 
 func TestRunPipeNoBuilds(t *testing.T) {
-	ctx := testctx.NewWithCfg(
-		config.Project{
-			Krews: []config.Krew{
-				{
-					Name:             manifestName(t),
-					Description:      "Some desc",
-					ShortDescription: "Short desc",
-					Index: config.RepoRef{
-						Owner: "test",
-						Name:  "test",
-					},
+	ctx := testctx.NewWithCfg(config.Project{
+		Krews: []config.Krew{
+			{
+				Name:             manifestName(t),
+				Description:      "Some desc",
+				ShortDescription: "Short desc",
+				Index: config.RepoRef{
+					Owner: "test",
+					Name:  "test",
 				},
 			},
 		},
-		testctx.WithTokenType(context.TokenTypeGitHub),
-	)
+	}, testctx.GitHubTokenType)
 	client := client.NewMock()
 	require.Equal(t, ErrNoArchivesFound, runAll(ctx, client))
 	require.False(t, client.CreatedFile)
@@ -755,7 +750,7 @@ func TestRunPipeNoUpload(t *testing.T) {
 				},
 			},
 		},
-	}, testctx.WithTokenType(context.TokenTypeGitHub), testctx.WithCurrentTag("v1.0.1"))
+	}, testctx.GitHubTokenType, testctx.WithCurrentTag("v1.0.1"))
 	path := filepath.Join(folder, "whatever.tar.gz")
 	f, err := os.Create(path)
 	require.NoError(t, err)
@@ -877,15 +872,12 @@ func TestRunMultipleBinaries(t *testing.T) {
 func TestDefault(t *testing.T) {
 	testlib.Mktmp(t)
 
-	ctx := testctx.NewWithCfg(
-		config.Project{
-			ProjectName: "myproject",
-			Krews: []config.Krew{
-				{},
-			},
+	ctx := testctx.NewWithCfg(config.Project{
+		ProjectName: "myproject",
+		Krews: []config.Krew{
+			{},
 		},
-		testctx.WithTokenType(context.TokenTypeGitHub),
-	)
+	}, testctx.GitHubTokenType)
 	require.NoError(t, Pipe{}.Default(ctx))
 	require.Equal(t, ctx.Config.ProjectName, ctx.Config.Krews[0].Name)
 	require.NotEmpty(t, ctx.Config.Krews[0].CommitAuthor.Name)
