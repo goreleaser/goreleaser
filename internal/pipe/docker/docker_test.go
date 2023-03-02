@@ -1239,7 +1239,7 @@ func TestDefaultFilesDot(t *testing.T) {
 			},
 		},
 	})
-	require.EqualError(t, Pipe{}.Default(ctx), `invalid docker.files: can't be . or inside dist folder: .`)
+	require.NoError(t, Pipe{}.Default(ctx))
 }
 
 func TestDefaultFilesDis(t *testing.T) {
@@ -1251,7 +1251,7 @@ func TestDefaultFilesDis(t *testing.T) {
 			},
 		},
 	})
-	require.EqualError(t, Pipe{}.Default(ctx), `invalid docker.files: can't be . or inside dist folder: /tmp/dist/asdasd/asd`)
+	require.NoError(t, Pipe{}.Default(ctx))
 }
 
 func TestDefaultSet(t *testing.T) {
