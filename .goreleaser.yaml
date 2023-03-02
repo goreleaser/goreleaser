@@ -279,8 +279,6 @@ sboms:
 
 signs:
 - cmd: cosign
-  env:
-  - COSIGN_EXPERIMENTAL=1
   certificate: '${artifact}.pem'
   output: true
   artifacts: checksum
@@ -289,16 +287,16 @@ signs:
     - '--output-certificate=${certificate}'
     - '--output-signature=${signature}'
     - '${artifact}'
+    - --yes
 
 docker_signs:
 - cmd: cosign
-  env:
-  - COSIGN_EXPERIMENTAL=1
   artifacts: manifests
   output: true
   args:
   - 'sign'
   - '${artifact}@${digest}'
+  - --yes
 
 publishers:
   - name: fury.io
