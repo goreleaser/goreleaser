@@ -109,10 +109,11 @@ On the nFPM name template field, you can use those extra fields as well:
 
 Key                    |Description
 -----------------------|--------------------------------------------------------------
-`.Release`             |release from the nfpm config
-`.Epoch`               |epoch from the nfpm config
-`.PackageName`         |package the name. Same as `ProjectName` if not overridden.
-`.ConventionalFileName`|conventional package file name as provided by nFPM[^arm-names]
+`.Release`              |release from the nfpm config
+`.Epoch`                |epoch from the nfpm config
+`.PackageName`          |package the name. Same as `ProjectName` if not overridden.
+`.ConventionalFileName` |conventional package file name as provided by nFPM.[^arm-names]
+`.ConventionalExtension`|conventional package extension as provided by nFPM. Since v1.16.
 
 [^arm-names]: Please beware: some OSs might have the same names for different
   ARM versions, for example, for Debian both ARMv6 and ARMv7 are called `armhf`.

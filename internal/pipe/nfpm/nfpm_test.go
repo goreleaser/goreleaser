@@ -1429,6 +1429,49 @@ func TestSkip(t *testing.T) {
 	})
 }
 
+func TestTemplateExt(t *testing.T) {
+	ctx := testctx.NewWithCfg(config.Project{
+		Dist: t.TempDir(),
+		NFPMs: []config.NFPM{
+			{
+				NFPMOverridables: config.NFPMOverridables{
+					FileNameTemplate: "a_{{ .ConventionalExtension }}_b",
+					PackageName:      "foo",
+				},
+				Meta:       true,
+				Maintainer: "foo@bar",
+				Formats:    []string{"deb", "rpm", "termux.deb", "apk", "archlinux"},
+				Builds:     []string{"default"},
+			},
+		},
+	})
+	ctx.Artifacts.Add(&artifact.Artifact{
+		Name:   "mybin",
+		Goos:   "linux",
+		Goarch: "amd64",
+		Type:   artifact.Binary,
+		Extra: map[string]interface{}{
+			artifact.ExtraID: "default",
+		},
+	})
+	require.NoError(t, Pipe{}.Run(ctx))
+
+	packages := ctx.Artifacts.Filter(artifact.ByType(artifact.LinuxPackage)).List()
+	require.Len(t, packages, 5)
+	names := make([]string, 0, 5)
+	for _, p := range packages {
+		names = append(names, p.Name)
+	}
+
+	require.ElementsMatch(t, []string{
+		"a_.apk_b.apk",
+		"a_.deb_b.deb",
+		"a_.rpm_b.rpm",
+		"a_.termux.deb_b.termux.deb",
+		"a_.pkg.tar.zst_b.pkg.tar.zst",
+	}, names)
+}
+
 func sources(contents files.Contents) []string {
 	result := make([]string, 0, len(contents))
 	for _, f := range contents {
