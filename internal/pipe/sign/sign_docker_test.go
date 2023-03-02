@@ -75,7 +75,7 @@ func TestDockerSignArtifacts(t *testing.T) {
 					Artifacts: "all",
 					Stdin:     &password,
 					Cmd:       "cosign",
-					Args:      []string{"sign", "--key=" + key, "--upload=false", "${artifact}"},
+					Args:      []string{"sign", "--key=" + key, "--upload=false", "${artifact}", "--yes"},
 				},
 			},
 		},
