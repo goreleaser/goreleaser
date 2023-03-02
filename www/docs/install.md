@@ -198,7 +198,7 @@ All artifacts are checksummed, and the checksum file is signed with [cosign][].
       ```
     1. Verify the signature:
       ```sh
-      COSIGN_EXPERIMENTAL=1 cosign verify-blob \
+      cosign verify-blob \
         --cert checksums.txt.pem \
         --signature checksums.txt.sig \
         checksums.txt
@@ -217,7 +217,7 @@ All artifacts are checksummed, and the checksum file is signed with [cosign][].
       ```
     1. Verify the signature:
       ```sh
-      COSIGN_EXPERIMENTAL=1 cosign verify-blob \
+      cosign verify-blob \
         --cert checksums.txt.pem \
         --signature checksums.txt.sig \
         checksums.txt
@@ -235,12 +235,12 @@ Verify the signatures:
 
 === "OSS"
     ```sh
-    COSIGN_EXPERIMENTAL=1 cosign verify goreleaser/goreleaser
+    cosign verify goreleaser/goreleaser
     ```
 
 === "Pro"
     ```sh
-    COSIGN_EXPERIMENTAL=1 cosign verify goreleaser/goreleaser-pro
+    cosign verify goreleaser/goreleaser-pro
     ```
 
 !!! info

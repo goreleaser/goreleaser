@@ -35,7 +35,7 @@ export TAR_FILE="$TMPDIR/${FILE_BASENAME}_$(uname -s)_$(uname -m).tar.gz"
 	sha256sum --ignore-missing --quiet --check checksums.txt
 	if command -v cosign >/dev/null 2>&1; then
 		echo "Verifying signatures..."
-		COSIGN_EXPERIMENTAL=1 cosign verify-blob \
+		cosign verify-blob \
 			--cert checksums.txt.pem \
 			--signature checksums.txt.sig \
 			checksums.txt
