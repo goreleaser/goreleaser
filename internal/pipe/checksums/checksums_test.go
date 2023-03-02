@@ -7,8 +7,8 @@ import (
 	"testing"
 
 	"github.com/goreleaser/goreleaser/internal/artifact"
+	"github.com/goreleaser/goreleaser/internal/testctx"
 	"github.com/goreleaser/goreleaser/pkg/config"
-	"github.com/goreleaser/goreleaser/pkg/context"
 	"github.com/stretchr/testify/require"
 )
 
@@ -50,7 +50,7 @@ func TestPipe(t *testing.T) {
 			folder := t.TempDir()
 			file := filepath.Join(folder, binary)
 			require.NoError(t, os.WriteFile(file, []byte("some string"), 0o644))
-			ctx := context.New(
+			ctx := testctx.NewWithCfg(
 				config.Project{
 					Dist:        folder,
 					ProjectName: binary,
@@ -59,10 +59,10 @@ func TestPipe(t *testing.T) {
 						Algorithm:    "sha256",
 						IDs:          tt.ids,
 					},
+					Env: []string{"FOO=bar"},
 				},
+				testctx.WithCurrentTag("1.2.3"),
 			)
-			ctx.Git.CurrentTag = "1.2.3"
-			ctx.Env = map[string]string{"FOO": "bar"}
 			ctx.Artifacts.Add(&artifact.Artifact{
 				Name: binary,
 				Path: file,
@@ -106,18 +106,15 @@ func TestRefreshModifying(t *testing.T) {
 	folder := t.TempDir()
 	file := filepath.Join(folder, binary)
 	require.NoError(t, os.WriteFile(file, []byte("some string"), 0o644))
-	ctx := context.New(
-		config.Project{
-			Dist:        folder,
-			ProjectName: binary,
-			Checksum: config.Checksum{
-				NameTemplate: "{{ .ProjectName }}_{{ .Env.FOO }}_checksums.txt",
-				Algorithm:    "sha256",
-			},
+	ctx := testctx.NewWithCfg(config.Project{
+		Dist:        folder,
+		ProjectName: binary,
+		Checksum: config.Checksum{
+			NameTemplate: "{{ .ProjectName }}_{{ .Env.FOO }}_checksums.txt",
+			Algorithm:    "sha256",
 		},
-	)
-	ctx.Git.CurrentTag = "1.2.3"
-	ctx.Env = map[string]string{"FOO": "bar"}
+		Env: []string{"FOO=bar"},
+	}, testctx.WithCurrentTag("1.2.3"))
 	ctx.Artifacts.Add(&artifact.Artifact{
 		Name: binary,
 		Path: file,
@@ -137,15 +134,15 @@ func TestRefreshModifying(t *testing.T) {
 
 func TestPipeFileNotExist(t *testing.T) {
 	folder := t.TempDir()
-	ctx := context.New(
+	ctx := testctx.NewWithCfg(
 		config.Project{
 			Dist: folder,
 			Checksum: config.Checksum{
 				NameTemplate: "checksums.txt",
 			},
 		},
+		testctx.WithCurrentTag("1.2.3"),
 	)
-	ctx.Git.CurrentTag = "1.2.3"
 	ctx.Artifacts.Add(&artifact.Artifact{
 		Name: "nope",
 		Path: "/nope",
@@ -169,7 +166,7 @@ func TestPipeInvalidNameTemplate(t *testing.T) {
 	} {
 		t.Run(template, func(t *testing.T) {
 			folder := t.TempDir()
-			ctx := context.New(
+			ctx := testctx.NewWithCfg(
 				config.Project{
 					Dist:        folder,
 					ProjectName: "name",
@@ -178,8 +175,8 @@ func TestPipeInvalidNameTemplate(t *testing.T) {
 						Algorithm:    "sha256",
 					},
 				},
+				testctx.WithCurrentTag("1.2.3"),
 			)
-			ctx.Git.CurrentTag = "1.2.3"
 			ctx.Artifacts.Add(&artifact.Artifact{
 				Name: "whatever",
 				Type: artifact.UploadableBinary,
@@ -202,7 +199,7 @@ func TestPipeCouldNotOpenChecksumsTxt(t *testing.T) {
 
 	file := filepath.Join(folder, "checksums.txt")
 	require.NoError(t, os.WriteFile(file, []byte("some string"), 0o000))
-	ctx := context.New(
+	ctx := testctx.NewWithCfg(
 		config.Project{
 			Dist: folder,
 			Checksum: config.Checksum{
@@ -210,8 +207,8 @@ func TestPipeCouldNotOpenChecksumsTxt(t *testing.T) {
 				Algorithm:    "sha256",
 			},
 		},
+		testctx.WithCurrentTag("1.2.3"),
 	)
-	ctx.Git.CurrentTag = "1.2.3"
 	ctx.Artifacts.Add(&artifact.Artifact{
 		Name: "whatever",
 		Type: artifact.UploadableBinary,
@@ -223,19 +220,15 @@ func TestPipeCouldNotOpenChecksumsTxt(t *testing.T) {
 }
 
 func TestPipeWhenNoArtifacts(t *testing.T) {
-	ctx := &context.Context{
-		Artifacts: artifact.New(),
-	}
+	ctx := testctx.New()
 	require.NoError(t, Pipe{}.Run(ctx))
 	require.Len(t, ctx.Artifacts.List(), 0)
 }
 
 func TestDefault(t *testing.T) {
-	ctx := &context.Context{
-		Config: config.Project{
-			Checksum: config.Checksum{},
-		},
-	}
+	ctx := testctx.NewWithCfg(config.Project{
+		Checksum: config.Checksum{},
+	})
 	require.NoError(t, Pipe{}.Default(ctx))
 	require.Equal(
 		t,
@@ -246,13 +239,11 @@ func TestDefault(t *testing.T) {
 }
 
 func TestDefaultSet(t *testing.T) {
-	ctx := &context.Context{
-		Config: config.Project{
-			Checksum: config.Checksum{
-				NameTemplate: "checksums.txt",
-			},
+	ctx := testctx.NewWithCfg(config.Project{
+		Checksum: config.Checksum{
+			NameTemplate: "checksums.txt",
 		},
-	}
+	})
 	require.NoError(t, Pipe{}.Default(ctx))
 	require.Equal(t, "checksums.txt", ctx.Config.Checksum.NameTemplate)
 }
@@ -310,7 +301,7 @@ func TestPipeCheckSumsWithExtraFiles(t *testing.T) {
 			folder := t.TempDir()
 			file := filepath.Join(folder, binary)
 			require.NoError(t, os.WriteFile(file, []byte("some string"), 0o644))
-			ctx := context.New(
+			ctx := testctx.NewWithCfg(
 				config.Project{
 					Dist:        folder,
 					ProjectName: binary,
@@ -363,7 +354,7 @@ func TestPipeCheckSumsWithExtraFiles(t *testing.T) {
 
 func TestExtraFilesNoMatch(t *testing.T) {
 	dir := t.TempDir()
-	ctx := context.New(
+	ctx := testctx.NewWithCfg(
 		config.Project{
 			Dist:        dir,
 			ProjectName: "fake",
@@ -387,7 +378,7 @@ func TestExtraFilesNoMatch(t *testing.T) {
 
 func TestSkip(t *testing.T) {
 	t.Run("skip", func(t *testing.T) {
-		ctx := context.New(config.Project{
+		ctx := testctx.NewWithCfg(config.Project{
 			Checksum: config.Checksum{
 				Disable: true,
 			},
@@ -396,7 +387,7 @@ func TestSkip(t *testing.T) {
 	})
 
 	t.Run("dont skip", func(t *testing.T) {
-		require.False(t, Pipe{}.Skip(context.New(config.Project{})))
+		require.False(t, Pipe{}.Skip(testctx.New()))
 	})
 }
 

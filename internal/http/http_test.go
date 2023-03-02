@@ -16,6 +16,7 @@ import (
 	"testing"
 
 	"github.com/goreleaser/goreleaser/internal/artifact"
+	"github.com/goreleaser/goreleaser/internal/testctx"
 	"github.com/goreleaser/goreleaser/pkg/config"
 	"github.com/goreleaser/goreleaser/pkg/context"
 	"github.com/stretchr/testify/require"
@@ -81,8 +82,10 @@ func TestDefaults(t *testing.T) {
 }
 
 func TestCheckConfig(t *testing.T) {
-	ctx := context.New(config.Project{ProjectName: "blah"})
-	ctx.Env["TEST_A_SECRET"] = "x"
+	ctx := testctx.NewWithCfg(config.Project{
+		ProjectName: "blah",
+		Env:         []string{"TEST_A_SECRET=x"},
+	})
 	type args struct {
 		ctx    *context.Context
 		upload *config.Upload
@@ -224,7 +227,7 @@ func TestUpload(t *testing.T) {
 		}
 		return fmt.Errorf("unexpected http status code: %v", r.StatusCode)
 	}
-	ctx := context.New(config.Project{
+	ctx := testctx.NewWithCfg(config.Project{
 		ProjectName: "blah",
 		Archives: []config.Archive{
 			{
@@ -233,11 +236,11 @@ func TestUpload(t *testing.T) {
 				},
 			},
 		},
-	})
-	ctx.Env["TEST_A_SECRET"] = "x"
-	ctx.Env["TEST_A_USERNAME"] = "u2"
-	ctx.Version = "2.1.0"
-	ctx.Artifacts = artifact.New()
+		Env: []string{
+			"TEST_A_SECRET=x",
+			"TEST_A_USERNAME=u2",
+		},
+	}, testctx.WithVersion("2.1.0"))
 	folder := t.TempDir()
 	for _, a := range []struct {
 		ext string

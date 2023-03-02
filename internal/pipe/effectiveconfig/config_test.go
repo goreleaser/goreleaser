@@ -5,9 +5,9 @@ import (
 	"path/filepath"
 	"testing"
 
+	"github.com/goreleaser/goreleaser/internal/testctx"
 	"github.com/goreleaser/goreleaser/internal/testlib"
 	"github.com/goreleaser/goreleaser/pkg/config"
-	"github.com/goreleaser/goreleaser/pkg/context"
 	"github.com/stretchr/testify/require"
 )
 
@@ -19,11 +19,9 @@ func TestRun(t *testing.T) {
 	folder := testlib.Mktmp(t)
 	dist := filepath.Join(folder, "dist")
 	require.NoError(t, os.Mkdir(dist, 0o755))
-	ctx := context.New(
-		config.Project{
-			Dist: dist,
-		},
-	)
+	ctx := testctx.NewWithCfg(config.Project{
+		Dist: dist,
+	})
 	require.NoError(t, Pipe{}.Run(ctx))
 	bts, err := os.ReadFile(filepath.Join(dist, "config.yaml"))
 	require.NoError(t, err)

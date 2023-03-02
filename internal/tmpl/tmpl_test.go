@@ -8,6 +8,7 @@ import (
 	"text/template"
 
 	"github.com/goreleaser/goreleaser/internal/artifact"
+	"github.com/goreleaser/goreleaser/internal/testctx"
 	"github.com/goreleaser/goreleaser/pkg/config"
 	"github.com/goreleaser/goreleaser/pkg/context"
 	"github.com/stretchr/testify/require"
@@ -15,30 +16,30 @@ import (
 
 func TestWithArtifact(t *testing.T) {
 	t.Parallel()
-	ctx := context.New(config.Project{
-		ProjectName: "proj",
-	})
-	ctx.ModulePath = "github.com/goreleaser/goreleaser"
-	ctx.Env = map[string]string{
-		"FOO":       "bar",
-		"MULTILINE": "something with\nmultiple lines\nremove this\nto test things",
-	}
-	ctx.Version = "1.2.3"
-	ctx.Git.PreviousTag = "v1.2.2"
-	ctx.Git.CurrentTag = "v1.2.3"
-	ctx.Semver = context.Semver{
-		Major: 1,
-		Minor: 2,
-		Patch: 3,
-	}
-	ctx.Git.Branch = "test-branch"
-	ctx.Git.Commit = "commit"
-	ctx.Git.FullCommit = "fullcommit"
-	ctx.Git.ShortCommit = "shortcommit"
-	ctx.Git.TagSubject = "awesome release"
-	ctx.Git.TagContents = "awesome release\n\nanother line"
-	ctx.Git.TagBody = "another line"
-	ctx.ReleaseNotes = "test release notes"
+	ctx := testctx.NewWithCfg(
+		config.Project{ProjectName: "proj"},
+		testctx.WithVersion("1.2.3"),
+		testctx.WithGitInfo(context.GitInfo{
+			PreviousTag: "v1.2.2",
+			CurrentTag:  "v1.2.3",
+			Branch:      "test-branch",
+			Commit:      "commit",
+			FullCommit:  "fullcommit",
+			ShortCommit: "shortcommit",
+			TagSubject:  "awesome release",
+			TagContents: "awesome release\n\nanother line",
+			TagBody:     "another line",
+		}),
+		testctx.WithEnv(map[string]string{
+			"FOO":       "bar",
+			"MULTILINE": "something with\nmultiple lines\nremove this\nto test things",
+		}),
+		testctx.WithSemver(1, 2, 3, ""),
+		func(ctx *context.Context) {
+			ctx.ModulePath = "github.com/goreleaser/goreleaser"
+			ctx.ReleaseNotes = "test release notes"
+		},
+	)
 	for expect, tmpl := range map[string]string{
 		"bar":                              "{{.Env.FOO}}",
 		"Linux":                            "{{.Os}}",
@@ -140,11 +141,10 @@ func TestEnv(t *testing.T) {
 			out:  "",
 		},
 	}
-	ctx := context.New(config.Project{})
-	ctx.Env = map[string]string{
-		"FOO": "BAR",
-	}
-	ctx.Git.CurrentTag = "v1.2.3"
+	ctx := testctx.New(
+		testctx.WithEnv(map[string]string{"FOO": "BAR"}),
+		testctx.WithCurrentTag("v1.2.3"),
+	)
 	for _, tC := range testCases {
 		t.Run(tC.desc, func(t *testing.T) {
 			out, _ := New(ctx).Apply(tC.in)
@@ -154,11 +154,10 @@ func TestEnv(t *testing.T) {
 }
 
 func TestWithEnv(t *testing.T) {
-	ctx := context.New(config.Project{})
-	ctx.Env = map[string]string{
-		"FOO": "BAR",
-	}
-	ctx.Git.CurrentTag = "v1.2.3"
+	ctx := testctx.New(
+		testctx.WithEnv(map[string]string{"FOO": "BAR"}),
+		testctx.WithCurrentTag("v1.2.3"),
+	)
 	tpl := New(ctx).WithEnvS([]string{
 		"FOO=foo",
 		"BAR=bar",
@@ -177,7 +176,7 @@ func TestWithEnv(t *testing.T) {
 }
 
 func TestFuncMap(t *testing.T) {
-	ctx := context.New(config.Project{
+	ctx := testctx.NewWithCfg(config.Project{
 		ProjectName: "proj",
 		Env: []string{
 			"FOO=bar",
@@ -273,7 +272,7 @@ func TestFuncMap(t *testing.T) {
 }
 
 func TestApplySingleEnvOnly(t *testing.T) {
-	ctx := context.New(config.Project{
+	ctx := testctx.NewWithCfg(config.Project{
 		Env: []string{
 			"FOO=value",
 			"BAR=another",
@@ -339,22 +338,20 @@ func TestApplySingleEnvOnly(t *testing.T) {
 }
 
 func TestInvalidTemplate(t *testing.T) {
-	ctx := context.New(config.Project{})
-	ctx.Git.CurrentTag = "v1.1.1"
+	ctx := testctx.New(testctx.WithCurrentTag("v1.1.1"))
 	_, err := New(ctx).Apply("{{{.Foo}")
 	require.EqualError(t, err, "template: tmpl:1: unexpected \"{\" in command")
 }
 
 func TestEnvNotFound(t *testing.T) {
-	ctx := context.New(config.Project{})
-	ctx.Git.CurrentTag = "v1.2.4"
+	ctx := testctx.New(testctx.WithCurrentTag("v1.2.4"))
 	result, err := New(ctx).Apply("{{.Env.FOO}}")
 	require.Empty(t, result)
 	require.EqualError(t, err, `template: tmpl:1:6: executing "tmpl" at <.Env.FOO>: map has no entry for key "FOO"`)
 }
 
 func TestWithExtraFields(t *testing.T) {
-	ctx := context.New(config.Project{})
+	ctx := testctx.New()
 	out, _ := New(ctx).WithExtraFields(Fields{
 		"MyCustomField": "foo",
 	}).Apply("{{ .MyCustomField }}")
@@ -369,7 +366,7 @@ func TestBool(t *testing.T) {
 			"TRUE",
 		} {
 			t.Run(v, func(t *testing.T) {
-				ctx := context.New(config.Project{
+				ctx := testctx.NewWithCfg(config.Project{
 					Env: []string{"FOO=" + v},
 				})
 				b, err := New(ctx).Bool("{{.Env.FOO}}")
@@ -386,7 +383,7 @@ func TestBool(t *testing.T) {
 			"yada yada",
 		} {
 			t.Run(v, func(t *testing.T) {
-				ctx := context.New(config.Project{
+				ctx := testctx.NewWithCfg(config.Project{
 					Env: []string{"FOO=" + v},
 				})
 				b, err := New(ctx).Bool("{{.Env.FOO}}")

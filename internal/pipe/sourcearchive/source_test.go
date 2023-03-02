@@ -7,6 +7,7 @@ import (
 	"testing"
 
 	"github.com/goreleaser/goreleaser/internal/artifact"
+	"github.com/goreleaser/goreleaser/internal/testctx"
 	"github.com/goreleaser/goreleaser/internal/testlib"
 	"github.com/goreleaser/goreleaser/pkg/config"
 	"github.com/goreleaser/goreleaser/pkg/context"
@@ -30,21 +31,23 @@ func TestArchive(t *testing.T) {
 			require.NoError(t, os.MkdirAll("subfolder", 0o755))
 			require.NoError(t, os.WriteFile("subfolder/file.md", []byte("a file within a folder, added later"), 0o655))
 
-			ctx := context.New(config.Project{
-				ProjectName: "foo",
-				Dist:        "dist",
-				Source: config.Source{
-					Format:         format,
-					Enabled:        true,
-					PrefixTemplate: "{{ .ProjectName }}-{{ .Version }}/",
-					Files: []config.File{
-						{Source: "*.txt"},
-						{Source: "subfolder/*"},
+			ctx := testctx.NewWithCfg(
+				config.Project{
+					ProjectName: "foo",
+					Dist:        "dist",
+					Source: config.Source{
+						Format:         format,
+						Enabled:        true,
+						PrefixTemplate: "{{ .ProjectName }}-{{ .Version }}/",
+						Files: []config.File{
+							{Source: "*.txt"},
+							{Source: "subfolder/*"},
+						},
 					},
 				},
-			})
-			ctx.Git.FullCommit = "HEAD"
-			ctx.Version = "1.0.0"
+				testctx.WithGitInfo(context.GitInfo{FullCommit: "HEAD"}),
+				testctx.WithVersion("1.0.0"),
+			)
 
 			require.NoError(t, Pipe{}.Default(ctx))
 			require.NoError(t, Pipe{}.Run(ctx))
@@ -80,7 +83,7 @@ func TestArchive(t *testing.T) {
 }
 
 func TestInvalidFormat(t *testing.T) {
-	ctx := context.New(config.Project{
+	ctx := testctx.NewWithCfg(config.Project{
 		Dist:        t.TempDir(),
 		ProjectName: "foo",
 		Source: config.Source{
@@ -94,7 +97,7 @@ func TestInvalidFormat(t *testing.T) {
 }
 
 func TestDefault(t *testing.T) {
-	ctx := context.New(config.Project{})
+	ctx := testctx.New()
 	require.NoError(t, Pipe{}.Default(ctx))
 	require.Equal(t, config.Source{
 		NameTemplate: "{{ .ProjectName }}-{{ .Version }}",
@@ -103,7 +106,7 @@ func TestDefault(t *testing.T) {
 }
 
 func TestInvalidNameTemplate(t *testing.T) {
-	ctx := context.New(config.Project{
+	ctx := testctx.NewWithCfg(config.Project{
 		Source: config.Source{
 			Enabled:      true,
 			NameTemplate: "{{ .foo }-asdda",
@@ -121,7 +124,7 @@ func TestInvalidInvalidFileTemplate(t *testing.T) {
 	testlib.GitAdd(t)
 	testlib.GitCommit(t, "feat: first")
 
-	ctx := context.New(config.Project{
+	ctx := testctx.NewWithCfg(config.Project{
 		ProjectName: "foo",
 		Dist:        "dist",
 		Source: config.Source{
@@ -139,7 +142,7 @@ func TestInvalidInvalidFileTemplate(t *testing.T) {
 }
 
 func TestInvalidPrefixTemplate(t *testing.T) {
-	ctx := context.New(config.Project{
+	ctx := testctx.NewWithCfg(config.Project{
 		Dist: t.TempDir(),
 		Source: config.Source{
 			Enabled:        true,
@@ -151,16 +154,16 @@ func TestInvalidPrefixTemplate(t *testing.T) {
 }
 
 func TestDisabled(t *testing.T) {
-	require.True(t, Pipe{}.Skip(context.New(config.Project{})))
+	require.True(t, Pipe{}.Skip(testctx.New()))
 }
 
 func TestSkip(t *testing.T) {
 	t.Run("skip", func(t *testing.T) {
-		require.True(t, Pipe{}.Skip(context.New(config.Project{})))
+		require.True(t, Pipe{}.Skip(testctx.New()))
 	})
 
 	t.Run("dont skip", func(t *testing.T) {
-		ctx := context.New(config.Project{
+		ctx := testctx.NewWithCfg(config.Project{
 			Source: config.Source{
 				Enabled: true,
 			},

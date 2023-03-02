@@ -7,6 +7,7 @@ import (
 	"runtime"
 	"testing"
 
+	"github.com/goreleaser/goreleaser/internal/testctx"
 	"github.com/goreleaser/goreleaser/internal/testlib"
 	"github.com/goreleaser/goreleaser/pkg/config"
 	"github.com/goreleaser/goreleaser/pkg/context"
@@ -17,7 +18,7 @@ func TestGoModProxy(t *testing.T) {
 	t.Run("goreleaser", func(t *testing.T) {
 		dir := testlib.Mktmp(t)
 		dist := filepath.Join(dir, "dist")
-		ctx := context.New(config.Project{
+		ctx := testctx.NewWithCfg(config.Project{
 			Dist: dist,
 			GoMod: config.GoMod{
 				Proxy:    true,
@@ -32,10 +33,7 @@ func TestGoModProxy(t *testing.T) {
 					Dir:    ".",
 				},
 			},
-		})
-		ctx.Git.CurrentTag = "v0.161.1"
-
-		ctx.ModulePath = "github.com/goreleaser/goreleaser"
+		}, testctx.WithCurrentTag("v0.161.1"), withGoReleaserModulePath)
 
 		fakeGoModAndSum(t, ctx.ModulePath)
 		require.NoError(t, ProxyPipe{}.Run(ctx))
@@ -51,7 +49,7 @@ func TestGoModProxy(t *testing.T) {
 	t.Run("nfpm", func(t *testing.T) {
 		dir := testlib.Mktmp(t)
 		dist := filepath.Join(dir, "dist")
-		ctx := context.New(config.Project{
+		ctx := testctx.NewWithCfg(config.Project{
 			Dist: dist,
 			GoMod: config.GoMod{
 				Proxy:    true,
@@ -65,10 +63,7 @@ func TestGoModProxy(t *testing.T) {
 					Main:   "./cmd/nfpm",
 				},
 			},
-		})
-		ctx.Git.CurrentTag = "v2.3.1"
-
-		ctx.ModulePath = "github.com/goreleaser/nfpm/v2"
+		}, testctx.WithCurrentTag("v2.3.1"), withNfpmModulePath)
 		fakeGoModAndSum(t, ctx.ModulePath)
 		require.NoError(t, ProxyPipe{}.Run(ctx))
 		requireGoMod(t)
@@ -81,7 +76,7 @@ func TestGoModProxy(t *testing.T) {
 	t.Run("no go.sum", func(t *testing.T) {
 		dir := testlib.Mktmp(t)
 		dist := filepath.Join(dir, "dist")
-		ctx := context.New(config.Project{
+		ctx := testctx.NewWithCfg(config.Project{
 			Dist: dist,
 			GoMod: config.GoMod{
 				Proxy:    true,
@@ -94,10 +89,7 @@ func TestGoModProxy(t *testing.T) {
 					Goarch: []string{runtime.GOARCH},
 				},
 			},
-		})
-		ctx.Git.CurrentTag = "v0.0.1"
-
-		ctx.ModulePath = "github.com/goreleaser/example-mod-proxy"
+		}, testctx.WithCurrentTag("v0.0.1"), withExampleModulePath)
 		fakeGoMod(t, ctx.ModulePath)
 		require.NoError(t, ProxyPipe{}.Run(ctx))
 		requireGoMod(t)
@@ -115,7 +107,7 @@ func TestGoModProxy(t *testing.T) {
 			t.Run(file, func(t *testing.T) {
 				dir := testlib.Mktmp(t)
 				dist := filepath.Join(dir, "dist")
-				ctx := context.New(config.Project{
+				ctx := testctx.NewWithCfg(config.Project{
 					Dist: dist,
 					GoMod: config.GoMod{
 						Proxy:    true,
@@ -128,10 +120,7 @@ func TestGoModProxy(t *testing.T) {
 							Goarch: []string{runtime.GOARCH},
 						},
 					},
-				})
-				ctx.Git.CurrentTag = "v0.161.1"
-
-				ctx.ModulePath = "github.com/goreleaser/goreleaser"
+				}, withGoReleaserModulePath, testctx.WithCurrentTag("v0.161.1"))
 
 				fakeGoModAndSum(t, ctx.ModulePath)
 				require.NoError(t, ProxyPipe{}.Run(ctx)) // should succeed at first
@@ -146,7 +135,7 @@ func TestGoModProxy(t *testing.T) {
 	t.Run("goreleaser with main.go", func(t *testing.T) {
 		dir := testlib.Mktmp(t)
 		dist := filepath.Join(dir, "dist")
-		ctx := context.New(config.Project{
+		ctx := testctx.NewWithCfg(config.Project{
 			Dist: dist,
 			GoMod: config.GoMod{
 				Proxy:    true,
@@ -160,10 +149,7 @@ func TestGoModProxy(t *testing.T) {
 					Main:   "main.go",
 				},
 			},
-		})
-		ctx.Git.CurrentTag = "v0.161.1"
-
-		ctx.ModulePath = "github.com/goreleaser/goreleaser"
+		}, withGoReleaserModulePath, testctx.WithCurrentTag("v0.161.1"))
 
 		fakeGoModAndSum(t, ctx.ModulePath)
 		require.NoError(t, ProxyPipe{}.Run(ctx))
@@ -180,37 +166,33 @@ func TestProxyDescription(t *testing.T) {
 
 func TestSkip(t *testing.T) {
 	t.Run("skip false gomod.proxy", func(t *testing.T) {
-		require.True(t, ProxyPipe{}.Skip(context.New(config.Project{})))
+		require.True(t, ProxyPipe{}.Skip(testctx.New()))
 	})
 
 	t.Run("skip snapshot", func(t *testing.T) {
-		ctx := context.New(config.Project{
+		ctx := testctx.NewWithCfg(config.Project{
 			GoMod: config.GoMod{
 				Proxy: true,
 			},
-		})
-		ctx.ModulePath = "github.com/goreleaser/goreleaser"
-		ctx.Snapshot = true
+		}, withGoReleaserModulePath, testctx.Snapshot)
 		require.True(t, ProxyPipe{}.Skip(ctx))
 	})
 
 	t.Run("skip not a go module", func(t *testing.T) {
-		ctx := context.New(config.Project{
+		ctx := testctx.NewWithCfg(config.Project{
 			GoMod: config.GoMod{
 				Proxy: true,
 			},
-		})
-		ctx.ModulePath = ""
+		}, func(ctx *context.Context) { ctx.ModulePath = "" })
 		require.True(t, ProxyPipe{}.Skip(ctx))
 	})
 
 	t.Run("dont skip", func(t *testing.T) {
-		ctx := context.New(config.Project{
+		ctx := testctx.NewWithCfg(config.Project{
 			GoMod: config.GoMod{
 				Proxy: true,
 			},
-		})
-		ctx.ModulePath = "github.com/goreleaser/goreleaser"
+		}, withGoReleaserModulePath)
 		require.False(t, ProxyPipe{}.Skip(ctx))
 	})
 }
@@ -236,4 +218,16 @@ func fakeGoModAndSum(tb testing.TB, module string) {
 func fakeGoMod(tb testing.TB, module string) {
 	tb.Helper()
 	require.NoError(tb, os.WriteFile("go.mod", []byte(fmt.Sprintf("module %s\n", module)), 0o666))
+}
+
+func withGoReleaserModulePath(ctx *context.Context) {
+	ctx.ModulePath = "github.com/goreleaser/goreleaser"
+}
+
+func withNfpmModulePath(ctx *context.Context) {
+	ctx.ModulePath = "github.com/goreleaser/nfpm/v2"
+}
+
+func withExampleModulePath(ctx *context.Context) {
+	ctx.ModulePath = "github.com/goreleaser/example-mod-proxy"
 }

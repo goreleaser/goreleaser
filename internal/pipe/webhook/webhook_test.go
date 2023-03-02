@@ -10,8 +10,8 @@ import (
 	"testing"
 
 	"github.com/google/uuid"
+	"github.com/goreleaser/goreleaser/internal/testctx"
 	"github.com/goreleaser/goreleaser/pkg/config"
-	"github.com/goreleaser/goreleaser/pkg/context"
 	"github.com/stretchr/testify/require"
 )
 
@@ -20,7 +20,7 @@ func TestStringer(t *testing.T) {
 }
 
 func TestNoEndpoint(t *testing.T) {
-	ctx := context.New(config.Project{
+	ctx := testctx.NewWithCfg(config.Project{
 		Announce: config.Announce{
 			Webhook: config.Webhook{},
 		},
@@ -29,7 +29,7 @@ func TestNoEndpoint(t *testing.T) {
 }
 
 func TestMalformedEndpoint(t *testing.T) {
-	ctx := context.New(config.Project{
+	ctx := testctx.NewWithCfg(config.Project{
 		Announce: config.Announce{
 			Webhook: config.Webhook{
 				EndpointURL: "httxxx://example.com",
@@ -40,7 +40,7 @@ func TestMalformedEndpoint(t *testing.T) {
 }
 
 func TestAnnounceInvalidMessageTemplate(t *testing.T) {
-	ctx := context.New(config.Project{
+	ctx := testctx.NewWithCfg(config.Project{
 		Announce: config.Announce{
 			Webhook: config.Webhook{
 				EndpointURL:     "https://example.com/webhook",
@@ -76,7 +76,7 @@ func TestAnnounceWebhook(t *testing.T) {
 	}))
 	defer srv.Close()
 
-	ctx := context.New(config.Project{
+	ctx := testctx.NewWithCfg(config.Project{
 		ProjectName: "webhook-test",
 		Announce: config.Announce{
 			Webhook: config.Webhook{
@@ -106,7 +106,7 @@ func TestAnnounceTLSWebhook(t *testing.T) {
 	}))
 	defer srv.Close()
 	fmt.Println(srv.URL)
-	ctx := context.New(config.Project{
+	ctx := testctx.NewWithCfg(config.Project{
 		ProjectName: "webhook-test",
 		Announce: config.Announce{
 			Webhook: config.Webhook{
@@ -134,7 +134,7 @@ func TestAnnounceTLSCheckCertWebhook(t *testing.T) {
 	}))
 	defer srv.Close()
 	fmt.Println(srv.URL)
-	ctx := context.New(config.Project{
+	ctx := testctx.NewWithCfg(config.Project{
 		ProjectName: "webhook-test",
 		Announce: config.Announce{
 			Webhook: config.Webhook{
@@ -170,7 +170,7 @@ func TestAnnounceBasicAuthWebhook(t *testing.T) {
 
 	defer srv.Close()
 
-	ctx := context.New(config.Project{
+	ctx := testctx.NewWithCfg(config.Project{
 		ProjectName: "webhook-test",
 		Announce: config.Announce{
 			Webhook: config.Webhook{
@@ -206,7 +206,7 @@ func TestAnnounceAdditionalHeadersWebhook(t *testing.T) {
 	}))
 	defer srv.Close()
 
-	ctx := context.New(config.Project{
+	ctx := testctx.NewWithCfg(config.Project{
 		ProjectName: "webhook-test",
 		Announce: config.Announce{
 			Webhook: config.Webhook{
@@ -223,11 +223,11 @@ func TestAnnounceAdditionalHeadersWebhook(t *testing.T) {
 
 func TestSkip(t *testing.T) {
 	t.Run("skip", func(t *testing.T) {
-		require.True(t, Pipe{}.Skip(context.New(config.Project{})))
+		require.True(t, Pipe{}.Skip(testctx.New()))
 	})
 
 	t.Run("dont skip", func(t *testing.T) {
-		ctx := context.New(config.Project{
+		ctx := testctx.NewWithCfg(config.Project{
 			Announce: config.Announce{
 				Webhook: config.Webhook{
 					Enabled: true,

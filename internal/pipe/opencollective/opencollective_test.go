@@ -3,8 +3,8 @@ package opencollective
 import (
 	"testing"
 
+	"github.com/goreleaser/goreleaser/internal/testctx"
 	"github.com/goreleaser/goreleaser/pkg/config"
-	"github.com/goreleaser/goreleaser/pkg/context"
 	"github.com/stretchr/testify/require"
 )
 
@@ -13,14 +13,14 @@ func TestStringer(t *testing.T) {
 }
 
 func TestDefault(t *testing.T) {
-	ctx := context.New(config.Project{})
+	ctx := testctx.New()
 	require.NoError(t, Pipe{}.Default(ctx))
 	require.Equal(t, ctx.Config.Announce.OpenCollective.TitleTemplate, defaultTitleTemplate)
 	require.Equal(t, ctx.Config.Announce.OpenCollective.MessageTemplate, defaultMessageTemplate)
 }
 
 func TestAnnounceInvalidTemplate(t *testing.T) {
-	ctx := context.New(config.Project{
+	ctx := testctx.NewWithCfg(config.Project{
 		Announce: config.Announce{
 			OpenCollective: config.OpenCollective{
 				MessageTemplate: "{{ .Foo }",
@@ -31,7 +31,7 @@ func TestAnnounceInvalidTemplate(t *testing.T) {
 }
 
 func TestAnnounceMissingEnv(t *testing.T) {
-	ctx := context.New(config.Project{
+	ctx := testctx.NewWithCfg(config.Project{
 		Announce: config.Announce{
 			OpenCollective: config.OpenCollective{},
 		},
@@ -42,11 +42,11 @@ func TestAnnounceMissingEnv(t *testing.T) {
 
 func TestSkip(t *testing.T) {
 	t.Run("skip", func(t *testing.T) {
-		require.True(t, Pipe{}.Skip(context.New(config.Project{})))
+		require.True(t, Pipe{}.Skip(testctx.New()))
 	})
 
 	t.Run("skip empty slug", func(t *testing.T) {
-		require.True(t, Pipe{}.Skip(context.New(config.Project{
+		require.True(t, Pipe{}.Skip(testctx.NewWithCfg(config.Project{
 			Announce: config.Announce{
 				OpenCollective: config.OpenCollective{
 					Enabled: true,
@@ -57,7 +57,7 @@ func TestSkip(t *testing.T) {
 	})
 
 	t.Run("dont skip", func(t *testing.T) {
-		require.False(t, Pipe{}.Skip(context.New(config.Project{
+		require.False(t, Pipe{}.Skip(testctx.NewWithCfg(config.Project{
 			Announce: config.Announce{
 				OpenCollective: config.OpenCollective{
 					Enabled: true,

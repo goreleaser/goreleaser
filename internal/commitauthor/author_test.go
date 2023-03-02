@@ -3,14 +3,14 @@ package commitauthor
 import (
 	"testing"
 
+	"github.com/goreleaser/goreleaser/internal/testctx"
 	"github.com/goreleaser/goreleaser/pkg/config"
-	"github.com/goreleaser/goreleaser/pkg/context"
 	"github.com/stretchr/testify/require"
 )
 
 func TestGet(t *testing.T) {
 	t.Run("valid", func(t *testing.T) {
-		author, err := Get(context.New(config.Project{
+		author, err := Get(testctx.NewWithCfg(config.Project{
 			Env: []string{"NAME=foo", "MAIL=foo@bar"},
 		}), config.CommitAuthor{
 			Name:  "{{.Env.NAME}}",
@@ -25,7 +25,7 @@ func TestGet(t *testing.T) {
 
 	t.Run("invalid name tmpl", func(t *testing.T) {
 		_, err := Get(
-			context.New(config.Project{}),
+			testctx.New(),
 			config.CommitAuthor{
 				Name:  "{{.Env.NOPE}}",
 				Email: "a",
@@ -35,7 +35,7 @@ func TestGet(t *testing.T) {
 
 	t.Run("invalid email tmpl", func(t *testing.T) {
 		_, err := Get(
-			context.New(config.Project{}),
+			testctx.New(),
 			config.CommitAuthor{
 				Name:  "a",
 				Email: "{{.Env.NOPE}}",

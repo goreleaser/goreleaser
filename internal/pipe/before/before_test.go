@@ -6,8 +6,8 @@ import (
 	"testing"
 
 	"github.com/caarlos0/log"
+	"github.com/goreleaser/goreleaser/internal/testctx"
 	"github.com/goreleaser/goreleaser/pkg/config"
-	"github.com/goreleaser/goreleaser/pkg/context"
 	"github.com/stretchr/testify/require"
 )
 
@@ -29,7 +29,7 @@ func TestRunPipe(t *testing.T) {
 		{"go version", "go list"},
 		{`bash -c "go version; echo \"lala spaces and such\""`},
 	} {
-		ctx := context.New(
+		ctx := testctx.NewWithCfg(
 			config.Project{
 				Before: config.Before{
 					Hooks: tc,
@@ -41,7 +41,7 @@ func TestRunPipe(t *testing.T) {
 }
 
 func TestRunPipeInvalidCommand(t *testing.T) {
-	ctx := context.New(
+	ctx := testctx.NewWithCfg(
 		config.Project{
 			Before: config.Before{
 				Hooks: []string{`bash -c "echo \"unterminated command\"`},
@@ -56,7 +56,7 @@ func TestRunPipeFail(t *testing.T) {
 		"hook failed: go tool foobar: exit status 2; output: go: no such tool \"foobar\"\n": {"go tool foobar"},
 		"hook failed: sh ./testdata/foo.sh: exit status 1; output: lalala\n":                {"sh ./testdata/foo.sh"},
 	} {
-		ctx := context.New(
+		ctx := testctx.NewWithCfg(
 			config.Project{
 				Before: config.Before{
 					Hooks: tc,
@@ -69,7 +69,7 @@ func TestRunPipeFail(t *testing.T) {
 
 func TestRunWithEnv(t *testing.T) {
 	f := filepath.Join(t.TempDir(), "testfile")
-	require.NoError(t, Pipe{}.Run(context.New(
+	require.NoError(t, Pipe{}.Run(testctx.NewWithCfg(
 		config.Project{
 			Env: []string{
 				"TEST_FILE=" + f,
@@ -83,7 +83,7 @@ func TestRunWithEnv(t *testing.T) {
 }
 
 func TestInvalidTemplate(t *testing.T) {
-	require.EqualError(t, Pipe{}.Run(context.New(
+	require.EqualError(t, Pipe{}.Run(testctx.NewWithCfg(
 		config.Project{
 			Before: config.Before{
 				Hooks: []string{"touch {{ .fasdsd }"},
@@ -94,11 +94,11 @@ func TestInvalidTemplate(t *testing.T) {
 
 func TestSkip(t *testing.T) {
 	t.Run("skip", func(t *testing.T) {
-		require.True(t, Pipe{}.Skip(context.New(config.Project{})))
+		require.True(t, Pipe{}.Skip(testctx.New()))
 	})
 
 	t.Run("skip before", func(t *testing.T) {
-		ctx := context.New(config.Project{
+		ctx := testctx.NewWithCfg(config.Project{
 			Before: config.Before{
 				Hooks: []string{""},
 			},
@@ -108,7 +108,7 @@ func TestSkip(t *testing.T) {
 	})
 
 	t.Run("dont skip", func(t *testing.T) {
-		ctx := context.New(config.Project{
+		ctx := testctx.NewWithCfg(config.Project{
 			Before: config.Before{
 				Hooks: []string{""},
 			},
