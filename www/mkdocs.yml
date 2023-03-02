@@ -40,9 +40,15 @@ plugins:
   - redirects:
       redirect_maps:
         discord.md: https://discord.gg/RGEBtg8vQ6
-        twitter.md: https://twitter.com/goreleaser
-        mastodon.md: https://fosstodon.org/@goreleaser
+        github.md: https://github.com/goreleaser
         linkedin.md: https://www.linkedin.com/company/goreleaser/
+        mastodon.md: https://fosstodon.org/@goreleaser
+        twitter.md: https://twitter.com/goreleaser
+        d.md: https://discord.gg/RGEBtg8vQ6
+        g.md: https://github.com/goreleaser
+        l.md: https://www.linkedin.com/company/goreleaser/
+        m.md: https://fosstodon.org/@goreleaser
+        t.md: https://twitter.com/goreleaser
         'customization/build.md': customization/builds.md
   - minify:
       minify_html: true
