@@ -26,7 +26,7 @@ func TestDockerSignDefault(t *testing.T) {
 	require.NoError(t, err)
 	require.Equal(t, "cosign", ctx.Config.DockerSigns[0].Cmd)
 	require.Equal(t, "", ctx.Config.DockerSigns[0].Signature)
-	require.Equal(t, []string{"sign", "--key=cosign.key", "${artifact}@${digest}"}, ctx.Config.DockerSigns[0].Args)
+	require.Equal(t, []string{"sign", "--key=cosign.key", "${artifact}@${digest}", "--yes"}, ctx.Config.DockerSigns[0].Args)
 	require.Equal(t, "none", ctx.Config.DockerSigns[0].Artifacts)
 }
 
