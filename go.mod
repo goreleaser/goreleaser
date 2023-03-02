@@ -8,7 +8,7 @@ require (
 	github.com/atc0005/go-teams-notify/v2 v2.7.0
 	github.com/awslabs/amazon-ecr-credential-helper/ecr-login v0.0.0-20220517224237-e6f29200ae04
 	github.com/caarlos0/ctrlc v1.2.0
-	github.com/caarlos0/env/v6 v6.10.1
+	github.com/caarlos0/env/v7 v7.0.0
 	github.com/caarlos0/go-reddit/v3 v3.0.1
 	github.com/caarlos0/go-shellwords v1.0.12
 	github.com/caarlos0/log v0.2.1
@@ -17,12 +17,12 @@ require (
 	github.com/chrismellard/docker-credential-acr-env v0.0.0-20220327082430-c57b701bfc08
 	github.com/dghubble/go-twitter v0.0.0-20211115160449-93a8679adecb
 	github.com/dghubble/oauth1 v0.7.2
-	github.com/disgoorg/disgo v0.15.1
+	github.com/disgoorg/disgo v0.15.2
 	github.com/disgoorg/snowflake/v2 v2.0.1
 	github.com/distribution/distribution/v3 v3.0.0-20221021092657-c47a966fded8
 	github.com/go-telegram-bot-api/telegram-bot-api v4.6.4+incompatible
 	github.com/google/go-containerregistry v0.13.0
-	github.com/google/go-github/v50 v50.0.0
+	github.com/google/go-github/v50 v50.1.0
 	github.com/google/ko v0.12.0
 	github.com/google/uuid v1.3.0
 	github.com/goreleaser/fileglob v1.3.0
@@ -40,7 +40,7 @@ require (
 	github.com/ory/dockertest/v3 v3.9.1
 	github.com/slack-go/slack v0.12.1
 	github.com/spf13/cobra v1.6.1
-	github.com/stretchr/testify v1.8.1
+	github.com/stretchr/testify v1.8.2
 	github.com/ulikunitz/xz v0.5.11
 	github.com/withfig/autocomplete-tools/integrations/cobra v1.2.1
 	github.com/xanzy/go-gitlab v0.80.2

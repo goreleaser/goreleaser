@@ -13,6 +13,7 @@ import (
 
 	"github.com/goreleaser/goreleaser/internal/artifact"
 	"github.com/goreleaser/goreleaser/internal/pipe"
+	"github.com/goreleaser/goreleaser/internal/testctx"
 	"github.com/goreleaser/goreleaser/internal/testlib"
 	"github.com/goreleaser/goreleaser/pkg/config"
 	"github.com/goreleaser/goreleaser/pkg/context"
@@ -101,7 +102,7 @@ func TestRunPipe_ModeBinary(t *testing.T) {
 		w.WriteHeader(http.StatusCreated)
 	})
 
-	ctx := context.New(config.Project{
+	ctx := testctx.NewWithCfg(config.Project{
 		ProjectName: "mybin",
 		Dist:        dist,
 		Uploads: []config.Upload{
@@ -120,14 +121,12 @@ func TestRunPipe_ModeBinary(t *testing.T) {
 				Username: "productionuser",
 			},
 		},
-		Archives: []config.Archive{
-			{},
+		Archives: []config.Archive{{}},
+		Env: []string{
+			"UPLOAD_PRODUCTION-US_SECRET=deployuser-secret",
+			"UPLOAD_PRODUCTION-EU_SECRET=productionuser-apikey",
 		},
 	})
-	ctx.Env = map[string]string{
-		"UPLOAD_PRODUCTION-US_SECRET": "deployuser-secret",
-		"UPLOAD_PRODUCTION-EU_SECRET": "productionuser-apikey",
-	}
 	for _, goos := range []string{"linux", "darwin"} {
 		ctx.Artifacts.Add(&artifact.Artifact{
 			Name:   "mybin",
@@ -153,7 +152,7 @@ func TestRunPipe_ModeArchive(t *testing.T) {
 	require.NoError(t, err)
 	require.NoError(t, debfile.Close())
 
-	ctx := context.New(config.Project{
+	ctx := testctx.NewWithCfg(config.Project{
 		ProjectName: "goreleaser",
 		Dist:        folder,
 		Uploads: []config.Upload{
@@ -165,14 +164,9 @@ func TestRunPipe_ModeArchive(t *testing.T) {
 				Username: "deployuser",
 			},
 		},
-		Archives: []config.Archive{
-			{},
-		},
-	})
-	ctx.Env = map[string]string{
-		"UPLOAD_PRODUCTION_SECRET": "deployuser-secret",
-	}
-	ctx.Version = "1.0.0"
+		Archives: []config.Archive{{}},
+		Env:      []string{"UPLOAD_PRODUCTION_SECRET=deployuser-secret"},
+	}, testctx.WithVersion("1.0.0"))
 	ctx.Artifacts.Add(&artifact.Artifact{
 		Type: artifact.UploadableArchive,
 		Name: "bin.tar.gz",
@@ -245,7 +239,7 @@ func TestRunPipe_ModeBinary_CustomArtifactName(t *testing.T) {
 		w.WriteHeader(http.StatusCreated)
 	})
 
-	ctx := context.New(config.Project{
+	ctx := testctx.NewWithCfg(config.Project{
 		ProjectName: "mybin",
 		Dist:        dist,
 		Uploads: []config.Upload{
@@ -258,13 +252,9 @@ func TestRunPipe_ModeBinary_CustomArtifactName(t *testing.T) {
 				CustomArtifactName: true,
 			},
 		},
-		Archives: []config.Archive{
-			{},
-		},
+		Archives: []config.Archive{{}},
+		Env:      []string{"UPLOAD_PRODUCTION-US_SECRET=deployuser-secret"},
 	})
-	ctx.Env = map[string]string{
-		"UPLOAD_PRODUCTION-US_SECRET": "deployuser-secret",
-	}
 	for _, goos := range []string{"linux", "darwin"} {
 		ctx.Artifacts.Add(&artifact.Artifact{
 			Name:   "mybin",
@@ -290,7 +280,7 @@ func TestRunPipe_ModeArchive_CustomArtifactName(t *testing.T) {
 	require.NoError(t, err)
 	require.NoError(t, debfile.Close())
 
-	ctx := context.New(config.Project{
+	ctx := testctx.NewWithCfg(config.Project{
 		ProjectName: "goreleaser",
 		Dist:        folder,
 		Uploads: []config.Upload{
@@ -303,14 +293,11 @@ func TestRunPipe_ModeArchive_CustomArtifactName(t *testing.T) {
 				CustomArtifactName: true,
 			},
 		},
-		Archives: []config.Archive{
-			{},
+		Archives: []config.Archive{{}},
+		Env: []string{
+			"UPLOAD_PRODUCTION_SECRET=deployuser-secret",
 		},
-	})
-	ctx.Env = map[string]string{
-		"UPLOAD_PRODUCTION_SECRET": "deployuser-secret",
-	}
-	ctx.Version = "1.0.0"
+	}, testctx.WithVersion("1.0.0"))
 	ctx.Artifacts.Add(&artifact.Artifact{
 		Type: artifact.UploadableArchive,
 		Name: "bin.tar.gz",
@@ -357,7 +344,7 @@ func TestRunPipe_ServerDown(t *testing.T) {
 	require.NoError(t, err)
 	require.NoError(t, tarfile.Close())
 
-	ctx := context.New(config.Project{
+	ctx := testctx.NewWithCfg(config.Project{
 		ProjectName: "goreleaser",
 		Dist:        folder,
 		Uploads: []config.Upload{
@@ -369,11 +356,8 @@ func TestRunPipe_ServerDown(t *testing.T) {
 				Username: "deployuser",
 			},
 		},
-	})
-	ctx.Version = "2.0.0"
-	ctx.Env = map[string]string{
-		"UPLOAD_PRODUCTION_SECRET": "deployuser-secret",
-	}
+		Env: []string{"UPLOAD_PRODUCTION_SECRET=deployuser-secret"},
+	}, testctx.WithVersion("2.0.0"))
 	ctx.Artifacts.Add(&artifact.Artifact{
 		Type: artifact.UploadableArchive,
 		Name: "bin.tar.gz",
@@ -389,7 +373,7 @@ func TestRunPipe_TargetTemplateError(t *testing.T) {
 	dist := filepath.Join(folder, "dist")
 	binPath := filepath.Join(dist, "mybin", "mybin")
 
-	ctx := context.New(config.Project{
+	ctx := testctx.NewWithCfg(config.Project{
 		ProjectName: "mybin",
 		Dist:        dist,
 		Uploads: []config.Upload{
@@ -402,13 +386,9 @@ func TestRunPipe_TargetTemplateError(t *testing.T) {
 				Username: "deployuser",
 			},
 		},
-		Archives: []config.Archive{
-			{},
-		},
+		Archives: []config.Archive{{}},
+		Env:      []string{"UPLOAD_PRODUCTION_SECRET=deployuser-secret"},
 	})
-	ctx.Env = map[string]string{
-		"UPLOAD_PRODUCTION_SECRET": "deployuser-secret",
-	}
 	ctx.Artifacts.Add(&artifact.Artifact{
 		Name:   "mybin",
 		Path:   binPath,
@@ -441,7 +421,7 @@ func TestRunPipe_BadCredentials(t *testing.T) {
 		w.WriteHeader(http.StatusUnauthorized)
 	})
 
-	ctx := context.New(config.Project{
+	ctx := testctx.NewWithCfg(config.Project{
 		ProjectName: "mybin",
 		Dist:        dist,
 		Uploads: []config.Upload{
@@ -453,13 +433,9 @@ func TestRunPipe_BadCredentials(t *testing.T) {
 				Username: "deployuser",
 			},
 		},
-		Archives: []config.Archive{
-			{},
-		},
+		Archives: []config.Archive{{}},
+		Env:      []string{"UPLOAD_PRODUCTION_SECRET=deployuser-secret"},
 	})
-	ctx.Env = map[string]string{
-		"UPLOAD_PRODUCTION_SECRET": "deployuser-secret",
-	}
 	ctx.Artifacts.Add(&artifact.Artifact{
 		Name:   "mybin",
 		Path:   binPath,
@@ -486,13 +462,9 @@ func TestRunPipe_FileNotFound(t *testing.T) {
 				Username: "deployuser",
 			},
 		},
-		Archives: []config.Archive{
-			{},
-		},
+		Archives: []config.Archive{{}},
+		Env:      []string{"UPLOAD_PRODUCTION_SECRET=deployuser-secret"},
 	})
-	ctx.Env = map[string]string{
-		"UPLOAD_PRODUCTION_SECRET": "deployuser-secret",
-	}
 	ctx.Artifacts.Add(&artifact.Artifact{
 		Name:   "mybin",
 		Path:   "archivetest/dist/mybin/mybin",
@@ -513,7 +485,7 @@ func TestRunPipe_UnparsableTarget(t *testing.T) {
 	d1 := []byte("hello\ngo\n")
 	require.NoError(t, os.WriteFile(binPath, d1, 0o666))
 
-	ctx := context.New(config.Project{
+	ctx := testctx.NewWithCfg(config.Project{
 		ProjectName: "mybin",
 		Dist:        dist,
 		Uploads: []config.Upload{
@@ -528,6 +500,7 @@ func TestRunPipe_UnparsableTarget(t *testing.T) {
 		Archives: []config.Archive{
 			{},
 		},
+		Env: []string{"UPLOAD_PRODUCTION_SECRET=deployuser-secret"},
 	})
 	ctx.Env = map[string]string{
 		"UPLOAD_PRODUCTION_SECRET": "deployuser-secret",
@@ -550,7 +523,7 @@ func TestRunPipe_DirUpload(t *testing.T) {
 	require.NoError(t, os.Mkdir(filepath.Join(dist, "mybin"), 0o755))
 	binPath := filepath.Join(dist, "mybin")
 
-	ctx := context.New(config.Project{
+	ctx := testctx.NewWithCfg(config.Project{
 		ProjectName: "mybin",
 		Dist:        dist,
 		Uploads: []config.Upload{
@@ -562,13 +535,9 @@ func TestRunPipe_DirUpload(t *testing.T) {
 				Username: "deployuser",
 			},
 		},
-		Archives: []config.Archive{
-			{},
-		},
+		Archives: []config.Archive{{}},
+		Env:      []string{"UPLOAD_PRODUCTION_SECRET=deployuser-secret"},
 	})
-	ctx.Env = map[string]string{
-		"UPLOAD_PRODUCTION_SECRET": "deployuser-secret",
-	}
 	ctx.Artifacts.Add(&artifact.Artifact{
 		Name:   "mybin",
 		Path:   filepath.Dir(binPath),
@@ -585,45 +554,37 @@ func TestDescription(t *testing.T) {
 }
 
 func TestPutsWithoutTarget(t *testing.T) {
-	ctx := &context.Context{
-		Env: map[string]string{
-			"UPLOAD_PRODUCTION_SECRET": "deployuser-secret",
-		},
-		Config: config.Project{
-			Uploads: []config.Upload{
-				{
-					Method:   h.MethodPut,
-					Name:     "production",
-					Username: "deployuser",
-				},
+	ctx := testctx.NewWithCfg(config.Project{
+		Uploads: []config.Upload{
+			{
+				Method:   h.MethodPut,
+				Name:     "production",
+				Username: "deployuser",
 			},
 		},
-	}
+		Env: []string{"UPLOAD_PRODUCTION_SECRET=deployuser-secret"},
+	})
 
 	require.True(t, pipe.IsSkip(Pipe{}.Publish(ctx)))
 }
 
 func TestPutsWithoutUsername(t *testing.T) {
-	ctx := &context.Context{
-		Env: map[string]string{
-			"UPLOAD_PRODUCTION_SECRET": "deployuser-secret",
-		},
-		Config: config.Project{
-			Uploads: []config.Upload{
-				{
-					Method: h.MethodPut,
-					Name:   "production",
-					Target: "http://artifacts.company.com/example-repo-local/{{ .ProjectName }}/{{ .Os }}/{{ .Arch }}{{ if .Arm }}v{{ .Arm }}{{ end }}",
-				},
+	ctx := testctx.NewWithCfg(config.Project{
+		Uploads: []config.Upload{
+			{
+				Method: h.MethodPut,
+				Name:   "production",
+				Target: "http://artifacts.company.com/example-repo-local/{{ .ProjectName }}/{{ .Os }}/{{ .Arch }}{{ if .Arm }}v{{ .Arm }}{{ end }}",
 			},
 		},
-	}
+		Env: []string{"UPLOAD_PRODUCTION_SECRET=deployuser-secret"},
+	})
 
 	require.True(t, pipe.IsSkip(Pipe{}.Publish(ctx)))
 }
 
 func TestPutsWithoutName(t *testing.T) {
-	require.True(t, pipe.IsSkip(Pipe{}.Publish(context.New(config.Project{
+	require.True(t, pipe.IsSkip(Pipe{}.Publish(testctx.NewWithCfg(config.Project{
 		Uploads: []config.Upload{
 			{
 				Method:   h.MethodPut,
@@ -635,7 +596,7 @@ func TestPutsWithoutName(t *testing.T) {
 }
 
 func TestPutsWithoutSecret(t *testing.T) {
-	require.True(t, pipe.IsSkip(Pipe{}.Publish(context.New(config.Project{
+	require.True(t, pipe.IsSkip(Pipe{}.Publish(testctx.NewWithCfg(config.Project{
 		Uploads: []config.Upload{
 			{
 				Method:   h.MethodPut,
@@ -648,37 +609,31 @@ func TestPutsWithoutSecret(t *testing.T) {
 }
 
 func TestPutsWithInvalidMode(t *testing.T) {
-	ctx := &context.Context{
-		Env: map[string]string{
-			"UPLOAD_PRODUCTION_SECRET": "deployuser-secret",
-		},
-		Config: config.Project{
-			Uploads: []config.Upload{
-				{
-					Method:   h.MethodPut,
-					Name:     "production",
-					Mode:     "does-not-exists",
-					Target:   "http://artifacts.company.com/example-repo-local/{{ .ProjectName }}/{{ .Os }}/{{ .Arch }}{{ if .Arm }}v{{ .Arm }}{{ end }}",
-					Username: "deployuser",
-				},
+	ctx := testctx.NewWithCfg(config.Project{
+		Uploads: []config.Upload{
+			{
+				Method:   h.MethodPut,
+				Name:     "production",
+				Mode:     "does-not-exists",
+				Target:   "http://artifacts.company.com/example-repo-local/{{ .ProjectName }}/{{ .Os }}/{{ .Arch }}{{ if .Arm }}v{{ .Arm }}{{ end }}",
+				Username: "deployuser",
 			},
 		},
-	}
+		Env: []string{"UPLOAD_PRODUCTION_SECRET=deployuser-secret"},
+	})
 	require.Error(t, Pipe{}.Publish(ctx))
 }
 
 func TestDefault(t *testing.T) {
-	ctx := &context.Context{
-		Config: config.Project{
-			Uploads: []config.Upload{
-				{
-					Name:     "production",
-					Target:   "http://artifacts.company.com/example-repo-local/{{ .ProjectName }}/{{ .Os }}/{{ .Arch }}{{ if .Arm }}v{{ .Arm }}{{ end }}",
-					Username: "deployuser",
-				},
+	ctx := testctx.NewWithCfg(config.Project{
+		Uploads: []config.Upload{
+			{
+				Name:     "production",
+				Target:   "http://artifacts.company.com/example-repo-local/{{ .ProjectName }}/{{ .Os }}/{{ .Arch }}{{ if .Arm }}v{{ .Arm }}{{ end }}",
+				Username: "deployuser",
 			},
 		},
-	}
+	})
 	require.NoError(t, Pipe{}.Default(ctx))
 	require.Len(t, ctx.Config.Uploads, 1)
 	upload := ctx.Config.Uploads[0]
@@ -687,26 +642,22 @@ func TestDefault(t *testing.T) {
 }
 
 func TestDefaultNoPuts(t *testing.T) {
-	ctx := &context.Context{
-		Config: config.Project{
-			Uploads: []config.Upload{},
-		},
-	}
+	ctx := testctx.NewWithCfg(config.Project{
+		Uploads: []config.Upload{},
+	})
 	require.NoError(t, Pipe{}.Default(ctx))
 	require.Empty(t, ctx.Config.Uploads)
 }
 
 func TestDefaultSet(t *testing.T) {
-	ctx := &context.Context{
-		Config: config.Project{
-			Uploads: []config.Upload{
-				{
-					Method: h.MethodPost,
-					Mode:   "custom",
-				},
+	ctx := testctx.NewWithCfg(config.Project{
+		Uploads: []config.Upload{
+			{
+				Method: h.MethodPost,
+				Mode:   "custom",
 			},
 		},
-	}
+	})
 	require.NoError(t, Pipe{}.Default(ctx))
 	require.Len(t, ctx.Config.Uploads, 1)
 	upload := ctx.Config.Uploads[0]
@@ -716,11 +667,11 @@ func TestDefaultSet(t *testing.T) {
 
 func TestSkip(t *testing.T) {
 	t.Run("skip", func(t *testing.T) {
-		require.True(t, Pipe{}.Skip(context.New(config.Project{})))
+		require.True(t, Pipe{}.Skip(testctx.New()))
 	})
 
 	t.Run("dont skip", func(t *testing.T) {
-		ctx := context.New(config.Project{
+		ctx := testctx.NewWithCfg(config.Project{
 			Uploads: []config.Upload{
 				{},
 			},

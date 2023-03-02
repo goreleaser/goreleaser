@@ -6,9 +6,9 @@ import (
 	"path/filepath"
 	"testing"
 
+	"github.com/goreleaser/goreleaser/internal/testctx"
 	"github.com/goreleaser/goreleaser/internal/testlib"
 	"github.com/goreleaser/goreleaser/pkg/config"
-	"github.com/goreleaser/goreleaser/pkg/context"
 	"github.com/stretchr/testify/require"
 )
 
@@ -18,7 +18,7 @@ func TestDescription(t *testing.T) {
 
 func TestNotAGitFolder(t *testing.T) {
 	testlib.Mktmp(t)
-	ctx := context.New(config.Project{})
+	ctx := testctx.New()
 	require.EqualError(t, Pipe{}.Run(ctx), ErrNotRepository.Error())
 }
 
@@ -28,7 +28,7 @@ func TestSingleCommit(t *testing.T) {
 	testlib.GitRemoteAdd(t, "git@github.com:foo/bar.git")
 	testlib.GitCommit(t, "commit1")
 	testlib.GitTag(t, "v0.0.1")
-	ctx := context.New(config.Project{})
+	ctx := testctx.New()
 	require.NoError(t, Pipe{}.Run(ctx))
 	require.Equal(t, "v0.0.1", ctx.Git.CurrentTag)
 	require.Equal(t, "v0.0.1", ctx.Git.Summary)
@@ -43,7 +43,7 @@ func TestAnnotatedTags(t *testing.T) {
 	testlib.GitRemoteAdd(t, "git@github.com:foo/bar.git")
 	testlib.GitCommit(t, "commit1")
 	testlib.GitAnnotatedTag(t, "v0.0.1", "first version\n\nlalalla\nlalal\nlah")
-	ctx := context.New(config.Project{})
+	ctx := testctx.New()
 	require.NoError(t, Pipe{}.Run(ctx))
 	require.Equal(t, "v0.0.1", ctx.Git.CurrentTag)
 	require.Equal(t, "first version", ctx.Git.TagSubject)
@@ -59,7 +59,7 @@ func TestBranch(t *testing.T) {
 	testlib.GitCommit(t, "test-branch-commit")
 	testlib.GitTag(t, "test-branch-tag")
 	testlib.GitCheckoutBranch(t, "test-branch")
-	ctx := context.New(config.Project{})
+	ctx := testctx.New()
 	require.NoError(t, Pipe{}.Run(ctx))
 	require.Equal(t, "test-branch", ctx.Git.Branch)
 	require.Equal(t, "test-branch-tag", ctx.Git.Summary)
@@ -70,14 +70,14 @@ func TestNoRemote(t *testing.T) {
 	testlib.GitInit(t)
 	testlib.GitCommit(t, "commit1")
 	testlib.GitTag(t, "v0.0.1")
-	ctx := context.New(config.Project{})
+	ctx := testctx.New()
 	require.EqualError(t, Pipe{}.Run(ctx), "couldn't get remote URL: fatal: No remote configured to list refs from.")
 }
 
 func TestNewRepository(t *testing.T) {
 	testlib.Mktmp(t)
 	testlib.GitInit(t)
-	ctx := context.New(config.Project{})
+	ctx := testctx.New()
 	// TODO: improve this error handling
 	require.Contains(t, Pipe{}.Run(ctx).Error(), `fatal: ambiguous argument 'HEAD'`)
 }
@@ -90,7 +90,7 @@ func TestNoTagsNoSnapshot(t *testing.T) {
 	testlib.GitInit(t)
 	testlib.GitRemoteAdd(t, "git@github.com:foo/bar.git")
 	testlib.GitCommit(t, "first")
-	ctx := context.New(config.Project{})
+	ctx := testctx.New()
 	ctx.Snapshot = false
 	require.EqualError(t, Pipe{}.Run(ctx), `git doesn't contain any tags. Either add a tag or use --snapshot`)
 }
@@ -107,18 +107,16 @@ func TestDirty(t *testing.T) {
 	testlib.GitTag(t, "v0.0.1")
 	require.NoError(t, os.WriteFile(dummy.Name(), []byte("lorem ipsum"), 0o644))
 	t.Run("all checks up", func(t *testing.T) {
-		err := Pipe{}.Run(context.New(config.Project{}))
+		err := Pipe{}.Run(testctx.New())
 		require.Error(t, err)
 		require.Contains(t, err.Error(), "git is in a dirty state")
 	})
 	t.Run("skip validate is set", func(t *testing.T) {
-		ctx := context.New(config.Project{})
-		ctx.SkipValidate = true
+		ctx := testctx.New(testctx.SkipValidate)
 		testlib.AssertSkipped(t, Pipe{}.Run(ctx))
 	})
 	t.Run("snapshot", func(t *testing.T) {
-		ctx := context.New(config.Project{})
-		ctx.Snapshot = true
+		ctx := testctx.New(testctx.Snapshot)
 		testlib.AssertSkipped(t, Pipe{}.Run(ctx))
 	})
 }
@@ -130,7 +128,7 @@ func TestRemoteURLContainsWithUsernameAndToken(t *testing.T) {
 	testlib.GitAdd(t)
 	testlib.GitCommit(t, "commit2")
 	testlib.GitTag(t, "v0.0.1")
-	ctx := context.New(config.Project{})
+	ctx := testctx.New()
 	require.NoError(t, Pipe{}.Run(ctx))
 }
 
@@ -141,7 +139,7 @@ func TestRemoteURLContainsWithUsernameAndTokenWithInvalidURL(t *testing.T) {
 	testlib.GitAdd(t)
 	testlib.GitCommit(t, "commit2")
 	testlib.GitTag(t, "v0.0.1")
-	ctx := context.New(config.Project{})
+	ctx := testctx.New()
 	require.Error(t, Pipe{}.Run(ctx))
 }
 
@@ -159,16 +157,14 @@ func TestShallowClone(t *testing.T) {
 	)
 	t.Run("all checks up", func(t *testing.T) {
 		// its just a warning now
-		require.NoError(t, Pipe{}.Run(context.New(config.Project{})))
+		require.NoError(t, Pipe{}.Run(testctx.New()))
 	})
 	t.Run("skip validate is set", func(t *testing.T) {
-		ctx := context.New(config.Project{})
-		ctx.SkipValidate = true
+		ctx := testctx.New(testctx.SkipValidate)
 		testlib.AssertSkipped(t, Pipe{}.Run(ctx))
 	})
 	t.Run("snapshot", func(t *testing.T) {
-		ctx := context.New(config.Project{})
-		ctx.Snapshot = true
+		ctx := testctx.New(testctx.Snapshot)
 		testlib.AssertSkipped(t, Pipe{}.Run(ctx))
 	})
 }
@@ -182,7 +178,7 @@ func TestTagSortOrder(t *testing.T) {
 	testlib.GitCommit(t, "commit3")
 	testlib.GitTag(t, "v0.0.1-rc.2")
 	testlib.GitTag(t, "v0.0.1")
-	ctx := context.New(config.Project{
+	ctx := testctx.NewWithCfg(config.Project{
 		Git: config.Git{
 			TagSort: "-version:creatordate",
 		},
@@ -198,7 +194,7 @@ func TestTagIsNotLastCommit(t *testing.T) {
 	testlib.GitCommit(t, "commit3")
 	testlib.GitTag(t, "v0.0.1")
 	testlib.GitCommit(t, "commit4")
-	ctx := context.New(config.Project{})
+	ctx := testctx.New()
 	err := Pipe{}.Run(ctx)
 	require.Error(t, err)
 	require.Contains(t, err.Error(), "git tag v0.0.1 was not made against commit")
@@ -214,7 +210,7 @@ func TestValidState(t *testing.T) {
 	testlib.GitTag(t, "v0.0.2")
 	testlib.GitCommit(t, "commit4")
 	testlib.GitTag(t, "v0.0.3")
-	ctx := context.New(config.Project{})
+	ctx := testctx.New()
 	require.NoError(t, Pipe{}.Run(ctx))
 	require.Equal(t, "v0.0.2", ctx.Git.PreviousTag)
 	require.Equal(t, "v0.0.3", ctx.Git.CurrentTag)
@@ -228,8 +224,7 @@ func TestSnapshotNoTags(t *testing.T) {
 	testlib.GitRemoteAdd(t, "git@github.com:foo/bar.git")
 	testlib.GitAdd(t)
 	testlib.GitCommit(t, "whatever")
-	ctx := context.New(config.Project{})
-	ctx.Snapshot = true
+	ctx := testctx.New(testctx.Snapshot)
 	testlib.AssertSkipped(t, Pipe{}.Run(ctx))
 	require.Equal(t, fakeInfo.CurrentTag, ctx.Git.CurrentTag)
 	require.Empty(t, ctx.Git.PreviousTag)
@@ -240,16 +235,14 @@ func TestSnapshotNoCommits(t *testing.T) {
 	testlib.Mktmp(t)
 	testlib.GitInit(t)
 	testlib.GitRemoteAdd(t, "git@github.com:foo/bar.git")
-	ctx := context.New(config.Project{})
-	ctx.Snapshot = true
+	ctx := testctx.New(testctx.Snapshot)
 	testlib.AssertSkipped(t, Pipe{}.Run(ctx))
 	require.Equal(t, fakeInfo, ctx.Git)
 }
 
 func TestSnapshotWithoutRepo(t *testing.T) {
 	testlib.Mktmp(t)
-	ctx := context.New(config.Project{})
-	ctx.Snapshot = true
+	ctx := testctx.New(testctx.Snapshot)
 	testlib.AssertSkipped(t, Pipe{}.Run(ctx))
 	require.Equal(t, fakeInfo, ctx.Git)
 }
@@ -262,8 +255,7 @@ func TestSnapshotDirty(t *testing.T) {
 	testlib.GitCommit(t, "whatever")
 	testlib.GitTag(t, "v0.0.1")
 	require.NoError(t, os.WriteFile(filepath.Join(folder, "foo"), []byte("foobar"), 0o644))
-	ctx := context.New(config.Project{})
-	ctx.Snapshot = true
+	ctx := testctx.New(testctx.Snapshot)
 	testlib.AssertSkipped(t, Pipe{}.Run(ctx))
 	require.Equal(t, "v0.0.1", ctx.Git.Summary)
 }
@@ -274,7 +266,7 @@ func TestGitNotInPath(t *testing.T) {
 		require.NoError(t, os.Setenv("PATH", path))
 	}()
 	require.NoError(t, os.Setenv("PATH", ""))
-	require.EqualError(t, Pipe{}.Run(context.New(config.Project{})), ErrNoGit.Error())
+	require.EqualError(t, Pipe{}.Run(testctx.New()), ErrNoGit.Error())
 }
 
 func TestTagFromCI(t *testing.T) {
@@ -299,7 +291,7 @@ func TestTagFromCI(t *testing.T) {
 			require.NoError(t, os.Setenv(name, value))
 		}
 
-		ctx := context.New(config.Project{})
+		ctx := testctx.New()
 		require.NoError(t, Pipe{}.Run(ctx))
 		require.Equal(t, tc.expected, ctx.Git.CurrentTag)
 
@@ -315,7 +307,7 @@ func TestNoPreviousTag(t *testing.T) {
 	testlib.GitRemoteAdd(t, "git@github.com:foo/bar.git")
 	testlib.GitCommit(t, "commit1")
 	testlib.GitTag(t, "v0.0.1")
-	ctx := context.New(config.Project{})
+	ctx := testctx.New()
 	require.NoError(t, Pipe{}.Run(ctx))
 	require.Equal(t, "v0.0.1", ctx.Git.CurrentTag)
 	require.Empty(t, ctx.Git.PreviousTag, "should be empty")
@@ -346,7 +338,7 @@ func TestPreviousTagFromCI(t *testing.T) {
 				require.NoError(t, os.Setenv(name, value))
 			}
 
-			ctx := context.New(config.Project{})
+			ctx := testctx.New()
 			require.NoError(t, Pipe{}.Run(ctx))
 			require.Equal(t, tc.expected, ctx.Git.PreviousTag)
 

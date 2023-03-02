@@ -4,9 +4,9 @@ import (
 	"fmt"
 	"testing"
 
+	"github.com/goreleaser/goreleaser/internal/testctx"
 	"github.com/goreleaser/goreleaser/internal/testlib"
 	"github.com/goreleaser/goreleaser/pkg/config"
-	"github.com/goreleaser/goreleaser/pkg/context"
 	"github.com/stretchr/testify/require"
 )
 
@@ -35,7 +35,7 @@ func TestErrors(t *testing.T) {
 
 func TestDefaultsNoConfig(t *testing.T) {
 	errorString := "bucket or provider cannot be empty"
-	ctx := context.New(config.Project{
+	ctx := testctx.NewWithCfg(config.Project{
 		Blobs: []config.Blob{{}},
 	})
 	require.EqualError(t, Pipe{}.Default(ctx), errorString)
@@ -43,7 +43,7 @@ func TestDefaultsNoConfig(t *testing.T) {
 
 func TestDefaultsNoBucket(t *testing.T) {
 	errorString := "bucket or provider cannot be empty"
-	ctx := context.New(config.Project{
+	ctx := testctx.NewWithCfg(config.Project{
 		Blobs: []config.Blob{
 			{
 				Provider: "azblob",
@@ -55,7 +55,7 @@ func TestDefaultsNoBucket(t *testing.T) {
 
 func TestDefaultsNoProvider(t *testing.T) {
 	errorString := "bucket or provider cannot be empty"
-	ctx := context.New(config.Project{
+	ctx := testctx.NewWithCfg(config.Project{
 		Blobs: []config.Blob{
 			{
 				Bucket: "goreleaser-bucket",
@@ -66,7 +66,7 @@ func TestDefaultsNoProvider(t *testing.T) {
 }
 
 func TestDefaults(t *testing.T) {
-	ctx := context.New(config.Project{
+	ctx := testctx.NewWithCfg(config.Project{
 		Blobs: []config.Blob{
 			{
 				Bucket:   "foo",
@@ -96,7 +96,7 @@ func TestDefaults(t *testing.T) {
 }
 
 func TestDefaultsWithProvider(t *testing.T) {
-	ctx := context.New(config.Project{
+	ctx := testctx.NewWithCfg(config.Project{
 		Blobs: []config.Blob{
 			{
 				Bucket:   "foo",
@@ -117,7 +117,7 @@ func TestDefaultsWithProvider(t *testing.T) {
 
 func TestURL(t *testing.T) {
 	t.Run("s3 with opts", func(t *testing.T) {
-		url, err := urlFor(context.New(config.Project{}), config.Blob{
+		url, err := urlFor(testctx.New(), config.Blob{
 			Bucket:     "foo",
 			Provider:   "s3",
 			Region:     "us-west-1",
@@ -130,7 +130,7 @@ func TestURL(t *testing.T) {
 	})
 
 	t.Run("s3 with some opts", func(t *testing.T) {
-		url, err := urlFor(context.New(config.Project{}), config.Blob{
+		url, err := urlFor(testctx.New(), config.Blob{
 			Bucket:     "foo",
 			Provider:   "s3",
 			Region:     "us-west-1",
@@ -141,7 +141,7 @@ func TestURL(t *testing.T) {
 	})
 
 	t.Run("gs with opts", func(t *testing.T) {
-		url, err := urlFor(context.New(config.Project{}), config.Blob{
+		url, err := urlFor(testctx.New(), config.Blob{
 			Bucket:     "foo",
 			Provider:   "gs",
 			Region:     "us-west-1",
@@ -154,7 +154,7 @@ func TestURL(t *testing.T) {
 	})
 
 	t.Run("s3 no opts", func(t *testing.T) {
-		url, err := urlFor(context.New(config.Project{}), config.Blob{
+		url, err := urlFor(testctx.New(), config.Blob{
 			Bucket:   "foo",
 			Provider: "s3",
 		})
@@ -163,7 +163,7 @@ func TestURL(t *testing.T) {
 	})
 
 	t.Run("gs no opts", func(t *testing.T) {
-		url, err := urlFor(context.New(config.Project{}), config.Blob{
+		url, err := urlFor(testctx.New(), config.Blob{
 			Bucket:   "foo",
 			Provider: "gs",
 		})
@@ -173,20 +173,20 @@ func TestURL(t *testing.T) {
 
 	t.Run("template errors", func(t *testing.T) {
 		t.Run("provider", func(t *testing.T) {
-			_, err := urlFor(context.New(config.Project{}), config.Blob{
+			_, err := urlFor(testctx.New(), config.Blob{
 				Provider: "{{ .Nope }}",
 			})
 			testlib.RequireTemplateError(t, err)
 		})
 		t.Run("bucket", func(t *testing.T) {
-			_, err := urlFor(context.New(config.Project{}), config.Blob{
+			_, err := urlFor(testctx.New(), config.Blob{
 				Bucket:   "{{ .Nope }}",
 				Provider: "gs",
 			})
 			testlib.RequireTemplateError(t, err)
 		})
 		t.Run("endpoint", func(t *testing.T) {
-			_, err := urlFor(context.New(config.Project{}), config.Blob{
+			_, err := urlFor(testctx.New(), config.Blob{
 				Bucket:   "foobar",
 				Endpoint: "{{.Env.NOPE}}",
 				Provider: "s3",
@@ -194,7 +194,7 @@ func TestURL(t *testing.T) {
 			testlib.RequireTemplateError(t, err)
 		})
 		t.Run("region", func(t *testing.T) {
-			_, err := urlFor(context.New(config.Project{}), config.Blob{
+			_, err := urlFor(testctx.New(), config.Blob{
 				Bucket:   "foobar",
 				Region:   "{{.Env.NOPE}}",
 				Provider: "s3",
@@ -206,11 +206,11 @@ func TestURL(t *testing.T) {
 
 func TestSkip(t *testing.T) {
 	t.Run("skip", func(t *testing.T) {
-		require.True(t, Pipe{}.Skip(context.New(config.Project{})))
+		require.True(t, Pipe{}.Skip(testctx.New()))
 	})
 
 	t.Run("dont skip", func(t *testing.T) {
-		ctx := context.New(config.Project{
+		ctx := testctx.NewWithCfg(config.Project{
 			Blobs: []config.Blob{{}},
 		})
 		require.False(t, Pipe{}.Skip(ctx))

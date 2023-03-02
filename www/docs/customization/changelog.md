@@ -86,6 +86,13 @@ changelog:
           regex: '.*build.*'
           order: 2
 
+  # Divider to use between groups.
+  #
+  # Defaults to empty.
+  #
+  # Since: v1.16.0-pro
+  divider: '---'
+
   filters:
     # Commit messages matching the regexp listed here will be removed from
     # the changelog

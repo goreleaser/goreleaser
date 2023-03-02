@@ -5,6 +5,7 @@ Tutorials made by the community.
 <!-- please, keep A-Z sorting -->
 - [Creating debs and rpms with Go](https://carlosbecker.com/posts/nfpm/)
 - [Cross compile with CGO and GoReleaser](https://medium.com/@robdefeo/cross-compile-with-cgo-and-goreleaser-6af884731222?source=friends_link&sk=baf6553fa48cb0e28ea3519615f02576)
+- [Cross-compiling a CGO project using Goreleaser](https://www.jvt.me/posts/2023/02/24/goreleaser-cgo-cross-compile/)
 - [Drop ballast... How I reduced the size of minectl 🗺](https://blog.ediri.io/drop-ballast-how-i-reduced-the-size-of-minectl)
 - [Fast and easy Go binaries delivery](https://carlosbecker.com/posts/goreleaser/)
 - [GitHub Action for release your Go projects as fast and easily as possible](https://dev.to/koddr/github-action-for-release-your-go-projects-as-fast-and-easily-as-possible-20a2)

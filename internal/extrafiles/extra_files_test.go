@@ -3,8 +3,8 @@ package extrafiles
 import (
 	"testing"
 
+	"github.com/goreleaser/goreleaser/internal/testctx"
 	"github.com/goreleaser/goreleaser/pkg/config"
-	"github.com/goreleaser/goreleaser/pkg/context"
 	"github.com/stretchr/testify/require"
 )
 
@@ -13,8 +13,9 @@ func TestTemplate(t *testing.T) {
 		{Glob: "./testdata/file{{ .Env.ONE }}.golden"},
 	}
 
-	ctx := context.New(config.Project{})
-	ctx.Env["ONE"] = "1"
+	ctx := testctx.NewWithCfg(config.Project{
+		Env: []string{"ONE=1"},
+	})
 	files, err := Find(ctx, globs)
 	require.NoError(t, err)
 	require.Len(t, files, 1)
@@ -26,7 +27,7 @@ func TestBadTemplate(t *testing.T) {
 		{Glob: "./testdata/file{{ .Env.NOPE }}.golden"},
 	}
 
-	ctx := context.New(config.Project{})
+	ctx := testctx.New()
 	files, err := Find(ctx, globs)
 	require.Empty(t, files)
 	require.EqualError(t, err, `failed to apply template to glob "./testdata/file{{ .Env.NOPE }}.golden": template: tmpl:1:22: executing "tmpl" at <.Env.NOPE>: map has no entry for key "NOPE"`)
@@ -39,7 +40,7 @@ func TestShouldGetSpecificFile(t *testing.T) {
 		{Glob: "./testdata/file1.golden"},
 	}
 
-	files, err := Find(context.New(config.Project{}), globs)
+	files, err := Find(testctx.New(), globs)
 	require.NoError(t, err)
 	require.Len(t, files, 1)
 
@@ -51,7 +52,7 @@ func TestFailToGetSpecificFile(t *testing.T) {
 		{Glob: "./testdata/file453.golden"},
 	}
 
-	files, err := Find(context.New(config.Project{}), globs)
+	files, err := Find(testctx.New(), globs)
 	require.EqualError(t, err, "globbing failed for pattern ./testdata/file453.golden: matching \"./testdata/file453.golden\": file does not exist")
 	require.Empty(t, files)
 }
@@ -61,7 +62,7 @@ func TestShouldGetFilesWithSuperStar(t *testing.T) {
 		{Glob: "./**/file?.golden"},
 	}
 
-	files, err := Find(context.New(config.Project{}), globs)
+	files, err := Find(testctx.New(), globs)
 	require.NoError(t, err)
 	require.Len(t, files, 3)
 	require.Equal(t, "testdata/file2.golden", files["file2.golden"])
@@ -74,7 +75,7 @@ func TestShouldGetAllFilesWithGoldenExtension(t *testing.T) {
 		{Glob: "./testdata/*.golden"},
 	}
 
-	files, err := Find(context.New(config.Project{}), globs)
+	files, err := Find(testctx.New(), globs)
 	require.NoError(t, err)
 	require.Len(t, files, 2)
 	require.Equal(t, "testdata/file1.golden", files["file1.golden"])
@@ -86,7 +87,7 @@ func TestShouldGetAllFilesInsideTestdata(t *testing.T) {
 		{Glob: "./testdata/*"},
 	}
 
-	files, err := Find(context.New(config.Project{}), globs)
+	files, err := Find(testctx.New(), globs)
 	require.NoError(t, err)
 	require.Len(t, files, 4)
 	require.Equal(t, "testdata/sub3/file1.golden", files["file1.golden"])
@@ -103,8 +104,7 @@ func TestTargetName(t *testing.T) {
 		},
 	}
 
-	ctx := context.New(config.Project{})
-	ctx.Git.CurrentTag = "v1.0.0"
+	ctx := testctx.New(testctx.WithCurrentTag("v1.0.0"))
 	files, err := Find(ctx, globs)
 	require.NoError(t, err)
 	require.Len(t, files, 1)
@@ -120,7 +120,7 @@ func TestTargetInvalidNameTemplate(t *testing.T) {
 		},
 	}
 
-	ctx := context.New(config.Project{})
+	ctx := testctx.New()
 	files, err := Find(ctx, globs)
 	require.Empty(t, files)
 	require.EqualError(t, err, `failed to apply template to name "file1_{{.Env.HONK}}.golden": template: tmpl:1:12: executing "tmpl" at <.Env.HONK>: map has no entry for key "HONK"`)
@@ -134,7 +134,7 @@ func TestTargetNameMatchesMultipleFiles(t *testing.T) {
 		},
 	}
 
-	ctx := context.New(config.Project{})
+	ctx := testctx.New()
 	files, err := Find(ctx, globs)
 	require.Empty(t, files)
 	require.EqualError(t, err, `failed to add extra_file: "./testdata/*" -> "file1.golden": glob matches multiple files`)
@@ -148,7 +148,7 @@ func TestTargetNameNoMatches(t *testing.T) {
 		},
 	}
 
-	ctx := context.New(config.Project{})
+	ctx := testctx.New()
 	files, err := Find(ctx, globs)
 	require.Empty(t, files)
 	require.EqualError(t, err, `globbing failed for pattern ./testdata/file1.silver: matching "./testdata/file1.silver": file does not exist`)
@@ -159,7 +159,7 @@ func TestGlobEvalsToEmpty(t *testing.T) {
 		{Glob: `{{ printf "" }}`},
 	}
 
-	ctx := context.New(config.Project{})
+	ctx := testctx.New()
 	files, err := Find(ctx, globs)
 	require.Empty(t, files)
 	require.NoError(t, err)
@@ -170,7 +170,7 @@ func TestTargetNameNoGlob(t *testing.T) {
 		{NameTemplate: "file1.golden"},
 	}
 
-	ctx := context.New(config.Project{})
+	ctx := testctx.New()
 	files, err := Find(ctx, globs)
 	require.Empty(t, files)
 	require.NoError(t, err)

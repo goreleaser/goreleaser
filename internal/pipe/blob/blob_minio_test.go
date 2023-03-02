@@ -10,6 +10,7 @@ import (
 	"testing"
 
 	"github.com/goreleaser/goreleaser/internal/artifact"
+	"github.com/goreleaser/goreleaser/internal/testctx"
 	"github.com/goreleaser/goreleaser/internal/testlib"
 	"github.com/goreleaser/goreleaser/pkg/config"
 	"github.com/goreleaser/goreleaser/pkg/context"
@@ -80,7 +81,7 @@ func TestMinioUpload(t *testing.T) {
 	require.NoError(t, os.WriteFile(debpath, []byte("fake\ndeb"), 0o744))
 	require.NoError(t, os.WriteFile(sigpath, []byte("fake\nsig"), 0o744))
 	require.NoError(t, os.WriteFile(certpath, []byte("fake\ncert"), 0o744))
-	ctx := context.New(config.Project{
+	ctx := testctx.NewWithCfg(config.Project{
 		Dist:        folder,
 		ProjectName: "testupload",
 		Blobs: []config.Blob{
@@ -97,8 +98,7 @@ func TestMinioUpload(t *testing.T) {
 				},
 			},
 		},
-	})
-	ctx.Git = context.GitInfo{CurrentTag: "v1.0.0"}
+	}, testctx.WithCurrentTag("v1.0.0"))
 	ctx.Artifacts.Add(&artifact.Artifact{
 		Type: artifact.Checksum,
 		Name: "checksum.txt",
@@ -169,7 +169,7 @@ func TestMinioUploadCustomBucketID(t *testing.T) {
 	require.NoError(t, os.WriteFile(debpath, []byte("fake\ndeb"), 0o744))
 	// Set custom BUCKET_ID env variable.
 	require.NoError(t, os.Setenv("BUCKET_ID", name))
-	ctx := context.New(config.Project{
+	ctx := testctx.NewWithCfg(config.Project{
 		Dist:        folder,
 		ProjectName: "testupload",
 		Blobs: []config.Blob{
@@ -179,8 +179,7 @@ func TestMinioUploadCustomBucketID(t *testing.T) {
 				Endpoint: "http://" + listen,
 			},
 		},
-	})
-	ctx.Git = context.GitInfo{CurrentTag: "v1.0.0"}
+	}, testctx.WithCurrentTag("v1.0.0"))
 	ctx.Artifacts.Add(&artifact.Artifact{
 		Type: artifact.UploadableArchive,
 		Name: "bin.tar.gz",
@@ -204,7 +203,7 @@ func TestMinioUploadRootFolder(t *testing.T) {
 	debpath := filepath.Join(folder, "bin.deb")
 	require.NoError(t, os.WriteFile(tgzpath, []byte("fake\ntargz"), 0o744))
 	require.NoError(t, os.WriteFile(debpath, []byte("fake\ndeb"), 0o744))
-	ctx := context.New(config.Project{
+	ctx := testctx.NewWithCfg(config.Project{
 		Dist:        folder,
 		ProjectName: "testupload",
 		Blobs: []config.Blob{
@@ -215,8 +214,7 @@ func TestMinioUploadRootFolder(t *testing.T) {
 				Endpoint: "http://" + listen,
 			},
 		},
-	})
-	ctx.Git = context.GitInfo{CurrentTag: "v1.0.0"}
+	}, testctx.WithCurrentTag("v1.0.0"))
 	ctx.Artifacts.Add(&artifact.Artifact{
 		Type: artifact.UploadableArchive,
 		Name: "bin.tar.gz",
@@ -239,7 +237,7 @@ func TestMinioUploadInvalidCustomBucketID(t *testing.T) {
 	debpath := filepath.Join(folder, "bin.deb")
 	require.NoError(t, os.WriteFile(tgzpath, []byte("fake\ntargz"), 0o744))
 	require.NoError(t, os.WriteFile(debpath, []byte("fake\ndeb"), 0o744))
-	ctx := context.New(config.Project{
+	ctx := testctx.NewWithCfg(config.Project{
 		Dist:        folder,
 		ProjectName: "testupload",
 		Blobs: []config.Blob{
@@ -249,8 +247,7 @@ func TestMinioUploadInvalidCustomBucketID(t *testing.T) {
 				Endpoint: "http://" + listen,
 			},
 		},
-	})
-	ctx.Git = context.GitInfo{CurrentTag: "v1.1.0"}
+	}, testctx.WithCurrentTag("v1.1.0"))
 	ctx.Artifacts.Add(&artifact.Artifact{
 		Type: artifact.UploadableArchive,
 		Name: "bin.tar.gz",

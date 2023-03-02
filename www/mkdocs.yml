@@ -88,6 +88,7 @@ nav:
   - Basics:
     - customization/includes.md
     - customization/templates.md
+    - customization/templatefiles.md
     - customization/env.md
     - customization/hooks.md
     - customization/dist.md

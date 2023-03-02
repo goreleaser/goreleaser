@@ -510,6 +510,9 @@
 						},
 						"type": "array"
 					},
+					"divider": {
+						"type": "string"
+					},
 					"abbrev": {
 						"type": "integer"
 					},
@@ -2256,6 +2259,12 @@
 					"git": {
 						"$ref": "#/$defs/Git"
 					},
+					"template_files": {
+						"items": {
+							"$ref": "#/$defs/TemplateFile"
+						},
+						"type": "array"
+					},
 					"universal_binaries": {
 						"items": {
 							"$ref": "#/$defs/UniversalBinary"
@@ -2604,6 +2613,12 @@
 						"type": "array"
 					},
 					"post_install": {
+						"items": {
+							"type": "string"
+						},
+						"type": "array"
+					},
+					"depends": {
 						"items": {
 							"type": "string"
 						},
@@ -3062,6 +3077,28 @@
 				},
 				"additionalProperties": false,
 				"type": "object"
+			},
+			"TemplateFile": {
+				"properties": {
+					"id": {
+						"type": "string"
+					},
+					"src": {
+						"type": "string"
+					},
+					"dst": {
+						"type": "string"
+					},
+					"mode": {
+						"type": "integer"
+					}
+				},
+				"additionalProperties": false,
+				"type": "object",
+				"required": [
+					"src",
+					"dst"
+				]
 			},
 			"Twitter": {
 				"properties": {

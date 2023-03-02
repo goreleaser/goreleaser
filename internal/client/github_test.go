@@ -10,15 +10,15 @@ import (
 	"text/template"
 
 	"github.com/goreleaser/goreleaser/internal/artifact"
+	"github.com/goreleaser/goreleaser/internal/testctx"
 	"github.com/goreleaser/goreleaser/pkg/config"
-	"github.com/goreleaser/goreleaser/pkg/context"
 	"github.com/stretchr/testify/require"
 )
 
 func TestNewGitHubClient(t *testing.T) {
 	t.Run("good urls", func(t *testing.T) {
 		githubURL := "https://github.mycompany.com"
-		ctx := context.New(config.Project{
+		ctx := testctx.NewWithCfg(config.Project{
 			GitHubURLs: config.GitHubURLs{
 				API:    githubURL + "/api",
 				Upload: githubURL + "/upload",
@@ -35,7 +35,7 @@ func TestNewGitHubClient(t *testing.T) {
 	})
 
 	t.Run("bad api url", func(t *testing.T) {
-		ctx := context.New(config.Project{
+		ctx := testctx.NewWithCfg(config.Project{
 			GitHubURLs: config.GitHubURLs{
 				API:    "://github.mycompany.com/api",
 				Upload: "https://github.mycompany.com/upload",
@@ -47,7 +47,7 @@ func TestNewGitHubClient(t *testing.T) {
 	})
 
 	t.Run("bad upload url", func(t *testing.T) {
-		ctx := context.New(config.Project{
+		ctx := testctx.NewWithCfg(config.Project{
 			GitHubURLs: config.GitHubURLs{
 				API:    "https://github.mycompany.com/api",
 				Upload: "not a url:4994",
@@ -60,7 +60,7 @@ func TestNewGitHubClient(t *testing.T) {
 
 	t.Run("template", func(t *testing.T) {
 		githubURL := "https://github.mycompany.com"
-		ctx := context.New(config.Project{
+		ctx := testctx.NewWithCfg(config.Project{
 			Env: []string{
 				fmt.Sprintf("GORELEASER_TEST_GITHUB_URLS_API=%s/api", githubURL),
 				fmt.Sprintf("GORELEASER_TEST_GITHUB_URLS_UPLOAD=%s/upload", githubURL),
@@ -81,7 +81,7 @@ func TestNewGitHubClient(t *testing.T) {
 	})
 
 	t.Run("template invalid api", func(t *testing.T) {
-		ctx := context.New(config.Project{
+		ctx := testctx.NewWithCfg(config.Project{
 			GitHubURLs: config.GitHubURLs{
 				API: "{{ .Env.GORELEASER_NOT_EXISTS }}",
 			},
@@ -92,7 +92,7 @@ func TestNewGitHubClient(t *testing.T) {
 	})
 
 	t.Run("template invalid upload", func(t *testing.T) {
-		ctx := context.New(config.Project{
+		ctx := testctx.NewWithCfg(config.Project{
 			GitHubURLs: config.GitHubURLs{
 				API:    "https://github.mycompany.com/api",
 				Upload: "{{ .Env.GORELEASER_NOT_EXISTS }}",
@@ -104,7 +104,7 @@ func TestNewGitHubClient(t *testing.T) {
 	})
 
 	t.Run("template invalid", func(t *testing.T) {
-		ctx := context.New(config.Project{
+		ctx := testctx.NewWithCfg(config.Project{
 			GitHubURLs: config.GitHubURLs{
 				API: "{{.dddddddddd",
 			},
@@ -116,7 +116,7 @@ func TestNewGitHubClient(t *testing.T) {
 }
 
 func TestGitHubUploadReleaseIDNotInt(t *testing.T) {
-	ctx := context.New(config.Project{})
+	ctx := testctx.New()
 	client, err := NewGitHub(ctx, ctx.Token)
 	require.NoError(t, err)
 
@@ -158,7 +158,7 @@ func TestGitHubReleaseURLTemplate(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			ctx := context.New(config.Project{
+			ctx := testctx.NewWithCfg(config.Project{
 				Env: []string{
 					"GORELEASER_TEST_GITHUB_URLS_DOWNLOAD=https://github.mycompany.com",
 				},
@@ -188,7 +188,7 @@ func TestGitHubReleaseURLTemplate(t *testing.T) {
 }
 
 func TestGitHubCreateReleaseWrongNameTemplate(t *testing.T) {
-	ctx := context.New(config.Project{
+	ctx := testctx.NewWithCfg(config.Project{
 		Release: config.Release{
 			NameTemplate: "{{.dddddddddd",
 		},
@@ -213,7 +213,7 @@ func TestGithubGetDefaultBranch(t *testing.T) {
 	}))
 	defer srv.Close()
 
-	ctx := context.New(config.Project{
+	ctx := testctx.NewWithCfg(config.Project{
 		GitHubURLs: config.GitHubURLs{
 			API: srv.URL + "/",
 		},
@@ -243,7 +243,7 @@ func TestGithubGetDefaultBranchErr(t *testing.T) {
 	}))
 	defer srv.Close()
 
-	ctx := context.New(config.Project{
+	ctx := testctx.NewWithCfg(config.Project{
 		GitHubURLs: config.GitHubURLs{
 			API: srv.URL + "/",
 		},
@@ -274,7 +274,7 @@ func TestChangelog(t *testing.T) {
 	}))
 	defer srv.Close()
 
-	ctx := context.New(config.Project{
+	ctx := testctx.NewWithCfg(config.Project{
 		GitHubURLs: config.GitHubURLs{
 			API: srv.URL + "/",
 		},
@@ -306,7 +306,7 @@ func TestReleaseNotes(t *testing.T) {
 	}))
 	defer srv.Close()
 
-	ctx := context.New(config.Project{
+	ctx := testctx.NewWithCfg(config.Project{
 		GitHubURLs: config.GitHubURLs{
 			API: srv.URL + "/",
 		},
@@ -339,7 +339,7 @@ func TestCloseMilestone(t *testing.T) {
 	}))
 	defer srv.Close()
 
-	ctx := context.New(config.Project{
+	ctx := testctx.NewWithCfg(config.Project{
 		GitHubURLs: config.GitHubURLs{
 			API: srv.URL + "/",
 		},

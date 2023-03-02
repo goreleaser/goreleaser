@@ -3,7 +3,7 @@ package semver
 import (
 	"testing"
 
-	"github.com/goreleaser/goreleaser/pkg/config"
+	"github.com/goreleaser/goreleaser/internal/testctx"
 	"github.com/goreleaser/goreleaser/pkg/context"
 	"github.com/stretchr/testify/require"
 )
@@ -13,8 +13,7 @@ func TestDescription(t *testing.T) {
 }
 
 func TestValidSemver(t *testing.T) {
-	ctx := context.New(config.Project{})
-	ctx.Git.CurrentTag = "v1.5.2-rc1"
+	ctx := testctx.New(testctx.WithCurrentTag("v1.5.2-rc1"))
 	require.NoError(t, Pipe{}.Run(ctx))
 	require.Equal(t, context.Semver{
 		Major:      1,
@@ -25,8 +24,7 @@ func TestValidSemver(t *testing.T) {
 }
 
 func TestInvalidSemver(t *testing.T) {
-	ctx := context.New(config.Project{})
-	ctx.Git.CurrentTag = "aaaav1.5.2-rc1"
+	ctx := testctx.New(testctx.WithCurrentTag("aaaav1.5.2-rc1"))
 	err := Pipe{}.Run(ctx)
 	require.Error(t, err)
 	require.Contains(t, err.Error(), "failed to parse tag 'aaaav1.5.2-rc1' as semver")

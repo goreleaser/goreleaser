@@ -4,15 +4,15 @@ import (
 	"path/filepath"
 	"testing"
 
+	"github.com/goreleaser/goreleaser/internal/testctx"
 	"github.com/goreleaser/goreleaser/pkg/config"
-	"github.com/goreleaser/goreleaser/pkg/context"
 	"github.com/stretchr/testify/require"
 )
 
 func TestMeta(t *testing.T) {
 	t.Run("good", func(t *testing.T) {
 		dist := t.TempDir()
-		ctx := context.New(config.Project{
+		ctx := testctx.NewWithCfg(config.Project{
 			Dist: dist,
 			Archives: []config.Archive{
 				{
@@ -36,7 +36,7 @@ func TestMeta(t *testing.T) {
 
 	t.Run("bad tmpl", func(t *testing.T) {
 		dist := t.TempDir()
-		ctx := context.New(config.Project{
+		ctx := testctx.NewWithCfg(config.Project{
 			Dist: dist,
 			Archives: []config.Archive{
 				{
@@ -55,7 +55,7 @@ func TestMeta(t *testing.T) {
 
 	t.Run("no files", func(t *testing.T) {
 		dist := t.TempDir()
-		ctx := context.New(config.Project{
+		ctx := testctx.NewWithCfg(config.Project{
 			Dist: dist,
 			Archives: []config.Archive{
 				{

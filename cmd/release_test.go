@@ -4,7 +4,7 @@ import (
 	"path/filepath"
 	"testing"
 
-	"github.com/goreleaser/goreleaser/pkg/config"
+	"github.com/goreleaser/goreleaser/internal/testctx"
 	"github.com/goreleaser/goreleaser/pkg/context"
 	"github.com/stretchr/testify/require"
 )
@@ -56,7 +56,7 @@ func TestReleaseBrokenProject(t *testing.T) {
 func TestReleaseFlags(t *testing.T) {
 	setup := func(tb testing.TB, opts releaseOpts) *context.Context {
 		tb.Helper()
-		ctx := context.New(config.Project{})
+		ctx := testctx.New()
 		setupReleaseContext(ctx, opts)
 		return ctx
 	}
