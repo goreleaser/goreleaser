@@ -28,7 +28,7 @@ func (DockerPipe) Default(ctx *context.Context) error {
 			cfg.Cmd = "cosign"
 		}
 		if len(cfg.Args) == 0 {
-			cfg.Args = []string{"sign", "--key=cosign.key", "${artifact}@${digest}"}
+			cfg.Args = []string{"sign", "--key=cosign.key", "${artifact}@${digest}", "--yes"}
 		}
 		if cfg.Artifacts == "" {
 			cfg.Artifacts = "none"

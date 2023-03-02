@@ -129,7 +129,12 @@ environment variable set, a simple usage example would look like this:
 signs:
 - cmd: cosign
   stdin: '{{ .Env.COSIGN_PWD }}'
-  args: ["sign-blob", "--key=cosign.key", "--output-signature=${signature}", "${artifact}"]
+  args:
+  - "sign-blob"
+  - "--key=cosign.key"
+  - "--output-signature=${signature}"
+  - "${artifact}"
+  - "--yes" # needed on cosign 2.0.0+
   artifacts: all
 ```
 

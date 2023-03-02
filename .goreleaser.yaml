@@ -289,6 +289,7 @@ signs:
     - '--output-certificate=${certificate}'
     - '--output-signature=${signature}'
     - '${artifact}'
+    - --yes
 
 docker_signs:
 - cmd: cosign
@@ -299,6 +300,7 @@ docker_signs:
   args:
   - 'sign'
   - '${artifact}@${digest}'
+  - --yes
 
 publishers:
   - name: fury.io
