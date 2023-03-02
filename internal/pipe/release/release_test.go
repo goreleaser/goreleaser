@@ -379,7 +379,7 @@ func TestDefaultWithGitlab(t *testing.T) {
 				Download: "https://gitlab.com",
 			},
 		},
-		testctx.GitHubTokenType,
+		testctx.GitLabTokenType,
 		testctx.WithCurrentTag("v1.0.0"),
 	)
 	require.NoError(t, Pipe{}.Default(ctx))
@@ -398,7 +398,7 @@ func TestDefaultWithGitlabInvalidURL(t *testing.T) {
 				Download: "https://gitlab.com",
 			},
 		},
-		testctx.GitHubTokenType,
+		testctx.GiteaTokenType,
 		testctx.WithCurrentTag("v1.0.0"),
 	)
 	require.Error(t, Pipe{}.Default(ctx))
@@ -415,7 +415,7 @@ func TestDefaultWithGitea(t *testing.T) {
 				Download: "https://git.honk.com",
 			},
 		},
-		testctx.GitHubTokenType,
+		testctx.GiteaTokenType,
 		testctx.WithCurrentTag("v1.0.0"),
 	)
 	require.NoError(t, Pipe{}.Default(ctx))
@@ -434,7 +434,7 @@ func TestDefaultWithGiteaInvalidURL(t *testing.T) {
 				Download: "https://git.honk.com",
 			},
 		},
-		testctx.GitHubTokenType,
+		testctx.GiteaTokenType,
 		testctx.WithCurrentTag("v1.0.0"),
 	)
 	require.Error(t, Pipe{}.Default(ctx))

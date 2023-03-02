@@ -390,7 +390,7 @@ func TestRunPipeNameTemplate(t *testing.T) {
 					},
 				},
 			},
-			Env: []string{"FOO=foo_is_bar"},
+			Env: []string{"FOO_BAR=is_bar"},
 		},
 		testctx.WithVersion("1.0.1"),
 		testctx.WithCurrentTag("v1.0.1"),
