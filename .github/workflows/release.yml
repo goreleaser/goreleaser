@@ -97,7 +97,7 @@ jobs:
             ./dist/*.rpm
             ./dist/*.apk
           key: ${{ github.ref }}
-      - uses: sigstore/cosign-installer@v2.8.1
+      - uses: sigstore/cosign-installer@v3.0.1
       - uses: anchore/sbom-action/download-syft@v0.13.3
       - name: dockerhub-login
         if: startsWith(github.ref, 'refs/tags/v')
