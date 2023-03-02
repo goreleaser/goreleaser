@@ -34,7 +34,7 @@ docker_signs:
     - "--key=cosign.key"
     - "--upload=false"
     - "${artifact}"
-    - "--yes"
+    - "--yes" # needed on cosign 2.0.0+
 
 
     # Which artifacts to sign
