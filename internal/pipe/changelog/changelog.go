@@ -38,8 +38,13 @@ const (
 // Pipe for checksums.
 type Pipe struct{}
 
-func (Pipe) String() string                 { return "generating changelog" }
-func (Pipe) Skip(ctx *context.Context) bool { return ctx.Config.Changelog.Skip || ctx.Snapshot }
+func (Pipe) String() string { return "generating changelog" }
+func (Pipe) Skip(ctx *context.Context) (bool, error) {
+	if ctx.Snapshot {
+		return true, nil
+	}
+	return tmpl.New(ctx).Bool(ctx.Config.Changelog.Skip)
+}
 
 // Run the pipe.
 func (Pipe) Run(ctx *context.Context) error {
