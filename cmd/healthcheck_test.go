@@ -1,6 +1,7 @@
 package cmd
 
 import (
+	"os"
 	"testing"
 
 	"github.com/stretchr/testify/require"
@@ -15,7 +16,7 @@ func TestHealthcheckSystem(t *testing.T) {
 func TestHealthcheckConfigThatDoesNotExist(t *testing.T) {
 	cmd := newHealthcheckCmd()
 	cmd.cmd.SetArgs([]string{"-f", "testdata/nope.yml"})
-	require.EqualError(t, cmd.cmd.Execute(), "open testdata/nope.yml: no such file or directory")
+	require.ErrorIs(t, cmd.cmd.Execute(), os.ErrNotExist)
 }
 
 func TestHealthcheckMissingTool(t *testing.T) {
