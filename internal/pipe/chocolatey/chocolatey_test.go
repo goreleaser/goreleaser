@@ -301,6 +301,10 @@ func TestPublish(t *testing.T) {
 	}
 }
 
+func TestDependencies(t *testing.T) {
+	require.Equal(t, []string{"choco"}, Pipe{}.Dependencies(nil))
+}
+
 type fakeCmd struct {
 	execFn func() ([]byte, error)
 }

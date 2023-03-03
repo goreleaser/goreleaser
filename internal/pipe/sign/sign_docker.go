@@ -19,6 +19,14 @@ func (DockerPipe) Skip(ctx *context.Context) bool {
 	return ctx.SkipSign || len(ctx.Config.DockerSigns) == 0
 }
 
+func (DockerPipe) Dependencies(ctx *context.Context) []string {
+	var cmds []string
+	for _, s := range ctx.Config.DockerSigns {
+		cmds = append(cmds, s.Cmd)
+	}
+	return cmds
+}
+
 // Default sets the Pipes defaults.
 func (DockerPipe) Default(ctx *context.Context) error {
 	ids := ids.New("docker_signs")

@@ -27,6 +27,14 @@ type Pipe struct{}
 func (Pipe) String() string                 { return "signing artifacts" }
 func (Pipe) Skip(ctx *context.Context) bool { return ctx.SkipSign || len(ctx.Config.Signs) == 0 }
 
+func (Pipe) Dependencies(ctx *context.Context) []string {
+	var cmds []string
+	for _, s := range ctx.Config.Signs {
+		cmds = append(cmds, s.Cmd)
+	}
+	return cmds
+}
+
 // Default sets the Pipes defaults.
 func (Pipe) Default(ctx *context.Context) error {
 	ids := ids.New("signs")

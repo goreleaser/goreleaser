@@ -228,3 +228,13 @@ func TestDockerSkip(t *testing.T) {
 		require.False(t, DockerPipe{}.Skip(ctx))
 	})
 }
+
+func TestDockerDependencies(t *testing.T) {
+	ctx := testctx.NewWithCfg(config.Project{
+		DockerSigns: []config.Sign{
+			{Cmd: "cosign"},
+			{Cmd: "gpg2"},
+		},
+	})
+	require.Equal(t, []string{"cosign", "gpg2"}, DockerPipe{}.Dependencies(ctx))
+}

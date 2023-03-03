@@ -723,3 +723,13 @@ func TestSkip(t *testing.T) {
 		require.False(t, Pipe{}.Skip(ctx))
 	})
 }
+
+func TestDependencies(t *testing.T) {
+	ctx := testctx.NewWithCfg(config.Project{
+		Signs: []config.Sign{
+			{Cmd: "cosign"},
+			{Cmd: "gpg2"},
+		},
+	})
+	require.Equal(t, []string{"cosign", "gpg2"}, Pipe{}.Dependencies(ctx))
+}
