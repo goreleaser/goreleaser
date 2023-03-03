@@ -1397,3 +1397,20 @@ func TestWithDigest(t *testing.T) {
 		})
 	}
 }
+
+func TestDependencies(t *testing.T) {
+	ctx := testctx.NewWithCfg(config.Project{
+		Dockers: []config.Docker{
+			{Use: useBuildx},
+			{Use: useDocker},
+			{Use: "nope"},
+		},
+		DockerManifests: []config.DockerManifest{
+			{Use: useBuildx},
+			{Use: useDocker},
+			{Use: "nope"},
+		},
+	})
+	require.Equal(t, []string{"docker", "docker"}, Pipe{}.Dependencies(ctx))
+	require.Equal(t, []string{"docker", "docker"}, ManifestPipe{}.Dependencies(ctx))
+}

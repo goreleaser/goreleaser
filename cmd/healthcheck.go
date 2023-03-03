@@ -9,7 +9,6 @@ import (
 	"github.com/caarlos0/ctrlc"
 	"github.com/caarlos0/log"
 	"github.com/charmbracelet/lipgloss"
-	"github.com/goreleaser/goreleaser/internal/middleware/errhandler"
 	"github.com/goreleaser/goreleaser/internal/middleware/skip"
 	"github.com/goreleaser/goreleaser/internal/pipe/defaults"
 	"github.com/goreleaser/goreleaser/pkg/context"
@@ -58,19 +57,14 @@ func newHealthcheckCmd() *healthcheckCmd {
 
 				var errs []error
 				for _, hc := range healthcheck.Healthcheckers {
-					if err := skip.Maybe(
-						hc,
-						errhandler.Handle(func(ctx *context.Context) error {
-							for _, tool := range hc.Dependencies(ctx) {
-								if err := checkPath(tool); err != nil {
-									errs = append(errs, err)
-								}
+					_ = skip.Maybe(hc, func(ctx *context.Context) error {
+						for _, tool := range hc.Dependencies(ctx) {
+							if err := checkPath(tool); err != nil {
+								errs = append(errs, err)
 							}
-							return nil
-						}),
-					)(ctx); err != nil {
-						errs = append(errs, err)
-					}
+						}
+						return nil
+					})(ctx)
 				}
 
 				if len(errs) == 0 {

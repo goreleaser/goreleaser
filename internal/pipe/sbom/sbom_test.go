@@ -750,3 +750,13 @@ func Test_templateNames(t *testing.T) {
 		})
 	}
 }
+
+func TestDependencies(t *testing.T) {
+	ctx := testctx.NewWithCfg(config.Project{
+		SBOMs: []config.SBOM{
+			{Cmd: "syft"},
+			{Cmd: "foobar"},
+		},
+	})
+	require.Equal(t, []string{"syft", "foobar"}, Pipe{}.Dependencies(ctx))
+}
