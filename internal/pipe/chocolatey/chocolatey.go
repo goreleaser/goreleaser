@@ -30,8 +30,9 @@ var cmd cmder = stdCmd{}
 // Pipe for chocolatey packaging.
 type Pipe struct{}
 
-func (Pipe) String() string                 { return "chocolatey packages" }
-func (Pipe) Skip(ctx *context.Context) bool { return len(ctx.Config.Chocolateys) == 0 }
+func (Pipe) String() string                             { return "chocolatey packages" }
+func (Pipe) Skip(ctx *context.Context) bool             { return len(ctx.Config.Chocolateys) == 0 }
+func (Pipe) Dependencies(ctx *context.Context) []string { return []string{"choco"} }
 
 // Default sets the pipe defaults.
 func (Pipe) Default(ctx *context.Context) error {

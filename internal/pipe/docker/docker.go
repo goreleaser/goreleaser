@@ -31,6 +31,18 @@ type Pipe struct{}
 func (Pipe) String() string                 { return "docker images" }
 func (Pipe) Skip(ctx *context.Context) bool { return len(ctx.Config.Dockers) == 0 || ctx.SkipDocker }
 
+func (Pipe) Dependencies(ctx *context.Context) []string {
+	var cmds []string
+	for _, s := range ctx.Config.Dockers {
+		switch s.Use {
+		case useDocker, useBuildx:
+			cmds = append(cmds, "docker")
+			// TODO: how to check if buildx is installed
+		}
+	}
+	return cmds
+}
+
 // Default sets the pipe defaults.
 func (Pipe) Default(ctx *context.Context) error {
 	ids := ids.New("dockers")
