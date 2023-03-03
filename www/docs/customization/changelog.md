@@ -6,10 +6,17 @@ You can customize how the changelog is generated using the `changelog` section i
 # .goreleaser.yml
 changelog:
   # Set this to true if you don't want any changelog at all.
+  #
   # Warning: this will also ignore any changelog files passed via `--release-notes`,
   # and will render an empty changelog.
+  #
   # This may result in an empty release notes on GitHub/GitLab/Gitea.
-  skip: true
+  #
+  # Templateable since v1.16.0.
+  # Must evaluate to either true or false.
+  #
+  # Defaults to false.
+  skip: '{{ .Env.CREATE_CHANGELOG }}'
 
   # Changelog generation implementation to use.
   #
