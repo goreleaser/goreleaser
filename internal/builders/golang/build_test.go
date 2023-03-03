@@ -758,9 +758,9 @@ func TestRunPipeWithoutMainFunc(t *testing.T) {
 	t.Run("not main.go", func(t *testing.T) {
 		ctx := newCtx(t)
 		ctx.Config.Builds[0].Main = "foo.go"
-		require.EqualError(t, Default.Build(ctx, ctx.Config.Builds[0], api.Options{
+		require.ErrorIs(t, Default.Build(ctx, ctx.Config.Builds[0], api.Options{
 			Target: runtimeTarget,
-		}), `couldn't find main file: stat foo.go: no such file or directory`)
+		}), os.ErrNotExist)
 	})
 	t.Run("glob", func(t *testing.T) {
 		ctx := newCtx(t)

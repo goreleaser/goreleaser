@@ -147,9 +147,10 @@ func TestSrcInfoSimple(t *testing.T) {
 
 func TestFullPipe(t *testing.T) {
 	type testcase struct {
-		prepare              func(ctx *context.Context)
-		expectedRunError     string
-		expectedPublishError string
+		prepare                func(ctx *context.Context)
+		expectedRunError       string
+		expectedPublishError   string
+		expectedPublishErrorIs error
 	}
 	for name, tt := range map[string]testcase{
 		"default": {
@@ -210,7 +211,7 @@ func TestFullPipe(t *testing.T) {
 			prepare: func(ctx *context.Context) {
 				ctx.Config.AURs[0].PrivateKey = "testdata/nope"
 			},
-			expectedPublishError: `could not stat aur.private_key: stat testdata/nope: no such file or directory`,
+			expectedPublishErrorIs: os.ErrNotExist,
 		},
 		"invalid-git-url-template": {
 			prepare: func(ctx *context.Context) {
@@ -322,6 +323,12 @@ func TestFullPipe(t *testing.T) {
 				require.EqualError(t, Pipe{}.Publish(ctx), tt.expectedPublishError)
 				return
 			}
+
+			if tt.expectedPublishErrorIs != nil {
+				require.ErrorIs(t, Pipe{}.Publish(ctx), tt.expectedPublishErrorIs)
+				return
+			}
+
 			require.NoError(t, Pipe{}.Publish(ctx))
 
 			requireEqualRepoFiles(t, folder, name, url)
@@ -696,7 +703,7 @@ func TestKeyPath(t *testing.T) {
 	})
 	t.Run("with invalid path", func(t *testing.T) {
 		result, err := keyPath("testdata/nope")
-		require.EqualError(t, err, `could not stat aur.private_key: stat testdata/nope: no such file or directory`)
+		require.ErrorIs(t, err, os.ErrNotExist)
 		require.Equal(t, "", result)
 	})
 

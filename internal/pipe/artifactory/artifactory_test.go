@@ -496,7 +496,7 @@ func TestRunPipe_FileNotFound(t *testing.T) {
 	})
 
 	require.NoError(t, Pipe{}.Default(ctx))
-	require.EqualError(t, Pipe{}.Publish(ctx), `open archivetest/dist/mybin/mybin: no such file or directory`)
+	require.ErrorIs(t, Pipe{}.Publish(ctx), os.ErrNotExist)
 }
 
 func TestRunPipe_UnparsableTarget(t *testing.T) {
