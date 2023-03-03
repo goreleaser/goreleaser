@@ -492,7 +492,14 @@
 						"default": ""
 					},
 					"skip": {
-						"type": "boolean"
+						"oneOf": [
+							{
+								"type": "string"
+							},
+							{
+								"type": "boolean"
+							}
+						]
 					},
 					"use": {
 						"type": "string",

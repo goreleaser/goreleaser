@@ -152,6 +152,7 @@ nav:
 - Command Line Usage:
     - cmd/goreleaser.md
     - cmd/goreleaser_init.md
+    - cmd/goreleaser_healthcheck.md
     - cmd/goreleaser_check.md
     - cmd/goreleaser_changelog.md
     - cmd/goreleaser_build.md

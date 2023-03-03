@@ -17,10 +17,9 @@ import (
 )
 
 type healthcheckCmd struct {
-	cmd        *cobra.Command
-	config     string
-	quiet      bool
-	deprecated bool
+	cmd    *cobra.Command
+	config string
+	quiet  bool
 }
 
 func newHealthcheckCmd() *healthcheckCmd {
@@ -29,6 +28,7 @@ func newHealthcheckCmd() *healthcheckCmd {
 		Use:           "healthcheck",
 		Aliases:       []string{"hc"},
 		Short:         "Checks if needed tools are installed",
+		Long:          `Check if the needed tools are available in your $PATH, exits 1 if any of them are missing.`,
 		SilenceUsage:  true,
 		SilenceErrors: true,
 		Args:          cobra.NoArgs,
@@ -42,7 +42,6 @@ func newHealthcheckCmd() *healthcheckCmd {
 				return err
 			}
 			ctx := context.New(cfg)
-			ctx.Deprecated = root.deprecated
 
 			if err := ctrlc.Default.Run(ctx, func() error {
 				log.Info(boldStyle.Render("checking tools..."))
@@ -83,7 +82,6 @@ func newHealthcheckCmd() *healthcheckCmd {
 
 	cmd.Flags().StringVarP(&root.config, "config", "f", "", "Configuration file")
 	cmd.Flags().BoolVarP(&root.quiet, "quiet", "q", false, "Quiet mode: no output")
-	cmd.Flags().BoolVar(&root.deprecated, "deprecated", false, "Force print the deprecation message - tests only")
 	_ = cmd.Flags().MarkHidden("deprecated")
 
 	root.cmd = cmd
