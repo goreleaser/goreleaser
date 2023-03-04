@@ -73,6 +73,8 @@ func TestWithArtifact(t *testing.T) {
 		"artifact name: not-this-binary":   "artifact name: {{ .ArtifactName }}",
 		"artifact ext: .exe":               "artifact ext: {{ .ArtifactExt }}",
 		"artifact path: /tmp/foo.exe":      "artifact path: {{ .ArtifactPath }}",
+		"artifact basename: foo.exe":       "artifact basename: {{ base .ArtifactPath }}",
+		"artifact dir: /tmp":               "artifact dir: {{ dir .ArtifactPath }}",
 
 		"remove this": "{{ filter .Env.MULTILINE \".*remove.*\" }}",
 		"something with\nmultiple lines\nto test things": "{{ reverseFilter .Env.MULTILINE \".*remove.*\" }}",
