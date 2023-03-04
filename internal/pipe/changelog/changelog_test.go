@@ -66,19 +66,19 @@ func TestTemplatedChangelogProvidedViaFlagResultIsEmpty(t *testing.T) {
 func TestChangelogProvidedViaFlagDoesntExist(t *testing.T) {
 	ctx := testctx.New()
 	ctx.ReleaseNotesFile = "testdata/changes.nope"
-	require.EqualError(t, Pipe{}.Run(ctx), "open testdata/changes.nope: no such file or directory")
+	require.ErrorIs(t, Pipe{}.Run(ctx), os.ErrNotExist)
 }
 
 func TestReleaseHeaderProvidedViaFlagDoesntExist(t *testing.T) {
 	ctx := testctx.New()
 	ctx.ReleaseHeaderFile = "testdata/header.nope"
-	require.EqualError(t, Pipe{}.Run(ctx), "open testdata/header.nope: no such file or directory")
+	require.ErrorIs(t, Pipe{}.Run(ctx), os.ErrNotExist)
 }
 
 func TestReleaseFooterProvidedViaFlagDoesntExist(t *testing.T) {
 	ctx := testctx.New()
 	ctx.ReleaseFooterFile = "testdata/footer.nope"
-	require.EqualError(t, Pipe{}.Run(ctx), "open testdata/footer.nope: no such file or directory")
+	require.ErrorIs(t, Pipe{}.Run(ctx), os.ErrNotExist)
 }
 
 func TestChangelog(t *testing.T) {
