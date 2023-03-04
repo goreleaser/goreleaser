@@ -135,6 +135,7 @@ Usage                         |Description
 `trimprefix "v1.2" "v"`       |removes provided leading prefix string, if present. See [TrimPrefix](https://golang.org/pkg/strings/#TrimPrefix).
 `trimsuffix "1.2v" "v"`       |removes provided trailing suffix string, if present. See [TrimSuffix](https://pkg.go.dev/strings#TrimSuffix).
 `dir .Path`                   |returns all but the last element of path, typically the path's directory. See [Dir](https://golang.org/pkg/path/filepath/#Dir).
+`base .Path`                  |returns the last element of path. See [Base](https://golang.org/pkg/path/filepath/#Base). Since v1.16.
 `abs .ArtifactPath`           |returns an absolute representation of path. See [Abs](https://golang.org/pkg/path/filepath/#Abs).
 `filter "text" "regex"`       |keeps only the lines matching the given regex, analogous to `grep -E`. Since v1.6.
 `reverseFilter "text" "regex"`|keeps only the lines **not** matching the given regex, analogous to `grep -vE`. Since v1.6.

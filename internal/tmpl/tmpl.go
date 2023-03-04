@@ -214,6 +214,7 @@ func (t *Template) Apply(s string) (string, error) {
 			"trimsuffix":    strings.TrimSuffix,
 			"title":         cases.Title(language.English).String,
 			"dir":           filepath.Dir,
+			"base":          filepath.Base,
 			"abs":           filepath.Abs,
 			"incmajor":      incMajor,
 			"incminor":      incMinor,
