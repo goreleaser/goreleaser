@@ -1313,7 +1313,9 @@ func TestSkipSign(t *testing.T) {
 	}
 
 	t.Run("skip sign not set", func(t *testing.T) {
-		require.ErrorIs(t, Pipe{}.Run(ctx), os.ErrNotExist)
+		// TODO: once https://github.com/goreleaser/nfpm/pull/630 is released,
+		// use require.ErrorIs() here.
+		require.Error(t, Pipe{}.Run(ctx))
 	})
 
 	t.Run("skip sign set", func(t *testing.T) {
