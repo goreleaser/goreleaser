@@ -180,7 +180,7 @@ func TestTagSortOrder(t *testing.T) {
 	testlib.GitTag(t, "v0.0.1")
 	ctx := testctx.NewWithCfg(config.Project{
 		Git: config.Git{
-			TagSort: "-version:creatordate",
+			TagSort: "-version:refname",
 		},
 	})
 	require.NoError(t, Pipe{}.Run(ctx))

@@ -28,6 +28,9 @@ func setDefaults(ctx *context.Context) {
 	if ctx.Config.Git.TagSort == "" {
 		ctx.Config.Git.TagSort = "-version:refname"
 	}
+	if ctx.Config.Git.PrereleaseSuffix == "" {
+		ctx.Config.Git.PrereleaseSuffix = "-"
+	}
 }
 
 // Run the pipe.
@@ -290,6 +293,8 @@ func getPreviousTag(ctx *context.Context, current string) (string, error) {
 func gitTagsPointingAt(ctx *context.Context, ref string) ([]string, error) {
 	return git.CleanAllLines(git.Run(
 		ctx,
+		"-c",
+		"versionsort.suffix="+ctx.Config.Git.PrereleaseSuffix,
 		"tag",
 		"--points-at",
 		ref,

@@ -979,6 +979,9 @@
 				"properties": {
 					"tag_sort": {
 						"type": "string"
+					},
+					"prerelease_suffix": {
+						"type": "string"
 					}
 				},
 				"additionalProperties": false,
