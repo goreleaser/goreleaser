@@ -12,6 +12,7 @@ git:
   #
   # Default: `-version:refname`
   tag_sort: -version:creatordate
+
   # What should be used to specify prerelease suffix while sorting tags when gathering
   # the current and previous tags if there are more than one tag in the same commit.
   #
