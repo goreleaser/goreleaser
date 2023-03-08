@@ -235,6 +235,7 @@ type Scoop struct {
 	PreInstall            []string     `yaml:"pre_install,omitempty" json:"pre_install,omitempty"`
 	PostInstall           []string     `yaml:"post_install,omitempty" json:"post_install,omitempty"`
 	Depends               []string     `yaml:"depends,omitempty" json:"depends,omitempty"`
+	Shortcuts             [][]string   `yaml:"shortcuts,omitempty" json:"shortcuts,omitempty"`
 	Goamd64               string       `yaml:"goamd64,omitempty" json:"goamd64,omitempty"`
 }
 

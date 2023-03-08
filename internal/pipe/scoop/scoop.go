@@ -195,6 +195,7 @@ type Manifest struct {
 	PreInstall   []string            `json:"pre_install,omitempty"`  // An array of strings, of the commands to be executed before an application is installed.
 	PostInstall  []string            `json:"post_install,omitempty"` // An array of strings, of the commands to be executed after an application is installed.
 	Depends      []string            `json:"depends,omitempty"`      // A string or an array of strings.
+	Shortcuts    [][]string          `json:"shortcuts,omitempty"`    // A two-dimensional array of string, specifies the shortcut values to make available in the startmenu.
 }
 
 // Resource represents a combination of a url and a binary name for an architecture.
@@ -225,6 +226,7 @@ func dataFor(ctx *context.Context, cl client.Client, artifacts []*artifact.Artif
 		PreInstall:   ctx.Config.Scoop.PreInstall,
 		PostInstall:  ctx.Config.Scoop.PostInstall,
 		Depends:      ctx.Config.Scoop.Depends,
+		Shortcuts:    ctx.Config.Scoop.Shortcuts,
 	}
 
 	if ctx.Config.Scoop.URLTemplate == "" {

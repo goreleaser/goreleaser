@@ -2420,6 +2420,13 @@
 						},
 						"type": "array"
 					},
+					"shortcuts": {
+						"items": {
+							"items": {
+								"type": "string"
+							}
+						}
+					},
 					"goamd64": {
 						"type": "string"
 					}
