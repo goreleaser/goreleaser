@@ -253,5 +253,12 @@ archives:
 - format: binary
 ```
 
+If you are using homebrew tap to distribute the application, adjust the `install` section of your tap. The default config relies on archives. For example: 
+
+```yaml
+# install: |-
+#   bin.install "your-application"
+```
+
 Make sure to check the rest of the documentation above, as doing this has some
 implications.
