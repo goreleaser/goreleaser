@@ -52,6 +52,7 @@ const (
 	isSnapshot      = "IsSnapshot"
 	env             = "Env"
 	date            = "Date"
+	now             = "Now"
 	timestamp       = "Timestamp"
 	modulePath      = "ModulePath"
 	releaseNotes    = "ReleaseNotes"
@@ -102,6 +103,7 @@ func New(ctx *context.Context) *Template {
 			releaseURL:      ctx.ReleaseURL,
 			env:             ctx.Env,
 			date:            ctx.Date.UTC().Format(time.RFC3339),
+			now:             ctx.Date.UTC(),
 			timestamp:       ctx.Date.UTC().Unix(),
 			major:           ctx.Semver.Major,
 			minor:           ctx.Semver.Minor,
