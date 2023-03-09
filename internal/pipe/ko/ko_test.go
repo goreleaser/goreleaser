@@ -123,10 +123,12 @@ func TestPublishPipeSuccess(t *testing.T) {
 	testlib.StartRegistry(t, "ko_registry", registryPort)
 
 	table := []struct {
-		Name      string
-		SBOM      string
-		BaseImage string
-		Platforms []string
+		Name           string
+		SBOM           string
+		BaseImage      string
+		Labels         map[string]string
+		ExpectedLabels map[string]string
+		Platforms      []string
 	}{
 		{
 			// Must be first as others add an SBOM for the same image
@@ -153,6 +155,11 @@ func TestPublishPipeSuccess(t *testing.T) {
 			Name:      "multiple-platforms",
 			Platforms: []string{"linux/amd64", "linux/arm64"},
 		},
+		{
+			Name:           "labels",
+			Labels:         map[string]string{"foo": "bar", "project": "{{.ProjectName}}"},
+			ExpectedLabels: map[string]string{"foo": "bar", "project": "test"},
+		},
 	}
 
 	repository := fmt.Sprintf("%sgoreleasertest/testapp", registry)
@@ -178,6 +185,7 @@ func TestPublishPipeSuccess(t *testing.T) {
 						WorkingDir: "./testdata/app/",
 						BaseImage:  table.BaseImage,
 						Repository: repository,
+						Labels:     table.Labels,
 						Platforms:  table.Platforms,
 						Tags:       []string{table.Name},
 						SBOM:       table.SBOM,
@@ -250,6 +258,11 @@ func TestPublishPipeSuccess(t *testing.T) {
 					require.Fail(t, "unknown SBOM type", table.SBOM)
 				}
 			}
+
+			configFile, err := image.ConfigFile()
+			require.NoError(t, err)
+
+			require.Equal(t, table.ExpectedLabels, configFile.Config.Labels)
 		})
 	}
 }
@@ -280,6 +293,13 @@ func TestPublishPipeError(t *testing.T) {
 		ctx.Config.Kos[0].BaseImage = "not a valid image hopefully"
 		require.NoError(t, Pipe{}.Default(ctx))
 		require.EqualError(t, Pipe{}.Publish(ctx), `build: could not parse reference: not a valid image hopefully`)
+	})
+
+	t.Run("invalid label tmpl", func(t *testing.T) {
+		ctx := makeCtx()
+		ctx.Config.Kos[0].Labels = map[string]string{"nope": "{{.Nope}}"}
+		require.NoError(t, Pipe{}.Default(ctx))
+		testlib.RequireTemplateError(t, Pipe{}.Publish(ctx))
 	})
 
 	t.Run("invalid sbom", func(t *testing.T) {

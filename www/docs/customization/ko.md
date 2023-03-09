@@ -39,6 +39,13 @@ kos:
   # Defaults to cgr.dev/chainguard/static.
   base_image: alpine
 
+  # Labels for the image.
+  #
+  # Defaults to null.
+  # Since v1.17.
+  labels:
+    foo: bar
+
   # Repository to push to.
   #
   # Defaults to the value of $KO_DOCKER_REPO.

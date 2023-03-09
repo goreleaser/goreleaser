@@ -138,6 +138,7 @@ type buildOptions struct {
 	workingDir          string
 	platforms           []string
 	baseImage           string
+	labels              map[string]string
 	tags                []string
 	sbom                string
 	ldflags             []string
@@ -186,6 +187,9 @@ func (o *buildOptions) makeBuilder(ctx *context.Context) (*build.Caching, error)
 			}
 			return nil, nil, fmt.Errorf("unexpected base image media type: %s", desc.MediaType)
 		}),
+	}
+	for k, v := range o.labels {
+		buildOptions = append(buildOptions, build.WithLabel(k, v))
 	}
 	switch o.sbom {
 	case "spdx":
@@ -298,6 +302,17 @@ func buildBuildOptions(ctx *context.Context, cfg config.Ko) (*buildOptions, erro
 		return nil, err
 	}
 	opts.tags = tags
+
+	if len(cfg.Labels) > 0 {
+		opts.labels = make(map[string]string, len(cfg.Labels))
+		for k, v := range cfg.Labels {
+			tv, err := tmpl.New(ctx).Apply(v)
+			if err != nil {
+				return nil, err
+			}
+			opts.labels[k] = tv
+		}
+	}
 
 	if len(cfg.Env) > 0 {
 		env, err := applyTemplate(ctx, cfg.Env)
