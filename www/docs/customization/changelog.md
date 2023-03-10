@@ -97,6 +97,8 @@ changelog:
   #
   # Defaults to empty.
   #
+  # This feature is only available in GoReleaser Pro.
+  #
   # Since: v1.16.0-pro
   divider: '---'
 
