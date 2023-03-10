@@ -62,6 +62,9 @@ changelog:
     - title: 'New Features'
       regexp: '^.*?feat(\([[:word:]]+\))??!?:.+$'
       order: 100
+    - title: 'Security updates'
+      regexp: '^.*?sec(\([[:word:]]+\))??!?:.+$'
+      order: 150
     - title: 'Bug fixes'
       regexp: '^.*?fix(\([[:word:]]+\))??!?:.+$'
       order: 200
