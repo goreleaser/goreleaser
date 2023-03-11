@@ -195,7 +195,7 @@ func (o *buildOptions) makeBuilder(ctx *context.Context) (*build.Caching, error)
 	case "go.version-m":
 		buildOptions = append(buildOptions, build.WithGoVersionSBOM())
 	case "none":
-		// don't do anything.
+		buildOptions = append(buildOptions, build.WithDisabledSBOM())
 	default:
 		return nil, fmt.Errorf("unknown sbom type: %q", o.sbom)
 	}

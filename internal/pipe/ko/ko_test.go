@@ -2,10 +2,13 @@ package ko
 
 import (
 	"fmt"
+	"strings"
 	"testing"
 
 	_ "github.com/distribution/distribution/v3/registry/auth/htpasswd"
 	_ "github.com/distribution/distribution/v3/registry/storage/driver/inmemory"
+	"github.com/google/go-containerregistry/pkg/name"
+	"github.com/google/go-containerregistry/pkg/v1/remote"
 	"github.com/goreleaser/goreleaser/internal/testctx"
 	"github.com/goreleaser/goreleaser/internal/testlib"
 	"github.com/goreleaser/goreleaser/pkg/config"
@@ -126,12 +129,13 @@ func TestPublishPipeSuccess(t *testing.T) {
 		Platforms []string
 	}{
 		{
-			Name: "sbom-spdx",
-			SBOM: "spdx",
-		},
-		{
+			// Must be first as others add an SBOM for the same image
 			Name: "sbom-none",
 			SBOM: "none",
+		},
+		{
+			Name: "sbom-spdx",
+			SBOM: "spdx",
 		},
 		{
 			Name: "sbom-cyclonedx",
@@ -151,9 +155,12 @@ func TestPublishPipeSuccess(t *testing.T) {
 		},
 	}
 
+	repository := fmt.Sprintf("%sgoreleasertest/testapp", registry)
+
 	for _, table := range table {
 		t.Run(table.Name, func(t *testing.T) {
 			ctx := testctx.NewWithCfg(config.Project{
+				ProjectName: "test",
 				Builds: []config.Build{
 					{
 						ID: "foo",
@@ -170,16 +177,79 @@ func TestPublishPipeSuccess(t *testing.T) {
 						Build:      "foo",
 						WorkingDir: "./testdata/app/",
 						BaseImage:  table.BaseImage,
-						Repository: fmt.Sprintf("%s/goreleasertest", registry),
+						Repository: repository,
 						Platforms:  table.Platforms,
 						Tags:       []string{table.Name},
 						SBOM:       table.SBOM,
+						Bare:       true,
 					},
 				},
 			})
 
 			require.NoError(t, Pipe{}.Default(ctx))
 			require.NoError(t, Pipe{}.Publish(ctx))
+
+			ref, err := name.ParseReference(
+				fmt.Sprintf("%s:%s", repository, table.Name),
+				name.Insecure,
+			)
+			require.NoError(t, err)
+
+			index, err := remote.Index(ref)
+			if len(table.Platforms) > 1 {
+				require.NoError(t, err)
+				imf, err := index.IndexManifest()
+				require.NoError(t, err)
+
+				platforms := make([]string, 0, len(imf.Manifests))
+				for _, mf := range imf.Manifests {
+					platforms = append(platforms, mf.Platform.String())
+				}
+				require.ElementsMatch(t, table.Platforms, platforms)
+			} else {
+				require.Error(t, err)
+			}
+
+			image, err := remote.Image(ref)
+			require.NoError(t, err)
+
+			digest, err := image.Digest()
+			require.NoError(t, err)
+
+			sbomRef, err := name.ParseReference(
+				fmt.Sprintf(
+					"%s:%s.sbom",
+					repository,
+					strings.Replace(digest.String(), ":", "-", 1),
+				),
+				name.Insecure,
+			)
+			require.NoError(t, err)
+
+			sbom, err := remote.Image(sbomRef)
+			if table.SBOM == "none" {
+				require.Error(t, err)
+			} else {
+				require.NoError(t, err)
+
+				layers, err := sbom.Layers()
+				require.NoError(t, err)
+				require.NotEmpty(t, layers)
+
+				mediaType, err := layers[0].MediaType()
+				require.NoError(t, err)
+
+				switch table.SBOM {
+				case "spdx", "":
+					require.Equal(t, "spdx+json", string(mediaType))
+				case "cyclonedx":
+					require.Equal(t, "application/vnd.cyclonedx+json", string(mediaType))
+				case "go.version-m":
+					require.Equal(t, "application/vnd.go.version-m", string(mediaType))
+				default:
+					require.Fail(t, "unknown SBOM type", table.SBOM)
+				}
+			}
 		})
 	}
 }
