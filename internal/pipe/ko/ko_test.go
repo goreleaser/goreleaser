@@ -125,13 +125,14 @@ func TestPublishPipeSuccess(t *testing.T) {
 	testlib.StartRegistry(t, "ko_registry", registryPort)
 
 	table := []struct {
-		Name           string
-		SBOM           string
-		BaseImage      string
-		Labels         map[string]string
-		ExpectedLabels map[string]string
-		Platforms      []string
-		CreationTime   string
+		Name               string
+		SBOM               string
+		BaseImage          string
+		Labels             map[string]string
+		ExpectedLabels     map[string]string
+		Platforms          []string
+		CreationTime       string
+		KoDataCreationTime string
 	}{
 		{
 			// Must be first as others add an SBOM for the same image
@@ -167,6 +168,10 @@ func TestPublishPipeSuccess(t *testing.T) {
 			Name:         "creation-time",
 			CreationTime: "1672531200",
 		},
+		{
+			Name:               "kodata-creation-time",
+			KoDataCreationTime: "1672531200",
+		},
 	}
 
 	repository := fmt.Sprintf("%sgoreleasertest/testapp", registry)
@@ -187,17 +192,18 @@ func TestPublishPipeSuccess(t *testing.T) {
 				},
 				Kos: []config.Ko{
 					{
-						ID:           "default",
-						Build:        "foo",
-						WorkingDir:   "./testdata/app/",
-						BaseImage:    table.BaseImage,
-						Repository:   repository,
-						Labels:       table.Labels,
-						Platforms:    table.Platforms,
-						Tags:         []string{table.Name},
-						CreationTime: table.CreationTime,
-						SBOM:         table.SBOM,
-						Bare:         true,
+						ID:                 "default",
+						Build:              "foo",
+						WorkingDir:         "./testdata/app/",
+						BaseImage:          table.BaseImage,
+						Repository:         repository,
+						Labels:             table.Labels,
+						Platforms:          table.Platforms,
+						Tags:               []string{table.Name},
+						CreationTime:       table.CreationTime,
+						KoDataCreationTime: table.KoDataCreationTime,
+						SBOM:               table.SBOM,
+						Bare:               true,
 					},
 				},
 			})
@@ -282,6 +288,14 @@ func TestPublishPipeSuccess(t *testing.T) {
 				require.Equal(t, creationTime, configFile.Created.Time)
 			}
 			require.Equal(t, creationTime, configFile.History[len(configFile.History)-1].Created.Time)
+
+			var koDataCreationTime time.Time
+			if table.KoDataCreationTime != "" {
+				kdct, err := strconv.ParseInt(table.KoDataCreationTime, 10, 64)
+				require.NoError(t, err)
+				koDataCreationTime = time.Unix(kdct, 0).UTC()
+			}
+			require.Equal(t, koDataCreationTime, configFile.History[len(configFile.History)-2].Created.Time)
 		})
 	}
 }
@@ -354,6 +368,22 @@ func TestPublishPipeError(t *testing.T) {
 	t.Run("invalid creation time tmpl", func(t *testing.T) {
 		ctx := makeCtx()
 		ctx.Config.Kos[0].CreationTime = "{{.Nope}}"
+		require.NoError(t, Pipe{}.Default(ctx))
+		testlib.RequireTemplateError(t, Pipe{}.Publish(ctx))
+	})
+
+	t.Run("invalid kodata creation time", func(t *testing.T) {
+		ctx := makeCtx()
+		ctx.Config.Kos[0].KoDataCreationTime = "nope"
+		require.NoError(t, Pipe{}.Default(ctx))
+		err := Pipe{}.Publish(ctx)
+		require.Error(t, err)
+		require.Contains(t, err.Error(), `strconv.ParseInt: parsing "nope": invalid syntax`)
+	})
+
+	t.Run("invalid kodata creation time tmpl", func(t *testing.T) {
+		ctx := makeCtx()
+		ctx.Config.Kos[0].KoDataCreationTime = "{{.Nope}}"
 		require.NoError(t, Pipe{}.Default(ctx))
 		testlib.RequireTemplateError(t, Pipe{}.Publish(ctx))
 	})

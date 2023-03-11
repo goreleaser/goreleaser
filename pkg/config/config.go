@@ -211,6 +211,7 @@ type Ko struct {
 	Platforms           []string          `yaml:"platforms,omitempty" json:"platforms,omitempty"`
 	Tags                []string          `yaml:"tags,omitempty" json:"tags,omitempty"`
 	CreationTime        string            `yaml:"creation_time,omitempty" json:"creation_time,omitempty"`
+	KoDataCreationTime  string            `yaml:"ko_data_creation_time,omitempty" json:"ko_data_creation_time,omitempty"`
 	SBOM                string            `yaml:"sbom,omitempty" json:"sbom,omitempty"`
 	Ldflags             []string          `yaml:"ldflags,omitempty" json:"ldflags,omitempty"`
 	Flags               []string          `yaml:"flags,omitempty" json:"flags,omitempty"`

@@ -71,6 +71,12 @@ kos:
   # Since v1.17.
   creation_time: '{{.CommitTimestamp}}'
 
+  # Creation time given to the files in the kodata directory.
+  #
+  # Defaults to empty string.
+  # Since v1.17.
+  ko_data_creation_time: '{{.CommitTimestamp}}'
+
   # SBOM format to use.
   #
   # Defaults to spdx.

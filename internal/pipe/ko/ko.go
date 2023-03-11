@@ -144,6 +144,7 @@ type buildOptions struct {
 	labels              map[string]string
 	tags                []string
 	creationTime        *v1.Time
+	koDataCreationTime  *v1.Time
 	sbom                string
 	ldflags             []string
 	bare                bool
@@ -194,6 +195,9 @@ func (o *buildOptions) makeBuilder(ctx *context.Context) (*build.Caching, error)
 	}
 	if o.creationTime != nil {
 		buildOptions = append(buildOptions, build.WithCreationTime(*o.creationTime))
+	}
+	if o.koDataCreationTime != nil {
+		buildOptions = append(buildOptions, build.WithKoDataCreationTime(*o.koDataCreationTime))
 	}
 	for k, v := range o.labels {
 		buildOptions = append(buildOptions, build.WithLabel(k, v))
@@ -316,6 +320,14 @@ func buildBuildOptions(ctx *context.Context, cfg config.Ko) (*buildOptions, erro
 			return nil, err
 		}
 		opts.creationTime = creationTime
+	}
+
+	if cfg.KoDataCreationTime != "" {
+		koDataCreationTime, err := getTimeFromTemplate(ctx, cfg.KoDataCreationTime)
+		if err != nil {
+			return nil, err
+		}
+		opts.koDataCreationTime = koDataCreationTime
 	}
 
 	if len(cfg.Labels) > 0 {
