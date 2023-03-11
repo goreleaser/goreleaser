@@ -2,8 +2,10 @@ package ko
 
 import (
 	"fmt"
+	"strconv"
 	"strings"
 	"testing"
+	"time"
 
 	_ "github.com/distribution/distribution/v3/registry/auth/htpasswd"
 	_ "github.com/distribution/distribution/v3/registry/storage/driver/inmemory"
@@ -129,6 +131,7 @@ func TestPublishPipeSuccess(t *testing.T) {
 		Labels         map[string]string
 		ExpectedLabels map[string]string
 		Platforms      []string
+		CreationTime   string
 	}{
 		{
 			// Must be first as others add an SBOM for the same image
@@ -160,6 +163,10 @@ func TestPublishPipeSuccess(t *testing.T) {
 			Labels:         map[string]string{"foo": "bar", "project": "{{.ProjectName}}"},
 			ExpectedLabels: map[string]string{"foo": "bar", "project": "test"},
 		},
+		{
+			Name:         "creation-time",
+			CreationTime: "1672531200",
+		},
 	}
 
 	repository := fmt.Sprintf("%sgoreleasertest/testapp", registry)
@@ -180,16 +187,17 @@ func TestPublishPipeSuccess(t *testing.T) {
 				},
 				Kos: []config.Ko{
 					{
-						ID:         "default",
-						Build:      "foo",
-						WorkingDir: "./testdata/app/",
-						BaseImage:  table.BaseImage,
-						Repository: repository,
-						Labels:     table.Labels,
-						Platforms:  table.Platforms,
-						Tags:       []string{table.Name},
-						SBOM:       table.SBOM,
-						Bare:       true,
+						ID:           "default",
+						Build:        "foo",
+						WorkingDir:   "./testdata/app/",
+						BaseImage:    table.BaseImage,
+						Repository:   repository,
+						Labels:       table.Labels,
+						Platforms:    table.Platforms,
+						Tags:         []string{table.Name},
+						CreationTime: table.CreationTime,
+						SBOM:         table.SBOM,
+						Bare:         true,
 					},
 				},
 			})
@@ -261,8 +269,19 @@ func TestPublishPipeSuccess(t *testing.T) {
 
 			configFile, err := image.ConfigFile()
 			require.NoError(t, err)
+			require.GreaterOrEqual(t, len(configFile.History), 3)
 
 			require.Equal(t, table.ExpectedLabels, configFile.Config.Labels)
+
+			var creationTime time.Time
+			if table.CreationTime != "" {
+				ct, err := strconv.ParseInt(table.CreationTime, 10, 64)
+				require.NoError(t, err)
+				creationTime = time.Unix(ct, 0).UTC()
+
+				require.Equal(t, creationTime, configFile.Created.Time)
+			}
+			require.Equal(t, creationTime, configFile.History[len(configFile.History)-1].Created.Time)
 		})
 	}
 }
@@ -319,6 +338,22 @@ func TestPublishPipeError(t *testing.T) {
 	t.Run("invalid tags tmpl", func(t *testing.T) {
 		ctx := makeCtx()
 		ctx.Config.Kos[0].Tags = []string{"{{.Nope}}"}
+		require.NoError(t, Pipe{}.Default(ctx))
+		testlib.RequireTemplateError(t, Pipe{}.Publish(ctx))
+	})
+
+	t.Run("invalid creation time", func(t *testing.T) {
+		ctx := makeCtx()
+		ctx.Config.Kos[0].CreationTime = "nope"
+		require.NoError(t, Pipe{}.Default(ctx))
+		err := Pipe{}.Publish(ctx)
+		require.Error(t, err)
+		require.Contains(t, err.Error(), `strconv.ParseInt: parsing "nope": invalid syntax`)
+	})
+
+	t.Run("invalid creation time tmpl", func(t *testing.T) {
+		ctx := makeCtx()
+		ctx.Config.Kos[0].CreationTime = "{{.Nope}}"
 		require.NoError(t, Pipe{}.Default(ctx))
 		testlib.RequireTemplateError(t, Pipe{}.Publish(ctx))
 	})

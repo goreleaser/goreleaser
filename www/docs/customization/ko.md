@@ -65,6 +65,12 @@ kos:
   - latest
   - '{{.Tag}}'
 
+  # Creation time given to the image.
+  #
+  # Defaults to empty string.
+  # Since v1.17.
+  creation_time: '{{.CommitTimestamp}}'
+
   # SBOM format to use.
   #
   # Defaults to spdx.
