@@ -57,7 +57,7 @@ jobs:
           version: 3.x
           repo-token: ${{ secrets.GITHUB_TOKEN }}
       - uses: docker/setup-qemu-action@e81a89b1732b9c48d79cd809d8d81d79c4647a18 # v2
-      - uses: actions/cache@940f3d7cf195ba83374c77632d1e2cbb2f24ae68 # v3
+      - uses: actions/cache@88522ab9f39a2ea568f7027eddc7d8d8bc9d59c8 # v3
         with:
           path: |
             ./dist/*.deb
@@ -90,7 +90,7 @@ jobs:
         with:
           go-version: '>=1.20.2'
           cache: true
-      - uses: actions/cache@940f3d7cf195ba83374c77632d1e2cbb2f24ae68 # v3
+      - uses: actions/cache@88522ab9f39a2ea568f7027eddc7d8d8bc9d59c8 # v3
         with:
           path: |
             ./dist/*.deb
