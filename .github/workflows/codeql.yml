@@ -20,6 +20,6 @@ jobs:
       with:
         go-version: '>=1.20.2'
         cache: true
-    - uses: github/codeql-action/init@32dc499307d133bb5085bae78498c0ac2cf762d5 # v2
-    - uses: github/codeql-action/autobuild@32dc499307d133bb5085bae78498c0ac2cf762d5 # v2
-    - uses: github/codeql-action/analyze@32dc499307d133bb5085bae78498c0ac2cf762d5 # v2
+    - uses: github/codeql-action/init@16964e90ba004cdf0cd845b866b5df21038b7723 # v2
+    - uses: github/codeql-action/autobuild@16964e90ba004cdf0cd845b866b5df21038b7723 # v2
+    - uses: github/codeql-action/analyze@16964e90ba004cdf0cd845b866b5df21038b7723 # v2
