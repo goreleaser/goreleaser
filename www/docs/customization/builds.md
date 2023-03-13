@@ -650,26 +650,3 @@ builds:
           {{- if eq .Arch "amd64" }}CXX=x86_64-w64-mingw32-g++{{- end }}
         {{- end }}
 ```
-
-## Command line application and utilities
-
-The distribution of command line applications is easy if its are downloadable from GitHub. For example, the binary releases published by goreleaser are available by the following link `https://github.com/your-org/your-app/releases/download/vX.Y.Z/your-app_X.Y.Z_os_arch`.
-
-The default `.goreleaser.yaml` is configured to publish archives. If you are looking to release the application using binaries, small adjustements to `.goreleaser.yaml` are required:
-
-```yaml
-# .goreleaser.yaml
-
-# 1. Disable archiving
-# You can do that by setting `format` to `binary`
-archives:
-- format: binary
-
-# 2. Adjust the `install` section of your tap if you are using homebrew tap to distribute the application.
-# the default tap config relies on archives
-brews:
-  - tap:
-#   install: |-
-#     bin.install "your-app"
-```
-

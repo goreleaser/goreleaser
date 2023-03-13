@@ -255,3 +255,6 @@ archives:
 
 Make sure to check the rest of the documentation above, as doing this has some
 implications.
+
+If you have customization that might rely on archives, for instance,
+`brews.install`, make sure to fix them too.
