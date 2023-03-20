@@ -65,13 +65,15 @@ kos:
   - latest
   - '{{.Tag}}'
 
-  # Creation time given to the image.
+  # Creation time given to the image
+  # in seconds since the Unix epoch as a string.
   #
   # Defaults to empty string.
   # Since v1.17.
   creation_time: '{{.CommitTimestamp}}'
 
-  # Creation time given to the files in the kodata directory.
+  # Creation time given to the files in the kodata directory
+  # in seconds since the Unix epoch as a string.
   #
   # Defaults to empty string.
   # Since v1.17.
