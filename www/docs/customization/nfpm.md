@@ -140,6 +140,20 @@ nfpms:
       - src: path/to/foo
         dst: /usr/bin/foo
 
+      # This will add all files in some/directory or in subdirectories at the
+      # same level under the directory /etc. This means the tree structure in
+      # some/directory will not be replicated.
+      - src: some/directory/
+        dst: /etc
+
+      # This will replicate the directory structure under some/directory at
+      # /etc, using the "tree" type.
+      #
+      # Since v1.17.0.
+      - src: some/directory/
+        dst: /etc
+        type: tree
+
       # Simple config file
       - src: path/to/foo.conf
         dst: /etc/foo.conf

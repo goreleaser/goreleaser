@@ -666,6 +666,7 @@
 							"config",
 							"config|noreplace",
 							"dir",
+							"tree",
 							""
 						],
 						"default": ""
