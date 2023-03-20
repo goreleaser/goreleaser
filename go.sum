@@ -1737,8 +1737,8 @@ github.com/goreleaser/fileglob v1.3.0 h1:/X6J7U8lbDpQtBvGcwwPS6OpzkNVlVEsFUVRx9+
 github.com/goreleaser/fileglob v1.3.0/go.mod h1:Jx6BoXv3mbYkEzwm9THo7xbr5egkAraxkGorbJb4RxU=
 github.com/goreleaser/goreleaser v0.134.0/go.mod h1:ZT6Y2rSYa6NxQzIsdfWWNWAlYGXGbreo66NmE+3X3WQ=
 github.com/goreleaser/nfpm v1.2.1/go.mod h1:TtWrABZozuLOttX2uDlYyECfQX7x5XYkVxhjYcR6G9w=
-github.com/goreleaser/nfpm/v2 v2.27.0 h1:IXDWfE+eEsSx2uO5jdS8nOXjYYN+P/CWOCY/ai+pIhI=
-github.com/goreleaser/nfpm/v2 v2.27.0/go.mod h1:o5coBBYYdw+tifbB6DJLL/rR42bUmI5mWCKGumJmEt8=
+github.com/goreleaser/nfpm/v2 v2.27.1 h1:+q7/aY+SCQjB5OKiqzdBVoFIhG1XnxRBU2Pxqt8qm3U=
+github.com/goreleaser/nfpm/v2 v2.27.1/go.mod h1:o5coBBYYdw+tifbB6DJLL/rR42bUmI5mWCKGumJmEt8=
 github.com/gorhill/cronexpr v0.0.0-20180427100037-88b0669f7d75/go.mod h1:g2644b03hfBX9Ov0ZBDgXXens4rxSxmqFBbhvKv2yVA=
 github.com/gorilla/context v1.1.1/go.mod h1:kBGZzfjB9CEq2AlWe17Uuf7NDRt0dE0s8S51q0aT7Yg=
 github.com/gorilla/handlers v0.0.0-20150720190736-60c7bfde3e33/go.mod h1:Qkdc/uu4tH4g6mTK6auzZ766c4CA0Ng8+o/OAirnOIQ=
