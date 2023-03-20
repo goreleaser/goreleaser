@@ -36,5 +36,5 @@ var Healthcheckers = []Healthchecker{
 
 type system struct{}
 
-func (system) String() string                             { return "system" }
-func (system) Dependencies(ctx *context.Context) []string { return []string{"git", "go"} }
+func (system) String() string                           { return "system" }
+func (system) Dependencies(_ *context.Context) []string { return []string{"git", "go"} }

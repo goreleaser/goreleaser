@@ -51,7 +51,7 @@ type dockerImager struct {
 
 var dockerDigestPattern = regexp.MustCompile("sha256:[a-z0-9]{64}")
 
-func (i dockerImager) Push(ctx *context.Context, image string, flags []string) (string, error) {
+func (i dockerImager) Push(ctx *context.Context, image string, _ []string) (string, error) {
 	bts, err := runCommandWithOutput(ctx, ".", "docker", "push", image)
 	if err != nil {
 		return "", fmt.Errorf("failed to push %s: %w", image, err)

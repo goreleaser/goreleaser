@@ -14,7 +14,7 @@ func (*dummy) WithDefaults(build config.Build) (config.Build, error) {
 	return build, nil
 }
 
-func (*dummy) Build(ctx *context.Context, build config.Build, options Options) error {
+func (*dummy) Build(_ *context.Context, _ config.Build, _ Options) error {
 	return nil
 }
 
