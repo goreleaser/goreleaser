@@ -2424,8 +2424,10 @@
 						"items": {
 							"items": {
 								"type": "string"
-							}
-						}
+							},
+							"type": "array"
+						},
+						"type": "array"
 					},
 					"goamd64": {
 						"type": "string"
