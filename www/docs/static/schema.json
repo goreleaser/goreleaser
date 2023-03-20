@@ -1276,6 +1276,14 @@
 					"base_image": {
 						"type": "string"
 					},
+					"labels": {
+						"patternProperties": {
+							".*": {
+								"type": "string"
+							}
+						},
+						"type": "object"
+					},
 					"repository": {
 						"type": "string"
 					},
@@ -1290,6 +1298,12 @@
 							"type": "string"
 						},
 						"type": "array"
+					},
+					"creation_time": {
+						"type": "string"
+					},
+					"ko_data_creation_time": {
+						"type": "string"
 					},
 					"sbom": {
 						"type": "string"
