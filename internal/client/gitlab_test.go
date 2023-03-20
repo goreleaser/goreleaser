@@ -319,7 +319,7 @@ func TestGitLabCreateReleaseReleaseNotExists(t *testing.T) {
 			_, err = client.CreateRelease(ctx, "body")
 			require.NoError(t, err)
 			require.True(t, createdRelease)
-			require.Equal(t, 3, totalRequests)
+			require.Equal(t, 2, totalRequests)
 		})
 	}
 }
@@ -375,7 +375,7 @@ func TestGitLabCreateReleaseReleaseExists(t *testing.T) {
 	_, err = client.CreateRelease(ctx, "body")
 	require.NoError(t, err)
 	require.True(t, createdRelease)
-	require.Equal(t, 3, totalRequests)
+	require.Equal(t, 2, totalRequests)
 }
 
 func TestGitLabCreateReleaseUnkownHTTPError(t *testing.T) {
@@ -399,7 +399,7 @@ func TestGitLabCreateReleaseUnkownHTTPError(t *testing.T) {
 
 	_, err = client.CreateRelease(ctx, "body")
 	require.Error(t, err)
-	require.Equal(t, 2, totalRequests)
+	require.Equal(t, 1, totalRequests)
 }
 
 func TestGitlabGetDefaultBranch(t *testing.T) {
@@ -429,7 +429,7 @@ func TestGitlabGetDefaultBranch(t *testing.T) {
 
 	_, err = client.GetDefaultBranch(ctx, repo)
 	require.NoError(t, err)
-	require.Equal(t, 2, totalRequests)
+	require.Equal(t, 1, totalRequests)
 }
 
 func TestGitlabGetDefaultBranchErr(t *testing.T) {
