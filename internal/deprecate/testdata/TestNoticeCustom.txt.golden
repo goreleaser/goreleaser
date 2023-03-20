@@ -1,3 +1,3 @@
-[1;m  •[0m first
-[1;m    •[0m [1;mDEPRECATED: some custom template with a url https://goreleaser.com/deprecations#something-else[0m
-[1;m  •[0m last
+  • first
+    • DEPRECATED: some custom template with a url https://goreleaser.com/deprecations#something-else
+  • last
