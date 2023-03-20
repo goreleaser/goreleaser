@@ -39,6 +39,13 @@ kos:
   # Defaults to cgr.dev/chainguard/static.
   base_image: alpine
 
+  # Labels for the image.
+  #
+  # Defaults to null.
+  # Since v1.17.
+  labels:
+    foo: bar
+
   # Repository to push to.
   #
   # Defaults to the value of $KO_DOCKER_REPO.
@@ -57,6 +64,20 @@ kos:
   tags:
   - latest
   - '{{.Tag}}'
+
+  # Creation time given to the image
+  # in seconds since the Unix epoch as a string.
+  #
+  # Defaults to empty string.
+  # Since v1.17.
+  creation_time: '{{.CommitTimestamp}}'
+
+  # Creation time given to the files in the kodata directory
+  # in seconds since the Unix epoch as a string.
+  #
+  # Defaults to empty string.
+  # Since v1.17.
+  ko_data_creation_time: '{{.CommitTimestamp}}'
 
   # SBOM format to use.
   #
