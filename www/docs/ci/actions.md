@@ -70,11 +70,6 @@ jobs:
     For more information, take a look at
     [actions/checkout#290](https://github.com/actions/checkout/issues/290).
 
-    #### Caching go dependencies
-    When using the `setup-go` action, you can optionally set `cache: true` for
-    it to aumatically cache and restore your go dependencies, which usually
-    helps speed up build times.
-
 !!! tip
     For detailed instructions please follow GitHub Actions [workflow syntax][syntax].
 
