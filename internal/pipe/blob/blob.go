@@ -4,7 +4,9 @@ package blob
 import (
 	"fmt"
 
+	"github.com/goreleaser/goreleaser/internal/pipe"
 	"github.com/goreleaser/goreleaser/internal/semerrgroup"
+	"github.com/goreleaser/goreleaser/internal/tmpl"
 	"github.com/goreleaser/goreleaser/pkg/context"
 )
 
@@ -33,11 +35,23 @@ func (Pipe) Default(ctx *context.Context) error {
 // Publish to specified blob bucket url.
 func (Pipe) Publish(ctx *context.Context) error {
 	g := semerrgroup.New(ctx.Parallelism)
+	skips := pipe.SkipMemento{}
 	for _, conf := range ctx.Config.Blobs {
 		conf := conf
 		g.Go(func() error {
+			b, err := tmpl.New(ctx).Bool(conf.Disable)
+			if err != nil {
+				return err
+			}
+			if b {
+				skips.Remember(pipe.Skip("configuration is disabled"))
+				return nil
+			}
 			return doUpload(ctx, conf)
 		})
 	}
-	return g.Wait()
+	if err := g.Wait(); err != nil {
+		return err
+	}
+	return skips.Evaluate()
 }

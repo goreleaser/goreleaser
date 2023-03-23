@@ -889,6 +889,7 @@ type Blob struct {
 	IDs        []string    `yaml:"ids,omitempty" json:"ids,omitempty"`
 	Endpoint   string      `yaml:"endpoint,omitempty" json:"endpoint,omitempty"` // used for minio for example
 	ExtraFiles []ExtraFile `yaml:"extra_files,omitempty" json:"extra_files,omitempty"`
+	Disable    string      `yaml:"disable,omitempty" json:"disable,omitempty" jsonschema:"oneof_type=string;boolean"`
 }
 
 // Upload configuration.
