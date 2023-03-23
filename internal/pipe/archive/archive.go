@@ -122,10 +122,7 @@ func (Pipe) Run(ctx *context.Context) error {
 				continue
 			}
 			g.Go(func() error {
-				if err := create(ctx, archive, artifacts); err != nil {
-					return err
-				}
-				return nil
+				return create(ctx, archive, artifacts)
 			})
 		}
 	}

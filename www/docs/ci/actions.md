@@ -34,10 +34,9 @@ jobs:
         with:
           fetch-depth: 0
       - run: git fetch --force --tags
-      - uses: actions/setup-go@v3
+      - uses: actions/setup-go@v4
         with:
-          go-version: '>=1.20.2'
-          cache: true
+          go-version: stable
       # More assembly might be required: Docker logins, GPG, etc. It all depends
       # on your needs.
       - uses: goreleaser/goreleaser-action@v4
@@ -70,11 +69,6 @@ jobs:
     `TagBody`, `TagSubject` or `TagContents` in your templates.
     For more information, take a look at
     [actions/checkout#290](https://github.com/actions/checkout/issues/290).
-
-    #### Caching go dependencies
-    When using the `setup-go` action, you can optionally set `cache: true` for
-    it to aumatically cache and restore your go dependencies, which usually
-    helps speed up build times.
 
 !!! tip
     For detailed instructions please follow GitHub Actions [workflow syntax][syntax].

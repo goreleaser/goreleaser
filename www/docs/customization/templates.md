@@ -37,6 +37,7 @@ Key                   |Description
 `.IsNightly`          |`true` if `--nightly` is set, `false` otherwise
 `.Env`                |a map with system's environment variables
 `.Date`               |current UTC date in RFC 3339 format
+`.Now`                |current UTC date as `time.Time` struct, allows all `time.Time` functions (e.g. `{{ .Now.Format "2006" }}`) . Since v1.17.
 `.Timestamp`          |current UTC time in Unix format
 `.ModulePath`         |the go module path, as reported by `go list -m`
 `incpatch "v1.2.4"`   |increments the patch of the given version[^panic-if-not-semver]

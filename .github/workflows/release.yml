@@ -49,7 +49,7 @@ jobs:
       matrix:
         format: [ deb, rpm, apk ]
     steps:
-      - uses: actions/checkout@ac593985615ec2ede58e132d2e21d2b1cbd6127c # v3
+      - uses: actions/checkout@24cb9080177205b6e8c946b17badbe402adc938f # v3
         with:
           fetch-depth: 0
       - uses: arduino/setup-task@e26d8975574116b0097a1161e0fe16ba75d84c1c # v1
@@ -57,7 +57,7 @@ jobs:
           version: 3.x
           repo-token: ${{ secrets.GITHUB_TOKEN }}
       - uses: docker/setup-qemu-action@e81a89b1732b9c48d79cd809d8d81d79c4647a18 # v2
-      - uses: actions/cache@940f3d7cf195ba83374c77632d1e2cbb2f24ae68 # v3
+      - uses: actions/cache@88522ab9f39a2ea568f7027eddc7d8d8bc9d59c8 # v3
         with:
           path: |
             ./dist/*.deb
@@ -70,7 +70,7 @@ jobs:
     env:
       DOCKER_CLI_EXPERIMENTAL: "enabled"
     steps:
-      - uses: actions/checkout@ac593985615ec2ede58e132d2e21d2b1cbd6127c # v3
+      - uses: actions/checkout@24cb9080177205b6e8c946b17badbe402adc938f # v3
         with:
           fetch-depth: 0
       - uses: arduino/setup-task@e26d8975574116b0097a1161e0fe16ba75d84c1c # v1
@@ -78,7 +78,7 @@ jobs:
           version: 3.x
           repo-token: ${{ secrets.GITHUB_TOKEN }}
       - uses: docker/setup-qemu-action@e81a89b1732b9c48d79cd809d8d81d79c4647a18 # v2
-      - uses: docker/setup-buildx-action@f03ac48505955848960e80bbb68046aa35c7b9e7 # v2
+      - uses: docker/setup-buildx-action@4b4e9c3e2d4531116a6f8ba8e71fc6e2cb6e6c8c # v2
       - name: setup-snapcraft
         # FIXME: the mkdirs are a hack for https://github.com/goreleaser/goreleaser/issues/1715
         run: |
@@ -86,11 +86,10 @@ jobs:
           sudo apt-get -yq --no-install-suggests --no-install-recommends install snapcraft
           mkdir -p $HOME/.cache/snapcraft/download
           mkdir -p $HOME/.cache/snapcraft/stage-packages
-      - uses: actions/setup-go@6edd4406fa81c3da01a34fa6f6343087c207a568 # v3
+      - uses: actions/setup-go@4d34df0c2316fe8122ab82dc22947d607c0c91f9 # v4
         with:
-          go-version: '>=1.20.2'
-          cache: true
-      - uses: actions/cache@940f3d7cf195ba83374c77632d1e2cbb2f24ae68 # v3
+          go-version: stable
+      - uses: actions/cache@88522ab9f39a2ea568f7027eddc7d8d8bc9d59c8 # v3
         with:
           path: |
             ./dist/*.deb

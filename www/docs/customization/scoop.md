@@ -82,6 +82,13 @@ scoop:
   # Since GoReleaser v1.16.0.
   depends: ["git", "foo"]
 
+
+  # A two-dimensional array of string, specifies the shortcut values to make available in the startmenu.
+  # The array has to contain a executable/label pair. The third and fourth element are optional.
+  # Defaults to empty.
+  # Since GoReleaser v1.17.0.
+  shortcuts: [["drumroll.exe", "drumroll"]]
+
   # GOAMD64 to specify which amd64 version to use if there are multiple versions
   # from the build section.
   # Default is v1.

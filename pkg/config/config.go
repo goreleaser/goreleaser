@@ -18,7 +18,8 @@ import (
 
 // Git configs.
 type Git struct {
-	TagSort string `yaml:"tag_sort,omitempty" json:"tag_sort,omitempty"`
+	TagSort          string `yaml:"tag_sort,omitempty" json:"tag_sort,omitempty"`
+	PrereleaseSuffix string `yaml:"prerelease_suffix,omitempty" json:"prerelease_suffix,omitempty"`
 }
 
 // GitHubURLs holds the URLs to be used when using github enterprise.
@@ -201,21 +202,24 @@ type Krew struct {
 
 // Ko contains the ko section
 type Ko struct {
-	ID                  string   `yaml:"id,omitempty" json:"id,omitempty"`
-	Build               string   `yaml:"build,omitempty" json:"build,omitempty"`
-	Main                string   `yaml:"main,omitempty" json:"main,omitempty"`
-	WorkingDir          string   `yaml:"working_dir,omitempty" json:"working_dir,omitempty"`
-	BaseImage           string   `yaml:"base_image,omitempty" json:"base_image,omitempty"`
-	Repository          string   `yaml:"repository,omitempty" json:"repository,omitempty"`
-	Platforms           []string `yaml:"platforms,omitempty" json:"platforms,omitempty"`
-	Tags                []string `yaml:"tags,omitempty" json:"tags,omitempty"`
-	SBOM                string   `yaml:"sbom,omitempty" json:"sbom,omitempty"`
-	Ldflags             []string `yaml:"ldflags,omitempty" json:"ldflags,omitempty"`
-	Flags               []string `yaml:"flags,omitempty" json:"flags,omitempty"`
-	Env                 []string `yaml:"env,omitempty" json:"env,omitempty"`
-	Bare                bool     `yaml:"bare,omitempty" json:"bare,omitempty"`
-	PreserveImportPaths bool     `yaml:"preserve_import_paths,omitempty" json:"preserve_import_paths,omitempty"`
-	BaseImportPaths     bool     `yaml:"base_import_paths,omitempty" json:"base_import_paths,omitempty"`
+	ID                  string            `yaml:"id,omitempty" json:"id,omitempty"`
+	Build               string            `yaml:"build,omitempty" json:"build,omitempty"`
+	Main                string            `yaml:"main,omitempty" json:"main,omitempty"`
+	WorkingDir          string            `yaml:"working_dir,omitempty" json:"working_dir,omitempty"`
+	BaseImage           string            `yaml:"base_image,omitempty" json:"base_image,omitempty"`
+	Labels              map[string]string `yaml:"labels,omitempty" json:"labels,omitempty"`
+	Repository          string            `yaml:"repository,omitempty" json:"repository,omitempty"`
+	Platforms           []string          `yaml:"platforms,omitempty" json:"platforms,omitempty"`
+	Tags                []string          `yaml:"tags,omitempty" json:"tags,omitempty"`
+	CreationTime        string            `yaml:"creation_time,omitempty" json:"creation_time,omitempty"`
+	KoDataCreationTime  string            `yaml:"ko_data_creation_time,omitempty" json:"ko_data_creation_time,omitempty"`
+	SBOM                string            `yaml:"sbom,omitempty" json:"sbom,omitempty"`
+	Ldflags             []string          `yaml:"ldflags,omitempty" json:"ldflags,omitempty"`
+	Flags               []string          `yaml:"flags,omitempty" json:"flags,omitempty"`
+	Env                 []string          `yaml:"env,omitempty" json:"env,omitempty"`
+	Bare                bool              `yaml:"bare,omitempty" json:"bare,omitempty"`
+	PreserveImportPaths bool              `yaml:"preserve_import_paths,omitempty" json:"preserve_import_paths,omitempty"`
+	BaseImportPaths     bool              `yaml:"base_import_paths,omitempty" json:"base_import_paths,omitempty"`
 }
 
 // Scoop contains the scoop.sh section.
@@ -234,6 +238,7 @@ type Scoop struct {
 	PreInstall            []string     `yaml:"pre_install,omitempty" json:"pre_install,omitempty"`
 	PostInstall           []string     `yaml:"post_install,omitempty" json:"post_install,omitempty"`
 	Depends               []string     `yaml:"depends,omitempty" json:"depends,omitempty"`
+	Shortcuts             [][]string   `yaml:"shortcuts,omitempty" json:"shortcuts,omitempty"`
 	Goamd64               string       `yaml:"goamd64,omitempty" json:"goamd64,omitempty"`
 }
 

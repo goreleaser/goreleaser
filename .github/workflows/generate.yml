@@ -19,12 +19,12 @@ jobs:
       contents: write  # for stefanzweifel/git-auto-commit-action to push code in repo
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@ac593985615ec2ede58e132d2e21d2b1cbd6127c # v3
+      - uses: actions/checkout@24cb9080177205b6e8c946b17badbe402adc938f # v3
         with:
           token: ${{ secrets.GH_PAT }}
-      - uses: actions/setup-go@6edd4406fa81c3da01a34fa6f6343087c207a568 # v3
+      - uses: actions/setup-go@4d34df0c2316fe8122ab82dc22947d607c0c91f9 # v4
         with:
-          go-version: '>=1.20.2'
+          go-version: stable
           cache: true
       - uses: arduino/setup-task@e26d8975574116b0097a1161e0fe16ba75d84c1c # v1
       - run: task docs:generate

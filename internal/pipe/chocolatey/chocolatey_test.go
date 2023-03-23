@@ -311,6 +311,6 @@ type fakeCmd struct {
 
 var _ cmder = fakeCmd{}
 
-func (f fakeCmd) Exec(ctx *context.Context, name string, args ...string) ([]byte, error) {
+func (f fakeCmd) Exec(_ *context.Context, _ string, _ ...string) ([]byte, error) {
 	return f.execFn()
 }

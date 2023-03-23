@@ -52,6 +52,7 @@ const (
 	isSnapshot      = "IsSnapshot"
 	env             = "Env"
 	date            = "Date"
+	now             = "Now"
 	timestamp       = "Timestamp"
 	modulePath      = "ModulePath"
 	releaseNotes    = "ReleaseNotes"
@@ -80,37 +81,43 @@ func New(ctx *context.Context) *Template {
 	sv := ctx.Semver
 	rawVersionV := fmt.Sprintf("%d.%d.%d", sv.Major, sv.Minor, sv.Patch)
 
+	fields := map[string]interface{}{}
+	for k, v := range map[string]interface{}{
+		projectName:     ctx.Config.ProjectName,
+		modulePath:      ctx.ModulePath,
+		version:         ctx.Version,
+		rawVersion:      rawVersionV,
+		summary:         ctx.Git.Summary,
+		tag:             ctx.Git.CurrentTag,
+		previousTag:     ctx.Git.PreviousTag,
+		branch:          ctx.Git.Branch,
+		commit:          ctx.Git.Commit,
+		shortCommit:     ctx.Git.ShortCommit,
+		fullCommit:      ctx.Git.FullCommit,
+		commitDate:      ctx.Git.CommitDate.UTC().Format(time.RFC3339),
+		commitTimestamp: ctx.Git.CommitDate.UTC().Unix(),
+		gitURL:          ctx.Git.URL,
+		env:             ctx.Env,
+		date:            ctx.Date.UTC().Format(time.RFC3339),
+		timestamp:       ctx.Date.UTC().Unix(),
+		now:             ctx.Date.UTC(),
+		major:           ctx.Semver.Major,
+		minor:           ctx.Semver.Minor,
+		patch:           ctx.Semver.Patch,
+		prerelease:      ctx.Semver.Prerelease,
+		isSnapshot:      ctx.Snapshot,
+		releaseNotes:    ctx.ReleaseNotes,
+		releaseURL:      ctx.ReleaseURL,
+		tagSubject:      ctx.Git.TagSubject,
+		tagContents:     ctx.Git.TagContents,
+		tagBody:         ctx.Git.TagBody,
+		runtimeK:        ctx.Runtime,
+	} {
+		fields[k] = v
+	}
+
 	return &Template{
-		fields: Fields{
-			projectName:     ctx.Config.ProjectName,
-			modulePath:      ctx.ModulePath,
-			version:         ctx.Version,
-			rawVersion:      rawVersionV,
-			tag:             ctx.Git.CurrentTag,
-			previousTag:     ctx.Git.PreviousTag,
-			branch:          ctx.Git.Branch,
-			commit:          ctx.Git.Commit,
-			shortCommit:     ctx.Git.ShortCommit,
-			fullCommit:      ctx.Git.FullCommit,
-			commitDate:      ctx.Git.CommitDate.UTC().Format(time.RFC3339),
-			commitTimestamp: ctx.Git.CommitDate.UTC().Unix(),
-			gitURL:          ctx.Git.URL,
-			summary:         ctx.Git.Summary,
-			tagSubject:      ctx.Git.TagSubject,
-			tagContents:     ctx.Git.TagContents,
-			tagBody:         ctx.Git.TagBody,
-			releaseURL:      ctx.ReleaseURL,
-			env:             ctx.Env,
-			date:            ctx.Date.UTC().Format(time.RFC3339),
-			timestamp:       ctx.Date.UTC().Unix(),
-			major:           ctx.Semver.Major,
-			minor:           ctx.Semver.Minor,
-			patch:           ctx.Semver.Patch,
-			prerelease:      ctx.Semver.Prerelease,
-			isSnapshot:      ctx.Snapshot,
-			releaseNotes:    ctx.ReleaseNotes,
-			runtimeK:        ctx.Runtime,
-		},
+		fields: fields,
 	}
 }
 

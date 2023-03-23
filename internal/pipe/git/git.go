@@ -288,14 +288,23 @@ func getPreviousTag(ctx *context.Context, current string) (string, error) {
 }
 
 func gitTagsPointingAt(ctx *context.Context, ref string) ([]string, error) {
-	return git.CleanAllLines(git.Run(
-		ctx,
+	args := []string{}
+	if ctx.Config.Git.PrereleaseSuffix != "" {
+		args = append(
+			args,
+			"-c",
+			"versionsort.suffix="+ctx.Config.Git.PrereleaseSuffix,
+		)
+	}
+	args = append(
+		args,
 		"tag",
 		"--points-at",
 		ref,
 		"--sort",
 		ctx.Config.Git.TagSort,
-	))
+	)
+	return git.CleanAllLines(git.Run(ctx, args...))
 }
 
 func gitDescribe(ctx *context.Context, ref string) (string, error) {

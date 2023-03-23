@@ -36,7 +36,7 @@ nfpms:
 
 type errorReader struct{}
 
-func (errorReader) Read(p []byte) (n int, err error) {
+func (errorReader) Read(_ []byte) (n int, err error) {
 	return 1, fmt.Errorf("error")
 }
 

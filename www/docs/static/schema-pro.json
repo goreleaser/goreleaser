@@ -720,6 +720,7 @@
 							"config",
 							"config|noreplace",
 							"dir",
+							"tree",
 							""
 						],
 						"default": ""
@@ -1076,6 +1077,9 @@
 			"Git": {
 				"properties": {
 					"tag_sort": {
+						"type": "string"
+					},
+					"prerelease_suffix": {
 						"type": "string"
 					}
 				},
