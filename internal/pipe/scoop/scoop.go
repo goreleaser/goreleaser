@@ -139,9 +139,6 @@ func doPublish(ctx *context.Context, cl client.Client) error {
 	if strings.TrimSpace(scoop.SkipUpload) == "auto" && ctx.Semver.Prerelease != "" {
 		return pipe.Skip("release is prerelease")
 	}
-	if ctx.Config.Release.Draft {
-		return pipe.Skip("release is marked as draft")
-	}
 
 	relDisabled, err := tmpl.New(ctx).Bool(ctx.Config.Release.Disable)
 	if err != nil {
