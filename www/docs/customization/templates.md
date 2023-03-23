@@ -33,7 +33,7 @@ Key                   |Description
 `.Prerelease`         |the prerelease part of the version, e.g. `beta`[^tag-is-semver]
 `.RawVersion`         |composed of `{Major}.{Minor}.{Patch}` [^tag-is-semver]
 `.ReleaseNotes`       |the generated release notes, available after the changelog step has been executed
-`.IsDraft`         |`true` if `release.draft` is set in the configuration, `false` otherwise. Since v1.17.
+`.IsDraft`            |`true` if `release.draft` is set in the configuration, `false` otherwise. Since v1.17.
 `.IsSnapshot`         |`true` if `--snapshot` is set, `false` otherwise
 `.IsNightly`          |`true` if `--nightly` is set, `false` otherwise
 `.Env`                |a map with system's environment variables
