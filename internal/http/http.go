@@ -145,7 +145,7 @@ func getPassword(ctx *context.Context, upload *config.Upload, kind string) strin
 }
 
 func misconfigured(kind string, upload *config.Upload, reason string) error {
-	return pipe.Skip(fmt.Sprintf("%s section '%s' is not configured properly (%s)", kind, upload.Name, reason))
+	return pipe.Skipf("%s section '%s' is not configured properly (%s)", kind, upload.Name, reason)
 }
 
 // ResponseChecker is a function capable of validating an http server response.

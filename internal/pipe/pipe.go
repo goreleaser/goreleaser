@@ -3,6 +3,7 @@ package pipe
 
 import (
 	"errors"
+	"fmt"
 	"strings"
 )
 
@@ -43,6 +44,11 @@ func (e ErrSkip) Error() string {
 // Skip skips this pipe with the given reason.
 func Skip(reason string) ErrSkip {
 	return ErrSkip{reason: reason}
+}
+
+// Skipf skips this pipe with the given reason.
+func Skipf(format string, a ...any) ErrSkip {
+	return Skip(fmt.Sprintf(format, a...))
 }
 
 // SkipMemento remembers previous skip errors so you can return them all at once later.
