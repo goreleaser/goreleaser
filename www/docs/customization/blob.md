@@ -52,6 +52,12 @@ blobs:
     # Default is `{{ .ProjectName }}/{{ .Tag }}`
     folder: "foo/bar/{{.Version}}"
 
+    # Template to disable this particular upload configuration.
+    #
+    # Since: v1.17
+    # Default: false
+    disable: '{{ neq .BLOB_UPLOAD_ONLY "foo" }}'
+
     # You can add extra pre-existing files to the bucket.
     # The filename on the release will be the last part of the path (base).
     # If another file with the same name exists, the last one found will be used.

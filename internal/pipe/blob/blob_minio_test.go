@@ -263,6 +263,95 @@ func TestMinioUploadInvalidCustomBucketID(t *testing.T) {
 	require.Error(t, Pipe{}.Publish(ctx))
 }
 
+func TestMinioUploadSkip(t *testing.T) {
+	name := "basic"
+	folder := t.TempDir()
+	debpath := filepath.Join(folder, "bin.deb")
+	tgzpath := filepath.Join(folder, "bin.tar.gz")
+	require.NoError(t, os.WriteFile(tgzpath, []byte("fake\ntargz"), 0o744))
+	require.NoError(t, os.WriteFile(debpath, []byte("fake\ndeb"), 0o744))
+
+	buildCtx := func(uploadID string) *context.Context {
+		ctx := testctx.NewWithCfg(
+			config.Project{
+				Dist:        folder,
+				ProjectName: "testupload",
+				Blobs: []config.Blob{
+					{
+						Provider: "s3",
+						Bucket:   name,
+						Region:   "us-east",
+						Endpoint: "http://" + listen,
+						IDs:      []string{"foo"},
+						Disable:  `{{ eq .Env.UPLOAD_ID "foo" }}`,
+					},
+					{
+						Provider: "s3",
+						Bucket:   name,
+						Region:   "us-east",
+						Endpoint: "http://" + listen,
+						Disable:  `{{ eq .Env.UPLOAD_ID "bar" }}`,
+						IDs:      []string{"bar"},
+					},
+				},
+			},
+			testctx.WithCurrentTag("v1.0.0"),
+			testctx.WithEnv(map[string]string{
+				"UPLOAD_ID": uploadID,
+			}),
+		)
+		ctx.Artifacts.Add(&artifact.Artifact{
+			Type: artifact.UploadableArchive,
+			Name: "bin.tar.gz",
+			Path: tgzpath,
+			Extra: map[string]interface{}{
+				artifact.ExtraID: "foo",
+			},
+		})
+		ctx.Artifacts.Add(&artifact.Artifact{
+			Type: artifact.LinuxPackage,
+			Name: "bin.deb",
+			Path: debpath,
+			Extra: map[string]interface{}{
+				artifact.ExtraID: "bar",
+			},
+		})
+		return ctx
+	}
+
+	setupBucket(t, testlib.MustDockerPool(t), name)
+
+	t.Run("upload only foo", func(t *testing.T) {
+		ctx := buildCtx("foo")
+		require.NoError(t, Pipe{}.Default(ctx))
+		testlib.AssertSkipped(t, Pipe{}.Publish(ctx))
+		require.Subset(t, getFiles(t, ctx, ctx.Config.Blobs[0]), []string{
+			"testupload/v1.0.0/bin.deb",
+		})
+	})
+
+	t.Run("upload only bar", func(t *testing.T) {
+		ctx := buildCtx("bar")
+		require.NoError(t, Pipe{}.Default(ctx))
+		testlib.AssertSkipped(t, Pipe{}.Publish(ctx))
+		require.Subset(t, getFiles(t, ctx, ctx.Config.Blobs[0]), []string{
+			"testupload/v1.0.0/bin.tar.gz",
+		})
+	})
+
+	t.Run("invalid tmpl", func(t *testing.T) {
+		ctx := buildCtx("none")
+		ctx.Config.Blobs = []config.Blob{{
+			Provider: "s3",
+			Bucket:   name,
+			Endpoint: "http://" + listen,
+			Disable:  `{{ .Env.NOME }}`,
+		}}
+		require.NoError(t, Pipe{}.Default(ctx))
+		testlib.RequireTemplateError(t, Pipe{}.Publish(ctx))
+	})
+}
+
 func prepareEnv() {
 	os.Setenv("AWS_ACCESS_KEY_ID", minioUser)
 	os.Setenv("AWS_SECRET_ACCESS_KEY", minioPwd)
