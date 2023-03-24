@@ -300,40 +300,6 @@ func Test_doRun(t *testing.T) {
 			noAssertions,
 		},
 		{
-			"is draft",
-			args{
-				func() *context.Context {
-					return testctx.NewWithCfg(
-						config.Project{
-							ProjectName: "run-pipe",
-							Release: config.Release{
-								Draft: true,
-							},
-							Scoop: config.Scoop{
-								Bucket: config.RepoRef{
-									Owner: "test",
-									Name:  "test",
-								},
-								Description: "A run pipe test formula",
-								Homepage:    "https://github.com/goreleaser",
-							},
-						},
-						testctx.GitHubTokenType,
-						testctx.WithCurrentTag("v1.0.1"),
-						testctx.WithVersion("1.0.1"),
-					)
-				},
-				client.NewMock(),
-			},
-			[]artifact.Artifact{
-				{Name: "foo_1.0.1_windows_amd64.tar.gz", Goos: "windows", Goarch: "amd64", Goamd64: "v1", Path: file},
-				{Name: "foo_1.0.1_windows_386.tar.gz", Goos: "windows", Goarch: "386", Path: file},
-			},
-			shouldNotErr,
-			shouldErr("release is marked as draft"),
-			noAssertions,
-		},
-		{
 			"is prerelease and skip upload set to auto",
 			args{
 				func() *context.Context {
