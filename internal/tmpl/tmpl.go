@@ -50,6 +50,7 @@ const (
 	patch           = "Patch"
 	prerelease      = "Prerelease"
 	isSnapshot      = "IsSnapshot"
+	isDraft         = "IsDraft"
 	env             = "Env"
 	date            = "Date"
 	now             = "Now"
@@ -106,6 +107,7 @@ func New(ctx *context.Context) *Template {
 		patch:           ctx.Semver.Patch,
 		prerelease:      ctx.Semver.Prerelease,
 		isSnapshot:      ctx.Snapshot,
+		isDraft:         ctx.Config.Release.Draft,
 		releaseNotes:    ctx.ReleaseNotes,
 		releaseURL:      ctx.ReleaseURL,
 		tagSubject:      ctx.Git.TagSubject,
