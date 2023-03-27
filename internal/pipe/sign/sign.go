@@ -15,6 +15,7 @@ import (
 	"github.com/goreleaser/goreleaser/internal/ids"
 	"github.com/goreleaser/goreleaser/internal/logext"
 	"github.com/goreleaser/goreleaser/internal/pipe"
+	"github.com/goreleaser/goreleaser/internal/pipe/git"
 	"github.com/goreleaser/goreleaser/internal/semerrgroup"
 	"github.com/goreleaser/goreleaser/internal/tmpl"
 	"github.com/goreleaser/goreleaser/pkg/config"
@@ -37,11 +38,17 @@ func (Pipe) Dependencies(ctx *context.Context) []string {
 
 // Default sets the Pipes defaults.
 func (Pipe) Default(ctx *context.Context) error {
+	gpgPath, err := git.GetGPGProgram(ctx)
+	if err != nil {
+		return err
+	}
+
 	ids := ids.New("signs")
 	for i := range ctx.Config.Signs {
 		cfg := &ctx.Config.Signs[i]
 		if cfg.Cmd == "" {
-			cfg.Cmd = "gpg"
+			// gpgPath is either "gpg" (default) or the user's git config gpg.program value
+			cfg.Cmd = gpgPath
 		}
 		if cfg.Signature == "" {
 			cfg.Signature = "${artifact}.sig"

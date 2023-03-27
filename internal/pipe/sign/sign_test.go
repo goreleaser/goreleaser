@@ -56,7 +56,7 @@ func TestSignDefault(t *testing.T) {
 	})
 	err := Pipe{}.Default(ctx)
 	require.NoError(t, err)
-	require.Equal(t, ctx.Config.Signs[0].Cmd, "gpg")
+	require.Equal(t, ctx.Config.Signs[0].Cmd, "gpg") // assumes git config gpg.program is not set
 	require.Equal(t, ctx.Config.Signs[0].Signature, "${artifact}.sig")
 	require.Equal(t, ctx.Config.Signs[0].Args, []string{"--output", "$signature", "--detach-sig", "$artifact"})
 	require.Equal(t, ctx.Config.Signs[0].Artifacts, "none")
