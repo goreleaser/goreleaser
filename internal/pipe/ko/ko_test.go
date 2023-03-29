@@ -263,7 +263,7 @@ func TestPublishPipeSuccess(t *testing.T) {
 
 				switch table.SBOM {
 				case "spdx", "":
-					require.Equal(t, "spdx+json", string(mediaType))
+					require.Equal(t, "text/spdx+json", string(mediaType))
 				case "cyclonedx":
 					require.Equal(t, "application/vnd.cyclonedx+json", string(mediaType))
 				case "go.version-m":
@@ -285,9 +285,9 @@ func TestPublishPipeSuccess(t *testing.T) {
 				require.NoError(t, err)
 				creationTime = time.Unix(ct, 0).UTC()
 
-				require.Equal(t, creationTime, configFile.Created.Time)
+				require.Equal(t, creationTime, configFile.Created.Time.UTC())
 			}
-			require.Equal(t, creationTime, configFile.History[len(configFile.History)-1].Created.Time)
+			require.Equal(t, creationTime, configFile.History[len(configFile.History)-1].Created.Time.UTC())
 
 			var koDataCreationTime time.Time
 			if table.KoDataCreationTime != "" {
@@ -295,7 +295,7 @@ func TestPublishPipeSuccess(t *testing.T) {
 				require.NoError(t, err)
 				koDataCreationTime = time.Unix(kdct, 0).UTC()
 			}
-			require.Equal(t, koDataCreationTime, configFile.History[len(configFile.History)-2].Created.Time)
+			require.Equal(t, koDataCreationTime, configFile.History[len(configFile.History)-2].Created.Time.UTC())
 		})
 	}
 }
