@@ -15,7 +15,9 @@ import (
 	"github.com/stretchr/testify/assert"
 
 	"github.com/goreleaser/goreleaser/internal/artifact"
+	"github.com/goreleaser/goreleaser/internal/git"
 	"github.com/goreleaser/goreleaser/internal/testctx"
+	"github.com/goreleaser/goreleaser/internal/testlib"
 	"github.com/goreleaser/goreleaser/pkg/config"
 	"github.com/goreleaser/goreleaser/pkg/context"
 	"github.com/stretchr/testify/require"
@@ -51,15 +53,32 @@ func TestDescription(t *testing.T) {
 }
 
 func TestSignDefault(t *testing.T) {
+	_ = testlib.Mktmp(t)
+	testlib.GitInit(t)
+
 	ctx := testctx.NewWithCfg(config.Project{
 		Signs: []config.Sign{{}},
 	})
-	err := Pipe{}.Default(ctx)
-	require.NoError(t, err)
-	require.Equal(t, ctx.Config.Signs[0].Cmd, "gpg") // assumes git config gpg.program is not set
+	setGpg(t, ctx, "") // force empty gpg.program
+
+	require.NoError(t, Pipe{}.Default(ctx))
+	require.Equal(t, ctx.Config.Signs[0].Cmd, "gpg")
 	require.Equal(t, ctx.Config.Signs[0].Signature, "${artifact}.sig")
 	require.Equal(t, ctx.Config.Signs[0].Args, []string{"--output", "$signature", "--detach-sig", "$artifact"})
 	require.Equal(t, ctx.Config.Signs[0].Artifacts, "none")
+}
+
+func TestDefaultGpgFromGitConfig(t *testing.T) {
+	_ = testlib.Mktmp(t)
+	testlib.GitInit(t)
+
+	ctx := testctx.NewWithCfg(config.Project{
+		Signs: []config.Sign{{}},
+	})
+	setGpg(t, ctx, "not-really-gpg")
+
+	require.NoError(t, Pipe{}.Default(ctx))
+	require.Equal(t, ctx.Config.Signs[0].Cmd, "not-really-gpg")
 }
 
 func TestSignDisabled(t *testing.T) {
@@ -739,4 +758,10 @@ func TestDependencies(t *testing.T) {
 		},
 	})
 	require.Equal(t, []string{"cosign", "gpg2"}, Pipe{}.Dependencies(ctx))
+}
+
+func setGpg(tb testing.TB, ctx *context.Context, p string) {
+	tb.Helper()
+	_, err := git.Run(ctx, "config", "--local", "--add", "gpg.program", p)
+	require.NoError(tb, err)
 }

@@ -337,15 +337,3 @@ func getFromEnv(s string) func() ([]string, error) {
 		return nil, nil
 	}
 }
-
-// GetGPGProgram returns the user set GPG path or "gpg" if nothing is set
-func GetGPGProgram(ctx *context.Context) (string, error) {
-	path, err := git.Clean(git.Run(ctx, "config", "gpg.program"))
-
-	// if config not set assume default
-	if len(path) == 0 {
-		path = "gpg"
-	}
-
-	return path, err
-}
