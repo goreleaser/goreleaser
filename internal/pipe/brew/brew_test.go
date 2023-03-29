@@ -767,11 +767,17 @@ func TestRunPipeNoBuilds(t *testing.T) {
 					Owner: "test",
 					Name:  "test",
 				},
+				IDs: []string{"foo"},
 			},
 		},
 	}, testctx.GitHubTokenType)
 	client := client.NewMock()
-	require.Equal(t, ErrNoArchivesFound, runAll(ctx, client))
+	require.NoError(t, Pipe{}.Default(ctx))
+	require.EqualError(t, runAll(ctx, client), ErrNoArchivesFound{
+		ids:     []string{"foo"},
+		goarm:   "6",
+		goamd64: "v1",
+	}.Error())
 	require.False(t, client.CreatedFile)
 }
 
