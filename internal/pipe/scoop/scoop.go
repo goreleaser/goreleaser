@@ -4,7 +4,6 @@ package scoop
 import (
 	"bytes"
 	"encoding/json"
-	"errors"
 	"fmt"
 	"os"
 	"path"
@@ -23,8 +22,13 @@ import (
 
 // ErrNoWindows when there is no build for windows (goos doesn't contain
 // windows) or archive.format is binary.
+type ErrNoWindows struct {
+	goamd64 string
+}
 
-var ErrNoWindows = errors.New("scoop requires a windows archive\nLearn more at https://goreleaser.com/errors/scoop-archive\n") // nolint: revive
+func (e ErrNoWindows) Error() string {
+	return fmt.Sprintf("scoop requires a windows archive, but no archives matched goos=windows goarch=[386 amd64] goamd64=%s\nLearn more at https://goreleaser.com/errors/scoop-archive\n", e.goamd64) // nolint: revive
+}
 
 const scoopConfigExtra = "ScoopConfig"
 
@@ -84,7 +88,7 @@ func doRun(ctx *context.Context, cl client.Client) error {
 		),
 	).List()
 	if len(archives) == 0 {
-		return ErrNoWindows
+		return ErrNoWindows{scoop.Goamd64}
 	}
 
 	filename := scoop.Name + ".json"
