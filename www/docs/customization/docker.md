@@ -140,6 +140,21 @@ dockers:
     # and use wildcards when you `COPY`/`ADD` in your Dockerfile.
     extra_files:
     - config.yml
+
+
+    # Additional templated extra files to add to the Docker image.
+    # Those files will have their contents pass through the template engine,
+    # and its results will be added to the build context the same way as the
+    # extra_files field above.
+    #
+    # Default: empty
+    # Since: v1.17 (pro)
+    # This feature is available in only GoReleaser Pro.
+    templated_extra_files:
+      - src: LICENSE.tpl
+        dst: LICENSE.txt
+        mode: 0644
+
 ```
 
 !!! warning

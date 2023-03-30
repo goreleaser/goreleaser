@@ -61,6 +61,25 @@ source:
         mode: 0644
         # format is `time.RFC3339Nano`
         mtime: 2008-01-02T15:04:05Z
+
+
+  # Additional templated files to add to the source archive.
+  # Those files will have their contents pass through the template engine,
+  # and its results will be added to the source archive.
+  #
+  # Default: empty
+  # Since: v1.17 (pro)
+  # This feature is available in only GoReleaser Pro.
+  files:
+    # a more complete example, check the globbing deep dive below
+    - src: 'LICENSE.md.tpl'
+      dst: LICENSE.md
+      info:
+        owner: root
+        group: root
+        mode: 0644
+        mtime: 2008-01-02T15:04:05Z
+
 ```
 
 !!! tip

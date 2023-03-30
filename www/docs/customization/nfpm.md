@@ -175,6 +175,19 @@ nfpms:
       - src: path/{{ .Os }}-{{ .Arch }}/bar.conf
         dst: /etc/foo/bar-{{ .ProjectName }}.conf
 
+
+    # Additional templated contents to add to the archive.
+    # Those files will have their contents pass through the template engine,
+    # and its results will be added to the package.
+    #
+    # Default: empty
+    # Since: v1.17 (pro)
+    # This feature is available in only GoReleaser Pro.
+    files:
+      # a more complete example, check the globbing deep dive below
+      - src: 'LICENSE.md.tpl'
+        dst: LICENSE.md
+
       # These files are not actually present in the package, but the file names
       # are added to the package header. From the RPM directives documentation:
       #

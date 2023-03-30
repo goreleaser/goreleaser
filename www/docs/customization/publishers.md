@@ -134,6 +134,19 @@ publishers:
       - glob: ./glob/foo/to/bar/file/foobar/override_from_previous
       - glob: ./single_file.txt
         name_template: file.txt # note that this only works if glob matches 1 file only
+
+
+    # Additional templated extra files to published.
+    # Those files will have their contents pass through the template engine,
+    # and its results will be published.
+    #
+    # Default: empty
+    # Since: v1.17 (pro)
+    # This feature is available in only GoReleaser Pro.
+    templated_extra_files:
+      - src: LICENSE.tpl
+        dst: LICENSE.txt
+
 ```
 
 These settings should allow you to push your artifacts to any number of

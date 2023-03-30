@@ -120,6 +120,19 @@ release:
     - glob: ./glob/foo/to/bar/file/foobar/override_from_previous
     - glob: ./single_file.txt
       name_template: file.txt # note that this only works if glob matches 1 file only
+
+
+  # Additional templated extra files to add to the release.
+  # Those files will have their contents pass through the template engine,
+  # and its results will be added to the release.
+  #
+  # Default: empty
+  # Since: v1.17 (pro)
+  # This feature is available in only GoReleaser Pro.
+  templated_extra_files:
+    - src: LICENSE.tpl
+      dst: LICENSE.txt
+
 ```
 
 !!! tip

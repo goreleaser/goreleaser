@@ -104,6 +104,18 @@ snapcrafts:
         destination: bin/drumroll.wrapper
         mode: 0755
 
+    # Additional templated extra files to add to the package.
+    # Those files will have their contents pass through the template engine,
+    # and its results will be added to the package.
+    #
+    # Default: empty
+    # Since: v1.17 (pro)
+    # This feature is available in only GoReleaser Pro.
+    templated_extra_files:
+      - source: LICENSE.tpl
+        destination: LICENSE.txt
+        mode: 0644
+
     # With layouts, you can make elements in $SNAP, $SNAP_DATA, $SNAP_COMMON
     # accessible from locations such as /usr, /var and /etc. This helps when
     # using pre-compiled binaries and libraries that expect to find files and

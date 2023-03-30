@@ -231,6 +231,12 @@
 					},
 					"hooks": {
 						"$ref": "#/$defs/ArchiveHooks"
+					},
+					"templated_files": {
+						"items": {
+							"$ref": "#/$defs/TemplatedFile"
+						},
+						"type": "array"
 					}
 				},
 				"additionalProperties": false,
@@ -301,6 +307,12 @@
 								"type": "boolean"
 							}
 						]
+					},
+					"templated_extra_files": {
+						"items": {
+							"$ref": "#/$defs/TemplatedExtraFile"
+						},
+						"type": "array"
 					}
 				},
 				"additionalProperties": false,
@@ -601,6 +613,12 @@
 							"$ref": "#/$defs/ExtraFile"
 						},
 						"type": "array"
+					},
+					"templated_extra_files": {
+						"items": {
+							"$ref": "#/$defs/TemplatedExtraFile"
+						},
+						"type": "array"
 					}
 				},
 				"additionalProperties": false,
@@ -873,6 +891,12 @@
 					},
 					"use": {
 						"type": "string"
+					},
+					"templated_files": {
+						"items": {
+							"$ref": "#/$defs/TemplatedExtraFileWithMode"
+						},
+						"type": "array"
 					}
 				},
 				"additionalProperties": false,
@@ -1712,6 +1736,9 @@
 					"archlinux": {
 						"$ref": "#/$defs/NFPMArchLinux"
 					},
+					"templated_contents": {
+						"$ref": "#/$defs/Contents"
+					},
 					"overrides": {
 						"patternProperties": {
 							".*": {
@@ -2006,6 +2033,9 @@
 					},
 					"archlinux": {
 						"$ref": "#/$defs/NFPMArchLinux"
+					},
+					"templated_contents": {
+						"$ref": "#/$defs/Contents"
 					}
 				},
 				"additionalProperties": false,
@@ -2381,6 +2411,12 @@
 							"$ref": "#/$defs/ExtraFile"
 						},
 						"type": "array"
+					},
+					"templated_extra_files": {
+						"items": {
+							"$ref": "#/$defs/TemplatedExtraFile"
+						},
+						"type": "array"
 					}
 				},
 				"additionalProperties": false,
@@ -2486,6 +2522,12 @@
 							"replace"
 						],
 						"default": "keep-existing"
+					},
+					"templated_extra_files": {
+						"items": {
+							"$ref": "#/$defs/TemplatedExtraFile"
+						},
+						"type": "array"
 					}
 				},
 				"additionalProperties": false,
@@ -2866,6 +2908,12 @@
 							"$ref": "#/$defs/SnapcraftExtraFiles"
 						},
 						"type": "array"
+					},
+					"templated_extra_files": {
+						"items": {
+							"$ref": "#/$defs/SnapcraftExtraFiles"
+						},
+						"type": "array"
 					}
 				},
 				"additionalProperties": false,
@@ -3061,6 +3109,12 @@
 					},
 					"rlcp": {
 						"type": "boolean"
+					},
+					"templated_files": {
+						"items": {
+							"$ref": "#/$defs/TemplatedFile"
+						},
+						"type": "array"
 					}
 				},
 				"additionalProperties": false,
@@ -3143,6 +3197,48 @@
 					"src",
 					"dst"
 				]
+			},
+			"TemplatedExtraFile": {
+				"properties": {
+					"src": {
+						"type": "string"
+					},
+					"dst": {
+						"type": "string"
+					}
+				},
+				"additionalProperties": false,
+				"type": "object"
+			},
+			"TemplatedExtraFileWithMode": {
+				"properties": {
+					"src": {
+						"type": "string"
+					},
+					"dst": {
+						"type": "string"
+					},
+					"mode": {
+						"type": "integer"
+					}
+				},
+				"additionalProperties": false,
+				"type": "object"
+			},
+			"TemplatedFile": {
+				"properties": {
+					"src": {
+						"type": "string"
+					},
+					"dst": {
+						"type": "string"
+					},
+					"info": {
+						"$ref": "#/$defs/FileInfo"
+					}
+				},
+				"additionalProperties": false,
+				"type": "object"
 			},
 			"Twitter": {
 				"properties": {

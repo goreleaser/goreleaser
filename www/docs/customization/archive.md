@@ -121,9 +121,39 @@ archives:
           # File mode.
           mode: 0644
 
+
+    # Additional templated files to add to the archive.
+    # Those files will have their contents pass through the template engine,
+    # and its results will be added to the archive.
+    #
+    # Default: empty
+    # Since: v1.17 (pro)
+    # This feature is available in only GoReleaser Pro.
+    files:
+      # a more complete example, check the globbing deep dive below
+      - src: 'LICENSE.md.tpl'
+        dst: LICENSE.md
+
+        # File info.
+        # Not all fields are supported by all formats available formats.
+        # Defaults to the file info of the actual file if not provided.
+        info:
+          # Templateable (since v1.14.0)
+          owner: root
+
+          # Templateable (since v1.14.0)
+          group: root
+
+          # Must be in time.RFC3339Nano format.
+          # Templateable (since v1.14.0)
+          mtime: '{{ .CommitDate }}'
+
+          # File mode.
+          mode: 0644
+
     # Before and after hooks for each archive.
     # Skipped if archive format is binary.
-    # This feature is available in [GoReleaser Pro](/pro) only.
+    # This feature is available in only GoReleaser Pro.
     hooks:
       before:
       - make clean # simple string
