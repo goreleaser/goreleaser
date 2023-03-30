@@ -1,6 +1,6 @@
 # Mastodon
 
-> Since: v1.13.0
+> Since: v1.13
 
 For it to work, you'll need to create a new Mastodon app
 `https://social.yourdomain.tld/settings/applications/new` with `write:statuses`
@@ -18,15 +18,14 @@ configuration file:
 announce:
   mastodon:
     # Whether its enabled or not.
-    # Defaults to false.
     enabled: true
 
     # Message template to use while publishing.
-    # Defaults to `{{ .ProjectName }} {{ .Tag }} is out! Check it out at {{ .ReleaseURL }}`
+    #
+    # Default: '{{ .ProjectName }} {{ .Tag }} is out! Check it out at {{ .ReleaseURL }}'
     message_template: 'Awesome project {{.Tag}} is out!'
 
     # Mastodon server URL.
-    # Defaults to empty.
     server: https://mastodon.social
 ```
 

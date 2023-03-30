@@ -28,14 +28,12 @@ blobs:
 
     # Sets the bucket region.
     # Requires provider to be `s3`
-    # Defaults to empty.
     #
-    # Templateable.
+    # Templates: allowed
     region: us-west-1
 
     # Disables SSL
     # Requires provider to be `s3`
-    # Defaults to false
     disableSSL: true
 
     # Template for the bucket name
@@ -49,21 +47,18 @@ blobs:
     - bar
 
     # Template for the path/name inside the bucket.
-    # Default is `{{ .ProjectName }}/{{ .Tag }}`
+    # Default: '{{ .ProjectName }}/{{ .Tag }}'
     folder: "foo/bar/{{.Version}}"
 
     # Template to disable this particular upload configuration.
     #
     # Since: v1.17
-    # Default: false
     disable: '{{ neq .BLOB_UPLOAD_ONLY "foo" }}'
 
     # You can add extra pre-existing files to the bucket.
     # The filename on the release will be the last part of the path (base).
     # If another file with the same name exists, the last one found will be used.
     # These globs can also include templates.
-    #
-    # Defaults to empty.
     extra_files:
       - glob: ./path/to/file.txt
       - glob: ./glob/**/to/**/file/**/*
@@ -76,7 +71,6 @@ blobs:
     # Those files will have their contents pass through the template engine,
     # and its results will be uploaded.
     #
-    # Default: empty
     # Since: v1.17 (pro)
     # This feature is only available in GoReleaser Pro.
     templated_extra_files:

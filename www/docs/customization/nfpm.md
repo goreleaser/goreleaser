@@ -65,7 +65,8 @@ nfpms:
       - zsh
 
     # Packages it provides. (overridable)
-    # Since: v1.11.
+    #
+    # Since: v1.11
     provides:
       - bar
 
@@ -129,8 +130,8 @@ nfpms:
     # formats (deb and rpm at the moment).
     #
     # Experimental.
-    # Default: empty.
-    # Since: v1.11.
+    # Default: ''
+    # Since: v1.11
     changelog: ./foo.yml
 
     # Contents to add to the package.

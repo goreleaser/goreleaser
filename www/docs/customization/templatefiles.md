@@ -17,7 +17,7 @@ All the templated files are uploaded to the release by default.
 template_files:
 -
   # ID of this particular file.
-  # Defaults to `default`.
+  # Default: 'default'
   id: default
 
   # Source path of the template file.
@@ -30,7 +30,7 @@ template_files:
   dst: foo.sh
 
   # File mode.
-  # Defaults to 0655.
+  # Default: 0655.
   mode: 0755
 ```
 

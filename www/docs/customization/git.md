@@ -16,7 +16,7 @@ git:
   # What should be used to specify prerelease suffix while sorting tags when gathering
   # the current and previous tags if there are more than one tag in the same commit.
   #
-  # Since: v1.17.0.
-  # Default: empty, uses what's defined in the git configuration.
+  # Since: v1.17
+  # Default: ''
   prerelease_suffix: "-"
 ```

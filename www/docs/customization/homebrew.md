@@ -19,7 +19,9 @@ brews:
     name: myproject
 
     # IDs of the archives to use.
-    # Defaults to all.
+    # Empty means all IDs.
+    #
+    # Default: []
     ids:
     - foo
     - bar
@@ -50,7 +52,7 @@ brews:
 
       # Optionally a branch can be provided. (templateable)
       #
-      # Defaults to the default repository branch.
+      # Default: default repository branch.
       branch: main
 
       # Optionally a token can be provided, if it differs from the token
@@ -145,7 +147,7 @@ brews:
 
     # Service block.
     #
-    # Since: v1.7.
+    # Since: v1.7
     service: |
       run: foo/bar
       # ...

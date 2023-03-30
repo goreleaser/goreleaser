@@ -153,7 +153,8 @@ uploads:
     name: production
 
     # HTTP method to use.
-    # Default: PUT
+    #
+    # Default: 'PUT'
     method: POST
 
     # IDs of the artifacts you want to upload.
@@ -166,8 +167,7 @@ uploads:
     # extensions with the same ID, and need to upload each extension to
     # a different place (e.g. nFPM packages).
     #
-    # Default: empty.
-    # Since: v1.7.
+    # Since: v1.7
     exts:
     - deb
     - rpm
@@ -175,13 +175,14 @@ uploads:
     # Upload mode. Valid options are `binary` and `archive`.
     # If mode is `archive`, variables _Os_, _Arch_ and _Arm_ for target name are not supported.
     # In that case these variables are empty.
-    # Default is `archive`.
+    #
+    # Default: 'archive'
     mode: archive
 
     # Template of the URL to be used as target of the HTTP request
     target: https://some.server/some/path/example-repo-local/{{ .ProjectName }}/{{ .Version }}/
 
-    # Custom artifact name (defaults to false)
+    # Custom artifact name.
     # If enable, you must supply the name of the Artifact as part of the Target
     # URL as it will not be automatically append to the end of the URL, its
     # pre-computed name is available as _ArtifactName_ for example
@@ -192,24 +193,22 @@ uploads:
     username: deployuser
 
     # Client certificate and key (when provided, added as client cert to TLS connections)
-    # Since: v1.11.
+    # Since: v1.11
     client_x509_cert: /path/to/client.cert.pem
     client_x509_key: /path/to/client.key.pem
 
     # An optional header you can use to tell GoReleaser to pass the artifact's
     # SHA256 checksum within the upload request.
-    # Default is empty.
     checksum_header: -X-SHA256-Sum
 
     # A map of custom headers e.g. to support required content types or auth schemes.
-    # Default is empty.
     custom_headers:
       JOB-TOKEN: "{{ .Env.CI_JOB_TOKEN }}"
 
-    # Upload checksums (defaults to false)
+    # Upload checksums.
     checksum: true
 
-    # Upload signatures (defaults to false)
+    # Upload signatures.
     signature: true
 
    # Certificate chain used to validate server certificates

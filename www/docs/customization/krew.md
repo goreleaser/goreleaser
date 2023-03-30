@@ -12,11 +12,10 @@ The `krews` section specifies how the plugins should be created:
 krews:
   -
     # Name template of the recipe
-    # Default to project name
+    # Default: ProjectName
     name: myproject
 
     # IDs of the archives to use.
-    # Defaults to all.
     ids:
     - foo
     - bar
@@ -24,12 +23,12 @@ krews:
     # GOARM to specify which 32-bit arm version to use if there are multiple
     # versions from the build section. Krew plugin supports at this moment only
     # one 32-bit version.
-    # Default is 6 for all artifacts or each id if there a multiple versions.
+    # Default: 6
     goarm: 6
 
     # GOAMD64 to specify which amd64 version to use if there are multiple
     # versions from the build section.
-    # Default is v1.
+    # Default: 'v1'
     goamd64: v3
 
     # NOTE: make sure the url_template, the token and given repo (github or
@@ -47,7 +46,7 @@ krews:
 
       # Optionally a branch can be provided. (templateable)
       #
-      # Defaults to the default repository branch.
+      # Default: default repository branch
       branch: main
 
       # Optionally a token can be provided, if it differs from the token
@@ -56,13 +55,12 @@ krews:
 
     # Template for the url which is determined by the given Token (github or
     # gitlab)
-    # Default for github is "https://github.com/<repo_owner>/<repo_name>/releases/download/{{ .Tag }}/{{ .ArtifactName }}"
-    # Default for gitlab is "https://gitlab.com/<repo_owner>/<repo_name>/-/releases/{{ .Tag }}/downloads/{{ .ArtifactName }}"
-    # Default for gitea is "https://gitea.com/<repo_owner>/<repo_name>/releases/download/{{ .Tag }}/{{ .ArtifactName }}"
+    # Default for GitHub: 'https://github.com/<repo_owner>/<repo_name>/releases/download/{{ .Tag }}/{{ .ArtifactName }}'
+    # Default for GitLab: 'https://gitlab.com/<repo_owner>/<repo_name>/-/releases/{{ .Tag }}/downloads/{{ .ArtifactName }}'
+    # Default for Gitea: 'https://gitea.com/<repo_owner>/<repo_name>/releases/download/{{ .Tag }}/{{ .ArtifactName }}'
     url_template: "http://github.mycompany.com/foo/bar/releases/{{ .Tag }}/{{ .ArtifactName }}"
 
     # Git author used to commit to the repository.
-    # Defaults are shown.
     commit_author:
       name: goreleaserbot
       email: bot@goreleaser.com
@@ -71,25 +69,18 @@ krews:
     commit_msg_template: "Krew plugin update for {{ .ProjectName }} version {{ .Tag }}"
 
     # Your app's homepage.
-    # Default is empty.
     homepage: "https://example.com/"
 
     # Template of your app's description.
     # The usual guideline for this is to wrap the line at 80 chars.
-    #
-    # Default is empty.
     description: "Software to create fast and easy drum rolls."
 
     # Template of your app's short description.
     # The usual guideline for this is to be at most 50 chars long.
-    #
-    # Default is empty.
     short_description: "Software to create fast and easy drum rolls."
 
     # Caveats for the user of your binary.
     # The usual guideline for this is to wrap the line at 80 chars.
-    #
-    # Default is empty.
     caveats: "How to use this binary"
 
     # Setting this will prevent goreleaser to actually try to commit the updated
@@ -97,7 +88,6 @@ krews:
     # only, leaving the responsibility of publishing it to the user.
     # If set to auto, the release will not be uploaded to the Krew plugin
     # in case there is an indicator for prerelease in the tag e.g. v1.0.0-rc1
-    # Default is false.
     skip_upload: true
 ```
 

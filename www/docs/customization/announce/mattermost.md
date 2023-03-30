@@ -12,19 +12,19 @@ Then, you can add something like the following to your `.goreleaser.yaml` config
 announce:
   mattermost:
     # Whether its enabled or not.
-    # Defaults to false.
     enabled: true
 
     # Title template to use while publishing.
-    # Defaults to `{{ .ProjectName }} {{ .Tag }} is out!`
+    #
+    # Default: '{{ .ProjectName }} {{ .Tag }} is out!'
     title_template: 'GoReleaser {{ .Tag }} was just released!'
 
     # Message template to use while publishing.
-    # Defaults to `{{ .ProjectName }} {{ .Tag }} is out! Check it out at {{ .ReleaseURL }}`
+    # Default: '{{ .ProjectName }} {{ .Tag }} is out! Check it out at {{ .ReleaseURL }}'
     message_template: 'Awesome project {{.Tag}} is out!'
 
     # Color code of the message. You have to use hexadecimal.
-    # Defaults to `#2D313E` - the grey-ish from goreleaser
+    # Default: '#2D313E' (the grey-ish from GoReleaser)
     color: ''
 
     # The name of the channel that the user selected as a destination for webhook messages.

@@ -1,6 +1,6 @@
 # Cataloging artifacts
 
-Since: v1.2.
+> Since: v1.2
 
 A Software Bill of Materials (SBOM) is a description of the components that make
 up a software artifact.
@@ -30,7 +30,7 @@ sboms:
   -
     # ID of the sbom config, must be unique.
     #
-    # Defaults to "default".
+    # Default: 'default'
     id: foo
 
     # List of Names/templates of the SBOM documents created at this step
@@ -43,7 +43,7 @@ sboms:
     #   document0: "foo"
     #   document1: "bar"
     #
-    # Default value is conditional based on the value of "artifacts"
+    # Default value is conditional based on the value of "artifacts":
     #   - "binary":   ["{{ .Binary }}_{{ .Version }}_{{ .Os }}_{{ .Arch }}.sbom"]
     #   - "any":      []
     #   - otherwise:  ["{{ .ArtifactName }}.sbom"]
@@ -57,18 +57,18 @@ sboms:
     #
     # Note: the process CWD will be set to the same location as "dist"
     #
-    # Defaults to `syft`
+    # Default: 'syft'
     cmd: syft
 
     # Command line templateable arguments for the command
     #
-    # Defaults to `["$artifact", "--file", "$document", "--output", "spdx-json"]`
+    # Default: ["$artifact", "--file", "$document", "--output", "spdx-json"]
     args: ["$artifact", "--file", "$sbom", "--output", "spdx-json"]
 
     # List of environment variables that will be passed to the SBOM command as
     # well as the templates.
     #
-    # Defaults to [ "SYFT_FILE_METADATA_CATALOGER_ENABLED=true" ]
+    # Default: [ "SYFT_FILE_METADATA_CATALOGER_ENABLED=true" ]
     env:
       - FOO=bar
       - HONK=honkhonk
@@ -82,14 +82,12 @@ sboms:
     #   archive:  archives from archive pipe
     #   binary:   binaries output from the build stage
     #
-    # Defaults to `archive`
+    # Default: 'archive'
     artifacts: archive
 
     # IDs of the artifacts to catalog.
     #
     # If `artifacts` is "source" or "any" then this fields has no effect.
-    #
-    # Defaults to empty (which implies no filtering).
     ids:
       - foo
       - bar

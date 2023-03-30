@@ -7,21 +7,19 @@ particularly useful if you want to sign it, for example.
 # .goreleaser.yaml
 source:
   # Whether this pipe is enabled or not.
-  # Defaults to `false`
   enabled: true
 
   # Name template of the final archive.
-  # Defaults to `{{ .ProjectName }}-{{ .Version }}`
+  # Default: '{{ .ProjectName }}-{{ .Version }}'
   name_template: '{{ .ProjectName }}'
 
   # Format of the archive.
   # Any format git-archive supports, this supports too.
-  # Defaults to `tar.gz`
+  # Default: 'tar.gz'
   format: 'tar'
 
   # Prefix template.
   # String to prepend to each filename in the archive.
-  # Defaults to empty
   prefix_template: '{{ .ProjectName }}-{{ .Version }}/'
 
   # This will make the destination paths be relative to the longest common
@@ -29,14 +27,12 @@ source:
   # Enabling this essentially mimic the behavior of nfpm's contents section.
   # It will be the default by June 2023.
   #
-  # Default: false
-  # Since: v1.14.
+  # Since: v1.14
   rlcp: true
 
   # Additional files/template/globs you want to add to the source archive.
   #
-  # Default: empty.
-  # Since: v1.11.
+  # Since: v1.11
   files:
     - LICENSE.txt
     - README_{{.Os}}.md
@@ -49,12 +45,11 @@ source:
       dst: docs
 
       # Strip parent folders when adding files to the archive.
-      # Default: false
       strip_parent: true
 
       # File info.
       # Not all fields are supported by all formats available formats.
-      # Defaults to the file info of the actual file if not provided.
+      # Default: file info of the source file
       info:
         owner: root
         group: root
@@ -67,7 +62,6 @@ source:
   # Those files will have their contents pass through the template engine,
   # and its results will be added to the source archive.
   #
-  # Default: empty
   # Since: v1.17 (pro)
   # This feature is only available in GoReleaser Pro.
   files:

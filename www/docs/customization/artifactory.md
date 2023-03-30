@@ -146,8 +146,7 @@ artifactories:
     # extensions with the same ID, and need to upload each extension to
     # a different place (e.g. nFPM packages).
     #
-    # Default: empty.
-    # Since: v1.7.
+    # Since: v1.7
     exts:
     - deb
     - rpm
@@ -155,7 +154,7 @@ artifactories:
     # Upload mode. Valid options are `binary` and `archive`.
     # If mode is `archive`, variables _Os_, _Arch_ and _Arm_ for target name are not supported.
     # In that case these variables are empty.
-    # Default is `archive`.
+    # Default: 'archive'
     mode: archive
 
     # URL of your Artifactory instance + path to deploy to
@@ -165,14 +164,15 @@ artifactories:
     username: deployuser
 
     # Client certificate and key (when provided, added as client cert to TLS connections)
-    # Since: v1.11.
+    #
+    # Since: v1.11
     client_x509_cert: /path/to/client.cert.pem
     client_x509_key: /path/to/client.key.pem
 
-    # Upload checksums (defaults to false)
+    # Upload checksums.
     checksum: true
 
-    # Upload signatures (defaults to false)
+    # Upload signatures.
     signature: true
 
     # Certificate chain used to validate server certificates

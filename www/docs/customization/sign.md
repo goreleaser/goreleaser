@@ -29,17 +29,17 @@ signs:
   -
     # ID of the sign config, must be unique.
     #
-    # Defaults to "default".
+    # Default: 'default'
     id: foo
 
     # Name/template of the signature file.
     #
-    # Defaults to `${artifact}.sig`.
+    # Default: '${artifact}.sig'
     signature: "${artifact}_sig"
 
     # Path to the signature command
     #
-    # Defaults to `gpg`
+    # Default: 'gpg'
     cmd: gpg2
 
     # Command line templateable arguments for the command
@@ -47,7 +47,7 @@ signs:
     # to sign with a specific key use
     # args: ["-u", "<key id, fingerprint, email, ...>", "--output", "${signature}", "--detach-sign", "${artifact}"]
     #
-    # Defaults to `["--output", "${signature}", "--detach-sign", "${artifact}"]`
+    # Default: ["--output", "${signature}", "--detach-sign", "${artifact}"]
     args: ["--output", "${signature}", "${artifact}", "{{ .ProjectName }}"]
 
     # Which artifacts to sign
@@ -61,39 +61,29 @@ signs:
     #   binary:   binaries if archiving format is set to binary
     #   sbom:     any Software Bill of Materials generated for other artifacts
     #
-    # Defaults to `none`
+    # Default: 'none'
     artifacts: all
 
     # IDs of the artifacts to sign.
     #
     # If `artifacts` is checksum or source, this fields has no effect.
-    #
-    # Defaults to empty (which implies no filtering).
     ids:
       - foo
       - bar
 
     # Stdin data template to be given to the signature command as stdin.
-    #
-    # Defaults to empty
     stdin: '{{ .Env.GPG_PASSWORD }}'
 
     # StdinFile file to be given to the signature command as stdin.
-    #
-    # Defaults to empty
     stdin_file: ./.password
 
     # Sets a certificate that your signing command should write to.
     # You can later use `${certificate}` or `.Env.certificate` in the `args` section.
     # This is particularly useful for keyless signing (for instance, with cosign).
     # Note that this should be a name, not a path.
-    #
-    # Defaults to empty.
     certificate: '{{ trimsuffix .Env.artifact ".tar.gz" }}.pem'
 
     # List of environment variables that will be passed to the signing command as well as the templates.
-    #
-    # Defaults to empty
     env:
     - FOO=bar
     - HONK=honkhonk
@@ -102,8 +92,7 @@ signs:
     # GoReleaser is running with `--debug` set.
     # You can set this to true if you want them to be displayed regardless.
     #
-    # Default: false.
-    # Since: v1.2.
+    # Since: v1.2
     output: true
 ```
 

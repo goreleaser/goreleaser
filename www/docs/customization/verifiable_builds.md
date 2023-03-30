@@ -32,8 +32,8 @@ gomod:
 
   # Sets the `-mod` flag value.
   #
-  # Default: empty.
-  # Since: v1.7.
+  # Default: ''
+  # Since: v1.7
   mod: mod
 
   # Which Go binary to use.

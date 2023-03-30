@@ -43,12 +43,14 @@ gitlab_urls:
 
   # set to true if you want to upload to the Package Registry rather than attachments
   # Only works with GitLab 13.5+
-  # Since: v1.3.
+  #
+  # Since: v1.3
   use_package_registry: false
 
   # Set this if you set GITLAB_TOKEN to the value of CI_JOB_TOKEN.
+  #
   # Default: false
-  # Since: v1.11.
+  # Since: v1.11
   use_job_token: true
 ```
 

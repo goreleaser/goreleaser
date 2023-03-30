@@ -1,6 +1,6 @@
 # Arch User Repositories
 
-Since: v1.4.
+> Since: v1.4
 
 After releasing to GitHub, GitLab, or Gitea, GoReleaser can generate and publish
 a `PKGBUILD` to an _Arch User Repository_.
@@ -17,40 +17,34 @@ aurs:
   -
     # The package name.
     #
-    # Defaults to the Project Name with a -bin suffix.
-    #
     # Note that since this integration does not create a PKGBUILD to build from
     # source, per Arch's guidelines.
     # That said, GoReleaser will enforce a `-bin` suffix if its not present.
+    #
+    # Default: ProjectName with a -bin suffix.
     name: package-bin
 
     # Artifact IDs to filter for.
-    #
-    # Defaults to empty, which includes all artifacts.
+    # Empty means all IDs (no filter).
     ids:
       - foo
       - bar
 
     # Your app's homepage.
-    # Default is empty.
     homepage: "https://example.com/"
 
     # Template of your app's description.
-    # Default is empty.
     description: "Software to create fast and easy drum rolls."
 
     # The maintainers of the package.
-    # Defaults to empty.
     maintainers:
       - 'Foo Bar <foo at bar dot com>'
 
     # The contributors of the package.
-    # Defaults to empty.
     contributors:
       - 'Foo Zaz <foo at zaz dot com>'
 
     # SPDX identifier of your app's license.
-    # Default is empty.
     license: "MIT"
 
     # The SSH private key that should be used to commit to the Git repository.
@@ -62,7 +56,6 @@ aurs:
     private_key: '{{ .Env.AUR_KEY }}'
 
     # The AUR Git URL for this package.
-    # Defaults to empty
     # Publish is skipped if empty.
     git_url: 'ssh://aur@aur.archlinux.org/mypackage-bin.git'
 
@@ -72,25 +65,21 @@ aurs:
     #
     # If set to auto, the release will not be uploaded to the AUR repo
     # in case there is an indicator for prerelease in the tag e.g. v1.0.0-rc1.
-    #
-    # Default is false.
     skip_upload: true
 
     # List of additional packages that the software provides the features of.
     #
-    # Defaults to the project name.
+    # Default: ProjectName
     provides:
       - mybin
 
     # List of packages that conflict with, or cause problems with the package.
     #
-    # Defaults to the project name.
+    # Default: ProjectName
     conflicts:
       - mybin
 
     # List of packages that must be installed to install this.
-    #
-    # Defaults to empty.
     depends:
       - curl
 
@@ -98,26 +87,23 @@ aurs:
     # but provide additional features.
     #
     # Must be in the format `package: short description of the extra functionality`.
-    #
-    # Defaults to empty.
     optdepends:
       - 'wget: for downloading things'
 
     # List of files that can contain user-made changes and should be preserved
     # during package upgrades and removals.
     #
-    # Default: empty.
     # Since: v1.12
     backup:
       - /etc/foo.conf
 
     # Custom package instructions.
-    #
-    # Defaults to `install -Dm755 "./PROJECT_NAME" "${pkgdir}/usr/bin/PROJECT_NAME",
     # which is not always correct.
     #
     # We recommend you override this, installing the binary, license and
     # everything else your package needs.
+    #
+    # Default: 'install -Dm755 "./PROJECT_NAME" "${pkgdir}/usr/bin/PROJECT_NAME"'
     package: |-
       # bin
       install -Dm755 "./mybin" "${pkgdir}/usr/bin/mybin"
@@ -137,30 +123,29 @@ aurs:
       install -Dm644 "./manpages/mybin.1.gz" "${pkgdir}/usr/share/man/man1/mybin.1.gz"
 
     # Git author used to commit to the repository.
-    # Defaults are shown below.
     commit_author:
       name: goreleaserbot
       email: bot@goreleaser.com
 
     # Commit message template.
-    # Defaults to `Update to {{ .Tag }}`.
+    # Default: 'Update to {{ .Tag }}'
     commit_msg_template: "pkgbuild updates"
 
     # If you build for multiple GOAMD64 versions, you may use this to choose which one to use.
-    # Defaults to `v1`.
+    # Default: 'v1'.
     goamd64: v2
 
     # The value to be passed to `GIT_SSH_COMMAND`.
     # This is mainly used to specify the SSH private key used to pull/push to
     # the Git URL.
     #
-    # Defaults to `ssh -i {{ .KeyPath }} -o StrictHostKeyChecking=accept-new -F /dev/null`.
+    # Default: 'ssh -i {{ .KeyPath }} -o StrictHostKeyChecking=accept-new -F /dev/null'
     git_ssh_command: 'ssh -i {{ .Env.KEY }} -o SomeOption=yes'
 
     # Template for the url which is determined by the given Token
     # (github, gitlab or gitea).
     #
-    # Default depends on the client.
+    # Default: depends on the client
     url_template: "http://github.mycompany.com/foo/bar/releases/{{ .Tag }}/{{ .ArtifactName }}"
 ```
 

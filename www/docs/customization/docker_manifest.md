@@ -33,22 +33,18 @@ docker_manifests:
   id: myimg
 
   # Name template for the manifest.
-  # Defaults to empty.
   name_template: "foo/bar:{{ .Version }}"
 
   # Image name templates to be added to this manifest.
-  # Defaults to empty.
   image_templates:
   - "foo/bar:{{ .Version }}-amd64"
   - "foo/bar:{{ .Version }}-arm64v8"
 
   # Extra flags to be passed down to the manifest create command.
-  # Defaults to empty.
   create_flags:
   - --insecure
 
   # Extra flags to be passed down to the manifest push command.
-  # Defaults to empty.
   push_flags:
   - --insecure
 
@@ -58,8 +54,6 @@ docker_manifests:
   #
   # If set to `auto`, the manifest will not be created in case there is an
   #  indicator of a prerelease in the tag, e.g. v1.0.0-rc1.
-  #
-  # Defaults to false.
   skip_push: false
 
   # Set the "backend" for the Docker manifest pipe.
@@ -70,7 +64,7 @@ docker_manifests:
   # 2. if you set podman here, the respective docker configs need to use podman
   #    too.
   #
-  # Defaults to docker.
+  # Default: 'docker'
   use: docker
 ```
 

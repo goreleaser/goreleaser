@@ -170,7 +170,7 @@ builds:
     # It is safe to ignore this option in most cases.
     #
     # Default: build.
-    # Since: v1.9.
+    # Since: v1.9
     command: test
 
     # Set the modified timestamp on the output binary, typically
@@ -211,7 +211,7 @@ builds:
     # example.
     #
     # Default: false.
-    # Since: v1.9.
+    # Since: v1.9
     no_main_check: true
 
     # Path to project's (sub)directory containing Go code.
@@ -232,8 +232,8 @@ builds:
     # This can be specially useful when using CGO.
     # Note: it'll only match if the full target matches.
     #
-    # Default: empty.
-    # Since: v1.5.
+    # Default: []
+    # Since: v1.5
     overrides:
       - goos: darwin
         goarch: arm64

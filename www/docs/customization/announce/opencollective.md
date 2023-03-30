@@ -11,7 +11,6 @@ Then, you can add something like the following to your `.goreleaser.yaml` config
 announce:
   opencollective:
     # Whether its enabled or not.
-    # Defaults to false.
     enabled: true
 
     # Collective slug
@@ -19,10 +18,10 @@ announce:
     slug: 'goreleaser'
 
     # Title for the update
-    # Defaults to `{{ .Tag }}`
+    # Default: '{{ .Tag }}'
     title_template: 'Release of {{ .Tag }}'
 
     # Message template to use while publishing. It can be HTML!
-    # Defaults to `{{ .ProjectName }} {{ .Tag }} is out!<br/>Check it out at <a href="{{ .ReleaseURL }}">{{ .ReleaseURL }}</a>`
+    # Default: '{{ .ProjectName }} {{ .Tag }} is out!<br/>Check it out at <a href="{{ .ReleaseURL }}">{{ .ReleaseURL }}</a>'
     message_template: 'Awesome project {{.Tag}} is out!'
 ```

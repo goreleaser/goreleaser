@@ -25,7 +25,7 @@ scoop:
 
     # Optionally a branch can be provided. (templateable)
     #
-    # Defaults to the default repository branch.
+    # Default: the repository default branch
     branch: main
 
     # Optionally a token can be provided, if it differs from the token provided
@@ -33,11 +33,9 @@ scoop:
     token: "{{ .Env.SCOOP_TAP_GITHUB_TOKEN }}"
 
   # Folder inside the repository to put the scoop.
-  # Default is the root folder.
   folder: Scoops
 
   # Git author used to commit to the repository.
-  # Defaults are shown.
   commit_author:
     name: goreleaserbot
     email: bot@goreleaser.com
@@ -46,22 +44,18 @@ scoop:
   commit_msg_template: "Scoop update for {{ .ProjectName }} version {{ .Tag }}"
 
   # Your app's homepage.
-  # Default is empty.
   homepage: "https://example.com/"
 
   # Your app's description.
-  # Default is empty.
   description: "Software to create fast and easy drum rolls."
 
   # Your app's license
-  # Default is empty.
   license: MIT
 
   # Setting this will prevent goreleaser to actually try to commit the updated
   # manifest leaving the responsibility of publishing it to the user.
   # If set to auto, the release will not be uploaded to the scoop bucket
   # in case there is an indicator for prerelease in the tag e.g. v1.0.0-rc1
-  # Default is false.
   skip_upload: true
 
   # Persist data between application updates
@@ -70,28 +64,27 @@ scoop:
   - "config.toml"
 
   # An array of commands to be executed before an application is installed.
-  # Default is empty.
   pre_install: ["Write-Host 'Running preinstall command'"]
 
   # An array of commands to be executed after an application is installed.
-  # Default is empty.
   post_install: ["Write-Host 'Running postinstall command'"]
 
   # An array of dependencies.
-  # Defaults to empty.
-  # Since GoReleaser v1.16.0.
+  #
+  # Since GoReleaser v1.16
   depends: ["git", "foo"]
 
 
   # A two-dimensional array of string, specifies the shortcut values to make available in the startmenu.
   # The array has to contain a executable/label pair. The third and fourth element are optional.
-  # Defaults to empty.
+  #
   # Since GoReleaser v1.17.0.
   shortcuts: [["drumroll.exe", "drumroll"]]
 
   # GOAMD64 to specify which amd64 version to use if there are multiple versions
   # from the build section.
-  # Default is v1.
+  #
+  # Default: v1
   goamd64: v3
 ```
 

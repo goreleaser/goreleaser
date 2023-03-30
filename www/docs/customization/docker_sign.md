@@ -18,17 +18,17 @@ docker_signs:
     # ID of the sign config, must be unique.
     # Only relevant if you want to produce some sort of signature file.
     #
-    # Defaults to "default".
+    # Default: 'default'
     id: foo
 
     # Path to the signature command
     #
-    # Defaults to `cosign`
+    # Default: 'cosign'
     cmd: cosign
 
     # Command line templateable arguments for the command
     #
-    # defaults to `["sign", "--key=cosign.key", "${artifact}@${digest}", "--yes"]`
+    # Default: ["sign", "--key=cosign.key", "${artifact}@${digest}", "--yes"]
     args:
     - "sign"
     - "--key=cosign.key"
@@ -44,12 +44,10 @@ docker_signs:
     #   images:    only docker images
     #   manifests: only docker manifests
     #
-    # defaults to `none`
+    # Default: 'none'
     artifacts: all
 
     # IDs of the artifacts to sign.
-    #
-    # Defaults to empty (which implies no ID filtering).
     ids:
       - foo
       - bar
@@ -72,8 +70,8 @@ docker_signs:
     # By default, the stdout and stderr of the signing cmd are discarded unless GoReleaser is running with `--debug` set.
     # You can set this to true if you want them to be displayed regardless.
     #
-    # Default: false.
-    # Since: v1.2.
+    # Default: false
+    # Since: v1.2
     output: true
 ```
 
