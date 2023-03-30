@@ -49,7 +49,7 @@ checksum:
   #
   # Default: empty
   # Since: v1.17 (pro)
-  # This feature is available in only GoReleaser Pro.
+  # This feature is only available in GoReleaser Pro.
   templated_extra_files:
     - src: LICENSE.tpl
       dst: LICENSE.txt

@@ -182,7 +182,7 @@ nfpms:
     #
     # Default: empty
     # Since: v1.17 (pro)
-    # This feature is available in only GoReleaser Pro.
+    # This feature is only available in GoReleaser Pro.
     files:
       # a more complete example, check the globbing deep dive below
       - src: 'LICENSE.md.tpl'

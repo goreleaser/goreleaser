@@ -128,7 +128,7 @@ archives:
     #
     # Default: empty
     # Since: v1.17 (pro)
-    # This feature is available in only GoReleaser Pro.
+    # This feature is only available in GoReleaser Pro.
     files:
       # a more complete example, check the globbing deep dive below
       - src: 'LICENSE.md.tpl'
@@ -153,7 +153,7 @@ archives:
 
     # Before and after hooks for each archive.
     # Skipped if archive format is binary.
-    # This feature is available in only GoReleaser Pro.
+    # This feature is only available in GoReleaser Pro.
     hooks:
       before:
       - make clean # simple string

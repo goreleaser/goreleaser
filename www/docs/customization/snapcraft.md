@@ -110,7 +110,7 @@ snapcrafts:
     #
     # Default: empty
     # Since: v1.17 (pro)
-    # This feature is available in only GoReleaser Pro.
+    # This feature is only available in GoReleaser Pro.
     templated_extra_files:
       - source: LICENSE.tpl
         destination: LICENSE.txt
