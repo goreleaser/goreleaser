@@ -3,7 +3,6 @@ package upload
 import (
 	"fmt"
 	"net/http"
-	h "net/http"
 	"net/http/httptest"
 	"os"
 	"path/filepath"
@@ -106,14 +105,14 @@ func TestRunPipe_ModeBinary(t *testing.T) {
 		Dist:        dist,
 		Uploads: []config.Upload{
 			{
-				Method:   h.MethodPut,
+				Method:   http.MethodPut,
 				Name:     "production-us",
 				Mode:     "binary",
 				Target:   fmt.Sprintf("%s/example-repo-local/{{ .ProjectName }}/{{ .Os }}/{{ .Arch }}{{ if .Arm }}v{{ .Arm }}{{ end }}", server.URL),
 				Username: "deployuser",
 			},
 			{
-				Method:   h.MethodPut,
+				Method:   http.MethodPut,
 				Name:     "production-eu",
 				Mode:     "binary",
 				Target:   fmt.Sprintf("%s/production-repo-remote/{{ .ProjectName }}/{{ .Os }}/{{ .Arch }}{{ if .Arm }}v{{ .Arm }}{{ end }}", server.URL),
@@ -156,7 +155,7 @@ func TestRunPipe_ModeArchive(t *testing.T) {
 		Dist:        folder,
 		Uploads: []config.Upload{
 			{
-				Method:   h.MethodPut,
+				Method:   http.MethodPut,
 				Name:     "production",
 				Mode:     "archive",
 				Target:   fmt.Sprintf("%s/example-repo-local/{{ .ProjectName }}/{{ .Version }}/", server.URL),
@@ -243,7 +242,7 @@ func TestRunPipe_ModeBinary_CustomArtifactName(t *testing.T) {
 		Dist:        dist,
 		Uploads: []config.Upload{
 			{
-				Method:             h.MethodPut,
+				Method:             http.MethodPut,
 				Name:               "production-us",
 				Mode:               "binary",
 				Target:             fmt.Sprintf("%s/example-repo-local/{{ .ProjectName }}/{{ .Os }}/{{ .Arch }}{{ if .Arm }}v{{ .Arm }}{{ end }}/{{ .ArtifactName }};deb.distribution=xenial", server.URL),
@@ -284,7 +283,7 @@ func TestRunPipe_ModeArchive_CustomArtifactName(t *testing.T) {
 		Dist:        folder,
 		Uploads: []config.Upload{
 			{
-				Method:             h.MethodPut,
+				Method:             http.MethodPut,
 				Name:               "production",
 				Mode:               "archive",
 				Target:             fmt.Sprintf("%s/example-repo-local/{{ .ProjectName }}/{{ .Version }}/{{ .ArtifactName }};deb.distribution=xenial", server.URL),
@@ -348,7 +347,7 @@ func TestRunPipe_ArtifactoryDown(t *testing.T) {
 		Dist:        folder,
 		Uploads: []config.Upload{
 			{
-				Method:   h.MethodPut,
+				Method:   http.MethodPut,
 				Name:     "production",
 				Mode:     "archive",
 				Target:   "http://localhost:1234/example-repo-local/{{ .ProjectName }}/{{ .Version }}/",
@@ -377,7 +376,7 @@ func TestRunPipe_TargetTemplateError(t *testing.T) {
 		Dist:        dist,
 		Uploads: []config.Upload{
 			{
-				Method: h.MethodPut,
+				Method: http.MethodPut,
 				Name:   "production",
 				Mode:   "binary",
 				// This template is not correct and should fail
@@ -425,7 +424,7 @@ func TestRunPipe_BadCredentials(t *testing.T) {
 		Dist:        dist,
 		Uploads: []config.Upload{
 			{
-				Method:   h.MethodPut,
+				Method:   http.MethodPut,
 				Name:     "production",
 				Mode:     "binary",
 				Target:   fmt.Sprintf("%s/example-repo-local/{{ .ProjectName }}/{{ .Os }}/{{ .Arch }}{{ if .Arm }}v{{ .Arm }}{{ end }}", server.URL),
@@ -454,7 +453,7 @@ func TestRunPipe_FileNotFound(t *testing.T) {
 		Dist:        "archivetest/dist",
 		Uploads: []config.Upload{
 			{
-				Method:   h.MethodPut,
+				Method:   http.MethodPut,
 				Name:     "production",
 				Mode:     "binary",
 				Target:   "http://artifacts.company.com/example-repo-local/{{ .ProjectName }}/{{ .Os }}/{{ .Arch }}{{ if .Arm }}v{{ .Arm }}{{ end }}",
@@ -489,7 +488,7 @@ func TestRunPipe_UnparsableTarget(t *testing.T) {
 		Dist:        dist,
 		Uploads: []config.Upload{
 			{
-				Method:   h.MethodPut,
+				Method:   http.MethodPut,
 				Name:     "production",
 				Mode:     "binary",
 				Target:   "://artifacts.company.com/example-repo-local/{{ .ProjectName }}/{{ .Os }}/{{ .Arch }}{{ if .Arm }}v{{ .Arm }}{{ end }}",
@@ -527,7 +526,7 @@ func TestRunPipe_DirUpload(t *testing.T) {
 		Dist:        dist,
 		Uploads: []config.Upload{
 			{
-				Method:   h.MethodPut,
+				Method:   http.MethodPut,
 				Name:     "production",
 				Mode:     "binary",
 				Target:   "http://artifacts.company.com/example-repo-local/{{ .ProjectName }}/{{ .Os }}/{{ .Arch }}{{ if .Arm }}v{{ .Arm }}{{ end }}",
@@ -556,7 +555,7 @@ func TestPutsWithoutTarget(t *testing.T) {
 	ctx := testctx.NewWithCfg(config.Project{
 		Uploads: []config.Upload{
 			{
-				Method:   h.MethodPut,
+				Method:   http.MethodPut,
 				Name:     "production",
 				Username: "deployuser",
 			},
@@ -571,7 +570,7 @@ func TestPutsWithoutUsername(t *testing.T) {
 	ctx := testctx.NewWithCfg(config.Project{
 		Uploads: []config.Upload{
 			{
-				Method: h.MethodPut,
+				Method: http.MethodPut,
 				Name:   "production",
 				Target: "http://artifacts.company.com/example-repo-local/{{ .ProjectName }}/{{ .Os }}/{{ .Arch }}{{ if .Arm }}v{{ .Arm }}{{ end }}",
 			},
@@ -586,7 +585,7 @@ func TestPutsWithoutName(t *testing.T) {
 	require.True(t, pipe.IsSkip(Pipe{}.Publish(testctx.NewWithCfg(config.Project{
 		Uploads: []config.Upload{
 			{
-				Method:   h.MethodPut,
+				Method:   http.MethodPut,
 				Username: "deployuser",
 				Target:   "http://artifacts.company.com/example-repo-local/{{ .ProjectName }}/{{ .Os }}/{{ .Arch }}{{ if .Arm }}v{{ .Arm }}{{ end }}",
 			},
@@ -598,7 +597,7 @@ func TestPutsWithoutSecret(t *testing.T) {
 	require.True(t, pipe.IsSkip(Pipe{}.Publish(testctx.NewWithCfg(config.Project{
 		Uploads: []config.Upload{
 			{
-				Method:   h.MethodPut,
+				Method:   http.MethodPut,
 				Name:     "production",
 				Target:   "http://artifacts.company.com/example-repo-local/{{ .ProjectName }}/{{ .Os }}/{{ .Arch }}{{ if .Arm }}v{{ .Arm }}{{ end }}",
 				Username: "deployuser",
@@ -611,7 +610,7 @@ func TestPutsWithInvalidMode(t *testing.T) {
 	ctx := testctx.NewWithCfg(config.Project{
 		Uploads: []config.Upload{
 			{
-				Method:   h.MethodPut,
+				Method:   http.MethodPut,
 				Name:     "production",
 				Mode:     "does-not-exists",
 				Target:   "http://artifacts.company.com/example-repo-local/{{ .ProjectName }}/{{ .Os }}/{{ .Arch }}{{ if .Arm }}v{{ .Arm }}{{ end }}",
@@ -637,7 +636,7 @@ func TestDefault(t *testing.T) {
 	require.Len(t, ctx.Config.Uploads, 1)
 	upload := ctx.Config.Uploads[0]
 	require.Equal(t, "archive", upload.Mode)
-	require.Equal(t, h.MethodPut, upload.Method)
+	require.Equal(t, http.MethodPut, upload.Method)
 }
 
 func TestDefaultNoPuts(t *testing.T) {
@@ -652,7 +651,7 @@ func TestDefaultSet(t *testing.T) {
 	ctx := testctx.NewWithCfg(config.Project{
 		Uploads: []config.Upload{
 			{
-				Method: h.MethodPost,
+				Method: http.MethodPost,
 				Mode:   "custom",
 			},
 		},
@@ -661,7 +660,7 @@ func TestDefaultSet(t *testing.T) {
 	require.Len(t, ctx.Config.Uploads, 1)
 	upload := ctx.Config.Uploads[0]
 	require.Equal(t, "custom", upload.Mode)
-	require.Equal(t, h.MethodPost, upload.Method)
+	require.Equal(t, http.MethodPost, upload.Method)
 }
 
 func TestSkip(t *testing.T) {
