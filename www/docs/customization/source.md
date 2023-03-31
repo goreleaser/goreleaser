@@ -10,16 +10,21 @@ source:
   enabled: true
 
   # Name template of the final archive.
+  #
   # Default: '{{ .ProjectName }}-{{ .Version }}'
+  # Templates: allowed
   name_template: '{{ .ProjectName }}'
 
   # Format of the archive.
   # Any format git-archive supports, this supports too.
+  #
   # Default: 'tar.gz'
   format: 'tar'
 
-  # Prefix template.
+  # Prefix.
   # String to prepend to each filename in the archive.
+  #
+  # Templates: allowed
   prefix_template: '{{ .ProjectName }}-{{ .Version }}/'
 
   # This will make the destination paths be relative to the longest common
@@ -30,9 +35,10 @@ source:
   # Since: v1.14
   rlcp: true
 
-  # Additional files/template/globs you want to add to the source archive.
+  # Additional files/globs you want to add to the source archive.
   #
   # Since: v1.11
+  # Templates: allowed
   files:
     - LICENSE.txt
     - README_{{.Os}}.md
@@ -64,6 +70,7 @@ source:
   #
   # Since: v1.17 (pro)
   # This feature is only available in GoReleaser Pro.
+  # Templates: allowed
   files:
     # a more complete example, check the globbing deep dive below
     - src: 'LICENSE.md.tpl'

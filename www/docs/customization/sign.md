@@ -32,9 +32,10 @@ signs:
     # Default: 'default'
     id: foo
 
-    # Name/template of the signature file.
+    # Name of the signature file.
     #
     # Default: '${artifact}.sig'
+    # Templates: allowed
     signature: "${artifact}_sig"
 
     # Path to the signature command
@@ -42,12 +43,13 @@ signs:
     # Default: 'gpg'
     cmd: gpg2
 
-    # Command line templateable arguments for the command
+    # Command line arguments for the command
     #
     # to sign with a specific key use
     # args: ["-u", "<key id, fingerprint, email, ...>", "--output", "${signature}", "--detach-sign", "${artifact}"]
     #
     # Default: ["--output", "${signature}", "--detach-sign", "${artifact}"]
+    # Templates: allowed
     args: ["--output", "${signature}", "${artifact}", "{{ .ProjectName }}"]
 
     # Which artifacts to sign
@@ -71,7 +73,9 @@ signs:
       - foo
       - bar
 
-    # Stdin data template to be given to the signature command as stdin.
+    # Stdin data to be given to the signature command as stdin.
+    #
+    # Templates: allowed
     stdin: '{{ .Env.GPG_PASSWORD }}'
 
     # StdinFile file to be given to the signature command as stdin.
@@ -83,7 +87,8 @@ signs:
     # Note that this should be a name, not a path.
     certificate: '{{ trimsuffix .Env.artifact ".tar.gz" }}.pem'
 
-    # List of environment variables that will be passed to the signing command as well as the templates.
+    # List of environment variables that will be passed to the signing command
+    # as well as the templates.
     env:
     - FOO=bar
     - HONK=honkhonk
@@ -98,8 +103,8 @@ signs:
 
 ### Available variable names
 
-These environment variables might be available in the fields that are
-templateable:
+These environment variables might be available in the fields that accept
+templates:
 
 - `${artifact}`: the path to the artifact that will be signed
 - `${artifactID}`: the ID of the artifact that will be signed

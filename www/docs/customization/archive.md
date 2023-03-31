@@ -30,15 +30,17 @@ archives:
     # The name template must not contain any references to `Os`, `Arch` and etc, since the archive will be meta.
     #
     # Since: v1.9
+    # Templates: allowed
     meta: true
 
-    # Archive name template.
+    # Archive name.
     #
-    # Defaults:
+    # Default:
     # - if format is `tar.gz`, `tar.xz`, `gz` or `zip`:
     #   - `{{ .ProjectName }}_{{ .Version }}_{{ .Os }}_{{ .Arch }}{{ with .Arm }}v{{ . }}{{ end }}{{ with .Mips }}_{{ . }}{{ end }}{{ if not (eq .Amd64 "v1") }}{{ .Amd64 }}{{ end }}`
     # - if format is `binary`:
     #   - `{{ .Binary }}_{{ .Version }}_{{ .Os }}_{{ .Arch }}{{ with .Arm }}v{{ . }}{{ end }}{{ with .Mips }}_{{ . }}{{ end }}{{ if not (eq .Amd64 "v1") }}{{ .Amd64 }}{{ end }}`
+    # Templates: allowed
     name_template: "{{ .ProjectName }}_{{ .Version }}_{{ .Os }}_{{ .Arch }}"
 
     # Sets the given file info to all the binaries included from the `builds`.
@@ -82,9 +84,10 @@ archives:
       - goos: windows
         format: zip
 
-    # Additional files/template/globs you want to add to the archive.
+    # Additional files/globs you want to add to the archive.
     #
     # Default: [ 'LICENSE*', 'README*', 'CHANGELOG', 'license*', 'readme*', 'changelog']
+    # Templates: allowed
     files:
       - LICENSE.txt
       - README_{{.Os}}.md
@@ -104,14 +107,15 @@ archives:
         #
         # Default: copied from the source file
         info:
-          # Templateable (since v1.14.0)
+          # Templates: allowed (since v1.14)
           owner: root
 
-          # Templateable (since v1.14.0)
+          # Templates: allowed (since v1.14)
           group: root
 
           # Must be in time.RFC3339Nano format.
-          # Templateable (since v1.14.0)
+          #
+          # Templates: allowed (since v1.14)
           mtime: '{{ .CommitDate }}'
 
           # File mode.
@@ -124,6 +128,7 @@ archives:
     #
     # Since: v1.17 (pro)
     # This feature is only available in GoReleaser Pro.
+    # Templates: allowed
     files:
       # a more complete example, check the globbing deep dive below
       - src: 'LICENSE.md.tpl'
@@ -134,17 +139,10 @@ archives:
         #
         # Default: copied from the source file
         info:
-          # Templateable (since v1.14.0)
           owner: root
-
-          # Templateable (since v1.14.0)
           group: root
-
           # Must be in time.RFC3339Nano format.
-          # Templateable (since v1.14.0)
           mtime: '{{ .CommitDate }}'
-
-          # File mode.
           mode: 0644
 
     # Before and after hooks for each archive.

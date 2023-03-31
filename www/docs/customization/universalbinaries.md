@@ -23,11 +23,12 @@ universal_binaries:
   - build1
   - build2
 
-  # Universal binary name template.
+  # Universal binary name.
   #
   # You will want to change this if you have multiple builds!
   #
   # Default: '{{ .ProjectName }}'
+  # Templates: allowed
   name_template: '{{.ProjectName}}_{{.Version}}'
 
   # Whether to remove the previous single-arch binaries from the artifact list.
@@ -37,7 +38,8 @@ universal_binaries:
 
   # Hooks can be used to customize the final binary,
   # for example, to run generators.
-  # Those fields allow templates.
+  #
+  # Templates: allowed
   hooks:
     pre: rice embed-go
     post: ./script.sh {{ .Path }}

@@ -32,10 +32,14 @@ docker_manifests:
   # custom publishers).
   id: myimg
 
-  # Name template for the manifest.
+  # Name for the manifest.
+  #
+  # Templates: allowed
   name_template: "foo/bar:{{ .Version }}"
 
-  # Image name templates to be added to this manifest.
+  # Image name to be added to this manifest.
+  #
+  # Templates: allowed
   image_templates:
   - "foo/bar:{{ .Version }}-amd64"
   - "foo/bar:{{ .Version }}-arm64v8"

@@ -16,18 +16,24 @@ announce:
     enabled: true
 
     # Title template to use while publishing.
+    #
     # Default: '{{ .ProjectName }} {{ .Tag }} is out!'
+    # Templates: allowed
     title_template: 'GoReleaser {{ .Tag }} was just released!'
 
     # Message template to use while publishing.
+    #
     # Default: '{{ .ProjectName }} {{ .Tag }} is out! Check it out at {{ .ReleaseURL }}'
+    # Templates: allowed
     message_template: 'Awesome project {{.Tag}} is out!'
 
     # Color code of the message. You have to use hexadecimal.
+    #
     # Default: '#2D313E' (the grey-ish from GoReleaser)
     color: ''
 
     # URL to an image to use as the icon for the message.
+    #
     # Default: 'https://goreleaser.com/static/avatar.png'
     icon_url: ''
 ```

@@ -45,10 +45,11 @@ chocolateys:
     # It is a required field.
     project_url: https://example.com/
 
-    # Template for the url which is determined by the given Token (github,
+    # URL which is determined by the given Token (github,
     # gitlab or gitea).
     #
     # Default: depends on the git remote
+    # Templates: allowed
     url_template: "https://github.com/foo/bar/releases/download/{{ .Tag }}/{{ .ArtifactName }}"
 
     # App's icon.

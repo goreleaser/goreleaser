@@ -1,6 +1,6 @@
 # Docker Images with Ko
 
-> Since v1.15.0.
+> Since v1.15
 
 You can also use [ko][] to build and publish Docker container images.
 
@@ -41,7 +41,7 @@ kos:
 
   # Labels for the image.
   #
-  # Since v1.17.
+  # Since: v1.17
   labels:
     foo: bar
 
@@ -57,9 +57,10 @@ kos:
   - linux/amd64
   - linux/arm64
 
-  # Tag templates to build and push.
+  # Tag to build and push.
   #
   # Default: 'latest'
+  # Templates: allowed
   tags:
   - latest
   - '{{.Tag}}'
@@ -67,17 +68,20 @@ kos:
   # Creation time given to the image
   # in seconds since the Unix epoch as a string.
   #
-  # Since v1.17.
+  # Since: v1.17
+  # Templates: allowed
   creation_time: '{{.CommitTimestamp}}'
 
   # Creation time given to the files in the kodata directory
   # in seconds since the Unix epoch as a string.
   #
-  # Since v1.17.
+  # Since: v1.17
+  # Templates: allowed
   ko_data_creation_time: '{{.CommitTimestamp}}'
 
   # SBOM format to use.
   #
+  # Default: 'spdx'
   # Valid options are: spdx, cyclonedx, go.version-m and none.
   sbom: none
 
@@ -103,7 +107,7 @@ kos:
   - SOMETHING=value
 
 
-  # Bare uses a tag on the KO_DOCKER_REPO without anything additional.
+  # Bare uses a tag on the $KO_DOCKER_REPO without anything additional.
   bare: true
 
   # Whether to preserve the full import path after the repository name.

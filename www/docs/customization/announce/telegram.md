@@ -20,12 +20,13 @@ announce:
 
     # Integer representation of your channel
     #
-    # Templateable. (since v1.15)
+    # Templates: allowed (since v1.15)
     chat_id: 123456
 
     # Message template to use while publishing.
     #
     # Default: '{{ .ProjectName }} {{ .Tag }} is out! Check it out at {{ .ReleaseURL }}'
+    # Templates: allowed
     message_template: 'Awesome project {{.Tag}} is out!'
 ```
 

@@ -71,6 +71,8 @@ dockers:
     - mynfpm
 
     # Templates of the Docker image names.
+    #
+    # Templates: allowed
     image_templates:
     - "myuser/myimage:latest"
     - "myuser/myimage:{{ .Tag }}"
@@ -109,7 +111,9 @@ dockers:
     # Default: 'docker'
     use: docker
 
-    # Template of the docker build flags.
+    # Docker build flags.
+    #
+    # Templates: allowed
     build_flag_templates:
     - "--pull"
     - "--label=org.opencontainers.image.created={{.Date}}"
@@ -143,6 +147,7 @@ dockers:
     #
     # Since: v1.17 (pro)
     # This feature is only available in GoReleaser Pro.
+    # Templates: allowed
     templated_extra_files:
       - src: LICENSE.tpl
         dst: LICENSE.txt

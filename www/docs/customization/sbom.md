@@ -33,7 +33,7 @@ sboms:
     # Default: 'default'
     id: foo
 
-    # List of Names/templates of the SBOM documents created at this step
+    # List of names of the SBOM documents created at this step
     # (relative to the dist dir).
     #
     # Each element configured is made available as variables. For example:
@@ -43,13 +43,14 @@ sboms:
     #   document0: "foo"
     #   document1: "bar"
     #
-    # Default value is conditional based on the value of "artifacts":
-    #   - "binary":   ["{{ .Binary }}_{{ .Version }}_{{ .Os }}_{{ .Arch }}.sbom"]
-    #   - "any":      []
-    #   - otherwise:  ["{{ .ArtifactName }}.sbom"]
-    #
     # Note that multiple sbom values are only allowed if the value of
     # "artifacts" is "any".
+    #
+    # Default:
+    #   When "binary":   ["{{ .Binary }}_{{ .Version }}_{{ .Os }}_{{ .Arch }}.sbom"]
+    #   When "any":      []
+    #   Otherwise:       ["{{ .ArtifactName }}.sbom"]
+    # Templates: allowed
     documents:
       - "${artifact}.spdx.sbom"
 
@@ -60,9 +61,10 @@ sboms:
     # Default: 'syft'
     cmd: syft
 
-    # Command line templateable arguments for the command
+    # Command line arguments for the command
     #
     # Default: ["$artifact", "--file", "$document", "--output", "spdx-json"]
+    # Templates: allowed
     args: ["$artifact", "--file", "$sbom", "--output", "spdx-json"]
 
     # List of environment variables that will be passed to the SBOM command as
@@ -95,8 +97,8 @@ sboms:
 
 ### Available variable names
 
-These environment variables might be available in the fields that are
-templateable:
+These environment variables might be available in the fields that are accept
+templates:
 
 - `${artifact}`: the path to the artifact that will be cataloged (unless
   "artifacts" config item is "any")

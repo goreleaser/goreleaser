@@ -75,20 +75,26 @@ release:
   # Default is `keep-existing`.
   mode: append
 
-  # Header template for the release body.
+  # Header for the release body.
+  #
+  # Templates: allowed
   header: |
     ## Some title ({{ .Date }})
 
     Welcome to this new release!
 
-  # Footer template for the release body.
+  # Footer for the release body.
+  #
+  # Templates: allowed
   footer: |
     ## Thanks!
 
     Those were the changes on {{ .Tag }}!
 
   # You can change the name of the release.
+  #
   # Default: '{{.Tag}}' ('{{.PrefixedTag}}' on Pro)
+  # Templates: allowed
   name_template: "{{.ProjectName}}-v{{.Version}} {{.Env.USER}}"
 
   # You can disable this pipe in order to not create the release on any SCM.
@@ -109,7 +115,8 @@ release:
   # You can add extra pre-existing files to the release.
   # The filename on the release will be the last part of the path (base).
   # If another file with the same name exists, the last one found will be used.
-  # These globs can also include templates.
+  #
+  # Templates: allowed
   extra_files:
     - glob: ./path/to/file.txt
     - glob: ./glob/**/to/**/file/**/*
@@ -124,6 +131,7 @@ release:
   #
   # Since: v1.17 (pro)
   # This feature is only available in GoReleaser Pro.
+  # Templates: allowed
   templated_extra_files:
     - src: LICENSE.tpl
       dst: LICENSE.txt
@@ -154,7 +162,9 @@ release:
     - bar
 
   # You can change the name of the release.
+  #
   # Default: '{{.Tag}}' ('{{.PrefixedTag}}' on Pro)
+  # Templates: allowed
   name_template: "{{.ProjectName}}-v{{.Version}} {{.Env.USER}}"
 
   # You can disable this pipe in order to not upload any artifacts.
@@ -174,7 +184,8 @@ release:
   # You can add extra pre-existing files to the release.
   # The filename on the release will be the last part of the path (base).
   # If another file with the same name exists, the last one found will be used.
-  # These globs can also include templates.
+  #
+  # Templates: allowed
   extra_files:
     - glob: ./path/to/file.txt
     - glob: ./glob/**/to/**/file/**/*
@@ -212,6 +223,7 @@ release:
   # You can change the name of the release.
   #
   # Default: '{{.Tag}}' ('{{.PrefixedTag}}' on Pro)
+  # Templates: allowed
   name_template: "{{.ProjectName}}-v{{.Version}} {{.Env.USER}}"
 
   # You can disable this pipe in order to not upload any artifacts.
@@ -231,7 +243,8 @@ release:
   # You can add extra pre-existing files to the release.
   # The filename on the release will be the last part of the path (base).
   # If another file with the same name exists, the last one found will be used.
-  # These globs can also include templates.
+  #
+  # Templates: allowed
   extra_files:
     - glob: ./path/to/file.txt
     - glob: ./glob/**/to/**/file/**/*

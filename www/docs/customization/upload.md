@@ -179,7 +179,9 @@ uploads:
     # Default: 'archive'
     mode: archive
 
-    # Template of the URL to be used as target of the HTTP request
+    # URL to be used as target of the HTTP request
+    #
+    # Templates: allowed
     target: https://some.server/some/path/example-repo-local/{{ .ProjectName }}/{{ .Version }}/
 
     # Custom artifact name.
@@ -193,6 +195,7 @@ uploads:
     username: deployuser
 
     # Client certificate and key (when provided, added as client cert to TLS connections)
+    #
     # Since: v1.11
     client_x509_cert: /path/to/client.cert.pem
     client_x509_key: /path/to/client.key.pem

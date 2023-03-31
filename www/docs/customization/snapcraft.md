@@ -26,10 +26,13 @@ snapcrafts:
     - bar
 
     # You can change the name of the package.
+    #
     # Default: '{{ .ProjectName }}_{{ .Version }}_{{ .Os }}_{{ .Arch }}{{ with .Arm }}v{{ . }}{{ end }}{{ with .Mips }}_{{ . }}{{ end }}{{ if not (eq .Amd64 "v1") }}{{ .Amd64 }}{{ end }}'
+    # Templates: allowed
     name_template: "{{ .ProjectName }}_{{ .Version }}_{{ .Os }}_{{ .Arch }}"
 
     # The name of the snap. This is optional.
+    #
     # Default: ProjectName
     name: drumroll
 
@@ -49,12 +52,12 @@ snapcrafts:
 
     # Channels in store where snap will be pushed.
     #
-    # Default: depends on grade:
-    # * `stable` = ["edge", "beta", "candidate", "stable"]
-    # * `devel` = ["edge", "beta"]
     # More info about channels here:
     # https://snapcraft.io/docs/reference/channels
     #
+    # Default:
+    #   grade is 'stable': ["edge", "beta", "candidate", "stable"]
+    #   grade is 'devel': ["edge", "beta"]
     # Templates: allowed (since v1.15)
     channel_templates:
       - edge
@@ -107,6 +110,7 @@ snapcrafts:
     #
     # Since: v1.17 (pro)
     # This feature is only available in GoReleaser Pro.
+    # Templates: allowed
     templated_extra_files:
       - source: LICENSE.tpl
         destination: LICENSE.txt
@@ -208,6 +212,7 @@ snapcrafts:
         completer: drumroll-completion.bash
 
         # You can override the command name.
+        #
         # Default: AppName
         command: bin/drumroll.wrapper
 

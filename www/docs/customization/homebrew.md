@@ -14,14 +14,14 @@ for more details.
 # .goreleaser.yaml
 brews:
   -
-    # Name template of the recipe
-    # Default to project name
+    # Name of the recipe
+    #
+    # Default: ProjectName
+    # Templates: allowed
     name: myproject
 
     # IDs of the archives to use.
     # Empty means all IDs.
-    #
-    # Default: []
     ids:
     - foo
     - bar
@@ -29,13 +29,15 @@ brews:
     # GOARM to specify which 32-bit arm version to use if there are multiple
     # versions from the build section. Brew formulas support only one 32-bit
     # version.
-    # Default is 6 for all artifacts or each id if there a multiple versions.
+    #
+    # Default: 6
     goarm: 6
 
     # GOAMD64 to specify which amd64 version to use if there are multiple
     # versions from the build section.
-    # Default is v1.
-    goamd64: v3
+    #
+    # Default: v1
+    goamd64: v1
 
     # NOTE: make sure the url_template, the token and given repo (github or
     # gitlab) owner and name are from the same kind.
@@ -44,65 +46,67 @@ brews:
 
     # GitHub/GitLab repository to push the formula to
     tap:
-      # Repository owner template. (templateable)
+      # Repository owner.
+      #
+      # Templates: allowed
       owner: user
 
-      # Repository name. (templateable)
+      # Repository name.
+      #
+      # Templates: allowed
       name: homebrew-tap
 
-      # Optionally a branch can be provided. (templateable)
+      # Optionally a branch can be provided.
       #
       # Default: default repository branch.
+      #
+      # Templates: allowed
       branch: main
 
       # Optionally a token can be provided, if it differs from the token
       # provided to GoReleaser
       token: "{{ .Env.HOMEBREW_TAP_GITHUB_TOKEN }}"
 
-    # Template for the url which is determined by the given Token (github,
-    # gitlab or gitea)
+    # URL which is determined by the given Token (github, gitlab or gitea).
     #
     # Default depends on the client.
+    # Templates: allowed
     url_template: "https://github.mycompany.com/foo/bar/releases/download/{{ .Tag }}/{{ .ArtifactName }}"
 
     # Allows you to set a custom download strategy. Note that you'll need
     # to implement the strategy and add it to your tap repository.
     # Example: https://docs.brew.sh/Formula-Cookbook#specifying-the-download-strategy-explicitly
-    # Default is empty.
     download_strategy: CurlDownloadStrategy
 
     # Allows you to add a custom require_relative at the top of the formula
     # template.
-    # Default is empty
     custom_require: custom_download_strategy
 
     # Git author used to commit to the repository.
-    # Defaults are shown.
     commit_author:
       name: goreleaserbot
       email: bot@goreleaser.com
 
     # The project name and current git tag are used in the format string.
+    #
+    # Templates: allowed
     commit_msg_template: "Brew formula update for {{ .ProjectName }} version {{ .Tag }}"
 
     # Folder inside the repository to put the formula.
-    # Default is the root folder.
     folder: Formula
 
     # Caveats for the user of your binary.
-    # Default is empty.
     caveats: "How to use this binary"
 
     # Your app's homepage.
-    # Default is empty.
     homepage: "https://example.com/"
 
-    # Template of your app's description.
-    # Default is empty.
+    # Your app's description.
+    #
+    # Templates: allowed
     description: "Software to create fast and easy drum rolls."
 
     # SPDX identifier of your app's license.
-    # Default is empty.
     license: "MIT"
 
     # Setting this will prevent goreleaser to actually try to commit the updated
@@ -110,12 +114,10 @@ brews:
     # leaving the responsibility of publishing it to the user.
     # If set to auto, the release will not be uploaded to the homebrew tap
     # in case there is an indicator for prerelease in the tag e.g. v1.0.0-rc1
-    # Default is false.
     skip_upload: true
 
     # Custom block for brew.
     # Can be used to specify alternate downloads for devel or head releases.
-    # Default is empty.
     custom_block: |
       head "https://github.com/some/package.git"
       ...
@@ -140,7 +142,6 @@ brews:
       - bash
 
     # Specify for packages that run as a service.
-    # Default is empty.
     plist: |
       <?xml version="1.0" encoding="UTF-8"?>
       # ...
@@ -153,13 +154,12 @@ brews:
       # ...
 
     # So you can `brew test` your formula.
-    # Default is empty.
     test: |
       system "#{bin}/foo --version"
       # ...
 
     # Custom install script for brew.
-    # Default is 'bin.install "the binary name"'.
+    # Default: 'bin.install "BinaryName"'
     install: |
       bin.install "some_other_name"
       bash_completion.install "completions/foo.bash" => "foo"
@@ -167,7 +167,6 @@ brews:
 
     # Custom post_install script for brew.
     # Could be used to do any additional work after the "install" script
-    # Default is empty.
     post_install: |
     	etc.install "app-config.conf"
     	...

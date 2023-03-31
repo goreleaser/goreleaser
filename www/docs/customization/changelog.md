@@ -12,8 +12,7 @@ changelog:
   #
   # This may result in an empty release notes on GitHub/GitLab/Gitea.
   #
-  # Templateable since v1.16.0.
-  # Must evaluate to either true or false.
+  # Templates: allowed
   skip: '{{ .Env.CREATE_CHANGELOG }}'
 
   # Changelog generation implementation to use.
@@ -91,7 +90,6 @@ changelog:
 
   # Divider to use between groups.
   #
-  # Default: ''
   # Since: v1.16 (pro)
   # This feature is only available in GoReleaser Pro.
   divider: '---'
@@ -99,7 +97,6 @@ changelog:
   filters:
     # Commit messages matching the regexp listed here will be removed from
     # the changelog
-    # Default is empty
     exclude:
       - '^docs:'
       - typo

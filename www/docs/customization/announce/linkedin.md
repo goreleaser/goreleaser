@@ -16,7 +16,8 @@ announce:
     # Whether its enabled or not.
     enabled: true
 
-    # Message template to use while publishing.
+    # Message to use while publishing.
+    #
     # Default: '{{ .ProjectName }} {{ .Tag }} is out! Check it out at {{ .ReleaseURL }}'
     message_template: 'Awesome project {{.Tag}} is out!'
 ```

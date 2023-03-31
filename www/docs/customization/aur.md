@@ -33,7 +33,9 @@ aurs:
     # Your app's homepage.
     homepage: "https://example.com/"
 
-    # Template of your app's description.
+    # Your app's description.
+    #
+    # Templates: allowed
     description: "Software to create fast and easy drum rolls."
 
     # The maintainers of the package.
@@ -127,11 +129,14 @@ aurs:
       name: goreleaserbot
       email: bot@goreleaser.com
 
-    # Commit message template.
+    # Commit message.
+    #
     # Default: 'Update to {{ .Tag }}'
+    # Templates: allowed
     commit_msg_template: "pkgbuild updates"
 
     # If you build for multiple GOAMD64 versions, you may use this to choose which one to use.
+    #
     # Default: 'v1'.
     goamd64: v2
 
@@ -142,10 +147,11 @@ aurs:
     # Default: 'ssh -i {{ .KeyPath }} -o StrictHostKeyChecking=accept-new -F /dev/null'
     git_ssh_command: 'ssh -i {{ .Env.KEY }} -o SomeOption=yes'
 
-    # Template for the url which is determined by the given Token
+    # URL which is determined by the given Token
     # (github, gitlab or gitea).
     #
     # Default: depends on the client
+    # Templates: allowed
     url_template: "http://github.mycompany.com/foo/bar/releases/{{ .Tag }}/{{ .ArtifactName }}"
 ```
 

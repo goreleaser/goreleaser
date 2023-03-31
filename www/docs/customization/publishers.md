@@ -125,7 +125,8 @@ publishers:
     # You can publish extra pre-existing files.
     # The filename published will be the last part of the path (base).
     # If another file with the same name exists, the last one found will be used.
-    # These globs can also include templates.
+    #
+    # Templates: allowed
     extra_files:
       - glob: ./path/to/file.txt
       - glob: ./glob/**/to/**/file/**/*
@@ -140,6 +141,7 @@ publishers:
     #
     # Since: v1.17 (pro)
     # This feature is only available in GoReleaser Pro.
+    # Templates: allowed
     templated_extra_files:
       - src: LICENSE.tpl
         dst: LICENSE.txt

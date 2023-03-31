@@ -15,7 +15,7 @@ blobs:
     # - azblob for Azure Blob Storage
     # - gs for Google Cloud Storage
     #
-    # Templateable.
+    # Templates: allowed
     provider: azblob
 
     # Set a custom endpoint, useful if you're using a minio backend or
@@ -23,7 +23,7 @@ blobs:
     #
     # Implies s3ForcePathStyle and requires provider to be `s3`
     #
-    # Templateable.
+    # Templates: allowed
     endpoint: https://minio.foo.bar
 
     # Sets the bucket region.
@@ -36,9 +36,9 @@ blobs:
     # Requires provider to be `s3`
     disableSSL: true
 
-    # Template for the bucket name
+    # Bucket name.
     #
-    # Templateable.
+    # Templates: allowed
     bucket: goreleaser-bucket
 
     # IDs of the artifacts you want to upload.
@@ -46,13 +46,16 @@ blobs:
     - foo
     - bar
 
-    # Template for the path/name inside the bucket.
+    # Path/name inside the bucket.
+    #
     # Default: '{{ .ProjectName }}/{{ .Tag }}'
+    # Templates: allowed
     folder: "foo/bar/{{.Version}}"
 
-    # Template to disable this particular upload configuration.
+    # Whether to disable this particular upload configuration.
     #
     # Since: v1.17
+    # Templates: allowed
     disable: '{{ neq .BLOB_UPLOAD_ONLY "foo" }}'
 
     # You can add extra pre-existing files to the bucket.
@@ -64,6 +67,7 @@ blobs:
       - glob: ./glob/**/to/**/file/**/*
       - glob: ./glob/foo/to/bar/file/foobar/override_from_previous
       - glob: ./single_file.txt
+        # Templates: allowed
         name_template: file.txt # note that this only works if glob matches 1 file only
 
 
@@ -73,6 +77,7 @@ blobs:
     #
     # Since: v1.17 (pro)
     # This feature is only available in GoReleaser Pro.
+    # Templates: allowed
     templated_extra_files:
       - src: LICENSE.tpl
         dst: LICENSE.txt

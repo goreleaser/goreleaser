@@ -18,10 +18,14 @@ announce:
     slug: 'goreleaser'
 
     # Title for the update
+    #
     # Default: '{{ .Tag }}'
+    # Templates: allowed
     title_template: 'Release of {{ .Tag }}'
 
-    # Message template to use while publishing. It can be HTML!
+    # Message to use while publishing. It can be HTML!
+    #
     # Default: '{{ .ProjectName }} {{ .Tag }} is out!<br/>Check it out at <a href="{{ .ReleaseURL }}">{{ .ReleaseURL }}</a>'
+    # Templates: allowed
     message_template: 'Awesome project {{.Tag}} is out!'
 ```

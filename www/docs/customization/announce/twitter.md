@@ -24,7 +24,9 @@ announce:
     enabled: true
 
     # Message template to use while publishing.
+    #
     # Default: '{{ .ProjectName }} {{ .Tag }} is out! Check it out at {{ .ReleaseURL }}'
+    # Templates: allowed
     message_template: 'Awesome project {{.Tag}} is out!'
 ```
 

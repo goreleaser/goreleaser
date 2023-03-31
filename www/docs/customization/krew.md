@@ -11,7 +11,8 @@ The `krews` section specifies how the plugins should be created:
 # .goreleaser.yaml
 krews:
   -
-    # Name template of the recipe
+    # Name of the recipe
+    #
     # Default: ProjectName
     name: myproject
 
@@ -23,11 +24,13 @@ krews:
     # GOARM to specify which 32-bit arm version to use if there are multiple
     # versions from the build section. Krew plugin supports at this moment only
     # one 32-bit version.
+    #
     # Default: 6
     goarm: 6
 
     # GOAMD64 to specify which amd64 version to use if there are multiple
     # versions from the build section.
+    #
     # Default: 'v1'
     goamd64: v3
 
@@ -38,26 +41,32 @@ krews:
     # GitHub/GitLab repository to push the Krew plugin to
     # Gitea is not supported yet, but the support coming
     index:
-      # Repository owner template. (templateable)
+      # Repository owner.
+      #
+      # Templates: allowed
       owner: user
 
-      # Repository name. (templateable)
+      # Repository name.
+      #
+      # Templates: allowed
       name: krew-plugins
 
-      # Optionally a branch can be provided. (templateable)
+      # Optionally a branch can be provided.
       #
       # Default: default repository branch
+      # Templates: allowed
       branch: main
 
       # Optionally a token can be provided, if it differs from the token
       # provided to GoReleaser
       token: "{{ .Env.HOMEBREW_TAP_GITHUB_TOKEN }}"
 
-    # Template for the url which is determined by the given Token (github or
+    # URL which is determined by the given Token (github or
     # gitlab)
-    # Default for GitHub: 'https://github.com/<repo_owner>/<repo_name>/releases/download/{{ .Tag }}/{{ .ArtifactName }}'
-    # Default for GitLab: 'https://gitlab.com/<repo_owner>/<repo_name>/-/releases/{{ .Tag }}/downloads/{{ .ArtifactName }}'
-    # Default for Gitea: 'https://gitea.com/<repo_owner>/<repo_name>/releases/download/{{ .Tag }}/{{ .ArtifactName }}'
+    # Default:
+    #   GitHub: 'https://github.com/<repo_owner>/<repo_name>/releases/download/{{ .Tag }}/{{ .ArtifactName }}'
+    #   GitLab: 'https://gitlab.com/<repo_owner>/<repo_name>/-/releases/{{ .Tag }}/downloads/{{ .ArtifactName }}'
+    #   Gitea: 'https://gitea.com/<repo_owner>/<repo_name>/releases/download/{{ .Tag }}/{{ .ArtifactName }}'
     url_template: "http://github.mycompany.com/foo/bar/releases/{{ .Tag }}/{{ .ArtifactName }}"
 
     # Git author used to commit to the repository.
@@ -71,12 +80,16 @@ krews:
     # Your app's homepage.
     homepage: "https://example.com/"
 
-    # Template of your app's description.
+    # Your app's description.
     # The usual guideline for this is to wrap the line at 80 chars.
+    #
+    # Templates: allowed
     description: "Software to create fast and easy drum rolls."
 
-    # Template of your app's short description.
+    # Your app's short description.
     # The usual guideline for this is to be at most 50 chars long.
+    #
+    # Templates: allowed
     short_description: "Software to create fast and easy drum rolls."
 
     # Caveats for the user of your binary.

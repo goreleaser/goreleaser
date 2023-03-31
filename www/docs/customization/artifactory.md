@@ -154,6 +154,7 @@ artifactories:
     # Upload mode. Valid options are `binary` and `archive`.
     # If mode is `archive`, variables _Os_, _Arch_ and _Arm_ for target name are not supported.
     # In that case these variables are empty.
+    #
     # Default: 'archive'
     mode: archive
 

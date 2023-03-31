@@ -37,8 +37,9 @@ furies:
 
     # Skip the announcing feature in some conditions, for instance, when
     # publishing patch releases.
-    # Valid options are `true`, `false`, empty, or a
-    # template that evaluates to a boolean (`true` or `false`).
+    # Any value different of 'true' will be considered 'false'.
+    #
+    # Templates: allowed
     skip: "{{gt .Patch 0}}"
 
     # Environment variable name to get the push token from.
@@ -55,6 +56,7 @@ furies:
 
     # Formats to upload.
     # Available options are `deb` and `rpm`.
+    #
     # Default: ['deb', 'rpm']
     formats:
       - deb

@@ -38,12 +38,17 @@ GoReleaser allows this with the global hooks feature.
     # .goreleaser.yaml
     # global before hooks
     before:
-      # Templates for the commands to be ran.
+      # Commands to be ran.
+      #
+      # Templates: allowed
       hooks:
       - make clean # simple string
       - cmd: go generate ./... # specify cmd
       - cmd: go mod tidy
-        output: true # always prints command output. Since GoReleaser v1.5.
+        # Always prints command output.
+        #
+        # Since: v1.5
+        output: true
         dir: ./submodule # specify command working directory
       - cmd: touch {{ .Env.FILE_TO_TOUCH }}
         env:
@@ -51,7 +56,9 @@ GoReleaser allows this with the global hooks feature.
 
     # global after hooks
     after:
-      # Templates for the commands to be ran.
+      # Commands to be ran.
+      #
+      # Templates: allowed
       hooks:
       - make clean
       - cmd: cat *.yaml

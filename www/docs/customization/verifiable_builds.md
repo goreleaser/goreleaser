@@ -17,8 +17,6 @@ gomod:
   # This will only be effective if running against a tag. Snapshots will ignore
   # this setting.
   # Notice: for this to work your `build.main` must be a package, not a `.go` file.
-  #
-  # Default: false.
   proxy: true
 
   # If proxy is true, use these environment variables when running `go mod`
@@ -32,7 +30,6 @@ gomod:
 
   # Sets the `-mod` flag value.
   #
-  # Default: ''
   # Since: v1.7
   mod: mod
 

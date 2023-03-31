@@ -11,6 +11,7 @@ checksum:
   # You can change the name of the checksums file.
   #
   # Default: {{ .ProjectName }}_{{ .Version }}_checksums.txt
+  # Templates: allowed
   name_template: "{{ .ProjectName }}_checksums.txt"
 
   # Algorithm to be used.
@@ -33,7 +34,8 @@ checksum:
   # You can add extra pre-existing files to the checksums file.
   # The filename on the checksum will be the last part of the path (base).
   # If another file with the same name exists, the last one found will be used.
-  # These globs can also include templates.
+  #
+  # Templates: allowed
   extra_files:
     - glob: ./path/to/file.txt
     - glob: ./glob/**/to/**/file/**/*
@@ -48,6 +50,7 @@ checksum:
   #
   # Since: v1.17 (pro)
   # This feature is only available in GoReleaser Pro.
+  # Templates: allowed
   templated_extra_files:
     - src: LICENSE.tpl
       dst: LICENSE.txt

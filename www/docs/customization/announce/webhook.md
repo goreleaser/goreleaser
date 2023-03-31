@@ -23,10 +23,13 @@ announce:
     skip_tls_verify: true
 
     # Message template to use while publishing.
+    #
     # Default: '{{ .ProjectName }} {{ .Tag }} is out! Check it out at {{ .ReleaseURL }}'
+    # Templates: allowed
     message_template: '{ "title": "Awesome project {{.Tag}} is out!"}'
 
     # Content type to use.
+    #
     # Default: 'application/json; charset=utf-8'
     content_type: "application/json"
 

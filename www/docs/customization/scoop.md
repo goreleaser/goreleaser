@@ -9,23 +9,31 @@ commented example below:
 ```yaml
 # .goreleaser.yaml
 scoop:
-  # Template for the url which is determined by the given Token (github or gitlab)
-  # Default for github is "https://github.com/<repo_owner>/<repo_name>/releases/download/{{ .Tag }}/{{ .ArtifactName }}"
-  # Default for gitlab is "https://gitlab.com/<repo_owner>/<repo_name>/-/releases/{{ .Tag }}/downloads/{{ .ArtifactName }}"
-  # Default for gitea is "https://gitea.com/<repo_owner>/<repo_name>/releases/download/{{ .Tag }}/{{ .ArtifactName }}"
+  # URL which is determined by the given Token (github or gitlab)
+  #
+  # Default:
+  #   GitHub: 'https://github.com/<repo_owner>/<repo_name>/releases/download/{{ .Tag }}/{{ .ArtifactName }}'
+  #   GitLab: 'https://gitlab.com/<repo_owner>/<repo_name>/-/releases/{{ .Tag }}/downloads/{{ .ArtifactName }}'
+  #   Gitea: 'https://gitea.com/<repo_owner>/<repo_name>/releases/download/{{ .Tag }}/{{ .ArtifactName }}'
+  # Templates: allowed
   url_template: "http://github.mycompany.com/foo/bar/releases/{{ .Tag }}/{{ .ArtifactName }}"
 
   # Repository to push the app manifest to.
   bucket:
-    # Repository owner template. (templateable)
+    # Repository owner.
+    #
+    # Templates: allowed
     owner: user
 
-    # Repository name. (templateable)
+    # Repository name.
+    #
+    # Templates: allowed
     name: scoop-bucket
 
-    # Optionally a branch can be provided. (templateable)
+    # Optionally a branch can be provided.
     #
     # Default: the repository default branch
+    # Templates: allowed
     branch: main
 
     # Optionally a token can be provided, if it differs from the token provided
@@ -41,6 +49,8 @@ scoop:
     email: bot@goreleaser.com
 
   # The project name and current git tag are used in the format string.
+  #
+  # Templates: allowed
   commit_msg_template: "Scoop update for {{ .ProjectName }} version {{ .Tag }}"
 
   # Your app's homepage.
@@ -84,7 +94,7 @@ scoop:
   # GOAMD64 to specify which amd64 version to use if there are multiple versions
   # from the build section.
   #
-  # Default: v1
+  # Default: 'v1'
   goamd64: v3
 ```
 
