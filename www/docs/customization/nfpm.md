@@ -12,11 +12,11 @@ nfpms:
   -
     # ID of the nfpm config, must be unique.
     #
-    # Defaults: 'default'
+    # Default: 'default'
     id: foo
 
     # Name of the package.
-    # Defaults: ProjectName
+    # Default: ProjectName
     package_name: foo
 
     # You can change the file name of the package.

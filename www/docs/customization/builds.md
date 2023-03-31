@@ -575,11 +575,11 @@ builds:
     buildmode: "c-shared"  # or "c-archive" for a static library
 ```
 
-## Complex templated environment variables
+## Complex template environment variables
 
 > Since v1.14
 
-Builds environment variables are templateable.
+Builds environment variables accept templates.
 
 You can leverage that to have a single build configuration with different
 environment variables for each platform, for example.
