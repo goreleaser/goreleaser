@@ -60,6 +60,13 @@ step:
 - run all the publishers
 - run all the announcers
 
+!!! warning
+    Please notice that this step will not run anything that the previous step
+    already did.
+    For example, it will not build anything again, nor run any `hooks` you have
+    defined.
+    It will only merge the previous results and publish them.
+
 You can also run the publishing and announce steps separately:
 
 ```bash
