@@ -19,24 +19,19 @@ nightly:
   # for example).
   #
   # Default is `{{ incpatch .Version }}-{{ .ShortCommit }}-nightly`.
+  # Templates: allowed
   name_template: '{{ incpatch .Version }}-devel'
 
   # Tag name to create if publish_release is enabled.
-  #
-  # Default is `nightly`
   tag_name: devel
 
   # Whether to publish a release or not.
   # Only works on GitHub.
-  #
-  # Default is `false`.
   publish_release: true
 
   # Whether to delete previous pre-releases for the same `tag_name` when
   # releasing.
   # This allows you to keep a single pre-release.
-  #
-  # Default is `false`.
   keep_single_release: true
 ```
 

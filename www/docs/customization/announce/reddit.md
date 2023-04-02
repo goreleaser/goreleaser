@@ -13,7 +13,6 @@ Then, you can add something like the following to your `.goreleaser.yaml` config
 announce:
   reddit:
     # Whether its enabled or not.
-    # Defaults to false.
     enabled: true
 
     # Application ID for Reddit Application
@@ -23,11 +22,15 @@ announce:
     username: ""
 
     # URL template to use while publishing.
-    # Defaults to `{{ .ReleaseURL }}`
+    #
+    # Default: '{{ .ReleaseURL }}'
+    # Templates: allowed
     url_template: 'https://github.com/goreleaser/goreleaser/releases/tag/{{ .Tag }}'
 
     # Title template to use while publishing.
-    # Defaults to `{{ .ProjectName }} {{ .Tag }} is out!`
+    #
+    # Default: '{{ .ProjectName }} {{ .Tag }} is out!'
+    # Templates: allowed
     title_template: ''GoReleaser {{ .Tag }} was just released!''
 ```
 

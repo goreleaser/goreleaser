@@ -106,10 +106,10 @@ publishers:
      - foo
      - bar
 
-    # Publish checksums (defaults to false)
+    # Publish checksums.
     checksum: true
 
-    # Publish signatures (defaults to false)
+    # Publish signatures.
     signature: true
 
     # Working directory in which to execute the command
@@ -125,9 +125,8 @@ publishers:
     # You can publish extra pre-existing files.
     # The filename published will be the last part of the path (base).
     # If another file with the same name exists, the last one found will be used.
-    # These globs can also include templates.
     #
-    # Defaults to empty.
+    # Templates: allowed
     extra_files:
       - glob: ./path/to/file.txt
       - glob: ./glob/**/to/**/file/**/*
@@ -140,9 +139,9 @@ publishers:
     # Those files will have their contents pass through the template engine,
     # and its results will be published.
     #
-    # Default: empty
     # Since: v1.17 (pro)
     # This feature is only available in GoReleaser Pro.
+    # Templates: allowed
     templated_extra_files:
       - src: LICENSE.tpl
         dst: LICENSE.txt

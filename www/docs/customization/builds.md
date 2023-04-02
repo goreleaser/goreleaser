@@ -13,7 +13,8 @@ builds:
   # You can have multiple builds defined as a yaml list
   -
     # ID of the build.
-    # Defaults to the binary name.
+    #
+    # Default: Binary name
     id: "my-build"
 
     # Path to main.go file or main package.
@@ -24,29 +25,35 @@ builds:
 
     # Binary name.
     # Can be a path (e.g. `bin/app`) to wrap the binary in a directory.
-    # Default is the name of the project directory.
+    #
+    # Default: Project directory name
     binary: program
 
-    # Custom flags templates.
-    # Default is empty.
+    # Custom flags.
+    #
+    # Templates: allowed
     flags:
       - -tags=dev
       - -v
 
-    # Custom asmflags templates.
-    # Default is empty.
+    # Custom asmflags.
+    #
+    # Templates: allowed
     asmflags:
       - -D mysymbol
       - all=-trimpath={{.Env.GOPATH}}
 
-    # Custom gcflags templates.
-    # Default is empty.
+    # Custom gcflags.
+    #
+    # Templates: allowed
     gcflags:
       - all=-trimpath={{.Env.GOPATH}}
       - ./dontoptimizeme=-N
 
-    # Custom ldflags templates.
-    # Default is `-s -w -X main.version={{.Version}} -X main.commit={{.Commit}} -X main.date={{.Date}} -X main.builtBy=goreleaser`.
+    # Custom ldflags.
+    #
+    # Default: 's -w -X main.version={{.Version}} -X main.commit={{.Commit}} -X main.date={{.Date}} -X main.builtBy=goreleaser'
+    # Templates: allowed
     ldflags:
       - -s -w -X main.build={{.Version}}
       - ./usemsan=-msan
@@ -57,12 +64,10 @@ builds:
     # - `c-shared`
     # - `c-archive`
     #
-    # Since GoReleaser v1.13.
-    # Default is empty.
+    # Since: v1.13
     buildmode: c-shared
 
     # Custom build tags templates.
-    # Default is empty.
     tags:
       - osusergo
       - netgo
@@ -70,12 +75,10 @@ builds:
       - feature
 
     # Custom environment variables to be set during the builds.
-    #
-    # This field is templateable. Since v1.14.
-    #
     # Invalid environment variables will be ignored.
     #
-    # Default: `os.Environ()` merged with what you set the root `env` section.
+    # Default: os.Environ() ++ env config section
+    # Templates: allowed (since v1.14)
     env:
       - CGO_ENABLED=0
       # complex, templated envs (v1.14+):
@@ -90,14 +93,16 @@ builds:
 
     # GOOS list to build for.
     # For more info refer to: https://golang.org/doc/install/source#environment
-    # Defaults are darwin, linux, and windows.
+    #
+    # Default: [ 'darwin', 'linux', 'windows' ]
     goos:
       - freebsd
       - windows
 
     # GOARCH to build for.
     # For more info refer to: https://golang.org/doc/install/source#environment
-    # Defaults are 386, amd64 and arm64.
+    #
+    # Default: [ '386', 'amd64', 'arm64' ]
     goarch:
       - amd64
       - arm
@@ -105,27 +110,29 @@ builds:
 
     # GOARM to build for when GOARCH is arm.
     # For more info refer to: https://golang.org/doc/install/source#environment
-    # Default is only 6.
+    #
+    # Default: [ 6 ]
     goarm:
       - 6
       - 7
 
     # GOAMD64 to build when GOARCH is amd64.
     # For more info refer to: https://golang.org/doc/install/source#environment
-    # Default is only v1.
+    #
+    # Default: [ 'v1' ]
     goamd64:
       - v2
       - v3
 
     # GOMIPS and GOMIPS64 to build when GOARCH is mips, mips64, mipsle or mips64le.
     # For more info refer to: https://golang.org/doc/install/source#environment
-    # Default is only hardfloat.
+    #
+    # Default: [ 'hardfloat' ]
     gomips:
       - hardfloat
       - softfloat
 
     # List of combinations of GOOS + GOARCH + GOARM to ignore.
-    # Default is empty.
     ignore:
       - goos: darwin
         goarch: 386
@@ -144,15 +151,15 @@ builds:
     #
     # Special values:
     # - go_118_first_class: evaluates to the first-class ports of go1.18.
-    #   Since GoReleaser v1.9.
     # - go_first_class: evaluates to latest stable go first-class ports,
     #   currently same as 1.18.
-    #   Since GoReleaser v1.9.
     #
     # This overrides `goos`, `goarch`, `goarm`, `gomips`, `goamd64` and
     # `ignores`.
     targets:
+      # Since: v1.9
       - go_first_class
+      # Since: v1.9
       - go_118_first_class
       - linux_amd64_v1
       - darwin_arm64
@@ -170,26 +177,24 @@ builds:
     # It is safe to ignore this option in most cases.
     #
     # Default: build.
-    # Since: v1.9.
+    # Since: v1.9
     command: test
 
     # Set the modified timestamp on the output binary, typically
     # you would do this to ensure a build was reproducible. Pass
     # empty string to skip modifying the output.
-    # Default is empty string, which will be the compile time.
     mod_timestamp: '{{ .CommitTimestamp }}'
 
     # Hooks can be used to customize the final binary,
     # for example, to run generators.
-    # Those fields allow templates.
-    # Default is both hooks empty.
+    #
+    # Templates: allowed
     hooks:
       pre: rice embed-go
       post: ./script.sh {{ .Path }}
 
     # If true, skip the build.
     # Useful for library projects.
-    # Default is false
     skip: false
 
     # By default, GoReleaser will create your binaries inside
@@ -201,8 +206,6 @@ builds:
     # created, you can set this property.
     # If you do, you are responsible for keeping different builds from
     # overriding each other.
-    #
-    # Defaults to `false`.
     no_unique_dist_dir: true
 
     # By default, GoReleaser will check if the main filepath has a main
@@ -210,8 +213,7 @@ builds:
     # This can be used to skip that check, in case you're building tests, for
     # example.
     #
-    # Default: false.
-    # Since: v1.9.
+    # Since: v1.9
     no_main_check: true
 
     # Path to project's (sub)directory containing Go code.
@@ -219,21 +221,22 @@ builds:
     # If dir does not contain a `go.mod` file, and you are using `gomod.proxy`,
     # produced binaries will be invalid.
     # You would likely want to use `main` instead of this.
-    # Default is `.`.
+    #
+    # Default: '.'
     dir: go
 
     # Builder allows you to use a different build implementation.
     # This is a GoReleaser Pro feature.
     # Valid options are: `go` and `prebuilt`.
-    # Defaults to `go`.
+    #
+    # Default: 'go'
     builder: prebuilt
 
     # Overrides allows to override some fields for specific targets.
     # This can be specially useful when using CGO.
     # Note: it'll only match if the full target matches.
     #
-    # Default: empty.
-    # Since: v1.5.
+    # Since: v1.5
     overrides:
       - goos: darwin
         goarch: arm64
@@ -364,7 +367,9 @@ builds:
       pre:
        - cmd: first-script.sh
          dir: "{{ dir .Dist}}"
-         output: true # always print command output, otherwise only visible in debug mode. Since GoReleaser v1.5.
+          # Always print command output, otherwise only visible in debug mode.
+          # Since: v1.5
+         output: true
          env:
           - HOOK_SPECIFIC_VAR={{ .Env.GLOBAL_VAR }}
        - second-script.sh
@@ -439,8 +444,7 @@ GoReleaser:
 !!! success "GoReleaser Pro"
     The prebuilt builder is a [GoReleaser Pro feature](/pro/).
 
-Since GoReleaser Pro v0.179.0, it is possible to import pre-built binaries into
-the GoReleaser lifecycle.
+It is also possible to import pre-built binaries into the GoReleaser lifecycle.
 
 Reasons you might want to do that include:
 
@@ -544,7 +548,7 @@ You can read more about it
 
 ## Building shared or static libraries
 
-> Since: v1.13.0
+> Since: v1.13
 
 GoReleaser supports compiling and releasing C shared or static libraries, by
 configuring the [Go build mode](https://pkg.go.dev/cmd/go#hdr-Build_modes).
@@ -571,11 +575,11 @@ builds:
     buildmode: "c-shared"  # or "c-archive" for a static library
 ```
 
-## Complex templated environment variables
+## Complex template environment variables
 
-> Since v1.14.0.
+> Since v1.14
 
-Builds environment variables are templateable.
+Builds environment variables accept templates.
 
 You can leverage that to have a single build configuration with different
 environment variables for each platform, for example.

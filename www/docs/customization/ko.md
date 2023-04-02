@@ -1,6 +1,6 @@
 # Docker Images with Ko
 
-> Since v1.15.0.
+> Since v1.15
 
 You can also use [ko][] to build and publish Docker container images.
 
@@ -26,41 +26,41 @@ kos:
 
   # Main path to build.
   #
-  # Defaults to the build's main.
+  # Default: build.main
   main: ./cmd/...
 
   # Working directory used to build.
   #
-  # Defaults to the build's dir.
+  # Default: build.dir
   working_dir: .
 
   # Base image to publish to use.
   #
-  # Defaults to cgr.dev/chainguard/static.
+  # Default: 'cgr.dev/chainguard/static'
   base_image: alpine
 
   # Labels for the image.
   #
-  # Defaults to null.
-  # Since v1.17.
+  # Since: v1.17
   labels:
     foo: bar
 
   # Repository to push to.
   #
-  # Defaults to the value of $KO_DOCKER_REPO.
+  # Default: $KO_DOCKER_REPO
   repository: ghcr.io/foo/bar
 
   # Platforms to build and publish.
   #
-  # Defaults to linux/amd64.
+  # Default: 'linux/amd64'
   platforms:
   - linux/amd64
   - linux/arm64
 
-  # Tag templates to build and push.
+  # Tag to build and push.
   #
-  # Defaults to `latest`.
+  # Default: 'latest'
+  # Templates: allowed
   tags:
   - latest
   - '{{.Tag}}'
@@ -68,58 +68,52 @@ kos:
   # Creation time given to the image
   # in seconds since the Unix epoch as a string.
   #
-  # Defaults to empty string.
-  # Since v1.17.
+  # Since: v1.17
+  # Templates: allowed
   creation_time: '{{.CommitTimestamp}}'
 
   # Creation time given to the files in the kodata directory
   # in seconds since the Unix epoch as a string.
   #
-  # Defaults to empty string.
-  # Since v1.17.
+  # Since: v1.17
+  # Templates: allowed
   ko_data_creation_time: '{{.CommitTimestamp}}'
 
   # SBOM format to use.
   #
-  # Defaults to spdx.
+  # Default: 'spdx'
   # Valid options are: spdx, cyclonedx, go.version-m and none.
   sbom: none
 
   # Ldflags to use on build.
   #
-  # Defaults to the build's ldflags.
+  # Default: build.ldflags
   ldflags:
   - foo
   - bar
 
   # Flags to use on build.
   #
-  # Defaults to the build's flags.
+  # Default: build.flags
   flags:
   - foo
   - bar
 
   # Env to use on build.
   #
-  # Defaults to the build's env.
+  # Default: build.env
   env:
   - FOO=bar
   - SOMETHING=value
 
 
-  # Bare uses a tag on the KO_DOCKER_REPO without anything additional.
-  #
-  # Defaults to false.
+  # Bare uses a tag on the $KO_DOCKER_REPO without anything additional.
   bare: true
 
   # Whether to preserve the full import path after the repository name.
-  #
-  # Defaults to false.
   preserve_import_paths: true
 
   # Whether to use the base path without the MD5 hash after the repository name.
-  #
-  # Defaults to false.
   base_import_paths: true
 ```
 

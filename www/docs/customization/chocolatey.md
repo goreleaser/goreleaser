@@ -1,6 +1,6 @@
 # Chocolatey Packages
 
-> Since: v1.13.0
+> Since: v1.13
 
 GoReleaser can also generate `nupkg` packages.
 [Chocolatey](http://chocolatey.org/) are packages based on `nupkg` format, that
@@ -19,44 +19,43 @@ chocolateys:
     # The value may not contain spaces or character that are not valid for a URL.
     # If you want a good separator for words, use '-', not  '.'.
     #
-    # Defaults to `ProjectName`.
+    # Default: ProjectName
     name: foo
 
     # IDs of the archives to use.
-    # Defaults to empty, which includes all artifacts.
+    # Empty means all IDs.
     ids:
       - foo
       - bar
 
     # Your app's owner.
     # It basically means your.
-    # Defaults empty.
     owners: Drum Roll Inc
 
     # The app's title.
     # A human-friendly title of the package.
-    # Defaults to `ProjectName`.
+    #
+    # Default: ProjectName
     title: Foo Bar
 
     # Your app's authors (probably you).
-    # Defaults are shown below.
     authors: Drummer
 
     # Your app's project url.
     # It is a required field.
     project_url: https://example.com/
 
-    # Template for the url which is determined by the given Token (github,
-    # gitlab or gitea)
-    # Default depends on the client.
+    # URL which is determined by the given Token (github,
+    # gitlab or gitea).
+    #
+    # Default: depends on the git remote
+    # Templates: allowed
     url_template: "https://github.com/foo/bar/releases/download/{{ .Tag }}/{{ .ArtifactName }}"
 
     # App's icon.
-    # Default is empty.
     icon_url: 'https://rawcdn.githack.com/foo/bar/efbdc760-395b-43f1-bf69-ba25c374d473/icon.png'
 
     # Your app's copyright details.
-    # Default is empty.
     copyright: 2022 Drummer Roll Inc
 
     # App's license information url.
@@ -65,23 +64,18 @@ chocolateys:
     # Your apps's require license acceptance:
     # Specify whether the client must prompt the consumer to accept the package
     # license before installing.
-    # Default is false.
     require_license_acceptance: false
 
     # Your app's source url.
-    # Default is empty.
     project_source_url: https://github.com/foo/bar
 
     # Your app's documentation url.
-    # Default is empty.
     docs_url: https://github.com/foo/bar/blob/main/README.md
 
     # App's bugtracker url.
-    # Default is empty.
     bug_tracker_url: https://github.com/foo/barr/issues
 
     # Your app's tag list.
-    # Default is empty.
     tags: "foo bar baz"
 
     # Your app's summary:
@@ -98,11 +92,10 @@ chocolateys:
     # Supports markdown. To prevent the need to continually update this field,
     # providing a URL to an external list of Release Notes is perfectly
     # acceptable.
-    # Default is empty.
     release_notes: "https://github.com/foo/bar/releases/tag/v{{ .Version }}"
 
     # App's dependencies
-    # Default is empty. Version is not required.
+    # The version is not required.
     dependencies:
       - id: nfpm
         version: 2.20.0
@@ -113,8 +106,6 @@ chocolateys:
     api_key: '{{ .Env.CHOCOLATEY_API_KEY }}'
 
     # The source repository that will push the package to.
-    #
-    # Defaults are shown below.
     source_repo: "https://push.chocolatey.org/"
 
     # Setting this will prevent goreleaser to actually try to push the package
@@ -124,7 +115,8 @@ chocolateys:
 
     # GOAMD64 to specify which amd64 version to use if there are multiple
     # versions from the build section.
-    # Default is v1.
+    #
+    # Default: 'v1'
     goamd64: v1
 ```
 

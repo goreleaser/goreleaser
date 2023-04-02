@@ -37,29 +37,27 @@ furies:
 
     # Skip the announcing feature in some conditions, for instance, when
     # publishing patch releases.
-    # Valid options are `true`, `false`, empty, or a
-    # template that evaluates to a boolean (`true` or `false`).
+    # Any value different of 'true' will be considered 'false'.
     #
-    # Defaults to empty - which means false.
+    # Templates: allowed
     skip: "{{gt .Patch 0}}"
 
     # Environment variable name to get the push token from.
     # You might want to change it if you have multiple fury configurations for
     # some reason.
     #
-    # Defaults to empty - which means false.
-    # Defaults to `FURY_TOKEN`.
+    # Default: 'FURY_TOKEN'
     secret_name: MY_ACCOUNT_FURY_TOKEN
 
     # IDs to filter by.
-    # Defaults to empty, which means all packages created by all nfpm
     # configurations get uploaded.
     ids:
       - packages
 
     # Formats to upload.
     # Available options are `deb` and `rpm`.
-    # Defaults to `deb` and `rpm`.
+    #
+    # Default: ['deb', 'rpm']
     formats:
       - deb
 ```

@@ -12,10 +12,7 @@ changelog:
   #
   # This may result in an empty release notes on GitHub/GitLab/Gitea.
   #
-  # Templateable since v1.16.0.
-  # Must evaluate to either true or false.
-  #
-  # Defaults to false.
+  # Templates: allowed
   skip: '{{ .Env.CREATE_CHANGELOG }}'
 
   # Changelog generation implementation to use.
@@ -26,12 +23,11 @@ changelog:
   # - `gitlab`: uses the compare GitLab API, appending the author name and email to the changelog.
   # - `github-native`: uses the GitHub release notes generation API, disables the groups feature.
   #
-  # Defaults to `git`.
+  # Default: 'git'
   use: github
 
   # Sorts the changelog by the commit's messages.
   # Could either be asc, desc or empty
-  # Default is empty
   sort: asc
 
   # Max commit hash length to use in the changelog.
@@ -40,7 +36,6 @@ changelog:
   # -1: remove the commit hash from the changelog
   # any other number: max length.
   #
-  # Default: 0.
   # Since: v1.11.2
   abbrev: -1
 
@@ -48,8 +43,9 @@ changelog:
   # Only works when `use: git`, otherwise ignored.
   # Only on GoReleaser Pro.
   #
-  # Default: monorepo.dir value, or empty if no monorepo.
-  # Since: v1.12.0-pro
+  # Default: monorepo.dir value, or empty if no monorepo
+  # Since: v1.12 (pro)
+  # This feature is only available in GoReleaser Pro.
   paths:
   - foo/
   - bar/
@@ -60,8 +56,6 @@ changelog:
   # Groups are disabled when using github-native, as it already groups things by itself.
   # Matches are performed against strings of the form: "<abbrev-commit>[:] <title-commit>".
   # Regex use RE2 syntax as defined here: https://github.com/google/re2/wiki/Syntax.
-  #
-  # Default is no groups.
   groups:
     - title: Features
       regexp: '^.*?feat(\([[:word:]]+\))??!?:.+$'
@@ -84,7 +78,8 @@ changelog:
       #
       # This feature is only available in GoReleaser Pro.
       #
-      # Since: v1.15.0-pro
+      # Since: v1.15 (pro)
+      # This feature is only available in GoReleaser Pro.
       subgroups:
         - title: 'Docs'
           regex: '.*docs.*'
@@ -95,17 +90,13 @@ changelog:
 
   # Divider to use between groups.
   #
-  # Defaults to empty.
-  #
+  # Since: v1.16 (pro)
   # This feature is only available in GoReleaser Pro.
-  #
-  # Since: v1.16.0-pro
   divider: '---'
 
   filters:
     # Commit messages matching the regexp listed here will be removed from
     # the changelog
-    # Default is empty
     exclude:
       - '^docs:'
       - typo

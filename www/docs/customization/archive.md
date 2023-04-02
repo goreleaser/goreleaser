@@ -11,40 +11,42 @@ Here is a commented `archives` section with all fields specified:
 archives:
   -
     # ID of this archive.
-    # Defaults to `default`.
+    #
+    # Default: 'default'
     id: my-archive
 
     # Builds reference which build instances should be archived in this archive.
-    # Default is empty, which includes all builds.
     builds:
     - default
 
     # Archive format. Valid options are `tar.gz`, `tar.xz`, `tar`, `gz`, `zip` and `binary`.
     # If format is `binary`, no archives are created and the binaries are instead
     # uploaded directly.
-    # Default is `tar.gz`.
+    #
+    # Default: 'tar.gz'
     format: zip
 
     # This will create an archive without any binaries, only the files are there.
     # The name template must not contain any references to `Os`, `Arch` and etc, since the archive will be meta.
     #
-    # Default: false.
-    # Since: v1.9.
+    # Since: v1.9
+    # Templates: allowed
     meta: true
 
-    # Archive name template.
-    # Defaults:
+    # Archive name.
+    #
+    # Default:
     # - if format is `tar.gz`, `tar.xz`, `gz` or `zip`:
     #   - `{{ .ProjectName }}_{{ .Version }}_{{ .Os }}_{{ .Arch }}{{ with .Arm }}v{{ . }}{{ end }}{{ with .Mips }}_{{ . }}{{ end }}{{ if not (eq .Amd64 "v1") }}{{ .Amd64 }}{{ end }}`
     # - if format is `binary`:
     #   - `{{ .Binary }}_{{ .Version }}_{{ .Os }}_{{ .Arch }}{{ with .Arm }}v{{ . }}{{ end }}{{ with .Mips }}_{{ . }}{{ end }}{{ if not (eq .Amd64 "v1") }}{{ .Amd64 }}{{ end }}`
+    # Templates: allowed
     name_template: "{{ .ProjectName }}_{{ .Version }}_{{ .Os }}_{{ .Arch }}"
 
     # Sets the given file info to all the binaries included from the `builds`.
     #
-    # Default is to use the actual binary properties.
-    #
-    # Since: v1.14.0.
+    # Default: copied from the source binary.
+    # Since: v1.14
     builds_info:
       group: root
       owner: root
@@ -58,15 +60,13 @@ archives:
     # you'll get a folder 'goreleaser_Linux_arm64'.
     # If set to false, all files are extracted separately.
     # You can also set it to a custom folder name (templating is supported).
-    # Default is false.
     wrap_in_directory: true
 
     # If set to true, will strip the parent directories away from binary files.
     #
     # This might be useful if you have your binary be built with a subdir for some reason, but do no want that subdir inside the archive.
     #
-    # Default: false.
-    # Since: v1.11.
+    # Since: v1.11
     strip_parent_binary_folder: true
 
 
@@ -75,20 +75,19 @@ archives:
     # Enabling this essentially mimic the behavior of nfpm's contents section.
     # It will be the default by June 2023.
     #
-    # Default: false
-    # Since: v1.14.
+    # Since: v1.14
     rlcp: true
 
     # Can be used to change the archive formats for specific GOOSs.
     # Most common use case is to archive as zip on Windows.
-    # Default is empty.
     format_overrides:
       - goos: windows
         format: zip
 
-    # Additional files/template/globs you want to add to the archive.
-    # Defaults are any files matching `LICENSE*`, `README*`, `CHANGELOG*`,
-    #  `license*`, `readme*` and `changelog*`.
+    # Additional files/globs you want to add to the archive.
+    #
+    # Default: [ 'LICENSE*', 'README*', 'CHANGELOG', 'license*', 'readme*', 'changelog']
+    # Templates: allowed
     files:
       - LICENSE.txt
       - README_{{.Os}}.md
@@ -101,21 +100,22 @@ archives:
         dst: docs
 
         # Strip parent folders when adding files to the archive.
-        # Default: false
         strip_parent: true
 
         # File info.
         # Not all fields are supported by all formats available formats.
-        # Defaults to the file info of the actual file if not provided.
+        #
+        # Default: copied from the source file
         info:
-          # Templateable (since v1.14.0)
+          # Templates: allowed (since v1.14)
           owner: root
 
-          # Templateable (since v1.14.0)
+          # Templates: allowed (since v1.14)
           group: root
 
           # Must be in time.RFC3339Nano format.
-          # Templateable (since v1.14.0)
+          #
+          # Templates: allowed (since v1.14)
           mtime: '{{ .CommitDate }}'
 
           # File mode.
@@ -126,9 +126,9 @@ archives:
     # Those files will have their contents pass through the template engine,
     # and its results will be added to the archive.
     #
-    # Default: empty
     # Since: v1.17 (pro)
     # This feature is only available in GoReleaser Pro.
+    # Templates: allowed
     files:
       # a more complete example, check the globbing deep dive below
       - src: 'LICENSE.md.tpl'
@@ -136,19 +136,13 @@ archives:
 
         # File info.
         # Not all fields are supported by all formats available formats.
-        # Defaults to the file info of the actual file if not provided.
+        #
+        # Default: copied from the source file
         info:
-          # Templateable (since v1.14.0)
           owner: root
-
-          # Templateable (since v1.14.0)
           group: root
-
           # Must be in time.RFC3339Nano format.
-          # Templateable (since v1.14.0)
           mtime: '{{ .CommitDate }}'
-
-          # File mode.
           mode: 0644
 
     # Before and after hooks for each archive.
@@ -174,7 +168,6 @@ archives:
         - 'RELEASE_DONE=something-{{ .ProjectName }}' # specify hook level environment variables
 
     # Disables the binary count check.
-    # Default: false
     allow_different_binary_count: true
 ```
 

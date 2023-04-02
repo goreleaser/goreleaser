@@ -16,18 +16,17 @@ config:
 announce:
   telegram:
     # Whether its enabled or not.
-    #
-    # Defaults to false.
     enabled: true
 
     # Integer representation of your channel
     #
-    # Templateable. (since v1.15)
+    # Templates: allowed (since v1.15)
     chat_id: 123456
 
     # Message template to use while publishing.
     #
-    # Defaults to `{{ .ProjectName }} {{ .Tag }} is out! Check it out at {{ .ReleaseURL }}`
+    # Default: '{{ .ProjectName }} {{ .Tag }} is out! Check it out at {{ .ReleaseURL }}'
+    # Templates: allowed
     message_template: 'Awesome project {{.Tag}} is out!'
 ```
 

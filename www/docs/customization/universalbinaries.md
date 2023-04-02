@@ -12,36 +12,34 @@ universal_binaries:
 -
   # ID of resulting universal binary.
   #
-  # Defaults to the project name.
+  # Default: the project name
   id: foo
 
   # IDs to use to filter the built binaries.
   #
-  # Defaults to the `id` field.
-  # Since: v1.3.
+  # Default: the value of the id field
+  # Since: v1.3
   ids:
   - build1
   - build2
 
-  # Universal binary name template.
+  # Universal binary name.
   #
   # You will want to change this if you have multiple builds!
   #
-  # Defaults to '{{ .ProjectName }}'
+  # Default: '{{ .ProjectName }}'
+  # Templates: allowed
   name_template: '{{.ProjectName}}_{{.Version}}'
 
   # Whether to remove the previous single-arch binaries from the artifact list.
   # If left as false, your end release might have both several macOS archives:
   # amd64, arm64 and all.
-  #
-  # Defaults to false.
   replace: true
 
   # Hooks can be used to customize the final binary,
   # for example, to run generators.
-  # Those fields allow templates.
   #
-  # Default is both hooks empty.
+  # Templates: allowed
   hooks:
     pre: rice embed-go
     post: ./script.sh {{ .Path }}
