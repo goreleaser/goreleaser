@@ -123,7 +123,7 @@ func releaseProject(options releaseOpts) (*context.Context, error) {
 
 func setupReleaseContext(ctx *context.Context, options releaseOpts) {
 	ctx.Deprecated = options.deprecated // test only
-	ctx.Parallelism = runtime.NumCPU()
+	ctx.Parallelism = runtime.GOMAXPROCS(0)
 	if options.parallelism > 0 {
 		ctx.Parallelism = options.parallelism
 	}
