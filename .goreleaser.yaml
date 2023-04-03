@@ -214,6 +214,7 @@ scoop:
   bucket:
     owner: goreleaser
     name: scoop-bucket
+  folder: bucket
   homepage:  https://goreleaser.com
   description: Deliver Go binaries as fast and easily as possible
   license: MIT
