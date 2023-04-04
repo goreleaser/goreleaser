@@ -41,6 +41,11 @@ scoop:
     token: "{{ .Env.SCOOP_TAP_GITHUB_TOKEN }}"
 
   # Folder inside the repository to put the scoop.
+  #
+  # Note that while scoop works if the manifests are in a folder,
+  # 'scoop bucket list' will show 0 manifests if they are not in the root
+  # folder.
+  # In short, it's generaly better to leave this empty.
   folder: Scoops
 
   # Git author used to commit to the repository.
