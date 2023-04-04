@@ -57,6 +57,11 @@ type Client interface {
 type GitHubClient interface {
 	Client
 	GenerateReleaseNotes(ctx *context.Context, repo Repo, prev, current string) (string, error)
+	PullRequestOpener
+}
+
+type PullRequestOpener interface {
+	OpenPullRequest(ctx *context.Context, repo Repo, head, title string) error
 }
 
 // New creates a new client depending on the token type.

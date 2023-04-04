@@ -118,6 +118,7 @@ func doPublish(ctx *context.Context, formula *artifact.Artifact, cl client.Clien
 	if err != nil {
 		return err
 	}
+	fmt.Printf("%+v\n", brew.Tap)
 	cl, err = client.NewIfToken(ctx, cl, brew.Tap.Token)
 	if err != nil {
 		return err
@@ -153,7 +154,22 @@ func doPublish(ctx *context.Context, formula *artifact.Artifact, cl client.Clien
 		return err
 	}
 
-	return cl.CreateFile(ctx, author, repo, content, gpath, msg)
+	if !brew.Tap.PullRequest.Enabled {
+		return cl.CreateFile(ctx, author, repo, content, gpath, msg)
+	}
+
+	log.Info("brews.pull_request enabled, creating a PR")
+	pcl, ok := cl.(client.PullRequestOpener)
+	if !ok {
+		return fmt.Errorf("client does not support pull requests")
+	}
+
+	if err := cl.CreateFile(ctx, author, repo, content, gpath, msg); err != nil {
+		return err
+	}
+
+	title := fmt.Sprintf("Updated %s to %s", ctx.Config.ProjectName, ctx.Version)
+	return pcl.OpenPullRequest(ctx, repo, brew.Tap.PullRequest.Base, title)
 }
 
 func doRun(ctx *context.Context, brew config.Homebrew, cl client.Client) error {
@@ -225,7 +241,6 @@ func doRun(ctx *context.Context, brew config.Homebrew, cl client.Client) error {
 
 	filename := brew.Name + ".rb"
 	path := filepath.Join(ctx.Config.Dist, filename)
-	log.WithField("formula", path).Info("writing")
 	if err := os.WriteFile(path, []byte(content), 0o644); err != nil { //nolint: gosec
 		return fmt.Errorf("failed to write brew formula: %w", err)
 	}
