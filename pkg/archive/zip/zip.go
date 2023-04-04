@@ -29,6 +29,42 @@ func New(target io.Writer) Archive {
 	}
 }
 
+// New zip archive.
+func Copying(source *os.File, target io.Writer) (Archive, error) {
+	w := New(target)
+	info, err := source.Stat()
+	if err != nil {
+		return w, err
+	}
+	r, err := zip.NewReader(source, info.Size())
+	if err != nil {
+		return w, err
+	}
+	for _, zf := range r.File {
+		hdr := zip.FileHeader{
+			Name:               zf.Name,
+			UncompressedSize64: zf.UncompressedSize64,
+			UncompressedSize:   zf.UncompressedSize,
+			CreatorVersion:     zf.CreatorVersion,
+			ExternalAttrs:      zf.ExternalAttrs,
+		}
+		ww, err := w.z.CreateHeader(&hdr)
+		if err != nil {
+			return w, err
+		}
+		rr, err := zf.Open()
+		if err != nil {
+			return w, err
+		}
+		defer rr.Close()
+		if _, err = io.Copy(ww, rr); err != nil {
+			return w, err
+		}
+		_ = rr.Close()
+	}
+	return w, nil
+}
+
 // Close all closeables.
 func (a Archive) Close() error {
 	return a.z.Close()

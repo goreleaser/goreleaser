@@ -22,6 +22,25 @@ func New(target io.Writer) Archive {
 	}
 }
 
+// Copying creates a new tar with the contents of the given tar.
+func Copying(source io.Reader, target io.Writer) (Archive, error) {
+	w := New(target)
+	r := tar.NewReader(source)
+	for {
+		h, err := r.Next()
+		if err == io.EOF || h == nil {
+			break
+		}
+		if err := w.tw.WriteHeader(h); err != nil {
+			return w, err
+		}
+		if _, err := io.Copy(w.tw, r); err != nil {
+			return w, err
+		}
+	}
+	return w, nil
+}
+
 // Close all closeables.
 func (a Archive) Close() error {
 	return a.tw.Close()

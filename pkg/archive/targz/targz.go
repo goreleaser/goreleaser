@@ -27,6 +27,16 @@ func New(target io.Writer) Archive {
 	}
 }
 
+func Copying(source io.Reader, target io.Writer) (Archive, error) {
+	// the error will be nil since the compression level is valid
+	gw, _ := gzip.NewWriterLevel(target, gzip.BestCompression)
+	tw, err := tar.Copying(source, gw)
+	return Archive{
+		gw: gw,
+		tw: &tw,
+	}, err
+}
+
 // Close all closeables.
 func (a Archive) Close() error {
 	if err := a.tw.Close(); err != nil {

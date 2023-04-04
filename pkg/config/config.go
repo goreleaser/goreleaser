@@ -926,7 +926,7 @@ type Publisher struct {
 // Source configuration.
 type Source struct {
 	NameTemplate   string `yaml:"name_template,omitempty" json:"name_template,omitempty"`
-	Format         string `yaml:"format,omitempty" json:"format,omitempty"`
+	Format         string `yaml:"format,omitempty" json:"format,omitempty" jsonschema:"enum=tar,enum=tgz,enum=tar.gz,enum=zip,default=tar.gz"`
 	Enabled        bool   `yaml:"enabled,omitempty" json:"enabled,omitempty"`
 	PrefixTemplate string `yaml:"prefix_template,omitempty" json:"prefix_template,omitempty"`
 	Files          []File `yaml:"files,omitempty" json:"files,omitempty"`
