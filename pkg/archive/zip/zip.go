@@ -5,11 +5,13 @@ package zip
 import (
 	"archive/zip"
 	"compress/flate"
+	"errors"
 	"fmt"
 	"io"
 	"os"
 	"path/filepath"
 
+	"github.com/caarlos0/log"
 	"github.com/goreleaser/goreleaser/pkg/config"
 )
 
@@ -31,16 +33,19 @@ func New(target io.Writer) Archive {
 
 // New zip archive.
 func Copying(source *os.File, target io.Writer) (Archive, error) {
-	w := New(target)
 	info, err := source.Stat()
 	if err != nil {
-		return w, err
+		return Archive{}, err
 	}
 	r, err := zip.NewReader(source, info.Size())
 	if err != nil {
-		return w, err
+		return Archive{}, err
 	}
+	w := New(target)
 	for _, zf := range r.File {
+		if zf.Mode().IsDir() {
+			continue
+		}
 		hdr := zip.FileHeader{
 			Name:               zf.Name,
 			UncompressedSize64: zf.UncompressedSize64,
@@ -50,15 +55,20 @@ func Copying(source *os.File, target io.Writer) (Archive, error) {
 		}
 		ww, err := w.z.CreateHeader(&hdr)
 		if err != nil {
-			return w, err
+			return Archive{}, fmt.Errorf("creating %q header in target: %w", zf.Name, err)
 		}
 		rr, err := zf.Open()
 		if err != nil {
-			return w, err
+			return Archive{}, fmt.Errorf("opening %q from source: %w", zf.Name, err)
 		}
 		defer rr.Close()
 		if _, err = io.Copy(ww, rr); err != nil {
-			return w, err
+			_ = rr.Close()
+			if errors.Is(err, zip.ErrChecksum) {
+				log.Log.WithError(err).WithField("name", zf.Name).Warn("file might be corrupted")
+				continue
+			}
+			return Archive{}, fmt.Errorf("copy from %q source to target: %w", zf.Name, err)
 		}
 		_ = rr.Close()
 	}

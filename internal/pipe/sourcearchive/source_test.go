@@ -1,7 +1,10 @@
 package sourcearchive
 
 import (
+	"archive/tar"
 	"archive/zip"
+	"fmt"
+	"io"
 	"os"
 	"path/filepath"
 	"testing"
@@ -11,6 +14,7 @@ import (
 	"github.com/goreleaser/goreleaser/internal/testlib"
 	"github.com/goreleaser/goreleaser/pkg/config"
 	"github.com/goreleaser/goreleaser/pkg/context"
+	"github.com/klauspost/compress/gzip"
 	"github.com/stretchr/testify/require"
 )
 
@@ -67,17 +71,33 @@ func TestArchive(t *testing.T) {
 			require.NoError(t, err)
 			require.Greater(t, stat.Size(), int64(100))
 
-			if format != "zip" {
-				return
+			switch format {
+			case "zip":
+				// TODO: code.txt is being duplicated
+				require.ElementsMatch(t, []string{
+					"foo-1.0.0/README.md",
+					"foo-1.0.0/code.py",
+					"foo-1.0.0/code.txt",
+					"foo-1.0.0/added-later.txt",
+					"foo-1.0.0/subfolder/file.md",
+				}, lsZip(t, path))
+			case "tar":
+				require.ElementsMatch(t, []string{
+					"foo-1.0.0/README.md",
+					"foo-1.0.0/code.py",
+					"foo-1.0.0/code.txt",
+					"foo-1.0.0/added-later.txt",
+					"foo-1.0.0/subfolder/file.md",
+				}, lsTar(t, path))
+			default:
+				require.ElementsMatch(t, []string{
+					"foo-1.0.0/README.md",
+					"foo-1.0.0/code.py",
+					"foo-1.0.0/code.txt",
+					"foo-1.0.0/added-later.txt",
+					"foo-1.0.0/subfolder/file.md",
+				}, lsTarGz(t, path))
 			}
-
-			require.ElementsMatch(t, []string{
-				"foo-1.0.0/README.md",
-				"foo-1.0.0/code.py",
-				"foo-1.0.0/code.txt",
-				"foo-1.0.0/added-later.txt",
-				"foo-1.0.0/subfolder/file.md",
-			}, lsZip(t, path))
 		})
 	}
 }
@@ -191,5 +211,44 @@ func lsZip(tb testing.TB, path string) []string {
 	for _, zf := range z.File {
 		paths = append(paths, zf.Name)
 	}
+	return paths
+}
+
+func lsTar(tb testing.TB, path string) []string {
+	tb.Helper()
+
+	f, err := os.Open(path)
+	require.NoError(tb, err)
+	z := tar.NewReader(f)
+
+	var paths []string
+	for {
+		h, err := z.Next()
+		if h == nil || err == io.EOF {
+			break
+		}
+		paths = append(paths, h.Name)
+	}
+	return paths
+}
+
+func lsTarGz(tb testing.TB, path string) []string {
+	tb.Helper()
+
+	f, err := os.Open(path)
+	require.NoError(tb, err)
+	gz, err := gzip.NewReader(f)
+	require.NoError(tb, err)
+	tgz := tar.NewReader(gz)
+
+	var paths []string
+	for {
+		h, err := tgz.Next()
+		if h == nil || err == io.EOF {
+			break
+		}
+		paths = append(paths, h.Name)
+	}
+	fmt.Println("AAAAAA", paths)
 	return paths
 }
