@@ -608,3 +608,7 @@ func TestGitHubCreateFileFeatureBranchDoesNotExist(t *testing.T) {
 
 	require.NoError(t, client.CreateFile(ctx, config.CommitAuthor{}, repo, []byte("content"), "file.txt", "message"))
 }
+
+// TODO: test create release
+// TODO: test create upload file to release
+// TODO: test delete draft release
