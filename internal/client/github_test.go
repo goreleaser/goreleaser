@@ -25,7 +25,7 @@ func TestNewGitHubClient(t *testing.T) {
 			},
 		})
 
-		client, err := NewGitHub(ctx, ctx.Token)
+		client, err := newGitHub(ctx, ctx.Token)
 		require.NoError(t, err)
 		require.Equal(t, githubURL+"/api", client.client.BaseURL.String())
 		require.Equal(t, githubURL+"/upload", client.client.UploadURL.String())
@@ -38,7 +38,7 @@ func TestNewGitHubClient(t *testing.T) {
 				Upload: "https://github.mycompany.com/upload",
 			},
 		})
-		_, err := NewGitHub(ctx, ctx.Token)
+		_, err := newGitHub(ctx, ctx.Token)
 
 		require.EqualError(t, err, `parse "://github.mycompany.com/api": missing protocol scheme`)
 	})
@@ -50,7 +50,7 @@ func TestNewGitHubClient(t *testing.T) {
 				Upload: "not a url:4994",
 			},
 		})
-		_, err := NewGitHub(ctx, ctx.Token)
+		_, err := newGitHub(ctx, ctx.Token)
 
 		require.EqualError(t, err, `parse "not a url:4994": first path segment in URL cannot contain colon`)
 	})
@@ -68,7 +68,7 @@ func TestNewGitHubClient(t *testing.T) {
 			},
 		})
 
-		client, err := NewGitHub(ctx, ctx.Token)
+		client, err := newGitHub(ctx, ctx.Token)
 		require.NoError(t, err)
 		require.Equal(t, githubURL+"/api", client.client.BaseURL.String())
 		require.Equal(t, githubURL+"/upload", client.client.UploadURL.String())
@@ -81,7 +81,7 @@ func TestNewGitHubClient(t *testing.T) {
 			},
 		})
 
-		_, err := NewGitHub(ctx, ctx.Token)
+		_, err := newGitHub(ctx, ctx.Token)
 		require.ErrorAs(t, err, &template.ExecError{})
 	})
 
@@ -93,7 +93,7 @@ func TestNewGitHubClient(t *testing.T) {
 			},
 		})
 
-		_, err := NewGitHub(ctx, ctx.Token)
+		_, err := newGitHub(ctx, ctx.Token)
 		require.ErrorAs(t, err, &template.ExecError{})
 	})
 
@@ -104,14 +104,14 @@ func TestNewGitHubClient(t *testing.T) {
 			},
 		})
 
-		_, err := NewGitHub(ctx, ctx.Token)
+		_, err := newGitHub(ctx, ctx.Token)
 		require.Error(t, err)
 	})
 }
 
 func TestGitHubUploadReleaseIDNotInt(t *testing.T) {
 	ctx := testctx.New()
-	client, err := NewGitHub(ctx, ctx.Token)
+	client, err := newGitHub(ctx, ctx.Token)
 	require.NoError(t, err)
 
 	require.EqualError(
@@ -166,7 +166,7 @@ func TestGitHubReleaseURLTemplate(t *testing.T) {
 					},
 				},
 			})
-			client, err := NewGitHub(ctx, ctx.Token)
+			client, err := newGitHub(ctx, ctx.Token)
 			require.NoError(t, err)
 
 			urlTpl, err := client.ReleaseURLTemplate(ctx)
@@ -187,7 +187,7 @@ func TestGitHubCreateReleaseWrongNameTemplate(t *testing.T) {
 			NameTemplate: "{{.dddddddddd",
 		},
 	})
-	client, err := NewGitHub(ctx, ctx.Token)
+	client, err := newGitHub(ctx, ctx.Token)
 	require.NoError(t, err)
 
 	str, err := client.CreateRelease(ctx, "")
@@ -213,7 +213,7 @@ func TestGithubGetDefaultBranch(t *testing.T) {
 		},
 	})
 
-	client, err := NewGitHub(ctx, "test-token")
+	client, err := newGitHub(ctx, "test-token")
 	require.NoError(t, err)
 	repo := Repo{
 		Owner:  "someone",
@@ -242,7 +242,7 @@ func TestGithubGetDefaultBranchErr(t *testing.T) {
 			API: srv.URL + "/",
 		},
 	})
-	client, err := NewGitHub(ctx, "test-token")
+	client, err := newGitHub(ctx, "test-token")
 	require.NoError(t, err)
 	repo := Repo{
 		Owner:  "someone",
@@ -273,7 +273,7 @@ func TestChangelog(t *testing.T) {
 			API: srv.URL + "/",
 		},
 	})
-	client, err := NewGitHub(ctx, "test-token")
+	client, err := newGitHub(ctx, "test-token")
 	require.NoError(t, err)
 	repo := Repo{
 		Owner:  "someone",
@@ -305,7 +305,7 @@ func TestReleaseNotes(t *testing.T) {
 			API: srv.URL + "/",
 		},
 	})
-	client, err := NewGitHub(ctx, "test-token")
+	client, err := newGitHub(ctx, "test-token")
 	require.NoError(t, err)
 	repo := Repo{
 		Owner:  "someone",
@@ -333,7 +333,7 @@ func TestReleaseNotesError(t *testing.T) {
 			API: srv.URL + "/",
 		},
 	})
-	client, err := NewGitHub(ctx, "test-token")
+	client, err := newGitHub(ctx, "test-token")
 	require.NoError(t, err)
 	repo := Repo{
 		Owner:  "someone",
@@ -365,7 +365,7 @@ func TestCloseMilestone(t *testing.T) {
 			API: srv.URL + "/",
 		},
 	})
-	client, err := NewGitHub(ctx, "test-token")
+	client, err := newGitHub(ctx, "test-token")
 	require.NoError(t, err)
 	repo := Repo{
 		Owner: "someone",
@@ -396,7 +396,7 @@ func TestOpenPullRequestHappyPath(t *testing.T) {
 			API: srv.URL + "/",
 		},
 	})
-	client, err := NewGitHub(ctx, "test-token")
+	client, err := newGitHub(ctx, "test-token")
 	require.NoError(t, err)
 	repo := Repo{
 		Owner: "someone",
@@ -428,7 +428,7 @@ func TestOpenPullRequestPRExists(t *testing.T) {
 			API: srv.URL + "/",
 		},
 	})
-	client, err := NewGitHub(ctx, "test-token")
+	client, err := newGitHub(ctx, "test-token")
 	require.NoError(t, err)
 	repo := Repo{
 		Owner: "someone",
@@ -465,7 +465,7 @@ func TestOpenPullRequestBaseEmpty(t *testing.T) {
 			API: srv.URL + "/",
 		},
 	})
-	client, err := NewGitHub(ctx, "test-token")
+	client, err := newGitHub(ctx, "test-token")
 	require.NoError(t, err)
 	repo := Repo{
 		Owner: "someone",
@@ -504,7 +504,7 @@ func TestGitHubCreateFileHappyPathCreate(t *testing.T) {
 			API: srv.URL + "/",
 		},
 	})
-	client, err := NewGitHub(ctx, "test-token")
+	client, err := newGitHub(ctx, "test-token")
 	require.NoError(t, err)
 	repo := Repo{
 		Owner: "someone",
@@ -544,7 +544,7 @@ func TestGitHubCreateFileHappyPathUpdate(t *testing.T) {
 			API: srv.URL + "/",
 		},
 	})
-	client, err := NewGitHub(ctx, "test-token")
+	client, err := newGitHub(ctx, "test-token")
 	require.NoError(t, err)
 	repo := Repo{
 		Owner: "someone",
@@ -598,7 +598,7 @@ func TestGitHubCreateFileFeatureBranchDoesNotExist(t *testing.T) {
 			API: srv.URL + "/",
 		},
 	})
-	client, err := NewGitHub(ctx, "test-token")
+	client, err := newGitHub(ctx, "test-token")
 	require.NoError(t, err)
 	repo := Repo{
 		Owner:  "someone",

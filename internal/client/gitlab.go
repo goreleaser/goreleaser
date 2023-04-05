@@ -24,8 +24,8 @@ type gitlabClient struct {
 
 var _ Client = &gitlabClient{}
 
-// NewGitLab returns a gitlab client implementation.
-func NewGitLab(ctx *context.Context, token string) (*gitlabClient, error) {
+// newGitLab returns a gitlab client implementation.
+func newGitLab(ctx *context.Context, token string) (*gitlabClient, error) {
 	transport := &http.Transport{
 		Proxy: http.ProxyFromEnvironment,
 		TLSClientConfig: &tls.Config{

@@ -27,8 +27,14 @@ type githubClient struct {
 	client *github.Client
 }
 
-// NewGitHub returns a github client implementation.
-func NewGitHub(ctx *context.Context, token string) (*githubClient, error) {
+// NewGitHubReleaseNotesGenerator returns a GitHub client that can generate
+// changelogs.
+func NewGitHubReleaseNotesGenerator(ctx *context.Context, token string) (ReleaseNotesGenerator, error) {
+	return newGitHub(ctx, token)
+}
+
+// newGitHub returns a github client implementation.
+func newGitHub(ctx *context.Context, token string) (*githubClient, error) {
 	ts := oauth2.StaticTokenSource(
 		&oauth2.Token{AccessToken: token},
 	)

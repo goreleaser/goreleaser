@@ -55,8 +55,13 @@ type Client interface {
 // GitHubClient is the client with GitHub-only features.
 type GitHubClient interface {
 	Client
-	GenerateReleaseNotes(ctx *context.Context, repo Repo, prev, current string) (string, error)
+	ReleaseNotesGenerator
 	PullRequestOpener
+}
+
+// ReleaseNotesGenerator can generate release notes.
+type ReleaseNotesGenerator interface {
+	GenerateReleaseNotes(ctx *context.Context, repo Repo, prev, current string) (string, error)
 }
 
 // PullRequestOpener can open pull requests.
@@ -73,11 +78,11 @@ func newWithToken(ctx *context.Context, token string) (Client, error) {
 	log.WithField("type", ctx.TokenType).Debug("token type")
 	switch ctx.TokenType {
 	case context.TokenTypeGitHub:
-		return NewGitHub(ctx, token)
+		return newGitHub(ctx, token)
 	case context.TokenTypeGitLab:
-		return NewGitLab(ctx, token)
+		return newGitLab(ctx, token)
 	case context.TokenTypeGitea:
-		return NewGitea(ctx, token)
+		return newGitea(ctx, token)
 	default:
 		return nil, fmt.Errorf("invalid client token type: %q", ctx.TokenType)
 	}

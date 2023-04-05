@@ -41,8 +41,8 @@ func getInstanceURL(ctx *context.Context) (string, error) {
 	return rawurl, nil
 }
 
-// NewGitea returns a gitea client implementation.
-func NewGitea(ctx *context.Context, token string) (*giteaClient, error) {
+// newGitea returns a gitea client implementation.
+func newGitea(ctx *context.Context, token string) (*giteaClient, error) {
 	instanceURL, err := getInstanceURL(ctx)
 	if err != nil {
 		return nil, err
