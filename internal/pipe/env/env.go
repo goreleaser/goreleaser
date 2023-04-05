@@ -69,18 +69,30 @@ func (Pipe) Run(ctx *context.Context) error {
 	gitlabToken, gitlabTokenErr := loadEnv("GITLAB_TOKEN", ctx.Config.EnvFiles.GitLabToken)
 	giteaToken, giteaTokenErr := loadEnv("GITEA_TOKEN", ctx.Config.EnvFiles.GiteaToken)
 
-	var tokens []string
-	if githubToken != "" {
-		tokens = append(tokens, "GITHUB_TOKEN")
-	}
-	if gitlabToken != "" {
-		tokens = append(tokens, "GITLAB_TOKEN")
-	}
-	if giteaToken != "" {
-		tokens = append(tokens, "GITEA_TOKEN")
-	}
-	if len(tokens) > 1 {
-		return ErrMultipleTokens{tokens}
+	switch os.Getenv("GORELEASER_FORCE_TOKEN") {
+	case "github":
+		gitlabToken = ""
+		giteaToken = ""
+	case "gitlab":
+		githubToken = ""
+		giteaToken = ""
+	case "gitea":
+		githubToken = ""
+		gitlabToken = ""
+	default:
+		var tokens []string
+		if githubToken != "" {
+			tokens = append(tokens, "GITHUB_TOKEN")
+		}
+		if gitlabToken != "" {
+			tokens = append(tokens, "GITLAB_TOKEN")
+		}
+		if giteaToken != "" {
+			tokens = append(tokens, "GITEA_TOKEN")
+		}
+		if len(tokens) > 1 {
+			return ErrMultipleTokens{tokens}
+		}
 	}
 
 	noTokens := githubToken == "" && gitlabToken == "" && giteaToken == ""
