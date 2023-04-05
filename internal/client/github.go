@@ -21,7 +21,11 @@ import (
 
 const DefaultGitHubDownloadURL = "https://github.com"
 
-var _ Client = &githubClient{}
+var (
+	_ Client                = &githubClient{}
+	_ ReleaseNotesGenerator = &githubClient{}
+	_ PullRequestOpener     = &githubClient{}
+)
 
 type githubClient struct {
 	client *github.Client

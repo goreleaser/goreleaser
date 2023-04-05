@@ -12,13 +12,11 @@ import (
 	"github.com/goreleaser/goreleaser/pkg/context"
 )
 
-type testClient interface {
-	Client
-	ReleaseNotesGenerator
-	PullRequestOpener
-}
-
-var _ testClient = &Mock{}
+var (
+	_ Client                = &Mock{}
+	_ ReleaseNotesGenerator = &Mock{}
+	_ PullRequestOpener     = &Mock{}
+)
 
 func NewMock() *Mock {
 	return &Mock{}
