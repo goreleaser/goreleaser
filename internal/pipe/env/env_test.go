@@ -13,10 +13,22 @@ import (
 )
 
 func TestMain(m *testing.M) {
-	os.Unsetenv("GITHUB_TOKEN")
-	os.Unsetenv("GITLAB_TOKEN")
-	os.Unsetenv("GITEA_TOKEN")
-	os.Exit(m.Run())
+	restores := map[string]string{}
+	for _, key := range []string{"GITHUB_TOKEN", "GITEA_TOKEN", "GITLAB_TOKEN"} {
+		prevValue, ok := os.LookupEnv(key)
+		if ok {
+			_ = os.Unsetenv(key)
+			restores[key] = prevValue
+		}
+	}
+
+	code := m.Run()
+
+	for k, v := range restores {
+		_ = os.Setenv(k, v)
+	}
+
+	os.Exit(code)
 }
 
 func TestDescription(t *testing.T) {
@@ -244,10 +256,6 @@ func TestInvalidEnvReleaseDisabled(t *testing.T) {
 		})
 		testlib.RequireTemplateError(t, Pipe{}.Run(ctx))
 	})
-}
-
-func TestInvalidEnvReleaseDisabledTmpl(t *testing.T) {
-	// TODO: ??
 }
 
 func TestLoadEnv(t *testing.T) {
