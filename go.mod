@@ -39,7 +39,7 @@ require (
 	github.com/muesli/termenv v0.15.1
 	github.com/ory/dockertest/v3 v3.9.1
 	github.com/slack-go/slack v0.12.1
-	github.com/spf13/cobra v1.6.1
+	github.com/spf13/cobra v1.7.0
 	github.com/stretchr/testify v1.8.2
 	github.com/ulikunitz/xz v0.5.11
 	github.com/withfig/autocomplete-tools/integrations/cobra v1.2.1
