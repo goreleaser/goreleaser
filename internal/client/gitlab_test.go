@@ -125,11 +125,7 @@ func TestGitLabURLsAPITemplate(t *testing.T) {
 
 			client, err := NewGitLab(ctx, ctx.Token)
 			require.NoError(t, err)
-
-			gitlabClient, ok := client.(*gitlabClient)
-			require.True(t, ok)
-
-			require.Equal(t, tt.wantHost, gitlabClient.client.BaseURL().Host)
+			require.Equal(t, tt.wantHost, client.client.BaseURL().Host)
 		})
 	}
 
@@ -427,7 +423,7 @@ func TestGitlabGetDefaultBranch(t *testing.T) {
 		Branch: "somebranch",
 	}
 
-	_, err = client.GetDefaultBranch(ctx, repo)
+	_, err = client.getDefaultBranch(ctx, repo)
 	require.NoError(t, err)
 	require.Equal(t, 1, totalRequests)
 }
@@ -455,7 +451,7 @@ func TestGitlabGetDefaultBranchErr(t *testing.T) {
 		Branch: "somebranch",
 	}
 
-	_, err = client.GetDefaultBranch(ctx, repo)
+	_, err = client.getDefaultBranch(ctx, repo)
 	require.Error(t, err)
 }
 

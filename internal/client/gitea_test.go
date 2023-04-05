@@ -564,7 +564,7 @@ func TestGiteaGetDefaultBranch(t *testing.T) {
 		Branch: "somebranch",
 	}
 
-	_, err = client.GetDefaultBranch(ctx, repo)
+	_, err = client.getDefaultBranch(ctx, repo)
 	require.NoError(t, err)
 	require.Equal(t, 2, totalRequests)
 }
@@ -595,7 +595,7 @@ func TestGiteaGetDefaultBranchErr(t *testing.T) {
 		Branch: "somebranch",
 	}
 
-	_, err = client.GetDefaultBranch(ctx, repo)
+	_, err = client.getDefaultBranch(ctx, repo)
 	require.Error(t, err)
 }
 

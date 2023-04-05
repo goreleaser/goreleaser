@@ -21,12 +21,14 @@ import (
 
 const DefaultGitHubDownloadURL = "https://github.com"
 
+var _ Client = &githubClient{}
+
 type githubClient struct {
 	client *github.Client
 }
 
 // NewGitHub returns a github client implementation.
-func NewGitHub(ctx *context.Context, token string) (GitHubClient, error) {
+func NewGitHub(ctx *context.Context, token string) (*githubClient, error) {
 	ts := oauth2.StaticTokenSource(
 		&oauth2.Token{AccessToken: token},
 	)
@@ -89,9 +91,8 @@ func (c *githubClient) Changelog(ctx *context.Context, repo Repo, prev, current 
 	return strings.Join(log, "\n"), nil
 }
 
-// GetDefaultBranch returns the default branch of a github repo
-// TODO: this don't need to be public
-func (c *githubClient) GetDefaultBranch(ctx *context.Context, repo Repo) (string, error) {
+// getDefaultBranch returns the default branch of a github repo
+func (c *githubClient) getDefaultBranch(ctx *context.Context, repo Repo) (string, error) {
 	p, res, err := c.client.Repositories.Get(ctx, repo.Owner, repo.Name)
 	if err != nil {
 		log.WithFields(log.Fields{
@@ -135,7 +136,7 @@ func (c *githubClient) OpenPullRequest(
 	base, title string,
 ) error {
 	if base == "" {
-		def, err := c.GetDefaultBranch(ctx, repo)
+		def, err := c.getDefaultBranch(ctx, repo)
 		if err != nil {
 			return err
 		}
@@ -166,7 +167,7 @@ func (c *githubClient) CreateFile(
 	path,
 	message string,
 ) error {
-	defBranch, err := c.GetDefaultBranch(ctx, repo)
+	defBranch, err := c.getDefaultBranch(ctx, repo)
 	if err != nil {
 		return fmt.Errorf("could not get default branch: %w", err)
 	}

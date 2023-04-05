@@ -49,7 +49,6 @@ type Client interface {
 	ReleaseURLTemplate(ctx *context.Context) (string, error)
 	CreateFile(ctx *context.Context, commitAuthor config.CommitAuthor, repo Repo, content []byte, path, message string) (err error)
 	Upload(ctx *context.Context, releaseID string, artifact *artifact.Artifact, file *os.File) (err error)
-	GetDefaultBranch(ctx *context.Context, repo Repo) (string, error)
 	Changelog(ctx *context.Context, repo Repo, prev, current string) (string, error)
 }
 
@@ -60,6 +59,7 @@ type GitHubClient interface {
 	PullRequestOpener
 }
 
+// PullRequestOpener can open pull requests.
 type PullRequestOpener interface {
 	OpenPullRequest(ctx *context.Context, repo Repo, head, title string) error
 }

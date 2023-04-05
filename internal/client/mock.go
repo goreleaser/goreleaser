@@ -70,10 +70,6 @@ func (c *Mock) CloseMilestone(_ *context.Context, _ Repo, title string) error {
 	return nil
 }
 
-func (c *Mock) GetDefaultBranch(_ *context.Context, _ Repo) (string, error) {
-	return "", ErrNotImplemented
-}
-
 func (c *Mock) CreateRelease(_ *context.Context, _ string) (string, error) {
 	if c.FailToCreateRelease {
 		return "", errors.New("release failed")

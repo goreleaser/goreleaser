@@ -27,11 +27,8 @@ func TestNewGitHubClient(t *testing.T) {
 
 		client, err := NewGitHub(ctx, ctx.Token)
 		require.NoError(t, err)
-
-		githubClient, ok := client.(*githubClient)
-		require.True(t, ok)
-		require.Equal(t, githubURL+"/api", githubClient.client.BaseURL.String())
-		require.Equal(t, githubURL+"/upload", githubClient.client.UploadURL.String())
+		require.Equal(t, githubURL+"/api", client.client.BaseURL.String())
+		require.Equal(t, githubURL+"/upload", client.client.UploadURL.String())
 	})
 
 	t.Run("bad api url", func(t *testing.T) {
@@ -73,11 +70,8 @@ func TestNewGitHubClient(t *testing.T) {
 
 		client, err := NewGitHub(ctx, ctx.Token)
 		require.NoError(t, err)
-
-		githubClient, ok := client.(*githubClient)
-		require.True(t, ok)
-		require.Equal(t, githubURL+"/api", githubClient.client.BaseURL.String())
-		require.Equal(t, githubURL+"/upload", githubClient.client.UploadURL.String())
+		require.Equal(t, githubURL+"/api", client.client.BaseURL.String())
+		require.Equal(t, githubURL+"/upload", client.client.UploadURL.String())
 	})
 
 	t.Run("template invalid api", func(t *testing.T) {
@@ -227,7 +221,7 @@ func TestGithubGetDefaultBranch(t *testing.T) {
 		Branch: "somebranch",
 	}
 
-	b, err := client.GetDefaultBranch(ctx, repo)
+	b, err := client.getDefaultBranch(ctx, repo)
 	require.NoError(t, err)
 	require.Equal(t, "main", b)
 	require.Equal(t, 1, totalRequests)
@@ -256,7 +250,7 @@ func TestGithubGetDefaultBranchErr(t *testing.T) {
 		Branch: "somebranch",
 	}
 
-	_, err = client.GetDefaultBranch(ctx, repo)
+	_, err = client.getDefaultBranch(ctx, repo)
 	require.Error(t, err)
 }
 
