@@ -118,7 +118,6 @@ func doPublish(ctx *context.Context, formula *artifact.Artifact, cl client.Clien
 	if err != nil {
 		return err
 	}
-	fmt.Printf("%+v\n", brew.Tap)
 	cl, err = client.NewIfToken(ctx, cl, brew.Tap.Token)
 	if err != nil {
 		return err
