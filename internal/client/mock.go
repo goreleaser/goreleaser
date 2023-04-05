@@ -38,11 +38,13 @@ type Mock struct {
 	Changes              string
 	ReleaseNotes         string
 	ReleaseNotesParams   []string
+	OpenedPullRequest    bool
 }
 
 // OpenPullRequest implements GitHubClient
-func (*Mock) OpenPullRequest(_ *context.Context, _ Repo, _, _ string) error {
-	panic("unimplemented")
+func (c *Mock) OpenPullRequest(_ *context.Context, _ Repo, _, _ string) error {
+	c.OpenedPullRequest = true
+	return nil
 }
 
 func (c *Mock) Changelog(_ *context.Context, _ Repo, _, _ string) (string, error) {
