@@ -12,10 +12,13 @@ import (
 	"github.com/goreleaser/goreleaser/pkg/context"
 )
 
-var (
-	_ Client       = &Mock{}
-	_ GitHubClient = &Mock{}
-)
+type testClient interface {
+	Client
+	ReleaseNotesGenerator
+	PullRequestOpener
+}
+
+var _ testClient = &Mock{}
 
 func NewMock() *Mock {
 	return &Mock{}
@@ -41,7 +44,6 @@ type Mock struct {
 	OpenedPullRequest    bool
 }
 
-// OpenPullRequest implements GitHubClient
 func (c *Mock) OpenPullRequest(_ *context.Context, _ Repo, _, _ string) error {
 	c.OpenedPullRequest = true
 	return nil
