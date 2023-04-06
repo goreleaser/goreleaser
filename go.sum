@@ -1342,8 +1342,8 @@ github.com/goreleaser/chglog v0.4.2 h1:afmbT1d7lX/q+GF8wv3a1Dofs2j/Y9YkiCpGemWR6
 github.com/goreleaser/chglog v0.4.2/go.mod h1:u/F03un4hMCQrp65qSWCkkC6T+G7YLKZ+AM2mITE47s=
 github.com/goreleaser/fileglob v1.3.0 h1:/X6J7U8lbDpQtBvGcwwPS6OpzkNVlVEsFUVRx9+k+7I=
 github.com/goreleaser/fileglob v1.3.0/go.mod h1:Jx6BoXv3mbYkEzwm9THo7xbr5egkAraxkGorbJb4RxU=
-github.com/goreleaser/nfpm/v2 v2.27.1 h1:+q7/aY+SCQjB5OKiqzdBVoFIhG1XnxRBU2Pxqt8qm3U=
-github.com/goreleaser/nfpm/v2 v2.27.1/go.mod h1:o5coBBYYdw+tifbB6DJLL/rR42bUmI5mWCKGumJmEt8=
+github.com/goreleaser/nfpm/v2 v2.28.0 h1:BLKOrJpyBrO/LQ7XQP/mICDBqq6K3iX1cqZIMYKUbCc=
+github.com/goreleaser/nfpm/v2 v2.28.0/go.mod h1:cMwzgk+6Irs3+ZKD6Lz/ADJ8qsVmJxYPlE3/wOxAfVA=
 github.com/gorilla/context v1.1.1/go.mod h1:kBGZzfjB9CEq2AlWe17Uuf7NDRt0dE0s8S51q0aT7Yg=
 github.com/gorilla/handlers v0.0.0-20150720190736-60c7bfde3e33/go.mod h1:Qkdc/uu4tH4g6mTK6auzZ766c4CA0Ng8+o/OAirnOIQ=
 github.com/gorilla/mux v1.6.2/go.mod h1:1lud6UwP+6orDFRuTfBEV8e9/aOM/c4fVVCaMa2zaAs=
