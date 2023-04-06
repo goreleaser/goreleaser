@@ -12,19 +12,19 @@ Below you can find the steps for each of them.
 ### homebrew tap
 
 === "OSS"
-    ```sh
+    ```bash
     brew install goreleaser/tap/goreleaser
     ```
 
 === "Pro"
-    ```sh
+    ```bash
     brew install goreleaser/tap/goreleaser-pro
     ```
 
 ### homebrew
 
 === "OSS"
-    ```sh
+    ```bash
     brew install goreleaser
     ```
 
@@ -35,20 +35,20 @@ Below you can find the steps for each of them.
 ### snapcraft
 
 === "OSS"
-    ```sh
+    ```bash
     sudo snap install --classic goreleaser
     ```
 
 ### scoop
 
 === "OSS"
-    ```sh
+    ```bash
     scoop bucket add goreleaser https://github.com/goreleaser/scoop-bucket.git
     scoop install goreleaser
     ```
 
 === "Pro"
-    ```sh
+    ```bash
     scoop bucket add goreleaser https://github.com/goreleaser/scoop-bucket.git
     scoop install goreleaser-pro
     ```
@@ -56,14 +56,14 @@ Below you can find the steps for each of them.
 ### apt
 
 === "OSS"
-    ```sh
+    ```bash
     echo 'deb [trusted=yes] https://repo.goreleaser.com/apt/ /' | sudo tee /etc/apt/sources.list.d/goreleaser.list
     sudo apt update
     sudo apt install goreleaser
     ```
 
 === "Pro"
-    ```sh
+    ```bash
     echo 'deb [trusted=yes] https://repo.goreleaser.com/apt/ /' | sudo tee /etc/apt/sources.list.d/goreleaser.list
     sudo apt update
     sudo apt install goreleaser-pro
@@ -72,7 +72,7 @@ Below you can find the steps for each of them.
 ### yum
 
 === "OSS"
-    ```sh
+    ```bash
     echo '[goreleaser]
     name=GoReleaser
     baseurl=https://repo.goreleaser.com/yum/
@@ -82,7 +82,7 @@ Below you can find the steps for each of them.
     ```
 
 === "Pro"
-    ```sh
+    ```bash
     echo '[goreleaser]
     name=GoReleaser
     baseurl=https://repo.goreleaser.com/yum/
@@ -94,12 +94,12 @@ Below you can find the steps for each of them.
 ### aur
 
 === "OSS"
-    ```sh
+    ```bash
     yay -S goreleaser-bin
     ```
 
 === "Pro"
-    ```sh
+    ```bash
     yay -S goreleaser-pro-bin
     ```
 
@@ -114,19 +114,19 @@ Below you can find the steps for each of them.
 ### go install
 
 === "OSS"
-    ```sh
+    ```bash
     go install github.com/goreleaser/goreleaser@latest
     ```
 
 ### bash script
 
 === "OSS"
-    ```sh
+    ```bash
     curl -sfL https://goreleaser.com/static/run | bash
     ```
 
 === "Pro"
-    ```sh
+    ```bash
     curl -sfL https://goreleaser.com/static/run | DISTRIBUTION=pro bash
     ```
 
@@ -191,39 +191,39 @@ All artifacts are checksummed, and the checksum file is signed with [cosign][].
 
 === "OSS"
     1. Download the files you want, and the `checksums.txt`, `checksum.txt.pem` and `checksums.txt.sig` files from the [releases][releases] page:
-      ```sh
-      wget https://github.com/goreleaser/goreleaser/releases/download/__VERSION__/checksums.txt
+      ```bash
+      wget 'https://github.com/goreleaser/goreleaser/releases/download/__VERSION__/checksums.txt'
       ```
     1. Verify the signature:
-      ```sh
+      ```bash
       cosign verify-blob \
         --certificate-identity 'https://github.com/goreleaser/goreleaser/.github/workflows/release.yml@refs/tags/__VERSION__' \
         --certificate-oidc-issuer 'https://token.actions.githubusercontent.com' \
-        --cert https://github.com/goreleaser/goreleaser/releases/download/__VERSION__/checksums.txt.pem \
-        --signature https://github.com/goreleaser/goreleaser/releases/download/__VERSION__/checksums.txt.sig \
+        --cert 'https://github.com/goreleaser/goreleaser/releases/download/__VERSION__/checksums.txt.pem' \
+        --signature 'https://github.com/goreleaser/goreleaser/releases/download/__VERSION__/checksums.txt.sig' \
         ./checksums.txt
       ```
     1. If the signature is valid, you can then verify the SHA256 sums match with the downloaded binary:
-      ```sh
+      ```bash
       sha256sum --ignore-missing -c checksums.txt
       ```
 
 === "Pro"
     1. Download the files you want, and the `checksums.txt`, `checksum.txt.pem` and `checksums.txt.sig` files from the [releases][pro-releases] page:
-      ```sh
-      wget https://github.com/goreleaser/goreleaser-pro/releases/download/__VERSION__-pro/checksums.txt
+      ```bash
+      wget 'https://github.com/goreleaser/goreleaser-pro/releases/download/__VERSION__-pro/checksums.txt'
       ```
     1. Verify the signature:
-      ```sh
+      ```bash
       cosign verify-blob \
         --certificate-identity 'https://github.com/goreleaser/goreleaser-pro-internal/.github/workflows/release-pro.yml@refs/tags/__VERSION__-pro' \
         --certificate-oidc-issuer 'https://token.actions.githubusercontent.com' \
-        --cert https://github.com/goreleaser/goreleaser-pro/releases/download/__VERSION__-pro/checksums.txt.pem \
-        --signature https://github.com/goreleaser/goreleaser-pro/releases/download/__VERSION__-pro/checksums.txt.sig \
+        --cert 'https://github.com/goreleaser/goreleaser-pro/releases/download/__VERSION__-pro/checksums.txt.pem' \
+        --signature 'https://github.com/goreleaser/goreleaser-pro/releases/download/__VERSION__-pro/checksums.txt.sig' \
         ./checksums.txt
       ```
     1. If the signature is valid, you can then verify the SHA256 sums match with the downloaded binary:
-      ```sh
+      ```bash
       sha256sum --ignore-missing -c checksums.txt
       ```
 
@@ -234,15 +234,15 @@ Our Docker images are signed with [cosign][].
 Verify the signatures:
 
 === "OSS"
-    ```sh
+    ```bash
     cosign verify \
       --certificate-identity 'https://github.com/goreleaser/goreleaser/.github/workflows/release.yml@refs/tags/__VERSION__' \
-      --certificate-oidc-issuer 'https://token.actions.githubusercontent.com' \
+        --certificate-oidc-issuer 'https://token.actions.githubusercontent.com' \
       goreleaser/goreleaser
     ```
 
 === "Pro"
-    ```sh
+    ```bash
     cosign verify \
       --certificate-identity 'https://github.com/goreleaser/goreleaser-pro-internal/.github/workflows/release-pro.yml@refs/tags/__VERSION__-pro' \
       --certificate-oidc-issuer 'https://token.actions.githubusercontent.com' \
@@ -265,7 +265,7 @@ To do that, you'll need to execute something more-or-less like the examples belo
 
     Example usage:
 
-    ```sh
+    ```bash
     docker run --rm --privileged \
       -v $PWD:/go/src/github.com/user/repo \
       -v /var/run/docker.sock:/var/run/docker.sock \
@@ -285,7 +285,7 @@ To do that, you'll need to execute something more-or-less like the examples belo
 
     Example usage:
 
-    ```sh
+    ```bash
     docker run --rm --privileged \
       -v $PWD:/go/src/github.com/user/repo \
       -v /var/run/docker.sock:/var/run/docker.sock \
@@ -333,25 +333,25 @@ If you just want to build from source for whatever reason, follow these steps:
 
 **clone:**
 
-```sh
+```bash
 git clone https://github.com/goreleaser/goreleaser
 cd goreleaser
 ```
 
 **get the dependencies:**
 
-```sh
+```bash
 go mod tidy
 ```
 
 **build:**
 
-```sh
+```bash
 go build -o goreleaser .
 ```
 
 **verify it works:**
 
-```sh
+```bash
 ./goreleaser --version
 ```
