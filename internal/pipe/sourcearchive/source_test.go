@@ -3,7 +3,6 @@ package sourcearchive
 import (
 	"archive/tar"
 	"archive/zip"
-	"fmt"
 	"io"
 	"os"
 	"path/filepath"
@@ -73,7 +72,6 @@ func TestArchive(t *testing.T) {
 
 			switch format {
 			case "zip":
-				// TODO: code.txt is being duplicated
 				require.ElementsMatch(t, []string{
 					"foo-1.0.0/README.md",
 					"foo-1.0.0/code.py",
@@ -83,6 +81,8 @@ func TestArchive(t *testing.T) {
 				}, lsZip(t, path))
 			case "tar":
 				require.ElementsMatch(t, []string{
+					"pax_global_header",
+					"foo-1.0.0/",
 					"foo-1.0.0/README.md",
 					"foo-1.0.0/code.py",
 					"foo-1.0.0/code.txt",
@@ -91,6 +91,8 @@ func TestArchive(t *testing.T) {
 				}, lsTar(t, path))
 			default:
 				require.ElementsMatch(t, []string{
+					"pax_global_header",
+					"foo-1.0.0/",
 					"foo-1.0.0/README.md",
 					"foo-1.0.0/code.py",
 					"foo-1.0.0/code.txt",
@@ -249,6 +251,5 @@ func lsTarGz(tb testing.TB, path string) []string {
 		}
 		paths = append(paths, h.Name)
 	}
-	fmt.Println("AAAAAA", paths)
 	return paths
 }

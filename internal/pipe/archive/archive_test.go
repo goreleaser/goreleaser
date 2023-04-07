@@ -6,6 +6,7 @@ import (
 	"compress/gzip"
 	"fmt"
 	"io"
+	"io/fs"
 	"os"
 	"path/filepath"
 	"testing"
@@ -999,10 +1000,10 @@ func TestDuplicateFilesInsideArchive(t *testing.T) {
 		Source:      ff.Name(),
 		Destination: "foo",
 	}))
-	require.EqualError(t, a.Add(config.File{
+	require.ErrorIs(t, a.Add(config.File{
 		Source:      ff.Name(),
 		Destination: "foo",
-	}), "file foo already exists in the archive")
+	}), fs.ErrExist)
 }
 
 func TestWrapInDirectory(t *testing.T) {

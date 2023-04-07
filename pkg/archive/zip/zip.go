@@ -8,6 +8,7 @@ import (
 	"errors"
 	"fmt"
 	"io"
+	"io/fs"
 	"os"
 	"path/filepath"
 
@@ -17,7 +18,8 @@ import (
 
 // Archive zip struct.
 type Archive struct {
-	z *zip.Writer
+	z     *zip.Writer
+	files map[string]bool
 }
 
 // New zip archive.
@@ -27,7 +29,8 @@ func New(target io.Writer) Archive {
 		return flate.NewWriter(out, flate.BestCompression)
 	})
 	return Archive{
-		z: compressor,
+		z:     compressor,
+		files: map[string]bool{},
 	}
 }
 
@@ -46,6 +49,7 @@ func Copying(source *os.File, target io.Writer) (Archive, error) {
 		if zf.Mode().IsDir() {
 			continue
 		}
+		w.files[zf.Name] = true
 		hdr := zip.FileHeader{
 			Name:               zf.Name,
 			UncompressedSize64: zf.UncompressedSize64,
@@ -82,6 +86,10 @@ func (a Archive) Close() error {
 
 // Add a file to the zip archive.
 func (a Archive) Add(f config.File) error {
+	if _, ok := a.files[f.Destination]; ok {
+		return &fs.PathError{Err: fs.ErrExist, Path: f.Destination, Op: "add"}
+	}
+	a.files[f.Destination] = true
 	info, err := os.Lstat(f.Source) // #nosec
 	if err != nil {
 		return err
