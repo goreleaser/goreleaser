@@ -5,14 +5,12 @@ package zip
 import (
 	"archive/zip"
 	"compress/flate"
-	"errors"
 	"fmt"
 	"io"
 	"io/fs"
 	"os"
 	"path/filepath"
 
-	"github.com/caarlos0/log"
 	"github.com/goreleaser/goreleaser/pkg/config"
 )
 
@@ -67,11 +65,6 @@ func Copying(source *os.File, target io.Writer) (Archive, error) {
 		}
 		defer rr.Close()
 		if _, err = io.Copy(ww, rr); err != nil {
-			_ = rr.Close()
-			if errors.Is(err, zip.ErrChecksum) {
-				log.Log.WithError(err).WithField("name", zf.Name).Warn("file might be corrupted")
-				continue
-			}
 			return Archive{}, fmt.Errorf("copy from %q source to target: %w", zf.Name, err)
 		}
 		_ = rr.Close()
