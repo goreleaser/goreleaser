@@ -12,52 +12,47 @@ import (
 	"github.com/ulikunitz/xz"
 )
 
+// LsArchive return the file list of a given archive in a given formatkj
 func LsArchive(tb testing.TB, path, format string) []string {
 	tb.Helper()
+	f := openFile(tb, path)
 	switch format {
 	case "tar.gz", "tgz":
-		return LsTarGz(tb, path)
+		return doLsTar(openGzip(tb, f))
 	case "tar.xz", "txz":
-		return LsTarXz(tb, path)
+		return doLsTar(openXz(tb, f))
 	case "tar":
-		return LsTar(tb, path)
+		return doLsTar(f)
 	case "zip":
-		return LsZip(tb, path)
+		return lsZip(tb, f)
 	case "gz":
-		return LsGz(tb, path)
+		return []string{openGzip(tb, f).Header.Name}
 	default:
 		tb.Errorf("invalid format: %s", format)
 		return nil
 	}
 }
 
-func LsTar(tb testing.TB, path string) []string {
+func openGzip(tb testing.TB, r io.Reader) *gzip.Reader {
 	tb.Helper()
-	return doLsTar(openFile(tb, path))
+	gz, err := gzip.NewReader(r)
+	require.NoError(tb, err)
+	return gz
 }
 
-func LsTarGz(tb testing.TB, path string) []string {
+func openXz(tb testing.TB, r io.Reader) *xz.Reader {
 	tb.Helper()
-
-	gz, err := gzip.NewReader(openFile(tb, path))
+	xz, err := xz.NewReader(r)
 	require.NoError(tb, err)
-	return doLsTar(gz)
+	return xz
 }
 
-func LsTarXz(tb testing.TB, path string) []string {
+func lsZip(tb testing.TB, f *os.File) []string {
 	tb.Helper()
 
-	gz, err := xz.NewReader(openFile(tb, path))
+	stat, err := f.Stat()
 	require.NoError(tb, err)
-	return doLsTar(gz)
-}
-
-func LsZip(tb testing.TB, path string) []string {
-	tb.Helper()
-
-	stat, err := os.Stat(path)
-	require.NoError(tb, err)
-	z, err := zip.NewReader(openFile(tb, path), stat.Size())
+	z, err := zip.NewReader(f, stat.Size())
 	require.NoError(tb, err)
 
 	var paths []string
@@ -65,13 +60,6 @@ func LsZip(tb testing.TB, path string) []string {
 		paths = append(paths, zf.Name)
 	}
 	return paths
-}
-
-func LsGz(tb testing.TB, path string) []string {
-	z, err := gzip.NewReader(openFile(tb, path))
-	require.NoError(tb, err)
-
-	return []string{z.Header.Name}
 }
 
 func doLsTar(f io.Reader) []string {

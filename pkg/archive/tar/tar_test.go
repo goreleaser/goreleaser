@@ -192,6 +192,6 @@ func TestCopying(t *testing.T) {
 	require.NoError(t, f2.Close())
 	require.NoError(t, f1.Close())
 
-	require.Equal(t, []string{"foo.txt"}, testlib.LsTar(t, f1.Name()))
-	require.Equal(t, []string{"foo.txt", "executable"}, testlib.LsTar(t, f2.Name()))
+	require.Equal(t, []string{"foo.txt"}, testlib.LsArchive(t, f1.Name(), "tar"))
+	require.Equal(t, []string{"foo.txt", "executable"}, testlib.LsArchive(t, f2.Name(), "tar"))
 }
