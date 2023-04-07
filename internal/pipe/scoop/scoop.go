@@ -174,14 +174,24 @@ func doPublish(ctx *context.Context, cl client.Client) error {
 	scoop.Bucket = ref
 
 	repo := client.RepoFromRef(scoop.Bucket)
-	return cl.CreateFile(
-		ctx,
-		author,
-		repo,
-		content,
-		path.Join(scoop.Folder, manifest.Name),
-		commitMessage,
-	)
+	gpath := path.Join(scoop.Folder, manifest.Name)
+
+	if !scoop.Bucket.PullRequest.Enabled {
+		return cl.CreateFile(ctx, author, repo, content, gpath, commitMessage)
+	}
+
+	log.Info("brews.pull_request enabled, creating a PR")
+	pcl, ok := cl.(client.PullRequestOpener)
+	if !ok {
+		return fmt.Errorf("client does not support pull requests")
+	}
+
+	if err := cl.CreateFile(ctx, author, repo, content, gpath, commitMessage); err != nil {
+		return err
+	}
+
+	title := fmt.Sprintf("Updated %s to %s", ctx.Config.ProjectName, ctx.Version)
+	return pcl.OpenPullRequest(ctx, repo, scoop.Bucket.PullRequest.Base, title)
 }
 
 // Manifest represents a scoop.sh App Manifest.

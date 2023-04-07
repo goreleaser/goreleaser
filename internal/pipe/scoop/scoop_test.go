@@ -510,6 +510,56 @@ func Test_doRun(t *testing.T) {
 	}
 }
 
+func TestRunPipePullRequest(t *testing.T) {
+	folder := t.TempDir()
+	ctx := testctx.NewWithCfg(
+		config.Project{
+			Dist:        folder,
+			ProjectName: "foo",
+			Scoop: config.Scoop{
+				Name:        "foo",
+				Homepage:    "https://goreleaser.com",
+				Description: "Fake desc",
+				Bucket: config.RepoRef{
+					Owner:  "foo",
+					Name:   "bar",
+					Branch: "update-{{.Version}}",
+					PullRequest: config.PullRequest{
+						Enabled: true,
+					},
+				},
+			},
+		},
+		testctx.WithVersion("1.2.1"),
+		testctx.WithCurrentTag("v1.2.1"),
+	)
+	path := filepath.Join(folder, "dist/foo_windows_amd64/foo.exe")
+	ctx.Artifacts.Add(&artifact.Artifact{
+		Name:   "foo_windows_amd64.tar.gz",
+		Path:   path,
+		Goos:   "windows",
+		Goarch: "amd64",
+		Type:   artifact.UploadableArchive,
+		Extra: map[string]interface{}{
+			artifact.ExtraID:     "foo",
+			artifact.ExtraFormat: "tar.gz",
+			artifact.ExtraBinary: "foo",
+		},
+	})
+
+	require.NoError(t, os.MkdirAll(filepath.Dir(path), 0o755))
+	f, err := os.Create(path)
+	require.NoError(t, err)
+	require.NoError(t, f.Close())
+
+	client := client.NewMock()
+	require.NoError(t, doRun(ctx, client))
+	require.NoError(t, doPublish(ctx, client))
+	require.True(t, client.CreatedFile)
+	require.True(t, client.OpenedPullRequest)
+	golden.RequireEqualJSON(t, []byte(client.Content))
+}
+
 func Test_buildManifest(t *testing.T) {
 	folder := t.TempDir()
 	file := filepath.Join(folder, "archive")
