@@ -81,7 +81,6 @@ func TestArchive(t *testing.T) {
 				}, lsZip(t, path))
 			case "tar":
 				require.ElementsMatch(t, []string{
-					"pax_global_header",
 					"foo-1.0.0/",
 					"foo-1.0.0/README.md",
 					"foo-1.0.0/code.py",
@@ -91,7 +90,6 @@ func TestArchive(t *testing.T) {
 				}, lsTar(t, path))
 			default:
 				require.ElementsMatch(t, []string{
-					"pax_global_header",
 					"foo-1.0.0/",
 					"foo-1.0.0/README.md",
 					"foo-1.0.0/code.py",
@@ -221,17 +219,7 @@ func lsTar(tb testing.TB, path string) []string {
 
 	f, err := os.Open(path)
 	require.NoError(tb, err)
-	z := tar.NewReader(f)
-
-	var paths []string
-	for {
-		h, err := z.Next()
-		if h == nil || err == io.EOF {
-			break
-		}
-		paths = append(paths, h.Name)
-	}
-	return paths
+	return doLsTar(f)
 }
 
 func lsTarGz(tb testing.TB, path string) []string {
@@ -241,13 +229,19 @@ func lsTarGz(tb testing.TB, path string) []string {
 	require.NoError(tb, err)
 	gz, err := gzip.NewReader(f)
 	require.NoError(tb, err)
-	tgz := tar.NewReader(gz)
+	return doLsTar(gz)
+}
 
+func doLsTar(f io.Reader) []string {
+	z := tar.NewReader(f)
 	var paths []string
 	for {
-		h, err := tgz.Next()
+		h, err := z.Next()
 		if h == nil || err == io.EOF {
 			break
+		}
+		if h.Format == tar.FormatPAX {
+			continue
 		}
 		paths = append(paths, h.Name)
 	}
