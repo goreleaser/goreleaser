@@ -2171,6 +2171,18 @@
 				"additionalProperties": false,
 				"type": "object"
 			},
+			"PullRequest": {
+				"properties": {
+					"enabled": {
+						"type": "boolean"
+					},
+					"base": {
+						"type": "string"
+					}
+				},
+				"additionalProperties": false,
+				"type": "object"
+			},
 			"Reddit": {
 				"properties": {
 					"enabled": {
@@ -2301,6 +2313,9 @@
 					},
 					"branch": {
 						"type": "string"
+					},
+					"pull_request": {
+						"$ref": "#/$defs/PullRequest"
 					}
 				},
 				"additionalProperties": false,

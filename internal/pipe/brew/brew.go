@@ -153,7 +153,22 @@ func doPublish(ctx *context.Context, formula *artifact.Artifact, cl client.Clien
 		return err
 	}
 
-	return cl.CreateFile(ctx, author, repo, content, gpath, msg)
+	if !brew.Tap.PullRequest.Enabled {
+		return cl.CreateFile(ctx, author, repo, content, gpath, msg)
+	}
+
+	log.Info("brews.pull_request enabled, creating a PR")
+	pcl, ok := cl.(client.PullRequestOpener)
+	if !ok {
+		return fmt.Errorf("client does not support pull requests")
+	}
+
+	if err := cl.CreateFile(ctx, author, repo, content, gpath, msg); err != nil {
+		return err
+	}
+
+	title := fmt.Sprintf("Updated %s to %s", ctx.Config.ProjectName, ctx.Version)
+	return pcl.OpenPullRequest(ctx, repo, brew.Tap.PullRequest.Base, title)
 }
 
 func doRun(ctx *context.Context, brew config.Homebrew, cl client.Client) error {

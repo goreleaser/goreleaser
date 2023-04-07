@@ -520,7 +520,7 @@ func TestGiteaReleaseURLTemplate(t *testing.T) {
 					},
 				},
 			})
-			client, err := NewGitea(ctx, ctx.Token)
+			client, err := newGitea(ctx, ctx.Token)
 			require.NoError(t, err)
 
 			urlTpl, err := client.ReleaseURLTemplate(ctx)
@@ -556,7 +556,7 @@ func TestGiteaGetDefaultBranch(t *testing.T) {
 			API: srv.URL,
 		},
 	})
-	client, err := NewGitea(ctx, "test-token")
+	client, err := newGitea(ctx, "test-token")
 	require.NoError(t, err)
 	repo := Repo{
 		Owner:  "someone",
@@ -564,7 +564,7 @@ func TestGiteaGetDefaultBranch(t *testing.T) {
 		Branch: "somebranch",
 	}
 
-	_, err = client.GetDefaultBranch(ctx, repo)
+	_, err = client.getDefaultBranch(ctx, repo)
 	require.NoError(t, err)
 	require.Equal(t, 2, totalRequests)
 }
@@ -587,7 +587,7 @@ func TestGiteaGetDefaultBranchErr(t *testing.T) {
 			API: srv.URL,
 		},
 	})
-	client, err := NewGitea(ctx, "test-token")
+	client, err := newGitea(ctx, "test-token")
 	require.NoError(t, err)
 	repo := Repo{
 		Owner:  "someone",
@@ -595,7 +595,7 @@ func TestGiteaGetDefaultBranchErr(t *testing.T) {
 		Branch: "somebranch",
 	}
 
-	_, err = client.GetDefaultBranch(ctx, repo)
+	_, err = client.getDefaultBranch(ctx, repo)
 	require.Error(t, err)
 }
 
@@ -614,7 +614,7 @@ func TestGiteaChangelog(t *testing.T) {
 			API: srv.URL,
 		},
 	})
-	client, err := NewGitea(ctx, "test-token")
+	client, err := newGitea(ctx, "test-token")
 	require.NoError(t, err)
 	repo := Repo{
 		Owner:  "someone",
