@@ -34,6 +34,8 @@ env_files:
 
 ## Forcing a specific token
 
+> Since: v1.17
+
 This will prevent using both GitLab and Gitea tokens.
 
 If GoReleaser is being run with more than one of the `*_TOKEN` environment
