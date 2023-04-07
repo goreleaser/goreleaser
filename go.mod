@@ -8,7 +8,7 @@ require (
 	github.com/atc0005/go-teams-notify/v2 v2.7.0
 	github.com/awslabs/amazon-ecr-credential-helper/ecr-login v0.0.0-20220517224237-e6f29200ae04
 	github.com/caarlos0/ctrlc v1.2.0
-	github.com/caarlos0/env/v7 v7.1.0
+	github.com/caarlos0/env/v8 v8.0.0
 	github.com/caarlos0/go-reddit/v3 v3.0.1
 	github.com/caarlos0/go-shellwords v1.0.12
 	github.com/caarlos0/log v0.2.2
@@ -17,7 +17,7 @@ require (
 	github.com/chrismellard/docker-credential-acr-env v0.0.0-20220327082430-c57b701bfc08
 	github.com/dghubble/go-twitter v0.0.0-20211115160449-93a8679adecb
 	github.com/dghubble/oauth1 v0.7.2
-	github.com/disgoorg/disgo v0.15.3
+	github.com/disgoorg/disgo v0.16.0
 	github.com/disgoorg/snowflake/v2 v2.0.1
 	github.com/distribution/distribution/v3 v3.0.0-20221021092657-c47a966fded8
 	github.com/go-telegram-bot-api/telegram-bot-api v4.6.4+incompatible
@@ -26,7 +26,7 @@ require (
 	github.com/google/ko v0.13.0
 	github.com/google/uuid v1.3.0
 	github.com/goreleaser/fileglob v1.3.0
-	github.com/goreleaser/nfpm/v2 v2.27.1
+	github.com/goreleaser/nfpm/v2 v2.28.0
 	github.com/hashicorp/go-multierror v1.1.1
 	github.com/imdario/mergo v0.3.15
 	github.com/invopop/jsonschema v0.7.0
@@ -39,17 +39,17 @@ require (
 	github.com/muesli/termenv v0.15.1
 	github.com/ory/dockertest/v3 v3.9.1
 	github.com/slack-go/slack v0.12.1
-	github.com/spf13/cobra v1.6.1
+	github.com/spf13/cobra v1.7.0
 	github.com/stretchr/testify v1.8.2
 	github.com/ulikunitz/xz v0.5.11
 	github.com/withfig/autocomplete-tools/integrations/cobra v1.2.1
-	github.com/xanzy/go-gitlab v0.81.0
+	github.com/xanzy/go-gitlab v0.82.0
 	gocloud.dev v0.29.0
 	golang.org/x/crypto v0.7.0
-	golang.org/x/oauth2 v0.6.0
+	golang.org/x/oauth2 v0.7.0
 	golang.org/x/sync v0.1.0
-	golang.org/x/text v0.8.0
-	golang.org/x/tools v0.7.0
+	golang.org/x/text v0.9.0
+	golang.org/x/tools v0.8.0
 	gopkg.in/mail.v2 v2.3.1
 	gopkg.in/yaml.v3 v3.0.1
 )
@@ -132,7 +132,7 @@ require (
 	github.com/disgoorg/log v1.2.0 // indirect
 	github.com/docker/cli v23.0.1+incompatible // indirect
 	github.com/docker/distribution v2.8.1+incompatible // indirect
-	github.com/docker/docker v23.0.1+incompatible // indirect
+	github.com/docker/docker v23.0.3+incompatible // indirect
 	github.com/docker/docker-credential-helpers v0.7.0 // indirect
 	github.com/docker/go-connections v0.4.0 // indirect
 	github.com/docker/go-metrics v0.0.1 // indirect
@@ -237,10 +237,10 @@ require (
 	go.opencensus.io v0.24.0 // indirect
 	go.uber.org/automaxprocs v1.5.2
 	golang.org/x/exp v0.0.0-20230124195608-d38c7dcee874 // indirect
-	golang.org/x/mod v0.9.0 // indirect
-	golang.org/x/net v0.8.0 // indirect
-	golang.org/x/sys v0.6.0 // indirect
-	golang.org/x/term v0.6.0 // indirect
+	golang.org/x/mod v0.10.0 // indirect
+	golang.org/x/net v0.9.0 // indirect
+	golang.org/x/sys v0.7.0 // indirect
+	golang.org/x/term v0.7.0 // indirect
 	golang.org/x/time v0.3.0 // indirect
 	golang.org/x/xerrors v0.0.0-20220907171357-04be3eba64a2 // indirect
 	google.golang.org/api v0.110.0 // indirect

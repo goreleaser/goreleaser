@@ -84,6 +84,13 @@ type RepoRef struct {
 	Name   string `yaml:"name,omitempty" json:"name,omitempty"`
 	Token  string `yaml:"token,omitempty" json:"token,omitempty"`
 	Branch string `yaml:"branch,omitempty" json:"branch,omitempty"`
+
+	PullRequest PullRequest `yaml:"pull_request,omitempty" json:"pull_request,omitempty"`
+}
+
+type PullRequest struct {
+	Enabled bool   `yaml:"enabled,omitempty" json:"enabled,omitempty"`
+	Base    string `yaml:"base,omitempty" json:"base,omitempty"`
 }
 
 // HomebrewDependency represents Homebrew dependency.

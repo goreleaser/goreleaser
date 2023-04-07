@@ -21,6 +21,8 @@ type giteaClient struct {
 	client *gitea.Client
 }
 
+var _ Client = &giteaClient{}
+
 func getInstanceURL(ctx *context.Context) (string, error) {
 	apiURL, err := tmpl.New(ctx).Apply(ctx.Config.GiteaURLs.API)
 	if err != nil {
@@ -39,8 +41,8 @@ func getInstanceURL(ctx *context.Context) (string, error) {
 	return rawurl, nil
 }
 
-// NewGitea returns a gitea client implementation.
-func NewGitea(ctx *context.Context, token string) (Client, error) {
+// newGitea returns a gitea client implementation.
+func newGitea(ctx *context.Context, token string) (*giteaClient, error) {
 	instanceURL, err := getInstanceURL(ctx)
 	if err != nil {
 		return nil, err
@@ -87,7 +89,7 @@ func (c *giteaClient) CloseMilestone(_ *context.Context, repo Repo, title string
 	return err
 }
 
-func (c *giteaClient) GetDefaultBranch(_ *context.Context, repo Repo) (string, error) {
+func (c *giteaClient) getDefaultBranch(_ *context.Context, repo Repo) (string, error) {
 	projectID := repo.String()
 	p, res, err := c.client.GetRepo(repo.Owner, repo.Name)
 	if err != nil {
@@ -117,7 +119,7 @@ func (c *giteaClient) CreateFile(
 	if repo.Branch != "" {
 		branch = repo.Branch
 	} else {
-		branch, err = c.GetDefaultBranch(ctx, repo)
+		branch, err = c.getDefaultBranch(ctx, repo)
 		if err != nil {
 			// Fall back to 'master' 😭
 			log.WithFields(log.Fields{

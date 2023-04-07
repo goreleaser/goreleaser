@@ -40,6 +40,20 @@ scoop:
     # to GoReleaser
     token: "{{ .Env.SCOOP_TAP_GITHUB_TOKEN }}"
 
+    # Sets up pull request creation instead of just pushing to the given branch.
+    # Make sure the 'branch' property is different from base before enabling
+    # it.
+    #
+    # Since: v1.17
+    pull_request:
+      # Whether to enable it or not.
+      enabled: true
+
+      # Base branch of the PR.
+      #
+      # Default: default repository branch.
+      base: main
+
   # Folder inside the repository to put the scoop.
   #
   # Note that while scoop works if the manifests are in a folder,

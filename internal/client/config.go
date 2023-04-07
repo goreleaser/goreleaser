@@ -28,9 +28,10 @@ func TemplateRef(apply func(s string) (string, error), ref config.RepoRef) (conf
 		return ref, err
 	}
 	return config.RepoRef{
-		Owner:  owner,
-		Name:   name,
-		Token:  ref.Token,
-		Branch: branch,
+		Owner:       owner,
+		Name:        name,
+		Token:       ref.Token,
+		Branch:      branch,
+		PullRequest: ref.PullRequest,
 	}, nil
 }

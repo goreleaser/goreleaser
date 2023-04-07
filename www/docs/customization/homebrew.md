@@ -67,6 +67,20 @@ brews:
       # provided to GoReleaser
       token: "{{ .Env.HOMEBREW_TAP_GITHUB_TOKEN }}"
 
+      # Sets up pull request creation instead of just pushing to the given branch.
+      # Make sure the 'branch' property is different from base before enabling
+      # it.
+      #
+      # Since: v1.17
+      pull_request:
+        # Whether to enable it or not.
+        enabled: true
+
+        # Base branch of the PR.
+        #
+        # Default: default repository branch.
+        base: main
+
     # URL which is determined by the given Token (github, gitlab or gitea).
     #
     # Default depends on the client.

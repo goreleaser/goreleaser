@@ -13,8 +13,9 @@ import (
 )
 
 var (
-	_ Client       = &Mock{}
-	_ GitHubClient = &Mock{}
+	_ Client                = &Mock{}
+	_ ReleaseNotesGenerator = &Mock{}
+	_ PullRequestOpener     = &Mock{}
 )
 
 func NewMock() *Mock {
@@ -38,6 +39,12 @@ type Mock struct {
 	Changes              string
 	ReleaseNotes         string
 	ReleaseNotesParams   []string
+	OpenedPullRequest    bool
+}
+
+func (c *Mock) OpenPullRequest(_ *context.Context, _ Repo, _, _ string) error {
+	c.OpenedPullRequest = true
+	return nil
 }
 
 func (c *Mock) Changelog(_ *context.Context, _ Repo, _, _ string) (string, error) {
@@ -63,10 +70,6 @@ func (c *Mock) CloseMilestone(_ *context.Context, _ Repo, title string) error {
 	c.ClosedMilestone = title
 
 	return nil
-}
-
-func (c *Mock) GetDefaultBranch(_ *context.Context, _ Repo) (string, error) {
-	return "", ErrNotImplemented
 }
 
 func (c *Mock) CreateRelease(_ *context.Context, _ string) (string, error) {

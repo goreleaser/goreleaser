@@ -3,7 +3,7 @@ package reddit
 import (
 	"fmt"
 
-	"github.com/caarlos0/env/v7"
+	"github.com/caarlos0/env/v8"
 	"github.com/caarlos0/go-reddit/v3/reddit"
 	"github.com/caarlos0/log"
 	"github.com/goreleaser/goreleaser/internal/tmpl"
