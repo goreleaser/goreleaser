@@ -310,6 +310,59 @@ func TestFullPipe(t *testing.T) {
 	}
 }
 
+func TestRunPipePullRequest(t *testing.T) {
+	folder := t.TempDir()
+	ctx := testctx.NewWithCfg(
+		config.Project{
+			Dist:        folder,
+			ProjectName: "foo",
+			Krews: []config.Krew{
+				{
+					Name:             "foo",
+					Homepage:         "https://goreleaser.com",
+					ShortDescription: "test",
+					Description:      "Fake desc",
+					Index: config.RepoRef{
+						Owner:  "foo",
+						Name:   "bar",
+						Branch: "update-{{.Version}}",
+						PullRequest: config.PullRequest{
+							Enabled: true,
+						},
+					},
+				},
+			},
+		},
+		testctx.WithVersion("1.2.1"),
+		testctx.WithCurrentTag("v1.2.1"),
+	)
+	path := filepath.Join(folder, "dist/foo_darwin_all/foo")
+	ctx.Artifacts.Add(&artifact.Artifact{
+		Name:   "foo_macos.tar.gz",
+		Path:   path,
+		Goos:   "darwin",
+		Goarch: "all",
+		Type:   artifact.UploadableArchive,
+		Extra: map[string]interface{}{
+			artifact.ExtraID:       "foo",
+			artifact.ExtraFormat:   "tar.gz",
+			artifact.ExtraBinaries: []string{"foo"},
+		},
+	})
+
+	require.NoError(t, os.MkdirAll(filepath.Dir(path), 0o755))
+	f, err := os.Create(path)
+	require.NoError(t, err)
+	require.NoError(t, f.Close())
+
+	client := client.NewMock()
+	require.NoError(t, runAll(ctx, client))
+	require.NoError(t, publishAll(ctx, client))
+	require.True(t, client.CreatedFile)
+	require.True(t, client.OpenedPullRequest)
+	golden.RequireEqualYaml(t, []byte(client.Content))
+}
+
 func TestRunPipeUniversalBinary(t *testing.T) {
 	folder := t.TempDir()
 

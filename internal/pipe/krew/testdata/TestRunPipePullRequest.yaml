@@ -1,0 +1,24 @@
+apiVersion: krew.googlecontainertools.github.com/v1alpha2
+kind: Plugin
+metadata:
+  name: foo
+spec:
+  version: v1.2.1
+  platforms:
+    - bin: foo
+      uri: https://dummyhost/download/v1.2.1/foo_macos.tar.gz
+      sha256: e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
+      selector:
+        matchLabels:
+          os: darwin
+          arch: amd64
+    - bin: foo
+      uri: https://dummyhost/download/v1.2.1/foo_macos.tar.gz
+      sha256: e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
+      selector:
+        matchLabels:
+          os: darwin
+          arch: arm64
+  shortDescription: test
+  homepage: https://goreleaser.com
+  description: Fake desc
