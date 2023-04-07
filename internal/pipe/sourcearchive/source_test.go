@@ -24,13 +24,14 @@ func TestArchive(t *testing.T) {
 			require.NoError(t, os.Mkdir("dist", 0o744))
 
 			testlib.GitInit(t)
-			require.NoError(t, os.WriteFile("code.txt", []byte("not really code"), 0o655))
+			require.NoError(t, os.WriteFile("code.rb", []byte("not really code"), 0o655))
 			require.NoError(t, os.WriteFile("code.py", []byte("print 1"), 0o655))
 			require.NoError(t, os.WriteFile("README.md", []byte("# my dope fake project"), 0o655))
 			testlib.GitAdd(t)
 			testlib.GitCommit(t, "feat: first")
 			require.NoError(t, os.WriteFile("added-later.txt", []byte("this file was added later"), 0o655))
 			require.NoError(t, os.WriteFile("ignored.md", []byte("never added"), 0o655))
+			require.NoError(t, os.WriteFile("code.txt", []byte("not really code"), 0o655))
 			require.NoError(t, os.MkdirAll("subfolder", 0o755))
 			require.NoError(t, os.WriteFile("subfolder/file.md", []byte("a file within a folder, added later"), 0o655))
 
@@ -75,6 +76,7 @@ func TestArchive(t *testing.T) {
 				require.ElementsMatch(t, []string{
 					"foo-1.0.0/README.md",
 					"foo-1.0.0/code.py",
+					"foo-1.0.0/code.rb",
 					"foo-1.0.0/code.txt",
 					"foo-1.0.0/added-later.txt",
 					"foo-1.0.0/subfolder/file.md",
@@ -84,6 +86,7 @@ func TestArchive(t *testing.T) {
 					"foo-1.0.0/",
 					"foo-1.0.0/README.md",
 					"foo-1.0.0/code.py",
+					"foo-1.0.0/code.rb",
 					"foo-1.0.0/code.txt",
 					"foo-1.0.0/added-later.txt",
 					"foo-1.0.0/subfolder/file.md",
@@ -93,6 +96,7 @@ func TestArchive(t *testing.T) {
 					"foo-1.0.0/",
 					"foo-1.0.0/README.md",
 					"foo-1.0.0/code.py",
+					"foo-1.0.0/code.rb",
 					"foo-1.0.0/code.txt",
 					"foo-1.0.0/added-later.txt",
 					"foo-1.0.0/subfolder/file.md",

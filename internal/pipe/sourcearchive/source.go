@@ -2,9 +2,7 @@
 package sourcearchive
 
 import (
-	"errors"
 	"fmt"
-	"io/fs"
 	"os"
 	"path/filepath"
 
@@ -101,7 +99,7 @@ func (Pipe) Run(ctx *context.Context) error {
 	}
 	for _, f := range files {
 		f.Destination = filepath.Join(prefix, f.Destination)
-		if err := arch.Add(f); err != nil && !errors.Is(err, fs.ErrExist) {
+		if err := arch.Add(f); err != nil {
 			return fmt.Errorf("could not add %q to archive: %w", f.Source, err)
 		}
 	}
