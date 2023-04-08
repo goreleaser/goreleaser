@@ -2845,7 +2845,14 @@
 						"type": "string"
 					},
 					"format": {
-						"type": "string"
+						"type": "string",
+						"enum": [
+							"tar",
+							"tgz",
+							"tar.gz",
+							"zip"
+						],
+						"default": "tar.gz"
 					},
 					"enabled": {
 						"type": "boolean"
