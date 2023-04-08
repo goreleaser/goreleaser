@@ -18,7 +18,7 @@ func TestArchive(t *testing.T) {
 	require.NoError(t, empty.Close())
 	require.NoError(t, os.Mkdir(folder+"/folder-inside", 0o755))
 
-	for _, format := range []string{"tar.gz", "zip", "gz", "tar.xz", "tar"} {
+	for _, format := range []string{"tar.gz", "zip", "gz", "tar.xz", "tar", "tgz", "txz"} {
 		format := format
 		t.Run(format, func(t *testing.T) {
 			f1, err := os.Create(filepath.Join(t.TempDir(), "1.tar"))
@@ -37,7 +37,7 @@ func TestArchive(t *testing.T) {
 			require.NoError(t, archive.Close())
 			require.NoError(t, f1.Close())
 
-			if format == "tar.xz" || format == "gz" {
+			if format == "tar.xz" || format == "txz" || format == "gz" {
 				_, err := Copying(f1, io.Discard, format)
 				require.Error(t, err)
 				return

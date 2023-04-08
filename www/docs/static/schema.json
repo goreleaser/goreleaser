@@ -184,7 +184,17 @@
 						"type": "object"
 					},
 					"format": {
-						"type": "string"
+						"type": "string",
+						"enum": [
+							"tar",
+							"tgz",
+							"tar.gz",
+							"zip",
+							"gz",
+							"tar.xz",
+							"txz"
+						],
+						"default": "tar.gz"
 					},
 					"format_overrides": {
 						"items": {
@@ -987,7 +997,17 @@
 						"type": "string"
 					},
 					"format": {
-						"type": "string"
+						"type": "string",
+						"enum": [
+							"tar",
+							"tgz",
+							"tar.gz",
+							"zip",
+							"gz",
+							"tar.xz",
+							"txz"
+						],
+						"default": "tar.gz"
 					}
 				},
 				"additionalProperties": false,

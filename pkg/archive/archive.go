@@ -23,13 +23,13 @@ type Archive interface {
 // New archive.
 func New(w io.Writer, format string) (Archive, error) {
 	switch format {
-	case "tar.gz":
+	case "tar.gz", "tgz":
 		return targz.New(w), nil
 	case "tar":
 		return tar.New(w), nil
 	case "gz":
 		return gzip.New(w), nil
-	case "tar.xz":
+	case "tar.xz", "txz":
 		return tarxz.New(w), nil
 	case "zip":
 		return zip.New(w), nil
