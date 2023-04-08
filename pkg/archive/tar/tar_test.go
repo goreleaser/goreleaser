@@ -9,6 +9,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/goreleaser/goreleaser/internal/testlib"
 	"github.com/goreleaser/goreleaser/pkg/config"
 	"github.com/stretchr/testify/require"
 )
@@ -57,6 +58,11 @@ func TestTarFile(t *testing.T) {
 		Source:      "../testdata/link.txt",
 		Destination: "link.txt",
 	}))
+
+	require.ErrorIs(t, archive.Add(config.File{
+		Source:      "../testdata/regular.txt",
+		Destination: "link.txt",
+	}), fs.ErrExist)
 
 	require.NoError(t, archive.Close())
 	require.Error(t, archive.Add(config.File{
@@ -157,4 +163,35 @@ func TestTarInvalidLink(t *testing.T) {
 		Source:      "../testdata/badlink.txt",
 		Destination: "badlink.txt",
 	}))
+}
+
+func TestCopying(t *testing.T) {
+	f1, err := os.Create(filepath.Join(t.TempDir(), "1.tar"))
+	require.NoError(t, err)
+	f2, err := os.Create(filepath.Join(t.TempDir(), "2.tar"))
+	require.NoError(t, err)
+
+	t1 := New(f1)
+	require.NoError(t, t1.Add(config.File{
+		Source:      "../testdata/foo.txt",
+		Destination: "foo.txt",
+	}))
+	require.NoError(t, t1.Close())
+	require.NoError(t, f1.Close())
+
+	f1, err = os.Open(f1.Name())
+	require.NoError(t, err)
+
+	t2, err := Copying(f1, f2)
+	require.NoError(t, err)
+	require.NoError(t, t2.Add(config.File{
+		Source:      "../testdata/sub1/executable",
+		Destination: "executable",
+	}))
+	require.NoError(t, t2.Close())
+	require.NoError(t, f2.Close())
+	require.NoError(t, f1.Close())
+
+	require.Equal(t, []string{"foo.txt"}, testlib.LsArchive(t, f1.Name(), "tar"))
+	require.Equal(t, []string{"foo.txt", "executable"}, testlib.LsArchive(t, f2.Name(), "tar"))
 }

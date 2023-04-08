@@ -1,7 +1,6 @@
 package sourcearchive
 
 import (
-	"archive/zip"
 	"os"
 	"path/filepath"
 	"testing"
@@ -21,13 +20,14 @@ func TestArchive(t *testing.T) {
 			require.NoError(t, os.Mkdir("dist", 0o744))
 
 			testlib.GitInit(t)
-			require.NoError(t, os.WriteFile("code.txt", []byte("not really code"), 0o655))
+			require.NoError(t, os.WriteFile("code.rb", []byte("not really code"), 0o655))
 			require.NoError(t, os.WriteFile("code.py", []byte("print 1"), 0o655))
 			require.NoError(t, os.WriteFile("README.md", []byte("# my dope fake project"), 0o655))
 			testlib.GitAdd(t)
 			testlib.GitCommit(t, "feat: first")
 			require.NoError(t, os.WriteFile("added-later.txt", []byte("this file was added later"), 0o655))
 			require.NoError(t, os.WriteFile("ignored.md", []byte("never added"), 0o655))
+			require.NoError(t, os.WriteFile("code.txt", []byte("not really code"), 0o655))
 			require.NoError(t, os.MkdirAll("subfolder", 0o755))
 			require.NoError(t, os.WriteFile("subfolder/file.md", []byte("a file within a folder, added later"), 0o655))
 
@@ -67,17 +67,22 @@ func TestArchive(t *testing.T) {
 			require.NoError(t, err)
 			require.Greater(t, stat.Size(), int64(100))
 
-			if format != "zip" {
-				return
-			}
-
-			require.ElementsMatch(t, []string{
+			expected := []string{
+				"foo-1.0.0/",
 				"foo-1.0.0/README.md",
 				"foo-1.0.0/code.py",
+				"foo-1.0.0/code.rb",
 				"foo-1.0.0/code.txt",
 				"foo-1.0.0/added-later.txt",
 				"foo-1.0.0/subfolder/file.md",
-			}, lsZip(t, path))
+			}
+
+			// zips wont have the parent dir
+			if format == "zip" {
+				expected = expected[1:]
+			}
+
+			require.ElementsMatch(t, expected, testlib.LsArchive(t, path, format))
 		})
 	}
 }
@@ -93,7 +98,7 @@ func TestInvalidFormat(t *testing.T) {
 		},
 	})
 	require.NoError(t, Pipe{}.Default(ctx))
-	require.EqualError(t, Pipe{}.Run(ctx), "invalid archive format: 7z")
+	require.EqualError(t, Pipe{}.Run(ctx), "invalid source archive format: 7z")
 }
 
 func TestDefault(t *testing.T) {
@@ -112,6 +117,7 @@ func TestInvalidNameTemplate(t *testing.T) {
 			NameTemplate: "{{ .foo }-asdda",
 		},
 	})
+	require.NoError(t, Pipe{}.Default(ctx))
 	testlib.RequireTemplateError(t, Pipe{}.Run(ctx))
 }
 
@@ -174,21 +180,4 @@ func TestSkip(t *testing.T) {
 
 func TestString(t *testing.T) {
 	require.NotEmpty(t, Pipe{}.String())
-}
-
-func lsZip(tb testing.TB, path string) []string {
-	tb.Helper()
-
-	stat, err := os.Stat(path)
-	require.NoError(tb, err)
-	f, err := os.Open(path)
-	require.NoError(tb, err)
-	z, err := zip.NewReader(f, stat.Size())
-	require.NoError(tb, err)
-
-	var paths []string
-	for _, zf := range z.File {
-		paths = append(paths, zf.Name)
-	}
-	return paths
 }

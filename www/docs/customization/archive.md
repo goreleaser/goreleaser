@@ -139,10 +139,17 @@ archives:
         #
         # Default: copied from the source file
         info:
+          # Templateable (since v1.14.0)
           owner: root
+
+          # Templateable (since v1.14.0)
           group: root
+
           # Must be in time.RFC3339Nano format.
+          # Templateable (since v1.14.0)
           mtime: '{{ .CommitDate }}'
+
+          # File mode.
           mode: 0644
 
     # Before and after hooks for each archive.

@@ -317,10 +317,6 @@ type EnhancedArchive struct {
 func (d EnhancedArchive) Add(f config.File) error {
 	name := strings.ReplaceAll(filepath.Join(d.wrap, f.Destination), "\\", "/")
 	log.Debugf("adding file: %s as %s", f.Source, name)
-	if _, ok := d.files[f.Destination]; ok {
-		return fmt.Errorf("file %s already exists in the archive", f.Destination)
-	}
-	d.files[f.Destination] = name
 	ff := config.File{
 		Source:      f.Source,
 		Destination: name,

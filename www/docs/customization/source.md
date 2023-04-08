@@ -16,7 +16,8 @@ source:
   name_template: '{{ .ProjectName }}'
 
   # Format of the archive.
-  # Any format git-archive supports, this supports too.
+  #
+  # Valid formats are: tar, tgz, tar.gz, and zip.
   #
   # Default: 'tar.gz'
   format: 'tar'
