@@ -436,6 +436,20 @@ func TestRunPipe(t *testing.T) {
 			pubAssertError:      shouldNotErr,
 			manifestAssertError: shouldNotErr,
 		},
+		"wrong binary name": {
+			dockers: []config.Docker{
+				{
+					ImageTemplates: []string{
+						registry + "goreleaser/wrong_bin_name:v1",
+					},
+					Goos:       "linux",
+					Goarch:     "amd64",
+					Dockerfile: "testdata/Dockerfile.wrongbin",
+				},
+			},
+			assertError:       shouldErr("seems like you tried to copy a file that is not available in the build context"),
+			assertImageLabels: noLabels,
+		},
 		"templated-dockerfile-invalid": {
 			dockers: []config.Docker{
 				{

@@ -2,6 +2,7 @@ package docker
 
 import (
 	"fmt"
+	"io/fs"
 	"os"
 	"path/filepath"
 	"sort"
@@ -198,6 +199,26 @@ func process(ctx *context.Context, docker config.Docker, artifacts []*artifact.A
 
 	log.Info("building docker image")
 	if err := imagers[docker.Use].Build(ctx, tmp, images, buildFlags); err != nil {
+		if strings.Contains(err.Error(), "file not found") || strings.Contains(err.Error(), "not found: not found") {
+			var files []string
+			_ = filepath.Walk(tmp, func(path string, info fs.FileInfo, err error) error {
+				if info.IsDir() {
+					return nil
+				}
+				files = append(files, info.Name())
+				return nil
+			})
+			return fmt.Errorf(`seems like you tried to copy a file that is not available in the build context.
+
+Here's more information about the build context:
+
+dir: %q
+files in that dir:
+ %s
+
+Previous error:
+%w`, tmp, strings.Join(files, "\n "), err)
+		}
 		return err
 	}
 
