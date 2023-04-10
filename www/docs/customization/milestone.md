@@ -17,15 +17,14 @@ milestones:
       name: repo
 
     # Whether to close the milestone
-    # Default is false
     close: true
 
     # Fail release on errors, such as missing milestone.
-    # Default is false
     fail_on_error: true
 
     # Name of the milestone
-    # Default is `{{ .Tag }}`
+    #
+    # Default: '{{ .Tag }}'
     name_template: "Current Release"
 ```
 

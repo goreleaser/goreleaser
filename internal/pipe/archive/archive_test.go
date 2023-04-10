@@ -2,10 +2,10 @@ package archive
 
 import (
 	"archive/tar"
-	"archive/zip"
 	"compress/gzip"
 	"fmt"
 	"io"
+	"io/fs"
 	"os"
 	"path/filepath"
 	"testing"
@@ -235,7 +235,7 @@ func TestRunPipe(t *testing.T) {
 							"foo/bar/foobar/blah.txt",
 							expectBin,
 						},
-						tarFiles(t, filepath.Join(dist, name)),
+						testlib.LsArchive(t, filepath.Join(dist, name), "tar.gz"),
 					)
 
 					header := tarInfo(t, filepath.Join(dist, name), expectBin)
@@ -252,7 +252,7 @@ func TestRunPipe(t *testing.T) {
 						"foo/bar/foobar/blah.txt",
 						expectBin + ".exe",
 					},
-					zipFiles(t, filepath.Join(dist, "foobar_0.0.1_windows_amd64.zip")),
+					testlib.LsArchive(t, filepath.Join(dist, "foobar_0.0.1_windows_amd64.zip"), "zip"),
 				)
 			}
 		})
@@ -355,21 +355,6 @@ func TestRunPipeNoBinaries(t *testing.T) {
 	require.NoError(t, Pipe{}.Run(ctx))
 }
 
-func zipFiles(t *testing.T, path string) []string {
-	t.Helper()
-	f, err := os.Open(path)
-	require.NoError(t, err)
-	info, err := f.Stat()
-	require.NoError(t, err)
-	r, err := zip.NewReader(f, info.Size())
-	require.NoError(t, err)
-	paths := make([]string, len(r.File))
-	for i, zf := range r.File {
-		paths[i] = zf.Name
-	}
-	return paths
-}
-
 func tarInfo(t *testing.T, path, name string) *tar.Header {
 	t.Helper()
 	f, err := os.Open(path)
@@ -389,27 +374,6 @@ func tarInfo(t *testing.T, path, name string) *tar.Header {
 		}
 	}
 	return nil
-}
-
-func tarFiles(t *testing.T, path string) []string {
-	t.Helper()
-	f, err := os.Open(path)
-	require.NoError(t, err)
-	defer f.Close()
-	gr, err := gzip.NewReader(f)
-	require.NoError(t, err)
-	defer gr.Close()
-	r := tar.NewReader(gr)
-	var paths []string
-	for {
-		next, err := r.Next()
-		if err == io.EOF {
-			break
-		}
-		require.NoError(t, err)
-		paths = append(paths, next.Name)
-	}
-	return paths
 }
 
 func TestRunPipeBinary(t *testing.T) {
@@ -742,22 +706,11 @@ func TestRunPipeWrap(t *testing.T) {
 	require.Len(t, archives, 1)
 	require.Equal(t, "foo_macOS", artifact.ExtraOr(*archives[0], artifact.ExtraWrappedIn, ""))
 
-	// Check archive contents
-	f, err = os.Open(filepath.Join(dist, "foo.tar.gz"))
-	require.NoError(t, err)
-	defer func() { require.NoError(t, f.Close()) }()
-	gr, err := gzip.NewReader(f)
-	require.NoError(t, err)
-	defer func() { require.NoError(t, gr.Close()) }()
-	r := tar.NewReader(gr)
-	for _, n := range []string{"README.md", "mybin"} {
-		h, err := r.Next()
-		if err == io.EOF {
-			break
-		}
-		require.NoError(t, err)
-		require.Equal(t, filepath.Join("foo_macOS", n), h.Name)
-	}
+	require.ElementsMatch(
+		t,
+		[]string{"foo_macOS/README.md", "foo_macOS/mybin"},
+		testlib.LsArchive(t, filepath.Join(dist, "foo.tar.gz"), "tar.gz"),
+	)
 }
 
 func TestDefault(t *testing.T) {
@@ -999,10 +952,10 @@ func TestDuplicateFilesInsideArchive(t *testing.T) {
 		Source:      ff.Name(),
 		Destination: "foo",
 	}))
-	require.EqualError(t, a.Add(config.File{
+	require.ErrorIs(t, a.Add(config.File{
 		Source:      ff.Name(),
 		Destination: "foo",
-	}), "file foo already exists in the archive")
+	}), fs.ErrExist)
 }
 
 func TestWrapInDirectory(t *testing.T) {
@@ -1068,7 +1021,7 @@ func TestArchive_globbing(t *testing.T) {
 		})
 
 		require.NoError(t, Pipe{}.Run(ctx))
-		require.Equal(t, append(expected, "foobin"), tarFiles(t, filepath.Join(dist, "foo.tar.gz")))
+		require.Equal(t, append(expected, "foobin"), testlib.LsArchive(t, filepath.Join(dist, "foo.tar.gz"), "tar.gz"))
 	}
 
 	t.Run("exact src file", func(t *testing.T) {

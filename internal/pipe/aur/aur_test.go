@@ -323,12 +323,13 @@ func TestFullPipe(t *testing.T) {
 				require.EqualError(t, Pipe{}.Publish(ctx), tt.expectedPublishError)
 				return
 			}
+
 			if tt.expectedPublishErrorIs != nil {
 				require.ErrorIs(t, Pipe{}.Publish(ctx), tt.expectedPublishErrorIs)
 				return
 			}
-			require.NoError(t, Pipe{}.Publish(ctx))
 
+			require.NoError(t, Pipe{}.Publish(ctx))
 			requireEqualRepoFiles(t, folder, name, url)
 		})
 	}
@@ -701,7 +702,7 @@ func TestKeyPath(t *testing.T) {
 	})
 	t.Run("with invalid path", func(t *testing.T) {
 		result, err := keyPath("testdata/nope")
-		require.EqualError(t, err, `could not stat aur.private_key: stat testdata/nope: no such file or directory`)
+		require.ErrorIs(t, err, os.ErrNotExist)
 		require.Equal(t, "", result)
 	})
 

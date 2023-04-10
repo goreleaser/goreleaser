@@ -3,6 +3,8 @@ package project
 
 import (
 	"fmt"
+	"os/exec"
+	"strings"
 
 	"github.com/goreleaser/goreleaser/pkg/context"
 )
@@ -16,17 +18,40 @@ func (Pipe) String() string {
 
 // Default set project defaults.
 func (Pipe) Default(ctx *context.Context) error {
-	if ctx.Config.ProjectName == "" {
-		switch {
-		case ctx.Config.Release.GitHub.Name != "":
-			ctx.Config.ProjectName = ctx.Config.Release.GitHub.Name
-		case ctx.Config.Release.GitLab.Name != "":
-			ctx.Config.ProjectName = ctx.Config.Release.GitLab.Name
-		case ctx.Config.Release.Gitea.Name != "":
-			ctx.Config.ProjectName = ctx.Config.Release.Gitea.Name
-		default:
-			return fmt.Errorf("couldn't guess project_name, please add it to your config")
-		}
+	if ctx.Config.ProjectName != "" {
+		return nil
 	}
-	return nil
+
+	for _, candidate := range []string{
+		ctx.Config.Release.GitHub.Name,
+		ctx.Config.Release.GitLab.Name,
+		ctx.Config.Release.Gitea.Name,
+		moduleName(),
+	} {
+		if candidate == "" {
+			continue
+		}
+		ctx.Config.ProjectName = candidate
+		return nil
+	}
+
+	return fmt.Errorf("couldn't guess project_name, please add it to your config")
+}
+
+func moduleName() string {
+	bts, err := exec.Command("go", "list", "-m").CombinedOutput()
+	if err != nil {
+		return ""
+	}
+
+	mod := strings.TrimSpace(string(bts))
+
+	// this is the default module used when go runs without a go module.
+	// https://pkg.go.dev/cmd/go@master#hdr-Package_lists_and_patterns
+	if mod == "command-line-arguments" {
+		return ""
+	}
+
+	parts := strings.Split(mod, "/")
+	return strings.TrimSpace(parts[len(parts)-1])
 }

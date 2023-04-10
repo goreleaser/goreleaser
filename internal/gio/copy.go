@@ -63,13 +63,13 @@ func copyFile(src, dst string, mode os.FileMode) error {
 	}
 	defer original.Close()
 
-	new, err := os.OpenFile(dst, os.O_CREATE|os.O_WRONLY|os.O_TRUNC, mode)
+	f, err := os.OpenFile(dst, os.O_CREATE|os.O_WRONLY|os.O_TRUNC, mode)
 	if err != nil {
 		return fmt.Errorf("failed to open '%s': %w", dst, err)
 	}
-	defer new.Close()
+	defer f.Close()
 
-	if _, err := io.Copy(new, original); err != nil {
+	if _, err := io.Copy(f, original); err != nil {
 		return fmt.Errorf("failed to copy: %w", err)
 	}
 	return nil

@@ -193,7 +193,17 @@
 						"type": "object"
 					},
 					"format": {
-						"type": "string"
+						"type": "string",
+						"enum": [
+							"tar",
+							"tgz",
+							"tar.gz",
+							"zip",
+							"gz",
+							"tar.xz",
+							"txz"
+						],
+						"default": "tar.gz"
 					},
 					"format_overrides": {
 						"items": {
@@ -231,6 +241,12 @@
 					},
 					"hooks": {
 						"$ref": "#/$defs/ArchiveHooks"
+					},
+					"templated_files": {
+						"items": {
+							"$ref": "#/$defs/TemplatedFile"
+						},
+						"type": "array"
 					}
 				},
 				"additionalProperties": false,
@@ -289,6 +305,22 @@
 					"extra_files": {
 						"items": {
 							"$ref": "#/$defs/ExtraFile"
+						},
+						"type": "array"
+					},
+					"disable": {
+						"oneOf": [
+							{
+								"type": "string"
+							},
+							{
+								"type": "boolean"
+							}
+						]
+					},
+					"templated_extra_files": {
+						"items": {
+							"$ref": "#/$defs/TemplatedExtraFile"
 						},
 						"type": "array"
 					}
@@ -492,7 +524,14 @@
 						"default": ""
 					},
 					"skip": {
-						"type": "boolean"
+						"oneOf": [
+							{
+								"type": "string"
+							},
+							{
+								"type": "boolean"
+							}
+						]
 					},
 					"use": {
 						"type": "string",
@@ -582,6 +621,12 @@
 					"extra_files": {
 						"items": {
 							"$ref": "#/$defs/ExtraFile"
+						},
+						"type": "array"
+					},
+					"templated_extra_files": {
+						"items": {
+							"$ref": "#/$defs/TemplatedExtraFile"
 						},
 						"type": "array"
 					}
@@ -713,6 +758,7 @@
 							"config",
 							"config|noreplace",
 							"dir",
+							"tree",
 							""
 						],
 						"default": ""
@@ -855,6 +901,12 @@
 					},
 					"use": {
 						"type": "string"
+					},
+					"templated_files": {
+						"items": {
+							"$ref": "#/$defs/TemplatedExtraFileWithMode"
+						},
+						"type": "array"
 					}
 				},
 				"additionalProperties": false,
@@ -1033,7 +1085,17 @@
 						"type": "string"
 					},
 					"format": {
-						"type": "string"
+						"type": "string",
+						"enum": [
+							"tar",
+							"tgz",
+							"tar.gz",
+							"zip",
+							"gz",
+							"tar.xz",
+							"txz"
+						],
+						"default": "tar.gz"
 					}
 				},
 				"additionalProperties": false,
@@ -1069,6 +1131,9 @@
 			"Git": {
 				"properties": {
 					"tag_sort": {
+						"type": "string"
+					},
+					"prerelease_suffix": {
 						"type": "string"
 					}
 				},
@@ -1394,6 +1459,14 @@
 					"base_image": {
 						"type": "string"
 					},
+					"labels": {
+						"patternProperties": {
+							".*": {
+								"type": "string"
+							}
+						},
+						"type": "object"
+					},
 					"repository": {
 						"type": "string"
 					},
@@ -1408,6 +1481,12 @@
 							"type": "string"
 						},
 						"type": "array"
+					},
+					"creation_time": {
+						"type": "string"
+					},
+					"ko_data_creation_time": {
+						"type": "string"
 					},
 					"sbom": {
 						"type": "string"
@@ -1676,6 +1755,9 @@
 					},
 					"archlinux": {
 						"$ref": "#/$defs/NFPMArchLinux"
+					},
+					"templated_contents": {
+						"$ref": "#/$defs/Contents"
 					},
 					"overrides": {
 						"patternProperties": {
@@ -1971,6 +2053,9 @@
 					},
 					"archlinux": {
 						"$ref": "#/$defs/NFPMArchLinux"
+					},
+					"templated_contents": {
+						"$ref": "#/$defs/Contents"
 					}
 				},
 				"additionalProperties": false,
@@ -2346,6 +2431,24 @@
 							"$ref": "#/$defs/ExtraFile"
 						},
 						"type": "array"
+					},
+					"templated_extra_files": {
+						"items": {
+							"$ref": "#/$defs/TemplatedExtraFile"
+						},
+						"type": "array"
+					}
+				},
+				"additionalProperties": false,
+				"type": "object"
+			},
+			"PullRequest": {
+				"properties": {
+					"enabled": {
+						"type": "boolean"
+					},
+					"base": {
+						"type": "string"
 					}
 				},
 				"additionalProperties": false,
@@ -2451,6 +2554,12 @@
 							"replace"
 						],
 						"default": "keep-existing"
+					},
+					"templated_extra_files": {
+						"items": {
+							"$ref": "#/$defs/TemplatedExtraFile"
+						},
+						"type": "array"
 					}
 				},
 				"additionalProperties": false,
@@ -2481,6 +2590,9 @@
 					},
 					"branch": {
 						"type": "string"
+					},
+					"pull_request": {
+						"$ref": "#/$defs/PullRequest"
 					}
 				},
 				"additionalProperties": false,
@@ -2621,6 +2733,15 @@
 					"depends": {
 						"items": {
 							"type": "string"
+						},
+						"type": "array"
+					},
+					"shortcuts": {
+						"items": {
+							"items": {
+								"type": "string"
+							},
+							"type": "array"
 						},
 						"type": "array"
 					},
@@ -2822,6 +2943,12 @@
 							"$ref": "#/$defs/SnapcraftExtraFiles"
 						},
 						"type": "array"
+					},
+					"templated_extra_files": {
+						"items": {
+							"$ref": "#/$defs/SnapcraftExtraFiles"
+						},
+						"type": "array"
 					}
 				},
 				"additionalProperties": false,
@@ -3001,7 +3128,14 @@
 						"type": "string"
 					},
 					"format": {
-						"type": "string"
+						"type": "string",
+						"enum": [
+							"tar",
+							"tgz",
+							"tar.gz",
+							"zip"
+						],
+						"default": "tar.gz"
 					},
 					"enabled": {
 						"type": "boolean"
@@ -3017,6 +3151,12 @@
 					},
 					"rlcp": {
 						"type": "boolean"
+					},
+					"templated_files": {
+						"items": {
+							"$ref": "#/$defs/TemplatedFile"
+						},
+						"type": "array"
 					}
 				},
 				"additionalProperties": false,
@@ -3099,6 +3239,48 @@
 					"src",
 					"dst"
 				]
+			},
+			"TemplatedExtraFile": {
+				"properties": {
+					"src": {
+						"type": "string"
+					},
+					"dst": {
+						"type": "string"
+					}
+				},
+				"additionalProperties": false,
+				"type": "object"
+			},
+			"TemplatedExtraFileWithMode": {
+				"properties": {
+					"src": {
+						"type": "string"
+					},
+					"dst": {
+						"type": "string"
+					},
+					"mode": {
+						"type": "integer"
+					}
+				},
+				"additionalProperties": false,
+				"type": "object"
+			},
+			"TemplatedFile": {
+				"properties": {
+					"src": {
+						"type": "string"
+					},
+					"dst": {
+						"type": "string"
+					},
+					"info": {
+						"$ref": "#/$defs/FileInfo"
+					}
+				},
+				"additionalProperties": false,
+				"type": "object"
 			},
 			"Twitter": {
 				"properties": {

@@ -24,14 +24,20 @@ import (
 
 const brewConfigExtra = "BrewConfig"
 
-var (
-	// ErrNoArchivesFound happens when 0 archives are found.
-	ErrNoArchivesFound = errors.New("no linux/macos archives found")
+// ErrMultipleArchivesSameOS happens when the config yields multiple archives
+// for linux or windows.
+var ErrMultipleArchivesSameOS = errors.New("one tap can handle only archive of an OS/Arch combination. Consider using ids in the brew section")
 
-	// ErrMultipleArchivesSameOS happens when the config yields multiple archives
-	// for linux or windows.
-	ErrMultipleArchivesSameOS = errors.New("one tap can handle only archive of an OS/Arch combination. Consider using ids in the brew section")
-)
+// ErrNoArchivesFound happens when 0 archives are found.
+type ErrNoArchivesFound struct {
+	goarm   string
+	goamd64 string
+	ids     []string
+}
+
+func (e ErrNoArchivesFound) Error() string {
+	return fmt.Sprintf("no linux/macos archives found matching goos=[darwin linux] goarch=[amd64 arm64 arm] goamd64=%s goarm=%s ids=%v", e.goamd64, e.goarm, e.ids)
+}
 
 // Pipe for brew deployment.
 type Pipe struct{}
@@ -147,7 +153,22 @@ func doPublish(ctx *context.Context, formula *artifact.Artifact, cl client.Clien
 		return err
 	}
 
-	return cl.CreateFile(ctx, author, repo, content, gpath, msg)
+	if !brew.Tap.PullRequest.Enabled {
+		return cl.CreateFile(ctx, author, repo, content, gpath, msg)
+	}
+
+	log.Info("brews.pull_request enabled, creating a PR")
+	pcl, ok := cl.(client.PullRequestOpener)
+	if !ok {
+		return fmt.Errorf("client does not support pull requests")
+	}
+
+	if err := cl.CreateFile(ctx, author, repo, content, gpath, msg); err != nil {
+		return err
+	}
+
+	title := fmt.Sprintf("Updated %s to %s", ctx.Config.ProjectName, ctx.Version)
+	return pcl.OpenPullRequest(ctx, repo, brew.Tap.PullRequest.Base, title)
 }
 
 func doRun(ctx *context.Context, brew config.Homebrew, cl client.Client) error {
@@ -187,7 +208,11 @@ func doRun(ctx *context.Context, brew config.Homebrew, cl client.Client) error {
 
 	archives := ctx.Artifacts.Filter(artifact.And(filters...)).List()
 	if len(archives) == 0 {
-		return ErrNoArchivesFound
+		return ErrNoArchivesFound{
+			goamd64: brew.Goamd64,
+			goarm:   brew.Goarm,
+			ids:     brew.IDs,
+		}
 	}
 
 	name, err := tmpl.New(ctx).Apply(brew.Name)

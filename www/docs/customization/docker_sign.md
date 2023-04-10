@@ -18,18 +18,24 @@ docker_signs:
     # ID of the sign config, must be unique.
     # Only relevant if you want to produce some sort of signature file.
     #
-    # Defaults to "default".
+    # Default: 'default'
     id: foo
 
     # Path to the signature command
     #
-    # Defaults to `cosign`
+    # Default: 'cosign'
     cmd: cosign
 
-    # Command line templateable arguments for the command
+    # Command line arguments for the command
     #
-    # defaults to `["sign", "--key=cosign.key", "${artifact}@${digest}"]`
-    args: ["sign", "--key=cosign.key", "--upload=false", "${artifact}"]
+    # Templates: allowed
+    # Default: ["sign", "--key=cosign.key", "${artifact}@${digest}", "--yes"]
+    args:
+    - "sign"
+    - "--key=cosign.key"
+    - "--upload=false"
+    - "${artifact}"
+    - "--yes" # needed on cosign 2.0.0+
 
 
     # Which artifacts to sign
@@ -39,27 +45,23 @@ docker_signs:
     #   images:    only docker images
     #   manifests: only docker manifests
     #
-    # defaults to `none`
+    # Default: 'none'
     artifacts: all
 
     # IDs of the artifacts to sign.
-    #
-    # Defaults to empty (which implies no ID filtering).
     ids:
       - foo
       - bar
 
-    # Stdin data template to be given to the signature command as stdin.
-    # Defaults to empty
+    # Stdin data to be given to the signature command as stdin.
+    #
+    # Templates: allowed
     stdin: '{{ .Env.COSIGN_PWD }}'
 
     # StdinFile file to be given to the signature command as stdin.
-    # Defaults to empty
     stdin_file: ./.password
 
     # List of environment variables that will be passed to the signing command as well as the templates.
-    #
-    # Defaults to empty
     env:
     - FOO=bar
     - HONK=honkhonk
@@ -67,8 +69,7 @@ docker_signs:
     # By default, the stdout and stderr of the signing cmd are discarded unless GoReleaser is running with `--debug` set.
     # You can set this to true if you want them to be displayed regardless.
     #
-    # Default: false.
-    # Since: v1.2.
+    # Since: v1.2
     output: true
 ```
 

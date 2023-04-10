@@ -12,7 +12,10 @@ import (
 	cobracompletefig "github.com/withfig/autocomplete-tools/integrations/cobra"
 )
 
-var boldStyle = lipgloss.NewStyle().Bold(true)
+var (
+	boldStyle = lipgloss.NewStyle().Bold(true)
+	codeStyle = lipgloss.NewStyle().Italic(true)
+)
 
 func Execute(version string, exit func(int), args []string) {
 	newRootCmd(version, exit).Execute(args)
@@ -79,6 +82,7 @@ Check out our website for more information, examples and documentation: https://
 		newBuildCmd().cmd,
 		newReleaseCmd().cmd,
 		newCheckCmd().cmd,
+		newHealthcheckCmd().cmd,
 		newInitCmd().cmd,
 		newDocsCmd().cmd,
 		newManCmd().cmd,

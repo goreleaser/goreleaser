@@ -15,6 +15,7 @@ snapshot:
   # for example).
   #
   # Default is `{{ .Version }}-SNAPSHOT-{{.ShortCommit}}`.
+  # Templates: allowed
   name_template: '{{ incpatch .Version }}-devel'
 ```
 

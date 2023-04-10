@@ -33,10 +33,12 @@ Key                   |Description
 `.Prerelease`         |the prerelease part of the version, e.g. `beta`[^tag-is-semver]
 `.RawVersion`         |composed of `{Major}.{Minor}.{Patch}` [^tag-is-semver]
 `.ReleaseNotes`       |the generated release notes, available after the changelog step has been executed
+`.IsDraft`            |`true` if `release.draft` is set in the configuration, `false` otherwise. Since v1.17.
 `.IsSnapshot`         |`true` if `--snapshot` is set, `false` otherwise
 `.IsNightly`          |`true` if `--nightly` is set, `false` otherwise
 `.Env`                |a map with system's environment variables
 `.Date`               |current UTC date in RFC 3339 format
+`.Now`                |current UTC date as `time.Time` struct, allows all `time.Time` functions (e.g. `{{ .Now.Format "2006" }}`) . Since v1.17.
 `.Timestamp`          |current UTC time in Unix format
 `.ModulePath`         |the go module path, as reported by `go list -m`
 `incpatch "v1.2.4"`   |increments the patch of the given version[^panic-if-not-semver]
@@ -109,10 +111,11 @@ On the nFPM name template field, you can use those extra fields as well:
 
 Key                    |Description
 -----------------------|--------------------------------------------------------------
-`.Release`             |release from the nfpm config
-`.Epoch`               |epoch from the nfpm config
-`.PackageName`         |package the name. Same as `ProjectName` if not overridden.
-`.ConventionalFileName`|conventional package file name as provided by nFPM[^arm-names]
+`.Release`              |release from the nfpm config
+`.Epoch`                |epoch from the nfpm config
+`.PackageName`          |package the name. Same as `ProjectName` if not overridden.
+`.ConventionalFileName` |conventional package file name as provided by nFPM.[^arm-names]
+`.ConventionalExtension`|conventional package extension as provided by nFPM. Since v1.16.
 
 [^arm-names]: Please beware: some OSs might have the same names for different
   ARM versions, for example, for Debian both ARMv6 and ARMv7 are called `armhf`.
@@ -134,6 +137,7 @@ Usage                         |Description
 `trimprefix "v1.2" "v"`       |removes provided leading prefix string, if present. See [TrimPrefix](https://golang.org/pkg/strings/#TrimPrefix).
 `trimsuffix "1.2v" "v"`       |removes provided trailing suffix string, if present. See [TrimSuffix](https://pkg.go.dev/strings#TrimSuffix).
 `dir .Path`                   |returns all but the last element of path, typically the path's directory. See [Dir](https://golang.org/pkg/path/filepath/#Dir).
+`base .Path`                  |returns the last element of path. See [Base](https://golang.org/pkg/path/filepath/#Base). Since v1.16.
 `abs .ArtifactPath`           |returns an absolute representation of path. See [Abs](https://golang.org/pkg/path/filepath/#Abs).
 `filter "text" "regex"`       |keeps only the lines matching the given regex, analogous to `grep -E`. Since v1.6.
 `reverseFilter "text" "regex"`|keeps only the lines **not** matching the given regex, analogous to `grep -vE`. Since v1.6.

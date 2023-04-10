@@ -169,6 +169,20 @@ func TestFullPipe(t *testing.T) {
 				ctx.Config.Brews[0].Homepage = "https://github.com/goreleaser"
 			},
 		},
+		"open pr": {
+			prepare: func(ctx *context.Context) {
+				ctx.TokenType = context.TokenTypeGitHub
+				ctx.Config.Brews[0].Homepage = "https://github.com/goreleaser"
+				ctx.Config.Brews[0].Tap = config.RepoRef{
+					Owner:  "test",
+					Name:   "test",
+					Branch: "update-{{.Version}}",
+					PullRequest: config.PullRequest{
+						Enabled: true,
+					},
+				}
+			},
+		},
 		"custom_download_strategy": {
 			prepare: func(ctx *context.Context) {
 				ctx.TokenType = context.TokenTypeGitHub
@@ -767,11 +781,17 @@ func TestRunPipeNoBuilds(t *testing.T) {
 					Owner: "test",
 					Name:  "test",
 				},
+				IDs: []string{"foo"},
 			},
 		},
 	}, testctx.GitHubTokenType)
 	client := client.NewMock()
-	require.Equal(t, ErrNoArchivesFound, runAll(ctx, client))
+	require.NoError(t, Pipe{}.Default(ctx))
+	require.EqualError(t, runAll(ctx, client), ErrNoArchivesFound{
+		ids:     []string{"foo"},
+		goarm:   "6",
+		goamd64: "v1",
+	}.Error())
 	require.False(t, client.CreatedFile)
 }
 
@@ -963,6 +983,58 @@ func TestRunPipeBinaryRelease(t *testing.T) {
 	require.NoError(t, runAll(ctx, client))
 	require.NoError(t, publishAll(ctx, client))
 	require.True(t, client.CreatedFile)
+	golden.RequireEqualRb(t, []byte(client.Content))
+}
+
+func TestRunPipePullRequest(t *testing.T) {
+	folder := t.TempDir()
+	ctx := testctx.NewWithCfg(
+		config.Project{
+			Dist:        folder,
+			ProjectName: "foo",
+			Brews: []config.Homebrew{
+				{
+					Name:        "foo",
+					Homepage:    "https://goreleaser.com",
+					Description: "Fake desc",
+					Tap: config.RepoRef{
+						Owner:  "foo",
+						Name:   "bar",
+						Branch: "update-{{.Version}}",
+						PullRequest: config.PullRequest{
+							Enabled: true,
+						},
+					},
+				},
+			},
+		},
+		testctx.WithVersion("1.2.1"),
+		testctx.WithCurrentTag("v1.2.1"),
+	)
+	path := filepath.Join(folder, "dist/foo_darwin_all/foo")
+	ctx.Artifacts.Add(&artifact.Artifact{
+		Name:   "foo_macos",
+		Path:   path,
+		Goos:   "darwin",
+		Goarch: "all",
+		Type:   artifact.UploadableBinary,
+		Extra: map[string]interface{}{
+			artifact.ExtraID:     "foo",
+			artifact.ExtraFormat: "binary",
+			artifact.ExtraBinary: "foo",
+		},
+	})
+
+	require.NoError(t, os.MkdirAll(filepath.Dir(path), 0o755))
+	f, err := os.Create(path)
+	require.NoError(t, err)
+	require.NoError(t, f.Close())
+
+	client := client.NewMock()
+	require.NoError(t, runAll(ctx, client))
+	require.NoError(t, publishAll(ctx, client))
+	require.True(t, client.CreatedFile)
+	require.True(t, client.OpenedPullRequest)
 	golden.RequireEqualRb(t, []byte(client.Content))
 }
 

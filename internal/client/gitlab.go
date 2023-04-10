@@ -22,8 +22,10 @@ type gitlabClient struct {
 	client *gitlab.Client
 }
 
-// NewGitLab returns a gitlab client implementation.
-func NewGitLab(ctx *context.Context, token string) (Client, error) {
+var _ Client = &gitlabClient{}
+
+// newGitLab returns a gitlab client implementation.
+func newGitLab(ctx *context.Context, token string) (*gitlabClient, error) {
 	transport := &http.Transport{
 		Proxy: http.ProxyFromEnvironment,
 		TLSClientConfig: &tls.Config{
@@ -58,7 +60,7 @@ func NewGitLab(ctx *context.Context, token string) (Client, error) {
 	return &gitlabClient{client: client}, nil
 }
 
-func (c *gitlabClient) Changelog(ctx *context.Context, repo Repo, prev, current string) (string, error) {
+func (c *gitlabClient) Changelog(_ *context.Context, repo Repo, prev, current string) (string, error) {
 	cmpOpts := &gitlab.CompareOptions{
 		From: &prev,
 		To:   &current,
@@ -81,8 +83,8 @@ func (c *gitlabClient) Changelog(ctx *context.Context, repo Repo, prev, current 
 	return strings.Join(log, "\n"), nil
 }
 
-// GetDefaultBranch get the default branch
-func (c *gitlabClient) GetDefaultBranch(ctx *context.Context, repo Repo) (string, error) {
+// getDefaultBranch get the default branch
+func (c *gitlabClient) getDefaultBranch(_ *context.Context, repo Repo) (string, error) {
 	projectID := repo.String()
 	p, res, err := c.client.Projects.GetProject(projectID, nil)
 	if err != nil {
@@ -97,7 +99,7 @@ func (c *gitlabClient) GetDefaultBranch(ctx *context.Context, repo Repo) (string
 }
 
 // CloseMilestone closes a given milestone.
-func (c *gitlabClient) CloseMilestone(ctx *context.Context, repo Repo, title string) error {
+func (c *gitlabClient) CloseMilestone(_ *context.Context, repo Repo, title string) error {
 	milestone, err := c.getMilestoneByTitle(repo, title)
 	if err != nil {
 		return err
@@ -148,7 +150,7 @@ func (c *gitlabClient) CreateFile(
 		branch = repo.Branch
 	} else {
 		// Try to get the default branch from the Git provider
-		branch, err = c.GetDefaultBranch(ctx, repo)
+		branch, err = c.getDefaultBranch(ctx, repo)
 		if err != nil {
 			// Fall back to 'master' 😭
 			log.WithFields(log.Fields{

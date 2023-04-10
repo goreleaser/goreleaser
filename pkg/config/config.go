@@ -18,7 +18,8 @@ import (
 
 // Git configs.
 type Git struct {
-	TagSort string `yaml:"tag_sort,omitempty" json:"tag_sort,omitempty"`
+	TagSort          string `yaml:"tag_sort,omitempty" json:"tag_sort,omitempty"`
+	PrereleaseSuffix string `yaml:"prerelease_suffix,omitempty" json:"prerelease_suffix,omitempty"`
 }
 
 // GitHubURLs holds the URLs to be used when using github enterprise.
@@ -83,6 +84,13 @@ type RepoRef struct {
 	Name   string `yaml:"name,omitempty" json:"name,omitempty"`
 	Token  string `yaml:"token,omitempty" json:"token,omitempty"`
 	Branch string `yaml:"branch,omitempty" json:"branch,omitempty"`
+
+	PullRequest PullRequest `yaml:"pull_request,omitempty" json:"pull_request,omitempty"`
+}
+
+type PullRequest struct {
+	Enabled bool   `yaml:"enabled,omitempty" json:"enabled,omitempty"`
+	Base    string `yaml:"base,omitempty" json:"base,omitempty"`
 }
 
 // HomebrewDependency represents Homebrew dependency.
@@ -201,21 +209,24 @@ type Krew struct {
 
 // Ko contains the ko section
 type Ko struct {
-	ID                  string   `yaml:"id,omitempty" json:"id,omitempty"`
-	Build               string   `yaml:"build,omitempty" json:"build,omitempty"`
-	Main                string   `yaml:"main,omitempty" json:"main,omitempty"`
-	WorkingDir          string   `yaml:"working_dir,omitempty" json:"working_dir,omitempty"`
-	BaseImage           string   `yaml:"base_image,omitempty" json:"base_image,omitempty"`
-	Repository          string   `yaml:"repository,omitempty" json:"repository,omitempty"`
-	Platforms           []string `yaml:"platforms,omitempty" json:"platforms,omitempty"`
-	Tags                []string `yaml:"tags,omitempty" json:"tags,omitempty"`
-	SBOM                string   `yaml:"sbom,omitempty" json:"sbom,omitempty"`
-	Ldflags             []string `yaml:"ldflags,omitempty" json:"ldflags,omitempty"`
-	Flags               []string `yaml:"flags,omitempty" json:"flags,omitempty"`
-	Env                 []string `yaml:"env,omitempty" json:"env,omitempty"`
-	Bare                bool     `yaml:"bare,omitempty" json:"bare,omitempty"`
-	PreserveImportPaths bool     `yaml:"preserve_import_paths,omitempty" json:"preserve_import_paths,omitempty"`
-	BaseImportPaths     bool     `yaml:"base_import_paths,omitempty" json:"base_import_paths,omitempty"`
+	ID                  string            `yaml:"id,omitempty" json:"id,omitempty"`
+	Build               string            `yaml:"build,omitempty" json:"build,omitempty"`
+	Main                string            `yaml:"main,omitempty" json:"main,omitempty"`
+	WorkingDir          string            `yaml:"working_dir,omitempty" json:"working_dir,omitempty"`
+	BaseImage           string            `yaml:"base_image,omitempty" json:"base_image,omitempty"`
+	Labels              map[string]string `yaml:"labels,omitempty" json:"labels,omitempty"`
+	Repository          string            `yaml:"repository,omitempty" json:"repository,omitempty"`
+	Platforms           []string          `yaml:"platforms,omitempty" json:"platforms,omitempty"`
+	Tags                []string          `yaml:"tags,omitempty" json:"tags,omitempty"`
+	CreationTime        string            `yaml:"creation_time,omitempty" json:"creation_time,omitempty"`
+	KoDataCreationTime  string            `yaml:"ko_data_creation_time,omitempty" json:"ko_data_creation_time,omitempty"`
+	SBOM                string            `yaml:"sbom,omitempty" json:"sbom,omitempty"`
+	Ldflags             []string          `yaml:"ldflags,omitempty" json:"ldflags,omitempty"`
+	Flags               []string          `yaml:"flags,omitempty" json:"flags,omitempty"`
+	Env                 []string          `yaml:"env,omitempty" json:"env,omitempty"`
+	Bare                bool              `yaml:"bare,omitempty" json:"bare,omitempty"`
+	PreserveImportPaths bool              `yaml:"preserve_import_paths,omitempty" json:"preserve_import_paths,omitempty"`
+	BaseImportPaths     bool              `yaml:"base_import_paths,omitempty" json:"base_import_paths,omitempty"`
 }
 
 // Scoop contains the scoop.sh section.
@@ -234,6 +245,7 @@ type Scoop struct {
 	PreInstall            []string     `yaml:"pre_install,omitempty" json:"pre_install,omitempty"`
 	PostInstall           []string     `yaml:"post_install,omitempty" json:"post_install,omitempty"`
 	Depends               []string     `yaml:"depends,omitempty" json:"depends,omitempty"`
+	Shortcuts             [][]string   `yaml:"shortcuts,omitempty" json:"shortcuts,omitempty"`
 	Goamd64               string       `yaml:"goamd64,omitempty" json:"goamd64,omitempty"`
 }
 
@@ -435,7 +447,7 @@ func (bh Hook) JSONSchema() *jsonschema.Schema {
 // FormatOverride is used to specify a custom format for a specific GOOS.
 type FormatOverride struct {
 	Goos   string `yaml:"goos,omitempty" json:"goos,omitempty"`
-	Format string `yaml:"format,omitempty" json:"format,omitempty"`
+	Format string `yaml:"format,omitempty" json:"format,omitempty" jsonschema:"enum=tar,enum=tgz,enum=tar.gz,enum=zip,enum=gz,enum=tar.xz,enum=txz,default=tar.gz"`
 }
 
 // File is a file inside an archive.
@@ -504,7 +516,7 @@ type Archive struct {
 	BuildsInfo                FileInfo          `yaml:"builds_info,omitempty" json:"builds_info,omitempty"`
 	NameTemplate              string            `yaml:"name_template,omitempty" json:"name_template,omitempty"`
 	Replacements              map[string]string `yaml:"replacements,omitempty" json:"replacements,omitempty"` // Deprecated: use templates instead
-	Format                    string            `yaml:"format,omitempty" json:"format,omitempty"`
+	Format                    string            `yaml:"format,omitempty" json:"format,omitempty" jsonschema:"enum=tar,enum=tgz,enum=tar.gz,enum=zip,enum=gz,enum=tar.xz,enum=txz,default=tar.gz"`
 	FormatOverrides           []FormatOverride  `yaml:"format_overrides,omitempty" json:"format_overrides,omitempty"`
 	WrapInDirectory           string            `yaml:"wrap_in_directory,omitempty" json:"wrap_in_directory,omitempty" jsonschema:"oneof_type=string;boolean"`
 	StripParentBinaryFolder   bool              `yaml:"strip_parent_binary_folder,omitempty" json:"strip_parent_binary_folder,omitempty"`
@@ -847,7 +859,7 @@ type Filters struct {
 type Changelog struct {
 	Filters Filters          `yaml:"filters,omitempty" json:"filters,omitempty"`
 	Sort    string           `yaml:"sort,omitempty" json:"sort,omitempty" jsonschema:"enum=asc,enum=desc,enum=,default="`
-	Skip    bool             `yaml:"skip,omitempty" json:"skip,omitempty"` // TODO(caarlos0): rename to Disable to match other pipes
+	Skip    string           `yaml:"skip,omitempty" json:"skip,omitempty" jsonschema:"oneof_type=string;boolean"` // TODO(caarlos0): rename to Disable to match other pipes
 	Use     string           `yaml:"use,omitempty" json:"use,omitempty" jsonschema:"enum=git,enum=github,enum=github-native,enum=gitlab,default=git"`
 	Groups  []ChangelogGroup `yaml:"groups,omitempty" json:"groups,omitempty"`
 	Abbrev  int              `yaml:"abbrev,omitempty" json:"abbrev,omitempty"`
@@ -884,6 +896,7 @@ type Blob struct {
 	IDs        []string    `yaml:"ids,omitempty" json:"ids,omitempty"`
 	Endpoint   string      `yaml:"endpoint,omitempty" json:"endpoint,omitempty"` // used for minio for example
 	ExtraFiles []ExtraFile `yaml:"extra_files,omitempty" json:"extra_files,omitempty"`
+	Disable    string      `yaml:"disable,omitempty" json:"disable,omitempty" jsonschema:"oneof_type=string;boolean"`
 }
 
 // Upload configuration.
@@ -920,7 +933,7 @@ type Publisher struct {
 // Source configuration.
 type Source struct {
 	NameTemplate   string `yaml:"name_template,omitempty" json:"name_template,omitempty"`
-	Format         string `yaml:"format,omitempty" json:"format,omitempty"`
+	Format         string `yaml:"format,omitempty" json:"format,omitempty" jsonschema:"enum=tar,enum=tgz,enum=tar.gz,enum=zip,default=tar.gz"`
 	Enabled        bool   `yaml:"enabled,omitempty" json:"enabled,omitempty"`
 	PrefixTemplate string `yaml:"prefix_template,omitempty" json:"prefix_template,omitempty"`
 	Files          []File `yaml:"files,omitempty" json:"files,omitempty"`

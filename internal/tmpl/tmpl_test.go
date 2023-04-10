@@ -6,6 +6,7 @@ import (
 	"runtime"
 	"testing"
 	"text/template"
+	"time"
 
 	"github.com/goreleaser/goreleaser/internal/artifact"
 	"github.com/goreleaser/goreleaser/internal/testctx"
@@ -17,7 +18,12 @@ import (
 func TestWithArtifact(t *testing.T) {
 	t.Parallel()
 	ctx := testctx.NewWithCfg(
-		config.Project{ProjectName: "proj"},
+		config.Project{
+			ProjectName: "proj",
+			Release: config.Release{
+				Draft: true,
+			},
+		},
 		testctx.WithVersion("1.2.3"),
 		testctx.WithGitInfo(context.GitInfo{
 			PreviousTag: "v1.2.2",
@@ -35,9 +41,11 @@ func TestWithArtifact(t *testing.T) {
 			"MULTILINE": "something with\nmultiple lines\nremove this\nto test things",
 		}),
 		testctx.WithSemver(1, 2, 3, ""),
+		testctx.Snapshot,
 		func(ctx *context.Context) {
 			ctx.ModulePath = "github.com/goreleaser/goreleaser"
 			ctx.ReleaseNotes = "test release notes"
+			ctx.Date = time.Unix(1678327562, 0)
 		},
 	)
 	for expect, tmpl := range map[string]string{
@@ -73,6 +81,13 @@ func TestWithArtifact(t *testing.T) {
 		"artifact name: not-this-binary":   "artifact name: {{ .ArtifactName }}",
 		"artifact ext: .exe":               "artifact ext: {{ .ArtifactExt }}",
 		"artifact path: /tmp/foo.exe":      "artifact path: {{ .ArtifactPath }}",
+		"artifact basename: foo.exe":       "artifact basename: {{ base .ArtifactPath }}",
+		"artifact dir: /tmp":               "artifact dir: {{ dir .ArtifactPath }}",
+		"2023":                             `{{ .Now.Format "2006" }}`,
+		"2023-03-09T02:06:02Z":             `{{ .Date }}`,
+		"1678327562":                       `{{ .Timestamp }}`,
+		"snapshot true":                    `snapshot {{.IsSnapshot}}`,
+		"draft true":                       `draft {{.IsDraft}}`,
 
 		"remove this": "{{ filter .Env.MULTILINE \".*remove.*\" }}",
 		"something with\nmultiple lines\nto test things": "{{ reverseFilter .Env.MULTILINE \".*remove.*\" }}",

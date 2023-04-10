@@ -50,28 +50,29 @@ dockers:
     id: myimg
 
     # GOOS of the built binaries/packages that should be used.
-    # Default: `linux`.
+    # Default: 'linux'
     goos: linux
 
     # GOARCH of the built binaries/packages that should be used.
-    # Default: `amd64`.
+    # Default: 'amd64'
     goarch: amd64
 
     # GOARM of the built binaries/packages that should be used.
-    # Default: `6`.
+    # Default: '6'
     goarm: ''
 
     # GOAMD64 of the built binaries/packages that should be used.
-    # Default: `v1`.
+    # Default: 'v1'
     goamd64: 'v2'
 
     # IDs to filter the binaries/packages.
-    # Default: `empty`.
     ids:
     - mybuild
     - mynfpm
 
     # Templates of the Docker image names.
+    #
+    # Templates: allowed
     image_templates:
     - "myuser/myimage:latest"
     - "myuser/myimage:{{ .Tag }}"
@@ -84,11 +85,9 @@ dockers:
     # Could be useful if you want to skip building the windows docker image on
     # linux, for example.
     #
-    # This field allows templates.
-    # Since: v1.14.0-pro.
+    # Templates: allowed
+    # Since: v1.14 (pro)
     # This option is only available on GoReleaser Pro.
-    #
-    # Defaults to false.
     skip_build: false
 
     # Skips the docker push.
@@ -96,13 +95,11 @@ dockers:
     #
     # If set to auto, the release will not be pushed to the Docker repository
     #  in case there is an indicator of a prerelease in the tag, e.g. v1.0.0-rc1.
-    #
-    # Defaults to false.
     skip_push: false
 
     # Path to the Dockerfile (from the project root).
     #
-    # Defaults to `Dockerfile`.
+    # Default: 'Dockerfile'
     dockerfile: '{{ .Env.DOCKERFILE }}'
 
     # Set the "backend" for the Docker pipe.
@@ -111,10 +108,12 @@ dockers:
     #
     # Podman is a GoReleaser Pro feature and is only available on Linux.
     #
-    # Defaults to docker.
+    # Default: 'docker'
     use: docker
 
-    # Template of the docker build flags.
+    # Docker build flags.
+    #
+    # Templates: allowed
     build_flag_templates:
     - "--pull"
     - "--label=org.opencontainers.image.created={{.Date}}"
@@ -125,7 +124,6 @@ dockers:
     - "--platform=linux/arm64"
 
     # Extra flags to be passed down to the push command.
-    # Defaults to empty.
     push_flags:
     - --tls-verify=false
 
@@ -140,6 +138,21 @@ dockers:
     # and use wildcards when you `COPY`/`ADD` in your Dockerfile.
     extra_files:
     - config.yml
+
+
+    # Additional templated extra files to add to the Docker image.
+    # Those files will have their contents pass through the template engine,
+    # and its results will be added to the build context the same way as the
+    # extra_files field above.
+    #
+    # Since: v1.17 (pro)
+    # This feature is only available in GoReleaser Pro.
+    # Templates: allowed
+    templated_extra_files:
+      - src: LICENSE.tpl
+        dst: LICENSE.txt
+        mode: 0644
+
 ```
 
 !!! warning

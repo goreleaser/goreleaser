@@ -13,8 +13,9 @@ import (
 )
 
 var (
-	_ Client       = &Mock{}
-	_ GitHubClient = &Mock{}
+	_ Client                = &Mock{}
+	_ ReleaseNotesGenerator = &Mock{}
+	_ PullRequestOpener     = &Mock{}
 )
 
 func NewMock() *Mock {
@@ -38,16 +39,22 @@ type Mock struct {
 	Changes              string
 	ReleaseNotes         string
 	ReleaseNotesParams   []string
+	OpenedPullRequest    bool
 }
 
-func (c *Mock) Changelog(ctx *context.Context, repo Repo, prev, current string) (string, error) {
+func (c *Mock) OpenPullRequest(_ *context.Context, _ Repo, _, _ string) error {
+	c.OpenedPullRequest = true
+	return nil
+}
+
+func (c *Mock) Changelog(_ *context.Context, _ Repo, _, _ string) (string, error) {
 	if c.Changes != "" {
 		return c.Changes, nil
 	}
 	return "", ErrNotImplemented
 }
 
-func (c *Mock) GenerateReleaseNotes(ctx *context.Context, repo Repo, prev, current string) (string, error) {
+func (c *Mock) GenerateReleaseNotes(_ *context.Context, _ Repo, prev, current string) (string, error) {
 	if c.ReleaseNotes != "" {
 		c.ReleaseNotesParams = []string{prev, current}
 		return c.ReleaseNotes, nil
@@ -55,7 +62,7 @@ func (c *Mock) GenerateReleaseNotes(ctx *context.Context, repo Repo, prev, curre
 	return "", ErrNotImplemented
 }
 
-func (c *Mock) CloseMilestone(ctx *context.Context, repo Repo, title string) error {
+func (c *Mock) CloseMilestone(_ *context.Context, _ Repo, title string) error {
 	if c.FailToCloseMilestone {
 		return errors.New("milestone failed")
 	}
@@ -65,11 +72,7 @@ func (c *Mock) CloseMilestone(ctx *context.Context, repo Repo, title string) err
 	return nil
 }
 
-func (c *Mock) GetDefaultBranch(ctx *context.Context, repo Repo) (string, error) {
-	return "", ErrNotImplemented
-}
-
-func (c *Mock) CreateRelease(ctx *context.Context, body string) (string, error) {
+func (c *Mock) CreateRelease(_ *context.Context, _ string) (string, error) {
 	if c.FailToCreateRelease {
 		return "", errors.New("release failed")
 	}
@@ -77,18 +80,18 @@ func (c *Mock) CreateRelease(ctx *context.Context, body string) (string, error) 
 	return "", nil
 }
 
-func (c *Mock) ReleaseURLTemplate(ctx *context.Context) (string, error) {
+func (c *Mock) ReleaseURLTemplate(_ *context.Context) (string, error) {
 	return "https://dummyhost/download/{{ .Tag }}/{{ .ArtifactName }}", nil
 }
 
-func (c *Mock) CreateFile(ctx *context.Context, commitAuthor config.CommitAuthor, repo Repo, content []byte, path, msg string) error {
+func (c *Mock) CreateFile(_ *context.Context, _ config.CommitAuthor, _ Repo, content []byte, path, _ string) error {
 	c.CreatedFile = true
 	c.Content = string(content)
 	c.Path = path
 	return nil
 }
 
-func (c *Mock) Upload(ctx *context.Context, releaseID string, artifact *artifact.Artifact, file *os.File) error {
+func (c *Mock) Upload(_ *context.Context, _ string, artifact *artifact.Artifact, file *os.File) error {
 	c.Lock.Lock()
 	defer c.Lock.Unlock()
 	if c.UploadedFilePaths == nil {

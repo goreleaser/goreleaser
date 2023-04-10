@@ -59,6 +59,11 @@ func TestZipFile(t *testing.T) {
 		Destination: "link.txt",
 	}))
 
+	require.ErrorIs(t, archive.Add(config.File{
+		Source:      "../testdata/regular.txt",
+		Destination: "link.txt",
+	}), fs.ErrExist)
+
 	require.NoError(t, archive.Close())
 	require.Error(t, archive.Add(config.File{
 		Source:      "tar.go",

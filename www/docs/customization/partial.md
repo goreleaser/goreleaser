@@ -2,7 +2,7 @@
 
 GoReleaser can also split and merge builds.
 
-> Since: v1.12.0-pro.
+> Since: v1.12 (pro)
 
 !!! success "GoReleaser Pro"
     This subcommand is a [GoReleaser Pro feature](https://goreleaser.com/pro/).
@@ -59,6 +59,13 @@ step:
 - SBOM artifacts (according to configuration)
 - run all the publishers
 - run all the announcers
+
+!!! warning
+    Please notice that this step will not run anything that the previous step
+    already did.
+    For example, it will not build anything again, nor run any `hooks` you have
+    defined.
+    It will only merge the previous results and publish them.
 
 You can also run the publishing and announce steps separately:
 

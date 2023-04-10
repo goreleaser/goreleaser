@@ -70,6 +70,7 @@ func WithCurrentTag(tag string) Opt {
 func WithCommit(commig string) Opt {
 	return func(ctx *context.Context) {
 		ctx.Git.Commit = commig
+		ctx.Git.FullCommit = commig
 	}
 }
 

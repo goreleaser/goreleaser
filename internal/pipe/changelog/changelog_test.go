@@ -606,23 +606,49 @@ func TestGetChangeloger(t *testing.T) {
 }
 
 func TestSkip(t *testing.T) {
-	t.Run("skip on snapshot", func(t *testing.T) {
+	t.Run("skip", func(t *testing.T) {
 		ctx := testctx.New(testctx.Snapshot)
-		require.True(t, Pipe{}.Skip(ctx))
+		b, err := Pipe{}.Skip(ctx)
+		require.NoError(t, err)
+		require.True(t, b)
 	})
 
-	t.Run("skip", func(t *testing.T) {
+	t.Run("skip on patches", func(t *testing.T) {
 		ctx := testctx.NewWithCfg(config.Project{
 			Changelog: config.Changelog{
-				Skip: true,
+				Skip: "{{gt .Patch 0}}",
 			},
-		})
-		require.True(t, Pipe{}.Skip(ctx))
+		}, testctx.WithSemver(0, 0, 1, ""))
+		b, err := Pipe{}.Skip(ctx)
+		require.NoError(t, err)
+		require.True(t, b)
+	})
+
+	t.Run("invalid template", func(t *testing.T) {
+		ctx := testctx.NewWithCfg(config.Project{
+			Changelog: config.Changelog{
+				Skip: "{{if eq .Patch 123}",
+			},
+		}, testctx.WithSemver(0, 0, 1, ""))
+		_, err := Pipe{}.Skip(ctx)
+		require.Error(t, err)
 	})
 
 	t.Run("dont skip", func(t *testing.T) {
-		ctx := testctx.New()
-		require.False(t, Pipe{}.Skip(ctx))
+		b, err := Pipe{}.Skip(testctx.New())
+		require.NoError(t, err)
+		require.False(t, b)
+	})
+
+	t.Run("dont skip based on template", func(t *testing.T) {
+		ctx := testctx.NewWithCfg(config.Project{
+			Changelog: config.Changelog{
+				Skip: "{{gt .Patch 0}}",
+			},
+		})
+		b, err := Pipe{}.Skip(ctx)
+		require.NoError(t, err)
+		require.False(t, b)
 	})
 }
 

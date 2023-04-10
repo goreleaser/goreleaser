@@ -3,7 +3,6 @@ package nfpm
 import (
 	"os"
 	"path/filepath"
-	"runtime"
 	"testing"
 
 	"github.com/goreleaser/goreleaser/internal/artifact"
@@ -981,21 +980,12 @@ func TestRPMSpecificScriptsConfig(t *testing.T) {
 	}
 
 	t.Run("PreTrans script file does not exist", func(t *testing.T) {
-		require.Contains(
-			t,
-			Pipe{}.Run(ctx).Error(),
-			`open /does/not/exist_pretrans.sh: no such file or directory`,
-		)
+		require.ErrorIs(t, Pipe{}.Run(ctx), os.ErrNotExist)
 	})
 
 	t.Run("PostTrans script file does not exist", func(t *testing.T) {
 		ctx.Config.NFPMs[0].RPM.Scripts.PreTrans = "testdata/testfile.txt"
-
-		require.Contains(
-			t,
-			Pipe{}.Run(ctx).Error(),
-			`open /does/not/exist_posttrans.sh: no such file or directory`,
-		)
+		require.ErrorIs(t, Pipe{}.Run(ctx), os.ErrNotExist)
 	})
 
 	t.Run("pretrans and posttrans scriptlets set", func(t *testing.T) {
@@ -1134,23 +1124,13 @@ func TestAPKSpecificScriptsConfig(t *testing.T) {
 	t.Run("PreUpgrade script file does not exist", func(t *testing.T) {
 		ctx.Config.NFPMs[0].APK.Scripts = scripts
 		ctx.Config.NFPMs[0].APK.Scripts.PostUpgrade = "testdata/testfile.txt"
-
-		require.Contains(
-			t,
-			Pipe{}.Run(ctx).Error(),
-			`stat /does/not/exist_preupgrade.sh: no such file or directory`,
-		)
+		require.ErrorIs(t, Pipe{}.Run(ctx), os.ErrNotExist)
 	})
 
 	t.Run("PostUpgrade script file does not exist", func(t *testing.T) {
 		ctx.Config.NFPMs[0].APK.Scripts = scripts
 		ctx.Config.NFPMs[0].APK.Scripts.PreUpgrade = "testdata/testfile.txt"
-
-		require.Contains(
-			t,
-			Pipe{}.Run(ctx).Error(),
-			`stat /does/not/exist_postupgrade.sh: no such file or directory`,
-		)
+		require.ErrorIs(t, Pipe{}.Run(ctx), os.ErrNotExist)
 	})
 
 	t.Run("preupgrade and postupgrade scriptlets set", func(t *testing.T) {
@@ -1333,15 +1313,9 @@ func TestSkipSign(t *testing.T) {
 	}
 
 	t.Run("skip sign not set", func(t *testing.T) {
-		contains := "open /does/not/exist.gpg: no such file or directory"
-		if runtime.GOOS == "windows" {
-			contains = "open /does/not/exist.gpg: The system cannot find the path specified."
-		}
-		require.Contains(
-			t,
-			Pipe{}.Run(ctx).Error(),
-			contains,
-		)
+		// TODO: once https://github.com/goreleaser/nfpm/pull/630 is released,
+		// use require.ErrorIs() here.
+		require.Error(t, Pipe{}.Run(ctx))
 	})
 
 	t.Run("skip sign set", func(t *testing.T) {
@@ -1427,6 +1401,49 @@ func TestSkip(t *testing.T) {
 		})
 		require.False(t, Pipe{}.Skip(ctx))
 	})
+}
+
+func TestTemplateExt(t *testing.T) {
+	ctx := testctx.NewWithCfg(config.Project{
+		Dist: t.TempDir(),
+		NFPMs: []config.NFPM{
+			{
+				NFPMOverridables: config.NFPMOverridables{
+					FileNameTemplate: "a_{{ .ConventionalExtension }}_b",
+					PackageName:      "foo",
+				},
+				Meta:       true,
+				Maintainer: "foo@bar",
+				Formats:    []string{"deb", "rpm", "termux.deb", "apk", "archlinux"},
+				Builds:     []string{"default"},
+			},
+		},
+	})
+	ctx.Artifacts.Add(&artifact.Artifact{
+		Name:   "mybin",
+		Goos:   "linux",
+		Goarch: "amd64",
+		Type:   artifact.Binary,
+		Extra: map[string]interface{}{
+			artifact.ExtraID: "default",
+		},
+	})
+	require.NoError(t, Pipe{}.Run(ctx))
+
+	packages := ctx.Artifacts.Filter(artifact.ByType(artifact.LinuxPackage)).List()
+	require.Len(t, packages, 5)
+	names := make([]string, 0, 5)
+	for _, p := range packages {
+		names = append(names, p.Name)
+	}
+
+	require.ElementsMatch(t, []string{
+		"a_.apk_b.apk",
+		"a_.deb_b.deb",
+		"a_.rpm_b.rpm",
+		"a_.termux.deb_b.termux.deb",
+		"a_.pkg.tar.zst_b.pkg.tar.zst",
+	}, names)
 }
 
 func sources(contents files.Contents) []string {

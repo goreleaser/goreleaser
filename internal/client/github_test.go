@@ -25,13 +25,10 @@ func TestNewGitHubClient(t *testing.T) {
 			},
 		})
 
-		client, err := NewGitHub(ctx, ctx.Token)
+		client, err := newGitHub(ctx, ctx.Token)
 		require.NoError(t, err)
-
-		githubClient, ok := client.(*githubClient)
-		require.True(t, ok)
-		require.Equal(t, githubURL+"/api", githubClient.client.BaseURL.String())
-		require.Equal(t, githubURL+"/upload", githubClient.client.UploadURL.String())
+		require.Equal(t, githubURL+"/api", client.client.BaseURL.String())
+		require.Equal(t, githubURL+"/upload", client.client.UploadURL.String())
 	})
 
 	t.Run("bad api url", func(t *testing.T) {
@@ -41,7 +38,7 @@ func TestNewGitHubClient(t *testing.T) {
 				Upload: "https://github.mycompany.com/upload",
 			},
 		})
-		_, err := NewGitHub(ctx, ctx.Token)
+		_, err := newGitHub(ctx, ctx.Token)
 
 		require.EqualError(t, err, `parse "://github.mycompany.com/api": missing protocol scheme`)
 	})
@@ -53,7 +50,7 @@ func TestNewGitHubClient(t *testing.T) {
 				Upload: "not a url:4994",
 			},
 		})
-		_, err := NewGitHub(ctx, ctx.Token)
+		_, err := newGitHub(ctx, ctx.Token)
 
 		require.EqualError(t, err, `parse "not a url:4994": first path segment in URL cannot contain colon`)
 	})
@@ -71,13 +68,10 @@ func TestNewGitHubClient(t *testing.T) {
 			},
 		})
 
-		client, err := NewGitHub(ctx, ctx.Token)
+		client, err := newGitHub(ctx, ctx.Token)
 		require.NoError(t, err)
-
-		githubClient, ok := client.(*githubClient)
-		require.True(t, ok)
-		require.Equal(t, githubURL+"/api", githubClient.client.BaseURL.String())
-		require.Equal(t, githubURL+"/upload", githubClient.client.UploadURL.String())
+		require.Equal(t, githubURL+"/api", client.client.BaseURL.String())
+		require.Equal(t, githubURL+"/upload", client.client.UploadURL.String())
 	})
 
 	t.Run("template invalid api", func(t *testing.T) {
@@ -87,7 +81,7 @@ func TestNewGitHubClient(t *testing.T) {
 			},
 		})
 
-		_, err := NewGitHub(ctx, ctx.Token)
+		_, err := newGitHub(ctx, ctx.Token)
 		require.ErrorAs(t, err, &template.ExecError{})
 	})
 
@@ -99,7 +93,7 @@ func TestNewGitHubClient(t *testing.T) {
 			},
 		})
 
-		_, err := NewGitHub(ctx, ctx.Token)
+		_, err := newGitHub(ctx, ctx.Token)
 		require.ErrorAs(t, err, &template.ExecError{})
 	})
 
@@ -110,14 +104,14 @@ func TestNewGitHubClient(t *testing.T) {
 			},
 		})
 
-		_, err := NewGitHub(ctx, ctx.Token)
+		_, err := newGitHub(ctx, ctx.Token)
 		require.Error(t, err)
 	})
 }
 
 func TestGitHubUploadReleaseIDNotInt(t *testing.T) {
 	ctx := testctx.New()
-	client, err := NewGitHub(ctx, ctx.Token)
+	client, err := newGitHub(ctx, ctx.Token)
 	require.NoError(t, err)
 
 	require.EqualError(
@@ -172,7 +166,7 @@ func TestGitHubReleaseURLTemplate(t *testing.T) {
 					},
 				},
 			})
-			client, err := NewGitHub(ctx, ctx.Token)
+			client, err := newGitHub(ctx, ctx.Token)
 			require.NoError(t, err)
 
 			urlTpl, err := client.ReleaseURLTemplate(ctx)
@@ -193,7 +187,7 @@ func TestGitHubCreateReleaseWrongNameTemplate(t *testing.T) {
 			NameTemplate: "{{.dddddddddd",
 		},
 	})
-	client, err := NewGitHub(ctx, ctx.Token)
+	client, err := newGitHub(ctx, ctx.Token)
 	require.NoError(t, err)
 
 	str, err := client.CreateRelease(ctx, "")
@@ -219,7 +213,7 @@ func TestGithubGetDefaultBranch(t *testing.T) {
 		},
 	})
 
-	client, err := NewGitHub(ctx, "test-token")
+	client, err := newGitHub(ctx, "test-token")
 	require.NoError(t, err)
 	repo := Repo{
 		Owner:  "someone",
@@ -227,7 +221,7 @@ func TestGithubGetDefaultBranch(t *testing.T) {
 		Branch: "somebranch",
 	}
 
-	b, err := client.GetDefaultBranch(ctx, repo)
+	b, err := client.getDefaultBranch(ctx, repo)
 	require.NoError(t, err)
 	require.Equal(t, "main", b)
 	require.Equal(t, 1, totalRequests)
@@ -248,7 +242,7 @@ func TestGithubGetDefaultBranchErr(t *testing.T) {
 			API: srv.URL + "/",
 		},
 	})
-	client, err := NewGitHub(ctx, "test-token")
+	client, err := newGitHub(ctx, "test-token")
 	require.NoError(t, err)
 	repo := Repo{
 		Owner:  "someone",
@@ -256,7 +250,7 @@ func TestGithubGetDefaultBranchErr(t *testing.T) {
 		Branch: "somebranch",
 	}
 
-	_, err = client.GetDefaultBranch(ctx, repo)
+	_, err = client.getDefaultBranch(ctx, repo)
 	require.Error(t, err)
 }
 
@@ -279,7 +273,7 @@ func TestChangelog(t *testing.T) {
 			API: srv.URL + "/",
 		},
 	})
-	client, err := NewGitHub(ctx, "test-token")
+	client, err := newGitHub(ctx, "test-token")
 	require.NoError(t, err)
 	repo := Repo{
 		Owner:  "someone",
@@ -311,7 +305,7 @@ func TestReleaseNotes(t *testing.T) {
 			API: srv.URL + "/",
 		},
 	})
-	client, err := NewGitHub(ctx, "test-token")
+	client, err := newGitHub(ctx, "test-token")
 	require.NoError(t, err)
 	repo := Repo{
 		Owner:  "someone",
@@ -322,6 +316,33 @@ func TestReleaseNotes(t *testing.T) {
 	log, err := client.GenerateReleaseNotes(ctx, repo, "v1.0.0", "v1.1.0")
 	require.NoError(t, err)
 	require.Equal(t, "**Full Changelog**: https://github.com/someone/something/compare/v1.0.0...v1.1.0", log)
+}
+
+func TestReleaseNotesError(t *testing.T) {
+	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		defer r.Body.Close()
+
+		if r.URL.Path == "/repos/someone/something/releases/generate-notes" {
+			w.WriteHeader(http.StatusBadRequest)
+		}
+	}))
+	defer srv.Close()
+
+	ctx := testctx.NewWithCfg(config.Project{
+		GitHubURLs: config.GitHubURLs{
+			API: srv.URL + "/",
+		},
+	})
+	client, err := newGitHub(ctx, "test-token")
+	require.NoError(t, err)
+	repo := Repo{
+		Owner:  "someone",
+		Name:   "something",
+		Branch: "somebranch",
+	}
+
+	_, err = client.GenerateReleaseNotes(ctx, repo, "v1.0.0", "v1.1.0")
+	require.Error(t, err)
 }
 
 func TestCloseMilestone(t *testing.T) {
@@ -344,7 +365,7 @@ func TestCloseMilestone(t *testing.T) {
 			API: srv.URL + "/",
 		},
 	})
-	client, err := NewGitHub(ctx, "test-token")
+	client, err := newGitHub(ctx, "test-token")
 	require.NoError(t, err)
 	repo := Repo{
 		Owner: "someone",
@@ -353,3 +374,241 @@ func TestCloseMilestone(t *testing.T) {
 
 	require.NoError(t, client.CloseMilestone(ctx, repo, "v1.13.0"))
 }
+
+func TestOpenPullRequestHappyPath(t *testing.T) {
+	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		defer r.Body.Close()
+
+		if r.URL.Path == "/repos/someone/something/pulls" {
+			r, err := os.Open("testdata/github/pull.json")
+			require.NoError(t, err)
+			_, err = io.Copy(w, r)
+			require.NoError(t, err)
+			return
+		}
+
+		t.Error("unhandled request: " + r.URL.Path)
+	}))
+	defer srv.Close()
+
+	ctx := testctx.NewWithCfg(config.Project{
+		GitHubURLs: config.GitHubURLs{
+			API: srv.URL + "/",
+		},
+	})
+	client, err := newGitHub(ctx, "test-token")
+	require.NoError(t, err)
+	repo := Repo{
+		Owner: "someone",
+		Name:  "something",
+	}
+
+	require.NoError(t, client.OpenPullRequest(ctx, repo, "main", "some title"))
+}
+
+func TestOpenPullRequestPRExists(t *testing.T) {
+	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		defer r.Body.Close()
+
+		if r.URL.Path == "/repos/someone/something/pulls" {
+			w.WriteHeader(http.StatusUnprocessableEntity)
+			r, err := os.Open("testdata/github/pull.json")
+			require.NoError(t, err)
+			_, err = io.Copy(w, r)
+			require.NoError(t, err)
+			return
+		}
+
+		t.Error("unhandled request: " + r.URL.Path)
+	}))
+	defer srv.Close()
+
+	ctx := testctx.NewWithCfg(config.Project{
+		GitHubURLs: config.GitHubURLs{
+			API: srv.URL + "/",
+		},
+	})
+	client, err := newGitHub(ctx, "test-token")
+	require.NoError(t, err)
+	repo := Repo{
+		Owner: "someone",
+		Name:  "something",
+	}
+
+	require.NoError(t, client.OpenPullRequest(ctx, repo, "main", "some title"))
+}
+
+func TestOpenPullRequestBaseEmpty(t *testing.T) {
+	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		defer r.Body.Close()
+
+		if r.URL.Path == "/repos/someone/something/pulls" {
+			r, err := os.Open("testdata/github/pull.json")
+			require.NoError(t, err)
+			_, err = io.Copy(w, r)
+			require.NoError(t, err)
+			return
+		}
+
+		if r.URL.Path == "/repos/someone/something" {
+			w.WriteHeader(http.StatusOK)
+			fmt.Fprint(w, `{"default_branch": "main"}`)
+			return
+		}
+
+		t.Error("unhandled request: " + r.URL.Path)
+	}))
+	defer srv.Close()
+
+	ctx := testctx.NewWithCfg(config.Project{
+		GitHubURLs: config.GitHubURLs{
+			API: srv.URL + "/",
+		},
+	})
+	client, err := newGitHub(ctx, "test-token")
+	require.NoError(t, err)
+	repo := Repo{
+		Owner: "someone",
+		Name:  "something",
+	}
+
+	require.NoError(t, client.OpenPullRequest(ctx, repo, "", "some title"))
+}
+
+func TestGitHubCreateFileHappyPathCreate(t *testing.T) {
+	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		defer r.Body.Close()
+
+		if r.URL.Path == "/repos/someone/something" {
+			w.WriteHeader(http.StatusOK)
+			fmt.Fprint(w, `{"default_branch": "main"}`)
+			return
+		}
+
+		if r.URL.Path == "/repos/someone/something/contents/file.txt" && r.Method == http.MethodGet {
+			w.WriteHeader(http.StatusNotFound)
+			return
+		}
+
+		if r.URL.Path == "/repos/someone/something/contents/file.txt" && r.Method == http.MethodPut {
+			w.WriteHeader(http.StatusOK)
+			return
+		}
+
+		t.Error("unhandled request: " + r.URL.Path)
+	}))
+	defer srv.Close()
+
+	ctx := testctx.NewWithCfg(config.Project{
+		GitHubURLs: config.GitHubURLs{
+			API: srv.URL + "/",
+		},
+	})
+	client, err := newGitHub(ctx, "test-token")
+	require.NoError(t, err)
+	repo := Repo{
+		Owner: "someone",
+		Name:  "something",
+	}
+
+	require.NoError(t, client.CreateFile(ctx, config.CommitAuthor{}, repo, []byte("content"), "file.txt", "message"))
+}
+
+func TestGitHubCreateFileHappyPathUpdate(t *testing.T) {
+	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		defer r.Body.Close()
+
+		if r.URL.Path == "/repos/someone/something" {
+			w.WriteHeader(http.StatusOK)
+			fmt.Fprint(w, `{"default_branch": "main"}`)
+			return
+		}
+
+		if r.URL.Path == "/repos/someone/something/contents/file.txt" && r.Method == http.MethodGet {
+			w.WriteHeader(http.StatusOK)
+			fmt.Fprint(w, `{"sha": "fake"}`)
+			return
+		}
+
+		if r.URL.Path == "/repos/someone/something/contents/file.txt" && r.Method == http.MethodPut {
+			w.WriteHeader(http.StatusOK)
+			return
+		}
+
+		t.Error("unhandled request: " + r.URL.Path)
+	}))
+	defer srv.Close()
+
+	ctx := testctx.NewWithCfg(config.Project{
+		GitHubURLs: config.GitHubURLs{
+			API: srv.URL + "/",
+		},
+	})
+	client, err := newGitHub(ctx, "test-token")
+	require.NoError(t, err)
+	repo := Repo{
+		Owner: "someone",
+		Name:  "something",
+	}
+
+	require.NoError(t, client.CreateFile(ctx, config.CommitAuthor{}, repo, []byte("content"), "file.txt", "message"))
+}
+
+func TestGitHubCreateFileFeatureBranchDoesNotExist(t *testing.T) {
+	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		defer r.Body.Close()
+
+		if r.URL.Path == "/repos/someone/something/branches/feature" && r.Method == http.MethodGet {
+			w.WriteHeader(http.StatusNotFound)
+			return
+		}
+
+		if r.URL.Path == "/repos/someone/something/git/ref/heads/main" {
+			fmt.Fprint(w, `{"object": {"sha": "fake-sha"}}`)
+			return
+		}
+
+		if r.URL.Path == "/repos/someone/something/git/refs" && r.Method == http.MethodPost {
+			w.WriteHeader(http.StatusOK)
+			return
+		}
+
+		if r.URL.Path == "/repos/someone/something" {
+			w.WriteHeader(http.StatusOK)
+			fmt.Fprint(w, `{"default_branch": "main"}`)
+			return
+		}
+
+		if r.URL.Path == "/repos/someone/something/contents/file.txt" && r.Method == http.MethodGet {
+			w.WriteHeader(http.StatusNotFound)
+			return
+		}
+
+		if r.URL.Path == "/repos/someone/something/contents/file.txt" && r.Method == http.MethodPut {
+			w.WriteHeader(http.StatusOK)
+			return
+		}
+
+		t.Error("unhandled request: " + r.Method + " " + r.URL.Path)
+	}))
+	defer srv.Close()
+
+	ctx := testctx.NewWithCfg(config.Project{
+		GitHubURLs: config.GitHubURLs{
+			API: srv.URL + "/",
+		},
+	})
+	client, err := newGitHub(ctx, "test-token")
+	require.NoError(t, err)
+	repo := Repo{
+		Owner:  "someone",
+		Name:   "something",
+		Branch: "feature",
+	}
+
+	require.NoError(t, client.CreateFile(ctx, config.CommitAuthor{}, repo, []byte("content"), "file.txt", "message"))
+}
+
+// TODO: test create release
+// TODO: test create upload file to release
+// TODO: test delete draft release

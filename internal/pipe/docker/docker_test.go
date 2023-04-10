@@ -439,6 +439,20 @@ func TestRunPipe(t *testing.T) {
 			pubAssertError:      shouldNotErr,
 			manifestAssertError: shouldNotErr,
 		},
+		"wrong binary name": {
+			dockers: []config.Docker{
+				{
+					ImageTemplates: []string{
+						registry + "goreleaser/wrong_bin_name:v1",
+					},
+					Goos:       "linux",
+					Goarch:     "amd64",
+					Dockerfile: "testdata/Dockerfile.wrongbin",
+				},
+			},
+			assertError:       shouldErr("seems like you tried to copy a file that is not available in the build context"),
+			assertImageLabels: noLabels,
+		},
 		"templated-dockerfile-invalid": {
 			dockers: []config.Docker{
 				{
@@ -1242,7 +1256,7 @@ func TestDefaultFilesDot(t *testing.T) {
 			},
 		},
 	})
-	require.EqualError(t, Pipe{}.Default(ctx), `invalid docker.files: can't be . or inside dist folder: .`)
+	require.NoError(t, Pipe{}.Default(ctx))
 }
 
 func TestDefaultFilesDis(t *testing.T) {
@@ -1254,7 +1268,7 @@ func TestDefaultFilesDis(t *testing.T) {
 			},
 		},
 	})
-	require.EqualError(t, Pipe{}.Default(ctx), `invalid docker.files: can't be . or inside dist folder: /tmp/dist/asdasd/asd`)
+	require.NoError(t, Pipe{}.Default(ctx))
 }
 
 func TestDefaultSet(t *testing.T) {
@@ -1399,4 +1413,21 @@ func TestWithDigest(t *testing.T) {
 			})
 		})
 	}
+}
+
+func TestDependencies(t *testing.T) {
+	ctx := testctx.NewWithCfg(config.Project{
+		Dockers: []config.Docker{
+			{Use: useBuildx},
+			{Use: useDocker},
+			{Use: "nope"},
+		},
+		DockerManifests: []config.DockerManifest{
+			{Use: useBuildx},
+			{Use: useDocker},
+			{Use: "nope"},
+		},
+	})
+	require.Equal(t, []string{"docker", "docker"}, Pipe{}.Dependencies(ctx))
+	require.Equal(t, []string{"docker", "docker"}, ManifestPipe{}.Dependencies(ctx))
 }

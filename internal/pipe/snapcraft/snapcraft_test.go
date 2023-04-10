@@ -706,6 +706,15 @@ func TestSkip(t *testing.T) {
 	})
 }
 
+func TestDependencies(t *testing.T) {
+	ctx := testctx.NewWithCfg(config.Project{
+		Snapcrafts: []config.Snapcraft{
+			{},
+		},
+	})
+	require.Equal(t, []string{"snapcraft"}, Pipe{}.Dependencies(ctx))
+}
+
 func requireEqualFileConents(tb testing.TB, a, b string) {
 	tb.Helper()
 	eq, err := gio.EqualFileContents(a, b)

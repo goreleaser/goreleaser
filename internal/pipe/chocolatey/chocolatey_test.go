@@ -301,12 +301,16 @@ func TestPublish(t *testing.T) {
 	}
 }
 
+func TestDependencies(t *testing.T) {
+	require.Equal(t, []string{"choco"}, Pipe{}.Dependencies(nil))
+}
+
 type fakeCmd struct {
 	execFn func() ([]byte, error)
 }
 
 var _ cmder = fakeCmd{}
 
-func (f fakeCmd) Exec(ctx *context.Context, name string, args ...string) ([]byte, error) {
+func (f fakeCmd) Exec(_ *context.Context, _ string, _ ...string) ([]byte, error) {
 	return f.execFn()
 }

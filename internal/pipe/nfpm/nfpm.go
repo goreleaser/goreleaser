@@ -396,19 +396,20 @@ func create(ctx *context.Context, fpm config.NFPM, format string, binaries []*ar
 		return err
 	}
 
-	info = nfpm.WithDefaults(info)
-	name, err := t.WithExtraFields(tmpl.Fields{
-		"ConventionalFileName": packager.ConventionalFileName(info),
-	}).Apply(overridden.FileNameTemplate)
-	if err != nil {
-		return err
-	}
-
 	ext := "." + format
 	if packager, ok := packager.(nfpm.PackagerWithExtension); ok {
 		if format != "termux.deb" {
 			ext = packager.ConventionalExtension()
 		}
+	}
+
+	info = nfpm.WithDefaults(info)
+	name, err := t.WithExtraFields(tmpl.Fields{
+		"ConventionalFileName":  packager.ConventionalFileName(info),
+		"ConventionalExtension": ext,
+	}).Apply(overridden.FileNameTemplate)
+	if err != nil {
+		return err
 	}
 
 	if !strings.HasSuffix(name, ext) {

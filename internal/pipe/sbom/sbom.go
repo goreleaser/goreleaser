@@ -31,6 +31,14 @@ func (Pipe) Skip(ctx *context.Context) bool {
 	return ctx.SkipSBOMCataloging || len(ctx.Config.SBOMs) == 0
 }
 
+func (Pipe) Dependencies(ctx *context.Context) []string {
+	var cmds []string
+	for _, s := range ctx.Config.SBOMs {
+		cmds = append(cmds, s.Cmd)
+	}
+	return cmds
+}
+
 // Default sets the Pipes defaults.
 func (Pipe) Default(ctx *context.Context) error {
 	ids := ids.New("sboms")

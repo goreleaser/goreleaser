@@ -21,6 +21,8 @@ type giteaClient struct {
 	client *gitea.Client
 }
 
+var _ Client = &giteaClient{}
+
 func getInstanceURL(ctx *context.Context) (string, error) {
 	apiURL, err := tmpl.New(ctx).Apply(ctx.Config.GiteaURLs.API)
 	if err != nil {
@@ -39,8 +41,8 @@ func getInstanceURL(ctx *context.Context) (string, error) {
 	return rawurl, nil
 }
 
-// NewGitea returns a gitea client implementation.
-func NewGitea(ctx *context.Context, token string) (Client, error) {
+// newGitea returns a gitea client implementation.
+func newGitea(ctx *context.Context, token string) (*giteaClient, error) {
 	instanceURL, err := getInstanceURL(ctx)
 	if err != nil {
 		return nil, err
@@ -68,12 +70,12 @@ func NewGitea(ctx *context.Context, token string) (Client, error) {
 	return &giteaClient{client: client}, nil
 }
 
-func (c *giteaClient) Changelog(ctx *context.Context, repo Repo, prev, current string) (string, error) {
+func (c *giteaClient) Changelog(_ *context.Context, _ Repo, _, _ string) (string, error) {
 	return "", ErrNotImplemented
 }
 
 // CloseMilestone closes a given milestone.
-func (c *giteaClient) CloseMilestone(ctx *context.Context, repo Repo, title string) error {
+func (c *giteaClient) CloseMilestone(_ *context.Context, repo Repo, title string) error {
 	closedState := gitea.StateClosed
 	opts := gitea.EditMilestoneOption{
 		State: &closedState,
@@ -87,7 +89,7 @@ func (c *giteaClient) CloseMilestone(ctx *context.Context, repo Repo, title stri
 	return err
 }
 
-func (c *giteaClient) GetDefaultBranch(ctx *context.Context, repo Repo) (string, error) {
+func (c *giteaClient) getDefaultBranch(_ *context.Context, repo Repo) (string, error) {
 	projectID := repo.String()
 	p, res, err := c.client.GetRepo(repo.Owner, repo.Name)
 	if err != nil {
@@ -117,7 +119,7 @@ func (c *giteaClient) CreateFile(
 	if repo.Branch != "" {
 		branch = repo.Branch
 	} else {
-		branch, err = c.GetDefaultBranch(ctx, repo)
+		branch, err = c.getDefaultBranch(ctx, repo)
 		if err != nil {
 			// Fall back to 'master' 😭
 			log.WithFields(log.Fields{

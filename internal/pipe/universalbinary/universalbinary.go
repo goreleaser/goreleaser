@@ -148,7 +148,7 @@ func makeUniversalBinary(ctx *context.Context, opts *build.Options, unibin confi
 
 	binaries := ctx.Artifacts.Filter(filterFor(unibin)).List()
 	if len(binaries) == 0 {
-		return pipe.Skip(fmt.Sprintf("no darwin binaries found with id %q", unibin.ID))
+		return pipe.Skipf("no darwin binaries found with id %q", unibin.ID)
 	}
 
 	log.WithField("id", unibin.ID).

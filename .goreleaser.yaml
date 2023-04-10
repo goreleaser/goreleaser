@@ -62,6 +62,9 @@ changelog:
     - title: 'New Features'
       regexp: '^.*?feat(\([[:word:]]+\))??!?:.+$'
       order: 100
+    - title: 'Security updates'
+      regexp: '^.*?sec(\([[:word:]]+\))??!?:.+$'
+      order: 150
     - title: 'Bug fixes'
       regexp: '^.*?fix(\([[:word:]]+\))??!?:.+$'
       order: 200
@@ -211,6 +214,7 @@ scoop:
   bucket:
     owner: goreleaser
     name: scoop-bucket
+  folder: bucket
   homepage:  https://goreleaser.com
   description: Deliver Go binaries as fast and easily as possible
   license: MIT
@@ -279,8 +283,6 @@ sboms:
 
 signs:
 - cmd: cosign
-  env:
-  - COSIGN_EXPERIMENTAL=1
   certificate: '${artifact}.pem'
   output: true
   artifacts: checksum
@@ -289,16 +291,16 @@ signs:
     - '--output-certificate=${certificate}'
     - '--output-signature=${signature}'
     - '${artifact}'
+    - --yes
 
 docker_signs:
 - cmd: cosign
-  env:
-  - COSIGN_EXPERIMENTAL=1
   artifacts: manifests
   output: true
   args:
   - 'sign'
   - '${artifact}@${digest}'
+  - --yes
 
 publishers:
   - name: fury.io

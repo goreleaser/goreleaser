@@ -99,8 +99,9 @@ const defaultNameTemplate = `{{ .ProjectName }}_{{ .Version }}_{{ .Os }}_{{ .Arc
 // Pipe for snapcraft packaging.
 type Pipe struct{}
 
-func (Pipe) String() string                 { return "snapcraft packages" }
-func (Pipe) Skip(ctx *context.Context) bool { return len(ctx.Config.Snapcrafts) == 0 }
+func (Pipe) String() string                           { return "snapcraft packages" }
+func (Pipe) Skip(ctx *context.Context) bool           { return len(ctx.Config.Snapcrafts) == 0 }
+func (Pipe) Dependencies(_ *context.Context) []string { return []string{"snapcraft"} }
 
 // Default sets the pipe defaults.
 func (Pipe) Default(ctx *context.Context) error {

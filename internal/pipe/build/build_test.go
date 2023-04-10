@@ -35,7 +35,7 @@ func (f *fakeBuilder) WithDefaults(build config.Build) (config.Build, error) {
 	return build, nil
 }
 
-func (f *fakeBuilder) Build(ctx *context.Context, build config.Build, options api.Options) error {
+func (f *fakeBuilder) Build(ctx *context.Context, _ config.Build, options api.Options) error {
 	if f.fail {
 		return errFailedBuild
 	}
@@ -91,8 +91,7 @@ func TestBuild(t *testing.T) {
 	)
 	opts, err := buildOptionsForTarget(ctx, ctx.Config.Builds[0], "darwin_amd64")
 	require.NoError(t, err)
-	error := doBuild(ctx, ctx.Config.Builds[0], *opts)
-	require.NoError(t, error)
+	require.NoError(t, doBuild(ctx, ctx.Config.Builds[0], *opts))
 }
 
 func TestRunPipe(t *testing.T) {

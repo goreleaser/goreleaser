@@ -5,6 +5,7 @@ import (
 	"testing"
 
 	"github.com/goreleaser/goreleaser/internal/testctx"
+	"github.com/goreleaser/goreleaser/internal/testlib"
 	"github.com/goreleaser/goreleaser/pkg/config"
 	"github.com/stretchr/testify/require"
 )
@@ -30,7 +31,7 @@ func TestMeta(t *testing.T) {
 		require.Equal(
 			t,
 			[]string{"testdata/a/a.txt", "testdata/a/b/a.txt", "testdata/a/b/c/d.txt"},
-			tarFiles(t, filepath.Join(dist, "foo.tar.gz")),
+			testlib.LsArchive(t, filepath.Join(dist, "foo.tar.gz"), "tar.gz"),
 		)
 	})
 

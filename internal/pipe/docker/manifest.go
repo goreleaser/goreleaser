@@ -24,6 +24,18 @@ func (ManifestPipe) Skip(ctx *context.Context) bool {
 	return len(ctx.Config.DockerManifests) == 0 || ctx.SkipDocker
 }
 
+func (ManifestPipe) Dependencies(ctx *context.Context) []string {
+	var cmds []string
+	for _, s := range ctx.Config.DockerManifests {
+		switch s.Use {
+		case useDocker, useBuildx:
+			cmds = append(cmds, "docker")
+			// TODO: check buildx
+		}
+	}
+	return cmds
+}
+
 // Default sets the pipe defaults.
 func (ManifestPipe) Default(ctx *context.Context) error {
 	ids := ids.New("docker_manifests")

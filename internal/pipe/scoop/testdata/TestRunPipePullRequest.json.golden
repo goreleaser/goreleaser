@@ -1,0 +1,12 @@
+{
+    "version": "1.2.1",
+    "architecture": {
+        "64bit": {
+            "url": "https://dummyhost/download/v1.2.1/foo_windows_amd64.tar.gz",
+            "bin": null,
+            "hash": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        }
+    },
+    "homepage": "https://goreleaser.com",
+    "description": "Fake desc"
+}

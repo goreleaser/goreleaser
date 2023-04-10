@@ -4,7 +4,6 @@ package scoop
 import (
 	"bytes"
 	"encoding/json"
-	"errors"
 	"fmt"
 	"os"
 	"path"
@@ -23,8 +22,13 @@ import (
 
 // ErrNoWindows when there is no build for windows (goos doesn't contain
 // windows) or archive.format is binary.
+type ErrNoWindows struct {
+	goamd64 string
+}
 
-var ErrNoWindows = errors.New("scoop requires a windows archive\nLearn more at https://goreleaser.com/errors/scoop-archive\n") // nolint: revive
+func (e ErrNoWindows) Error() string {
+	return fmt.Sprintf("scoop requires a windows archive, but no archives matched goos=windows goarch=[386 amd64] goamd64=%s\nLearn more at https://goreleaser.com/errors/scoop-archive\n", e.goamd64) // nolint: revive
+}
 
 const scoopConfigExtra = "ScoopConfig"
 
@@ -84,7 +88,7 @@ func doRun(ctx *context.Context, cl client.Client) error {
 		),
 	).List()
 	if len(archives) == 0 {
-		return ErrNoWindows
+		return ErrNoWindows{scoop.Goamd64}
 	}
 
 	filename := scoop.Name + ".json"
@@ -139,9 +143,6 @@ func doPublish(ctx *context.Context, cl client.Client) error {
 	if strings.TrimSpace(scoop.SkipUpload) == "auto" && ctx.Semver.Prerelease != "" {
 		return pipe.Skip("release is prerelease")
 	}
-	if ctx.Config.Release.Draft {
-		return pipe.Skip("release is marked as draft")
-	}
 
 	relDisabled, err := tmpl.New(ctx).Bool(ctx.Config.Release.Disable)
 	if err != nil {
@@ -173,14 +174,24 @@ func doPublish(ctx *context.Context, cl client.Client) error {
 	scoop.Bucket = ref
 
 	repo := client.RepoFromRef(scoop.Bucket)
-	return cl.CreateFile(
-		ctx,
-		author,
-		repo,
-		content,
-		path.Join(scoop.Folder, manifest.Name),
-		commitMessage,
-	)
+	gpath := path.Join(scoop.Folder, manifest.Name)
+
+	if !scoop.Bucket.PullRequest.Enabled {
+		return cl.CreateFile(ctx, author, repo, content, gpath, commitMessage)
+	}
+
+	log.Info("brews.pull_request enabled, creating a PR")
+	pcl, ok := cl.(client.PullRequestOpener)
+	if !ok {
+		return fmt.Errorf("client does not support pull requests")
+	}
+
+	if err := cl.CreateFile(ctx, author, repo, content, gpath, commitMessage); err != nil {
+		return err
+	}
+
+	title := fmt.Sprintf("Updated %s to %s", ctx.Config.ProjectName, ctx.Version)
+	return pcl.OpenPullRequest(ctx, repo, scoop.Bucket.PullRequest.Base, title)
 }
 
 // Manifest represents a scoop.sh App Manifest.
@@ -195,6 +206,7 @@ type Manifest struct {
 	PreInstall   []string            `json:"pre_install,omitempty"`  // An array of strings, of the commands to be executed before an application is installed.
 	PostInstall  []string            `json:"post_install,omitempty"` // An array of strings, of the commands to be executed after an application is installed.
 	Depends      []string            `json:"depends,omitempty"`      // A string or an array of strings.
+	Shortcuts    [][]string          `json:"shortcuts,omitempty"`    // A two-dimensional array of string, specifies the shortcut values to make available in the startmenu.
 }
 
 // Resource represents a combination of a url and a binary name for an architecture.
@@ -225,6 +237,7 @@ func dataFor(ctx *context.Context, cl client.Client, artifacts []*artifact.Artif
 		PreInstall:   ctx.Config.Scoop.PreInstall,
 		PostInstall:  ctx.Config.Scoop.PostInstall,
 		Depends:      ctx.Config.Scoop.Depends,
+		Shortcuts:    ctx.Config.Scoop.Shortcuts,
 	}
 
 	if ctx.Config.Scoop.URLTemplate == "" {

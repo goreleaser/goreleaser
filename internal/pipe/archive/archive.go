@@ -122,10 +122,7 @@ func (Pipe) Run(ctx *context.Context) error {
 				continue
 			}
 			g.Go(func() error {
-				if err := create(ctx, archive, artifacts); err != nil {
-					return err
-				}
-				return nil
+				return create(ctx, archive, artifacts)
 			})
 		}
 	}
@@ -320,10 +317,6 @@ type EnhancedArchive struct {
 func (d EnhancedArchive) Add(f config.File) error {
 	name := strings.ReplaceAll(filepath.Join(d.wrap, f.Destination), "\\", "/")
 	log.Debugf("adding file: %s as %s", f.Source, name)
-	if _, ok := d.files[f.Destination]; ok {
-		return fmt.Errorf("file %s already exists in the archive", f.Destination)
-	}
-	d.files[f.Destination] = name
 	ff := config.File{
 		Source:      f.Source,
 		Destination: name,

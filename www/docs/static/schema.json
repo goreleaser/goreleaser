@@ -184,7 +184,17 @@
 						"type": "object"
 					},
 					"format": {
-						"type": "string"
+						"type": "string",
+						"enum": [
+							"tar",
+							"tgz",
+							"tar.gz",
+							"zip",
+							"gz",
+							"tar.xz",
+							"txz"
+						],
+						"default": "tar.gz"
 					},
 					"format_overrides": {
 						"items": {
@@ -270,6 +280,16 @@
 							"$ref": "#/$defs/ExtraFile"
 						},
 						"type": "array"
+					},
+					"disable": {
+						"oneOf": [
+							{
+								"type": "string"
+							},
+							{
+								"type": "boolean"
+							}
+						]
 					}
 				},
 				"additionalProperties": false,
@@ -468,7 +488,14 @@
 						"default": ""
 					},
 					"skip": {
-						"type": "boolean"
+						"oneOf": [
+							{
+								"type": "string"
+							},
+							{
+								"type": "boolean"
+							}
+						]
 					},
 					"use": {
 						"type": "string",
@@ -659,6 +686,7 @@
 							"config",
 							"config|noreplace",
 							"dir",
+							"tree",
 							""
 						],
 						"default": ""
@@ -969,7 +997,17 @@
 						"type": "string"
 					},
 					"format": {
-						"type": "string"
+						"type": "string",
+						"enum": [
+							"tar",
+							"tgz",
+							"tar.gz",
+							"zip",
+							"gz",
+							"tar.xz",
+							"txz"
+						],
+						"default": "tar.gz"
 					}
 				},
 				"additionalProperties": false,
@@ -978,6 +1016,9 @@
 			"Git": {
 				"properties": {
 					"tag_sort": {
+						"type": "string"
+					},
+					"prerelease_suffix": {
 						"type": "string"
 					}
 				},
@@ -1265,6 +1306,14 @@
 					"base_image": {
 						"type": "string"
 					},
+					"labels": {
+						"patternProperties": {
+							".*": {
+								"type": "string"
+							}
+						},
+						"type": "object"
+					},
 					"repository": {
 						"type": "string"
 					},
@@ -1279,6 +1328,12 @@
 							"type": "string"
 						},
 						"type": "array"
+					},
+					"creation_time": {
+						"type": "string"
+					},
+					"ko_data_creation_time": {
+						"type": "string"
 					},
 					"sbom": {
 						"type": "string"
@@ -2136,6 +2191,18 @@
 				"additionalProperties": false,
 				"type": "object"
 			},
+			"PullRequest": {
+				"properties": {
+					"enabled": {
+						"type": "boolean"
+					},
+					"base": {
+						"type": "string"
+					}
+				},
+				"additionalProperties": false,
+				"type": "object"
+			},
 			"Reddit": {
 				"properties": {
 					"enabled": {
@@ -2266,6 +2333,9 @@
 					},
 					"branch": {
 						"type": "string"
+					},
+					"pull_request": {
+						"$ref": "#/$defs/PullRequest"
 					}
 				},
 				"additionalProperties": false,
@@ -2406,6 +2476,15 @@
 					"depends": {
 						"items": {
 							"type": "string"
+						},
+						"type": "array"
+					},
+					"shortcuts": {
+						"items": {
+							"items": {
+								"type": "string"
+							},
+							"type": "array"
 						},
 						"type": "array"
 					},
@@ -2786,7 +2865,14 @@
 						"type": "string"
 					},
 					"format": {
-						"type": "string"
+						"type": "string",
+						"enum": [
+							"tar",
+							"tgz",
+							"tar.gz",
+							"zip"
+						],
+						"default": "tar.gz"
 					},
 					"enabled": {
 						"type": "boolean"

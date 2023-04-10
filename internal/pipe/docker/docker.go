@@ -2,6 +2,7 @@ package docker
 
 import (
 	"fmt"
+	"io/fs"
 	"os"
 	"path/filepath"
 	"sort"
@@ -30,6 +31,18 @@ type Pipe struct{}
 
 func (Pipe) String() string                 { return "docker images" }
 func (Pipe) Skip(ctx *context.Context) bool { return len(ctx.Config.Dockers) == 0 || ctx.SkipDocker }
+
+func (Pipe) Dependencies(ctx *context.Context) []string {
+	var cmds []string
+	for _, s := range ctx.Config.Dockers {
+		switch s.Use {
+		case useDocker, useBuildx:
+			cmds = append(cmds, "docker")
+			// TODO: how to check if buildx is installed
+		}
+	}
+	return cmds
+}
 
 // Default sets the pipe defaults.
 func (Pipe) Default(ctx *context.Context) error {
@@ -60,11 +73,6 @@ func (Pipe) Default(ctx *context.Context) error {
 		}
 		if err := validateImager(docker.Use); err != nil {
 			return err
-		}
-		for _, f := range docker.Files {
-			if f == "." || strings.HasPrefix(f, ctx.Config.Dist) {
-				return fmt.Errorf("invalid docker.files: can't be . or inside dist folder: %s", f)
-			}
 		}
 	}
 	return ids.Validate()
@@ -145,7 +153,7 @@ func process(ctx *context.Context, docker config.Docker, artifacts []*artifact.A
 	if len(artifacts) == 0 {
 		log.Warn("not binaries or packages found for the given platform - COPY/ADD may not work")
 	}
-	tmp, err := os.MkdirTemp(ctx.Config.Dist, "goreleaserdocker")
+	tmp, err := os.MkdirTemp("", "goreleaserdocker")
 	if err != nil {
 		return fmt.Errorf("failed to create temporary dir: %w", err)
 	}
@@ -191,6 +199,26 @@ func process(ctx *context.Context, docker config.Docker, artifacts []*artifact.A
 
 	log.Info("building docker image")
 	if err := imagers[docker.Use].Build(ctx, tmp, images, buildFlags); err != nil {
+		if strings.Contains(err.Error(), "file not found") || strings.Contains(err.Error(), "not found: not found") {
+			var files []string
+			_ = filepath.Walk(tmp, func(path string, info fs.FileInfo, err error) error {
+				if info.IsDir() {
+					return nil
+				}
+				files = append(files, info.Name())
+				return nil
+			})
+			return fmt.Errorf(`seems like you tried to copy a file that is not available in the build context.
+
+Here's more information about the build context:
+
+dir: %q
+files in that dir:
+ %s
+
+Previous error:
+%w`, tmp, strings.Join(files, "\n "), err)
+		}
 		return err
 	}
 

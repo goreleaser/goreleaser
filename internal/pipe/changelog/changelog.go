@@ -38,8 +38,13 @@ const (
 // Pipe for checksums.
 type Pipe struct{}
 
-func (Pipe) String() string                 { return "generating changelog" }
-func (Pipe) Skip(ctx *context.Context) bool { return ctx.Config.Changelog.Skip || ctx.Snapshot }
+func (Pipe) String() string { return "generating changelog" }
+func (Pipe) Skip(ctx *context.Context) (bool, error) {
+	if ctx.Snapshot {
+		return true, nil
+	}
+	return tmpl.New(ctx).Bool(ctx.Config.Changelog.Skip)
+}
 
 // Run the pipe.
 func (Pipe) Run(ctx *context.Context) error {
@@ -323,7 +328,7 @@ func getChangeloger(ctx *context.Context) (changeloger, error) {
 }
 
 func newGithubChangeloger(ctx *context.Context) (changeloger, error) {
-	cli, err := client.NewGitHub(ctx, ctx.Token)
+	cli, err := client.NewGitHubReleaseNotesGenerator(ctx, ctx.Token)
 	if err != nil {
 		return nil, err
 	}
@@ -420,7 +425,7 @@ func (c *scmChangeloger) Log(ctx *context.Context) (string, error) {
 }
 
 type githubNativeChangeloger struct {
-	client client.GitHubClient
+	client client.ReleaseNotesGenerator
 	repo   client.Repo
 }
 

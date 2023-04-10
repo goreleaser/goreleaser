@@ -14,23 +14,27 @@ After this, you can add following section to your `.goreleaser.yaml` config:
 announce:
   discord:
     # Whether its enabled or not.
-    # Defaults to false.
     enabled: true
 
     # Message template to use while publishing.
-    # Defaults to `{{ .ProjectName }} {{ .Tag }} is out! Check it out at {{ .ReleaseURL }}`
+    #
+    # Default: '{{ .ProjectName }} {{ .Tag }} is out! Check it out at {{ .ReleaseURL }}'
+    # Templates: allowed
     message_template: 'Awesome project {{.Tag}} is out!'
 
     # Set author of the embed.
-    # Defaults to `GoReleaser`
+    #
+    # Default: 'GoReleaser'
     author: ''
 
     # Color code of the embed. You have to use decimal numeral system, not hexadecimal.
-    # Defaults to `3888754` - the grey-ish from goreleaser
+    #
+    # Default: '3888754' (the grey-ish from GoReleaser)
     color: ''
 
     # URL to an image to use as the icon for the embed.
-    # Defaults to `https://goreleaser.com/static/avatar.png`
+    #
+    # Default: 'https://goreleaser.com/static/avatar.png'
     icon_url: ''
 ```
 
