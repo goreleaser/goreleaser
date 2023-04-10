@@ -192,7 +192,8 @@
 							"zip",
 							"gz",
 							"tar.xz",
-							"txz"
+							"txz",
+							"binary"
 						],
 						"default": "tar.gz"
 					},
@@ -1005,7 +1006,8 @@
 							"zip",
 							"gz",
 							"tar.xz",
-							"txz"
+							"txz",
+							"binary"
 						],
 						"default": "tar.gz"
 					}
