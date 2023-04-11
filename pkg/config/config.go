@@ -787,15 +787,19 @@ type Snapcraft struct {
 	ID               string                             `yaml:"id,omitempty" json:"id,omitempty"`
 	Builds           []string                           `yaml:"builds,omitempty" json:"builds,omitempty"`
 	Name             string                             `yaml:"name,omitempty" json:"name,omitempty"`
+	Title            string                             `yaml:"title,omitempty" json:"title,omitempty"`
 	Summary          string                             `yaml:"summary,omitempty" json:"summary,omitempty"`
 	Description      string                             `yaml:"description,omitempty" json:"description,omitempty"`
+	Icon             string                             `yaml:"icon,omitempty" json:"icon,omitempty"`
 	Base             string                             `yaml:"base,omitempty" json:"base,omitempty"`
 	License          string                             `yaml:"license,omitempty" json:"license,omitempty"`
 	Grade            string                             `yaml:"grade,omitempty" json:"grade,omitempty"`
 	ChannelTemplates []string                           `yaml:"channel_templates,omitempty" json:"channel_templates,omitempty"`
 	Confinement      string                             `yaml:"confinement,omitempty" json:"confinement,omitempty"`
+	Assumes          []string                           `yaml:"assumes,omitempty" json:"assumes,omitempty"`
 	Layout           map[string]SnapcraftLayoutMetadata `yaml:"layout,omitempty" json:"layout,omitempty"`
 	Apps             map[string]SnapcraftAppMetadata    `yaml:"apps,omitempty" json:"apps,omitempty"`
+	Hooks            map[string]interface{}             `yaml:"hooks,omitempty" json:"hooks,omitempty"`
 	Plugs            map[string]interface{}             `yaml:"plugs,omitempty" json:"plugs,omitempty"`
 
 	Files []SnapcraftExtraFiles `yaml:"extra_files,omitempty" json:"extra_files,omitempty"`
