@@ -73,6 +73,8 @@ func (a Archive) Add(f config.File) error {
 		return fmt.Errorf("%s: %w", f.Source, err)
 	}
 	header.Name = f.Destination
+	// https://pkg.go.dev/archive/tar#Format
+	header.Format = tar.FormatGNU
 	if !f.Info.ParsedMTime.IsZero() {
 		header.ModTime = f.Info.ParsedMTime
 	}

@@ -50,18 +50,28 @@ func TestArchive(t *testing.T) {
 
 			a, err := Copying(f1, f2, format)
 			require.NoError(t, err)
+			require.NoError(t, f1.Close())
+
 			require.NoError(t, a.Add(config.File{
 				Source:      empty.Name(),
 				Destination: "added_later.txt",
 			}))
+			require.NoError(t, a.Add(config.File{
+				Source:      empty.Name(),
+				Destination: "ملف.txt",
+			}))
 			require.NoError(t, a.Close())
-			require.NoError(t, f1.Close())
 			require.NoError(t, f2.Close())
 
-			require.Equal(t, []string{"empty.txt", "added_later.txt"}, testlib.LsArchive(t, f2.Name(), format))
+			require.ElementsMatch(
+				t,
+				[]string{"empty.txt", "added_later.txt", "ملف.txt"},
+				testlib.LsArchive(t, f2.Name(), format),
+			)
 		})
 	}
 
+	// unsupported format...
 	t.Run("7z", func(t *testing.T) {
 		_, err := New(io.Discard, "7z")
 		require.EqualError(t, err, "invalid archive format: 7z")
