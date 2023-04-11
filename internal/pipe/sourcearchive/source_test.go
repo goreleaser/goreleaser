@@ -21,6 +21,7 @@ func TestArchive(t *testing.T) {
 			testlib.GitInit(t)
 			require.NoError(t, os.WriteFile("code.rb", []byte("not really code"), 0o655))
 			require.NoError(t, os.WriteFile("code.py", []byte("print 1"), 0o655))
+			require.NoError(t, os.WriteFile("ملف.txt", []byte("محتوى عربي"), 0o655))
 			require.NoError(t, os.WriteFile("README.md", []byte("# my dope fake project"), 0o655))
 			require.NoError(t, os.WriteFile(".gitignore", []byte(`
 added-later.txt
@@ -88,6 +89,7 @@ subfolder/
 				"foo-1.0.0/code.py",
 				"foo-1.0.0/code.rb",
 				"foo-1.0.0/code.txt",
+				"foo-1.0.0/ملف.txt",
 				"foo-1.0.0/added-later.txt",
 				"foo-1.0.0/subfolder/file.md",
 			}
