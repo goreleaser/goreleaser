@@ -1428,3 +1428,14 @@ func TestDependencies(t *testing.T) {
 	require.Equal(t, []string{"docker", "docker"}, Pipe{}.Dependencies(ctx))
 	require.Equal(t, []string{"docker", "docker"}, ManifestPipe{}.Dependencies(ctx))
 }
+
+func TestIsFileNotFoundError(t *testing.T) {
+	t.Run("executable not in path", func(t *testing.T) {
+		require.False(t, isFileNotFoundError(`error getting credentials - err: exec: "docker-credential-desktop": executable file not found in $PATH, out:`))
+	})
+
+	t.Run("file not found", func(t *testing.T) {
+		require.True(t, isFileNotFoundError(`./foo: file not found`))
+		require.True(t, isFileNotFoundError(`./foo: not found: not found`))
+	})
+}
