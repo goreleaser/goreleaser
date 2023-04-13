@@ -61,10 +61,24 @@ func (Pipe) Run(ctx *context.Context) error {
 		return err
 	}
 
-	if len(ctx.Config.Source.Files) == 0 {
-		return nil
+	if len(ctx.Config.Source.Files) > 0 {
+		if err := appendExtraFilesToArchive(ctx, prefix, path, format); err != nil {
+			return err
+		}
 	}
 
+	ctx.Artifacts.Add(&artifact.Artifact{
+		Type: artifact.UploadableSourceArchive,
+		Name: filename,
+		Path: path,
+		Extra: map[string]interface{}{
+			artifact.ExtraFormat: format,
+		},
+	})
+	return err
+}
+
+func appendExtraFilesToArchive(ctx *context.Context, prefix, path, format string) error {
 	oldPath := path + ".bkp"
 	if err := gio.Copy(path, oldPath); err != nil {
 		return fmt.Errorf("failed make a backup of %q: %w", path, err)
@@ -110,16 +124,7 @@ func (Pipe) Run(ctx *context.Context) error {
 	if err := af.Close(); err != nil {
 		return fmt.Errorf("could not close archive file: %w", err)
 	}
-
-	ctx.Artifacts.Add(&artifact.Artifact{
-		Type: artifact.UploadableSourceArchive,
-		Name: filename,
-		Path: path,
-		Extra: map[string]interface{}{
-			artifact.ExtraFormat: format,
-		},
-	})
-	return err
+	return nil
 }
 
 // Default sets the pipe defaults.
