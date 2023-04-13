@@ -159,3 +159,5 @@ func TestTarInvalidLink(t *testing.T) {
 		Destination: "badlink.txt",
 	}))
 }
+
+// TODO: add copying test
