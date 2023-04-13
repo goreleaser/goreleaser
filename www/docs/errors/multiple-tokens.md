@@ -32,11 +32,11 @@ env_files:
   gitea_token: ~/nope
 ```
 
+This will prevent using both GitLab and Gitea tokens.
+
 ## Forcing a specific token
 
 > Since: v1.17
-
-This will prevent using both GitLab and Gitea tokens.
 
 If GoReleaser is being run with more than one of the `*_TOKEN` environment
 variables and you can't unset any of them, you can force GoReleaser to use a
@@ -45,4 +45,11 @@ specific one by exporting a `GORELEASER_FORCE_TOKEN` environment variable.
 So, for instance, if you have both `GITHUB_TOKEN` and `GITEA_TOKEN` set and want
 GoReleaser to pick `GITEA_TOKEN`, you can set `GORELEASER_FORCE_TOKEN=gitea`.
 GoReleaser will then unset `GITHUB_TOKEN` and proceed.
+
+You can also force a token by using `force_token` in your config:
+
+```yaml
+# .goreleaser.yaml
+force_token: gitea
+```
 
