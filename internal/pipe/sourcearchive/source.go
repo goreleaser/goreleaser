@@ -61,7 +61,7 @@ func (Pipe) Run(ctx *context.Context) error {
 		return err
 	}
 
-	if len(ctx.Config.Source.Files) >= 0 {
+	if len(ctx.Config.Source.Files) > 0 {
 		if err := appendExtraFilesToArchive(ctx, prefix, path, format); err != nil {
 			return err
 		}
