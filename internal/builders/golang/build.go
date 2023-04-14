@@ -344,9 +344,11 @@ func run(ctx *context.Context, command, env []string, dir string) error {
 	cmd.Env = env
 	cmd.Dir = dir
 	log.Debug("running")
-	if out, err := cmd.CombinedOutput(); err != nil {
+	out, err := cmd.CombinedOutput()
+	if err != nil {
 		return fmt.Errorf("%w: %s", err, string(out))
 	}
+	log.Debug(string(out))
 	return nil
 }
 
