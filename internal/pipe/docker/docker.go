@@ -199,7 +199,7 @@ func process(ctx *context.Context, docker config.Docker, artifacts []*artifact.A
 
 	log.Info("building docker image")
 	if err := imagers[docker.Use].Build(ctx, tmp, images, buildFlags); err != nil {
-		if strings.Contains(err.Error(), "file not found") || strings.Contains(err.Error(), "not found: not found") {
+		if isFileNotFoundError(err.Error()) {
 			var files []string
 			_ = filepath.Walk(tmp, func(path string, info fs.FileInfo, err error) error {
 				if info.IsDir() {
@@ -236,6 +236,14 @@ Previous error:
 		})
 	}
 	return nil
+}
+
+func isFileNotFoundError(out string) bool {
+	if strings.Contains(out, `executable file not found in $PATH`) {
+		return false
+	}
+	return strings.Contains(out, "file not found") ||
+		strings.Contains(out, "not found: not found")
 }
 
 func processImageTemplates(ctx *context.Context, docker config.Docker) ([]string, error) {

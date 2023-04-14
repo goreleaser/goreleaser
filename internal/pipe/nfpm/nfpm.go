@@ -443,6 +443,7 @@ func create(ctx *context.Context, fpm config.NFPM, format string, binaries []*ar
 			artifact.ExtraBuilds: binaries,
 			artifact.ExtraID:     fpm.ID,
 			artifact.ExtraFormat: format,
+			artifact.ExtraExt:    format,
 			extraFiles:           contents,
 		},
 	})
