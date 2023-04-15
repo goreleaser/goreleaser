@@ -136,7 +136,7 @@ func doLsTar(f io.Reader) []string {
 		if h == nil || err == io.EOF {
 			break
 		}
-		if h.Format == tar.FormatPAX {
+		if h.Name == "pax_global_header" {
 			continue
 		}
 		paths = append(paths, h.Name)

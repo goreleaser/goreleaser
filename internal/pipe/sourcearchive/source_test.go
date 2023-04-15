@@ -23,6 +23,8 @@ func TestArchive(t *testing.T) {
 			require.NoError(t, os.WriteFile("code.rb", []byte("not really code"), 0o655))
 			require.NoError(t, os.WriteFile("code.py", []byte("print 1"), 0o655))
 			require.NoError(t, os.WriteFile("README.md", []byte("# my dope fake project"), 0o655))
+			require.NoError(t, os.WriteFile("ملف.go", []byte("محتوى عربي"), 0o655))
+			require.NoError(t, os.WriteFile("🤔.patch", []byte("thinking"), 0o655))
 			require.NoError(t, os.WriteFile(".gitignore", []byte(`
 added-later.txt
 ignored.txt
@@ -40,6 +42,8 @@ subfolder/
 			require.NoError(t, os.WriteFile("added-later.txt", []byte("this file was added later"), 0o655))
 			require.NoError(t, os.WriteFile("ignored.md", []byte("never added"), 0o655))
 			require.NoError(t, os.WriteFile("code.txt", []byte("not really code"), 0o655))
+			require.NoError(t, os.WriteFile("ملف.txt", []byte("محتوى عربي"), 0o655))
+			require.NoError(t, os.WriteFile("🤝", []byte("it works"), 0o655))
 			require.NoError(t, os.MkdirAll("subfolder", 0o755))
 			require.NoError(t, os.WriteFile("subfolder/file.md", []byte("a file within a folder, added later"), 0o655))
 
@@ -68,15 +72,18 @@ subfolder/
 					format,
 					[]string{
 						"foo-1.0.0/",
-						"foo-1.0.0/.gitignore",
-						"foo-1.0.0/.gitattributes",
 						"foo-1.0.0/.VERSION",
+						"foo-1.0.0/.gitattributes",
+						"foo-1.0.0/.gitignore",
 						"foo-1.0.0/README.md",
+						"foo-1.0.0/added-later.txt",
 						"foo-1.0.0/code.py",
 						"foo-1.0.0/code.rb",
 						"foo-1.0.0/code.txt",
-						"foo-1.0.0/added-later.txt",
 						"foo-1.0.0/subfolder/file.md",
+						"foo-1.0.0/ملف.go",
+						"foo-1.0.0/ملف.txt",
+						"foo-1.0.0/🤔.patch",
 					},
 				)
 			})
@@ -102,12 +109,14 @@ subfolder/
 					format,
 					[]string{
 						"foo-1.0.0/",
-						"foo-1.0.0/.gitignore",
-						"foo-1.0.0/.gitattributes",
 						"foo-1.0.0/.VERSION",
+						"foo-1.0.0/.gitattributes",
+						"foo-1.0.0/.gitignore",
 						"foo-1.0.0/README.md",
 						"foo-1.0.0/code.py",
 						"foo-1.0.0/code.rb",
+						"foo-1.0.0/ملف.go",
+						"foo-1.0.0/🤔.patch",
 					},
 				)
 			})
