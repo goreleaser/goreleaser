@@ -34,9 +34,8 @@ func Copying(source io.Reader, target io.Writer) (Archive, error) {
 		if err == io.EOF || header == nil {
 			break
 		}
-		// needed for git archive
-		if len(header.PAXRecords) == 0 {
-			header.Format = tar.FormatGNU
+		if err != nil {
+			return Archive{}, err
 		}
 		w.files[header.Name] = true
 		if err := w.tw.WriteHeader(header); err != nil {
@@ -76,8 +75,6 @@ func (a Archive) Add(f config.File) error {
 		return fmt.Errorf("%s: %w", f.Source, err)
 	}
 	header.Name = f.Destination
-	// https://pkg.go.dev/archive/tar#Format
-	header.Format = tar.FormatGNU
 	if !f.Info.ParsedMTime.IsZero() {
 		header.ModTime = f.Info.ParsedMTime
 	}
