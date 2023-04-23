@@ -25,6 +25,7 @@ import (
 	"github.com/goreleaser/goreleaser/internal/pipe/nfpm"
 	"github.com/goreleaser/goreleaser/internal/pipe/prebuild"
 	"github.com/goreleaser/goreleaser/internal/pipe/publish"
+	"github.com/goreleaser/goreleaser/internal/pipe/reportsizes"
 	"github.com/goreleaser/goreleaser/internal/pipe/sbom"
 	"github.com/goreleaser/goreleaser/internal/pipe/scoop"
 	"github.com/goreleaser/goreleaser/internal/pipe/semver"
@@ -73,6 +74,7 @@ var BuildPipeline = []Piper{
 	build.Pipe{},
 	// universal binary handling
 	universalbinary.Pipe{},
+	reportsizes.Pipe{},
 }
 
 // BuildCmdPipeline is the pipeline run by goreleaser build.

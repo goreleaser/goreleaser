@@ -138,6 +138,7 @@ const (
 	ExtraRefresh   = "Refresh"
 	ExtraReplaces  = "Replaces"
 	ExtraDigest    = "Digest"
+	ExtraSize      = "Size"
 )
 
 // Extras represents the extra fields in an artifact.

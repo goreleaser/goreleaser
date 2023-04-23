@@ -13,6 +13,8 @@ snapshot:
 gomod:
   proxy: true
 
+report_sizes: true
+
 builds:
 - env:
     - CGO_ENABLED=0
