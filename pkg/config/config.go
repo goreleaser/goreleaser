@@ -11,9 +11,10 @@ import (
 	"time"
 
 	"github.com/caarlos0/log"
-	"github.com/goreleaser/goreleaser/internal/yaml"
 	"github.com/goreleaser/nfpm/v2/files"
 	"github.com/invopop/jsonschema"
+
+	"github.com/goreleaser/goreleaser/internal/yaml"
 )
 
 // Git configs.
@@ -916,6 +917,7 @@ type Upload struct {
 	Signature          bool              `yaml:"signature,omitempty" json:"signature,omitempty"`
 	CustomArtifactName bool              `yaml:"custom_artifact_name,omitempty" json:"custom_artifact_name,omitempty"`
 	CustomHeaders      map[string]string `yaml:"custom_headers,omitempty" json:"custom_headers,omitempty"`
+	Properties         map[string]string `yaml:"properties,omitempty" json:"properties,omitempty"`
 }
 
 // Publisher configuration.

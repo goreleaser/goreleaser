@@ -15,11 +15,12 @@ import (
 	"sync"
 	"testing"
 
+	"github.com/stretchr/testify/require"
+
 	"github.com/goreleaser/goreleaser/internal/artifact"
 	"github.com/goreleaser/goreleaser/internal/testctx"
 	"github.com/goreleaser/goreleaser/pkg/config"
 	"github.com/goreleaser/goreleaser/pkg/context"
-	"github.com/stretchr/testify/require"
 )
 
 func TestAssetOpenDefault(t *testing.T) {
@@ -610,6 +611,44 @@ func TestUpload(t *testing.T) {
 			},
 			wantErrTLS: true,
 			check:      checks(),
+		},
+		{
+			name:     "upload with matrix parameters",
+			tryPlain: true,
+			tryTLS:   true,
+			setup: func(s *httptest.Server) (*context.Context, config.Upload) {
+				return ctx, config.Upload{
+					Mode:         ModeArchive,
+					Name:         "a",
+					Target:       s.URL + "/{{.ProjectName}}/{{.Version}}/",
+					Username:     "u3",
+					TrustedCerts: cert(s),
+					Exts:         []string{"deb", "rpm"},
+					Properties:   map[string]string{"a.property": "value", "another.property": "{{ .Version }}"},
+				}
+			},
+			// Because iteration order of maps is not guaranteed, the matrix parameters may be the other way around
+			// I'm not sure how you think is best to test for this
+			check: checks(check{"/blah/2.1.0/a.deb;a.property=value;another.property=2.1.0", "u3", "x", content, map[string]string{}}),
+		},
+		{
+			name:         "cannot upload with matrix parameters that contain invalid template",
+			tryPlain:     true,
+			tryTLS:       true,
+			wantErrPlain: true,
+			wantErrTLS:   true,
+			setup: func(s *httptest.Server) (*context.Context, config.Upload) {
+				return ctx, config.Upload{
+					Mode:         ModeArchive,
+					Name:         "a",
+					Target:       s.URL + "/{{.ProjectName}}/{{.Version}}/",
+					Username:     "u3",
+					TrustedCerts: cert(s),
+					Exts:         []string{"deb", "rpm"},
+					Properties:   map[string]string{"a.property": "{{ .Unresolvable }}"},
+				}
+			},
+			check: checks(),
 		},
 	}
 

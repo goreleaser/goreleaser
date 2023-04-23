@@ -183,6 +183,10 @@ artifactories:
       ...(edited content)...
       TyzMJasj5BPZrmKjJb6O/tOtEIJ66xPSBTxPShkEYHnB7A==
       -----END CERTIFICATE-----
+
+    # Additional properties supplied as matrix parameters
+    properties:
+        propertyName: propertyValue
 ```
 
 These settings should allow you to push your artifacts into multiple Artifactories.

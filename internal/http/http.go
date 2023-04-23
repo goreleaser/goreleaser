@@ -243,6 +243,18 @@ func uploadAsset(ctx *context.Context, upload *config.Upload, artifact *artifact
 		}
 		targetURL += artifact.Name
 	}
+
+	// Add any matrix parameters
+	for k, templatedVal := range upload.Properties {
+		// nolint:staticcheck
+		val, err := tmpl.New(ctx).WithArtifact(artifact).Apply(templatedVal)
+		if err != nil {
+			msg := fmt.Sprintf("%s: error while applying matrix parameters", kind)
+			log.WithField("instance", upload.Name).WithError(err).Error(msg)
+			return fmt.Errorf("%s: %w", msg, err)
+		}
+		targetURL += (";" + k + "=" + val)
+	}
 	log.Debugf("generated target url: %s", targetURL)
 
 	headers := map[string]string{}
