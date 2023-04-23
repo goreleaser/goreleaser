@@ -2131,6 +2131,9 @@
 					"git": {
 						"$ref": "#/$defs/Git"
 					},
+					"report_sizes": {
+						"type": "boolean"
+					},
 					"universal_binaries": {
 						"items": {
 							"$ref": "#/$defs/UniversalBinary"
