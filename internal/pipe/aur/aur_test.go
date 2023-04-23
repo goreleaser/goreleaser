@@ -240,7 +240,7 @@ func TestFullPipe(t *testing.T) {
 	} {
 		t.Run(name, func(t *testing.T) {
 			url := makeBareRepo(t)
-			key := makeKey(t, keygen.Ed25519, nil)
+			key := makeKey(t, keygen.Ed25519, "")
 
 			folder := t.TempDir()
 			ctx := testctx.NewWithCfg(
@@ -338,7 +338,7 @@ func TestFullPipe(t *testing.T) {
 
 func TestRunPipe(t *testing.T) {
 	url := makeBareRepo(t)
-	key := makeKey(t, keygen.Ed25519, nil)
+	key := makeKey(t, keygen.Ed25519, "")
 
 	folder := t.TempDir()
 	ctx := testctx.NewWithCfg(
@@ -474,7 +474,7 @@ func TestRunPipeNoBuilds(t *testing.T) {
 
 func TestRunPipeBinaryRelease(t *testing.T) {
 	url := makeBareRepo(t)
-	key := makeKey(t, keygen.Ed25519, nil)
+	key := makeKey(t, keygen.Ed25519, "")
 	folder := t.TempDir()
 	ctx := testctx.NewWithCfg(
 		config.Project{
@@ -696,7 +696,7 @@ func TestSkip(t *testing.T) {
 
 func TestKeyPath(t *testing.T) {
 	t.Run("with valid path", func(t *testing.T) {
-		path := makeKey(t, keygen.Ed25519, nil)
+		path := makeKey(t, keygen.Ed25519, "")
 		result, err := keyPath(path)
 		require.NoError(t, err)
 		require.Equal(t, path, result)
@@ -708,7 +708,7 @@ func TestKeyPath(t *testing.T) {
 	})
 
 	t.Run("with password protected key path", func(t *testing.T) {
-		path := makeKey(t, keygen.Ed25519, []byte("pwd"))
+		path := makeKey(t, keygen.Ed25519, "pwd")
 		bts, err := os.ReadFile(path)
 		require.NoError(t, err)
 
@@ -720,7 +720,7 @@ func TestKeyPath(t *testing.T) {
 	t.Run("with key", func(t *testing.T) {
 		for _, algo := range []keygen.KeyType{keygen.Ed25519, keygen.RSA} {
 			t.Run(string(algo), func(t *testing.T) {
-				path := makeKey(t, algo, nil)
+				path := makeKey(t, algo, "")
 				bts, err := os.ReadFile(path)
 				require.NoError(t, err)
 
@@ -739,7 +739,7 @@ func TestKeyPath(t *testing.T) {
 		require.Equal(t, "", result)
 	})
 	t.Run("with invalid EOF", func(t *testing.T) {
-		path := makeKey(t, keygen.Ed25519, nil)
+		path := makeKey(t, keygen.Ed25519, "")
 		bts, err := os.ReadFile(path)
 		require.NoError(t, err)
 
@@ -767,14 +767,14 @@ func makeBareRepo(tb testing.TB) string {
 	return dir
 }
 
-func makeKey(tb testing.TB, algo keygen.KeyType, pass []byte) string {
+func makeKey(tb testing.TB, algo keygen.KeyType, pass string) string {
 	tb.Helper()
 
 	dir := tb.TempDir()
-	filepath := filepath.Join(dir, "id")
-	_, err := keygen.NewWithWrite(filepath, pass, algo)
+	filepath := filepath.Join(dir, "id_"+algo.String())
+	_, err := keygen.New(filepath, keygen.WithKeyType(algo), keygen.WithWrite(), keygen.WithPassphrase(pass))
 	require.NoError(tb, err)
-	return fmt.Sprintf("%s_%s", filepath, algo)
+	return filepath
 }
 
 func requireEqualRepoFiles(tb testing.TB, folder, name, url string) {
