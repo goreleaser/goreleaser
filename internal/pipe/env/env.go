@@ -69,7 +69,11 @@ func (Pipe) Run(ctx *context.Context) error {
 	gitlabToken, gitlabTokenErr := loadEnv("GITLAB_TOKEN", ctx.Config.EnvFiles.GitLabToken)
 	giteaToken, giteaTokenErr := loadEnv("GITEA_TOKEN", ctx.Config.EnvFiles.GiteaToken)
 
-	switch os.Getenv("GORELEASER_FORCE_TOKEN") {
+	forceToken := ctx.Config.ForceToken
+	if forceToken == "" {
+		forceToken = os.Getenv("GORELEASER_FORCE_TOKEN")
+	}
+	switch strings.ToLower(forceToken) {
 	case "github":
 		gitlabToken = ""
 		giteaToken = ""

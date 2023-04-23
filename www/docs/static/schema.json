@@ -2141,6 +2141,16 @@
 						"$ref": "#/$defs/Build",
 						"description": "deprecated: use builds instead"
 					},
+					"force_token": {
+						"type": "string",
+						"enum": [
+							"github",
+							"gitlab",
+							"gitea",
+							""
+						],
+						"default": ""
+					},
 					"github_urls": {
 						"$ref": "#/$defs/GitHubURLs"
 					},
