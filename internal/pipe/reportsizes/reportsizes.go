@@ -34,12 +34,15 @@ func (Pipe) Run(ctx *context.Context) error {
 		if err != nil {
 			return err
 		}
-		relpath, err := filepath.Rel(cwd, a.Path)
-		if err != nil {
-			return err
+		relpath := a.Path
+		if filepath.IsAbs(a.Path) {
+			relpath, err = filepath.Rel(cwd, a.Path)
+			if err != nil {
+				return err
+			}
 		}
 		a.Extra[artifact.ExtraSize] = stat.Size()
-		log.WithField("size", units.BytesSize(float64(stat.Size()))).Info(relpath)
+		log.WithField("path", relpath).Info(units.BytesSize(float64(stat.Size())))
 		return nil
 	})
 }

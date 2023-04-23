@@ -74,12 +74,11 @@ var BuildPipeline = []Piper{
 	build.Pipe{},
 	// universal binary handling
 	universalbinary.Pipe{},
-	reportsizes.Pipe{},
 }
 
 // BuildCmdPipeline is the pipeline run by goreleaser build.
 // nolint:gochecknoglobals
-var BuildCmdPipeline = append(BuildPipeline, metadata.Pipe{})
+var BuildCmdPipeline = append(BuildPipeline, metadata.Pipe{}, reportsizes.Pipe{})
 
 // Pipeline contains all pipe implementations in order.
 // nolint: gochecknoglobals
@@ -111,6 +110,8 @@ var Pipeline = append(
 	scoop.Pipe{},
 	// create chocolatey pkg and publish
 	chocolatey.Pipe{},
+	// reports artifacts sizes to the log and to artifacts.json
+	reportsizes.Pipe{},
 	// create and push docker images
 	docker.Pipe{},
 	// publishes artifacts
