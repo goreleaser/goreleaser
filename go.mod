@@ -43,7 +43,7 @@ require (
 	github.com/stretchr/testify v1.8.2
 	github.com/ulikunitz/xz v0.5.11
 	github.com/withfig/autocomplete-tools/integrations/cobra v1.2.1
-	github.com/xanzy/go-gitlab v0.82.0
+	github.com/xanzy/go-gitlab v0.83.0
 	gocloud.dev v0.29.0
 	golang.org/x/crypto v0.8.0
 	golang.org/x/oauth2 v0.7.0
@@ -136,7 +136,7 @@ require (
 	github.com/docker/docker-credential-helpers v0.7.0 // indirect
 	github.com/docker/go-connections v0.4.0 // indirect
 	github.com/docker/go-metrics v0.0.1 // indirect
-	github.com/docker/go-units v0.5.0 // indirect
+	github.com/docker/go-units v0.5.0
 	github.com/emirpasic/gods v1.12.0 // indirect
 	github.com/evanphx/json-patch/v5 v5.6.0 // indirect
 	github.com/fsnotify/fsnotify v1.6.0 // indirect
