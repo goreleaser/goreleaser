@@ -17,8 +17,8 @@ In practice, what this does is:
 
 - for each of your builds, create a `dist/proxy/{{ build.id }}`;
 - creates a `go.mod` that requires your __main module__ at the __current tag__;
-- creates a `main.go` that imports your __main package__;
 - copy the project's `go.sum` to that folder.
+- runs `go get module@version`
 
 In which:
 
@@ -30,30 +30,20 @@ In which:
 So, let's say:
 
 - __main module__: `github.com/goreleaser/nfpm/v2`;
+- __build id__: `nfpm`
 - build's `main`: `./cmd/nfpm/`;
 - __current tag__: `v2.5.0`.
 
-GoReleaser will create a `main.go` like:
+GoReleaser will create a `go.mod` like:
 
-```go
-// +build: main
-package main
-
-import _ "github.com/goreleaser/nfpm/v2/cmd/nfpm"
-```
-
-a `go.mod` like:
-
-```
+```gomod
 module nfpm
-
-require github.com/goreleaser/nfpm/v2 v2.5.0
 ```
 
-Then, it'll run:
+Then it'll copy the `go.sum` into this folder, and run:
 
 ```sh
-go mod tidy
+go get github.com/goreleaser/nfpm/v2@v2.5.0
 ```
 
 And, to build, it will use something like:
