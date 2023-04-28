@@ -128,6 +128,10 @@ func (Pipe) Run(ctx *context.Context) error {
 }
 
 func sign(ctx *context.Context, cfg config.Sign, artifacts []*artifact.Artifact) error {
+	if len(artifacts) == 0 {
+		log.Warn("no artifacts matching the given filters found")
+		return nil
+	}
 	for _, a := range artifacts {
 		if err := a.Refresh(); err != nil {
 			return err
