@@ -17,6 +17,7 @@ nfpms:
 
     # Name of the package.
     # Default: ProjectName
+    # Templates: allowed (since v1.18)
     package_name: foo
 
     # You can change the file name of the package.

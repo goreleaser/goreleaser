@@ -1,6 +1,7 @@
 package nfpm
 
 import (
+	"fmt"
 	"os"
 	"path/filepath"
 	"testing"
@@ -340,146 +341,157 @@ func TestRunPipe(t *testing.T) {
 }
 
 func TestRunPipeConventionalNameTemplate(t *testing.T) {
-	folder := t.TempDir()
-	dist := filepath.Join(folder, "dist")
-	require.NoError(t, os.Mkdir(dist, 0o755))
-	require.NoError(t, os.Mkdir(filepath.Join(dist, "mybin"), 0o755))
-	binPath := filepath.Join(dist, "mybin", "mybin")
-	f, err := os.Create(binPath)
-	require.NoError(t, err)
-	require.NoError(t, f.Close())
-	ctx := testctx.NewWithCfg(config.Project{
-		ProjectName: "mybin",
-		Dist:        dist,
-		NFPMs: []config.NFPM{
-			{
-				ID:          "someid",
-				Builds:      []string{"default"},
-				Formats:     []string{"deb", "rpm", "apk", "archlinux"},
-				Section:     "somesection",
-				Priority:    "standard",
-				Description: "Some description ",
-				License:     "MIT",
-				Maintainer:  "me@me",
-				Vendor:      "asdf",
-				Homepage:    "https://goreleaser.com/",
-				Bindir:      "/usr/bin",
-				NFPMOverridables: config.NFPMOverridables{
-					FileNameTemplate: `{{ trimsuffix (trimsuffix (trimsuffix (trimsuffix .ConventionalFileName ".pkg.tar.zst") ".deb") ".rpm") ".apk" }}{{ if not (eq .Amd64 "v1")}}{{ .Amd64 }}{{ end }}`,
-					PackageName:      "foo",
-				},
-			},
-		},
-	}, testctx.WithVersion("1.0.0"), testctx.WithCurrentTag("v1.0.0"))
-	for _, goos := range []string{"linux", "darwin"} {
-		for _, goarch := range []string{"amd64", "386", "arm64", "arm", "mips"} {
-			switch goarch {
-			case "arm":
-				for _, goarm := range []string{"6", "7"} {
-					ctx.Artifacts.Add(&artifact.Artifact{
-						Name:   "subdir/mybin",
-						Path:   binPath,
-						Goarch: goarch,
-						Goos:   goos,
-						Goarm:  goarm,
-						Type:   artifact.Binary,
-						Extra: map[string]interface{}{
-							artifact.ExtraID: "default",
+	for _, snapshot := range []bool{true, false} {
+		t.Run(fmt.Sprintf("snapshot %v", snapshot), func(t *testing.T) {
+			folder := t.TempDir()
+			dist := filepath.Join(folder, "dist")
+			require.NoError(t, os.Mkdir(dist, 0o755))
+			require.NoError(t, os.Mkdir(filepath.Join(dist, "mybin"), 0o755))
+			binPath := filepath.Join(dist, "mybin", "mybin")
+			f, err := os.Create(binPath)
+			require.NoError(t, err)
+			require.NoError(t, f.Close())
+			ctx := testctx.NewWithCfg(config.Project{
+				ProjectName: "mybin",
+				Dist:        dist,
+				NFPMs: []config.NFPM{
+					{
+						ID:          "someid",
+						Builds:      []string{"default"},
+						Formats:     []string{"deb", "rpm", "apk", "archlinux"},
+						Section:     "somesection",
+						Priority:    "standard",
+						Description: "Some description ",
+						License:     "MIT",
+						Maintainer:  "me@me",
+						Vendor:      "asdf",
+						Homepage:    "https://goreleaser.com/",
+						Bindir:      "/usr/bin",
+						NFPMOverridables: config.NFPMOverridables{
+							FileNameTemplate: `{{ trimsuffix (trimsuffix (trimsuffix (trimsuffix .ConventionalFileName ".pkg.tar.zst") ".deb") ".rpm") ".apk" }}{{ if not (eq .Amd64 "v1")}}{{ .Amd64 }}{{ end }}`,
+							PackageName:      "foo{{ if .IsSnapshot }}-snapshot{{ end }}",
 						},
-					})
-				}
-			case "amd64":
-				for _, goamd64 := range []string{"v1", "v2", "v3", "v4"} {
-					ctx.Artifacts.Add(&artifact.Artifact{
-						Name:    "subdir/mybin",
-						Path:    binPath,
-						Goarch:  goarch,
-						Goos:    goos,
-						Goamd64: goamd64,
-						Type:    artifact.Binary,
-						Extra: map[string]interface{}{
-							artifact.ExtraID: "default",
-						},
-					})
-				}
-			case "mips":
-				for _, gomips := range []string{"softfloat", "hardfloat"} {
-					ctx.Artifacts.Add(&artifact.Artifact{
-						Name:   "subdir/mybin",
-						Path:   binPath,
-						Goarch: goarch,
-						Goos:   goos,
-						Gomips: gomips,
-						Type:   artifact.Binary,
-						Extra: map[string]interface{}{
-							artifact.ExtraID: "default",
-						},
-					})
-				}
-			default:
-				ctx.Artifacts.Add(&artifact.Artifact{
-					Name:   "subdir/mybin",
-					Path:   binPath,
-					Goarch: goarch,
-					Goos:   goos,
-					Type:   artifact.Binary,
-					Extra: map[string]interface{}{
-						artifact.ExtraID: "default",
 					},
-				})
+				},
+			}, testctx.WithVersion("1.0.0"), testctx.WithCurrentTag("v1.0.0"))
+			if snapshot {
+				ctx.Snapshot = true
 			}
-		}
-	}
-	require.NoError(t, Pipe{}.Run(ctx))
-	packages := ctx.Artifacts.Filter(artifact.ByType(artifact.LinuxPackage)).List()
-	require.Len(t, packages, 40)
-	for _, pkg := range packages {
-		format := pkg.Format()
-		require.NotEmpty(t, format)
-		require.Contains(t, []string{
-			"foo-1.0.0.aarch64.rpm",
-			"foo-1.0.0.armv6hl.rpm",
-			"foo-1.0.0.armv7hl.rpm",
-			"foo-1.0.0.i386.rpm",
-			"foo-1.0.0.mipshardfloat.rpm",
-			"foo-1.0.0.mipssoftfloat.rpm",
-			"foo-1.0.0.x86_64.rpm",
-			"foo-1.0.0.x86_64v2.rpm",
-			"foo-1.0.0.x86_64v3.rpm",
-			"foo-1.0.0.x86_64v4.rpm",
-			"foo_1.0.0_aarch64.apk",
-			"foo_1.0.0_amd64.deb",
-			"foo_1.0.0_amd64v2.deb",
-			"foo_1.0.0_amd64v3.deb",
-			"foo_1.0.0_amd64v4.deb",
-			"foo_1.0.0_arm64.deb",
-			"foo_1.0.0_armhf.apk",
-			"foo_1.0.0_armhf.deb",
-			"foo_1.0.0_armv7.apk",
-			"foo_1.0.0_i386.deb",
-			"foo_1.0.0_mipshardfloat.apk",
-			"foo_1.0.0_mipshardfloat.deb",
-			"foo_1.0.0_mipssoftfloat.apk",
-			"foo_1.0.0_mipssoftfloat.deb",
-			"foo_1.0.0_x86.apk",
-			"foo_1.0.0_x86_64.apk",
-			"foo_1.0.0_x86_64v2.apk",
-			"foo_1.0.0_x86_64v3.apk",
-			"foo_1.0.0_x86_64v4.apk",
-			"foo-1.0.0-1-aarch64.pkg.tar.zst",
-			"foo-1.0.0-1-armv6h.pkg.tar.zst",
-			"foo-1.0.0-1-armv7h.pkg.tar.zst",
-			"foo-1.0.0-1-i686.pkg.tar.zst",
-			"foo-1.0.0-1-x86_64.pkg.tar.zst",
-			"foo-1.0.0-1-x86_64v2.pkg.tar.zst",
-			"foo-1.0.0-1-x86_64v3.pkg.tar.zst",
-			"foo-1.0.0-1-x86_64v4.pkg.tar.zst",
-			"foo-1.0.0-1-mipssoftfloat.pkg.tar.zst",
-			"foo-1.0.0-1-mipshardfloat.pkg.tar.zst",
-		}, pkg.Name, "package name is not expected")
-		require.Equal(t, "someid", pkg.ID())
-		require.ElementsMatch(t, []string{binPath}, sources(artifact.ExtraOr(*pkg, extraFiles, files.Contents{})))
-		require.ElementsMatch(t, []string{"/usr/bin/subdir/mybin"}, destinations(artifact.ExtraOr(*pkg, extraFiles, files.Contents{})))
+			for _, goos := range []string{"linux", "darwin"} {
+				for _, goarch := range []string{"amd64", "386", "arm64", "arm", "mips"} {
+					switch goarch {
+					case "arm":
+						for _, goarm := range []string{"6", "7"} {
+							ctx.Artifacts.Add(&artifact.Artifact{
+								Name:   "subdir/mybin",
+								Path:   binPath,
+								Goarch: goarch,
+								Goos:   goos,
+								Goarm:  goarm,
+								Type:   artifact.Binary,
+								Extra: map[string]interface{}{
+									artifact.ExtraID: "default",
+								},
+							})
+						}
+					case "amd64":
+						for _, goamd64 := range []string{"v1", "v2", "v3", "v4"} {
+							ctx.Artifacts.Add(&artifact.Artifact{
+								Name:    "subdir/mybin",
+								Path:    binPath,
+								Goarch:  goarch,
+								Goos:    goos,
+								Goamd64: goamd64,
+								Type:    artifact.Binary,
+								Extra: map[string]interface{}{
+									artifact.ExtraID: "default",
+								},
+							})
+						}
+					case "mips":
+						for _, gomips := range []string{"softfloat", "hardfloat"} {
+							ctx.Artifacts.Add(&artifact.Artifact{
+								Name:   "subdir/mybin",
+								Path:   binPath,
+								Goarch: goarch,
+								Goos:   goos,
+								Gomips: gomips,
+								Type:   artifact.Binary,
+								Extra: map[string]interface{}{
+									artifact.ExtraID: "default",
+								},
+							})
+						}
+					default:
+						ctx.Artifacts.Add(&artifact.Artifact{
+							Name:   "subdir/mybin",
+							Path:   binPath,
+							Goarch: goarch,
+							Goos:   goos,
+							Type:   artifact.Binary,
+							Extra: map[string]interface{}{
+								artifact.ExtraID: "default",
+							},
+						})
+					}
+				}
+			}
+			require.NoError(t, Pipe{}.Run(ctx))
+			packages := ctx.Artifacts.Filter(artifact.ByType(artifact.LinuxPackage)).List()
+			require.Len(t, packages, 40)
+			prefix := "foo"
+			if snapshot {
+				prefix += "-snapshot"
+			}
+			for _, pkg := range packages {
+				format := pkg.Format()
+				require.NotEmpty(t, format)
+				require.Contains(t, []string{
+					prefix + "-1.0.0.aarch64.rpm",
+					prefix + "-1.0.0.armv6hl.rpm",
+					prefix + "-1.0.0.armv7hl.rpm",
+					prefix + "-1.0.0.i386.rpm",
+					prefix + "-1.0.0.mipshardfloat.rpm",
+					prefix + "-1.0.0.mipssoftfloat.rpm",
+					prefix + "-1.0.0.x86_64.rpm",
+					prefix + "-1.0.0.x86_64v2.rpm",
+					prefix + "-1.0.0.x86_64v3.rpm",
+					prefix + "-1.0.0.x86_64v4.rpm",
+					prefix + "_1.0.0_aarch64.apk",
+					prefix + "_1.0.0_amd64.deb",
+					prefix + "_1.0.0_amd64v2.deb",
+					prefix + "_1.0.0_amd64v3.deb",
+					prefix + "_1.0.0_amd64v4.deb",
+					prefix + "_1.0.0_arm64.deb",
+					prefix + "_1.0.0_armhf.apk",
+					prefix + "_1.0.0_armhf.deb",
+					prefix + "_1.0.0_armv7.apk",
+					prefix + "_1.0.0_i386.deb",
+					prefix + "_1.0.0_mipshardfloat.apk",
+					prefix + "_1.0.0_mipshardfloat.deb",
+					prefix + "_1.0.0_mipssoftfloat.apk",
+					prefix + "_1.0.0_mipssoftfloat.deb",
+					prefix + "_1.0.0_x86.apk",
+					prefix + "_1.0.0_x86_64.apk",
+					prefix + "_1.0.0_x86_64v2.apk",
+					prefix + "_1.0.0_x86_64v3.apk",
+					prefix + "_1.0.0_x86_64v4.apk",
+					prefix + "-1.0.0-1-aarch64.pkg.tar.zst",
+					prefix + "-1.0.0-1-armv6h.pkg.tar.zst",
+					prefix + "-1.0.0-1-armv7h.pkg.tar.zst",
+					prefix + "-1.0.0-1-i686.pkg.tar.zst",
+					prefix + "-1.0.0-1-x86_64.pkg.tar.zst",
+					prefix + "-1.0.0-1-x86_64v2.pkg.tar.zst",
+					prefix + "-1.0.0-1-x86_64v3.pkg.tar.zst",
+					prefix + "-1.0.0-1-x86_64v4.pkg.tar.zst",
+					prefix + "-1.0.0-1-mipssoftfloat.pkg.tar.zst",
+					prefix + "-1.0.0-1-mipshardfloat.pkg.tar.zst",
+				}, pkg.Name, "package name is not expected")
+				require.Equal(t, "someid", pkg.ID())
+				require.ElementsMatch(t, []string{binPath}, sources(artifact.ExtraOr(*pkg, extraFiles, files.Contents{})))
+				require.ElementsMatch(t, []string{"/usr/bin/subdir/mybin"}, destinations(artifact.ExtraOr(*pkg, extraFiles, files.Contents{})))
+			}
+		})
 	}
 }
 
