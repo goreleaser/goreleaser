@@ -178,13 +178,19 @@ func create(ctx *context.Context, fpm config.NFPM, format string, binaries []*ar
 	if err != nil {
 		return err
 	}
+
+	packageName, err := tmpl.New(ctx).Apply(fpm.PackageName)
+	if err != nil {
+		return err
+	}
+
 	// nolint:staticcheck
 	t := tmpl.New(ctx).
 		WithArtifactReplacements(binaries[0], overridden.Replacements).
 		WithExtraFields(tmpl.Fields{
 			"Release":     fpm.Release,
 			"Epoch":       fpm.Epoch,
-			"PackageName": fpm.PackageName,
+			"PackageName": packageName,
 		})
 
 	binDir, err := t.Apply(bindDir)
@@ -249,9 +255,9 @@ func create(ctx *context.Context, fpm config.NFPM, format string, binaries []*ar
 	if len(fpm.Deb.Lintian) > 0 {
 		lines := make([]string, 0, len(fpm.Deb.Lintian))
 		for _, ov := range fpm.Deb.Lintian {
-			lines = append(lines, fmt.Sprintf("%s: %s", fpm.PackageName, ov))
+			lines = append(lines, fmt.Sprintf("%s: %s", packageName, ov))
 		}
-		lintianPath := filepath.Join(ctx.Config.Dist, "deb", fpm.PackageName+"_"+arch, ".lintian")
+		lintianPath := filepath.Join(ctx.Config.Dist, "deb", packageName+"_"+arch, ".lintian")
 		if err := os.MkdirAll(filepath.Dir(lintianPath), 0o755); err != nil {
 			return fmt.Errorf("failed to write lintian file: %w", err)
 		}
@@ -262,7 +268,7 @@ func create(ctx *context.Context, fpm config.NFPM, format string, binaries []*ar
 		log.Debugf("creating %q", lintianPath)
 		contents = append(contents, &files.Content{
 			Source:      lintianPath,
-			Destination: filepath.Join("./usr/share/lintian/overrides", fpm.PackageName),
+			Destination: filepath.Join("./usr/share/lintian/overrides", packageName),
 			Packager:    "deb",
 			FileInfo: &files.ContentFileInfo{
 				Mode: 0o644,
@@ -270,7 +276,7 @@ func create(ctx *context.Context, fpm config.NFPM, format string, binaries []*ar
 		})
 	}
 
-	log := log.WithField("package", fpm.PackageName).WithField("format", format).WithField("arch", arch)
+	log := log.WithField("package", packageName).WithField("format", format).WithField("arch", arch)
 
 	// FPM meta package should not contain binaries at all
 	if !fpm.Meta {
@@ -293,7 +299,7 @@ func create(ctx *context.Context, fpm config.NFPM, format string, binaries []*ar
 	info := &nfpm.Info{
 		Arch:            infoArch,
 		Platform:        infoPlatform,
-		Name:            fpm.PackageName,
+		Name:            packageName,
 		Version:         ctx.Version,
 		Section:         fpm.Section,
 		Priority:        fpm.Priority,
@@ -404,7 +410,7 @@ func create(ctx *context.Context, fpm config.NFPM, format string, binaries []*ar
 	}
 
 	info = nfpm.WithDefaults(info)
-	name, err := t.WithExtraFields(tmpl.Fields{
+	packageFilename, err := t.WithExtraFields(tmpl.Fields{
 		"ConventionalFileName":  packager.ConventionalFileName(info),
 		"ConventionalExtension": ext,
 	}).Apply(overridden.FileNameTemplate)
@@ -412,11 +418,11 @@ func create(ctx *context.Context, fpm config.NFPM, format string, binaries []*ar
 		return err
 	}
 
-	if !strings.HasSuffix(name, ext) {
-		name = name + ext
+	if !strings.HasSuffix(packageFilename, ext) {
+		packageFilename = packageFilename + ext
 	}
 
-	path := filepath.Join(ctx.Config.Dist, name)
+	path := filepath.Join(ctx.Config.Dist, packageFilename)
 	log.WithField("file", path).Info("creating")
 	w, err := os.Create(path)
 	if err != nil {
@@ -425,14 +431,14 @@ func create(ctx *context.Context, fpm config.NFPM, format string, binaries []*ar
 	defer w.Close()
 
 	if err := packager.Package(info, w); err != nil {
-		return fmt.Errorf("nfpm failed for %s: %w", name, err)
+		return fmt.Errorf("nfpm failed for %s: %w", packageFilename, err)
 	}
 	if err := w.Close(); err != nil {
 		return fmt.Errorf("could not close package file: %w", err)
 	}
 	ctx.Artifacts.Add(&artifact.Artifact{
 		Type:    artifact.LinuxPackage,
-		Name:    name,
+		Name:    packageFilename,
 		Path:    path,
 		Goos:    binaries[0].Goos,
 		Goarch:  binaries[0].Goarch,
