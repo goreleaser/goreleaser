@@ -151,17 +151,17 @@ func doPublish(ctx *context.Context, formula *artifact.Artifact, cl client.Clien
 
 	if brew.Tap.Git.URL != "" {
 		fmt.Printf("creating file in %s: %s", repo.GitURL, gpath)
-		return client.NewGitUploadClient(ctx, "brews", repo.Branch).
+		return client.NewGitUploadClient(ctx, repo.Branch).
 			CreateFile(ctx, author, repo, content, gpath, msg)
-	}
-
-	if !brew.Tap.PullRequest.Enabled {
-		return cl.CreateFile(ctx, author, repo, content, gpath, msg)
 	}
 
 	cl, err = client.NewIfToken(ctx, cl, brew.Tap.Token)
 	if err != nil {
 		return err
+	}
+
+	if !brew.Tap.PullRequest.Enabled {
+		return cl.CreateFile(ctx, author, repo, content, gpath, msg)
 	}
 
 	log.Info("brews.pull_request enabled, creating a PR")

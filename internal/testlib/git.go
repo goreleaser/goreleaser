@@ -138,6 +138,6 @@ func CatFileFromBareRepository(tb testing.TB, url, name string) []byte {
 		"show",
 		"master:"+name,
 	).CombinedOutput()
-	require.NoError(tb, err)
+	require.NoError(tb, err, "could not cat file "+name+" in repository")
 	return out
 }

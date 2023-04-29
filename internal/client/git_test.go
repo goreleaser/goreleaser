@@ -19,7 +19,7 @@ func TestGitClient(t *testing.T) {
 		Dist: t.TempDir(),
 	})
 
-	cli := NewGitUploadClient(ctx, "test", "master")
+	cli := NewGitUploadClient(ctx, "master")
 
 	require.NoError(t, cli.CreateFile(
 		ctx,

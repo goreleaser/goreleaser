@@ -27,14 +27,12 @@ var cloneLock = cloneGlobalLock{
 }
 
 type gitClient struct {
-	folder string
 	branch string
 }
 
 // NewGitUploadClient
-func NewGitUploadClient(ctx *context.Context, branch, folder string) FileCreator {
+func NewGitUploadClient(ctx *context.Context, branch string) FileCreator {
 	return &gitClient{
-		folder: folder,
 		branch: branch,
 	}
 }
@@ -71,7 +69,7 @@ func (g *gitClient) CreateFile(ctx *context.Context, commitAuthor config.CommitA
 		return fmt.Errorf("git: failed to template ssh command: %w", err)
 	}
 
-	parent := filepath.Join(ctx.Config.Dist, "git", g.folder)
+	parent := filepath.Join(ctx.Config.Dist, "git")
 	cwd := filepath.Join(parent, repo.Name)
 
 	env := []string{fmt.Sprintf("GIT_SSH_COMMAND=%s", sshcmd)}
@@ -99,7 +97,11 @@ func (g *gitClient) CreateFile(ctx *context.Context, commitAuthor config.CommitA
 		return err
 	}
 
-	if err := os.WriteFile(filepath.Join(cwd, path), content, 0o644); err != nil {
+	location := filepath.Join(cwd, path)
+	if err := os.MkdirAll(filepath.Dir(location), 0o755); err != nil {
+		return fmt.Errorf("failed to create parent dirs for %s: %w", path, err)
+	}
+	if err := os.WriteFile(location, content, 0o644); err != nil {
 		return fmt.Errorf("failed to write %s: %w", path, err)
 	}
 
