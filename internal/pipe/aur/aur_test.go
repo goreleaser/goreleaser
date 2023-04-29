@@ -150,6 +150,7 @@ func TestFullPipe(t *testing.T) {
 		expectedRunError       string
 		expectedPublishError   string
 		expectedPublishErrorIs error
+		expectedErrorCheck     func(testing.TB, error)
 	}
 	for name, tt := range map[string]testcase{
 		"default": {
@@ -192,19 +193,19 @@ func TestFullPipe(t *testing.T) {
 			prepare: func(ctx *context.Context) {
 				ctx.Config.AURs[0].CommitMessageTemplate = "{{ .Asdsa }"
 			},
-			expectedPublishError: `template: tmpl:1: unexpected "}" in operand`,
+			expectedErrorCheck: testlib.RequireTemplateError,
 		},
 		"invalid-key-template": {
 			prepare: func(ctx *context.Context) {
 				ctx.Config.AURs[0].PrivateKey = "{{ .Asdsa }"
 			},
-			expectedPublishError: `template: tmpl:1: unexpected "}" in operand`,
+			expectedErrorCheck: testlib.RequireTemplateError,
 		},
 		"no-key": {
 			prepare: func(ctx *context.Context) {
 				ctx.Config.AURs[0].PrivateKey = ""
 			},
-			expectedPublishError: `aur.private_key is empty`,
+			expectedPublishError: `private_key is empty`,
 		},
 		"key-not-found": {
 			prepare: func(ctx *context.Context) {
@@ -216,25 +217,25 @@ func TestFullPipe(t *testing.T) {
 			prepare: func(ctx *context.Context) {
 				ctx.Config.AURs[0].GitURL = "{{ .Asdsa }"
 			},
-			expectedPublishError: `template: tmpl:1: unexpected "}" in operand`,
+			expectedErrorCheck: testlib.RequireTemplateError,
 		},
 		"no-git-url": {
 			prepare: func(ctx *context.Context) {
 				ctx.Config.AURs[0].GitURL = ""
 			},
-			expectedPublishError: `aur.git_url is empty`,
+			expectedPublishError: `url is empty`,
 		},
 		"invalid-ssh-cmd-template": {
 			prepare: func(ctx *context.Context) {
 				ctx.Config.AURs[0].GitSSHCommand = "{{ .Asdsa }"
 			},
-			expectedPublishError: `template: tmpl:1: unexpected "}" in operand`,
+			expectedErrorCheck: testlib.RequireTemplateError,
 		},
 		"invalid-commit-author-template": {
 			prepare: func(ctx *context.Context) {
 				ctx.Config.AURs[0].CommitAuthor.Name = "{{ .Asdsa }"
 			},
-			expectedPublishError: `template: tmpl:1: unexpected "}" in operand`,
+			expectedErrorCheck: testlib.RequireTemplateError,
 		},
 	} {
 		t.Run(name, func(t *testing.T) {
@@ -325,6 +326,11 @@ func TestFullPipe(t *testing.T) {
 
 			if tt.expectedPublishErrorIs != nil {
 				require.ErrorIs(t, Pipe{}.Publish(ctx), tt.expectedPublishErrorIs)
+				return
+			}
+
+			if tt.expectedErrorCheck != nil {
+				tt.expectedErrorCheck(t, Pipe{}.Publish(ctx))
 				return
 			}
 

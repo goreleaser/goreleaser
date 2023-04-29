@@ -118,10 +118,6 @@ func doPublish(ctx *context.Context, formula *artifact.Artifact, cl client.Clien
 	if err != nil {
 		return err
 	}
-	cl, err = client.NewIfToken(ctx, cl, brew.Tap.Token)
-	if err != nil {
-		return err
-	}
 
 	if strings.TrimSpace(brew.SkipUpload) == "true" {
 		return pipe.Skip("brew.skip_upload is set")
@@ -153,8 +149,19 @@ func doPublish(ctx *context.Context, formula *artifact.Artifact, cl client.Clien
 		return err
 	}
 
+	if brew.Tap.Git.URL != "" {
+		fmt.Printf("creating file in %s: %s", repo.GitURL, gpath)
+		return client.NewGitUploadClient(ctx, "brews").
+			CreateFile(ctx, author, repo, content, gpath, msg)
+	}
+
 	if !brew.Tap.PullRequest.Enabled {
 		return cl.CreateFile(ctx, author, repo, content, gpath, msg)
+	}
+
+	cl, err = client.NewIfToken(ctx, cl, brew.Tap.Token)
+	if err != nil {
+		return err
 	}
 
 	log.Info("brews.pull_request enabled, creating a PR")
@@ -171,7 +178,7 @@ func doPublish(ctx *context.Context, formula *artifact.Artifact, cl client.Clien
 	return pcl.OpenPullRequest(ctx, repo, brew.Tap.PullRequest.Base, title)
 }
 
-func doRun(ctx *context.Context, brew config.Homebrew, cl client.Client) error {
+func doRun(ctx *context.Context, brew config.Homebrew, cl client.ReleaserURLTemplater) error {
 	if brew.Tap.Name == "" {
 		return pipe.Skip("brew tap name is not set")
 	}
@@ -261,7 +268,7 @@ func buildFormulaPath(folder, filename string) string {
 	return path.Join(folder, filename)
 }
 
-func buildFormula(ctx *context.Context, brew config.Homebrew, client client.Client, artifacts []*artifact.Artifact) (string, error) {
+func buildFormula(ctx *context.Context, brew config.Homebrew, client client.ReleaserURLTemplater, artifacts []*artifact.Artifact) (string, error) {
 	data, err := dataFor(ctx, brew, client, artifacts)
 	if err != nil {
 		return "", err
@@ -339,7 +346,7 @@ func keys(m map[string]bool) []string {
 	return keys
 }
 
-func dataFor(ctx *context.Context, cfg config.Homebrew, cl client.Client, artifacts []*artifact.Artifact) (templateData, error) {
+func dataFor(ctx *context.Context, cfg config.Homebrew, cl client.ReleaserURLTemplater, artifacts []*artifact.Artifact) (templateData, error) {
 	result := templateData{
 		Name:          formulaNameFor(cfg.Name),
 		Desc:          cfg.Description,

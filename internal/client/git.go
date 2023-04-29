@@ -7,6 +7,7 @@ import (
 	"os"
 	"path/filepath"
 	"strings"
+	"sync"
 
 	"github.com/caarlos0/log"
 	"github.com/goreleaser/goreleaser/internal/git"
@@ -17,21 +18,28 @@ import (
 	"golang.org/x/crypto/ssh"
 )
 
-// DefaulGittSSHCommand used for git over SSH.
-const DefaulGittSSHCommand = "ssh -i {{ .KeyPath }} -o StrictHostKeyChecking=accept-new -F /dev/null"
+// DefaulGitSSHCommand used for git over SSH.
+const DefaulGitSSHCommand = `ssh -i "{{ .KeyPath }}" -o StrictHostKeyChecking=accept-new -F /dev/null`
 
-type gitClient struct{}
+var cloneLock = cloneGlobalLock{
+	l:     sync.Mutex{},
+	repos: map[string]bool{},
+}
+
+type gitClient struct {
+	folder string
+}
 
 // NewGitUploadClient
-func NewGitUploadClient(ctx *context.Context) (FileCreator, error) {
-	return &gitClient{}, nil
+func NewGitUploadClient(ctx *context.Context, folder string) FileCreator {
+	return &gitClient{folder: folder}
 }
 
 // CreateFile implements FileCreator
-func (*gitClient) CreateFile(ctx *context.Context, commitAuthor config.CommitAuthor, repo Repo, content []byte, path string, message string) error {
+func (g *gitClient) CreateFile(ctx *context.Context, commitAuthor config.CommitAuthor, repo Repo, content []byte, path string, message string) error {
 	key, err := tmpl.New(ctx).Apply(repo.PrivateKey)
 	if err != nil {
-		return err
+		return fmt.Errorf("git: failed to template private key: %w", err)
 	}
 
 	key, err = keyPath(key)
@@ -41,46 +49,49 @@ func (*gitClient) CreateFile(ctx *context.Context, commitAuthor config.CommitAut
 
 	url, err := tmpl.New(ctx).Apply(repo.GitURL)
 	if err != nil {
-		return err
+		return fmt.Errorf("git: failed to template git url: %w", err)
 	}
 
 	if url == "" {
-		return pipe.Skip("git_url is empty")
+		return pipe.Skip("url is empty")
 	}
 
 	sshcmd, err := tmpl.New(ctx).WithExtraFields(tmpl.Fields{
 		"KeyPath": key,
-	}).Apply(firstNonEmpty(repo.GitSSHCommand, DefaulGittSSHCommand))
+	}).Apply(firstNonEmpty(repo.GitSSHCommand, DefaulGitSSHCommand))
 	if err != nil {
-		return err
+		return fmt.Errorf("git: failed to template ssh command: %w", err)
 	}
 
 	repoName := repo.Name
-	parent := filepath.Join(ctx.Config.Dist, "git", "repositories")
+	parent := filepath.Join(ctx.Config.Dist, "git", g.folder)
 	cwd := filepath.Join(parent, repoName)
 
-	if err := os.MkdirAll(parent, 0o755); err != nil {
-		return err
-	}
-
 	env := []string{fmt.Sprintf("GIT_SSH_COMMAND=%s", sshcmd)}
+	if err := cloneLock.clone(url, func() error {
+		if err := os.MkdirAll(parent, 0o755); err != nil {
+			return fmt.Errorf("git: failed to create parent: %w", err)
+		}
 
-	// TODO: check, clone might fail, repo might be out of date, etc
-	// TODO: maybe also pass --depth=1?
-	if err := runGitCmds(ctx, parent, env, [][]string{
-		{"clone", url, repoName},
-	}); err != nil {
-		return fmt.Errorf("failed to setup local repo: %w", err)
-	}
+		// TODO: check, clone might fail, repo might be out of date, etc
+		// TODO: maybe also pass --depth=1?
+		if err := runGitCmds(ctx, parent, env, [][]string{
+			{"clone", url, repoName},
+		}); err != nil {
+			return fmt.Errorf("git: failed to clone local repository: %w", err)
+		}
 
-	if err := runGitCmds(ctx, cwd, env, [][]string{
-		// setup auth et al
-		{"config", "--local", "user.name", commitAuthor.Name},
-		{"config", "--local", "user.email", commitAuthor.Email},
-		{"config", "--local", "commit.gpgSign", "false"},
-		{"config", "--local", "init.defaultBranch", "master"},
+		if err := runGitCmds(ctx, cwd, env, [][]string{
+			{"config", "--local", "user.name", commitAuthor.Name},
+			{"config", "--local", "user.email", commitAuthor.Email},
+			{"config", "--local", "commit.gpgSign", "false"},
+			{"config", "--local", "init.defaultBranch", "master"},
+		}); err != nil {
+			return fmt.Errorf("git: failed to setup local repository: %w", err)
+		}
+		return nil
 	}); err != nil {
-		return fmt.Errorf("failed to setup local AUR repo: %w", err)
+		return err
 	}
 
 	if err := os.WriteFile(filepath.Join(cwd, path), content, 0o644); err != nil {
@@ -93,7 +104,7 @@ func (*gitClient) CreateFile(ctx *context.Context, commitAuthor config.CommitAut
 		{"commit", "-m", message},
 		{"push", "origin", "HEAD"},
 	}); err != nil {
-		return fmt.Errorf("failed to push %q (%q): %w", repoName, url, err)
+		return fmt.Errorf("git: failed to push %q (%q): %w", repoName, url, err)
 	}
 
 	return nil
@@ -101,14 +112,14 @@ func (*gitClient) CreateFile(ctx *context.Context, commitAuthor config.CommitAut
 
 func keyPath(key string) (string, error) {
 	if key == "" {
-		return "", pipe.Skip("aur.private_key is empty")
+		return "", pipe.Skip("private_key is empty")
 	}
 
 	path := key
 
 	_, err := ssh.ParsePrivateKey([]byte(key))
 	if isPasswordError(err) {
-		return "", fmt.Errorf("key is password-protected")
+		return "", fmt.Errorf("git: key is password-protected")
 	}
 
 	if err == nil {
@@ -116,7 +127,7 @@ func keyPath(key string) (string, error) {
 		// temp file and use that path on GIT_SSH_COMMAND.
 		f, err := os.CreateTemp("", "id_*")
 		if err != nil {
-			return "", fmt.Errorf("failed to store private key: %w", err)
+			return "", fmt.Errorf("git: failed to store private key: %w", err)
 		}
 		defer f.Close()
 
@@ -127,21 +138,21 @@ func keyPath(key string) (string, error) {
 		}
 
 		if _, err := io.WriteString(f, key); err != nil {
-			return "", fmt.Errorf("failed to store private key: %w", err)
+			return "", fmt.Errorf("git: failed to store private key: %w", err)
 		}
 		if err := f.Close(); err != nil {
-			return "", fmt.Errorf("failed to store private key: %w", err)
+			return "", fmt.Errorf("git: failed to store private key: %w", err)
 		}
 		path = f.Name()
 	}
 
 	if _, err := os.Stat(path); err != nil {
-		return "", fmt.Errorf("could not stat private_key: %w", err)
+		return "", fmt.Errorf("git: could not stat private_key: %w", err)
 	}
 
 	// in any case, ensure the key has the correct permissions.
 	if err := os.Chmod(path, 0o600); err != nil {
-		return "", fmt.Errorf("failed to ensure private_key permissions: %w", err)
+		return "", fmt.Errorf("git: failed to ensure private_key permissions: %w", err)
 	}
 
 	return path, nil
@@ -167,4 +178,35 @@ func firstNonEmpty(s1, s2 string) string {
 		return s1
 	}
 	return s2
+}
+
+type cloneGlobalLock struct {
+	l     sync.Mutex
+	repos map[string]bool
+}
+
+func (c *cloneGlobalLock) clone(url string, fn func() error) error {
+	c.l.Lock()
+	defer c.l.Unlock()
+
+	if c.repos[url] {
+		return nil
+	}
+
+	c.repos[url] = true
+	return fn()
+}
+
+// ErrOnce is like sync.Once, but the Do() accepts a func() error and can
+// therefore also return an error.
+type ErrOnce struct {
+	once sync.Once
+	err  error
+}
+
+func (o *ErrOnce) Do(fn func() error) error {
+	o.once.Do(func() {
+		o.err = fn()
+	})
+	return o.err
 }

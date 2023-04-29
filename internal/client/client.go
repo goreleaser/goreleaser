@@ -49,10 +49,16 @@ func (r Repo) String() string {
 type Client interface {
 	CloseMilestone(ctx *context.Context, repo Repo, title string) (err error)
 	CreateRelease(ctx *context.Context, body string) (releaseID string, err error)
-	ReleaseURLTemplate(ctx *context.Context) (string, error)
 	Upload(ctx *context.Context, releaseID string, artifact *artifact.Artifact, file *os.File) (err error)
 	Changelog(ctx *context.Context, repo Repo, prev, current string) (string, error)
+	ReleaserURLTemplater
 	FileCreator
+}
+
+// ReleaserURLTemplater provides the release URL as a template, containing the
+// artifact name as well.
+type ReleaserURLTemplater interface {
+	ReleaseURLTemplate(ctx *context.Context) (string, error)
 }
 
 // FileCreator can create the given file to some code repository.

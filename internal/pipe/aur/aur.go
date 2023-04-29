@@ -23,7 +23,7 @@ import (
 
 const (
 	aurExtra          = "AURConfig"
-	defaultSSHCommand = client.DefaulGittSSHCommand
+	defaultSSHCommand = client.DefaulGitSSHCommand
 	defaultCommitMsg  = "Update to {{ .Tag }}"
 )
 
@@ -59,7 +59,7 @@ func (Pipe) Default(ctx *context.Context) error {
 			pkg.Rel = "1"
 		}
 		if pkg.GitSSHCommand == "" {
-			pkg.GitSSHCommand = client.DefaulGittSSHCommand
+			pkg.GitSSHCommand = client.DefaulGitSSHCommand
 		}
 		if pkg.Goamd64 == "" {
 			pkg.Goamd64 = "v1"
@@ -365,16 +365,24 @@ func doPublish(ctx *context.Context, pkgs []*artifact.Artifact) error {
 		return pipe.Skip("prerelease detected with 'auto' upload, skipping aur publish")
 	}
 
-	cli, err := client.NewGitUploadClient(ctx)
+	author, err := commitauthor.Get(ctx, cfg.CommitAuthor)
 	if err != nil {
 		return err
 	}
 
+	msg, err := tmpl.New(ctx).Apply(cfg.CommitMessageTemplate)
+	if err != nil {
+		return err
+	}
+
+	cli := client.NewGitUploadClient(ctx, "aur")
 	repo := client.RepoFromRef(config.RepoRef{
-		PrivateKey:    cfg.PrivateKey,
-		GitURL:        cfg.GitURL,
-		GitSSHCommand: cfg.GitSSHCommand,
-		Name:          cfg.Name,
+		Git: config.GitRepoRef{
+			PrivateKey: cfg.PrivateKey,
+			URL:        cfg.GitURL,
+			SSHCommand: cfg.GitSSHCommand,
+		},
+		Name: cfg.Name,
 	})
 
 	log.WithField("repo", cfg.GitURL).WithField("name", cfg.Name).Info("pushing")
@@ -384,7 +392,7 @@ func doPublish(ctx *context.Context, pkgs []*artifact.Artifact) error {
 		if err != nil {
 			return err
 		}
-		if err := cli.CreateFile(ctx, cfg.CommitAuthor, repo, content, pkg.Name, cfg.CommitMessageTemplate); err != nil {
+		if err := cli.CreateFile(ctx, author, repo, content, pkg.Name, msg); err != nil {
 			return err
 		}
 	}

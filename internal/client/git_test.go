@@ -19,8 +19,7 @@ func TestGitClient(t *testing.T) {
 		Dist: t.TempDir(),
 	})
 
-	cli, err := NewGitUploadClient(ctx)
-	require.NoError(t, err)
+	cli := NewGitUploadClient(ctx, "test")
 
 	require.NoError(t, cli.CreateFile(
 		ctx,
@@ -30,7 +29,7 @@ func TestGitClient(t *testing.T) {
 		},
 		Repo{
 			GitURL:        url,
-			GitSSHCommand: DefaulGittSSHCommand,
+			GitSSHCommand: DefaulGitSSHCommand,
 			PrivateKey:    keypath,
 			Name:          "test1",
 		},
@@ -59,7 +58,7 @@ func TestKeyPath(t *testing.T) {
 		require.NoError(t, err)
 
 		result, err := keyPath(string(bts))
-		require.EqualError(t, err, "key is password-protected")
+		require.EqualError(t, err, "git: key is password-protected")
 		require.Empty(t, result)
 	})
 
@@ -81,7 +80,7 @@ func TestKeyPath(t *testing.T) {
 	})
 	t.Run("empty", func(t *testing.T) {
 		result, err := keyPath("")
-		require.EqualError(t, err, `aur.private_key is empty`)
+		require.EqualError(t, err, `private_key is empty`)
 		require.Equal(t, "", result)
 	})
 	t.Run("with invalid EOF", func(t *testing.T) {

@@ -2,6 +2,7 @@ package testlib
 
 import (
 	"context"
+	"os/exec"
 	"path/filepath"
 	"testing"
 
@@ -126,4 +127,17 @@ func MakeNewSSHKey(tb testing.TB, algo keygen.KeyType, pass string) string {
 	)
 	require.NoError(tb, err)
 	return filepath
+}
+
+func CatFileFromBareRepository(tb testing.TB, url, name string) []byte {
+	tb.Helper()
+
+	out, err := exec.Command(
+		"git",
+		"-C", url,
+		"show",
+		"master:"+name,
+	).CombinedOutput()
+	require.NoError(tb, err)
+	return out
 }
