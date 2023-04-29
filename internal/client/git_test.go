@@ -13,30 +13,60 @@ import (
 )
 
 func TestGitClient(t *testing.T) {
-	keypath := testlib.MakeNewSSHKey(t, keygen.Ed25519, "")
-	url := testlib.GitMakeBareRepository(t)
-	ctx := testctx.NewWithCfg(config.Project{
-		Dist: t.TempDir(),
-	})
-
 	cli := NewGitUploadClient("master")
+	author := config.CommitAuthor{
+		Name:  "Foo",
+		Email: "foo@bar.com",
+	}
 
-	require.NoError(t, cli.CreateFile(
-		ctx,
-		config.CommitAuthor{
-			Name:  "Foo",
-			Email: "foo@bar.com",
-		},
-		Repo{
+	t.Run("clone repo, commit and push multiple times", func(t *testing.T) {
+		keypath := testlib.MakeNewSSHKey(t, keygen.Ed25519, "")
+		url := testlib.GitMakeBareRepository(t)
+		ctx := testctx.NewWithCfg(config.Project{
+			Dist: t.TempDir(),
+		})
+		repo := Repo{
 			GitURL:     url,
 			PrivateKey: keypath,
 			Name:       "test1",
-		},
-		[]byte("fake content"),
-		"fake.txt",
-		"hey test",
-	))
-	require.Equal(t, "fake content", string(testlib.CatFileFromBareRepository(t, url, "fake.txt")))
+		}
+		require.NoError(t, cli.CreateFile(
+			ctx,
+			author,
+			repo,
+			[]byte("fake content"),
+			"fake.txt",
+			"hey test",
+		))
+		require.NoError(t, cli.CreateFile(
+			ctx,
+			author,
+			repo,
+			[]byte("fake content 2"),
+			"fake.txt",
+			"hey test 2",
+		))
+		require.Equal(t, "fake content 2", string(testlib.CatFileFromBareRepository(t, url, "fake.txt")))
+	})
+	t.Run("bad url", func(t *testing.T) {
+		ctx := testctx.NewWithCfg(config.Project{
+			Dist: t.TempDir(),
+		})
+		repo := Repo{
+			GitURL: "{{ .Nope }}",
+		}
+		require.EqualError(t, cli.CreateFile(
+			ctx,
+			author,
+			repo,
+			nil,
+			"",
+			"",
+		))
+	})
+}
+
+func TestBadURL(t *testing.T) {
 }
 
 func TestKeyPath(t *testing.T) {
