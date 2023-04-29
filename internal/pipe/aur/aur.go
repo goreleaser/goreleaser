@@ -374,6 +374,7 @@ func doPublish(ctx *context.Context, pkgs []*artifact.Artifact) error {
 		PrivateKey:    cfg.PrivateKey,
 		GitURL:        cfg.GitURL,
 		GitSSHCommand: cfg.GitSSHCommand,
+		Name:          cfg.Name,
 	})
 
 	log.WithField("repo", cfg.GitURL).WithField("name", cfg.Name).Info("pushing")

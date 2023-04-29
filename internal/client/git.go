@@ -45,7 +45,7 @@ func (*gitClient) CreateFile(ctx *context.Context, commitAuthor config.CommitAut
 	}
 
 	if url == "" {
-		return pipe.Skip("aur.git_url is empty")
+		return pipe.Skip("git_url is empty")
 	}
 
 	sshcmd, err := tmpl.New(ctx).WithExtraFields(tmpl.Fields{
@@ -55,8 +55,9 @@ func (*gitClient) CreateFile(ctx *context.Context, commitAuthor config.CommitAut
 		return err
 	}
 
-	parent := filepath.Join(ctx.Config.Dist, "aur", "repos")
-	cwd := filepath.Join(parent, repo.Name)
+	repoName := repo.Name
+	parent := filepath.Join(ctx.Config.Dist, "git", "repositories")
+	cwd := filepath.Join(parent, repoName)
 
 	if err := os.MkdirAll(parent, 0o755); err != nil {
 		return err
@@ -67,9 +68,9 @@ func (*gitClient) CreateFile(ctx *context.Context, commitAuthor config.CommitAut
 	// TODO: check, clone might fail, repo might be out of date, etc
 	// TODO: maybe also pass --depth=1?
 	if err := runGitCmds(ctx, parent, env, [][]string{
-		{"clone", url, repo.Name},
+		{"clone", url, repoName},
 	}); err != nil {
-		return fmt.Errorf("failed to setup local AUR repo: %w", err)
+		return fmt.Errorf("failed to setup local repo: %w", err)
 	}
 
 	if err := runGitCmds(ctx, cwd, env, [][]string{
@@ -82,17 +83,17 @@ func (*gitClient) CreateFile(ctx *context.Context, commitAuthor config.CommitAut
 		return fmt.Errorf("failed to setup local AUR repo: %w", err)
 	}
 
-	if err := os.WriteFile(filepath.Join(ctx.Config.Dist, repo.Name, path), content, 0o644); err != nil {
+	if err := os.WriteFile(filepath.Join(cwd, path), content, 0o644); err != nil {
 		return fmt.Errorf("failed to write %s: %w", path, err)
 	}
 
-	log.WithField("repo", url).WithField("name", repo.Name).Info("pushing")
+	log.WithField("repo", url).WithField("name", repoName).Info("pushing")
 	if err := runGitCmds(ctx, cwd, env, [][]string{
 		{"add", "-A", "."},
 		{"commit", "-m", message},
 		{"push", "origin", "HEAD"},
 	}); err != nil {
-		return fmt.Errorf("failed to push %q (%q): %w", repo.Name, url, err)
+		return fmt.Errorf("failed to push %q (%q): %w", repoName, url, err)
 	}
 
 	return nil
@@ -135,12 +136,12 @@ func keyPath(key string) (string, error) {
 	}
 
 	if _, err := os.Stat(path); err != nil {
-		return "", fmt.Errorf("could not stat aur.private_key: %w", err)
+		return "", fmt.Errorf("could not stat private_key: %w", err)
 	}
 
 	// in any case, ensure the key has the correct permissions.
 	if err := os.Chmod(path, 0o600); err != nil {
-		return "", fmt.Errorf("failed to ensure aur.private_key permissions: %w", err)
+		return "", fmt.Errorf("failed to ensure private_key permissions: %w", err)
 	}
 
 	return path, nil

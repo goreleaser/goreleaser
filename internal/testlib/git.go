@@ -2,9 +2,12 @@ package testlib
 
 import (
 	"context"
+	"path/filepath"
 	"testing"
 
+	"github.com/charmbracelet/keygen"
 	"github.com/goreleaser/goreleaser/internal/git"
+	"github.com/goreleaser/goreleaser/internal/testctx"
 	"github.com/stretchr/testify/require"
 )
 
@@ -93,4 +96,34 @@ func GitCheckoutBranch(tb testing.TB, name string) {
 	out, err := fakeGit("checkout", "-b", name)
 	require.NoError(tb, err)
 	require.Empty(tb, out)
+}
+
+func GitMakeBareRpository(tb testing.TB) string {
+	tb.Helper()
+	dir := tb.TempDir()
+	_, err := git.Run(
+		testctx.New(),
+		"-C", dir,
+		"-c", "init.defaultBranch=master",
+		"init",
+		"--bare",
+		".",
+	)
+	require.NoError(tb, err)
+	return dir
+}
+
+func MakeNewSSHKey(tb testing.TB, algo keygen.KeyType, pass string) string {
+	tb.Helper()
+
+	dir := tb.TempDir()
+	filepath := filepath.Join(dir, "id_"+algo.String())
+	_, err := keygen.New(
+		filepath,
+		keygen.WithKeyType(algo),
+		keygen.WithWrite(),
+		keygen.WithPassphrase(pass),
+	)
+	require.NoError(tb, err)
+	return filepath
 }

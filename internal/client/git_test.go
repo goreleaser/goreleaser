@@ -2,17 +2,47 @@ package client
 
 import (
 	"os"
-	"path/filepath"
 	"strings"
 	"testing"
 
 	"github.com/charmbracelet/keygen"
+	"github.com/goreleaser/goreleaser/internal/testctx"
+	"github.com/goreleaser/goreleaser/internal/testlib"
+	"github.com/goreleaser/goreleaser/pkg/config"
 	"github.com/stretchr/testify/require"
 )
 
+func TestGitClient(t *testing.T) {
+	keypath := testlib.MakeNewSSHKey(t, keygen.Ed25519, "")
+	url := testlib.GitMakeBareRpository(t)
+	ctx := testctx.NewWithCfg(config.Project{
+		Dist: t.TempDir(),
+	})
+
+	cli, err := NewGitUploadClient(ctx)
+	require.NoError(t, err)
+
+	require.NoError(t, cli.CreateFile(
+		ctx,
+		config.CommitAuthor{
+			Name:  "Foo",
+			Email: "foo@bar.com",
+		},
+		Repo{
+			GitURL:        url,
+			GitSSHCommand: DefaulGittSSHCommand,
+			PrivateKey:    keypath,
+			Name:          "test1",
+		},
+		[]byte("fake content"),
+		"fake.txt",
+		"hey test",
+	))
+}
+
 func TestKeyPath(t *testing.T) {
 	t.Run("with valid path", func(t *testing.T) {
-		path := makeKey(t, keygen.Ed25519, "")
+		path := testlib.MakeNewSSHKey(t, keygen.Ed25519, "")
 		result, err := keyPath(path)
 		require.NoError(t, err)
 		require.Equal(t, path, result)
@@ -24,7 +54,7 @@ func TestKeyPath(t *testing.T) {
 	})
 
 	t.Run("with password protected key path", func(t *testing.T) {
-		path := makeKey(t, keygen.Ed25519, "pwd")
+		path := testlib.MakeNewSSHKey(t, keygen.Ed25519, "pwd")
 		bts, err := os.ReadFile(path)
 		require.NoError(t, err)
 
@@ -36,7 +66,7 @@ func TestKeyPath(t *testing.T) {
 	t.Run("with key", func(t *testing.T) {
 		for _, algo := range []keygen.KeyType{keygen.Ed25519, keygen.RSA} {
 			t.Run(string(algo), func(t *testing.T) {
-				path := makeKey(t, algo, "")
+				path := testlib.MakeNewSSHKey(t, algo, "")
 				bts, err := os.ReadFile(path)
 				require.NoError(t, err)
 
@@ -55,7 +85,7 @@ func TestKeyPath(t *testing.T) {
 		require.Equal(t, "", result)
 	})
 	t.Run("with invalid EOF", func(t *testing.T) {
-		path := makeKey(t, keygen.Ed25519, "")
+		path := testlib.MakeNewSSHKey(t, keygen.Ed25519, "")
 		bts, err := os.ReadFile(path)
 		require.NoError(t, err)
 
@@ -66,14 +96,4 @@ func TestKeyPath(t *testing.T) {
 		require.NoError(t, err)
 		require.Equal(t, string(bts), string(resultbts))
 	})
-}
-
-func makeKey(tb testing.TB, algo keygen.KeyType, pass string) string {
-	tb.Helper()
-
-	dir := tb.TempDir()
-	filepath := filepath.Join(dir, "id_"+algo.String())
-	_, err := keygen.New(filepath, keygen.WithKeyType(algo), keygen.WithWrite(), keygen.WithPassphrase(pass))
-	require.NoError(tb, err)
-	return filepath
 }

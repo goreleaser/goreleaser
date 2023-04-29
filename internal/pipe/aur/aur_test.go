@@ -238,8 +238,8 @@ func TestFullPipe(t *testing.T) {
 		},
 	} {
 		t.Run(name, func(t *testing.T) {
-			url := makeBareRepo(t)
-			key := makeKey(t, keygen.Ed25519, "")
+			url := testlib.GitMakeBareRpository(t)
+			key := testlib.MakeNewSSHKey(t, keygen.Ed25519, "")
 
 			folder := t.TempDir()
 			ctx := testctx.NewWithCfg(
@@ -336,8 +336,8 @@ func TestFullPipe(t *testing.T) {
 }
 
 func TestRunPipe(t *testing.T) {
-	url := makeBareRepo(t)
-	key := makeKey(t, keygen.Ed25519, "")
+	url := testlib.GitMakeBareRpository(t)
+	key := testlib.MakeNewSSHKey(t, keygen.Ed25519, "")
 
 	folder := t.TempDir()
 	ctx := testctx.NewWithCfg(
@@ -472,8 +472,8 @@ func TestRunPipeNoBuilds(t *testing.T) {
 }
 
 func TestRunPipeBinaryRelease(t *testing.T) {
-	url := makeBareRepo(t)
-	key := makeKey(t, keygen.Ed25519, "")
+	url := testlib.GitMakeBareRpository(t)
+	key := testlib.MakeNewSSHKey(t, keygen.Ed25519, "")
 	folder := t.TempDir()
 	ctx := testctx.NewWithCfg(
 		config.Project{
@@ -691,31 +691,6 @@ func TestSkip(t *testing.T) {
 		})
 		require.False(t, Pipe{}.Skip(ctx))
 	})
-}
-
-func makeBareRepo(tb testing.TB) string {
-	tb.Helper()
-	dir := tb.TempDir()
-	_, err := git.Run(
-		testctx.New(),
-		"-C", dir,
-		"-c", "init.defaultBranch=master",
-		"init",
-		"--bare",
-		".",
-	)
-	require.NoError(tb, err)
-	return dir
-}
-
-func makeKey(tb testing.TB, algo keygen.KeyType, pass string) string {
-	tb.Helper()
-
-	dir := tb.TempDir()
-	filepath := filepath.Join(dir, "id_"+algo.String())
-	_, err := keygen.New(filepath, keygen.WithKeyType(algo), keygen.WithWrite(), keygen.WithPassphrase(pass))
-	require.NoError(tb, err)
-	return filepath
 }
 
 func requireEqualRepoFiles(tb testing.TB, folder, name, url string) {
