@@ -37,6 +37,19 @@ func NewGitUploadClient(ctx *context.Context, folder string) FileCreator {
 
 // CreateFile implements FileCreator
 func (g *gitClient) CreateFile(ctx *context.Context, commitAuthor config.CommitAuthor, repo Repo, content []byte, path string, message string) error {
+	url, err := tmpl.New(ctx).Apply(repo.GitURL)
+	if err != nil {
+		return fmt.Errorf("git: failed to template git url: %w", err)
+	}
+
+	if url == "" {
+		return pipe.Skip("url is empty")
+	}
+
+	if repo.Name == "" {
+		repo.Name = strings.TrimSuffix(url[strings.LastIndex(url, "/")+1:], ".git")
+	}
+
 	key, err := tmpl.New(ctx).Apply(repo.PrivateKey)
 	if err != nil {
 		return fmt.Errorf("git: failed to template private key: %w", err)
@@ -47,15 +60,6 @@ func (g *gitClient) CreateFile(ctx *context.Context, commitAuthor config.CommitA
 		return err
 	}
 
-	url, err := tmpl.New(ctx).Apply(repo.GitURL)
-	if err != nil {
-		return fmt.Errorf("git: failed to template git url: %w", err)
-	}
-
-	if url == "" {
-		return pipe.Skip("url is empty")
-	}
-
 	sshcmd, err := tmpl.New(ctx).WithExtraFields(tmpl.Fields{
 		"KeyPath": key,
 	}).Apply(firstNonEmpty(repo.GitSSHCommand, DefaulGitSSHCommand))
@@ -63,9 +67,8 @@ func (g *gitClient) CreateFile(ctx *context.Context, commitAuthor config.CommitA
 		return fmt.Errorf("git: failed to template ssh command: %w", err)
 	}
 
-	repoName := repo.Name
 	parent := filepath.Join(ctx.Config.Dist, "git", g.folder)
-	cwd := filepath.Join(parent, repoName)
+	cwd := filepath.Join(parent, repo.Name)
 
 	env := []string{fmt.Sprintf("GIT_SSH_COMMAND=%s", sshcmd)}
 	if err := cloneLock.clone(url, func() error {
@@ -73,10 +76,8 @@ func (g *gitClient) CreateFile(ctx *context.Context, commitAuthor config.CommitA
 			return fmt.Errorf("git: failed to create parent: %w", err)
 		}
 
-		// TODO: check, clone might fail, repo might be out of date, etc
-		// TODO: maybe also pass --depth=1?
 		if err := runGitCmds(ctx, parent, env, [][]string{
-			{"clone", url, repoName},
+			{"clone", url, repo.Name},
 		}); err != nil {
 			return fmt.Errorf("git: failed to clone local repository: %w", err)
 		}
@@ -98,13 +99,13 @@ func (g *gitClient) CreateFile(ctx *context.Context, commitAuthor config.CommitA
 		return fmt.Errorf("failed to write %s: %w", path, err)
 	}
 
-	log.WithField("repo", url).WithField("name", repoName).Info("pushing")
+	log.WithField("repo", url).WithField("name", repo.Name).Info("pushing")
 	if err := runGitCmds(ctx, cwd, env, [][]string{
 		{"add", "-A", "."},
 		{"commit", "-m", message},
 		{"push", "origin", "HEAD"},
 	}); err != nil {
-		return fmt.Errorf("git: failed to push %q (%q): %w", repoName, url, err)
+		return fmt.Errorf("git: failed to push %q (%q): %w", repo.Name, url, err)
 	}
 
 	return nil
