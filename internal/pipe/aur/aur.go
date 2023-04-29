@@ -371,7 +371,7 @@ func doPublish(ctx *context.Context, pkgs []*artifact.Artifact) error {
 		return err
 	}
 
-	cli := client.NewGitUploadClient(ctx, "master")
+	cli := client.NewGitUploadClient("master")
 	repo := client.RepoFromRef(config.RepoRef{
 		Git: config.GitRepoRef{
 			PrivateKey: cfg.PrivateKey,

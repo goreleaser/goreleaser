@@ -31,7 +31,7 @@ type gitClient struct {
 }
 
 // NewGitUploadClient
-func NewGitUploadClient(ctx *context.Context, branch string) FileCreator {
+func NewGitUploadClient(branch string) FileCreator {
 	return &gitClient{
 		branch: branch,
 	}

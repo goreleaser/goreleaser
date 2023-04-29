@@ -172,7 +172,7 @@ func doPublish(ctx *context.Context, cl client.Client) error {
 	gpath := path.Join(scoop.Folder, manifest.Name)
 
 	if scoop.Bucket.Git.URL != "" {
-		return client.NewGitUploadClient(ctx, repo.Branch).
+		return client.NewGitUploadClient(repo.Branch).
 			CreateFile(ctx, author, repo, content, gpath, commitMessage)
 	}
 
