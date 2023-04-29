@@ -90,6 +90,25 @@ func TestGitClient(t *testing.T) {
 			"msg",
 		))
 	})
+	t.Run("clone fail", func(t *testing.T) {
+		ctx := testctx.NewWithCfg(config.Project{
+			Dist: t.TempDir(),
+		})
+		repo := Repo{
+			GitURL:     "git@github.com:nope/nopenopenopenope",
+			PrivateKey: testlib.MakeNewSSHKey(t, keygen.Ed25519, ""),
+		}
+		err := cli.CreateFile(
+			ctx,
+			author,
+			repo,
+			[]byte{},
+			"filename",
+			"msg",
+		)
+		require.Error(t, err)
+		require.Contains(t, err.Error(), "failed to clone")
+	})
 	t.Run("bad ssh cmd", func(t *testing.T) {
 		ctx := testctx.NewWithCfg(config.Project{
 			Dist: t.TempDir(),

@@ -525,54 +525,59 @@ func TestRunPipeBinaryRelease(t *testing.T) {
 
 func TestRunPipeNoUpload(t *testing.T) {
 	folder := t.TempDir()
-	ctx := testctx.NewWithCfg(
-		config.Project{
-			Dist:        folder,
-			ProjectName: "foo",
-			Release:     config.Release{},
-			AURs:        []config.AUR{{}},
-		},
-		testctx.GitHubTokenType,
-		testctx.WithCurrentTag("v1.0.1"),
-		testctx.WithSemver(1, 0, 1, ""),
-	)
+	testPublish := func(tb testing.TB, modifier func(ctx *context.Context)) {
+		tb.Helper()
+		ctx := testctx.NewWithCfg(
+			config.Project{
+				Dist:        folder,
+				ProjectName: "foo",
+				Release:     config.Release{},
+				AURs:        []config.AUR{{}},
+			},
+			testctx.GitHubTokenType,
+			testctx.WithCurrentTag("v1.0.1"),
+			testctx.WithSemver(1, 0, 1, ""),
+		)
 
-	path := filepath.Join(folder, "whatever.tar.gz")
-	f, err := os.Create(path)
-	require.NoError(t, err)
-	require.NoError(t, f.Close())
-	ctx.Artifacts.Add(&artifact.Artifact{
-		Name:    "bin",
-		Path:    path,
-		Goos:    "linux",
-		Goarch:  "amd64",
-		Goamd64: "v1",
-		Type:    artifact.UploadableArchive,
-		Extra: map[string]interface{}{
-			artifact.ExtraID:       "foo",
-			artifact.ExtraFormat:   "tar.gz",
-			artifact.ExtraBinaries: []string{"foo"},
-		},
-	})
+		path := filepath.Join(folder, "whatever.tar.gz")
+		f, err := os.Create(path)
+		require.NoError(t, err)
+		require.NoError(t, f.Close())
+		ctx.Artifacts.Add(&artifact.Artifact{
+			Name:    "bin",
+			Path:    path,
+			Goos:    "linux",
+			Goarch:  "amd64",
+			Goamd64: "v1",
+			Type:    artifact.UploadableArchive,
+			Extra: map[string]interface{}{
+				artifact.ExtraID:       "foo",
+				artifact.ExtraFormat:   "tar.gz",
+				artifact.ExtraBinaries: []string{"foo"},
+			},
+		})
 
-	require.NoError(t, Pipe{}.Default(ctx))
-	client := client.NewMock()
+		modifier(ctx)
 
-	assertNoPublish := func(t *testing.T) {
-		t.Helper()
+		require.NoError(t, Pipe{}.Default(ctx))
+		client := client.NewMock()
 		require.NoError(t, runAll(ctx, client))
+		t.Log(Pipe{}.Publish(ctx))
 		testlib.AssertSkipped(t, Pipe{}.Publish(ctx))
 		require.False(t, client.CreatedFile)
 	}
+
 	t.Run("skip upload true", func(t *testing.T) {
-		ctx.Config.AURs[0].SkipUpload = "true"
-		ctx.Semver.Prerelease = ""
-		assertNoPublish(t)
+		testPublish(t, func(ctx *context.Context) {
+			ctx.Config.AURs[0].SkipUpload = "true"
+			ctx.Semver.Prerelease = ""
+		})
 	})
 	t.Run("skip upload auto", func(t *testing.T) {
-		ctx.Config.AURs[0].SkipUpload = "auto"
-		ctx.Semver.Prerelease = "beta1"
-		assertNoPublish(t)
+		testPublish(t, func(ctx *context.Context) {
+			ctx.Config.AURs[0].SkipUpload = "auto"
+			ctx.Semver.Prerelease = "beta1"
+		})
 	})
 }
 
