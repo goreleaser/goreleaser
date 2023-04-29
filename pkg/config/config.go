@@ -85,6 +85,11 @@ type RepoRef struct {
 	Token  string `yaml:"token,omitempty" json:"token,omitempty"`
 	Branch string `yaml:"branch,omitempty" json:"branch,omitempty"`
 
+	// only for the plain git client:
+	GitURL        string `yaml:"git_url,omitempty" json:"git_url,omitempty"`
+	GitSSHCommand string `yaml:"git_ssh_command,omitempty" json:"git_ssh_command,omitempty"`
+	PrivateKey    string `yaml:"private_key,omitempty" json:"private_key,omitempty"`
+
 	PullRequest PullRequest `yaml:"pull_request,omitempty" json:"pull_request,omitempty"`
 }
 

@@ -1,15 +1,16 @@
 package client
 
-import (
-	"github.com/goreleaser/goreleaser/pkg/config"
-)
+import "github.com/goreleaser/goreleaser/pkg/config"
 
 // RepoFromRef converts a config.RepoRef into a Repo.
 func RepoFromRef(ref config.RepoRef) Repo {
 	return Repo{
-		Owner:  ref.Owner,
-		Name:   ref.Name,
-		Branch: ref.Branch,
+		Owner:         ref.Owner,
+		Name:          ref.Name,
+		Branch:        ref.Branch,
+		GitURL:        ref.GitURL,
+		GitSSHCommand: ref.GitSSHCommand,
+		PrivateKey:    ref.PrivateKey,
 	}
 }
 
@@ -27,11 +28,26 @@ func TemplateRef(apply func(s string) (string, error), ref config.RepoRef) (conf
 	if err != nil {
 		return ref, err
 	}
+	gitURL, err := apply(ref.GitURL)
+	if err != nil {
+		return ref, err
+	}
+	privateKey, err := apply(ref.PrivateKey)
+	if err != nil {
+		return ref, err
+	}
+	gitSSHCommand, err := apply(ref.GitSSHCommand)
+	if err != nil {
+		return ref, err
+	}
 	return config.RepoRef{
-		Owner:       owner,
-		Name:        name,
-		Token:       ref.Token,
-		Branch:      branch,
-		PullRequest: ref.PullRequest,
+		Owner:         owner,
+		Name:          name,
+		Token:         ref.Token,
+		Branch:        branch,
+		PullRequest:   ref.PullRequest,
+		GitURL:        gitURL,
+		PrivateKey:    privateKey,
+		GitSSHCommand: gitSSHCommand,
 	}, nil
 }

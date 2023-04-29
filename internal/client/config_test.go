@@ -29,10 +29,13 @@ func TestRepoFromRef(t *testing.T) {
 
 func TestTemplateRef(t *testing.T) {
 	expected := config.RepoRef{
-		Owner:  "owner",
-		Name:   "name",
-		Branch: "branch",
-		Token:  "token",
+		Owner:         "owner",
+		Name:          "name",
+		Branch:        "branch",
+		Token:         "token",
+		GitURL:        "giturl",
+		GitSSHCommand: "gitsshcommand",
+		PrivateKey:    "privatekey",
 	}
 	t.Run("success", func(t *testing.T) {
 		ref, err := TemplateRef(func(s string) (string, error) {
@@ -66,6 +69,33 @@ func TestTemplateRef(t *testing.T) {
 	t.Run("fail branch", func(t *testing.T) {
 		_, err := TemplateRef(func(s string) (string, error) {
 			if s == "token" || s == "branch" {
+				return "", fmt.Errorf("nope")
+			}
+			return s, nil
+		}, expected)
+		require.Error(t, err)
+	})
+	t.Run("fail giturl", func(t *testing.T) {
+		_, err := TemplateRef(func(s string) (string, error) {
+			if s == "token" || s == "giturl" {
+				return "", fmt.Errorf("nope")
+			}
+			return s, nil
+		}, expected)
+		require.Error(t, err)
+	})
+	t.Run("fail gitsshcommand", func(t *testing.T) {
+		_, err := TemplateRef(func(s string) (string, error) {
+			if s == "token" || s == "gitsshcommand" {
+				return "", fmt.Errorf("nope")
+			}
+			return s, nil
+		}, expected)
+		require.Error(t, err)
+	})
+	t.Run("fail privatekey", func(t *testing.T) {
+		_, err := TemplateRef(func(s string) (string, error) {
+			if s == "token" || s == "privatekey" {
 				return "", fmt.Errorf("nope")
 			}
 			return s, nil
