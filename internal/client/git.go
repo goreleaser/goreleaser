@@ -48,9 +48,7 @@ func (g *gitClient) CreateFile(ctx *context.Context, commitAuthor config.CommitA
 		return pipe.Skip("url is empty")
 	}
 
-	if repo.Name == "" {
-		repo.Name = strings.TrimSuffix(url[strings.LastIndex(url, "/")+1:], ".git")
-	}
+	repo.Name = firstNonEmpty(repo.Name, nameFromURL(url))
 
 	key, err := tmpl.New(ctx).Apply(repo.PrivateKey)
 	if err != nil {
@@ -186,6 +184,10 @@ func firstNonEmpty(s1, s2 string) string {
 		return s1
 	}
 	return s2
+}
+
+func nameFromURL(url string) string {
+	return strings.TrimSuffix(url[strings.LastIndex(url, "/")+1:], ".git")
 }
 
 type cloneGlobalLock struct {

@@ -215,3 +215,15 @@ func TestKeyPath(t *testing.T) {
 		require.Equal(t, string(bts), string(resultbts))
 	})
 }
+
+func TestRepoFromURL(t *testing.T) {
+	for k, v := range map[string]string{
+		"goreleaser": "git@github.com:goreleaser/goreleaser.git",
+		"nfpm":       "https://github.com/goreleaser/nfpm",
+		"test":       "https://myserver.git/foo/test.git",
+	} {
+		t.Run(k, func(t *testing.T) {
+			require.Equal(t, k, nameFromURL(v))
+		})
+	}
+}
