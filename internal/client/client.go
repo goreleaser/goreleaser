@@ -50,9 +50,14 @@ type Client interface {
 	CloseMilestone(ctx *context.Context, repo Repo, title string) (err error)
 	CreateRelease(ctx *context.Context, body string) (releaseID string, err error)
 	ReleaseURLTemplate(ctx *context.Context) (string, error)
-	CreateFile(ctx *context.Context, commitAuthor config.CommitAuthor, repo Repo, content []byte, path, message string) (err error)
 	Upload(ctx *context.Context, releaseID string, artifact *artifact.Artifact, file *os.File) (err error)
 	Changelog(ctx *context.Context, repo Repo, prev, current string) (string, error)
+	FileCreator
+}
+
+// FileCreator can create the given file to some code repository.
+type FileCreator interface {
+	CreateFile(ctx *context.Context, commitAuthor config.CommitAuthor, repo Repo, content []byte, path, message string) (err error)
 }
 
 // ReleaseNotesGenerator can generate release notes.
