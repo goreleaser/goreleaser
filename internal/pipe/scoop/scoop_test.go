@@ -107,7 +107,7 @@ func Test_doRun(t *testing.T) {
 			args{
 				testctx.NewWithCfg(
 					config.Project{
-						ProjectName: "run-pipe",
+						ProjectName: "git-run-pipe",
 						Scoop: config.Scoop{
 							Bucket: config.RepoRef{
 								Name:   "test",
@@ -137,11 +137,11 @@ func Test_doRun(t *testing.T) {
 			func(tb testing.TB, a args) {
 				tb.Helper()
 				content := testlib.CatFileFromBareRepository(
-					t,
+					tb,
 					a.ctx.Config.Scoop.Bucket.Git.URL,
-					"scoops/run-pipe.json",
+					"scoops/git-run-pipe.json",
 				)
-				golden.RequireEqualJSON(t, content)
+				golden.RequireEqualJSON(tb, content)
 			},
 		},
 		{
