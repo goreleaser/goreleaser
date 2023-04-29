@@ -158,9 +158,6 @@ func TestGitClient(t *testing.T) {
 	})
 }
 
-func TestBadURL(t *testing.T) {
-}
-
 func TestKeyPath(t *testing.T) {
 	t.Run("with valid path", func(t *testing.T) {
 		path := testlib.MakeNewSSHKey(t, keygen.Ed25519, "")
