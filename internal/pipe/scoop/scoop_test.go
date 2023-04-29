@@ -35,7 +35,7 @@ func TestDefault(t *testing.T) {
 }
 
 func Test_doRun(t *testing.T) {
-	folder := testlib.Mktmp(t)
+	folder := t.TempDir()
 	file := filepath.Join(folder, "archive")
 	require.NoError(t, os.WriteFile(file, []byte("lorem ipsum"), 0o644))
 
@@ -74,6 +74,7 @@ func Test_doRun(t *testing.T) {
 			args{
 				testctx.NewWithCfg(
 					config.Project{
+						Dist:        t.TempDir(),
 						ProjectName: "run-pipe",
 						Scoop: config.Scoop{
 							Bucket: config.RepoRef{
@@ -108,6 +109,7 @@ func Test_doRun(t *testing.T) {
 				testctx.NewWithCfg(
 					config.Project{
 						ProjectName: "git-run-pipe",
+						Dist:        t.TempDir(),
 						Scoop: config.Scoop{
 							Bucket: config.RepoRef{
 								Name:   "test",
