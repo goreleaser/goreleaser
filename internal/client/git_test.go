@@ -14,7 +14,7 @@ import (
 
 func TestGitClient(t *testing.T) {
 	keypath := testlib.MakeNewSSHKey(t, keygen.Ed25519, "")
-	url := testlib.GitMakeBareRpository(t)
+	url := testlib.GitMakeBareRepository(t)
 	ctx := testctx.NewWithCfg(config.Project{
 		Dist: t.TempDir(),
 	})

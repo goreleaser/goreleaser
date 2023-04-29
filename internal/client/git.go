@@ -71,8 +71,8 @@ func (g *gitClient) CreateFile(ctx *context.Context, commitAuthor config.CommitA
 
 	parent := filepath.Join(ctx.Config.Dist, "git")
 	cwd := filepath.Join(parent, repo.Name)
-
 	env := []string{fmt.Sprintf("GIT_SSH_COMMAND=%s", sshcmd)}
+
 	if err := cloneLock.clone(url, func() error {
 		if err := os.MkdirAll(parent, 0o755); err != nil {
 			return fmt.Errorf("git: failed to create parent: %w", err)
@@ -98,6 +98,7 @@ func (g *gitClient) CreateFile(ctx *context.Context, commitAuthor config.CommitA
 	}
 
 	location := filepath.Join(cwd, path)
+	log.WithField("path", location).Info("writing")
 	if err := os.MkdirAll(filepath.Dir(location), 0o755); err != nil {
 		return fmt.Errorf("failed to create parent dirs for %s: %w", path, err)
 	}

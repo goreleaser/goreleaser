@@ -99,7 +99,7 @@ func GitCheckoutBranch(tb testing.TB, name string) {
 	require.Empty(tb, out)
 }
 
-func GitMakeBareRpository(tb testing.TB) string {
+func GitMakeBareRepository(tb testing.TB) string {
 	tb.Helper()
 	dir := tb.TempDir()
 	_, err := git.Run(

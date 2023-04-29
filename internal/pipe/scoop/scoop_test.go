@@ -5,6 +5,7 @@ import (
 	"path/filepath"
 	"testing"
 
+	"github.com/charmbracelet/keygen"
 	"github.com/goreleaser/goreleaser/internal/artifact"
 	"github.com/goreleaser/goreleaser/internal/client"
 	"github.com/goreleaser/goreleaser/internal/golden"
@@ -39,7 +40,7 @@ func Test_doRun(t *testing.T) {
 	require.NoError(t, os.WriteFile(file, []byte("lorem ipsum"), 0o644))
 
 	type args struct {
-		ctx    func() *context.Context
+		ctx    *context.Context
 		client *client.Mock
 	}
 
@@ -71,25 +72,23 @@ func Test_doRun(t *testing.T) {
 		{
 			"valid public github",
 			args{
-				func() *context.Context {
-					return testctx.NewWithCfg(
-						config.Project{
-							ProjectName: "run-pipe",
-							Scoop: config.Scoop{
-								Bucket: config.RepoRef{
-									Owner: "test",
-									Name:  "test",
-								},
-								Folder:      "scoops",
-								Description: "A run pipe test formula",
-								Homepage:    "https://github.com/goreleaser",
+				testctx.NewWithCfg(
+					config.Project{
+						ProjectName: "run-pipe",
+						Scoop: config.Scoop{
+							Bucket: config.RepoRef{
+								Owner: "test",
+								Name:  "test",
 							},
+							Folder:      "scoops",
+							Description: "A run pipe test formula",
+							Homepage:    "https://github.com/goreleaser",
 						},
-						testctx.GitHubTokenType,
-						testctx.WithCurrentTag("v1.0.1"),
-						testctx.WithVersion("1.0.1"),
-					)
-				},
+					},
+					testctx.GitHubTokenType,
+					testctx.WithCurrentTag("v1.0.1"),
+					testctx.WithVersion("1.0.1"),
+				),
 				client.NewMock(),
 			},
 			[]artifact.Artifact{
@@ -104,26 +103,66 @@ func Test_doRun(t *testing.T) {
 			},
 		},
 		{
+			"git_remote",
+			args{
+				testctx.NewWithCfg(
+					config.Project{
+						ProjectName: "run-pipe",
+						Scoop: config.Scoop{
+							Bucket: config.RepoRef{
+								Name:   "test",
+								Branch: "main",
+								Git: config.GitRepoRef{
+									URL:        testlib.GitMakeBareRepository(t),
+									PrivateKey: testlib.MakeNewSSHKey(t, keygen.Ed25519, ""),
+								},
+							},
+							Folder:      "scoops",
+							Description: "A run pipe test formula",
+							Homepage:    "https://github.com/goreleaser",
+						},
+					},
+					testctx.GitHubTokenType,
+					testctx.WithCurrentTag("v1.0.1"),
+					testctx.WithVersion("1.0.1"),
+				),
+				client.NewMock(),
+			},
+			[]artifact.Artifact{
+				{Name: "foo_1.0.1_windows_amd64.tar.gz", Goos: "windows", Goarch: "amd64", Goamd64: "v1", Path: file},
+				{Name: "foo_1.0.1_windows_386.tar.gz", Goos: "windows", Goarch: "386", Path: file},
+			},
+			shouldNotErr,
+			shouldNotErr,
+			func(tb testing.TB, a args) {
+				tb.Helper()
+				content := testlib.CatFileFromBareRepository(
+					t,
+					a.ctx.Config.Scoop.Bucket.Git.URL,
+					"scoops/run-pipe.json",
+				)
+				golden.RequireEqualJSON(t, content)
+			},
+		},
+		{
 			"wrap in directory",
 			args{
-				func() *context.Context {
-					return testctx.NewWithCfg(
-						config.Project{
-							ProjectName: "run-pipe",
-							Scoop: config.Scoop{
-								Bucket: config.RepoRef{
-									Owner: "test",
-									Name:  "test",
-								},
-								Description: "A run pipe test formula",
-								Homepage:    "https://github.com/goreleaser",
+				testctx.NewWithCfg(
+					config.Project{
+						ProjectName: "run-pipe",
+						Scoop: config.Scoop{
+							Bucket: config.RepoRef{
+								Owner: "test",
+								Name:  "test",
 							},
+							Description: "A run pipe test formula",
+							Homepage:    "https://github.com/goreleaser",
 						},
-						testctx.GitHubTokenType,
-						testctx.WithCurrentTag("v1.0.1"),
-						testctx.WithVersion("1.0.1"),
-					)
-				},
+					},
+					testctx.GitHubTokenType,
+					testctx.WithCurrentTag("v1.0.1"),
+					testctx.WithVersion("1.0.1"),
+				),
 				client.NewMock(),
 			},
 			[]artifact.Artifact{
@@ -154,25 +193,23 @@ func Test_doRun(t *testing.T) {
 		{
 			"valid enterprise github",
 			args{
-				func() *context.Context {
-					return testctx.NewWithCfg(
-						config.Project{
-							GitHubURLs:  config.GitHubURLs{Download: "https://api.custom.github.enterprise.com"},
-							ProjectName: "run-pipe",
-							Scoop: config.Scoop{
-								Bucket: config.RepoRef{
-									Owner: "test",
-									Name:  "test",
-								},
-								Description: "A run pipe test formula",
-								Homepage:    "https://github.com/goreleaser",
+				testctx.NewWithCfg(
+					config.Project{
+						GitHubURLs:  config.GitHubURLs{Download: "https://api.custom.github.enterprise.com"},
+						ProjectName: "run-pipe",
+						Scoop: config.Scoop{
+							Bucket: config.RepoRef{
+								Owner: "test",
+								Name:  "test",
 							},
+							Description: "A run pipe test formula",
+							Homepage:    "https://github.com/goreleaser",
 						},
-						testctx.GitHubTokenType,
-						testctx.WithCurrentTag("v1.0.1"),
-						testctx.WithVersion("1.0.1"),
-					)
-				},
+					},
+					testctx.GitHubTokenType,
+					testctx.WithCurrentTag("v1.0.1"),
+					testctx.WithVersion("1.0.1"),
+				),
 				client.NewMock(),
 			},
 			[]artifact.Artifact{
@@ -189,24 +226,22 @@ func Test_doRun(t *testing.T) {
 		{
 			"valid public gitlab",
 			args{
-				func() *context.Context {
-					return testctx.NewWithCfg(
-						config.Project{
-							ProjectName: "run-pipe",
-							Scoop: config.Scoop{
-								Bucket: config.RepoRef{
-									Owner: "test",
-									Name:  "test",
-								},
-								Description: "A run pipe test formula",
-								Homepage:    "https://gitlab.com/goreleaser",
+				testctx.NewWithCfg(
+					config.Project{
+						ProjectName: "run-pipe",
+						Scoop: config.Scoop{
+							Bucket: config.RepoRef{
+								Owner: "test",
+								Name:  "test",
 							},
+							Description: "A run pipe test formula",
+							Homepage:    "https://gitlab.com/goreleaser",
 						},
-						testctx.GitHubTokenType,
-						testctx.WithCurrentTag("v1.0.1"),
-						testctx.WithVersion("1.0.1"),
-					)
-				},
+					},
+					testctx.GitHubTokenType,
+					testctx.WithCurrentTag("v1.0.1"),
+					testctx.WithVersion("1.0.1"),
+				),
 				client.NewMock(),
 			},
 			[]artifact.Artifact{
@@ -231,25 +266,23 @@ func Test_doRun(t *testing.T) {
 		{
 			"valid enterprise gitlab",
 			args{
-				func() *context.Context {
-					return testctx.NewWithCfg(
-						config.Project{
-							GitHubURLs:  config.GitHubURLs{Download: "https://api.custom.gitlab.enterprise.com"},
-							ProjectName: "run-pipe",
-							Scoop: config.Scoop{
-								Bucket: config.RepoRef{
-									Owner: "test",
-									Name:  "test",
-								},
-								Description: "A run pipe test formula",
-								Homepage:    "https://gitlab.com/goreleaser",
+				testctx.NewWithCfg(
+					config.Project{
+						GitHubURLs:  config.GitHubURLs{Download: "https://api.custom.gitlab.enterprise.com"},
+						ProjectName: "run-pipe",
+						Scoop: config.Scoop{
+							Bucket: config.RepoRef{
+								Owner: "test",
+								Name:  "test",
 							},
+							Description: "A run pipe test formula",
+							Homepage:    "https://gitlab.com/goreleaser",
 						},
-						testctx.GitHubTokenType,
-						testctx.WithCurrentTag("v1.0.1"),
-						testctx.WithVersion("1.0.1"),
-					)
-				},
+					},
+					testctx.GitHubTokenType,
+					testctx.WithCurrentTag("v1.0.1"),
+					testctx.WithVersion("1.0.1"),
+				),
 				client.NewMock(),
 			},
 			[]artifact.Artifact{
@@ -274,24 +307,22 @@ func Test_doRun(t *testing.T) {
 		{
 			"no windows build",
 			args{
-				func() *context.Context {
-					return testctx.NewWithCfg(
-						config.Project{
-							ProjectName: "run-pipe",
-							Scoop: config.Scoop{
-								Bucket: config.RepoRef{
-									Owner: "test",
-									Name:  "test",
-								},
-								Description: "A run pipe test formula",
-								Homepage:    "https://github.com/goreleaser",
+				testctx.NewWithCfg(
+					config.Project{
+						ProjectName: "run-pipe",
+						Scoop: config.Scoop{
+							Bucket: config.RepoRef{
+								Owner: "test",
+								Name:  "test",
 							},
+							Description: "A run pipe test formula",
+							Homepage:    "https://github.com/goreleaser",
 						},
-						testctx.GitHubTokenType,
-						testctx.WithCurrentTag("v1.0.1"),
-						testctx.WithVersion("1.0.1"),
-					)
-				},
+					},
+					testctx.GitHubTokenType,
+					testctx.WithCurrentTag("v1.0.1"),
+					testctx.WithVersion("1.0.1"),
+				),
 				client.NewMock(),
 			},
 			[]artifact.Artifact{},
@@ -302,26 +333,24 @@ func Test_doRun(t *testing.T) {
 		{
 			"is prerelease and skip upload set to auto",
 			args{
-				func() *context.Context {
-					return testctx.NewWithCfg(
-						config.Project{
-							ProjectName: "run-pipe",
-							Scoop: config.Scoop{
-								SkipUpload: "auto",
-								Bucket: config.RepoRef{
-									Owner: "test",
-									Name:  "test",
-								},
-								Description: "A run pipe test formula",
-								Homepage:    "https://github.com/goreleaser",
+				testctx.NewWithCfg(
+					config.Project{
+						ProjectName: "run-pipe",
+						Scoop: config.Scoop{
+							SkipUpload: "auto",
+							Bucket: config.RepoRef{
+								Owner: "test",
+								Name:  "test",
 							},
+							Description: "A run pipe test formula",
+							Homepage:    "https://github.com/goreleaser",
 						},
-						testctx.GitHubTokenType,
-						testctx.WithCurrentTag("v1.0.1-pre.1"),
-						testctx.WithVersion("1.0.1-pre.1"),
-						testctx.WithSemver(1, 0, 0, "pre.1"),
-					)
-				},
+					},
+					testctx.GitHubTokenType,
+					testctx.WithCurrentTag("v1.0.1-pre.1"),
+					testctx.WithVersion("1.0.1-pre.1"),
+					testctx.WithSemver(1, 0, 0, "pre.1"),
+				),
 				client.NewMock(),
 			},
 			[]artifact.Artifact{
@@ -335,25 +364,23 @@ func Test_doRun(t *testing.T) {
 		{
 			"skip upload set to true",
 			args{
-				func() *context.Context {
-					return testctx.NewWithCfg(
-						config.Project{
-							ProjectName: "run-pipe",
-							Scoop: config.Scoop{
-								SkipUpload: "true",
-								Bucket: config.RepoRef{
-									Owner: "test",
-									Name:  "test",
-								},
-								Description: "A run pipe test formula",
-								Homepage:    "https://github.com/goreleaser",
+				testctx.NewWithCfg(
+					config.Project{
+						ProjectName: "run-pipe",
+						Scoop: config.Scoop{
+							SkipUpload: "true",
+							Bucket: config.RepoRef{
+								Owner: "test",
+								Name:  "test",
 							},
+							Description: "A run pipe test formula",
+							Homepage:    "https://github.com/goreleaser",
 						},
-						testctx.GitHubTokenType,
-						testctx.WithCurrentTag("v1.0.1"),
-						testctx.WithVersion("1.0.1"),
-					)
-				},
+					},
+					testctx.GitHubTokenType,
+					testctx.WithCurrentTag("v1.0.1"),
+					testctx.WithVersion("1.0.1"),
+				),
 				client.NewMock(),
 			},
 			[]artifact.Artifact{
@@ -367,27 +394,25 @@ func Test_doRun(t *testing.T) {
 		{
 			"release is disabled",
 			args{
-				func() *context.Context {
-					return testctx.NewWithCfg(
-						config.Project{
-							ProjectName: "run-pipe",
-							Release: config.Release{
-								Disable: "true",
-							},
-							Scoop: config.Scoop{
-								Bucket: config.RepoRef{
-									Owner: "test",
-									Name:  "test",
-								},
-								Description: "A run pipe test formula",
-								Homepage:    "https://github.com/goreleaser",
-							},
+				testctx.NewWithCfg(
+					config.Project{
+						ProjectName: "run-pipe",
+						Release: config.Release{
+							Disable: "true",
 						},
-						testctx.GitHubTokenType,
-						testctx.WithCurrentTag("v1.0.1"),
-						testctx.WithVersion("1.0.1"),
-					)
-				},
+						Scoop: config.Scoop{
+							Bucket: config.RepoRef{
+								Owner: "test",
+								Name:  "test",
+							},
+							Description: "A run pipe test formula",
+							Homepage:    "https://github.com/goreleaser",
+						},
+					},
+					testctx.GitHubTokenType,
+					testctx.WithCurrentTag("v1.0.1"),
+					testctx.WithVersion("1.0.1"),
+				),
 				client.NewMock(),
 			},
 			[]artifact.Artifact{
@@ -401,24 +426,22 @@ func Test_doRun(t *testing.T) {
 		{
 			"no archive",
 			args{
-				func() *context.Context {
-					return testctx.NewWithCfg(
-						config.Project{
-							ProjectName: "run-pipe",
-							Scoop: config.Scoop{
-								Bucket: config.RepoRef{
-									Owner: "test",
-									Name:  "test",
-								},
-								Description: "A run pipe test formula",
-								Homepage:    "https://github.com/goreleaser",
+				testctx.NewWithCfg(
+					config.Project{
+						ProjectName: "run-pipe",
+						Scoop: config.Scoop{
+							Bucket: config.RepoRef{
+								Owner: "test",
+								Name:  "test",
 							},
+							Description: "A run pipe test formula",
+							Homepage:    "https://github.com/goreleaser",
 						},
-						testctx.GitHubTokenType,
-						testctx.WithCurrentTag("v1.0.1"),
-						testctx.WithVersion("1.0.1"),
-					)
-				},
+					},
+					testctx.GitHubTokenType,
+					testctx.WithCurrentTag("v1.0.1"),
+					testctx.WithVersion("1.0.1"),
+				),
 				client.NewMock(),
 			},
 			[]artifact.Artifact{},
@@ -429,25 +452,23 @@ func Test_doRun(t *testing.T) {
 		{
 			"invalid ref tmpl",
 			args{
-				func() *context.Context {
-					return testctx.NewWithCfg(
-						config.Project{
-							ProjectName: "run-pipe",
-							Scoop: config.Scoop{
-								Bucket: config.RepoRef{
-									Owner: "{{ .Env.aaaaaa }}",
-									Name:  "test",
-								},
-								Folder:      "scoops",
-								Description: "A run pipe test formula",
-								Homepage:    "https://github.com/goreleaser",
+				testctx.NewWithCfg(
+					config.Project{
+						ProjectName: "run-pipe",
+						Scoop: config.Scoop{
+							Bucket: config.RepoRef{
+								Owner: "{{ .Env.aaaaaa }}",
+								Name:  "test",
 							},
+							Folder:      "scoops",
+							Description: "A run pipe test formula",
+							Homepage:    "https://github.com/goreleaser",
 						},
-						testctx.GitHubTokenType,
-						testctx.WithCurrentTag("v1.0.1"),
-						testctx.WithVersion("1.0.1"),
-					)
-				},
+					},
+					testctx.GitHubTokenType,
+					testctx.WithCurrentTag("v1.0.1"),
+					testctx.WithVersion("1.0.1"),
+				),
 				client.NewMock(),
 			},
 			[]artifact.Artifact{
@@ -460,27 +481,25 @@ func Test_doRun(t *testing.T) {
 		{
 			"ref templ",
 			args{
-				func() *context.Context {
-					return testctx.NewWithCfg(
-						config.Project{
-							Env:         []string{"FOO=test", "BRANCH=main"},
-							ProjectName: "run-pipe",
-							Scoop: config.Scoop{
-								Bucket: config.RepoRef{
-									Owner:  "{{ .Env.FOO }}",
-									Name:   "{{ .Env.FOO }}",
-									Branch: "{{ .Env.BRANCH }}",
-								},
-								Folder:      "scoops",
-								Description: "A run pipe test formula",
-								Homepage:    "https://github.com/goreleaser",
+				testctx.NewWithCfg(
+					config.Project{
+						Env:         []string{"FOO=test", "BRANCH=main"},
+						ProjectName: "run-pipe",
+						Scoop: config.Scoop{
+							Bucket: config.RepoRef{
+								Owner:  "{{ .Env.FOO }}",
+								Name:   "{{ .Env.FOO }}",
+								Branch: "{{ .Env.BRANCH }}",
 							},
+							Folder:      "scoops",
+							Description: "A run pipe test formula",
+							Homepage:    "https://github.com/goreleaser",
 						},
-						testctx.GitHubTokenType,
-						testctx.WithCurrentTag("v1.0.1"),
-						testctx.WithVersion("1.0.1"),
-					)
-				},
+					},
+					testctx.GitHubTokenType,
+					testctx.WithCurrentTag("v1.0.1"),
+					testctx.WithVersion("1.0.1"),
+				),
 				client.NewMock(),
 			},
 			[]artifact.Artifact{
@@ -496,7 +515,7 @@ func Test_doRun(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			ctx := tt.args.ctx()
+			ctx := tt.args.ctx
 			for _, a := range tt.artifacts {
 				a.Type = artifact.UploadableArchive
 				ctx.Artifacts.Add(&a)

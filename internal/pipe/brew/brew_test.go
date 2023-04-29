@@ -178,7 +178,7 @@ func TestFullPipe(t *testing.T) {
 					Name:   "test",
 					Branch: "main",
 					Git: config.GitRepoRef{
-						URL:        testlib.GitMakeBareRpository(t),
+						URL:        testlib.GitMakeBareRepository(t),
 						PrivateKey: testlib.MakeNewSSHKey(t, keygen.Ed25519, ""),
 					},
 				}

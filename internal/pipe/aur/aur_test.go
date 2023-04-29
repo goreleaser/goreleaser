@@ -239,7 +239,7 @@ func TestFullPipe(t *testing.T) {
 		},
 	} {
 		t.Run(name, func(t *testing.T) {
-			url := testlib.GitMakeBareRpository(t)
+			url := testlib.GitMakeBareRepository(t)
 			key := testlib.MakeNewSSHKey(t, keygen.Ed25519, "")
 
 			folder := t.TempDir()
@@ -342,7 +342,7 @@ func TestFullPipe(t *testing.T) {
 }
 
 func TestRunPipe(t *testing.T) {
-	url := testlib.GitMakeBareRpository(t)
+	url := testlib.GitMakeBareRepository(t)
 	key := testlib.MakeNewSSHKey(t, keygen.Ed25519, "")
 
 	folder := t.TempDir()
@@ -478,7 +478,7 @@ func TestRunPipeNoBuilds(t *testing.T) {
 }
 
 func TestRunPipeBinaryRelease(t *testing.T) {
-	url := testlib.GitMakeBareRpository(t)
+	url := testlib.GitMakeBareRepository(t)
 	key := testlib.MakeNewSSHKey(t, keygen.Ed25519, "")
 	folder := t.TempDir()
 	ctx := testctx.NewWithCfg(
