@@ -19,16 +19,42 @@ func TestGitClient(t *testing.T) {
 		Email: "foo@bar.com",
 	}
 
-	t.Run("clone repo, commit and push multiple times", func(t *testing.T) {
-		keypath := testlib.MakeNewSSHKey(t, keygen.Ed25519, "")
+	t.Run("full", func(t *testing.T) {
 		url := testlib.GitMakeBareRepository(t)
 		ctx := testctx.NewWithCfg(config.Project{
 			Dist: t.TempDir(),
 		})
 		repo := Repo{
 			GitURL:     url,
-			PrivateKey: keypath,
+			PrivateKey: testlib.MakeNewSSHKey(t, keygen.Ed25519, ""),
 			Name:       "test1",
+		}
+		require.NoError(t, cli.CreateFile(
+			ctx,
+			author,
+			repo,
+			[]byte("fake content"),
+			"fake.txt",
+			"hey test",
+		))
+		require.NoError(t, cli.CreateFile(
+			ctx,
+			author,
+			repo,
+			[]byte("fake content 2"),
+			"fake.txt",
+			"hey test 2",
+		))
+		require.Equal(t, "fake content 2", string(testlib.CatFileFromBareRepository(t, url, "fake.txt")))
+	})
+	t.Run("no repo name", func(t *testing.T) {
+		url := testlib.GitMakeBareRepository(t)
+		ctx := testctx.NewWithCfg(config.Project{
+			Dist: t.TempDir(),
+		})
+		repo := Repo{
+			GitURL:     url,
+			PrivateKey: testlib.MakeNewSSHKey(t, keygen.Ed25519, ""),
 		}
 		require.NoError(t, cli.CreateFile(
 			ctx,
@@ -55,13 +81,79 @@ func TestGitClient(t *testing.T) {
 		repo := Repo{
 			GitURL: "{{ .Nope }}",
 		}
+		testlib.RequireTemplateError(t, cli.CreateFile(
+			ctx,
+			author,
+			repo,
+			[]byte{},
+			"filename",
+			"msg",
+		))
+	})
+	t.Run("bad ssh cmd", func(t *testing.T) {
+		ctx := testctx.NewWithCfg(config.Project{
+			Dist: t.TempDir(),
+		})
+		repo := Repo{
+			GitURL:        testlib.GitMakeBareRepository(t),
+			PrivateKey:    testlib.MakeNewSSHKey(t, keygen.Ed25519, ""),
+			GitSSHCommand: "{{.Foo}}",
+		}
+		testlib.RequireTemplateError(t, cli.CreateFile(
+			ctx,
+			author,
+			repo,
+			[]byte{},
+			"filename",
+			"msg",
+		))
+	})
+	t.Run("empty url", func(t *testing.T) {
+		ctx := testctx.NewWithCfg(config.Project{
+			Dist: t.TempDir(),
+		})
+		repo := Repo{}
 		require.EqualError(t, cli.CreateFile(
 			ctx,
 			author,
 			repo,
-			nil,
-			"",
-			"",
+			[]byte{},
+			"filename",
+			"msg",
+		), "url is empty")
+	})
+	t.Run("bad ssh cmd", func(t *testing.T) {
+		ctx := testctx.NewWithCfg(config.Project{
+			Dist: t.TempDir(),
+		})
+		repo := Repo{
+			GitURL:     testlib.GitMakeBareRepository(t),
+			PrivateKey: "{{.Foo}}",
+		}
+		testlib.RequireTemplateError(t, cli.CreateFile(
+			ctx,
+			author,
+			repo,
+			[]byte{},
+			"filename",
+			"msg",
+		))
+	})
+	t.Run("bad key path", func(t *testing.T) {
+		ctx := testctx.NewWithCfg(config.Project{
+			Dist: t.TempDir(),
+		})
+		repo := Repo{
+			GitURL:     testlib.GitMakeBareRepository(t),
+			PrivateKey: "./nope",
+		}
+		require.Error(t, cli.CreateFile(
+			ctx,
+			author,
+			repo,
+			[]byte{},
+			"filename",
+			"msg",
 		))
 	})
 }
