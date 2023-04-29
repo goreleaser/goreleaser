@@ -19,7 +19,7 @@ func TestGitClient(t *testing.T) {
 		Dist: t.TempDir(),
 	})
 
-	cli := NewGitUploadClient(ctx, "test")
+	cli := NewGitUploadClient(ctx, "test", "master")
 
 	require.NoError(t, cli.CreateFile(
 		ctx,
@@ -28,15 +28,15 @@ func TestGitClient(t *testing.T) {
 			Email: "foo@bar.com",
 		},
 		Repo{
-			GitURL:        url,
-			GitSSHCommand: DefaulGitSSHCommand,
-			PrivateKey:    keypath,
-			Name:          "test1",
+			GitURL:     url,
+			PrivateKey: keypath,
+			Name:       "test1",
 		},
 		[]byte("fake content"),
 		"fake.txt",
 		"hey test",
 	))
+	require.Equal(t, "fake content", string(testlib.CatFileFromBareRepository(t, url, "fake.txt")))
 }
 
 func TestKeyPath(t *testing.T) {

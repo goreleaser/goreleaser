@@ -22,9 +22,8 @@ import (
 )
 
 const (
-	aurExtra          = "AURConfig"
-	defaultSSHCommand = client.DefaulGitSSHCommand
-	defaultCommitMsg  = "Update to {{ .Tag }}"
+	aurExtra         = "AURConfig"
+	defaultCommitMsg = "Update to {{ .Tag }}"
 )
 
 var ErrNoArchivesFound = errors.New("no linux archives found")
@@ -57,9 +56,6 @@ func (Pipe) Default(ctx *context.Context) error {
 		}
 		if pkg.Rel == "" {
 			pkg.Rel = "1"
-		}
-		if pkg.GitSSHCommand == "" {
-			pkg.GitSSHCommand = client.DefaulGitSSHCommand
 		}
 		if pkg.Goamd64 == "" {
 			pkg.Goamd64 = "v1"
@@ -375,7 +371,7 @@ func doPublish(ctx *context.Context, pkgs []*artifact.Artifact) error {
 		return err
 	}
 
-	cli := client.NewGitUploadClient(ctx, "aur")
+	cli := client.NewGitUploadClient(ctx, "aur", "master")
 	repo := client.RepoFromRef(config.RepoRef{
 		Git: config.GitRepoRef{
 			PrivateKey: cfg.PrivateKey,

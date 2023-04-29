@@ -623,7 +623,6 @@ func TestDefault(t *testing.T) {
 			Provides:              []string{"myproject"},
 			Rel:                   "1",
 			CommitMessageTemplate: defaultCommitMsg,
-			GitSSHCommand:         defaultSSHCommand,
 			Goamd64:               "v1",
 			CommitAuthor: config.CommitAuthor{
 				Name:  "goreleaserbot",
@@ -648,7 +647,6 @@ func TestDefault(t *testing.T) {
 			Provides:              []string{"myproject"},
 			Rel:                   "1",
 			CommitMessageTemplate: defaultCommitMsg,
-			GitSSHCommand:         defaultSSHCommand,
 			Goamd64:               "v1",
 			CommitAuthor: config.CommitAuthor{
 				Name:  "goreleaserbot",
@@ -674,7 +672,6 @@ func TestDefault(t *testing.T) {
 			Provides:              []string{"myproject"},
 			Rel:                   "1",
 			CommitMessageTemplate: defaultCommitMsg,
-			GitSSHCommand:         defaultSSHCommand,
 			Goamd64:               "v3",
 			CommitAuthor: config.CommitAuthor{
 				Name:  "goreleaserbot",

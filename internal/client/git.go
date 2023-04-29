@@ -28,11 +28,15 @@ var cloneLock = cloneGlobalLock{
 
 type gitClient struct {
 	folder string
+	branch string
 }
 
 // NewGitUploadClient
-func NewGitUploadClient(ctx *context.Context, folder string) FileCreator {
-	return &gitClient{folder: folder}
+func NewGitUploadClient(ctx *context.Context, branch, folder string) FileCreator {
+	return &gitClient{
+		folder: folder,
+		branch: branch,
+	}
 }
 
 // CreateFile implements FileCreator
@@ -86,7 +90,7 @@ func (g *gitClient) CreateFile(ctx *context.Context, commitAuthor config.CommitA
 			{"config", "--local", "user.name", commitAuthor.Name},
 			{"config", "--local", "user.email", commitAuthor.Email},
 			{"config", "--local", "commit.gpgSign", "false"},
-			{"config", "--local", "init.defaultBranch", "master"},
+			{"config", "--local", "init.defaultBranch", firstNonEmpty(g.branch, "master")},
 		}); err != nil {
 			return fmt.Errorf("git: failed to setup local repository: %w", err)
 		}

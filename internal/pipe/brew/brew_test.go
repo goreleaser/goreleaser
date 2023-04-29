@@ -180,7 +180,6 @@ func TestFullPipe(t *testing.T) {
 					Git: config.GitRepoRef{
 						URL:        testlib.GitMakeBareRpository(t),
 						PrivateKey: testlib.MakeNewSSHKey(t, keygen.Ed25519, ""),
-						SSHCommand: client.DefaulGitSSHCommand,
 					},
 				}
 			},
