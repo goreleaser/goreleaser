@@ -8,7 +8,9 @@ commented example below:
 
 ```yaml
 # .goreleaser.yaml
-scoop:
+# Since: v1.18
+scoops:
+-
   # URL which is determined by the given Token (github or gitlab)
   #
   # Default:

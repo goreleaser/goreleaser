@@ -24,14 +24,46 @@ func TestDefault(t *testing.T) {
 	testlib.Mktmp(t)
 
 	ctx := testctx.NewWithCfg(
-		config.Project{ProjectName: "barr"},
+		config.Project{
+			ProjectName: "barr",
+			Scoops: []config.Scoop{
+				{
+					Bucket: config.RepoRef{
+						Name: "foo",
+					},
+				},
+			},
+		},
 		testctx.GitHubTokenType,
 	)
 	require.NoError(t, Pipe{}.Default(ctx))
-	require.Equal(t, ctx.Config.ProjectName, ctx.Config.Scoop.Name)
-	require.NotEmpty(t, ctx.Config.Scoop.CommitAuthor.Name)
-	require.NotEmpty(t, ctx.Config.Scoop.CommitAuthor.Email)
-	require.NotEmpty(t, ctx.Config.Scoop.CommitMessageTemplate)
+	require.Len(t, ctx.Config.Scoops, 1)
+	require.Equal(t, ctx.Config.ProjectName, ctx.Config.Scoops[0].Name)
+	require.NotEmpty(t, ctx.Config.Scoops[0].CommitAuthor.Name)
+	require.NotEmpty(t, ctx.Config.Scoops[0].CommitAuthor.Email)
+	require.NotEmpty(t, ctx.Config.Scoops[0].CommitMessageTemplate)
+}
+
+func TestDefaultDeprecated(t *testing.T) {
+	testlib.Mktmp(t)
+
+	ctx := testctx.NewWithCfg(
+		config.Project{
+			ProjectName: "barr",
+			Scoop: config.Scoop{
+				Bucket: config.RepoRef{
+					Name: "foo",
+				},
+			},
+		},
+		testctx.GitHubTokenType,
+	)
+	require.NoError(t, Pipe{}.Default(ctx))
+	require.Len(t, ctx.Config.Scoops, 1)
+	require.Equal(t, ctx.Config.ProjectName, ctx.Config.Scoops[0].Name)
+	require.NotEmpty(t, ctx.Config.Scoops[0].CommitAuthor.Name)
+	require.NotEmpty(t, ctx.Config.Scoops[0].CommitAuthor.Email)
+	require.NotEmpty(t, ctx.Config.Scoops[0].CommitMessageTemplate)
 }
 
 func Test_doRun(t *testing.T) {
@@ -70,6 +102,88 @@ func Test_doRun(t *testing.T) {
 		assert             asserter
 	}{
 		{
+			"multiple_artifacts",
+			args{
+				testctx.NewWithCfg(
+					config.Project{
+						Dist:        t.TempDir(),
+						ProjectName: "multi-arts",
+						Scoops: []config.Scoop{{
+							Bucket: config.RepoRef{
+								Owner: "test",
+								Name:  "test",
+							},
+							Folder:      "scoops",
+							Description: "A run pipe test formula",
+							Homepage:    "https://github.com/goreleaser",
+						}},
+					},
+					testctx.GitHubTokenType,
+					testctx.WithCurrentTag("v1.0.1"),
+					testctx.WithVersion("1.0.1"),
+				),
+				client.NewMock(),
+			},
+			[]artifact.Artifact{
+				{Name: "foo_1.0.1_windows_amd64.tar.gz", Goos: "windows", Goarch: "amd64", Goamd64: "v1", Path: file},
+				{Name: "foos_1.0.1_windows_amd64.tar.gz", Goos: "windows", Goarch: "amd64", Goamd64: "v1", Path: file},
+			},
+			func(tb testing.TB, err error) {
+				tb.Helper()
+				require.EqualError(tb, err, ErrIncorrectArchiveCount{
+					goamd64: "v1",
+					archives: []*artifact.Artifact{
+						{Name: "foo_1.0.1_windows_amd64.tar.gz"},
+						{Name: "foos_1.0.1_windows_amd64.tar.gz"},
+					},
+				}.Error())
+			},
+			nil,
+			noAssertions,
+		},
+		{
+			"multiple_binaries",
+			args{
+				testctx.NewWithCfg(
+					config.Project{
+						Dist:        t.TempDir(),
+						ProjectName: "multi-bins",
+						Scoops: []config.Scoop{{
+							Bucket: config.RepoRef{
+								Owner: "test",
+								Name:  "test",
+							},
+							IDs:         []string{"id2"},
+							Folder:      "scoops",
+							Description: "A run pipe test formula",
+							Homepage:    "https://github.com/goreleaser",
+						}},
+					},
+					testctx.GitHubTokenType,
+					testctx.WithCurrentTag("v1.0.1"),
+					testctx.WithVersion("1.0.1"),
+				),
+				client.NewMock(),
+			},
+			[]artifact.Artifact{
+				{Name: "foo_1.0.1_windows_amd64.tar.gz", Goos: "windows", Goarch: "amd64", Goamd64: "v1", Path: file, Extra: map[string]any{
+					artifact.ExtraID:       "id1",
+					artifact.ExtraBinaries: []string{"bin1", "bin2"},
+				}},
+				{Name: "foos_1.0.1_windows_amd64.tar.gz", Goos: "windows", Goarch: "amd64", Goamd64: "v1", Path: file, Extra: map[string]any{
+					artifact.ExtraID:       "id2",
+					artifact.ExtraBinaries: []string{"bin4", "bin3"},
+				}},
+			},
+			shouldNotErr,
+			shouldNotErr,
+			func(tb testing.TB, a args) {
+				tb.Helper()
+				require.Equal(tb, "scoops/multi-bins.json", a.client.Path)
+				golden.RequireEqualJSON(tb, []byte(a.client.Content))
+			},
+		},
+		{
 			"valid public github",
 			args{
 				testctx.NewWithCfg(
@@ -101,6 +215,7 @@ func Test_doRun(t *testing.T) {
 			func(tb testing.TB, a args) {
 				tb.Helper()
 				require.Equal(tb, "scoops/run-pipe.json", a.client.Path)
+				golden.RequireEqualJSON(tb, []byte(a.client.Content))
 			},
 		},
 		{
@@ -328,7 +443,7 @@ func Test_doRun(t *testing.T) {
 				client.NewMock(),
 			},
 			[]artifact.Artifact{},
-			shouldErr(ErrNoWindows{"v1"}.Error()),
+			shouldErr(ErrIncorrectArchiveCount{"v1", nil, nil}.Error()),
 			shouldNotErr,
 			noAssertions,
 		},
@@ -447,7 +562,7 @@ func Test_doRun(t *testing.T) {
 				client.NewMock(),
 			},
 			[]artifact.Artifact{},
-			shouldErr(ErrNoWindows{"v1"}.Error()),
+			shouldErr(ErrIncorrectArchiveCount{"v1", nil, nil}.Error()),
 			shouldNotErr,
 			noAssertions,
 		},
@@ -487,7 +602,7 @@ func Test_doRun(t *testing.T) {
 					config.Project{
 						Env:         []string{"FOO=test", "BRANCH=main"},
 						ProjectName: "run-pipe",
-						Scoop: config.Scoop{
+						Scoops: []config.Scoop{{
 							Bucket: config.RepoRef{
 								Owner:  "{{ .Env.FOO }}",
 								Name:   "{{ .Env.FOO }}",
@@ -496,7 +611,7 @@ func Test_doRun(t *testing.T) {
 							Folder:      "scoops",
 							Description: "A run pipe test formula",
 							Homepage:    "https://github.com/goreleaser",
-						},
+						}},
 					},
 					testctx.GitHubTokenType,
 					testctx.WithCurrentTag("v1.0.1"),
@@ -519,13 +634,15 @@ func Test_doRun(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			ctx := tt.args.ctx
 			for _, a := range tt.artifacts {
+				a := a
 				a.Type = artifact.UploadableArchive
 				ctx.Artifacts.Add(&a)
 			}
 			require.NoError(t, Pipe{}.Default(ctx))
-
-			tt.assertRunError(t, doRun(ctx, tt.args.client))
-			tt.assertPublishError(t, doPublish(ctx, tt.args.client))
+			tt.assertRunError(t, runAll(ctx, tt.args.client))
+			if tt.assertPublishError != nil {
+				tt.assertPublishError(t, publishAll(ctx, tt.args.client))
+			}
 			tt.assert(t, tt.args)
 		})
 	}
@@ -537,7 +654,7 @@ func TestRunPipePullRequest(t *testing.T) {
 		config.Project{
 			Dist:        folder,
 			ProjectName: "foo",
-			Scoop: config.Scoop{
+			Scoops: []config.Scoop{{
 				Name:        "foo",
 				Homepage:    "https://goreleaser.com",
 				Description: "Fake desc",
@@ -549,7 +666,7 @@ func TestRunPipePullRequest(t *testing.T) {
 						Enabled: true,
 					},
 				},
-			},
+			}},
 		},
 		testctx.WithVersion("1.2.1"),
 		testctx.WithCurrentTag("v1.2.1"),
@@ -574,8 +691,8 @@ func TestRunPipePullRequest(t *testing.T) {
 	require.NoError(t, f.Close())
 
 	client := client.NewMock()
-	require.NoError(t, doRun(ctx, client))
-	require.NoError(t, doPublish(ctx, client))
+	require.NoError(t, runAll(ctx, client))
+	require.NoError(t, publishAll(ctx, client))
 	require.True(t, client.CreatedFile)
 	require.True(t, client.OpenedPullRequest)
 	golden.RequireEqualJSON(t, []byte(client.Content))
@@ -712,7 +829,7 @@ func Test_buildManifest(t *testing.T) {
 			require.NoError(t, err)
 			require.NoError(t, Pipe{}.Default(ctx))
 
-			mf, err := dataFor(ctx, cl, []*artifact.Artifact{
+			mf, err := dataFor(ctx, ctx.Config.Scoops[0], cl, []*artifact.Artifact{
 				{
 					Name:    "foo_1.0.1_windows_amd64.tar.gz",
 					Goos:    "windows",
@@ -720,13 +837,9 @@ func Test_buildManifest(t *testing.T) {
 					Goamd64: "v1",
 					Path:    file,
 					Extra: map[string]interface{}{
-						artifact.ExtraBuilds: []*artifact.Artifact{
-							{
-								Name: "foo.exe",
-							},
-							{
-								Name: "bar.exe",
-							},
+						artifact.ExtraBinaries: []string{
+							"foo.exe",
+							"bar.exe",
 						},
 					},
 				},
@@ -736,13 +849,9 @@ func Test_buildManifest(t *testing.T) {
 					Goarch: "arm",
 					Path:   file,
 					Extra: map[string]interface{}{
-						artifact.ExtraBuilds: []*artifact.Artifact{
-							{
-								Name: "foo.exe",
-							},
-							{
-								Name: "bar.exe",
-							},
+						artifact.ExtraBinaries: []string{
+							"foo.exe",
+							"bar.exe",
 						},
 					},
 				},
@@ -752,13 +861,9 @@ func Test_buildManifest(t *testing.T) {
 					Goarch: "386",
 					Path:   file,
 					Extra: map[string]interface{}{
-						artifact.ExtraBuilds: []*artifact.Artifact{
-							{
-								Name: "foo.exe",
-							},
-							{
-								Name: "bar.exe",
-							},
+						artifact.ExtraBinaries: []string{
+							"foo.exe",
+							"bar.exe",
 						},
 					},
 				},
@@ -833,8 +938,8 @@ func TestRunPipeScoopWithSkipUpload(t *testing.T) {
 
 	cli := client.NewMock()
 	require.NoError(t, Pipe{}.Default(ctx))
-	require.NoError(t, doRun(ctx, cli))
-	require.EqualError(t, doPublish(ctx, cli), `scoop.skip_upload is true`)
+	require.NoError(t, runAll(ctx, cli))
+	require.EqualError(t, publishAll(ctx, cli), `scoop.skip_upload is true`)
 
 	distFile := filepath.Join(folder, ctx.Config.Scoop.Name+".json")
 	_, err = os.Stat(distFile)
@@ -852,7 +957,7 @@ func TestWrapInDirectory(t *testing.T) {
 				Download: "https://gitlab.com",
 			},
 			ProjectName: "run-pipe",
-			Scoop: config.Scoop{
+			Scoops: []config.Scoop{{
 				Bucket: config.RepoRef{
 					Owner: "test",
 					Name:  "test",
@@ -862,7 +967,7 @@ func TestWrapInDirectory(t *testing.T) {
 				URLTemplate:           "http://gitlab.mycompany.com/foo/bar/-/releases/{{ .Tag }}/downloads/{{ .ArtifactName }}",
 				CommitMessageTemplate: "chore(scoop): update {{ .ProjectName }} version {{ .Tag }}",
 				Persist:               []string{"data.cfg", "etc"},
-			},
+			}},
 		},
 		testctx.GitHubTokenType,
 		testctx.WithCurrentTag("v1.0.1"),
@@ -872,7 +977,7 @@ func TestWrapInDirectory(t *testing.T) {
 	require.NoError(t, Pipe{}.Default(ctx))
 	cl, err := client.New(ctx)
 	require.NoError(t, err)
-	mf, err := dataFor(ctx, cl, []*artifact.Artifact{
+	mf, err := dataFor(ctx, ctx.Config.Scoops[0], cl, []*artifact.Artifact{
 		{
 			Name:    "foo_1.0.1_windows_amd64.tar.gz",
 			Goos:    "windows",
@@ -881,13 +986,9 @@ func TestWrapInDirectory(t *testing.T) {
 			Path:    file,
 			Extra: map[string]interface{}{
 				artifact.ExtraWrappedIn: "foo_1.0.1_windows_amd64",
-				artifact.ExtraBuilds: []*artifact.Artifact{
-					{
-						Name: "foo.exe",
-					},
-					{
-						Name: "bar.exe",
-					},
+				artifact.ExtraBinaries: []string{
+					"foo.exe",
+					"bar.exe",
 				},
 			},
 		},
