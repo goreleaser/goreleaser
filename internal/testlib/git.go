@@ -8,7 +8,6 @@ import (
 
 	"github.com/charmbracelet/keygen"
 	"github.com/goreleaser/goreleaser/internal/git"
-	"github.com/goreleaser/goreleaser/internal/testctx"
 	"github.com/stretchr/testify/require"
 )
 
@@ -103,7 +102,7 @@ func GitMakeBareRepository(tb testing.TB) string {
 	tb.Helper()
 	dir := tb.TempDir()
 	_, err := git.Run(
-		testctx.New(),
+		context.Background(),
 		"-C", dir,
 		"-c", "init.defaultBranch=master",
 		"init",
