@@ -1,0 +1,11 @@
+{
+  "gitVersion": "1.2.3",
+  "moduleCheksum": "unknown",
+  "gitCommit": "aaaa",
+  "gitTreeState": "unknown",
+  "buildDate": "12/12/12",
+  "builtBy": "me",
+  "goVersion": "go1.20.3",
+  "compiler": "gc",
+  "platform": "linux/amd64"
+}
