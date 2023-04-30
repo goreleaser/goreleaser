@@ -11,6 +11,7 @@ require (
 	github.com/caarlos0/env/v8 v8.0.0
 	github.com/caarlos0/go-reddit/v3 v3.0.1
 	github.com/caarlos0/go-shellwords v1.0.12
+	github.com/caarlos0/go-version v0.1.1
 	github.com/caarlos0/log v0.2.2
 	github.com/charmbracelet/keygen v0.4.2
 	github.com/charmbracelet/lipgloss v0.7.1
