@@ -78,7 +78,11 @@ var BuildPipeline = []Piper{
 
 // BuildCmdPipeline is the pipeline run by goreleaser build.
 // nolint:gochecknoglobals
-var BuildCmdPipeline = append(BuildPipeline, metadata.Pipe{}, reportsizes.Pipe{})
+var BuildCmdPipeline = append(
+	BuildPipeline,
+	reportsizes.Pipe{},
+	metadata.Pipe{},
+)
 
 // Pipeline contains all pipe implementations in order.
 // nolint: gochecknoglobals
