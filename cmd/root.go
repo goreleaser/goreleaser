@@ -76,6 +76,9 @@ Check out our website for more information, examples and documentation: https://
 				log.Debug("debug logs enabled")
 			}
 		},
+		PersistentPostRun: func(_ *cobra.Command, _ []string) {
+			log.Info("thanks for using goreleaser!")
+		},
 	}
 	cmd.SetVersionTemplate("{{.Version}}")
 
