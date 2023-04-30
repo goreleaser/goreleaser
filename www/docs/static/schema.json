@@ -1066,6 +1066,21 @@
 				"additionalProperties": false,
 				"type": "object"
 			},
+			"GitRepoRef": {
+				"properties": {
+					"url": {
+						"type": "string"
+					},
+					"ssh_command": {
+						"type": "string"
+					},
+					"private_key": {
+						"type": "string"
+					}
+				},
+				"additionalProperties": false,
+				"type": "object"
+			},
 			"GiteaURLs": {
 				"properties": {
 					"api": {
@@ -2348,6 +2363,9 @@
 					},
 					"branch": {
 						"type": "string"
+					},
+					"git": {
+						"$ref": "#/$defs/GitRepoRef"
 					},
 					"pull_request": {
 						"$ref": "#/$defs/PullRequest"
