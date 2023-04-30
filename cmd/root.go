@@ -76,6 +76,7 @@ Check out our website for more information, examples and documentation: https://
 			}
 		},
 	}
+	cmd.SetVersionTemplate("{{.Version}}")
 
 	cmd.PersistentFlags().BoolVar(&root.debug, "debug", false, "Enable debug mode")
 	cmd.AddCommand(

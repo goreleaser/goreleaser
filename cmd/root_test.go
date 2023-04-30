@@ -28,7 +28,7 @@ func TestRootCmdVersion(t *testing.T) {
 	cmd.SetOut(&b)
 	cmd.SetArgs([]string{"-v"})
 	require.NoError(t, cmd.Execute())
-	require.Equal(t, "goreleaser version 1.2.3\n", b.String())
+	require.Equal(t, "1.2.3", b.String())
 	require.Equal(t, 0, mem.code)
 }
 
