@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"time"
 
+	goversion "github.com/caarlos0/go-version"
 	"github.com/caarlos0/log"
 	"github.com/charmbracelet/lipgloss"
 	"github.com/goreleaser/goreleaser/pkg/context"
@@ -17,7 +18,7 @@ var (
 	codeStyle = lipgloss.NewStyle().Italic(true)
 )
 
-func Execute(version string, exit func(int), args []string) {
+func Execute(version goversion.Info, exit func(int), args []string) {
 	newRootCmd(version, exit).Execute(args)
 }
 
@@ -49,7 +50,7 @@ type rootCmd struct {
 	exit  func(int)
 }
 
-func newRootCmd(version string, exit func(int)) *rootCmd {
+func newRootCmd(version goversion.Info, exit func(int)) *rootCmd {
 	root := &rootCmd{
 		exit: exit,
 	}
@@ -65,11 +66,11 @@ You can customize your entire release process through a single .goreleaser.yaml 
 
 Check out our website for more information, examples and documentation: https://goreleaser.com
 `,
-		Version:       version,
+		Version:       version.String(),
 		SilenceUsage:  true,
 		SilenceErrors: true,
 		Args:          cobra.NoArgs,
-		PersistentPreRun: func(cmd *cobra.Command, args []string) {
+		PersistentPreRun: func(_ *cobra.Command, _ []string) {
 			if root.debug {
 				log.SetLevel(log.DebugLevel)
 				log.Debug("debug logs enabled")

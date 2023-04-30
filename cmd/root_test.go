@@ -4,18 +4,23 @@ import (
 	"bytes"
 	"testing"
 
+	goversion "github.com/caarlos0/go-version"
 	"github.com/stretchr/testify/require"
 )
 
+var testversion = goversion.Info{
+	GitVersion: "1.2.3",
+}
+
 func TestRootCmd(t *testing.T) {
 	mem := &exitMemento{}
-	Execute("1.2.3", mem.Exit, []string{"-h"})
+	Execute(testversion, mem.Exit, []string{"-h"})
 	require.Equal(t, 0, mem.code)
 }
 
 func TestRootCmdHelp(t *testing.T) {
 	mem := &exitMemento{}
-	cmd := newRootCmd("", mem.Exit).cmd
+	cmd := newRootCmd(testversion, mem.Exit).cmd
 	cmd.SetArgs([]string{"-h"})
 	require.NoError(t, cmd.Execute())
 	require.Equal(t, 0, mem.code)
@@ -24,17 +29,17 @@ func TestRootCmdHelp(t *testing.T) {
 func TestRootCmdVersion(t *testing.T) {
 	var b bytes.Buffer
 	mem := &exitMemento{}
-	cmd := newRootCmd("1.2.3", mem.Exit).cmd
+	cmd := newRootCmd(testversion, mem.Exit).cmd
 	cmd.SetOut(&b)
 	cmd.SetArgs([]string{"-v"})
 	require.NoError(t, cmd.Execute())
-	require.Equal(t, "1.2.3", b.String())
+	require.Contains(t, b.String(), "1.2.3")
 	require.Equal(t, 0, mem.code)
 }
 
 func TestRootCmdExitCode(t *testing.T) {
 	mem := &exitMemento{}
-	cmd := newRootCmd("", mem.Exit)
+	cmd := newRootCmd(testversion, mem.Exit)
 	args := []string{"check", "--deprecated", "-f", "testdata/good.yml"}
 	cmd.Execute(args)
 	require.Equal(t, 2, mem.code)
@@ -43,7 +48,7 @@ func TestRootCmdExitCode(t *testing.T) {
 func TestRootRelease(t *testing.T) {
 	setup(t)
 	mem := &exitMemento{}
-	cmd := newRootCmd("", mem.Exit)
+	cmd := newRootCmd(testversion, mem.Exit)
 	cmd.Execute([]string{})
 	require.Equal(t, 1, mem.code)
 }
@@ -51,14 +56,14 @@ func TestRootRelease(t *testing.T) {
 func TestRootReleaseDebug(t *testing.T) {
 	setup(t)
 	mem := &exitMemento{}
-	cmd := newRootCmd("", mem.Exit)
+	cmd := newRootCmd(testversion, mem.Exit)
 	cmd.Execute([]string{"r", "--debug"})
 	require.Equal(t, 1, mem.code)
 }
 
 func TestShouldPrependRelease(t *testing.T) {
 	result := func(args []string) bool {
-		return shouldPrependRelease(newRootCmd("1", func(_ int) {}).cmd, args)
+		return shouldPrependRelease(newRootCmd(testversion, func(_ int) {}).cmd, args)
 	}
 
 	t.Run("no args", func(t *testing.T) {

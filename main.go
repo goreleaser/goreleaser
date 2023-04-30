@@ -36,7 +36,7 @@ func init() {
 
 func main() {
 	cmd.Execute(
-		buildVersion(version, commit, date, builtBy).String(),
+		buildVersion(version, commit, date, builtBy),
 		os.Exit,
 		os.Args[1:],
 	)
