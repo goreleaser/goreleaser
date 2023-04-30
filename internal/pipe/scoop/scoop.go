@@ -71,7 +71,7 @@ func (Pipe) Default(ctx *context.Context) error {
 	return nil
 }
 
-func doRun(ctx *context.Context, cl client.Client) error {
+func doRun(ctx *context.Context, cl client.ReleaserURLTemplater) error {
 	scoop := ctx.Config.Scoop
 
 	archives := ctx.Artifacts.Filter(
@@ -231,7 +231,7 @@ func doBuildManifest(manifest Manifest) (bytes.Buffer, error) {
 	return result, err
 }
 
-func dataFor(ctx *context.Context, cl client.Client, artifacts []*artifact.Artifact) (Manifest, error) {
+func dataFor(ctx *context.Context, cl client.ReleaserURLTemplater, artifacts []*artifact.Artifact) (Manifest, error) {
 	manifest := Manifest{
 		Version:      ctx.Version,
 		Architecture: map[string]Resource{},
@@ -259,10 +259,10 @@ func dataFor(ctx *context.Context, cl client.Client, artifacts []*artifact.Artif
 		}
 
 		var arch string
-		switch {
-		case artifact.Goarch == "386":
+		switch artifact.Goarch {
+		case "386":
 			arch = "32bit"
-		case artifact.Goarch == "amd64":
+		case "amd64":
 			arch = "64bit"
 		default:
 			continue

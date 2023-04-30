@@ -77,7 +77,7 @@ func runAll(ctx *context.Context, cli client.Client) error {
 	return nil
 }
 
-func doRun(ctx *context.Context, krew config.Krew, cl client.Client) error {
+func doRun(ctx *context.Context, krew config.Krew, cl client.ReleaserURLTemplater) error {
 	if krew.Name == "" {
 		return pipe.Skip("krew: manifest name is not set")
 	}
@@ -177,7 +177,12 @@ func templateFields(ctx *context.Context, krew config.Krew) (config.Krew, error)
 	return krew, nil
 }
 
-func buildmanifest(ctx *context.Context, krew config.Krew, client client.Client, artifacts []*artifact.Artifact) (string, error) {
+func buildmanifest(
+	ctx *context.Context,
+	krew config.Krew,
+	client client.ReleaserURLTemplater,
+	artifacts []*artifact.Artifact,
+) (string, error) {
 	data, err := manifestFor(ctx, krew, client, artifacts)
 	if err != nil {
 		return "", err
@@ -193,7 +198,12 @@ func doBuildManifest(data Manifest) (string, error) {
 	return string(out), nil
 }
 
-func manifestFor(ctx *context.Context, cfg config.Krew, cl client.Client, artifacts []*artifact.Artifact) (Manifest, error) {
+func manifestFor(
+	ctx *context.Context,
+	cfg config.Krew,
+	cl client.ReleaserURLTemplater,
+	artifacts []*artifact.Artifact,
+) (Manifest, error) {
 	result := Manifest{
 		APIVersion: apiVersion,
 		Kind:       kind,
