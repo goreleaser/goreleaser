@@ -108,7 +108,7 @@ jobs:
 ```
 
 In this example a `Test` job is used to run `go test ./...` to first make sure that there're no failing tests. Only if
-that job succeeds and the pipeline was triggered from a tag (because of the defined `condition`) Goreleaser will be run.
+that job succeeds and the pipeline was triggered from a tag (because of the defined `condition`) GoReleaser will be run.
 
 [goreleaser-extension]: https://marketplace.visualstudio.com/items?itemName=GoReleaser.goreleaser
 [marketplace]: https://marketplace.visualstudio.com/azuredevops
