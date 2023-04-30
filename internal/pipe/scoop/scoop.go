@@ -132,11 +132,6 @@ func doPublish(ctx *context.Context, cl client.Client) error {
 		return err
 	}
 
-	cl, err = client.NewIfToken(ctx, cl, scoop.Bucket.Token)
-	if err != nil {
-		return err
-	}
-
 	if strings.TrimSpace(scoop.SkipUpload) == "true" {
 		return pipe.Skip("scoop.skip_upload is true")
 	}
@@ -175,6 +170,16 @@ func doPublish(ctx *context.Context, cl client.Client) error {
 
 	repo := client.RepoFromRef(scoop.Bucket)
 	gpath := path.Join(scoop.Folder, manifest.Name)
+
+	if scoop.Bucket.Git.URL != "" {
+		return client.NewGitUploadClient(repo.Branch).
+			CreateFile(ctx, author, repo, content, gpath, commitMessage)
+	}
+
+	cl, err = client.NewIfToken(ctx, cl, scoop.Bucket.Token)
+	if err != nil {
+		return err
+	}
 
 	if !scoop.Bucket.PullRequest.Enabled {
 		return cl.CreateFile(ctx, author, repo, content, gpath, commitMessage)

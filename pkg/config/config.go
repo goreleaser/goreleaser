@@ -85,7 +85,14 @@ type RepoRef struct {
 	Token  string `yaml:"token,omitempty" json:"token,omitempty"`
 	Branch string `yaml:"branch,omitempty" json:"branch,omitempty"`
 
+	Git         GitRepoRef  `yaml:"git,omitempty" json:"git,omitempty"`
 	PullRequest PullRequest `yaml:"pull_request,omitempty" json:"pull_request,omitempty"`
+}
+
+type GitRepoRef struct {
+	URL        string `yaml:"url,omitempty" json:"url,omitempty"`
+	SSHCommand string `yaml:"ssh_command,omitempty" json:"ssh_command,omitempty"`
+	PrivateKey string `yaml:"private_key,omitempty" json:"private_key,omitempty"`
 }
 
 type PullRequest struct {

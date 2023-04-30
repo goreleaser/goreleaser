@@ -6,6 +6,7 @@ import (
 	"path/filepath"
 	"testing"
 
+	"github.com/charmbracelet/keygen"
 	"github.com/goreleaser/goreleaser/internal/artifact"
 	"github.com/goreleaser/goreleaser/internal/client"
 	"github.com/goreleaser/goreleaser/internal/golden"
@@ -169,7 +170,21 @@ func TestFullPipe(t *testing.T) {
 				ctx.Config.Brews[0].Homepage = "https://github.com/goreleaser"
 			},
 		},
-		"open pr": {
+		"git_remote": {
+			prepare: func(ctx *context.Context) {
+				ctx.TokenType = context.TokenTypeGitHub
+				ctx.Config.Brews[0].Homepage = "https://github.com/goreleaser"
+				ctx.Config.Brews[0].Tap = config.RepoRef{
+					Name:   "test",
+					Branch: "main",
+					Git: config.GitRepoRef{
+						URL:        testlib.GitMakeBareRepository(t),
+						PrivateKey: testlib.MakeNewSSHKey(t, keygen.Ed25519, ""),
+					},
+				}
+			},
+		},
+		"open_pr": {
 			prepare: func(ctx *context.Context) {
 				ctx.TokenType = context.TokenTypeGitHub
 				ctx.Config.Brews[0].Homepage = "https://github.com/goreleaser"
@@ -360,6 +375,8 @@ func TestFullPipe(t *testing.T) {
 			client := client.NewMock()
 			distFile := filepath.Join(folder, name+".rb")
 
+			require.NoError(t, Pipe{}.Default(ctx))
+
 			if tt.expectedRunError == "" {
 				require.NoError(t, runAll(ctx, client))
 			} else {
@@ -372,12 +389,19 @@ func TestFullPipe(t *testing.T) {
 			}
 
 			require.NoError(t, publishAll(ctx, client))
-			require.True(t, client.CreatedFile)
-			golden.RequireEqualRb(t, []byte(client.Content))
+
+			content := []byte(client.Content)
+			if url := ctx.Config.Brews[0].Tap.Git.URL; url == "" {
+				require.True(t, client.CreatedFile, "should have created a file")
+			} else {
+				content = testlib.CatFileFromBareRepository(t, url, name+".rb")
+			}
+
+			golden.RequireEqualRb(t, content)
 
 			distBts, err := os.ReadFile(distFile)
 			require.NoError(t, err)
-			require.Equal(t, client.Content, string(distBts))
+			require.Equal(t, string(content), string(distBts))
 		})
 	}
 }

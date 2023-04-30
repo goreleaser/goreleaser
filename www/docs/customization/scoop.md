@@ -54,6 +54,32 @@ scoop:
       # Default: default repository branch.
       base: main
 
+    # Clone, create the file, commit and push, to a regular Git repository.
+    #
+    # Notice that this will only have any effect if the given URL is not
+    # empty.
+    #
+    # Since: v1.18
+    git:
+      # The Git URL to push.
+      url: 'ssh://git@myserver.com:repo.git'
+
+      # The SSH private key that should be used to commit to the Git
+      # repository.
+      # This can either be a path or the key contents.
+      #
+      # IMPORTANT: the key must not be password-protected.
+      #
+      # WARNING: do not expose your private key in the configuration file!
+      private_key: '{{ .Env.PRIVATE_KEY_PATH }}'
+
+      # The value to be passed to `GIT_SSH_COMMAND`.
+      # This is mainly used to specify the SSH private key used to pull/push
+      # to the Git URL.
+      #
+      # Default: 'ssh -i {{ .KeyPath }} -o StrictHostKeyChecking=accept-new -F /dev/null'
+      ssh_command: 'ssh -i {{ .Env.KEY }} -o SomeOption=yes'
+
   # Folder inside the repository to put the scoop.
   #
   # Note that while scoop works if the manifests are in a folder,

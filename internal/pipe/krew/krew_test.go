@@ -9,6 +9,7 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/charmbracelet/keygen"
 	"github.com/goreleaser/goreleaser/internal/artifact"
 	"github.com/goreleaser/goreleaser/internal/client"
 	"github.com/goreleaser/goreleaser/internal/golden"
@@ -140,6 +141,20 @@ func TestFullPipe(t *testing.T) {
 				ctx.Config.Krews[0].Index.Owner = "test"
 				ctx.Config.Krews[0].Index.Name = "test"
 				ctx.Config.Krews[0].Homepage = "https://github.com/goreleaser"
+			},
+		},
+		"git_remote": {
+			prepare: func(ctx *context.Context) {
+				ctx.TokenType = context.TokenTypeGitHub
+				ctx.Config.Krews[0].Homepage = "https://github.com/goreleaser"
+				ctx.Config.Krews[0].Index = config.RepoRef{
+					Name:   "test",
+					Branch: "main",
+					Git: config.GitRepoRef{
+						URL:        testlib.GitMakeBareRepository(t),
+						PrivateKey: testlib.MakeNewSSHKey(t, keygen.Ed25519, ""),
+					},
+				}
 			},
 		},
 		"default_gitlab": {
@@ -299,13 +314,20 @@ func TestFullPipe(t *testing.T) {
 			}
 
 			require.NoError(t, err)
-			require.True(t, client.CreatedFile)
-			golden.RequireEqualYaml(t, []byte(client.Content))
+
+			content := []byte(client.Content)
+			if url := ctx.Config.Krews[0].Index.Git.URL; url == "" {
+				require.True(t, client.CreatedFile, "should have created a file")
+			} else {
+				content = testlib.CatFileFromBareRepository(t, url, "plugins/"+name+".yaml")
+			}
+
+			golden.RequireEqualYaml(t, content)
 			requireValidManifest(t)
 
 			distBts, err := os.ReadFile(distFile)
 			require.NoError(t, err)
-			require.Equal(t, client.Content, string(distBts))
+			require.Equal(t, string(content), string(distBts))
 		})
 	}
 }

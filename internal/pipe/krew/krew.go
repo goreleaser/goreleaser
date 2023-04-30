@@ -288,11 +288,6 @@ func doPublish(ctx *context.Context, manifest *artifact.Artifact, cl client.Clie
 		return err
 	}
 
-	cl, err = client.NewIfToken(ctx, cl, cfg.Index.Token)
-	if err != nil {
-		return err
-	}
-
 	if strings.TrimSpace(cfg.SkipUpload) == "true" {
 		return pipe.Skip("krews.skip_upload is set")
 	}
@@ -324,6 +319,16 @@ func doPublish(ctx *context.Context, manifest *artifact.Artifact, cl client.Clie
 	}
 
 	content, err := os.ReadFile(manifest.Path)
+	if err != nil {
+		return err
+	}
+
+	if cfg.Index.Git.URL != "" {
+		return client.NewGitUploadClient(repo.Branch).
+			CreateFile(ctx, author, repo, content, gpath, msg)
+	}
+
+	cl, err = client.NewIfToken(ctx, cl, cfg.Index.Token)
 	if err != nil {
 		return err
 	}
