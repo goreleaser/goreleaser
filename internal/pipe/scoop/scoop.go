@@ -340,12 +340,12 @@ func dataFor(ctx *context.Context, scoop config.Scoop, cl client.ReleaserURLTemp
 			return manifest, err
 		}
 
-		log.WithFields(log.Fields{
-			"artifactExtras":   artifact.Extra,
-			"fromURLTemplate":  scoop.URLTemplate,
-			"templatedBrewURL": url,
-			"sum":              sum,
-		}).Debug("scoop url templating")
+		log.
+			WithField("artifactExtras", artifact.Extra).
+			WithField("fromURLTemplate", scoop.URLTemplate).
+			WithField("templatedBrewURL", url).
+			WithField("sum", sum).
+			Debug("scoop url templating")
 
 		binaries, err := binaries(*artifact)
 		if err != nil {

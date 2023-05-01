@@ -105,11 +105,10 @@ func (c *githubClient) Changelog(ctx *context.Context, repo Repo, prev, current 
 func (c *githubClient) getDefaultBranch(ctx *context.Context, repo Repo) (string, error) {
 	p, res, err := c.client.Repositories.Get(ctx, repo.Owner, repo.Name)
 	if err != nil {
-		log.WithFields(log.Fields{
-			"projectID":  repo.String(),
-			"statusCode": res.StatusCode,
-			"err":        err.Error(),
-		}).Warn("error checking for default branch")
+		log.WithField("projectID", repo.String()).
+			WithField("statusCode", res.StatusCode).
+			WithError(err).
+			Warn("error checking for default branch")
 		return "", err
 	}
 	return p.GetDefaultBranch(), nil
@@ -311,11 +310,10 @@ func (c *githubClient) createOrUpdateRelease(ctx *context.Context, data *github.
 			data,
 		)
 		if err == nil {
-			log.WithFields(log.Fields{
-				"name":       data.GetName(),
-				"release-id": release.GetID(),
-				"request-id": resp.Header.Get("X-GitHub-Request-Id"),
-			}).Info("release created")
+			log.WithField("name", data.GetName()).
+				WithField("release-id", release.GetID()).
+				WithField("request-id", resp.Header.Get("X-GitHub-Request-Id")).
+				Info("release created")
 		}
 		return release, err
 	}
@@ -333,11 +331,10 @@ func (c *githubClient) updateRelease(ctx *context.Context, id int64, data *githu
 		data,
 	)
 	if err == nil {
-		log.WithFields(log.Fields{
-			"name":       data.GetName(),
-			"release-id": release.GetID(),
-			"request-id": resp.Header.Get("X-GitHub-Request-Id"),
-		}).Info("release updated")
+		log.WithField("name", data.GetName()).
+			WithField("release-id", release.GetID()).
+			WithField("request-id", resp.Header.Get("X-GitHub-Request-Id")).
+			Info("release updated")
 	}
 	return release, err
 }
@@ -381,11 +378,10 @@ func (c *githubClient) Upload(
 		if resp != nil {
 			requestID = resp.Header.Get("X-GitHub-Request-Id")
 		}
-		log.WithFields(log.Fields{
-			"name":       artifact.Name,
-			"release-id": releaseID,
-			"request-id": requestID,
-		}).Warn("upload failed")
+		log.WithField("name", artifact.Name).
+			WithField("release-id", releaseID).
+			WithField("request-id", requestID).
+			Warn("upload failed")
 	}
 	if err == nil {
 		return nil
@@ -482,11 +478,10 @@ func (c *githubClient) deleteExistingDraftRelease(ctx *context.Context, name str
 					return fmt.Errorf("could not delete previous draft release: %w", err)
 				}
 
-				log.WithFields(log.Fields{
-					"commit": r.GetTargetCommitish(),
-					"tag":    r.GetTagName(),
-					"name":   r.GetName(),
-				}).Info("deleted previous draft release")
+				log.WithField("commit", r.GetTargetCommitish()).
+					WithField("tag", r.GetTagName()).
+					WithField("name", r.GetName()).
+					Info("deleted previous draft release")
 
 				// in theory, there should be only 1 release matching, so we can just return
 				return nil

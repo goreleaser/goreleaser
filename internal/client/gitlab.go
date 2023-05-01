@@ -88,11 +88,11 @@ func (c *gitlabClient) getDefaultBranch(_ *context.Context, repo Repo) (string, 
 	projectID := repo.String()
 	p, res, err := c.client.Projects.GetProject(projectID, nil)
 	if err != nil {
-		log.WithFields(log.Fields{
-			"projectID":  projectID,
-			"statusCode": res.StatusCode,
-			"err":        err.Error(),
-		}).Warn("error checking for default branch")
+		log.
+			WithField("projectID", projectID).
+			WithField("statusCode", res.StatusCode).
+			WithField("err", err.Error()).
+			Warn("error checking for default branch")
 		return "", err
 	}
 	return p.DefaultBranch, nil
@@ -153,12 +153,12 @@ func (c *gitlabClient) CreateFile(
 		branch, err = c.getDefaultBranch(ctx, repo)
 		if err != nil {
 			// Fall back to 'master' 😭
-			log.WithFields(log.Fields{
-				"fileName":        fileName,
-				"projectID":       repo.String(),
-				"requestedBranch": branch,
-				"err":             err.Error(),
-			}).Warn("error checking for default branch, using master")
+			log.
+				WithField("fileName", fileName).
+				WithField("projectID", repo.String()).
+				WithField("requestedBranch", branch).
+				WithError(err).
+				Warn("error checking for default branch, using master")
 			ref = "master"
 			branch = "master"
 		}
@@ -167,37 +167,37 @@ func (c *gitlabClient) CreateFile(
 	opts := &gitlab.GetFileOptions{Ref: &ref}
 	castedContent := string(content)
 
-	log.WithFields(log.Fields{
-		"owner":  repo.Owner,
-		"name":   repo.Name,
-		"ref":    ref,
-		"branch": branch,
-	}).Debug("projectID at brew")
+	log.
+		WithField("owner", repo.Owner).
+		WithField("name", repo.Name).
+		WithField("ref", ref).
+		WithField("branch", branch).
+		Debug("projectID at brew")
 
 	_, res, err := c.client.RepositoryFiles.GetFile(repo.String(), fileName, opts)
 	if err != nil && (res == nil || res.StatusCode != 404) {
-		log.WithFields(log.Fields{
-			"fileName":   fileName,
-			"ref":        ref,
-			"projectID":  projectID,
-			"statusCode": res.StatusCode,
-			"err":        err.Error(),
-		}).Error("error getting file for brew formula")
+		log.
+			WithField("fileName", fileName).
+			WithField("ref", ref).
+			WithField("projectID", projectID).
+			WithField("statusCode", res.StatusCode).
+			WithError(err).
+			Error("error getting file for brew formula")
 		return err
 	}
 
-	log.WithFields(log.Fields{
-		"fileName":  fileName,
-		"branch":    branch,
-		"projectID": projectID,
-	}).Debug("found already existing brew formula file")
+	log.
+		WithField("fileName", fileName).
+		WithField("branch", branch).
+		WithField("projectID", projectID).
+		Debug("found already existing brew formula file")
 
 	if res.StatusCode == 404 {
-		log.WithFields(log.Fields{
-			"fileName":  fileName,
-			"ref":       ref,
-			"projectID": projectID,
-		}).Debug("creating brew formula")
+		log.
+			WithField("fileName", fileName).
+			WithField("ref", ref).
+			WithField("projectID", projectID).
+			Debug("creating brew formula")
 		createOpts := &gitlab.CreateFileOptions{
 			AuthorName:    &commitAuthor.Name,
 			AuthorEmail:   &commitAuthor.Email,
@@ -207,30 +207,30 @@ func (c *gitlabClient) CreateFile(
 		}
 		fileInfo, res, err := c.client.RepositoryFiles.CreateFile(projectID, fileName, createOpts)
 		if err != nil {
-			log.WithFields(log.Fields{
-				"fileName":   fileName,
-				"branch":     branch,
-				"projectID":  projectID,
-				"statusCode": res.StatusCode,
-				"err":        err.Error(),
-			}).Error("error creating brew formula file")
+			log.
+				WithField("fileName", fileName).
+				WithField("branch", branch).
+				WithField("projectID", projectID).
+				WithField("statusCode", res.StatusCode).
+				WithError(err).
+				Error("error creating brew formula file")
 			return err
 		}
 
-		log.WithFields(log.Fields{
-			"fileName":  fileName,
-			"branch":    branch,
-			"projectID": projectID,
-			"filePath":  fileInfo.FilePath,
-		}).Debug("created brew formula file")
+		log.
+			WithField("fileName", fileName).
+			WithField("branch", branch).
+			WithField("projectID", projectID).
+			WithField("filePath", fileInfo.FilePath).
+			Debug("created brew formula file")
 		return nil
 	}
 
-	log.WithFields(log.Fields{
-		"fileName":  fileName,
-		"ref":       ref,
-		"projectID": projectID,
-	}).Debug("updating brew formula")
+	log.
+		WithField("fileName", fileName).
+		WithField("ref", ref).
+		WithField("projectID", projectID).
+		Debug("updating brew formula")
 	updateOpts := &gitlab.UpdateFileOptions{
 		AuthorName:    &commitAuthor.Name,
 		AuthorEmail:   &commitAuthor.Email,
@@ -241,23 +241,23 @@ func (c *gitlabClient) CreateFile(
 
 	updateFileInfo, res, err := c.client.RepositoryFiles.UpdateFile(projectID, fileName, updateOpts)
 	if err != nil {
-		log.WithFields(log.Fields{
-			"fileName":   fileName,
-			"branch":     branch,
-			"projectID":  projectID,
-			"statusCode": res.StatusCode,
-			"err":        err.Error(),
-		}).Error("error updating brew formula file")
+		log.
+			WithField("fileName", fileName).
+			WithField("branch", branch).
+			WithField("projectID", projectID).
+			WithField("statusCode", res.StatusCode).
+			WithError(err).
+			Error("error updating brew formula file")
 		return err
 	}
 
-	log.WithFields(log.Fields{
-		"fileName":   fileName,
-		"branch":     branch,
-		"projectID":  projectID,
-		"filePath":   updateFileInfo.FilePath,
-		"statusCode": res.StatusCode,
-	}).Debug("updated brew formula file")
+	log.
+		WithField("fileName", fileName).
+		WithField("branch", branch).
+		WithField("projectID", projectID).
+		WithField("filePath", updateFileInfo.FilePath).
+		WithField("statusCode", res.StatusCode).
+		Debug("updated brew formula file")
 	return nil
 }
 
@@ -276,11 +276,11 @@ func (c *gitlabClient) CreateRelease(ctx *context.Context, body string) (release
 	if ctx.Config.Release.GitLab.Owner != "" {
 		projectID = ctx.Config.Release.GitLab.Owner + "/" + projectID
 	}
-	log.WithFields(log.Fields{
-		"owner":     ctx.Config.Release.GitLab.Owner,
-		"name":      gitlabName,
-		"projectID": projectID,
-	}).Debug("projectID")
+	log.
+		WithField("owner", ctx.Config.Release.GitLab.Owner).
+		WithField("name", gitlabName).
+		WithField("projectID", projectID).
+		Debug("projectID")
 
 	name := title
 	tagName := ctx.Git.CurrentTag
@@ -290,20 +290,18 @@ func (c *gitlabClient) CreateRelease(ctx *context.Context, body string) (release
 	}
 
 	if resp.StatusCode == 403 || resp.StatusCode == 404 {
-		log.WithFields(log.Fields{
-			"err": err.Error(),
-		}).Debug("get release")
+		log.WithError(err).Debug("get release")
 
 		description := body
 		ref := ctx.Git.Commit
 		gitURL := ctx.Git.URL
 
-		log.WithFields(log.Fields{
-			"name":        name,
-			"description": description,
-			"ref":         ref,
-			"url":         gitURL,
-		}).Debug("creating release")
+		log.
+			WithField("name", name).
+			WithField("description", description).
+			WithField("ref", ref).
+			WithField("url", gitURL).
+			Debug("creating release")
 		release, _, err = c.client.Releases.CreateRelease(projectID, &gitlab.CreateReleaseOptions{
 			Name:        &name,
 			Description: &description,
@@ -312,9 +310,7 @@ func (c *gitlabClient) CreateRelease(ctx *context.Context, body string) (release
 		})
 
 		if err != nil {
-			log.WithFields(log.Fields{
-				"err": err.Error(),
-			}).Debug("error create release")
+			log.WithError(err).Debug("error creating release")
 			return "", err
 		}
 		log.WithField("name", release.Name).Info("release created")
@@ -329,9 +325,7 @@ func (c *gitlabClient) CreateRelease(ctx *context.Context, body string) (release
 			Description: &desc,
 		})
 		if err != nil {
-			log.WithFields(log.Fields{
-				"err": err.Error(),
-			}).Debug("error update release")
+			log.WithError(err).Debug("error updating release")
 			return "", err
 		}
 
@@ -438,10 +432,9 @@ func (c *gitlabClient) Upload(
 		linkURL = gitlabBaseURL + "/" + projectDetails.PathWithNamespace + baseLinkURL
 	}
 
-	log.WithFields(log.Fields{
-		"file": file.Name(),
-		"url":  baseLinkURL,
-	}).Debug("uploaded file")
+	log.WithField("file", file.Name()).
+		WithField("url", baseLinkURL).
+		Debug("uploaded file")
 
 	name := artifact.Name
 	filename := "/" + name
@@ -457,10 +450,9 @@ func (c *gitlabClient) Upload(
 		return RetriableError{err}
 	}
 
-	log.WithFields(log.Fields{
-		"id":  releaseLink.ID,
-		"url": releaseLink.DirectAssetURL,
-	}).Debug("created release link")
+	log.WithField("id", releaseLink.ID).
+		WithField("url", releaseLink.DirectAssetURL).
+		Debug("created release link")
 
 	// for checksums.txt the field is nil, so we initialize it
 	if artifact.Extra == nil {

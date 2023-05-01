@@ -2,7 +2,6 @@ package reportsizes
 
 import (
 	"os"
-	"path/filepath"
 
 	"github.com/caarlos0/log"
 	"github.com/docker/go-units"
@@ -16,10 +15,6 @@ func (Pipe) Skip(ctx *context.Context) bool { return !ctx.Config.ReportSizes }
 func (Pipe) String() string                 { return "size reports" }
 
 func (Pipe) Run(ctx *context.Context) error {
-	cwd, err := os.Getwd()
-	if err != nil {
-		return err
-	}
 	return ctx.Artifacts.Filter(artifact.Or(
 		artifact.ByType(artifact.Binary),
 		artifact.ByType(artifact.UniversalBinary),
@@ -34,15 +29,9 @@ func (Pipe) Run(ctx *context.Context) error {
 		if err != nil {
 			return err
 		}
-		relpath := a.Path
-		if filepath.IsAbs(a.Path) {
-			relpath, err = filepath.Rel(cwd, a.Path)
-			if err != nil {
-				return err
-			}
-		}
 		a.Extra[artifact.ExtraSize] = stat.Size()
-		log.WithField("path", relpath).Info(units.BytesSize(float64(stat.Size())))
+		log.WithField("path", a.Path).
+			Info(units.BytesSize(float64(stat.Size())))
 		return nil
 	})
 }

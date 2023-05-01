@@ -31,10 +31,7 @@ func CopyWithMode(src, dst string, mode os.FileMode) error {
 		// - path = "a/b/c.txt"
 		// So we join "a/b" with "c.txt" and use it as the destination.
 		dst := filepath.ToSlash(filepath.Join(dst, strings.Replace(path, src, "", 1)))
-		log.WithFields(log.Fields{
-			"src": path,
-			"dst": dst,
-		}).Debug("copying file")
+		log.WithField("src", path).WithField("dst", dst).Debug("copying file")
 		if info.IsDir() {
 			return os.MkdirAll(dst, info.Mode())
 		}

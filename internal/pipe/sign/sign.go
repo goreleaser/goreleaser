@@ -225,12 +225,12 @@ func signone(ctx *context.Context, cfg config.Sign, art *artifact.Artifact) ([]*
 		stdin = f
 	}
 
-	fields := log.Fields{"cmd": cfg.Cmd, "artifact": art.Name}
+	log := log.WithField("cmd", cfg.Cmd).WithField("artifact", art.Name)
 	if name != "" {
-		fields["signature"] = name
+		log = log.WithField("signature", name)
 	}
 	if cert != "" {
-		fields["certificate"] = cert
+		log = log.WithField("certificate", cert)
 	}
 
 	// The GoASTScanner flags this as a security risk.
@@ -246,7 +246,7 @@ func signone(ctx *context.Context, cfg config.Sign, art *artifact.Artifact) ([]*
 		cmd.Stdin = stdin
 	}
 	cmd.Env = env.Strings()
-	log.WithFields(fields).Info("signing")
+	log.Info("signing")
 	if err := cmd.Run(); err != nil {
 		return nil, fmt.Errorf("sign: %s failed: %w: %s", cfg.Cmd, err, b.String())
 	}
