@@ -14,20 +14,43 @@ import (
 	"github.com/goreleaser/goreleaser/internal/artifact"
 	"github.com/goreleaser/goreleaser/internal/client"
 	"github.com/goreleaser/goreleaser/internal/commitauthor"
+	"github.com/goreleaser/goreleaser/internal/deprecate"
 	"github.com/goreleaser/goreleaser/internal/pipe"
 	"github.com/goreleaser/goreleaser/internal/tmpl"
 	"github.com/goreleaser/goreleaser/pkg/config"
 	"github.com/goreleaser/goreleaser/pkg/context"
 )
 
-// ErrNoWindows when there is no build for windows (goos doesn't contain
-// windows) or archive.format is binary.
-type ErrNoWindows struct {
-	goamd64 string
+// ErrIncorrectArchiveCount happens when a given filter evaluates 0 or more
+// than 1 archives.
+type ErrIncorrectArchiveCount struct {
+	goamd64  string
+	ids      []string
+	archives []*artifact.Artifact
 }
 
-func (e ErrNoWindows) Error() string {
-	return fmt.Sprintf("scoop requires a windows archive, but no archives matched goos=windows goarch=[386 amd64] goamd64=%s\nLearn more at https://goreleaser.com/errors/scoop-archive\n", e.goamd64) // nolint: revive
+func (e ErrIncorrectArchiveCount) Error() string {
+	b := strings.Builder{}
+
+	_, _ = b.WriteString("scoop requires a single windows archive, ")
+	if len(e.archives) == 0 {
+		_, _ = b.WriteString("but no archives ")
+	} else {
+		_, _ = b.WriteString(fmt.Sprintf("but found %d archives ", len(e.archives)))
+	}
+
+	_, _ = b.WriteString(fmt.Sprintf("matching the given filters: goos=windows goarch=[386 amd64] goamd64=%s ids=%s", e.goamd64, e.ids))
+
+	if len(e.archives) > 0 {
+		names := make([]string, 0, len(e.archives))
+		for _, a := range e.archives {
+			names = append(names, a.Name)
+		}
+		_, _ = b.WriteString(fmt.Sprintf(": %s", names))
+	}
+
+	_, _ = b.WriteString("\nLearn more at https://goreleaser.com/errors/scoop-archive\n")
+	return b.String()
 }
 
 const scoopConfigExtra = "ScoopConfig"
@@ -35,8 +58,10 @@ const scoopConfigExtra = "ScoopConfig"
 // Pipe that builds and publishes scoop manifests.
 type Pipe struct{}
 
-func (Pipe) String() string                 { return "scoop manifests" }
-func (Pipe) Skip(ctx *context.Context) bool { return ctx.Config.Scoop.Bucket.Name == "" }
+func (Pipe) String() string { return "scoop manifests" }
+func (Pipe) Skip(ctx *context.Context) bool {
+	return ctx.Config.Scoop.Bucket.Name == "" && len(ctx.Config.Scoops) == 0
+}
 
 // Run creates the scoop manifest locally.
 func (Pipe) Run(ctx *context.Context) error {
@@ -44,7 +69,7 @@ func (Pipe) Run(ctx *context.Context) error {
 	if err != nil {
 		return err
 	}
-	return doRun(ctx, client)
+	return runAll(ctx, client)
 }
 
 // Publish scoop manifest.
@@ -53,47 +78,74 @@ func (Pipe) Publish(ctx *context.Context) error {
 	if err != nil {
 		return err
 	}
-	return doPublish(ctx, client)
+	return publishAll(ctx, client)
 }
 
 // Default sets the pipe defaults.
 func (Pipe) Default(ctx *context.Context) error {
-	if ctx.Config.Scoop.Name == "" {
-		ctx.Config.Scoop.Name = ctx.Config.ProjectName
+	if ctx.Config.Scoop.Bucket.Name != "" {
+		deprecate.Notice(ctx, "scoop")
+		ctx.Config.Scoops = append(ctx.Config.Scoops, ctx.Config.Scoop)
 	}
-	ctx.Config.Scoop.CommitAuthor = commitauthor.Default(ctx.Config.Scoop.CommitAuthor)
-	if ctx.Config.Scoop.CommitMessageTemplate == "" {
-		ctx.Config.Scoop.CommitMessageTemplate = "Scoop update for {{ .ProjectName }} version {{ .Tag }}"
-	}
-	if ctx.Config.Scoop.Goamd64 == "" {
-		ctx.Config.Scoop.Goamd64 = "v1"
+	for i := range ctx.Config.Scoops {
+		scoop := &ctx.Config.Scoops[i]
+		if scoop.Name == "" {
+			scoop.Name = ctx.Config.ProjectName
+		}
+		scoop.CommitAuthor = commitauthor.Default(scoop.CommitAuthor)
+		if scoop.CommitMessageTemplate == "" {
+			scoop.CommitMessageTemplate = "Scoop update for {{ .ProjectName }} version {{ .Tag }}"
+		}
+		if scoop.Goamd64 == "" {
+			scoop.Goamd64 = "v1"
+		}
 	}
 	return nil
 }
 
-func doRun(ctx *context.Context, cl client.ReleaserURLTemplater) error {
-	scoop := ctx.Config.Scoop
+func runAll(ctx *context.Context, cl client.ReleaserURLTemplater) error {
+	for _, scoop := range ctx.Config.Scoops {
+		err := doRun(ctx, scoop, cl)
+		if err != nil {
+			return err
+		}
+	}
+	return nil
+}
 
-	archives := ctx.Artifacts.Filter(
-		artifact.And(
-			artifact.ByGoos("windows"),
-			artifact.ByType(artifact.UploadableArchive),
-			artifact.Or(
-				artifact.And(
-					artifact.ByGoarch("amd64"),
-					artifact.ByGoamd64(scoop.Goamd64),
-				),
-				artifact.ByGoarch("386"),
+func doRun(ctx *context.Context, scoop config.Scoop, cl client.ReleaserURLTemplater) error {
+	filters := []artifact.Filter{
+		artifact.ByGoos("windows"),
+		artifact.ByType(artifact.UploadableArchive),
+		artifact.Or(
+			artifact.And(
+				artifact.ByGoarch("amd64"),
+				artifact.ByGoamd64(scoop.Goamd64),
 			),
+			artifact.ByGoarch("386"),
 		),
-	).List()
+	}
+
+	if len(scoop.IDs) > 0 {
+		filters = append(filters, artifact.ByIDs(scoop.IDs...))
+	}
+
+	filtered := ctx.Artifacts.Filter(artifact.And(filters...))
+	archives := filtered.List()
+	for _, platArchives := range filtered.GroupByPlatform() {
+		// there might be multiple archives, but only of for each platform
+		if len(platArchives) != 1 {
+			return ErrIncorrectArchiveCount{scoop.Goamd64, scoop.IDs, archives}
+		}
+	}
+	// handle no archives found whatsoever
 	if len(archives) == 0 {
-		return ErrNoWindows{scoop.Goamd64}
+		return ErrIncorrectArchiveCount{scoop.Goamd64, scoop.IDs, archives}
 	}
 
 	filename := scoop.Name + ".json"
 
-	data, err := dataFor(ctx, cl, archives)
+	data, err := dataFor(ctx, scoop, cl, archives)
 	if err != nil {
 		return err
 	}
@@ -119,14 +171,24 @@ func doRun(ctx *context.Context, cl client.ReleaserURLTemplater) error {
 	return nil
 }
 
-func doPublish(ctx *context.Context, cl client.Client) error {
-	manifests := ctx.Artifacts.Filter(artifact.ByType(artifact.ScoopManifest)).List()
-	if len(manifests) == 0 { // should never happen
-		return nil
+func publishAll(ctx *context.Context, cli client.Client) error {
+	// even if one of them skips, we run them all, and then show return the skips all at once.
+	// this is needed so we actually create the `dist/foo.rb` file, which is useful for debugging.
+	skips := pipe.SkipMemento{}
+	for _, manifest := range ctx.Artifacts.Filter(artifact.ByType(artifact.ScoopManifest)).List() {
+		err := doPublish(ctx, manifest, cli)
+		if err != nil && pipe.IsSkip(err) {
+			skips.Remember(err)
+			continue
+		}
+		if err != nil {
+			return err
+		}
 	}
+	return skips.Evaluate()
+}
 
-	manifest := manifests[0]
-
+func doPublish(ctx *context.Context, manifest *artifact.Artifact, cl client.Client) error {
 	scoop, err := artifact.Extra[config.Scoop](*manifest, scoopConfigExtra)
 	if err != nil {
 		return err
@@ -231,26 +293,26 @@ func doBuildManifest(manifest Manifest) (bytes.Buffer, error) {
 	return result, err
 }
 
-func dataFor(ctx *context.Context, cl client.ReleaserURLTemplater, artifacts []*artifact.Artifact) (Manifest, error) {
+func dataFor(ctx *context.Context, scoop config.Scoop, cl client.ReleaserURLTemplater, artifacts []*artifact.Artifact) (Manifest, error) {
 	manifest := Manifest{
 		Version:      ctx.Version,
 		Architecture: map[string]Resource{},
-		Homepage:     ctx.Config.Scoop.Homepage,
-		License:      ctx.Config.Scoop.License,
-		Description:  ctx.Config.Scoop.Description,
-		Persist:      ctx.Config.Scoop.Persist,
-		PreInstall:   ctx.Config.Scoop.PreInstall,
-		PostInstall:  ctx.Config.Scoop.PostInstall,
-		Depends:      ctx.Config.Scoop.Depends,
-		Shortcuts:    ctx.Config.Scoop.Shortcuts,
+		Homepage:     scoop.Homepage,
+		License:      scoop.License,
+		Description:  scoop.Description,
+		Persist:      scoop.Persist,
+		PreInstall:   scoop.PreInstall,
+		PostInstall:  scoop.PostInstall,
+		Depends:      scoop.Depends,
+		Shortcuts:    scoop.Shortcuts,
 	}
 
-	if ctx.Config.Scoop.URLTemplate == "" {
+	if scoop.URLTemplate == "" {
 		url, err := cl.ReleaseURLTemplate(ctx)
 		if err != nil {
 			return manifest, err
 		}
-		ctx.Config.Scoop.URLTemplate = url
+		scoop.URLTemplate = url
 	}
 
 	for _, artifact := range artifacts {
@@ -268,7 +330,7 @@ func dataFor(ctx *context.Context, cl client.ReleaserURLTemplater, artifacts []*
 			continue
 		}
 
-		url, err := tmpl.New(ctx).WithArtifact(artifact).Apply(ctx.Config.Scoop.URLTemplate)
+		url, err := tmpl.New(ctx).WithArtifact(artifact).Apply(scoop.URLTemplate)
 		if err != nil {
 			return manifest, err
 		}
@@ -280,7 +342,7 @@ func dataFor(ctx *context.Context, cl client.ReleaserURLTemplater, artifacts []*
 
 		log.WithFields(log.Fields{
 			"artifactExtras":   artifact.Extra,
-			"fromURLTemplate":  ctx.Config.Scoop.URLTemplate,
+			"fromURLTemplate":  scoop.URLTemplate,
 			"templatedBrewURL": url,
 			"sum":              sum,
 		}).Debug("scoop url templating")
@@ -302,14 +364,14 @@ func dataFor(ctx *context.Context, cl client.ReleaserURLTemplater, artifacts []*
 
 func binaries(a artifact.Artifact) ([]string, error) {
 	// nolint: prealloc
-	var bins []string
+	var result []string
 	wrap := artifact.ExtraOr(a, artifact.ExtraWrappedIn, "")
-	builds, err := artifact.Extra[[]artifact.Artifact](a, artifact.ExtraBuilds)
+	bins, err := artifact.Extra[[]string](a, artifact.ExtraBinaries)
 	if err != nil {
 		return nil, err
 	}
-	for _, b := range builds {
-		bins = append(bins, filepath.Join(wrap, b.Name))
+	for _, b := range bins {
+		result = append(result, filepath.Join(wrap, b))
 	}
-	return bins, nil
+	return result, nil
 }

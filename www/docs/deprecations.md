@@ -37,6 +37,27 @@ Description.
 -->
 
 
+### scoop
+
+> since 2023-04-30 (v1.18.0)
+
+GoReleaser now allows many `scoop` configurations, so it should be pluralized
+[accordingly](/customization/scoop).
+
+=== "Before"
+
+    ``` yaml
+    scoop:
+      # ...
+    ```
+
+=== "After"
+    ``` yaml
+    scoops:
+    - # ...
+    ```
+
+
 ### build
 
 > since 2023-02-09 (v1.16.0)

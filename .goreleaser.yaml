@@ -212,14 +212,14 @@ aurs:
       # man pages
       install -Dm644 "./manpages/goreleaser.1.gz" "${pkgdir}/usr/share/man/man1/goreleaser.1.gz"
 
-scoop:
-  bucket:
-    owner: goreleaser
-    name: scoop-bucket
-  folder: bucket
-  homepage:  https://goreleaser.com
-  description: Deliver Go binaries as fast and easily as possible
-  license: MIT
+scoops:
+  - bucket:
+      owner: goreleaser
+      name: scoop-bucket
+    folder: bucket
+    homepage:  https://goreleaser.com
+    description: Deliver Go binaries as fast and easily as possible
+    license: MIT
 
 nfpms:
   - file_name_template: '{{ .ConventionalFileName }}'

@@ -239,6 +239,7 @@ type Ko struct {
 // Scoop contains the scoop.sh section.
 type Scoop struct {
 	Name                  string       `yaml:"name,omitempty" json:"name,omitempty"`
+	IDs                   []string     `yaml:"ids,omitempty" json:"ids,omitempty"`
 	Bucket                RepoRef      `yaml:"bucket,omitempty" json:"bucket,omitempty"`
 	Folder                string       `yaml:"folder,omitempty" json:"folder,omitempty"`
 	CommitAuthor          CommitAuthor `yaml:"commit_author,omitempty" json:"commit_author,omitempty"`
@@ -957,7 +958,8 @@ type Project struct {
 	AURs            []AUR            `yaml:"aurs,omitempty" json:"aurs,omitempty"`
 	Krews           []Krew           `yaml:"krews,omitempty" json:"krews,omitempty"`
 	Kos             []Ko             `yaml:"kos,omitempty" json:"kos,omitempty"`
-	Scoop           Scoop            `yaml:"scoop,omitempty" json:"scoop,omitempty"`
+	Scoop           Scoop            `yaml:"scoop,omitempty" json:"scoop,omitempty"` // deprecated
+	Scoops          []Scoop          `yaml:"scoops,omitempty" json:"scoops,omitempty"`
 	Builds          []Build          `yaml:"builds,omitempty" json:"builds,omitempty"`
 	Archives        []Archive        `yaml:"archives,omitempty" json:"archives,omitempty"`
 	NFPMs           []NFPM           `yaml:"nfpms,omitempty" json:"nfpms,omitempty"`
