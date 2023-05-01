@@ -41,10 +41,7 @@ func (Pipe) Run(ctx *context.Context) error {
 		for _, bin := range findBinaries(ctx, upx) {
 			bin := bin
 			g.Go(func() error {
-				log.WithField("binary", bin.Path).Info("packing")
-
 				sizeBefore := sizeOf(bin.Path)
-
 				args := []string{
 					"--quiet",
 				}
@@ -72,17 +69,17 @@ func (Pipe) Run(ctx *context.Context) error {
 							return nil
 						}
 					}
-					return fmt.Errorf("could not pack: %w: %s", err, string(out))
+					return fmt.Errorf("could not pack %s: %w: %s", bin.Path, err, string(out))
 				}
 
 				sizeAfter := sizeOf(bin.Path)
 
-				log.WithFields(log.Fields{
-					"binary": bin.Path,
-					"before": units.HumanSize(float64(sizeBefore)),
-					"after":  units.HumanSize(float64(sizeAfter)),
-					"ratio":  fmt.Sprintf("%d%%", (sizeAfter*100)/sizeBefore),
-				}).Info("packed")
+				log.
+					WithField("before", units.HumanSize(float64(sizeBefore))).
+					WithField("after", units.HumanSize(float64(sizeAfter))).
+					WithField("ratio", fmt.Sprintf("%d%%", (sizeAfter*100)/sizeBefore)).
+					WithField("binary", bin.Path).
+					Info("packed")
 
 				return nil
 			})
