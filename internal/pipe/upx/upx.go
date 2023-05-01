@@ -91,6 +91,7 @@ func (Pipe) Run(ctx *context.Context) error {
 var knownExceptions = []string{
 	"CantPackException",
 	"AlreadyPackedException",
+	"NotCompressibleException",
 }
 
 func findBinaries(ctx *context.Context, upx config.UPX) []*artifact.Artifact {
