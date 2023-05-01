@@ -34,6 +34,7 @@ import (
 	"github.com/goreleaser/goreleaser/internal/pipe/snapshot"
 	"github.com/goreleaser/goreleaser/internal/pipe/sourcearchive"
 	"github.com/goreleaser/goreleaser/internal/pipe/universalbinary"
+	"github.com/goreleaser/goreleaser/internal/pipe/upx"
 	"github.com/goreleaser/goreleaser/pkg/context"
 )
 
@@ -74,6 +75,8 @@ var BuildPipeline = []Piper{
 	build.Pipe{},
 	// universal binary handling
 	universalbinary.Pipe{},
+	// upx
+	upx.Pipe{},
 }
 
 // BuildCmdPipeline is the pipeline run by goreleaser build.
