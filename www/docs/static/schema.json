@@ -2032,6 +2032,12 @@
 					"scoop": {
 						"$ref": "#/$defs/Scoop"
 					},
+					"scoops": {
+						"items": {
+							"$ref": "#/$defs/Scoop"
+						},
+						"type": "array"
+					},
 					"builds": {
 						"items": {
 							"$ref": "#/$defs/Build"
@@ -2453,6 +2459,12 @@
 				"properties": {
 					"name": {
 						"type": "string"
+					},
+					"ids": {
+						"items": {
+							"type": "string"
+						},
+						"type": "array"
 					},
 					"bucket": {
 						"$ref": "#/$defs/RepoRef"
