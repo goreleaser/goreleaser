@@ -2161,6 +2161,12 @@
 						},
 						"type": "array"
 					},
+					"upx": {
+						"items": {
+							"$ref": "#/$defs/UPX"
+						},
+						"type": "array"
+					},
 					"build": {
 						"$ref": "#/$defs/Build",
 						"description": "deprecated: use builds instead"
@@ -3001,6 +3007,47 @@
 					},
 					"message_template": {
 						"type": "string"
+					}
+				},
+				"additionalProperties": false,
+				"type": "object"
+			},
+			"UPX": {
+				"properties": {
+					"enabled": {
+						"type": "boolean"
+					},
+					"ids": {
+						"items": {
+							"type": "string"
+						},
+						"type": "array"
+					},
+					"binary": {
+						"type": "string"
+					},
+					"compress": {
+						"type": "string",
+						"enum": [
+							"1",
+							"2",
+							"3",
+							"4",
+							"5",
+							"6",
+							"7",
+							"8",
+							"9",
+							"best",
+							""
+						],
+						"default": ""
+					},
+					"lzma": {
+						"type": "boolean"
+					},
+					"brute": {
+						"type": "boolean"
 					}
 				},
 				"additionalProperties": false,
