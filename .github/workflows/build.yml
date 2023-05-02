@@ -50,7 +50,7 @@ jobs:
       - uses: actions/setup-go@4d34df0c2316fe8122ab82dc22947d607c0c91f9 # v4
         with:
           go-version: stable
-      - uses: sigstore/cosign-installer@v3.0.1
+      - uses: sigstore/cosign-installer@v3.0.3
       - uses: anchore/sbom-action/download-syft@v0.13.3
       - name: setup-validate-krew-manifest
         run: go install sigs.k8s.io/krew/cmd/validate-krew-manifest@latest
