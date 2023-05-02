@@ -329,11 +329,20 @@ func relPath(a *Artifact) (string, error) {
 	return filepath.Rel(cwd, a.Path)
 }
 
+func shouldRelPath(a *Artifact) bool {
+	switch a.Type {
+	case DockerImage, DockerManifest, PublishableDockerImage:
+		return false
+	default:
+		return filepath.IsAbs(a.Path)
+	}
+}
+
 // Add safely adds a new artifact to an artifact list.
 func (artifacts *Artifacts) Add(a *Artifact) {
 	artifacts.lock.Lock()
 	defer artifacts.lock.Unlock()
-	if filepath.IsAbs(a.Path) {
+	if shouldRelPath(a) {
 		rel, err := relPath(a)
 		if rel != "" && err == nil {
 			a.Path = rel
