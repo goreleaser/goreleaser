@@ -12,7 +12,7 @@ require (
 	github.com/caarlos0/go-reddit/v3 v3.0.1
 	github.com/caarlos0/go-shellwords v1.0.12
 	github.com/caarlos0/go-version v0.1.1
-	github.com/caarlos0/log v0.2.2
+	github.com/caarlos0/log v0.4.0
 	github.com/charmbracelet/keygen v0.4.2
 	github.com/charmbracelet/lipgloss v0.7.1
 	github.com/chrismellard/docker-credential-acr-env v0.0.0-20220327082430-c57b701bfc08
@@ -54,6 +54,8 @@ require (
 	gopkg.in/mail.v2 v2.3.1
 	gopkg.in/yaml.v3 v3.0.1
 )
+
+require github.com/elliotchance/orderedmap/v2 v2.2.0 // indirect
 
 // DO NOT UPDATE THIS!! needs to be v0.0.0-20210512092938-c05353c2d58c
 require github.com/ProtonMail/go-crypto v0.0.0-20210512092938-c05353c2d58c // indirect
