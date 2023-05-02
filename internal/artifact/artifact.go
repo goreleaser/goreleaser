@@ -15,6 +15,8 @@ import (
 	"hash/crc32"
 	"io"
 	"os"
+	"path/filepath"
+	"strings"
 	"sync"
 
 	"github.com/caarlos0/log"
@@ -316,15 +318,40 @@ func (artifacts *Artifacts) GroupByPlatform() map[string][]*Artifact {
 	return result
 }
 
+func relPath(a *Artifact) (string, error) {
+	cwd, err := os.Getwd()
+	if err != nil {
+		return "", err
+	}
+	if !strings.HasPrefix(a.Path, cwd) {
+		return "", nil
+	}
+	return filepath.Rel(cwd, a.Path)
+}
+
+func shouldRelPath(a *Artifact) bool {
+	switch a.Type {
+	case DockerImage, DockerManifest, PublishableDockerImage:
+		return false
+	default:
+		return filepath.IsAbs(a.Path)
+	}
+}
+
 // Add safely adds a new artifact to an artifact list.
 func (artifacts *Artifacts) Add(a *Artifact) {
 	artifacts.lock.Lock()
 	defer artifacts.lock.Unlock()
-	log.WithFields(log.Fields{
-		"name": a.Name,
-		"path": a.Path,
-		"type": a.Type,
-	}).Debug("added new artifact")
+	if shouldRelPath(a) {
+		rel, err := relPath(a)
+		if rel != "" && err == nil {
+			a.Path = rel
+		}
+	}
+	log.WithField("name", a.Name).
+		WithField("type", a.Type).
+		WithField("path", a.Path).
+		Debug("added new artifact")
 	artifacts.items = append(artifacts.items, a)
 }
 
@@ -340,11 +367,10 @@ func (artifacts *Artifacts) Remove(filter Filter) error {
 	result := New()
 	for _, a := range artifacts.items {
 		if filter(a) {
-			log.WithFields(log.Fields{
-				"name": a.Name,
-				"path": a.Path,
-				"type": a.Type,
-			}).Debug("removing")
+			log.WithField("name", a.Name).
+				WithField("type", a.Type).
+				WithField("path", a.Path).
+				Debug("removing")
 		} else {
 			result.items = append(result.items, a)
 		}

@@ -93,11 +93,10 @@ func (c *giteaClient) getDefaultBranch(_ *context.Context, repo Repo) (string, e
 	projectID := repo.String()
 	p, res, err := c.client.GetRepo(repo.Owner, repo.Name)
 	if err != nil {
-		log.WithFields(log.Fields{
-			"projectID":  projectID,
-			"statusCode": res.StatusCode,
-			"err":        err.Error(),
-		}).Warn("error checking for default branch")
+		log.WithField("projectID", projectID).
+			WithField("statusCode", res.StatusCode).
+			WithError(err).
+			Warn("error checking for default branch")
 		return "", err
 	}
 	return p.DefaultBranch, nil
@@ -122,12 +121,11 @@ func (c *giteaClient) CreateFile(
 		branch, err = c.getDefaultBranch(ctx, repo)
 		if err != nil {
 			// Fall back to 'master' 😭
-			log.WithFields(log.Fields{
-				"fileName":        path,
-				"projectID":       repo.String(),
-				"requestedBranch": branch,
-				"err":             err.Error(),
-			}).Warn("error checking for default branch, using master")
+			log.WithField("fileName", path).
+				WithField("projectID", repo.String()).
+				WithField("requestedBranch", branch).
+				WithError(err).
+				Warn("error checking for default branch, using master")
 		}
 
 	}
@@ -183,9 +181,7 @@ func (c *giteaClient) createRelease(ctx *context.Context, title, body string) (*
 	}
 	release, _, err := c.client.CreateRelease(owner, repoName, opts)
 	if err != nil {
-		log.WithFields(log.Fields{
-			"err": err.Error(),
-		}).Debug("error creating Gitea release")
+		log.WithError(err).Debug("error creating Gitea release")
 		return nil, err
 	}
 	log.WithField("id", release.ID).Info("Gitea release created")
@@ -224,9 +220,7 @@ func (c *giteaClient) updateRelease(ctx *context.Context, title, body string, id
 
 	release, _, err := c.client.EditRelease(owner, repoName, id, opts)
 	if err != nil {
-		log.WithFields(log.Fields{
-			"err": err.Error(),
-		}).Debug("error updating Gitea release")
+		log.WithError(err).Debug("error updating Gitea release")
 		return nil, err
 	}
 	log.WithField("id", release.ID).Info("Gitea release updated")

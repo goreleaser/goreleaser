@@ -221,9 +221,7 @@ func (u *productionUploader) Close() error {
 }
 
 func (u *productionUploader) Open(ctx *context.Context, bucket string) error {
-	log.WithFields(log.Fields{
-		"bucket": bucket,
-	}).Debug("uploading")
+	log.WithField("bucket", bucket).Debug("uploading")
 
 	conn, err := blob.OpenBucket(ctx, bucket)
 	if err != nil {

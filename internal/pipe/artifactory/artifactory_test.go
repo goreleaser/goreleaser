@@ -469,7 +469,7 @@ func TestRunPipe_UnparsableErrorResponse(t *testing.T) {
 	})
 
 	require.NoError(t, Pipe{}.Default(ctx))
-	require.EqualError(t, Pipe{}.Publish(ctx), `artifactory: upload failed: unexpected error: invalid character '<' looking for beginning of value: <body><h1>error</h1></body>`)
+	require.EqualError(t, Pipe{}.Publish(ctx), `production: artifactory: upload failed: unexpected error: invalid character '<' looking for beginning of value: <body><h1>error</h1></body>`)
 }
 
 func TestRunPipe_FileNotFound(t *testing.T) {
@@ -531,7 +531,7 @@ func TestRunPipe_UnparsableTarget(t *testing.T) {
 	})
 
 	require.NoError(t, Pipe{}.Default(ctx))
-	require.EqualError(t, Pipe{}.Publish(ctx), `artifactory: upload failed: parse "://artifacts.company.com/example-repo-local/mybin/darwin/amd64/mybin": missing protocol scheme`)
+	require.EqualError(t, Pipe{}.Publish(ctx), `production: artifactory: upload failed: parse "://artifacts.company.com/example-repo-local/mybin/darwin/amd64/mybin": missing protocol scheme`)
 }
 
 func TestRunPipe_DirUpload(t *testing.T) {

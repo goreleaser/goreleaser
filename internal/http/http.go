@@ -177,12 +177,7 @@ func Upload(ctx *context.Context, uploads []config.Upload, kind string, check Re
 		case ModeBinary:
 			filters = append(filters, artifact.ByType(artifact.UploadableBinary))
 		default:
-			err := fmt.Errorf("%s: mode \"%s\" not supported", kind, v)
-			log.WithFields(log.Fields{
-				kind:   upload.Name,
-				"mode": v,
-			}).Error(err.Error())
-			return err
+			return fmt.Errorf("%s: %s: mode \"%s\" not supported", upload.Name, kind, v)
 		}
 
 		filter := artifact.Or(filters...)
@@ -223,9 +218,7 @@ func uploadAsset(ctx *context.Context, upload *config.Upload, artifact *artifact
 	// Generate the target url
 	targetURL, err := resolveTargetTemplate(ctx, upload, artifact)
 	if err != nil {
-		msg := fmt.Sprintf("%s: error while building the target url", kind)
-		log.WithField("instance", upload.Name).WithError(err).Error(msg)
-		return fmt.Errorf("%s: %w", msg, err)
+		return fmt.Errorf("%s: %s: error while building target URL: %w", upload.Name, kind, err)
 	}
 
 	// Handle the artifact
@@ -250,13 +243,7 @@ func uploadAsset(ctx *context.Context, upload *config.Upload, artifact *artifact
 		for name, value := range upload.CustomHeaders {
 			resolvedValue, err := resolveHeaderTemplate(ctx, upload, artifact, value)
 			if err != nil {
-				msg := fmt.Sprintf("%s: failed to resolve custom_headers template", kind)
-				log.WithError(err).WithFields(log.Fields{
-					"instance":     upload.Name,
-					"header_name":  name,
-					"header_value": value,
-				}).Error(msg)
-				return fmt.Errorf("%s: %w", msg, err)
+				return fmt.Errorf("%s: %s: failed to resolve custom_headers template: %w", upload.Name, kind, err)
 			}
 			headers[name] = resolvedValue
 		}
@@ -271,20 +258,15 @@ func uploadAsset(ctx *context.Context, upload *config.Upload, artifact *artifact
 
 	res, err := uploadAssetToServer(ctx, upload, targetURL, username, secret, headers, asset, check)
 	if err != nil {
-		msg := fmt.Sprintf("%s: upload failed", kind)
-		log.WithError(err).WithFields(log.Fields{
-			"instance": upload.Name,
-		}).Error(msg)
-		return fmt.Errorf("%s: %w", msg, err)
+		return fmt.Errorf("%s: %s: upload failed: %w", upload.Name, kind, err)
 	}
 	if err := res.Body.Close(); err != nil {
 		log.WithError(err).Warn("failed to close response body")
 	}
 
-	log.WithFields(log.Fields{
-		"instance": upload.Name,
-		"mode":     upload.Mode,
-	}).Info("uploaded successful")
+	log.WithField("instance", upload.Name).
+		WithField("mode", upload.Mode).
+		Info("uploaded successful")
 
 	return nil
 }

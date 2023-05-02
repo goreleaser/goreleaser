@@ -181,8 +181,6 @@ func catalogArtifact(ctx *context.Context, cfg config.SBOM, a *artifact.Artifact
 		names = append(names, filepath.Base(p))
 	}
 
-	fields := log.Fields{"cmd": cfg.Cmd, "artifact": artifactDisplayName, "sboms": strings.Join(names, ", ")}
-
 	// The GoASTScanner flags this as a security risk.
 	// However, this works as intended. The nosec annotation
 	// tells the scanner to ignore this.
@@ -202,7 +200,10 @@ func catalogArtifact(ctx *context.Context, cfg config.SBOM, a *artifact.Artifact
 	cmd.Stderr = io.MultiWriter(logext.NewWriter(), w)
 	cmd.Stdout = io.MultiWriter(logext.NewWriter(), w)
 
-	log.WithFields(fields).Info("cataloging")
+	log.WithField("cmd", cfg.Cmd).
+		WithField("artifact", artifactDisplayName).
+		WithField("sbom", names).
+		Info("cataloging")
 	if err := cmd.Run(); err != nil {
 		return nil, fmt.Errorf("cataloging artifacts: %s failed: %w: %s", cfg.Cmd, err, b.String())
 	}
