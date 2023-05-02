@@ -15,10 +15,11 @@ import (
 
 // nolint: gochecknoglobals
 var (
-	version = ""
-	commit  = ""
-	date    = ""
-	builtBy = ""
+	version   = ""
+	commit    = ""
+	treeState = ""
+	date      = ""
+	builtBy   = ""
 )
 
 func init() {
@@ -54,6 +55,9 @@ func buildVersion(version, commit, date, builtBy string) goversion.Info {
 		func(i *goversion.Info) {
 			if commit != "" {
 				i.GitCommit = commit
+			}
+			if treeState != "" {
+				i.GitTreeState = treeState
 			}
 			if date != "" {
 				i.BuildDate = date
