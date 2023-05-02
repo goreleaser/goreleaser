@@ -27,6 +27,7 @@ Key                   |Description
 `.CommitDate`         |the UTC commit date in RFC 3339 format
 `.CommitTimestamp`    |the UTC commit date in Unix format
 `.GitURL`             |the git remote url
+`.IsGitDirty`         |whether or not current git state is dirty. Since v1.19.
 `.Major`              |the major part of the version[^tag-is-semver]
 `.Minor`              |the minor part of the version[^tag-is-semver]
 `.Patch`              |the patch part of the version[^tag-is-semver]
