@@ -49,7 +49,7 @@ jobs:
       matrix:
         format: [ deb, rpm, apk ]
     steps:
-      - uses: actions/checkout@24cb9080177205b6e8c946b17badbe402adc938f # v3
+      - uses: actions/checkout@8e5e7e5ab8b370d6c329ec480221332ada57f0ab # v3
         with:
           fetch-depth: 0
       - uses: arduino/setup-task@e26d8975574116b0097a1161e0fe16ba75d84c1c # v1
@@ -96,8 +96,8 @@ jobs:
             ./dist/*.rpm
             ./dist/*.apk
           key: ${{ github.ref }}
-      - uses: sigstore/cosign-installer@v3.0.1
-      - uses: anchore/sbom-action/download-syft@v0.13.3
+      - uses: sigstore/cosign-installer@v3.0.3
+      - uses: anchore/sbom-action/download-syft@v0.14.1
       - name: dockerhub-login
         if: startsWith(github.ref, 'refs/tags/v')
         uses: docker/login-action@f4ef78c080cd8ba55a85445d5b36e214a81df20a # v1
