@@ -78,7 +78,8 @@ func runCommandWithOutput(ctx *context.Context, dir, binary string, args ...stri
 	log.
 		WithField("cmd", append([]string{binary}, args[0])).
 		WithField("cwd", dir).
-		WithField("args", args[1:]).Debug("running")
+		WithField("args", args[1:]).
+		Debug("running")
 	out, err := cmd.Output()
 	if out != nil {
 		// regardless of command success, always print stdout for backward-compatibility with runCommand()

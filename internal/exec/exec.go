@@ -96,16 +96,15 @@ func executeCommand(c *command, artifact *artifact.Artifact) error {
 	cmd.Stderr = io.MultiWriter(logext.NewWriter(), w)
 	cmd.Stdout = io.MultiWriter(logext.NewWriter(), w)
 
-	log.WithField("cmd", c.Args[0]).
-		WithField("artifact", artifact.Name).
-		Info("publishing")
+	log := log.WithField("cmd", c.Args[0]).
+		WithField("artifact", artifact.Name)
+
+	log.Info("publishing")
 	if err := cmd.Run(); err != nil {
 		return fmt.Errorf("publishing: %s failed: %w: %s", c.Args[0], err, b.String())
 	}
 
-	log.WithField("cmd", c.Args[0]).
-		WithField("artifact", artifact.Name).
-		Debugf("command %s finished successfully", c.Args[0])
+	log.Debug("command finished successfully")
 	return nil
 }
 

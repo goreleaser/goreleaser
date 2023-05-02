@@ -91,7 +91,7 @@ func (c *gitlabClient) getDefaultBranch(_ *context.Context, repo Repo) (string, 
 		log.
 			WithField("projectID", projectID).
 			WithField("statusCode", res.StatusCode).
-			WithField("err", err.Error()).
+			WithError(err).
 			Warn("error checking for default branch")
 		return "", err
 	}

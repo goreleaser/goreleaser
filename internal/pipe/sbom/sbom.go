@@ -202,7 +202,7 @@ func catalogArtifact(ctx *context.Context, cfg config.SBOM, a *artifact.Artifact
 
 	log.WithField("cmd", cfg.Cmd).
 		WithField("artifact", artifactDisplayName).
-		WithField("sboms", strings.Join(names, ", ")).
+		WithField("sbom", names).
 		Info("cataloging")
 	if err := cmd.Run(); err != nil {
 		return nil, fmt.Errorf("cataloging artifacts: %s failed: %w: %s", cfg.Cmd, err, b.String())
