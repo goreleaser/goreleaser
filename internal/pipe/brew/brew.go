@@ -26,7 +26,7 @@ const brewConfigExtra = "BrewConfig"
 
 // ErrMultipleArchivesSameOS happens when the config yields multiple archives
 // for linux or windows.
-var ErrMultipleArchivesSameOS = errors.New("one tap can handle only archive of an OS/Arch combination. Consider using ids in the brew section")
+var ErrMultipleArchivesSameOS = errors.New("one tap can handle only one archive of an OS/Arch combination. Consider using ids in the brew section")
 
 // ErrNoArchivesFound happens when 0 archives are found.
 type ErrNoArchivesFound struct {
