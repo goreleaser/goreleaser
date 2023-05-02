@@ -1181,6 +1181,21 @@
 				"additionalProperties": false,
 				"type": "object"
 			},
+			"GitRepoRef": {
+				"properties": {
+					"url": {
+						"type": "string"
+					},
+					"ssh_command": {
+						"type": "string"
+					},
+					"private_key": {
+						"type": "string"
+					}
+				},
+				"additionalProperties": false,
+				"type": "object"
+			},
 			"GiteaURLs": {
 				"properties": {
 					"api": {
@@ -2229,6 +2244,12 @@
 					"scoop": {
 						"$ref": "#/$defs/Scoop"
 					},
+					"scoops": {
+						"items": {
+							"$ref": "#/$defs/Scoop"
+						},
+						"type": "array"
+					},
 					"builds": {
 						"items": {
 							"$ref": "#/$defs/Build"
@@ -2346,6 +2367,9 @@
 					"git": {
 						"$ref": "#/$defs/Git"
 					},
+					"report_sizes": {
+						"type": "boolean"
+					},
 					"template_files": {
 						"items": {
 							"$ref": "#/$defs/TemplateFile"
@@ -2358,9 +2382,25 @@
 						},
 						"type": "array"
 					},
+					"upx": {
+						"items": {
+							"$ref": "#/$defs/UPX"
+						},
+						"type": "array"
+					},
 					"build": {
 						"$ref": "#/$defs/Build",
 						"description": "deprecated: use builds instead"
+					},
+					"force_token": {
+						"type": "string",
+						"enum": [
+							"github",
+							"gitlab",
+							"gitea",
+							""
+						],
+						"default": ""
 					},
 					"github_urls": {
 						"$ref": "#/$defs/GitHubURLs"
@@ -2593,6 +2633,9 @@
 					"branch": {
 						"type": "string"
 					},
+					"git": {
+						"$ref": "#/$defs/GitRepoRef"
+					},
 					"pull_request": {
 						"$ref": "#/$defs/PullRequest"
 					}
@@ -2679,6 +2722,12 @@
 				"properties": {
 					"name": {
 						"type": "string"
+					},
+					"ids": {
+						"items": {
+							"type": "string"
+						},
+						"type": "array"
 					},
 					"bucket": {
 						"$ref": "#/$defs/RepoRef"
@@ -3291,6 +3340,47 @@
 					},
 					"message_template": {
 						"type": "string"
+					}
+				},
+				"additionalProperties": false,
+				"type": "object"
+			},
+			"UPX": {
+				"properties": {
+					"enabled": {
+						"type": "boolean"
+					},
+					"ids": {
+						"items": {
+							"type": "string"
+						},
+						"type": "array"
+					},
+					"binary": {
+						"type": "string"
+					},
+					"compress": {
+						"type": "string",
+						"enum": [
+							"1",
+							"2",
+							"3",
+							"4",
+							"5",
+							"6",
+							"7",
+							"8",
+							"9",
+							"best",
+							""
+						],
+						"default": ""
+					},
+					"lzma": {
+						"type": "boolean"
+					},
+					"brute": {
+						"type": "boolean"
 					}
 				},
 				"additionalProperties": false,

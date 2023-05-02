@@ -277,9 +277,15 @@ nFPM will soon make mandatory setting the maintainer field.
     - maintainer: 'Name <email>'
     ```
 
+
+## Expired deprecation notices
+
+The following options were deprecated in the past and were already removed.
+
+
 ### variables
 
-> since 2022-01-20 (v1.4.0)
+> since 2022-01-20 (v1.4.0), removed 2023-05-01 (v1.18.0)
 
 On [GoReleaser PRO](/pro/) custom variables should now be prefixed with `.Var`.
 
@@ -298,10 +304,6 @@ On [GoReleaser PRO](/pro/) custom variables should now be prefixed with `.Var`.
       foo: bar
     some_template: 'lala-{{ .Var.foo }}'
     ```
-
-## Expired deprecation notices
-
-The following options were deprecated in the past and were already removed.
 
 ### dockers.use: buildpacks
 
