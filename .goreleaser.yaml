@@ -42,6 +42,9 @@ builds:
 universal_binaries:
 - replace: false
 
+upx:
+  - enabled: true
+
 checksum:
   name_template: 'checksums.txt'
 

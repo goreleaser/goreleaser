@@ -40,6 +40,7 @@ import (
 	"github.com/goreleaser/goreleaser/internal/pipe/twitter"
 	"github.com/goreleaser/goreleaser/internal/pipe/universalbinary"
 	"github.com/goreleaser/goreleaser/internal/pipe/upload"
+	"github.com/goreleaser/goreleaser/internal/pipe/upx"
 	"github.com/goreleaser/goreleaser/internal/pipe/webhook"
 	"github.com/goreleaser/goreleaser/pkg/context"
 )
@@ -62,6 +63,7 @@ var Defaulters = []Defaulter{
 	gomod.Pipe{},
 	build.Pipe{},
 	universalbinary.Pipe{},
+	upx.Pipe{},
 	sourcearchive.Pipe{},
 	archive.Pipe{},
 	nfpm.Pipe{},

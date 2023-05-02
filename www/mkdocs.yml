@@ -105,6 +105,7 @@ nav:
     - customization/verifiable_builds.md
     - customization/monorepo.md
     - customization/universalbinaries.md
+    - customization/upx.md
   - customization/partial.md
   - Packaging and Archiving:
     - customization/archive.md
