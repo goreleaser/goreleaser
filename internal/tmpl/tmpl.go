@@ -45,6 +45,7 @@ const (
 	tagContents     = "TagContents"
 	tagBody         = "TagBody"
 	releaseURL      = "ReleaseURL"
+	isGitDirty      = "IsGitDirty"
 	major           = "Major"
 	minor           = "Minor"
 	patch           = "Patch"
@@ -98,6 +99,7 @@ func New(ctx *context.Context) *Template {
 		commitDate:      ctx.Git.CommitDate.UTC().Format(time.RFC3339),
 		commitTimestamp: ctx.Git.CommitDate.UTC().Unix(),
 		gitURL:          ctx.Git.URL,
+		isGitDirty:      ctx.Git.Dirty,
 		env:             ctx.Env,
 		date:            ctx.Date.UTC().Format(time.RFC3339),
 		timestamp:       ctx.Date.UTC().Unix(),

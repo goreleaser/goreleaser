@@ -35,6 +35,7 @@ func TestWithArtifact(t *testing.T) {
 			TagSubject:  "awesome release",
 			TagContents: "awesome release\n\nanother line",
 			TagBody:     "another line",
+			Dirty:       true,
 		}),
 		testctx.WithEnv(map[string]string{
 			"FOO":       "bar",
@@ -88,6 +89,7 @@ func TestWithArtifact(t *testing.T) {
 		"1678327562":                       `{{ .Timestamp }}`,
 		"snapshot true":                    `snapshot {{.IsSnapshot}}`,
 		"draft true":                       `draft {{.IsDraft}}`,
+		"dirty true":                       `dirty {{.IsGitDirty}}`,
 
 		"remove this": "{{ filter .Env.MULTILINE \".*remove.*\" }}",
 		"something with\nmultiple lines\nto test things": "{{ reverseFilter .Env.MULTILINE \".*remove.*\" }}",

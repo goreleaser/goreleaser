@@ -164,6 +164,7 @@ func getGitInfo(ctx *context.Context) (context.GitInfo, error) {
 		TagSubject:  subject,
 		TagContents: contents,
 		TagBody:     body,
+		Dirty:       CheckDirty(ctx) != nil,
 	}, nil
 }
 

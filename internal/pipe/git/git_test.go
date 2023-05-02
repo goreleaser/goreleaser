@@ -114,10 +114,12 @@ func TestDirty(t *testing.T) {
 	t.Run("skip validate is set", func(t *testing.T) {
 		ctx := testctx.New(testctx.SkipValidate)
 		testlib.AssertSkipped(t, Pipe{}.Run(ctx))
+		require.True(t, ctx.Git.Dirty)
 	})
 	t.Run("snapshot", func(t *testing.T) {
 		ctx := testctx.New(testctx.Snapshot)
 		testlib.AssertSkipped(t, Pipe{}.Run(ctx))
+		require.True(t, ctx.Git.Dirty)
 	})
 }
 
@@ -235,6 +237,7 @@ func TestValidState(t *testing.T) {
 	require.Equal(t, "v0.0.3", ctx.Git.CurrentTag)
 	require.Equal(t, "git@github.com:foo/bar.git", ctx.Git.URL)
 	require.NotEmpty(t, ctx.Git.FirstCommit)
+	require.False(t, ctx.Git.Dirty)
 }
 
 func TestSnapshotNoTags(t *testing.T) {
