@@ -517,6 +517,16 @@ type UniversalBinary struct {
 	Hooks        BuildHookConfig `yaml:"hooks,omitempty" json:"hooks,omitempty"`
 }
 
+// UPX allows to compress binaries with `upx`.
+type UPX struct {
+	Enabled  bool     `yaml:"enabled,omitempty" json:"enabled,omitempty"`
+	IDs      []string `yaml:"ids,omitempty" json:"ids,omitempty"`
+	Binary   string   `yaml:"binary,omitempty" json:"binary,omitempty"`
+	Compress string   `yaml:"compress,omitempty" json:"compress,omitempty" jsonschema:"enum=1,enum=2,enum=3,enum=4,enum=5,enum=6,enum=7,enum=8,enum=9,enum=best,enum=,default="`
+	LZMA     bool     `yaml:"lzma,omitempty" json:"lzma,omitempty"`
+	Brute    bool     `yaml:"brute,omitempty" json:"brute,omitempty"`
+}
+
 // Archive config used for the archive.
 type Archive struct {
 	ID                        string            `yaml:"id,omitempty" json:"id,omitempty"`
@@ -987,6 +997,7 @@ type Project struct {
 	ReportSizes     bool             `yaml:"report_sizes,omitempty" json:"report_sizes,omitempty"`
 
 	UniversalBinaries []UniversalBinary `yaml:"universal_binaries,omitempty" json:"universal_binaries,omitempty"`
+	UPXs              []UPX             `yaml:"upx,omitempty" json:"upx,omitempty"`
 
 	// this is a hack ¯\_(ツ)_/¯
 	SingleBuild Build `yaml:"build,omitempty" json:"build,omitempty" jsonschema_description:"deprecated: use builds instead"` // deprecated
