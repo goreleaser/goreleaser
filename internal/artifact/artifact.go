@@ -16,6 +16,7 @@ import (
 	"io"
 	"os"
 	"path/filepath"
+	"strings"
 	"sync"
 
 	"github.com/caarlos0/log"
@@ -322,6 +323,9 @@ func relPath(a *Artifact) (string, error) {
 	if err != nil {
 		return "", err
 	}
+	if !strings.HasPrefix(a.Path, cwd) {
+		return "", nil
+	}
 	return filepath.Rel(cwd, a.Path)
 }
 
@@ -331,7 +335,7 @@ func (artifacts *Artifacts) Add(a *Artifact) {
 	defer artifacts.lock.Unlock()
 	if filepath.IsAbs(a.Path) {
 		rel, err := relPath(a)
-		if err == nil {
+		if rel != "" && err == nil {
 			a.Path = rel
 		}
 	}
