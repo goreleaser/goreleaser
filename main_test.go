@@ -8,6 +8,10 @@ import (
 )
 
 func TestVersion(t *testing.T) {
+	const goVersion = "go1.20.3"
+	const compiler = "gc"
+	const platform = "linux/amd64"
+
 	for name, tt := range map[string]struct {
 		version, commit, date, builtBy string
 	}{
@@ -34,6 +38,9 @@ func TestVersion(t *testing.T) {
 		tt := tt
 		t.Run(name, func(t *testing.T) {
 			v := buildVersion(tt.version, tt.commit, tt.date, tt.builtBy)
+			v.GoVersion = goVersion
+			v.Compiler = compiler
+			v.Platform = platform
 			out, err := v.JSONString()
 			require.NoError(t, err)
 
