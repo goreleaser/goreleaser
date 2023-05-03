@@ -34,3 +34,6 @@ upx:
     # Whether to try all methods and filters (slow).
     brute: true
 ```
+
+!!! info
+    If `upx` is not in `$PATH`, GoReleaser will automatically avoid running it.
