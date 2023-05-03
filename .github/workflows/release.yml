@@ -98,6 +98,9 @@ jobs:
           key: ${{ github.ref }}
       - uses: sigstore/cosign-installer@v3.0.3
       - uses: anchore/sbom-action/download-syft@v0.14.1
+      - uses: crazy-max/ghaction-upx@v2
+        with:
+          install-only: true
       - name: dockerhub-login
         if: startsWith(github.ref, 'refs/tags/v')
         uses: docker/login-action@f4ef78c080cd8ba55a85445d5b36e214a81df20a # v1
