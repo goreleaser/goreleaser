@@ -704,8 +704,8 @@ github.com/caarlos0/go-shellwords v1.0.12 h1:HWrUnu6lGbWfrDcFiHcZiwOLzHWjjrPVehU
 github.com/caarlos0/go-shellwords v1.0.12/go.mod h1:bYeeX1GrTLPl5cAMYEzdm272qdsQAZiaHgeF0KTk1Gw=
 github.com/caarlos0/go-version v0.1.1 h1:1bikKHkGGVIIxqCmufhSSs3hpBScgHGacrvsi8FuIfc=
 github.com/caarlos0/go-version v0.1.1/go.mod h1:Ze5Qx4TsBBi5FyrSKVg1Ibc44KGV/llAaKGp86oTwZ0=
-github.com/caarlos0/log v0.4.0 h1:6e6F5hpFIstCh9tqIAu21gRLoiAp3IYtXpz/yuPy83A=
-github.com/caarlos0/log v0.4.0/go.mod h1:KZ4KwLhipK/sWIPGOCNVg3ke+iD2A3GC3+1WLEjTehw=
+github.com/caarlos0/log v0.4.1 h1:99+ocwxvbvQPK/effsNa4Di8MA0Xt7gBQK3vY20xG18=
+github.com/caarlos0/log v0.4.1/go.mod h1:Uv+r6RfrgaRmW/xoarK1S9csv+BQgS7fZbcKYXn8ggo=
 github.com/caarlos0/sshmarshal v0.1.0 h1:zTCZrDORFfWh526Tsb7vCm3+Yg/SfW/Ub8aQDeosk0I=
 github.com/caarlos0/sshmarshal v0.1.0/go.mod h1:7Pd/0mmq9x/JCzKauogNjSQEhivBclCQHfr9dlpDIyA=
 github.com/caarlos0/testfs v0.4.4 h1:3PHvzHi5Lt+g332CiShwS8ogTgS3HjrmzZxCm6JCDr8=
