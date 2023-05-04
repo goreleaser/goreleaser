@@ -184,7 +184,8 @@ nav:
   - About: cookbooks/index.md
   - Blog Posts: cookbooks/blog-posts.md
   - Add a new cookbook: cookbooks/contributing.md
-  - cookbooks//build-go-modules.md
+  - cookbooks/multi-platform-docker-images.md
+  - cookbooks/build-go-modules.md
   - cookbooks/cgo-and-crosscompiling.md
   - cookbooks/debconf-templates.md
   - cookbooks/using-jfrog-cli-to-publish-to-artifactory.md
