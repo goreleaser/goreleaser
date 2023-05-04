@@ -55,8 +55,6 @@ require (
 	gopkg.in/yaml.v3 v3.0.1
 )
 
-require github.com/google/s2a-go v0.1.2 // indirect
-
 // DO NOT UPDATE THIS!! needs to be v0.0.0-20210512092938-c05353c2d58c
 require github.com/ProtonMail/go-crypto v0.0.0-20210512092938-c05353c2d58c // indirect
 
@@ -164,6 +162,7 @@ require (
 	github.com/golang/protobuf v1.5.3 // indirect
 	github.com/google/go-cmp v0.5.9 // indirect
 	github.com/google/go-querystring v1.1.0 // indirect
+	github.com/google/s2a-go v0.1.2 // indirect
 	github.com/google/safetext v0.0.0-20220905092116-b49f7bc46da2 // indirect
 	github.com/google/shlex v0.0.0-20191202100458-e7afc7fbc510 // indirect
 	github.com/google/wire v0.5.0 // indirect
