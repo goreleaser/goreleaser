@@ -3,15 +3,14 @@
 Checks if configuration is valid
 
 ```
-goreleaser check [flags]
+goreleaser check [configuration files] [flags]
 ```
 
 ## Options
 
 ```
-  -f, --config string   Configuration file to check
-  -h, --help            help for check
-  -q, --quiet           Quiet mode: no output
+  -h, --help    help for check
+  -q, --quiet   Quiet mode: no output
 ```
 
 ## Options inherited from parent commands
