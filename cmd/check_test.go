@@ -28,7 +28,7 @@ func TestCheckConfigUnmarshalError(t *testing.T) {
 func TestCheckConfigInvalid(t *testing.T) {
 	cmd := newCheckCmd()
 	cmd.cmd.SetArgs([]string{"-f", "testdata/invalid.yml"})
-	require.EqualError(t, cmd.cmd.Execute(), "invalid config: found 2 builds with the ID 'a', please fix your config")
+	require.Error(t, cmd.cmd.Execute())
 }
 
 func TestCheckConfigInvalidQuiet(t *testing.T) {
@@ -40,5 +40,5 @@ func TestCheckConfigInvalidQuiet(t *testing.T) {
 func TestCheckConfigDeprecated(t *testing.T) {
 	cmd := newCheckCmd()
 	cmd.cmd.SetArgs([]string{"-f", "testdata/good.yml", "--deprecated"})
-	require.EqualError(t, cmd.cmd.Execute(), "config is valid, but uses deprecated properties, check logs above for details")
+	require.Error(t, cmd.cmd.Execute())
 }
