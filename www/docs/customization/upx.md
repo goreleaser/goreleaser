@@ -14,6 +14,15 @@ the _de facto_ tool for the job.
 GoReleaser has been able to integrate with it via custom [build hooks][bhooks],
 and now UPX has its own configuration section:
 
+!!! warning
+    `upx` does not support all platforms! Make sure to check
+    [their issues][upx-issues] and to test your packed binaries first.
+
+    Namely, _macOS Ventura_ is not supported at the moment.
+
+    Future GoReleaser releases will add more filters so you can cherry-pick
+    which platforms you want to pack or not.
+
 ```yaml
 # .goreleaser.yaml
 upx:
@@ -37,3 +46,5 @@ upx:
 
 !!! info
     If `upx` is not in `$PATH`, GoReleaser will automatically avoid running it.
+
+[upx-issues]: https://github.com/upx/upx/issues
