@@ -41,6 +41,12 @@ func (Pipe) Run(ctx *context.Context) error {
 		for _, bin := range findBinaries(ctx, upx) {
 			bin := bin
 			g.Go(func() error {
+				if bin.Goos == "darwin" {
+					log.
+						WithField("issue", "https://github.com/upx/upx/issues/612").
+						Warn("upx packed binaries currently do not work on macOS Ventura, skipping...")
+					return nil
+				}
 				sizeBefore := sizeOf(bin.Path)
 				args := []string{
 					"--quiet",
