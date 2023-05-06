@@ -192,7 +192,6 @@ brews:
 aurs:
   - homepage:  https://goreleaser.com
     description: Deliver Go binaries as fast and easily as possible
-    skip_upload: true # temporary, can't clone any of my aur packages for some reason
     maintainers:
       - 'Fernandez Ludovic <lfernandez dot dev at gmail dot com>'
       - 'Carlos Alexandro Becker <carlos at becker dot software>'
