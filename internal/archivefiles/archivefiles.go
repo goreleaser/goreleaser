@@ -20,37 +20,27 @@ import (
 func Eval(template *tmpl.Template, rlcp bool, files []config.File) ([]config.File, error) {
 	var result []config.File
 	for _, f := range files {
-		replaced, err := template.Apply(f.Source)
+		glob, err := template.Apply(f.Source)
 		if err != nil {
 			return result, fmt.Errorf("failed to apply template %s: %w", f.Source, err)
 		}
 
-		files, err := fileglob.Glob(replaced)
+		files, err := fileglob.Glob(glob)
 		if err != nil {
-			return result, fmt.Errorf("globbing failed for pattern %s: %w", replaced, err)
+			return result, fmt.Errorf("globbing failed for pattern %s: %w", glob, err)
 		}
 
-		f.Info.Owner, err = template.Apply(f.Info.Owner)
-		if err != nil {
-			return result, fmt.Errorf("failed to apply template %s: %w", f.Info.Owner, err)
+		if len(files) == 0 {
+			log.WithField("glob", f.Source).Warn("no files matched")
+			continue
 		}
-		f.Info.Group, err = template.Apply(f.Info.Group)
-		if err != nil {
-			return result, fmt.Errorf("failed to apply template %s: %w", f.Info.Group, err)
-		}
-		f.Info.MTime, err = template.Apply(f.Info.MTime)
-		if err != nil {
-			return result, fmt.Errorf("failed to apply template %s: %w", f.Info.MTime, err)
-		}
-		if f.Info.MTime != "" {
-			f.Info.ParsedMTime, err = time.Parse(time.RFC3339Nano, f.Info.MTime)
-			if err != nil {
-				return result, fmt.Errorf("failed to parse %s: %w", f.Info.MTime, err)
-			}
+
+		if err := tmplInfo(template, &f.Info); err != nil {
+			return result, err
 		}
 
 		// the prefix may not be a complete path or may use glob patterns, in that case use the parent directory
-		prefix := replaced
+		prefix := glob
 		if _, err := os.Stat(prefix); errors.Is(err, fs.ErrNotExist) || fileglob.ContainsMatchers(prefix) {
 			prefix = filepath.Dir(longestCommonPrefix(files))
 		}
@@ -73,6 +63,29 @@ func Eval(template *tmpl.Template, rlcp bool, files []config.File) ([]config.Fil
 	})
 
 	return unique(result), nil
+}
+
+func tmplInfo(template *tmpl.Template, info *config.FileInfo) error {
+	var err error
+	info.Owner, err = template.Apply(info.Owner)
+	if err != nil {
+		return fmt.Errorf("failed to apply template %s: %w", info.Owner, err)
+	}
+	info.Group, err = template.Apply(info.Group)
+	if err != nil {
+		return fmt.Errorf("failed to apply template %s: %w", info.Group, err)
+	}
+	info.MTime, err = template.Apply(info.MTime)
+	if err != nil {
+		return fmt.Errorf("failed to apply template %s: %w", info.MTime, err)
+	}
+	if info.MTime != "" {
+		info.ParsedMTime, err = time.Parse(time.RFC3339Nano, info.MTime)
+		if err != nil {
+			return fmt.Errorf("failed to parse %s: %w", info.MTime, err)
+		}
+	}
+	return nil
 }
 
 // remove duplicates
