@@ -20,14 +20,14 @@ import (
 func Eval(template *tmpl.Template, rlcp bool, files []config.File) ([]config.File, error) {
 	var result []config.File
 	for _, f := range files {
-		replaced, err := template.Apply(f.Source)
+		glob, err := template.Apply(f.Source)
 		if err != nil {
 			return result, fmt.Errorf("failed to apply template %s: %w", f.Source, err)
 		}
 
-		files, err := fileglob.Glob(replaced)
+		files, err := fileglob.Glob(glob)
 		if err != nil {
-			return result, fmt.Errorf("globbing failed for pattern %s: %w", replaced, err)
+			return result, fmt.Errorf("globbing failed for pattern %s: %w", glob, err)
 		}
 
 		if len(files) == 0 {
@@ -40,7 +40,7 @@ func Eval(template *tmpl.Template, rlcp bool, files []config.File) ([]config.Fil
 		}
 
 		// the prefix may not be a complete path or may use glob patterns, in that case use the parent directory
-		prefix := replaced
+		prefix := glob
 		if _, err := os.Stat(prefix); errors.Is(err, fs.ErrNotExist) || fileglob.ContainsMatchers(prefix) {
 			prefix = filepath.Dir(longestCommonPrefix(files))
 		}
