@@ -273,6 +273,12 @@ from one software to another.
 Our suggestion is to create a `my-app-head.rb` file on your tap following
 [homebrew's documentation](https://docs.brew.sh/Formula-Cookbook#unstable-versions-head).
 
+## GitHub Actions
+
+To publish a formula from one repository to another using GitHub Actions, you cannot use the default action token.
+You must use a separate token with content write privileges for the tap repository.
+You can check the [resource not accessible by integration](https://goreleaser.com/errors/resource-not-accessible-by-integration/) for more information.
+
 ## Limitations
 
 - Only one `GOARM` build is allowed;
