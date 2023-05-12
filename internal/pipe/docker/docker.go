@@ -285,10 +285,14 @@ func dockerPush(ctx *context.Context, image *artifact.Artifact) error {
 		return err
 	}
 
-	if strings.TrimSpace(docker.SkipPush) == "true" {
+	skip, err := tmpl.New(ctx).Apply(docker.SkipPush)
+	if err != nil {
+		return err
+	}
+	if strings.TrimSpace(skip) == "true" {
 		return pipe.Skip("docker.skip_push is set: " + image.Name)
 	}
-	if strings.TrimSpace(docker.SkipPush) == "auto" && ctx.Semver.Prerelease != "" {
+	if strings.TrimSpace(skip) == "auto" && ctx.Semver.Prerelease != "" {
 		return pipe.Skip("prerelease detected with 'auto' push, skipping docker publish: " + image.Name)
 	}
 
