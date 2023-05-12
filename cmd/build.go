@@ -178,6 +178,7 @@ func setupBuildSingleTarget(ctx *context.Context) {
 		build.Goamd64 = nil
 		build.Targets = nil
 	}
+	ctx.Config.UniversalBinaries = nil
 }
 
 func setupBuildID(ctx *context.Context, ids []string) error {
@@ -214,7 +215,11 @@ func (w withOutputPipe) String() string {
 }
 
 func (w withOutputPipe) Run(ctx *context.Context) error {
-	path := ctx.Artifacts.Filter(artifact.ByType(artifact.Binary)).List()[0].Path
+	bins := ctx.Artifacts.Filter(artifact.ByType(artifact.Binary)).List()
+	if len(bins) == 0 {
+		return fmt.Errorf("no binary found")
+	}
+	path := bins[0].Path
 	out := w.output
 	if out == "." {
 		out = filepath.Base(path)
