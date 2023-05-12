@@ -118,6 +118,7 @@ func TestRunPipe(t *testing.T) {
 			assertImageLabels:   noLabels,
 		},
 		"manifest autoskip no prerelease": {
+			env: map[string]string{"AUTO": "auto"},
 			dockers: []config.Docker{
 				{
 					ImageTemplates: []string{registry + "goreleaser/test_manifestskip:test-amd64"},
@@ -132,7 +133,7 @@ func TestRunPipe(t *testing.T) {
 					ImageTemplates: []string{
 						registry + "goreleaser/test_manifestskip:test-amd64",
 					},
-					SkipPush: "auto",
+					SkipPush: "{{ .Env.AUTO }}",
 				},
 			},
 			expect: []string{
@@ -625,6 +626,7 @@ func TestRunPipe(t *testing.T) {
 			manifestAssertError: shouldNotErr,
 		},
 		"valid_skip_push": {
+			env: map[string]string{"TRUE": "true"},
 			dockers: []config.Docker{
 				{
 					ImageTemplates: []string{
@@ -633,7 +635,7 @@ func TestRunPipe(t *testing.T) {
 					Goos:       "linux",
 					Goarch:     "amd64",
 					Dockerfile: "testdata/Dockerfile",
-					SkipPush:   "true",
+					SkipPush:   "{{.Env.TRUE}}",
 				},
 			},
 			expect: []string{
