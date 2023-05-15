@@ -64,7 +64,7 @@ func TestRunPipePullRequest(t *testing.T) {
 
 	client := client.NewMock()
 	pipe := Pipe{
-		prefetcher: fakeNixShaPrefetcher{
+		fakeNixShaPrefetcher{
 			"https://dummyhost/download/v1.2.1/foo_linux_amd64.tar.gz":  "sha1",
 			"https://dummyhost/download/v1.2.1/foo_linux_arm64.tar.gz":  "sha2",
 			"https://dummyhost/download/v1.2.1/foo_darwin_amd64.tar.gz": "sha3",

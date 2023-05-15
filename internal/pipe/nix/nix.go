@@ -33,6 +33,10 @@ func (e ErrNoArchivesFound) Error() string {
 	return fmt.Sprintf("no linux/macos archives found matching goos=[darwin linux] goarch=[amd64 arm64] goamd64=%s ids=%v", e.goamd64, e.ids)
 }
 
+func New() Pipe {
+	return Pipe{prodShaPrefetcher{}}
+}
+
 type Pipe struct {
 	prefetcher ShaPrefetcher
 }
@@ -56,10 +60,10 @@ func (Pipe) Default(ctx *context.Context) error {
 			nix.Goamd64 = "v1"
 		}
 		if nix.Install == "" {
-			nix.Install = fmt.Sprintf(`
+			nix.Install = `
 			    mkdir -p $out/bin
-				cp -vr ./%s $out/bin/%[1]s
-			 `, nix.Name)
+				cp -vr ./{{.Binary}} $out/bin/{{.Binary}}
+			 `
 		}
 	}
 
@@ -194,10 +198,15 @@ func (p Pipe) buildDerivation(ctx *context.Context, nix config.Nix, cli client.R
 		nix.URLTemplate = url
 	}
 
+	installs, err := installs(ctx, nix, artifacts[0])
+	if err != nil {
+		return "", err
+	}
+
 	data := TemplateData{
 		Name:       nix.Name,
 		Version:    ctx.Version,
-		Install:    nix.Install,
+		Install:    installs,
 		Archives:   map[string]Archive{},
 		SourceRoot: ".",
 	}
@@ -319,17 +328,58 @@ func doBuildPkg(ctx *context.Context, data TemplateData) (string, error) {
 	return out.String(), nil
 }
 
+func installs(ctx *context.Context, nix config.Nix, art *artifact.Artifact) ([]string, error) {
+	applied, err := tmpl.New(ctx).WithArtifact(art).Apply(nix.Install)
+	if err != nil {
+		return nil, err
+	}
+	if applied != "" {
+		return split(applied), nil
+	}
+
+	result := []string{"mkdir -p $out/bin"}
+	switch art.Type {
+	case artifact.UploadableBinary:
+		name := art.Name
+		bin := artifact.ExtraOr(*art, artifact.ExtraBinary, art.Name)
+		result = append(result, fmt.Sprintf("cp -vr ./%s $out/bin/%s", name, bin))
+	case artifact.UploadableArchive:
+		for _, bin := range artifact.ExtraOr(*art, artifact.ExtraBinaries, []string{}) {
+			result = append(result, fmt.Sprintf("cp -vr ./%s $out/bin/%[1]s", bin))
+		}
+	}
+
+	log.WithField("install", result).Warnf("guessing install")
+	return result, nil
+}
+
+func keys(m map[string]bool) []string {
+	keys := make([]string, 0, len(m))
+	for k := range m {
+		keys = append(keys, k)
+	}
+	return keys
+}
+
+func split(s string) []string {
+	var result []string
+	for _, line := range strings.Split(strings.TrimSpace(s), "\n") {
+		line := strings.TrimSpace(line)
+		if line == "" {
+			continue
+		}
+		result = append(result, line)
+	}
+	return result
+}
+
 type ShaPrefetcher interface {
 	Prefetch(url string) (string, error)
 }
 
-// ProductionShaPrefetcher uses `nix-prefetch-url` to prefetch hashes.
-type ProductionShaPrefetcher struct{}
+type prodShaPrefetcher struct{}
 
-// Prefetch implements NixShaPrefetcher
-func (ProductionShaPrefetcher) Prefetch(url string) (string, error) {
+func (prodShaPrefetcher) Prefetch(url string) (string, error) {
 	out, err := exec.Command("nix-prefetch-url", url).Output()
 	return strings.TrimSpace(string(out)), err
 }
-
-var _ ShaPrefetcher = ProductionShaPrefetcher{}

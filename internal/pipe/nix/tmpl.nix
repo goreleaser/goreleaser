@@ -26,7 +26,9 @@ in stdenv.mkDerivation {
   nativeBuildInputs = [ installShellFiles ];
 
   installPhase = ''
-    {{ .Install }}
+    	{{- range $index, $element := .Install }}
+        {{ . -}}
+        {{- end }}
   '';
 
   system = builtins.currentSystem;

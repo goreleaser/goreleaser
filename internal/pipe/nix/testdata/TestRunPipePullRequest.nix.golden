@@ -26,7 +26,8 @@ in stdenv.mkDerivation {
   nativeBuildInputs = [ installShellFiles ];
 
   installPhase = ''
-
+        mkdir -p $out/bin
+        cp -vr ./foo $out/bin/foo
   '';
 
   system = builtins.currentSystem;

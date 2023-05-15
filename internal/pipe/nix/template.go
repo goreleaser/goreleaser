@@ -12,7 +12,7 @@ type Archive struct {
 type TemplateData struct {
 	Name       string
 	Version    string
-	Install    string
+	Install    []string
 	SourceRoot string
 	Archives   map[string]Archive
 }
