@@ -58,6 +58,8 @@ const (
 	UploadableSourceArchive
 	// BrewTap is an uploadable homebrew tap recipe file.
 	BrewTap
+	// Nixpkg is an uploadable nix package.
+	Nixpkg
 	// PkgBuild is an Arch Linux AUR PKGBUILD file.
 	PkgBuild
 	// SrcInfo is an Arch Linux AUR .SRCINFO file.

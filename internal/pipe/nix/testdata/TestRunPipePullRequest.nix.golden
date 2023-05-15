@@ -1,0 +1,33 @@
+{ stdenv, fetchurl, installShellFiles }:
+let
+  shaMap = {
+    x86_64-linux = "sha1";
+    aarch64-linux = "sha2";
+    x86_64-darwin = "sha3";
+    aarch64-darwin = "sha4";
+  };
+
+  urlMap = {
+    x86_64-linux = "https://dummyhost/download/v1.2.1/foo_linux_amd64.tar.gz";
+    aarch64-linux = "https://dummyhost/download/v1.2.1/foo_linux_arm64.tar.gz";
+    x86_64-darwin = "https://dummyhost/download/v1.2.1/foo_darwin_amd64.tar.gz";
+    aarch64-darwin = "https://dummyhost/download/v1.2.1/foo_darwin_arm64.tar.gz";
+  };
+in stdenv.mkDerivation {
+  pname = "foo";
+  version = "1.2.1";
+  src = fetchurl {
+    url = urlMap.${builtins.currentSystem};
+    sha256 = shaMap.${builtins.currentSystem};
+  };
+
+  sourceRoot = ".";
+
+  nativeBuildInputs = [ installShellFiles ];
+
+  installPhase = ''
+
+  '';
+
+  system = builtins.currentSystem;
+}
