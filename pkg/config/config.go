@@ -464,6 +464,7 @@ type File struct {
 	Destination string   `yaml:"dst,omitempty" json:"dst,omitempty"`
 	StripParent bool     `yaml:"strip_parent,omitempty" json:"strip_parent,omitempty"`
 	Info        FileInfo `yaml:"info,omitempty" json:"info,omitempty"`
+	Default     bool     `yaml:"-" json:"-"`
 }
 
 // FileInfo is the file info of a file.
