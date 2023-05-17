@@ -32,12 +32,12 @@ func RunWithEnv(ctx context.Context, env []string, args ...string) (string, erro
 	cmd.Stderr = &stderr
 	cmd.Env = append(cmd.Env, env...)
 
-	log.WithField("args", args).Debug("running git")
 	err := cmd.Run()
 
-	log.WithField("stdout", stdout.String()).
-		WithField("stderr", stderr.String()).
-		Debug("git result")
+	log.WithField("args", args).
+		WithField("stdout", strings.TrimSpace(stdout.String())).
+		WithField("stderr", strings.TrimSpace(stderr.String())).
+		Debug("git command result")
 
 	if err != nil {
 		return "", errors.New(stderr.String())

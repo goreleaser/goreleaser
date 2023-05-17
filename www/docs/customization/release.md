@@ -298,7 +298,7 @@ list all commits since the last tag, but skip ones starting with `Merge` or
 `docs`, you could run this command:
 
 ```sh
-goreleaser --release-notes <(some_changelog_generator)
+goreleaser release --release-notes <(some_changelog_generator)
 ```
 
 Some changelog generators you can use:

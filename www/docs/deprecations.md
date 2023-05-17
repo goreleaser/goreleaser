@@ -37,6 +37,24 @@ Description.
 -->
 
 
+### --debug
+
+> since 2023-05-16 (v1.19.0)
+
+`--debug` has been deprecated in favor of `--verbose`.
+
+=== "Before"
+
+    ```bash
+    goreleaser release --debug
+    ```
+
+=== "After"
+
+    ```bash
+    goreleaser release --verbose
+    ```
+
 ### scoop
 
 > since 2023-04-30 (v1.18.0)
@@ -91,13 +109,13 @@ Simply use the pluralized form, `builds`, according to the
 === "Before"
 
     ```bash
-    goreleaser --rm-dist
+    goreleaser release --rm-dist
     ```
 
 === "After"
 
     ```bash
-    goreleaser --clean
+    goreleaser release --clean
     ```
 
 ### archives.rlcp

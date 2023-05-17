@@ -10,7 +10,7 @@ You can, though, leverage other tools to do the work for you, like for example
 ```bash
 git tag "$(svu next)"
 git push --tags
-goreleaser --clean
+goreleaser release --clean
 ```
 
 ## Example: semantic-release
