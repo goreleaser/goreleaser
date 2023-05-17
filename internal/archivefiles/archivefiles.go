@@ -31,7 +31,11 @@ func Eval(template *tmpl.Template, rlcp bool, files []config.File) ([]config.Fil
 		}
 
 		if len(files) == 0 {
-			log.WithField("glob", f.Source).Warn("no files matched")
+			if !f.Default {
+				// only log if its not a default glob, as those are usually
+				// very generic and are not really warnings for the user.
+				log.WithField("glob", f.Source).Warn("no files matched")
+			}
 			continue
 		}
 

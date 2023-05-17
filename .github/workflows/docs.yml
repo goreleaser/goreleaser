@@ -21,7 +21,7 @@ jobs:
       - uses: arduino/setup-task@e26d8975574116b0097a1161e0fe16ba75d84c1c # v1
         with:
           repo-token: ${{ secrets.GITHUB_TOKEN }}
-      - uses: actions/setup-go@4d34df0c2316fe8122ab82dc22947d607c0c91f9 # v4
+      - uses: actions/setup-go@fac708d6674e30b6ba41289acaab6d4b75aa0753 # v4
         with:
           go-version: stable
       - run: task docs:build

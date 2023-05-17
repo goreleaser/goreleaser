@@ -64,12 +64,12 @@ func (Pipe) Default(ctx *context.Context) error {
 		}
 		if len(archive.Files) == 0 {
 			archive.Files = []config.File{
-				{Source: "license*"},
-				{Source: "LICENSE*"},
-				{Source: "readme*"},
-				{Source: "README*"},
-				{Source: "changelog*"},
-				{Source: "CHANGELOG*"},
+				{Source: "license*", Default: true},
+				{Source: "LICENSE*", Default: true},
+				{Source: "readme*", Default: true},
+				{Source: "README*", Default: true},
+				{Source: "changelog*", Default: true},
+				{Source: "CHANGELOG*", Default: true},
 			}
 		}
 		if archive.NameTemplate == "" {
