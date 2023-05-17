@@ -21,6 +21,11 @@ import (
 	"github.com/goreleaser/goreleaser/pkg/context"
 )
 
+// TODO: this must run only after the release is published, otherwise prefetch
+// url will fail. Might need to do some pre-processing before actually
+// publishing.
+// TODO: add metadata et al.
+
 const nixConfigExtra = "NixConfig"
 
 // ErrNoArchivesFound happens when 0 archives are found.
@@ -351,14 +356,6 @@ func installs(ctx *context.Context, nix config.Nix, art *artifact.Artifact) ([]s
 
 	log.WithField("install", result).Warnf("guessing install")
 	return result, nil
-}
-
-func keys(m map[string]bool) []string {
-	keys := make([]string, 0, len(m))
-	for k := range m {
-		keys = append(keys, k)
-	}
-	return keys
 }
 
 func split(s string) []string {
