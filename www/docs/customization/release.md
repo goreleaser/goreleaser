@@ -48,7 +48,18 @@ release:
   #
   # Default: ''
   # Since: v1.11
+  # Templates: allowed
   target_commitish: '{{ .Commit }}'
+
+  # This allows to change which tag GitHub will create.
+  # Usually you'll use this together with `target_commitish`, or if you want to
+  # publish a binary from a monorepo into a public repository somewhere, without
+  # the tag prefix.
+  #
+  # Default: '{{ .PrefixedCurrentTag }}'
+  # Since: v1.19 (pro)
+  # Templates: allowed
+  tag: '{{ .CurrentTag }}'
 
   # If set, will create a release discussion in the category specified.
   #

@@ -2540,6 +2540,9 @@
 					"target_commitish": {
 						"type": "string"
 					},
+					"tag": {
+						"type": "string"
+					},
 					"disable": {
 						"oneOf": [
 							{

@@ -184,6 +184,7 @@ nav:
   - About: cookbooks/index.md
   - Blog Posts: cookbooks/blog-posts.md
   - Add a new cookbook: cookbooks/contributing.md
+  - cookbooks/private-monorepo-public-release.md
   - cookbooks/multi-platform-docker-images.md
   - cookbooks/build-go-modules.md
   - cookbooks/cgo-and-crosscompiling.md
