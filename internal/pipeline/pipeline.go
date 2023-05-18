@@ -111,7 +111,7 @@ var Pipeline = append(
 	// create arch linux aur pkgbuild
 	aur.Pipe{},
 	// create nixpkgs
-	nix.New(),
+	nix.NewBuild(),
 	// create brew tap
 	brew.Pipe{},
 	// krew plugins

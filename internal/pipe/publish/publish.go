@@ -48,7 +48,7 @@ var publishers = []Publisher{
 	// This should be one of the last steps
 	release.Pipe{},
 	// brew et al use the release URL, so, they should be last
-	nix.Pipe{},
+	nix.NewPublish(),
 	brew.Pipe{},
 	aur.Pipe{},
 	krew.Pipe{},

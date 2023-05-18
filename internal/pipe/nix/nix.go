@@ -21,9 +21,6 @@ import (
 	"github.com/goreleaser/goreleaser/pkg/context"
 )
 
-// TODO: this must run only after the release is published, otherwise prefetch
-// url will fail. Might need to do some pre-processing before actually
-// publishing.
 // TODO: add metadata et al.
 
 const nixConfigExtra = "NixConfig"
@@ -38,12 +35,18 @@ func (e ErrNoArchivesFound) Error() string {
 	return fmt.Sprintf("no linux/macos archives found matching goos=[darwin linux] goarch=[amd64 arm64] goamd64=%s ids=%v", e.goamd64, e.ids)
 }
 
-func New() Pipe {
+// NewBuild returns a pipe to be used in the build phase.
+func NewBuild() Pipe {
+	return Pipe{buildShaPrefetcher{}}
+}
+
+// NewPublish returns a pipe to be used in the publish phase.
+func NewPublish() Pipe {
 	return Pipe{prodShaPrefetcher{}}
 }
 
 type Pipe struct {
-	prefetcher ShaPrefetcher
+	prefetcher shaPrefetcher
 }
 
 func (Pipe) String() string                 { return "nixpkgs" }
@@ -85,12 +88,12 @@ func (p Pipe) Run(ctx *context.Context) error {
 }
 
 // Publish .
-func (Pipe) Publish(ctx *context.Context) error {
+func (p Pipe) Publish(ctx *context.Context) error {
 	cli, err := client.New(ctx)
 	if err != nil {
 		return err
 	}
-	return publishAll(ctx, cli)
+	return p.publishAll(ctx, cli)
 }
 
 func (p Pipe) runAll(ctx *context.Context, cli client.Client) error {
@@ -103,10 +106,10 @@ func (p Pipe) runAll(ctx *context.Context, cli client.Client) error {
 	return nil
 }
 
-func publishAll(ctx *context.Context, cli client.Client) error {
+func (p Pipe) publishAll(ctx *context.Context, cli client.Client) error {
 	skips := pipe.SkipMemento{}
 	for _, nix := range ctx.Artifacts.Filter(artifact.ByType(artifact.Nixpkg)).List() {
-		err := doPublish(ctx, nix, cli)
+		err := doPublish(ctx, p.prefetcher, cli, nix)
 		if err != nil && pipe.IsSkip(err) {
 			skips.Remember(err)
 			continue
@@ -123,6 +126,56 @@ func (p Pipe) doRun(ctx *context.Context, nix config.Nix, cl client.ReleaserURLT
 		return pipe.Skip("derivation name is not set")
 	}
 
+	name, err := tmpl.New(ctx).Apply(nix.Name)
+	if err != nil {
+		return err
+	}
+	nix.Name = name
+
+	ref, err := client.TemplateRef(tmpl.New(ctx).Apply, nix.Tap)
+	if err != nil {
+		return err
+	}
+	nix.Tap = ref
+
+	skipUpload, err := tmpl.New(ctx).Apply(nix.SkipUpload)
+	if err != nil {
+		return err
+	}
+	nix.SkipUpload = skipUpload
+
+	filename := nix.Name + ".nix"
+	path := filepath.Join(ctx.Config.Dist, filename)
+
+	content, err := preparePkg(ctx, nix, cl, p.prefetcher, path)
+	if err != nil {
+		return err
+	}
+
+	log.WithField("nixpkg", path).Info("writing")
+	if err := os.WriteFile(path, []byte(content), 0o644); err != nil { //nolint: gosec
+		return fmt.Errorf("failed to write nixpkg: %w", err)
+	}
+
+	ctx.Artifacts.Add(&artifact.Artifact{
+		Name: filename,
+		Path: path,
+		Type: artifact.Nixpkg,
+		Extra: map[string]interface{}{
+			nixConfigExtra: nix,
+		},
+	})
+
+	return nil
+}
+
+func preparePkg(
+	ctx *context.Context,
+	nix config.Nix,
+	cli client.ReleaserURLTemplater,
+	prefetcher shaPrefetcher,
+	path string,
+) (string, error) {
 	filters := []artifact.Filter{
 		artifact.Or(
 			artifact.ByGoos("darwin"),
@@ -146,55 +199,12 @@ func (p Pipe) doRun(ctx *context.Context, nix config.Nix, cl client.ReleaserURLT
 
 	archives := ctx.Artifacts.Filter(artifact.And(filters...)).List()
 	if len(archives) == 0 {
-		return ErrNoArchivesFound{
+		return "", ErrNoArchivesFound{
 			goamd64: nix.Goamd64,
 			ids:     nix.IDs,
 		}
 	}
 
-	name, err := tmpl.New(ctx).Apply(nix.Name)
-	if err != nil {
-		return err
-	}
-	nix.Name = name
-
-	ref, err := client.TemplateRef(tmpl.New(ctx).Apply, nix.Tap)
-	if err != nil {
-		return err
-	}
-	nix.Tap = ref
-
-	skipUpload, err := tmpl.New(ctx).Apply(nix.SkipUpload)
-	if err != nil {
-		return err
-	}
-	nix.SkipUpload = skipUpload
-
-	content, err := p.buildDerivation(ctx, nix, cl, archives)
-	if err != nil {
-		return err
-	}
-
-	filename := nix.Name + ".nix"
-	path := filepath.Join(ctx.Config.Dist, filename)
-	log.WithField("nixpkg", path).Info("writing")
-	if err := os.WriteFile(path, []byte(content), 0o644); err != nil { //nolint: gosec
-		return fmt.Errorf("failed to write nixpkg: %w", err)
-	}
-
-	ctx.Artifacts.Add(&artifact.Artifact{
-		Name: filename,
-		Path: path,
-		Type: artifact.Nixpkg,
-		Extra: map[string]interface{}{
-			nixConfigExtra: nix,
-		},
-	})
-
-	return nil
-}
-
-func (p Pipe) buildDerivation(ctx *context.Context, nix config.Nix, cli client.ReleaserURLTemplater, artifacts []*artifact.Artifact) (string, error) {
 	if nix.URLTemplate == "" {
 		url, err := cli.ReleaseURLTemplate(ctx)
 		if err != nil {
@@ -203,7 +213,7 @@ func (p Pipe) buildDerivation(ctx *context.Context, nix config.Nix, cli client.R
 		nix.URLTemplate = url
 	}
 
-	installs, err := installs(ctx, nix, artifacts[0])
+	installs, err := installs(ctx, nix, archives[0])
 	if err != nil {
 		return "", err
 	}
@@ -215,12 +225,12 @@ func (p Pipe) buildDerivation(ctx *context.Context, nix config.Nix, cli client.R
 		Archives:   map[string]Archive{},
 		SourceRoot: ".",
 	}
-	for _, art := range artifacts {
+	for _, art := range archives {
 		url, err := tmpl.New(ctx).WithArtifact(art).Apply(nix.URLTemplate)
 		if err != nil {
 			return "", err
 		}
-		sha, err := p.prefetcher.Prefetch(url)
+		sha, err := prefetcher.Prefetch(url)
 		if err != nil {
 			return "", err
 		}
@@ -234,7 +244,7 @@ func (p Pipe) buildDerivation(ctx *context.Context, nix config.Nix, cli client.R
 	return doBuildPkg(ctx, data)
 }
 
-func doPublish(ctx *context.Context, pkg *artifact.Artifact, cl client.Client) error {
+func doPublish(ctx *context.Context, prefetcher shaPrefetcher, cl client.Client, pkg *artifact.Artifact) error {
 	nix, err := artifact.Extra[config.Nix](*pkg, nixConfigExtra)
 	if err != nil {
 		return err
@@ -265,14 +275,14 @@ func doPublish(ctx *context.Context, pkg *artifact.Artifact, cl client.Client) e
 		return err
 	}
 
-	content, err := os.ReadFile(pkg.Path)
+	content, err := preparePkg(ctx, nix, cl, prefetcher, pkg.Path)
 	if err != nil {
 		return err
 	}
 
 	if nix.Tap.Git.URL != "" {
 		return client.NewGitUploadClient(repo.Branch).
-			CreateFile(ctx, author, repo, content, gpath, msg)
+			CreateFile(ctx, author, repo, []byte(content), gpath, msg)
 	}
 
 	cl, err = client.NewIfToken(ctx, cl, nix.Tap.Token)
@@ -281,7 +291,7 @@ func doPublish(ctx *context.Context, pkg *artifact.Artifact, cl client.Client) e
 	}
 
 	if !nix.Tap.PullRequest.Enabled {
-		return cl.CreateFile(ctx, author, repo, content, gpath, msg)
+		return cl.CreateFile(ctx, author, repo, []byte(content), gpath, msg)
 	}
 
 	log.Info("brews.pull_request enabled, creating a PR")
@@ -290,7 +300,7 @@ func doPublish(ctx *context.Context, pkg *artifact.Artifact, cl client.Client) e
 		return fmt.Errorf("client does not support pull requests")
 	}
 
-	if err := cl.CreateFile(ctx, author, repo, content, gpath, msg); err != nil {
+	if err := cl.CreateFile(ctx, author, repo, []byte(content), gpath, msg); err != nil {
 		return err
 	}
 
@@ -370,9 +380,15 @@ func split(s string) []string {
 	return result
 }
 
-type ShaPrefetcher interface {
+type shaPrefetcher interface {
 	Prefetch(url string) (string, error)
 }
+
+const zeroHash = "0000000000000000000000000000000000000000000000000000"
+
+type buildShaPrefetcher struct{}
+
+func (buildShaPrefetcher) Prefetch(_ string) (string, error) { return zeroHash, nil }
 
 type prodShaPrefetcher struct{}
 

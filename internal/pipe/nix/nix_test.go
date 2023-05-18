@@ -3,6 +3,7 @@ package nix
 import (
 	"os"
 	"path/filepath"
+	"strings"
 	"testing"
 
 	"github.com/goreleaser/goreleaser/internal/artifact"
@@ -41,12 +42,12 @@ func TestRunPipePullRequest(t *testing.T) {
 		for _, goarch := range []string{"amd64", "arm64", "386"} {
 			path := filepath.Join(folder, "dist/foo_"+goos+goarch+".tar.gz")
 			ctx.Artifacts.Add(&artifact.Artifact{
-				Name:   "foo_" + goos + "_" + goarch + ".tar.gz",
-				Path:   path,
-				Goos:   goos,
-				Goarch: goarch,
-				// Goamd64: "v1",
-				Type: artifact.UploadableArchive,
+				Name:    "foo_" + goos + "_" + goarch + ".tar.gz",
+				Path:    path,
+				Goos:    goos,
+				Goarch:  goarch,
+				Goamd64: "v1",
+				Type:    artifact.UploadableArchive,
 				Extra: map[string]interface{}{
 					artifact.ExtraID:       "foo",
 					artifact.ExtraFormat:   "tar.gz",
@@ -63,7 +64,8 @@ func TestRunPipePullRequest(t *testing.T) {
 	}
 
 	client := client.NewMock()
-	pipe := Pipe{
+	bpipe := NewBuild()
+	ppipe := Pipe{
 		fakeNixShaPrefetcher{
 			"https://dummyhost/download/v1.2.1/foo_linux_amd64.tar.gz":  "sha1",
 			"https://dummyhost/download/v1.2.1/foo_linux_arm64.tar.gz":  "sha2",
@@ -71,11 +73,16 @@ func TestRunPipePullRequest(t *testing.T) {
 			"https://dummyhost/download/v1.2.1/foo_darwin_arm64.tar.gz": "sha4",
 		},
 	}
-	require.NoError(t, pipe.runAll(ctx, client))
-	require.NoError(t, publishAll(ctx, client))
+	require.NoError(t, bpipe.Default(ctx))
+	require.NoError(t, bpipe.runAll(ctx, client))
+	bts, err := os.ReadFile(ctx.Artifacts.Filter(artifact.ByType(artifact.Nixpkg)).Paths()[0])
+	require.NoError(t, err)
+	golden.RequireEqualExt(t, bts, "_build.nix")
+	require.NoError(t, ppipe.publishAll(ctx, client))
 	require.True(t, client.CreatedFile)
 	require.True(t, client.OpenedPullRequest)
-	golden.RequireEqualExt(t, []byte(client.Content), ".nix")
+	golden.RequireEqualExt(t, []byte(client.Content), "_publish.nix")
+	require.NotContains(t, client.Content, strings.Repeat("0", 52))
 }
 
 type fakeNixShaPrefetcher map[string]string
