@@ -186,11 +186,13 @@ func preparePkg(
 			),
 			artifact.ByGoarch("arm64"),
 			artifact.ByGoarch("386"),
+			artifact.ByGoarch("all"),
 		),
 		artifact.And(
 			artifact.ByFormats("zip", "tar.gz"),
 			artifact.ByType(artifact.UploadableArchive),
 		),
+		artifact.OnlyReplacingUnibins,
 	}
 	if len(nix.IDs) > 0 {
 		filters = append(filters, artifact.ByIDs(nix.IDs...))
@@ -237,20 +239,31 @@ func preparePkg(
 		if err != nil {
 			return "", err
 		}
-		data.Archives[art.Goos+art.Goarch] = Archive{
+		archive := Archive{
 			URL: url,
 			Sha: sha,
 		}
-		plat, ok := goosToPlatform[art.Goos+art.Goarch]
-		if !ok {
-			return "", fmt.Errorf("invalid platform: %s/%s", art.Goos, art.Goarch)
+
+		for _, goarch := range expandGoarch(art.Goarch) {
+			data.Archives[art.Goos+goarch] = archive
+			plat, ok := goosToPlatform[art.Goos+goarch]
+			if !ok {
+				return "", fmt.Errorf("invalid platform: %s/%s", art.Goos, goarch)
+			}
+			platforms[plat] = true
 		}
-		platforms[plat] = true
 	}
 	data.Platforms = keys(platforms)
 	sort.Strings(data.Platforms)
 
 	return doBuildPkg(ctx, data)
+}
+
+func expandGoarch(goarch string) []string {
+	if goarch == "all" {
+		return []string{"amd64", "arm64"}
+	}
+	return []string{goarch}
 }
 
 var goosToPlatform = map[string]string{

@@ -2,17 +2,33 @@
 { system ? builtins.currentSystem, pkgs, lib, fetchurl, installShellFiles }:
 let
   shaMap = {
-    x86_64-linux = "{{ .Archives.linuxamd64.Sha }}";
-    aarch64-linux = "{{ .Archives.linuxarm64.Sha }}";
-    x86_64-darwin = "{{ .Archives.darwinamd64.Sha }}";
-    aarch64-darwin = "{{ .Archives.darwinarm64.Sha }}";
+    {{- with  .Archives.linuxamd64.Sha }}
+    x86_64-linux = "{{ . }}";
+    {{- end }}
+    {{- with  .Archives.linuxarm64.Sha }}
+    aarch64-linux = "{{ . }}";
+    {{- end }}
+    {{- with  .Archives.darwinamd64.Sha }}
+    x86_64-darwin = "{{ . }}";
+    {{- end }}
+    {{- with  .Archives.darwinarm64.Sha }}
+    aarch64-darwin = "{{ . }}";
+    {{- end }}
   };
 
   urlMap = {
-    x86_64-linux = "{{ .Archives.linuxamd64.URL }}";
-    aarch64-linux = "{{ .Archives.linuxarm64.URL }}";
-    x86_64-darwin = "{{ .Archives.darwinamd64.URL }}";
-    aarch64-darwin = "{{ .Archives.darwinarm64.URL }}";
+    {{- with  .Archives.linuxamd64.URL }}
+    x86_64-linux = "{{ . }}";
+    {{- end }}
+    {{- with  .Archives.linuxarm64.URL }}
+    aarch64-linux = "{{ . }}";
+    {{- end }}
+    {{- with  .Archives.darwinamd64.URL }}
+    x86_64-darwin = "{{ . }}";
+    {{- end }}
+    {{- with  .Archives.darwinarm64.URL }}
+    aarch64-darwin = "{{ . }}";
+    {{- end }}
   };
 in pkgs.stdenv.mkDerivation {
   pname = "{{ .Name }}";
@@ -35,9 +51,15 @@ in pkgs.stdenv.mkDerivation {
   system = system;
 
   meta = with lib; {
-    description = "{{ .Description }}";
-    homepage = "{{ .Homepage }}";
-    license = licenses.{{.License}};
+    {{- with .Description }}
+    description = "{{ . }}";
+    {{- end }}
+    {{- with .Homepage }}
+    homepage = "{{ . }}";
+    {{- end }}
+    {{- with .License }}
+    license = licenses.{{ . }};
+    {{- end }}
 
     platforms = [
       {{- range $index, $plat := .Platforms }}
