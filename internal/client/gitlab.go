@@ -174,6 +174,12 @@ func (c *gitlabClient) CreateFile(
 		WithField("branch", branch).
 		Debug("projectID at brew")
 
+	log.
+		WithField("repository", repo.String()).
+		WithField("name", repo.Name).
+		WithField("name", repo.Name).
+		Info("pushing")
+
 	_, res, err := c.client.RepositoryFiles.GetFile(repo.String(), fileName, opts)
 	if err != nil && (res == nil || res.StatusCode != 404) {
 		log.

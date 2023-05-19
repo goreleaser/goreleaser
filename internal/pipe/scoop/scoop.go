@@ -172,8 +172,9 @@ func doRun(ctx *context.Context, scoop config.Scoop, cl client.ReleaserURLTempla
 }
 
 func publishAll(ctx *context.Context, cli client.Client) error {
-	// even if one of them skips, we run them all, and then show return the skips all at once.
-	// this is needed so we actually create the `dist/foo.rb` file, which is useful for debugging.
+	// even if one of them skips, we run them all, and then show return the
+	// skips all at once. this is needed so we actually create the
+	// `dist/foo.json` file, which is useful for debugging.
 	skips := pipe.SkipMemento{}
 	for _, manifest := range ctx.Artifacts.Filter(artifact.ByType(artifact.ScoopManifest)).List() {
 		err := doPublish(ctx, manifest, cli)
