@@ -9,10 +9,14 @@ type Archive struct {
 	URL, Sha string
 }
 
-type TemplateData struct {
-	Name       string
-	Version    string
-	Install    []string
-	SourceRoot string
-	Archives   map[string]Archive
+type templateData struct {
+	Name        string
+	Version     string
+	Install     []string
+	SourceRoot  string
+	Archives    map[string]Archive
+	Description string
+	Homepage    string
+	License     string
+	Platforms   []string
 }

@@ -1,4 +1,4 @@
-{ system ? builtins.currentSystem, pkgs, fetchurl, installShellFiles }:
+{ system ? builtins.currentSystem, pkgs, lib, fetchurl, installShellFiles }:
 let
   shaMap = {
     x86_64-linux = "sha1";
@@ -31,4 +31,18 @@ in pkgs.stdenv.mkDerivation {
   '';
 
   system = system;
+
+  meta = with lib; {
+    description = "my test";
+    homepage = "https://goreleaser.com";
+    license = licenses.mit;
+
+    platforms = [
+		"x86_64-linux"
+		"aarch64-linux"
+		"i686-linux"
+		"x86_64-darwin"
+		"aarch64-darwin"
+	];
+  };
 }

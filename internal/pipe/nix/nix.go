@@ -21,8 +21,6 @@ import (
 	"github.com/goreleaser/goreleaser/pkg/context"
 )
 
-// TODO: add metadata et al.
-
 const nixConfigExtra = "NixConfig"
 
 // ErrNoArchivesFound happens when 0 archives are found.
@@ -122,7 +120,7 @@ func (p Pipe) publishAll(ctx *context.Context, cli client.Client) error {
 }
 
 func (p Pipe) doRun(ctx *context.Context, nix config.Nix, cl client.ReleaserURLTemplater) error {
-	if nix.Tap.Name == "" {
+	if nix.Repository.Name == "" {
 		return pipe.Skip("derivation name is not set")
 	}
 
@@ -132,11 +130,11 @@ func (p Pipe) doRun(ctx *context.Context, nix config.Nix, cl client.ReleaserURLT
 	}
 	nix.Name = name
 
-	ref, err := client.TemplateRef(tmpl.New(ctx).Apply, nix.Tap)
+	ref, err := client.TemplateRef(tmpl.New(ctx).Apply, nix.Repository)
 	if err != nil {
 		return err
 	}
-	nix.Tap = ref
+	nix.Repository = ref
 
 	skipUpload, err := tmpl.New(ctx).Apply(nix.SkipUpload)
 	if err != nil {
@@ -147,7 +145,7 @@ func (p Pipe) doRun(ctx *context.Context, nix config.Nix, cl client.ReleaserURLT
 	filename := nix.Name + ".nix"
 	path := filepath.Join(ctx.Config.Dist, filename)
 
-	content, err := preparePkg(ctx, nix, cl, p.prefetcher, path)
+	content, err := preparePkg(ctx, nix, cl, p.prefetcher)
 	if err != nil {
 		return err
 	}
@@ -174,7 +172,6 @@ func preparePkg(
 	nix config.Nix,
 	cli client.ReleaserURLTemplater,
 	prefetcher shaPrefetcher,
-	path string,
 ) (string, error) {
 	filters := []artifact.Filter{
 		artifact.Or(
@@ -187,6 +184,7 @@ func preparePkg(
 				artifact.ByGoamd64(nix.Goamd64),
 			),
 			artifact.ByGoarch("arm64"),
+			artifact.ByGoarch("386"),
 		),
 		artifact.And(
 			artifact.ByFormats("zip", "tar.gz"),
@@ -218,13 +216,17 @@ func preparePkg(
 		return "", err
 	}
 
-	data := TemplateData{
-		Name:       nix.Name,
-		Version:    ctx.Version,
-		Install:    installs,
-		Archives:   map[string]Archive{},
-		SourceRoot: ".",
+	data := templateData{
+		Name:        nix.Name,
+		Version:     ctx.Version,
+		Install:     installs,
+		Archives:    map[string]Archive{},
+		SourceRoot:  ".",
+		Description: nix.Description,
+		Homepage:    nix.Homepage,
+		License:     nix.License,
 	}
+	platforms := map[string]bool{}
 	for _, art := range archives {
 		url, err := tmpl.New(ctx).WithArtifact(art).Apply(nix.URLTemplate)
 		if err != nil {
@@ -238,10 +240,31 @@ func preparePkg(
 			URL: url,
 			Sha: sha,
 		}
-
+		plat, ok := goosToPlatform[art.Goos+art.Goarch]
+		if !ok {
+			return "", fmt.Errorf("invalid platform: %s/%s", art.Goos, art.Goarch)
+		}
+		platforms[plat] = true
 	}
+	data.Platforms = keys(platforms)
 
 	return doBuildPkg(ctx, data)
+}
+
+var goosToPlatform = map[string]string{
+	"linuxamd64":  "x86_64-linux",
+	"linuxarm64":  "aarch64-linux",
+	"linux386":    "i686-linux",
+	"darwinamd64": "x86_64-darwin",
+	"darwinarm64": "aarch64-darwin",
+}
+
+func keys(m map[string]bool) []string {
+	keys := make([]string, 0, len(m))
+	for k := range m {
+		keys = append(keys, k)
+	}
+	return keys
 }
 
 func doPublish(ctx *context.Context, prefetcher shaPrefetcher, cl client.Client, pkg *artifact.Artifact) error {
@@ -258,7 +281,7 @@ func doPublish(ctx *context.Context, prefetcher shaPrefetcher, cl client.Client,
 		return pipe.Skip("prerelease detected with 'auto' upload, skipping nixpkg publish")
 	}
 
-	repo := client.RepoFromRef(nix.Tap)
+	repo := client.RepoFromRef(nix.Repository)
 
 	gpath := path.Join("pkgs", nix.Name, "default.nix")
 	log.WithField("path", gpath).
@@ -275,22 +298,22 @@ func doPublish(ctx *context.Context, prefetcher shaPrefetcher, cl client.Client,
 		return err
 	}
 
-	content, err := preparePkg(ctx, nix, cl, prefetcher, pkg.Path)
+	content, err := preparePkg(ctx, nix, cl, prefetcher)
 	if err != nil {
 		return err
 	}
 
-	if nix.Tap.Git.URL != "" {
+	if nix.Repository.Git.URL != "" {
 		return client.NewGitUploadClient(repo.Branch).
 			CreateFile(ctx, author, repo, []byte(content), gpath, msg)
 	}
 
-	cl, err = client.NewIfToken(ctx, cl, nix.Tap.Token)
+	cl, err = client.NewIfToken(ctx, cl, nix.Repository.Token)
 	if err != nil {
 		return err
 	}
 
-	if !nix.Tap.PullRequest.Enabled {
+	if !nix.Repository.PullRequest.Enabled {
 		return cl.CreateFile(ctx, author, repo, []byte(content), gpath, msg)
 	}
 
@@ -305,10 +328,10 @@ func doPublish(ctx *context.Context, prefetcher shaPrefetcher, cl client.Client,
 	}
 
 	title := fmt.Sprintf("Updated %s to %s", ctx.Config.ProjectName, ctx.Version)
-	return pcl.OpenPullRequest(ctx, repo, nix.Tap.PullRequest.Base, title)
+	return pcl.OpenPullRequest(ctx, repo, nix.Repository.PullRequest.Base, title)
 }
 
-func doBuildPkg(ctx *context.Context, data TemplateData) (string, error) {
+func doBuildPkg(ctx *context.Context, data templateData) (string, error) {
 	t, err := template.
 		New(data.Name).
 		Parse(string(pkgTmpl))

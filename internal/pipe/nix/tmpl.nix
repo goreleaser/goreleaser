@@ -1,4 +1,4 @@
-{ system ? builtins.currentSystem, pkgs, fetchurl, installShellFiles }:
+{ system ? builtins.currentSystem, pkgs, lib, fetchurl, installShellFiles }:
 let
   shaMap = {
     x86_64-linux = "{{ .Archives.linuxamd64.Sha }}";
@@ -32,4 +32,16 @@ in pkgs.stdenv.mkDerivation {
   '';
 
   system = system;
+
+  meta = with lib; {
+    description = "{{ .Description }}";
+    homepage = "{{ .Homepage }}";
+    license = licenses.{{.License}};
+
+    platforms = [
+		{{- range $index, $plat := .Platforms }}
+		"{{ . -}}"
+		{{- end }}
+	];
+  };
 }

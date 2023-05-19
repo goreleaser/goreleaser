@@ -22,9 +22,12 @@ func TestRunPipePullRequest(t *testing.T) {
 			ProjectName: "foo",
 			Nix: []config.Nix{
 				{
-					Name: "foo",
-					IDs:  []string{"foo"},
-					Tap: config.RepoRef{
+					Name:        "foo",
+					IDs:         []string{"foo"},
+					Description: "my test",
+					Homepage:    "https://goreleaser.com",
+					License:     "mit",
+					Repository: config.RepoRef{
 						Owner:  "foo",
 						Name:   "bar",
 						Branch: "update-{{.Version}}",
@@ -40,6 +43,9 @@ func TestRunPipePullRequest(t *testing.T) {
 	)
 	for _, goos := range []string{"linux", "darwin", "windows"} {
 		for _, goarch := range []string{"amd64", "arm64", "386"} {
+			if goos+goarch == "darwin386" {
+				continue
+			}
 			path := filepath.Join(folder, "dist/foo_"+goos+goarch+".tar.gz")
 			ctx.Artifacts.Add(&artifact.Artifact{
 				Name:    "foo_" + goos + "_" + goarch + ".tar.gz",
