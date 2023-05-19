@@ -59,12 +59,13 @@ brews:
       # Optionally a branch can be provided.
       #
       # Default: default repository branch.
-      #
       # Templates: allowed
       branch: main
 
       # Optionally a token can be provided, if it differs from the token
       # provided to GoReleaser
+      #
+      # Templates: allowed
       token: "{{ .Env.HOMEBREW_TAP_GITHUB_TOKEN }}"
 
       # Sets up pull request creation instead of just pushing to the given branch.
@@ -89,6 +90,8 @@ brews:
       # Since: v1.18
       git:
         # The Git URL to push.
+        #
+        # Templates: allowed
         url: 'ssh://git@myserver.com:repo.git'
 
         # The SSH private key that should be used to commit to the Git
@@ -98,6 +101,8 @@ brews:
         # IMPORTANT: the key must not be password-protected.
         #
         # WARNING: do not expose your private key in the configuration file!
+        #
+        # Templates: allowed
         private_key: '{{ .Env.PRIVATE_KEY_PATH }}'
 
         # The value to be passed to `GIT_SSH_COMMAND`.
@@ -105,6 +110,7 @@ brews:
         # to the Git URL.
         #
         # Default: 'ssh -i {{ .KeyPath }} -o StrictHostKeyChecking=accept-new -F /dev/null'
+        # Templates: allowed
         ssh_command: 'ssh -i {{ .Env.KEY }} -o SomeOption=yes'
 
     # URL which is determined by the given Token (github, gitlab or gitea).
@@ -154,6 +160,8 @@ brews:
     # leaving the responsibility of publishing it to the user.
     # If set to auto, the release will not be uploaded to the homebrew tap
     # in case there is an indicator for prerelease in the tag e.g. v1.0.0-rc1
+    #
+    # Templates: allowed
     skip_upload: true
 
     # Custom block for brew.
