@@ -28,6 +28,7 @@ theme:
         icon: material/lightbulb
         name: Switch to dark mode
   features:
+    - announce.dismiss
     - search.suggest
     - search.highlight
     - search.share
