@@ -591,8 +591,8 @@ func Test_doRun(t *testing.T) {
 			[]artifact.Artifact{
 				{Name: "foo_1.0.1-pre.1_windows_amd64.tar.gz", Goos: "windows", Goarch: "amd64", Goamd64: "v1", Path: file},
 			},
-			shouldNotErr,
 			testlib.RequireTemplateError,
+			shouldNotErr,
 			noAssertions,
 		},
 		{
