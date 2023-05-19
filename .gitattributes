@@ -12,3 +12,4 @@ www/docs/static/releases-pro.json linguist-generated=true
 *.nix.golden linguist-language=Nix
 *.rb.golden linguist-language=Ruby
 *.json.golden linguist-language=JSON
+*.yaml.golden linguist-language=YAML
