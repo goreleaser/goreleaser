@@ -1,3 +1,4 @@
+# vim: set ft=nix ts=2 sw=2 sts=2 et sta
 { system ? builtins.currentSystem, pkgs, lib, fetchurl, installShellFiles }:
 let
   shaMap = {
