@@ -8,6 +8,7 @@ import (
 	"os/exec"
 	"path"
 	"path/filepath"
+	"sort"
 	"strings"
 	"text/template"
 
@@ -247,6 +248,7 @@ func preparePkg(
 		platforms[plat] = true
 	}
 	data.Platforms = keys(platforms)
+	sort.Strings(data.Platforms)
 
 	return doBuildPkg(ctx, data)
 }

@@ -39,9 +39,9 @@ in pkgs.stdenv.mkDerivation {
     license = licenses.{{.License}};
 
     platforms = [
-		{{- range $index, $plat := .Platforms }}
-		"{{ . -}}"
-		{{- end }}
-	];
+      {{- range $index, $plat := .Platforms }}
+      "{{ . }}"
+      {{- end }}
+    ];
   };
 }
