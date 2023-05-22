@@ -130,9 +130,6 @@ func doPublish(ctx *context.Context, formula *artifact.Artifact, cl client.Clien
 	repo := client.RepoFromRef(brew.Tap)
 
 	gpath := buildFormulaPath(brew.Folder, formula.Name)
-	log.WithField("formula", gpath).
-		WithField("repo", repo.String()).
-		Info("pushing")
 
 	msg, err := tmpl.New(ctx).Apply(brew.CommitMessageTemplate)
 	if err != nil {

@@ -381,9 +381,7 @@ func doPublish(ctx *context.Context, pkgs []*artifact.Artifact) error {
 		Name: cfg.Name,
 	})
 
-	log.WithField("repo", cfg.GitURL).WithField("name", cfg.Name).Info("pushing")
 	for _, pkg := range pkgs {
-		log.WithField("package", pkg.Name).Info("pushing")
 		content, err := os.ReadFile(pkg.Path)
 		if err != nil {
 			return err

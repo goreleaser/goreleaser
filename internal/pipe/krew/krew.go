@@ -312,11 +312,7 @@ func doPublish(ctx *context.Context, manifest *artifact.Artifact, cl client.Clie
 	}
 	cfg.Index = ref
 	repo := client.RepoFromRef(cfg.Index)
-
 	gpath := buildManifestPath(manifestsFolder, manifest.Name)
-	log.WithField("manifest", gpath).
-		WithField("repo", repo.String()).
-		Info("pushing")
 
 	msg, err := tmpl.New(ctx).Apply(cfg.CommitMessageTemplate)
 	if err != nil {

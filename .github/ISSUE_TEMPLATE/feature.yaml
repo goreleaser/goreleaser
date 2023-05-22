@@ -34,7 +34,14 @@ body:
     attributes:
       label: Search
       options:
-        - label: I did search for other open and closed issues before opening this.
+        - label: I did search for other open and closed issues before opening this
+          required: true
+  - type: checkboxes
+    id: supporter
+    attributes:
+      label: Supporter
+      options:
+        - label: I am a [sponsor](https://github.com/sponsors/caarlos0/) of [Pro](https://goreleaser.com/pro) customer
           required: true
   - type: checkboxes
     id: terms

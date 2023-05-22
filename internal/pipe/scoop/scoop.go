@@ -143,7 +143,23 @@ func doRun(ctx *context.Context, scoop config.Scoop, cl client.ReleaserURLTempla
 		return ErrIncorrectArchiveCount{scoop.Goamd64, scoop.IDs, archives}
 	}
 
-	filename := scoop.Name + ".json"
+	name, err := tmpl.New(ctx).Apply(scoop.Name)
+	if err != nil {
+		return err
+	}
+	scoop.Name = name
+
+	ref, err := client.TemplateRef(tmpl.New(ctx).Apply, scoop.Bucket)
+	if err != nil {
+		return err
+	}
+	scoop.Bucket = ref
+
+	skipUpload, err := tmpl.New(ctx).Apply(scoop.SkipUpload)
+	if err != nil {
+		return err
+	}
+	scoop.SkipUpload = skipUpload
 
 	data, err := dataFor(ctx, scoop, cl, archives)
 	if err != nil {
@@ -154,6 +170,7 @@ func doRun(ctx *context.Context, scoop config.Scoop, cl client.ReleaserURLTempla
 		return err
 	}
 
+	filename := scoop.Name + ".json"
 	path := filepath.Join(ctx.Config.Dist, filename)
 	log.WithField("manifest", path).Info("writing")
 	if err := os.WriteFile(path, content.Bytes(), 0o644); err != nil {
@@ -172,8 +189,9 @@ func doRun(ctx *context.Context, scoop config.Scoop, cl client.ReleaserURLTempla
 }
 
 func publishAll(ctx *context.Context, cli client.Client) error {
-	// even if one of them skips, we run them all, and then show return the skips all at once.
-	// this is needed so we actually create the `dist/foo.rb` file, which is useful for debugging.
+	// even if one of them skips, we run them all, and then show return the
+	// skips all at once. this is needed so we actually create the
+	// `dist/foo.json` file, which is useful for debugging.
 	skips := pipe.SkipMemento{}
 	for _, manifest := range ctx.Artifacts.Filter(artifact.ByType(artifact.ScoopManifest)).List() {
 		err := doPublish(ctx, manifest, cli)
@@ -223,12 +241,6 @@ func doPublish(ctx *context.Context, manifest *artifact.Artifact, cl client.Clie
 	if err != nil {
 		return err
 	}
-
-	ref, err := client.TemplateRef(tmpl.New(ctx).Apply, scoop.Bucket)
-	if err != nil {
-		return err
-	}
-	scoop.Bucket = ref
 
 	repo := client.RepoFromRef(scoop.Bucket)
 	gpath := path.Join(scoop.Folder, manifest.Name)

@@ -178,6 +178,9 @@ You can still get the same features by abusing the `name_template` property.
 
 Those two configurations will yield the same results.
 
+Notice that if you are using the `archives.name_template`, notice it also has a
+`{{.Version}}` in it. Adjust the new `name_template` accordingly.
+
 
 ### nfpms.replacements
 

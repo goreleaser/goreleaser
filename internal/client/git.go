@@ -37,7 +37,7 @@ func NewGitUploadClient(branch string) FileCreator {
 	}
 }
 
-// CreateFile implements FileCreator
+// CreateFile implements FileCreator.
 func (g *gitClient) CreateFile(ctx *context.Context, commitAuthor config.CommitAuthor, repo Repo, content []byte, path string, message string) error {
 	url, err := tmpl.New(ctx).Apply(repo.GitURL)
 	if err != nil {
@@ -104,7 +104,12 @@ func (g *gitClient) CreateFile(ctx *context.Context, commitAuthor config.CommitA
 		return fmt.Errorf("failed to write %s: %w", path, err)
 	}
 
-	log.WithField("repo", url).WithField("name", repo.Name).Info("pushing")
+	log.
+		WithField("repository", url).
+		WithField("name", repo.Name).
+		WithField("file", path).
+		Info("pushing")
+
 	if err := runGitCmds(ctx, cwd, env, [][]string{
 		{"add", "-A", "."},
 		{"commit", "-m", message},
