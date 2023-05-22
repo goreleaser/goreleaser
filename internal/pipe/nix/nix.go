@@ -219,12 +219,14 @@ func preparePkg(
 		return "", err
 	}
 
+	folder := artifact.ExtraOr(*archives[0], artifact.ExtraWrappedIn, ".")
+
 	data := templateData{
 		Name:        nix.Name,
 		Version:     ctx.Version,
 		Install:     installs,
 		Archives:    map[string]Archive{},
-		SourceRoot:  ".",
+		SourceRoot:  folder,
 		Description: nix.Description,
 		Homepage:    nix.Homepage,
 		License:     nix.License,

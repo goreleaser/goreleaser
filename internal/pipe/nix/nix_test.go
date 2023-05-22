@@ -38,6 +38,20 @@ func TestRunPipe(t *testing.T) {
 			},
 		},
 		{
+			name: "wrapped-in-dir",
+			nix: config.Nix{
+				Name:        "wrapped-in-dir",
+				IDs:         []string{"wrapped-in-dir"},
+				Description: "my test",
+				Homepage:    "https://goreleaser.com",
+				License:     "mit",
+				Repository: config.RepoRef{
+					Owner: "foo",
+					Name:  "bar",
+				},
+			},
+		},
+		{
 			name: "unibin",
 			nix: config.Nix{
 				Name:        "unibin",
@@ -127,6 +141,7 @@ func TestRunPipe(t *testing.T) {
 					createFakeArtifact("foo", goos, goarch, nil)
 					createFakeArtifact("unibin", goos, goarch, nil)
 					createFakeArtifact("unibin-replaces", goos, goarch, nil)
+					createFakeArtifact("wrapped-in-dir", goos, goarch, map[string]any{artifact.ExtraWrappedIn: "./foo"})
 				}
 			}
 
