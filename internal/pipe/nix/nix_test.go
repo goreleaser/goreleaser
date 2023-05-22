@@ -46,6 +46,13 @@ func TestRunPipe(t *testing.T) {
 				Description: "my test",
 				Homepage:    "https://goreleaser.com",
 				License:     "mit",
+				PostInstall: `
+					echo "do something"
+				`,
+				Install: `
+					mkdir -p $out/bin
+					cp foo $out/bin/foo
+				`,
 				Repository: config.RepoRef{
 					Owner: "foo",
 					Name:  "bar",

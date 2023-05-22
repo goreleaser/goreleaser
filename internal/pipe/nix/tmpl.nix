@@ -48,6 +48,14 @@ in pkgs.stdenv.mkDerivation {
     {{- end }}
   '';
 
+  {{- with .PostInstall }}
+  postInstall = ''
+    {{- range $index, $element := . }}
+    {{ . -}}
+    {{- end }}
+  '';
+  {{- end }}
+
   system = system;
 
   meta = with lib; {

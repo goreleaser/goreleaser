@@ -13,6 +13,7 @@ type templateData struct {
 	Name        string
 	Version     string
 	Install     []string
+	PostInstall []string
 	SourceRoot  string
 	Archives    map[string]Archive
 	Description string

@@ -28,7 +28,10 @@ in pkgs.stdenv.mkDerivation {
 
   installPhase = ''
     mkdir -p $out/bin
-    cp -vr ./foo $out/bin/foo
+    cp foo $out/bin/foo
+  '';
+  postInstall = ''
+    echo "do something"
   '';
 
   system = system;

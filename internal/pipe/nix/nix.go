@@ -219,12 +219,18 @@ func preparePkg(
 		return "", err
 	}
 
+	postInstall, err := postInstall(ctx, nix, archives[0])
+	if err != nil {
+		return "", err
+	}
+
 	folder := artifact.ExtraOr(*archives[0], artifact.ExtraWrappedIn, ".")
 
 	data := templateData{
 		Name:        nix.Name,
 		Version:     ctx.Version,
 		Install:     installs,
+		PostInstall: postInstall,
 		Archives:    map[string]Archive{},
 		SourceRoot:  folder,
 		Description: nix.Description,
@@ -381,6 +387,14 @@ func doBuildPkg(ctx *context.Context, data templateData) (string, error) {
 	}
 
 	return out.String(), nil
+}
+
+func postInstall(ctx *context.Context, nix config.Nix, art *artifact.Artifact) ([]string, error) {
+	applied, err := tmpl.New(ctx).WithArtifact(art).Apply(nix.PostInstall)
+	if err != nil {
+		return nil, err
+	}
+	return split(applied), nil
 }
 
 func installs(ctx *context.Context, nix config.Nix, art *artifact.Artifact) ([]string, error) {
