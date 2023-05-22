@@ -300,10 +300,10 @@ func doPublish(ctx *context.Context, prefetcher shaPrefetcher, cl client.Client,
 
 	repo := client.RepoFromRef(nix.Repository)
 
-	gpath := path.Join("pkgs", nix.Name, "default.nix")
-	log.WithField("path", gpath).
-		WithField("repo", repo.String()).
-		Info("pushing")
+	gpath := nix.Path
+	if gpath == "" {
+		gpath = path.Join("pkgs", nix.Name, "default.nix")
+	}
 
 	msg, err := tmpl.New(ctx).Apply(nix.CommitMessageTemplate)
 	if err != nil {

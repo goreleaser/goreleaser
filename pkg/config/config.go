@@ -199,6 +199,7 @@ type Homebrew struct {
 
 type Nix struct {
 	Name                  string       `yaml:"name,omitempty" json:"name,omitempty"`
+	Path                  string       `yaml:"path,omitempty" json:"path,omitempty"`
 	Repository            RepoRef      `yaml:"repository,omitempty" json:"repository,omitempty"`
 	CommitAuthor          CommitAuthor `yaml:"commit_author,omitempty" json:"commit_author,omitempty"`
 	CommitMessageTemplate string       `yaml:"commit_msg_template,omitempty" json:"commit_msg_template,omitempty"`

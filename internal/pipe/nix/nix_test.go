@@ -27,6 +27,7 @@ func TestRunPipe(t *testing.T) {
 				Description: "my test",
 				Homepage:    "https://goreleaser.com",
 				License:     "mit",
+				Path:        "pkgs/foo.nix",
 				Repository: config.RepoRef{
 					Owner:  "foo",
 					Name:   "bar",
@@ -163,11 +164,14 @@ func TestRunPipe(t *testing.T) {
 			golden.RequireEqualExt(t, bts, "_build.nix")
 			require.NoError(t, ppipe.publishAll(ctx, client))
 			require.True(t, client.CreatedFile)
+			golden.RequireEqualExt(t, []byte(client.Content), "_publish.nix")
+			require.NotContains(t, client.Content, strings.Repeat("0", 52))
 			if tt.nix.Repository.PullRequest.Enabled {
 				require.True(t, client.OpenedPullRequest)
 			}
-			golden.RequireEqualExt(t, []byte(client.Content), "_publish.nix")
-			require.NotContains(t, client.Content, strings.Repeat("0", 52))
+			if tt.nix.Path != "" {
+				require.Equal(t, tt.nix.Path, client.Path)
+			}
 		})
 	}
 }
