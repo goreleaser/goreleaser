@@ -41,15 +41,17 @@ func NewBuild() Pipe {
 
 // NewPublish returns a pipe to be used in the publish phase.
 func NewPublish() Pipe {
-	return Pipe{prodShaPrefetcher{}}
+	return Pipe{publishShaPrefetcher{}}
 }
 
 type Pipe struct {
 	prefetcher shaPrefetcher
 }
 
-func (Pipe) String() string                 { return "nixpkgs" }
-func (Pipe) Skip(ctx *context.Context) bool { return len(ctx.Config.Brews) == 0 }
+func (Pipe) String() string { return "nixpkgs" }
+func (p Pipe) Skip(ctx *context.Context) bool {
+	return len(ctx.Config.Nix) == 0 || !p.prefetcher.Available()
+}
 
 func (Pipe) Default(ctx *context.Context) error {
 	for i := range ctx.Config.Nix {
@@ -297,7 +299,7 @@ func doPublish(ctx *context.Context, prefetcher shaPrefetcher, cl client.Client,
 	}
 
 	if strings.TrimSpace(nix.SkipUpload) == "true" {
-		return pipe.Skip("brew.skip_upload is set")
+		return pipe.Skip("nix.skip_upload is set")
 	}
 
 	if strings.TrimSpace(nix.SkipUpload) == "auto" && ctx.Semver.Prerelease != "" {
@@ -340,7 +342,7 @@ func doPublish(ctx *context.Context, prefetcher shaPrefetcher, cl client.Client,
 		return cl.CreateFile(ctx, author, repo, []byte(content), gpath, msg)
 	}
 
-	log.Info("brews.pull_request enabled, creating a PR")
+	log.Info("nix.pull_request enabled, creating a PR")
 	pcl, ok := cl.(client.PullRequestOpener)
 	if !ok {
 		return fmt.Errorf("client does not support pull requests")
@@ -436,6 +438,7 @@ func split(s string) []string {
 
 type shaPrefetcher interface {
 	Prefetch(url string) (string, error)
+	Available() bool
 }
 
 const zeroHash = "0000000000000000000000000000000000000000000000000000"
@@ -443,10 +446,16 @@ const zeroHash = "0000000000000000000000000000000000000000000000000000"
 type buildShaPrefetcher struct{}
 
 func (buildShaPrefetcher) Prefetch(_ string) (string, error) { return zeroHash, nil }
+func (buildShaPrefetcher) Available() bool                   { return true }
 
-type prodShaPrefetcher struct{}
+type publishShaPrefetcher struct{}
 
-func (prodShaPrefetcher) Prefetch(url string) (string, error) {
+func (publishShaPrefetcher) Available() bool {
+	_, err := exec.LookPath("nix-prefetch-url")
+	return err == nil
+}
+
+func (publishShaPrefetcher) Prefetch(url string) (string, error) {
 	out, err := exec.Command("nix-prefetch-url", url).Output()
 	return strings.TrimSpace(string(out)), err
 }

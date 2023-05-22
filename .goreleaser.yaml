@@ -189,6 +189,20 @@ brews:
       fish_completion.install "completions/goreleaser.fish"
       man1.install "manpages/goreleaser.1.gz"
 
+nix:
+  - repositoryy:
+      owner: goreleaser
+      name: nur
+    homepage:  https://goreleaser.com
+    description: Deliver Go binaries as fast and easily as possible
+    license: mit
+    install: |-
+      mkdir -p $out/bin
+      cp -vr ./goreleaser $out/bin/goreleaser
+      installManPage ./manpages/goreleaser.1.gz
+      installShellCompletion ./completions/*
+
+
 aurs:
   - homepage:  https://goreleaser.com
     description: Deliver Go binaries as fast and easily as possible
