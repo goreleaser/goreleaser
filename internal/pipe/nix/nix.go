@@ -41,7 +41,9 @@ func NewBuild() Pipe {
 
 // NewPublish returns a pipe to be used in the publish phase.
 func NewPublish() Pipe {
-	return Pipe{publishShaPrefetcher{}}
+	return Pipe{publishShaPrefetcher{
+		bin: nixPrefetchURLBin,
+	}}
 }
 
 type Pipe struct {
@@ -67,12 +69,6 @@ func (Pipe) Default(ctx *context.Context) error {
 		}
 		if nix.Goamd64 == "" {
 			nix.Goamd64 = "v1"
-		}
-		if nix.Install == "" {
-			nix.Install = `
-			    mkdir -p $out/bin
-				cp -vr ./{{.Binary}} $out/bin/{{.Binary}}
-			 `
 		}
 	}
 
@@ -412,15 +408,8 @@ func installs(ctx *context.Context, nix config.Nix, art *artifact.Artifact) ([]s
 	}
 
 	result := []string{"mkdir -p $out/bin"}
-	switch art.Type {
-	case artifact.UploadableBinary:
-		name := art.Name
-		bin := artifact.ExtraOr(*art, artifact.ExtraBinary, art.Name)
-		result = append(result, fmt.Sprintf("cp -vr ./%s $out/bin/%s", name, bin))
-	case artifact.UploadableArchive:
-		for _, bin := range artifact.ExtraOr(*art, artifact.ExtraBinaries, []string{}) {
-			result = append(result, fmt.Sprintf("cp -vr ./%s $out/bin/%[1]s", bin))
-		}
+	for _, bin := range artifact.ExtraOr(*art, artifact.ExtraBinaries, []string{}) {
+		result = append(result, fmt.Sprintf("cp -vr ./%s $out/bin/%[1]s", bin))
 	}
 
 	log.WithField("install", result).Warnf("guessing install")
@@ -444,21 +433,29 @@ type shaPrefetcher interface {
 	Available() bool
 }
 
-const zeroHash = "0000000000000000000000000000000000000000000000000000"
+const (
+	zeroHash          = "0000000000000000000000000000000000000000000000000000"
+	nixPrefetchURLBin = "nix-prefetch-url"
+)
 
 type buildShaPrefetcher struct{}
 
 func (buildShaPrefetcher) Prefetch(_ string) (string, error) { return zeroHash, nil }
 func (buildShaPrefetcher) Available() bool                   { return true }
 
-type publishShaPrefetcher struct{}
+type publishShaPrefetcher struct {
+	bin string
+}
 
-func (publishShaPrefetcher) Available() bool {
-	_, err := exec.LookPath("nix-prefetch-url")
+func (p publishShaPrefetcher) Available() bool {
+	_, err := exec.LookPath(p.bin)
+	if err != nil {
+		log.Warnf("%s is not available", p.bin)
+	}
 	return err == nil
 }
 
-func (publishShaPrefetcher) Prefetch(url string) (string, error) {
-	out, err := exec.Command("nix-prefetch-url", url).Output()
+func (p publishShaPrefetcher) Prefetch(url string) (string, error) {
+	out, err := exec.Command(p.bin, url).Output()
 	return strings.TrimSpace(string(out)), err
 }

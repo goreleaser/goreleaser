@@ -2,6 +2,7 @@ package nix
 
 import (
 	"os"
+	"os/exec"
 	"path/filepath"
 	"strings"
 	"testing"
@@ -14,11 +15,77 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
+func TestString(t *testing.T) {
+	require.NotEmpty(t, Pipe{}.String())
+}
+
+func TestSkip(t *testing.T) {
+	t.Run("no-nix", func(t *testing.T) {
+		require.True(t, Pipe{}.Skip(testctx.New()))
+	})
+	t.Run("nix-all-good", func(t *testing.T) {
+		require.False(t, NewPublish().Skip(testctx.NewWithCfg(config.Project{
+			Nix: []config.Nix{{}},
+		})))
+	})
+	t.Run("prefetcher-not-in-path", func(t *testing.T) {
+		t.Setenv("PATH", "nope")
+		require.True(t, NewPublish().Skip(testctx.NewWithCfg(config.Project{
+			Nix: []config.Nix{{}},
+		})))
+	})
+}
+
+const fakeNixPrefetchURLBin = "fake-nix-prefetch-url"
+
+func TestPrefetcher(t *testing.T) {
+	t.Run("prefetch", func(t *testing.T) {
+		t.Run("build", func(t *testing.T) {
+			sha, err := buildShaPrefetcher{}.Prefetch("any")
+			require.NoError(t, err)
+			require.Equal(t, zeroHash, sha)
+		})
+		t.Run("publish", func(t *testing.T) {
+			t.Run("no-nix-prefetch-url", func(t *testing.T) {
+				_, err := publishShaPrefetcher{fakeNixPrefetchURLBin}.Prefetch("any")
+				require.ErrorIs(t, err, exec.ErrNotFound)
+			})
+			t.Run("valid", func(t *testing.T) {
+				sha, err := publishShaPrefetcher{nixPrefetchURLBin}.Prefetch("https://github.com/goreleaser/goreleaser/releases/download/v1.18.2/goreleaser_Darwin_arm64.tar.gz")
+				require.NoError(t, err)
+				require.Equal(t, "0girjxp07srylyq36xk1ska8p68m2fhp05xgyv4wkcl61d6rzv3y", sha)
+			})
+		})
+	})
+	t.Run("available", func(t *testing.T) {
+		t.Run("build", func(t *testing.T) {
+			require.True(t, buildShaPrefetcher{}.Available())
+		})
+		t.Run("publish", func(t *testing.T) {
+			t.Run("no-nix-prefetch-url", func(t *testing.T) {
+				require.False(t, publishShaPrefetcher{fakeNixPrefetchURLBin}.Available())
+			})
+			t.Run("valid", func(t *testing.T) {
+				require.True(t, publishShaPrefetcher{nixPrefetchURLBin}.Available())
+			})
+		})
+	})
+}
+
 func TestRunPipe(t *testing.T) {
 	for _, tt := range []struct {
 		name string
 		nix  config.Nix
 	}{
+		{
+			name: "minimal",
+			nix: config.Nix{
+				Repository: config.RepoRef{
+					Owner: "foo",
+					Name:  "bar",
+				},
+			},
+		},
 		{
 			name: "open-pr",
 			nix: config.Nix{
