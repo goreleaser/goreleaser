@@ -103,6 +103,49 @@ Below you can find the steps for each of them.
     yay -S goreleaser-pro-bin
     ```
 
+
+### nix
+
+#### nixpkgs
+
+=== "OSS"
+    ```bash
+    nix-env -iA goreleaser
+    ```
+
+!!! info
+    The [package in nixpkgs](https://github.com/NixOS/nixpkgs/blob/master/pkgs/tools/misc/goreleaser/default.nix)
+    might be slightly outdated, as it is not updated automatically.
+    Use our NUR to always get the latest updates.
+
+#### nur
+
+First, you'll need to add our [NUR][nur] to your nix configuration.
+You can follow the guides
+[here](https://github.com/nix-community/NUR#installation).
+
+Once you do that, you can install the packages.
+
+[nur]: https://github.com/goreleaser/nur
+
+=== "OSS"
+    ```nix
+    { pkgs, lib, ... }: {
+      home.packages = with pkgs; [
+        nur.repos.goreleaser.goreleaser
+      ];
+    }
+    ```
+
+=== "Pro"
+    ```nix
+    { pkgs, lib, ... }: {
+      home.packages = with pkgs; [
+        nur.repos.goreleaser.goreleaser-pro
+      ];
+    }
+    ```
+
 ### deb, rpm and apk packages
 
 === "OSS"
