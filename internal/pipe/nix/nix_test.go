@@ -188,3 +188,4 @@ type fakeNixShaPrefetcher map[string]string
 func (m fakeNixShaPrefetcher) Prefetch(url string) (string, error) {
 	return m[url], nil
 }
+func (m fakeNixShaPrefetcher) Available() bool { return true }

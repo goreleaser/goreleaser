@@ -227,6 +227,9 @@ func preparePkg(
 	}
 
 	folder := artifact.ExtraOr(*archives[0], artifact.ExtraWrappedIn, ".")
+	if folder == "" {
+		folder = "."
+	}
 
 	data := templateData{
 		Name:        nix.Name,

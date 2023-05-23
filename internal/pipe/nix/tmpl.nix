@@ -2,6 +2,9 @@
 { system ? builtins.currentSystem, pkgs, lib, fetchurl, installShellFiles }:
 let
   shaMap = {
+    {{- with  .Archives.linux386.Sha }}
+    i686-linux = "{{ . }}";
+    {{- end }}
     {{- with  .Archives.linuxamd64.Sha }}
     x86_64-linux = "{{ . }}";
     {{- end }}
@@ -17,6 +20,9 @@ let
   };
 
   urlMap = {
+    {{- with  .Archives.linux386.URL }}
+    i686-linux = "{{ . }}";
+    {{- end }}
     {{- with  .Archives.linuxamd64.URL }}
     x86_64-linux = "{{ . }}";
     {{- end }}

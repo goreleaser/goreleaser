@@ -190,7 +190,8 @@ brews:
       man1.install "manpages/goreleaser.1.gz"
 
 nix:
-  - repositoryy:
+  - name: goreleaser
+    repository:
       owner: goreleaser
       name: nur
     homepage:  https://goreleaser.com
