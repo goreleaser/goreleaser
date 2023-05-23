@@ -24,15 +24,20 @@ import (
 
 const nixConfigExtra = "NixConfig"
 
-// ErrNoArchivesFound happens when 0 archives are found.
-type ErrNoArchivesFound struct {
+type errNoArchivesFound struct {
 	goamd64 string
 	ids     []string
 }
 
-func (e ErrNoArchivesFound) Error() string {
-	return fmt.Sprintf("no linux/macos archives found matching goos=[darwin linux] goarch=[amd64 arm64] goamd64=%s ids=%v", e.goamd64, e.ids)
+func (e errNoArchivesFound) Error() string {
+	return fmt.Sprintf("no linux/macos archives found matching goos=[darwin linux] goarch=[amd64 arm64 386] goamd64=%s ids=%v", e.goamd64, e.ids)
 }
+
+var (
+	errNoRepoName     = pipe.Skip("repository name is not set")
+	errSkipUpload     = pipe.Skip("nix.skip_upload is set")
+	errSkipUploadAuto = pipe.Skip("nix.skip_upload is set to 'auto', and current version is a pre-release")
+)
 
 // NewBuild returns a pipe to be used in the build phase.
 func NewBuild() Pipe {
@@ -120,7 +125,7 @@ func (p Pipe) publishAll(ctx *context.Context, cli client.Client) error {
 
 func (p Pipe) doRun(ctx *context.Context, nix config.Nix, cl client.ReleaserURLTemplater) error {
 	if nix.Repository.Name == "" {
-		return pipe.Skip("derivation name is not set")
+		return errNoRepoName
 	}
 
 	name, err := tmpl.New(ctx).Apply(nix.Name)
@@ -198,7 +203,7 @@ func preparePkg(
 
 	archives := ctx.Artifacts.Filter(artifact.And(filters...)).List()
 	if len(archives) == 0 {
-		return "", ErrNoArchivesFound{
+		return "", errNoArchivesFound{
 			goamd64: nix.Goamd64,
 			ids:     nix.IDs,
 		}
@@ -255,10 +260,7 @@ func preparePkg(
 
 		for _, goarch := range expandGoarch(art.Goarch) {
 			data.Archives[art.Goos+goarch] = archive
-			plat, ok := goosToPlatform[art.Goos+goarch]
-			if !ok {
-				return "", fmt.Errorf("invalid platform: %s/%s", art.Goos, goarch)
-			}
+			plat := goosToPlatform[art.Goos+goarch]
 			platforms[plat] = true
 		}
 	}
@@ -298,11 +300,11 @@ func doPublish(ctx *context.Context, prefetcher shaPrefetcher, cl client.Client,
 	}
 
 	if strings.TrimSpace(nix.SkipUpload) == "true" {
-		return pipe.Skip("nix.skip_upload is set")
+		return errSkipUpload
 	}
 
 	if strings.TrimSpace(nix.SkipUpload) == "auto" && ctx.Semver.Prerelease != "" {
-		return pipe.Skip("prerelease detected with 'auto' upload, skipping nixpkg publish")
+		return errSkipUploadAuto
 	}
 
 	repo := client.RepoFromRef(nix.Repository)

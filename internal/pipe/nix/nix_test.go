@@ -1,6 +1,7 @@
 package nix
 
 import (
+	"html/template"
 	"os"
 	"os/exec"
 	"path/filepath"
@@ -74,8 +75,10 @@ func TestPrefetcher(t *testing.T) {
 
 func TestRunPipe(t *testing.T) {
 	for _, tt := range []struct {
-		name string
-		nix  config.Nix
+		name                 string
+		expectRunErrorIs     error
+		expectPublishErrorIs error
+		nix                  config.Nix
 	}{
 		{
 			name: "minimal",
@@ -141,6 +144,22 @@ func TestRunPipe(t *testing.T) {
 			},
 		},
 		{
+			name: "no-archives",
+			expectRunErrorIs: errNoArchivesFound{
+				goamd64: "v2",
+				ids:     []string{"nopenopenope"},
+			},
+			nix: config.Nix{
+				Name:    "no-archives",
+				IDs:     []string{"nopenopenope"},
+				Goamd64: "v2",
+				Repository: config.RepoRef{
+					Owner: "foo",
+					Name:  "bar",
+				},
+			},
+		},
+		{
 			name: "unibin-replaces",
 			nix: config.Nix{
 				Name:        "unibin-replaces",
@@ -165,6 +184,74 @@ func TestRunPipe(t *testing.T) {
 				},
 			},
 		},
+		{
+			name:             "no-repo-name",
+			expectRunErrorIs: errNoRepoName,
+			nix: config.Nix{
+				Name: "doesnotmatter",
+				Repository: config.RepoRef{
+					Owner: "foo",
+				},
+			},
+		},
+		{
+			name:             "bad-name-tmpl",
+			expectRunErrorIs: &template.Error{},
+			nix: config.Nix{
+				Name: "{{ .Nope }}",
+				Repository: config.RepoRef{
+					Owner: "foo",
+					Name:  "bar",
+				},
+			},
+		},
+		{
+			name:             "bad-repo-tmpl",
+			expectRunErrorIs: &template.Error{},
+			nix: config.Nix{
+				Name: "doesnotmatter",
+				Repository: config.RepoRef{
+					Owner: "foo",
+					Name:  "{{ .Nope }}",
+				},
+			},
+		},
+		{
+			name:             "bad-skip-upload-tmpl",
+			expectRunErrorIs: &template.Error{},
+			nix: config.Nix{
+				Name:       "doesnotmatter",
+				SkipUpload: "{{ .Nope }}",
+				Repository: config.RepoRef{
+					Owner: "foo",
+					Name:  "bar",
+				},
+			},
+		},
+		{
+			name:                 "skip-upload",
+			expectPublishErrorIs: errSkipUpload,
+			nix: config.Nix{
+				Name:       "doesnotmatter",
+				SkipUpload: "true",
+				Repository: config.RepoRef{
+					Owner: "foo",
+					Name:  "bar",
+				},
+			},
+		},
+		{
+			name:                 "skip-upload-auto",
+			expectPublishErrorIs: errSkipUploadAuto,
+			nix: config.Nix{
+				Name:       "doesnotmatter",
+				SkipUpload: "auto",
+				Repository: config.RepoRef{
+					Owner: "foo",
+					Name:  "bar",
+				},
+			},
+		},
 	} {
 		t.Run(tt.name, func(t *testing.T) {
 			folder := t.TempDir()
@@ -176,6 +263,7 @@ func TestRunPipe(t *testing.T) {
 				},
 				testctx.WithVersion("1.2.1"),
 				testctx.WithCurrentTag("v1.2.1"),
+				testctx.WithSemver(1, 2, 1, "rc1"),
 			)
 			createFakeArtifact := func(id, goos, goarch string, extra map[string]any) {
 				path := filepath.Join(folder, "dist/foo_"+goos+goarch+".tar.gz")
@@ -187,9 +275,10 @@ func TestRunPipe(t *testing.T) {
 					Goamd64: "v1",
 					Type:    artifact.UploadableArchive,
 					Extra: map[string]interface{}{
-						artifact.ExtraID:       id,
-						artifact.ExtraFormat:   "tar.gz",
-						artifact.ExtraBinaries: []string{"foo"},
+						artifact.ExtraID:        id,
+						artifact.ExtraFormat:    "tar.gz",
+						artifact.ExtraBinaries:  []string{"foo"},
+						artifact.ExtraWrappedIn: "",
 					},
 				}
 				for k, v := range extra {
@@ -231,15 +320,32 @@ func TestRunPipe(t *testing.T) {
 					"https://dummyhost/download/v1.2.1/foo_darwin_all.tar.gz":   "sha5",
 				},
 			}
+
+			// default
 			require.NoError(t, bpipe.Default(ctx))
+
+			// run
+			if tt.expectRunErrorIs != nil {
+				err := bpipe.runAll(ctx, client)
+				require.ErrorAs(t, err, &tt.expectPublishErrorIs)
+				return
+			}
 			require.NoError(t, bpipe.runAll(ctx, client))
 			bts, err := os.ReadFile(ctx.Artifacts.Filter(artifact.ByType(artifact.Nixpkg)).Paths()[0])
 			require.NoError(t, err)
 			golden.RequireEqualExt(t, bts, "_build.nix")
+
+			// publish
+			if tt.expectPublishErrorIs != nil {
+				err := ppipe.publishAll(ctx, client)
+				require.ErrorAs(t, err, &tt.expectPublishErrorIs)
+				return
+			}
 			require.NoError(t, ppipe.publishAll(ctx, client))
 			require.True(t, client.CreatedFile)
 			golden.RequireEqualExt(t, []byte(client.Content), "_publish.nix")
 			require.NotContains(t, client.Content, strings.Repeat("0", 52))
+
 			if tt.nix.Repository.PullRequest.Enabled {
 				require.True(t, client.OpenedPullRequest)
 			}
@@ -248,6 +354,13 @@ func TestRunPipe(t *testing.T) {
 			}
 		})
 	}
+}
+
+func TestErrNoArchivesFound(t *testing.T) {
+	require.EqualError(t, errNoArchivesFound{
+		goamd64: "v1",
+		ids:     []string{"foo", "bar"},
+	}, "no linux/macos archives found matching goos=[darwin linux] goarch=[amd64 arm64 386] goamd64=v1 ids=[foo bar]")
 }
 
 type fakeNixShaPrefetcher map[string]string
