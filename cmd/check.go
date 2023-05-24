@@ -17,6 +17,7 @@ type checkCmd struct {
 	config     string
 	quiet      bool
 	deprecated bool
+	checked    int
 }
 
 func newCheckCmd() *checkCmd {
@@ -34,10 +35,9 @@ func newCheckCmd() *checkCmd {
 			}
 
 			var errs []*exitError
-			if root.config != "" {
+			if root.config != "" || len(args) == 0 {
 				args = append(args, root.config)
 			}
-
 			for _, config := range args {
 				cfg, err := loadConfig(config)
 				if err != nil {
@@ -67,6 +67,7 @@ func newCheckCmd() *checkCmd {
 				}
 			}
 
+			root.checked = len(args)
 			exit := 0
 			for _, err := range errs {
 				if err.code < exit || exit == 0 {
@@ -79,6 +80,7 @@ func newCheckCmd() *checkCmd {
 					log.WithError(err.err).Warn(err.details)
 				}
 			}
+
 			if exit > 0 {
 				return wrapErrorWithCode(fmt.Errorf("%d out of %d configuration file(s) have issues", len(errs), len(args)), exit, "")
 			}
