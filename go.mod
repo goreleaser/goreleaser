@@ -27,7 +27,7 @@ require (
 	github.com/google/ko v0.13.0
 	github.com/google/uuid v1.3.0
 	github.com/goreleaser/fileglob v1.3.0
-	github.com/goreleaser/nfpm/v2 v2.28.0
+	github.com/goreleaser/nfpm/v2 v2.29.0
 	github.com/hashicorp/go-multierror v1.1.1
 	github.com/imdario/mergo v0.3.15
 	github.com/invopop/jsonschema v0.7.0
@@ -183,7 +183,7 @@ require (
 	github.com/jmespath/go-jmespath v0.4.0 // indirect
 	github.com/josharian/intern v1.0.0 // indirect
 	github.com/kevinburke/ssh_config v1.1.0 // indirect
-	github.com/klauspost/compress v1.16.3 // indirect
+	github.com/klauspost/compress v1.16.5 // indirect
 	github.com/kylelemons/godebug v1.1.0 // indirect
 	github.com/letsencrypt/boulder v0.0.0-20221109233200-85aa52084eaf // indirect
 	github.com/lucasb-eyer/go-colorful v1.2.0 // indirect
