@@ -203,6 +203,12 @@ func TestGithubGetDefaultBranch(t *testing.T) {
 		totalRequests++
 		defer r.Body.Close()
 
+		if r.URL.Path == "/rate_limit" {
+			w.WriteHeader(http.StatusOK)
+			fmt.Fprint(w, `{"resources":{"core":{"remaining":120}}}`)
+			return
+		}
+
 		// Assume the request to create a branch was good
 		w.WriteHeader(http.StatusOK)
 		fmt.Fprint(w, `{"default_branch": "main"}`)
@@ -226,7 +232,7 @@ func TestGithubGetDefaultBranch(t *testing.T) {
 	b, err := client.getDefaultBranch(ctx, repo)
 	require.NoError(t, err)
 	require.Equal(t, "main", b)
-	require.Equal(t, 1, totalRequests)
+	require.Equal(t, 2, totalRequests)
 }
 
 func TestGithubGetDefaultBranchErr(t *testing.T) {
@@ -267,6 +273,11 @@ func TestChangelog(t *testing.T) {
 			require.NoError(t, err)
 			return
 		}
+		if r.URL.Path == "/rate_limit" {
+			w.WriteHeader(http.StatusOK)
+			fmt.Fprint(w, `{"resources":{"core":{"remaining":120}}}`)
+			return
+		}
 	}))
 	defer srv.Close()
 
@@ -299,6 +310,11 @@ func TestReleaseNotes(t *testing.T) {
 			require.NoError(t, err)
 			return
 		}
+		if r.URL.Path == "/rate_limit" {
+			w.WriteHeader(http.StatusOK)
+			fmt.Fprint(w, `{"resources":{"core":{"remaining":120}}}`)
+			return
+		}
 	}))
 	defer srv.Close()
 
@@ -326,6 +342,11 @@ func TestReleaseNotesError(t *testing.T) {
 
 		if r.URL.Path == "/repos/someone/something/releases/generate-notes" {
 			w.WriteHeader(http.StatusBadRequest)
+		}
+		if r.URL.Path == "/rate_limit" {
+			w.WriteHeader(http.StatusOK)
+			fmt.Fprint(w, `{"resources":{"core":{"remaining":120}}}`)
+			return
 		}
 	}))
 	defer srv.Close()
