@@ -229,6 +229,42 @@ func TestRunPipe(t *testing.T) {
 			},
 		},
 		{
+			name:             "bad-install-tmpl",
+			expectRunErrorIs: &template.Error{},
+			nix: config.Nix{
+				Name:    "foo",
+				Install: `{{.NoInstall}}`,
+				Repository: config.RepoRef{
+					Owner: "foo",
+					Name:  "bar",
+				},
+			},
+		},
+		{
+			name:             "bad-post-install-tmpl",
+			expectRunErrorIs: &template.Error{},
+			nix: config.Nix{
+				Name:        "foo",
+				PostInstall: `{{.NoPostInstall}}`,
+				Repository: config.RepoRef{
+					Owner: "foo",
+					Name:  "bar",
+				},
+			},
+		},
+		{
+			name:             "bad-release-url-tmpl",
+			expectRunErrorIs: &template.Error{},
+			nix: config.Nix{
+				Name:        "foo",
+				URLTemplate: "{{.BadURL}}",
+				Repository: config.RepoRef{
+					Owner: "foo",
+					Name:  "bar",
+				},
+			},
+		},
+		{
 			name:                 "skip-upload",
 			expectPublishErrorIs: errSkipUpload,
 			nix: config.Nix{
