@@ -9,6 +9,7 @@ import (
 	"reflect"
 	"strconv"
 	"strings"
+	"time"
 
 	"github.com/caarlos0/log"
 	"github.com/google/go-github/v50/github"
@@ -64,7 +65,22 @@ func newGitHub(ctx *context.Context, token string) (*githubClient, error) {
 	return &githubClient{client: client}, nil
 }
 
+func (c *githubClient) checkRateLimit(ctx *context.Context) {
+	limits, _, err := c.client.RateLimits(ctx)
+	if err != nil {
+		log.Warn("could not check rate limits, hoping for the best...")
+		return
+	}
+	if limits.Core.Remaining > 100 { // 100 should be safe enough
+		return
+	}
+	sleep := limits.Core.Reset.UTC().Sub(time.Now().UTC())
+	log.Warnf("token too close to rate limiting, will sleep for %s before continuing...", sleep)
+	time.Sleep(sleep)
+}
+
 func (c *githubClient) GenerateReleaseNotes(ctx *context.Context, repo Repo, prev, current string) (string, error) {
+	c.checkRateLimit(ctx)
 	notes, _, err := c.client.Repositories.GenerateReleaseNotes(ctx, repo.Owner, repo.Name, &github.GenerateNotesOptions{
 		TagName:         current,
 		PreviousTagName: github.String(prev),
@@ -76,6 +92,7 @@ func (c *githubClient) GenerateReleaseNotes(ctx *context.Context, repo Repo, pre
 }
 
 func (c *githubClient) Changelog(ctx *context.Context, repo Repo, prev, current string) (string, error) {
+	c.checkRateLimit(ctx)
 	var log []string
 	opts := &github.ListOptions{PerPage: 100}
 
@@ -103,6 +120,7 @@ func (c *githubClient) Changelog(ctx *context.Context, repo Repo, prev, current 
 
 // getDefaultBranch returns the default branch of a github repo
 func (c *githubClient) getDefaultBranch(ctx *context.Context, repo Repo) (string, error) {
+	c.checkRateLimit(ctx)
 	p, res, err := c.client.Repositories.Get(ctx, repo.Owner, repo.Name)
 	if err != nil {
 		log.WithField("projectID", repo.String()).
@@ -116,6 +134,7 @@ func (c *githubClient) getDefaultBranch(ctx *context.Context, repo Repo) (string
 
 // CloseMilestone closes a given milestone.
 func (c *githubClient) CloseMilestone(ctx *context.Context, repo Repo, title string) error {
+	c.checkRateLimit(ctx)
 	milestone, err := c.getMilestoneByTitle(ctx, repo, title)
 	if err != nil {
 		return err
@@ -144,6 +163,7 @@ func (c *githubClient) OpenPullRequest(
 	repo Repo,
 	base, title string,
 ) error {
+	c.checkRateLimit(ctx)
 	if base == "" {
 		def, err := c.getDefaultBranch(ctx, repo)
 		if err != nil {
@@ -176,6 +196,7 @@ func (c *githubClient) CreateFile(
 	path,
 	message string,
 ) error {
+	c.checkRateLimit(ctx)
 	defBranch, err := c.getDefaultBranch(ctx, repo)
 	if err != nil {
 		return fmt.Errorf("could not get default branch: %w", err)
@@ -257,6 +278,7 @@ func (c *githubClient) CreateFile(
 }
 
 func (c *githubClient) CreateRelease(ctx *context.Context, body string) (string, error) {
+	c.checkRateLimit(ctx)
 	title, err := tmpl.New(ctx).Apply(ctx.Config.Release.NameTemplate)
 	if err != nil {
 		return "", err
@@ -302,6 +324,7 @@ func (c *githubClient) CreateRelease(ctx *context.Context, body string) (string,
 }
 
 func (c *githubClient) createOrUpdateRelease(ctx *context.Context, data *github.RepositoryRelease, body string) (*github.RepositoryRelease, error) {
+	c.checkRateLimit(ctx)
 	release, _, err := c.client.Repositories.GetReleaseByTag(
 		ctx,
 		ctx.Config.Release.GitHub.Owner,
@@ -329,6 +352,7 @@ func (c *githubClient) createOrUpdateRelease(ctx *context.Context, data *github.
 }
 
 func (c *githubClient) updateRelease(ctx *context.Context, id int64, data *github.RepositoryRelease) (*github.RepositoryRelease, error) {
+	c.checkRateLimit(ctx)
 	release, resp, err := c.client.Repositories.EditRelease(
 		ctx,
 		ctx.Config.Release.GitHub.Owner,
@@ -365,6 +389,7 @@ func (c *githubClient) Upload(
 	artifact *artifact.Artifact,
 	file *os.File,
 ) error {
+	c.checkRateLimit(ctx)
 	githubReleaseID, err := strconv.ParseInt(releaseID, 10, 64)
 	if err != nil {
 		return err
@@ -400,6 +425,7 @@ func (c *githubClient) Upload(
 
 // getMilestoneByTitle returns a milestone by title.
 func (c *githubClient) getMilestoneByTitle(ctx *context.Context, repo Repo, title string) (*github.Milestone, error) {
+	c.checkRateLimit(ctx)
 	// The GitHub API/SDK does not provide lookup by title functionality currently.
 	opts := &github.MilestoneListOptions{
 		ListOptions: github.ListOptions{PerPage: 100},
@@ -462,6 +488,7 @@ func overrideGitHubClientAPI(ctx *context.Context, client *github.Client) error 
 }
 
 func (c *githubClient) deleteExistingDraftRelease(ctx *context.Context, name string) error {
+	c.checkRateLimit(ctx)
 	opt := github.ListOptions{PerPage: 50}
 	for {
 		releases, resp, err := c.client.Repositories.ListReleases(
