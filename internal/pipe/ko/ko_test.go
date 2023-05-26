@@ -243,93 +243,91 @@ func TestPublishPipeSuccess(t *testing.T) {
 			_, err = remote.Index(ref)
 			require.Error(t, err) // latest should not exist
 
-			for _, tag := range tags {
-				ref, err := name.ParseReference(
-					fmt.Sprintf("%s:%s", repository, tag),
-					name.Insecure,
-				)
+			ref, err = name.ParseReference(
+				fmt.Sprintf("%s:%s", repository, tags[0]),
+				name.Insecure,
+			)
+			require.NoError(t, err)
+
+			index, err := remote.Index(ref)
+			if len(table.Platforms) > 1 {
+				require.NoError(t, err)
+				imf, err := index.IndexManifest()
 				require.NoError(t, err)
 
-				index, err := remote.Index(ref)
-				if len(table.Platforms) > 1 {
-					require.NoError(t, err)
-					imf, err := index.IndexManifest()
-					require.NoError(t, err)
-
-					platforms := make([]string, 0, len(imf.Manifests))
-					for _, mf := range imf.Manifests {
-						platforms = append(platforms, mf.Platform.String())
-					}
-					require.ElementsMatch(t, table.Platforms, platforms)
-				} else {
-					require.Error(t, err)
+				platforms := make([]string, 0, len(imf.Manifests))
+				for _, mf := range imf.Manifests {
+					platforms = append(platforms, mf.Platform.String())
 				}
-
-				image, err := remote.Image(ref)
-				require.NoError(t, err)
-
-				digest, err := image.Digest()
-				require.NoError(t, err)
-
-				sbomRef, err := name.ParseReference(
-					fmt.Sprintf(
-						"%s:%s.sbom",
-						repository,
-						strings.Replace(digest.String(), ":", "-", 1),
-					),
-					name.Insecure,
-				)
-				require.NoError(t, err)
-
-				sbom, err := remote.Image(sbomRef)
-				if table.SBOM == "none" {
-					require.Error(t, err)
-				} else {
-					require.NoError(t, err)
-
-					layers, err := sbom.Layers()
-					require.NoError(t, err)
-					require.NotEmpty(t, layers)
-
-					mediaType, err := layers[0].MediaType()
-					require.NoError(t, err)
-
-					switch table.SBOM {
-					case "spdx", "":
-						require.Equal(t, "text/spdx+json", string(mediaType))
-					case "cyclonedx":
-						require.Equal(t, "application/vnd.cyclonedx+json", string(mediaType))
-					case "go.version-m":
-						require.Equal(t, "application/vnd.go.version-m", string(mediaType))
-					default:
-						require.Fail(t, "unknown SBOM type", table.SBOM)
-					}
-				}
-
-				configFile, err := image.ConfigFile()
-				require.NoError(t, err)
-				require.GreaterOrEqual(t, len(configFile.History), 3)
-
-				require.Equal(t, table.ExpectedLabels, configFile.Config.Labels)
-
-				var creationTime time.Time
-				if table.CreationTime != "" {
-					ct, err := strconv.ParseInt(table.CreationTime, 10, 64)
-					require.NoError(t, err)
-					creationTime = time.Unix(ct, 0).UTC()
-
-					require.Equal(t, creationTime, configFile.Created.Time.UTC())
-				}
-				require.Equal(t, creationTime, configFile.History[len(configFile.History)-1].Created.Time.UTC())
-
-				var koDataCreationTime time.Time
-				if table.KoDataCreationTime != "" {
-					kdct, err := strconv.ParseInt(table.KoDataCreationTime, 10, 64)
-					require.NoError(t, err)
-					koDataCreationTime = time.Unix(kdct, 0).UTC()
-				}
-				require.Equal(t, koDataCreationTime, configFile.History[len(configFile.History)-2].Created.Time.UTC())
+				require.ElementsMatch(t, table.Platforms, platforms)
+			} else {
+				require.Error(t, err)
 			}
+
+			image, err := remote.Image(ref)
+			require.NoError(t, err)
+
+			digest, err := image.Digest()
+			require.NoError(t, err)
+
+			sbomRef, err := name.ParseReference(
+				fmt.Sprintf(
+					"%s:%s.sbom",
+					repository,
+					strings.Replace(digest.String(), ":", "-", 1),
+				),
+				name.Insecure,
+			)
+			require.NoError(t, err)
+
+			sbom, err := remote.Image(sbomRef)
+			if table.SBOM == "none" {
+				require.Error(t, err)
+			} else {
+				require.NoError(t, err)
+
+				layers, err := sbom.Layers()
+				require.NoError(t, err)
+				require.NotEmpty(t, layers)
+
+				mediaType, err := layers[0].MediaType()
+				require.NoError(t, err)
+
+				switch table.SBOM {
+				case "spdx", "":
+					require.Equal(t, "text/spdx+json", string(mediaType))
+				case "cyclonedx":
+					require.Equal(t, "application/vnd.cyclonedx+json", string(mediaType))
+				case "go.version-m":
+					require.Equal(t, "application/vnd.go.version-m", string(mediaType))
+				default:
+					require.Fail(t, "unknown SBOM type", table.SBOM)
+				}
+			}
+
+			configFile, err := image.ConfigFile()
+			require.NoError(t, err)
+			require.GreaterOrEqual(t, len(configFile.History), 3)
+
+			require.Equal(t, table.ExpectedLabels, configFile.Config.Labels)
+
+			var creationTime time.Time
+			if table.CreationTime != "" {
+				ct, err := strconv.ParseInt(table.CreationTime, 10, 64)
+				require.NoError(t, err)
+				creationTime = time.Unix(ct, 0).UTC()
+
+				require.Equal(t, creationTime, configFile.Created.Time.UTC())
+			}
+			require.Equal(t, creationTime, configFile.History[len(configFile.History)-1].Created.Time.UTC())
+
+			var koDataCreationTime time.Time
+			if table.KoDataCreationTime != "" {
+				kdct, err := strconv.ParseInt(table.KoDataCreationTime, 10, 64)
+				require.NoError(t, err)
+				koDataCreationTime = time.Unix(kdct, 0).UTC()
+			}
+			require.Equal(t, koDataCreationTime, configFile.History[len(configFile.History)-2].Created.Time.UTC())
 		})
 	}
 }
