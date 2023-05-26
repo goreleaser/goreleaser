@@ -860,19 +860,49 @@ func TestDebSpecificConfig(t *testing.T) {
 
 	t.Run("lintian", func(t *testing.T) {
 		ctx := setupContext(t)
+		ctx.Parallelism = 100
 		ctx.Env = map[string]string{
 			"NFPM_SOMEID_DEB_PASSPHRASE": "hunter2",
 		}
-		ctx.Config.NFPMs[0].NFPMOverridables.Deb.Lintian = []string{
+		ctx.Config.NFPMs[0].Deb.Lintian = []string{
 			"statically-linked-binary",
 			"changelog-file-missing-in-native-package",
 		}
-		require.NoError(t, Pipe{}.Run(ctx))
+		ctx.Config.NFPMs[0].Formats = []string{"apk", "rpm", "deb", "termux.deb"}
 
+		require.NoError(t, Pipe{}.Run(ctx))
+		for _, format := range []string{"apk", "rpm"} {
+			require.NoDirExists(t, filepath.Join(ctx.Config.Dist, format))
+		}
+		require.DirExists(t, filepath.Join(ctx.Config.Dist, "deb"))
 		for _, goarch := range []string{"amd64", "386"} {
-			bts, err := os.ReadFile(filepath.Join(ctx.Config.Dist, "deb/foo_"+goarch+"/.lintian"))
+			bts, err := os.ReadFile(filepath.Join(ctx.Config.Dist, "deb", "foo_"+goarch, "lintian"))
 			require.NoError(t, err)
 			require.Equal(t, "foo: statically-linked-binary\nfoo: changelog-file-missing-in-native-package", string(bts))
+		}
+		require.DirExists(t, filepath.Join(ctx.Config.Dist, "termux.deb"))
+		for _, goarch := range []string{"x86_64", "i686"} {
+			bts, err := os.ReadFile(filepath.Join(ctx.Config.Dist, "termux.deb", "foo_"+goarch, "lintian"))
+			require.NoError(t, err)
+			require.Equal(t, "foo: statically-linked-binary\nfoo: changelog-file-missing-in-native-package", string(bts))
+		}
+	})
+
+	t.Run("lintian no debs", func(t *testing.T) {
+		ctx := setupContext(t)
+		ctx.Parallelism = 100
+		ctx.Env = map[string]string{
+			"NFPM_SOMEID_DEB_PASSPHRASE": "hunter2",
+		}
+		ctx.Config.NFPMs[0].Deb.Lintian = []string{
+			"statically-linked-binary",
+			"changelog-file-missing-in-native-package",
+		}
+		ctx.Config.NFPMs[0].Formats = []string{"apk", "rpm"}
+
+		require.NoError(t, Pipe{}.Run(ctx))
+		for _, format := range []string{"deb", "termux.deb"} {
+			require.NoDirExists(t, filepath.Join(ctx.Config.Dist, format))
 		}
 	})
 }

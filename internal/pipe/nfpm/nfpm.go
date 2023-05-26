@@ -252,28 +252,12 @@ func create(ctx *context.Context, fpm config.NFPM, format string, binaries []*ar
 		})
 	}
 
-	if len(fpm.Deb.Lintian) > 0 {
-		lines := make([]string, 0, len(fpm.Deb.Lintian))
-		for _, ov := range fpm.Deb.Lintian {
-			lines = append(lines, fmt.Sprintf("%s: %s", packageName, ov))
+	if len(fpm.Deb.Lintian) > 0 && (format == "deb" || format == "termux.deb") {
+		lintian, err := setupLintian(ctx, fpm, packageName, format, arch)
+		if err != nil {
+			return err
 		}
-		lintianPath := filepath.Join(ctx.Config.Dist, "deb", packageName+"_"+arch, ".lintian")
-		if err := os.MkdirAll(filepath.Dir(lintianPath), 0o755); err != nil {
-			return fmt.Errorf("failed to write lintian file: %w", err)
-		}
-		if err := os.WriteFile(lintianPath, []byte(strings.Join(lines, "\n")), 0o644); err != nil {
-			return fmt.Errorf("failed to write lintian file: %w", err)
-		}
-
-		log.Debugf("creating %q", lintianPath)
-		contents = append(contents, &files.Content{
-			Source:      lintianPath,
-			Destination: filepath.Join("./usr/share/lintian/overrides", packageName),
-			Packager:    "deb",
-			FileInfo: &files.ContentFileInfo{
-				Mode: 0o644,
-			},
-		})
+		contents = append(contents, lintian)
 	}
 
 	log := log.WithField("package", packageName).WithField("format", format).WithField("arch", arch)
@@ -454,6 +438,30 @@ func create(ctx *context.Context, fpm config.NFPM, format string, binaries []*ar
 		},
 	})
 	return nil
+}
+
+func setupLintian(ctx *context.Context, fpm config.NFPM, packageName, format, arch string) (*files.Content, error) {
+	lines := make([]string, 0, len(fpm.Deb.Lintian))
+	for _, ov := range fpm.Deb.Lintian {
+		lines = append(lines, fmt.Sprintf("%s: %s", packageName, ov))
+	}
+	lintianPath := filepath.Join(ctx.Config.Dist, format, packageName+"_"+arch, "lintian")
+	if err := os.MkdirAll(filepath.Dir(lintianPath), 0o755); err != nil {
+		return nil, fmt.Errorf("failed to write lintian file: %w", err)
+	}
+	if err := os.WriteFile(lintianPath, []byte(strings.Join(lines, "\n")), 0o644); err != nil {
+		return nil, fmt.Errorf("failed to write lintian file: %w", err)
+	}
+
+	log.Debugf("creating %q", lintianPath)
+	return &files.Content{
+		Source:      lintianPath,
+		Destination: filepath.Join("./usr/share/lintian/overrides", packageName),
+		Packager:    "deb",
+		FileInfo: &files.ContentFileInfo{
+			Mode: 0o644,
+		},
+	}, nil
 }
 
 func destinations(contents files.Contents) []string {
