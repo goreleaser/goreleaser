@@ -11,7 +11,11 @@ import (
 	"github.com/goreleaser/goreleaser/pkg/context"
 )
 
-const defaultMessageTemplate = `{{ .ProjectName }} {{ .Tag }} is out! Check it out at {{ .ReleaseURL }}`
+const (
+	defaultMessageTemplate = `{{ .ProjectName }} {{ mdv2escape .Tag }} is out! Check it out at {{ mdv2escape .ReleaseURL }}`
+	parseModeHTML          = "HTML"
+	parseModeMarkdown      = "MarkdownV2"
+)
 
 type Pipe struct{}
 
@@ -26,23 +30,19 @@ func (Pipe) Default(ctx *context.Context) error {
 	if ctx.Config.Announce.Telegram.MessageTemplate == "" {
 		ctx.Config.Announce.Telegram.MessageTemplate = defaultMessageTemplate
 	}
+	switch ctx.Config.Announce.Telegram.ParseMode {
+	case parseModeHTML, parseModeMarkdown:
+		break
+	default:
+		ctx.Config.Announce.Telegram.ParseMode = parseModeMarkdown
+	}
 	return nil
 }
 
 func (Pipe) Announce(ctx *context.Context) error {
-	tpl := tmpl.New(ctx)
-	msg, err := tpl.Apply(ctx.Config.Announce.Telegram.MessageTemplate)
+	msg, chatID, err := getMessageDetails(ctx)
 	if err != nil {
-		return fmt.Errorf("telegram: %w", err)
-	}
-
-	chatIDStr, err := tpl.Apply(ctx.Config.Announce.Telegram.ChatID)
-	if err != nil {
-		return fmt.Errorf("telegram: %w", err)
-	}
-	chatID, err := strconv.ParseInt(chatIDStr, 10, 64)
-	if err != nil {
-		return fmt.Errorf("telegram: %w", err)
+		return err
 	}
 
 	var cfg Config
@@ -64,4 +64,21 @@ func (Pipe) Announce(ctx *context.Context) error {
 	}
 	log.Debug("message sent")
 	return nil
+}
+
+func getMessageDetails(ctx *context.Context) (string, int64, error) {
+	msg, err := tmpl.New(ctx).Apply(ctx.Config.Announce.Telegram.MessageTemplate)
+	if err != nil {
+		return "", 0, fmt.Errorf("telegram: %w", err)
+	}
+	chatIDStr, err := tmpl.New(ctx).Apply(ctx.Config.Announce.Telegram.ChatID)
+	if err != nil {
+		return "", 0, fmt.Errorf("telegram: %w", err)
+	}
+	chatID, err := strconv.ParseInt(chatIDStr, 10, 64)
+	if err != nil {
+		return "", 0, fmt.Errorf("telegram: %w", err)
+	}
+
+	return msg, chatID, nil
 }

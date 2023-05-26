@@ -232,6 +232,7 @@ func (t *Template) Apply(s string) (string, error) {
 			"incpatch":      incPatch,
 			"filter":        filter(false),
 			"reverseFilter": filter(true),
+			"mdv2escape":    mdv2Escape,
 		}).
 		Parse(s)
 	if err != nil {
@@ -321,4 +322,27 @@ func filter(reverse bool) func(content, exp string) string {
 
 		return strings.Join(lines, "\n")
 	}
+}
+
+func mdv2Escape(s string) string {
+	return strings.NewReplacer(
+		"_", "\\_",
+		"*", "\\*",
+		"[", "\\[",
+		"]", "\\]",
+		"(", "\\(",
+		")", "\\)",
+		"~", "\\~",
+		"`", "\\`",
+		">", "\\>",
+		"#", "\\#",
+		"+", "\\+",
+		"-", "\\-",
+		"=", "\\=",
+		"|", "\\|",
+		"{", "\\{",
+		"}", "\\}",
+		".", "\\.",
+		"!", "\\!",
+	).Replace(s)
 }
