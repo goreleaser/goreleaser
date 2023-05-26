@@ -250,7 +250,6 @@ func TestPublishPipeSuccess(t *testing.T) {
 				)
 				require.NoError(t, err)
 
-				t.Log("checking", ref.Name())
 				index, err := remote.Index(ref)
 				if len(table.Platforms) > 1 {
 					require.NoError(t, err)
