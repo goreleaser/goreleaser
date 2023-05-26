@@ -1967,6 +1967,64 @@
 				"additionalProperties": false,
 				"type": "object"
 			},
+			"Nix": {
+				"properties": {
+					"name": {
+						"type": "string"
+					},
+					"path": {
+						"type": "string"
+					},
+					"repository": {
+						"$ref": "#/$defs/RepoRef"
+					},
+					"commit_author": {
+						"$ref": "#/$defs/CommitAuthor"
+					},
+					"commit_msg_template": {
+						"type": "string"
+					},
+					"ids": {
+						"items": {
+							"type": "string"
+						},
+						"type": "array"
+					},
+					"goamd64": {
+						"type": "string"
+					},
+					"skip_upload": {
+						"oneOf": [
+							{
+								"type": "string"
+							},
+							{
+								"type": "boolean"
+							}
+						]
+					},
+					"url_template": {
+						"type": "string"
+					},
+					"install": {
+						"type": "string"
+					},
+					"post_install": {
+						"type": "string"
+					},
+					"description": {
+						"type": "string"
+					},
+					"homepage": {
+						"type": "string"
+					},
+					"license": {
+						"type": "string"
+					}
+				},
+				"additionalProperties": false,
+				"type": "object"
+			},
 			"OpenCollective": {
 				"properties": {
 					"enabled": {
@@ -2008,6 +2066,12 @@
 					"brews": {
 						"items": {
 							"$ref": "#/$defs/Homebrew"
+						},
+						"type": "array"
+					},
+					"nix": {
+						"items": {
+							"$ref": "#/$defs/Nix"
 						},
 						"type": "array"
 					},
