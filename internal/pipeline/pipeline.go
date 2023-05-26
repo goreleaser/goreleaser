@@ -23,6 +23,7 @@ import (
 	"github.com/goreleaser/goreleaser/internal/pipe/krew"
 	"github.com/goreleaser/goreleaser/internal/pipe/metadata"
 	"github.com/goreleaser/goreleaser/internal/pipe/nfpm"
+	"github.com/goreleaser/goreleaser/internal/pipe/nix"
 	"github.com/goreleaser/goreleaser/internal/pipe/prebuild"
 	"github.com/goreleaser/goreleaser/internal/pipe/publish"
 	"github.com/goreleaser/goreleaser/internal/pipe/reportsizes"
@@ -109,6 +110,8 @@ var Pipeline = append(
 	sign.Pipe{},
 	// create arch linux aur pkgbuild
 	aur.Pipe{},
+	// create nixpkgs
+	nix.NewBuild(),
 	// create brew tap
 	brew.Pipe{},
 	// krew plugins
