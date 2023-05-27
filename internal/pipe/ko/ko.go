@@ -9,6 +9,7 @@ import (
 	"io"
 	"path/filepath"
 	"strconv"
+	"strings"
 	"sync"
 	"time"
 
@@ -328,7 +329,7 @@ func buildBuildOptions(ctx *context.Context, cfg config.Ko) (*buildOptions, erro
 	if err != nil {
 		return nil, err
 	}
-	opts.tags = tags
+	opts.tags = removeEmpty(tags)
 
 	if cfg.CreationTime != "" {
 		creationTime, err := getTimeFromTemplate(ctx, cfg.CreationTime)
@@ -381,6 +382,17 @@ func buildBuildOptions(ctx *context.Context, cfg config.Ko) (*buildOptions, erro
 		opts.ldflags = ldflags
 	}
 	return opts, nil
+}
+
+func removeEmpty(strs []string) []string {
+	var res []string
+	for _, s := range strs {
+		if strings.TrimSpace(s) == "" {
+			continue
+		}
+		res = append(res, s)
+	}
+	return res
 }
 
 func applyTemplate(ctx *context.Context, templateable []string) ([]string, error) {

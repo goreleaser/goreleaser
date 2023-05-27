@@ -58,12 +58,14 @@ kos:
   - linux/arm64
 
   # Tag to build and push.
+  # Empty tags are ignored.
   #
   # Default: 'latest'
   # Templates: allowed
   tags:
   - latest
   - '{{.Tag}}'
+  - '{{if not .Prerelease}}stable{{end}}'
 
   # Creation time given to the image
   # in seconds since the Unix epoch as a string.
