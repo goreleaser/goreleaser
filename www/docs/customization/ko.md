@@ -157,5 +157,17 @@ kos:
 This will build the binaries for `linux/arm64`, `linux/amd64`, `darwin/amd64`
 and `darwin/arm64`, as well as the Docker images and manifest for Linux.
 
+# Signing KO manifests
+
+KO will add the built manifest to the artifact list, so you can sign them with
+`docker_signs`:
+
+```yaml
+# .goreleaser.yml
+docker_signs:
+  -
+    artifacts: manifests
+```
+
 [ko]: https://ko.build
 [build]: /customization/build/

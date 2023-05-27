@@ -11,6 +11,7 @@ import (
 	_ "github.com/distribution/distribution/v3/registry/storage/driver/inmemory"
 	"github.com/google/go-containerregistry/pkg/name"
 	"github.com/google/go-containerregistry/pkg/v1/remote"
+	"github.com/goreleaser/goreleaser/internal/artifact"
 	"github.com/goreleaser/goreleaser/internal/testctx"
 	"github.com/goreleaser/goreleaser/internal/testlib"
 	"github.com/goreleaser/goreleaser/pkg/config"
@@ -229,6 +230,13 @@ func TestPublishPipeSuccess(t *testing.T) {
 
 			require.NoError(t, Pipe{}.Default(ctx))
 			require.NoError(t, Pipe{}.Publish(ctx))
+
+			manifests := ctx.Artifacts.Filter(artifact.ByType(artifact.DockerManifest)).List()
+			require.Len(t, manifests, 1)
+			require.NotEmpty(t, manifests[0].Name)
+			require.Equal(t, manifests[0].Name, manifests[0].Path)
+			require.NotEmpty(t, manifests[0].Extra[artifact.ExtraDigest])
+			require.Equal(t, "default", manifests[0].Extra[artifact.ExtraID])
 
 			tags, err := applyTemplate(ctx, table.Tags)
 			require.NoError(t, err)

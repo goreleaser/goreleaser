@@ -24,6 +24,7 @@ import (
 	"github.com/google/ko/pkg/build"
 	"github.com/google/ko/pkg/commands/options"
 	"github.com/google/ko/pkg/publish"
+	"github.com/goreleaser/goreleaser/internal/artifact"
 	"github.com/goreleaser/goreleaser/internal/ids"
 	"github.com/goreleaser/goreleaser/internal/semerrgroup"
 	"github.com/goreleaser/goreleaser/internal/tmpl"
@@ -252,12 +253,27 @@ func doBuild(ctx *context.Context, ko config.Ko) func() error {
 			return fmt.Errorf("newDefault: %w", err)
 		}
 		defer func() { _ = p.Close() }()
-		if _, err = p.Publish(ctx, r, opts.importPath); err != nil {
+		ref, err := p.Publish(ctx, r, opts.importPath)
+		if err != nil {
 			return fmt.Errorf("publish: %w", err)
 		}
 		if err := p.Close(); err != nil {
 			return fmt.Errorf("close: %w", err)
 		}
+
+		art := &artifact.Artifact{
+			Type:  artifact.DockerManifest,
+			Name:  ref.Name(),
+			Path:  ref.Name(),
+			Extra: map[string]interface{}{},
+		}
+		if ko.ID != "" {
+			art.Extra[artifact.ExtraID] = ko.ID
+		}
+		if digest := ref.Context().Digest(ref.Identifier()).DigestStr(); digest != "" {
+			art.Extra[artifact.ExtraDigest] = digest
+		}
+		ctx.Artifacts.Add(art)
 		return nil
 	}
 }
