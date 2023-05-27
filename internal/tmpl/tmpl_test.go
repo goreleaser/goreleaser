@@ -410,3 +410,10 @@ func TestBool(t *testing.T) {
 		}
 	})
 }
+
+func TestMdv2Escape(t *testing.T) {
+	require.Equal(
+		t,
+		"aaa\\_\\*\\[\\]\\(\\)\\~\\`\\>\\#\\+\\-\\=\\|\\{\\}\\.\\!",
+		mdv2Escape("aaa_*[]()~`>#+-=|{}.!"))
+}

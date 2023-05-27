@@ -25,9 +25,17 @@ announce:
 
     # Message template to use while publishing.
     #
-    # Default: '{{ .ProjectName }} {{ .Tag }} is out! Check it out at {{ .ReleaseURL }}'
+    # Default: '{{ .ProjectName }} {{ mdv2escape .Tag }} is out! Check it out at {{ mdv2escape .ReleaseURL }}'
     # Templates: allowed
     message_template: 'Awesome project {{.Tag}} is out!'
+
+    # Parse mode.
+    #
+    # Valid options are MarkdownV2 and HTML.
+    #
+    # Default: MarkdownV2
+    # Since: v1.19
+    parse_mode: HTML
 ```
 
 You can format your message using `MarkdownV2`, for reference, see the
@@ -35,3 +43,5 @@ You can format your message using `MarkdownV2`, for reference, see the
 
 !!! tip
     Learn more about the [name template engine](/customization/templates/).
+    In the specific case of `MarkdownV2`, you'll probably need the `mdv2escape`
+    function.

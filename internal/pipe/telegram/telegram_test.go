@@ -14,9 +14,24 @@ func TestStringer(t *testing.T) {
 }
 
 func TestDefault(t *testing.T) {
-	ctx := testctx.New()
-	require.NoError(t, Pipe{}.Default(ctx))
-	require.Equal(t, ctx.Config.Announce.Telegram.MessageTemplate, defaultMessageTemplate)
+	t.Run("empty", func(t *testing.T) {
+		ctx := testctx.New()
+		require.NoError(t, Pipe{}.Default(ctx))
+		require.Equal(t, ctx.Config.Announce.Telegram.MessageTemplate, defaultMessageTemplate)
+		require.Equal(t, ctx.Config.Announce.Telegram.ParseMode, parseModeMarkdown)
+	})
+	t.Run("markdownv2 parsemode", func(t *testing.T) {
+		ctx := testctx.New()
+		ctx.Config.Announce.Telegram.ParseMode = parseModeMarkdown
+		require.NoError(t, Pipe{}.Default(ctx))
+		require.Equal(t, ctx.Config.Announce.Telegram.ParseMode, parseModeMarkdown)
+	})
+	t.Run("html parsemode", func(t *testing.T) {
+		ctx := testctx.New()
+		ctx.Config.Announce.Telegram.ParseMode = parseModeHTML
+		require.NoError(t, Pipe{}.Default(ctx))
+		require.Equal(t, ctx.Config.Announce.Telegram.ParseMode, parseModeHTML)
+	})
 }
 
 func TestAnnounceInvalidTemplate(t *testing.T) {
@@ -82,5 +97,25 @@ func TestSkip(t *testing.T) {
 			},
 		})
 		require.False(t, Pipe{}.Skip(ctx))
+	})
+}
+
+func TestGetMessageDetails(t *testing.T) {
+	t.Run("default message template", func(t *testing.T) {
+		ctx := testctx.NewWithCfg(
+			config.Project{
+				ProjectName: "foo",
+				Announce: config.Announce{
+					Telegram: config.Telegram{
+						ChatID: "1230212",
+					},
+				},
+			},
+			testctx.WithCurrentTag("v1.0.0"),
+		)
+		require.NoError(t, Pipe{}.Default(ctx))
+		msg, _, err := getMessageDetails(ctx)
+		require.NoError(t, err)
+		require.Equal(t, "foo v1\\.0\\.0 is out! Check it out at ", msg)
 	})
 }
