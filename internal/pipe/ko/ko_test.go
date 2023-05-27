@@ -131,6 +131,7 @@ func TestPublishPipeSuccess(t *testing.T) {
 		Labels             map[string]string
 		ExpectedLabels     map[string]string
 		Platforms          []string
+		Tags               []string
 		CreationTime       string
 		KoDataCreationTime string
 	}{
@@ -172,12 +173,30 @@ func TestPublishPipeSuccess(t *testing.T) {
 			Name:               "kodata-creation-time",
 			KoDataCreationTime: "1672531200",
 		},
+		{
+			Name: "tag-templates",
+			Tags: []string{
+				"{{if not .Prerelease }}{{.Version}}{{ end }}",
+				"   ", // empty
+			},
+		},
+		{
+			Name: "tag-template-eval-empty",
+			Tags: []string{
+				"{{.Version}}",
+				"{{if .Prerelease }}latest{{ end }}",
+			},
+		},
 	}
 
 	repository := fmt.Sprintf("%sgoreleasertest/testapp", registry)
 
 	for _, table := range table {
+		table := table
 		t.Run(table.Name, func(t *testing.T) {
+			if len(table.Tags) == 0 {
+				table.Tags = []string{table.Name}
+			}
 			ctx := testctx.NewWithCfg(config.Project{
 				ProjectName: "test",
 				Builds: []config.Build{
@@ -199,20 +218,33 @@ func TestPublishPipeSuccess(t *testing.T) {
 						Repository:         repository,
 						Labels:             table.Labels,
 						Platforms:          table.Platforms,
-						Tags:               []string{table.Name},
+						Tags:               table.Tags,
 						CreationTime:       table.CreationTime,
 						KoDataCreationTime: table.KoDataCreationTime,
 						SBOM:               table.SBOM,
 						Bare:               true,
 					},
 				},
-			})
+			}, testctx.WithVersion("1.2.0"))
 
 			require.NoError(t, Pipe{}.Default(ctx))
 			require.NoError(t, Pipe{}.Publish(ctx))
 
+			tags, err := applyTemplate(ctx, table.Tags)
+			require.NoError(t, err)
+			tags = removeEmpty(tags)
+			require.Len(t, tags, 1)
+
 			ref, err := name.ParseReference(
-				fmt.Sprintf("%s:%s", repository, table.Name),
+				fmt.Sprintf("%s:latest", repository),
+				name.Insecure,
+			)
+			require.NoError(t, err)
+			_, err = remote.Index(ref)
+			require.Error(t, err) // latest should not exist
+
+			ref, err = name.ParseReference(
+				fmt.Sprintf("%s:%s", repository, tags[0]),
 				name.Insecure,
 			)
 			require.NoError(t, err)
