@@ -17,7 +17,8 @@ See each sub-command's help for details on how to use the generated script.
 ## Options inherited from parent commands
 
 ```
-      --debug   Enable debug mode
+      --debug     Enable verbose mode (deprecated)
+      --verbose   Enable verbose mode
 ```
 
 ## See also

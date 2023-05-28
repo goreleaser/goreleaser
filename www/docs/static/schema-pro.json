@@ -3331,6 +3331,14 @@
 								"type": "integer"
 							}
 						]
+					},
+					"parse_mode": {
+						"type": "string",
+						"enum": [
+							"MarkdownV2",
+							"HTML"
+						],
+						"default": "MarkdownV2"
 					}
 				},
 				"additionalProperties": false,

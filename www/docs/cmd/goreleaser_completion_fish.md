@@ -31,7 +31,8 @@ goreleaser completion fish [flags]
 ## Options inherited from parent commands
 
 ```
-      --debug   Enable debug mode
+      --debug     Enable verbose mode (deprecated)
+      --verbose   Enable verbose mode
 ```
 
 ## See also
