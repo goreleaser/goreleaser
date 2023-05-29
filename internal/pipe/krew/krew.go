@@ -358,7 +358,7 @@ func doPublish(ctx *context.Context, manifest *artifact.Artifact, cl client.Clie
 		Name:   cfg.Index.PullRequest.Base.Name,
 		Owner:  cfg.Index.PullRequest.Base.Owner,
 		Branch: cfg.Index.PullRequest.Base.Branch,
-	}, repo, title)
+	}, repo, title, cfg.Index.PullRequest.Draft)
 }
 
 func buildManifestPath(folder, filename string) string {

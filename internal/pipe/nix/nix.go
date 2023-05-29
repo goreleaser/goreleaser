@@ -367,7 +367,7 @@ func doPublish(ctx *context.Context, prefetcher shaPrefetcher, cl client.Client,
 		Name:   nix.Repository.PullRequest.Base.Name,
 		Owner:  nix.Repository.PullRequest.Base.Owner,
 		Branch: nix.Repository.PullRequest.Base.Branch,
-	}, repo, title)
+	}, repo, title, nix.Repository.PullRequest.Draft)
 }
 
 func doBuildPkg(ctx *context.Context, data templateData) (string, error) {

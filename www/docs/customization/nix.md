@@ -62,11 +62,11 @@ nix:
         # Whether to enable it or not.
         enabled: true
 
-        # Base branch of the PR.
-        # If base is a string, the PR will be opened into the same repository.
+        # Whether to open the PR as a draft or not.
         #
-        # Default: default repository branch.
-        base: main
+        # Default: false
+        # Since: v1.19
+        draft: true
 
         # Base can also be another repository, in which case the owner and name
         # above will be used as HEAD, allowing cross-repository pull requests.

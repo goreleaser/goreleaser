@@ -42,7 +42,7 @@ type Mock struct {
 	OpenedPullRequest    bool
 }
 
-func (c *Mock) OpenPullRequest(_ *context.Context, _, _ Repo, _ string) error {
+func (c *Mock) OpenPullRequest(_ *context.Context, _, _ Repo, _ string, _ bool) error {
 	c.OpenedPullRequest = true
 	return nil
 }

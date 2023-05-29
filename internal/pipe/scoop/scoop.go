@@ -274,7 +274,7 @@ func doPublish(ctx *context.Context, manifest *artifact.Artifact, cl client.Clie
 		Name:   scoop.Bucket.PullRequest.Base.Name,
 		Owner:  scoop.Bucket.PullRequest.Base.Owner,
 		Branch: scoop.Bucket.PullRequest.Base.Branch,
-	}, repo, title)
+	}, repo, title, scoop.Bucket.PullRequest.Draft)
 }
 
 // Manifest represents a scoop.sh App Manifest.
