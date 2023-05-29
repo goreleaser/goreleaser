@@ -73,7 +73,7 @@ type ReleaseNotesGenerator interface {
 
 // PullRequestOpener can open pull requests.
 type PullRequestOpener interface {
-	OpenPullRequest(ctx *context.Context, repo Repo, head, title string) error
+	OpenPullRequest(ctx *context.Context, base, head Repo, title string) error
 }
 
 // New creates a new client depending on the token type.

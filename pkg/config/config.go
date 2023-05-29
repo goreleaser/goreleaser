@@ -95,9 +95,53 @@ type GitRepoRef struct {
 	PrivateKey string `yaml:"private_key,omitempty" json:"private_key,omitempty"`
 }
 
+type PullRequestBase struct {
+	Owner  string `yaml:"owner,omitempty" json:"owner,omitempty"`
+	Name   string `yaml:"name,omitempty" json:"name,omitempty"`
+	Branch string `yaml:"branch,omitempty" json:"branch,omitempty"`
+}
+
+// type alias to prevent stack overflowing in the custom unmarshaler.
+type pullRequestBase PullRequestBase
+
+// UnmarshalYAML is a custom unmarshaler that accept brew deps in both the old and new format.
+func (a *PullRequestBase) UnmarshalYAML(unmarshal func(interface{}) error) error {
+	var str string
+	if err := unmarshal(&str); err == nil {
+		a.Branch = str
+		return nil
+	}
+
+	var base pullRequestBase
+	if err := unmarshal(&base); err != nil {
+		return err
+	}
+
+	a.Branch = base.Branch
+	a.Owner = base.Owner
+	a.Name = base.Name
+
+	return nil
+}
+
+func (a PullRequestBase) JSONSchema() *jsonschema.Schema {
+	reflector := jsonschema.Reflector{
+		ExpandedStruct: true,
+	}
+	schema := reflector.Reflect(&pullRequestBase{})
+	return &jsonschema.Schema{
+		OneOf: []*jsonschema.Schema{
+			{
+				Type: "string",
+			},
+			schema,
+		},
+	}
+}
+
 type PullRequest struct {
-	Enabled bool   `yaml:"enabled,omitempty" json:"enabled,omitempty"`
-	Base    string `yaml:"base,omitempty" json:"base,omitempty"`
+	Enabled bool            `yaml:"enabled,omitempty" json:"enabled,omitempty"`
+	Base    PullRequestBase `yaml:"base,omitempty" json:"base,omitempty"`
 }
 
 // HomebrewDependency represents Homebrew dependency.
