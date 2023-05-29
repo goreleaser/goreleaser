@@ -158,23 +158,12 @@ func (c *githubClient) CloseMilestone(ctx *context.Context, repo Repo, title str
 	return err
 }
 
-func removeEmpty(strs ...string) []string {
-	var res []string
-	for _, s := range strs {
-		if strings.TrimSpace(s) == "" {
-			continue
-		}
-		res = append(res, s)
-	}
-	return res
-}
-
 func headString(base, head Repo) string {
-	return strings.Join(removeEmpty(
+	return strings.Join([]string{
 		firstNonEmpty(head.Owner, base.Owner),
 		firstNonEmpty(head.Name, base.Name),
 		firstNonEmpty(head.Branch, base.Branch),
-	), ":")
+	}, ":")
 }
 
 func (c *githubClient) OpenPullRequest(
