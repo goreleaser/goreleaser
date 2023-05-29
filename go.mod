@@ -29,7 +29,7 @@ require (
 	github.com/goreleaser/fileglob v1.3.0
 	github.com/goreleaser/nfpm/v2 v2.29.0
 	github.com/hashicorp/go-multierror v1.1.1
-	github.com/imdario/mergo v0.3.15
+	github.com/imdario/mergo v0.3.16
 	github.com/invopop/jsonschema v0.7.0
 	github.com/jarcoal/httpmock v1.3.0
 	github.com/klauspost/pgzip v1.2.6
