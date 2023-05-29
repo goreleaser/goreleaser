@@ -2303,11 +2303,35 @@
 						"type": "boolean"
 					},
 					"base": {
-						"type": "string"
+						"$ref": "#/$defs/PullRequestBase"
 					}
 				},
 				"additionalProperties": false,
 				"type": "object"
+			},
+			"PullRequestBase": {
+				"oneOf": [
+					{
+						"type": "string"
+					},
+					{
+						"$schema": "https://json-schema.org/draft/2020-12/schema",
+						"$id": "https://github.com/goreleaser/goreleaser/pkg/config/pull-request-base",
+						"properties": {
+							"owner": {
+								"type": "string"
+							},
+							"name": {
+								"type": "string"
+							},
+							"branch": {
+								"type": "string"
+							}
+						},
+						"additionalProperties": false,
+						"type": "object"
+					}
+				]
 			},
 			"Reddit": {
 				"properties": {
@@ -3059,6 +3083,14 @@
 								"type": "integer"
 							}
 						]
+					},
+					"parse_mode": {
+						"type": "string",
+						"enum": [
+							"MarkdownV2",
+							"HTML"
+						],
+						"default": "MarkdownV2"
 					}
 				},
 				"additionalProperties": false,
