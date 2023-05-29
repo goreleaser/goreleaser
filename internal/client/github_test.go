@@ -450,7 +450,7 @@ func TestOpenPullRequestCrossRepo(t *testing.T) {
 		Name:   "something",
 		Branch: "foo",
 	}
-	require.NoError(t, client.OpenPullRequest(ctx, base, head, "some title"))
+	require.NoError(t, client.OpenPullRequest(ctx, base, head, "some title", false))
 }
 
 func TestOpenPullRequestHappyPath(t *testing.T) {
@@ -488,10 +488,10 @@ func TestOpenPullRequestHappyPath(t *testing.T) {
 		Branch: "main",
 	}
 
-	require.NoError(t, client.OpenPullRequest(ctx, repo, Repo{}, "some title"))
+	require.NoError(t, client.OpenPullRequest(ctx, repo, Repo{}, "some title", false))
 }
 
-func TestOpenPullRequestNoBaseBranch(t *testing.T) {
+func TestOpenPullRequestNoBaseBranchDraft(t *testing.T) {
 	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		defer r.Body.Close()
 
@@ -502,6 +502,7 @@ func TestOpenPullRequestNoBaseBranch(t *testing.T) {
 			require.NoError(t, json.Unmarshal(got, &pr))
 			require.Equal(t, "main", pr.GetBase())
 			require.Equal(t, "someone:something:foo", pr.GetHead())
+			require.Equal(t, true, pr.GetDraft())
 
 			r, err := os.Open("testdata/github/pull.json")
 			require.NoError(t, err)
@@ -540,7 +541,7 @@ func TestOpenPullRequestNoBaseBranch(t *testing.T) {
 
 	require.NoError(t, client.OpenPullRequest(ctx, repo, Repo{
 		Branch: "foo",
-	}, "some title"))
+	}, "some title", true))
 }
 
 func TestOpenPullRequestPRExists(t *testing.T) {
@@ -579,7 +580,7 @@ func TestOpenPullRequestPRExists(t *testing.T) {
 		Branch: "main",
 	}
 
-	require.NoError(t, client.OpenPullRequest(ctx, repo, Repo{}, "some title"))
+	require.NoError(t, client.OpenPullRequest(ctx, repo, Repo{}, "some title", false))
 }
 
 func TestOpenPullRequestBaseEmpty(t *testing.T) {
@@ -623,7 +624,7 @@ func TestOpenPullRequestBaseEmpty(t *testing.T) {
 		Branch: "main",
 	}
 
-	require.NoError(t, client.OpenPullRequest(ctx, repo, Repo{}, "some title"))
+	require.NoError(t, client.OpenPullRequest(ctx, repo, Repo{}, "some title", false))
 }
 
 func TestGitHubCreateFileHappyPathCreate(t *testing.T) {

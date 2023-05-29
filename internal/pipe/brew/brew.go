@@ -175,7 +175,7 @@ func doPublish(ctx *context.Context, formula *artifact.Artifact, cl client.Clien
 		Name:   brew.Tap.PullRequest.Base.Name,
 		Owner:  brew.Tap.PullRequest.Base.Owner,
 		Branch: brew.Tap.PullRequest.Base.Branch,
-	}, repo, title)
+	}, repo, title, brew.Tap.PullRequest.Draft)
 }
 
 func doRun(ctx *context.Context, brew config.Homebrew, cl client.ReleaserURLTemplater) error {

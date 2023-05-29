@@ -142,6 +142,7 @@ func (a PullRequestBase) JSONSchema() *jsonschema.Schema {
 type PullRequest struct {
 	Enabled bool            `yaml:"enabled,omitempty" json:"enabled,omitempty"`
 	Base    PullRequestBase `yaml:"base,omitempty" json:"base,omitempty"`
+	Draft   bool            `yaml:"draft,omitempty" json:"draft,omitempty"`
 }
 
 // HomebrewDependency represents Homebrew dependency.
