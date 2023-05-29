@@ -468,5 +468,9 @@ func (p publishShaPrefetcher) Available() bool {
 
 func (p publishShaPrefetcher) Prefetch(url string) (string, error) {
 	out, err := exec.Command(p.bin, url).Output()
-	return strings.TrimSpace(string(out)), err
+	outStr := strings.TrimSpace(string(out))
+	if err != nil {
+		return "", fmt.Errorf("could not prefetch url: %s: %w: %s", url, err, outStr)
+	}
+	return outStr, nil
 }
