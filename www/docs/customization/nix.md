@@ -47,7 +47,7 @@ nix:
       #
       # Default: default repository branch.
       # Templates: allowed
-      branch: main
+      branch: foo
 
       # Optionally a token can be provided, if it differs from the token
       # provided to GoReleaser
@@ -63,9 +63,19 @@ nix:
         enabled: true
 
         # Base branch of the PR.
+        # If base is a string, the PR will be opened into the same repository.
         #
         # Default: default repository branch.
         base: main
+
+        # Base can also be another repository, in which case the owner and name
+        # above will be used as HEAD, allowing cross-repository pull requests.
+        #
+        # Since: v1.19
+        base:
+          owner: org
+          name: nur
+          branch: main
 
       # Clone, create the file, commit and push, to a regular Git repository.
       #

@@ -171,7 +171,11 @@ func doPublish(ctx *context.Context, formula *artifact.Artifact, cl client.Clien
 	}
 
 	title := fmt.Sprintf("Updated %s to %s", ctx.Config.ProjectName, ctx.Version)
-	return pcl.OpenPullRequest(ctx, repo, brew.Tap.PullRequest.Base, title)
+	return pcl.OpenPullRequest(ctx, client.Repo{
+		Name:   brew.Tap.PullRequest.Base.Name,
+		Owner:  brew.Tap.PullRequest.Base.Owner,
+		Branch: brew.Tap.PullRequest.Base.Branch,
+	}, repo, title)
 }
 
 func doRun(ctx *context.Context, brew config.Homebrew, cl client.ReleaserURLTemplater) error {

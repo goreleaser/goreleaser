@@ -354,7 +354,11 @@ func doPublish(ctx *context.Context, manifest *artifact.Artifact, cl client.Clie
 	}
 
 	title := fmt.Sprintf("Updated %s to %s", ctx.Config.ProjectName, ctx.Version)
-	return pcl.OpenPullRequest(ctx, repo, cfg.Index.PullRequest.Base, title)
+	return pcl.OpenPullRequest(ctx, client.Repo{
+		Name:   cfg.Index.PullRequest.Base.Name,
+		Owner:  cfg.Index.PullRequest.Base.Owner,
+		Branch: cfg.Index.PullRequest.Base.Branch,
+	}, repo, title)
 }
 
 func buildManifestPath(folder, filename string) string {

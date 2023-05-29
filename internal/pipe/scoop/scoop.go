@@ -270,7 +270,11 @@ func doPublish(ctx *context.Context, manifest *artifact.Artifact, cl client.Clie
 	}
 
 	title := fmt.Sprintf("Updated %s to %s", ctx.Config.ProjectName, ctx.Version)
-	return pcl.OpenPullRequest(ctx, repo, scoop.Bucket.PullRequest.Base, title)
+	return pcl.OpenPullRequest(ctx, client.Repo{
+		Name:   scoop.Bucket.PullRequest.Base.Name,
+		Owner:  scoop.Bucket.PullRequest.Base.Owner,
+		Branch: scoop.Bucket.PullRequest.Base.Branch,
+	}, repo, title)
 }
 
 // Manifest represents a scoop.sh App Manifest.
