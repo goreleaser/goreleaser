@@ -7,8 +7,8 @@ let
   };
 
   urlMap = {
-    x86_64-linux = "https://dummyhost/download/v1.2.1/foo_linux_amd64.tar.gz";
-    x86_64-darwin = "https://dummyhost/download/v1.2.1/foo_darwin_amd64.tar.gz";
+    x86_64-linux = "https://dummyhost/download/v1.2.1/foo_linux_amd64v1.tar.gz";
+    x86_64-darwin = "https://dummyhost/download/v1.2.1/foo_darwin_amd64v1.tar.gz";
   };
 in pkgs.stdenv.mkDerivation {
   pname = "partial";

@@ -187,6 +187,13 @@ func preparePkg(
 				artifact.ByGoarch("amd64"),
 				artifact.ByGoamd64(nix.Goamd64),
 			),
+			artifact.And(
+				artifact.ByGoarch("arm"),
+				artifact.Or(
+					artifact.ByGoarm("6"),
+					artifact.ByGoarm("7"),
+				),
+			),
 			artifact.ByGoarch("arm64"),
 			artifact.ByGoarch("386"),
 			artifact.ByGoarch("all"),
@@ -259,8 +266,8 @@ func preparePkg(
 		}
 
 		for _, goarch := range expandGoarch(art.Goarch) {
-			data.Archives[art.Goos+goarch] = archive
-			plat := goosToPlatform[art.Goos+goarch]
+			data.Archives[art.Goos+goarch+art.Goarm] = archive
+			plat := goosToPlatform[art.Goos+goarch+art.Goarm]
 			platforms[plat] = true
 		}
 	}
@@ -280,6 +287,8 @@ func expandGoarch(goarch string) []string {
 var goosToPlatform = map[string]string{
 	"linuxamd64":  "x86_64-linux",
 	"linuxarm64":  "aarch64-linux",
+	"linuxarm6":   "armv6l-linux",
+	"linuxarm7":   "armv7l-linux",
 	"linux386":    "i686-linux",
 	"darwinamd64": "x86_64-darwin",
 	"darwinarm64": "aarch64-darwin",

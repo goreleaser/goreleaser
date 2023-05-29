@@ -8,6 +8,12 @@ let
     {{- with  .Archives.linuxamd64.Sha }}
     x86_64-linux = "{{ . }}";
     {{- end }}
+    {{- with  .Archives.linuxarm6.Sha }}
+    armv6l-linux = "{{ . }}";
+    {{- end }}
+    {{- with  .Archives.linuxarm7.Sha }}
+    armv7l-linux = "{{ . }}";
+    {{- end }}
     {{- with  .Archives.linuxarm64.Sha }}
     aarch64-linux = "{{ . }}";
     {{- end }}
@@ -25,6 +31,12 @@ let
     {{- end }}
     {{- with  .Archives.linuxamd64.URL }}
     x86_64-linux = "{{ . }}";
+    {{- end }}
+    {{- with  .Archives.linuxarm6.URL }}
+    armv6l-linux = "{{ . }}";
+    {{- end }}
+    {{- with  .Archives.linuxarm7.URL }}
+    armv7l-linux = "{{ . }}";
     {{- end }}
     {{- with  .Archives.linuxarm64.URL }}
     aarch64-linux = "{{ . }}";
