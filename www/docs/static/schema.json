@@ -2304,6 +2304,9 @@
 					},
 					"base": {
 						"$ref": "#/$defs/PullRequestBase"
+					},
+					"draft": {
+						"type": "boolean"
 					}
 				},
 				"additionalProperties": false,
