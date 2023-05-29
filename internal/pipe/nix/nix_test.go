@@ -301,14 +301,15 @@ func TestRunPipe(t *testing.T) {
 				testctx.WithCurrentTag("v1.2.1"),
 				testctx.WithSemver(1, 2, 1, "rc1"),
 			)
-			createFakeArtifact := func(id, goos, goarch string, extra map[string]any) {
-				path := filepath.Join(folder, "dist/foo_"+goos+goarch+".tar.gz")
+			createFakeArtifact := func(id, goos, goarch, goamd64, goarm string, extra map[string]any) {
+				path := filepath.Join(folder, "dist/foo_"+goos+goarch+goamd64+goarm+".tar.gz")
 				art := artifact.Artifact{
-					Name:    "foo_" + goos + "_" + goarch + ".tar.gz",
+					Name:    "foo_" + goos + "_" + goarch + goamd64 + goarm + ".tar.gz",
 					Path:    path,
 					Goos:    goos,
 					Goarch:  goarch,
-					Goamd64: "v1",
+					Goarm:   goarm,
+					Goamd64: goamd64,
 					Type:    artifact.UploadableArchive,
 					Extra: map[string]interface{}{
 						artifact.ExtraID:        id,
@@ -328,20 +329,32 @@ func TestRunPipe(t *testing.T) {
 				require.NoError(t, f.Close())
 			}
 
-			createFakeArtifact("unibin-replaces", "darwin", "all", map[string]any{artifact.ExtraReplaces: true})
-			createFakeArtifact("unibin", "darwin", "all", nil)
+			createFakeArtifact("unibin-replaces", "darwin", "all", "", "", map[string]any{artifact.ExtraReplaces: true})
+			createFakeArtifact("unibin", "darwin", "all", "", "", nil)
 			for _, goos := range []string{"linux", "darwin", "windows"} {
-				for _, goarch := range []string{"amd64", "arm64", "386"} {
+				for _, goarch := range []string{"amd64", "arm64", "386", "arm"} {
 					if goos+goarch == "darwin386" {
 						continue
 					}
 					if goarch == "amd64" {
-						createFakeArtifact("partial", goos, goarch, nil)
+						createFakeArtifact("partial", goos, goarch, "v1", "", nil)
+						createFakeArtifact("foo", goos, goarch, "v1", "", nil)
+						createFakeArtifact("unibin", goos, goarch, "v1", "", nil)
+						createFakeArtifact("unibin-replaces", goos, goarch, "v1", "", nil)
+						createFakeArtifact("wrapped-in-dir", goos, goarch, "v1", "", map[string]any{artifact.ExtraWrappedIn: "./foo"})
 					}
-					createFakeArtifact("foo", goos, goarch, nil)
-					createFakeArtifact("unibin", goos, goarch, nil)
-					createFakeArtifact("unibin-replaces", goos, goarch, nil)
-					createFakeArtifact("wrapped-in-dir", goos, goarch, map[string]any{artifact.ExtraWrappedIn: "./foo"})
+					if goarch == "arm" {
+						if goos != "linux" {
+							continue
+						}
+						createFakeArtifact("foo", goos, goarch, "", "6", nil)
+						createFakeArtifact("foo", goos, goarch, "", "7", nil)
+						continue
+					}
+					createFakeArtifact("foo", goos, goarch, "", "", nil)
+					createFakeArtifact("unibin", goos, goarch, "", "", nil)
+					createFakeArtifact("unibin-replaces", goos, goarch, "", "", nil)
+					createFakeArtifact("wrapped-in-dir", goos, goarch, "", "", map[string]any{artifact.ExtraWrappedIn: "./foo"})
 				}
 			}
 
@@ -349,11 +362,13 @@ func TestRunPipe(t *testing.T) {
 			bpipe := NewBuild()
 			ppipe := Pipe{
 				fakeNixShaPrefetcher{
-					"https://dummyhost/download/v1.2.1/foo_linux_amd64.tar.gz":  "sha1",
-					"https://dummyhost/download/v1.2.1/foo_linux_arm64.tar.gz":  "sha2",
-					"https://dummyhost/download/v1.2.1/foo_darwin_amd64.tar.gz": "sha3",
-					"https://dummyhost/download/v1.2.1/foo_darwin_arm64.tar.gz": "sha4",
-					"https://dummyhost/download/v1.2.1/foo_darwin_all.tar.gz":   "sha5",
+					"https://dummyhost/download/v1.2.1/foo_linux_amd64v1.tar.gz":  "sha1",
+					"https://dummyhost/download/v1.2.1/foo_linux_arm64.tar.gz":    "sha2",
+					"https://dummyhost/download/v1.2.1/foo_darwin_amd64v1.tar.gz": "sha3",
+					"https://dummyhost/download/v1.2.1/foo_darwin_arm64.tar.gz":   "sha4",
+					"https://dummyhost/download/v1.2.1/foo_darwin_all.tar.gz":     "sha5",
+					"https://dummyhost/download/v1.2.1/foo_linux_arm6.tar.gz":     "sha6",
+					"https://dummyhost/download/v1.2.1/foo_linux_arm7.tar.gz":     "sha7",
 				},
 			}
 
@@ -396,7 +411,7 @@ func TestErrNoArchivesFound(t *testing.T) {
 	require.EqualError(t, errNoArchivesFound{
 		goamd64: "v1",
 		ids:     []string{"foo", "bar"},
-	}, "no linux/macos archives found matching goos=[darwin linux] goarch=[amd64 arm64 386] goamd64=v1 ids=[foo bar]")
+	}, "no linux/macos archives found matching goos=[darwin linux] goarch=[amd64 arm arm64 386] goarm=[6 7] goamd64=v1 ids=[foo bar]")
 }
 
 type fakeNixShaPrefetcher map[string]string
