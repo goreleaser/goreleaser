@@ -30,7 +30,7 @@ type errNoArchivesFound struct {
 }
 
 func (e errNoArchivesFound) Error() string {
-	return fmt.Sprintf("no linux/macos archives found matching goos=[darwin linux] goarch=[amd64 arm64 386] goamd64=%s ids=%v", e.goamd64, e.ids)
+	return fmt.Sprintf("no linux/macos archives found matching goos=[darwin linux] goarch=[amd64 arm arm64 386] goarm=[6 7] goamd64=%s ids=%v", e.goamd64, e.ids)
 }
 
 var (
