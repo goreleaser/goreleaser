@@ -5,8 +5,6 @@
 After releasing to GitHub, GitLab, or Gitea, GoReleaser can generate and publish
 a _nixpkg_ to a [Nix User Repository][nur].
 
-[nur]: https://github.com/nix-community/NUR
-
 The `nix` section specifies how the pkgs should be created:
 
 ```yaml
@@ -189,4 +187,20 @@ You can check the
 [resource not accessible by integration](/errors/resource-not-accessible-by-integration/)
 for more information.
 
+## Setting up a NUR
 
+To set up a Nix User Repository, follow the instructions in their
+[repository][nur].
+
+Then, you'll need to:
+
+- publish a release with GoReleaser: it should create the package at
+  `./pkgs/{name}/default.nix` or whatever path you set it up to
+- make sure `./flake.nix` is correct with what you want, especially the
+  `systems` bit
+- add your package to `./default.nix`
+- edit your `README.md` removing the template stuff
+
+That's it!
+
+[nur]: https://github.com/nix-community/NUR
