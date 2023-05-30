@@ -149,6 +149,18 @@ func doRun(ctx *context.Context, scoop config.Scoop, cl client.ReleaserURLTempla
 	}
 	scoop.Name = name
 
+	description, err := tmpl.New(ctx).Apply(scoop.Description)
+	if err != nil {
+		return err
+	}
+	scoop.Description = description
+
+	homepage, err := tmpl.New(ctx).Apply(scoop.Homepage)
+	if err != nil {
+		return err
+	}
+	scoop.Homepage = homepage
+
 	ref, err := client.TemplateRef(tmpl.New(ctx).Apply, scoop.Bucket)
 	if err != nil {
 		return err

@@ -567,6 +567,114 @@ func Test_doRun(t *testing.T) {
 			noAssertions,
 		},
 		{
+			"invalid name tmpl",
+			args{
+				testctx.NewWithCfg(
+					config.Project{
+						ProjectName: "run-pipe",
+						Scoop: config.Scoop{
+							Bucket: config.RepoRef{
+								Owner: "test",
+								Name:  "test",
+							},
+							Name: "{{.Nope}}",
+						},
+					},
+					testctx.GitHubTokenType,
+					testctx.WithCurrentTag("v1.0.1"),
+					testctx.WithVersion("1.0.1"),
+				),
+				client.NewMock(),
+			},
+			[]artifact.Artifact{
+				{Name: "foo_1.0.1-pre.1_windows_amd64.tar.gz", Goos: "windows", Goarch: "amd64", Goamd64: "v1", Path: file},
+			},
+			testlib.RequireTemplateError,
+			shouldNotErr,
+			noAssertions,
+		},
+		{
+			"invalid description tmpl",
+			args{
+				testctx.NewWithCfg(
+					config.Project{
+						ProjectName: "run-pipe",
+						Scoop: config.Scoop{
+							Bucket: config.RepoRef{
+								Owner: "test",
+								Name:  "test",
+							},
+							Description: "{{.Nope}}",
+						},
+					},
+					testctx.GitHubTokenType,
+					testctx.WithCurrentTag("v1.0.1"),
+					testctx.WithVersion("1.0.1"),
+				),
+				client.NewMock(),
+			},
+			[]artifact.Artifact{
+				{Name: "foo_1.0.1-pre.1_windows_amd64.tar.gz", Goos: "windows", Goarch: "amd64", Goamd64: "v1", Path: file},
+			},
+			testlib.RequireTemplateError,
+			shouldNotErr,
+			noAssertions,
+		},
+		{
+			"invalid homepage tmpl",
+			args{
+				testctx.NewWithCfg(
+					config.Project{
+						ProjectName: "run-pipe",
+						Scoop: config.Scoop{
+							Bucket: config.RepoRef{
+								Owner: "test",
+								Name:  "test",
+							},
+							Homepage: "{{.Nope}}",
+						},
+					},
+					testctx.GitHubTokenType,
+					testctx.WithCurrentTag("v1.0.1"),
+					testctx.WithVersion("1.0.1"),
+				),
+				client.NewMock(),
+			},
+			[]artifact.Artifact{
+				{Name: "foo_1.0.1-pre.1_windows_amd64.tar.gz", Goos: "windows", Goarch: "amd64", Goamd64: "v1", Path: file},
+			},
+			testlib.RequireTemplateError,
+			shouldNotErr,
+			noAssertions,
+		},
+		{
+			"invalid skip upload tmpl",
+			args{
+				testctx.NewWithCfg(
+					config.Project{
+						ProjectName: "run-pipe",
+						Scoop: config.Scoop{
+							Bucket: config.RepoRef{
+								Owner: "test",
+								Name:  "test",
+							},
+							SkipUpload: "{{.Nope}}",
+						},
+					},
+					testctx.GitHubTokenType,
+					testctx.WithCurrentTag("v1.0.1"),
+					testctx.WithVersion("1.0.1"),
+				),
+				client.NewMock(),
+			},
+			[]artifact.Artifact{
+				{Name: "foo_1.0.1-pre.1_windows_amd64.tar.gz", Goos: "windows", Goarch: "amd64", Goamd64: "v1", Path: file},
+			},
+			testlib.RequireTemplateError,
+			shouldNotErr,
+			noAssertions,
+		},
+		{
 			"invalid ref tmpl",
 			args{
 				testctx.NewWithCfg(
@@ -655,9 +763,9 @@ func TestRunPipePullRequest(t *testing.T) {
 			Dist:        folder,
 			ProjectName: "foo",
 			Scoops: []config.Scoop{{
-				Name:        "foo",
-				Homepage:    "https://goreleaser.com",
-				Description: "Fake desc",
+				Name:        "{{.Env.FOO}}",
+				Homepage:    "https://{{.Env.FOO}}.com",
+				Description: "Fake desc for {{.ProjectName}}",
 				Bucket: config.RepoRef{
 					Owner:  "foo",
 					Name:   "bar",
@@ -670,6 +778,7 @@ func TestRunPipePullRequest(t *testing.T) {
 		},
 		testctx.WithVersion("1.2.1"),
 		testctx.WithCurrentTag("v1.2.1"),
+		testctx.WithEnv(map[string]string{"FOO": "foobar"}),
 	)
 	path := filepath.Join(folder, "dist/foo_windows_amd64/foo.exe")
 	ctx.Artifacts.Add(&artifact.Artifact{
