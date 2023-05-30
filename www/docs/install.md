@@ -12,108 +12,109 @@ Below you can find the steps for each of them.
 ### homebrew tap
 
 === "OSS"
-    ```bash
+`bash
     brew install goreleaser/tap/goreleaser
-    ```
+    `
 
 === "Pro"
-    ```bash
+`bash
     brew install goreleaser/tap/goreleaser-pro
-    ```
+    `
 
 ### homebrew
 
 === "OSS"
-    ```bash
+`bash
     brew install goreleaser
-    ```
+    `
 
 !!! info
+
     The [formula in homebrew-core](https://github.com/Homebrew/homebrew-core/blob/master/Formula/goreleaser.rb) might be slightly outdated.
     Use our homebrew tap to always get the latest updates.
 
 ### snapcraft
 
 === "OSS"
-    ```bash
+`bash
     sudo snap install --classic goreleaser
-    ```
+    `
 
 ### scoop
 
 === "OSS"
-    ```bash
+`bash
     scoop bucket add goreleaser https://github.com/goreleaser/scoop-bucket.git
     scoop install goreleaser
-    ```
+    `
 
 === "Pro"
-    ```bash
+`bash
     scoop bucket add goreleaser https://github.com/goreleaser/scoop-bucket.git
     scoop install goreleaser-pro
-    ```
+    `
 
 ### apt
 
 === "OSS"
-    ```bash
+`bash
     echo 'deb [trusted=yes] https://repo.goreleaser.com/apt/ /' | sudo tee /etc/apt/sources.list.d/goreleaser.list
     sudo apt update
     sudo apt install goreleaser
-    ```
+    `
 
 === "Pro"
-    ```bash
+`bash
     echo 'deb [trusted=yes] https://repo.goreleaser.com/apt/ /' | sudo tee /etc/apt/sources.list.d/goreleaser.list
     sudo apt update
     sudo apt install goreleaser-pro
-    ```
+    `
 
 ### yum
 
 === "OSS"
-    ```bash
+`bash
     echo '[goreleaser]
     name=GoReleaser
     baseurl=https://repo.goreleaser.com/yum/
     enabled=1
     gpgcheck=0' | sudo tee /etc/yum.repos.d/goreleaser.repo
     sudo yum install goreleaser
-    ```
+    `
 
 === "Pro"
-    ```bash
+`bash
     echo '[goreleaser]
     name=GoReleaser
     baseurl=https://repo.goreleaser.com/yum/
     enabled=1
     gpgcheck=0' | sudo tee /etc/yum.repos.d/goreleaser.repo
     sudo yum install goreleaser-pro
-    ```
+    `
 
 ### aur
 
 === "OSS"
-    ```bash
+`bash
     yay -S goreleaser-bin
-    ```
+    `
 
 === "Pro"
-    ```bash
+`bash
     yay -S goreleaser-pro-bin
-    ```
-
+    `
 
 ### nix
 
 #### nixpkgs
 
 === "OSS"
-    ```bash
+`bash
     nix-env -iA goreleaser
-    ```
+    `
 
 !!! info
+
     The [package in nixpkgs](https://github.com/NixOS/nixpkgs/blob/master/pkgs/tools/misc/goreleaser/default.nix)
     might be slightly outdated, as it is not updated automatically.
     Use our NUR to always get the latest updates.
@@ -129,54 +130,54 @@ Once you do that, you can install the packages.
 [nur]: https://github.com/goreleaser/nur
 
 === "OSS"
-    ```nix
+`nix
     { pkgs, lib, ... }: {
       home.packages = with pkgs; [
         nur.repos.goreleaser.goreleaser
       ];
     }
-    ```
+    `
 
 === "Pro"
-    ```nix
+`nix
     { pkgs, lib, ... }: {
       home.packages = with pkgs; [
         nur.repos.goreleaser.goreleaser-pro
       ];
     }
-    ```
+    `
 
 ### deb, rpm and apk packages
 
 === "OSS"
-    Download the `.deb`, `.rpm` or `.apk` packages from the [OSS releases page][releases] and install them with the appropriate tools.
+Download the `.deb`, `.rpm` or `.apk` packages from the [OSS releases page][releases] and install them with the appropriate tools.
 
 === "Pro"
-    Download the `.deb`, `.rpm` or `.apk` packages from the [Pro releases page][pro-releases] and install them with the appropriate tools.
+Download the `.deb`, `.rpm` or `.apk` packages from the [Pro releases page][pro-releases] and install them with the appropriate tools.
 
 ### go install
 
 === "OSS"
-    ```bash
+`bash
     go install github.com/goreleaser/goreleaser@latest
-    ```
+    `
 
 ### bash script
 
 === "OSS"
-    ```bash
+`bash
     curl -sfL https://goreleaser.com/static/run | bash
-    ```
+    `
 
 === "Pro"
-    ```bash
+`bash
     curl -sfL https://goreleaser.com/static/run | DISTRIBUTION=pro bash
-    ```
+    `
 
 === "Additional Options"
-    You can also set the `VERSION` and `DISTRIBUTION` variables to specify
-    a version instead of using latest and `pro` or `oss` distributions,
-    respectively.
+You can also set the `VERSION` and `DISTRIBUTION` variables to specify
+a version instead of using latest and `pro` or `oss` distributions,
+respectively.
 
     You can also pass flags and args to GoReleaser:
 
@@ -186,6 +187,7 @@ Once you do that, you can install the packages.
     ```
 
 !!! tip
+
     This script does not install anything, it just downloads, verifies and
     runs GoReleaser.
     Its purpose is to be used within scripts and CIs.
@@ -193,10 +195,10 @@ Once you do that, you can install the packages.
 ### manually
 
 === "OSS"
-    Download the pre-compiled binaries from the [OSS releases page][releases] and copy them to the desired location.
+Download the pre-compiled binaries from the [OSS releases page][releases] and copy them to the desired location.
 
 === "Pro"
-    Download the pre-compiled binaries from the [Pro releases page][pro-releases] and copy them to the desired location.
+Download the pre-compiled binaries from the [Pro releases page][pro-releases] and copy them to the desired location.
 
 ### nightly
 
@@ -206,20 +208,20 @@ Use it for testing out new features only.
 #### manually
 
 === "Pro"
-    Download the pre-compiled binaries from the [nightly release][nighly-pro-releases] and copy them to the desired location.
+Download the pre-compiled binaries from the [nightly release][nighly-pro-releases] and copy them to the desired location.
 
 ### bash script
 
 === "Pro"
-    ```bash
+`bash
     curl -sfL https://goreleaser.com/static/run |
       VERSION=nightly DISTRIBUTION=pro bash -s -- release --clean
-    ```
+    `
 
 #### docker
 
 === "Pro"
-    Docker images are also available, look for tags with a `-nightly` suffix.
+Docker images are also available, look for tags with a `-nightly` suffix.
 
     Registries:
 
@@ -232,43 +234,37 @@ Use it for testing out new features only.
 
 All artifacts are checksummed, and the checksum file is signed with [cosign][].
 
-=== "OSS"
-    1. Download the files you want, and the `checksums.txt`, `checksum.txt.pem` and `checksums.txt.sig` files from the [releases][releases] page:
-      ```bash
+=== "OSS" 1. Download the files you want, and the `checksums.txt`, `checksum.txt.pem` and `checksums.txt.sig` files from the [releases][releases] page:
+`bash
       wget 'https://github.com/goreleaser/goreleaser/releases/download/__VERSION__/checksums.txt'
-      ```
-    1. Verify the signature:
-      ```bash
+      ` 1. Verify the signature:
+`bash
       cosign verify-blob \
         --certificate-identity 'https://github.com/goreleaser/goreleaser/.github/workflows/release.yml@refs/tags/__VERSION__' \
         --certificate-oidc-issuer 'https://token.actions.githubusercontent.com' \
         --cert 'https://github.com/goreleaser/goreleaser/releases/download/__VERSION__/checksums.txt.pem' \
         --signature 'https://github.com/goreleaser/goreleaser/releases/download/__VERSION__/checksums.txt.sig' \
         ./checksums.txt
-      ```
-    1. If the signature is valid, you can then verify the SHA256 sums match with the downloaded binary:
-      ```bash
+      ` 1. If the signature is valid, you can then verify the SHA256 sums match with the downloaded binary:
+`bash
       sha256sum --ignore-missing -c checksums.txt
-      ```
+      `
 
-=== "Pro"
-    1. Download the files you want, and the `checksums.txt`, `checksum.txt.pem` and `checksums.txt.sig` files from the [releases][pro-releases] page:
-      ```bash
+=== "Pro" 1. Download the files you want, and the `checksums.txt`, `checksum.txt.pem` and `checksums.txt.sig` files from the [releases][pro-releases] page:
+`bash
       wget 'https://github.com/goreleaser/goreleaser-pro/releases/download/__VERSION__-pro/checksums.txt'
-      ```
-    1. Verify the signature:
-      ```bash
+      ` 1. Verify the signature:
+`bash
       cosign verify-blob \
         --certificate-identity 'https://github.com/goreleaser/goreleaser-pro-internal/.github/workflows/release-pro.yml@refs/tags/__VERSION__-pro' \
         --certificate-oidc-issuer 'https://token.actions.githubusercontent.com' \
         --cert 'https://github.com/goreleaser/goreleaser-pro/releases/download/__VERSION__-pro/checksums.txt.pem' \
         --signature 'https://github.com/goreleaser/goreleaser-pro/releases/download/__VERSION__-pro/checksums.txt.sig' \
         ./checksums.txt
-      ```
-    1. If the signature is valid, you can then verify the SHA256 sums match with the downloaded binary:
-      ```bash
+      ` 1. If the signature is valid, you can then verify the SHA256 sums match with the downloaded binary:
+`bash
       sha256sum --ignore-missing -c checksums.txt
-      ```
+      `
 
 ### docker images
 
@@ -277,22 +273,23 @@ Our Docker images are signed with [cosign][].
 Verify the signatures:
 
 === "OSS"
-    ```bash
+`bash
     cosign verify \
       --certificate-identity 'https://github.com/goreleaser/goreleaser/.github/workflows/release.yml@refs/tags/__VERSION__' \
         --certificate-oidc-issuer 'https://token.actions.githubusercontent.com' \
       goreleaser/goreleaser
-    ```
+    `
 
 === "Pro"
-    ```bash
+`bash
     cosign verify \
       --certificate-identity 'https://github.com/goreleaser/goreleaser-pro-internal/.github/workflows/release-pro.yml@refs/tags/__VERSION__-pro' \
       --certificate-oidc-issuer 'https://token.actions.githubusercontent.com' \
       goreleaser/goreleaser-pro
-    ```
+    `
 
 !!! info
+
     The `.pem` and `.sig` files are the image `name:tag`, replacing `/` and `:` with `-`.
 
 ## Running with Docker
@@ -301,7 +298,7 @@ You can also use it within a Docker container.
 To do that, you'll need to execute something more-or-less like the examples below.
 
 === "OSS"
-    Registries:
+Registries:
 
     - [`goreleaser/goreleaser`](https://hub.docker.com/r/goreleaser/goreleaser)
     - [`ghcr.io/goreleaser/goreleaser`](https://github.com/goreleaser/goreleaser/pkgs/container/goreleaser)
@@ -321,7 +318,7 @@ To do that, you'll need to execute something more-or-less like the examples belo
     ```
 
 === "Pro"
-    Registries:
+Registries:
 
     - [`goreleaser/goreleaser-pro`](https://hub.docker.com/r/goreleaser/goreleaser-pro)
     - [`ghcr.io/goreleaser/goreleaser-pro`](https://github.com/goreleaser/goreleaser/pkgs/container/goreleaser-pro)
@@ -341,8 +338,8 @@ To do that, you'll need to execute something more-or-less like the examples belo
       goreleaser/goreleaser-pro release
     ```
 
-
 !!! info
+
     Now, the provided docker image does not support
     the generation of snapcraft packages.
 

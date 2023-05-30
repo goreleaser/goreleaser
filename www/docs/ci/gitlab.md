@@ -14,10 +14,12 @@ variable should be masked and optionally protected if the job will only run on
 protected branches and tags.
 
 !!! warning
+
     If you use a project access token, make sure to set `use_package_registry`
     to `true` as well, otherwise it might not work.
 
 !!! warning
+
     If you are using a [protected variable](https://docs.gitlab.com/ee/ci/variables/#protected-cicd-variables)
     to store any of the values needed by goreleaser, ensure that you are protecting the tags as CI jobs in
     Gitlab only may access protected variables if the job is run for protected refs
@@ -37,7 +39,7 @@ release:
   stage: release
   image:
     name: goreleaser/goreleaser
-    entrypoint: ['']
+    entrypoint: [""]
   only:
     - tags
   variables:
@@ -134,12 +136,11 @@ Example:
 
 ```yaml
 dockers:
--
-  goos: linux
-  goarch: amd64
-  image_templates:
-  - 'registry.gitlab.com/Group/Project:{{ .Tag }}'
-  - 'registry.gitlab.com/Group/Project:latest'
+  - goos: linux
+    goarch: amd64
+    image_templates:
+      - "registry.gitlab.com/Group/Project:{{ .Tag }}"
+      - "registry.gitlab.com/Group/Project:latest"
 ```
 
 ## Example Repository

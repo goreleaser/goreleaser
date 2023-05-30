@@ -14,16 +14,15 @@ Available options:
 ```yaml
 # .goreleaser.yaml
 snapcrafts:
-  -
-    # ID of the snapcraft config, must be unique.
+  - # ID of the snapcraft config, must be unique.
     #
     # Default: 'default'
     id: foo
 
     # Build IDs for the builds you want to create snapcraft packages for.
     builds:
-    - foo
-    - bar
+      - foo
+      - bar
 
     # You can change the name of the package.
     #
@@ -64,10 +63,10 @@ snapcrafts:
       - beta
       - candidate
       - stable
-      - '{{ .Major }}.{{ .Minor }}/edge'
-      - '{{ .Major }}.{{ .Minor }}/beta'
-      - '{{ .Major }}.{{ .Minor }}/candidate'
-      - '{{ .Major }}.{{ .Minor }}/stable'
+      - "{{ .Major }}.{{ .Minor }}/edge"
+      - "{{ .Major }}.{{ .Minor }}/beta"
+      - "{{ .Major }}.{{ .Minor }}/candidate"
+      - "{{ .Major }}.{{ .Minor }}/stable"
 
     # A guardrail to prevent you from releasing a snap to all your users before
     # it is ready.
@@ -139,7 +138,6 @@ snapcrafts:
     layout:
       # The path you want to access in sandbox.
       /etc/drumroll:
-
         # Which outside file or directory you want to map to sandbox.
         # Valid keys are:
         # * bind - Bind-mount a directory.
@@ -152,10 +150,8 @@ snapcrafts:
     # you can declare extra details for those binaries. It is optional.
     # See: https://snapcraft.io/docs/snapcraft-app-and-service-metadata
     apps:
-
       # The name of the app must be the same name as the binary built or the snapcraft name.
       drumroll:
-
         # If you any to pass args to your binary, you can add them with the
         # args option.
         args: --foo
@@ -335,14 +331,16 @@ snapcrafts:
     plugs:
       personal-files:
         read:
-        - $HOME/.foo
+          - $HOME/.foo
         write:
-        - $HOME/.foo
-        - $HOME/.foobar
+          - $HOME/.foo
+          - $HOME/.foobar
 ```
 
 !!! tip
+
     Learn more about the [name template engine](/customization/templates/).
 
 !!! note
+
     GoReleaser will not install `snapcraft` nor any of its dependencies for you.

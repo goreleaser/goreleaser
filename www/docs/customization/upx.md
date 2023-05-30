@@ -13,6 +13,7 @@ GoReleaser has been able to integrate with it via custom [build hooks][bhooks],
 and now UPX has its own configuration section:
 
 !!! warning
+
     `upx` does not support all platforms! Make sure to check
     [their issues][upx-issues] and to test your packed binaries first.
 
@@ -24,32 +25,31 @@ and now UPX has its own configuration section:
 ```yaml
 # .goreleaser.yaml
 upx:
-  -
-    # Whether to enable it or not.
+  - # Whether to enable it or not.
     enabled: true
 
     # Filter by build ID.
-    ids: [ build1, build2 ]
+    ids: [build1, build2]
 
     # Filter by GOOS.
     #
     # Since: v1.19
-    goos: [ linux , darwin ]
+    goos: [linux, darwin]
 
     # Filter by GOARCH.
     #
     # Since: v1.19
-    goarch: [ arm, amd64 ]
+    goarch: [arm, amd64]
 
     # Filter by GOARM.
     #
     # Since: v1.19
-    goarm: [ 8 ]
+    goarm: [8]
 
     # Filter by GOAMD64.
     #
     # Since: v1.19
-    goamd64: [ v1 ]
+    goamd64: [v1]
 
     # Compress argument.
     # Valid options are from '1' (faster) to '9' (better), and 'best'.
@@ -67,6 +67,7 @@ You can use that to have different compression options depending on the target
 OS, for instance - or even to run it only on a few selected platforms.
 
 !!! info
+
     If `upx` is not in `$PATH`, GoReleaser will automatically avoid running it.
 
 [upx]: https://upx.github.io/

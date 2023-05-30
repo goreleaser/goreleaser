@@ -231,6 +231,7 @@ brews:
 ```
 
 !!! tip
+
     Learn more about the [name template engine](/customization/templates/).
 
 By defining the `brew` section, GoReleaser will take care of publishing the
@@ -278,6 +279,7 @@ end
 ```
 
 !!! info
+
     Note that GoReleaser does not generate a valid homebrew-core formula.
     The generated formulas are meant to be published as
     [homebrew taps](https://docs.brew.sh/Taps.html), and in their current

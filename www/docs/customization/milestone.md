@@ -9,8 +9,7 @@ Let's see what can be customized in the `milestones` section:
 # .goreleaser.yaml
 milestones:
   # You can have multiple milestone configs
-  -
-    # Repository for the milestone
+  - # Repository for the milestone
     # Default is extracted from the origin remote URL
     repo:
       owner: user
@@ -29,4 +28,5 @@ milestones:
 ```
 
 !!! tip
+
     Learn more about the [name template engine](/customization/templates/).

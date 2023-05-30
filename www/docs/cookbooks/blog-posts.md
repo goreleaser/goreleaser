@@ -3,6 +3,7 @@
 Tutorials made by the community.
 
 <!-- please, keep A-Z sorting -->
+
 - [Creating debs and rpms with Go](https://carlosbecker.com/posts/nfpm/)
 - [Cross compile with CGO and GoReleaser](https://medium.com/@robdefeo/cross-compile-with-cgo-and-goreleaser-6af884731222?source=friends_link&sk=baf6553fa48cb0e28ea3519615f02576)
 - [Cross-compiling a CGO project using GoReleaser](https://www.jvt.me/posts/2023/02/24/goreleaser-cgo-cross-compile/)
@@ -21,4 +22,5 @@ Tutorials made by the community.
 - [Using GoReleaser includes feature](https://carlosbecker.com/posts/goreleaser-includes/)
 
 !!! tip
+
     Click on the "Edit" button to add your page here.

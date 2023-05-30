@@ -14,8 +14,7 @@ Available options:
 ```yaml
 # .goreleaser.yaml
 chocolateys:
-  -
-    # Your app's package name.
+  - # Your app's package name.
     # The value may not contain spaces or character that are not valid for a URL.
     # If you want a good separator for words, use '-', not  '.'.
     #
@@ -53,7 +52,7 @@ chocolateys:
     url_template: "https://github.com/foo/bar/releases/download/{{ .Tag }}/{{ .ArtifactName }}"
 
     # App's icon.
-    icon_url: 'https://rawcdn.githack.com/foo/bar/efbdc760-395b-43f1-bf69-ba25c374d473/icon.png'
+    icon_url: "https://rawcdn.githack.com/foo/bar/efbdc760-395b-43f1-bf69-ba25c374d473/icon.png"
 
     # Your app's copyright details.
     copyright: 2022 Drummer Roll Inc
@@ -103,7 +102,7 @@ chocolateys:
     # The api key that should be used to push to the chocolatey repository.
     #
     # WARNING: do not expose your api key in the configuration file!
-    api_key: '{{ .Env.CHOCOLATEY_API_KEY }}'
+    api_key: "{{ .Env.CHOCOLATEY_API_KEY }}"
 
     # The source repository that will push the package to.
     source_repo: "https://push.chocolatey.org/"
@@ -121,8 +120,10 @@ chocolateys:
 ```
 
 !!! tip
+
     Learn more about the [name template engine](/customization/templates/).
 
 !!! note
+
     GoReleaser will not install `chocolatey`/`choco` nor any of its dependencies
     for you.

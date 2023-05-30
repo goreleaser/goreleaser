@@ -16,7 +16,7 @@ snapshot:
   #
   # Default is `{{ .Version }}-SNAPSHOT-{{.ShortCommit}}`.
   # Templates: allowed
-  name_template: '{{ incpatch .Version }}-devel'
+  name_template: "{{ incpatch .Version }}-devel"
 ```
 
 ## How it works
@@ -32,6 +32,7 @@ You can also check if it's a snapshot build inside a template with:
 ```
 
 !!! tip
+
     Learn more about the [name template engine](/customization/templates/).
 
 Note that the idea behind GoReleaser's snapshots is for local builds or to
@@ -39,5 +40,6 @@ validate your build on the CI pipeline. Artifacts won't be uploaded and will
 only be generated into the `dist` folder.
 
 !!! info "Maybe you are looking for something else?"
+
     - If just want to build the binaries, and no packages at all, check the [`goreleaser build` command](/cmd/goreleaser_build/);
     - If you actually want to create nightly builds, check out the [nightly documentation](/customization/nightlies/).

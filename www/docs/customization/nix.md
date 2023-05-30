@@ -10,8 +10,7 @@ The `nix` section specifies how the pkgs should be created:
 ```yaml
 # .goreleaser.yaml
 nix:
-  -
-    # Name of the recipe
+  - # Name of the recipe
     #
     # Default: ProjectName
     # Templates: allowed
@@ -20,8 +19,8 @@ nix:
     # IDs of the archives to use.
     # Empty means all IDs.
     ids:
-    - foo
-    - bar
+      - foo
+      - bar
 
     # GOAMD64 to specify which amd64 version to use if there are multiple
     # versions from the build section.
@@ -83,7 +82,7 @@ nix:
         # The Git URL to push.
         #
         # Templates: allowed
-        url: 'ssh://git@myserver.com:repo.git'
+        url: "ssh://git@myserver.com:repo.git"
 
         # The SSH private key that should be used to commit to the Git
         # repository.
@@ -94,7 +93,7 @@ nix:
         # WARNING: do not expose your private key in the configuration file!
         #
         # Templates: allowed
-        private_key: '{{ .Env.PRIVATE_KEY_PATH }}'
+        private_key: "{{ .Env.PRIVATE_KEY_PATH }}"
 
         # The value to be passed to `GIT_SSH_COMMAND`.
         # This is mainly used to specify the SSH private key used to pull/push
@@ -102,7 +101,7 @@ nix:
         #
         # Default: 'ssh -i {{ .KeyPath }} -o StrictHostKeyChecking=accept-new -F /dev/null'
         # Templates: allowed
-        ssh_command: 'ssh -i {{ .Env.KEY }} -o SomeOption=yes'
+        ssh_command: "ssh -i {{ .Env.KEY }} -o SomeOption=yes"
 
     # URL which is determined by the given Token (github, gitlab or gitea).
     #
@@ -164,6 +163,7 @@ nix:
 ```
 
 !!! tip
+
     Learn more about the [name template engine](/customization/templates/).
 
 ## Things not yet implemented

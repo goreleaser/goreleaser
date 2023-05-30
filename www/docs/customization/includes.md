@@ -1,6 +1,7 @@
 # Includes
 
 !!! success "GoReleaser Pro"
+
     Includes is a [GoReleaser Pro feature](/pro/).
 
 GoReleaser allows you to include other files from an URL or in the current

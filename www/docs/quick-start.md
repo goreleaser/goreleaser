@@ -14,6 +14,7 @@ func main() {
 ```
 
 Initialize modules with
+
 ```sh
 go mod init main
 ```
@@ -50,6 +51,7 @@ It will be used to deploy releases to your GitHub repository.
 You can create a new GitHub token [here](https://github.com/settings/tokens/new?scopes=repo,write:packages).
 
 !!! info
+
     The minimum permissions the `GITHUB_TOKEN` should have to run this are `write:packages`
 
 ```sh
@@ -66,9 +68,11 @@ git push origin v0.1.0
 ```
 
 !!! info
+
     Check if your tag adheres to [semantic versioning](/limitations/semver/).
 
 !!! info
+
     If you don't want to create a tag yet, you can also run GoReleaser without publishing based on the latest commit by using the `--snapshot` flag:
 
     ```sh

@@ -40,10 +40,12 @@ gomod:
 ```
 
 !!! tip
+
     You can use `debug.ReadBuildInfo()` to get the version/checksum/dependencies
     of the module.
 
 !!! warning
+
     VCS Info will not be embedded in the binary, as in practice it is not being
     built from the source, but from the Go Mod Proxy.
 

@@ -179,19 +179,24 @@ archives:
 ```
 
 !!! success "GoReleaser Pro"
+
     Archive hooks is a [GoReleaser Pro feature](/pro/).
 
 !!! tip
+
     Learn more about the [name template engine](/customization/templates/).
 
 !!! tip
+
     You can add entire folders, its subfolders and files by using the glob notation,
     for example: `myfolder/**/*`.
 
 !!! warning
+
     The `files` and `wrap_in_directory` options are ignored if `format` is `binary`.
 
 !!! warning
+
     The `name_template` option will not reflect the filenames under the `dist` folder if `format` is `binary`.
     The template will be applied only where the binaries are uploaded (e.g. GitHub releases).
 
@@ -202,30 +207,29 @@ We'll walk through what happens in each case using some examples.
 ```yaml
 # ...
 files:
+  # Adds `README.md` at the root of the archive:
+  - README.md
 
-# Adds `README.md` at the root of the archive:
-- README.md
+  # Adds all `md` files to the root of the archive:
+  - "*.md"
 
-# Adds all `md` files to the root of the archive:
-- '*.md'
+  # Adds all `md` files to the root of the archive:
+  - src: "*.md"
 
-# Adds all `md` files to the root of the archive:
-- src: '*.md'
+  # Adds all `md` files in the current folder to a `docs` folder in the archive:
+  - src: "*.md"
+    dst: docs
 
-# Adds all `md` files in the current folder to a `docs` folder in the archive:
-- src: '*.md'
-  dst: docs
+  # Recursively adds all `go` files to a `source` folder in the archive.
+  # in this case, `cmd/myapp/main.go` will be added as `source/cmd/myapp/main.go`
+  - src: "**/*.go"
+    dst: source
 
-# Recursively adds all `go` files to a `source` folder in the archive.
-# in this case, `cmd/myapp/main.go` will be added as `source/cmd/myapp/main.go`
-- src: '**/*.go'
-  dst: source
-
-# Recursively adds all `go` files to a `source` folder in the archive, stripping their parent folder.
-# In this case, `cmd/myapp/main.go` will be added as `source/main.go`:
-- src: '**/*.go'
-  dst: source
-  strip_parent: true
+  # Recursively adds all `go` files to a `source` folder in the archive, stripping their parent folder.
+  # In this case, `cmd/myapp/main.go` will be added as `source/main.go`:
+  - src: "**/*.go"
+    dst: source
+    strip_parent: true
 # ...
 ```
 
@@ -240,8 +244,8 @@ A working hack is to use something like this:
 ```yaml
 # .goreleaser.yaml
 archives:
-- files:
-  - none*
+  - files:
+      - none*
 ```
 
 This would add all files matching the glob `none*`, provide that you don't
@@ -261,15 +265,16 @@ will probably look like this:
 ```yaml
 # .goreleaser.yaml
 archives:
-- format: gz
-  files:
-  - none*
+  - format: gz
+    files:
+      - none*
 ```
 
 This should create `.gz` files with the binaries only, which should be
 extracted with something like `gzip -d file.gz`.
 
 !!! warning
+
     You won't be able to package multiple builds in a single archive either.
     The alternative is to declare multiple archives filtering by build ID.
 
@@ -280,7 +285,7 @@ You can do that by setting `format` to `binary`:
 ```yaml
 # .goreleaser.yaml
 archives:
-- format: binary
+  - format: binary
 ```
 
 Make sure to check the rest of the documentation above, as doing this has some

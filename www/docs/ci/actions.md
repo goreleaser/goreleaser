@@ -19,7 +19,7 @@ on:
   push:
     # run only against tags
     tags:
-      - '*'
+      - "*"
 
 permissions:
   contents: write
@@ -53,6 +53,7 @@ jobs:
 ```
 
 !!! warning "Some things to look closely..."
+
     #### The action does not install, configure or authenticate into dependencies
     GoReleaser Action will not install nor setup any other software needed to
     release. It's the user's responsibility to install and configure Go, Docker,
@@ -71,6 +72,7 @@ jobs:
     [actions/checkout#290](https://github.com/actions/checkout/issues/290).
 
 !!! tip
+
     For detailed instructions please follow GitHub Actions [workflow syntax][syntax].
 
 ### Signing
@@ -79,22 +81,20 @@ If [signing is enabled][signing] in your GoReleaser configuration, you can use
 the [Import GPG][import-gpg] GitHub Action along with this one:
 
 ```yaml
-      -
-        name: Import GPG key
-        id: import_gpg
-        uses: crazy-max/ghaction-import-gpg@v4
-        with:
-          gpg_private_key: ${{ secrets.GPG_PRIVATE_KEY }}
-          passphrase: ${{ secrets.PASSPHRASE }}
-      -
-        name: Run GoReleaser
-        uses: goreleaser/goreleaser-action@v4
-        with:
-          version: latest
-          args: release --clean
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          GPG_FINGERPRINT: ${{ steps.import_gpg.outputs.fingerprint }}
+- name: Import GPG key
+  id: import_gpg
+  uses: crazy-max/ghaction-import-gpg@v4
+  with:
+    gpg_private_key: ${{ secrets.GPG_PRIVATE_KEY }}
+    passphrase: ${{ secrets.PASSPHRASE }}
+- name: Run GoReleaser
+  uses: goreleaser/goreleaser-action@v4
+  with:
+    version: latest
+    args: release --clean
+  env:
+    GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+    GPG_FINGERPRINT: ${{ steps.import_gpg.outputs.fingerprint }}
 ```
 
 And reference the fingerprint in your signing configuration using the
@@ -103,7 +103,16 @@ And reference the fingerprint in your signing configuration using the
 ```yaml
 signs:
   - artifacts: checksum
-    args: ["--batch", "-u", "{{ .Env.GPG_FINGERPRINT }}", "--output", "${signature}", "--detach-sign", "${artifact}"]
+    args:
+      [
+        "--batch",
+        "-u",
+        "{{ .Env.GPG_FINGERPRINT }}",
+        "--output",
+        "${signature}",
+        "--detach-sign",
+        "${artifact}",
+      ]
 ```
 
 ## Customizing
@@ -114,34 +123,35 @@ signs:
 
 Following inputs can be used as `step.with` keys
 
-Name          |Type  |Default     |Description
---------------|------|------------|----------------------------------------------------------------
-`distribution`|String|`goreleaser`|GoReleaser distribution, either `goreleaser` or `goreleaser-pro`
-`version`[^1] |String|`latest`    |GoReleaser version
-`args`        |String|            |Arguments to pass to GoReleaser
-`workdir`     |String|`.`         |Working directory (below repository root)
-`install-only`|Bool  |`false`     |Just install GoReleaser
+| Name           | Type   | Default      | Description                                                      |
+| -------------- | ------ | ------------ | ---------------------------------------------------------------- |
+| `distribution` | String | `goreleaser` | GoReleaser distribution, either `goreleaser` or `goreleaser-pro` |
+| `version`[^1]  | String | `latest`     | GoReleaser version                                               |
+| `args`         | String |              | Arguments to pass to GoReleaser                                  |
+| `workdir`      | String | `.`          | Working directory (below repository root)                        |
+| `install-only` | Bool   | `false`      | Just install GoReleaser                                          |
 
-[^1]: Can be a fixed version like `v0.117.0` or a max satisfying SemVer one like
-  `~> 0.132`. In this case this will return `v0.132.1`.
+[^1]:
+    Can be a fixed version like `v0.117.0` or a max satisfying SemVer one like
+    `~> 0.132`. In this case this will return `v0.132.1`.
 
 ### Outputs
 
 Following outputs are available
 
-Name       |Type|Description
------------|----|----------------------
-`artifacts`|JSON|Build result artifacts
-`metadata` |JSON|Build result metadata
+| Name        | Type | Description            |
+| ----------- | ---- | ---------------------- |
+| `artifacts` | JSON | Build result artifacts |
+| `metadata`  | JSON | Build result metadata  |
 
 ### Environment Variables
 
 Following environment variables can be used as `step.env` keys
 
-Name            |Description
-----------------|---------------------------------------------------------------------------------------------------------------------------------------------------
-`GITHUB_TOKEN`  |[GITHUB_TOKEN](https://help.github.com/en/actions/configuring-and-managing-workflows/authenticating-with-the-github_token) as provided by `secrets`
-`GORELEASER_KEY`|Your [GoReleaser Pro](https://goreleaser.com/pro) License Key, in case you are using the `goreleaser-pro` distribution
+| Name             | Description                                                                                                                                         |
+| ---------------- | --------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `GITHUB_TOKEN`   | [GITHUB_TOKEN](https://help.github.com/en/actions/configuring-and-managing-workflows/authenticating-with-the-github_token) as provided by `secrets` |
+| `GORELEASER_KEY` | Your [GoReleaser Pro](https://goreleaser.com/pro) License Key, in case you are using the `goreleaser-pro` distribution                              |
 
 ## Token Permissions
 
@@ -149,15 +159,15 @@ The following
 [permissions](https://docs.github.com/en/actions/reference/authentication-in-a-workflow#permissions-for-the-github_token)
 are required by GoReleaser:
 
- - `contents: write` if you wish to
-    - [upload archives as GitHub Releases](/customization/release/), or
-    - publish to [Homebrew](/customization/homebrew/), or
-      [Scoop](/customization/scoop/) (assuming it's part of the same repository)
- - or just `contents: read` if you don't need any of the above
- - `packages: write` if you [push Docker images](/customization/docker/) to
-   GitHub
- - `issues: write` if you use [milestone closing
-   capability](/customization/milestone/)
+- `contents: write` if you wish to
+  - [upload archives as GitHub Releases](/customization/release/), or
+  - publish to [Homebrew](/customization/homebrew/), or
+    [Scoop](/customization/scoop/) (assuming it's part of the same repository)
+- or just `contents: read` if you don't need any of the above
+- `packages: write` if you [push Docker images](/customization/docker/) to
+  GitHub
+- `issues: write` if you use [milestone closing
+  capability](/customization/milestone/)
 
 `GITHUB_TOKEN` permissions [are limited to the repository][about-github-token]
 that contains your workflow.
@@ -168,14 +178,13 @@ secret in the repository][secrets]. If you create a secret named `GH_PAT`, the
 step will look like this:
 
 ```yaml
-      -
-        name: Run GoReleaser
-        uses: goreleaser/goreleaser-action@v4
-        with:
-          version: latest
-          args: release --clean
-        env:
-          GITHUB_TOKEN: ${{ secrets.GH_PAT }}
+- name: Run GoReleaser
+  uses: goreleaser/goreleaser-action@v4
+  with:
+    version: latest
+    args: release --clean
+  env:
+    GITHUB_TOKEN: ${{ secrets.GH_PAT }}
 ```
 
 You can also read the [GitHub documentation](https://docs.github.com/en/github/authenticating-to-github/creating-a-personal-access-token) about it.

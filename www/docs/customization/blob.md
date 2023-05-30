@@ -9,8 +9,7 @@ Google GCS.
 # .goreleaser.yaml
 blobs:
   # You can have multiple blob configs
-  -
-    # Cloud provider name:
+  - # Cloud provider name:
     # - s3 for AWS S3 Storage
     # - azblob for Azure Blob Storage
     # - gs for Google Cloud Storage
@@ -43,8 +42,8 @@ blobs:
 
     # IDs of the artifacts you want to upload.
     ids:
-    - foo
-    - bar
+      - foo
+      - bar
 
     # Path/name inside the bucket.
     #
@@ -70,7 +69,6 @@ blobs:
         # Templates: allowed
         name_template: file.txt # note that this only works if glob matches 1 file only
 
-
     # Additional templated extra files to uploaded.
     # Those files will have their contents pass through the template engine,
     # and its results will be uploaded.
@@ -82,17 +80,16 @@ blobs:
       - src: LICENSE.tpl
         dst: LICENSE.txt
 
-  -
-    provider: gs
+  - provider: gs
     bucket: goreleaser-bucket
     folder: "foo/bar/{{.Version}}"
-  -
-    provider: s3
+  - provider: s3
     bucket: goreleaser-bucket
     folder: "foo/bar/{{.Version}}"
 ```
 
 !!! tip
+
     Learn more about the [name template engine](/customization/templates/).
 
 ## Authentication
@@ -125,7 +122,7 @@ in the following order:
 
 - Environment Variable (`GOOGLE_APPLICATION_CREDENTIALS`)
 - Default Service Account from the compute instance (Compute Engine,
-Kubernetes Engine, Cloud function etc).
+  Kubernetes Engine, Cloud function etc).
 
 ## ACLs
 

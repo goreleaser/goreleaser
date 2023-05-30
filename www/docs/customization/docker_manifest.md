@@ -13,6 +13,7 @@ config file, GoReleaser will add the manifest's to the release notes instead of
 the Docker images names.
 
 !!! warning
+
     Notice that the images used in the manifest **need to be pushed** for this
     to work. This is a limitation of how `docker manifest create` works. For
     more info, check
@@ -27,54 +28,54 @@ options available:
 # .goreleaser.yaml
 docker_manifests:
   # You can have multiple Docker manifests.
--
-  # ID of the manifest, needed if you want to filter by it later on (e.g. on
-  # custom publishers).
-  id: myimg
+  - # ID of the manifest, needed if you want to filter by it later on (e.g. on
+    # custom publishers).
+    id: myimg
 
-  # Name for the manifest.
-  #
-  # Templates: allowed
-  name_template: "foo/bar:{{ .Version }}"
+    # Name for the manifest.
+    #
+    # Templates: allowed
+    name_template: "foo/bar:{{ .Version }}"
 
-  # Image name to be added to this manifest.
-  #
-  # Templates: allowed
-  image_templates:
-  - "foo/bar:{{ .Version }}-amd64"
-  - "foo/bar:{{ .Version }}-arm64v8"
+    # Image name to be added to this manifest.
+    #
+    # Templates: allowed
+    image_templates:
+      - "foo/bar:{{ .Version }}-amd64"
+      - "foo/bar:{{ .Version }}-arm64v8"
 
-  # Extra flags to be passed down to the manifest create command.
-  create_flags:
-  - --insecure
+    # Extra flags to be passed down to the manifest create command.
+    create_flags:
+      - --insecure
 
-  # Extra flags to be passed down to the manifest push command.
-  push_flags:
-  - --insecure
+    # Extra flags to be passed down to the manifest push command.
+    push_flags:
+      - --insecure
 
-  # Skips the Docker manifest.
-  # If you set this to `false` or `auto` on your source Docker configuration,
-  #  you'll probably want to do the same here.
-  #
-  # If set to `auto`, the manifest will not be created in case there is an
-  #  indicator of a prerelease in the tag, e.g. v1.0.0-rc1.
-  #
-  # Templates: allowed (since v1.19)
-  skip_push: false
+    # Skips the Docker manifest.
+    # If you set this to `false` or `auto` on your source Docker configuration,
+    #  you'll probably want to do the same here.
+    #
+    # If set to `auto`, the manifest will not be created in case there is an
+    #  indicator of a prerelease in the tag, e.g. v1.0.0-rc1.
+    #
+    # Templates: allowed (since v1.19)
+    skip_push: false
 
-  # Set the "backend" for the Docker manifest pipe.
-  # Valid options are: docker, podman
-  #
-  # Relevant notes:
-  # 1. podman is a GoReleaser Pro feature and is only available on Linux;
-  # 2. if you set podman here, the respective docker configuration need to use
-  #     podman too.
-  #
-  # Default: 'docker'
-  use: docker
+    # Set the "backend" for the Docker manifest pipe.
+    # Valid options are: docker, podman
+    #
+    # Relevant notes:
+    # 1. podman is a GoReleaser Pro feature and is only available on Linux;
+    # 2. if you set podman here, the respective docker configuration need to use
+    #     podman too.
+    #
+    # Default: 'docker'
+    use: docker
 ```
 
 !!! tip
+
     Learn more about the [name template engine](/customization/templates/).
 
 ## How it works
@@ -85,6 +86,7 @@ section to our configuration defining, which images are part of which manifests.
 GoReleaser will create and publish the manifest in its publishing phase.
 
 !!! warning
+
     Unfortunately, the manifest tool needs the images to be pushed to create
     the manifest, that's why we both create and push it in the publishing phase.
 
@@ -107,36 +109,37 @@ Then, on our GoReleaser configuration file, we need to define both the
 ```yaml
 # .goreleaser.yaml
 builds:
-- env:
-  - CGO_ENABLED=0
-  binary: mybin
-  goos:
-  - linux
-  goarch:
-  - amd64
-  - arm64
+  - env:
+      - CGO_ENABLED=0
+    binary: mybin
+    goos:
+      - linux
+    goarch:
+      - amd64
+      - arm64
 dockers:
-- image_templates:
-  - "foo/bar:{{ .Version }}-amd64"
-  use: buildx
-  dockerfile: Dockerfile
-  build_flag_templates:
-  - "--platform=linux/amd64"
-- image_templates:
-  - "foo/bar:{{ .Version }}-arm64v8"
-  use: buildx
-  goarch: arm64
-  dockerfile: Dockerfile
-  build_flag_templates:
-  - "--platform=linux/arm64/v8"
+  - image_templates:
+      - "foo/bar:{{ .Version }}-amd64"
+    use: buildx
+    dockerfile: Dockerfile
+    build_flag_templates:
+      - "--platform=linux/amd64"
+  - image_templates:
+      - "foo/bar:{{ .Version }}-arm64v8"
+    use: buildx
+    goarch: arm64
+    dockerfile: Dockerfile
+    build_flag_templates:
+      - "--platform=linux/arm64/v8"
 docker_manifests:
-- name_template: "foo/bar:{{ .Version }}"
-  image_templates:
-  - "foo/bar:{{ .Version }}-amd64"
-  - "foo/bar:{{ .Version }}-arm64v8"
+  - name_template: "foo/bar:{{ .Version }}"
+    image_templates:
+      - "foo/bar:{{ .Version }}-amd64"
+      - "foo/bar:{{ .Version }}-arm64v8"
 ```
 
 !!! warning
+
     Notice that `--platform` needs to be in the Docker platform format, not Go's.
 
 That config will build the 2 Docker images defined, as well as the manifest,
@@ -145,6 +148,7 @@ and push everything to Docker Hub.
 ## Podman
 
 !!! success "GoReleaser Pro"
+
     The podman backend is a [GoReleaser Pro feature](/pro/).
 
 You can use [`podman`](https://podman.io) instead of `docker` by setting `use`
@@ -153,11 +157,11 @@ to `podman` on your configuration:
 ```yaml
 # .goreleaser.yaml
 docker_manifests:
-- name_template: "foo/bar:{{ .Version }}"
-  image_templates:
-  - "foo/bar:{{ .Version }}-amd64"
-  - "foo/bar:{{ .Version }}-arm64v8"
-  use: podman
+  - name_template: "foo/bar:{{ .Version }}"
+    image_templates:
+      - "foo/bar:{{ .Version }}-amd64"
+      - "foo/bar:{{ .Version }}-arm64v8"
+    use: podman
 ```
 
 Note that GoReleaser will not install Podman for you, nor change any of its

@@ -6,6 +6,7 @@ After releasing to GitHub, GitLab, or Gitea, GoReleaser can generate and publish
 a `PKGBUILD` to an _Arch User Repository_.
 
 !!! warning
+
     Before going further on this, make sure to read
     [AUR's Submission Guidelines](https://wiki.archlinux.org/title/AUR_submission_guidelines).
 
@@ -14,8 +15,7 @@ This page describes the available options.
 ```yaml
 # .goreleaser.yaml
 aurs:
-  -
-    # The package name.
+  - # The package name.
     #
     # Note that since this integration does not create a PKGBUILD to build from
     # source, per Arch's guidelines.
@@ -40,11 +40,11 @@ aurs:
 
     # The maintainers of the package.
     maintainers:
-      - 'Foo Bar <foo at bar dot com>'
+      - "Foo Bar <foo at bar dot com>"
 
     # The contributors of the package.
     contributors:
-      - 'Foo Zaz <foo at zaz dot com>'
+      - "Foo Zaz <foo at zaz dot com>"
 
     # SPDX identifier of your app's license.
     license: "MIT"
@@ -55,11 +55,11 @@ aurs:
     # IMPORTANT: the key must not be password-protected.
     #
     # WARNING: do not expose your private key in the configuration file!
-    private_key: '{{ .Env.AUR_KEY }}'
+    private_key: "{{ .Env.AUR_KEY }}"
 
     # The AUR Git URL for this package.
     # Publish is skipped if empty.
-    git_url: 'ssh://aur@aur.archlinux.org/mypackage-bin.git'
+    git_url: "ssh://aur@aur.archlinux.org/mypackage-bin.git"
 
     # Setting this will prevent goreleaser to actually try to commit the updated
     # formula - instead, the formula file will be stored on the dist folder only,
@@ -90,7 +90,7 @@ aurs:
     #
     # Must be in the format `package: short description of the extra functionality`.
     optdepends:
-      - 'wget: for downloading things'
+      - "wget: for downloading things"
 
     # List of files that can contain user-made changes and should be preserved
     # during package upgrades and removals.
@@ -145,7 +145,7 @@ aurs:
     # the Git URL.
     #
     # Default: 'ssh -i {{ .KeyPath }} -o StrictHostKeyChecking=accept-new -F /dev/null'
-    git_ssh_command: 'ssh -i {{ .Env.KEY }} -o SomeOption=yes'
+    git_ssh_command: "ssh -i {{ .Env.KEY }} -o SomeOption=yes"
 
     # URL which is determined by the given Token
     # (github, gitlab or gitea).
@@ -156,8 +156,10 @@ aurs:
 ```
 
 !!! tip
+
     Learn more about the [name template engine](/customization/templates/).
 
 !!! tip
+
     For more info about what each field does, please refer to
     [Arch's PKGBUILD reference](https://wiki.archlinux.org/title/PKGBUILD).

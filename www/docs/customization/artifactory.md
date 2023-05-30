@@ -32,7 +32,7 @@ An example configuration for `goreleaser` in upload mode `binary` with the targe
 
 ```yaml
 - mode: binary
-  target: 'http://artifacts.company.com:8081/artifactory/example-repo-local/{{ .ProjectName }}/{{ .Version }}/{{ .Os }}/{{ .Arch }}{{ if .Arm }}{{ .Arm }}{{ end }}'
+  target: "http://artifacts.company.com:8081/artifactory/example-repo-local/{{ .ProjectName }}/{{ .Version }}/{{ .Os }}/{{ .Arch }}{{ if .Arm }}{{ .Arm }}{{ end }}"
 ```
 
 and will result in a final deployment like `http://artifacts.company.com:8081/artifactory/example-repo-local/goreleaser/1.0.0/Darwin/x86_64/goreleaser`.
@@ -47,6 +47,7 @@ Supported variables:
 - Arm
 
 !!! info
+
     Variables _Os_, _Arch_ and _Arm_ are only supported in upload mode `binary`.
 
 ### Username
@@ -132,14 +133,13 @@ Of course, you can customize a lot of things:
 # .goreleaser.yaml
 artifactories:
   # You can have multiple Artifactory instances.
-  -
-    # Unique name of your artifactory instance. Used to identify the instance
+  - # Unique name of your artifactory instance. Used to identify the instance
     name: production
 
     # IDs of the artifacts you want to upload.
     ids:
-    - foo
-    - bar
+      - foo
+      - bar
 
     # File extensions to filter for.
     # This might be useful if you have multiple packages with different
@@ -148,8 +148,8 @@ artifactories:
     #
     # Since: v1.7
     exts:
-    - deb
-    - rpm
+      - deb
+      - rpm
 
     # Upload mode. Valid options are `binary` and `archive`.
     # If mode is `archive`, variables _Os_, _Arch_ and _Arm_ for target name are not supported.
@@ -191,4 +191,5 @@ artifactories:
 These settings should allow you to push your artifacts into multiple Artifactories.
 
 !!! tip
+
     Learn more about the [name template engine](/customization/templates/).

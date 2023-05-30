@@ -6,6 +6,7 @@ private monorepo, but publish its binaries to a public repository.
 This cookbook gives some suggestions on how to handle that.
 
 !!! success "GoReleaser Pro"
+
     This cookbook uses [GoReleaser Pro](/pro).
 
 Usually, you'll rely on tag prefixes for each sub-project within your monorepo.
@@ -44,13 +45,14 @@ You can remove it by setting the `release.tag` field:
 
 ```yaml
 release:
-  tag: '{{ .Tag }}'
+  tag: "{{ .Tag }}"
   github:
     owner: myorg
     name: app1
 ```
 
 !!! info
+
     On GoReleaser Pro, `{{.Tag}}` is the tag without the prefix, and the
     prefixed tag can be accessed with `{{.PrefixedTag}}`. Check the
     [documentation](/customization/templates) for more information.
@@ -62,4 +64,3 @@ Make sure to take a look at the following documentation pages:
 - [Monorepo](/customization/monorepo)
 - [Release](/customization/release)
 - [Template variables](/customization/templates)
-

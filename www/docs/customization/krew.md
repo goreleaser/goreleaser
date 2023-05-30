@@ -10,8 +10,7 @@ The `krews` section specifies how the plugins should be created:
 ```yaml
 # .goreleaser.yaml
 krews:
-  -
-    # Name of the recipe
+  - # Name of the recipe
     #
     # Default: ProjectName
     # Templates: allowed
@@ -19,8 +18,8 @@ krews:
 
     # IDs of the archives to use.
     ids:
-    - foo
-    - bar
+      - foo
+      - bar
 
     # GOARM to specify which 32-bit arm version to use if there are multiple
     # versions from the build section. Krew plugin supports at this moment only
@@ -97,7 +96,7 @@ krews:
         # The Git URL to push.
         #
         # Templates: allowed
-        url: 'ssh://git@myserver.com:repo.git'
+        url: "ssh://git@myserver.com:repo.git"
 
         # The SSH private key that should be used to commit to the Git
         # repository.
@@ -108,7 +107,7 @@ krews:
         # WARNING: do not expose your private key in the configuration file!
         #
         # Templates: allowed
-        private_key: '{{ .Env.PRIVATE_KEY_PATH }}'
+        private_key: "{{ .Env.PRIVATE_KEY_PATH }}"
 
         # The value to be passed to `GIT_SSH_COMMAND`.
         # This is mainly used to specify the SSH private key used to pull/push
@@ -116,7 +115,7 @@ krews:
         #
         # Default: 'ssh -i {{ .KeyPath }} -o StrictHostKeyChecking=accept-new -F /dev/null'
         # Templates: allowed
-        ssh_command: 'ssh -i {{ .Env.KEY }} -o SomeOption=yes'
+        ssh_command: "ssh -i {{ .Env.KEY }} -o SomeOption=yes"
 
     # URL which is determined by the given Token (github or
     # gitlab)
@@ -163,6 +162,7 @@ krews:
 ```
 
 !!! tip
+
     Learn more about the [name template engine](/customization/templates/).
 
 ## Limitations

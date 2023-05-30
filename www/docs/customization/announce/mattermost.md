@@ -18,30 +18,31 @@ announce:
     #
     # Default: '{{ .ProjectName }} {{ .Tag }} is out!'
     # Templates: allowed
-    title_template: 'GoReleaser {{ .Tag }} was just released!'
+    title_template: "GoReleaser {{ .Tag }} was just released!"
 
     # Message to use while publishing.
     #
     # Default: '{{ .ProjectName }} {{ .Tag }} is out! Check it out at {{ .ReleaseURL }}'
     # Templates: allowed
-    message_template: 'Awesome project {{.Tag}} is out!'
+    message_template: "Awesome project {{.Tag}} is out!"
 
     # Color code of the message. You have to use hexadecimal.
     # Default: '#2D313E' (the grey-ish from GoReleaser)
-    color: ''
+    color: ""
 
     # The name of the channel that the user selected as a destination for webhook messages.
-    channel: '#channel'
+    channel: "#channel"
 
     # Set your Webhook's user name.
-    username: ''
+    username: ""
 
     # Emoji to use as the icon for this message. Overrides icon_url.
-    icon_emoji: ''
+    icon_emoji: ""
 
     # URL to an image to use as the icon for this message.
-    icon_url: ''
+    icon_url: ""
 ```
 
 !!! tip
+
     Learn more about the [name template engine](/customization/templates/).

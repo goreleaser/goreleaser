@@ -42,8 +42,8 @@ announce:
     #   Authorization: "Bearer <token>"
     headers:
       User-Agent: "goreleaser"
-
 ```
 
 !!! tip
-  Learn more about the [name template engine](/customization/templates/).
+
+Learn more about the [name template engine](/customization/templates/).

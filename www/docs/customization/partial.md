@@ -5,6 +5,7 @@ GoReleaser can also split and merge builds.
 > Since: v1.12 (pro)
 
 !!! success "GoReleaser Pro"
+
     This subcommand is a [GoReleaser Pro feature](https://goreleaser.com/pro/).
 
 This feature can help in some areas:
@@ -28,7 +29,7 @@ Note that this step will push your Docker images as well.
 Docker manifests are not created yet, though.
 
 - In the first example, it'll build for the current `GOOS` (as returned by
-`runtime.GOOS`).
+  `runtime.GOOS`).
 - In the second, it'll use the informed `GOOS`. This env will also bleed to
   things like before hooks, so be aware that any `go run` commands ran by
   GoReleaser there might fail.
@@ -61,6 +62,7 @@ step:
 - run all the announcers
 
 !!! warning
+
     Please notice that this step will not run anything that the previous step
     already did.
     For example, it will not build anything again, nor run any `hooks` you have

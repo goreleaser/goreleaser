@@ -20,23 +20,24 @@ announce:
     #
     # Default: '{{ .ProjectName }} {{ .Tag }} is out! Check it out at {{ .ReleaseURL }}'
     # Templates: allowed
-    message_template: 'Awesome project {{.Tag}} is out!'
+    message_template: "Awesome project {{.Tag}} is out!"
 
     # Set author of the embed.
     #
     # Default: 'GoReleaser'
-    author: ''
+    author: ""
 
     # Color code of the embed. You have to use decimal numeral system, not hexadecimal.
     #
     # Default: '3888754' (the grey-ish from GoReleaser)
-    color: ''
+    color: ""
 
     # URL to an image to use as the icon for the embed.
     #
     # Default: 'https://goreleaser.com/static/avatar.png'
-    icon_url: ''
+    icon_url: ""
 ```
 
 !!! tip
+
     Learn more about the [name template engine](/customization/templates/).
