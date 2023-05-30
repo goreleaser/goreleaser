@@ -124,9 +124,13 @@ scoops:
   commit_msg_template: "Scoop update for {{ .ProjectName }} version {{ .Tag }}"
 
   # Your app's homepage.
+  #
+  # Templates: allowed (since v1.19)
   homepage: "https://example.com/"
 
   # Your app's description.
+  #
+  # Templates: allowed (since v1.19)
   description: "Software to create fast and easy drum rolls."
 
   # Your app's license
