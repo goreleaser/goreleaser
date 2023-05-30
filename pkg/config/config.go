@@ -584,6 +584,10 @@ type UniversalBinary struct {
 type UPX struct {
 	Enabled  bool     `yaml:"enabled,omitempty" json:"enabled,omitempty"`
 	IDs      []string `yaml:"ids,omitempty" json:"ids,omitempty"`
+	Goos     []string `yaml:"goos,omitempty" json:"goos,omitempty"`
+	Goarch   []string `yaml:"goarch,omitempty" json:"goarch,omitempty"`
+	Goarm    []string `yaml:"goarm,omitempty" json:"goarm,omitempty"`
+	Goamd64  []string `yaml:"goamd64,omitempty" json:"goamd64,omitempty"`
 	Binary   string   `yaml:"binary,omitempty" json:"binary,omitempty"`
 	Compress string   `yaml:"compress,omitempty" json:"compress,omitempty" jsonschema:"enum=1,enum=2,enum=3,enum=4,enum=5,enum=6,enum=7,enum=8,enum=9,enum=best,enum=,default="`
 	LZMA     bool     `yaml:"lzma,omitempty" json:"lzma,omitempty"`

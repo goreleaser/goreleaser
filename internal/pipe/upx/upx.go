@@ -101,10 +101,33 @@ func findBinaries(ctx *context.Context, upx config.UPX) []*artifact.Artifact {
 			artifact.ByType(artifact.UniversalBinary),
 		),
 	}
+	if f := orBy(artifact.ByGoos, upx.Goos); f != nil {
+		filters = append(filters, f)
+	}
+	if f := orBy(artifact.ByGoarch, upx.Goarch); f != nil {
+		filters = append(filters, f)
+	}
+	if f := orBy(artifact.ByGoarm, upx.Goarm); f != nil {
+		filters = append(filters, f)
+	}
+	if f := orBy(artifact.ByGoamd64, upx.Goamd64); f != nil {
+		filters = append(filters, f)
+	}
 	if len(upx.IDs) > 0 {
 		filters = append(filters, artifact.ByIDs(upx.IDs...))
 	}
 	return ctx.Artifacts.Filter(artifact.And(filters...)).List()
+}
+
+func orBy(fn func(string) artifact.Filter, items []string) artifact.Filter {
+	var result []artifact.Filter
+	for _, f := range items {
+		result = append(result, fn(f))
+	}
+	if len(result) == 0 {
+		return nil
+	}
+	return artifact.Or(result...)
 }
 
 func sizeOf(name string) int64 {
