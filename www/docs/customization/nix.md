@@ -166,18 +166,24 @@ nix:
 !!! tip
     Learn more about the [name template engine](/customization/templates/).
 
-## `nix-prefetch-url`
+## Things not yet implemented
+
+- Generating packages that compile from source (using `buildGoModule`)
+- Generating packages when `archives.format` is `binary`
+
+Both issues are in [the radar][iss4034].
+You're welcome to contribute. 😄
+
+## Dependencies
+
+### `nix-prefetch-url`
 
 The `nix-prefetch-url` binary must be available in the `$PATH` for the
 publishing to work.
 
-## Compile from source
+[iss4034]: https://github.com/goreleaser/goreleaser/issues/4034
 
-GoReleaser does not (yet) generate packages that compile the Go module from
-source.
-It's planned for next releases, though.
-
-## GitHub Actions
+### GitHub Actions
 
 To publish a package from one repository to another using GitHub Actions, you
 cannot use the default action token.
