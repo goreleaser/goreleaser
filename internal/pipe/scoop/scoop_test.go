@@ -740,6 +740,7 @@ func Test_doRun(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			testlib.Mktmp(t)
 			ctx := tt.args.ctx
 			for _, a := range tt.artifacts {
 				a := a
