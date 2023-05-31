@@ -3458,6 +3458,30 @@
 						},
 						"type": "array"
 					},
+					"goos": {
+						"items": {
+							"type": "string"
+						},
+						"type": "array"
+					},
+					"goarch": {
+						"items": {
+							"type": "string"
+						},
+						"type": "array"
+					},
+					"goarm": {
+						"items": {
+							"type": "string"
+						},
+						"type": "array"
+					},
+					"goamd64": {
+						"items": {
+							"type": "string"
+						},
+						"type": "array"
+					},
 					"binary": {
 						"type": "string"
 					},
