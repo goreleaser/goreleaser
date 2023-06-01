@@ -49,6 +49,18 @@ func TestWithArtifact(t *testing.T) {
 			ctx.Date = time.Unix(1678327562, 0)
 		},
 	)
+	checksumPath := filepath.Join(t.TempDir(), "checksums.txt")
+	checksumContent := "f674623cf1edd0f753e620688cedee4e7c0e837ac1e53c0cbbce132ffe35fd52  foo.zip"
+	ctx.Artifacts.Add(&artifact.Artifact{
+		Name: "checksums.txt",
+		Path: checksumPath,
+		Type: artifact.Checksum,
+		Extra: map[string]interface{}{
+			artifact.ExtraRefresh: func() error {
+				return os.WriteFile(checksumPath, []byte(checksumContent), 0o644)
+			},
+		},
+	})
 	for expect, tmpl := range map[string]string{
 		"bar":                              "{{.Env.FOO}}",
 		"Linux":                            "{{.Os}}",
@@ -93,6 +105,7 @@ func TestWithArtifact(t *testing.T) {
 
 		"remove this": "{{ filter .Env.MULTILINE \".*remove.*\" }}",
 		"something with\nmultiple lines\nto test things": "{{ reverseFilter .Env.MULTILINE \".*remove.*\" }}",
+		"checksums: " + checksumContent:                  "checksums: {{ .Checksums }}",
 	} {
 		tmpl := tmpl
 		expect := expect
