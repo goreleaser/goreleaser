@@ -6,8 +6,6 @@ Those fields are often suffixed with `_template`, but sometimes they may not
 be. The documentation of each section should be explicit about which fields
 support templating.
 
-<!-- to format the tables, use: https://tabletomarkdown.com/format-markdown-table/ -->
-
 ## Common Fields
 
 In fields that support templates, these fields are always available:
@@ -54,7 +52,7 @@ In fields that support templates, these fields are always available:
 | `.Runtime.Goos`        | equivalent to `runtime.GOOS`. Since v1.5.                                                                                 |
 | `.Runtime.Goarch`      | equivalent to `runtime.GOARCH`. Since v1.5.                                                                               |
 | `.Artifacts`           | the current artifact list. See table bellow for fields. Since v1.16-pro.                                                  |
-| `.Checksums`           | the current checksum file contents. Since v1.19.                                                                          |
+| `.Checksums`           | the current checksum file contents. Only available in the release body. Since v1.19.                                      |
 
 [^version-prefix]:
     The `v` prefix is stripped, and it might be changed in

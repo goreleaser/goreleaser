@@ -4,7 +4,6 @@ package tmpl
 import (
 	"bytes"
 	"fmt"
-	"os"
 	"path/filepath"
 	"regexp"
 	"strings"
@@ -60,7 +59,6 @@ const (
 	modulePath      = "ModulePath"
 	releaseNotes    = "ReleaseNotes"
 	runtimeK        = "Runtime"
-	checksums       = "Checksums"
 
 	// artifact-only keys.
 	osKey        = "Os"
@@ -84,13 +82,6 @@ const (
 func New(ctx *context.Context) *Template {
 	sv := ctx.Semver
 	rawVersionV := fmt.Sprintf("%d.%d.%d", sv.Major, sv.Minor, sv.Patch)
-
-	var checksum string
-	if l := ctx.Artifacts.Filter(artifact.ByType(artifact.Checksum)).List(); len(l) > 0 {
-		_ = l[0].Refresh()
-		bts, _ := os.ReadFile(l[0].Path)
-		checksum = string(bts)
-	}
 
 	fields := map[string]interface{}{}
 	for k, v := range map[string]interface{}{
@@ -125,7 +116,6 @@ func New(ctx *context.Context) *Template {
 		tagContents:     ctx.Git.TagContents,
 		tagBody:         ctx.Git.TagBody,
 		runtimeK:        ctx.Runtime,
-		checksums:       checksum,
 	} {
 		fields[k] = v
 	}
