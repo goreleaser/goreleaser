@@ -44,13 +44,13 @@ require (
 	github.com/stretchr/testify v1.8.4
 	github.com/ulikunitz/xz v0.5.11
 	github.com/withfig/autocomplete-tools/integrations/cobra v1.2.1
-	github.com/xanzy/go-gitlab v0.83.0
+	github.com/xanzy/go-gitlab v0.84.0
 	gocloud.dev v0.29.0
 	golang.org/x/crypto v0.9.0
 	golang.org/x/oauth2 v0.8.0
 	golang.org/x/sync v0.2.0
 	golang.org/x/text v0.9.0
-	golang.org/x/tools v0.9.1
+	golang.org/x/tools v0.9.2
 	gopkg.in/mail.v2 v2.3.1
 	gopkg.in/yaml.v3 v3.0.1
 )
