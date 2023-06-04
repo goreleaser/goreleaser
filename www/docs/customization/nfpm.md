@@ -422,7 +422,7 @@ nfpms:
     Learn more about the [name template engine](/customization/templates/).
 
 !!! info
-    Fields marked with "overridable" can be overriden for any format.
+    Fields marked with "overridable" can be overridden for any format.
 
 ## A note about Termux
 

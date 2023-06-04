@@ -1,4 +1,4 @@
-// Package pipeline provides generic erros for pipes to use.
+// Package pipeline provides generic errors for pipes to use.
 package pipeline
 
 import (

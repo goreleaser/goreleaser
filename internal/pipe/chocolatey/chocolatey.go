@@ -325,7 +325,7 @@ func dataFor(ctx *context.Context, cl client.Client, choco config.Chocolatey, ar
 // The intention is to be used to wrap the standard exec and provide the
 // ability to create a fake one for testing.
 type cmder interface {
-	// Exec executes an command.
+	// Exec executes a command.
 	Exec(*context.Context, string, ...string) ([]byte, error)
 }
 

@@ -143,7 +143,7 @@ Usage                         |Description
 `filter "text" "regex"`       |keeps only the lines matching the given regex, analogous to `grep -E`. Since v1.6.
 `reverseFilter "text" "regex"`|keeps only the lines **not** matching the given regex, analogous to `grep -vE`. Since v1.6.
 `title "foo"`                 |"titlenize" the string using english as language. See [Title](https://pkg.go.dev/golang.org/x/text/cases#Title). Since v1.14.
-`mdv2escape "foo"`            |escape characteres according to MarkdownV2, especially useful in the Telegram integration. Since v1.19.
+`mdv2escape "foo"`            |escape characters according to MarkdownV2, especially useful in the Telegram integration. Since v1.19.
 
 With all those fields, you may be able to compose the name of your artifacts
 pretty much the way you want:

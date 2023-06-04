@@ -162,7 +162,7 @@ func TestUnmarshall(t *testing.T) {
 }
 
 func slackTestHook() string {
-	// redacted: replace this by a real Slack Web Incoming Hook to test the featue end to end.
+	// redacted: replace this by a real Slack Web Incoming Hook to test the feature end to end.
 	const hook = "https://hooks.slack.com/services/*********/***********/************************"
 
 	return hook

@@ -109,7 +109,7 @@ chocolateys:
     source_repo: "https://push.chocolatey.org/"
 
     # Setting this will prevent goreleaser to actually try to push the package
-    # to chocolatey repository, leaving the responsability of publishing it to
+    # to chocolatey repository, leaving the responsibility of publishing it to
     # the user.
     skip_publish: false
 
