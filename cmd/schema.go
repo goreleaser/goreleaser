@@ -49,7 +49,7 @@ func newSchemaCmd() *schemaCmd {
 	}
 
 	cmd.Flags().StringVarP(&root.output, "output", "o", "-", "Where to save the JSONSchema file")
-	_ = cmd.Flags().SetAnnotation("output", cobra.BashCompFilenameExt, []string{"json"})
+	_ = cmd.MarkFlagFilename("output", "json")
 
 	root.cmd = cmd
 	return root

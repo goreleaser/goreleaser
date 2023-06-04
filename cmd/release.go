@@ -68,6 +68,7 @@ func newReleaseCmd() *releaseCmd {
 	}
 
 	cmd.Flags().StringVarP(&root.opts.config, "config", "f", "", "Load configuration from file")
+	_ = cmd.MarkFlagFilename("config", "yaml", "yml")
 	cmd.Flags().StringVar(&root.opts.releaseNotesFile, "release-notes", "", "Load custom release notes from a markdown file (will skip GoReleaser changelog generation)")
 	_ = cmd.MarkFlagFilename("release-notes", "md", "mkd", "markdown")
 	cmd.Flags().StringVar(&root.opts.releaseHeaderFile, "release-header", "", "Load custom release notes header from a markdown file")
@@ -100,7 +101,6 @@ func newReleaseCmd() *releaseCmd {
 	_ = cmd.Flags().MarkHidden("deprecated")
 	_ = cmd.Flags().MarkHidden("rm-dist")
 	_ = cmd.Flags().MarkDeprecated("rm-dist", "please use --clean instead")
-	_ = cmd.Flags().SetAnnotation("config", cobra.BashCompFilenameExt, []string{"yaml", "yml"})
 
 	root.cmd = cmd
 	return root
