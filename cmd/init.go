@@ -51,6 +51,7 @@ func newInitCmd() *initCmd {
 	}
 
 	cmd.Flags().StringVarP(&root.config, "config", "f", ".goreleaser.yaml", "Load configuration from file")
+	_ = cmd.MarkFlagFilename("config", "yaml", "yml")
 
 	root.cmd = cmd
 	return root

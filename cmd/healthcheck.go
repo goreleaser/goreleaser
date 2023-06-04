@@ -82,6 +82,7 @@ func newHealthcheckCmd() *healthcheckCmd {
 	}
 
 	cmd.Flags().StringVarP(&root.config, "config", "f", "", "Configuration file")
+	_ = cmd.MarkFlagFilename("config", "yaml", "yml")
 	cmd.Flags().BoolVarP(&root.quiet, "quiet", "q", false, "Quiet mode: no output")
 	_ = cmd.Flags().MarkHidden("deprecated")
 
