@@ -86,7 +86,17 @@ When using ` + "`--single-target`" + `, the ` + "`GOOS`" + ` and ` + "`GOARCH`" 
 	_ = cmd.RegisterFlagCompletionFunc("parallelism", cobra.NoFileCompletions)
 	cmd.Flags().BoolVar(&root.opts.singleTarget, "single-target", false, "Builds only for current GOOS and GOARCH, regardless of what's set in the configuration file")
 	cmd.Flags().StringArrayVar(&root.opts.ids, "id", nil, "Builds only the specified build ids")
-	_ = cmd.RegisterFlagCompletionFunc("id", cobra.NoFileCompletions)
+	_ = cmd.RegisterFlagCompletionFunc("id", func(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
+		cfg, err := loadConfig(root.opts.config)
+		if err != nil {
+			return nil, cobra.ShellCompDirectiveNoFileComp
+		}
+		ids := make([]string, 0, len(cfg.Builds))
+		for _, build := range cfg.Builds {
+			ids = append(ids, build.ID)
+		}
+		return ids, cobra.ShellCompDirectiveNoFileComp
+	})
 	cmd.Flags().BoolVar(&root.opts.deprecated, "deprecated", false, "Force print the deprecation message - tests only")
 	cmd.Flags().StringVarP(&root.opts.output, "output", "o", "", "Copy the binary to the path after the build. Only taken into account when using --single-target and a single id (either with --id or if configuration only has one build)")
 	_ = cmd.MarkFlagFilename("output", "")
