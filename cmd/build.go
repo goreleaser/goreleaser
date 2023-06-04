@@ -58,9 +58,10 @@ It also allows you to generate a local build for your current machine only using
 
 When using ` + "`--single-target`" + `, the ` + "`GOOS`" + ` and ` + "`GOARCH`" + ` environment variables are used to determine the target, defaulting to the current machine target if not set.
 `,
-		SilenceUsage:  true,
-		SilenceErrors: true,
-		Args:          cobra.NoArgs,
+		SilenceUsage:      true,
+		SilenceErrors:     true,
+		Args:              cobra.NoArgs,
+		ValidArgsFunction: cobra.NoFileCompletions,
 		RunE: timedRunE("build", func(cmd *cobra.Command, args []string) error {
 			ctx, err := buildProject(root.opts)
 			if err != nil {

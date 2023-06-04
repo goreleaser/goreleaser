@@ -50,12 +50,13 @@ func newReleaseCmd() *releaseCmd {
 	root := &releaseCmd{}
 	// nolint: dupl
 	cmd := &cobra.Command{
-		Use:           "release",
-		Aliases:       []string{"r"},
-		Short:         "Releases the current project",
-		SilenceUsage:  true,
-		SilenceErrors: true,
-		Args:          cobra.NoArgs,
+		Use:               "release",
+		Aliases:           []string{"r"},
+		Short:             "Releases the current project",
+		SilenceUsage:      true,
+		SilenceErrors:     true,
+		Args:              cobra.NoArgs,
+		ValidArgsFunction: cobra.NoFileCompletions,
 		RunE: timedRunE("release", func(cmd *cobra.Command, args []string) error {
 			ctx, err := releaseProject(root.opts)
 			if err != nil {

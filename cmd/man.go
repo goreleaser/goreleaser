@@ -22,6 +22,7 @@ func newManCmd() *manCmd {
 		DisableFlagsInUseLine: true,
 		Hidden:                true,
 		Args:                  cobra.NoArgs,
+		ValidArgsFunction:     cobra.NoFileCompletions,
 		RunE: func(cmd *cobra.Command, args []string) error {
 			manPage, err := mcoral.NewManPage(1, root.cmd.Root())
 			if err != nil {

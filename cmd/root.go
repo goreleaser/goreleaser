@@ -67,10 +67,11 @@ You can customize your entire release process through a single .goreleaser.yaml 
 
 Check out our website for more information, examples and documentation: https://goreleaser.com
 `,
-		Version:       version.String(),
-		SilenceUsage:  true,
-		SilenceErrors: true,
-		Args:          cobra.NoArgs,
+		Version:           version.String(),
+		SilenceUsage:      true,
+		SilenceErrors:     true,
+		Args:              cobra.NoArgs,
+		ValidArgsFunction: cobra.NoFileCompletions,
 		PersistentPreRun: func(_ *cobra.Command, _ []string) {
 			if root.verbose || root.debug {
 				log.SetLevel(log.DebugLevel)
