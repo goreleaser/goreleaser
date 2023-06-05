@@ -110,7 +110,7 @@ scoops:
   # Note that while scoop works if the manifests are in a folder,
   # 'scoop bucket list' will show 0 manifests if they are not in the root
   # folder.
-  # In short, it's generaly better to leave this empty.
+  # In short, it's generally better to leave this empty.
   folder: Scoops
 
   # Git author used to commit to the repository.
@@ -162,7 +162,7 @@ scoops:
 
 
   # A two-dimensional array of string, specifies the shortcut values to make available in the startmenu.
-  # The array has to contain a executable/label pair. The third and fourth element are optional.
+  # The array has to contain an executable/label pair. The third and fourth element are optional.
   #
   # Since GoReleaser v1.17.0.
   shortcuts: [["drumroll.exe", "drumroll"]]

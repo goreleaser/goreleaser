@@ -13,7 +13,7 @@ publishers:
  dir: "{{ dir .ArtifactPath }}"
 ```
 
-Example of a [publishers](/customization/publishers/) section pushing files to a Artifactory instance using jfrog cli with api key in environment
+Example of a [publishers](/customization/publishers/) section pushing files to an Artifactory instance using jfrog cli with api key in environment
 
 ```yaml
 publishers:

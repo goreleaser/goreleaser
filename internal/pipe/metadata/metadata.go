@@ -1,4 +1,4 @@
-// Package metadata provides the pipe implementation that creates a artifacts.json file in the dist folder.
+// Package metadata provides the pipe implementation that creates an artifacts.json file in the dist folder.
 package metadata
 
 import (
