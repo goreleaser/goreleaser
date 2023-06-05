@@ -52,7 +52,7 @@ builds:
 
     # Custom ldflags.
     #
-    # Default: 's -w -X main.version={{.Version}} -X main.commit={{.Commit}} -X main.date={{.Date}} -X main.builtBy=goreleaser'
+    # Default: '-s -w -X main.version={{.Version}} -X main.commit={{.Commit}} -X main.date={{.Date}} -X main.builtBy=goreleaser'
     # Templates: allowed
     ldflags:
       - -s -w -X main.build={{.Version}}
