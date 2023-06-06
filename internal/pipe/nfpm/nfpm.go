@@ -59,14 +59,6 @@ func (Pipe) Default(ctx *context.Context) error {
 		if fpm.Maintainer == "" {
 			deprecate.NoticeCustom(ctx, "nfpms.maintainer", "`{{ .Property }}` should always be set, check {{ .URL }} for more info")
 		}
-		if len(fpm.Replacements) != 0 {
-			deprecate.Notice(ctx, "nfpms.replacements")
-		}
-		for _, rfpm := range fpm.Overrides {
-			if len(rfpm.Replacements) != 0 {
-				deprecate.Notice(ctx, "nfpms.replacements")
-			}
-		}
 		ids.Inc(fpm.ID)
 	}
 
@@ -184,9 +176,7 @@ func create(ctx *context.Context, fpm config.NFPM, format string, binaries []*ar
 		return err
 	}
 
-	// nolint:staticcheck
 	t := tmpl.New(ctx).
-		WithArtifactReplacements(binaries[0], overridden.Replacements).
 		WithExtraFields(tmpl.Fields{
 			"Release":     fpm.Release,
 			"Epoch":       fpm.Epoch,

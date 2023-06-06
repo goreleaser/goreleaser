@@ -229,13 +229,6 @@ func TestUpload(t *testing.T) {
 	}
 	ctx := testctx.NewWithCfg(config.Project{
 		ProjectName: "blah",
-		Archives: []config.Archive{
-			{
-				Replacements: map[string]string{
-					"linux": "Linux",
-				},
-			},
-		},
 		Env: []string{
 			"TEST_A_SECRET=x",
 			"TEST_A_USERNAME=u2",

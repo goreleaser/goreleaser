@@ -33,42 +33,6 @@ func TestRunPipeNoFormats(t *testing.T) {
 	testlib.AssertSkipped(t, Pipe{}.Run(ctx))
 }
 
-func TestDefaultsDeprecated(t *testing.T) {
-	t.Run("replacements", func(t *testing.T) {
-		ctx := testctx.NewWithCfg(config.Project{
-			NFPMs: []config.NFPM{
-				{
-					NFPMOverridables: config.NFPMOverridables{
-						Replacements: map[string]string{
-							"linux": "Tux",
-						},
-					},
-				},
-			},
-		})
-		require.NoError(t, Pipe{}.Default(ctx))
-		require.True(t, ctx.Deprecated)
-	})
-
-	t.Run("replacements overrides", func(t *testing.T) {
-		ctx := testctx.NewWithCfg(config.Project{
-			NFPMs: []config.NFPM{
-				{
-					Overrides: map[string]config.NFPMOverridables{
-						"apk": {
-							Replacements: map[string]string{
-								"linux": "Tux",
-							},
-						},
-					},
-				},
-			},
-		})
-		require.NoError(t, Pipe{}.Default(ctx))
-		require.True(t, ctx.Deprecated)
-	})
-}
-
 func TestRunPipeError(t *testing.T) {
 	ctx := testctx.NewWithCfg(config.Project{
 		Dist: t.TempDir(),
@@ -205,9 +169,6 @@ func TestRunPipe(t *testing.T) {
 							Source:      "./testdata/folder",
 							Destination: "/etc/folder",
 						},
-					},
-					Replacements: map[string]string{
-						"linux": "Tux",
 					},
 				},
 			},
@@ -1255,9 +1216,6 @@ func TestMeta(t *testing.T) {
 							Destination: "/var/log/foobar",
 							Type:        "dir",
 						},
-					},
-					Replacements: map[string]string{
-						"linux": "Tux",
 					},
 				},
 			},

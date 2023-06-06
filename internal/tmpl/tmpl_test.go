@@ -99,7 +99,7 @@ func TestWithArtifact(t *testing.T) {
 		expect := expect
 		t.Run(expect, func(t *testing.T) {
 			t.Parallel()
-			result, err := New(ctx).WithArtifactReplacements(
+			result, err := New(ctx).WithArtifact(
 				&artifact.Artifact{
 					Name:    "not-this-binary",
 					Path:    "/tmp/foo.exe",
@@ -113,7 +113,6 @@ func TestWithArtifact(t *testing.T) {
 						artifact.ExtraExt:    ".exe",
 					},
 				},
-				map[string]string{"linux": "Linux"},
 			).Apply(tmpl)
 			require.NoError(t, err)
 			require.Equal(t, expect, result)
@@ -122,13 +121,13 @@ func TestWithArtifact(t *testing.T) {
 
 	t.Run("artifact without binary name", func(t *testing.T) {
 		t.Parallel()
-		result, err := New(ctx).WithArtifactReplacements(
+		result, err := New(ctx).WithArtifact(
 			&artifact.Artifact{
 				Name:   "another-binary",
 				Goarch: "amd64",
 				Goos:   "linux",
 				Goarm:  "6",
-			}, map[string]string{},
+			},
 		).Apply("{{ .Binary }}")
 		require.NoError(t, err)
 		require.Equal(t, ctx.Config.ProjectName, result)
