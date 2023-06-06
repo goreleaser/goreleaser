@@ -37,6 +37,24 @@ Description.
 
 -->
 
+### archives.rlcp
+
+> since 2023-06-06 (v1.19.0)
+
+This option is now default and can't be changed. You can remove it from your
+configuration files.
+
+See [this](#archivesrlcp_1) for more info.
+
+### source.rlcp
+
+> since 2023-06-06 (v1.19.0)
+
+This option is now default and can't be changed. You can remove it from your
+configuration files.
+
+See [this](#sourcerlcp_1) for more info.
+
 ### brews.plist
 
 > since 2023-06-06 (v1.19.0)
@@ -148,9 +166,33 @@ Simply use the pluralized form, `builds`, according to the
     goreleaser release --clean
     ```
 
+### nfpms.maintainer
+
+> since 2022-05-07 (v1.9.0)
+
+nFPM will soon make mandatory setting the maintainer field.
+
+=== "Before"
+
+    ```yaml
+    nfpms:
+    - maintainer: ''
+    ```
+
+=== "After"
+
+    ```yaml
+    nfpms:
+    - maintainer: 'Name <email>'
+    ```
+
+## Expired deprecation notices
+
+The following options were deprecated in the past and were already removed.
+
 ### archives.rlcp
 
-> since 2022-12-23 (v1.14.0)
+> since 2022-12-23 (v1.14.0), removed 2023-06-06 (v1.19.0)
 
 This is not so much a deprecation property (yet), as it is a default behavior
 change.
@@ -179,7 +221,7 @@ enable this option and test it out with
 
 ### source.rlcp
 
-> since 2022-12-23 (v1.14.0)
+> since 2022-12-23 (v1.14.0), removed 2023-06-06 (v1.19.0)
 
 Same as [`archives.rlcp`](#archivesrlcp).
 

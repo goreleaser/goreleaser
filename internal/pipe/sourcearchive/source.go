@@ -103,11 +103,7 @@ func appendExtraFilesToArchive(ctx *context.Context, prefix, path, format string
 		return err
 	}
 
-	files, err := archivefiles.Eval(
-		tmpl.New(ctx),
-		ctx.Config.Source.RLCP,
-		ctx.Config.Source.Files,
-	)
+	files, err := archivefiles.Eval(tmpl.New(ctx), ctx.Config.Source.Files)
 	if err != nil {
 		return err
 	}
@@ -138,8 +134,8 @@ func (Pipe) Default(ctx *context.Context) error {
 		archive.NameTemplate = "{{ .ProjectName }}-{{ .Version }}"
 	}
 
-	if archive.Enabled && !archive.RLCP {
-		deprecate.NoticeCustom(ctx, "source.rlcp", "`{{ .Property }}` will be the default soon, check {{ .URL }} for more info")
+	if archive.Enabled && archive.RLCP != "" {
+		deprecate.Notice(ctx, "source.rlcp")
 	}
 	return nil
 }
