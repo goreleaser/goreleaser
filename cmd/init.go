@@ -17,12 +17,13 @@ type initCmd struct {
 func newInitCmd() *initCmd {
 	root := &initCmd{}
 	cmd := &cobra.Command{
-		Use:           "init",
-		Aliases:       []string{"i"},
-		Short:         "Generates a .goreleaser.yaml file",
-		SilenceUsage:  true,
-		SilenceErrors: true,
-		Args:          cobra.NoArgs,
+		Use:               "init",
+		Aliases:           []string{"i"},
+		Short:             "Generates a .goreleaser.yaml file",
+		SilenceUsage:      true,
+		SilenceErrors:     true,
+		Args:              cobra.NoArgs,
+		ValidArgsFunction: cobra.NoFileCompletions,
 		RunE: func(cmd *cobra.Command, args []string) error {
 			conf, err := os.OpenFile(root.config, os.O_WRONLY|os.O_CREATE|os.O_TRUNC|os.O_EXCL, 0o644)
 			if err != nil {
@@ -50,6 +51,7 @@ func newInitCmd() *initCmd {
 	}
 
 	cmd.Flags().StringVarP(&root.config, "config", "f", ".goreleaser.yaml", "Load configuration from file")
+	_ = cmd.MarkFlagFilename("config", "yaml", "yml")
 
 	root.cmd = cmd
 	return root

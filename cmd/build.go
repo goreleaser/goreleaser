@@ -58,9 +58,10 @@ It also allows you to generate a local build for your current machine only using
 
 When using ` + "`--single-target`" + `, the ` + "`GOOS`" + ` and ` + "`GOARCH`" + ` environment variables are used to determine the target, defaulting to the current machine target if not set.
 `,
-		SilenceUsage:  true,
-		SilenceErrors: true,
-		Args:          cobra.NoArgs,
+		SilenceUsage:      true,
+		SilenceErrors:     true,
+		Args:              cobra.NoArgs,
+		ValidArgsFunction: cobra.NoFileCompletions,
 		RunE: timedRunE("build", func(cmd *cobra.Command, args []string) error {
 			ctx, err := buildProject(root.opts)
 			if err != nil {
@@ -72,6 +73,7 @@ When using ` + "`--single-target`" + `, the ` + "`GOOS`" + ` and ` + "`GOARCH`" 
 	}
 
 	cmd.Flags().StringVarP(&root.opts.config, "config", "f", "", "Load configuration from file")
+	_ = cmd.MarkFlagFilename("config", "yaml", "yml")
 	cmd.Flags().BoolVar(&root.opts.snapshot, "snapshot", false, "Generate an unversioned snapshot build, skipping all validations")
 	cmd.Flags().BoolVar(&root.opts.skipValidate, "skip-validate", false, "Skips several sanity checks")
 	cmd.Flags().BoolVar(&root.opts.skipBefore, "skip-before", false, "Skips global before hooks")
@@ -79,12 +81,25 @@ When using ` + "`--single-target`" + `, the ` + "`GOOS`" + ` and ` + "`GOARCH`" 
 	cmd.Flags().BoolVar(&root.opts.clean, "clean", false, "Remove the dist folder before building")
 	cmd.Flags().BoolVar(&root.opts.rmDist, "rm-dist", false, "Remove the dist folder before building")
 	cmd.Flags().IntVarP(&root.opts.parallelism, "parallelism", "p", 0, "Amount tasks to run concurrently (default: number of CPUs)")
+	_ = cmd.RegisterFlagCompletionFunc("parallelism", cobra.NoFileCompletions)
 	cmd.Flags().DurationVar(&root.opts.timeout, "timeout", 30*time.Minute, "Timeout to the entire build process")
+	_ = cmd.RegisterFlagCompletionFunc("timeout", cobra.NoFileCompletions)
 	cmd.Flags().BoolVar(&root.opts.singleTarget, "single-target", false, "Builds only for current GOOS and GOARCH, regardless of what's set in the configuration file")
 	cmd.Flags().StringArrayVar(&root.opts.ids, "id", nil, "Builds only the specified build ids")
+	_ = cmd.RegisterFlagCompletionFunc("id", func(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
+		cfg, err := loadConfig(root.opts.config)
+		if err != nil {
+			return nil, cobra.ShellCompDirectiveNoFileComp
+		}
+		ids := make([]string, 0, len(cfg.Builds))
+		for _, build := range cfg.Builds {
+			ids = append(ids, build.ID)
+		}
+		return ids, cobra.ShellCompDirectiveNoFileComp
+	})
 	cmd.Flags().BoolVar(&root.opts.deprecated, "deprecated", false, "Force print the deprecation message - tests only")
 	cmd.Flags().StringVarP(&root.opts.output, "output", "o", "", "Copy the binary to the path after the build. Only taken into account when using --single-target and a single id (either with --id or if configuration only has one build)")
-	_ = cmd.Flags().SetAnnotation("output", cobra.BashCompFilenameExt, []string{""})
+	_ = cmd.MarkFlagFilename("output", "")
 	_ = cmd.Flags().MarkHidden("rm-dist")
 	_ = cmd.Flags().MarkHidden("deprecated")
 

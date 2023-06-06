@@ -25,13 +25,14 @@ type healthcheckCmd struct {
 func newHealthcheckCmd() *healthcheckCmd {
 	root := &healthcheckCmd{}
 	cmd := &cobra.Command{
-		Use:           "healthcheck",
-		Aliases:       []string{"hc"},
-		Short:         "Checks if needed tools are installed",
-		Long:          `Check if the needed tools are available in your $PATH, exits 1 if any of them are missing.`,
-		SilenceUsage:  true,
-		SilenceErrors: true,
-		Args:          cobra.NoArgs,
+		Use:               "healthcheck",
+		Aliases:           []string{"hc"},
+		Short:             "Checks if needed tools are installed",
+		Long:              `Check if the needed tools are available in your $PATH, exits 1 if any of them are missing.`,
+		SilenceUsage:      true,
+		SilenceErrors:     true,
+		Args:              cobra.NoArgs,
+		ValidArgsFunction: cobra.NoFileCompletions,
 		RunE: func(cmd *cobra.Command, args []string) error {
 			if root.quiet {
 				log.Log = log.New(io.Discard)
@@ -81,6 +82,7 @@ func newHealthcheckCmd() *healthcheckCmd {
 	}
 
 	cmd.Flags().StringVarP(&root.config, "config", "f", "", "Configuration file")
+	_ = cmd.MarkFlagFilename("config", "yaml", "yml")
 	cmd.Flags().BoolVarP(&root.quiet, "quiet", "q", false, "Quiet mode: no output")
 	_ = cmd.Flags().MarkHidden("deprecated")
 
