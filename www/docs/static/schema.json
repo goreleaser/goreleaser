@@ -175,14 +175,6 @@
 					"name_template": {
 						"type": "string"
 					},
-					"replacements": {
-						"patternProperties": {
-							".*": {
-								"type": "string"
-							}
-						},
-						"type": "object"
-					},
 					"format": {
 						"type": "string",
 						"enum": [
@@ -1546,14 +1538,6 @@
 					"version_metadata": {
 						"type": "string"
 					},
-					"replacements": {
-						"patternProperties": {
-							".*": {
-								"type": "string"
-							}
-						},
-						"type": "object"
-					},
 					"dependencies": {
 						"items": {
 							"type": "string"
@@ -1840,14 +1824,6 @@
 					},
 					"version_metadata": {
 						"type": "string"
-					},
-					"replacements": {
-						"patternProperties": {
-							".*": {
-								"type": "string"
-							}
-						},
-						"type": "object"
 					},
 					"dependencies": {
 						"items": {
@@ -2756,14 +2732,6 @@
 				"properties": {
 					"name_template": {
 						"type": "string"
-					},
-					"replacements": {
-						"patternProperties": {
-							".*": {
-								"type": "string"
-							}
-						},
-						"type": "object"
 					},
 					"publish": {
 						"type": "boolean"
