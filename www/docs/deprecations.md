@@ -232,6 +232,30 @@ Same as [`archives.rlcp`](#archivesrlcp).
       rlcp: true
     ```
 
+### nfpms.maintainer
+
+> since 2022-05-07 (v1.9.0)
+
+nFPM will soon make mandatory setting the maintainer field.
+
+=== "Before"
+
+    ```yaml
+    nfpms:
+    - maintainer: ''
+    ```
+
+=== "After"
+
+    ```yaml
+    nfpms:
+    - maintainer: 'Name <email>'
+    ```
+
+## Expired deprecation notices
+
+The following options were deprecated in the past and were already removed.
+
 ### archives.replacements
 
 > since 2022-11-24 (v1.14.0), removed 2023-06-06 (v1.19.0)
