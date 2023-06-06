@@ -146,20 +146,10 @@ type command struct {
 // Those variables can be replaced by the given context, goos, goarch, goarm and more.
 func resolveCommand(ctx *context.Context, publisher config.Publisher, artifact *artifact.Artifact) (*command, error) {
 	var err error
-
-	replacements := make(map[string]string)
-	// TODO: Replacements should be associated only with relevant artifacts/archives
-	// this is pretty much all wrong and will be removed soon.
-	archives := ctx.Config.Archives
-	if len(archives) > 0 {
-		replacements = archives[0].Replacements
-	}
-
 	dir := publisher.Dir
 
 	// nolint:staticcheck
-	tpl := tmpl.New(ctx).
-		WithArtifactReplacements(artifact, replacements)
+	tpl := tmpl.New(ctx).WithArtifact(artifact)
 	if dir != "" {
 		dir, err = tpl.Apply(dir)
 		if err != nil {
