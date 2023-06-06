@@ -209,7 +209,14 @@
 						"type": "boolean"
 					},
 					"rlcp": {
-						"type": "boolean"
+						"oneOf": [
+							{
+								"type": "string"
+							},
+							{
+								"type": "boolean"
+							}
+						]
 					},
 					"files": {
 						"items": {
@@ -2997,7 +3004,14 @@
 						"type": "array"
 					},
 					"rlcp": {
-						"type": "boolean"
+						"oneOf": [
+							{
+								"type": "string"
+							},
+							{
+								"type": "boolean"
+							}
+						]
 					}
 				},
 				"additionalProperties": false,
