@@ -7,8 +7,8 @@ class MultipleArmv7 < Formula
   homepage "https://github.com/goreleaser"
   version "1.0.1"
 
-  depends_on "zsh"
   depends_on "bash" => :recommended
+  depends_on "zsh"
 
   on_macos do
     url "https://dummyhost/download/v1.0.1/bin.tar.gz"

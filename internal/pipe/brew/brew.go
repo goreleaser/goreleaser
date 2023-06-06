@@ -347,6 +347,9 @@ func keys(m map[string]bool) []string {
 }
 
 func dataFor(ctx *context.Context, cfg config.Homebrew, cl client.ReleaserURLTemplater, artifacts []*artifact.Artifact) (templateData, error) {
+	sort.Slice(cfg.Dependencies, func(i, j int) bool {
+		return cfg.Dependencies[i].Name < cfg.Dependencies[j].Name
+	})
 	result := templateData{
 		Name:          formulaNameFor(cfg.Name),
 		Desc:          cfg.Description,
