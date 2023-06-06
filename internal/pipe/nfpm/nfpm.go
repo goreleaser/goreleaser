@@ -177,6 +177,7 @@ func create(ctx *context.Context, fpm config.NFPM, format string, binaries []*ar
 	}
 
 	t := tmpl.New(ctx).
+		WithArtifact(binaries[0]).
 		WithExtraFields(tmpl.Fields{
 			"Release":     fpm.Release,
 			"Epoch":       fpm.Epoch,

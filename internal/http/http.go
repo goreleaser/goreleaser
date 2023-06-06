@@ -216,7 +216,7 @@ func uploadAsset(ctx *context.Context, upload *config.Upload, artifact *artifact
 	secret := getPassword(ctx, upload, kind)
 
 	// Generate the target url
-	targetURL, err := tmpl.New(ctx).Apply(upload.Target)
+	targetURL, err := tmpl.New(ctx).WithArtifact(artifact).Apply(upload.Target)
 	if err != nil {
 		return fmt.Errorf("%s: %s: error while building target URL: %w", upload.Name, kind, err)
 	}

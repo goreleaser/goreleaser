@@ -265,7 +265,7 @@ func TestRunPipe(t *testing.T) {
 		}
 
 		if pkg.Goos == "linux" {
-			require.Equal(t, "foo_1.0.0_Tux_"+arch+"-10-20"+ext, pkg.Name)
+			require.Equal(t, "foo_1.0.0_linux_"+arch+"-10-20"+ext, pkg.Name)
 		} else {
 			require.Equal(t, "foo_1.0.0_ios_arm64-10-20"+ext, pkg.Name)
 		}
@@ -1241,7 +1241,7 @@ func TestMeta(t *testing.T) {
 	for _, pkg := range packages {
 		format := pkg.Format()
 		require.NotEmpty(t, format)
-		require.Equal(t, pkg.Name, "foo_1.0.0_Tux_"+pkg.Goarch+"-10-20."+format)
+		require.Equal(t, pkg.Name, "foo_1.0.0_linux_"+pkg.Goarch+"-10-20."+format)
 		require.Equal(t, pkg.ID(), "someid")
 		require.ElementsMatch(t, []string{
 			"/var/log/foobar",

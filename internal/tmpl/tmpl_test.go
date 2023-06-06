@@ -51,7 +51,7 @@ func TestWithArtifact(t *testing.T) {
 	)
 	for expect, tmpl := range map[string]string{
 		"bar":                              "{{.Env.FOO}}",
-		"Linux":                            "{{.Os}}",
+		"linux":                            "{{.Os}}",
 		"amd64":                            "{{.Arch}}",
 		"6":                                "{{.Arm}}",
 		"softfloat":                        "{{.Mips}}",

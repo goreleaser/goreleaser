@@ -148,6 +148,9 @@ func create(ctx *context.Context, arch config.Archive, binaries []*artifact.Arti
 
 func doCreate(ctx *context.Context, arch config.Archive, binaries []*artifact.Artifact, format string) error {
 	template := tmpl.New(ctx)
+	if len(binaries) > 0 {
+		template = template.WithArtifact(binaries[0])
+	}
 	folder, err := template.Apply(arch.NameTemplate)
 	if err != nil {
 		return err
@@ -249,8 +252,7 @@ func wrapFolder(a config.Archive) string {
 
 func skip(ctx *context.Context, archive config.Archive, binaries []*artifact.Artifact) error {
 	for _, binary := range binaries {
-		name, err := tmpl.New(ctx).
-			Apply(archive.NameTemplate)
+		name, err := tmpl.New(ctx).WithArtifact(binary).Apply(archive.NameTemplate)
 		if err != nil {
 			return err
 		}

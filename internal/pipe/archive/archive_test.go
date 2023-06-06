@@ -678,9 +678,6 @@ func TestRunPipeWrap(t *testing.T) {
 					NameTemplate:    "foo",
 					WrapInDirectory: "foo_{{ .Os }}",
 					Format:          "tar.gz",
-					Replacements: map[string]string{
-						"darwin": "macOS",
-					},
 					Files: []config.File{
 						{Source: "README.*"},
 					},
@@ -704,11 +701,11 @@ func TestRunPipeWrap(t *testing.T) {
 
 	archives := ctx.Artifacts.Filter(artifact.ByType(artifact.UploadableArchive)).List()
 	require.Len(t, archives, 1)
-	require.Equal(t, "foo_macOS", artifact.ExtraOr(*archives[0], artifact.ExtraWrappedIn, ""))
+	require.Equal(t, "foo_darwin", artifact.ExtraOr(*archives[0], artifact.ExtraWrappedIn, ""))
 
 	require.ElementsMatch(
 		t,
-		[]string{"foo_macOS/README.md", "foo_macOS/mybin"},
+		[]string{"foo_darwin/README.md", "foo_darwin/mybin"},
 		testlib.LsArchive(t, filepath.Join(dist, "foo.tar.gz"), "tar.gz"),
 	)
 }
