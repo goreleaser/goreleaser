@@ -222,7 +222,7 @@ type Homebrew struct {
 	CommitMessageTemplate string               `yaml:"commit_msg_template,omitempty" json:"commit_msg_template,omitempty"`
 	Folder                string               `yaml:"folder,omitempty" json:"folder,omitempty"`
 	Caveats               string               `yaml:"caveats,omitempty" json:"caveats,omitempty"`
-	Plist                 string               `yaml:"plist,omitempty" json:"plist,omitempty"`
+	Plist                 string               `yaml:"plist,omitempty" json:"plist,omitempty"` // Deprecated
 	Install               string               `yaml:"install,omitempty" json:"install,omitempty"`
 	PostInstall           string               `yaml:"post_install,omitempty" json:"post_install,omitempty"`
 	Dependencies          []HomebrewDependency `yaml:"dependencies,omitempty" json:"dependencies,omitempty"`
