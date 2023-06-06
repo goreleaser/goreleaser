@@ -20,7 +20,7 @@ func TestEval(t *testing.T) {
 	tmpl := tmpl.New(ctx)
 
 	t.Run("invalid glob", func(t *testing.T) {
-		_, err := Eval(tmpl, false, []config.File{
+		_, err := Eval(tmpl, []config.File{
 			{
 				Source:      "../testdata/**/nope.txt",
 				Destination: "var/foobar/d.txt",
@@ -30,36 +30,36 @@ func TestEval(t *testing.T) {
 	})
 
 	t.Run("templated src", func(t *testing.T) {
-		result, err := Eval(tmpl, false, []config.File{
+		result, err := Eval(tmpl, []config.File{
 			{
 				Source:      "./testdata/**/{{ .Env.FOLDER }}.txt",
-				Destination: "var/foobar/d.txt",
+				Destination: "var/foobar/",
 			},
 		})
 		require.NoError(t, err)
 		require.Equal(t, []config.File{
 			{
 				Source:      "testdata/a/b/c/d.txt",
-				Destination: "var/foobar/d.txt/testdata/a/b/c/d.txt",
+				Destination: "var/foobar/d.txt",
 			},
 		}, result)
 	})
 
 	t.Run("templated src error", func(t *testing.T) {
-		_, err := Eval(tmpl, false, []config.File{
+		_, err := Eval(tmpl, []config.File{
 			{
 				Source:      "./testdata/**/{{ .Env.NOPE }}.txt",
-				Destination: "var/foobar/d.txt",
+				Destination: "var/foobar/",
 			},
 		})
 		testlib.RequireTemplateError(t, err)
 	})
 
 	t.Run("templated info", func(t *testing.T) {
-		result, err := Eval(tmpl, false, []config.File{
+		result, err := Eval(tmpl, []config.File{
 			{
 				Source:      "./testdata/**/d.txt",
-				Destination: "var/foobar/d.txt",
+				Destination: "var/foobar/",
 				Info: config.FileInfo{
 					MTime: "{{.CommitDate}}",
 					Owner: "{{ .Env.OWNER }}",
@@ -72,7 +72,7 @@ func TestEval(t *testing.T) {
 		require.Equal(t, []config.File{
 			{
 				Source:      "testdata/a/b/c/d.txt",
-				Destination: "var/foobar/d.txt/testdata/a/b/c/d.txt",
+				Destination: "var/foobar/d.txt",
 				Info: config.FileInfo{
 					MTime:       now.UTC().Format(time.RFC3339),
 					ParsedMTime: now.UTC(),
@@ -85,9 +85,9 @@ func TestEval(t *testing.T) {
 
 	t.Run("template info errors", func(t *testing.T) {
 		t.Run("owner", func(t *testing.T) {
-			_, err := Eval(tmpl, false, []config.File{{
+			_, err := Eval(tmpl, []config.File{{
 				Source:      "./testdata/**/d.txt",
-				Destination: "var/foobar/d.txt",
+				Destination: "var/foobar/",
 				Info: config.FileInfo{
 					Owner: "{{ .Env.NOPE }}",
 				},
@@ -95,9 +95,9 @@ func TestEval(t *testing.T) {
 			testlib.RequireTemplateError(t, err)
 		})
 		t.Run("group", func(t *testing.T) {
-			_, err := Eval(tmpl, false, []config.File{{
+			_, err := Eval(tmpl, []config.File{{
 				Source:      "./testdata/**/d.txt",
-				Destination: "var/foobar/d.txt",
+				Destination: "var/foobar/",
 				Info: config.FileInfo{
 					Group: "{{ .Env.NOPE }}",
 				},
@@ -105,9 +105,9 @@ func TestEval(t *testing.T) {
 			testlib.RequireTemplateError(t, err)
 		})
 		t.Run("mtime", func(t *testing.T) {
-			_, err := Eval(tmpl, false, []config.File{{
+			_, err := Eval(tmpl, []config.File{{
 				Source:      "./testdata/**/d.txt",
-				Destination: "var/foobar/d.txt",
+				Destination: "var/foobar/",
 				Info: config.FileInfo{
 					MTime: "{{ .Env.NOPE }}",
 				},
@@ -115,9 +115,9 @@ func TestEval(t *testing.T) {
 			testlib.RequireTemplateError(t, err)
 		})
 		t.Run("mtime format", func(t *testing.T) {
-			_, err := Eval(tmpl, false, []config.File{{
+			_, err := Eval(tmpl, []config.File{{
 				Source:      "./testdata/**/d.txt",
-				Destination: "var/foobar/d.txt",
+				Destination: "var/foobar/",
 				Info: config.FileInfo{
 					MTime: "2005-123-123",
 				},
@@ -127,10 +127,10 @@ func TestEval(t *testing.T) {
 	})
 
 	t.Run("single file", func(t *testing.T) {
-		result, err := Eval(tmpl, false, []config.File{
+		result, err := Eval(tmpl, []config.File{
 			{
 				Source:      "./testdata/**/d.txt",
-				Destination: "var/foobar/d.txt",
+				Destination: "var/foobar/",
 			},
 		})
 
@@ -138,13 +138,13 @@ func TestEval(t *testing.T) {
 		require.Equal(t, []config.File{
 			{
 				Source:      "testdata/a/b/c/d.txt",
-				Destination: "var/foobar/d.txt/testdata/a/b/c/d.txt",
+				Destination: "var/foobar/d.txt",
 			},
 		}, result)
 	})
 
 	t.Run("rlcp", func(t *testing.T) {
-		result, err := Eval(tmpl, true, []config.File{{
+		result, err := Eval(tmpl, []config.File{{
 			Source:      "./testdata/a/**/*",
 			Destination: "foo/bar",
 		}})
@@ -157,7 +157,7 @@ func TestEval(t *testing.T) {
 	})
 
 	t.Run("rlcp empty destination", func(t *testing.T) {
-		result, err := Eval(tmpl, true, []config.File{{
+		result, err := Eval(tmpl, []config.File{{
 			Source: "./testdata/a/**/*",
 		}})
 
@@ -169,7 +169,7 @@ func TestEval(t *testing.T) {
 	})
 
 	t.Run("rlcp no results", func(t *testing.T) {
-		result, err := Eval(tmpl, true, []config.File{{
+		result, err := Eval(tmpl, []config.File{{
 			Source:      "./testdata/abc/**/*",
 			Destination: "foo/bar",
 		}})
@@ -179,7 +179,7 @@ func TestEval(t *testing.T) {
 	})
 
 	t.Run("strip parent plays nicely with destination omitted", func(t *testing.T) {
-		result, err := Eval(tmpl, false, []config.File{{Source: "./testdata/a/b", StripParent: true}})
+		result, err := Eval(tmpl, []config.File{{Source: "./testdata/a/b", StripParent: true}})
 
 		require.NoError(t, err)
 		require.Equal(t, []config.File{
@@ -189,7 +189,7 @@ func TestEval(t *testing.T) {
 	})
 
 	t.Run("strip parent plays nicely with destination as an empty string", func(t *testing.T) {
-		result, err := Eval(tmpl, false, []config.File{{Source: "./testdata/a/b", Destination: "", StripParent: true}})
+		result, err := Eval(tmpl, []config.File{{Source: "./testdata/a/b", Destination: "", StripParent: true}})
 
 		require.NoError(t, err)
 		require.Equal(t, []config.File{
@@ -199,7 +199,7 @@ func TestEval(t *testing.T) {
 	})
 
 	t.Run("match multiple files within tree without destination", func(t *testing.T) {
-		result, err := Eval(tmpl, false, []config.File{{Source: "./testdata/a"}})
+		result, err := Eval(tmpl, []config.File{{Source: "./testdata/a"}})
 
 		require.NoError(t, err)
 		require.Equal(t, []config.File{
@@ -210,60 +210,10 @@ func TestEval(t *testing.T) {
 	})
 
 	t.Run("match multiple files within tree specific destination", func(t *testing.T) {
-		result, err := Eval(tmpl, false, []config.File{
+		result, err := Eval(tmpl, []config.File{
 			{
 				Source:      "./testdata/a",
 				Destination: "usr/local/test",
-				Info: config.FileInfo{
-					Owner:       "carlos",
-					Group:       "users",
-					Mode:        0o755,
-					ParsedMTime: now,
-				},
-			},
-		})
-
-		require.NoError(t, err)
-		require.Equal(t, []config.File{
-			{
-				Source:      "testdata/a/a.txt",
-				Destination: "usr/local/test/testdata/a/a.txt",
-				Info: config.FileInfo{
-					Owner:       "carlos",
-					Group:       "users",
-					Mode:        0o755,
-					ParsedMTime: now,
-				},
-			},
-			{
-				Source:      "testdata/a/b/a.txt",
-				Destination: "usr/local/test/testdata/a/b/a.txt",
-				Info: config.FileInfo{
-					Owner:       "carlos",
-					Group:       "users",
-					Mode:        0o755,
-					ParsedMTime: now,
-				},
-			},
-			{
-				Source:      "testdata/a/b/c/d.txt",
-				Destination: "usr/local/test/testdata/a/b/c/d.txt",
-				Info: config.FileInfo{
-					Owner:       "carlos",
-					Group:       "users",
-					Mode:        0o755,
-					ParsedMTime: now,
-				},
-			},
-		}, result)
-	})
-
-	t.Run("match multiple files within tree specific destination stripping parents", func(t *testing.T) {
-		result, err := Eval(tmpl, false, []config.File{
-			{
-				Source:      "./testdata/a",
-				Destination: "usr/local/test",
-				StripParent: true,
 				Info: config.FileInfo{
 					Owner:       "carlos",
 					Group:       "users",
@@ -286,8 +236,18 @@ func TestEval(t *testing.T) {
 				},
 			},
 			{
+				Source:      "testdata/a/b/a.txt",
+				Destination: "usr/local/test/b/a.txt",
+				Info: config.FileInfo{
+					Owner:       "carlos",
+					Group:       "users",
+					Mode:        0o755,
+					ParsedMTime: now,
+				},
+			},
+			{
 				Source:      "testdata/a/b/c/d.txt",
-				Destination: "usr/local/test/d.txt",
+				Destination: "usr/local/test/b/c/d.txt",
 				Info: config.FileInfo{
 					Owner:       "carlos",
 					Group:       "users",

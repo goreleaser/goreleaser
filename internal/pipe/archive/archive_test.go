@@ -718,7 +718,6 @@ func TestDefault(t *testing.T) {
 	require.NotEmpty(t, ctx.Config.Archives[0].NameTemplate)
 	require.Equal(t, "tar.gz", ctx.Config.Archives[0].Format)
 	require.NotEmpty(t, ctx.Config.Archives[0].Files)
-	require.False(t, ctx.Config.Archives[0].RLCP)
 }
 
 func TestDefaultSet(t *testing.T) {
@@ -737,7 +736,6 @@ func TestDefaultSet(t *testing.T) {
 	require.NoError(t, Pipe{}.Default(ctx))
 	require.Equal(t, "foo", ctx.Config.Archives[0].NameTemplate)
 	require.Equal(t, "zip", ctx.Config.Archives[0].Format)
-	require.False(t, ctx.Config.Archives[0].RLCP)
 	require.Equal(t, config.File{Source: "foo"}, ctx.Config.Archives[0].Files[0])
 }
 
@@ -751,7 +749,6 @@ func TestDefaultNoFiles(t *testing.T) {
 	})
 	require.NoError(t, Pipe{}.Default(ctx))
 	require.Equal(t, defaultNameTemplate, ctx.Config.Archives[0].NameTemplate)
-	require.False(t, ctx.Config.Archives[0].RLCP)
 }
 
 func TestDefaultFormatBinary(t *testing.T) {
@@ -764,7 +761,6 @@ func TestDefaultFormatBinary(t *testing.T) {
 	})
 	require.NoError(t, Pipe{}.Default(ctx))
 	require.Equal(t, defaultBinaryNameTemplate, ctx.Config.Archives[0].NameTemplate)
-	require.False(t, ctx.Config.Archives[0].RLCP)
 }
 
 func TestFormatFor(t *testing.T) {
