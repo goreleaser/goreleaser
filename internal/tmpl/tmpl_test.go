@@ -88,6 +88,7 @@ func TestWithArtifact(t *testing.T) {
 		"2023-03-09T02:06:02Z":             `{{ .Date }}`,
 		"1678327562":                       `{{ .Timestamp }}`,
 		"snapshot true":                    `snapshot {{.IsSnapshot}}`,
+		"nightly false":                    `nightly {{.IsNightly}}`,
 		"draft true":                       `draft {{.IsDraft}}`,
 		"dirty true":                       `dirty {{.IsGitDirty}}`,
 
