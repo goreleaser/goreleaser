@@ -103,10 +103,7 @@ func appendExtraFilesToArchive(ctx *context.Context, prefix, path, format string
 		return err
 	}
 
-	files, err := archivefiles.Eval(
-		tmpl.New(ctx),
-		ctx.Config.Source.Files,
-	)
+	files, err := archivefiles.Eval(tmpl.New(ctx), ctx.Config.Source.Files)
 	if err != nil {
 		return err
 	}
