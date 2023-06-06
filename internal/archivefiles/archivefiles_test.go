@@ -49,7 +49,7 @@ func TestEval(t *testing.T) {
 		_, err := Eval(tmpl, []config.File{
 			{
 				Source:      "./testdata/**/{{ .Env.NOPE }}.txt",
-				Destination: "var/foobar/",
+				Destination: "var/foobar/d.txt",
 			},
 		})
 		testlib.RequireTemplateError(t, err)
@@ -87,7 +87,7 @@ func TestEval(t *testing.T) {
 		t.Run("owner", func(t *testing.T) {
 			_, err := Eval(tmpl, []config.File{{
 				Source:      "./testdata/**/d.txt",
-				Destination: "var/foobar/",
+				Destination: "var/foobar",
 				Info: config.FileInfo{
 					Owner: "{{ .Env.NOPE }}",
 				},
@@ -97,7 +97,7 @@ func TestEval(t *testing.T) {
 		t.Run("group", func(t *testing.T) {
 			_, err := Eval(tmpl, []config.File{{
 				Source:      "./testdata/**/d.txt",
-				Destination: "var/foobar/",
+				Destination: "var/foobar",
 				Info: config.FileInfo{
 					Group: "{{ .Env.NOPE }}",
 				},
@@ -107,7 +107,7 @@ func TestEval(t *testing.T) {
 		t.Run("mtime", func(t *testing.T) {
 			_, err := Eval(tmpl, []config.File{{
 				Source:      "./testdata/**/d.txt",
-				Destination: "var/foobar/",
+				Destination: "var/foobar",
 				Info: config.FileInfo{
 					MTime: "{{ .Env.NOPE }}",
 				},
@@ -117,7 +117,7 @@ func TestEval(t *testing.T) {
 		t.Run("mtime format", func(t *testing.T) {
 			_, err := Eval(tmpl, []config.File{{
 				Source:      "./testdata/**/d.txt",
-				Destination: "var/foobar/",
+				Destination: "var/foobar",
 				Info: config.FileInfo{
 					MTime: "2005-123-123",
 				},
@@ -130,7 +130,7 @@ func TestEval(t *testing.T) {
 		result, err := Eval(tmpl, []config.File{
 			{
 				Source:      "./testdata/**/d.txt",
-				Destination: "var/foobar/",
+				Destination: "var/foobar",
 			},
 		})
 
@@ -257,6 +257,46 @@ func TestEval(t *testing.T) {
 			},
 		}, result)
 	})
+
+	t.Run("match multiple files within tree specific destination stripping parents", func(t *testing.T) {
+		result, err := Eval(tmpl, []config.File{
+			{
+				Source:      "./testdata/a",
+				Destination: "usr/local/test",
+				StripParent: true,
+				Info: config.FileInfo{
+					Owner:       "carlos",
+					Group:       "users",
+					Mode:        0o755,
+					ParsedMTime: now,
+				},
+			},
+		})
+
+		require.NoError(t, err)
+		require.Equal(t, []config.File{
+			{
+				Source:      "testdata/a/a.txt",
+				Destination: "usr/local/test/a.txt",
+				Info: config.FileInfo{
+					Owner:       "carlos",
+					Group:       "users",
+					Mode:        0o755,
+					ParsedMTime: now,
+				},
+			},
+			{
+				Source:      "testdata/a/b/c/d.txt",
+				Destination: "usr/local/test/d.txt",
+				Info: config.FileInfo{
+					Owner:       "carlos",
+					Group:       "users",
+					Mode:        0o755,
+					ParsedMTime: now,
+				},
+			},
+		}, result)
+	})
 }
 
 func TestStrlcp(t *testing.T) {
@@ -271,3 +311,4 @@ func TestStrlcp(t *testing.T) {
 		})
 	}
 }
+
