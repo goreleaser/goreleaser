@@ -78,9 +78,6 @@ func (Pipe) Default(ctx *context.Context) error {
 				archive.NameTemplate = defaultBinaryNameTemplate
 			}
 		}
-		if len(archive.Replacements) != 0 {
-			deprecate.Notice(ctx, "archives.replacements")
-		}
 		ids.Inc(archive.ID)
 	}
 	return ids.Validate()
@@ -141,17 +138,19 @@ func checkArtifacts(artifacts map[string][]*artifact.Artifact) error {
 }
 
 func createMeta(ctx *context.Context, arch config.Archive) error {
-	return doCreate(ctx, arch, nil, arch.Format, tmpl.New(ctx))
+	return doCreate(ctx, arch, nil, arch.Format)
 }
 
 func create(ctx *context.Context, arch config.Archive, binaries []*artifact.Artifact) error {
-	// nolint:staticcheck
-	template := tmpl.New(ctx).WithArtifactReplacements(binaries[0], arch.Replacements)
 	format := packageFormat(arch, binaries[0].Goos)
-	return doCreate(ctx, arch, binaries, format, template)
+	return doCreate(ctx, arch, binaries, format)
 }
 
-func doCreate(ctx *context.Context, arch config.Archive, binaries []*artifact.Artifact, format string, template *tmpl.Template) error {
+func doCreate(ctx *context.Context, arch config.Archive, binaries []*artifact.Artifact, format string) error {
+	template := tmpl.New(ctx)
+	if len(binaries) > 0 {
+		template = template.WithArtifact(binaries[0])
+	}
 	folder, err := template.Apply(arch.NameTemplate)
 	if err != nil {
 		return err
@@ -253,10 +252,7 @@ func wrapFolder(a config.Archive) string {
 
 func skip(ctx *context.Context, archive config.Archive, binaries []*artifact.Artifact) error {
 	for _, binary := range binaries {
-		// nolint:staticcheck
-		name, err := tmpl.New(ctx).
-			WithArtifactReplacements(binary, archive.Replacements).
-			Apply(archive.NameTemplate)
+		name, err := tmpl.New(ctx).WithArtifact(binary).Apply(archive.NameTemplate)
 		if err != nil {
 			return err
 		}

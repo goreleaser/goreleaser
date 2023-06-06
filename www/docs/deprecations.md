@@ -190,9 +190,33 @@ Same as [`archives.rlcp`](#archivesrlcp).
       rlcp: true
     ```
 
+### nfpms.maintainer
+
+> since 2022-05-07 (v1.9.0)
+
+nFPM will soon make mandatory setting the maintainer field.
+
+=== "Before"
+
+    ```yaml
+    nfpms:
+    - maintainer: ''
+    ```
+
+=== "After"
+
+    ```yaml
+    nfpms:
+    - maintainer: 'Name <email>'
+    ```
+
+## Expired deprecation notices
+
+The following options were deprecated in the past and were already removed.
+
 ### archives.replacements
 
-> since 2022-11-24 (v1.14.0)
+> since 2022-11-24 (v1.14.0), removed 2023-06-06 (v1.19.0)
 
 The `replacements` will be removed soon from the archives section, as it was
 never handled correctly when multiple archives were being used, and it also
@@ -234,7 +258,7 @@ Notice that if you are using the `archives.name_template`, notice it also has a
 
 ### nfpms.replacements
 
-> since 2022-11-24 (v1.14.0)
+> since 2022-11-24 (v1.14.0), removed 2023-06-06 (v1.19.0)
 
 The `replacements` will be removed soon from the nFPMs section.
 
@@ -274,7 +298,7 @@ instead of custom templates.
 
 ### snapcrafts.replacements
 
-> since 2022-11-24 (v1.14.0)
+> since 2022-11-24 (v1.14.0), removed 2023-06-06 (v1.19.0)
 
 The `replacements` will be removed soon from the Snapcrafts section.
 
@@ -311,30 +335,6 @@ Those two configurations will yield the same results.
 
 Generally speaking, is probably best to use `{{ .ConventionalFileName }}`
 instead of custom templates.
-
-### nfpms.maintainer
-
-> since 2022-05-07 (v1.9.0)
-
-nFPM will soon make mandatory setting the maintainer field.
-
-=== "Before"
-
-    ```yaml
-    nfpms:
-    - maintainer: ''
-    ```
-
-=== "After"
-
-    ```yaml
-    nfpms:
-    - maintainer: 'Name <email>'
-    ```
-
-## Expired deprecation notices
-
-The following options were deprecated in the past and were already removed.
 
 ### variables
 

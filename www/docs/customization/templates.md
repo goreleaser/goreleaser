@@ -98,17 +98,15 @@ may have some extra fields:
 
 | Key             | Description                                  |
 | --------------- | -------------------------------------------- |
-| `.Os`           | `GOOS`[^archive-replacementes]               |
-| `.Arch`         | `GOARCH`[^archive-replacementes]             |
-| `.Arm`          | `GOARM`[^archive-replacementes]              |
-| `.Mips`         | `GOMIPS`[^archive-replacementes]             |
-| `.Amd64`        | `GOAMD64`[^archive-replacementes]            |
+| `.Os`           | `GOOS`                                       |
+| `.Arch`         | `GOARCH`                                     |
+| `.Arm`          | `GOARM`                                      |
+| `.Mips`         | `GOMIPS`                                     |
+| `.Amd64`        | `GOAMD64`                                    |
 | `.Binary`       | binary name                                  |
 | `.ArtifactName` | archive name                                 |
 | `.ArtifactPath` | absolute path to artifact                    |
 | `.ArtifactExt`  | binary extension (e.g. `.exe`). Since v1.11. |
-
-[^archive-replacementes]: Might have been replaced by `archives.replacements`.
 
 ## nFPM extra fields
 
