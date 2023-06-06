@@ -52,7 +52,6 @@ In fields that support templates, these fields are always available:
 | `.Runtime.Goos`        | equivalent to `runtime.GOOS`. Since v1.5.                                                                                 |
 | `.Runtime.Goarch`      | equivalent to `runtime.GOARCH`. Since v1.5.                                                                               |
 | `.Artifacts`           | the current artifact list. See table bellow for fields. Since v1.16-pro.                                                  |
-| `.Checksums`           | the current checksum file contents. Only available in the release body. Since v1.19.                                      |
 
 [^version-prefix]:
     The `v` prefix is stripped, and it might be changed in
@@ -113,7 +112,7 @@ may have some extra fields:
 
 ## nFPM extra fields
 
-On the nFPM name template field, you can use those extra fields as well:
+In the nFPM name template field, you can use those extra fields:
 
 | Key                      | Description                                                      |
 | ------------------------ | ---------------------------------------------------------------- |
@@ -128,6 +127,14 @@ On the nFPM name template field, you can use those extra fields as well:
     ARM versions, for example, for Debian both ARMv6 and ARMv7 are called `armhf`.
     Make sure that's not your case otherwise you might end up with colliding
     names. It also does not handle multiple GOAMD64 versions.
+
+## Release body extra fields
+
+In the `release.body` field, you can use these extra fields:
+
+| Key          | Description                                                                          |
+| ------------ | ------------------------------------------------------------------------------------ |
+| `.Checksums` | the current checksum file contents. Only available in the release body. Since v1.19. |
 
 ## Functions
 
@@ -149,7 +156,7 @@ On all fields, you have these available functions:
 | `filter "text" "regex"`        | keeps only the lines matching the given regex, analogous to `grep -E`. Since v1.6.                                              |
 | `reverseFilter "text" "regex"` | keeps only the lines **not** matching the given regex, analogous to `grep -vE`. Since v1.6.                                     |
 | `title "foo"`                  | "titlenize" the string using english as language. See [Title](https://pkg.go.dev/golang.org/x/text/cases#Title). Since v1.14.   |
-| `mdv2escape "foo"`             | escape characters according to MarkdownV2, especially useful in the Telegram integration. Since v1.19.                         |
+| `mdv2escape "foo"`             | escape characters according to MarkdownV2, especially useful in the Telegram integration. Since v1.19.                          |
 
 With all those fields, you may be able to compose the name of your artifacts
 pretty much the way you want:
