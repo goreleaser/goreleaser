@@ -175,14 +175,6 @@
 					"name_template": {
 						"type": "string"
 					},
-					"replacements": {
-						"patternProperties": {
-							".*": {
-								"type": "string"
-							}
-						},
-						"type": "object"
-					},
 					"format": {
 						"type": "string",
 						"enum": [
@@ -217,7 +209,14 @@
 						"type": "boolean"
 					},
 					"rlcp": {
-						"type": "boolean"
+						"oneOf": [
+							{
+								"type": "string"
+							},
+							{
+								"type": "boolean"
+							}
+						]
 					},
 					"files": {
 						"items": {
@@ -1546,14 +1545,6 @@
 					"version_metadata": {
 						"type": "string"
 					},
-					"replacements": {
-						"patternProperties": {
-							".*": {
-								"type": "string"
-							}
-						},
-						"type": "object"
-					},
 					"dependencies": {
 						"items": {
 							"type": "string"
@@ -1840,14 +1831,6 @@
 					},
 					"version_metadata": {
 						"type": "string"
-					},
-					"replacements": {
-						"patternProperties": {
-							".*": {
-								"type": "string"
-							}
-						},
-						"type": "object"
 					},
 					"dependencies": {
 						"items": {
@@ -2757,14 +2740,6 @@
 					"name_template": {
 						"type": "string"
 					},
-					"replacements": {
-						"patternProperties": {
-							".*": {
-								"type": "string"
-							}
-						},
-						"type": "object"
-					},
 					"publish": {
 						"type": "boolean"
 					},
@@ -3029,7 +3004,14 @@
 						"type": "array"
 					},
 					"rlcp": {
-						"type": "boolean"
+						"oneOf": [
+							{
+								"type": "string"
+							},
+							{
+								"type": "boolean"
+							}
+						]
 					}
 				},
 				"additionalProperties": false,

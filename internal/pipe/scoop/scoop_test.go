@@ -741,6 +741,7 @@ func Test_doRun(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			ctx := tt.args.ctx
+			ctx.Config.Dist = t.TempDir()
 			for _, a := range tt.artifacts {
 				a := a
 				a.Type = artifact.UploadableArchive

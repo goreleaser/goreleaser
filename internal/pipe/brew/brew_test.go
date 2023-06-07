@@ -1161,7 +1161,9 @@ func TestDefault(t *testing.T) {
 	ctx := testctx.NewWithCfg(config.Project{
 		ProjectName: "myproject",
 		Brews: []config.Homebrew{
-			{},
+			{
+				Plist: "<xml>... whatever</xml>",
+			},
 		},
 	}, testctx.GitHubTokenType)
 	require.NoError(t, Pipe{}.Default(ctx))
@@ -1169,6 +1171,7 @@ func TestDefault(t *testing.T) {
 	require.NotEmpty(t, ctx.Config.Brews[0].CommitAuthor.Name)
 	require.NotEmpty(t, ctx.Config.Brews[0].CommitAuthor.Email)
 	require.NotEmpty(t, ctx.Config.Brews[0].CommitMessageTemplate)
+	require.True(t, ctx.Deprecated)
 }
 
 func TestGHFolder(t *testing.T) {

@@ -216,7 +216,7 @@ func uploadAsset(ctx *context.Context, upload *config.Upload, artifact *artifact
 	secret := getPassword(ctx, upload, kind)
 
 	// Generate the target url
-	targetURL, err := resolveTargetTemplate(ctx, upload, artifact)
+	targetURL, err := tmpl.New(ctx).WithArtifact(artifact).Apply(upload.Target)
 	if err != nil {
 		return fmt.Errorf("%s: %s: error while building target URL: %w", upload.Name, kind, err)
 	}
@@ -241,7 +241,7 @@ func uploadAsset(ctx *context.Context, upload *config.Upload, artifact *artifact
 	headers := map[string]string{}
 	if upload.CustomHeaders != nil {
 		for name, value := range upload.CustomHeaders {
-			resolvedValue, err := resolveHeaderTemplate(ctx, upload, artifact, value)
+			resolvedValue, err := tmpl.New(ctx).WithArtifact(artifact).Apply(value)
 			if err != nil {
 				return fmt.Errorf("%s: %s: failed to resolve custom_headers template: %w", upload.Name, kind, err)
 			}
@@ -360,35 +360,4 @@ func executeHTTPRequest(ctx *context.Context, upload *config.Upload, req *h.Requ
 	}
 
 	return resp, err
-}
-
-// resolveTargetTemplate returns the resolved target template with replaced variables
-// Those variables can be replaced by the given context, goos, goarch, goarm and more.
-func resolveTargetTemplate(ctx *context.Context, upload *config.Upload, artifact *artifact.Artifact) (string, error) {
-	replacements := map[string]string{}
-	if upload.Mode == ModeBinary {
-		// TODO: multiple archives here
-		// will be removed soon anyway
-		replacements = ctx.Config.Archives[0].Replacements
-	}
-
-	// nolint:staticcheck
-	return tmpl.New(ctx).
-		WithArtifactReplacements(artifact, replacements).
-		Apply(upload.Target)
-}
-
-// resolveHeaderTemplate returns the resolved custom header template with replaced variables
-// Those variables can be replaced by the given context, goos, goarch, goarm and more.
-func resolveHeaderTemplate(ctx *context.Context, upload *config.Upload, artifact *artifact.Artifact, headerValue string) (string, error) {
-	replacements := map[string]string{}
-	if upload.Mode == ModeBinary {
-		// TODO: multiple archives here
-		// will be removed soon anyway
-		replacements = ctx.Config.Archives[0].Replacements
-	}
-	// nolint:staticcheck
-	return tmpl.New(ctx).
-		WithArtifactReplacements(artifact, replacements).
-		Apply(headerValue)
 }

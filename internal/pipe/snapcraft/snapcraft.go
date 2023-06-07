@@ -13,7 +13,6 @@ import (
 
 	"github.com/caarlos0/log"
 	"github.com/goreleaser/goreleaser/internal/artifact"
-	"github.com/goreleaser/goreleaser/internal/deprecate"
 	"github.com/goreleaser/goreleaser/internal/gio"
 	"github.com/goreleaser/goreleaser/internal/ids"
 	"github.com/goreleaser/goreleaser/internal/pipe"
@@ -132,9 +131,6 @@ func (Pipe) Default(ctx *context.Context) error {
 				snap.Builds = append(snap.Builds, b.ID)
 			}
 		}
-		if len(snap.Replacements) != 0 {
-			deprecate.Notice(ctx, "snapcrafts.replacements")
-		}
 		ids.Inc(snap.ID)
 	}
 	return ids.Validate()
@@ -224,10 +220,7 @@ func (Pipe) Publish(ctx *context.Context) error {
 
 func create(ctx *context.Context, snap config.Snapcraft, arch string, binaries []*artifact.Artifact) error {
 	log := log.WithField("arch", arch)
-	// nolint:staticcheck
-	folder, err := tmpl.New(ctx).
-		WithArtifactReplacements(binaries[0], snap.Replacements).
-		Apply(snap.NameTemplate)
+	folder, err := tmpl.New(ctx).WithArtifact(binaries[0]).Apply(snap.NameTemplate)
 	if err != nil {
 		return err
 	}

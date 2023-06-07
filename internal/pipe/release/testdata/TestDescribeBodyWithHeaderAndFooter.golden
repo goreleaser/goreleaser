@@ -11,3 +11,12 @@ Get images at docker.io/foo/bar:v1.0
 ---
 
 Get GoReleaser Pro at https://goreleaser.com/pro
+
+---
+
+## Checksums
+
+```
+f674623cf1edd0f753e620688cedee4e7c0e837ac1e53c0cbbce132ffe35fd52  foo.zip
+```
+				

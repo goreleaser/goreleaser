@@ -20,6 +20,7 @@ func newDocsCmd() *docsCmd {
 		DisableFlagsInUseLine: true,
 		Hidden:                true,
 		Args:                  cobra.NoArgs,
+		ValidArgsFunction:     cobra.NoFileCompletions,
 		RunE: func(cmd *cobra.Command, args []string) error {
 			root.cmd.Root().DisableAutoGenTag = true
 			return doc.GenMarkdownTreeCustom(root.cmd.Root(), "www/docs/cmd", func(_ string) string {

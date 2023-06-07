@@ -222,7 +222,7 @@ type Homebrew struct {
 	CommitMessageTemplate string               `yaml:"commit_msg_template,omitempty" json:"commit_msg_template,omitempty"`
 	Folder                string               `yaml:"folder,omitempty" json:"folder,omitempty"`
 	Caveats               string               `yaml:"caveats,omitempty" json:"caveats,omitempty"`
-	Plist                 string               `yaml:"plist,omitempty" json:"plist,omitempty"`
+	Plist                 string               `yaml:"plist,omitempty" json:"plist,omitempty"` // Deprecated
 	Install               string               `yaml:"install,omitempty" json:"install,omitempty"`
 	PostInstall           string               `yaml:"post_install,omitempty" json:"post_install,omitempty"`
 	Dependencies          []HomebrewDependency `yaml:"dependencies,omitempty" json:"dependencies,omitempty"`
@@ -596,19 +596,18 @@ type UPX struct {
 
 // Archive config used for the archive.
 type Archive struct {
-	ID                        string            `yaml:"id,omitempty" json:"id,omitempty"`
-	Builds                    []string          `yaml:"builds,omitempty" json:"builds,omitempty"`
-	BuildsInfo                FileInfo          `yaml:"builds_info,omitempty" json:"builds_info,omitempty"`
-	NameTemplate              string            `yaml:"name_template,omitempty" json:"name_template,omitempty"`
-	Replacements              map[string]string `yaml:"replacements,omitempty" json:"replacements,omitempty"` // Deprecated: use templates instead
-	Format                    string            `yaml:"format,omitempty" json:"format,omitempty" jsonschema:"enum=tar,enum=tgz,enum=tar.gz,enum=zip,enum=gz,enum=tar.xz,enum=txz,enum=binary,default=tar.gz"`
-	FormatOverrides           []FormatOverride  `yaml:"format_overrides,omitempty" json:"format_overrides,omitempty"`
-	WrapInDirectory           string            `yaml:"wrap_in_directory,omitempty" json:"wrap_in_directory,omitempty" jsonschema:"oneof_type=string;boolean"`
-	StripParentBinaryFolder   bool              `yaml:"strip_parent_binary_folder,omitempty" json:"strip_parent_binary_folder,omitempty"`
-	RLCP                      bool              `yaml:"rlcp,omitempty" json:"rlcp,omitempty"`
-	Files                     []File            `yaml:"files,omitempty" json:"files,omitempty"`
-	Meta                      bool              `yaml:"meta,omitempty" json:"meta,omitempty"`
-	AllowDifferentBinaryCount bool              `yaml:"allow_different_binary_count,omitempty" json:"allow_different_binary_count,omitempty"`
+	ID                        string           `yaml:"id,omitempty" json:"id,omitempty"`
+	Builds                    []string         `yaml:"builds,omitempty" json:"builds,omitempty"`
+	BuildsInfo                FileInfo         `yaml:"builds_info,omitempty" json:"builds_info,omitempty"`
+	NameTemplate              string           `yaml:"name_template,omitempty" json:"name_template,omitempty"`
+	Format                    string           `yaml:"format,omitempty" json:"format,omitempty" jsonschema:"enum=tar,enum=tgz,enum=tar.gz,enum=zip,enum=gz,enum=tar.xz,enum=txz,enum=binary,default=tar.gz"`
+	FormatOverrides           []FormatOverride `yaml:"format_overrides,omitempty" json:"format_overrides,omitempty"`
+	WrapInDirectory           string           `yaml:"wrap_in_directory,omitempty" json:"wrap_in_directory,omitempty" jsonschema:"oneof_type=string;boolean"`
+	StripParentBinaryFolder   bool             `yaml:"strip_parent_binary_folder,omitempty" json:"strip_parent_binary_folder,omitempty"`
+	RLCP                      string           `yaml:"rlcp,omitempty" json:"rlcp,omitempty"  jsonschema:"oneof_type=string;boolean"` // Deprecated
+	Files                     []File           `yaml:"files,omitempty" json:"files,omitempty"`
+	Meta                      bool             `yaml:"meta,omitempty" json:"meta,omitempty"`
+	AllowDifferentBinaryCount bool             `yaml:"allow_different_binary_count,omitempty" json:"allow_different_binary_count,omitempty"`
 }
 
 type ReleaseNotesMode string
@@ -773,25 +772,24 @@ type NFPMArchLinux struct {
 
 // NFPMOverridables is used to specify per package format settings.
 type NFPMOverridables struct {
-	FileNameTemplate string            `yaml:"file_name_template,omitempty" json:"file_name_template,omitempty"`
-	PackageName      string            `yaml:"package_name,omitempty" json:"package_name,omitempty"`
-	Epoch            string            `yaml:"epoch,omitempty" json:"epoch,omitempty"`
-	Release          string            `yaml:"release,omitempty" json:"release,omitempty"`
-	Prerelease       string            `yaml:"prerelease,omitempty" json:"prerelease,omitempty"`
-	VersionMetadata  string            `yaml:"version_metadata,omitempty" json:"version_metadata,omitempty"`
-	Replacements     map[string]string `yaml:"replacements,omitempty" json:"replacements,omitempty"` // Deprecated: use templates instead
-	Dependencies     []string          `yaml:"dependencies,omitempty" json:"dependencies,omitempty"`
-	Recommends       []string          `yaml:"recommends,omitempty" json:"recommends,omitempty"`
-	Suggests         []string          `yaml:"suggests,omitempty" json:"suggests,omitempty"`
-	Conflicts        []string          `yaml:"conflicts,omitempty" json:"conflicts,omitempty"`
-	Replaces         []string          `yaml:"replaces,omitempty" json:"replaces,omitempty"`
-	Provides         []string          `yaml:"provides,omitempty" json:"provides,omitempty"`
-	Contents         files.Contents    `yaml:"contents,omitempty" json:"contents,omitempty"`
-	Scripts          NFPMScripts       `yaml:"scripts,omitempty" json:"scripts,omitempty"`
-	RPM              NFPMRPM           `yaml:"rpm,omitempty" json:"rpm,omitempty"`
-	Deb              NFPMDeb           `yaml:"deb,omitempty" json:"deb,omitempty"`
-	APK              NFPMAPK           `yaml:"apk,omitempty" json:"apk,omitempty"`
-	ArchLinux        NFPMArchLinux     `yaml:"archlinux,omitempty" json:"archlinux,omitempty"`
+	FileNameTemplate string         `yaml:"file_name_template,omitempty" json:"file_name_template,omitempty"`
+	PackageName      string         `yaml:"package_name,omitempty" json:"package_name,omitempty"`
+	Epoch            string         `yaml:"epoch,omitempty" json:"epoch,omitempty"`
+	Release          string         `yaml:"release,omitempty" json:"release,omitempty"`
+	Prerelease       string         `yaml:"prerelease,omitempty" json:"prerelease,omitempty"`
+	VersionMetadata  string         `yaml:"version_metadata,omitempty" json:"version_metadata,omitempty"`
+	Dependencies     []string       `yaml:"dependencies,omitempty" json:"dependencies,omitempty"`
+	Recommends       []string       `yaml:"recommends,omitempty" json:"recommends,omitempty"`
+	Suggests         []string       `yaml:"suggests,omitempty" json:"suggests,omitempty"`
+	Conflicts        []string       `yaml:"conflicts,omitempty" json:"conflicts,omitempty"`
+	Replaces         []string       `yaml:"replaces,omitempty" json:"replaces,omitempty"`
+	Provides         []string       `yaml:"provides,omitempty" json:"provides,omitempty"`
+	Contents         files.Contents `yaml:"contents,omitempty" json:"contents,omitempty"`
+	Scripts          NFPMScripts    `yaml:"scripts,omitempty" json:"scripts,omitempty"`
+	RPM              NFPMRPM        `yaml:"rpm,omitempty" json:"rpm,omitempty"`
+	Deb              NFPMDeb        `yaml:"deb,omitempty" json:"deb,omitempty"`
+	APK              NFPMAPK        `yaml:"apk,omitempty" json:"apk,omitempty"`
+	ArchLinux        NFPMArchLinux  `yaml:"archlinux,omitempty" json:"archlinux,omitempty"`
 }
 
 // SBOM config.
@@ -865,10 +863,8 @@ type SnapcraftLayoutMetadata struct {
 
 // Snapcraft config.
 type Snapcraft struct {
-	NameTemplate string            `yaml:"name_template,omitempty" json:"name_template,omitempty"`
-	Replacements map[string]string `yaml:"replacements,omitempty" json:"replacements,omitempty"` // Deprecated: use templates instead.
-	Publish      bool              `yaml:"publish,omitempty" json:"publish,omitempty"`
-
+	NameTemplate     string                             `yaml:"name_template,omitempty" json:"name_template,omitempty"`
+	Publish          bool                               `yaml:"publish,omitempty" json:"publish,omitempty"`
 	ID               string                             `yaml:"id,omitempty" json:"id,omitempty"`
 	Builds           []string                           `yaml:"builds,omitempty" json:"builds,omitempty"`
 	Name             string                             `yaml:"name,omitempty" json:"name,omitempty"`
@@ -1022,7 +1018,7 @@ type Source struct {
 	Enabled        bool   `yaml:"enabled,omitempty" json:"enabled,omitempty"`
 	PrefixTemplate string `yaml:"prefix_template,omitempty" json:"prefix_template,omitempty"`
 	Files          []File `yaml:"files,omitempty" json:"files,omitempty"`
-	RLCP           bool   `yaml:"rlcp,omitempty" json:"rlcp,omitempty"`
+	RLCP           string `yaml:"rlcp,omitempty" json:"rlcp,omitempty" jsonschema:"oneof_type=string;boolean"` // Deprecated
 }
 
 // Project includes all project configuration.

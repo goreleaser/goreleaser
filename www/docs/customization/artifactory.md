@@ -70,7 +70,7 @@ environment variable is not used at all.
 
 ### Password / API Key
 
-The password or API key will be stored in a environment variable.
+The password or API key will be stored in an environment variable.
 The configured name of your Artifactory instance will be used.
 With this way we support auth for multiple instances.
 This also means that the `name` per configured instance needs to be unique

@@ -51,7 +51,7 @@ builds:
 
     # Custom ldflags.
     #
-    # Default: 's -w -X main.version={{.Version}} -X main.commit={{.Commit}} -X main.date={{.Date}} -X main.builtBy=goreleaser'
+    # Default: '-s -w -X main.version={{.Version}} -X main.commit={{.Commit}} -X main.date={{.Date}} -X main.builtBy=goreleaser'
     # Templates: allowed
     ldflags:
       - -s -w -X main.build={{.Version}}
@@ -197,7 +197,7 @@ builds:
     skip: false
 
     # By default, GoReleaser will create your binaries inside
-    # `dist/${BuildID}_${BuildTarget}`, which is an unique directory per build
+    # `dist/${BuildID}_${BuildTarget}`, which is a unique directory per build
     # target in the matrix.
     # You can set subdirs within that folder using the `binary` property.
     #
@@ -520,7 +520,7 @@ If you'd like to see this in action, check [this example on GitHub](https://gith
 ## A note about folder names inside `dist`
 
 By default, GoReleaser will create your binaries inside
-`dist/${BuildID}_${BuildTarget}`, which is an unique directory per build target
+`dist/${BuildID}_${BuildTarget}`, which is a unique directory per build target
 in the matrix.
 
 Those names have no guarantees of remaining the same from one version to

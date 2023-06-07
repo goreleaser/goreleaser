@@ -7,9 +7,9 @@ class Default < Formula
   homepage "https://github.com/goreleaser"
   version "1.0.1"
 
-  depends_on "zsh" => :optional
   depends_on "bash" => "3.2.57"
   depends_on "fish" => :optional
+  depends_on "zsh" => :optional
 
   on_macos do
     if Hardware::CPU.intel?

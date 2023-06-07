@@ -51,6 +51,7 @@ const (
 	patch           = "Patch"
 	prerelease      = "Prerelease"
 	isSnapshot      = "IsSnapshot"
+	isNightly       = "IsNightly"
 	isDraft         = "IsDraft"
 	env             = "Env"
 	date            = "Date"
@@ -109,6 +110,7 @@ func New(ctx *context.Context) *Template {
 		patch:           ctx.Semver.Patch,
 		prerelease:      ctx.Semver.Prerelease,
 		isSnapshot:      ctx.Snapshot,
+		isNightly:       false,
 		isDraft:         ctx.Config.Release.Draft,
 		releaseNotes:    ctx.ReleaseNotes,
 		releaseURL:      ctx.ReleaseURL,
@@ -151,22 +153,6 @@ func (t *Template) WithExtraFields(f Fields) *Template {
 	for k, v := range f {
 		t.fields[k] = v
 	}
-	return t
-}
-
-// WithArtifactReplacements populates Fields from the artifact and replacements.
-//
-// Deprecated: use WithArtifact instead.
-func (t *Template) WithArtifactReplacements(a *artifact.Artifact, replacements map[string]string) *Template {
-	t.fields[osKey] = replace(replacements, a.Goos)
-	t.fields[arch] = replace(replacements, a.Goarch)
-	t.fields[arm] = replace(replacements, a.Goarm)
-	t.fields[mips] = replace(replacements, a.Gomips)
-	t.fields[amd64] = replace(replacements, a.Goamd64)
-	t.fields[binary] = artifact.ExtraOr(*a, binary, t.fields[projectName].(string))
-	t.fields[artifactName] = a.Name
-	t.fields[artifactExt] = artifact.ExtraOr(*a, artifact.ExtraExt, "")
-	t.fields[artifactPath] = a.Path
 	return t
 }
 
@@ -276,15 +262,6 @@ func (t *Template) ApplySingleEnvOnly(s string) (string, error) {
 
 	err = tmpl.Execute(&out, t.fields)
 	return out.String(), err
-}
-
-// deprecated: will be removed soon.
-func replace(replacements map[string]string, original string) string {
-	result := replacements[original]
-	if result == "" {
-		return original
-	}
-	return result
 }
 
 func incMajor(v string) string {

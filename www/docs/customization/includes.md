@@ -4,7 +4,7 @@
 
     Includes is a [GoReleaser Pro feature](/pro/).
 
-GoReleaser allows you to include other files from an URL or in the current
+GoReleaser allows you to include other files from a URL or in the current
 file system.
 
 Files are included recursively in the order they are declared.

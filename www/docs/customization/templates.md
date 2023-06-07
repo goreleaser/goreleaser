@@ -6,11 +6,9 @@ Those fields are often suffixed with `_template`, but sometimes they may not
 be. The documentation of each section should be explicit about which fields
 support templating.
 
-<!-- to format the tables, use: https://tabletomarkdown.com/format-markdown-table/ -->
-
 ## Common Fields
 
-On fields that support templating, these fields are always available:
+In fields that support templates, these fields are always available:
 
 | Key                    | Description                                                                                                               |
 | ---------------------- | ------------------------------------------------------------------------------------------------------------------------- |
@@ -100,21 +98,19 @@ may have some extra fields:
 
 | Key             | Description                                  |
 | --------------- | -------------------------------------------- |
-| `.Os`           | `GOOS`[^archive-replacementes]               |
-| `.Arch`         | `GOARCH`[^archive-replacementes]             |
-| `.Arm`          | `GOARM`[^archive-replacementes]              |
-| `.Mips`         | `GOMIPS`[^archive-replacementes]             |
-| `.Amd64`        | `GOAMD64`[^archive-replacementes]            |
+| `.Os`           | `GOOS`                                       |
+| `.Arch`         | `GOARCH`                                     |
+| `.Arm`          | `GOARM`                                      |
+| `.Mips`         | `GOMIPS`                                     |
+| `.Amd64`        | `GOAMD64`                                    |
 | `.Binary`       | binary name                                  |
 | `.ArtifactName` | archive name                                 |
 | `.ArtifactPath` | absolute path to artifact                    |
 | `.ArtifactExt`  | binary extension (e.g. `.exe`). Since v1.11. |
 
-[^archive-replacementes]: Might have been replaced by `archives.replacements`.
-
 ## nFPM extra fields
 
-On the nFPM name template field, you can use those extra fields as well:
+In the nFPM name template field, you can use those extra fields:
 
 | Key                      | Description                                                      |
 | ------------------------ | ---------------------------------------------------------------- |
@@ -129,6 +125,14 @@ On the nFPM name template field, you can use those extra fields as well:
     ARM versions, for example, for Debian both ARMv6 and ARMv7 are called `armhf`.
     Make sure that's not your case otherwise you might end up with colliding
     names. It also does not handle multiple GOAMD64 versions.
+
+## Release body extra fields
+
+In the `release.body` field, you can use these extra fields:
+
+| Key          | Description                                                                          |
+| ------------ | ------------------------------------------------------------------------------------ |
+| `.Checksums` | the current checksum file contents. Only available in the release body. Since v1.19. |
 
 ## Functions
 
@@ -150,7 +154,7 @@ On all fields, you have these available functions:
 | `filter "text" "regex"`        | keeps only the lines matching the given regex, analogous to `grep -E`. Since v1.6.                                              |
 | `reverseFilter "text" "regex"` | keeps only the lines **not** matching the given regex, analogous to `grep -vE`. Since v1.6.                                     |
 | `title "foo"`                  | "titlenize" the string using english as language. See [Title](https://pkg.go.dev/golang.org/x/text/cases#Title). Since v1.14.   |
-| `mdv2escape "foo"`             | escape characteres according to MarkdownV2, especially useful in the Telegram integration. Since v1.19.                         |
+| `mdv2escape "foo"`             | escape characters according to MarkdownV2, especially useful in the Telegram integration. Since v1.19.                          |
 
 With all those fields, you may be able to compose the name of your artifacts
 pretty much the way you want:
@@ -180,7 +184,7 @@ GOVERSION_NR=$(go version | awk '{print $3;}') goreleaser
 
 !!! success "GoReleaser Pro"
 
-     Custom template variables support is a [GoReleaser Pro feature](/pro/).
+Custom template variables support is a [GoReleaser Pro feature](/pro/).
 
 You can also declare custom variables. This feature is specially useful with
 [includes](/customization/includes/), so you can have more generic configuration

@@ -50,12 +50,13 @@ func newReleaseCmd() *releaseCmd {
 	root := &releaseCmd{}
 	// nolint: dupl
 	cmd := &cobra.Command{
-		Use:           "release",
-		Aliases:       []string{"r"},
-		Short:         "Releases the current project",
-		SilenceUsage:  true,
-		SilenceErrors: true,
-		Args:          cobra.NoArgs,
+		Use:               "release",
+		Aliases:           []string{"r"},
+		Short:             "Releases the current project",
+		SilenceUsage:      true,
+		SilenceErrors:     true,
+		Args:              cobra.NoArgs,
+		ValidArgsFunction: cobra.NoFileCompletions,
 		RunE: timedRunE("release", func(cmd *cobra.Command, args []string) error {
 			ctx, err := releaseProject(root.opts)
 			if err != nil {
@@ -67,12 +68,19 @@ func newReleaseCmd() *releaseCmd {
 	}
 
 	cmd.Flags().StringVarP(&root.opts.config, "config", "f", "", "Load configuration from file")
+	_ = cmd.MarkFlagFilename("config", "yaml", "yml")
 	cmd.Flags().StringVar(&root.opts.releaseNotesFile, "release-notes", "", "Load custom release notes from a markdown file (will skip GoReleaser changelog generation)")
+	_ = cmd.MarkFlagFilename("release-notes", "md", "mkd", "markdown")
 	cmd.Flags().StringVar(&root.opts.releaseHeaderFile, "release-header", "", "Load custom release notes header from a markdown file")
+	_ = cmd.MarkFlagFilename("release-header", "md", "mkd", "markdown")
 	cmd.Flags().StringVar(&root.opts.releaseFooterFile, "release-footer", "", "Load custom release notes footer from a markdown file")
+	_ = cmd.MarkFlagFilename("release-footer", "md", "mkd", "markdown")
 	cmd.Flags().StringVar(&root.opts.releaseNotesTmpl, "release-notes-tmpl", "", "Load custom release notes from a templated markdown file (overrides --release-notes)")
+	_ = cmd.MarkFlagFilename("release-notes-tmpl", "md", "mkd", "markdown")
 	cmd.Flags().StringVar(&root.opts.releaseHeaderTmpl, "release-header-tmpl", "", "Load custom release notes header from a templated markdown file (overrides --release-header)")
+	_ = cmd.MarkFlagFilename("release-header-tmpl", "md", "mkd", "markdown")
 	cmd.Flags().StringVar(&root.opts.releaseFooterTmpl, "release-footer-tmpl", "", "Load custom release notes footer from a templated markdown file (overrides --release-footer)")
+	_ = cmd.MarkFlagFilename("release-footer-tmpl", "md", "mkd", "markdown")
 	cmd.Flags().BoolVar(&root.opts.autoSnapshot, "auto-snapshot", false, "Automatically sets --snapshot if the repository is dirty")
 	cmd.Flags().BoolVar(&root.opts.snapshot, "snapshot", false, "Generate an unversioned snapshot release, skipping all validations and without publishing any artifacts (implies --skip-publish, --skip-announce and --skip-validate)")
 	cmd.Flags().BoolVar(&root.opts.skipPublish, "skip-publish", false, "Skips publishing artifacts (implies --skip-announce)")
@@ -86,12 +94,13 @@ func newReleaseCmd() *releaseCmd {
 	cmd.Flags().BoolVar(&root.opts.clean, "clean", false, "Removes the dist folder")
 	cmd.Flags().BoolVar(&root.opts.rmDist, "rm-dist", false, "Removes the dist folder")
 	cmd.Flags().IntVarP(&root.opts.parallelism, "parallelism", "p", 0, "Amount tasks to run concurrently (default: number of CPUs)")
+	_ = cmd.RegisterFlagCompletionFunc("parallelism", cobra.NoFileCompletions)
 	cmd.Flags().DurationVar(&root.opts.timeout, "timeout", 30*time.Minute, "Timeout to the entire release process")
+	_ = cmd.RegisterFlagCompletionFunc("timeout", cobra.NoFileCompletions)
 	cmd.Flags().BoolVar(&root.opts.deprecated, "deprecated", false, "Force print the deprecation message - tests only")
 	_ = cmd.Flags().MarkHidden("deprecated")
 	_ = cmd.Flags().MarkHidden("rm-dist")
 	_ = cmd.Flags().MarkDeprecated("rm-dist", "please use --clean instead")
-	_ = cmd.Flags().SetAnnotation("config", cobra.BashCompFilenameExt, []string{"yaml", "yml"})
 
 	root.cmd = cmd
 	return root

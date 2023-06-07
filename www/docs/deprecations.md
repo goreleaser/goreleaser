@@ -37,6 +37,55 @@ Description.
 
 -->
 
+### archives.rlcp
+
+> since 2023-06-06 (v1.19.0)
+
+This option is now default and can't be changed. You can remove it from your
+configuration files.
+
+See [this](#archivesrlcp_1) for more info.
+
+### source.rlcp
+
+> since 2023-06-06 (v1.19.0)
+
+This option is now default and can't be changed. You can remove it from your
+configuration files.
+
+See [this](#sourcerlcp_1) for more info.
+
+### brews.plist
+
+> since 2023-06-06 (v1.19.0)
+
+`plist` is deprecated by Homebrew, and now on GoReleaser too. Use `service`
+instead.
+
+=== "Before"
+
+    ```yaml
+    brews:
+    -
+      plist: |
+        <?xml version="1.0" encoding="UTF-8"?>
+        <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+        <plist version="1.0">
+        <dict>
+        # etc ...
+    ```
+
+=== "After"
+
+    ```yaml
+    brews:
+    -
+      service: |
+        run [opt_bin/"mybin"]
+        keep_alive true
+        # etc ...
+    ```
+
 ### --debug
 
 > since 2023-05-16 (v1.19.0)
@@ -73,7 +122,7 @@ GoReleaser now allows many `scoop` configurations, so it should be pluralized
 
     ``` yaml
     scoops:
-    - # ...
+      - # ...
     ```
 
 ### build
@@ -97,7 +146,7 @@ Simply use the pluralized form, `builds`, according to the
 
     ``` yaml
     builds:
-    - # ...
+      - # ...
     ```
 
 ### --rm-dist
@@ -118,9 +167,33 @@ Simply use the pluralized form, `builds`, according to the
     goreleaser release --clean
     ```
 
+### nfpms.maintainer
+
+> since 2022-05-07 (v1.9.0)
+
+nFPM will soon make mandatory setting the maintainer field.
+
+=== "Before"
+
+    ```yaml
+    nfpms:
+    - maintainer: ''
+    ```
+
+=== "After"
+
+    ```yaml
+    nfpms:
+    - maintainer: 'Name <email>'
+    ```
+
+## Expired deprecation notices
+
+The following options were deprecated in the past and were already removed.
+
 ### archives.rlcp
 
-> since 2022-12-23 (v1.14.0)
+> since 2022-12-23 (v1.14.0), removed 2023-06-06 (v1.19.0)
 
 This is not so much a deprecation property (yet), as it is a default behavior
 change.
@@ -149,7 +222,7 @@ enable this option and test it out with
 
 ### source.rlcp
 
-> since 2022-12-23 (v1.14.0)
+> since 2022-12-23 (v1.14.0), removed 2023-06-06 (v1.19.0)
 
 Same as [`archives.rlcp`](#archivesrlcp).
 
@@ -160,9 +233,33 @@ Same as [`archives.rlcp`](#archivesrlcp).
       rlcp: true
     ```
 
+### nfpms.maintainer
+
+> since 2022-05-07 (v1.9.0)
+
+nFPM will soon make mandatory setting the maintainer field.
+
+=== "Before"
+
+    ```yaml
+    nfpms:
+    - maintainer: ''
+    ```
+
+=== "After"
+
+    ```yaml
+    nfpms:
+    - maintainer: 'Name <email>'
+    ```
+
+## Expired deprecation notices
+
+The following options were deprecated in the past and were already removed.
+
 ### archives.replacements
 
-> since 2022-11-24 (v1.14.0)
+> since 2022-11-24 (v1.14.0), removed 2023-06-06 (v1.19.0)
 
 The `replacements` will be removed soon from the archives section, as it was
 never handled correctly when multiple archives were being used, and it also
@@ -204,7 +301,7 @@ Notice that if you are using the `archives.name_template`, notice it also has a
 
 ### nfpms.replacements
 
-> since 2022-11-24 (v1.14.0)
+> since 2022-11-24 (v1.14.0), removed 2023-06-06 (v1.19.0)
 
 The `replacements` will be removed soon from the nFPMs section.
 
@@ -244,7 +341,7 @@ instead of custom templates.
 
 ### snapcrafts.replacements
 
-> since 2022-11-24 (v1.14.0)
+> since 2022-11-24 (v1.14.0), removed 2023-06-06 (v1.19.0)
 
 The `replacements` will be removed soon from the Snapcrafts section.
 
@@ -282,6 +379,8 @@ Those two configurations will yield the same results.
 Generally speaking, is probably best to use `{{ .ConventionalFileName }}`
 instead of custom templates.
 
+<<<<<<< HEAD
+
 ### nfpms.maintainer
 
 > since 2022-05-07 (v1.9.0)
@@ -305,6 +404,10 @@ nFPM will soon make mandatory setting the maintainer field.
 ## Expired deprecation notices
 
 The following options were deprecated in the past and were already removed.
+
+=======
+
+> > > > > > > origin/main
 
 ### variables
 

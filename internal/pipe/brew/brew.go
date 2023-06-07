@@ -16,6 +16,7 @@ import (
 	"github.com/goreleaser/goreleaser/internal/artifact"
 	"github.com/goreleaser/goreleaser/internal/client"
 	"github.com/goreleaser/goreleaser/internal/commitauthor"
+	"github.com/goreleaser/goreleaser/internal/deprecate"
 	"github.com/goreleaser/goreleaser/internal/pipe"
 	"github.com/goreleaser/goreleaser/internal/tmpl"
 	"github.com/goreleaser/goreleaser/pkg/config"
@@ -62,6 +63,9 @@ func (Pipe) Default(ctx *context.Context) error {
 		}
 		if brew.Goamd64 == "" {
 			brew.Goamd64 = "v1"
+		}
+		if brew.Plist != "" {
+			deprecate.Notice(ctx, "brews.plist")
 		}
 	}
 
@@ -347,6 +351,9 @@ func keys(m map[string]bool) []string {
 }
 
 func dataFor(ctx *context.Context, cfg config.Homebrew, cl client.ReleaserURLTemplater, artifacts []*artifact.Artifact) (templateData, error) {
+	sort.Slice(cfg.Dependencies, func(i, j int) bool {
+		return cfg.Dependencies[i].Name < cfg.Dependencies[j].Name
+	})
 	result := templateData{
 		Name:          formulaNameFor(cfg.Name),
 		Desc:          cfg.Description,

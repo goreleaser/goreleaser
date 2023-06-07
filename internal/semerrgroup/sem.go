@@ -1,4 +1,4 @@
-// Package semerrgroup wraps a error group with a semaphore with configurable
+// Package semerrgroup wraps an error group with a semaphore with configurable
 // size, so you can control the number of tasks being executed simultaneously.
 package semerrgroup
 
@@ -9,7 +9,7 @@ import (
 	"golang.org/x/sync/errgroup"
 )
 
-// Group is the Semphore ErrorGroup itself.
+// Group is the Semaphore ErrorGroup itself.
 type Group interface {
 	Go(func() error)
 	Wait() error

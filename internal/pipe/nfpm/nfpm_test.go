@@ -33,42 +33,6 @@ func TestRunPipeNoFormats(t *testing.T) {
 	testlib.AssertSkipped(t, Pipe{}.Run(ctx))
 }
 
-func TestDefaultsDeprecated(t *testing.T) {
-	t.Run("replacements", func(t *testing.T) {
-		ctx := testctx.NewWithCfg(config.Project{
-			NFPMs: []config.NFPM{
-				{
-					NFPMOverridables: config.NFPMOverridables{
-						Replacements: map[string]string{
-							"linux": "Tux",
-						},
-					},
-				},
-			},
-		})
-		require.NoError(t, Pipe{}.Default(ctx))
-		require.True(t, ctx.Deprecated)
-	})
-
-	t.Run("replacements overrides", func(t *testing.T) {
-		ctx := testctx.NewWithCfg(config.Project{
-			NFPMs: []config.NFPM{
-				{
-					Overrides: map[string]config.NFPMOverridables{
-						"apk": {
-							Replacements: map[string]string{
-								"linux": "Tux",
-							},
-						},
-					},
-				},
-			},
-		})
-		require.NoError(t, Pipe{}.Default(ctx))
-		require.True(t, ctx.Deprecated)
-	})
-}
-
 func TestRunPipeError(t *testing.T) {
 	ctx := testctx.NewWithCfg(config.Project{
 		Dist: t.TempDir(),
@@ -206,9 +170,6 @@ func TestRunPipe(t *testing.T) {
 							Destination: "/etc/folder",
 						},
 					},
-					Replacements: map[string]string{
-						"linux": "Tux",
-					},
 				},
 			},
 		},
@@ -304,7 +265,7 @@ func TestRunPipe(t *testing.T) {
 		}
 
 		if pkg.Goos == "linux" {
-			require.Equal(t, "foo_1.0.0_Tux_"+arch+"-10-20"+ext, pkg.Name)
+			require.Equal(t, "foo_1.0.0_linux_"+arch+"-10-20"+ext, pkg.Name)
 		} else {
 			require.Equal(t, "foo_1.0.0_ios_arm64-10-20"+ext, pkg.Name)
 		}
@@ -1256,9 +1217,6 @@ func TestMeta(t *testing.T) {
 							Type:        "dir",
 						},
 					},
-					Replacements: map[string]string{
-						"linux": "Tux",
-					},
 				},
 			},
 		},
@@ -1283,7 +1241,7 @@ func TestMeta(t *testing.T) {
 	for _, pkg := range packages {
 		format := pkg.Format()
 		require.NotEmpty(t, format)
-		require.Equal(t, pkg.Name, "foo_1.0.0_Tux_"+pkg.Goarch+"-10-20."+format)
+		require.Equal(t, pkg.Name, "foo_1.0.0_linux_"+pkg.Goarch+"-10-20."+format)
 		require.Equal(t, pkg.ID(), "someid")
 		require.ElementsMatch(t, []string{
 			"/var/log/foobar",
