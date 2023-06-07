@@ -1027,7 +1027,7 @@ func TestArchive_globbing(t *testing.T) {
 				Source:      "testdata/a/a.txt",
 				Destination: "foo/",
 			},
-		}, []string{"foo/testdata/a/a.txt"})
+		}, []string{"foo"})
 	})
 
 	t.Run("glob src", func(t *testing.T) {
@@ -1047,9 +1047,9 @@ func TestArchive_globbing(t *testing.T) {
 				Destination: "var/yada",
 			},
 		}, []string{
-			"var/yada/testdata/a/a.txt",
-			"var/yada/testdata/a/b/a.txt",
-			"var/yada/testdata/a/b/c/d.txt",
+			"var/yada/a.txt",
+			"var/yada/b/a.txt",
+			"var/yada/b/c/d.txt",
 		})
 	})
 
