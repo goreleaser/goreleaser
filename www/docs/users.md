@@ -63,5 +63,6 @@ If you're going to edit it, please:
 - /www/docs/users.md is auto-copied from /USERS.md
 -->
 
-[^1]: Entries were either added by the companies themselves or by the maintainers after seeing it in the wild.
-      You can see all public repositories using GoReleaser by [searching on GitHub](https://github.com/search?q=filename%3Agoreleaser+language%3Ayaml+path%3A%2F).
+[^1]:
+    Entries were either added by the companies themselves or by the maintainers after seeing it in the wild.
+    You can see all public repositories using GoReleaser by [searching on GitHub](https://github.com/search?q=filename%3Agoreleaser+language%3Ayaml+path%3A%2F).

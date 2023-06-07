@@ -8,28 +8,28 @@ Here is an example pipeline that builds a Go application and then uses
 GoReleaser.
 
 ```yaml
-version: '1.0'
+version: "1.0"
 stages:
   - prepare
   - build
   - release
 steps:
   main_clone:
-    title: 'Cloning main repository...'
+    title: "Cloning main repository..."
     type: git-clone
-    repo: '${{CF_REPO_OWNER}}/${{CF_REPO_NAME}}'
-    revision: '${{CF_REVISION}}'
+    repo: "${{CF_REPO_OWNER}}/${{CF_REPO_NAME}}"
+    revision: "${{CF_REVISION}}"
     stage: prepare
   BuildMyApp:
     title: Compiling go code
     stage: build
-    image: 'golang:1.20'
+    image: "golang:1.20"
     commands:
       - go build
   ReleaseMyApp:
     title: Creating packages
     stage: release
-    image: 'goreleaser/goreleaser'
+    image: "goreleaser/goreleaser"
     commands:
       - goreleaser release --clean
 ```

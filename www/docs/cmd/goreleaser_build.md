@@ -12,7 +12,6 @@ It also allows you to generate a local build for your current machine only using
 
 When using `--single-target`, the `GOOS` and `GOARCH` environment variables are used to determine the target, defaulting to the current machine target if not set.
 
-
 ```
 goreleaser build [flags]
 ```
@@ -44,5 +43,4 @@ goreleaser build [flags]
 
 ## See also
 
-* [goreleaser](/cmd/goreleaser/)	 - Deliver Go binaries as fast and easily as possible
-
+- [goreleaser](/cmd/goreleaser/) - Deliver Go binaries as fast and easily as possible

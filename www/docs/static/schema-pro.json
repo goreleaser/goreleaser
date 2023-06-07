@@ -1,3622 +1,3577 @@
 {
-		"$schema": "https://json-schema.org/draft/2020-12/schema",
-		"$id": "https://github.com/goreleaser/goreleaser/pkg/config/project",
-		"$ref": "#/$defs/Project",
-		"$defs": {
-			"AUR": {
-				"properties": {
-					"name": {
-						"type": "string"
-					},
-					"ids": {
-						"items": {
-							"type": "string"
-						},
-						"type": "array"
-					},
-					"commit_author": {
-						"$ref": "#/$defs/CommitAuthor"
-					},
-					"commit_msg_template": {
-						"type": "string"
-					},
-					"description": {
-						"type": "string"
-					},
-					"homepage": {
-						"type": "string"
-					},
-					"license": {
-						"type": "string"
-					},
-					"skip_upload": {
-						"oneOf": [
-							{
-								"type": "string"
-							},
-							{
-								"type": "boolean"
-							}
-						]
-					},
-					"url_template": {
-						"type": "string"
-					},
-					"maintainers": {
-						"items": {
-							"type": "string"
-						},
-						"type": "array"
-					},
-					"contributors": {
-						"items": {
-							"type": "string"
-						},
-						"type": "array"
-					},
-					"provides": {
-						"items": {
-							"type": "string"
-						},
-						"type": "array"
-					},
-					"conflicts": {
-						"items": {
-							"type": "string"
-						},
-						"type": "array"
-					},
-					"depends": {
-						"items": {
-							"type": "string"
-						},
-						"type": "array"
-					},
-					"optdepends": {
-						"items": {
-							"type": "string"
-						},
-						"type": "array"
-					},
-					"backup": {
-						"items": {
-							"type": "string"
-						},
-						"type": "array"
-					},
-					"rel": {
-						"type": "string"
-					},
-					"package": {
-						"type": "string"
-					},
-					"git_url": {
-						"type": "string"
-					},
-					"git_ssh_command": {
-						"type": "string"
-					},
-					"private_key": {
-						"type": "string"
-					},
-					"goamd64": {
-						"type": "string"
-					}
+	"$schema": "https://json-schema.org/draft/2020-12/schema",
+	"$id": "https://github.com/goreleaser/goreleaser/pkg/config/project",
+	"$ref": "#/$defs/Project",
+	"$defs": {
+		"AUR": {
+			"properties": {
+				"name": {
+					"type": "string"
 				},
-				"additionalProperties": false,
-				"type": "object"
-			},
-			"After": {
-				"properties": {
-					"hooks": {
-						"$ref": "#/$defs/Hooks"
-					}
-				},
-				"additionalProperties": false,
-				"type": "object"
-			},
-			"Announce": {
-				"properties": {
-					"skip": {
-						"oneOf": [
-							{
-								"type": "string"
-							},
-							{
-								"type": "boolean"
-							}
-						]
-					},
-					"twitter": {
-						"$ref": "#/$defs/Twitter"
-					},
-					"mastodon": {
-						"$ref": "#/$defs/Mastodon"
-					},
-					"reddit": {
-						"$ref": "#/$defs/Reddit"
-					},
-					"slack": {
-						"$ref": "#/$defs/Slack"
-					},
-					"discord": {
-						"$ref": "#/$defs/Discord"
-					},
-					"teams": {
-						"$ref": "#/$defs/Teams"
-					},
-					"smtp": {
-						"$ref": "#/$defs/SMTP"
-					},
-					"mattermost": {
-						"$ref": "#/$defs/Mattermost"
-					},
-					"linkedin": {
-						"$ref": "#/$defs/LinkedIn"
-					},
-					"telegram": {
-						"$ref": "#/$defs/Telegram"
-					},
-					"webhook": {
-						"$ref": "#/$defs/Webhook"
-					},
-					"opencolletive": {
-						"$ref": "#/$defs/OpenCollective"
-					}
-				},
-				"additionalProperties": false,
-				"type": "object"
-			},
-			"Archive": {
-				"properties": {
-					"id": {
+				"ids": {
+					"items": {
 						"type": "string"
 					},
-					"builds": {
-						"items": {
+					"type": "array"
+				},
+				"commit_author": {
+					"$ref": "#/$defs/CommitAuthor"
+				},
+				"commit_msg_template": {
+					"type": "string"
+				},
+				"description": {
+					"type": "string"
+				},
+				"homepage": {
+					"type": "string"
+				},
+				"license": {
+					"type": "string"
+				},
+				"skip_upload": {
+					"oneOf": [
+						{
 							"type": "string"
 						},
-						"type": "array"
-					},
-					"builds_info": {
-						"$ref": "#/$defs/FileInfo"
-					},
-					"name_template": {
-						"type": "string"
-					},
-					"replacements": {
-						"patternProperties": {
-							".*": {
-								"type": "string"
-							}
-						},
-						"type": "object"
-					},
-					"format": {
-						"type": "string",
-						"enum": [
-							"tar",
-							"tgz",
-							"tar.gz",
-							"zip",
-							"gz",
-							"tar.xz",
-							"txz",
-							"binary"
-						],
-						"default": "tar.gz"
-					},
-					"format_overrides": {
-						"items": {
-							"$ref": "#/$defs/FormatOverride"
-						},
-						"type": "array"
-					},
-					"wrap_in_directory": {
-						"oneOf": [
-							{
-								"type": "string"
-							},
-							{
-								"type": "boolean"
-							}
-						]
-					},
-					"strip_parent_binary_folder": {
-						"type": "boolean"
-					},
-					"rlcp": {
-						"oneOf": [
-							{
-								"type": "string"
-							},
-							{
-								"type": "boolean"
-							}
-						]
-					},
-					"files": {
-						"items": {
-							"$ref": "#/$defs/File"
-						},
-						"type": "array"
-					},
-					"meta": {
-						"type": "boolean"
-					},
-					"allow_different_binary_count": {
-						"type": "boolean"
-					},
-					"hooks": {
-						"$ref": "#/$defs/ArchiveHooks"
-					},
-					"templated_files": {
-						"items": {
-							"$ref": "#/$defs/TemplatedFile"
-						},
-						"type": "array"
-					}
+						{
+							"type": "boolean"
+						}
+					]
 				},
-				"additionalProperties": false,
-				"type": "object"
-			},
-			"ArchiveHooks": {
-				"properties": {
-					"before": {
-						"$ref": "#/$defs/Hooks"
-					},
-					"after": {
-						"$ref": "#/$defs/Hooks"
-					}
+				"url_template": {
+					"type": "string"
 				},
-				"additionalProperties": false,
-				"type": "object"
-			},
-			"Before": {
-				"properties": {
-					"hooks": {
-						"$ref": "#/$defs/Hooks"
-					}
+				"maintainers": {
+					"items": {
+						"type": "string"
+					},
+					"type": "array"
 				},
-				"additionalProperties": false,
-				"type": "object"
-			},
-			"Blob": {
-				"properties": {
-					"bucket": {
+				"contributors": {
+					"items": {
 						"type": "string"
 					},
-					"provider": {
-						"type": "string"
-					},
-					"region": {
-						"type": "string"
-					},
-					"disableSSL": {
-						"type": "boolean"
-					},
-					"folder": {
-						"type": "string"
-					},
-					"kmskey": {
-						"type": "string"
-					},
-					"ids": {
-						"items": {
-							"type": "string"
-						},
-						"type": "array"
-					},
-					"endpoint": {
-						"type": "string"
-					},
-					"extra_files": {
-						"items": {
-							"$ref": "#/$defs/ExtraFile"
-						},
-						"type": "array"
-					},
-					"disable": {
-						"oneOf": [
-							{
-								"type": "string"
-							},
-							{
-								"type": "boolean"
-							}
-						]
-					},
-					"templated_extra_files": {
-						"items": {
-							"$ref": "#/$defs/TemplatedExtraFile"
-						},
-						"type": "array"
-					}
+					"type": "array"
 				},
-				"additionalProperties": false,
-				"type": "object"
-			},
-			"Build": {
-				"properties": {
-					"id": {
+				"provides": {
+					"items": {
 						"type": "string"
 					},
-					"goos": {
-						"items": {
-							"type": "string"
-						},
-						"type": "array"
-					},
-					"goarch": {
-						"items": {
-							"type": "string"
-						},
-						"type": "array"
-					},
-					"goarm": {
-						"items": {
-							"type": "string"
-						},
-						"type": "array"
-					},
-					"gomips": {
-						"items": {
-							"type": "string"
-						},
-						"type": "array"
-					},
-					"goamd64": {
-						"items": {
-							"type": "string"
-						},
-						"type": "array"
-					},
-					"targets": {
-						"items": {
-							"type": "string"
-						},
-						"type": "array"
-					},
-					"ignore": {
-						"items": {
-							"$ref": "#/$defs/IgnoredBuild"
-						},
-						"type": "array"
-					},
-					"dir": {
-						"type": "string"
-					},
-					"main": {
-						"type": "string"
-					},
-					"binary": {
-						"type": "string"
-					},
-					"hooks": {
-						"$ref": "#/$defs/BuildHookConfig"
-					},
-					"builder": {
-						"type": "string"
-					},
-					"mod_timestamp": {
-						"type": "string"
-					},
-					"skip": {
-						"type": "boolean"
-					},
-					"gobinary": {
-						"type": "string"
-					},
-					"command": {
-						"type": "string"
-					},
-					"no_unique_dist_dir": {
-						"type": "boolean"
-					},
-					"no_main_check": {
-						"type": "boolean"
-					},
-					"buildmode": {
-						"type": "string"
-					},
-					"ldflags": {
-						"$ref": "#/$defs/StringArray"
-					},
-					"tags": {
-						"$ref": "#/$defs/FlagArray"
-					},
-					"flags": {
-						"$ref": "#/$defs/FlagArray"
-					},
-					"asmflags": {
-						"$ref": "#/$defs/StringArray"
-					},
-					"gcflags": {
-						"$ref": "#/$defs/StringArray"
-					},
-					"env": {
-						"items": {
-							"type": "string"
-						},
-						"type": "array"
-					},
-					"overrides": {
-						"items": {
-							"$ref": "#/$defs/BuildDetailsOverride"
-						},
-						"type": "array"
-					},
-					"prebuilt": {
-						"$ref": "#/$defs/PreBuiltOptions"
-					}
+					"type": "array"
 				},
-				"additionalProperties": false,
-				"type": "object"
-			},
-			"BuildDetailsOverride": {
-				"properties": {
-					"goos": {
+				"conflicts": {
+					"items": {
 						"type": "string"
 					},
-					"goarch": {
-						"type": "string"
-					},
-					"goarm": {
-						"oneOf": [
-							{
-								"type": "string"
-							},
-							{
-								"type": "integer"
-							}
-						]
-					},
-					"gomips": {
-						"type": "string"
-					},
-					"goamd64": {
-						"type": "string"
-					},
-					"buildmode": {
-						"type": "string"
-					},
-					"ldflags": {
-						"$ref": "#/$defs/StringArray"
-					},
-					"tags": {
-						"$ref": "#/$defs/FlagArray"
-					},
-					"flags": {
-						"$ref": "#/$defs/FlagArray"
-					},
-					"asmflags": {
-						"$ref": "#/$defs/StringArray"
-					},
-					"gcflags": {
-						"$ref": "#/$defs/StringArray"
-					},
-					"env": {
-						"items": {
-							"type": "string"
-						},
-						"type": "array"
-					}
+					"type": "array"
 				},
-				"additionalProperties": false,
-				"type": "object"
-			},
-			"BuildHookConfig": {
-				"properties": {
-					"pre": {
-						"$ref": "#/$defs/Hooks"
+				"depends": {
+					"items": {
+						"type": "string"
 					},
-					"post": {
-						"$ref": "#/$defs/Hooks"
-					}
+					"type": "array"
 				},
-				"additionalProperties": false,
-				"type": "object"
-			},
-			"Changelog": {
-				"properties": {
-					"filters": {
-						"$ref": "#/$defs/Filters"
-					},
-					"sort": {
-						"type": "string",
-						"enum": [
-							"asc",
-							"desc",
-							""
-						],
-						"default": ""
-					},
-					"skip": {
-						"oneOf": [
-							{
-								"type": "string"
-							},
-							{
-								"type": "boolean"
-							}
-						]
-					},
-					"use": {
-						"type": "string",
-						"enum": [
-							"git",
-							"github",
-							"github-native",
-							"gitlab"
-						],
-						"default": "git"
-					},
-					"groups": {
-						"items": {
-							"$ref": "#/$defs/ChangelogGroup"
-						},
-						"type": "array"
-					},
-					"divider": {
+				"optdepends": {
+					"items": {
 						"type": "string"
 					},
-					"abbrev": {
-						"type": "integer"
-					},
-					"paths": {
-						"items": {
-							"type": "string"
-						},
-						"type": "array"
-					}
+					"type": "array"
 				},
-				"additionalProperties": false,
-				"type": "object"
-			},
-			"ChangelogGroup": {
-				"properties": {
-					"title": {
+				"backup": {
+					"items": {
 						"type": "string"
 					},
-					"regexp": {
-						"type": "string"
-					},
-					"order": {
-						"type": "integer"
-					},
-					"groups": {
-						"items": {
-							"$ref": "#/$defs/ChangelogSubgroup"
-						},
-						"type": "array"
-					}
+					"type": "array"
 				},
-				"additionalProperties": false,
-				"type": "object"
-			},
-			"ChangelogSubgroup": {
-				"properties": {
-					"title": {
-						"type": "string"
-					},
-					"regexp": {
-						"type": "string"
-					},
-					"order": {
-						"type": "integer"
-					}
+				"rel": {
+					"type": "string"
 				},
-				"additionalProperties": false,
-				"type": "object"
-			},
-			"Checksum": {
-				"properties": {
-					"name_template": {
-						"type": "string"
-					},
-					"algorithm": {
-						"type": "string"
-					},
-					"ids": {
-						"items": {
-							"type": "string"
-						},
-						"type": "array"
-					},
-					"disable": {
-						"type": "boolean"
-					},
-					"extra_files": {
-						"items": {
-							"$ref": "#/$defs/ExtraFile"
-						},
-						"type": "array"
-					},
-					"templated_extra_files": {
-						"items": {
-							"$ref": "#/$defs/TemplatedExtraFile"
-						},
-						"type": "array"
-					}
+				"package": {
+					"type": "string"
 				},
-				"additionalProperties": false,
-				"type": "object"
-			},
-			"Chocolatey": {
-				"properties": {
-					"name": {
-						"type": "string"
-					},
-					"ids": {
-						"items": {
-							"type": "string"
-						},
-						"type": "array"
-					},
-					"package_source_url": {
-						"type": "string"
-					},
-					"authoers": {
-						"type": "string"
-					},
-					"title": {
-						"type": "string"
-					},
-					"authors": {
-						"type": "string"
-					},
-					"project_url": {
-						"type": "string"
-					},
-					"url_template": {
-						"type": "string"
-					},
-					"icon_url": {
-						"type": "string"
-					},
-					"copyright": {
-						"type": "string"
-					},
-					"license_url": {
-						"type": "string"
-					},
-					"require_license_acceptance": {
-						"type": "boolean"
-					},
-					"project_source_url": {
-						"type": "string"
-					},
-					"docs_url": {
-						"type": "string"
-					},
-					"bug_tracker_url": {
-						"type": "string"
-					},
-					"tags": {
-						"type": "string"
-					},
-					"summary": {
-						"type": "string"
-					},
-					"description": {
-						"type": "string"
-					},
-					"release_notes": {
-						"type": "string"
-					},
-					"dependencies": {
-						"items": {
-							"$ref": "#/$defs/ChocolateyDependency"
-						},
-						"type": "array"
-					},
-					"skip_publish": {
-						"type": "boolean"
-					},
-					"api_key": {
-						"type": "string"
-					},
-					"source_repo": {
-						"type": "string"
-					},
-					"goamd64": {
-						"type": "string"
-					}
+				"git_url": {
+					"type": "string"
 				},
-				"additionalProperties": false,
-				"type": "object"
-			},
-			"ChocolateyDependency": {
-				"properties": {
-					"id": {
-						"type": "string"
-					},
-					"version": {
-						"type": "string"
-					}
+				"git_ssh_command": {
+					"type": "string"
 				},
-				"additionalProperties": false,
-				"type": "object"
-			},
-			"CommitAuthor": {
-				"properties": {
-					"name": {
-						"type": "string"
-					},
-					"email": {
-						"type": "string"
-					}
+				"private_key": {
+					"type": "string"
 				},
-				"additionalProperties": false,
-				"type": "object"
-			},
-			"Content": {
-				"properties": {
-					"src": {
-						"type": "string"
-					},
-					"dst": {
-						"type": "string"
-					},
-					"type": {
-						"type": "string",
-						"enum": [
-							"symlink",
-							"ghost",
-							"config",
-							"config|noreplace",
-							"dir",
-							"tree",
-							""
-						],
-						"default": ""
-					},
-					"packager": {
-						"type": "string"
-					},
-					"file_info": {
-						"$ref": "#/$defs/ContentFileInfo"
-					}
-				},
-				"additionalProperties": false,
-				"type": "object",
-				"required": [
-					"dst"
-				]
-			},
-			"ContentFileInfo": {
-				"properties": {
-					"owner": {
-						"type": "string"
-					},
-					"group": {
-						"type": "string"
-					},
-					"mode": {
-						"type": "integer"
-					},
-					"mtime": {
-						"type": "string",
-						"format": "date-time"
-					}
-				},
-				"additionalProperties": false,
-				"type": "object"
-			},
-			"Contents": {
-				"items": {
-					"$ref": "#/$defs/Content"
-				},
-				"type": "array"
-			},
-			"Discord": {
-				"properties": {
-					"enabled": {
-						"type": "boolean"
-					},
-					"message_template": {
-						"type": "string"
-					},
-					"author": {
-						"type": "string"
-					},
-					"color": {
-						"type": "string"
-					},
-					"icon_url": {
-						"type": "string"
-					}
-				},
-				"additionalProperties": false,
-				"type": "object"
-			},
-			"Docker": {
-				"properties": {
-					"id": {
-						"type": "string"
-					},
-					"ids": {
-						"items": {
-							"type": "string"
-						},
-						"type": "array"
-					},
-					"goos": {
-						"type": "string"
-					},
-					"goarch": {
-						"type": "string"
-					},
-					"goarm": {
-						"oneOf": [
-							{
-								"type": "string"
-							},
-							{
-								"type": "integer"
-							}
-						]
-					},
-					"goamd64": {
-						"type": "string"
-					},
-					"dockerfile": {
-						"type": "string"
-					},
-					"image_templates": {
-						"items": {
-							"type": "string"
-						},
-						"type": "array"
-					},
-					"skip_build": {
-						"oneOf": [
-							{
-								"type": "string"
-							},
-							{
-								"type": "boolean"
-							}
-						]
-					},
-					"skip_push": {
-						"oneOf": [
-							{
-								"type": "string"
-							},
-							{
-								"type": "boolean"
-							}
-						]
-					},
-					"extra_files": {
-						"items": {
-							"type": "string"
-						},
-						"type": "array"
-					},
-					"build_flag_templates": {
-						"items": {
-							"type": "string"
-						},
-						"type": "array"
-					},
-					"push_flags": {
-						"items": {
-							"type": "string"
-						},
-						"type": "array"
-					},
-					"use": {
-						"type": "string"
-					},
-					"templated_files": {
-						"items": {
-							"$ref": "#/$defs/TemplatedExtraFileWithMode"
-						},
-						"type": "array"
-					}
-				},
-				"additionalProperties": false,
-				"type": "object"
-			},
-			"DockerManifest": {
-				"properties": {
-					"id": {
-						"type": "string"
-					},
-					"name_template": {
-						"type": "string"
-					},
-					"skip_push": {
-						"oneOf": [
-							{
-								"type": "string"
-							},
-							{
-								"type": "boolean"
-							}
-						]
-					},
-					"image_templates": {
-						"items": {
-							"type": "string"
-						},
-						"type": "array"
-					},
-					"create_flags": {
-						"items": {
-							"type": "string"
-						},
-						"type": "array"
-					},
-					"push_flags": {
-						"items": {
-							"type": "string"
-						},
-						"type": "array"
-					},
-					"use": {
-						"type": "string"
-					}
-				},
-				"additionalProperties": false,
-				"type": "object"
-			},
-			"EnvFiles": {
-				"properties": {
-					"github_token": {
-						"type": "string"
-					},
-					"gitlab_token": {
-						"type": "string"
-					},
-					"gitea_token": {
-						"type": "string"
-					}
-				},
-				"additionalProperties": false,
-				"type": "object"
-			},
-			"ExtraFile": {
-				"properties": {
-					"glob": {
-						"type": "string"
-					},
-					"name_template": {
-						"type": "string"
-					}
-				},
-				"additionalProperties": false,
-				"type": "object"
-			},
-			"File": {
-				"oneOf": [
-					{
-						"type": "string"
-					},
-					{
-						"$schema": "https://json-schema.org/draft/2020-12/schema",
-						"$id": "https://github.com/goreleaser/goreleaser/pkg/config/t",
-						"$defs": {
-							"FileInfo": {
-								"properties": {
-									"owner": {
-										"type": "string"
-									},
-									"group": {
-										"type": "string"
-									},
-									"mode": {
-										"type": "integer"
-									},
-									"mtime": {
-										"type": "string"
-									}
-								},
-								"additionalProperties": false,
-								"type": "object"
-							}
-						},
-						"properties": {
-							"src": {
-								"type": "string"
-							},
-							"dst": {
-								"type": "string"
-							},
-							"strip_parent": {
-								"type": "boolean"
-							},
-							"info": {
-								"$ref": "#/$defs/FileInfo"
-							}
-						},
-						"additionalProperties": false,
-						"type": "object"
-					}
-				]
-			},
-			"FileInfo": {
-				"$schema": "https://json-schema.org/draft/2020-12/schema",
-				"$id": "https://github.com/goreleaser/goreleaser/pkg/config/file-info",
-				"$ref": "#/$defs/FileInfo",
-				"$defs": {
-					"FileInfo": {
-						"properties": {
-							"owner": {
-								"type": "string"
-							},
-							"group": {
-								"type": "string"
-							},
-							"mode": {
-								"type": "integer"
-							},
-							"mtime": {
-								"type": "string"
-							}
-						},
-						"additionalProperties": false,
-						"type": "object"
-					}
+				"goamd64": {
+					"type": "string"
 				}
 			},
-			"Filters": {
-				"properties": {
-					"exclude": {
-						"items": {
+			"additionalProperties": false,
+			"type": "object"
+		},
+		"After": {
+			"properties": {
+				"hooks": {
+					"$ref": "#/$defs/Hooks"
+				}
+			},
+			"additionalProperties": false,
+			"type": "object"
+		},
+		"Announce": {
+			"properties": {
+				"skip": {
+					"oneOf": [
+						{
 							"type": "string"
 						},
-						"type": "array"
-					}
+						{
+							"type": "boolean"
+						}
+					]
 				},
-				"additionalProperties": false,
-				"type": "object"
+				"twitter": {
+					"$ref": "#/$defs/Twitter"
+				},
+				"mastodon": {
+					"$ref": "#/$defs/Mastodon"
+				},
+				"reddit": {
+					"$ref": "#/$defs/Reddit"
+				},
+				"slack": {
+					"$ref": "#/$defs/Slack"
+				},
+				"discord": {
+					"$ref": "#/$defs/Discord"
+				},
+				"teams": {
+					"$ref": "#/$defs/Teams"
+				},
+				"smtp": {
+					"$ref": "#/$defs/SMTP"
+				},
+				"mattermost": {
+					"$ref": "#/$defs/Mattermost"
+				},
+				"linkedin": {
+					"$ref": "#/$defs/LinkedIn"
+				},
+				"telegram": {
+					"$ref": "#/$defs/Telegram"
+				},
+				"webhook": {
+					"$ref": "#/$defs/Webhook"
+				},
+				"opencolletive": {
+					"$ref": "#/$defs/OpenCollective"
+				}
 			},
-			"FlagArray": {
-				"oneOf": [
-					{
+			"additionalProperties": false,
+			"type": "object"
+		},
+		"Archive": {
+			"properties": {
+				"id": {
+					"type": "string"
+				},
+				"builds": {
+					"items": {
 						"type": "string"
 					},
-					{
-						"items": {
+					"type": "array"
+				},
+				"builds_info": {
+					"$ref": "#/$defs/FileInfo"
+				},
+				"name_template": {
+					"type": "string"
+				},
+				"replacements": {
+					"patternProperties": {
+						".*": {
+							"type": "string"
+						}
+					},
+					"type": "object"
+				},
+				"format": {
+					"type": "string",
+					"enum": [
+						"tar",
+						"tgz",
+						"tar.gz",
+						"zip",
+						"gz",
+						"tar.xz",
+						"txz",
+						"binary"
+					],
+					"default": "tar.gz"
+				},
+				"format_overrides": {
+					"items": {
+						"$ref": "#/$defs/FormatOverride"
+					},
+					"type": "array"
+				},
+				"wrap_in_directory": {
+					"oneOf": [
+						{
 							"type": "string"
 						},
-						"type": "array"
-					}
-				]
-			},
-			"FormatOverride": {
-				"properties": {
-					"goos": {
-						"type": "string"
-					},
-					"format": {
-						"type": "string",
-						"enum": [
-							"tar",
-							"tgz",
-							"tar.gz",
-							"zip",
-							"gz",
-							"tar.xz",
-							"txz",
-							"binary"
-						],
-						"default": "tar.gz"
-					}
+						{
+							"type": "boolean"
+						}
+					]
 				},
-				"additionalProperties": false,
-				"type": "object"
-			},
-			"Fury": {
-				"properties": {
-					"account": {
-						"type": "string"
-					},
-					"ids": {
-						"items": {
+				"strip_parent_binary_folder": {
+					"type": "boolean"
+				},
+				"rlcp": {
+					"oneOf": [
+						{
 							"type": "string"
 						},
-						"type": "array"
+						{
+							"type": "boolean"
+						}
+					]
+				},
+				"files": {
+					"items": {
+						"$ref": "#/$defs/File"
 					},
-					"formats": {
-						"items": {
+					"type": "array"
+				},
+				"meta": {
+					"type": "boolean"
+				},
+				"allow_different_binary_count": {
+					"type": "boolean"
+				},
+				"hooks": {
+					"$ref": "#/$defs/ArchiveHooks"
+				},
+				"templated_files": {
+					"items": {
+						"$ref": "#/$defs/TemplatedFile"
+					},
+					"type": "array"
+				}
+			},
+			"additionalProperties": false,
+			"type": "object"
+		},
+		"ArchiveHooks": {
+			"properties": {
+				"before": {
+					"$ref": "#/$defs/Hooks"
+				},
+				"after": {
+					"$ref": "#/$defs/Hooks"
+				}
+			},
+			"additionalProperties": false,
+			"type": "object"
+		},
+		"Before": {
+			"properties": {
+				"hooks": {
+					"$ref": "#/$defs/Hooks"
+				}
+			},
+			"additionalProperties": false,
+			"type": "object"
+		},
+		"Blob": {
+			"properties": {
+				"bucket": {
+					"type": "string"
+				},
+				"provider": {
+					"type": "string"
+				},
+				"region": {
+					"type": "string"
+				},
+				"disableSSL": {
+					"type": "boolean"
+				},
+				"folder": {
+					"type": "string"
+				},
+				"kmskey": {
+					"type": "string"
+				},
+				"ids": {
+					"items": {
+						"type": "string"
+					},
+					"type": "array"
+				},
+				"endpoint": {
+					"type": "string"
+				},
+				"extra_files": {
+					"items": {
+						"$ref": "#/$defs/ExtraFile"
+					},
+					"type": "array"
+				},
+				"disable": {
+					"oneOf": [
+						{
 							"type": "string"
 						},
-						"type": "array"
-					},
-					"secret_name": {
-						"type": "string"
-					},
-					"skip": {
-						"type": "string"
-					}
+						{
+							"type": "boolean"
+						}
+					]
 				},
-				"additionalProperties": false,
-				"type": "object"
-			},
-			"Git": {
-				"properties": {
-					"tag_sort": {
-						"type": "string"
+				"templated_extra_files": {
+					"items": {
+						"$ref": "#/$defs/TemplatedExtraFile"
 					},
-					"prerelease_suffix": {
-						"type": "string"
-					}
+					"type": "array"
+				}
+			},
+			"additionalProperties": false,
+			"type": "object"
+		},
+		"Build": {
+			"properties": {
+				"id": {
+					"type": "string"
 				},
-				"additionalProperties": false,
-				"type": "object"
-			},
-			"GitHubURLs": {
-				"properties": {
-					"api": {
+				"goos": {
+					"items": {
 						"type": "string"
 					},
-					"upload": {
-						"type": "string"
-					},
-					"download": {
-						"type": "string"
-					},
-					"skip_tls_verify": {
-						"type": "boolean"
-					}
+					"type": "array"
 				},
-				"additionalProperties": false,
-				"type": "object"
-			},
-			"GitLabURLs": {
-				"properties": {
-					"api": {
+				"goarch": {
+					"items": {
 						"type": "string"
 					},
-					"download": {
-						"type": "string"
-					},
-					"skip_tls_verify": {
-						"type": "boolean"
-					},
-					"use_package_registry": {
-						"type": "boolean"
-					},
-					"use_job_token": {
-						"type": "boolean"
-					}
+					"type": "array"
 				},
-				"additionalProperties": false,
-				"type": "object"
-			},
-			"GitRepoRef": {
-				"properties": {
-					"url": {
+				"goarm": {
+					"items": {
 						"type": "string"
 					},
-					"ssh_command": {
-						"type": "string"
-					},
-					"private_key": {
-						"type": "string"
-					}
+					"type": "array"
 				},
-				"additionalProperties": false,
-				"type": "object"
-			},
-			"GiteaURLs": {
-				"properties": {
-					"api": {
+				"gomips": {
+					"items": {
 						"type": "string"
 					},
-					"download": {
-						"type": "string"
-					},
-					"skip_tls_verify": {
-						"type": "boolean"
-					}
+					"type": "array"
 				},
-				"additionalProperties": false,
-				"type": "object"
-			},
-			"GoMod": {
-				"properties": {
-					"proxy": {
-						"type": "boolean"
+				"goamd64": {
+					"items": {
+						"type": "string"
 					},
-					"env": {
-						"items": {
+					"type": "array"
+				},
+				"targets": {
+					"items": {
+						"type": "string"
+					},
+					"type": "array"
+				},
+				"ignore": {
+					"items": {
+						"$ref": "#/$defs/IgnoredBuild"
+					},
+					"type": "array"
+				},
+				"dir": {
+					"type": "string"
+				},
+				"main": {
+					"type": "string"
+				},
+				"binary": {
+					"type": "string"
+				},
+				"hooks": {
+					"$ref": "#/$defs/BuildHookConfig"
+				},
+				"builder": {
+					"type": "string"
+				},
+				"mod_timestamp": {
+					"type": "string"
+				},
+				"skip": {
+					"type": "boolean"
+				},
+				"gobinary": {
+					"type": "string"
+				},
+				"command": {
+					"type": "string"
+				},
+				"no_unique_dist_dir": {
+					"type": "boolean"
+				},
+				"no_main_check": {
+					"type": "boolean"
+				},
+				"buildmode": {
+					"type": "string"
+				},
+				"ldflags": {
+					"$ref": "#/$defs/StringArray"
+				},
+				"tags": {
+					"$ref": "#/$defs/FlagArray"
+				},
+				"flags": {
+					"$ref": "#/$defs/FlagArray"
+				},
+				"asmflags": {
+					"$ref": "#/$defs/StringArray"
+				},
+				"gcflags": {
+					"$ref": "#/$defs/StringArray"
+				},
+				"env": {
+					"items": {
+						"type": "string"
+					},
+					"type": "array"
+				},
+				"overrides": {
+					"items": {
+						"$ref": "#/$defs/BuildDetailsOverride"
+					},
+					"type": "array"
+				},
+				"prebuilt": {
+					"$ref": "#/$defs/PreBuiltOptions"
+				}
+			},
+			"additionalProperties": false,
+			"type": "object"
+		},
+		"BuildDetailsOverride": {
+			"properties": {
+				"goos": {
+					"type": "string"
+				},
+				"goarch": {
+					"type": "string"
+				},
+				"goarm": {
+					"oneOf": [
+						{
 							"type": "string"
 						},
-						"type": "array"
-					},
-					"gobinary": {
-						"type": "string"
-					},
-					"mod": {
-						"type": "string"
-					}
+						{
+							"type": "integer"
+						}
+					]
 				},
-				"additionalProperties": false,
-				"type": "object"
+				"gomips": {
+					"type": "string"
+				},
+				"goamd64": {
+					"type": "string"
+				},
+				"buildmode": {
+					"type": "string"
+				},
+				"ldflags": {
+					"$ref": "#/$defs/StringArray"
+				},
+				"tags": {
+					"$ref": "#/$defs/FlagArray"
+				},
+				"flags": {
+					"$ref": "#/$defs/FlagArray"
+				},
+				"asmflags": {
+					"$ref": "#/$defs/StringArray"
+				},
+				"gcflags": {
+					"$ref": "#/$defs/StringArray"
+				},
+				"env": {
+					"items": {
+						"type": "string"
+					},
+					"type": "array"
+				}
 			},
-			"Homebrew": {
-				"properties": {
-					"name": {
-						"type": "string"
-					},
-					"tap": {
-						"$ref": "#/$defs/RepoRef"
-					},
-					"commit_author": {
-						"$ref": "#/$defs/CommitAuthor"
-					},
-					"commit_msg_template": {
-						"type": "string"
-					},
-					"folder": {
-						"type": "string"
-					},
-					"caveats": {
-						"type": "string"
-					},
-					"plist": {
-						"type": "string"
-					},
-					"install": {
-						"type": "string"
-					},
-					"post_install": {
-						"type": "string"
-					},
-					"dependencies": {
-						"items": {
-							"$ref": "#/$defs/HomebrewDependency"
-						},
-						"type": "array"
-					},
-					"test": {
-						"type": "string"
-					},
-					"conflicts": {
-						"items": {
+			"additionalProperties": false,
+			"type": "object"
+		},
+		"BuildHookConfig": {
+			"properties": {
+				"pre": {
+					"$ref": "#/$defs/Hooks"
+				},
+				"post": {
+					"$ref": "#/$defs/Hooks"
+				}
+			},
+			"additionalProperties": false,
+			"type": "object"
+		},
+		"Changelog": {
+			"properties": {
+				"filters": {
+					"$ref": "#/$defs/Filters"
+				},
+				"sort": {
+					"type": "string",
+					"enum": ["asc", "desc", ""],
+					"default": ""
+				},
+				"skip": {
+					"oneOf": [
+						{
 							"type": "string"
 						},
-						"type": "array"
+						{
+							"type": "boolean"
+						}
+					]
+				},
+				"use": {
+					"type": "string",
+					"enum": ["git", "github", "github-native", "gitlab"],
+					"default": "git"
+				},
+				"groups": {
+					"items": {
+						"$ref": "#/$defs/ChangelogGroup"
 					},
-					"description": {
+					"type": "array"
+				},
+				"divider": {
+					"type": "string"
+				},
+				"abbrev": {
+					"type": "integer"
+				},
+				"paths": {
+					"items": {
 						"type": "string"
 					},
-					"homepage": {
+					"type": "array"
+				}
+			},
+			"additionalProperties": false,
+			"type": "object"
+		},
+		"ChangelogGroup": {
+			"properties": {
+				"title": {
+					"type": "string"
+				},
+				"regexp": {
+					"type": "string"
+				},
+				"order": {
+					"type": "integer"
+				},
+				"groups": {
+					"items": {
+						"$ref": "#/$defs/ChangelogSubgroup"
+					},
+					"type": "array"
+				}
+			},
+			"additionalProperties": false,
+			"type": "object"
+		},
+		"ChangelogSubgroup": {
+			"properties": {
+				"title": {
+					"type": "string"
+				},
+				"regexp": {
+					"type": "string"
+				},
+				"order": {
+					"type": "integer"
+				}
+			},
+			"additionalProperties": false,
+			"type": "object"
+		},
+		"Checksum": {
+			"properties": {
+				"name_template": {
+					"type": "string"
+				},
+				"algorithm": {
+					"type": "string"
+				},
+				"ids": {
+					"items": {
 						"type": "string"
 					},
-					"license": {
+					"type": "array"
+				},
+				"disable": {
+					"type": "boolean"
+				},
+				"extra_files": {
+					"items": {
+						"$ref": "#/$defs/ExtraFile"
+					},
+					"type": "array"
+				},
+				"templated_extra_files": {
+					"items": {
+						"$ref": "#/$defs/TemplatedExtraFile"
+					},
+					"type": "array"
+				}
+			},
+			"additionalProperties": false,
+			"type": "object"
+		},
+		"Chocolatey": {
+			"properties": {
+				"name": {
+					"type": "string"
+				},
+				"ids": {
+					"items": {
 						"type": "string"
 					},
-					"skip_upload": {
-						"oneOf": [
-							{
-								"type": "string"
-							},
-							{
-								"type": "boolean"
-							}
-						]
+					"type": "array"
+				},
+				"package_source_url": {
+					"type": "string"
+				},
+				"authoers": {
+					"type": "string"
+				},
+				"title": {
+					"type": "string"
+				},
+				"authors": {
+					"type": "string"
+				},
+				"project_url": {
+					"type": "string"
+				},
+				"url_template": {
+					"type": "string"
+				},
+				"icon_url": {
+					"type": "string"
+				},
+				"copyright": {
+					"type": "string"
+				},
+				"license_url": {
+					"type": "string"
+				},
+				"require_license_acceptance": {
+					"type": "boolean"
+				},
+				"project_source_url": {
+					"type": "string"
+				},
+				"docs_url": {
+					"type": "string"
+				},
+				"bug_tracker_url": {
+					"type": "string"
+				},
+				"tags": {
+					"type": "string"
+				},
+				"summary": {
+					"type": "string"
+				},
+				"description": {
+					"type": "string"
+				},
+				"release_notes": {
+					"type": "string"
+				},
+				"dependencies": {
+					"items": {
+						"$ref": "#/$defs/ChocolateyDependency"
 					},
-					"download_strategy": {
+					"type": "array"
+				},
+				"skip_publish": {
+					"type": "boolean"
+				},
+				"api_key": {
+					"type": "string"
+				},
+				"source_repo": {
+					"type": "string"
+				},
+				"goamd64": {
+					"type": "string"
+				}
+			},
+			"additionalProperties": false,
+			"type": "object"
+		},
+		"ChocolateyDependency": {
+			"properties": {
+				"id": {
+					"type": "string"
+				},
+				"version": {
+					"type": "string"
+				}
+			},
+			"additionalProperties": false,
+			"type": "object"
+		},
+		"CommitAuthor": {
+			"properties": {
+				"name": {
+					"type": "string"
+				},
+				"email": {
+					"type": "string"
+				}
+			},
+			"additionalProperties": false,
+			"type": "object"
+		},
+		"Content": {
+			"properties": {
+				"src": {
+					"type": "string"
+				},
+				"dst": {
+					"type": "string"
+				},
+				"type": {
+					"type": "string",
+					"enum": [
+						"symlink",
+						"ghost",
+						"config",
+						"config|noreplace",
+						"dir",
+						"tree",
+						""
+					],
+					"default": ""
+				},
+				"packager": {
+					"type": "string"
+				},
+				"file_info": {
+					"$ref": "#/$defs/ContentFileInfo"
+				}
+			},
+			"additionalProperties": false,
+			"type": "object",
+			"required": ["dst"]
+		},
+		"ContentFileInfo": {
+			"properties": {
+				"owner": {
+					"type": "string"
+				},
+				"group": {
+					"type": "string"
+				},
+				"mode": {
+					"type": "integer"
+				},
+				"mtime": {
+					"type": "string",
+					"format": "date-time"
+				}
+			},
+			"additionalProperties": false,
+			"type": "object"
+		},
+		"Contents": {
+			"items": {
+				"$ref": "#/$defs/Content"
+			},
+			"type": "array"
+		},
+		"Discord": {
+			"properties": {
+				"enabled": {
+					"type": "boolean"
+				},
+				"message_template": {
+					"type": "string"
+				},
+				"author": {
+					"type": "string"
+				},
+				"color": {
+					"type": "string"
+				},
+				"icon_url": {
+					"type": "string"
+				}
+			},
+			"additionalProperties": false,
+			"type": "object"
+		},
+		"Docker": {
+			"properties": {
+				"id": {
+					"type": "string"
+				},
+				"ids": {
+					"items": {
 						"type": "string"
 					},
-					"url_template": {
-						"type": "string"
-					},
-					"custom_require": {
-						"type": "string"
-					},
-					"custom_block": {
-						"type": "string"
-					},
-					"ids": {
-						"items": {
+					"type": "array"
+				},
+				"goos": {
+					"type": "string"
+				},
+				"goarch": {
+					"type": "string"
+				},
+				"goarm": {
+					"oneOf": [
+						{
 							"type": "string"
 						},
-						"type": "array"
-					},
-					"goarm": {
-						"oneOf": [
-							{
-								"type": "string"
-							},
-							{
-								"type": "integer"
-							}
-						]
-					},
-					"goamd64": {
-						"type": "string"
-					},
-					"service": {
-						"type": "string"
-					}
+						{
+							"type": "integer"
+						}
+					]
 				},
-				"additionalProperties": false,
-				"type": "object"
-			},
-			"HomebrewDependency": {
-				"oneOf": [
-					{
+				"goamd64": {
+					"type": "string"
+				},
+				"dockerfile": {
+					"type": "string"
+				},
+				"image_templates": {
+					"items": {
 						"type": "string"
 					},
-					{
-						"$schema": "https://json-schema.org/draft/2020-12/schema",
-						"$id": "https://github.com/goreleaser/goreleaser/pkg/config/homebrew-dependency",
-						"properties": {
-							"name": {
-								"type": "string"
-							},
-							"type": {
-								"type": "string"
-							},
-							"version": {
-								"type": "string"
-							}
+					"type": "array"
+				},
+				"skip_build": {
+					"oneOf": [
+						{
+							"type": "string"
 						},
-						"additionalProperties": false,
-						"type": "object"
-					}
-				]
-			},
-			"Hook": {
-				"oneOf": [
-					{
+						{
+							"type": "boolean"
+						}
+					]
+				},
+				"skip_push": {
+					"oneOf": [
+						{
+							"type": "string"
+						},
+						{
+							"type": "boolean"
+						}
+					]
+				},
+				"extra_files": {
+					"items": {
 						"type": "string"
 					},
-					{
-						"$schema": "https://json-schema.org/draft/2020-12/schema",
-						"$id": "https://github.com/goreleaser/goreleaser/pkg/config/t",
-						"properties": {
-							"dir": {
-								"type": "string"
-							},
-							"cmd": {
-								"type": "string"
-							},
-							"env": {
-								"items": {
+					"type": "array"
+				},
+				"build_flag_templates": {
+					"items": {
+						"type": "string"
+					},
+					"type": "array"
+				},
+				"push_flags": {
+					"items": {
+						"type": "string"
+					},
+					"type": "array"
+				},
+				"use": {
+					"type": "string"
+				},
+				"templated_files": {
+					"items": {
+						"$ref": "#/$defs/TemplatedExtraFileWithMode"
+					},
+					"type": "array"
+				}
+			},
+			"additionalProperties": false,
+			"type": "object"
+		},
+		"DockerManifest": {
+			"properties": {
+				"id": {
+					"type": "string"
+				},
+				"name_template": {
+					"type": "string"
+				},
+				"skip_push": {
+					"oneOf": [
+						{
+							"type": "string"
+						},
+						{
+							"type": "boolean"
+						}
+					]
+				},
+				"image_templates": {
+					"items": {
+						"type": "string"
+					},
+					"type": "array"
+				},
+				"create_flags": {
+					"items": {
+						"type": "string"
+					},
+					"type": "array"
+				},
+				"push_flags": {
+					"items": {
+						"type": "string"
+					},
+					"type": "array"
+				},
+				"use": {
+					"type": "string"
+				}
+			},
+			"additionalProperties": false,
+			"type": "object"
+		},
+		"EnvFiles": {
+			"properties": {
+				"github_token": {
+					"type": "string"
+				},
+				"gitlab_token": {
+					"type": "string"
+				},
+				"gitea_token": {
+					"type": "string"
+				}
+			},
+			"additionalProperties": false,
+			"type": "object"
+		},
+		"ExtraFile": {
+			"properties": {
+				"glob": {
+					"type": "string"
+				},
+				"name_template": {
+					"type": "string"
+				}
+			},
+			"additionalProperties": false,
+			"type": "object"
+		},
+		"File": {
+			"oneOf": [
+				{
+					"type": "string"
+				},
+				{
+					"$schema": "https://json-schema.org/draft/2020-12/schema",
+					"$id": "https://github.com/goreleaser/goreleaser/pkg/config/t",
+					"$defs": {
+						"FileInfo": {
+							"properties": {
+								"owner": {
 									"type": "string"
 								},
-								"type": "array"
+								"group": {
+									"type": "string"
+								},
+								"mode": {
+									"type": "integer"
+								},
+								"mtime": {
+									"type": "string"
+								}
 							},
-							"output": {
-								"type": "boolean"
-							}
+							"additionalProperties": false,
+							"type": "object"
+						}
+					},
+					"properties": {
+						"src": {
+							"type": "string"
 						},
-						"additionalProperties": false,
-						"type": "object"
-					}
-				]
+						"dst": {
+							"type": "string"
+						},
+						"strip_parent": {
+							"type": "boolean"
+						},
+						"info": {
+							"$ref": "#/$defs/FileInfo"
+						}
+					},
+					"additionalProperties": false,
+					"type": "object"
+				}
+			]
+		},
+		"FileInfo": {
+			"$schema": "https://json-schema.org/draft/2020-12/schema",
+			"$id": "https://github.com/goreleaser/goreleaser/pkg/config/file-info",
+			"$ref": "#/$defs/FileInfo",
+			"$defs": {
+				"FileInfo": {
+					"properties": {
+						"owner": {
+							"type": "string"
+						},
+						"group": {
+							"type": "string"
+						},
+						"mode": {
+							"type": "integer"
+						},
+						"mtime": {
+							"type": "string"
+						}
+					},
+					"additionalProperties": false,
+					"type": "object"
+				}
+			}
+		},
+		"Filters": {
+			"properties": {
+				"exclude": {
+					"items": {
+						"type": "string"
+					},
+					"type": "array"
+				}
 			},
-			"Hooks": {
-				"items": {
-					"$ref": "#/$defs/Hook"
+			"additionalProperties": false,
+			"type": "object"
+		},
+		"FlagArray": {
+			"oneOf": [
+				{
+					"type": "string"
 				},
-				"type": "array"
-			},
-			"IgnoredBuild": {
-				"properties": {
-					"goos": {
+				{
+					"items": {
 						"type": "string"
 					},
-					"goarch": {
-						"type": "string"
-					},
-					"goarm": {
-						"oneOf": [
-							{
-								"type": "string"
-							},
-							{
-								"type": "integer"
-							}
-						]
-					},
-					"gomips": {
-						"type": "string"
-					},
-					"goamd64": {
-						"type": "string"
-					}
+					"type": "array"
+				}
+			]
+		},
+		"FormatOverride": {
+			"properties": {
+				"goos": {
+					"type": "string"
 				},
-				"additionalProperties": false,
-				"type": "object"
+				"format": {
+					"type": "string",
+					"enum": [
+						"tar",
+						"tgz",
+						"tar.gz",
+						"zip",
+						"gz",
+						"tar.xz",
+						"txz",
+						"binary"
+					],
+					"default": "tar.gz"
+				}
 			},
-			"Include": {
-				"properties": {
-					"from_url": {
-						"$ref": "#/$defs/IncludeFromURL"
-					},
-					"from_file": {
-						"$ref": "#/$defs/IncludeFromFile"
-					}
+			"additionalProperties": false,
+			"type": "object"
+		},
+		"Fury": {
+			"properties": {
+				"account": {
+					"type": "string"
 				},
-				"additionalProperties": false,
-				"type": "object"
-			},
-			"IncludeFromFile": {
-				"properties": {
-					"path": {
+				"ids": {
+					"items": {
 						"type": "string"
-					}
+					},
+					"type": "array"
 				},
-				"additionalProperties": false,
-				"type": "object"
-			},
-			"IncludeFromURL": {
-				"properties": {
-					"url": {
+				"formats": {
+					"items": {
 						"type": "string"
 					},
-					"headers": {
-						"patternProperties": {
-							".*": {
-								"type": "string"
-							}
-						},
-						"type": "object"
-					}
+					"type": "array"
 				},
-				"additionalProperties": false,
-				"type": "object"
-			},
-			"Ko": {
-				"properties": {
-					"id": {
-						"type": "string"
-					},
-					"build": {
-						"type": "string"
-					},
-					"main": {
-						"type": "string"
-					},
-					"working_dir": {
-						"type": "string"
-					},
-					"base_image": {
-						"type": "string"
-					},
-					"labels": {
-						"patternProperties": {
-							".*": {
-								"type": "string"
-							}
-						},
-						"type": "object"
-					},
-					"repository": {
-						"type": "string"
-					},
-					"platforms": {
-						"items": {
-							"type": "string"
-						},
-						"type": "array"
-					},
-					"tags": {
-						"items": {
-							"type": "string"
-						},
-						"type": "array"
-					},
-					"creation_time": {
-						"type": "string"
-					},
-					"ko_data_creation_time": {
-						"type": "string"
-					},
-					"sbom": {
-						"type": "string"
-					},
-					"ldflags": {
-						"items": {
-							"type": "string"
-						},
-						"type": "array"
-					},
-					"flags": {
-						"items": {
-							"type": "string"
-						},
-						"type": "array"
-					},
-					"env": {
-						"items": {
-							"type": "string"
-						},
-						"type": "array"
-					},
-					"bare": {
-						"type": "boolean"
-					},
-					"preserve_import_paths": {
-						"type": "boolean"
-					},
-					"base_import_paths": {
-						"type": "boolean"
-					}
+				"secret_name": {
+					"type": "string"
 				},
-				"additionalProperties": false,
-				"type": "object"
+				"skip": {
+					"type": "string"
+				}
 			},
-			"Krew": {
-				"properties": {
-					"ids": {
-						"items": {
-							"type": "string"
-						},
-						"type": "array"
-					},
-					"name": {
-						"type": "string"
-					},
-					"index": {
-						"$ref": "#/$defs/RepoRef"
-					},
-					"commit_author": {
-						"$ref": "#/$defs/CommitAuthor"
-					},
-					"commit_msg_template": {
-						"type": "string"
-					},
-					"caveats": {
-						"type": "string"
-					},
-					"short_description": {
-						"type": "string"
-					},
-					"description": {
-						"type": "string"
-					},
-					"homepage": {
-						"type": "string"
-					},
-					"url_template": {
-						"type": "string"
-					},
-					"goarm": {
-						"oneOf": [
-							{
-								"type": "string"
-							},
-							{
-								"type": "integer"
-							}
-						]
-					},
-					"goamd64": {
-						"type": "string"
-					},
-					"skip_upload": {
-						"oneOf": [
-							{
-								"type": "string"
-							},
-							{
-								"type": "boolean"
-							}
-						]
-					}
+			"additionalProperties": false,
+			"type": "object"
+		},
+		"Git": {
+			"properties": {
+				"tag_sort": {
+					"type": "string"
 				},
-				"additionalProperties": false,
-				"type": "object"
+				"prerelease_suffix": {
+					"type": "string"
+				}
 			},
-			"LinkedIn": {
-				"properties": {
-					"enabled": {
-						"type": "boolean"
-					},
-					"message_template": {
-						"type": "string"
-					}
+			"additionalProperties": false,
+			"type": "object"
+		},
+		"GitHubURLs": {
+			"properties": {
+				"api": {
+					"type": "string"
 				},
-				"additionalProperties": false,
-				"type": "object"
-			},
-			"Mastodon": {
-				"properties": {
-					"enabled": {
-						"type": "boolean"
-					},
-					"message_template": {
-						"type": "string"
-					},
-					"server": {
-						"type": "string"
-					}
+				"upload": {
+					"type": "string"
 				},
-				"additionalProperties": false,
-				"type": "object",
-				"required": [
-					"server"
-				]
-			},
-			"Mattermost": {
-				"properties": {
-					"enabled": {
-						"type": "boolean"
-					},
-					"message_template": {
-						"type": "string"
-					},
-					"title_template": {
-						"type": "string"
-					},
-					"color": {
-						"type": "string"
-					},
-					"channel": {
-						"type": "string"
-					},
-					"username": {
-						"type": "string"
-					},
-					"icon_emoji": {
-						"type": "string"
-					},
-					"icon_url": {
-						"type": "string"
-					}
+				"download": {
+					"type": "string"
 				},
-				"additionalProperties": false,
-				"type": "object"
+				"skip_tls_verify": {
+					"type": "boolean"
+				}
 			},
-			"Milestone": {
-				"properties": {
-					"repo": {
-						"$ref": "#/$defs/Repo"
-					},
-					"close": {
-						"type": "boolean"
-					},
-					"fail_on_error": {
-						"type": "boolean"
-					},
-					"name_template": {
-						"type": "string"
-					}
+			"additionalProperties": false,
+			"type": "object"
+		},
+		"GitLabURLs": {
+			"properties": {
+				"api": {
+					"type": "string"
 				},
-				"additionalProperties": false,
-				"type": "object"
-			},
-			"Monorepo": {
-				"properties": {
-					"tag_prefix": {
-						"type": "string"
-					},
-					"dir": {
-						"type": "string"
-					}
+				"download": {
+					"type": "string"
 				},
-				"additionalProperties": false,
-				"type": "object"
-			},
-			"NFPM": {
-				"properties": {
-					"file_name_template": {
-						"type": "string"
-					},
-					"package_name": {
-						"type": "string"
-					},
-					"epoch": {
-						"type": "string"
-					},
-					"release": {
-						"type": "string"
-					},
-					"prerelease": {
-						"type": "string"
-					},
-					"version_metadata": {
-						"type": "string"
-					},
-					"dependencies": {
-						"items": {
-							"type": "string"
-						},
-						"type": "array"
-					},
-					"recommends": {
-						"items": {
-							"type": "string"
-						},
-						"type": "array"
-					},
-					"suggests": {
-						"items": {
-							"type": "string"
-						},
-						"type": "array"
-					},
-					"conflicts": {
-						"items": {
-							"type": "string"
-						},
-						"type": "array"
-					},
-					"replaces": {
-						"items": {
-							"type": "string"
-						},
-						"type": "array"
-					},
-					"provides": {
-						"items": {
-							"type": "string"
-						},
-						"type": "array"
-					},
-					"contents": {
-						"$ref": "#/$defs/Contents"
-					},
-					"scripts": {
-						"$ref": "#/$defs/NFPMScripts"
-					},
-					"rpm": {
-						"$ref": "#/$defs/NFPMRPM"
-					},
-					"deb": {
-						"$ref": "#/$defs/NFPMDeb"
-					},
-					"apk": {
-						"$ref": "#/$defs/NFPMAPK"
-					},
-					"archlinux": {
-						"$ref": "#/$defs/NFPMArchLinux"
-					},
-					"templated_contents": {
-						"$ref": "#/$defs/Contents"
-					},
-					"overrides": {
-						"patternProperties": {
-							".*": {
-								"$ref": "#/$defs/NFPMOverridables"
-							}
-						},
-						"type": "object"
-					},
-					"id": {
-						"type": "string"
-					},
-					"builds": {
-						"items": {
-							"type": "string"
-						},
-						"type": "array"
-					},
-					"formats": {
-						"items": {
-							"type": "string"
-						},
-						"type": "array"
-					},
-					"section": {
-						"type": "string"
-					},
-					"priority": {
-						"type": "string"
-					},
-					"vendor": {
-						"type": "string"
-					},
-					"homepage": {
-						"type": "string"
-					},
-					"maintainer": {
-						"type": "string"
-					},
-					"description": {
-						"type": "string"
-					},
-					"license": {
-						"type": "string"
-					},
-					"bindir": {
-						"type": "string"
-					},
-					"changelog": {
-						"type": "string"
-					},
-					"meta": {
-						"type": "boolean"
-					}
+				"skip_tls_verify": {
+					"type": "boolean"
 				},
-				"additionalProperties": false,
-				"type": "object"
-			},
-			"NFPMAPK": {
-				"properties": {
-					"scripts": {
-						"$ref": "#/$defs/NFPMAPKScripts"
-					},
-					"signature": {
-						"$ref": "#/$defs/NFPMAPKSignature"
-					}
+				"use_package_registry": {
+					"type": "boolean"
 				},
-				"additionalProperties": false,
-				"type": "object"
+				"use_job_token": {
+					"type": "boolean"
+				}
 			},
-			"NFPMAPKScripts": {
-				"properties": {
-					"preupgrade": {
-						"type": "string"
-					},
-					"postupgrade": {
-						"type": "string"
-					}
+			"additionalProperties": false,
+			"type": "object"
+		},
+		"GitRepoRef": {
+			"properties": {
+				"url": {
+					"type": "string"
 				},
-				"additionalProperties": false,
-				"type": "object"
-			},
-			"NFPMAPKSignature": {
-				"properties": {
-					"key_file": {
-						"type": "string"
-					},
-					"key_name": {
-						"type": "string"
-					}
+				"ssh_command": {
+					"type": "string"
 				},
-				"additionalProperties": false,
-				"type": "object"
+				"private_key": {
+					"type": "string"
+				}
 			},
-			"NFPMArchLinux": {
-				"properties": {
-					"pkgbase": {
-						"type": "string"
-					},
-					"packager": {
-						"type": "string"
-					},
-					"scripts": {
-						"$ref": "#/$defs/NFPMArchLinuxScripts"
-					}
+			"additionalProperties": false,
+			"type": "object"
+		},
+		"GiteaURLs": {
+			"properties": {
+				"api": {
+					"type": "string"
 				},
-				"additionalProperties": false,
-				"type": "object"
-			},
-			"NFPMArchLinuxScripts": {
-				"properties": {
-					"preupgrade": {
-						"type": "string"
-					},
-					"postupgrade": {
-						"type": "string"
-					}
+				"download": {
+					"type": "string"
 				},
-				"additionalProperties": false,
-				"type": "object"
+				"skip_tls_verify": {
+					"type": "boolean"
+				}
 			},
-			"NFPMDeb": {
-				"properties": {
-					"scripts": {
-						"$ref": "#/$defs/NFPMDebScripts"
-					},
-					"triggers": {
-						"$ref": "#/$defs/NFPMDebTriggers"
-					},
-					"breaks": {
-						"items": {
-							"type": "string"
-						},
-						"type": "array"
-					},
-					"signature": {
-						"$ref": "#/$defs/NFPMDebSignature"
-					},
-					"lintian_overrides": {
-						"items": {
-							"type": "string"
-						},
-						"type": "array"
-					}
+			"additionalProperties": false,
+			"type": "object"
+		},
+		"GoMod": {
+			"properties": {
+				"proxy": {
+					"type": "boolean"
 				},
-				"additionalProperties": false,
-				"type": "object"
-			},
-			"NFPMDebScripts": {
-				"properties": {
-					"rules": {
+				"env": {
+					"items": {
 						"type": "string"
 					},
-					"templates": {
-						"type": "string"
-					}
+					"type": "array"
 				},
-				"additionalProperties": false,
-				"type": "object"
-			},
-			"NFPMDebSignature": {
-				"properties": {
-					"key_file": {
-						"type": "string"
-					},
-					"type": {
-						"type": "string"
-					}
+				"gobinary": {
+					"type": "string"
 				},
-				"additionalProperties": false,
-				"type": "object"
+				"mod": {
+					"type": "string"
+				}
 			},
-			"NFPMDebTriggers": {
-				"properties": {
-					"interest": {
-						"items": {
-							"type": "string"
-						},
-						"type": "array"
-					},
-					"interest_await": {
-						"items": {
-							"type": "string"
-						},
-						"type": "array"
-					},
-					"interest_noawait": {
-						"items": {
-							"type": "string"
-						},
-						"type": "array"
-					},
-					"activate": {
-						"items": {
-							"type": "string"
-						},
-						"type": "array"
-					},
-					"activate_await": {
-						"items": {
-							"type": "string"
-						},
-						"type": "array"
-					},
-					"activate_noawait": {
-						"items": {
-							"type": "string"
-						},
-						"type": "array"
-					}
+			"additionalProperties": false,
+			"type": "object"
+		},
+		"Homebrew": {
+			"properties": {
+				"name": {
+					"type": "string"
 				},
-				"additionalProperties": false,
-				"type": "object"
-			},
-			"NFPMOverridables": {
-				"properties": {
-					"file_name_template": {
-						"type": "string"
-					},
-					"package_name": {
-						"type": "string"
-					},
-					"epoch": {
-						"type": "string"
-					},
-					"release": {
-						"type": "string"
-					},
-					"prerelease": {
-						"type": "string"
-					},
-					"version_metadata": {
-						"type": "string"
-					},
-					"dependencies": {
-						"items": {
-							"type": "string"
-						},
-						"type": "array"
-					},
-					"recommends": {
-						"items": {
-							"type": "string"
-						},
-						"type": "array"
-					},
-					"suggests": {
-						"items": {
-							"type": "string"
-						},
-						"type": "array"
-					},
-					"conflicts": {
-						"items": {
-							"type": "string"
-						},
-						"type": "array"
-					},
-					"replaces": {
-						"items": {
-							"type": "string"
-						},
-						"type": "array"
-					},
-					"provides": {
-						"items": {
-							"type": "string"
-						},
-						"type": "array"
-					},
-					"contents": {
-						"$ref": "#/$defs/Contents"
-					},
-					"scripts": {
-						"$ref": "#/$defs/NFPMScripts"
-					},
-					"rpm": {
-						"$ref": "#/$defs/NFPMRPM"
-					},
-					"deb": {
-						"$ref": "#/$defs/NFPMDeb"
-					},
-					"apk": {
-						"$ref": "#/$defs/NFPMAPK"
-					},
-					"archlinux": {
-						"$ref": "#/$defs/NFPMArchLinux"
-					},
-					"templated_contents": {
-						"$ref": "#/$defs/Contents"
-					}
+				"tap": {
+					"$ref": "#/$defs/RepoRef"
 				},
-				"additionalProperties": false,
-				"type": "object"
-			},
-			"NFPMRPM": {
-				"properties": {
-					"summary": {
-						"type": "string"
-					},
-					"group": {
-						"type": "string"
-					},
-					"compression": {
-						"type": "string"
-					},
-					"signature": {
-						"$ref": "#/$defs/NFPMRPMSignature"
-					},
-					"scripts": {
-						"$ref": "#/$defs/NFPMRPMScripts"
-					}
+				"commit_author": {
+					"$ref": "#/$defs/CommitAuthor"
 				},
-				"additionalProperties": false,
-				"type": "object"
-			},
-			"NFPMRPMScripts": {
-				"properties": {
-					"pretrans": {
-						"type": "string"
-					},
-					"posttrans": {
-						"type": "string"
-					}
+				"commit_msg_template": {
+					"type": "string"
 				},
-				"additionalProperties": false,
-				"type": "object"
-			},
-			"NFPMRPMSignature": {
-				"properties": {
-					"key_file": {
-						"type": "string"
-					}
+				"folder": {
+					"type": "string"
 				},
-				"additionalProperties": false,
-				"type": "object"
-			},
-			"NFPMScripts": {
-				"properties": {
-					"preinstall": {
-						"type": "string"
-					},
-					"postinstall": {
-						"type": "string"
-					},
-					"preremove": {
-						"type": "string"
-					},
-					"postremove": {
-						"type": "string"
-					}
+				"caveats": {
+					"type": "string"
 				},
-				"additionalProperties": false,
-				"type": "object"
-			},
-			"Nightly": {
-				"properties": {
-					"name_template": {
-						"type": "string"
-					},
-					"tag_name": {
-						"type": "string"
-					},
-					"publish_release": {
-						"type": "boolean"
-					},
-					"keep_single_release": {
-						"type": "boolean"
-					}
+				"plist": {
+					"type": "string"
 				},
-				"additionalProperties": false,
-				"type": "object"
-			},
-			"Nix": {
-				"properties": {
-					"name": {
+				"install": {
+					"type": "string"
+				},
+				"post_install": {
+					"type": "string"
+				},
+				"dependencies": {
+					"items": {
+						"$ref": "#/$defs/HomebrewDependency"
+					},
+					"type": "array"
+				},
+				"test": {
+					"type": "string"
+				},
+				"conflicts": {
+					"items": {
 						"type": "string"
 					},
-					"path": {
-						"type": "string"
-					},
-					"repository": {
-						"$ref": "#/$defs/RepoRef"
-					},
-					"commit_author": {
-						"$ref": "#/$defs/CommitAuthor"
-					},
-					"commit_msg_template": {
-						"type": "string"
-					},
-					"ids": {
-						"items": {
+					"type": "array"
+				},
+				"description": {
+					"type": "string"
+				},
+				"homepage": {
+					"type": "string"
+				},
+				"license": {
+					"type": "string"
+				},
+				"skip_upload": {
+					"oneOf": [
+						{
 							"type": "string"
 						},
-						"type": "array"
-					},
-					"goamd64": {
-						"type": "string"
-					},
-					"skip_upload": {
-						"oneOf": [
-							{
-								"type": "string"
-							},
-							{
-								"type": "boolean"
-							}
-						]
-					},
-					"url_template": {
-						"type": "string"
-					},
-					"install": {
-						"type": "string"
-					},
-					"post_install": {
-						"type": "string"
-					},
-					"description": {
-						"type": "string"
-					},
-					"homepage": {
-						"type": "string"
-					},
-					"license": {
-						"type": "string"
-					}
+						{
+							"type": "boolean"
+						}
+					]
 				},
-				"additionalProperties": false,
-				"type": "object"
-			},
-			"OpenCollective": {
-				"properties": {
-					"enabled": {
-						"type": "boolean"
-					},
-					"slug": {
-						"type": "string"
-					},
-					"title_template": {
-						"type": "string"
-					},
-					"message_template": {
-						"type": "string"
-					}
+				"download_strategy": {
+					"type": "string"
 				},
-				"additionalProperties": false,
-				"type": "object"
-			},
-			"Partial": {
-				"properties": {
-					"by": {
-						"type": "string",
-						"enum": [
-							"goos",
-							"target"
-						],
-						"default": "goos"
-					}
+				"url_template": {
+					"type": "string"
 				},
-				"additionalProperties": false,
-				"type": "object"
-			},
-			"PreBuiltOptions": {
-				"properties": {
-					"path": {
-						"type": "string"
-					}
+				"custom_require": {
+					"type": "string"
 				},
-				"additionalProperties": false,
-				"type": "object"
-			},
-			"Project": {
-				"properties": {
-					"project_name": {
-						"type": "string"
-					},
-					"env": {
-						"items": {
-							"type": "string"
-						},
-						"type": "array"
-					},
-					"release": {
-						"$ref": "#/$defs/Release"
-					},
-					"milestones": {
-						"items": {
-							"$ref": "#/$defs/Milestone"
-						},
-						"type": "array"
-					},
-					"brews": {
-						"items": {
-							"$ref": "#/$defs/Homebrew"
-						},
-						"type": "array"
-					},
-					"nix": {
-						"items": {
-							"$ref": "#/$defs/Nix"
-						},
-						"type": "array"
-					},
-					"aurs": {
-						"items": {
-							"$ref": "#/$defs/AUR"
-						},
-						"type": "array"
-					},
-					"krews": {
-						"items": {
-							"$ref": "#/$defs/Krew"
-						},
-						"type": "array"
-					},
-					"kos": {
-						"items": {
-							"$ref": "#/$defs/Ko"
-						},
-						"type": "array"
-					},
-					"scoop": {
-						"$ref": "#/$defs/Scoop"
-					},
-					"scoops": {
-						"items": {
-							"$ref": "#/$defs/Scoop"
-						},
-						"type": "array"
-					},
-					"builds": {
-						"items": {
-							"$ref": "#/$defs/Build"
-						},
-						"type": "array"
-					},
-					"archives": {
-						"items": {
-							"$ref": "#/$defs/Archive"
-						},
-						"type": "array"
-					},
-					"nfpms": {
-						"items": {
-							"$ref": "#/$defs/NFPM"
-						},
-						"type": "array"
-					},
-					"snapcrafts": {
-						"items": {
-							"$ref": "#/$defs/Snapcraft"
-						},
-						"type": "array"
-					},
-					"snapshot": {
-						"$ref": "#/$defs/Snapshot"
-					},
-					"checksum": {
-						"$ref": "#/$defs/Checksum"
-					},
-					"dockers": {
-						"items": {
-							"$ref": "#/$defs/Docker"
-						},
-						"type": "array"
-					},
-					"docker_manifests": {
-						"items": {
-							"$ref": "#/$defs/DockerManifest"
-						},
-						"type": "array"
-					},
-					"artifactories": {
-						"items": {
-							"$ref": "#/$defs/Upload"
-						},
-						"type": "array"
-					},
-					"uploads": {
-						"items": {
-							"$ref": "#/$defs/Upload"
-						},
-						"type": "array"
-					},
-					"blobs": {
-						"items": {
-							"$ref": "#/$defs/Blob"
-						},
-						"type": "array"
-					},
-					"publishers": {
-						"items": {
-							"$ref": "#/$defs/Publisher"
-						},
-						"type": "array"
-					},
-					"changelog": {
-						"$ref": "#/$defs/Changelog"
-					},
-					"dist": {
-						"type": "string"
-					},
-					"signs": {
-						"items": {
-							"$ref": "#/$defs/Sign"
-						},
-						"type": "array"
-					},
-					"docker_signs": {
-						"items": {
-							"$ref": "#/$defs/Sign"
-						},
-						"type": "array"
-					},
-					"env_files": {
-						"$ref": "#/$defs/EnvFiles"
-					},
-					"before": {
-						"$ref": "#/$defs/Before"
-					},
-					"after": {
-						"$ref": "#/$defs/After"
-					},
-					"source": {
-						"$ref": "#/$defs/Source"
-					},
-					"gomod": {
-						"$ref": "#/$defs/GoMod"
-					},
-					"announce": {
-						"$ref": "#/$defs/Announce"
-					},
-					"sboms": {
-						"items": {
-							"$ref": "#/$defs/SBOM"
-						},
-						"type": "array"
-					},
-					"chocolateys": {
-						"items": {
-							"$ref": "#/$defs/Chocolatey"
-						},
-						"type": "array"
-					},
-					"git": {
-						"$ref": "#/$defs/Git"
-					},
-					"report_sizes": {
-						"type": "boolean"
-					},
-					"template_files": {
-						"items": {
-							"$ref": "#/$defs/TemplateFile"
-						},
-						"type": "array"
-					},
-					"universal_binaries": {
-						"items": {
-							"$ref": "#/$defs/UniversalBinary"
-						},
-						"type": "array"
-					},
-					"upx": {
-						"items": {
-							"$ref": "#/$defs/UPX"
-						},
-						"type": "array"
-					},
-					"build": {
-						"$ref": "#/$defs/Build",
-						"description": "deprecated: use builds instead"
-					},
-					"force_token": {
-						"type": "string",
-						"enum": [
-							"github",
-							"gitlab",
-							"gitea",
-							""
-						],
-						"default": ""
-					},
-					"github_urls": {
-						"$ref": "#/$defs/GitHubURLs"
-					},
-					"gitlab_urls": {
-						"$ref": "#/$defs/GitLabURLs"
-					},
-					"gitea_urls": {
-						"$ref": "#/$defs/GiteaURLs"
-					},
-					"includes": {
-						"items": {
-							"$ref": "#/$defs/Include"
-						},
-						"type": "array"
-					},
-					"variables": {
-						"type": "object"
-					},
-					"monorepo": {
-						"$ref": "#/$defs/Monorepo"
-					},
-					"partial": {
-						"$ref": "#/$defs/Partial"
-					},
-					"nightly": {
-						"$ref": "#/$defs/Nightly"
-					},
-					"furies": {
-						"items": {
-							"$ref": "#/$defs/Fury"
-						},
-						"type": "array"
-					}
+				"custom_block": {
+					"type": "string"
 				},
-				"additionalProperties": false,
-				"type": "object"
-			},
-			"Publisher": {
-				"properties": {
-					"name": {
+				"ids": {
+					"items": {
 						"type": "string"
 					},
-					"ids": {
-						"items": {
-							"type": "string"
-						},
-						"type": "array"
-					},
-					"checksum": {
-						"type": "boolean"
-					},
-					"signature": {
-						"type": "boolean"
-					},
-					"dir": {
-						"type": "string"
-					},
-					"cmd": {
-						"type": "string"
-					},
-					"env": {
-						"items": {
-							"type": "string"
-						},
-						"type": "array"
-					},
-					"extra_files": {
-						"items": {
-							"$ref": "#/$defs/ExtraFile"
-						},
-						"type": "array"
-					},
-					"templated_extra_files": {
-						"items": {
-							"$ref": "#/$defs/TemplatedExtraFile"
-						},
-						"type": "array"
-					}
+					"type": "array"
 				},
-				"additionalProperties": false,
-				"type": "object"
-			},
-			"PullRequest": {
-				"properties": {
-					"enabled": {
-						"type": "boolean"
-					},
-					"base": {
-						"$ref": "#/$defs/PullRequestBase"
-					},
-					"draft": {
-						"type": "boolean"
-					}
+				"goarm": {
+					"oneOf": [
+						{
+							"type": "string"
+						},
+						{
+							"type": "integer"
+						}
+					]
 				},
-				"additionalProperties": false,
-				"type": "object"
-			},
-			"PullRequestBase": {
-				"oneOf": [
-					{
-						"type": "string"
-					},
-					{
-						"$schema": "https://json-schema.org/draft/2020-12/schema",
-						"$id": "https://github.com/goreleaser/goreleaser/pkg/config/pull-request-base",
-						"properties": {
-							"owner": {
-								"type": "string"
-							},
-							"name": {
-								"type": "string"
-							},
-							"branch": {
-								"type": "string"
-							}
-						},
-						"additionalProperties": false,
-						"type": "object"
-					}
-				]
-			},
-			"Reddit": {
-				"properties": {
-					"enabled": {
-						"type": "boolean"
-					},
-					"application_id": {
-						"type": "string"
-					},
-					"username": {
-						"type": "string"
-					},
-					"title_template": {
-						"type": "string"
-					},
-					"url_template": {
-						"type": "string"
-					},
-					"sub": {
-						"type": "string"
-					}
+				"goamd64": {
+					"type": "string"
 				},
-				"additionalProperties": false,
-				"type": "object"
+				"service": {
+					"type": "string"
+				}
 			},
-			"Release": {
-				"properties": {
-					"github": {
-						"$ref": "#/$defs/Repo"
-					},
-					"gitlab": {
-						"$ref": "#/$defs/Repo"
-					},
-					"gitea": {
-						"$ref": "#/$defs/Repo"
-					},
-					"draft": {
-						"type": "boolean"
-					},
-					"replace_existing_draft": {
-						"type": "boolean"
-					},
-					"target_commitish": {
-						"type": "string"
-					},
-					"tag": {
-						"type": "string"
-					},
-					"disable": {
-						"oneOf": [
-							{
-								"type": "string"
-							},
-							{
-								"type": "boolean"
-							}
-						]
-					},
-					"skip_upload": {
-						"oneOf": [
-							{
-								"type": "string"
-							},
-							{
-								"type": "boolean"
-							}
-						]
-					},
-					"prerelease": {
-						"type": "string"
-					},
-					"name_template": {
-						"type": "string"
-					},
-					"ids": {
-						"items": {
-							"type": "string"
-						},
-						"type": "array"
-					},
-					"extra_files": {
-						"items": {
-							"$ref": "#/$defs/ExtraFile"
-						},
-						"type": "array"
-					},
-					"discussion_category_name": {
-						"type": "string"
-					},
-					"header": {
-						"type": "string"
-					},
-					"footer": {
-						"type": "string"
-					},
-					"mode": {
-						"type": "string",
-						"enum": [
-							"keep-existing",
-							"append",
-							"prepend",
-							"replace"
-						],
-						"default": "keep-existing"
-					},
-					"templated_extra_files": {
-						"items": {
-							"$ref": "#/$defs/TemplatedExtraFile"
-						},
-						"type": "array"
-					}
+			"additionalProperties": false,
+			"type": "object"
+		},
+		"HomebrewDependency": {
+			"oneOf": [
+				{
+					"type": "string"
 				},
-				"additionalProperties": false,
-				"type": "object"
-			},
-			"Repo": {
-				"properties": {
-					"owner": {
-						"type": "string"
+				{
+					"$schema": "https://json-schema.org/draft/2020-12/schema",
+					"$id": "https://github.com/goreleaser/goreleaser/pkg/config/homebrew-dependency",
+					"properties": {
+						"name": {
+							"type": "string"
+						},
+						"type": {
+							"type": "string"
+						},
+						"version": {
+							"type": "string"
+						}
 					},
-					"name": {
-						"type": "string"
-					}
+					"additionalProperties": false,
+					"type": "object"
+				}
+			]
+		},
+		"Hook": {
+			"oneOf": [
+				{
+					"type": "string"
 				},
-				"additionalProperties": false,
-				"type": "object"
-			},
-			"RepoRef": {
-				"properties": {
-					"owner": {
-						"type": "string"
-					},
-					"name": {
-						"type": "string"
-					},
-					"token": {
-						"type": "string"
-					},
-					"branch": {
-						"type": "string"
-					},
-					"git": {
-						"$ref": "#/$defs/GitRepoRef"
-					},
-					"pull_request": {
-						"$ref": "#/$defs/PullRequest"
-					}
-				},
-				"additionalProperties": false,
-				"type": "object"
-			},
-			"SBOM": {
-				"properties": {
-					"id": {
-						"type": "string"
-					},
-					"cmd": {
-						"type": "string"
-					},
-					"env": {
-						"items": {
+				{
+					"$schema": "https://json-schema.org/draft/2020-12/schema",
+					"$id": "https://github.com/goreleaser/goreleaser/pkg/config/t",
+					"properties": {
+						"dir": {
 							"type": "string"
 						},
-						"type": "array"
-					},
-					"args": {
-						"items": {
+						"cmd": {
 							"type": "string"
 						},
-						"type": "array"
-					},
-					"documents": {
-						"items": {
-							"type": "string"
-						},
-						"type": "array"
-					},
-					"artifacts": {
-						"type": "string"
-					},
-					"ids": {
-						"items": {
-							"type": "string"
-						},
-						"type": "array"
-					}
-				},
-				"additionalProperties": false,
-				"type": "object"
-			},
-			"SMTP": {
-				"properties": {
-					"enabled": {
-						"type": "boolean"
-					},
-					"host": {
-						"type": "string"
-					},
-					"port": {
-						"type": "integer"
-					},
-					"username": {
-						"type": "string"
-					},
-					"from": {
-						"type": "string"
-					},
-					"to": {
-						"items": {
-							"type": "string"
-						},
-						"type": "array"
-					},
-					"subject_template": {
-						"type": "string"
-					},
-					"body_template": {
-						"type": "string"
-					},
-					"insecure_skip_verify": {
-						"type": "boolean"
-					}
-				},
-				"additionalProperties": false,
-				"type": "object"
-			},
-			"Scoop": {
-				"properties": {
-					"name": {
-						"type": "string"
-					},
-					"ids": {
-						"items": {
-							"type": "string"
-						},
-						"type": "array"
-					},
-					"bucket": {
-						"$ref": "#/$defs/RepoRef"
-					},
-					"folder": {
-						"type": "string"
-					},
-					"commit_author": {
-						"$ref": "#/$defs/CommitAuthor"
-					},
-					"commit_msg_template": {
-						"type": "string"
-					},
-					"homepage": {
-						"type": "string"
-					},
-					"description": {
-						"type": "string"
-					},
-					"license": {
-						"type": "string"
-					},
-					"url_template": {
-						"type": "string"
-					},
-					"persist": {
-						"items": {
-							"type": "string"
-						},
-						"type": "array"
-					},
-					"skip_upload": {
-						"oneOf": [
-							{
-								"type": "string"
-							},
-							{
-								"type": "boolean"
-							}
-						]
-					},
-					"pre_install": {
-						"items": {
-							"type": "string"
-						},
-						"type": "array"
-					},
-					"post_install": {
-						"items": {
-							"type": "string"
-						},
-						"type": "array"
-					},
-					"depends": {
-						"items": {
-							"type": "string"
-						},
-						"type": "array"
-					},
-					"shortcuts": {
-						"items": {
+						"env": {
 							"items": {
 								"type": "string"
 							},
 							"type": "array"
 						},
-						"type": "array"
-					},
-					"goamd64": {
-						"type": "string"
-					}
-				},
-				"additionalProperties": false,
-				"type": "object"
-			},
-			"Sign": {
-				"properties": {
-					"id": {
-						"type": "string"
-					},
-					"cmd": {
-						"type": "string"
-					},
-					"args": {
-						"items": {
-							"type": "string"
-						},
-						"type": "array"
-					},
-					"signature": {
-						"type": "string"
-					},
-					"artifacts": {
-						"type": "string",
-						"enum": [
-							"all",
-							"manifests",
-							"images",
-							"checksum",
-							"source",
-							"package",
-							"archive",
-							"binary",
-							"sbom"
-						]
-					},
-					"ids": {
-						"items": {
-							"type": "string"
-						},
-						"type": "array"
-					},
-					"stdin": {
-						"type": "string"
-					},
-					"stdin_file": {
-						"type": "string"
-					},
-					"env": {
-						"items": {
-							"type": "string"
-						},
-						"type": "array"
-					},
-					"certificate": {
-						"type": "string"
-					},
-					"output": {
-						"type": "boolean"
-					}
-				},
-				"additionalProperties": false,
-				"type": "object"
-			},
-			"Slack": {
-				"properties": {
-					"enabled": {
-						"type": "boolean"
-					},
-					"message_template": {
-						"type": "string"
-					},
-					"channel": {
-						"type": "string"
-					},
-					"username": {
-						"type": "string"
-					},
-					"icon_emoji": {
-						"type": "string"
-					},
-					"icon_url": {
-						"type": "string"
-					},
-					"blocks": {
-						"items": {
-							"$ref": "#/$defs/SlackBlock"
-						},
-						"type": "array"
-					},
-					"attachments": {
-						"items": {
-							"$ref": "#/$defs/SlackAttachment"
-						},
-						"type": "array"
-					}
-				},
-				"additionalProperties": false,
-				"type": "object"
-			},
-			"SlackAttachment": {
-				"properties": {
-					"Internal": true
-				},
-				"additionalProperties": false,
-				"type": "object",
-				"required": [
-					"Internal"
-				]
-			},
-			"SlackBlock": {
-				"properties": {
-					"Internal": true
-				},
-				"additionalProperties": false,
-				"type": "object",
-				"required": [
-					"Internal"
-				]
-			},
-			"Snapcraft": {
-				"properties": {
-					"name_template": {
-						"type": "string"
-					},
-					"publish": {
-						"type": "boolean"
-					},
-					"id": {
-						"type": "string"
-					},
-					"builds": {
-						"items": {
-							"type": "string"
-						},
-						"type": "array"
-					},
-					"name": {
-						"type": "string"
-					},
-					"summary": {
-						"type": "string"
-					},
-					"description": {
-						"type": "string"
-					},
-					"base": {
-						"type": "string"
-					},
-					"license": {
-						"type": "string"
-					},
-					"grade": {
-						"type": "string"
-					},
-					"channel_templates": {
-						"items": {
-							"type": "string"
-						},
-						"type": "array"
-					},
-					"confinement": {
-						"type": "string"
-					},
-					"layout": {
-						"patternProperties": {
-							".*": {
-								"$ref": "#/$defs/SnapcraftLayoutMetadata"
-							}
-						},
-						"type": "object"
-					},
-					"apps": {
-						"patternProperties": {
-							".*": {
-								"$ref": "#/$defs/SnapcraftAppMetadata"
-							}
-						},
-						"type": "object"
-					},
-					"plugs": {
-						"type": "object"
-					},
-					"extra_files": {
-						"items": {
-							"$ref": "#/$defs/SnapcraftExtraFiles"
-						},
-						"type": "array"
-					},
-					"templated_extra_files": {
-						"items": {
-							"$ref": "#/$defs/SnapcraftExtraFiles"
-						},
-						"type": "array"
-					}
-				},
-				"additionalProperties": false,
-				"type": "object"
-			},
-			"SnapcraftAppMetadata": {
-				"properties": {
-					"command": {
-						"type": "string"
-					},
-					"args": {
-						"type": "string"
-					},
-					"adapter": {
-						"type": "string"
-					},
-					"after": {
-						"items": {
-							"type": "string"
-						},
-						"type": "array"
-					},
-					"aliases": {
-						"items": {
-							"type": "string"
-						},
-						"type": "array"
-					},
-					"autostart": {
-						"type": "string"
-					},
-					"before": {
-						"items": {
-							"type": "string"
-						},
-						"type": "array"
-					},
-					"bus_name": {
-						"type": "string"
-					},
-					"command_chain": {
-						"items": {
-							"type": "string"
-						},
-						"type": "array"
-					},
-					"common_id": {
-						"type": "string"
-					},
-					"completer": {
-						"type": "string"
-					},
-					"daemon": {
-						"type": "string"
-					},
-					"desktop": {
-						"type": "string"
-					},
-					"environment": {
-						"type": "object"
-					},
-					"extensions": {
-						"items": {
-							"type": "string"
-						},
-						"type": "array"
-					},
-					"install_mode": {
-						"type": "string"
-					},
-					"passthrough": {
-						"type": "object"
-					},
-					"plugs": {
-						"items": {
-							"type": "string"
-						},
-						"type": "array"
-					},
-					"post_stop_command": {
-						"type": "string"
-					},
-					"refresh_mode": {
-						"type": "string"
-					},
-					"reload_command": {
-						"type": "string"
-					},
-					"restart_condition": {
-						"type": "string"
-					},
-					"restart_delay": {
-						"type": "string"
-					},
-					"slots": {
-						"items": {
-							"type": "string"
-						},
-						"type": "array"
-					},
-					"sockets": {
-						"type": "object"
-					},
-					"start_timeout": {
-						"type": "string"
-					},
-					"stop_command": {
-						"type": "string"
-					},
-					"stop_mode": {
-						"type": "string"
-					},
-					"stop_timeout": {
-						"type": "string"
-					},
-					"timer": {
-						"type": "string"
-					},
-					"watchdog_timeout": {
-						"type": "string"
-					}
-				},
-				"additionalProperties": false,
-				"type": "object",
-				"required": [
-					"command"
-				]
-			},
-			"SnapcraftExtraFiles": {
-				"properties": {
-					"source": {
-						"type": "string"
-					},
-					"destination": {
-						"type": "string"
-					},
-					"mode": {
-						"type": "integer"
-					}
-				},
-				"additionalProperties": false,
-				"type": "object",
-				"required": [
-					"source"
-				]
-			},
-			"SnapcraftLayoutMetadata": {
-				"properties": {
-					"symlink": {
-						"type": "string"
-					},
-					"bind": {
-						"type": "string"
-					},
-					"bind_file": {
-						"type": "string"
-					},
-					"type": {
-						"type": "string"
-					}
-				},
-				"additionalProperties": false,
-				"type": "object"
-			},
-			"Snapshot": {
-				"properties": {
-					"name_template": {
-						"type": "string"
-					}
-				},
-				"additionalProperties": false,
-				"type": "object"
-			},
-			"Source": {
-				"properties": {
-					"name_template": {
-						"type": "string"
-					},
-					"format": {
-						"type": "string",
-						"enum": [
-							"tar",
-							"tgz",
-							"tar.gz",
-							"zip"
-						],
-						"default": "tar.gz"
-					},
-					"enabled": {
-						"type": "boolean"
-					},
-					"prefix_template": {
-						"type": "string"
-					},
-					"files": {
-						"items": {
-							"$ref": "#/$defs/File"
-						},
-						"type": "array"
-					},
-					"rlcp": {
-						"oneOf": [
-							{
-								"type": "string"
-							},
-							{
-								"type": "boolean"
-							}
-						]
-					},
-					"templated_files": {
-						"items": {
-							"$ref": "#/$defs/TemplatedFile"
-						},
-						"type": "array"
-					}
-				},
-				"additionalProperties": false,
-				"type": "object"
-			},
-			"StringArray": {
-				"oneOf": [
-					{
-						"type": "string"
-					},
-					{
-						"items": {
-							"type": "string"
-						},
-						"type": "array"
-					}
-				]
-			},
-			"Teams": {
-				"properties": {
-					"enabled": {
-						"type": "boolean"
-					},
-					"title_template": {
-						"type": "string"
-					},
-					"message_template": {
-						"type": "string"
-					},
-					"color": {
-						"type": "string"
-					},
-					"icon_url": {
-						"type": "string"
-					}
-				},
-				"additionalProperties": false,
-				"type": "object"
-			},
-			"Telegram": {
-				"properties": {
-					"enabled": {
-						"type": "boolean"
-					},
-					"message_template": {
-						"type": "string"
-					},
-					"chat_id": {
-						"oneOf": [
-							{
-								"type": "string"
-							},
-							{
-								"type": "integer"
-							}
-						]
-					},
-					"parse_mode": {
-						"type": "string",
-						"enum": [
-							"MarkdownV2",
-							"HTML"
-						],
-						"default": "MarkdownV2"
-					}
-				},
-				"additionalProperties": false,
-				"type": "object"
-			},
-			"TemplateFile": {
-				"properties": {
-					"id": {
-						"type": "string"
-					},
-					"src": {
-						"type": "string"
-					},
-					"dst": {
-						"type": "string"
-					},
-					"mode": {
-						"type": "integer"
-					}
-				},
-				"additionalProperties": false,
-				"type": "object",
-				"required": [
-					"src",
-					"dst"
-				]
-			},
-			"TemplatedExtraFile": {
-				"properties": {
-					"src": {
-						"type": "string"
-					},
-					"dst": {
-						"type": "string"
-					}
-				},
-				"additionalProperties": false,
-				"type": "object"
-			},
-			"TemplatedExtraFileWithMode": {
-				"properties": {
-					"src": {
-						"type": "string"
-					},
-					"dst": {
-						"type": "string"
-					},
-					"mode": {
-						"type": "integer"
-					}
-				},
-				"additionalProperties": false,
-				"type": "object"
-			},
-			"TemplatedFile": {
-				"properties": {
-					"src": {
-						"type": "string"
-					},
-					"dst": {
-						"type": "string"
-					},
-					"info": {
-						"$ref": "#/$defs/FileInfo"
-					}
-				},
-				"additionalProperties": false,
-				"type": "object"
-			},
-			"Twitter": {
-				"properties": {
-					"enabled": {
-						"type": "boolean"
-					},
-					"message_template": {
-						"type": "string"
-					}
-				},
-				"additionalProperties": false,
-				"type": "object"
-			},
-			"UPX": {
-				"properties": {
-					"enabled": {
-						"type": "boolean"
-					},
-					"ids": {
-						"items": {
-							"type": "string"
-						},
-						"type": "array"
-					},
-					"goos": {
-						"items": {
-							"type": "string"
-						},
-						"type": "array"
-					},
-					"goarch": {
-						"items": {
-							"type": "string"
-						},
-						"type": "array"
-					},
-					"goarm": {
-						"items": {
-							"type": "string"
-						},
-						"type": "array"
-					},
-					"goamd64": {
-						"items": {
-							"type": "string"
-						},
-						"type": "array"
-					},
-					"binary": {
-						"type": "string"
-					},
-					"compress": {
-						"type": "string",
-						"enum": [
-							"1",
-							"2",
-							"3",
-							"4",
-							"5",
-							"6",
-							"7",
-							"8",
-							"9",
-							"best",
-							""
-						],
-						"default": ""
-					},
-					"lzma": {
-						"type": "boolean"
-					},
-					"brute": {
-						"type": "boolean"
-					}
-				},
-				"additionalProperties": false,
-				"type": "object"
-			},
-			"UniversalBinary": {
-				"properties": {
-					"id": {
-						"type": "string"
-					},
-					"ids": {
-						"items": {
-							"type": "string"
-						},
-						"type": "array"
-					},
-					"name_template": {
-						"type": "string"
-					},
-					"replace": {
-						"type": "boolean"
-					},
-					"hooks": {
-						"$ref": "#/$defs/BuildHookConfig"
-					}
-				},
-				"additionalProperties": false,
-				"type": "object"
-			},
-			"Upload": {
-				"properties": {
-					"name": {
-						"type": "string"
-					},
-					"ids": {
-						"items": {
-							"type": "string"
-						},
-						"type": "array"
-					},
-					"exts": {
-						"items": {
-							"type": "string"
-						},
-						"type": "array"
-					},
-					"target": {
-						"type": "string"
-					},
-					"username": {
-						"type": "string"
-					},
-					"mode": {
-						"type": "string"
-					},
-					"method": {
-						"type": "string"
-					},
-					"checksum_header": {
-						"type": "string"
-					},
-					"client_x509_cert": {
-						"type": "string"
-					},
-					"client_x509_key": {
-						"type": "string"
-					},
-					"trusted_certificates": {
-						"type": "string"
-					},
-					"checksum": {
-						"type": "boolean"
-					},
-					"signature": {
-						"type": "boolean"
-					},
-					"custom_artifact_name": {
-						"type": "boolean"
-					},
-					"custom_headers": {
-						"patternProperties": {
-							".*": {
-								"type": "string"
-							}
-						},
-						"type": "object"
-					}
-				},
-				"additionalProperties": false,
-				"type": "object"
-			},
-			"Webhook": {
-				"properties": {
-					"enabled": {
-						"type": "boolean"
-					},
-					"skip_tls_verify": {
-						"type": "boolean"
-					},
-					"message_template": {
-						"type": "string"
-					},
-					"endpoint_url": {
-						"type": "string"
-					},
-					"headers": {
-						"patternProperties": {
-							".*": {
-								"type": "string"
-							}
-						},
-						"type": "object"
-					},
-					"content_type": {
-						"type": "string"
-					}
-				},
-				"additionalProperties": false,
-				"type": "object"
-			}
+						"output": {
+							"type": "boolean"
+						}
+					},
+					"additionalProperties": false,
+					"type": "object"
+				}
+			]
 		},
-		"description": "goreleaser configuration definition file"
-	}
+		"Hooks": {
+			"items": {
+				"$ref": "#/$defs/Hook"
+			},
+			"type": "array"
+		},
+		"IgnoredBuild": {
+			"properties": {
+				"goos": {
+					"type": "string"
+				},
+				"goarch": {
+					"type": "string"
+				},
+				"goarm": {
+					"oneOf": [
+						{
+							"type": "string"
+						},
+						{
+							"type": "integer"
+						}
+					]
+				},
+				"gomips": {
+					"type": "string"
+				},
+				"goamd64": {
+					"type": "string"
+				}
+			},
+			"additionalProperties": false,
+			"type": "object"
+		},
+		"Include": {
+			"properties": {
+				"from_url": {
+					"$ref": "#/$defs/IncludeFromURL"
+				},
+				"from_file": {
+					"$ref": "#/$defs/IncludeFromFile"
+				}
+			},
+			"additionalProperties": false,
+			"type": "object"
+		},
+		"IncludeFromFile": {
+			"properties": {
+				"path": {
+					"type": "string"
+				}
+			},
+			"additionalProperties": false,
+			"type": "object"
+		},
+		"IncludeFromURL": {
+			"properties": {
+				"url": {
+					"type": "string"
+				},
+				"headers": {
+					"patternProperties": {
+						".*": {
+							"type": "string"
+						}
+					},
+					"type": "object"
+				}
+			},
+			"additionalProperties": false,
+			"type": "object"
+		},
+		"Ko": {
+			"properties": {
+				"id": {
+					"type": "string"
+				},
+				"build": {
+					"type": "string"
+				},
+				"main": {
+					"type": "string"
+				},
+				"working_dir": {
+					"type": "string"
+				},
+				"base_image": {
+					"type": "string"
+				},
+				"labels": {
+					"patternProperties": {
+						".*": {
+							"type": "string"
+						}
+					},
+					"type": "object"
+				},
+				"repository": {
+					"type": "string"
+				},
+				"platforms": {
+					"items": {
+						"type": "string"
+					},
+					"type": "array"
+				},
+				"tags": {
+					"items": {
+						"type": "string"
+					},
+					"type": "array"
+				},
+				"creation_time": {
+					"type": "string"
+				},
+				"ko_data_creation_time": {
+					"type": "string"
+				},
+				"sbom": {
+					"type": "string"
+				},
+				"ldflags": {
+					"items": {
+						"type": "string"
+					},
+					"type": "array"
+				},
+				"flags": {
+					"items": {
+						"type": "string"
+					},
+					"type": "array"
+				},
+				"env": {
+					"items": {
+						"type": "string"
+					},
+					"type": "array"
+				},
+				"bare": {
+					"type": "boolean"
+				},
+				"preserve_import_paths": {
+					"type": "boolean"
+				},
+				"base_import_paths": {
+					"type": "boolean"
+				}
+			},
+			"additionalProperties": false,
+			"type": "object"
+		},
+		"Krew": {
+			"properties": {
+				"ids": {
+					"items": {
+						"type": "string"
+					},
+					"type": "array"
+				},
+				"name": {
+					"type": "string"
+				},
+				"index": {
+					"$ref": "#/$defs/RepoRef"
+				},
+				"commit_author": {
+					"$ref": "#/$defs/CommitAuthor"
+				},
+				"commit_msg_template": {
+					"type": "string"
+				},
+				"caveats": {
+					"type": "string"
+				},
+				"short_description": {
+					"type": "string"
+				},
+				"description": {
+					"type": "string"
+				},
+				"homepage": {
+					"type": "string"
+				},
+				"url_template": {
+					"type": "string"
+				},
+				"goarm": {
+					"oneOf": [
+						{
+							"type": "string"
+						},
+						{
+							"type": "integer"
+						}
+					]
+				},
+				"goamd64": {
+					"type": "string"
+				},
+				"skip_upload": {
+					"oneOf": [
+						{
+							"type": "string"
+						},
+						{
+							"type": "boolean"
+						}
+					]
+				}
+			},
+			"additionalProperties": false,
+			"type": "object"
+		},
+		"LinkedIn": {
+			"properties": {
+				"enabled": {
+					"type": "boolean"
+				},
+				"message_template": {
+					"type": "string"
+				}
+			},
+			"additionalProperties": false,
+			"type": "object"
+		},
+		"Mastodon": {
+			"properties": {
+				"enabled": {
+					"type": "boolean"
+				},
+				"message_template": {
+					"type": "string"
+				},
+				"server": {
+					"type": "string"
+				}
+			},
+			"additionalProperties": false,
+			"type": "object",
+			"required": ["server"]
+		},
+		"Mattermost": {
+			"properties": {
+				"enabled": {
+					"type": "boolean"
+				},
+				"message_template": {
+					"type": "string"
+				},
+				"title_template": {
+					"type": "string"
+				},
+				"color": {
+					"type": "string"
+				},
+				"channel": {
+					"type": "string"
+				},
+				"username": {
+					"type": "string"
+				},
+				"icon_emoji": {
+					"type": "string"
+				},
+				"icon_url": {
+					"type": "string"
+				}
+			},
+			"additionalProperties": false,
+			"type": "object"
+		},
+		"Milestone": {
+			"properties": {
+				"repo": {
+					"$ref": "#/$defs/Repo"
+				},
+				"close": {
+					"type": "boolean"
+				},
+				"fail_on_error": {
+					"type": "boolean"
+				},
+				"name_template": {
+					"type": "string"
+				}
+			},
+			"additionalProperties": false,
+			"type": "object"
+		},
+		"Monorepo": {
+			"properties": {
+				"tag_prefix": {
+					"type": "string"
+				},
+				"dir": {
+					"type": "string"
+				}
+			},
+			"additionalProperties": false,
+			"type": "object"
+		},
+		"NFPM": {
+			"properties": {
+				"file_name_template": {
+					"type": "string"
+				},
+				"package_name": {
+					"type": "string"
+				},
+				"epoch": {
+					"type": "string"
+				},
+				"release": {
+					"type": "string"
+				},
+				"prerelease": {
+					"type": "string"
+				},
+				"version_metadata": {
+					"type": "string"
+				},
+				"dependencies": {
+					"items": {
+						"type": "string"
+					},
+					"type": "array"
+				},
+				"recommends": {
+					"items": {
+						"type": "string"
+					},
+					"type": "array"
+				},
+				"suggests": {
+					"items": {
+						"type": "string"
+					},
+					"type": "array"
+				},
+				"conflicts": {
+					"items": {
+						"type": "string"
+					},
+					"type": "array"
+				},
+				"replaces": {
+					"items": {
+						"type": "string"
+					},
+					"type": "array"
+				},
+				"provides": {
+					"items": {
+						"type": "string"
+					},
+					"type": "array"
+				},
+				"contents": {
+					"$ref": "#/$defs/Contents"
+				},
+				"scripts": {
+					"$ref": "#/$defs/NFPMScripts"
+				},
+				"rpm": {
+					"$ref": "#/$defs/NFPMRPM"
+				},
+				"deb": {
+					"$ref": "#/$defs/NFPMDeb"
+				},
+				"apk": {
+					"$ref": "#/$defs/NFPMAPK"
+				},
+				"archlinux": {
+					"$ref": "#/$defs/NFPMArchLinux"
+				},
+				"templated_contents": {
+					"$ref": "#/$defs/Contents"
+				},
+				"overrides": {
+					"patternProperties": {
+						".*": {
+							"$ref": "#/$defs/NFPMOverridables"
+						}
+					},
+					"type": "object"
+				},
+				"id": {
+					"type": "string"
+				},
+				"builds": {
+					"items": {
+						"type": "string"
+					},
+					"type": "array"
+				},
+				"formats": {
+					"items": {
+						"type": "string"
+					},
+					"type": "array"
+				},
+				"section": {
+					"type": "string"
+				},
+				"priority": {
+					"type": "string"
+				},
+				"vendor": {
+					"type": "string"
+				},
+				"homepage": {
+					"type": "string"
+				},
+				"maintainer": {
+					"type": "string"
+				},
+				"description": {
+					"type": "string"
+				},
+				"license": {
+					"type": "string"
+				},
+				"bindir": {
+					"type": "string"
+				},
+				"changelog": {
+					"type": "string"
+				},
+				"meta": {
+					"type": "boolean"
+				}
+			},
+			"additionalProperties": false,
+			"type": "object"
+		},
+		"NFPMAPK": {
+			"properties": {
+				"scripts": {
+					"$ref": "#/$defs/NFPMAPKScripts"
+				},
+				"signature": {
+					"$ref": "#/$defs/NFPMAPKSignature"
+				}
+			},
+			"additionalProperties": false,
+			"type": "object"
+		},
+		"NFPMAPKScripts": {
+			"properties": {
+				"preupgrade": {
+					"type": "string"
+				},
+				"postupgrade": {
+					"type": "string"
+				}
+			},
+			"additionalProperties": false,
+			"type": "object"
+		},
+		"NFPMAPKSignature": {
+			"properties": {
+				"key_file": {
+					"type": "string"
+				},
+				"key_name": {
+					"type": "string"
+				}
+			},
+			"additionalProperties": false,
+			"type": "object"
+		},
+		"NFPMArchLinux": {
+			"properties": {
+				"pkgbase": {
+					"type": "string"
+				},
+				"packager": {
+					"type": "string"
+				},
+				"scripts": {
+					"$ref": "#/$defs/NFPMArchLinuxScripts"
+				}
+			},
+			"additionalProperties": false,
+			"type": "object"
+		},
+		"NFPMArchLinuxScripts": {
+			"properties": {
+				"preupgrade": {
+					"type": "string"
+				},
+				"postupgrade": {
+					"type": "string"
+				}
+			},
+			"additionalProperties": false,
+			"type": "object"
+		},
+		"NFPMDeb": {
+			"properties": {
+				"scripts": {
+					"$ref": "#/$defs/NFPMDebScripts"
+				},
+				"triggers": {
+					"$ref": "#/$defs/NFPMDebTriggers"
+				},
+				"breaks": {
+					"items": {
+						"type": "string"
+					},
+					"type": "array"
+				},
+				"signature": {
+					"$ref": "#/$defs/NFPMDebSignature"
+				},
+				"lintian_overrides": {
+					"items": {
+						"type": "string"
+					},
+					"type": "array"
+				}
+			},
+			"additionalProperties": false,
+			"type": "object"
+		},
+		"NFPMDebScripts": {
+			"properties": {
+				"rules": {
+					"type": "string"
+				},
+				"templates": {
+					"type": "string"
+				}
+			},
+			"additionalProperties": false,
+			"type": "object"
+		},
+		"NFPMDebSignature": {
+			"properties": {
+				"key_file": {
+					"type": "string"
+				},
+				"type": {
+					"type": "string"
+				}
+			},
+			"additionalProperties": false,
+			"type": "object"
+		},
+		"NFPMDebTriggers": {
+			"properties": {
+				"interest": {
+					"items": {
+						"type": "string"
+					},
+					"type": "array"
+				},
+				"interest_await": {
+					"items": {
+						"type": "string"
+					},
+					"type": "array"
+				},
+				"interest_noawait": {
+					"items": {
+						"type": "string"
+					},
+					"type": "array"
+				},
+				"activate": {
+					"items": {
+						"type": "string"
+					},
+					"type": "array"
+				},
+				"activate_await": {
+					"items": {
+						"type": "string"
+					},
+					"type": "array"
+				},
+				"activate_noawait": {
+					"items": {
+						"type": "string"
+					},
+					"type": "array"
+				}
+			},
+			"additionalProperties": false,
+			"type": "object"
+		},
+		"NFPMOverridables": {
+			"properties": {
+				"file_name_template": {
+					"type": "string"
+				},
+				"package_name": {
+					"type": "string"
+				},
+				"epoch": {
+					"type": "string"
+				},
+				"release": {
+					"type": "string"
+				},
+				"prerelease": {
+					"type": "string"
+				},
+				"version_metadata": {
+					"type": "string"
+				},
+				"dependencies": {
+					"items": {
+						"type": "string"
+					},
+					"type": "array"
+				},
+				"recommends": {
+					"items": {
+						"type": "string"
+					},
+					"type": "array"
+				},
+				"suggests": {
+					"items": {
+						"type": "string"
+					},
+					"type": "array"
+				},
+				"conflicts": {
+					"items": {
+						"type": "string"
+					},
+					"type": "array"
+				},
+				"replaces": {
+					"items": {
+						"type": "string"
+					},
+					"type": "array"
+				},
+				"provides": {
+					"items": {
+						"type": "string"
+					},
+					"type": "array"
+				},
+				"contents": {
+					"$ref": "#/$defs/Contents"
+				},
+				"scripts": {
+					"$ref": "#/$defs/NFPMScripts"
+				},
+				"rpm": {
+					"$ref": "#/$defs/NFPMRPM"
+				},
+				"deb": {
+					"$ref": "#/$defs/NFPMDeb"
+				},
+				"apk": {
+					"$ref": "#/$defs/NFPMAPK"
+				},
+				"archlinux": {
+					"$ref": "#/$defs/NFPMArchLinux"
+				},
+				"templated_contents": {
+					"$ref": "#/$defs/Contents"
+				}
+			},
+			"additionalProperties": false,
+			"type": "object"
+		},
+		"NFPMRPM": {
+			"properties": {
+				"summary": {
+					"type": "string"
+				},
+				"group": {
+					"type": "string"
+				},
+				"compression": {
+					"type": "string"
+				},
+				"signature": {
+					"$ref": "#/$defs/NFPMRPMSignature"
+				},
+				"scripts": {
+					"$ref": "#/$defs/NFPMRPMScripts"
+				}
+			},
+			"additionalProperties": false,
+			"type": "object"
+		},
+		"NFPMRPMScripts": {
+			"properties": {
+				"pretrans": {
+					"type": "string"
+				},
+				"posttrans": {
+					"type": "string"
+				}
+			},
+			"additionalProperties": false,
+			"type": "object"
+		},
+		"NFPMRPMSignature": {
+			"properties": {
+				"key_file": {
+					"type": "string"
+				}
+			},
+			"additionalProperties": false,
+			"type": "object"
+		},
+		"NFPMScripts": {
+			"properties": {
+				"preinstall": {
+					"type": "string"
+				},
+				"postinstall": {
+					"type": "string"
+				},
+				"preremove": {
+					"type": "string"
+				},
+				"postremove": {
+					"type": "string"
+				}
+			},
+			"additionalProperties": false,
+			"type": "object"
+		},
+		"Nightly": {
+			"properties": {
+				"name_template": {
+					"type": "string"
+				},
+				"tag_name": {
+					"type": "string"
+				},
+				"publish_release": {
+					"type": "boolean"
+				},
+				"keep_single_release": {
+					"type": "boolean"
+				}
+			},
+			"additionalProperties": false,
+			"type": "object"
+		},
+		"Nix": {
+			"properties": {
+				"name": {
+					"type": "string"
+				},
+				"path": {
+					"type": "string"
+				},
+				"repository": {
+					"$ref": "#/$defs/RepoRef"
+				},
+				"commit_author": {
+					"$ref": "#/$defs/CommitAuthor"
+				},
+				"commit_msg_template": {
+					"type": "string"
+				},
+				"ids": {
+					"items": {
+						"type": "string"
+					},
+					"type": "array"
+				},
+				"goamd64": {
+					"type": "string"
+				},
+				"skip_upload": {
+					"oneOf": [
+						{
+							"type": "string"
+						},
+						{
+							"type": "boolean"
+						}
+					]
+				},
+				"url_template": {
+					"type": "string"
+				},
+				"install": {
+					"type": "string"
+				},
+				"post_install": {
+					"type": "string"
+				},
+				"description": {
+					"type": "string"
+				},
+				"homepage": {
+					"type": "string"
+				},
+				"license": {
+					"type": "string"
+				}
+			},
+			"additionalProperties": false,
+			"type": "object"
+		},
+		"OpenCollective": {
+			"properties": {
+				"enabled": {
+					"type": "boolean"
+				},
+				"slug": {
+					"type": "string"
+				},
+				"title_template": {
+					"type": "string"
+				},
+				"message_template": {
+					"type": "string"
+				}
+			},
+			"additionalProperties": false,
+			"type": "object"
+		},
+		"Partial": {
+			"properties": {
+				"by": {
+					"type": "string",
+					"enum": ["goos", "target"],
+					"default": "goos"
+				}
+			},
+			"additionalProperties": false,
+			"type": "object"
+		},
+		"PreBuiltOptions": {
+			"properties": {
+				"path": {
+					"type": "string"
+				}
+			},
+			"additionalProperties": false,
+			"type": "object"
+		},
+		"Project": {
+			"properties": {
+				"project_name": {
+					"type": "string"
+				},
+				"env": {
+					"items": {
+						"type": "string"
+					},
+					"type": "array"
+				},
+				"release": {
+					"$ref": "#/$defs/Release"
+				},
+				"milestones": {
+					"items": {
+						"$ref": "#/$defs/Milestone"
+					},
+					"type": "array"
+				},
+				"brews": {
+					"items": {
+						"$ref": "#/$defs/Homebrew"
+					},
+					"type": "array"
+				},
+				"nix": {
+					"items": {
+						"$ref": "#/$defs/Nix"
+					},
+					"type": "array"
+				},
+				"aurs": {
+					"items": {
+						"$ref": "#/$defs/AUR"
+					},
+					"type": "array"
+				},
+				"krews": {
+					"items": {
+						"$ref": "#/$defs/Krew"
+					},
+					"type": "array"
+				},
+				"kos": {
+					"items": {
+						"$ref": "#/$defs/Ko"
+					},
+					"type": "array"
+				},
+				"scoop": {
+					"$ref": "#/$defs/Scoop"
+				},
+				"scoops": {
+					"items": {
+						"$ref": "#/$defs/Scoop"
+					},
+					"type": "array"
+				},
+				"builds": {
+					"items": {
+						"$ref": "#/$defs/Build"
+					},
+					"type": "array"
+				},
+				"archives": {
+					"items": {
+						"$ref": "#/$defs/Archive"
+					},
+					"type": "array"
+				},
+				"nfpms": {
+					"items": {
+						"$ref": "#/$defs/NFPM"
+					},
+					"type": "array"
+				},
+				"snapcrafts": {
+					"items": {
+						"$ref": "#/$defs/Snapcraft"
+					},
+					"type": "array"
+				},
+				"snapshot": {
+					"$ref": "#/$defs/Snapshot"
+				},
+				"checksum": {
+					"$ref": "#/$defs/Checksum"
+				},
+				"dockers": {
+					"items": {
+						"$ref": "#/$defs/Docker"
+					},
+					"type": "array"
+				},
+				"docker_manifests": {
+					"items": {
+						"$ref": "#/$defs/DockerManifest"
+					},
+					"type": "array"
+				},
+				"artifactories": {
+					"items": {
+						"$ref": "#/$defs/Upload"
+					},
+					"type": "array"
+				},
+				"uploads": {
+					"items": {
+						"$ref": "#/$defs/Upload"
+					},
+					"type": "array"
+				},
+				"blobs": {
+					"items": {
+						"$ref": "#/$defs/Blob"
+					},
+					"type": "array"
+				},
+				"publishers": {
+					"items": {
+						"$ref": "#/$defs/Publisher"
+					},
+					"type": "array"
+				},
+				"changelog": {
+					"$ref": "#/$defs/Changelog"
+				},
+				"dist": {
+					"type": "string"
+				},
+				"signs": {
+					"items": {
+						"$ref": "#/$defs/Sign"
+					},
+					"type": "array"
+				},
+				"docker_signs": {
+					"items": {
+						"$ref": "#/$defs/Sign"
+					},
+					"type": "array"
+				},
+				"env_files": {
+					"$ref": "#/$defs/EnvFiles"
+				},
+				"before": {
+					"$ref": "#/$defs/Before"
+				},
+				"after": {
+					"$ref": "#/$defs/After"
+				},
+				"source": {
+					"$ref": "#/$defs/Source"
+				},
+				"gomod": {
+					"$ref": "#/$defs/GoMod"
+				},
+				"announce": {
+					"$ref": "#/$defs/Announce"
+				},
+				"sboms": {
+					"items": {
+						"$ref": "#/$defs/SBOM"
+					},
+					"type": "array"
+				},
+				"chocolateys": {
+					"items": {
+						"$ref": "#/$defs/Chocolatey"
+					},
+					"type": "array"
+				},
+				"git": {
+					"$ref": "#/$defs/Git"
+				},
+				"report_sizes": {
+					"type": "boolean"
+				},
+				"template_files": {
+					"items": {
+						"$ref": "#/$defs/TemplateFile"
+					},
+					"type": "array"
+				},
+				"universal_binaries": {
+					"items": {
+						"$ref": "#/$defs/UniversalBinary"
+					},
+					"type": "array"
+				},
+				"upx": {
+					"items": {
+						"$ref": "#/$defs/UPX"
+					},
+					"type": "array"
+				},
+				"build": {
+					"$ref": "#/$defs/Build",
+					"description": "deprecated: use builds instead"
+				},
+				"force_token": {
+					"type": "string",
+					"enum": ["github", "gitlab", "gitea", ""],
+					"default": ""
+				},
+				"github_urls": {
+					"$ref": "#/$defs/GitHubURLs"
+				},
+				"gitlab_urls": {
+					"$ref": "#/$defs/GitLabURLs"
+				},
+				"gitea_urls": {
+					"$ref": "#/$defs/GiteaURLs"
+				},
+				"includes": {
+					"items": {
+						"$ref": "#/$defs/Include"
+					},
+					"type": "array"
+				},
+				"variables": {
+					"type": "object"
+				},
+				"monorepo": {
+					"$ref": "#/$defs/Monorepo"
+				},
+				"partial": {
+					"$ref": "#/$defs/Partial"
+				},
+				"nightly": {
+					"$ref": "#/$defs/Nightly"
+				},
+				"furies": {
+					"items": {
+						"$ref": "#/$defs/Fury"
+					},
+					"type": "array"
+				}
+			},
+			"additionalProperties": false,
+			"type": "object"
+		},
+		"Publisher": {
+			"properties": {
+				"name": {
+					"type": "string"
+				},
+				"ids": {
+					"items": {
+						"type": "string"
+					},
+					"type": "array"
+				},
+				"checksum": {
+					"type": "boolean"
+				},
+				"signature": {
+					"type": "boolean"
+				},
+				"dir": {
+					"type": "string"
+				},
+				"cmd": {
+					"type": "string"
+				},
+				"env": {
+					"items": {
+						"type": "string"
+					},
+					"type": "array"
+				},
+				"extra_files": {
+					"items": {
+						"$ref": "#/$defs/ExtraFile"
+					},
+					"type": "array"
+				},
+				"templated_extra_files": {
+					"items": {
+						"$ref": "#/$defs/TemplatedExtraFile"
+					},
+					"type": "array"
+				}
+			},
+			"additionalProperties": false,
+			"type": "object"
+		},
+		"PullRequest": {
+			"properties": {
+				"enabled": {
+					"type": "boolean"
+				},
+				"base": {
+					"$ref": "#/$defs/PullRequestBase"
+				},
+				"draft": {
+					"type": "boolean"
+				}
+			},
+			"additionalProperties": false,
+			"type": "object"
+		},
+		"PullRequestBase": {
+			"oneOf": [
+				{
+					"type": "string"
+				},
+				{
+					"$schema": "https://json-schema.org/draft/2020-12/schema",
+					"$id": "https://github.com/goreleaser/goreleaser/pkg/config/pull-request-base",
+					"properties": {
+						"owner": {
+							"type": "string"
+						},
+						"name": {
+							"type": "string"
+						},
+						"branch": {
+							"type": "string"
+						}
+					},
+					"additionalProperties": false,
+					"type": "object"
+				}
+			]
+		},
+		"Reddit": {
+			"properties": {
+				"enabled": {
+					"type": "boolean"
+				},
+				"application_id": {
+					"type": "string"
+				},
+				"username": {
+					"type": "string"
+				},
+				"title_template": {
+					"type": "string"
+				},
+				"url_template": {
+					"type": "string"
+				},
+				"sub": {
+					"type": "string"
+				}
+			},
+			"additionalProperties": false,
+			"type": "object"
+		},
+		"Release": {
+			"properties": {
+				"github": {
+					"$ref": "#/$defs/Repo"
+				},
+				"gitlab": {
+					"$ref": "#/$defs/Repo"
+				},
+				"gitea": {
+					"$ref": "#/$defs/Repo"
+				},
+				"draft": {
+					"type": "boolean"
+				},
+				"replace_existing_draft": {
+					"type": "boolean"
+				},
+				"target_commitish": {
+					"type": "string"
+				},
+				"tag": {
+					"type": "string"
+				},
+				"disable": {
+					"oneOf": [
+						{
+							"type": "string"
+						},
+						{
+							"type": "boolean"
+						}
+					]
+				},
+				"skip_upload": {
+					"oneOf": [
+						{
+							"type": "string"
+						},
+						{
+							"type": "boolean"
+						}
+					]
+				},
+				"prerelease": {
+					"type": "string"
+				},
+				"name_template": {
+					"type": "string"
+				},
+				"ids": {
+					"items": {
+						"type": "string"
+					},
+					"type": "array"
+				},
+				"extra_files": {
+					"items": {
+						"$ref": "#/$defs/ExtraFile"
+					},
+					"type": "array"
+				},
+				"discussion_category_name": {
+					"type": "string"
+				},
+				"header": {
+					"type": "string"
+				},
+				"footer": {
+					"type": "string"
+				},
+				"mode": {
+					"type": "string",
+					"enum": ["keep-existing", "append", "prepend", "replace"],
+					"default": "keep-existing"
+				},
+				"templated_extra_files": {
+					"items": {
+						"$ref": "#/$defs/TemplatedExtraFile"
+					},
+					"type": "array"
+				}
+			},
+			"additionalProperties": false,
+			"type": "object"
+		},
+		"Repo": {
+			"properties": {
+				"owner": {
+					"type": "string"
+				},
+				"name": {
+					"type": "string"
+				}
+			},
+			"additionalProperties": false,
+			"type": "object"
+		},
+		"RepoRef": {
+			"properties": {
+				"owner": {
+					"type": "string"
+				},
+				"name": {
+					"type": "string"
+				},
+				"token": {
+					"type": "string"
+				},
+				"branch": {
+					"type": "string"
+				},
+				"git": {
+					"$ref": "#/$defs/GitRepoRef"
+				},
+				"pull_request": {
+					"$ref": "#/$defs/PullRequest"
+				}
+			},
+			"additionalProperties": false,
+			"type": "object"
+		},
+		"SBOM": {
+			"properties": {
+				"id": {
+					"type": "string"
+				},
+				"cmd": {
+					"type": "string"
+				},
+				"env": {
+					"items": {
+						"type": "string"
+					},
+					"type": "array"
+				},
+				"args": {
+					"items": {
+						"type": "string"
+					},
+					"type": "array"
+				},
+				"documents": {
+					"items": {
+						"type": "string"
+					},
+					"type": "array"
+				},
+				"artifacts": {
+					"type": "string"
+				},
+				"ids": {
+					"items": {
+						"type": "string"
+					},
+					"type": "array"
+				}
+			},
+			"additionalProperties": false,
+			"type": "object"
+		},
+		"SMTP": {
+			"properties": {
+				"enabled": {
+					"type": "boolean"
+				},
+				"host": {
+					"type": "string"
+				},
+				"port": {
+					"type": "integer"
+				},
+				"username": {
+					"type": "string"
+				},
+				"from": {
+					"type": "string"
+				},
+				"to": {
+					"items": {
+						"type": "string"
+					},
+					"type": "array"
+				},
+				"subject_template": {
+					"type": "string"
+				},
+				"body_template": {
+					"type": "string"
+				},
+				"insecure_skip_verify": {
+					"type": "boolean"
+				}
+			},
+			"additionalProperties": false,
+			"type": "object"
+		},
+		"Scoop": {
+			"properties": {
+				"name": {
+					"type": "string"
+				},
+				"ids": {
+					"items": {
+						"type": "string"
+					},
+					"type": "array"
+				},
+				"bucket": {
+					"$ref": "#/$defs/RepoRef"
+				},
+				"folder": {
+					"type": "string"
+				},
+				"commit_author": {
+					"$ref": "#/$defs/CommitAuthor"
+				},
+				"commit_msg_template": {
+					"type": "string"
+				},
+				"homepage": {
+					"type": "string"
+				},
+				"description": {
+					"type": "string"
+				},
+				"license": {
+					"type": "string"
+				},
+				"url_template": {
+					"type": "string"
+				},
+				"persist": {
+					"items": {
+						"type": "string"
+					},
+					"type": "array"
+				},
+				"skip_upload": {
+					"oneOf": [
+						{
+							"type": "string"
+						},
+						{
+							"type": "boolean"
+						}
+					]
+				},
+				"pre_install": {
+					"items": {
+						"type": "string"
+					},
+					"type": "array"
+				},
+				"post_install": {
+					"items": {
+						"type": "string"
+					},
+					"type": "array"
+				},
+				"depends": {
+					"items": {
+						"type": "string"
+					},
+					"type": "array"
+				},
+				"shortcuts": {
+					"items": {
+						"items": {
+							"type": "string"
+						},
+						"type": "array"
+					},
+					"type": "array"
+				},
+				"goamd64": {
+					"type": "string"
+				}
+			},
+			"additionalProperties": false,
+			"type": "object"
+		},
+		"Sign": {
+			"properties": {
+				"id": {
+					"type": "string"
+				},
+				"cmd": {
+					"type": "string"
+				},
+				"args": {
+					"items": {
+						"type": "string"
+					},
+					"type": "array"
+				},
+				"signature": {
+					"type": "string"
+				},
+				"artifacts": {
+					"type": "string",
+					"enum": [
+						"all",
+						"manifests",
+						"images",
+						"checksum",
+						"source",
+						"package",
+						"archive",
+						"binary",
+						"sbom"
+					]
+				},
+				"ids": {
+					"items": {
+						"type": "string"
+					},
+					"type": "array"
+				},
+				"stdin": {
+					"type": "string"
+				},
+				"stdin_file": {
+					"type": "string"
+				},
+				"env": {
+					"items": {
+						"type": "string"
+					},
+					"type": "array"
+				},
+				"certificate": {
+					"type": "string"
+				},
+				"output": {
+					"type": "boolean"
+				}
+			},
+			"additionalProperties": false,
+			"type": "object"
+		},
+		"Slack": {
+			"properties": {
+				"enabled": {
+					"type": "boolean"
+				},
+				"message_template": {
+					"type": "string"
+				},
+				"channel": {
+					"type": "string"
+				},
+				"username": {
+					"type": "string"
+				},
+				"icon_emoji": {
+					"type": "string"
+				},
+				"icon_url": {
+					"type": "string"
+				},
+				"blocks": {
+					"items": {
+						"$ref": "#/$defs/SlackBlock"
+					},
+					"type": "array"
+				},
+				"attachments": {
+					"items": {
+						"$ref": "#/$defs/SlackAttachment"
+					},
+					"type": "array"
+				}
+			},
+			"additionalProperties": false,
+			"type": "object"
+		},
+		"SlackAttachment": {
+			"properties": {
+				"Internal": true
+			},
+			"additionalProperties": false,
+			"type": "object",
+			"required": ["Internal"]
+		},
+		"SlackBlock": {
+			"properties": {
+				"Internal": true
+			},
+			"additionalProperties": false,
+			"type": "object",
+			"required": ["Internal"]
+		},
+		"Snapcraft": {
+			"properties": {
+				"name_template": {
+					"type": "string"
+				},
+				"publish": {
+					"type": "boolean"
+				},
+				"id": {
+					"type": "string"
+				},
+				"builds": {
+					"items": {
+						"type": "string"
+					},
+					"type": "array"
+				},
+				"name": {
+					"type": "string"
+				},
+				"summary": {
+					"type": "string"
+				},
+				"description": {
+					"type": "string"
+				},
+				"base": {
+					"type": "string"
+				},
+				"license": {
+					"type": "string"
+				},
+				"grade": {
+					"type": "string"
+				},
+				"channel_templates": {
+					"items": {
+						"type": "string"
+					},
+					"type": "array"
+				},
+				"confinement": {
+					"type": "string"
+				},
+				"layout": {
+					"patternProperties": {
+						".*": {
+							"$ref": "#/$defs/SnapcraftLayoutMetadata"
+						}
+					},
+					"type": "object"
+				},
+				"apps": {
+					"patternProperties": {
+						".*": {
+							"$ref": "#/$defs/SnapcraftAppMetadata"
+						}
+					},
+					"type": "object"
+				},
+				"plugs": {
+					"type": "object"
+				},
+				"extra_files": {
+					"items": {
+						"$ref": "#/$defs/SnapcraftExtraFiles"
+					},
+					"type": "array"
+				},
+				"templated_extra_files": {
+					"items": {
+						"$ref": "#/$defs/SnapcraftExtraFiles"
+					},
+					"type": "array"
+				}
+			},
+			"additionalProperties": false,
+			"type": "object"
+		},
+		"SnapcraftAppMetadata": {
+			"properties": {
+				"command": {
+					"type": "string"
+				},
+				"args": {
+					"type": "string"
+				},
+				"adapter": {
+					"type": "string"
+				},
+				"after": {
+					"items": {
+						"type": "string"
+					},
+					"type": "array"
+				},
+				"aliases": {
+					"items": {
+						"type": "string"
+					},
+					"type": "array"
+				},
+				"autostart": {
+					"type": "string"
+				},
+				"before": {
+					"items": {
+						"type": "string"
+					},
+					"type": "array"
+				},
+				"bus_name": {
+					"type": "string"
+				},
+				"command_chain": {
+					"items": {
+						"type": "string"
+					},
+					"type": "array"
+				},
+				"common_id": {
+					"type": "string"
+				},
+				"completer": {
+					"type": "string"
+				},
+				"daemon": {
+					"type": "string"
+				},
+				"desktop": {
+					"type": "string"
+				},
+				"environment": {
+					"type": "object"
+				},
+				"extensions": {
+					"items": {
+						"type": "string"
+					},
+					"type": "array"
+				},
+				"install_mode": {
+					"type": "string"
+				},
+				"passthrough": {
+					"type": "object"
+				},
+				"plugs": {
+					"items": {
+						"type": "string"
+					},
+					"type": "array"
+				},
+				"post_stop_command": {
+					"type": "string"
+				},
+				"refresh_mode": {
+					"type": "string"
+				},
+				"reload_command": {
+					"type": "string"
+				},
+				"restart_condition": {
+					"type": "string"
+				},
+				"restart_delay": {
+					"type": "string"
+				},
+				"slots": {
+					"items": {
+						"type": "string"
+					},
+					"type": "array"
+				},
+				"sockets": {
+					"type": "object"
+				},
+				"start_timeout": {
+					"type": "string"
+				},
+				"stop_command": {
+					"type": "string"
+				},
+				"stop_mode": {
+					"type": "string"
+				},
+				"stop_timeout": {
+					"type": "string"
+				},
+				"timer": {
+					"type": "string"
+				},
+				"watchdog_timeout": {
+					"type": "string"
+				}
+			},
+			"additionalProperties": false,
+			"type": "object",
+			"required": ["command"]
+		},
+		"SnapcraftExtraFiles": {
+			"properties": {
+				"source": {
+					"type": "string"
+				},
+				"destination": {
+					"type": "string"
+				},
+				"mode": {
+					"type": "integer"
+				}
+			},
+			"additionalProperties": false,
+			"type": "object",
+			"required": ["source"]
+		},
+		"SnapcraftLayoutMetadata": {
+			"properties": {
+				"symlink": {
+					"type": "string"
+				},
+				"bind": {
+					"type": "string"
+				},
+				"bind_file": {
+					"type": "string"
+				},
+				"type": {
+					"type": "string"
+				}
+			},
+			"additionalProperties": false,
+			"type": "object"
+		},
+		"Snapshot": {
+			"properties": {
+				"name_template": {
+					"type": "string"
+				}
+			},
+			"additionalProperties": false,
+			"type": "object"
+		},
+		"Source": {
+			"properties": {
+				"name_template": {
+					"type": "string"
+				},
+				"format": {
+					"type": "string",
+					"enum": ["tar", "tgz", "tar.gz", "zip"],
+					"default": "tar.gz"
+				},
+				"enabled": {
+					"type": "boolean"
+				},
+				"prefix_template": {
+					"type": "string"
+				},
+				"files": {
+					"items": {
+						"$ref": "#/$defs/File"
+					},
+					"type": "array"
+				},
+				"rlcp": {
+					"oneOf": [
+						{
+							"type": "string"
+						},
+						{
+							"type": "boolean"
+						}
+					]
+				},
+				"templated_files": {
+					"items": {
+						"$ref": "#/$defs/TemplatedFile"
+					},
+					"type": "array"
+				}
+			},
+			"additionalProperties": false,
+			"type": "object"
+		},
+		"StringArray": {
+			"oneOf": [
+				{
+					"type": "string"
+				},
+				{
+					"items": {
+						"type": "string"
+					},
+					"type": "array"
+				}
+			]
+		},
+		"Teams": {
+			"properties": {
+				"enabled": {
+					"type": "boolean"
+				},
+				"title_template": {
+					"type": "string"
+				},
+				"message_template": {
+					"type": "string"
+				},
+				"color": {
+					"type": "string"
+				},
+				"icon_url": {
+					"type": "string"
+				}
+			},
+			"additionalProperties": false,
+			"type": "object"
+		},
+		"Telegram": {
+			"properties": {
+				"enabled": {
+					"type": "boolean"
+				},
+				"message_template": {
+					"type": "string"
+				},
+				"chat_id": {
+					"oneOf": [
+						{
+							"type": "string"
+						},
+						{
+							"type": "integer"
+						}
+					]
+				},
+				"parse_mode": {
+					"type": "string",
+					"enum": ["MarkdownV2", "HTML"],
+					"default": "MarkdownV2"
+				}
+			},
+			"additionalProperties": false,
+			"type": "object"
+		},
+		"TemplateFile": {
+			"properties": {
+				"id": {
+					"type": "string"
+				},
+				"src": {
+					"type": "string"
+				},
+				"dst": {
+					"type": "string"
+				},
+				"mode": {
+					"type": "integer"
+				}
+			},
+			"additionalProperties": false,
+			"type": "object",
+			"required": ["src", "dst"]
+		},
+		"TemplatedExtraFile": {
+			"properties": {
+				"src": {
+					"type": "string"
+				},
+				"dst": {
+					"type": "string"
+				}
+			},
+			"additionalProperties": false,
+			"type": "object"
+		},
+		"TemplatedExtraFileWithMode": {
+			"properties": {
+				"src": {
+					"type": "string"
+				},
+				"dst": {
+					"type": "string"
+				},
+				"mode": {
+					"type": "integer"
+				}
+			},
+			"additionalProperties": false,
+			"type": "object"
+		},
+		"TemplatedFile": {
+			"properties": {
+				"src": {
+					"type": "string"
+				},
+				"dst": {
+					"type": "string"
+				},
+				"info": {
+					"$ref": "#/$defs/FileInfo"
+				}
+			},
+			"additionalProperties": false,
+			"type": "object"
+		},
+		"Twitter": {
+			"properties": {
+				"enabled": {
+					"type": "boolean"
+				},
+				"message_template": {
+					"type": "string"
+				}
+			},
+			"additionalProperties": false,
+			"type": "object"
+		},
+		"UPX": {
+			"properties": {
+				"enabled": {
+					"type": "boolean"
+				},
+				"ids": {
+					"items": {
+						"type": "string"
+					},
+					"type": "array"
+				},
+				"goos": {
+					"items": {
+						"type": "string"
+					},
+					"type": "array"
+				},
+				"goarch": {
+					"items": {
+						"type": "string"
+					},
+					"type": "array"
+				},
+				"goarm": {
+					"items": {
+						"type": "string"
+					},
+					"type": "array"
+				},
+				"goamd64": {
+					"items": {
+						"type": "string"
+					},
+					"type": "array"
+				},
+				"binary": {
+					"type": "string"
+				},
+				"compress": {
+					"type": "string",
+					"enum": [
+						"1",
+						"2",
+						"3",
+						"4",
+						"5",
+						"6",
+						"7",
+						"8",
+						"9",
+						"best",
+						""
+					],
+					"default": ""
+				},
+				"lzma": {
+					"type": "boolean"
+				},
+				"brute": {
+					"type": "boolean"
+				}
+			},
+			"additionalProperties": false,
+			"type": "object"
+		},
+		"UniversalBinary": {
+			"properties": {
+				"id": {
+					"type": "string"
+				},
+				"ids": {
+					"items": {
+						"type": "string"
+					},
+					"type": "array"
+				},
+				"name_template": {
+					"type": "string"
+				},
+				"replace": {
+					"type": "boolean"
+				},
+				"hooks": {
+					"$ref": "#/$defs/BuildHookConfig"
+				}
+			},
+			"additionalProperties": false,
+			"type": "object"
+		},
+		"Upload": {
+			"properties": {
+				"name": {
+					"type": "string"
+				},
+				"ids": {
+					"items": {
+						"type": "string"
+					},
+					"type": "array"
+				},
+				"exts": {
+					"items": {
+						"type": "string"
+					},
+					"type": "array"
+				},
+				"target": {
+					"type": "string"
+				},
+				"username": {
+					"type": "string"
+				},
+				"mode": {
+					"type": "string"
+				},
+				"method": {
+					"type": "string"
+				},
+				"checksum_header": {
+					"type": "string"
+				},
+				"client_x509_cert": {
+					"type": "string"
+				},
+				"client_x509_key": {
+					"type": "string"
+				},
+				"trusted_certificates": {
+					"type": "string"
+				},
+				"checksum": {
+					"type": "boolean"
+				},
+				"signature": {
+					"type": "boolean"
+				},
+				"custom_artifact_name": {
+					"type": "boolean"
+				},
+				"custom_headers": {
+					"patternProperties": {
+						".*": {
+							"type": "string"
+						}
+					},
+					"type": "object"
+				}
+			},
+			"additionalProperties": false,
+			"type": "object"
+		},
+		"Webhook": {
+			"properties": {
+				"enabled": {
+					"type": "boolean"
+				},
+				"skip_tls_verify": {
+					"type": "boolean"
+				},
+				"message_template": {
+					"type": "string"
+				},
+				"endpoint_url": {
+					"type": "string"
+				},
+				"headers": {
+					"patternProperties": {
+						".*": {
+							"type": "string"
+						}
+					},
+					"type": "object"
+				},
+				"content_type": {
+					"type": "string"
+				}
+			},
+			"additionalProperties": false,
+			"type": "object"
+		}
+	},
+	"description": "goreleaser configuration definition file"
+}

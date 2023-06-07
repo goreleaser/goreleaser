@@ -15,6 +15,7 @@ GoReleaser also has a [jsonschema][] file, which you can use to have better
 editor support:
 
 === "OSS"
+
     ```sh
     https://goreleaser.com/static/schema.json
     ```
@@ -26,6 +27,7 @@ editor support:
     ```
 
 === "Pro"
+
     ```sh
     https://goreleaser.com/static/schema-pro.json
     ```
@@ -44,13 +46,14 @@ You can also generate it for your specific version using the
 You can pin the version by getting the schema from the GitHub tag, for example,
 for v1.12.0:
 
-
 === "OSS"
+
     ```sh
     https://raw.githubusercontent.com/goreleaser/goreleaser/v1.12.0/www/docs/static/schema.json
     ```
 
 === "Pro"
+
     ```sh
     https://raw.githubusercontent.com/goreleaser/goreleaser/v1.12.0/www/docs/static/schema-pro.json
     ```

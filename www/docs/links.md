@@ -2,15 +2,15 @@
 
 - Follow the progress on the [GitHub repository](https://github.com/goreleaser/goreleaser)
 - Follow us on [Twitter](/twitter) and
-<a rel="me" href="https://fosstodon.org/@goreleaser">Mastodon</a>
-for updates
+  <a rel="me" href="https://fosstodon.org/@goreleaser">Mastodon</a>
+  for updates
 - Join our [Discord server](/discord)
 - Read our [blog](https://blog.goreleaser.com)[^blog]
 - Sign up for our [Newsletter](https://www.getrevue.co/profile/goreleaser)
 - Follow us on [LinkedIn](/linkedin)
 - For questions, support and general discussion, please use
-[Discord](/discord) or
-[GitHub Discussions](https://github.com/goreleaser/goreleaser/discussions)
+  [Discord](/discord) or
+  [GitHub Discussions](https://github.com/goreleaser/goreleaser/discussions)
 - [Contributing Guidelines](/contributing)
 - [Security Policy](/security)
 - [EULA](/eula)

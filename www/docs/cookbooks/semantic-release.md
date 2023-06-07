@@ -24,7 +24,7 @@ plugins:
   - "@semantic-release/release-notes-generator"
   - "@semantic-release/changelog"
   - "@semantic-release/git"
-  - - "@semantic-release/exec"
+  - "@semantic-release/exec"
     - publishCmd: |
         echo "${nextRelease.notes}" > /tmp/release-notes.md
         goreleaser release --release-notes /tmp/release-notes.md --clean

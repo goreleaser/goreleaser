@@ -60,7 +60,6 @@ You can also do it in your continuous integration platform of choice.
 
 Hopefully you find it useful, and the docs easy to follow.
 
-
 Feel free to [create an issue][iss] if you find something that's not clear and
 join our [Discord][dis] to chat with other users and maintainers.
 

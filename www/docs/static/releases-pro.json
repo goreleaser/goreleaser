@@ -1,260 +1,260 @@
 [
-  {
-    "tag_name": "v1.18.2-pro"
-  },
-  {
-    "tag_name": "v1.18.1-pro"
-  },
-  {
-    "tag_name": "v1.18.0-pro"
-  },
-  {
-    "tag_name": "v1.17.2-pro"
-  },
-  {
-    "tag_name": "v1.17.1-pro"
-  },
-  {
-    "tag_name": "v1.17.0-pro"
-  },
-  {
-    "tag_name": "v1.16.2-pro"
-  },
-  {
-    "tag_name": "v1.16.1-pro"
-  },
-  {
-    "tag_name": "v1.16.0-pro"
-  },
-  {
-    "tag_name": "v1.15.2-pro"
-  },
-  {
-    "tag_name": "v1.15.1-pro"
-  },
-  {
-    "tag_name": "v1.15.0-pro"
-  },
-  {
-    "tag_name": "v1.14.1-pro"
-  },
-  {
-    "tag_name": "v1.14.0-pro"
-  },
-  {
-    "tag_name": "v1.13.1-pro"
-  },
-  {
-    "tag_name": "v1.13.0-pro"
-  },
-  {
-    "tag_name": "v1.12.3-pro"
-  },
-  {
-    "tag_name": "v1.12.2-pro"
-  },
-  {
-    "tag_name": "v1.12.1-pro"
-  },
-  {
-    "tag_name": "v1.12.0-pro"
-  },
-  {
-    "tag_name": "nightly"
-  },
-  {
-    "tag_name": "v1.11.5-pro"
-  },
-  {
-    "tag_name": "v1.11.4-pro"
-  },
-  {
-    "tag_name": "v1.11.3-pro"
-  },
-  {
-    "tag_name": "v1.11.2-pro"
-  },
-  {
-    "tag_name": "v1.11.1-pro"
-  },
-  {
-    "tag_name": "v1.11.0-pro"
-  },
-  {
-    "tag_name": "v1.10.3-pro"
-  },
-  {
-    "tag_name": "v1.10.2-pro"
-  },
-  {
-    "tag_name": "v1.10.1-pro"
-  },
-  {
-    "tag_name": "v1.10.0-pro"
-  },
-  {
-    "tag_name": "v1.9.2-pro"
-  },
-  {
-    "tag_name": "v1.9.1-pro"
-  },
-  {
-    "tag_name": "v1.9.0-pro"
-  },
-  {
-    "tag_name": "v1.8.3-pro"
-  },
-  {
-    "tag_name": "v1.8.2-pro"
-  },
-  {
-    "tag_name": "v1.8.1-pro"
-  },
-  {
-    "tag_name": "v1.8.0-pro"
-  },
-  {
-    "tag_name": "v1.7.0-pro"
-  },
-  {
-    "tag_name": "v1.6.3-pro"
-  },
-  {
-    "tag_name": "v1.6.2-pro"
-  },
-  {
-    "tag_name": "v1.6.1-pro"
-  },
-  {
-    "tag_name": "v1.6.0-pro"
-  },
-  {
-    "tag_name": "v1.5.0-pro"
-  },
-  {
-    "tag_name": "v1.4.1-pro"
-  },
-  {
-    "tag_name": "v1.4.0-pro"
-  },
-  {
-    "tag_name": "v1.3.1-pro"
-  },
-  {
-    "tag_name": "v1.3.0-pro"
-  },
-  {
-    "tag_name": "v1.2.5-pro"
-  },
-  {
-    "tag_name": "v1.2.4-pro"
-  },
-  {
-    "tag_name": "v1.2.3-pro"
-  },
-  {
-    "tag_name": "v1.2.2-pro"
-  },
-  {
-    "tag_name": "v1.2.1-pro"
-  },
-  {
-    "tag_name": "v1.2.0-pro"
-  },
-  {
-    "tag_name": "v1.1.0-pro"
-  },
-  {
-    "tag_name": "v1.0.0-pro"
-  },
-  {
-    "tag_name": "v0.184.0-pro"
-  },
-  {
-    "tag_name": "v0.183.0-pro"
-  },
-  {
-    "tag_name": "v0.182.1-pro"
-  },
-  {
-    "tag_name": "v0.182.0-pro"
-  },
-  {
-    "tag_name": "v0.181.1-pro"
-  },
-  {
-    "tag_name": "v0.181.0-pro"
-  },
-  {
-    "tag_name": "v0.180.3-pro"
-  },
-  {
-    "tag_name": "v0.180.2-pro"
-  },
-  {
-    "tag_name": "v0.180.1-pro"
-  },
-  {
-    "tag_name": "v0.180.0-pro"
-  },
-  {
-    "tag_name": "v0.179.0-pro"
-  },
-  {
-    "tag_name": "v0.178.0-pro"
-  },
-  {
-    "tag_name": "v0.177.0-pro"
-  },
-  {
-    "tag_name": "v0.176.0-pro"
-  },
-  {
-    "tag_name": "v0.175.0-pro"
-  },
-  {
-    "tag_name": "v0.174.2-pro"
-  },
-  {
-    "tag_name": "v0.174.1-pro"
-  },
-  {
-    "tag_name": "v0.174.0-pro"
-  },
-  {
-    "tag_name": "v0.173.1-pro"
-  },
-  {
-    "tag_name": "v0.173.0-pro"
-  },
-  {
-    "tag_name": "v0.172.1-pro"
-  },
-  {
-    "tag_name": "v0.172.0-pro"
-  },
-  {
-    "tag_name": "v0.171.1-pro"
-  },
-  {
-    "tag_name": "v0.171.0-pro"
-  },
-  {
-    "tag_name": "v0.170.0-pro"
-  },
-  {
-    "tag_name": "v0.169.0-pro"
-  },
-  {
-    "tag_name": "v0.168.0-pro"
-  },
-  {
-    "tag_name": "v0.167.0-pro"
-  },
-  {
-    "tag_name": "v0.166.1-pro"
-  },
-  {
-    "tag_name": "v0.166.0-pro"
-  }
+	{
+		"tag_name": "v1.18.2-pro"
+	},
+	{
+		"tag_name": "v1.18.1-pro"
+	},
+	{
+		"tag_name": "v1.18.0-pro"
+	},
+	{
+		"tag_name": "v1.17.2-pro"
+	},
+	{
+		"tag_name": "v1.17.1-pro"
+	},
+	{
+		"tag_name": "v1.17.0-pro"
+	},
+	{
+		"tag_name": "v1.16.2-pro"
+	},
+	{
+		"tag_name": "v1.16.1-pro"
+	},
+	{
+		"tag_name": "v1.16.0-pro"
+	},
+	{
+		"tag_name": "v1.15.2-pro"
+	},
+	{
+		"tag_name": "v1.15.1-pro"
+	},
+	{
+		"tag_name": "v1.15.0-pro"
+	},
+	{
+		"tag_name": "v1.14.1-pro"
+	},
+	{
+		"tag_name": "v1.14.0-pro"
+	},
+	{
+		"tag_name": "v1.13.1-pro"
+	},
+	{
+		"tag_name": "v1.13.0-pro"
+	},
+	{
+		"tag_name": "v1.12.3-pro"
+	},
+	{
+		"tag_name": "v1.12.2-pro"
+	},
+	{
+		"tag_name": "v1.12.1-pro"
+	},
+	{
+		"tag_name": "v1.12.0-pro"
+	},
+	{
+		"tag_name": "nightly"
+	},
+	{
+		"tag_name": "v1.11.5-pro"
+	},
+	{
+		"tag_name": "v1.11.4-pro"
+	},
+	{
+		"tag_name": "v1.11.3-pro"
+	},
+	{
+		"tag_name": "v1.11.2-pro"
+	},
+	{
+		"tag_name": "v1.11.1-pro"
+	},
+	{
+		"tag_name": "v1.11.0-pro"
+	},
+	{
+		"tag_name": "v1.10.3-pro"
+	},
+	{
+		"tag_name": "v1.10.2-pro"
+	},
+	{
+		"tag_name": "v1.10.1-pro"
+	},
+	{
+		"tag_name": "v1.10.0-pro"
+	},
+	{
+		"tag_name": "v1.9.2-pro"
+	},
+	{
+		"tag_name": "v1.9.1-pro"
+	},
+	{
+		"tag_name": "v1.9.0-pro"
+	},
+	{
+		"tag_name": "v1.8.3-pro"
+	},
+	{
+		"tag_name": "v1.8.2-pro"
+	},
+	{
+		"tag_name": "v1.8.1-pro"
+	},
+	{
+		"tag_name": "v1.8.0-pro"
+	},
+	{
+		"tag_name": "v1.7.0-pro"
+	},
+	{
+		"tag_name": "v1.6.3-pro"
+	},
+	{
+		"tag_name": "v1.6.2-pro"
+	},
+	{
+		"tag_name": "v1.6.1-pro"
+	},
+	{
+		"tag_name": "v1.6.0-pro"
+	},
+	{
+		"tag_name": "v1.5.0-pro"
+	},
+	{
+		"tag_name": "v1.4.1-pro"
+	},
+	{
+		"tag_name": "v1.4.0-pro"
+	},
+	{
+		"tag_name": "v1.3.1-pro"
+	},
+	{
+		"tag_name": "v1.3.0-pro"
+	},
+	{
+		"tag_name": "v1.2.5-pro"
+	},
+	{
+		"tag_name": "v1.2.4-pro"
+	},
+	{
+		"tag_name": "v1.2.3-pro"
+	},
+	{
+		"tag_name": "v1.2.2-pro"
+	},
+	{
+		"tag_name": "v1.2.1-pro"
+	},
+	{
+		"tag_name": "v1.2.0-pro"
+	},
+	{
+		"tag_name": "v1.1.0-pro"
+	},
+	{
+		"tag_name": "v1.0.0-pro"
+	},
+	{
+		"tag_name": "v0.184.0-pro"
+	},
+	{
+		"tag_name": "v0.183.0-pro"
+	},
+	{
+		"tag_name": "v0.182.1-pro"
+	},
+	{
+		"tag_name": "v0.182.0-pro"
+	},
+	{
+		"tag_name": "v0.181.1-pro"
+	},
+	{
+		"tag_name": "v0.181.0-pro"
+	},
+	{
+		"tag_name": "v0.180.3-pro"
+	},
+	{
+		"tag_name": "v0.180.2-pro"
+	},
+	{
+		"tag_name": "v0.180.1-pro"
+	},
+	{
+		"tag_name": "v0.180.0-pro"
+	},
+	{
+		"tag_name": "v0.179.0-pro"
+	},
+	{
+		"tag_name": "v0.178.0-pro"
+	},
+	{
+		"tag_name": "v0.177.0-pro"
+	},
+	{
+		"tag_name": "v0.176.0-pro"
+	},
+	{
+		"tag_name": "v0.175.0-pro"
+	},
+	{
+		"tag_name": "v0.174.2-pro"
+	},
+	{
+		"tag_name": "v0.174.1-pro"
+	},
+	{
+		"tag_name": "v0.174.0-pro"
+	},
+	{
+		"tag_name": "v0.173.1-pro"
+	},
+	{
+		"tag_name": "v0.173.0-pro"
+	},
+	{
+		"tag_name": "v0.172.1-pro"
+	},
+	{
+		"tag_name": "v0.172.0-pro"
+	},
+	{
+		"tag_name": "v0.171.1-pro"
+	},
+	{
+		"tag_name": "v0.171.0-pro"
+	},
+	{
+		"tag_name": "v0.170.0-pro"
+	},
+	{
+		"tag_name": "v0.169.0-pro"
+	},
+	{
+		"tag_name": "v0.168.0-pro"
+	},
+	{
+		"tag_name": "v0.167.0-pro"
+	},
+	{
+		"tag_name": "v0.166.1-pro"
+	},
+	{
+		"tag_name": "v0.166.0-pro"
+	}
 ]

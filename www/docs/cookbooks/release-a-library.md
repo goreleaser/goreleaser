@@ -6,5 +6,5 @@ All you need is to add `skip: true` to the build config:
 
 ```yaml
 builds:
-- skip: true
+  - skip: true
 ```

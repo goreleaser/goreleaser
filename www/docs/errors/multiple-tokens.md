@@ -52,4 +52,3 @@ You can also force a token by using `force_token` in your config:
 # .goreleaser.yaml
 force_token: gitea
 ```
-

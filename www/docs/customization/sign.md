@@ -26,8 +26,7 @@ To customize the signing pipeline you can use the following options:
 ```yaml
 # .goreleaser.yaml
 signs:
-  -
-    # ID of the sign config, must be unique.
+  - # ID of the sign config, must be unique.
     #
     # Default: 'default'
     id: foo
@@ -76,7 +75,7 @@ signs:
     # Stdin data to be given to the signature command as stdin.
     #
     # Templates: allowed
-    stdin: '{{ .Env.GPG_PASSWORD }}'
+    stdin: "{{ .Env.GPG_PASSWORD }}"
 
     # StdinFile file to be given to the signature command as stdin.
     stdin_file: ./.password
@@ -90,8 +89,8 @@ signs:
     # List of environment variables that will be passed to the signing command
     # as well as the templates.
     env:
-    - FOO=bar
-    - HONK=honkhonk
+      - FOO=bar
+      - HONK=honkhonk
 
     # By default, the stdout and stderr of the signing cmd are discarded unless
     # GoReleaser is running with `--debug` set.
@@ -121,15 +120,15 @@ environment variable set, a simple usage example would look like this:
 ```yaml
 # .goreleaser.yaml
 signs:
-- cmd: cosign
-  stdin: '{{ .Env.COSIGN_PWD }}'
-  args:
-  - "sign-blob"
-  - "--key=cosign.key"
-  - "--output-signature=${signature}"
-  - "${artifact}"
-  - "--yes" # needed on cosign 2.0.0+
-  artifacts: all
+  - cmd: cosign
+    stdin: "{{ .Env.COSIGN_PWD }}"
+    args:
+      - "sign-blob"
+      - "--key=cosign.key"
+      - "--output-signature=${signature}"
+      - "${artifact}"
+      - "--yes" # needed on cosign 2.0.0+
+    artifacts: all
 ```
 
 Your users can then verify the signature with:
@@ -151,23 +150,23 @@ For example, you can use [gon][] to create notarized macOS apps:
 ```yaml
 # .goreleaser.yaml
 builds:
-- binary: foo
-  id: foo
-  goos:
-  - linux
-  - windows
-  goarch:
-  - amd64
+  - binary: foo
+    id: foo
+    goos:
+      - linux
+      - windows
+    goarch:
+      - amd64
 
-# notice that we need a separated build for the MacOS binary only:
-- binary: foo
-  id: foo-macos
-  goos:
-  - darwin
-  goarch:
-  - amd64
-  hooks:
-    post: gon gon.hcl
+  # notice that we need a separated build for the MacOS binary only:
+  - binary: foo
+    id: foo-macos
+    goos:
+      - darwin
+    goarch:
+      - amd64
+    hooks:
+      post: gon gon.hcl
 ```
 
 and:
@@ -203,7 +202,6 @@ You can also check
 [this issue](https://github.com/goreleaser/goreleaser/issues/1227) for more
 details.
 
-
 ### With cosign
 
 You can also use [cosign][] to sign the binaries directly, but you'll need to
@@ -212,19 +210,19 @@ manually add the `.sig` files to the release and/or archive:
 ```yaml
 # .goreleaser.yaml
 builds:
-- hooks:
-    post:
-      - sh -c "COSIGN_PASSWORD=$COSIGN_PWD cosign sign-blob --key cosign.key --output-signature dist/{{ .ProjectName }}_{{ .Version }}_{{ .Target }}.sig {{ .Path }}"
+  - hooks:
+      post:
+        - sh -c "COSIGN_PASSWORD=$COSIGN_PWD cosign sign-blob --key cosign.key --output-signature dist/{{ .ProjectName }}_{{ .Version }}_{{ .Target }}.sig {{ .Path }}"
 
 # add to the release directly:
 release:
   extra_files:
-  - glob: dist/*.sig
+    - glob: dist/*.sig
 
 # or just to the archives:
 archives:
-- files:
-  - dist/*.sig
+  - files:
+      - dist/*.sig
 ```
 
 While this works, I would recommend using the signing pipe directly.
@@ -244,11 +242,11 @@ you can wrap the command inside a `sh -c` execution, for instance:
 ```yaml
 # .goreleaser.yaml
 signs:
-- cmd: sh
-  args:
-  - '-c'
-  - 'echo "${artifact} is signed and I can prove it" | tee ${signature}'
-  artifacts: all
+  - cmd: sh
+    args:
+      - "-c"
+      - 'echo "${artifact} is signed and I can prove it" | tee ${signature}'
+    artifacts: all
 ```
 
 And it will work just fine. Just make sure to always use the `${signature}`

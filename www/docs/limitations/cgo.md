@@ -8,4 +8,3 @@ things up.
 
 Tools like `xgo` are not natively supported, and we make no promises about
 whether or how well they work within GoReleaser or not.
-

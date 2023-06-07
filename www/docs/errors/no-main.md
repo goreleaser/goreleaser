@@ -17,7 +17,7 @@ Add something like this to your config:
 ```yaml
 # .goreleaser.yaml
 builds:
-- skip: true
+  - skip: true
 ```
 
 ## If your `main.go` is not in the root folder
@@ -27,7 +27,7 @@ Add something like this to your config:
 ```yaml
 # .goreleaser.yaml
 builds:
-- main: ./path/to/your/main/pkg/
+  - main: ./path/to/your/main/pkg/
 ```
 
 For more info, check the [builds documentation](/customization/build/).
@@ -43,9 +43,9 @@ You can set `no_main_check` to `true`:
 ```yaml
 # .goreleaser.yaml
 builds:
-- main: ./path/...
-  buildmode: plugin
-  no_main_check: true
+  - main: ./path/...
+    buildmode: plugin
+    no_main_check: true
 ```
 
 For more info, check the [builds documentation](/customization/build/).

@@ -9,6 +9,7 @@ Note that you'll need to enable `tags` in repo settings and add `github_token`
 secret.
 
 #### 1.x
+
 ```yaml
 # .drone.yml
 
@@ -90,6 +91,7 @@ Note: to use DIND you have to set repo as 'trusted'. To mark repository as trust
 2. or set your [user as administrator](https://docs.drone.io/server/user/admin/) and then enable 'trusted' switch in repository settings UI
 
 #### 0.8
+
 ```yaml
 pipeline:
   clone:
@@ -104,9 +106,7 @@ pipeline:
   release:
     image: golang:1.10
     secrets: [github_token]
-    commands:
-      curl -sfL https://goreleaser.com/static/run | bash
+    commands: curl -sfL https://goreleaser.com/static/run | bash
     when:
       event: tag
 ```
-

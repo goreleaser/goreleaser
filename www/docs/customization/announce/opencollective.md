@@ -15,17 +15,17 @@ announce:
 
     # Collective slug
     # https://opencollective.com/<slug>
-    slug: 'goreleaser'
+    slug: "goreleaser"
 
     # Title for the update
     #
     # Default: '{{ .Tag }}'
     # Templates: allowed
-    title_template: 'Release of {{ .Tag }}'
+    title_template: "Release of {{ .Tag }}"
 
     # Message to use while publishing. It can be HTML!
     #
     # Default: '{{ .ProjectName }} {{ .Tag }} is out!<br/>Check it out at <a href="{{ .ReleaseURL }}">{{ .ReleaseURL }}</a>'
     # Templates: allowed
-    message_template: 'Awesome project {{.Tag}} is out!'
+    message_template: "Awesome project {{.Tag}} is out!"
 ```

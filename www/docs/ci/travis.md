@@ -11,35 +11,35 @@ language: go
 addons:
   apt:
     packages:
-    - snapcraft
+      - snapcraft
 
 # needed only if you use the Docker pipe
 services:
-- docker
+  - docker
 
 script:
   - go test ./... # replace this with your test script
   - curl -sfL https://goreleaser.com/static/run | bash -s -- check # check goreleaser config for deprecations
 
 after_success:
-# Docker login is required if you want to push Docker images.
-# DOCKER_PASSWORD should be a secret in your .travis.yml configuration.
-- test -n "$TRAVIS_TAG" && docker login -u=myuser -p="$DOCKER_PASSWORD"
-# snapcraft login is required if you want to push snapcraft packages to the
-# store.
-# You'll need to run `snapcraft export-login snap.login` and
-# `travis encrypt-file snap.login --add` to add the key to the travis
-# environment.
-- test -n "$TRAVIS_TAG" && snapcraft login --with snap.login
+  # Docker login is required if you want to push Docker images.
+  # DOCKER_PASSWORD should be a secret in your .travis.yml configuration.
+  - test -n "$TRAVIS_TAG" && docker login -u=myuser -p="$DOCKER_PASSWORD"
+  # snapcraft login is required if you want to push snapcraft packages to the
+  # store.
+  # You'll need to run `snapcraft export-login snap.login` and
+  # `travis encrypt-file snap.login --add` to add the key to the travis
+  # environment.
+  - test -n "$TRAVIS_TAG" && snapcraft login --with snap.login
 
 # calls goreleaser
 deploy:
-- provider: script
-  skip_cleanup: true
-  script: curl -sfL https://goreleaser.com/static/run | bash
-  on:
-    tags: true
-    condition: $TRAVIS_OS_NAME = linux
+  - provider: script
+    skip_cleanup: true
+    script: curl -sfL https://goreleaser.com/static/run | bash
+    on:
+      tags: true
+      condition: $TRAVIS_OS_NAME = linux
 ```
 
 Note the last line (`condition: $TRAVIS_OS_NAME = linux`): it is important

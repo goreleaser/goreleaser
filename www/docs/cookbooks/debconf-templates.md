@@ -44,13 +44,13 @@ fi
 Include `templates` and `postinst` in `.goreleaser.yaml`:
 
 ```yaml
-    overrides:
-      deb:
-        scripts:
-          postinstall: ./deb/postinst
-    deb:
-      scripts:
-        templates: ./deb/templates
+overrides:
+  deb:
+    scripts:
+      postinstall: ./deb/postinst
+deb:
+  scripts:
+    templates: ./deb/templates
 ```
 
 Useful tutorial: [Debconf Programmer's Tutorial](http://www.fifi.org/doc/debconf-doc/tutorial.html)
