@@ -259,6 +259,28 @@ type Nix struct {
 	License               string       `yaml:"license,omitempty" json:"license,omitempty"`
 }
 
+type Winget struct {
+	Name                  string       `yaml:"name,omitempty" json:"name,omitempty"`
+	Publisher             string       `yaml:"publisher,omitempty" json:"publisher,omitempty"`
+	PublisherURL          string       `yaml:"publisher_url,omitempty" json:"publisher_url,omitempty"`
+	Copyright             string       `yaml:"copyright,omitempty" json:"copyright,omitempty"`
+	Author                string       `yaml:"author,omitempty" json:"author,omitempty"`
+	Path                  string       `yaml:"path,omitempty" json:"path,omitempty"`
+	Repository            RepoRef      `yaml:"repository,omitempty" json:"repository,omitempty"`
+	CommitAuthor          CommitAuthor `yaml:"commit_author,omitempty" json:"commit_author,omitempty"`
+	CommitMessageTemplate string       `yaml:"commit_msg_template,omitempty" json:"commit_msg_template,omitempty"`
+	IDs                   []string     `yaml:"ids,omitempty" json:"ids,omitempty"`
+	Goamd64               string       `yaml:"goamd64,omitempty" json:"goamd64,omitempty"`
+	SkipUpload            string       `yaml:"skip_upload,omitempty" json:"skip_upload,omitempty" jsonschema:"oneof_type=string;boolean"`
+	URLTemplate           string       `yaml:"url_template,omitempty" json:"url_template,omitempty"`
+	Install               string       `yaml:"install,omitempty" json:"install,omitempty"`
+	ShortDescription      string       `yaml:"short_description,omitempty" json:"short_description,omitempty"`
+	Description           string       `yaml:"description,omitempty" json:"description,omitempty"`
+	Homepage              string       `yaml:"homepage,omitempty" json:"homepage,omitempty"`
+	License               string       `yaml:"license,omitempty" json:"license,omitempty"`
+	LicenseURL            string       `yaml:"license_url,omitempty" json:"license_url,omitempty"`
+}
+
 // Krew contains the krew section.
 type Krew struct {
 	IDs                   []string     `yaml:"ids,omitempty" json:"ids,omitempty"`
@@ -1029,6 +1051,7 @@ type Project struct {
 	Milestones      []Milestone      `yaml:"milestones,omitempty" json:"milestones,omitempty"`
 	Brews           []Homebrew       `yaml:"brews,omitempty" json:"brews,omitempty"`
 	Nix             []Nix            `yaml:"nix,omitempty" json:"nix,omitempty"`
+	Winget          []Winget         `yaml:"winget,omitempty" json:"winget,omitempty"`
 	AURs            []AUR            `yaml:"aurs,omitempty" json:"aurs,omitempty"`
 	Krews           []Krew           `yaml:"krews,omitempty" json:"krews,omitempty"`
 	Kos             []Ko             `yaml:"kos,omitempty" json:"kos,omitempty"`

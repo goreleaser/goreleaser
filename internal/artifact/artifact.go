@@ -60,6 +60,10 @@ const (
 	BrewTap
 	// Nixpkg is an uploadable nix package.
 	Nixpkg
+	// WingetInstaller
+	WingetInstaller
+	WingetDefaultLocale
+	WingetVersion
 	// PkgBuild is an Arch Linux AUR PKGBUILD file.
 	PkgBuild
 	// SrcInfo is an Arch Linux AUR .SRCINFO file.
