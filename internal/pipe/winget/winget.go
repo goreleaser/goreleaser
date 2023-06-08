@@ -355,6 +355,10 @@ func doPublish(ctx *context.Context, cl client.Client, pkgs []*artifact.Artifact
 		return err
 	}
 
+	// TODO: handle create files
+	// TODO: write tests
+	// TODO: does winget support custom "sources"?
+
 	// XXX: how bad is to create one commit for each file? probably bad, right?
 	// github api does not seem to allow to create multiple files in a single commit though...
 	// maybe support only plain git repositories instead?? after all, it should also work 🤔
