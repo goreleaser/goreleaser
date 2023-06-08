@@ -31,14 +31,14 @@ type gitClient struct {
 }
 
 // NewGitUploadClient
-func NewGitUploadClient(branch string) FileCreator {
+func NewGitUploadClient(branch string) FilesCreator {
 	return &gitClient{
 		branch: branch,
 	}
 }
 
-// CreateFile implements FileCreator.
-func (g *gitClient) CreateFile(ctx *context.Context, commitAuthor config.CommitAuthor, repo Repo, content []byte, path string, message string) error {
+// CreateFiles implements FilesCreator.
+func (g *gitClient) CreateFiles(ctx *context.Context, commitAuthor config.CommitAuthor, repo Repo, message string, files []RepoFile) error {
 	url, err := tmpl.New(ctx).Apply(repo.GitURL)
 	if err != nil {
 		return fmt.Errorf("git: failed to template git url: %w", err)
@@ -95,20 +95,22 @@ func (g *gitClient) CreateFile(ctx *context.Context, commitAuthor config.CommitA
 		return err
 	}
 
-	location := filepath.Join(cwd, path)
-	log.WithField("path", location).Info("writing")
-	if err := os.MkdirAll(filepath.Dir(location), 0o755); err != nil {
-		return fmt.Errorf("failed to create parent dirs for %s: %w", path, err)
-	}
-	if err := os.WriteFile(location, content, 0o644); err != nil {
-		return fmt.Errorf("failed to write %s: %w", path, err)
-	}
+	for _, file := range files {
+		location := filepath.Join(cwd, file.Path)
+		log.WithField("path", location).Info("writing")
+		if err := os.MkdirAll(filepath.Dir(location), 0o755); err != nil {
+			return fmt.Errorf("failed to create parent dirs for %s: %w", file.Path, err)
+		}
+		if err := os.WriteFile(location, file.Content, 0o644); err != nil {
+			return fmt.Errorf("failed to write %s: %w", file.Path, err)
+		}
 
-	log.
-		WithField("repository", url).
-		WithField("name", repo.Name).
-		WithField("file", path).
-		Info("pushing")
+		log.
+			WithField("repository", url).
+			WithField("name", repo.Name).
+			WithField("file", file.Path).
+			Info("pushing")
+	}
 
 	if err := runGitCmds(ctx, cwd, env, [][]string{
 		{"add", "-A", "."},
@@ -119,6 +121,14 @@ func (g *gitClient) CreateFile(ctx *context.Context, commitAuthor config.CommitA
 	}
 
 	return nil
+}
+
+// CreateFile implements FileCreator.
+func (g *gitClient) CreateFile(ctx *context.Context, commitAuthor config.CommitAuthor, repo Repo, content []byte, path string, message string) error {
+	return g.CreateFiles(ctx, commitAuthor, repo, message, []RepoFile{{
+		Content: content,
+		Path:    path,
+	}})
 }
 
 func keyPath(key string) (string, error) {

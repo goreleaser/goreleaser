@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"strings"
 	"time"
 
 	"github.com/caarlos0/log"
@@ -12,6 +13,7 @@ import (
 	"github.com/goreleaser/goreleaser/internal/commitauthor"
 	"github.com/goreleaser/goreleaser/internal/pipe"
 	"github.com/goreleaser/goreleaser/internal/tmpl"
+	"github.com/goreleaser/goreleaser/internal/yaml"
 	"github.com/goreleaser/goreleaser/pkg/config"
 	"github.com/goreleaser/goreleaser/pkg/context"
 )
@@ -21,6 +23,8 @@ var (
 	errSkipUpload     = pipe.Skip("winget.skip_upload is set")
 	errSkipUploadAuto = pipe.Skip("winget.skip_upload is set to 'auto', and current version is a pre-release")
 )
+
+const wingetConfigExtra = "WingetConfig"
 
 type Pipe struct{}
 
@@ -130,9 +134,6 @@ func (p Pipe) doRun(ctx *context.Context, winget config.Winget, cl client.Releas
 	}
 	winget.ShortDescription = shortDescription
 
-	filename := winget.Name + ".yaml"
-	path := filepath.Join(ctx.Config.Dist, filename)
-
 	version := Version{
 		PackageIdentifier: name,
 		PackageVersion:    ctx.Version,
@@ -140,18 +141,102 @@ func (p Pipe) doRun(ctx *context.Context, winget config.Winget, cl client.Releas
 		ManifestType:      "version",
 		ManifestVersion:   manifestVersion,
 	}
+	versionContent, err := yaml.Marshal(version)
+	if err != nil {
+		return err
+	}
+
+	filename := winget.Name + ".yaml"
+	path := filepath.Join(ctx.Config.Dist, filename)
+	log.WithField("winget version", path).Info("writing")
+	if err := os.WriteFile(path, []byte(strings.Join([]string{
+		generatedHeader,
+		versionLangServer,
+		string(versionContent),
+	}, "\n")), 0o644); err != nil { //nolint: gosec
+		return fmt.Errorf("failed to write winget version: %w", err)
+	}
+	ctx.Artifacts.Add(&artifact.Artifact{
+		Name: filename,
+		Path: path,
+		Type: artifact.WingetVersion,
+		Extra: map[string]interface{}{
+			wingetConfigExtra: winget,
+		},
+	})
 
 	installer := Installer{
 		PackageIdentifier: name,
 		PackageVersion:    ctx.Version,
 		InstallerLocale:   defaultLocale,
-		InstallerType:     "portable",
+		InstallerType:     "zip",
 		Commands:          []string{},
 		ReleaseDate:       ctx.Date.Format(time.DateOnly),
 		Installers:        []InstallerItem{},
 		ManifestType:      "installer",
 		ManifestVersion:   manifestVersion,
 	}
+
+	for _, archive := range ctx.Artifacts.Filter(
+		artifact.And(
+			artifact.ByGoos("windows"),
+			artifact.ByFormats("zip"),
+			artifact.ByType(artifact.UploadableArchive),
+			artifact.Or(
+				artifact.ByGoarch("386"),
+				artifact.And(
+					artifact.ByGoamd64(winget.Goamd64),
+					artifact.ByGoarch("amd64"),
+				),
+			),
+		),
+	).List() {
+		sha256, err := archive.Checksum("sha256")
+		if err != nil {
+			return err
+		}
+		var files []InstallerItemFile
+		for _, bin := range artifact.ExtraOr(*archive, artifact.ExtraBinaries, []string{}) {
+			files = append(files, InstallerItemFile{
+				RelativeFilePath: bin,
+			})
+		}
+		url, err := tmpl.New(ctx).WithArtifact(archive).Apply(winget.URLTemplate)
+		if err != nil {
+			return err
+		}
+		installer.Installers = append(installer.Installers, InstallerItem{
+			Architecture:         fromGoArch[archive.Goarch],
+			NestedInstallerType:  "portable",
+			NestedInstallerFiles: files,
+			InstallerUrl:         url,
+			InstallerSha256:      sha256,
+			UpgradeBehavior:      "uninstallPrevious",
+		})
+	}
+
+	installerContent, err := yaml.Marshal(installer)
+	if err != nil {
+		return err
+	}
+	filename = winget.Name + ".installer.yaml"
+	path = filepath.Join(ctx.Config.Dist, filename)
+	log.WithField("winget installer", path).Info("writing")
+	if err := os.WriteFile(path, []byte(strings.Join([]string{
+		generatedHeader,
+		installerLangServer,
+		string(installerContent),
+	}, "\n")), 0o644); err != nil { //nolint: gosec
+		return fmt.Errorf("failed to write winget installer: %w", err)
+	}
+	ctx.Artifacts.Add(&artifact.Artifact{
+		Name: filename,
+		Path: path,
+		Type: artifact.WingetInstaller,
+		Extra: map[string]interface{}{
+			wingetConfigExtra: winget,
+		},
+	})
 
 	locale := Locale{
 		PackageIdentifier: name,
@@ -175,17 +260,26 @@ func (p Pipe) doRun(ctx *context.Context, winget config.Winget, cl client.Releas
 		ManifestVersion:   manifestVersion,
 	}
 
-	log.WithField("nixpkg", path).Info("writing")
-	if err := os.WriteFile(path, []byte(content), 0o644); err != nil { //nolint: gosec
-		return fmt.Errorf("failed to write nixpkg: %w", err)
+	localeContent, err := yaml.Marshal(locale)
+	if err != nil {
+		return err
 	}
-
+	filename = winget.Name + "." + defaultLocale + ".yaml"
+	path = filepath.Join(ctx.Config.Dist, filename)
+	log.WithField("winget locale", path).Info("writing")
+	if err := os.WriteFile(path, []byte(strings.Join([]string{
+		generatedHeader,
+		defaultLocaleLangServer,
+		string(localeContent),
+	}, "\n")), 0o644); err != nil { //nolint: gosec
+		return fmt.Errorf("failed to write winget locale: %w", err)
+	}
 	ctx.Artifacts.Add(&artifact.Artifact{
 		Name: filename,
 		Path: path,
-		Type: artifact.Nixpkg,
+		Type: artifact.WingetDefaultLocale,
 		Extra: map[string]interface{}{
-			nixConfigExtra: nix,
+			wingetConfigExtra: winget,
 		},
 	})
 
@@ -198,7 +292,7 @@ func (p Pipe) publishAll(ctx *context.Context, cli client.Client) error {
 		artifact.ByType(artifact.WingetInstaller),
 		artifact.ByType(artifact.WingetVersion),
 		artifact.ByType(artifact.WingetDefaultLocale),
-	)).List() {
+	)).GroupByID() {
 		err := doPublish(ctx, cli, winget)
 		if err != nil && pipe.IsSkip(err) {
 			skips.Remember(err)
@@ -211,12 +305,88 @@ func (p Pipe) publishAll(ctx *context.Context, cli client.Client) error {
 	return skips.Evaluate()
 }
 
+func doPublish(ctx *context.Context, cl client.Client, pkgs []*artifact.Artifact) error {
+	winget, err := artifact.Extra[config.Winget](*pkgs[0], wingetConfigExtra)
+	if err != nil {
+		return err
+	}
+
+	if strings.TrimSpace(winget.SkipUpload) == "true" {
+		return errSkipUpload
+	}
+
+	if strings.TrimSpace(winget.SkipUpload) == "auto" && ctx.Semver.Prerelease != "" {
+		return errSkipUploadAuto
+	}
+
+	repo := client.RepoFromRef(winget.Repository)
+
+	gpath := winget.Path
+
+	msg, err := tmpl.New(ctx).Apply(winget.CommitMessageTemplate)
+	if err != nil {
+		return err
+	}
+
+	author, err := commitauthor.Get(ctx, winget.CommitAuthor)
+	if err != nil {
+		return err
+	}
+
+	var files []client.RepoFile
+	for _, pkg := range pkgs {
+		content, err := os.ReadFile(pkg.Path)
+		if err != nil {
+			return err
+		}
+		files = append(files, client.RepoFile{
+			Content: content,
+			Path:    filepath.Join(gpath, pkg.Name),
+		})
+	}
+
+	if winget.Repository.Git.URL != "" {
+		return client.NewGitUploadClient(repo.Branch).
+			CreateFiles(ctx, author, repo, msg, files)
+	}
+
+	cl, err = client.NewIfToken(ctx, cl, winget.Repository.Token)
+	if err != nil {
+		return err
+	}
+
+	// XXX: how bad is to create one commit for each file? probably bad, right?
+	// github api does not seem to allow to create multiple files in a single commit though...
+	// maybe support only plain git repositories instead?? after all, it should also work 🤔
+	if !winget.Repository.PullRequest.Enabled {
+		return cl.CreateFiles(ctx, author, repo, msg, files)
+	}
+
+	log.Info("winget.pull_request enabled, creating a PR")
+	pcl, ok := cl.(client.PullRequestOpener)
+	if !ok {
+		return fmt.Errorf("client does not support pull requests")
+	}
+
+	if err := cl.CreateFiles(ctx, author, repo, msg, files); err != nil {
+		return err
+	}
+
+	title := fmt.Sprintf("Updated %s to %s", ctx.Config.ProjectName, ctx.Version)
+	return pcl.OpenPullRequest(ctx, client.Repo{
+		Name:   winget.Repository.PullRequest.Base.Name,
+		Owner:  winget.Repository.PullRequest.Base.Owner,
+		Branch: winget.Repository.PullRequest.Base.Branch,
+	}, repo, title, winget.Repository.PullRequest.Draft)
+}
+
 const (
 	manifestVersion         = "1.5.0"
 	versionLangServer       = "# yaml-language-server: $schema=https://aka.ms/winget-manifest.version.1.5.0.schema.json"
 	installerLangServer     = "# yaml-language-server: $schema=https://aka.ms/winget-manifest.installer.1.5.0.schema.json"
 	defaultLocaleLangServer = "# yaml-language-server: $schema=https://aka.ms/winget-manifest.defaultLocale.1.5.0.schema.json"
 	defaultLocale           = "en-US"
+	generatedHeader         = `# This file was generated by GoReleaser. DO NOT EDIT.`
 )
 
 type Version struct {
@@ -273,4 +443,9 @@ type Locale struct {
 	ReleaseNotesUrl   string
 	ManifestType      string
 	ManifestVersion   string
+}
+
+var fromGoArch = map[string]string{
+	"amd64": "x64",
+	"386":   "x86",
 }
