@@ -318,7 +318,7 @@ func TestRunPipe(t *testing.T) {
 					Extra: map[string]interface{}{
 						artifact.ExtraID:        id,
 						artifact.ExtraFormat:    "zip",
-						artifact.ExtraBinaries:  []string{"foo"},
+						artifact.ExtraBinaries:  []string{"foo.exe"},
 						artifact.ExtraWrappedIn: "",
 					},
 				}
@@ -337,11 +337,11 @@ func TestRunPipe(t *testing.T) {
 			goarch := "amd64"
 			createFakeArtifact("partial", goos, goarch, "v1", "", nil)
 			createFakeArtifact("foo", goos, goarch, "v1", "", nil)
-			createFakeArtifact("wrapped-in-dir", goos, goarch, "v1", "", map[string]any{artifact.ExtraWrappedIn: "./foo"})
+			createFakeArtifact("wrapped-in-dir", goos, goarch, "v1", "", map[string]any{artifact.ExtraWrappedIn: "foo"})
 
 			goarch = "3864"
 			createFakeArtifact("foo", goos, goarch, "", "", nil)
-			createFakeArtifact("wrapped-in-dir", goos, goarch, "", "", map[string]any{artifact.ExtraWrappedIn: "./foo"})
+			createFakeArtifact("wrapped-in-dir", goos, goarch, "", "", map[string]any{artifact.ExtraWrappedIn: "foo"})
 
 			client := client.NewMock()
 			pipe := Pipe{}

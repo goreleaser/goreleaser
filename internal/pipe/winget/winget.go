@@ -213,9 +213,10 @@ func (p Pipe) doRun(ctx *context.Context, winget config.Winget, cl client.Releas
 			return err
 		}
 		var files []InstallerItemFile
+		folder := artifact.ExtraOr(*archive, artifact.ExtraWrappedIn, ".")
 		for _, bin := range artifact.ExtraOr(*archive, artifact.ExtraBinaries, []string{}) {
 			files = append(files, InstallerItemFile{
-				RelativeFilePath: bin,
+				RelativeFilePath: windowsJoin([2]string{folder, bin}),
 			})
 		}
 		url, err := tmpl.New(ctx).WithArtifact(archive).Apply(winget.URLTemplate)
@@ -372,4 +373,11 @@ func extFor(tp artifact.Type) string {
 		// should never happen
 		return ""
 	}
+}
+
+func windowsJoin(elem [2]string) string {
+	if elem[0] == "" {
+		return elem[1]
+	}
+	return strings.Join(elem[:], "\\")
 }
