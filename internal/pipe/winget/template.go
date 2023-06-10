@@ -54,58 +54,58 @@ const (
 )
 
 type Version struct {
-	PackageIdentifier string
-	PackageVersion    string
-	DefaultLocale     string
-	ManifestType      string
-	ManifestVersion   string
+	PackageIdentifier string `yaml:"PackageIdentifier,omitempty"`
+	PackageVersion    string `yaml:"PackageVersion,omitempty"`
+	DefaultLocale     string `yaml:"DefaultLocale,omitempty"`
+	ManifestType      string `yaml:"ManifestType,omitempty"`
+	ManifestVersion   string `yaml:"ManifestVersion,omitempty"`
 }
 
 type InstallerItemFile struct {
-	RelativeFilePath string
+	RelativeFilePath string `yaml:"RelativeFilePath,omitempty"`
 }
 
 type InstallerItem struct {
-	Architecture         string
-	NestedInstallerType  string
-	NestedInstallerFiles []InstallerItemFile
-	InstallerUrl         string
-	InstallerSha256      string
-	UpgradeBehavior      string
+	Architecture         string              `yaml:"Architecture,omitempty"`
+	NestedInstallerType  string              `yaml:"NestedInstallerType,omitempty"`
+	NestedInstallerFiles []InstallerItemFile `yaml:"NestedInstallerFiles,omitempty"`
+	InstallerURL         string              `yaml:"InstallerUrl,omitempty"`
+	InstallerSha256      string              `yaml:"InstallerSha256,omitempty"`
+	UpgradeBehavior      string              `yaml:"UpgradeBehavior,omitempty"`
 }
 
 type Installer struct {
-	PackageIdentifier string
-	PackageVersion    string
-	InstallerLocale   string // en-us
-	InstallerType     string // zip
-	Commands          []string
-	ReleaseDate       string
-	Installers        []InstallerItem
-	ManifestType      string
-	ManifestVersion   string
+	PackageIdentifier string          `yaml:"PackageIdentifier,omitempty"`
+	PackageVersion    string          `yaml:"PackageVersion,omitempty"`
+	InstallerLocale   string          `yaml:"InstallerLocale,omitempty"`
+	InstallerType     string          `yaml:"InstallerType,omitempty"`
+	Commands          []string        `yaml:"Commands,omitempty"`
+	ReleaseDate       string          `yaml:"ReleaseDate,omitempty"`
+	Installers        []InstallerItem `yaml:"Installers,omitempty"`
+	ManifestType      string          `yaml:"ManifestType,omitempty"`
+	ManifestVersion   string          `yaml:"ManifestVersion,omitempty"`
 }
 
 type Locale struct {
-	PackageIdentifier string
-	PackageVersion    string
-	PackageLocale     string
-	Publisher         string
-	PublisherUrl      string
-	Author            string
-	PackageName       string
-	PackageUrl        string
-	License           string
-	LicenseUrl        string
-	Copyright         string
-	ShortDescription  string
-	Description       string
-	Moniker           string
-	Tags              []string
-	ReleaseNotes      string
-	ReleaseNotesUrl   string
-	ManifestType      string
-	ManifestVersion   string
+	PackageIdentifier string   `yaml:"PackageIdentifier,omitempty"`
+	PackageVersion    string   `yaml:"PackageVersion,omitempty"`
+	PackageLocale     string   `yaml:"PackageLocale,omitempty"`
+	Publisher         string   `yaml:"Publisher,omitempty"`
+	PublisherURL      string   `yaml:"PublisherUrl,omitempty"`
+	Author            string   `yaml:"Author,omitempty"`
+	PackageName       string   `yaml:"PackageName,omitempty"`
+	PackageURL        string   `yaml:"PackageUrl,omitempty"`
+	License           string   `yaml:"License,omitempty"`
+	LicenseURL        string   `yaml:"LicenseUrl,omitempty"`
+	Copyright         string   `yaml:"Copyright,omitempty"`
+	ShortDescription  string   `yaml:"ShortDescription,omitempty"`
+	Description       string   `yaml:"Description,omitempty"`
+	Moniker           string   `yaml:"Moniker,omitempty"`
+	Tags              []string `yaml:"Tags,omitempty"`
+	ReleaseNotes      string   `yaml:"ReleaseNotes,omitempty"`
+	ReleaseNotesURL   string   `yaml:"ReleaseNotesUrl,omitempty"`
+	ManifestType      string   `yaml:"ManifestType,omitempty"`
+	ManifestVersion   string   `yaml:"ManifestVersion,omitempty"`
 }
 
 var fromGoArch = map[string]string{
