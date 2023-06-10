@@ -152,7 +152,10 @@ func doPublish(ctx *context.Context, formula *artifact.Artifact, cl client.Clien
 
 	if brew.Tap.Git.URL != "" {
 		return client.NewGitUploadClient(repo.Branch).
-			CreateFile(ctx, author, repo, content, gpath, msg)
+			CreateFiles(ctx, author, repo, msg, []client.RepoFile{{
+				Content: content,
+				Path:    gpath,
+			}})
 	}
 
 	cl, err = client.NewIfToken(ctx, cl, brew.Tap.Token)

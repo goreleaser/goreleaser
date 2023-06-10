@@ -29,21 +29,25 @@ func TestGitClient(t *testing.T) {
 			PrivateKey: testlib.MakeNewSSHKey(t, keygen.Ed25519, ""),
 			Name:       "test1",
 		}
-		require.NoError(t, cli.CreateFile(
+		require.NoError(t, cli.CreateFiles(
 			ctx,
 			author,
 			repo,
-			[]byte("fake content"),
-			"fake.txt",
 			"hey test",
+			[]RepoFile{{
+				[]byte("fake content"),
+				"fake.txt",
+			}},
 		))
-		require.NoError(t, cli.CreateFile(
+		require.NoError(t, cli.CreateFiles(
 			ctx,
 			author,
 			repo,
-			[]byte("fake content 2"),
-			"fake.txt",
 			"hey test 2",
+			[]RepoFile{{
+				[]byte("fake content 2"),
+				"fake.txt",
+			}},
 		))
 		require.Equal(t, "fake content 2", string(testlib.CatFileFromBareRepository(t, url, "fake.txt")))
 	})
@@ -56,21 +60,25 @@ func TestGitClient(t *testing.T) {
 			GitURL:     url,
 			PrivateKey: testlib.MakeNewSSHKey(t, keygen.Ed25519, ""),
 		}
-		require.NoError(t, cli.CreateFile(
+		require.NoError(t, cli.CreateFiles(
 			ctx,
 			author,
 			repo,
-			[]byte("fake content"),
-			"fake.txt",
 			"hey test",
+			[]RepoFile{{
+				[]byte("fake content"),
+				"fake.txt",
+			}},
 		))
-		require.NoError(t, cli.CreateFile(
+		require.NoError(t, cli.CreateFiles(
 			ctx,
 			author,
 			repo,
-			[]byte("fake content 2"),
-			"fake.txt",
 			"hey test 2",
+			[]RepoFile{{
+				[]byte("fake content 2"),
+				"fake.txt",
+			}},
 		))
 		require.Equal(t, "fake content 2", string(testlib.CatFileFromBareRepository(t, url, "fake.txt")))
 	})
@@ -81,13 +89,15 @@ func TestGitClient(t *testing.T) {
 		repo := Repo{
 			GitURL: "{{ .Nope }}",
 		}
-		testlib.RequireTemplateError(t, cli.CreateFile(
+		testlib.RequireTemplateError(t, cli.CreateFiles(
 			ctx,
 			author,
 			repo,
-			[]byte{},
-			"filename",
 			"msg",
+			[]RepoFile{{
+				[]byte{},
+				"filename",
+			}},
 		))
 	})
 	t.Run("clone fail", func(t *testing.T) {
@@ -98,13 +108,15 @@ func TestGitClient(t *testing.T) {
 			GitURL:     "git@github.com:nope/nopenopenopenope",
 			PrivateKey: testlib.MakeNewSSHKey(t, keygen.Ed25519, ""),
 		}
-		err := cli.CreateFile(
+		err := cli.CreateFiles(
 			ctx,
 			author,
 			repo,
-			[]byte{},
-			"filename",
 			"msg",
+			[]RepoFile{{
+				[]byte{},
+				"filename",
+			}},
 		)
 		require.Error(t, err)
 		require.Contains(t, err.Error(), "failed to clone")
@@ -118,13 +130,15 @@ func TestGitClient(t *testing.T) {
 			PrivateKey:    testlib.MakeNewSSHKey(t, keygen.Ed25519, ""),
 			GitSSHCommand: "{{.Foo}}",
 		}
-		testlib.RequireTemplateError(t, cli.CreateFile(
+		testlib.RequireTemplateError(t, cli.CreateFiles(
 			ctx,
 			author,
 			repo,
-			[]byte{},
-			"filename",
 			"msg",
+			[]RepoFile{{
+				[]byte{},
+				"filename",
+			}},
 		))
 	})
 	t.Run("empty url", func(t *testing.T) {
@@ -132,13 +146,15 @@ func TestGitClient(t *testing.T) {
 			Dist: t.TempDir(),
 		})
 		repo := Repo{}
-		require.EqualError(t, cli.CreateFile(
+		require.EqualError(t, cli.CreateFiles(
 			ctx,
 			author,
 			repo,
-			[]byte{},
-			"filename",
 			"msg",
+			[]RepoFile{{
+				[]byte{},
+				"filename",
+			}},
 		), "url is empty")
 	})
 	t.Run("bad ssh cmd", func(t *testing.T) {
@@ -149,13 +165,15 @@ func TestGitClient(t *testing.T) {
 			GitURL:     testlib.GitMakeBareRepository(t),
 			PrivateKey: "{{.Foo}}",
 		}
-		testlib.RequireTemplateError(t, cli.CreateFile(
+		testlib.RequireTemplateError(t, cli.CreateFiles(
 			ctx,
 			author,
 			repo,
-			[]byte{},
-			"filename",
 			"msg",
+			[]RepoFile{{
+				[]byte{},
+				"filename",
+			}},
 		))
 	})
 	t.Run("bad key path", func(t *testing.T) {
@@ -166,13 +184,15 @@ func TestGitClient(t *testing.T) {
 			GitURL:     testlib.GitMakeBareRepository(t),
 			PrivateKey: "./nope",
 		}
-		require.Error(t, cli.CreateFile(
+		require.Error(t, cli.CreateFiles(
 			ctx,
 			author,
 			repo,
-			[]byte{},
-			"filename",
 			"msg",
+			[]RepoFile{{
+				[]byte{},
+				"filename",
+			}},
 		))
 	})
 }

@@ -30,7 +30,7 @@ type errNoArchivesFound struct {
 }
 
 func (e errNoArchivesFound) Error() string {
-	return fmt.Sprintf("no linux/macos archives found matching goos=[darwin linux] goarch=[amd64 arm arm64 386] goarm=[6 7] goamd64=%s ids=%v", e.goamd64, e.ids)
+	return fmt.Sprintf("no archives found matching goos=[darwin linux] goarch=[amd64 arm arm64 386] goarm=[6 7] goamd64=%s ids=%v", e.goamd64, e.ids)
 }
 
 var (
@@ -340,7 +340,10 @@ func doPublish(ctx *context.Context, prefetcher shaPrefetcher, cl client.Client,
 
 	if nix.Repository.Git.URL != "" {
 		return client.NewGitUploadClient(repo.Branch).
-			CreateFile(ctx, author, repo, []byte(content), gpath, msg)
+			CreateFiles(ctx, author, repo, msg, []client.RepoFile{{
+				Content: []byte(content),
+				Path:    gpath,
+			}})
 	}
 
 	cl, err = client.NewIfToken(ctx, cl, nix.Repository.Token)

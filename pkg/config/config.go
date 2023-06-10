@@ -273,12 +273,12 @@ type Winget struct {
 	Goamd64               string       `yaml:"goamd64,omitempty" json:"goamd64,omitempty"`
 	SkipUpload            string       `yaml:"skip_upload,omitempty" json:"skip_upload,omitempty" jsonschema:"oneof_type=string;boolean"`
 	URLTemplate           string       `yaml:"url_template,omitempty" json:"url_template,omitempty"`
-	Install               string       `yaml:"install,omitempty" json:"install,omitempty"`
 	ShortDescription      string       `yaml:"short_description,omitempty" json:"short_description,omitempty"`
 	Description           string       `yaml:"description,omitempty" json:"description,omitempty"`
 	Homepage              string       `yaml:"homepage,omitempty" json:"homepage,omitempty"`
 	License               string       `yaml:"license,omitempty" json:"license,omitempty"`
 	LicenseURL            string       `yaml:"license_url,omitempty" json:"license_url,omitempty"`
+	ReleaseNotesURL       string       `yaml:"release_notes_url,omitempty" json:"release_notes_url,omitempty"`
 }
 
 // Krew contains the krew section.

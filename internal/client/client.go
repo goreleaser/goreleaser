@@ -67,13 +67,11 @@ type RepoFile struct {
 }
 
 // FileCreator can create the given file to some code repository.
-//
-// Deprecated: use FilesCreator instead.
 type FileCreator interface {
 	CreateFile(ctx *context.Context, commitAuthor config.CommitAuthor, repo Repo, content []byte, path, message string) (err error)
 }
 
-// FilesCreator can create the multiple files in some repository.
+// FilesCreator can create the multiple files in some repository and in a single commit.
 type FilesCreator interface {
 	CreateFiles(ctx *context.Context, commitAuthor config.CommitAuthor, repo Repo, message string, files []RepoFile) (err error)
 }
