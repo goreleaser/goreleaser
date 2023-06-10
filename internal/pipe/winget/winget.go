@@ -112,6 +112,12 @@ func (p Pipe) doRun(ctx *context.Context, winget config.Winget, cl client.Releas
 	}
 	winget.Publisher = publisher
 
+	publisherURL, err := tmpl.New(ctx).Apply(winget.PublisherURL)
+	if err != nil {
+		return err
+	}
+	winget.PublisherURL = publisherURL
+
 	homepage, err := tmpl.New(ctx).Apply(winget.Homepage)
 	if err != nil {
 		return err
@@ -147,6 +153,14 @@ func (p Pipe) doRun(ctx *context.Context, winget config.Winget, cl client.Releas
 		return err
 	}
 	winget.ReleaseNotesURL = releaseNotesURL
+
+	if winget.URLTemplate == "" {
+		url, err := cl.ReleaseURLTemplate(ctx)
+		if err != nil {
+			return err
+		}
+		winget.URLTemplate = url
+	}
 
 	filters := []artifact.Filter{
 		artifact.ByGoos("windows"),
@@ -230,7 +244,7 @@ func (p Pipe) doRun(ctx *context.Context, winget config.Winget, cl client.Releas
 		PublisherUrl:      winget.PublisherURL,
 		Author:            author,
 		PackageName:       name,
-		PackageUrl:        homepage,
+		PackageUrl:        winget.Homepage,
 		License:           winget.License,
 		LicenseUrl:        winget.LicenseURL,
 		Copyright:         winget.Copyright,

@@ -62,8 +62,7 @@ type Version struct {
 }
 
 type InstallerItemFile struct {
-	RelativeFilePath     string
-	PortableCommandAlias string
+	RelativeFilePath string
 }
 
 type InstallerItem struct {

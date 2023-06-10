@@ -46,6 +46,33 @@ func TestRunPipe(t *testing.T) {
 			},
 		},
 		{
+			name: "full",
+			winget: config.Winget{
+				Name:                  "foo",
+				Publisher:             "becker software",
+				PublisherURL:          "https://carlosbecker.com",
+				Copyright:             "bla bla bla",
+				Author:                "Carlos Becker",
+				Path:                  "manifests/b/beckersoftware/foo/{{.Tag}}",
+				Repository:            config.RepoRef{Owner: "foo", Name: "bar"},
+				CommitAuthor:          config.CommitAuthor{},
+				CommitMessageTemplate: "update foo to latest and greatest",
+				IDs:                   []string{"foo"},
+				Goamd64:               "v1",
+				SkipUpload:            "false",
+				ShortDescription:      "foo",
+				Description: `long foo bar
+
+				yadaa yada yada loooaaasssss
+
+				sss`,
+				Homepage:        "https://goreleaser.com",
+				License:         "MIT",
+				LicenseURL:      "https://goreleaser.com/eula/",
+				ReleaseNotesURL: "https://github.com/goreleaser/goreleaser/tags/{{.Tag}}",
+			},
+		},
+		{
 			name: "open-pr",
 			winget: config.Winget{
 				Name:        "foo",
@@ -122,6 +149,72 @@ func TestRunPipe(t *testing.T) {
 			expectRunErrorIs: &template.Error{},
 			winget: config.Winget{
 				Name: "{{ .Nope }}",
+				Repository: config.RepoRef{
+					Owner: "foo",
+					Name:  "bar",
+				},
+			},
+		},
+		{
+			name:             "bad-publisher-tmpl",
+			expectRunErrorIs: &template.Error{},
+			winget: config.Winget{
+				Publisher: "{{ .Nope }}",
+				Repository: config.RepoRef{
+					Owner: "foo",
+					Name:  "bar",
+				},
+			},
+		},
+		{
+			name:             "bad-publisher-url-tmpl",
+			expectRunErrorIs: &template.Error{},
+			winget: config.Winget{
+				PublisherURL: "{{ .Nope }}",
+				Repository: config.RepoRef{
+					Owner: "foo",
+					Name:  "bar",
+				},
+			},
+		},
+		{
+			name:             "bad-author-tmpl",
+			expectRunErrorIs: &template.Error{},
+			winget: config.Winget{
+				Author: "{{ .Nope }}",
+				Repository: config.RepoRef{
+					Owner: "foo",
+					Name:  "bar",
+				},
+			},
+		},
+		{
+			name:             "bad-homepage-tmpl",
+			expectRunErrorIs: &template.Error{},
+			winget: config.Winget{
+				Homepage: "{{ .Nope }}",
+				Repository: config.RepoRef{
+					Owner: "foo",
+					Name:  "bar",
+				},
+			},
+		},
+		{
+			name:             "bad-description-tmpl",
+			expectRunErrorIs: &template.Error{},
+			winget: config.Winget{
+				Description: "{{ .Nope }}",
+				Repository: config.RepoRef{
+					Owner: "foo",
+					Name:  "bar",
+				},
+			},
+		},
+		{
+			name:             "bad-short-description-tmpl",
+			expectRunErrorIs: &template.Error{},
+			winget: config.Winget{
+				ShortDescription: "{{ .Nope }}",
 				Repository: config.RepoRef{
 					Owner: "foo",
 					Name:  "bar",

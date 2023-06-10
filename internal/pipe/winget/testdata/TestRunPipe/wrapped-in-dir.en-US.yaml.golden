@@ -11,8 +11,7 @@ installers:
     nestedinstallertype: portable
     nestedinstallerfiles:
       - relativefilepath: foo
-        portablecommandalias: ""
-    installerurl: ""
+    installerurl: https://dummyhost/download/v1.2.1/foo_windows_amd64v1.zip
     installersha256: e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
     upgradebehavior: uninstallPrevious
 manifesttype: installer
