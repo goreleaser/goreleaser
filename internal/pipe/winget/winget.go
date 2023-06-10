@@ -379,5 +379,5 @@ func windowsJoin(elem [2]string) string {
 	if elem[0] == "" {
 		return elem[1]
 	}
-	return strings.Join(elem[:], "\\")
+	return elem[0] + "\\" + elem[1]
 }
