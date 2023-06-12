@@ -14,7 +14,7 @@ Available options:
 ```yaml
 # .goreleaser.yaml
 snapcrafts:
-  -
+  - #
     # ID of the snapcraft config, must be unique.
     #
     # Default: 'default'
@@ -22,8 +22,8 @@ snapcrafts:
 
     # Build IDs for the builds you want to create snapcraft packages for.
     builds:
-    - foo
-    - bar
+      - foo
+      - bar
 
     # You can change the name of the package.
     #
@@ -35,6 +35,18 @@ snapcrafts:
     #
     # Default: ProjectName
     name: drumroll
+
+    # The canonical title of the application, displayed in the software
+    # centre graphical frontends.
+    #
+    # Since: v1.19.
+    title: Drum Roll
+
+    # Path to icon image that represents the snap in the snapcraft.io store
+    # pages and other graphical store fronts.
+    #
+    # Since: v1.19.
+    icon: ./icon.png
 
     # Whether to publish the snap to the snapcraft store.
     # Remember you need to `snapcraft login` first.
@@ -64,10 +76,10 @@ snapcrafts:
       - beta
       - candidate
       - stable
-      - '{{ .Major }}.{{ .Minor }}/edge'
-      - '{{ .Major }}.{{ .Minor }}/beta'
-      - '{{ .Major }}.{{ .Minor }}/candidate'
-      - '{{ .Major }}.{{ .Minor }}/stable'
+      - "{{ .Major }}.{{ .Minor }}/edge"
+      - "{{ .Major }}.{{ .Minor }}/beta"
+      - "{{ .Major }}.{{ .Minor }}/candidate"
+      - "{{ .Major }}.{{ .Minor }}/stable"
 
     # A guardrail to prevent you from releasing a snap to all your users before
     # it is ready.
@@ -94,6 +106,21 @@ snapcrafts:
     # * core - Ubuntu Core 16;
     # * core18 - Ubuntu Core 18.
     base: core18
+
+    # A list of features that must be supported by the core in order for
+    # this snap to install.
+    #
+    # Since: v1.19.
+    assumes:
+      - snapd2.38
+
+    # his top-level keyword to define a hook with a plug to access more
+    # privileges.
+    #
+    # Since: v1.19.
+    hooks:
+      install:
+        - network
 
     # Add extra files on the resulting snap. Useful for including wrapper
     # scripts or other useful static files. Source filenames are relative to the
@@ -139,7 +166,6 @@ snapcrafts:
     layout:
       # The path you want to access in sandbox.
       /etc/drumroll:
-
         # Which outside file or directory you want to map to sandbox.
         # Valid keys are:
         # * bind - Bind-mount a directory.
@@ -152,10 +178,8 @@ snapcrafts:
     # you can declare extra details for those binaries. It is optional.
     # See: https://snapcraft.io/docs/snapcraft-app-and-service-metadata
     apps:
-
       # The name of the app must be the same name as the binary built or the snapcraft name.
       drumroll:
-
         # If you any to pass args to your binary, you can add them with the
         # args option.
         args: --foo
@@ -335,14 +359,16 @@ snapcrafts:
     plugs:
       personal-files:
         read:
-        - $HOME/.foo
+          - $HOME/.foo
         write:
-        - $HOME/.foo
-        - $HOME/.foobar
+          - $HOME/.foo
+          - $HOME/.foobar
 ```
 
 !!! tip
+
     Learn more about the [name template engine](/customization/templates/).
 
 !!! note
+
     GoReleaser will not install `snapcraft` nor any of its dependencies for you.
