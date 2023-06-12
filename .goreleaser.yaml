@@ -158,7 +158,6 @@ archives:
     builds_info:
       group: root
       owner: root
-    rlcp: true
     files:
       - README.md
       - LICENSE.md
