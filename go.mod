@@ -5,7 +5,7 @@ go 1.20
 require (
 	code.gitea.io/sdk/gitea v0.15.1
 	github.com/Masterminds/semver/v3 v3.2.1
-	github.com/atc0005/go-teams-notify/v2 v2.7.0
+	github.com/atc0005/go-teams-notify/v2 v2.7.1
 	github.com/awslabs/amazon-ecr-credential-helper/ecr-login v0.0.0-20220517224237-e6f29200ae04
 	github.com/caarlos0/ctrlc v1.2.0
 	github.com/caarlos0/env/v8 v8.0.0
