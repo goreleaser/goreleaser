@@ -3,6 +3,7 @@
 PackageIdentifier: partial
 PackageVersion: 1.2.1
 PackageLocale: en-US
+Publisher: Becker Software
 PackageName: partial
 Moniker: partial
 ManifestType: defaultLocale

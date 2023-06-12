@@ -3,6 +3,7 @@
 PackageIdentifier: doesnotmatter
 PackageVersion: 1.2.1
 PackageLocale: en-US
+Publisher: Becker Software
 PackageName: doesnotmatter
 Moniker: doesnotmatter
 ManifestType: defaultLocale

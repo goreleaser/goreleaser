@@ -3,6 +3,7 @@
 PackageIdentifier: wrapped-in-dir
 PackageVersion: 1.2.1
 PackageLocale: en-US
+Publisher: Becker Software
 PackageName: wrapped-in-dir
 PackageUrl: https://goreleaser.com
 License: mit

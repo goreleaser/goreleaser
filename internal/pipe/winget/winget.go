@@ -18,7 +18,8 @@ import (
 )
 
 var (
-	errNoRepoName     = pipe.Skip("repository name is not set")
+	errNoRepoName     = pipe.Skip("winget.repository.name name is not set")
+	errNoPublisher    = pipe.Skip("winget.publisher is not set")
 	errSkipUpload     = pipe.Skip("winget.skip_upload is set")
 	errSkipUploadAuto = pipe.Skip("winget.skip_upload is set to 'auto', and current version is a pre-release")
 )
@@ -94,6 +95,15 @@ func (p Pipe) doRun(ctx *context.Context, winget config.Winget, cl client.Releas
 		return errNoRepoName
 	}
 
+	publisher, err := tmpl.New(ctx).Apply(winget.Publisher)
+	if err != nil {
+		return err
+	}
+	if publisher == "" {
+		return errNoPublisher
+	}
+	winget.Publisher = publisher
+
 	name, err := tmpl.New(ctx).Apply(winget.Name)
 	if err != nil {
 		return err
@@ -105,12 +115,6 @@ func (p Pipe) doRun(ctx *context.Context, winget config.Winget, cl client.Releas
 		return err
 	}
 	winget.Author = author
-
-	publisher, err := tmpl.New(ctx).Apply(winget.Publisher)
-	if err != nil {
-		return err
-	}
-	winget.Publisher = publisher
 
 	publisherURL, err := tmpl.New(ctx).Apply(winget.PublisherURL)
 	if err != nil {
@@ -293,13 +297,6 @@ func doPublish(ctx *context.Context, cl client.Client, wingets []*artifact.Artif
 		return errSkipUploadAuto
 	}
 
-	repo := client.RepoFromRef(winget.Repository)
-
-	folder, err := tmpl.New(ctx).Apply(winget.Path)
-	if err != nil {
-		return err
-	}
-
 	msg, err := tmpl.New(ctx).Apply(winget.CommitMessageTemplate)
 	if err != nil {
 		return err
@@ -308,6 +305,17 @@ func doPublish(ctx *context.Context, cl client.Client, wingets []*artifact.Artif
 	author, err := commitauthor.Get(ctx, winget.CommitAuthor)
 	if err != nil {
 		return err
+	}
+
+	repo := client.RepoFromRef(winget.Repository)
+
+	folder, err := tmpl.New(ctx).Apply(winget.Path)
+	if err != nil {
+		return err
+	}
+
+	if folder == "" {
+		folder = filepath.Join("manifests", strings.ToLower(string(winget.Publisher[0])), winget.Publisher, winget.Name, ctx.Version)
 	}
 
 	var files []client.RepoFile

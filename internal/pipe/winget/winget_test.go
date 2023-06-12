@@ -4,6 +4,7 @@ import (
 	"html/template"
 	"os"
 	"path/filepath"
+	"strings"
 	"testing"
 
 	"github.com/goreleaser/goreleaser/internal/artifact"
@@ -34,11 +35,15 @@ func TestRunPipe(t *testing.T) {
 		name                 string
 		expectRunErrorIs     error
 		expectPublishErrorIs error
+		expectPath           string
 		winget               config.Winget
 	}{
 		{
-			name: "minimal",
+			name:       "minimal",
+			expectPath: "manifests/f/Foo/min/1.2.1/min.",
 			winget: config.Winget{
+				Name:      "min",
+				Publisher: "Foo",
 				Repository: config.RepoRef{
 					Owner: "foo",
 					Name:  "bar",
@@ -46,14 +51,15 @@ func TestRunPipe(t *testing.T) {
 			},
 		},
 		{
-			name: "full",
+			name:       "full",
+			expectPath: "manifests/b/Becker Software LTDA/foo/1.2.1",
 			winget: config.Winget{
 				Name:                  "foo",
-				Publisher:             "becker software",
+				Publisher:             "Becker Software",
 				PublisherURL:          "https://carlosbecker.com",
 				Copyright:             "bla bla bla",
 				Author:                "Carlos Becker",
-				Path:                  "manifests/b/beckersoftware/foo/{{.Tag}}",
+				Path:                  "manifests/b/Becker Software LTDA/foo/{{.Version}}",
 				Repository:            config.RepoRef{Owner: "foo", Name: "bar"},
 				CommitAuthor:          config.CommitAuthor{},
 				CommitMessageTemplate: "update foo to latest and greatest",
@@ -76,6 +82,7 @@ func TestRunPipe(t *testing.T) {
 			name: "open-pr",
 			winget: config.Winget{
 				Name:        "foo",
+				Publisher:   "Becker Software",
 				IDs:         []string{"foo"},
 				Description: "my test",
 				Homepage:    "https://goreleaser.com",
@@ -95,6 +102,7 @@ func TestRunPipe(t *testing.T) {
 			name: "wrapped-in-dir",
 			winget: config.Winget{
 				Name:            "wrapped-in-dir",
+				Publisher:       "Becker Software",
 				IDs:             []string{"wrapped-in-dir"},
 				Description:     "my test",
 				Homepage:        "https://goreleaser.com",
@@ -114,9 +122,10 @@ func TestRunPipe(t *testing.T) {
 				ids:     []string{"nopenopenope"},
 			},
 			winget: config.Winget{
-				Name:    "no-archives",
-				IDs:     []string{"nopenopenope"},
-				Goamd64: "v2",
+				Name:      "no-archives",
+				Publisher: "Becker Software",
+				IDs:       []string{"nopenopenope"},
+				Goamd64:   "v2",
 				Repository: config.RepoRef{
 					Owner: "foo",
 					Name:  "bar",
@@ -126,8 +135,9 @@ func TestRunPipe(t *testing.T) {
 		{
 			name: "partial",
 			winget: config.Winget{
-				Name: "partial",
-				IDs:  []string{"partial"},
+				Name:      "partial",
+				Publisher: "Becker Software",
+				IDs:       []string{"partial"},
 				Repository: config.RepoRef{
 					Owner: "foo",
 					Name:  "bar",
@@ -138,7 +148,8 @@ func TestRunPipe(t *testing.T) {
 			name:             "no-repo-name",
 			expectRunErrorIs: errNoRepoName,
 			winget: config.Winget{
-				Name: "doesnotmatter",
+				Name:      "doesnotmatter",
+				Publisher: "Becker Software",
 				Repository: config.RepoRef{
 					Owner: "foo",
 				},
@@ -148,7 +159,8 @@ func TestRunPipe(t *testing.T) {
 			name:             "bad-name-tmpl",
 			expectRunErrorIs: &template.Error{},
 			winget: config.Winget{
-				Name: "{{ .Nope }}",
+				Name:      "{{ .Nope }}",
+				Publisher: "Becker Software",
 				Repository: config.RepoRef{
 					Owner: "foo",
 					Name:  "bar",
@@ -159,6 +171,7 @@ func TestRunPipe(t *testing.T) {
 			name:             "bad-publisher-tmpl",
 			expectRunErrorIs: &template.Error{},
 			winget: config.Winget{
+				Name:      "foo",
 				Publisher: "{{ .Nope }}",
 				Repository: config.RepoRef{
 					Owner: "foo",
@@ -170,6 +183,8 @@ func TestRunPipe(t *testing.T) {
 			name:             "bad-publisher-url-tmpl",
 			expectRunErrorIs: &template.Error{},
 			winget: config.Winget{
+				Name:         "foo",
+				Publisher:    "Becker Software",
 				PublisherURL: "{{ .Nope }}",
 				Repository: config.RepoRef{
 					Owner: "foo",
@@ -181,7 +196,9 @@ func TestRunPipe(t *testing.T) {
 			name:             "bad-author-tmpl",
 			expectRunErrorIs: &template.Error{},
 			winget: config.Winget{
-				Author: "{{ .Nope }}",
+				Name:      "foobar",
+				Publisher: "Becker Software",
+				Author:    "{{ .Nope }}",
 				Repository: config.RepoRef{
 					Owner: "foo",
 					Name:  "bar",
@@ -192,7 +209,9 @@ func TestRunPipe(t *testing.T) {
 			name:             "bad-homepage-tmpl",
 			expectRunErrorIs: &template.Error{},
 			winget: config.Winget{
-				Homepage: "{{ .Nope }}",
+				Name:      "foobar",
+				Publisher: "Becker Software",
+				Homepage:  "{{ .Nope }}",
 				Repository: config.RepoRef{
 					Owner: "foo",
 					Name:  "bar",
@@ -203,6 +222,8 @@ func TestRunPipe(t *testing.T) {
 			name:             "bad-description-tmpl",
 			expectRunErrorIs: &template.Error{},
 			winget: config.Winget{
+				Name:        "foobar",
+				Publisher:   "Becker Software",
 				Description: "{{ .Nope }}",
 				Repository: config.RepoRef{
 					Owner: "foo",
@@ -214,6 +235,8 @@ func TestRunPipe(t *testing.T) {
 			name:             "bad-short-description-tmpl",
 			expectRunErrorIs: &template.Error{},
 			winget: config.Winget{
+				Name:             "foobar",
+				Publisher:        "Becker Software",
 				ShortDescription: "{{ .Nope }}",
 				Repository: config.RepoRef{
 					Owner: "foo",
@@ -225,7 +248,8 @@ func TestRunPipe(t *testing.T) {
 			name:             "bad-repo-tmpl",
 			expectRunErrorIs: &template.Error{},
 			winget: config.Winget{
-				Name: "doesnotmatter",
+				Name:      "doesnotmatter",
+				Publisher: "Becker Software",
 				Repository: config.RepoRef{
 					Owner: "foo",
 					Name:  "{{ .Nope }}",
@@ -237,6 +261,7 @@ func TestRunPipe(t *testing.T) {
 			expectRunErrorIs: &template.Error{},
 			winget: config.Winget{
 				Name:       "doesnotmatter",
+				Publisher:  "Becker Software",
 				SkipUpload: "{{ .Nope }}",
 				Repository: config.RepoRef{
 					Owner: "foo",
@@ -249,6 +274,7 @@ func TestRunPipe(t *testing.T) {
 			expectRunErrorIs: &template.Error{},
 			winget: config.Winget{
 				Name:            "foo",
+				Publisher:       "Becker Software",
 				ReleaseNotesURL: `https://goo/bar/asdfsd/{{.nope}}`,
 				Repository: config.RepoRef{
 					Owner: "foo",
@@ -261,6 +287,7 @@ func TestRunPipe(t *testing.T) {
 			expectRunErrorIs: &template.Error{},
 			winget: config.Winget{
 				Name:        "foo",
+				Publisher:   "Becker Software",
 				URLTemplate: "{{.BadURL}}",
 				Repository: config.RepoRef{
 					Owner: "foo",
@@ -273,6 +300,7 @@ func TestRunPipe(t *testing.T) {
 			expectPublishErrorIs: errSkipUpload,
 			winget: config.Winget{
 				Name:       "doesnotmatter",
+				Publisher:  "Becker Software",
 				SkipUpload: "true",
 				Repository: config.RepoRef{
 					Owner: "foo",
@@ -285,6 +313,7 @@ func TestRunPipe(t *testing.T) {
 			expectPublishErrorIs: errSkipUploadAuto,
 			winget: config.Winget{
 				Name:       "doesnotmatter",
+				Publisher:  "Becker Software",
 				SkipUpload: "auto",
 				Repository: config.RepoRef{
 					Owner: "foo",
@@ -375,6 +404,11 @@ func TestRunPipe(t *testing.T) {
 			}
 			require.NoError(t, pipe.publishAll(ctx, client))
 			require.True(t, client.CreatedFile)
+
+			require.NotEmpty(t, client.Path)
+			if tt.expectPath != "" {
+				require.Truef(t, strings.HasPrefix(client.Path, tt.expectPath), "expected %q to begin with %q", client.Path, tt.expectPath)
+			}
 
 			if tt.winget.Repository.PullRequest.Enabled {
 				require.True(t, client.OpenedPullRequest)

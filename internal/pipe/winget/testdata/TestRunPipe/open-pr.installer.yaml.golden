@@ -3,6 +3,7 @@
 PackageIdentifier: foo
 PackageVersion: 1.2.1
 PackageLocale: en-US
+Publisher: Becker Software
 PackageName: foo
 PackageUrl: https://goreleaser.com
 License: mit

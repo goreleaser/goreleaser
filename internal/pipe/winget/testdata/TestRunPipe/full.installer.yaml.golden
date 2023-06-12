@@ -3,7 +3,7 @@
 PackageIdentifier: foo
 PackageVersion: 1.2.1
 PackageLocale: en-US
-Publisher: becker software
+Publisher: Becker Software
 PublisherUrl: https://carlosbecker.com
 Author: Carlos Becker
 PackageName: foo
