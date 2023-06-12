@@ -17,7 +17,7 @@ jobs:
   htmltest:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@8e5e7e5ab8b370d6c329ec480221332ada57f0ab # v3
+      - uses: actions/checkout@c85c95e3d7251135ab7dc9ce3241c5835cc595a9 # v3
       - uses: arduino/setup-task@e26d8975574116b0097a1161e0fe16ba75d84c1c # v1
         with:
           repo-token: ${{ secrets.GITHUB_TOKEN }}
