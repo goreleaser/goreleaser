@@ -943,8 +943,8 @@ github.com/digitalocean/godo v1.78.0/go.mod h1:GBmu8MkjZmNARE7IXRPmkbbnocNN8+uBm
 github.com/digitalocean/godo v1.95.0/go.mod h1:NRpFznZFvhHjBoqZAaOD3khVzsJ3EibzKqFL4R60dmA=
 github.com/dimchansky/utfbom v1.1.1 h1:vV6w1AhK4VMnhBno/TPVCoK9U/LP0PkLCS9tbxHdi/U=
 github.com/dimchansky/utfbom v1.1.1/go.mod h1:SxdoEBH5qIqFocHMyGOXVAybYJdr71b1Q/j0mACtrfE=
-github.com/disgoorg/disgo v0.16.5 h1:6f2k9OwiDvLL/xq9mxevBVEpL0oSKYxM7aZ+v8mnt5w=
-github.com/disgoorg/disgo v0.16.5/go.mod h1:wo61ZLPn6bxHVdUODjyZ3fZTnCT7giD3uknsDUwMGn8=
+github.com/disgoorg/disgo v0.16.6 h1:2avPDjTJuKpQtRyCQq8yfG3+vOQWrYcE/dmvEnMuT/8=
+github.com/disgoorg/disgo v0.16.6/go.mod h1:wo61ZLPn6bxHVdUODjyZ3fZTnCT7giD3uknsDUwMGn8=
 github.com/disgoorg/json v1.1.0 h1:7xigHvomlVA9PQw9bMGO02PHGJJPqvX5AnwlYg/Tnys=
 github.com/disgoorg/json v1.1.0/go.mod h1:BHDwdde0rpQFDVsRLKhma6Y7fTbQKub/zdGO5O9NqqA=
 github.com/disgoorg/log v1.2.0 h1:sqlXnu/ZKAlIlHV9IO+dbMto7/hCQ474vlIdMWk8QKo=
