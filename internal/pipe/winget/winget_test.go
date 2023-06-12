@@ -389,10 +389,3 @@ func TestErrNoArchivesFound(t *testing.T) {
 		ids:     []string{"foo", "bar"},
 	}, "no zip archives found matching goos=[windows] goarch=[amd64 386] goamd64=v1 ids=[foo bar]")
 }
-
-type fakeWingetShaPrefetcher map[string]string
-
-func (m fakeWingetShaPrefetcher) Prefetch(url string) (string, error) {
-	return m[url], nil
-}
-func (m fakeWingetShaPrefetcher) Available() bool { return true }

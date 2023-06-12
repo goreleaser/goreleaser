@@ -237,7 +237,7 @@ func (p Pipe) doRun(ctx *context.Context, winget config.Winget, cl client.Releas
 		return err
 	}
 
-	if err := createYAML(ctx, winget, Locale{
+	return createYAML(ctx, winget, Locale{
 		PackageIdentifier: name,
 		PackageVersion:    ctx.Version,
 		PackageLocale:     defaultLocale,
@@ -257,11 +257,7 @@ func (p Pipe) doRun(ctx *context.Context, winget config.Winget, cl client.Releas
 		ReleaseNotesURL:   winget.ReleaseNotesURL,
 		ManifestType:      "defaultLocale",
 		ManifestVersion:   manifestVersion,
-	}, artifact.WingetDefaultLocale); err != nil {
-		return err
-	}
-
-	return nil
+	}, artifact.WingetDefaultLocale)
 }
 
 func (p Pipe) publishAll(ctx *context.Context, cli client.Client) error {

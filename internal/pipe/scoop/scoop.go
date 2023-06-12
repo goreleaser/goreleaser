@@ -260,7 +260,7 @@ func doPublish(ctx *context.Context, manifest *artifact.Artifact, cl client.Clie
 	if scoop.Bucket.Git.URL != "" {
 		return client.NewGitUploadClient(repo.Branch).
 			CreateFiles(ctx, author, repo, commitMessage, []client.RepoFile{{
-				Content: []byte(content),
+				Content: content,
 				Path:    gpath,
 			}})
 	}
