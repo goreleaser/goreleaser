@@ -37,16 +37,20 @@ var ErrNoSummary = errors.New("no summary provided for snapcraft")
 // Metadata to generate the snap package.
 type Metadata struct {
 	Name          string
+	Title         string
 	Version       string
 	Summary       string
 	Description   string
+	Icon          string
 	Base          string `yaml:",omitempty"`
 	License       string `yaml:",omitempty"`
 	Grade         string `yaml:",omitempty"`
 	Confinement   string `yaml:",omitempty"`
 	Architectures []string
+	Assumes       []string                  `yaml:",omitempty"`
 	Layout        map[string]LayoutMetadata `yaml:",omitempty"`
 	Apps          map[string]AppMetadata
+	Hooks         map[string]interface{} `yaml:",omitempty"`
 	Plugs         map[string]interface{} `yaml:",omitempty"`
 }
 
@@ -269,6 +273,14 @@ func create(ctx *context.Context, snap config.Snapcraft, arch string, binaries [
 		Apps:          map[string]AppMetadata{},
 	}
 
+	if snap.Title != "" {
+		metadata.Title = snap.Title
+	}
+
+	if snap.Icon != "" {
+		metadata.Icon = snap.Icon
+	}
+
 	if snap.Base != "" {
 		metadata.Base = snap.Base
 	}
@@ -377,6 +389,8 @@ func create(ctx *context.Context, snap config.Snapcraft, arch string, binaries [
 		}
 
 		metadata.Apps[name] = appMetadata
+		metadata.Assumes = snap.Assumes
+		metadata.Hooks = snap.Hooks
 		metadata.Plugs = snap.Plugs
 	}
 
