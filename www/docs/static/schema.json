@@ -2755,10 +2755,16 @@
 					"name": {
 						"type": "string"
 					},
+					"title": {
+						"type": "string"
+					},
 					"summary": {
 						"type": "string"
 					},
 					"description": {
+						"type": "string"
+					},
+					"icon": {
 						"type": "string"
 					},
 					"base": {
@@ -2779,6 +2785,12 @@
 					"confinement": {
 						"type": "string"
 					},
+					"assumes": {
+						"items": {
+							"type": "string"
+						},
+						"type": "array"
+					},
 					"layout": {
 						"patternProperties": {
 							".*": {
@@ -2793,6 +2805,9 @@
 								"$ref": "#/$defs/SnapcraftAppMetadata"
 							}
 						},
+						"type": "object"
+					},
+					"hooks": {
 						"type": "object"
 					},
 					"plugs": {
