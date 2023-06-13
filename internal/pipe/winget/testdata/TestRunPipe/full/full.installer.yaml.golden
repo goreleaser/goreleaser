@@ -2,23 +2,16 @@
 # yaml-language-server: $schema=https://aka.ms/winget-manifest.version.1.4.0.schema.json
 PackageIdentifier: Beckersoft.foo
 PackageVersion: 1.2.1
-PackageLocale: en-US
-Publisher: Beckersoft
-PublisherUrl: https://carlosbecker.com
-Author: Carlos Becker
-PackageName: foo
-PackageUrl: https://goreleaser.com
-License: MIT
-LicenseUrl: https://goreleaser.com/eula/
-Copyright: bla bla bla
-ShortDescription: foo
-Description: |-
-  long foo bar
-
-  				yadaa yada yada loooaaasssss
-
-  				sss
-Moniker: foo
-ReleaseNotesUrl: https://github.com/goreleaser/goreleaser/tags/v1.2.1
-ManifestType: defaultLocale
+InstallerLocale: en-US
+InstallerType: zip
+ReleaseDate: "2023-06-12"
+Installers:
+  - Architecture: x64
+    NestedInstallerType: portable
+    NestedInstallerFiles:
+      - RelativeFilePath: foo.exe
+    InstallerUrl: https://dummyhost/download/v1.2.1/foo_windows_amd64v1.zip
+    InstallerSha256: e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
+    UpgradeBehavior: uninstallPrevious
+ManifestType: installer
 ManifestVersion: 1.4.0

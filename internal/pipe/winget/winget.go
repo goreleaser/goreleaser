@@ -26,6 +26,7 @@ var (
 	errInvalidPackageIdentifier = pipe.Skip("winget.package_identifier is invalid")
 	errSkipUpload               = pipe.Skip("winget.skip_upload is set")
 	errSkipUploadAuto           = pipe.Skip("winget.skip_upload is set to 'auto', and current version is a pre-release")
+	errMultipleArchives         = pipe.Skip("found multiple archives for the same platform, please consider filtering by id")
 	packageIdentifierValid      = regexp.MustCompile("^[^\\.\\s\\\\/:\\*\\?\"<>\\|\\x01-\\x1f]{1,32}(\\.[^\\.\\s\\\\/:\\*\\?\"<>\\|\\x01-\\x1f]{1,32}){1,7}$")
 )
 
@@ -242,6 +243,7 @@ func (p Pipe) doRun(ctx *context.Context, winget config.Winget, cl client.Releas
 		ManifestVersion:   manifestVersion,
 	}
 
+	var amd64Count, i386count int
 	for _, archive := range archives {
 		sha256, err := archive.Checksum("sha256")
 		if err != nil {
@@ -266,6 +268,16 @@ func (p Pipe) doRun(ctx *context.Context, winget config.Winget, cl client.Releas
 			InstallerSha256:      sha256,
 			UpgradeBehavior:      "uninstallPrevious",
 		})
+		switch archive.Goarch {
+		case "386":
+			i386count++
+		case "amd64":
+			amd64Count++
+		}
+	}
+
+	if i386count > 1 || amd64Count > 1 {
+		return errMultipleArchives
 	}
 
 	if err := createYAML(ctx, winget, installer, artifact.WingetInstaller); err != nil {

@@ -47,6 +47,7 @@ func TestRunPipe(t *testing.T) {
 				Publisher:        "Foo",
 				License:          "MIT",
 				ShortDescription: "foo bar zaz",
+				IDs:              []string{"foo"},
 				Repository: config.RepoRef{
 					Owner: "foo",
 					Name:  "bar",
@@ -133,6 +134,21 @@ func TestRunPipe(t *testing.T) {
 				Goamd64:          "v2",
 				License:          "MIT",
 				ShortDescription: "foo bar zaz",
+				Repository: config.RepoRef{
+					Owner: "foo",
+					Name:  "bar",
+				},
+			},
+		},
+		{
+			name:             "too-many-archives",
+			expectRunErrorIs: errMultipleArchives,
+			winget: config.Winget{
+				Name:             "min",
+				Publisher:        "Foo",
+				License:          "MIT",
+				ShortDescription: "foo bar zaz",
+				IDs:              []string{},
 				Repository: config.RepoRef{
 					Owner: "foo",
 					Name:  "bar",
@@ -405,6 +421,7 @@ func TestRunPipe(t *testing.T) {
 				License:               "MIT",
 				ShortDescription:      "foo bar zaz",
 				CommitMessageTemplate: "{{.Foo}}",
+				IDs:                   []string{"foo"},
 				Repository: config.RepoRef{
 					Owner: "foo",
 					Name:  "bar",
@@ -419,6 +436,7 @@ func TestRunPipe(t *testing.T) {
 				Publisher:        "Beckersoft",
 				SkipUpload:       "true",
 				License:          "MIT",
+				IDs:              []string{"foo"},
 				ShortDescription: "foo bar zaz",
 				Repository: config.RepoRef{
 					Owner: "foo",
@@ -434,6 +452,7 @@ func TestRunPipe(t *testing.T) {
 				Publisher:        "Beckersoft",
 				License:          "MIT",
 				ShortDescription: "foo bar zaz",
+				IDs:              []string{"foo"},
 				SkipUpload:       "auto",
 				Repository: config.RepoRef{
 					Owner: "foo",
