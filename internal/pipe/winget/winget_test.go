@@ -382,8 +382,8 @@ func TestRunPipe(t *testing.T) {
 			},
 		},
 		{
-			name:                 "bad-path-tmpl",
-			expectPublishErrorIs: &template.Error{},
+			name:             "bad-path-tmpl",
+			expectRunErrorIs: &template.Error{},
 			winget: config.Winget{
 				Name:             "foo",
 				Publisher:        "Beckersoft",

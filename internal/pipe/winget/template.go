@@ -20,9 +20,12 @@ func createYAML(ctx *context.Context, winget config.Winget, in any, tp artifact.
 	}
 
 	filename := winget.Name + extFor(tp)
-	path := filepath.Join(ctx.Config.Dist, filename)
+	path := filepath.Join(ctx.Config.Dist, winget.Path, filename)
+	if err := os.MkdirAll(filepath.Dir(path), 0o755); err != nil {
+		return err
+	}
 
-	log.WithField("winget version", path).Info("writing")
+	log.WithField("path", path).Info("writing")
 	if err := os.WriteFile(path, []byte(strings.Join([]string{
 		generatedHeader,
 		versionLangServer,

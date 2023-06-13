@@ -179,6 +179,16 @@ func (p Pipe) doRun(ctx *context.Context, winget config.Winget, cl client.Releas
 		winget.URLTemplate = url
 	}
 
+	path, err := tmpl.New(ctx).Apply(winget.Path)
+	if err != nil {
+		return err
+	}
+
+	if path == "" {
+		path = filepath.Join("manifests", strings.ToLower(string(winget.Publisher[0])), winget.Publisher, winget.Name, ctx.Version)
+	}
+	winget.Path = path
+
 	filters := []artifact.Filter{
 		artifact.ByGoos("windows"),
 		artifact.ByFormats("zip"),
@@ -330,15 +340,6 @@ func doPublish(ctx *context.Context, cl client.Client, wingets []*artifact.Artif
 
 	repo := client.RepoFromRef(winget.Repository)
 
-	folder, err := tmpl.New(ctx).Apply(winget.Path)
-	if err != nil {
-		return err
-	}
-
-	if folder == "" {
-		folder = filepath.Join("manifests", strings.ToLower(string(winget.Publisher[0])), winget.Publisher, winget.Name, ctx.Version)
-	}
-
 	var files []client.RepoFile
 	for _, pkg := range wingets {
 		content, err := os.ReadFile(pkg.Path)
@@ -347,7 +348,7 @@ func doPublish(ctx *context.Context, cl client.Client, wingets []*artifact.Artif
 		}
 		files = append(files, client.RepoFile{
 			Content: content,
-			Path:    filepath.Join(folder, pkg.Name),
+			Path:    filepath.Join(winget.Path, pkg.Name),
 		})
 	}
 
@@ -390,9 +391,9 @@ func extFor(tp artifact.Type) string {
 	switch tp {
 	case artifact.WingetVersion:
 		return ".yaml"
-	case artifact.WingetDefaultLocale:
-		return ".installer.yaml"
 	case artifact.WingetInstaller:
+		return ".installer.yaml"
+	case artifact.WingetDefaultLocale:
 		return "." + defaultLocale + ".yaml"
 	default:
 		// should never happen
