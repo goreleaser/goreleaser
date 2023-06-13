@@ -18,10 +18,11 @@ import (
 )
 
 var (
-	errNoRepoName     = pipe.Skip("winget.repository.name name is not set")
-	errNoPublisher    = pipe.Skip("winget.publisher is not set")
-	errSkipUpload     = pipe.Skip("winget.skip_upload is set")
-	errSkipUploadAuto = pipe.Skip("winget.skip_upload is set to 'auto', and current version is a pre-release")
+	errNoRepoName               = pipe.Skip("winget.repository.name name is not set")
+	errNoPublisher              = pipe.Skip("winget.publisher is not set")
+	errInvalidPackageIdentifier = pipe.Skip("winget.package_identifier must be in 'Publisher.Package' format")
+	errSkipUpload               = pipe.Skip("winget.skip_upload is set")
+	errSkipUploadAuto           = pipe.Skip("winget.skip_upload is set to 'auto', and current version is a pre-release")
 )
 
 type errNoArchivesFound struct {
@@ -189,8 +190,16 @@ func (p Pipe) doRun(ctx *context.Context, winget config.Winget, cl client.Releas
 		}
 	}
 
+	if winget.PackageIdentifier == "" {
+		winget.PackageIdentifier = publisher + "." + name
+	}
+
+	if !strings.Contains(winget.PackageIdentifier, ".") {
+		return errInvalidPackageIdentifier
+	}
+
 	if err := createYAML(ctx, winget, Version{
-		PackageIdentifier: name,
+		PackageIdentifier: winget.PackageIdentifier,
 		PackageVersion:    ctx.Version,
 		DefaultLocale:     defaultLocale,
 		ManifestType:      "version",
@@ -200,7 +209,7 @@ func (p Pipe) doRun(ctx *context.Context, winget config.Winget, cl client.Releas
 	}
 
 	installer := Installer{
-		PackageIdentifier: name,
+		PackageIdentifier: winget.PackageIdentifier,
 		PackageVersion:    ctx.Version,
 		InstallerLocale:   defaultLocale,
 		InstallerType:     "zip",
@@ -242,7 +251,7 @@ func (p Pipe) doRun(ctx *context.Context, winget config.Winget, cl client.Releas
 	}
 
 	return createYAML(ctx, winget, Locale{
-		PackageIdentifier: name,
+		PackageIdentifier: winget.PackageIdentifier,
 		PackageVersion:    ctx.Version,
 		PackageLocale:     defaultLocale,
 		Publisher:         publisher,

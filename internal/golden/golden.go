@@ -21,27 +21,32 @@ func RequireEqual(tb testing.TB, out []byte) {
 
 func RequireEqualExt(tb testing.TB, out []byte, ext string) {
 	tb.Helper()
-	doRequireEqual(tb, out, ext, golden)
+	doRequireEqual(tb, out, ext, golden, false)
+}
+
+func RequireEqualExtSubfolder(tb testing.TB, out []byte, ext string) {
+	tb.Helper()
+	doRequireEqual(tb, out, ext, golden, true)
 }
 
 func RequireEqualTxt(tb testing.TB, out []byte) {
 	tb.Helper()
-	doRequireEqual(tb, out, ".txt", golden)
+	doRequireEqual(tb, out, ".txt", golden, false)
 }
 
 func RequireEqualJSON(tb testing.TB, out []byte) {
 	tb.Helper()
-	doRequireEqual(tb, out, ".json", golden)
+	doRequireEqual(tb, out, ".json", golden, false)
 }
 
 func RequireEqualRb(tb testing.TB, out []byte) {
 	tb.Helper()
-	doRequireEqual(tb, out, ".rb", golden)
+	doRequireEqual(tb, out, ".rb", golden, false)
 }
 
 func RequireEqualYaml(tb testing.TB, out []byte) {
 	tb.Helper()
-	doRequireEqual(tb, out, ".yaml", "")
+	doRequireEqual(tb, out, ".yaml", "", false)
 }
 
 func RequireReadFile(tb testing.TB, path string) []byte {
@@ -51,10 +56,13 @@ func RequireReadFile(tb testing.TB, path string) []byte {
 	return bts
 }
 
-func doRequireEqual(tb testing.TB, out []byte, ext, suffix string) {
+func doRequireEqual(tb testing.TB, out []byte, ext, suffix string, folder bool) {
 	tb.Helper()
 
-	golden := "testdata/" + tb.Name() + ext + suffix
+	golden := filepath.Join("testdata", tb.Name()+ext+suffix)
+	if folder {
+		golden = filepath.Join("testdata", tb.Name(), filepath.Base(tb.Name())+ext+suffix)
+	}
 	if *update {
 		require.NoError(tb, os.MkdirAll(filepath.Dir(golden), 0o755))
 		require.NoError(tb, os.WriteFile(golden, out, 0o655))

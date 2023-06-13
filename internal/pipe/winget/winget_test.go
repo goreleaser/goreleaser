@@ -157,6 +157,30 @@ func TestRunPipe(t *testing.T) {
 			},
 		},
 		{
+			name:             "invalid-package-identifier",
+			expectRunErrorIs: errInvalidPackageIdentifier,
+			winget: config.Winget{
+				Name:              "min",
+				PackageIdentifier: "foobar",
+				Publisher:         "Foo",
+				Repository: config.RepoRef{
+					Owner: "foo",
+					Name:  "bar",
+				},
+			},
+		},
+		{
+			name:             "no-publisher",
+			expectRunErrorIs: errNoPublisher,
+			winget: config.Winget{
+				Name: "min",
+				Repository: config.RepoRef{
+					Owner: "foo",
+					Name:  "bar",
+				},
+			},
+		},
+		{
 			name:             "bad-name-tmpl",
 			expectRunErrorIs: &template.Error{},
 			winget: config.Winget{
@@ -395,7 +419,7 @@ func TestRunPipe(t *testing.T) {
 			)).List() {
 				bts, err := os.ReadFile(winget.Path)
 				require.NoError(t, err)
-				golden.RequireEqualExt(t, bts, extFor(winget.Type))
+				golden.RequireEqualExtSubfolder(t, bts, extFor(winget.Type))
 			}
 
 			// publish
@@ -424,4 +448,16 @@ func TestErrNoArchivesFound(t *testing.T) {
 		goamd64: "v1",
 		ids:     []string{"foo", "bar"},
 	}, "no zip archives found matching goos=[windows] goarch=[amd64 386] goamd64=v1 ids=[foo bar]")
+}
+
+func TestDefault(t *testing.T) {
+	ctx := testctx.NewWithCfg(config.Project{
+		ProjectName: "foo",
+		Winget:      []config.Winget{{}},
+	})
+	require.NoError(t, Pipe{}.Default(ctx))
+	winget := ctx.Config.Winget[0]
+	require.Equal(t, "v1", winget.Goamd64)
+	require.NotEmpty(t, winget.CommitMessageTemplate)
+	require.Equal(t, "foo", winget.Name)
 }
