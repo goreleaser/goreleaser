@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"regexp"
 	"strings"
 	"time"
 
@@ -18,11 +19,14 @@ import (
 )
 
 var (
-	errNoRepoName               = pipe.Skip("winget.repository.name name is not set")
-	errNoPublisher              = pipe.Skip("winget.publisher is not set")
-	errInvalidPackageIdentifier = pipe.Skip("winget.package_identifier must be in 'Publisher.Package' format")
+	errNoRepoName               = pipe.Skip("winget.repository.name name is required")
+	errNoPublisher              = pipe.Skip("winget.publisher is required")
+	errNoLicense                = pipe.Skip("winget.license is required")
+	errNoShortDescription       = pipe.Skip("winget.short_description is required")
+	errInvalidPackageIdentifier = pipe.Skip("winget.package_identifier is invalid")
 	errSkipUpload               = pipe.Skip("winget.skip_upload is set")
 	errSkipUploadAuto           = pipe.Skip("winget.skip_upload is set to 'auto', and current version is a pre-release")
+	packageIdentifierValid      = regexp.MustCompile("^[^\\.\\s\\\\/:\\*\\?\"<>\\|\\x01-\\x1f]{1,32}(\\.[^\\.\\s\\\\/:\\*\\?\"<>\\|\\x01-\\x1f]{1,32}){1,7}$")
 )
 
 type errNoArchivesFound struct {
@@ -105,6 +109,10 @@ func (p Pipe) doRun(ctx *context.Context, winget config.Winget, cl client.Releas
 	}
 	winget.Publisher = publisher
 
+	if winget.License == "" {
+		return errNoLicense
+	}
+
 	name, err := tmpl.New(ctx).Apply(winget.Name)
 	if err != nil {
 		return err
@@ -153,6 +161,10 @@ func (p Pipe) doRun(ctx *context.Context, winget config.Winget, cl client.Releas
 	}
 	winget.ShortDescription = shortDescription
 
+	if winget.ShortDescription == "" {
+		return errNoShortDescription
+	}
+
 	releaseNotesURL, err := tmpl.New(ctx).Apply(winget.ReleaseNotesURL)
 	if err != nil {
 		return err
@@ -194,8 +206,8 @@ func (p Pipe) doRun(ctx *context.Context, winget config.Winget, cl client.Releas
 		winget.PackageIdentifier = publisher + "." + name
 	}
 
-	if !strings.Contains(winget.PackageIdentifier, ".") {
-		return errInvalidPackageIdentifier
+	if !packageIdentifierValid.MatchString(winget.PackageIdentifier) {
+		return fmt.Errorf("%w: %s", errInvalidPackageIdentifier, winget.PackageIdentifier)
 	}
 
 	if err := createYAML(ctx, winget, Version{
