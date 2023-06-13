@@ -43,7 +43,6 @@ import (
 	"github.com/goreleaser/goreleaser/internal/pipe/upload"
 	"github.com/goreleaser/goreleaser/internal/pipe/upx"
 	"github.com/goreleaser/goreleaser/internal/pipe/webhook"
-	"github.com/goreleaser/goreleaser/internal/pipe/winget"
 	"github.com/goreleaser/goreleaser/pkg/context"
 )
 
@@ -81,7 +80,6 @@ var Defaulters = []Defaulter{
 	upload.Pipe{},
 	aur.Pipe{},
 	nix.Pipe{},
-	winget.Pipe{},
 	brew.Pipe{},
 	krew.Pipe{},
 	ko.Pipe{},

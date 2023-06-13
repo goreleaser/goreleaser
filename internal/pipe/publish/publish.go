@@ -23,7 +23,6 @@ import (
 	"github.com/goreleaser/goreleaser/internal/pipe/sign"
 	"github.com/goreleaser/goreleaser/internal/pipe/snapcraft"
 	"github.com/goreleaser/goreleaser/internal/pipe/upload"
-	"github.com/goreleaser/goreleaser/internal/pipe/winget"
 	"github.com/goreleaser/goreleaser/pkg/context"
 )
 
@@ -50,7 +49,6 @@ var publishers = []Publisher{
 	release.Pipe{},
 	// brew et al use the release URL, so, they should be last
 	nix.NewPublish(),
-	winget.Pipe{},
 	brew.Pipe{},
 	aur.Pipe{},
 	krew.Pipe{},

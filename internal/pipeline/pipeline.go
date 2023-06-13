@@ -36,7 +36,6 @@ import (
 	"github.com/goreleaser/goreleaser/internal/pipe/sourcearchive"
 	"github.com/goreleaser/goreleaser/internal/pipe/universalbinary"
 	"github.com/goreleaser/goreleaser/internal/pipe/upx"
-	"github.com/goreleaser/goreleaser/internal/pipe/winget"
 	"github.com/goreleaser/goreleaser/pkg/context"
 )
 
@@ -113,8 +112,6 @@ var Pipeline = append(
 	aur.Pipe{},
 	// create nixpkgs
 	nix.NewBuild(),
-	// winget installers
-	winget.Pipe{},
 	// create brew tap
 	brew.Pipe{},
 	// krew plugins
