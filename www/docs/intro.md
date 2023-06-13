@@ -33,7 +33,7 @@ software bill of materials, and reproducible binaries, for example.
 
 GoReleaser has been widely adopted by the Go community in the past few years,
 with
-[thousands of projects and companies](https://github.com/search?l=&q=filename%3Agoreleaser+language%3Ayaml+-path%3A%2Fvendor&type=code)
+[thousands of projects and companies](https://github.com/search?q=path%3A.goreleaser.yml+OR+path%3A.goreleaser.yaml+&type=code)
 using it to manage their releases.
 
 You can check some of our users out [here](/users).
@@ -59,7 +59,6 @@ You can also do it in your continuous integration platform of choice.
 ---
 
 Hopefully you find it useful, and the docs easy to follow.
-
 
 Feel free to [create an issue][iss] if you find something that's not clear and
 join our [Discord][dis] to chat with other users and maintainers.
