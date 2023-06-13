@@ -6,6 +6,7 @@ import (
 	"path/filepath"
 	"strings"
 	"testing"
+	"time"
 
 	"github.com/goreleaser/goreleaser/internal/artifact"
 	"github.com/goreleaser/goreleaser/internal/client"
@@ -333,6 +334,7 @@ func TestRunPipe(t *testing.T) {
 				testctx.WithVersion("1.2.1"),
 				testctx.WithCurrentTag("v1.2.1"),
 				testctx.WithSemver(1, 2, 1, "rc1"),
+				testctx.WithDate(time.Date(2023, 6, 12, 20, 32, 10, 12, time.Local)),
 			)
 			createFakeArtifact := func(id, goos, goarch, goamd64, goarm string, extra map[string]any) {
 				path := filepath.Join(folder, "dist/foo_"+goos+goarch+goamd64+goarm+".zip")
