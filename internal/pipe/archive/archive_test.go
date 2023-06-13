@@ -1110,3 +1110,44 @@ func TestIssue3803(t *testing.T) {
 	archives := ctx.Artifacts.List()
 	require.Len(t, archives, 2)
 }
+
+func TestExtraFormatWhenOverride(t *testing.T) {
+	ctx := testctx.NewWithCfg(config.Project{
+		Dist: t.TempDir(),
+		Archives: []config.Archive{
+			{
+				ID:           "foo",
+				NameTemplate: "foo",
+				Format:       "tar.gz",
+				FormatOverrides: []config.FormatOverride{{
+					Goos:   "windows",
+					Format: "zip",
+				}},
+				Files: []config.File{
+					{Source: "./testdata/a/a.txt"},
+				},
+			},
+		},
+	})
+	windowsBuild := &artifact.Artifact{
+		Goos:    "windows",
+		Goarch:  "amd64",
+		Goamd64: "v1",
+		Name:    "bin/mybin.exe",
+		Path:    filepath.Join(ctx.Config.Dist, "windowsamd64", "bin", "mybin.exe"),
+		Type:    artifact.Binary,
+		Extra: map[string]interface{}{
+			artifact.ExtraBinary: "mybin",
+			artifact.ExtraExt:    ".exe",
+			artifact.ExtraID:     "default",
+		},
+	}
+	require.NoError(t, os.MkdirAll(filepath.Dir(windowsBuild.Path), 0o755))
+	f, err := os.Create(windowsBuild.Path)
+	require.NoError(t, err)
+	require.NoError(t, f.Close())
+	ctx.Artifacts.Add(windowsBuild)
+	require.NoError(t, Pipe{}.Run(ctx))
+	archives := ctx.Artifacts.Filter(artifact.ByFormats("zip")).List()
+	require.Len(t, archives, 1)
+}

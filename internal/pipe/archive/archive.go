@@ -221,7 +221,7 @@ func doCreate(ctx *context.Context, arch config.Archive, binaries []*artifact.Ar
 		Extra: map[string]interface{}{
 			artifact.ExtraBuilds:    binaries,
 			artifact.ExtraID:        arch.ID,
-			artifact.ExtraFormat:    arch.Format,
+			artifact.ExtraFormat:    format,
 			artifact.ExtraWrappedIn: wrap,
 			artifact.ExtraBinaries:  bins,
 		},
