@@ -87,8 +87,6 @@ nix:
     post_install: |
       installShellCompletion ./completions/*
 
-    # GitHub/GitLab repository to push the pkg to.
-    repository:
 {% include-markdown "../includes/repository.md" comments=false %}
 ```
 

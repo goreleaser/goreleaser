@@ -28,7 +28,7 @@ func TestDefault(t *testing.T) {
 			ProjectName: "barr",
 			Scoops: []config.Scoop{
 				{
-					Bucket: config.RepoRef{
+					Repository: config.RepoRef{
 						Name: "foo",
 					},
 				},
@@ -64,6 +64,8 @@ func TestDefaultDeprecated(t *testing.T) {
 	require.NotEmpty(t, ctx.Config.Scoops[0].CommitAuthor.Name)
 	require.NotEmpty(t, ctx.Config.Scoops[0].CommitAuthor.Email)
 	require.NotEmpty(t, ctx.Config.Scoops[0].CommitMessageTemplate)
+	require.Equal(t, "foo", ctx.Config.Scoops[0].Repository.Name)
+	require.True(t, ctx.Deprecated)
 }
 
 func Test_doRun(t *testing.T) {
@@ -109,7 +111,7 @@ func Test_doRun(t *testing.T) {
 						Dist:        t.TempDir(),
 						ProjectName: "multi-arts",
 						Scoops: []config.Scoop{{
-							Bucket: config.RepoRef{
+							Repository: config.RepoRef{
 								Owner: "test",
 								Name:  "test",
 							},
@@ -149,7 +151,7 @@ func Test_doRun(t *testing.T) {
 						Dist:        t.TempDir(),
 						ProjectName: "multi-bins",
 						Scoops: []config.Scoop{{
-							Bucket: config.RepoRef{
+							Repository: config.RepoRef{
 								Owner: "test",
 								Name:  "test",
 							},
@@ -191,7 +193,7 @@ func Test_doRun(t *testing.T) {
 						Dist:        t.TempDir(),
 						ProjectName: "run-pipe",
 						Scoop: config.Scoop{
-							Bucket: config.RepoRef{
+							Repository: config.RepoRef{
 								Owner: "test",
 								Name:  "test",
 							},
@@ -226,7 +228,7 @@ func Test_doRun(t *testing.T) {
 						ProjectName: "git-run-pipe",
 						Dist:        t.TempDir(),
 						Scoop: config.Scoop{
-							Bucket: config.RepoRef{
+							Repository: config.RepoRef{
 								Name:   "test",
 								Branch: "main",
 								Git: config.GitRepoRef{
@@ -255,7 +257,7 @@ func Test_doRun(t *testing.T) {
 				tb.Helper()
 				content := testlib.CatFileFromBareRepository(
 					tb,
-					a.ctx.Config.Scoop.Bucket.Git.URL,
+					a.ctx.Config.Scoop.Repository.Git.URL,
 					"scoops/git-run-pipe.json",
 				)
 				golden.RequireEqualJSON(tb, content)
@@ -268,7 +270,7 @@ func Test_doRun(t *testing.T) {
 					config.Project{
 						ProjectName: "run-pipe",
 						Scoop: config.Scoop{
-							Bucket: config.RepoRef{
+							Repository: config.RepoRef{
 								Owner: "test",
 								Name:  "test",
 							},
@@ -315,7 +317,7 @@ func Test_doRun(t *testing.T) {
 						GitHubURLs:  config.GitHubURLs{Download: "https://api.custom.github.enterprise.com"},
 						ProjectName: "run-pipe",
 						Scoop: config.Scoop{
-							Bucket: config.RepoRef{
+							Repository: config.RepoRef{
 								Owner: "test",
 								Name:  "test",
 							},
@@ -347,7 +349,7 @@ func Test_doRun(t *testing.T) {
 					config.Project{
 						ProjectName: "run-pipe",
 						Scoop: config.Scoop{
-							Bucket: config.RepoRef{
+							Repository: config.RepoRef{
 								Owner: "test",
 								Name:  "test",
 							},
@@ -388,7 +390,7 @@ func Test_doRun(t *testing.T) {
 						GitHubURLs:  config.GitHubURLs{Download: "https://api.custom.gitlab.enterprise.com"},
 						ProjectName: "run-pipe",
 						Scoop: config.Scoop{
-							Bucket: config.RepoRef{
+							Repository: config.RepoRef{
 								Owner: "test",
 								Name:  "test",
 							},
@@ -428,7 +430,7 @@ func Test_doRun(t *testing.T) {
 					config.Project{
 						ProjectName: "run-pipe",
 						Scoop: config.Scoop{
-							Bucket: config.RepoRef{
+							Repository: config.RepoRef{
 								Owner: "test",
 								Name:  "test",
 							},
@@ -455,7 +457,7 @@ func Test_doRun(t *testing.T) {
 						ProjectName: "run-pipe",
 						Scoop: config.Scoop{
 							SkipUpload: "auto",
-							Bucket: config.RepoRef{
+							Repository: config.RepoRef{
 								Owner: "test",
 								Name:  "test",
 							},
@@ -486,7 +488,7 @@ func Test_doRun(t *testing.T) {
 						ProjectName: "run-pipe",
 						Scoop: config.Scoop{
 							SkipUpload: "true",
-							Bucket: config.RepoRef{
+							Repository: config.RepoRef{
 								Owner: "test",
 								Name:  "test",
 							},
@@ -518,7 +520,7 @@ func Test_doRun(t *testing.T) {
 							Disable: "true",
 						},
 						Scoop: config.Scoop{
-							Bucket: config.RepoRef{
+							Repository: config.RepoRef{
 								Owner: "test",
 								Name:  "test",
 							},
@@ -547,7 +549,7 @@ func Test_doRun(t *testing.T) {
 					config.Project{
 						ProjectName: "run-pipe",
 						Scoop: config.Scoop{
-							Bucket: config.RepoRef{
+							Repository: config.RepoRef{
 								Owner: "test",
 								Name:  "test",
 							},
@@ -573,7 +575,7 @@ func Test_doRun(t *testing.T) {
 					config.Project{
 						ProjectName: "run-pipe",
 						Scoop: config.Scoop{
-							Bucket: config.RepoRef{
+							Repository: config.RepoRef{
 								Owner: "test",
 								Name:  "test",
 							},
@@ -600,7 +602,7 @@ func Test_doRun(t *testing.T) {
 					config.Project{
 						ProjectName: "run-pipe",
 						Scoop: config.Scoop{
-							Bucket: config.RepoRef{
+							Repository: config.RepoRef{
 								Owner: "test",
 								Name:  "test",
 							},
@@ -627,7 +629,7 @@ func Test_doRun(t *testing.T) {
 					config.Project{
 						ProjectName: "run-pipe",
 						Scoop: config.Scoop{
-							Bucket: config.RepoRef{
+							Repository: config.RepoRef{
 								Owner: "test",
 								Name:  "test",
 							},
@@ -654,7 +656,7 @@ func Test_doRun(t *testing.T) {
 					config.Project{
 						ProjectName: "run-pipe",
 						Scoop: config.Scoop{
-							Bucket: config.RepoRef{
+							Repository: config.RepoRef{
 								Owner: "test",
 								Name:  "test",
 							},
@@ -681,7 +683,7 @@ func Test_doRun(t *testing.T) {
 					config.Project{
 						ProjectName: "run-pipe",
 						Scoop: config.Scoop{
-							Bucket: config.RepoRef{
+							Repository: config.RepoRef{
 								Owner: "{{ .Env.aaaaaa }}",
 								Name:  "test",
 							},
@@ -711,7 +713,7 @@ func Test_doRun(t *testing.T) {
 						Env:         []string{"FOO=test", "BRANCH=main"},
 						ProjectName: "run-pipe",
 						Scoops: []config.Scoop{{
-							Bucket: config.RepoRef{
+							Repository: config.RepoRef{
 								Owner:  "{{ .Env.FOO }}",
 								Name:   "{{ .Env.FOO }}",
 								Branch: "{{ .Env.BRANCH }}",
@@ -767,7 +769,7 @@ func TestRunPipePullRequest(t *testing.T) {
 				Name:        "{{.Env.FOO}}",
 				Homepage:    "https://{{.Env.FOO}}.com",
 				Description: "Fake desc for {{.ProjectName}}",
-				Bucket: config.RepoRef{
+				Repository: config.RepoRef{
 					Owner:  "foo",
 					Name:   "bar",
 					Branch: "update-{{.Version}}",
@@ -832,7 +834,7 @@ func Test_buildManifest(t *testing.T) {
 						},
 					},
 					Scoop: config.Scoop{
-						Bucket: config.RepoRef{
+						Repository: config.RepoRef{
 							Owner: "test",
 							Name:  "test",
 						},
@@ -861,7 +863,7 @@ func Test_buildManifest(t *testing.T) {
 						},
 					},
 					Scoop: config.Scoop{
-						Bucket: config.RepoRef{
+						Repository: config.RepoRef{
 							Owner: "test",
 							Name:  "test",
 						},
@@ -886,7 +888,7 @@ func Test_buildManifest(t *testing.T) {
 					},
 					ProjectName: "run-pipe",
 					Scoop: config.Scoop{
-						Bucket: config.RepoRef{
+						Repository: config.RepoRef{
 							Owner: "test",
 							Name:  "test",
 						},
@@ -911,7 +913,7 @@ func Test_buildManifest(t *testing.T) {
 					},
 					ProjectName: "run-pipe",
 					Scoop: config.Scoop{
-						Bucket: config.RepoRef{
+						Repository: config.RepoRef{
 							Owner: "test",
 							Name:  "test",
 						},
@@ -994,7 +996,7 @@ func getScoopPipeSkipCtx(folder string) (*context.Context, string) {
 			Dist:        folder,
 			ProjectName: "run-pipe",
 			Scoop: config.Scoop{
-				Bucket: config.RepoRef{
+				Repository: config.RepoRef{
 					Owner: "test",
 					Name:  "test",
 				},
@@ -1068,7 +1070,7 @@ func TestWrapInDirectory(t *testing.T) {
 			},
 			ProjectName: "run-pipe",
 			Scoops: []config.Scoop{{
-				Bucket: config.RepoRef{
+				Repository: config.RepoRef{
 					Owner: "test",
 					Name:  "test",
 				},
@@ -1118,7 +1120,7 @@ func TestSkip(t *testing.T) {
 	t.Run("dont skip", func(t *testing.T) {
 		ctx := testctx.NewWithCfg(config.Project{
 			Scoop: config.Scoop{
-				Bucket: config.RepoRef{
+				Repository: config.RepoRef{
 					Name: "a",
 				},
 			},

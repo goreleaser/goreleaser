@@ -1,3 +1,5 @@
+    # Repository to push the generated files to.
+    repository:
       # Repository owner.
       #
       # Templates: allowed
