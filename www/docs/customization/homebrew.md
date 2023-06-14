@@ -44,85 +44,6 @@ brews:
     # We will probably unify this in the next major version like it is
     # done with scoop.
 
-    # GitHub/GitLab repository to push the formula to
-    tap:
-      # Repository owner.
-      #
-      # Templates: allowed
-      owner: user
-
-      # Repository name.
-      #
-      # Templates: allowed
-      name: homebrew-tap
-
-      # Optionally a branch can be provided.
-      #
-      # Default: default repository branch.
-      # Templates: allowed
-      branch: main
-
-      # Optionally a token can be provided, if it differs from the token
-      # provided to GoReleaser
-      #
-      # Templates: allowed
-      token: "{{ .Env.HOMEBREW_TAP_GITHUB_TOKEN }}"
-
-      # Sets up pull request creation instead of just pushing to the given branch.
-      # Make sure the 'branch' property is different from base before enabling
-      # it.
-      #
-      # Since: v1.17
-      pull_request:
-        # Whether to enable it or not.
-        enabled: true
-
-        # Whether to open the PR as a draft or not.
-        #
-        # Default: false
-        # Since: v1.19
-        draft: true
-
-        # Base can also be another repository, in which case the owner and name
-        # above will be used as HEAD, allowing cross-repository pull requests.
-        #
-        # Since: v1.19
-        base:
-          owner: org
-          name: nur
-          branch: main
-
-      # Clone, create the file, commit and push, to a regular Git repository.
-      #
-      # Notice that this will only have any effect if the given URL is not
-      # empty.
-      #
-      # Since: v1.18
-      git:
-        # The Git URL to push.
-        #
-        # Templates: allowed
-        url: 'ssh://git@myserver.com:repo.git'
-
-        # The SSH private key that should be used to commit to the Git
-        # repository.
-        # This can either be a path or the key contents.
-        #
-        # IMPORTANT: the key must not be password-protected.
-        #
-        # WARNING: do not expose your private key in the configuration file!
-        #
-        # Templates: allowed
-        private_key: '{{ .Env.PRIVATE_KEY_PATH }}'
-
-        # The value to be passed to `GIT_SSH_COMMAND`.
-        # This is mainly used to specify the SSH private key used to pull/push
-        # to the Git URL.
-        #
-        # Default: 'ssh -i {{ .KeyPath }} -o StrictHostKeyChecking=accept-new -F /dev/null'
-        # Templates: allowed
-        ssh_command: 'ssh -i {{ .Env.KEY }} -o SomeOption=yes'
-
     # URL which is determined by the given Token (github, gitlab or gitea).
     #
     # Default depends on the client.
@@ -227,11 +148,15 @@ brews:
     # Could be used to do any additional work after the "install" script
     post_install: |
     	etc.install "app-config.conf"
-    	...
+      # ...
+
+    # GitHub/GitLab repository to push the formula to
+    tap:
+{% include-markdown "../includes/repository.md" comments=false %}
 ```
 
 !!! tip
-    Learn more about the [name template engine](/customization/templates/).
+Learn more about the [name template engine](/customization/templates/).
 
 By defining the `brew` section, GoReleaser will take care of publishing the
 Homebrew tap.
@@ -278,10 +203,10 @@ end
 ```
 
 !!! info
-    Note that GoReleaser does not generate a valid homebrew-core formula.
-    The generated formulas are meant to be published as
-    [homebrew taps](https://docs.brew.sh/Taps.html), and in their current
-    form will not be accepted in any of the official homebrew repositories.
+Note that GoReleaser does not generate a valid homebrew-core formula.
+The generated formulas are meant to be published as
+[homebrew taps](https://docs.brew.sh/Taps.html), and in their current
+form will not be accepted in any of the official homebrew repositories.
 
 ## Head Formulas
 
