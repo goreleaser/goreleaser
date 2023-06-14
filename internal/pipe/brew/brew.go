@@ -8,6 +8,7 @@ import (
 	"os"
 	"path"
 	"path/filepath"
+	"reflect"
 	"sort"
 	"strings"
 	"text/template"
@@ -66,6 +67,10 @@ func (Pipe) Default(ctx *context.Context) error {
 		}
 		if brew.Plist != "" {
 			deprecate.Notice(ctx, "brews.plist")
+		}
+		if !reflect.DeepEqual(brew.Tap, config.RepoRef{}) {
+			brew.Repository = brew.Tap
+			deprecate.Notice(ctx, "brews.tap")
 		}
 	}
 
@@ -131,7 +136,7 @@ func doPublish(ctx *context.Context, formula *artifact.Artifact, cl client.Clien
 		return pipe.Skip("prerelease detected with 'auto' upload, skipping homebrew publish")
 	}
 
-	repo := client.RepoFromRef(brew.Tap)
+	repo := client.RepoFromRef(brew.Repository)
 
 	gpath := buildFormulaPath(brew.Folder, formula.Name)
 
@@ -150,7 +155,7 @@ func doPublish(ctx *context.Context, formula *artifact.Artifact, cl client.Clien
 		return err
 	}
 
-	if brew.Tap.Git.URL != "" {
+	if brew.Repository.Git.URL != "" {
 		return client.NewGitUploadClient(repo.Branch).
 			CreateFiles(ctx, author, repo, msg, []client.RepoFile{{
 				Content: content,
@@ -158,12 +163,12 @@ func doPublish(ctx *context.Context, formula *artifact.Artifact, cl client.Clien
 			}})
 	}
 
-	cl, err = client.NewIfToken(ctx, cl, brew.Tap.Token)
+	cl, err = client.NewIfToken(ctx, cl, brew.Repository.Token)
 	if err != nil {
 		return err
 	}
 
-	if !brew.Tap.PullRequest.Enabled {
+	if !brew.Repository.PullRequest.Enabled {
 		return cl.CreateFile(ctx, author, repo, content, gpath, msg)
 	}
 
@@ -179,15 +184,15 @@ func doPublish(ctx *context.Context, formula *artifact.Artifact, cl client.Clien
 
 	title := fmt.Sprintf("Updated %s to %s", ctx.Config.ProjectName, ctx.Version)
 	return pcl.OpenPullRequest(ctx, client.Repo{
-		Name:   brew.Tap.PullRequest.Base.Name,
-		Owner:  brew.Tap.PullRequest.Base.Owner,
-		Branch: brew.Tap.PullRequest.Base.Branch,
-	}, repo, title, brew.Tap.PullRequest.Draft)
+		Name:   brew.Repository.PullRequest.Base.Name,
+		Owner:  brew.Repository.PullRequest.Base.Owner,
+		Branch: brew.Repository.PullRequest.Base.Branch,
+	}, repo, title, brew.Repository.PullRequest.Draft)
 }
 
 func doRun(ctx *context.Context, brew config.Homebrew, cl client.ReleaserURLTemplater) error {
-	if brew.Tap.Name == "" {
-		return pipe.Skip("brew tap name is not set")
+	if brew.Repository.Name == "" {
+		return pipe.Skip("brew.repository.name is not set")
 	}
 
 	filters := []artifact.Filter{
@@ -235,11 +240,11 @@ func doRun(ctx *context.Context, brew config.Homebrew, cl client.ReleaserURLTemp
 	}
 	brew.Name = name
 
-	ref, err := client.TemplateRef(tmpl.New(ctx).Apply, brew.Tap)
+	ref, err := client.TemplateRef(tmpl.New(ctx).Apply, brew.Repository)
 	if err != nil {
 		return err
 	}
-	brew.Tap = ref
+	brew.Repository = ref
 
 	skipUpload, err := tmpl.New(ctx).Apply(brew.SkipUpload)
 	if err != nil {

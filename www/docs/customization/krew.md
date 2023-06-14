@@ -82,13 +82,12 @@ krews:
     # in case there is an indicator for prerelease in the tag e.g. v1.0.0-rc1
     skip_upload: true
 
-    # GitHub/GitLab repository to push the Krew plugin to.
-    index:
 {% include-markdown "../includes/repository.md" comments=false %}
 ```
 
 !!! tip
-Learn more about the [name template engine](/customization/templates/).
+
+    Learn more about the [name template engine](/customization/templates/).
 
 ## Limitations
 

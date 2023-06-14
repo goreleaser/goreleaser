@@ -92,10 +92,12 @@ scoops:
     # Default: 'v1'
     goamd64: v3
 
-    # Repository to push the app manifest to.
-    bucket:
 {% include-markdown "../includes/repository.md" comments=false %}
 ```
+
+!!! tip
+
+    Learn more about the [name template engine](/customization/templates/).
 
 By defining the `scoop` section, GoReleaser will take care of publishing the
 Scoop app. Assuming that the project name is `drumroll`, and the current tag is

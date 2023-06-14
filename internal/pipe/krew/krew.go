@@ -10,6 +10,7 @@ import (
 	"os"
 	"path"
 	"path/filepath"
+	"reflect"
 	"sort"
 	"strings"
 
@@ -17,6 +18,7 @@ import (
 	"github.com/goreleaser/goreleaser/internal/artifact"
 	"github.com/goreleaser/goreleaser/internal/client"
 	"github.com/goreleaser/goreleaser/internal/commitauthor"
+	"github.com/goreleaser/goreleaser/internal/deprecate"
 	"github.com/goreleaser/goreleaser/internal/pipe"
 	"github.com/goreleaser/goreleaser/internal/tmpl"
 	"github.com/goreleaser/goreleaser/internal/yaml"
@@ -52,6 +54,10 @@ func (Pipe) Default(ctx *context.Context) error {
 		}
 		if krew.Goamd64 == "" {
 			krew.Goamd64 = "v1"
+		}
+		if !reflect.DeepEqual(krew.Index, config.RepoRef{}) {
+			krew.Repository = krew.Index
+			deprecate.Notice(ctx, "krews.index")
 		}
 	}
 
@@ -306,12 +312,12 @@ func doPublish(ctx *context.Context, manifest *artifact.Artifact, cl client.Clie
 		return pipe.Skip("prerelease detected with 'auto' upload, skipping krew publish")
 	}
 
-	ref, err := client.TemplateRef(tmpl.New(ctx).Apply, cfg.Index)
+	ref, err := client.TemplateRef(tmpl.New(ctx).Apply, cfg.Repository)
 	if err != nil {
 		return err
 	}
-	cfg.Index = ref
-	repo := client.RepoFromRef(cfg.Index)
+	cfg.Repository = ref
+	repo := client.RepoFromRef(cfg.Repository)
 	gpath := buildManifestPath(manifestsFolder, manifest.Name)
 
 	msg, err := tmpl.New(ctx).Apply(cfg.CommitMessageTemplate)
@@ -329,7 +335,7 @@ func doPublish(ctx *context.Context, manifest *artifact.Artifact, cl client.Clie
 		return err
 	}
 
-	if cfg.Index.Git.URL != "" {
+	if cfg.Repository.Git.URL != "" {
 		return client.NewGitUploadClient(repo.Branch).
 			CreateFiles(ctx, author, repo, msg, []client.RepoFile{{
 				Content: content,
@@ -337,12 +343,12 @@ func doPublish(ctx *context.Context, manifest *artifact.Artifact, cl client.Clie
 			}})
 	}
 
-	cl, err = client.NewIfToken(ctx, cl, cfg.Index.Token)
+	cl, err = client.NewIfToken(ctx, cl, cfg.Repository.Token)
 	if err != nil {
 		return err
 	}
 
-	if !cfg.Index.PullRequest.Enabled {
+	if !cfg.Repository.PullRequest.Enabled {
 		return cl.CreateFile(ctx, author, repo, content, gpath, msg)
 	}
 
@@ -358,10 +364,10 @@ func doPublish(ctx *context.Context, manifest *artifact.Artifact, cl client.Clie
 
 	title := fmt.Sprintf("Updated %s to %s", ctx.Config.ProjectName, ctx.Version)
 	return pcl.OpenPullRequest(ctx, client.Repo{
-		Name:   cfg.Index.PullRequest.Base.Name,
-		Owner:  cfg.Index.PullRequest.Base.Owner,
-		Branch: cfg.Index.PullRequest.Base.Branch,
-	}, repo, title, cfg.Index.PullRequest.Draft)
+		Name:   cfg.Repository.PullRequest.Base.Name,
+		Owner:  cfg.Repository.PullRequest.Base.Owner,
+		Branch: cfg.Repository.PullRequest.Base.Branch,
+	}, repo, title, cfg.Repository.PullRequest.Draft)
 }
 
 func buildManifestPath(folder, filename string) string {

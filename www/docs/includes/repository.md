@@ -1,12 +1,14 @@
+    # Repository to push the generated files to.
+    repository:
       # Repository owner.
       #
       # Templates: allowed
-      owner: user
+      owner: caarlos0
 
       # Repository name.
       #
       # Templates: allowed
-      name: krew-plugins
+      name: my-repo
 
       # Optionally a branch can be provided.
       #
@@ -17,7 +19,7 @@
       # Optionally a token can be provided, if it differs from the token
       # provided to GoReleaser
       # Templates: allowed
-      token: "{{ .Env.HOMEBREW_TAP_GITHUB_TOKEN }}"
+      token: "{{ .Env.GITHUB_PERSONAL_AUTH_TOKEN }}"
 
       # Sets up pull request creation instead of just pushing to the given branch.
       # Make sure the 'branch' property is different from base before enabling
@@ -39,8 +41,8 @@
         #
         # Since: v1.19
         base:
-          owner: org
-          name: nur
+          owner: goreleaser
+          name: my-repo
           branch: main
 
       # Clone, create the file, commit and push, to a regular Git repository.
