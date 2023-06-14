@@ -1,3 +1,5 @@
+# yaml-language-server: $schema=https://goreleaser.com/static/schema.json
+# vim: set ts=2 sw=2 tw=0 fo=jcroql
 env:
   - GO111MODULE=on
 
@@ -165,7 +167,7 @@ archives:
       - manpages/*
 
 brews:
-  - tap:
+  - repository:
       owner: goreleaser
       name: homebrew-tap
     folder: Formula
@@ -230,7 +232,7 @@ aurs:
       install -Dm644 "./manpages/goreleaser.1.gz" "${pkgdir}/usr/share/man/man1/goreleaser.1.gz"
 
 scoops:
-  - bucket:
+  - repository:
       owner: goreleaser
       name: scoop-bucket
     folder: bucket
@@ -363,5 +365,3 @@ announce:
   discord:
     enabled: true
     message_template: "GoReleaser {{ .Tag }} is out! Check it out: https://github.com/goreleaser/goreleaser/releases/tag/{{ .Tag }}"
-# yaml-language-server: $schema=https://goreleaser.com/static/schema.json
-# vim: set ts=2 sw=2 tw=0 fo=jcroql
