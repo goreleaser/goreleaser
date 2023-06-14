@@ -184,14 +184,6 @@
 					"name_template": {
 						"type": "string"
 					},
-					"replacements": {
-						"patternProperties": {
-							".*": {
-								"type": "string"
-							}
-						},
-						"type": "object"
-					},
 					"format": {
 						"type": "string",
 						"enum": [
@@ -233,7 +225,8 @@
 							{
 								"type": "boolean"
 							}
-						]
+						],
+						"description": "you can now remove this"
 					},
 					"files": {
 						"items": {
@@ -1245,6 +1238,10 @@
 						"type": "string"
 					},
 					"tap": {
+						"$ref": "#/$defs/RepoRef",
+						"description": "use repository instead"
+					},
+					"repository": {
 						"$ref": "#/$defs/RepoRef"
 					},
 					"commit_author": {
@@ -1260,7 +1257,8 @@
 						"type": "string"
 					},
 					"plist": {
-						"type": "string"
+						"type": "string",
+						"description": "use service instead"
 					},
 					"install": {
 						"type": "string"
@@ -1558,6 +1556,10 @@
 						"type": "string"
 					},
 					"index": {
+						"$ref": "#/$defs/RepoRef",
+						"description": "use repository instead"
+					},
+					"repository": {
 						"$ref": "#/$defs/RepoRef"
 					},
 					"commit_author": {
@@ -2297,7 +2299,8 @@
 						"type": "array"
 					},
 					"scoop": {
-						"$ref": "#/$defs/Scoop"
+						"$ref": "#/$defs/Scoop",
+						"description": "use scoops insteads"
 					},
 					"scoops": {
 						"items": {
@@ -2445,7 +2448,7 @@
 					},
 					"build": {
 						"$ref": "#/$defs/Build",
-						"description": "deprecated: use builds instead"
+						"description": "use builds instead"
 					},
 					"force_token": {
 						"type": "string",
@@ -2815,6 +2818,10 @@
 						"type": "array"
 					},
 					"bucket": {
+						"$ref": "#/$defs/RepoRef",
+						"description": "use repository instead"
+					},
+					"repository": {
 						"$ref": "#/$defs/RepoRef"
 					},
 					"folder": {
@@ -3300,7 +3307,8 @@
 							{
 								"type": "boolean"
 							}
-						]
+						],
+						"description": "you can now remove this"
 					},
 					"templated_files": {
 						"items": {
