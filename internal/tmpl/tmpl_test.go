@@ -91,6 +91,8 @@ func TestWithArtifact(t *testing.T) {
 		"nightly false":                    `nightly {{.IsNightly}}`,
 		"draft true":                       `draft {{.IsDraft}}`,
 		"dirty true":                       `dirty {{.IsGitDirty}}`,
+		"env bar: barrrrr":                 `env bar: {{ envOrDefault "BAR" "barrrrr" }}`,
+		"env foo: bar":                     `env foo: {{ envOrDefault "FOO" "barrrrr" }}`,
 
 		"remove this": "{{ filter .Env.MULTILINE \".*remove.*\" }}",
 		"something with\nmultiple lines\nto test things": "{{ reverseFilter .Env.MULTILINE \".*remove.*\" }}",
