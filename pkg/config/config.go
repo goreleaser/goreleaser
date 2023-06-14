@@ -217,7 +217,8 @@ type AUR struct {
 // Homebrew contains the brew section.
 type Homebrew struct {
 	Name                  string               `yaml:"name,omitempty" json:"name,omitempty"`
-	Tap                   RepoRef              `yaml:"tap,omitempty" json:"tap,omitempty"`
+	Tap                   RepoRef              `yaml:"tap,omitempty" json:"tap,omitempty"` // Deprecated
+	Repository            RepoRef              `yaml:"repository,omitempty" json:"repository,omitempty"`
 	CommitAuthor          CommitAuthor         `yaml:"commit_author,omitempty" json:"commit_author,omitempty"`
 	CommitMessageTemplate string               `yaml:"commit_msg_template,omitempty" json:"commit_msg_template,omitempty"`
 	Folder                string               `yaml:"folder,omitempty" json:"folder,omitempty"`
@@ -263,7 +264,8 @@ type Nix struct {
 type Krew struct {
 	IDs                   []string     `yaml:"ids,omitempty" json:"ids,omitempty"`
 	Name                  string       `yaml:"name,omitempty" json:"name,omitempty"`
-	Index                 RepoRef      `yaml:"index,omitempty" json:"index,omitempty"`
+	Index                 RepoRef      `yaml:"index,omitempty" json:"index,omitempty"` // Deprecated
+	Repository            RepoRef      `yaml:"repository,omitempty" json:"repository,omitempty"`
 	CommitAuthor          CommitAuthor `yaml:"commit_author,omitempty" json:"commit_author,omitempty"`
 	CommitMessageTemplate string       `yaml:"commit_msg_template,omitempty" json:"commit_msg_template,omitempty"`
 	Caveats               string       `yaml:"caveats,omitempty" json:"caveats,omitempty"`
@@ -302,7 +304,8 @@ type Ko struct {
 type Scoop struct {
 	Name                  string       `yaml:"name,omitempty" json:"name,omitempty"`
 	IDs                   []string     `yaml:"ids,omitempty" json:"ids,omitempty"`
-	Bucket                RepoRef      `yaml:"bucket,omitempty" json:"bucket,omitempty"`
+	Bucket                RepoRef      `yaml:"bucket,omitempty" json:"bucket,omitempty"` // Deprecated
+	Repository            RepoRef      `yaml:"repository,omitempty" json:"repository,omitempty"`
 	Folder                string       `yaml:"folder,omitempty" json:"folder,omitempty"`
 	CommitAuthor          CommitAuthor `yaml:"commit_author,omitempty" json:"commit_author,omitempty"`
 	CommitMessageTemplate string       `yaml:"commit_msg_template,omitempty" json:"commit_msg_template,omitempty"`
@@ -573,7 +576,7 @@ func (f File) JSONSchema() *jsonschema.Schema {
 
 // UniversalBinary setups macos universal binaries.
 type UniversalBinary struct {
-	ID           string          `yaml:"id,omitempty" json:"id,omitempty"` // deprecated
+	ID           string          `yaml:"id,omitempty" json:"id,omitempty"` // Deprecated
 	IDs          []string        `yaml:"ids,omitempty" json:"ids,omitempty"`
 	NameTemplate string          `yaml:"name_template,omitempty" json:"name_template,omitempty"`
 	Replace      bool            `yaml:"replace,omitempty" json:"replace,omitempty"`
@@ -1036,7 +1039,7 @@ type Project struct {
 	AURs            []AUR            `yaml:"aurs,omitempty" json:"aurs,omitempty"`
 	Krews           []Krew           `yaml:"krews,omitempty" json:"krews,omitempty"`
 	Kos             []Ko             `yaml:"kos,omitempty" json:"kos,omitempty"`
-	Scoop           Scoop            `yaml:"scoop,omitempty" json:"scoop,omitempty"` // deprecated
+	Scoop           Scoop            `yaml:"scoop,omitempty" json:"scoop,omitempty"` // Deprecated
 	Scoops          []Scoop          `yaml:"scoops,omitempty" json:"scoops,omitempty"`
 	Builds          []Build          `yaml:"builds,omitempty" json:"builds,omitempty"`
 	Archives        []Archive        `yaml:"archives,omitempty" json:"archives,omitempty"`
@@ -1068,7 +1071,7 @@ type Project struct {
 	UPXs              []UPX             `yaml:"upx,omitempty" json:"upx,omitempty"`
 
 	// this is a hack ¯\_(ツ)_/¯
-	SingleBuild Build `yaml:"build,omitempty" json:"build,omitempty" jsonschema_description:"deprecated: use builds instead"` // deprecated
+	SingleBuild Build `yaml:"build,omitempty" json:"build,omitempty" jsonschema_description:"deprecated: use builds instead"` // Deprecated
 
 	// force the SCM token to use when multiple are set
 	ForceToken string `yaml:"force_token,omitempty" json:"force_token,omitempty" jsonschema:"enum=github,enum=gitlab,enum=gitea,enum=,default="`

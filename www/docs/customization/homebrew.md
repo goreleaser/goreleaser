@@ -150,8 +150,6 @@ brews:
     	etc.install "app-config.conf"
       # ...
 
-    # GitHub/GitLab repository to push the formula to
-    tap:
 {% include-markdown "../includes/repository.md" comments=false %}
 ```
 

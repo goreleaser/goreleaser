@@ -1,4 +1,4 @@
-// Package scoop provides a Pipe that generates a scoop.sh App Manifest and pushes it to a bucket
+// Package scoop provides a Pipe that generates a scoop.sh App Manifest and pushes it to a bucket.
 package scoop
 
 import (
@@ -8,6 +8,7 @@ import (
 	"os"
 	"path"
 	"path/filepath"
+	"reflect"
 	"strings"
 
 	"github.com/caarlos0/log"
@@ -60,7 +61,7 @@ type Pipe struct{}
 
 func (Pipe) String() string { return "scoop manifests" }
 func (Pipe) Skip(ctx *context.Context) bool {
-	return ctx.Config.Scoop.Bucket.Name == "" && len(ctx.Config.Scoops) == 0
+	return ctx.Config.Scoop.Repository.Name == "" && len(ctx.Config.Scoops) == 0
 }
 
 // Run creates the scoop manifest locally.
@@ -83,7 +84,8 @@ func (Pipe) Publish(ctx *context.Context) error {
 
 // Default sets the pipe defaults.
 func (Pipe) Default(ctx *context.Context) error {
-	if ctx.Config.Scoop.Bucket.Name != "" {
+	if !reflect.DeepEqual(ctx.Config.Scoop.Bucket, config.RepoRef{}) ||
+		!reflect.DeepEqual(ctx.Config.Scoop.Repository, config.RepoRef{}) {
 		deprecate.Notice(ctx, "scoop")
 		ctx.Config.Scoops = append(ctx.Config.Scoops, ctx.Config.Scoop)
 	}
@@ -98,6 +100,10 @@ func (Pipe) Default(ctx *context.Context) error {
 		}
 		if scoop.Goamd64 == "" {
 			scoop.Goamd64 = "v1"
+		}
+		if !reflect.DeepEqual(scoop.Bucket, config.RepoRef{}) {
+			scoop.Repository = scoop.Bucket
+			deprecate.Notice(ctx, "scoops.bucket")
 		}
 	}
 	return nil
@@ -161,11 +167,11 @@ func doRun(ctx *context.Context, scoop config.Scoop, cl client.ReleaserURLTempla
 	}
 	scoop.Homepage = homepage
 
-	ref, err := client.TemplateRef(tmpl.New(ctx).Apply, scoop.Bucket)
+	ref, err := client.TemplateRef(tmpl.New(ctx).Apply, scoop.Repository)
 	if err != nil {
 		return err
 	}
-	scoop.Bucket = ref
+	scoop.Repository = ref
 
 	skipUpload, err := tmpl.New(ctx).Apply(scoop.SkipUpload)
 	if err != nil {
@@ -254,20 +260,20 @@ func doPublish(ctx *context.Context, manifest *artifact.Artifact, cl client.Clie
 		return err
 	}
 
-	repo := client.RepoFromRef(scoop.Bucket)
+	repo := client.RepoFromRef(scoop.Repository)
 	gpath := path.Join(scoop.Folder, manifest.Name)
 
-	if scoop.Bucket.Git.URL != "" {
+	if scoop.Repository.Git.URL != "" {
 		return client.NewGitUploadClient(repo.Branch).
 			CreateFile(ctx, author, repo, content, gpath, commitMessage)
 	}
 
-	cl, err = client.NewIfToken(ctx, cl, scoop.Bucket.Token)
+	cl, err = client.NewIfToken(ctx, cl, scoop.Repository.Token)
 	if err != nil {
 		return err
 	}
 
-	if !scoop.Bucket.PullRequest.Enabled {
+	if !scoop.Repository.PullRequest.Enabled {
 		return cl.CreateFile(ctx, author, repo, content, gpath, commitMessage)
 	}
 
@@ -283,10 +289,10 @@ func doPublish(ctx *context.Context, manifest *artifact.Artifact, cl client.Clie
 
 	title := fmt.Sprintf("Updated %s to %s", ctx.Config.ProjectName, ctx.Version)
 	return pcl.OpenPullRequest(ctx, client.Repo{
-		Name:   scoop.Bucket.PullRequest.Base.Name,
-		Owner:  scoop.Bucket.PullRequest.Base.Owner,
-		Branch: scoop.Bucket.PullRequest.Base.Branch,
-	}, repo, title, scoop.Bucket.PullRequest.Draft)
+		Name:   scoop.Repository.PullRequest.Base.Name,
+		Owner:  scoop.Repository.PullRequest.Base.Owner,
+		Branch: scoop.Repository.PullRequest.Base.Branch,
+	}, repo, title, scoop.Repository.PullRequest.Draft)
 }
 
 // Manifest represents a scoop.sh App Manifest.

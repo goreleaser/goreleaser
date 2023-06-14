@@ -165,8 +165,8 @@ func TestFullPipe(t *testing.T) {
 		"default": {
 			prepare: func(ctx *context.Context) {
 				ctx.TokenType = context.TokenTypeGitHub
-				ctx.Config.Brews[0].Tap.Owner = "test"
-				ctx.Config.Brews[0].Tap.Name = "test"
+				ctx.Config.Brews[0].Repository.Owner = "test"
+				ctx.Config.Brews[0].Repository.Name = "test"
 				ctx.Config.Brews[0].Homepage = "https://github.com/goreleaser"
 			},
 		},
@@ -174,7 +174,7 @@ func TestFullPipe(t *testing.T) {
 			prepare: func(ctx *context.Context) {
 				ctx.TokenType = context.TokenTypeGitHub
 				ctx.Config.Brews[0].Homepage = "https://github.com/goreleaser"
-				ctx.Config.Brews[0].Tap = config.RepoRef{
+				ctx.Config.Brews[0].Repository = config.RepoRef{
 					Name:   "test",
 					Branch: "main",
 					Git: config.GitRepoRef{
@@ -188,7 +188,7 @@ func TestFullPipe(t *testing.T) {
 			prepare: func(ctx *context.Context) {
 				ctx.TokenType = context.TokenTypeGitHub
 				ctx.Config.Brews[0].Homepage = "https://github.com/goreleaser"
-				ctx.Config.Brews[0].Tap = config.RepoRef{
+				ctx.Config.Brews[0].Repository = config.RepoRef{
 					Owner:  "test",
 					Name:   "test",
 					Branch: "update-{{.Version}}",
@@ -201,8 +201,8 @@ func TestFullPipe(t *testing.T) {
 		"custom_download_strategy": {
 			prepare: func(ctx *context.Context) {
 				ctx.TokenType = context.TokenTypeGitHub
-				ctx.Config.Brews[0].Tap.Owner = "test"
-				ctx.Config.Brews[0].Tap.Name = "test"
+				ctx.Config.Brews[0].Repository.Owner = "test"
+				ctx.Config.Brews[0].Repository.Name = "test"
 				ctx.Config.Brews[0].Homepage = "https://github.com/goreleaser"
 
 				ctx.Config.Brews[0].DownloadStrategy = "GitHubPrivateRepositoryReleaseDownloadStrategy"
@@ -211,8 +211,8 @@ func TestFullPipe(t *testing.T) {
 		"custom_require": {
 			prepare: func(ctx *context.Context) {
 				ctx.TokenType = context.TokenTypeGitHub
-				ctx.Config.Brews[0].Tap.Owner = "test"
-				ctx.Config.Brews[0].Tap.Name = "test"
+				ctx.Config.Brews[0].Repository.Owner = "test"
+				ctx.Config.Brews[0].Repository.Name = "test"
 				ctx.Config.Brews[0].Homepage = "https://github.com/goreleaser"
 
 				ctx.Config.Brews[0].DownloadStrategy = "CustomDownloadStrategy"
@@ -222,8 +222,8 @@ func TestFullPipe(t *testing.T) {
 		"custom_block": {
 			prepare: func(ctx *context.Context) {
 				ctx.TokenType = context.TokenTypeGitHub
-				ctx.Config.Brews[0].Tap.Owner = "test"
-				ctx.Config.Brews[0].Tap.Name = "test"
+				ctx.Config.Brews[0].Repository.Owner = "test"
+				ctx.Config.Brews[0].Repository.Name = "test"
 				ctx.Config.Brews[0].Homepage = "https://github.com/goreleaser"
 
 				ctx.Config.Brews[0].CustomBlock = `head "https://github.com/caarlos0/test.git"`
@@ -232,55 +232,55 @@ func TestFullPipe(t *testing.T) {
 		"default_gitlab": {
 			prepare: func(ctx *context.Context) {
 				ctx.TokenType = context.TokenTypeGitLab
-				ctx.Config.Brews[0].Tap.Owner = "test"
-				ctx.Config.Brews[0].Tap.Name = "test"
+				ctx.Config.Brews[0].Repository.Owner = "test"
+				ctx.Config.Brews[0].Repository.Name = "test"
 				ctx.Config.Brews[0].Homepage = "https://gitlab.com/goreleaser"
 			},
 		},
 		"invalid_commit_template": {
 			prepare: func(ctx *context.Context) {
-				ctx.Config.Brews[0].Tap.Owner = "test"
-				ctx.Config.Brews[0].Tap.Name = "test"
+				ctx.Config.Brews[0].Repository.Owner = "test"
+				ctx.Config.Brews[0].Repository.Name = "test"
 				ctx.Config.Brews[0].CommitMessageTemplate = "{{ .Asdsa }"
 			},
 			expectedPublishError: `template: tmpl:1: unexpected "}" in operand`,
 		},
-		"valid_tap_templates": {
+		"valid_repository_templates": {
 			prepare: func(ctx *context.Context) {
 				ctx.TokenType = context.TokenTypeGitHub
 				ctx.Env = map[string]string{
 					"FOO": "templated",
 				}
-				ctx.Config.Brews[0].Tap.Owner = "{{.Env.FOO}}"
-				ctx.Config.Brews[0].Tap.Name = "{{.Env.FOO}}"
+				ctx.Config.Brews[0].Repository.Owner = "{{.Env.FOO}}"
+				ctx.Config.Brews[0].Repository.Name = "{{.Env.FOO}}"
 			},
 		},
-		"invalid_tap_name_template": {
+		"invalid_repository_name_template": {
 			prepare: func(ctx *context.Context) {
-				ctx.Config.Brews[0].Tap.Owner = "test"
-				ctx.Config.Brews[0].Tap.Name = "{{ .Asdsa }"
+				ctx.Config.Brews[0].Repository.Owner = "test"
+				ctx.Config.Brews[0].Repository.Name = "{{ .Asdsa }"
 			},
 			expectedRunError: `template: tmpl:1: unexpected "}" in operand`,
 		},
-		"invalid_tap_owner_template": {
+		"invalid_repository_owner_template": {
 			prepare: func(ctx *context.Context) {
-				ctx.Config.Brews[0].Tap.Owner = "{{ .Asdsa }"
-				ctx.Config.Brews[0].Tap.Name = "test"
+				ctx.Config.Brews[0].Repository.Owner = "{{ .Asdsa }"
+				ctx.Config.Brews[0].Repository.Name = "test"
 			},
 			expectedRunError: `template: tmpl:1: unexpected "}" in operand`,
 		},
-		"invalid_tap_skip_upload_template": {
+		"invalid_repository_skip_upload_template": {
 			prepare: func(ctx *context.Context) {
 				ctx.Config.Brews[0].SkipUpload = "{{ .Asdsa }"
-				ctx.Config.Brews[0].Tap.Owner = "test"
-				ctx.Config.Brews[0].Tap.Name = "test"
+				ctx.Config.Brews[0].Repository.Owner = "test"
+				ctx.Config.Brews[0].Repository.Name = "test"
 			},
 			expectedRunError: `template: tmpl:1: unexpected "}" in operand`,
 		},
 		"invalid_install_template": {
 			prepare: func(ctx *context.Context) {
-				ctx.Config.Brews[0].Tap.Owner = "test"
-				ctx.Config.Brews[0].Tap.Name = "test"
+				ctx.Config.Brews[0].Repository.Owner = "test"
+				ctx.Config.Brews[0].Repository.Name = "test"
 				ctx.Config.Brews[0].Install = "{{ .aaaa }"
 			},
 			expectedRunError: `template: tmpl:1: unexpected "}" in operand`,
@@ -391,7 +391,7 @@ func TestFullPipe(t *testing.T) {
 			require.NoError(t, publishAll(ctx, client))
 
 			content := []byte(client.Content)
-			if url := ctx.Config.Brews[0].Tap.Git.URL; url == "" {
+			if url := ctx.Config.Brews[0].Repository.Git.URL; url == "" {
 				require.True(t, client.CreatedFile, "should have created a file")
 			} else {
 				content = testlib.CatFileFromBareRepository(t, url, name+".rb")
@@ -419,7 +419,7 @@ func TestRunPipeNameTemplate(t *testing.T) {
 					Homepage:    "https://goreleaser.com",
 					Goamd64:     "v1",
 					Install:     `bin.install "foo"`,
-					Tap: config.RepoRef{
+					Repository: config.RepoRef{
 						Owner: "foo",
 						Name:  "bar",
 					},
@@ -472,7 +472,7 @@ func TestRunPipeMultipleBrewsWithSkip(t *testing.T) {
 				{
 					Name:    "foo",
 					Goamd64: "v1",
-					Tap: config.RepoRef{
+					Repository: config.RepoRef{
 						Owner: "foo",
 						Name:  "bar",
 					},
@@ -484,7 +484,7 @@ func TestRunPipeMultipleBrewsWithSkip(t *testing.T) {
 				{
 					Name:    "bar",
 					Goamd64: "v1",
-					Tap: config.RepoRef{
+					Repository: config.RepoRef{
 						Owner: "foo",
 						Name:  "bar",
 					},
@@ -495,7 +495,7 @@ func TestRunPipeMultipleBrewsWithSkip(t *testing.T) {
 				{
 					Name:    "foobar",
 					Goamd64: "v1",
-					Tap: config.RepoRef{
+					Repository: config.RepoRef{
 						Owner: "foo",
 						Name:  "bar",
 					},
@@ -507,7 +507,7 @@ func TestRunPipeMultipleBrewsWithSkip(t *testing.T) {
 				{
 					Name:    "baz",
 					Goamd64: "v1",
-					Tap: config.RepoRef{
+					Repository: config.RepoRef{
 						Owner: "foo",
 						Name:  "bar",
 					},
@@ -580,7 +580,7 @@ func TestRunPipeForMultipleAmd64Versions(t *testing.T) {
 						{
 							Name:        name,
 							Description: "Run pipe test formula",
-							Tap: config.RepoRef{
+							Repository: config.RepoRef{
 								Owner: "test",
 								Name:  "test",
 							},
@@ -706,7 +706,7 @@ func TestRunPipeForMultipleArmVersions(t *testing.T) {
 							Dependencies: []config.HomebrewDependency{{Name: "zsh"}, {Name: "bash", Type: "recommended"}},
 							Conflicts:    []string{"gtk+", "qt"},
 							Install:      `bin.install "{{ .ProjectName }}"`,
-							Tap: config.RepoRef{
+							Repository: config.RepoRef{
 								Owner: "test",
 								Name:  "test",
 							},
@@ -801,7 +801,7 @@ func TestRunPipeNoBuilds(t *testing.T) {
 	ctx := testctx.NewWithCfg(config.Project{
 		Brews: []config.Homebrew{
 			{
-				Tap: config.RepoRef{
+				Repository: config.RepoRef{
 					Owner: "test",
 					Name:  "test",
 				},
@@ -823,7 +823,7 @@ func TestRunPipeMultipleArchivesSameOsBuild(t *testing.T) {
 	ctx := testctx.NewWithCfg(config.Project{
 		Brews: []config.Homebrew{
 			{
-				Tap: config.RepoRef{
+				Repository: config.RepoRef{
 					Owner: "test",
 					Name:  "test",
 				},
@@ -974,7 +974,7 @@ func TestRunPipeBinaryRelease(t *testing.T) {
 					Name:        "foo",
 					Homepage:    "https://goreleaser.com",
 					Description: "Fake desc",
-					Tap: config.RepoRef{
+					Repository: config.RepoRef{
 						Owner: "foo",
 						Name:  "bar",
 					},
@@ -1021,7 +1021,7 @@ func TestRunPipePullRequest(t *testing.T) {
 					Name:        "foo",
 					Homepage:    "https://goreleaser.com",
 					Description: "Fake desc",
-					Tap: config.RepoRef{
+					Repository: config.RepoRef{
 						Owner:  "foo",
 						Name:   "bar",
 						Branch: "update-{{.Version}}",
@@ -1070,7 +1070,7 @@ func TestRunPipeNoUpload(t *testing.T) {
 		Release:     config.Release{},
 		Brews: []config.Homebrew{
 			{
-				Tap: config.RepoRef{
+				Repository: config.RepoRef{
 					Owner: "test",
 					Name:  "test",
 				},
@@ -1128,7 +1128,7 @@ func TestRunEmptyTokenType(t *testing.T) {
 		Release:     config.Release{},
 		Brews: []config.Homebrew{
 			{
-				Tap: config.RepoRef{
+				Repository: config.RepoRef{
 					Owner: "test",
 					Name:  "test",
 				},
@@ -1158,11 +1158,32 @@ func TestRunEmptyTokenType(t *testing.T) {
 
 func TestDefault(t *testing.T) {
 	testlib.Mktmp(t)
+	repo := config.RepoRef{
+		Owner:  "owner",
+		Name:   "name",
+		Token:  "aaa",
+		Branch: "feat",
+		Git: config.GitRepoRef{
+			URL:        "git@github.com:foo/bar",
+			SSHCommand: "ssh ",
+			PrivateKey: "/fake",
+		},
+		PullRequest: config.PullRequest{
+			Enabled: true,
+			Base: config.PullRequestBase{
+				Owner:  "foo2",
+				Name:   "bar2",
+				Branch: "branch2",
+			},
+			Draft: true,
+		},
+	}
 	ctx := testctx.NewWithCfg(config.Project{
 		ProjectName: "myproject",
 		Brews: []config.Homebrew{
 			{
 				Plist: "<xml>... whatever</xml>",
+				Tap:   repo,
 			},
 		},
 	}, testctx.GitHubTokenType)
@@ -1171,6 +1192,7 @@ func TestDefault(t *testing.T) {
 	require.NotEmpty(t, ctx.Config.Brews[0].CommitAuthor.Name)
 	require.NotEmpty(t, ctx.Config.Brews[0].CommitAuthor.Email)
 	require.NotEmpty(t, ctx.Config.Brews[0].CommitMessageTemplate)
+	require.Equal(t, repo, ctx.Config.Brews[0].Repository)
 	require.True(t, ctx.Deprecated)
 }
 
@@ -1283,7 +1305,7 @@ func TestRunPipeUniversalBinary(t *testing.T) {
 					Name:        "unibin",
 					Homepage:    "https://goreleaser.com",
 					Description: "Fake desc",
-					Tap: config.RepoRef{
+					Repository: config.RepoRef{
 						Owner: "unibin",
 						Name:  "bar",
 					},
@@ -1338,7 +1360,7 @@ func TestRunPipeUniversalBinaryNotReplacing(t *testing.T) {
 					Name:        "unibin",
 					Homepage:    "https://goreleaser.com",
 					Description: "Fake desc",
-					Tap: config.RepoRef{
+					Repository: config.RepoRef{
 						Owner: "unibin",
 						Name:  "bar",
 					},

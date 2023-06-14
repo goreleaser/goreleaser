@@ -92,8 +92,6 @@ scoops:
     # Default: 'v1'
     goamd64: v3
 
-    # Repository to push the app manifest to.
-    bucket:
 {% include-markdown "../includes/repository.md" comments=false %}
 ```
 

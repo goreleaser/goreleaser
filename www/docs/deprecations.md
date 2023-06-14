@@ -37,6 +37,84 @@ Description.
 
 -->
 
+### scoops.bucket
+
+> since 2023-06-13 (v1.19.0)
+
+Replace `index` with `repository`.
+
+=== "Before"
+
+    ```yaml
+    scoops:
+      -
+        bucket:
+          - name: foo
+            owner: bar
+    ```
+
+=== "After"
+
+    ```yaml
+    scoops:
+      -
+        repository:
+          - name: foo
+            owner: bar
+    ```
+
+### krews.index
+
+> since 2023-06-13 (v1.19.0)
+
+Replace `index` with `repository`.
+
+=== "Before"
+
+    ```yaml
+    krews:
+      -
+        index:
+          - name: foo
+            owner: bar
+    ```
+
+=== "After"
+
+    ```yaml
+    krews:
+      -
+        repository:
+          - name: foo
+            owner: bar
+    ```
+
+### brews.tap
+
+> since 2023-06-13 (v1.19.0)
+
+Replace `tap` with `repository`.
+
+=== "Before"
+
+    ```yaml
+    brews:
+      -
+        tap:
+          - name: foo
+            owner: bar
+    ```
+
+=== "After"
+
+    ```yaml
+    brews:
+      -
+        repository:
+          - name: foo
+            owner: bar
+    ```
+
 ### archives.rlcp
 
 > since 2023-06-06 (v1.19.0)
