@@ -219,6 +219,7 @@ func (t *Template) Apply(s string) (string, error) {
 			"filter":        filter(false),
 			"reverseFilter": filter(true),
 			"mdv2escape":    mdv2Escape,
+			"envOrDefault":  t.envOrDefault,
 		}).
 		Parse(s)
 	if err != nil {
@@ -227,6 +228,14 @@ func (t *Template) Apply(s string) (string, error) {
 
 	err = tmpl.Execute(&out, t.fields)
 	return out.String(), err
+}
+
+func (t *Template) envOrDefault(name, value string) string {
+	s, ok := t.fields[env].(context.Env)[name]
+	if !ok {
+		return value
+	}
+	return s
 }
 
 type ExpectedSingleEnvErr struct{}
