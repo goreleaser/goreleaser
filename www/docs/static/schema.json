@@ -1124,6 +1124,9 @@
 					"tap": {
 						"$ref": "#/$defs/RepoRef"
 					},
+					"repository": {
+						"$ref": "#/$defs/RepoRef"
+					},
 					"commit_author": {
 						"$ref": "#/$defs/CommitAuthor"
 					},
@@ -1397,6 +1400,9 @@
 						"type": "string"
 					},
 					"index": {
+						"$ref": "#/$defs/RepoRef"
+					},
+					"repository": {
 						"$ref": "#/$defs/RepoRef"
 					},
 					"commit_author": {
@@ -2547,6 +2553,9 @@
 						"type": "array"
 					},
 					"bucket": {
+						"$ref": "#/$defs/RepoRef"
+					},
+					"repository": {
 						"$ref": "#/$defs/RepoRef"
 					},
 					"folder": {
