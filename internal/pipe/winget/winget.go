@@ -399,6 +399,17 @@ func doPublish(ctx *context.Context, cl client.Client, wingets []*artifact.Artif
 	}, repo, title, winget.Repository.PullRequest.Draft)
 }
 
+func langserverLineFor(tp artifact.Type) string {
+	switch tp {
+	case artifact.WingetInstaller:
+		return installerLangServer
+	case artifact.WingetDefaultLocale:
+		return defaultLocaleLangServer
+	default:
+		return versionLangServer
+	}
+}
+
 func extFor(tp artifact.Type) string {
 	switch tp {
 	case artifact.WingetVersion:

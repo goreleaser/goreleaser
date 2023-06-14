@@ -28,7 +28,7 @@ func createYAML(ctx *context.Context, winget config.Winget, in any, tp artifact.
 	log.WithField("path", path).Info("writing")
 	if err := os.WriteFile(path, []byte(strings.Join([]string{
 		generatedHeader,
-		versionLangServer,
+		langserverLineFor(tp),
 		string(versionContent),
 	}, "\n")), 0o644); err != nil { //nolint: gosec
 		return fmt.Errorf("failed to write winget version: %w", err)
