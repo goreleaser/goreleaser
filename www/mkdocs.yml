@@ -15,12 +15,12 @@ theme:
   include_search_page: false
   search_index_only: true
   palette:
-    - media: "(prefers-color-scheme: light)"  # Light mode
+    - media: "(prefers-color-scheme: light)" # Light mode
       scheme: default
       toggle:
         icon: material/lightbulb-outline
         name: Switch to light mode
-    - media: "(prefers-color-scheme: dark)"  # Dark mode
+    - media: "(prefers-color-scheme: dark)" # Dark mode
       scheme: slate
       primary: light blue
       accent: indigo
@@ -50,9 +50,10 @@ plugins:
         l.md: https://www.linkedin.com/company/goreleaser/
         m.md: https://fosstodon.org/@goreleaser
         t.md: https://twitter.com/goreleaser
-        'customization/build.md': customization/builds.md
+        "customization/build.md": customization/builds.md
   - minify:
       minify_html: true
+  - include-markdown
 
 extra:
   social:
@@ -64,147 +65,147 @@ extra:
       link: https://fosstodon.org/@goreleaser
 
 nav:
-- Home: index.md
-- intro.md
-- install.md
-- quick-start.md
-- how-it-works.md
-- Limitations:
-  - limitations/cgo.md
-  - limitations/semver.md
-- SCM:
-  - scm/github.md
-  - scm/gitlab.md
-  - scm/gitea.md
-- Continuous Integration:
-  - About: ci/index.md
-  - ci/actions.md
-  - ci/azurepipelines.md
-  - ci/circle.md
-  - ci/cirrus.md
-  - ci/cloudbuild.md
-  - ci/codefresh.md
-  - ci/drone.md
-  - ci/gitlab.md
-  - ci/jenkins.md
-  - ci/semaphore.md
-  - ci/travis.md
-  - ci/woodpecker.md
-- Customization:
-  - About: customization/index.md
-  - Basics:
-    - customization/includes.md
-    - customization/templates.md
-    - customization/templatefiles.md
-    - customization/env.md
-    - customization/hooks.md
-    - customization/dist.md
-    - customization/project.md
-    - customization/git.md
-  - Build:
-    - customization/builds.md
-    - customization/verifiable_builds.md
-    - customization/monorepo.md
-    - customization/universalbinaries.md
-    - customization/upx.md
-  - customization/partial.md
-  - Packaging and Archiving:
-    - customization/archive.md
-    - customization/nfpm.md
-    - customization/checksum.md
-    - customization/snapcraft.md
-    - customization/chocolatey.md
-    - customization/docker.md
-    - customization/docker_manifest.md
-    - customization/ko.md
-  - customization/sbom.md
-  - customization/reportsizes.md
-  - Signing:
-    - Checksums and artifacts: customization/sign.md
-    - Docker Images and Manifests: customization/docker_sign.md
-  - Publish:
-    - customization/release.md
-    - customization/snapshots.md
-    - customization/nightlies.md
-    - customization/blob.md
-    - customization/fury.md
-    - customization/homebrew.md
-    - customization/nix.md
-    - customization/aur.md
-    - customization/krew.md
-    - customization/scoop.md
-    - customization/changelog.md
-    - customization/upload.md
-    - customization/source.md
-    - customization/publishers.md
-    - customization/artifactory.md
-    - customization/milestone.md
-  - Announce:
-      - About: customization/announce/index.md
-      - customization/announce/discord.md
-      - customization/announce/linkedin.md
-      - customization/announce/mastodon.md
-      - customization/announce/mattermost.md
-      - customization/announce/opencollective.md
-      - customization/announce/reddit.md
-      - customization/announce/slack.md
-      - customization/announce/smtp.md
-      - customization/announce/teams.md
-      - customization/announce/telegram.md
-      - customization/announce/twitter.md
-      - customization/announce/webhook.md
-- Command Line Usage:
-    - cmd/goreleaser.md
-    - cmd/goreleaser_init.md
-    - cmd/goreleaser_healthcheck.md
-    - cmd/goreleaser_check.md
-    - cmd/goreleaser_changelog.md
-    - cmd/goreleaser_build.md
-    - cmd/goreleaser_release.md
-    - cmd/goreleaser_continue.md
-    - cmd/goreleaser_publish.md
-    - cmd/goreleaser_announce.md
-    - cmd/goreleaser_completion.md
-    - cmd/goreleaser_completion_bash.md
-    - cmd/goreleaser_completion_fish.md
-    - cmd/goreleaser_completion_powershell.md
-    - cmd/goreleaser_completion_zsh.md
-    - cmd/goreleaser_jsonschema.md
-- Common errors:
-  - errors/dirty.md
-  - errors/multiple-tokens.md
-  - errors/release-upload.md
-  - errors/docker-build.md
-  - errors/no-main.md
-  - errors/build.md
-  - errors/resource-not-accessible-by-integration.md
-  - errors/no-history.md
-  - errors/multiple-binaries-archive.md
-  - errors/scoop-archive.md
-- deprecations.md
-- Cookbooks:
-  - About: cookbooks/index.md
-  - Blog Posts: cookbooks/blog-posts.md
-  - Add a new cookbook: cookbooks/contributing.md
-  - cookbooks/private-monorepo-public-release.md
-  - cookbooks/multi-platform-docker-images.md
-  - cookbooks/build-go-modules.md
-  - cookbooks/cgo-and-crosscompiling.md
-  - cookbooks/debconf-templates.md
-  - cookbooks/using-jfrog-cli-to-publish-to-artifactory.md
-  - cookbooks/publish-to-nexus.md
-  - cookbooks/release-a-library.md
-  - cookbooks/semantic-release.md
-  - cookbooks/set-a-custom-git-tag.md
-  - cookbooks/using-main.version.md
-  - cookbooks/override-image-name.md
-  - cookbooks/goreleaser-xx.md
-- Community:
-  - sponsors.md
-  - users.md
-  - contributing.md
-- pro.md
-- links.md
+  - Home: index.md
+  - intro.md
+  - install.md
+  - quick-start.md
+  - how-it-works.md
+  - Limitations:
+      - limitations/cgo.md
+      - limitations/semver.md
+  - SCM:
+      - scm/github.md
+      - scm/gitlab.md
+      - scm/gitea.md
+  - Continuous Integration:
+      - About: ci/index.md
+      - ci/actions.md
+      - ci/azurepipelines.md
+      - ci/circle.md
+      - ci/cirrus.md
+      - ci/cloudbuild.md
+      - ci/codefresh.md
+      - ci/drone.md
+      - ci/gitlab.md
+      - ci/jenkins.md
+      - ci/semaphore.md
+      - ci/travis.md
+      - ci/woodpecker.md
+  - Customization:
+      - About: customization/index.md
+      - Basics:
+          - customization/includes.md
+          - customization/templates.md
+          - customization/templatefiles.md
+          - customization/env.md
+          - customization/hooks.md
+          - customization/dist.md
+          - customization/project.md
+          - customization/git.md
+      - Build:
+          - customization/builds.md
+          - customization/verifiable_builds.md
+          - customization/monorepo.md
+          - customization/universalbinaries.md
+          - customization/upx.md
+      - customization/partial.md
+      - Packaging and Archiving:
+          - customization/archive.md
+          - customization/nfpm.md
+          - customization/checksum.md
+          - customization/snapcraft.md
+          - customization/chocolatey.md
+          - customization/docker.md
+          - customization/docker_manifest.md
+          - customization/ko.md
+      - customization/sbom.md
+      - customization/reportsizes.md
+      - Signing:
+          - Checksums and artifacts: customization/sign.md
+          - Docker Images and Manifests: customization/docker_sign.md
+      - Publish:
+          - customization/release.md
+          - customization/snapshots.md
+          - customization/nightlies.md
+          - customization/blob.md
+          - customization/fury.md
+          - customization/homebrew.md
+          - customization/nix.md
+          - customization/aur.md
+          - customization/krew.md
+          - customization/scoop.md
+          - customization/changelog.md
+          - customization/upload.md
+          - customization/source.md
+          - customization/publishers.md
+          - customization/artifactory.md
+          - customization/milestone.md
+      - Announce:
+          - About: customization/announce/index.md
+          - customization/announce/discord.md
+          - customization/announce/linkedin.md
+          - customization/announce/mastodon.md
+          - customization/announce/mattermost.md
+          - customization/announce/opencollective.md
+          - customization/announce/reddit.md
+          - customization/announce/slack.md
+          - customization/announce/smtp.md
+          - customization/announce/teams.md
+          - customization/announce/telegram.md
+          - customization/announce/twitter.md
+          - customization/announce/webhook.md
+  - Command Line Usage:
+      - cmd/goreleaser.md
+      - cmd/goreleaser_init.md
+      - cmd/goreleaser_healthcheck.md
+      - cmd/goreleaser_check.md
+      - cmd/goreleaser_changelog.md
+      - cmd/goreleaser_build.md
+      - cmd/goreleaser_release.md
+      - cmd/goreleaser_continue.md
+      - cmd/goreleaser_publish.md
+      - cmd/goreleaser_announce.md
+      - cmd/goreleaser_completion.md
+      - cmd/goreleaser_completion_bash.md
+      - cmd/goreleaser_completion_fish.md
+      - cmd/goreleaser_completion_powershell.md
+      - cmd/goreleaser_completion_zsh.md
+      - cmd/goreleaser_jsonschema.md
+  - Common errors:
+      - errors/dirty.md
+      - errors/multiple-tokens.md
+      - errors/release-upload.md
+      - errors/docker-build.md
+      - errors/no-main.md
+      - errors/build.md
+      - errors/resource-not-accessible-by-integration.md
+      - errors/no-history.md
+      - errors/multiple-binaries-archive.md
+      - errors/scoop-archive.md
+  - deprecations.md
+  - Cookbooks:
+      - About: cookbooks/index.md
+      - Blog Posts: cookbooks/blog-posts.md
+      - Add a new cookbook: cookbooks/contributing.md
+      - cookbooks/private-monorepo-public-release.md
+      - cookbooks/multi-platform-docker-images.md
+      - cookbooks/build-go-modules.md
+      - cookbooks/cgo-and-crosscompiling.md
+      - cookbooks/debconf-templates.md
+      - cookbooks/using-jfrog-cli-to-publish-to-artifactory.md
+      - cookbooks/publish-to-nexus.md
+      - cookbooks/release-a-library.md
+      - cookbooks/semantic-release.md
+      - cookbooks/set-a-custom-git-tag.md
+      - cookbooks/using-main.version.md
+      - cookbooks/override-image-name.md
+      - cookbooks/goreleaser-xx.md
+  - Community:
+      - sponsors.md
+      - users.md
+      - contributing.md
+  - pro.md
+  - links.md
 
 markdown_extensions:
   - admonition
