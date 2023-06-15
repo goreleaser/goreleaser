@@ -48,5 +48,5 @@ TAR_FILE="${FILE_BASENAME}_${OS}_${ARCH}.tar.gz"
 	fi
 )
 
-tar -xf "$TAR_FILE" -C "$TMP_DIR"
+tar -xf "$TMP_DIR/$TAR_FILE" -C "$TMP_DIR"
 "$TMP_DIR/goreleaser" "$@"
