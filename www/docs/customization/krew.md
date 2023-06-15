@@ -94,3 +94,5 @@ krews:
 - Only one binary per archive is allowed;
 - Binary releases (when `archives.format` is set to `binary`) are not allowed;
 - Only one `GOARM` build is allowed;
+
+{% include-markdown "../includes/prs.md" comments=false %}
