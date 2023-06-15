@@ -337,10 +337,7 @@ func doPublish(ctx *context.Context, manifest *artifact.Artifact, cl client.Clie
 
 	if cfg.Repository.Git.URL != "" {
 		return client.NewGitUploadClient(repo.Branch).
-			CreateFiles(ctx, author, repo, msg, []client.RepoFile{{
-				Content: content,
-				Path:    gpath,
-			}})
+			CreateFile(ctx, author, repo, content, gpath, msg)
 	}
 
 	cl, err = client.NewIfToken(ctx, cl, cfg.Repository.Token)
