@@ -138,3 +138,5 @@ Then, you'll need to:
 That's it!
 
 [nur]: https://github.com/nix-community/NUR
+
+{% include-markdown "../includes/prs.md" comments=false %}
