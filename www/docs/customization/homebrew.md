@@ -225,3 +225,5 @@ You can check the [resource not accessible by integration](https://goreleaser.co
 ## Limitations
 
 - Only one `GOARM` build is allowed;
+
+{% include-markdown "../includes/prs.md" comments=false %}

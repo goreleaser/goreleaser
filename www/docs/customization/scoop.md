@@ -133,3 +133,5 @@ scoop install org/drumroll
 You can check the
 [Scoop documentation](https://github.com/lukesampson/scoop/wiki) for more
 details.
+
+{% include-markdown "../includes/prs.md" comments=false %}
