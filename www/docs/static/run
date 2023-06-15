@@ -20,11 +20,13 @@ test -z "$VERSION" && {
 	exit 1
 }
 
-test -z "$TMPDIR" && TMPDIR="$(mktemp -d)"
-export TAR_FILE="$TMPDIR/${FILE_BASENAME}_$(uname -s)_$(uname -m).tar.gz"
+TMP_DIR="$(mktemp -d)"
+# shellcheck disable=SC2064 # intentionally expands here
+trap "rm -rf \"$TMP_DIR\"" EXIT
+export TAR_FILE="$TMP_DIR/${FILE_BASENAME}_$(uname -s)_$(uname -m).tar.gz"
 
 (
-	cd "$TMPDIR"
+	cd "$TMP_DIR"
 	echo "Downloading GoReleaser $VERSION..."
 	curl -sfLo "$TAR_FILE" \
 		"$RELEASES_URL/download/$VERSION/${FILE_BASENAME}_$(uname -s)_$(uname -m).tar.gz"
@@ -44,6 +46,5 @@ export TAR_FILE="$TMPDIR/${FILE_BASENAME}_$(uname -s)_$(uname -m).tar.gz"
 	fi
 )
 
-tar -xf "$TAR_FILE" -C "$TMPDIR"
-"${TMPDIR}/goreleaser" "$@"
-
+tar -xf "$TAR_FILE" -C "$TMP_DIR"
+"$TMP_DIR/goreleaser" "$@"
