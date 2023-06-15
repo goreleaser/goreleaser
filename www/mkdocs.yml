@@ -131,6 +131,7 @@ nav:
           - customization/fury.md
           - customization/homebrew.md
           - customization/nix.md
+          - customization/winget.md
           - customization/aur.md
           - customization/krew.md
           - customization/scoop.md

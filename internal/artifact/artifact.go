@@ -60,6 +60,12 @@ const (
 	BrewTap
 	// Nixpkg is an uploadable nix package.
 	Nixpkg
+	// WingetInstaller winget installer file.
+	WingetInstaller
+	// WingetDefaultLocale winget default locale file.
+	WingetDefaultLocale
+	// WingetVersion winget version file.
+	WingetVersion
 	// PkgBuild is an Arch Linux AUR PKGBUILD file.
 	PkgBuild
 	// SrcInfo is an Arch Linux AUR .SRCINFO file.
@@ -126,6 +132,8 @@ func (t Type) String() string {
 		return "C Archive Library"
 	case CShared:
 		return "C Shared Library"
+	case WingetInstaller, WingetDefaultLocale, WingetVersion:
+		return "Winget Manifest"
 	default:
 		return "unknown"
 	}

@@ -204,6 +204,23 @@ nix:
       installManPage ./manpages/goreleaser.1.gz
       installShellCompletion ./completions/*
 
+winget:
+  - name: goreleaser
+    publisher: goreleaser
+    license: MIT
+    homepage: https://goreleaser.com
+    short_description: Deliver Go binaries as fast and easily as possible
+    repository:
+      owner: goreleaser
+      name: winget-pkgs
+      pull_request:
+        enabled: true
+        base:
+          owner: microsoft
+          name: winget-pkgs
+          branch: master
+          draft: true
+
 aurs:
   - homepage: https://goreleaser.com
     description: Deliver Go binaries as fast and easily as possible
