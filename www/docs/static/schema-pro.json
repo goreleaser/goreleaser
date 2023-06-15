@@ -2280,6 +2280,12 @@
 						},
 						"type": "array"
 					},
+					"winget": {
+						"items": {
+							"$ref": "#/$defs/Winget"
+						},
+						"type": "array"
+					},
 					"aurs": {
 						"items": {
 							"$ref": "#/$defs/AUR"
@@ -3634,6 +3640,82 @@
 						"type": "object"
 					},
 					"content_type": {
+						"type": "string"
+					}
+				},
+				"additionalProperties": false,
+				"type": "object"
+			},
+			"Winget": {
+				"properties": {
+					"name": {
+						"type": "string"
+					},
+					"package_identifier": {
+						"type": "string"
+					},
+					"publisher": {
+						"type": "string"
+					},
+					"publisher_url": {
+						"type": "string"
+					},
+					"copyright": {
+						"type": "string"
+					},
+					"author": {
+						"type": "string"
+					},
+					"path": {
+						"type": "string"
+					},
+					"repository": {
+						"$ref": "#/$defs/RepoRef"
+					},
+					"commit_author": {
+						"$ref": "#/$defs/CommitAuthor"
+					},
+					"commit_msg_template": {
+						"type": "string"
+					},
+					"ids": {
+						"items": {
+							"type": "string"
+						},
+						"type": "array"
+					},
+					"goamd64": {
+						"type": "string"
+					},
+					"skip_upload": {
+						"oneOf": [
+							{
+								"type": "string"
+							},
+							{
+								"type": "boolean"
+							}
+						]
+					},
+					"url_template": {
+						"type": "string"
+					},
+					"short_description": {
+						"type": "string"
+					},
+					"description": {
+						"type": "string"
+					},
+					"homepage": {
+						"type": "string"
+					},
+					"license": {
+						"type": "string"
+					},
+					"license_url": {
+						"type": "string"
+					},
+					"release_notes_url": {
 						"type": "string"
 					}
 				},
