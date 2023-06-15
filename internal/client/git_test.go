@@ -29,23 +29,28 @@ func TestGitClient(t *testing.T) {
 			PrivateKey: testlib.MakeNewSSHKey(t, keygen.Ed25519, ""),
 			Name:       "test1",
 		}
-		require.NoError(t, cli.CreateFile(
+		require.NoError(t, cli.CreateFiles(
 			ctx,
 			author,
 			repo,
-			[]byte("fake content"),
-			"fake.txt",
 			"hey test",
+			[]RepoFile{
+				{
+					Content: []byte("fake content"),
+					Path:    "fake.txt",
+				},
+				{
+					Content: []byte("fake2 content"),
+					Path:    "fake2.txt",
+				},
+				{
+					Content: []byte("fake content updated"),
+					Path:    "fake.txt",
+				},
+			},
 		))
-		require.NoError(t, cli.CreateFile(
-			ctx,
-			author,
-			repo,
-			[]byte("fake content 2"),
-			"fake.txt",
-			"hey test 2",
-		))
-		require.Equal(t, "fake content 2", string(testlib.CatFileFromBareRepository(t, url, "fake.txt")))
+		require.Equal(t, "fake content updated", string(testlib.CatFileFromBareRepository(t, url, "fake.txt")))
+		require.Equal(t, "fake2 content", string(testlib.CatFileFromBareRepository(t, url, "fake2.txt")))
 	})
 	t.Run("no repo name", func(t *testing.T) {
 		url := testlib.GitMakeBareRepository(t)
