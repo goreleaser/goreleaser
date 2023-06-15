@@ -167,10 +167,13 @@ func headString(base, head Repo) string {
 }
 
 func (c *githubClient) getPRTemplate(ctx *context.Context, repo Repo) (string, error) {
-	// https://github.com/microsoft/winget-pkgs/blob/master/.github/PULL_REQUEST_TEMPLATE.md
-	content, _, _, err := c.client.Repositories.GetContents(ctx, repo.Owner, repo.Name, ".github/PULL_REQUEST_TEMPLATE.md", &github.RepositoryContentGetOptions{
-		Ref: repo.Branch,
-	})
+	content, _, _, err := c.client.Repositories.GetContents(
+		ctx, repo.Owner, repo.Name,
+		".github/PULL_REQUEST_TEMPLATE.md",
+		&github.RepositoryContentGetOptions{
+			Ref: repo.Branch,
+		},
+	)
 	if err != nil {
 		return "", err
 	}
