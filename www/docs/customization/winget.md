@@ -107,3 +107,5 @@ winget:
 !!! tip
 
     Learn more about the [name template engine](/customization/templates/).
+
+{% include-markdown "../includes/prs.md" comments=false %}

@@ -213,6 +213,13 @@ winget:
     repository:
       owner: goreleaser
       name: winget-pkgs
+      pull_request:
+        enabled: true
+        base:
+          owner: microsoft
+          name: winget-pkgs
+          branch: master
+          draft: true
 
 aurs:
   - homepage: https://goreleaser.com
