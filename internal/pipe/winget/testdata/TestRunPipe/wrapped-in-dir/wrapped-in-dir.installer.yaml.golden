@@ -13,5 +13,19 @@ Installers:
     InstallerUrl: https://dummyhost/download/v1.2.1/foo_windows_amd64v1.zip
     InstallerSha256: e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
     UpgradeBehavior: uninstallPrevious
+  - Architecture: x86
+    NestedInstallerType: portable
+    NestedInstallerFiles:
+      - RelativeFilePath: foo\foo.exe
+    InstallerUrl: https://dummyhost/download/v1.2.1/foo_windows_386.zip
+    InstallerSha256: e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
+    UpgradeBehavior: uninstallPrevious
+  - Architecture: arm64
+    NestedInstallerType: portable
+    NestedInstallerFiles:
+      - RelativeFilePath: foo\foo.exe
+    InstallerUrl: https://dummyhost/download/v1.2.1/foo_windows_arm64.zip
+    InstallerSha256: e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
+    UpgradeBehavior: uninstallPrevious
 ManifestType: installer
 ManifestVersion: 1.4.0

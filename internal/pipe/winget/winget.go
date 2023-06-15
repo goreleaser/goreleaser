@@ -196,6 +196,7 @@ func (p Pipe) doRun(ctx *context.Context, winget config.Winget, cl client.Releas
 		artifact.ByType(artifact.UploadableArchive),
 		artifact.Or(
 			artifact.ByGoarch("386"),
+			artifact.ByGoarch("arm64"),
 			artifact.And(
 				artifact.ByGoamd64(winget.Goamd64),
 				artifact.ByGoarch("amd64"),

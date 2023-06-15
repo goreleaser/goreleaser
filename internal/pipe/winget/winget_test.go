@@ -508,7 +508,11 @@ func TestRunPipe(t *testing.T) {
 			createFakeArtifact("foo", goos, goarch, "v1", "", nil)
 			createFakeArtifact("wrapped-in-dir", goos, goarch, "v1", "", map[string]any{artifact.ExtraWrappedIn: "foo"})
 
-			goarch = "3864"
+			goarch = "386"
+			createFakeArtifact("foo", goos, goarch, "", "", nil)
+			createFakeArtifact("wrapped-in-dir", goos, goarch, "", "", map[string]any{artifact.ExtraWrappedIn: "foo"})
+
+			goarch = "arm64"
 			createFakeArtifact("foo", goos, goarch, "", "", nil)
 			createFakeArtifact("wrapped-in-dir", goos, goarch, "", "", map[string]any{artifact.ExtraWrappedIn: "foo"})
 

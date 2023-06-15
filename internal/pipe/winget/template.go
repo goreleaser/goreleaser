@@ -119,4 +119,5 @@ type Locale struct {
 var fromGoArch = map[string]string{
 	"amd64": "x64",
 	"386":   "x86",
+	"arm64": "arm64",
 }
