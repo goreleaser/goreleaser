@@ -215,11 +215,11 @@ winget:
       name: winget-pkgs
       pull_request:
         enabled: true
+        draft: true
         base:
           owner: microsoft
           name: winget-pkgs
           branch: master
-          draft: true
 
 aurs:
   - homepage: https://goreleaser.com
