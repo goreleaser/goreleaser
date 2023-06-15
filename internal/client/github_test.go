@@ -1,6 +1,7 @@
 package client
 
 import (
+	"encoding/base64"
 	"encoding/json"
 	"fmt"
 	"io"
@@ -405,9 +406,21 @@ func TestCloseMilestone(t *testing.T) {
 	require.NoError(t, client.CloseMilestone(ctx, repo, "v1.13.0"))
 }
 
+const testPRTemplate = "fake template\n- [ ] mark this\n---"
+
 func TestOpenPullRequestCrossRepo(t *testing.T) {
 	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		defer r.Body.Close()
+
+		if r.URL.Path == "/repos/someone/something/contents/.github/PULL_REQUEST_TEMPLATE.md" {
+			content := github.RepositoryContent{
+				Encoding: github.String("base64"),
+				Content:  github.String(base64.StdEncoding.EncodeToString([]byte(testPRTemplate))),
+			}
+			bts, _ := json.Marshal(content)
+			_, _ = w.Write(bts)
+			return
+		}
 
 		if r.URL.Path == "/repos/someone/something/pulls" {
 			got, err := io.ReadAll(r.Body)
@@ -416,6 +429,7 @@ func TestOpenPullRequestCrossRepo(t *testing.T) {
 			require.NoError(t, json.Unmarshal(got, &pr))
 			require.Equal(t, "main", pr.GetBase())
 			require.Equal(t, "someoneelse:something:foo", pr.GetHead())
+			require.Equal(t, testPRTemplate+"\n"+prFooter, pr.GetBody())
 			r, err := os.Open("testdata/github/pull.json")
 			require.NoError(t, err)
 			_, err = io.Copy(w, r)
@@ -457,6 +471,16 @@ func TestOpenPullRequestHappyPath(t *testing.T) {
 	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		defer r.Body.Close()
 
+		if r.URL.Path == "/repos/someone/something/contents/.github/PULL_REQUEST_TEMPLATE.md" {
+			content := github.RepositoryContent{
+				Encoding: github.String("base64"),
+				Content:  github.String(base64.StdEncoding.EncodeToString([]byte(testPRTemplate))),
+			}
+			bts, _ := json.Marshal(content)
+			_, _ = w.Write(bts)
+			return
+		}
+
 		if r.URL.Path == "/repos/someone/something/pulls" {
 			r, err := os.Open("testdata/github/pull.json")
 			require.NoError(t, err)
@@ -494,6 +518,11 @@ func TestOpenPullRequestHappyPath(t *testing.T) {
 func TestOpenPullRequestNoBaseBranchDraft(t *testing.T) {
 	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		defer r.Body.Close()
+
+		if r.URL.Path == "/repos/someone/something/contents/.github/PULL_REQUEST_TEMPLATE.md" {
+			w.WriteHeader(http.StatusNotFound)
+			return
+		}
 
 		if r.URL.Path == "/repos/someone/something/pulls" {
 			got, err := io.ReadAll(r.Body)
@@ -548,6 +577,11 @@ func TestOpenPullRequestPRExists(t *testing.T) {
 	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		defer r.Body.Close()
 
+		if r.URL.Path == "/repos/someone/something/contents/.github/PULL_REQUEST_TEMPLATE.md" {
+			w.WriteHeader(http.StatusNotFound)
+			return
+		}
+
 		if r.URL.Path == "/repos/someone/something/pulls" {
 			w.WriteHeader(http.StatusUnprocessableEntity)
 			r, err := os.Open("testdata/github/pull.json")
@@ -586,6 +620,11 @@ func TestOpenPullRequestPRExists(t *testing.T) {
 func TestOpenPullRequestBaseEmpty(t *testing.T) {
 	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		defer r.Body.Close()
+
+		if r.URL.Path == "/repos/someone/something/contents/.github/PULL_REQUEST_TEMPLATE.md" {
+			w.WriteHeader(http.StatusNotFound)
+			return
+		}
 
 		if r.URL.Path == "/repos/someone/something/pulls" {
 			r, err := os.Open("testdata/github/pull.json")
