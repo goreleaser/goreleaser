@@ -386,11 +386,7 @@ func doPublish(ctx *context.Context, pkgs []*artifact.Artifact) error {
 		if err != nil {
 			return err
 		}
-
-		if err := cli.CreateFiles(ctx, author, repo, msg, []client.RepoFile{{
-			Content: content,
-			Path:    pkg.Name,
-		}}); err != nil {
+		if err := cli.CreateFile(ctx, author, repo, content, pkg.Name, msg); err != nil {
 			return err
 		}
 	}
