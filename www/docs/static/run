@@ -23,13 +23,16 @@ test -z "$VERSION" && {
 TMP_DIR="$(mktemp -d)"
 # shellcheck disable=SC2064 # intentionally expands here
 trap "rm -rf \"$TMP_DIR\"" EXIT
-export TAR_FILE="$TMP_DIR/${FILE_BASENAME}_$(uname -s)_$(uname -m).tar.gz"
+OS="$(uname -s)"
+ARCH="$(uname -m)"
+test "$ARCH" = "aarch64" && ARCH="arm64"
+export TAR_FILE="$TMP_DIR/${FILE_BASENAME}_${OS}_${ARCH}.tar.gz"
 
 (
 	cd "$TMP_DIR"
 	echo "Downloading GoReleaser $VERSION..."
 	curl -sfLo "$TAR_FILE" \
-		"$RELEASES_URL/download/$VERSION/${FILE_BASENAME}_$(uname -s)_$(uname -m).tar.gz"
+		"$RELEASES_URL/download/$VERSION/${FILE_BASENAME}_${OS}_${ARCH}.tar.gz"
 	curl -sfLo "checksums.txt" "$RELEASES_URL/download/$VERSION/checksums.txt"
 	echo "Verifying checksums..."
 	sha256sum --ignore-missing --quiet --check checksums.txt
