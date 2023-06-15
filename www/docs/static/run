@@ -26,7 +26,7 @@ trap "rm -rf \"$TMP_DIR\"" EXIT
 OS="$(uname -s)"
 ARCH="$(uname -m)"
 test "$ARCH" = "aarch64" && ARCH="arm64"
-export TAR_FILE="$TMP_DIR/${FILE_BASENAME}_${OS}_${ARCH}.tar.gz"
+TAR_FILE="$TMP_DIR/${FILE_BASENAME}_${OS}_${ARCH}.tar.gz"
 
 (
 	cd "$TMP_DIR"
