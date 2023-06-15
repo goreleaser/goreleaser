@@ -124,6 +124,7 @@ tasks:
     desc: Build docs
     cmds:
       - task: docs:generate
+      - "{{.DOCKER}} build -t mkdocs -f www/docker/Dockerfile www/docker"
       - "{{.DOCKER}} run --rm -v ${PWD}/www:/docs docker.io/squidfunk/mkdocs-material build"
 
   release:
