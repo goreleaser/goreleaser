@@ -3,7 +3,7 @@
 > Since v1.17
 
 GoReleaser allows you to, instead of pushing directly to the main branch, push
-to a feature branch, and opening a pull requests with the changes.
+to a feature branch, and open a pull requests with the changes.
 
 ### Templates
 
