@@ -259,3 +259,5 @@ require (
 	sigs.k8s.io/kind v0.17.0 // indirect
 	sigs.k8s.io/yaml v1.3.0 // indirect
 )
+
+replace github.com/invopop/jsonschema => github.com/caarlos0/jsonschema v0.0.0-20230614035932-131eafc78732
