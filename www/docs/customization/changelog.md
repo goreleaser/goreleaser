@@ -13,7 +13,7 @@ changelog:
   # This may result in an empty release notes on GitHub/GitLab/Gitea.
   #
   # Templates: allowed
-  skip: '{{ .Env.CREATE_CHANGELOG }}'
+  skip: "{{ .Env.CREATE_CHANGELOG }}"
 
   # Changelog generation implementation to use.
   #
@@ -47,8 +47,8 @@ changelog:
   # Since: v1.12 (pro)
   # This feature is only available in GoReleaser Pro.
   paths:
-  - foo/
-  - bar/
+    - foo/
+    - bar/
 
   # Group commits messages by given regex and title.
   # Order value defines the order of the groups.
@@ -60,7 +60,7 @@ changelog:
     - title: Features
       regexp: '^.*?feat(\([[:word:]]+\))??!?:.+$'
       order: 0
-    - title: 'Bug fixes'
+    - title: "Bug fixes"
       regexp: '^.*?bug(\([[:word:]]+\))??!?:.+$'
       order: 1
     - title: Others
@@ -81,29 +81,38 @@ changelog:
       # Since: v1.15 (pro)
       # This feature is only available in GoReleaser Pro.
       subgroups:
-        - title: 'Docs'
-          regex: '.*docs.*'
+        - title: "Docs"
+          regex: ".*docs.*"
           order: 1
-        - title: 'CI'
-          regex: '.*build.*'
+        - title: "CI"
+          regex: ".*build.*"
           order: 2
 
   # Divider to use between groups.
   #
   # Since: v1.16 (pro)
   # This feature is only available in GoReleaser Pro.
-  divider: '---'
+  divider: "---"
 
   filters:
     # Commit messages matching the regexp listed here will be removed from
     # the changelog
     exclude:
-      - '^docs:'
+      - "^docs:"
       - typo
       - (?i)foo
+    # Commit messages matching the regexp listed here will be the only ones
+    # added to the changelog
+    #
+    # If include is not-empty, exclude will be ignored.
+    #
+    # Since: v1.19
+    include:
+      - "^feat:"
 ```
 
 !!! warning
+
     Some things to keep an eye on:
 
     * The `github-native` changelog does not support `sort` and `filter`.

@@ -963,6 +963,7 @@ type DockerManifest struct {
 
 // Filters config.
 type Filters struct {
+	Include []string `yaml:"include,omitempty" json:"include,omitempty"`
 	Exclude []string `yaml:"exclude,omitempty" json:"exclude,omitempty"`
 }
 
