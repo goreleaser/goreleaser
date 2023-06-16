@@ -4,6 +4,7 @@ import (
 	"os"
 	"path/filepath"
 	"strings"
+	"syscall"
 	"testing"
 
 	"github.com/goreleaser/goreleaser/internal/artifact"
@@ -148,8 +149,7 @@ func TestPipeFileNotExist(t *testing.T) {
 		Path: "/nope",
 		Type: artifact.UploadableBinary,
 	})
-	err := Pipe{}.Run(ctx)
-	require.ErrorIs(t, err, os.ErrNotExist)
+	require.ErrorIs(t, Pipe{}.Run(ctx), os.ErrNotExist)
 }
 
 func TestPipeInvalidNameTemplate(t *testing.T) {
@@ -215,7 +215,7 @@ func TestPipeCouldNotOpenChecksumsTxt(t *testing.T) {
 	})
 	err = Pipe{}.Run(ctx)
 	require.Error(t, err)
-	require.Contains(t, err.Error(), "/checksums.txt: permission denied")
+	require.ErrorIs(t, Pipe{}.Run(ctx), syscall.EACCES)
 }
 
 func TestPipeWhenNoArtifacts(t *testing.T) {
