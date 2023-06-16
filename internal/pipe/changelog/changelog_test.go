@@ -335,6 +335,25 @@ func TestChangelogFilterInvalidRegex(t *testing.T) {
 	require.EqualError(t, Pipe{}.Run(ctx), "error parsing regexp: invalid or unsupported Perl syntax: `(?ia`")
 }
 
+func TestChangelogFilterIncludeInvalidRegex(t *testing.T) {
+	testlib.Mktmp(t)
+	testlib.GitInit(t)
+	testlib.GitCommit(t, "commitssss")
+	testlib.GitTag(t, "v0.0.3")
+	testlib.GitCommit(t, "commitzzz")
+	testlib.GitTag(t, "v0.0.4")
+	ctx := testctx.NewWithCfg(config.Project{
+		Changelog: config.Changelog{
+			Filters: config.Filters{
+				Include: []string{
+					"(?iasdr4qasd)not a valid regex i guess",
+				},
+			},
+		},
+	}, testctx.WithCurrentTag("v0.0.4"), testctx.WithPreviousTag("v0.0.3"))
+	require.EqualError(t, Pipe{}.Run(ctx), "error parsing regexp: invalid or unsupported Perl syntax: `(?ia`")
+}
+
 func TestChangelogNoTags(t *testing.T) {
 	testlib.Mktmp(t)
 	testlib.GitInit(t)
