@@ -3,14 +3,14 @@ name: build
 on:
   push:
     branches:
-      - 'main'
+      - "main"
   pull_request:
     paths:
-      - 'go.*'
-      - '**/*.go'
-      - 'Taskfile.yml'
-      - 'Dockerfile'
-      - '.github/workflows/*.yml'
+      - "go.*"
+      - "**/*.go"
+      - "Taskfile.yml"
+      - "Dockerfile"
+      - ".github/workflows/*.yml"
 
 permissions:
   contents: read
@@ -23,7 +23,7 @@ jobs:
   ruleguard:
     uses: caarlos0/meta/.github/workflows/ruleguard.yml@main
     with:
-      args: '-disable largeloopcopy'
+      args: "-disable largeloopcopy"
   test:
     strategy:
       matrix:
@@ -32,16 +32,16 @@ jobs:
     env:
       DOCKER_CLI_EXPERIMENTAL: "enabled"
     steps:
-      - uses: actions/checkout@24cb9080177205b6e8c946b17badbe402adc938f # v3
+      - uses: actions/checkout@c85c95e3d7251135ab7dc9ce3241c5835cc595a9 # v3
         with:
           fetch-depth: 0
       - uses: arduino/setup-task@e26d8975574116b0097a1161e0fe16ba75d84c1c # v1
         with:
           version: 3.x
           repo-token: ${{ secrets.GITHUB_TOKEN }}
-      - uses: docker/setup-qemu-action@e81a89b1732b9c48d79cd809d8d81d79c4647a18 # v2
+      - uses: docker/setup-qemu-action@2b82ce82d56a2a04d2637cd93a637ae1b359c0a7 # v2
         if: matrix.os == 'ubuntu-latest'
-      - uses: docker/setup-buildx-action@4b4e9c3e2d4531116a6f8ba8e71fc6e2cb6e6c8c # v2
+      - uses: docker/setup-buildx-action@ecf95283f03858871ff00b787d79c419715afc34 # v2
       - name: setup-snapcraft
         if: matrix.os == 'ubuntu-latest'
         # FIXME: the mkdirs are a hack for https://github.com/goreleaser/goreleaser/issues/1715
@@ -50,11 +50,17 @@ jobs:
           sudo apt-get -yq --no-install-suggests --no-install-recommends install snapcraft
           mkdir -p $HOME/.cache/snapcraft/download
           mkdir -p $HOME/.cache/snapcraft/stage-packages
-      - uses: actions/setup-go@4d34df0c2316fe8122ab82dc22947d607c0c91f9 # v4
+      - uses: crazy-max/ghaction-upx@v2
+        with:
+          install-only: true
+      - uses: cachix/install-nix-action@v21
+        with:
+          github_access_token: ${{ secrets.GITHUB_TOKEN }}
+      - uses: actions/setup-go@fac708d6674e30b6ba41289acaab6d4b75aa0753 # v4
         with:
           go-version: stable
-      - uses: sigstore/cosign-installer@v3.0.1
-      - uses: anchore/sbom-action/download-syft@v0.13.3
+      - uses: sigstore/cosign-installer@v3.0.5
+      - uses: anchore/sbom-action/download-syft@v0.14.2
         if: matrix.os == 'ubuntu-latest'
       - name: setup-validate-krew-manifest
         run: go install sigs.k8s.io/krew/cmd/validate-krew-manifest@latest
@@ -66,12 +72,12 @@ jobs:
           task setup
           task build
       - name: test
-        if: matrix.os == 'ubuntu-latest'
         run: ./scripts/test.sh
+        if: matrix.os == 'ubuntu-latest'
       - name: test
-        if: matrix.os != 'ubuntu-latest'
         run: task test
-      - uses: codecov/codecov-action@d9f34f8cd5cb3b3eb79b3e4b5dae3a16df499a70 # v3
+        if: matrix.os != 'ubuntu-latest'
+      - uses: codecov/codecov-action@eaaf4bedf32dbdc6b720b63067d99c4d77d6047d # v3
         if: matrix.os == 'ubuntu-latest'
         with:
           file: ./coverage.txt

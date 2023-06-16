@@ -95,6 +95,8 @@ dockers:
     #
     # If set to auto, the release will not be pushed to the Docker repository
     #  in case there is an indicator of a prerelease in the tag, e.g. v1.0.0-rc1.
+    #
+    # Templates: allowed (since v1.19)
     skip_push: false
 
     # Path to the Dockerfile (from the project root).

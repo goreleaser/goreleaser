@@ -17,8 +17,9 @@ Check out our website for more information, examples and documentation: https://
 ## Options
 
 ```
-      --debug   Enable debug mode
-  -h, --help    help for goreleaser
+      --debug     Enable verbose mode (deprecated)
+  -h, --help      help for goreleaser
+      --verbose   Enable verbose mode
 ```
 
 ## See also

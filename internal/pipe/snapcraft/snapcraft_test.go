@@ -479,8 +479,8 @@ func TestExtraFile(t *testing.T) {
 
 	apath := filepath.Join(dist, "foo_amd64", "prime", "a", "b", "c", "extra-file.txt")
 	bpath := filepath.Join(dist, "foo_amd64", "prime", "testdata", "extra-file-2.txt")
-	requireEqualFileConents(t, "testdata/extra-file.txt", apath)
-	requireEqualFileConents(t, "testdata/extra-file-2.txt", bpath)
+	requireEqualFileContents(t, "testdata/extra-file.txt", apath)
+	requireEqualFileContents(t, "testdata/extra-file-2.txt", bpath)
 }
 
 func TestDefault(t *testing.T) {
@@ -715,7 +715,7 @@ func TestDependencies(t *testing.T) {
 	require.Equal(t, []string{"snapcraft"}, Pipe{}.Dependencies(ctx))
 }
 
-func requireEqualFileConents(tb testing.TB, a, b string) {
+func requireEqualFileContents(tb testing.TB, a, b string) {
 	tb.Helper()
 	eq, err := gio.EqualFileContents(a, b)
 	require.NoError(tb, err)

@@ -340,7 +340,7 @@ func (s *GiteaCreateReleaseSuite) TestTemplateError() {
 	require.Error(t, err)
 }
 
-func (s *GiteaCreateReleaseSuite) TestErrorGettingExisitngRelease() {
+func (s *GiteaCreateReleaseSuite) TestErrorGettingExistingRelease() {
 	t := s.T()
 	httpmock.RegisterResponder("GET", s.releasesURL, httpmock.NewStringResponder(404, ""))
 

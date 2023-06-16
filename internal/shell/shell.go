@@ -15,10 +15,9 @@ import (
 
 // Run a shell command with given arguments and envs
 func Run(ctx *context.Context, dir string, command, env []string, output bool) error {
-	fields := log.Fields{
-		"cmd": command,
-		"env": env,
-	}
+	log := log.
+		WithField("cmd", command).
+		WithField("env", env)
 
 	/* #nosec */
 	cmd := exec.CommandContext(ctx, command[0], command[1:]...)
@@ -34,9 +33,9 @@ func Run(ctx *context.Context, dir string, command, env []string, output bool) e
 		cmd.Dir = dir
 	}
 
-	log.WithFields(fields).Debug("running")
+	log.Debug("running")
 	if err := cmd.Run(); err != nil {
-		log.WithFields(fields).WithError(err).Debug("failed")
+		log.WithError(err).Debug("failed")
 		return fmt.Errorf("failed to run '%s': %w", strings.Join(command, " "), err)
 	}
 

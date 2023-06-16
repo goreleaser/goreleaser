@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
-	"strings"
 	"testing"
 
 	"github.com/charmbracelet/keygen"
@@ -151,6 +150,7 @@ func TestFullPipe(t *testing.T) {
 		expectedRunError       string
 		expectedPublishError   string
 		expectedPublishErrorIs error
+		expectedErrorCheck     func(testing.TB, error)
 	}
 	for name, tt := range map[string]testcase{
 		"default": {
@@ -193,19 +193,19 @@ func TestFullPipe(t *testing.T) {
 			prepare: func(ctx *context.Context) {
 				ctx.Config.AURs[0].CommitMessageTemplate = "{{ .Asdsa }"
 			},
-			expectedPublishError: `template: tmpl:1: unexpected "}" in operand`,
+			expectedErrorCheck: testlib.RequireTemplateError,
 		},
 		"invalid-key-template": {
 			prepare: func(ctx *context.Context) {
 				ctx.Config.AURs[0].PrivateKey = "{{ .Asdsa }"
 			},
-			expectedPublishError: `template: tmpl:1: unexpected "}" in operand`,
+			expectedErrorCheck: testlib.RequireTemplateError,
 		},
 		"no-key": {
 			prepare: func(ctx *context.Context) {
 				ctx.Config.AURs[0].PrivateKey = ""
 			},
-			expectedPublishError: `aur.private_key is empty`,
+			expectedPublishError: `private_key is empty`,
 		},
 		"key-not-found": {
 			prepare: func(ctx *context.Context) {
@@ -217,30 +217,30 @@ func TestFullPipe(t *testing.T) {
 			prepare: func(ctx *context.Context) {
 				ctx.Config.AURs[0].GitURL = "{{ .Asdsa }"
 			},
-			expectedPublishError: `template: tmpl:1: unexpected "}" in operand`,
+			expectedErrorCheck: testlib.RequireTemplateError,
 		},
 		"no-git-url": {
 			prepare: func(ctx *context.Context) {
 				ctx.Config.AURs[0].GitURL = ""
 			},
-			expectedPublishError: `aur.git_url is empty`,
+			expectedPublishError: `url is empty`,
 		},
 		"invalid-ssh-cmd-template": {
 			prepare: func(ctx *context.Context) {
 				ctx.Config.AURs[0].GitSSHCommand = "{{ .Asdsa }"
 			},
-			expectedPublishError: `template: tmpl:1: unexpected "}" in operand`,
+			expectedErrorCheck: testlib.RequireTemplateError,
 		},
 		"invalid-commit-author-template": {
 			prepare: func(ctx *context.Context) {
 				ctx.Config.AURs[0].CommitAuthor.Name = "{{ .Asdsa }"
 			},
-			expectedPublishError: `template: tmpl:1: unexpected "}" in operand`,
+			expectedErrorCheck: testlib.RequireTemplateError,
 		},
 	} {
 		t.Run(name, func(t *testing.T) {
-			url := makeBareRepo(t)
-			key := makeKey(t, keygen.Ed25519, nil)
+			url := testlib.GitMakeBareRepository(t)
+			key := testlib.MakeNewSSHKey(t, keygen.Ed25519, "")
 
 			folder := t.TempDir()
 			ctx := testctx.NewWithCfg(
@@ -329,6 +329,11 @@ func TestFullPipe(t *testing.T) {
 				return
 			}
 
+			if tt.expectedErrorCheck != nil {
+				tt.expectedErrorCheck(t, Pipe{}.Publish(ctx))
+				return
+			}
+
 			require.NoError(t, Pipe{}.Publish(ctx))
 			requireEqualRepoFiles(t, folder, name, url)
 		})
@@ -336,8 +341,8 @@ func TestFullPipe(t *testing.T) {
 }
 
 func TestRunPipe(t *testing.T) {
-	url := makeBareRepo(t)
-	key := makeKey(t, keygen.Ed25519, nil)
+	url := testlib.GitMakeBareRepository(t)
+	key := testlib.MakeNewSSHKey(t, keygen.Ed25519, "")
 
 	folder := t.TempDir()
 	ctx := testctx.NewWithCfg(
@@ -472,8 +477,8 @@ func TestRunPipeNoBuilds(t *testing.T) {
 }
 
 func TestRunPipeBinaryRelease(t *testing.T) {
-	url := makeBareRepo(t)
-	key := makeKey(t, keygen.Ed25519, nil)
+	url := testlib.GitMakeBareRepository(t)
+	key := testlib.MakeNewSSHKey(t, keygen.Ed25519, "")
 	folder := t.TempDir()
 	ctx := testctx.NewWithCfg(
 		config.Project{
@@ -519,54 +524,59 @@ func TestRunPipeBinaryRelease(t *testing.T) {
 
 func TestRunPipeNoUpload(t *testing.T) {
 	folder := t.TempDir()
-	ctx := testctx.NewWithCfg(
-		config.Project{
-			Dist:        folder,
-			ProjectName: "foo",
-			Release:     config.Release{},
-			AURs:        []config.AUR{{}},
-		},
-		testctx.GitHubTokenType,
-		testctx.WithCurrentTag("v1.0.1"),
-		testctx.WithSemver(1, 0, 1, ""),
-	)
+	testPublish := func(tb testing.TB, modifier func(ctx *context.Context)) {
+		tb.Helper()
+		ctx := testctx.NewWithCfg(
+			config.Project{
+				Dist:        folder,
+				ProjectName: "foo",
+				Release:     config.Release{},
+				AURs:        []config.AUR{{}},
+			},
+			testctx.GitHubTokenType,
+			testctx.WithCurrentTag("v1.0.1"),
+			testctx.WithSemver(1, 0, 1, ""),
+		)
 
-	path := filepath.Join(folder, "whatever.tar.gz")
-	f, err := os.Create(path)
-	require.NoError(t, err)
-	require.NoError(t, f.Close())
-	ctx.Artifacts.Add(&artifact.Artifact{
-		Name:    "bin",
-		Path:    path,
-		Goos:    "linux",
-		Goarch:  "amd64",
-		Goamd64: "v1",
-		Type:    artifact.UploadableArchive,
-		Extra: map[string]interface{}{
-			artifact.ExtraID:       "foo",
-			artifact.ExtraFormat:   "tar.gz",
-			artifact.ExtraBinaries: []string{"foo"},
-		},
-	})
+		path := filepath.Join(folder, "whatever.tar.gz")
+		f, err := os.Create(path)
+		require.NoError(t, err)
+		require.NoError(t, f.Close())
+		ctx.Artifacts.Add(&artifact.Artifact{
+			Name:    "bin",
+			Path:    path,
+			Goos:    "linux",
+			Goarch:  "amd64",
+			Goamd64: "v1",
+			Type:    artifact.UploadableArchive,
+			Extra: map[string]interface{}{
+				artifact.ExtraID:       "foo",
+				artifact.ExtraFormat:   "tar.gz",
+				artifact.ExtraBinaries: []string{"foo"},
+			},
+		})
 
-	require.NoError(t, Pipe{}.Default(ctx))
-	client := client.NewMock()
+		modifier(ctx)
 
-	assertNoPublish := func(t *testing.T) {
-		t.Helper()
+		require.NoError(t, Pipe{}.Default(ctx))
+		client := client.NewMock()
 		require.NoError(t, runAll(ctx, client))
+		t.Log(Pipe{}.Publish(ctx))
 		testlib.AssertSkipped(t, Pipe{}.Publish(ctx))
 		require.False(t, client.CreatedFile)
 	}
+
 	t.Run("skip upload true", func(t *testing.T) {
-		ctx.Config.AURs[0].SkipUpload = "true"
-		ctx.Semver.Prerelease = ""
-		assertNoPublish(t)
+		testPublish(t, func(ctx *context.Context) {
+			ctx.Config.AURs[0].SkipUpload = "true"
+			ctx.Semver.Prerelease = ""
+		})
 	})
 	t.Run("skip upload auto", func(t *testing.T) {
-		ctx.Config.AURs[0].SkipUpload = "auto"
-		ctx.Semver.Prerelease = "beta1"
-		assertNoPublish(t)
+		testPublish(t, func(ctx *context.Context) {
+			ctx.Config.AURs[0].SkipUpload = "auto"
+			ctx.Semver.Prerelease = "beta1"
+		})
 	})
 }
 
@@ -617,7 +627,6 @@ func TestDefault(t *testing.T) {
 			Provides:              []string{"myproject"},
 			Rel:                   "1",
 			CommitMessageTemplate: defaultCommitMsg,
-			GitSSHCommand:         defaultSSHCommand,
 			Goamd64:               "v1",
 			CommitAuthor: config.CommitAuthor{
 				Name:  "goreleaserbot",
@@ -642,7 +651,6 @@ func TestDefault(t *testing.T) {
 			Provides:              []string{"myproject"},
 			Rel:                   "1",
 			CommitMessageTemplate: defaultCommitMsg,
-			GitSSHCommand:         defaultSSHCommand,
 			Goamd64:               "v1",
 			CommitAuthor: config.CommitAuthor{
 				Name:  "goreleaserbot",
@@ -668,7 +676,6 @@ func TestDefault(t *testing.T) {
 			Provides:              []string{"myproject"},
 			Rel:                   "1",
 			CommitMessageTemplate: defaultCommitMsg,
-			GitSSHCommand:         defaultSSHCommand,
 			Goamd64:               "v3",
 			CommitAuthor: config.CommitAuthor{
 				Name:  "goreleaserbot",
@@ -691,89 +698,6 @@ func TestSkip(t *testing.T) {
 		})
 		require.False(t, Pipe{}.Skip(ctx))
 	})
-}
-
-func TestKeyPath(t *testing.T) {
-	t.Run("with valid path", func(t *testing.T) {
-		path := makeKey(t, keygen.Ed25519, nil)
-		result, err := keyPath(path)
-		require.NoError(t, err)
-		require.Equal(t, path, result)
-	})
-	t.Run("with invalid path", func(t *testing.T) {
-		result, err := keyPath("testdata/nope")
-		require.ErrorIs(t, err, os.ErrNotExist)
-		require.Equal(t, "", result)
-	})
-
-	t.Run("with password protected key path", func(t *testing.T) {
-		path := makeKey(t, keygen.Ed25519, []byte("pwd"))
-		bts, err := os.ReadFile(path)
-		require.NoError(t, err)
-
-		result, err := keyPath(string(bts))
-		require.EqualError(t, err, "key is password-protected")
-		require.Empty(t, result)
-	})
-
-	t.Run("with key", func(t *testing.T) {
-		for _, algo := range []keygen.KeyType{keygen.Ed25519, keygen.RSA} {
-			t.Run(string(algo), func(t *testing.T) {
-				path := makeKey(t, algo, nil)
-				bts, err := os.ReadFile(path)
-				require.NoError(t, err)
-
-				result, err := keyPath(string(bts))
-				require.NoError(t, err)
-
-				resultbts, err := os.ReadFile(result)
-				require.NoError(t, err)
-				require.Equal(t, string(bts), string(resultbts))
-			})
-		}
-	})
-	t.Run("empty", func(t *testing.T) {
-		result, err := keyPath("")
-		require.EqualError(t, err, `aur.private_key is empty`)
-		require.Equal(t, "", result)
-	})
-	t.Run("with invalid EOF", func(t *testing.T) {
-		path := makeKey(t, keygen.Ed25519, nil)
-		bts, err := os.ReadFile(path)
-		require.NoError(t, err)
-
-		result, err := keyPath(strings.TrimSpace(string(bts)))
-		require.NoError(t, err)
-
-		resultbts, err := os.ReadFile(result)
-		require.NoError(t, err)
-		require.Equal(t, string(bts), string(resultbts))
-	})
-}
-
-func makeBareRepo(tb testing.TB) string {
-	tb.Helper()
-	dir := tb.TempDir()
-	_, err := git.Run(
-		testctx.New(),
-		"-C", dir,
-		"-c", "init.defaultBranch=master",
-		"init",
-		"--bare",
-		".",
-	)
-	require.NoError(tb, err)
-	return dir
-}
-
-func makeKey(tb testing.TB, algo keygen.KeyType, pass []byte) string {
-	tb.Helper()
-
-	dir := tb.TempDir()
-	filepath := filepath.Join(dir, "id")
-	_, err := keygen.NewWithWrite(filepath, pass, algo)
-	require.NoError(tb, err)
-	return fmt.Sprintf("%s_%s", filepath, algo)
 }
 
 func requireEqualRepoFiles(tb testing.TB, folder, name, url string) {

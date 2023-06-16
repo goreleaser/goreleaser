@@ -57,7 +57,7 @@ universal_binaries:
 - replace: true
 ```
 
-That config will join your default build macOS binaries into an Universal Binary,
+That config will join your default build macOS binaries into a Universal Binary,
 removing the single-arch binaries from the artifact list.
 
 From there, the `Arch` template variable for this file will be `all`.

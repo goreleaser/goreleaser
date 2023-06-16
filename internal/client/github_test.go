@@ -1,6 +1,8 @@
 package client
 
 import (
+	"encoding/base64"
+	"encoding/json"
 	"fmt"
 	"io"
 	"net/http"
@@ -8,7 +10,9 @@ import (
 	"os"
 	"testing"
 	"text/template"
+	"time"
 
+	"github.com/google/go-github/v50/github"
 	"github.com/goreleaser/goreleaser/internal/artifact"
 	"github.com/goreleaser/goreleaser/internal/testctx"
 	"github.com/goreleaser/goreleaser/pkg/config"
@@ -201,6 +205,12 @@ func TestGithubGetDefaultBranch(t *testing.T) {
 		totalRequests++
 		defer r.Body.Close()
 
+		if r.URL.Path == "/rate_limit" {
+			w.WriteHeader(http.StatusOK)
+			fmt.Fprint(w, `{"resources":{"core":{"remaining":120}}}`)
+			return
+		}
+
 		// Assume the request to create a branch was good
 		w.WriteHeader(http.StatusOK)
 		fmt.Fprint(w, `{"default_branch": "main"}`)
@@ -224,7 +234,7 @@ func TestGithubGetDefaultBranch(t *testing.T) {
 	b, err := client.getDefaultBranch(ctx, repo)
 	require.NoError(t, err)
 	require.Equal(t, "main", b)
-	require.Equal(t, 1, totalRequests)
+	require.Equal(t, 2, totalRequests)
 }
 
 func TestGithubGetDefaultBranchErr(t *testing.T) {
@@ -265,6 +275,11 @@ func TestChangelog(t *testing.T) {
 			require.NoError(t, err)
 			return
 		}
+		if r.URL.Path == "/rate_limit" {
+			w.WriteHeader(http.StatusOK)
+			fmt.Fprint(w, `{"resources":{"core":{"remaining":120}}}`)
+			return
+		}
 	}))
 	defer srv.Close()
 
@@ -297,6 +312,11 @@ func TestReleaseNotes(t *testing.T) {
 			require.NoError(t, err)
 			return
 		}
+		if r.URL.Path == "/rate_limit" {
+			w.WriteHeader(http.StatusOK)
+			fmt.Fprint(w, `{"resources":{"core":{"remaining":120}}}`)
+			return
+		}
 	}))
 	defer srv.Close()
 
@@ -324,6 +344,11 @@ func TestReleaseNotesError(t *testing.T) {
 
 		if r.URL.Path == "/repos/someone/something/releases/generate-notes" {
 			w.WriteHeader(http.StatusBadRequest)
+		}
+		if r.URL.Path == "/rate_limit" {
+			w.WriteHeader(http.StatusOK)
+			fmt.Fprint(w, `{"resources":{"core":{"remaining":120}}}`)
+			return
 		}
 	}))
 	defer srv.Close()
@@ -357,6 +382,12 @@ func TestCloseMilestone(t *testing.T) {
 			require.NoError(t, err)
 			return
 		}
+
+		if r.URL.Path == "/rate_limit" {
+			w.WriteHeader(http.StatusOK)
+			fmt.Fprint(w, `{"resources":{"core":{"remaining":120}}}`)
+			return
+		}
 	}))
 	defer srv.Close()
 
@@ -375,15 +406,149 @@ func TestCloseMilestone(t *testing.T) {
 	require.NoError(t, client.CloseMilestone(ctx, repo, "v1.13.0"))
 }
 
+const testPRTemplate = "fake template\n- [ ] mark this\n---"
+
+func TestOpenPullRequestCrossRepo(t *testing.T) {
+	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		defer r.Body.Close()
+
+		if r.URL.Path == "/repos/someone/something/contents/.github/PULL_REQUEST_TEMPLATE.md" {
+			content := github.RepositoryContent{
+				Encoding: github.String("base64"),
+				Content:  github.String(base64.StdEncoding.EncodeToString([]byte(testPRTemplate))),
+			}
+			bts, _ := json.Marshal(content)
+			_, _ = w.Write(bts)
+			return
+		}
+
+		if r.URL.Path == "/repos/someone/something/pulls" {
+			got, err := io.ReadAll(r.Body)
+			require.NoError(t, err)
+			var pr github.NewPullRequest
+			require.NoError(t, json.Unmarshal(got, &pr))
+			require.Equal(t, "main", pr.GetBase())
+			require.Equal(t, "someoneelse:something:foo", pr.GetHead())
+			require.Equal(t, testPRTemplate+"\n"+prFooter, pr.GetBody())
+			r, err := os.Open("testdata/github/pull.json")
+			require.NoError(t, err)
+			_, err = io.Copy(w, r)
+			require.NoError(t, err)
+			return
+		}
+
+		if r.URL.Path == "/rate_limit" {
+			w.WriteHeader(http.StatusOK)
+			fmt.Fprint(w, `{"resources":{"core":{"remaining":120}}}`)
+			return
+		}
+
+		t.Error("unhandled request: " + r.URL.Path)
+	}))
+	defer srv.Close()
+
+	ctx := testctx.NewWithCfg(config.Project{
+		GitHubURLs: config.GitHubURLs{
+			API: srv.URL + "/",
+		},
+	})
+	client, err := newGitHub(ctx, "test-token")
+	require.NoError(t, err)
+	base := Repo{
+		Owner:  "someone",
+		Name:   "something",
+		Branch: "main",
+	}
+	head := Repo{
+		Owner:  "someoneelse",
+		Name:   "something",
+		Branch: "foo",
+	}
+	require.NoError(t, client.OpenPullRequest(ctx, base, head, "some title", false))
+}
+
 func TestOpenPullRequestHappyPath(t *testing.T) {
 	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		defer r.Body.Close()
+
+		if r.URL.Path == "/repos/someone/something/contents/.github/PULL_REQUEST_TEMPLATE.md" {
+			content := github.RepositoryContent{
+				Encoding: github.String("base64"),
+				Content:  github.String(base64.StdEncoding.EncodeToString([]byte(testPRTemplate))),
+			}
+			bts, _ := json.Marshal(content)
+			_, _ = w.Write(bts)
+			return
+		}
 
 		if r.URL.Path == "/repos/someone/something/pulls" {
 			r, err := os.Open("testdata/github/pull.json")
 			require.NoError(t, err)
 			_, err = io.Copy(w, r)
 			require.NoError(t, err)
+			return
+		}
+
+		if r.URL.Path == "/rate_limit" {
+			w.WriteHeader(http.StatusOK)
+			fmt.Fprint(w, `{"resources":{"core":{"remaining":120}}}`)
+			return
+		}
+
+		t.Error("unhandled request: " + r.URL.Path)
+	}))
+	defer srv.Close()
+
+	ctx := testctx.NewWithCfg(config.Project{
+		GitHubURLs: config.GitHubURLs{
+			API: srv.URL + "/",
+		},
+	})
+	client, err := newGitHub(ctx, "test-token")
+	require.NoError(t, err)
+	repo := Repo{
+		Owner:  "someone",
+		Name:   "something",
+		Branch: "main",
+	}
+
+	require.NoError(t, client.OpenPullRequest(ctx, repo, Repo{}, "some title", false))
+}
+
+func TestOpenPullRequestNoBaseBranchDraft(t *testing.T) {
+	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		defer r.Body.Close()
+
+		if r.URL.Path == "/repos/someone/something/contents/.github/PULL_REQUEST_TEMPLATE.md" {
+			w.WriteHeader(http.StatusNotFound)
+			return
+		}
+
+		if r.URL.Path == "/repos/someone/something/pulls" {
+			got, err := io.ReadAll(r.Body)
+			require.NoError(t, err)
+			var pr github.NewPullRequest
+			require.NoError(t, json.Unmarshal(got, &pr))
+			require.Equal(t, "main", pr.GetBase())
+			require.Equal(t, "someone:something:foo", pr.GetHead())
+			require.Equal(t, true, pr.GetDraft())
+
+			r, err := os.Open("testdata/github/pull.json")
+			require.NoError(t, err)
+			_, err = io.Copy(w, r)
+			require.NoError(t, err)
+			return
+		}
+
+		if r.URL.Path == "/repos/someone/something" {
+			w.WriteHeader(http.StatusOK)
+			fmt.Fprint(w, `{"default_branch": "main"}`)
+			return
+		}
+
+		if r.URL.Path == "/rate_limit" {
+			w.WriteHeader(http.StatusOK)
+			fmt.Fprint(w, `{"resources":{"core":{"remaining":120}}}`)
 			return
 		}
 
@@ -403,12 +568,19 @@ func TestOpenPullRequestHappyPath(t *testing.T) {
 		Name:  "something",
 	}
 
-	require.NoError(t, client.OpenPullRequest(ctx, repo, "main", "some title"))
+	require.NoError(t, client.OpenPullRequest(ctx, repo, Repo{
+		Branch: "foo",
+	}, "some title", true))
 }
 
 func TestOpenPullRequestPRExists(t *testing.T) {
 	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		defer r.Body.Close()
+
+		if r.URL.Path == "/repos/someone/something/contents/.github/PULL_REQUEST_TEMPLATE.md" {
+			w.WriteHeader(http.StatusNotFound)
+			return
+		}
 
 		if r.URL.Path == "/repos/someone/something/pulls" {
 			w.WriteHeader(http.StatusUnprocessableEntity)
@@ -419,6 +591,12 @@ func TestOpenPullRequestPRExists(t *testing.T) {
 			return
 		}
 
+		if r.URL.Path == "/rate_limit" {
+			w.WriteHeader(http.StatusOK)
+			fmt.Fprint(w, `{"resources":{"core":{"remaining":120}}}`)
+			return
+		}
+
 		t.Error("unhandled request: " + r.URL.Path)
 	}))
 	defer srv.Close()
@@ -431,16 +609,22 @@ func TestOpenPullRequestPRExists(t *testing.T) {
 	client, err := newGitHub(ctx, "test-token")
 	require.NoError(t, err)
 	repo := Repo{
-		Owner: "someone",
-		Name:  "something",
+		Owner:  "someone",
+		Name:   "something",
+		Branch: "main",
 	}
 
-	require.NoError(t, client.OpenPullRequest(ctx, repo, "main", "some title"))
+	require.NoError(t, client.OpenPullRequest(ctx, repo, Repo{}, "some title", false))
 }
 
 func TestOpenPullRequestBaseEmpty(t *testing.T) {
 	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		defer r.Body.Close()
+
+		if r.URL.Path == "/repos/someone/something/contents/.github/PULL_REQUEST_TEMPLATE.md" {
+			w.WriteHeader(http.StatusNotFound)
+			return
+		}
 
 		if r.URL.Path == "/repos/someone/something/pulls" {
 			r, err := os.Open("testdata/github/pull.json")
@@ -456,6 +640,12 @@ func TestOpenPullRequestBaseEmpty(t *testing.T) {
 			return
 		}
 
+		if r.URL.Path == "/rate_limit" {
+			w.WriteHeader(http.StatusOK)
+			fmt.Fprint(w, `{"resources":{"core":{"remaining":120}}}`)
+			return
+		}
+
 		t.Error("unhandled request: " + r.URL.Path)
 	}))
 	defer srv.Close()
@@ -468,11 +658,12 @@ func TestOpenPullRequestBaseEmpty(t *testing.T) {
 	client, err := newGitHub(ctx, "test-token")
 	require.NoError(t, err)
 	repo := Repo{
-		Owner: "someone",
-		Name:  "something",
+		Owner:  "someone",
+		Name:   "something",
+		Branch: "main",
 	}
 
-	require.NoError(t, client.OpenPullRequest(ctx, repo, "", "some title"))
+	require.NoError(t, client.OpenPullRequest(ctx, repo, Repo{}, "some title", false))
 }
 
 func TestGitHubCreateFileHappyPathCreate(t *testing.T) {
@@ -492,6 +683,12 @@ func TestGitHubCreateFileHappyPathCreate(t *testing.T) {
 
 		if r.URL.Path == "/repos/someone/something/contents/file.txt" && r.Method == http.MethodPut {
 			w.WriteHeader(http.StatusOK)
+			return
+		}
+
+		if r.URL.Path == "/rate_limit" {
+			w.WriteHeader(http.StatusOK)
+			fmt.Fprint(w, `{"resources":{"core":{"remaining":120}}}`)
 			return
 		}
 
@@ -532,6 +729,12 @@ func TestGitHubCreateFileHappyPathUpdate(t *testing.T) {
 
 		if r.URL.Path == "/repos/someone/something/contents/file.txt" && r.Method == http.MethodPut {
 			w.WriteHeader(http.StatusOK)
+			return
+		}
+
+		if r.URL.Path == "/rate_limit" {
+			w.WriteHeader(http.StatusOK)
+			fmt.Fprint(w, `{"resources":{"core":{"remaining":120}}}`)
 			return
 		}
 
@@ -589,6 +792,12 @@ func TestGitHubCreateFileFeatureBranchDoesNotExist(t *testing.T) {
 			return
 		}
 
+		if r.URL.Path == "/rate_limit" {
+			w.WriteHeader(http.StatusOK)
+			fmt.Fprint(w, `{"resources":{"core":{"remaining":120}}}`)
+			return
+		}
+
 		t.Error("unhandled request: " + r.Method + " " + r.URL.Path)
 	}))
 	defer srv.Close()
@@ -609,6 +818,33 @@ func TestGitHubCreateFileFeatureBranchDoesNotExist(t *testing.T) {
 	require.NoError(t, client.CreateFile(ctx, config.CommitAuthor{}, repo, []byte("content"), "file.txt", "message"))
 }
 
+func TestCheckRateLimit(t *testing.T) {
+	now := time.Now().UTC()
+	reset := now.Add(1392 * time.Millisecond)
+	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		defer r.Body.Close()
+		if r.URL.Path == "/rate_limit" {
+			w.WriteHeader(http.StatusOK)
+			resetstr, _ := github.Timestamp{Time: reset}.MarshalJSON()
+			fmt.Fprintf(w, `{"resources":{"core":{"remaining":98,"reset":%s}}}`, string(resetstr))
+			return
+		}
+		t.Error("unhandled request: " + r.Method + " " + r.URL.Path)
+	}))
+	defer srv.Close()
+
+	ctx := testctx.NewWithCfg(config.Project{
+		GitHubURLs: config.GitHubURLs{
+			API: srv.URL + "/",
+		},
+	})
+	client, err := newGitHub(ctx, "test-token")
+	require.NoError(t, err)
+	client.checkRateLimit(ctx)
+	require.True(t, time.Now().UTC().After(reset))
+}
+
 // TODO: test create release
 // TODO: test create upload file to release
 // TODO: test delete draft release
+// TODO: test create PR

@@ -1,16 +1,17 @@
-# Webhook
+# WebHooks
 
 > Since: v1.3
 
-Webhooks are a way to receive notifications. With this `Goreleaser` functionality, you can send events to any server
-exposing a webhook.
+WebHooks are a way to receive notifications.
+With this GoReleaser functionality, you can send events to any server
+exposing a WebHook.
 
 If your endpoints are not secure, you can use following environment variables to configure them:
 
-- BASIC_AUTH_HEADER_VALUE like `Basic <base64(username:password)>`
-- BEARER_TOKEN_HEADER_VALUE like `Bearer <token>`
+- `BASIC_AUTH_HEADER_VALUE` like `Basic <base64(username:password)>`
+- `BEARER_TOKEN_HEADER_VALUE` like `Bearer <token>`
 
-Add following to your `.goreleaser.yaml` config to enable the webhook functionality:
+Add following to your `.goreleaser.yaml` configuration to enable the WebHook functionality:
 
 ```yaml
 # .goreleaser.yaml

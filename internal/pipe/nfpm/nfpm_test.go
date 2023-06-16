@@ -33,42 +33,6 @@ func TestRunPipeNoFormats(t *testing.T) {
 	testlib.AssertSkipped(t, Pipe{}.Run(ctx))
 }
 
-func TestDefaultsDeprecated(t *testing.T) {
-	t.Run("replacements", func(t *testing.T) {
-		ctx := testctx.NewWithCfg(config.Project{
-			NFPMs: []config.NFPM{
-				{
-					NFPMOverridables: config.NFPMOverridables{
-						Replacements: map[string]string{
-							"linux": "Tux",
-						},
-					},
-				},
-			},
-		})
-		require.NoError(t, Pipe{}.Default(ctx))
-		require.True(t, ctx.Deprecated)
-	})
-
-	t.Run("replacements overrides", func(t *testing.T) {
-		ctx := testctx.NewWithCfg(config.Project{
-			NFPMs: []config.NFPM{
-				{
-					Overrides: map[string]config.NFPMOverridables{
-						"apk": {
-							Replacements: map[string]string{
-								"linux": "Tux",
-							},
-						},
-					},
-				},
-			},
-		})
-		require.NoError(t, Pipe{}.Default(ctx))
-		require.True(t, ctx.Deprecated)
-	})
-}
-
 func TestRunPipeError(t *testing.T) {
 	ctx := testctx.NewWithCfg(config.Project{
 		Dist: t.TempDir(),
@@ -206,9 +170,6 @@ func TestRunPipe(t *testing.T) {
 							Destination: "/etc/folder",
 						},
 					},
-					Replacements: map[string]string{
-						"linux": "Tux",
-					},
 				},
 			},
 		},
@@ -281,6 +242,7 @@ func TestRunPipe(t *testing.T) {
 	for _, pkg := range packages {
 		format := pkg.Format()
 		require.NotEmpty(t, format)
+		require.Equal(t, pkg.Format(), artifact.ExtraOr(*pkg, artifact.ExtraExt, ""))
 		arch := pkg.Goarch
 		if pkg.Goarm != "" {
 			arch += "v" + pkg.Goarm
@@ -303,7 +265,7 @@ func TestRunPipe(t *testing.T) {
 		}
 
 		if pkg.Goos == "linux" {
-			require.Equal(t, "foo_1.0.0_Tux_"+arch+"-10-20"+ext, pkg.Name)
+			require.Equal(t, "foo_1.0.0_linux_"+arch+"-10-20"+ext, pkg.Name)
 		} else {
 			require.Equal(t, "foo_1.0.0_ios_arm64-10-20"+ext, pkg.Name)
 		}
@@ -339,6 +301,12 @@ func TestRunPipe(t *testing.T) {
 }
 
 func TestRunPipeConventionalNameTemplate(t *testing.T) {
+	t.Run("regular", func(t *testing.T) { doTestRunPipeConventionalNameTemplate(t, false) })
+	t.Run("snapshot", func(t *testing.T) { doTestRunPipeConventionalNameTemplate(t, true) })
+}
+
+func doTestRunPipeConventionalNameTemplate(t *testing.T, snapshot bool) {
+	t.Helper()
 	folder := t.TempDir()
 	dist := filepath.Join(folder, "dist")
 	require.NoError(t, os.Mkdir(dist, 0o755))
@@ -365,11 +333,14 @@ func TestRunPipeConventionalNameTemplate(t *testing.T) {
 				Bindir:      "/usr/bin",
 				NFPMOverridables: config.NFPMOverridables{
 					FileNameTemplate: `{{ trimsuffix (trimsuffix (trimsuffix (trimsuffix .ConventionalFileName ".pkg.tar.zst") ".deb") ".rpm") ".apk" }}{{ if not (eq .Amd64 "v1")}}{{ .Amd64 }}{{ end }}`,
-					PackageName:      "foo",
+					PackageName:      "foo{{ if .IsSnapshot }}-snapshot{{ end }}",
 				},
 			},
 		},
 	}, testctx.WithVersion("1.0.0"), testctx.WithCurrentTag("v1.0.0"))
+	if snapshot {
+		ctx.Snapshot = true
+	}
 	for _, goos := range []string{"linux", "darwin"} {
 		for _, goarch := range []string{"amd64", "386", "arm64", "arm", "mips"} {
 			switch goarch {
@@ -432,49 +403,53 @@ func TestRunPipeConventionalNameTemplate(t *testing.T) {
 	require.NoError(t, Pipe{}.Run(ctx))
 	packages := ctx.Artifacts.Filter(artifact.ByType(artifact.LinuxPackage)).List()
 	require.Len(t, packages, 40)
+	prefix := "foo"
+	if snapshot {
+		prefix += "-snapshot"
+	}
 	for _, pkg := range packages {
 		format := pkg.Format()
 		require.NotEmpty(t, format)
 		require.Contains(t, []string{
-			"foo-1.0.0.aarch64.rpm",
-			"foo-1.0.0.armv6hl.rpm",
-			"foo-1.0.0.armv7hl.rpm",
-			"foo-1.0.0.i386.rpm",
-			"foo-1.0.0.mipshardfloat.rpm",
-			"foo-1.0.0.mipssoftfloat.rpm",
-			"foo-1.0.0.x86_64.rpm",
-			"foo-1.0.0.x86_64v2.rpm",
-			"foo-1.0.0.x86_64v3.rpm",
-			"foo-1.0.0.x86_64v4.rpm",
-			"foo_1.0.0_aarch64.apk",
-			"foo_1.0.0_amd64.deb",
-			"foo_1.0.0_amd64v2.deb",
-			"foo_1.0.0_amd64v3.deb",
-			"foo_1.0.0_amd64v4.deb",
-			"foo_1.0.0_arm64.deb",
-			"foo_1.0.0_armhf.apk",
-			"foo_1.0.0_armhf.deb",
-			"foo_1.0.0_armv7.apk",
-			"foo_1.0.0_i386.deb",
-			"foo_1.0.0_mipshardfloat.apk",
-			"foo_1.0.0_mipshardfloat.deb",
-			"foo_1.0.0_mipssoftfloat.apk",
-			"foo_1.0.0_mipssoftfloat.deb",
-			"foo_1.0.0_x86.apk",
-			"foo_1.0.0_x86_64.apk",
-			"foo_1.0.0_x86_64v2.apk",
-			"foo_1.0.0_x86_64v3.apk",
-			"foo_1.0.0_x86_64v4.apk",
-			"foo-1.0.0-1-aarch64.pkg.tar.zst",
-			"foo-1.0.0-1-armv6h.pkg.tar.zst",
-			"foo-1.0.0-1-armv7h.pkg.tar.zst",
-			"foo-1.0.0-1-i686.pkg.tar.zst",
-			"foo-1.0.0-1-x86_64.pkg.tar.zst",
-			"foo-1.0.0-1-x86_64v2.pkg.tar.zst",
-			"foo-1.0.0-1-x86_64v3.pkg.tar.zst",
-			"foo-1.0.0-1-x86_64v4.pkg.tar.zst",
-			"foo-1.0.0-1-mipssoftfloat.pkg.tar.zst",
-			"foo-1.0.0-1-mipshardfloat.pkg.tar.zst",
+			prefix + "-1.0.0.aarch64.rpm",
+			prefix + "-1.0.0.armv6hl.rpm",
+			prefix + "-1.0.0.armv7hl.rpm",
+			prefix + "-1.0.0.i386.rpm",
+			prefix + "-1.0.0.mips.rpm",
+			prefix + "-1.0.0.mips.rpm",
+			prefix + "-1.0.0.x86_64.rpm",
+			prefix + "-1.0.0.x86_64v2.rpm",
+			prefix + "-1.0.0.x86_64v3.rpm",
+			prefix + "-1.0.0.x86_64v4.rpm",
+			prefix + "_1.0.0_aarch64.apk",
+			prefix + "_1.0.0_amd64.deb",
+			prefix + "_1.0.0_amd64v2.deb",
+			prefix + "_1.0.0_amd64v3.deb",
+			prefix + "_1.0.0_amd64v4.deb",
+			prefix + "_1.0.0_arm64.deb",
+			prefix + "_1.0.0_armhf.apk",
+			prefix + "_1.0.0_armhf.deb",
+			prefix + "_1.0.0_armv7.apk",
+			prefix + "_1.0.0_i386.deb",
+			prefix + "_1.0.0_mips.apk",
+			prefix + "_1.0.0_mips.deb",
+			prefix + "_1.0.0_mips.apk",
+			prefix + "_1.0.0_mips.deb",
+			prefix + "_1.0.0_x86.apk",
+			prefix + "_1.0.0_x86_64.apk",
+			prefix + "_1.0.0_x86_64v2.apk",
+			prefix + "_1.0.0_x86_64v3.apk",
+			prefix + "_1.0.0_x86_64v4.apk",
+			prefix + "-1.0.0-1-aarch64.pkg.tar.zst",
+			prefix + "-1.0.0-1-armv6h.pkg.tar.zst",
+			prefix + "-1.0.0-1-armv7h.pkg.tar.zst",
+			prefix + "-1.0.0-1-i686.pkg.tar.zst",
+			prefix + "-1.0.0-1-x86_64.pkg.tar.zst",
+			prefix + "-1.0.0-1-x86_64v2.pkg.tar.zst",
+			prefix + "-1.0.0-1-x86_64v3.pkg.tar.zst",
+			prefix + "-1.0.0-1-x86_64v4.pkg.tar.zst",
+			prefix + "-1.0.0-1-mips.pkg.tar.zst",
+			prefix + "-1.0.0-1-mips.pkg.tar.zst",
 		}, pkg.Name, "package name is not expected")
 		require.Equal(t, "someid", pkg.ID())
 		require.ElementsMatch(t, []string{binPath}, sources(artifact.ExtraOr(*pkg, extraFiles, files.Contents{})))
@@ -846,19 +821,49 @@ func TestDebSpecificConfig(t *testing.T) {
 
 	t.Run("lintian", func(t *testing.T) {
 		ctx := setupContext(t)
+		ctx.Parallelism = 100
 		ctx.Env = map[string]string{
 			"NFPM_SOMEID_DEB_PASSPHRASE": "hunter2",
 		}
-		ctx.Config.NFPMs[0].NFPMOverridables.Deb.Lintian = []string{
+		ctx.Config.NFPMs[0].Deb.Lintian = []string{
 			"statically-linked-binary",
 			"changelog-file-missing-in-native-package",
 		}
-		require.NoError(t, Pipe{}.Run(ctx))
+		ctx.Config.NFPMs[0].Formats = []string{"apk", "rpm", "deb", "termux.deb"}
 
+		require.NoError(t, Pipe{}.Run(ctx))
+		for _, format := range []string{"apk", "rpm"} {
+			require.NoDirExists(t, filepath.Join(ctx.Config.Dist, format))
+		}
+		require.DirExists(t, filepath.Join(ctx.Config.Dist, "deb"))
 		for _, goarch := range []string{"amd64", "386"} {
-			bts, err := os.ReadFile(filepath.Join(ctx.Config.Dist, "deb/foo_"+goarch+"/.lintian"))
+			bts, err := os.ReadFile(filepath.Join(ctx.Config.Dist, "deb", "foo_"+goarch, "lintian"))
 			require.NoError(t, err)
 			require.Equal(t, "foo: statically-linked-binary\nfoo: changelog-file-missing-in-native-package", string(bts))
+		}
+		require.DirExists(t, filepath.Join(ctx.Config.Dist, "termux.deb"))
+		for _, goarch := range []string{"x86_64", "i686"} {
+			bts, err := os.ReadFile(filepath.Join(ctx.Config.Dist, "termux.deb", "foo_"+goarch, "lintian"))
+			require.NoError(t, err)
+			require.Equal(t, "foo: statically-linked-binary\nfoo: changelog-file-missing-in-native-package", string(bts))
+		}
+	})
+
+	t.Run("lintian no debs", func(t *testing.T) {
+		ctx := setupContext(t)
+		ctx.Parallelism = 100
+		ctx.Env = map[string]string{
+			"NFPM_SOMEID_DEB_PASSPHRASE": "hunter2",
+		}
+		ctx.Config.NFPMs[0].Deb.Lintian = []string{
+			"statically-linked-binary",
+			"changelog-file-missing-in-native-package",
+		}
+		ctx.Config.NFPMs[0].Formats = []string{"apk", "rpm"}
+
+		require.NoError(t, Pipe{}.Run(ctx))
+		for _, format := range []string{"deb", "termux.deb"} {
+			require.NoDirExists(t, filepath.Join(ctx.Config.Dist, format))
 		}
 	})
 }
@@ -1212,9 +1217,6 @@ func TestMeta(t *testing.T) {
 							Type:        "dir",
 						},
 					},
-					Replacements: map[string]string{
-						"linux": "Tux",
-					},
 				},
 			},
 		},
@@ -1239,7 +1241,7 @@ func TestMeta(t *testing.T) {
 	for _, pkg := range packages {
 		format := pkg.Format()
 		require.NotEmpty(t, format)
-		require.Equal(t, pkg.Name, "foo_1.0.0_Tux_"+pkg.Goarch+"-10-20."+format)
+		require.Equal(t, pkg.Name, "foo_1.0.0_linux_"+pkg.Goarch+"-10-20."+format)
 		require.Equal(t, pkg.ID(), "someid")
 		require.ElementsMatch(t, []string{
 			"/var/log/foobar",

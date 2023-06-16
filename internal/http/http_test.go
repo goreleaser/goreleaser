@@ -229,13 +229,6 @@ func TestUpload(t *testing.T) {
 	}
 	ctx := testctx.NewWithCfg(config.Project{
 		ProjectName: "blah",
-		Archives: []config.Archive{
-			{
-				Replacements: map[string]string{
-					"linux": "Linux",
-				},
-			},
-		},
 		Env: []string{
 			"TEST_A_SECRET=x",
 			"TEST_A_USERNAME=u2",
@@ -397,7 +390,7 @@ func TestUpload(t *testing.T) {
 					TrustedCerts: cert(s),
 				}
 			},
-			checks(check{"/blah/2.1.0/Linux/amd64/a.ubi", "u2", "x", content, map[string]string{}}),
+			checks(check{"/blah/2.1.0/linux/amd64/a.ubi", "u2", "x", content, map[string]string{}}),
 		},
 		{
 			"binary_with_ids", true, true, false, false,

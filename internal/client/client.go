@@ -30,9 +30,12 @@ type Info struct {
 }
 
 type Repo struct {
-	Owner  string
-	Name   string
-	Branch string
+	Owner         string
+	Name          string
+	Branch        string
+	GitURL        string
+	GitSSHCommand string
+	PrivateKey    string
 }
 
 func (r Repo) String() string {
@@ -46,10 +49,33 @@ func (r Repo) String() string {
 type Client interface {
 	CloseMilestone(ctx *context.Context, repo Repo, title string) (err error)
 	CreateRelease(ctx *context.Context, body string) (releaseID string, err error)
-	ReleaseURLTemplate(ctx *context.Context) (string, error)
-	CreateFile(ctx *context.Context, commitAuthor config.CommitAuthor, repo Repo, content []byte, path, message string) (err error)
 	Upload(ctx *context.Context, releaseID string, artifact *artifact.Artifact, file *os.File) (err error)
 	Changelog(ctx *context.Context, repo Repo, prev, current string) (string, error)
+	ReleaserURLTemplater
+	FileCreator
+}
+
+// ReleaserURLTemplater provides the release URL as a template, containing the
+// artifact name as well.
+type ReleaserURLTemplater interface {
+	ReleaseURLTemplate(ctx *context.Context) (string, error)
+}
+
+// RepoFile is a file to be created.
+type RepoFile struct {
+	Content []byte
+	Path    string
+}
+
+// FileCreator can create the given file to some code repository.
+type FileCreator interface {
+	CreateFile(ctx *context.Context, commitAuthor config.CommitAuthor, repo Repo, content []byte, path, message string) (err error)
+}
+
+// FilesCreator can create the multiple files in some repository and in a single commit.
+type FilesCreator interface {
+	FileCreator
+	CreateFiles(ctx *context.Context, commitAuthor config.CommitAuthor, repo Repo, message string, files []RepoFile) (err error)
 }
 
 // ReleaseNotesGenerator can generate release notes.
@@ -59,7 +85,7 @@ type ReleaseNotesGenerator interface {
 
 // PullRequestOpener can open pull requests.
 type PullRequestOpener interface {
-	OpenPullRequest(ctx *context.Context, repo Repo, head, title string) error
+	OpenPullRequest(ctx *context.Context, base, head Repo, title string, draft bool) error
 }
 
 // New creates a new client depending on the token type.

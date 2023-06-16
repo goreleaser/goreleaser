@@ -13,7 +13,6 @@ import (
 
 	"github.com/caarlos0/log"
 	"github.com/goreleaser/goreleaser/internal/artifact"
-	"github.com/goreleaser/goreleaser/internal/deprecate"
 	"github.com/goreleaser/goreleaser/internal/gio"
 	"github.com/goreleaser/goreleaser/internal/ids"
 	"github.com/goreleaser/goreleaser/internal/pipe"
@@ -38,16 +37,20 @@ var ErrNoSummary = errors.New("no summary provided for snapcraft")
 // Metadata to generate the snap package.
 type Metadata struct {
 	Name          string
+	Title         string
 	Version       string
 	Summary       string
 	Description   string
+	Icon          string
 	Base          string `yaml:",omitempty"`
 	License       string `yaml:",omitempty"`
 	Grade         string `yaml:",omitempty"`
 	Confinement   string `yaml:",omitempty"`
 	Architectures []string
+	Assumes       []string                  `yaml:",omitempty"`
 	Layout        map[string]LayoutMetadata `yaml:",omitempty"`
 	Apps          map[string]AppMetadata
+	Hooks         map[string]interface{} `yaml:",omitempty"`
 	Plugs         map[string]interface{} `yaml:",omitempty"`
 }
 
@@ -131,9 +134,6 @@ func (Pipe) Default(ctx *context.Context) error {
 			for _, b := range ctx.Config.Builds {
 				snap.Builds = append(snap.Builds, b.ID)
 			}
-		}
-		if len(snap.Replacements) != 0 {
-			deprecate.Notice(ctx, "snapcrafts.replacements")
 		}
 		ids.Inc(snap.ID)
 	}
@@ -224,10 +224,7 @@ func (Pipe) Publish(ctx *context.Context) error {
 
 func create(ctx *context.Context, snap config.Snapcraft, arch string, binaries []*artifact.Artifact) error {
 	log := log.WithField("arch", arch)
-	// nolint:staticcheck
-	folder, err := tmpl.New(ctx).
-		WithArtifactReplacements(binaries[0], snap.Replacements).
-		Apply(snap.NameTemplate)
+	folder, err := tmpl.New(ctx).WithArtifact(binaries[0]).Apply(snap.NameTemplate)
 	if err != nil {
 		return err
 	}
@@ -274,6 +271,14 @@ func create(ctx *context.Context, snap config.Snapcraft, arch string, binaries [
 		Architectures: []string{arch},
 		Layout:        map[string]LayoutMetadata{},
 		Apps:          map[string]AppMetadata{},
+	}
+
+	if snap.Title != "" {
+		metadata.Title = snap.Title
+	}
+
+	if snap.Icon != "" {
+		metadata.Icon = snap.Icon
 	}
 
 	if snap.Base != "" {
@@ -384,6 +389,8 @@ func create(ctx *context.Context, snap config.Snapcraft, arch string, binaries [
 		}
 
 		metadata.Apps[name] = appMetadata
+		metadata.Assumes = snap.Assumes
+		metadata.Hooks = snap.Hooks
 		metadata.Plugs = snap.Plugs
 	}
 

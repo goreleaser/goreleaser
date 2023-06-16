@@ -9,6 +9,7 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/charmbracelet/keygen"
 	"github.com/goreleaser/goreleaser/internal/artifact"
 	"github.com/goreleaser/goreleaser/internal/client"
 	"github.com/goreleaser/goreleaser/internal/golden"
@@ -137,71 +138,85 @@ func TestFullPipe(t *testing.T) {
 		"default": {
 			prepare: func(ctx *context.Context) {
 				ctx.TokenType = context.TokenTypeGitHub
-				ctx.Config.Krews[0].Index.Owner = "test"
-				ctx.Config.Krews[0].Index.Name = "test"
+				ctx.Config.Krews[0].Repository.Owner = "test"
+				ctx.Config.Krews[0].Repository.Name = "test"
 				ctx.Config.Krews[0].Homepage = "https://github.com/goreleaser"
+			},
+		},
+		"git_remote": {
+			prepare: func(ctx *context.Context) {
+				ctx.TokenType = context.TokenTypeGitHub
+				ctx.Config.Krews[0].Homepage = "https://github.com/goreleaser"
+				ctx.Config.Krews[0].Repository = config.RepoRef{
+					Name:   "test",
+					Branch: "main",
+					Git: config.GitRepoRef{
+						URL:        testlib.GitMakeBareRepository(t),
+						PrivateKey: testlib.MakeNewSSHKey(t, keygen.Ed25519, ""),
+					},
+				}
 			},
 		},
 		"default_gitlab": {
 			prepare: func(ctx *context.Context) {
 				ctx.TokenType = context.TokenTypeGitLab
-				ctx.Config.Krews[0].Index.Owner = "test"
-				ctx.Config.Krews[0].Index.Name = "test"
+				ctx.Config.Krews[0].Repository.Owner = "test"
+				ctx.Config.Krews[0].Repository.Name = "test"
 				ctx.Config.Krews[0].Homepage = "https://gitlab.com/goreleaser"
 			},
 		},
 		"invalid_commit_template": {
 			prepare: func(ctx *context.Context) {
-				ctx.Config.Krews[0].Index.Owner = "test"
-				ctx.Config.Krews[0].Index.Name = "test"
+				ctx.Config.Krews[0].Repository.Owner = "test"
+				ctx.Config.Krews[0].Repository.Name = "test"
 				ctx.Config.Krews[0].CommitMessageTemplate = "{{ .Asdsa }"
 			},
 			expectedPublishError: `template: tmpl:1: unexpected "}" in operand`,
 		},
 		"invalid desc": {
 			prepare: func(ctx *context.Context) {
-				ctx.Config.Krews[0].Index.Owner = "test"
-				ctx.Config.Krews[0].Index.Name = "test"
+				ctx.Config.Krews[0].Repository.Owner = "test"
+				ctx.Config.Krews[0].Repository.Name = "test"
 				ctx.Config.Krews[0].Description = "{{ .Asdsa }"
 			},
 			expectedRunError: `template: tmpl:1: unexpected "}" in operand`,
 		},
 		"invalid short desc": {
 			prepare: func(ctx *context.Context) {
-				ctx.Config.Krews[0].Index.Owner = "test"
-				ctx.Config.Krews[0].Index.Name = "test"
+				ctx.Config.Krews[0].Repository.Owner = "test"
+				ctx.Config.Krews[0].Repository.Name = "test"
 				ctx.Config.Krews[0].ShortDescription = "{{ .Asdsa }"
 			},
 			expectedRunError: `template: tmpl:1: unexpected "}" in operand`,
 		},
 		"invalid homepage": {
 			prepare: func(ctx *context.Context) {
-				ctx.Config.Krews[0].Index.Owner = "test"
-				ctx.Config.Krews[0].Index.Name = "test"
+				ctx.Config.Krews[0].Repository.Owner = "test"
+				ctx.Config.Krews[0].Repository.Name = "test"
 				ctx.Config.Krews[0].Homepage = "{{ .Asdsa }"
 			},
 			expectedRunError: `template: tmpl:1: unexpected "}" in operand`,
 		},
 		"invalid name": {
 			prepare: func(ctx *context.Context) {
-				ctx.Config.Krews[0].Index.Owner = "test"
-				ctx.Config.Krews[0].Index.Name = "test"
+				ctx.Config.Krews[0].Repository.Owner = "test"
+				ctx.Config.Krews[0].Repository.Name = "test"
 				ctx.Config.Krews[0].Name = "{{ .Asdsa }"
 			},
 			expectedRunError: `template: tmpl:1: unexpected "}" in operand`,
 		},
 		"invalid caveats": {
 			prepare: func(ctx *context.Context) {
-				ctx.Config.Krews[0].Index.Owner = "test"
-				ctx.Config.Krews[0].Index.Name = "test"
+				ctx.Config.Krews[0].Repository.Owner = "test"
+				ctx.Config.Krews[0].Repository.Name = "test"
 				ctx.Config.Krews[0].Caveats = "{{ .Asdsa }"
 			},
 			expectedRunError: `template: tmpl:1: unexpected "}" in operand`,
 		},
 		"no short desc": {
 			prepare: func(ctx *context.Context) {
-				ctx.Config.Krews[0].Index.Owner = "test"
-				ctx.Config.Krews[0].Index.Name = "test"
+				ctx.Config.Krews[0].Repository.Owner = "test"
+				ctx.Config.Krews[0].Repository.Name = "test"
 				ctx.Config.Krews[0].Description = "lalala"
 				ctx.Config.Krews[0].ShortDescription = ""
 			},
@@ -209,8 +224,8 @@ func TestFullPipe(t *testing.T) {
 		},
 		"no desc": {
 			prepare: func(ctx *context.Context) {
-				ctx.Config.Krews[0].Index.Owner = "test"
-				ctx.Config.Krews[0].Index.Name = "test"
+				ctx.Config.Krews[0].Repository.Owner = "test"
+				ctx.Config.Krews[0].Repository.Name = "test"
 				ctx.Config.Krews[0].Description = ""
 				ctx.Config.Krews[0].ShortDescription = "lalala"
 			},
@@ -299,13 +314,20 @@ func TestFullPipe(t *testing.T) {
 			}
 
 			require.NoError(t, err)
-			require.True(t, client.CreatedFile)
-			golden.RequireEqualYaml(t, []byte(client.Content))
+
+			content := []byte(client.Content)
+			if url := ctx.Config.Krews[0].Repository.Git.URL; url == "" {
+				require.True(t, client.CreatedFile, "should have created a file")
+			} else {
+				content = testlib.CatFileFromBareRepository(t, url, "plugins/"+name+".yaml")
+			}
+
+			golden.RequireEqualYaml(t, content)
 			requireValidManifest(t)
 
 			distBts, err := os.ReadFile(distFile)
 			require.NoError(t, err)
-			require.Equal(t, client.Content, string(distBts))
+			require.Equal(t, string(content), string(distBts))
 		})
 	}
 }
@@ -322,7 +344,7 @@ func TestRunPipePullRequest(t *testing.T) {
 					Homepage:         "https://goreleaser.com",
 					ShortDescription: "test",
 					Description:      "Fake desc",
-					Index: config.RepoRef{
+					Repository: config.RepoRef{
 						Owner:  "foo",
 						Name:   "bar",
 						Branch: "update-{{.Version}}",
@@ -375,7 +397,7 @@ func TestRunPipeUniversalBinary(t *testing.T) {
 					Name:             manifestName(t),
 					Description:      "Some desc",
 					ShortDescription: "Short desc",
-					Index: config.RepoRef{
+					Repository: config.RepoRef{
 						Owner: "unibin",
 						Name:  "bar",
 					},
@@ -431,7 +453,7 @@ func TestRunPipeUniversalBinaryNotReplacing(t *testing.T) {
 					Name:             manifestName(t),
 					Description:      "Some desc",
 					ShortDescription: "Short desc",
-					Index: config.RepoRef{
+					Repository: config.RepoRef{
 						Owner: "unibin",
 						Name:  "bar",
 					},
@@ -513,7 +535,7 @@ func TestRunPipeNameTemplate(t *testing.T) {
 					Name:             "{{ .Env.FOO_BAR }}",
 					Description:      "Some desc",
 					ShortDescription: "Short desc",
-					Index: config.RepoRef{
+					Repository: config.RepoRef{
 						Owner: "foo",
 						Name:  "bar",
 					},
@@ -570,7 +592,7 @@ func TestRunPipeMultipleKrewWithSkip(t *testing.T) {
 					Name:             "foo",
 					Description:      "Some desc",
 					ShortDescription: "Short desc",
-					Index: config.RepoRef{
+					Repository: config.RepoRef{
 						Owner: "foo",
 						Name:  "bar",
 					},
@@ -583,7 +605,7 @@ func TestRunPipeMultipleKrewWithSkip(t *testing.T) {
 					Name:             "bar",
 					Description:      "Some desc",
 					ShortDescription: "Short desc",
-					Index: config.RepoRef{
+					Repository: config.RepoRef{
 						Owner: "foo",
 						Name:  "bar",
 					},
@@ -595,7 +617,7 @@ func TestRunPipeMultipleKrewWithSkip(t *testing.T) {
 					Name:             "foobar",
 					Description:      "Some desc",
 					ShortDescription: "Short desc",
-					Index: config.RepoRef{
+					Repository: config.RepoRef{
 						Owner: "foo",
 						Name:  "bar",
 					},
@@ -665,7 +687,7 @@ func TestRunPipeForMultipleArmVersions(t *testing.T) {
 							Name:             name,
 							ShortDescription: "Short desc",
 							Description:      "A run pipe test krew manifest and FOO={{ .Env.FOO }}",
-							Index: config.RepoRef{
+							Repository: config.RepoRef{
 								Owner: "test",
 								Name:  "test",
 							},
@@ -767,7 +789,7 @@ func TestRunPipeNoBuilds(t *testing.T) {
 				Name:             manifestName(t),
 				Description:      "Some desc",
 				ShortDescription: "Short desc",
-				Index: config.RepoRef{
+				Repository: config.RepoRef{
 					Owner: "test",
 					Name:  "test",
 				},
@@ -790,7 +812,7 @@ func TestRunPipeNoUpload(t *testing.T) {
 				Name:             manifestName(t),
 				Description:      "Some desc",
 				ShortDescription: "Short desc",
-				Index: config.RepoRef{
+				Repository: config.RepoRef{
 					Owner: "test",
 					Name:  "test",
 				},
@@ -846,7 +868,7 @@ func TestRunEmptyTokenType(t *testing.T) {
 				Name:             manifestName(t),
 				Description:      "Some desc",
 				ShortDescription: "Short desc",
-				Index: config.RepoRef{
+				Repository: config.RepoRef{
 					Owner: "test",
 					Name:  "test",
 				},
@@ -886,7 +908,7 @@ func TestRunMultipleBinaries(t *testing.T) {
 				Name:             manifestName(t),
 				Description:      "Some desc",
 				ShortDescription: "Short desc",
-				Index: config.RepoRef{
+				Repository: config.RepoRef{
 					Owner: "test",
 					Name:  "test",
 				},
@@ -921,7 +943,13 @@ func TestDefault(t *testing.T) {
 	ctx := testctx.NewWithCfg(config.Project{
 		ProjectName: "myproject",
 		Krews: []config.Krew{
-			{},
+			{
+				Index: config.RepoRef{
+					Git: config.GitRepoRef{
+						URL: "foo/bar",
+					},
+				},
+			},
 		},
 	}, testctx.GitHubTokenType)
 	require.NoError(t, Pipe{}.Default(ctx))
@@ -929,6 +957,8 @@ func TestDefault(t *testing.T) {
 	require.NotEmpty(t, ctx.Config.Krews[0].CommitAuthor.Name)
 	require.NotEmpty(t, ctx.Config.Krews[0].CommitAuthor.Email)
 	require.NotEmpty(t, ctx.Config.Krews[0].CommitMessageTemplate)
+	require.Equal(t, "foo/bar", ctx.Config.Krews[0].Repository.Git.URL)
+	require.True(t, ctx.Deprecated)
 }
 
 func TestGHFolder(t *testing.T) {

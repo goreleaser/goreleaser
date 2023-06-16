@@ -17,46 +17,40 @@ import (
 )
 
 // Eval evaluates the given list of files to their final form.
-func Eval(template *tmpl.Template, rlcp bool, files []config.File) ([]config.File, error) {
+func Eval(template *tmpl.Template, files []config.File) ([]config.File, error) {
 	var result []config.File
 	for _, f := range files {
-		replaced, err := template.Apply(f.Source)
+		glob, err := template.Apply(f.Source)
 		if err != nil {
 			return result, fmt.Errorf("failed to apply template %s: %w", f.Source, err)
 		}
 
-		files, err := fileglob.Glob(replaced)
+		files, err := fileglob.Glob(glob)
 		if err != nil {
-			return result, fmt.Errorf("globbing failed for pattern %s: %w", replaced, err)
+			return result, fmt.Errorf("globbing failed for pattern %s: %w", glob, err)
 		}
 
-		f.Info.Owner, err = template.Apply(f.Info.Owner)
-		if err != nil {
-			return result, fmt.Errorf("failed to apply template %s: %w", f.Info.Owner, err)
-		}
-		f.Info.Group, err = template.Apply(f.Info.Group)
-		if err != nil {
-			return result, fmt.Errorf("failed to apply template %s: %w", f.Info.Group, err)
-		}
-		f.Info.MTime, err = template.Apply(f.Info.MTime)
-		if err != nil {
-			return result, fmt.Errorf("failed to apply template %s: %w", f.Info.MTime, err)
-		}
-		if f.Info.MTime != "" {
-			f.Info.ParsedMTime, err = time.Parse(time.RFC3339Nano, f.Info.MTime)
-			if err != nil {
-				return result, fmt.Errorf("failed to parse %s: %w", f.Info.MTime, err)
+		if len(files) == 0 {
+			if !f.Default {
+				// only log if its not a default glob, as those are usually
+				// very generic and are not really warnings for the user.
+				log.WithField("glob", f.Source).Warn("no files matched")
 			}
+			continue
+		}
+
+		if err := tmplInfo(template, &f.Info); err != nil {
+			return result, err
 		}
 
 		// the prefix may not be a complete path or may use glob patterns, in that case use the parent directory
-		prefix := replaced
+		prefix := glob
 		if _, err := os.Stat(prefix); errors.Is(err, fs.ErrNotExist) || fileglob.ContainsMatchers(prefix) {
 			prefix = filepath.Dir(longestCommonPrefix(files))
 		}
 
 		for _, file := range files {
-			dst, err := destinationFor(f, prefix, file, rlcp)
+			dst, err := destinationFor(f, prefix, file)
 			if err != nil {
 				return nil, err
 			}
@@ -73,6 +67,29 @@ func Eval(template *tmpl.Template, rlcp bool, files []config.File) ([]config.Fil
 	})
 
 	return unique(result), nil
+}
+
+func tmplInfo(template *tmpl.Template, info *config.FileInfo) error {
+	var err error
+	info.Owner, err = template.Apply(info.Owner)
+	if err != nil {
+		return fmt.Errorf("failed to apply template %s: %w", info.Owner, err)
+	}
+	info.Group, err = template.Apply(info.Group)
+	if err != nil {
+		return fmt.Errorf("failed to apply template %s: %w", info.Group, err)
+	}
+	info.MTime, err = template.Apply(info.MTime)
+	if err != nil {
+		return fmt.Errorf("failed to apply template %s: %w", info.MTime, err)
+	}
+	if info.MTime != "" {
+		info.ParsedMTime, err = time.Parse(time.RFC3339Nano, info.MTime)
+		if err != nil {
+			return fmt.Errorf("failed to parse %s: %w", info.MTime, err)
+		}
+	}
+	return nil
 }
 
 // remove duplicates
@@ -96,12 +113,12 @@ func unique(in []config.File) []config.File {
 	return result
 }
 
-func destinationFor(f config.File, prefix, path string, rlcp bool) (string, error) {
+func destinationFor(f config.File, prefix, path string) (string, error) {
 	if f.StripParent {
 		return filepath.Join(f.Destination, filepath.Base(path)), nil
 	}
 
-	if rlcp && f.Destination != "" {
+	if f.Destination != "" {
 		relpath, err := filepath.Rel(prefix, path)
 		if err != nil {
 			// since prefix is a prefix of src a relative path should always be found

@@ -7,9 +7,9 @@ class OpenPr < Formula
   homepage "https://github.com/goreleaser"
   version "1.0.1"
 
-  depends_on "zsh" => :optional
   depends_on "bash" => "3.2.57"
   depends_on "fish" => :optional
+  depends_on "zsh" => :optional
 
   on_macos do
     if Hardware::CPU.intel?
@@ -17,7 +17,7 @@ class OpenPr < Formula
       sha256 "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
 
       def install
-        bin.install "open pr_darwin_amd64 => open pr"
+        bin.install "open_pr_darwin_amd64 => open_pr"
       end
     end
     if Hardware::CPU.arm?
@@ -25,7 +25,7 @@ class OpenPr < Formula
       sha256 "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
 
       def install
-        bin.install "open pr_darwin_arm64 => open pr"
+        bin.install "open_pr_darwin_arm64 => open_pr"
       end
     end
   end
@@ -36,7 +36,7 @@ class OpenPr < Formula
       sha256 "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
 
       def install
-        bin.install "open pr_linux_amd64 => open pr"
+        bin.install "open_pr_linux_amd64 => open_pr"
       end
     end
   end
@@ -51,7 +51,7 @@ class OpenPr < Formula
 
   def caveats
     <<~EOS
-      don't do this open pr
+      don't do this open_pr
     EOS
   end
 

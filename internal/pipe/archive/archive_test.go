@@ -678,9 +678,6 @@ func TestRunPipeWrap(t *testing.T) {
 					NameTemplate:    "foo",
 					WrapInDirectory: "foo_{{ .Os }}",
 					Format:          "tar.gz",
-					Replacements: map[string]string{
-						"darwin": "macOS",
-					},
 					Files: []config.File{
 						{Source: "README.*"},
 					},
@@ -704,11 +701,11 @@ func TestRunPipeWrap(t *testing.T) {
 
 	archives := ctx.Artifacts.Filter(artifact.ByType(artifact.UploadableArchive)).List()
 	require.Len(t, archives, 1)
-	require.Equal(t, "foo_macOS", artifact.ExtraOr(*archives[0], artifact.ExtraWrappedIn, ""))
+	require.Equal(t, "foo_darwin", artifact.ExtraOr(*archives[0], artifact.ExtraWrappedIn, ""))
 
 	require.ElementsMatch(
 		t,
-		[]string{"foo_macOS/README.md", "foo_macOS/mybin"},
+		[]string{"foo_darwin/README.md", "foo_darwin/mybin"},
 		testlib.LsArchive(t, filepath.Join(dist, "foo.tar.gz"), "tar.gz"),
 	)
 }
@@ -721,7 +718,6 @@ func TestDefault(t *testing.T) {
 	require.NotEmpty(t, ctx.Config.Archives[0].NameTemplate)
 	require.Equal(t, "tar.gz", ctx.Config.Archives[0].Format)
 	require.NotEmpty(t, ctx.Config.Archives[0].Files)
-	require.False(t, ctx.Config.Archives[0].RLCP)
 }
 
 func TestDefaultSet(t *testing.T) {
@@ -740,7 +736,6 @@ func TestDefaultSet(t *testing.T) {
 	require.NoError(t, Pipe{}.Default(ctx))
 	require.Equal(t, "foo", ctx.Config.Archives[0].NameTemplate)
 	require.Equal(t, "zip", ctx.Config.Archives[0].Format)
-	require.False(t, ctx.Config.Archives[0].RLCP)
 	require.Equal(t, config.File{Source: "foo"}, ctx.Config.Archives[0].Files[0])
 }
 
@@ -754,7 +749,6 @@ func TestDefaultNoFiles(t *testing.T) {
 	})
 	require.NoError(t, Pipe{}.Default(ctx))
 	require.Equal(t, defaultNameTemplate, ctx.Config.Archives[0].NameTemplate)
-	require.False(t, ctx.Config.Archives[0].RLCP)
 }
 
 func TestDefaultFormatBinary(t *testing.T) {
@@ -767,7 +761,6 @@ func TestDefaultFormatBinary(t *testing.T) {
 	})
 	require.NoError(t, Pipe{}.Default(ctx))
 	require.Equal(t, defaultBinaryNameTemplate, ctx.Config.Archives[0].NameTemplate)
-	require.False(t, ctx.Config.Archives[0].RLCP)
 }
 
 func TestFormatFor(t *testing.T) {
@@ -1034,7 +1027,7 @@ func TestArchive_globbing(t *testing.T) {
 				Source:      "testdata/a/a.txt",
 				Destination: "foo/",
 			},
-		}, []string{"foo/testdata/a/a.txt"})
+		}, []string{"foo"})
 	})
 
 	t.Run("glob src", func(t *testing.T) {
@@ -1054,9 +1047,9 @@ func TestArchive_globbing(t *testing.T) {
 				Destination: "var/yada",
 			},
 		}, []string{
-			"var/yada/testdata/a/a.txt",
-			"var/yada/testdata/a/b/a.txt",
-			"var/yada/testdata/a/b/c/d.txt",
+			"var/yada/a.txt",
+			"var/yada/b/a.txt",
+			"var/yada/b/c/d.txt",
 		})
 	})
 
@@ -1116,4 +1109,45 @@ func TestIssue3803(t *testing.T) {
 	require.NoError(t, Pipe{}.Run(ctx))
 	archives := ctx.Artifacts.List()
 	require.Len(t, archives, 2)
+}
+
+func TestExtraFormatWhenOverride(t *testing.T) {
+	ctx := testctx.NewWithCfg(config.Project{
+		Dist: t.TempDir(),
+		Archives: []config.Archive{
+			{
+				ID:           "foo",
+				NameTemplate: "foo",
+				Format:       "tar.gz",
+				FormatOverrides: []config.FormatOverride{{
+					Goos:   "windows",
+					Format: "zip",
+				}},
+				Files: []config.File{
+					{Source: "./testdata/a/a.txt"},
+				},
+			},
+		},
+	})
+	windowsBuild := &artifact.Artifact{
+		Goos:    "windows",
+		Goarch:  "amd64",
+		Goamd64: "v1",
+		Name:    "bin/mybin.exe",
+		Path:    filepath.Join(ctx.Config.Dist, "windowsamd64", "bin", "mybin.exe"),
+		Type:    artifact.Binary,
+		Extra: map[string]interface{}{
+			artifact.ExtraBinary: "mybin",
+			artifact.ExtraExt:    ".exe",
+			artifact.ExtraID:     "default",
+		},
+	}
+	require.NoError(t, os.MkdirAll(filepath.Dir(windowsBuild.Path), 0o755))
+	f, err := os.Create(windowsBuild.Path)
+	require.NoError(t, err)
+	require.NoError(t, f.Close())
+	ctx.Artifacts.Add(windowsBuild)
+	require.NoError(t, Pipe{}.Run(ctx))
+	archives := ctx.Artifacts.Filter(artifact.ByFormats("zip")).List()
+	require.Len(t, archives, 1)
 }

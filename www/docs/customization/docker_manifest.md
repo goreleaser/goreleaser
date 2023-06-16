@@ -53,11 +53,13 @@ docker_manifests:
   - --insecure
 
   # Skips the Docker manifest.
-  # If you set this to `false` or `auto` on your source Docker configs,
+  # If you set this to `false` or `auto` on your source Docker configuration,
   #  you'll probably want to do the same here.
   #
   # If set to `auto`, the manifest will not be created in case there is an
   #  indicator of a prerelease in the tag, e.g. v1.0.0-rc1.
+  #
+  # Templates: allowed (since v1.19)
   skip_push: false
 
   # Set the "backend" for the Docker manifest pipe.
@@ -65,8 +67,8 @@ docker_manifests:
   #
   # Relevant notes:
   # 1. podman is a GoReleaser Pro feature and is only available on Linux;
-  # 2. if you set podman here, the respective docker configs need to use podman
-  #    too.
+  # 2. if you set podman here, the respective docker configuration need to use
+  #     podman too.
   #
   # Default: 'docker'
   use: docker

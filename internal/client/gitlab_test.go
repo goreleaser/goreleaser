@@ -249,7 +249,7 @@ func TestGitLabURLsDownloadTemplate(t *testing.T) {
 	}
 }
 
-func TestGitLabCreateReleaseUknownHost(t *testing.T) {
+func TestGitLabCreateReleaseUnknownHost(t *testing.T) {
 	ctx := testctx.NewWithCfg(config.Project{
 		Release: config.Release{
 			GitLab: config.Repo{
@@ -292,7 +292,7 @@ func TestGitLabCreateReleaseReleaseNotExists(t *testing.T) {
 					return
 				}
 
-				// Create release if it doens't exists
+				// Create release if it doesn't exist
 				if r.Method == http.MethodPost {
 					createdRelease = true
 					w.WriteHeader(http.StatusOK)
@@ -374,7 +374,7 @@ func TestGitLabCreateReleaseReleaseExists(t *testing.T) {
 	require.Equal(t, 2, totalRequests)
 }
 
-func TestGitLabCreateReleaseUnkownHTTPError(t *testing.T) {
+func TestGitLabCreateReleaseUnknownHTTPError(t *testing.T) {
 	totalRequests := 0
 	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		totalRequests++

@@ -175,6 +175,10 @@ func TestCopying(t *testing.T) {
 		Source:      "../testdata/foo.txt",
 		Destination: "foo.txt",
 	}))
+	require.NoError(t, t1.Add(config.File{
+		Source:      "../testdata/foo.txt",
+		Destination: "ملف.txt",
+	}))
 	require.NoError(t, t1.Close())
 	require.NoError(t, f1.Close())
 
@@ -187,10 +191,14 @@ func TestCopying(t *testing.T) {
 		Source:      "../testdata/sub1/executable",
 		Destination: "executable",
 	}))
+	require.NoError(t, t2.Add(config.File{
+		Source:      "../testdata/sub1/executable",
+		Destination: "ملف.exe",
+	}))
 	require.NoError(t, t2.Close())
 	require.NoError(t, f2.Close())
 	require.NoError(t, f1.Close())
 
-	require.Equal(t, []string{"foo.txt"}, testlib.LsArchive(t, f1.Name(), "tar"))
-	require.Equal(t, []string{"foo.txt", "executable"}, testlib.LsArchive(t, f2.Name(), "tar"))
+	require.Equal(t, []string{"foo.txt", "ملف.txt"}, testlib.LsArchive(t, f1.Name(), "tar"))
+	require.Equal(t, []string{"foo.txt", "ملف.txt", "executable", "ملف.exe"}, testlib.LsArchive(t, f2.Name(), "tar"))
 }

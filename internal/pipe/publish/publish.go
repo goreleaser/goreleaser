@@ -17,11 +17,13 @@ import (
 	"github.com/goreleaser/goreleaser/internal/pipe/ko"
 	"github.com/goreleaser/goreleaser/internal/pipe/krew"
 	"github.com/goreleaser/goreleaser/internal/pipe/milestone"
+	"github.com/goreleaser/goreleaser/internal/pipe/nix"
 	"github.com/goreleaser/goreleaser/internal/pipe/release"
 	"github.com/goreleaser/goreleaser/internal/pipe/scoop"
 	"github.com/goreleaser/goreleaser/internal/pipe/sign"
 	"github.com/goreleaser/goreleaser/internal/pipe/snapcraft"
 	"github.com/goreleaser/goreleaser/internal/pipe/upload"
+	"github.com/goreleaser/goreleaser/internal/pipe/winget"
 	"github.com/goreleaser/goreleaser/pkg/context"
 )
 
@@ -47,6 +49,8 @@ var publishers = []Publisher{
 	// This should be one of the last steps
 	release.Pipe{},
 	// brew et al use the release URL, so, they should be last
+	nix.NewPublish(),
+	winget.Pipe{},
 	brew.Pipe{},
 	aur.Pipe{},
 	krew.Pipe{},

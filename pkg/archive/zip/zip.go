@@ -44,9 +44,7 @@ func Copying(source *os.File, target io.Writer) (Archive, error) {
 	}
 	w := New(target)
 	for _, zf := range r.File {
-		if zf.Mode().IsDir() {
-			continue
-		}
+
 		w.files[zf.Name] = true
 		hdr := zip.FileHeader{
 			Name:               zf.Name,
@@ -58,6 +56,9 @@ func Copying(source *os.File, target io.Writer) (Archive, error) {
 		ww, err := w.z.CreateHeader(&hdr)
 		if err != nil {
 			return Archive{}, fmt.Errorf("creating %q header in target: %w", zf.Name, err)
+		}
+		if zf.Mode().IsDir() {
+			continue
 		}
 		rr, err := zf.Open()
 		if err != nil {

@@ -121,6 +121,7 @@ func TestRunPipe(t *testing.T) {
 			assertImageLabels:   noLabels,
 		},
 		"manifest autoskip no prerelease": {
+			env: map[string]string{"AUTO": "auto"},
 			dockers: []config.Docker{
 				{
 					ImageTemplates: []string{registry + "goreleaser/test_manifestskip:test-amd64"},
@@ -135,7 +136,7 @@ func TestRunPipe(t *testing.T) {
 					ImageTemplates: []string{
 						registry + "goreleaser/test_manifestskip:test-amd64",
 					},
-					SkipPush: "auto",
+					SkipPush: "{{ .Env.AUTO }}",
 				},
 			},
 			expect: []string{
@@ -628,6 +629,7 @@ func TestRunPipe(t *testing.T) {
 			manifestAssertError: shouldNotErr,
 		},
 		"valid_skip_push": {
+			env: map[string]string{"TRUE": "true"},
 			dockers: []config.Docker{
 				{
 					ImageTemplates: []string{
@@ -636,7 +638,7 @@ func TestRunPipe(t *testing.T) {
 					Goos:       "linux",
 					Goarch:     "amd64",
 					Dockerfile: "testdata/Dockerfile",
-					SkipPush:   "true",
+					SkipPush:   "{{.Env.TRUE}}",
 				},
 			},
 			expect: []string{
@@ -1430,4 +1432,15 @@ func TestDependencies(t *testing.T) {
 	})
 	require.Equal(t, []string{"docker", "docker"}, Pipe{}.Dependencies(ctx))
 	require.Equal(t, []string{"docker", "docker"}, ManifestPipe{}.Dependencies(ctx))
+}
+
+func TestIsFileNotFoundError(t *testing.T) {
+	t.Run("executable not in path", func(t *testing.T) {
+		require.False(t, isFileNotFoundError(`error getting credentials - err: exec: "docker-credential-desktop": executable file not found in $PATH, out:`))
+	})
+
+	t.Run("file not found", func(t *testing.T) {
+		require.True(t, isFileNotFoundError(`./foo: file not found`))
+		require.True(t, isFileNotFoundError(`./foo: not found: not found`))
+	})
 }

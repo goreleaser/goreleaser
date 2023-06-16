@@ -16,6 +16,7 @@ import (
 	"io"
 	"os"
 	"path/filepath"
+	"strings"
 	"sync"
 
 	"github.com/caarlos0/log"
@@ -57,6 +58,14 @@ const (
 	UploadableSourceArchive
 	// BrewTap is an uploadable homebrew tap recipe file.
 	BrewTap
+	// Nixpkg is an uploadable nix package.
+	Nixpkg
+	// WingetInstaller winget installer file.
+	WingetInstaller
+	// WingetDefaultLocale winget default locale file.
+	WingetDefaultLocale
+	// WingetVersion winget version file.
+	WingetVersion
 	// PkgBuild is an Arch Linux AUR PKGBUILD file.
 	PkgBuild
 	// SrcInfo is an Arch Linux AUR .SRCINFO file.
@@ -123,6 +132,8 @@ func (t Type) String() string {
 		return "C Archive Library"
 	case CShared:
 		return "C Shared Library"
+	case WingetInstaller, WingetDefaultLocale, WingetVersion:
+		return "Winget Manifest"
 	default:
 		return "unknown"
 	}
@@ -132,13 +143,14 @@ const (
 	ExtraID        = "ID"
 	ExtraBinary    = "Binary"
 	ExtraExt       = "Ext"
-	ExtraBuilds    = "Builds"
+	ExtraBuilds    = "Builds" // deprecated
 	ExtraFormat    = "Format"
 	ExtraWrappedIn = "WrappedIn"
 	ExtraBinaries  = "Binaries"
 	ExtraRefresh   = "Refresh"
 	ExtraReplaces  = "Replaces"
 	ExtraDigest    = "Digest"
+	ExtraSize      = "Size"
 )
 
 // Extras represents the extra fields in an artifact.
@@ -316,16 +328,41 @@ func (artifacts *Artifacts) GroupByPlatform() map[string][]*Artifact {
 	return result
 }
 
+func relPath(a *Artifact) (string, error) {
+	cwd, err := os.Getwd()
+	if err != nil {
+		return "", err
+	}
+	if !strings.HasPrefix(a.Path, cwd) {
+		return "", nil
+	}
+	return filepath.Rel(cwd, a.Path)
+}
+
+func shouldRelPath(a *Artifact) bool {
+	switch a.Type {
+	case DockerImage, DockerManifest, PublishableDockerImage:
+		return false
+	default:
+		return filepath.IsAbs(a.Path)
+	}
+}
+
 // Add safely adds a new artifact to an artifact list.
 func (artifacts *Artifacts) Add(a *Artifact) {
 	artifacts.lock.Lock()
 	defer artifacts.lock.Unlock()
+	if shouldRelPath(a) {
+		rel, err := relPath(a)
+		if rel != "" && err == nil {
+			a.Path = rel
+		}
+	}
 	a.Path = filepath.ToSlash(a.Path)
-	log.WithFields(log.Fields{
-		"name": a.Name,
-		"path": a.Path,
-		"type": a.Type,
-	}).Debug("added new artifact")
+	log.WithField("name", a.Name).
+		WithField("type", a.Type).
+		WithField("path", a.Path).
+		Debug("added new artifact")
 	artifacts.items = append(artifacts.items, a)
 }
 
@@ -341,11 +378,10 @@ func (artifacts *Artifacts) Remove(filter Filter) error {
 	result := New()
 	for _, a := range artifacts.items {
 		if filter(a) {
-			log.WithFields(log.Fields{
-				"name": a.Name,
-				"path": a.Path,
-				"type": a.Type,
-			}).Debug("removing")
+			log.WithField("name", a.Name).
+				WithField("type", a.Type).
+				WithField("path", a.Path).
+				Debug("removing")
 		} else {
 			result.items = append(result.items, a)
 		}

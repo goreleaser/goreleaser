@@ -14,6 +14,7 @@ krews:
     # Name of the recipe
     #
     # Default: ProjectName
+    # Templates: allowed
     name: myproject
 
     # IDs of the archives to use.
@@ -38,49 +39,13 @@ krews:
     # gitlab) owner and name are from the same kind. We will probably unify this
     # in the next major version like it is done with scoop.
 
-    # GitHub/GitLab repository to push the Krew plugin to
-    # Gitea is not supported yet, but the support coming
-    index:
-      # Repository owner.
-      #
-      # Templates: allowed
-      owner: user
-
-      # Repository name.
-      #
-      # Templates: allowed
-      name: krew-plugins
-
-      # Optionally a branch can be provided.
-      #
-      # Default: default repository branch
-      # Templates: allowed
-      branch: main
-
-      # Optionally a token can be provided, if it differs from the token
-      # provided to GoReleaser
-      token: "{{ .Env.HOMEBREW_TAP_GITHUB_TOKEN }}"
-
-      # Sets up pull request creation instead of just pushing to the given branch.
-      # Make sure the 'branch' property is different from base before enabling
-      # it.
-      #
-      # Since: v1.17
-      pull_request:
-        # Whether to enable it or not.
-        enabled: true
-
-        # Base branch of the PR.
-        #
-        # Default: default repository branch.
-        base: main
-
     # URL which is determined by the given Token (github or
     # gitlab)
     # Default:
     #   GitHub: 'https://github.com/<repo_owner>/<repo_name>/releases/download/{{ .Tag }}/{{ .ArtifactName }}'
     #   GitLab: 'https://gitlab.com/<repo_owner>/<repo_name>/-/releases/{{ .Tag }}/downloads/{{ .ArtifactName }}'
     #   Gitea: 'https://gitea.com/<repo_owner>/<repo_name>/releases/download/{{ .Tag }}/{{ .ArtifactName }}'
+    # Templates: allowed
     url_template: "http://github.mycompany.com/foo/bar/releases/{{ .Tag }}/{{ .ArtifactName }}"
 
     # Git author used to commit to the repository.
@@ -116,9 +81,12 @@ krews:
     # If set to auto, the release will not be uploaded to the Krew plugin
     # in case there is an indicator for prerelease in the tag e.g. v1.0.0-rc1
     skip_upload: true
+
+{% include-markdown "../includes/repository.md" comments=false %}
 ```
 
 !!! tip
+
     Learn more about the [name template engine](/customization/templates/).
 
 ## Limitations
@@ -126,3 +94,5 @@ krews:
 - Only one binary per archive is allowed;
 - Binary releases (when `archives.format` is set to `binary`) are not allowed;
 - Only one `GOARM` build is allowed;
+
+{% include-markdown "../includes/prs.md" comments=false %}

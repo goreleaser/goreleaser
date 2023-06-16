@@ -292,15 +292,19 @@ func TestBuildSingleTargetWithSpecificTargets(t *testing.T) {
 				},
 			},
 		},
+		UniversalBinaries: []config.UniversalBinary{
+			{Replace: true},
+		},
 	})
 
-	t.Setenv("GOOS", "linux")
+	t.Setenv("GOOS", "darwin")
 	t.Setenv("GOARCH", "amd64")
 	setupBuildSingleTarget(ctx)
 	require.Equal(t, config.Build{
-		Goos:   []string{"linux"},
+		Goos:   []string{"darwin"},
 		Goarch: []string{"amd64"},
 	}, ctx.Config.Builds[0])
+	require.Nil(t, ctx.Config.UniversalBinaries)
 }
 
 func TestBuildSingleTargetRemoveOtherOptions(t *testing.T) {

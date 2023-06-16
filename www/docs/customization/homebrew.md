@@ -44,43 +44,6 @@ brews:
     # We will probably unify this in the next major version like it is
     # done with scoop.
 
-    # GitHub/GitLab repository to push the formula to
-    tap:
-      # Repository owner.
-      #
-      # Templates: allowed
-      owner: user
-
-      # Repository name.
-      #
-      # Templates: allowed
-      name: homebrew-tap
-
-      # Optionally a branch can be provided.
-      #
-      # Default: default repository branch.
-      #
-      # Templates: allowed
-      branch: main
-
-      # Optionally a token can be provided, if it differs from the token
-      # provided to GoReleaser
-      token: "{{ .Env.HOMEBREW_TAP_GITHUB_TOKEN }}"
-
-      # Sets up pull request creation instead of just pushing to the given branch.
-      # Make sure the 'branch' property is different from base before enabling
-      # it.
-      #
-      # Since: v1.17
-      pull_request:
-        # Whether to enable it or not.
-        enabled: true
-
-        # Base branch of the PR.
-        #
-        # Default: default repository branch.
-        base: main
-
     # URL which is determined by the given Token (github, gitlab or gitea).
     #
     # Default depends on the client.
@@ -128,6 +91,8 @@ brews:
     # leaving the responsibility of publishing it to the user.
     # If set to auto, the release will not be uploaded to the homebrew tap
     # in case there is an indicator for prerelease in the tag e.g. v1.0.0-rc1
+    #
+    # Templates: allowed
     skip_upload: true
 
     # Custom block for brew.
@@ -183,10 +148,13 @@ brews:
     # Could be used to do any additional work after the "install" script
     post_install: |
     	etc.install "app-config.conf"
-    	...
+      # ...
+
+{% include-markdown "../includes/repository.md" comments=false %}
 ```
 
 !!! tip
+
     Learn more about the [name template engine](/customization/templates/).
 
 By defining the `brew` section, GoReleaser will take care of publishing the
@@ -234,6 +202,7 @@ end
 ```
 
 !!! info
+
     Note that GoReleaser does not generate a valid homebrew-core formula.
     The generated formulas are meant to be published as
     [homebrew taps](https://docs.brew.sh/Taps.html), and in their current
@@ -247,6 +216,14 @@ from one software to another.
 Our suggestion is to create a `my-app-head.rb` file on your tap following
 [homebrew's documentation](https://docs.brew.sh/Formula-Cookbook#unstable-versions-head).
 
+## GitHub Actions
+
+To publish a formula from one repository to another using GitHub Actions, you cannot use the default action token.
+You must use a separate token with content write privileges for the tap repository.
+You can check the [resource not accessible by integration](https://goreleaser.com/errors/resource-not-accessible-by-integration/) for more information.
+
 ## Limitations
 
 - Only one `GOARM` build is allowed;
+
+{% include-markdown "../includes/prs.md" comments=false %}

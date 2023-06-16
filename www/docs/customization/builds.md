@@ -52,7 +52,7 @@ builds:
 
     # Custom ldflags.
     #
-    # Default: 's -w -X main.version={{.Version}} -X main.commit={{.Commit}} -X main.date={{.Date}} -X main.builtBy=goreleaser'
+    # Default: '-s -w -X main.version={{.Version}} -X main.commit={{.Commit}} -X main.date={{.Date}} -X main.builtBy=goreleaser'
     # Templates: allowed
     ldflags:
       - -s -w -X main.build={{.Version}}
@@ -198,7 +198,7 @@ builds:
     skip: false
 
     # By default, GoReleaser will create your binaries inside
-    # `dist/${BuildID}_${BuildTarget}`, which is an unique directory per build
+    # `dist/${BuildID}_${BuildTarget}`, which is a unique directory per build
     # target in the matrix.
     # You can set subdirs within that folder using the `binary` property.
     #
@@ -479,13 +479,13 @@ builds:
     # GoReleaser removes the `dist` folder before running, so you will likely
     # want to put the binaries elsewhere.
     # This field is required when using the `prebuilt` builder.
-    path: output/mybin_{{ .Os }}_{{ .Arch }}_{{ with .Amd64 }}_{{ . }}{{ end }}/mybin
+    path: output/mybin_{{ .Os }}_{{ .Arch }}{{ with .Amd64 }}_{{ . }}{{ end }}/mybin
 ```
 
 This example config will import into your release pipeline the following
 binaries:
 
-- `output/mybin_linux_amd64`
+- `output/mybin_linux_amd64_v1`
 - `output/mybin_linux_arm64`
 - `output/mybin_darwin_amd64_v1`
 - `output/mybin_darwin_arm64`
@@ -518,7 +518,7 @@ If you'd like to see this in action, check [this example on GitHub](https://gith
 ## A note about folder names inside `dist`
 
 By default, GoReleaser will create your binaries inside
-`dist/${BuildID}_${BuildTarget}`, which is an unique directory per build target
+`dist/${BuildID}_${BuildTarget}`, which is a unique directory per build target
 in the matrix.
 
 Those names have no guarantees of remaining the same from one version to

@@ -362,8 +362,6 @@ func TestRunPipe_ServerDown(t *testing.T) {
 		Name: "bin.tar.gz",
 		Path: tarfile.Name(),
 	})
-	err = Pipe{}.Publish(ctx)
-	require.Error(t, err)
 	require.ErrorIs(t, Pipe{}.Publish(ctx), syscall.ECONNREFUSED)
 }
 
@@ -512,7 +510,7 @@ func TestRunPipe_UnparsableTarget(t *testing.T) {
 		Type:   artifact.UploadableBinary,
 	})
 
-	require.EqualError(t, Pipe{}.Publish(ctx), `upload: upload failed: parse "://artifacts.company.com/example-repo-local/mybin/darwin/amd64/mybin": missing protocol scheme`)
+	require.EqualError(t, Pipe{}.Publish(ctx), `production: upload: upload failed: parse "://artifacts.company.com/example-repo-local/mybin/darwin/amd64/mybin": missing protocol scheme`)
 }
 
 func TestRunPipe_DirUpload(t *testing.T) {

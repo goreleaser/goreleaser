@@ -30,13 +30,15 @@ func Copying(source io.Reader, target io.Writer) (Archive, error) {
 	w := New(target)
 	r := tar.NewReader(source)
 	for {
-		h, err := r.Next()
-		if err == io.EOF || h == nil {
+		header, err := r.Next()
+		if err == io.EOF || header == nil {
 			break
 		}
-
-		w.files[h.Name] = true
-		if err := w.tw.WriteHeader(h); err != nil {
+		if err != nil {
+			return Archive{}, err
+		}
+		w.files[header.Name] = true
+		if err := w.tw.WriteHeader(header); err != nil {
 			return w, err
 		}
 		if _, err := io.Copy(w.tw, r); err != nil {

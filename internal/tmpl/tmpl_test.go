@@ -35,6 +35,7 @@ func TestWithArtifact(t *testing.T) {
 			TagSubject:  "awesome release",
 			TagContents: "awesome release\n\nanother line",
 			TagBody:     "another line",
+			Dirty:       true,
 		}),
 		testctx.WithEnv(map[string]string{
 			"FOO":       "bar",
@@ -50,7 +51,7 @@ func TestWithArtifact(t *testing.T) {
 	)
 	for expect, tmpl := range map[string]string{
 		"bar":                              "{{.Env.FOO}}",
-		"Linux":                            "{{.Os}}",
+		"linux":                            "{{.Os}}",
 		"amd64":                            "{{.Arch}}",
 		"6":                                "{{.Arm}}",
 		"softfloat":                        "{{.Mips}}",
@@ -87,7 +88,11 @@ func TestWithArtifact(t *testing.T) {
 		"2023-03-09T02:06:02Z":             `{{ .Date }}`,
 		"1678327562":                       `{{ .Timestamp }}`,
 		"snapshot true":                    `snapshot {{.IsSnapshot}}`,
+		"nightly false":                    `nightly {{.IsNightly}}`,
 		"draft true":                       `draft {{.IsDraft}}`,
+		"dirty true":                       `dirty {{.IsGitDirty}}`,
+		"env bar: barrrrr":                 `env bar: {{ envOrDefault "BAR" "barrrrr" }}`,
+		"env foo: bar":                     `env foo: {{ envOrDefault "FOO" "barrrrr" }}`,
 
 		"remove this": "{{ filter .Env.MULTILINE \".*remove.*\" }}",
 		"something with\nmultiple lines\nto test things": "{{ reverseFilter .Env.MULTILINE \".*remove.*\" }}",
@@ -96,7 +101,7 @@ func TestWithArtifact(t *testing.T) {
 		expect := expect
 		t.Run(expect, func(t *testing.T) {
 			t.Parallel()
-			result, err := New(ctx).WithArtifactReplacements(
+			result, err := New(ctx).WithArtifact(
 				&artifact.Artifact{
 					Name:    "not-this-binary",
 					Path:    "/tmp/foo.exe",
@@ -110,7 +115,6 @@ func TestWithArtifact(t *testing.T) {
 						artifact.ExtraExt:    ".exe",
 					},
 				},
-				map[string]string{"linux": "Linux"},
 			).Apply(tmpl)
 			require.NoError(t, err)
 			require.Equal(t, expect, result)
@@ -119,13 +123,13 @@ func TestWithArtifact(t *testing.T) {
 
 	t.Run("artifact without binary name", func(t *testing.T) {
 		t.Parallel()
-		result, err := New(ctx).WithArtifactReplacements(
+		result, err := New(ctx).WithArtifact(
 			&artifact.Artifact{
 				Name:   "another-binary",
 				Goarch: "amd64",
 				Goos:   "linux",
 				Goarm:  "6",
-			}, map[string]string{},
+			},
 		).Apply("{{ .Binary }}")
 		require.NoError(t, err)
 		require.Equal(t, ctx.Config.ProjectName, result)
@@ -407,4 +411,11 @@ func TestBool(t *testing.T) {
 			})
 		}
 	})
+}
+
+func TestMdv2Escape(t *testing.T) {
+	require.Equal(
+		t,
+		"aaa\\_\\*\\[\\]\\(\\)\\~\\`\\>\\#\\+\\-\\=\\|\\{\\}\\.\\!",
+		mdv2Escape("aaa_*[]()~`>#+-=|{}.!"))
 }

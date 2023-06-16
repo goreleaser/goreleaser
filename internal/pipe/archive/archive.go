@@ -59,17 +59,17 @@ func (Pipe) Default(ctx *context.Context) error {
 		if archive.ID == "" {
 			archive.ID = "default"
 		}
-		if !archive.RLCP && archive.Format != "binary" && len(archive.Files) > 0 {
-			deprecate.NoticeCustom(ctx, "archives.rlcp", "`{{ .Property }}` will be the default soon, check {{ .URL }} for more info")
+		if archive.RLCP != "" && archive.Format != "binary" && len(archive.Files) > 0 {
+			deprecate.Notice(ctx, "archives.rlcp")
 		}
 		if len(archive.Files) == 0 {
 			archive.Files = []config.File{
-				{Source: "license*"},
-				{Source: "LICENSE*"},
-				{Source: "readme*"},
-				{Source: "README*"},
-				{Source: "changelog*"},
-				{Source: "CHANGELOG*"},
+				{Source: "license*", Default: true},
+				{Source: "LICENSE*", Default: true},
+				{Source: "readme*", Default: true},
+				{Source: "README*", Default: true},
+				{Source: "changelog*", Default: true},
+				{Source: "CHANGELOG*", Default: true},
 			}
 		}
 		if archive.NameTemplate == "" {
@@ -77,9 +77,6 @@ func (Pipe) Default(ctx *context.Context) error {
 			if archive.Format == "binary" {
 				archive.NameTemplate = defaultBinaryNameTemplate
 			}
-		}
-		if len(archive.Replacements) != 0 {
-			deprecate.Notice(ctx, "archives.replacements")
 		}
 		ids.Inc(archive.ID)
 	}
@@ -141,17 +138,19 @@ func checkArtifacts(artifacts map[string][]*artifact.Artifact) error {
 }
 
 func createMeta(ctx *context.Context, arch config.Archive) error {
-	return doCreate(ctx, arch, nil, arch.Format, tmpl.New(ctx))
+	return doCreate(ctx, arch, nil, arch.Format)
 }
 
 func create(ctx *context.Context, arch config.Archive, binaries []*artifact.Artifact) error {
-	// nolint:staticcheck
-	template := tmpl.New(ctx).WithArtifactReplacements(binaries[0], arch.Replacements)
 	format := packageFormat(arch, binaries[0].Goos)
-	return doCreate(ctx, arch, binaries, format, template)
+	return doCreate(ctx, arch, binaries, format)
 }
 
-func doCreate(ctx *context.Context, arch config.Archive, binaries []*artifact.Artifact, format string, template *tmpl.Template) error {
+func doCreate(ctx *context.Context, arch config.Archive, binaries []*artifact.Artifact, format string) error {
+	template := tmpl.New(ctx)
+	if len(binaries) > 0 {
+		template = template.WithArtifact(binaries[0])
+	}
 	folder, err := template.Apply(arch.NameTemplate)
 	if err != nil {
 		return err
@@ -188,7 +187,7 @@ func doCreate(ctx *context.Context, arch config.Archive, binaries []*artifact.Ar
 	a = NewEnhancedArchive(a, wrap)
 	defer a.Close()
 
-	files, err := archivefiles.Eval(template, arch.RLCP, arch.Files)
+	files, err := archivefiles.Eval(template, arch.Files)
 	if err != nil {
 		return fmt.Errorf("failed to find files to archive: %w", err)
 	}
@@ -222,7 +221,7 @@ func doCreate(ctx *context.Context, arch config.Archive, binaries []*artifact.Ar
 		Extra: map[string]interface{}{
 			artifact.ExtraBuilds:    binaries,
 			artifact.ExtraID:        arch.ID,
-			artifact.ExtraFormat:    arch.Format,
+			artifact.ExtraFormat:    format,
 			artifact.ExtraWrappedIn: wrap,
 			artifact.ExtraBinaries:  bins,
 		},
@@ -253,10 +252,7 @@ func wrapFolder(a config.Archive) string {
 
 func skip(ctx *context.Context, archive config.Archive, binaries []*artifact.Artifact) error {
 	for _, binary := range binaries {
-		// nolint:staticcheck
-		name, err := tmpl.New(ctx).
-			WithArtifactReplacements(binary, archive.Replacements).
-			Apply(archive.NameTemplate)
+		name, err := tmpl.New(ctx).WithArtifact(binary).Apply(archive.NameTemplate)
 		if err != nil {
 			return err
 		}

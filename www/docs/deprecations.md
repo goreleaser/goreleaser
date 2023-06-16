@@ -30,12 +30,177 @@ Description.
     ```
 
 === "After"
+
     ``` yaml
     foo: bar
     ```
 
 -->
 
+### scoops.bucket
+
+> since 2023-06-13 (v1.19.0)
+
+Replace `index` with `repository`.
+
+=== "Before"
+
+    ```yaml
+    scoops:
+      -
+        bucket:
+          - name: foo
+            owner: bar
+    ```
+
+=== "After"
+
+    ```yaml
+    scoops:
+      -
+        repository:
+          - name: foo
+            owner: bar
+    ```
+
+### krews.index
+
+> since 2023-06-13 (v1.19.0)
+
+Replace `index` with `repository`.
+
+=== "Before"
+
+    ```yaml
+    krews:
+      -
+        index:
+          - name: foo
+            owner: bar
+    ```
+
+=== "After"
+
+    ```yaml
+    krews:
+      -
+        repository:
+          - name: foo
+            owner: bar
+    ```
+
+### brews.tap
+
+> since 2023-06-13 (v1.19.0)
+
+Replace `tap` with `repository`.
+
+=== "Before"
+
+    ```yaml
+    brews:
+      -
+        tap:
+          - name: foo
+            owner: bar
+    ```
+
+=== "After"
+
+    ```yaml
+    brews:
+      -
+        repository:
+          - name: foo
+            owner: bar
+    ```
+
+### archives.rlcp
+
+> since 2023-06-06 (v1.19.0)
+
+This option is now default and can't be changed. You can remove it from your
+configuration files.
+
+See [this](#archivesrlcp_1) for more info.
+
+### source.rlcp
+
+> since 2023-06-06 (v1.19.0)
+
+This option is now default and can't be changed. You can remove it from your
+configuration files.
+
+See [this](#sourcerlcp_1) for more info.
+
+### brews.plist
+
+> since 2023-06-06 (v1.19.0)
+
+`plist` is deprecated by Homebrew, and now on GoReleaser too. Use `service`
+instead.
+
+=== "Before"
+
+    ```yaml
+    brews:
+    -
+      plist: |
+        <?xml version="1.0" encoding="UTF-8"?>
+        <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+        <plist version="1.0">
+        <dict>
+        # etc ...
+    ```
+
+=== "After"
+
+    ```yaml
+    brews:
+    -
+      service: |
+        run [opt_bin/"mybin"]
+        keep_alive true
+        # etc ...
+    ```
+
+### --debug
+
+> since 2023-05-16 (v1.19.0)
+
+`--debug` has been deprecated in favor of `--verbose`.
+
+=== "Before"
+
+    ```bash
+    goreleaser release --debug
+    ```
+
+=== "After"
+
+    ```bash
+    goreleaser release --verbose
+    ```
+
+### scoop
+
+> since 2023-04-30 (v1.18.0)
+
+GoReleaser now allows many `scoop` configurations, so it should be pluralized
+[accordingly](/customization/scoop).
+
+=== "Before"
+
+    ``` yaml
+    scoop:
+      # ...
+    ```
+
+=== "After"
+`yaml
+    scoops:
+    - # ...
+   `
 
 ### build
 
@@ -55,11 +220,11 @@ Simply use the pluralized form, `builds`, according to the
     ```
 
 === "After"
+
     ``` yaml
     builds:
     - # ...
     ```
-
 
 ### --rm-dist
 
@@ -70,18 +235,42 @@ Simply use the pluralized form, `builds`, according to the
 === "Before"
 
     ```bash
-    goreleaser --rm-dist
+    goreleaser release --rm-dist
     ```
 
 === "After"
 
     ```bash
-    goreleaser --clean
+    goreleaser release --clean
     ```
+
+### nfpms.maintainer
+
+> since 2022-05-07 (v1.9.0)
+
+nFPM will soon make mandatory setting the maintainer field.
+
+=== "Before"
+
+    ```yaml
+    nfpms:
+    - maintainer: ''
+    ```
+
+=== "After"
+
+    ```yaml
+    nfpms:
+    - maintainer: 'Name <email>'
+    ```
+
+## Expired deprecation notices
+
+The following options were deprecated in the past and were already removed.
 
 ### archives.rlcp
 
-> since 2022-12-23 (v1.14.0)
+> since 2022-12-23 (v1.14.0), removed 2023-06-06 (v1.19.0)
 
 This is not so much a deprecation property (yet), as it is a default behavior
 change.
@@ -101,6 +290,7 @@ enable this option and test it out with
 `goreleaser release --snapshot --clean`.
 
 === "After"
+
     ``` yaml
     archives:
     -
@@ -109,19 +299,44 @@ enable this option and test it out with
 
 ### source.rlcp
 
-> since 2022-12-23 (v1.14.0)
+> since 2022-12-23 (v1.14.0), removed 2023-06-06 (v1.19.0)
 
 Same as [`archives.rlcp`](#archivesrlcp).
 
 === "After"
+
     ``` yaml
     source:
       rlcp: true
     ```
 
+### nfpms.maintainer
+
+> since 2022-05-07 (v1.9.0)
+
+nFPM will soon make mandatory setting the maintainer field.
+
+=== "Before"
+
+    ```yaml
+    nfpms:
+    - maintainer: ''
+    ```
+
+=== "After"
+
+    ```yaml
+    nfpms:
+    - maintainer: 'Name <email>'
+    ```
+
+## Expired deprecation notices
+
+The following options were deprecated in the past and were already removed.
+
 ### archives.replacements
 
-> since 2022-11-24 (v1.14.0)
+> since 2022-11-24 (v1.14.0), removed 2023-06-06 (v1.19.0)
 
 The `replacements` will be removed soon from the archives section, as it was
 never handled correctly when multiple archives were being used, and it also
@@ -144,6 +359,7 @@ You can still get the same features by abusing the `name_template` property.
     ```
 
 === "After"
+
     ``` yaml
     archives:
       - id: foo
@@ -157,10 +373,12 @@ You can still get the same features by abusing the `name_template` property.
 
 Those two configurations will yield the same results.
 
+Notice that if you are using the `archives.name_template`, notice it also has a
+`{{.Version}}` in it. Adjust the new `name_template` accordingly.
 
 ### nfpms.replacements
 
-> since 2022-11-24 (v1.14.0)
+> since 2022-11-24 (v1.14.0), removed 2023-06-06 (v1.19.0)
 
 The `replacements` will be removed soon from the nFPMs section.
 
@@ -181,6 +399,7 @@ You can still get the same features by abusing the `file_name_template` property
     ```
 
 === "After"
+
     ``` yaml
     nfpms:
       - id: foo
@@ -199,7 +418,7 @@ instead of custom templates.
 
 ### snapcrafts.replacements
 
-> since 2022-11-24 (v1.14.0)
+> since 2022-11-24 (v1.14.0), removed 2023-06-06 (v1.19.0)
 
 The `replacements` will be removed soon from the Snapcrafts section.
 
@@ -220,6 +439,7 @@ You can still get the same features by abusing the `name_template` property.
     ```
 
 === "After"
+
     ``` yaml
     snapcrafts:
       - id: foo
@@ -236,29 +456,9 @@ Those two configurations will yield the same results.
 Generally speaking, is probably best to use `{{ .ConventionalFileName }}`
 instead of custom templates.
 
-
-
-### nfpms.maintainer
-
-> since 2022-05-07 (v1.9.0)
-
-nFPM will soon make mandatory setting the maintainer field.
-
-=== "Before"
-    ```yaml
-    nfpms:
-    - maintainer: ''
-    ```
-
-=== "After"
-    ```yaml
-    nfpms:
-    - maintainer: 'Name <email>'
-    ```
-
 ### variables
 
-> since 2022-01-20 (v1.4.0)
+> since 2022-01-20 (v1.4.0), removed 2023-05-01 (v1.18.0)
 
 On [GoReleaser PRO](/pro/) custom variables should now be prefixed with `.Var`.
 
@@ -277,10 +477,6 @@ On [GoReleaser PRO](/pro/) custom variables should now be prefixed with `.Var`.
       foo: bar
     some_template: 'lala-{{ .Var.foo }}'
     ```
-
-## Expired deprecation notices
-
-The following options were deprecated in the past and were already removed.
 
 ### dockers.use: buildpacks
 
@@ -313,13 +509,13 @@ nFPM empty folders is now deprecated in favor of a `dir` content type:
     ```
 
 === "After"
+
     ``` yaml
     nfpms:
     - contents:
       - dst: /foo/bar
         type: dir
     ```
-
 
 ### builds for windows/arm64
 
@@ -334,8 +530,8 @@ If you want to make sure it is ignored in the future, you need to add this to yo
 
 ```yaml
 ignore:
-- goos: windows
-  goarch: arm64
+  - goos: windows
+    goarch: arm64
 ```
 
 If you try to use new versions of GoReleaser with Go 1.16 or older, it will warn
@@ -368,6 +564,7 @@ Please follow to the check their documentation for alternative install methods.
 Change this:
 
 === "Before"
+
     ```yaml
     dockers:
       -
@@ -375,6 +572,7 @@ Change this:
     ```
 
 === "After"
+
     ```yaml
     dockers:
       -
@@ -394,8 +592,8 @@ If you want to make sure it is ignored in the future, you need to add this to yo
 
 ```yaml
 ignore:
-- goos: darwin
-  goarch: arm64
+  - goos: darwin
+    goarch: arm64
 ```
 
 If you try to use new versions of GoReleaser with Go 1.15 or older, it will warn about it until this deprecation warning expires, after that your build will likely fail.
@@ -417,6 +615,7 @@ Because of that, once this deprecation expires, GoReleaser will hard fail on non
 Change this:
 
 === "Before"
+
     ```yaml
     dockers:
       -
@@ -424,6 +623,7 @@ Change this:
     ```
 
 === "After"
+
     ```yaml
     dockers:
       -
@@ -440,6 +640,7 @@ If you want to filter something out, use the `ids` property.
 Change this:
 
 === "Before"
+
     ```yaml
     dockers:
       -
@@ -447,6 +648,7 @@ Change this:
     ```
 
 === "After"
+
     ```yaml
     dockers:
       -
@@ -462,6 +664,7 @@ Change this:
 Change this:
 
 === "Before"
+
     ```yaml
     nfpms:
       -
@@ -470,6 +673,7 @@ Change this:
     ```
 
 === "After"
+
     ```yaml
     nfpms:
       -
@@ -487,6 +691,7 @@ Change this:
 Change this:
 
 === "Before"
+
     ```yaml
     nfpms:
       -
@@ -495,6 +700,7 @@ Change this:
     ```
 
 === "After"
+
     ```yaml
     nfpms:
       -
@@ -513,6 +719,7 @@ Change this:
 Change this:
 
 === "Before"
+
     ```yaml
     nfpms:
       -
@@ -521,6 +728,7 @@ Change this:
     ```
 
 === "After"
+
     ```yaml
     nfpms:
       -
@@ -539,6 +747,7 @@ Change this:
 Change this:
 
 === "Before"
+
     ```yaml
     nfpms:
       -
@@ -548,6 +757,7 @@ Change this:
     ```
 
 === "After"
+
     ```yaml
     nfpms:
       -
@@ -566,6 +776,7 @@ Change this:
 Change this:
 
 === "Before"
+
     ```yaml
     nfpms:
       -
@@ -575,6 +786,7 @@ Change this:
     ```
 
 === "After"
+
     ```yaml
     nfpms:
       -
@@ -585,7 +797,6 @@ Change this:
             packager: rpm # optional
     ```
 
-
 ### nfpms.deb.version_metadata
 
 > since 2020-12-21 (v0.149.0), removed 2021-07-26 (v0.172.0)
@@ -595,6 +806,7 @@ Change this:
 Change this:
 
 === "Before"
+
     ```yaml
     nfpms:
       -
@@ -603,6 +815,7 @@ Change this:
     ```
 
 === "After"
+
     ```yaml
     nfpms:
       -
@@ -620,6 +833,7 @@ automatically when GitHub token is passed.
 Change this:
 
 === "Before"
+
     ```yaml
     brews:
       -
@@ -629,6 +843,7 @@ Change this:
     ```
 
 === "After"
+
     ```yaml
     brews:
       -
@@ -648,6 +863,7 @@ automatically when GitLab token is passed.
 Change this:
 
 === "Before"
+
     ```yaml
     brews:
       -
@@ -657,6 +873,7 @@ Change this:
     ```
 
 === "After"
+
     ```yaml
     brews:
       -
@@ -680,6 +897,7 @@ so the name `puts` kind of lost its meaning.
     ```
 
 === "After"
+
     ``` yaml
     uploads:
     - ...
@@ -696,13 +914,14 @@ The `name_template` field was deprecated in favor of a more clear one,
 `file_name_template`.
 
 === "Before"
+
     ``` yaml
     nfpms:
     - name_template: foo
     ```
 
-
 === "After"
+
     ``` yaml
     nfpms:
     - file_name_template: foo
@@ -717,12 +936,14 @@ It was already accepting multiple inputs, but its pluralized now so its more
 clear.
 
 === "Before"
+
     ```yaml
     blob:
       # etc
     ```
 
 === "After"
+
     ```yaml
     blobs:
       # etc
@@ -735,12 +956,14 @@ clear.
 Sign was deprecated in favor of its plural form.
 
 === "Before"
+
     ```yaml
     sign:
       # etc
     ```
 
 === "After"
+
     ```yaml
     signs:
       -
@@ -756,12 +979,14 @@ Brew was deprecated in favor of its plural form.
 Change this:
 
 === "Before"
+
     ```yaml
     brew:
       # etc
     ```
 
 === "After"
+
     ```yaml
     brews:
       -
@@ -776,6 +1001,7 @@ S3 was deprecated in favor of the new `blob`, which supports S3, Azure Blob and
 GCS.
 
 === "Before"
+
     ```yaml
     s3:
     -
@@ -783,6 +1009,7 @@ GCS.
     ```
 
 === "After"
+
     ```yaml
     blobs:
     -
@@ -799,12 +1026,14 @@ ACLs should be set on the bucket, the `acl` option does not exist anymore.
 We now allow multiple archives, so the `archive` statement will be removed.
 
 === "Before"
+
     ```yaml
     archive:
       format: zip
     ```
 
 === "After"
+
     ```yaml
     archives:
       - id: foo
@@ -818,6 +1047,7 @@ We now allow multiple archives, so the `archive` statement will be removed.
 We now allow multiple Snapcraft configs, so the `snapcraft` statement will be removed.
 
 === "Before"
+
     ```yaml
     snapcraft:
       publish: true
@@ -825,6 +1055,7 @@ We now allow multiple Snapcraft configs, so the `snapcraft` statement will be re
     ```
 
 === "After"
+
     ```yaml
     snapcrafts:
       -
@@ -839,6 +1070,7 @@ We now allow multiple Snapcraft configs, so the `snapcraft` statement will be re
 We now allow multiple NFPM config, so the `nfpm` statement will be removed.
 
 === "Before"
+
     ```yaml
     nfpm:
       formats:
@@ -846,6 +1078,7 @@ We now allow multiple NFPM config, so the `nfpm` statement will be removed.
     ```
 
 === "After"
+
     ```yaml
     nfpms:
       -
@@ -860,6 +1093,7 @@ We now allow multiple NFPM config, so the `nfpm` statement will be removed.
 You can now create a Docker image with multiple binaries.
 
 === "Before"
+
     ```yaml
     dockers:
     - image: foo/bar
@@ -867,6 +1101,7 @@ You can now create a Docker image with multiple binaries.
     ```
 
 === "After"
+
     ```yaml
     dockers:
     - image: foo/bar
@@ -883,6 +1118,7 @@ The idea is to be able to define several images and tags using templates instead
 This flexibility allows images to be pushed to multiple registries.
 
 === "Before"
+
     ```yaml
     dockers:
     - image: foo/bar
@@ -891,6 +1127,7 @@ This flexibility allows images to be pushed to multiple registries.
     ```
 
 === "After"
+
     ```yaml
     dockers:
     - image_templates:
@@ -905,6 +1142,7 @@ This property was deprecated in favor of more flexible `image_templates`.
 The idea is to be able to define several images and tags using templates instead of just one image with tag templates.
 
 === "Before"
+
     ```yaml
     dockers:
     - image: foo/bar
@@ -913,6 +1151,7 @@ The idea is to be able to define several images and tags using templates instead
     ```
 
 === "After"
+
     ```yaml
     dockers:
     - image_templates:
@@ -928,6 +1167,7 @@ instead of the full ones. This has been removed in favor of specific
 template variables (`.FullCommit` and `.ShortCommit`).
 
 === "Before"
+
     ```yaml
     git:
       short_hash: true
@@ -937,6 +1177,7 @@ template variables (`.FullCommit` and `.ShortCommit`).
     ```
 
 === "After"
+
     ```yaml
     fake:
       foo_template: 'blah {{ .ShortCommit }}'
@@ -953,12 +1194,14 @@ CI/CD pipelines.
 Just replace the `fpm` keyword by `nfpm` in your `.goreleaser.yaml` file.
 
 === "Before"
+
     ```yaml
     fpm:
       # ...
     ```
 
 === "After"
+
     ```yaml
     nfpm:
       # ...
@@ -972,6 +1215,7 @@ This property was deprecated in favor of the pluralized `tag_templates`.
 The idea is to be able to define several tags instead of just one.
 
 === "Before"
+
     ```yaml
     dockers:
     - image: foo/bar
@@ -979,6 +1223,7 @@ The idea is to be able to define several tags instead of just one.
     ```
 
 === "After"
+
     ```yaml
     dockers:
     - image: foo/bar
@@ -994,6 +1239,7 @@ The `latest` field in Docker config is deprecated in favor of the newer
 `tag_templates` field.
 
 === "Before"
+
     ```yaml
     dockers:
     - image: foo/bar
@@ -1001,6 +1247,7 @@ The `latest` field in Docker config is deprecated in favor of the newer
     ```
 
 === "After"
+
     ```yaml
     dockers:
     - image: foo/bar
