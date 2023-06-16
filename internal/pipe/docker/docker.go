@@ -201,7 +201,7 @@ func process(ctx *context.Context, docker config.Docker, artifacts []*artifact.A
 	if err := imagers[docker.Use].Build(ctx, tmp, images, buildFlags); err != nil {
 		if isFileNotFoundError(err.Error()) {
 			var files []string
-			_ = filepath.Walk(tmp, func(path string, info fs.FileInfo, err error) error {
+			_ = filepath.Walk(tmp, func(_ string, info fs.FileInfo, _ error) error {
 				if info.IsDir() {
 					return nil
 				}
