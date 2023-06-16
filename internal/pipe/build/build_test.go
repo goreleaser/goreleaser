@@ -210,13 +210,17 @@ func TestRunPipeFailingHooks(t *testing.T) {
 		ctx := testctx.NewWithCfg(cfg, testctx.WithCurrentTag("2.4.5"))
 		ctx.Config.Builds[0].Hooks.Pre = []config.Hook{{Cmd: "exit 1"}}
 		ctx.Config.Builds[0].Hooks.Post = []config.Hook{{Cmd: "echo post"}}
-		require.ErrorIs(t, Pipe{}.Run(ctx), exec.ErrNotFound)
+		err := Pipe{}.Run(ctx)
+		require.ErrorIs(t, err, exec.ErrNotFound)
+		require.Contains(t, err.Error(), "pre hook failed")
 	})
 	t.Run("post-hook", func(t *testing.T) {
 		ctx := testctx.NewWithCfg(cfg, testctx.WithCurrentTag("2.4.5"))
 		ctx.Config.Builds[0].Hooks.Pre = []config.Hook{{Cmd: "echo pre"}}
 		ctx.Config.Builds[0].Hooks.Post = []config.Hook{{Cmd: "exit 1"}}
-		require.ErrorIs(t, Pipe{}.Run(ctx), exec.ErrNotFound)
+		err := Pipe{}.Run(ctx)
+		require.ErrorIs(t, err, exec.ErrNotFound)
+		require.Contains(t, err.Error(), "post hook failed")
 	})
 }
 
