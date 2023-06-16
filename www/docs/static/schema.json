@@ -969,6 +969,12 @@
 			},
 			"Filters": {
 				"properties": {
+					"include": {
+						"items": {
+							"type": "string"
+						},
+						"type": "array"
+					},
 					"exclude": {
 						"items": {
 							"type": "string"
