@@ -20,10 +20,12 @@ var _ fmt.Stringer = Type(0)
 func TestAdd(t *testing.T) {
 	var g errgroup.Group
 	artifacts := New()
+	wd, _ := os.Getwd()
 	for _, a := range []*Artifact{
 		{
 			Name: "foo",
 			Type: UploadableArchive,
+			Path: filepath.Join(wd, "/foo/bar.tgz"),
 		},
 		{
 			Name: "bar",
@@ -46,6 +48,8 @@ func TestAdd(t *testing.T) {
 	}
 	require.NoError(t, g.Wait())
 	require.Len(t, artifacts.List(), 4)
+	archives := artifacts.Filter(ByType(UploadableArchive)).List()
+	require.Len(t, archives, 1)
 }
 
 func TestFilter(t *testing.T) {

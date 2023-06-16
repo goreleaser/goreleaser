@@ -358,6 +358,7 @@ func (artifacts *Artifacts) Add(a *Artifact) {
 			a.Path = rel
 		}
 	}
+	a.Path = filepath.ToSlash(a.Path)
 	log.WithField("name", a.Name).
 		WithField("type", a.Type).
 		WithField("path", a.Path).
