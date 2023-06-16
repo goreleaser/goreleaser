@@ -7,6 +7,7 @@ import (
 	"os"
 	"path/filepath"
 	"sync"
+	"syscall"
 	"testing"
 
 	"github.com/goreleaser/goreleaser/internal/artifact"
@@ -336,7 +337,7 @@ func TestRunPipe_ModeArchive_CustomArtifactName(t *testing.T) {
 	require.True(t, ok, "deb file was not uploaded")
 }
 
-func TestRunPipe_ArtifactoryDown(t *testing.T) {
+func TestRunPipe_ServerDown(t *testing.T) {
 	folder := t.TempDir()
 	tarfile, err := os.Create(filepath.Join(folder, "bin.tar.gz"))
 	require.NoError(t, err)
@@ -361,9 +362,7 @@ func TestRunPipe_ArtifactoryDown(t *testing.T) {
 		Name: "bin.tar.gz",
 		Path: tarfile.Name(),
 	})
-	err = Pipe{}.Publish(ctx)
-	require.Error(t, err)
-	require.Contains(t, err.Error(), "connection refused")
+	require.ErrorIs(t, Pipe{}.Publish(ctx), syscall.ECONNREFUSED)
 }
 
 func TestRunPipe_TargetTemplateError(t *testing.T) {
