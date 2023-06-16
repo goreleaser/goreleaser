@@ -3,6 +3,7 @@ package build
 import (
 	"errors"
 	"os"
+	"os/exec"
 	"path/filepath"
 	"testing"
 
@@ -209,13 +210,18 @@ func TestRunPipeFailingHooks(t *testing.T) {
 		ctx := testctx.NewWithCfg(cfg, testctx.WithCurrentTag("2.4.5"))
 		ctx.Config.Builds[0].Hooks.Pre = []config.Hook{{Cmd: "exit 1"}}
 		ctx.Config.Builds[0].Hooks.Post = []config.Hook{{Cmd: "echo post"}}
-		require.EqualError(t, Pipe{}.Run(ctx), "pre hook failed: failed to run 'exit 1': exec: \"exit\": executable file not found in $PATH")
+
+		err := Pipe{}.Run(ctx)
+		require.ErrorIs(t, err, exec.ErrNotFound)
+		require.Contains(t, err.Error(), "pre hook failed")
 	})
 	t.Run("post-hook", func(t *testing.T) {
 		ctx := testctx.NewWithCfg(cfg, testctx.WithCurrentTag("2.4.5"))
 		ctx.Config.Builds[0].Hooks.Pre = []config.Hook{{Cmd: "echo pre"}}
 		ctx.Config.Builds[0].Hooks.Post = []config.Hook{{Cmd: "exit 1"}}
-		require.EqualError(t, Pipe{}.Run(ctx), `post hook failed: failed to run 'exit 1': exec: "exit": executable file not found in $PATH`)
+		err := Pipe{}.Run(ctx)
+		require.ErrorIs(t, err, exec.ErrNotFound)
+		require.Contains(t, err.Error(), "post hook failed")
 	})
 }
 

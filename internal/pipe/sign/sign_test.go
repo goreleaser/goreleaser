@@ -107,8 +107,8 @@ func TestSignArtifacts(t *testing.T) {
 		user             string
 	}{
 		{
-			desc:           "sign cmd not found",
-			expectedErrMsg: `sign: not-a-valid-cmd failed: exec: "not-a-valid-cmd": executable file not found in $PATH: `,
+			desc:          "sign cmd not found",
+			expectedErrIs: exec.ErrNotFound,
 			ctx: testctx.NewWithCfg(config.Project{
 				Signs: []config.Sign{
 					{
