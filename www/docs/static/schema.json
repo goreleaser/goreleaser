@@ -217,7 +217,8 @@
 								"type": "boolean"
 							}
 						],
-						"description": "you can now remove this"
+						"description": "you can now remove this",
+						"deprecated": true
 					},
 					"files": {
 						"items": {
@@ -1130,7 +1131,8 @@
 					},
 					"tap": {
 						"$ref": "#/$defs/RepoRef",
-						"description": "use repository instead"
+						"description": "use repository instead",
+						"deprecated": true
 					},
 					"repository": {
 						"$ref": "#/$defs/RepoRef"
@@ -1149,7 +1151,8 @@
 					},
 					"plist": {
 						"type": "string",
-						"description": "use service instead"
+						"description": "use service instead",
+						"deprecated": true
 					},
 					"install": {
 						"type": "string"
@@ -1410,7 +1413,8 @@
 					},
 					"index": {
 						"$ref": "#/$defs/RepoRef",
-						"description": "use repository instead"
+						"description": "use repository instead",
+						"deprecated": true
 					},
 					"repository": {
 						"$ref": "#/$defs/RepoRef"
@@ -2100,7 +2104,8 @@
 					},
 					"scoop": {
 						"$ref": "#/$defs/Scoop",
-						"description": "use scoops insteads"
+						"description": "use scoops insteads",
+						"deprecated": true
 					},
 					"scoops": {
 						"items": {
@@ -2239,7 +2244,8 @@
 					},
 					"build": {
 						"$ref": "#/$defs/Build",
-						"description": "use builds instead"
+						"description": "use builds instead",
+						"deprecated": true
 					},
 					"force_token": {
 						"type": "string",
@@ -2571,7 +2577,8 @@
 					},
 					"bucket": {
 						"$ref": "#/$defs/RepoRef",
-						"description": "use repository instead"
+						"description": "use repository instead",
+						"deprecated": true
 					},
 					"repository": {
 						"$ref": "#/$defs/RepoRef"
@@ -3054,7 +3061,8 @@
 								"type": "boolean"
 							}
 						],
-						"description": "you can now remove this"
+						"description": "you can now remove this",
+						"deprecated": true
 					}
 				},
 				"additionalProperties": false,
