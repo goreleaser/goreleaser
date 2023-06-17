@@ -414,6 +414,10 @@ func TestErrNoArchivesFound(t *testing.T) {
 	}, "no archives found matching goos=[darwin linux] goarch=[amd64 arm arm64 386] goarm=[6 7] goamd64=v1 ids=[foo bar]")
 }
 
+func TestDependencies(t *testing.T) {
+	require.Equal(t, []string{"nix-prefetch-url"}, Pipe{}.Dependencies(nil))
+}
+
 type fakeNixShaPrefetcher map[string]string
 
 func (m fakeNixShaPrefetcher) Prefetch(url string) (string, error) {

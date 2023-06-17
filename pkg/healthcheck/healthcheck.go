@@ -7,6 +7,7 @@ import (
 
 	"github.com/goreleaser/goreleaser/internal/pipe/chocolatey"
 	"github.com/goreleaser/goreleaser/internal/pipe/docker"
+	"github.com/goreleaser/goreleaser/internal/pipe/nix"
 	"github.com/goreleaser/goreleaser/internal/pipe/sbom"
 	"github.com/goreleaser/goreleaser/internal/pipe/sign"
 	"github.com/goreleaser/goreleaser/internal/pipe/snapcraft"
@@ -32,6 +33,7 @@ var Healthcheckers = []Healthchecker{
 	docker.Pipe{},
 	docker.ManifestPipe{},
 	chocolatey.Pipe{},
+	nix.NewPublish(),
 }
 
 type system struct{}

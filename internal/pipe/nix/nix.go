@@ -55,7 +55,8 @@ type Pipe struct {
 	prefetcher shaPrefetcher
 }
 
-func (Pipe) String() string { return "nixpkgs" }
+func (Pipe) String() string                           { return "nixpkgs" }
+func (Pipe) Dependencies(_ *context.Context) []string { return []string{"nix-prefetch-url"} }
 func (p Pipe) Skip(ctx *context.Context) bool {
 	return len(ctx.Config.Nix) == 0 || !p.prefetcher.Available()
 }
