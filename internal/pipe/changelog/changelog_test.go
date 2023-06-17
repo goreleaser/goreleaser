@@ -131,6 +131,56 @@ func TestChangelog(t *testing.T) {
 	require.NotEmpty(t, string(bts))
 }
 
+func TestChangelogInclude(t *testing.T) {
+	folder := testlib.Mktmp(t)
+	testlib.GitInit(t)
+	testlib.GitCommit(t, "first")
+	testlib.GitTag(t, "v0.0.1")
+	testlib.GitCommit(t, "added feature 1")
+	testlib.GitCommit(t, "fixed bug 2")
+	testlib.GitCommit(t, "ignored: whatever")
+	testlib.GitCommit(t, "docs: whatever")
+	testlib.GitCommit(t, "something about cArs we dont need")
+	testlib.GitCommit(t, "feat: added that thing")
+	testlib.GitCommit(t, "Merge pull request #999 from goreleaser/some-branch")
+	testlib.GitCommit(t, "this is not a Merge pull request")
+	testlib.GitTag(t, "v0.0.2")
+	ctx := testctx.NewWithCfg(config.Project{
+		Dist: folder,
+		Changelog: config.Changelog{
+			Use: "git",
+			Filters: config.Filters{
+				Include: []string{
+					"docs:",
+					"ignored:",
+					"(?i)cars",
+					"^Merge pull request",
+				},
+			},
+		},
+	}, testctx.WithCurrentTag("v0.0.2"), testctx.WithPreviousTag("v0.0.1"))
+	require.NoError(t, Pipe{}.Run(ctx))
+	require.Contains(t, ctx.ReleaseNotes, "## Changelog")
+	require.NotContains(t, ctx.ReleaseNotes, "first")
+	require.NotContains(t, ctx.ReleaseNotes, "added feature 1")
+	require.NotContains(t, ctx.ReleaseNotes, "fixed bug 2")
+	require.Contains(t, ctx.ReleaseNotes, "docs")
+	require.Contains(t, ctx.ReleaseNotes, "ignored")
+	require.Contains(t, ctx.ReleaseNotes, "cArs")
+	require.Contains(t, ctx.ReleaseNotes, "from goreleaser/some-branch")
+
+	for _, line := range strings.Split(ctx.ReleaseNotes, "\n")[1:] {
+		if line == "" {
+			continue
+		}
+		require.Truef(t, strings.HasPrefix(line, "* "), "%q: changelog commit must be a list item", line)
+	}
+
+	bts, err := os.ReadFile(filepath.Join(folder, "CHANGELOG.md"))
+	require.NoError(t, err)
+	require.NotEmpty(t, string(bts))
+}
+
 func TestChangelogForGitlab(t *testing.T) {
 	folder := testlib.Mktmp(t)
 	testlib.GitInit(t)
@@ -277,6 +327,25 @@ func TestChangelogFilterInvalidRegex(t *testing.T) {
 		Changelog: config.Changelog{
 			Filters: config.Filters{
 				Exclude: []string{
+					"(?iasdr4qasd)not a valid regex i guess",
+				},
+			},
+		},
+	}, testctx.WithCurrentTag("v0.0.4"), testctx.WithPreviousTag("v0.0.3"))
+	require.EqualError(t, Pipe{}.Run(ctx), "error parsing regexp: invalid or unsupported Perl syntax: `(?ia`")
+}
+
+func TestChangelogFilterIncludeInvalidRegex(t *testing.T) {
+	testlib.Mktmp(t)
+	testlib.GitInit(t)
+	testlib.GitCommit(t, "commitssss")
+	testlib.GitTag(t, "v0.0.3")
+	testlib.GitCommit(t, "commitzzz")
+	testlib.GitTag(t, "v0.0.4")
+	ctx := testctx.NewWithCfg(config.Project{
+		Changelog: config.Changelog{
+			Filters: config.Filters{
+				Include: []string{
 					"(?iasdr4qasd)not a valid regex i guess",
 				},
 			},
