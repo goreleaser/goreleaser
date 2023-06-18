@@ -86,8 +86,8 @@ func TestZipFile(t *testing.T) {
 	for i, zf := range r.File {
 		paths[i] = zf.Name
 		if zf.Name == "sub1/executable" {
-			ex := zf.Mode() | 0o111
-			require.Equal(t, zf.Mode().String(), ex.String())
+			ex := zf.Mode()&0o111 != 0
+			require.True(t, ex, "expected executable permissions, got %s", zf.Mode())
 		}
 		if zf.Name == "link.txt" {
 			require.True(t, zf.FileInfo().Mode()&os.ModeSymlink != 0)

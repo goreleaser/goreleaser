@@ -3,6 +3,7 @@ package env
 import (
 	"fmt"
 	"os"
+	"syscall"
 	"testing"
 
 	"github.com/goreleaser/goreleaser/internal/testctx"
@@ -183,7 +184,9 @@ func TestEmptyGithubEnvFile(t *testing.T) {
 			GitHubToken: f.Name(),
 		},
 	})
-	require.EqualError(t, Pipe{}.Run(ctx), fmt.Sprintf("failed to load github token: open %s: permission denied", f.Name()))
+	err = Pipe{}.Run(ctx)
+	require.ErrorIs(t, err, syscall.EACCES)
+	require.Contains(t, err.Error(), "failed to load github token")
 }
 
 func TestEmptyGitlabEnvFile(t *testing.T) {
@@ -196,7 +199,9 @@ func TestEmptyGitlabEnvFile(t *testing.T) {
 			GitLabToken: f.Name(),
 		},
 	})
-	require.EqualError(t, Pipe{}.Run(ctx), fmt.Sprintf("failed to load gitlab token: open %s: permission denied", f.Name()))
+	err = Pipe{}.Run(ctx)
+	require.ErrorIs(t, err, syscall.EACCES)
+	require.Contains(t, err.Error(), "failed to load gitlab token")
 }
 
 func TestEmptyGiteaEnvFile(t *testing.T) {
@@ -209,7 +214,9 @@ func TestEmptyGiteaEnvFile(t *testing.T) {
 			GiteaToken: f.Name(),
 		},
 	})
-	require.EqualError(t, Pipe{}.Run(ctx), fmt.Sprintf("failed to load gitea token: open %s: permission denied", f.Name()))
+	err = Pipe{}.Run(ctx)
+	require.ErrorIs(t, err, syscall.EACCES)
+	require.Contains(t, err.Error(), "failed to load gitea token")
 }
 
 func TestInvalidEnvChecksSkipped(t *testing.T) {

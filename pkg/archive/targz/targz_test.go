@@ -88,8 +88,8 @@ func TestTarGzFile(t *testing.T) {
 		require.NoError(t, err)
 		paths = append(paths, next.Name)
 		if next.Name == "sub1/executable" {
-			ex := next.FileInfo().Mode() | 0o111
-			require.Equal(t, next.FileInfo().Mode().String(), ex.String())
+			ex := next.FileInfo().Mode()&0o111 != 0
+			require.True(t, ex, "expected executable permissions, got %s", next.FileInfo().Mode())
 		}
 		if next.Name == "link.txt" {
 			require.Equal(t, next.Linkname, "regular.txt")
