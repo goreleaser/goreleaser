@@ -10,6 +10,10 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
+func TestContinueOnError(t *testing.T) {
+	require.True(t, Pipe{}.ContinueOnError())
+}
+
 func TestDefaultWithRepoConfig(t *testing.T) {
 	testlib.Mktmp(t)
 	testlib.GitInit(t)
