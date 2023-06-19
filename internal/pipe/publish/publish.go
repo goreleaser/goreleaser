@@ -35,39 +35,45 @@ type Publisher interface {
 	Publish(ctx *context.Context) error
 }
 
-// nolint: gochecknoglobals
-var publishers = []Publisher{
-	blob.Pipe{},
-	upload.Pipe{},
-	artifactory.Pipe{},
-	custompublishers.Pipe{},
-	docker.Pipe{},
-	docker.ManifestPipe{},
-	ko.Pipe{},
-	sign.DockerPipe{},
-	snapcraft.Pipe{},
-	// This should be one of the last steps
-	release.Pipe{},
-	// brew et al use the release URL, so, they should be last
-	nix.NewPublish(),
-	winget.Pipe{},
-	brew.Pipe{},
-	aur.Pipe{},
-	krew.Pipe{},
-	scoop.Pipe{},
-	chocolatey.Pipe{},
-	milestone.Pipe{},
+// New publish pipeline.
+func New() Pipe {
+	return Pipe{
+		pipeline: []Publisher{
+			blob.Pipe{},
+			upload.Pipe{},
+			artifactory.Pipe{},
+			custompublishers.Pipe{},
+			docker.Pipe{},
+			docker.ManifestPipe{},
+			ko.Pipe{},
+			sign.DockerPipe{},
+			snapcraft.Pipe{},
+			// This should be one of the last steps
+			release.Pipe{},
+			// brew et al use the release URL, so, they should be last
+			nix.NewPublish(),
+			winget.Pipe{},
+			brew.Pipe{},
+			aur.Pipe{},
+			krew.Pipe{},
+			scoop.Pipe{},
+			chocolatey.Pipe{},
+			milestone.Pipe{},
+		},
+	}
 }
 
 // Pipe that publishes artifacts.
-type Pipe struct{}
+type Pipe struct {
+	pipeline []Publisher
+}
 
 func (Pipe) String() string                 { return "publishing" }
 func (Pipe) Skip(ctx *context.Context) bool { return ctx.SkipPublish }
 
-func (Pipe) Run(ctx *context.Context) error {
+func (p Pipe) Run(ctx *context.Context) error {
 	memo := errhandler.Memo{}
-	for _, publisher := range publishers {
+	for _, publisher := range p.pipeline {
 		if err := skip.Maybe(
 			publisher,
 			logging.PadLog(

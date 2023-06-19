@@ -128,7 +128,7 @@ var Pipeline = append(
 	// create and push docker images
 	docker.Pipe{},
 	// publishes artifacts
-	publish.Pipe{},
+	publish.New(),
 	// creates a metadata.json and an artifacts.json files in the dist folder
 	metadata.Pipe{},
 	// announce releases
