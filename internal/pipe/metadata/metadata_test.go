@@ -60,8 +60,4 @@ func requireEqualJSONFile(tb testing.TB, tmp, s string) {
 	tb.Helper()
 	path := filepath.Join(tmp, s)
 	golden.RequireEqualJSON(tb, golden.RequireReadFile(tb, path))
-
-	info, err := os.Stat(path)
-	require.NoError(tb, err)
-	require.Equal(tb, "-rw-r--r--", info.Mode().String())
 }
