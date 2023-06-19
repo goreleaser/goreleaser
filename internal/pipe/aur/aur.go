@@ -381,15 +381,16 @@ func doPublish(ctx *context.Context, pkgs []*artifact.Artifact) error {
 		Name: cfg.Name,
 	})
 
+	files := make([]client.RepoFile, 0, len(pkgs))
 	for _, pkg := range pkgs {
 		content, err := os.ReadFile(pkg.Path)
 		if err != nil {
 			return err
 		}
-		if err := cli.CreateFile(ctx, author, repo, content, pkg.Name, msg); err != nil {
-			return err
-		}
+		files = append(files, client.RepoFile{
+			Path:    pkg.Name,
+			Content: content,
+		})
 	}
-
-	return nil
+	return cli.CreateFiles(ctx, author, repo, msg, files)
 }
