@@ -81,10 +81,6 @@ func TestSkip(t *testing.T) {
 	})
 }
 
-func newTestPublisher() *testPublisher {
-	return &testPublisher{}
-}
-
 type testPublisher struct {
 	shouldErr   bool
 	shouldSkip  bool
