@@ -75,7 +75,7 @@ func (Pipe) Run(ctx *context.Context) error {
 				errhandler.Handle(publisher.Publish),
 			),
 		)(ctx); err != nil {
-			if ig, ok := publisher.(Continuable); ok && ig.ContinueOnError() {
+			if ig, ok := publisher.(Continuable); ok && ig.ContinueOnError() && !ctx.FailFast {
 				memo.Memorize(fmt.Errorf("%s: %w", publisher.String(), err))
 				continue
 			}
