@@ -66,6 +66,7 @@ func (Pipe) String() string                 { return "publishing" }
 func (Pipe) Skip(ctx *context.Context) bool { return ctx.SkipPublish }
 
 func (Pipe) Run(ctx *context.Context) error {
+	memo := errhandler.Memo{}
 	for _, publisher := range publishers {
 		if err := skip.Maybe(
 			publisher,
@@ -74,8 +75,16 @@ func (Pipe) Run(ctx *context.Context) error {
 				errhandler.Handle(publisher.Publish),
 			),
 		)(ctx); err != nil {
+			if ig, ok := publisher.(Continuable); ok && ig.ContinueOnError() {
+				memo.Memorize(fmt.Errorf("%s: %w", publisher.String(), err))
+				continue
+			}
 			return fmt.Errorf("%s: failed to publish artifacts: %w", publisher.String(), err)
 		}
 	}
-	return nil
+	return memo.Error()
+}
+
+type Continuable interface {
+	ContinueOnError() bool
 }

@@ -39,6 +39,7 @@ var ErrNoArchivesFound = errors.New("no archives found")
 type Pipe struct{}
 
 func (Pipe) String() string                 { return "krew plugin manifest" }
+func (Pipe) ContinueOnError() bool          { return true }
 func (Pipe) Skip(ctx *context.Context) bool { return len(ctx.Config.Krews) == 0 }
 
 func (Pipe) Default(ctx *context.Context) error {

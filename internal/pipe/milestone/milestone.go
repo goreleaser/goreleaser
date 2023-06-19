@@ -16,6 +16,7 @@ const defaultNameTemplate = "{{ .Tag }}"
 type Pipe struct{}
 
 func (Pipe) String() string                 { return "milestones" }
+func (Pipe) ContinueOnError() bool          { return true }
 func (Pipe) Skip(ctx *context.Context) bool { return len(ctx.Config.Milestones) == 0 }
 
 // Default sets the pipe defaults.

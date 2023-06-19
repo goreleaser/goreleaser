@@ -32,6 +32,7 @@ var ErrNoArchivesFound = errors.New("no linux archives found")
 type Pipe struct{}
 
 func (Pipe) String() string                 { return "arch user repositories" }
+func (Pipe) ContinueOnError() bool          { return true }
 func (Pipe) Skip(ctx *context.Context) bool { return len(ctx.Config.AURs) == 0 }
 
 func (Pipe) Default(ctx *context.Context) error {

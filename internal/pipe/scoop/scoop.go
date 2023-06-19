@@ -59,7 +59,8 @@ const scoopConfigExtra = "ScoopConfig"
 // Pipe that builds and publishes scoop manifests.
 type Pipe struct{}
 
-func (Pipe) String() string { return "scoop manifests" }
+func (Pipe) String() string        { return "scoop manifests" }
+func (Pipe) ContinueOnError() bool { return true }
 func (Pipe) Skip(ctx *context.Context) bool {
 	return ctx.Config.Scoop.Repository.Name == "" && len(ctx.Config.Scoops) == 0
 }
