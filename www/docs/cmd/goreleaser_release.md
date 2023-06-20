@@ -12,6 +12,7 @@ goreleaser release [flags]
       --auto-snapshot                Automatically sets --snapshot if the repository is dirty
       --clean                        Removes the dist folder
   -f, --config string                Load configuration from file
+      --fail-fast                    Whether to abort the release publishing on the first error
   -h, --help                         help for release
   -k, --key string                   GoReleaser Pro license key [$GORELEASER_KEY] (Pro only)
       --nightly                      Generate a nightly build, publishing artifacts that support it (implies --skip-announce and --skip-validate) (Pro only)
