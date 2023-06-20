@@ -31,6 +31,7 @@ type releaseOpts struct {
 	releaseFooterTmpl  string
 	autoSnapshot       bool
 	snapshot           bool
+	failFast           bool
 	skipPublish        bool
 	skipSign           bool
 	skipValidate       bool
@@ -83,6 +84,7 @@ func newReleaseCmd() *releaseCmd {
 	_ = cmd.MarkFlagFilename("release-footer-tmpl", "md", "mkd", "markdown")
 	cmd.Flags().BoolVar(&root.opts.autoSnapshot, "auto-snapshot", false, "Automatically sets --snapshot if the repository is dirty")
 	cmd.Flags().BoolVar(&root.opts.snapshot, "snapshot", false, "Generate an unversioned snapshot release, skipping all validations and without publishing any artifacts (implies --skip-publish, --skip-announce and --skip-validate)")
+	cmd.Flags().BoolVar(&root.opts.failFast, "fail-fast", false, "Whether to abort the release publishing on the first error")
 	cmd.Flags().BoolVar(&root.opts.skipPublish, "skip-publish", false, "Skips publishing artifacts (implies --skip-announce)")
 	cmd.Flags().BoolVar(&root.opts.skipAnnounce, "skip-announce", false, "Skips announcing releases (implies --skip-validate)")
 	cmd.Flags().BoolVar(&root.opts.skipSign, "skip-sign", false, "Skips signing artifacts")
@@ -144,6 +146,7 @@ func setupReleaseContext(ctx *context.Context, options releaseOpts) {
 	ctx.ReleaseFooterFile = options.releaseFooterFile
 	ctx.ReleaseFooterTmpl = options.releaseFooterTmpl
 	ctx.Snapshot = options.snapshot
+	ctx.FailFast = options.failFast
 	if options.autoSnapshot && git.CheckDirty(ctx) != nil {
 		log.Info("git repository is dirty and --auto-snapshot is set, implying --snapshot")
 		ctx.Snapshot = true

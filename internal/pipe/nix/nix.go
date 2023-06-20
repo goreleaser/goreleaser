@@ -56,6 +56,7 @@ type Pipe struct {
 }
 
 func (Pipe) String() string                           { return "nixpkgs" }
+func (Pipe) ContinueOnError() bool                    { return true }
 func (Pipe) Dependencies(_ *context.Context) []string { return []string{"nix-prefetch-url"} }
 func (p Pipe) Skip(ctx *context.Context) bool {
 	return len(ctx.Config.Nix) == 0 || !p.prefetcher.Available()

@@ -43,7 +43,8 @@ const wingetConfigExtra = "WingetConfig"
 
 type Pipe struct{}
 
-func (Pipe) String() string { return "winget" }
+func (Pipe) String() string        { return "winget" }
+func (Pipe) ContinueOnError() bool { return true }
 func (p Pipe) Skip(ctx *context.Context) bool {
 	return len(ctx.Config.Winget) == 0
 }

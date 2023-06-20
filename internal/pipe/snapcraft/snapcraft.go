@@ -103,6 +103,7 @@ const defaultNameTemplate = `{{ .ProjectName }}_{{ .Version }}_{{ .Os }}_{{ .Arc
 type Pipe struct{}
 
 func (Pipe) String() string                           { return "snapcraft packages" }
+func (Pipe) ContinueOnError() bool                    { return true }
 func (Pipe) Skip(ctx *context.Context) bool           { return len(ctx.Config.Snapcrafts) == 0 }
 func (Pipe) Dependencies(_ *context.Context) []string { return []string{"snapcraft"} }
 

@@ -20,6 +20,10 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
+func TestContinueOnError(t *testing.T) {
+	require.True(t, Pipe{}.ContinueOnError())
+}
+
 func TestDescription(t *testing.T) {
 	require.NotEmpty(t, Pipe{}.String())
 }

@@ -45,6 +45,7 @@ func (e ErrNoArchivesFound) Error() string {
 type Pipe struct{}
 
 func (Pipe) String() string                 { return "homebrew tap formula" }
+func (Pipe) ContinueOnError() bool          { return true }
 func (Pipe) Skip(ctx *context.Context) bool { return len(ctx.Config.Brews) == 0 }
 
 func (Pipe) Default(ctx *context.Context) error {

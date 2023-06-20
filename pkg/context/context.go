@@ -91,6 +91,7 @@ type Context struct {
 	Version            string
 	ModulePath         string
 	Snapshot           bool
+	FailFast           bool
 	SkipPostBuildHooks bool
 	SkipPublish        bool
 	SkipAnnounce       bool

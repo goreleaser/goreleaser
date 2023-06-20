@@ -43,11 +43,15 @@ func (m *Memo) Wrap(action middleware.Action) middleware.Action {
 		if err == nil {
 			return nil
 		}
-		if pipe.IsSkip(err) {
-			log.WithField("reason", err.Error()).Warn("pipe skipped")
-			return nil
-		}
-		m.err = multierror.Append(m.err, err)
+		m.Memorize(err)
 		return nil
 	}
+}
+
+func (m *Memo) Memorize(err error) {
+	if pipe.IsSkip(err) {
+		log.WithField("reason", err.Error()).Warn("pipe skipped")
+		return
+	}
+	m.err = multierror.Append(m.err, err)
 }

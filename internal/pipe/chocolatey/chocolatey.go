@@ -31,6 +31,7 @@ var cmd cmder = stdCmd{}
 type Pipe struct{}
 
 func (Pipe) String() string                           { return "chocolatey packages" }
+func (Pipe) ContinueOnError() bool                    { return true }
 func (Pipe) Skip(ctx *context.Context) bool           { return len(ctx.Config.Chocolateys) == 0 }
 func (Pipe) Dependencies(_ *context.Context) []string { return []string{"choco"} }
 
