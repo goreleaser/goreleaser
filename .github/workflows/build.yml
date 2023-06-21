@@ -3,14 +3,14 @@ name: build
 on:
   push:
     branches:
-      - 'main'
+      - "main"
   pull_request:
     paths:
-      - 'go.*'
-      - '**/*.go'
-      - 'Taskfile.yml'
-      - 'Dockerfile'
-      - '.github/workflows/*.yml'
+      - "go.*"
+      - "**/*.go"
+      - "Taskfile.yml"
+      - "Dockerfile"
+      - ".github/workflows/*.yml"
 
 permissions:
   contents: read
@@ -23,7 +23,7 @@ jobs:
   ruleguard:
     uses: caarlos0/meta/.github/workflows/ruleguard.yml@main
     with:
-      args: '-disable largeloopcopy'
+      args: "-disable largeloopcopy"
   test:
     runs-on: ubuntu-latest
     env:
@@ -54,6 +54,10 @@ jobs:
       - uses: actions/setup-go@fac708d6674e30b6ba41289acaab6d4b75aa0753 # v4
         with:
           go-version: stable
+      - uses: actions/cache@v3
+        with:
+          key: ${{ runner.os }}-go-${{ hashFiles('**/go.sum') }}
+          restore-keys: ${{ runner.os }}-go-
       - uses: sigstore/cosign-installer@v3.0.5
       - uses: anchore/sbom-action/download-syft@v0.14.3
       - name: setup-validate-krew-manifest
