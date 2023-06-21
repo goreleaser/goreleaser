@@ -22,7 +22,7 @@ test -z "$VERSION" && {
 
 TMP_DIR="$(mktemp -d)"
 # shellcheck disable=SC2064 # intentionally expands here
-trap "rm -rf \"$TMP_DIR\"" EXIT
+trap "rm -rf \"$TMP_DIR\"" EXIT INT TERM
 OS="$(uname -s)"
 ARCH="$(uname -m)"
 test "$ARCH" = "aarch64" && ARCH="arm64"
