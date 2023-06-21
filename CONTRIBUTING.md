@@ -12,7 +12,7 @@ Prerequisites:
 - [Task](https://taskfile.dev/#/installation)
 - [Go 1.20+](https://golang.org/doc/install)
 
-Other things you might need to run the tests:
+Optional dependencies that you'll need if you working in some features:
 
 - [cosign](https://github.com/sigstore/cosign)
 - [Docker](https://www.docker.com/)
@@ -20,6 +20,9 @@ Other things you might need to run the tests:
 - [Podman](https://podman.io/)
 - [Snapcraft](https://snapcraft.io/)
 - [Syft](https://github.com/anchore/syft)
+- [nix-prefetch-url](https://nixos.org/manual/nix/stable/command-ref/nix-prefetch-url.html)
+- [upx](https://upx.github.io)
+- [`validate-krew-manifest`](https://sigs.k8s.io/krew/cmd/validate-krew-manifest)
 
 Clone `goreleaser` anywhere:
 
