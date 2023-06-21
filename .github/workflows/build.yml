@@ -3,14 +3,14 @@ name: build
 on:
   push:
     branches:
-      - 'main'
+      - "main"
   pull_request:
     paths:
-      - 'go.*'
-      - '**/*.go'
-      - 'Taskfile.yml'
-      - 'Dockerfile'
-      - '.github/workflows/*.yml'
+      - "go.*"
+      - "**/*.go"
+      - "Taskfile.yml"
+      - "Dockerfile"
+      - ".github/workflows/*.yml"
 
 permissions:
   contents: read
@@ -23,7 +23,7 @@ jobs:
   ruleguard:
     uses: caarlos0/meta/.github/workflows/ruleguard.yml@main
     with:
-      args: '-disable largeloopcopy'
+      args: "-disable largeloopcopy"
   test:
     runs-on: ubuntu-latest
     env:
