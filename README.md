@@ -55,7 +55,15 @@ Please refer to our [contributing guidelines](CONTRIBUTING.md) for further infor
 [![Conventional Commits](https://img.shields.io/badge/Conventional%20Commits-1.0.0-yellow.svg?style=for-the-badge)](https://conventionalcommits.org)
 [![CII Best Practices](https://img.shields.io/cii/summary/5420?label=openssf%20best%20practices&style=for-the-badge)](https://bestpractices.coreinfrastructure.org/projects/5420)
 
-## Sponsors
+## GitHub Sponsors
+
+High-tier sponsors of [@caarlos0](https://github.com/sponsors/caarlos0/) on GitHub:
+
+<a href="https://smallstep.com" target="_blank"><img width="200" src="https://github.com/goreleaser/goreleaser/assets/245435/05ade839-6652-474a-af90-da3ea67dde24"></a>
+
+## OpenCollective
+
+### Sponsors
 
 Does your company use goreleaser? Help keep the project bug-free and feature rich by [sponsoring the project](https://opencollective.com/goreleaser#sponsor).
 
@@ -77,7 +85,7 @@ Does your company use goreleaser? Help keep the project bug-free and feature ric
 <a href="https://opencollective.com/goreleaser/sponsors/15/website" target="_blank"><img src="https://opencollective.com/goreleaser/sponsors/15/avatar"></a>
 <a href="https://opencollective.com/goreleaser/sponsors/16/website" target="_blank"><img src="https://opencollective.com/goreleaser/sponsors/16/avatar"></a>
 
-## Backers
+### Backers
 
 Love our work and community? [Become a backer](https://opencollective.com/goreleaser).
 
@@ -112,7 +120,7 @@ Love our work and community? [Become a backer](https://opencollective.com/gorele
 <a href="https://opencollective.com/goreleaser/backers/28/website" target="_blank"><img src="https://opencollective.com/goreleaser/backers/28/avatar"></a>
 <a href="https://opencollective.com/goreleaser/backers/29/website" target="_blank"><img src="https://opencollective.com/goreleaser/backers/29/avatar"></a>
 
-## Contributors
+### Contributors
 
 This project exists thanks to all the people who contribute. [[Contribute](CONTRIBUTING.md)].
 <a href="https://github.com/goreleaser/goreleaser/graphs/contributors"><img src="https://opencollective.com/goreleaser/contributors.svg?width=890" /></a>
