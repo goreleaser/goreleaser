@@ -1589,6 +1589,9 @@
 						},
 						"type": "array"
 					},
+					"umask": {
+						"type": "integer"
+					},
 					"replaces": {
 						"items": {
 							"type": "string"
@@ -1875,6 +1878,9 @@
 							"type": "string"
 						},
 						"type": "array"
+					},
+					"umask": {
+						"type": "integer"
 					},
 					"replaces": {
 						"items": {
