@@ -289,6 +289,7 @@ func create(ctx *context.Context, fpm config.NFPM, format string, binaries []*ar
 		License:         fpm.License,
 		Changelog:       fpm.Changelog,
 		Overridables: nfpm.Overridables{
+			Umask:      overridden.Umask,
 			Conflicts:  overridden.Conflicts,
 			Depends:    overridden.Dependencies,
 			Recommends: overridden.Recommends,
