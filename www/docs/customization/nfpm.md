@@ -9,7 +9,7 @@ Available options:
 # .goreleaser.yaml
 nfpms:
   # note that this is an array of nfpm configs
-  -
+  - #
     # ID of the nfpm config, must be unique.
     #
     # Default: 'default'
@@ -55,7 +55,13 @@ nfpms:
       - deb
       - rpm
       - termux.deb # Since: v1.11
-      - archlinux  # Since: v1.13
+      - archlinux # Since: v1.13
+
+    # Umask to be used on files without explicit mode set. (overridable)
+    #
+    # Default: 0o002 (will remove world-writable permissions)
+    # Since: v1.19
+    umask: 0o002
 
     # Packages your package depends on. (overridable)
     dependencies:
@@ -176,7 +182,6 @@ nfpms:
       - src: path/{{ .Os }}-{{ .Arch }}/bar.conf
         dst: /etc/foo/bar-{{ .ProjectName }}.conf
 
-
     # Additional templated contents to add to the archive.
     # Those files will have their contents pass through the template engine,
     # and its results will be added to the package.
@@ -186,7 +191,7 @@ nfpms:
     # Templates: allowed
     files:
       # a more complete example, check the globbing deep dive below
-      - src: 'LICENSE.md.tpl'
+      - src: "LICENSE.md.tpl"
         dst: LICENSE.md
 
       # These files are not actually present in the package, but the file names
@@ -320,7 +325,7 @@ nfpms:
         # should be set as `$NFPM_DEFAULT_RPM_PASSPHRASE`
         #
         # Templates: allowed
-        key_file: '{{ .Env.GPG_KEY_PATH }}'
+        key_file: "{{ .Env.GPG_KEY_PATH }}"
 
     # Custom configuration applied only to the Deb packager.
     deb:
@@ -364,7 +369,7 @@ nfpms:
         # should be set as `$NFPM_DEFAULT_DEB_PASSPHRASE`
         #
         # Templates: allowed
-        key_file: '{{ .Env.GPG_KEY_PATH }}'
+        key_file: "{{ .Env.GPG_KEY_PATH }}"
 
         # The type describes the signers role, possible values are "origin",
         # "maint" and "archive".
@@ -391,7 +396,7 @@ nfpms:
         # should be set as `$NFPM_DEFAULT_APK_PASSPHRASE`
         #
         # Templates: allowed
-        key_file: '{{ .Env.GPG_KEY_PATH }}'
+        key_file: "{{ .Env.GPG_KEY_PATH }}"
 
         # The name of the signing key. When verifying a package, the signature
         # is matched to the public key store in /etc/apk/keys/<key_name>.rsa.pub.
@@ -415,18 +420,19 @@ nfpms:
       # The packager refers to the organization packaging the software, not to be confused
       # with the maintainer, which is the person who maintains the software.
       packager: GoReleaser <staff@goreleaser.com>
-
 ```
 
 !!! tip
+
     Learn more about the [name template engine](/customization/templates/).
 
 !!! info
+
     Fields marked with "overridable" can be overridden for any format.
 
 ## A note about Termux
 
 Termux is the same format as `deb`, the differences are:
+
 - it uses a different `bindir` (prefixed with `/data/data/com.termux/files/`)
 - it uses slightly different architecture names than Debian
-
