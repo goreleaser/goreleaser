@@ -419,7 +419,7 @@ func extFor(tp artifact.Type) string {
 	case artifact.WingetInstaller:
 		return ".installer.yaml"
 	case artifact.WingetDefaultLocale:
-		return "." + defaultLocale + ".yaml"
+		return ".locale." + defaultLocale + ".yaml"
 	default:
 		// should never happen
 		return ""
