@@ -97,7 +97,6 @@ func TestParseRichText(t *testing.T) {
 }
 
 func TestRichText(t *testing.T) {
-	t.Parallel()
 	t.Setenv("SLACK_WEBHOOK", slackTestHook())
 
 	t.Run("e2e - full slack config with blocks and attachments", func(t *testing.T) {
