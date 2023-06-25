@@ -148,8 +148,11 @@ func (p Pipe) doRun(ctx *context.Context, nix config.Nix, cl client.ReleaserURLT
 	}
 	nix.SkipUpload = skipUpload
 
-	filename := nix.Name + ".nix"
-	path := filepath.Join(ctx.Config.Dist, filename)
+	path := filepath.Join(ctx.Config.Dist, "nix", nix.Path)
+	filename := filepath.Base(path)
+	if err := os.MkdirAll(filepath.Dir(path), 0o755); err != nil {
+		return err
+	}
 
 	content, err := preparePkg(ctx, nix, cl, p.prefetcher)
 	if err != nil {

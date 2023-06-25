@@ -377,7 +377,7 @@ func TestFullPipe(t *testing.T) {
 			require.NoError(t, err)
 			require.NoError(t, f.Close())
 			client := client.NewMock()
-			distFile := filepath.Join(folder, name+".rb")
+			distFile := filepath.Join(folder, "homebrew", name+".rb")
 
 			require.NoError(t, Pipe{}.Default(ctx))
 
@@ -455,7 +455,7 @@ func TestRunPipeNameTemplate(t *testing.T) {
 	require.NoError(t, err)
 	require.NoError(t, f.Close())
 	client := client.NewMock()
-	distFile := filepath.Join(folder, "foo_is_bar.rb")
+	distFile := filepath.Join(folder, "homebrew", "foo_is_bar.rb")
 
 	require.NoError(t, runAll(ctx, client))
 	require.NoError(t, publishAll(ctx, client))
@@ -553,7 +553,7 @@ func TestRunPipeMultipleBrewsWithSkip(t *testing.T) {
 	require.True(t, cli.CreatedFile)
 
 	for _, brew := range ctx.Config.Brews {
-		distFile := filepath.Join(folder, brew.Name+".rb")
+		distFile := filepath.Join(folder, "homebrew", brew.Name+".rb")
 		_, err := os.Stat(distFile)
 		require.NoError(t, err, "file should exist: "+distFile)
 	}
@@ -668,7 +668,7 @@ func TestRunPipeForMultipleAmd64Versions(t *testing.T) {
 			}
 
 			client := client.NewMock()
-			distFile := filepath.Join(folder, name+".rb")
+			distFile := filepath.Join(folder, "homebrew", name+".rb")
 
 			require.NoError(t, runAll(ctx, client))
 			require.NoError(t, publishAll(ctx, client))
@@ -787,7 +787,7 @@ func TestRunPipeForMultipleArmVersions(t *testing.T) {
 			}
 
 			client := client.NewMock()
-			distFile := filepath.Join(folder, name+".rb")
+			distFile := filepath.Join(folder, "homebrew", name+".rb")
 
 			require.NoError(t, runAll(ctx, client))
 			require.NoError(t, publishAll(ctx, client))
@@ -1342,7 +1342,7 @@ func TestRunPipeUniversalBinary(t *testing.T) {
 	require.NoError(t, err)
 	require.NoError(t, f.Close())
 	client := client.NewMock()
-	distFile := filepath.Join(folder, "unibin.rb")
+	distFile := filepath.Join(folder, "homebrew", "unibin.rb")
 
 	require.NoError(t, runAll(ctx, client))
 	require.NoError(t, publishAll(ctx, client))
@@ -1425,7 +1425,7 @@ func TestRunPipeUniversalBinaryNotReplacing(t *testing.T) {
 	require.NoError(t, err)
 	require.NoError(t, f.Close())
 	client := client.NewMock()
-	distFile := filepath.Join(folder, "unibin.rb")
+	distFile := filepath.Join(folder, "homebrew", "unibin.rb")
 
 	require.NoError(t, runAll(ctx, client))
 	require.NoError(t, publishAll(ctx, client))

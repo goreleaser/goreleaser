@@ -256,7 +256,11 @@ func doRun(ctx *context.Context, brew config.Homebrew, cl client.ReleaserURLTemp
 	}
 
 	filename := brew.Name + ".rb"
-	path := filepath.Join(ctx.Config.Dist, filename)
+	path := filepath.Join(ctx.Config.Dist, "homebrew", brew.Folder, filename)
+	if err := os.MkdirAll(filepath.Dir(path), 0o755); err != nil {
+		return err
+	}
+
 	log.WithField("formula", path).Info("writing")
 	if err := os.WriteFile(path, []byte(content), 0o644); err != nil { //nolint: gosec
 		return fmt.Errorf("failed to write brew formula: %w", err)

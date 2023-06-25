@@ -1057,7 +1057,7 @@ func TestRunPipeScoopWithSkipUpload(t *testing.T) {
 	require.NoError(t, runAll(ctx, cli))
 	require.EqualError(t, publishAll(ctx, cli), `scoop.skip_upload is true`)
 
-	distFile := filepath.Join(folder, ctx.Config.Scoop.Name+".json")
+	distFile := filepath.Join(folder, "scoop", ctx.Config.Scoop.Name+".json")
 	_, err = os.Stat(distFile)
 	require.NoError(t, err, "file should exist: "+distFile)
 }
