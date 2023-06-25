@@ -371,12 +371,11 @@ func doPublish(ctx *context.Context, prefetcher shaPrefetcher, cl client.Client,
 		return err
 	}
 
-	title := fmt.Sprintf("Updated %s to %s", ctx.Config.ProjectName, ctx.Version)
 	return pcl.OpenPullRequest(ctx, client.Repo{
 		Name:   nix.Repository.PullRequest.Base.Name,
 		Owner:  nix.Repository.PullRequest.Base.Owner,
 		Branch: nix.Repository.PullRequest.Base.Branch,
-	}, repo, title, nix.Repository.PullRequest.Draft)
+	}, repo, msg, nix.Repository.PullRequest.Draft)
 }
 
 func doBuildPkg(ctx *context.Context, data templateData) (string, error) {

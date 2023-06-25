@@ -403,12 +403,11 @@ func doPublish(ctx *context.Context, cl client.Client, wingets []*artifact.Artif
 		return fmt.Errorf("client does not support pull requests")
 	}
 
-	title := fmt.Sprintf("Updated %s to %s", ctx.Config.ProjectName, ctx.Version)
 	return pcl.OpenPullRequest(ctx, client.Repo{
 		Name:   winget.Repository.PullRequest.Base.Name,
 		Owner:  winget.Repository.PullRequest.Base.Owner,
 		Branch: winget.Repository.PullRequest.Base.Branch,
-	}, repo, title, winget.Repository.PullRequest.Draft)
+	}, repo, msg, winget.Repository.PullRequest.Draft)
 }
 
 func langserverLineFor(tp artifact.Type) string {

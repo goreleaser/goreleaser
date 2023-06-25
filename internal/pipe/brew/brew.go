@@ -180,12 +180,11 @@ func doPublish(ctx *context.Context, formula *artifact.Artifact, cl client.Clien
 		return err
 	}
 
-	title := fmt.Sprintf("Updated %s to %s", ctx.Config.ProjectName, ctx.Version)
 	return pcl.OpenPullRequest(ctx, client.Repo{
 		Name:   brew.Repository.PullRequest.Base.Name,
 		Owner:  brew.Repository.PullRequest.Base.Owner,
 		Branch: brew.Repository.PullRequest.Base.Branch,
-	}, repo, title, brew.Repository.PullRequest.Draft)
+	}, repo, msg, brew.Repository.PullRequest.Draft)
 }
 
 func doRun(ctx *context.Context, brew config.Homebrew, cl client.ReleaserURLTemplater) error {
