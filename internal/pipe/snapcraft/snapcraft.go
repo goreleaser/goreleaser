@@ -37,11 +37,11 @@ var ErrNoSummary = errors.New("no summary provided for snapcraft")
 // Metadata to generate the snap package.
 type Metadata struct {
 	Name          string
-	Title         string
+	Title         string `yaml:",omitempty"`
 	Version       string
 	Summary       string
 	Description   string
-	Icon          string
+	Icon          string `yaml:",omitempty"`
 	Base          string `yaml:",omitempty"`
 	License       string `yaml:",omitempty"`
 	Grade         string `yaml:",omitempty"`
