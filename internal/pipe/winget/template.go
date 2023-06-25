@@ -20,7 +20,7 @@ func createYAML(ctx *context.Context, winget config.Winget, in any, tp artifact.
 	}
 
 	filename := winget.Name + extFor(tp)
-	path := filepath.Join(ctx.Config.Dist, winget.Path, filename)
+	path := filepath.Join(ctx.Config.Dist, "winget", winget.Path, filename)
 	if err := os.MkdirAll(filepath.Dir(path), 0o755); err != nil {
 		return err
 	}

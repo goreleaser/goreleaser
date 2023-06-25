@@ -190,7 +190,10 @@ func doRun(ctx *context.Context, scoop config.Scoop, cl client.ReleaserURLTempla
 	}
 
 	filename := scoop.Name + ".json"
-	path := filepath.Join(ctx.Config.Dist, filename)
+	path := filepath.Join(ctx.Config.Dist, "scoop", scoop.Folder, filename)
+	if err := os.MkdirAll(filepath.Dir(path), 0o755); err != nil {
+		return err
+	}
 	log.WithField("manifest", path).Info("writing")
 	if err := os.WriteFile(path, content.Bytes(), 0o644); err != nil {
 		return fmt.Errorf("failed to write scoop manifest: %w", err)

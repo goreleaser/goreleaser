@@ -301,7 +301,7 @@ func TestFullPipe(t *testing.T) {
 			require.NoError(t, err)
 			require.NoError(t, f.Close())
 			client := client.NewMock()
-			distFile := filepath.Join(folder, name+".yaml")
+			distFile := filepath.Join(folder, "krew", name+".yaml")
 
 			require.NoError(t, Pipe{}.Default(ctx))
 			err = runAll(ctx, client)
@@ -434,7 +434,7 @@ func TestRunPipeUniversalBinary(t *testing.T) {
 	require.NoError(t, err)
 	require.NoError(t, f.Close())
 	client := client.NewMock()
-	distFile := filepath.Join(folder, manifestName(t)+".yaml")
+	distFile := filepath.Join(folder, "krew", manifestName(t)+".yaml")
 
 	require.NoError(t, runAll(ctx, client))
 	require.NoError(t, publishAll(ctx, client))
@@ -515,7 +515,7 @@ func TestRunPipeUniversalBinaryNotReplacing(t *testing.T) {
 	require.NoError(t, err)
 	require.NoError(t, f.Close())
 	client := client.NewMock()
-	distFile := filepath.Join(folder, manifestName(t)+".yaml")
+	distFile := filepath.Join(folder, "krew", manifestName(t)+".yaml")
 
 	require.NoError(t, Pipe{}.Default(ctx))
 	require.NoError(t, runAll(ctx, client))
@@ -572,7 +572,7 @@ func TestRunPipeNameTemplate(t *testing.T) {
 	require.NoError(t, err)
 	require.NoError(t, f.Close())
 	client := client.NewMock()
-	distFile := filepath.Join(folder, t.Name()+".yaml")
+	distFile := filepath.Join(folder, "krew", t.Name()+".yaml")
 
 	require.NoError(t, Pipe{}.Default(ctx))
 	require.NoError(t, runAll(ctx, client))
@@ -662,7 +662,7 @@ func TestRunPipeMultipleKrewWithSkip(t *testing.T) {
 	require.True(t, cli.CreatedFile)
 
 	for _, manifest := range ctx.Config.Krews {
-		distFile := filepath.Join(folder, manifest.Name+".yaml")
+		distFile := filepath.Join(folder, "krew", manifest.Name+".yaml")
 		_, err := os.Stat(distFile)
 		require.NoError(t, err, "file should exist: "+distFile)
 	}
@@ -770,7 +770,7 @@ func TestRunPipeForMultipleArmVersions(t *testing.T) {
 			}
 
 			client := client.NewMock()
-			distFile := filepath.Join(folder, name+".yaml")
+			distFile := filepath.Join(folder, "krew", name+".yaml")
 
 			require.NoError(t, Pipe{}.Default(ctx))
 			require.NoError(t, runAll(ctx, client))
