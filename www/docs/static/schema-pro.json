@@ -1754,6 +1754,9 @@
 						},
 						"type": "array"
 					},
+					"umask": {
+						"type": "integer"
+					},
 					"replaces": {
 						"items": {
 							"type": "string"
@@ -2043,6 +2046,9 @@
 							"type": "string"
 						},
 						"type": "array"
+					},
+					"umask": {
+						"type": "integer"
 					},
 					"replaces": {
 						"items": {
@@ -3727,6 +3733,9 @@
 						"type": "string"
 					},
 					"license_url": {
+						"type": "string"
+					},
+					"release_notes": {
 						"type": "string"
 					},
 					"release_notes_url": {
