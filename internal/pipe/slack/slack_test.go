@@ -101,7 +101,6 @@ func TestRichText(t *testing.T) {
 
 	t.Run("e2e - full slack config with blocks and attachments", func(t *testing.T) {
 		t.SkipNow() // requires a valid webhook for integration testing
-		t.Parallel()
 		var project config.Project
 		require.NoError(t, yaml.Unmarshal(goodRichSlackConf(), &project))
 		ctx := testctx.NewWithCfg(project, testctx.WithVersion(testVersion))
@@ -109,7 +108,6 @@ func TestRichText(t *testing.T) {
 	})
 
 	t.Run("slack config with bad blocks", func(t *testing.T) {
-		t.Parallel()
 		var project config.Project
 		require.NoError(t, yaml.Unmarshal(badBlocksSlackConf(), &project))
 		ctx := testctx.NewWithCfg(project, testctx.WithVersion(testVersion))
