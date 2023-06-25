@@ -283,11 +283,7 @@ func TestSnapshotDirty(t *testing.T) {
 }
 
 func TestGitNotInPath(t *testing.T) {
-	path := os.Getenv("PATH")
-	defer func() {
-		require.NoError(t, os.Setenv("PATH", path))
-	}()
-	require.NoError(t, os.Setenv("PATH", ""))
+	t.Setenv("PATH", "")
 	require.EqualError(t, Pipe{}.Run(testctx.New()), ErrNoGit.Error())
 }
 
@@ -310,16 +306,12 @@ func TestTagFromCI(t *testing.T) {
 		},
 	} {
 		for name, value := range tc.envs {
-			require.NoError(t, os.Setenv(name, value))
+			t.Setenv(name, value)
 		}
 
 		ctx := testctx.New()
 		require.NoError(t, Pipe{}.Run(ctx))
 		require.Equal(t, tc.expected, ctx.Git.CurrentTag)
-
-		for name := range tc.envs {
-			require.NoError(t, os.Setenv(name, ""))
-		}
 	}
 }
 
@@ -357,16 +349,12 @@ func TestPreviousTagFromCI(t *testing.T) {
 	} {
 		t.Run(tc.expected, func(t *testing.T) {
 			for name, value := range tc.envs {
-				require.NoError(t, os.Setenv(name, value))
+				t.Setenv(name, value)
 			}
 
 			ctx := testctx.New()
 			require.NoError(t, Pipe{}.Run(ctx))
 			require.Equal(t, tc.expected, ctx.Git.PreviousTag)
-
-			for name := range tc.envs {
-				require.NoError(t, os.Setenv(name, ""))
-			}
 		})
 	}
 }

@@ -168,7 +168,7 @@ func TestMinioUploadCustomBucketID(t *testing.T) {
 	require.NoError(t, os.WriteFile(tgzpath, []byte("fake\ntargz"), 0o744))
 	require.NoError(t, os.WriteFile(debpath, []byte("fake\ndeb"), 0o744))
 	// Set custom BUCKET_ID env variable.
-	require.NoError(t, os.Setenv("BUCKET_ID", name))
+	t.Setenv("BUCKET_ID", name)
 	ctx := testctx.NewWithCfg(config.Project{
 		Dist:        folder,
 		ProjectName: "testupload",

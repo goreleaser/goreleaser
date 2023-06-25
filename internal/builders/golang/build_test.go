@@ -281,12 +281,9 @@ func createFakeGoBinaryWithVersion(tb testing.TB, name, version string) {
 	))
 
 	currentPath := os.Getenv("PATH")
-	tb.Cleanup(func() {
-		require.NoError(tb, os.Setenv("PATH", currentPath))
-	})
 
 	path := fmt.Sprintf("%s%c%s", d, os.PathListSeparator, currentPath)
-	require.NoError(tb, os.Setenv("PATH", path))
+	tb.Setenv("PATH", path)
 }
 
 func TestInvalidTargets(t *testing.T) {

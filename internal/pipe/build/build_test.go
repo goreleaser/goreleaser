@@ -246,7 +246,7 @@ func TestDefaultFail(t *testing.T) {
 }
 
 func TestDefaultExpandEnv(t *testing.T) {
-	require.NoError(t, os.Setenv("XBAR", "FOOBAR"))
+	t.Setenv("XBAR", "FOOBAR")
 	ctx := testctx.NewWithCfg(config.Project{
 		Builds: []config.Build{
 			{

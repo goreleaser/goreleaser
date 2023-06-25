@@ -1,7 +1,6 @@
 package testlib
 
 import (
-	"os"
 	"testing"
 
 	"github.com/stretchr/testify/require"
@@ -15,17 +14,8 @@ func TestCheckPath(t *testing.T) {
 		})
 	}
 
-	setupEnv := func(tb testing.TB, value string) {
-		tb.Helper()
-		previous := os.Getenv("CI")
-		require.NoError(tb, os.Setenv("CI", value))
-		tb.Cleanup(func() {
-			require.NoError(tb, os.Setenv("CI", previous))
-		})
-	}
-
 	t.Run("local", func(t *testing.T) {
-		setupEnv(t, "false")
+		t.Setenv("CI", "false")
 
 		t.Run("in path", func(t *testing.T) {
 			requireSkipped(t, false)
@@ -39,7 +29,7 @@ func TestCheckPath(t *testing.T) {
 	})
 
 	t.Run("CI", func(t *testing.T) {
-		setupEnv(t, "true")
+		t.Setenv("CI", "true")
 
 		t.Run("in path on CI", func(t *testing.T) {
 			requireSkipped(t, false)
