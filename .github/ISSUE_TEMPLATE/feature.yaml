@@ -41,7 +41,7 @@ body:
     attributes:
       label: Supporter
       options:
-        - label: I am a [sponsor](https://github.com/sponsors/caarlos0/) of [Pro](https://goreleaser.com/pro) customer
+        - label: I am a [sponsor](https://github.com/sponsors/caarlos0/) or a [Pro](https://goreleaser.com/pro) customer
   - type: checkboxes
     id: terms
     attributes:

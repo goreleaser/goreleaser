@@ -26,7 +26,7 @@ body:
     id: goreleaser-version
     attributes:
       label: goreleaser version
-      description: '`goreleaser --version` output'
+      description: "`goreleaser --version` output"
       render: bash
     validations:
       required: true
@@ -34,7 +34,7 @@ body:
     id: goreleaser-check
     attributes:
       label: GoReleaser Check
-      description: 'If I run `goreleaser check` it shows no errors'
+      description: "If I run `goreleaser check` it shows no errors"
       options:
         - label: goreleaser check shows no errors
           required: true
@@ -50,7 +50,7 @@ body:
     attributes:
       label: Supporter
       options:
-        - label: I am a [sponsor](https://github.com/sponsors/caarlos0/) of [Pro](https://goreleaser.com/pro) customer
+        - label: I am a [sponsor](https://github.com/sponsors/caarlos0/) or a [Pro](https://goreleaser.com/pro) customer
   - type: checkboxes
     id: terms
     attributes:
