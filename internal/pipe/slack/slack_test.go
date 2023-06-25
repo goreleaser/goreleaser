@@ -2,7 +2,6 @@ package slack
 
 import (
 	"bytes"
-	"os"
 	"testing"
 
 	"github.com/goreleaser/goreleaser/internal/testctx"
@@ -98,8 +97,7 @@ func TestParseRichText(t *testing.T) {
 }
 
 func TestRichText(t *testing.T) {
-	t.Parallel()
-	os.Setenv("SLACK_WEBHOOK", slackTestHook())
+	t.Setenv("SLACK_WEBHOOK", slackTestHook())
 
 	t.Run("e2e - full slack config with blocks and attachments", func(t *testing.T) {
 		t.SkipNow() // requires a valid webhook for integration testing

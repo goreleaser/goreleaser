@@ -1,7 +1,6 @@
 package cmd
 
 import (
-	"os"
 	"runtime"
 	"testing"
 
@@ -181,12 +180,8 @@ func TestBuildFlags(t *testing.T) {
 		})
 
 		t.Run("from env", func(t *testing.T) {
-			os.Setenv("GOOS", "linux")
-			os.Setenv("GOARCH", "arm64")
-			t.Cleanup(func() {
-				os.Unsetenv("GOOS")
-				os.Unsetenv("GOARCH")
-			})
+			t.Setenv("GOOS", "linux")
+			t.Setenv("GOARCH", "arm64")
 			result := setup(opts)
 			require.Equal(t, []string{"linux"}, result.Config.Builds[0].Goos)
 			require.Equal(t, []string{"arm64"}, result.Config.Builds[0].Goarch)

@@ -319,11 +319,7 @@ func TestRunPipeMetadata(t *testing.T) {
 }
 
 func TestNoSnapcraftInPath(t *testing.T) {
-	path := os.Getenv("PATH")
-	defer func() {
-		require.NoError(t, os.Setenv("PATH", path))
-	}()
-	require.NoError(t, os.Setenv("PATH", ""))
+	t.Setenv("PATH", "")
 	ctx := testctx.NewWithCfg(config.Project{
 		Snapcrafts: []config.Snapcraft{
 			{

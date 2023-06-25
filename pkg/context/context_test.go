@@ -1,7 +1,6 @@
 package context
 
 import (
-	"os"
 	"runtime"
 	"testing"
 	"time"
@@ -11,8 +10,8 @@ import (
 )
 
 func TestNew(t *testing.T) {
-	require.NoError(t, os.Setenv("FOO", "NOT BAR"))
-	require.NoError(t, os.Setenv("BAR", "1"))
+	t.Setenv("FOO", "NOT BAR")
+	t.Setenv("BAR", "1")
 	ctx := New(config.Project{
 		Env: []string{
 			"FOO=BAR",
