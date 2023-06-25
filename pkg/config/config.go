@@ -281,6 +281,7 @@ type Winget struct {
 	Homepage              string       `yaml:"homepage,omitempty" json:"homepage,omitempty"`
 	License               string       `yaml:"license,omitempty" json:"license,omitempty"`
 	LicenseURL            string       `yaml:"license_url,omitempty" json:"license_url,omitempty"`
+	ReleaseNotes          string       `yaml:"release_notes,omitempty" json:"release_notes,omitempty"`
 	ReleaseNotesURL       string       `yaml:"release_notes_url,omitempty" json:"release_notes_url,omitempty"`
 }
 

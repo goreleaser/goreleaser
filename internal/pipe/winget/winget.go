@@ -102,7 +102,9 @@ func (p Pipe) doRun(ctx *context.Context, winget config.Winget, cl client.Releas
 		return errNoRepoName
 	}
 
-	publisher, err := tmpl.New(ctx).Apply(winget.Publisher)
+	tp := tmpl.New(ctx)
+
+	publisher, err := tp.Apply(winget.Publisher)
 	if err != nil {
 		return err
 	}
@@ -115,49 +117,49 @@ func (p Pipe) doRun(ctx *context.Context, winget config.Winget, cl client.Releas
 		return errNoLicense
 	}
 
-	name, err := tmpl.New(ctx).Apply(winget.Name)
+	name, err := tp.Apply(winget.Name)
 	if err != nil {
 		return err
 	}
 	winget.Name = name
 
-	author, err := tmpl.New(ctx).Apply(winget.Author)
+	author, err := tp.Apply(winget.Author)
 	if err != nil {
 		return err
 	}
 	winget.Author = author
 
-	publisherURL, err := tmpl.New(ctx).Apply(winget.PublisherURL)
+	publisherURL, err := tp.Apply(winget.PublisherURL)
 	if err != nil {
 		return err
 	}
 	winget.PublisherURL = publisherURL
 
-	homepage, err := tmpl.New(ctx).Apply(winget.Homepage)
+	homepage, err := tp.Apply(winget.Homepage)
 	if err != nil {
 		return err
 	}
 	winget.Homepage = homepage
 
-	ref, err := client.TemplateRef(tmpl.New(ctx).Apply, winget.Repository)
+	ref, err := client.TemplateRef(tp.Apply, winget.Repository)
 	if err != nil {
 		return err
 	}
 	winget.Repository = ref
 
-	skipUpload, err := tmpl.New(ctx).Apply(winget.SkipUpload)
+	skipUpload, err := tp.Apply(winget.SkipUpload)
 	if err != nil {
 		return err
 	}
 	winget.SkipUpload = skipUpload
 
-	description, err := tmpl.New(ctx).Apply(winget.Description)
+	description, err := tp.Apply(winget.Description)
 	if err != nil {
 		return err
 	}
 	winget.Description = description
 
-	shortDescription, err := tmpl.New(ctx).Apply(winget.ShortDescription)
+	shortDescription, err := tp.Apply(winget.ShortDescription)
 	if err != nil {
 		return err
 	}
@@ -167,11 +169,19 @@ func (p Pipe) doRun(ctx *context.Context, winget config.Winget, cl client.Releas
 		return errNoShortDescription
 	}
 
-	releaseNotesURL, err := tmpl.New(ctx).Apply(winget.ReleaseNotesURL)
+	releaseNotesURL, err := tp.Apply(winget.ReleaseNotesURL)
 	if err != nil {
 		return err
 	}
 	winget.ReleaseNotesURL = releaseNotesURL
+
+	releaseNotes, err := tp.WithExtraFields(tmpl.Fields{
+		"Changelog": ctx.ReleaseNotes,
+	}).Apply(winget.ReleaseNotes)
+	if err != nil {
+		return err
+	}
+	winget.ReleaseNotes = releaseNotes
 
 	if winget.URLTemplate == "" {
 		url, err := cl.ReleaseURLTemplate(ctx)
@@ -181,7 +191,7 @@ func (p Pipe) doRun(ctx *context.Context, winget config.Winget, cl client.Releas
 		winget.URLTemplate = url
 	}
 
-	path, err := tmpl.New(ctx).Apply(winget.Path)
+	path, err := tp.Apply(winget.Path)
 	if err != nil {
 		return err
 	}
@@ -302,7 +312,7 @@ func (p Pipe) doRun(ctx *context.Context, winget config.Winget, cl client.Releas
 		Description:       description,
 		Moniker:           name,
 		Tags:              []string{},
-		ReleaseNotes:      ctx.ReleaseNotes,
+		ReleaseNotes:      winget.ReleaseNotes,
 		ReleaseNotesURL:   winget.ReleaseNotesURL,
 		ManifestType:      "defaultLocale",
 		ManifestVersion:   manifestVersion,

@@ -19,6 +19,7 @@ Description: |-
 
   				sss
 Moniker: foo
+ReleaseNotes: the changelog for this release...
 ReleaseNotesUrl: https://github.com/goreleaser/goreleaser/tags/v1.2.1
 ManifestType: defaultLocale
 ManifestVersion: 1.4.0

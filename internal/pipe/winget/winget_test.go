@@ -84,6 +84,7 @@ func TestRunPipe(t *testing.T) {
 				License:         "MIT",
 				LicenseURL:      "https://goreleaser.com/eula/",
 				ReleaseNotesURL: "https://github.com/goreleaser/goreleaser/tags/{{.Tag}}",
+				ReleaseNotes:    "{{.Changelog}}",
 			},
 		},
 		{
@@ -478,6 +479,7 @@ func TestRunPipe(t *testing.T) {
 				testctx.WithSemver(1, 2, 1, "rc1"),
 				testctx.WithDate(time.Date(2023, 6, 12, 20, 32, 10, 12, time.Local)),
 			)
+			ctx.ReleaseNotes = "the changelog for this release..."
 			createFakeArtifact := func(id, goos, goarch, goamd64, goarm string, extra map[string]any) {
 				path := filepath.Join(folder, "dist/foo_"+goos+goarch+goamd64+goarm+".zip")
 				art := artifact.Artifact{
