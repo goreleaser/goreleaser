@@ -45,7 +45,7 @@ func TestRunPipe(t *testing.T) {
 	}{
 		{
 			name:       "minimal",
-			expectPath: "manifests/f/Foo/min/1.2.1/min.",
+			expectPath: "manifests/f/Foo/min/1.2.1/Foo.min.",
 			winget: config.Winget{
 				Name:             "min",
 				Publisher:        "Foo",
