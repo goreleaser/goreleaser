@@ -25,6 +25,7 @@ import (
 // Type defines the type of an artifact.
 type Type int
 
+// If you add more types, update TestArtifactTypeStringer!
 const (
 	// UploadableArchive a tar.gz/zip archive to be uploaded.
 	UploadableArchive Type = iota + 1
@@ -134,6 +135,8 @@ func (t Type) String() string {
 		return "C Shared Library"
 	case WingetInstaller, WingetDefaultLocale, WingetVersion:
 		return "Winget Manifest"
+	case Nixpkg:
+		return "Nixpkg"
 	default:
 		return "unknown"
 	}

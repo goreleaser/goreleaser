@@ -926,3 +926,11 @@ func TestArtifactStringer(t *testing.T) {
 		Name: "foobar",
 	}.String())
 }
+
+func TestArtifactTypeStringer(t *testing.T) {
+	for i := 1; i <= 29; i++ {
+		t.Run(fmt.Sprintf("type-%d-%s", i, Type(i).String()), func(t *testing.T) {
+			require.NotEqual(t, "unknown", Type(i).String())
+		})
+	}
+}
