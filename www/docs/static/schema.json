@@ -3399,6 +3399,9 @@
 					"license_url": {
 						"type": "string"
 					},
+					"release_notes": {
+						"type": "string"
+					},
 					"release_notes_url": {
 						"type": "string"
 					}
