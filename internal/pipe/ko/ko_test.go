@@ -386,7 +386,7 @@ func TestPublishPipeError(t *testing.T) {
 		ctx := makeCtx()
 		ctx.Config.Kos[0].WorkingDir = t.TempDir()
 		require.NoError(t, Pipe{}.Default(ctx))
-		require.EqualError(t, Pipe{}.Publish(ctx), `build: exit status 1`)
+		require.EqualError(t, Pipe{}.Publish(ctx), `build: build: go build: exit status 1`)
 	})
 
 	t.Run("invalid tags tmpl", func(t *testing.T) {
@@ -454,7 +454,7 @@ func TestPublishPipeError(t *testing.T) {
 		require.NoError(t, Pipe{}.Default(ctx))
 		err := Pipe{}.Publish(ctx)
 		require.Error(t, err)
-		require.Contains(t, err.Error(), `publish: writing sbom: Get "https://fakerepo:8080/v2/": dial tcp:`)
+		require.Contains(t, err.Error(), `publish: Get "https://fakerepo:8080/v2/": dial tcp:`)
 	})
 }
 
