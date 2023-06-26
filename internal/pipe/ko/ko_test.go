@@ -365,7 +365,7 @@ func TestPublishPipeError(t *testing.T) {
 		ctx := makeCtx()
 		ctx.Config.Kos[0].BaseImage = "not a valid image hopefully"
 		require.NoError(t, Pipe{}.Default(ctx))
-		require.EqualError(t, Pipe{}.Publish(ctx), `build: could not parse reference: not a valid image hopefully`)
+		require.EqualError(t, Pipe{}.Publish(ctx), `build: fetching base image: could not parse reference: not a valid image hopefully`)
 	})
 
 	t.Run("invalid label tmpl", func(t *testing.T) {
