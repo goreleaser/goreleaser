@@ -70,7 +70,7 @@ winget:
     # The project name and current git tag are used in the format string.
     #
     # Templates: allowed
-    commit_msg_template: "{{ .ProjectName }}: {{ .Tag }}"
+    commit_msg_template: "{{ .PackageIdentifier }}: {{ .Tag }}"
 
     # Path for the file inside the repository.
     #

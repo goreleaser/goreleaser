@@ -26,6 +26,7 @@ type Mock struct {
 	CreatedFile          bool
 	Content              string
 	Path                 string
+	Message              string
 	FailToCreateRelease  bool
 	FailToUpload         bool
 	CreatedRelease       bool
@@ -84,10 +85,11 @@ func (c *Mock) ReleaseURLTemplate(_ *context.Context) (string, error) {
 	return "https://dummyhost/download/{{ .Tag }}/{{ .ArtifactName }}", nil
 }
 
-func (c *Mock) CreateFile(_ *context.Context, _ config.CommitAuthor, _ Repo, content []byte, path, _ string) error {
+func (c *Mock) CreateFile(_ *context.Context, _ config.CommitAuthor, _ Repo, content []byte, path, msg string) error {
 	c.CreatedFile = true
 	c.Content = string(content)
 	c.Path = path
+	c.Message = msg
 	return nil
 }
 

@@ -56,7 +56,7 @@ func (Pipe) Default(ctx *context.Context) error {
 		winget.CommitAuthor = commitauthor.Default(winget.CommitAuthor)
 
 		if winget.CommitMessageTemplate == "" {
-			winget.CommitMessageTemplate = "{{ .ProjectName }}: {{ .PreviousTag }} -> {{ .Tag }}"
+			winget.CommitMessageTemplate = "New version: {{ .PackageIdentifier }} {{ .Version }}"
 		}
 		if winget.Name == "" {
 			winget.Name = ctx.Config.ProjectName
@@ -352,7 +352,9 @@ func doPublish(ctx *context.Context, cl client.Client, wingets []*artifact.Artif
 		return errSkipUploadAuto
 	}
 
-	msg, err := tmpl.New(ctx).Apply(winget.CommitMessageTemplate)
+	msg, err := tmpl.New(ctx).WithExtraFields(tmpl.Fields{
+		"PackageIdentifier": winget.PackageIdentifier,
+	}).Apply(winget.CommitMessageTemplate)
 	if err != nil {
 		return err
 	}

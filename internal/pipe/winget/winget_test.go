@@ -62,19 +62,18 @@ func TestRunPipe(t *testing.T) {
 			name:       "full",
 			expectPath: "manifests/b/Beckersoft LTDA/foo/1.2.1",
 			winget: config.Winget{
-				Name:                  "foo",
-				Publisher:             "Beckersoft",
-				PublisherURL:          "https://carlosbecker.com",
-				Copyright:             "bla bla bla",
-				Author:                "Carlos Becker",
-				Path:                  "manifests/b/Beckersoft LTDA/foo/{{.Version}}",
-				Repository:            config.RepoRef{Owner: "foo", Name: "bar"},
-				CommitAuthor:          config.CommitAuthor{},
-				CommitMessageTemplate: "update foo to latest and greatest",
-				IDs:                   []string{"foo"},
-				Goamd64:               "v1",
-				SkipUpload:            "false",
-				ShortDescription:      "foo",
+				Name:             "foo",
+				Publisher:        "Beckersoft",
+				PublisherURL:     "https://carlosbecker.com",
+				Copyright:        "bla bla bla",
+				Author:           "Carlos Becker",
+				Path:             "manifests/b/Beckersoft LTDA/foo/{{.Version}}",
+				Repository:       config.RepoRef{Owner: "foo", Name: "bar"},
+				CommitAuthor:     config.CommitAuthor{},
+				IDs:              []string{"foo"},
+				Goamd64:          "v1",
+				SkipUpload:       "false",
+				ShortDescription: "foo",
 				Description: `long foo bar
 
 				yadaa yada yada loooaaasssss
@@ -556,6 +555,8 @@ func TestRunPipe(t *testing.T) {
 			}
 			require.NoError(t, pipe.publishAll(ctx, client))
 			require.True(t, client.CreatedFile)
+
+			require.Regexp(t, "New version: \\w+\\.[\\w-]+ 1.2.1", client.Message)
 
 			require.NotEmpty(t, client.Path)
 			if tt.expectPath != "" {
