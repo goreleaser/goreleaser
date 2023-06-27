@@ -2,7 +2,7 @@
   "gitVersion": "1.2.3",
   "moduleCheksum": "unknown",
   "gitCommit": "aaaa",
-  "gitTreeState": "unknown",
+  "gitTreeState": "clean",
   "buildDate": "12/12/12",
   "builtBy": "me",
   "goVersion": "go1.20.3",

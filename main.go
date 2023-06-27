@@ -37,7 +37,7 @@ func init() {
 
 func main() {
 	cmd.Execute(
-		buildVersion(version, commit, date, builtBy),
+		buildVersion(version, commit, date, builtBy, treeState),
 		os.Exit,
 		os.Args[1:],
 	)
@@ -48,7 +48,7 @@ const website = "https://goreleaser.com"
 //go:embed art.txt
 var asciiArt string
 
-func buildVersion(version, commit, date, builtBy string) goversion.Info {
+func buildVersion(version, commit, date, builtBy, treeState string) goversion.Info {
 	return goversion.GetVersionInfo(
 		goversion.WithAppDetails("goreleaser", "Deliver Go Binaries as fast and easily as possible", website),
 		goversion.WithASCIIName(asciiArt),

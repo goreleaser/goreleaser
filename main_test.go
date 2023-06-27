@@ -13,14 +13,15 @@ func TestVersion(t *testing.T) {
 	const platform = "linux/amd64"
 
 	for name, tt := range map[string]struct {
-		version, commit, date, builtBy string
+		version, commit, date, builtBy, treeState string
 	}{
 		"all empty": {},
 		"complete": {
-			version: "1.2.3",
-			date:    "12/12/12",
-			commit:  "aaaa",
-			builtBy: "me",
+			version:   "1.2.3",
+			date:      "12/12/12",
+			commit:    "aaaa",
+			builtBy:   "me",
+			treeState: "clean",
 		},
 		"only version": {
 			version: "1.2.3",
@@ -37,7 +38,7 @@ func TestVersion(t *testing.T) {
 	} {
 		tt := tt
 		t.Run(name, func(t *testing.T) {
-			v := buildVersion(tt.version, tt.commit, tt.date, tt.builtBy)
+			v := buildVersion(tt.version, tt.commit, tt.date, tt.builtBy, tt.treeState)
 			v.GoVersion = goVersion
 			v.Compiler = compiler
 			v.Platform = platform
