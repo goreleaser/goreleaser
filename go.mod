@@ -37,7 +37,7 @@ require (
 	github.com/mitchellh/go-homedir v1.1.0
 	github.com/muesli/mango-cobra v1.2.0
 	github.com/muesli/roff v0.1.0
-	github.com/muesli/termenv v0.15.1
+	github.com/muesli/termenv v0.15.2
 	github.com/ory/dockertest/v3 v3.10.0
 	github.com/slack-go/slack v0.12.2
 	github.com/spf13/cobra v1.7.0
@@ -187,7 +187,7 @@ require (
 	github.com/lucasb-eyer/go-colorful v1.2.0 // indirect
 	github.com/magiconair/properties v1.8.7 // indirect
 	github.com/mailru/easyjson v0.7.7 // indirect
-	github.com/mattn/go-isatty v0.0.17 // indirect
+	github.com/mattn/go-isatty v0.0.18 // indirect
 	github.com/mattn/go-runewidth v0.0.14 // indirect
 	github.com/matttproud/golang_protobuf_extensions v1.0.4 // indirect
 	github.com/mitchellh/copystructure v1.2.0 // indirect
