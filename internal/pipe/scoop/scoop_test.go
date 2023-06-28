@@ -515,38 +515,6 @@ func Test_doRun(t *testing.T) {
 			noAssertions,
 		},
 		{
-			"release is disabled",
-			args{
-				testctx.NewWithCfg(
-					config.Project{
-						ProjectName: "run-pipe",
-						Release: config.Release{
-							Disable: "true",
-						},
-						Scoop: config.Scoop{
-							Repository: config.RepoRef{
-								Owner: "test",
-								Name:  "test",
-							},
-							Description: "A run pipe test formula",
-							Homepage:    "https://github.com/goreleaser",
-						},
-					},
-					testctx.GitHubTokenType,
-					testctx.WithCurrentTag("v1.0.1"),
-					testctx.WithVersion("1.0.1"),
-				),
-				client.NewMock(),
-			},
-			[]artifact.Artifact{
-				{Name: "foo_1.0.1_windows_amd64.tar.gz", Goos: "windows", Goarch: "amd64", Goamd64: "v1", Path: file},
-				{Name: "foo_1.0.1_windows_386.tar.gz", Goos: "windows", Goarch: "386", Path: file},
-			},
-			shouldNotErr,
-			shouldErr("release is disabled"),
-			noAssertions,
-		},
-		{
 			"no archive",
 			args{
 				testctx.NewWithCfg(

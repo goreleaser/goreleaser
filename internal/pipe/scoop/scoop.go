@@ -241,14 +241,6 @@ func doPublish(ctx *context.Context, manifest *artifact.Artifact, cl client.Clie
 		return pipe.Skip("release is prerelease")
 	}
 
-	relDisabled, err := tmpl.New(ctx).Bool(ctx.Config.Release.Disable)
-	if err != nil {
-		return err
-	}
-	if relDisabled {
-		return pipe.Skip("release is disabled")
-	}
-
 	commitMessage, err := tmpl.New(ctx).Apply(scoop.CommitMessageTemplate)
 	if err != nil {
 		return err
