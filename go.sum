@@ -939,8 +939,8 @@ github.com/caarlos0/go-version v0.1.1 h1:1bikKHkGGVIIxqCmufhSSs3hpBScgHGacrvsi8F
 github.com/caarlos0/go-version v0.1.1/go.mod h1:Ze5Qx4TsBBi5FyrSKVg1Ibc44KGV/llAaKGp86oTwZ0=
 github.com/caarlos0/jsonschema v0.0.0-20230614035932-131eafc78732 h1:Fmq8/UTqYiNUASO1gVazutjSAx+hfEb4OmovbrYpyM0=
 github.com/caarlos0/jsonschema v0.0.0-20230614035932-131eafc78732/go.mod h1:O9uiLokuu0+MGFlyiaqtWxwqJm41/+8Nj0lD7A36YH0=
-github.com/caarlos0/log v0.4.1 h1:99+ocwxvbvQPK/effsNa4Di8MA0Xt7gBQK3vY20xG18=
-github.com/caarlos0/log v0.4.1/go.mod h1:Uv+r6RfrgaRmW/xoarK1S9csv+BQgS7fZbcKYXn8ggo=
+github.com/caarlos0/log v0.4.2 h1:Zi5DNvCJLU0zJAI7B3sYf2zRfHW3xS8ahKQg1eh5/LQ=
+github.com/caarlos0/log v0.4.2/go.mod h1:xwKkgWnQMD39Cb/HgTWrhsG3l3MTTGwf2UZqbki2eqM=
 github.com/caarlos0/sshmarshal v0.1.0 h1:zTCZrDORFfWh526Tsb7vCm3+Yg/SfW/Ub8aQDeosk0I=
 github.com/caarlos0/sshmarshal v0.1.0/go.mod h1:7Pd/0mmq9x/JCzKauogNjSQEhivBclCQHfr9dlpDIyA=
 github.com/caarlos0/testfs v0.4.4 h1:3PHvzHi5Lt+g332CiShwS8ogTgS3HjrmzZxCm6JCDr8=
