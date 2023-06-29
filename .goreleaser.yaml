@@ -214,6 +214,7 @@ winget:
     repository:
       owner: goreleaser
       name: winget-pkgs
+      branch: "goreleaser-{{.Version}}"
       pull_request:
         enabled: true
         draft: true
