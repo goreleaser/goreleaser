@@ -255,6 +255,20 @@ func TestRunPipe(t *testing.T) {
 			},
 		},
 		{
+			name:             "bad-releasenotes-tmpl",
+			expectRunErrorIs: &template.Error{},
+			winget: config.Winget{
+				ReleaseNotes:     "{{ .Nope }}",
+				Publisher:        "Beckersoft",
+				License:          "MIT",
+				ShortDescription: "foo bar zaz",
+				Repository: config.RepoRef{
+					Owner: "foo",
+					Name:  "bar",
+				},
+			},
+		},
+		{
 			name:             "bad-publisher-tmpl",
 			expectRunErrorIs: &template.Error{},
 			winget: config.Winget{

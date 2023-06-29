@@ -104,102 +104,89 @@ func (p Pipe) doRun(ctx *context.Context, winget config.Winget, cl client.Releas
 
 	tp := tmpl.New(ctx)
 
-	publisher, err := tp.Apply(winget.Publisher)
+	var err error
+	winget.Publisher, err = tp.Apply(winget.Publisher)
 	if err != nil {
 		return err
 	}
-	if publisher == "" {
+	if winget.Publisher == "" {
 		return errNoPublisher
 	}
-	winget.Publisher = publisher
 
 	if winget.License == "" {
 		return errNoLicense
 	}
 
-	name, err := tp.Apply(winget.Name)
+	winget.Name, err = tp.Apply(winget.Name)
 	if err != nil {
 		return err
 	}
-	winget.Name = name
 
-	author, err := tp.Apply(winget.Author)
+	winget.Author, err = tp.Apply(winget.Author)
 	if err != nil {
 		return err
 	}
-	winget.Author = author
 
-	publisherURL, err := tp.Apply(winget.PublisherURL)
+	winget.PublisherURL, err = tp.Apply(winget.PublisherURL)
 	if err != nil {
 		return err
 	}
-	winget.PublisherURL = publisherURL
 
-	homepage, err := tp.Apply(winget.Homepage)
+	winget.Homepage, err = tp.Apply(winget.Homepage)
 	if err != nil {
 		return err
 	}
-	winget.Homepage = homepage
 
-	ref, err := client.TemplateRef(tp.Apply, winget.Repository)
+	winget.Repository, err = client.TemplateRef(tp.Apply, winget.Repository)
 	if err != nil {
 		return err
 	}
-	winget.Repository = ref
 
-	skipUpload, err := tp.Apply(winget.SkipUpload)
+	winget.SkipUpload, err = tp.Apply(winget.SkipUpload)
 	if err != nil {
 		return err
 	}
-	winget.SkipUpload = skipUpload
 
-	description, err := tp.Apply(winget.Description)
+	winget.Description, err = tp.Apply(winget.Description)
 	if err != nil {
 		return err
 	}
-	winget.Description = description
 
-	shortDescription, err := tp.Apply(winget.ShortDescription)
+	winget.ShortDescription, err = tp.Apply(winget.ShortDescription)
 	if err != nil {
 		return err
 	}
-	winget.ShortDescription = shortDescription
 
 	if winget.ShortDescription == "" {
 		return errNoShortDescription
 	}
 
-	releaseNotesURL, err := tp.Apply(winget.ReleaseNotesURL)
+	winget.ReleaseNotesURL, err = tp.Apply(winget.ReleaseNotesURL)
 	if err != nil {
 		return err
 	}
-	winget.ReleaseNotesURL = releaseNotesURL
 
-	releaseNotes, err := tp.WithExtraFields(tmpl.Fields{
+	winget.ReleaseNotes, err = tp.WithExtraFields(tmpl.Fields{
 		"Changelog": ctx.ReleaseNotes,
 	}).Apply(winget.ReleaseNotes)
 	if err != nil {
 		return err
 	}
-	winget.ReleaseNotes = releaseNotes
 
 	if winget.URLTemplate == "" {
-		url, err := cl.ReleaseURLTemplate(ctx)
+		winget.URLTemplate, err = cl.ReleaseURLTemplate(ctx)
 		if err != nil {
 			return err
 		}
-		winget.URLTemplate = url
 	}
 
-	path, err := tp.Apply(winget.Path)
+	winget.Path, err = tp.Apply(winget.Path)
 	if err != nil {
 		return err
 	}
-
-	if path == "" {
-		path = filepath.Join("manifests", strings.ToLower(string(winget.Publisher[0])), winget.Publisher, winget.Name, ctx.Version)
+	if winget.Path == "" {
+		winget.Path = filepath.Join("manifests", strings.ToLower(string(winget.Publisher[0])), winget.Publisher, winget.Name, ctx.Version)
 	}
-	winget.Path = path
 
 	filters := []artifact.Filter{
 		artifact.ByGoos("windows"),
@@ -226,7 +213,7 @@ func (p Pipe) doRun(ctx *context.Context, winget config.Winget, cl client.Releas
 	}
 
 	if winget.PackageIdentifier == "" {
-		winget.PackageIdentifier = publisher + "." + name
+		winget.PackageIdentifier = winget.Publisher + "." + winget.Name
 	}
 
 	if !packageIdentifierValid.MatchString(winget.PackageIdentifier) {
@@ -300,17 +287,17 @@ func (p Pipe) doRun(ctx *context.Context, winget config.Winget, cl client.Releas
 		PackageIdentifier: winget.PackageIdentifier,
 		PackageVersion:    ctx.Version,
 		PackageLocale:     defaultLocale,
-		Publisher:         publisher,
+		Publisher:         winget.Publisher,
 		PublisherURL:      winget.PublisherURL,
-		Author:            author,
-		PackageName:       name,
+		Author:            winget.Author,
+		PackageName:       winget.Name,
 		PackageURL:        winget.Homepage,
 		License:           winget.License,
 		LicenseURL:        winget.LicenseURL,
 		Copyright:         winget.Copyright,
-		ShortDescription:  shortDescription,
-		Description:       description,
-		Moniker:           name,
+		ShortDescription:  winget.ShortDescription,
+		Description:       winget.Description,
+		Moniker:           winget.Name,
 		Tags:              []string{},
 		ReleaseNotes:      winget.ReleaseNotes,
 		ReleaseNotesURL:   winget.ReleaseNotesURL,
