@@ -8,6 +8,7 @@ import (
 	"net/http"
 	"net/http/httptest"
 	"os"
+	"sync/atomic"
 	"testing"
 	"text/template"
 	"time"
@@ -821,12 +822,21 @@ func TestGitHubCreateFileFeatureBranchDoesNotExist(t *testing.T) {
 func TestCheckRateLimit(t *testing.T) {
 	now := time.Now().UTC()
 	reset := now.Add(1392 * time.Millisecond)
+	var first atomic.Bool
 	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		defer r.Body.Close()
 		if r.URL.Path == "/rate_limit" {
 			w.WriteHeader(http.StatusOK)
 			resetstr, _ := github.Timestamp{Time: reset}.MarshalJSON()
+			if first.Load() {
+				// second time asking for the rate limit
+				fmt.Fprintf(w, `{"resources":{"core":{"remaining":138,"reset":%s}}}`, string(resetstr))
+				return
+			}
+
+			// first time asking for the rate limit
 			fmt.Fprintf(w, `{"resources":{"core":{"remaining":98,"reset":%s}}}`, string(resetstr))
+			first.Store(true)
 			return
 		}
 		t.Error("unhandled request: " + r.Method + " " + r.URL.Path)
