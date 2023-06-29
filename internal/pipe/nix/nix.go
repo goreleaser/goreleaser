@@ -130,30 +130,42 @@ func (p Pipe) doRun(ctx *context.Context, nix config.Nix, cl client.ReleaserURLT
 		return errNoRepoName
 	}
 
-	name, err := tmpl.New(ctx).Apply(nix.Name)
+	var err error
+
+	nix.Name, err = tmpl.New(ctx).Apply(nix.Name)
 	if err != nil {
 		return err
 	}
-	nix.Name = name
 
-	ref, err := client.TemplateRef(tmpl.New(ctx).Apply, nix.Repository)
+	nix.Repository, err = client.TemplateRef(tmpl.New(ctx).Apply, nix.Repository)
 	if err != nil {
 		return err
 	}
-	nix.Repository = ref
 
-	skipUpload, err := tmpl.New(ctx).Apply(nix.SkipUpload)
+	nix.SkipUpload, err = tmpl.New(ctx).Apply(nix.SkipUpload)
 	if err != nil {
 		return err
 	}
-	nix.SkipUpload = skipUpload
 
+	nix.Homepage, err = tmpl.New(ctx).Apply(nix.Homepage)
+	if err != nil {
+		return err
+	}
+
+	nix.Description, err = tmpl.New(ctx).Apply(nix.Description)
+	if err != nil {
+		return err
+	}
+
+	nix.Path, err = tmpl.New(ctx).Apply(nix.Path)
+	if err != nil {
+		return err
+	}
 	if nix.Path == "" {
-		nix.Path = nix.Name + ".nix"
+		nix.Path = path.Join("pkgs", nix.Name, "default.nix")
 	}
 
 	path := filepath.Join(ctx.Config.Dist, "nix", nix.Path)
-	filename := filepath.Base(path)
 	if err := os.MkdirAll(filepath.Dir(path), 0o755); err != nil {
 		return err
 	}
@@ -169,7 +181,7 @@ func (p Pipe) doRun(ctx *context.Context, nix config.Nix, cl client.ReleaserURLT
 	}
 
 	ctx.Artifacts.Add(&artifact.Artifact{
-		Name: filename,
+		Name: filepath.Base(path),
 		Path: path,
 		Type: artifact.Nixpkg,
 		Extra: map[string]interface{}{
@@ -328,9 +340,6 @@ func doPublish(ctx *context.Context, prefetcher shaPrefetcher, cl client.Client,
 	repo := client.RepoFromRef(nix.Repository)
 
 	gpath := nix.Path
-	if gpath == "" {
-		gpath = path.Join("pkgs", nix.Name, "default.nix")
-	}
 
 	msg, err := tmpl.New(ctx).Apply(nix.CommitMessageTemplate)
 	if err != nil {

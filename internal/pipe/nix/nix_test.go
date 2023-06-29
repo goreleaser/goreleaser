@@ -210,6 +210,28 @@ func TestRunPipe(t *testing.T) {
 			},
 		},
 		{
+			name:             "bad-description-tmpl",
+			expectRunErrorIs: &template.Error{},
+			nix: config.Nix{
+				Description: "{{ .Nope }}",
+				Repository: config.RepoRef{
+					Owner: "foo",
+					Name:  "bar",
+				},
+			},
+		},
+		{
+			name:             "bad-homepage-tmpl",
+			expectRunErrorIs: &template.Error{},
+			nix: config.Nix{
+				Homepage: "{{ .Nope }}",
+				Repository: config.RepoRef{
+					Owner: "foo",
+					Name:  "bar",
+				},
+			},
+		},
+		{
 			name:             "bad-repo-tmpl",
 			expectRunErrorIs: &template.Error{},
 			nix: config.Nix{
@@ -250,6 +272,18 @@ func TestRunPipe(t *testing.T) {
 			nix: config.Nix{
 				Name:        "foo",
 				PostInstall: `{{.NoPostInstall}}`,
+				Repository: config.RepoRef{
+					Owner: "foo",
+					Name:  "bar",
+				},
+			},
+		},
+		{
+			name:             "bad-path-tmpl",
+			expectRunErrorIs: &template.Error{},
+			nix: config.Nix{
+				Name: "foo",
+				Path: `{{.Foo}}/bar/foo.nix`,
 				Repository: config.RepoRef{
 					Owner: "foo",
 					Name:  "bar",
@@ -406,6 +440,11 @@ func TestRunPipe(t *testing.T) {
 			}
 			if tt.nix.Path != "" {
 				require.Equal(t, tt.nix.Path, client.Path)
+			} else {
+				if tt.nix.Name == "" {
+					tt.nix.Name = "foo"
+				}
+				require.Equal(t, "pkgs/"+tt.nix.Name+"/default.nix", client.Path)
 			}
 		})
 	}

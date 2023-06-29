@@ -48,9 +48,12 @@ nix:
     # Path for the file inside the repository.
     #
     # Default: pkgs/<name>/default.nix
+    # Templates: allowed
     path: pkgs/foo.nix
 
     # Your app's homepage.
+    #
+    # Templates: allowed
     homepage: "https://example.com/"
 
     # Your app's description.
