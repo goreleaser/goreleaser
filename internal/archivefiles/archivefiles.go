@@ -70,20 +70,15 @@ func Eval(template *tmpl.Template, files []config.File) ([]config.File, error) {
 }
 
 func tmplInfo(template *tmpl.Template, info *config.FileInfo) error {
-	var err error
-	info.Owner, err = template.Apply(info.Owner)
-	if err != nil {
-		return fmt.Errorf("failed to apply template %s: %w", info.Owner, err)
-	}
-	info.Group, err = template.Apply(info.Group)
-	if err != nil {
-		return fmt.Errorf("failed to apply template %s: %w", info.Group, err)
-	}
-	info.MTime, err = template.Apply(info.MTime)
-	if err != nil {
-		return fmt.Errorf("failed to apply template %s: %w", info.MTime, err)
+	if err := template.ApplyAll(
+		&info.Owner,
+		&info.Group,
+		&info.MTime,
+	); err != nil {
+		return err
 	}
 	if info.MTime != "" {
+		var err error
 		info.ParsedMTime, err = time.Parse(time.RFC3339Nano, info.MTime)
 		if err != nil {
 			return fmt.Errorf("failed to parse %s: %w", info.MTime, err)
