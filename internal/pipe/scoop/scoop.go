@@ -150,35 +150,22 @@ func doRun(ctx *context.Context, scoop config.Scoop, cl client.ReleaserURLTempla
 		return ErrIncorrectArchiveCount{scoop.Goamd64, scoop.IDs, archives}
 	}
 
-	name, err := tmpl.New(ctx).Apply(scoop.Name)
-	if err != nil {
-		return err
-	}
-	scoop.Name = name
+	tp := tmpl.New(ctx)
 
-	description, err := tmpl.New(ctx).Apply(scoop.Description)
-	if err != nil {
+	if err := tp.ApplyAll(
+		&scoop.Name,
+		&scoop.Description,
+		&scoop.Homepage,
+		&scoop.SkipUpload,
+	); err != nil {
 		return err
 	}
-	scoop.Description = description
-
-	homepage, err := tmpl.New(ctx).Apply(scoop.Homepage)
-	if err != nil {
-		return err
-	}
-	scoop.Homepage = homepage
 
 	ref, err := client.TemplateRef(tmpl.New(ctx).Apply, scoop.Repository)
 	if err != nil {
 		return err
 	}
 	scoop.Repository = ref
-
-	skipUpload, err := tmpl.New(ctx).Apply(scoop.SkipUpload)
-	if err != nil {
-		return err
-	}
-	scoop.SkipUpload = skipUpload
 
 	data, err := dataFor(ctx, scoop, cl, archives)
 	if err != nil {
