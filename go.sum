@@ -937,8 +937,6 @@ github.com/caarlos0/go-shellwords v1.0.12 h1:HWrUnu6lGbWfrDcFiHcZiwOLzHWjjrPVehU
 github.com/caarlos0/go-shellwords v1.0.12/go.mod h1:bYeeX1GrTLPl5cAMYEzdm272qdsQAZiaHgeF0KTk1Gw=
 github.com/caarlos0/go-version v0.1.1 h1:1bikKHkGGVIIxqCmufhSSs3hpBScgHGacrvsi8FuIfc=
 github.com/caarlos0/go-version v0.1.1/go.mod h1:Ze5Qx4TsBBi5FyrSKVg1Ibc44KGV/llAaKGp86oTwZ0=
-github.com/caarlos0/jsonschema v0.0.0-20230614035932-131eafc78732 h1:Fmq8/UTqYiNUASO1gVazutjSAx+hfEb4OmovbrYpyM0=
-github.com/caarlos0/jsonschema v0.0.0-20230614035932-131eafc78732/go.mod h1:O9uiLokuu0+MGFlyiaqtWxwqJm41/+8Nj0lD7A36YH0=
 github.com/caarlos0/log v0.4.2 h1:Zi5DNvCJLU0zJAI7B3sYf2zRfHW3xS8ahKQg1eh5/LQ=
 github.com/caarlos0/log v0.4.2/go.mod h1:xwKkgWnQMD39Cb/HgTWrhsG3l3MTTGwf2UZqbki2eqM=
 github.com/caarlos0/sshmarshal v0.1.0 h1:zTCZrDORFfWh526Tsb7vCm3+Yg/SfW/Ub8aQDeosk0I=
@@ -1758,6 +1756,8 @@ github.com/inconshreveable/mousetrap v1.1.0 h1:wN+x4NVGpMsO7ErUn/mUI3vEoE6Jt13X2
 github.com/inconshreveable/mousetrap v1.1.0/go.mod h1:vpF70FUmC8bwa3OWnCshd2FqLfsEA9PFc4w1p2J65bw=
 github.com/influxdata/influxdb1-client v0.0.0-20200827194710-b269163b24ab/go.mod h1:qj24IKcXYK6Iy9ceXlo3Tc+vtHo9lIhSX5JddghvEPo=
 github.com/intel/goresctrl v0.2.0/go.mod h1:+CZdzouYFn5EsxgqAQTEzMfwKwuc0fVdMrT9FCCAVRQ=
+github.com/invopop/jsonschema v0.7.0 h1:2vgQcBz1n256N+FpX3Jq7Y17AjYt46Ig3zIWyy770So=
+github.com/invopop/jsonschema v0.7.0/go.mod h1:O9uiLokuu0+MGFlyiaqtWxwqJm41/+8Nj0lD7A36YH0=
 github.com/ionos-cloud/sdk-go/v6 v6.1.6/go.mod h1:EzEgRIDxBELvfoa/uBN0kOQaqovLjUWEB7iW4/Q+t4k=
 github.com/j-keck/arping v0.0.0-20160618110441-2cf9dc699c56/go.mod h1:ymszkNOg6tORTn+6F6j+Jc8TOr5osrynvN6ivFWZ2GA=
 github.com/j-keck/arping v1.0.2/go.mod h1:aJbELhR92bSk7tp79AWM/ftfc90EfEi2bQJrbBFOsPw=

@@ -197,6 +197,7 @@ nix:
       name: nur
     homepage: https://goreleaser.com
     description: Deliver Go binaries as fast and easily as possible
+    path: pkgs/goreleaser/default.nix
     license: mit
     install: |-
       mkdir -p $out/bin
@@ -213,6 +214,7 @@ winget:
     repository:
       owner: goreleaser
       name: winget-pkgs
+      branch: "goreleaser-{{.Version}}"
       pull_request:
         enabled: true
         draft: true
