@@ -76,7 +76,10 @@ func (c *githubClient) checkRateLimit(ctx *context.Context) {
 	}
 	sleep := limits.Core.Reset.UTC().Sub(time.Now().UTC())
 	if sleep <= 0 {
-		sleep = time.Minute
+		// it seems that sometimes, after the rate limit just reset, it might
+		// still get <100 remaining and a reset time in the past... in such
+		// cases we can probably sleep a bit more before trying again...
+		sleep = 15 * time.Second
 	}
 	log.Warnf("token too close to rate limiting, will sleep for %s before continuing...", sleep)
 	time.Sleep(sleep)
