@@ -154,16 +154,12 @@ func (Pipe) Run(ctx *context.Context) error {
 
 func doRun(ctx *context.Context, snap config.Snapcraft) error {
 	tpl := tmpl.New(ctx)
-	summary, err := tpl.Apply(snap.Summary)
-	if err != nil {
+	if err := tpl.ApplyAll(
+		&snap.Summary,
+		&snap.Description,
+	); err != nil {
 		return err
 	}
-	description, err := tpl.Apply(snap.Description)
-	if err != nil {
-		return err
-	}
-	snap.Summary = summary
-	snap.Description = description
 	if snap.Summary == "" && snap.Description == "" {
 		return pipe.Skip("no summary nor description were provided")
 	}
@@ -173,8 +169,7 @@ func doRun(ctx *context.Context, snap config.Snapcraft) error {
 	if snap.Description == "" {
 		return ErrNoDescription
 	}
-	_, err = exec.LookPath("snapcraft")
-	if err != nil {
+	if _, err := exec.LookPath("snapcraft"); err != nil {
 		return ErrNoSnapcraft
 	}
 
