@@ -130,48 +130,43 @@ func (p Pipe) doRun(ctx *context.Context, nix config.Nix, cl client.ReleaserURLT
 		return errNoRepoName
 	}
 
-	name, err := tmpl.New(ctx).Apply(nix.Name)
-	if err != nil {
-		return err
-	}
-	nix.Name = name
+	var err error
 
-	ref, err := client.TemplateRef(tmpl.New(ctx).Apply, nix.Repository)
+	nix.Name, err = tmpl.New(ctx).Apply(nix.Name)
 	if err != nil {
 		return err
 	}
-	nix.Repository = ref
 
-	skipUpload, err := tmpl.New(ctx).Apply(nix.SkipUpload)
+	nix.Repository, err = client.TemplateRef(tmpl.New(ctx).Apply, nix.Repository)
 	if err != nil {
 		return err
 	}
-	nix.SkipUpload = skipUpload
 
-	homepage, err := tmpl.New(ctx).Apply(nix.Homepage)
+	nix.SkipUpload, err = tmpl.New(ctx).Apply(nix.SkipUpload)
 	if err != nil {
 		return err
 	}
-	nix.Homepage = homepage
 
-	description, err := tmpl.New(ctx).Apply(nix.Description)
+	nix.Homepage, err = tmpl.New(ctx).Apply(nix.Homepage)
 	if err != nil {
 		return err
 	}
-	nix.Description = description
 
-	tmplPath, err := tmpl.New(ctx).Apply(nix.Path)
+	nix.Description, err = tmpl.New(ctx).Apply(nix.Description)
 	if err != nil {
 		return err
 	}
-	nix.Path = tmplPath
+
+	nix.Path, err = tmpl.New(ctx).Apply(nix.Path)
+	if err != nil {
+		return err
+	}
 	if nix.Path == "" {
 		nix.Path = path.Join("pkgs", nix.Name, "default.nix")
 	}
 
-	tmplPath = filepath.Join(ctx.Config.Dist, "nix", nix.Path)
-	filename := filepath.Base(tmplPath)
-	if err := os.MkdirAll(filepath.Dir(tmplPath), 0o755); err != nil {
+	path := filepath.Join(ctx.Config.Dist, "nix", nix.Path)
+	if err := os.MkdirAll(filepath.Dir(path), 0o755); err != nil {
 		return err
 	}
 
@@ -180,14 +175,14 @@ func (p Pipe) doRun(ctx *context.Context, nix config.Nix, cl client.ReleaserURLT
 		return err
 	}
 
-	log.WithField("nixpkg", tmplPath).Info("writing")
-	if err := os.WriteFile(tmplPath, []byte(content), 0o644); err != nil { //nolint: gosec
+	log.WithField("nixpkg", path).Info("writing")
+	if err := os.WriteFile(path, []byte(content), 0o644); err != nil { //nolint: gosec
 		return fmt.Errorf("failed to write nixpkg: %w", err)
 	}
 
 	ctx.Artifacts.Add(&artifact.Artifact{
-		Name: filename,
-		Path: tmplPath,
+		Name: filepath.Base(path),
+		Path: path,
 		Type: artifact.Nixpkg,
 		Extra: map[string]interface{}{
 			nixConfigExtra: nix,
