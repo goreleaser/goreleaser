@@ -75,8 +75,12 @@ func (c *githubClient) checkRateLimit(ctx *context.Context) {
 		return
 	}
 	sleep := limits.Core.Reset.UTC().Sub(time.Now().UTC())
+	if sleep <= 0 {
+		sleep = time.Minute
+	}
 	log.Warnf("token too close to rate limiting, will sleep for %s before continuing...", sleep)
 	time.Sleep(sleep)
+	c.checkRateLimit(ctx)
 }
 
 func (c *githubClient) GenerateReleaseNotes(ctx *context.Context, repo Repo, prev, current string) (string, error) {
