@@ -148,13 +148,30 @@ func (p Pipe) doRun(ctx *context.Context, nix config.Nix, cl client.ReleaserURLT
 	}
 	nix.SkipUpload = skipUpload
 
+	homepage, err := tmpl.New(ctx).Apply(nix.Homepage)
+	if err != nil {
+		return err
+	}
+	nix.Homepage = homepage
+
+	description, err := tmpl.New(ctx).Apply(nix.Description)
+	if err != nil {
+		return err
+	}
+	nix.Description = description
+
+	tmplPath, err := tmpl.New(ctx).Apply(nix.Path)
+	if err != nil {
+		return err
+	}
+	nix.Path = tmplPath
 	if nix.Path == "" {
-		nix.Path = nix.Name + ".nix"
+		nix.Path = path.Join("pkgs", nix.Name, "default.nix")
 	}
 
-	path := filepath.Join(ctx.Config.Dist, "nix", nix.Path)
-	filename := filepath.Base(path)
-	if err := os.MkdirAll(filepath.Dir(path), 0o755); err != nil {
+	tmplPath = filepath.Join(ctx.Config.Dist, "nix", nix.Path)
+	filename := filepath.Base(tmplPath)
+	if err := os.MkdirAll(filepath.Dir(tmplPath), 0o755); err != nil {
 		return err
 	}
 
@@ -163,14 +180,14 @@ func (p Pipe) doRun(ctx *context.Context, nix config.Nix, cl client.ReleaserURLT
 		return err
 	}
 
-	log.WithField("nixpkg", path).Info("writing")
-	if err := os.WriteFile(path, []byte(content), 0o644); err != nil { //nolint: gosec
+	log.WithField("nixpkg", tmplPath).Info("writing")
+	if err := os.WriteFile(tmplPath, []byte(content), 0o644); err != nil { //nolint: gosec
 		return fmt.Errorf("failed to write nixpkg: %w", err)
 	}
 
 	ctx.Artifacts.Add(&artifact.Artifact{
 		Name: filename,
-		Path: path,
+		Path: tmplPath,
 		Type: artifact.Nixpkg,
 		Extra: map[string]interface{}{
 			nixConfigExtra: nix,
@@ -328,9 +345,6 @@ func doPublish(ctx *context.Context, prefetcher shaPrefetcher, cl client.Client,
 	repo := client.RepoFromRef(nix.Repository)
 
 	gpath := nix.Path
-	if gpath == "" {
-		gpath = path.Join("pkgs", nix.Name, "default.nix")
-	}
 
 	msg, err := tmpl.New(ctx).Apply(nix.CommitMessageTemplate)
 	if err != nil {
