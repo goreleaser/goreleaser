@@ -183,7 +183,7 @@ func TestFullPipe(t *testing.T) {
 				ctx.Config.Krews[0].Repository.Name = "test"
 				ctx.Config.Krews[0].Description = "{{ .Asdsa }"
 			},
-			expectedRunError: `template: tmpl:1: unexpected "}" in operand`,
+			expectedRunError: `failed to apply template: {{ .Asdsa }: template: tmpl:1: unexpected "}" in operand`,
 		},
 		"invalid short desc": {
 			prepare: func(ctx *context.Context) {
@@ -191,7 +191,7 @@ func TestFullPipe(t *testing.T) {
 				ctx.Config.Krews[0].Repository.Name = "test"
 				ctx.Config.Krews[0].ShortDescription = "{{ .Asdsa }"
 			},
-			expectedRunError: `template: tmpl:1: unexpected "}" in operand`,
+			expectedRunError: `failed to apply template: {{ .Asdsa }: template: tmpl:1: unexpected "}" in operand`,
 		},
 		"invalid homepage": {
 			prepare: func(ctx *context.Context) {
@@ -199,7 +199,7 @@ func TestFullPipe(t *testing.T) {
 				ctx.Config.Krews[0].Repository.Name = "test"
 				ctx.Config.Krews[0].Homepage = "{{ .Asdsa }"
 			},
-			expectedRunError: `template: tmpl:1: unexpected "}" in operand`,
+			expectedRunError: `failed to apply template: {{ .Asdsa }: template: tmpl:1: unexpected "}" in operand`,
 		},
 		"invalid name": {
 			prepare: func(ctx *context.Context) {
@@ -207,7 +207,7 @@ func TestFullPipe(t *testing.T) {
 				ctx.Config.Krews[0].Repository.Name = "test"
 				ctx.Config.Krews[0].Name = "{{ .Asdsa }"
 			},
-			expectedRunError: `template: tmpl:1: unexpected "}" in operand`,
+			expectedRunError: `failed to apply template: {{ .Asdsa }: template: tmpl:1: unexpected "}" in operand`,
 		},
 		"invalid caveats": {
 			prepare: func(ctx *context.Context) {
@@ -215,7 +215,7 @@ func TestFullPipe(t *testing.T) {
 				ctx.Config.Krews[0].Repository.Name = "test"
 				ctx.Config.Krews[0].Caveats = "{{ .Asdsa }"
 			},
-			expectedRunError: `template: tmpl:1: unexpected "}" in operand`,
+			expectedRunError: `failed to apply template: {{ .Asdsa }: template: tmpl:1: unexpected "}" in operand`,
 		},
 		"no short desc": {
 			prepare: func(ctx *context.Context) {

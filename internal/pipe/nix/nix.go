@@ -130,9 +130,15 @@ func (p Pipe) doRun(ctx *context.Context, nix config.Nix, cl client.ReleaserURLT
 		return errNoRepoName
 	}
 
-	var err error
+	tp := tmpl.New(ctx)
 
-	nix.Name, err = tmpl.New(ctx).Apply(nix.Name)
+	err := tp.ApplyAll(
+		&nix.Name,
+		&nix.SkipUpload,
+		&nix.Homepage,
+		&nix.Description,
+		&nix.Path,
+	)
 	if err != nil {
 		return err
 	}
@@ -142,25 +148,6 @@ func (p Pipe) doRun(ctx *context.Context, nix config.Nix, cl client.ReleaserURLT
 		return err
 	}
 
-	nix.SkipUpload, err = tmpl.New(ctx).Apply(nix.SkipUpload)
-	if err != nil {
-		return err
-	}
-
-	nix.Homepage, err = tmpl.New(ctx).Apply(nix.Homepage)
-	if err != nil {
-		return err
-	}
-
-	nix.Description, err = tmpl.New(ctx).Apply(nix.Description)
-	if err != nil {
-		return err
-	}
-
-	nix.Path, err = tmpl.New(ctx).Apply(nix.Path)
-	if err != nil {
-		return err
-	}
 	if nix.Path == "" {
 		nix.Path = path.Join("pkgs", nix.Name, "default.nix")
 	}

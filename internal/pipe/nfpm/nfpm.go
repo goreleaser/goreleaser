@@ -149,7 +149,6 @@ func create(ctx *context.Context, fpm config.NFPM, format string, binaries []*ar
 		}
 	}
 
-	bindDir := fpm.Bindir
 	if format == termuxFormat {
 		if !isSupportedTermuxArch(arch) {
 			log.Debugf("skipping termux.deb for %s as its not supported by termux", arch)
@@ -163,7 +162,7 @@ func create(ctx *context.Context, fpm config.NFPM, format string, binaries []*ar
 		)
 		infoArch = replacer.Replace(infoArch)
 		arch = replacer.Replace(arch)
-		bindDir = filepath.Join("/data/data/com.termux/files", bindDir)
+		fpm.Bindir = filepath.Join("/data/data/com.termux/files", fpm.Bindir)
 	}
 
 	overridden, err := mergeOverrides(fpm, format)
@@ -184,25 +183,17 @@ func create(ctx *context.Context, fpm config.NFPM, format string, binaries []*ar
 			"PackageName": packageName,
 		})
 
-	binDir, err := t.Apply(bindDir)
-	if err != nil {
+	if err := t.ApplyAll(
+		&fpm.Bindir,
+		&fpm.Homepage,
+		&fpm.Description,
+		&fpm.Maintainer,
+	); err != nil {
 		return err
 	}
 
-	homepage, err := t.Apply(fpm.Homepage)
-	if err != nil {
-		return err
-	}
-
-	description, err := t.Apply(fpm.Description)
-	if err != nil {
-		return err
-	}
-
-	maintainer, err := t.Apply(fpm.Maintainer)
-	if err != nil {
-		return err
-	}
+	// We cannot use t.ApplyAll on the following fields as they are shared
+	// across multiple nfpms.
 
 	debKeyFile, err := t.Apply(overridden.Deb.Signature.KeyFile)
 	if err != nil {
@@ -257,7 +248,7 @@ func create(ctx *context.Context, fpm config.NFPM, format string, binaries []*ar
 	if !fpm.Meta {
 		for _, binary := range binaries {
 			src := binary.Path
-			dst := filepath.Join(binDir, binary.Name)
+			dst := filepath.Join(fpm.Bindir, binary.Name)
 			log.WithField("src", src).WithField("dst", dst).Debug("adding binary to package")
 			contents = append(contents, &files.Content{
 				Source:      filepath.ToSlash(src),
@@ -282,10 +273,10 @@ func create(ctx *context.Context, fpm config.NFPM, format string, binaries []*ar
 		Release:         fpm.Release,
 		Prerelease:      fpm.Prerelease,
 		VersionMetadata: fpm.VersionMetadata,
-		Maintainer:      maintainer,
-		Description:     description,
+		Maintainer:      fpm.Maintainer,
+		Description:     fpm.Description,
 		Vendor:          fpm.Vendor,
-		Homepage:        homepage,
+		Homepage:        fpm.Homepage,
 		License:         fpm.License,
 		Changelog:       fpm.Changelog,
 		Overridables: nfpm.Overridables{

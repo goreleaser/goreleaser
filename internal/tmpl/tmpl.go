@@ -230,6 +230,20 @@ func (t *Template) Apply(s string) (string, error) {
 	return out.String(), err
 }
 
+// ApplyAll applies all the given strings against the Fields stored in the
+// template. Application stops as soon as an error is encountered.
+func (t *Template) ApplyAll(sps ...*string) error {
+	for _, sp := range sps {
+		s := *sp
+		result, err := t.Apply(s)
+		if err != nil {
+			return fmt.Errorf("failed to apply template: %s: %w", s, err)
+		}
+		*sp = result
+	}
+	return nil
+}
+
 func (t *Template) envOrDefault(name, value string) string {
 	s, ok := t.fields[env].(context.Env)[name]
 	if !ok {

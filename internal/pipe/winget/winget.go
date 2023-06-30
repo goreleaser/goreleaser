@@ -104,11 +104,22 @@ func (p Pipe) doRun(ctx *context.Context, winget config.Winget, cl client.Releas
 
 	tp := tmpl.New(ctx)
 
-	var err error
-	winget.Publisher, err = tp.Apply(winget.Publisher)
+	err := tp.ApplyAll(
+		&winget.Publisher,
+		&winget.Name,
+		&winget.Author,
+		&winget.PublisherURL,
+		&winget.Homepage,
+		&winget.SkipUpload,
+		&winget.Description,
+		&winget.ShortDescription,
+		&winget.ReleaseNotesURL,
+		&winget.Path,
+	)
 	if err != nil {
 		return err
 	}
+
 	if winget.Publisher == "" {
 		return errNoPublisher
 	}
@@ -117,53 +128,13 @@ func (p Pipe) doRun(ctx *context.Context, winget config.Winget, cl client.Releas
 		return errNoLicense
 	}
 
-	winget.Name, err = tp.Apply(winget.Name)
-	if err != nil {
-		return err
-	}
-
-	winget.Author, err = tp.Apply(winget.Author)
-	if err != nil {
-		return err
-	}
-
-	winget.PublisherURL, err = tp.Apply(winget.PublisherURL)
-	if err != nil {
-		return err
-	}
-
-	winget.Homepage, err = tp.Apply(winget.Homepage)
-	if err != nil {
-		return err
-	}
-
 	winget.Repository, err = client.TemplateRef(tp.Apply, winget.Repository)
-	if err != nil {
-		return err
-	}
-
-	winget.SkipUpload, err = tp.Apply(winget.SkipUpload)
-	if err != nil {
-		return err
-	}
-
-	winget.Description, err = tp.Apply(winget.Description)
-	if err != nil {
-		return err
-	}
-
-	winget.ShortDescription, err = tp.Apply(winget.ShortDescription)
 	if err != nil {
 		return err
 	}
 
 	if winget.ShortDescription == "" {
 		return errNoShortDescription
-	}
-
-	winget.ReleaseNotesURL, err = tp.Apply(winget.ReleaseNotesURL)
-	if err != nil {
-		return err
 	}
 
 	winget.ReleaseNotes, err = tp.WithExtraFields(tmpl.Fields{
@@ -180,10 +151,6 @@ func (p Pipe) doRun(ctx *context.Context, winget config.Winget, cl client.Releas
 		}
 	}
 
-	winget.Path, err = tp.Apply(winget.Path)
-	if err != nil {
-		return err
-	}
 	if winget.Path == "" {
 		winget.Path = filepath.Join("manifests", strings.ToLower(string(winget.Publisher[0])), winget.Publisher, winget.Name, ctx.Version)
 	}

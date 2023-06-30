@@ -159,31 +159,17 @@ func doRun(ctx *context.Context, krew config.Krew, cl client.ReleaserURLTemplate
 
 func templateFields(ctx *context.Context, krew config.Krew) (config.Krew, error) {
 	t := tmpl.New(ctx)
-	var err error
-	krew.Name, err = t.Apply(krew.Name)
-	if err != nil {
+
+	if err := t.ApplyAll(
+		&krew.Name,
+		&krew.Homepage,
+		&krew.Description,
+		&krew.Caveats,
+		&krew.ShortDescription,
+	); err != nil {
 		return config.Krew{}, err
 	}
 
-	krew.Homepage, err = t.Apply(krew.Homepage)
-	if err != nil {
-		return config.Krew{}, err
-	}
-
-	krew.Description, err = t.Apply(krew.Description)
-	if err != nil {
-		return config.Krew{}, err
-	}
-
-	krew.Caveats, err = t.Apply(krew.Caveats)
-	if err != nil {
-		return config.Krew{}, err
-	}
-
-	krew.ShortDescription, err = t.Apply(krew.ShortDescription)
-	if err != nil {
-		return config.Krew{}, err
-	}
 	return krew, nil
 }
 
