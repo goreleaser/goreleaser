@@ -36,7 +36,7 @@ func getInstanceURL(ctx *context.Context) (string, error) {
 	u.Path = ""
 	rawurl := u.String()
 	if rawurl == "" {
-		return "", fmt.Errorf("invalid URL: %v", apiURL)
+		return "", fmt.Errorf("invalid URL: %q", ctx.Config.GiteaURLs.API)
 	}
 	return rawurl, nil
 }

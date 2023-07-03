@@ -625,3 +625,14 @@ func TestGiteaChangelog(t *testing.T) {
 	_, err = client.Changelog(ctx, repo, "v1.0.0", "v1.1.0")
 	require.EqualError(t, err, ErrNotImplemented.Error())
 }
+
+func TestGetInstanceURL(t *testing.T) {
+	ctx := testctx.NewWithCfg(config.Project{
+		GiteaURLs: config.GiteaURLs{
+			API: "http://our.internal.gitea.media/api/v1",
+		},
+	})
+	url, err := getInstanceURL(ctx)
+	require.NoError(t, err)
+	require.Equal(t, "http://our.internal.gitea.media", url)
+}
