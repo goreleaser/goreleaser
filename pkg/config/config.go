@@ -658,6 +658,7 @@ type Release struct {
 	Disable                string      `yaml:"disable,omitempty" json:"disable,omitempty" jsonschema:"oneof_type=string;boolean"`
 	SkipUpload             string      `yaml:"skip_upload,omitempty" json:"skip_upload,omitempty" jsonschema:"oneof_type=string;boolean"`
 	Prerelease             string      `yaml:"prerelease,omitempty" json:"prerelease,omitempty"`
+	MakeLatest             string      `yaml:"make_latest,omitempty" json:"make_latest,omitempty" jsonschema:"oneof_type=string;boolean"`
 	NameTemplate           string      `yaml:"name_template,omitempty" json:"name_template,omitempty"`
 	IDs                    []string    `yaml:"ids,omitempty" json:"ids,omitempty"`
 	ExtraFiles             []ExtraFile `yaml:"extra_files,omitempty" json:"extra_files,omitempty"`

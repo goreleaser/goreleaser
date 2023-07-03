@@ -75,6 +75,15 @@ release:
   # Default is false.
   prerelease: auto
 
+  # If set to false, will NOT mark the release as "latest".
+  # This prevents it from being shown at the top of the release list,
+  # and from being returned when calling https://api.github.com/repos/OWNER/REPO/releases/latest.
+  #
+  # Available only for GitHub.
+  #
+  # Default is true.
+  make_latest: true
+
   # What to do with the release notes in case there the release already exists.
   #
   # Valid options are:
