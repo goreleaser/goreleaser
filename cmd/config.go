@@ -31,6 +31,6 @@ func loadConfig(path string) (config.Project, error) {
 	}
 	// the user didn't specify a config file and the known possible file names
 	// don't exist, so, return an empty config and a nil err.
-	log.Warn("could not find a config file, using defaults...")
+	log.Warn("could not find a configuration file, using defaults...")
 	return config.Project{}, nil
 }
