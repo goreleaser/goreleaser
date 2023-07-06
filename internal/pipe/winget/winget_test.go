@@ -62,18 +62,20 @@ func TestRunPipe(t *testing.T) {
 			name:       "full",
 			expectPath: "manifests/b/Beckersoft LTDA/foo/1.2.1",
 			winget: config.Winget{
-				Name:             "foo",
-				Publisher:        "Beckersoft",
-				PublisherURL:     "https://carlosbecker.com",
-				Copyright:        "bla bla bla",
-				Author:           "Carlos Becker",
-				Path:             "manifests/b/Beckersoft LTDA/foo/{{.Version}}",
-				Repository:       config.RepoRef{Owner: "foo", Name: "bar"},
-				CommitAuthor:     config.CommitAuthor{},
-				IDs:              []string{"foo"},
-				Goamd64:          "v1",
-				SkipUpload:       "false",
-				ShortDescription: "foo",
+				Name:                "foo",
+				Publisher:           "Beckersoft",
+				PublisherURL:        "https://carlosbecker.com",
+				PublisherSupportURL: "https://carlosbecker.com/support",
+				Copyright:           "bla bla bla",
+				CopyrightURL:        "https://goreleaser.com/copyright",
+				Author:              "Carlos Becker",
+				Path:                "manifests/b/Beckersoft LTDA/foo/{{.Version}}",
+				Repository:          config.RepoRef{Owner: "foo", Name: "bar"},
+				CommitAuthor:        config.CommitAuthor{},
+				IDs:                 []string{"foo"},
+				Goamd64:             "v1",
+				SkipUpload:          "false",
+				ShortDescription:    "foo",
 				Description: `long foo bar
 
 				yadaa yada yada loooaaasssss
@@ -84,6 +86,7 @@ func TestRunPipe(t *testing.T) {
 				LicenseURL:      "https://goreleaser.com/eula/",
 				ReleaseNotesURL: "https://github.com/goreleaser/goreleaser/tags/{{.Tag}}",
 				ReleaseNotes:    "{{.Changelog}}",
+				Tags:            []string{"foo", "bar"},
 			},
 		},
 		{
@@ -440,6 +443,80 @@ func TestRunPipe(t *testing.T) {
 				ShortDescription:      "foo bar zaz",
 				CommitMessageTemplate: "{{.Foo}}",
 				IDs:                   []string{"foo"},
+				Repository: config.RepoRef{
+					Owner: "foo",
+					Name:  "bar",
+				},
+			},
+		},
+		{
+			name:             "bad-publisher-support-url-tmpl",
+			expectRunErrorIs: &template.Error{},
+			winget: config.Winget{
+				Name:                "foo",
+				Publisher:           "Beckersoft",
+				PublisherSupportURL: "{{.Nope}}",
+				License:             "MIT",
+				ShortDescription:    "foo bar zaz",
+				Repository: config.RepoRef{
+					Owner: "foo",
+					Name:  "bar",
+				},
+			},
+		},
+		{
+			name:             "bad-copyright-tmpl",
+			expectRunErrorIs: &template.Error{},
+			winget: config.Winget{
+				Name:             "foo",
+				Publisher:        "Beckersoft",
+				License:          "MIT",
+				Copyright:        "{{ .Nope }}",
+				ShortDescription: "foo bar zaz",
+				Repository: config.RepoRef{
+					Owner: "foo",
+					Name:  "bar",
+				},
+			},
+		},
+		{
+			name:             "bad-copyright-url-tmpl",
+			expectRunErrorIs: &template.Error{},
+			winget: config.Winget{
+				Name:             "{{ .Nope }}",
+				Publisher:        "Beckersoft",
+				License:          "MIT",
+				CopyrightURL:     "{{ .Nope }}",
+				ShortDescription: "foo bar zaz",
+				Repository: config.RepoRef{
+					Owner: "foo",
+					Name:  "bar",
+				},
+			},
+		},
+		{
+			name:             "bad-license-tmpl",
+			expectRunErrorIs: &template.Error{},
+			winget: config.Winget{
+				Name:             "foo",
+				Publisher:        "Beckersoft",
+				License:          "{{ .Nope }}",
+				ShortDescription: "foo bar zaz",
+				Repository: config.RepoRef{
+					Owner: "foo",
+					Name:  "bar",
+				},
+			},
+		},
+		{
+			name:             "bad-license-url-tmpl",
+			expectRunErrorIs: &template.Error{},
+			winget: config.Winget{
+				Name:             "foo",
+				Publisher:        "Beckersoft",
+				License:          "MIT",
+				LicenseURL:       "{{ .Nope }}",
+				ShortDescription: "foo bar zaz",
 				Repository: config.RepoRef{
 					Owner: "foo",
 					Name:  "bar",

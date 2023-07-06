@@ -30,6 +30,8 @@ winget:
     short_description: "Software to create fast and easy drum rolls."
 
     # License name.
+    #
+    # Templates: allowed
     # Required.
     license: "mit"
 
@@ -37,6 +39,11 @@ winget:
     #
     # Templates: allowed
     publisher_url: https://goreleaser.com
+
+    # Publisher support URL.
+    #
+    # Templates: allowed
+    publisher_support_url: "https://github.com/user/repo/issues/new"
 
     # Package identifier.
     #
@@ -86,10 +93,19 @@ winget:
     description: "Software to create fast and easy drum rolls."
 
     # License URL.
+    #
+    # Templates: allowed
     license_url: "https://goreleaser.com/license"
 
     # Copyright.
+    #
+    # Templates: allowed
     copyright: "Becker Software LTDA"
+
+    # Copyright URL.
+    #
+    # Templates: allowed
+    copyright_url: "https://goreleaser.com/copyright"
 
     # Setting this will prevent goreleaser to actually try to commit the updated
     # package - instead, it will be stored on the dist folder only,
@@ -113,6 +129,12 @@ winget:
     #
     # Templates: allowed
     release_notes_url: "https://foo.bar/changelog/{{.Version}}"
+
+    # Tags.
+    tags:
+      - golang
+      - cli
+
 
 {% include-markdown "../includes/repository.md" comments=false %}
 ```

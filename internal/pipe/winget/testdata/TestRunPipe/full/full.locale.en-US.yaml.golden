@@ -5,12 +5,14 @@ PackageVersion: 1.2.1
 PackageLocale: en-US
 Publisher: Beckersoft
 PublisherUrl: https://carlosbecker.com
+PublisherSupportUrl: https://carlosbecker.com/support
 Author: Carlos Becker
 PackageName: foo
 PackageUrl: https://goreleaser.com
 License: MIT
 LicenseUrl: https://goreleaser.com/eula/
 Copyright: bla bla bla
+CopyrightUrl: https://goreleaser.com/copyright
 ShortDescription: foo
 Description: |-
   long foo bar
@@ -19,6 +21,9 @@ Description: |-
 
   				sss
 Moniker: foo
+Tags:
+  - foo
+  - bar
 ReleaseNotes: the changelog for this release...
 ReleaseNotesUrl: https://github.com/goreleaser/goreleaser/tags/v1.2.1
 ManifestType: defaultLocale
