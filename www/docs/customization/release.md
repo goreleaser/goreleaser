@@ -49,7 +49,7 @@ release:
   # Default: ''
   # Since: v1.11
   # Templates: allowed
-  target_commitish: '{{ .Commit }}'
+  target_commitish: "{{ .Commit }}"
 
   # This allows to change which tag GitHub will create.
   # Usually you'll use this together with `target_commitish`, or if you want to
@@ -59,7 +59,7 @@ release:
   # Default: '{{ .PrefixedCurrentTag }}'
   # Since: v1.19 (pro)
   # Templates: allowed
-  tag: '{{ .CurrentTag }}'
+  tag: "{{ .CurrentTag }}"
 
   # If set, will create a release discussion in the category specified.
   #
@@ -135,7 +135,6 @@ release:
     - glob: ./single_file.txt
       name_template: file.txt # note that this only works if glob matches 1 file only
 
-
   # Additional templated extra files to add to the release.
   # Those files will have their contents pass through the template engine,
   # and its results will be added to the release.
@@ -146,10 +145,10 @@ release:
   templated_extra_files:
     - src: LICENSE.tpl
       dst: LICENSE.txt
-
 ```
 
 !!! tip
+
     [Learn how to set up an API token, GitHub Enterprise, etc](/scm/github/).
 
 ## GitLab
@@ -206,13 +205,16 @@ release:
 ```
 
 !!! tip
+
     [Learn how to set up an API token, self-hosted GitLab, etc](/scm/gitlab/).
 
 !!! tip
+
     If you use GitLab subgroups, you need to specify it in the `owner` field,
     e.g. `mygroup/mysubgroup`.
 
 !!! warning
+
     Only GitLab `v12.9+` is supported for releases.
 
 ## Gitea
@@ -273,17 +275,21 @@ ALLOWED_TYPES = application/gzip|application/x-gzip|application/x-gtar|applicati
 ```
 
 !!! tip
+
     [Learn how to set up an API token](/scm/gitea/).
 
 !!! tip
+
     Learn more about the [name template engine](/customization/templates/).
 
 !!! warning
+
     Gitea versions earlier than 1.9.2 do not support uploading `checksums.txt`
     files because of a [bug](https://github.com/go-gitea/gitea/issues/7882),
     so you will have to enable all file types with `*/*`.
 
 !!! warning
+
     `draft` and `prerelease` are only supported by GitHub and Gitea.
 
 ### Define Previous Tag
@@ -318,6 +324,7 @@ Some changelog generators you can use:
 - [miniscruff/changie](https://github.com/miniscruff/changie)
 
 !!! info
+
     If you create the release before running GoReleaser, and the said release
     has some text in its body, GoReleaser will not override it with its release
     notes.

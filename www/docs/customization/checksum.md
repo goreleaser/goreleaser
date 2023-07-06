@@ -43,7 +43,6 @@ checksum:
     - glob: ./single_file.txt
       name_template: file.txt # note that this only works if glob matches 1 file only
 
-
   # Additional templated extra files to add to the checksum.
   # Those files will have their contents pass through the template engine,
   # and its results will be added to the checksum.
@@ -54,8 +53,8 @@ checksum:
   templated_extra_files:
     - src: LICENSE.tpl
       dst: LICENSE.txt
-
 ```
 
 !!! tip
+
     Learn more about the [name template engine](/customization/templates/).

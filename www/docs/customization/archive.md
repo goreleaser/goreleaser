@@ -9,7 +9,7 @@ Here is a commented `archives` section with all fields specified:
 ```yaml
 # .goreleaser.yaml
 archives:
-  -
+  - #
     # ID of this archive.
     #
     # Default: 'default'
@@ -17,7 +17,7 @@ archives:
 
     # Builds reference which build instances should be archived in this archive.
     builds:
-    - default
+      - default
 
     # Archive format. Valid options are `tar.gz`, `tgz`, `tar.xz`, `txz`, tar`, `gz`, `zip` and `binary`.
     # If format is `binary`, no archives are created and the binaries are instead
@@ -54,7 +54,6 @@ archives:
       # format is `time.RFC3339Nano`
       mtime: 2008-01-02T15:04:05Z
 
-
     # Set this to true if you want all files in the archive to be in a single directory.
     # If set to true and you extract the archive 'goreleaser_Linux_arm64.tar.gz',
     # you'll get a folder 'goreleaser_Linux_arm64'.
@@ -68,7 +67,6 @@ archives:
     #
     # Since: v1.11
     strip_parent_binary_folder: true
-
 
     # This will make the destination paths be relative to the longest common
     # path prefix between all the files matched and the source glob.
@@ -96,7 +94,7 @@ archives:
       - design/*.png
       - templates/**/*
       # a more complete example, check the globbing deep dive below
-      - src: '*.md'
+      - src: "*.md"
         dst: docs
 
         # Strip parent folders when adding files to the archive.
@@ -116,11 +114,10 @@ archives:
           # Must be in time.RFC3339Nano format.
           #
           # Templates: allowed (since v1.14)
-          mtime: '{{ .CommitDate }}'
+          mtime: "{{ .CommitDate }}"
 
           # File mode.
           mode: 0644
-
 
     # Additional templated files to add to the archive.
     # Those files will have their contents pass through the template engine,
@@ -129,9 +126,9 @@ archives:
     # Since: v1.17 (pro)
     # This feature is only available in GoReleaser Pro.
     # Templates: allowed
-    files:
+    templated_files:
       # a more complete example, check the globbing deep dive below
-      - src: 'LICENSE.md.tpl'
+      - src: "LICENSE.md.tpl"
         dst: LICENSE.md
 
         # File info.
@@ -147,7 +144,7 @@ archives:
 
           # Must be in time.RFC3339Nano format.
           # Templateable (since v1.14.0)
-          mtime: '{{ .CommitDate }}'
+          mtime: "{{ .CommitDate }}"
 
           # File mode.
           mode: 0644
@@ -157,41 +154,46 @@ archives:
     # This feature is only available in GoReleaser Pro.
     hooks:
       before:
-      - make clean # simple string
-      - cmd: go generate ./... # specify cmd
-      - cmd: go mod tidy
-        output: true # always prints command output
-        dir: ./submodule # specify command working directory
-      - cmd: touch {{ .Env.FILE_TO_TOUCH }}
-        env:
-        - 'FILE_TO_TOUCH=something-{{ .ProjectName }}' # specify hook level environment variables
+        - make clean # simple string
+        - cmd: go generate ./... # specify cmd
+        - cmd: go mod tidy
+          output: true # always prints command output
+          dir: ./submodule # specify command working directory
+        - cmd: touch {{ .Env.FILE_TO_TOUCH }}
+          env:
+            - "FILE_TO_TOUCH=something-{{ .ProjectName }}" # specify hook level environment variables
 
       after:
-      - make clean
-      - cmd: cat *.yaml
-        dir: ./submodule
-      - cmd: touch {{ .Env.RELEASE_DONE }}
-        env:
-        - 'RELEASE_DONE=something-{{ .ProjectName }}' # specify hook level environment variables
+        - make clean
+        - cmd: cat *.yaml
+          dir: ./submodule
+        - cmd: touch {{ .Env.RELEASE_DONE }}
+          env:
+            - "RELEASE_DONE=something-{{ .ProjectName }}" # specify hook level environment variables
 
     # Disables the binary count check.
     allow_different_binary_count: true
 ```
 
 !!! success "GoReleaser Pro"
+
     Archive hooks is a [GoReleaser Pro feature](/pro/).
 
 !!! tip
+
     Learn more about the [name template engine](/customization/templates/).
 
 !!! tip
+
     You can add entire folders, its subfolders and files by using the glob notation,
     for example: `myfolder/**/*`.
 
 !!! warning
+
     The `files` and `wrap_in_directory` options are ignored if `format` is `binary`.
 
 !!! warning
+
     The `name_template` option will not reflect the filenames under the `dist` folder if `format` is `binary`.
     The template will be applied only where the binaries are uploaded (e.g. GitHub releases).
 
@@ -202,30 +204,29 @@ We'll walk through what happens in each case using some examples.
 ```yaml
 # ...
 files:
+  # Adds `README.md` at the root of the archive:
+  - README.md
 
-# Adds `README.md` at the root of the archive:
-- README.md
+  # Adds all `md` files to the root of the archive:
+  - "*.md"
 
-# Adds all `md` files to the root of the archive:
-- '*.md'
+  # Adds all `md` files to the root of the archive:
+  - src: "*.md"
 
-# Adds all `md` files to the root of the archive:
-- src: '*.md'
+  # Adds all `md` files in the current folder to a `docs` folder in the archive:
+  - src: "*.md"
+    dst: docs
 
-# Adds all `md` files in the current folder to a `docs` folder in the archive:
-- src: '*.md'
-  dst: docs
+  # Recursively adds all `go` files to a `source` folder in the archive.
+  # in this case, `cmd/myapp/main.go` will be added as `source/cmd/myapp/main.go`
+  - src: "**/*.go"
+    dst: source
 
-# Recursively adds all `go` files to a `source` folder in the archive.
-# in this case, `cmd/myapp/main.go` will be added as `source/cmd/myapp/main.go`
-- src: '**/*.go'
-  dst: source
-
-# Recursively adds all `go` files to a `source` folder in the archive, stripping their parent folder.
-# In this case, `cmd/myapp/main.go` will be added as `source/main.go`:
-- src: '**/*.go'
-  dst: source
-  strip_parent: true
+  # Recursively adds all `go` files to a `source` folder in the archive, stripping their parent folder.
+  # In this case, `cmd/myapp/main.go` will be added as `source/main.go`:
+  - src: "**/*.go"
+    dst: source
+    strip_parent: true
 # ...
 ```
 
@@ -240,8 +241,8 @@ A working hack is to use something like this:
 ```yaml
 # .goreleaser.yaml
 archives:
-- files:
-  - none*
+  - files:
+      - none*
 ```
 
 This would add all files matching the glob `none*`, provide that you don't
@@ -261,15 +262,16 @@ will probably look like this:
 ```yaml
 # .goreleaser.yaml
 archives:
-- format: gz
-  files:
-  - none*
+  - format: gz
+    files:
+      - none*
 ```
 
 This should create `.gz` files with the binaries only, which should be
 extracted with something like `gzip -d file.gz`.
 
 !!! warning
+
     You won't be able to package multiple builds in a single archive either.
     The alternative is to declare multiple archives filtering by build ID.
 
@@ -280,7 +282,7 @@ You can do that by setting `format` to `binary`:
 ```yaml
 # .goreleaser.yaml
 archives:
-- format: binary
+  - format: binary
 ```
 
 Make sure to check the rest of the documentation above, as doing this has some

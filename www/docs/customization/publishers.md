@@ -40,7 +40,6 @@ Environment variables that are kept:
 - `TEMP`
 - `PATH`
 
-
 You can however use `.Env.NAME` templating syntax, which enables
 more explicit inheritance.
 
@@ -70,14 +69,14 @@ publishers:
       - TOKEN={{ .Env.CUSTOM_PUBLISHER_TOKEN }}
 ```
 
-so the above example will execute:
+So the above example will execute:
 
 ```bash
 custom-publisher -product=goreleaser -version=1.0.0 goreleaser_1.0.0_linux_amd64.zip
 ```
-in `/path/to/dist` with
-`TOKEN=token`, assuming that GoReleaser is executed with
-`CUSTOM_PUBLISHER_TOKEN=token`.
+
+In `/path/to/dist` with `TOKEN=token`, assuming that GoReleaser is executed
+with `CUSTOM_PUBLISHER_TOKEN=token`.
 
 Supported variables:
 
@@ -97,14 +96,14 @@ Of course, you can customize a lot of things:
 ```yaml
 # .goreleaser.yaml
 publishers:
-  -
+  - #
     # Unique name of your publisher. Used for identification
     name: "custom"
 
     # IDs of the artifacts you want to publish
     ids:
-     - foo
-     - bar
+      - foo
+      - bar
 
     # Publish checksums.
     checksum: true
@@ -134,7 +133,6 @@ publishers:
       - glob: ./single_file.txt
         name_template: file.txt # note that this only works if glob matches 1 file only
 
-
     # Additional templated extra files to published.
     # Those files will have their contents pass through the template engine,
     # and its results will be published.
@@ -145,7 +143,6 @@ publishers:
     templated_extra_files:
       - src: LICENSE.tpl
         dst: LICENSE.txt
-
 ```
 
 These settings should allow you to push your artifacts to any number of
@@ -153,4 +150,5 @@ endpoints, which may require non-trivial authentication or has otherwise complex
 requirements.
 
 !!! tip
+
     Learn more about the [name template engine](/customization/templates/).

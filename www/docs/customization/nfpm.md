@@ -189,7 +189,7 @@ nfpms:
     # Since: v1.17 (pro)
     # This feature is only available in GoReleaser Pro.
     # Templates: allowed
-    files:
+    templated_contents:
       # a more complete example, check the globbing deep dive below
       - src: "LICENSE.md.tpl"
         dst: LICENSE.md

@@ -226,8 +226,7 @@
 								"type": "boolean"
 							}
 						],
-						"description": "you can now remove this",
-						"deprecated": true
+						"description": "you can now remove this"
 					},
 					"files": {
 						"items": {
@@ -1246,8 +1245,7 @@
 					},
 					"tap": {
 						"$ref": "#/$defs/RepoRef",
-						"description": "use repository instead",
-						"deprecated": true
+						"description": "use repository instead"
 					},
 					"repository": {
 						"$ref": "#/$defs/RepoRef"
@@ -1266,8 +1264,7 @@
 					},
 					"plist": {
 						"type": "string",
-						"description": "use service instead",
-						"deprecated": true
+						"description": "use service instead"
 					},
 					"install": {
 						"type": "string"
@@ -1566,8 +1563,7 @@
 					},
 					"index": {
 						"$ref": "#/$defs/RepoRef",
-						"description": "use repository instead",
-						"deprecated": true
+						"description": "use repository instead"
 					},
 					"repository": {
 						"$ref": "#/$defs/RepoRef"
@@ -2322,8 +2318,7 @@
 					},
 					"scoop": {
 						"$ref": "#/$defs/Scoop",
-						"description": "use scoops insteads",
-						"deprecated": true
+						"description": "use scoops insteads"
 					},
 					"scoops": {
 						"items": {
@@ -2471,8 +2466,7 @@
 					},
 					"build": {
 						"$ref": "#/$defs/Build",
-						"description": "use builds instead",
-						"deprecated": true
+						"description": "use builds instead"
 					},
 					"force_token": {
 						"type": "string",
@@ -2843,8 +2837,7 @@
 					},
 					"bucket": {
 						"$ref": "#/$defs/RepoRef",
-						"description": "use repository instead",
-						"deprecated": true
+						"description": "use repository instead"
 					},
 					"repository": {
 						"$ref": "#/$defs/RepoRef"
@@ -3333,8 +3326,7 @@
 								"type": "boolean"
 							}
 						],
-						"description": "you can now remove this",
-						"deprecated": true
+						"description": "you can now remove this"
 					},
 					"templated_files": {
 						"items": {
@@ -3680,7 +3672,13 @@
 					"publisher_url": {
 						"type": "string"
 					},
+					"publisher_support_url": {
+						"type": "string"
+					},
 					"copyright": {
+						"type": "string"
+					},
+					"copyright_url": {
 						"type": "string"
 					},
 					"author": {
@@ -3740,6 +3738,12 @@
 					},
 					"release_notes_url": {
 						"type": "string"
+					},
+					"tags": {
+						"items": {
+							"type": "string"
+						},
+						"type": "array"
 					}
 				},
 				"additionalProperties": false,

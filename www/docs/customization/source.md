@@ -13,20 +13,20 @@ source:
   #
   # Default: '{{ .ProjectName }}-{{ .Version }}'
   # Templates: allowed
-  name_template: '{{ .ProjectName }}'
+  name_template: "{{ .ProjectName }}"
 
   # Format of the archive.
   #
   # Valid formats are: tar, tgz, tar.gz, and zip.
   #
   # Default: 'tar.gz'
-  format: 'tar'
+  format: "tar"
 
   # Prefix.
   # String to prepend to each filename in the archive.
   #
   # Templates: allowed
-  prefix_template: '{{ .ProjectName }}-{{ .Version }}/'
+  prefix_template: "{{ .ProjectName }}-{{ .Version }}/"
 
   # This will make the destination paths be relative to the longest common
   # path prefix between all the files matched and the source glob.
@@ -48,7 +48,7 @@ source:
     - design/*.png
     - templates/**/*
     # a more complete example, check the globbing deep dive below
-    - src: '*.md'
+    - src: "*.md"
       dst: docs
 
       # Strip parent folders when adding files to the archive.
@@ -64,7 +64,6 @@ source:
         # format is `time.RFC3339Nano`
         mtime: 2008-01-02T15:04:05Z
 
-
   # Additional templated files to add to the source archive.
   # Those files will have their contents pass through the template engine,
   # and its results will be added to the source archive.
@@ -72,17 +71,17 @@ source:
   # Since: v1.17 (pro)
   # This feature is only available in GoReleaser Pro.
   # Templates: allowed
-  files:
+  templated_files:
     # a more complete example, check the globbing deep dive below
-    - src: 'LICENSE.md.tpl'
+    - src: "LICENSE.md.tpl"
       dst: LICENSE.md
       info:
         owner: root
         group: root
         mode: 0644
         mtime: 2008-01-02T15:04:05Z
-
 ```
 
 !!! tip
+
     Learn more about the [name template engine](/customization/templates/).
