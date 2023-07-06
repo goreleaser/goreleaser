@@ -95,25 +95,27 @@ type Installer struct {
 
 // nolint: tagliatelle
 type Locale struct {
-	PackageIdentifier string   `yaml:"PackageIdentifier,omitempty"`
-	PackageVersion    string   `yaml:"PackageVersion,omitempty"`
-	PackageLocale     string   `yaml:"PackageLocale,omitempty"`
-	Publisher         string   `yaml:"Publisher,omitempty"`
-	PublisherURL      string   `yaml:"PublisherUrl,omitempty"`
-	Author            string   `yaml:"Author,omitempty"`
-	PackageName       string   `yaml:"PackageName,omitempty"`
-	PackageURL        string   `yaml:"PackageUrl,omitempty"`
-	License           string   `yaml:"License,omitempty"`
-	LicenseURL        string   `yaml:"LicenseUrl,omitempty"`
-	Copyright         string   `yaml:"Copyright,omitempty"`
-	ShortDescription  string   `yaml:"ShortDescription,omitempty"`
-	Description       string   `yaml:"Description,omitempty"`
-	Moniker           string   `yaml:"Moniker,omitempty"`
-	Tags              []string `yaml:"Tags,omitempty"`
-	ReleaseNotes      string   `yaml:"ReleaseNotes,omitempty"`
-	ReleaseNotesURL   string   `yaml:"ReleaseNotesUrl,omitempty"`
-	ManifestType      string   `yaml:"ManifestType,omitempty"`
-	ManifestVersion   string   `yaml:"ManifestVersion,omitempty"`
+	PackageIdentifier   string   `yaml:"PackageIdentifier,omitempty"`
+	PackageVersion      string   `yaml:"PackageVersion,omitempty"`
+	PackageLocale       string   `yaml:"PackageLocale,omitempty"`
+	Publisher           string   `yaml:"Publisher,omitempty"`
+	PublisherURL        string   `yaml:"PublisherUrl,omitempty"`
+	PublisherSupportURL string   `yaml:"PublisherSupportUrl,omitempty"`
+	Author              string   `yaml:"Author,omitempty"`
+	PackageName         string   `yaml:"PackageName,omitempty"`
+	PackageURL          string   `yaml:"PackageUrl,omitempty"`
+	License             string   `yaml:"License,omitempty"`
+	LicenseURL          string   `yaml:"LicenseUrl,omitempty"`
+	Copyright           string   `yaml:"Copyright,omitempty"`
+	CopyrightURL        string   `yaml:"CopyrightUrl,omitempty"`
+	ShortDescription    string   `yaml:"ShortDescription,omitempty"`
+	Description         string   `yaml:"Description,omitempty"`
+	Moniker             string   `yaml:"Moniker,omitempty"`
+	Tags                []string `yaml:"Tags,omitempty"`
+	ReleaseNotes        string   `yaml:"ReleaseNotes,omitempty"`
+	ReleaseNotesURL     string   `yaml:"ReleaseNotesUrl,omitempty"`
+	ManifestType        string   `yaml:"ManifestType,omitempty"`
+	ManifestVersion     string   `yaml:"ManifestVersion,omitempty"`
 }
 
 var fromGoArch = map[string]string{

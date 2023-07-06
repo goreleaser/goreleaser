@@ -266,7 +266,9 @@ type Winget struct {
 	PackageIdentifier     string       `yaml:"package_identifier,omitempty" json:"package_identifier,omitempty"`
 	Publisher             string       `yaml:"publisher,omitempty" json:"publisher,omitempty"`
 	PublisherURL          string       `yaml:"publisher_url,omitempty" json:"publisher_url,omitempty"`
+	PublisherSupportURL   string       `yaml:"publisher_support_url,omitempty" json:"publisher_support_url,omitempty"`
 	Copyright             string       `yaml:"copyright,omitempty" json:"copyright,omitempty"`
+	CopyrightURL          string       `yaml:"copyright_url,omitempty" json:"copyright_url,omitempty"`
 	Author                string       `yaml:"author,omitempty" json:"author,omitempty"`
 	Path                  string       `yaml:"path,omitempty" json:"path,omitempty"`
 	Repository            RepoRef      `yaml:"repository,omitempty" json:"repository,omitempty"`
@@ -283,6 +285,7 @@ type Winget struct {
 	LicenseURL            string       `yaml:"license_url,omitempty" json:"license_url,omitempty"`
 	ReleaseNotes          string       `yaml:"release_notes,omitempty" json:"release_notes,omitempty"`
 	ReleaseNotesURL       string       `yaml:"release_notes_url,omitempty" json:"release_notes_url,omitempty"`
+	Tags                  []string     `yaml:"tags,omitempty" json:"tags,omitempty"`
 }
 
 // Krew contains the krew section.
