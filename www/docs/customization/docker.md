@@ -192,7 +192,8 @@ This will build and publish the following images:
 - `myuser/foo`
 
 !!! tip
-Learn more about the [name template engine](/customization/templates/).
+
+    Learn more about the [name template engine](/customization/templates/).
 
 ## Keeping docker images updated for current major
 
