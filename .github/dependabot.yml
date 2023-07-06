@@ -10,6 +10,10 @@ updates:
     commit-message:
       prefix: "feat"
       include: "scope"
+    groups:
+      gomod-deps:
+        patterns:
+          - "*"
   - package-ecosystem: "github-actions"
     directory: "/"
     schedule:
@@ -20,6 +24,10 @@ updates:
     commit-message:
       prefix: "chore"
       include: "scope"
+    groups:
+      github-actions:
+        patterns:
+          - "*"
   - package-ecosystem: "docker"
     directory: "/"
     schedule:
