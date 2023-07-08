@@ -197,10 +197,11 @@ GoReleaser now allows many `scoop` configurations, so it should be pluralized
     ```
 
 === "After"
-`yaml
+
+    ``` yaml
     scoops:
     - # ...
-   `
+    ```
 
 ### build
 
