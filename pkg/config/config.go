@@ -609,6 +609,7 @@ type UniversalBinary struct {
 	NameTemplate string          `yaml:"name_template,omitempty" json:"name_template,omitempty"`
 	Replace      bool            `yaml:"replace,omitempty" json:"replace,omitempty"`
 	Hooks        BuildHookConfig `yaml:"hooks,omitempty" json:"hooks,omitempty"`
+	ModTimestamp string          `yaml:"mod_timestamp,omitempty" json:"mod_timestamp,omitempty"`
 }
 
 // UPX allows to compress binaries with `upx`.

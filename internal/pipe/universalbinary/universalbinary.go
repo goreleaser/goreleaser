@@ -7,6 +7,8 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"strconv"
+	"time"
 
 	"github.com/caarlos0/go-shellwords"
 	"github.com/caarlos0/log"
@@ -134,10 +136,13 @@ const (
 
 // heavily based on https://github.com/randall77/makefat
 func makeUniversalBinary(ctx *context.Context, opts *build.Options, unibin config.UniversalBinary) error {
-	name, err := tmpl.New(ctx).Apply(unibin.NameTemplate)
-	if err != nil {
+	if err := tmpl.New(ctx).ApplyAll(
+		&unibin.NameTemplate,
+		&unibin.ModTimestamp,
+	); err != nil {
 		return err
 	}
+	name := unibin.NameTemplate
 	opts.Name = name
 
 	path := filepath.Join(ctx.Config.Dist, unibin.ID+"_darwin_all", name)
@@ -219,6 +224,19 @@ func makeUniversalBinary(ctx *context.Context, opts *build.Options, unibin confi
 
 	if err := out.Close(); err != nil {
 		return fmt.Errorf("failed to close file: %w", err)
+	}
+
+	if unibin.ModTimestamp != "" {
+		modUnix, err := strconv.ParseInt(unibin.ModTimestamp, 10, 64)
+		if err != nil {
+			return err
+		}
+		modTime := time.Unix(modUnix, 0)
+		if err := os.Chtimes(path, modTime, modTime); err != nil {
+			return fmt.Errorf("failed to change times for %s: %w", path, err)
+		}
+
+		fmt.Println("AQUI", unibin.ModTimestamp, modTime)
 	}
 
 	extra := map[string]interface{}{}
