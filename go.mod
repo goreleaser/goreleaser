@@ -4,6 +4,7 @@ go 1.20
 
 require (
 	code.gitea.io/sdk/gitea v0.15.1
+	dagger.io/dagger v0.7.2
 	github.com/Masterminds/semver/v3 v3.2.1
 	github.com/atc0005/go-teams-notify/v2 v2.7.1
 	github.com/awslabs/amazon-ecr-credential-helper/ecr-login v0.0.0-20220517224237-e6f29200ae04
@@ -56,6 +57,22 @@ require (
 )
 
 require (
+<<<<<<< Updated upstream
+=======
+	github.com/99designs/gqlgen v0.17.2 // indirect
+	github.com/Khan/genqlient v0.5.0 // indirect
+	github.com/adrg/xdg v0.4.0 // indirect
+	github.com/iancoleman/strcase v0.2.0 // indirect
+	github.com/vektah/gqlparser/v2 v2.5.1 // indirect
+	google.golang.org/genproto/googleapis/api v0.0.0-20230530153820-e85fd2cbaebc // indirect
+	google.golang.org/genproto/googleapis/rpc v0.0.0-20230530153820-e85fd2cbaebc // indirect
+)
+
+// DO NOT UPDATE THIS!! needs to be v0.0.0-20210512092938-c05353c2d58c
+require github.com/ProtonMail/go-crypto v0.0.0-20210512092938-c05353c2d58c // indirect
+
+require (
+>>>>>>> Stashed changes
 	cloud.google.com/go v0.110.2 // indirect
 	cloud.google.com/go/compute v1.20.0 // indirect
 	cloud.google.com/go/compute/metadata v0.2.3 // indirect
