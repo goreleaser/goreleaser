@@ -157,6 +157,7 @@ func process(ctx *context.Context, docker config.Docker, artifacts []*artifact.A
 	if err != nil {
 		return fmt.Errorf("failed to create temporary dir: %w", err)
 	}
+	defer os.RemoveAll(tmp)
 
 	images, err := processImageTemplates(ctx, docker)
 	if err != nil {
