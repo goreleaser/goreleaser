@@ -39,7 +39,7 @@ func newCheckCmd() *checkCmd {
 				args = append(args, root.config)
 			}
 			for _, config := range args {
-				cfg, err := loadConfig(config)
+				cfg, path, err := loadConfigCheck(config)
 				if err != nil {
 					return err
 				}
@@ -47,14 +47,14 @@ func newCheckCmd() *checkCmd {
 				ctx.Deprecated = root.deprecated
 
 				if err := ctrlc.Default.Run(ctx, func() error {
-					log.Info(boldStyle.Render("checking config..."))
+					log.Info(boldStyle.Render("checking configuration..."))
 					return defaults.Pipe{}.Run(ctx)
 				}); err != nil {
-					log.WithError(err).Error(boldStyle.Render("config is invalid"))
+					log.WithError(err).Error(boldStyle.Render("configuration is invalid"))
 					errs = append(errs, wrapErrorWithCode(
 						fmt.Errorf("configuration is invalid: %w", err),
 						1,
-						config,
+						path,
 					))
 				}
 
@@ -62,7 +62,7 @@ func newCheckCmd() *checkCmd {
 					errs = append(errs, wrapErrorWithCode(
 						fmt.Errorf("configuration is valid, but uses deprecated properties"),
 						2,
-						config,
+						path,
 					))
 				}
 			}
