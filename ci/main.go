@@ -37,4 +37,11 @@ func main() {
 		panic(err)
 	}
 	fmt.Println(out)
+
+	// Export built binary
+	_, err = builder.File("./goreleaser").Export(ctx, "./goreleaser")
+	if err != nil {
+		fmt.Printf("Error in CI pipeline: %+v\n", err)
+		panic(err)
+	}
 }
