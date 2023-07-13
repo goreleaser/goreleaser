@@ -18,6 +18,7 @@ Here's a running list of some organizations using GoReleaser[^1]:
 1. [CrowdStrike](https://www.crowdstrike.com)
 1. [Crusoe Cloud](https://crusoecloud.com)
 1. [Curio](https://curio.sh)
+1. [Dagger](https://dagger.io)
 1. [DeepSource](https://deepsource.io)
 1. [EVCC](https://evcc.io)
 1. [FabioLB](https://fabiolb.net)
