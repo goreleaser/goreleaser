@@ -13,14 +13,14 @@ import (
 type Pipe struct{}
 
 func (Pipe) Skip(ctx *context.Context) bool {
+	if ctx.Config.ReportSizes {
+		deprecate.Notice(ctx, "report_sizes")
+	}
 	return !ctx.Config.ReportSizes && !ctx.Config.Metadata.ReportSizes
 }
 func (Pipe) String() string { return "size reports" }
 
 func (Pipe) Run(ctx *context.Context) error {
-	if ctx.Config.ReportSizes {
-		deprecate.Notice(ctx, "report_sizes")
-	}
 	return ctx.Artifacts.Filter(artifact.Or(
 		artifact.ByType(artifact.Binary),
 		artifact.ByType(artifact.UniversalBinary),

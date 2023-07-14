@@ -17,14 +17,21 @@ func TestString(t *testing.T) {
 
 func TestSkip(t *testing.T) {
 	t.Run("skip", func(t *testing.T) {
-		require.True(t, Pipe{}.Skip(testctx.NewWithCfg(config.Project{
-			ReportSizes: false,
-		})))
+		require.True(t, Pipe{}.Skip(testctx.New()))
 	})
 	t.Run("dont skip", func(t *testing.T) {
 		require.False(t, Pipe{}.Skip(testctx.NewWithCfg(config.Project{
-			ReportSizes: true,
+			Metadata: config.ProjectMetadata{
+				ReportSizes: true,
+			},
 		})))
+	})
+	t.Run("dont skip deprecated", func(t *testing.T) {
+		ctx := testctx.NewWithCfg(config.Project{
+			ReportSizes: true,
+		})
+		require.False(t, Pipe{}.Skip(ctx))
+		require.True(t, ctx.Deprecated)
 	})
 }
 
