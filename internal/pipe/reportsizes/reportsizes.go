@@ -6,15 +6,21 @@ import (
 	"github.com/caarlos0/log"
 	"github.com/docker/go-units"
 	"github.com/goreleaser/goreleaser/internal/artifact"
+	"github.com/goreleaser/goreleaser/internal/deprecate"
 	"github.com/goreleaser/goreleaser/pkg/context"
 )
 
 type Pipe struct{}
 
-func (Pipe) Skip(ctx *context.Context) bool { return !ctx.Config.ReportSizes }
-func (Pipe) String() string                 { return "size reports" }
+func (Pipe) Skip(ctx *context.Context) bool {
+	return !ctx.Config.ReportSizes && !ctx.Config.Metadata.ReportSizes
+}
+func (Pipe) String() string { return "size reports" }
 
 func (Pipe) Run(ctx *context.Context) error {
+	if ctx.Config.ReportSizes {
+		deprecate.Notice(ctx, "report_sizes")
+	}
 	return ctx.Artifacts.Filter(artifact.Or(
 		artifact.ByType(artifact.Binary),
 		artifact.ByType(artifact.UniversalBinary),

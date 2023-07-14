@@ -3,12 +3,15 @@ package metadata
 
 import (
 	"encoding/json"
+	"fmt"
 	"os"
 	"path/filepath"
+	"strconv"
 	"time"
 
 	"github.com/caarlos0/log"
 	"github.com/goreleaser/goreleaser/internal/artifact"
+	"github.com/goreleaser/goreleaser/internal/tmpl"
 	"github.com/goreleaser/goreleaser/pkg/context"
 )
 
@@ -20,6 +23,9 @@ func (Pipe) Skip(_ *context.Context) bool { return false }
 
 // Run the pipe.
 func (Pipe) Run(ctx *context.Context) error {
+	if err := tmpl.New(ctx).ApplyAll(&ctx.Config.Metadata.ModTimestamp); err != nil {
+		return err
+	}
 	if err := writeArtifacts(ctx); err != nil {
 		return err
 	}
@@ -57,7 +63,23 @@ func writeJSON(ctx *context.Context, j interface{}, name string) error {
 	}
 	path := filepath.Join(ctx.Config.Dist, name)
 	log.Log.WithField("file", path).Info("writing")
-	return os.WriteFile(path, bts, 0o644)
+	if err := os.WriteFile(path, bts, 0o644); err != nil {
+		return err
+	}
+
+	if ctx.Config.Metadata.ModTimestamp == "" {
+		return nil
+	}
+
+	modUnix, err := strconv.ParseInt(ctx.Config.Metadata.ModTimestamp, 10, 64)
+	if err != nil {
+		return err
+	}
+	modTime := time.Unix(modUnix, 0)
+	if err := os.Chtimes(path, modTime, modTime); err != nil {
+		return fmt.Errorf("failed to change times for %s: %w", path, err)
+	}
+	return nil
 }
 
 type metadata struct {
