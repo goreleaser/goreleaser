@@ -441,7 +441,7 @@ func setupLintian(ctx *context.Context, fpm config.NFPM, packageName, format, ar
 	log.Debugf("creating %q", lintianPath)
 	return &files.Content{
 		Source:      lintianPath,
-		Destination: filepath.ToSlash(filepath.Join("./usr/share/lintian/overrides", packageName)),
+		Destination: "./usr/share/lintian/overrides/" + packageName,
 		Packager:    "deb",
 		FileInfo: &files.ContentFileInfo{
 			Mode: 0o644,
