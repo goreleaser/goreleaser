@@ -3245,6 +3245,9 @@
 					},
 					"hooks": {
 						"$ref": "#/$defs/BuildHookConfig"
+					},
+					"mod_timestamp": {
+						"type": "string"
 					}
 				},
 				"additionalProperties": false,
