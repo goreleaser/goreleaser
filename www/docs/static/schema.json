@@ -2415,6 +2415,16 @@
 					"prerelease": {
 						"type": "string"
 					},
+					"make_latest": {
+						"oneOf": [
+							{
+								"type": "string"
+							},
+							{
+								"type": "boolean"
+							}
+						]
+					},
 					"name_template": {
 						"type": "string"
 					},
