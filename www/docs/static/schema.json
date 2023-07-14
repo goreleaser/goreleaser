@@ -1928,6 +1928,15 @@
 					},
 					"scripts": {
 						"$ref": "#/$defs/NFPMRPMScripts"
+					},
+					"prefixes": {
+						"items": {
+							"type": "string"
+						},
+						"type": "array"
+					},
+					"packager": {
+						"type": "string"
 					}
 				},
 				"additionalProperties": false,
