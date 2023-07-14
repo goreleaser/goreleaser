@@ -51,6 +51,7 @@ plugins:
         m.md: https://fosstodon.org/@goreleaser
         t.md: https://twitter.com/goreleaser
         "customization/build.md": customization/builds.md
+        "customization/reportsizes.md": customization/metadata.md
   - minify:
       minify_html: true
   - include-markdown
@@ -119,7 +120,7 @@ nav:
           - customization/docker_manifest.md
           - customization/ko.md
       - customization/sbom.md
-      - customization/reportsizes.md
+      - customization/metadata.md
       - Signing:
           - Checksums and artifacts: customization/sign.md
           - Docker Images and Manifests: customization/docker_sign.md
