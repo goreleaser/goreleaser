@@ -314,6 +314,12 @@ nfpms:
       # Compression algorithm (gzip (default), lzma or xz).
       compression: lzma
 
+      # Prefixes for relocatable packages.
+      #
+      # Since: v1.20.
+      prefixes:
+        - /usr/bin
+
       # The package is signed if a key_file is set
       signature:
         # PGP secret key file path (can also be ASCII-armored).

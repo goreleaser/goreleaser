@@ -10,12 +10,19 @@ import (
 )
 
 func loadConfig(path string) (config.Project, error) {
+	p, _, err := loadConfigCheck(path)
+	return p, err
+}
+
+func loadConfigCheck(path string) (config.Project, string, error) {
 	if path == "-" {
 		log.Info("loading config from stdin")
-		return config.LoadReader(os.Stdin)
+		p, err := config.LoadReader(os.Stdin)
+		return p, path, err
 	}
 	if path != "" {
-		return config.Load(path)
+		p, err := config.Load(path)
+		return p, path, err
 	}
 	for _, f := range [4]string{
 		".goreleaser.yml",
@@ -27,10 +34,10 @@ func loadConfig(path string) (config.Project, error) {
 		if err != nil && errors.Is(err, fs.ErrNotExist) {
 			continue
 		}
-		return proj, err
+		return proj, f, err
 	}
 	// the user didn't specify a config file and the known possible file names
 	// don't exist, so, return an empty config and a nil err.
 	log.Warn("could not find a configuration file, using defaults...")
-	return config.Project{}, nil
+	return config.Project{}, "", nil
 }

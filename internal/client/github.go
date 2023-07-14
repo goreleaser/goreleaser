@@ -349,6 +349,7 @@ func (c *githubClient) CreateRelease(ctx *context.Context, body string) (string,
 		Body:       github.String(body),
 		Draft:      github.Bool(ctx.Config.Release.Draft),
 		Prerelease: github.Bool(ctx.PreRelease),
+		MakeLatest: github.String("true"),
 	}
 
 	if ctx.Config.Release.DiscussionCategoryName != "" {
@@ -363,6 +364,10 @@ func (c *githubClient) CreateRelease(ctx *context.Context, body string) (string,
 		if target != "" {
 			data.TargetCommitish = github.String(target)
 		}
+	}
+
+	if latest := strings.TrimSpace(ctx.Config.Release.MakeLatest); latest == "false" {
+		data.MakeLatest = github.String(latest)
 	}
 
 	release, err := c.createOrUpdateRelease(ctx, data, body)

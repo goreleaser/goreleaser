@@ -9,8 +9,8 @@ By participating in this project, you agree to abide our
 
 Prerequisites:
 
-- [Task](https://taskfile.dev/#/installation)
-- [Go 1.20+](https://golang.org/doc/install)
+- [Task](https://taskfile.dev/installation)
+- [Go 1.20+](https://go.dev/doc/install)
 
 Other things you might need to run the tests:
 
