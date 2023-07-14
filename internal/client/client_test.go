@@ -69,7 +69,7 @@ func TestNewIfToken(t *testing.T) {
 		require.True(t, ok)
 
 		ctx = testctx.NewWithCfg(config.Project{
-			Env: []string{"VAR=token"},
+			Env: []string{"VAR=giteatoken"},
 			GiteaURLs: config.GiteaURLs{
 				API: "https://gitea.com/api/v1",
 			},

@@ -609,6 +609,7 @@ type UniversalBinary struct {
 	NameTemplate string          `yaml:"name_template,omitempty" json:"name_template,omitempty"`
 	Replace      bool            `yaml:"replace,omitempty" json:"replace,omitempty"`
 	Hooks        BuildHookConfig `yaml:"hooks,omitempty" json:"hooks,omitempty"`
+	ModTimestamp string          `yaml:"mod_timestamp,omitempty" json:"mod_timestamp,omitempty"`
 }
 
 // UPX allows to compress binaries with `upx`.
@@ -661,6 +662,7 @@ type Release struct {
 	Disable                string      `yaml:"disable,omitempty" json:"disable,omitempty" jsonschema:"oneof_type=string;boolean"`
 	SkipUpload             string      `yaml:"skip_upload,omitempty" json:"skip_upload,omitempty" jsonschema:"oneof_type=string;boolean"`
 	Prerelease             string      `yaml:"prerelease,omitempty" json:"prerelease,omitempty"`
+	MakeLatest             string      `yaml:"make_latest,omitempty" json:"make_latest,omitempty" jsonschema:"oneof_type=string;boolean"`
 	NameTemplate           string      `yaml:"name_template,omitempty" json:"name_template,omitempty"`
 	IDs                    []string    `yaml:"ids,omitempty" json:"ids,omitempty"`
 	ExtraFiles             []ExtraFile `yaml:"extra_files,omitempty" json:"extra_files,omitempty"`
@@ -732,6 +734,8 @@ type NFPMRPM struct {
 	Compression string           `yaml:"compression,omitempty" json:"compression,omitempty"`
 	Signature   NFPMRPMSignature `yaml:"signature,omitempty" json:"signature,omitempty"`
 	Scripts     NFPMRPMScripts   `yaml:"scripts,omitempty" json:"scripts,omitempty"`
+	Prefixes    []string         `yaml:"prefixes,omitempty" json:"prefixes,omitempty"`
+	Packager    string           `yaml:"packager,omitempty" json:"packager,omitempty"`
 }
 
 // NFPMDebScripts is scripts only available on deb packages.

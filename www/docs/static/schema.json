@@ -1928,6 +1928,15 @@
 					},
 					"scripts": {
 						"$ref": "#/$defs/NFPMRPMScripts"
+					},
+					"prefixes": {
+						"items": {
+							"type": "string"
+						},
+						"type": "array"
+					},
+					"packager": {
+						"type": "string"
 					}
 				},
 				"additionalProperties": false,
@@ -2414,6 +2423,16 @@
 					},
 					"prerelease": {
 						"type": "string"
+					},
+					"make_latest": {
+						"oneOf": [
+							{
+								"type": "string"
+							},
+							{
+								"type": "boolean"
+							}
+						]
 					},
 					"name_template": {
 						"type": "string"
@@ -3226,6 +3245,9 @@
 					},
 					"hooks": {
 						"$ref": "#/$defs/BuildHookConfig"
+					},
+					"mod_timestamp": {
+						"type": "string"
 					}
 				},
 				"additionalProperties": false,

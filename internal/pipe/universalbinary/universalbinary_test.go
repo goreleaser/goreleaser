@@ -2,9 +2,11 @@ package universalbinary
 
 import (
 	"debug/macho"
+	"fmt"
 	"os"
 	"os/exec"
 	"path/filepath"
+	"strconv"
 	"strings"
 	"testing"
 	"time"
@@ -194,6 +196,28 @@ func TestRun(t *testing.T) {
 		},
 	})
 
+	modTime := time.Now().AddDate(-1, 0, 0).Round(1 * time.Second).UTC()
+	ctx7 := testctx.NewWithCfg(config.Project{
+		Dist: dist,
+		UniversalBinaries: []config.UniversalBinary{
+			{
+				ID:           "foo",
+				IDs:          []string{"foo"},
+				NameTemplate: "foo",
+				ModTimestamp: fmt.Sprintf("%d", modTime.Unix()),
+				Hooks: config.BuildHookConfig{
+					Pre: []config.Hook{
+						{Cmd: "touch " + pre},
+					},
+					Post: []config.Hook{
+						{Cmd: "touch " + post},
+						{Cmd: `sh -c 'echo "{{ .Name }} {{ .Os }} {{ .Arch }} {{ .Arm }} {{ .Target }} {{ .Ext }}" > {{ .Path }}.post'`, Output: true},
+					},
+				},
+			},
+		},
+	})
+
 	for arch, path := range paths {
 		cmd := exec.Command("go", "build", "-o", path, src)
 		cmd.Env = append(os.Environ(), "GOOS=darwin", "GOARCH="+arch)
@@ -218,6 +242,7 @@ func TestRun(t *testing.T) {
 		ctx2.Artifacts.Add(&art)
 		ctx5.Artifacts.Add(&art)
 		ctx6.Artifacts.Add(&art)
+		ctx7.Artifacts.Add(&art)
 		ctx4.Artifacts.Add(&artifact.Artifact{
 			Name:   "fake",
 			Path:   path + "wrong",
@@ -341,6 +366,24 @@ func TestRun(t *testing.T) {
 		}}
 		ctx.Config.UniversalBinaries[0].Hooks.Post = []config.Hook{}
 		testlib.RequireTemplateError(t, Pipe{}.Run(ctx))
+	})
+
+	t.Run("mod timestamp", func(t *testing.T) {
+		ctx := ctx7
+		require.NoError(t, Pipe{}.Run(ctx))
+		unibins := ctx.Artifacts.Filter(artifact.ByType(artifact.UniversalBinary)).List()
+		require.Len(t, unibins, 1)
+		stat, err := os.Stat(unibins[0].Path)
+		require.NoError(t, err)
+		require.Equal(t, modTime.Unix(), stat.ModTime().Unix())
+	})
+
+	t.Run("bad mod timestamp", func(t *testing.T) {
+		ctx := ctx5
+		ctx.Config.UniversalBinaries[0].ModTimestamp = "not a number"
+		ctx.Config.UniversalBinaries[0].Hooks.Pre = []config.Hook{}
+		ctx.Config.UniversalBinaries[0].Hooks.Post = []config.Hook{}
+		require.ErrorIs(t, Pipe{}.Run(ctx), strconv.ErrSyntax)
 	})
 }
 
