@@ -6,6 +6,7 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
+	"strconv"
 	"strings"
 	"testing"
 	"time"
@@ -375,6 +376,14 @@ func TestRun(t *testing.T) {
 		stat, err := os.Stat(unibins[0].Path)
 		require.NoError(t, err)
 		require.Equal(t, modTime.Unix(), stat.ModTime().Unix())
+	})
+
+	t.Run("bad mod timestamp", func(t *testing.T) {
+		ctx := ctx5
+		ctx.Config.UniversalBinaries[0].ModTimestamp = "not a number"
+		ctx.Config.UniversalBinaries[0].Hooks.Pre = []config.Hook{}
+		ctx.Config.UniversalBinaries[0].Hooks.Post = []config.Hook{}
+		require.ErrorIs(t, Pipe{}.Run(ctx), strconv.ErrSyntax)
 	})
 }
 

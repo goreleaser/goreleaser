@@ -235,8 +235,6 @@ func makeUniversalBinary(ctx *context.Context, opts *build.Options, unibin confi
 		if err := os.Chtimes(path, modTime, modTime); err != nil {
 			return fmt.Errorf("failed to change times for %s: %w", path, err)
 		}
-
-		fmt.Println("AQUI", unibin.ModTimestamp, modTime)
 	}
 
 	extra := map[string]interface{}{}
