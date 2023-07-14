@@ -733,6 +733,8 @@ type NFPMRPM struct {
 	Compression string           `yaml:"compression,omitempty" json:"compression,omitempty"`
 	Signature   NFPMRPMSignature `yaml:"signature,omitempty" json:"signature,omitempty"`
 	Scripts     NFPMRPMScripts   `yaml:"scripts,omitempty" json:"scripts,omitempty"`
+	Prefixes    []string         `yaml:"prefixes,omitempty" json:"prefixes,omitempty"`
+	Packager    string           `yaml:"packager,omitempty" json:"packager,omitempty"`
 }
 
 // NFPMDebScripts is scripts only available on deb packages.
