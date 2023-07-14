@@ -371,7 +371,7 @@ func TestGitHubReleaseNotesError(t *testing.T) {
 	require.Error(t, err)
 }
 
-func TestCloseMilestone(t *testing.T) {
+func TestGitHubCloseMilestone(t *testing.T) {
 	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		defer r.Body.Close()
 		t.Log(r.URL.Path)
@@ -819,7 +819,7 @@ func TestGitHubCreateFileFeatureBranchDoesNotExist(t *testing.T) {
 	require.NoError(t, client.CreateFile(ctx, config.CommitAuthor{}, repo, []byte("content"), "file.txt", "message"))
 }
 
-func TestCheckRateLimit(t *testing.T) {
+func TestGitHubCheckRateLimit(t *testing.T) {
 	now := time.Now().UTC()
 	reset := now.Add(1392 * time.Millisecond)
 	var first atomic.Bool
