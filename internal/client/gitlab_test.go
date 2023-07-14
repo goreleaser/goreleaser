@@ -398,7 +398,7 @@ func TestGitLabCreateReleaseUnknownHTTPError(t *testing.T) {
 	require.Equal(t, 1, totalRequests)
 }
 
-func TestGitlabGetDefaultBranch(t *testing.T) {
+func TestGitLabGetDefaultBranch(t *testing.T) {
 	totalRequests := 0
 	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		totalRequests++
@@ -428,7 +428,7 @@ func TestGitlabGetDefaultBranch(t *testing.T) {
 	require.Equal(t, 1, totalRequests)
 }
 
-func TestGitlabGetDefaultBranchErr(t *testing.T) {
+func TestGitLabGetDefaultBranchErr(t *testing.T) {
 	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		defer r.Body.Close()
 
@@ -455,7 +455,7 @@ func TestGitlabGetDefaultBranchErr(t *testing.T) {
 	require.Error(t, err)
 }
 
-func TestGitlabChangelog(t *testing.T) {
+func TestGitLabChangelog(t *testing.T) {
 	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		if strings.HasSuffix(r.URL.Path, "projects/someone/something/repository/compare") {
 			r, err := os.Open("testdata/gitlab/compare.json")
@@ -486,7 +486,7 @@ func TestGitlabChangelog(t *testing.T) {
 	require.Equal(t, "6dcb09b5: Fix all the bugs (Joey User <joey@user.edu>)", log)
 }
 
-func TestGitlabCreateFile(t *testing.T) {
+func TestGitLabCreateFile(t *testing.T) {
 	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		// Handle the test where we know the branch
 		if strings.HasSuffix(r.URL.Path, "projects/someone/something/repository/files/newfile.txt") {
@@ -555,7 +555,7 @@ func TestGitlabCreateFile(t *testing.T) {
 	require.Error(t, err)
 }
 
-func TestCloseMileston(t *testing.T) {
+func TestGitLabCloseMileston(t *testing.T) {
 	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		if strings.HasSuffix(r.URL.Path, "projects/someone/something/milestones") {
 			r, err := os.Open("testdata/gitlab/milestones.json")
@@ -595,7 +595,7 @@ func TestCloseMileston(t *testing.T) {
 	require.Error(t, err)
 }
 
-func TestCheckUseJobToken(t *testing.T) {
+func TestGitLabCheckUseJobToken(t *testing.T) {
 	tests := []struct {
 		useJobToken bool
 		token       string

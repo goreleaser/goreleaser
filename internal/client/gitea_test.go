@@ -229,7 +229,7 @@ func (s *GetExistingReleaseSuite) TestReleaseExists() {
 	require.NoError(t, err)
 }
 
-func TestGetExistingReleaseSuite(t *testing.T) {
+func TestGiteaGetExistingReleaseSuite(t *testing.T) {
 	suite.Run(t, new(GetExistingReleaseSuite))
 }
 
@@ -626,7 +626,7 @@ func TestGiteaChangelog(t *testing.T) {
 	require.EqualError(t, err, ErrNotImplemented.Error())
 }
 
-func TestGetInstanceURL(t *testing.T) {
+func TestGiteatGetInstanceURL(t *testing.T) {
 	ctx := testctx.NewWithCfg(config.Project{
 		GiteaURLs: config.GiteaURLs{
 			API: "http://our.internal.gitea.media/api/v1",
