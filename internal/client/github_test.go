@@ -200,7 +200,7 @@ func TestGitHubCreateReleaseWrongNameTemplate(t *testing.T) {
 	require.EqualError(t, err, `template: tmpl:1: unclosed action`)
 }
 
-func TestGithubGetDefaultBranch(t *testing.T) {
+func TestGitHubGetDefaultBranch(t *testing.T) {
 	totalRequests := 0
 	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		totalRequests++
@@ -238,7 +238,7 @@ func TestGithubGetDefaultBranch(t *testing.T) {
 	require.Equal(t, 2, totalRequests)
 }
 
-func TestGithubGetDefaultBranchErr(t *testing.T) {
+func TestGitHubGetDefaultBranchErr(t *testing.T) {
 	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		defer r.Body.Close()
 
@@ -265,7 +265,7 @@ func TestGithubGetDefaultBranchErr(t *testing.T) {
 	require.Error(t, err)
 }
 
-func TestChangelog(t *testing.T) {
+func TestGitHubChangelog(t *testing.T) {
 	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		defer r.Body.Close()
 
@@ -302,7 +302,7 @@ func TestChangelog(t *testing.T) {
 	require.Equal(t, "6dcb09b5b57875f334f61aebed695e2e4193db5e: Fix all the bugs (@octocat)", log)
 }
 
-func TestReleaseNotes(t *testing.T) {
+func TestGitHubReleaseNotes(t *testing.T) {
 	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		defer r.Body.Close()
 
@@ -339,7 +339,7 @@ func TestReleaseNotes(t *testing.T) {
 	require.Equal(t, "**Full Changelog**: https://github.com/someone/something/compare/v1.0.0...v1.1.0", log)
 }
 
-func TestReleaseNotesError(t *testing.T) {
+func TestGitHubReleaseNotesError(t *testing.T) {
 	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		defer r.Body.Close()
 
@@ -371,7 +371,7 @@ func TestReleaseNotesError(t *testing.T) {
 	require.Error(t, err)
 }
 
-func TestCloseMilestone(t *testing.T) {
+func TestGitHubCloseMilestone(t *testing.T) {
 	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		defer r.Body.Close()
 		t.Log(r.URL.Path)
@@ -409,7 +409,7 @@ func TestCloseMilestone(t *testing.T) {
 
 const testPRTemplate = "fake template\n- [ ] mark this\n---"
 
-func TestOpenPullRequestCrossRepo(t *testing.T) {
+func TestGitHubOpenPullRequestCrossRepo(t *testing.T) {
 	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		defer r.Body.Close()
 
@@ -468,7 +468,7 @@ func TestOpenPullRequestCrossRepo(t *testing.T) {
 	require.NoError(t, client.OpenPullRequest(ctx, base, head, "some title", false))
 }
 
-func TestOpenPullRequestHappyPath(t *testing.T) {
+func TestGitHubOpenPullRequestHappyPath(t *testing.T) {
 	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		defer r.Body.Close()
 
@@ -516,7 +516,7 @@ func TestOpenPullRequestHappyPath(t *testing.T) {
 	require.NoError(t, client.OpenPullRequest(ctx, repo, Repo{}, "some title", false))
 }
 
-func TestOpenPullRequestNoBaseBranchDraft(t *testing.T) {
+func TestGitHubOpenPullRequestNoBaseBranchDraft(t *testing.T) {
 	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		defer r.Body.Close()
 
@@ -574,7 +574,7 @@ func TestOpenPullRequestNoBaseBranchDraft(t *testing.T) {
 	}, "some title", true))
 }
 
-func TestOpenPullRequestPRExists(t *testing.T) {
+func TestGitHubOpenPullRequestPRExists(t *testing.T) {
 	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		defer r.Body.Close()
 
@@ -618,7 +618,7 @@ func TestOpenPullRequestPRExists(t *testing.T) {
 	require.NoError(t, client.OpenPullRequest(ctx, repo, Repo{}, "some title", false))
 }
 
-func TestOpenPullRequestBaseEmpty(t *testing.T) {
+func TestGitHubOpenPullRequestBaseEmpty(t *testing.T) {
 	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		defer r.Body.Close()
 
@@ -819,7 +819,7 @@ func TestGitHubCreateFileFeatureBranchDoesNotExist(t *testing.T) {
 	require.NoError(t, client.CreateFile(ctx, config.CommitAuthor{}, repo, []byte("content"), "file.txt", "message"))
 }
 
-func TestCheckRateLimit(t *testing.T) {
+func TestGitHubCheckRateLimit(t *testing.T) {
 	now := time.Now().UTC()
 	reset := now.Add(1392 * time.Millisecond)
 	var first atomic.Bool

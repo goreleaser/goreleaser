@@ -48,7 +48,7 @@ func runCommand(ctx *context.Context, dir, binary string, args ...string) error 
 	/* #nosec */
 	cmd := exec.CommandContext(ctx, binary, args...)
 	cmd.Dir = dir
-	cmd.Env = ctx.Env.Strings()
+	cmd.Env = append(ctx.Env.Strings(), cmd.Env...)
 
 	var b bytes.Buffer
 	w := gio.Safe(&b)
@@ -69,7 +69,7 @@ func runCommandWithOutput(ctx *context.Context, dir, binary string, args ...stri
 	/* #nosec */
 	cmd := exec.CommandContext(ctx, binary, args...)
 	cmd.Dir = dir
-	cmd.Env = ctx.Env.Strings()
+	cmd.Env = append(ctx.Env.Strings(), cmd.Env...)
 
 	var b bytes.Buffer
 	w := gio.Safe(&b)

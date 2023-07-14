@@ -322,6 +322,8 @@ func create(ctx *context.Context, fpm config.NFPM, format string, binaries []*ar
 				Summary:     overridden.RPM.Summary,
 				Group:       overridden.RPM.Group,
 				Compression: overridden.RPM.Compression,
+				Prefixes:    overridden.RPM.Prefixes,
+				Packager:    overridden.RPM.Packager,
 				Signature: nfpm.RPMSignature{
 					PackageSignature: nfpm.PackageSignature{
 						KeyFile:       rpmKeyFile,
@@ -439,7 +441,7 @@ func setupLintian(ctx *context.Context, fpm config.NFPM, packageName, format, ar
 	log.Debugf("creating %q", lintianPath)
 	return &files.Content{
 		Source:      lintianPath,
-		Destination: filepath.Join("./usr/share/lintian/overrides", packageName),
+		Destination: "./usr/share/lintian/overrides/" + packageName,
 		Packager:    "deb",
 		FileInfo: &files.ContentFileInfo{
 			Mode: 0o644,
