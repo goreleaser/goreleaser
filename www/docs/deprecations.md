@@ -37,6 +37,25 @@ Description.
 
 -->
 
+### `report_sizes`
+
+> since 2023-07-14 (v1.20.0)
+
+It was moved inside the new `metadata` property.
+
+=== "Before"
+
+    ``` yaml
+    report_sizes: true
+    ```
+
+=== "After"
+
+    ``` yaml
+    metadata:
+      report_sizes: true
+    ```
+
 ### scoops.bucket
 
 > since 2023-06-13 (v1.19.0)
