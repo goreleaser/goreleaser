@@ -8,13 +8,12 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
-	"strconv"
 	"strings"
-	"time"
 
 	"github.com/caarlos0/log"
 	"github.com/goreleaser/goreleaser/internal/artifact"
 	"github.com/goreleaser/goreleaser/internal/builders/buildtarget"
+	"github.com/goreleaser/goreleaser/internal/gio"
 	"github.com/goreleaser/goreleaser/internal/tmpl"
 	api "github.com/goreleaser/goreleaser/pkg/build"
 	"github.com/goreleaser/goreleaser/pkg/config"
@@ -205,20 +204,12 @@ func (*Builder) Build(ctx *context.Context, build config.Build, options api.Opti
 		return fmt.Errorf("failed to build for %s: %w", options.Target, err)
 	}
 
-	if build.ModTimestamp != "" {
-		modTimestamp, err := tmpl.New(ctx).WithEnvS(env).WithArtifact(a).Apply(build.ModTimestamp)
-		if err != nil {
-			return err
-		}
-		modUnix, err := strconv.ParseInt(modTimestamp, 10, 64)
-		if err != nil {
-			return err
-		}
-		modTime := time.Unix(modUnix, 0)
-		err = os.Chtimes(options.Path, modTime, modTime)
-		if err != nil {
-			return fmt.Errorf("failed to change times for %s: %w", options.Target, err)
-		}
+	modTimestamp, err := tmpl.New(ctx).WithEnvS(env).WithArtifact(a).Apply(build.ModTimestamp)
+	if err != nil {
+		return err
+	}
+	if err := gio.Chtimes(options.Path, modTimestamp); err != nil {
+		return err
 	}
 
 	ctx.Artifacts.Add(a)
