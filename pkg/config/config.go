@@ -1122,7 +1122,6 @@ type Project struct {
 }
 
 type ProjectMetadata struct {
-	ReportSizes  bool   `yaml:"report_sizes,omitempty" json:"report_sizes,omitempty"`
 	ModTimestamp string `yaml:"mod_timestamp,omitempty" json:"mod_timestamp,omitempty"`
 }
 

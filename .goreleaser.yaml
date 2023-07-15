@@ -15,8 +15,9 @@ snapshot:
 gomod:
   proxy: true
 
+report_sizes: true
+
 metadata:
-  report_sizes: true
   mod_timestamp: "{{ .CommitTimestamp }}"
 
 builds:

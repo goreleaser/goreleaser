@@ -51,7 +51,6 @@ plugins:
         m.md: https://fosstodon.org/@goreleaser
         t.md: https://twitter.com/goreleaser
         "customization/build.md": customization/builds.md
-        "customization/reportsizes.md": customization/metadata.md
   - minify:
       minify_html: true
   - include-markdown
