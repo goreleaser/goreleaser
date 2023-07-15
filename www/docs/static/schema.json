@@ -2240,6 +2240,9 @@
 					"report_sizes": {
 						"type": "boolean"
 					},
+					"metadata": {
+						"$ref": "#/$defs/ProjectMetadata"
+					},
 					"universal_binaries": {
 						"items": {
 							"$ref": "#/$defs/UniversalBinary"
@@ -2274,6 +2277,15 @@
 					},
 					"gitea_urls": {
 						"$ref": "#/$defs/GiteaURLs"
+					}
+				},
+				"additionalProperties": false,
+				"type": "object"
+			},
+			"ProjectMetadata": {
+				"properties": {
+					"mod_timestamp": {
+						"type": "string"
 					}
 				},
 				"additionalProperties": false,
