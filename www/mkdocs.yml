@@ -119,6 +119,7 @@ nav:
           - customization/docker_manifest.md
           - customization/ko.md
       - customization/sbom.md
+      - customization/reportsizes.md
       - customization/metadata.md
       - Signing:
           - Checksums and artifacts: customization/sign.md
