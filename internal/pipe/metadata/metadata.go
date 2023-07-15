@@ -9,6 +9,8 @@ import (
 
 	"github.com/caarlos0/log"
 	"github.com/goreleaser/goreleaser/internal/artifact"
+	"github.com/goreleaser/goreleaser/internal/gio"
+	"github.com/goreleaser/goreleaser/internal/tmpl"
 	"github.com/goreleaser/goreleaser/pkg/context"
 )
 
@@ -20,6 +22,11 @@ func (Pipe) Skip(_ *context.Context) bool { return false }
 
 // Run the pipe.
 func (Pipe) Run(ctx *context.Context) error {
+	if err := tmpl.New(ctx).ApplyAll(
+		&ctx.Config.Metadata.ModTimestamp,
+	); err != nil {
+		return err
+	}
 	if err := writeArtifacts(ctx); err != nil {
 		return err
 	}
@@ -57,7 +64,11 @@ func writeJSON(ctx *context.Context, j interface{}, name string) error {
 	}
 	path := filepath.Join(ctx.Config.Dist, name)
 	log.Log.WithField("file", path).Info("writing")
-	return os.WriteFile(path, bts, 0o644)
+	if err := os.WriteFile(path, bts, 0o644); err != nil {
+		return err
+	}
+
+	return gio.Chtimes(path, ctx.Config.Metadata.ModTimestamp)
 }
 
 type metadata struct {
