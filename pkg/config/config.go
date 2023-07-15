@@ -1100,7 +1100,7 @@ type Project struct {
 	SBOMs           []SBOM           `yaml:"sboms,omitempty" json:"sboms,omitempty"`
 	Chocolateys     []Chocolatey     `yaml:"chocolateys,omitempty" json:"chocolateys,omitempty"`
 	Git             Git              `yaml:"git,omitempty" json:"git,omitempty"`
-	ReportSizes     bool             `yaml:"report_sizes,omitempty" json:"report_sizes,omitempty" jsonschema:"deprecated=true,description=use metadata.report_sizes instead"` // Deprecated
+	ReportSizes     bool             `yaml:"report_sizes,omitempty" json:"report_sizes,omitempty"`
 	Metadata        ProjectMetadata  `yaml:"metadata,omitempty" json:"metadata,omitempty"`
 
 	UniversalBinaries []UniversalBinary `yaml:"universal_binaries,omitempty" json:"universal_binaries,omitempty"`
