@@ -1255,13 +1255,12 @@ func TestMeta(t *testing.T) {
 }
 
 func TestSkipSign(t *testing.T) {
-	folder, err := os.MkdirTemp("", "archivetest")
-	require.NoError(t, err)
+	folder := t.TempDir()
 	dist := filepath.Join(folder, "dist")
 	require.NoError(t, os.Mkdir(dist, 0o755))
 	require.NoError(t, os.Mkdir(filepath.Join(dist, "mybin"), 0o755))
 	binPath := filepath.Join(dist, "mybin", "mybin")
-	_, err = os.Create(binPath)
+	_, err := os.Create(binPath)
 	require.NoError(t, err)
 	ctx := testctx.NewWithCfg(config.Project{
 		ProjectName: "mybin",
