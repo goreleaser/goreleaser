@@ -7,12 +7,11 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
-	"strconv"
-	"time"
 
 	"github.com/caarlos0/go-shellwords"
 	"github.com/caarlos0/log"
 	"github.com/goreleaser/goreleaser/internal/artifact"
+	"github.com/goreleaser/goreleaser/internal/gio"
 	"github.com/goreleaser/goreleaser/internal/ids"
 	"github.com/goreleaser/goreleaser/internal/pipe"
 	"github.com/goreleaser/goreleaser/internal/semerrgroup"
@@ -226,15 +225,8 @@ func makeUniversalBinary(ctx *context.Context, opts *build.Options, unibin confi
 		return fmt.Errorf("failed to close file: %w", err)
 	}
 
-	if unibin.ModTimestamp != "" {
-		modUnix, err := strconv.ParseInt(unibin.ModTimestamp, 10, 64)
-		if err != nil {
-			return err
-		}
-		modTime := time.Unix(modUnix, 0)
-		if err := os.Chtimes(path, modTime, modTime); err != nil {
-			return fmt.Errorf("failed to change times for %s: %w", path, err)
-		}
+	if err := gio.Chtimes(path, unibin.ModTimestamp); err != nil {
+		return err
 	}
 
 	extra := map[string]interface{}{}

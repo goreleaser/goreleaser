@@ -2099,6 +2099,15 @@
 					},
 					"scripts": {
 						"$ref": "#/$defs/NFPMRPMScripts"
+					},
+					"prefixes": {
+						"items": {
+							"type": "string"
+						},
+						"type": "array"
+					},
+					"packager": {
+						"type": "string"
 					}
 				},
 				"additionalProperties": false,
@@ -2446,6 +2455,9 @@
 					"report_sizes": {
 						"type": "boolean"
 					},
+					"metadata": {
+						"$ref": "#/$defs/ProjectMetadata"
+					},
 					"template_files": {
 						"items": {
 							"$ref": "#/$defs/TemplateFile"
@@ -2510,6 +2522,15 @@
 							"$ref": "#/$defs/Fury"
 						},
 						"type": "array"
+					}
+				},
+				"additionalProperties": false,
+				"type": "object"
+			},
+			"ProjectMetadata": {
+				"properties": {
+					"mod_timestamp": {
+						"type": "string"
 					}
 				},
 				"additionalProperties": false,
@@ -2668,6 +2689,16 @@
 					},
 					"prerelease": {
 						"type": "string"
+					},
+					"make_latest": {
+						"oneOf": [
+							{
+								"type": "string"
+							},
+							{
+								"type": "boolean"
+							}
+						]
 					},
 					"name_template": {
 						"type": "string"
@@ -3562,6 +3593,9 @@
 					},
 					"hooks": {
 						"$ref": "#/$defs/BuildHookConfig"
+					},
+					"mod_timestamp": {
+						"type": "string"
 					}
 				},
 				"additionalProperties": false,

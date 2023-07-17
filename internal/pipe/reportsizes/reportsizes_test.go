@@ -17,9 +17,7 @@ func TestString(t *testing.T) {
 
 func TestSkip(t *testing.T) {
 	t.Run("skip", func(t *testing.T) {
-		require.True(t, Pipe{}.Skip(testctx.NewWithCfg(config.Project{
-			ReportSizes: false,
-		})))
+		require.True(t, Pipe{}.Skip(testctx.New()))
 	})
 	t.Run("dont skip", func(t *testing.T) {
 		require.False(t, Pipe{}.Skip(testctx.NewWithCfg(config.Project{
