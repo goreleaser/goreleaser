@@ -11,6 +11,7 @@ goreleaser check [configuration files] [flags]
 ```
   -h, --help    help for check
   -q, --quiet   Quiet mode: no output
+      --soft    Exit 1 only if there are syntax errors (Pro only)
 ```
 
 ## Options inherited from parent commands
