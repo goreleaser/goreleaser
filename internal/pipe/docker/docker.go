@@ -171,11 +171,15 @@ func process(ctx *context.Context, docker config.Docker, artifacts []*artifact.A
 	log := log.WithField("image", images[0])
 	log.Debug("tempdir: " + tmp)
 
-	dockerfile, err := tmpl.New(ctx).Apply(docker.Dockerfile)
-	if err != nil {
+	if err := tmpl.New(ctx).ApplyAll(
+		&docker.Dockerfile,
+	); err != nil {
 		return err
 	}
-	if err := gio.Copy(dockerfile, filepath.Join(tmp, "Dockerfile")); err != nil {
+	if err := gio.Copy(
+		docker.Dockerfile,
+		filepath.Join(tmp, "Dockerfile"),
+	); err != nil {
 		return fmt.Errorf("failed to copy dockerfile: %w", err)
 	}
 
