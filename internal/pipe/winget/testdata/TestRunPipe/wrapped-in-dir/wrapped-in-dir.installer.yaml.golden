@@ -10,6 +10,7 @@ Installers:
     NestedInstallerType: portable
     NestedInstallerFiles:
       - RelativeFilePath: foo\bin\foo.exe
+        PortableCommandAlias: foo
     InstallerUrl: https://dummyhost/download/v1.2.1/foo_windows_amd64v1.zip
     InstallerSha256: e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
     UpgradeBehavior: uninstallPrevious
@@ -17,6 +18,7 @@ Installers:
     NestedInstallerType: portable
     NestedInstallerFiles:
       - RelativeFilePath: foo\bin\foo.exe
+        PortableCommandAlias: foo
     InstallerUrl: https://dummyhost/download/v1.2.1/foo_windows_386.zip
     InstallerSha256: e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
     UpgradeBehavior: uninstallPrevious
@@ -24,6 +26,7 @@ Installers:
     NestedInstallerType: portable
     NestedInstallerFiles:
       - RelativeFilePath: foo\bin\foo.exe
+        PortableCommandAlias: foo
     InstallerUrl: https://dummyhost/download/v1.2.1/foo_windows_arm64.zip
     InstallerSha256: e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
     UpgradeBehavior: uninstallPrevious
