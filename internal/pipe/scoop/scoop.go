@@ -40,7 +40,7 @@ func (e ErrIncorrectArchiveCount) Error() string {
 		_, _ = b.WriteString(fmt.Sprintf("but found %d archives ", len(e.archives)))
 	}
 
-	_, _ = b.WriteString(fmt.Sprintf("matching the given filters: goos=windows goarch=[386 amd64] goamd64=%s ids=%s", e.goamd64, e.ids))
+	_, _ = b.WriteString(fmt.Sprintf("matching the given filters: goos=windows goarch=[386 amd64 arm64] goamd64=%s ids=%s", e.goamd64, e.ids))
 
 	if len(e.archives) > 0 {
 		names := make([]string, 0, len(e.archives))
@@ -129,6 +129,7 @@ func doRun(ctx *context.Context, scoop config.Scoop, cl client.ReleaserURLTempla
 				artifact.ByGoarch("amd64"),
 				artifact.ByGoamd64(scoop.Goamd64),
 			),
+			artifact.ByGoarch("arm64"),
 			artifact.ByGoarch("386"),
 		),
 	}
@@ -342,6 +343,8 @@ func dataFor(ctx *context.Context, scoop config.Scoop, cl client.ReleaserURLTemp
 			arch = "32bit"
 		case "amd64":
 			arch = "64bit"
+		case "arm64":
+			arch = "arm64"
 		default:
 			continue
 		}

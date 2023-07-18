@@ -132,6 +132,7 @@ func Test_doRun(t *testing.T) {
 			},
 			[]artifact.Artifact{
 				{Name: "foo_1.0.1_windows_amd64.tar.gz", Goos: "windows", Goarch: "amd64", Goamd64: "v1", Path: file},
+				{Name: "foo_1.0.1_windows_arm64.tar.gz", Goos: "windows", Goarch: "arm64", Path: file},
 				{Name: "foos_1.0.1_windows_amd64.tar.gz", Goos: "windows", Goarch: "amd64", Goamd64: "v1", Path: file},
 			},
 			func(tb testing.TB, err error) {
@@ -140,6 +141,7 @@ func Test_doRun(t *testing.T) {
 					goamd64: "v1",
 					archives: []*artifact.Artifact{
 						{Name: "foo_1.0.1_windows_amd64.tar.gz"},
+						{Name: "foo_1.0.1_windows_arm64.tar.gz"},
 						{Name: "foos_1.0.1_windows_amd64.tar.gz"},
 					},
 				}.Error())
@@ -931,6 +933,18 @@ func Test_buildManifest(t *testing.T) {
 					Name:   "foo_1.0.1_windows_arm.tar.gz",
 					Goos:   "windows",
 					Goarch: "arm",
+					Path:   file,
+					Extra: map[string]interface{}{
+						artifact.ExtraBinaries: []string{
+							"foo.exe",
+							"bar.exe",
+						},
+					},
+				},
+				{
+					Name:   "foo_1.0.1_windows_arm64.tar.gz",
+					Goos:   "windows",
+					Goarch: "arm64",
 					Path:   file,
 					Extra: map[string]interface{}{
 						artifact.ExtraBinaries: []string{

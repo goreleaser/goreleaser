@@ -16,6 +16,14 @@
                 "bar.exe"
             ],
             "hash": "5e2bf57d3f40c4b6df69daf1936cb766f832374b4fc0259a7cbff06e2f70f269"
+        },
+        "arm64": {
+            "url": "http://gitlab.mycompany.com/foo/bar/-/releases/v1.0.1/downloads/foo_1.0.1_windows_arm64.tar.gz",
+            "bin": [
+                "foo.exe",
+                "bar.exe"
+            ],
+            "hash": "5e2bf57d3f40c4b6df69daf1936cb766f832374b4fc0259a7cbff06e2f70f269"
         }
     },
     "homepage": "https://gitlab.com/goreleaser",
