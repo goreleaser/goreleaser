@@ -649,7 +649,7 @@
 					"package_source_url": {
 						"type": "string"
 					},
-					"authoers": {
+					"owners": {
 						"type": "string"
 					},
 					"title": {

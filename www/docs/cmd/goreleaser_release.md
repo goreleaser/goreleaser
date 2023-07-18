@@ -14,6 +14,7 @@ goreleaser release [flags]
   -f, --config string                Load configuration from file
       --fail-fast                    Whether to abort the release publishing on the first error
   -h, --help                         help for release
+      --id stringArray               Builds only the specified build ids (implies --skip-publish) (Pro only)
   -k, --key string                   GoReleaser Pro license key [$GORELEASER_KEY] (Pro only)
       --nightly                      Generate a nightly build, publishing artifacts that support it (implies --skip-announce and --skip-validate) (Pro only)
   -p, --parallelism int              Amount tasks to run concurrently (default: number of CPUs)
@@ -24,6 +25,7 @@ goreleaser release [flags]
       --release-header-tmpl string   Load custom release notes header from a templated markdown file (overrides --release-header)
       --release-notes string         Load custom release notes from a markdown file (will skip GoReleaser changelog generation)
       --release-notes-tmpl string    Load custom release notes from a templated markdown file (overrides --release-notes)
+      --single-target                Builds only for current GOOS and GOARCH, regardless of what's set in the configuration file (implies --skip-publish) (Pro only)
       --skip-after                   Skips global after hooks (Pro only)
       --skip-announce                Skips announcing releases (implies --skip-validate)
       --skip-before                  Skips global before hooks
