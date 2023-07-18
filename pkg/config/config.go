@@ -1317,7 +1317,7 @@ type Chocolatey struct {
 	Name                     string                 `yaml:"name,omitempty" json:"name,omitempty"`
 	IDs                      []string               `yaml:"ids,omitempty" json:"ids,omitempty"`
 	PackageSourceURL         string                 `yaml:"package_source_url,omitempty" json:"package_source_url,omitempty"`
-	Owners                   string                 `yaml:"owners,omitempty" json:"authoers,omitempty"`
+	Owners                   string                 `yaml:"owners,omitempty" json:"owners,omitempty"`
 	Title                    string                 `yaml:"title,omitempty" json:"title,omitempty"`
 	Authors                  string                 `yaml:"authors,omitempty" json:"authors,omitempty"`
 	ProjectURL               string                 `yaml:"project_url,omitempty" json:"project_url,omitempty"`
