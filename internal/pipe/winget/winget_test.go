@@ -602,18 +602,24 @@ func TestRunPipe(t *testing.T) {
 			goarch := "amd64"
 			createFakeArtifact("partial", goos, goarch, "v1", "", nil)
 			createFakeArtifact("foo", goos, goarch, "v1", "", nil)
-			createFakeArtifact("wrapped-in-dir", goos, goarch, "v1", "", map[string]any{artifact.ExtraWrappedIn: "foo",
-																						artifact.ExtraBinaries: []string{"bin/foo.exe"}})
+			createFakeArtifact("wrapped-in-dir", goos, goarch, "v1", "", map[string]any{
+				artifact.ExtraWrappedIn: "foo",
+				artifact.ExtraBinaries:  []string{"bin/foo.exe"},
+			})
 
 			goarch = "386"
 			createFakeArtifact("foo", goos, goarch, "", "", nil)
-			createFakeArtifact("wrapped-in-dir", goos, goarch, "", "", map[string]any{artifact.ExtraWrappedIn: "foo",
-																					  artifact.ExtraBinaries: []string{"bin/foo.exe"}})
+			createFakeArtifact("wrapped-in-dir", goos, goarch, "", "", map[string]any{
+				artifact.ExtraWrappedIn: "foo",
+				artifact.ExtraBinaries:  []string{"bin/foo.exe"},
+			})
 
 			goarch = "arm64"
 			createFakeArtifact("foo", goos, goarch, "", "", nil)
-			createFakeArtifact("wrapped-in-dir", goos, goarch, "", "", map[string]any{artifact.ExtraWrappedIn: "foo",
-																					  artifact.ExtraBinaries: []string{"bin/foo.exe"}})
+			createFakeArtifact("wrapped-in-dir", goos, goarch, "", "", map[string]any{
+				artifact.ExtraWrappedIn: "foo",
+				artifact.ExtraBinaries:  []string{"bin/foo.exe"},
+			})
 
 			client := client.NewMock()
 			pipe := Pipe{}
