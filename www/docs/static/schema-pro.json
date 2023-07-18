@@ -908,6 +908,9 @@
 							"$ref": "#/$defs/TemplatedExtraFileWithMode"
 						},
 						"type": "array"
+					},
+					"templated_dockerfile": {
+						"type": "string"
 					}
 				},
 				"additionalProperties": false,
@@ -1786,6 +1789,9 @@
 					"templated_contents": {
 						"$ref": "#/$defs/Contents"
 					},
+					"templated_scripts": {
+						"$ref": "#/$defs/NFPMScripts"
+					},
 					"overrides": {
 						"patternProperties": {
 							".*": {
@@ -2078,6 +2084,9 @@
 					},
 					"templated_contents": {
 						"$ref": "#/$defs/Contents"
+					},
+					"templated_scripts": {
+						"$ref": "#/$defs/NFPMScripts"
 					}
 				},
 				"additionalProperties": false,

@@ -103,7 +103,18 @@ dockers:
     # Path to the Dockerfile (from the project root).
     #
     # Default: 'Dockerfile'
+    # Templates: allowed.
     dockerfile: "{{ .Env.DOCKERFILE }}"
+
+    # Use this instead of `dockerfile` if the contents of your Dockerfile are
+    # supposed to go through the template engine as well.
+    #
+    # `dockerfile` is ignored when this is set.
+    #
+    # Since: v1.20 (pro)
+    # This feature is only available in GoReleaser Pro.
+    # Templates: allowed
+    templated_dockerfile: "{{.Env.DOCKERFILE }}"
 
     # Set the "backend" for the Docker pipe.
     #

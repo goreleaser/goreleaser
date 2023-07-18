@@ -17,13 +17,13 @@ nfpms:
 
     # Name of the package.
     # Default: ProjectName
-    # Templates: allowed (since v1.18)
+    # Templates: allowed. (since v1.18)
     package_name: foo
 
     # You can change the file name of the package.
     #
     # Default: '{{ .PackageName }}_{{ .Version }}_{{ .Os }}_{{ .Arch }}{{ with .Arm }}v{{ . }}{{ end }}{{ with .Mips }}_{{ . }}{{ end }}{{ if not (eq .Amd64 "v1") }}{{ .Amd64 }}{{ end }}'
-    # Templates: allowed
+    # Templates: allowed.
     file_name_template: "{{ .ConventionalFileName }}"
 
     # Build IDs for the builds you want to create NFPM packages for.
@@ -156,7 +156,7 @@ nfpms:
       # /etc, using the "tree" type.
       #
       # Since: v1.17
-      # Templates: allowed
+      # Templates: allowed.
       - src: some/directory/
         dst: /etc
         type: tree
@@ -188,7 +188,7 @@ nfpms:
     #
     # Since: v1.17 (pro)
     # This feature is only available in GoReleaser Pro.
-    # Templates: allowed
+    # Templates: allowed.
     templated_contents:
       # a more complete example, check the globbing deep dive below
       - src: "LICENSE.md.tpl"
@@ -261,7 +261,23 @@ nfpms:
     #
     # Keys are the possible targets during the installation process
     # Values are the paths to the scripts which will be executed.
+    #
+    # Templates: allowed (since v1.20).
     scripts:
+      preinstall: "scripts/preinstall.sh"
+      postinstall: "scripts/postinstall.sh"
+      preremove: "scripts/preremove.sh"
+      postremove: "scripts/postremove.sh"
+
+    # Templated scripts to execute during the installation of the package. (overridable)
+    #
+    # Keys are the possible targets during the installation process
+    # Values are the paths to the scripts which will be executed.
+    #
+    # Since: v1.20 (pro)
+    # This feature is only available in GoReleaser Pro.
+    # Templates: allowed.
+    templated_scripts:
       preinstall: "scripts/preinstall.sh"
       postinstall: "scripts/postinstall.sh"
       preremove: "scripts/preremove.sh"
@@ -330,7 +346,7 @@ nfpms:
         # E.g. If your nfpm id is 'default' then the rpm-specific passphrase
         # should be set as `$NFPM_DEFAULT_RPM_PASSPHRASE`
         #
-        # Templates: allowed
+        # Templates: allowed.
         key_file: "{{ .Env.GPG_KEY_PATH }}"
 
     # Custom configuration applied only to the Deb packager.
@@ -374,7 +390,7 @@ nfpms:
         # E.g. If your nfpm id is 'default' then the deb-specific passphrase
         # should be set as `$NFPM_DEFAULT_DEB_PASSPHRASE`
         #
-        # Templates: allowed
+        # Templates: allowed.
         key_file: "{{ .Env.GPG_KEY_PATH }}"
 
         # The type describes the signers role, possible values are "origin",
@@ -401,14 +417,14 @@ nfpms:
         # E.g. If your nfpm id is 'default' then the apk-specific passphrase
         # should be set as `$NFPM_DEFAULT_APK_PASSPHRASE`
         #
-        # Templates: allowed
+        # Templates: allowed.
         key_file: "{{ .Env.GPG_KEY_PATH }}"
 
         # The name of the signing key. When verifying a package, the signature
         # is matched to the public key store in /etc/apk/keys/<key_name>.rsa.pub.
         #
         # Default: maintainer's email address
-        # Templates: allowed (since v1.15)
+        # Templates: allowed. (since v1.15)
         key_name: origin
 
     archlinux:

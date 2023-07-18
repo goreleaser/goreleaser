@@ -106,6 +106,7 @@ func TestRunPipe(t *testing.T) {
 		Env: []string{
 			"PRO=pro",
 			"DESC=templates",
+			"EXT=.sh",
 		},
 		NFPMs: []config.NFPM{
 			{
@@ -132,6 +133,12 @@ func TestRunPipe(t *testing.T) {
 					Provides:         []string{"ash"},
 					Release:          "10",
 					Epoch:            "20",
+					Scripts: config.NFPMScripts{
+						PreInstall:  "./testdata/pre_install{{.Env.EXT}}",
+						PostInstall: "./testdata/post_install{{.Env.EXT}}",
+						PreRemove:   "./testdata/pre_remove{{.Env.EXT}}",
+						PostRemove:  "./testdata/post_remove{{.Env.EXT}}",
+					},
 					Contents: []*files.Content{
 						{
 							Destination: "/var/log/foobar",

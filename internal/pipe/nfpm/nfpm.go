@@ -188,6 +188,10 @@ func create(ctx *context.Context, fpm config.NFPM, format string, binaries []*ar
 		&fpm.Homepage,
 		&fpm.Description,
 		&fpm.Maintainer,
+		&overridden.Scripts.PostInstall,
+		&overridden.Scripts.PreInstall,
+		&overridden.Scripts.PostRemove,
+		&overridden.Scripts.PreRemove,
 	); err != nil {
 		return err
 	}
