@@ -3,6 +3,7 @@ package cmd
 import (
 	"fmt"
 	"os"
+	"regexp"
 
 	"github.com/caarlos0/log"
 	"github.com/goreleaser/goreleaser/internal/static"
@@ -14,6 +15,8 @@ type initCmd struct {
 	config string
 }
 
+const gitignorePath = ".gitignore"
+
 func newInitCmd() *initCmd {
 	root := &initCmd{}
 	cmd := &cobra.Command{
@@ -24,7 +27,10 @@ func newInitCmd() *initCmd {
 		SilenceErrors:     true,
 		Args:              cobra.NoArgs,
 		ValidArgsFunction: cobra.NoFileCompletions,
-		RunE: func(cmd *cobra.Command, args []string) error {
+		RunE: func(_ *cobra.Command, _ []string) error {
+			if _, err := os.Stat(root.config); err == nil {
+				return fmt.Errorf("%s already exists, delete it and run the command again", root.config)
+			}
 			conf, err := os.OpenFile(root.config, os.O_WRONLY|os.O_CREATE|os.O_TRUNC|os.O_EXCL, 0o644)
 			if err != nil {
 				return err
@@ -36,15 +42,16 @@ func newInitCmd() *initCmd {
 				return err
 			}
 
-			gitignore, err := os.OpenFile(".gitignore", os.O_WRONLY|os.O_CREATE|os.O_APPEND, 0o644)
-			if err != nil {
-				return err
+			if !hasDistIgnored(gitignorePath) {
+				gitignore, err := os.OpenFile(gitignorePath, os.O_WRONLY|os.O_CREATE|os.O_APPEND, 0o644)
+				if err != nil {
+					return err
+				}
+				defer gitignore.Close()
+				if _, err := gitignore.WriteString("\ndist/\n"); err != nil {
+					return err
+				}
 			}
-			defer gitignore.Close()
-			if _, err := gitignore.WriteString("\ndist/\n"); err != nil {
-				return err
-			}
-
 			log.WithField("file", root.config).Info("config created; please edit accordingly to your needs")
 			return nil
 		},
@@ -55,4 +62,13 @@ func newInitCmd() *initCmd {
 
 	root.cmd = cmd
 	return root
+}
+
+func hasDistIgnored(path string) bool {
+	bts, err := os.ReadFile(path)
+	if err != nil {
+		return false
+	}
+	exp := regexp.MustCompile("(?m)^dist/$")
+	return exp.Match(bts)
 }

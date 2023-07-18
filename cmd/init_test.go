@@ -18,6 +18,25 @@ func TestInit(t *testing.T) {
 	require.FileExists(t, filepath.Join(folder, ".gitignore"))
 }
 
+func TestInitConfigAlreadyExist(t *testing.T) {
+	folder := setupInitTest(t)
+	config := "foo.yaml"
+	configPath := filepath.Join(folder, config)
+
+	cmd := newInitCmd().cmd
+	cmd.SetArgs([]string{"-f", config})
+	content := []byte("foo: bar\n")
+	require.NoError(t, os.WriteFile(configPath, content, 0o644))
+
+	require.Error(t, cmd.Execute())
+	require.FileExists(t, configPath)
+	require.NoFileExists(t, filepath.Join(folder, ".gitignore"))
+
+	bts, err := os.ReadFile(configPath)
+	require.NoError(t, err)
+	require.Equal(t, string(content), string(bts))
+}
+
 func TestInitGitIgnoreExists(t *testing.T) {
 	folder := setupInitTest(t)
 	cmd := newInitCmd().cmd
@@ -65,4 +84,27 @@ func setupInitTest(tb testing.TB) string {
 	})
 	require.NoError(tb, os.Chdir(folder))
 	return folder
+}
+
+func TestHasDistIgnored(t *testing.T) {
+	t.Run("ignored", func(t *testing.T) {
+		require.True(t, hasDistIgnored("../.gitignore"))
+	})
+
+	t.Run("ignored middle of file", func(t *testing.T) {
+		path := filepath.Join(t.TempDir(), "gitignore")
+		require.NoError(t, os.WriteFile(path, []byte("foo\ndist/\nbar\n"), 0o644))
+		require.True(t, hasDistIgnored(path))
+	})
+
+	t.Run("not ignored", func(t *testing.T) {
+		path := filepath.Join(t.TempDir(), "gitignore")
+		require.NoError(t, os.WriteFile(path, []byte("foo\nbar\n"), 0o644))
+		require.False(t, hasDistIgnored(path))
+	})
+
+	t.Run("file does not exist", func(t *testing.T) {
+		path := filepath.Join(t.TempDir(), "gitignore")
+		require.False(t, hasDistIgnored(path))
+	})
 }
