@@ -224,7 +224,8 @@ func (p Pipe) doRun(ctx *context.Context, winget config.Winget, cl client.Releas
 		folder := artifact.ExtraOr(*archive, artifact.ExtraWrappedIn, ".")
 		for _, bin := range artifact.ExtraOr(*archive, artifact.ExtraBinaries, []string{}) {
 			files = append(files, InstallerItemFile{
-				RelativeFilePath: windowsJoin([2]string{folder, bin}),
+				RelativeFilePath:     windowsJoin([2]string{folder, bin}),
+				PortableCommandAlias: strings.TrimSuffix(bin, ".exe"),
 			})
 		}
 		url, err := tmpl.New(ctx).WithArtifact(archive).Apply(winget.URLTemplate)

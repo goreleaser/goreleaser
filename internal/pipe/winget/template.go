@@ -67,7 +67,8 @@ type Version struct {
 
 // nolint: tagliatelle
 type InstallerItemFile struct {
-	RelativeFilePath string `yaml:"RelativeFilePath,omitempty"`
+	RelativeFilePath     string `yaml:"RelativeFilePath,omitempty"`
+	PortableCommandAlias string `yaml:"PortableCommandAlias,omitempty"`
 }
 
 // nolint: tagliatelle
