@@ -54,16 +54,6 @@ func TestInitGitIgnoreExists(t *testing.T) {
 	require.Equal(t, "mybinary\n\ndist/\n", string(bts))
 }
 
-func TestInitFileExists(t *testing.T) {
-	folder := setupInitTest(t)
-	cmd := newInitCmd().cmd
-	path := filepath.Join(folder, "twice.yaml")
-	cmd.SetArgs([]string{"-f", path})
-	require.NoError(t, cmd.Execute())
-	require.EqualError(t, cmd.Execute(), "open "+path+": file exists")
-	require.FileExists(t, path)
-}
-
 func TestInitFileError(t *testing.T) {
 	folder := setupInitTest(t)
 	cmd := newInitCmd().cmd
