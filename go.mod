@@ -4,7 +4,7 @@ go 1.20
 
 require (
 	code.gitea.io/sdk/gitea v0.15.1
-	dagger.io/dagger v0.7.2
+	dagger.io/dagger v0.7.4
 	github.com/Masterminds/semver/v3 v3.2.1
 	github.com/atc0005/go-teams-notify/v2 v2.7.1
 	github.com/awslabs/amazon-ecr-credential-helper/ecr-login v0.0.0-20220517224237-e6f29200ae04
@@ -57,7 +57,17 @@ require (
 )
 
 require (
-	github.com/google/rpmpack v0.5.0 // indirect
+	github.com/99designs/gqlgen v0.17.31 // indirect
+	github.com/Khan/genqlient v0.6.0 // indirect
+	github.com/ProtonMail/go-crypto v0.0.0-20230626094100-7e9e0395ebec // indirect
+	github.com/adrg/xdg v0.4.0 // indirect
+	github.com/iancoleman/strcase v0.3.0 // indirect
+	github.com/vektah/gqlparser/v2 v2.5.6 // indirect
+	google.golang.org/genproto/googleapis/api v0.0.0-20230530153820-e85fd2cbaebc // indirect
+	google.golang.org/genproto/googleapis/rpc v0.0.0-20230530153820-e85fd2cbaebc // indirect
+)
+
+require (
 	cloud.google.com/go v0.110.2 // indirect
 	cloud.google.com/go/compute v1.20.1 // indirect
 	cloud.google.com/go/compute/metadata v0.2.3 // indirect
@@ -161,6 +171,7 @@ require (
 	github.com/golang/protobuf v1.5.3 // indirect
 	github.com/google/go-cmp v0.5.9 // indirect
 	github.com/google/go-querystring v1.1.0 // indirect
+	github.com/google/rpmpack v0.5.0 // indirect
 	github.com/google/s2a-go v0.1.4 // indirect
 	github.com/google/safetext v0.0.0-20220905092116-b49f7bc46da2 // indirect
 	github.com/google/shlex v0.0.0-20191202100458-e7afc7fbc510 // indirect
@@ -215,7 +226,7 @@ require (
 	github.com/rivo/uniseg v0.4.2 // indirect
 	github.com/russross/blackfriday/v2 v2.1.0 // indirect
 	github.com/sasha-s/go-csync v0.0.0-20210812194225-61421b77c44b // indirect
-	github.com/sergi/go-diff v1.2.0 // indirect
+	github.com/sergi/go-diff v1.3.1 // indirect
 	github.com/shopspring/decimal v1.2.0 // indirect
 	github.com/sigstore/cosign/v2 v2.0.3-0.20230523133326-0544abd8fc8a // indirect
 	github.com/sigstore/rekor v1.2.0 // indirect
