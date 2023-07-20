@@ -18,7 +18,14 @@ func main() {
 	}
 	defer client.Close()
 
-	src := client.Host().Directory(".") // TODO: excludes
+	src := client.Host().Directory(".",
+		dagger.HostDirectoryOpts{
+			Exclude: []string{
+				"ci/",
+				// ".git/",
+				".github/",
+			},
+		}) // TODO: excludes
 
 	fmt.Println("Executing CI...")
 	builder, err := builder(client, src).Sync(ctx)
@@ -29,7 +36,7 @@ func main() {
 
 	builder = builder.WithExec([]string{"go", "mod", "tidy"}).
 		WithExec([]string{"go", "build"}).
-		WithExec([]string{"go", "test", "./..."})
+		WithExec([]string{"sh", "-c", "go test -failfast -coverpkg=./... -covermode=atomic -coverprofile=coverage.txt ./... -run . -timeout=15m"})
 
 	out, err := builder.Stdout(ctx)
 	if err != nil {

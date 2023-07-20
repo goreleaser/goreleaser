@@ -25,12 +25,13 @@ func builder(client *dagger.Client, source *dagger.Directory) *dagger.Container 
 		WithExec([]string{"chown", "-R", "nonroot", "/src"}).
 		WithNewFile("/usr/local/sbin/docker", dagger.ContainerWithNewFileOpts{
 			Contents: `#!/bin/sh
-DOCKER_HOST=tcp://localhost:2375 /usr/bin/docker $@`,
+		DOCKER_HOST=tcp://localhost:2375 /usr/bin/docker $@`,
 			Permissions: 0o777,
 		}).
 		With(actions.SetupGo).
 		WithUser("nonroot").
 		WithWorkdir("/src").
+		With(actions.SetupTask).
 		With(actions.SetupCosign).
 		With(actions.SetupSyft).
 		With(actions.SetupKrew).
