@@ -30,7 +30,6 @@ func init() {
 	// automatically set GOMAXPROCS to match available CPUs.
 	// GOMAXPROCS will be used as the default value for the --parallelism flag.
 	if _, err := maxprocs.Set(); err != nil {
-		// might fail on WSL...
 		log.WithError(err).Warn("failed to set GOMAXPROCS")
 	}
 }
