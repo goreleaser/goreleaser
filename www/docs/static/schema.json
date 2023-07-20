@@ -1253,41 +1253,47 @@
 					}
 				]
 			},
-			"Hook": {
+			"Hooks": {
 				"oneOf": [
 					{
 						"type": "string"
 					},
 					{
-						"$schema": "https://json-schema.org/draft/2020-12/schema",
-						"$id": "https://github.com/goreleaser/goreleaser/pkg/config/t",
-						"properties": {
-							"dir": {
-								"type": "string"
-							},
-							"cmd": {
-								"type": "string"
-							},
-							"env": {
-								"items": {
+						"items": {
+							"$schema": "https://json-schema.org/draft/2020-12/schema",
+							"$id": "https://github.com/goreleaser/goreleaser/pkg/config/hook",
+							"oneOf": [
+								{
 									"type": "string"
 								},
-								"type": "array"
-							},
-							"output": {
-								"type": "boolean"
-							}
+								{
+									"$schema": "https://json-schema.org/draft/2020-12/schema",
+									"$id": "https://github.com/goreleaser/goreleaser/pkg/config/t",
+									"properties": {
+										"dir": {
+											"type": "string"
+										},
+										"cmd": {
+											"type": "string"
+										},
+										"env": {
+											"items": {
+												"type": "string"
+											},
+											"type": "array"
+										},
+										"output": {
+											"type": "boolean"
+										}
+									},
+									"additionalProperties": false,
+									"type": "object"
+								}
+							]
 						},
-						"additionalProperties": false,
-						"type": "object"
+						"type": "array"
 					}
 				]
-			},
-			"Hooks": {
-				"items": {
-					"$ref": "#/$defs/Hook"
-				},
-				"type": "array"
 			},
 			"IgnoredBuild": {
 				"properties": {

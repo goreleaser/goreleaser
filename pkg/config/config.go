@@ -505,6 +505,22 @@ func (bhc *Hooks) UnmarshalYAML(unmarshal func(interface{}) error) error {
 	return nil
 }
 
+func (bhc Hooks) JSONSchema() *jsonschema.Schema {
+	reflector := jsonschema.Reflector{
+		ExpandedStruct: true,
+	}
+	var t Hook
+	schema := reflector.Reflect(&t)
+	return &jsonschema.Schema{
+		OneOf: []*jsonschema.Schema{{
+			Type: "string",
+		}, {
+			Type:  "array",
+			Items: schema,
+		}},
+	}
+}
+
 type Hook struct {
 	Dir    string   `yaml:"dir,omitempty" json:"dir,omitempty"`
 	Cmd    string   `yaml:"cmd,omitempty" json:"cmd,omitempty"`
