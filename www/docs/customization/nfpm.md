@@ -124,8 +124,6 @@ nfpms:
     # Makes a meta package - an empty package that contains only supporting
     # files and dependencies.
     # When set to `true`, the `builds` option is ignored.
-    #
-    # Default: false
     meta: true
 
     # Changelog YAML file, see: https://github.com/goreleaser/chglog

@@ -27,8 +27,6 @@ release:
 
   # If set to true, will not auto-publish the release.
   # Available only for GitHub and Gitea.
-  #
-  # Default: false
   draft: true
 
   # Whether to remove existing draft releases with the same name before creating
@@ -36,7 +34,6 @@ release:
   # Only effective if `draft` is set to true.
   # Available only for GitHub.
   #
-  # Default: false
   # Since: v1.11
   replace_existing_draft: true
 

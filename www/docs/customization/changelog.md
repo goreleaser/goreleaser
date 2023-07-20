@@ -41,7 +41,6 @@ changelog:
 
   # Paths to filter the commits for.
   # Only works when `use: git`, otherwise ignored.
-  # Only on GoReleaser Pro.
   #
   # Default: monorepo.dir value, or empty if no monorepo
   # Since: v1.12 (pro)

@@ -32,9 +32,15 @@
 
         # Whether to open the PR as a draft or not.
         #
-        # Default: false
         # Since: v1.19
         draft: true
+
+        # If the pull request template has checkboxes, enabling this will
+        # check all of them.
+        #
+        # Since: v1.20 (pro).
+        # This feature is only available in GoReleaser Pro.
+        check_boxex: true
 
         # Base can also be another repository, in which case the owner and name
         # above will be used as HEAD, allowing cross-repository pull requests.

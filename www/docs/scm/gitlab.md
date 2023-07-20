@@ -17,10 +17,12 @@ env_files:
 ```
 
 !!! warning
+
     If you use a project access token, make sure to set `use_package_registry`
     to `true` as well, otherwise it might not work.
 
 !!! warning
+
     If you are using a [protected variable](https://docs.gitlab.com/ee/ci/variables/#protected-cicd-variables)
     to store any of the values needed by goreleaser, ensure that you are protecting the tags as CI jobs in
     Gitlab only may access protected variables if the job is run for protected refs
@@ -49,7 +51,6 @@ gitlab_urls:
 
   # Set this if you set GITLAB_TOKEN to the value of CI_JOB_TOKEN.
   #
-  # Default: false
   # Since: v1.11
   use_job_token: true
 ```
@@ -57,6 +58,7 @@ gitlab_urls:
 If none are set, they default to GitLab's public URLs.
 
 !!! note
+
     Releasing to a private-hosted GitLab CE will only work for version `v12.9+`, due to dependencies
     on [release](https://docs.gitlab.com/ee/user/project/releases/index.html) functionality
     and [direct asset linking](https://docs.gitlab.com/ee/user/project/releases/index.html#permanent-links-to-release-assets).
@@ -65,9 +67,11 @@ If none are set, they default to GitLab's public URLs.
 
 GitLab introduced the [Generic Package Registry](https://docs.gitlab.com/ee/user/packages/package_registry/index.html) in Gitlab 13.5.
 
-Normally, `goreleaser` uploads release files as "attachments", which may have [administrative limits](https://docs.gitlab.com/ee/user/admin_area/settings/account_and_limit_settings.html).  Notably, hosted gitlab.com instances have a 10MB attachment limit, which cannot be changed.
+Normally, `goreleaser` uploads release files as "attachments", which may have [administrative limits](https://docs.gitlab.com/ee/user/admin_area/settings/account_and_limit_settings.html).
+Notably, hosted GitLab instances have a 10MB attachment limit, which cannot be changed.
 
-Uploading to the Generic Package Registry does not have this restriction.  To use it instead, set `use_package_registry` to `true`.
+Uploading to the Generic Package Registry does not have this restriction.
+To use it instead, set `use_package_registry` to `true`.
 
 ```yaml
 # .goreleaser.yml

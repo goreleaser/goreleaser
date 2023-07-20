@@ -2606,6 +2606,9 @@
 					},
 					"draft": {
 						"type": "boolean"
+					},
+					"check_boxes": {
+						"type": "boolean"
 					}
 				},
 				"additionalProperties": false,
