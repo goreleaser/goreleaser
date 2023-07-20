@@ -335,8 +335,9 @@ func doPublish(ctx *context.Context, cl client.Client, wingets []*artifact.Artif
 			return err
 		}
 		files = append(files, client.RepoFile{
-			Content: content,
-			Path:    filepath.Join(winget.Path, pkg.Name),
+			Content:    content,
+			Path:       filepath.Join(winget.Path, pkg.Name),
+			Identifier: repoFileID(pkg.Type),
 		})
 	}
 
@@ -351,7 +352,14 @@ func doPublish(ctx *context.Context, cl client.Client, wingets []*artifact.Artif
 	}
 
 	for _, file := range files {
-		if err := cl.CreateFile(ctx, author, repo, file.Content, file.Path, msg); err != nil {
+		if err := cl.CreateFile(
+			ctx,
+			author,
+			repo,
+			file.Content,
+			file.Path,
+			msg+": add "+file.Identifier,
+		); err != nil {
 			return err
 		}
 	}
@@ -393,6 +401,20 @@ func extFor(tp artifact.Type) string {
 		return ".installer.yaml"
 	case artifact.WingetDefaultLocale:
 		return ".locale." + defaultLocale + ".yaml"
+	default:
+		// should never happen
+		return ""
+	}
+}
+
+func repoFileID(tp artifact.Type) string {
+	switch tp {
+	case artifact.WingetVersion:
+		return "version"
+	case artifact.WingetInstaller:
+		return "installer"
+	case artifact.WingetDefaultLocale:
+		return "locale"
 	default:
 		// should never happen
 		return ""

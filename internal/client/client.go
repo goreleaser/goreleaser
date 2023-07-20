@@ -63,8 +63,9 @@ type ReleaserURLTemplater interface {
 
 // RepoFile is a file to be created.
 type RepoFile struct {
-	Content []byte
-	Path    string
+	Content    []byte
+	Path       string
+	Identifier string // for the use of the caller.
 }
 
 // FileCreator can create the given file to some code repository.

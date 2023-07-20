@@ -26,7 +26,7 @@ type Mock struct {
 	CreatedFile          bool
 	Content              string
 	Path                 string
-	Message              string
+	Messages             []string
 	FailToCreateRelease  bool
 	FailToUpload         bool
 	CreatedRelease       bool
@@ -89,7 +89,7 @@ func (c *Mock) CreateFile(_ *context.Context, _ config.CommitAuthor, _ Repo, con
 	c.CreatedFile = true
 	c.Content = string(content)
 	c.Path = path
-	c.Message = msg
+	c.Messages = append(c.Messages, msg)
 	return nil
 }
 

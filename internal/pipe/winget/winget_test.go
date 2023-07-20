@@ -656,7 +656,21 @@ func TestRunPipe(t *testing.T) {
 			require.NoError(t, pipe.publishAll(ctx, client))
 			require.True(t, client.CreatedFile)
 
-			require.Regexp(t, "New version: \\w+\\.[\\w-]+ 1.2.1", client.Message)
+			require.Len(t, client.Messages, 3)
+			expected := map[string]bool{
+				"locale":    false,
+				"version":   false,
+				"installer": false,
+			}
+			for _, msg := range client.Messages {
+				require.Regexp(t, "New version: \\w+\\.[\\w-]+ 1.2.1", msg)
+				for k, v := range expected {
+					if strings.Contains(msg, ": add "+k) {
+						require.False(t, v, "multiple commits for "+k)
+						expected[k] = true
+					}
+				}
+			}
 
 			require.NotEmpty(t, client.Path)
 			if tt.expectPath != "" {
