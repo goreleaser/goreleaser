@@ -3,53 +3,56 @@
 GoReleaser Pro is a paid, closed-source GoReleaser distribution with some
 additional features:
 
-
+- [x] `goreleaser release --single-target` to build the whole pipeline for a
+      single architecture locally;
+- [x] Check boxes in pull request templates;
 - [x] [Template entire files](/customization/templatefiles) and add them to the
-  release. You can also template files that will be included in archives,
-  packages, Docker images, etc...;
+      release. You can also template files that will be included in archives,
+      packages, Docker images, etc...;
 - [x] Use the [`.Artifacts`](/customization/templates/#artifacts) template
-  variable to build more powerful customizations;
+      variable to build more powerful customizations;
 - [x] [Split and merge builds](/customization/partial) to speed up your release
-  by splitting work, use CGO, or run platform-specific code;
+      by splitting work, use CGO, or run platform-specific code;
 - [x] More [changelog options](/customization/changelog): Filter commits by path
-  & subgroups, group dividers;
+      & subgroups, group dividers;
 - [x] Have custom [before and after hooks for archives](/customization/archive/);
 - [x] Prepare a release with
-  [`goreleaser release --prepare`](/cmd/goreleaser_release/), publish and
-  announce it later with
-  [`goreleaser publish`](/cmd/goreleaser_publish/) and
-  [`goreleaser announce`](/cmd/goreleaser_announce/), or with
-  [`goreleaser continue`](/cmd/goreleaser_continue/);
+      [`goreleaser release --prepare`](/cmd/goreleaser_release/), publish and
+      announce it later with
+      [`goreleaser publish`](/cmd/goreleaser_publish/) and
+      [`goreleaser announce`](/cmd/goreleaser_announce/), or with
+      [`goreleaser continue`](/cmd/goreleaser_continue/);
 - [x] Preview and test your next release's change log with
-  [`goreleaser changelog`](/cmd/goreleaser_changelog/);
+      [`goreleaser changelog`](/cmd/goreleaser_changelog/);
 - [x] Continuously release [nightly builds](/customization/nightlies/);
 - [x] Import pre-built binaries with the
-  [`prebuilt` builder](/customization/build/#import-pre-built-binaries);
+      [`prebuilt` builder](/customization/build/#import-pre-built-binaries);
 - [x] Rootless build [Docker images](/customization/docker/#podman) and
-  [manifests](/customization/docker_manifest/#podman) with
-  [Podman](https://podman.io);
+      [manifests](/customization/docker_manifest/#podman) with
+      [Podman](https://podman.io);
 - [x] Easily create `apt` and `yum` repositories with the
-  [fury.io integration](/customization/fury/);
+      [fury.io integration](/customization/fury/);
 - [x] Reuse configuration files with the
-  [include keyword](/customization/includes/);
+      [include keyword](/customization/includes/);
 - [x] Run commands after the release with
-  [global after hooks](/customization/hooks/);
+      [global after hooks](/customization/hooks/);
 - [x] Use GoReleaser within your [monorepo](/customization/monorepo/);
 - [x] Create
-  [custom template variables](/customization/templates/#custom-variables)
-  (goes well with [includes](/customization/includes/)).
+      [custom template variables](/customization/templates/#custom-variables)
+      (goes well with [includes](/customization/includes/)).
 
 <script src="https://gumroad.com/js/gumroad.js"></script>
+
 <a class="gumroad-button" href="https://gumroad.com/l/CadfZ" target="_blank">Get GoReleaser Pro</a>
 
 ## Road map
 
-We don't have a properly organized public road map (*yet*), but these are some
+We don't have a properly organized public road map (_yet_), but these are some
 of the things we plan to work on, in one form or another:
 
+- [x] `--single-target` & friends for `goreleaser release`;
 - [ ] `--dry-run` to test the release locally, possibly skipping the actual
-  build of the binaries to focus on faster iteration of the other parts;
-- [ ] `--single-target` & friends for `goreleaser release`;
+      build of the binaries to focus on faster iteration of the other parts;
 - [ ] first-class macOS signing;
 - [ ] create Windows installers;
 
