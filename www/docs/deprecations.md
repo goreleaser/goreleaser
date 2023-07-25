@@ -41,7 +41,7 @@ Description.
 
 > since 2023-06-13 (v1.19.0)
 
-Replace `index` with `repository`.
+Replace `bucket` with `repository`.
 
 === "Before"
 
