@@ -6,6 +6,7 @@ import (
 	"os"
 
 	"github.com/caarlos0/log"
+	"github.com/goreleaser/goreleaser/internal/logext"
 	"github.com/goreleaser/goreleaser/pkg/config"
 )
 
@@ -38,6 +39,6 @@ func loadConfigCheck(path string) (config.Project, string, error) {
 	}
 	// the user didn't specify a config file and the known possible file names
 	// don't exist, so, return an empty config and a nil err.
-	log.Warn("could not find a configuration file, using defaults...")
+	log.Warn(logext.Warning("could not find a configuration file, using defaults..."))
 	return config.Project{}, "", nil
 }
