@@ -2757,6 +2757,12 @@
 							"$ref": "#/$defs/TemplatedExtraFile"
 						},
 						"type": "array"
+					},
+					"header_from": {
+						"type": "string"
+					},
+					"footer_from": {
+						"type": "string"
 					}
 				},
 				"additionalProperties": false,

@@ -101,6 +101,15 @@ release:
 
     Welcome to this new release!
 
+  # Load the header from a file or URL.
+  #
+  # It can start with `http://` or `https://` to indicate that a GET request
+  # should be made, or with `file://` to indicate a local file path.
+  #
+  # Since v1.20 (pro)
+  # Templates: allowed
+  header_from: https://foo.bar/header.md
+
   # Footer for the release body.
   #
   # Templates: allowed
@@ -108,6 +117,15 @@ release:
     ## Thanks!
 
     Those were the changes on {{ .Tag }}!
+
+  # Load the footer from a file or URL.
+  #
+  # It can start with `http://` or `https://` to indicate that a GET request
+  # should be made, or with `file://` to indicate a local file path.
+  #
+  # Since v1.20 (pro)
+  # Templates: allowed
+  footer_from: file://./.github/footer.md
 
   # You can change the name of the release.
   #
