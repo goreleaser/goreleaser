@@ -11,6 +11,7 @@ import (
 	"strings"
 
 	"github.com/caarlos0/log"
+	"github.com/goreleaser/goreleaser/internal/logext"
 	"github.com/goreleaser/goreleaser/internal/tmpl"
 	"github.com/goreleaser/goreleaser/pkg/context"
 	homedir "github.com/mitchellh/go-homedir"
@@ -159,7 +160,7 @@ func checkErrors(ctx *context.Context, noTokens, noTokenErrs bool, gitlabTokenEr
 func loadEnv(env, path string) (string, error) {
 	val := os.Getenv(env)
 	if val != "" {
-		log.Infof("using token from %q", "$"+env)
+		log.Infof("using token from %q", logext.Keyword("$"+env))
 		return val, nil
 	}
 	path, err := homedir.Expand(path)
@@ -174,7 +175,7 @@ func loadEnv(env, path string) (string, error) {
 		return "", err
 	}
 	defer f.Close()
-	log.Infof("using token from %q", path)
+	log.Infof("using token from %q", logext.Keyword(path))
 	bts, _, err := bufio.NewReader(f).ReadLine()
 	return string(bts), err
 }

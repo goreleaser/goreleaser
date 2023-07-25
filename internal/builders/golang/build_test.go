@@ -1373,6 +1373,34 @@ func TestOverrides(t *testing.T) {
 	})
 }
 
+func TestWarnIfTargetsAndOtherOptionsTogether(t *testing.T) {
+	nonEmpty := []string{"foo", "bar"}
+	for name, fn := range map[string]func(*config.Build){
+		"goos":    func(b *config.Build) { b.Goos = nonEmpty },
+		"goarch":  func(b *config.Build) { b.Goarch = nonEmpty },
+		"goarm":   func(b *config.Build) { b.Goarm = nonEmpty },
+		"gomips":  func(b *config.Build) { b.Gomips = nonEmpty },
+		"goamd64": func(b *config.Build) { b.Goamd64 = nonEmpty },
+		"ignores": func(b *config.Build) { b.Ignore = []config.IgnoredBuild{{Goos: "linux"}} },
+		"multiple": func(b *config.Build) {
+			b.Goos = nonEmpty
+			b.Goarch = nonEmpty
+			b.Goarm = nonEmpty
+			b.Gomips = nonEmpty
+			b.Goamd64 = nonEmpty
+			b.Ignore = []config.IgnoredBuild{{Goos: "linux"}}
+		},
+	} {
+		t.Run(name, func(t *testing.T) {
+			b := config.Build{
+				Targets: nonEmpty,
+			}
+			fn(&b)
+			require.True(t, warnIfTargetsAndOtherOptionTogether(b))
+		})
+	}
+}
+
 //
 // Helpers
 //
