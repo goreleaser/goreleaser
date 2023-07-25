@@ -14,6 +14,7 @@ import (
 	"github.com/goreleaser/goreleaser/internal/artifact"
 	"github.com/goreleaser/goreleaser/internal/builders/buildtarget"
 	"github.com/goreleaser/goreleaser/internal/gio"
+	"github.com/goreleaser/goreleaser/internal/logext"
 	"github.com/goreleaser/goreleaser/internal/tmpl"
 	api "github.com/goreleaser/goreleaser/pkg/build"
 	"github.com/goreleaser/goreleaser/pkg/config"
@@ -50,6 +51,8 @@ func (*Builder) WithDefaults(build config.Build) (config.Build, error) {
 	if len(build.Ldflags) == 0 {
 		build.Ldflags = []string{"-s -w -X main.version={{.Version}} -X main.commit={{.Commit}} -X main.date={{.Date}} -X main.builtBy=goreleaser"}
 	}
+
+	_ = warnIfTargetsAndOtherOptionTogether(build)
 	if len(build.Targets) == 0 {
 		if len(build.Goos) == 0 {
 			build.Goos = []string{"linux", "darwin", "windows"}
@@ -101,6 +104,29 @@ func (*Builder) WithDefaults(build config.Build) (config.Build, error) {
 		build.Targets = keys(targets)
 	}
 	return build, nil
+}
+
+func warnIfTargetsAndOtherOptionTogether(build config.Build) bool {
+	if len(build.Targets) == 0 {
+		return false
+	}
+
+	res := false
+	for k, v := range map[string]int{
+		"goos":    len(build.Goos),
+		"goarch":  len(build.Goarch),
+		"goarm":   len(build.Goarm),
+		"gomips":  len(build.Gomips),
+		"goamd64": len(build.Goamd64),
+		"ignore":  len(build.Ignore),
+	} {
+		if v == 0 {
+			continue
+		}
+		log.Warnf(logext.Keyword("builds."+k) + " is ignored when " + logext.Keyword("targets") + " is set")
+		res = true
+	}
+	return res
 }
 
 func keys(m map[string]bool) []string {
