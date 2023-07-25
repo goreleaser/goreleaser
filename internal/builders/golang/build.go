@@ -123,7 +123,7 @@ func warnIfTargetsAndOtherOptionTogether(build config.Build) bool {
 		if v == 0 {
 			continue
 		}
-		log.Warnf(logext.Keyword("builds."+k) + " is ignored when " + logext.Keyword("targets") + " is set")
+		log.Warnf(logext.Keyword("builds."+k) + " is ignored when " + logext.Keyword("builds.targets") + " is set")
 		res = true
 	}
 	return res
