@@ -255,6 +255,7 @@ type Nix struct {
 	SkipUpload            string       `yaml:"skip_upload,omitempty" json:"skip_upload,omitempty" jsonschema:"oneof_type=string;boolean"`
 	URLTemplate           string       `yaml:"url_template,omitempty" json:"url_template,omitempty"`
 	Install               string       `yaml:"install,omitempty" json:"install,omitempty"`
+	ExtraInstall          string       `yaml:"extra_install,omitempty" json:"extra_install,omitempty"`
 	PostInstall           string       `yaml:"post_install,omitempty" json:"post_install,omitempty"`
 	Description           string       `yaml:"description,omitempty" json:"description,omitempty"`
 	Homepage              string       `yaml:"homepage,omitempty" json:"homepage,omitempty"`

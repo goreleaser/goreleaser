@@ -1,1 +1,0 @@
-cp -vr ./%s $out/bin/%[1]s
