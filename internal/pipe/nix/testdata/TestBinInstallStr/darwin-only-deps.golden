@@ -1,0 +1,1 @@
+wrapProgram $out/bin/%[1]s --prefix PATH : ${lib.makeBinPath (lib.optionals stdenv.isDarwin [ foo bar ])}

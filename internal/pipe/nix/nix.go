@@ -247,17 +247,25 @@ func preparePkg(
 		folder = "."
 	}
 
-	data := templateData{
-		Name:        nix.Name,
-		Version:     ctx.Version,
-		Install:     installs,
-		PostInstall: postInstall,
-		Archives:    map[string]Archive{},
-		SourceRoot:  folder,
-		Description: nix.Description,
-		Homepage:    nix.Homepage,
-		License:     nix.License,
+	inputs := []string{"installShellFiles"}
+	if len(nix.Dependencies) > 0 {
+		inputs = append(inputs, "makeWrapper")
 	}
+
+	data := templateData{
+		Name:         nix.Name,
+		Version:      ctx.Version,
+		Install:      installs,
+		PostInstall:  postInstall,
+		Archives:     map[string]Archive{},
+		SourceRoot:   folder,
+		Description:  nix.Description,
+		Homepage:     nix.Homepage,
+		License:      nix.License,
+		Inputs:       inputs,
+		Dependencies: depNames(nix.Dependencies),
+	}
+
 	platforms := map[string]bool{}
 	for _, art := range archives {
 		url, err := tmpl.New(ctx).WithArtifact(art).Apply(nix.URLTemplate)
@@ -427,12 +435,46 @@ func installs(ctx *context.Context, nix config.Nix, art *artifact.Artifact) ([]s
 	}
 
 	result := []string{"mkdir -p $out/bin"}
+	binInstall := binInstallStr(nix)
 	for _, bin := range artifact.ExtraOr(*art, artifact.ExtraBinaries, []string{}) {
-		result = append(result, fmt.Sprintf("cp -vr ./%s $out/bin/%[1]s", bin))
+		result = append(result, fmt.Sprintf(binInstall, bin))
 	}
 
 	log.WithField("install", result).Warnf("guessing install")
 	return result, nil
+}
+
+func binInstallStr(nix config.Nix) string {
+	if len(nix.Dependencies) == 0 {
+		return "cp -vr ./%s $out/bin/%[1]s"
+	}
+	var deps, linuxDeps, darwinDeps []string
+
+	for _, dep := range nix.Dependencies {
+		switch dep.OS {
+		case "darwin":
+			darwinDeps = append(darwinDeps, dep.Name)
+		case "linux":
+			linuxDeps = append(linuxDeps, dep.Name)
+		default:
+			deps = append(deps, dep.Name)
+		}
+	}
+
+	var depStrings []string
+
+	if len(darwinDeps) > 0 {
+		depStrings = append(depStrings, fmt.Sprintf("lib.optionals stdenv.isDarwin [ %s ]", strings.Join(darwinDeps, " ")))
+	}
+	if len(linuxDeps) > 0 {
+		depStrings = append(depStrings, fmt.Sprintf("lib.optionals stdenv.isLinux [ %s ]", strings.Join(linuxDeps, " ")))
+	}
+	if len(deps) > 0 {
+		depStrings = append(depStrings, fmt.Sprintf("[ %s ]", strings.Join(deps, " ")))
+	}
+
+	depString := strings.Join(depStrings, " ++ ")
+	return "wrapProgram $out/bin/%[1]s --prefix PATH : ${lib.makeBinPath (" + depString + ")}"
 }
 
 func split(s string) []string {
@@ -443,6 +485,14 @@ func split(s string) []string {
 			continue
 		}
 		result = append(result, line)
+	}
+	return result
+}
+
+func depNames(deps []config.NixDependency) []string {
+	var result []string
+	for _, dep := range deps {
+		result = append(result, dep.Name)
 	}
 	return result
 }
