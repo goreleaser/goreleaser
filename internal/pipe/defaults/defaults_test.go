@@ -94,6 +94,7 @@ func TestFillPartial(t *testing.T) {
 	require.NotEmpty(t, ctx.Config.Dockers[0].Dockerfile)
 	require.Equal(t, "disttt", ctx.Config.Dist)
 	require.NotEqual(t, "https://github.com", ctx.Config.GitHubURLs.Download)
+	require.Empty(t, ctx.Config.Nix, "nix should have been skipped")
 
 	ctx = testctx.NewWithCfg(config.Project{
 		GiteaURLs: config.GiteaURLs{
