@@ -94,6 +94,37 @@ func TestRunPipe(t *testing.T) {
 			},
 		},
 		{
+			name: "deps",
+			nix: config.Nix{
+				Repository: config.RepoRef{
+					Owner: "foo",
+					Name:  "bar",
+				},
+				Dependencies: []config.NixDependency{
+					{Name: "fish"},
+					{Name: "bash"},
+					linuxDep("ttyd"),
+					darwinDep("chromium"),
+				},
+			},
+		},
+		{
+			name: "extra-install",
+			nix: config.Nix{
+				Repository: config.RepoRef{
+					Owner: "foo",
+					Name:  "bar",
+				},
+				Dependencies: []config.NixDependency{
+					{Name: "fish"},
+					{Name: "bash"},
+					linuxDep("ttyd"),
+					darwinDep("chromium"),
+				},
+				ExtraInstall: "installManPage ./manpages/foo.1.gz",
+			},
+		},
+		{
 			name: "open-pr",
 			nix: config.Nix{
 				Name:        "foo",
@@ -459,6 +490,75 @@ func TestErrNoArchivesFound(t *testing.T) {
 
 func TestDependencies(t *testing.T) {
 	require.Equal(t, []string{"nix-prefetch-url"}, Pipe{}.Dependencies(nil))
+}
+
+func TestBinInstallFormats(t *testing.T) {
+	t.Run("no-deps", func(t *testing.T) {
+		golden.RequireEqual(t, []byte(strings.Join(
+			binInstallFormats(config.Nix{}),
+			"\n",
+		)))
+	})
+	t.Run("deps", func(t *testing.T) {
+		golden.RequireEqual(t, []byte(strings.Join(
+			binInstallFormats(config.Nix{
+				Dependencies: []config.NixDependency{
+					{Name: "fish"},
+					{Name: "bash"},
+					{Name: "zsh"},
+				},
+			}),
+			"\n",
+		)))
+	})
+	t.Run("linux-only-deps", func(t *testing.T) {
+		golden.RequireEqual(t, []byte(strings.Join(
+			binInstallFormats(config.Nix{
+				Dependencies: []config.NixDependency{
+					linuxDep("foo"),
+					linuxDep("bar"),
+				},
+			}),
+			"\n",
+		)))
+	})
+	t.Run("darwin-only-deps", func(t *testing.T) {
+		golden.RequireEqual(t, []byte(strings.Join(
+			binInstallFormats(config.Nix{
+				Dependencies: []config.NixDependency{
+					darwinDep("foo"),
+					darwinDep("bar"),
+				},
+			}),
+			"\n",
+		)))
+	})
+	t.Run("mixed-deps", func(t *testing.T) {
+		golden.RequireEqual(t, []byte(strings.Join(
+			binInstallFormats(config.Nix{
+				Dependencies: []config.NixDependency{
+					{Name: "fish"},
+					linuxDep("foo"),
+					darwinDep("bar"),
+				},
+			}),
+			"\n",
+		)))
+	})
+}
+
+func darwinDep(s string) config.NixDependency {
+	return config.NixDependency{
+		Name: s,
+		OS:   "darwin",
+	}
+}
+
+func linuxDep(s string) config.NixDependency {
+	return config.NixDependency{
+		Name: s,
+		OS:   "linux",
+	}
 }
 
 type fakeNixShaPrefetcher map[string]string

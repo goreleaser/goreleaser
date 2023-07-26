@@ -101,14 +101,23 @@ release:
 
     Welcome to this new release!
 
-  # Load the header from a file or URL.
+  # Header for the release body.
   #
-  # It can start with `http://` or `https://` to indicate that a GET request
-  # should be made, or with `file://` to indicate a local file path.
-  #
+  # This feature is only available in GoReleaser Pro.
   # Since v1.20 (pro)
-  # Templates: allowed
-  header_from: https://foo.bar/header.md
+  header:
+    # Loads from an URL.
+    from_url:
+      # Templates: allowed
+      url: https://foo.bar/header.md
+      headers:
+        x-api-token: "${MYCOMPANY_TOKEN}"
+
+    # Loads from a local file.
+    # Overrides `from_url`.
+    from_file:
+      # Templates: allowed
+      path: ./header.md
 
   # Footer for the release body.
   #
@@ -118,14 +127,23 @@ release:
 
     Those were the changes on {{ .Tag }}!
 
-  # Load the footer from a file or URL.
+  # Footer for the release body.
   #
-  # It can start with `http://` or `https://` to indicate that a GET request
-  # should be made, or with `file://` to indicate a local file path.
-  #
+  # This feature is only available in GoReleaser Pro.
   # Since v1.20 (pro)
-  # Templates: allowed
-  footer_from: file://./.github/footer.md
+  footer:
+    # Loads from an URL.
+    from_url:
+      # Templates: allowed
+      url: https://foo.bar/footer.md
+      footers:
+        x-api-token: "${MYCOMPANY_TOKEN}"
+
+    # Loads from a local file.
+    # Overrides `from_url`.
+    from_file:
+      # Templates: allowed
+      path: ./footer.md
 
   # You can change the name of the release.
   #
@@ -175,6 +193,10 @@ release:
 !!! tip
 
     [Learn how to set up an API token, GitHub Enterprise, etc](/scm/github/).
+
+!!! success "GoReleaser Pro"
+
+    Some options are exclusive [GoReleaser Pro features](/pro/).
 
 ## GitLab
 
