@@ -74,6 +74,17 @@ nix:
     # Templates: allowed
     skip_upload: true
 
+    # Runtime dependencies of the package.
+    #
+    # Since: v1.20.
+    dependencies:
+    - zsh
+    - chromium
+    - name: bash
+      os: linux
+    - name: fish
+      os: darwin
+
     # Custom install script.
     #
     # Default: 'mkdir -p $out/bin; cp -vr $binary $out/bin/$binary'
