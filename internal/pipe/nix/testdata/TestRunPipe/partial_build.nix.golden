@@ -37,7 +37,7 @@ pkgs.stdenv.mkDerivation {
 
   system = system;
 
-  meta = with lib; {
+  meta = {
 
     platforms = [
       "x86_64-darwin"

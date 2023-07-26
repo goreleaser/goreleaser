@@ -46,10 +46,10 @@ pkgs.stdenv.mkDerivation {
 
   system = system;
 
-  meta = with lib; {
+  meta = {
     description = "my test";
     homepage = "https://goreleaser.com";
-    license = licenses.mit;
+    license = lib.licenses.mit;
 
     platforms = [
       "aarch64-darwin"
