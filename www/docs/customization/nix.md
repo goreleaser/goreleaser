@@ -87,11 +87,20 @@ nix:
 
     # Custom install script.
     #
-    # Default: 'mkdir -p $out/bin; cp -vr $binary $out/bin/$binary'
+    # Default: 'mkdir -p $out/bin; cp -vr $binary $out/bin/$binary', and
+    #   `makeWrapper` if `dependencies` were provided.
     # Templates: allowed
     install: |
       mkdir -p $out/bin
       cp -vr ./foo $out/bin/foo
+
+    # Custom additional install instructions.
+    # This has the advantage of preventing you to rewrite the `install` script
+    # if the defaults work for you.
+    #
+    # Since: v1.20
+    # Templates: allowed
+    extra_install: |
       installManPage ./manpages/foo.1.gz
 
     # Custom post_install script.

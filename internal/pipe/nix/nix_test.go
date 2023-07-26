@@ -109,6 +109,22 @@ func TestRunPipe(t *testing.T) {
 			},
 		},
 		{
+			name: "extra-install",
+			nix: config.Nix{
+				Repository: config.RepoRef{
+					Owner: "foo",
+					Name:  "bar",
+				},
+				Dependencies: []config.NixDependency{
+					{Name: "fish"},
+					{Name: "bash"},
+					linuxDep("ttyd"),
+					darwinDep("chromium"),
+				},
+				ExtraInstall: "installManPage ./manpages/foo.1.gz",
+			},
+		},
+		{
 			name: "open-pr",
 			nix: config.Nix{
 				Name:        "foo",
@@ -476,43 +492,58 @@ func TestDependencies(t *testing.T) {
 	require.Equal(t, []string{"nix-prefetch-url"}, Pipe{}.Dependencies(nil))
 }
 
-func TestBinInstallStr(t *testing.T) {
+func TestBinInstallFormats(t *testing.T) {
 	t.Run("no-deps", func(t *testing.T) {
-		golden.RequireEqual(t, []byte(binInstallStr(config.Nix{})))
+		golden.RequireEqual(t, []byte(strings.Join(
+			binInstallFormats(config.Nix{}),
+			"\n",
+		)))
 	})
 	t.Run("deps", func(t *testing.T) {
-		golden.RequireEqual(t, []byte(binInstallStr(config.Nix{
-			Dependencies: []config.NixDependency{
-				{Name: "fish"},
-				{Name: "bash"},
-				{Name: "zsh"},
-			},
-		})))
+		golden.RequireEqual(t, []byte(strings.Join(
+			binInstallFormats(config.Nix{
+				Dependencies: []config.NixDependency{
+					{Name: "fish"},
+					{Name: "bash"},
+					{Name: "zsh"},
+				},
+			}),
+			"\n",
+		)))
 	})
 	t.Run("linux-only-deps", func(t *testing.T) {
-		golden.RequireEqual(t, []byte(binInstallStr(config.Nix{
-			Dependencies: []config.NixDependency{
-				linuxDep("foo"),
-				linuxDep("bar"),
-			},
-		})))
+		golden.RequireEqual(t, []byte(strings.Join(
+			binInstallFormats(config.Nix{
+				Dependencies: []config.NixDependency{
+					linuxDep("foo"),
+					linuxDep("bar"),
+				},
+			}),
+			"\n",
+		)))
 	})
 	t.Run("darwin-only-deps", func(t *testing.T) {
-		golden.RequireEqual(t, []byte(binInstallStr(config.Nix{
-			Dependencies: []config.NixDependency{
-				darwinDep("foo"),
-				darwinDep("bar"),
-			},
-		})))
+		golden.RequireEqual(t, []byte(strings.Join(
+			binInstallFormats(config.Nix{
+				Dependencies: []config.NixDependency{
+					darwinDep("foo"),
+					darwinDep("bar"),
+				},
+			}),
+			"\n",
+		)))
 	})
 	t.Run("mixed-deps", func(t *testing.T) {
-		golden.RequireEqual(t, []byte(binInstallStr(config.Nix{
-			Dependencies: []config.NixDependency{
-				{Name: "fish"},
-				linuxDep("foo"),
-				darwinDep("bar"),
-			},
-		})))
+		golden.RequireEqual(t, []byte(strings.Join(
+			binInstallFormats(config.Nix{
+				Dependencies: []config.NixDependency{
+					{Name: "fish"},
+					linuxDep("foo"),
+					darwinDep("bar"),
+				},
+			}),
+			"\n",
+		)))
 	})
 }
 

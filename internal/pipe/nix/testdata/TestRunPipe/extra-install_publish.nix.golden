@@ -15,13 +15,12 @@
 }:
 let
   shaMap = {
-    i686-linux = "0000000000000000000000000000000000000000000000000000";
-    x86_64-linux = "0000000000000000000000000000000000000000000000000000";
-    armv6l-linux = "0000000000000000000000000000000000000000000000000000";
-    armv7l-linux = "0000000000000000000000000000000000000000000000000000";
-    aarch64-linux = "0000000000000000000000000000000000000000000000000000";
-    x86_64-darwin = "0000000000000000000000000000000000000000000000000000";
-    aarch64-darwin = "0000000000000000000000000000000000000000000000000000";
+    x86_64-linux = "sha1";
+    armv6l-linux = "sha6";
+    armv7l-linux = "sha7";
+    aarch64-linux = "sha2";
+    x86_64-darwin = "sha3";
+    aarch64-darwin = "sha4";
   };
 
   urlMap = {
@@ -49,6 +48,7 @@ in pkgs.stdenv.mkDerivation {
     mkdir -p $out/bin
     cp -vr ./foo $out/bin/foo
     wrapProgram $out/bin/foo --prefix PATH : ${lib.makeBinPath (lib.optionals stdenv.isDarwin [ chromium ] ++ lib.optionals stdenv.isLinux [ ttyd ] ++ [ fish bash ])}
+    installManPage ./manpages/foo.1.gz
   '';
 
   system = system;

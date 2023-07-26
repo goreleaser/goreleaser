@@ -435,18 +435,29 @@ func installs(ctx *context.Context, nix config.Nix, art *artifact.Artifact) ([]s
 	}
 
 	result := []string{"mkdir -p $out/bin"}
-	binInstall := binInstallStr(nix)
+	binInstallFormat := binInstallFormats(nix)
 	for _, bin := range artifact.ExtraOr(*art, artifact.ExtraBinaries, []string{}) {
-		result = append(result, fmt.Sprintf(binInstall, bin))
+		for _, format := range binInstallFormat {
+			result = append(result, fmt.Sprintf(format, bin))
+		}
 	}
 
 	log.WithField("install", result).Warnf("guessing install")
+
+	applied, err = tmpl.New(ctx).WithArtifact(art).Apply(nix.ExtraInstall)
+	if err != nil {
+		return nil, err
+	}
+	if applied != "" {
+		result = append(result, split(applied)...)
+	}
 	return result, nil
 }
 
-func binInstallStr(nix config.Nix) string {
+func binInstallFormats(nix config.Nix) []string {
+	formats := []string{"cp -vr ./%[1]s $out/bin/%[1]s"}
 	if len(nix.Dependencies) == 0 {
-		return "cp -vr ./%s $out/bin/%[1]s"
+		return formats
 	}
 	var deps, linuxDeps, darwinDeps []string
 
@@ -474,7 +485,10 @@ func binInstallStr(nix config.Nix) string {
 	}
 
 	depString := strings.Join(depStrings, " ++ ")
-	return "wrapProgram $out/bin/%[1]s --prefix PATH : ${lib.makeBinPath (" + depString + ")}"
+	return append(
+		formats,
+		"wrapProgram $out/bin/%[1]s --prefix PATH : ${lib.makeBinPath ("+depString+")}",
+	)
 }
 
 func split(s string) []string {

@@ -46,6 +46,7 @@ in pkgs.stdenv.mkDerivation {
 
   installPhase = ''
     mkdir -p $out/bin
+    cp -vr ./foo $out/bin/foo
     wrapProgram $out/bin/foo --prefix PATH : ${lib.makeBinPath (lib.optionals stdenv.isDarwin [ chromium ] ++ lib.optionals stdenv.isLinux [ ttyd ] ++ [ fish bash ])}
   '';
 
