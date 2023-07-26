@@ -91,7 +91,7 @@ pkgs.stdenv.mkDerivation {
 
   system = system;
 
-  meta = with lib; {
+  meta = {
     {{- with .Description }}
     description = "{{ . }}";
     {{- end }}
@@ -99,7 +99,7 @@ pkgs.stdenv.mkDerivation {
     homepage = "{{ . }}";
     {{- end }}
     {{- with .License }}
-    license = licenses.{{ . }};
+    license = lib.licenses.{{ . }};
     {{- end }}
 
     platforms = [

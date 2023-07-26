@@ -55,7 +55,7 @@ pkgs.stdenv.mkDerivation {
 
   system = system;
 
-  meta = with lib; {
+  meta = {
 
     platforms = [
       "aarch64-darwin"
