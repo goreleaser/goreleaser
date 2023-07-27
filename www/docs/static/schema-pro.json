@@ -1342,6 +1342,12 @@
 					},
 					"service": {
 						"type": "string"
+					},
+					"alternative_names": {
+						"items": {
+							"type": "string"
+						},
+						"type": "array"
 					}
 				},
 				"additionalProperties": false,

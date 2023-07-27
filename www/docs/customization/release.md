@@ -123,7 +123,7 @@ release:
   #
   # Templates: allowed
   footer: |
-    ## Thanks!
+    ## Thanks
 
     Those were the changes on {{ .Tag }}!
 
