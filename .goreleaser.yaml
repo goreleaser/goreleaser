@@ -202,9 +202,7 @@ nix:
     description: Deliver Go binaries as fast and easily as possible
     path: pkgs/goreleaser/default.nix
     license: mit
-    install: |-
-      mkdir -p $out/bin
-      cp -vr ./goreleaser $out/bin/goreleaser
+    extra_install: |-
       installManPage ./manpages/goreleaser.1.gz
       installShellCompletion ./completions/*
 
