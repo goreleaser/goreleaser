@@ -38,6 +38,7 @@ pkgs.stdenv.mkDerivation {
   installPhase = ''
     mkdir -p $out/bin
     cp foo $out/bin/foo
+    installManPage ./manpages/foo.1.gz
   '';
   postInstall = ''
     echo "do something"

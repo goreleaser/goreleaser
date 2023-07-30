@@ -426,12 +426,19 @@ func postInstall(ctx *context.Context, nix config.Nix, art *artifact.Artifact) (
 }
 
 func installs(ctx *context.Context, nix config.Nix, art *artifact.Artifact) ([]string, error) {
-	applied, err := tmpl.New(ctx).WithArtifact(art).Apply(nix.Install)
+	tpl := tmpl.New(ctx).WithArtifact(art)
+
+	extraInstall, err := tpl.Apply(nix.ExtraInstall)
 	if err != nil {
 		return nil, err
 	}
-	if applied != "" {
-		return split(applied), nil
+
+	install, err := tpl.Apply(nix.Install)
+	if err != nil {
+		return nil, err
+	}
+	if install != "" {
+		return append(split(install), split(extraInstall)...), nil
 	}
 
 	result := []string{"mkdir -p $out/bin"}
@@ -442,16 +449,9 @@ func installs(ctx *context.Context, nix config.Nix, art *artifact.Artifact) ([]s
 		}
 	}
 
-	log.WithField("install", result).Warnf("guessing install")
+	log.WithField("install", result).Info("guessing install")
 
-	applied, err = tmpl.New(ctx).WithArtifact(art).Apply(nix.ExtraInstall)
-	if err != nil {
-		return nil, err
-	}
-	if applied != "" {
-		result = append(result, split(applied)...)
-	}
-	return result, nil
+	return append(result, split(extraInstall)...), nil
 }
 
 func binInstallFormats(nix config.Nix) []string {

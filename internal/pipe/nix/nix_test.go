@@ -158,6 +158,7 @@ func TestRunPipe(t *testing.T) {
 					mkdir -p $out/bin
 					cp foo $out/bin/foo
 				`,
+				ExtraInstall: "installManPage ./manpages/foo.1.gz",
 				Repository: config.RepoRef{
 					Owner: "foo",
 					Name:  "bar",
