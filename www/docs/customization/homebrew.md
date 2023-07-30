@@ -144,15 +144,28 @@ brews:
       # ...
 
     # So you can `brew test` your formula.
+    #
+    # Template: allowed
     test: |
       system "#{bin}/foo --version"
       # ...
 
     # Custom install script for brew.
+    #
+    # Template: allowed
     # Default: 'bin.install "BinaryName"'
     install: |
       bin.install "some_other_name"
       bash_completion.install "completions/foo.bash" => "foo"
+      # ...
+
+    # Additional install instructions so you don't need to override `install`.
+    #
+    # Template: allowed
+    # Since: v1.20.
+    extra_install: |
+      bash_completion.install "completions/foo.bash" => "foo"
+      man1.install "man/foo.1.gz"
       # ...
 
     # Custom post_install script for brew.

@@ -588,8 +588,9 @@ func TestRunPipeForMultipleAmd64Versions(t *testing.T) {
 								Owner: "test",
 								Name:  "test",
 							},
-							Homepage: "https://github.com/goreleaser",
-							Install:  `bin.install "foo"`,
+							Homepage:     "https://github.com/goreleaser",
+							Install:      `bin.install "foo"`,
+							ExtraInstall: `man1.install "./man/foo.1.gz"`,
 						},
 					},
 					GitHubURLs: config.GitHubURLs{
@@ -982,6 +983,7 @@ func TestRunPipeBinaryRelease(t *testing.T) {
 						Owner: "foo",
 						Name:  "bar",
 					},
+					ExtraInstall: `man1.install "./man/foo.1.gz"`,
 				},
 			},
 		},
@@ -1022,9 +1024,10 @@ func TestRunPipePullRequest(t *testing.T) {
 			ProjectName: "foo",
 			Brews: []config.Homebrew{
 				{
-					Name:        "foo",
-					Homepage:    "https://goreleaser.com",
-					Description: "Fake desc",
+					Name:         "foo",
+					Homepage:     "https://goreleaser.com",
+					Description:  "Fake desc",
+					ExtraInstall: `man1.install "./man/foo.1.gz"`,
 					Repository: config.RepoRef{
 						Owner:  "foo",
 						Name:   "bar",

@@ -325,30 +325,38 @@ func doBuildFormula(ctx *context.Context, data templateData) (string, error) {
 }
 
 func installs(ctx *context.Context, cfg config.Homebrew, art *artifact.Artifact) ([]string, error) {
-	applied, err := tmpl.New(ctx).WithArtifact(art).Apply(cfg.Install)
+	tpl := tmpl.New(ctx).WithArtifact(art)
+
+	extraInstall, err := tpl.Apply(cfg.ExtraInstall)
 	if err != nil {
 		return nil, err
 	}
-	if applied != "" {
-		return split(applied), nil
+
+	install, err := tpl.Apply(cfg.Install)
+	if err != nil {
+		return nil, err
+	}
+	if install != "" {
+		return append(split(install), split(extraInstall)...), nil
 	}
 
-	install := map[string]bool{}
+	installMap := map[string]bool{}
 	switch art.Type {
 	case artifact.UploadableBinary:
 		name := art.Name
 		bin := artifact.ExtraOr(*art, artifact.ExtraBinary, art.Name)
-		install[fmt.Sprintf("bin.install %q => %q", name, bin)] = true
+		installMap[fmt.Sprintf("bin.install %q => %q", name, bin)] = true
 	case artifact.UploadableArchive:
 		for _, bin := range artifact.ExtraOr(*art, artifact.ExtraBinaries, []string{}) {
-			install[fmt.Sprintf("bin.install %q", bin)] = true
+			installMap[fmt.Sprintf("bin.install %q", bin)] = true
 		}
 	}
 
-	result := keys(install)
+	result := keys(installMap)
 	sort.Strings(result)
-	log.Warnf("guessing install to be %q", strings.Join(result, ", "))
-	return result, nil
+	log.WithField("install", result).Info("guessing install")
+
+	return append(result, split(extraInstall)...), nil
 }
 
 func keys(m map[string]bool) []string {

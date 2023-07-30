@@ -186,8 +186,7 @@ brews:
       - name: git
     conflicts:
       - goreleaser-pro
-    install: |-
-      bin.install "goreleaser"
+    extra_install: |-
       bash_completion.install "completions/goreleaser.bash" => "goreleaser"
       zsh_completion.install "completions/goreleaser.zsh" => "_goreleaser"
       fish_completion.install "completions/goreleaser.fish"
