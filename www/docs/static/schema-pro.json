@@ -1722,6 +1722,17 @@
 					"server"
 				]
 			},
+			"Matrix": {
+				"patternProperties": {
+					".*": {
+						"items": {
+							"type": "string"
+						},
+						"type": "array"
+					}
+				},
+				"type": "object"
+			},
 			"Mattermost": {
 				"properties": {
 					"enabled": {
@@ -3780,6 +3791,9 @@
 							}
 						},
 						"type": "object"
+					},
+					"matrix": {
+						"$ref": "#/$defs/Matrix"
 					}
 				},
 				"additionalProperties": false,

@@ -23,6 +23,7 @@ Prerequisites:
 - A user + password / client x509 certificate / API key with grants to upload an artifact
 
 !!! note
+
     authentication is optional and may be provided if the server requires it
     - user/pass is for Basic Authentication
     - client x509 certificate is for mutual TLS authentication (aka "mTLS")
@@ -36,7 +37,7 @@ An example configuration for `goreleaser` in upload mode `binary` with the targe
 ```yaml
 - name: production
   mode: binary
-  target: 'http://some.server/some/path/example-repo-local/{{ .ProjectName }}/{{ .Version }}/{{ .Os }}/{{ .Arch }}{{ if .Arm }}{{ .Arm }}{{ end }}'
+  target: "http://some.server/some/path/example-repo-local/{{ .ProjectName }}/{{ .Version }}/{{ .Os }}/{{ .Arch }}{{ if .Arm }}{{ .Arm }}{{ end }}"
 ```
 
 and will result in an HTTP PUT request sent to
@@ -44,15 +45,16 @@ and will result in an HTTP PUT request sent to
 
 Supported variables:
 
-- Version
-- Tag
-- ProjectName
-- ArtifactName
-- Os
-- Arch
-- Arm
+- `Version`
+- `Tag`
+- `ProjectName`
+- `ArtifactName`
+- `Os`
+- `Arch`
+- `Arm`
 
 !!! warning
+
     Variables `Os`, `Arch` and `Arm` are only supported in upload mode `binary`.
 
 For `archive` mode, it will also included the `LinuxPackage` type which is
@@ -103,10 +105,10 @@ certificate/key pair of pem-encode files.
 
 ```yaml
 uploads:
-- name: production
-  client_x509_cert: path/to/client.cert.pem
-  client_x509_key: path/to/client.key.pem
-  target: 'http://some.server/some/path/example-repo-local/{{ .ProjectName }}/{{ .Version }}/{{ .Os }}/{{ .Arch }}{{ if .Arm }}{{ .Arm }}{{ end }}'
+  - name: production
+    client_x509_cert: path/to/client.cert.pem
+    client_x509_key: path/to/client.key.pem
+    target: "http://some.server/some/path/example-repo-local/{{ .ProjectName }}/{{ .Version }}/{{ .Os }}/{{ .Arch }}{{ if .Arm }}{{ .Arm }}{{ end }}"
 ```
 
 This will offer the client certificate during the TLS handshake, which your artifactory server may use to authenticate
@@ -148,8 +150,7 @@ Of course, you can customize a lot of things:
 # .goreleaser.yaml
 uploads:
   # You can have multiple upload instances.
-  -
-    # Unique name of your upload instance. Used to identify the instance.
+  - # Unique name of your upload instance. Used to identify the instance.
     name: production
 
     # HTTP method to use.
@@ -159,8 +160,8 @@ uploads:
 
     # IDs of the artifacts you want to upload.
     ids:
-    - foo
-    - bar
+      - foo
+      - bar
 
     # File extensions to filter for.
     # This might be useful if you have multiple packages with different
@@ -169,8 +170,19 @@ uploads:
     #
     # Since: v1.7
     exts:
-    - deb
-    - rpm
+      - deb
+      - rpm
+
+    # Matrix will run the upload for each possible combination of the given
+    # values.
+    # The keys will be available as template variables in the `target` and
+    # `custom_headers` fields.
+    #
+    # This feature is only available in GoReleaser Pro.
+    # Since: v1.20 (pro)
+    matrix:
+      foo: [bar zaz]
+      something: [foobar somethingelse anotherthing]
 
     # Upload mode. Valid options are `binary` and `archive`.
     # If mode is `archive`, variables _Os_, _Arch_ and _Arm_ for target name are not supported.
@@ -214,7 +226,7 @@ uploads:
     # Upload signatures.
     signature: true
 
-   # Certificate chain used to validate server certificates
+    # Certificate chain used to validate server certificates
     trusted_certificates: |
       -----BEGIN CERTIFICATE-----
       MIIDrjCCApagAwIBAgIIShr2zchZo+8wDQYJKoZIhvcNAQENBQAwNTEXMBUGA1UE
@@ -223,8 +235,13 @@ uploads:
       -----END CERTIFICATE-----
 ```
 
+!!! success "GoReleaser Pro"
+
+    Some options are only available in [GoReleaser Pro feature](/pro/).
+
 These settings should allow you to push your artifacts into multiple HTTP
 servers.
 
 !!! tip
+
     Learn more about the [name template engine](/customization/templates/).
