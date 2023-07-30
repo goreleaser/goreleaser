@@ -14,6 +14,7 @@ class Foo < Formula
 
     def install
       bin.install "foo_macos" => "foo"
+      man1.install "./man/foo.1.gz"
     end
   end
 end

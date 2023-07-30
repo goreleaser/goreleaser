@@ -226,6 +226,7 @@ type Homebrew struct {
 	Caveats               string               `yaml:"caveats,omitempty" json:"caveats,omitempty"`
 	Plist                 string               `yaml:"plist,omitempty" json:"plist,omitempty" jsonschema:"deprecated=true,description=use service instead"` // Deprecated
 	Install               string               `yaml:"install,omitempty" json:"install,omitempty"`
+	ExtraInstall          string               `yaml:"extra_install,omitempty" json:"extra_install,omitempty"`
 	PostInstall           string               `yaml:"post_install,omitempty" json:"post_install,omitempty"`
 	Dependencies          []HomebrewDependency `yaml:"dependencies,omitempty" json:"dependencies,omitempty"`
 	Test                  string               `yaml:"test,omitempty" json:"test,omitempty"`
