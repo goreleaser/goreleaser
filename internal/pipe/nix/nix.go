@@ -248,8 +248,13 @@ func preparePkg(
 	}
 
 	inputs := []string{"installShellFiles"}
-	if len(nix.Dependencies) > 0 {
+	dependencies := depNames(nix.Dependencies)
+	if len(dependencies) > 0 {
 		inputs = append(inputs, "makeWrapper")
+	}
+	if archives[0].Format() == "zip" {
+		inputs = append(inputs, "unzip")
+		dependencies = append(dependencies, "unzip")
 	}
 
 	data := templateData{
@@ -263,7 +268,7 @@ func preparePkg(
 		Homepage:     nix.Homepage,
 		License:      nix.License,
 		Inputs:       inputs,
-		Dependencies: depNames(nix.Dependencies),
+		Dependencies: dependencies,
 	}
 
 	platforms := map[string]bool{}
