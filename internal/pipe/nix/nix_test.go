@@ -491,6 +491,8 @@ func TestRunPipe(t *testing.T) {
 					"https://dummyhost/download/v1.2.1/foo_darwin_all.zip":        "sha12",
 					"https://dummyhost/download/v1.2.1/foo_linux_arm6.zip":        "sha13",
 					"https://dummyhost/download/v1.2.1/foo_linux_arm7.zip":        "sha14",
+					"https://dummyhost/download/v1.2.1/foo_linux_386.zip":         "sha15",
+					"https://dummyhost/download/v1.2.1/foo_linux_386.tar.gz":      "sha16",
 				},
 			}
 

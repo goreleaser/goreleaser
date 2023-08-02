@@ -13,6 +13,7 @@ system ? builtins.currentSystem
 }:
 let
   shaMap = {
+    i686-linux = "sha15";
     x86_64-linux = "sha8";
     aarch64-linux = "sha9";
     x86_64-darwin = "sha10";
