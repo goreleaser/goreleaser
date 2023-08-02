@@ -13,14 +13,18 @@ system ? builtins.currentSystem
 }:
 let
   shaMap = {
+    x86_64-linux = "sha8";
+    aarch64-linux = "sha9";
+    x86_64-darwin = "sha10";
+    aarch64-darwin = "sha11";
   };
 
   urlMap = {
-    i686-linux = "https://dummyhost/download/v1.2.1/foo_linux_386v1.zip";
+    i686-linux = "https://dummyhost/download/v1.2.1/foo_linux_386.zip";
     x86_64-linux = "https://dummyhost/download/v1.2.1/foo_linux_amd64v1.zip";
-    aarch64-linux = "https://dummyhost/download/v1.2.1/foo_linux_arm64v1.zip";
+    aarch64-linux = "https://dummyhost/download/v1.2.1/foo_linux_arm64.zip";
     x86_64-darwin = "https://dummyhost/download/v1.2.1/foo_darwin_amd64v1.zip";
-    aarch64-darwin = "https://dummyhost/download/v1.2.1/foo_darwin_arm64v1.zip";
+    aarch64-darwin = "https://dummyhost/download/v1.2.1/foo_darwin_arm64.zip";
   };
 in
 pkgs.stdenv.mkDerivation {

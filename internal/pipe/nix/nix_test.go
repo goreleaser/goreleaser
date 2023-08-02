@@ -408,6 +408,12 @@ func TestRunPipe(t *testing.T) {
 				testctx.WithSemver(1, 2, 1, "rc1"),
 			)
 			createFakeArtifact := func(id, goos, goarch, goamd64, goarm, format string, extra map[string]any) {
+				if goarch != "arm" {
+					goarm = ""
+				}
+				if goarch != "amd64" {
+					goamd64 = ""
+				}
 				path := filepath.Join(folder, "dist/foo_"+goos+goarch+goamd64+goarm+"."+format)
 				art := artifact.Artifact{
 					Name:    "foo_" + goos + "_" + goarch + goamd64 + goarm + "." + format,
@@ -478,6 +484,13 @@ func TestRunPipe(t *testing.T) {
 					"https://dummyhost/download/v1.2.1/foo_darwin_all.tar.gz":     "sha5",
 					"https://dummyhost/download/v1.2.1/foo_linux_arm6.tar.gz":     "sha6",
 					"https://dummyhost/download/v1.2.1/foo_linux_arm7.tar.gz":     "sha7",
+					"https://dummyhost/download/v1.2.1/foo_linux_amd64v1.zip":     "sha8",
+					"https://dummyhost/download/v1.2.1/foo_linux_arm64.zip":       "sha9",
+					"https://dummyhost/download/v1.2.1/foo_darwin_amd64v1.zip":    "sha10",
+					"https://dummyhost/download/v1.2.1/foo_darwin_arm64.zip":      "sha11",
+					"https://dummyhost/download/v1.2.1/foo_darwin_all.zip":        "sha12",
+					"https://dummyhost/download/v1.2.1/foo_linux_arm6.zip":        "sha13",
+					"https://dummyhost/download/v1.2.1/foo_linux_arm7.zip":        "sha14",
 				},
 			}
 
