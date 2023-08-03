@@ -23,7 +23,7 @@ require (
 	github.com/disgoorg/snowflake/v2 v2.0.1
 	github.com/distribution/distribution/v3 v3.0.0-20221021092657-c47a966fded8
 	github.com/go-telegram-bot-api/telegram-bot-api v4.6.4+incompatible
-	github.com/google/go-containerregistry v0.15.2
+	github.com/google/go-containerregistry v0.16.1
 	github.com/google/go-github/v53 v53.2.0
 	github.com/google/ko v0.14.1
 	github.com/google/uuid v1.3.0
@@ -131,7 +131,7 @@ require (
 	github.com/dimchansky/utfbom v1.1.1 // indirect
 	github.com/disgoorg/json v1.1.0 // indirect
 	github.com/disgoorg/log v1.2.0 // indirect
-	github.com/docker/cli v23.0.5+incompatible // indirect
+	github.com/docker/cli v24.0.0+incompatible // indirect
 	github.com/docker/distribution v2.8.2+incompatible // indirect
 	github.com/docker/docker v24.0.2+incompatible // indirect
 	github.com/docker/docker-credential-helpers v0.7.0 // indirect
@@ -222,7 +222,7 @@ require (
 	github.com/sigstore/cosign/v2 v2.0.3-0.20230523133326-0544abd8fc8a // indirect
 	github.com/sigstore/rekor v1.2.0 // indirect
 	github.com/sigstore/sigstore v1.6.4 // indirect
-	github.com/sirupsen/logrus v1.9.0 // indirect
+	github.com/sirupsen/logrus v1.9.1 // indirect
 	github.com/skeema/knownhosts v1.1.1 // indirect
 	github.com/spf13/afero v1.9.5 // indirect
 	github.com/spf13/cast v1.5.1 // indirect
