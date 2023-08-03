@@ -6,16 +6,22 @@ system ? builtins.currentSystem
 , lib
 , fetchurl
 , installShellFiles
+, makeWrapper
+, stdenv
+, fish
+, bash
+, ttyd
+, chromium
 }:
 let
   shaMap = {
-    i686-linux = "sha16";
-    x86_64-linux = "sha1";
-    armv6l-linux = "sha6";
-    armv7l-linux = "sha7";
-    aarch64-linux = "sha2";
-    x86_64-darwin = "sha3";
-    aarch64-darwin = "sha4";
+    i686-linux = "0000000000000000000000000000000000000000000000000000";
+    x86_64-linux = "0000000000000000000000000000000000000000000000000000";
+    armv6l-linux = "0000000000000000000000000000000000000000000000000000";
+    armv7l-linux = "0000000000000000000000000000000000000000000000000000";
+    aarch64-linux = "0000000000000000000000000000000000000000000000000000";
+    x86_64-darwin = "0000000000000000000000000000000000000000000000000000";
+    aarch64-darwin = "0000000000000000000000000000000000000000000000000000";
   };
 
   urlMap = {
@@ -38,19 +44,17 @@ pkgs.stdenv.mkDerivation {
 
   sourceRoot = ".";
 
-  nativeBuildInputs = [ installShellFiles ];
+  nativeBuildInputs = [ installShellFiles makeWrapper ];
 
   installPhase = ''
     mkdir -p $out/bin
     cp -vr ./foo $out/bin/foo
+    wrapProgram $out/bin/foo --prefix PATH : ${lib.makeBinPath (lib.optionals stdenv.isDarwin [ chromium ] ++ lib.optionals stdenv.isLinux [ ttyd ] ++ [ fish bash ])}
   '';
 
   system = system;
 
   meta = {
-    description = "my test";
-    homepage = "https://goreleaser.com";
-    license = lib.licenses.mit;
 
     platforms = [
       "aarch64-darwin"

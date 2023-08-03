@@ -1342,6 +1342,12 @@
 					},
 					"service": {
 						"type": "string"
+					},
+					"alternative_names": {
+						"items": {
+							"type": "string"
+						},
+						"type": "array"
 					}
 				},
 				"additionalProperties": false,
@@ -1460,7 +1466,10 @@
 					}
 				},
 				"additionalProperties": false,
-				"type": "object"
+				"type": "object",
+				"required": [
+					"path"
+				]
 			},
 			"IncludeFromURL": {
 				"properties": {
@@ -1477,7 +1486,65 @@
 					}
 				},
 				"additionalProperties": false,
-				"type": "object"
+				"type": "object",
+				"required": [
+					"url"
+				]
+			},
+			"IncludedMarkdown": {
+				"oneOf": [
+					{
+						"type": "string"
+					},
+					{
+						"$schema": "https://json-schema.org/draft/2020-12/schema",
+						"$id": "https://github.com/goreleaser/goreleaser/pkg/config/include",
+						"$defs": {
+							"IncludeFromFile": {
+								"properties": {
+									"path": {
+										"type": "string"
+									}
+								},
+								"additionalProperties": false,
+								"type": "object",
+								"required": [
+									"path"
+								]
+							},
+							"IncludeFromURL": {
+								"properties": {
+									"url": {
+										"type": "string"
+									},
+									"headers": {
+										"patternProperties": {
+											".*": {
+												"type": "string"
+											}
+										},
+										"type": "object"
+									}
+								},
+								"additionalProperties": false,
+								"type": "object",
+								"required": [
+									"url"
+								]
+							}
+						},
+						"properties": {
+							"from_url": {
+								"$ref": "#/$defs/IncludeFromURL"
+							},
+							"from_file": {
+								"$ref": "#/$defs/IncludeFromFile"
+							}
+						},
+						"additionalProperties": false,
+						"type": "object"
+					}
+				]
 			},
 			"Ko": {
 				"properties": {
@@ -1654,6 +1721,17 @@
 				"required": [
 					"server"
 				]
+			},
+			"Matrix": {
+				"patternProperties": {
+					".*": {
+						"items": {
+							"type": "string"
+						},
+						"type": "array"
+					}
+				},
+				"type": "object"
 			},
 			"Mattermost": {
 				"properties": {
@@ -2227,6 +2305,9 @@
 					"install": {
 						"type": "string"
 					},
+					"extra_install": {
+						"type": "string"
+					},
 					"post_install": {
 						"type": "string"
 					},
@@ -2238,10 +2319,44 @@
 					},
 					"license": {
 						"type": "string"
+					},
+					"dependencies": {
+						"items": {
+							"$ref": "#/$defs/NixDependency"
+						},
+						"type": "array"
 					}
 				},
 				"additionalProperties": false,
 				"type": "object"
+			},
+			"NixDependency": {
+				"oneOf": [
+					{
+						"type": "string"
+					},
+					{
+						"$schema": "https://json-schema.org/draft/2020-12/schema",
+						"$id": "https://github.com/goreleaser/goreleaser/pkg/config/t",
+						"properties": {
+							"name": {
+								"type": "string"
+							},
+							"os": {
+								"type": "string",
+								"enum": [
+									"linux",
+									"darwin"
+								]
+							}
+						},
+						"additionalProperties": false,
+						"type": "object",
+						"required": [
+							"name"
+						]
+					}
+				]
 			},
 			"OpenCollective": {
 				"properties": {
@@ -2736,12 +2851,6 @@
 					"discussion_category_name": {
 						"type": "string"
 					},
-					"header": {
-						"type": "string"
-					},
-					"footer": {
-						"type": "string"
-					},
 					"mode": {
 						"type": "string",
 						"enum": [
@@ -2758,11 +2867,11 @@
 						},
 						"type": "array"
 					},
-					"header_from": {
-						"type": "string"
+					"header": {
+						"$ref": "#/$defs/IncludedMarkdown"
 					},
-					"footer_from": {
-						"type": "string"
+					"footer": {
+						"$ref": "#/$defs/IncludedMarkdown"
 					}
 				},
 				"additionalProperties": false,
@@ -3682,6 +3791,9 @@
 							}
 						},
 						"type": "object"
+					},
+					"matrix": {
+						"$ref": "#/$defs/Matrix"
 					}
 				},
 				"additionalProperties": false,

@@ -87,10 +87,44 @@ func TestRunPipe(t *testing.T) {
 		{
 			name: "minimal",
 			nix: config.Nix{
+				IDs: []string{"foo"},
 				Repository: config.RepoRef{
 					Owner: "foo",
 					Name:  "bar",
 				},
+			},
+		},
+		{
+			name: "deps",
+			nix: config.Nix{
+				IDs: []string{"foo"},
+				Repository: config.RepoRef{
+					Owner: "foo",
+					Name:  "bar",
+				},
+				Dependencies: []config.NixDependency{
+					{Name: "fish"},
+					{Name: "bash"},
+					linuxDep("ttyd"),
+					darwinDep("chromium"),
+				},
+			},
+		},
+		{
+			name: "extra-install",
+			nix: config.Nix{
+				IDs: []string{"foo"},
+				Repository: config.RepoRef{
+					Owner: "foo",
+					Name:  "bar",
+				},
+				Dependencies: []config.NixDependency{
+					{Name: "fish"},
+					{Name: "bash"},
+					linuxDep("ttyd"),
+					darwinDep("chromium"),
+				},
+				ExtraInstall: "installManPage ./manpages/foo.1.gz",
 			},
 		},
 		{
@@ -127,6 +161,7 @@ func TestRunPipe(t *testing.T) {
 					mkdir -p $out/bin
 					cp foo $out/bin/foo
 				`,
+				ExtraInstall: "installManPage ./manpages/foo.1.gz",
 				Repository: config.RepoRef{
 					Owner: "foo",
 					Name:  "bar",
@@ -134,7 +169,39 @@ func TestRunPipe(t *testing.T) {
 			},
 		},
 		{
-			name: "unibin",
+			name: "zip",
+			nix: config.Nix{
+				Name:        "foozip",
+				IDs:         []string{"foo-zip"},
+				Description: "my test",
+				Homepage:    "https://goreleaser.com",
+				License:     "mit",
+				Repository: config.RepoRef{
+					Owner: "foo",
+					Name:  "bar",
+				},
+			},
+		},
+		{
+			name: "zip-with-dependencies",
+			nix: config.Nix{
+				Name:        "foozip",
+				IDs:         []string{"foo-zip"},
+				Description: "my test",
+				Homepage:    "https://goreleaser.com",
+				License:     "mit",
+				Dependencies: []config.NixDependency{
+					{Name: "git"},
+				},
+				Repository: config.RepoRef{
+					Owner: "foo",
+					Name:  "bar",
+				},
+			},
+		},
+		{
+			name:             "unibin",
+			expectRunErrorIs: ErrMultipleArchivesSamePlatform,
 			nix: config.Nix{
 				Name:        "unibin",
 				IDs:         []string{"unibin"},
@@ -308,6 +375,7 @@ func TestRunPipe(t *testing.T) {
 			nix: config.Nix{
 				Name:       "doesnotmatter",
 				SkipUpload: "true",
+				IDs:        []string{"foo"},
 				Repository: config.RepoRef{
 					Owner: "foo",
 					Name:  "bar",
@@ -320,6 +388,7 @@ func TestRunPipe(t *testing.T) {
 			nix: config.Nix{
 				Name:       "doesnotmatter",
 				SkipUpload: "auto",
+				IDs:        []string{"foo"},
 				Repository: config.RepoRef{
 					Owner: "foo",
 					Name:  "bar",
@@ -339,10 +408,16 @@ func TestRunPipe(t *testing.T) {
 				testctx.WithCurrentTag("v1.2.1"),
 				testctx.WithSemver(1, 2, 1, "rc1"),
 			)
-			createFakeArtifact := func(id, goos, goarch, goamd64, goarm string, extra map[string]any) {
-				path := filepath.Join(folder, "dist/foo_"+goos+goarch+goamd64+goarm+".tar.gz")
+			createFakeArtifact := func(id, goos, goarch, goamd64, goarm, format string, extra map[string]any) {
+				if goarch != "arm" {
+					goarm = ""
+				}
+				if goarch != "amd64" {
+					goamd64 = ""
+				}
+				path := filepath.Join(folder, "dist/foo_"+goos+goarch+goamd64+goarm+"."+format)
 				art := artifact.Artifact{
-					Name:    "foo_" + goos + "_" + goarch + goamd64 + goarm + ".tar.gz",
+					Name:    "foo_" + goos + "_" + goarch + goamd64 + goarm + "." + format,
 					Path:    path,
 					Goos:    goos,
 					Goarch:  goarch,
@@ -351,7 +426,7 @@ func TestRunPipe(t *testing.T) {
 					Type:    artifact.UploadableArchive,
 					Extra: map[string]interface{}{
 						artifact.ExtraID:        id,
-						artifact.ExtraFormat:    "tar.gz",
+						artifact.ExtraFormat:    format,
 						artifact.ExtraBinaries:  []string{"foo"},
 						artifact.ExtraWrappedIn: "",
 					},
@@ -367,32 +442,41 @@ func TestRunPipe(t *testing.T) {
 				require.NoError(t, f.Close())
 			}
 
-			createFakeArtifact("unibin-replaces", "darwin", "all", "", "", map[string]any{artifact.ExtraReplaces: true})
-			createFakeArtifact("unibin", "darwin", "all", "", "", nil)
+			createFakeArtifact("unibin-replaces", "darwin", "all", "", "", "tar.gz", map[string]any{artifact.ExtraReplaces: true})
+			createFakeArtifact("unibin", "darwin", "all", "", "", "tar.gz", nil)
 			for _, goos := range []string{"linux", "darwin", "windows"} {
 				for _, goarch := range []string{"amd64", "arm64", "386", "arm"} {
 					if goos+goarch == "darwin386" {
 						continue
 					}
 					if goarch == "amd64" {
-						createFakeArtifact("partial", goos, goarch, "v1", "", nil)
-						createFakeArtifact("foo", goos, goarch, "v1", "", nil)
-						createFakeArtifact("unibin", goos, goarch, "v1", "", nil)
-						createFakeArtifact("unibin-replaces", goos, goarch, "v1", "", nil)
-						createFakeArtifact("wrapped-in-dir", goos, goarch, "v1", "", map[string]any{artifact.ExtraWrappedIn: "./foo"})
+						createFakeArtifact("partial", goos, goarch, "v1", "", "tar.gz", nil)
+						createFakeArtifact("foo", goos, goarch, "v1", "", "tar.gz", nil)
+						createFakeArtifact("unibin", goos, goarch, "v1", "", "tar.gz", nil)
+						if goos != "darwin" {
+							createFakeArtifact("unibin-replaces", goos, goarch, "v1", "", "tar.gz", nil)
+						}
+						createFakeArtifact("wrapped-in-dir", goos, goarch, "v1", "", "tar.gz", map[string]any{artifact.ExtraWrappedIn: "./foo"})
+						createFakeArtifact("foo-zip", goos, goarch, "v1", "", "zip", nil)
+						continue
 					}
 					if goarch == "arm" {
 						if goos != "linux" {
 							continue
 						}
-						createFakeArtifact("foo", goos, goarch, "", "6", nil)
-						createFakeArtifact("foo", goos, goarch, "", "7", nil)
+						createFakeArtifact("foo", goos, goarch, "", "6", "tar.gz", nil)
+						createFakeArtifact("foo", goos, goarch, "", "7", "tar.gz", nil)
+						createFakeArtifact("foo-zip", goos, goarch, "", "", "zip", nil)
+						createFakeArtifact("unibin-replaces", goos, goarch, "", "", "tar.gz", nil)
 						continue
 					}
-					createFakeArtifact("foo", goos, goarch, "", "", nil)
-					createFakeArtifact("unibin", goos, goarch, "", "", nil)
-					createFakeArtifact("unibin-replaces", goos, goarch, "", "", nil)
-					createFakeArtifact("wrapped-in-dir", goos, goarch, "", "", map[string]any{artifact.ExtraWrappedIn: "./foo"})
+					createFakeArtifact("foo", goos, goarch, "", "", "tar.gz", nil)
+					createFakeArtifact("unibin", goos, goarch, "", "", "tar.gz", nil)
+					if goos != "darwin" {
+						createFakeArtifact("unibin-replaces", goos, goarch, "", "", "tar.gz", nil)
+					}
+					createFakeArtifact("wrapped-in-dir", goos, goarch, "", "", "tar.gz", map[string]any{artifact.ExtraWrappedIn: "./foo"})
+					createFakeArtifact("foo-zip", goos, goarch, "v1", "", "zip", nil)
 				}
 			}
 
@@ -407,6 +491,15 @@ func TestRunPipe(t *testing.T) {
 					"https://dummyhost/download/v1.2.1/foo_darwin_all.tar.gz":     "sha5",
 					"https://dummyhost/download/v1.2.1/foo_linux_arm6.tar.gz":     "sha6",
 					"https://dummyhost/download/v1.2.1/foo_linux_arm7.tar.gz":     "sha7",
+					"https://dummyhost/download/v1.2.1/foo_linux_amd64v1.zip":     "sha8",
+					"https://dummyhost/download/v1.2.1/foo_linux_arm64.zip":       "sha9",
+					"https://dummyhost/download/v1.2.1/foo_darwin_amd64v1.zip":    "sha10",
+					"https://dummyhost/download/v1.2.1/foo_darwin_arm64.zip":      "sha11",
+					"https://dummyhost/download/v1.2.1/foo_darwin_all.zip":        "sha12",
+					"https://dummyhost/download/v1.2.1/foo_linux_arm6.zip":        "sha13",
+					"https://dummyhost/download/v1.2.1/foo_linux_arm7.zip":        "sha14",
+					"https://dummyhost/download/v1.2.1/foo_linux_386.zip":         "sha15",
+					"https://dummyhost/download/v1.2.1/foo_linux_386.tar.gz":      "sha16",
 				},
 			}
 
@@ -459,6 +552,75 @@ func TestErrNoArchivesFound(t *testing.T) {
 
 func TestDependencies(t *testing.T) {
 	require.Equal(t, []string{"nix-prefetch-url"}, Pipe{}.Dependencies(nil))
+}
+
+func TestBinInstallFormats(t *testing.T) {
+	t.Run("no-deps", func(t *testing.T) {
+		golden.RequireEqual(t, []byte(strings.Join(
+			binInstallFormats(config.Nix{}),
+			"\n",
+		)))
+	})
+	t.Run("deps", func(t *testing.T) {
+		golden.RequireEqual(t, []byte(strings.Join(
+			binInstallFormats(config.Nix{
+				Dependencies: []config.NixDependency{
+					{Name: "fish"},
+					{Name: "bash"},
+					{Name: "zsh"},
+				},
+			}),
+			"\n",
+		)))
+	})
+	t.Run("linux-only-deps", func(t *testing.T) {
+		golden.RequireEqual(t, []byte(strings.Join(
+			binInstallFormats(config.Nix{
+				Dependencies: []config.NixDependency{
+					linuxDep("foo"),
+					linuxDep("bar"),
+				},
+			}),
+			"\n",
+		)))
+	})
+	t.Run("darwin-only-deps", func(t *testing.T) {
+		golden.RequireEqual(t, []byte(strings.Join(
+			binInstallFormats(config.Nix{
+				Dependencies: []config.NixDependency{
+					darwinDep("foo"),
+					darwinDep("bar"),
+				},
+			}),
+			"\n",
+		)))
+	})
+	t.Run("mixed-deps", func(t *testing.T) {
+		golden.RequireEqual(t, []byte(strings.Join(
+			binInstallFormats(config.Nix{
+				Dependencies: []config.NixDependency{
+					{Name: "fish"},
+					linuxDep("foo"),
+					darwinDep("bar"),
+				},
+			}),
+			"\n",
+		)))
+	})
+}
+
+func darwinDep(s string) config.NixDependency {
+	return config.NixDependency{
+		Name: s,
+		OS:   "darwin",
+	}
+}
+
+func linuxDep(s string) config.NixDependency {
+	return config.NixDependency{
+		Name: s,
+		OS:   "linux",
+	}
 }
 
 type fakeNixShaPrefetcher map[string]string

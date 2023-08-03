@@ -43,12 +43,12 @@ And will result in a final deployment like
 
 Supported variables:
 
-- Version
-- Tag
-- ProjectName
-- Os
-- Arch
-- Arm
+- `Version`
+- `Tag`
+- `ProjectName`
+- `Os`
+- `Arch`
+- `Arm`
 
 !!! info
 
@@ -156,6 +156,17 @@ artifactories:
       - deb
       - rpm
 
+    # Matrix will run the upload for each possible combination of the given
+    # values.
+    # The keys will be available as template variables in the `target` and
+    # `custom_headers` fields.
+    #
+    # This feature is only available in GoReleaser Pro.
+    # Since: v1.20 (pro)
+    matrix:
+      foo: [bar zaz]
+      something: [foobar somethingelse anotherthing]
+
     # Upload mode. Valid options are `binary` and `archive`.
     #
     # If mode is `archive`, variables _Os_, _Arch_ and _Arm_ for target name
@@ -196,6 +207,10 @@ artifactories:
       TyzMJasj5BPZrmKjJb6O/tOtEIJ66xPSBTxPShkEYHnB7A==
       -----END CERTIFICATE-----
 ```
+
+!!! success "GoReleaser Pro"
+
+    Some options are only available in [GoReleaser Pro feature](/pro/).
 
 These settings should allow you to push your artifacts into multiple
 **Artifactory** instances.

@@ -8,6 +8,7 @@ import (
 	"path/filepath"
 	"strings"
 
+	"dario.cat/mergo"
 	"github.com/caarlos0/log"
 	"github.com/goreleaser/goreleaser/internal/artifact"
 	"github.com/goreleaser/goreleaser/internal/deprecate"
@@ -20,7 +21,6 @@ import (
 	"github.com/goreleaser/nfpm/v2"
 	"github.com/goreleaser/nfpm/v2/deprecation"
 	"github.com/goreleaser/nfpm/v2/files"
-	"github.com/imdario/mergo"
 
 	_ "github.com/goreleaser/nfpm/v2/apk"  // blank import to register the format
 	_ "github.com/goreleaser/nfpm/v2/arch" // blank import to register the format

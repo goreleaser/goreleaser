@@ -226,6 +226,7 @@ type Homebrew struct {
 	Caveats               string               `yaml:"caveats,omitempty" json:"caveats,omitempty"`
 	Plist                 string               `yaml:"plist,omitempty" json:"plist,omitempty" jsonschema:"deprecated=true,description=use service instead"` // Deprecated
 	Install               string               `yaml:"install,omitempty" json:"install,omitempty"`
+	ExtraInstall          string               `yaml:"extra_install,omitempty" json:"extra_install,omitempty"`
 	PostInstall           string               `yaml:"post_install,omitempty" json:"post_install,omitempty"`
 	Dependencies          []HomebrewDependency `yaml:"dependencies,omitempty" json:"dependencies,omitempty"`
 	Test                  string               `yaml:"test,omitempty" json:"test,omitempty"`
@@ -255,10 +256,53 @@ type Nix struct {
 	SkipUpload            string       `yaml:"skip_upload,omitempty" json:"skip_upload,omitempty" jsonschema:"oneof_type=string;boolean"`
 	URLTemplate           string       `yaml:"url_template,omitempty" json:"url_template,omitempty"`
 	Install               string       `yaml:"install,omitempty" json:"install,omitempty"`
+	ExtraInstall          string       `yaml:"extra_install,omitempty" json:"extra_install,omitempty"`
 	PostInstall           string       `yaml:"post_install,omitempty" json:"post_install,omitempty"`
 	Description           string       `yaml:"description,omitempty" json:"description,omitempty"`
 	Homepage              string       `yaml:"homepage,omitempty" json:"homepage,omitempty"`
 	License               string       `yaml:"license,omitempty" json:"license,omitempty"`
+
+	Dependencies []NixDependency `yaml:"dependencies,omitempty" json:"dependencies,omitempty"`
+}
+
+type NixDependency struct {
+	Name string `yaml:"name" json:"name"`
+	OS   string `yaml:"os,omitempty" json:"os,omitempty" jsonschema:"enum=linux,enum=darwin"`
+}
+
+func (a NixDependency) JSONSchema() *jsonschema.Schema {
+	reflector := jsonschema.Reflector{
+		ExpandedStruct: true,
+	}
+	type t NixDependency
+	schema := reflector.Reflect(&t{})
+	return &jsonschema.Schema{
+		OneOf: []*jsonschema.Schema{
+			{
+				Type: "string",
+			},
+			schema,
+		},
+	}
+}
+
+func (a *NixDependency) UnmarshalYAML(unmarshal func(interface{}) error) error {
+	var str string
+	if err := unmarshal(&str); err == nil {
+		a.Name = str
+		return nil
+	}
+
+	type t NixDependency
+	var dep t
+	if err := unmarshal(&dep); err != nil {
+		return err
+	}
+
+	a.Name = dep.Name
+	a.OS = dep.OS
+
+	return nil
 }
 
 type Winget struct {

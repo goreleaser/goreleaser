@@ -1154,6 +1154,9 @@
 					"install": {
 						"type": "string"
 					},
+					"extra_install": {
+						"type": "string"
+					},
 					"post_install": {
 						"type": "string"
 					},
@@ -2029,6 +2032,9 @@
 					"install": {
 						"type": "string"
 					},
+					"extra_install": {
+						"type": "string"
+					},
 					"post_install": {
 						"type": "string"
 					},
@@ -2040,10 +2046,44 @@
 					},
 					"license": {
 						"type": "string"
+					},
+					"dependencies": {
+						"items": {
+							"$ref": "#/$defs/NixDependency"
+						},
+						"type": "array"
 					}
 				},
 				"additionalProperties": false,
 				"type": "object"
+			},
+			"NixDependency": {
+				"oneOf": [
+					{
+						"type": "string"
+					},
+					{
+						"$schema": "https://json-schema.org/draft/2020-12/schema",
+						"$id": "https://github.com/goreleaser/goreleaser/pkg/config/t",
+						"properties": {
+							"name": {
+								"type": "string"
+							},
+							"os": {
+								"type": "string",
+								"enum": [
+									"linux",
+									"darwin"
+								]
+							}
+						},
+						"additionalProperties": false,
+						"type": "object",
+						"required": [
+							"name"
+						]
+					}
+				]
 			},
 			"OpenCollective": {
 				"properties": {

@@ -3,6 +3,7 @@ package nix
 import (
 	"bufio"
 	"bytes"
+	"errors"
 	"fmt"
 	"os"
 	"os/exec"
@@ -23,6 +24,10 @@ import (
 )
 
 const nixConfigExtra = "NixConfig"
+
+// ErrMultipleArchivesSamePlatform happens when the config yields multiple
+// archives for the same platform.
+var ErrMultipleArchivesSamePlatform = errors.New("one nixpkg can handle only one archive of each OS/Arch combination")
 
 type errNoArchivesFound struct {
 	goamd64 string
@@ -247,17 +252,30 @@ func preparePkg(
 		folder = "."
 	}
 
-	data := templateData{
-		Name:        nix.Name,
-		Version:     ctx.Version,
-		Install:     installs,
-		PostInstall: postInstall,
-		Archives:    map[string]Archive{},
-		SourceRoot:  folder,
-		Description: nix.Description,
-		Homepage:    nix.Homepage,
-		License:     nix.License,
+	inputs := []string{"installShellFiles"}
+	dependencies := depNames(nix.Dependencies)
+	if len(dependencies) > 0 {
+		inputs = append(inputs, "makeWrapper")
 	}
+	if archives[0].Format() == "zip" {
+		inputs = append(inputs, "unzip")
+		dependencies = append(dependencies, "unzip")
+	}
+
+	data := templateData{
+		Name:         nix.Name,
+		Version:      ctx.Version,
+		Install:      installs,
+		PostInstall:  postInstall,
+		Archives:     map[string]Archive{},
+		SourceRoot:   folder,
+		Description:  nix.Description,
+		Homepage:     nix.Homepage,
+		License:      nix.License,
+		Inputs:       inputs,
+		Dependencies: dependencies,
+	}
+
 	platforms := map[string]bool{}
 	for _, art := range archives {
 		url, err := tmpl.New(ctx).WithArtifact(art).Apply(nix.URLTemplate)
@@ -274,7 +292,11 @@ func preparePkg(
 		}
 
 		for _, goarch := range expandGoarch(art.Goarch) {
-			data.Archives[art.Goos+goarch+art.Goarm] = archive
+			key := art.Goos + goarch + art.Goarm
+			if _, ok := data.Archives[key]; ok {
+				return "", ErrMultipleArchivesSamePlatform
+			}
+			data.Archives[key] = archive
 			plat := goosToPlatform[art.Goos+goarch+art.Goarm]
 			platforms[plat] = true
 		}
@@ -418,21 +440,69 @@ func postInstall(ctx *context.Context, nix config.Nix, art *artifact.Artifact) (
 }
 
 func installs(ctx *context.Context, nix config.Nix, art *artifact.Artifact) ([]string, error) {
-	applied, err := tmpl.New(ctx).WithArtifact(art).Apply(nix.Install)
+	tpl := tmpl.New(ctx).WithArtifact(art)
+
+	extraInstall, err := tpl.Apply(nix.ExtraInstall)
 	if err != nil {
 		return nil, err
 	}
-	if applied != "" {
-		return split(applied), nil
+
+	install, err := tpl.Apply(nix.Install)
+	if err != nil {
+		return nil, err
+	}
+	if install != "" {
+		return append(split(install), split(extraInstall)...), nil
 	}
 
 	result := []string{"mkdir -p $out/bin"}
+	binInstallFormat := binInstallFormats(nix)
 	for _, bin := range artifact.ExtraOr(*art, artifact.ExtraBinaries, []string{}) {
-		result = append(result, fmt.Sprintf("cp -vr ./%s $out/bin/%[1]s", bin))
+		for _, format := range binInstallFormat {
+			result = append(result, fmt.Sprintf(format, bin))
+		}
 	}
 
-	log.WithField("install", result).Warnf("guessing install")
-	return result, nil
+	log.WithField("install", result).Info("guessing install")
+
+	return append(result, split(extraInstall)...), nil
+}
+
+func binInstallFormats(nix config.Nix) []string {
+	formats := []string{"cp -vr ./%[1]s $out/bin/%[1]s"}
+	if len(nix.Dependencies) == 0 {
+		return formats
+	}
+	var deps, linuxDeps, darwinDeps []string
+
+	for _, dep := range nix.Dependencies {
+		switch dep.OS {
+		case "darwin":
+			darwinDeps = append(darwinDeps, dep.Name)
+		case "linux":
+			linuxDeps = append(linuxDeps, dep.Name)
+		default:
+			deps = append(deps, dep.Name)
+		}
+	}
+
+	var depStrings []string
+
+	if len(darwinDeps) > 0 {
+		depStrings = append(depStrings, fmt.Sprintf("lib.optionals stdenv.isDarwin [ %s ]", strings.Join(darwinDeps, " ")))
+	}
+	if len(linuxDeps) > 0 {
+		depStrings = append(depStrings, fmt.Sprintf("lib.optionals stdenv.isLinux [ %s ]", strings.Join(linuxDeps, " ")))
+	}
+	if len(deps) > 0 {
+		depStrings = append(depStrings, fmt.Sprintf("[ %s ]", strings.Join(deps, " ")))
+	}
+
+	depString := strings.Join(depStrings, " ++ ")
+	return append(
+		formats,
+		"wrapProgram $out/bin/%[1]s --prefix PATH : ${lib.makeBinPath ("+depString+")}",
+	)
 }
 
 func split(s string) []string {
@@ -443,6 +513,14 @@ func split(s string) []string {
 			continue
 		}
 		result = append(result, line)
+	}
+	return result
+}
+
+func depNames(deps []config.NixDependency) []string {
+	var result []string
+	for _, dep := range deps {
+		result = append(result, dep.Name)
 	}
 	return result
 }

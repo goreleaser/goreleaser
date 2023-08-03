@@ -20,6 +20,17 @@ brews:
     # Templates: allowed
     name: myproject
 
+    # Alternative names for the current recipe.
+    #
+    # Useful if you want to publish a versioned formula as well, so users can
+    # more easily downgrade.
+    #
+    # Since: v1.20 (pro)
+    # Templates: allowed
+    alternative_names:
+      - myproject@{{ .Version }}
+      - myproject@{{ .Major }}
+
     # IDs of the archives to use.
     # Empty means all IDs.
     ids:
@@ -133,15 +144,28 @@ brews:
       # ...
 
     # So you can `brew test` your formula.
+    #
+    # Template: allowed
     test: |
       system "#{bin}/foo --version"
       # ...
 
     # Custom install script for brew.
+    #
+    # Template: allowed
     # Default: 'bin.install "BinaryName"'
     install: |
       bin.install "some_other_name"
       bash_completion.install "completions/foo.bash" => "foo"
+      # ...
+
+    # Additional install instructions so you don't need to override `install`.
+    #
+    # Template: allowed
+    # Since: v1.20.
+    extra_install: |
+      bash_completion.install "completions/foo.bash" => "foo"
+      man1.install "man/foo.1.gz"
       # ...
 
     # Custom post_install script for brew.
@@ -215,6 +239,34 @@ from one software to another.
 
 Our suggestion is to create a `my-app-head.rb` file on your tap following
 [homebrew's documentation](https://docs.brew.sh/Formula-Cookbook#unstable-versions-head).
+
+## Versioned formulas
+
+!!! success "GoReleaser Pro"
+
+    This requires [GoReleaser Pro](/pro/).
+
+GoReleaser can also create a versioned formula.
+For instance, you might want to make keep previous minor versions available to
+your users, so they easily downgrade and/or keep using an older version.
+
+To do that, use `alternative_names`:
+
+```yaml
+# .goreleaser.yaml
+brews:
+  - name: foo
+    alternative_names:
+      - "foo@{{ .Major }}.{{ .Minor }}"
+    # other fields
+```
+
+So, if you tag `v1.2.3`, GoReleaser will create and push `foo.rb` and
+`foo@1.2.rb`.
+
+Later on, you can tag `v1.3.0`, and then GoReleaser will create and push both
+`foo.rb` (thus overriding the previous version) and `foo@1.3.rb`.
+Your users can then `brew install foo@1.2` to keep using the previous version.
 
 ## GitHub Actions
 

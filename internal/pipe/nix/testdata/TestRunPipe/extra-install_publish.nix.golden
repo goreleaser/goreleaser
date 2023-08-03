@@ -6,6 +6,12 @@ system ? builtins.currentSystem
 , lib
 , fetchurl
 , installShellFiles
+, makeWrapper
+, stdenv
+, fish
+, bash
+, ttyd
+, chromium
 }:
 let
   shaMap = {
@@ -38,19 +44,18 @@ pkgs.stdenv.mkDerivation {
 
   sourceRoot = ".";
 
-  nativeBuildInputs = [ installShellFiles ];
+  nativeBuildInputs = [ installShellFiles makeWrapper ];
 
   installPhase = ''
     mkdir -p $out/bin
     cp -vr ./foo $out/bin/foo
+    wrapProgram $out/bin/foo --prefix PATH : ${lib.makeBinPath (lib.optionals stdenv.isDarwin [ chromium ] ++ lib.optionals stdenv.isLinux [ ttyd ] ++ [ fish bash ])}
+    installManPage ./manpages/foo.1.gz
   '';
 
   system = system;
 
   meta = {
-    description = "my test";
-    homepage = "https://goreleaser.com";
-    license = lib.licenses.mit;
 
     platforms = [
       "aarch64-darwin"

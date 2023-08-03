@@ -186,8 +186,7 @@ brews:
       - name: git
     conflicts:
       - goreleaser-pro
-    install: |-
-      bin.install "goreleaser"
+    extra_install: |-
       bash_completion.install "completions/goreleaser.bash" => "goreleaser"
       zsh_completion.install "completions/goreleaser.zsh" => "_goreleaser"
       fish_completion.install "completions/goreleaser.fish"
@@ -202,9 +201,7 @@ nix:
     description: Deliver Go binaries as fast and easily as possible
     path: pkgs/goreleaser/default.nix
     license: mit
-    install: |-
-      mkdir -p $out/bin
-      cp -vr ./goreleaser $out/bin/goreleaser
+    extra_install: |-
       installManPage ./manpages/goreleaser.1.gz
       installShellCompletion ./completions/*
 
