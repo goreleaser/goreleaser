@@ -192,7 +192,12 @@ func process(ctx *context.Context, docker config.Docker, artifacts []*artifact.A
 		}
 	}
 	for _, art := range artifacts {
-		if err := gio.Copy(art.Path, filepath.Join(tmp, filepath.Base(art.Path))); err != nil {
+		target := filepath.Join(tmp, art.Name)
+		if err := os.MkdirAll(filepath.Dir(target), 0o755); err != nil {
+			return fmt.Errorf("failed to make dir for artifact: %w", err)
+		}
+
+		if err := gio.Copy(art.Path, target); err != nil {
 			return fmt.Errorf("failed to copy artifact: %w", err)
 		}
 	}
