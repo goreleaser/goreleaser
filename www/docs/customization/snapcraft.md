@@ -62,6 +62,11 @@ snapcrafts:
     # store.
     description: This is the best drum roll application out there. Install it and awe!
 
+    # Disable this configuration.
+    #
+    # Templates: allowed (since v1.20)
+    disable: true
+
     # Channels in store where snap will be pushed.
     #
     # More info about channels here:
