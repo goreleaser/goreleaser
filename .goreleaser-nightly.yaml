@@ -1,0 +1,11 @@
+# yaml-language-server: $schema=https://goreleaser.com/static/schema-pro.json
+# vim: set ts=2 sw=2 tw=0 fo=jcroql
+
+nightly:
+  publish_release: true
+  keep_single_release: true
+  name_template: "{{ incminor .Version }}-nightly"
+
+includes:
+  - from_file:
+      path: ./.goreleaser.yaml
