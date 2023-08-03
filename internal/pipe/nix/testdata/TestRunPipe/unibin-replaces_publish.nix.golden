@@ -12,16 +12,16 @@ let
     i686-linux = "sha16";
     x86_64-linux = "sha1";
     aarch64-linux = "sha2";
-    x86_64-darwin = "sha3";
-    aarch64-darwin = "sha4";
+    x86_64-darwin = "sha5";
+    aarch64-darwin = "sha5";
   };
 
   urlMap = {
     i686-linux = "https://dummyhost/download/v1.2.1/foo_linux_386.tar.gz";
     x86_64-linux = "https://dummyhost/download/v1.2.1/foo_linux_amd64v1.tar.gz";
     aarch64-linux = "https://dummyhost/download/v1.2.1/foo_linux_arm64.tar.gz";
-    x86_64-darwin = "https://dummyhost/download/v1.2.1/foo_darwin_amd64v1.tar.gz";
-    aarch64-darwin = "https://dummyhost/download/v1.2.1/foo_darwin_arm64.tar.gz";
+    x86_64-darwin = "https://dummyhost/download/v1.2.1/foo_darwin_all.tar.gz";
+    aarch64-darwin = "https://dummyhost/download/v1.2.1/foo_darwin_all.tar.gz";
   };
 in
 pkgs.stdenv.mkDerivation {

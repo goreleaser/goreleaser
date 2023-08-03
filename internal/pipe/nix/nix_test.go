@@ -200,7 +200,8 @@ func TestRunPipe(t *testing.T) {
 			},
 		},
 		{
-			name: "unibin",
+			name:             "unibin",
+			expectRunErrorIs: ErrMultipleArchivesSamePlatform,
 			nix: config.Nix{
 				Name:        "unibin",
 				IDs:         []string{"unibin"},
@@ -452,9 +453,12 @@ func TestRunPipe(t *testing.T) {
 						createFakeArtifact("partial", goos, goarch, "v1", "", "tar.gz", nil)
 						createFakeArtifact("foo", goos, goarch, "v1", "", "tar.gz", nil)
 						createFakeArtifact("unibin", goos, goarch, "v1", "", "tar.gz", nil)
-						createFakeArtifact("unibin-replaces", goos, goarch, "v1", "", "tar.gz", nil)
+						if goos != "darwin" {
+							createFakeArtifact("unibin-replaces", goos, goarch, "v1", "", "tar.gz", nil)
+						}
 						createFakeArtifact("wrapped-in-dir", goos, goarch, "v1", "", "tar.gz", map[string]any{artifact.ExtraWrappedIn: "./foo"})
 						createFakeArtifact("foo-zip", goos, goarch, "v1", "", "zip", nil)
+						continue
 					}
 					if goarch == "arm" {
 						if goos != "linux" {
@@ -462,12 +466,15 @@ func TestRunPipe(t *testing.T) {
 						}
 						createFakeArtifact("foo", goos, goarch, "", "6", "tar.gz", nil)
 						createFakeArtifact("foo", goos, goarch, "", "7", "tar.gz", nil)
-						createFakeArtifact("foo-zip", goos, goarch, "v1", "", "zip", nil)
+						createFakeArtifact("foo-zip", goos, goarch, "", "", "zip", nil)
+						createFakeArtifact("unibin-replaces", goos, goarch, "", "", "tar.gz", nil)
 						continue
 					}
 					createFakeArtifact("foo", goos, goarch, "", "", "tar.gz", nil)
 					createFakeArtifact("unibin", goos, goarch, "", "", "tar.gz", nil)
-					createFakeArtifact("unibin-replaces", goos, goarch, "", "", "tar.gz", nil)
+					if goos != "darwin" {
+						createFakeArtifact("unibin-replaces", goos, goarch, "", "", "tar.gz", nil)
+					}
 					createFakeArtifact("wrapped-in-dir", goos, goarch, "", "", "tar.gz", map[string]any{artifact.ExtraWrappedIn: "./foo"})
 					createFakeArtifact("foo-zip", goos, goarch, "v1", "", "zip", nil)
 				}

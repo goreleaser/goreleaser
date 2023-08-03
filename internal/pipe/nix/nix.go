@@ -3,6 +3,7 @@ package nix
 import (
 	"bufio"
 	"bytes"
+	"errors"
 	"fmt"
 	"os"
 	"os/exec"
@@ -23,6 +24,10 @@ import (
 )
 
 const nixConfigExtra = "NixConfig"
+
+// ErrMultipleArchivesSamePlatform happens when the config yields multiple
+// archives for the same platform.
+var ErrMultipleArchivesSamePlatform = errors.New("one nixpkg can handle only one archive of each OS/Arch combination")
 
 type errNoArchivesFound struct {
 	goamd64 string
@@ -287,7 +292,11 @@ func preparePkg(
 		}
 
 		for _, goarch := range expandGoarch(art.Goarch) {
-			data.Archives[art.Goos+goarch+art.Goarm] = archive
+			key := art.Goos + goarch + art.Goarm
+			if _, ok := data.Archives[key]; ok {
+				return "", ErrMultipleArchivesSamePlatform
+			}
+			data.Archives[key] = archive
 			plat := goosToPlatform[art.Goos+goarch+art.Goarm]
 			platforms[plat] = true
 		}
