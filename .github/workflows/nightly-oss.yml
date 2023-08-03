@@ -25,13 +25,6 @@ jobs:
           repo-token: ${{ secrets.GITHUB_TOKEN }}
       - uses: docker/setup-qemu-action@2b82ce82d56a2a04d2637cd93a637ae1b359c0a7 # v2
       - uses: docker/setup-buildx-action@4c0219f9ac95b02789c1075625400b2acbff50b1 # v2
-      - name: setup-snapcraft
-        # FIXME: the mkdirs are a hack for https://github.com/goreleaser/goreleaser/issues/1715
-        run: |
-          sudo apt-get update
-          sudo apt-get -yq --no-install-suggests --no-install-recommends install snapcraft
-          mkdir -p $HOME/.cache/snapcraft/download
-          mkdir -p $HOME/.cache/snapcraft/stage-packages
       - uses: actions/setup-go@fac708d6674e30b6ba41289acaab6d4b75aa0753 # v4
         with:
           go-version: stable
@@ -44,21 +37,16 @@ jobs:
         with:
           github_access_token: ${{ secrets.GITHUB_TOKEN }}
       - name: dockerhub-login
-        if: startsWith(github.ref, 'refs/tags/v')
         uses: docker/login-action@465a07811f14bebb1938fbed4728c6a1ff8901fc # v2
         with:
           username: ${{ secrets.DOCKER_USERNAME }}
           password: ${{ secrets.DOCKER_PASSWORD }}
       - name: ghcr-login
-        if: startsWith(github.ref, 'refs/tags/v')
         uses: docker/login-action@465a07811f14bebb1938fbed4728c6a1ff8901fc # v2
         with:
           registry: ghcr.io
           username: ${{ github.repository_owner }}
           password: ${{ secrets.GITHUB_TOKEN }}
-      - name: snapcraft-login
-        if: startsWith(github.ref, 'refs/tags/v')
-        run: snapcraft login --with <(echo "${{ secrets.SNAPCRAFT_LOGIN }}")
       - uses: goreleaser/goreleaser-action@v4
         with:
           distribution: goreleaser-pro
