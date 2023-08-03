@@ -1,3 +1,4 @@
 FROM scratch
 ADD mybin /
 ADD anotherbin /
+ADD subdir/subbin /
