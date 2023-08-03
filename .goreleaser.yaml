@@ -317,6 +317,7 @@ snapcrafts:
     grade: stable
     confinement: classic
     publish: true
+    skip: "{{ if .IsNightly }}true{{ end }}"
 
 sboms:
   - artifacts: archive

@@ -978,6 +978,7 @@ type Snapcraft struct {
 	Apps             map[string]SnapcraftAppMetadata    `yaml:"apps,omitempty" json:"apps,omitempty"`
 	Hooks            map[string]interface{}             `yaml:"hooks,omitempty" json:"hooks,omitempty"`
 	Plugs            map[string]interface{}             `yaml:"plugs,omitempty" json:"plugs,omitempty"`
+	Disable          string                             `yaml:"disable,omitempty" json:"disable,omitempty" jsonschema:"oneof_type=string;boolean"`
 
 	Files []SnapcraftExtraFiles `yaml:"extra_files,omitempty" json:"extra_files,omitempty"`
 }

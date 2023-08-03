@@ -79,11 +79,20 @@ func TestRunPipe(t *testing.T) {
 				Builds:           []string{"bar"},
 				ChannelTemplates: []string{"stable"},
 			},
+			{
+				NameTemplate:     "bar_{{.Arch}}",
+				Summary:          "test summary",
+				Description:      "test description",
+				Publish:          true,
+				Builds:           []string{"bar"},
+				ChannelTemplates: []string{"stable"},
+				Disable:          "{{.Env.SKIP}}",
+			},
 		},
-	}, testctx.WithCurrentTag("v1.2.3"), testctx.WithVersion("1.2.3"))
+	}, testctx.WithCurrentTag("v1.2.3"), testctx.WithVersion("1.2.3"), testctx.WithEnv(map[string]string{"SKIP": "true"}))
 	addBinaries(t, ctx, "foo", filepath.Join(dist, "foo"))
 	addBinaries(t, ctx, "bar", filepath.Join(dist, "bar"))
-	require.NoError(t, Pipe{}.Run(ctx))
+	testlib.AssertSkipped(t, Pipe{}.Run(ctx))
 	list := ctx.Artifacts.Filter(artifact.ByType(artifact.PublishableSnapcraft)).List()
 	require.Len(t, list, 9)
 }
