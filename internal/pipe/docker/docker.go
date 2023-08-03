@@ -248,7 +248,7 @@ func isFileNotFoundError(out string) bool {
 		return false
 	}
 	return strings.Contains(out, "file not found") ||
-		strings.Contains(out, "not found: not found")
+		strings.Contains(out, ": not found")
 }
 
 func processImageTemplates(ctx *context.Context, docker config.Docker) ([]string, error) {
