@@ -3,7 +3,7 @@ name: release
 on:
   workflow_dispatch:
   schedule:
-    - 0 0 * * 4
+    - cron: 0 0 * * 4
 
 permissions:
   contents: write
