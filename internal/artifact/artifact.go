@@ -146,7 +146,6 @@ const (
 	ExtraID        = "ID"
 	ExtraBinary    = "Binary"
 	ExtraExt       = "Ext"
-	ExtraBuilds    = "Builds" // deprecated
 	ExtraFormat    = "Format"
 	ExtraWrappedIn = "WrappedIn"
 	ExtraBinaries  = "Binaries"

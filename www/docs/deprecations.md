@@ -331,10 +331,6 @@ nFPM will soon make mandatory setting the maintainer field.
     - maintainer: 'Name <email>'
     ```
 
-## Expired deprecation notices
-
-The following options were deprecated in the past and were already removed.
-
 ### archives.replacements
 
 > since 2022-11-24 (v1.14.0), removed 2023-06-06 (v1.19.0)
@@ -365,11 +361,12 @@ You can still get the same features by abusing the `name_template` property.
     archives:
       - id: foo
         name_template: >-
-          {{ .ProjectName }}_
+          {{- .ProjectName }}_
           {{- title .Os }}_
           {{- if eq .Arch "amd64" }}x86_64
           {{- else if eq .Arch "386" }}i386
           {{- else }}{{ .Arch }}{{ end }}
+          {{- if .Arm }}v{{ .Arm }}{{ end -}}
     ```
 
 Those two configurations will yield the same results.
@@ -405,11 +402,12 @@ You can still get the same features by abusing the `file_name_template` property
     nfpms:
       - id: foo
         file_name_template: >-
-          {{ .ProjectName }}_
+          {{- .ProjectName }}_
           {{- title .Os }}_
           {{- if eq .Arch "amd64" }}x86_64
           {{- else if eq .Arch "386" }}i386
           {{- else }}{{ .Arch }}{{ end }}
+          {{- if .Arm }}v{{ .Arm }}{{ end -}}
     ```
 
 Those two configurations will yield the same results.

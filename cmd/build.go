@@ -35,12 +35,14 @@ type buildOpts struct {
 	skipBefore    bool
 	skipPostHooks bool
 	clean         bool
-	rmDist        bool // deprecated
 	deprecated    bool
 	parallelism   int
 	timeout       time.Duration
 	singleTarget  bool
 	output        string
+
+	// Deprecated: use clean instead.
+	rmDist bool
 }
 
 func newBuildCmd() *buildCmd {

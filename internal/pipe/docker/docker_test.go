@@ -908,7 +908,7 @@ func TestRunPipe(t *testing.T) {
 					ImageTemplates: []string{registry + "goreleaser/multiple:latest"},
 					Goos:           "darwin",
 					Goarch:         "amd64",
-					IDs:            []string{"mybin", "anotherbin"},
+					IDs:            []string{"mybin", "anotherbin", "subdir/subbin"},
 					Dockerfile:     "testdata/Dockerfile.multiple",
 				},
 			},
@@ -965,12 +965,14 @@ func TestRunPipe(t *testing.T) {
 			t.Run(name+" on "+imager, func(t *testing.T) {
 				folder := t.TempDir()
 				dist := filepath.Join(folder, "dist")
-				require.NoError(t, os.Mkdir(dist, 0o755))
-				require.NoError(t, os.Mkdir(filepath.Join(dist, "mybin"), 0o755))
+				require.NoError(t, os.MkdirAll(filepath.Join(dist, "mybin", "subdir"), 0o755))
 				f, err := os.Create(filepath.Join(dist, "mybin", "mybin"))
 				require.NoError(t, err)
 				require.NoError(t, f.Close())
 				f, err = os.Create(filepath.Join(dist, "mybin", "anotherbin"))
+				require.NoError(t, err)
+				require.NoError(t, f.Close())
+				f, err = os.Create(filepath.Join(dist, "mybin", "subdir", "subbin"))
 				require.NoError(t, err)
 				require.NoError(t, f.Close())
 				f, err = os.Create(filepath.Join(dist, "mynfpm.apk"))
@@ -997,7 +999,7 @@ func TestRunPipe(t *testing.T) {
 				)
 				for _, os := range []string{"linux", "darwin"} {
 					for _, arch := range []string{"amd64", "386", "arm64"} {
-						for _, bin := range []string{"mybin", "anotherbin"} {
+						for _, bin := range []string{"mybin", "anotherbin", "subdir/subbin"} {
 							ctx.Artifacts.Add(&artifact.Artifact{
 								Name:   bin,
 								Path:   filepath.Join(dist, "mybin", bin),

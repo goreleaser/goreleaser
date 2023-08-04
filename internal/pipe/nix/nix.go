@@ -3,6 +3,7 @@ package nix
 import (
 	"bufio"
 	"bytes"
+	"errors"
 	"fmt"
 	"os"
 	"os/exec"
@@ -23,6 +24,10 @@ import (
 )
 
 const nixConfigExtra = "NixConfig"
+
+// ErrMultipleArchivesSamePlatform happens when the config yields multiple
+// archives for the same platform.
+var ErrMultipleArchivesSamePlatform = errors.New("one nixpkg can handle only one archive of each OS/Arch combination")
 
 type errNoArchivesFound struct {
 	goamd64 string
@@ -248,8 +253,13 @@ func preparePkg(
 	}
 
 	inputs := []string{"installShellFiles"}
-	if len(nix.Dependencies) > 0 {
+	dependencies := depNames(nix.Dependencies)
+	if len(dependencies) > 0 {
 		inputs = append(inputs, "makeWrapper")
+	}
+	if archives[0].Format() == "zip" {
+		inputs = append(inputs, "unzip")
+		dependencies = append(dependencies, "unzip")
 	}
 
 	data := templateData{
@@ -263,7 +273,7 @@ func preparePkg(
 		Homepage:     nix.Homepage,
 		License:      nix.License,
 		Inputs:       inputs,
-		Dependencies: depNames(nix.Dependencies),
+		Dependencies: dependencies,
 	}
 
 	platforms := map[string]bool{}
@@ -282,7 +292,11 @@ func preparePkg(
 		}
 
 		for _, goarch := range expandGoarch(art.Goarch) {
-			data.Archives[art.Goos+goarch+art.Goarm] = archive
+			key := art.Goos + goarch + art.Goarm
+			if _, ok := data.Archives[key]; ok {
+				return "", ErrMultipleArchivesSamePlatform
+			}
+			data.Archives[key] = archive
 			plat := goosToPlatform[art.Goos+goarch+art.Goarm]
 			platforms[plat] = true
 		}
@@ -426,12 +440,19 @@ func postInstall(ctx *context.Context, nix config.Nix, art *artifact.Artifact) (
 }
 
 func installs(ctx *context.Context, nix config.Nix, art *artifact.Artifact) ([]string, error) {
-	applied, err := tmpl.New(ctx).WithArtifact(art).Apply(nix.Install)
+	tpl := tmpl.New(ctx).WithArtifact(art)
+
+	extraInstall, err := tpl.Apply(nix.ExtraInstall)
 	if err != nil {
 		return nil, err
 	}
-	if applied != "" {
-		return split(applied), nil
+
+	install, err := tpl.Apply(nix.Install)
+	if err != nil {
+		return nil, err
+	}
+	if install != "" {
+		return append(split(install), split(extraInstall)...), nil
 	}
 
 	result := []string{"mkdir -p $out/bin"}
@@ -442,16 +463,9 @@ func installs(ctx *context.Context, nix config.Nix, art *artifact.Artifact) ([]s
 		}
 	}
 
-	log.WithField("install", result).Warnf("guessing install")
+	log.WithField("install", result).Info("guessing install")
 
-	applied, err = tmpl.New(ctx).WithArtifact(art).Apply(nix.ExtraInstall)
-	if err != nil {
-		return nil, err
-	}
-	if applied != "" {
-		result = append(result, split(applied)...)
-	}
-	return result, nil
+	return append(result, split(extraInstall)...), nil
 }
 
 func binInstallFormats(nix config.Nix) []string {

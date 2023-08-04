@@ -157,8 +157,12 @@ func doRun(ctx *context.Context, snap config.Snapcraft) error {
 	if err := tpl.ApplyAll(
 		&snap.Summary,
 		&snap.Description,
+		&snap.Disable,
 	); err != nil {
 		return err
+	}
+	if snap.Disable == "true" {
+		return pipe.Skip("configuration is disabled")
 	}
 	if snap.Summary == "" && snap.Description == "" {
 		return pipe.Skip("no summary nor description were provided")

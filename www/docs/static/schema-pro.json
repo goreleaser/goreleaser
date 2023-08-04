@@ -1272,6 +1272,9 @@
 					"install": {
 						"type": "string"
 					},
+					"extra_install": {
+						"type": "string"
+					},
 					"post_install": {
 						"type": "string"
 					},
@@ -1342,6 +1345,12 @@
 					},
 					"service": {
 						"type": "string"
+					},
+					"alternative_names": {
+						"items": {
+							"type": "string"
+						},
+						"type": "array"
 					}
 				},
 				"additionalProperties": false,
@@ -1715,6 +1724,17 @@
 				"required": [
 					"server"
 				]
+			},
+			"Matrix": {
+				"patternProperties": {
+					".*": {
+						"items": {
+							"type": "string"
+						},
+						"type": "array"
+					}
+				},
+				"type": "object"
 			},
 			"Mattermost": {
 				"properties": {
@@ -3253,6 +3273,16 @@
 					"plugs": {
 						"type": "object"
 					},
+					"disable": {
+						"oneOf": [
+							{
+								"type": "string"
+							},
+							{
+								"type": "boolean"
+							}
+						]
+					},
 					"extra_files": {
 						"items": {
 							"$ref": "#/$defs/SnapcraftExtraFiles"
@@ -3774,6 +3804,9 @@
 							}
 						},
 						"type": "object"
+					},
+					"matrix": {
+						"$ref": "#/$defs/Matrix"
 					}
 				},
 				"additionalProperties": false,

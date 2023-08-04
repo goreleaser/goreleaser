@@ -41,10 +41,12 @@ type releaseOpts struct {
 	skipKo             bool
 	skipBefore         bool
 	clean              bool
-	rmDist             bool // deprecated
 	deprecated         bool
 	parallelism        int
 	timeout            time.Duration
+
+	// Deprecated: use clean instead.
+	rmDist bool
 }
 
 func newReleaseCmd() *releaseCmd {

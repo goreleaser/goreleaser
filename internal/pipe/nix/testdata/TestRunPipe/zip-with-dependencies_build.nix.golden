@@ -6,6 +6,10 @@ system ? builtins.currentSystem
 , lib
 , fetchurl
 , installShellFiles
+, makeWrapper
+, stdenv
+, git
+, unzip
 }:
 let
   shaMap = {
@@ -17,15 +21,15 @@ let
   };
 
   urlMap = {
-    i686-linux = "https://dummyhost/download/v1.2.1/foo_linux_386.tar.gz";
-    x86_64-linux = "https://dummyhost/download/v1.2.1/foo_linux_amd64v1.tar.gz";
-    aarch64-linux = "https://dummyhost/download/v1.2.1/foo_linux_arm64.tar.gz";
-    x86_64-darwin = "https://dummyhost/download/v1.2.1/foo_darwin_amd64v1.tar.gz";
-    aarch64-darwin = "https://dummyhost/download/v1.2.1/foo_darwin_arm64.tar.gz";
+    i686-linux = "https://dummyhost/download/v1.2.1/foo_linux_386.zip";
+    x86_64-linux = "https://dummyhost/download/v1.2.1/foo_linux_amd64v1.zip";
+    aarch64-linux = "https://dummyhost/download/v1.2.1/foo_linux_arm64.zip";
+    x86_64-darwin = "https://dummyhost/download/v1.2.1/foo_darwin_amd64v1.zip";
+    aarch64-darwin = "https://dummyhost/download/v1.2.1/foo_darwin_arm64.zip";
   };
 in
 pkgs.stdenv.mkDerivation {
-  pname = "unibin";
+  pname = "foozip";
   version = "1.2.1";
   src = fetchurl {
     url = urlMap.${system};
@@ -34,11 +38,12 @@ pkgs.stdenv.mkDerivation {
 
   sourceRoot = ".";
 
-  nativeBuildInputs = [ installShellFiles ];
+  nativeBuildInputs = [ installShellFiles makeWrapper unzip ];
 
   installPhase = ''
     mkdir -p $out/bin
     cp -vr ./foo $out/bin/foo
+    wrapProgram $out/bin/foo --prefix PATH : ${lib.makeBinPath ([ git ])}
   '';
 
   system = system;

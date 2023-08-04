@@ -1154,6 +1154,9 @@
 					"install": {
 						"type": "string"
 					},
+					"extra_install": {
+						"type": "string"
+					},
 					"post_install": {
 						"type": "string"
 					},
