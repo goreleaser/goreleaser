@@ -157,6 +157,7 @@ var (
 		"illumosamd64",
 		"iosarm64",
 		"jswasm",
+		"wasip1wasm",
 		"linux386",
 		"linuxamd64",
 		"linuxarm",
@@ -202,6 +203,7 @@ var (
 		"plan9",
 		"solaris",
 		"windows",
+		"wasip1",
 	}
 
 	validGoarch = []string{
