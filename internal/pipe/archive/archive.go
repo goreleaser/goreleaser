@@ -219,7 +219,6 @@ func doCreate(ctx *context.Context, arch config.Archive, binaries []*artifact.Ar
 		Name: folder + "." + format,
 		Path: archivePath,
 		Extra: map[string]interface{}{
-			artifact.ExtraBuilds:    binaries,
 			artifact.ExtraID:        arch.ID,
 			artifact.ExtraFormat:    format,
 			artifact.ExtraWrappedIn: wrap,
@@ -270,7 +269,6 @@ func skip(ctx *context.Context, archive config.Archive, binaries []*artifact.Art
 			Gomips:  binary.Gomips,
 			Goamd64: binary.Goamd64,
 			Extra: map[string]interface{}{
-				artifact.ExtraBuilds:   []*artifact.Artifact{binary},
 				artifact.ExtraID:       archive.ID,
 				artifact.ExtraFormat:   archive.Format,
 				artifact.ExtraBinary:   binary.Name,

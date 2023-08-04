@@ -419,7 +419,6 @@ func create(ctx *context.Context, fpm config.NFPM, format string, binaries []*ar
 		Gomips:  binaries[0].Gomips,
 		Goamd64: binaries[0].Goamd64,
 		Extra: map[string]interface{}{
-			artifact.ExtraBuilds: binaries,
 			artifact.ExtraID:     fpm.ID,
 			artifact.ExtraFormat: format,
 			artifact.ExtraExt:    format,

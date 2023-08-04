@@ -47,8 +47,10 @@ func (cmd *rootCmd) Execute(args []string) {
 type rootCmd struct {
 	cmd     *cobra.Command
 	verbose bool
-	debug   bool // deprecated
 	exit    func(int)
+
+	// Deprecated: use verbose instead.
+	debug bool
 }
 
 func newRootCmd(version goversion.Info, exit func(int)) *rootCmd {
