@@ -409,7 +409,7 @@ func TestExtra(t *testing.T) {
 
 	t.Run("unmarshal error", func(t *testing.T) {
 		_, err := Extra[config.Docker](a, "fail-plz")
-		require.EqualError(t, err, "json: unknown field \"tap\"")
+		require.EqualError(t, err, "json: unknown field \"repository\"")
 	})
 
 	t.Run("marshal error", func(t *testing.T) {
