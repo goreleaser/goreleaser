@@ -8,6 +8,7 @@ import (
 	"testing"
 
 	"github.com/goreleaser/goreleaser/internal/artifact"
+	"github.com/goreleaser/goreleaser/internal/pipe"
 	"github.com/goreleaser/goreleaser/internal/testctx"
 	"github.com/goreleaser/goreleaser/pkg/config"
 	"github.com/stretchr/testify/require"
@@ -113,8 +114,9 @@ func TestExecute(t *testing.T) {
 			"no filter",
 			[]config.Publisher{
 				{
-					Name: "test",
-					Cmd:  MockCmd + " {{ .ArtifactName }}",
+					Name:    "test",
+					Cmd:     MockCmd + " {{ .ArtifactName }}",
+					Disable: "false",
 					Env: []string{
 						MarshalMockEnv(&MockData{
 							AnyOf: []MockCall{
@@ -129,6 +131,30 @@ func TestExecute(t *testing.T) {
 				},
 			},
 			nil,
+		},
+		{
+			"disabled",
+			[]config.Publisher{
+				{
+					Name:    "test",
+					Cmd:     MockCmd + " {{ .ArtifactName }}",
+					Disable: "true",
+					Env:     []string{},
+				},
+			},
+			pipe.ErrSkip{},
+		},
+		{
+			"disabled invalid tmpl",
+			[]config.Publisher{
+				{
+					Name:    "test",
+					Cmd:     MockCmd + " {{ .ArtifactName }}",
+					Disable: "{{ .NOPE }}",
+					Env:     []string{},
+				},
+			},
+			fmt.Errorf(`template: tmpl:1:3: executing "tmpl" at <.NOPE>`),
 		},
 		{
 			"include checksum",
@@ -325,6 +351,9 @@ func TestExecute(t *testing.T) {
 			"command error",
 			[]config.Publisher{
 				{
+					Disable: "true",
+				},
+				{
 					Name: "test",
 					IDs:  []string{"debpkg"},
 					Cmd:  MockCmd + " {{.ArtifactName}}",
@@ -355,7 +384,7 @@ func TestExecute(t *testing.T) {
 				return
 			}
 			require.Error(t, err)
-			require.True(t, strings.HasPrefix(err.Error(), tc.expectErr.Error()))
+			require.True(t, strings.HasPrefix(err.Error(), tc.expectErr.Error()), err.Error())
 		})
 	}
 }

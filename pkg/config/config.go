@@ -1121,6 +1121,7 @@ type Publisher struct {
 	Cmd        string      `yaml:"cmd,omitempty" json:"cmd,omitempty"`
 	Env        []string    `yaml:"env,omitempty" json:"env,omitempty"`
 	ExtraFiles []ExtraFile `yaml:"extra_files,omitempty" json:"extra_files,omitempty"`
+	Disable    string      `yaml:"disable,omitempty" json:"disable,omitempty" jsonschema:"oneof_type=string;boolean"`
 }
 
 // Source configuration.
