@@ -356,6 +356,7 @@ milestones:
   - close: true
 
 release:
+  name_template: "v{{ .Version }}"
   footer: |
     **Full Changelog**: https://github.com/goreleaser/goreleaser/compare/{{ .PreviousTag }}...{{ .Tag }}
 
