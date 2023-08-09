@@ -14,6 +14,7 @@ import (
 	"github.com/goreleaser/goreleaser/internal/extrafiles"
 	"github.com/goreleaser/goreleaser/internal/gio"
 	"github.com/goreleaser/goreleaser/internal/logext"
+	"github.com/goreleaser/goreleaser/internal/pipe"
 	"github.com/goreleaser/goreleaser/internal/semerrgroup"
 	"github.com/goreleaser/goreleaser/internal/tmpl"
 	"github.com/goreleaser/goreleaser/pkg/config"
@@ -25,18 +26,30 @@ var passthroughEnvVars = []string{"HOME", "USER", "USERPROFILE", "TMPDIR", "TMP"
 
 // Execute the given publisher
 func Execute(ctx *context.Context, publishers []config.Publisher) error {
+	skips := pipe.SkipMemento{}
 	for _, p := range publishers {
 		log.WithField("name", p.Name).Debug("executing custom publisher")
 		err := executePublisher(ctx, p)
+		if err != nil && pipe.IsSkip(err) {
+			skips.Remember(err)
+			continue
+		}
 		if err != nil {
 			return err
 		}
 	}
-
-	return nil
+	return skips.Evaluate()
 }
 
 func executePublisher(ctx *context.Context, publisher config.Publisher) error {
+	disabled, err := tmpl.New(ctx).Bool(publisher.Disable)
+	if err != nil {
+		return err
+	}
+	if disabled {
+		return pipe.Skip("publisher is disabled")
+	}
+
 	log.Debugf("filtering %d artifacts", len(ctx.Artifacts.List()))
 	artifacts := filterArtifacts(ctx.Artifacts, publisher)
 
