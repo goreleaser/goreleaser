@@ -226,3 +226,10 @@ tasks:
         sh: 'if [[ $GITHUB_REF != refs/tags/v* ]]; then echo "--snapshot"; fi'
     cmds:
       - ./goreleaser release --clean --timeout 60m {{.SNAPSHOT}}
+
+  nightly:
+    cmds:
+      - gh run list --workflow=nightly-oss.yml
+      - gh workflow run nightly-oss.yml
+      - sleep 30
+      - gh run watch
