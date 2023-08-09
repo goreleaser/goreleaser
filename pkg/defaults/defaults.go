@@ -80,7 +80,7 @@ var Defaulters = []Defaulter{
 	blob.Pipe{},
 	upload.Pipe{},
 	aur.Pipe{},
-	nix.NewPublish(),
+	nix.Pipe{},
 	winget.Pipe{},
 	brew.Pipe{},
 	krew.Pipe{},

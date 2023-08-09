@@ -8,7 +8,6 @@ import (
 
 	"github.com/goreleaser/goreleaser/internal/client"
 	"github.com/goreleaser/goreleaser/internal/middleware/errhandler"
-	"github.com/goreleaser/goreleaser/internal/middleware/skip"
 	"github.com/goreleaser/goreleaser/internal/tmpl"
 	"github.com/goreleaser/goreleaser/pkg/context"
 	"github.com/goreleaser/goreleaser/pkg/defaults"
@@ -39,10 +38,7 @@ func (Pipe) Run(ctx *context.Context) error {
 		ctx.Config.GiteaURLs.Download = strings.TrimSuffix(strings.ReplaceAll(apiURL, "/api/v1", ""), "/")
 	}
 	for _, defaulter := range defaults.Defaulters {
-		if err := skip.Maybe(
-			defaulter,
-			errhandler.Handle(defaulter.Default),
-		)(ctx); err != nil {
+		if err := errhandler.Handle(defaulter.Default)(ctx); err != nil {
 			return err
 		}
 	}
