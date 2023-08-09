@@ -2704,6 +2704,16 @@
 						},
 						"type": "array"
 					},
+					"disable": {
+						"oneOf": [
+							{
+								"type": "string"
+							},
+							{
+								"type": "boolean"
+							}
+						]
+					},
 					"templated_extra_files": {
 						"items": {
 							"$ref": "#/$defs/TemplatedExtraFile"
