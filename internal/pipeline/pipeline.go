@@ -59,10 +59,10 @@ var BuildPipeline = []Piper{
 	semver.Pipe{},
 	// load default configs
 	defaults.Pipe{},
-	// run global hooks before build
-	before.Pipe{},
 	// snapshot version handling
 	snapshot.Pipe{},
+	// run global hooks before build
+	before.Pipe{},
 	// ensure ./dist is clean
 	dist.Pipe{},
 	// setup gomod-related stuff
