@@ -23,6 +23,6 @@ jobs:
           go-version: stable
           cache: false
       - name: golangci-lint
-        uses: golangci/golangci-lint-action@639cd343e1d3b897ff35927a75193d57cfcba299 # v3
+        uses: golangci/golangci-lint-action@3a919529898de77ec3da873e3063ca4b10e7f5cc # v3
         with:
           args: --timeout=5m
