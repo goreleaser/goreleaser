@@ -9,7 +9,7 @@ import (
 	"github.com/goreleaser/goreleaser/pkg/context"
 )
 
-// Pipe for checksums.
+// Pipe for setting up the snapshot feature..
 type Pipe struct{}
 
 func (Pipe) String() string                 { return "snapshotting" }
@@ -26,7 +26,7 @@ func (Pipe) Default(ctx *context.Context) error {
 func (Pipe) Run(ctx *context.Context) error {
 	name, err := tmpl.New(ctx).Apply(ctx.Config.Snapshot.NameTemplate)
 	if err != nil {
-		return fmt.Errorf("failed to generate snapshot name: %w", err)
+		return fmt.Errorf("failed to parse snapshot name: %w", err)
 	}
 	if name == "" {
 		return fmt.Errorf("empty snapshot name")
