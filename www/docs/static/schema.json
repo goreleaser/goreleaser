@@ -208,17 +208,6 @@
 					"strip_parent_binary_folder": {
 						"type": "boolean"
 					},
-					"rlcp": {
-						"oneOf": [
-							{
-								"type": "string"
-							},
-							{
-								"type": "boolean"
-							}
-						],
-						"description": "you can now remove this"
-					},
 					"files": {
 						"items": {
 							"$ref": "#/$defs/File"
@@ -230,6 +219,17 @@
 					},
 					"allow_different_binary_count": {
 						"type": "boolean"
+					},
+					"rlcp": {
+						"oneOf": [
+							{
+								"type": "string"
+							},
+							{
+								"type": "boolean"
+							}
+						],
+						"description": "you can now remove this"
 					}
 				},
 				"additionalProperties": false,
@@ -1128,10 +1128,6 @@
 					"name": {
 						"type": "string"
 					},
-					"tap": {
-						"$ref": "#/$defs/RepoRef",
-						"description": "use repository instead"
-					},
 					"repository": {
 						"$ref": "#/$defs/RepoRef"
 					},
@@ -1146,10 +1142,6 @@
 					},
 					"caveats": {
 						"type": "string"
-					},
-					"plist": {
-						"type": "string",
-						"description": "use service instead"
 					},
 					"install": {
 						"type": "string"
@@ -1227,6 +1219,14 @@
 					},
 					"service": {
 						"type": "string"
+					},
+					"tap": {
+						"$ref": "#/$defs/RepoRef",
+						"description": "use repository instead"
+					},
+					"plist": {
+						"type": "string",
+						"description": "use service instead"
 					}
 				},
 				"additionalProperties": false,
@@ -1417,10 +1417,6 @@
 					"name": {
 						"type": "string"
 					},
-					"index": {
-						"$ref": "#/$defs/RepoRef",
-						"description": "use repository instead"
-					},
 					"repository": {
 						"$ref": "#/$defs/RepoRef"
 					},
@@ -1467,6 +1463,10 @@
 								"type": "boolean"
 							}
 						]
+					},
+					"index": {
+						"$ref": "#/$defs/RepoRef",
+						"description": "use repository instead"
 					}
 				},
 				"additionalProperties": false,
@@ -2159,10 +2159,6 @@
 						},
 						"type": "array"
 					},
-					"scoop": {
-						"$ref": "#/$defs/Scoop",
-						"description": "use scoops insteads"
-					},
 					"scoops": {
 						"items": {
 							"$ref": "#/$defs/Scoop"
@@ -2301,10 +2297,6 @@
 						},
 						"type": "array"
 					},
-					"build": {
-						"$ref": "#/$defs/Build",
-						"description": "use builds instead"
-					},
 					"force_token": {
 						"type": "string",
 						"enum": [
@@ -2323,6 +2315,14 @@
 					},
 					"gitea_urls": {
 						"$ref": "#/$defs/GiteaURLs"
+					},
+					"scoop": {
+						"$ref": "#/$defs/Scoop",
+						"description": "use scoops instead"
+					},
+					"build": {
+						"$ref": "#/$defs/Build",
+						"description": "use builds instead"
 					}
 				},
 				"additionalProperties": false,
@@ -2371,6 +2371,16 @@
 							"$ref": "#/$defs/ExtraFile"
 						},
 						"type": "array"
+					},
+					"disable": {
+						"oneOf": [
+							{
+								"type": "string"
+							},
+							{
+								"type": "boolean"
+							}
+						]
 					}
 				},
 				"additionalProperties": false,
@@ -2652,10 +2662,6 @@
 						},
 						"type": "array"
 					},
-					"bucket": {
-						"$ref": "#/$defs/RepoRef",
-						"description": "use repository instead"
-					},
 					"repository": {
 						"$ref": "#/$defs/RepoRef"
 					},
@@ -2725,6 +2731,10 @@
 					},
 					"goamd64": {
 						"type": "string"
+					},
+					"bucket": {
+						"$ref": "#/$defs/RepoRef",
+						"description": "use repository instead"
 					}
 				},
 				"additionalProperties": false,
@@ -2922,6 +2932,16 @@
 					},
 					"plugs": {
 						"type": "object"
+					},
+					"disable": {
+						"oneOf": [
+							{
+								"type": "string"
+							},
+							{
+								"type": "boolean"
+							}
+						]
 					},
 					"extra_files": {
 						"items": {
