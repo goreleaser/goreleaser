@@ -47,7 +47,9 @@ func newCheckCmd() *checkCmd {
 				ctx.Deprecated = root.deprecated
 
 				if err := ctrlc.Default.Run(ctx, func() error {
-					log.Info(boldStyle.Render("checking configuration..."))
+					log.WithField("path", config).
+						Info(boldStyle.Render("checking"))
+
 					return defaults.Pipe{}.Run(ctx)
 				}); err != nil {
 					log.WithError(err).Error(boldStyle.Render("configuration is invalid"))

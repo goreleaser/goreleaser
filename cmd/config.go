@@ -11,13 +11,15 @@ import (
 )
 
 func loadConfig(path string) (config.Project, error) {
-	p, _, err := loadConfigCheck(path)
+	p, path, err := loadConfigCheck(path)
+	if err == nil {
+		log.WithField("path", path).Info("loading")
+	}
 	return p, err
 }
 
 func loadConfigCheck(path string) (config.Project, string, error) {
 	if path == "-" {
-		log.Info("loading config from stdin")
 		p, err := config.LoadReader(os.Stdin)
 		return p, path, err
 	}

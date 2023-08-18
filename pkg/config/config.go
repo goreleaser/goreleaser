@@ -11,7 +11,6 @@ import (
 	"strings"
 	"time"
 
-	"github.com/caarlos0/log"
 	"github.com/goreleaser/goreleaser/internal/yaml"
 	"github.com/goreleaser/nfpm/v2/files"
 	"github.com/invopop/jsonschema"
@@ -1330,7 +1329,6 @@ func Load(file string) (config Project, err error) {
 		return
 	}
 	defer f.Close()
-	log.WithField("file", file).Info("loading config file")
 	return LoadReader(f)
 }
 
@@ -1341,7 +1339,6 @@ func LoadReader(fd io.Reader) (config Project, err error) {
 		return config, err
 	}
 	err = yaml.UnmarshalStrict(data, &config)
-	log.WithField("config", config).Debug("loaded config file")
 	return config, err
 }
 
