@@ -138,7 +138,8 @@ func TestWithArtifact(t *testing.T) {
 	t.Run("template using artifact Fields with no artifact", func(t *testing.T) {
 		t.Parallel()
 		result, err := New(ctx).Apply("{{ .Os }}")
-		require.EqualError(t, err, `template: tmpl:1:3: executing "tmpl" at <.Os>: map has no entry for key "Os"`)
+		require.ErrorAs(t, err, &Error{})
+		require.EqualError(t, err, `template: failed to apply "{{ .Os }}": map has no entry for key "Os"`)
 		require.Empty(t, result)
 	})
 }
@@ -357,16 +358,18 @@ func TestApplySingleEnvOnly(t *testing.T) {
 }
 
 func TestInvalidTemplate(t *testing.T) {
-	ctx := testctx.New(testctx.WithCurrentTag("v1.1.1"))
+	ctx := testctx.New()
 	_, err := New(ctx).Apply("{{{.Foo}")
-	require.EqualError(t, err, "template: tmpl:1: unexpected \"{\" in command")
+	require.ErrorAs(t, err, &Error{})
+	require.EqualError(t, err, `template: failed to apply "{{{.Foo}": unexpected "{" in command`)
 }
 
 func TestEnvNotFound(t *testing.T) {
 	ctx := testctx.New(testctx.WithCurrentTag("v1.2.4"))
 	result, err := New(ctx).Apply("{{.Env.FOO}}")
 	require.Empty(t, result)
-	require.EqualError(t, err, `template: tmpl:1:6: executing "tmpl" at <.Env.FOO>: map has no entry for key "FOO"`)
+	require.ErrorAs(t, err, &Error{})
+	require.EqualError(t, err, `template: failed to apply "{{.Env.FOO}}": map has no entry for key "FOO"`)
 }
 
 func TestWithExtraFields(t *testing.T) {

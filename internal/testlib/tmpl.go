@@ -2,8 +2,8 @@ package testlib
 
 import (
 	"testing"
-	"text/template"
 
+	"github.com/goreleaser/goreleaser/internal/tmpl"
 	"github.com/stretchr/testify/require"
 )
 
@@ -12,5 +12,5 @@ func RequireTemplateError(tb testing.TB, err error) {
 	tb.Helper()
 
 	require.Error(tb, err)
-	require.ErrorAs(tb, err, &template.ExecError{})
+	require.ErrorAs(tb, err, &tmpl.Error{})
 }
