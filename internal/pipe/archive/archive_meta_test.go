@@ -51,7 +51,7 @@ func TestMeta(t *testing.T) {
 		})
 
 		require.NoError(t, Pipe{}.Default(ctx))
-		require.EqualError(t, Pipe{}.Run(ctx), `template: tmpl:1:5: executing "tmpl" at <.Os>: map has no entry for key "Os"`)
+		testlib.RequireTemplateError(t, Pipe{}.Run(ctx))
 	})
 
 	t.Run("no files", func(t *testing.T) {

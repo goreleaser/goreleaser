@@ -9,6 +9,7 @@ import (
 
 	"github.com/goreleaser/goreleaser/internal/artifact"
 	"github.com/goreleaser/goreleaser/internal/testctx"
+	"github.com/goreleaser/goreleaser/internal/testlib"
 	"github.com/goreleaser/goreleaser/pkg/config"
 	"github.com/stretchr/testify/require"
 )
@@ -159,9 +160,9 @@ func TestPipeInvalidNameTemplate(t *testing.T) {
 	_, err = binFile.WriteString("fake artifact")
 	require.NoError(t, err)
 
-	for template, eerr := range map[string]string{
-		"{{ .Pro }_checksums.txt": `template: tmpl:1: unexpected "}" in operand`,
-		"{{.Env.NOPE}}":           `template: tmpl:1:6: executing "tmpl" at <.Env.NOPE>: map has no entry for key "NOPE"`,
+	for _, template := range []string{
+		"{{ .Pro }_checksums.txt",
+		"{{.Env.NOPE}}",
 	} {
 		t.Run(template, func(t *testing.T) {
 			folder := t.TempDir()
@@ -181,9 +182,7 @@ func TestPipeInvalidNameTemplate(t *testing.T) {
 				Type: artifact.UploadableBinary,
 				Path: binFile.Name(),
 			})
-			err = Pipe{}.Run(ctx)
-			require.Error(t, err)
-			require.Equal(t, eerr, err.Error())
+			testlib.RequireTemplateError(t, Pipe{}.Run(ctx))
 		})
 	}
 }

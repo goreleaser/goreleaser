@@ -8,6 +8,7 @@ import (
 	"github.com/goreleaser/goreleaser/internal/artifact"
 	"github.com/goreleaser/goreleaser/internal/golden"
 	"github.com/goreleaser/goreleaser/internal/testctx"
+	"github.com/goreleaser/goreleaser/internal/testlib"
 	"github.com/goreleaser/goreleaser/pkg/config"
 	"github.com/goreleaser/goreleaser/pkg/context"
 	"github.com/stretchr/testify/require"
@@ -85,7 +86,7 @@ func TestDescribeBodyWithInvalidHeaderTemplate(t *testing.T) {
 		},
 	})
 	_, err := describeBody(ctx)
-	require.EqualError(t, err, `template: tmpl:1: unexpected "}" in operand`)
+	testlib.RequireTemplateError(t, err)
 }
 
 func TestDescribeBodyWithInvalidFooterTemplate(t *testing.T) {
@@ -95,5 +96,5 @@ func TestDescribeBodyWithInvalidFooterTemplate(t *testing.T) {
 		},
 	})
 	_, err := describeBody(ctx)
-	require.EqualError(t, err, `template: tmpl:1: unexpected "}" in operand`)
+	testlib.RequireTemplateError(t, err)
 }

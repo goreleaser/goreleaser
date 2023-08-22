@@ -4,6 +4,7 @@ import (
 	"testing"
 
 	"github.com/goreleaser/goreleaser/internal/testctx"
+	"github.com/goreleaser/goreleaser/internal/testlib"
 	"github.com/goreleaser/goreleaser/pkg/config"
 	"github.com/stretchr/testify/require"
 )
@@ -30,7 +31,7 @@ func TestBadTemplate(t *testing.T) {
 	ctx := testctx.New()
 	files, err := Find(ctx, globs)
 	require.Empty(t, files)
-	require.EqualError(t, err, `failed to apply template to glob "./testdata/file{{ .Env.NOPE }}.golden": template: tmpl:1:22: executing "tmpl" at <.Env.NOPE>: map has no entry for key "NOPE"`)
+	testlib.RequireTemplateError(t, err)
 }
 
 func TestShouldGetSpecificFile(t *testing.T) {
@@ -123,7 +124,7 @@ func TestTargetInvalidNameTemplate(t *testing.T) {
 	ctx := testctx.New()
 	files, err := Find(ctx, globs)
 	require.Empty(t, files)
-	require.EqualError(t, err, `failed to apply template to name "file1_{{.Env.HONK}}.golden": template: tmpl:1:12: executing "tmpl" at <.Env.HONK>: map has no entry for key "HONK"`)
+	testlib.RequireTemplateError(t, err)
 }
 
 func TestTargetNameMatchesMultipleFiles(t *testing.T) {

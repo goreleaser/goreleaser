@@ -3,6 +3,7 @@ package prebuild
 import (
 	"testing"
 
+	"github.com/goreleaser/goreleaser/internal/testlib"
 	"github.com/goreleaser/goreleaser/pkg/config"
 	"github.com/goreleaser/goreleaser/pkg/context"
 	"github.com/stretchr/testify/require"
@@ -31,7 +32,7 @@ func TestRun(t *testing.T) {
 		ctx := context.New(config.Project{
 			Builds: []config.Build{{Main: "{{ .Env.FOO }}"}},
 		})
-		require.EqualError(t, Pipe{}.Run(ctx), `template: tmpl:1:7: executing "tmpl" at <.Env.FOO>: map has no entry for key "FOO"`)
+		testlib.RequireTemplateError(t, Pipe{}.Run(ctx))
 	})
 }
 
