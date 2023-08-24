@@ -196,6 +196,8 @@ func (c *githubClient) OpenPullRequest(
 	draft bool,
 ) error {
 	c.checkRateLimit(ctx)
+	base.Owner = firstNonEmpty(base.Owner, head.Owner)
+	base.Name = firstNonEmpty(base.Name, head.Name)
 	if base.Branch == "" {
 		def, err := c.getDefaultBranch(ctx, base)
 		if err != nil {
@@ -217,8 +219,8 @@ func (c *githubClient) OpenPullRequest(
 	log.Info("opening pull request")
 	pr, res, err := c.client.PullRequests.Create(
 		ctx,
-		firstNonEmpty(base.Owner, head.Owner),
-		firstNonEmpty(base.Name, head.Name),
+		base.Owner,
+		base.Name,
 		&github.NewPullRequest{
 			Title: github.String(title),
 			Base:  github.String(base.Branch),
