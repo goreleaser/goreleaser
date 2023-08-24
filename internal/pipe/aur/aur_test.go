@@ -150,11 +150,12 @@ func TestSrcInfoSimple(t *testing.T) {
 
 func TestFullPipe(t *testing.T) {
 	type testcase struct {
-		prepare                func(ctx *context.Context)
-		expectedRunError       string
-		expectedPublishError   string
-		expectedPublishErrorIs error
-		expectedErrorCheck     func(testing.TB, error)
+		prepare                   func(ctx *context.Context)
+		expectedRunError          string
+		expectedRunErrorCheck     func(testing.TB, error)
+		expectedPublishError      string
+		expectedPublishErrorIs    error
+		expectedPublishErrorCheck func(testing.TB, error)
 	}
 	for name, tt := range map[string]testcase{
 		"default": {
@@ -185,25 +186,25 @@ func TestFullPipe(t *testing.T) {
 			prepare: func(ctx *context.Context) {
 				ctx.Config.AURs[0].Name = "{{ .Asdsa }"
 			},
-			expectedRunError: `template: tmpl:1: unexpected "}" in operand`,
+			expectedRunErrorCheck: testlib.RequireTemplateError,
 		},
 		"invalid-package-template": {
 			prepare: func(ctx *context.Context) {
 				ctx.Config.AURs[0].Package = "{{ .Asdsa }"
 			},
-			expectedRunError: `template: tmpl:1: unexpected "}" in operand`,
+			expectedRunErrorCheck: testlib.RequireTemplateError,
 		},
 		"invalid-commit-template": {
 			prepare: func(ctx *context.Context) {
 				ctx.Config.AURs[0].CommitMessageTemplate = "{{ .Asdsa }"
 			},
-			expectedErrorCheck: testlib.RequireTemplateError,
+			expectedPublishErrorCheck: testlib.RequireTemplateError,
 		},
 		"invalid-key-template": {
 			prepare: func(ctx *context.Context) {
 				ctx.Config.AURs[0].PrivateKey = "{{ .Asdsa }"
 			},
-			expectedErrorCheck: testlib.RequireTemplateError,
+			expectedPublishErrorCheck: testlib.RequireTemplateError,
 		},
 		"no-key": {
 			prepare: func(ctx *context.Context) {
@@ -221,7 +222,7 @@ func TestFullPipe(t *testing.T) {
 			prepare: func(ctx *context.Context) {
 				ctx.Config.AURs[0].GitURL = "{{ .Asdsa }"
 			},
-			expectedErrorCheck: testlib.RequireTemplateError,
+			expectedPublishErrorCheck: testlib.RequireTemplateError,
 		},
 		"no-git-url": {
 			prepare: func(ctx *context.Context) {
@@ -233,13 +234,13 @@ func TestFullPipe(t *testing.T) {
 			prepare: func(ctx *context.Context) {
 				ctx.Config.AURs[0].GitSSHCommand = "{{ .Asdsa }"
 			},
-			expectedErrorCheck: testlib.RequireTemplateError,
+			expectedPublishErrorCheck: testlib.RequireTemplateError,
 		},
 		"invalid-commit-author-template": {
 			prepare: func(ctx *context.Context) {
 				ctx.Config.AURs[0].CommitAuthor.Name = "{{ .Asdsa }"
 			},
-			expectedErrorCheck: testlib.RequireTemplateError,
+			expectedPublishErrorCheck: testlib.RequireTemplateError,
 		},
 	} {
 		t.Run(name, func(t *testing.T) {
@@ -321,6 +322,10 @@ func TestFullPipe(t *testing.T) {
 				require.EqualError(t, runAll(ctx, client), tt.expectedRunError)
 				return
 			}
+			if tt.expectedRunErrorCheck != nil {
+				tt.expectedRunErrorCheck(t, runAll(ctx, client))
+				return
+			}
 			require.NoError(t, runAll(ctx, client))
 
 			if tt.expectedPublishError != "" {
@@ -333,8 +338,8 @@ func TestFullPipe(t *testing.T) {
 				return
 			}
 
-			if tt.expectedErrorCheck != nil {
-				tt.expectedErrorCheck(t, Pipe{}.Publish(ctx))
+			if tt.expectedPublishErrorCheck != nil {
+				tt.expectedPublishErrorCheck(t, Pipe{}.Publish(ctx))
 				return
 			}
 

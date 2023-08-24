@@ -22,13 +22,18 @@ func newTmplError(str string, err error) error {
 			break
 		}
 	}
-	return Error{str, details}
+	return Error{str, details, err}
 }
 
 // Error is returned on any template error.
 type Error struct {
 	str     string
 	details string
+	err     error
+}
+
+func (e Error) Unwrap() error {
+	return e.err
 }
 
 func (e Error) Error() string {

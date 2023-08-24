@@ -68,7 +68,7 @@ func (p Pipe) Announce(ctx *context.Context) error {
 
 	msg, err := tmpl.New(ctx).Apply(ctx.Config.Announce.Webhook.MessageTemplate)
 	if err != nil {
-		return fmt.Errorf("webhook: %s", err)
+		return fmt.Errorf("webhook: %w", err)
 	}
 
 	log.Infof("posting: '%s'", msg)
