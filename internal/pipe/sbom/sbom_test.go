@@ -11,6 +11,7 @@ import (
 	"github.com/goreleaser/goreleaser/internal/artifact"
 	"github.com/goreleaser/goreleaser/internal/testctx"
 	"github.com/goreleaser/goreleaser/internal/testlib"
+	"github.com/goreleaser/goreleaser/internal/tmpl"
 	"github.com/goreleaser/goreleaser/pkg/config"
 	"github.com/goreleaser/goreleaser/pkg/context"
 	"github.com/stretchr/testify/assert"
@@ -221,6 +222,7 @@ func TestSBOMCatalogArtifacts(t *testing.T) {
 		ctx            *context.Context
 		sbomPaths      []string
 		sbomNames      []string
+		expectedErrAs  any
 		expectedErrMsg string
 	}{
 		{
@@ -237,8 +239,8 @@ func TestSBOMCatalogArtifacts(t *testing.T) {
 			}),
 		},
 		{
-			desc:           "invalid args template",
-			expectedErrMsg: `cataloging artifacts failed: arg "${FOO}-{{ .foo }{{}}{": invalid template: template: tmpl:1: unexpected "}" in operand`,
+			desc:          "invalid args template",
+			expectedErrAs: &tmpl.Error{},
 			ctx: testctx.NewWithCfg(config.Project{
 				SBOMs: []config.SBOM{
 					{
@@ -415,12 +417,25 @@ func TestSBOMCatalogArtifacts(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.desc, func(t *testing.T) {
-			testSBOMCataloging(t, test.ctx, test.sbomPaths, test.sbomNames, test.expectedErrMsg)
+			testSBOMCataloging(
+				t,
+				test.ctx,
+				test.sbomPaths,
+				test.sbomNames,
+				test.expectedErrAs,
+				test.expectedErrMsg,
+			)
 		})
 	}
 }
 
-func testSBOMCataloging(tb testing.TB, ctx *context.Context, sbomPaths, sbomNames []string, expectedErrMsg string) {
+func testSBOMCataloging(
+	tb testing.TB,
+	ctx *context.Context,
+	sbomPaths, sbomNames []string,
+	expectedErrAs any,
+	expectedErrMsg string,
+) {
 	tb.Helper()
 	testlib.CheckPath(tb, "syft")
 	tmpdir := tb.TempDir()
@@ -499,6 +514,10 @@ func testSBOMCataloging(tb testing.TB, ctx *context.Context, sbomPaths, sbomName
 		err := Pipe{}.Run(ctx)
 		require.Error(tb, err)
 		require.Contains(tb, err.Error(), expectedErrMsg)
+		return
+	}
+	if expectedErrAs != nil {
+		require.ErrorAs(tb, Pipe{}.Run(ctx), expectedErrAs)
 		return
 	}
 
