@@ -18,6 +18,7 @@ import (
 	"github.com/goreleaser/goreleaser/internal/git"
 	"github.com/goreleaser/goreleaser/internal/testctx"
 	"github.com/goreleaser/goreleaser/internal/testlib"
+	"github.com/goreleaser/goreleaser/internal/tmpl"
 	"github.com/goreleaser/goreleaser/pkg/config"
 	"github.com/goreleaser/goreleaser/pkg/context"
 	"github.com/stretchr/testify/require"
@@ -104,6 +105,7 @@ func TestSignArtifacts(t *testing.T) {
 		certificateNames []string
 		expectedErrMsg   string
 		expectedErrIs    error
+		expectedErrAs    any
 		user             string
 	}{
 		{
@@ -132,8 +134,8 @@ func TestSignArtifacts(t *testing.T) {
 			}),
 		},
 		{
-			desc:           "invalid certificate template",
-			expectedErrMsg: `sign failed: artifact1: template: tmpl:1:3: executing "tmpl" at <.blah>: map has no entry for key "blah"`,
+			desc:          "invalid certificate template",
+			expectedErrAs: &tmpl.Error{},
 			ctx: testctx.NewWithCfg(config.Project{
 				Signs: []config.Sign{
 					{
@@ -145,8 +147,8 @@ func TestSignArtifacts(t *testing.T) {
 			}),
 		},
 		{
-			desc:           "invalid signature template",
-			expectedErrMsg: `sign failed: artifact1: template: tmpl:1:3: executing "tmpl" at <.blah>: map has no entry for key "blah"`,
+			desc:          "invalid signature template",
+			expectedErrAs: &tmpl.Error{},
 			ctx: testctx.NewWithCfg(config.Project{
 				Signs: []config.Sign{
 					{
@@ -158,8 +160,8 @@ func TestSignArtifacts(t *testing.T) {
 			}),
 		},
 		{
-			desc:           "invalid args template",
-			expectedErrMsg: `sign failed: artifact1: template: tmpl:1: unexpected "}" in operand`,
+			desc:          "invalid args template",
+			expectedErrAs: &tmpl.Error{},
 			ctx: testctx.NewWithCfg(config.Project{
 				Signs: []config.Sign{
 					{
@@ -174,8 +176,8 @@ func TestSignArtifacts(t *testing.T) {
 			}),
 		},
 		{
-			desc:           "invalid env template",
-			expectedErrMsg: `sign failed: artifact1: template: tmpl:1:5: executing "tmpl" at <.blah>: map has no entry for key "blah"`,
+			desc:          "invalid env template",
+			expectedErrAs: &tmpl.Error{},
 			ctx: testctx.NewWithCfg(config.Project{
 				Signs: []config.Sign{
 					{
@@ -524,12 +526,29 @@ func TestSignArtifacts(t *testing.T) {
 		}
 
 		t.Run(test.desc, func(t *testing.T) {
-			testSign(t, test.ctx, test.certificateNames, test.signaturePaths, test.signatureNames, test.user, test.expectedErrMsg, test.expectedErrIs)
+			testSign(
+				t,
+				test.ctx,
+				test.certificateNames,
+				test.signaturePaths,
+				test.signatureNames,
+				test.user,
+				test.expectedErrMsg,
+				test.expectedErrIs,
+				test.expectedErrAs,
+			)
 		})
 	}
 }
 
-func testSign(tb testing.TB, ctx *context.Context, certificateNames, signaturePaths, signatureNames []string, user, expectedErrMsg string, expectedErrIs error) {
+func testSign(
+	tb testing.TB,
+	ctx *context.Context,
+	certificateNames, signaturePaths, signatureNames []string,
+	user, expectedErrMsg string,
+	expectedErrIs error,
+	expectedErrAs any,
+) {
 	tb.Helper()
 	tmpdir := tb.TempDir()
 
@@ -636,6 +655,11 @@ func testSign(tb testing.TB, ctx *context.Context, certificateNames, signaturePa
 
 	if expectedErrIs != nil {
 		require.ErrorIs(tb, err, expectedErrIs)
+		return
+	}
+
+	if expectedErrAs != nil {
+		require.ErrorAs(tb, err, expectedErrAs)
 		return
 	}
 

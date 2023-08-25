@@ -655,7 +655,7 @@ func TestRunPipeInvalidWrapInDirectoryTemplate(t *testing.T) {
 			artifact.ExtraID:     "default",
 		},
 	})
-	require.EqualError(t, Pipe{}.Run(ctx), `template: tmpl:1: unexpected "}" in operand`)
+	testlib.RequireTemplateError(t, Pipe{}.Run(ctx))
 }
 
 func TestRunPipeWrap(t *testing.T) {

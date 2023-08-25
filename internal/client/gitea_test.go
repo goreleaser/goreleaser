@@ -7,11 +7,11 @@ import (
 	"os"
 	"strings"
 	"testing"
-	"text/template"
 
 	"code.gitea.io/sdk/gitea"
 	"github.com/goreleaser/goreleaser/internal/artifact"
 	"github.com/goreleaser/goreleaser/internal/testctx"
+	"github.com/goreleaser/goreleaser/internal/tmpl"
 	"github.com/goreleaser/goreleaser/pkg/config"
 	"github.com/goreleaser/goreleaser/pkg/context"
 	"github.com/jarcoal/httpmock"
@@ -102,7 +102,7 @@ func (s *GetInstanceURLSuite) TestTemplateMissingValue() {
 	})
 
 	result, err := getInstanceURL(ctx)
-	require.ErrorAs(t, err, &template.ExecError{})
+	require.ErrorAs(t, err, &tmpl.Error{})
 	require.Empty(t, result)
 }
 

@@ -562,7 +562,7 @@ func TestPipeOnBuild_invalidBinaryTpl(t *testing.T) {
 	})
 	g := semerrgroup.New(ctx.Parallelism)
 	runPipeOnBuild(ctx, g, build)
-	require.EqualError(t, g.Wait(), `template: tmpl:1:11: executing "tmpl" at <.XYZ>: map has no entry for key "XYZ"`)
+	testlib.RequireTemplateError(t, g.Wait())
 }
 
 func TestBuildOptionsForTarget(t *testing.T) {

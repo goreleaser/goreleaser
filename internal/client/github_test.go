@@ -16,6 +16,7 @@ import (
 	"github.com/google/go-github/v54/github"
 	"github.com/goreleaser/goreleaser/internal/artifact"
 	"github.com/goreleaser/goreleaser/internal/testctx"
+	"github.com/goreleaser/goreleaser/internal/testlib"
 	"github.com/goreleaser/goreleaser/pkg/config"
 	"github.com/stretchr/testify/require"
 )
@@ -197,7 +198,7 @@ func TestGitHubCreateReleaseWrongNameTemplate(t *testing.T) {
 
 	str, err := client.CreateRelease(ctx, "")
 	require.Empty(t, str)
-	require.EqualError(t, err, `template: tmpl:1: unclosed action`)
+	testlib.RequireTemplateError(t, err)
 }
 
 func TestGitHubGetDefaultBranch(t *testing.T) {

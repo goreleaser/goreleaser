@@ -12,6 +12,7 @@ import (
 	"github.com/goreleaser/goreleaser/internal/golden"
 	"github.com/goreleaser/goreleaser/internal/testctx"
 	"github.com/goreleaser/goreleaser/internal/testlib"
+	"github.com/goreleaser/goreleaser/internal/tmpl"
 	"github.com/goreleaser/goreleaser/pkg/config"
 	"github.com/goreleaser/goreleaser/pkg/context"
 	"github.com/stretchr/testify/require"
@@ -161,9 +162,11 @@ func TestSplit(t *testing.T) {
 
 func TestFullPipe(t *testing.T) {
 	type testcase struct {
-		prepare              func(ctx *context.Context)
-		expectedRunError     string
-		expectedPublishError string
+		prepare                func(ctx *context.Context)
+		expectedRunError       string
+		expectedRunErrorAs     any
+		expectedPublishError   string
+		expectedPublishErrorAs any
 	}
 	for name, tt := range map[string]testcase{
 		"default": {
@@ -247,7 +250,7 @@ func TestFullPipe(t *testing.T) {
 				ctx.Config.Brews[0].Repository.Name = "test"
 				ctx.Config.Brews[0].CommitMessageTemplate = "{{ .Asdsa }"
 			},
-			expectedPublishError: `template: tmpl:1: unexpected "}" in operand`,
+			expectedPublishErrorAs: &tmpl.Error{},
 		},
 		"valid_repository_templates": {
 			prepare: func(ctx *context.Context) {
@@ -264,14 +267,14 @@ func TestFullPipe(t *testing.T) {
 				ctx.Config.Brews[0].Repository.Owner = "test"
 				ctx.Config.Brews[0].Repository.Name = "{{ .Asdsa }"
 			},
-			expectedRunError: `template: tmpl:1: unexpected "}" in operand`,
+			expectedRunErrorAs: &tmpl.Error{},
 		},
 		"invalid_repository_owner_template": {
 			prepare: func(ctx *context.Context) {
 				ctx.Config.Brews[0].Repository.Owner = "{{ .Asdsa }"
 				ctx.Config.Brews[0].Repository.Name = "test"
 			},
-			expectedRunError: `template: tmpl:1: unexpected "}" in operand`,
+			expectedRunErrorAs: &tmpl.Error{},
 		},
 		"invalid_repository_skip_upload_template": {
 			prepare: func(ctx *context.Context) {
@@ -279,7 +282,7 @@ func TestFullPipe(t *testing.T) {
 				ctx.Config.Brews[0].Repository.Owner = "test"
 				ctx.Config.Brews[0].Repository.Name = "test"
 			},
-			expectedRunError: `template: tmpl:1: unexpected "}" in operand`,
+			expectedRunErrorAs: &tmpl.Error{},
 		},
 		"invalid_install_template": {
 			prepare: func(ctx *context.Context) {
@@ -287,7 +290,7 @@ func TestFullPipe(t *testing.T) {
 				ctx.Config.Brews[0].Repository.Name = "test"
 				ctx.Config.Brews[0].Install = "{{ .aaaa }"
 			},
-			expectedRunError: `template: tmpl:1: unexpected "}" in operand`,
+			expectedRunErrorAs: &tmpl.Error{},
 		},
 	} {
 		t.Run(name, func(t *testing.T) {
@@ -381,18 +384,27 @@ func TestFullPipe(t *testing.T) {
 
 			require.NoError(t, Pipe{}.Default(ctx))
 
-			if tt.expectedRunError == "" {
-				require.NoError(t, runAll(ctx, client))
-			} else {
-				require.EqualError(t, runAll(ctx, client), tt.expectedRunError)
+			err = runAll(ctx, client)
+			if tt.expectedRunError != "" {
+				require.EqualError(t, err, tt.expectedRunError)
 				return
 			}
-			if tt.expectedPublishError != "" {
-				require.EqualError(t, publishAll(ctx, client), tt.expectedPublishError)
+			if tt.expectedRunErrorAs != nil {
+				require.ErrorAs(t, err, tt.expectedRunErrorAs)
 				return
 			}
+			require.NoError(t, err)
 
-			require.NoError(t, publishAll(ctx, client))
+			err = publishAll(ctx, client)
+			if tt.expectedPublishError != "" {
+				require.EqualError(t, err, tt.expectedPublishError)
+				return
+			}
+			if tt.expectedPublishErrorAs != nil {
+				require.ErrorAs(t, err, tt.expectedPublishErrorAs)
+				return
+			}
+			require.NoError(t, err)
 
 			content := []byte(client.Content)
 			if url := ctx.Config.Brews[0].Repository.Git.URL; url == "" {

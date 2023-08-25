@@ -78,7 +78,7 @@ func TestSetDefaultTokenFiles(t *testing.T) {
 				"FOO={{ .Asss }",
 			},
 		})
-		require.EqualError(t, Pipe{}.Run(ctx), `template: tmpl:1: unexpected "}" in operand`)
+		testlib.RequireTemplateError(t, Pipe{}.Run(ctx))
 	})
 
 	t.Run("no token", func(t *testing.T) {
