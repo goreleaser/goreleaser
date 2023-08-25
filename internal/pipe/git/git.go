@@ -10,7 +10,6 @@ import (
 	"regexp/syntax"
 	"strconv"
 	"strings"
-	"text/template"
 	"time"
 
 	"github.com/caarlos0/log"
@@ -181,7 +180,7 @@ func shouldErr(err error) bool {
 	if err == nil {
 		return false
 	}
-	if errors.As(err, &template.ExecError{}) {
+	if errors.As(err, &tmpl.Error{}) {
 		return true
 	}
 	se := &syntax.Error{}

@@ -19,7 +19,7 @@ git:
   # Since: v1.17
   prerelease_suffix: "-"
 
-  # Regex expressions for tags to be ignored by GoReleaser.
+  # Regular expressions for tags to be ignored by GoReleaser.
   # This means that GoReleaser will not pick up tags that match any of the
   # provided ignores as either previous or current tags.
   #
