@@ -5,6 +5,7 @@ import (
 	"testing"
 
 	"github.com/goreleaser/goreleaser/internal/testctx"
+	"github.com/goreleaser/goreleaser/internal/testlib"
 	"github.com/goreleaser/goreleaser/internal/yaml"
 	"github.com/goreleaser/goreleaser/pkg/config"
 	"github.com/slack-go/slack"
@@ -29,7 +30,7 @@ func TestAnnounceInvalidTemplate(t *testing.T) {
 			},
 		},
 	})
-	require.EqualError(t, Pipe{}.Announce(ctx), `slack: template: tmpl:1: unexpected "}" in operand`)
+	testlib.RequireTemplateError(t, Pipe{}.Announce(ctx))
 }
 
 func TestAnnounceMissingEnv(t *testing.T) {

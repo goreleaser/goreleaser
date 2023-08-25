@@ -223,11 +223,11 @@ func (t *Template) Apply(s string) (string, error) {
 		}).
 		Parse(s)
 	if err != nil {
-		return "", err
+		return "", newTmplError(s, err)
 	}
 
 	err = tmpl.Execute(&out, t.fields)
-	return out.String(), err
+	return out.String(), newTmplError(s, err)
 }
 
 // ApplyAll applies all the given strings against the Fields stored in the
@@ -237,7 +237,7 @@ func (t *Template) ApplyAll(sps ...*string) error {
 		s := *sp
 		result, err := t.Apply(s)
 		if err != nil {
-			return fmt.Errorf("failed to apply template: %s: %w", s, err)
+			return newTmplError(s, err)
 		}
 		*sp = result
 	}

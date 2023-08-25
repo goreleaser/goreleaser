@@ -10,6 +10,7 @@ import (
 	"github.com/goreleaser/goreleaser/internal/artifact"
 	"github.com/goreleaser/goreleaser/internal/pipe"
 	"github.com/goreleaser/goreleaser/internal/testctx"
+	"github.com/goreleaser/goreleaser/internal/tmpl"
 	"github.com/goreleaser/goreleaser/pkg/config"
 	"github.com/stretchr/testify/require"
 )
@@ -88,9 +89,10 @@ func TestExecute(t *testing.T) {
 	}
 
 	testCases := []struct {
-		name       string
-		publishers []config.Publisher
-		expectErr  error
+		name        string
+		publishers  []config.Publisher
+		expectErr   error
+		expectErrAs any
 	}{
 		{
 			"filter by IDs",
@@ -108,6 +110,7 @@ func TestExecute(t *testing.T) {
 					},
 				},
 			},
+			nil,
 			nil,
 		},
 		{
@@ -131,6 +134,7 @@ func TestExecute(t *testing.T) {
 				},
 			},
 			nil,
+			nil,
 		},
 		{
 			"disabled",
@@ -143,6 +147,7 @@ func TestExecute(t *testing.T) {
 				},
 			},
 			pipe.ErrSkip{},
+			nil,
 		},
 		{
 			"disabled invalid tmpl",
@@ -154,7 +159,8 @@ func TestExecute(t *testing.T) {
 					Env:     []string{},
 				},
 			},
-			fmt.Errorf(`template: tmpl:1:3: executing "tmpl" at <.NOPE>`),
+			nil,
+			&tmpl.Error{},
 		},
 		{
 			"include checksum",
@@ -177,6 +183,7 @@ func TestExecute(t *testing.T) {
 					},
 				},
 			},
+			nil,
 			nil,
 		},
 		{
@@ -202,6 +209,7 @@ func TestExecute(t *testing.T) {
 				},
 			},
 			nil,
+			nil,
 		},
 		{
 			"docker",
@@ -220,6 +228,7 @@ func TestExecute(t *testing.T) {
 					},
 				},
 			},
+			nil,
 			nil,
 		},
 		{
@@ -245,6 +254,7 @@ func TestExecute(t *testing.T) {
 					},
 				},
 			},
+			nil,
 			nil,
 		},
 		{
@@ -274,6 +284,7 @@ func TestExecute(t *testing.T) {
 				},
 			},
 			nil,
+			nil,
 		},
 		{
 			"try dir templating",
@@ -293,6 +304,7 @@ func TestExecute(t *testing.T) {
 					},
 				},
 			},
+			nil,
 			nil,
 		},
 		{
@@ -321,6 +333,7 @@ func TestExecute(t *testing.T) {
 				},
 			},
 			nil,
+			nil,
 		},
 		{
 			"override path",
@@ -345,6 +358,7 @@ func TestExecute(t *testing.T) {
 					},
 				},
 			},
+			nil,
 			nil,
 		},
 		{
@@ -373,18 +387,23 @@ func TestExecute(t *testing.T) {
 			},
 			// stderr is sent to output via logger
 			fmt.Errorf(`publishing: %s failed: exit status 1: test error`, MockCmd),
+			nil,
 		},
 	}
 
 	for i, tc := range testCases {
 		t.Run(fmt.Sprintf("%d-%s", i, tc.name), func(t *testing.T) {
 			err := Execute(ctx, tc.publishers)
-			if tc.expectErr == nil {
-				require.NoError(t, err)
+			if tc.expectErr != nil {
+				require.Error(t, err)
+				require.True(t, strings.HasPrefix(err.Error(), tc.expectErr.Error()), err.Error())
 				return
 			}
-			require.Error(t, err)
-			require.True(t, strings.HasPrefix(err.Error(), tc.expectErr.Error()), err.Error())
+			if tc.expectErrAs != nil {
+				require.ErrorAs(t, err, tc.expectErrAs)
+				return
+			}
+			require.NoError(t, err)
 		})
 	}
 }

@@ -11,6 +11,7 @@ import (
 
 	"github.com/google/uuid"
 	"github.com/goreleaser/goreleaser/internal/testctx"
+	"github.com/goreleaser/goreleaser/internal/testlib"
 	"github.com/goreleaser/goreleaser/pkg/config"
 	"github.com/stretchr/testify/require"
 )
@@ -48,7 +49,7 @@ func TestAnnounceInvalidMessageTemplate(t *testing.T) {
 			},
 		},
 	})
-	require.EqualError(t, Pipe{}.Announce(ctx), `webhook: template: tmpl:1: unexpected "}" in operand`)
+	testlib.RequireTemplateError(t, Pipe{}.Announce(ctx))
 }
 
 type WebHookServerMockMessage struct {

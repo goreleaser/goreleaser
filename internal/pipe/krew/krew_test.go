@@ -15,6 +15,7 @@ import (
 	"github.com/goreleaser/goreleaser/internal/golden"
 	"github.com/goreleaser/goreleaser/internal/testctx"
 	"github.com/goreleaser/goreleaser/internal/testlib"
+	"github.com/goreleaser/goreleaser/internal/tmpl"
 	"github.com/goreleaser/goreleaser/pkg/config"
 	"github.com/goreleaser/goreleaser/pkg/context"
 	"github.com/stretchr/testify/require"
@@ -134,9 +135,11 @@ func TestSimple(t *testing.T) {
 
 func TestFullPipe(t *testing.T) {
 	type testcase struct {
-		prepare              func(ctx *context.Context)
-		expectedRunError     string
-		expectedPublishError string
+		prepare                func(ctx *context.Context)
+		expectedRunError       string
+		expectedRunErrorAs     any
+		expectedPublishError   string
+		expectedPublishErrorAs any
 	}
 	for name, tt := range map[string]testcase{
 		"default": {
@@ -175,7 +178,7 @@ func TestFullPipe(t *testing.T) {
 				ctx.Config.Krews[0].Repository.Name = "test"
 				ctx.Config.Krews[0].CommitMessageTemplate = "{{ .Asdsa }"
 			},
-			expectedPublishError: `template: tmpl:1: unexpected "}" in operand`,
+			expectedPublishErrorAs: &tmpl.Error{},
 		},
 		"invalid desc": {
 			prepare: func(ctx *context.Context) {
@@ -183,7 +186,7 @@ func TestFullPipe(t *testing.T) {
 				ctx.Config.Krews[0].Repository.Name = "test"
 				ctx.Config.Krews[0].Description = "{{ .Asdsa }"
 			},
-			expectedRunError: `failed to apply template: {{ .Asdsa }: template: tmpl:1: unexpected "}" in operand`,
+			expectedRunErrorAs: &tmpl.Error{},
 		},
 		"invalid short desc": {
 			prepare: func(ctx *context.Context) {
@@ -191,7 +194,7 @@ func TestFullPipe(t *testing.T) {
 				ctx.Config.Krews[0].Repository.Name = "test"
 				ctx.Config.Krews[0].ShortDescription = "{{ .Asdsa }"
 			},
-			expectedRunError: `failed to apply template: {{ .Asdsa }: template: tmpl:1: unexpected "}" in operand`,
+			expectedRunErrorAs: &tmpl.Error{},
 		},
 		"invalid homepage": {
 			prepare: func(ctx *context.Context) {
@@ -199,7 +202,7 @@ func TestFullPipe(t *testing.T) {
 				ctx.Config.Krews[0].Repository.Name = "test"
 				ctx.Config.Krews[0].Homepage = "{{ .Asdsa }"
 			},
-			expectedRunError: `failed to apply template: {{ .Asdsa }: template: tmpl:1: unexpected "}" in operand`,
+			expectedRunErrorAs: &tmpl.Error{},
 		},
 		"invalid name": {
 			prepare: func(ctx *context.Context) {
@@ -207,7 +210,7 @@ func TestFullPipe(t *testing.T) {
 				ctx.Config.Krews[0].Repository.Name = "test"
 				ctx.Config.Krews[0].Name = "{{ .Asdsa }"
 			},
-			expectedRunError: `failed to apply template: {{ .Asdsa }: template: tmpl:1: unexpected "}" in operand`,
+			expectedRunErrorAs: &tmpl.Error{},
 		},
 		"invalid caveats": {
 			prepare: func(ctx *context.Context) {
@@ -215,7 +218,7 @@ func TestFullPipe(t *testing.T) {
 				ctx.Config.Krews[0].Repository.Name = "test"
 				ctx.Config.Krews[0].Caveats = "{{ .Asdsa }"
 			},
-			expectedRunError: `failed to apply template: {{ .Asdsa }: template: tmpl:1: unexpected "}" in operand`,
+			expectedRunErrorAs: &tmpl.Error{},
 		},
 		"no short desc": {
 			prepare: func(ctx *context.Context) {
@@ -304,9 +307,14 @@ func TestFullPipe(t *testing.T) {
 			distFile := filepath.Join(folder, "krew", name+".yaml")
 
 			require.NoError(t, Pipe{}.Default(ctx))
+
 			err = runAll(ctx, client)
 			if tt.expectedRunError != "" {
 				require.EqualError(t, err, tt.expectedRunError)
+				return
+			}
+			if tt.expectedRunErrorAs != nil {
+				require.ErrorAs(t, err, tt.expectedRunErrorAs)
 				return
 			}
 			require.NoError(t, err)
@@ -316,7 +324,10 @@ func TestFullPipe(t *testing.T) {
 				require.EqualError(t, err, tt.expectedPublishError)
 				return
 			}
-
+			if tt.expectedPublishErrorAs != nil {
+				require.ErrorAs(t, err, tt.expectedPublishErrorAs)
+				return
+			}
 			require.NoError(t, err)
 
 			content := []byte(client.Content)

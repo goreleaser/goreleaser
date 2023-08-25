@@ -7,6 +7,7 @@ import (
 
 	"github.com/caarlos0/log"
 	"github.com/goreleaser/goreleaser/internal/testctx"
+	"github.com/goreleaser/goreleaser/internal/testlib"
 	"github.com/goreleaser/goreleaser/pkg/config"
 	"github.com/stretchr/testify/require"
 )
@@ -83,13 +84,13 @@ func TestRunWithEnv(t *testing.T) {
 }
 
 func TestInvalidTemplate(t *testing.T) {
-	require.EqualError(t, Pipe{}.Run(testctx.NewWithCfg(
+	testlib.RequireTemplateError(t, Pipe{}.Run(testctx.NewWithCfg(
 		config.Project{
 			Before: config.Before{
 				Hooks: []string{"touch {{ .fasdsd }"},
 			},
 		},
-	)), `template: tmpl:1: unexpected "}" in operand`)
+	)))
 }
 
 func TestSkip(t *testing.T) {

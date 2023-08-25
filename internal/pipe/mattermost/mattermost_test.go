@@ -10,6 +10,7 @@ import (
 	"github.com/stretchr/testify/require"
 
 	"github.com/goreleaser/goreleaser/internal/testctx"
+	"github.com/goreleaser/goreleaser/internal/testlib"
 	"github.com/goreleaser/goreleaser/pkg/config"
 )
 
@@ -31,7 +32,7 @@ func TestAnnounceInvalidTemplate(t *testing.T) {
 			},
 		},
 	})
-	require.EqualError(t, Pipe{}.Announce(ctx), `mattermost: template: tmpl:1: unexpected "}" in operand`)
+	testlib.RequireTemplateError(t, Pipe{}.Announce(ctx))
 }
 
 func TestAnnounceMissingEnv(t *testing.T) {

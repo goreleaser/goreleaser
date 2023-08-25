@@ -52,8 +52,11 @@ changelog:
   # Group commits messages by given regex and title.
   # Order value defines the order of the groups.
   # Providing no regex means all commits will be grouped under the default group.
+  #
+  # Matches are performed against the first line of the commit message only,
+  # prefixed with the commit SHA1, usually in the form of
+  # `<abbrev-commit>[:] <title-commit>`.
   # Groups are disabled when using github-native, as it already groups things by itself.
-  # Matches are performed against strings of the form: "<abbrev-commit>[:] <title-commit>".
   # Regex use RE2 syntax as defined here: https://github.com/google/re2/wiki/Syntax.
   groups:
     - title: Features
@@ -96,14 +99,23 @@ changelog:
   filters:
     # Commit messages matching the regexp listed here will be removed from
     # the changelog
+    #
+    # Matches are performed against the first line of the commit message only,
+    # prefixed with the commit SHA1, usually in the form of
+    # `<abbrev-commit>[:] <title-commit>`.
     exclude:
       - "^docs:"
       - typo
       - (?i)foo
+
     # Commit messages matching the regexp listed here will be the only ones
     # added to the changelog
     #
     # If include is not-empty, exclude will be ignored.
+    #
+    # Matches are performed against the first line of the commit message only,
+    # prefixed with the commit SHA1, usually in the form of
+    # `<abbrev-commit>[:] <title-commit>`.
     #
     # Since: v1.19
     include:
