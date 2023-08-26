@@ -54,6 +54,9 @@ plugins:
   - minify:
       minify_html: true
   - include-markdown
+  - tags
+  # - meta
+  - blog
 
 extra:
   social:
@@ -206,6 +209,8 @@ nav:
       - sponsors.md
       - users.md
       - contributing.md
+  - Blog:
+      - blog/index.md
   - pro.md
   - links.md
 
