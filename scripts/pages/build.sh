@@ -3,7 +3,7 @@ set -euo pipefail
 
 # install
 pip install --upgrade pip
-pip install -U mkdocs-material mkdocs-redirects mkdocs-minify-plugin mkdocs-include-markdown-plugin lunr
+pip install -U mkdocs-material mkdocs-redirects mkdocs-minify-plugin mkdocs-include-markdown-plugin lunr mkdocs-rss-plugin
 
 # prepare
 version="$(cat ./www/docs/static/latest)"

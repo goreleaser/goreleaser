@@ -1,0 +1,25 @@
+---
+date: 2023-08-26
+slug: welcome
+categories:
+  - announcements
+authors:
+  - caarlos0
+---
+
+# Welcome to our new blog
+
+We are in the process of migrating our blog from Medium to here.
+
+<!-- more -->
+
+Medium is proprietary, and I don't particularly like it very much.
+
+Now that [material-mkdocs][] has a blog feature, I started migrating the blog to
+here.
+
+You can follow the progress in [this issue](https://github.com/goreleaser/goreleaser/issues/3503).
+
+Thanks, I hope you enjoy the new home. 😄
+
+[material-mkdocs]: https://squidfunk.github.io/mkdocs-material/

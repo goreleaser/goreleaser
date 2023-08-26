@@ -57,6 +57,10 @@ plugins:
   - tags
   # - meta
   - blog
+  - rss:
+      match_path: blog/posts/.*
+      date_from_meta:
+        as_creation: date
 
 extra:
   social:
