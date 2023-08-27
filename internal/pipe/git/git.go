@@ -1,13 +1,11 @@
 package git
 
 import (
-	"errors"
 	"fmt"
 	"net/url"
 	"os"
 	"os/exec"
 	"regexp"
-	"regexp/syntax"
 	"strconv"
 	"strings"
 	"time"
@@ -173,18 +171,6 @@ func getGitInfo(ctx *context.Context) (context.GitInfo, error) {
 		TagBody:     body,
 		Dirty:       CheckDirty(ctx) != nil,
 	}, nil
-}
-
-// shouldErr returns true if the errors are template or regex related.
-func shouldErr(err error) bool {
-	if err == nil {
-		return false
-	}
-	if errors.As(err, &tmpl.Error{}) {
-		return true
-	}
-	se := &syntax.Error{}
-	return errors.As(err, &se)
 }
 
 func validate(ctx *context.Context) error {
