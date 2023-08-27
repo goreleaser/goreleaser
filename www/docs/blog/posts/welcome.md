@@ -20,6 +20,8 @@ here.
 
 You can follow the progress in [this issue](https://github.com/goreleaser/goreleaser/issues/3503).
 
+You can also subscribe to the [RSS feed](/feed_rss_created.xml)!
+
 Thanks, I hope you enjoy the new home. 😄
 
 [material-mkdocs]: https://squidfunk.github.io/mkdocs-material/

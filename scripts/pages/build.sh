@@ -1,7 +1,7 @@
 #!/bin/bash
 set -euo pipefail
 
-# unshallow
+# unshallow (needed for the rss plugin)
 git fetch --prune --tags --unshallow
 
 # install
