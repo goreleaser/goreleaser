@@ -3,6 +3,9 @@ package git
 import (
 	"errors"
 	"fmt"
+	"regexp/syntax"
+
+	"github.com/goreleaser/goreleaser/internal/tmpl"
 )
 
 // ErrDirty happens when the repo has uncommitted/unstashed changes.
@@ -33,3 +36,12 @@ var ErrNotRepository = errors.New("current folder is not a git repository")
 
 // ErrNoGit happens when git is not present in PATH.
 var ErrNoGit = errors.New("git not present in PATH")
+
+// shouldErr returns true if the errors are template or regex related.
+func shouldErr(err error) bool {
+	if errors.As(err, &tmpl.Error{}) {
+		return true
+	}
+	se := &syntax.Error{}
+	return errors.As(err, &se)
+}

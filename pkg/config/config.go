@@ -18,8 +18,9 @@ import (
 
 // Git configs.
 type Git struct {
-	TagSort          string `yaml:"tag_sort,omitempty" json:"tag_sort,omitempty"`
-	PrereleaseSuffix string `yaml:"prerelease_suffix,omitempty" json:"prerelease_suffix,omitempty"`
+	TagSort          string   `yaml:"tag_sort,omitempty" json:"tag_sort,omitempty"`
+	PrereleaseSuffix string   `yaml:"prerelease_suffix,omitempty" json:"prerelease_suffix,omitempty"`
+	IgnoreTags       []string `yaml:"ignore_tags,omitempty" json:"ignore_tags,omitempty"`
 }
 
 // GitHubURLs holds the URLs to be used when using github enterprise.
