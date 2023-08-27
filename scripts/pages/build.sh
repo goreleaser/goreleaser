@@ -1,7 +1,8 @@
 #!/bin/bash
 set -euo pipefail
 
-git log
+# unshallow
+git fetch --prune --tags --unshallow
 
 # install
 pip install --upgrade pip
