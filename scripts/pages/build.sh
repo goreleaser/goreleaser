@@ -1,6 +1,8 @@
 #!/bin/bash
 set -euo pipefail
 
+git log
+
 # install
 pip install --upgrade pip
 pip install -U mkdocs-material mkdocs-redirects mkdocs-minify-plugin mkdocs-include-markdown-plugin lunr mkdocs-rss-plugin
