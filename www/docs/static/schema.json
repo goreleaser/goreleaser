@@ -1028,6 +1028,12 @@
 					},
 					"prerelease_suffix": {
 						"type": "string"
+					},
+					"ignore_tags": {
+						"items": {
+							"type": "string"
+						},
+						"type": "array"
 					}
 				},
 				"additionalProperties": false,
