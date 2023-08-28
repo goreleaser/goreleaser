@@ -3,6 +3,7 @@ package docker
 import (
 	"fmt"
 	"io/fs"
+	"net/http"
 	"os"
 	"path/filepath"
 	"sort"
@@ -337,7 +338,7 @@ func doPush(ctx *context.Context, img imager, name string, flags []string) (stri
 		if err == nil {
 			return digest, nil
 		}
-		if strings.Contains(err.Error(), "received unexpected HTTP status: 503 Service Unavailable") {
+		if isRetryable(err) {
 			log.WithField("try", try).
 				WithField("image", name).
 				WithError(err).
@@ -349,4 +350,32 @@ func doPush(ctx *context.Context, img imager, name string, flags []string) (stri
 		return "", fmt.Errorf("failed to push %s after %d tries: %w", name, try, err)
 	}
 	return "", nil // will never happen
+}
+
+func isRetryable(err error) bool {
+	for _, code := range []int{
+		http.StatusInternalServerError,
+		// http.StatusNotImplemented,
+		http.StatusBadGateway,
+		http.StatusServiceUnavailable,
+		http.StatusGatewayTimeout,
+		// http.StatusHTTPVersionNotSupported,
+		http.StatusVariantAlsoNegotiates,
+		// http.StatusInsufficientStorage,
+		// http.StatusLoopDetected,
+		http.StatusNotExtended,
+		// http.StatusNetworkAuthenticationRequired,
+	} {
+		if strings.Contains(
+			err.Error(),
+			fmt.Sprintf(
+				"received unexpected HTTP status: %d %s",
+				code,
+				http.StatusText(code),
+			),
+		) {
+			return true
+		}
+	}
+	return false
 }
