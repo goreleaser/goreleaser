@@ -7,6 +7,7 @@ import (
 	"path/filepath"
 	"sort"
 	"strings"
+	"time"
 
 	"github.com/caarlos0/log"
 	"github.com/goreleaser/goreleaser/internal/artifact"
@@ -306,7 +307,7 @@ func dockerPush(ctx *context.Context, image *artifact.Artifact) error {
 		return pipe.Skip("prerelease detected with 'auto' push, skipping docker publish: " + image.Name)
 	}
 
-	digest, err := imagers[docker.Use].Push(ctx, image.Name, docker.PushFlags)
+	digest, err := doPush(ctx, imagers[docker.Use], image.Name, docker.PushFlags)
 	if err != nil {
 		return err
 	}
@@ -327,4 +328,25 @@ func dockerPush(ctx *context.Context, image *artifact.Artifact) error {
 
 	ctx.Artifacts.Add(art)
 	return nil
+}
+
+func doPush(ctx *context.Context, img imager, name string, flags []string) (string, error) {
+	var try int
+	for try < 10 {
+		digest, err := img.Push(ctx, name, flags)
+		if err == nil {
+			return digest, nil
+		}
+		if strings.Contains(err.Error(), "received unexpected HTTP status: 503 Service Unavailable") {
+			log.WithField("try", try).
+				WithField("image", name).
+				WithError(err).
+				Warnf("failed to push image, will retry")
+			time.Sleep(time.Duration(try*10) * time.Second)
+			try++
+			continue
+		}
+		return "", fmt.Errorf("failed to push %s after %d tries: %w", name, try, err)
+	}
+	return "", nil // will never happen
 }
