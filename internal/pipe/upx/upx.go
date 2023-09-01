@@ -11,6 +11,7 @@ import (
 	"github.com/goreleaser/goreleaser/internal/artifact"
 	"github.com/goreleaser/goreleaser/internal/pipe"
 	"github.com/goreleaser/goreleaser/internal/semerrgroup"
+	"github.com/goreleaser/goreleaser/internal/tmpl"
 	"github.com/goreleaser/goreleaser/pkg/config"
 	"github.com/goreleaser/goreleaser/pkg/context"
 )
@@ -32,7 +33,11 @@ func (Pipe) Run(ctx *context.Context) error {
 	g := semerrgroup.NewSkipAware(semerrgroup.New(ctx.Parallelism))
 	for _, upx := range ctx.Config.UPXs {
 		upx := upx
-		if !upx.Enabled {
+		enabled, err := tmpl.New(ctx).Bool(upx.Enabled)
+		if err != nil {
+			return err
+		}
+		if !enabled {
 			return pipe.Skip("upx is not enabled")
 		}
 		if _, err := exec.LookPath(upx.Binary); err != nil {

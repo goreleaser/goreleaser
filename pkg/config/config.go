@@ -682,7 +682,7 @@ type UniversalBinary struct {
 
 // UPX allows to compress binaries with `upx`.
 type UPX struct {
-	Enabled  bool     `yaml:"enabled,omitempty" json:"enabled,omitempty"`
+	Enabled  string   `yaml:"enabled,omitempty" json:"enabled,omitempty" jsonschema:"oneof_type=string;boolean"`
 	IDs      []string `yaml:"ids,omitempty" json:"ids,omitempty"`
 	Goos     []string `yaml:"goos,omitempty" json:"goos,omitempty"`
 	Goarch   []string `yaml:"goarch,omitempty" json:"goarch,omitempty"`
