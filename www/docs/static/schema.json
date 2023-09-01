@@ -3248,7 +3248,14 @@
 			"UPX": {
 				"properties": {
 					"enabled": {
-						"type": "boolean"
+						"oneOf": [
+							{
+								"type": "string"
+							},
+							{
+								"type": "boolean"
+							}
+						]
 					},
 					"ids": {
 						"items": {
