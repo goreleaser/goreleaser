@@ -12,44 +12,43 @@ the _de facto_ tool for the job.
 GoReleaser has been able to integrate with it via custom [build hooks][bhooks],
 and now UPX has its own configuration section:
 
-!!! warning
+!!! warning "Compatibility"
+
     `upx` does not support all platforms! Make sure to check
-    [their issues][upx-issues] and to test your packed binaries first.
+    [their issues][upx-issues] and to test your packed binaries.
 
     Namely, _macOS Ventura_ is not supported at the moment.
-
-    Future GoReleaser releases will add more filters so you can cherry-pick
-    which platforms you want to pack or not.
 
 ```yaml
 # .goreleaser.yaml
 upx:
-  -
-    # Whether to enable it or not.
+  - # Whether to enable it or not.
+    #
+    # Templates: allowed (since v1.21).
     enabled: true
 
     # Filter by build ID.
-    ids: [ build1, build2 ]
+    ids: [build1, build2]
 
     # Filter by GOOS.
     #
     # Since: v1.19
-    goos: [ linux , darwin ]
+    goos: [linux, darwin]
 
     # Filter by GOARCH.
     #
     # Since: v1.19
-    goarch: [ arm, amd64 ]
+    goarch: [arm, amd64]
 
     # Filter by GOARM.
     #
     # Since: v1.19
-    goarm: [ 8 ]
+    goarm: [8]
 
     # Filter by GOAMD64.
     #
     # Since: v1.19
-    goamd64: [ v1 ]
+    goamd64: [v1]
 
     # Compress argument.
     # Valid options are from '1' (faster) to '9' (better), and 'best'.
@@ -62,12 +61,17 @@ upx:
     brute: true
 ```
 
+!!! info
+
+    If `upx` is not in `$PATH`, GoReleaser will automatically avoid running it.
+
 Notice you can define multiple `upx` definitions, filtering by various fields.
 You can use that to have different compression options depending on the target
 OS, for instance - or even to run it only on a few selected platforms.
 
-!!! info
-    If `upx` is not in `$PATH`, GoReleaser will automatically avoid running it.
+!!! tip
+
+    Learn more about the [name template engine](templates.md).
 
 [upx]: https://upx.github.io/
 [upx-issues]: https://github.com/upx/upx/issues

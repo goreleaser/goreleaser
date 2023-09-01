@@ -50,32 +50,32 @@ func TestRun(t *testing.T) {
 	ctx := testctx.NewWithCfg(config.Project{
 		UPXs: []config.UPX{
 			{
-				Enabled: true,
+				Enabled: "true",
 				IDs:     []string{"1"},
 			},
 			{
-				Enabled:  true,
+				Enabled:  "true",
 				IDs:      []string{"2"},
 				Compress: "best",
 			},
 			{
-				Enabled:  true,
+				Enabled:  "true",
 				IDs:      []string{"3"},
 				Compress: "9",
 			},
 			{
-				Enabled:  true,
+				Enabled:  "true",
 				IDs:      []string{"4"},
 				Compress: "8",
 				LZMA:     true,
 			},
 			{
-				Enabled: true,
+				Enabled: `{{ eq .Env.UPX "1" }}`,
 				IDs:     []string{"5"},
 				Brute:   true,
 			},
 		},
-	})
+	}, testctx.WithEnv(map[string]string{"UPX": "1"}))
 
 	tmp := t.TempDir()
 	main := filepath.Join(tmp, "main.go")
@@ -119,20 +119,42 @@ func TestRun(t *testing.T) {
 	require.NoError(t, Pipe{}.Run(ctx))
 }
 
-func TestDisabled(t *testing.T) {
-	ctx := testctx.NewWithCfg(config.Project{
-		UPXs: []config.UPX{
-			{},
-		},
+func TestEnabled(t *testing.T) {
+	t.Run("no config", func(t *testing.T) {
+		ctx := testctx.NewWithCfg(config.Project{
+			UPXs: []config.UPX{
+				{},
+			},
+		})
+		testlib.AssertSkipped(t, Pipe{}.Run(ctx))
 	})
-	testlib.AssertSkipped(t, Pipe{}.Run(ctx))
+	t.Run("tmpl", func(t *testing.T) {
+		ctx := testctx.NewWithCfg(config.Project{
+			UPXs: []config.UPX{
+				{
+					Enabled: `{{ printf "false" }}`,
+				},
+			},
+		})
+		testlib.AssertSkipped(t, Pipe{}.Run(ctx))
+	})
+	t.Run("invalid template", func(t *testing.T) {
+		ctx := testctx.NewWithCfg(config.Project{
+			UPXs: []config.UPX{
+				{
+					Enabled: `{{ .Foo }}`,
+				},
+			},
+		})
+		testlib.RequireTemplateError(t, Pipe{}.Run(ctx))
+	})
 }
 
 func TestUpxNotInstalled(t *testing.T) {
 	ctx := testctx.NewWithCfg(config.Project{
 		UPXs: []config.UPX{
 			{
-				Enabled: true,
+				Enabled: "true",
 				Binary:  "fakeupx",
 			},
 		},
