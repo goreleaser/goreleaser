@@ -18,8 +18,9 @@ import (
 
 // Git configs.
 type Git struct {
-	TagSort          string `yaml:"tag_sort,omitempty" json:"tag_sort,omitempty"`
-	PrereleaseSuffix string `yaml:"prerelease_suffix,omitempty" json:"prerelease_suffix,omitempty"`
+	TagSort          string   `yaml:"tag_sort,omitempty" json:"tag_sort,omitempty"`
+	PrereleaseSuffix string   `yaml:"prerelease_suffix,omitempty" json:"prerelease_suffix,omitempty"`
+	IgnoreTags       []string `yaml:"ignore_tags,omitempty" json:"ignore_tags,omitempty"`
 }
 
 // GitHubURLs holds the URLs to be used when using github enterprise.
@@ -681,7 +682,7 @@ type UniversalBinary struct {
 
 // UPX allows to compress binaries with `upx`.
 type UPX struct {
-	Enabled  bool     `yaml:"enabled,omitempty" json:"enabled,omitempty"`
+	Enabled  string   `yaml:"enabled,omitempty" json:"enabled,omitempty" jsonschema:"oneof_type=string;boolean"`
 	IDs      []string `yaml:"ids,omitempty" json:"ids,omitempty"`
 	Goos     []string `yaml:"goos,omitempty" json:"goos,omitempty"`
 	Goarch   []string `yaml:"goarch,omitempty" json:"goarch,omitempty"`

@@ -662,6 +662,55 @@ func TestGitHubOpenPullRequestBaseEmpty(t *testing.T) {
 	repo := Repo{
 		Owner:  "someone",
 		Name:   "something",
+		Branch: "foo",
+	}
+
+	require.NoError(t, client.OpenPullRequest(ctx, Repo{}, repo, "some title", false))
+}
+
+func TestGitHubOpenPullRequestHeadEmpty(t *testing.T) {
+	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		defer r.Body.Close()
+
+		if r.URL.Path == "/repos/someone/something/contents/.github/PULL_REQUEST_TEMPLATE.md" {
+			w.WriteHeader(http.StatusNotFound)
+			return
+		}
+
+		if r.URL.Path == "/repos/someone/something/pulls" {
+			r, err := os.Open("testdata/github/pull.json")
+			require.NoError(t, err)
+			_, err = io.Copy(w, r)
+			require.NoError(t, err)
+			return
+		}
+
+		if r.URL.Path == "/repos/someone/something" {
+			w.WriteHeader(http.StatusOK)
+			fmt.Fprint(w, `{"default_branch": "main"}`)
+			return
+		}
+
+		if r.URL.Path == "/rate_limit" {
+			w.WriteHeader(http.StatusOK)
+			fmt.Fprint(w, `{"resources":{"core":{"remaining":120}}}`)
+			return
+		}
+
+		t.Error("unhandled request: " + r.URL.Path)
+	}))
+	defer srv.Close()
+
+	ctx := testctx.NewWithCfg(config.Project{
+		GitHubURLs: config.GitHubURLs{
+			API: srv.URL + "/",
+		},
+	})
+	client, err := newGitHub(ctx, "test-token")
+	require.NoError(t, err)
+	repo := Repo{
+		Owner:  "someone",
+		Name:   "something",
 		Branch: "main",
 	}
 

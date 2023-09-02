@@ -358,3 +358,73 @@ func TestPreviousTagFromCI(t *testing.T) {
 		})
 	}
 }
+
+func TestFilterTags(t *testing.T) {
+	testlib.Mktmp(t)
+	testlib.GitInit(t)
+	testlib.GitRemoteAdd(t, "git@github.com:foo/bar.git")
+	testlib.GitCommit(t, "commit1")
+	testlib.GitTag(t, "v0.0.1")
+	testlib.GitTag(t, "nightly")
+	testlib.GitCommit(t, "commit2")
+	testlib.GitTag(t, "v0.0.2")
+	testlib.GitTag(t, "v0.1.0-dev")
+
+	t.Run("no filter", func(t *testing.T) {
+		ctx := testctx.New()
+		require.NoError(t, Pipe{}.Run(ctx))
+		require.Equal(t, "v0.0.1", ctx.Git.PreviousTag)
+		require.Equal(t, "v0.1.0-dev", ctx.Git.CurrentTag)
+	})
+
+	t.Run("regex", func(t *testing.T) {
+		ctx := testctx.NewWithCfg(config.Project{
+			Git: config.Git{
+				IgnoreTags: []string{
+					".*-dev",
+				},
+			},
+		})
+		require.NoError(t, Pipe{}.Run(ctx))
+		require.Equal(t, "v0.0.1", ctx.Git.PreviousTag)
+		require.Equal(t, "v0.0.2", ctx.Git.CurrentTag)
+	})
+
+	t.Run("template", func(t *testing.T) {
+		ctx := testctx.NewWithCfg(config.Project{
+			Git: config.Git{
+				IgnoreTags: []string{
+					"{{.Env.PREFIX}}.*",
+					"nightly",
+				},
+			},
+		}, testctx.WithEnv(map[string]string{
+			"PREFIX": `v0\.0\.`,
+		}))
+		require.NoError(t, Pipe{}.Run(ctx))
+		require.Empty(t, ctx.Git.PreviousTag)
+		require.Equal(t, "v0.1.0-dev", ctx.Git.CurrentTag)
+	})
+
+	t.Run("invalid regex", func(t *testing.T) {
+		ctx := testctx.NewWithCfg(config.Project{
+			Git: config.Git{
+				IgnoreTags: []string{
+					"[",
+				},
+			},
+		})
+		require.EqualError(t, Pipe{}.Run(ctx), "could not get current tag: error parsing regexp: missing closing ]: `[`")
+	})
+
+	t.Run("invalid template", func(t *testing.T) {
+		ctx := testctx.NewWithCfg(config.Project{
+			Git: config.Git{
+				IgnoreTags: []string{
+					"{{.Env.Nope}}",
+				},
+			},
+		})
+		testlib.RequireTemplateError(t, Pipe{}.Run(ctx))
+	})
+}
