@@ -70,7 +70,7 @@ func (Pipe) Default(ctx *context.Context) error {
 }
 
 func (p Pipe) Run(ctx *context.Context) error {
-	cli, err := client.New(ctx)
+	cli, err := client.NewReleaseClient(ctx)
 	if err != nil {
 		return err
 	}
@@ -87,7 +87,7 @@ func (p Pipe) Publish(ctx *context.Context) error {
 	return p.publishAll(ctx, cli)
 }
 
-func (p Pipe) runAll(ctx *context.Context, cli client.Client) error {
+func (p Pipe) runAll(ctx *context.Context, cli client.ReleaseURLTemplater) error {
 	for _, winget := range ctx.Config.Winget {
 		err := p.doRun(ctx, winget, cli)
 		if err != nil {
@@ -97,7 +97,7 @@ func (p Pipe) runAll(ctx *context.Context, cli client.Client) error {
 	return nil
 }
 
-func (p Pipe) doRun(ctx *context.Context, winget config.Winget, cl client.ReleaserURLTemplater) error {
+func (p Pipe) doRun(ctx *context.Context, winget config.Winget, cl client.ReleaseURLTemplater) error {
 	if winget.Repository.Name == "" {
 		return errNoRepoName
 	}

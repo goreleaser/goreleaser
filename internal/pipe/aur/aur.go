@@ -67,7 +67,7 @@ func (Pipe) Default(ctx *context.Context) error {
 }
 
 func (Pipe) Run(ctx *context.Context) error {
-	cli, err := client.New(ctx)
+	cli, err := client.NewReleaseClient(ctx)
 	if err != nil {
 		return err
 	}
@@ -75,7 +75,7 @@ func (Pipe) Run(ctx *context.Context) error {
 	return runAll(ctx, cli)
 }
 
-func runAll(ctx *context.Context, cli client.Client) error {
+func runAll(ctx *context.Context, cli client.ReleaseURLTemplater) error {
 	for _, aur := range ctx.Config.AURs {
 		err := doRun(ctx, aur, cli)
 		if err != nil {
@@ -85,7 +85,7 @@ func runAll(ctx *context.Context, cli client.Client) error {
 	return nil
 }
 
-func doRun(ctx *context.Context, aur config.AUR, cl client.Client) error {
+func doRun(ctx *context.Context, aur config.AUR, cl client.ReleaseURLTemplater) error {
 	name, err := tmpl.New(ctx).Apply(aur.Name)
 	if err != nil {
 		return err
@@ -189,7 +189,7 @@ func doRun(ctx *context.Context, aur config.AUR, cl client.Client) error {
 	return nil
 }
 
-func buildPkgFile(ctx *context.Context, pkg config.AUR, client client.Client, artifacts []*artifact.Artifact, tpl string) (string, error) {
+func buildPkgFile(ctx *context.Context, pkg config.AUR, client client.ReleaseURLTemplater, artifacts []*artifact.Artifact, tpl string) (string, error) {
 	data, err := dataFor(ctx, pkg, client, artifacts)
 	if err != nil {
 		return "", err
@@ -274,7 +274,7 @@ func toPkgBuildArch(arch string) string {
 	}
 }
 
-func dataFor(ctx *context.Context, cfg config.AUR, cl client.Client, artifacts []*artifact.Artifact) (templateData, error) {
+func dataFor(ctx *context.Context, cfg config.AUR, cl client.ReleaseURLTemplater, artifacts []*artifact.Artifact) (templateData, error) {
 	result := templateData{
 		Name:         cfg.Name,
 		Desc:         cfg.Description,

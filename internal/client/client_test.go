@@ -5,6 +5,7 @@ import (
 	"testing"
 
 	"github.com/goreleaser/goreleaser/internal/testctx"
+	"github.com/goreleaser/goreleaser/internal/testlib"
 	"github.com/goreleaser/goreleaser/pkg/config"
 	"github.com/goreleaser/goreleaser/pkg/context"
 	"github.com/stretchr/testify/require"
@@ -15,6 +16,45 @@ func TestClientEmpty(t *testing.T) {
 	client, err := New(ctx)
 	require.Nil(t, client)
 	require.EqualError(t, err, `invalid client token type: ""`)
+}
+
+func TestNewReleaseClient(t *testing.T) {
+	t.Run("normal", func(t *testing.T) {
+		cli, err := NewReleaseClient(testctx.New(
+			testctx.WithTokenType(context.TokenTypeGitHub),
+		))
+		require.NoError(t, err)
+		require.IsType(t, &githubClient{}, cli)
+	})
+
+	t.Run("bad tmpl", func(t *testing.T) {
+		_, err := NewReleaseClient(testctx.NewWithCfg(
+			config.Project{
+				Release: config.Release{
+					Disable: "{{ .Nope }}",
+				},
+			},
+			testctx.WithTokenType(context.TokenTypeGitHub),
+		))
+		testlib.RequireTemplateError(t, err)
+	})
+
+	t.Run("disabled", func(t *testing.T) {
+		cli, err := NewReleaseClient(testctx.NewWithCfg(
+			config.Project{
+				Release: config.Release{
+					Disable: "true",
+				},
+			},
+			testctx.WithTokenType(context.TokenTypeGitHub),
+		))
+		require.NoError(t, err)
+		require.IsType(t, errURLTemplater{}, cli)
+
+		url, err := cli.ReleaseURLTemplate(nil)
+		require.Empty(t, url)
+		require.ErrorIs(t, err, ErrReleaseDisabled)
+	})
 }
 
 func TestClientNewGitea(t *testing.T) {
