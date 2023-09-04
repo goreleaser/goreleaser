@@ -177,7 +177,9 @@ func setupBuildContext(ctx *context.Context, options buildOpts) error {
 	}
 	log.Debugf("parallelism: %v", ctx.Parallelism)
 	ctx.Snapshot = options.snapshot
-	skips.SetS(ctx, options.skips...)
+	if err := skips.SetBuild(ctx, options.skips...); err != nil {
+		return err
+	}
 
 	if options.skipValidate {
 		skips.Set(ctx, skips.Validate)

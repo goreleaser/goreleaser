@@ -154,7 +154,9 @@ func releaseProject(options releaseOpts) (*context.Context, error) {
 	}
 	ctx, cancel := context.NewWithTimeout(cfg, options.timeout)
 	defer cancel()
-	setupReleaseContext(ctx, options)
+	if err := setupReleaseContext(ctx, options); err != nil {
+		return nil, err
+	}
 	return ctx, ctrlc.Default.Run(ctx, func() error {
 		for _, pipe := range pipeline.Pipeline {
 			if err := skip.Maybe(
@@ -171,7 +173,7 @@ func releaseProject(options releaseOpts) (*context.Context, error) {
 	})
 }
 
-func setupReleaseContext(ctx *context.Context, options releaseOpts) {
+func setupReleaseContext(ctx *context.Context, options releaseOpts) error {
 	ctx.Deprecated = options.deprecated // test only
 	ctx.Parallelism = runtime.GOMAXPROCS(0)
 	if options.parallelism > 0 {
@@ -192,7 +194,9 @@ func setupReleaseContext(ctx *context.Context, options releaseOpts) {
 		ctx.Snapshot = true
 	}
 
-	skips.SetS(ctx, options.skips...)
+	if err := skips.SetRelease(ctx, options.skips...); err != nil {
+		return err
+	}
 
 	// wire deprecated options
 	// XXX: remove soon
@@ -238,4 +242,5 @@ func setupReleaseContext(ctx *context.Context, options releaseOpts) {
 	if skips.Any(ctx, skips.Publish) {
 		skips.Set(ctx, skips.Announce)
 	}
+	return nil
 }

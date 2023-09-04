@@ -1,6 +1,12 @@
 package skips
 
-import "github.com/goreleaser/goreleaser/pkg/context"
+import (
+	"fmt"
+	"strings"
+
+	"github.com/goreleaser/goreleaser/pkg/context"
+	"golang.org/x/exp/slices"
+)
 
 type Key string
 
@@ -32,13 +38,34 @@ func Set(ctx *context.Context, keys ...Key) {
 	}
 }
 
-func SetS(ctx *context.Context, keys ...string) {
-	for _, key := range keys {
-		ctx.Skips[key] = true
+var (
+	SetRelease = set(Release)
+	SetBuild   = set(Build)
+)
+
+func set(allowed Keys) func(ctx *context.Context, keys ...string) error {
+	return func(ctx *context.Context, keys ...string) error {
+		for _, key := range keys {
+			if !slices.Contains(allowed, Key(key)) {
+				return fmt.Errorf("--skip=%s is not allowed. Valid options for skip are [%s]", key, allowed)
+			}
+			ctx.Skips[key] = true
+		}
+		return nil
 	}
 }
 
-var Release = []Key{
+type Keys []Key
+
+func (keys Keys) String() string {
+	ss := make([]string, len(keys))
+	for i, key := range keys {
+		ss[i] = string(key)
+	}
+	return strings.Join(ss, ", ")
+}
+
+var Release = Keys{
 	Publish,
 	Announce,
 	Sign,
@@ -49,7 +76,7 @@ var Release = []Key{
 	Before,
 }
 
-var Build = []Key{
+var Build = Keys{
 	BeforeBuildHooks,
 	PostBuildHooks,
 	Validate,
