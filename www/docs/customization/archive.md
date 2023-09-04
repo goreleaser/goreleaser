@@ -136,14 +136,14 @@ archives:
         #
         # Default: copied from the source file
         info:
-          # Templateable (since v1.14.0)
+          # Templateable (since v1.14)
           owner: root
 
-          # Templateable (since v1.14.0)
+          # Templateable (since v1.14)
           group: root
 
           # Must be in time.RFC3339Nano format.
-          # Templateable (since v1.14.0)
+          # Templateable (since v1.14)
           mtime: "{{ .CommitDate }}"
 
           # File mode.

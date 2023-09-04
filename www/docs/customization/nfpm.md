@@ -260,7 +260,7 @@ nfpms:
     # Keys are the possible targets during the installation process
     # Values are the paths to the scripts which will be executed.
     #
-    # Templates: allowed (since v1.20).
+    # Templates: allowed (since v1.20)
     scripts:
       preinstall: "scripts/preinstall.sh"
       postinstall: "scripts/postinstall.sh"

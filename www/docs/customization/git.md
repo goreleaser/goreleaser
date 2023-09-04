@@ -1,6 +1,6 @@
 # Git
 
-> Since v1.14.0.
+> Since v1.14
 
 This allows you to change the behavior of some Git commands.
 
@@ -29,3 +29,25 @@ git:
     - nightly
     - "{{.Env.FOO}}.*"
 ```
+
+## Semver sorting
+
+> Since v1.21 (pro)
+
+This allows you to sort tags by semver:
+
+```yaml
+# .goreleaser.yml
+git:
+  tag_sort: semver
+```
+
+It'll parse all tags, ignoring non-semver-compatible tags, and sort from newest
+to oldest, so the latest tag is returned.
+
+This has the effect of sorting non-pre-release tags before pre-release ones,
+which is different from what other git sorting options might give you.
+
+!!! success "GoReleaser Pro"
+
+    Semver sorting is a [GoReleaser Pro feature](/pro/).
