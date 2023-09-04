@@ -1024,7 +1024,12 @@
 			"Git": {
 				"properties": {
 					"tag_sort": {
-						"type": "string"
+						"type": "string",
+						"enum": [
+							"-version:refname",
+							"-version:creatordate"
+						],
+						"default": "-version:refname"
 					},
 					"prerelease_suffix": {
 						"type": "string"
