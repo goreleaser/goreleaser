@@ -6,6 +6,7 @@ import (
 	"syscall"
 	"testing"
 
+	"github.com/goreleaser/goreleaser/internal/skips"
 	"github.com/goreleaser/goreleaser/internal/testctx"
 	"github.com/goreleaser/goreleaser/internal/testlib"
 	"github.com/goreleaser/goreleaser/pkg/config"
@@ -220,7 +221,7 @@ func TestEmptyGiteaEnvFile(t *testing.T) {
 }
 
 func TestInvalidEnvChecksSkipped(t *testing.T) {
-	ctx := testctx.New(testctx.SkipPublish)
+	ctx := testctx.New(testctx.Skip(skips.Publish...))
 	require.NoError(t, Pipe{}.Run(ctx))
 }
 

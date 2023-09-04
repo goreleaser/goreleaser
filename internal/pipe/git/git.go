@@ -13,6 +13,7 @@ import (
 	"github.com/caarlos0/log"
 	"github.com/goreleaser/goreleaser/internal/git"
 	"github.com/goreleaser/goreleaser/internal/pipe"
+	"github.com/goreleaser/goreleaser/internal/skips"
 	"github.com/goreleaser/goreleaser/internal/tmpl"
 	"github.com/goreleaser/goreleaser/pkg/context"
 )
@@ -177,7 +178,7 @@ func validate(ctx *context.Context) error {
 	if ctx.Snapshot {
 		return pipe.ErrSnapshotEnabled
 	}
-	if ctx.SkipValidate {
+	if skips.Any(ctx, skips.Validate) {
 		return pipe.ErrSkipValidateEnabled
 	}
 	if _, err := os.Stat(".git/shallow"); err == nil {

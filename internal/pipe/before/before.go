@@ -11,6 +11,7 @@ import (
 	"github.com/caarlos0/log"
 	"github.com/goreleaser/goreleaser/internal/gio"
 	"github.com/goreleaser/goreleaser/internal/logext"
+	"github.com/goreleaser/goreleaser/internal/skips"
 	"github.com/goreleaser/goreleaser/internal/tmpl"
 	"github.com/goreleaser/goreleaser/pkg/context"
 )
@@ -19,8 +20,9 @@ import (
 type Pipe struct{}
 
 func (Pipe) String() string { return "running before hooks" }
+
 func (Pipe) Skip(ctx *context.Context) bool {
-	return len(ctx.Config.Before.Hooks) == 0 || ctx.SkipBefore
+	return len(ctx.Config.Before.Hooks) == 0 || skips.Any(ctx, skips.Before)
 }
 
 // Run executes the hooks.

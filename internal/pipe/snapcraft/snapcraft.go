@@ -210,9 +210,6 @@ func isValidArch(arch string) bool {
 
 // Publish packages.
 func (Pipe) Publish(ctx *context.Context) error {
-	if ctx.SkipPublish {
-		return pipe.ErrSkipPublishEnabled
-	}
 	snaps := ctx.Artifacts.Filter(artifact.ByType(artifact.PublishableSnapcraft)).List()
 	for _, snap := range snaps {
 		if err := push(ctx, snap); err != nil {

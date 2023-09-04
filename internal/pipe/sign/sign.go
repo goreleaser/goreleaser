@@ -17,6 +17,7 @@ import (
 	"github.com/goreleaser/goreleaser/internal/logext"
 	"github.com/goreleaser/goreleaser/internal/pipe"
 	"github.com/goreleaser/goreleaser/internal/semerrgroup"
+	"github.com/goreleaser/goreleaser/internal/skips"
 	"github.com/goreleaser/goreleaser/internal/tmpl"
 	"github.com/goreleaser/goreleaser/pkg/config"
 	"github.com/goreleaser/goreleaser/pkg/context"
@@ -25,8 +26,11 @@ import (
 // Pipe that signs common artifacts.
 type Pipe struct{}
 
-func (Pipe) String() string                 { return "signing artifacts" }
-func (Pipe) Skip(ctx *context.Context) bool { return ctx.SkipSign || len(ctx.Config.Signs) == 0 }
+func (Pipe) String() string { return "signing artifacts" }
+
+func (Pipe) Skip(ctx *context.Context) bool {
+	return skips.Any(ctx, skips.Sign) || len(ctx.Config.Signs) == 0
+}
 
 func (Pipe) Dependencies(ctx *context.Context) []string {
 	var cmds []string

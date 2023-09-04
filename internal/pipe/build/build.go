@@ -15,6 +15,7 @@ import (
 	"github.com/goreleaser/goreleaser/internal/ids"
 	"github.com/goreleaser/goreleaser/internal/semerrgroup"
 	"github.com/goreleaser/goreleaser/internal/shell"
+	"github.com/goreleaser/goreleaser/internal/skips"
 	"github.com/goreleaser/goreleaser/internal/tmpl"
 	builders "github.com/goreleaser/goreleaser/pkg/build"
 	"github.com/goreleaser/goreleaser/pkg/config"
@@ -96,13 +97,15 @@ func runPipeOnBuild(ctx *context.Context, g semerrgroup.Group, build config.Buil
 				return err
 			}
 
-			if err := runHook(ctx, *opts, build.Env, build.Hooks.Pre); err != nil {
-				return fmt.Errorf("pre hook failed: %w", err)
+			if !skips.Any(ctx, skips.BeforeBuildHooks) {
+				if err := runHook(ctx, *opts, build.Env, build.Hooks.Pre); err != nil {
+					return fmt.Errorf("pre hook failed: %w", err)
+				}
 			}
 			if err := doBuild(ctx, build, *opts); err != nil {
 				return err
 			}
-			if !ctx.SkipPostBuildHooks {
+			if !skips.Any(ctx, skips.PostBuildHooks) {
 				if err := runHook(ctx, *opts, build.Env, build.Hooks.Post); err != nil {
 					return fmt.Errorf("post hook failed: %w", err)
 				}

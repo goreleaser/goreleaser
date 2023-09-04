@@ -10,6 +10,7 @@ import (
 	"github.com/goreleaser/goreleaser/internal/ids"
 	"github.com/goreleaser/goreleaser/internal/pipe"
 	"github.com/goreleaser/goreleaser/internal/semerrgroup"
+	"github.com/goreleaser/goreleaser/internal/skips"
 	"github.com/goreleaser/goreleaser/internal/tmpl"
 	"github.com/goreleaser/goreleaser/pkg/config"
 	"github.com/goreleaser/goreleaser/pkg/context"
@@ -20,8 +21,9 @@ import (
 type ManifestPipe struct{}
 
 func (ManifestPipe) String() string { return "docker manifests" }
+
 func (ManifestPipe) Skip(ctx *context.Context) bool {
-	return len(ctx.Config.DockerManifests) == 0 || ctx.SkipDocker
+	return len(ctx.Config.DockerManifests) == 0 || skips.Any(ctx, skips.Docker)
 }
 
 func (ManifestPipe) Dependencies(ctx *context.Context) []string {

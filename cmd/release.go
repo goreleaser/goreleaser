@@ -1,7 +1,10 @@
 package cmd
 
 import (
+	"fmt"
 	"runtime"
+	"sort"
+	"strings"
 	"time"
 
 	"github.com/caarlos0/ctrlc"
@@ -12,6 +15,7 @@ import (
 	"github.com/goreleaser/goreleaser/internal/middleware/skip"
 	"github.com/goreleaser/goreleaser/internal/pipe/git"
 	"github.com/goreleaser/goreleaser/internal/pipeline"
+	"github.com/goreleaser/goreleaser/internal/skips"
 	"github.com/goreleaser/goreleaser/pkg/context"
 	"github.com/spf13/cobra"
 )
@@ -22,31 +26,40 @@ type releaseCmd struct {
 }
 
 type releaseOpts struct {
-	config             string
-	releaseNotesFile   string
-	releaseNotesTmpl   string
-	releaseHeaderFile  string
-	releaseHeaderTmpl  string
-	releaseFooterFile  string
-	releaseFooterTmpl  string
-	autoSnapshot       bool
-	snapshot           bool
-	failFast           bool
-	skipPublish        bool
-	skipSign           bool
-	skipValidate       bool
-	skipAnnounce       bool
-	skipSBOMCataloging bool
-	skipDocker         bool
-	skipKo             bool
-	skipBefore         bool
-	clean              bool
-	deprecated         bool
-	parallelism        int
-	timeout            time.Duration
+	config            string
+	releaseNotesFile  string
+	releaseNotesTmpl  string
+	releaseHeaderFile string
+	releaseHeaderTmpl string
+	releaseFooterFile string
+	releaseFooterTmpl string
+	autoSnapshot      bool
+	snapshot          bool
+	failFast          bool
+	clean             bool
+	deprecated        bool
+	parallelism       int
+	timeout           time.Duration
+	skips             []string
 
 	// Deprecated: use clean instead.
 	rmDist bool
+	// Deprecated: use skips instead.
+	skipPublish bool
+	// Deprecated: use skips instead.
+	skipSign bool
+	// Deprecated: use skips instead.
+	skipValidate bool
+	// Deprecated: use skips instead.
+	skipAnnounce bool
+	// Deprecated: use skips instead.
+	skipSBOMCataloging bool
+	// Deprecated: use skips instead.
+	skipDocker bool
+	// Deprecated: use skips instead.
+	skipKo bool
+	// Deprecated: use skips instead.
+	skipBefore bool
 }
 
 func newReleaseCmd() *releaseCmd {
@@ -60,7 +73,7 @@ func newReleaseCmd() *releaseCmd {
 		SilenceErrors:     true,
 		Args:              cobra.NoArgs,
 		ValidArgsFunction: cobra.NoFileCompletions,
-		RunE: timedRunE("release", func(cmd *cobra.Command, args []string) error {
+		RunE: timedRunE("release", func(_ *cobra.Command, _ []string) error {
 			ctx, err := releaseProject(root.opts)
 			if err != nil {
 				return err
@@ -105,6 +118,30 @@ func newReleaseCmd() *releaseCmd {
 	_ = cmd.Flags().MarkHidden("deprecated")
 	_ = cmd.Flags().MarkHidden("rm-dist")
 	_ = cmd.Flags().MarkDeprecated("rm-dist", "please use --clean instead")
+	for _, f := range []string{
+		"publish",
+		"announce",
+		"sign",
+		"sbom",
+		"docker",
+		"ko",
+		"before",
+		"validate",
+	} {
+		_ = cmd.Flags().MarkHidden("skip-" + f)
+		_ = cmd.Flags().MarkDeprecated("skip"+f, fmt.Sprintf("please use --skip=%s instead", f))
+	}
+	cmd.Flags().StringSliceVar(&root.opts.skips, "skip", nil, "Skip the given options")
+	_ = cmd.RegisterFlagCompletionFunc("skip", func(_ *cobra.Command, _ []string, toComplete string) ([]string, cobra.ShellCompDirective) {
+		var result []string
+		for _, k := range skips.Release {
+			if strings.HasPrefix(string(k), strings.ToLower(toComplete)) {
+				result = append(result, string(k))
+			}
+		}
+		sort.Strings(result)
+		return result, cobra.ShellCompDirectiveDefault
+	})
 
 	root.cmd = cmd
 	return root
@@ -149,21 +186,56 @@ func setupReleaseContext(ctx *context.Context, options releaseOpts) {
 	ctx.ReleaseFooterTmpl = options.releaseFooterTmpl
 	ctx.Snapshot = options.snapshot
 	ctx.FailFast = options.failFast
+	ctx.Clean = options.clean || options.rmDist
 	if options.autoSnapshot && git.CheckDirty(ctx) != nil {
 		log.Info("git repository is dirty and --auto-snapshot is set, implying --snapshot")
 		ctx.Snapshot = true
 	}
-	ctx.SkipPublish = ctx.Snapshot || options.skipPublish
-	ctx.SkipAnnounce = ctx.Snapshot || options.skipPublish || options.skipAnnounce
-	ctx.SkipValidate = ctx.Snapshot || options.skipValidate
-	ctx.SkipSign = options.skipSign
-	ctx.SkipSBOMCataloging = options.skipSBOMCataloging
-	ctx.SkipDocker = options.skipDocker
-	ctx.SkipKo = options.skipKo
-	ctx.SkipBefore = options.skipBefore
-	ctx.Clean = options.clean || options.rmDist
 
+	skips.SetS(ctx, options.skips...)
+
+	// wire deprecated options
+	// XXX: remove soon
+	if options.skipPublish {
+		skips.Set(ctx, skips.Publish)
+		deprecate.NoticeCustom(ctx, "-skip-publish", "--skip-publish was deprecated in favor of --skip=publish, check {{ .URL }} for more details")
+	}
+	if options.skipSign {
+		skips.Set(ctx, skips.Sign)
+		deprecate.NoticeCustom(ctx, "-skip-sign", "--skip-sign was deprecated in favor of --skip=sign, check {{ .URL }} for more details")
+	}
+	if options.skipValidate {
+		skips.Set(ctx, skips.Validate)
+		deprecate.NoticeCustom(ctx, "-skip-validate", "--skip-validate was deprecated in favor of --skip=validate, check {{ .URL }} for more details")
+	}
+	if options.skipAnnounce {
+		skips.Set(ctx, skips.Announce)
+		deprecate.NoticeCustom(ctx, "-skip-announce", "--skip-announce was deprecated in favor of --skip=announce, check {{ .URL }} for more details")
+	}
+	if options.skipSBOMCataloging {
+		skips.Set(ctx, skips.SBOM)
+		deprecate.NoticeCustom(ctx, "-skip-sbom", "--skip-sbom was deprecated in favor of --skip=sbom, check {{ .URL }} for more details")
+	}
+	if options.skipDocker {
+		skips.Set(ctx, skips.Docker)
+		deprecate.NoticeCustom(ctx, "-skip-docker", "--skip-docker was deprecated in favor of --skip=docker, check {{ .URL }} for more details")
+	}
+	if options.skipKo {
+		skips.Set(ctx, skips.Ko)
+		deprecate.NoticeCustom(ctx, "-skip-ko", "--skip-ko was deprecated in favor of --skip=ko, check {{ .URL }} for more details")
+	}
+	if options.skipBefore {
+		skips.Set(ctx, skips.Before)
+		deprecate.NoticeCustom(ctx, "-skip-before", "--skip-before was deprecated in favor of --skip=before, check {{ .URL }} for more details")
+	}
 	if options.rmDist {
 		deprecate.NoticeCustom(ctx, "-rm-dist", "--rm-dist was deprecated in favor of --clean, check {{ .URL }} for more details")
+	}
+
+	if ctx.Snapshot {
+		skips.Set(ctx, skips.Publish, skips.Announce, skips.Validate)
+	}
+	if skips.Any(ctx, skips.Publish) {
+		skips.Set(ctx, skips.Announce)
 	}
 }

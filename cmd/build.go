@@ -5,6 +5,7 @@ import (
 	"os"
 	"path/filepath"
 	"runtime"
+	"sort"
 	"strings"
 	"time"
 
@@ -17,6 +18,7 @@ import (
 	"github.com/goreleaser/goreleaser/internal/middleware/logging"
 	"github.com/goreleaser/goreleaser/internal/middleware/skip"
 	"github.com/goreleaser/goreleaser/internal/pipeline"
+	"github.com/goreleaser/goreleaser/internal/skips"
 	"github.com/goreleaser/goreleaser/pkg/config"
 	"github.com/goreleaser/goreleaser/pkg/context"
 	"github.com/spf13/cobra"
@@ -28,21 +30,25 @@ type buildCmd struct {
 }
 
 type buildOpts struct {
-	config        string
-	ids           []string
-	snapshot      bool
-	skipValidate  bool
-	skipBefore    bool
-	skipPostHooks bool
-	clean         bool
-	deprecated    bool
-	parallelism   int
-	timeout       time.Duration
-	singleTarget  bool
-	output        string
+	config       string
+	ids          []string
+	snapshot     bool
+	clean        bool
+	deprecated   bool
+	parallelism  int
+	timeout      time.Duration
+	singleTarget bool
+	output       string
+	skips        []string
 
 	// Deprecated: use clean instead.
 	rmDist bool
+	// Deprecated: use skip instead.
+	skipValidate bool
+	// Deprecated: use skip instead.
+	skipBefore bool
+	// Deprecated: use skip instead.
+	skipPostHooks bool
 }
 
 func newBuildCmd() *buildCmd {
@@ -88,7 +94,8 @@ When using ` + "`--single-target`" + `, the ` + "`GOOS`" + ` and ` + "`GOARCH`" 
 	_ = cmd.RegisterFlagCompletionFunc("timeout", cobra.NoFileCompletions)
 	cmd.Flags().BoolVar(&root.opts.singleTarget, "single-target", false, "Builds only for current GOOS and GOARCH, regardless of what's set in the configuration file")
 	cmd.Flags().StringArrayVar(&root.opts.ids, "id", nil, "Builds only the specified build ids")
-	_ = cmd.RegisterFlagCompletionFunc("id", func(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
+	_ = cmd.RegisterFlagCompletionFunc("id", func(_ *cobra.Command, _ []string, _ string) ([]string, cobra.ShellCompDirective) {
+		// TODO: improve this
 		cfg, err := loadConfig(root.opts.config)
 		if err != nil {
 			return nil, cobra.ShellCompDirectiveNoFileComp
@@ -104,6 +111,26 @@ When using ` + "`--single-target`" + `, the ` + "`GOOS`" + ` and ` + "`GOARCH`" 
 	_ = cmd.MarkFlagFilename("output", "")
 	_ = cmd.Flags().MarkHidden("rm-dist")
 	_ = cmd.Flags().MarkHidden("deprecated")
+
+	for _, f := range []string{
+		"post-hooks",
+		"before",
+		"validate",
+	} {
+		_ = cmd.Flags().MarkHidden("skip-" + f)
+		_ = cmd.Flags().MarkDeprecated("skip"+f, fmt.Sprintf("please use --skip=%s instead", f))
+	}
+	cmd.Flags().StringSliceVar(&root.opts.skips, "skip", nil, "Skip the given options")
+	_ = cmd.RegisterFlagCompletionFunc("skip", func(_ *cobra.Command, _ []string, toComplete string) ([]string, cobra.ShellCompDirective) {
+		var result []string
+		for _, k := range skips.Build {
+			if strings.HasPrefix(string(k), strings.ToLower(toComplete)) {
+				result = append(result, string(k))
+			}
+		}
+		sort.Strings(result)
+		return result, cobra.ShellCompDirectiveDefault
+	})
 
 	root.cmd = cmd
 	return root
@@ -150,15 +177,31 @@ func setupBuildContext(ctx *context.Context, options buildOpts) error {
 	}
 	log.Debugf("parallelism: %v", ctx.Parallelism)
 	ctx.Snapshot = options.snapshot
-	ctx.SkipValidate = ctx.Snapshot || options.skipValidate
-	ctx.SkipBefore = options.skipBefore
-	ctx.SkipPostBuildHooks = options.skipPostHooks
-	ctx.SkipTokenCheck = true
-	ctx.Clean = options.clean || options.rmDist
+	skips.SetS(ctx, options.skips...)
+
+	if options.skipValidate {
+		skips.Set(ctx, skips.Validate)
+		deprecate.NoticeCustom(ctx, "-skip-validate", "--skip-validate was deprecated in favor of --skip=validate, check {{ .URL }} for more details")
+	}
+	if options.skipBefore {
+		skips.Set(ctx, skips.Before)
+		deprecate.NoticeCustom(ctx, "-skip-before", "--skip-before was deprecated in favor of --skip=before, check {{ .URL }} for more details")
+	}
+	if options.skipPostHooks {
+		skips.Set(ctx, skips.PostBuildHooks)
+		deprecate.NoticeCustom(ctx, "-skip-post-hooks", "--skip-post-hooks was deprecated in favor of --skip=post-hooks, check {{ .URL }} for more details")
+	}
 
 	if options.rmDist {
 		deprecate.NoticeCustom(ctx, "-rm-dist", "--rm-dist was deprecated in favor of --clean, check {{ .URL }} for more details")
 	}
+
+	if ctx.Snapshot {
+		skips.Set(ctx, skips.Validate)
+	}
+
+	ctx.SkipTokenCheck = true
+	ctx.Clean = options.clean || options.rmDist
 
 	if options.singleTarget {
 		setupBuildSingleTarget(ctx)

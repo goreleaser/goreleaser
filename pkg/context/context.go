@@ -72,41 +72,33 @@ const (
 // Context carries along some data through the pipes.
 type Context struct {
 	stdctx.Context
-	Config             config.Project
-	Env                Env
-	SkipTokenCheck     bool
-	Token              string
-	TokenType          TokenType
-	Git                GitInfo
-	Date               time.Time
-	Artifacts          *artifact.Artifacts
-	ReleaseURL         string
-	ReleaseNotes       string
-	ReleaseNotesFile   string
-	ReleaseNotesTmpl   string
-	ReleaseHeaderFile  string
-	ReleaseHeaderTmpl  string
-	ReleaseFooterFile  string
-	ReleaseFooterTmpl  string
-	Version            string
-	ModulePath         string
-	Snapshot           bool
-	FailFast           bool
-	SkipPostBuildHooks bool
-	SkipPublish        bool
-	SkipAnnounce       bool
-	SkipSign           bool
-	SkipValidate       bool
-	SkipSBOMCataloging bool
-	SkipKo             bool
-	SkipDocker         bool
-	SkipBefore         bool
-	Clean              bool
-	PreRelease         bool
-	Deprecated         bool
-	Parallelism        int
-	Semver             Semver
-	Runtime            Runtime
+	Config            config.Project
+	Env               Env
+	Token             string
+	TokenType         TokenType
+	Git               GitInfo
+	Date              time.Time
+	Artifacts         *artifact.Artifacts
+	ReleaseURL        string
+	ReleaseNotes      string
+	ReleaseNotesFile  string
+	ReleaseNotesTmpl  string
+	ReleaseHeaderFile string
+	ReleaseHeaderTmpl string
+	ReleaseFooterFile string
+	ReleaseFooterTmpl string
+	Version           string
+	ModulePath        string
+	Snapshot          bool
+	FailFast          bool
+	SkipTokenCheck    bool
+	Clean             bool
+	PreRelease        bool
+	Deprecated        bool
+	Parallelism       int
+	Semver            Semver
+	Runtime           Runtime
+	Skips             map[string]bool
 }
 
 type Runtime struct {
@@ -142,6 +134,7 @@ func Wrap(ctx stdctx.Context, config config.Project) *Context {
 		Parallelism: 4,
 		Artifacts:   artifact.New(),
 		Date:        time.Now(),
+		Skips:       map[string]bool{},
 		Runtime: Runtime{
 			Goos:   runtime.GOOS,
 			Goarch: runtime.GOARCH,

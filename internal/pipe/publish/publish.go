@@ -24,6 +24,7 @@ import (
 	"github.com/goreleaser/goreleaser/internal/pipe/snapcraft"
 	"github.com/goreleaser/goreleaser/internal/pipe/upload"
 	"github.com/goreleaser/goreleaser/internal/pipe/winget"
+	"github.com/goreleaser/goreleaser/internal/skips"
 	"github.com/goreleaser/goreleaser/pkg/context"
 )
 
@@ -69,7 +70,7 @@ type Pipe struct {
 }
 
 func (Pipe) String() string                 { return "publishing" }
-func (Pipe) Skip(ctx *context.Context) bool { return ctx.SkipPublish }
+func (Pipe) Skip(ctx *context.Context) bool { return skips.Any(ctx, skips.Publish) }
 
 func (p Pipe) Run(ctx *context.Context) error {
 	memo := errhandler.Memo{}
