@@ -221,11 +221,6 @@ func TestPublish(t *testing.T) {
 		err       string
 	}{
 		{
-			name: "skip publish",
-			skip: true,
-			err:  "publishing is disabled",
-		},
-		{
 			name: "no artifacts",
 		},
 		{
@@ -287,7 +282,7 @@ func TestPublish(t *testing.T) {
 				cmd = stdCmd{}
 			})
 
-			ctx := testctx.New(func(ctx *context.Context) { ctx.SkipPublish = tt.skip })
+			ctx := testctx.New()
 			for _, artifact := range tt.artifacts {
 				ctx.Artifacts.Add(&artifact)
 			}
