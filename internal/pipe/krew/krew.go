@@ -66,7 +66,7 @@ func (Pipe) Default(ctx *context.Context) error {
 }
 
 func (Pipe) Run(ctx *context.Context) error {
-	cli, err := client.New(ctx)
+	cli, err := client.NewReleaseClient(ctx)
 	if err != nil {
 		return err
 	}
@@ -74,7 +74,7 @@ func (Pipe) Run(ctx *context.Context) error {
 	return runAll(ctx, cli)
 }
 
-func runAll(ctx *context.Context, cli client.Client) error {
+func runAll(ctx *context.Context, cli client.ReleaseURLTemplater) error {
 	for _, krew := range ctx.Config.Krews {
 		err := doRun(ctx, krew, cli)
 		if err != nil {
@@ -84,7 +84,7 @@ func runAll(ctx *context.Context, cli client.Client) error {
 	return nil
 }
 
-func doRun(ctx *context.Context, krew config.Krew, cl client.ReleaserURLTemplater) error {
+func doRun(ctx *context.Context, krew config.Krew, cl client.ReleaseURLTemplater) error {
 	if krew.Name == "" {
 		return pipe.Skip("krew: manifest name is not set")
 	}
@@ -176,7 +176,7 @@ func templateFields(ctx *context.Context, krew config.Krew) (config.Krew, error)
 func buildmanifest(
 	ctx *context.Context,
 	krew config.Krew,
-	client client.ReleaserURLTemplater,
+	client client.ReleaseURLTemplater,
 	artifacts []*artifact.Artifact,
 ) (string, error) {
 	data, err := manifestFor(ctx, krew, client, artifacts)
@@ -197,7 +197,7 @@ func doBuildManifest(data Manifest) (string, error) {
 func manifestFor(
 	ctx *context.Context,
 	cfg config.Krew,
-	cl client.ReleaserURLTemplater,
+	cl client.ReleaseURLTemplater,
 	artifacts []*artifact.Artifact,
 ) (Manifest, error) {
 	result := Manifest{

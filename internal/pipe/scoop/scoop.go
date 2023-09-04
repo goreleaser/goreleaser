@@ -67,11 +67,11 @@ func (Pipe) Skip(ctx *context.Context) bool {
 
 // Run creates the scoop manifest locally.
 func (Pipe) Run(ctx *context.Context) error {
-	client, err := client.New(ctx)
+	cli, err := client.NewReleaseClient(ctx)
 	if err != nil {
 		return err
 	}
-	return runAll(ctx, client)
+	return runAll(ctx, cli)
 }
 
 // Publish scoop manifest.
@@ -90,6 +90,7 @@ func (Pipe) Default(ctx *context.Context) error {
 		deprecate.Notice(ctx, "scoop")
 		ctx.Config.Scoops = append(ctx.Config.Scoops, ctx.Config.Scoop)
 	}
+
 	for i := range ctx.Config.Scoops {
 		scoop := &ctx.Config.Scoops[i]
 		if scoop.Name == "" {
@@ -110,7 +111,7 @@ func (Pipe) Default(ctx *context.Context) error {
 	return nil
 }
 
-func runAll(ctx *context.Context, cl client.ReleaserURLTemplater) error {
+func runAll(ctx *context.Context, cl client.ReleaseURLTemplater) error {
 	for _, scoop := range ctx.Config.Scoops {
 		err := doRun(ctx, scoop, cl)
 		if err != nil {
@@ -120,7 +121,7 @@ func runAll(ctx *context.Context, cl client.ReleaserURLTemplater) error {
 	return nil
 }
 
-func doRun(ctx *context.Context, scoop config.Scoop, cl client.ReleaserURLTemplater) error {
+func doRun(ctx *context.Context, scoop config.Scoop, cl client.ReleaseURLTemplater) error {
 	filters := []artifact.Filter{
 		artifact.ByGoos("windows"),
 		artifact.ByType(artifact.UploadableArchive),
@@ -310,7 +311,7 @@ func doBuildManifest(manifest Manifest) (bytes.Buffer, error) {
 	return result, err
 }
 
-func dataFor(ctx *context.Context, scoop config.Scoop, cl client.ReleaserURLTemplater, artifacts []*artifact.Artifact) (Manifest, error) {
+func dataFor(ctx *context.Context, scoop config.Scoop, cl client.ReleaseURLTemplater, artifacts []*artifact.Artifact) (Manifest, error) {
 	manifest := Manifest{
 		Version:      ctx.Version,
 		Architecture: map[string]Resource{},
