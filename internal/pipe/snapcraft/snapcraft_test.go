@@ -532,21 +532,6 @@ func TestPublish(t *testing.T) {
 	require.Contains(t, err.Error(), "failed to push nope.snap package")
 }
 
-func TestPublishSkip(t *testing.T) {
-	ctx := testctx.New(testctx.SkipPublish)
-	ctx.Artifacts.Add(&artifact.Artifact{
-		Name:   "mybin",
-		Path:   "nope.snap",
-		Goarch: "amd64",
-		Goos:   "linux",
-		Type:   artifact.PublishableSnapcraft,
-		Extra: map[string]interface{}{
-			releasesExtra: []string{"stable"},
-		},
-	})
-	testlib.AssertSkipped(t, Pipe{}.Publish(ctx))
-}
-
 func TestDefaultSet(t *testing.T) {
 	ctx := testctx.NewWithCfg(config.Project{
 		Snapcrafts: []config.Snapcraft{
@@ -587,7 +572,6 @@ func Test_processChannelsTemplates(t *testing.T) {
 			},
 			Env: []string{"FOO=123"},
 		},
-		testctx.SkipPublish,
 		testctx.WithCommit("a1b2c3d4"),
 		testctx.WithCurrentTag("v1.0.0"),
 		testctx.WithSemver(1, 0, 0, ""),
