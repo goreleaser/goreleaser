@@ -10,6 +10,7 @@ import (
 
 	"github.com/goreleaser/goreleaser/internal/artifact"
 	"github.com/goreleaser/goreleaser/internal/pipe"
+	"github.com/goreleaser/goreleaser/internal/skips"
 	"github.com/goreleaser/goreleaser/internal/testctx"
 	"github.com/goreleaser/goreleaser/internal/testlib"
 	"github.com/goreleaser/goreleaser/pkg/config"
@@ -1343,8 +1344,7 @@ func TestSkip(t *testing.T) {
 		t.Run("skip docker", func(t *testing.T) {
 			ctx := testctx.NewWithCfg(config.Project{
 				Dockers: []config.Docker{{}},
-			})
-			ctx.SkipDocker = true
+			}, testctx.Skip(skips.Docker))
 			require.True(t, Pipe{}.Skip(ctx))
 		})
 
@@ -1364,7 +1364,7 @@ func TestSkip(t *testing.T) {
 		t.Run("skip docker", func(t *testing.T) {
 			ctx := testctx.NewWithCfg(config.Project{
 				DockerManifests: []config.DockerManifest{{}},
-			}, testctx.SkipDocker)
+			}, testctx.Skip(skips.Docker))
 			require.True(t, ManifestPipe{}.Skip(ctx))
 		})
 
