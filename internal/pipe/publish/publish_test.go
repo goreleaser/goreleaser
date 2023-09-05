@@ -73,7 +73,7 @@ func TestPublishError(t *testing.T) {
 
 func TestSkip(t *testing.T) {
 	t.Run("skip", func(t *testing.T) {
-		ctx := testctx.New(testctx.Skip(skips.Publish...))
+		ctx := testctx.New(testctx.Skip(skips.Publish))
 		require.True(t, Pipe{}.Skip(ctx))
 	})
 

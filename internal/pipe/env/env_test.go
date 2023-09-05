@@ -221,7 +221,7 @@ func TestEmptyGiteaEnvFile(t *testing.T) {
 }
 
 func TestInvalidEnvChecksSkipped(t *testing.T) {
-	ctx := testctx.New(testctx.Skip(skips.Publish...))
+	ctx := testctx.New(testctx.Skip(skips.Publish))
 	require.NoError(t, Pipe{}.Run(ctx))
 }
 
