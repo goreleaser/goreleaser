@@ -10,6 +10,7 @@ import (
 )
 
 const (
+	goPreModulesError      = "flag provided but not defined: -m"
 	go115NotAGoModuleError = "go list -m: not using modules"
 	go116NotAGoModuleError = "command-line-arguments"
 )
@@ -37,6 +38,9 @@ func (Pipe) Run(ctx *context.Context) error {
 	cmd.Env = append(ctx.Env.Strings(), ctx.Config.GoMod.Env...)
 	out, err := cmd.CombinedOutput()
 	result := strings.TrimSpace(string(out))
+	if strings.HasPrefix(result, goPreModulesError) {
+		return pipe.Skip("go version does not support modules")
+	}
 	if result == go115NotAGoModuleError || result == go116NotAGoModuleError {
 		return pipe.Skip("not a go module")
 	}
