@@ -43,9 +43,23 @@ func (Pipe) Run(ctx *context.Context) error {
 		return err
 	}
 	ctx.Git = info
-	log.WithField("commit", info.Commit).WithField("latest tag", info.CurrentTag).Info("building...")
+	log.WithField("commit", info.Commit).
+		WithField("branch", info.Branch).
+		WithField("current_tag", info.CurrentTag).
+		WithField("previous_tag", firstNonEmpty(info.PreviousTag, "<unknown>")).
+		WithField("dirty", info.Dirty).
+		Info("git state")
 	ctx.Version = strings.TrimPrefix(ctx.Git.CurrentTag, "v")
 	return validate(ctx)
+}
+
+func firstNonEmpty(ss ...string) string {
+	for _, s := range ss {
+		if s != "" {
+			return s
+		}
+	}
+	return ""
 }
 
 // nolint: gochecknoglobals
@@ -151,7 +165,7 @@ func getGitInfo(ctx *context.Context) (context.GitInfo, error) {
 
 	previous, err := getPreviousTag(ctx, tag)
 	if err != nil {
-		// shouldn't error, will only affect templates
+		// shouldn't error, will only affect templates and changelog
 		log.Warnf("couldn't find any tags before %q", tag)
 	}
 
