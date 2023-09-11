@@ -45,7 +45,7 @@ jobs:
           sudo apt-get -yq --no-install-suggests --no-install-recommends install snapcraft
           mkdir -p $HOME/.cache/snapcraft/download
           mkdir -p $HOME/.cache/snapcraft/stage-packages
-      - uses: crazy-max/ghaction-upx@v2
+      - uses: crazy-max/ghaction-upx@v3
         with:
           install-only: true
       - uses: cachix/install-nix-action@v23
