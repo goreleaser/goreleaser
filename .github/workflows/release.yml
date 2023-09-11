@@ -98,7 +98,7 @@ jobs:
           key: ${{ github.ref }}
       - uses: sigstore/cosign-installer@v3.1.2
       - uses: anchore/sbom-action/download-syft@v0.14.3
-      - uses: crazy-max/ghaction-upx@v2
+      - uses: crazy-max/ghaction-upx@v3
         with:
           install-only: true
       - uses: cachix/install-nix-action@v23
