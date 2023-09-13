@@ -21,7 +21,7 @@ import (
 )
 
 // Environment variables to pass through to exec
-var passthroughEnvVars = []string{"HOME", "USER", "USERPROFILE", "TMPDIR", "TMP", "TEMP", "PATH"}
+var passthroughEnvVars = []string{"HOME", "USER", "USERPROFILE", "TMPDIR", "TMP", "TEMP", "PATH", "LOCALAPPDATA"}
 
 // Pipe that catalogs common artifacts as an SBOM.
 type Pipe struct{}
