@@ -59,7 +59,7 @@ func TestRunOutsideGoModule(t *testing.T) {
 	require.Empty(t, ctx.ModulePath)
 }
 
-func TestRunOldGoVersion(t *testing.T) {
+func TestRunCommandError(t *testing.T) {
 	ctx := testctx.NewWithCfg(config.Project{
 		GoMod: config.GoMod{
 			GoBinary: "not-a-valid-binary",
@@ -73,11 +73,11 @@ func TestRunOldGoVersion(t *testing.T) {
 	require.Empty(t, ctx.ModulePath)
 }
 
-func TestRunCommandError(t *testing.T) {
+func TestRunOldGoVersion(t *testing.T) {
 	bin := filepath.Join(t.TempDir(), "go.bin")
 	require.NoError(t, os.WriteFile(
 		bin,
-		[]byte(`#!/bin/sh\necho "flag provided but not defined: -m"\nexit 1`),
+		[]byte("#!/bin/sh\necho \"flag provided but not defined: -m\"\nexit 1"),
 		0o755,
 	))
 	ctx := testctx.NewWithCfg(config.Project{
