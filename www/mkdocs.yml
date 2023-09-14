@@ -54,6 +54,14 @@ plugins:
   - minify:
       minify_html: true
   - include-markdown
+  - tags
+  # - meta
+  - blog:
+      post_url_format: "{slug}"
+  - rss:
+      match_path: blog/posts/.*
+      date_from_meta:
+        as_creation: date
 
 extra:
   social:
@@ -206,6 +214,8 @@ nav:
       - sponsors.md
       - users.md
       - contributing.md
+  - Blog:
+      - blog/index.md
   - pro.md
   - links.md
 
