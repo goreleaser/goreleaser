@@ -29,7 +29,7 @@ Below you can find the steps for each of them.
     ```
 
 !!! info
-    The [formula in homebrew-core](https://github.com/Homebrew/homebrew-core/blob/master/Formula/goreleaser.rb) might be slightly outdated.
+    The [formula in homebrew-core](https://github.com/Homebrew/homebrew-core/blob/master/Formula/g/goreleaser.rb) might be slightly outdated.
     Use our homebrew tap to always get the latest updates.
 
 ### snapcraft
