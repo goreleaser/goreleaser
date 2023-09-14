@@ -67,14 +67,9 @@ jobs:
         if: matrix.os == 'ubuntu-latest'
       - name: setup-validate-krew-manifest
         run: go install sigs.k8s.io/krew/cmd/validate-krew-manifest@latest
-      - name: setup-tparse
-        run: go install github.com/mfridman/tparse@latest
-      - name: setup
-        run: |
-          task setup
-          task build
-      - name: test
-        run: ./scripts/test.sh
+      - run: task setup
+      - run: task build
+      - run: task test
       - uses: codecov/codecov-action@eaaf4bedf32dbdc6b720b63067d99c4d77d6047d # v3
         if: matrix.os == 'ubuntu-latest'
         with:
