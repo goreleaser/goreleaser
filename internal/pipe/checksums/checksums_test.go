@@ -213,8 +213,7 @@ func TestPipeCouldNotOpenChecksumsTxt(t *testing.T) {
 		Path: binFile.Name(),
 	})
 	err = Pipe{}.Run(ctx)
-	require.Error(t, err)
-	require.ErrorIs(t, Pipe{}.Run(ctx), syscall.EACCES)
+	require.ErrorIs(t, err, syscall.EACCES)
 }
 
 func TestPipeWhenNoArtifacts(t *testing.T) {

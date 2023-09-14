@@ -300,7 +300,7 @@ func TestLoadEnv(t *testing.T) {
 		err = os.Chmod(f.Name(), 0o377)
 		require.NoError(t, err)
 		v, err := loadEnv(env, f.Name())
-		require.EqualError(t, err, fmt.Sprintf("open %s: permission denied", f.Name()))
+		require.ErrorIs(t, err, syscall.EACCES)
 		require.Equal(t, "", v)
 	})
 }
