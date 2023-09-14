@@ -33,7 +33,10 @@ func (Pipe) Skip(ctx *context.Context) (bool, error) {
 }
 
 // Default sets the pipe defaults.
-func (Pipe) Default(ctx *context.Context) error {
+func (p Pipe) Default(ctx *context.Context) error {
+	if b, _ := p.Skip(ctx); b {
+		return pipe.Skip("release is disabled")
+	}
 	numOfReleases := 0
 	if ctx.Config.Release.GitHub.String() != "" {
 		numOfReleases++

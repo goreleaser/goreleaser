@@ -1142,10 +1142,21 @@
 			"Git": {
 				"properties": {
 					"tag_sort": {
-						"type": "string"
+						"type": "string",
+						"enum": [
+							"-version:refname",
+							"-version:creatordate",
+							"semver"
+						]
 					},
 					"prerelease_suffix": {
 						"type": "string"
+					},
+					"ignore_tags": {
+						"items": {
+							"type": "string"
+						},
+						"type": "array"
 					}
 				},
 				"additionalProperties": false,
@@ -3668,7 +3679,14 @@
 			"UPX": {
 				"properties": {
 					"enabled": {
-						"type": "boolean"
+						"oneOf": [
+							{
+								"type": "string"
+							},
+							{
+								"type": "boolean"
+							}
+						]
 					},
 					"ids": {
 						"items": {

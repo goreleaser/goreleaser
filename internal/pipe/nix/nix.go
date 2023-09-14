@@ -88,7 +88,7 @@ func (Pipe) Default(ctx *context.Context) error {
 }
 
 func (p Pipe) Run(ctx *context.Context) error {
-	cli, err := client.New(ctx)
+	cli, err := client.NewReleaseClient(ctx)
 	if err != nil {
 		return err
 	}
@@ -105,7 +105,7 @@ func (p Pipe) Publish(ctx *context.Context) error {
 	return p.publishAll(ctx, cli)
 }
 
-func (p Pipe) runAll(ctx *context.Context, cli client.Client) error {
+func (p Pipe) runAll(ctx *context.Context, cli client.ReleaseURLTemplater) error {
 	for _, nix := range ctx.Config.Nix {
 		err := p.doRun(ctx, nix, cli)
 		if err != nil {
@@ -130,7 +130,7 @@ func (p Pipe) publishAll(ctx *context.Context, cli client.Client) error {
 	return skips.Evaluate()
 }
 
-func (p Pipe) doRun(ctx *context.Context, nix config.Nix, cl client.ReleaserURLTemplater) error {
+func (p Pipe) doRun(ctx *context.Context, nix config.Nix, cl client.ReleaseURLTemplater) error {
 	if nix.Repository.Name == "" {
 		return errNoRepoName
 	}
@@ -187,7 +187,7 @@ func (p Pipe) doRun(ctx *context.Context, nix config.Nix, cl client.ReleaserURLT
 func preparePkg(
 	ctx *context.Context,
 	nix config.Nix,
-	cli client.ReleaserURLTemplater,
+	cli client.ReleaseURLTemplater,
 	prefetcher shaPrefetcher,
 ) (string, error) {
 	filters := []artifact.Filter{

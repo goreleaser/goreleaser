@@ -12,7 +12,6 @@ import (
 	"github.com/caarlos0/log"
 	"github.com/goreleaser/goreleaser/internal/artifact"
 	"github.com/goreleaser/goreleaser/internal/client"
-	"github.com/goreleaser/goreleaser/internal/pipe"
 	"github.com/goreleaser/goreleaser/internal/tmpl"
 	"github.com/goreleaser/goreleaser/pkg/config"
 	"github.com/goreleaser/goreleaser/pkg/context"
@@ -62,13 +61,13 @@ func (Pipe) Default(ctx *context.Context) error {
 
 // Run the pipe.
 func (Pipe) Run(ctx *context.Context) error {
-	client, err := client.New(ctx)
+	cli, err := client.NewReleaseClient(ctx)
 	if err != nil {
 		return err
 	}
 
 	for _, choco := range ctx.Config.Chocolateys {
-		if err := doRun(ctx, client, choco); err != nil {
+		if err := doRun(ctx, cli, choco); err != nil {
 			return err
 		}
 	}
@@ -78,10 +77,6 @@ func (Pipe) Run(ctx *context.Context) error {
 
 // Publish packages.
 func (Pipe) Publish(ctx *context.Context) error {
-	if ctx.SkipPublish {
-		return pipe.ErrSkipPublishEnabled
-	}
-
 	artifacts := ctx.Artifacts.Filter(
 		artifact.ByType(artifact.PublishableChocolatey),
 	).List()
@@ -95,7 +90,7 @@ func (Pipe) Publish(ctx *context.Context) error {
 	return nil
 }
 
-func doRun(ctx *context.Context, cl client.Client, choco config.Chocolatey) error {
+func doRun(ctx *context.Context, cl client.ReleaseURLTemplater, choco config.Chocolatey) error {
 	filters := []artifact.Filter{
 		artifact.ByGoos("windows"),
 		artifact.ByType(artifact.UploadableArchive),
@@ -280,7 +275,7 @@ func buildTemplate(name string, text string, data templateData) ([]byte, error) 
 	return out.Bytes(), nil
 }
 
-func dataFor(ctx *context.Context, cl client.Client, choco config.Chocolatey, artifacts []*artifact.Artifact) (templateData, error) {
+func dataFor(ctx *context.Context, cl client.ReleaseURLTemplater, choco config.Chocolatey, artifacts []*artifact.Artifact) (templateData, error) {
 	result := templateData{}
 
 	if choco.URLTemplate == "" {

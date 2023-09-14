@@ -79,7 +79,7 @@ func (Pipe) Default(ctx *context.Context) error {
 }
 
 func (Pipe) Run(ctx *context.Context) error {
-	cli, err := client.New(ctx)
+	cli, err := client.NewReleaseClient(ctx)
 	if err != nil {
 		return err
 	}
@@ -96,7 +96,7 @@ func (Pipe) Publish(ctx *context.Context) error {
 	return publishAll(ctx, cli)
 }
 
-func runAll(ctx *context.Context, cli client.Client) error {
+func runAll(ctx *context.Context, cli client.ReleaseURLTemplater) error {
 	for _, brew := range ctx.Config.Brews {
 		err := doRun(ctx, brew, cli)
 		if err != nil {
@@ -187,7 +187,7 @@ func doPublish(ctx *context.Context, formula *artifact.Artifact, cl client.Clien
 	}, repo, msg, brew.Repository.PullRequest.Draft)
 }
 
-func doRun(ctx *context.Context, brew config.Homebrew, cl client.ReleaserURLTemplater) error {
+func doRun(ctx *context.Context, brew config.Homebrew, cl client.ReleaseURLTemplater) error {
 	if brew.Repository.Name == "" {
 		return pipe.Skip("brew.repository.name is not set")
 	}
@@ -281,7 +281,7 @@ func buildFormulaPath(folder, filename string) string {
 	return path.Join(folder, filename)
 }
 
-func buildFormula(ctx *context.Context, brew config.Homebrew, client client.ReleaserURLTemplater, artifacts []*artifact.Artifact) (string, error) {
+func buildFormula(ctx *context.Context, brew config.Homebrew, client client.ReleaseURLTemplater, artifacts []*artifact.Artifact) (string, error) {
 	data, err := dataFor(ctx, brew, client, artifacts)
 	if err != nil {
 		return "", err
@@ -367,7 +367,7 @@ func keys(m map[string]bool) []string {
 	return keys
 }
 
-func dataFor(ctx *context.Context, cfg config.Homebrew, cl client.ReleaserURLTemplater, artifacts []*artifact.Artifact) (templateData, error) {
+func dataFor(ctx *context.Context, cfg config.Homebrew, cl client.ReleaseURLTemplater, artifacts []*artifact.Artifact) (templateData, error) {
 	sort.Slice(cfg.Dependencies, func(i, j int) bool {
 		return cfg.Dependencies[i].Name < cfg.Dependencies[j].Name
 	})

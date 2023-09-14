@@ -19,6 +19,7 @@ func TestAllBuildTargets(t *testing.T) {
 			"windows",
 			"js",
 			"ios",
+			"wasip1",
 		},
 		Goarch: []string{
 			"386",
@@ -111,6 +112,7 @@ func TestAllBuildTargets(t *testing.T) {
 			"windows_arm64",
 			"js_wasm",
 			"ios_arm64",
+			"wasip1_wasm",
 		}, result)
 	})
 

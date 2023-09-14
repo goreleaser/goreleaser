@@ -24,7 +24,7 @@ and now UPX has its own configuration section:
 upx:
   - # Whether to enable it or not.
     #
-    # Templates: allowed (since v1.21).
+    # Templates: allowed (since v1.21)
     enabled: true
 
     # Filter by build ID.

@@ -22,6 +22,10 @@ const (
 // ErrNotImplemented is returned when a client does not implement certain feature.
 var ErrNotImplemented = fmt.Errorf("not implemented")
 
+// ErrReleaseDisabled happens when a configuration tries to use the default
+// url_template even though the release is disabled.
+var ErrReleaseDisabled = fmt.Errorf("release is disabled, cannot use default url_template")
+
 // Info of the repository.
 type Info struct {
 	Description string
@@ -51,13 +55,13 @@ type Client interface {
 	CreateRelease(ctx *context.Context, body string) (releaseID string, err error)
 	Upload(ctx *context.Context, releaseID string, artifact *artifact.Artifact, file *os.File) (err error)
 	Changelog(ctx *context.Context, repo Repo, prev, current string) (string, error)
-	ReleaserURLTemplater
+	ReleaseURLTemplater
 	FileCreator
 }
 
-// ReleaserURLTemplater provides the release URL as a template, containing the
+// ReleaseURLTemplater provides the release URL as a template, containing the
 // artifact name as well.
-type ReleaserURLTemplater interface {
+type ReleaseURLTemplater interface {
 	ReleaseURLTemplate(ctx *context.Context) (string, error)
 }
 
@@ -92,6 +96,27 @@ type PullRequestOpener interface {
 // New creates a new client depending on the token type.
 func New(ctx *context.Context) (Client, error) {
 	return newWithToken(ctx, ctx.Token)
+}
+
+// NewReleaseClient returns a ReleaserURLTemplater, handling the possibility of
+// the release being disabled.
+func NewReleaseClient(ctx *context.Context) (ReleaseURLTemplater, error) {
+	disable, err := tmpl.New(ctx).Bool(ctx.Config.Release.Disable)
+	if err != nil {
+		return nil, err
+	}
+	if disable {
+		return errURLTemplater{}, nil
+	}
+	return New(ctx)
+}
+
+var _ ReleaseURLTemplater = errURLTemplater{}
+
+type errURLTemplater struct{}
+
+func (errURLTemplater) ReleaseURLTemplate(_ *context.Context) (string, error) {
+	return "", ErrReleaseDisabled
 }
 
 func newWithToken(ctx *context.Context, token string) (Client, error) {

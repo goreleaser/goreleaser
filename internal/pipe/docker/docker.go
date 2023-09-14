@@ -153,7 +153,7 @@ func (Pipe) Run(ctx *context.Context) error {
 
 func process(ctx *context.Context, docker config.Docker, artifacts []*artifact.Artifact) error {
 	if len(artifacts) == 0 {
-		log.Warn("not binaries or packages found for the given platform - COPY/ADD may not work")
+		log.Warn("no binaries or packages found for the given platform - COPY/ADD may not work")
 	}
 	tmp, err := os.MkdirTemp("", "goreleaserdocker")
 	if err != nil {

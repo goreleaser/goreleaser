@@ -1,6 +1,7 @@
 # Monorepo
 
 !!! success "GoReleaser Pro"
+
     The monorepo support is a [GoReleaser Pro feature](/pro/).
 
 If you want to use GoReleaser within a monorepo and use tag prefixes to mark
@@ -12,7 +13,7 @@ You project falls into either one of these categories:
 
 1. tags are like `subproject1/v1.2.3` and `subproject2/v1.2.3`;
 1. tags are like `@user/thing@v1.2.3` (for a NPM package, for example)
-  and `v1.2.3` for the rest of the (Go) code.
+   and `v1.2.3` for the rest of the (Go) code.
 
 ## Usage
 
@@ -53,7 +54,6 @@ Then, the following is different from a "regular" run:
   tag name), and `{{.Tag}}` has the prefix stripped;
 
 The rest of the release process should work as usual.
-
 
 ### Category 2
 

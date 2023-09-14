@@ -534,9 +534,9 @@ func TestDefaultPipeDisabled(t *testing.T) {
 		},
 	})
 	ctx.TokenType = context.TokenTypeGitHub
-	require.NoError(t, Pipe{}.Default(ctx))
-	require.Equal(t, "goreleaser", ctx.Config.Release.GitHub.Name)
-	require.Equal(t, "goreleaser", ctx.Config.Release.GitHub.Owner)
+	testlib.AssertSkipped(t, Pipe{}.Default(ctx))
+	require.Empty(t, ctx.Config.Release.GitHub.Name)
+	require.Empty(t, ctx.Config.Release.GitHub.Owner)
 }
 
 func TestDefaultFilled(t *testing.T) {
