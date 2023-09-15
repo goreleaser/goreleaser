@@ -56,7 +56,7 @@ universal_binaries:
 
     Learn more about the [name template engine](/customization/templates/).
 
-For more info about hooks, see the [build section](/customization/build/#build-hooks).
+For more info about hooks, see the [build section](./builds.md#build-hooks).
 
 The minimal configuration for most setups would look like this:
 
