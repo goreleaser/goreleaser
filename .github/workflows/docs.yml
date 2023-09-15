@@ -3,12 +3,14 @@ name: docs
 on:
   push:
     branches:
-      - 'main'
+      - "main"
     paths:
-      - 'www/*'
+      - "www/**/*"
+      - ".github/workflows/docs.yml"
   pull_request:
     paths:
-      - 'www/*'
+      - "www/**/*"
+      - ".github/workflows/docs.yml"
 
 permissions:
   contents: read
