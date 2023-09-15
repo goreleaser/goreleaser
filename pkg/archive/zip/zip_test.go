@@ -7,6 +7,7 @@ import (
 	"io/fs"
 	"os"
 	"path/filepath"
+	"runtime"
 	"testing"
 	"time"
 
@@ -85,8 +86,13 @@ func TestZipFile(t *testing.T) {
 	paths := make([]string, len(r.File))
 	for i, zf := range r.File {
 		paths[i] = zf.Name
-		if zf.Name == "sub1/executable" {
-			require.Truef(t, zf.Mode()&0o111 != 0, "expected executable perms, got %s", zf.Mode().String())
+		if zf.Name == "sub1/executable" && runtime.GOOS != "windows" {
+			require.Truef(
+				t,
+				zf.Mode()&0o111 != 0,
+				"expected executable perms, got %s",
+				zf.Mode().String(),
+			)
 		}
 		if zf.Name == "link.txt" {
 			require.True(t, zf.FileInfo().Mode()&os.ModeSymlink != 0)
