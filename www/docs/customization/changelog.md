@@ -129,4 +129,4 @@ changelog:
     * The `github-native` changelog does not support `sort` and `filter`.
     * When releasing a [nightly][], `use` will fallback to `git`.
 
-[nightly]: /customization/nightly
+[nightly]: ./nightlies.md
