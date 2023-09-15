@@ -245,8 +245,7 @@ func (c *githubClient) CreateFile(
 	commitAuthor config.CommitAuthor,
 	repo Repo,
 	content []byte,
-	path,
-	message string,
+	path, message string,
 ) error {
 	c.checkRateLimit(ctx)
 	defBranch, err := c.getDefaultBranch(ctx, repo)
