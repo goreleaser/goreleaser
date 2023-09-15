@@ -120,7 +120,12 @@ When using ` + "`--single-target`" + `, the ` + "`GOOS`" + ` and ` + "`GOARCH`" 
 		_ = cmd.Flags().MarkHidden("skip-" + f)
 		_ = cmd.Flags().MarkDeprecated("skip"+f, fmt.Sprintf("please use --skip=%s instead", f))
 	}
-	cmd.Flags().StringSliceVar(&root.opts.skips, "skip", nil, "Skip the given options")
+	cmd.Flags().StringSliceVar(
+		&root.opts.skips,
+		"skip",
+		nil,
+		fmt.Sprintf("Skip the given options (valid options are %s)", skips.Build.String()),
+	)
 	_ = cmd.RegisterFlagCompletionFunc("skip", func(_ *cobra.Command, _ []string, toComplete string) ([]string, cobra.ShellCompDirective) {
 		var result []string
 		for _, k := range skips.Build {

@@ -11,16 +11,15 @@ import (
 type Key string
 
 const (
-	BeforeBuildHooks Key = "before-hooks"
-	PostBuildHooks   Key = "post-hooks"
-	Publish          Key = "publish"
-	Announce         Key = "announce"
-	Sign             Key = "sign"
-	Validate         Key = "validate"
-	SBOM             Key = "sbom"
-	Ko               Key = "ko"
-	Docker           Key = "docker"
-	Before           Key = "before"
+	PostBuildHooks Key = "post-hooks"
+	Publish        Key = "publish"
+	Announce       Key = "announce"
+	Sign           Key = "sign"
+	Validate       Key = "validate"
+	SBOM           Key = "sbom"
+	Ko             Key = "ko"
+	Docker         Key = "docker"
+	Before         Key = "before"
 )
 
 func Any(ctx *context.Context, keys ...Key) bool {
@@ -62,6 +61,7 @@ func (keys Keys) String() string {
 	for i, key := range keys {
 		ss[i] = string(key)
 	}
+	slices.Sort(ss)
 	return strings.Join(ss, ", ")
 }
 
@@ -77,7 +77,6 @@ var Release = Keys{
 }
 
 var Build = Keys{
-	BeforeBuildHooks,
 	PostBuildHooks,
 	Validate,
 	Before,

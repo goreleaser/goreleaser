@@ -98,10 +98,10 @@ func newReleaseCmd() *releaseCmd {
 	cmd.Flags().StringVar(&root.opts.releaseFooterTmpl, "release-footer-tmpl", "", "Load custom release notes footer from a templated markdown file (overrides --release-footer)")
 	_ = cmd.MarkFlagFilename("release-footer-tmpl", "md", "mkd", "markdown")
 	cmd.Flags().BoolVar(&root.opts.autoSnapshot, "auto-snapshot", false, "Automatically sets --snapshot if the repository is dirty")
-	cmd.Flags().BoolVar(&root.opts.snapshot, "snapshot", false, "Generate an unversioned snapshot release, skipping all validations and without publishing any artifacts (implies --skip-publish, --skip-announce and --skip-validate)")
+	cmd.Flags().BoolVar(&root.opts.snapshot, "snapshot", false, "Generate an unversioned snapshot release, skipping all validations and without publishing any artifacts (implies --skip=announce,publish,validate)")
 	cmd.Flags().BoolVar(&root.opts.failFast, "fail-fast", false, "Whether to abort the release publishing on the first error")
-	cmd.Flags().BoolVar(&root.opts.skipPublish, "skip-publish", false, "Skips publishing artifacts (implies --skip-announce)")
-	cmd.Flags().BoolVar(&root.opts.skipAnnounce, "skip-announce", false, "Skips announcing releases (implies --skip-validate)")
+	cmd.Flags().BoolVar(&root.opts.skipPublish, "skip-publish", false, "Skips publishing artifacts (implies --skip=announce)")
+	cmd.Flags().BoolVar(&root.opts.skipAnnounce, "skip-announce", false, "Skips announcing releases (implies --skip=validate)")
 	cmd.Flags().BoolVar(&root.opts.skipSign, "skip-sign", false, "Skips signing artifacts")
 	cmd.Flags().BoolVar(&root.opts.skipSBOMCataloging, "skip-sbom", false, "Skips cataloging artifacts")
 	cmd.Flags().BoolVar(&root.opts.skipDocker, "skip-docker", false, "Skips Docker Images/Manifests builds")
@@ -131,7 +131,12 @@ func newReleaseCmd() *releaseCmd {
 		_ = cmd.Flags().MarkHidden("skip-" + f)
 		_ = cmd.Flags().MarkDeprecated("skip"+f, fmt.Sprintf("please use --skip=%s instead", f))
 	}
-	cmd.Flags().StringSliceVar(&root.opts.skips, "skip", nil, "Skip the given options")
+	cmd.Flags().StringSliceVar(
+		&root.opts.skips,
+		"skip",
+		nil,
+		fmt.Sprintf("Skip the given options (valid options are %s)", skips.Release.String()),
+	)
 	_ = cmd.RegisterFlagCompletionFunc("skip", func(_ *cobra.Command, _ []string, toComplete string) ([]string, cobra.ShellCompDirective) {
 		var result []string
 		for _, k := range skips.Release {
