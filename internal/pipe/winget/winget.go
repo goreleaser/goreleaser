@@ -3,6 +3,7 @@ package winget
 import (
 	"fmt"
 	"os"
+	"path"
 	"path/filepath"
 	"regexp"
 	"strings"
@@ -157,7 +158,13 @@ func (p Pipe) doRun(ctx *context.Context, winget config.Winget, cl client.Releas
 	}
 
 	if winget.Path == "" {
-		winget.Path = filepath.Join("manifests", strings.ToLower(string(winget.Publisher[0])), winget.Publisher, winget.Name, ctx.Version)
+		winget.Path = path.Join(
+			"manifests",
+			strings.ToLower(string(winget.Publisher[0])),
+			winget.Publisher,
+			winget.Name,
+			ctx.Version,
+		)
 	}
 
 	filters := []artifact.Filter{
@@ -336,7 +343,7 @@ func doPublish(ctx *context.Context, cl client.Client, wingets []*artifact.Artif
 		}
 		files = append(files, client.RepoFile{
 			Content:    content,
-			Path:       filepath.Join(winget.Path, pkg.Name),
+			Path:       path.Join(winget.Path, pkg.Name),
 			Identifier: repoFileID(pkg.Type),
 		})
 	}
