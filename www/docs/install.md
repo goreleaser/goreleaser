@@ -12,11 +12,13 @@ Below you can find the steps for each of them.
 ### homebrew tap
 
 === "OSS"
+
     ```bash
     brew install goreleaser/tap/goreleaser
     ```
 
 === "Pro"
+
     ```bash
     brew install goreleaser/tap/goreleaser-pro
     ```
@@ -24,17 +26,20 @@ Below you can find the steps for each of them.
 ### homebrew
 
 === "OSS"
+
     ```bash
     brew install goreleaser
     ```
 
 !!! info
-    The [formula in homebrew-core](https://github.com/Homebrew/homebrew-core/blob/master/Formula/goreleaser.rb) might be slightly outdated.
+
+    The [formula in homebrew-core](https://github.com/Homebrew/homebrew-core/blob/master/Formula/g/goreleaser.rb) might be slightly outdated.
     Use our homebrew tap to always get the latest updates.
 
 ### snapcraft
 
 === "OSS"
+
     ```bash
     sudo snap install --classic goreleaser
     ```
@@ -42,12 +47,14 @@ Below you can find the steps for each of them.
 ### scoop
 
 === "OSS"
+
     ```bash
     scoop bucket add goreleaser https://github.com/goreleaser/scoop-bucket.git
     scoop install goreleaser
     ```
 
 === "Pro"
+
     ```bash
     scoop bucket add goreleaser https://github.com/goreleaser/scoop-bucket.git
     scoop install goreleaser-pro
@@ -56,6 +63,7 @@ Below you can find the steps for each of them.
 ### apt
 
 === "OSS"
+
     ```bash
     echo 'deb [trusted=yes] https://repo.goreleaser.com/apt/ /' | sudo tee /etc/apt/sources.list.d/goreleaser.list
     sudo apt update
@@ -63,6 +71,7 @@ Below you can find the steps for each of them.
     ```
 
 === "Pro"
+
     ```bash
     echo 'deb [trusted=yes] https://repo.goreleaser.com/apt/ /' | sudo tee /etc/apt/sources.list.d/goreleaser.list
     sudo apt update
@@ -72,6 +81,7 @@ Below you can find the steps for each of them.
 ### yum
 
 === "OSS"
+
     ```bash
     echo '[goreleaser]
     name=GoReleaser
@@ -82,6 +92,7 @@ Below you can find the steps for each of them.
     ```
 
 === "Pro"
+
     ```bash
     echo '[goreleaser]
     name=GoReleaser
@@ -94,26 +105,29 @@ Below you can find the steps for each of them.
 ### aur
 
 === "OSS"
+
     ```bash
     yay -S goreleaser-bin
     ```
 
 === "Pro"
+
     ```bash
     yay -S goreleaser-pro-bin
     ```
-
 
 ### nix
 
 #### nixpkgs
 
 === "OSS"
+
     ```bash
     nix-env -iA goreleaser
     ```
 
 !!! info
+
     The [package in nixpkgs](https://github.com/NixOS/nixpkgs/blob/master/pkgs/tools/misc/goreleaser/default.nix)
     might be slightly outdated, as it is not updated automatically.
     Use our NUR to always get the latest updates.
@@ -129,6 +143,7 @@ Once you do that, you can install the packages.
 [nur]: https://github.com/goreleaser/nur
 
 === "OSS"
+
     ```nix
     { pkgs, lib, ... }: {
       home.packages = with pkgs; [
@@ -138,6 +153,7 @@ Once you do that, you can install the packages.
     ```
 
 === "Pro"
+
     ```nix
     { pkgs, lib, ... }: {
       home.packages = with pkgs; [
@@ -149,14 +165,17 @@ Once you do that, you can install the packages.
 ### deb, rpm and apk packages
 
 === "OSS"
+
     Download the `.deb`, `.rpm` or `.apk` packages from the [OSS releases page][releases] and install them with the appropriate tools.
 
 === "Pro"
+
     Download the `.deb`, `.rpm` or `.apk` packages from the [Pro releases page][pro-releases] and install them with the appropriate tools.
 
 ### go install
 
 === "OSS"
+
     ```bash
     go install github.com/goreleaser/goreleaser@latest
     ```
@@ -164,16 +183,19 @@ Once you do that, you can install the packages.
 ### bash script
 
 === "OSS"
+
     ```bash
     curl -sfL https://goreleaser.com/static/run | bash
     ```
 
 === "Pro"
+
     ```bash
     curl -sfL https://goreleaser.com/static/run | DISTRIBUTION=pro bash
     ```
 
 === "Additional Options"
+
     You can also set the `VERSION` and `DISTRIBUTION` variables to specify
     a version instead of using latest and `pro` or `oss` distributions,
     respectively.
@@ -186,6 +208,7 @@ Once you do that, you can install the packages.
     ```
 
 !!! tip
+
     This script does not install anything, it just downloads, verifies and
     runs GoReleaser.
     Its purpose is to be used within scripts and CIs.
@@ -193,9 +216,11 @@ Once you do that, you can install the packages.
 ### manually
 
 === "OSS"
+
     Download the pre-compiled binaries from the [OSS releases page][releases] and copy them to the desired location.
 
 === "Pro"
+
     Download the pre-compiled binaries from the [Pro releases page][pro-releases] and copy them to the desired location.
 
 ### nightly
@@ -206,11 +231,13 @@ Use it for testing out new features only.
 #### manually
 
 === "Pro"
+
     Download the pre-compiled binaries from the [nightly release][nighly-pro-releases] and copy them to the desired location.
 
 ### bash script
 
 === "Pro"
+
     ```bash
     curl -sfL https://goreleaser.com/static/run |
       VERSION=nightly DISTRIBUTION=pro bash -s -- release --clean
@@ -219,6 +246,7 @@ Use it for testing out new features only.
 #### docker
 
 === "Pro"
+
     Docker images are also available, look for tags with a `-nightly` suffix.
 
     Registries:
@@ -233,6 +261,7 @@ Use it for testing out new features only.
 All artifacts are checksummed, and the checksum file is signed with [cosign][].
 
 === "OSS"
+
     1. Download the files you want, and the `checksums.txt`, `checksum.txt.pem` and `checksums.txt.sig` files from the [releases][releases] page:
       ```bash
       wget 'https://github.com/goreleaser/goreleaser/releases/download/__VERSION__/checksums.txt'
@@ -252,6 +281,7 @@ All artifacts are checksummed, and the checksum file is signed with [cosign][].
       ```
 
 === "Pro"
+
     1. Download the files you want, and the `checksums.txt`, `checksum.txt.pem` and `checksums.txt.sig` files from the [releases][pro-releases] page:
       ```bash
       wget 'https://github.com/goreleaser/goreleaser-pro/releases/download/__VERSION__-pro/checksums.txt'
@@ -277,6 +307,7 @@ Our Docker images are signed with [cosign][].
 Verify the signatures:
 
 === "OSS"
+
     ```bash
     cosign verify \
       --certificate-identity 'https://github.com/goreleaser/goreleaser/.github/workflows/release.yml@refs/tags/__VERSION__' \
@@ -285,6 +316,7 @@ Verify the signatures:
     ```
 
 === "Pro"
+
     ```bash
     cosign verify \
       --certificate-identity 'https://github.com/goreleaser/goreleaser-pro-internal/.github/workflows/release-pro.yml@refs/tags/__VERSION__-pro' \
@@ -293,6 +325,7 @@ Verify the signatures:
     ```
 
 !!! info
+
     The `.pem` and `.sig` files are the image `name:tag`, replacing `/` and `:` with `-`.
 
 ## Running with Docker
@@ -301,6 +334,7 @@ You can also use it within a Docker container.
 To do that, you'll need to execute something more-or-less like the examples below.
 
 === "OSS"
+
     Registries:
 
     - [`goreleaser/goreleaser`](https://hub.docker.com/r/goreleaser/goreleaser)
@@ -321,6 +355,7 @@ To do that, you'll need to execute something more-or-less like the examples belo
     ```
 
 === "Pro"
+
     Registries:
 
     - [`goreleaser/goreleaser-pro`](https://hub.docker.com/r/goreleaser/goreleaser-pro)
@@ -341,10 +376,10 @@ To do that, you'll need to execute something more-or-less like the examples belo
       goreleaser/goreleaser-pro release
     ```
 
-
 !!! info
+
     Now, the provided docker image does not support
-    the generation of snapcraft packages.
+    the generation of Snapcraft packages.
 
 Note that the image will almost always have the last stable Go version.
 
@@ -370,7 +405,7 @@ and iterate from that.
 Here you have two options:
 
 If you want to contribute to the project, please follow the
-steps on our [contributing guide](/contributing/).
+steps on our [contributing guide](/contributing).
 
 If you just want to build from source for whatever reason, follow these steps:
 
