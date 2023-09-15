@@ -284,7 +284,7 @@ func TestRunPipe(t *testing.T) {
 			"/etc/nope.conf",
 			"./testdata/folder",
 			"./testdata/testfile-" + pkg.Goarch + pkg.Goamd64 + pkg.Goarm + pkg.Gomips + ".txt",
-			binPath,
+			filepath.ToSlash(binPath),
 		}, sources(artifact.ExtraOr(*pkg, extraFiles, files.Contents{})))
 
 		bin := "/usr/bin/subdir/"
@@ -301,7 +301,7 @@ func TestRunPipe(t *testing.T) {
 			"/etc/nope2.conf",
 			"/etc/nope3_mybin.conf",
 			"/etc/folder",
-			bin,
+			filepath.ToSlash(bin),
 		}, destinations(artifact.ExtraOr(*pkg, extraFiles, files.Contents{})))
 	}
 	require.Len(t, ctx.Config.NFPMs[0].Contents, 8, "should not modify the config file list")
@@ -459,7 +459,7 @@ func doTestRunPipeConventionalNameTemplate(t *testing.T, snapshot bool) {
 			prefix + "-1.0.0-1-mips.pkg.tar.zst",
 		}, pkg.Name, "package name is not expected")
 		require.Equal(t, "someid", pkg.ID())
-		require.ElementsMatch(t, []string{binPath}, sources(artifact.ExtraOr(*pkg, extraFiles, files.Contents{})))
+		require.ElementsMatch(t, []string{filepath.ToSlash(binPath)}, sources(artifact.ExtraOr(*pkg, extraFiles, files.Contents{})))
 		require.ElementsMatch(t, []string{"/usr/bin/subdir/mybin"}, destinations(artifact.ExtraOr(*pkg, extraFiles, files.Contents{})))
 	}
 }
