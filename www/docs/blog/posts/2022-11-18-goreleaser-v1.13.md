@@ -18,8 +18,7 @@ contributors!
 
 ![Mastodon integration](https://carlosbecker.com/posts/goreleaser-v1.13/picture.png)
 
-This one also marks the point of
-[1 year since our first v1](./v1.md)!
+This one also marks the point of 1 year since v1.0.0!
 
 ### Highlights
 

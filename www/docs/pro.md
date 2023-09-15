@@ -26,9 +26,9 @@ additional features:
       [`goreleaser changelog`](/cmd/goreleaser_changelog/);
 - [x] Continuously release [nightly builds](/customization/nightlies/);
 - [x] Import pre-built binaries with the
-      [`prebuilt` builder](/customization/build/#import-pre-built-binaries);
-- [x] Rootless build [Docker images](/customization/docker/#podman) and
-      [manifests](/customization/docker_manifest/#podman) with
+      [`prebuilt` builder](./customization/builds.md#import-pre-built-binaries);
+- [x] Rootless build [Docker images](./customization/docker.md#podman) and
+      [manifests](./customization/docker_manifest.md#podman) with
       [Podman](https://podman.io);
 - [x] Easily create `apt` and `yum` repositories with the
       [fury.io integration](/customization/fury/);
