@@ -44,7 +44,7 @@ every Thursday.
 
 ### Nix
 
-[We added Nix support in the previous release](./v1.19.md),
+[We added Nix support in the previous release](./2023-06-28-goreleaser-v1.19.md),
 and in this one we added a few improvements:
 
 - `zip` support
