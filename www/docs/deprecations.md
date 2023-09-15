@@ -37,6 +37,52 @@ Description.
 
 -->
 
+### `--skip`
+
+> since 2023-09-14
+
+The following `goreleaser release` flags were deprecated:
+
+- `--skip-announce`
+- `--skip-before`
+- `--skip-docker`
+- `--skip-ko`
+- `--skip-publish`
+- `--skip-sbom`
+- `--skip-sign`
+- `--skip-validate`
+
+By the same token, the following `goreleaser build` flags were deprecated:
+
+- `--skip-before`
+- `--skip-post-hooks`
+- `--skip-validate`
+
+All these flags are now under a single `--skip` flag, that accepts multiple
+values.
+
+=== "Before"
+
+    ```sh
+    goreleaser build --skip-before --skip-validate
+    goreleaser release --skip-validate --skip-publish
+    ```
+
+=== "After"
+
+    ```sh
+    goreleaser build --skip=before,validate
+    goreleaser release --skip=validate,publish
+
+    # or
+
+    goreleaser build --skip=before --skip=validate
+    goreleaser release --skip=validate --skip=publish
+    ```
+
+You can check `goreleaser build --help` and `goreleaser release --help` to see
+the valid options, and shell autocompletion should work properly as well.
+
 ### scoops.bucket
 
 > since 2023-06-13 (v1.19.0)

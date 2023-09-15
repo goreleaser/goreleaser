@@ -118,7 +118,7 @@ When using ` + "`--single-target`" + `, the ` + "`GOOS`" + ` and ` + "`GOARCH`" 
 		"validate",
 	} {
 		_ = cmd.Flags().MarkHidden("skip-" + f)
-		_ = cmd.Flags().MarkDeprecated("skip"+f, fmt.Sprintf("please use --skip=%s instead", f))
+		_ = cmd.Flags().MarkDeprecated("skip-"+f, fmt.Sprintf("please use --skip=%s instead", f))
 	}
 	cmd.Flags().StringSliceVar(
 		&root.opts.skips,
@@ -188,15 +188,15 @@ func setupBuildContext(ctx *context.Context, options buildOpts) error {
 
 	if options.skipValidate {
 		skips.Set(ctx, skips.Validate)
-		deprecate.NoticeCustom(ctx, "-skip-validate", "--skip-validate was deprecated in favor of --skip=validate, check {{ .URL }} for more details")
+		deprecate.NoticeCustom(ctx, "-skip", "--skip-validate was deprecated in favor of --skip=validate, check {{ .URL }} for more details")
 	}
 	if options.skipBefore {
 		skips.Set(ctx, skips.Before)
-		deprecate.NoticeCustom(ctx, "-skip-before", "--skip-before was deprecated in favor of --skip=before, check {{ .URL }} for more details")
+		deprecate.NoticeCustom(ctx, "-skip", "--skip-before was deprecated in favor of --skip=before, check {{ .URL }} for more details")
 	}
 	if options.skipPostHooks {
 		skips.Set(ctx, skips.PostBuildHooks)
-		deprecate.NoticeCustom(ctx, "-skip-post-hooks", "--skip-post-hooks was deprecated in favor of --skip=post-hooks, check {{ .URL }} for more details")
+		deprecate.NoticeCustom(ctx, "-skip", "--skip-post-hooks was deprecated in favor of --skip=post-hooks, check {{ .URL }} for more details")
 	}
 
 	if options.rmDist {

@@ -207,35 +207,35 @@ func setupReleaseContext(ctx *context.Context, options releaseOpts) error {
 	// XXX: remove soon
 	if options.skipPublish {
 		skips.Set(ctx, skips.Publish)
-		deprecate.NoticeCustom(ctx, "-skip-publish", "--skip-publish was deprecated in favor of --skip=publish, check {{ .URL }} for more details")
+		deprecate.NoticeCustom(ctx, "-skip", "--skip-publish was deprecated in favor of --skip=publish, check {{ .URL }} for more details")
 	}
 	if options.skipSign {
 		skips.Set(ctx, skips.Sign)
-		deprecate.NoticeCustom(ctx, "-skip-sign", "--skip-sign was deprecated in favor of --skip=sign, check {{ .URL }} for more details")
+		deprecate.NoticeCustom(ctx, "-skip", "--skip-sign was deprecated in favor of --skip=sign, check {{ .URL }} for more details")
 	}
 	if options.skipValidate {
 		skips.Set(ctx, skips.Validate)
-		deprecate.NoticeCustom(ctx, "-skip-validate", "--skip-validate was deprecated in favor of --skip=validate, check {{ .URL }} for more details")
+		deprecate.NoticeCustom(ctx, "-skip", "--skip-validate was deprecated in favor of --skip=validate, check {{ .URL }} for more details")
 	}
 	if options.skipAnnounce {
 		skips.Set(ctx, skips.Announce)
-		deprecate.NoticeCustom(ctx, "-skip-announce", "--skip-announce was deprecated in favor of --skip=announce, check {{ .URL }} for more details")
+		deprecate.NoticeCustom(ctx, "-skip", "--skip-announce was deprecated in favor of --skip=announce, check {{ .URL }} for more details")
 	}
 	if options.skipSBOMCataloging {
 		skips.Set(ctx, skips.SBOM)
-		deprecate.NoticeCustom(ctx, "-skip-sbom", "--skip-sbom was deprecated in favor of --skip=sbom, check {{ .URL }} for more details")
+		deprecate.NoticeCustom(ctx, "-skip", "--skip-sbom was deprecated in favor of --skip=sbom, check {{ .URL }} for more details")
 	}
 	if options.skipDocker {
 		skips.Set(ctx, skips.Docker)
-		deprecate.NoticeCustom(ctx, "-skip-docker", "--skip-docker was deprecated in favor of --skip=docker, check {{ .URL }} for more details")
+		deprecate.NoticeCustom(ctx, "-skip", "--skip-docker was deprecated in favor of --skip=docker, check {{ .URL }} for more details")
 	}
 	if options.skipKo {
 		skips.Set(ctx, skips.Ko)
-		deprecate.NoticeCustom(ctx, "-skip-ko", "--skip-ko was deprecated in favor of --skip=ko, check {{ .URL }} for more details")
+		deprecate.NoticeCustom(ctx, "-skip", "--skip-ko was deprecated in favor of --skip=ko, check {{ .URL }} for more details")
 	}
 	if options.skipBefore {
 		skips.Set(ctx, skips.Before)
-		deprecate.NoticeCustom(ctx, "-skip-before", "--skip-before was deprecated in favor of --skip=before, check {{ .URL }} for more details")
+		deprecate.NoticeCustom(ctx, "-skip", "--skip-before was deprecated in favor of --skip=before, check {{ .URL }} for more details")
 	}
 	if options.rmDist {
 		deprecate.NoticeCustom(ctx, "-rm-dist", "--rm-dist was deprecated in favor of --clean, check {{ .URL }} for more details")
