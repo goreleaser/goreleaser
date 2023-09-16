@@ -3,6 +3,7 @@ dist/
 bin/
 coverage.txt
 goreleaser
+gorelaser.exe
 debug.test
 snap.login
 site/
