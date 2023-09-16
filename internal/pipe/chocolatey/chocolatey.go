@@ -199,7 +199,7 @@ func doPush(ctx *context.Context, art *artifact.Artifact) error {
 		choco.SourceRepo,
 		"--api-key",
 		key,
-		art.Path,
+		filepath.Clean(art.Path),
 	}
 
 	if out, err := cmd.Exec(ctx, "choco", args...); err != nil {
@@ -325,5 +325,8 @@ type stdCmd struct{}
 var _ cmder = &stdCmd{}
 
 func (stdCmd) Exec(ctx *context.Context, name string, args ...string) ([]byte, error) {
+	log.WithField("cmd", name).
+		WithField("args", args).
+		Debug("running")
 	return exec.CommandContext(ctx, name, args...).CombinedOutput()
 }

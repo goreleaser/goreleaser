@@ -53,7 +53,7 @@ func Test_doRun(t *testing.T) {
 	tests := []struct {
 		name      string
 		choco     config.Chocolatey
-		exec      func() ([]byte, error)
+		exec      func(cmd string, args ...string) ([]byte, error)
 		published int
 		err       string
 	}{
@@ -72,7 +72,7 @@ func Test_doRun(t *testing.T) {
 				Name:    "app",
 				Goamd64: "v1",
 			},
-			exec: func() ([]byte, error) {
+			exec: func(_ string, _ ...string) ([]byte, error) {
 				return nil, errors.New(`exec: "choco.exe": executable file not found in $PATH`)
 			},
 			err: `failed to generate chocolatey package: exec: "choco.exe": executable file not found in $PATH: `,
@@ -84,7 +84,8 @@ func Test_doRun(t *testing.T) {
 				Goamd64:     "v1",
 				SkipPublish: true,
 			},
-			exec: func() ([]byte, error) {
+			exec: func(cmd string, args ...string) ([]byte, error) {
+				checkPackCmd(t, cmd, args...)
 				return []byte("success"), nil
 			},
 		},
@@ -94,7 +95,8 @@ func Test_doRun(t *testing.T) {
 				Name:    "app",
 				Goamd64: "v1",
 			},
-			exec: func() ([]byte, error) {
+			exec: func(cmd string, args ...string) ([]byte, error) {
+				checkPackCmd(t, cmd, args...)
 				return []byte("success"), nil
 			},
 			published: 1,
@@ -213,10 +215,13 @@ func TestPublish(t *testing.T) {
 	file := filepath.Join(folder, "archive")
 	require.NoError(t, os.WriteFile(file, []byte("lorem ipsum"), 0o644))
 
+	fakenu := filepath.Join(t.TempDir(), "foo.nupkg")
+	require.NoError(t, os.WriteFile(fakenu, []byte("fake nupkg"), 0o644))
+
 	tests := []struct {
 		name      string
 		artifacts []artifact.Artifact
-		exec      func() ([]byte, error)
+		exec      func(cmd string, args ...string) ([]byte, error)
 		skip      bool
 		err       string
 	}{
@@ -250,7 +255,7 @@ func TestPublish(t *testing.T) {
 					},
 				},
 			},
-			exec: func() ([]byte, error) {
+			exec: func(cmd string, args ...string) ([]byte, error) {
 				return nil, errors.New(`unable to push`)
 			},
 			err: "failed to push chocolatey package: unable to push: ",
@@ -261,15 +266,18 @@ func TestPublish(t *testing.T) {
 				{
 					Type: artifact.PublishableChocolatey,
 					Name: "app.1.0.1.nupkg",
+					Path: fakenu,
 					Extra: map[string]interface{}{
 						artifact.ExtraFormat: nupkgFormat,
 						chocoConfigExtra: config.Chocolatey{
-							APIKey: "abcd",
+							APIKey:     "abcd",
+							SourceRepo: "abc",
 						},
 					},
 				},
 			},
-			exec: func() ([]byte, error) {
+			exec: func(cmd string, args ...string) ([]byte, error) {
+				checkPushCmd(t, cmd, args...)
 				return []byte("success"), nil
 			},
 		},
@@ -305,11 +313,28 @@ func TestDependencies(t *testing.T) {
 }
 
 type fakeCmd struct {
-	execFn func() ([]byte, error)
+	execFn func(cmd string, args ...string) ([]byte, error)
 }
 
 var _ cmder = fakeCmd{}
 
-func (f fakeCmd) Exec(_ *context.Context, _ string, _ ...string) ([]byte, error) {
-	return f.execFn()
+func (f fakeCmd) Exec(_ *context.Context, cmd string, args ...string) ([]byte, error) {
+	return f.execFn(cmd, args...)
+}
+
+func checkPushCmd(tb testing.TB, cmd string, args ...string) {
+	tb.Helper()
+	tb.Log("would have run:", cmd, args)
+	require.Len(tb, args, 6)
+	require.Equal(tb, cmd, "choco")
+	require.FileExists(tb, args[5])
+}
+
+func checkPackCmd(tb testing.TB, cmd string, args ...string) {
+	tb.Helper()
+	tb.Log("would have run:", cmd, args)
+	require.Len(tb, args, 4)
+	require.Equal(tb, cmd, "choco")
+	require.FileExists(tb, args[1])
+	require.DirExists(tb, args[3])
 }
