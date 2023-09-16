@@ -9,6 +9,7 @@ import (
 	"testing"
 
 	"github.com/goreleaser/goreleaser/internal/artifact"
+	"github.com/goreleaser/goreleaser/internal/skips"
 	"github.com/goreleaser/goreleaser/internal/testctx"
 	"github.com/goreleaser/goreleaser/internal/testlib"
 	"github.com/goreleaser/goreleaser/internal/tmpl"
@@ -199,8 +200,7 @@ func TestSkipCataloging(t *testing.T) {
 					Artifacts: "all",
 				},
 			},
-		})
-		ctx.SkipSBOMCataloging = true
+		}, testctx.Skip(skips.SBOM))
 		require.True(t, Pipe{}.Skip(ctx))
 	})
 

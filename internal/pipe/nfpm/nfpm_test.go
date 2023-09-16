@@ -6,6 +6,7 @@ import (
 	"testing"
 
 	"github.com/goreleaser/goreleaser/internal/artifact"
+	"github.com/goreleaser/goreleaser/internal/skips"
 	"github.com/goreleaser/goreleaser/internal/testctx"
 	"github.com/goreleaser/goreleaser/internal/testlib"
 	"github.com/goreleaser/goreleaser/pkg/config"
@@ -1327,7 +1328,7 @@ func TestSkipSign(t *testing.T) {
 	})
 
 	t.Run("skip sign set", func(t *testing.T) {
-		ctx.SkipSign = true
+		skips.Set(ctx, skips.Sign)
 		require.NoError(t, Pipe{}.Run(ctx))
 	})
 }

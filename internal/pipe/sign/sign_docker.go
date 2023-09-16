@@ -7,6 +7,7 @@ import (
 	"github.com/goreleaser/goreleaser/internal/ids"
 	"github.com/goreleaser/goreleaser/internal/pipe"
 	"github.com/goreleaser/goreleaser/internal/semerrgroup"
+	"github.com/goreleaser/goreleaser/internal/skips"
 	"github.com/goreleaser/goreleaser/pkg/context"
 )
 
@@ -16,7 +17,7 @@ type DockerPipe struct{}
 func (DockerPipe) String() string { return "signing docker images" }
 
 func (DockerPipe) Skip(ctx *context.Context) bool {
-	return ctx.SkipSign || len(ctx.Config.DockerSigns) == 0
+	return skips.Any(ctx, skips.Sign) || len(ctx.Config.DockerSigns) == 0
 }
 
 func (DockerPipe) Dependencies(ctx *context.Context) []string {

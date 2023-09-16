@@ -27,6 +27,7 @@ import (
 	"github.com/goreleaser/goreleaser/internal/artifact"
 	"github.com/goreleaser/goreleaser/internal/ids"
 	"github.com/goreleaser/goreleaser/internal/semerrgroup"
+	"github.com/goreleaser/goreleaser/internal/skips"
 	"github.com/goreleaser/goreleaser/internal/tmpl"
 	"github.com/goreleaser/goreleaser/pkg/config"
 	"github.com/goreleaser/goreleaser/pkg/context"
@@ -55,7 +56,7 @@ type Pipe struct{}
 
 func (Pipe) String() string { return "ko" }
 func (Pipe) Skip(ctx *context.Context) bool {
-	return ctx.SkipKo || len(ctx.Config.Kos) == 0
+	return skips.Any(ctx, skips.Ko) || len(ctx.Config.Kos) == 0
 }
 
 // Default sets the Pipes defaults.

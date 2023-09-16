@@ -6,6 +6,7 @@ import (
 	"testing"
 
 	"github.com/caarlos0/log"
+	"github.com/goreleaser/goreleaser/internal/skips"
 	"github.com/goreleaser/goreleaser/internal/testctx"
 	"github.com/goreleaser/goreleaser/internal/testlib"
 	"github.com/goreleaser/goreleaser/pkg/config"
@@ -103,8 +104,7 @@ func TestSkip(t *testing.T) {
 			Before: config.Before{
 				Hooks: []string{""},
 			},
-		})
-		ctx.SkipBefore = true
+		}, testctx.Skip(skips.Before))
 		require.True(t, Pipe{}.Skip(ctx))
 	})
 

@@ -4,6 +4,7 @@ package testctx
 import (
 	"time"
 
+	"github.com/goreleaser/goreleaser/internal/skips"
 	"github.com/goreleaser/goreleaser/pkg/config"
 	"github.com/goreleaser/goreleaser/pkg/context"
 )
@@ -105,28 +106,14 @@ func WithFakeRuntime(ctx *context.Context) {
 	}
 }
 
-func SkipPublish(ctx *context.Context) {
-	ctx.SkipPublish = true
-}
-
-func SkipAnnounce(ctx *context.Context) {
-	ctx.SkipAnnounce = true
-}
-
-func SkipDocker(ctx *context.Context) {
-	ctx.SkipDocker = true
-}
-
-func SkipValidate(ctx *context.Context) {
-	ctx.SkipValidate = true
+func Skip(keys ...skips.Key) Opt {
+	return func(ctx *context.Context) {
+		skips.Set(ctx, keys...)
+	}
 }
 
 func Snapshot(ctx *context.Context) {
 	ctx.Snapshot = true
-}
-
-func SkipSign(ctx *context.Context) {
-	ctx.SkipSign = true
 }
 
 func NewWithCfg(c config.Project, opts ...Opt) *context.Context {

@@ -5,6 +5,7 @@ import (
 	"testing"
 
 	"github.com/goreleaser/goreleaser/internal/pipeline"
+	"github.com/goreleaser/goreleaser/internal/skips"
 	"github.com/goreleaser/goreleaser/internal/testctx"
 	"github.com/goreleaser/goreleaser/pkg/config"
 	"github.com/goreleaser/goreleaser/pkg/context"
@@ -142,17 +143,27 @@ func TestBuildFlags(t *testing.T) {
 			snapshot: true,
 		})
 		require.True(t, ctx.Snapshot)
-		require.True(t, ctx.SkipValidate)
+		requireAll(t, ctx, skips.Validate)
+		require.True(t, ctx.SkipTokenCheck)
+	})
+
+	t.Run("skips (old)", func(t *testing.T) {
+		ctx := setup(buildOpts{
+			skipValidate:  true,
+			skipPostHooks: true,
+		})
+		requireAll(t, ctx, skips.Validate, skips.PostBuildHooks)
 		require.True(t, ctx.SkipTokenCheck)
 	})
 
 	t.Run("skips", func(t *testing.T) {
 		ctx := setup(buildOpts{
-			skipValidate:  true,
-			skipPostHooks: true,
+			skips: []string{
+				string(skips.Validate),
+				string(skips.PostBuildHooks),
+			},
 		})
-		require.True(t, ctx.SkipValidate)
-		require.True(t, ctx.SkipPostBuildHooks)
+		requireAll(t, ctx, skips.Validate, skips.PostBuildHooks)
 		require.True(t, ctx.SkipTokenCheck)
 	})
 

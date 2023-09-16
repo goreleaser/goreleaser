@@ -15,6 +15,7 @@ import (
 	"github.com/goreleaser/goreleaser/internal/ids"
 	"github.com/goreleaser/goreleaser/internal/logext"
 	"github.com/goreleaser/goreleaser/internal/semerrgroup"
+	"github.com/goreleaser/goreleaser/internal/skips"
 	"github.com/goreleaser/goreleaser/internal/tmpl"
 	"github.com/goreleaser/goreleaser/pkg/config"
 	"github.com/goreleaser/goreleaser/pkg/context"
@@ -28,7 +29,7 @@ type Pipe struct{}
 
 func (Pipe) String() string { return "cataloging artifacts" }
 func (Pipe) Skip(ctx *context.Context) bool {
-	return ctx.SkipSBOMCataloging || len(ctx.Config.SBOMs) == 0
+	return skips.Any(ctx, skips.SBOM) || len(ctx.Config.SBOMs) == 0
 }
 
 func (Pipe) Dependencies(ctx *context.Context) []string {

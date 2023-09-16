@@ -19,6 +19,7 @@ import (
 	"github.com/goreleaser/goreleaser/internal/pipe/telegram"
 	"github.com/goreleaser/goreleaser/internal/pipe/twitter"
 	"github.com/goreleaser/goreleaser/internal/pipe/webhook"
+	"github.com/goreleaser/goreleaser/internal/skips"
 	"github.com/goreleaser/goreleaser/internal/tmpl"
 	"github.com/goreleaser/goreleaser/pkg/context"
 )
@@ -52,7 +53,7 @@ type Pipe struct{}
 func (Pipe) String() string { return "announcing" }
 
 func (Pipe) Skip(ctx *context.Context) (bool, error) {
-	if ctx.SkipAnnounce {
+	if skips.Any(ctx, skips.Announce) {
 		return true, nil
 	}
 	return tmpl.New(ctx).Bool(ctx.Config.Announce.Skip)

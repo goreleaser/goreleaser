@@ -8,6 +8,7 @@ import (
 
 	"github.com/goreleaser/goreleaser/internal/artifact"
 	"github.com/goreleaser/goreleaser/internal/gio"
+	"github.com/goreleaser/goreleaser/internal/skips"
 	"github.com/goreleaser/goreleaser/internal/testctx"
 	"github.com/goreleaser/goreleaser/internal/testlib"
 	"github.com/goreleaser/goreleaser/pkg/config"
@@ -215,7 +216,7 @@ func TestDockerSkip(t *testing.T) {
 	})
 
 	t.Run("skip sign", func(t *testing.T) {
-		ctx := testctx.New(testctx.SkipSign)
+		ctx := testctx.New(testctx.Skip(skips.Sign))
 		require.True(t, DockerPipe{}.Skip(ctx))
 	})
 

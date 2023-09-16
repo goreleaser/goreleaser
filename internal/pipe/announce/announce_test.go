@@ -4,6 +4,7 @@ import (
 	"errors"
 	"testing"
 
+	"github.com/goreleaser/goreleaser/internal/skips"
 	"github.com/goreleaser/goreleaser/internal/testctx"
 	"github.com/goreleaser/goreleaser/pkg/config"
 	"github.com/hashicorp/go-multierror"
@@ -40,7 +41,7 @@ func TestAnnounceAllDisabled(t *testing.T) {
 
 func TestSkip(t *testing.T) {
 	t.Run("skip", func(t *testing.T) {
-		ctx := testctx.New(testctx.SkipAnnounce)
+		ctx := testctx.New(testctx.Skip(skips.Announce))
 		b, err := Pipe{}.Skip(ctx)
 		require.NoError(t, err)
 		require.True(t, b)

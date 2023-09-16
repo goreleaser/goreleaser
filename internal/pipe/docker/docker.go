@@ -16,6 +16,7 @@ import (
 	"github.com/goreleaser/goreleaser/internal/ids"
 	"github.com/goreleaser/goreleaser/internal/pipe"
 	"github.com/goreleaser/goreleaser/internal/semerrgroup"
+	"github.com/goreleaser/goreleaser/internal/skips"
 	"github.com/goreleaser/goreleaser/internal/tmpl"
 	"github.com/goreleaser/goreleaser/pkg/config"
 	"github.com/goreleaser/goreleaser/pkg/context"
@@ -31,8 +32,11 @@ const (
 // Pipe for docker.
 type Pipe struct{}
 
-func (Pipe) String() string                 { return "docker images" }
-func (Pipe) Skip(ctx *context.Context) bool { return len(ctx.Config.Dockers) == 0 || ctx.SkipDocker }
+func (Pipe) String() string { return "docker images" }
+
+func (Pipe) Skip(ctx *context.Context) bool {
+	return len(ctx.Config.Dockers) == 0 || skips.Any(ctx, skips.Docker)
+}
 
 func (Pipe) Dependencies(ctx *context.Context) []string {
 	var cmds []string

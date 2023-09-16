@@ -12,6 +12,7 @@ import (
 
 	"github.com/caarlos0/log"
 	"github.com/goreleaser/goreleaser/internal/logext"
+	"github.com/goreleaser/goreleaser/internal/skips"
 	"github.com/goreleaser/goreleaser/internal/tmpl"
 	"github.com/goreleaser/goreleaser/pkg/context"
 	homedir "github.com/mitchellh/go-homedir"
@@ -132,7 +133,7 @@ func (Pipe) Run(ctx *context.Context) error {
 }
 
 func checkErrors(ctx *context.Context, noTokens, noTokenErrs bool, gitlabTokenErr, githubTokenErr, giteaTokenErr error) error {
-	if ctx.SkipTokenCheck || ctx.SkipPublish {
+	if ctx.SkipTokenCheck || skips.Any(ctx, skips.Publish) {
 		return nil
 	}
 	if b, err := tmpl.New(ctx).Bool(ctx.Config.Release.Disable); err != nil || b {

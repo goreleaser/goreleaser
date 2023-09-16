@@ -15,6 +15,7 @@ import (
 	"github.com/goreleaser/goreleaser/internal/ids"
 	"github.com/goreleaser/goreleaser/internal/pipe"
 	"github.com/goreleaser/goreleaser/internal/semerrgroup"
+	"github.com/goreleaser/goreleaser/internal/skips"
 	"github.com/goreleaser/goreleaser/internal/tmpl"
 	"github.com/goreleaser/goreleaser/pkg/config"
 	"github.com/goreleaser/goreleaser/pkg/context"
@@ -364,7 +365,7 @@ func create(ctx *context.Context, fpm config.NFPM, format string, binaries []*ar
 		},
 	}
 
-	if ctx.SkipSign {
+	if skips.Any(ctx, skips.Sign) {
 		info.APK.Signature = nfpm.APKSignature{}
 		info.RPM.Signature = nfpm.RPMSignature{}
 		info.Deb.Signature = nfpm.DebSignature{}

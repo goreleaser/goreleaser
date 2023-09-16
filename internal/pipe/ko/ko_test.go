@@ -12,6 +12,7 @@ import (
 	"github.com/google/go-containerregistry/pkg/name"
 	"github.com/google/go-containerregistry/pkg/v1/remote"
 	"github.com/goreleaser/goreleaser/internal/artifact"
+	"github.com/goreleaser/goreleaser/internal/skips"
 	"github.com/goreleaser/goreleaser/internal/testctx"
 	"github.com/goreleaser/goreleaser/internal/testlib"
 	"github.com/goreleaser/goreleaser/pkg/config"
@@ -88,8 +89,7 @@ func TestSkip(t *testing.T) {
 	t.Run("skip ko set", func(t *testing.T) {
 		ctx := testctx.NewWithCfg(config.Project{
 			Kos: []config.Ko{{}},
-		})
-		ctx.SkipKo = true
+		}, testctx.Skip(skips.Ko))
 		require.True(t, Pipe{}.Skip(ctx))
 	})
 	t.Run("skip no kos", func(t *testing.T) {

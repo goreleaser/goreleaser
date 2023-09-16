@@ -6,6 +6,7 @@ import (
 	"path/filepath"
 	"testing"
 
+	"github.com/goreleaser/goreleaser/internal/skips"
 	"github.com/goreleaser/goreleaser/internal/testctx"
 	"github.com/goreleaser/goreleaser/internal/testlib"
 	"github.com/goreleaser/goreleaser/pkg/config"
@@ -112,7 +113,7 @@ func TestDirty(t *testing.T) {
 		require.Contains(t, err.Error(), "git is in a dirty state")
 	})
 	t.Run("skip validate is set", func(t *testing.T) {
-		ctx := testctx.New(testctx.SkipValidate)
+		ctx := testctx.New(testctx.Skip(skips.Validate))
 		testlib.AssertSkipped(t, Pipe{}.Run(ctx))
 		require.True(t, ctx.Git.Dirty)
 	})
@@ -162,7 +163,7 @@ func TestShallowClone(t *testing.T) {
 		require.NoError(t, Pipe{}.Run(testctx.New()))
 	})
 	t.Run("skip validate is set", func(t *testing.T) {
-		ctx := testctx.New(testctx.SkipValidate)
+		ctx := testctx.New(testctx.Skip(skips.Validate))
 		testlib.AssertSkipped(t, Pipe{}.Run(ctx))
 	})
 	t.Run("snapshot", func(t *testing.T) {
