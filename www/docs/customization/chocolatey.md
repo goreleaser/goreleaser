@@ -29,7 +29,7 @@ chocolateys:
       - bar
 
     # Your app's owner.
-    # It basically means your.
+    # It basically means you.
     owners: Drum Roll Inc
 
     # The app's title.
