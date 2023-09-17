@@ -12,6 +12,7 @@ import (
 type Key string
 
 const (
+	PreBuildHooks  Key = "pre-hooks"
 	PostBuildHooks Key = "post-hooks"
 	Publish        Key = "publish"
 	Announce       Key = "announce"
@@ -89,6 +90,7 @@ var Release = Keys{
 }
 
 var Build = Keys{
+	PreBuildHooks,
 	PostBuildHooks,
 	Validate,
 	Before,

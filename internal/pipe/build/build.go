@@ -97,8 +97,10 @@ func runPipeOnBuild(ctx *context.Context, g semerrgroup.Group, build config.Buil
 				return err
 			}
 
-			if err := runHook(ctx, *opts, build.Env, build.Hooks.Pre); err != nil {
-				return fmt.Errorf("pre hook failed: %w", err)
+			if !skips.Any(ctx, skips.PreBuildHooks) {
+				if err := runHook(ctx, *opts, build.Env, build.Hooks.Pre); err != nil {
+					return fmt.Errorf("pre hook failed: %w", err)
+				}
 			}
 			if err := doBuild(ctx, build, *opts); err != nil {
 				return err

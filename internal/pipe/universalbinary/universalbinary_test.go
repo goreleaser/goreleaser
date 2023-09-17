@@ -337,6 +337,13 @@ func TestRun(t *testing.T) {
 		require.NoError(t, Pipe{}.Run(ctx))
 	})
 
+	t.Run("skipping pre-hook", func(t *testing.T) {
+		ctx := ctx5
+		skips.Set(ctx, skips.PreBuildHooks)
+		ctx.Config.UniversalBinaries[0].Hooks.Pre = []config.Hook{{Cmd: "exit 1"}}
+		require.NoError(t, Pipe{}.Run(ctx))
+	})
+
 	t.Run("hook with env tmpl", func(t *testing.T) {
 		ctx := ctx5
 		ctx.Config.UniversalBinaries[0].Hooks.Pre = []config.Hook{{

@@ -59,8 +59,10 @@ func (Pipe) Run(ctx *context.Context) error {
 				Goos:   "darwin",
 				Goarch: "all",
 			}
-			if err := runHook(ctx, &opts, unibin.Hooks.Pre); err != nil {
-				return fmt.Errorf("pre hook failed: %w", err)
+			if !skips.Any(ctx, skips.PreBuildHooks) {
+				if err := runHook(ctx, &opts, unibin.Hooks.Pre); err != nil {
+					return fmt.Errorf("pre hook failed: %w", err)
+				}
 			}
 			if err := makeUniversalBinary(ctx, &opts, unibin); err != nil {
 				return err
