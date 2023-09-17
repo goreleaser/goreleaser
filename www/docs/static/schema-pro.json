@@ -1147,7 +1147,8 @@
 							"-version:refname",
 							"-version:creatordate",
 							"semver"
-						]
+						],
+						"default": "-version:refname"
 					},
 					"prerelease_suffix": {
 						"type": "string"
