@@ -383,6 +383,7 @@ func TestFilterTags(t *testing.T) {
 			Git: config.Git{
 				IgnoreTags: []string{
 					".*-dev",
+					`{{printf ""}}`,
 				},
 			},
 		})

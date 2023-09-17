@@ -323,6 +323,9 @@ func filterOutTags(ctx *context.Context, tags []string) ([]string, error) {
 		if err != nil {
 			return nil, err
 		}
+		if applied == "" {
+			continue
+		}
 		re, err := regexp.Compile(applied)
 		if err != nil {
 			return nil, err
