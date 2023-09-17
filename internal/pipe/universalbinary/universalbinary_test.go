@@ -346,6 +346,8 @@ func TestRun(t *testing.T) {
 
 	t.Run("hook with env tmpl", func(t *testing.T) {
 		ctx := ctx5
+		ctx.Skips[string(skips.PostBuildHooks)] = false
+		ctx.Skips[string(skips.PreBuildHooks)] = false
 		ctx.Config.UniversalBinaries[0].Hooks.Pre = []config.Hook{{
 			Cmd: "echo {{.Env.FOO}}",
 			Env: []string{"FOO=foo-{{.Tag}}"},
@@ -356,6 +358,8 @@ func TestRun(t *testing.T) {
 
 	t.Run("hook with bad env tmpl", func(t *testing.T) {
 		ctx := ctx5
+		ctx.Skips[string(skips.PostBuildHooks)] = false
+		ctx.Skips[string(skips.PreBuildHooks)] = false
 		ctx.Config.UniversalBinaries[0].Hooks.Pre = []config.Hook{{
 			Cmd: "echo blah",
 			Env: []string{"FOO=foo-{{.Tag}"},
