@@ -202,6 +202,17 @@ func (p Pipe) doRun(ctx *context.Context, winget config.Winget, cl client.Releas
 		return err
 	}
 
+	var deps []PackageDependency
+	for _, dep := range winget.Dependencies {
+		if err := tp.ApplyAll(&dep.MinimumVersion, &dep.PackageIdentifier); err != nil {
+			return err
+		}
+		deps = append(deps, PackageDependency{
+			PackageIdentifier: dep.PackageIdentifier,
+			MinimumVersion:    dep.MinimumVersion,
+		})
+	}
+
 	installer := Installer{
 		PackageIdentifier: winget.PackageIdentifier,
 		PackageVersion:    ctx.Version,
@@ -212,6 +223,9 @@ func (p Pipe) doRun(ctx *context.Context, winget config.Winget, cl client.Releas
 		Installers:        []InstallerItem{},
 		ManifestType:      "installer",
 		ManifestVersion:   manifestVersion,
+		Dependencies: Dependencies{
+			PackageDependencies: deps,
+		},
 	}
 
 	var amd64Count, i386count int

@@ -135,6 +135,14 @@ winget:
       - golang
       - cli
 
+    # Package dependencies.
+    #
+    # Since: v1.21
+    # Templates: allowed
+    dependencies:
+      - package_identifier: Foo.Bar
+        minimum_version: 1.2.3
+
 
 {% include-markdown "../includes/repository.md" comments=false %}
 ```

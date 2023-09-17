@@ -555,6 +555,48 @@ func TestRunPipe(t *testing.T) {
 				},
 			},
 		},
+		{
+			name:       "with-deps",
+			expectPath: "manifests/f/Foo/deps/1.2.1/Foo.deps.",
+			winget: config.Winget{
+				Name:             "deps",
+				Publisher:        "Foo",
+				License:          "MIT",
+				ShortDescription: "foo bar zaz",
+				IDs:              []string{"foo"},
+				Repository: config.RepoRef{
+					Owner: "foo",
+					Name:  "bar",
+				},
+				Dependencies: []config.WingetDependency{
+					{
+						PackageIdentifier: "foo.bar",
+						MinimumVersion:    "1.2.3",
+					},
+					{
+						PackageIdentifier: "zaz.bar",
+					},
+				},
+			},
+		},
+		{
+			name:             "bad-dependency-template",
+			expectRunErrorIs: &template.Error{},
+			winget: config.Winget{
+				Name:             "foo",
+				Publisher:        "Beckersoft",
+				License:          "MIT",
+				LicenseURL:       "https://foo.bar",
+				ShortDescription: "foo bar zaz",
+				Repository: config.RepoRef{
+					Owner: "foo",
+					Name:  "bar",
+				},
+				Dependencies: []config.WingetDependency{
+					{PackageIdentifier: "{{.Nope}}"},
+				},
+			},
+		},
 	} {
 		t.Run(tt.name, func(t *testing.T) {
 			folder := t.TempDir()

@@ -310,30 +310,36 @@ func (a *NixDependency) UnmarshalYAML(unmarshal func(interface{}) error) error {
 }
 
 type Winget struct {
-	Name                  string       `yaml:"name,omitempty" json:"name,omitempty"`
-	PackageIdentifier     string       `yaml:"package_identifier,omitempty" json:"package_identifier,omitempty"`
-	Publisher             string       `yaml:"publisher,omitempty" json:"publisher,omitempty"`
-	PublisherURL          string       `yaml:"publisher_url,omitempty" json:"publisher_url,omitempty"`
-	PublisherSupportURL   string       `yaml:"publisher_support_url,omitempty" json:"publisher_support_url,omitempty"`
-	Copyright             string       `yaml:"copyright,omitempty" json:"copyright,omitempty"`
-	CopyrightURL          string       `yaml:"copyright_url,omitempty" json:"copyright_url,omitempty"`
-	Author                string       `yaml:"author,omitempty" json:"author,omitempty"`
-	Path                  string       `yaml:"path,omitempty" json:"path,omitempty"`
-	Repository            RepoRef      `yaml:"repository,omitempty" json:"repository,omitempty"`
-	CommitAuthor          CommitAuthor `yaml:"commit_author,omitempty" json:"commit_author,omitempty"`
-	CommitMessageTemplate string       `yaml:"commit_msg_template,omitempty" json:"commit_msg_template,omitempty"`
-	IDs                   []string     `yaml:"ids,omitempty" json:"ids,omitempty"`
-	Goamd64               string       `yaml:"goamd64,omitempty" json:"goamd64,omitempty"`
-	SkipUpload            string       `yaml:"skip_upload,omitempty" json:"skip_upload,omitempty" jsonschema:"oneof_type=string;boolean"`
-	URLTemplate           string       `yaml:"url_template,omitempty" json:"url_template,omitempty"`
-	ShortDescription      string       `yaml:"short_description,omitempty" json:"short_description,omitempty"`
-	Description           string       `yaml:"description,omitempty" json:"description,omitempty"`
-	Homepage              string       `yaml:"homepage,omitempty" json:"homepage,omitempty"`
-	License               string       `yaml:"license,omitempty" json:"license,omitempty"`
-	LicenseURL            string       `yaml:"license_url,omitempty" json:"license_url,omitempty"`
-	ReleaseNotes          string       `yaml:"release_notes,omitempty" json:"release_notes,omitempty"`
-	ReleaseNotesURL       string       `yaml:"release_notes_url,omitempty" json:"release_notes_url,omitempty"`
-	Tags                  []string     `yaml:"tags,omitempty" json:"tags,omitempty"`
+	Name                  string             `yaml:"name,omitempty" json:"name,omitempty"`
+	PackageIdentifier     string             `yaml:"package_identifier,omitempty" json:"package_identifier,omitempty"`
+	Publisher             string             `yaml:"publisher,omitempty" json:"publisher,omitempty"`
+	PublisherURL          string             `yaml:"publisher_url,omitempty" json:"publisher_url,omitempty"`
+	PublisherSupportURL   string             `yaml:"publisher_support_url,omitempty" json:"publisher_support_url,omitempty"`
+	Copyright             string             `yaml:"copyright,omitempty" json:"copyright,omitempty"`
+	CopyrightURL          string             `yaml:"copyright_url,omitempty" json:"copyright_url,omitempty"`
+	Author                string             `yaml:"author,omitempty" json:"author,omitempty"`
+	Path                  string             `yaml:"path,omitempty" json:"path,omitempty"`
+	Repository            RepoRef            `yaml:"repository,omitempty" json:"repository,omitempty"`
+	CommitAuthor          CommitAuthor       `yaml:"commit_author,omitempty" json:"commit_author,omitempty"`
+	CommitMessageTemplate string             `yaml:"commit_msg_template,omitempty" json:"commit_msg_template,omitempty"`
+	IDs                   []string           `yaml:"ids,omitempty" json:"ids,omitempty"`
+	Goamd64               string             `yaml:"goamd64,omitempty" json:"goamd64,omitempty"`
+	SkipUpload            string             `yaml:"skip_upload,omitempty" json:"skip_upload,omitempty" jsonschema:"oneof_type=string;boolean"`
+	URLTemplate           string             `yaml:"url_template,omitempty" json:"url_template,omitempty"`
+	ShortDescription      string             `yaml:"short_description,omitempty" json:"short_description,omitempty"`
+	Description           string             `yaml:"description,omitempty" json:"description,omitempty"`
+	Homepage              string             `yaml:"homepage,omitempty" json:"homepage,omitempty"`
+	License               string             `yaml:"license,omitempty" json:"license,omitempty"`
+	LicenseURL            string             `yaml:"license_url,omitempty" json:"license_url,omitempty"`
+	ReleaseNotes          string             `yaml:"release_notes,omitempty" json:"release_notes,omitempty"`
+	ReleaseNotesURL       string             `yaml:"release_notes_url,omitempty" json:"release_notes_url,omitempty"`
+	Tags                  []string           `yaml:"tags,omitempty" json:"tags,omitempty"`
+	Dependencies          []WingetDependency `yaml:"dependencies,omitempty" json:"dependencies,omitempty"`
+}
+
+type WingetDependency struct {
+	PackageIdentifier string `yaml:"package_identifier" json:"package_identifier"`
+	MinimumVersion    string `yaml:"minimum_version,omitempty" json:"minimum_version,omitempty"`
 }
 
 // Krew contains the krew section.

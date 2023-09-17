@@ -92,6 +92,18 @@ type Installer struct {
 	Installers        []InstallerItem `yaml:"Installers,omitempty"`
 	ManifestType      string          `yaml:"ManifestType,omitempty"`
 	ManifestVersion   string          `yaml:"ManifestVersion,omitempty"`
+	Dependencies      Dependencies    `yaml:"Dependencies,omitempty"`
+}
+
+// nolint: tagliatelle
+type Dependencies struct {
+	PackageDependencies []PackageDependency `yaml:"PackageDependencies,omitempty"`
+}
+
+// nolint: tagliatelle
+type PackageDependency struct {
+	PackageIdentifier string `yaml:"PackageIdentifier"`
+	MinimumVersion    string `yaml:"MinimumVersion,omitempty"`
 }
 
 // nolint: tagliatelle
