@@ -149,6 +149,8 @@ func catalog(ctx *context.Context, cfg config.SBOM, artifacts []*artifact.Artifa
 }
 
 func subprocessDistPath(distDir string, pathRelativeToCwd string) (string, error) {
+	distDir = filepath.Clean(distDir)
+	pathRelativeToCwd = filepath.Clean(pathRelativeToCwd)
 	cwd, err := os.Getwd()
 	if err != nil {
 		return "", err
@@ -195,6 +197,11 @@ func catalogArtifact(ctx *context.Context, cfg config.SBOM, a *artifact.Artifact
 	}
 	cmd.Env = append(cmd.Env, envs...)
 	cmd.Dir = ctx.Config.Dist
+
+	log.WithField("env", cmd.Env).
+		WithField("dir", cmd.Dir).
+		WithField("cmd", cmd.Args).
+		Debug("running")
 
 	var b bytes.Buffer
 	w := gio.Safe(&b)
