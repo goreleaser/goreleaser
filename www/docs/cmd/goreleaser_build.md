@@ -27,7 +27,7 @@ goreleaser build [flags]
   -o, --output string      Copy the binary to the path after the build. Only taken into account when using --single-target and a single id (either with --id or if configuration only has one build)
   -p, --parallelism int    Amount tasks to run concurrently (default: number of CPUs)
       --single-target      Builds only for current GOOS and GOARCH, regardless of what's set in the configuration file
-      --skip strings       Skip the given options (valid options are: after, before, post-hooks, validate)
+      --skip strings       Skip the given options (valid options are: after, before, post-hooks, pre-hooks, validate)
       --snapshot           Generate an unversioned snapshot build, skipping all validations
       --timeout duration   Timeout to the entire build process (default 30m0s)
 ```
