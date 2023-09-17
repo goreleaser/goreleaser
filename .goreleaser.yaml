@@ -19,7 +19,7 @@ report_sizes: true
 
 git:
   ignore_tags:
-    - nightly
+    - "{{ if not .Nightly }}nightly{{ end }}"
 
 metadata:
   mod_timestamp: "{{ .CommitTimestamp }}"
