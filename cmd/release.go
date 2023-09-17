@@ -3,8 +3,6 @@ package cmd
 import (
 	"fmt"
 	"runtime"
-	"sort"
-	"strings"
 	"time"
 
 	"github.com/caarlos0/ctrlc"
@@ -138,14 +136,7 @@ func newReleaseCmd() *releaseCmd {
 		fmt.Sprintf("Skip the given options (valid options are %s)", skips.Release.String()),
 	)
 	_ = cmd.RegisterFlagCompletionFunc("skip", func(_ *cobra.Command, _ []string, toComplete string) ([]string, cobra.ShellCompDirective) {
-		var result []string
-		for _, k := range skips.Release {
-			if strings.HasPrefix(string(k), strings.ToLower(toComplete)) {
-				result = append(result, string(k))
-			}
-		}
-		sort.Strings(result)
-		return result, cobra.ShellCompDirectiveDefault
+		return skips.Release.Complete(toComplete), cobra.ShellCompDirectiveDefault
 	})
 
 	root.cmd = cmd

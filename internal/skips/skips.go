@@ -2,6 +2,7 @@ package skips
 
 import (
 	"fmt"
+	"sort"
 	"strings"
 
 	"github.com/goreleaser/goreleaser/pkg/context"
@@ -63,6 +64,17 @@ func (keys Keys) String() string {
 	}
 	slices.Sort(ss)
 	return strings.Join(ss, ", ")
+}
+
+func (keys Keys) Complete(prefix string) []string {
+	var result []string
+	for _, k := range keys {
+		if strings.HasPrefix(string(k), strings.ToLower(prefix)) {
+			result = append(result, string(k))
+		}
+	}
+	sort.Strings(result)
+	return result
 }
 
 var Release = Keys{
