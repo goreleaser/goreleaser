@@ -2965,7 +2965,16 @@
 						"type": "array"
 					},
 					"artifacts": {
-						"type": "string"
+						"type": "string",
+						"enum": [
+							"source",
+							"package",
+							"archive",
+							"binary",
+							"any",
+							"any"
+						],
+						"default": "archive"
 					},
 					"ids": {
 						"items": {
@@ -3956,10 +3965,31 @@
 							"type": "string"
 						},
 						"type": "array"
+					},
+					"dependencies": {
+						"items": {
+							"$ref": "#/$defs/WingetDependency"
+						},
+						"type": "array"
 					}
 				},
 				"additionalProperties": false,
 				"type": "object"
+			},
+			"WingetDependency": {
+				"properties": {
+					"package_identifier": {
+						"type": "string"
+					},
+					"minimum_version": {
+						"type": "string"
+					}
+				},
+				"additionalProperties": false,
+				"type": "object",
+				"required": [
+					"package_identifier"
+				]
 			}
 		},
 		"description": "goreleaser configuration definition file"
