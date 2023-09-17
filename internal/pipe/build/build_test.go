@@ -9,6 +9,7 @@ import (
 
 	"github.com/goreleaser/goreleaser/internal/artifact"
 	"github.com/goreleaser/goreleaser/internal/semerrgroup"
+	"github.com/goreleaser/goreleaser/internal/skips"
 	"github.com/goreleaser/goreleaser/internal/testctx"
 	"github.com/goreleaser/goreleaser/internal/testlib"
 	"github.com/goreleaser/goreleaser/internal/tmpl"
@@ -222,6 +223,17 @@ func TestRunPipeFailingHooks(t *testing.T) {
 		err := Pipe{}.Run(ctx)
 		require.ErrorIs(t, err, exec.ErrNotFound)
 		require.Contains(t, err.Error(), "post hook failed")
+	})
+
+	t.Run("post-hook-skip", func(t *testing.T) {
+		ctx := testctx.NewWithCfg(
+			cfg,
+			testctx.WithCurrentTag("2.4.5"),
+			testctx.Skip(skips.PostBuildHooks),
+		)
+		ctx.Config.Builds[0].Hooks.Pre = []config.Hook{{Cmd: "echo pre"}}
+		ctx.Config.Builds[0].Hooks.Post = []config.Hook{{Cmd: "exit 1"}}
+		require.NoError(t, Pipe{}.Run(ctx))
 	})
 }
 

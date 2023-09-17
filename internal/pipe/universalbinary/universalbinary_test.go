@@ -12,6 +12,7 @@ import (
 	"time"
 
 	"github.com/goreleaser/goreleaser/internal/artifact"
+	"github.com/goreleaser/goreleaser/internal/skips"
 	"github.com/goreleaser/goreleaser/internal/testctx"
 	"github.com/goreleaser/goreleaser/internal/testlib"
 	"github.com/goreleaser/goreleaser/pkg/config"
@@ -327,6 +328,13 @@ func TestRun(t *testing.T) {
 		err := Pipe{}.Run(ctx)
 		require.ErrorIs(t, err, exec.ErrNotFound)
 		require.Contains(t, err.Error(), "post hook failed")
+	})
+
+	t.Run("skipping post-hook", func(t *testing.T) {
+		ctx := ctx5
+		skips.Set(ctx, skips.PostBuildHooks)
+		ctx.Config.UniversalBinaries[0].Hooks.Post = []config.Hook{{Cmd: "exit 1"}}
+		require.NoError(t, Pipe{}.Run(ctx))
 	})
 
 	t.Run("hook with env tmpl", func(t *testing.T) {
