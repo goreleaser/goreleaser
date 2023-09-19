@@ -45,7 +45,7 @@ require (
 	github.com/ulikunitz/xz v0.5.11
 	github.com/withfig/autocomplete-tools/integrations/cobra v1.2.1
 	github.com/xanzy/go-gitlab v0.91.1
-	gocloud.dev v0.33.0
+	gocloud.dev v0.34.0
 	golang.org/x/crypto v0.12.0
 	golang.org/x/oauth2 v0.11.0
 	golang.org/x/sync v0.3.0
