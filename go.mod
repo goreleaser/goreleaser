@@ -30,7 +30,7 @@ require (
 	github.com/goreleaser/fileglob v1.3.0
 	github.com/goreleaser/nfpm/v2 v2.32.0
 	github.com/hashicorp/go-multierror v1.1.1
-	github.com/invopop/jsonschema v0.7.0
+	github.com/invopop/jsonschema v0.8.0
 	github.com/jarcoal/httpmock v1.3.1
 	github.com/klauspost/pgzip v1.2.6
 	github.com/mattn/go-mastodon v0.0.6
@@ -243,7 +243,7 @@ require (
 	go.mongodb.org/mongo-driver v1.11.3 // indirect
 	go.opencensus.io v0.24.0 // indirect
 	go.uber.org/automaxprocs v1.5.3
-	golang.org/x/exp v0.0.0-20230321023759-10a507213a29 // indirect
+	golang.org/x/exp v0.0.0-20230321023759-10a507213a29
 	golang.org/x/mod v0.12.0 // indirect
 	golang.org/x/net v0.14.0 // indirect
 	golang.org/x/sys v0.11.0 // indirect
