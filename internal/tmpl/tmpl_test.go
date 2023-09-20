@@ -425,10 +425,10 @@ func TestMdv2Escape(t *testing.T) {
 
 func TestMap(t *testing.T) {
 	ctx := testctx.New()
-	out, err := New(ctx).Apply(`{{ $m := map "a" "1" "b" "2" }}{{ $m.Get "a" }}{{ $m.Get "b" }}{{ $m.Get "c" "3" }}{{ $m.Get "z" }}`)
+	out, err := New(ctx).Apply(`{{ $m := map "a" "1" "b" "2" }}{{ index $m "a" }}{{ indexOrDefault $m "b" "1" }}{{ indexOrDefault $m "c" "3" }}{{ index $m "z" }}`)
 	require.NoError(t, err)
 	require.Equal(t, "123", out)
 
-	_, err = New(ctx).Apply(`{{ $m := map "a" }}{{ $m.Get "a" }}`)
-	require.Error(t, err, "expected even number of arguments, got 1")
+	_, err = New(ctx).Apply(`{{ $m := map "a" }}`)
+	require.ErrorContains(t, err, "map expects even number of arguments, got 1")
 }
