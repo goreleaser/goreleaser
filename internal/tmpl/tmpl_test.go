@@ -429,6 +429,6 @@ func TestMap(t *testing.T) {
 	require.NoError(t, err)
 	require.Equal(t, "123", out)
 
-	out, err = New(ctx).Apply(`{{ $m := map "a" }}{{ $m.Get "a" }}`)
+	_, err = New(ctx).Apply(`{{ $m := map "a" }}{{ $m.Get "a" }}`)
 	require.Error(t, err, "expected even number of arguments, got 1")
 }
