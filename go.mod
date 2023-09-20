@@ -3,7 +3,7 @@ module github.com/goreleaser/goreleaser
 go 1.21
 
 require (
-	code.gitea.io/sdk/gitea v0.15.1
+	code.gitea.io/sdk/gitea v0.16.0
 	dario.cat/mergo v1.0.0
 	github.com/Masterminds/semver/v3 v3.2.1
 	github.com/atc0005/go-teams-notify/v2 v2.8.0
@@ -55,7 +55,11 @@ require (
 	gopkg.in/yaml.v3 v3.0.1
 )
 
-require github.com/imdario/mergo v0.3.16 // indirect
+require (
+	github.com/davidmz/go-pageant v1.0.2 // indirect
+	github.com/go-fed/httpsig v1.1.0 // indirect
+	github.com/imdario/mergo v0.3.16 // indirect
+)
 
 require (
 	cloud.google.com/go v0.110.7 // indirect
