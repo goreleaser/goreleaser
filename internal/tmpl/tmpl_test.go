@@ -422,3 +422,13 @@ func TestMdv2Escape(t *testing.T) {
 		"aaa\\_\\*\\[\\]\\(\\)\\~\\`\\>\\#\\+\\-\\=\\|\\{\\}\\.\\!",
 		mdv2Escape("aaa_*[]()~`>#+-=|{}.!"))
 }
+
+func TestMap(t *testing.T) {
+	ctx := testctx.New()
+	out, err := New(ctx).Apply(`{{ $m := map "a" "1" "b" "2" }}{{ $m.Get "a" }}{{ $m.Get "b" }}{{ $m.Get "c" "3" }}{{ $m.Get "z" }}`)
+	require.NoError(t, err)
+	require.Equal(t, "123", out)
+
+	out, err = New(ctx).Apply(`{{ $m := map "a" }}{{ $m.Get "a" }}`)
+	require.Error(t, err, "expected even number of arguments, got 1")
+}

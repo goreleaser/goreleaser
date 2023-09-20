@@ -220,6 +220,7 @@ func (t *Template) Apply(s string) (string, error) {
 			"reverseFilter": filter(true),
 			"mdv2escape":    mdv2Escape,
 			"envOrDefault":  t.envOrDefault,
+			"map":           makemap,
 		}).
 		Parse(s)
 	if err != nil {
@@ -345,4 +346,29 @@ func mdv2Escape(s string) string {
 		".", "\\.",
 		"!", "\\!",
 	).Replace(s)
+}
+
+type stringMap map[string]string
+
+// Get returns the value for the given key, or the default value if the key is
+// not present.
+func (m stringMap) Get(key string, def ...string) string {
+	if v, ok := m[key]; ok {
+		return v
+	}
+	if len(def) > 0 {
+		return def[0]
+	}
+	return ""
+}
+
+func makemap(kvs ...string) (stringMap, error) {
+	if len(kvs)%2 != 0 {
+		return nil, fmt.Errorf("expected even number of arguments, got %d", len(kvs))
+	}
+	m := make(stringMap)
+	for i := 0; i < len(kvs); i += 2 {
+		m[kvs[i]] = kvs[i+1]
+	}
+	return m, nil
 }

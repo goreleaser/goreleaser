@@ -156,6 +156,7 @@ On all fields, you have these available functions:
 | `title "foo"`                  | "titlenize" the string using english as language. See [Title](https://pkg.go.dev/golang.org/x/text/cases#Title). Since v1.14    |
 | `mdv2escape "foo"`             | escape characters according to MarkdownV2, especially useful in the Telegram integration. Since v1.19                           |
 | `envOrDefault "NAME" "value"`  | either gets the value of the given environment variable, or the given default. Since v1.19                                      |
+| `$m := map "KEY" "VALUE"`      | creates a map with the given key value pairs, use `$m.Get("key", "default")` to get the value. Since v1.21                      |
 
 With all those fields, you may be able to compose the name of your artifacts
 pretty much the way you want:
