@@ -8,6 +8,7 @@ import (
 	"github.com/caarlos0/ctrlc"
 	"github.com/caarlos0/log"
 	"github.com/goreleaser/goreleaser/internal/deprecate"
+	"github.com/goreleaser/goreleaser/internal/logext"
 	"github.com/goreleaser/goreleaser/internal/middleware/errhandler"
 	"github.com/goreleaser/goreleaser/internal/middleware/logging"
 	"github.com/goreleaser/goreleaser/internal/middleware/skip"
@@ -238,5 +239,10 @@ func setupReleaseContext(ctx *context.Context, options releaseOpts) error {
 	if skips.Any(ctx, skips.Publish) {
 		skips.Set(ctx, skips.Announce)
 	}
+
+	log.Warnf(
+		logext.Warning("skipping %s..."),
+		skips.String(ctx),
+	)
 	return nil
 }
