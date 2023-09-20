@@ -27,7 +27,9 @@ var (
 	errSkipUpload               = pipe.Skip("winget.skip_upload is set")
 	errSkipUploadAuto           = pipe.Skip("winget.skip_upload is set to 'auto', and current version is a pre-release")
 	errMultipleArchives         = pipe.Skip("found multiple archives for the same platform, please consider filtering by id")
-	packageIdentifierValid      = regexp.MustCompile("^[^\\.\\s\\\\/:\\*\\?\"<>\\|\\x01-\\x1f]{1,32}(\\.[^\\.\\s\\\\/:\\*\\?\"<>\\|\\x01-\\x1f]{1,32}){1,7}$")
+
+	// copied from winget src
+	packageIdentifierValid = regexp.MustCompile("^[^\\.\\s\\\\/:\\*\\?\"<>\\|\\x01-\\x1f]{1,32}(\\.[^\\.\\s\\\\/:\\*\\?\"<>\\|\\x01-\\x1f]{1,32}){1,7}$")
 )
 
 type errNoArchivesFound struct {
