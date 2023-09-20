@@ -3,7 +3,7 @@ module github.com/goreleaser/goreleaser
 go 1.21
 
 require (
-	code.gitea.io/sdk/gitea v0.15.1
+	code.gitea.io/sdk/gitea v0.16.0
 	dario.cat/mergo v1.0.0
 	github.com/Masterminds/semver/v3 v3.2.1
 	github.com/atc0005/go-teams-notify/v2 v2.8.0
@@ -19,7 +19,7 @@ require (
 	github.com/chrismellard/docker-credential-acr-env v0.0.0-20220327082430-c57b701bfc08
 	github.com/dghubble/go-twitter v0.0.0-20211115160449-93a8679adecb
 	github.com/dghubble/oauth1 v0.7.2
-	github.com/disgoorg/disgo v0.16.8
+	github.com/disgoorg/disgo v0.16.9
 	github.com/disgoorg/snowflake/v2 v2.0.1
 	github.com/distribution/distribution/v3 v3.0.0-20221021092657-c47a966fded8
 	github.com/go-telegram-bot-api/telegram-bot-api v4.6.4+incompatible
@@ -46,8 +46,8 @@ require (
 	github.com/withfig/autocomplete-tools/integrations/cobra v1.2.1
 	github.com/xanzy/go-gitlab v0.91.1
 	gocloud.dev v0.34.0
-	golang.org/x/crypto v0.12.0
-	golang.org/x/oauth2 v0.11.0
+	golang.org/x/crypto v0.13.0
+	golang.org/x/oauth2 v0.12.0
 	golang.org/x/sync v0.3.0
 	golang.org/x/text v0.13.0
 	golang.org/x/tools v0.12.0
@@ -55,7 +55,11 @@ require (
 	gopkg.in/yaml.v3 v3.0.1
 )
 
-require github.com/imdario/mergo v0.3.16 // indirect
+require (
+	github.com/davidmz/go-pageant v1.0.2 // indirect
+	github.com/go-fed/httpsig v1.1.0 // indirect
+	github.com/imdario/mergo v0.3.16 // indirect
+)
 
 require (
 	cloud.google.com/go v0.110.7 // indirect
@@ -243,11 +247,11 @@ require (
 	go.mongodb.org/mongo-driver v1.11.3 // indirect
 	go.opencensus.io v0.24.0 // indirect
 	go.uber.org/automaxprocs v1.5.3
-	golang.org/x/exp v0.0.0-20230321023759-10a507213a29
+	golang.org/x/exp v0.0.0-20230801115018-d63ba01acd4b
 	golang.org/x/mod v0.12.0 // indirect
-	golang.org/x/net v0.14.0 // indirect
-	golang.org/x/sys v0.11.0 // indirect
-	golang.org/x/term v0.11.0 // indirect
+	golang.org/x/net v0.15.0 // indirect
+	golang.org/x/sys v0.12.0 // indirect
+	golang.org/x/term v0.12.0 // indirect
 	golang.org/x/time v0.3.0 // indirect
 	golang.org/x/xerrors v0.0.0-20220907171357-04be3eba64a2 // indirect
 	google.golang.org/api v0.134.0 // indirect
