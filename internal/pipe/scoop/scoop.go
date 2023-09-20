@@ -391,7 +391,7 @@ func binaries(a artifact.Artifact) ([]string, error) {
 		return nil, err
 	}
 	for _, b := range bins {
-		result = append(result, filepath.Join(wrap, b))
+		result = append(result, path.Join(wrap, b))
 	}
 	return result, nil
 }
