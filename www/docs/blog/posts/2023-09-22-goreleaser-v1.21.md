@@ -42,24 +42,31 @@ And, as always, several bug fixes and documentation updates!
 
 ## Windows
 
-GoReleaser was never properly tested on Windows. It somewhat works, but there
-are potentially many rough edges.
+GoReleaser was never properly/extensive tested on Windows.
+It somewhat works, but there are many rough edges, and potentially some bugs
+here and there.
 
+To make Windows a first-class runtime for GoReleaser,
 [I started trying to make CI pass on Windows](https://github.com/goreleaser/goreleaser/pull/4293).
-It's a bit hard to evolve it as I don't really use Windows, so I have to juggle
-around VMs and/or CI.
+It's a bit hard to evolve it as I don't really use Windows, and end up having
+to juggle around VMs and/or CI.
 
-If you use Windows regularly and want to contribute, ping me on our
-[Discord][discord], I'm happy to help you in any way I need, especially if you
-are a beginner in the field and/or Go.
+If you use Windows regularly and want to contribute to OSS, ping me on our
+[Discord][discord], I'm happy to help you in any way you need, especially if
+you are a beginner in the field and/or Go.
 
 ## Blog
 
-Our blog was migrated to this site, or, rather, is being migrated!
+Our blog was migrated here!
 
 You can read the announcement [here](./2023-09-14-welcome.md).
 
-You can also see the still-open issue [here](https://github.com/goreleaser/goreleaser/issues/3503)
+It still a work in progress, though.
+You can also see the still-open issue
+[here](https://github.com/goreleaser/goreleaser/issues/3503)
+
+The old address will still be up indefinitely, but we won't be updating it any
+longer.
 
 ## Other news
 
