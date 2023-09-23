@@ -70,6 +70,7 @@ func CleanAllLines(output string, err error) ([]string, error) {
 		}
 		result = append(result, l)
 	}
+	// TODO: maybe check for exec.ExitError only?
 	if err != nil {
 		err = errors.New(strings.TrimSuffix(err.Error(), "\n"))
 	}
