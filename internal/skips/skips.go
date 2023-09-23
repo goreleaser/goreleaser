@@ -6,6 +6,7 @@ import (
 	"strings"
 
 	"github.com/goreleaser/goreleaser/pkg/context"
+	"golang.org/x/exp/maps"
 	"golang.org/x/exp/slices"
 )
 
@@ -23,6 +24,16 @@ const (
 	Docker         Key = "docker"
 	Before         Key = "before"
 )
+
+func String(ctx *context.Context) string {
+	keys := maps.Keys(ctx.Skips)
+	sort.Strings(keys)
+	str := strings.Join(keys, ", ")
+	if idx := strings.LastIndex(str, ","); idx > -1 {
+		str = str[:idx] + " and" + str[idx+1:]
+	}
+	return str
+}
 
 func Any(ctx *context.Context, keys ...Key) bool {
 	for _, key := range keys {

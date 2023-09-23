@@ -1492,10 +1492,8 @@
 						"type": "string"
 					},
 					"headers": {
-						"patternProperties": {
-							".*": {
-								"type": "string"
-							}
+						"additionalProperties": {
+							"type": "string"
 						},
 						"type": "object"
 					}
@@ -1533,10 +1531,8 @@
 										"type": "string"
 									},
 									"headers": {
-										"patternProperties": {
-											".*": {
-												"type": "string"
-											}
+										"additionalProperties": {
+											"type": "string"
 										},
 										"type": "object"
 									}
@@ -1579,10 +1575,8 @@
 						"type": "string"
 					},
 					"labels": {
-						"patternProperties": {
-							".*": {
-								"type": "string"
-							}
+						"additionalProperties": {
+							"type": "string"
 						},
 						"type": "object"
 					},
@@ -1738,13 +1732,11 @@
 				]
 			},
 			"Matrix": {
-				"patternProperties": {
-					".*": {
-						"items": {
-							"type": "string"
-						},
-						"type": "array"
-					}
+				"additionalProperties": {
+					"items": {
+						"type": "string"
+					},
+					"type": "array"
 				},
 				"type": "object"
 			},
@@ -1892,10 +1884,8 @@
 						"$ref": "#/$defs/NFPMScripts"
 					},
 					"overrides": {
-						"patternProperties": {
-							".*": {
-								"$ref": "#/$defs/NFPMOverridables"
-							}
+						"additionalProperties": {
+							"$ref": "#/$defs/NFPMOverridables"
 						},
 						"type": "object"
 					},
@@ -3283,18 +3273,14 @@
 						"type": "array"
 					},
 					"layout": {
-						"patternProperties": {
-							".*": {
-								"$ref": "#/$defs/SnapcraftLayoutMetadata"
-							}
+						"additionalProperties": {
+							"$ref": "#/$defs/SnapcraftLayoutMetadata"
 						},
 						"type": "object"
 					},
 					"apps": {
-						"patternProperties": {
-							".*": {
-								"$ref": "#/$defs/SnapcraftAppMetadata"
-							}
+						"additionalProperties": {
+							"$ref": "#/$defs/SnapcraftAppMetadata"
 						},
 						"type": "object"
 					},
@@ -3836,10 +3822,8 @@
 						"type": "boolean"
 					},
 					"custom_headers": {
-						"patternProperties": {
-							".*": {
-								"type": "string"
-							}
+						"additionalProperties": {
+							"type": "string"
 						},
 						"type": "object"
 					},
@@ -3865,10 +3849,8 @@
 						"type": "string"
 					},
 					"headers": {
-						"patternProperties": {
-							".*": {
-								"type": "string"
-							}
+						"additionalProperties": {
+							"type": "string"
 						},
 						"type": "object"
 					},

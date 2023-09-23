@@ -1355,10 +1355,8 @@
 						"type": "string"
 					},
 					"labels": {
-						"patternProperties": {
-							".*": {
-								"type": "string"
-							}
+						"additionalProperties": {
+							"type": "string"
 						},
 						"type": "object"
 					},
@@ -1639,10 +1637,8 @@
 						"$ref": "#/$defs/NFPMArchLinux"
 					},
 					"overrides": {
-						"patternProperties": {
-							".*": {
-								"$ref": "#/$defs/NFPMOverridables"
-							}
+						"additionalProperties": {
+							"$ref": "#/$defs/NFPMOverridables"
 						},
 						"type": "object"
 					},
@@ -2614,7 +2610,16 @@
 						"type": "array"
 					},
 					"artifacts": {
-						"type": "string"
+						"type": "string",
+						"enum": [
+							"source",
+							"package",
+							"archive",
+							"binary",
+							"any",
+							"any"
+						],
+						"default": "archive"
 					},
 					"ids": {
 						"items": {
@@ -2923,18 +2928,14 @@
 						"type": "array"
 					},
 					"layout": {
-						"patternProperties": {
-							".*": {
-								"$ref": "#/$defs/SnapcraftLayoutMetadata"
-							}
+						"additionalProperties": {
+							"$ref": "#/$defs/SnapcraftLayoutMetadata"
 						},
 						"type": "object"
 					},
 					"apps": {
-						"patternProperties": {
-							".*": {
-								"$ref": "#/$defs/SnapcraftAppMetadata"
-							}
+						"additionalProperties": {
+							"$ref": "#/$defs/SnapcraftAppMetadata"
 						},
 						"type": "object"
 					},
@@ -3400,10 +3401,8 @@
 						"type": "boolean"
 					},
 					"custom_headers": {
-						"patternProperties": {
-							".*": {
-								"type": "string"
-							}
+						"additionalProperties": {
+							"type": "string"
 						},
 						"type": "object"
 					}
@@ -3426,10 +3425,8 @@
 						"type": "string"
 					},
 					"headers": {
-						"patternProperties": {
-							".*": {
-								"type": "string"
-							}
+						"additionalProperties": {
+							"type": "string"
 						},
 						"type": "object"
 					},
@@ -3526,10 +3523,31 @@
 							"type": "string"
 						},
 						"type": "array"
+					},
+					"dependencies": {
+						"items": {
+							"$ref": "#/$defs/WingetDependency"
+						},
+						"type": "array"
 					}
 				},
 				"additionalProperties": false,
 				"type": "object"
+			},
+			"WingetDependency": {
+				"properties": {
+					"package_identifier": {
+						"type": "string"
+					},
+					"minimum_version": {
+						"type": "string"
+					}
+				},
+				"additionalProperties": false,
+				"type": "object",
+				"required": [
+					"package_identifier"
+				]
 			}
 		},
 		"description": "goreleaser configuration definition file"
