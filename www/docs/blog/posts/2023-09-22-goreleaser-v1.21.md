@@ -1,5 +1,5 @@
 ---
-date: 2023-09-21
+date: 2023-09-22
 slug: goreleaser-v1.21
 categories:
   - announcements
@@ -9,7 +9,7 @@ authors:
 
 # Announcing GoReleaser v1.21 - mostly bug fixes
 
-A boring release, mostly bugfixes.
+A boring release, mostly bug fixes.
 Boring is good.
 
 <!-- more -->
@@ -27,7 +27,7 @@ Boring is good.
 - You can now skip pre build hooks on `goreleaser build`.
 - Properly `go mod` handling on pre-mods Go versions.
 - WASI support.
-- Templates are now allowed in `upx.enabled`.
+- New templateable fields and functions.
 - Several bug fixes, specially when the runtime OS is Windows.
 
 Besides that, some important refactories that should help evolving GoReleaser
