@@ -27,7 +27,7 @@ git:
   # Since: v1.21.
   ignore_tags:
     - nightly
-    - "{{.Env.FOO}}.*"
+    - "{{.Env.IGNORE_TAG}}"
 ```
 
 ## Semver sorting
