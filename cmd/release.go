@@ -240,9 +240,11 @@ func setupReleaseContext(ctx *context.Context, options releaseOpts) error {
 		skips.Set(ctx, skips.Announce)
 	}
 
-	log.Warnf(
-		logext.Warning("skipping %s..."),
-		skips.String(ctx),
-	)
+	if skips.Any(ctx, skips.Release...) {
+		log.Warnf(
+			logext.Warning("skipping %s..."),
+			skips.String(ctx),
+		)
+	}
 	return nil
 }
