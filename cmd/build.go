@@ -13,6 +13,7 @@ import (
 	"github.com/goreleaser/goreleaser/internal/artifact"
 	"github.com/goreleaser/goreleaser/internal/deprecate"
 	"github.com/goreleaser/goreleaser/internal/gio"
+	"github.com/goreleaser/goreleaser/internal/logext"
 	"github.com/goreleaser/goreleaser/internal/middleware/errhandler"
 	"github.com/goreleaser/goreleaser/internal/middleware/logging"
 	"github.com/goreleaser/goreleaser/internal/middleware/skip"
@@ -210,6 +211,13 @@ func setupBuildContext(ctx *context.Context, options buildOpts) error {
 		if err := setupBuildID(ctx, options.ids); err != nil {
 			return err
 		}
+	}
+
+	if skips.Any(ctx, skips.Build...) {
+		log.Warnf(
+			logext.Warning("skipping %s..."),
+			skips.String(ctx),
+		)
 	}
 
 	return nil
