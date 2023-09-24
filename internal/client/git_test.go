@@ -52,6 +52,42 @@ func TestGitClient(t *testing.T) {
 		require.Equal(t, "fake content updated", string(testlib.CatFileFromBareRepository(t, url, "fake.txt")))
 		require.Equal(t, "fake2 content", string(testlib.CatFileFromBareRepository(t, url, "fake2.txt")))
 	})
+
+	t.Run("with new branch", func(t *testing.T) {
+		cli := NewGitUploadClient("new-branch")
+		url := testlib.GitMakeBareRepository(t)
+		ctx := testctx.NewWithCfg(config.Project{
+			Dist: t.TempDir(),
+		})
+		repo := Repo{
+			GitURL:     url,
+			PrivateKey: testlib.MakeNewSSHKey(t, keygen.Ed25519, ""),
+			Name:       "test1",
+		}
+		require.NoError(t, cli.CreateFiles(
+			ctx,
+			author,
+			repo,
+			"hey test",
+			[]RepoFile{
+				{
+					Content: []byte("fake content"),
+					Path:    "fake.txt",
+				},
+				{
+					Content: []byte("fake2 content"),
+					Path:    "fake2.txt",
+				},
+				{
+					Content: []byte("fake content updated"),
+					Path:    "fake.txt",
+				},
+			},
+		))
+		require.Equal(t, "fake content updated", string(testlib.CatFileFromBareRepositoryOnBranch(t, url, "new-branch", "fake.txt")))
+		require.Equal(t, "fake2 content", string(testlib.CatFileFromBareRepositoryOnBranch(t, url, "new-branch", "fake2.txt")))
+	})
+
 	t.Run("no repo name", func(t *testing.T) {
 		url := testlib.GitMakeBareRepository(t)
 		ctx := testctx.NewWithCfg(config.Project{
