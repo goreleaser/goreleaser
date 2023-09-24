@@ -57,7 +57,8 @@ you are a beginner in the field and/or Go.
 
 ## Blog
 
-Our blog was migrated here!
+Our blog was migrated to a new address (and out of medium)!
+
 
 You can read the announcement [here](./2023-09-14-welcome.md).
 
