@@ -167,6 +167,7 @@ func doPublish(ctx *context.Context, formula *artifact.Artifact, cl client.Clien
 	}
 
 	if !brew.Repository.PullRequest.Enabled {
+		log.Debug("brews.pull_request disabled")
 		return cl.CreateFile(ctx, author, repo, content, gpath, msg)
 	}
 

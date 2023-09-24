@@ -381,7 +381,7 @@ func doPublish(ctx *context.Context, cl client.Client, wingets []*artifact.Artif
 	}
 
 	if !winget.Repository.PullRequest.Enabled {
-		log.Debug("winget.pull_request disabled")
+		log.Debug("wingets.pull_request disabled")
 		return nil
 	}
 
