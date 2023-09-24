@@ -130,13 +130,18 @@ func MakeNewSSHKey(tb testing.TB, algo keygen.KeyType, pass string) string {
 
 func CatFileFromBareRepository(tb testing.TB, url, name string) []byte {
 	tb.Helper()
+	return CatFileFromBareRepositoryOnBranch(tb, url, "master", name)
+}
+
+func CatFileFromBareRepositoryOnBranch(tb testing.TB, url, branch, name string) []byte {
+	tb.Helper()
 
 	out, err := exec.Command(
 		"git",
 		"-C", url,
 		"show",
-		"master:"+name,
+		branch+":"+name,
 	).CombinedOutput()
-	require.NoError(tb, err, "could not cat file "+name+" in repository")
+	require.NoError(tb, err, "could not cat file "+name+" in repository on branch "+branch)
 	return out
 }

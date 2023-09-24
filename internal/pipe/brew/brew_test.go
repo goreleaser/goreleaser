@@ -410,7 +410,11 @@ func TestFullPipe(t *testing.T) {
 			if url := ctx.Config.Brews[0].Repository.Git.URL; url == "" {
 				require.True(t, client.CreatedFile, "should have created a file")
 			} else {
-				content = testlib.CatFileFromBareRepository(t, url, name+".rb")
+				content = testlib.CatFileFromBareRepositoryOnBranch(
+					t, url,
+					ctx.Config.Brews[0].Repository.Branch,
+					name+".rb",
+				)
 			}
 
 			golden.RequireEqualRb(t, content)

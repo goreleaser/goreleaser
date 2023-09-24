@@ -334,7 +334,11 @@ func TestFullPipe(t *testing.T) {
 			if url := ctx.Config.Krews[0].Repository.Git.URL; url == "" {
 				require.True(t, client.CreatedFile, "should have created a file")
 			} else {
-				content = testlib.CatFileFromBareRepository(t, url, "plugins/"+name+".yaml")
+				content = testlib.CatFileFromBareRepositoryOnBranch(
+					t, url,
+					ctx.Config.Krews[0].Repository.Branch,
+					"plugins/"+name+".yaml",
+				)
 			}
 
 			golden.RequireEqualYaml(t, content)

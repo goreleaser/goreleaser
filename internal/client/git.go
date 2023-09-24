@@ -38,7 +38,13 @@ func NewGitUploadClient(branch string) FilesCreator {
 }
 
 // CreateFiles implements FilesCreator.
-func (g *gitClient) CreateFiles(ctx *context.Context, commitAuthor config.CommitAuthor, repo Repo, message string, files []RepoFile) (err error) {
+func (g *gitClient) CreateFiles(
+	ctx *context.Context,
+	commitAuthor config.CommitAuthor,
+	repo Repo,
+	message string,
+	files []RepoFile,
+) (err error) {
 	url, err := tmpl.New(ctx).Apply(repo.GitURL)
 	if err != nil {
 		return fmt.Errorf("git: failed to template git url: %w", err)
@@ -68,7 +74,8 @@ func (g *gitClient) CreateFiles(ctx *context.Context, commitAuthor config.Commit
 	}
 
 	parent := filepath.Join(ctx.Config.Dist, "git")
-	cwd := filepath.Join(parent, repo.Name)
+	name := repo.Name + "-" + g.branch
+	cwd := filepath.Join(parent, name)
 	env := []string{fmt.Sprintf("GIT_SSH_COMMAND=%s", sshcmd)}
 
 	if err := cloneLock.clone(url, func() error {
@@ -77,7 +84,7 @@ func (g *gitClient) CreateFiles(ctx *context.Context, commitAuthor config.Commit
 		}
 
 		if err := runGitCmds(ctx, parent, env, [][]string{
-			{"clone", url, repo.Name},
+			{"clone", url, name},
 		}); err != nil {
 			return fmt.Errorf("git: failed to clone local repository: %w", err)
 		}
@@ -89,6 +96,15 @@ func (g *gitClient) CreateFiles(ctx *context.Context, commitAuthor config.Commit
 			{"config", "--local", "init.defaultBranch", firstNonEmpty(g.branch, "master")},
 		}); err != nil {
 			return fmt.Errorf("git: failed to setup local repository: %w", err)
+		}
+		if err := runGitCmds(ctx, cwd, env, [][]string{
+			{"checkout", g.branch},
+		}); err != nil {
+			if err := runGitCmds(ctx, cwd, env, [][]string{
+				{"checkout", "-b", g.branch},
+			}); err != nil {
+				return fmt.Errorf("git: could not checkout branch %s: %w", g.branch, err)
+			}
 		}
 		return nil
 	}); err != nil {

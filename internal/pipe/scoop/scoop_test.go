@@ -261,9 +261,10 @@ func Test_doRun(t *testing.T) {
 			shouldNotErr,
 			func(tb testing.TB, a args) {
 				tb.Helper()
-				content := testlib.CatFileFromBareRepository(
+				content := testlib.CatFileFromBareRepositoryOnBranch(
 					tb,
 					a.ctx.Config.Scoop.Repository.Git.URL,
+					a.ctx.Config.Scoop.Repository.Branch,
 					"scoops/git-run-pipe.json",
 				)
 				golden.RequireEqualJSON(tb, content)
