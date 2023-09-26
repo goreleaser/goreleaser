@@ -13,7 +13,6 @@ import (
 )
 
 func TestGitClient(t *testing.T) {
-	cli := NewGitUploadClient("master")
 	author := config.CommitAuthor{
 		Name:  "Foo",
 		Email: "foo@bar.com",
@@ -29,6 +28,7 @@ func TestGitClient(t *testing.T) {
 			PrivateKey: testlib.MakeNewSSHKey(t, keygen.Ed25519, ""),
 			Name:       "test1",
 		}
+		cli := NewGitUploadClient(repo.Branch)
 		require.NoError(t, cli.CreateFiles(
 			ctx,
 			author,
@@ -54,7 +54,6 @@ func TestGitClient(t *testing.T) {
 	})
 
 	t.Run("with new branch", func(t *testing.T) {
-		cli := NewGitUploadClient("new-branch")
 		url := testlib.GitMakeBareRepository(t)
 		ctx := testctx.NewWithCfg(config.Project{
 			Dist: t.TempDir(),
@@ -63,7 +62,9 @@ func TestGitClient(t *testing.T) {
 			GitURL:     url,
 			PrivateKey: testlib.MakeNewSSHKey(t, keygen.Ed25519, ""),
 			Name:       "test1",
+			Branch:     "new-branch",
 		}
+		cli := NewGitUploadClient(repo.Branch)
 		require.NoError(t, cli.CreateFiles(
 			ctx,
 			author,
@@ -84,8 +85,19 @@ func TestGitClient(t *testing.T) {
 				},
 			},
 		))
-		require.Equal(t, "fake content updated", string(testlib.CatFileFromBareRepositoryOnBranch(t, url, "new-branch", "fake.txt")))
-		require.Equal(t, "fake2 content", string(testlib.CatFileFromBareRepositoryOnBranch(t, url, "new-branch", "fake2.txt")))
+		for path, content := range map[string]string{
+			"fake.txt":  "fake content updated",
+			"fake2.txt": "fake2 content",
+		} {
+			require.Equal(
+				t, content,
+				string(testlib.CatFileFromBareRepositoryOnBranch(
+					t, url,
+					repo.Branch,
+					path,
+				)),
+			)
+		}
 	})
 
 	t.Run("no repo name", func(t *testing.T) {
@@ -97,6 +109,7 @@ func TestGitClient(t *testing.T) {
 			GitURL:     url,
 			PrivateKey: testlib.MakeNewSSHKey(t, keygen.Ed25519, ""),
 		}
+		cli := NewGitUploadClient(repo.Branch)
 		require.NoError(t, cli.CreateFile(
 			ctx,
 			author,
@@ -122,6 +135,7 @@ func TestGitClient(t *testing.T) {
 		repo := Repo{
 			GitURL: "{{ .Nope }}",
 		}
+		cli := NewGitUploadClient(repo.Branch)
 		testlib.RequireTemplateError(t, cli.CreateFile(
 			ctx,
 			author,
@@ -139,6 +153,7 @@ func TestGitClient(t *testing.T) {
 			GitURL:     "git@github.com:nope/nopenopenopenope",
 			PrivateKey: testlib.MakeNewSSHKey(t, keygen.Ed25519, ""),
 		}
+		cli := NewGitUploadClient(repo.Branch)
 		err := cli.CreateFile(
 			ctx,
 			author,
@@ -159,6 +174,7 @@ func TestGitClient(t *testing.T) {
 			PrivateKey:    testlib.MakeNewSSHKey(t, keygen.Ed25519, ""),
 			GitSSHCommand: "{{.Foo}}",
 		}
+		cli := NewGitUploadClient(repo.Branch)
 		testlib.RequireTemplateError(t, cli.CreateFile(
 			ctx,
 			author,
@@ -173,6 +189,7 @@ func TestGitClient(t *testing.T) {
 			Dist: t.TempDir(),
 		})
 		repo := Repo{}
+		cli := NewGitUploadClient(repo.Branch)
 		require.EqualError(t, cli.CreateFile(
 			ctx,
 			author,
@@ -190,6 +207,7 @@ func TestGitClient(t *testing.T) {
 			GitURL:     testlib.GitMakeBareRepository(t),
 			PrivateKey: "{{.Foo}}",
 		}
+		cli := NewGitUploadClient(repo.Branch)
 		testlib.RequireTemplateError(t, cli.CreateFile(
 			ctx,
 			author,
@@ -207,6 +225,7 @@ func TestGitClient(t *testing.T) {
 			GitURL:     testlib.GitMakeBareRepository(t),
 			PrivateKey: "./nope",
 		}
+		cli := NewGitUploadClient(repo.Branch)
 		require.Error(t, cli.CreateFile(
 			ctx,
 			author,
