@@ -35,6 +35,9 @@ theme:
     - content.code.copy
     - content.action.edit
     - navigation.footer
+    - navigation.instant
+    - navigation.tracking
+    - navigation.tabs
 
 plugins:
   - search
@@ -74,33 +77,16 @@ extra:
 
 nav:
   - Home: index.md
-  - intro.md
-  - install.md
-  - quick-start.md
-  - how-it-works.md
-  - Limitations:
-      - limitations/cgo.md
-      - limitations/semver.md
-  - SCM:
-      - scm/github.md
-      - scm/gitlab.md
-      - scm/gitea.md
-  - Continuous Integration:
-      - About: ci/index.md
-      - ci/actions.md
-      - ci/azurepipelines.md
-      - ci/circle.md
-      - ci/cirrus.md
-      - ci/cloudbuild.md
-      - ci/codefresh.md
-      - ci/drone.md
-      - ci/gitlab.md
-      - ci/jenkins.md
-      - ci/semaphore.md
-      - ci/travis.md
-      - ci/woodpecker.md
+  - Getting Started:
+    - intro.md
+    - install.md
+    - quick-start.md
+    - how-it-works.md
+    - Limitations:
+        - limitations/cgo.md
+        - limitations/semver.md
   - Customization:
-      - About: customization/index.md
+      - JSONSchema: customization/jsonschema.md
       - Basics:
           - customization/includes.md
           - customization/templates.md
@@ -150,8 +136,12 @@ nav:
           - customization/publishers.md
           - customization/artifactory.md
           - customization/milestone.md
+          - SCM:
+              - scm/github.md
+              - scm/gitlab.md
+              - scm/gitea.md
       - Announce:
-          - About: customization/announce/index.md
+          - customization/announce/index.md
           - customization/announce/discord.md
           - customization/announce/linkedin.md
           - customization/announce/mastodon.md
@@ -164,60 +154,77 @@ nav:
           - customization/announce/telegram.md
           - customization/announce/twitter.md
           - customization/announce/webhook.md
-  - Command Line Usage:
-      - cmd/goreleaser.md
-      - cmd/goreleaser_init.md
-      - cmd/goreleaser_healthcheck.md
-      - cmd/goreleaser_check.md
-      - cmd/goreleaser_changelog.md
-      - cmd/goreleaser_build.md
-      - cmd/goreleaser_release.md
-      - cmd/goreleaser_continue.md
-      - cmd/goreleaser_publish.md
-      - cmd/goreleaser_announce.md
-      - cmd/goreleaser_completion.md
-      - cmd/goreleaser_completion_bash.md
-      - cmd/goreleaser_completion_fish.md
-      - cmd/goreleaser_completion_powershell.md
-      - cmd/goreleaser_completion_zsh.md
-      - cmd/goreleaser_jsonschema.md
-  - Common errors:
-      - errors/dirty.md
-      - errors/multiple-tokens.md
-      - errors/release-upload.md
-      - errors/docker-build.md
-      - errors/no-main.md
-      - errors/build.md
-      - errors/resource-not-accessible-by-integration.md
-      - errors/no-history.md
-      - errors/multiple-binaries-archive.md
-      - errors/scoop-archive.md
-  - deprecations.md
-  - Cookbooks:
-      - About: cookbooks/index.md
-      - Blog Posts: cookbooks/blog-posts.md
-      - Add a new cookbook: cookbooks/contributing.md
-      - cookbooks/private-monorepo-public-release.md
-      - cookbooks/multi-platform-docker-images.md
-      - cookbooks/build-go-modules.md
-      - cookbooks/cgo-and-crosscompiling.md
-      - cookbooks/debconf-templates.md
-      - cookbooks/using-jfrog-cli-to-publish-to-artifactory.md
-      - cookbooks/publish-to-nexus.md
-      - cookbooks/release-a-library.md
-      - cookbooks/semantic-release.md
-      - cookbooks/set-a-custom-git-tag.md
-      - cookbooks/using-main.version.md
-      - cookbooks/override-image-name.md
-      - cookbooks/goreleaser-xx.md
-  - Community:
-      - sponsors.md
-      - users.md
-      - contributing.md
+
+      - Continuous Integration:
+          - About: ci/index.md
+          - ci/actions.md
+          - ci/azurepipelines.md
+          - ci/circle.md
+          - ci/cirrus.md
+          - ci/cloudbuild.md
+          - ci/codefresh.md
+          - ci/drone.md
+          - ci/gitlab.md
+          - ci/jenkins.md
+          - ci/semaphore.md
+          - ci/travis.md
+          - ci/woodpecker.md
+
+
+  - More resources:
+    - sponsors.md
+    - users.md
+    - deprecations.md
+    - Common errors:
+        - errors/dirty.md
+        - errors/multiple-tokens.md
+        - errors/release-upload.md
+        - errors/docker-build.md
+        - errors/no-main.md
+        - errors/build.md
+        - errors/resource-not-accessible-by-integration.md
+        - errors/no-history.md
+        - errors/multiple-binaries-archive.md
+        - errors/scoop-archive.md
+    - Cookbooks:
+        - About: cookbooks/index.md
+        - Blog Posts: cookbooks/blog-posts.md
+        - Add a new cookbook: cookbooks/contributing.md
+        - cookbooks/private-monorepo-public-release.md
+        - cookbooks/multi-platform-docker-images.md
+        - cookbooks/build-go-modules.md
+        - cookbooks/cgo-and-crosscompiling.md
+        - cookbooks/debconf-templates.md
+        - cookbooks/using-jfrog-cli-to-publish-to-artifactory.md
+        - cookbooks/publish-to-nexus.md
+        - cookbooks/release-a-library.md
+        - cookbooks/semantic-release.md
+        - cookbooks/set-a-custom-git-tag.md
+        - cookbooks/using-main.version.md
+        - cookbooks/override-image-name.md
+        - cookbooks/goreleaser-xx.md
+    - Command Line Usage:
+        - cmd/goreleaser.md
+        - cmd/goreleaser_init.md
+        - cmd/goreleaser_healthcheck.md
+        - cmd/goreleaser_check.md
+        - cmd/goreleaser_changelog.md
+        - cmd/goreleaser_build.md
+        - cmd/goreleaser_release.md
+        - cmd/goreleaser_continue.md
+        - cmd/goreleaser_publish.md
+        - cmd/goreleaser_announce.md
+        - cmd/goreleaser_completion.md
+        - cmd/goreleaser_completion_bash.md
+        - cmd/goreleaser_completion_fish.md
+        - cmd/goreleaser_completion_powershell.md
+        - cmd/goreleaser_completion_zsh.md
+        - cmd/goreleaser_jsonschema.md
+    - contributing.md
+    - links.md
+  - Get Pro: pro.md
   - Blog:
       - blog/index.md
-  - pro.md
-  - links.md
 
 markdown_extensions:
   - admonition

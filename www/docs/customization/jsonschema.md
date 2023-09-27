@@ -1,4 +1,4 @@
-# Customization
+# JSONSchema
 
 GoReleaser can be customized by tweaking a `.goreleaser.yaml` file.
 
