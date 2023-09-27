@@ -97,15 +97,16 @@ func (g *gitClient) CreateFiles(
 		}); err != nil {
 			return fmt.Errorf("git: failed to setup local repository: %w", err)
 		}
-		if g.branch != "" {
+		if g.branch == "" {
+			return nil
+		}
+		if err := runGitCmds(ctx, cwd, env, [][]string{
+			{"checkout", g.branch},
+		}); err != nil {
 			if err := runGitCmds(ctx, cwd, env, [][]string{
-				{"checkout", g.branch},
+				{"checkout", "-b", g.branch},
 			}); err != nil {
-				if err := runGitCmds(ctx, cwd, env, [][]string{
-					{"checkout", "-b", g.branch},
-				}); err != nil {
-					return fmt.Errorf("git: could not checkout branch %s: %w", g.branch, err)
-				}
+				return fmt.Errorf("git: could not checkout branch %s: %w", g.branch, err)
 			}
 		}
 		return nil
