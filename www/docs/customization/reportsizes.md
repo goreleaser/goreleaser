@@ -8,14 +8,14 @@ sizes.
 It'll report the size of each artifact of the following types to the build
 output, as well as on `dist/artifacts.json`:
 
-- `Binary,`
-- `UniversalBinary,`
-- `UploadableArchive,`
-- `PublishableSnapcraft,`
-- `LinuxPackage,`
-- `CArchive,`
-- `CShared,`
-- `Header,`
+- `Binary`
+- `UniversalBinary`
+- `UploadableArchive`
+- `PublishableSnapcraft`
+- `LinuxPackage`
+- `CArchive`
+- `CShared`
+- `Header`
 
 Here's the available configuration options:
 
