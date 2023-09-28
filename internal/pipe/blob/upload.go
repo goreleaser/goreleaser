@@ -144,7 +144,7 @@ func uploadData(ctx *context.Context, conf config.Blob, up uploader, dataFile, u
 		return err
 	}
 
-	if err := up.Upload(ctx, uploadFile, data); err != nil {
+	if err := up.Upload(ctx, uploadFile, data, conf.CacheControl); err != nil {
 		return handleError(err, bucketURL)
 	}
 	return nil
@@ -205,7 +205,7 @@ func getData(ctx *context.Context, conf config.Blob, path string) ([]byte, error
 type uploader interface {
 	io.Closer
 	Open(ctx *context.Context, url string) error
-	Upload(ctx *context.Context, path string, data []byte) error
+	Upload(ctx *context.Context, path string, data []byte, cacheControl []string) error
 }
 
 // productionUploader actually do upload to.
@@ -231,12 +231,17 @@ func (u *productionUploader) Open(ctx *context.Context, bucket string) error {
 	return nil
 }
 
-func (u *productionUploader) Upload(ctx *context.Context, filepath string, data []byte) error {
+func (u *productionUploader) Upload(ctx *context.Context, filepath string, data []byte, cacheControl []string) error {
 	log.WithField("path", filepath).Info("uploading")
 
 	opts := &blob.WriterOptions{
 		ContentDisposition: "attachment; filename=" + path.Base(filepath),
 	}
+
+	if len(cacheControl) > 0 {
+		opts.CacheControl = strings.Join(cacheControl, ", ")
+	}
+
 	w, err := u.bucket.NewWriter(ctx, filepath, opts)
 	if err != nil {
 		return err
