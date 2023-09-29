@@ -16,25 +16,21 @@ func setupGitHub(ctx *context.Context) error {
 		ctx.Config.Release.GitHub = repo
 	}
 
-	owner, err := tmpl.New(ctx).Apply(ctx.Config.Release.GitHub.Owner)
-	if err != nil {
+	if err := tmpl.New(ctx).ApplyAll(
+		&ctx.Config.Release.GitHub.Name,
+		&ctx.Config.Release.GitHub.Owner,
+	); err != nil {
 		return err
 	}
-	ctx.Config.Release.GitHub.Owner = owner
 
-	name, err := tmpl.New(ctx).Apply(ctx.Config.Release.GitHub.Name)
-	if err != nil {
-		return err
-	}
-	ctx.Config.Release.GitHub.Name = name
-
-	ctx.ReleaseURL, err = tmpl.New(ctx).Apply(fmt.Sprintf(
+	url, err := tmpl.New(ctx).Apply(fmt.Sprintf(
 		"%s/%s/%s/releases/tag/%s",
 		ctx.Config.GitHubURLs.Download,
 		ctx.Config.Release.GitHub.Owner,
 		ctx.Config.Release.GitHub.Name,
 		ctx.Git.CurrentTag,
 	))
+	ctx.ReleaseURL = url
 	return err
 }
 
@@ -47,25 +43,21 @@ func setupGitLab(ctx *context.Context) error {
 		ctx.Config.Release.GitLab = repo
 	}
 
-	owner, err := tmpl.New(ctx).Apply(ctx.Config.Release.GitLab.Owner)
-	if err != nil {
+	if err := tmpl.New(ctx).ApplyAll(
+		&ctx.Config.Release.GitLab.Name,
+		&ctx.Config.Release.GitLab.Owner,
+	); err != nil {
 		return err
 	}
-	ctx.Config.Release.GitLab.Owner = owner
 
-	name, err := tmpl.New(ctx).Apply(ctx.Config.Release.GitLab.Name)
-	if err != nil {
-		return err
-	}
-	ctx.Config.Release.GitLab.Name = name
-
-	ctx.ReleaseURL, err = tmpl.New(ctx).Apply(fmt.Sprintf(
+	url, err := tmpl.New(ctx).Apply(fmt.Sprintf(
 		"%s/%s/%s/-/releases/%s",
 		ctx.Config.GitLabURLs.Download,
 		ctx.Config.Release.GitLab.Owner,
 		ctx.Config.Release.GitLab.Name,
 		ctx.Git.CurrentTag,
 	))
+	ctx.ReleaseURL = url
 	return err
 }
 
@@ -78,24 +70,20 @@ func setupGitea(ctx *context.Context) error {
 		ctx.Config.Release.Gitea = repo
 	}
 
-	owner, err := tmpl.New(ctx).Apply(ctx.Config.Release.Gitea.Owner)
-	if err != nil {
+	if err := tmpl.New(ctx).ApplyAll(
+		&ctx.Config.Release.Gitea.Name,
+		&ctx.Config.Release.Gitea.Owner,
+	); err != nil {
 		return err
 	}
-	ctx.Config.Release.Gitea.Owner = owner
 
-	name, err := tmpl.New(ctx).Apply(ctx.Config.Release.Gitea.Name)
-	if err != nil {
-		return err
-	}
-	ctx.Config.Release.Gitea.Name = name
-
-	ctx.ReleaseURL, err = tmpl.New(ctx).Apply(fmt.Sprintf(
+	url, err := tmpl.New(ctx).Apply(fmt.Sprintf(
 		"%s/%s/%s/releases/tag/%s",
 		ctx.Config.GiteaURLs.Download,
 		ctx.Config.Release.Gitea.Owner,
 		ctx.Config.Release.Gitea.Name,
 		ctx.Git.CurrentTag,
 	))
+	ctx.ReleaseURL = url
 	return err
 }
