@@ -1,4 +1,4 @@
-FROM golang:1.21.1-alpine@sha256:96634e55b363cb93d39f78fb18aa64abc7f96d372c176660d7b8b6118939d97b
+FROM golang:1.21.1-alpine@sha256:2b74246a3464da3bd3edc19b4c029447c795e772f2068e40f39817ba89ae1054
 
 RUN apk add --no-cache bash \
 	curl \
