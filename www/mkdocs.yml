@@ -86,7 +86,7 @@ nav:
         - limitations/cgo.md
         - limitations/semver.md
   - Customization:
-      - JSONSchema: customization/jsonschema.md
+      - customization/index.md
       - Basics:
           - customization/includes.md
           - customization/templates.md

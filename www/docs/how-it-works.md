@@ -7,7 +7,7 @@ use cases easy.
 GoReleaser expects a couple of things:
 
 - a `.goreleaser.yaml` file with the configuration (see the
-  [customization section](/customization) for more info)
+  [customization section](./customization/index.md) for more info)
 - a clean working tree
 - a SemVer-compatible version (e.g. `10.21.34-prerelease+buildmeta`)
 
@@ -24,6 +24,6 @@ A GoReleaser run is split into 4 major steps:
 - **announcing**: announces your release to the configured channels
 
 Some steps might be skipped with `--skip-foo`-like flags (check the
-[command line docs](/cmd/goreleaser/) for details).
+[command line docs](./cmd/goreleaser.md) for details).
 
 If any of the previous steps fails, the next steps will not run.
