@@ -6,6 +6,7 @@ import (
 	"os/exec"
 	"strings"
 
+	"github.com/goreleaser/goreleaser/internal/git"
 	"github.com/goreleaser/goreleaser/pkg/context"
 )
 
@@ -27,6 +28,7 @@ func (Pipe) Default(ctx *context.Context) error {
 		ctx.Config.Release.GitLab.Name,
 		ctx.Config.Release.Gitea.Name,
 		moduleName(),
+		gitRemote(ctx),
 	} {
 		if candidate == "" {
 			continue
@@ -54,4 +56,15 @@ func moduleName() string {
 
 	parts := strings.Split(mod, "/")
 	return strings.TrimSpace(parts[len(parts)-1])
+}
+
+func gitRemote(ctx *context.Context) string {
+	repo, err := git.ExtractRepoFromConfig(ctx)
+	if err != nil {
+		return ""
+	}
+	if err := repo.CheckSCM(); err != nil {
+		return ""
+	}
+	return repo.Name
 }
