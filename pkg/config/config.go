@@ -11,6 +11,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/goreleaser/goreleaser/internal/logext"
 	"github.com/goreleaser/goreleaser/internal/yaml"
 	"github.com/goreleaser/nfpm/v2/files"
 	"github.com/invopop/jsonschema"
@@ -1144,6 +1145,7 @@ type Source struct {
 
 // Project includes all project configuration.
 type Project struct {
+	Version         int              `yaml:"version" json:"version" jsonschema:"enum=2"`
 	ProjectName     string           `yaml:"project_name,omitempty" json:"project_name,omitempty"`
 	Env             []string         `yaml:"env,omitempty" json:"env,omitempty"`
 	Release         Release          `yaml:"release,omitempty" json:"release,omitempty"`
@@ -1346,6 +1348,13 @@ func LoadReader(fd io.Reader) (config Project, err error) {
 		return config, err
 	}
 	err = yaml.UnmarshalStrict(data, &config)
+	if config.Version != 2 {
+		return config, fmt.Errorf(
+			"only configurations files on %s are supported, yours is %s, please update your configuration",
+			logext.Keyword("version: 2"),
+			logext.Keyword(fmt.Sprintf("version: %d", config.Version)),
+		)
+	}
 	return config, err
 }
 
