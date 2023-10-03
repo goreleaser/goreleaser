@@ -9,7 +9,6 @@ type templateData struct {
 	Version              string
 	License              string
 	Caveats              []string
-	Plist                string
 	PostInstall          []string
 	Dependencies         []config.HomebrewDependency
 	Conflicts            []string
@@ -171,17 +170,6 @@ class {{ .Name }} < Formula
     {{- range $index, $element := . }}
       {{ . -}}
     {{- end }}
-    EOS
-  end
-  {{- end -}}
-
-  {{- with .Plist }}
-
-  plist_options startup: false
-
-  def plist
-    <<~EOS
-      {{ . }}
     EOS
   end
   {{- end -}}

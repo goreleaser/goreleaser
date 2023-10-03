@@ -57,14 +57,6 @@ class MultipleArmv6 < Formula
     EOS
   end
 
-  plist_options startup: false
-
-  def plist
-    <<~EOS
-      <xml>whatever</xml>
-    EOS
-  end
-
   test do
     system "true"
     system "#{bin}/foo", "-h"

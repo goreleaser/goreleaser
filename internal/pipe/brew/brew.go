@@ -8,7 +8,6 @@ import (
 	"os"
 	"path"
 	"path/filepath"
-	"reflect"
 	"sort"
 	"strings"
 	"text/template"
@@ -17,7 +16,6 @@ import (
 	"github.com/goreleaser/goreleaser/internal/artifact"
 	"github.com/goreleaser/goreleaser/internal/client"
 	"github.com/goreleaser/goreleaser/internal/commitauthor"
-	"github.com/goreleaser/goreleaser/internal/deprecate"
 	"github.com/goreleaser/goreleaser/internal/pipe"
 	"github.com/goreleaser/goreleaser/internal/tmpl"
 	"github.com/goreleaser/goreleaser/pkg/config"
@@ -65,13 +63,6 @@ func (Pipe) Default(ctx *context.Context) error {
 		}
 		if brew.Goamd64 == "" {
 			brew.Goamd64 = "v1"
-		}
-		if brew.Plist != "" {
-			deprecate.Notice(ctx, "brews.plist")
-		}
-		if !reflect.DeepEqual(brew.Tap, config.RepoRef{}) {
-			brew.Repository = brew.Tap
-			deprecate.Notice(ctx, "brews.tap")
 		}
 	}
 
@@ -381,7 +372,6 @@ func dataFor(ctx *context.Context, cfg config.Homebrew, cl client.ReleaseURLTemp
 		Caveats:       split(cfg.Caveats),
 		Dependencies:  cfg.Dependencies,
 		Conflicts:     cfg.Conflicts,
-		Plist:         cfg.Plist,
 		Service:       split(cfg.Service),
 		PostInstall:   split(cfg.PostInstall),
 		Tests:         split(cfg.Test),

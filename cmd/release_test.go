@@ -58,7 +58,7 @@ func TestReleaseFlags(t *testing.T) {
 	setup := func(tb testing.TB, opts releaseOpts) *context.Context {
 		tb.Helper()
 		ctx := testctx.New()
-		setupReleaseContext(ctx, opts)
+		require.NoError(t, setupReleaseContext(ctx, opts))
 		return ctx
 	}
 
@@ -68,16 +68,6 @@ func TestReleaseFlags(t *testing.T) {
 		})
 		require.True(t, ctx.Snapshot)
 		requireAll(t, ctx, skips.Publish, skips.Validate, skips.Announce)
-	})
-
-	t.Run("skips (old)", func(t *testing.T) {
-		ctx := setup(t, releaseOpts{
-			skipPublish:  true,
-			skipSign:     true,
-			skipValidate: true,
-		})
-
-		requireAll(t, ctx, skips.Sign, skips.Publish, skips.Validate, skips.Announce)
 	})
 
 	t.Run("skips", func(t *testing.T) {

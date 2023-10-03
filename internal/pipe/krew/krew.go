@@ -10,7 +10,6 @@ import (
 	"os"
 	"path"
 	"path/filepath"
-	"reflect"
 	"sort"
 	"strings"
 
@@ -18,7 +17,6 @@ import (
 	"github.com/goreleaser/goreleaser/internal/artifact"
 	"github.com/goreleaser/goreleaser/internal/client"
 	"github.com/goreleaser/goreleaser/internal/commitauthor"
-	"github.com/goreleaser/goreleaser/internal/deprecate"
 	"github.com/goreleaser/goreleaser/internal/pipe"
 	"github.com/goreleaser/goreleaser/internal/tmpl"
 	"github.com/goreleaser/goreleaser/internal/yaml"
@@ -55,10 +53,6 @@ func (Pipe) Default(ctx *context.Context) error {
 		}
 		if krew.Goamd64 == "" {
 			krew.Goamd64 = "v1"
-		}
-		if !reflect.DeepEqual(krew.Index, config.RepoRef{}) {
-			krew.Repository = krew.Index
-			deprecate.Notice(ctx, "krews.index")
 		}
 	}
 

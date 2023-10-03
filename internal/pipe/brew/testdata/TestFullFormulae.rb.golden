@@ -74,14 +74,6 @@ class Test < Formula
     EOS
   end
 
-  plist_options startup: false
-
-  def plist
-    <<~EOS
-      it works
-    EOS
-  end
-
   test do
     system "#{bin}/foo", "-version"
   end

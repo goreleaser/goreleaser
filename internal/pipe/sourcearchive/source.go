@@ -9,7 +9,6 @@ import (
 	"github.com/caarlos0/log"
 	"github.com/goreleaser/goreleaser/internal/archivefiles"
 	"github.com/goreleaser/goreleaser/internal/artifact"
-	"github.com/goreleaser/goreleaser/internal/deprecate"
 	"github.com/goreleaser/goreleaser/internal/gio"
 	"github.com/goreleaser/goreleaser/internal/git"
 	"github.com/goreleaser/goreleaser/internal/tmpl"
@@ -132,10 +131,6 @@ func (Pipe) Default(ctx *context.Context) error {
 
 	if archive.NameTemplate == "" {
 		archive.NameTemplate = "{{ .ProjectName }}-{{ .Version }}"
-	}
-
-	if archive.Enabled && archive.RLCP != "" {
-		deprecate.Notice(ctx, "source.rlcp")
 	}
 	return nil
 }

@@ -241,12 +241,6 @@ type Homebrew struct {
 	Goarm                 string               `yaml:"goarm,omitempty" json:"goarm,omitempty" jsonschema:"oneof_type=string;integer"`
 	Goamd64               string               `yaml:"goamd64,omitempty" json:"goamd64,omitempty"`
 	Service               string               `yaml:"service,omitempty" json:"service,omitempty"`
-
-	// Deprecated: use Repository instead.
-	Tap RepoRef `yaml:"tap,omitempty" json:"tap,omitempty" jsonschema:"deprecated=true,description=use repository instead"`
-
-	// Deprecated: use Service instead.
-	Plist string `yaml:"plist,omitempty" json:"plist,omitempty" jsonschema:"deprecated=true,description=use service instead"`
 }
 
 type Nix struct {
@@ -357,9 +351,6 @@ type Krew struct {
 	Goarm                 string       `yaml:"goarm,omitempty" json:"goarm,omitempty" jsonschema:"oneof_type=string;integer"`
 	Goamd64               string       `yaml:"goamd64,omitempty" json:"goamd64,omitempty"`
 	SkipUpload            string       `yaml:"skip_upload,omitempty" json:"skip_upload,omitempty" jsonschema:"oneof_type=string;boolean"`
-
-	// Deprecated: use Repository instead.
-	Index RepoRef `yaml:"index,omitempty" json:"index,omitempty" jsonschema:"deprecated=true,description=use repository instead"`
 }
 
 // Ko contains the ko section
@@ -403,9 +394,6 @@ type Scoop struct {
 	Depends               []string     `yaml:"depends,omitempty" json:"depends,omitempty"`
 	Shortcuts             [][]string   `yaml:"shortcuts,omitempty" json:"shortcuts,omitempty"`
 	Goamd64               string       `yaml:"goamd64,omitempty" json:"goamd64,omitempty"`
-
-	// Deprecated: use Repository instead.
-	Bucket RepoRef `yaml:"bucket,omitempty" json:"bucket,omitempty" jsonschema:"deprecated=true,description=use repository instead"`
 }
 
 // CommitAuthor is the author of a Git commit.
@@ -713,9 +701,6 @@ type Archive struct {
 	Files                     []File           `yaml:"files,omitempty" json:"files,omitempty"`
 	Meta                      bool             `yaml:"meta,omitempty" json:"meta,omitempty"`
 	AllowDifferentBinaryCount bool             `yaml:"allow_different_binary_count,omitempty" json:"allow_different_binary_count,omitempty"`
-
-	// Deprecated: don't need to set this anymore.
-	RLCP string `yaml:"rlcp,omitempty" json:"rlcp,omitempty"  jsonschema:"oneof_type=string;boolean,deprecated=true,description=you can now remove this"`
 }
 
 type ReleaseNotesMode string
@@ -1137,9 +1122,6 @@ type Source struct {
 	Enabled        bool   `yaml:"enabled,omitempty" json:"enabled,omitempty"`
 	PrefixTemplate string `yaml:"prefix_template,omitempty" json:"prefix_template,omitempty"`
 	Files          []File `yaml:"files,omitempty" json:"files,omitempty"`
-
-	// Deprecated: don't need to set this anymore.
-	RLCP string `yaml:"rlcp,omitempty" json:"rlcp,omitempty" jsonschema:"oneof_type=string;boolean,deprecated=true,description=you can now remove this"`
 }
 
 // Project includes all project configuration.
@@ -1196,12 +1178,6 @@ type Project struct {
 
 	// should be set if using Gitea
 	GiteaURLs GiteaURLs `yaml:"gitea_urls,omitempty" json:"gitea_urls,omitempty"`
-
-	// Deprecated: use Scoops instead.
-	Scoop Scoop `yaml:"scoop,omitempty" json:"scoop,omitempty" jsonschema:"deprecated=true,description=use scoops instead"`
-
-	// Deprecated: use Builds instead.
-	SingleBuild Build `yaml:"build,omitempty" json:"build,omitempty" jsonschema:"deprecated=true,description=use builds instead"`
 }
 
 type ProjectMetadata struct {

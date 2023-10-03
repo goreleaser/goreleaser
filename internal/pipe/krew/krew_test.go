@@ -963,7 +963,7 @@ func TestDefault(t *testing.T) {
 		ProjectName: "myproject",
 		Krews: []config.Krew{
 			{
-				Index: config.RepoRef{
+				Repository: config.RepoRef{
 					Git: config.GitRepoRef{
 						URL: "foo/bar",
 					},
@@ -977,7 +977,6 @@ func TestDefault(t *testing.T) {
 	require.NotEmpty(t, ctx.Config.Krews[0].CommitAuthor.Email)
 	require.NotEmpty(t, ctx.Config.Krews[0].CommitMessageTemplate)
 	require.Equal(t, "foo/bar", ctx.Config.Krews[0].Repository.Git.URL)
-	require.True(t, ctx.Deprecated)
 }
 
 func TestGHFolder(t *testing.T) {

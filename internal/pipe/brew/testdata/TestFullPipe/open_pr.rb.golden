@@ -55,14 +55,6 @@ class OpenPr < Formula
     EOS
   end
 
-  plist_options startup: false
-
-  def plist
-    <<~EOS
-      <xml>whatever</xml>
-    EOS
-  end
-
   service do
     run foo/bar
     keep_alive true

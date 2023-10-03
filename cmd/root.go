@@ -48,9 +48,6 @@ type rootCmd struct {
 	cmd     *cobra.Command
 	verbose bool
 	exit    func(int)
-
-	// Deprecated: use verbose instead.
-	debug bool
 }
 
 func newRootCmd(version goversion.Info, exit func(int)) *rootCmd {
@@ -75,7 +72,7 @@ Check out our website for more information, examples and documentation: https://
 		Args:              cobra.NoArgs,
 		ValidArgsFunction: cobra.NoFileCompletions,
 		PersistentPreRun: func(_ *cobra.Command, _ []string) {
-			if root.verbose || root.debug {
+			if root.verbose {
 				log.SetLevel(log.DebugLevel)
 				log.Debug("verbose output enabled")
 			}
@@ -86,10 +83,7 @@ Check out our website for more information, examples and documentation: https://
 	}
 	cmd.SetVersionTemplate("{{.Version}}")
 
-	cmd.PersistentFlags().BoolVar(&root.debug, "debug", false, "Enable verbose mode")
 	cmd.PersistentFlags().BoolVar(&root.verbose, "verbose", false, "Enable verbose mode")
-	_ = cmd.Flags().MarkDeprecated("debug", "please use --verbose instead")
-	_ = cmd.Flags().MarkHidden("debug")
 	cmd.AddCommand(
 		newBuildCmd().cmd,
 		newReleaseCmd().cmd,

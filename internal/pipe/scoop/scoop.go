@@ -8,14 +8,12 @@ import (
 	"os"
 	"path"
 	"path/filepath"
-	"reflect"
 	"strings"
 
 	"github.com/caarlos0/log"
 	"github.com/goreleaser/goreleaser/internal/artifact"
 	"github.com/goreleaser/goreleaser/internal/client"
 	"github.com/goreleaser/goreleaser/internal/commitauthor"
-	"github.com/goreleaser/goreleaser/internal/deprecate"
 	"github.com/goreleaser/goreleaser/internal/pipe"
 	"github.com/goreleaser/goreleaser/internal/tmpl"
 	"github.com/goreleaser/goreleaser/pkg/config"
@@ -59,11 +57,9 @@ const scoopConfigExtra = "ScoopConfig"
 // Pipe that builds and publishes scoop manifests.
 type Pipe struct{}
 
-func (Pipe) String() string        { return "scoop manifests" }
-func (Pipe) ContinueOnError() bool { return true }
-func (Pipe) Skip(ctx *context.Context) bool {
-	return ctx.Config.Scoop.Repository.Name == "" && len(ctx.Config.Scoops) == 0
-}
+func (Pipe) String() string                 { return "scoop manifests" }
+func (Pipe) ContinueOnError() bool          { return true }
+func (Pipe) Skip(ctx *context.Context) bool { return len(ctx.Config.Scoops) == 0 }
 
 // Run creates the scoop manifest locally.
 func (Pipe) Run(ctx *context.Context) error {
@@ -85,12 +81,6 @@ func (Pipe) Publish(ctx *context.Context) error {
 
 // Default sets the pipe defaults.
 func (Pipe) Default(ctx *context.Context) error {
-	if !reflect.DeepEqual(ctx.Config.Scoop.Bucket, config.RepoRef{}) ||
-		!reflect.DeepEqual(ctx.Config.Scoop.Repository, config.RepoRef{}) {
-		deprecate.Notice(ctx, "scoop")
-		ctx.Config.Scoops = append(ctx.Config.Scoops, ctx.Config.Scoop)
-	}
-
 	for i := range ctx.Config.Scoops {
 		scoop := &ctx.Config.Scoops[i]
 		if scoop.Name == "" {
@@ -102,10 +92,6 @@ func (Pipe) Default(ctx *context.Context) error {
 		}
 		if scoop.Goamd64 == "" {
 			scoop.Goamd64 = "v1"
-		}
-		if !reflect.DeepEqual(scoop.Bucket, config.RepoRef{}) {
-			scoop.Repository = scoop.Bucket
-			deprecate.Notice(ctx, "scoops.bucket")
 		}
 	}
 	return nil

@@ -109,7 +109,6 @@ func TestFullFormulae(t *testing.T) {
 	data.Caveats = []string{"Here are some caveats"}
 	data.Dependencies = []config.HomebrewDependency{{Name: "gtk+"}}
 	data.Conflicts = []string{"svn"}
-	data.Plist = "it works"
 	data.PostInstall = []string{`touch "/tmp/foo"`, `system "echo", "done"`}
 	data.CustomBlock = []string{"devel do", `  url "https://github.com/caarlos0/test/releases/download/v0.1.3/test_Darwin_x86_64.tar.gz"`, `  sha256 "1633f61598ab0791e213135923624eb342196b3494909c91899bcd0560f84c68"`, "end"}
 	data.Tests = []string{`system "#{bin}/{{.ProjectName}}", "-version"`}
@@ -308,7 +307,6 @@ func TestFullPipe(t *testing.T) {
 							Description: "Run pipe test formula and FOO={{ .Env.FOO }}",
 							Caveats:     "don't do this {{ .ProjectName }}",
 							Test:        "system \"true\"\nsystem \"#{bin}/foo\", \"-h\"",
-							Plist:       `<xml>whatever</xml>`,
 							Dependencies: []config.HomebrewDependency{
 								{Name: "zsh", Type: "optional"},
 								{Name: "bash", Version: "3.2.57"},
@@ -723,7 +721,6 @@ func TestRunPipeForMultipleArmVersions(t *testing.T) {
 							Description:  "Run pipe test formula and FOO={{ .Env.FOO }}",
 							Caveats:      "don't do this {{ .ProjectName }}",
 							Test:         "system \"true\"\nsystem \"#{bin}/foo\", \"-h\"",
-							Plist:        `<xml>whatever</xml>`,
 							Dependencies: []config.HomebrewDependency{{Name: "zsh"}, {Name: "bash", Type: "recommended"}},
 							Conflicts:    []string{"gtk+", "qt"},
 							Install:      `bin.install "{{ .ProjectName }}"`,
@@ -1205,8 +1202,7 @@ func TestDefault(t *testing.T) {
 		ProjectName: "myproject",
 		Brews: []config.Homebrew{
 			{
-				Plist: "<xml>... whatever</xml>",
-				Tap:   repo,
+				Repository: repo,
 			},
 		},
 	}, testctx.GitHubTokenType)
@@ -1216,7 +1212,6 @@ func TestDefault(t *testing.T) {
 	require.NotEmpty(t, ctx.Config.Brews[0].CommitAuthor.Email)
 	require.NotEmpty(t, ctx.Config.Brews[0].CommitMessageTemplate)
 	require.Equal(t, repo, ctx.Config.Brews[0].Repository)
-	require.True(t, ctx.Deprecated)
 }
 
 func TestGHFolder(t *testing.T) {
