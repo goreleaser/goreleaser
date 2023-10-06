@@ -25,7 +25,7 @@ func TestGitClient(t *testing.T) {
 		})
 		repo := Repo{
 			GitURL:     url,
-			PrivateKey: testlib.MakeNewSSHKey(t, keygen.Ed25519, ""),
+			PrivateKey: testlib.MakeNewSSHKey(t, ""),
 			Name:       "test1",
 		}
 		cli := NewGitUploadClient(repo.Branch)
@@ -60,7 +60,7 @@ func TestGitClient(t *testing.T) {
 		})
 		repo := Repo{
 			GitURL:     url,
-			PrivateKey: testlib.MakeNewSSHKey(t, keygen.Ed25519, ""),
+			PrivateKey: testlib.MakeNewSSHKey(t, ""),
 			Name:       "test1",
 			Branch:     "new-branch",
 		}
@@ -107,7 +107,7 @@ func TestGitClient(t *testing.T) {
 		})
 		repo := Repo{
 			GitURL:     url,
-			PrivateKey: testlib.MakeNewSSHKey(t, keygen.Ed25519, ""),
+			PrivateKey: testlib.MakeNewSSHKey(t, ""),
 		}
 		cli := NewGitUploadClient(repo.Branch)
 		require.NoError(t, cli.CreateFile(
@@ -151,7 +151,7 @@ func TestGitClient(t *testing.T) {
 		})
 		repo := Repo{
 			GitURL:     "git@github.com:nope/nopenopenopenope",
-			PrivateKey: testlib.MakeNewSSHKey(t, keygen.Ed25519, ""),
+			PrivateKey: testlib.MakeNewSSHKey(t, ""),
 		}
 		cli := NewGitUploadClient(repo.Branch)
 		err := cli.CreateFile(
@@ -171,7 +171,7 @@ func TestGitClient(t *testing.T) {
 		})
 		repo := Repo{
 			GitURL:        testlib.GitMakeBareRepository(t),
-			PrivateKey:    testlib.MakeNewSSHKey(t, keygen.Ed25519, ""),
+			PrivateKey:    testlib.MakeNewSSHKey(t, ""),
 			GitSSHCommand: "{{.Foo}}",
 		}
 		cli := NewGitUploadClient(repo.Branch)
@@ -239,7 +239,7 @@ func TestGitClient(t *testing.T) {
 
 func TestKeyPath(t *testing.T) {
 	t.Run("with valid path", func(t *testing.T) {
-		path := testlib.MakeNewSSHKey(t, keygen.Ed25519, "")
+		path := testlib.MakeNewSSHKey(t, "")
 		result, err := keyPath(path)
 		require.NoError(t, err)
 		require.Equal(t, path, result)
@@ -251,7 +251,7 @@ func TestKeyPath(t *testing.T) {
 	})
 
 	t.Run("with password protected key path", func(t *testing.T) {
-		path := testlib.MakeNewSSHKey(t, keygen.Ed25519, "pwd")
+		path := testlib.MakeNewSSHKey(t, "pwd")
 		bts, err := os.ReadFile(path)
 		require.NoError(t, err)
 
@@ -263,7 +263,7 @@ func TestKeyPath(t *testing.T) {
 	t.Run("with key", func(t *testing.T) {
 		for _, algo := range []keygen.KeyType{keygen.Ed25519, keygen.RSA} {
 			t.Run(string(algo), func(t *testing.T) {
-				path := testlib.MakeNewSSHKey(t, algo, "")
+				path := testlib.MakeNewSSHKeyType(t, "", algo)
 				bts, err := os.ReadFile(path)
 				require.NoError(t, err)
 
@@ -282,7 +282,7 @@ func TestKeyPath(t *testing.T) {
 		require.Equal(t, "", result)
 	})
 	t.Run("with invalid EOF", func(t *testing.T) {
-		path := testlib.MakeNewSSHKey(t, keygen.Ed25519, "")
+		path := testlib.MakeNewSSHKey(t, "")
 		bts, err := os.ReadFile(path)
 		require.NoError(t, err)
 

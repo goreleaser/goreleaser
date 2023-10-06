@@ -113,9 +113,13 @@ func GitMakeBareRepository(tb testing.TB) string {
 	return dir
 }
 
-func MakeNewSSHKey(tb testing.TB, algo keygen.KeyType, pass string) string {
+func MakeNewSSHKey(tb testing.TB, pass string) string {
 	tb.Helper()
+	return MakeNewSSHKeyType(tb, pass, keygen.Ed25519)
+}
 
+func MakeNewSSHKeyType(tb testing.TB, pass string, algo keygen.KeyType) string {
+	tb.Helper()
 	dir := tb.TempDir()
 	filepath := filepath.Join(dir, "id_"+algo.String())
 	_, err := keygen.New(

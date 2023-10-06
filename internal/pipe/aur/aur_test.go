@@ -6,7 +6,6 @@ import (
 	"path/filepath"
 	"testing"
 
-	"github.com/charmbracelet/keygen"
 	"github.com/goreleaser/goreleaser/internal/artifact"
 	"github.com/goreleaser/goreleaser/internal/client"
 	"github.com/goreleaser/goreleaser/internal/git"
@@ -245,7 +244,7 @@ func TestFullPipe(t *testing.T) {
 	} {
 		t.Run(name, func(t *testing.T) {
 			url := testlib.GitMakeBareRepository(t)
-			key := testlib.MakeNewSSHKey(t, keygen.Ed25519, "")
+			key := testlib.MakeNewSSHKey(t, "")
 
 			folder := t.TempDir()
 			ctx := testctx.NewWithCfg(
@@ -352,7 +351,7 @@ func TestFullPipe(t *testing.T) {
 
 func TestRunPipe(t *testing.T) {
 	url := testlib.GitMakeBareRepository(t)
-	key := testlib.MakeNewSSHKey(t, keygen.Ed25519, "")
+	key := testlib.MakeNewSSHKey(t, "")
 
 	folder := t.TempDir()
 	ctx := testctx.NewWithCfg(
@@ -488,7 +487,7 @@ func TestRunPipeNoBuilds(t *testing.T) {
 
 func TestRunPipeBinaryRelease(t *testing.T) {
 	url := testlib.GitMakeBareRepository(t)
-	key := testlib.MakeNewSSHKey(t, keygen.Ed25519, "")
+	key := testlib.MakeNewSSHKey(t, "")
 	folder := t.TempDir()
 	ctx := testctx.NewWithCfg(
 		config.Project{

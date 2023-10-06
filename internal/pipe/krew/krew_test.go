@@ -9,7 +9,6 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/charmbracelet/keygen"
 	"github.com/goreleaser/goreleaser/internal/artifact"
 	"github.com/goreleaser/goreleaser/internal/client"
 	"github.com/goreleaser/goreleaser/internal/golden"
@@ -159,7 +158,7 @@ func TestFullPipe(t *testing.T) {
 					Branch: "main",
 					Git: config.GitRepoRef{
 						URL:        testlib.GitMakeBareRepository(t),
-						PrivateKey: testlib.MakeNewSSHKey(t, keygen.Ed25519, ""),
+						PrivateKey: testlib.MakeNewSSHKey(t, ""),
 					},
 				}
 			},
