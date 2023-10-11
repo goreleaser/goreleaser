@@ -12,6 +12,7 @@ import (
 	"time"
 
 	"github.com/caarlos0/log"
+	"github.com/charmbracelet/x/exp/ordered"
 	"github.com/google/go-github/v55/github"
 	"github.com/goreleaser/goreleaser/internal/artifact"
 	"github.com/goreleaser/goreleaser/internal/tmpl"
@@ -167,9 +168,9 @@ func (c *githubClient) CloseMilestone(ctx *context.Context, repo Repo, title str
 
 func headString(base, head Repo) string {
 	return strings.Join([]string{
-		firstNonEmpty(head.Owner, base.Owner),
-		firstNonEmpty(head.Name, base.Name),
-		firstNonEmpty(head.Branch, base.Branch),
+		ordered.First(head.Owner, base.Owner),
+		ordered.First(head.Name, base.Name),
+		ordered.First(head.Branch, base.Branch),
 	}, ":")
 }
 
@@ -196,8 +197,8 @@ func (c *githubClient) OpenPullRequest(
 	draft bool,
 ) error {
 	c.checkRateLimit(ctx)
-	base.Owner = firstNonEmpty(base.Owner, head.Owner)
-	base.Name = firstNonEmpty(base.Name, head.Name)
+	base.Owner = ordered.First(base.Owner, head.Owner)
+	base.Name = ordered.First(base.Name, head.Name)
 	if base.Branch == "" {
 		def, err := c.getDefaultBranch(ctx, base)
 		if err != nil {

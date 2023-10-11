@@ -10,6 +10,7 @@ import (
 	"time"
 
 	"github.com/caarlos0/log"
+	"github.com/charmbracelet/x/exp/ordered"
 	"github.com/goreleaser/goreleaser/internal/git"
 	"github.com/goreleaser/goreleaser/internal/pipe"
 	"github.com/goreleaser/goreleaser/internal/skips"
@@ -46,20 +47,11 @@ func (Pipe) Run(ctx *context.Context) error {
 	log.WithField("commit", info.Commit).
 		WithField("branch", info.Branch).
 		WithField("current_tag", info.CurrentTag).
-		WithField("previous_tag", firstNonEmpty(info.PreviousTag, "<unknown>")).
+		WithField("previous_tag", ordered.First(info.PreviousTag, "<unknown>")).
 		WithField("dirty", info.Dirty).
 		Info("git state")
 	ctx.Version = strings.TrimPrefix(ctx.Git.CurrentTag, "v")
 	return validate(ctx)
-}
-
-func firstNonEmpty(ss ...string) string {
-	for _, s := range ss {
-		if s != "" {
-			return s
-		}
-	}
-	return ""
 }
 
 // nolint: gochecknoglobals
