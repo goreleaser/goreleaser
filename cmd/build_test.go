@@ -133,7 +133,17 @@ func TestSetupPipeline(t *testing.T) {
 
 func TestBuildFlags(t *testing.T) {
 	setup := func(opts buildOpts) *context.Context {
-		ctx := testctx.New()
+		ctx := testctx.NewWithCfg(config.Project{
+			Builds: []config.Build{
+				{
+					Goos:   []string{runtime.GOOS},
+					Goarch: []string{runtime.GOARCH},
+				},
+				{
+					Targets: []string{"linux_arm64"},
+				},
+			},
+		})
 		require.NoError(t, setupBuildContext(ctx, opts))
 		return ctx
 	}
@@ -186,6 +196,7 @@ func TestBuildFlags(t *testing.T) {
 
 		t.Run("runtime", func(t *testing.T) {
 			result := setup(opts)
+			require.Len(t, result.Config.Builds, 1)
 			require.Equal(t, []string{runtime.GOOS}, result.Config.Builds[0].Goos)
 			require.Equal(t, []string{runtime.GOARCH}, result.Config.Builds[0].Goarch)
 		})
@@ -194,6 +205,7 @@ func TestBuildFlags(t *testing.T) {
 			t.Setenv("GOOS", "linux")
 			t.Setenv("GOARCH", "arm64")
 			result := setup(opts)
+			require.Len(t, result.Config.Builds, 1)
 			require.Equal(t, []string{"linux"}, result.Config.Builds[0].Goos)
 			require.Equal(t, []string{"arm64"}, result.Config.Builds[0].Goarch)
 		})
@@ -306,11 +318,32 @@ func TestBuildSingleTargetWithSpecificTargets(t *testing.T) {
 	t.Setenv("GOOS", "darwin")
 	t.Setenv("GOARCH", "amd64")
 	setupBuildSingleTarget(ctx)
+	require.Len(t, ctx.Config.Builds, 1)
 	require.Equal(t, config.Build{
 		Goos:   []string{"darwin"},
 		Goarch: []string{"amd64"},
 	}, ctx.Config.Builds[0])
 	require.Nil(t, ctx.Config.UniversalBinaries)
+}
+
+func TestBuildSingleTargetNoMatch(t *testing.T) {
+	ctx := testctx.NewWithCfg(config.Project{
+		ProjectName: "test",
+		Builds: []config.Build{
+			{
+				Goos:    []string{"linux", "darwin"},
+				Goarch:  []string{"amd64", "arm64"},
+				Goamd64: []string{"v1", "v2"},
+				Goarm:   []string{"6"},
+				Gomips:  []string{"anything"},
+			},
+		},
+	})
+
+	t.Setenv("GOOS", "windows")
+	t.Setenv("GOARCH", "amd64")
+	setupBuildSingleTarget(ctx)
+	require.Empty(t, ctx.Config.Builds)
 }
 
 func TestBuildSingleTargetRemoveOtherOptions(t *testing.T) {
