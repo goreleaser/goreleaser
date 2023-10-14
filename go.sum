@@ -245,8 +245,8 @@ github.com/cespare/xxhash/v2 v2.2.0 h1:DC2CZ1Ep5Y4k3ZQ899DldepgrayRUGE6BBZ/cd9Cj
 github.com/cespare/xxhash/v2 v2.2.0/go.mod h1:VGX0DQ3Q6kWi7AoAeZDth3/j3BFtOZR5XLFGgcrjCOs=
 github.com/charmbracelet/keygen v0.5.0 h1:XY0fsoYiCSM9axkrU+2ziE6u6YjJulo/b9Dghnw6MZc=
 github.com/charmbracelet/keygen v0.5.0/go.mod h1:DfvCgLHxZ9rJxdK0DGw3C/LkV4SgdGbnliHcObV3L+8=
-github.com/charmbracelet/lipgloss v0.9.0 h1:BHIM7U4vX77xGEld8GrTKspBMtSv7j0wxPCH73nrdxE=
-github.com/charmbracelet/lipgloss v0.9.0/go.mod h1:h8KDyaivONasw1Bhb4nWiKlk4P1wHPly+3+3v6EFMmA=
+github.com/charmbracelet/lipgloss v0.9.1 h1:PNyd3jvaJbg4jRHKWXnCj1akQm4rh8dbEzN1p/u1KWg=
+github.com/charmbracelet/lipgloss v0.9.1/go.mod h1:1mPmG4cxScwUQALAAnacHaigiiHB9Pmr+v1VEawJl6I=
 github.com/charmbracelet/x/exp/ordered v0.0.0-20231010190216-1cb11efc897d h1:+o+e/8hf7cG0SbAzEAm/usJ8qoZPgFXhudLjop+TM0g=
 github.com/charmbracelet/x/exp/ordered v0.0.0-20231010190216-1cb11efc897d/go.mod h1:aoG4bThKYIOnyB55r202eHqo6TkN7ZXV+cu4Do3eoBQ=
 github.com/checkpoint-restore/go-criu/v5 v5.3.0/go.mod h1:E/eQpaFtUKGOOSEBZgmKAcn+zUUwWxqcaKZlF54wK8E=
