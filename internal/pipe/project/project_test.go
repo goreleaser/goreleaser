@@ -76,6 +76,23 @@ func TestEmptyProjectName_DefaultsToGoModPath(t *testing.T) {
 	require.Equal(t, "bar", ctx.Config.ProjectName)
 }
 
+func TestEmptyProjectName_DefaultsToGitURL(t *testing.T) {
+	_ = testlib.Mktmp(t)
+	ctx := testctx.New()
+	testlib.GitInit(t)
+	testlib.GitRemoteAdd(t, "git@github.com:foo/bar.git")
+	require.NoError(t, Pipe{}.Default(ctx))
+	require.Equal(t, "bar", ctx.Config.ProjectName)
+}
+
+func TestEmptyProjectName_DefaultsToNonSCMGitURL(t *testing.T) {
+	_ = testlib.Mktmp(t)
+	ctx := testctx.New()
+	testlib.GitInit(t)
+	testlib.GitRemoteAdd(t, "git@myhost.local:bar.git")
+	require.EqualError(t, Pipe{}.Default(ctx), "couldn't guess project_name, please add it to your config")
+}
+
 func TestEmptyProjectNameAndRelease(t *testing.T) {
 	_ = testlib.Mktmp(t)
 	ctx := testctx.NewWithCfg(config.Project{
