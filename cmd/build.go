@@ -22,6 +22,7 @@ import (
 	"github.com/goreleaser/goreleaser/pkg/config"
 	"github.com/goreleaser/goreleaser/pkg/context"
 	"github.com/spf13/cobra"
+	"golang.org/x/exp/slices"
 )
 
 type buildCmd struct {
@@ -236,16 +237,32 @@ func setupBuildSingleTarget(ctx *context.Context) {
 	if len(ctx.Config.Builds) == 0 {
 		ctx.Config.Builds = append(ctx.Config.Builds, config.Build{})
 	}
-	for i := range ctx.Config.Builds {
-		build := &ctx.Config.Builds[i]
+	var keep []config.Build
+	for _, build := range ctx.Config.Builds {
+		if !shouldBuild(build, goos, goarch) {
+			continue
+		}
 		build.Goos = []string{goos}
 		build.Goarch = []string{goarch}
 		build.Goarm = nil
 		build.Gomips = nil
 		build.Goamd64 = nil
 		build.Targets = nil
+		keep = append(keep, build)
 	}
+	ctx.Config.Builds = keep
 	ctx.Config.UniversalBinaries = nil
+}
+
+func shouldBuild(build config.Build, goos, goarch string) bool {
+	fmt.Println("AQUI", build)
+	if len(build.Targets) > 0 {
+		return slices.ContainsFunc(build.Targets, func(e string) bool {
+			return strings.HasPrefix(e, fmt.Sprintf("%s_%s", goos, goarch))
+		})
+	}
+	return slices.Contains(build.Goos, goos) &&
+		slices.Contains(build.Goarch, goarch)
 }
 
 func setupBuildID(ctx *context.Context, ids []string) error {
