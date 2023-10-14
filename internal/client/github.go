@@ -13,7 +13,7 @@ import (
 
 	"github.com/caarlos0/log"
 	"github.com/charmbracelet/x/exp/ordered"
-	"github.com/google/go-github/v55/github"
+	"github.com/google/go-github/v56/github"
 	"github.com/goreleaser/goreleaser/internal/artifact"
 	"github.com/goreleaser/goreleaser/internal/tmpl"
 	"github.com/goreleaser/goreleaser/pkg/config"
