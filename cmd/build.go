@@ -255,7 +255,6 @@ func setupBuildSingleTarget(ctx *context.Context) {
 }
 
 func shouldBuild(build config.Build, goos, goarch string) bool {
-	fmt.Println("AQUI", build)
 	if len(build.Targets) > 0 {
 		return slices.ContainsFunc(build.Targets, func(e string) bool {
 			return strings.HasPrefix(e, fmt.Sprintf("%s_%s", goos, goarch))
