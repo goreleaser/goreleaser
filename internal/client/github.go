@@ -282,7 +282,7 @@ func (c *githubClient) CreateFile(
 		Info("pushing")
 
 	if defBranch != branch && branch != "" {
-		_, res, err := c.client.Repositories.GetBranch(ctx, repo.Owner, repo.Name, branch, true)
+		_, res, err := c.client.Repositories.GetBranch(ctx, repo.Owner, repo.Name, branch, 100)
 		if err != nil && (res == nil || res.StatusCode != 404) {
 			return fmt.Errorf("could not get branch %q: %w", branch, err)
 		}
