@@ -386,7 +386,10 @@ func TestPublishPipeError(t *testing.T) {
 		ctx := makeCtx()
 		ctx.Config.Kos[0].WorkingDir = t.TempDir()
 		require.NoError(t, Pipe{}.Default(ctx))
-		require.EqualError(t, Pipe{}.Publish(ctx), `build: build: go build: exit status 1`)
+		require.EqualError(
+			t, Pipe{}.Publish(ctx),
+			"build: build: go build: exit status 1: pattern ./...: directory prefix . does not contain main module or its selected dependencies\n",
+		)
 	})
 
 	t.Run("invalid tags tmpl", func(t *testing.T) {
