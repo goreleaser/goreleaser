@@ -1,5 +1,9 @@
-#!/bin/sh
+#!/bin/bash
 set -e
+
+if [[ "$VERSION" == *-pro ]]; then
+	DISTRIBUTION="pro"
+fi
 
 if test "$DISTRIBUTION" = "pro"; then
 	echo "Using Pro distribution..."
@@ -20,9 +24,14 @@ test -z "$VERSION" && {
 	exit 1
 }
 
+if test "$DISTRIBUTION" = "pro" && [[ "$VERSION" != *-pro ]]; then
+	VERSION="$VERSION-pro"
+fi
+
 TMP_DIR="$(mktemp -d)"
 # shellcheck disable=SC2064 # intentionally expands here
 trap "rm -rf \"$TMP_DIR\"" EXIT INT TERM
+
 OS="$(uname -s)"
 ARCH="$(uname -m)"
 test "$ARCH" = "aarch64" && ARCH="arm64"
