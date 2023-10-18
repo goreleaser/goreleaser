@@ -205,6 +205,9 @@ Once you do that, you can install the packages.
     ```bash
     curl -sfL https://goreleaser.com/static/run |
       VERSION=__VERSION__ DISTRIBUTION=oss bash -s -- check
+
+    curl -sfL https://goreleaser.com/static/run |
+      VERSION=__VERSION__ DISTRIBUTION=pro bash -s -- check
     ```
 
 !!! tip
