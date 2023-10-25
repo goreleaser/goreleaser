@@ -819,7 +819,12 @@
 						"type": "array"
 					},
 					"use": {
-						"type": "string"
+						"type": "string",
+						"enum": [
+							"docker",
+							"buildx"
+						],
+						"default": "docker"
 					}
 				},
 				"additionalProperties": false,
