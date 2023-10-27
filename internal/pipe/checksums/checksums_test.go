@@ -246,6 +246,55 @@ func TestDefaultSet(t *testing.T) {
 	require.Equal(t, "checksums.txt", ctx.Config.Checksum.NameTemplate)
 }
 
+func TestPipeChecksumsSortByFilename(t *testing.T) {
+	const binary = "binary"
+	const checksums = "checksums.txt"
+	const filePaths = "./testdata/order/*.txt"
+
+	folder := t.TempDir()
+	file := filepath.Join(folder, binary)
+	require.NoError(t, os.WriteFile(file, []byte("some string"), 0o644))
+
+	ctx := testctx.NewWithCfg(
+		config.Project{
+			Dist:        folder,
+			ProjectName: binary,
+			Checksum: config.Checksum{
+				Algorithm:    "sha256",
+				NameTemplate: "checksums.txt",
+				ExtraFiles: []config.ExtraFile{
+					{Glob: filePaths},
+				},
+			},
+		},
+	)
+
+	ctx.Artifacts.Add(&artifact.Artifact{
+		Name: binary,
+		Path: file,
+		Type: artifact.UploadableBinary,
+	})
+
+	require.NoError(t, Pipe{}.Run(ctx))
+
+	bts, err := os.ReadFile(filepath.Join(folder, checksums))
+	require.NoError(t, err)
+
+	lines := strings.Split(string(bts), "\n")
+
+	wantLinesOrder := []string{
+		"ca978112ca1bbdcafac231b39a23dc4da786eff8147c4e72b9807785afee48bb  a.txt",
+		"3b64db95cb55c763391c707108489ae18b4112d783300de38e033b4c98c3deaf  b.txt",
+		"61d034473102d7dac305902770471fd50f4c5b26f6831a56dd90b5184b3c30fc  binary",
+		"64daa44ad493ff28a96effab6e77f1732a3d97d83241581b37dbd70a7a4900fe  c.txt",
+		"5bf8aa57fc5a6bc547decf1cc6db63f10deb55a3c6c5df497d631fb3d95e1abf  d.txt",
+	}
+
+	for i, want := range wantLinesOrder {
+		require.Equal(t, want, lines[i])
+	}
+}
+
 func TestPipeCheckSumsWithExtraFiles(t *testing.T) {
 	const binary = "binary"
 	const checksums = "checksums.txt"
