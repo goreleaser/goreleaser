@@ -49,6 +49,8 @@ pkgs.stdenv.mkDerivation {
 
   meta = {
 
+    sourceProvenance = [ lib.sourceTypes.binaryNativeCode ];
+
     platforms = [
       "aarch64-darwin"
       "aarch64-linux"

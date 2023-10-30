@@ -52,6 +52,8 @@ pkgs.stdenv.mkDerivation {
     homepage = "https://goreleaser.com";
     license = lib.licenses.mit;
 
+    sourceProvenance = [ lib.sourceTypes.binaryNativeCode ];
+
     platforms = [
       "aarch64-darwin"
       "aarch64-linux"
