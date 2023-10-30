@@ -102,6 +102,8 @@ pkgs.stdenv.mkDerivation {
     license = lib.licenses.{{ . }};
     {{- end }}
 
+    sourceProvenance = [ lib.sourceTypes.binaryNativeCode ];
+
     platforms = [
       {{- range $index, $plat := .Platforms }}
       "{{ . }}"
