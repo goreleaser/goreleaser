@@ -1,6 +1,7 @@
 package config
 
 import (
+	"bytes"
 	"fmt"
 	"os"
 	"path/filepath"
@@ -71,4 +72,24 @@ func TestInvalidYaml(t *testing.T) {
 func TestConfigWithAnchors(t *testing.T) {
 	_, err := Load("testdata/anchor.yaml")
 	require.NoError(t, err)
+}
+
+func TestVersion(t *testing.T) {
+	t.Run("allow no version", func(t *testing.T) {
+		_, err := LoadReader(bytes.NewReader(nil))
+		require.NoError(t, err)
+	})
+	t.Run("allow v0", func(t *testing.T) {
+		_, err := LoadReader(strings.NewReader("version: 0"))
+		require.NoError(t, err)
+	})
+	t.Run("allow v1", func(t *testing.T) {
+		_, err := LoadReader(strings.NewReader("version: 1"))
+		require.NoError(t, err)
+	})
+	t.Run("do not allow v2", func(t *testing.T) {
+		_, err := LoadReader(strings.NewReader("version: 2"))
+		require.Error(t, err)
+		require.ErrorIs(t, err, VersionError{2})
+	})
 }
