@@ -74,6 +74,7 @@ Here's a running list of some organizations using GoReleaser[^1]:
 1. [Trendyol](https://trendyol.com)
 1. [Trybe](https://betrybe.com)
 1. [Uber](https://uber.github.io/)
+1. [Updatecli](https://updatecli.io/)
 1. [VMWare](https://www.vmware.com)
 1. [Weave Works](https://www.weave.works)
 1. [Zitatel](https://zitadel.com)
