@@ -11,10 +11,15 @@ import (
 	"strings"
 	"time"
 
+	"github.com/goreleaser/goreleaser/internal/logext"
 	"github.com/goreleaser/goreleaser/internal/yaml"
 	"github.com/goreleaser/nfpm/v2/files"
 	"github.com/invopop/jsonschema"
 )
+
+type Versioned struct {
+	Version int
+}
 
 // Git configs.
 type Git struct {
@@ -1144,6 +1149,7 @@ type Source struct {
 
 // Project includes all project configuration.
 type Project struct {
+	Version         int              `yaml:"version" json:"version" jsonschema:"enum=1,default=1"`
 	ProjectName     string           `yaml:"project_name,omitempty" json:"project_name,omitempty"`
 	Env             []string         `yaml:"env,omitempty" json:"env,omitempty"`
 	Release         Release          `yaml:"release,omitempty" json:"release,omitempty"`
@@ -1339,12 +1345,31 @@ func Load(file string) (config Project, err error) {
 	return LoadReader(f)
 }
 
+type VersionError struct {
+	current int
+}
+
+func (e VersionError) Error() string {
+	return fmt.Sprintf(
+		"only configurations files on %s are supported, yours is %s, please update your configuration",
+		logext.Keyword("version: 1"),
+		logext.Keyword(fmt.Sprintf("version: %d", e.current)),
+	)
+}
+
 // LoadReader config via io.Reader.
 func LoadReader(fd io.Reader) (config Project, err error) {
 	data, err := io.ReadAll(fd)
 	if err != nil {
 		return config, err
 	}
+
+	var versioned Versioned
+	_ = yaml.Unmarshal(data, &versioned)
+	if versioned.Version != 0 && versioned.Version != 1 {
+		return config, VersionError{versioned.Version}
+	}
+
 	err = yaml.UnmarshalStrict(data, &config)
 	return config, err
 }
