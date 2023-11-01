@@ -27,6 +27,7 @@ const (
 
 	useBuildx = "buildx"
 	useDocker = "docker"
+	useDepot  = "depot"
 )
 
 // Pipe for docker.
@@ -45,6 +46,8 @@ func (Pipe) Dependencies(ctx *context.Context) []string {
 		case useDocker, useBuildx:
 			cmds = append(cmds, "docker")
 			// TODO: how to check if buildx is installed
+		case useDepot:
+			cmds = append(cmds, "depot")
 		}
 	}
 	return cmds
@@ -214,7 +217,15 @@ func process(ctx *context.Context, docker config.Docker, artifacts []*artifact.A
 	}
 
 	log.Info("building docker image")
-	if err := imagers[docker.Use].Build(ctx, tmp, images, buildFlags); err != nil {
+	buildConfig := buildConfig{
+		Platform:     newPlatform(docker),
+		RootDir:      tmp,
+		Images:       images,
+		Flags:        buildFlags,
+		DepotProject: docker.DepotProject,
+	}
+	digest, err := imagers[docker.Use].Build(ctx, buildConfig)
+	if err != nil {
 		if isFileNotFoundError(err.Error()) {
 			var files []string
 			_ = filepath.Walk(tmp, func(_ string, info fs.FileInfo, _ error) error {
@@ -239,7 +250,7 @@ Previous error:
 	}
 
 	for _, img := range images {
-		ctx.Artifacts.Add(&artifact.Artifact{
+		art := &artifact.Artifact{
 			Type:   artifact.PublishableDockerImage,
 			Name:   img,
 			Path:   img,
@@ -249,7 +260,11 @@ Previous error:
 			Extra: map[string]interface{}{
 				dockerConfigExtra: docker,
 			},
-		})
+		}
+		if digest != "" {
+			art.Extra[artifact.ExtraDigest] = digest
+		}
+		ctx.Artifacts.Add(art)
 	}
 	return nil
 }
@@ -312,9 +327,13 @@ func dockerPush(ctx *context.Context, image *artifact.Artifact) error {
 		return pipe.Skip("prerelease detected with 'auto' push, skipping docker publish: " + image.Name)
 	}
 
-	digest, err := doPush(ctx, imagers[docker.Use], image.Name, docker.PushFlags)
-	if err != nil {
-		return err
+	digest := artifact.ExtraOr(*image, artifact.ExtraDigest, "")
+	// Push only if the image build did not create a digest.
+	if digest == "" {
+		digest, err = doPush(ctx, imagers[docker.Use], image.Name, docker.PushFlags)
+		if err != nil {
+			return err
+		}
 	}
 
 	art := &artifact.Artifact{
@@ -329,7 +348,9 @@ func dockerPush(ctx *context.Context, image *artifact.Artifact) error {
 	if docker.ID != "" {
 		art.Extra[artifact.ExtraID] = docker.ID
 	}
-	art.Extra[artifact.ExtraDigest] = digest
+	if digest != "" {
+		art.Extra[artifact.ExtraDigest] = digest
+	}
 
 	ctx.Artifacts.Add(art)
 	return nil
