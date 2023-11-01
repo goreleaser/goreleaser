@@ -70,6 +70,8 @@ var BuildPipeline = []Piper{
 	// run prebuild stuff
 	prebuild.Pipe{},
 	// proxy gomod if needed
+	gomod.CheckGoModPipe{},
+	// proxy gomod if needed
 	gomod.ProxyPipe{},
 	// writes the actual config (with defaults et al set) to dist
 	effectiveconfig.Pipe{},

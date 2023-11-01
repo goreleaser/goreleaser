@@ -10,13 +10,63 @@ import (
 	"os/exec"
 	"path"
 	"path/filepath"
+	"regexp"
 	"strings"
 
 	"github.com/caarlos0/log"
+	"github.com/goreleaser/goreleaser/internal/logext"
 	"github.com/goreleaser/goreleaser/internal/tmpl"
 	"github.com/goreleaser/goreleaser/pkg/config"
 	"github.com/goreleaser/goreleaser/pkg/context"
 )
+
+// ErrReplaceWithProxy happens when the configuration has gomod.proxy enabled,
+// and the go.mod file contains replace directives.
+//
+// Replaces does not work with proxying, nor with go installs,
+// and are made for development only.
+var ErrReplaceWithProxy = errors.New("cannot use the go.mod replace directive with go mod proxy enabled")
+
+type CheckGoModPipe struct{}
+
+func (CheckGoModPipe) String() string { return "checking go.mod" }
+func (CheckGoModPipe) Skip(ctx *context.Context) bool {
+	return ctx.ModulePath == "" || !ctx.Config.GoMod.Proxy
+}
+
+var replaceRe = regexp.MustCompile("^replace .* => .*$")
+
+// Run the ReplaceCheckPipe.
+func (CheckGoModPipe) Run(ctx *context.Context) error {
+	for i := range ctx.Config.Builds {
+		build := &ctx.Config.Builds[i]
+		path := filepath.Join(build.UnproxiedDir, "go.mod")
+		mod, err := os.ReadFile(path)
+		if err != nil {
+			log.Errorf("could not check %q", path)
+			return nil
+		}
+		for _, line := range strings.Split(string(mod), "\n") {
+			if !replaceRe.MatchString(line) {
+				continue
+			}
+			log.Warnf(
+				"your %[2]s file has %[1]s directive in it, and go mod proxying is enabled - "+
+					"this does not work, and you need to either disable it or remove the %[1]s directive",
+				logext.Keyword("replace"),
+				logext.Keyword("go.mod"),
+			)
+			log.Warnf("the offending line is %s", logext.Keyword(strings.TrimSpace(line)))
+			if ctx.Snapshot {
+				// only warn on snapshots
+				break
+			}
+			return ErrReplaceWithProxy
+		}
+	}
+
+	return nil
+}
 
 // ProxyPipe for gomod proxy.
 type ProxyPipe struct{}
