@@ -456,3 +456,26 @@ Termux is the same format as `deb`, the differences are:
 
 - it uses a different `bindir` (prefixed with `/data/data/com.termux/files/`)
 - it uses slightly different architecture names than Debian
+
+## Conventional file names, Debian, and ARMv6
+
+On Debian, both ARMv6 and ARMv7 have the same architecture name: `armhf`.
+
+If you use `{{.ConventionalFileName}}`, and build for both architectures, you'll
+get duplicated file names.
+
+You can go around that with something like this:
+
+```yaml
+# .goreleaser.yaml
+nfpms:
+  - 
+    # ...
+    file_name_template: >-
+      {{- trimsuffix .ConventionalFileName .ConventionalExtension -}}
+      {{- if and (eq .Arm "6") (eq .ConventionalExtension ".deb") }}6{{ end -}}
+      {{- if not (eq .Amd64 "v1")}}{{ .Amd64 }}{{ end -}}
+      {{- .ConventionalExtension -}}
+
+    # ...
+```

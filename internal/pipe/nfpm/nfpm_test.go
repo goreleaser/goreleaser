@@ -340,8 +340,13 @@ func doTestRunPipeConventionalNameTemplate(t *testing.T, snapshot bool) {
 				Homepage:    "https://goreleaser.com/",
 				Bindir:      "/usr/bin",
 				NFPMOverridables: config.NFPMOverridables{
-					FileNameTemplate: `{{ trimsuffix (trimsuffix (trimsuffix (trimsuffix .ConventionalFileName ".pkg.tar.zst") ".deb") ".rpm") ".apk" }}{{ if not (eq .Amd64 "v1")}}{{ .Amd64 }}{{ end }}`,
-					PackageName:      "foo{{ if .IsSnapshot }}-snapshot{{ end }}",
+					FileNameTemplate: `
+						{{- trimsuffix .ConventionalFileName .ConventionalExtension -}}
+						{{- if and (eq .Arm "6") (eq .ConventionalExtension ".deb") }}6{{ end -}}
+						{{- if not (eq .Amd64 "v1")}}{{ .Amd64 }}{{ end -}}
+						{{- .ConventionalExtension -}}
+					`,
+					PackageName: "foo{{ if .IsSnapshot }}-snapshot{{ end }}",
 				},
 			},
 		},
@@ -437,6 +442,7 @@ func doTestRunPipeConventionalNameTemplate(t *testing.T, snapshot bool) {
 			prefix + "_1.0.0_arm64.deb",
 			prefix + "_1.0.0_armhf.apk",
 			prefix + "_1.0.0_armhf.deb",
+			prefix + "_1.0.0_armhf6.deb",
 			prefix + "_1.0.0_armv7.apk",
 			prefix + "_1.0.0_i386.deb",
 			prefix + "_1.0.0_mips.apk",
