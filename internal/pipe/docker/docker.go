@@ -235,6 +235,9 @@ files in that dir:
 Previous error:
 %w`, tmp, strings.Join(files, "\n "), err)
 		}
+		if isBuildxContextError(err.Error()) {
+			return fmt.Errorf(`docker buildx not set to default context\nPlease switch with 'docker context use default'\nLearn more at https://goreleaser.com/errors/docker-build`)
+		}
 		return err
 	}
 
@@ -260,6 +263,10 @@ func isFileNotFoundError(out string) bool {
 	}
 	return strings.Contains(out, "file not found") ||
 		strings.Contains(out, ": not found")
+}
+
+func isBuildxContextError(out string) bool {
+	return strings.Contains(out, "buildx to switch to context")
 }
 
 func processImageTemplates(ctx *context.Context, docker config.Docker) ([]string, error) {
