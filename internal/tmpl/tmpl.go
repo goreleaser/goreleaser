@@ -183,6 +183,7 @@ func buildOptsToFields(opts build.Options) Fields {
 		osKey:  opts.Goos,
 		arch:   opts.Goarch,
 		arm:    opts.Goarm,
+		amd64:  opts.Goamd64,
 		mips:   opts.Gomips,
 	}
 }

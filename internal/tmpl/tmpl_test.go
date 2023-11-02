@@ -10,6 +10,7 @@ import (
 
 	"github.com/goreleaser/goreleaser/internal/artifact"
 	"github.com/goreleaser/goreleaser/internal/testctx"
+	"github.com/goreleaser/goreleaser/pkg/build"
 	"github.com/goreleaser/goreleaser/pkg/config"
 	"github.com/goreleaser/goreleaser/pkg/context"
 	"github.com/stretchr/testify/require"
@@ -429,4 +430,20 @@ func TestMdv2Escape(t *testing.T) {
 func TestInvalidMap(t *testing.T) {
 	_, err := New(testctx.New()).Apply(`{{ $m := map "a" }}`)
 	require.ErrorContains(t, err, "map expects even number of arguments, got 1")
+}
+
+func TestWithBuildOptions(t *testing.T) {
+	out, err := New(testctx.New()).WithBuildOptions(build.Options{
+		Name:    "name",
+		Path:    "./path",
+		Ext:     ".ext",
+		Target:  "target",
+		Goos:    "os",
+		Goarch:  "arch",
+		Goamd64: "amd64",
+		Goarm:   "arm",
+		Gomips:  "mips",
+	}).Apply("{{.Name}}_{{.Path}}_{{.Ext}}_{{.Target}}_{{.Os}}_{{.Arch}}_{{.Amd64}}_{{.Arm}}_{{.Mips}}")
+	require.NoError(t, err)
+	require.Equal(t, "name_./path_.ext_target_os_arch_amd64_arm_mips", out)
 }
