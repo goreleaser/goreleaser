@@ -19,6 +19,7 @@ import (
 	"github.com/goreleaser/goreleaser/internal/commitauthor"
 	"github.com/goreleaser/goreleaser/internal/deprecate"
 	"github.com/goreleaser/goreleaser/internal/pipe"
+	"github.com/goreleaser/goreleaser/internal/skips"
 	"github.com/goreleaser/goreleaser/internal/tmpl"
 	"github.com/goreleaser/goreleaser/pkg/config"
 	"github.com/goreleaser/goreleaser/pkg/context"
@@ -44,9 +45,11 @@ func (e ErrNoArchivesFound) Error() string {
 // Pipe for brew deployment.
 type Pipe struct{}
 
-func (Pipe) String() string                 { return "homebrew tap formula" }
-func (Pipe) ContinueOnError() bool          { return true }
-func (Pipe) Skip(ctx *context.Context) bool { return len(ctx.Config.Brews) == 0 }
+func (Pipe) String() string        { return "homebrew tap formula" }
+func (Pipe) ContinueOnError() bool { return true }
+func (Pipe) Skip(ctx *context.Context) bool {
+	return skips.Any(ctx, skips.Homebrew) || len(ctx.Config.Brews) == 0
+}
 
 func (Pipe) Default(ctx *context.Context) error {
 	for i := range ctx.Config.Brews {
