@@ -26,6 +26,7 @@ const (
 	Winget         Key = "winget"
 	Snapcraft      Key = "snapcraft"
 	Scoop          Key = "scoop"
+	AUR            Key = "aur"
 )
 
 func String(ctx *context.Context) string {
@@ -103,6 +104,7 @@ var Release = Keys{
 	Winget,
 	Snapcraft,
 	Scoop,
+	AUR,
 	Before,
 }
 

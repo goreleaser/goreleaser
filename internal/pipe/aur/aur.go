@@ -16,6 +16,7 @@ import (
 	"github.com/goreleaser/goreleaser/internal/client"
 	"github.com/goreleaser/goreleaser/internal/commitauthor"
 	"github.com/goreleaser/goreleaser/internal/pipe"
+	"github.com/goreleaser/goreleaser/internal/skips"
 	"github.com/goreleaser/goreleaser/internal/tmpl"
 	"github.com/goreleaser/goreleaser/pkg/config"
 	"github.com/goreleaser/goreleaser/pkg/context"
@@ -31,9 +32,11 @@ var ErrNoArchivesFound = errors.New("no linux archives found")
 // Pipe for arch linux's AUR pkgbuild.
 type Pipe struct{}
 
-func (Pipe) String() string                 { return "arch user repositories" }
-func (Pipe) ContinueOnError() bool          { return true }
-func (Pipe) Skip(ctx *context.Context) bool { return len(ctx.Config.AURs) == 0 }
+func (Pipe) String() string        { return "arch user repositories" }
+func (Pipe) ContinueOnError() bool { return true }
+func (Pipe) Skip(ctx *context.Context) bool {
+	return skips.Any(ctx, skips.AUR) || len(ctx.Config.AURs) == 0
+}
 
 func (Pipe) Default(ctx *context.Context) error {
 	for i := range ctx.Config.AURs {
