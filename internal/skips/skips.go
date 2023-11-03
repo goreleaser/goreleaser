@@ -26,6 +26,7 @@ const (
 	Winget         Key = "winget"
 	Snapcraft      Key = "snapcraft"
 	Scoop          Key = "scoop"
+	Homebrew       Key = "homebrew"
 	Nix            Key = "nix"
 	AUR            Key = "aur"
 )
@@ -105,6 +106,7 @@ var Release = Keys{
 	Winget,
 	Snapcraft,
 	Scoop,
+	Homebrew,
 	Nix,
 	AUR,
 	Before,
