@@ -24,6 +24,7 @@ const (
 	Docker         Key = "docker"
 	Before         Key = "before"
 	Winget         Key = "winget"
+	Snapcraft      Key = "snapcraft"
 	Scoop          Key = "scoop"
 )
 
@@ -100,6 +101,7 @@ var Release = Keys{
 	Ko,
 	Docker,
 	Winget,
+	Snapcraft,
 	Scoop,
 	Before,
 }
