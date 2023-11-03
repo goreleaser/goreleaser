@@ -266,7 +266,7 @@ func isFileNotFoundError(out string) bool {
 }
 
 func isBuildxContextError(out string) bool {
-	return strings.Contains(out, "buildx to switch to context")
+	return strings.Contains(out, "to switch to context")
 }
 
 func processImageTemplates(ctx *context.Context, docker config.Docker) ([]string, error) {
