@@ -17,6 +17,7 @@ import (
 	"github.com/goreleaser/goreleaser/internal/commitauthor"
 	"github.com/goreleaser/goreleaser/internal/deprecate"
 	"github.com/goreleaser/goreleaser/internal/pipe"
+	"github.com/goreleaser/goreleaser/internal/skips"
 	"github.com/goreleaser/goreleaser/internal/tmpl"
 	"github.com/goreleaser/goreleaser/pkg/config"
 	"github.com/goreleaser/goreleaser/pkg/context"
@@ -62,7 +63,7 @@ type Pipe struct{}
 func (Pipe) String() string        { return "scoop manifests" }
 func (Pipe) ContinueOnError() bool { return true }
 func (Pipe) Skip(ctx *context.Context) bool {
-	return ctx.Config.Scoop.Repository.Name == "" && len(ctx.Config.Scoops) == 0
+	return skips.Any(ctx, skips.Scoop) || (ctx.Config.Scoop.Repository.Name == "" && len(ctx.Config.Scoops) == 0)
 }
 
 // Run creates the scoop manifest locally.

@@ -8,6 +8,7 @@ import (
 	"github.com/goreleaser/goreleaser/internal/artifact"
 	"github.com/goreleaser/goreleaser/internal/client"
 	"github.com/goreleaser/goreleaser/internal/golden"
+	"github.com/goreleaser/goreleaser/internal/skips"
 	"github.com/goreleaser/goreleaser/internal/testctx"
 	"github.com/goreleaser/goreleaser/internal/testlib"
 	"github.com/goreleaser/goreleaser/pkg/config"
@@ -1101,6 +1102,7 @@ func TestWrapInDirectory(t *testing.T) {
 func TestSkip(t *testing.T) {
 	t.Run("skip", func(t *testing.T) {
 		require.True(t, Pipe{}.Skip(testctx.New()))
+		require.True(t, Pipe{}.Skip(testctx.New(testctx.Skip(skips.Scoop))))
 	})
 
 	t.Run("dont skip", func(t *testing.T) {
