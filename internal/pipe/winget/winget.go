@@ -13,6 +13,7 @@ import (
 	"github.com/goreleaser/goreleaser/internal/client"
 	"github.com/goreleaser/goreleaser/internal/commitauthor"
 	"github.com/goreleaser/goreleaser/internal/pipe"
+	"github.com/goreleaser/goreleaser/internal/skips"
 	"github.com/goreleaser/goreleaser/internal/tmpl"
 	"github.com/goreleaser/goreleaser/pkg/config"
 	"github.com/goreleaser/goreleaser/pkg/context"
@@ -48,7 +49,7 @@ type Pipe struct{}
 func (Pipe) String() string        { return "winget" }
 func (Pipe) ContinueOnError() bool { return true }
 func (p Pipe) Skip(ctx *context.Context) bool {
-	return len(ctx.Config.Winget) == 0
+	return skips.Any(ctx, skips.Winget) || len(ctx.Config.Winget) == 0
 }
 
 func (Pipe) Default(ctx *context.Context) error {

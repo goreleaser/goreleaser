@@ -23,6 +23,7 @@ const (
 	Ko             Key = "ko"
 	Docker         Key = "docker"
 	Before         Key = "before"
+	Winget         Key = "winget"
 	Scoop          Key = "scoop"
 )
 
@@ -98,6 +99,7 @@ var Release = Keys{
 	SBOM,
 	Ko,
 	Docker,
+	Winget,
 	Scoop,
 	Before,
 }
