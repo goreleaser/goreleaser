@@ -18,6 +18,7 @@ import (
 	"github.com/goreleaser/goreleaser/internal/client"
 	"github.com/goreleaser/goreleaser/internal/commitauthor"
 	"github.com/goreleaser/goreleaser/internal/pipe"
+	"github.com/goreleaser/goreleaser/internal/skips"
 	"github.com/goreleaser/goreleaser/internal/tmpl"
 	"github.com/goreleaser/goreleaser/pkg/config"
 	"github.com/goreleaser/goreleaser/pkg/context"
@@ -64,7 +65,7 @@ func (Pipe) String() string                           { return "nixpkgs" }
 func (Pipe) ContinueOnError() bool                    { return true }
 func (Pipe) Dependencies(_ *context.Context) []string { return []string{"nix-prefetch-url"} }
 func (p Pipe) Skip(ctx *context.Context) bool {
-	return len(ctx.Config.Nix) == 0 || !p.prefetcher.Available()
+	return skips.Any(ctx, skips.Nix) || len(ctx.Config.Nix) == 0 || !p.prefetcher.Available()
 }
 
 func (Pipe) Default(ctx *context.Context) error {

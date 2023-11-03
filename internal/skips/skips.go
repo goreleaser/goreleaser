@@ -26,6 +26,7 @@ const (
 	Winget         Key = "winget"
 	Snapcraft      Key = "snapcraft"
 	Scoop          Key = "scoop"
+	Nix            Key = "nix"
 	AUR            Key = "aur"
 )
 
@@ -104,6 +105,7 @@ var Release = Keys{
 	Winget,
 	Snapcraft,
 	Scoop,
+	Nix,
 	AUR,
 	Before,
 }
