@@ -28,7 +28,11 @@ func TestString(t *testing.T) {
 func TestSkip(t *testing.T) {
 	t.Run("should", func(t *testing.T) {
 		require.True(t, Pipe{}.Skip(testctx.New()))
-		require.True(t, Pipe{}.Skip(testctx.New(testctx.Skip(skips.Winget))))
+	})
+	t.Run("skip flag", func(t *testing.T) {
+		require.False(t, Pipe{}.Skip(testctx.NewWithCfg(config.Project{
+			Winget: []config.Winget{{}},
+		}, testctx.Skip(skips.Winget))))
 	})
 	t.Run("should not", func(t *testing.T) {
 		require.False(t, Pipe{}.Skip(testctx.NewWithCfg(config.Project{

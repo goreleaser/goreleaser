@@ -1102,9 +1102,17 @@ func TestWrapInDirectory(t *testing.T) {
 func TestSkip(t *testing.T) {
 	t.Run("skip", func(t *testing.T) {
 		require.True(t, Pipe{}.Skip(testctx.New()))
-		require.True(t, Pipe{}.Skip(testctx.New(testctx.Skip(skips.Scoop))))
 	})
-
+	t.Run("skip flag", func(t *testing.T) {
+		ctx := testctx.NewWithCfg(config.Project{
+			Scoop: config.Scoop{
+				Repository: config.RepoRef{
+					Name: "a",
+				},
+			},
+		}, testctx.Skip(skips.Scoop))
+		require.False(t, Pipe{}.Skip(ctx))
+	})
 	t.Run("dont skip", func(t *testing.T) {
 		ctx := testctx.NewWithCfg(config.Project{
 			Scoop: config.Scoop{

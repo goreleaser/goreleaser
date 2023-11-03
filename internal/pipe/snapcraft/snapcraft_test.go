@@ -679,9 +679,15 @@ func Test_isValidArch(t *testing.T) {
 func TestSkip(t *testing.T) {
 	t.Run("skip", func(t *testing.T) {
 		require.True(t, Pipe{}.Skip(testctx.New()))
-		require.True(t, Pipe{}.Skip(testctx.New(testctx.Skip(skips.Snapcraft))))
 	})
-
+	t.Run("skip flag", func(t *testing.T) {
+		ctx := testctx.NewWithCfg(config.Project{
+			Snapcrafts: []config.Snapcraft{
+				{},
+			},
+		}, testctx.Skip(skips.Snapcraft))
+		require.False(t, Pipe{}.Skip(ctx))
+	})
 	t.Run("dont skip", func(t *testing.T) {
 		ctx := testctx.NewWithCfg(config.Project{
 			Snapcrafts: []config.Snapcraft{
