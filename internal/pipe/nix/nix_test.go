@@ -11,6 +11,7 @@ import (
 	"github.com/goreleaser/goreleaser/internal/artifact"
 	"github.com/goreleaser/goreleaser/internal/client"
 	"github.com/goreleaser/goreleaser/internal/golden"
+	"github.com/goreleaser/goreleaser/internal/skips"
 	"github.com/goreleaser/goreleaser/internal/testctx"
 	"github.com/goreleaser/goreleaser/pkg/config"
 	"github.com/stretchr/testify/require"
@@ -27,6 +28,11 @@ func TestString(t *testing.T) {
 func TestSkip(t *testing.T) {
 	t.Run("no-nix", func(t *testing.T) {
 		require.True(t, Pipe{}.Skip(testctx.New()))
+	})
+	t.Run("skip flag", func(t *testing.T) {
+		require.False(t, NewPublish().Skip(testctx.NewWithCfg(config.Project{
+			Nix: []config.Nix{{}},
+		}, testctx.Skip(skips.Nix))))
 	})
 	t.Run("nix-all-good", func(t *testing.T) {
 		require.False(t, NewPublish().Skip(testctx.NewWithCfg(config.Project{
