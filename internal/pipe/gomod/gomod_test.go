@@ -2,7 +2,9 @@ package gomod
 
 import (
 	"os"
+	"os/exec"
 	"path/filepath"
+	"strings"
 	"testing"
 
 	"github.com/goreleaser/goreleaser/internal/testctx"
@@ -16,6 +18,43 @@ func TestRun(t *testing.T) {
 	require.NoError(t, Pipe{}.Default(ctx))
 	require.NoError(t, Pipe{}.Run(ctx))
 	require.Equal(t, "github.com/goreleaser/goreleaser", ctx.ModulePath)
+}
+
+func TestRunGoWork(t *testing.T) {
+	dir := testlib.Mktmp(t)
+	require.NoError(t, os.WriteFile(
+		filepath.Join(dir, "main.go"),
+		[]byte("package main\nfunc main() {println(0)}"),
+		0o666,
+	))
+	require.NoError(t, os.WriteFile(
+		filepath.Join(dir, "go.mod"),
+		[]byte("module a"),
+		0o666,
+	))
+	require.NoError(t, os.Mkdir(filepath.Join(dir, "b"), 0o755))
+	require.NoError(t, os.WriteFile(
+		filepath.Join(dir, "b", "main.go"),
+		[]byte("package main\nfunc main() {println(1)}"),
+		0o666,
+	))
+	require.NoError(t, os.WriteFile(
+		filepath.Join(dir, "b", "go.mod"),
+		[]byte("module a/b"),
+		0o666,
+	))
+	require.NoError(t, os.WriteFile(
+		filepath.Join(dir, "go.work"),
+		[]byte("use (\n\t.\n\tb\n)"),
+		0o666,
+	))
+	out, err := exec.Command("go", "list", "-m").CombinedOutput()
+	require.NoError(t, err)
+	require.Equal(t, "a\na/b", strings.TrimSpace(string(out)))
+	ctx := testctx.New()
+	require.NoError(t, Pipe{}.Default(ctx))
+	require.NoError(t, Pipe{}.Run(ctx))
+	require.Equal(t, "a", ctx.ModulePath)
 }
 
 func TestRunCustomMod(t *testing.T) {

@@ -48,6 +48,9 @@ func (Pipe) Run(ctx *context.Context) error {
 		return fmt.Errorf("failed to get module path: %w: %s", err, string(out))
 	}
 
-	ctx.ModulePath = result
+	// Splits and use the first line in case a `go.work` file exists with multiple modules.
+	// The first module is/should be `.` in the `go.work` file, so this should be correct.
+	// Running `go work sync` also always puts `.` as the first line in `use`.
+	ctx.ModulePath = strings.Split(result, "\n")[0]
 	return nil
 }
