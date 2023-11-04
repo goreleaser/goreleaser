@@ -236,7 +236,7 @@ Previous error:
 %w`, tmp, strings.Join(files, "\n "), err)
 		}
 		if isBuildxContextError(err.Error()) {
-			return fmt.Errorf("docker buildx not set to default context\nPlease switch with 'docker context use default'\nLearn more at https://goreleaser.com/errors/docker-build")	
+			return fmt.Errorf("docker buildx is not set to default context - please switch with 'docker context use default'")
 		}
 		return err
 	}
