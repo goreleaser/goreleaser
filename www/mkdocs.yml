@@ -43,7 +43,7 @@ plugins:
   - search
   - redirects:
       redirect_maps:
-        discord.md: https://discord.gg/RGEBtg8vQ6
+        discord.md: https://discord.gg/rYWM4AZvy7
         github.md: https://github.com/goreleaser
         linkedin.md: https://www.linkedin.com/company/goreleaser/
         mastodon.md: https://fosstodon.org/@goreleaser
