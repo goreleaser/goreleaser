@@ -697,9 +697,6 @@
 					},
 					"file_info": {
 						"$ref": "#/$defs/ContentFileInfo"
-					},
-					"expand": {
-						"type": "boolean"
 					}
 				},
 				"additionalProperties": false,
@@ -822,12 +819,7 @@
 						"type": "array"
 					},
 					"use": {
-						"type": "string",
-						"enum": [
-							"docker",
-							"buildx"
-						],
-						"default": "docker"
+						"type": "string"
 					}
 				},
 				"additionalProperties": false,
@@ -2120,13 +2112,6 @@
 			},
 			"Project": {
 				"properties": {
-					"version": {
-						"type": "integer",
-						"enum": [
-							1
-						],
-						"default": 1
-					},
 					"project_name": {
 						"type": "string"
 					},
@@ -2348,10 +2333,7 @@
 					}
 				},
 				"additionalProperties": false,
-				"type": "object",
-				"required": [
-					"version"
-				]
+				"type": "object"
 			},
 			"ProjectMetadata": {
 				"properties": {

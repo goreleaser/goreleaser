@@ -1,14 +1,7 @@
 name: generate
 
 on:
-  push:
-    branches:
-      - 'main'
-    paths:
-      - '.github/workflows/generate.yml'
-      - pkg/config/config.go
-      - CONTRIBUTING.md
-      - USERS.md
+  workflow_dispatch: {}
 
 permissions:
   contents: read
@@ -16,7 +9,7 @@ permissions:
 jobs:
   docs:
     permissions:
-      contents: write  # for stefanzweifel/git-auto-commit-action to push code in repo
+      contents: write
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@8ade135a41bc03ea155e62e844d188df1ea18608 # v3
@@ -27,6 +20,7 @@ jobs:
           go-version: stable
           cache: true
       - uses: arduino/setup-task@e26d8975574116b0097a1161e0fe16ba75d84c1c # v1
+      - run: task docs:releases
       - run: task docs:generate
       - run: task schema:generate
       - uses: stefanzweifel/git-auto-commit-action@8756aa072ef5b4a080af5dc8fef36c5d586e521d # v5
