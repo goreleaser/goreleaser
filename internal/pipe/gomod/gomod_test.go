@@ -23,21 +23,11 @@ func TestRun(t *testing.T) {
 func TestRunGoWork(t *testing.T) {
 	dir := testlib.Mktmp(t)
 	require.NoError(t, os.WriteFile(
-		filepath.Join(dir, "main.go"),
-		[]byte("package main\nfunc main() {println(0)}"),
-		0o666,
-	))
-	require.NoError(t, os.WriteFile(
 		filepath.Join(dir, "go.mod"),
 		[]byte("module a"),
 		0o666,
 	))
 	require.NoError(t, os.Mkdir(filepath.Join(dir, "b"), 0o755))
-	require.NoError(t, os.WriteFile(
-		filepath.Join(dir, "b", "main.go"),
-		[]byte("package main\nfunc main() {println(1)}"),
-		0o666,
-	))
 	require.NoError(t, os.WriteFile(
 		filepath.Join(dir, "b", "go.mod"),
 		[]byte("module a/b"),
