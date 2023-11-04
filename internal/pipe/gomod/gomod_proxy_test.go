@@ -46,6 +46,28 @@ func TestCheckGoMod(t *testing.T) {
 		require.NoError(t, exec.Command("go", "mod", "edit", "-replace", "foo=../bar").Run())
 		require.NoError(t, CheckGoModPipe{}.Run(ctx))
 	})
+	t.Run("no go mod", func(t *testing.T) {
+		dir := testlib.Mktmp(t)
+		dist := filepath.Join(dir, "dist")
+		ctx := testctx.NewWithCfg(config.Project{
+			Dist: dist,
+			GoMod: config.GoMod{
+				Proxy:    true,
+				GoBinary: "go",
+			},
+			Builds: []config.Build{
+				{
+					ID:     "foo",
+					Goos:   []string{runtime.GOOS},
+					Goarch: []string{runtime.GOARCH},
+					Main:   ".",
+					Dir:    ".",
+				},
+			},
+		}, withGoReleaserModulePath)
+
+		require.NoError(t, CheckGoModPipe{}.Run(ctx))
+	})
 	t.Run("replace", func(t *testing.T) {
 		dir := testlib.Mktmp(t)
 		dist := filepath.Join(dir, "dist")
