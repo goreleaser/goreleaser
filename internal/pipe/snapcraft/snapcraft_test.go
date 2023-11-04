@@ -686,7 +686,7 @@ func TestSkip(t *testing.T) {
 				{},
 			},
 		}, testctx.Skip(skips.Snapcraft))
-		require.False(t, Pipe{}.Skip(ctx))
+		require.True(t, Pipe{}.Skip(ctx))
 	})
 	t.Run("dont skip", func(t *testing.T) {
 		ctx := testctx.NewWithCfg(config.Project{
