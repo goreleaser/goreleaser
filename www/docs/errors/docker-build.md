@@ -15,7 +15,7 @@ It's not.
 It's always a new temporary build context with the artifacts you can use in
 its root, so you can just `COPY binaryname /bin/binaryname` and etc.
 
-Bellow you can find some **don'ts** as well as what you should **do**.
+Below you can find some **don'ts** as well as what you should **do**.
 
 ## `use docker --context=default buildx to switch to context "default"`
 
@@ -23,7 +23,7 @@ The "default" context is a built-in context in "docker buildx", and it is automa
 
 You can switch to the default context using `docker context use default`.
 
-This change should be persistant.
+This change should be persistent.
 
 ### Don't
 
