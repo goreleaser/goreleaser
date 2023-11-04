@@ -1149,7 +1149,7 @@ type Source struct {
 
 // Project includes all project configuration.
 type Project struct {
-	Version         int              `yaml:"version" json:"version" jsonschema:"enum=1,default=1"`
+	Version         int              `yaml:"version,omitempty" json:"version,omitempty" jsonschema:"enum=1,default=1"`
 	ProjectName     string           `yaml:"project_name,omitempty" json:"project_name,omitempty"`
 	Env             []string         `yaml:"env,omitempty" json:"env,omitempty"`
 	Release         Release          `yaml:"release,omitempty" json:"release,omitempty"`
