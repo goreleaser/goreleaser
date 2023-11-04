@@ -30,7 +30,7 @@ func TestSkip(t *testing.T) {
 		require.True(t, Pipe{}.Skip(testctx.New()))
 	})
 	t.Run("skip flag", func(t *testing.T) {
-		require.False(t, NewPublish().Skip(testctx.NewWithCfg(config.Project{
+		require.True(t, NewPublish().Skip(testctx.NewWithCfg(config.Project{
 			Nix: []config.Nix{{}},
 		}, testctx.Skip(skips.Nix))))
 	})
