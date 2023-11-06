@@ -51,7 +51,7 @@ In fields that support templates, these fields are always available:
 | `.TagBody`             | the annotated tag message's body, or the message's body of the commit it points out[^git-tag-body]. Since v1.2           |
 | `.Runtime.Goos`        | equivalent to `runtime.GOOS`. Since v1.5                                                                                 |
 | `.Runtime.Goarch`      | equivalent to `runtime.GOARCH`. Since v1.5                                                                               |
-| `.Artifacts`           | the current artifact list. See table bellow for fields. Since v1.16 (pro)                                                |
+| `.Artifacts`           | the current artifact list. See table below for fields. Since v1.16 (pro)                                                 |
 
 [^version-prefix]:
     The `v` prefix is stripped, and it might be changed in
