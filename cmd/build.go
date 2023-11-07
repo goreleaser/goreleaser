@@ -260,8 +260,9 @@ func shouldBuild(build config.Build, goos, goarch string) bool {
 			return strings.HasPrefix(e, fmt.Sprintf("%s_%s", goos, goarch))
 		})
 	}
-	return slices.Contains(build.Goos, goos) &&
-		slices.Contains(build.Goarch, goarch)
+	return (len(build.Goos) == 0 && len(build.Goarch) == 0) ||
+		(slices.Contains(build.Goos, goos) &&
+			slices.Contains(build.Goarch, goarch))
 }
 
 func setupBuildID(ctx *context.Context, ids []string) error {

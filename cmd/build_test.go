@@ -201,6 +201,16 @@ func TestBuildFlags(t *testing.T) {
 			require.Equal(t, []string{runtime.GOARCH}, result.Config.Builds[0].Goarch)
 		})
 
+		t.Run("default config", func(t *testing.T) {
+			ctx := testctx.NewWithCfg(config.Project{
+				Builds: []config.Build{{}},
+			})
+			require.NoError(t, setupBuildContext(ctx, opts))
+			require.Len(t, ctx.Config.Builds, 1)
+			require.Equal(t, []string{runtime.GOOS}, ctx.Config.Builds[0].Goos)
+			require.Equal(t, []string{runtime.GOARCH}, ctx.Config.Builds[0].Goarch)
+		})
+
 		t.Run("from env", func(t *testing.T) {
 			t.Setenv("GOOS", "linux")
 			t.Setenv("GOARCH", "arm64")
