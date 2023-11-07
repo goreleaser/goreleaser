@@ -1,5 +1,8 @@
 [
   {
+    "tag_name": "v1.22.0-pro"
+  },
+  {
     "tag_name": "v1.21.2-pro"
   },
   {
@@ -90,6 +93,9 @@
     "tag_name": "v1.11.4-pro"
   },
   {
+    "tag_name": "v1.11.3-pro"
+  },
+  {
     "tag_name": "v1.11.2-pro"
   },
   {
@@ -175,9 +181,6 @@
   },
   {
     "tag_name": "v1.2.1-pro"
-  },
-  {
-    "tag_name": "v1.2.0-pro"
   },
   {
     "tag_name": "v1.2.0-pro"

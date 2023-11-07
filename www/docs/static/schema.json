@@ -697,6 +697,9 @@
 					},
 					"file_info": {
 						"$ref": "#/$defs/ContentFileInfo"
+					},
+					"expand": {
+						"type": "boolean"
 					}
 				},
 				"additionalProperties": false,
@@ -819,7 +822,12 @@
 						"type": "array"
 					},
 					"use": {
-						"type": "string"
+						"type": "string",
+						"enum": [
+							"docker",
+							"buildx"
+						],
+						"default": "docker"
 					}
 				},
 				"additionalProperties": false,
@@ -2112,6 +2120,13 @@
 			},
 			"Project": {
 				"properties": {
+					"version": {
+						"type": "integer",
+						"enum": [
+							1
+						],
+						"default": 1
+					},
 					"project_name": {
 						"type": "string"
 					},
