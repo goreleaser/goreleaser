@@ -19,7 +19,7 @@ body:
     id: reproducible
     attributes:
       label: How can we reproduce this?
-      description: Please share a public repository that reproduces the issue, or an example config file. Links to failing goreleaser runs and etc are also helpful.
+      description: Please share a public repository that reproduces the issue, or an example config file. Links to failing goreleaser runs are also helpful.
     validations:
       required: true
   - type: textarea
