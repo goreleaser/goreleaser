@@ -201,6 +201,17 @@ func TestBuildFlags(t *testing.T) {
 			require.Equal(t, []string{runtime.GOARCH}, result.Config.Builds[0].Goarch)
 		})
 
+		t.Run("no matches", func(t *testing.T) {
+			t.Setenv("GOOS", "windows")
+			t.Setenv("GOARCH", "arm64")
+			ctx := testctx.NewWithCfg(config.Project{
+				Builds: []config.Build{{
+					Goos: []string{"linux"},
+				}},
+			})
+			require.EqualError(t, setupBuildContext(ctx, opts), "no builds matching --single-target windows/arm64")
+		})
+
 		t.Run("default config", func(t *testing.T) {
 			ctx := testctx.NewWithCfg(config.Project{
 				Builds: []config.Build{{}},
@@ -352,7 +363,7 @@ func TestBuildSingleTargetNoMatch(t *testing.T) {
 
 	t.Setenv("GOOS", "windows")
 	t.Setenv("GOARCH", "amd64")
-	setupBuildSingleTarget(ctx)
+	require.Error(t, setupBuildSingleTarget(ctx))
 	require.Empty(t, ctx.Config.Builds)
 }
 

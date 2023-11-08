@@ -205,7 +205,9 @@ func setupBuildContext(ctx *context.Context, options buildOpts) error {
 	ctx.Clean = options.clean || options.rmDist
 
 	if options.singleTarget {
-		setupBuildSingleTarget(ctx)
+		if err := setupBuildSingleTarget(ctx); err != nil {
+			return err
+		}
 	}
 
 	if len(options.ids) > 0 {
@@ -224,7 +226,7 @@ func setupBuildContext(ctx *context.Context, options buildOpts) error {
 	return nil
 }
 
-func setupBuildSingleTarget(ctx *context.Context) {
+func setupBuildSingleTarget(ctx *context.Context) error {
 	goos := os.Getenv("GOOS")
 	if goos == "" {
 		goos = runtime.GOOS
@@ -250,8 +252,15 @@ func setupBuildSingleTarget(ctx *context.Context) {
 		build.Targets = nil
 		keep = append(keep, build)
 	}
+
 	ctx.Config.Builds = keep
 	ctx.Config.UniversalBinaries = nil
+
+	if len(keep) == 0 {
+		return fmt.Errorf("no builds matching --single-target %s/%s", goos, goarch)
+	}
+
+	return nil
 }
 
 func shouldBuild(build config.Build, goos, goarch string) bool {
