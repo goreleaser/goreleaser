@@ -222,7 +222,7 @@ func process(ctx *context.Context, docker config.Docker, artifacts []*artifact.A
 		RootDir:      tmp,
 		Images:       images,
 		Flags:        buildFlags,
-		DepotProject: docker.DepotProject,
+		DepotProject: docker.Depot.Project,
 	}
 	digest, err := imagers[docker.Use].Build(ctx, buildConfig)
 	if err != nil {
