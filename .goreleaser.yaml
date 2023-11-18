@@ -364,8 +364,9 @@ milestones:
 release:
   name_template: "v{{ .Version }}"
   footer: |
-    **Full Changelog**: https://github.com/goreleaser/goreleaser/compare/{{ .PreviousTag }}...{{ .Tag }}
+    **Full Changelog**: https://github.com/goreleaser/goreleaser/compare/{{ .PreviousTag }}...{{ if .IsNightly }}nightly{{ else }}{{ .Tag }}{{ end }}
 
+    {{ if not .IsNightly }}
     ## Helping out
 
     This release is only possible thanks to **all** the support of some **awesome people**!
@@ -379,6 +380,7 @@ release:
     * Reach out on [Discord](https://discord.gg/RGEBtg8vQ6) and [Twitter](https://twitter.com/goreleaser)!
 
     <a href="https://goreleaser.com"><img src="https://raw.githubusercontent.com/goreleaser/artwork/master/opencollective-header.png" with="100%" alt="GoReleaser logo"></a>
+    {{ end }}
 
 announce:
   twitter:
