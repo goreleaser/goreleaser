@@ -20,6 +20,7 @@ Other things you might need to run the tests:
 - [Podman](https://podman.io/)
 - [Snapcraft](https://snapcraft.io/)
 - [Syft](https://github.com/anchore/syft)
+- [upx](https://upx.github.io/)
 
 Clone `goreleaser` anywhere:
 
