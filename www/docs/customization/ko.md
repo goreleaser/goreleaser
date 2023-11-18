@@ -25,6 +25,7 @@ kos:
   build: build-id
 
   # Main path to build.
+  # It must be a relative path
   #
   # Default: build.main
   main: ./cmd/...
