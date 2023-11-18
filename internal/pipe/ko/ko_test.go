@@ -340,6 +340,48 @@ func TestPublishPipeSuccess(t *testing.T) {
 	}
 }
 
+func TestKoValidateMainPathIssue4383(t *testing.T) {
+	someKoConfig := []config.Ko{
+		{
+			ID:    "default",
+			Build: "foo",
+		},
+	}
+
+	ctx := testctx.NewWithCfg(config.Project{
+		Builds: []config.Build{
+			{
+				ID:   "foo",
+				Main: "./...",
+			},
+		},
+		Kos: someKoConfig,
+	})
+	require.NoError(t, Pipe{}.Default(ctx))
+
+	ctx = testctx.NewWithCfg(config.Project{
+		Builds: []config.Build{
+			{
+				ID:   "foo",
+				Main: "/some/non/relative/path",
+			},
+		},
+		Kos: someKoConfig,
+	})
+	require.EqualError(t, Pipe{}.Default(ctx), errInvalidMainPath.Error())
+
+	ctx = testctx.NewWithCfg(config.Project{
+		Builds: []config.Build{
+			{
+				ID:   "foo",
+				Main: "./src/main.go",
+			},
+		},
+		Kos: someKoConfig,
+	})
+	require.EqualError(t, Pipe{}.Default(ctx), errInvalidMainPath.Error())
+}
+
 func TestPublishPipeError(t *testing.T) {
 	makeCtx := func() *context.Context {
 		return testctx.NewWithCfg(config.Project{
