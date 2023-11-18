@@ -340,46 +340,56 @@ func TestPublishPipeSuccess(t *testing.T) {
 	}
 }
 
-func TestKoValidateMainPathIssue4383(t *testing.T) {
-	someKoConfig := []config.Ko{
-		{
-			ID:    "default",
-			Build: "foo",
-		},
-	}
+func TestKoValidateMainPathIssue4382(t *testing.T) {
+	// testing the validation of the main path directly to cover many cases
+	require.NoError(t, validateMainPath(""))
+	require.NoError(t, validateMainPath("."))
+	require.NoError(t, validateMainPath("./..."))
+	require.NoError(t, validateMainPath("./app"))
+	require.NoError(t, validateMainPath("../../../..."))
+	require.NoError(t, validateMainPath("../../app/"))
+	require.NoError(t, validateMainPath("./testdata/app/main"))
+	require.NoError(t, validateMainPath("./testdata/app/folder.with.dots"))
 
-	ctx := testctx.NewWithCfg(config.Project{
+	require.ErrorIs(t, validateMainPath("app/"), errInvalidMainPath)
+	require.ErrorIs(t, validateMainPath("/src/"), errInvalidMainPath)
+	require.ErrorIs(t, validateMainPath("/src/app"), errInvalidMainPath)
+	require.ErrorIs(t, validateMainPath("./testdata/app/main.go"), errInvalidMainPath)
+
+	// testing with real context
+	ctxOk := testctx.NewWithCfg(config.Project{
 		Builds: []config.Build{
 			{
 				ID:   "foo",
 				Main: "./...",
 			},
 		},
-		Kos: someKoConfig,
+		Kos: []config.Ko{
+			{
+				ID:         "default",
+				Build:      "foo",
+				Repository: "fakerepo",
+			},
+		},
 	})
-	require.NoError(t, Pipe{}.Default(ctx))
+	require.NoError(t, Pipe{}.Default(ctxOk))
 
-	ctx = testctx.NewWithCfg(config.Project{
+	ctxWithInvalidMainPath := testctx.NewWithCfg(config.Project{
 		Builds: []config.Build{
 			{
 				ID:   "foo",
 				Main: "/some/non/relative/path",
 			},
 		},
-		Kos: someKoConfig,
-	})
-	require.EqualError(t, Pipe{}.Default(ctx), errInvalidMainPath.Error())
-
-	ctx = testctx.NewWithCfg(config.Project{
-		Builds: []config.Build{
+		Kos: []config.Ko{
 			{
-				ID:   "foo",
-				Main: "./src/main.go",
+				ID:         "default",
+				Build:      "foo",
+				Repository: "fakerepo",
 			},
 		},
-		Kos: someKoConfig,
 	})
-	require.EqualError(t, Pipe{}.Default(ctx), errInvalidMainPath.Error())
+	require.ErrorIs(t, Pipe{}.Default(ctxWithInvalidMainPath), errInvalidMainPath)
 }
 
 func TestPublishPipeError(t *testing.T) {

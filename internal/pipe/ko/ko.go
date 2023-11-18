@@ -428,6 +428,10 @@ func getTimeFromTemplate(ctx *context.Context, t string) (*v1.Time, error) {
 }
 
 func validateMainPath(path string) error {
+	// if the path is empty, it's probably fine as ko will use the default value
+	if path == "" {
+		return nil
+	}
 	if matched, _ := regexp.MatchString(`^\.?(\.\/[^\/]?.*)?$`, path); !matched {
 		return errInvalidMainPath
 	}
