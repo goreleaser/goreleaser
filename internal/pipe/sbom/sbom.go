@@ -72,7 +72,7 @@ func setConfigDefaults(cfg *config.SBOM) error {
 	}
 	if cfg.Cmd == "syft" {
 		if len(cfg.Args) == 0 {
-			cfg.Args = []string{"$artifact", "--file", "$document", "--output", "spdx-json"}
+			cfg.Args = []string{"$artifact", "--output", "spdx-json=$document"}
 		}
 		if len(cfg.Env) == 0 && (cfg.Artifacts == "source" || cfg.Artifacts == "archive") {
 			cfg.Env = []string{
