@@ -8,6 +8,7 @@ import (
 	"fmt"
 	"io"
 	"path/filepath"
+	"regexp"
 	"strconv"
 	"strings"
 	"sync"
@@ -48,7 +49,8 @@ var (
 		azureKeychain,
 	)
 
-	errNoRepository = errors.New("ko: missing repository: please set either the repository field or a $KO_DOCKER_REPO environment variable")
+	errNoRepository    = errors.New("ko: missing repository: please set either the repository field or a $KO_DOCKER_REPO environment variable")
+	errInvalidMainPath = errors.New("ko: invalid Main path: ko.main (or build.main if ko.main is not set) should be a relative path.")
 )
 
 // Pipe that build OCI compliant images with ko.
@@ -91,6 +93,10 @@ func (Pipe) Default(ctx *context.Context) error {
 
 		if ko.Main == "" {
 			ko.Main = build.Main
+		}
+
+		if err := validateMainPath(ko.Main); err != nil {
+			return err
 		}
 
 		if ko.WorkingDir == "" {
@@ -419,4 +425,19 @@ func getTimeFromTemplate(ctx *context.Context, t string) (*v1.Time, error) {
 		return nil, err
 	}
 	return &v1.Time{Time: time.Unix(seconds, 0)}, nil
+}
+
+func validateMainPath(path string) error {
+	// if the path is empty, it's probably fine as ko will use the default value
+	if path == "" {
+		return nil
+	}
+	if matched, _ := regexp.MatchString(`^\.?(\.\/[^\/]?.*)?$`, path); !matched {
+		return errInvalidMainPath
+	}
+	// paths sure can have dots in them, but if the path ends in .go, it's propably a file that one misundertood as a valid value
+	if strings.HasSuffix(path, ".go") {
+		return errInvalidMainPath
+	}
+	return nil
 }
