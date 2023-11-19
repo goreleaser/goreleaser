@@ -24,7 +24,7 @@ func TestDescription(t *testing.T) {
 }
 
 func TestSBOMCatalogDefault(t *testing.T) {
-	defaultArgs := []string{"$artifact", "--file", "$document", "--output", "spdx-json"}
+	defaultArgs := []string{"$artifact", "--output", "spdx-json=$document"}
 	defaultSboms := []string{
 		"{{ .ArtifactName }}.sbom",
 	}
@@ -307,10 +307,8 @@ func TestSBOMCatalogArtifacts(t *testing.T) {
 					{
 						Artifacts: "any",
 						Args: []string{
-							"--file",
-							"$document0",
 							"--output",
-							"spdx-json",
+							"spdx-json=$document0",
 							"artifact5.tar.gz",
 						},
 						Documents: []string{
@@ -377,10 +375,8 @@ func TestSBOMCatalogArtifacts(t *testing.T) {
 					{
 						Artifacts: "binary",
 						Args: []string{
-							"--file",
-							"$document",
 							"--output",
-							"spdx-json",
+							"spdx-json=$document",
 							"$artifact",
 						},
 						Documents: []string{
@@ -412,6 +408,23 @@ func TestSBOMCatalogArtifacts(t *testing.T) {
 				},
 			}),
 			expectedErrMsg: "cataloging artifacts: false failed: exit status 1: ",
+		},
+		{
+			desc: "catalog wrong command",
+			ctx: testctx.NewWithCfg(config.Project{
+				SBOMs: []config.SBOM{
+					{Args: []string{"$artifact", "--file", "$sbom", "--output", "spdx-json"}},
+				},
+			}),
+			expectedErrMsg: "cataloging artifacts: command did not write any files, check your configuration",
+		},
+		{
+			desc: "no matches",
+			ctx: testctx.NewWithCfg(config.Project{
+				SBOMs: []config.SBOM{
+					{IDs: []string{"nopenopenope"}},
+				},
+			}),
 		},
 	}
 
