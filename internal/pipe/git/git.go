@@ -50,7 +50,6 @@ func (Pipe) Run(ctx *context.Context) error {
 		WithField("previous_tag", ordered.First(info.PreviousTag, "<unknown>")).
 		WithField("dirty", info.Dirty).
 		Info("git state")
-	ctx.Version = strings.TrimPrefix(ctx.Git.CurrentTag, "v")
 	return validate(ctx)
 }
 

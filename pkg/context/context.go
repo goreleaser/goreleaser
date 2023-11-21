@@ -112,6 +112,7 @@ type Semver struct {
 	Minor      uint64
 	Patch      uint64
 	Prerelease string
+	Metadata   string
 }
 
 // New context.

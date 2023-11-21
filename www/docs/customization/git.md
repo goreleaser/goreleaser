@@ -24,10 +24,22 @@ git:
   # provided values as either previous or current tags.
   #
   # Templates: allowed.
-  # Since: v1.21.
+  # Since: v1.21
   ignore_tags:
     - nightly
     - "{{.Env.IGNORE_TAG}}"
+
+  # Tag prefixes to be omitted by GoReleaser.
+  # This means that GoReleaser will trim this prefixes from git current tag and
+  # versioning will be computed from trimmed current tag.
+  # If prefixes are defined current tag MUST match at least one of them or error will be raised.
+  # It is useful for multiple projects in one git repository.
+  #
+  # Templates: allowed
+  # Since: v1.23
+  tag_prefixes:
+    - "componentA_"
+    - "{{ .ProjectName }}_"
 ```
 
 ## Semver sorting

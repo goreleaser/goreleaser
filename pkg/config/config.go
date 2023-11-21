@@ -26,6 +26,7 @@ type Git struct {
 	TagSort          string   `yaml:"tag_sort,omitempty" json:"tag_sort,omitempty" jsonschema:"enum=-version:refname,enum=-version:creatordate,default=-version:refname"`
 	PrereleaseSuffix string   `yaml:"prerelease_suffix,omitempty" json:"prerelease_suffix,omitempty"`
 	IgnoreTags       []string `yaml:"ignore_tags,omitempty" json:"ignore_tags,omitempty"`
+	TagPrefixes      []string `yaml:"tag_prefixes,omitempty" json:"tag_prefixes,omitempty"`
 }
 
 // GitHubURLs holds the URLs to be used when using github enterprise.

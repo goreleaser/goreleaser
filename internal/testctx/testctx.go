@@ -68,10 +68,16 @@ func WithCurrentTag(tag string) Opt {
 	}
 }
 
-func WithCommit(commig string) Opt {
+func WithTagPrefixes(prefixes []string) Opt {
 	return func(ctx *context.Context) {
-		ctx.Git.Commit = commig
-		ctx.Git.FullCommit = commig
+		ctx.Config.Git.TagPrefixes = prefixes
+	}
+}
+
+func WithCommit(commit string) Opt {
+	return func(ctx *context.Context) {
+		ctx.Git.Commit = commit
+		ctx.Git.FullCommit = commit
 	}
 }
 
