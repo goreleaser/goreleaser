@@ -72,7 +72,7 @@ func setConfigDefaults(cfg *config.SBOM) error {
 	}
 	if cfg.Cmd == "syft" {
 		if len(cfg.Args) == 0 {
-			cfg.Args = []string{"$artifact", "--file", "$document", "--output", "spdx-json"}
+			cfg.Args = []string{"$artifact", "--output", "spdx-json=$document"}
 		}
 		if len(cfg.Env) == 0 && (cfg.Artifacts == "source" || cfg.Artifacts == "archive") {
 			cfg.Env = []string{
@@ -131,6 +131,9 @@ func catalogTask(ctx *context.Context, cfg config.SBOM) func() error {
 			filters = append(filters, artifact.ByIDs(cfg.IDs...))
 		}
 		artifacts := ctx.Artifacts.Filter(artifact.And(filters...)).List()
+		if len(artifacts) == 0 {
+			log.Warn("no artifacts matching current filters")
+		}
 		return catalog(ctx, cfg, artifacts)
 	}
 }
@@ -238,6 +241,10 @@ func catalogArtifact(ctx *context.Context, cfg config.SBOM, a *artifact.Artifact
 			})
 		}
 
+	}
+
+	if len(artifacts) == 0 {
+		return nil, fmt.Errorf("cataloging artifacts: command did not write any files, check your configuration")
 	}
 
 	return artifacts, nil
