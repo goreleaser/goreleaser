@@ -108,11 +108,18 @@ chain in the following order:
 
 ### Azure Blob Provider
 
-It supports authentication only with
-[environment variables](https://docs.microsoft.com/en-us/azure/storage/common/storage-azure-cli#set-default-azure-storage-account-environment-variables):
+```yaml
+blobs:
+  - provider: azblob
+    bucket: releases?storage_account=myazurestorage
+```
 
-- `AZURE_STORAGE_ACCOUNT`
-- `AZURE_STORAGE_KEY` or `AZURE_STORAGE_SAS_TOKEN`
+Storage account is set over URL param `storage_account` in `bucket` or in environment variable `AZURE_STORAGE_ACCOUNT`
+
+It supports authentication with
+- [environment variables](https://docs.microsoft.com/en-us/azure/storage/common/storage-azure-cli#set-default-azure-storage-account-environment-variables):
+  - `AZURE_STORAGE_KEY` or `AZURE_STORAGE_SAS_TOKEN`
+- [default Azure credential](https://learn.microsoft.com/en-us/azure/developer/go/azure-sdk-authentication-service-principal)
 
 ### [GCS Provider](https://cloud.google.com/docs/authentication/production)
 
