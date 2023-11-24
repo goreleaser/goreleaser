@@ -89,8 +89,10 @@ type Context struct {
 	ReleaseFooterTmpl string
 	Version           string
 	ModulePath        string
+	PartialTarget     string
 	Snapshot          bool
 	FailFast          bool
+	Partial           bool
 	SkipTokenCheck    bool
 	Clean             bool
 	PreRelease        bool

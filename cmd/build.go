@@ -2,7 +2,6 @@ package cmd
 
 import (
 	"fmt"
-	"os"
 	"path/filepath"
 	"runtime"
 	"strings"
@@ -22,7 +21,6 @@ import (
 	"github.com/goreleaser/goreleaser/pkg/config"
 	"github.com/goreleaser/goreleaser/pkg/context"
 	"github.com/spf13/cobra"
-	"golang.org/x/exp/slices"
 )
 
 type buildCmd struct {
@@ -125,7 +123,7 @@ When using ` + "`--single-target`" + `, the ` + "`GOOS`" + ` and ` + "`GOARCH`" 
 		&root.opts.skips,
 		"skip",
 		nil,
-		fmt.Sprintf("Skip the given options (valid options are %s)", skips.Build.String()),
+		fmt.Sprintf("Skip the given options (valid options are: %s)", skips.Build.String()),
 	)
 	_ = cmd.RegisterFlagCompletionFunc("skip", func(_ *cobra.Command, _ []string, toComplete string) ([]string, cobra.ShellCompDirective) {
 		return skips.Build.Complete(toComplete), cobra.ShellCompDirectiveDefault
@@ -176,6 +174,7 @@ func setupBuildContext(ctx *context.Context, options buildOpts) error {
 	}
 	log.Debugf("parallelism: %v", ctx.Parallelism)
 	ctx.Snapshot = options.snapshot
+
 	if err := skips.SetBuild(ctx, options.skips...); err != nil {
 		return err
 	}
@@ -205,9 +204,7 @@ func setupBuildContext(ctx *context.Context, options buildOpts) error {
 	ctx.Clean = options.clean || options.rmDist
 
 	if options.singleTarget {
-		if err := setupBuildSingleTarget(ctx); err != nil {
-			return err
-		}
+		ctx.Partial = true
 	}
 
 	if len(options.ids) > 0 {
@@ -224,54 +221,6 @@ func setupBuildContext(ctx *context.Context, options buildOpts) error {
 	}
 
 	return nil
-}
-
-func setupBuildSingleTarget(ctx *context.Context) error {
-	goos := os.Getenv("GOOS")
-	if goos == "" {
-		goos = runtime.GOOS
-	}
-	goarch := os.Getenv("GOARCH")
-	if goarch == "" {
-		goarch = runtime.GOARCH
-	}
-	log.WithField("reason", "single target is enabled").Warnf("building only for %s/%s", goos, goarch)
-	if len(ctx.Config.Builds) == 0 {
-		ctx.Config.Builds = append(ctx.Config.Builds, config.Build{})
-	}
-	var keep []config.Build
-	for _, build := range ctx.Config.Builds {
-		if !shouldBuild(build, goos, goarch) {
-			continue
-		}
-		build.Goos = []string{goos}
-		build.Goarch = []string{goarch}
-		build.Goarm = nil
-		build.Gomips = nil
-		build.Goamd64 = nil
-		build.Targets = nil
-		keep = append(keep, build)
-	}
-
-	ctx.Config.Builds = keep
-	ctx.Config.UniversalBinaries = nil
-
-	if len(keep) == 0 {
-		return fmt.Errorf("no builds matching --single-target %s/%s", goos, goarch)
-	}
-
-	return nil
-}
-
-func shouldBuild(build config.Build, goos, goarch string) bool {
-	if len(build.Targets) > 0 {
-		return slices.ContainsFunc(build.Targets, func(e string) bool {
-			return strings.HasPrefix(e, fmt.Sprintf("%s_%s", goos, goarch))
-		})
-	}
-	return (len(build.Goos) == 0 && len(build.Goarch) == 0) ||
-		(slices.Contains(build.Goos, goos) &&
-			slices.Contains(build.Goarch, goarch))
 }
 
 func setupBuildID(ctx *context.Context, ids []string) error {
