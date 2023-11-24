@@ -15,70 +15,70 @@ blobs:
     # - gs for Google Cloud Storage
     #
     # Templates: allowed
-    - provider: azblob
+    provider: azblob
 
-      # Set a custom endpoint, useful if you're using a minio backend or
-      # other s3-compatible backends.
-      #
-      # Implies s3ForcePathStyle and requires provider to be `s3`
-      #
-      # Templates: allowed
-      endpoint: https://minio.foo.bar
+    # Set a custom endpoint, useful if you're using a minio backend or
+    # other s3-compatible backends.
+    #
+    # Implies s3ForcePathStyle and requires provider to be `s3`
+    #
+    # Templates: allowed
+    endpoint: https://minio.foo.bar
 
-      # Sets the bucket region.
-      # Requires provider to be `s3`
-      #
-      # Templates: allowed
-      region: us-west-1
+    # Sets the bucket region.
+    # Requires provider to be `s3`
+    #
+    # Templates: allowed
+    region: us-west-1
 
-      # Disables SSL
-      # Requires provider to be `s3`
-      disableSSL: true
+    # Disables SSL
+    # Requires provider to be `s3`
+    disableSSL: true
 
-      # Bucket name.
-      #
-      # Templates: allowed
-      bucket: goreleaser-bucket
+    # Bucket name.
+    #
+    # Templates: allowed
+    bucket: goreleaser-bucket
 
-      # IDs of the artifacts you want to upload.
-      ids:
-        - foo
-        - bar
+    # IDs of the artifacts you want to upload.
+    ids:
+      - foo
+      - bar
 
-      # Path/name inside the bucket.
-      #
-      # Default: '{{ .ProjectName }}/{{ .Tag }}'
-      # Templates: allowed
-      folder: "foo/bar/{{.Version}}"
+    # Path/name inside the bucket.
+    #
+    # Default: '{{ .ProjectName }}/{{ .Tag }}'
+    # Templates: allowed
+    folder: "foo/bar/{{.Version}}"
 
-      # Whether to disable this particular upload configuration.
-      #
-      # Since: v1.17
-      # Templates: allowed
-      disable: '{{ neq .BLOB_UPLOAD_ONLY "foo" }}'
+    # Whether to disable this particular upload configuration.
+    #
+    # Since: v1.17
+    # Templates: allowed
+    disable: '{{ neq .BLOB_UPLOAD_ONLY "foo" }}'
 
-      # You can add extra pre-existing files to the bucket.
-      # The filename on the release will be the last part of the path (base).
-      # If another file with the same name exists, the last one found will be used.
-      # These globs can also include templates.
-      extra_files:
-        - glob: ./path/to/file.txt
-        - glob: ./glob/**/to/**/file/**/*
-        - glob: ./glob/foo/to/bar/file/foobar/override_from_previous
-        - glob: ./single_file.txt
-          # Templates: allowed
-          name_template: file.txt # note that this only works if glob matches 1 file only
+    # You can add extra pre-existing files to the bucket.
+    # The filename on the release will be the last part of the path (base).
+    # If another file with the same name exists, the last one found will be used.
+    # These globs can also include templates.
+    extra_files:
+      - glob: ./path/to/file.txt
+      - glob: ./glob/**/to/**/file/**/*
+      - glob: ./glob/foo/to/bar/file/foobar/override_from_previous
+      - glob: ./single_file.txt
+        # Templates: allowed
+        name_template: file.txt # note that this only works if glob matches 1 file only
 
-      # Additional templated extra files to uploaded.
-      # Those files will have their contents pass through the template engine,
-      # and its results will be uploaded.
-      #
-      # Since: v1.17 (pro)
-      # This feature is only available in GoReleaser Pro.
-      # Templates: allowed
-      templated_extra_files:
-        - src: LICENSE.tpl
-          dst: LICENSE.txt
+    # Additional templated extra files to uploaded.
+    # Those files will have their contents pass through the template engine,
+    # and its results will be uploaded.
+    #
+    # Since: v1.17 (pro)
+    # This feature is only available in GoReleaser Pro.
+    # Templates: allowed
+    templated_extra_files:
+      - src: LICENSE.tpl
+        dst: LICENSE.txt
 
   - provider: gs
     bucket: goreleaser-bucket
