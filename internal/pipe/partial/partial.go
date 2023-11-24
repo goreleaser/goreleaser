@@ -4,6 +4,7 @@ import (
 	"os"
 	"runtime"
 
+	"github.com/charmbracelet/x/exp/ordered"
 	"github.com/goreleaser/goreleaser/pkg/context"
 )
 
@@ -18,16 +19,7 @@ func (Pipe) Run(ctx *context.Context) error {
 }
 
 func getFilter() string {
-	goos := firstNonEmpty(os.Getenv("GGOOS"), os.Getenv("GOOS"), runtime.GOOS)
-	goarch := firstNonEmpty(os.Getenv("GGOARCH"), os.Getenv("GOARCH"), runtime.GOARCH)
+	goos := ordered.First(os.Getenv("GGOOS"), os.Getenv("GOOS"), runtime.GOOS)
+	goarch := ordered.First(os.Getenv("GGOARCH"), os.Getenv("GOARCH"), runtime.GOARCH)
 	return goos + "_" + goarch
-}
-
-func firstNonEmpty(ss ...string) string {
-	for _, s := range ss {
-		if s != "" {
-			return s
-		}
-	}
-	return ""
 }
