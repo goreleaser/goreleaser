@@ -215,7 +215,7 @@ func doRun(ctx *context.Context, brew config.Homebrew, cl client.ReleaseURLTempl
 		),
 		artifact.Or(
 			artifact.And(
-				artifact.ByFormats("zip", "tar.gz"),
+				artifact.ByFormats("zip", "tar.gz", "tar.xz"),
 				artifact.ByType(artifact.UploadableArchive),
 			),
 			artifact.ByType(artifact.UploadableBinary),
