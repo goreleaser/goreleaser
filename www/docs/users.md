@@ -56,9 +56,12 @@ Here's a running list of some organizations using GoReleaser[^1]:
 1. [OpenSSF](https://openssf.org)
 1. [Optimus Mine](https://optimusmine.com)
 1. [Parca](https://www.parca.dev)
+1. [Pdfcpu](https://pdfcpu.io)
 1. [Planetscale](https://planetscale.com)
+1. [Prestd](https://prestd.com)
 1. [Pulumi](https://pulumi.com)
 1. [ReviewDog](https://github.com/reviewdog)
+1. [Rixo](https://www.rixo.cz)
 1. [Schwarz IT](https://jobs.schwarz)
 1. [SecureGo](https://securego.io)
 1. [SemaphoreCI](https://semaphoreci.com)
@@ -78,8 +81,6 @@ Here's a running list of some organizations using GoReleaser[^1]:
 1. [VMWare](https://www.vmware.com)
 1. [Weave Works](https://www.weave.works)
 1. [Zitatel](https://zitadel.com)
-1. [pdfcpu](https://pdfcpu.io)
-1. [prestd](https://prestd.com)
 
 Feel free to [add yours](https://github.com/goreleaser/goreleaser/edit/main/USERS.md)!
 
