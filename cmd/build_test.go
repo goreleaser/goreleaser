@@ -1,7 +1,6 @@
 package cmd
 
 import (
-	"runtime"
 	"testing"
 
 	"github.com/goreleaser/goreleaser/internal/pipeline"
@@ -133,17 +132,7 @@ func TestSetupPipeline(t *testing.T) {
 
 func TestBuildFlags(t *testing.T) {
 	setup := func(opts buildOpts) *context.Context {
-		ctx := testctx.NewWithCfg(config.Project{
-			Builds: []config.Build{
-				{
-					Goos:   []string{runtime.GOOS},
-					Goarch: []string{runtime.GOARCH},
-				},
-				{
-					Targets: []string{"linux_arm64"},
-				},
-			},
-		})
+		ctx := testctx.New()
 		require.NoError(t, setupBuildContext(ctx, opts))
 		return ctx
 	}
@@ -187,49 +176,6 @@ func TestBuildFlags(t *testing.T) {
 		require.True(t, setup(buildOpts{
 			clean: true,
 		}).Clean)
-	})
-
-	t.Run("single-target", func(t *testing.T) {
-		opts := buildOpts{
-			singleTarget: true,
-		}
-
-		t.Run("runtime", func(t *testing.T) {
-			result := setup(opts)
-			require.Len(t, result.Config.Builds, 1)
-			require.Equal(t, []string{runtime.GOOS}, result.Config.Builds[0].Goos)
-			require.Equal(t, []string{runtime.GOARCH}, result.Config.Builds[0].Goarch)
-		})
-
-		t.Run("no matches", func(t *testing.T) {
-			t.Setenv("GOOS", "windows")
-			t.Setenv("GOARCH", "arm64")
-			ctx := testctx.NewWithCfg(config.Project{
-				Builds: []config.Build{{
-					Goos: []string{"linux"},
-				}},
-			})
-			require.EqualError(t, setupBuildContext(ctx, opts), "no builds matching --single-target windows/arm64")
-		})
-
-		t.Run("default config", func(t *testing.T) {
-			ctx := testctx.NewWithCfg(config.Project{
-				Builds: []config.Build{{}},
-			})
-			require.NoError(t, setupBuildContext(ctx, opts))
-			require.Len(t, ctx.Config.Builds, 1)
-			require.Equal(t, []string{runtime.GOOS}, ctx.Config.Builds[0].Goos)
-			require.Equal(t, []string{runtime.GOARCH}, ctx.Config.Builds[0].Goarch)
-		})
-
-		t.Run("from env", func(t *testing.T) {
-			t.Setenv("GOOS", "linux")
-			t.Setenv("GOARCH", "arm64")
-			result := setup(opts)
-			require.Len(t, result.Config.Builds, 1)
-			require.Equal(t, []string{"linux"}, result.Config.Builds[0].Goos)
-			require.Equal(t, []string{"arm64"}, result.Config.Builds[0].Goarch)
-		})
 	})
 
 	t.Run("id", func(t *testing.T) {
@@ -317,75 +263,4 @@ func TestBuildFlags(t *testing.T) {
 			}))
 		})
 	})
-}
-
-func TestBuildSingleTargetWithSpecificTargets(t *testing.T) {
-	ctx := testctx.NewWithCfg(config.Project{
-		ProjectName: "test",
-		Builds: []config.Build{
-			{
-				Targets: []string{
-					"linux_amd64_v1",
-					"darwin_arm64",
-					"darwin_amd64_v1",
-				},
-			},
-		},
-		UniversalBinaries: []config.UniversalBinary{
-			{Replace: true},
-		},
-	})
-
-	t.Setenv("GOOS", "darwin")
-	t.Setenv("GOARCH", "amd64")
-	setupBuildSingleTarget(ctx)
-	require.Len(t, ctx.Config.Builds, 1)
-	require.Equal(t, config.Build{
-		Goos:   []string{"darwin"},
-		Goarch: []string{"amd64"},
-	}, ctx.Config.Builds[0])
-	require.Nil(t, ctx.Config.UniversalBinaries)
-}
-
-func TestBuildSingleTargetNoMatch(t *testing.T) {
-	ctx := testctx.NewWithCfg(config.Project{
-		ProjectName: "test",
-		Builds: []config.Build{
-			{
-				Goos:    []string{"linux", "darwin"},
-				Goarch:  []string{"amd64", "arm64"},
-				Goamd64: []string{"v1", "v2"},
-				Goarm:   []string{"6"},
-				Gomips:  []string{"anything"},
-			},
-		},
-	})
-
-	t.Setenv("GOOS", "windows")
-	t.Setenv("GOARCH", "amd64")
-	require.Error(t, setupBuildSingleTarget(ctx))
-	require.Empty(t, ctx.Config.Builds)
-}
-
-func TestBuildSingleTargetRemoveOtherOptions(t *testing.T) {
-	ctx := testctx.NewWithCfg(config.Project{
-		ProjectName: "test",
-		Builds: []config.Build{
-			{
-				Goos:    []string{"linux", "darwin"},
-				Goarch:  []string{"amd64", "arm64"},
-				Goamd64: []string{"v1", "v2"},
-				Goarm:   []string{"6"},
-				Gomips:  []string{"anything"},
-			},
-		},
-	})
-
-	t.Setenv("GOOS", "linux")
-	t.Setenv("GOARCH", "amd64")
-	setupBuildSingleTarget(ctx)
-	require.Equal(t, config.Build{
-		Goos:   []string{"linux"},
-		Goarch: []string{"amd64"},
-	}, ctx.Config.Builds[0])
 }

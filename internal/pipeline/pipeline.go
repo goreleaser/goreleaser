@@ -24,6 +24,7 @@ import (
 	"github.com/goreleaser/goreleaser/internal/pipe/metadata"
 	"github.com/goreleaser/goreleaser/internal/pipe/nfpm"
 	"github.com/goreleaser/goreleaser/internal/pipe/nix"
+	"github.com/goreleaser/goreleaser/internal/pipe/partial"
 	"github.com/goreleaser/goreleaser/internal/pipe/prebuild"
 	"github.com/goreleaser/goreleaser/internal/pipe/publish"
 	"github.com/goreleaser/goreleaser/internal/pipe/reportsizes"
@@ -59,6 +60,8 @@ var BuildPipeline = []Piper{
 	semver.Pipe{},
 	// load default configs
 	defaults.Pipe{},
+	// setup things for partial builds/releases
+	partial.Pipe{},
 	// snapshot version handling
 	snapshot.Pipe{},
 	// run global hooks before build

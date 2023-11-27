@@ -116,6 +116,10 @@ func Snapshot(ctx *context.Context) {
 	ctx.Snapshot = true
 }
 
+func Partial(ctx *context.Context) {
+	ctx.Partial = true
+}
+
 func NewWithCfg(c config.Project, opts ...Opt) *context.Context {
 	ctx := context.New(c)
 	for _, opt := range opts {
