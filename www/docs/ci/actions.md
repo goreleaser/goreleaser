@@ -113,7 +113,7 @@ And reference the fingerprint in your signing configuration using the
 # .goreleaser.yaml
 signs:
   - artifacts: checksum
-    cms: gpg2
+    cmd: gpg2
     args:
       - "--batch"
       - "-u"
