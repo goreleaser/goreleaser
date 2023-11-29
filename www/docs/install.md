@@ -180,6 +180,8 @@ Once you do that, you can install the packages.
     go install github.com/goreleaser/goreleaser@latest
     ```
 
+    Requires Go 1.21.
+
 ### bash script
 
 === "OSS"
