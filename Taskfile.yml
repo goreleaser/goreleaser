@@ -6,9 +6,6 @@ env:
   GO111MODULE: on
   GOPROXY: https://proxy.golang.org,direct
 
-vars:
-  DOCKER: '{{default "docker" .DOCKER}}'
-
 tasks:
   dev:
     desc: Setup git hooks
@@ -117,15 +114,13 @@ tasks:
     desc: Start documentation server
     cmds:
       - task: docs:generate
-      - "{{.DOCKER}} build -t mkdocs -f www/docker/Dockerfile www/docker"
-      - "{{.DOCKER}} run --rm -p 8000:8000 -v ${PWD}/www:/docs mkdocs"
+      - "mkdocs serve -f www/mkdocs.yml -a 0.0.0.0:8000"
 
   docs:build:
     desc: Build docs
     cmds:
       - task: docs:generate
-      - "{{.DOCKER}} build -t mkdocs -f www/docker/Dockerfile www/docker"
-      - "{{.DOCKER}} run --rm -v ${PWD}/www:/docs mkdocs build"
+      - "mkdocs build -f www/mkdocs.yml"
 
   release:
     desc: Create a new tag
