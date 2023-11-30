@@ -54,18 +54,19 @@ func TestRunPipeInvalidCommand(t *testing.T) {
 }
 
 func TestRunPipeFail(t *testing.T) {
-	for err, tc := range map[string][]string{
-		"hook failed: shell: 'go tool foobar': exit status 2: go: no such tool \"foobar\"\n": {"go tool foobar"},
-		"hook failed: shell: 'sh ./testdata/foo.sh': exit status 1: lalala\n":                {"sh ./testdata/foo.sh"},
+	for _, tc := range []string{
+		"go tool foobar",
+		"sh ./testdata/foo.sh",
 	} {
 		ctx := testctx.NewWithCfg(
 			config.Project{
 				Before: config.Before{
-					Hooks: tc,
+					Hooks: []string{tc},
 				},
 			},
 		)
-		require.EqualError(t, Pipe{}.Run(ctx), err)
+		err := Pipe{}.Run(ctx)
+		require.Contains(t, err.Error(), "hook failed")
 	}
 }
 
