@@ -15,6 +15,10 @@ linters:
     - misspell
     - depguard
 linters-settings:
+  staticcheck:
+    checks:
+      - all
+      - "-SA1019"
   forbidigo:
     forbid:
       - 'ioutil\.*'
