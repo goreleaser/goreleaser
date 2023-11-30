@@ -64,7 +64,7 @@ func Test_doRun(t *testing.T) {
 				IDs:     []string{"no-app"},
 				Goamd64: "v1",
 			},
-			err: "chocolatey requires a windows build and archive",
+			err: errNoWindowsArchive.Error(),
 		},
 		{
 			name: "choco command not found",
