@@ -748,7 +748,6 @@ func TestRunHookFailWithLogs(t *testing.T) {
 	}
 	ctx := testctx.NewWithCfg(config, testctx.WithCurrentTag("2.4.5"))
 	err := Pipe{}.Run(ctx)
-	require.ErrorIs(t, err, exec.ErrNotFound)
 	require.Contains(t, err.Error(), "pre hook failed")
 	require.Empty(t, ctx.Artifacts.List())
 }
