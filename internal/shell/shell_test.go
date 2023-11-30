@@ -18,7 +18,7 @@ func TestRunCommand(t *testing.T) {
 		require.EqualError(
 			t,
 			shell.Run(testctx.New(), "", []string{"sh", "-c", "exit 1"}, []string{}, false),
-			`failed to run 'sh -c exit 1': exit status 1`,
+			`shell: 'sh -c exit 1': exit status 1: [no output]`,
 		)
 	})
 
@@ -26,7 +26,7 @@ func TestRunCommand(t *testing.T) {
 		require.EqualError(
 			t,
 			shell.Run(testctx.New(), "", []string{"sh", "-c", `echo something; exit 1`}, []string{}, true),
-			`failed to run 'sh -c echo something; exit 1': exit status 1`,
+			`shell: 'sh -c echo something; exit 1': exit status 1: something`,
 		)
 	})
 

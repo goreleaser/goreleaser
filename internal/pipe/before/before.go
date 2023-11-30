@@ -2,15 +2,11 @@
 package before
 
 import (
-	"bytes"
 	"fmt"
-	"io"
-	"os/exec"
 
 	"github.com/caarlos0/go-shellwords"
 	"github.com/caarlos0/log"
-	"github.com/goreleaser/goreleaser/internal/gio"
-	"github.com/goreleaser/goreleaser/internal/logext"
+	"github.com/goreleaser/goreleaser/internal/shell"
 	"github.com/goreleaser/goreleaser/internal/skips"
 	"github.com/goreleaser/goreleaser/internal/tmpl"
 	"github.com/goreleaser/goreleaser/pkg/context"
@@ -39,17 +35,9 @@ func (Pipe) Run(ctx *context.Context) error {
 			return err
 		}
 
-		cmd := exec.Command(args[0], args[1:]...)
-		cmd.Env = ctx.Env.Strings()
-
-		var b bytes.Buffer
-		w := gio.Safe(&b)
-		cmd.Stderr = io.MultiWriter(logext.NewWriter(), w)
-		cmd.Stdout = io.MultiWriter(logext.NewWriter(), w)
-
-		log.WithField("hook", step).Info("running")
-		if err := cmd.Run(); err != nil {
-			return fmt.Errorf("hook failed: %s: %w; output: %s", step, err, b.String())
+		log.WithField("hook", s).Info("running")
+		if err := shell.Run(ctx, "", args, ctx.Env.Strings(), false); err != nil {
+			return fmt.Errorf("hook failed: %w", err)
 		}
 	}
 	return nil
