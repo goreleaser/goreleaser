@@ -15,6 +15,8 @@ removed in **minor** instead of **major** versions.
 
 Those complaints are valid, and today I'm announcing how I plan to move forward.
 
+<!-- more -->
+
 ## History
 
 Before we do that, I feel like I should explain how we got in this position
