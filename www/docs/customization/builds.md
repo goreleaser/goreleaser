@@ -169,6 +169,7 @@ builds:
     # It is safe to ignore this option in most cases.
     #
     # Default is "go"
+    # Templates: allowed (since v1.23).
     gobinary: "go1.13.4"
 
     # Sets the command to run to build.
