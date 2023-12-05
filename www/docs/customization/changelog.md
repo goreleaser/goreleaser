@@ -78,8 +78,6 @@ changelog:
       # There can only be one level of subgroups, i.e. a subgroup cannot have
       # subgroups.
       #
-      # This feature is only available in GoReleaser Pro.
-      #
       # Since: v1.15 (pro)
       # This feature is only available in GoReleaser Pro.
       subgroups:
