@@ -2,6 +2,7 @@ package client
 
 import (
 	"crypto/tls"
+	"errors"
 	"fmt"
 	"net/http"
 	"net/url"
@@ -231,7 +232,7 @@ func (c *githubClient) OpenPullRequest(
 		},
 	)
 	if err != nil {
-		if res.StatusCode == 422 {
+		if res.StatusCode == http.StatusUnprocessableEntity {
 			log.WithError(err).Warn("pull request validation failed")
 			return nil
 		}
@@ -283,23 +284,26 @@ func (c *githubClient) CreateFile(
 
 	if defBranch != branch && branch != "" {
 		_, res, err := c.client.Repositories.GetBranch(ctx, repo.Owner, repo.Name, branch, 100)
-		if err != nil && (res == nil || res.StatusCode != 404) {
+		if err != nil && (res == nil || res.StatusCode != http.StatusNotFound) {
 			return fmt.Errorf("could not get branch %q: %w", branch, err)
 		}
 
-		if res.StatusCode == 404 {
+		if res.StatusCode == http.StatusNotFound {
 			defRef, _, err := c.client.Git.GetRef(ctx, repo.Owner, repo.Name, "refs/heads/"+defBranch)
 			if err != nil {
 				return fmt.Errorf("could not get ref %q: %w", "refs/heads/"+defBranch, err)
 			}
 
-			if _, refRes, err := c.client.Git.CreateRef(ctx, repo.Owner, repo.Name, &github.Reference{
+			if _, _, err := c.client.Git.CreateRef(ctx, repo.Owner, repo.Name, &github.Reference{
 				Ref: github.String("refs/heads/" + branch),
 				Object: &github.GitObject{
 					SHA: defRef.Object.SHA,
 				},
-			}); err != nil && (refRes == nil || refRes.StatusCode != 422) {
-				return fmt.Errorf("could not create ref %q from %q: %w", "refs/heads/"+branch, defRef.Object.GetSHA(), err)
+			}); err != nil {
+				rerr := new(github.ErrorResponse)
+				if !errors.As(err, &rerr) || rerr.Message != "Reference already exists" {
+					return fmt.Errorf("could not create ref %q from %q: %w", "refs/heads/"+branch, defRef.Object.GetSHA(), err)
+				}
 			}
 		}
 	}
@@ -313,7 +317,7 @@ func (c *githubClient) CreateFile(
 			Ref: branch,
 		},
 	)
-	if err != nil && (res == nil || res.StatusCode != 404) {
+	if err != nil && (res == nil || res.StatusCode != http.StatusNotFound) {
 		return fmt.Errorf("could not get %q: %w", path, err)
 	}
 
@@ -475,7 +479,7 @@ func (c *githubClient) Upload(
 	if err == nil {
 		return nil
 	}
-	if resp != nil && resp.StatusCode == 422 {
+	if resp != nil && resp.StatusCode == http.StatusUnprocessableEntity {
 		return err
 	}
 	return RetriableError{err}
