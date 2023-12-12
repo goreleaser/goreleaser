@@ -1175,6 +1175,15 @@ func TestBuildGoBuildLine(t *testing.T) {
 		}, strings.Fields("go test -c -o foo.test ."))
 	})
 
+	t.Run("build test alwasy as c flags", func(t *testing.T) {
+		requireEqualCmd(t, config.Build{
+			Main:     ".",
+			GoBinary: "go",
+			Command:  "test",
+			Binary:   "foo.test",
+		}, strings.Fields("go test -c -o foo.test ."))
+	})
+
 	t.Run("ldflags1", func(t *testing.T) {
 		requireEqualCmd(t, config.Build{
 			Main: ".",
