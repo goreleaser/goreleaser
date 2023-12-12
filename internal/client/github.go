@@ -293,12 +293,12 @@ func (c *githubClient) CreateFile(
 				return fmt.Errorf("could not get ref %q: %w", "refs/heads/"+defBranch, err)
 			}
 
-			if _, _, err := c.client.Git.CreateRef(ctx, repo.Owner, repo.Name, &github.Reference{
+			if _, refRes, err := c.client.Git.CreateRef(ctx, repo.Owner, repo.Name, &github.Reference{
 				Ref: github.String("refs/heads/" + branch),
 				Object: &github.GitObject{
 					SHA: defRef.Object.SHA,
 				},
-			}); err != nil {
+			}); err != nil && (refRes == nil || refRes.StatusCode != 422) {
 				return fmt.Errorf("could not create ref %q from %q: %w", "refs/heads/"+branch, defRef.Object.GetSHA(), err)
 			}
 		}
