@@ -49,6 +49,7 @@ class {{ .Name }} < Formula
   {{ range $index, $element := . }}
   depends_on "{{ .Name }}"
   {{- if .Type }} => :{{ .Type }}{{- else if .Version }} => "{{ .Version }}"{{- end }}
+  {{- with .OS }} if OS.{{ . }}?{{- end }}
   {{- end }}
   {{- end -}}
 
