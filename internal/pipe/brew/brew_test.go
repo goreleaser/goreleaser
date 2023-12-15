@@ -313,6 +313,8 @@ func TestFullPipe(t *testing.T) {
 								{Name: "zsh", Type: "optional"},
 								{Name: "bash", Version: "3.2.57"},
 								{Name: "fish", Type: "optional", Version: "v1.2.3"},
+								{Name: "powershell", Type: "optional", OS: "mac"},
+								{Name: "ash", Version: "1.0.0", OS: "linux"},
 							},
 							Conflicts:   []string{"gtk+", "qt"},
 							Service:     "run foo/bar\nkeep_alive true",

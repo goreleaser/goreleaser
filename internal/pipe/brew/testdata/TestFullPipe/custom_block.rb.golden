@@ -7,8 +7,10 @@ class CustomBlock < Formula
   homepage "https://github.com/goreleaser"
   version "1.0.1"
 
+  depends_on "ash" => "1.0.0" if OS.linux?
   depends_on "bash" => "3.2.57"
   depends_on "fish" => :optional
+  depends_on "powershell" => :optional if OS.mac?
   depends_on "zsh" => :optional
 
   on_macos do

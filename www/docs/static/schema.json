@@ -1268,6 +1268,13 @@
 							},
 							"version": {
 								"type": "string"
+							},
+							"os": {
+								"type": "string",
+								"enum": [
+									"mac",
+									"linux"
+								]
 							}
 						},
 						"additionalProperties": false,

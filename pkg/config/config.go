@@ -156,6 +156,7 @@ type HomebrewDependency struct {
 	Name    string `yaml:"name,omitempty" json:"name,omitempty"`
 	Type    string `yaml:"type,omitempty" json:"type,omitempty"`
 	Version string `yaml:"version,omitempty" json:"version,omitempty"`
+	OS      string `yaml:"os,omitempty" json:"os,omitempty" jsonschema:"enum=mac,enum=linux"`
 }
 
 // type alias to prevent stack overflowing in the custom unmarshaler.

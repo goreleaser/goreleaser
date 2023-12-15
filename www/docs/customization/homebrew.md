@@ -115,6 +115,11 @@ brews:
     # Packages your package depends on.
     dependencies:
       - name: git
+        # Allow to specify the OS in which the dependency is required.
+        # Valid options are `mac` and `linux`.
+        #
+        # Since: v1.23.0
+        os: mac
       - name: zsh
         type: optional
       - name: fish
