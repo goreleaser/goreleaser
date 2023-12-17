@@ -112,9 +112,9 @@ func TestRunPipe(t *testing.T) {
 		},
 	}, testctx.WithCurrentTag("2.4.5"))
 	require.NoError(t, Pipe{}.Run(ctx))
-	require.Equal(t, ctx.Artifacts.List(), []*artifact.Artifact{{
+	require.Equal(t, []*artifact.Artifact{{
 		Name: "testing",
-	}})
+	}}, ctx.Artifacts.List())
 }
 
 func TestRunFullPipe(t *testing.T) {
@@ -152,9 +152,9 @@ func TestRunFullPipe(t *testing.T) {
 	ctx := testctx.NewWithCfg(config, testctx.WithCurrentTag("2.4.5"))
 	require.NoError(t, Pipe{}.Default(ctx))
 	require.NoError(t, Pipe{}.Run(ctx))
-	require.Equal(t, ctx.Artifacts.List(), []*artifact.Artifact{{
+	require.Equal(t, []*artifact.Artifact{{
 		Name: "testing",
-	}})
+	}}, ctx.Artifacts.List())
 	require.FileExists(t, post)
 	require.FileExists(t, pre)
 	require.FileExists(t, postOS)
@@ -410,7 +410,7 @@ func TestDefaultFillSingleBuild(t *testing.T) {
 	})
 	require.NoError(t, Pipe{}.Default(ctx))
 	require.Len(t, ctx.Config.Builds, 1)
-	require.Equal(t, ctx.Config.Builds[0].Binary, "foo")
+	require.Equal(t, "foo", ctx.Config.Builds[0].Binary)
 }
 
 func TestDefaultFailSingleBuild(t *testing.T) {
@@ -438,7 +438,7 @@ func TestSkipBuild(t *testing.T) {
 	}
 	ctx := testctx.NewWithCfg(config, testctx.WithCurrentTag("2.4.5"))
 	require.NoError(t, Pipe{}.Run(ctx))
-	require.Len(t, ctx.Artifacts.List(), 0)
+	require.Empty(t, ctx.Artifacts.List())
 }
 
 func TestExtDarwin(t *testing.T) {

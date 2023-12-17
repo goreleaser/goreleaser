@@ -44,7 +44,7 @@ func TestPublishSuccess(t *testing.T) {
 	require.Error(t, err)
 	merr := &multierror.Error{}
 	require.ErrorAs(t, err, &merr)
-	require.Equal(t, merr.Len(), 1)
+	require.Equal(t, 1, merr.Len())
 	require.True(t, lastStep.ran)
 }
 

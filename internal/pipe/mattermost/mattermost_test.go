@@ -15,13 +15,13 @@ import (
 )
 
 func TestStringer(t *testing.T) {
-	require.Equal(t, Pipe{}.String(), "mattermost")
+	require.Equal(t, "mattermost", Pipe{}.String())
 }
 
 func TestDefault(t *testing.T) {
 	ctx := testctx.New()
 	require.NoError(t, Pipe{}.Default(ctx))
-	require.Equal(t, ctx.Config.Announce.Mattermost.MessageTemplate, defaultMessageTemplate)
+	require.Equal(t, defaultMessageTemplate, ctx.Config.Announce.Mattermost.MessageTemplate)
 }
 
 func TestAnnounceInvalidTemplate(t *testing.T) {

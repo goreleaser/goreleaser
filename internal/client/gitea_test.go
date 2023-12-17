@@ -186,7 +186,7 @@ func (s *GiteaReleasesTestSuite) SetupTest() {
 	s.releaseURL = fmt.Sprintf("%v/%v", s.releasesURL, s.releaseID)
 	httpmock.RegisterResponder("GET", fmt.Sprintf("%s/api/v1/version", s.url), httpmock.NewStringResponder(200, "{\"version\":\"1.12.0\"}"))
 	newClient, err := gitea.NewClient(s.url)
-	require.NoError(s.T(), err)
+	s.Require().NoError(err)
 	s.client = &giteaClient{client: newClient}
 }
 
@@ -320,7 +320,7 @@ func (s *GiteaupdateReleaseSuite) TestGiteaCreateFile() {
 	path := "file.txt"
 	message := "add hello world"
 	err := s.client.CreateFile(s.ctx, author, repo, content, path, message)
-	require.Nil(t, err)
+	require.NoError(t, err)
 }
 
 func TestGiteaupdateReleaseSuite(t *testing.T) {
@@ -442,7 +442,7 @@ func (s *GiteaUploadSuite) SetupTest() {
 
 func (s *GiteaUploadSuite) TearDownTest() {
 	s.GiteaReleasesTestSuite.TearDownTest()
-	require.NoError(s.T(), s.file.Close())
+	s.Require().NoError(s.file.Close())
 }
 
 func (s *GiteaUploadSuite) TestErrorParsingReleaseID() {

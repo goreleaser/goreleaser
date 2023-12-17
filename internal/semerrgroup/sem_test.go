@@ -26,7 +26,7 @@ func TestSemaphore(t *testing.T) {
 				})
 			}
 			require.NoError(t, g.Wait())
-			require.Equal(t, counter, 10)
+			require.Equal(t, 10, counter)
 		})
 	}
 }
@@ -83,7 +83,7 @@ func TestSemaphoreSkipAware(t *testing.T) {
 				})
 			}
 			require.EqualError(t, g.Wait(), "fake skip")
-			require.Equal(t, counter, 10)
+			require.Equal(t, 10, counter)
 		})
 	}
 }

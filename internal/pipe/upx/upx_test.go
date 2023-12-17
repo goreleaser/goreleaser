@@ -258,12 +258,12 @@ func TestFindBinaries(t *testing.T) {
 	})
 
 	t.Run("goamd64", func(t *testing.T) {
-		require.Len(t, findBinaries(ctx, config.UPX{
+		require.Empty(t, findBinaries(ctx, config.UPX{
 			IDs:     []string{"2"},
 			Goos:    []string{"linux"},
 			Goarch:  []string{"amd64"},
 			Goamd64: []string{"v3"},
-		}), 0)
+		}))
 		require.Len(t, findBinaries(ctx, config.UPX{
 			IDs:     []string{"2"},
 			Goos:    []string{"linux"},
@@ -273,12 +273,12 @@ func TestFindBinaries(t *testing.T) {
 	})
 
 	t.Run("goarm", func(t *testing.T) {
-		require.Len(t, findBinaries(ctx, config.UPX{
+		require.Empty(t, findBinaries(ctx, config.UPX{
 			IDs:    []string{"2"},
 			Goos:   []string{"linux"},
 			Goarch: []string{"arm"},
 			Goarm:  []string{"6"},
-		}), 0)
+		}))
 		require.Len(t, findBinaries(ctx, config.UPX{
 			IDs:    []string{"2"},
 			Goos:   []string{"linux"},

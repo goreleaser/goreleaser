@@ -117,7 +117,7 @@ func TestFilter(t *testing.T) {
 	require.Len(t, artifacts.Filter(ByGoos("darwin")).items, 2)
 
 	require.Len(t, artifacts.Filter(ByGoarch("amd64")).items, 4)
-	require.Len(t, artifacts.Filter(ByGoarch("386")).items, 0)
+	require.Empty(t, artifacts.Filter(ByGoarch("386")).items)
 
 	require.Len(t, artifacts.Filter(ByGoamd64("v1")).items, 1)
 	require.Len(t, artifacts.Filter(ByGoamd64("v2")).items, 1)
@@ -125,10 +125,10 @@ func TestFilter(t *testing.T) {
 	require.Len(t, artifacts.Filter(ByGoamd64("v4")).items, 1)
 
 	require.Len(t, artifacts.Filter(ByGoarm("6")).items, 1)
-	require.Len(t, artifacts.Filter(ByGoarm("7")).items, 0)
+	require.Empty(t, artifacts.Filter(ByGoarm("7")).items)
 
 	require.Len(t, artifacts.Filter(ByType(Checksum)).items, 2)
-	require.Len(t, artifacts.Filter(ByType(Binary)).items, 0)
+	require.Empty(t, artifacts.Filter(ByType(Binary)).items)
 
 	require.Len(t, artifacts.Filter(OnlyReplacingUnibins).items, 9)
 	require.Len(t, artifacts.Filter(And(OnlyReplacingUnibins, ByGoos("darwin"))).items, 1)
@@ -492,7 +492,7 @@ func TestByExts(t *testing.T) {
 	require.Len(t, artifacts.Filter(ByExt("deb")).items, 2)
 	require.Len(t, artifacts.Filter(ByExt("rpm")).items, 1)
 	require.Len(t, artifacts.Filter(ByExt("rpm", "deb")).items, 3)
-	require.Len(t, artifacts.Filter(ByExt("foo")).items, 0)
+	require.Empty(t, artifacts.Filter(ByExt("foo")).items)
 }
 
 func TestByFormats(t *testing.T) {
