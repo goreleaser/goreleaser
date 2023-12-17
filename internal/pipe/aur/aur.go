@@ -6,6 +6,7 @@ import (
 	"errors"
 	"fmt"
 	"os"
+	"path"
 	"path/filepath"
 	"sort"
 	"strings"
@@ -89,11 +90,12 @@ func runAll(ctx *context.Context, cli client.ReleaseURLTemplater) error {
 }
 
 func doRun(ctx *context.Context, aur config.AUR, cl client.ReleaseURLTemplater) error {
-	name, err := tmpl.New(ctx).Apply(aur.Name)
-	if err != nil {
+	if err := tmpl.New(ctx).ApplyAll(
+		&aur.Name,
+		&aur.Directory,
+	); err != nil {
 		return err
 	}
-	aur.Name = name
 
 	filters := []artifact.Filter{
 		artifact.ByGoos("linux"),
@@ -392,7 +394,7 @@ func doPublish(ctx *context.Context, pkgs []*artifact.Artifact) error {
 			return err
 		}
 		files = append(files, client.RepoFile{
-			Path:    pkg.Name,
+			Path:    path.Join(cfg.Directory, pkg.Name),
 			Content: content,
 		})
 	}
