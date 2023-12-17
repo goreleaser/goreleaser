@@ -77,7 +77,7 @@ func TestZipFile(t *testing.T) {
 
 	info, err := f.Stat()
 	require.NoError(t, err)
-	require.Lessf(t, info.Size(), 1000, "archived file should be smaller than %d", info.Size())
+	require.Lessf(t, info.Size(), int64(1000), "archived file should be smaller than %d", info.Size())
 
 	r, err := zip.NewReader(f, info.Size())
 	require.NoError(t, err)

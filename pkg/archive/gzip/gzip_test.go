@@ -37,7 +37,7 @@ func TestGzFile(t *testing.T) {
 
 	info, err := f.Stat()
 	require.NoError(t, err)
-	require.Lessf(t, info.Size(), 500, "archived file should be smaller than %d", info.Size())
+	require.Lessf(t, info.Size(), int64(500), "archived file should be smaller than %d", info.Size())
 
 	gzf, err := gzip.NewReader(f)
 	require.NoError(t, err)
@@ -75,7 +75,7 @@ func TestGzFileCustomMtime(t *testing.T) {
 
 	info, err := f.Stat()
 	require.NoError(t, err)
-	require.Lessf(t, info.Size(), 500, "archived file should be smaller than %d", info.Size())
+	require.Lessf(t, info.Size(), int64(500), "archived file should be smaller than %d", info.Size())
 
 	gzf, err := gzip.NewReader(f)
 	require.NoError(t, err)

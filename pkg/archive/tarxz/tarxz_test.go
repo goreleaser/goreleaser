@@ -72,7 +72,7 @@ func TestTarXzFile(t *testing.T) {
 
 	info, err := f.Stat()
 	require.NoError(t, err)
-	require.Lessf(t, info.Size(), 500, "archived file should be smaller than %d", info.Size())
+	require.Lessf(t, info.Size(), int64(500), "archived file should be smaller than %d", info.Size())
 
 	xzf, err := xz.NewReader(f)
 	require.NoError(t, err)

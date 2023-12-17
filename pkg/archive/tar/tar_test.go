@@ -77,7 +77,7 @@ func TestTarFile(t *testing.T) {
 
 	info, err := f.Stat()
 	require.NoError(t, err)
-	require.Lessf(t, info.Size(), 10000, "archived file should be smaller than %d", info.Size())
+	require.Lessf(t, info.Size(), int64(10000), "archived file should be smaller than %d", info.Size())
 
 	var paths []string
 	r := tar.NewReader(f)
