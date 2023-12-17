@@ -164,6 +164,13 @@ func TestFullPipe(t *testing.T) {
 				ctx.Config.AURs[0].Homepage = "https://github.com/goreleaser"
 			},
 		},
+		"custom-dir": {
+			prepare: func(ctx *context.Context) {
+				ctx.TokenType = context.TokenTypeGitHub
+				ctx.Config.AURs[0].Homepage = "https://github.com/goreleaser"
+				ctx.Config.AURs[0].Directory = "foo"
+			},
+		},
 		"with-more-opts": {
 			prepare: func(ctx *context.Context) {
 				ctx.TokenType = context.TokenTypeGitHub
@@ -345,7 +352,7 @@ func TestFullPipe(t *testing.T) {
 
 			require.NoError(t, Pipe{}.Publish(ctx))
 
-			requireEqualRepoFiles(t, folder, name, url)
+			requireEqualRepoFiles(t, folder, ctx.Config.AURs[0].Directory, name, url)
 		})
 	}
 }
@@ -472,7 +479,7 @@ func TestRunPipe(t *testing.T) {
 	require.NoError(t, runAll(ctx, client))
 	require.NoError(t, Pipe{}.Publish(ctx))
 
-	requireEqualRepoFiles(t, folder, "foo", url)
+	requireEqualRepoFiles(t, folder, ".", "foo", url)
 }
 
 func TestRunPipeNoBuilds(t *testing.T) {
@@ -529,7 +536,7 @@ func TestRunPipeBinaryRelease(t *testing.T) {
 	require.NoError(t, runAll(ctx, client))
 	require.NoError(t, Pipe{}.Publish(ctx))
 
-	requireEqualRepoFiles(t, folder, "foo", url)
+	requireEqualRepoFiles(t, folder, ".", "foo", url)
 }
 
 func TestRunPipeNoUpload(t *testing.T) {
@@ -717,7 +724,7 @@ func TestSkip(t *testing.T) {
 	})
 }
 
-func requireEqualRepoFiles(tb testing.TB, folder, name, url string) {
+func requireEqualRepoFiles(tb testing.TB, distDir, repoDir, name, url string) {
 	tb.Helper()
 	dir := tb.TempDir()
 	_, err := git.Run(testctx.New(), "-C", dir, "clone", url, "repo")
@@ -727,12 +734,12 @@ func requireEqualRepoFiles(tb testing.TB, folder, name, url string) {
 		"PKGBUILD": ".pkgbuild",
 		".SRCINFO": ".srcinfo",
 	} {
-		path := filepath.Join(folder, "aur", name+"-bin"+ext)
+		path := filepath.Join(distDir, "aur", name+"-bin"+ext)
 		bts, err := os.ReadFile(path)
 		require.NoError(tb, err)
 		golden.RequireEqualExt(tb, bts, ext)
 
-		bts, err = os.ReadFile(filepath.Join(dir, "repo", reponame))
+		bts, err = os.ReadFile(filepath.Join(dir, "repo", repoDir, reponame))
 		require.NoError(tb, err)
 		golden.RequireEqualExt(tb, bts, ext)
 	}
