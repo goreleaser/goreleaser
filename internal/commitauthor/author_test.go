@@ -46,27 +46,27 @@ func TestGet(t *testing.T) {
 
 func TestDefault(t *testing.T) {
 	t.Run("empty", func(t *testing.T) {
-		require.Equal(t, Default(config.CommitAuthor{}), config.CommitAuthor{
+		require.Equal(t, config.CommitAuthor{
 			Name:  defaultName,
 			Email: defaultEmail,
-		})
+		}, Default(config.CommitAuthor{}))
 	})
 
 	t.Run("no name", func(t *testing.T) {
-		require.Equal(t, Default(config.CommitAuthor{
-			Email: "a",
-		}), config.CommitAuthor{
+		require.Equal(t, config.CommitAuthor{
 			Name:  defaultName,
 			Email: "a",
-		})
+		}, Default(config.CommitAuthor{
+			Email: "a",
+		}))
 	})
 
 	t.Run("no email", func(t *testing.T) {
-		require.Equal(t, Default(config.CommitAuthor{
-			Name: "a",
-		}), config.CommitAuthor{
+		require.Equal(t, config.CommitAuthor{
 			Name:  "a",
 			Email: defaultEmail,
-		})
+		}, Default(config.CommitAuthor{
+			Name: "a",
+		}))
 	})
 }

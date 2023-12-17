@@ -487,7 +487,7 @@ func TestDefaultPreRelease(t *testing.T) {
 			testctx.WithSemver(1, 0, 0, ""),
 		)
 		require.NoError(t, Pipe{}.Default(ctx))
-		require.Equal(t, false, ctx.PreRelease)
+		require.False(t, ctx.PreRelease)
 	})
 
 	t.Run("auto-rc", func(t *testing.T) {
@@ -501,7 +501,7 @@ func TestDefaultPreRelease(t *testing.T) {
 			testctx.WithSemver(1, 0, 0, "rc1"),
 		)
 		require.NoError(t, Pipe{}.Default(ctx))
-		require.Equal(t, true, ctx.PreRelease)
+		require.True(t, ctx.PreRelease)
 	})
 
 	t.Run("auto-rc-github-setup", func(t *testing.T) {
@@ -519,7 +519,7 @@ func TestDefaultPreRelease(t *testing.T) {
 			testctx.WithSemver(1, 0, 0, "rc1"),
 		)
 		require.NoError(t, Pipe{}.Default(ctx))
-		require.Equal(t, true, ctx.PreRelease)
+		require.True(t, ctx.PreRelease)
 	})
 }
 

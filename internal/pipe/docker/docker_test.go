@@ -64,7 +64,7 @@ func TestRunPipe(t *testing.T) {
 				for _, id := range strings.Split(strings.TrimSpace(string(output)), "\n") {
 					uniqueIDs[id] = id
 				}
-				require.Equal(t, 1, len(uniqueIDs))
+				require.Len(t, uniqueIDs, 1)
 			}
 		}
 	}

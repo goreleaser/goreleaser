@@ -220,7 +220,7 @@ func TestPipeCouldNotOpenChecksumsTxt(t *testing.T) {
 func TestPipeWhenNoArtifacts(t *testing.T) {
 	ctx := testctx.New()
 	require.NoError(t, Pipe{}.Run(ctx))
-	require.Len(t, ctx.Artifacts.List(), 0)
+	require.Empty(t, ctx.Artifacts.List())
 }
 
 func TestDefault(t *testing.T) {
@@ -391,7 +391,7 @@ func TestPipeCheckSumsWithExtraFiles(t *testing.T) {
 					return nil
 				}
 				checkSum, err := artifact.Extra[string](*a, artifactChecksumExtra)
-				require.Nil(t, err)
+				require.NoError(t, err)
 				require.NotEmptyf(t, checkSum, "failed: %v", a.Path)
 				return nil
 			})

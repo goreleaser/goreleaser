@@ -267,7 +267,7 @@ func TestRun(t *testing.T) {
 
 	t.Run("replacing", func(t *testing.T) {
 		require.NoError(t, Pipe{}.Run(ctx1))
-		require.Len(t, ctx1.Artifacts.Filter(artifact.ByType(artifact.Binary)).List(), 0)
+		require.Empty(t, ctx1.Artifacts.Filter(artifact.ByType(artifact.Binary)).List())
 		unis := ctx1.Artifacts.Filter(artifact.ByType(artifact.UniversalBinary)).List()
 		require.Len(t, unis, 1)
 		checkUniversalBinary(t, unis[0])

@@ -10,13 +10,13 @@ import (
 )
 
 func TestStringer(t *testing.T) {
-	require.Equal(t, Pipe{}.String(), "linkedin")
+	require.Equal(t, "linkedin", Pipe{}.String())
 }
 
 func TestDefault(t *testing.T) {
 	ctx := testctx.New()
 	require.NoError(t, Pipe{}.Default(ctx))
-	require.Equal(t, ctx.Config.Announce.LinkedIn.MessageTemplate, defaultMessageTemplate)
+	require.Equal(t, defaultMessageTemplate, ctx.Config.Announce.LinkedIn.MessageTemplate)
 }
 
 func TestAnnounceDisabled(t *testing.T) {

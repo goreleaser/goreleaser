@@ -72,7 +72,7 @@ func TestTarXzFile(t *testing.T) {
 
 	info, err := f.Stat()
 	require.NoError(t, err)
-	require.Truef(t, info.Size() < 500, "archived file should be smaller than %d", info.Size())
+	require.Lessf(t, info.Size(), 500, "archived file should be smaller than %d", info.Size())
 
 	xzf, err := xz.NewReader(f)
 	require.NoError(t, err)
@@ -91,7 +91,7 @@ func TestTarXzFile(t *testing.T) {
 			require.True(t, ex, "expected executable permissions, got %s", next.FileInfo().Mode())
 		}
 		if next.Name == "link.txt" {
-			require.Equal(t, next.Linkname, "regular.txt")
+			require.Equal(t, "regular.txt", next.Linkname)
 		}
 	}
 	require.Equal(t, []string{

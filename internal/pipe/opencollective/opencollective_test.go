@@ -10,14 +10,14 @@ import (
 )
 
 func TestStringer(t *testing.T) {
-	require.Equal(t, Pipe{}.String(), "opencollective")
+	require.Equal(t, "opencollective", Pipe{}.String())
 }
 
 func TestDefault(t *testing.T) {
 	ctx := testctx.New()
 	require.NoError(t, Pipe{}.Default(ctx))
-	require.Equal(t, ctx.Config.Announce.OpenCollective.TitleTemplate, defaultTitleTemplate)
-	require.Equal(t, ctx.Config.Announce.OpenCollective.MessageTemplate, defaultMessageTemplate)
+	require.Equal(t, defaultTitleTemplate, ctx.Config.Announce.OpenCollective.TitleTemplate)
+	require.Equal(t, defaultMessageTemplate, ctx.Config.Announce.OpenCollective.MessageTemplate)
 }
 
 func TestAnnounceInvalidTemplate(t *testing.T) {

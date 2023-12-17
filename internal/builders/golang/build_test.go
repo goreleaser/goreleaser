@@ -1265,13 +1265,13 @@ func TestOverrides(t *testing.T) {
 			},
 		)
 		require.NoError(t, err)
-		require.Equal(t, dets, config.BuildDetails{
+		require.Equal(t, config.BuildDetails{
 			Ldflags:  []string{"overridden"},
 			Gcflags:  []string{"gcflag1"},
 			Asmflags: []string{"asm1"},
 			Tags:     []string{"tag1"},
 			Env:      []string{},
-		})
+		}, dets)
 	})
 
 	t.Run("with template", func(t *testing.T) {
@@ -1297,11 +1297,11 @@ func TestOverrides(t *testing.T) {
 			},
 		)
 		require.NoError(t, err)
-		require.Equal(t, dets, config.BuildDetails{
+		require.Equal(t, config.BuildDetails{
 			Ldflags:  []string{"overridden"},
 			Asmflags: []string{"asm1"},
 			Env:      []string{},
-		})
+		}, dets)
 	})
 
 	t.Run("with invalid template", func(t *testing.T) {
@@ -1345,10 +1345,10 @@ func TestOverrides(t *testing.T) {
 			},
 		)
 		require.NoError(t, err)
-		require.Equal(t, dets, config.BuildDetails{
+		require.Equal(t, config.BuildDetails{
 			Ldflags: []string{"overridden"},
 			Env:     []string{},
-		})
+		}, dets)
 	})
 
 	t.Run("with gomips", func(t *testing.T) {
@@ -1375,10 +1375,10 @@ func TestOverrides(t *testing.T) {
 			},
 		)
 		require.NoError(t, err)
-		require.Equal(t, dets, config.BuildDetails{
+		require.Equal(t, config.BuildDetails{
 			Ldflags: []string{"overridden"},
 			Env:     []string{},
-		})
+		}, dets)
 	})
 }
 

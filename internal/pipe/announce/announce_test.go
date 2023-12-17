@@ -1,7 +1,6 @@
 package announce
 
 import (
-	"errors"
 	"testing"
 
 	"github.com/goreleaser/goreleaser/internal/skips"
@@ -30,7 +29,7 @@ func TestAnnounce(t *testing.T) {
 	err := Pipe{}.Run(ctx)
 	require.Error(t, err)
 	merr := &multierror.Error{}
-	require.True(t, errors.As(err, &merr), "must be a multierror")
+	require.ErrorAs(t, err, &merr, "must be a multierror")
 	require.Len(t, merr.Errors, 2)
 }
 

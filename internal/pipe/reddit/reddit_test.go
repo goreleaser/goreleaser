@@ -10,13 +10,13 @@ import (
 )
 
 func TestStringer(t *testing.T) {
-	require.Equal(t, Pipe{}.String(), "reddit")
+	require.Equal(t, "reddit", Pipe{}.String())
 }
 
 func TestDefault(t *testing.T) {
 	ctx := testctx.New()
 	require.NoError(t, Pipe{}.Default(ctx))
-	require.Equal(t, ctx.Config.Announce.Reddit.TitleTemplate, defaultTitleTemplate)
+	require.Equal(t, defaultTitleTemplate, ctx.Config.Announce.Reddit.TitleTemplate)
 }
 
 func TestAnnounceInvalidURLTemplate(t *testing.T) {

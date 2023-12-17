@@ -533,7 +533,7 @@ func TestGitHubOpenPullRequestNoBaseBranchDraft(t *testing.T) {
 			require.NoError(t, json.Unmarshal(got, &pr))
 			require.Equal(t, "main", pr.GetBase())
 			require.Equal(t, "someone:something:foo", pr.GetHead())
-			require.Equal(t, true, pr.GetDraft())
+			require.True(t, pr.GetDraft())
 
 			r, err := os.Open("testdata/github/pull.json")
 			require.NoError(t, err)

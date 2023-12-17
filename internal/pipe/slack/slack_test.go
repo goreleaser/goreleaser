@@ -13,13 +13,13 @@ import (
 )
 
 func TestStringer(t *testing.T) {
-	require.Equal(t, Pipe{}.String(), "slack")
+	require.Equal(t, "slack", Pipe{}.String())
 }
 
 func TestDefault(t *testing.T) {
 	ctx := testctx.New()
 	require.NoError(t, Pipe{}.Default(ctx))
-	require.Equal(t, ctx.Config.Announce.Slack.MessageTemplate, defaultMessageTemplate)
+	require.Equal(t, defaultMessageTemplate, ctx.Config.Announce.Slack.MessageTemplate)
 }
 
 func TestAnnounceInvalidTemplate(t *testing.T) {

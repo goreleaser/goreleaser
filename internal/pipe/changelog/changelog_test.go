@@ -455,7 +455,7 @@ func TestChangeLogWithReleaseFooter(t *testing.T) {
 	require.NoError(t, Pipe{}.Run(ctx))
 	require.Contains(t, ctx.ReleaseNotes, "## Changelog")
 	require.Contains(t, ctx.ReleaseNotes, "test footer")
-	require.Equal(t, rune(ctx.ReleaseNotes[len(ctx.ReleaseNotes)-1]), '\n')
+	require.Equal(t, '\n', rune(ctx.ReleaseNotes[len(ctx.ReleaseNotes)-1]))
 }
 
 func TestChangeLogWithTemplatedReleaseFooter(t *testing.T) {
@@ -480,7 +480,7 @@ func TestChangeLogWithTemplatedReleaseFooter(t *testing.T) {
 	require.NoError(t, Pipe{}.Run(ctx))
 	require.Contains(t, ctx.ReleaseNotes, "## Changelog")
 	require.Contains(t, ctx.ReleaseNotes, "test footer with tag v0.0.1")
-	require.Equal(t, rune(ctx.ReleaseNotes[len(ctx.ReleaseNotes)-1]), '\n')
+	require.Equal(t, '\n', rune(ctx.ReleaseNotes[len(ctx.ReleaseNotes)-1]))
 }
 
 func TestChangeLogWithoutReleaseFooter(t *testing.T) {
@@ -503,7 +503,7 @@ func TestChangeLogWithoutReleaseFooter(t *testing.T) {
 	ctx := testctx.New(testctx.WithCurrentTag("v0.0.1"), withFirstCommit(t))
 	require.NoError(t, Pipe{}.Run(ctx))
 	require.Contains(t, ctx.ReleaseNotes, "## Changelog")
-	require.Equal(t, rune(ctx.ReleaseNotes[len(ctx.ReleaseNotes)-1]), '\n')
+	require.Equal(t, '\n', rune(ctx.ReleaseNotes[len(ctx.ReleaseNotes)-1]))
 }
 
 func TestGetChangelogGitHub(t *testing.T) {
@@ -589,7 +589,7 @@ func TestGetChangeloger(t *testing.T) {
 	t.Run("default", func(t *testing.T) {
 		c, err := getChangeloger(testctx.New())
 		require.NoError(t, err)
-		require.IsType(t, c, gitChangeloger{})
+		require.IsType(t, gitChangeloger{}, c)
 	})
 
 	t.Run(useGit, func(t *testing.T) {
@@ -599,7 +599,7 @@ func TestGetChangeloger(t *testing.T) {
 			},
 		}))
 		require.NoError(t, err)
-		require.IsType(t, c, gitChangeloger{})
+		require.IsType(t, gitChangeloger{}, c)
 	})
 
 	t.Run(useGitHub, func(t *testing.T) {
@@ -610,7 +610,7 @@ func TestGetChangeloger(t *testing.T) {
 		}, testctx.GitHubTokenType)
 		c, err := getChangeloger(ctx)
 		require.NoError(t, err)
-		require.IsType(t, c, &scmChangeloger{})
+		require.IsType(t, &scmChangeloger{}, c)
 	})
 
 	t.Run(useGitHubNative, func(t *testing.T) {
@@ -621,7 +621,7 @@ func TestGetChangeloger(t *testing.T) {
 		}, testctx.GitHubTokenType)
 		c, err := getChangeloger(ctx)
 		require.NoError(t, err)
-		require.IsType(t, c, &githubNativeChangeloger{})
+		require.IsType(t, &githubNativeChangeloger{}, c)
 	})
 
 	t.Run(useGitHubNative+"-invalid-repo", func(t *testing.T) {
@@ -646,7 +646,7 @@ func TestGetChangeloger(t *testing.T) {
 		}, testctx.GitHubTokenType)
 		c, err := getChangeloger(ctx)
 		require.NoError(t, err)
-		require.IsType(t, c, &scmChangeloger{})
+		require.IsType(t, &scmChangeloger{}, c)
 	})
 
 	t.Run(useGitHub+"-invalid-repo", func(t *testing.T) {
