@@ -241,7 +241,7 @@ snapcrafts:
         common_id: "com.example.drumroll"
 
         # Bash completion snippet. More information about completion here:
-        # https://docs.snapcraft.io/tab-completion-for-snaps.
+        # https://snapcraft.io/docs/tab-completion.
         completer: drumroll-completion.bash
 
         # You can override the command name.
