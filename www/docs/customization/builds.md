@@ -268,7 +268,7 @@ builds:
     ```sh
     go tool dist list -json | jq -r '.[] | select(.FirstClass) | [.GOOS, .GOARCH] | @tsv'
     ```
-    We also recommend reading the [official wiki about Go ports](https://github.com/golang/go/wiki/PortingPolicy#first-class-ports).
+    We also recommend reading the [official wiki about Go ports](https://go.dev/wiki/PortingPolicy#first-class-ports).
 
 Here is an example with multiple binaries:
 
@@ -559,7 +559,7 @@ The `targets` option can take a `go_first_class` special value as target, which
 will evaluate to the list of first class ports as defined in the Go wiki.
 
 You can read more about it
-[here](https://github.com/golang/go/wiki/PortingPolicy#first-class-ports).
+[here](https://go.dev/wiki/PortingPolicy#first-class-ports).
 
 ## Building shared or static libraries
 
