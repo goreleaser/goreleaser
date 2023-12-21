@@ -206,6 +206,20 @@ func TestRunPipe(t *testing.T) {
 			},
 		},
 		{
+			name: "zip-and-tar",
+			nix: config.Nix{
+				Name:        "foozip",
+				IDs:         []string{"zip-and-tar"},
+				Description: "my test",
+				Homepage:    "https://goreleaser.com",
+				License:     "mit",
+				Repository: config.RepoRef{
+					Owner: "foo",
+					Name:  "bar",
+				},
+			},
+		},
+		{
 			name:             "unibin",
 			expectRunErrorIs: ErrMultipleArchivesSamePlatform,
 			nix: config.Nix{
@@ -483,6 +497,11 @@ func TestRunPipe(t *testing.T) {
 					}
 					createFakeArtifact("wrapped-in-dir", goos, goarch, "", "", "tar.gz", map[string]any{artifact.ExtraWrappedIn: "./foo"})
 					createFakeArtifact("foo-zip", goos, goarch, "v1", "", "zip", nil)
+					if goos == "darwin" {
+						createFakeArtifact("zip-and-tar", goos, goarch, "v1", "", "zip", nil)
+					} else {
+						createFakeArtifact("zip-and-tar", goos, goarch, "v1", "", "tar.gz", nil)
+					}
 				}
 			}
 
