@@ -259,5 +259,5 @@ signs:
 And it will work just fine. Just make sure to always use the `${signature}`
 template variable as the result file name and `${artifact}` as the origin file.
 
-[gon]: https://github.com/mitchellh/gon
+[gon]: https://github.com/Bearer/gon
 [cosign]: https://github.com/sigstore/cosign
