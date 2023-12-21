@@ -258,9 +258,12 @@ func preparePkg(
 	if len(dependencies) > 0 {
 		inputs = append(inputs, "makeWrapper")
 	}
-	if archives[0].Format() == "zip" {
-		inputs = append(inputs, "unzip")
-		dependencies = append(dependencies, "unzip")
+	for _, arch := range archives {
+		if arch.Format() == "zip" {
+			inputs = append(inputs, "unzip")
+			dependencies = append(dependencies, "unzip")
+			break
+		}
 	}
 
 	data := templateData{
