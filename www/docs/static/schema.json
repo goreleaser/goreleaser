@@ -101,6 +101,9 @@
 					},
 					"goamd64": {
 						"type": "string"
+					},
+					"directory": {
+						"type": "string"
 					}
 				},
 				"additionalProperties": false,
@@ -3554,7 +3557,14 @@
 					}
 				},
 				"additionalProperties": false,
-				"type": "object"
+				"type": "object",
+				"required": [
+					"package_identifier",
+					"publisher",
+					"repository",
+					"short_description",
+					"license"
+				]
 			},
 			"WingetDependency": {
 				"properties": {
