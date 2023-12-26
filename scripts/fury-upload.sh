@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 set -e
 if [ "${1: -4}" == ".deb" ] || [ "${1: -4}" == ".rpm" ]; then
 	cd dist
