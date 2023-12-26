@@ -140,8 +140,10 @@ func doRun(ctx *context.Context, aur config.AUR, cl client.ReleaseURLTemplater) 
 			bin := artifact.ExtraOr(*art, artifact.ExtraBinary, art.Name)
 			pkg = fmt.Sprintf(`install -Dm755 "./%s "${pkgdir}/usr/bin/%s"`, name, bin)
 		case artifact.UploadableArchive:
+			folder := artifact.ExtraOr(*art, artifact.ExtraWrappedIn, ".")
 			for _, bin := range artifact.ExtraOr(*art, artifact.ExtraBinaries, []string{}) {
-				pkg = fmt.Sprintf(`install -Dm755 "./%s" "${pkgdir}/usr/bin/%[1]s"`, bin)
+				path := filepath.ToSlash(filepath.Clean(filepath.Join(folder, bin)))
+				pkg = fmt.Sprintf(`install -Dm755 "./%s" "${pkgdir}/usr/bin/%s"`, path, bin)
 				break
 			}
 		}

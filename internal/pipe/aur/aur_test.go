@@ -493,6 +493,53 @@ func TestRunPipeNoBuilds(t *testing.T) {
 	require.False(t, client.CreatedFile)
 }
 
+func TestRunPipeWrappedInDirectory(t *testing.T) {
+	url := testlib.GitMakeBareRepository(t)
+	key := testlib.MakeNewSSHKey(t, "")
+	folder := t.TempDir()
+	ctx := testctx.NewWithCfg(
+		config.Project{
+			Dist:        folder,
+			ProjectName: "foo",
+			AURs: []config.AUR{{
+				GitURL:     url,
+				PrivateKey: key,
+			}},
+		},
+		testctx.WithVersion("1.2.1"),
+		testctx.WithCurrentTag("v1.2.1"),
+		testctx.WithSemver(1, 2, 1, ""),
+	)
+
+	path := filepath.Join(folder, "dist/foo_linux_amd64/foo")
+	ctx.Artifacts.Add(&artifact.Artifact{
+		Name:    "foo.tar.gz",
+		Path:    path,
+		Goos:    "linux",
+		Goarch:  "amd64",
+		Goamd64: "v1",
+		Type:    artifact.UploadableArchive,
+		Extra: map[string]interface{}{
+			artifact.ExtraID:        "foo",
+			artifact.ExtraFormat:    "tar.gz",
+			artifact.ExtraBinaries:  []string{"foo"},
+			artifact.ExtraWrappedIn: "foo",
+		},
+	})
+
+	require.NoError(t, Pipe{}.Default(ctx))
+	require.NoError(t, os.MkdirAll(filepath.Dir(path), 0o755))
+	f, err := os.Create(path)
+	require.NoError(t, err)
+	require.NoError(t, f.Close())
+
+	client := client.NewMock()
+	require.NoError(t, runAll(ctx, client))
+	require.NoError(t, Pipe{}.Publish(ctx))
+
+	requireEqualRepoFiles(t, folder, ".", "foo", url)
+}
+
 func TestRunPipeBinaryRelease(t *testing.T) {
 	url := testlib.GitMakeBareRepository(t)
 	key := testlib.MakeNewSSHKey(t, "")
