@@ -1055,6 +1055,26 @@ type DockerManifest struct {
 	Use            string   `yaml:"use,omitempty" json:"use,omitempty"`
 }
 
+type DockerPlatform struct {
+	Os   string `yaml:"goos,omitempty" json:"goos,omitempty"`
+	Arch string `yaml:"goarch,omitempty" json:"goarch,omitempty"`
+}
+
+type DockerBuildKit struct {
+	ID                 string           `yaml:"id,omitempty" json:"id,omitempty"`
+	IDs                []string         `yaml:"ids,omitempty" json:"ids,omitempty"`
+	Platforms          []DockerPlatform `yaml:"platforms,omitempty" json:"platforms,omitempty"`
+	Dockerfile         string           `yaml:"dockerfile,omitempty" json:"dockerfile,omitempty"`
+	ImageTemplates     []string         `yaml:"image_templates,omitempty" json:"image_templates,omitempty"`
+	SkipPush           string           `yaml:"skip_push,omitempty" json:"skip_push,omitempty" jsonschema:"oneof_type=string;boolean"`
+	Files              []string         `yaml:"extra_files,omitempty" json:"extra_files,omitempty"`
+	BuildFlagTemplates []string         `yaml:"build_flag_templates,omitempty" json:"build_flag_templates,omitempty"`
+	PushFlags          []string         `yaml:"push_flags,omitempty" json:"push_flags,omitempty"`
+
+	BuilderName string `yaml:"builderName,omitempty" json:"builderName,omitempty"`
+	SkipImport  bool   `yaml:"skipImageImport,omitempty" json:"skipImageImport,omitempty"`
+}
+
 // Filters config.
 type Filters struct {
 	Include []string `yaml:"include,omitempty" json:"include,omitempty"`
@@ -1171,6 +1191,7 @@ type Project struct {
 	Checksum        Checksum         `yaml:"checksum,omitempty" json:"checksum,omitempty"`
 	Dockers         []Docker         `yaml:"dockers,omitempty" json:"dockers,omitempty"`
 	DockerManifests []DockerManifest `yaml:"docker_manifests,omitempty" json:"docker_manifests,omitempty"`
+	DockerBuildKits []DockerBuildKit `yaml:"docker_buildkits,omitempty" json:"docker_buildkits,omitempty"`
 	Artifactories   []Upload         `yaml:"artifactories,omitempty" json:"artifactories,omitempty"`
 	Uploads         []Upload         `yaml:"uploads,omitempty" json:"uploads,omitempty"`
 	Blobs           []Blob           `yaml:"blobs,omitempty" json:"blobs,omitempty"`
