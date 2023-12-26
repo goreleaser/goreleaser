@@ -1,12 +1,15 @@
 [
   {
+    "tag_name": "v1.23.0"
+  },
+  {
+    "tag_name": "nightly"
+  },
+  {
     "tag_name": "v1.22.1"
   },
   {
     "tag_name": "v1.22.0"
-  },
-  {
-    "tag_name": "nightly"
   },
   {
     "tag_name": "v1.21.2"
