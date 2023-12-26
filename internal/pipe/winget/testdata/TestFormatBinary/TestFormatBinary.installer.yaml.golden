@@ -4,6 +4,8 @@ PackageIdentifier: Foo.min
 PackageVersion: 1.2.1
 InstallerLocale: en-US
 InstallerType: portable
+Commands:
+  - min
 ReleaseDate: "2023-06-12"
 Installers:
   - Architecture: x64
