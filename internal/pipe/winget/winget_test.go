@@ -785,8 +785,8 @@ func TestFormatBinary(t *testing.T) {
 			Dist:        folder,
 			ProjectName: "foo",
 			Winget: []config.Winget{{
-				Name:             "name",
-				Publisher:        "publisher",
+				Name:             "foo",
+				Publisher:        "goreleaser",
 				License:          "MIT",
 				ShortDescription: "foo bar zaz",
 				IDs:              []string{"foo"},
