@@ -261,6 +261,7 @@ func (p Pipe) doRun(ctx *context.Context, winget config.Winget, cl client.Releas
 		} else {
 			binaryCount++
 			installer.InstallerType = "portable"
+			installer.Commands = []string{winget.Name}
 		}
 		installer.Installers = append(installer.Installers, item)
 		switch archive.Goarch {
