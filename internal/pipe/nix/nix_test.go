@@ -86,6 +86,7 @@ func TestPrefetcher(t *testing.T) {
 func TestRunPipe(t *testing.T) {
 	for _, tt := range []struct {
 		name                 string
+		expectDefaultErrorIs error
 		expectRunErrorIs     error
 		expectPublishErrorIs error
 		nix                  config.Nix
@@ -94,6 +95,18 @@ func TestRunPipe(t *testing.T) {
 			name: "minimal",
 			nix: config.Nix{
 				IDs: []string{"foo"},
+				Repository: config.RepoRef{
+					Owner: "foo",
+					Name:  "bar",
+				},
+			},
+		},
+		{
+			name:                 "invalid license",
+			expectDefaultErrorIs: errInvalidLicense,
+			nix: config.Nix{
+				IDs:     []string{"foo"},
+				License: "mitt",
 				Repository: config.RepoRef{
 					Owner: "foo",
 					Name:  "bar",
@@ -529,12 +542,18 @@ func TestRunPipe(t *testing.T) {
 			}
 
 			// default
+			if tt.expectDefaultErrorIs != nil {
+				err := bpipe.Default(ctx)
+				require.ErrorAs(t, err, &tt.expectDefaultErrorIs)
+				return
+
+			}
 			require.NoError(t, bpipe.Default(ctx))
 
 			// run
 			if tt.expectRunErrorIs != nil {
 				err := bpipe.runAll(ctx, client)
-				require.ErrorAs(t, err, &tt.expectPublishErrorIs)
+				require.ErrorAs(t, err, &tt.expectRunErrorIs)
 				return
 			}
 			require.NoError(t, bpipe.runAll(ctx, client))

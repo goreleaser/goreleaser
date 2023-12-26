@@ -67,6 +67,13 @@ tasks:
     cmds:
       - task: ci
 
+  nix:licenses:generate:
+    desc: Generate nix/licenses.go
+    cmds:
+      - ./scripts/gen-nix-licenses.sh
+    generates:
+      - ./internal/pipe/nix/licenses.go
+
   schema:generate:
     desc: Generate JSONSchema
     cmds:
