@@ -76,7 +76,9 @@ func TestFillPartial(t *testing.T) {
 		},
 		Dockers: []config.Docker{
 			{
-				ImageTemplates: []string{"a/b"},
+				ImageDefinition: config.ImageDefinition{
+					ImageTemplates: []string{"a/b"},
+				},
 			},
 		},
 		Brews: []config.Homebrew{

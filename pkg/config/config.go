@@ -1027,21 +1027,29 @@ type Checksum struct {
 	ExtraFiles   []ExtraFile `yaml:"extra_files,omitempty" json:"extra_files,omitempty"`
 }
 
-// Docker image config.
-type Docker struct {
-	ID                 string   `yaml:"id,omitempty" json:"id,omitempty"`
+type ImageDefinition struct {
 	IDs                []string `yaml:"ids,omitempty" json:"ids,omitempty"`
-	Goos               string   `yaml:"goos,omitempty" json:"goos,omitempty"`
-	Goarch             string   `yaml:"goarch,omitempty" json:"goarch,omitempty"`
-	Goarm              string   `yaml:"goarm,omitempty" json:"goarm,omitempty" jsonschema:"oneof_type=string;integer"`
-	Goamd64            string   `yaml:"goamd64,omitempty" json:"goamd64,omitempty"`
 	Dockerfile         string   `yaml:"dockerfile,omitempty" json:"dockerfile,omitempty"`
 	ImageTemplates     []string `yaml:"image_templates,omitempty" json:"image_templates,omitempty"`
-	SkipPush           string   `yaml:"skip_push,omitempty" json:"skip_push,omitempty" jsonschema:"oneof_type=string;boolean"`
 	Files              []string `yaml:"extra_files,omitempty" json:"extra_files,omitempty"`
 	BuildFlagTemplates []string `yaml:"build_flag_templates,omitempty" json:"build_flag_templates,omitempty"`
 	PushFlags          []string `yaml:"push_flags,omitempty" json:"push_flags,omitempty"`
-	Use                string   `yaml:"use,omitempty" json:"use,omitempty" jsonschema:"enum=docker,enum=buildx,default=docker"`
+}
+
+type ContainerPlatform struct {
+	Goos    string `yaml:"goos,omitempty" json:"goos,omitempty"`
+	Goarch  string `yaml:"goarch,omitempty" json:"goarch,omitempty"`
+	Goarm   string `yaml:"goarm,omitempty" json:"goarm,omitempty" jsonschema:"oneof_type=string;integer"`
+	Goamd64 string `yaml:"goamd64,omitempty" json:"goamd64,omitempty"`
+}
+
+// Docker image config.
+type Docker struct {
+	ID                string `yaml:"id,omitempty" json:"id,omitempty"`
+	ContainerPlatform `yaml:",inline"`
+	ImageDefinition   `yaml:",inline"`
+	SkipPush          string `yaml:"skip_push,omitempty" json:"skip_push,omitempty" jsonschema:"oneof_type=string;boolean"`
+	Use               string `yaml:"use,omitempty" json:"use,omitempty" jsonschema:"enum=docker,enum=buildx,default=docker"`
 }
 
 // DockerManifest config.
@@ -1055,24 +1063,24 @@ type DockerManifest struct {
 	Use            string   `yaml:"use,omitempty" json:"use,omitempty"`
 }
 
-type DockerPlatform struct {
-	Os   string `yaml:"goos,omitempty" json:"goos,omitempty"`
-	Arch string `yaml:"goarch,omitempty" json:"goarch,omitempty"`
+type BuildKitBuilder struct {
+	// Builder name. If not set no builder is provided and the current one will be used
+	Name string `yaml:"builder_name,omitempty" json:"builder_name,omitempty"`
 }
 
-type DockerBuildKit struct {
-	ID                 string           `yaml:"id,omitempty" json:"id,omitempty"`
-	IDs                []string         `yaml:"ids,omitempty" json:"ids,omitempty"`
-	Platforms          []DockerPlatform `yaml:"platforms,omitempty" json:"platforms,omitempty"`
-	Dockerfile         string           `yaml:"dockerfile,omitempty" json:"dockerfile,omitempty"`
-	ImageTemplates     []string         `yaml:"image_templates,omitempty" json:"image_templates,omitempty"`
-	SkipPush           string           `yaml:"skip_push,omitempty" json:"skip_push,omitempty" jsonschema:"oneof_type=string;boolean"`
-	Files              []string         `yaml:"extra_files,omitempty" json:"extra_files,omitempty"`
-	BuildFlagTemplates []string         `yaml:"build_flag_templates,omitempty" json:"build_flag_templates,omitempty"`
-	PushFlags          []string         `yaml:"push_flags,omitempty" json:"push_flags,omitempty"`
+// If no builder is set, it will default to buildKit
+type ContainerBuilder struct {
+	BuildKit *BuildKitBuilder `yaml:"buildkit,omitempty" json:"buildkit,omitempty"`
+}
 
-	BuilderName string `yaml:"builderName,omitempty" json:"builderName,omitempty"`
-	SkipImport  bool   `yaml:"skipImageImport,omitempty" json:"skipImageImport,omitempty"`
+type Container struct {
+	ID              string              `yaml:"id,omitempty" json:"id,omitempty"`
+	Platforms       []ContainerPlatform `yaml:"platforms,omitempty" json:"platforms,omitempty"`
+	ImageDefinition `yaml:",inline"`
+
+	Builder    ContainerBuilder `yaml:"builder,omitempty" json:"builder,omitempty"`
+	SkipImport string           `yaml:"skip_import,omitempty" json:"skip_import,omitempty" jsonschema:"oneof_type=string;boolean"`
+	SkipPush   string           `yaml:"skip_push,omitempty" json:"skip_push,omitempty" jsonschema:"oneof_type=string;boolean"`
 }
 
 // Filters config.
@@ -1191,7 +1199,7 @@ type Project struct {
 	Checksum        Checksum         `yaml:"checksum,omitempty" json:"checksum,omitempty"`
 	Dockers         []Docker         `yaml:"dockers,omitempty" json:"dockers,omitempty"`
 	DockerManifests []DockerManifest `yaml:"docker_manifests,omitempty" json:"docker_manifests,omitempty"`
-	DockerBuildKits []DockerBuildKit `yaml:"docker_buildkits,omitempty" json:"docker_buildkits,omitempty"`
+	Containers      []Container      `yaml:"containers,omitempty" json:"containers,omitempty"`
 	Artifactories   []Upload         `yaml:"artifactories,omitempty" json:"artifactories,omitempty"`
 	Uploads         []Upload         `yaml:"uploads,omitempty" json:"uploads,omitempty"`
 	Blobs           []Blob           `yaml:"blobs,omitempty" json:"blobs,omitempty"`

@@ -13,9 +13,9 @@ import (
 	"github.com/goreleaser/goreleaser/internal/pipe/build"
 	"github.com/goreleaser/goreleaser/internal/pipe/checksums"
 	"github.com/goreleaser/goreleaser/internal/pipe/chocolatey"
+	"github.com/goreleaser/goreleaser/internal/pipe/container"
 	"github.com/goreleaser/goreleaser/internal/pipe/discord"
 	"github.com/goreleaser/goreleaser/internal/pipe/docker"
-	buildkit "github.com/goreleaser/goreleaser/internal/pipe/dockerbuildkit"
 	"github.com/goreleaser/goreleaser/internal/pipe/gomod"
 	"github.com/goreleaser/goreleaser/internal/pipe/ko"
 	"github.com/goreleaser/goreleaser/internal/pipe/krew"
@@ -77,7 +77,7 @@ var Defaulters = []Defaulter{
 	sbom.Pipe{},
 	docker.Pipe{},
 	docker.ManifestPipe{},
-	buildkit.Pipe{},
+	container.Pipe{},
 	artifactory.Pipe{},
 	blob.Pipe{},
 	upload.Pipe{},

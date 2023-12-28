@@ -20,6 +20,7 @@ const (
 	Sign           Key = "sign"
 	Validate       Key = "validate"
 	SBOM           Key = "sbom"
+	Container      Key = "container"
 	Ko             Key = "ko"
 	Docker         Key = "docker"
 	Before         Key = "before"

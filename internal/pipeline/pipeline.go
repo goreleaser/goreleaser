@@ -13,10 +13,10 @@ import (
 	"github.com/goreleaser/goreleaser/internal/pipe/changelog"
 	"github.com/goreleaser/goreleaser/internal/pipe/checksums"
 	"github.com/goreleaser/goreleaser/internal/pipe/chocolatey"
+	"github.com/goreleaser/goreleaser/internal/pipe/container"
 	"github.com/goreleaser/goreleaser/internal/pipe/defaults"
 	"github.com/goreleaser/goreleaser/internal/pipe/dist"
 	"github.com/goreleaser/goreleaser/internal/pipe/docker"
-	buildkit "github.com/goreleaser/goreleaser/internal/pipe/dockerbuildkit"
 	"github.com/goreleaser/goreleaser/internal/pipe/effectiveconfig"
 	"github.com/goreleaser/goreleaser/internal/pipe/env"
 	"github.com/goreleaser/goreleaser/internal/pipe/git"
@@ -133,7 +133,7 @@ var Pipeline = append(
 	reportsizes.Pipe{},
 	// create and push docker images
 	docker.Pipe{},
-	buildkit.Pipe{},
+	container.Pipe{},
 	// publishes artifacts
 	publish.New(),
 	// creates a metadata.json and an artifacts.json files in the dist folder
