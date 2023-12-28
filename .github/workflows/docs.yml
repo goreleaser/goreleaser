@@ -20,13 +20,11 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v3
-      - uses: arduino/setup-task@e26d8975574116b0097a1161e0fe16ba75d84c1c # v1
+      - uses: cachix/install-nix-action@v24
         with:
-          repo-token: ${{ secrets.GITHUB_TOKEN }}
-      - uses: actions/setup-go@0c52d547c9bc32b1aa3301fd7a9cb496313a4491 # v4
-        with:
-          go-version: stable
-      - run: task docs:build
+          nix_path: nixpkgs=channel:nixos-unstable
+          github_access_token: ${{ secrets.GITHUB_TOKEN }}
+      - run: nix develop --command task docs:build
       - uses: wjdp/htmltest-action@09118714cd26bef56bd3d0819e4f9b1dce6f60a9 # master
         with:
           path: www/site
