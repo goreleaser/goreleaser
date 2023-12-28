@@ -129,6 +129,12 @@ tasks:
       - task: docs:generate
       - "mkdocs build -f www/mkdocs.yml"
 
+  docs:test:
+    desc: Test docs with htmltest
+    cmds:
+      - task: docs:build
+      - "htmltest www/site -c www/htmltest.yml"
+
   release:
     desc: Create a new tag
     vars:

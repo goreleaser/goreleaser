@@ -4,7 +4,7 @@
     staging.url = "github:caarlos0/nixpkgs/wip";
     flake-utils.url = "github:numtide/flake-utils";
   };
-  outputs = { self, nixpkgs, staging, flake-utils, ... }:
+  outputs = { nixpkgs, staging, flake-utils, ... }:
     flake-utils.lib.eachDefaultSystem (system:
       let
         pkgs = nixpkgs.legacyPackages.${system};
@@ -19,22 +19,26 @@
           doCheck = false;
           vendorHash = "sha256-wY3kIhNIqTaK9MT1VeePERNhqvbtf6bsyRTjG8nrqxU=";
         };
-        devShells. default = pkgs.mkShell {
-          packages = with pkgs; with staging-pkgs.python311Packages;[
+
+        devShells.default = pkgs.mkShell {
+          packages = with pkgs; with staging-pkgs.python311Packages; [
             go
             go-task
             gofumpt
+          ];
+          shellHook = "go mod tidy";
+        };
 
+        devShells.docs = pkgs.mkShell {
+          packages = with pkgs; with staging-pkgs.python311Packages; [
+            go-task
+            htmltest
             mkdocs-material
             mkdocs-redirects
             mkdocs-minify
             mkdocs-rss-plugin
             mkdocs-include-markdown-plugin
           ] ++ mkdocs-material.passthru.optional-dependencies.git;
-
-          shellHook = ''
-            		  go mod tidy
-            		  '';
         };
       }
     );

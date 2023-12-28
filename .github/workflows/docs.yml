@@ -24,8 +24,4 @@ jobs:
         with:
           nix_path: nixpkgs=channel:nixos-unstable
           github_access_token: ${{ secrets.GITHUB_TOKEN }}
-      - run: nix develop --command task docs:build
-      - uses: wjdp/htmltest-action@09118714cd26bef56bd3d0819e4f9b1dce6f60a9 # master
-        with:
-          path: www/site
-          config: www/htmltest.yml
+      - run: nix develop .#docs --command task docs:test
