@@ -8,6 +8,7 @@ import (
 	"strings"
 
 	"github.com/caarlos0/log"
+	"github.com/charmbracelet/x/exp/ordered"
 	"github.com/goreleaser/goreleaser/internal/gio"
 	"github.com/goreleaser/goreleaser/internal/logext"
 	"github.com/goreleaser/goreleaser/pkg/context"
@@ -17,7 +18,8 @@ import (
 func Run(ctx *context.Context, dir string, command, env []string, output bool) error {
 	log := log.
 		WithField("cmd", command).
-		WithField("env", env)
+		WithField("env", env).
+		WithField("dir", dir)
 
 	/* #nosec */
 	cmd := exec.CommandContext(ctx, command[0], command[1:]...)
@@ -35,8 +37,15 @@ func Run(ctx *context.Context, dir string, command, env []string, output bool) e
 
 	log.Debug("running")
 	if err := cmd.Run(); err != nil {
-		log.WithError(err).Debug("failed")
-		return fmt.Errorf("failed to run '%s': %w", strings.Join(command, " "), err)
+		return fmt.Errorf(
+			"shell: '%s': %w: %s",
+			strings.Join(command, " "),
+			err,
+			ordered.First(
+				strings.TrimSpace(b.String()),
+				"[no output]",
+			),
+		)
 	}
 
 	return nil

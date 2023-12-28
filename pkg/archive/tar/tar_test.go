@@ -77,7 +77,7 @@ func TestTarFile(t *testing.T) {
 
 	info, err := f.Stat()
 	require.NoError(t, err)
-	require.Truef(t, info.Size() < 10000, "archived file should be smaller than %d", info.Size())
+	require.Lessf(t, info.Size(), int64(10000), "archived file should be smaller than %d", info.Size())
 
 	var paths []string
 	r := tar.NewReader(f)
@@ -93,7 +93,7 @@ func TestTarFile(t *testing.T) {
 			require.True(t, ex, "expected executable permissions, got %s", next.FileInfo().Mode())
 		}
 		if next.Name == "link.txt" {
-			require.Equal(t, next.Linkname, "regular.txt")
+			require.Equal(t, "regular.txt", next.Linkname)
 		}
 	}
 	require.Equal(t, []string{

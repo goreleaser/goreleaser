@@ -195,12 +195,13 @@ func buildOptionsForTarget(ctx *context.Context, build config.Build, target stri
 		Goamd64: goamd64,
 	}
 
-	binary, err := tmpl.New(ctx).WithBuildOptions(buildOpts).Apply(build.Binary)
-	if err != nil {
+	if err := tmpl.New(ctx).WithBuildOptions(buildOpts).ApplyAll(
+		&build.Binary,
+		&build.GoBinary,
+	); err != nil {
 		return nil, err
 	}
 
-	build.Binary = binary
 	name := build.Binary + ext
 	dir := fmt.Sprintf("%s_%s", build.ID, target)
 	if build.NoUniqueDistDir {

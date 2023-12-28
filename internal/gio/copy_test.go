@@ -26,7 +26,7 @@ func TestCopySymlink(t *testing.T) {
 
 	fi, err := os.Lstat(c)
 	require.NoError(t, err)
-	require.True(t, fi.Mode()&os.ModeSymlink != 0)
+	require.NotEqual(t, 0, fi.Mode()&os.ModeSymlink)
 
 	l, err := os.Readlink(c)
 	require.NoError(t, err)

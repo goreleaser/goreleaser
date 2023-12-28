@@ -125,10 +125,10 @@ goreleaser build --help
 
 ### Release Flags
 
-Use the `--skip-publish` flag to skip publishing:
+Use the `--skip=publish` flag to skip publishing:
 
 ```sh
-goreleaser release --skip-publish
+goreleaser release --skip=publish
 ```
 
 You can check the other options by running:

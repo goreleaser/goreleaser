@@ -112,7 +112,7 @@ func TestDefaultsWithProvider(t *testing.T) {
 			},
 		},
 	})
-	require.Nil(t, Pipe{}.Default(ctx))
+	require.NoError(t, Pipe{}.Default(ctx))
 }
 
 func TestURL(t *testing.T) {

@@ -64,7 +64,7 @@ func Test_doRun(t *testing.T) {
 				IDs:     []string{"no-app"},
 				Goamd64: "v1",
 			},
-			err: "chocolatey requires a windows build and archive",
+			err: errNoWindowsArchive.Error(),
 		},
 		{
 			name: "choco command not found",
@@ -326,7 +326,7 @@ func checkPushCmd(tb testing.TB, cmd string, args ...string) {
 	tb.Helper()
 	tb.Log("would have run:", cmd, args)
 	require.Len(tb, args, 6)
-	require.Equal(tb, cmd, "choco")
+	require.Equal(tb, "choco", cmd)
 	require.FileExists(tb, args[5])
 }
 
@@ -334,7 +334,7 @@ func checkPackCmd(tb testing.TB, cmd string, args ...string) {
 	tb.Helper()
 	tb.Log("would have run:", cmd, args)
 	require.Len(tb, args, 4)
-	require.Equal(tb, cmd, "choco")
+	require.Equal(tb, "choco", cmd)
 	require.FileExists(tb, args[1])
 	require.DirExists(tb, args[3])
 }

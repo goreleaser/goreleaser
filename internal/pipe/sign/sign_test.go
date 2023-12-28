@@ -64,10 +64,10 @@ func TestSignDefault(t *testing.T) {
 	setGpg(t, ctx, "") // force empty gpg.program
 
 	require.NoError(t, Pipe{}.Default(ctx))
-	require.Equal(t, ctx.Config.Signs[0].Cmd, "gpg")
-	require.Equal(t, ctx.Config.Signs[0].Signature, "${artifact}.sig")
-	require.Equal(t, ctx.Config.Signs[0].Args, []string{"--output", "$signature", "--detach-sig", "$artifact"})
-	require.Equal(t, ctx.Config.Signs[0].Artifacts, "none")
+	require.Equal(t, "gpg", ctx.Config.Signs[0].Cmd)
+	require.Equal(t, "${artifact}.sig", ctx.Config.Signs[0].Signature)
+	require.Equal(t, []string{"--output", "$signature", "--detach-sig", "$artifact"}, ctx.Config.Signs[0].Args)
+	require.Equal(t, "none", ctx.Config.Signs[0].Artifacts)
 }
 
 func TestDefaultGpgFromGitConfig(t *testing.T) {
@@ -80,7 +80,7 @@ func TestDefaultGpgFromGitConfig(t *testing.T) {
 	setGpg(t, ctx, "not-really-gpg")
 
 	require.NoError(t, Pipe{}.Default(ctx))
-	require.Equal(t, ctx.Config.Signs[0].Cmd, "not-really-gpg")
+	require.Equal(t, "not-really-gpg", ctx.Config.Signs[0].Cmd)
 }
 
 func TestSignDisabled(t *testing.T) {

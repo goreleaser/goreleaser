@@ -6,6 +6,7 @@ After releasing to GitHub, GitLab, or Gitea, GoReleaser can generate and publish
 a `PKGBUILD` to an _Arch User Repository_.
 
 !!! warning
+
     Before going further on this, make sure to read
     [AUR's Submission Guidelines](https://wiki.archlinux.org/title/AUR_submission_guidelines).
 
@@ -153,11 +154,22 @@ aurs:
     # Default: depends on the client
     # Templates: allowed
     url_template: "http://github.mycompany.com/foo/bar/releases/{{ .Tag }}/{{ .ArtifactName }}"
+
+    # Directory in which the files will be created inside the repository.
+    # Only useful if you're creating your own AUR with multiple packages in a
+    # single repository.
+    #
+    # Default: .
+    # Templates: allowed
+    # Since: v1.23.
+    url_template: "http://github.mycompany.com/foo/bar/releases/{{ .Tag }}/{{ .ArtifactName }}"
 ```
 
 !!! tip
+
     Learn more about the [name template engine](/customization/templates/).
 
 !!! tip
+
     For more info about what each field does, please refer to
     [Arch's PKGBUILD reference](https://wiki.archlinux.org/title/PKGBUILD).

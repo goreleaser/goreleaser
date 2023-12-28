@@ -101,6 +101,9 @@
 					},
 					"goamd64": {
 						"type": "string"
+					},
+					"directory": {
+						"type": "string"
 					}
 				},
 				"additionalProperties": false,
@@ -1268,6 +1271,13 @@
 							},
 							"version": {
 								"type": "string"
+							},
+							"os": {
+								"type": "string",
+								"enum": [
+									"mac",
+									"linux"
+								]
 							}
 						},
 						"additionalProperties": false,
@@ -3547,7 +3557,14 @@
 					}
 				},
 				"additionalProperties": false,
-				"type": "object"
+				"type": "object",
+				"required": [
+					"package_identifier",
+					"publisher",
+					"repository",
+					"short_description",
+					"license"
+				]
 			},
 			"WingetDependency": {
 				"properties": {

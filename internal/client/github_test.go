@@ -13,7 +13,7 @@ import (
 	"text/template"
 	"time"
 
-	"github.com/google/go-github/v56/github"
+	"github.com/google/go-github/v57/github"
 	"github.com/goreleaser/goreleaser/internal/artifact"
 	"github.com/goreleaser/goreleaser/internal/testctx"
 	"github.com/goreleaser/goreleaser/internal/testlib"
@@ -533,7 +533,7 @@ func TestGitHubOpenPullRequestNoBaseBranchDraft(t *testing.T) {
 			require.NoError(t, json.Unmarshal(got, &pr))
 			require.Equal(t, "main", pr.GetBase())
 			require.Equal(t, "someone:something:foo", pr.GetHead())
-			require.Equal(t, true, pr.GetDraft())
+			require.True(t, pr.GetDraft())
 
 			r, err := os.Open("testdata/github/pull.json")
 			require.NoError(t, err)
@@ -803,6 +803,68 @@ func TestGitHubCreateFileHappyPathUpdate(t *testing.T) {
 	repo := Repo{
 		Owner: "someone",
 		Name:  "something",
+	}
+
+	require.NoError(t, client.CreateFile(ctx, config.CommitAuthor{}, repo, []byte("content"), "file.txt", "message"))
+}
+
+func TestGitHubCreateFileFeatureBranchAlreadyExists(t *testing.T) {
+	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		defer r.Body.Close()
+
+		if r.URL.Path == "/repos/someone/something/branches/feature" && r.Method == http.MethodGet {
+			w.WriteHeader(http.StatusNotFound)
+			return
+		}
+
+		if r.URL.Path == "/repos/someone/something/git/ref/heads/main" {
+			fmt.Fprint(w, `{"object": {"sha": "fake-sha"}}`)
+			return
+		}
+
+		if r.URL.Path == "/repos/someone/something/git/refs" && r.Method == http.MethodPost {
+			w.WriteHeader(http.StatusUnprocessableEntity)
+			fmt.Fprintf(w, `{"message": "Reference already exists"}`)
+			return
+		}
+
+		if r.URL.Path == "/repos/someone/something" {
+			w.WriteHeader(http.StatusOK)
+			fmt.Fprint(w, `{"default_branch": "main"}`)
+			return
+		}
+
+		if r.URL.Path == "/repos/someone/something/contents/file.txt" && r.Method == http.MethodGet {
+			w.WriteHeader(http.StatusNotFound)
+			return
+		}
+
+		if r.URL.Path == "/repos/someone/something/contents/file.txt" && r.Method == http.MethodPut {
+			w.WriteHeader(http.StatusOK)
+			return
+		}
+
+		if r.URL.Path == "/rate_limit" {
+			w.WriteHeader(http.StatusOK)
+			fmt.Fprint(w, `{"resources":{"core":{"remaining":120}}}`)
+			return
+		}
+
+		t.Error("unhandled request: " + r.Method + " " + r.URL.Path)
+	}))
+	defer srv.Close()
+
+	ctx := testctx.NewWithCfg(config.Project{
+		GitHubURLs: config.GitHubURLs{
+			API: srv.URL + "/",
+		},
+	})
+	client, err := newGitHub(ctx, "test-token")
+	require.NoError(t, err)
+	repo := Repo{
+		Owner:  "someone",
+		Name:   "something",
+		Branch: "feature",
 	}
 
 	require.NoError(t, client.CreateFile(ctx, config.CommitAuthor{}, repo, []byte("content"), "file.txt", "message"))

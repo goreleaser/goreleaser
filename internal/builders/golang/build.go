@@ -8,6 +8,7 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
+	"slices"
 	"strings"
 
 	"dario.cat/mergo"
@@ -283,6 +284,9 @@ func buildGoBuildLine(ctx *context.Context, build config.Build, details config.B
 		return cmd, err
 	}
 	cmd = append(cmd, flags...)
+	if build.Command == "test" && !slices.Contains(flags, "-c") {
+		cmd = append(cmd, "-c")
+	}
 
 	asmflags, err := processFlags(ctx, artifact, env, details.Asmflags, "-asmflags=")
 	if err != nil {

@@ -1,7 +1,6 @@
 package errhandler
 
 import (
-	"errors"
 	"fmt"
 	"testing"
 
@@ -53,6 +52,6 @@ func TestErrorMemo(t *testing.T) {
 
 	err := memo.Error()
 	merr := &multierror.Error{}
-	require.True(t, errors.As(err, &merr), "must be a multierror")
+	require.ErrorAs(t, err, &merr, "must be a multierror")
 	require.Len(t, merr.Errors, 1)
 }

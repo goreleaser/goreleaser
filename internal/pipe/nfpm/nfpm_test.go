@@ -1256,7 +1256,7 @@ func TestMeta(t *testing.T) {
 		format := pkg.Format()
 		require.NotEmpty(t, format)
 		require.Equal(t, pkg.Name, "foo_1.0.0_linux_"+pkg.Goarch+"-10-20."+format)
-		require.Equal(t, pkg.ID(), "someid")
+		require.Equal(t, "someid", pkg.ID())
 		require.ElementsMatch(t, []string{
 			"/var/log/foobar",
 			"/usr/share/testfile.txt",

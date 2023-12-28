@@ -77,7 +77,7 @@ func TestZipFile(t *testing.T) {
 
 	info, err := f.Stat()
 	require.NoError(t, err)
-	require.Truef(t, info.Size() < 1000, "archived file should be smaller than %d", info.Size())
+	require.Lessf(t, info.Size(), int64(1000), "archived file should be smaller than %d", info.Size())
 
 	r, err := zip.NewReader(f, info.Size())
 	require.NoError(t, err)
@@ -90,14 +90,14 @@ func TestZipFile(t *testing.T) {
 			require.True(t, ex, "expected executable permissions, got %s", zf.Mode())
 		}
 		if zf.Name == "link.txt" {
-			require.True(t, zf.FileInfo().Mode()&os.ModeSymlink != 0)
+			require.NotEqual(t, 0, zf.FileInfo().Mode()&os.ModeSymlink)
 			rc, err := zf.Open()
 			require.NoError(t, err)
 			var link bytes.Buffer
 			_, err = io.Copy(&link, rc)
 			require.NoError(t, err)
 			rc.Close()
-			require.Equal(t, link.String(), "regular.txt")
+			require.Equal(t, "regular.txt", link.String())
 		}
 	}
 	require.Equal(t, []string{

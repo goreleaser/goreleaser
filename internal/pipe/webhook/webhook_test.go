@@ -17,7 +17,7 @@ import (
 )
 
 func TestStringer(t *testing.T) {
-	require.Equal(t, Pipe{}.String(), "webhook")
+	require.Equal(t, "webhook", Pipe{}.String())
 }
 
 func TestNoEndpoint(t *testing.T) {

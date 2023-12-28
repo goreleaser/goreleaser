@@ -7,6 +7,10 @@ From there it will be installable in all the
 [supported Linux distros](https://snapcraft.io/docs/core/install), with
 automatic and transactional updates.
 
+!!! warning
+
+    Snapcraft packages can't be build inside a Docker container.
+
 You can read more about it in the [snapcraft docs](https://snapcraft.io/docs/).
 
 Available options:
@@ -237,7 +241,7 @@ snapcrafts:
         common_id: "com.example.drumroll"
 
         # Bash completion snippet. More information about completion here:
-        # https://docs.snapcraft.io/tab-completion-for-snaps.
+        # https://snapcraft.io/docs/tab-completion.
         completer: drumroll-completion.bash
 
         # You can override the command name.

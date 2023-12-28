@@ -15,7 +15,7 @@ jobs:
       - uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v3
         with:
           token: ${{ secrets.GH_PAT }}
-      - uses: actions/setup-go@93397bea11091df50f3d7e59dc26a7711a8bcfbe # v4
+      - uses: actions/setup-go@0c52d547c9bc32b1aa3301fd7a9cb496313a4491 # v4
         with:
           go-version: stable
           cache: true
@@ -23,11 +23,13 @@ jobs:
         with:
           version: 3.x
           repo-token: ${{ secrets.GITHUB_TOKEN }}
+      - run: "go install mvdan.cc/gofumpt@latest"
       - run: task docs:releases
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       - run: task docs:generate
       - run: task schema:generate
+      - run: task nix:licenses:generate
       - uses: stefanzweifel/git-auto-commit-action@8756aa072ef5b4a080af5dc8fef36c5d586e521d # v5
         with:
           commit_message: "chore: docs auto-update"

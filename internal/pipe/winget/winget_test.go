@@ -65,6 +65,21 @@ func TestRunPipe(t *testing.T) {
 			},
 		},
 		{
+			name:             "mixed-formats",
+			expectRunErrorIs: errMixedFormats,
+			winget: config.Winget{
+				Name:             "mixed",
+				Publisher:        "Foo",
+				License:          "MIT",
+				ShortDescription: "foo bar zaz",
+				IDs:              []string{"zaz", "bar"},
+				Repository: config.RepoRef{
+					Owner: "foo",
+					Name:  "bar",
+				},
+			},
+		},
+		{
 			name:       "full",
 			expectPath: "manifests/b/Beckersoft LTDA/foo/1.2.1",
 			winget: config.Winget{
@@ -650,6 +665,7 @@ func TestRunPipe(t *testing.T) {
 			goarch := "amd64"
 			createFakeArtifact("partial", goos, goarch, "v1", "", nil)
 			createFakeArtifact("foo", goos, goarch, "v1", "", nil)
+			createFakeArtifact("zaz", goos, goarch, "v1", "", nil)
 			createFakeArtifact("wrapped-in-dir", goos, goarch, "v1", "", map[string]any{
 				artifact.ExtraWrappedIn: "foo",
 				artifact.ExtraBinaries:  []string{"bin/foo.exe"},
@@ -657,6 +673,17 @@ func TestRunPipe(t *testing.T) {
 
 			goarch = "386"
 			createFakeArtifact("foo", goos, goarch, "", "", nil)
+			ctx.Artifacts.Add(&artifact.Artifact{
+				Name:   "bar.exe",
+				Path:   "doesnt-matter",
+				Goos:   goos,
+				Goarch: goarch,
+				Type:   artifact.UploadableBinary,
+				Extra: map[string]interface{}{
+					artifact.ExtraID: "bar",
+				},
+			})
+			createFakeArtifact("bar", goos, goarch, "v1", "", nil)
 			createFakeArtifact("wrapped-in-dir", goos, goarch, "", "", map[string]any{
 				artifact.ExtraWrappedIn: "foo",
 				artifact.ExtraBinaries:  []string{"bin/foo.exe"},
@@ -749,4 +776,71 @@ func TestDefault(t *testing.T) {
 	require.Equal(t, "v1", winget.Goamd64)
 	require.NotEmpty(t, winget.CommitMessageTemplate)
 	require.Equal(t, "foo", winget.Name)
+}
+
+func TestFormatBinary(t *testing.T) {
+	folder := t.TempDir()
+	ctx := testctx.NewWithCfg(
+		config.Project{
+			Dist:        folder,
+			ProjectName: "foo",
+			Winget: []config.Winget{{
+				Name:             "foo",
+				Publisher:        "goreleaser",
+				License:          "MIT",
+				ShortDescription: "foo bar zaz",
+				IDs:              []string{"foo"},
+				Repository: config.RepoRef{
+					Owner: "foo",
+					Name:  "bar",
+				},
+			}},
+		},
+		testctx.WithVersion("1.2.1"),
+		testctx.WithCurrentTag("v1.2.1"),
+		testctx.WithSemver(1, 2, 1, "rc1"),
+		testctx.WithDate(time.Date(2023, 6, 12, 20, 32, 10, 12, time.Local)),
+	)
+	ctx.ReleaseNotes = "the changelog for this release..."
+	createFakeArtifact := func(id, goos, goarch, goamd64 string) {
+		path := filepath.Join(folder, "dist/foo_"+goos+goarch+goamd64+".exe")
+		art := artifact.Artifact{
+			Name:    "foo_" + goos + "_" + goarch + goamd64 + ".exe",
+			Path:    path,
+			Goos:    goos,
+			Goarch:  goarch,
+			Goamd64: goamd64,
+			Type:    artifact.UploadableBinary,
+			Extra: map[string]interface{}{
+				artifact.ExtraID: id,
+			},
+		}
+		ctx.Artifacts.Add(&art)
+		require.NoError(t, os.MkdirAll(filepath.Dir(path), 0o755))
+		f, err := os.Create(path)
+		require.NoError(t, err)
+		require.NoError(t, f.Close())
+	}
+
+	goos := "windows"
+	createFakeArtifact("foo", goos, "amd64", "v1")
+	createFakeArtifact("foo", goos, "386", "")
+	createFakeArtifact("foo", goos, "arm64", "")
+
+	client := client.NewMock()
+	pipe := Pipe{}
+
+	require.NoError(t, pipe.Default(ctx))
+	require.NoError(t, pipe.runAll(ctx, client))
+	for _, winget := range ctx.Artifacts.Filter(artifact.Or(
+		artifact.ByType(artifact.WingetInstaller),
+		artifact.ByType(artifact.WingetVersion),
+		artifact.ByType(artifact.WingetDefaultLocale),
+	)).List() {
+		bts, err := os.ReadFile(winget.Path)
+		require.NoError(t, err)
+		golden.RequireEqualExtSubfolder(t, bts, extFor(winget.Type))
+	}
+	require.NoError(t, pipe.publishAll(ctx, client))
+	require.True(t, client.CreatedFile)
 }

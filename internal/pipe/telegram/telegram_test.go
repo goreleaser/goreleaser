@@ -10,27 +10,27 @@ import (
 )
 
 func TestStringer(t *testing.T) {
-	require.Equal(t, Pipe{}.String(), "telegram")
+	require.Equal(t, "telegram", Pipe{}.String())
 }
 
 func TestDefault(t *testing.T) {
 	t.Run("empty", func(t *testing.T) {
 		ctx := testctx.New()
 		require.NoError(t, Pipe{}.Default(ctx))
-		require.Equal(t, ctx.Config.Announce.Telegram.MessageTemplate, defaultMessageTemplate)
-		require.Equal(t, ctx.Config.Announce.Telegram.ParseMode, parseModeMarkdown)
+		require.Equal(t, defaultMessageTemplate, ctx.Config.Announce.Telegram.MessageTemplate)
+		require.Equal(t, parseModeMarkdown, ctx.Config.Announce.Telegram.ParseMode)
 	})
 	t.Run("markdownv2 parsemode", func(t *testing.T) {
 		ctx := testctx.New()
 		ctx.Config.Announce.Telegram.ParseMode = parseModeMarkdown
 		require.NoError(t, Pipe{}.Default(ctx))
-		require.Equal(t, ctx.Config.Announce.Telegram.ParseMode, parseModeMarkdown)
+		require.Equal(t, parseModeMarkdown, ctx.Config.Announce.Telegram.ParseMode)
 	})
 	t.Run("html parsemode", func(t *testing.T) {
 		ctx := testctx.New()
 		ctx.Config.Announce.Telegram.ParseMode = parseModeHTML
 		require.NoError(t, Pipe{}.Default(ctx))
-		require.Equal(t, ctx.Config.Announce.Telegram.ParseMode, parseModeHTML)
+		require.Equal(t, parseModeHTML, ctx.Config.Announce.Telegram.ParseMode)
 	})
 }
 

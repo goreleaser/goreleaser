@@ -23,6 +23,8 @@ import (
 	"github.com/goreleaser/goreleaser/internal/tmpl"
 	"github.com/goreleaser/goreleaser/pkg/config"
 	"github.com/goreleaser/goreleaser/pkg/context"
+	"golang.org/x/text/cases"
+	"golang.org/x/text/language"
 )
 
 const brewConfigExtra = "BrewConfig"
@@ -471,6 +473,7 @@ func formulaNameFor(name string) string {
 	name = strings.ReplaceAll(name, "-", " ")
 	name = strings.ReplaceAll(name, "_", " ")
 	name = strings.ReplaceAll(name, ".", "")
-	name = strings.ReplaceAll(name, "@", "AT")
-	return strings.ReplaceAll(strings.Title(name), " ", "") // nolint:staticcheck
+	name = cases.Title(language.English).String(name)
+	name = strings.ReplaceAll(name, " ", "")
+	return strings.ReplaceAll(name, "@", "AT")
 }

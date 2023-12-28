@@ -17,7 +17,7 @@ GoReleaser 1.5 is out, with a handful of miscellaneous improvements.
 
 - Better manpages using [mango](https://github.com/muesli/mango);
 - Migrated from [cobra](https://github.com/spf13/cobra) to [coral](https://github.com/muesli/coral) — which will eventually lead to faster `go install`;
-- Improved nFPM to make it easier for GoReleaser's debs and GoReleaser-generated debs that pass [lintian](https://lintian.debian.org/) checks;
+- Improved nFPM to make it easier for GoReleaser's debs and GoReleaser-generated debs that pass [lintian](https://wiki.debian.org/Lintian) checks;
 - Several improvements on GoReleaser output logs;
 - More fields are now templateable, namely on nFPMs and Universal Binaries configs;
 - Hooks now have an option to always print their outputs;

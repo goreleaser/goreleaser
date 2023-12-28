@@ -17,6 +17,8 @@ import (
 	"github.com/goreleaser/goreleaser/pkg/context"
 )
 
+var errNoWindowsArchive = errors.New("chocolatey requires at least one windows archive")
+
 // nuget package extension.
 const nupkgFormat = "nupkg"
 
@@ -112,7 +114,7 @@ func doRun(ctx *context.Context, cl client.ReleaseURLTemplater, choco config.Cho
 		List()
 
 	if len(artifacts) == 0 {
-		return errors.New("chocolatey requires a windows build and archive")
+		return errNoWindowsArchive
 	}
 
 	// folderDir is the directory that then will be compressed to make the

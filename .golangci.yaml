@@ -14,7 +14,12 @@ linters:
     - tagliatelle
     - misspell
     - depguard
+    - testifylint
 linters-settings:
+  staticcheck:
+    checks:
+      - all
+      - "-SA1019"
   forbidigo:
     forbid:
       - 'ioutil\.*'

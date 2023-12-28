@@ -112,9 +112,9 @@ func TestRunPipe(t *testing.T) {
 		},
 	}, testctx.WithCurrentTag("2.4.5"))
 	require.NoError(t, Pipe{}.Run(ctx))
-	require.Equal(t, ctx.Artifacts.List(), []*artifact.Artifact{{
+	require.Equal(t, []*artifact.Artifact{{
 		Name: "testing",
-	}})
+	}}, ctx.Artifacts.List())
 }
 
 func TestRunFullPipe(t *testing.T) {
@@ -152,9 +152,9 @@ func TestRunFullPipe(t *testing.T) {
 	ctx := testctx.NewWithCfg(config, testctx.WithCurrentTag("2.4.5"))
 	require.NoError(t, Pipe{}.Default(ctx))
 	require.NoError(t, Pipe{}.Run(ctx))
-	require.Equal(t, ctx.Artifacts.List(), []*artifact.Artifact{{
+	require.Equal(t, []*artifact.Artifact{{
 		Name: "testing",
-	}})
+	}}, ctx.Artifacts.List())
 	require.FileExists(t, post)
 	require.FileExists(t, pre)
 	require.FileExists(t, postOS)
@@ -410,7 +410,7 @@ func TestDefaultFillSingleBuild(t *testing.T) {
 	})
 	require.NoError(t, Pipe{}.Default(ctx))
 	require.Len(t, ctx.Config.Builds, 1)
-	require.Equal(t, ctx.Config.Builds[0].Binary, "foo")
+	require.Equal(t, "foo", ctx.Config.Builds[0].Binary)
 }
 
 func TestDefaultFailSingleBuild(t *testing.T) {
@@ -438,7 +438,7 @@ func TestSkipBuild(t *testing.T) {
 	}
 	ctx := testctx.NewWithCfg(config, testctx.WithCurrentTag("2.4.5"))
 	require.NoError(t, Pipe{}.Run(ctx))
-	require.Len(t, ctx.Artifacts.List(), 0)
+	require.Empty(t, ctx.Artifacts.List())
 }
 
 func TestExtDarwin(t *testing.T) {
@@ -568,6 +568,24 @@ func TestPipeOnBuild_hooksRunPerTarget(t *testing.T) {
 	require.FileExists(t, filepath.Join(tmpDir, "post-hook-linux_amd64"))
 	require.FileExists(t, filepath.Join(tmpDir, "post-hook-darwin_amd64"))
 	require.FileExists(t, filepath.Join(tmpDir, "post-hook-windows_amd64"))
+}
+
+func TestPipeOnBuild_invalidGoBinary(t *testing.T) {
+	build := config.Build{
+		Builder:  "fake",
+		GoBinary: "testing.v{{.XYZ}}",
+		Targets: []string{
+			"linux_amd64",
+		},
+	}
+	ctx := testctx.NewWithCfg(config.Project{
+		Builds: []config.Build{
+			build,
+		},
+	})
+	g := semerrgroup.New(ctx.Parallelism)
+	runPipeOnBuild(ctx, g, build)
+	testlib.RequireTemplateError(t, g.Wait())
 }
 
 func TestPipeOnBuild_invalidBinaryTpl(t *testing.T) {
@@ -747,6 +765,7 @@ func TestRunHookFailWithLogs(t *testing.T) {
 		},
 	}
 	ctx := testctx.NewWithCfg(config, testctx.WithCurrentTag("2.4.5"))
-	require.EqualError(t, Pipe{}.Run(ctx), "pre hook failed: failed to run 'sh -c echo foo; exit 1': exit status 1")
+	err := Pipe{}.Run(ctx)
+	require.Contains(t, err.Error(), "pre hook failed")
 	require.Empty(t, ctx.Artifacts.List())
 }

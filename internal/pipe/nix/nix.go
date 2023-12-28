@@ -9,6 +9,7 @@ import (
 	"os/exec"
 	"path"
 	"path/filepath"
+	"slices"
 	"sort"
 	"strings"
 	"text/template"
@@ -43,6 +44,7 @@ var (
 	errNoRepoName     = pipe.Skip("repository name is not set")
 	errSkipUpload     = pipe.Skip("nix.skip_upload is set")
 	errSkipUploadAuto = pipe.Skip("nix.skip_upload is set to 'auto', and current version is a pre-release")
+	errInvalidLicense = errors.New("nix.license is invalid")
 )
 
 // NewBuild returns a pipe to be used in the build phase.
@@ -82,6 +84,9 @@ func (Pipe) Default(ctx *context.Context) error {
 		}
 		if nix.Goamd64 == "" {
 			nix.Goamd64 = "v1"
+		}
+		if nix.License != "" && !slices.Contains(validLicenses, nix.License) {
+			return fmt.Errorf("%w: %s", errInvalidLicense, nix.License)
 		}
 	}
 
@@ -258,9 +263,12 @@ func preparePkg(
 	if len(dependencies) > 0 {
 		inputs = append(inputs, "makeWrapper")
 	}
-	if archives[0].Format() == "zip" {
-		inputs = append(inputs, "unzip")
-		dependencies = append(dependencies, "unzip")
+	for _, arch := range archives {
+		if arch.Format() == "zip" {
+			inputs = append(inputs, "unzip")
+			dependencies = append(dependencies, "unzip")
+			break
+		}
 	}
 
 	data := templateData{
