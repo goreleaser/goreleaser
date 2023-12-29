@@ -62,6 +62,11 @@ func TestReleaseFlags(t *testing.T) {
 		return ctx
 	}
 
+	t.Run("action", func(t *testing.T) {
+		ctx := setup(t, releaseOpts{})
+		require.Equal(t, context.ActionRelease, ctx.Action)
+	})
+
 	t.Run("snapshot", func(t *testing.T) {
 		ctx := setup(t, releaseOpts{
 			snapshot: true,

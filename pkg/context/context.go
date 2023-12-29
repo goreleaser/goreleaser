@@ -69,9 +69,18 @@ const (
 	TokenTypeGitea TokenType = "gitea"
 )
 
+type Action uint8
+
+const (
+	ActionNone Action = iota
+	ActionBuild
+	ActionRelease
+)
+
 // Context carries along some data through the pipes.
 type Context struct {
 	stdctx.Context
+	Action            Action
 	Config            config.Project
 	Env               Env
 	Token             string
