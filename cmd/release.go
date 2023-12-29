@@ -171,6 +171,7 @@ func releaseProject(options releaseOpts) (*context.Context, error) {
 }
 
 func setupReleaseContext(ctx *context.Context, options releaseOpts) error {
+	ctx.Action = context.ActionRelease
 	ctx.Deprecated = options.deprecated // test only
 	ctx.Parallelism = runtime.GOMAXPROCS(0)
 	if options.parallelism > 0 {

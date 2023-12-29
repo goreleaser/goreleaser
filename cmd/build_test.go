@@ -137,6 +137,11 @@ func TestBuildFlags(t *testing.T) {
 		return ctx
 	}
 
+	t.Run("action", func(t *testing.T) {
+		ctx := setup(buildOpts{})
+		require.Equal(t, context.ActionBuild, ctx.Action)
+	})
+
 	t.Run("snapshot", func(t *testing.T) {
 		ctx := setup(buildOpts{
 			snapshot: true,

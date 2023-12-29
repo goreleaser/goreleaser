@@ -167,6 +167,7 @@ func setupPipeline(ctx *context.Context, options buildOpts) []pipeline.Piper {
 }
 
 func setupBuildContext(ctx *context.Context, options buildOpts) error {
+	ctx.Action = context.ActionBuild
 	ctx.Deprecated = options.deprecated // test only
 	ctx.Parallelism = runtime.GOMAXPROCS(0)
 	if options.parallelism > 0 {
