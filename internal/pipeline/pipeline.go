@@ -133,6 +133,7 @@ var Pipeline = append(
 	reportsizes.Pipe{},
 	// create and push docker images
 	docker.Pipe{},
+	// create and push container images
 	container.Pipe{},
 	// publishes artifacts
 	publish.New(),

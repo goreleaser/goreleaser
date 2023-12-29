@@ -13,6 +13,7 @@ import (
 
 	"github.com/caarlos0/log"
 	"github.com/goreleaser/goreleaser/internal/artifact"
+	"github.com/goreleaser/goreleaser/internal/containers"
 	"github.com/goreleaser/goreleaser/pkg/config"
 	"github.com/goreleaser/goreleaser/pkg/context"
 )
@@ -83,17 +84,17 @@ func (BuildKitBuilder) SkipBuildIfPublish() bool {
 	return true
 }
 
-func (b BuildKitBuilder) Build(ctx *context.Context, params ImageBuildParameters, importImages bool, pushImages bool, logger *log.Entry) error {
+func (b BuildKitBuilder) Build(ctx *context.Context, buildContext containers.ImageBuildContext, importImages bool, pushImages bool, logger *log.Entry) error {
 	needLoad := importImages && !b.storeImageNatively
 	if !pushImages || needLoad {
 		if needLoad || !b.supportsMultiPlatformsBuild {
 			// If the builder does not support multi-arch builds (e.g. standard docker) or we need to load the results,
 			// we trigger multiple parallel builds
 			// ToDo: for now this loop is not parallel as we don't pass the syncGroup here
-			for _, platform := range params.Platforms {
-				logger := logger.WithField("platfrom", fmt.Sprintf("%s/%s", platform.Goos, platform.Goarch))
+			for _, platform := range buildContext.Platforms {
+				logger := logger.WithField("platform", fmt.Sprintf("%s/%s", platform.Goos, platform.Goarch))
 				logger.Info("building...")
-				err := b.buildImages(ctx, params, []config.ContainerPlatform{platform}, needLoad)
+				err := b.buildImages(ctx, buildContext, []config.ContainerPlatform{platform}, needLoad)
 				if err != nil {
 					return fmt.Errorf("failed to build image for platform %v: %w", platform, err)
 				}
@@ -101,7 +102,7 @@ func (b BuildKitBuilder) Build(ctx *context.Context, params ImageBuildParameters
 			}
 		} else {
 			logger.Info("building...")
-			err := b.buildImages(ctx, params, params.Platforms, needLoad)
+			err := b.buildImages(ctx, buildContext, buildContext.Platforms, needLoad)
 			if err != nil {
 				return fmt.Errorf("failed to build image: %w", err)
 			}
@@ -110,7 +111,7 @@ func (b BuildKitBuilder) Build(ctx *context.Context, params ImageBuildParameters
 	}
 	if pushImages {
 		logger.Info("pushing...")
-		err := b.pushImages(ctx, params)
+		err := b.pushImages(ctx, buildContext)
 		if err != nil {
 			return fmt.Errorf("failed to push image: %w", err)
 		}
@@ -121,7 +122,7 @@ func (b BuildKitBuilder) Build(ctx *context.Context, params ImageBuildParameters
 	return nil
 }
 
-func (b BuildKitBuilder) pushImages(ctx *context.Context, params ImageBuildParameters) error {
+func (b BuildKitBuilder) pushImages(ctx *context.Context, params containers.ImageBuildContext) error {
 	flags := []string{}
 	flags = append(flags, params.BuildFlags...)
 	flags = append(flags, params.PushFlags...)
@@ -175,8 +176,8 @@ func (b BuildKitBuilder) pushImages(ctx *context.Context, params ImageBuildParam
 	return nil
 }
 
-func (b BuildKitBuilder) buildImages(ctx *context.Context, params ImageBuildParameters, platforms []config.ContainerPlatform, loadImages bool) error {
-	digest, err := build(ctx, params.BuildPath, params.Images, params.BuildFlags, b.BuilderName, platforms, loadImages)
+func (b BuildKitBuilder) buildImages(ctx *context.Context, buildContext containers.ImageBuildContext, platforms []config.ContainerPlatform, loadImages bool) error {
+	digest, err := build(ctx, buildContext.BuildPath, buildContext.Images, buildContext.BuildFlags, b.BuilderName, platforms, loadImages)
 	if err != nil {
 		return err
 	}
@@ -185,7 +186,7 @@ func (b BuildKitBuilder) buildImages(ctx *context.Context, params ImageBuildPara
 	}
 	if !b.supportsMultiPlatformsBuild {
 		// Case of non-multiplatform builders
-		for _, img := range params.Images {
+		for _, img := range buildContext.Images {
 			art := &artifact.Artifact{
 				Type:   artifact.PublishableDockerImage,
 				Name:   img,
@@ -196,13 +197,13 @@ func (b BuildKitBuilder) buildImages(ctx *context.Context, params ImageBuildPara
 					artifact.ExtraDigest: digest,
 				},
 			}
-			if params.ID != "" {
-				art.Extra[artifact.ExtraID] = params.ID
+			if buildContext.ID != "" {
+				art.Extra[artifact.ExtraID] = buildContext.ID
 			}
 			ctx.Artifacts.Add(art)
 		}
 	} else {
-		for _, img := range params.Images {
+		for _, img := range buildContext.Images {
 			art := &artifact.Artifact{
 				Type: artifact.DockerManifest,
 				Name: img,
@@ -211,8 +212,8 @@ func (b BuildKitBuilder) buildImages(ctx *context.Context, params ImageBuildPara
 					artifact.ExtraDigest: digest,
 				},
 			}
-			if params.ID != "" {
-				art.Extra[artifact.ExtraID] = params.ID
+			if buildContext.ID != "" {
+				art.Extra[artifact.ExtraID] = buildContext.ID
 			}
 			ctx.Artifacts.Add(art)
 		}
