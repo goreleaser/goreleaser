@@ -285,8 +285,8 @@ func (a NixDependency) JSONSchema() *jsonschema.Schema {
 	reflector := jsonschema.Reflector{
 		ExpandedStruct: true,
 	}
-	type t NixDependency
-	schema := reflector.Reflect(&t{})
+	type nixDependencyAlias NixDependency
+	schema := reflector.Reflect(&nixDependencyAlias{})
 	return &jsonschema.Schema{
 		OneOf: []*jsonschema.Schema{
 			{
@@ -611,11 +611,11 @@ func (bh *Hook) UnmarshalYAML(unmarshal func(interface{}) error) error {
 }
 
 func (bh Hook) JSONSchema() *jsonschema.Schema {
-	type t Hook
+	type hookAlias Hook
 	reflector := jsonschema.Reflector{
 		ExpandedStruct: true,
 	}
-	schema := reflector.Reflect(&t{})
+	schema := reflector.Reflect(&hookAlias{})
 	return &jsonschema.Schema{
 		OneOf: []*jsonschema.Schema{
 			{
@@ -668,11 +668,11 @@ func (f *File) UnmarshalYAML(unmarshal func(interface{}) error) error {
 }
 
 func (f File) JSONSchema() *jsonschema.Schema {
-	type t File
+	type fileAlias File
 	reflector := jsonschema.Reflector{
 		ExpandedStruct: true,
 	}
-	schema := reflector.Reflect(&t{})
+	schema := reflector.Reflect(&fileAlias{})
 	return &jsonschema.Schema{
 		OneOf: []*jsonschema.Schema{
 			{

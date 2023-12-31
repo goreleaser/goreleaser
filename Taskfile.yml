@@ -80,6 +80,13 @@ tasks:
     generates:
       - ./www/docs/static/schema.json
 
+  schema:validate:
+    desc: Validate JSONSchema
+    cmds:
+      - jv ./www/docs/static/schema.json
+    sources:
+      - ./www/docs/static/schema.json
+
   docs:generate:
     desc: Generate docs
     cmds:
