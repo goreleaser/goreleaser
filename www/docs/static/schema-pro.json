@@ -1005,7 +1005,7 @@
 					},
 					{
 						"$schema": "https://json-schema.org/draft/2020-12/schema",
-						"$id": "https://github.com/goreleaser/goreleaser/pkg/config/t",
+						"$id": "https://github.com/goreleaser/goreleaser/pkg/config/file-alias",
 						"$defs": {
 							"FileInfo": {
 								"properties": {
@@ -1426,7 +1426,7 @@
 								},
 								{
 									"$schema": "https://json-schema.org/draft/2020-12/schema",
-									"$id": "https://github.com/goreleaser/goreleaser/pkg/config/t",
+									"$id": "https://github.com/goreleaser/goreleaser/pkg/config/hook-alias",
 									"properties": {
 										"dir": {
 											"type": "string"
@@ -2361,7 +2361,7 @@
 					},
 					{
 						"$schema": "https://json-schema.org/draft/2020-12/schema",
-						"$id": "https://github.com/goreleaser/goreleaser/pkg/config/t",
+						"$id": "https://github.com/goreleaser/goreleaser/pkg/config/nix-dependency-alias",
 						"properties": {
 							"name": {
 								"type": "string"
