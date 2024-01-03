@@ -549,6 +549,52 @@ func TestRunPipeInvalidGlob(t *testing.T) {
 	require.EqualError(t, Pipe{}.Run(ctx), `failed to find files to archive: globbing failed for pattern [x-]: compile glob pattern: unexpected end of input`)
 }
 
+func TestRunPipeNameTemplateWithSpace(t *testing.T) {
+	folder := testlib.Mktmp(t)
+	dist := filepath.Join(folder, "dist")
+	require.NoError(t, os.Mkdir(dist, 0o755))
+	require.NoError(t, os.Mkdir(filepath.Join(dist, "darwinamd64"), 0o755))
+	f, err := os.Create(filepath.Join(dist, "darwinamd64", "mybin"))
+	require.NoError(t, err)
+	require.NoError(t, f.Close())
+	ctx := testctx.NewWithCfg(
+		config.Project{
+			Dist: dist,
+			Archives: []config.Archive{
+				{
+					Builds:       []string{"default"},
+					NameTemplate: " foo_{{.Os}}_{{.Arch}} ",
+					Format:       "zip",
+				},
+				{
+					Builds:       []string{"default"},
+					NameTemplate: " foo_{{.Os}}_{{.Arch}} ",
+					Format:       "binary",
+				},
+			},
+		},
+		testctx.WithCurrentTag("v0.0.1"),
+	)
+	ctx.Artifacts.Add(&artifact.Artifact{
+		Goos:   "darwin",
+		Goarch: "amd64",
+		Name:   "mybin",
+		Path:   filepath.Join("dist", "darwinamd64", "mybin"),
+		Type:   artifact.Binary,
+		Extra: map[string]interface{}{
+			artifact.ExtraBinary: "mybin",
+			artifact.ExtraID:     "default",
+		},
+	})
+	require.NoError(t, Pipe{}.Run(ctx))
+	list := ctx.Artifacts.Filter(artifact.ByType(artifact.UploadableBinary)).List()
+	require.Len(t, list, 1)
+	require.Equal(t, "foo_darwin_amd64", list[0].Name)
+	list = ctx.Artifacts.Filter(artifact.ByType(artifact.UploadableArchive)).List()
+	require.Len(t, list, 1)
+	require.Equal(t, "foo_darwin_amd64.zip", list[0].Name)
+}
+
 func TestRunPipeInvalidNameTemplate(t *testing.T) {
 	folder := testlib.Mktmp(t)
 	dist := filepath.Join(folder, "dist")

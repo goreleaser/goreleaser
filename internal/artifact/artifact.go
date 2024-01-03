@@ -354,6 +354,8 @@ func shouldRelPath(a *Artifact) bool {
 func (artifacts *Artifacts) Add(a *Artifact) {
 	artifacts.lock.Lock()
 	defer artifacts.lock.Unlock()
+	ext := filepath.Ext(a.Name)
+	a.Name = strings.TrimSpace(strings.TrimSuffix(a.Name, ext)) + ext
 	if shouldRelPath(a) {
 		rel, err := relPath(a)
 		if rel != "" && err == nil {
