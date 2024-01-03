@@ -29,7 +29,7 @@ jobs:
         with:
           go-version: stable
       - uses: sigstore/cosign-installer@v3.3.0
-      - uses: anchore/sbom-action/download-syft@v0.15.1
+      - uses: anchore/sbom-action/download-syft@v0.15.2
       - uses: crazy-max/ghaction-upx@v3
         with:
           install-only: true
