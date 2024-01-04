@@ -31,10 +31,9 @@ jobs:
   goreleaser:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
         with:
           fetch-depth: 0
-      - run: git fetch --force --tags
       - uses: actions/setup-go@v4
         with:
           go-version: stable
