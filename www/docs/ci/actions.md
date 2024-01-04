@@ -17,6 +17,7 @@ Below is a simple snippet to use this action in your workflow:
 name: goreleaser
 
 on:
+  pull_request:
   push:
     # run only against tags
     tags:
