@@ -27,7 +27,7 @@ require (
 	github.com/google/ko v0.15.1
 	github.com/google/uuid v1.5.0
 	github.com/goreleaser/fileglob v1.3.0
-	github.com/goreleaser/nfpm/v2 v2.35.1
+	github.com/goreleaser/nfpm/v2 v2.35.2
 	github.com/hashicorp/go-multierror v1.1.1
 	github.com/invopop/jsonschema v0.12.0
 	github.com/jarcoal/httpmock v1.3.1
