@@ -56,3 +56,21 @@ func TestSkip(t *testing.T) {
 		require.False(t, Pipe{}.Skip(ctx))
 	})
 }
+
+func TestLive(t *testing.T) {
+	t.SkipNow()
+	t.Setenv("DISCORD_WEBHOOK_ID", "TODO")
+	t.Setenv("DISCORD_WEBHOOK_TOKEN", "TODO")
+
+	ctx := testctx.NewWithCfg(config.Project{
+		Announce: config.Announce{
+			Discord: config.Discord{
+				MessageTemplate: "test",
+				Enabled:         true,
+			},
+		},
+	})
+
+	require.NoError(t, Pipe{}.Default(ctx))
+	require.NoError(t, Pipe{}.Announce(ctx))
+}
