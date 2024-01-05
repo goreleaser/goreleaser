@@ -126,5 +126,4 @@ This project exists thanks to all the people who contribute. [[Contribute](CONTR
 <a href="https://github.com/goreleaser/goreleaser/graphs/contributors"><img src="https://opencollective.com/goreleaser/contributors.svg?width=890" /></a>
 
 ## Stargazers over time
-
-[![Stargazers over time](https://starchart.cc/goreleaser/goreleaser.svg)](https://starchart.cc/goreleaser/goreleaser)
+[![Stargazers over time](https://starchart.cc/goreleaser/goreleaser.svg?variant=adaptive)](https://starchart.cc/goreleaser/goreleaser)
