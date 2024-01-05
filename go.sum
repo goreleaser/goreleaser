@@ -530,8 +530,8 @@ github.com/goreleaser/chglog v0.5.0 h1:Sk6BMIpx8+vpAf8KyPit34OgWui8c7nKTMHhYx88j
 github.com/goreleaser/chglog v0.5.0/go.mod h1:Ri46M3lrMuv76FHszs3vtABR8J8k1w9JHYAzxeeOl28=
 github.com/goreleaser/fileglob v1.3.0 h1:/X6J7U8lbDpQtBvGcwwPS6OpzkNVlVEsFUVRx9+k+7I=
 github.com/goreleaser/fileglob v1.3.0/go.mod h1:Jx6BoXv3mbYkEzwm9THo7xbr5egkAraxkGorbJb4RxU=
-github.com/goreleaser/nfpm/v2 v2.35.1 h1:QpDus/yMTwG/IpRxI/hL7VuRII1mzYwbLInsPiWrtaM=
-github.com/goreleaser/nfpm/v2 v2.35.1/go.mod h1:KeO5wxOHyU1nPFO5siSfw6Ds5dKyy0E6y89/ypM7+ZI=
+github.com/goreleaser/nfpm/v2 v2.35.2 h1:/8dAMJ/eG9mFCgN5Q2L3gMheChXmxF9Ue5Nvd5NpnpA=
+github.com/goreleaser/nfpm/v2 v2.35.2/go.mod h1:gORhkEMuO8zSHn0k4WCBAaXxRa+jOLDJv3QByQVWE1M=
 github.com/gorilla/mux v1.8.0 h1:i40aqfkR1h2SlN9hojwV5ZA91wcXFOvkdNIeFDP5koI=
 github.com/gorilla/mux v1.8.0/go.mod h1:DVbg23sWSpFRCP0SfiEN6jmj59UnW/n46BH5rLB71So=
 github.com/gorilla/websocket v1.4.2/go.mod h1:YR8l580nyteQvAITg2hZ9XVh4b55+EU/adAjf1fMHhE=
