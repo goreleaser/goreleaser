@@ -6,6 +6,7 @@ import (
 	"sync"
 
 	"github.com/goreleaser/goreleaser/internal/pipe"
+	"github.com/hashicorp/go-multierror"
 	"golang.org/x/sync/errgroup"
 )
 
@@ -30,9 +31,9 @@ func NewSkipAware(g Group) Group {
 }
 
 type skipAwareGroup struct {
-	g        Group
-	skipErr  error
-	skipOnce sync.Once
+	g       Group
+	skipErr error
+	l       sync.Mutex
 }
 
 // Go execs runs `fn` and saves the result if no error has been encountered.
@@ -42,9 +43,9 @@ func (s *skipAwareGroup) Go(fn func() error) {
 		// if the err is a skip, set it for later, but return nil for now so the
 		// group proceeds.
 		if pipe.IsSkip(err) {
-			s.skipOnce.Do(func() {
-				s.skipErr = err
-			})
+			s.l.Lock()
+			defer s.l.Unlock()
+			s.skipErr = multierror.Append(s.skipErr, err)
 			return nil
 		}
 		return err
