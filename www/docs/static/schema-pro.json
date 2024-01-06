@@ -3984,7 +3984,7 @@
 				"additionalProperties": false,
 				"type": "object",
 				"required": [
-					"package_identifier",
+					"name",
 					"publisher",
 					"repository",
 					"short_description",
