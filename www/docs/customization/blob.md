@@ -80,23 +80,26 @@ blobs:
       - src: LICENSE.tpl
         dst: LICENSE.txt
 
-    # Disable forcing of path style access on S3.
+    # Allow to disable `s3ForcePathStyle`.
     #
     # Default: true
     # Since: v1.24
     s3_force_path_style: false
 
     # ACL to be applied to all files in this configuration.
+    #
     # If you need different ACLs for different files, create multiple `blobs`
     # configurations.
-    # Only available when provider is S3.
+    #
+    # Only available when `provider` is S3.
     #
     # Default: empty
     # Since: v1.24
     acl: foo
 
     # Cache control options.
-    # If you need different cache control options for different files,
+    #
+    # If you need different `cache_control` options for different files,
     # create multiple `blobs` configurations.
     #
     # Default: empty
@@ -106,6 +109,9 @@ blobs:
       - public
 
     # Allows to set the content disposition of the file.
+    #
+    # If you need different `content_disposition` options for different files,
+    # create multiple `blobs` configurations.
     #
     # Default: attachment;filename={{.Filename}}
     # Templates: allowed
