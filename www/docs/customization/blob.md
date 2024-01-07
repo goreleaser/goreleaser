@@ -82,9 +82,18 @@ blobs:
 
     # Disable forcing of path style access on S3.
     #
-    # Default: true.
+    # Default: true
     # Since: v1.24
     s3_force_path_style: false
+
+    # ACL to be applied to all files in this configuration.
+    # If you need different ACLs for different files, create multiple `blobs`
+    # configurations.
+    # Only available when provider is S3.
+    #
+    # Default: empty
+    # Since: v1.24
+    acl: foo
 
   - provider: gs
     bucket: goreleaser-bucket
