@@ -33,6 +33,10 @@ func (Pipe) Default(ctx *context.Context) error {
 			deprecate.Notice(ctx, "blobs.disableSSL")
 			blob.DisableSSL = true
 		}
+		if blob.OldKMSKey != "" {
+			deprecate.Notice(ctx, "blobs.kmskey")
+			blob.KMSKey = blob.OldKMSKey
+		}
 	}
 	return nil
 }

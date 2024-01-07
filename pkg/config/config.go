@@ -1098,7 +1098,7 @@ type Blob struct {
 	Region           string      `yaml:"region,omitempty" json:"region,omitempty"`
 	DisableSSL       bool        `yaml:"disable_ssl,omitempty" json:"disable_ssl,omitempty"`
 	Folder           string      `yaml:"folder,omitempty" json:"folder,omitempty"`
-	KMSKey           string      `yaml:"kmskey,omitempty" json:"kmskey,omitempty"`
+	KMSKey           string      `yaml:"kms_key,omitempty" json:"kms_key,omitempty"`
 	IDs              []string    `yaml:"ids,omitempty" json:"ids,omitempty"`
 	Endpoint         string      `yaml:"endpoint,omitempty" json:"endpoint,omitempty"` // used for minio for example
 	ExtraFiles       []ExtraFile `yaml:"extra_files,omitempty" json:"extra_files,omitempty"`
@@ -1109,6 +1109,8 @@ type Blob struct {
 
 	// Deprecated: use disable_ssl instead
 	OldDisableSSL bool `yaml:"disableSSL,omitempty" json:"disableSSL,omitempty" jsonschema:"deprecated=true,description=use disable_ssl instead"` // nolint:tagliatelle
+	// Deprecated: use kms_key instead
+	OldKMSKey string `yaml:"kmskey,omitempty" json:"kmskey,omitempty" jsonschema:"deprecated=true,description=use kms_key instead"`
 }
 
 // Upload configuration.
