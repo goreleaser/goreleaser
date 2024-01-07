@@ -4,6 +4,7 @@ package blob
 import (
 	"fmt"
 
+	"github.com/goreleaser/goreleaser/internal/deprecate"
 	"github.com/goreleaser/goreleaser/internal/pipe"
 	"github.com/goreleaser/goreleaser/internal/semerrgroup"
 	"github.com/goreleaser/goreleaser/internal/tmpl"
@@ -27,6 +28,10 @@ func (Pipe) Default(ctx *context.Context) error {
 		}
 		if blob.Folder == "" {
 			blob.Folder = "{{ .ProjectName }}/{{ .Tag }}"
+		}
+		if blob.OldDisableSSL {
+			deprecate.Notice(ctx, "blobs.disableSSL")
+			blob.DisableSSL = true
 		}
 	}
 	return nil

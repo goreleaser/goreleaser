@@ -37,6 +37,26 @@ Description.
 
 -->
 
+### blobs.disableSSL
+
+> since 2024-01-07
+
+Changed to `disable_ssl` to conform with all other options.
+
+=== "Before"
+
+    ``` yaml
+    blobs:
+      - disableSSL: true
+    ```
+
+=== "After"
+
+    ``` yaml
+    blobs:
+      - disable_ssl: true
+    ```
+
 ### `--skip`
 
 > since 2023-09-14
