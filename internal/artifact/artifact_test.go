@@ -941,4 +941,8 @@ func TestArtifactTypeStringer(t *testing.T) {
 			require.NotEqual(t, "unknown", Type(i).String())
 		})
 	}
+
+	t.Run("unknown", func(t *testing.T) {
+		require.Equal(t, "unknown", Type(99999).String())
+	})
 }
