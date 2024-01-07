@@ -23,13 +23,17 @@ func TestAdd(t *testing.T) {
 	wd, _ := os.Getwd()
 	for _, a := range []*Artifact{
 		{
-			Name: "foo",
+			Name: " whitespaces .zip",
 			Type: UploadableArchive,
 			Path: filepath.Join(wd, "/foo/bar.tgz"),
 		},
 		{
 			Name: "bar",
 			Type: Binary,
+		},
+		{
+			Name: " whitespaces ",
+			Type: UploadableBinary,
 		},
 		{
 			Name: "foobar",
@@ -47,9 +51,13 @@ func TestAdd(t *testing.T) {
 		})
 	}
 	require.NoError(t, g.Wait())
-	require.Len(t, artifacts.List(), 4)
+	require.Len(t, artifacts.List(), 5)
 	archives := artifacts.Filter(ByType(UploadableArchive)).List()
 	require.Len(t, archives, 1)
+	require.Equal(t, "whitespaces.zip", archives[0].Name)
+	binaries := artifacts.Filter(ByType(UploadableBinary)).List()
+	require.Len(t, binaries, 1)
+	require.Equal(t, "whitespaces", binaries[0].Name)
 }
 
 func TestFilter(t *testing.T) {
@@ -933,4 +941,8 @@ func TestArtifactTypeStringer(t *testing.T) {
 			require.NotEqual(t, "unknown", Type(i).String())
 		})
 	}
+
+	t.Run("unknown", func(t *testing.T) {
+		require.Equal(t, "unknown", Type(99999).String())
+	})
 }
