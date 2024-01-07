@@ -69,28 +69,48 @@ func TestDefaults(t *testing.T) {
 	ctx := testctx.NewWithCfg(config.Project{
 		Blobs: []config.Blob{
 			{
-				Bucket:   "foo",
-				Provider: "azblob",
-				IDs:      []string{"foo", "bar"},
+				Bucket:             "foo",
+				Provider:           "azblob",
+				IDs:                []string{"foo", "bar"},
+				ContentDisposition: "inline",
 			},
 			{
 				Bucket:   "foobar",
 				Provider: "gcs",
+			},
+			{
+				Bucket:        "deprecated",
+				Provider:      "s3",
+				Folder:        "static",
+				OldDisableSSL: true,
+				OldKMSKey:     "fake",
 			},
 		},
 	})
 	require.NoError(t, Pipe{}.Default(ctx))
 	require.Equal(t, []config.Blob{
 		{
-			Bucket:   "foo",
-			Provider: "azblob",
-			Folder:   "{{ .ProjectName }}/{{ .Tag }}",
-			IDs:      []string{"foo", "bar"},
+			Bucket:             "foo",
+			Provider:           "azblob",
+			Folder:             "{{ .ProjectName }}/{{ .Tag }}",
+			IDs:                []string{"foo", "bar"},
+			ContentDisposition: "inline",
 		},
 		{
-			Bucket:   "foobar",
-			Provider: "gcs",
-			Folder:   "{{ .ProjectName }}/{{ .Tag }}",
+			Bucket:             "foobar",
+			Provider:           "gcs",
+			Folder:             "{{ .ProjectName }}/{{ .Tag }}",
+			ContentDisposition: "attachment;filename={{.Filename}}",
+		},
+		{
+			Bucket:             "deprecated",
+			Provider:           "s3",
+			Folder:             "static",
+			OldDisableSSL:      true,
+			DisableSSL:         true,
+			OldKMSKey:          "fake",
+			KMSKey:             "fake",
+			ContentDisposition: "attachment;filename={{.Filename}}",
 		},
 	}, ctx.Config.Blobs)
 }
