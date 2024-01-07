@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"github.com/goreleaser/goreleaser/internal/pipe"
+	"github.com/hashicorp/go-multierror"
 	"github.com/stretchr/testify/require"
 )
 
@@ -71,19 +72,49 @@ func TestSemaphoreSkipAware(t *testing.T) {
 	for _, i := range []int{1, 4} {
 		t.Run(fmt.Sprintf("limit-%d", i), func(t *testing.T) {
 			g := NewSkipAware(New(i))
-			var lock sync.Mutex
-			var counter int
 			for i := 0; i < 10; i++ {
 				g.Go(func() error {
 					time.Sleep(10 * time.Millisecond)
-					lock.Lock()
-					counter++
-					lock.Unlock()
 					return pipe.Skip("fake skip")
 				})
 			}
+			merr := &multierror.Error{}
+			require.ErrorAs(t, g.Wait(), &merr, "must be a multierror")
+			require.Len(t, merr.Errors, 10)
+		})
+	}
+}
+
+func TestSemaphoreSkipAwareSingleError(t *testing.T) {
+	for _, i := range []int{1, 4} {
+		t.Run(fmt.Sprintf("limit-%d", i), func(t *testing.T) {
+			g := NewSkipAware(New(i))
+			for i := 0; i < 10; i++ {
+				i := i
+				g.Go(func() error {
+					time.Sleep(10 * time.Millisecond)
+					if i == 5 {
+						return pipe.Skip("fake skip")
+					}
+					return nil
+				})
+			}
 			require.EqualError(t, g.Wait(), "fake skip")
-			require.Equal(t, 10, counter)
+		})
+	}
+}
+
+func TestSemaphoreSkipAwareNoSkips(t *testing.T) {
+	for _, i := range []int{1, 4} {
+		t.Run(fmt.Sprintf("limit-%d", i), func(t *testing.T) {
+			g := NewSkipAware(New(i))
+			for i := 0; i < 10; i++ {
+				g.Go(func() error {
+					time.Sleep(10 * time.Millisecond)
+					return nil
+				})
+			}
+			require.NoError(t, g.Wait())
 		})
 	}
 }
