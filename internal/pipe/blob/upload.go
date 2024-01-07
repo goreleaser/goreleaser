@@ -8,6 +8,8 @@ import (
 	"path"
 	"strings"
 
+	"github.com/aws/aws-sdk-go/aws"
+	"github.com/aws/aws-sdk-go/service/s3/s3manager"
 	"github.com/caarlos0/log"
 	"github.com/goreleaser/goreleaser/internal/artifact"
 	"github.com/goreleaser/goreleaser/internal/extrafiles"
@@ -109,6 +111,17 @@ func doUpload(ctx *context.Context, conf config.Blob) error {
 	}
 
 	up := &productionUploader{}
+	if conf.Provider == "s3" && conf.ACL != "" {
+		up.beforeWrite = func(asFunc func(interface{}) bool) error {
+			req := &s3manager.UploadInput{}
+			if !asFunc(&req) {
+				return fmt.Errorf("could not apply before write")
+			}
+			req.ACL = aws.String(conf.ACL)
+			return nil
+		}
+	}
+
 	if err := up.Open(ctx, bucketURL); err != nil {
 		return handleError(err, bucketURL)
 	}
@@ -214,7 +227,8 @@ type uploader interface {
 
 // productionUploader actually do upload to.
 type productionUploader struct {
-	bucket *blob.Bucket
+	bucket      *blob.Bucket
+	beforeWrite func(asFunc func(interface{}) bool) error
 }
 
 func (u *productionUploader) Close() error {
@@ -240,6 +254,7 @@ func (u *productionUploader) Upload(ctx *context.Context, filepath string, data 
 
 	opts := &blob.WriterOptions{
 		ContentDisposition: "attachment; filename=" + path.Base(filepath),
+		BeforeWrite:        u.beforeWrite,
 	}
 	w, err := u.bucket.NewWriter(ctx, filepath, opts)
 	if err != nil {
