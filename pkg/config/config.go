@@ -1105,6 +1105,7 @@ type Blob struct {
 	Disable          string      `yaml:"disable,omitempty" json:"disable,omitempty" jsonschema:"oneof_type=string;boolean"`
 	S3ForcePathStyle *bool       `yaml:"s3_force_path_style,omitempty" json:"s3_force_path_style,omitempty"`
 	ACL              string      `yaml:"acl,omitempty" json:"acl,omitempty"`
+	CacheControl     []string    `yaml:"cache_control,omitempty" json:"cache_control,omitempty"`
 
 	// Deprecated: use disable_ssl instead
 	OldDisableSSL bool `yaml:"disableSSL,omitempty" json:"disableSSL,omitempty" jsonschema:"deprecated=true,description=use disable_ssl instead"` // nolint:tagliatelle
