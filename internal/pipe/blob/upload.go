@@ -53,7 +53,11 @@ func urlFor(ctx *context.Context, conf config.Blob) (string, error) {
 	}
 	if endpoint != "" {
 		query.Add("endpoint", endpoint)
-		query.Add("s3ForcePathStyle", "true")
+		if conf.S3ForcePathStyle == nil {
+			query.Add("s3ForcePathStyle", "true")
+		} else {
+			query.Add("s3ForcePathStyle", fmt.Sprintf("%t", *conf.S3ForcePathStyle))
+		}
 	}
 
 	region, err := tmpl.New(ctx).Apply(conf.Region)

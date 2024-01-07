@@ -1103,7 +1103,7 @@ type Blob struct {
 	Endpoint         string      `yaml:"endpoint,omitempty" json:"endpoint,omitempty"` // used for minio for example
 	ExtraFiles       []ExtraFile `yaml:"extra_files,omitempty" json:"extra_files,omitempty"`
 	Disable          string      `yaml:"disable,omitempty" json:"disable,omitempty" jsonschema:"oneof_type=string;boolean"`
-	ForceS3StylePath bool        `yaml:"force_s3_style_path,omitempty" json:"force_s3_style_path,omitempty"`
+	S3ForcePathStyle *bool       `yaml:"s3_force_path_style,omitempty" json:"s3_force_path_style,omitempty"`
 
 	// Deprecated: use disable_ssl instead
 	OldDisableSSL bool `yaml:"disableSSL,omitempty" json:"disableSSL,omitempty" jsonschema:"deprecated=true,description=use disable_ssl instead"` // nolint:tagliatelle
