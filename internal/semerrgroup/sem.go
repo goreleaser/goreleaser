@@ -32,7 +32,7 @@ func NewSkipAware(g Group) Group {
 
 type skipAwareGroup struct {
 	g       Group
-	skipErr error
+	skipErr *multierror.Error
 	l       sync.Mutex
 }
 
@@ -58,5 +58,13 @@ func (s *skipAwareGroup) Wait() error {
 	if err := s.g.Wait(); err != nil {
 		return err
 	}
+	if s.skipErr == nil {
+		return nil
+	}
+
+	if s.skipErr.Len() == 1 {
+		return s.skipErr.Errors[0]
+	}
+
 	return s.skipErr
 }
