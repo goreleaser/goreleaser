@@ -2,8 +2,10 @@
 
 This page is used to list deprecation notices across GoReleaser.
 
-Deprecated options will be removed after ~6 months from the time they were
-deprecated.
+Deprecated options are only removed on major versions of GoReleaser.
+
+Nevertheless, it's a good thing to keep your configuration up-to-date to prevent
+any issues.
 
 You can check your use of deprecated configurations by running:
 
