@@ -95,6 +95,16 @@ blobs:
     # Since: v1.24
     acl: foo
 
+    # Cache control options.
+    # If you need different cache control options for different files,
+    # create multiple `blobs` configurations.
+    #
+    # Default: empty
+    # Since: v1.24
+    cache_control:
+      - max-age=9999
+      - public
+
   - provider: gs
     bucket: goreleaser-bucket
     folder: "foo/bar/{{.Version}}"

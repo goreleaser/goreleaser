@@ -86,11 +86,12 @@ func TestMinioUpload(t *testing.T) {
 		ProjectName: "testupload",
 		Blobs: []config.Blob{
 			{
-				Provider: "s3",
-				Bucket:   name,
-				Region:   "us-east",
-				Endpoint: "http://" + listen,
-				IDs:      []string{"foo", "bar"},
+				Provider:     "s3",
+				Bucket:       name,
+				Region:       "us-east",
+				Endpoint:     "http://" + listen,
+				IDs:          []string{"foo", "bar"},
+				CacheControl: []string{"max-age=9999"},
 				ExtraFiles: []config.ExtraFile{
 					{
 						Glob: "./testdata/*.golden",
