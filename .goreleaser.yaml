@@ -154,6 +154,14 @@ docker_manifests:
     image_templates:
       - "ghcr.io/goreleaser/goreleaser:v{{ .Version }}-amd64"
       - "ghcr.io/goreleaser/goreleaser:v{{ .Version }}-arm64"
+  - name_template: "{{ if .IsNightly }}goreleaser/goreleaser:nightly{{ end }}"
+    image_templates:
+      - "goreleaser/goreleaser:v{{ .Version }}-amd64"
+      - "goreleaser/goreleaser:v{{ .Version }}-arm64"
+  - name_template: "{{ if .IsNightly }}ghcr.io/goreleaser/goreleaser:nightly{{ end }}"
+    image_templates:
+      - "ghcr.io/goreleaser/goreleaser:v{{ .Version }}-amd64"
+      - "ghcr.io/goreleaser/goreleaser:v{{ .Version }}-arm64"
 
 archives:
   - name_template: >-
