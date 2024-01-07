@@ -37,6 +37,26 @@ Description.
 
 -->
 
+### blobs.kmskey
+
+> since 2024-01-07
+
+Changed to `kms_key` to conform with all other options.
+
+=== "Before"
+
+    ``` yaml
+    blobs:
+      - kmskey: foo
+    ```
+
+=== "After"
+
+    ``` yaml
+    blobs:
+      - kms_key: foo
+    ```
+
 ### blobs.disableSSL
 
 > since 2024-01-07
