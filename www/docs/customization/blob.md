@@ -105,6 +105,13 @@ blobs:
       - max-age=9999
       - public
 
+    # Allows to set the content disposition of the file.
+    #
+    # Default: attachment;filename={{.Filename}}
+    # Templates: allowed
+    # Since: v1.24
+    content_disposition: "inline"
+
   - provider: gs
     bucket: goreleaser-bucket
     folder: "foo/bar/{{.Version}}"

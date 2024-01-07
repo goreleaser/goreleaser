@@ -111,7 +111,8 @@ func doUpload(ctx *context.Context, conf config.Blob) error {
 	}
 
 	up := &productionUploader{
-		cacheControl: conf.CacheControl,
+		cacheControl:       conf.CacheControl,
+		contentDisposition: conf.ContentDisposition,
 	}
 	if conf.Provider == "s3" && conf.ACL != "" {
 		up.beforeWrite = func(asFunc func(interface{}) bool) error {
@@ -229,9 +230,10 @@ type uploader interface {
 
 // productionUploader actually do upload to.
 type productionUploader struct {
-	bucket       *blob.Bucket
-	beforeWrite  func(asFunc func(interface{}) bool) error
-	cacheControl []string
+	bucket             *blob.Bucket
+	beforeWrite        func(asFunc func(interface{}) bool) error
+	cacheControl       []string
+	contentDisposition string
 }
 
 func (u *productionUploader) Close() error {
@@ -255,8 +257,15 @@ func (u *productionUploader) Open(ctx *context.Context, bucket string) error {
 func (u *productionUploader) Upload(ctx *context.Context, filepath string, data []byte) error {
 	log.WithField("path", filepath).Info("uploading")
 
+	disp, err := tmpl.New(ctx).WithExtraFields(tmpl.Fields{
+		"Filename": path.Base(filepath),
+	}).Apply(u.contentDisposition)
+	if err != nil {
+		return err
+	}
+
 	opts := &blob.WriterOptions{
-		ContentDisposition: "attachment; filename=" + path.Base(filepath),
+		ContentDisposition: disp,
 		BeforeWrite:        u.beforeWrite,
 		CacheControl:       strings.Join(u.cacheControl, ", "),
 	}
