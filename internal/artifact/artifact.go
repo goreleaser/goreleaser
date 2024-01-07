@@ -354,8 +354,7 @@ func shouldRelPath(a *Artifact) bool {
 func (artifacts *Artifacts) Add(a *Artifact) {
 	artifacts.lock.Lock()
 	defer artifacts.lock.Unlock()
-	ext := filepath.Ext(a.Name)
-	a.Name = strings.TrimSpace(strings.TrimSuffix(a.Name, ext)) + ext
+	a.Name = cleanName(*a)
 	if shouldRelPath(a) {
 		rel, err := relPath(a)
 		if rel != "" && err == nil {
@@ -576,4 +575,18 @@ func (artifacts *Artifacts) Visit(fn VisitFn) error {
 		}
 	}
 	return nil
+}
+
+func cleanName(a Artifact) string {
+	name := a.Name
+	ext := filepath.Ext(name)
+	result := strings.TrimSpace(strings.TrimSuffix(name, ext)) + ext
+	if name != result {
+		log.WithField("name", a.Name).
+			WithField("new name", result).
+			WithField("type", a.Type).
+			WithField("path", a.Path).
+			Warn("removed trailing whitespaces from artifact name")
+	}
+	return result
 }
