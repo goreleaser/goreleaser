@@ -29,6 +29,7 @@ const (
 	Homebrew       Key = "homebrew"
 	Nix            Key = "nix"
 	AUR            Key = "aur"
+	NFPM           Key = "nfpm"
 )
 
 func String(ctx *context.Context) string {
@@ -109,6 +110,7 @@ var Release = Keys{
 	Homebrew,
 	Nix,
 	AUR,
+	NFPM,
 	Before,
 }
 

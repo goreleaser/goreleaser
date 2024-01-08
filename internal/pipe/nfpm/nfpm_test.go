@@ -1407,6 +1407,14 @@ func TestSkip(t *testing.T) {
 	t.Run("skip", func(t *testing.T) {
 		require.True(t, Pipe{}.Skip(testctx.New()))
 	})
+	t.Run("skip flag", func(t *testing.T) {
+		ctx := testctx.NewWithCfg(config.Project{
+			NFPMs: []config.NFPM{
+				{},
+			},
+		}, testctx.Skip(skips.NFPM))
+		require.True(t, Pipe{}.Skip(ctx))
+	})
 
 	t.Run("dont skip", func(t *testing.T) {
 		ctx := testctx.NewWithCfg(config.Project{
