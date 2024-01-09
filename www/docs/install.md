@@ -235,11 +235,22 @@ Use it for testing out new features only.
 
 #### manually
 
+=== "OSS"
+
+    Download the pre-compiled binaries from the [nightly release][nighly-releases] and copy them to the desired location.
+
 === "Pro"
 
     Download the pre-compiled binaries from the [nightly release][nighly-pro-releases] and copy them to the desired location.
 
 ### bash script
+
+=== "OSS"
+
+    ```bash
+    curl -sfL https://goreleaser.com/static/run |
+      VERSION=nightly DISTRIBUTION=oss bash -s -- release --clean
+    ```
 
 === "Pro"
 
@@ -250,9 +261,18 @@ Use it for testing out new features only.
 
 #### docker
 
-=== "Pro"
+Docker images are also available, look for tags with a `-nightly` suffix for
+the last nightly of a specific release, or the `:nightly` tag,
+which is always the latest nightly build available.
 
-    Docker images are also available, look for tags with a `-nightly` suffix.
+=== "OSS"
+
+    Registries:
+
+    - [`goreleaser/goreleaser`](https://hub.docker.com/r/goreleaser/goreleaser)
+    - [`ghcr.io/goreleaser/goreleaser`](https://github.com/goreleaser/goreleaser/pkgs/container/goreleaser)
+
+=== "Pro"
 
     Registries:
 
@@ -399,6 +419,7 @@ and iterate from that.
 [releases]: https://github.com/goreleaser/goreleaser/releases
 [pro-releases]: https://github.com/goreleaser/goreleaser-pro/releases
 [nightly-pro-releases]: https://github.com/goreleaser/goreleaser-pro/releases/nightly
+[nightly-releases]: https://github.com/goreleaser/goreleaser/releases/nightly
 [cosign]: https://github.com/sigstore/cosign
 
 ## Packaging status
