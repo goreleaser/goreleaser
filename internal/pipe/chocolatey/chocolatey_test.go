@@ -9,6 +9,7 @@ import (
 	"github.com/goreleaser/goreleaser/internal/artifact"
 	"github.com/goreleaser/goreleaser/internal/client"
 	"github.com/goreleaser/goreleaser/internal/golden"
+	"github.com/goreleaser/goreleaser/internal/skips"
 	"github.com/goreleaser/goreleaser/internal/testctx"
 	"github.com/goreleaser/goreleaser/internal/testlib"
 	"github.com/goreleaser/goreleaser/pkg/config"
@@ -25,8 +26,26 @@ func TestDescription(t *testing.T) {
 }
 
 func TestSkip(t *testing.T) {
-	ctx := testctx.New()
-	require.True(t, Pipe{}.Skip(ctx))
+	t.Run("skip", func(t *testing.T) {
+		require.True(t, Pipe{}.Skip(testctx.New()))
+	})
+	t.Run("skip flag", func(t *testing.T) {
+		ctx := testctx.NewWithCfg(config.Project{
+			Chocolateys: []config.Chocolatey{
+				{},
+			},
+		}, testctx.Skip(skips.Chocolatey))
+		require.True(t, Pipe{}.Skip(ctx))
+	})
+
+	t.Run("dont skip", func(t *testing.T) {
+		ctx := testctx.NewWithCfg(config.Project{
+			Chocolateys: []config.Chocolatey{
+				{},
+			},
+		})
+		require.False(t, Pipe{}.Skip(ctx))
+	})
 }
 
 func TestDefault(t *testing.T) {

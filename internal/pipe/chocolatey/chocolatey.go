@@ -12,6 +12,7 @@ import (
 	"github.com/caarlos0/log"
 	"github.com/goreleaser/goreleaser/internal/artifact"
 	"github.com/goreleaser/goreleaser/internal/client"
+	"github.com/goreleaser/goreleaser/internal/skips"
 	"github.com/goreleaser/goreleaser/internal/tmpl"
 	"github.com/goreleaser/goreleaser/pkg/config"
 	"github.com/goreleaser/goreleaser/pkg/context"
@@ -31,9 +32,11 @@ var cmd cmder = stdCmd{}
 // Pipe for chocolatey packaging.
 type Pipe struct{}
 
-func (Pipe) String() string                           { return "chocolatey packages" }
-func (Pipe) ContinueOnError() bool                    { return true }
-func (Pipe) Skip(ctx *context.Context) bool           { return len(ctx.Config.Chocolateys) == 0 }
+func (Pipe) String() string        { return "chocolatey packages" }
+func (Pipe) ContinueOnError() bool { return true }
+func (Pipe) Skip(ctx *context.Context) bool {
+	return skips.Any(ctx, skips.Chocolatey) || len(ctx.Config.Chocolateys) == 0
+}
 func (Pipe) Dependencies(_ *context.Context) []string { return []string{"choco"} }
 
 // Default sets the pipe defaults.
