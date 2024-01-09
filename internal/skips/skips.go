@@ -30,6 +30,7 @@ const (
 	Nix            Key = "nix"
 	AUR            Key = "aur"
 	NFPM           Key = "nfpm"
+	Chocolatey     Key = "chocolatey"
 )
 
 func String(ctx *context.Context) string {
@@ -112,6 +113,7 @@ var Release = Keys{
 	AUR,
 	NFPM,
 	Before,
+	Chocolatey,
 }
 
 var Build = Keys{
@@ -119,4 +121,5 @@ var Build = Keys{
 	PostBuildHooks,
 	Validate,
 	Before,
+	Chocolatey,
 }
