@@ -71,8 +71,14 @@ func (p Pipe) Default(ctx *context.Context) error {
 		}
 	}
 
-	// Check if we have to check the git tag for an indicator to mark as pre release
-	switch ctx.Config.Release.Prerelease {
+	// Resolve prerelease template
+	release_is_prerelease, err := tmpl.New(ctx).Apply(ctx.Config.Release.Prerelease)
+	if err != nil {
+		return err
+	}
+
+	// Check if we have to check the git tag for an indicator to mark as pre-release
+	switch release_is_prerelease {
 	case "auto":
 		if ctx.Semver.Prerelease != "" {
 			ctx.PreRelease = true
