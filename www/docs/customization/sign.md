@@ -152,7 +152,12 @@ Executables can be signed after build using post hooks.
 
 ### With gon
 
-For example, you can use [gon][] to create notarized macOS apps:
+!!! notice
+
+    [gon][] was discontinued by its maintainer, but it lives on in a
+    [fork][gon-fork], which we'll use here.
+
+For example, you can use [gon][gon-fork] to create notarized macOS apps:
 
 ```yaml
 # .goreleaser.yaml
@@ -176,7 +181,7 @@ builds:
       post: gon gon.hcl
 ```
 
-and:
+And:
 
 ```terraform
 # gon.hcl
@@ -259,5 +264,6 @@ signs:
 And it will work just fine. Just make sure to always use the `${signature}`
 template variable as the result file name and `${artifact}` as the origin file.
 
-[gon]: https://github.com/Bearer/gon
+[gon]: https://github.com/mitchellh/gon
+[gon-fork]: https://github.com/Bearer/gon
 [cosign]: https://github.com/sigstore/cosign
