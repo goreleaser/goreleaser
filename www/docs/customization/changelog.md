@@ -13,7 +13,7 @@ changelog:
   # This may result in an empty release notes on GitHub/GitLab/Gitea.
   #
   # Templates: allowed
-  skip: "{{ .Env.CREATE_CHANGELOG }}"
+  disable: "{{ .Env.CREATE_CHANGELOG }}"
 
   # Changelog generation implementation to use.
   #

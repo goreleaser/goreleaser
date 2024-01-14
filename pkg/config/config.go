@@ -1065,10 +1065,13 @@ type Filters struct {
 type Changelog struct {
 	Filters Filters          `yaml:"filters,omitempty" json:"filters,omitempty"`
 	Sort    string           `yaml:"sort,omitempty" json:"sort,omitempty" jsonschema:"enum=asc,enum=desc,enum=,default="`
-	Skip    string           `yaml:"skip,omitempty" json:"skip,omitempty" jsonschema:"oneof_type=string;boolean"` // TODO(caarlos0): rename to Disable to match other pipes
+	Disable string           `yaml:"disable,omitempty" json:"disable,omitempty" jsonschema:"oneof_type=string;boolean"`
 	Use     string           `yaml:"use,omitempty" json:"use,omitempty" jsonschema:"enum=git,enum=github,enum=github-native,enum=gitlab,default=git"`
 	Groups  []ChangelogGroup `yaml:"groups,omitempty" json:"groups,omitempty"`
 	Abbrev  int              `yaml:"abbrev,omitempty" json:"abbrev,omitempty"`
+
+	// Deprecated: use disable instead.
+	Skip string `yaml:"skip,omitempty" json:"skip,omitempty" jsonschema:"oneof_type=string;boolean,deprecated=true,description=use disable_disable instead"` // TODO(caarlos0): rename to Disable to match other pipes
 }
 
 // ChangelogGroup holds the grouping criteria for the changelog.
