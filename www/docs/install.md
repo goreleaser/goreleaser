@@ -237,11 +237,11 @@ Use it for testing out new features only.
 
 === "OSS"
 
-    Download the pre-compiled binaries from the [nightly release][nighly-releases] and copy them to the desired location.
+    Download the pre-compiled binaries from the [nightly release][nightly-releases] and copy them to the desired location.
 
 === "Pro"
 
-    Download the pre-compiled binaries from the [nightly release][nighly-pro-releases] and copy them to the desired location.
+    Download the pre-compiled binaries from the [nightly release][nightly-pro-releases] and copy them to the desired location.
 
 ### bash script
 
