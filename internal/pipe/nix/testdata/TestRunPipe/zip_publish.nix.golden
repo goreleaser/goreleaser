@@ -7,7 +7,7 @@ system ? builtins.currentSystem
 , fetchurl
 , installShellFiles
 , makeWrapper
-, stdenv
+, stdenvNoCC
 , unzip
 }:
 let
@@ -27,7 +27,7 @@ let
     aarch64-darwin = "https://dummyhost/download/v1.2.1/foo_darwin_arm64.zip";
   };
 in
-pkgs.stdenv.mkDerivation {
+pkgs.stdenvNoCC.mkDerivation {
   pname = "foozip";
   version = "1.2.1";
   src = fetchurl {

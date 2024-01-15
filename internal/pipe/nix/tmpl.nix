@@ -8,7 +8,7 @@ system ? builtins.currentSystem
 , installShellFiles
 {{- if .Dependencies }}
 , makeWrapper
-, stdenv
+, stdenvNoCC
 {{- end -}}
 {{- range $index, $element := .Dependencies }}
 , {{ . -}}
@@ -63,7 +63,7 @@ let
     {{- end }}
   };
 in
-pkgs.stdenv.mkDerivation {
+pkgs.stdenvNoCC.mkDerivation {
   pname = "{{ .Name }}";
   version = "{{ .Version }}";
   src = fetchurl {

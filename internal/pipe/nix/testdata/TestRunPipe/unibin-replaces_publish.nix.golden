@@ -24,7 +24,7 @@ let
     aarch64-darwin = "https://dummyhost/download/v1.2.1/foo_darwin_all.tar.gz";
   };
 in
-pkgs.stdenv.mkDerivation {
+pkgs.stdenvNoCC.mkDerivation {
   pname = "unibin-replaces";
   version = "1.2.1";
   src = fetchurl {

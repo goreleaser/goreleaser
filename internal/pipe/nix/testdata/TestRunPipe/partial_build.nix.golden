@@ -18,7 +18,7 @@ let
     x86_64-darwin = "https://dummyhost/download/v1.2.1/foo_darwin_amd64v1.tar.gz";
   };
 in
-pkgs.stdenv.mkDerivation {
+pkgs.stdenvNoCC.mkDerivation {
   pname = "partial";
   version = "1.2.1";
   src = fetchurl {
