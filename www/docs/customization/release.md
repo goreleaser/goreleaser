@@ -69,6 +69,7 @@ release:
   # If set to auto, will mark the release as not ready for production
   # in case there is an indicator for this in the tag e.g. v1.0.0-rc1
   # If set to true, will mark the release as not ready for production.
+  # Templates: allowed (since v1.24.0)
   # Default is false.
   prerelease: auto
 
