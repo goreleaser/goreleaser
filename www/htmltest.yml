@@ -20,6 +20,7 @@ IgnoreURLs:
   - docs.github.com
   - help.github.com
   - twitter.com
+  - medium.com
 IgnoreDirs:
   - overrides
 IgnoreDirectoryMissingTrailingSlash: true
