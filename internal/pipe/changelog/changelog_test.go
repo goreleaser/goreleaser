@@ -682,10 +682,22 @@ func TestSkip(t *testing.T) {
 		require.True(t, b)
 	})
 
-	t.Run("skip on patches", func(t *testing.T) {
+	t.Run("skip/disable", func(t *testing.T) {
 		ctx := testctx.NewWithCfg(config.Project{
 			Changelog: config.Changelog{
 				Skip: "{{gt .Patch 0}}",
+			},
+		}, testctx.WithSemver(0, 0, 1, ""))
+		b, err := Pipe{}.Skip(ctx)
+		require.NoError(t, err)
+		require.True(t, b)
+		require.Equal(t, ctx.Config.Changelog.Skip, ctx.Config.Changelog.Disable)
+	})
+
+	t.Run("disable on patches", func(t *testing.T) {
+		ctx := testctx.NewWithCfg(config.Project{
+			Changelog: config.Changelog{
+				Disable: "{{gt .Patch 0}}",
 			},
 		}, testctx.WithSemver(0, 0, 1, ""))
 		b, err := Pipe{}.Skip(ctx)
@@ -696,7 +708,7 @@ func TestSkip(t *testing.T) {
 	t.Run("invalid template", func(t *testing.T) {
 		ctx := testctx.NewWithCfg(config.Project{
 			Changelog: config.Changelog{
-				Skip: "{{if eq .Patch 123}",
+				Disable: "{{if eq .Patch 123}",
 			},
 		}, testctx.WithSemver(0, 0, 1, ""))
 		_, err := Pipe{}.Skip(ctx)
@@ -712,7 +724,7 @@ func TestSkip(t *testing.T) {
 	t.Run("dont skip based on template", func(t *testing.T) {
 		ctx := testctx.NewWithCfg(config.Project{
 			Changelog: config.Changelog{
-				Skip: "{{gt .Patch 0}}",
+				Disable: "{{gt .Patch 0}}",
 			},
 		})
 		b, err := Pipe{}.Skip(ctx)

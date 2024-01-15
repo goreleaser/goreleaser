@@ -288,13 +288,13 @@
 					"region": {
 						"type": "string"
 					},
-					"disableSSL": {
+					"disable_ssl": {
 						"type": "boolean"
 					},
 					"folder": {
 						"type": "string"
 					},
-					"kmskey": {
+					"kms_key": {
 						"type": "string"
 					},
 					"ids": {
@@ -321,6 +321,29 @@
 								"type": "boolean"
 							}
 						]
+					},
+					"s3_force_path_style": {
+						"type": "boolean"
+					},
+					"acl": {
+						"type": "string"
+					},
+					"cache_control": {
+						"items": {
+							"type": "string"
+						},
+						"type": "array"
+					},
+					"content_disposition": {
+						"type": "string"
+					},
+					"disableSSL": {
+						"type": "boolean",
+						"description": "use disable_ssl instead"
+					},
+					"kmskey": {
+						"type": "string",
+						"description": "use kms_key instead"
 					},
 					"templated_extra_files": {
 						"items": {

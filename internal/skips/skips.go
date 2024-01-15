@@ -106,6 +106,7 @@ var Release = Keys{
 	Ko,
 	Docker,
 	Winget,
+	Chocolatey,
 	Snapcraft,
 	Scoop,
 	Homebrew,
@@ -113,7 +114,6 @@ var Release = Keys{
 	AUR,
 	NFPM,
 	Before,
-	Chocolatey,
 }
 
 var Build = Keys{
@@ -121,5 +121,4 @@ var Build = Keys{
 	PostBuildHooks,
 	Validate,
 	Before,
-	Chocolatey,
 }
