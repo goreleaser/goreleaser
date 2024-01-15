@@ -25,3 +25,13 @@ multiarch docker images can be built and made available, you may wish to build y
 git clone git@github.com:squidfunk/mkdocs-material.git
 docker build -t docker.io/squidfunk/mkdocs-material .
 ```
+
+## Edit the docs
+
+After installing mkdocs and extensions, build and run the documentation locally:
+
+```sh
+task docs:serve
+```
+
+The site will soon be available at http://0.0.0.0:8000 and update after changes.
