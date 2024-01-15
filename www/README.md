@@ -9,6 +9,12 @@ To iterate with documentation, therefore, it is recommended to run the mkdocs se
 
 - [Get Docker](https://docs.docker.com/get-docker/)
 - [Get Task](https://taskfile.dev/installation/)
+- [Get MkDocs](https://www.mkdocs.org/user-guide/installation/)
+  - [Get MkDocs Material](https://squidfunk.github.io/mkdocs-material/getting-started/#installation)
+  - [Get MkDocs Redirect](https://github.com/mkdocs/mkdocs-redirects#installing)
+  - [Get MkDocs Minify](https://github.com/byrnereese/mkdocs-minify-plugin#setup)
+  - [Get MkDocs Include Markdown](https://github.com/mondeja/mkdocs-include-markdown-plugin#installation)
+  - [Get MkDocs RSS](https://github.com/guts/mkdocs-rss-plugin#installation)
 
 ### NOTE to M1/M2 mac owners
 
