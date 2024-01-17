@@ -139,10 +139,11 @@ In the `release.body` field, you can use these extra fields:
 On all fields, you have these available functions:
 
 | Usage                             | Description                                                                                                                     |
-|-----------------------------------|---------------------------------------------------------------------------------------------------------------------------------|
+| --------------------------------- | ------------------------------------------------------------------------------------------------------------------------------- |
 | `replace "v1.2" "v" ""`           | replaces all matches. See [ReplaceAll](https://golang.org/pkg/strings/#ReplaceAll).                                             |
 | `split "1.2" "."`                 | split string at separator. See [Split](https://golang.org/pkg/strings/#Split). Since v1.11                                      |
 | `time "01/02/2006"`               | current UTC time in the specified format (this is not deterministic, a new time for every call).                                |
+| `contains "foobar" "foo"`         | checks whether the first string contains the second. See [ToLower](https://golang.org/pkg/strings/#Contains). Since 1.24        |
 | `tolower "V1.2"`                  | makes input string lowercase. See [ToLower](https://golang.org/pkg/strings/#ToLower).                                           |
 | `toupper "v1.2"`                  | makes input string uppercase. See [ToUpper](https://golang.org/pkg/strings/#ToUpper).                                           |
 | `trim " v1.2  "`                  | removes all leading and trailing white space. See [TrimSpace](https://golang.org/pkg/strings/#TrimSpace).                       |
@@ -156,7 +157,7 @@ On all fields, you have these available functions:
 | `title "foo"`                     | "titlenize" the string using english as language. See [Title](https://pkg.go.dev/golang.org/x/text/cases#Title). Since v1.14    |
 | `mdv2escape "foo"`                | escape characters according to MarkdownV2, especially useful in the Telegram integration. Since v1.19                           |
 | `envOrDefault "NAME" "value"`     | either gets the value of the given environment variable, or the given default. Since v1.19                                      |
-| `$m := map "KEY" "VALUE"`         | creates a map from a list of key and value pairs. Both keys and values must be of type `string`. Since v1.21                                                                   |
+| `$m := map "KEY" "VALUE"`         | creates a map from a list of key and value pairs. Both keys and values must be of type `string`. Since v1.21                    |
 | `indexOrDefault $m "KEY" "value"` | either gets the value of the given key or the given default value from the given map. Since v1.21                               |
 
 With all those fields, you may be able to compose the name of your artifacts

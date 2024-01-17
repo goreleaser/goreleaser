@@ -250,6 +250,11 @@ func TestFuncMap(t *testing.T) {
 			Expected: "test",
 		},
 		{
+			Template: `{{ if contains "TEST_TEST_TEST" "TEST" }}it does{{else}}nope{{end}}`,
+			Name:     "contains",
+			Expected: "it does",
+		},
+		{
 			Template: `{{ trimprefix "v1.2.4" "v" }}`,
 			Name:     "trimprefix",
 			Expected: "1.2.4",

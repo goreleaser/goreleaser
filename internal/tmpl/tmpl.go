@@ -205,6 +205,7 @@ func (t *Template) Apply(s string) (string, error) {
 			"time": func(s string) string {
 				return time.Now().UTC().Format(s)
 			},
+			"contains":       strings.Contains,
 			"tolower":        strings.ToLower,
 			"toupper":        strings.ToUpper,
 			"trim":           strings.TrimSpace,
