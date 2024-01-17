@@ -1,9 +1,8 @@
 # Fury.io (apt and rpm repositories)
 
 !!! success "GoReleaser Pro"
-    The fury.io publisher is a [GoReleaser Pro feature](/pro/). You might be
-    able to reproduce some of its behavior on GoReleaser OSS using
-    [custom publishers](/customization/publishers/).
+
+    The fury.io publisher is available only in [GoReleaser Pro feature](/pro/).
 
 You can easily create `deb` and `yum` repositories on [fury.io][fury] using GoReleaser.
 
@@ -17,7 +16,7 @@ as an environment variable named `FURY_TOKEN`:
 ```yaml
 # .goreleaser.yaml
 furies:
-- account: myaccount
+  - account: myaccount
 ```
 
 This will automatically upload all your `deb` and `rpm` files.
@@ -30,8 +29,7 @@ You can also have plenty of customization options:
 # goreleaser.yaml
 
 furies:
-  -
-    # fury.io account.
+  - # fury.io account.
     # Config is skipped if empty
     account: "{{ .Env.FURY_ACCOUNT }}"
 
@@ -64,6 +62,6 @@ furies:
 
 [fury]: https://gemfury.com
 
-
 !!! tip
+
     Learn more about the [name template engine](/customization/templates/).

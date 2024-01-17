@@ -550,7 +550,7 @@
 						],
 						"default": ""
 					},
-					"skip": {
+					"disable": {
 						"oneOf": [
 							{
 								"type": "string"
@@ -587,6 +587,17 @@
 							"type": "string"
 						},
 						"type": "array"
+					},
+					"skip": {
+						"oneOf": [
+							{
+								"type": "string"
+							},
+							{
+								"type": "boolean"
+							}
+						],
+						"description": "use disable_disable instead"
 					}
 				},
 				"additionalProperties": false,
@@ -1189,6 +1200,12 @@
 						"type": "string"
 					},
 					"ignore_tags": {
+						"items": {
+							"type": "string"
+						},
+						"type": "array"
+					},
+					"ignore_tag_prefixes": {
 						"items": {
 							"type": "string"
 						},

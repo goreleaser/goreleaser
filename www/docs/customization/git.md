@@ -28,6 +28,15 @@ git:
   ignore_tags:
     - nightly
     - "{{.Env.IGNORE_TAG}}"
+
+  # Tags that begin with these prefixes will be ignored.
+  #
+  # Templates: allowed.
+  # This feature is only available in GoReleaser Pro.
+  # Since: v1.24 (pro)
+  ignore_tag_prefixes:
+    - foo/
+    - "{{.Env.IGNORE_TAG_PREFIX}}/bar"
 ```
 
 ## Semver sorting
