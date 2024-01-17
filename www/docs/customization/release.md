@@ -79,7 +79,7 @@ release:
   # Available only for GitHub.
   #
   # Default is true.
-  # Since: v1.20.
+  # Since: v1.20
   make_latest: true
 
   # What to do with the release notes in case there the release already exists.

@@ -76,7 +76,7 @@ nix:
 
     # Runtime dependencies of the package.
     #
-    # Since: v1.20.
+    # Since: v1.20
     dependencies:
     - zsh
     - chromium

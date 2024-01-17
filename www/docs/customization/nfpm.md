@@ -330,7 +330,7 @@ nfpms:
 
       # Prefixes for relocatable packages.
       #
-      # Since: v1.20.
+      # Since: v1.20
       prefixes:
         - /usr/bin
 
@@ -469,8 +469,7 @@ You can go around that with something like this:
 ```yaml
 # .goreleaser.yaml
 nfpms:
-  - 
-    # ...
+  - # ...
     file_name_template: >-
       {{- trimsuffix .ConventionalFileName .ConventionalExtension -}}
       {{- if and (eq .Arm "6") (eq .ConventionalExtension ".deb") }}6{{ end -}}

@@ -161,7 +161,7 @@ aurs:
     #
     # Default: .
     # Templates: allowed
-    # Since: v1.23.
+    # Since: v1.23
     url_template: "http://github.mycompany.com/foo/bar/releases/{{ .Tag }}/{{ .ArtifactName }}"
 ```
 

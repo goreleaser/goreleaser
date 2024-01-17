@@ -43,13 +43,13 @@ snapcrafts:
     # The canonical title of the application, displayed in the software
     # centre graphical frontends.
     #
-    # Since: v1.19.
+    # Since: v1.19
     title: Drum Roll
 
     # Path to icon image that represents the snap in the snapcraft.io store
     # pages and other graphical store fronts.
     #
-    # Since: v1.19.
+    # Since: v1.19
     icon: ./icon.png
 
     # Whether to publish the snap to the snapcraft store.
@@ -119,14 +119,14 @@ snapcrafts:
     # A list of features that must be supported by the core in order for
     # this snap to install.
     #
-    # Since: v1.19.
+    # Since: v1.19
     assumes:
       - snapd2.38
 
     # his top-level keyword to define a hook with a plug to access more
     # privileges.
     #
-    # Since: v1.19.
+    # Since: v1.19
     hooks:
       install:
         - network

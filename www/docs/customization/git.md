@@ -24,7 +24,7 @@ git:
   # provided values as either previous or current tags.
   #
   # Templates: allowed.
-  # Since: v1.21.
+  # Since: v1.21
   ignore_tags:
     - nightly
     - "{{.Env.IGNORE_TAG}}"
