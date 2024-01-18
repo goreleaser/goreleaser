@@ -46,6 +46,8 @@ const (
 	tagBody         = "TagBody"
 	releaseURL      = "ReleaseURL"
 	isGitDirty      = "IsGitDirty"
+	isGitClean      = "IsGitClean"
+	gitTreeState    = "GitTreeState"
 	major           = "Major"
 	minor           = "Minor"
 	patch           = "Patch"
@@ -83,6 +85,10 @@ const (
 func New(ctx *context.Context) *Template {
 	sv := ctx.Semver
 	rawVersionV := fmt.Sprintf("%d.%d.%d", sv.Major, sv.Minor, sv.Patch)
+	treeState := "clean"
+	if ctx.Git.Dirty {
+		treeState = "dirty"
+	}
 
 	fields := map[string]interface{}{}
 	for k, v := range map[string]interface{}{
@@ -101,6 +107,8 @@ func New(ctx *context.Context) *Template {
 		commitTimestamp: ctx.Git.CommitDate.UTC().Unix(),
 		gitURL:          ctx.Git.URL,
 		isGitDirty:      ctx.Git.Dirty,
+		isGitClean:      !ctx.Git.Dirty,
+		gitTreeState:    treeState,
 		env:             ctx.Env,
 		date:            ctx.Date.UTC().Format(time.RFC3339),
 		timestamp:       ctx.Date.UTC().Unix(),

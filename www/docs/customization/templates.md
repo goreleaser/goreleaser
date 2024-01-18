@@ -25,6 +25,8 @@ In fields that support templates, these fields are always available:
 | `.CommitDate`          | the UTC commit date in RFC 3339 format                                                                                   |
 | `.CommitTimestamp`     | the UTC commit date in Unix format                                                                                       |
 | `.GitURL`              | the git remote url                                                                                                       |
+| `.GitTreeState`        | either 'clean' or 'dirty'. Since v1.24                                                                                   |
+| `.IsGitClean`          | whether or not current git state is clean. Since v1.24                                                                   |
 | `.IsGitDirty`          | whether or not current git state is dirty. Since v1.19                                                                   |
 | `.Major`               | the major part of the version[^tag-is-semver]                                                                            |
 | `.Minor`               | the minor part of the version[^tag-is-semver]                                                                            |
