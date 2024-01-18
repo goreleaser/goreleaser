@@ -3,6 +3,7 @@ package slack
 import (
 	"encoding/json"
 	"fmt"
+	"strings"
 
 	"github.com/caarlos0/env/v9"
 	"github.com/caarlos0/log"
@@ -102,7 +103,11 @@ func unmarshal(ctx *context.Context, in interface{}, target interface{}) error {
 		return fmt.Errorf("failed to marshal input as JSON: %w", err)
 	}
 
-	tplApplied, err := tmpl.New(ctx).Apply(string(jazon))
+	body := string(jazon)
+	// ensure that double quotes that are inside the string get un-escaped so they can be interpreted for templates
+	body = strings.ReplaceAll(body, "\\\"", "\"")
+
+	tplApplied, err := tmpl.New(ctx).Apply(body)
 	if err != nil {
 		return fmt.Errorf("failed to evaluate template: %w", err)
 	}
