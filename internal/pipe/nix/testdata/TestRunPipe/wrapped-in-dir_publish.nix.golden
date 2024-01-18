@@ -23,6 +23,13 @@ let
     x86_64-darwin = "https://dummyhost/download/v1.2.1/foo_darwin_amd64v1.tar.gz";
     aarch64-darwin = "https://dummyhost/download/v1.2.1/foo_darwin_arm64.tar.gz";
   };
+  sourceRootMap = {
+    i686-linux = "./foo_386";
+    x86_64-linux = "./foo_amd64";
+    aarch64-linux = "./foo_arm64";
+    x86_64-darwin = "./foo_amd64";
+    aarch64-darwin = "./foo_arm64";
+  };
 in
 pkgs.stdenvNoCC.mkDerivation {
   pname = "wrapped-in-dir";
@@ -32,7 +39,7 @@ pkgs.stdenvNoCC.mkDerivation {
     sha256 = shaMap.${system};
   };
 
-  sourceRoot = "./foo";
+  sourceRoot = sourceRootMap.${system};
 
   nativeBuildInputs = [ installShellFiles ];
 

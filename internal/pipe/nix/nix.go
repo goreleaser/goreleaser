@@ -23,6 +23,7 @@ import (
 	"github.com/goreleaser/goreleaser/internal/tmpl"
 	"github.com/goreleaser/goreleaser/pkg/config"
 	"github.com/goreleaser/goreleaser/pkg/context"
+	"golang.org/x/exp/maps"
 )
 
 const nixConfigExtra = "NixConfig"
@@ -253,11 +254,6 @@ func preparePkg(
 		return "", err
 	}
 
-	folder := artifact.ExtraOr(*archives[0], artifact.ExtraWrappedIn, ".")
-	if folder == "" {
-		folder = "."
-	}
-
 	inputs := []string{"installShellFiles"}
 	dependencies := depNames(nix.Dependencies)
 	if len(dependencies) > 0 {
@@ -277,7 +273,7 @@ func preparePkg(
 		Install:      installs,
 		PostInstall:  postInstall,
 		Archives:     map[string]Archive{},
-		SourceRoot:   folder,
+		SourceRoots:  map[string]string{},
 		Description:  nix.Description,
 		Homepage:     nix.Homepage,
 		License:      nix.License,
@@ -305,10 +301,19 @@ func preparePkg(
 			if _, ok := data.Archives[key]; ok {
 				return "", ErrMultipleArchivesSamePlatform
 			}
+			folder := artifact.ExtraOr(*art, artifact.ExtraWrappedIn, ".")
+			if folder == "" {
+				folder = "."
+			}
+			data.SourceRoots[key] = folder
 			data.Archives[key] = archive
 			plat := goosToPlatform[art.Goos+goarch+art.Goarm]
 			platforms[plat] = true
 		}
+	}
+
+	if roots := slices.Compact(maps.Values(data.SourceRoots)); len(roots) == 1 {
+		data.SourceRoot = roots[0]
 	}
 	data.Platforms = keys(platforms)
 	sort.Strings(data.Platforms)
