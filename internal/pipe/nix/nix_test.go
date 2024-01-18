@@ -489,7 +489,7 @@ func TestRunPipe(t *testing.T) {
 						if goos != "darwin" {
 							createFakeArtifact("unibin-replaces", goos, goarch, "v1", "", "tar.gz", nil)
 						}
-						createFakeArtifact("wrapped-in-dir", goos, goarch, "v1", "", "tar.gz", map[string]any{artifact.ExtraWrappedIn: "./foo"})
+						createFakeArtifact("wrapped-in-dir", goos, goarch, "v1", "", "tar.gz", map[string]any{artifact.ExtraWrappedIn: "./foo_" + goarch})
 						createFakeArtifact("foo-zip", goos, goarch, "v1", "", "zip", nil)
 						continue
 					}
@@ -508,7 +508,7 @@ func TestRunPipe(t *testing.T) {
 					if goos != "darwin" {
 						createFakeArtifact("unibin-replaces", goos, goarch, "", "", "tar.gz", nil)
 					}
-					createFakeArtifact("wrapped-in-dir", goos, goarch, "", "", "tar.gz", map[string]any{artifact.ExtraWrappedIn: "./foo"})
+					createFakeArtifact("wrapped-in-dir", goos, goarch, "", "", "tar.gz", map[string]any{artifact.ExtraWrappedIn: "./foo_" + goarch})
 					createFakeArtifact("foo-zip", goos, goarch, "v1", "", "zip", nil)
 					if goos == "darwin" {
 						createFakeArtifact("zip-and-tar", goos, goarch, "v1", "", "zip", nil)
