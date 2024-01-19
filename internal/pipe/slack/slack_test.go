@@ -2,6 +2,7 @@ package slack
 
 import (
 	"bytes"
+	"encoding/json"
 	"testing"
 
 	"github.com/goreleaser/goreleaser/internal/testctx"
@@ -9,6 +10,7 @@ import (
 	"github.com/goreleaser/goreleaser/internal/yaml"
 	"github.com/goreleaser/goreleaser/pkg/config"
 	"github.com/slack-go/slack"
+	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
 
@@ -31,6 +33,42 @@ func TestAnnounceInvalidTemplate(t *testing.T) {
 		},
 	})
 	testlib.RequireTemplateError(t, Pipe{}.Announce(ctx))
+}
+
+func TestAnnounceWithQuotes(t *testing.T) {
+	t.Setenv("SLACK_WEBHOOK", slackTestHook())
+	t.Setenv("USER", "bot-mc-botyson")
+
+	t.Run("with a plain message", func(t *testing.T) {
+		ctx := testctx.NewWithCfg(config.Project{
+			Announce: config.Announce{
+				Slack: config.Slack{
+					MessageTemplate: "{{ envOrDefault \"USER\" \"\" }}",
+				},
+			},
+		})
+		require.NoError(t, Pipe{}.Announce(ctx))
+	})
+
+	t.Run("with rich text", func(t *testing.T) {
+		var project config.Project
+		require.NoError(t, yaml.Unmarshal(goodRichSlackConfWithEnv(), &project))
+		ctx := testctx.NewWithCfg(project)
+		blocks, attachments, err := parseAdvancedFormatting(ctx)
+		require.NoError(t, err)
+		assert.Len(t, blocks.BlockSet, 2)
+
+		blocksBody, err := json.Marshal(blocks.BlockSet)
+		require.NoError(t, err)
+
+		assert.Contains(t, string(blocksBody), `The current user is bot-mc-botyson`)
+		assert.Contains(t, string(blocksBody), `The current user is bot-mc-botyson\nnewline!`)
+
+		assert.Len(t, attachments, 1)
+		attachmentsBody, err := json.Marshal(attachments)
+		require.NoError(t, err)
+		assert.Contains(t, string(attachmentsBody), `The current user is bot-mc-botyson\n\nIncluding newlines\n`)
+	})
 }
 
 func TestAnnounceMissingEnv(t *testing.T) {
@@ -305,6 +343,36 @@ announce:
         text:
           type: plain_text
 		  text: '{{ .Wrong }}'
+`
+
+	buf := bytes.NewBufferString(conf)
+
+	return bytes.ReplaceAll(buf.Bytes(), []byte("\t"), []byte("    "))
+}
+
+func goodRichSlackConfWithEnv() []byte {
+	const conf = `
+project_name: test
+announce:
+  slack:
+    enabled: true
+    blocks:
+      - type: header
+        text:
+          type: plain_text
+          text: 'The current user is {{ envOrDefault "USER" "" }}'
+      - type: header
+        text:
+          type: plain_text
+          text: "The current user is {{ envOrDefault \"USER\" \"\" }}\nnewline!"
+    attachments:
+        -
+          title: Release artifacts
+          color: '#2eb886'
+		  text: |
+            The current user is {{ envOrDefault "USER" "" }}
+
+			Including newlines
 `
 
 	buf := bytes.NewBufferString(conf)
