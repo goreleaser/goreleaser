@@ -296,9 +296,21 @@ func buildFormula(ctx *context.Context, brew config.Homebrew, client client.Rele
 }
 
 func doBuildFormula(ctx *context.Context, data templateData) (string, error) {
-	t, err := template.
-		New(data.Name).
-		Parse(formulaTemplate)
+	t := template.New("cask.rb")
+	var err error
+	t, err = t.Funcs(map[string]any{
+		"include": func(name string, data interface{}) (string, error) {
+			buf := bytes.NewBuffer(nil)
+			if err := t.ExecuteTemplate(buf, name, data); err != nil {
+				return "", err
+			}
+			return buf.String(), nil
+		},
+		"indent": func(spaces int, v string) string {
+			pad := strings.Repeat(" ", spaces)
+			return pad + strings.ReplaceAll(v, "\n", "\n"+pad)
+		},
+	}).ParseFS(formulaTemplate, "templates/*.rb")
 	if err != nil {
 		return "", err
 	}
