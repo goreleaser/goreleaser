@@ -238,15 +238,13 @@ func uploadAsset(ctx *context.Context, upload *config.Upload, artifact *artifact
 	}
 	log.Debugf("generated target url: %s", targetURL)
 
-	headers := map[string]string{}
-	if upload.CustomHeaders != nil {
-		for name, value := range upload.CustomHeaders {
-			resolvedValue, err := tmpl.New(ctx).WithArtifact(artifact).Apply(value)
-			if err != nil {
-				return fmt.Errorf("%s: %s: failed to resolve custom_headers template: %w", upload.Name, kind, err)
-			}
-			headers[name] = resolvedValue
+	headers := make(map[string]string, len(upload.CustomHeaders))
+	for name, value := range upload.CustomHeaders {
+		resolvedValue, err := tmpl.New(ctx).WithArtifact(artifact).Apply(value)
+		if err != nil {
+			return fmt.Errorf("%s: %s: failed to resolve custom_headers template: %w", upload.Name, kind, err)
 		}
+		headers[name] = resolvedValue
 	}
 	if upload.ChecksumHeader != "" {
 		sum, err := artifact.Checksum("sha256")
