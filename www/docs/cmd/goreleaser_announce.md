@@ -13,6 +13,10 @@ finally, announce it to your users.
 Environment variables will be re-evaluated here, so make sure they are
 available to the announce command as well.
 
+On the other hand, the GoReleaser configuration file will not be parsed again,
+which means you might need to specify the dist folder path if it is different
+than the default.
+
 !!! success "GoReleaser Pro"
     This subcommand is a [GoReleaser Pro feature](https://goreleaser.com/pro/).
 
