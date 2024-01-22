@@ -211,73 +211,9 @@ func (p Pipe) doRun(ctx *context.Context, winget config.Winget, cl client.Releas
 		return err
 	}
 
-	var deps []PackageDependency
-	for _, dep := range winget.Dependencies {
-		if err := tp.ApplyAll(&dep.MinimumVersion, &dep.PackageIdentifier); err != nil {
-			return err
-		}
-		deps = append(deps, PackageDependency{
-			PackageIdentifier: dep.PackageIdentifier,
-			MinimumVersion:    dep.MinimumVersion,
-		})
-	}
-
-	installer := Installer{
-		PackageIdentifier: winget.PackageIdentifier,
-		PackageVersion:    ctx.Version,
-		InstallerLocale:   defaultLocale,
-		InstallerType:     "zip",
-		Commands:          []string{},
-		ReleaseDate:       ctx.Date.Format(time.DateOnly),
-		Installers:        []InstallerItem{},
-		ManifestType:      "installer",
-		ManifestVersion:   manifestVersion,
-		Dependencies: Dependencies{
-			PackageDependencies: deps,
-		},
-	}
-
-	var amd64Count, i386count, zipCount, binaryCount int
-	for _, archive := range archives {
-		sha256, err := archive.Checksum("sha256")
-		if err != nil {
-			return err
-		}
-		url, err := tmpl.New(ctx).WithArtifact(archive).Apply(winget.URLTemplate)
-		if err != nil {
-			return err
-		}
-		item := InstallerItem{
-			Architecture:    fromGoArch[archive.Goarch],
-			InstallerURL:    url,
-			InstallerSha256: sha256,
-			UpgradeBehavior: "uninstallPrevious",
-		}
-		if archive.Format() == "zip" {
-			zipCount++
-			installer.InstallerType = "zip"
-			item.NestedInstallerType = "portable"
-			item.NestedInstallerFiles = installerItemFilesFor(*archive)
-		} else {
-			binaryCount++
-			installer.InstallerType = "portable"
-			installer.Commands = []string{winget.Name}
-		}
-		installer.Installers = append(installer.Installers, item)
-		switch archive.Goarch {
-		case "386":
-			i386count++
-		case "amd64":
-			amd64Count++
-		}
-	}
-
-	if binaryCount > 0 && zipCount > 0 {
-		return errMixedFormats
-	}
-
-	if i386count > 1 || amd64Count > 1 {
-		return errMultipleArchives
+	installer, err := makeInstaller(ctx, winget, archives)
+	if err != nil {
+		return err
 	}
 
 	if err := createYAML(ctx, winget, installer, artifact.WingetInstaller); err != nil {
@@ -459,4 +395,78 @@ func installerItemFilesFor(archive artifact.Artifact) []InstallerItemFile {
 		})
 	}
 	return files
+}
+
+func makeInstaller(ctx *context.Context, winget config.Winget, archives []*artifact.Artifact) (Installer, error) {
+	tp := tmpl.New(ctx)
+	var deps []PackageDependency
+	for _, dep := range winget.Dependencies {
+		if err := tp.ApplyAll(&dep.MinimumVersion, &dep.PackageIdentifier); err != nil {
+			return Installer{}, err
+		}
+		deps = append(deps, PackageDependency{
+			PackageIdentifier: dep.PackageIdentifier,
+			MinimumVersion:    dep.MinimumVersion,
+		})
+	}
+
+	installer := Installer{
+		PackageIdentifier: winget.PackageIdentifier,
+		PackageVersion:    ctx.Version,
+		InstallerLocale:   defaultLocale,
+		InstallerType:     "zip",
+		Commands:          []string{},
+		ReleaseDate:       ctx.Date.Format(time.DateOnly),
+		Installers:        []InstallerItem{},
+		ManifestType:      "installer",
+		ManifestVersion:   manifestVersion,
+		Dependencies: Dependencies{
+			PackageDependencies: deps,
+		},
+	}
+
+	var amd64Count, i386count, zipCount, binaryCount int
+	for _, archive := range archives {
+		sha256, err := archive.Checksum("sha256")
+		if err != nil {
+			return Installer{}, err
+		}
+		url, err := tmpl.New(ctx).WithArtifact(archive).Apply(winget.URLTemplate)
+		if err != nil {
+			return Installer{}, err
+		}
+		item := InstallerItem{
+			Architecture:    fromGoArch[archive.Goarch],
+			InstallerURL:    url,
+			InstallerSha256: sha256,
+			UpgradeBehavior: "uninstallPrevious",
+		}
+		if archive.Format() == "zip" {
+			zipCount++
+			installer.InstallerType = "zip"
+			item.NestedInstallerType = "portable"
+			item.NestedInstallerFiles = installerItemFilesFor(*archive)
+		} else {
+			binaryCount++
+			installer.InstallerType = "portable"
+			installer.Commands = []string{winget.Name}
+		}
+		installer.Installers = append(installer.Installers, item)
+		switch archive.Goarch {
+		case "386":
+			i386count++
+		case "amd64":
+			amd64Count++
+		}
+	}
+
+	if binaryCount > 0 && zipCount > 0 {
+		return Installer{}, errMixedFormats
+	}
+
+	if i386count > 1 || amd64Count > 1 {
+		return Installer{}, errMultipleArchives
+	}
+
+	return installer, nil
 }
