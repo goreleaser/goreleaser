@@ -28,6 +28,7 @@
             syft
             upx
             cosign
+            gnupg
           ];
           shellHook = "go mod tidy";
         };
