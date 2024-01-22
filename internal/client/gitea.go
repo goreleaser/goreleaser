@@ -96,9 +96,11 @@ func (c *giteaClient) getDefaultBranch(_ *context.Context, repo Repo) (string, e
 	projectID := repo.String()
 	p, res, err := c.client.GetRepo(repo.Owner, repo.Name)
 	if err != nil {
-		log.WithField("projectID", projectID).
-			WithField("statusCode", res.StatusCode).
-			WithError(err).
+		log := log.WithField("projectID", projectID)
+		if res != nil {
+			log = log.WithField("statusCode", res.StatusCode)
+		}
+		log.WithError(err).
 			Warn("error checking for default branch")
 		return "", err
 	}

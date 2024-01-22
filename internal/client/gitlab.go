@@ -88,11 +88,11 @@ func (c *gitlabClient) getDefaultBranch(_ *context.Context, repo Repo) (string, 
 	projectID := repo.String()
 	p, res, err := c.client.Projects.GetProject(projectID, nil)
 	if err != nil {
-		log.
-			WithField("projectID", projectID).
-			WithField("statusCode", res.StatusCode).
-			WithError(err).
-			Warn("error checking for default branch")
+		log := log.WithField("projectID", projectID)
+		if res != nil {
+			log = log.WithField("statusCode", res.StatusCode)
+		}
+		log.WithError(err).Warn("error checking for default branch")
 		return "", err
 	}
 	return p.DefaultBranch, nil
@@ -182,12 +182,14 @@ func (c *gitlabClient) CreateFile(
 
 	_, res, err := c.client.RepositoryFiles.GetFile(repo.String(), fileName, opts)
 	if err != nil && (res == nil || res.StatusCode != 404) {
-		log.
+		log := log.
 			WithField("fileName", fileName).
 			WithField("ref", ref).
-			WithField("projectID", projectID).
-			WithField("statusCode", res.StatusCode).
-			WithError(err).
+			WithField("projectID", projectID)
+		if res != nil {
+			log = log.WithField("statusCode", res.StatusCode)
+		}
+		log.WithError(err).
 			Error("error getting file for brew formula")
 		return err
 	}
@@ -213,12 +215,14 @@ func (c *gitlabClient) CreateFile(
 		}
 		fileInfo, res, err := c.client.RepositoryFiles.CreateFile(projectID, fileName, createOpts)
 		if err != nil {
-			log.
+			log := log.
 				WithField("fileName", fileName).
 				WithField("branch", branch).
-				WithField("projectID", projectID).
-				WithField("statusCode", res.StatusCode).
-				WithError(err).
+				WithField("projectID", projectID)
+			if res != nil {
+				log = log.WithField("statusCode", res.StatusCode)
+			}
+			log.WithError(err).
 				Error("error creating brew formula file")
 			return err
 		}
@@ -247,23 +251,27 @@ func (c *gitlabClient) CreateFile(
 
 	updateFileInfo, res, err := c.client.RepositoryFiles.UpdateFile(projectID, fileName, updateOpts)
 	if err != nil {
-		log.
+		log := log.
 			WithField("fileName", fileName).
 			WithField("branch", branch).
-			WithField("projectID", projectID).
-			WithField("statusCode", res.StatusCode).
-			WithError(err).
+			WithField("projectID", projectID)
+		if res != nil {
+			log = log.WithField("statusCode", res.StatusCode)
+		}
+		log.WithError(err).
 			Error("error updating brew formula file")
 		return err
 	}
 
-	log.
+	log := log.
 		WithField("fileName", fileName).
 		WithField("branch", branch).
 		WithField("projectID", projectID).
-		WithField("filePath", updateFileInfo.FilePath).
-		WithField("statusCode", res.StatusCode).
-		Debug("updated brew formula file")
+		WithField("filePath", updateFileInfo.FilePath)
+	if res != nil {
+		log = log.WithField("statusCode", res.StatusCode)
+	}
+	log.Debug("updated brew formula file")
 	return nil
 }
 

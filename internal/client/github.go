@@ -132,8 +132,11 @@ func (c *githubClient) getDefaultBranch(ctx *context.Context, repo Repo) (string
 	c.checkRateLimit(ctx)
 	p, res, err := c.client.Repositories.Get(ctx, repo.Owner, repo.Name)
 	if err != nil {
-		log.WithField("projectID", repo.String()).
-			WithField("statusCode", res.StatusCode).
+		log := log.WithField("projectID", repo.String())
+		if res != nil {
+			log = log.WithField("statusCode", res.StatusCode)
+		}
+		log.
 			WithError(err).
 			Warn("error checking for default branch")
 		return "", err
