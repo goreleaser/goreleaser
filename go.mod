@@ -25,7 +25,7 @@ require (
 	github.com/google/go-containerregistry v0.18.0
 	github.com/google/go-github/v57 v57.0.0
 	github.com/google/ko v0.15.1
-	github.com/google/uuid v1.5.0
+	github.com/google/uuid v1.6.0
 	github.com/goreleaser/fileglob v1.3.0
 	github.com/goreleaser/nfpm/v2 v2.35.2
 	github.com/hashicorp/go-multierror v1.1.1
