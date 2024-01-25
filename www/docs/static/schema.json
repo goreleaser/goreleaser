@@ -491,7 +491,7 @@
 						],
 						"default": ""
 					},
-					"skip": {
+					"disable": {
 						"oneOf": [
 							{
 								"type": "string"
