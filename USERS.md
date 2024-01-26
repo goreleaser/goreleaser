@@ -95,4 +95,4 @@ If you're going to edit it, please:
 
 [^1]:
     Entries were either added by the companies themselves or by the maintainers after seeing it in the wild.
-    You can see all public repositories using GoReleaser by [searching on GitHub](https://github.com/search?q=path%3A%2Fgoreleaser.*+language%3Ayaml&type=code).
+    You can see all public repositories using GoReleaser by [searching on GitHub](https://github.com/search?q=path%3A.goreleaser.yml+OR+path%3A.goreleaser.yaml+&type=code).
