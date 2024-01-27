@@ -1071,7 +1071,7 @@ type Changelog struct {
 	Abbrev  int              `yaml:"abbrev,omitempty" json:"abbrev,omitempty"`
 
 	// Deprecated: use disable instead.
-	Skip string `yaml:"skip,omitempty" json:"skip,omitempty" jsonschema:"oneof_type=string;boolean,deprecated=true,description=use disable_disable instead"` // TODO(caarlos0): rename to Disable to match other pipes
+	Skip string `yaml:"skip,omitempty" json:"skip,omitempty" jsonschema:"oneof_type=string;boolean,deprecated=true,description=use disable instead"`
 }
 
 // ChangelogGroup holds the grouping criteria for the changelog.
