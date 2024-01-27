@@ -2,14 +2,13 @@
 # vim: set ft=nix ts=2 sw=2 sts=2 et sta
 {
 system ? builtins.currentSystem
-, pkgs
 , lib
 , fetchurl
 , installShellFiles
 {{- if .Dependencies }}
 , makeWrapper
+{{- end }}
 , stdenvNoCC
-{{- end -}}
 {{- range $index, $element := .Dependencies }}
 , {{ . -}}
 {{- end }}
@@ -89,7 +88,7 @@ let
   };
   {{- end }}
 in
-pkgs.stdenvNoCC.mkDerivation {
+stdenvNoCC.mkDerivation {
   pname = "{{ .Name }}";
   version = "{{ .Version }}";
   src = fetchurl {
