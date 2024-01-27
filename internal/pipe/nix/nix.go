@@ -258,6 +258,7 @@ func preparePkg(
 	dependencies := depNames(nix.Dependencies)
 	if len(dependencies) > 0 {
 		inputs = append(inputs, "makeWrapper")
+		dependencies = append(dependencies, "makeWrapper")
 	}
 	for _, arch := range archives {
 		if arch.Format() == "zip" {

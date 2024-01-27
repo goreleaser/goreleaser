@@ -5,9 +5,9 @@ system ? builtins.currentSystem
 , lib
 , fetchurl
 , installShellFiles
-, makeWrapper
 , stdenvNoCC
 , git
+, makeWrapper
 , unzip
 }:
 let

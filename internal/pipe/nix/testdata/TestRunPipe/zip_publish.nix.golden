@@ -5,7 +5,6 @@ system ? builtins.currentSystem
 , lib
 , fetchurl
 , installShellFiles
-, makeWrapper
 , stdenvNoCC
 , unzip
 }:

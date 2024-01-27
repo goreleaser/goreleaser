@@ -5,12 +5,12 @@ system ? builtins.currentSystem
 , lib
 , fetchurl
 , installShellFiles
-, makeWrapper
 , stdenvNoCC
 , fish
 , bash
 , ttyd
 , chromium
+, makeWrapper
 }:
 let
   shaMap = {

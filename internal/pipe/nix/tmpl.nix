@@ -5,9 +5,6 @@ system ? builtins.currentSystem
 , lib
 , fetchurl
 , installShellFiles
-{{- if .Dependencies }}
-, makeWrapper
-{{- end }}
 , stdenvNoCC
 {{- range $index, $element := .Dependencies }}
 , {{ . -}}
