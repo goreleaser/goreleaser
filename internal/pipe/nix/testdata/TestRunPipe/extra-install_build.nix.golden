@@ -2,7 +2,6 @@
 # vim: set ft=nix ts=2 sw=2 sts=2 et sta
 {
 system ? builtins.currentSystem
-, pkgs
 , lib
 , fetchurl
 , installShellFiles
@@ -34,7 +33,7 @@ let
     aarch64-darwin = "https://dummyhost/download/v1.2.1/foo_darwin_arm64.tar.gz";
   };
 in
-pkgs.stdenvNoCC.mkDerivation {
+stdenvNoCC.mkDerivation {
   pname = "foo";
   version = "1.2.1";
   src = fetchurl {
@@ -49,7 +48,7 @@ pkgs.stdenvNoCC.mkDerivation {
   installPhase = ''
     mkdir -p $out/bin
     cp -vr ./foo $out/bin/foo
-    wrapProgram $out/bin/foo --prefix PATH : ${lib.makeBinPath (lib.optionals stdenv.isDarwin [ chromium ] ++ lib.optionals stdenv.isLinux [ ttyd ] ++ [ fish bash ])}
+    wrapProgram $out/bin/foo --prefix PATH : ${lib.makeBinPath (lib.optionals stdenvNoCC.isDarwin [ chromium ] ++ lib.optionals stdenvNoCC.isLinux [ ttyd ] ++ [ fish bash ])}
     installManPage ./manpages/foo.1.gz
   '';
 

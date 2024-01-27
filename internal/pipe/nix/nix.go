@@ -503,10 +503,10 @@ func binInstallFormats(nix config.Nix) []string {
 	var depStrings []string
 
 	if len(darwinDeps) > 0 {
-		depStrings = append(depStrings, fmt.Sprintf("lib.optionals stdenv.isDarwin [ %s ]", strings.Join(darwinDeps, " ")))
+		depStrings = append(depStrings, fmt.Sprintf("lib.optionals stdenvNoCC.isDarwin [ %s ]", strings.Join(darwinDeps, " ")))
 	}
 	if len(linuxDeps) > 0 {
-		depStrings = append(depStrings, fmt.Sprintf("lib.optionals stdenv.isLinux [ %s ]", strings.Join(linuxDeps, " ")))
+		depStrings = append(depStrings, fmt.Sprintf("lib.optionals stdenvNoCC.isLinux [ %s ]", strings.Join(linuxDeps, " ")))
 	}
 	if len(deps) > 0 {
 		depStrings = append(depStrings, fmt.Sprintf("[ %s ]", strings.Join(deps, " ")))
