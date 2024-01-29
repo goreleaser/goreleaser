@@ -201,8 +201,7 @@ func catalogArtifact(ctx *context.Context, cfg config.SBOM, a *artifact.Artifact
 	cmd.Env = append(cmd.Env, envs...)
 	cmd.Dir = ctx.Config.Dist
 
-	log.WithField("env", cmd.Env).
-		WithField("dir", cmd.Dir).
+	log.WithField("dir", cmd.Dir).
 		WithField("cmd", cmd.Args).
 		Debug("running")
 
