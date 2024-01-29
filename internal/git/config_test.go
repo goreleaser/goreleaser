@@ -35,6 +35,7 @@ func TestRelativeRemote(t *testing.T) {
 	_, err = git.Run(ctx, "checkout", "--track", "-b", "relative_branch")
 	require.NoError(t, err)
 	gitCfg, err := git.Run(ctx, "config", "--local", "--list")
+	require.NoError(t, err)
 	require.True(t, strings.Contains(gitCfg, "branch.relative_branch.remote=."))
 	repo, err := git.ExtractRepoFromConfig(ctx)
 	require.NoError(t, err)
