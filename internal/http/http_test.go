@@ -243,6 +243,7 @@ func TestUpload(t *testing.T) {
 		{"deb", artifact.LinuxPackage},
 		{"bin", artifact.Binary},
 		{"tar", artifact.UploadableArchive},
+		{"tar.gz", artifact.UploadableSourceArchive},
 		{"ubi", artifact.UploadableBinary},
 		{"sum", artifact.Checksum},
 		{"sig", artifact.Signature},
@@ -298,6 +299,7 @@ func TestUpload(t *testing.T) {
 			checks(
 				check{"/blah/2.1.0/a.deb", "u2", "x", content, map[string]string{}},
 				check{"/blah/2.1.0/a.tar", "u2", "x", content, map[string]string{}},
+				check{"/blah/2.1.0/a.tar.gz", "u2", "x", content, map[string]string{}},
 			),
 		},
 		{
@@ -315,6 +317,7 @@ func TestUpload(t *testing.T) {
 			checks(
 				check{"/blah/2.1.0/a.deb", "u1", "x", content, map[string]string{}},
 				check{"/blah/2.1.0/a.tar", "u1", "x", content, map[string]string{}},
+				check{"/blah/2.1.0/a.tar.gz", "u1", "x", content, map[string]string{}},
 			),
 		},
 		{
@@ -331,6 +334,7 @@ func TestUpload(t *testing.T) {
 			checks(
 				check{"/blah/2.1.0/a.deb", "u1", "x", content, map[string]string{}},
 				check{"/blah/2.1.0/a.tar", "u1", "x", content, map[string]string{}},
+				check{"/blah/2.1.0/a.tar.gz", "u1", "x", content, map[string]string{}},
 			),
 		},
 		{
@@ -347,6 +351,7 @@ func TestUpload(t *testing.T) {
 			checks(
 				check{"/blah/2.1.0/linux/amd64/a.deb", "u1", "x", content, map[string]string{}},
 				check{"/blah/2.1.0/linux/amd64/a.tar", "u1", "x", content, map[string]string{}},
+				check{"/blah/2.1.0/linux/amd64/a.tar.gz", "u1", "x", content, map[string]string{}},
 			),
 		},
 		{
@@ -364,6 +369,7 @@ func TestUpload(t *testing.T) {
 			checks(
 				check{"/blah/2.1.0/a.deb", "u1", "x", content, map[string]string{}},
 				check{"/blah/2.1.0/a.tar", "u1", "x", content, map[string]string{}},
+				check{"/blah/2.1.0/a.tar.gz", "u1", "x", content, map[string]string{}},
 			),
 		},
 		{
@@ -435,6 +441,7 @@ func TestUpload(t *testing.T) {
 			checks(
 				check{"/blah/2.1.0/a.deb", "u3", "x", content, map[string]string{}},
 				check{"/blah/2.1.0/a.tar", "u3", "x", content, map[string]string{}},
+				check{"/blah/2.1.0/a.tar.gz", "u3", "x", content, map[string]string{}},
 				check{"/blah/2.1.0/a.sum", "u3", "x", content, map[string]string{}},
 				check{"/blah/2.1.0/a.sig", "u3", "x", content, map[string]string{}},
 				check{"/blah/2.1.0/a.pem", "u3", "x", content, map[string]string{}},

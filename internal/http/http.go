@@ -169,9 +169,9 @@ func Upload(ctx *context.Context, uploads []config.Upload, kind string, check Re
 		//	- "binary": Upload only the raw binaries
 		switch v := strings.ToLower(upload.Mode); v {
 		case ModeArchive:
-			// TODO: should we add source archives here too?
 			filters = append(filters,
 				artifact.ByType(artifact.UploadableArchive),
+				artifact.ByType(artifact.UploadableSourceArchive),
 				artifact.ByType(artifact.LinuxPackage),
 			)
 		case ModeBinary:
@@ -197,6 +197,9 @@ func Upload(ctx *context.Context, uploads []config.Upload, kind string, check Re
 
 func uploadWithFilter(ctx *context.Context, upload *config.Upload, filter artifact.Filter, kind string, check ResponseChecker) error {
 	artifacts := ctx.Artifacts.Filter(filter).List()
+	if len(artifacts) == 0 {
+		log.Info("no artifacts found")
+	}
 	log.Debugf("will upload %d artifacts", len(artifacts))
 	g := semerrgroup.New(ctx.Parallelism)
 	for _, artifact := range artifacts {
