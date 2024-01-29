@@ -74,7 +74,7 @@ changelog:
       - go mod tidy
   groups:
     - title: Dependency updates
-      regexp: '^.*?(feat|fix)\(deps\)!?:.+$'
+      regexp: '^.*?(feat|fix|chore)\(deps\)!?:.+$'
       order: 300
     - title: "New Features"
       regexp: '^.*?feat(\([[:word:]]+\))??!?:.+$'
@@ -83,13 +83,13 @@ changelog:
       regexp: '^.*?sec(\([[:word:]]+\))??!?:.+$'
       order: 150
     - title: "Bug fixes"
-      regexp: '^.*?fix(\([[:word:]]+\))??!?:.+$'
+      regexp: '^.*?(fix|refactor)(\([[:word:]]+\))??!?:.+$'
       order: 200
     - title: "Documentation updates"
-      regexp: ^.*?doc(\([[:word:]]+\))??!?:.+$
+      regexp: ^.*?docs?(\([[:word:]]+\))??!?:.+$
       order: 400
     - title: "Build process updates"
-      regexp: ^.*?build(\([[:word:]]+\))??!?:.+$
+      regexp: ^.*?(build|ci)(\([[:word:]]+\))??!?:.+$
       order: 400
     - title: Other work
       order: 9999
