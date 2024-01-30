@@ -536,7 +536,7 @@ type BuildDetailsOverride struct {
 }
 
 type BuildDetails struct {
-	Buildmode string      `yaml:"buildmode,omitempty" json:"buildmode,omitempty"`
+	Buildmode string      `yaml:"buildmode,omitempty" json:"buildmode,omitempty" jsonschema:"enum=c-archive,enum=c-shared,enum=,default="`
 	Ldflags   StringArray `yaml:"ldflags,omitempty" json:"ldflags,omitempty"`
 	Tags      FlagArray   `yaml:"tags,omitempty" json:"tags,omitempty"`
 	Flags     FlagArray   `yaml:"flags,omitempty" json:"flags,omitempty"`
@@ -786,8 +786,15 @@ type NFPM struct {
 	Description string   `yaml:"description,omitempty" json:"description,omitempty"`
 	License     string   `yaml:"license,omitempty" json:"license,omitempty"`
 	Bindir      string   `yaml:"bindir,omitempty" json:"bindir,omitempty"`
+	Libdirs     Libdirs  `yaml:"libdirs,omitempty" json:"libdirs,omitempty"`
 	Changelog   string   `yaml:"changelog,omitempty" json:"changelog,omitempty"`
 	Meta        bool     `yaml:"meta,omitempty" json:"meta,omitempty"` // make package without binaries - only deps
+}
+
+type Libdirs struct {
+	Header   string `yaml:"header,omitempty" json:"header,omitempty"`
+	CArchive string `yaml:"carchive,omitempty" json:"carchive,omitempty"`
+	CShared  string `yaml:"cshared,omitempty" json:"cshared,omitempty"`
 }
 
 // NFPMScripts is used to specify maintainer scripts.
