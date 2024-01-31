@@ -218,6 +218,10 @@ func create(ctx *context.Context, fpm config.NFPM, format string, artifacts []*a
 
 	// We cannot use t.ApplyAll on the following fields as they are shared
 	// across multiple nfpms.
+	//
+	t = t.WithExtraFields(tmpl.Fields{
+		"Format": format,
+	})
 
 	debKeyFile, err := t.Apply(overridden.Deb.Signature.KeyFile)
 	if err != nil {

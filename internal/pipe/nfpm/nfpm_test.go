@@ -108,7 +108,7 @@ func TestRunPipe(t *testing.T) {
 
 	}
 	libPrefix := `/usr/lib
-      {{- if eq .Arch "amd64" }}64{{- end -}}
+      {{- if eq .Arch "amd64" }}{{if eq .Format "rpm"}}_rpm{{end}}64{{- end -}}
 	`
 	ctx := testctx.NewWithCfg(config.Project{
 		ProjectName: "mybin",
@@ -439,9 +439,15 @@ func TestRunPipe(t *testing.T) {
 		carchive := "/usr/lib/c-archives"
 		cshared := "/usr/lib/c-shareds"
 		if pkg.Goarch == "amd64" {
-			header = "/usr/lib64/headers"
-			carchive = "/usr/lib64/c-archives"
-			cshared = "/usr/lib64/c-shareds"
+			if pkg.Format() == "rpm" {
+				header = "/usr/lib_rpm64/headers"
+				carchive = "/usr/lib_rpm64/c-archives"
+				cshared = "/usr/lib_rpm64/c-shareds"
+			} else {
+				header = "/usr/lib64/headers"
+				carchive = "/usr/lib64/c-archives"
+				cshared = "/usr/lib64/c-shareds"
+			}
 		}
 		if format == termuxFormat {
 			bin = filepath.Join("/data/data/com.termux/files", bin)

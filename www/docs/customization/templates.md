@@ -121,6 +121,7 @@ In the nFPM name template field, you can use those extra fields:
 | `.PackageName`           | package the name. Same as `ProjectName` if not overridden.      |
 | `.ConventionalFileName`  | conventional package file name as provided by nFPM.[^arm-names] |
 | `.ConventionalExtension` | conventional package extension as provided by nFPM. Since v1.16 |
+| `.Format`                | package format. Since v1.24                                     |
 
 [^arm-names]:
     Please beware: some OSs might have the same names for different
