@@ -209,9 +209,6 @@ func create(ctx *context.Context, fpm config.NFPM, format string, artifacts []*a
 		&fpm.Homepage,
 		&fpm.Description,
 		&fpm.Maintainer,
-		&fpm.Libdirs.Header,
-		&fpm.Libdirs.CShared,
-		&fpm.Libdirs.CArchive,
 		&overridden.Scripts.PostInstall,
 		&overridden.Scripts.PreInstall,
 		&overridden.Scripts.PostRemove,
@@ -239,6 +236,21 @@ func create(ctx *context.Context, fpm config.NFPM, format string, artifacts []*a
 	}
 
 	apkKeyName, err := t.Apply(overridden.APK.Signature.KeyName)
+	if err != nil {
+		return err
+	}
+
+	libdirs := config.Libdirs{}
+
+	libdirs.Header, err = t.Apply(fpm.Libdirs.Header)
+	if err != nil {
+		return err
+	}
+	libdirs.CShared, err = t.Apply(fpm.Libdirs.CShared)
+	if err != nil {
+		return err
+	}
+	libdirs.CArchive, err = t.Apply(fpm.Libdirs.CArchive)
 	if err != nil {
 		return err
 	}
@@ -276,7 +288,7 @@ func create(ctx *context.Context, fpm config.NFPM, format string, artifacts []*a
 	if !fpm.Meta {
 		for _, art := range artifacts {
 			src := art.Path
-			dst := filepath.Join(artifactPackageDir(fpm, art), art.Name)
+			dst := filepath.Join(artifactPackageDir(fpm.Bindir, libdirs, art), art.Name)
 			log.WithField("src", src).
 				WithField("dst", dst).
 				WithField("type", art.Type.String()).
@@ -513,16 +525,16 @@ func termuxPrefixedDir(dir string) string {
 	return filepath.Join("/data/data/com.termux/files", dir)
 }
 
-func artifactPackageDir(fpm config.NFPM, art *artifact.Artifact) string {
+func artifactPackageDir(bindir string, libdirs config.Libdirs, art *artifact.Artifact) string {
 	switch art.Type {
 	case artifact.Binary:
-		return fpm.Bindir
+		return bindir
 	case artifact.Header:
-		return fpm.Libdirs.Header
+		return libdirs.Header
 	case artifact.CShared:
-		return fpm.Libdirs.CShared
+		return libdirs.CShared
 	case artifact.CArchive:
-		return fpm.Libdirs.CArchive
+		return libdirs.CArchive
 	default:
 		// should never happen
 		return ""

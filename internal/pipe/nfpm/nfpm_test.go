@@ -107,6 +107,9 @@ func TestRunPipe(t *testing.T) {
 		require.NoError(t, f.Close())
 
 	}
+	libPrefix := `/usr/lib
+      {{- if eq .Arch "amd64" }}64{{- end -}}
+	`
 	ctx := testctx.NewWithCfg(config.Project{
 		ProjectName: "mybin",
 		Dist:        dist,
@@ -130,9 +133,9 @@ func TestRunPipe(t *testing.T) {
 				Homepage:    "https://goreleaser.com/{{ .Env.PRO }}",
 				Changelog:   "./testdata/changelog.yaml",
 				Libdirs: config.Libdirs{
-					Header:   "/usr/lib/headers",
-					CArchive: "/usr/lib/c-archives",
-					CShared:  "/usr/lib/c-shareds",
+					Header:   libPrefix + "/headers",
+					CArchive: libPrefix + "/c-archives",
+					CShared:  libPrefix + "/c-shareds",
 				},
 				NFPMOverridables: config.NFPMOverridables{
 					FileNameTemplate: defaultNameTemplate + "-{{ .Release }}-{{ .Epoch }}",
@@ -435,6 +438,11 @@ func TestRunPipe(t *testing.T) {
 		header := "/usr/lib/headers"
 		carchive := "/usr/lib/c-archives"
 		cshared := "/usr/lib/c-shareds"
+		if pkg.Goarch == "amd64" {
+			header = "/usr/lib64/headers"
+			carchive = "/usr/lib64/c-archives"
+			cshared = "/usr/lib64/c-shareds"
+		}
 		if format == termuxFormat {
 			bin = filepath.Join("/data/data/com.termux/files", bin)
 			header = filepath.Join("/data/data/com.termux/files", header)
