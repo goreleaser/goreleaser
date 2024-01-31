@@ -53,6 +53,15 @@ func (Pipe) Default(ctx *context.Context) error {
 		if fpm.Bindir == "" {
 			fpm.Bindir = "/usr/bin"
 		}
+		if fpm.Libdirs.Header == "" {
+			fpm.Libdirs.Header = "/usr/include"
+		}
+		if fpm.Libdirs.CShared == "" {
+			fpm.Libdirs.CShared = "/usr/lib"
+		}
+		if fpm.Libdirs.CArchive == "" {
+			fpm.Libdirs.CArchive = "/usr/lib"
+		}
 		if fpm.PackageName == "" {
 			fpm.PackageName = ctx.Config.ProjectName
 		}
@@ -85,7 +94,12 @@ func (Pipe) Run(ctx *context.Context) error {
 
 func doRun(ctx *context.Context, fpm config.NFPM) error {
 	filters := []artifact.Filter{
-		artifact.ByType(artifact.Binary),
+		artifact.Or(
+			artifact.ByType(artifact.Binary),
+			artifact.ByType(artifact.Header),
+			artifact.ByType(artifact.CArchive),
+			artifact.ByType(artifact.CShared),
+		),
 		artifact.Or(
 			artifact.ByGoos("linux"),
 			artifact.ByGoos("ios"),
@@ -139,11 +153,11 @@ func isSupportedTermuxArch(arch string) bool {
 	return false
 }
 
-func create(ctx *context.Context, fpm config.NFPM, format string, binaries []*artifact.Artifact) error {
+func create(ctx *context.Context, fpm config.NFPM, format string, artifacts []*artifact.Artifact) error {
 	// TODO: improve mips handling on nfpm
-	infoArch := binaries[0].Goarch + binaries[0].Goarm + binaries[0].Gomips // key used for the ConventionalFileName et al
-	arch := infoArch + binaries[0].Goamd64                                  // unique arch key
-	infoPlatform := binaries[0].Goos
+	infoArch := artifacts[0].Goarch + artifacts[0].Goarm + artifacts[0].Gomips // key used for the ConventionalFileName et al
+	arch := infoArch + artifacts[0].Goamd64                                    // unique arch key
+	infoPlatform := artifacts[0].Goos
 	if infoPlatform == "ios" {
 		if format == "deb" {
 			infoPlatform = "iphoneos-arm64"
@@ -165,7 +179,10 @@ func create(ctx *context.Context, fpm config.NFPM, format string, binaries []*ar
 		)
 		infoArch = replacer.Replace(infoArch)
 		arch = replacer.Replace(arch)
-		fpm.Bindir = filepath.Join("/data/data/com.termux/files", fpm.Bindir)
+		fpm.Bindir = termuxPrefixedDir(fpm.Bindir)
+		fpm.Libdirs.Header = termuxPrefixedDir(fpm.Libdirs.Header)
+		fpm.Libdirs.CArchive = termuxPrefixedDir(fpm.Libdirs.CArchive)
+		fpm.Libdirs.CShared = termuxPrefixedDir(fpm.Libdirs.CShared)
 	}
 
 	overridden, err := mergeOverrides(fpm, format)
@@ -179,7 +196,7 @@ func create(ctx *context.Context, fpm config.NFPM, format string, binaries []*ar
 	}
 
 	t := tmpl.New(ctx).
-		WithArtifact(binaries[0]).
+		WithArtifact(artifacts[0]).
 		WithExtraFields(tmpl.Fields{
 			"Release":     fpm.Release,
 			"Epoch":       fpm.Epoch,
@@ -222,6 +239,21 @@ func create(ctx *context.Context, fpm config.NFPM, format string, binaries []*ar
 		return err
 	}
 
+	libdirs := config.Libdirs{}
+
+	libdirs.Header, err = t.Apply(fpm.Libdirs.Header)
+	if err != nil {
+		return err
+	}
+	libdirs.CShared, err = t.Apply(fpm.Libdirs.CShared)
+	if err != nil {
+		return err
+	}
+	libdirs.CArchive, err = t.Apply(fpm.Libdirs.CArchive)
+	if err != nil {
+		return err
+	}
+
 	contents := files.Contents{}
 	for _, content := range overridden.Contents {
 		src, err := t.Apply(content.Source)
@@ -253,10 +285,13 @@ func create(ctx *context.Context, fpm config.NFPM, format string, binaries []*ar
 
 	// FPM meta package should not contain binaries at all
 	if !fpm.Meta {
-		for _, binary := range binaries {
-			src := binary.Path
-			dst := filepath.Join(fpm.Bindir, binary.Name)
-			log.WithField("src", src).WithField("dst", dst).Debug("adding binary to package")
+		for _, art := range artifacts {
+			src := art.Path
+			dst := filepath.Join(artifactPackageDir(fpm.Bindir, libdirs, art), art.Name)
+			log.WithField("src", src).
+				WithField("dst", dst).
+				WithField("type", art.Type.String()).
+				Debug("adding artifact to package")
 			contents = append(contents, &files.Content{
 				Source:      filepath.ToSlash(src),
 				Destination: filepath.ToSlash(dst),
@@ -416,11 +451,11 @@ func create(ctx *context.Context, fpm config.NFPM, format string, binaries []*ar
 		Type:    artifact.LinuxPackage,
 		Name:    packageFilename,
 		Path:    path,
-		Goos:    binaries[0].Goos,
-		Goarch:  binaries[0].Goarch,
-		Goarm:   binaries[0].Goarm,
-		Gomips:  binaries[0].Gomips,
-		Goamd64: binaries[0].Goamd64,
+		Goos:    artifacts[0].Goos,
+		Goarch:  artifacts[0].Goarch,
+		Goarm:   artifacts[0].Goarm,
+		Gomips:  artifacts[0].Gomips,
+		Goamd64: artifacts[0].Goamd64,
 		Extra: map[string]interface{}{
 			artifact.ExtraID:     fpm.ID,
 			artifact.ExtraFormat: format,
@@ -480,4 +515,27 @@ func getPassphraseFromEnv(ctx *context.Context, packager string, nfpmID string) 
 	}
 
 	return passphrase
+}
+
+func termuxPrefixedDir(dir string) string {
+	if dir == "" {
+		return ""
+	}
+	return filepath.Join("/data/data/com.termux/files", dir)
+}
+
+func artifactPackageDir(bindir string, libdirs config.Libdirs, art *artifact.Artifact) string {
+	switch art.Type {
+	case artifact.Binary:
+		return bindir
+	case artifact.Header:
+		return libdirs.Header
+	case artifact.CShared:
+		return libdirs.CShared
+	case artifact.CArchive:
+		return libdirs.CArchive
+	default:
+		// should never happen
+		return ""
+	}
 }

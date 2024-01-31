@@ -98,9 +98,18 @@ func TestRunPipe(t *testing.T) {
 	require.NoError(t, os.Mkdir(dist, 0o755))
 	require.NoError(t, os.Mkdir(filepath.Join(dist, "mybin"), 0o755))
 	binPath := filepath.Join(dist, "mybin", "mybin")
-	f, err := os.Create(binPath)
-	require.NoError(t, err)
-	require.NoError(t, f.Close())
+	foohPath := filepath.Join(dist, "foo.h")
+	foosoPath := filepath.Join(dist, "foo.so")
+	fooaPath := filepath.Join(dist, "foo.a")
+	for _, name := range []string{binPath, foosoPath, foohPath, fooaPath} {
+		f, err := os.Create(name)
+		require.NoError(t, err)
+		require.NoError(t, f.Close())
+
+	}
+	libPrefix := `/usr/lib
+      {{- if eq .Arch "amd64" }}64{{- end -}}
+	`
 	ctx := testctx.NewWithCfg(config.Project{
 		ProjectName: "mybin",
 		Dist:        dist,
@@ -113,7 +122,7 @@ func TestRunPipe(t *testing.T) {
 			{
 				ID:          "someid",
 				Bindir:      "/usr/bin",
-				Builds:      []string{"default"},
+				Builds:      []string{"default", "lib1", "lib2", "lib3"},
 				Formats:     []string{"deb", "rpm", "apk", "termux.deb", "archlinux"},
 				Section:     "somesection",
 				Priority:    "standard",
@@ -123,6 +132,11 @@ func TestRunPipe(t *testing.T) {
 				Vendor:      "asdf",
 				Homepage:    "https://goreleaser.com/{{ .Env.PRO }}",
 				Changelog:   "./testdata/changelog.yaml",
+				Libdirs: config.Libdirs{
+					Header:   libPrefix + "/headers",
+					CArchive: libPrefix + "/c-archives",
+					CShared:  libPrefix + "/c-shareds",
+				},
 				NFPMOverridables: config.NFPMOverridables{
 					FileNameTemplate: defaultNameTemplate + "-{{ .Release }}-{{ .Epoch }}",
 					PackageName:      "foo",
@@ -201,6 +215,39 @@ func TestRunPipe(t *testing.T) {
 							artifact.ExtraID: "default",
 						},
 					})
+					ctx.Artifacts.Add(&artifact.Artifact{
+						Name:   "foo.h",
+						Path:   foohPath,
+						Goarch: goarch,
+						Goos:   goos,
+						Goarm:  goarm,
+						Type:   artifact.Header,
+						Extra: map[string]interface{}{
+							artifact.ExtraID: "lib1",
+						},
+					})
+					ctx.Artifacts.Add(&artifact.Artifact{
+						Name:   "foo.so",
+						Path:   foosoPath,
+						Goarch: goarch,
+						Goos:   goos,
+						Goarm:  goarm,
+						Type:   artifact.CShared,
+						Extra: map[string]interface{}{
+							artifact.ExtraID: "lib2",
+						},
+					})
+					ctx.Artifacts.Add(&artifact.Artifact{
+						Name:   "foo.a",
+						Path:   fooaPath,
+						Goarch: goarch,
+						Goos:   goos,
+						Goarm:  goarm,
+						Type:   artifact.CArchive,
+						Extra: map[string]interface{}{
+							artifact.ExtraID: "lib3",
+						},
+					})
 				}
 			case "amd64":
 				for _, goamd64 := range []string{"v1", "v2", "v3", "v4"} {
@@ -213,6 +260,39 @@ func TestRunPipe(t *testing.T) {
 						Type:    artifact.Binary,
 						Extra: map[string]interface{}{
 							artifact.ExtraID: "default",
+						},
+					})
+					ctx.Artifacts.Add(&artifact.Artifact{
+						Name:    "foo.h",
+						Path:    foohPath,
+						Goarch:  goarch,
+						Goos:    goos,
+						Goamd64: goamd64,
+						Type:    artifact.Header,
+						Extra: map[string]interface{}{
+							artifact.ExtraID: "lib1",
+						},
+					})
+					ctx.Artifacts.Add(&artifact.Artifact{
+						Name:    "foo.so",
+						Path:    foosoPath,
+						Goarch:  goarch,
+						Goos:    goos,
+						Goamd64: goamd64,
+						Type:    artifact.CShared,
+						Extra: map[string]interface{}{
+							artifact.ExtraID: "lib2",
+						},
+					})
+					ctx.Artifacts.Add(&artifact.Artifact{
+						Name:    "foo.a",
+						Path:    fooaPath,
+						Goarch:  goarch,
+						Goos:    goos,
+						Goamd64: goamd64,
+						Type:    artifact.CArchive,
+						Extra: map[string]interface{}{
+							artifact.ExtraID: "lib3",
 						},
 					})
 				}
@@ -229,6 +309,39 @@ func TestRunPipe(t *testing.T) {
 							artifact.ExtraID: "default",
 						},
 					})
+					ctx.Artifacts.Add(&artifact.Artifact{
+						Name:   "foo.h",
+						Path:   foohPath,
+						Goarch: goarch,
+						Goos:   goos,
+						Gomips: gomips,
+						Type:   artifact.Header,
+						Extra: map[string]interface{}{
+							artifact.ExtraID: "lib1",
+						},
+					})
+					ctx.Artifacts.Add(&artifact.Artifact{
+						Name:   "foo.so",
+						Path:   foosoPath,
+						Goarch: goarch,
+						Goos:   goos,
+						Gomips: gomips,
+						Type:   artifact.CShared,
+						Extra: map[string]interface{}{
+							artifact.ExtraID: "lib2",
+						},
+					})
+					ctx.Artifacts.Add(&artifact.Artifact{
+						Name:   "foo.a",
+						Path:   fooaPath,
+						Goarch: goarch,
+						Goos:   goos,
+						Gomips: gomips,
+						Type:   artifact.CArchive,
+						Extra: map[string]interface{}{
+							artifact.ExtraID: "lib3",
+						},
+					})
 				}
 			default:
 				ctx.Artifacts.Add(&artifact.Artifact{
@@ -239,6 +352,36 @@ func TestRunPipe(t *testing.T) {
 					Type:   artifact.Binary,
 					Extra: map[string]interface{}{
 						artifact.ExtraID: "default",
+					},
+				})
+				ctx.Artifacts.Add(&artifact.Artifact{
+					Name:   "foo.h",
+					Path:   foohPath,
+					Goarch: goarch,
+					Goos:   goos,
+					Type:   artifact.Header,
+					Extra: map[string]interface{}{
+						artifact.ExtraID: "lib1",
+					},
+				})
+				ctx.Artifacts.Add(&artifact.Artifact{
+					Name:   "foo.so",
+					Path:   foosoPath,
+					Goarch: goarch,
+					Goos:   goos,
+					Type:   artifact.CShared,
+					Extra: map[string]interface{}{
+						artifact.ExtraID: "lib2",
+					},
+				})
+				ctx.Artifacts.Add(&artifact.Artifact{
+					Name:   "foo.a",
+					Path:   fooaPath,
+					Goarch: goarch,
+					Goos:   goos,
+					Type:   artifact.CArchive,
+					Extra: map[string]interface{}{
+						artifact.ExtraID: "lib3",
 					},
 				})
 			}
@@ -286,13 +429,30 @@ func TestRunPipe(t *testing.T) {
 			"./testdata/folder",
 			"./testdata/testfile-" + pkg.Goarch + pkg.Goamd64 + pkg.Goarm + pkg.Gomips + ".txt",
 			binPath,
+			foohPath,
+			fooaPath,
+			foosoPath,
 		}, sources(artifact.ExtraOr(*pkg, extraFiles, files.Contents{})))
 
 		bin := "/usr/bin/subdir/"
+		header := "/usr/lib/headers"
+		carchive := "/usr/lib/c-archives"
+		cshared := "/usr/lib/c-shareds"
+		if pkg.Goarch == "amd64" {
+			header = "/usr/lib64/headers"
+			carchive = "/usr/lib64/c-archives"
+			cshared = "/usr/lib64/c-shareds"
+		}
 		if format == termuxFormat {
 			bin = filepath.Join("/data/data/com.termux/files", bin)
+			header = filepath.Join("/data/data/com.termux/files", header)
+			cshared = filepath.Join("/data/data/com.termux/files", cshared)
+			carchive = filepath.Join("/data/data/com.termux/files", carchive)
 		}
 		bin = filepath.Join(bin, "mybin")
+		header = filepath.Join(header, "foo.h")
+		cshared = filepath.Join(cshared, "foo.so")
+		carchive = filepath.Join(carchive, "foo.a")
 		require.ElementsMatch(t, []string{
 			"/var/log/foobar",
 			"/usr/share/testfile.txt",
@@ -303,6 +463,9 @@ func TestRunPipe(t *testing.T) {
 			"/etc/nope3_mybin.conf",
 			"/etc/folder",
 			bin,
+			header,
+			carchive,
+			cshared,
 		}, destinations(artifact.ExtraOr(*pkg, extraFiles, files.Contents{})))
 	}
 	require.Len(t, ctx.Config.NFPMs[0].Contents, 8, "should not modify the config file list")

@@ -94,8 +94,26 @@ nfpms:
       - fish
 
     # Path that the binaries should be installed.
+    #
     # Default: '/usr/bin'
     bindir: /usr/bin
+
+    # Paths to the directories where to put specific types of libraries that
+    # GoReleaser built.
+    #
+    # This should be used together with `builds.buildmode`
+    #
+    # Since: v1.24.
+    # Templates: allowed
+    libdirs:
+      # Default: '/usr/include'
+      headers: /usr/include/something
+
+      # Default: '/usr/lib'
+      cshared: /usr/lib/foo
+
+      # Default: '/usr/lib'
+      carchive: /usr/lib/foobar
 
     # Version Epoch.
     # Default: extracted from `version` if it is semver compatible

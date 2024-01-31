@@ -261,13 +261,13 @@
 					"region": {
 						"type": "string"
 					},
-					"disableSSL": {
+					"disable_ssl": {
 						"type": "boolean"
 					},
 					"folder": {
 						"type": "string"
 					},
-					"kmskey": {
+					"kms_key": {
 						"type": "string"
 					},
 					"ids": {
@@ -294,6 +294,29 @@
 								"type": "boolean"
 							}
 						]
+					},
+					"s3_force_path_style": {
+						"type": "boolean"
+					},
+					"acl": {
+						"type": "string"
+					},
+					"cache_control": {
+						"items": {
+							"type": "string"
+						},
+						"type": "array"
+					},
+					"content_disposition": {
+						"type": "string"
+					},
+					"disableSSL": {
+						"type": "boolean",
+						"description": "use disable_ssl instead"
+					},
+					"kmskey": {
+						"type": "string",
+						"description": "use kms_key instead"
 					}
 				},
 				"additionalProperties": false,
@@ -380,7 +403,13 @@
 						"type": "boolean"
 					},
 					"buildmode": {
-						"type": "string"
+						"type": "string",
+						"enum": [
+							"c-archive",
+							"c-shared",
+							""
+						],
+						"default": ""
 					},
 					"ldflags": {
 						"$ref": "#/$defs/StringArray"
@@ -438,7 +467,13 @@
 						"type": "string"
 					},
 					"buildmode": {
-						"type": "string"
+						"type": "string",
+						"enum": [
+							"c-archive",
+							"c-shared",
+							""
+						],
+						"default": ""
 					},
 					"ldflags": {
 						"$ref": "#/$defs/StringArray"
@@ -491,7 +526,7 @@
 						],
 						"default": ""
 					},
-					"skip": {
+					"disable": {
 						"oneOf": [
 							{
 								"type": "string"
@@ -519,6 +554,17 @@
 					},
 					"abbrev": {
 						"type": "integer"
+					},
+					"skip": {
+						"oneOf": [
+							{
+								"type": "string"
+							},
+							{
+								"type": "boolean"
+							}
+						],
+						"description": "use disable instead"
 					}
 				},
 				"additionalProperties": false,
@@ -1499,6 +1545,21 @@
 				"additionalProperties": false,
 				"type": "object"
 			},
+			"Libdirs": {
+				"properties": {
+					"header": {
+						"type": "string"
+					},
+					"carchive": {
+						"type": "string"
+					},
+					"cshared": {
+						"type": "string"
+					}
+				},
+				"additionalProperties": false,
+				"type": "object"
+			},
 			"LinkedIn": {
 				"properties": {
 					"enabled": {
@@ -1698,6 +1759,9 @@
 					},
 					"bindir": {
 						"type": "string"
+					},
+					"libdirs": {
+						"$ref": "#/$defs/Libdirs"
 					},
 					"changelog": {
 						"type": "string"
