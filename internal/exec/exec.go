@@ -86,7 +86,6 @@ func executePublisher(ctx *context.Context, publisher config.Publisher) error {
 
 func executeCommand(c *command, artifact *artifact.Artifact) error {
 	log.WithField("args", c.Args).
-		WithField("env", c.Env).
 		WithField("artifact", artifact.Name).
 		Debug("executing command")
 

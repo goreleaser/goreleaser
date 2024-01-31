@@ -18,7 +18,6 @@ import (
 func Run(ctx *context.Context, dir string, command, env []string, output bool) error {
 	log := log.
 		WithField("cmd", command).
-		WithField("env", env).
 		WithField("dir", dir)
 
 	/* #nosec */
