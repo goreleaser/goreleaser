@@ -114,8 +114,7 @@ func (c client) getProfileSub() (string, error) {
 	defer resp.Body.Close()
 
 	var result map[string]interface{}
-	err = json.Unmarshal(value, &result)
-	if err != nil {
+	if err := json.Unmarshal(value, &result); err != nil {
 		return "", fmt.Errorf("could not unmarshal: %w", err)
 	}
 
@@ -123,7 +122,7 @@ func (c client) getProfileSub() (string, error) {
 		return v.(string), nil
 	}
 
-	return "", fmt.Errorf("could not find 'sub' in result: %w", err)
+	return "", fmt.Errorf("could not find 'sub' in result: %v", result)
 }
 
 // Person or Organization URN - urn:li:person:PROFILE_IDENTIFIER
