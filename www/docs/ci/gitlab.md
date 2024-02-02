@@ -14,15 +14,15 @@ variable should be masked and optionally protected if the job will only run on
 protected branches and tags.
 
 !!! warning
-    If you use a project access token, make sure to set `use_package_registry`
-    to `true` as well, otherwise it might not work.
+If you use a project access token, make sure to set `use_package_registry`
+to `true` as well, otherwise it might not work.
 
 !!! warning
-    If you are using a [protected variable](https://docs.gitlab.com/ee/ci/variables/#protected-cicd-variables)
-    to store any of the values needed by goreleaser, ensure that you are protecting the tags as CI jobs in
-    Gitlab only may access protected variables if the job is run for protected refs
-    ([branches](https://docs.gitlab.com/ee/user/project/protected_branches.html),
-    [tags](https://docs.gitlab.com/ee/user/project/protected_tags.html)).
+If you are using a [protected variable](https://docs.gitlab.com/ee/ci/variables/#protected-cicd-variables)
+to store any of the values needed by goreleaser, ensure that you are protecting the tags as CI jobs in
+Gitlab only may access protected variables if the job is run for protected refs
+([branches](https://docs.gitlab.com/ee/user/project/protected_branches.html),
+[tags](https://docs.gitlab.com/ee/user/project/protected_tags.html)).
 
 See [Quick Start](https://goreleaser.com/quick-start/) for more information on
 GoReleaser's environment variables.
@@ -37,7 +37,7 @@ release:
   stage: release
   image:
     name: goreleaser/goreleaser
-    entrypoint: ['']
+    entrypoint: [""]
   only:
     - tags
   variables:
@@ -92,13 +92,17 @@ release:
 
   script: |
     # GITLAB_TOKEN is needed to create GitLab releases.
+    # CI_JOB_TOKEN is needed if use_job_token is set.
     # DOCKER_* are needed to push Docker images.
     docker run --rm --privileged \
       -v $PWD:/go/src/gitlab.com/YourGitLabUser/YourGitLabRepo \
       -w /go/src/gitlab.com/YourGitLabUser/YourGitLabRepo \
       -v /var/run/docker.sock:/var/run/docker.sock \
-      -e DOCKER_USERNAME -e DOCKER_PASSWORD -e DOCKER_REGISTRY  \
+      -e DOCKER_USERNAME \
+      -e DOCKER_PASSWORD \
+      -e DOCKER_REGISTRY \
       -e GITLAB_TOKEN \
+      -e CI_JOB_TOKEN \
       goreleaser/goreleaser release --clean
 ```
 
@@ -134,12 +138,11 @@ Example:
 
 ```yaml
 dockers:
--
-  goos: linux
-  goarch: amd64
-  image_templates:
-  - 'registry.gitlab.com/Group/Project:{{ .Tag }}'
-  - 'registry.gitlab.com/Group/Project:latest'
+  - goos: linux
+    goarch: amd64
+    image_templates:
+      - "registry.gitlab.com/Group/Project:{{ .Tag }}"
+      - "registry.gitlab.com/Group/Project:latest"
 ```
 
 ## Example Repository
