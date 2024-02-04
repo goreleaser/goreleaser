@@ -20,7 +20,7 @@
           vendorHash = "sha256-wY3kIhNIqTaK9MT1VeePERNhqvbtf6bsyRTjG8nrqxU=";
         };
 
-        devShells.default = pkgs.mkShell {
+        devShells.default = pkgs.mkShellNoCC {
           packages = with pkgs; [
             go
             go-task
@@ -33,7 +33,7 @@
           shellHook = "go mod tidy";
         };
 
-        devShells.docs = pkgs.mkShell {
+        devShells.docs = pkgs.mkShellNoCC {
           packages = with pkgs; with staging-pkgs.python311Packages; [
             go-task
             htmltest
