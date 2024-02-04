@@ -54,36 +54,37 @@ Then we can start the server and listen on port 8080.
 package main
 
 import (
-  "log"
-  "net/http"
-  "os"
-  "strings"
-  "github.com/gorilla/mux"
+	"log"
+	"net/http"
+	"os"
+	"strings"
+
+	"github.com/gorilla/mux"
 )
 
 const (
-  // Port is the port the server will listen on
-  Port = "8080"
+	// Port is the port the server will listen on
+	Port = "8080"
 )
 
 func HelloWorldHandler(w http.ResponseWriter, r *http.Request) {
-  w.Write([]byte("Hello World!"))
+	w.Write([]byte("Hello World!"))
 }
 
 func main() {
-  r := mux.NewRouter()
-  r.HandleFunc("/", HelloWorldHandler)
-  port := os.Getenv("PORT")
-  if port == "" {
-    port = Port
-  }
-  for _, env := range os.Environ() {
-    if strings.HasPrefix(env, "TEST") {
-      log.Printf("%s", env)
-    }
-  }
-  log.Println("Listening on port " + port)
-  log.Fatal(http.ListenAndServe(":"+port, r))
+	r := mux.NewRouter()
+	r.HandleFunc("/", HelloWorldHandler)
+	port := os.Getenv("PORT")
+	if port == "" {
+		port = Port
+	}
+	for _, env := range os.Environ() {
+		if strings.HasPrefix(env, "TEST") {
+			log.Printf("%s", env)
+		}
+	}
+	log.Println("Listening on port " + port)
+	log.Fatal(http.ListenAndServe(":"+port, r))
 }
 ```
 
@@ -204,7 +205,7 @@ az acr show --resource-group goreleaser-rg --name mygoreleaserregistry --query l
 This is the new part we need to add to our `goreleaser.yaml,` to activate the build of the container image and manifest.
 
 If you want to know more about the manifest files, I wrote an article about it
-[here](https://blog.goreleaser.com/goreleaser-and-docker-manifests-9fe167acf21e)
+[here](/blog/docker-manifests).
 
 ```yaml
 ---

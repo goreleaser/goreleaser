@@ -22,7 +22,7 @@ Together, they provide a robust defense against the growing threats posed by mal
 
 GoReleaser takes the ever-growing risks in the realm of software supply chain security incredibly seriously. From the onset of this era of heightened security concerns, GoReleaser has been at the forefront, continuously adding features to safeguard your artifacts against potential software supply chain attacks such as [generating an SBOMs](https://goreleaser.com/customization/sbom/), [signing your artifacts](https://goreleaser.com/customization/docker_sign/), and more.
 
-> _If you want to learn more about the general software supply chain security features supported by GoReleaser, check out our [blog post](https://blog.goreleaser.com/goreleaser-and-software-supply-chain-security-e8917b26924b/) on the topic._
+> _If you want to learn more about the general software supply chain security features supported by GoReleaser, check out our [blog post](/blog/supply-chain-security/) on the topic._
 
 In this blog post, we will explore how GoReleaser can help you generate SLSA provenance for your artifacts and how you can leverage the slsa-github-generator to automate the process.
 
@@ -55,7 +55,6 @@ We said artifacts a lot, but what are artifacts really? In the context of this b
 Let's take a look at the `.goreleaser.yml` file of our demo project:
 
 ```yaml
-
 ---
 builds:
   - env:
@@ -100,7 +99,6 @@ It's important to understand reusable workflows since the slsa-github-generator 
 Let's have a first look at the GitHub workflow file that we will use to generate SLSA provenance for our artifacts:
 
 ```yaml
-
 ---
 binary-provenance:
   needs: [goreleaser]

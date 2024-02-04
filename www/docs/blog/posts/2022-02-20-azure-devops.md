@@ -366,8 +366,7 @@ You will find the artefacts on the pipeline detail
 Of course, you can use other targets too, like a cloud native storage.
 
 You can check out the
-[How to use GoReleaser with Cloud Native
-Storage](https://blog.goreleaser.com/how-to-use-goreleaser-with-cloud-native-storage-bbc4bee5fe91)
+[How to use GoReleaser with Cloud Native Storage](/blog/cloud-native-storage)
 post for more details on this subject
 
 ### Release the kraken äh app!

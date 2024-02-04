@@ -45,7 +45,7 @@ Here's to safer internet in the future!
 
 ### **Houston, we have a blog!**
 
-We now have an official [blog](https://blog.goreleaser.com)!
+We now have an official [blog](https://goreleaser.com/blog)!
 
 Before I was [posting everything here in my personal blog](https://carlosbecker.com/tags/goreleaser/), and will likely still post some things here, but here the idea is to collaborate with all GoReleaser contributors to post news in the _official blog_.
 

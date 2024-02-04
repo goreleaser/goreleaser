@@ -33,7 +33,9 @@ It is a super user-friendly, easy-to-use, go-to CLI tool and also provides
 CI-friendly. It also includes a bunch of features for mitigating the risks of
 the software supply chain attacks, such as [generating
 SBOMs](/customization/sbom), [signing the artifacts](/customization/sign), and
-many others. To get more detail, here is the [blog post](https://blog.goreleaser.com/goreleaser-and-software-supply-chain-security-e8917b26924b) for you.
+many others.
+To get more detail, here is the [blog post](/blog/supply-chain-security) for
+you.
 
 On the other hand, [ko][] is specifically designed for building and publishing
 container images for Go projects. But the utmost vital features in ko are that
