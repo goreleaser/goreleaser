@@ -54,14 +54,17 @@ signs:
 
     # Which artifacts to sign
     #
-    #   all:      all artifacts
-    #   none:     no signing
-    #   checksum: only checksum file(s)
-    #   source:   source archive
-    #   package:  linux packages (deb, rpm, apk)
-    #   archive:  archives from archive pipe
-    #   binary:   binaries if archiving format is set to binary
-    #   sbom:     any Software Bill of Materials generated for other artifacts
+    # Valid options are:
+    # - none        no signing
+    # - all:        all artifacts
+    # - checksum:   checksum files
+    # - source:     source archive
+    # - package:    Linux packages (deb, rpm, apk, etc)
+    # - installer:  Windows MSI installers (Pro only)
+    # - diskimage:  macOS DMG disk images (Pro only)
+    # - archive:    archives from archive pipe
+    # - binary:     binaries output from the build stage
+    # - sbom:       any SBOMs generated for other artifacts
     #
     # Default: 'none'
     artifacts: all

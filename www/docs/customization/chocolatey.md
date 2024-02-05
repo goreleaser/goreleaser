@@ -45,6 +45,16 @@ chocolateys:
     # It is a required field.
     project_url: https://example.com/
 
+    # Which format to use.
+    #
+    # Valid options are:
+    # - 'msi':     msi installers (requires the MSI pipe configured, Pro only)
+    # - 'archive': archives (only if format is zip),
+    #
+    # Default: 'archive'
+    # Since: v1.24 (pro)
+    use: msi
+
     # URL which is determined by the given Token (github,
     # gitlab or gitea).
     #

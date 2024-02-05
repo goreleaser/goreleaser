@@ -436,7 +436,13 @@
 						"type": "boolean"
 					},
 					"buildmode": {
-						"type": "string"
+						"type": "string",
+						"enum": [
+							"c-archive",
+							"c-shared",
+							""
+						],
+						"default": ""
 					},
 					"ldflags": {
 						"$ref": "#/$defs/StringArray"
@@ -497,7 +503,13 @@
 						"type": "string"
 					},
 					"buildmode": {
-						"type": "string"
+						"type": "string",
+						"enum": [
+							"c-archive",
+							"c-shared",
+							""
+						],
+						"default": ""
 					},
 					"ldflags": {
 						"$ref": "#/$defs/StringArray"
@@ -597,7 +609,7 @@
 								"type": "boolean"
 							}
 						],
-						"description": "use disable_disable instead"
+						"description": "use disable instead"
 					}
 				},
 				"additionalProperties": false,
@@ -751,6 +763,14 @@
 					},
 					"goamd64": {
 						"type": "string"
+					},
+					"use": {
+						"type": "string",
+						"enum": [
+							"archive",
+							"msi"
+						],
+						"default": "archive"
 					}
 				},
 				"additionalProperties": false,
@@ -841,6 +861,42 @@
 					"$ref": "#/$defs/Content"
 				},
 				"type": "array"
+			},
+			"DMG": {
+				"properties": {
+					"id": {
+						"type": "string"
+					},
+					"name": {
+						"type": "string"
+					},
+					"ids": {
+						"items": {
+							"type": "string"
+						},
+						"type": "array"
+					},
+					"goamd64": {
+						"type": "string"
+					},
+					"extra_files": {
+						"items": {
+							"type": "string"
+						},
+						"type": "array"
+					},
+					"replace": {
+						"type": "boolean"
+					},
+					"mod_timestamp": {
+						"type": "string"
+					}
+				},
+				"additionalProperties": false,
+				"type": "object",
+				"required": [
+					"name"
+				]
 			},
 			"Discord": {
 				"properties": {
@@ -1408,6 +1464,9 @@
 						},
 						"type": "array"
 					},
+					"app": {
+						"type": "string"
+					},
 					"tap": {
 						"$ref": "#/$defs/RepoRef",
 						"description": "use repository instead"
@@ -1760,6 +1819,21 @@
 				"additionalProperties": false,
 				"type": "object"
 			},
+			"Libdirs": {
+				"properties": {
+					"header": {
+						"type": "string"
+					},
+					"carchive": {
+						"type": "string"
+					},
+					"cshared": {
+						"type": "string"
+					}
+				},
+				"additionalProperties": false,
+				"type": "object"
+			},
 			"LinkedIn": {
 				"properties": {
 					"enabled": {
@@ -1771,6 +1845,46 @@
 				},
 				"additionalProperties": false,
 				"type": "object"
+			},
+			"MSI": {
+				"properties": {
+					"id": {
+						"type": "string"
+					},
+					"name": {
+						"type": "string"
+					},
+					"wxs": {
+						"type": "string"
+					},
+					"ids": {
+						"items": {
+							"type": "string"
+						},
+						"type": "array"
+					},
+					"goamd64": {
+						"type": "string"
+					},
+					"extra_files": {
+						"items": {
+							"type": "string"
+						},
+						"type": "array"
+					},
+					"replace": {
+						"type": "boolean"
+					},
+					"mod_timestamp": {
+						"type": "string"
+					}
+				},
+				"additionalProperties": false,
+				"type": "object",
+				"required": [
+					"name",
+					"wxs"
+				]
 			},
 			"Mastodon": {
 				"properties": {
@@ -1986,6 +2100,9 @@
 					},
 					"bindir": {
 						"type": "string"
+					},
+					"libdirs": {
+						"$ref": "#/$defs/Libdirs"
 					},
 					"changelog": {
 						"type": "string"
@@ -2508,6 +2625,18 @@
 						},
 						"type": "array"
 					},
+					"msi": {
+						"items": {
+							"$ref": "#/$defs/MSI"
+						},
+						"type": "array"
+					},
+					"dmg": {
+						"items": {
+							"$ref": "#/$defs/DMG"
+						},
+						"type": "array"
+					},
 					"aurs": {
 						"items": {
 							"$ref": "#/$defs/AUR"
@@ -3025,9 +3154,10 @@
 						"enum": [
 							"source",
 							"package",
+							"diskimage",
+							"installer",
 							"archive",
 							"binary",
-							"any",
 							"any"
 						],
 						"default": "archive"
@@ -3159,6 +3289,14 @@
 					"goamd64": {
 						"type": "string"
 					},
+					"use": {
+						"type": "string",
+						"enum": [
+							"archive",
+							"msi"
+						],
+						"default": "archive"
+					},
 					"bucket": {
 						"$ref": "#/$defs/RepoRef",
 						"description": "use repository instead"
@@ -3195,7 +3333,9 @@
 							"package",
 							"archive",
 							"binary",
-							"sbom"
+							"sbom",
+							"installer",
+							"diskimage"
 						]
 					},
 					"ids": {
@@ -4019,6 +4159,17 @@
 							"$ref": "#/$defs/WingetDependency"
 						},
 						"type": "array"
+					},
+					"product_code": {
+						"type": "string"
+					},
+					"use": {
+						"type": "string",
+						"enum": [
+							"archive",
+							"binary",
+							"msi"
+						]
 					}
 				},
 				"additionalProperties": false,

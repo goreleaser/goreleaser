@@ -182,8 +182,8 @@ builds:
     command: test
 
     # Set the modified timestamp on the output binary, typically
-    # you would do this to ensure a build was reproducible. Pass
-    # empty string to skip modifying the output.
+    # you would do this to ensure a build was reproducible.
+    # Pass an empty string to skip modifying the output.
     #
     # Templates: allowed.
     mod_timestamp: "{{ .CommitTimestamp }}"
