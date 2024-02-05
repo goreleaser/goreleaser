@@ -7,8 +7,8 @@ authors: [caarlos0]
 
 # Announcing GoReleaser v1.24 - the first of 2024
 
-The first release of 2024 comes in hot!
-Let's learn what's new.
+Happy new year!
+The first release of 2024 is here!
 
 <!-- more -->
 
@@ -51,12 +51,12 @@ full release notes and download the pre-compiled binaries [here][oss-rel] and
 
 ## Helping out
 
-You can help by contributing features and bug fixes, or by donating.
-You may also be interested in buying a GoReleaser Pro license.
+You can help by reporting issues, contributing features, documentation
+improvements, and bug fixes.
+You can also [sponsor the project](/sponsor), or get a
+[GoReleaser Pro licence][pro].
 
-You can find out more [here](https://goreleaser.com/sponsors/).
-
-[pro]: https://goreleaser.com/pro
+[pro]: /pro
 [install]: https://goreleaser.com/install
 [pro-rel]: https://github.com/goreleaser/goreleaser-pro/releases/tag/v1.24.0-pro
 [oss-rel]: https://github.com/goreleaser/goreleaser/releases/tag/v1.24.0
