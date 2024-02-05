@@ -61,6 +61,7 @@ var validLicenses = []string{
 	"cc-by-sa-20",
 	"cc-by-sa-25",
 	"cc-by-10",
+	"cc-by-20",
 	"cc-by-30",
 	"cc-by-sa-30",
 	"cc-by-40",
