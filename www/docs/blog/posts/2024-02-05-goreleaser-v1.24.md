@@ -53,7 +53,7 @@ full release notes and download the pre-compiled binaries [here][oss-rel] and
 
 You can help by reporting issues, contributing features, documentation
 improvements, and bug fixes.
-You can also [sponsor the project](/sponsor), or get a
+You can also [sponsor the project](/sponsors), or get a
 [GoReleaser Pro licence][pro].
 
 [pro]: /pro
