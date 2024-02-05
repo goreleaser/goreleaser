@@ -21,7 +21,8 @@ generate() {
 		curl \
 			-H "Authorization: Bearer $GITHUB_TOKEN" \
 			-sSf "$url?page=$page" |
-			jq 'map({tag_name: .tag_name})' >"$tmp/$i.json"
+			jq 'map({tag_name: .tag_name}) | [.[] | select(.tag_name != "nightly")]' >"$tmp/$i.json"
+
 	done
 
 	jq -s 'add' "$tmp"/*.json >"$file"
