@@ -3,9 +3,9 @@
 GoReleaser Pro is a paid, closed-source GoReleaser distribution with some
 additional features:
 
-- [x] create [macOS disk images (DMGs)](/customization/dmg);
-- [x] create [Windows installers](/customization/msi);
-- [x] `goreleaser release --single-target` to build the whole pipeline for a
+- [x] Create [macOS disk images (DMGs)](/customization/dmg);
+- [x] Create [Windows installers](/customization/msi);
+- [x] Use `goreleaser release --single-target` to build the whole pipeline for a
       single architecture locally;
 - [x] Check boxes in pull request templates;
 - [x] [Template entire files](/customization/templatefiles) and add them to the
