@@ -33,6 +33,16 @@ scoops:
     # In short, it's generally better to leave this empty.
     folder: Scoops
 
+    # Which format to use.
+    #
+    # Valid options are:
+    # - 'msi':     msi installers (requires the MSI pipe configured, Pro only)
+    # - 'archive': archives (only if format is zip),
+    #
+    # Default: 'archive'
+    # Since: v1.24 (pro)
+    use: msi
+
     # Git author used to commit to the repository.
     commit_author:
       name: goreleaserbot
@@ -77,13 +87,13 @@ scoops:
 
     # An array of dependencies.
     #
-    # Since GoReleaser v1.16
+    # Since: v1.16
     depends: ["git", "foo"]
 
     # A two-dimensional array of string, specifies the shortcut values to make available in the startmenu.
     # The array has to contain an executable/label pair. The third and fourth element are optional.
     #
-    # Since GoReleaser v1.17.0.
+    # Since: v1.17
     shortcuts: [["drumroll.exe", "drumroll"]]
 
     # GOAMD64 to specify which amd64 version to use if there are multiple versions

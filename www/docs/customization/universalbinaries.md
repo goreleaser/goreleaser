@@ -9,7 +9,7 @@ Here's how to use it:
 ```yaml
 # .goreleaser.yaml
 universal_binaries:
-  - # ID of resulting universal binary.
+  - # ID of the resulting universal binary.
     #
     # Default: the project name
     id: foo
@@ -31,13 +31,13 @@ universal_binaries:
     name_template: "{{.ProjectName}}_{{.Version}}"
 
     # Whether to remove the previous single-arch binaries from the artifact list.
-    # If left as false, your end release might have both several macOS archives:
-    # amd64, arm64 and all.
+    # If left as false, your end release might have as much as three
+    # archives for macOS: 'amd64', 'arm64' and 'all'.
     replace: true
 
     # Set the modified timestamp on the output binary, typically
-    # you would do this to ensure a build was reproducible. Pass
-    # empty string to skip modifying the output.
+    # you would do this to ensure a build was reproducible.
+    # Pass an empty string to skip modifying the output.
     #
     # Templates: allowed.
     # Since: v1.20

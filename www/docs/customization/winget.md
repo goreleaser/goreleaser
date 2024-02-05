@@ -57,11 +57,30 @@ winget:
       - foo
       - bar
 
+    # Which format to use.
+    #
+    # Valid options are:
+    # - '':        archives or binaries
+    # - 'msi':     msi installers (requires the MSI pipe configured, Pro only)
+    # - 'archive': archives (only if format is zip),
+    # - 'binary':  binaries
+    #
+    # Default: ''
+    # Since: v1.24 (pro)
+    use: msi
+
     # GOAMD64 to specify which amd64 version to use if there are multiple
     # versions from the build section.
     #
     # Default: v1
     goamd64: v1
+
+    # Product code to be used.
+    #
+    # Usually needed when `use: msi`.
+    #
+    # Since: v1.24 (pro)
+    product_code: AAAA-BBB-CCC-DDD-EEEFFF
 
     # URL which is determined by the given Token (github, gitlab or gitea).
     #

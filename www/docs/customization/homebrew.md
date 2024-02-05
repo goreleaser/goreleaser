@@ -37,6 +37,11 @@ brews:
     - foo
     - bar
 
+    # Sets the app file within a DMG.
+    #
+    # Since: 1.24 (pro)
+    app: MyApp.app
+
     # GOARM to specify which 32-bit arm version to use if there are multiple
     # versions from the build section. Brew formulas support only one 32-bit
     # version.
