@@ -14,22 +14,22 @@ Let's learn what's new.
 
 ## Highlights
 
-- security: goreleaser would log environment variables in some configurations
-  when run with `--verbose`. Note that we only recommend using the
-  `--verbose` flag locally, to debug possible issues.
+- **security**: goreleaser would log environment variables in some
+  configurations when run with `--verbose`. Note that we only recommend using
+  the `--verbose` flag locally, to debug possible issues.
   [CVE-2024-23840](https://nvd.nist.gov/vuln/detail/CVE-2024-23840)
-- new: create DMG images (with `hdutil`/`mkisofs`) (only on [Pro][pro])
-- new: create MSI installers (with `wix`/`msitools`) (only on [Pro][pro])
-- blog: we fully migrated our blog from Medium to [mkdocs](/blog)
-- git: options to ignore tag prefixes (only on [Pro][pro])
-- blob: ACLs, cache control, and content disposition
-- nfpm: add libraries to packages
-- artifactory: allow to publish source archives
-- brew: improve handling of single OS
-- nix: improved generated derivations, use `stdenvNoCC` by default
-- jsonschema: we now validate our jsonschema every time it changes to make sure
-  it is still valid
-- deprecations: we deprecated some options in the `changelog` and `blobs`
+- **new**: create DMG images (with `hdutil`/`mkisofs`) (only on [Pro][pro])
+- **new**: create MSI installers (with `wix`/`msitools`) (only on [Pro][pro])
+- **blog**: we fully migrated our blog from Medium to [mkdocs](/blog)
+- **git**: options to ignore tag prefixes (only on [Pro][pro])
+- **blob**: ACLs, cache control, and content disposition
+- **nfpm**: add libraries to packages
+- **artifactory**: allow to publish source archives
+- **brew**: improve handling of single OS
+- **nix**: improved generated derivations, use `stdenvNoCC` by default
+- **jsonschema**: we now validate our jsonschema every time it changes to make
+  sure it is still valid
+- **deprecations**: we deprecated some options in the `changelog` and `blobs`
   sections. [Details](/deprecations)
 
 As always, bug fixes, dependency updates, housekeeping, and documentation
