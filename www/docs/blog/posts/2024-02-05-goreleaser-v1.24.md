@@ -20,13 +20,14 @@ The first release of 2024 is here!
   [CVE-2024-23840](https://nvd.nist.gov/vuln/detail/CVE-2024-23840)
 - **new**: create DMG images (with `hdutil`/`mkisofs`) (only on [Pro][pro])
 - **new**: create MSI installers (with `wix`/`msitools`) (only on [Pro][pro])
-- **blog**: we fully migrated our blog from Medium to [mkdocs](/blog)
 - **git**: options to ignore tag prefixes (only on [Pro][pro])
+- **blog**: we fully migrated our blog from Medium to [mkdocs](/blog)
 - **blob**: ACLs, cache control, and content disposition
 - **nfpm**: add libraries to packages
 - **artifactory**: allow to publish source archives
 - **brew**: improve handling of single OS
 - **nix**: improved generated derivations, use `stdenvNoCC` by default
+- **templates**: new fields added, `.GitTreeState`, `.IsGitClean`, `.Format`
 - **jsonschema**: we now validate our jsonschema every time it changes to make
   sure it is still valid
 - **deprecations**: we deprecated some options in the `changelog` and `blobs`
