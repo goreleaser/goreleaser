@@ -466,7 +466,7 @@ func dataFor(ctx *context.Context, cfg config.Homebrew, cl client.ReleaseURLTemp
 }
 
 func lessFnFor(list []releasePackage) func(i, j int) bool {
-	return func(i, j int) bool { return list[i].OS > list[j].OS && list[i].Arch > list[j].Arch }
+	return func(i, j int) bool { return list[i].Arch < list[j].Arch }
 }
 
 func split(s string) []string {
