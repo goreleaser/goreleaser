@@ -26,6 +26,7 @@ release:
     - bar
 
   # If set to true, will not auto-publish the release.
+  # Note: all GitHub releases start as drafts while artifacts are uploaded.
   # Available only for GitHub and Gitea.
   draft: true
 
@@ -288,6 +289,10 @@ release:
 
   # You can disable this pipe in order to not upload any artifacts.
   disable: true
+
+  # If set to true, will not auto-publish the release.
+  # Available only for GitHub and Gitea.
+  draft: true
 
   # What to do with the release notes in case there the release already exists.
   #

@@ -354,10 +354,12 @@ func (c *githubClient) CreateRelease(ctx *context.Context, body string) (string,
 	body = truncateReleaseBody(body)
 
 	data := &github.RepositoryRelease{
-		Name:       github.String(title),
-		TagName:    github.String(ctx.Git.CurrentTag),
-		Body:       github.String(body),
-		Draft:      github.Bool(ctx.Config.Release.Draft),
+		Name:    github.String(title),
+		TagName: github.String(ctx.Git.CurrentTag),
+		Body:    github.String(body),
+		// Always start with a draft release while uploading artifacts.
+		// PublishRelease will undraft it.
+		Draft:      github.Bool(true),
 		Prerelease: github.Bool(ctx.PreRelease),
 		MakeLatest: github.String("true"),
 	}
@@ -386,6 +388,19 @@ func (c *githubClient) CreateRelease(ctx *context.Context, body string) (string,
 	}
 
 	return strconv.FormatInt(release.GetID(), 10), nil
+}
+
+func (c *githubClient) PublishRelease(ctx *context.Context, releaseID string) (err error) {
+	releaseIDInt, err := strconv.ParseInt(releaseID, 10, 64)
+	if err != nil {
+		return fmt.Errorf("non-numeric release ID %q: %w", releaseID, err)
+	}
+	if _, err := c.updateRelease(ctx, releaseIDInt, &github.RepositoryRelease{
+		Draft: github.Bool(ctx.Config.Release.Draft),
+	}); err != nil {
+		return fmt.Errorf("could not update existing release: %w", err)
+	}
+	return nil
 }
 
 func (c *githubClient) createOrUpdateRelease(ctx *context.Context, data *github.RepositoryRelease, body string) (*github.RepositoryRelease, error) {
