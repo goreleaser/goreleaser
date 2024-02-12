@@ -149,7 +149,7 @@ func TestRun(t *testing.T) {
 		UniversalBinaries: []config.UniversalBinary{
 			{
 				ID:           "notfoo",
-				IDs:          []string{"notfoo"},
+				IDs:          []string{"notfoo", "notbar"},
 				NameTemplate: "notfoo",
 			},
 		},
@@ -294,7 +294,7 @@ func TestRun(t *testing.T) {
 	})
 
 	t.Run("no darwin builds", func(t *testing.T) {
-		require.EqualError(t, Pipe{}.Run(ctx3), `no darwin binaries found with id "notfoo"`)
+		require.EqualError(t, Pipe{}.Run(ctx3), `no darwin binaries found with ids: notfoo, notbar`)
 	})
 
 	t.Run("fail to open", func(t *testing.T) {

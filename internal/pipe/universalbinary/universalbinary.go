@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"strings"
 
 	"github.com/caarlos0/go-shellwords"
 	"github.com/caarlos0/log"
@@ -157,7 +158,7 @@ func makeUniversalBinary(ctx *context.Context, opts *build.Options, unibin confi
 
 	binaries := ctx.Artifacts.Filter(filterFor(unibin)).List()
 	if len(binaries) == 0 {
-		return pipe.Skipf("no darwin binaries found with id %q", unibin.ID)
+		return pipe.Skipf("no darwin binaries found with ids: %s", strings.Join(unibin.IDs, ", "))
 	}
 
 	log.WithField("id", unibin.ID).
