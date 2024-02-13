@@ -63,6 +63,7 @@ builds:
     # Valid options:
     # - `c-shared`
     # - `c-archive`
+    # - `pie`
     #
     # Since: v1.13
     buildmode: c-shared
