@@ -17,31 +17,32 @@
           src = ./.;
           ldflags = [ "-s" "-w" "-X main.version=dev" "-X main.builtBy=flake" ];
           doCheck = false;
-          vendorHash = "sha256-wY3kIhNIqTaK9MT1VeePERNhqvbtf6bsyRTjG8nrqxU=";
+          vendorHash = "sha256-2CoQuiv8lVjdNJwwuX/rezoHRaMph0AsptLAudztqF8=";
         };
 
         devShells.default = pkgs.mkShellNoCC {
           packages = with pkgs; [
-            go
+            go_1_22
             go-task
             gofumpt
             syft
             upx
             cosign
             gnupg
+            nix-prefetch
           ];
           shellHook = "go mod tidy";
         };
 
         devShells.docs = pkgs.mkShellNoCC {
-          packages = with pkgs; with staging-pkgs.python311Packages; [
+          packages = with pkgs; with pkgs.python311Packages; [
             go-task
             htmltest
             mkdocs-material
             mkdocs-redirects
             mkdocs-minify
-            mkdocs-rss-plugin
-            mkdocs-include-markdown-plugin
+            staging-pkgs.pkgs.python311Packages.mkdocs-rss-plugin # https://github.com/NixOS/nixpkgs/pull/277350
+            staging-pkgs.pkgs.python311Packages.mkdocs-include-markdown-plugin # https://github.com/NixOS/nixpkgs/pull/277351
           ] ++ mkdocs-material.passthru.optional-dependencies.git;
         };
       }
