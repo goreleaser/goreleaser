@@ -159,6 +159,7 @@ var validLicenses = []string{
 	"mpl10",
 	"mpl11",
 	"mpl20",
+	"mplus",
 	"mspl",
 	"mulan-psl2",
 	"nasa13",
