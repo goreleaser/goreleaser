@@ -355,12 +355,8 @@ nfpms:
       # The package is signed if a key_file is set
       signature:
         # PGP secret key file path (can also be ASCII-armored).
-        # The passphrase is taken from the environment variable
-        # `$NFPM_ID_RPM_PASSPHRASE` with a fallback to `$NFPM_ID_PASSPHRASE`,
-        # where ID is the id of the current nfpm config.
-        # The id will be transformed to uppercase.
-        # E.g. If your nfpm id is 'default' then the rpm-specific passphrase
-        # should be set as `$NFPM_DEFAULT_RPM_PASSPHRASE`
+        #
+        # See "Signing key passphrases" below for more information.
         #
         # Templates: allowed.
         key_file: "{{ .Env.GPG_KEY_PATH }}"
@@ -399,12 +395,8 @@ nfpms:
       # The package is signed if a key_file is set
       signature:
         # PGP secret key file path (can also be ASCII-armored).
-        # The passphrase is taken from the environment variable
-        # `$NFPM_ID_DEB_PASSPHRASE` with a fallback to `$NFPM_ID_PASSPHRASE`,
-        # where ID is the id of the current nfpm config.
-        # The id will be transformed to uppercase.
-        # E.g. If your nfpm id is 'default' then the deb-specific passphrase
-        # should be set as `$NFPM_DEFAULT_DEB_PASSPHRASE`
+        #
+        # See "Signing key passphrases" below for more information.
         #
         # Templates: allowed.
         key_file: "{{ .Env.GPG_KEY_PATH }}"
@@ -426,12 +418,8 @@ nfpms:
       # The package is signed if a key_file is set
       signature:
         # PGP secret key file path (can also be ASCII-armored).
-        # The passphrase is taken from the environment variable
-        # `$NFPM_ID_APK_PASSPHRASE` with a fallback to `$NFPM_ID_PASSPHRASE`,
-        # where ID is the id of the current nfpm config.
-        # The id will be transformed to uppercase.
-        # E.g. If your nfpm id is 'default' then the apk-specific passphrase
-        # should be set as `$NFPM_DEFAULT_APK_PASSPHRASE`
+        #
+        # See "Signing key passphrases" below for more information.
         #
         # Templates: allowed.
         key_file: "{{ .Env.GPG_KEY_PATH }}"
@@ -467,6 +455,23 @@ nfpms:
 !!! info
 
     Fields marked with "overridable" can be overridden for any format.
+
+## Signing key passphrases
+
+GoReleaser will try to get the password from the following environment
+variables, in the following order of preference:
+
+1. `$NFPM_[ID]_[FORMAT]_PASSPHRASE`
+1. `$NFPM_[ID]_PASSPHRASE`
+1. `$NFPM_PASSPHRASE`
+
+Basically, it'll start from the most specific to the most generic.
+Also, `[ID]` is the uppercase `id` value, and `[FORMAT]` is the uppercase format
+(`deb`, `rpm`, etc).
+
+So, if your `nfpms.id` is `default`, then the deb-specific passphrase
+will be set `$NFPM_DEFAULT_DEB_PASSPHRASE`. GoReleaser will try that, then
+`$NFPM_DEFAULT_PASSPHRASE`, and finally, `$NFPM_PASSPHRASE`.
 
 ## A note about Termux
 
