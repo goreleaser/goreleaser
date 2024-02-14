@@ -396,6 +396,14 @@ nfpms:
       breaks:
         - some-package
 
+      # Packages which would break if this package would be installed.
+      # The installation of this package is blocked if `some-package`
+      # is already installed.
+      #
+      # Since: v1.25.
+      breaks:
+        - some-package
+
       # The package is signed if a key_file is set
       signature:
         # PGP secret key file path (can also be ASCII-armored).
@@ -414,6 +422,17 @@ nfpms:
         #
         # Default: 'origin'
         type: origin
+
+      # Additional fields for the control file. Empty fields are ignored.
+      # This will expand any env vars you set in the field values, e.g. Vcs-Browser: ${CI_PROJECT_URL}
+      fields:
+        Bugs: https://github.com/goreleaser/nfpm/issues
+
+      # The Debian-specific "predepends" field can be used to ensure the complete installation of a list of
+      # packages (including unpacking, pre- and post installation scripts) prior to the installation of the
+      # built package.
+      predepends:
+        - baz (>= 1.2.3-0)
 
     apk:
       # APK specific scripts.
