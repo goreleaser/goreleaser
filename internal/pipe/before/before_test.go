@@ -15,8 +15,9 @@ import (
 
 func TestMain(m *testing.M) {
 	log.SetLevel(log.DebugLevel)
-	defer log.SetLevel(log.InfoLevel)
-	os.Exit(m.Run())
+	code := m.Run()
+	log.SetLevel(log.InfoLevel)
+	os.Exit(code)
 }
 
 func TestDescription(t *testing.T) {
