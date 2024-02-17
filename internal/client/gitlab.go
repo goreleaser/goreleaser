@@ -322,7 +322,6 @@ func (c *gitlabClient) CreateRelease(ctx *context.Context, body string) (release
 			Ref:         &ref,
 			TagName:     &tagName,
 		})
-
 		if err != nil {
 			log.WithError(err).Debug("error creating release")
 			return "", err

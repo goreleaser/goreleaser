@@ -12,19 +12,19 @@ import (
 
 func TestError(t *testing.T) {
 	t.Run("no errors", func(t *testing.T) {
-		require.NoError(t, Handle(func(ctx *context.Context) error {
+		require.NoError(t, Handle(func(_ *context.Context) error {
 			return nil
 		})(nil))
 	})
 
 	t.Run("pipe skipped", func(t *testing.T) {
-		require.NoError(t, Handle(func(ctx *context.Context) error {
+		require.NoError(t, Handle(func(_ *context.Context) error {
 			return pipe.ErrSkipValidateEnabled
 		})(nil))
 	})
 
 	t.Run("some err", func(t *testing.T) {
-		require.Error(t, Handle(func(ctx *context.Context) error {
+		require.Error(t, Handle(func(_ *context.Context) error {
 			return fmt.Errorf("pipe errored")
 		})(nil))
 	})
@@ -33,19 +33,19 @@ func TestError(t *testing.T) {
 func TestErrorMemo(t *testing.T) {
 	memo := Memo{}
 	t.Run("no errors", func(t *testing.T) {
-		require.NoError(t, memo.Wrap(func(ctx *context.Context) error {
+		require.NoError(t, memo.Wrap(func(_ *context.Context) error {
 			return nil
 		})(nil))
 	})
 
 	t.Run("pipe skipped", func(t *testing.T) {
-		require.NoError(t, memo.Wrap(func(ctx *context.Context) error {
+		require.NoError(t, memo.Wrap(func(_ *context.Context) error {
 			return pipe.ErrSkipValidateEnabled
 		})(nil))
 	})
 
 	t.Run("some err", func(t *testing.T) {
-		require.NoError(t, memo.Wrap(func(ctx *context.Context) error {
+		require.NoError(t, memo.Wrap(func(_ *context.Context) error {
 			return fmt.Errorf("pipe errored")
 		})(nil))
 	})

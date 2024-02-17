@@ -53,7 +53,7 @@ func TestRunPipe(t *testing.T) {
 	}
 	type imageLabelFinder func(*testing.T, string)
 	shouldFindImagesWithLabels := func(image string, filters ...string) func(*testing.T, string) {
-		return func(t *testing.T, use string) {
+		return func(t *testing.T, _ string) {
 			t.Helper()
 			for _, filter := range filters {
 				cmd := exec.Command("docker", "images", "-q", "--filter", "reference=*/"+image, "--filter", filter)

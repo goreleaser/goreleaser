@@ -172,7 +172,7 @@ func (o *buildOptions) makeBuilder(ctx *context.Context) (*build.Caching, error)
 			},
 		}),
 		build.WithPlatforms(o.platforms...),
-		build.WithBaseImages(func(ctx stdctx.Context, s string) (name.Reference, build.Result, error) {
+		build.WithBaseImages(func(_ stdctx.Context, _ string) (name.Reference, build.Result, error) {
 			ref, err := name.ParseReference(o.baseImage)
 			if err != nil {
 				return nil, nil, err

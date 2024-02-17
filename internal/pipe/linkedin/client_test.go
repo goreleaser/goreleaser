@@ -55,7 +55,7 @@ func TestCreateLinkedInClient(t *testing.T) {
 }
 
 func TestClient_Share(t *testing.T) {
-	server := httptest.NewServer(http.HandlerFunc(func(rw http.ResponseWriter, req *http.Request) {
+	server := httptest.NewServer(http.HandlerFunc(func(rw http.ResponseWriter, _ *http.Request) {
 		_, _ = io.WriteString(rw, `
 {
 	"sub": "foo",

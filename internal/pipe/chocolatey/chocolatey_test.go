@@ -274,7 +274,7 @@ func TestPublish(t *testing.T) {
 					},
 				},
 			},
-			exec: func(cmd string, args ...string) ([]byte, error) {
+			exec: func(_ string, _ ...string) ([]byte, error) {
 				return nil, errors.New(`unable to push`)
 			},
 			err: "failed to push chocolatey package: unable to push: ",

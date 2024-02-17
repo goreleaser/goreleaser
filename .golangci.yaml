@@ -39,3 +39,7 @@ linters-settings:
   gocritic:
     enabled-checks:
       - exitAfterDefer
+  testifylint:
+    enable-all: true
+    disable:
+      - error-is-as # false positive
