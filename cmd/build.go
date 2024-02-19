@@ -69,7 +69,7 @@ When using ` + "`--single-target`" + `, the ` + "`GOOS`" + ` and ` + "`GOARCH`" 
 		SilenceErrors:     true,
 		Args:              cobra.NoArgs,
 		ValidArgsFunction: cobra.NoFileCompletions,
-		RunE: timedRunE("build", func(cmd *cobra.Command, args []string) error {
+		RunE: timedRunE("build", func(_ *cobra.Command, _ []string) error {
 			ctx, err := buildProject(root.opts)
 			if err != nil {
 				return err

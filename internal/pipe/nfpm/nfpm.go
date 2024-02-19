@@ -341,7 +341,9 @@ func create(ctx *context.Context, fpm config.NFPM, format string, artifacts []*a
 				PostRemove:  overridden.Scripts.PostRemove,
 			},
 			Deb: nfpm.Deb{
-				// TODO: Compression, Fields
+				Compression: overridden.Deb.Compression,
+				Fields:      overridden.Deb.Fields,
+				Predepends:  overridden.Deb.Predepends,
 				Scripts: nfpm.DebScripts{
 					Rules:     overridden.Deb.Scripts.Rules,
 					Templates: overridden.Deb.Scripts.Templates,
@@ -503,22 +505,18 @@ func destinations(contents files.Contents) []string {
 }
 
 func getPassphraseFromEnv(ctx *context.Context, packager string, nfpmID string) string {
-	var passphrase string
-
 	nfpmID = strings.ToUpper(nfpmID)
-	packagerSpecificPassphrase := ctx.Env[fmt.Sprintf(
-		"NFPM_%s_%s_PASSPHRASE",
-		nfpmID,
-		packager,
-	)]
-	if packagerSpecificPassphrase != "" {
-		passphrase = packagerSpecificPassphrase
-	} else {
-		generalPassphrase := ctx.Env[fmt.Sprintf("NFPM_%s_PASSPHRASE", nfpmID)]
-		passphrase = generalPassphrase
+	for _, k := range []string{
+		fmt.Sprintf("NFPM_%s_%s_PASSPHRASE", nfpmID, packager),
+		fmt.Sprintf("NFPM_%s_PASSPHRASE", nfpmID),
+		"NFPM_PASSPHRASE",
+	} {
+		if v, ok := ctx.Env[k]; ok {
+			return v
+		}
 	}
 
-	return passphrase
+	return ""
 }
 
 func termuxPrefixedDir(dir string) string {

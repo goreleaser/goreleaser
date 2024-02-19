@@ -857,11 +857,14 @@ type NFPMDebSignature struct {
 
 // NFPMDeb is custom configs that are only available on deb packages.
 type NFPMDeb struct {
-	Scripts   NFPMDebScripts   `yaml:"scripts,omitempty" json:"scripts,omitempty"`
-	Triggers  NFPMDebTriggers  `yaml:"triggers,omitempty" json:"triggers,omitempty"`
-	Breaks    []string         `yaml:"breaks,omitempty" json:"breaks,omitempty"`
-	Signature NFPMDebSignature `yaml:"signature,omitempty" json:"signature,omitempty"`
-	Lintian   []string         `yaml:"lintian_overrides,omitempty" json:"lintian_overrides,omitempty"`
+	Scripts     NFPMDebScripts    `yaml:"scripts,omitempty" json:"scripts,omitempty"`
+	Triggers    NFPMDebTriggers   `yaml:"triggers,omitempty" json:"triggers,omitempty"`
+	Breaks      []string          `yaml:"breaks,omitempty" json:"breaks,omitempty"`
+	Signature   NFPMDebSignature  `yaml:"signature,omitempty" json:"signature,omitempty"`
+	Lintian     []string          `yaml:"lintian_overrides,omitempty" json:"lintian_overrides,omitempty"`
+	Compression string            `yaml:"compression,omitempty" json:"compression,omitempty" jsonschema:"enum=gzip,enum=xz,enum=none,default=gzip"`
+	Fields      map[string]string `yaml:"fields,omitempty" json:"fields,omitempty"`
+	Predepends  []string          `yaml:"predepends,omitempty" json:"predepends,omitempty"`
 }
 
 type NFPMAPKScripts struct {

@@ -33,7 +33,7 @@ func newHealthcheckCmd() *healthcheckCmd {
 		SilenceErrors:     true,
 		Args:              cobra.NoArgs,
 		ValidArgsFunction: cobra.NoFileCompletions,
-		RunE: func(cmd *cobra.Command, args []string) error {
+		RunE: func(_ *cobra.Command, _ []string) error {
 			if root.quiet {
 				log.Log = log.New(io.Discard)
 			}
