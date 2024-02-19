@@ -318,7 +318,7 @@ func TestRun(t *testing.T) {
 		ctx.Config.UniversalBinaries[0].Hooks.Post = []config.Hook{{Cmd: "echo post"}}
 		err := Pipe{}.Run(ctx)
 		require.ErrorIs(t, err, exec.ErrNotFound)
-		require.Contains(t, err.Error(), "pre hook failed")
+		require.ErrorContains(t, err, "pre hook failed")
 	})
 
 	t.Run("failing post-hook", func(t *testing.T) {
@@ -327,7 +327,7 @@ func TestRun(t *testing.T) {
 		ctx.Config.UniversalBinaries[0].Hooks.Post = []config.Hook{{Cmd: "exit 1"}}
 		err := Pipe{}.Run(ctx)
 		require.ErrorIs(t, err, exec.ErrNotFound)
-		require.Contains(t, err.Error(), "post hook failed")
+		require.ErrorContains(t, err, "post hook failed")
 	})
 
 	t.Run("skipping post-hook", func(t *testing.T) {

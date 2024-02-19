@@ -642,7 +642,7 @@ func TestBuildFailed(t *testing.T) {
 	err := Default.Build(ctx, ctx.Config.Builds[0], api.Options{
 		Target: "darwin_amd64",
 	})
-	assertContainsError(t, err, `flag provided but not defined: -flag-that-dont-exists-to-force-failure`)
+	require.ErrorContains(t, err, `flag provided but not defined: -flag-that-dont-exists-to-force-failure`)
 	require.Empty(t, ctx.Artifacts.List())
 }
 
@@ -1444,10 +1444,4 @@ func writeTest(t *testing.T, folder string) {
 		[]byte("module foo\n"),
 		0o666,
 	))
-}
-
-func assertContainsError(t *testing.T, err error, s string) {
-	t.Helper()
-	require.Error(t, err)
-	require.Contains(t, err.Error(), s)
 }

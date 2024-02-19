@@ -162,8 +162,7 @@ func TestGitClient(t *testing.T) {
 			"filename",
 			"msg",
 		)
-		require.Error(t, err)
-		require.Contains(t, err.Error(), "failed to clone")
+		require.ErrorContains(t, err, "failed to clone")
 	})
 	t.Run("bad ssh cmd", func(t *testing.T) {
 		ctx := testctx.NewWithCfg(config.Project{

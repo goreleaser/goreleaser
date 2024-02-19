@@ -650,8 +650,7 @@ func testSign(
 
 	// run the pipeline
 	if expectedErrMsg != "" {
-		require.Error(tb, err)
-		require.Contains(tb, err.Error(), expectedErrMsg)
+		require.ErrorContains(tb, err, expectedErrMsg)
 		return
 	}
 

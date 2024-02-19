@@ -418,8 +418,7 @@ func TestRunPipe_BadCredentials(t *testing.T) {
 
 	require.NoError(t, Pipe{}.Default(ctx))
 	err := Pipe{}.Publish(ctx)
-	require.Error(t, err)
-	require.Contains(t, err.Error(), "Bad credentials")
+	require.ErrorContains(t, err, "Bad credentials")
 }
 
 func TestRunPipe_UnparsableErrorResponse(t *testing.T) {

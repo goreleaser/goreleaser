@@ -525,8 +525,7 @@ func testSBOMCataloging(
 	// run the pipeline
 	if expectedErrMsg != "" {
 		err := Pipe{}.Run(ctx)
-		require.Error(tb, err)
-		require.Contains(tb, err.Error(), expectedErrMsg)
+		require.ErrorContains(tb, err, expectedErrMsg)
 		return
 	}
 	if expectedErrAs != nil {

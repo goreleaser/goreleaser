@@ -530,7 +530,7 @@ func TestPublish(t *testing.T) {
 		},
 	})
 	err := Pipe{}.Publish(ctx)
-	require.Contains(t, err.Error(), "failed to push nope.snap package")
+	require.ErrorContains(t, err, "failed to push nope.snap package")
 }
 
 func TestDefaultSet(t *testing.T) {

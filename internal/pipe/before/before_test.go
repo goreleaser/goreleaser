@@ -67,7 +67,7 @@ func TestRunPipeFail(t *testing.T) {
 			},
 		)
 		err := Pipe{}.Run(ctx)
-		require.Contains(t, err.Error(), "hook failed")
+		require.ErrorContains(t, err, "hook failed")
 	}
 }
 

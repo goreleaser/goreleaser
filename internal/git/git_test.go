@@ -17,13 +17,8 @@ func TestGit(t *testing.T) {
 	require.NotEmpty(t, out)
 
 	out, err = git.Run(ctx, "command-that-dont-exist")
-	require.Error(t, err)
+	require.EqualError(t, err, "git: 'command-that-dont-exist' is not a git command. See 'git --help'.\n")
 	require.Empty(t, out)
-	require.Equal(
-		t,
-		"git: 'command-that-dont-exist' is not a git command. See 'git --help'.\n",
-		err.Error(),
-	)
 }
 
 func TestGitWarning(t *testing.T) {
@@ -66,23 +61,13 @@ func TestClean(t *testing.T) {
 
 	t.Run("error", func(t *testing.T) {
 		out, err := git.Clean(git.Run(ctx, "command-that-dont-exist"))
-		require.Error(t, err)
+		require.EqualError(t, err, "git: 'command-that-dont-exist' is not a git command. See 'git --help'.")
 		require.Empty(t, out)
-		require.Equal(
-			t,
-			"git: 'command-that-dont-exist' is not a git command. See 'git --help'.",
-			err.Error(),
-		)
 	})
 
 	t.Run("all lines error", func(t *testing.T) {
 		out, err := git.CleanAllLines(git.Run(ctx, "command-that-dont-exist"))
-		require.Error(t, err)
+		require.EqualError(t, err, "git: 'command-that-dont-exist' is not a git command. See 'git --help'.")
 		require.Empty(t, out)
-		require.Equal(
-			t,
-			"git: 'command-that-dont-exist' is not a git command. See 'git --help'.",
-			err.Error(),
-		)
 	})
 }
