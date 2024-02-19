@@ -456,8 +456,7 @@ func TestPublishPipeError(t *testing.T) {
 		ctx.Config.Kos[0].CreationTime = "nope"
 		require.NoError(t, Pipe{}.Default(ctx))
 		err := Pipe{}.Publish(ctx)
-		require.Error(t, err)
-		require.Contains(t, err.Error(), `strconv.ParseInt: parsing "nope": invalid syntax`)
+		require.ErrorContains(t, err, `strconv.ParseInt: parsing "nope": invalid syntax`)
 	})
 
 	t.Run("invalid creation time tmpl", func(t *testing.T) {
@@ -472,8 +471,7 @@ func TestPublishPipeError(t *testing.T) {
 		ctx.Config.Kos[0].KoDataCreationTime = "nope"
 		require.NoError(t, Pipe{}.Default(ctx))
 		err := Pipe{}.Publish(ctx)
-		require.Error(t, err)
-		require.Contains(t, err.Error(), `strconv.ParseInt: parsing "nope": invalid syntax`)
+		require.ErrorContains(t, err, `strconv.ParseInt: parsing "nope": invalid syntax`)
 	})
 
 	t.Run("invalid kodata creation time tmpl", func(t *testing.T) {

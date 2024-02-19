@@ -187,7 +187,7 @@ func TestEmptyGithubEnvFile(t *testing.T) {
 	})
 	err = Pipe{}.Run(ctx)
 	require.ErrorIs(t, err, syscall.EACCES)
-	require.Contains(t, err.Error(), "failed to load github token")
+	require.ErrorContains(t, err, "failed to load github token")
 }
 
 func TestEmptyGitlabEnvFile(t *testing.T) {
@@ -202,7 +202,7 @@ func TestEmptyGitlabEnvFile(t *testing.T) {
 	})
 	err = Pipe{}.Run(ctx)
 	require.ErrorIs(t, err, syscall.EACCES)
-	require.Contains(t, err.Error(), "failed to load gitlab token")
+	require.ErrorContains(t, err, "failed to load gitlab token")
 }
 
 func TestEmptyGiteaEnvFile(t *testing.T) {
@@ -217,7 +217,7 @@ func TestEmptyGiteaEnvFile(t *testing.T) {
 	})
 	err = Pipe{}.Run(ctx)
 	require.ErrorIs(t, err, syscall.EACCES)
-	require.Contains(t, err.Error(), "failed to load gitea token")
+	require.ErrorContains(t, err, "failed to load gitea token")
 }
 
 func TestInvalidEnvChecksSkipped(t *testing.T) {

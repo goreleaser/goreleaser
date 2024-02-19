@@ -442,8 +442,7 @@ func TestRunPipe_BadCredentials(t *testing.T) {
 	})
 
 	err := Pipe{}.Publish(ctx)
-	require.Error(t, err)
-	require.Contains(t, err.Error(), "Unauthorized")
+	require.ErrorContains(t, err, "Unauthorized")
 }
 
 func TestRunPipe_FileNotFound(t *testing.T) {

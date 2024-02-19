@@ -39,8 +39,7 @@ func TestRunPipe(t *testing.T) {
 	shouldErr := func(msg string) errChecker {
 		return func(t *testing.T, err error) {
 			t.Helper()
-			require.Error(t, err)
-			require.Contains(t, err.Error(), msg)
+			require.ErrorContains(t, err, msg)
 		}
 	}
 	shouldNotErr := func(t *testing.T, err error) {

@@ -26,6 +26,5 @@ func TestValidSemver(t *testing.T) {
 func TestInvalidSemver(t *testing.T) {
 	ctx := testctx.New(testctx.WithCurrentTag("aaaav1.5.2-rc1"))
 	err := Pipe{}.Run(ctx)
-	require.Error(t, err)
-	require.Contains(t, err.Error(), "failed to parse tag 'aaaav1.5.2-rc1' as semver")
+	require.ErrorContains(t, err, "failed to parse tag 'aaaav1.5.2-rc1' as semver")
 }

@@ -10,8 +10,7 @@ import (
 func TestSkipPipe(t *testing.T) {
 	reason := "this is a test"
 	err := Skip(reason)
-	require.Error(t, err)
-	require.Equal(t, reason, err.Error())
+	require.EqualError(t, err, reason)
 }
 
 func TestIsSkip(t *testing.T) {

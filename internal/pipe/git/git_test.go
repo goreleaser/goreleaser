@@ -109,8 +109,7 @@ func TestDirty(t *testing.T) {
 	require.NoError(t, os.WriteFile(dummy.Name(), []byte("lorem ipsum"), 0o644))
 	t.Run("all checks up", func(t *testing.T) {
 		err := Pipe{}.Run(testctx.New())
-		require.Error(t, err)
-		require.Contains(t, err.Error(), "git is in a dirty state")
+		require.ErrorContains(t, err, "git is in a dirty state")
 	})
 	t.Run("skip validate is set", func(t *testing.T) {
 		ctx := testctx.New(testctx.Skip(skips.Validate))
@@ -218,8 +217,7 @@ func TestTagIsNotLastCommit(t *testing.T) {
 	testlib.GitCommit(t, "commit4")
 	ctx := testctx.New()
 	err := Pipe{}.Run(ctx)
-	require.Error(t, err)
-	require.Contains(t, err.Error(), "git tag v0.0.1 was not made against commit")
+	require.ErrorContains(t, err, "git tag v0.0.1 was not made against commit")
 	require.Contains(t, ctx.Git.Summary, "v0.0.1-1-g") // commit not represented because it changes every test
 }
 

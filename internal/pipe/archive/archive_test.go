@@ -964,8 +964,7 @@ func TestRunPipeSameArchiveFilename(t *testing.T) {
 	ctx.Version = "0.0.1"
 	ctx.Git.CurrentTag = "v0.0.1"
 	err = Pipe{}.Run(ctx)
-	require.Error(t, err)
-	require.Contains(t, err.Error(), "same-filename.tar.gz already exists. Check your archive name template")
+	require.ErrorContains(t, err, "same-filename.tar.gz already exists. Check your archive name template")
 }
 
 func TestDuplicateFilesInsideArchive(t *testing.T) {
