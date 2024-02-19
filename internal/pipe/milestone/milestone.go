@@ -76,7 +76,6 @@ func doPublish(ctx *context.Context, vcsClient client.Client) error {
 			Info("closing milestone")
 
 		err = vcsClient.CloseMilestone(ctx, repo, name)
-
 		if err != nil {
 			if milestone.FailOnError {
 				return err

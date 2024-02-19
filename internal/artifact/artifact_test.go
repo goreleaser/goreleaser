@@ -635,7 +635,7 @@ func TestVisit(t *testing.T) {
 	})
 
 	t.Run("nok", func(t *testing.T) {
-		require.EqualError(t, artifacts.Visit(func(a *Artifact) error {
+		require.EqualError(t, artifacts.Visit(func(_ *Artifact) error {
 			return fmt.Errorf("fake err")
 		}), `fake err`)
 	})

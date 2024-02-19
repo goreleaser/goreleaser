@@ -214,7 +214,7 @@ func TestUpload(t *testing.T) {
 		w.WriteHeader(h.StatusCreated)
 		w.Header().Set("Location", r.URL.RequestURI())
 	}))
-	assetOpen = func(k string, a *artifact.Artifact) (*asset, error) {
+	assetOpen = func(_ string, _ *artifact.Artifact) (*asset, error) {
 		return &asset{
 			ReadCloser: io.NopCloser(bytes.NewReader(content)),
 			Size:       int64(len(content)),

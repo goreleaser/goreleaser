@@ -6,6 +6,7 @@ import (
 	"sync"
 	"testing"
 
+	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
 
@@ -20,8 +21,8 @@ func TestSafe(t *testing.T) {
 	for i := 0; i < chars; i++ {
 		go func() {
 			s, err := io.WriteString(w, "a")
-			require.Equal(t, 1, s)
-			require.NoError(t, err)
+			assert.Equal(t, 1, s)
+			assert.NoError(t, err)
 			wg.Done()
 		}()
 	}
