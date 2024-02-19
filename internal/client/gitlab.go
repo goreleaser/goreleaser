@@ -348,7 +348,7 @@ func (c *gitlabClient) CreateRelease(ctx *context.Context, body string) (release
 	return tagName, err // gitlab references a tag in a repo by its name
 }
 
-func (c *gitlabClient) PublishRelease(ctx *context.Context, releaseID string) (err error) {
+func (c *gitlabClient) PublishRelease(_ *context.Context, _ string /* releaseID */) (err error) {
 	// GitLab doesn't support draft releases. So a created release is already published.
 	return nil
 }

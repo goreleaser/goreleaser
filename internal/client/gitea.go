@@ -276,7 +276,7 @@ func (c *giteaClient) CreateRelease(ctx *context.Context, body string) (string, 
 	return strconv.FormatInt(release.ID, 10), nil
 }
 
-func (c *giteaClient) PublishRelease(ctx *context.Context, releaseID string) (err error) {
+func (c *giteaClient) PublishRelease(_ *context.Context, _ string /* releaseID */) (err error) {
 	// TODO: Create release as draft while uploading artifacts and only publish it here.
 	return nil
 }

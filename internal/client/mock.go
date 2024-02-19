@@ -82,7 +82,7 @@ func (c *Mock) CreateRelease(_ *context.Context, _ string) (string, error) {
 	return "", nil
 }
 
-func (c *Mock) PublishRelease(ctx *context.Context, releaseID string) (err error) {
+func (c *Mock) PublishRelease(_ *context.Context, _ string /* releaseID */) (err error) {
 	c.ReleasePublished = true
 	return nil
 }
