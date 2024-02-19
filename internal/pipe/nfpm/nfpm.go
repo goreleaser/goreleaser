@@ -341,7 +341,9 @@ func create(ctx *context.Context, fpm config.NFPM, format string, artifacts []*a
 				PostRemove:  overridden.Scripts.PostRemove,
 			},
 			Deb: nfpm.Deb{
-				// TODO: Compression, Fields
+				Compression: overridden.Deb.Compression,
+				Fields:      overridden.Deb.Fields,
+				Predepends:  overridden.Deb.Predepends,
 				Scripts: nfpm.DebScripts{
 					Rules:     overridden.Deb.Scripts.Rules,
 					Templates: overridden.Deb.Scripts.Templates,
