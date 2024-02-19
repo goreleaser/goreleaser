@@ -290,10 +290,6 @@ release:
   # You can disable this pipe in order to not upload any artifacts.
   disable: true
 
-  # If set to true, will not auto-publish the release.
-  # Available only for GitHub and Gitea.
-  draft: true
-
   # What to do with the release notes in case there the release already exists.
   #
   # Valid options are:
