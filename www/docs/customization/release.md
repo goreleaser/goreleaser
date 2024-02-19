@@ -26,6 +26,7 @@ release:
     - bar
 
   # If set to true, will not auto-publish the release.
+  # Note: all GitHub releases start as drafts while artifacts are uploaded.
   # Available only for GitHub and Gitea.
   draft: true
 

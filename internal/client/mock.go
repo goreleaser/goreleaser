@@ -31,6 +31,7 @@ type Mock struct {
 	FailToUpload         bool
 	CreatedRelease       bool
 	UploadedFile         bool
+	ReleasePublished     bool
 	UploadedFileNames    []string
 	UploadedFilePaths    map[string]string
 	FailFirstUpload      bool
@@ -79,6 +80,11 @@ func (c *Mock) CreateRelease(_ *context.Context, _ string) (string, error) {
 	}
 	c.CreatedRelease = true
 	return "", nil
+}
+
+func (c *Mock) PublishRelease(_ *context.Context, _ string /* releaseID */) (err error) {
+	c.ReleasePublished = true
+	return nil
 }
 
 func (c *Mock) ReleaseURLTemplate(_ *context.Context) (string, error) {

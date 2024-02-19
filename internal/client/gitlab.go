@@ -348,6 +348,11 @@ func (c *gitlabClient) CreateRelease(ctx *context.Context, body string) (release
 	return tagName, err // gitlab references a tag in a repo by its name
 }
 
+func (c *gitlabClient) PublishRelease(_ *context.Context, _ string /* releaseID */) (err error) {
+	// GitLab doesn't support draft releases. So a created release is already published.
+	return nil
+}
+
 func (c *gitlabClient) ReleaseURLTemplate(ctx *context.Context) (string, error) {
 	var urlTemplate string
 	gitlabName, err := tmpl.New(ctx).Apply(ctx.Config.Release.GitLab.Name)

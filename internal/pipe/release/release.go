@@ -171,7 +171,11 @@ func doPublish(ctx *context.Context, client client.Client) error {
 			return upload(ctx, client, releaseID, artifact)
 		})
 	}
-	return g.Wait()
+	if err := g.Wait(); err != nil {
+		return err
+	}
+
+	return client.PublishRelease(ctx, releaseID)
 }
 
 func upload(ctx *context.Context, cli client.Client, releaseID string, artifact *artifact.Artifact) error {
