@@ -15,6 +15,7 @@ linters:
     - misspell
     - depguard
     - testifylint
+    - gocritic
 linters-settings:
   staticcheck:
     checks:
@@ -35,3 +36,6 @@ linters-settings:
         deny:
           - pkg: "github.com/pkg/errors"
             desc: "use stdlib instead"
+  gocritic:
+    enabled-checks:
+      - exitAfterDefer

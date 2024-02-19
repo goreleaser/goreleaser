@@ -37,7 +37,7 @@ jobs:
         with:
           fetch-depth: 0
       - name: Set up Go
-        uses: actions/setup-go@v4
+        uses: actions/setup-go@v5
         with:
           go-version: stable
       # More assembly might be required: Docker logins, GPG, etc.
@@ -133,7 +133,7 @@ signs:
 Following inputs can be used as `step.with` keys
 
 | Name           | Type   | Default      | Description                                                      |
-| -------------- | ------ | ------------ | ---------------------------------------------------------------- |
+|----------------|--------|--------------|------------------------------------------------------------------|
 | `distribution` | String | `goreleaser` | GoReleaser distribution, either `goreleaser` or `goreleaser-pro` |
 | `version`[^1]  | String | `latest`     | GoReleaser version                                               |
 | `args`         | String |              | Arguments to pass to GoReleaser                                  |
@@ -149,7 +149,7 @@ Following inputs can be used as `step.with` keys
 Following outputs are available
 
 | Name        | Type | Description            |
-| ----------- | ---- | ---------------------- |
+|-------------|------|------------------------|
 | `artifacts` | JSON | Build result artifacts |
 | `metadata`  | JSON | Build result metadata  |
 
@@ -158,7 +158,7 @@ Following outputs are available
 Following environment variables can be used as `step.env` keys
 
 | Name             | Description                                                                                                                                         |
-| ---------------- | --------------------------------------------------------------------------------------------------------------------------------------------------- |
+|------------------|-----------------------------------------------------------------------------------------------------------------------------------------------------|
 | `GITHUB_TOKEN`   | [GITHUB_TOKEN](https://help.github.com/en/actions/configuring-and-managing-workflows/authenticating-with-the-github_token) as provided by `secrets` |
 | `GORELEASER_KEY` | Your [GoReleaser Pro](https://goreleaser.com/pro) License Key, in case you are using the `goreleaser-pro` distribution                              |
 
