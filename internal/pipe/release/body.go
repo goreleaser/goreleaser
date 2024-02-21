@@ -17,21 +17,29 @@ const bodyTemplateText = `{{ with .Header }}{{ . }}{{ "\n" }}{{ end }}
 
 func describeBody(ctx *context.Context) (bytes.Buffer, error) {
 	var out bytes.Buffer
+	f := tmpl.Fields{}
 	var checksum string
-	if l := ctx.Artifacts.Filter(artifact.ByType(artifact.Checksum)).List(); len(l) > 0 {
-		if err := l[0].Refresh(); err != nil {
-			return out, err
-		}
-		bts, err := os.ReadFile(l[0].Path)
+	checksums := map[string]string{}
+	checks, err := ctx.Artifacts.Checksums().OnlyChecksums()
+	if err != nil {
+		return out, err
+	}
+	for _, check := range checks {
+		bts, err := os.ReadFile(check.Path)
 		if err != nil {
 			return out, err
 		}
 		checksum = string(bts)
+		of := artifact.ExtraOr(*check, artifact.ExtraChecksumOf, "<unknown>")
+		checksums[of] = string(bts)
+	}
+	if len(checks) == 1 {
+		f["Checksums"] = checksum
+	} else {
+		f["Checksums"] = checksums
 	}
 
-	t := tmpl.New(ctx).WithExtraFields(tmpl.Fields{
-		"Checksums": checksum,
-	})
+	t := tmpl.New(ctx).WithExtraFields(f)
 
 	header, err := t.Apply(ctx.Config.Release.Header)
 	if err != nil {

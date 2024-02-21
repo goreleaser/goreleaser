@@ -95,7 +95,6 @@ func TestPipe(t *testing.T) {
 			require.NoError(t, err)
 			for _, a := range result {
 				artifacts = append(artifacts, a.Name)
-				require.NoError(t, a.Refresh(), "refresh should not fail and yield same results as nothing changed")
 			}
 			require.Contains(t, artifacts, checksums, binary)
 			bts, err := os.ReadFile(filepath.Join(folder, checksums))

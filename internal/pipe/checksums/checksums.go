@@ -72,13 +72,16 @@ func splitChecksums(ctx *context.Context, extras []*artifact.Artifact) artifact.
 					return err
 				}
 				filepath := filepath.Join(ctx.Config.Dist, filename)
-				if err := os.WriteFile(filepath, []byte(sum), 0644); err != nil {
+				if err := os.WriteFile(filepath, []byte(sum), 0o644); err != nil {
 					return err
 				}
 				checks = append(checks, &artifact.Artifact{
 					Type: artifact.Checksum,
 					Path: filepath,
 					Name: filename,
+					Extra: artifact.Extras{
+						artifact.ExtraChecksumOf: art.Name,
+					},
 				})
 				return nil
 			})

@@ -144,33 +144,21 @@ func (t Type) String() string {
 }
 
 const (
-	ExtraID        = "ID"
-	ExtraBinary    = "Binary"
-	ExtraExt       = "Ext"
-	ExtraFormat    = "Format"
-	ExtraWrappedIn = "WrappedIn"
-	ExtraBinaries  = "Binaries"
-	ExtraRefresh   = "Refresh"
-	ExtraReplaces  = "Replaces"
-	ExtraDigest    = "Digest"
-	ExtraSize      = "Size"
-	ExtraChecksum  = "Checksum"
+	ExtraID         = "ID"
+	ExtraBinary     = "Binary"
+	ExtraExt        = "Ext"
+	ExtraFormat     = "Format"
+	ExtraWrappedIn  = "WrappedIn"
+	ExtraBinaries   = "Binaries"
+	ExtraReplaces   = "Replaces"
+	ExtraDigest     = "Digest"
+	ExtraSize       = "Size"
+	ExtraChecksum   = "Checksum"
+	ExtraChecksumOf = "ChecksumOf"
 )
 
 // Extras represents the extra fields in an artifact.
 type Extras map[string]any
-
-func (e Extras) MarshalJSON() ([]byte, error) {
-	m := map[string]any{}
-	for k, v := range e {
-		if k == ExtraRefresh {
-			// refresh is a func, so we can't serialize it.
-			continue
-		}
-		m[k] = v
-	}
-	return json.Marshal(m)
-}
 
 // Artifact represents an artifact and its relevant info.
 type Artifact struct {
@@ -289,21 +277,6 @@ func (a *Artifact) Checksum(algorithm string) (string, error) {
 	return sha, nil
 }
 
-var noRefresh = func() error { return nil }
-
-// Refresh executes a Refresh extra function on artifacts, if it exists.
-func (a Artifact) Refresh() error {
-	// for now lets only do it for checksums, as we know for a fact that
-	// they are the only ones that support this right now.
-	if a.Type != Checksum {
-		return nil
-	}
-	if err := ExtraOr(a, ExtraRefresh, noRefresh)(); err != nil {
-		return fmt.Errorf("failed to refresh %q: %w", a.Name, err)
-	}
-	return nil
-}
-
 // ID returns the artifact ID if it exists, empty otherwise.
 func (a Artifact) ID() string {
 	return ExtraOr(a, ExtraID, "")
@@ -338,18 +311,32 @@ func (artifacts *Artifacts) SetChecksummer(checksummer Checksummer) *Artifacts {
 }
 
 type ChecksummingArtifacts struct {
-	a *Artifacts
+	inner *Artifacts
 }
 
 func (artifacts *Artifacts) Checksums() *ChecksummingArtifacts {
 	return &ChecksummingArtifacts{artifacts}
 }
 
-func (artifacts *ChecksummingArtifacts) List() ([]*Artifact, error) {
-	list := artifacts.a.List()
+func (a *ChecksummingArtifacts) OnlyChecksums() ([]*Artifact, error) {
+	var result []*Artifact
 
-	if artifacts.a.checksums != nil && len(list) > 0 {
-		checks, err := artifacts.a.checksums(list)
+	if list := a.inner.List(); a.inner.checksums != nil && len(list) > 0 {
+		checks, err := a.inner.checksums(list)
+		if err != nil {
+			return nil, err
+		}
+		result = append(result, checks...)
+	}
+
+	return result, nil
+}
+
+func (a *ChecksummingArtifacts) List() ([]*Artifact, error) {
+	list := a.inner.List()
+
+	if a.inner.checksums != nil && len(list) > 0 {
+		checks, err := a.inner.checksums(list)
 		if err != nil {
 			return nil, err
 		}

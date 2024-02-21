@@ -124,11 +124,7 @@ func (Pipe) Run(ctx *context.Context) error {
 		return err
 	}
 
-	return ctx.Artifacts.
-		Filter(artifact.ByType(artifact.Checksum)).
-		Visit(func(a *artifact.Artifact) error {
-			return a.Refresh()
-		})
+	return nil
 }
 
 func sign(ctx *context.Context, cfg config.Sign, artifacts []*artifact.Artifact) error {
@@ -137,9 +133,6 @@ func sign(ctx *context.Context, cfg config.Sign, artifacts []*artifact.Artifact)
 		return nil
 	}
 	for _, a := range artifacts {
-		if err := a.Refresh(); err != nil {
-			return err
-		}
 		artifacts, err := signone(ctx, cfg, a)
 		if err != nil {
 			return err
