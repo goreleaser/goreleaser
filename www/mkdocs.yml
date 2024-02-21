@@ -70,7 +70,7 @@ extra:
   extra:
   analytics:
     provider: google
-    property: "UA-106198408-1"
+    property: "G-3MZGQS8EPS"
   social:
     - icon: fontawesome/brands/github-alt
       link: https://github.com/goreleaser
