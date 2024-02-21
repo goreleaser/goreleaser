@@ -10,7 +10,8 @@ The `checksum` section allows customizations of the filename:
 checksum:
   # You can change the name of the checksums file.
   #
-  # Default: {{ .ProjectName }}_{{ .Version }}_checksums.txt
+  # Default: "{{ .ProjectName }}_{{ .Version }}_checksums.txt", or
+  #          "{{ .ArtifactName }}.{{ .Algorithm }}" if "split" is set.
   # Templates: allowed
   name_template: "{{ .ProjectName }}_checksums.txt"
 
@@ -19,6 +20,14 @@ checksum:
   #
   # Default: sha256.
   algorithm: sha256
+
+  # Allows to create one checksum file for each file being checksummed, instead
+  # of a single file with all the checksums.
+  # Note that the checksums created by this method will contain only the
+  # checksum itself, without the filename.
+  #
+  # Since: v1.25
+  split: true
 
   # IDs of artifacts to include in the checksums file.
   #

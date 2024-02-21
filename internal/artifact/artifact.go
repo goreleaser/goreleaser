@@ -10,6 +10,7 @@ import (
 	"crypto/sha512"
 	"encoding/hex"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"hash"
 	"hash/crc32"
@@ -153,6 +154,7 @@ const (
 	ExtraReplaces  = "Replaces"
 	ExtraDigest    = "Digest"
 	ExtraSize      = "Size"
+	ExtraChecksum  = "Checksum"
 )
 
 // Extras represents the extra fields in an artifact.
@@ -226,9 +228,28 @@ func ExtraOr[T any](a Artifact, key string, or T) T {
 	return a.Extra[key].(T)
 }
 
+func (a Artifact) isChecksummable() bool {
+	switch a.Type {
+	case UploadableArchive,
+		UploadableBinary,
+		UploadableSourceArchive,
+		UploadableFile,
+		LinuxPackage,
+		SBOM:
+		return true
+	default:
+		return false
+	}
+}
+
+var ErrNotChecksummable = errors.New("artifact type does not support checksumming")
+
 // Checksum calculates the checksum of the artifact.
 // nolint: gosec
-func (a Artifact) Checksum(algorithm string) (string, error) {
+func (a *Artifact) Checksum(algorithm string) (string, error) {
+	if !a.isChecksummable() {
+		return "", ErrNotChecksummable
+	}
 	log.Debugf("calculating checksum for %s", a.Path)
 	file, err := os.Open(a.Path)
 	if err != nil {
@@ -258,7 +279,14 @@ func (a Artifact) Checksum(algorithm string) (string, error) {
 	if _, err := io.Copy(h, file); err != nil {
 		return "", fmt.Errorf("failed to checksum: %w", err)
 	}
-	return hex.EncodeToString(h.Sum(nil)), nil
+	sha := hex.EncodeToString(h.Sum(nil))
+
+	if a.Extra == nil {
+		a.Extra = make(Extras)
+	}
+	a.Extra[ExtraChecksum] = fmt.Sprintf("%s:%s", algorithm, sha)
+
+	return sha, nil
 }
 
 var noRefresh = func() error { return nil }
@@ -290,7 +318,11 @@ func (a Artifact) Format() string {
 type Artifacts struct {
 	items []*Artifact
 	lock  *sync.Mutex
+
+	checksums Checksummer
 }
+
+type Checksummer func(items []*Artifact) ([]*Artifact, error)
 
 // New return a new list of artifacts.
 func New() *Artifacts {
@@ -298,6 +330,33 @@ func New() *Artifacts {
 		items: []*Artifact{},
 		lock:  &sync.Mutex{},
 	}
+}
+
+func (artifacts *Artifacts) SetChecksummer(checksummer Checksummer) *Artifacts {
+	artifacts.checksums = checksummer
+	return artifacts
+}
+
+type ChecksummingArtifacts struct {
+	a *Artifacts
+}
+
+func (artifacts *Artifacts) Checksums() *ChecksummingArtifacts {
+	return &ChecksummingArtifacts{artifacts}
+}
+
+func (artifacts *ChecksummingArtifacts) List() ([]*Artifact, error) {
+	list := artifacts.a.List()
+
+	if artifacts.a.checksums != nil && len(list) > 0 {
+		checks, err := artifacts.a.checksums(list)
+		if err != nil {
+			return nil, err
+		}
+		list = append(list, checks...)
+	}
+
+	return list, nil
 }
 
 // List return the actual list of artifacts.
@@ -547,6 +606,7 @@ func (artifacts *Artifacts) Filter(filter Filter) *Artifacts {
 	}
 
 	result := New()
+	result.checksums = artifacts.checksums
 	for _, a := range artifacts.List() {
 		if filter(a) {
 			result.items = append(result.items, a)

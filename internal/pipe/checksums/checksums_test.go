@@ -91,7 +91,9 @@ func TestPipe(t *testing.T) {
 			})
 			require.NoError(t, Pipe{}.Run(ctx))
 			var artifacts []string
-			for _, a := range ctx.Artifacts.List() {
+			result, err := ctx.Artifacts.Checksums().List()
+			require.NoError(t, err)
+			for _, a := range result {
 				artifacts = append(artifacts, a.Name)
 				require.NoError(t, a.Refresh(), "refresh should not fail and yield same results as nothing changed")
 			}
@@ -122,16 +124,26 @@ func TestRefreshModifying(t *testing.T) {
 		Path: file,
 		Type: artifact.UploadableBinary,
 	})
+
 	require.NoError(t, Pipe{}.Run(ctx))
-	checks := ctx.Artifacts.Filter(artifact.ByType(artifact.Checksum)).List()
-	require.Len(t, checks, 1)
-	previous, err := os.ReadFile(checks[0].Path)
+
+	checks, err := ctx.Artifacts.Filter(artifact.ByType(artifact.UploadableBinary)).Checksums().List()
 	require.NoError(t, err)
+	require.Len(t, checks, 2)
+
+	previous, err := os.ReadFile(checks[1].Path)
+	require.NoError(t, err)
+	require.Equal(t, "61d034473102d7dac305902770471fd50f4c5b26f6831a56dd90b5184b3c30fc  binary", string(previous))
+
 	require.NoError(t, os.WriteFile(file, []byte("some other string"), 0o644))
-	require.NoError(t, checks[0].Refresh())
-	current, err := os.ReadFile(checks[0].Path)
+
+	checks, err = ctx.Artifacts.Filter(artifact.ByType(artifact.UploadableBinary)).Checksums().List()
 	require.NoError(t, err)
-	require.NotEqual(t, string(previous), string(current))
+	require.Len(t, checks, 2)
+
+	current, err := os.ReadFile(checks[1].Path)
+	require.NoError(t, err)
+	require.Equal(t, "94870326db59631f737f8392e49d18608d69018b1da3a79517a25623cd959c4c  binary", string(current))
 }
 
 func TestPipeFileNotExist(t *testing.T) {
@@ -150,7 +162,10 @@ func TestPipeFileNotExist(t *testing.T) {
 		Path: "/nope",
 		Type: artifact.UploadableBinary,
 	})
-	require.ErrorIs(t, Pipe{}.Run(ctx), os.ErrNotExist)
+
+	require.NoError(t, Pipe{}.Run(ctx))
+	_, err := ctx.Artifacts.Checksums().List()
+	require.ErrorIs(t, err, os.ErrNotExist)
 }
 
 func TestPipeInvalidNameTemplate(t *testing.T) {
@@ -182,7 +197,9 @@ func TestPipeInvalidNameTemplate(t *testing.T) {
 				Type: artifact.UploadableBinary,
 				Path: binFile.Name(),
 			})
-			testlib.RequireTemplateError(t, Pipe{}.Run(ctx))
+			require.NoError(t, Pipe{}.Run(ctx))
+			_, err := ctx.Artifacts.Checksums().List()
+			testlib.RequireTemplateError(t, err)
 		})
 	}
 }
@@ -212,15 +229,20 @@ func TestPipeCouldNotOpenChecksumsTxt(t *testing.T) {
 		Type: artifact.UploadableBinary,
 		Path: binFile.Name(),
 	})
-	err = Pipe{}.Run(ctx)
-	require.Error(t, err)
-	require.ErrorIs(t, Pipe{}.Run(ctx), syscall.EACCES)
+	require.NoError(t, Pipe{}.Run(ctx))
+	_, err = ctx.Artifacts.Checksums().List()
+	require.ErrorIs(t, err, syscall.EACCES)
 }
 
 func TestPipeWhenNoArtifacts(t *testing.T) {
-	ctx := testctx.New()
+	ctx := testctx.NewWithCfg(config.Project{
+		ProjectName: "foo",
+	})
+	require.NoError(t, Pipe{}.Default(ctx))
 	require.NoError(t, Pipe{}.Run(ctx))
-	require.Empty(t, ctx.Artifacts.List())
+	list, err := ctx.Artifacts.Checksums().List()
+	require.NoError(t, err)
+	require.Empty(t, list)
 }
 
 func TestDefault(t *testing.T) {
@@ -276,6 +298,8 @@ func TestPipeChecksumsSortByFilename(t *testing.T) {
 	})
 
 	require.NoError(t, Pipe{}.Run(ctx))
+	_, err := ctx.Artifacts.Checksums().List()
+	require.NoError(t, err)
 
 	bts, err := os.ReadFile(filepath.Join(folder, checksums))
 	require.NoError(t, err)
@@ -371,6 +395,8 @@ func TestPipeCheckSumsWithExtraFiles(t *testing.T) {
 			})
 
 			require.NoError(t, Pipe{}.Run(ctx))
+			_, err := ctx.Artifacts.Checksums().List()
+			require.NoError(t, err)
 
 			bts, err := os.ReadFile(filepath.Join(folder, checksums))
 
@@ -390,7 +416,7 @@ func TestPipeCheckSumsWithExtraFiles(t *testing.T) {
 				if len(tt.ids) > 0 {
 					return nil
 				}
-				checkSum, err := artifact.Extra[string](*a, artifactChecksumExtra)
+				checkSum, err := artifact.Extra[string](*a, artifact.ExtraChecksum)
 				require.NoError(t, err)
 				require.NotEmptyf(t, checkSum, "failed: %v", a.Path)
 				return nil

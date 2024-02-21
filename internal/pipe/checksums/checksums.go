@@ -9,9 +9,7 @@ import (
 	"path/filepath"
 	"sort"
 	"strings"
-	"sync"
 
-	"github.com/caarlos0/log"
 	"github.com/goreleaser/goreleaser/internal/artifact"
 	"github.com/goreleaser/goreleaser/internal/extrafiles"
 	"github.com/goreleaser/goreleaser/internal/semerrgroup"
@@ -19,141 +17,176 @@ import (
 	"github.com/goreleaser/goreleaser/pkg/context"
 )
 
-const (
-	artifactChecksumExtra = "Checksum"
-)
-
-var (
-	errNoArtifacts = errors.New("there are no artifacts to sign")
-	lock           sync.Mutex
-)
-
 // Pipe for checksums.
 type Pipe struct{}
 
-func (Pipe) String() string                 { return "calculating checksums" }
-func (Pipe) Skip(ctx *context.Context) bool { return ctx.Config.Checksum.Disable }
+func (Pipe) String() string { return "calculating checksums" }
+func (Pipe) Skip(ctx *context.Context) bool {
+	d := ctx.Config.Checksum.Disable
+	if d {
+		ctx.Artifacts.SetChecksummer(noChecksums)
+	}
+	return d
+}
 
 // Default sets the pipe defaults.
 func (Pipe) Default(ctx *context.Context) error {
-	if ctx.Config.Checksum.NameTemplate == "" {
-		ctx.Config.Checksum.NameTemplate = "{{ .ProjectName }}_{{ .Version }}_checksums.txt"
-	}
-	if ctx.Config.Checksum.Algorithm == "" {
-		ctx.Config.Checksum.Algorithm = "sha256"
-	}
-	return nil
-}
-
-// Run the pipe.
-func (Pipe) Run(ctx *context.Context) error {
-	filename, err := tmpl.New(ctx).Apply(ctx.Config.Checksum.NameTemplate)
-	if err != nil {
-		return err
-	}
-	filepath := filepath.Join(ctx.Config.Dist, filename)
-	if err := refresh(ctx, filepath); err != nil {
-		if errors.Is(err, errNoArtifacts) {
-			return nil
+	c := &ctx.Config.Checksum
+	if c.NameTemplate == "" {
+		if c.Split {
+			c.NameTemplate = "{{ .ArtifactName }}.{{ .Algorithm }}"
+		} else {
+			c.NameTemplate = "{{ .ProjectName }}_{{ .Version }}_checksums.txt"
 		}
-		return err
 	}
-	ctx.Artifacts.Add(&artifact.Artifact{
-		Type: artifact.Checksum,
-		Path: filepath,
-		Name: filename,
-		Extra: map[string]interface{}{
-			artifact.ExtraRefresh: func() error {
-				log.WithField("file", filename).Info("refreshing checksums")
-				return refresh(ctx, filepath)
-			},
-		},
-	})
+	if c.Algorithm == "" {
+		c.Algorithm = "sha256"
+	}
 	return nil
 }
 
-func refresh(ctx *context.Context, filepath string) error {
-	lock.Lock()
-	defer lock.Unlock()
-	filter := artifact.Or(
-		artifact.ByType(artifact.UploadableArchive),
-		artifact.ByType(artifact.UploadableBinary),
-		artifact.ByType(artifact.UploadableSourceArchive),
-		artifact.ByType(artifact.LinuxPackage),
-		artifact.ByType(artifact.SBOM),
-	)
-	if len(ctx.Config.Checksum.IDs) > 0 {
-		filter = artifact.And(filter, artifact.ByIDs(ctx.Config.Checksum.IDs...))
+func noChecksums([]*artifact.Artifact) ([]*artifact.Artifact, error) {
+	return nil, nil
+}
+
+func splitChecksums(ctx *context.Context, extras []*artifact.Artifact) artifact.Checksummer {
+	return func(items []*artifact.Artifact) ([]*artifact.Artifact, error) {
+		items = append(filterIDs(ctx, items), extras...)
+
+		var checks []*artifact.Artifact
+		g := semerrgroup.New(ctx.Parallelism)
+		for _, art := range items {
+			art := art
+			g.Go(func() error {
+				sum, err := art.Checksum(ctx.Config.Checksum.Algorithm)
+				if err != nil {
+					if errors.Is(err, artifact.ErrNotChecksummable) {
+						return nil
+					}
+					return err
+				}
+				filename, err := tmpl.New(ctx).WithArtifact(art).WithExtraFields(tmpl.Fields{
+					"Algorithm": ctx.Config.Checksum.Algorithm,
+				}).Apply(ctx.Config.Checksum.NameTemplate)
+				if err != nil {
+					return err
+				}
+				filepath := filepath.Join(ctx.Config.Dist, filename)
+				if err := os.WriteFile(filepath, []byte(sum), 0644); err != nil {
+					return err
+				}
+				checks = append(checks, &artifact.Artifact{
+					Type: artifact.Checksum,
+					Path: filepath,
+					Name: filename,
+				})
+				return nil
+			})
+		}
+		if err := g.Wait(); err != nil {
+			return nil, err
+		}
+		return checks, nil
 	}
+}
 
-	artifactList := ctx.Artifacts.Filter(filter).List()
+func singleChecksum(ctx *context.Context, extras []*artifact.Artifact) artifact.Checksummer {
+	return func(items []*artifact.Artifact) ([]*artifact.Artifact, error) {
+		items = append(filterIDs(ctx, items), extras...)
 
+		filename, err := tmpl.New(ctx).Apply(ctx.Config.Checksum.NameTemplate)
+		if err != nil {
+			return nil, err
+		}
+		filepath := filepath.Join(ctx.Config.Dist, filename)
+
+		g := semerrgroup.New(ctx.Parallelism)
+		var sumLines []string
+		for _, art := range items {
+			art := art
+			g.Go(func() error {
+				sum, err := art.Checksum(ctx.Config.Checksum.Algorithm)
+				if err != nil {
+					if errors.Is(err, artifact.ErrNotChecksummable) {
+						return nil
+					}
+					return err
+				}
+				sumLines = append(sumLines, fmt.Sprintf("%v  %v", sum, art.Name))
+				return nil
+			})
+		}
+		if err := g.Wait(); err != nil {
+			return nil, err
+		}
+
+		file, err := os.OpenFile(
+			filepath,
+			os.O_APPEND|os.O_WRONLY|os.O_CREATE|os.O_TRUNC,
+			0o644,
+		)
+		if err != nil {
+			return nil, err
+		}
+		defer file.Close()
+
+		// sort to ensure the signature is deterministic downstream
+		sort.Sort(ByFilename(sumLines))
+
+		if _, err := file.WriteString(strings.Join(sumLines, "\n")); err != nil {
+			return nil, err
+		}
+
+		return []*artifact.Artifact{
+			{
+				Type: artifact.Checksum,
+				Path: filepath,
+				Name: filename,
+			},
+		}, nil
+	}
+}
+
+func evalExtras(ctx *context.Context) ([]*artifact.Artifact, error) {
 	extraFiles, err := extrafiles.Find(ctx, ctx.Config.Checksum.ExtraFiles)
 	if err != nil {
-		return err
+		return nil, err
 	}
 
+	var extras []*artifact.Artifact
 	for name, path := range extraFiles {
-		artifactList = append(artifactList, &artifact.Artifact{
+		extras = append(extras, &artifact.Artifact{
 			Name: name,
 			Path: path,
 			Type: artifact.UploadableFile,
 		})
 	}
-
-	if len(artifactList) == 0 {
-		return errNoArtifacts
-	}
-
-	g := semerrgroup.New(ctx.Parallelism)
-	sumLines := make([]string, len(artifactList))
-	for i, artifact := range artifactList {
-		i := i
-		artifact := artifact
-		g.Go(func() error {
-			sumLine, err := checksums(ctx.Config.Checksum.Algorithm, artifact)
-			if err != nil {
-				return err
-			}
-			sumLines[i] = sumLine
-			return nil
-		})
-	}
-
-	err = g.Wait()
-	if err != nil {
-		return err
-	}
-
-	file, err := os.OpenFile(
-		filepath,
-		os.O_APPEND|os.O_WRONLY|os.O_CREATE|os.O_TRUNC,
-		0o644,
-	)
-	if err != nil {
-		return err
-	}
-	defer file.Close()
-
-	// sort to ensure the signature is deterministic downstream
-	sort.Sort(ByFilename(sumLines))
-	_, err = file.WriteString(strings.Join(sumLines, ""))
-	return err
+	return extras, nil
 }
 
-func checksums(algorithm string, a *artifact.Artifact) (string, error) {
-	log.WithField("file", a.Name).Debug("checksumming")
-	sha, err := a.Checksum(algorithm)
+func filterIDs(ctx *context.Context, items []*artifact.Artifact) []*artifact.Artifact {
+	if ids := ctx.Config.Checksum.IDs; len(ids) > 0 {
+		a := artifact.New()
+		for _, i := range items {
+			a.Add(i)
+		}
+		return a.Filter(artifact.ByIDs(ids...)).List()
+	}
+	return items
+}
+
+// Run the pipe.
+func (Pipe) Run(ctx *context.Context) error {
+	extras, err := evalExtras(ctx)
 	if err != nil {
-		return "", err
+		return err
 	}
-
-	if a.Extra == nil {
-		a.Extra = make(artifact.Extras)
+	if ctx.Config.Checksum.Split {
+		ctx.Artifacts.SetChecksummer(splitChecksums(ctx, extras))
+	} else {
+		ctx.Artifacts.SetChecksummer(singleChecksum(ctx, extras))
 	}
-	a.Extra[artifactChecksumExtra] = fmt.Sprintf("%s:%s", algorithm, sha)
-
-	return fmt.Sprintf("%v  %v\n", sha, a.Name), nil
+	return nil
 }
 
 // ByFilename implements sort.Interface for []string based on

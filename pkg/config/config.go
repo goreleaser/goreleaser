@@ -1032,6 +1032,7 @@ type Checksum struct {
 	IDs          []string    `yaml:"ids,omitempty" json:"ids,omitempty"`
 	Disable      bool        `yaml:"disable,omitempty" json:"disable,omitempty"`
 	ExtraFiles   []ExtraFile `yaml:"extra_files,omitempty" json:"extra_files,omitempty"`
+	Split        bool        `yaml:"split" json:"split"`
 }
 
 // Docker image config.
