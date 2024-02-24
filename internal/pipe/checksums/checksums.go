@@ -39,8 +39,21 @@ func (Pipe) Default(ctx *context.Context) error {
 	return nil
 }
 
-func noChecksums([]*artifact.Artifact) ([]*artifact.Artifact, error) {
-	return nil, nil
+// Run the pipe.
+func (Pipe) Run(ctx *context.Context) error {
+	extras, err := evalExtras(ctx)
+	if err != nil {
+		return err
+	}
+	ctx.Artifacts.SetChecksummer(getChecksummer(ctx, extras))
+	return nil
+}
+
+func getChecksummer(ctx *context.Context, extras []*artifact.Artifact) artifact.Checksummer {
+	if ctx.Config.Checksum.Split {
+		return splitChecksums(ctx, extras)
+	}
+	return singleChecksum(ctx, extras)
 }
 
 func splitChecksums(ctx *context.Context, extras []*artifact.Artifact) artifact.Checksummer {
@@ -170,20 +183,6 @@ func filterIDs(ctx *context.Context, items []*artifact.Artifact) []*artifact.Art
 		return a.Filter(artifact.ByIDs(ids...)).List()
 	}
 	return items
-}
-
-// Run the pipe.
-func (Pipe) Run(ctx *context.Context) error {
-	extras, err := evalExtras(ctx)
-	if err != nil {
-		return err
-	}
-	if ctx.Config.Checksum.Split {
-		ctx.Artifacts.SetChecksummer(splitChecksums(ctx, extras))
-	} else {
-		ctx.Artifacts.SetChecksummer(singleChecksum(ctx, extras))
-	}
-	return nil
 }
 
 // ByFilename implements sort.Interface for []string based on
