@@ -78,14 +78,20 @@ func (Pipe) Run(ctx *context.Context) error {
 	g := semerrgroup.New(ctx.Parallelism)
 	for i := range ctx.Config.Signs {
 		cfg := ctx.Config.Signs[i]
+		var includeChecksums bool
 		g.Go(func() error {
 			var filters []artifact.Filter
 			switch cfg.Artifacts {
 			case "checksum":
-				filters = append(filters, artifact.ByType(artifact.Checksum))
+				includeChecksums = true
 				if len(cfg.IDs) > 0 {
 					log.Warn("when artifacts is `checksum`, `ids` has no effect. ignoring")
 				}
+				artifacts, err := ctx.Artifacts.Checksums().Get()
+				if err != nil {
+					return err
+				}
+				return sign(ctx, cfg, artifacts)
 			case "source":
 				filters = append(filters, artifact.ByType(artifact.UploadableSourceArchive))
 				if len(cfg.IDs) > 0 {
@@ -96,10 +102,10 @@ func (Pipe) Run(ctx *context.Context) error {
 					artifact.ByType(artifact.UploadableArchive),
 					artifact.ByType(artifact.UploadableBinary),
 					artifact.ByType(artifact.UploadableSourceArchive),
-					artifact.ByType(artifact.Checksum),
 					artifact.ByType(artifact.LinuxPackage),
 					artifact.ByType(artifact.SBOM),
 				))
+				includeChecksums = true
 			case "archive":
 				filters = append(filters, artifact.ByType(artifact.UploadableArchive))
 			case "binary":
@@ -117,7 +123,19 @@ func (Pipe) Run(ctx *context.Context) error {
 			if len(cfg.IDs) > 0 {
 				filters = append(filters, artifact.ByIDs(cfg.IDs...))
 			}
-			return sign(ctx, cfg, ctx.Artifacts.Filter(artifact.And(filters...)).List())
+
+			artifacts := ctx.Artifacts.Filter(artifact.And(filters...))
+			list := artifacts.List()
+
+			if includeChecksums {
+				var err error
+				list, err = artifacts.Checksums().List()
+				if err != nil {
+					return err
+				}
+			}
+
+			return sign(ctx, cfg, list)
 		})
 	}
 	if err := g.Wait(); err != nil {
