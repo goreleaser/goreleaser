@@ -9,6 +9,7 @@ import (
 	"path/filepath"
 	"sort"
 	"strings"
+	"sync"
 
 	"github.com/goreleaser/goreleaser/internal/artifact"
 	"github.com/goreleaser/goreleaser/internal/extrafiles"
@@ -61,6 +62,8 @@ func splitChecksums(ctx *context.Context, extras []*artifact.Artifact) artifact.
 		items = append(filterIDs(ctx, items), extras...)
 
 		var checks []*artifact.Artifact
+		var lock sync.Mutex
+
 		g := semerrgroup.New(ctx.Parallelism)
 		for _, art := range items {
 			art := art
@@ -72,9 +75,12 @@ func splitChecksums(ctx *context.Context, extras []*artifact.Artifact) artifact.
 					}
 					return err
 				}
-				filename, err := tmpl.New(ctx).WithArtifact(art).WithExtraFields(tmpl.Fields{
-					"Algorithm": ctx.Config.Checksum.Algorithm,
-				}).Apply(ctx.Config.Checksum.NameTemplate)
+				filename, err := tmpl.New(ctx).
+					WithArtifact(art).
+					WithExtraFields(tmpl.Fields{
+						"Algorithm": ctx.Config.Checksum.Algorithm,
+					}).
+					Apply(ctx.Config.Checksum.NameTemplate)
 				if err != nil {
 					return err
 				}
@@ -82,6 +88,8 @@ func splitChecksums(ctx *context.Context, extras []*artifact.Artifact) artifact.
 				if err := os.WriteFile(filepath, []byte(sum), 0o644); err != nil {
 					return err
 				}
+				lock.Lock()
+				defer lock.Unlock()
 				checks = append(checks, &artifact.Artifact{
 					Type: artifact.Checksum,
 					Path: filepath,
@@ -111,7 +119,10 @@ func singleChecksum(ctx *context.Context, extras []*artifact.Artifact) artifact.
 		filepath := filepath.Join(ctx.Config.Dist, filename)
 
 		g := semerrgroup.New(ctx.Parallelism)
+
 		var sumLines []string
+		var lock sync.Mutex
+
 		for _, art := range items {
 			art := art
 			g.Go(func() error {
@@ -122,6 +133,8 @@ func singleChecksum(ctx *context.Context, extras []*artifact.Artifact) artifact.
 					}
 					return err
 				}
+				lock.Lock()
+				defer lock.Unlock()
 				sumLines = append(sumLines, fmt.Sprintf("%v  %v", sum, art.Name))
 				return nil
 			})

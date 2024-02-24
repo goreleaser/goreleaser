@@ -104,6 +104,74 @@ func TestPipe(t *testing.T) {
 	}
 }
 
+func TestPipeSplit(t *testing.T) {
+	const binary = "binary"
+	const archive = binary + ".tar.gz"
+	const linuxPackage = binary + ".rpm"
+
+	folder := t.TempDir()
+	file := filepath.Join(folder, binary)
+	require.NoError(t, os.WriteFile(file, []byte("some string"), 0o644))
+	ctx := testctx.NewWithCfg(
+		config.Project{
+			Dist:        folder,
+			ProjectName: binary,
+			Checksum: config.Checksum{
+				Split: true,
+			},
+		},
+		testctx.WithCurrentTag("1.2.3"),
+	)
+	ctx.Artifacts.Add(&artifact.Artifact{
+		Name: binary,
+		Path: file,
+		Type: artifact.UploadableBinary,
+		Extra: map[string]interface{}{
+			artifact.ExtraID: "id-1",
+		},
+	})
+	ctx.Artifacts.Add(&artifact.Artifact{
+		Name: archive,
+		Path: file,
+		Type: artifact.UploadableArchive,
+		Extra: map[string]interface{}{
+			artifact.ExtraID: "id-2",
+		},
+	})
+	ctx.Artifacts.Add(&artifact.Artifact{
+		Name: linuxPackage,
+		Path: file,
+		Type: artifact.LinuxPackage,
+		Extra: map[string]interface{}{
+			artifact.ExtraID: "id-3",
+		},
+	})
+	require.NoError(t, Pipe{}.Default(ctx))
+	require.NoError(t, Pipe{}.Run(ctx))
+	result, err := ctx.Artifacts.Checksums().List()
+	require.NoError(t, err)
+	require.Len(t, result, 6)
+
+	checks, err := ctx.Artifacts.Checksums().Get()
+	require.Len(t, checks, 3)
+	require.NoError(t, err)
+
+	expected := map[string]string{
+		"binary.rpm.sha256":    "61d034473102d7dac305902770471fd50f4c5b26f6831a56dd90b5184b3c30fc",
+		"binary.sha256":        "61d034473102d7dac305902770471fd50f4c5b26f6831a56dd90b5184b3c30fc",
+		"binary.tar.gz.sha256": "61d034473102d7dac305902770471fd50f4c5b26f6831a56dd90b5184b3c30fc",
+	}
+
+	for _, check := range checks {
+		sha, err := os.ReadFile(check.Path)
+		require.NoError(t, err)
+
+		got, ok := expected[check.Name]
+		require.True(t, ok)
+		require.Equal(t, got, string(sha))
+	}
+}
+
 func TestRefreshModifying(t *testing.T) {
 	const binary = "binary"
 	folder := t.TempDir()
@@ -252,6 +320,21 @@ func TestDefault(t *testing.T) {
 	require.Equal(
 		t,
 		"{{ .ProjectName }}_{{ .Version }}_checksums.txt",
+		ctx.Config.Checksum.NameTemplate,
+	)
+	require.Equal(t, "sha256", ctx.Config.Checksum.Algorithm)
+}
+
+func TestDefaultSplit(t *testing.T) {
+	ctx := testctx.NewWithCfg(config.Project{
+		Checksum: config.Checksum{
+			Split: true,
+		},
+	})
+	require.NoError(t, Pipe{}.Default(ctx))
+	require.Equal(
+		t,
+		"{{ .ArtifactName }}.{{ .Algorithm }}",
 		ctx.Config.Checksum.NameTemplate,
 	)
 	require.Equal(t, "sha256", ctx.Config.Checksum.Algorithm)
