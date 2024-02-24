@@ -20,7 +20,7 @@ func describeBody(ctx *context.Context) (bytes.Buffer, error) {
 	f := tmpl.Fields{}
 	var checksum string
 	checksums := map[string]string{}
-	checks, err := ctx.Artifacts.Checksums().OnlyChecksums()
+	checks, err := ctx.Artifacts.Checksums().Get()
 	if err != nil {
 		return out, err
 	}

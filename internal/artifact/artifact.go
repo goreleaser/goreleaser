@@ -10,7 +10,6 @@ import (
 	"crypto/sha512"
 	"encoding/hex"
 	"encoding/json"
-	"errors"
 	"fmt"
 	"hash"
 	"hash/crc32"
@@ -230,8 +229,6 @@ func (a Artifact) isChecksummable() bool {
 	}
 }
 
-var ErrNotChecksummable = errors.New("artifact type does not support checksumming")
-
 // Checksum calculates the checksum of the artifact.
 // nolint: gosec
 func (a *Artifact) Checksum(algorithm string) (string, error) {
@@ -295,13 +292,12 @@ type Artifacts struct {
 	checksums Checksummer
 }
 
-type Checksummer func(items []*Artifact) ([]*Artifact, error)
-
 // New return a new list of artifacts.
 func New() *Artifacts {
 	return &Artifacts{
-		items: []*Artifact{},
-		lock:  &sync.Mutex{},
+		items:     []*Artifact{},
+		lock:      &sync.Mutex{},
+		checksums: func([]*Artifact) ([]*Artifact, error) { return nil, nil },
 	}
 }
 
@@ -310,40 +306,8 @@ func (artifacts *Artifacts) SetChecksummer(checksummer Checksummer) *Artifacts {
 	return artifacts
 }
 
-type ChecksummingArtifacts struct {
-	inner *Artifacts
-}
-
 func (artifacts *Artifacts) Checksums() *ChecksummingArtifacts {
 	return &ChecksummingArtifacts{artifacts}
-}
-
-func (a *ChecksummingArtifacts) OnlyChecksums() ([]*Artifact, error) {
-	var result []*Artifact
-
-	if list := a.inner.List(); a.inner.checksums != nil && len(list) > 0 {
-		checks, err := a.inner.checksums(list)
-		if err != nil {
-			return nil, err
-		}
-		result = append(result, checks...)
-	}
-
-	return result, nil
-}
-
-func (a *ChecksummingArtifacts) List() ([]*Artifact, error) {
-	list := a.inner.List()
-
-	if a.inner.checksums != nil && len(list) > 0 {
-		checks, err := a.inner.checksums(list)
-		if err != nil {
-			return nil, err
-		}
-		list = append(list, checks...)
-	}
-
-	return list, nil
 }
 
 // List return the actual list of artifacts.

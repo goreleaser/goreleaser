@@ -20,14 +20,8 @@ import (
 // Pipe for checksums.
 type Pipe struct{}
 
-func (Pipe) String() string { return "calculating checksums" }
-func (Pipe) Skip(ctx *context.Context) bool {
-	d := ctx.Config.Checksum.Disable
-	if d {
-		ctx.Artifacts.SetChecksummer(noChecksums)
-	}
-	return d
-}
+func (Pipe) String() string                 { return "calculating checksums" }
+func (Pipe) Skip(ctx *context.Context) bool { return ctx.Config.Checksum.Disable }
 
 // Default sets the pipe defaults.
 func (Pipe) Default(ctx *context.Context) error {

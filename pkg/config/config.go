@@ -1029,9 +1029,9 @@ type Snapshot struct {
 type Checksum struct {
 	NameTemplate string      `yaml:"name_template,omitempty" json:"name_template,omitempty"`
 	Algorithm    string      `yaml:"algorithm,omitempty" json:"algorithm,omitempty"`
-	IDs          []string    `yaml:"ids,omitempty" json:"ids,omitempty"`
+	IDs          []string    `yaml:"ids,omitempty" json:"ids,omitempty"` // Deprecated, has no effect anymore.
 	Disable      bool        `yaml:"disable,omitempty" json:"disable,omitempty"`
-	ExtraFiles   []ExtraFile `yaml:"extra_files,omitempty" json:"extra_files,omitempty"`
+	ExtraFiles   []ExtraFile `yaml:"extra_files,omitempty" json:"extra_files,omitempty"` // Deprecated, has no effect anymore.
 	Split        bool        `yaml:"split" json:"split"`
 }
 
