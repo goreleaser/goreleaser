@@ -25,83 +25,62 @@ func TestPipe(t *testing.T) {
 	const checksums = binary + "_bar_checksums.txt"
 	const sum = "61d034473102d7dac305902770471fd50f4c5b26f6831a56dd90b5184b3c30fc  "
 
-	tests := map[string]struct {
-		ids  []string
-		want string
-	}{
-		"default": {
-			want: strings.Join([]string{
-				sum + binary,
-				sum + linuxPackage,
-				sum + archive,
-			}, "\n") + "\n",
-		},
-		"select ids": {
-			ids: []string{
-				"id-1",
-				"id-2",
+	want := strings.Join([]string{
+		sum + binary,
+		sum + linuxPackage,
+		sum + archive,
+	}, "\n") + "\n"
+
+	folder := t.TempDir()
+	file := filepath.Join(folder, binary)
+	require.NoError(t, os.WriteFile(file, []byte("some string"), 0o644))
+	ctx := testctx.NewWithCfg(
+		config.Project{
+			Dist:        folder,
+			ProjectName: binary,
+			Checksum: config.Checksum{
+				NameTemplate: "{{ .ProjectName }}_{{ .Env.FOO }}_checksums.txt",
 			},
-			want: strings.Join([]string{
-				sum + binary,
-				sum + archive,
-			}, "\n") + "\n",
+			Env: []string{"FOO=bar"},
 		},
+		testctx.WithCurrentTag("1.2.3"),
+	)
+	ctx.Artifacts.Add(&artifact.Artifact{
+		Name: binary,
+		Path: file,
+		Type: artifact.UploadableBinary,
+		Extra: map[string]interface{}{
+			artifact.ExtraID: "id-1",
+		},
+	})
+	ctx.Artifacts.Add(&artifact.Artifact{
+		Name: archive,
+		Path: file,
+		Type: artifact.UploadableArchive,
+		Extra: map[string]interface{}{
+			artifact.ExtraID: "id-2",
+		},
+	})
+	ctx.Artifacts.Add(&artifact.Artifact{
+		Name: linuxPackage,
+		Path: file,
+		Type: artifact.LinuxPackage,
+		Extra: map[string]interface{}{
+			artifact.ExtraID: "id-3",
+		},
+	})
+	require.NoError(t, Pipe{}.Default(ctx))
+	require.NoError(t, Pipe{}.Run(ctx))
+	var artifacts []string
+	result, err := ctx.Artifacts.Checksums().List()
+	require.NoError(t, err)
+	for _, a := range result {
+		artifacts = append(artifacts, a.Name)
 	}
-	for name, tt := range tests {
-		t.Run(name, func(t *testing.T) {
-			folder := t.TempDir()
-			file := filepath.Join(folder, binary)
-			require.NoError(t, os.WriteFile(file, []byte("some string"), 0o644))
-			ctx := testctx.NewWithCfg(
-				config.Project{
-					Dist:        folder,
-					ProjectName: binary,
-					Checksum: config.Checksum{
-						NameTemplate: "{{ .ProjectName }}_{{ .Env.FOO }}_checksums.txt",
-						Algorithm:    "sha256",
-						IDs:          tt.ids,
-					},
-					Env: []string{"FOO=bar"},
-				},
-				testctx.WithCurrentTag("1.2.3"),
-			)
-			ctx.Artifacts.Add(&artifact.Artifact{
-				Name: binary,
-				Path: file,
-				Type: artifact.UploadableBinary,
-				Extra: map[string]interface{}{
-					artifact.ExtraID: "id-1",
-				},
-			})
-			ctx.Artifacts.Add(&artifact.Artifact{
-				Name: archive,
-				Path: file,
-				Type: artifact.UploadableArchive,
-				Extra: map[string]interface{}{
-					artifact.ExtraID: "id-2",
-				},
-			})
-			ctx.Artifacts.Add(&artifact.Artifact{
-				Name: linuxPackage,
-				Path: file,
-				Type: artifact.LinuxPackage,
-				Extra: map[string]interface{}{
-					artifact.ExtraID: "id-3",
-				},
-			})
-			require.NoError(t, Pipe{}.Run(ctx))
-			var artifacts []string
-			result, err := ctx.Artifacts.Checksums().List()
-			require.NoError(t, err)
-			for _, a := range result {
-				artifacts = append(artifacts, a.Name)
-			}
-			require.Contains(t, artifacts, checksums, binary)
-			bts, err := os.ReadFile(filepath.Join(folder, checksums))
-			require.NoError(t, err)
-			require.Contains(t, tt.want, string(bts))
-		})
-	}
+	require.Contains(t, artifacts, checksums, binary)
+	bts, err := os.ReadFile(filepath.Join(folder, checksums))
+	require.NoError(t, err)
+	require.Contains(t, want, string(bts))
 }
 
 func TestPipeSplit(t *testing.T) {
@@ -379,6 +358,14 @@ func TestPipeChecksumsSortByFilename(t *testing.T) {
 		Type: artifact.UploadableBinary,
 	})
 
+	for _, f := range []string{"a", "b", "c", "d"} {
+		ctx.Artifacts.Add(&artifact.Artifact{
+			Name: f + ".txt",
+			Path: filepath.Join("testdata", "order", f+".txt"),
+			Type: artifact.UploadableFile,
+		})
+	}
+
 	require.NoError(t, Pipe{}.Run(ctx))
 	_, err := ctx.Artifacts.Checksums().List()
 	require.NoError(t, err)
@@ -399,136 +386,6 @@ func TestPipeChecksumsSortByFilename(t *testing.T) {
 	for i, want := range wantLinesOrder {
 		require.Equal(t, want, lines[i])
 	}
-}
-
-func TestPipeCheckSumsWithExtraFiles(t *testing.T) {
-	const binary = "binary"
-	const checksums = "checksums.txt"
-	const extraFileFooRelPath = "./testdata/foo.txt"
-	const extraFileBarRelPath = "./testdata/**/bar.txt"
-	const extraFileFoo = "foo.txt"
-	const extraFileBar = "bar.txt"
-
-	tests := map[string]struct {
-		extraFiles []config.ExtraFile
-		ids        []string
-		want       []string
-	}{
-		"default": {
-			extraFiles: nil,
-			want: []string{
-				binary,
-			},
-		},
-		"one extra file": {
-			extraFiles: []config.ExtraFile{
-				{Glob: extraFileFooRelPath},
-			},
-			want: []string{
-				extraFileFoo,
-			},
-		},
-		"multiple extra files": {
-			extraFiles: []config.ExtraFile{
-				{Glob: extraFileFooRelPath},
-				{Glob: extraFileBarRelPath},
-			},
-			want: []string{
-				extraFileFoo,
-				extraFileBar,
-			},
-		},
-		"one extra file with no builds": {
-			extraFiles: []config.ExtraFile{
-				{Glob: extraFileFooRelPath},
-			},
-			ids: []string{"yada yada yada"},
-			want: []string{
-				extraFileFoo,
-			},
-		},
-	}
-
-	for name, tt := range tests {
-		t.Run(name, func(t *testing.T) {
-			folder := t.TempDir()
-			file := filepath.Join(folder, binary)
-			require.NoError(t, os.WriteFile(file, []byte("some string"), 0o644))
-			ctx := testctx.NewWithCfg(
-				config.Project{
-					Dist:        folder,
-					ProjectName: binary,
-					Checksum: config.Checksum{
-						Algorithm:    "sha256",
-						NameTemplate: "checksums.txt",
-						ExtraFiles:   tt.extraFiles,
-						IDs:          tt.ids,
-					},
-				},
-			)
-
-			ctx.Artifacts.Add(&artifact.Artifact{
-				Name: binary,
-				Path: file,
-				Type: artifact.UploadableBinary,
-				Extra: map[string]interface{}{
-					artifact.ExtraID: "id-1",
-				},
-			})
-
-			require.NoError(t, Pipe{}.Run(ctx))
-			_, err := ctx.Artifacts.Checksums().List()
-			require.NoError(t, err)
-
-			bts, err := os.ReadFile(filepath.Join(folder, checksums))
-
-			require.NoError(t, err)
-			for _, want := range tt.want {
-				if tt.extraFiles == nil {
-					require.Contains(t, string(bts), "61d034473102d7dac305902770471fd50f4c5b26f6831a56dd90b5184b3c30fc  "+want)
-				} else {
-					require.Contains(t, string(bts), "3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855  "+want)
-				}
-			}
-
-			_ = ctx.Artifacts.Visit(func(a *artifact.Artifact) error {
-				if a.Path != file {
-					return nil
-				}
-				if len(tt.ids) > 0 {
-					return nil
-				}
-				checkSum, err := artifact.Extra[string](*a, artifact.ExtraChecksum)
-				require.NoError(t, err)
-				require.NotEmptyf(t, checkSum, "failed: %v", a.Path)
-				return nil
-			})
-		})
-	}
-}
-
-func TestExtraFilesNoMatch(t *testing.T) {
-	dir := t.TempDir()
-	ctx := testctx.NewWithCfg(
-		config.Project{
-			Dist:        dir,
-			ProjectName: "fake",
-			Checksum: config.Checksum{
-				Algorithm:    "sha256",
-				NameTemplate: "checksums.txt",
-				ExtraFiles:   []config.ExtraFile{{Glob: "./nope/nope.txt"}},
-			},
-		},
-	)
-
-	ctx.Artifacts.Add(&artifact.Artifact{
-		Name: "fake",
-		Path: "fake-path",
-		Type: artifact.UploadableBinary,
-	})
-
-	require.NoError(t, Pipe{}.Default(ctx))
-	require.EqualError(t, Pipe{}.Run(ctx), `globbing failed for pattern ./nope/nope.txt: matching "./nope/nope.txt": file does not exist`)
 }
 
 func TestSkip(t *testing.T) {

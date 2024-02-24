@@ -39,6 +39,28 @@ Description.
 
 -->
 
+### checksum.templated_extra_files
+
+> since 2024-02-23 (v1.25.0)
+
+This option no longer makes sense.
+
+Checksums will now be evaluated for all the assets being uploaded, which should
+include the extra files too.
+
+The `ids` filter also is not necessary anymore, as you would already have
+filtered the artifacts by the `id`s you want beforehand.
+
+You can now simply remove this.
+
+### checksum.extra_files
+
+See [`checksum.templated_extra_files`](#checksumtemplated_extra_files).
+
+### checksum.ids
+
+See [`checksum.templated_extra_files`](#checksumtemplated_extra_files).
+
 ### changelog.skip
 
 > since 2024-01-14

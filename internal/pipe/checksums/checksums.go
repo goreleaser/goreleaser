@@ -12,7 +12,7 @@ import (
 	"sync"
 
 	"github.com/goreleaser/goreleaser/internal/artifact"
-	"github.com/goreleaser/goreleaser/internal/extrafiles"
+	"github.com/goreleaser/goreleaser/internal/deprecate"
 	"github.com/goreleaser/goreleaser/internal/semerrgroup"
 	"github.com/goreleaser/goreleaser/internal/tmpl"
 	"github.com/goreleaser/goreleaser/pkg/context"
@@ -37,30 +37,30 @@ func (Pipe) Default(ctx *context.Context) error {
 	if c.Algorithm == "" {
 		c.Algorithm = "sha256"
 	}
+	if len(c.IDs) > 0 {
+		deprecate.Notice(ctx, "checksum.ids")
+	}
+	if len(c.ExtraFiles) > 0 {
+		deprecate.Notice(ctx, "checksum.extra_files")
+	}
 	return nil
 }
 
 // Run the pipe.
 func (Pipe) Run(ctx *context.Context) error {
-	extras, err := evalExtras(ctx)
-	if err != nil {
-		return err
-	}
-	ctx.Artifacts.SetChecksummer(getChecksummer(ctx, extras))
+	ctx.Artifacts.SetChecksummer(getChecksummer(ctx))
 	return nil
 }
 
-func getChecksummer(ctx *context.Context, extras []*artifact.Artifact) artifact.Checksummer {
+func getChecksummer(ctx *context.Context) artifact.Checksummer {
 	if ctx.Config.Checksum.Split {
-		return splitChecksums(ctx, extras)
+		return splitChecksums(ctx)
 	}
-	return singleChecksum(ctx, extras)
+	return singleChecksum(ctx)
 }
 
-func splitChecksums(ctx *context.Context, extras []*artifact.Artifact) artifact.Checksummer {
+func splitChecksums(ctx *context.Context) artifact.Checksummer {
 	return func(items []*artifact.Artifact) ([]*artifact.Artifact, error) {
-		items = append(filterIDs(ctx, items), extras...)
-
 		var checks []*artifact.Artifact
 		var lock sync.Mutex
 
@@ -108,10 +108,8 @@ func splitChecksums(ctx *context.Context, extras []*artifact.Artifact) artifact.
 	}
 }
 
-func singleChecksum(ctx *context.Context, extras []*artifact.Artifact) artifact.Checksummer {
+func singleChecksum(ctx *context.Context) artifact.Checksummer {
 	return func(items []*artifact.Artifact) ([]*artifact.Artifact, error) {
-		items = append(filterIDs(ctx, items), extras...)
-
 		filename, err := tmpl.New(ctx).Apply(ctx.Config.Checksum.NameTemplate)
 		if err != nil {
 			return nil, err
@@ -168,34 +166,6 @@ func singleChecksum(ctx *context.Context, extras []*artifact.Artifact) artifact.
 			},
 		}, nil
 	}
-}
-
-func evalExtras(ctx *context.Context) ([]*artifact.Artifact, error) {
-	extraFiles, err := extrafiles.Find(ctx, ctx.Config.Checksum.ExtraFiles)
-	if err != nil {
-		return nil, err
-	}
-
-	var extras []*artifact.Artifact
-	for name, path := range extraFiles {
-		extras = append(extras, &artifact.Artifact{
-			Name: name,
-			Path: path,
-			Type: artifact.UploadableFile,
-		})
-	}
-	return extras, nil
-}
-
-func filterIDs(ctx *context.Context, items []*artifact.Artifact) []*artifact.Artifact {
-	if ids := ctx.Config.Checksum.IDs; len(ids) > 0 {
-		a := artifact.New()
-		for _, i := range items {
-			a.Add(i)
-		}
-		return a.Filter(artifact.ByIDs(ids...)).List()
-	}
-	return items
 }
 
 // ByFilename implements sort.Interface for []string based on
