@@ -52,6 +52,9 @@ func executePublisher(ctx *context.Context, publisher config.Publisher) error {
 
 	log.Debugf("filtering %d artifacts", len(ctx.Artifacts.List()))
 	artifacts := filterArtifacts(ctx.Artifacts, publisher)
+	if err != nil {
+		return err
+	}
 
 	extraFiles, err := extrafiles.Find(ctx, publisher.ExtraFiles)
 	if err != nil {
@@ -59,17 +62,27 @@ func executePublisher(ctx *context.Context, publisher config.Publisher) error {
 	}
 
 	for name, path := range extraFiles {
-		artifacts = append(artifacts, &artifact.Artifact{
+		artifacts.Add(&artifact.Artifact{
 			Name: name,
 			Path: path,
 			Type: artifact.UploadableFile,
 		})
 	}
 
-	log.Debugf("will execute custom publisher with %d artifacts", len(artifacts))
+	var list []*artifact.Artifact
+	if publisher.Checksum {
+		list, err = artifacts.Checksums().List()
+		if err != nil {
+			return err
+		}
+	} else {
+		list = artifacts.List()
+	}
+
+	log.Debugf("will execute custom publisher with %d artifacts", len(list))
 
 	g := semerrgroup.New(ctx.Parallelism)
-	for _, artifact := range artifacts {
+	for _, artifact := range list {
 		artifact := artifact
 		g.Go(func() error {
 			c, err := resolveCommand(ctx, publisher, artifact)
@@ -120,7 +133,7 @@ func executeCommand(c *command, artifact *artifact.Artifact) error {
 	return nil
 }
 
-func filterArtifacts(artifacts *artifact.Artifacts, publisher config.Publisher) []*artifact.Artifact {
+func filterArtifacts(artifacts *artifact.Artifacts, publisher config.Publisher) *artifact.Artifacts {
 	filters := []artifact.Filter{
 		artifact.ByType(artifact.UploadableArchive),
 		artifact.ByType(artifact.UploadableFile),
@@ -128,10 +141,6 @@ func filterArtifacts(artifacts *artifact.Artifacts, publisher config.Publisher) 
 		artifact.ByType(artifact.UploadableBinary),
 		artifact.ByType(artifact.DockerImage),
 		artifact.ByType(artifact.DockerManifest),
-	}
-
-	if publisher.Checksum {
-		filters = append(filters, artifact.ByType(artifact.Checksum))
 	}
 
 	if publisher.Signature {
@@ -144,7 +153,7 @@ func filterArtifacts(artifacts *artifact.Artifacts, publisher config.Publisher) 
 		filter = artifact.And(filter, artifact.ByIDs(publisher.IDs...))
 	}
 
-	return artifacts.Filter(filter).List()
+	return artifacts.Filter(filter)
 }
 
 type command struct {

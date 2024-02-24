@@ -158,9 +158,6 @@ func Upload(ctx *context.Context, uploads []config.Upload, kind string, check Re
 	for _, upload := range uploads {
 		upload := upload
 		filters := []artifact.Filter{}
-		if upload.Checksum {
-			filters = append(filters, artifact.ByType(artifact.Checksum))
-		}
 		if upload.Signature {
 			filters = append(filters, artifact.ByType(artifact.Signature), artifact.ByType(artifact.Certificate))
 		}
@@ -187,7 +184,11 @@ func Upload(ctx *context.Context, uploads []config.Upload, kind string, check Re
 		if len(upload.Exts) > 0 {
 			filter = artifact.And(filter, artifact.ByExt(upload.Exts...))
 		}
-		if err := uploadWithFilter(ctx, &upload, filter, kind, check); err != nil {
+		artifacts, err := list(ctx, &upload, filter)
+		if err != nil {
+			return err
+		}
+		if err := uploadWithFilter(ctx, &upload, artifacts, kind, check); err != nil {
 			return err
 		}
 	}
@@ -195,8 +196,14 @@ func Upload(ctx *context.Context, uploads []config.Upload, kind string, check Re
 	return nil
 }
 
-func uploadWithFilter(ctx *context.Context, upload *config.Upload, filter artifact.Filter, kind string, check ResponseChecker) error {
-	artifacts := ctx.Artifacts.Filter(filter).List()
+func list(ctx *context.Context, upload *config.Upload, filter artifact.Filter) ([]*artifact.Artifact, error) {
+	if upload.Checksum {
+		return ctx.Artifacts.Filter(filter).Checksums().List()
+	}
+	return ctx.Artifacts.Filter(filter).List(), nil
+}
+
+func uploadWithFilter(ctx *context.Context, upload *config.Upload, artifacts []*artifact.Artifact, kind string, check ResponseChecker) error {
 	if len(artifacts) == 0 {
 		log.Info("no artifacts found")
 	}

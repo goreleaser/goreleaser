@@ -151,21 +151,24 @@ func doPublish(ctx *context.Context, client client.Client) error {
 		artifact.ByType(artifact.UploadableArchive),
 		artifact.ByType(artifact.UploadableBinary),
 		artifact.ByType(artifact.UploadableSourceArchive),
-		artifact.ByType(artifact.Checksum),
 		artifact.ByType(artifact.Signature),
 		artifact.ByType(artifact.Certificate),
 		artifact.ByType(artifact.LinuxPackage),
 		artifact.ByType(artifact.SBOM),
+		artifact.ByType(artifact.UploadableFile),
 	)
 
 	if len(ctx.Config.Release.IDs) > 0 {
 		filters = artifact.And(filters, artifact.ByIDs(ctx.Config.Release.IDs...))
 	}
 
-	filters = artifact.Or(filters, artifact.ByType(artifact.UploadableFile))
+	list, err := ctx.Artifacts.Filter(filters).Checksums().List()
+	if err != nil {
+		return err
+	}
 
 	g := semerrgroup.New(ctx.Parallelism)
-	for _, artifact := range ctx.Artifacts.Filter(filters).List() {
+	for _, artifact := range list {
 		artifact := artifact
 		g.Go(func() error {
 			return upload(ctx, client, releaseID, artifact)

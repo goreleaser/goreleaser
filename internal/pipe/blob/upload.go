@@ -100,7 +100,6 @@ func doUpload(ctx *context.Context, conf config.Blob) error {
 		artifact.ByType(artifact.UploadableArchive),
 		artifact.ByType(artifact.UploadableBinary),
 		artifact.ByType(artifact.UploadableSourceArchive),
-		artifact.ByType(artifact.Checksum),
 		artifact.ByType(artifact.Signature),
 		artifact.ByType(artifact.Certificate),
 		artifact.ByType(artifact.LinuxPackage),
@@ -130,8 +129,25 @@ func doUpload(ctx *context.Context, conf config.Blob) error {
 	}
 	defer up.Close()
 
+	list := ctx.Artifacts.Filter(filter)
+	files, err := extrafiles.Find(ctx, conf.ExtraFiles)
+	if err != nil {
+		return err
+	}
+	for name, fullpath := range files {
+		list.Add(&artifact.Artifact{
+			Name: name,
+			Path: fullpath,
+			Type: artifact.UploadableFile,
+		})
+	}
+
 	g := semerrgroup.New(ctx.Parallelism)
-	for _, artifact := range ctx.Artifacts.Filter(filter).List() {
+	result, err := list.Checksums().List()
+	if err != nil {
+		return err
+	}
+	for _, artifact := range result {
 		artifact := artifact
 		g.Go(func() error {
 			// TODO: replace this with ?prefix=folder on the bucket url
@@ -139,19 +155,6 @@ func doUpload(ctx *context.Context, conf config.Blob) error {
 			uploadFile := path.Join(folder, artifact.Name)
 
 			return uploadData(ctx, conf, up, dataFile, uploadFile, bucketURL)
-		})
-	}
-
-	files, err := extrafiles.Find(ctx, conf.ExtraFiles)
-	if err != nil {
-		return err
-	}
-	for name, fullpath := range files {
-		name := name
-		fullpath := fullpath
-		g.Go(func() error {
-			uploadFile := path.Join(folder, name)
-			return uploadData(ctx, conf, up, fullpath, uploadFile, bucketURL)
 		})
 	}
 
