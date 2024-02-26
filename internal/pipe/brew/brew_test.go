@@ -177,6 +177,29 @@ func TestFullPipe(t *testing.T) {
 				ctx.Config.Brews[0].Homepage = "https://github.com/goreleaser"
 			},
 		},
+		"with_header": {
+			prepare: func(ctx *context.Context) {
+				ctx.TokenType = context.TokenTypeGitHub
+				ctx.Config.Brews[0].Repository.Owner = "test"
+				ctx.Config.Brews[0].Repository.Name = "test"
+				ctx.Config.Brews[0].Homepage = "https://github.com/goreleaser"
+				ctx.Config.Brews[0].URLHeaders = []string{
+					`Authorization: bearer #{ENV["HOMEBREW_GITHUB_API_TOKEN"]}`,
+				}
+			},
+		},
+		"with_many_headers": {
+			prepare: func(ctx *context.Context) {
+				ctx.TokenType = context.TokenTypeGitHub
+				ctx.Config.Brews[0].Repository.Owner = "test"
+				ctx.Config.Brews[0].Repository.Name = "test"
+				ctx.Config.Brews[0].Homepage = "https://github.com/goreleaser"
+				ctx.Config.Brews[0].URLHeaders = []string{
+					"Accept: application/octet-stream",
+					`Authorization: bearer #{ENV["HOMEBREW_GITHUB_API_TOKEN"]}`,
+				}
+			},
+		},
 		"git_remote": {
 			prepare: func(ctx *context.Context) {
 				ctx.TokenType = context.TokenTypeGitHub
