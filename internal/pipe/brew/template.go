@@ -33,6 +33,7 @@ type releasePackage struct {
 	Arch             string
 	DownloadStrategy string
 	Install          []string
+	Headers          []string
 }
 
 //go:embed templates

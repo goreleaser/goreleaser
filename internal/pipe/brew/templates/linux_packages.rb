@@ -11,6 +11,11 @@
   {{- end }}
     url "{{ $element.DownloadURL }}"
     {{- if .DownloadStrategy }}, using: {{ .DownloadStrategy }}{{- end }}
+    {{- if .Headers }},
+      headers: [{{ printf "\n" }}
+        {{- join .Headers | indent 10 }}
+      ]
+    {{- end }}
     sha256 "{{ $element.SHA256 }}"
 
     def install

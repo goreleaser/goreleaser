@@ -3,6 +3,11 @@
   {{- if eq $element.Arch "all" }}
   url "{{ $element.DownloadURL }}"
   {{- if .DownloadStrategy }}, using: {{ .DownloadStrategy }}{{- end }}
+  {{- if .Headers }},
+    headers: [{{ printf "\n" }}
+      {{- join .Headers | indent 8 }}
+    ]
+  {{- end }}
   sha256 "{{ $element.SHA256 }}"
 
   def install
@@ -13,6 +18,11 @@
   {{- else if $.HasOnlyAmd64MacOsPkg }}
   url "{{ $element.DownloadURL }}"
   {{- if .DownloadStrategy }}, using: {{ .DownloadStrategy }}{{- end }}
+  {{- if .Headers }},
+    headers: [{{ printf "\n" }}
+      {{- join .Headers | indent 8 }}
+    ]
+  {{- end }}
   sha256 "{{ $element.SHA256 }}"
 
   def install
@@ -39,6 +49,11 @@
   {{- end}}
     url "{{ $element.DownloadURL }}"
     {{- if .DownloadStrategy }}, using: {{ .DownloadStrategy }}{{- end }}
+    {{- if .Headers }},
+      headers: [{{ printf "\n" }}
+        {{- join .Headers | indent 8 }}
+      ]
+    {{- end }}
     sha256 "{{ $element.SHA256 }}"
 
     def install

@@ -310,6 +310,13 @@ func doBuildFormula(ctx *context.Context, data templateData) (string, error) {
 			pad := strings.Repeat(" ", spaces)
 			return pad + strings.ReplaceAll(v, "\n", "\n"+pad)
 		},
+		"join": func(in []string) string {
+			items := make([]string, 0, len(in))
+			for _, i := range in {
+				items = append(items, fmt.Sprintf(`"%s"`, i))
+			}
+			return strings.Join(items, ",\n")
+		},
 	}).ParseFS(formulaTemplate, "templates/*.rb")
 	if err != nil {
 		return "", err
@@ -437,6 +444,7 @@ func dataFor(ctx *context.Context, cfg config.Homebrew, cl client.ReleaseURLTemp
 			OS:               art.Goos,
 			Arch:             art.Goarch,
 			DownloadStrategy: cfg.DownloadStrategy,
+			Headers:          cfg.URLHeaders,
 			Install:          install,
 		}
 
