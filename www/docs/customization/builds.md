@@ -186,7 +186,7 @@ builds:
     # you would do this to ensure a build was reproducible.
     # Pass an empty string to skip modifying the output.
     #
-    # Templates: allowed.
+    # Templates: allowed
     mod_timestamp: "{{ .CommitTimestamp }}"
 
     # Hooks can be used to customize the final binary,

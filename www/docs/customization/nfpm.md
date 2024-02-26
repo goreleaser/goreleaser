@@ -17,13 +17,13 @@ nfpms:
 
     # Name of the package.
     # Default: ProjectName
-    # Templates: allowed. (since v1.18)
+    # Templates: allowed (since v1.18)
     package_name: foo
 
     # You can change the file name of the package.
     #
     # Default: '{{ .PackageName }}_{{ .Version }}_{{ .Os }}_{{ .Arch }}{{ with .Arm }}v{{ . }}{{ end }}{{ with .Mips }}_{{ . }}{{ end }}{{ if not (eq .Amd64 "v1") }}{{ .Amd64 }}{{ end }}'
-    # Templates: allowed.
+    # Templates: allowed
     file_name_template: "{{ .ConventionalFileName }}"
 
     # Build IDs for the builds you want to create NFPM packages for.
@@ -172,7 +172,7 @@ nfpms:
       # /etc, using the "tree" type.
       #
       # Since: v1.17
-      # Templates: allowed.
+      # Templates: allowed
       - src: some/directory/
         dst: /etc
         type: tree
@@ -204,7 +204,7 @@ nfpms:
     #
     # This feature is only available in GoReleaser Pro.
     # Since: v1.17 (pro)
-    # Templates: allowed.
+    # Templates: allowed
     templated_contents:
       # a more complete example, check the globbing deep dive below
       - src: "LICENSE.md.tpl"
@@ -292,7 +292,7 @@ nfpms:
     #
     # This feature is only available in GoReleaser Pro.
     # Since: v1.20 (pro)
-    # Templates: allowed.
+    # Templates: allowed
     templated_scripts:
       preinstall: "scripts/preinstall.sh"
       postinstall: "scripts/postinstall.sh"
@@ -358,7 +358,7 @@ nfpms:
         #
         # See "Signing key passphrases" below for more information.
         #
-        # Templates: allowed.
+        # Templates: allowed
         key_file: "{{ .Env.GPG_KEY_PATH }}"
 
     # Custom configuration applied only to the Deb packager.
@@ -406,7 +406,7 @@ nfpms:
         #
         # See "Signing key passphrases" below for more information.
         #
-        # Templates: allowed.
+        # Templates: allowed
         key_file: "{{ .Env.GPG_KEY_PATH }}"
 
         # The type describes the signers role, possible values are "origin",
@@ -440,14 +440,14 @@ nfpms:
         #
         # See "Signing key passphrases" below for more information.
         #
-        # Templates: allowed.
+        # Templates: allowed
         key_file: "{{ .Env.GPG_KEY_PATH }}"
 
         # The name of the signing key. When verifying a package, the signature
         # is matched to the public key store in /etc/apk/keys/<key_name>.rsa.pub.
         #
         # Default: maintainer's email address
-        # Templates: allowed. (since v1.15)
+        # Templates: allowed (since v1.15)
         key_name: origin
 
     archlinux:

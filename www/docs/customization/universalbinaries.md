@@ -43,7 +43,7 @@ universal_binaries:
     # Pass an empty string to skip modifying the output.
     #
     # Since: v1.20
-    # Templates: allowed.
+    # Templates: allowed
     mod_timestamp: "{{ .CommitTimestamp }}"
 
     # Hooks can be used to customize the final binary,

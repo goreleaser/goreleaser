@@ -103,7 +103,7 @@ dockers:
     # Path to the Dockerfile (from the project root).
     #
     # Default: 'Dockerfile'
-    # Templates: allowed.
+    # Templates: allowed
     dockerfile: "{{ .Env.DOCKERFILE }}"
 
     # Use this instead of `dockerfile` if the contents of your Dockerfile are

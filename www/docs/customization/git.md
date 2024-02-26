@@ -24,7 +24,7 @@ git:
   # provided values as either previous or current tags.
   #
   # Since: v1.21
-  # Templates: allowed.
+  # Templates: allowed
   ignore_tags:
     - nightly
     - "{{.Env.IGNORE_TAG}}"
@@ -33,7 +33,7 @@ git:
   #
   # This feature is only available in GoReleaser Pro.
   # Since: v1.24 (pro)
-  # Templates: allowed.
+  # Templates: allowed
   ignore_tag_prefixes:
     - foo/
     - "{{.Env.IGNORE_TAG_PREFIX}}/bar"
