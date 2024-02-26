@@ -202,8 +202,8 @@ nfpms:
     # Those files will have their contents pass through the template engine,
     # and its results will be added to the package.
     #
-    # Since: v1.17 (pro)
     # This feature is only available in GoReleaser Pro.
+    # Since: v1.17 (pro)
     # Templates: allowed.
     templated_contents:
       # a more complete example, check the globbing deep dive below
@@ -290,8 +290,8 @@ nfpms:
     # Keys are the possible targets during the installation process
     # Values are the paths to the scripts which will be executed.
     #
-    # Since: v1.20 (pro)
     # This feature is only available in GoReleaser Pro.
+    # Since: v1.20 (pro)
     # Templates: allowed.
     templated_scripts:
       preinstall: "scripts/preinstall.sh"

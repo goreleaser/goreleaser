@@ -68,8 +68,8 @@ source:
   # Those files will have their contents pass through the template engine,
   # and its results will be added to the source archive.
   #
-  # Since: v1.17 (pro)
   # This feature is only available in GoReleaser Pro.
+  # Since: v1.17 (pro)
   # Templates: allowed
   templated_files:
     # a more complete example, check the globbing deep dive below

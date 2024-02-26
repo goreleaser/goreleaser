@@ -87,8 +87,8 @@ dockers:
     # linux, for example.
     #
     # Templates: allowed
-    # Since: v1.14 (pro)
     # This option is only available on GoReleaser Pro.
+    # Since: v1.14 (pro)
     skip_build: false
 
     # Skips the docker push.
@@ -111,8 +111,8 @@ dockers:
     #
     # `dockerfile` is ignored when this is set.
     #
-    # Since: v1.20 (pro)
     # This feature is only available in GoReleaser Pro.
+    # Since: v1.20 (pro)
     # Templates: allowed
     templated_dockerfile: "{{.Env.DOCKERFILE }}"
 
@@ -158,8 +158,8 @@ dockers:
     # and its results will be added to the build context the same way as the
     # extra_files field above.
     #
-    # Since: v1.17 (pro)
     # This feature is only available in GoReleaser Pro.
+    # Since: v1.17 (pro)
     # Templates: allowed
     templated_extra_files:
       - src: LICENSE.tpl
