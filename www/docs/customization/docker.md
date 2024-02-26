@@ -86,9 +86,9 @@ dockers:
     # Could be useful if you want to skip building the windows docker image on
     # linux, for example.
     #
-    # Templates: allowed
     # This option is only available on GoReleaser Pro.
     # Since: v1.14 (pro)
+    # Templates: allowed
     skip_build: false
 
     # Skips the docker push.

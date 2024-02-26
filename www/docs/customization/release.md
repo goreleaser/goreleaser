@@ -44,8 +44,8 @@ release:
   # value of this field.
   # Only works on GitHub.
   #
-  # Default: ''
   # Since: v1.11
+  # Default: ''
   # Templates: allowed
   target_commitish: "{{ .Commit }}"
 
@@ -54,8 +54,8 @@ release:
   # publish a binary from a monorepo into a public repository somewhere, without
   # the tag prefix.
   #
-  # Default: '{{ .PrefixedCurrentTag }}'
   # Since: v1.19 (pro)
+  # Default: '{{ .PrefixedCurrentTag }}'
   # Templates: allowed
   tag: "{{ .CurrentTag }}"
 

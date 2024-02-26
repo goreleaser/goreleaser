@@ -23,8 +23,8 @@ git:
   # This means that GoReleaser will not pick up tags that match any of the
   # provided values as either previous or current tags.
   #
-  # Templates: allowed.
   # Since: v1.21
+  # Templates: allowed.
   ignore_tags:
     - nightly
     - "{{.Env.IGNORE_TAG}}"
@@ -32,8 +32,8 @@ git:
   # Tags that begin with these prefixes will be ignored.
   #
   # This feature is only available in GoReleaser Pro.
-  # Templates: allowed.
   # Since: v1.24 (pro)
+  # Templates: allowed.
   ignore_tag_prefixes:
     - foo/
     - "{{.Env.IGNORE_TAG_PREFIX}}/bar"

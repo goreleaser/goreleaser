@@ -113,9 +113,9 @@ blobs:
     # If you need different `content_disposition` options for different files,
     # create multiple `blobs` configurations.
     #
+    # Since: v1.24
     # Default: attachment;filename={{.Filename}}
     # Templates: allowed
-    # Since: v1.24
     content_disposition: "inline"
 
   - provider: gs
