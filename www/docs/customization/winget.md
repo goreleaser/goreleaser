@@ -20,19 +20,19 @@ winget:
     # Publisher name.
     #
     # Templates: allowed
-    # Required.
+    # Required
     publisher: Foo Inc
 
     # Your app's description.
     #
     # Templates: allowed
-    # Required.
+    # Required
     short_description: "Software to create fast and easy drum rolls."
 
     # License name.
     #
     # Templates: allowed
-    # Required.
+    # Required
     license: "mit"
 
     # Publisher URL.

@@ -44,8 +44,8 @@ release:
   # value of this field.
   # Only works on GitHub.
   #
-  # Default: ''
   # Since: v1.11
+  # Default: ''
   # Templates: allowed
   target_commitish: "{{ .Commit }}"
 
@@ -54,8 +54,8 @@ release:
   # publish a binary from a monorepo into a public repository somewhere, without
   # the tag prefix.
   #
-  # Default: '{{ .PrefixedCurrentTag }}'
   # Since: v1.19 (pro)
+  # Default: '{{ .PrefixedCurrentTag }}'
   # Templates: allowed
   tag: "{{ .CurrentTag }}"
 
@@ -183,8 +183,8 @@ release:
   # Those files will have their contents pass through the template engine,
   # and its results will be added to the release.
   #
-  # Since: v1.17 (pro)
   # This feature is only available in GoReleaser Pro.
+  # Since: v1.17 (pro)
   # Templates: allowed
   templated_extra_files:
     - src: LICENSE.tpl

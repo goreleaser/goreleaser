@@ -86,9 +86,9 @@ dockers:
     # Could be useful if you want to skip building the windows docker image on
     # linux, for example.
     #
-    # Templates: allowed
-    # Since: v1.14 (pro)
     # This option is only available on GoReleaser Pro.
+    # Since: v1.14 (pro)
+    # Templates: allowed
     skip_build: false
 
     # Skips the docker push.
@@ -103,7 +103,7 @@ dockers:
     # Path to the Dockerfile (from the project root).
     #
     # Default: 'Dockerfile'
-    # Templates: allowed.
+    # Templates: allowed
     dockerfile: "{{ .Env.DOCKERFILE }}"
 
     # Use this instead of `dockerfile` if the contents of your Dockerfile are
@@ -111,8 +111,8 @@ dockers:
     #
     # `dockerfile` is ignored when this is set.
     #
-    # Since: v1.20 (pro)
     # This feature is only available in GoReleaser Pro.
+    # Since: v1.20 (pro)
     # Templates: allowed
     templated_dockerfile: "{{.Env.DOCKERFILE }}"
 
@@ -158,8 +158,8 @@ dockers:
     # and its results will be added to the build context the same way as the
     # extra_files field above.
     #
-    # Since: v1.17 (pro)
     # This feature is only available in GoReleaser Pro.
+    # Since: v1.17 (pro)
     # Templates: allowed
     templated_extra_files:
       - src: LICENSE.tpl

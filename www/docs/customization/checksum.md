@@ -47,8 +47,8 @@ checksum:
   # Those files will have their contents pass through the template engine,
   # and its results will be added to the checksum.
   #
-  # Since: v1.17 (pro)
   # This feature is only available in GoReleaser Pro.
+  # Since: v1.17 (pro)
   # Templates: allowed
   templated_extra_files:
     - src: LICENSE.tpl

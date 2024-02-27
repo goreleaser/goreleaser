@@ -43,8 +43,8 @@ changelog:
   # Only works when `use: git`, otherwise ignored.
   #
   # Default: monorepo.dir value, or empty if no monorepo
-  # Since: v1.12 (pro)
   # This feature is only available in GoReleaser Pro.
+  # Since: v1.12 (pro)
   paths:
     - foo/
     - bar/
@@ -79,8 +79,8 @@ changelog:
       # There can only be one level of subgroups, i.e.: a subgroup can't have
       # subgroups within it.
       #
-      # Since: v1.15 (pro)
       # This feature is only available in GoReleaser Pro.
+      # Since: v1.15 (pro)
       groups:
         - title: "Docs"
           regex: ".*docs.*"
@@ -91,8 +91,8 @@ changelog:
 
   # Divider to use between groups.
   #
-  # Since: v1.16 (pro)
   # This feature is only available in GoReleaser Pro.
+  # Since: v1.16 (pro)
   divider: "---"
 
   filters:
