@@ -19,7 +19,7 @@ require (
 	github.com/charmbracelet/x/exp/ordered v0.0.0-20231010190216-1cb11efc897d
 	github.com/chrismellard/docker-credential-acr-env v0.0.0-20230304212654-82a0ddb27589
 	github.com/dghubble/go-twitter v0.0.0-20211115160449-93a8679adecb
-	github.com/dghubble/oauth1 v0.7.2
+	github.com/dghubble/oauth1 v0.7.3
 	github.com/distribution/distribution/v3 v3.0.0-alpha.1
 	github.com/go-telegram-bot-api/telegram-bot-api v4.6.4+incompatible
 	github.com/google/go-containerregistry v0.19.0
