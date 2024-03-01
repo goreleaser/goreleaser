@@ -8,6 +8,7 @@ import (
 
 	"github.com/goreleaser/goreleaser/internal/artifact"
 	"github.com/goreleaser/goreleaser/internal/client"
+	"github.com/goreleaser/goreleaser/internal/pipe/checksums"
 	"github.com/goreleaser/goreleaser/internal/testctx"
 	"github.com/goreleaser/goreleaser/internal/testlib"
 	"github.com/goreleaser/goreleaser/pkg/config"
@@ -32,7 +33,6 @@ func TestRunPipeWithoutIDsThenDoesNotFilter(t *testing.T) {
 	tarfile := createTmpFile(t, folder, "bin.tar.gz")
 	srcfile := createTmpFile(t, folder, "source.tar.gz")
 	debfile := createTmpFile(t, folder, "bin.deb")
-	checksumfile := createTmpFile(t, folder, "checksum")
 	checksumsigfile := createTmpFile(t, folder, "checksum.sig")
 	checksumpemfile := createTmpFile(t, folder, "checksum.pem")
 	filteredtarfile := createTmpFile(t, folder, "filtered.tar.gz")
@@ -40,6 +40,9 @@ func TestRunPipeWithoutIDsThenDoesNotFilter(t *testing.T) {
 
 	config := config.Project{
 		Dist: folder,
+		Checksum: config.Checksum{
+			NameTemplate: "checksum",
+		},
 		Release: config.Release{
 			GitHub: config.Repo{
 				Owner: "test",
@@ -88,15 +91,6 @@ func TestRunPipeWithoutIDsThenDoesNotFilter(t *testing.T) {
 			artifact.ExtraFormat: "tar.gz",
 		},
 	})
-
-	ctx.Artifacts.Add(&artifact.Artifact{
-		Type: artifact.Checksum,
-		Name: "checksum",
-		Path: checksumfile,
-		Extra: map[string]interface{}{
-			artifact.ExtraID: "bar",
-		},
-	})
 	ctx.Artifacts.Add(&artifact.Artifact{
 		Type: artifact.Signature,
 		Name: "checksum.sig",
@@ -114,6 +108,8 @@ func TestRunPipeWithoutIDsThenDoesNotFilter(t *testing.T) {
 		},
 	})
 	client := &client.Mock{}
+	require.NoError(t, checksums.Pipe{}.Default(ctx))
+	require.NoError(t, checksums.Pipe{}.Run(ctx))
 	require.NoError(t, doPublish(ctx, client))
 	require.True(t, client.CreatedRelease)
 	require.True(t, client.UploadedFile)
@@ -190,6 +186,8 @@ func TestRunPipeWithIDsThenFilters(t *testing.T) {
 		},
 	})
 	client := &client.Mock{}
+	require.NoError(t, checksums.Pipe{}.Default(ctx))
+	require.NoError(t, checksums.Pipe{}.Run(ctx))
 	require.NoError(t, doPublish(ctx, client))
 	require.True(t, client.CreatedRelease)
 	require.True(t, client.UploadedFile)
@@ -214,6 +212,8 @@ func TestRunPipeReleaseCreationFailed(t *testing.T) {
 	client := &client.Mock{
 		FailToCreateRelease: true,
 	}
+	require.NoError(t, checksums.Pipe{}.Default(ctx))
+	require.NoError(t, checksums.Pipe{}.Run(ctx))
 	require.Error(t, doPublish(ctx, client))
 	require.False(t, client.CreatedRelease)
 	require.False(t, client.UploadedFile)
@@ -236,6 +236,8 @@ func TestRunPipeWithFileThatDontExist(t *testing.T) {
 		Path: "/nope/nope/nope",
 	})
 	client := &client.Mock{}
+	require.NoError(t, checksums.Pipe{}.Default(ctx))
+	require.NoError(t, checksums.Pipe{}.Run(ctx))
 	require.Error(t, doPublish(ctx, client))
 	require.True(t, client.CreatedRelease)
 	require.False(t, client.UploadedFile)
@@ -259,6 +261,8 @@ func TestRunPipeUploadFailure(t *testing.T) {
 		Name: "bin.tar.gz",
 		Path: tarfile.Name(),
 	})
+	require.NoError(t, checksums.Pipe{}.Default(ctx))
+	require.NoError(t, checksums.Pipe{}.Run(ctx))
 	client := &client.Mock{
 		FailToUpload: true,
 	}
@@ -283,6 +287,8 @@ func TestRunPipeExtraFileNotFound(t *testing.T) {
 	}
 	ctx := testctx.NewWithCfg(config, testctx.WithCurrentTag("v1.0.0"))
 	client := &client.Mock{}
+	require.NoError(t, checksums.Pipe{}.Default(ctx))
+	require.NoError(t, checksums.Pipe{}.Run(ctx))
 	require.EqualError(t, doPublish(ctx, client), "globbing failed for pattern ./nope: matching \"./nope\": file does not exist")
 	require.True(t, client.CreatedRelease)
 	require.False(t, client.UploadedFile)
@@ -303,6 +309,8 @@ func TestRunPipeExtraOverride(t *testing.T) {
 	}
 	ctx := testctx.NewWithCfg(config, testctx.WithCurrentTag("v1.0.0"))
 	client := &client.Mock{}
+	require.NoError(t, checksums.Pipe{}.Default(ctx))
+	require.NoError(t, checksums.Pipe{}.Run(ctx))
 	require.NoError(t, doPublish(ctx, client))
 	require.True(t, client.CreatedRelease)
 	require.True(t, client.UploadedFile)
@@ -331,6 +339,8 @@ func TestRunPipeUploadRetry(t *testing.T) {
 	client := &client.Mock{
 		FailFirstUpload: true,
 	}
+	require.NoError(t, checksums.Pipe{}.Default(ctx))
+	require.NoError(t, checksums.Pipe{}.Run(ctx))
 	require.NoError(t, doPublish(ctx, client))
 	require.True(t, client.CreatedRelease)
 	require.True(t, client.UploadedFile)
@@ -654,6 +664,8 @@ func TestSkip(t *testing.T) {
 			},
 		})
 		client := &client.Mock{}
+		require.NoError(t, checksums.Pipe{}.Default(ctx))
+		require.NoError(t, checksums.Pipe{}.Run(ctx))
 		testlib.AssertSkipped(t, doPublish(ctx, client))
 		require.True(t, client.CreatedRelease)
 		require.False(t, client.UploadedFile)
@@ -666,6 +678,8 @@ func TestSkip(t *testing.T) {
 			},
 		})
 		client := &client.Mock{}
+		require.NoError(t, checksums.Pipe{}.Default(ctx))
+		require.NoError(t, checksums.Pipe{}.Run(ctx))
 		testlib.AssertSkipped(t, doPublish(ctx, client))
 		require.True(t, client.CreatedRelease)
 		require.False(t, client.UploadedFile)

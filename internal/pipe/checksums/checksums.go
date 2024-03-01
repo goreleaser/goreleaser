@@ -46,6 +46,13 @@ func (Pipe) Default(ctx *context.Context) error {
 	return nil
 }
 
+// XXX: this is a bit weird to use in tests.
+// All the tests that need to use checksums, will also need to run this pipe first.
+// It's hard to break that dependency, as there's no right place to put this
+// without creating cycling dependencies, as we would ideally call this on
+// `context.New`.
+// For now, I'm leaving it as is.
+
 // Run the pipe.
 func (Pipe) Run(ctx *context.Context) error {
 	ctx.Artifacts.SetChecksummer(getChecksummer(ctx))
