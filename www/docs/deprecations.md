@@ -39,6 +39,26 @@ Description.
 
 -->
 
+### furies.skip
+
+> since 2024-03-03
+
+Changed to `disable` to conform with all other pipes.
+
+=== "Before"
+
+    ```yaml
+    furies:
+      - skip: true
+    ```
+
+=== "After"
+
+    ```yaml
+    furies:
+      - disable: true
+    ```
+
 ### changelog.skip
 
 > since 2024-01-14
