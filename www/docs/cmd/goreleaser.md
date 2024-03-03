@@ -35,4 +35,5 @@ Check out our website for more information, examples and documentation: https://
 * [goreleaser jsonschema](/cmd/goreleaser_jsonschema/)	 - outputs goreleaser's JSON schema
 * [goreleaser publish](/cmd/goreleaser_publish/)	 - Publishes a previously prepared release
 * [goreleaser release](/cmd/goreleaser_release/)	 - Releases the current project
+* [goreleaser verify-license](/cmd/goreleaser_verify-license/)	 - Verify if the given license is valid
 
