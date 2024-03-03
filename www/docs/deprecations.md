@@ -83,7 +83,7 @@ Changed to `disable` to conform with all other pipes.
 
 ### changelog.skip
 
-> since 2024-01-14
+> since 2024-01-14 (v1.24)
 
 Changed to `disable` to conform with all other pipes.
 
@@ -103,7 +103,7 @@ Changed to `disable` to conform with all other pipes.
 
 ### blobs.kmskey
 
-> since 2024-01-07
+> since 2024-01-07 (v1.24)
 
 Changed to `kms_key` to conform with all other options.
 
@@ -123,7 +123,7 @@ Changed to `kms_key` to conform with all other options.
 
 ### blobs.disableSSL
 
-> since 2024-01-07
+> since 2024-01-07 (v1.24)
 
 Changed to `disable_ssl` to conform with all other options.
 
@@ -143,7 +143,7 @@ Changed to `disable_ssl` to conform with all other options.
 
 ### `--skip`
 
-> since 2023-09-14
+> since 2023-09-14 (v1.21)
 
 The following `goreleaser release` flags were deprecated:
 

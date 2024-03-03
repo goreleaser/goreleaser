@@ -77,19 +77,19 @@ changelog:
       regexp: '^.*?(feat|fix|chore)\(deps\)!?:.+$'
       order: 300
     - title: "New Features"
-      regexp: '^.*?feat(\([[:word:]]+\))??!?:.+$'
+      regexp: '^.*?feat(\(.+\))??!?:.+$'
       order: 100
     - title: "Security updates"
-      regexp: '^.*?sec(\([[:word:]]+\))??!?:.+$'
+      regexp: '^.*?sec(\(.+\))??!?:.+$'
       order: 150
     - title: "Bug fixes"
-      regexp: '^.*?(fix|refactor)(\([[:word:]]+\))??!?:.+$'
+      regexp: '^.*?(fix|refactor)(\(.+\))??!?:.+$'
       order: 200
     - title: "Documentation updates"
-      regexp: ^.*?docs?(\([[:word:]]+\))??!?:.+$
+      regexp: ^.*?docs?(\(.+\))??!?:.+$
       order: 400
     - title: "Build process updates"
-      regexp: ^.*?(build|ci)(\([[:word:]]+\))??!?:.+$
+      regexp: ^.*?(build|ci)(\(.+\))??!?:.+$
       order: 400
     - title: Other work
       order: 9999
