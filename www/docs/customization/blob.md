@@ -73,8 +73,8 @@ blobs:
     # Those files will have their contents pass through the template engine,
     # and its results will be uploaded.
     #
-    # Since: v1.17 (pro)
     # This feature is only available in GoReleaser Pro.
+    # Since: v1.17 (pro)
     # Templates: allowed
     templated_extra_files:
       - src: LICENSE.tpl
@@ -113,9 +113,9 @@ blobs:
     # If you need different `content_disposition` options for different files,
     # create multiple `blobs` configurations.
     #
+    # Since: v1.24
     # Default: attachment;filename={{.Filename}}
     # Templates: allowed
-    # Since: v1.24
     content_disposition: "inline"
 
   - provider: gs

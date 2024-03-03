@@ -66,6 +66,15 @@ brews:
     # Templates: allowed
     url_template: "https://github.mycompany.com/foo/bar/releases/download/{{ .Tag }}/{{ .ArtifactName }}"
 
+    # Headers to include in the `url` stanza.
+    # This can be a more modern alternative to `download_strategy` in some
+    # cases.
+    #
+    # Since: v1.25
+    url_headers:
+      - "Accept: application/octet-stream"
+      - 'Authorization: bearer #{ENV["HOMEBREW_GITHUB_API_TOKEN"]}'
+
     # Allows you to set a custom download strategy. Note that you'll need
     # to implement the strategy and add it to your tap repository.
     # Example: https://docs.brew.sh/Formula-Cookbook#specifying-the-download-strategy-explicitly

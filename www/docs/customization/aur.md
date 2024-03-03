@@ -159,9 +159,9 @@ aurs:
     # Only useful if you're creating your own AUR with multiple packages in a
     # single repository.
     #
+    # Since: v1.23
     # Default: .
     # Templates: allowed
-    # Since: v1.23
     directory: "."
 ```
 

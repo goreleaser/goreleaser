@@ -239,6 +239,7 @@ type Homebrew struct {
 	SkipUpload            string               `yaml:"skip_upload,omitempty" json:"skip_upload,omitempty" jsonschema:"oneof_type=string;boolean"`
 	DownloadStrategy      string               `yaml:"download_strategy,omitempty" json:"download_strategy,omitempty"`
 	URLTemplate           string               `yaml:"url_template,omitempty" json:"url_template,omitempty"`
+	URLHeaders            []string             `yaml:"url_headers,omitempty" json:"url_headers,omitempty"`
 	CustomRequire         string               `yaml:"custom_require,omitempty" json:"custom_require,omitempty"`
 	CustomBlock           string               `yaml:"custom_block,omitempty" json:"custom_block,omitempty"`
 	IDs                   []string             `yaml:"ids,omitempty" json:"ids,omitempty"`
@@ -314,7 +315,7 @@ func (a *NixDependency) UnmarshalYAML(unmarshal func(interface{}) error) error {
 }
 
 type Winget struct {
-	Name                  string             `yaml:"name" json:"name"`
+	Name                  string             `yaml:"name,omitempty" json:"name,omitempty"`
 	PackageIdentifier     string             `yaml:"package_identifier,omitempty" json:"package_identifier,omitempty"`
 	Publisher             string             `yaml:"publisher" json:"publisher"`
 	PublisherURL          string             `yaml:"publisher_url,omitempty" json:"publisher_url,omitempty"`

@@ -38,8 +38,8 @@
         # If the pull request template has checkboxes, enabling this will
         # check all of them.
         #
-        # Since: v1.20 (pro)
         # This feature is only available in GoReleaser Pro.
+        # Since: v1.20 (pro)
         check_boxes: true
 
         # Base can also be another repository, in which case the owner and name

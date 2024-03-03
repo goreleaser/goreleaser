@@ -1,7 +1,7 @@
 # Checksums
 
 GoReleaser will always generate checksums for artifacts being uploaded, except
-if explicitly disabled.
+when explicitly disabled.
 
 The `checksum` section allows the following customizations:
 

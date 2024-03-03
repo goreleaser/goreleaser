@@ -6,7 +6,7 @@ require (
 	code.gitea.io/sdk/gitea v0.17.1
 	dario.cat/mergo v1.0.0
 	github.com/Masterminds/semver/v3 v3.2.1
-	github.com/atc0005/go-teams-notify/v2 v2.9.0
+	github.com/atc0005/go-teams-notify/v2 v2.10.0
 	github.com/awslabs/amazon-ecr-credential-helper/ecr-login v0.0.0-20231024185945-8841054dbdb8
 	github.com/caarlos0/ctrlc v1.2.0
 	github.com/caarlos0/env/v9 v9.0.0
@@ -19,7 +19,7 @@ require (
 	github.com/charmbracelet/x/exp/ordered v0.0.0-20231010190216-1cb11efc897d
 	github.com/chrismellard/docker-credential-acr-env v0.0.0-20230304212654-82a0ddb27589
 	github.com/dghubble/go-twitter v0.0.0-20211115160449-93a8679adecb
-	github.com/dghubble/oauth1 v0.7.2
+	github.com/dghubble/oauth1 v0.7.3
 	github.com/distribution/distribution/v3 v3.0.0-alpha.1
 	github.com/go-telegram-bot-api/telegram-bot-api v4.6.4+incompatible
 	github.com/google/go-containerregistry v0.19.0
@@ -38,14 +38,14 @@ require (
 	github.com/muesli/roff v0.1.0
 	github.com/muesli/termenv v0.15.2
 	github.com/ory/dockertest/v3 v3.10.0
-	github.com/slack-go/slack v0.12.4
+	github.com/slack-go/slack v0.12.5
 	github.com/spf13/cobra v1.8.0
 	github.com/stretchr/testify v1.8.4
 	github.com/ulikunitz/xz v0.5.11
 	github.com/withfig/autocomplete-tools/integrations/cobra v1.2.1
-	github.com/xanzy/go-gitlab v0.97.0
+	github.com/xanzy/go-gitlab v0.98.0
 	gocloud.dev v0.36.0
-	golang.org/x/crypto v0.19.0
+	golang.org/x/crypto v0.20.0
 	golang.org/x/oauth2 v0.17.0
 	golang.org/x/sync v0.6.0
 	golang.org/x/text v0.14.0

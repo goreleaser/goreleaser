@@ -61,6 +61,26 @@ See [`checksum.templated_extra_files`](#checksumtemplated_extra_files).
 
 See [`checksum.templated_extra_files`](#checksumtemplated_extra_files).
 
+### furies.skip
+
+> since 2024-03-03 (v1.25)
+
+Changed to `disable` to conform with all other pipes.
+
+=== "Before"
+
+    ```yaml
+    furies:
+      - skip: true
+    ```
+
+=== "After"
+
+    ```yaml
+    furies:
+      - disable: true
+    ```
+
 ### changelog.skip
 
 > since 2024-01-14
