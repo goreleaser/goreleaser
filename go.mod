@@ -40,7 +40,7 @@ require (
 	github.com/ory/dockertest/v3 v3.10.0
 	github.com/slack-go/slack v0.12.5
 	github.com/spf13/cobra v1.8.0
-	github.com/stretchr/testify v1.8.4
+	github.com/stretchr/testify v1.9.0
 	github.com/ulikunitz/xz v0.5.11
 	github.com/withfig/autocomplete-tools/integrations/cobra v1.2.1
 	github.com/xanzy/go-gitlab v0.98.0
