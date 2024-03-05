@@ -132,10 +132,10 @@ var Pipeline = append(
 	reportsizes.Pipe{},
 	// create and push docker images
 	docker.Pipe{},
-	// publishes artifacts
-	publish.New(),
 	// creates a metadata.json and an artifacts.json files in the dist folder
 	metadata.Pipe{},
+	// publishes artifacts
+	publish.New(),
 	// announce releases
 	announce.Pipe{},
 )
