@@ -64,7 +64,7 @@ require (
 	github.com/secure-systems-lab/go-securesystemslib v0.7.0 // indirect
 	github.com/sourcegraph/conc v0.3.0 // indirect
 	go.uber.org/multierr v1.11.0 // indirect
-	gopkg.in/go-jose/go-jose.v2 v2.6.1 // indirect
+	gopkg.in/go-jose/go-jose.v2 v2.6.3 // indirect
 )
 
 require (
