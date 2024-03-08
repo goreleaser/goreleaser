@@ -28,6 +28,7 @@ changelog:
 
   # Sorts the changelog by the commit's messages.
   # Could either be asc, desc or empty
+  # Empty means 'no sorting', it'll use the output of `git log` as is.
   sort: asc
 
   # Max commit hash length to use in the changelog.
