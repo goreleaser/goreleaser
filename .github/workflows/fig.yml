@@ -19,7 +19,7 @@ jobs:
           go-version: stable
           cache: true
       - run: go run . generate-fig-spec >goreleaser.ts
-      - uses: withfig/push-to-fig-autocomplete-action@v1
+      - uses: withfig/push-to-fig-autocomplete-action@v2
         with:
           token: ${{ secrets.GH_PAT }}
           autocomplete-spec-name: goreleaser
