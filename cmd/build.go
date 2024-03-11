@@ -13,9 +13,6 @@ import (
 	"github.com/goreleaser/goreleaser/internal/deprecate"
 	"github.com/goreleaser/goreleaser/internal/gio"
 	"github.com/goreleaser/goreleaser/internal/logext"
-	"github.com/goreleaser/goreleaser/internal/middleware/errhandler"
-	"github.com/goreleaser/goreleaser/internal/middleware/logging"
-	"github.com/goreleaser/goreleaser/internal/middleware/skip"
 	"github.com/goreleaser/goreleaser/internal/pipeline"
 	"github.com/goreleaser/goreleaser/internal/skips"
 	"github.com/goreleaser/goreleaser/pkg/config"
@@ -144,14 +141,15 @@ func buildProject(options buildOpts) (*context.Context, error) {
 		return nil, err
 	}
 	return ctx, ctrlc.Default.Run(ctx, func() error {
+		defer func() {
+			for _, pipe := range pipeline.MustPipeline {
+				if err := execPipe(ctx, pipe); err != nil {
+					log.WithError(err).Error("metadata")
+				}
+			}
+		}()
 		for _, pipe := range setupPipeline(ctx, options) {
-			if err := skip.Maybe(
-				pipe,
-				logging.Log(
-					pipe.String(),
-					errhandler.Handle(pipe.Run),
-				),
-			)(ctx); err != nil {
+			if err := execPipe(ctx, pipe); err != nil {
 				return err
 			}
 		}

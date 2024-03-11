@@ -144,6 +144,16 @@ func newReleaseCmd() *releaseCmd {
 	return root
 }
 
+func execPipe(ctx *context.Context, pipe pipeline.Piper) error {
+	return skip.Maybe(
+		pipe,
+		logging.Log(
+			pipe.String(),
+			errhandler.Handle(pipe.Run),
+		),
+	)(ctx)
+}
+
 func releaseProject(options releaseOpts) (*context.Context, error) {
 	cfg, err := loadConfig(options.config)
 	if err != nil {
@@ -155,14 +165,15 @@ func releaseProject(options releaseOpts) (*context.Context, error) {
 		return nil, err
 	}
 	return ctx, ctrlc.Default.Run(ctx, func() error {
+		defer func() {
+			for _, pipe := range pipeline.MustPipeline {
+				if err := execPipe(ctx, pipe); err != nil {
+					log.WithError(err).Error("metadata")
+				}
+			}
+		}()
 		for _, pipe := range pipeline.Pipeline {
-			if err := skip.Maybe(
-				pipe,
-				logging.Log(
-					pipe.String(),
-					errhandler.Handle(pipe.Run),
-				),
-			)(ctx); err != nil {
+			if err := execPipe(ctx, pipe); err != nil {
 				return err
 			}
 		}

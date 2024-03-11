@@ -91,7 +91,6 @@ var BuildPipeline = []Piper{
 var BuildCmdPipeline = append(
 	BuildPipeline,
 	reportsizes.Pipe{},
-	metadata.Pipe{},
 )
 
 // Pipeline contains all pipe implementations in order.
@@ -134,8 +133,13 @@ var Pipeline = append(
 	docker.Pipe{},
 	// publishes artifacts
 	publish.New(),
-	// creates a metadata.json and an artifacts.json files in the dist folder
-	metadata.Pipe{},
 	// announce releases
 	announce.Pipe{},
 )
+
+// MustPipeline is a pipeline that should always run, even if the "main"
+// pipeline errors.
+var MustPipeline = []Piper{
+	// creates a metadata.json and an artifacts.json files in the dist folder
+	metadata.Pipe{},
+}
