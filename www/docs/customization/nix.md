@@ -117,13 +117,10 @@ nix:
 
     Learn more about the [name template engine](/customization/templates/).
 
-## Things not yet implemented
+## Things not supported
 
 - Generating packages that compile from source (using `buildGoModule`)
 - Generating packages when `archives.format` is `binary`
-
-Both issues are in [the radar][iss4034].
-You're welcome to contribute. 😄
 
 ## Dependencies
 
