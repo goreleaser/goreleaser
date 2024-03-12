@@ -92,7 +92,7 @@ func runPipeOnBuild(ctx *context.Context, g semerrgroup.Group, build config.Buil
 		target := target
 		build := build
 		g.Go(func() error {
-			opts, err := buildOptionsForTarget(ctx, build, target)
+			opts, err := buildOptionsForTarget(ctx, &build, target)
 			if err != nil {
 				return err
 			}
@@ -162,7 +162,7 @@ func doBuild(ctx *context.Context, build config.Build, opts builders.Options) er
 	return builders.For(build.Builder).Build(ctx, build, opts)
 }
 
-func buildOptionsForTarget(ctx *context.Context, build config.Build, target string) (*builders.Options, error) {
+func buildOptionsForTarget(ctx *context.Context, build *config.Build, target string) (*builders.Options, error) {
 	ext := extFor(target, build.BuildDetails)
 	parts := strings.Split(target, "_")
 	if len(parts) < 2 {

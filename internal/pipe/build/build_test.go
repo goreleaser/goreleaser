@@ -90,7 +90,7 @@ func TestBuild(t *testing.T) {
 			Commit:     "123",
 		}),
 	)
-	opts, err := buildOptionsForTarget(ctx, ctx.Config.Builds[0], "darwin_amd64")
+	opts, err := buildOptionsForTarget(ctx, &ctx.Config.Builds[0], "darwin_amd64")
 	require.NoError(t, err)
 	require.NoError(t, doBuild(ctx, ctx.Config.Builds[0], *opts))
 }
@@ -733,7 +733,7 @@ func TestBuildOptionsForTarget(t *testing.T) {
 				Builds: []config.Build{tc.build},
 			})
 			require.NoError(t, Pipe{}.Default(ctx))
-			opts, err := buildOptionsForTarget(ctx, ctx.Config.Builds[0], ctx.Config.Builds[0].Targets[0])
+			opts, err := buildOptionsForTarget(ctx, &ctx.Config.Builds[0], ctx.Config.Builds[0].Targets[0])
 			if tc.expectedErr == "" {
 				require.NoError(t, err)
 				require.Equal(t, tc.expectedOpts, opts)
