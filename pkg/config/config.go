@@ -34,12 +34,15 @@ type GitHubURLs struct {
 }
 
 // GitLabURLs holds the URLs to be used when using gitlab ce/enterprise.
+// PackageRegistryProject: Store all of your packages in one GitLab project
+// see https://docs.gitlab.com/ee/user/packages/workflows/project_registry.html
 type GitLabURLs struct {
-	API                string `yaml:"api,omitempty" json:"api,omitempty"`
-	Download           string `yaml:"download,omitempty" json:"download,omitempty"`
-	SkipTLSVerify      bool   `yaml:"skip_tls_verify,omitempty" json:"skip_tls_verify,omitempty"`
-	UsePackageRegistry bool   `yaml:"use_package_registry,omitempty" json:"use_package_registry,omitempty"`
-	UseJobToken        bool   `yaml:"use_job_token,omitempty" json:"use_job_token,omitempty"`
+	API                    string `yaml:"api,omitempty" json:"api,omitempty"`
+	Download               string `yaml:"download,omitempty" json:"download,omitempty"`
+	SkipTLSVerify          bool   `yaml:"skip_tls_verify,omitempty" json:"skip_tls_verify,omitempty"`
+	UsePackageRegistry     bool   `yaml:"use_package_registry,omitempty" json:"use_package_registry,omitempty"`
+	UseJobToken            bool   `yaml:"use_job_token,omitempty" json:"use_job_token,omitempty"`
+	PackageRegistryProject string `yaml:"package_registry_project,omitempty" json:"package_registry_project,omitempty"`
 }
 
 // GiteaURLs holds the URLs to be used when using gitea.

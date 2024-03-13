@@ -403,6 +403,11 @@ func (c *gitlabClient) Upload(
 	var linkURL string
 	if ctx.Config.GitLabURLs.UsePackageRegistry {
 		log.WithField("file", file.Name()).Debug("uploading file as generic package")
+
+		if ctx.Config.GitLabURLs.PackageRegistryProject != "" {
+			projectID = ctx.Config.GitLabURLs.PackageRegistryProject
+		}
+
 		if _, _, err := c.client.GenericPackages.PublishPackageFile(
 			projectID,
 			ctx.Config.ProjectName,
