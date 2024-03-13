@@ -42,7 +42,6 @@ require (
 	github.com/spf13/cobra v1.8.0
 	github.com/stretchr/testify v1.9.0
 	github.com/ulikunitz/xz v0.5.11
-	github.com/withfig/autocomplete-tools/integrations/cobra v1.2.1
 	github.com/xanzy/go-gitlab v0.100.0
 	gocloud.dev v0.36.0
 	golang.org/x/crypto v0.21.0
