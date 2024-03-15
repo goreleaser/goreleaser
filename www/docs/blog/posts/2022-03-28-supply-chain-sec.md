@@ -184,6 +184,6 @@ Verified OK
 
 GoReleaser always cares about the security of the artifacts it produces this is why it integrates with tools like cosign, Syft, etc., to mitigate the risks happening in software supply chains. As you can see from the examples we gave, it does that effortlessly by simply adding a bunch of new settings to your GoReleaser configuration file, which all happens behind the scenes without making it even more complex.
 
-> 🍭 BONUS: Another important topic that gives you a confidence about the software’s integrity is [Reproducible Builds](http://reproducible-builds.org), are a set of software development practices that create an independently-verifiable path from source to binary code, thanks to [Carlos A. Becker](undefined), wrote a blogpost to explain it in detail, so, please do not forget to checkout it his blogpost to learn more about how GoReleaser can help you to achieve reproducibility👇
+> 🍭 BONUS: Another important topic that gives you a confidence about the software’s integrity is [Reproducible Builds](http://reproducible-builds.org), are a set of software development practices that create an independently-verifiable path from source to binary code, thanks to [Carlos A. Becker](https://caarlos0.dev/), wrote a blogpost to explain it in detail, so, please do not forget to checkout it his blogpost to learn more about how GoReleaser can help you to achieve reproducibility👇
 >
 > [Here's the link](https://medium.com/goreleaser/reproducible-build-with-goreleaser-6de2763458a5).
