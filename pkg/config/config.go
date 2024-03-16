@@ -775,7 +775,7 @@ type NFPM struct {
 
 	ID          string   `yaml:"id,omitempty" json:"id,omitempty"`
 	Builds      []string `yaml:"builds,omitempty" json:"builds,omitempty"`
-	Formats     []string `yaml:"formats,omitempty" json:"formats,omitempty"`
+	Formats     []string `yaml:"formats,omitempty" json:"formats,omitempty" jsonschema:"enum=apk,enum=deb,enum=rpm,enum=termux.deb,enum=archlinux"`
 	Section     string   `yaml:"section,omitempty" json:"section,omitempty"`
 	Priority    string   `yaml:"priority,omitempty" json:"priority,omitempty"`
 	Vendor      string   `yaml:"vendor,omitempty" json:"vendor,omitempty"`
