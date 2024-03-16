@@ -26,8 +26,9 @@ But let us start, with the idea behind Docker Image Manifest.
 
 ## What are Docker Image Manifests?
 
-![Image Manifests](https://cdn-images-1.medium.com/max/2000/0*RgP9-e82VIkjmt0e.png)
-_[Source](https://ownyourbits.com/2019/05/13/building-docker-containers-in-2019/)_
+![Image Manifests](https://github.com/goreleaser/goreleaser/assets/245435/380b4907-8d7f-4704-852d-8142c1212e86)
+
+<!-- _[Source](https://ownyourbits.com/2019/05/13/building-docker-containers-in-2019/)_ doesn't exist anymole -->
 
 A Docker manifests describe all the layers inside an image.
 And with the help of the manifest we can exact compare two images, independent
@@ -59,7 +60,7 @@ This works fine with local images or images stored in a remote registry.
 docker manifest inspect <image>:<version>
 ```
 
-![Example output of the docker manifest inspect command](https://cdn-images-1.medium.com/max/9488/1*Ek2pxYKtqs73ORRXg4c8zw.png)
+![Example output of the docker manifest inspect command](https://github.com/goreleaser/goreleaser/assets/245435/90b1f47f-8c3f-41dd-962a-7990e14771a9)
 _Example output of the docker manifest inspect command_
 
 ## Multi-Arch Builds and Manifests
@@ -95,7 +96,7 @@ All you need to do is to add the `docker_manifests` to your `.goreleaser.yaml`.
 The most important part is to map `name_template` to the `image_templates` you
 created in the `dockers` step.
 
-![Example snippet of a gorelaser.yaml](https://cdn-images-1.medium.com/max/3518/1*j3i3LEhI9puKJQuYmYJ_Pw.png)
+![Example snippet of a gorelaser.yaml](https://github.com/goreleaser/goreleaser/assets/245435/94f6f3fc-98e0-4d9f-96c0-65851ee07e2f)
 _Example snippet of a `.gorelaser.yaml`_
 
 There are some additional flags you can set, e.g. if you have a self-hosted

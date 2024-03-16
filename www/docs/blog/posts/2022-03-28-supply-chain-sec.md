@@ -105,9 +105,9 @@ To install cosign, you need to add the following line to our GitHub Action workf
 > $ brew install cosign
 > ```
 
-You can start signing your artifacts by creating public/private key pairs with the **generate-key-pair** command. Then, you need to run the **sign** command with the private key you generated. But in today's blog post, we'll be talking about a unique concept in cosign called [Keyless Signing](https://github.com/sigstore/cosign/blob/main/KEYLESS.md), which means that we no longer need to generate public/private key pairs.
+You can start signing your artifacts by creating public/private key pairs with the **generate-key-pair** command. Then, you need to run the **sign** command with the private key you generated. But in today's blog post, we'll be talking about a unique concept in cosign called _Keyless Signing_, which means that we no longer need to generate public/private key pairs.
 
-> For more background on **"keyless signing"**, see blog posts on the Chainguard blog on [Fulcio](https://chainguard.dev/posts/2021-11-12-fulcio-deep-dive) and [keyless signing with EKS](https://chainguard.dev/posts/2021-11-03-zero-friction-keyless-signing).
+> For more background on **"keyless signing"**, see blog posts on the Chainguard blog on [Fulcio](https://www.chainguard.dev/unchained/a-fulcio-deep-dive) and [keyless signing with EKS](https://www.chainguard.dev/unchained/zero-friction-keyless-signing-with-kubernetes).
 
 It's important to note that another part of sigstore is [Fulcio](https://github.com/sigstore/fulcio),
 a root CA that issues signing certificates from OIDC tokens, and [Rekor](https://github.com/sigstore/rekor),
@@ -161,7 +161,8 @@ Once you have all of these, you will end up having something like the following 
 
 Also, a successful release pipeline:
 
-![[https://github.com/goreleaser/supply-chain-example/runs/4618694011?check_suite_focus=true](https://github.com/goreleaser/supply-chain-example/runs/4618694011?check_suite_focus=true)](https://cdn-images-1.medium.com/max/5084/1*LUmE7iOj-HLkYT-yGoJMnQ.png)[https://github.com/goreleaser/supply-chain-example/runs/4618694011?check_suite_focus=true](https://github.com/goreleaser/supply-chain-example/runs/4618694011?check_suite_focus=true)
+![](https://cdn-images-1.medium.com/max/5084/1*LUmE7iOj-HLkYT-yGoJMnQ.png)
+[A GitHub Actions run](https://github.com/goreleaser/goreleaser-example-supply-chain/actions/workflows/release.yml)
 
 If you verify the container image you pushed to the ghcr.io, a **verify** command of cosign might help you verify the image's signature.
 

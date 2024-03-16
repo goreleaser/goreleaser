@@ -25,7 +25,7 @@ Here's a running list of some organizations using GoReleaser[^1]:
 1. [Curio](https://curio.sh)
 1. [Dagger](https://dagger.io)
 1. [Ddosify](https://github.com/ddosify)
-1. [DeepSource](https://deepsource.io)
+1. [DeepSource](https://deepsource.com)
 1. [EVCC](https://evcc.io)
 1. [FabioLB](https://fabiolb.net)
 1. [Fleet for osquery](https://fleetdm.com)
@@ -45,7 +45,7 @@ Here's a running list of some organizations using GoReleaser[^1]:
 1. [Hugo](https://gohugo.io)
 1. [IBM](https://www.ibm.com/br-pt)
 1. [IRON Security](https://iron.security)
-1. [KSOC](https://www.ksoc.com/)
+1. [KSOC](https://github.com/ksoclabs)
 1. [Ko Build](https://ko.build)
 1. [Koordinator](https://koordinator.sh)
 1. [Kubernetes SIGs](https://github.com/kubernetes-sigs)
@@ -93,7 +93,7 @@ Here's a running list of some organizations using GoReleaser[^1]:
 1. [Uber](https://uber.github.io/)
 1. [Updatecli](https://updatecli.io/)
 1. [VMWare](https://www.vmware.com)
-1. [Weave Works](https://www.weave.works)
+1. [Weave Works](https://github.com/weaveworks/weave)
 1. [Zitatel](https://zitadel.com)
 
 Feel free to [add yours](https://github.com/goreleaser/goreleaser/edit/main/USERS.md)!
