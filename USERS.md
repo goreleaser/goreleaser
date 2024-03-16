@@ -28,6 +28,7 @@ Here's a running list of some organizations using GoReleaser[^1]:
 1. [DeepSource](https://deepsource.com)
 1. [EVCC](https://evcc.io)
 1. [FabioLB](https://fabiolb.net)
+1. [Farmblox](https://github.com/farmblox)
 1. [Fleet for osquery](https://fleetdm.com)
 1. [Flipt](https://www.flipt.io)
 1. [FluxCD](https://fluxcd.io)
@@ -94,6 +95,7 @@ Here's a running list of some organizations using GoReleaser[^1]:
 1. [Updatecli](https://updatecli.io/)
 1. [VMWare](https://www.vmware.com)
 1. [Weave Works](https://github.com/weaveworks/weave)
+1. [Zeiss](https://github.com/ZEISS)
 1. [Zitatel](https://zitadel.com)
 
 Feel free to [add yours](https://github.com/goreleaser/goreleaser/edit/main/USERS.md)!
