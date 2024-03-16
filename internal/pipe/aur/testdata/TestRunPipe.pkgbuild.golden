@@ -5,16 +5,13 @@ pkgver=1.0.1
 pkgrel=1
 pkgdesc='A run pipe test aur and FOO=foo_is_bar'
 url='https://github.com/goreleaser'
-arch=('aarch64' 'armv6h' 'armv7h' 'i686' 'x86_64')
+arch=('aarch64' 'armv7h' 'i686' 'x86_64')
 license=('MIT')
 provides=('foo')
 conflicts=('foo')
 
 source_aarch64=("${pkgname}_${pkgver}_aarch64.tar.gz::https://dummyhost/download/v1.0.1/arm64.tar.gz")
 sha256sums_aarch64=('e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855')
-
-source_armv6h=("${pkgname}_${pkgver}_armv6h.tar.gz::https://dummyhost/download/v1.0.1/armv6.tar.gz")
-sha256sums_armv6h=('e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855')
 
 source_armv7h=("${pkgname}_${pkgver}_armv7h.tar.gz::https://dummyhost/download/v1.0.1/armv7.tar.gz")
 sha256sums_armv7h=('e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855')

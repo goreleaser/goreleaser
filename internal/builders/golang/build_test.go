@@ -342,7 +342,7 @@ func TestBuild(t *testing.T) {
 	folder := testlib.Mktmp(t)
 	writeGoodMain(t, folder)
 	ctx := testctx.NewWithCfg(config.Project{
-		Env: []string{"GO_FLAGS=-v"},
+		Env: []string{"GO_FLAGS=-v", "GOBIN=go"},
 		Builds: []config.Build{
 			{
 				ID:     "foo",
@@ -356,7 +356,7 @@ func TestBuild(t *testing.T) {
 					"linux_mips_softfloat",
 					"linux_mips64le_softfloat",
 				},
-				GoBinary: "go",
+				GoBinary: "{{ .Env.GOBIN }}",
 				Command:  "build",
 				BuildDetails: config.BuildDetails{
 					Env: []string{
@@ -1071,6 +1071,7 @@ func TestBuildGoBuildLine(t *testing.T) {
 			},
 			testctx.WithVersion("1.2.3"),
 			testctx.WithGitInfo(context.GitInfo{Commit: "aaa"}),
+			testctx.WithEnv(map[string]string{"GOBIN": "go"}),
 		)
 		options := api.Options{
 			Path:   ctx.Config.Builds[0].Binary,
@@ -1104,7 +1105,7 @@ func TestBuildGoBuildLine(t *testing.T) {
 				Ldflags:  []string{"ldflag1", "ldflag2"},
 			},
 			Binary:   "foo",
-			GoBinary: "go",
+			GoBinary: "{{ .Env.GOBIN }}",
 			Command:  "build",
 		}, []string{
 			"go", "build",

@@ -1,14 +1,14 @@
 {
   inputs = {
     nixpkgs.url = "github:nixos/nixpkgs/nixos-unstable";
-    staging.url = "github:caarlos0/nixpkgs/wip";
+    carlos.url = "github:caarlos0/nur";
     flake-utils.url = "github:numtide/flake-utils";
   };
-  outputs = { nixpkgs, staging, flake-utils, ... }:
+  outputs = { nixpkgs, carlos, flake-utils, ... }:
     flake-utils.lib.eachDefaultSystem (system:
       let
         pkgs = nixpkgs.legacyPackages.${system};
-        staging-pkgs = staging.legacyPackages.${system};
+        cpkgs = carlos.packages.${system};
       in
       {
         packages.default = pkgs.buildGoModule {
@@ -41,8 +41,8 @@
             mkdocs-material
             mkdocs-redirects
             mkdocs-minify
-            staging-pkgs.pkgs.python311Packages.mkdocs-rss-plugin # https://github.com/NixOS/nixpkgs/pull/277350
-            staging-pkgs.pkgs.python311Packages.mkdocs-include-markdown-plugin # https://github.com/NixOS/nixpkgs/pull/277351
+            cpkgs.mkdocs-rss-plugin # https://github.com/NixOS/nixpkgs/pull/277350
+            cpkgs.mkdocs-include-markdown-plugin # https://github.com/NixOS/nixpkgs/pull/277351
           ] ++ mkdocs-material.passthru.optional-dependencies.git;
         };
       }

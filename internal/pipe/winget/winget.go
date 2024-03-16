@@ -20,7 +20,7 @@ import (
 )
 
 var (
-	errNoRepoName               = pipe.Skip("winget.repository.name name is required")
+	errNoRepoName               = pipe.Skip("winget.repository.name is required")
 	errNoPublisher              = pipe.Skip("winget.publisher is required")
 	errNoLicense                = pipe.Skip("winget.license is required")
 	errNoShortDescription       = pipe.Skip("winget.short_description is required")

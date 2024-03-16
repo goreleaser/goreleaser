@@ -153,6 +153,20 @@ func isSupportedTermuxArch(arch string) bool {
 	return false
 }
 
+// arch officially only supports x86_64.
+// however, there are unofficial ports for 686, arm64, and armv7
+func isSupportedArchlinuxArch(arch, arm string) bool {
+	if arch == "arm" && arm == "7" {
+		return true
+	}
+	for _, a := range []string{"amd64", "arm64", "386"} {
+		if strings.HasPrefix(arch, a) {
+			return true
+		}
+	}
+	return false
+}
+
 func create(ctx *context.Context, fpm config.NFPM, format string, artifacts []*artifact.Artifact) error {
 	// TODO: improve mips handling on nfpm
 	infoArch := artifacts[0].Goarch + artifacts[0].Goarm + artifacts[0].Gomips // key used for the ConventionalFileName et al
@@ -162,12 +176,19 @@ func create(ctx *context.Context, fpm config.NFPM, format string, artifacts []*a
 		if format == "deb" {
 			infoPlatform = "iphoneos-arm64"
 		} else {
+			log.Debugf("skipping ios for %s as its not supported", format)
 			return nil
 		}
 	}
 
-	if format == termuxFormat {
-		if !isSupportedTermuxArch(arch) {
+	switch format {
+	case "archlinux":
+		if !isSupportedArchlinuxArch(artifacts[0].Goarch, artifacts[0].Goarm) {
+			log.Debugf("skipping archlinux for %s as its not supported", arch)
+			return nil
+		}
+	case termuxFormat:
+		if !isSupportedTermuxArch(artifacts[0].Goarch) {
 			log.Debugf("skipping termux.deb for %s as its not supported by termux", arch)
 			return nil
 		}
