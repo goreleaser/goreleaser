@@ -1,4 +1,4 @@
-// Package checksums provides a Pipe that creates .checksums files for
+// Package checksums provides a Pipe that creates .checksums files forcheck
 // each artifact.
 package checksums
 
@@ -36,23 +36,72 @@ func (Pipe) Skip(ctx *context.Context) bool { return ctx.Config.Checksum.Disable
 
 // Default sets the pipe defaults.
 func (Pipe) Default(ctx *context.Context) error {
-	if ctx.Config.Checksum.NameTemplate == "" {
-		ctx.Config.Checksum.NameTemplate = "{{ .ProjectName }}_{{ .Version }}_checksums.txt"
+	cs := &ctx.Config.Checksum
+	if cs.Algorithm == "" {
+		cs.Algorithm = "sha256"
 	}
-	if ctx.Config.Checksum.Algorithm == "" {
-		ctx.Config.Checksum.Algorithm = "sha256"
+	if cs.NameTemplate == "" {
+		if cs.Split {
+			cs.NameTemplate = "{{ .ArtifactName }}.{{ .Algorithm }}"
+		} else {
+			cs.NameTemplate = "{{ .ProjectName }}_{{ .Version }}_checksums.txt"
+		}
 	}
 	return nil
 }
 
 // Run the pipe.
 func (Pipe) Run(ctx *context.Context) error {
+	if ctx.Config.Checksum.Split {
+		return splitChecksum(ctx)
+	}
+
+	return singleChecksum(ctx)
+}
+
+func splitChecksum(ctx *context.Context) error {
+	artifactList, err := buildArtifactList(ctx)
+	if err != nil {
+		return err
+	}
+
+	for _, art := range artifactList {
+		filename, err := tmpl.New(ctx).
+			WithArtifact(art).
+			WithExtraFields(tmpl.Fields{
+				"Algorithm": ctx.Config.Checksum.Algorithm,
+			}).
+			Apply(ctx.Config.Checksum.NameTemplate)
+		if err != nil {
+			return fmt.Errorf("checksum: name template: %w", err)
+		}
+		filepath := filepath.Join(ctx.Config.Dist, filename)
+		if err := refreshOne(ctx, *art, filepath); err != nil {
+			return fmt.Errorf("checksum: %s: %w", art.Path, err)
+		}
+		ctx.Artifacts.Add(&artifact.Artifact{
+			Type: artifact.Checksum,
+			Path: filepath,
+			Name: filename,
+			Extra: map[string]interface{}{
+				artifact.ExtraChecksumOf: art.Path,
+				artifact.ExtraRefresh: func() error {
+					log.WithField("file", filename).Info("refreshing checksums")
+					return refreshOne(ctx, *art, filepath)
+				},
+			},
+		})
+	}
+	return nil
+}
+
+func singleChecksum(ctx *context.Context) error {
 	filename, err := tmpl.New(ctx).Apply(ctx.Config.Checksum.NameTemplate)
 	if err != nil {
 		return err
 	}
 	filepath := filepath.Join(ctx.Config.Dist, filename)
-	if err := refresh(ctx, filepath); err != nil {
+	if err := refreshAll(ctx, filepath); err != nil {
 		if errors.Is(err, errNoArtifacts) {
 			return nil
 		}
@@ -65,44 +114,28 @@ func (Pipe) Run(ctx *context.Context) error {
 		Extra: map[string]interface{}{
 			artifact.ExtraRefresh: func() error {
 				log.WithField("file", filename).Info("refreshing checksums")
-				return refresh(ctx, filepath)
+				return refreshAll(ctx, filepath)
 			},
 		},
 	})
 	return nil
 }
 
-func refresh(ctx *context.Context, filepath string) error {
-	lock.Lock()
-	defer lock.Unlock()
-	filter := artifact.Or(
-		artifact.ByType(artifact.UploadableArchive),
-		artifact.ByType(artifact.UploadableBinary),
-		artifact.ByType(artifact.UploadableSourceArchive),
-		artifact.ByType(artifact.LinuxPackage),
-		artifact.ByType(artifact.SBOM),
-	)
-	if len(ctx.Config.Checksum.IDs) > 0 {
-		filter = artifact.And(filter, artifact.ByIDs(ctx.Config.Checksum.IDs...))
-	}
-
-	artifactList := ctx.Artifacts.Filter(filter).List()
-
-	extraFiles, err := extrafiles.Find(ctx, ctx.Config.Checksum.ExtraFiles)
+func refreshOne(ctx *context.Context, art artifact.Artifact, path string) error {
+	check, err := art.Checksum(ctx.Config.Checksum.Algorithm)
 	if err != nil {
 		return err
 	}
+	return os.WriteFile(path, []byte(check), 0o644)
+}
 
-	for name, path := range extraFiles {
-		artifactList = append(artifactList, &artifact.Artifact{
-			Name: name,
-			Path: path,
-			Type: artifact.UploadableFile,
-		})
-	}
+func refreshAll(ctx *context.Context, filepath string) error {
+	lock.Lock()
+	defer lock.Unlock()
 
-	if len(artifactList) == 0 {
-		return errNoArtifacts
+	artifactList, err := buildArtifactList(ctx)
+	if err != nil {
+		return err
 	}
 
 	g := semerrgroup.New(ctx.Parallelism)
@@ -139,6 +172,39 @@ func refresh(ctx *context.Context, filepath string) error {
 	sort.Sort(ByFilename(sumLines))
 	_, err = file.WriteString(strings.Join(sumLines, ""))
 	return err
+}
+
+func buildArtifactList(ctx *context.Context) ([]*artifact.Artifact, error) {
+	filter := artifact.Or(
+		artifact.ByType(artifact.UploadableArchive),
+		artifact.ByType(artifact.UploadableBinary),
+		artifact.ByType(artifact.UploadableSourceArchive),
+		artifact.ByType(artifact.LinuxPackage),
+		artifact.ByType(artifact.SBOM),
+	)
+	if len(ctx.Config.Checksum.IDs) > 0 {
+		filter = artifact.And(filter, artifact.ByIDs(ctx.Config.Checksum.IDs...))
+	}
+
+	artifactList := ctx.Artifacts.Filter(filter).List()
+
+	extraFiles, err := extrafiles.Find(ctx, ctx.Config.Checksum.ExtraFiles)
+	if err != nil {
+		return nil, err
+	}
+
+	for name, path := range extraFiles {
+		artifactList = append(artifactList, &artifact.Artifact{
+			Name: name,
+			Path: path,
+			Type: artifact.UploadableFile,
+		})
+	}
+
+	if len(artifactList) == 0 {
+		return nil, errNoArtifacts
+	}
+	return artifactList, nil
 }
 
 func checksums(algorithm string, a *artifact.Artifact) (string, error) {

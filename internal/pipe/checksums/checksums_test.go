@@ -1,6 +1,7 @@
 package checksums
 
 import (
+	"fmt"
 	"os"
 	"path/filepath"
 	"strings"
@@ -103,6 +104,66 @@ func TestPipe(t *testing.T) {
 	}
 }
 
+func TestPipeSplit(t *testing.T) {
+	const binary = "binary"
+	const archive = binary + ".tar.gz"
+	const linuxPackage = binary + ".rpm"
+	const sum = "61d034473102d7dac305902770471fd50f4c5b26f6831a56dd90b5184b3c30fc"
+
+	folder := t.TempDir()
+	file := filepath.Join(folder, binary)
+	require.NoError(t, os.WriteFile(file, []byte("some string"), 0o644))
+	ctx := testctx.NewWithCfg(
+		config.Project{
+			Dist:        folder,
+			ProjectName: "foo",
+			Checksum: config.Checksum{
+				Split: true,
+			},
+		},
+	)
+	ctx.Artifacts.Add(&artifact.Artifact{
+		Name: binary,
+		Path: file,
+		Type: artifact.UploadableBinary,
+		Extra: map[string]interface{}{
+			artifact.ExtraID: "id-1",
+		},
+	})
+	ctx.Artifacts.Add(&artifact.Artifact{
+		Name: archive,
+		Path: file,
+		Type: artifact.UploadableArchive,
+		Extra: map[string]interface{}{
+			artifact.ExtraID: "id-2",
+		},
+	})
+	ctx.Artifacts.Add(&artifact.Artifact{
+		Name: linuxPackage,
+		Path: file,
+		Type: artifact.LinuxPackage,
+		Extra: map[string]interface{}{
+			artifact.ExtraID: "id-3",
+		},
+	})
+	require.NoError(t, Pipe{}.Default(ctx))
+	require.NoError(t, Pipe{}.Run(ctx))
+
+	require.NoError(t, ctx.Artifacts.Visit(func(a *artifact.Artifact) error {
+		return a.Refresh()
+	}))
+
+	checks := ctx.Artifacts.Filter(artifact.ByType(artifact.Checksum)).List()
+	require.Len(t, checks, 3)
+
+	for _, check := range checks {
+		require.NotEmpty(t, check.Extra[artifact.ExtraChecksumOf])
+		bts, err := os.ReadFile(check.Path)
+		require.NoError(t, err)
+		require.Equal(t, sum, string(bts))
+	}
+}
+
 func TestRefreshModifying(t *testing.T) {
 	const binary = "binary"
 	folder := t.TempDir()
@@ -122,6 +183,37 @@ func TestRefreshModifying(t *testing.T) {
 		Path: file,
 		Type: artifact.UploadableBinary,
 	})
+	require.NoError(t, Pipe{}.Run(ctx))
+	checks := ctx.Artifacts.Filter(artifact.ByType(artifact.Checksum)).List()
+	require.Len(t, checks, 1)
+	previous, err := os.ReadFile(checks[0].Path)
+	require.NoError(t, err)
+	require.NoError(t, os.WriteFile(file, []byte("some other string"), 0o644))
+	require.NoError(t, checks[0].Refresh())
+	current, err := os.ReadFile(checks[0].Path)
+	require.NoError(t, err)
+	require.NotEqual(t, string(previous), string(current))
+}
+
+func TestRefreshModifyingSplit(t *testing.T) {
+	const binary = "binary"
+	folder := t.TempDir()
+	file := filepath.Join(folder, binary)
+	require.NoError(t, os.WriteFile(file, []byte("some string"), 0o644))
+	ctx := testctx.NewWithCfg(config.Project{
+		Dist:        folder,
+		ProjectName: binary,
+		Checksum: config.Checksum{
+			Split: true,
+		},
+		Env: []string{"FOO=bar"},
+	}, testctx.WithCurrentTag("1.2.3"))
+	ctx.Artifacts.Add(&artifact.Artifact{
+		Name: binary,
+		Path: file,
+		Type: artifact.UploadableBinary,
+	})
+	require.NoError(t, Pipe{}.Default(ctx))
 	require.NoError(t, Pipe{}.Run(ctx))
 	checks := ctx.Artifacts.Filter(artifact.ByType(artifact.Checksum)).List()
 	require.Len(t, checks, 1)
@@ -164,26 +256,29 @@ func TestPipeInvalidNameTemplate(t *testing.T) {
 		"{{ .Pro }_checksums.txt",
 		"{{.Env.NOPE}}",
 	} {
-		t.Run(template, func(t *testing.T) {
-			folder := t.TempDir()
-			ctx := testctx.NewWithCfg(
-				config.Project{
-					Dist:        folder,
-					ProjectName: "name",
-					Checksum: config.Checksum{
-						NameTemplate: template,
-						Algorithm:    "sha256",
+		for _, split := range []bool{true, false} {
+			t.Run(fmt.Sprintf("split_%v_%s", split, template), func(t *testing.T) {
+				folder := t.TempDir()
+				ctx := testctx.NewWithCfg(
+					config.Project{
+						Dist:        folder,
+						ProjectName: "name",
+						Checksum: config.Checksum{
+							NameTemplate: template,
+							Algorithm:    "sha256",
+							Split:        split,
+						},
 					},
-				},
-				testctx.WithCurrentTag("1.2.3"),
-			)
-			ctx.Artifacts.Add(&artifact.Artifact{
-				Name: "whatever",
-				Type: artifact.UploadableBinary,
-				Path: binFile.Name(),
+					testctx.WithCurrentTag("1.2.3"),
+				)
+				ctx.Artifacts.Add(&artifact.Artifact{
+					Name: "whatever",
+					Type: artifact.UploadableBinary,
+					Path: binFile.Name(),
+				})
+				testlib.RequireTemplateError(t, Pipe{}.Run(ctx))
 			})
-			testlib.RequireTemplateError(t, Pipe{}.Run(ctx))
-		})
+		}
 	}
 }
 
@@ -231,6 +326,21 @@ func TestDefault(t *testing.T) {
 	require.Equal(
 		t,
 		"{{ .ProjectName }}_{{ .Version }}_checksums.txt",
+		ctx.Config.Checksum.NameTemplate,
+	)
+	require.Equal(t, "sha256", ctx.Config.Checksum.Algorithm)
+}
+
+func TestDefaultSPlit(t *testing.T) {
+	ctx := testctx.NewWithCfg(config.Project{
+		Checksum: config.Checksum{
+			Split: true,
+		},
+	})
+	require.NoError(t, Pipe{}.Default(ctx))
+	require.Equal(
+		t,
+		"{{ .ArtifactName }}.{{ .Algorithm }}",
 		ctx.Config.Checksum.NameTemplate,
 	)
 	require.Equal(t, "sha256", ctx.Config.Checksum.Algorithm)
