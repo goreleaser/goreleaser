@@ -273,8 +273,19 @@ func withOverrides(ctx *context.Context, build config.Build, options api.Options
 	return build.BuildDetails, nil
 }
 
-func buildGoBuildLine(ctx *context.Context, build config.Build, details config.BuildDetails, options api.Options, artifact *artifact.Artifact, env []string) ([]string, error) {
-	cmd := []string{build.GoBinary, build.Command}
+func buildGoBuildLine(
+	ctx *context.Context,
+	build config.Build,
+	details config.BuildDetails,
+	options api.Options,
+	artifact *artifact.Artifact,
+	env []string,
+) ([]string, error) {
+	gobin, err := tmpl.New(ctx).WithBuildOptions(options).Apply(build.GoBinary)
+	if err != nil {
+		return nil, err
+	}
+	cmd := []string{gobin, build.Command}
 
 	// tags, ldflags, and buildmode, should only appear once, warning only to avoid a breaking change
 	validateUniqueFlags(details)

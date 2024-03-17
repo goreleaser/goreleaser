@@ -395,7 +395,6 @@ GitHub
 
 ### Caveat:
 
-- I use in cosign not the
-  [keyless](https://github.com/sigstore/cosign/blob/main/KEYLESS.md) approach, as
+- I use in cosign not the _keyless_ approach, as
   I am not sure that it will work for **Azure DevOps**. So I generated a keypair
   and committed the public and private key into the repository.
