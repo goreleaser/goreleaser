@@ -500,6 +500,12 @@ func TestGitLabCreateFile(t *testing.T) {
 			require.NoError(t, err)
 			return
 		}
+		// Handle the case with a projectID
+		if strings.HasSuffix(r.URL.Path, "projects/123456789/repository/files/newfile-projectID.txt") {
+			_, err := io.Copy(w, strings.NewReader(`{ "file_path": "newfile-projectID.txt", "branch": "main" }`))
+			require.NoError(t, err)
+			return
+		}
 		// File of doooom...gets created, but 404s when getting fetched
 		if strings.HasSuffix(r.URL.Path, "projects/someone/something/repository/files/doomed-file-404.txt") {
 			if r.Method == "PUT" {
@@ -544,6 +550,15 @@ func TestGitLabCreateFile(t *testing.T) {
 	err = client.CreateFile(ctx, config.CommitAuthor{Name: repo.Owner}, repo, []byte("Hello there"), "newfile-in-default.txt", "test: test commit")
 	require.NoError(t, err)
 
+	// Test using projectID
+	repo = Repo{
+		Name:   "123456789",
+		Branch: "main",
+	}
+
+	err = client.CreateFile(ctx, config.CommitAuthor{Name: repo.Owner}, repo, []byte("Hello there"), "newfile-projectID.txt", "test: test commit")
+	require.NoError(t, err)
+
 	// Test a doomed file. This is a file that is 'successfully' created, but returns a 404 when trying to fetch
 	repo = Repo{
 		Owner:  "someone",
@@ -555,7 +570,7 @@ func TestGitLabCreateFile(t *testing.T) {
 	require.Error(t, err)
 }
 
-func TestGitLabCloseMileston(t *testing.T) {
+func TestGitLabCloseMilestone(t *testing.T) {
 	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		if strings.HasSuffix(r.URL.Path, "projects/someone/something/milestones") {
 			r, err := os.Open("testdata/gitlab/milestones.json")
