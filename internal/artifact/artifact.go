@@ -143,16 +143,18 @@ func (t Type) String() string {
 }
 
 const (
-	ExtraID        = "ID"
-	ExtraBinary    = "Binary"
-	ExtraExt       = "Ext"
-	ExtraFormat    = "Format"
-	ExtraWrappedIn = "WrappedIn"
-	ExtraBinaries  = "Binaries"
-	ExtraRefresh   = "Refresh"
-	ExtraReplaces  = "Replaces"
-	ExtraDigest    = "Digest"
-	ExtraSize      = "Size"
+	ExtraID         = "ID"
+	ExtraBinary     = "Binary"
+	ExtraExt        = "Ext"
+	ExtraFormat     = "Format"
+	ExtraWrappedIn  = "WrappedIn"
+	ExtraBinaries   = "Binaries"
+	ExtraRefresh    = "Refresh"
+	ExtraReplaces   = "Replaces"
+	ExtraDigest     = "Digest"
+	ExtraSize       = "Size"
+	ExtraChecksum   = "Checksum"
+	ExtraChecksumOf = "ChecksumOf"
 )
 
 // Extras represents the extra fields in an artifact.
@@ -258,7 +260,12 @@ func (a Artifact) Checksum(algorithm string) (string, error) {
 	if _, err := io.Copy(h, file); err != nil {
 		return "", fmt.Errorf("failed to checksum: %w", err)
 	}
-	return hex.EncodeToString(h.Sum(nil)), nil
+	check := hex.EncodeToString(h.Sum(nil))
+	if a.Extra == nil {
+		a.Extra = make(Extras)
+	}
+	a.Extra[ExtraChecksum] = fmt.Sprintf("%s:%s", algorithm, check)
+	return check, nil
 }
 
 var noRefresh = func() error { return nil }

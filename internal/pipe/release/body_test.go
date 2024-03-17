@@ -34,6 +34,49 @@ func TestDontEscapeHTML(t *testing.T) {
 	require.Contains(t, out.String(), changelog)
 }
 
+func TestDescribeBodyMultipleChecksums(t *testing.T) {
+	ctx := testctx.NewWithCfg(
+		config.Project{
+			Release: config.Release{
+				Header: "## Yada yada yada\nsomething\n",
+				Footer: `
+---
+
+## Checksums
+
+` + "```\n{{ range $key, $value := .Checksums }}{{ $value }} {{ $key }}\n{{ end }}```\n",
+			},
+		},
+		testctx.WithCurrentTag("v1.0"),
+		func(ctx *context.Context) { ctx.ReleaseNotes = "nothing" },
+	)
+
+	checksums := map[string]string{
+		"bar.zip": "f674623cf1edd0f753e620688cedee4e7c0e837ac1e53c0cbbce132ffe35fd52",
+		"foo.zip": "271a74b75a12f6c3affc88df101f9ef29af79717b1b2f4bdd5964aacf65bcf40",
+	}
+	for name, check := range checksums {
+		name := name
+		check := check
+		checksumPath := filepath.Join(t.TempDir(), name+".sha256")
+		ctx.Artifacts.Add(&artifact.Artifact{
+			Name: name + ".sha256",
+			Path: checksumPath,
+			Type: artifact.Checksum,
+			Extra: map[string]interface{}{
+				artifact.ExtraChecksumOf: name,
+				artifact.ExtraRefresh: func() error {
+					return os.WriteFile(checksumPath, []byte(check), 0o644)
+				},
+			},
+		})
+	}
+	out, err := describeBody(ctx)
+	require.NoError(t, err)
+
+	golden.RequireEqual(t, out.Bytes())
+}
+
 func TestDescribeBodyWithHeaderAndFooter(t *testing.T) {
 	changelog := "feature1: description\nfeature2: other description"
 	ctx := testctx.NewWithCfg(
