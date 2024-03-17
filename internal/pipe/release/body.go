@@ -17,21 +17,39 @@ const bodyTemplateText = `{{ with .Header }}{{ . }}{{ "\n" }}{{ end }}
 
 func describeBody(ctx *context.Context) (bytes.Buffer, error) {
 	var out bytes.Buffer
-	var checksum string
-	if l := ctx.Artifacts.Filter(artifact.ByType(artifact.Checksum)).List(); len(l) > 0 {
-		if err := l[0].Refresh(); err != nil {
-			return out, err
-		}
-		bts, err := os.ReadFile(l[0].Path)
+	fields := tmpl.Fields{}
+
+	checksums := ctx.Artifacts.Filter(artifact.ByType(artifact.Checksum))
+
+	if err := checksums.Visit(func(a *artifact.Artifact) error {
+		return a.Refresh()
+	}); err != nil {
+		return out, err
+	}
+
+	checksumsList := checksums.List()
+	switch len(checksumsList) {
+	case 0:
+		// do nothing
+	case 1:
+		bts, err := os.ReadFile(checksumsList[0].Path)
 		if err != nil {
 			return out, err
 		}
-		checksum = string(bts)
+		fields["Checksums"] = string(bts)
+	default:
+		checkMap := map[string]string{}
+		for _, check := range checksumsList {
+			bts, err := os.ReadFile(check.Path)
+			if err != nil {
+				return out, err
+			}
+			checkMap[artifact.ExtraOr(*check, artifact.ExtraChecksumOf, "")] = string(bts)
+		}
+		fields["Checksums"] = checkMap
 	}
 
-	t := tmpl.New(ctx).WithExtraFields(tmpl.Fields{
-		"Checksums": checksum,
-	})
+	t := tmpl.New(ctx).WithExtraFields(fields)
 
 	header, err := t.Apply(ctx.Config.Release.Header)
 	if err != nil {
