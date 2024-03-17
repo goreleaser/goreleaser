@@ -1411,6 +1411,28 @@ func TestWarnIfTargetsAndOtherOptionsTogether(t *testing.T) {
 	}
 }
 
+func TestInvalidGoBinaryTpl(t *testing.T) {
+	folder := testlib.Mktmp(t)
+	require.NoError(t, os.Mkdir(filepath.Join(folder, ".go"), 0o755))
+	writeGoodMain(t, folder)
+	ctx := testctx.NewWithCfg(config.Project{
+		Builds: []config.Build{
+			{
+				Targets:  []string{runtimeTarget},
+				GoBinary: "{{.Foo}}",
+				Command:  "build",
+			},
+		},
+	})
+	build := ctx.Config.Builds[0]
+	testlib.RequireTemplateError(t, Default.Build(ctx, build, api.Options{
+		Target: runtimeTarget,
+		Name:   build.Binary,
+		Path:   filepath.Join("dist", runtimeTarget, build.Binary),
+		Ext:    "",
+	}))
+}
+
 //
 // Helpers
 //

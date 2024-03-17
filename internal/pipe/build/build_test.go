@@ -570,24 +570,6 @@ func TestPipeOnBuild_hooksRunPerTarget(t *testing.T) {
 	require.FileExists(t, filepath.Join(tmpDir, "post-hook-windows_amd64"))
 }
 
-func TestPipeOnBuild_invalidGoBinary(t *testing.T) {
-	build := config.Build{
-		Builder:  "fake",
-		GoBinary: "testing.v{{.XYZ}}",
-		Targets: []string{
-			"linux_amd64",
-		},
-	}
-	ctx := testctx.NewWithCfg(config.Project{
-		Builds: []config.Build{
-			build,
-		},
-	})
-	g := semerrgroup.New(ctx.Parallelism)
-	runPipeOnBuild(ctx, g, build)
-	testlib.RequireTemplateError(t, g.Wait())
-}
-
 func TestPipeOnBuild_invalidBinaryTpl(t *testing.T) {
 	build := config.Build{
 		Builder: "fake",

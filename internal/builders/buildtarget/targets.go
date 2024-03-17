@@ -174,6 +174,7 @@ var (
 		"netbsd386",
 		"netbsdamd64",
 		"netbsdarm",
+		"netbsdarm64", // not on the official list for some reason, yet its supported on go 1.13+
 		"openbsd386",
 		"openbsdamd64",
 		"openbsdarm",
