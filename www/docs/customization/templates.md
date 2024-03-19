@@ -133,9 +133,9 @@ In the nFPM name template field, you can use those extra fields:
 
 In the `release.body` field, you can use these extra fields:
 
-| Key          | Description                                                                         |
-| ------------ | ----------------------------------------------------------------------------------- |
-| `.Checksums` | the current checksum file contents. Only available in the release body. Since v1.19 |
+| Key          | Description                                                                                                                                            |
+| ------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `.Checksums` | the current checksum file contents, or a map of filename/checksum contents if `checksum.split` is set. Only available in the release body. Since v1.19 |
 
 ## Functions
 

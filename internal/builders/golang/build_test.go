@@ -342,7 +342,7 @@ func TestBuild(t *testing.T) {
 	folder := testlib.Mktmp(t)
 	writeGoodMain(t, folder)
 	ctx := testctx.NewWithCfg(config.Project{
-		Env: []string{"GO_FLAGS=-v"},
+		Env: []string{"GO_FLAGS=-v", "GOBIN=go"},
 		Builds: []config.Build{
 			{
 				ID:     "foo",
@@ -356,7 +356,7 @@ func TestBuild(t *testing.T) {
 					"linux_mips_softfloat",
 					"linux_mips64le_softfloat",
 				},
-				GoBinary: "go",
+				GoBinary: "{{ .Env.GOBIN }}",
 				Command:  "build",
 				BuildDetails: config.BuildDetails{
 					Env: []string{
@@ -1071,6 +1071,7 @@ func TestBuildGoBuildLine(t *testing.T) {
 			},
 			testctx.WithVersion("1.2.3"),
 			testctx.WithGitInfo(context.GitInfo{Commit: "aaa"}),
+			testctx.WithEnv(map[string]string{"GOBIN": "go"}),
 		)
 		options := api.Options{
 			Path:   ctx.Config.Builds[0].Binary,
@@ -1104,7 +1105,7 @@ func TestBuildGoBuildLine(t *testing.T) {
 				Ldflags:  []string{"ldflag1", "ldflag2"},
 			},
 			Binary:   "foo",
-			GoBinary: "go",
+			GoBinary: "{{ .Env.GOBIN }}",
 			Command:  "build",
 		}, []string{
 			"go", "build",
@@ -1408,6 +1409,28 @@ func TestWarnIfTargetsAndOtherOptionsTogether(t *testing.T) {
 			require.True(t, warnIfTargetsAndOtherOptionTogether(b))
 		})
 	}
+}
+
+func TestInvalidGoBinaryTpl(t *testing.T) {
+	folder := testlib.Mktmp(t)
+	require.NoError(t, os.Mkdir(filepath.Join(folder, ".go"), 0o755))
+	writeGoodMain(t, folder)
+	ctx := testctx.NewWithCfg(config.Project{
+		Builds: []config.Build{
+			{
+				Targets:  []string{runtimeTarget},
+				GoBinary: "{{.Foo}}",
+				Command:  "build",
+			},
+		},
+	})
+	build := ctx.Config.Builds[0]
+	testlib.RequireTemplateError(t, Default.Build(ctx, build, api.Options{
+		Target: runtimeTarget,
+		Name:   build.Binary,
+		Path:   filepath.Join("dist", runtimeTarget, build.Binary),
+		Ext:    "",
+	}))
 }
 
 //

@@ -49,7 +49,7 @@ jobs:
       matrix:
         format: [deb, rpm, apk]
     steps:
-      - uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v3
+      - uses: actions/checkout@9bb56186c3b09b4f86b1c65136769dd318469633 # v3
         with:
           fetch-depth: 0
       - uses: arduino/setup-task@b91d5d2c96a56797b48ac1e0e89220bf64044611 # v1
@@ -70,7 +70,7 @@ jobs:
     env:
       DOCKER_CLI_EXPERIMENTAL: "enabled"
     steps:
-      - uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v3
+      - uses: actions/checkout@9bb56186c3b09b4f86b1c65136769dd318469633 # v3
         with:
           fetch-depth: 0
       - uses: arduino/setup-task@b91d5d2c96a56797b48ac1e0e89220bf64044611 # v1
@@ -78,7 +78,7 @@ jobs:
           version: 3.x
           repo-token: ${{ secrets.GITHUB_TOKEN }}
       - uses: docker/setup-qemu-action@68827325e0b33c7199eb31dd4e31fbe9023e06e3 # v2
-      - uses: docker/setup-buildx-action@0d103c3126aa41d772a8362f6aa67afac040f80c # v3
+      - uses: docker/setup-buildx-action@2b51285047da1547ffb1b2203d8be4c0af6b1f20 # v3
       - name: setup-snapcraft
         # FIXME: the mkdirs are a hack for https://github.com/goreleaser/goreleaser/issues/1715
         run: |
@@ -106,13 +106,13 @@ jobs:
           github_access_token: ${{ secrets.GITHUB_TOKEN }}
       - name: dockerhub-login
         if: startsWith(github.ref, 'refs/tags/v')
-        uses: docker/login-action@343f7c4344506bcbf9b4de18042ae17996df046d # v2
+        uses: docker/login-action@e92390c5fb421da1463c202d546fed0ec5c39f20 # v2
         with:
           username: ${{ secrets.DOCKER_USERNAME }}
           password: ${{ secrets.DOCKER_PASSWORD }}
       - name: ghcr-login
         if: startsWith(github.ref, 'refs/tags/v')
-        uses: docker/login-action@343f7c4344506bcbf9b4de18042ae17996df046d # v2
+        uses: docker/login-action@e92390c5fb421da1463c202d546fed0ec5c39f20 # v2
         with:
           registry: ghcr.io
           username: ${{ github.repository_owner }}

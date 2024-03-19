@@ -389,7 +389,7 @@ func TestRunPipe(t *testing.T) {
 	}
 	require.NoError(t, Pipe{}.Run(ctx))
 	packages := ctx.Artifacts.Filter(artifact.ByType(artifact.LinuxPackage)).List()
-	require.Len(t, packages, 47)
+	require.Len(t, packages, 44)
 	for _, pkg := range packages {
 		format := pkg.Format()
 		require.NotEmpty(t, format)
@@ -406,7 +406,7 @@ func TestRunPipe(t *testing.T) {
 		}
 
 		ext := "." + format
-		if format != "termux.deb" {
+		if format != termuxFormat {
 			packager, err := nfpm.Get(format)
 			require.NoError(t, err)
 
@@ -584,7 +584,7 @@ func doTestRunPipeConventionalNameTemplate(t *testing.T, snapshot bool) {
 	}
 	require.NoError(t, Pipe{}.Run(ctx))
 	packages := ctx.Artifacts.Filter(artifact.ByType(artifact.LinuxPackage)).List()
-	require.Len(t, packages, 40)
+	require.Len(t, packages, 37)
 	prefix := "foo"
 	if snapshot {
 		prefix += "-snapshot"

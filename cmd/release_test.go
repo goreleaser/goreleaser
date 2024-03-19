@@ -23,7 +23,7 @@ func TestReleaseAutoSnapshot(t *testing.T) {
 		cmd := newReleaseCmd()
 		cmd.cmd.SetArgs([]string{"--auto-snapshot", "--skip-publish"})
 		require.NoError(t, cmd.cmd.Execute())
-		require.FileExists(t, "dist/fake_0.0.2_checksums.txt", "should not have run with --snapshot")
+		require.FileExists(t, "dist/fake_0.0.2_checksums.txt", "should have created checksums when run with --snapshot")
 	})
 
 	t.Run("dirty", func(t *testing.T) {

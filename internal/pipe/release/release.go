@@ -106,7 +106,7 @@ func (Pipe) Publish(ctx *context.Context) error {
 	if err := doPublish(ctx, c); err != nil {
 		return err
 	}
-	log.WithField("url", ctx.ReleaseURL).Info("published")
+	log.WithField("url", ctx.ReleaseURL).WithField("published", !ctx.Config.Release.Draft).Info("release created/updated")
 	return nil
 }
 

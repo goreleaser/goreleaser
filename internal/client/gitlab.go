@@ -139,7 +139,11 @@ func (c *gitlabClient) CreateFile(
 	message string, // the commit msg
 ) error {
 	fileName := path
-	projectID := repo.String()
+
+	projectID := repo.Name
+	if repo.Owner != "" {
+		projectID = repo.Owner + "/" + projectID
+	}
 
 	// Use the project default branch if we can get it...otherwise, just use
 	// 'master'
@@ -155,7 +159,7 @@ func (c *gitlabClient) CreateFile(
 			// Fall back to 'master' 😭
 			log.
 				WithField("fileName", fileName).
-				WithField("projectID", repo.String()).
+				WithField("projectID", projectID).
 				WithField("requestedBranch", branch).
 				WithError(err).
 				Warn("error checking for default branch, using master")
@@ -168,19 +172,16 @@ func (c *gitlabClient) CreateFile(
 	castedContent := string(content)
 
 	log.
-		WithField("owner", repo.Owner).
-		WithField("name", repo.Name).
+		WithField("projectID", projectID).
 		WithField("ref", ref).
 		WithField("branch", branch).
 		Debug("projectID at brew")
 
 	log.
-		WithField("repository", repo.String()).
-		WithField("name", repo.Name).
-		WithField("name", repo.Name).
+		WithField("projectID", projectID).
 		Info("pushing")
 
-	_, res, err := c.client.RepositoryFiles.GetFile(repo.String(), fileName, opts)
+	_, res, err := c.client.RepositoryFiles.GetFile(projectID, fileName, opts)
 	if err != nil && (res == nil || res.StatusCode != 404) {
 		log := log.
 			WithField("fileName", fileName).

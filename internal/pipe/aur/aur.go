@@ -110,7 +110,6 @@ func doRun(ctx *context.Context, aur config.AUR, cl client.ReleaseURLTemplater) 
 				artifact.ByGoarch("arm"),
 				artifact.Or(
 					artifact.ByGoarm("7"),
-					artifact.ByGoarm("6"),
 				),
 			),
 		),
