@@ -32,11 +32,25 @@ release:
 
   # Whether to remove existing draft releases with the same name before creating
   # a new one.
+  #
   # Only effective if `draft` is set to true.
   # Available only for GitHub.
   #
   # Since: v1.11
   replace_existing_draft: true
+
+  # Whether to remove an artifact that already exists.
+  #
+  # Available only for GitHub.
+  # This might be a bit expensive (rate-limiting speaking), so it is only done
+  # when the upload of an artifact fails with a 422 (which means it already
+  # exists in the release).
+  # We then grab the list of artifacts from the release, and delete the file
+  # that matches the one we're trying to upload.
+  # GoReleaser will then retry its upload.
+  #
+  # Since: v1.25
+  replace_existing_artifacts: true
 
   # Useful if you want to delay the creation of the tag in the remote.
   # You can create the tag locally, but not push it, and run GoReleaser.
