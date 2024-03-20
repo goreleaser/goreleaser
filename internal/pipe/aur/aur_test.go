@@ -482,6 +482,88 @@ func TestRunPipe(t *testing.T) {
 	requireEqualRepoFiles(t, folder, ".", "foo", url)
 }
 
+func TestRunPipeMultipleConfigurations(t *testing.T) {
+	url := testlib.GitMakeBareRepository(t)
+	key := testlib.MakeNewSSHKey(t, "")
+
+	folder := t.TempDir()
+	ctx := testctx.NewWithCfg(
+		config.Project{
+			Dist:        folder,
+			ProjectName: "foo",
+			AURs: []config.AUR{
+				{
+					Name:        "foo",
+					IDs:         []string{"foo"},
+					PrivateKey:  key,
+					License:     "MIT",
+					GitURL:      url,
+					Description: "The foo aur",
+					Directory:   "foo",
+				},
+				{
+					Name:        "bar",
+					IDs:         []string{"bar"},
+					PrivateKey:  key,
+					License:     "MIT",
+					GitURL:      url,
+					Description: "The bar aur",
+					Directory:   "bar",
+				},
+			},
+		},
+		testctx.WithCurrentTag("v1.0.1-foo"),
+		testctx.WithSemver(1, 0, 1, "foo"),
+		testctx.WithVersion("1.0.1-foo"),
+	)
+
+	path := filepath.Join(folder, "bin.tar.gz")
+	ctx.Artifacts.Add(&artifact.Artifact{
+		Name:    "bar_bin.tar.gz",
+		Path:    path,
+		Goos:    "linux",
+		Goarch:  "amd64",
+		Goamd64: "v1",
+		Type:    artifact.UploadableArchive,
+		Extra: map[string]interface{}{
+			artifact.ExtraID:       "bar",
+			artifact.ExtraFormat:   "tar.gz",
+			artifact.ExtraBinaries: []string{"bar"},
+		},
+	})
+	ctx.Artifacts.Add(&artifact.Artifact{
+		Name:    "bin.tar.gz",
+		Path:    path,
+		Goos:    "linux",
+		Goarch:  "amd64",
+		Goamd64: "v1",
+		Type:    artifact.UploadableArchive,
+		Extra: map[string]interface{}{
+			artifact.ExtraID:       "foo",
+			artifact.ExtraFormat:   "tar.gz",
+			artifact.ExtraBinaries: []string{"name"},
+		},
+	})
+
+	f, err := os.Create(path)
+	require.NoError(t, err)
+	require.NoError(t, f.Close())
+	client := client.NewMock()
+
+	require.NoError(t, Pipe{}.Default(ctx))
+	require.NoError(t, runAll(ctx, client))
+	require.NoError(t, Pipe{}.Publish(ctx))
+
+	dir := t.TempDir()
+	_, err = git.Run(testctx.New(), "-C", dir, "clone", url, "repo")
+	require.NoError(t, err)
+
+	require.FileExists(t, filepath.Join(dir, "repo", "foo", ".SRCINFO"))
+	require.FileExists(t, filepath.Join(dir, "repo", "foo", "PKGBUILD"))
+	require.FileExists(t, filepath.Join(dir, "repo", "bar", ".SRCINFO"))
+	require.FileExists(t, filepath.Join(dir, "repo", "bar", "PKGBUILD"))
+}
+
 func TestRunPipeNoBuilds(t *testing.T) {
 	ctx := testctx.NewWithCfg(config.Project{
 		ProjectName: "foo",
