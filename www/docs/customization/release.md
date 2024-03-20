@@ -204,7 +204,6 @@ release:
     - src: LICENSE.tpl
       dst: LICENSE.txt
 
-
   # Upload metadata.json and artifacts.json to the release as well.
   #
   # Since: v1.25
