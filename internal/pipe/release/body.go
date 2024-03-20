@@ -21,12 +21,6 @@ func describeBody(ctx *context.Context) (bytes.Buffer, error) {
 
 	checksums := ctx.Artifacts.Filter(artifact.ByType(artifact.Checksum))
 
-	if err := checksums.Visit(func(a *artifact.Artifact) error {
-		return a.Refresh()
-	}); err != nil {
-		return out, err
-	}
-
 	checksumsList := checksums.List()
 	switch len(checksumsList) {
 	case 0:

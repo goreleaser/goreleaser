@@ -307,6 +307,13 @@ func New() *Artifacts {
 	}
 }
 
+// Refresh visits all artifacts and refreshes them.
+func (artifacts *Artifacts) Refresh() error {
+	return artifacts.Visit(func(a *Artifact) error {
+		return a.Refresh()
+	})
+}
+
 // List return the actual list of artifacts.
 func (artifacts *Artifacts) List() []*Artifact {
 	artifacts.lock.Lock()

@@ -570,9 +570,7 @@ func TestRefresher(t *testing.T) {
 			Type: Checksum,
 		})
 
-		for _, item := range artifacts.List() {
-			require.NoError(t, item.Refresh())
-		}
+		require.NoError(t, artifacts.Refresh())
 
 		bts, err := os.ReadFile(path)
 		require.NoError(t, err)

@@ -71,6 +71,9 @@ func TestDescribeBodyMultipleChecksums(t *testing.T) {
 			},
 		})
 	}
+
+	require.NoError(t, ctx.Artifacts.Refresh())
+
 	out, err := describeBody(ctx)
 	require.NoError(t, err)
 
@@ -116,6 +119,9 @@ Get GoReleaser Pro at https://goreleaser.com/pro
 			},
 		},
 	})
+
+	require.NoError(t, ctx.Artifacts.Refresh())
+
 	out, err := describeBody(ctx)
 	require.NoError(t, err)
 
