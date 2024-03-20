@@ -46,6 +46,7 @@ func TestRunPipeWithoutIDsThenDoesNotFilter(t *testing.T) {
 				Owner: "test",
 				Name:  "test",
 			},
+			IncludeMeta: true,
 		},
 	}
 	ctx := testctx.NewWithCfg(config, testctx.WithCurrentTag("v1.0.0"))
@@ -101,7 +102,7 @@ func TestRunPipeWithoutIDsThenDoesNotFilter(t *testing.T) {
 
 	ctx.Artifacts.Add(&artifact.Artifact{
 		Type: artifact.Metadata,
-		Name: "metadta.json",
+		Name: "metadata.json",
 		Path: metafile,
 		Extra: map[string]interface{}{
 			artifact.ExtraID: "doesnt-matter",
@@ -133,6 +134,7 @@ func TestRunPipeWithoutIDsThenDoesNotFilter(t *testing.T) {
 	require.Contains(t, client.UploadedFileNames, "bin.tar.gz")
 	require.Contains(t, client.UploadedFileNames, "filtered.deb")
 	require.Contains(t, client.UploadedFileNames, "filtered.tar.gz")
+	require.Contains(t, client.UploadedFileNames, "metadata.json")
 	require.Contains(t, client.UploadedFileNames, "checksum")
 	require.Contains(t, client.UploadedFileNames, "checksum.pem")
 	require.Contains(t, client.UploadedFileNames, "checksum.sig")
