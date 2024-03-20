@@ -160,7 +160,7 @@ func doPublish(ctx *context.Context, client client.Client) error {
 		artifact.ByType(artifact.Certificate),
 		artifact.ByType(artifact.LinuxPackage),
 		artifact.ByType(artifact.SBOM),
-	)
+	}
 	filters := artifact.Or(typeFilters...)
 
 	if len(ctx.Config.Release.IDs) > 0 {
