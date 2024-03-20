@@ -68,6 +68,10 @@ var BuildPipeline = []Piper{
 	before.Pipe{},
 	// ensure ./dist is clean
 	dist.Pipe{},
+	// setup metadata options
+	metadata.Pipe{},
+	// creates a metadta.json files in the dist folder
+	metadata.MetaPipe{},
 	// setup gomod-related stuff
 	gomod.Pipe{},
 	// run prebuild stuff
@@ -91,7 +95,7 @@ var BuildPipeline = []Piper{
 var BuildCmdPipeline = append(
 	BuildPipeline,
 	reportsizes.Pipe{},
-	metadata.Pipe{},
+	metadata.ArtifactsPipe{},
 )
 
 // Pipeline contains all pipe implementations in order.
@@ -134,8 +138,8 @@ var Pipeline = append(
 	docker.Pipe{},
 	// publishes artifacts
 	publish.New(),
-	// creates a metadata.json and an artifacts.json files in the dist folder
-	metadata.Pipe{},
+	// creates a artifacts.json files in the dist folder
+	metadata.ArtifactsPipe{},
 	// announce releases
 	announce.Pipe{},
 )

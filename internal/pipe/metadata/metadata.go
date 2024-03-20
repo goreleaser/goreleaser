@@ -14,24 +14,25 @@ import (
 	"github.com/goreleaser/goreleaser/pkg/context"
 )
 
-// Pipe implementation.
-type Pipe struct{}
+type (
+	// Pipe implementation.
+	Pipe struct{}
+	// MetaPipe implementation.
+	MetaPipe struct{}
+	// ArtifactsPipe implementation.
+	ArtifactsPipe struct{}
+)
 
-func (Pipe) String() string               { return "storing release metadata" }
-func (Pipe) Skip(_ *context.Context) bool { return false }
-
-// Run the pipe.
+func (Pipe) String() string { return "setting up metadata" }
 func (Pipe) Run(ctx *context.Context) error {
-	if err := tmpl.New(ctx).ApplyAll(
-		&ctx.Config.Metadata.ModTimestamp,
-	); err != nil {
-		return err
-	}
-	if err := writeArtifacts(ctx); err != nil {
-		return err
-	}
-	return writeMetadata(ctx)
+	return tmpl.New(ctx).ApplyAll(&ctx.Config.Metadata.ModTimestamp)
 }
+
+func (MetaPipe) String() string                 { return "storing release metadata" }
+func (MetaPipe) Run(ctx *context.Context) error { return writeMetadata(ctx) }
+
+func (ArtifactsPipe) String() string                 { return "storing artifacts metadata" }
+func (ArtifactsPipe) Run(ctx *context.Context) error { return writeArtifacts(ctx) }
 
 func writeMetadata(ctx *context.Context) error {
 	const name = "metadata.json"
