@@ -66,12 +66,14 @@ func TestRun(t *testing.T) {
 		ctx := getCtx(tmp)
 		require.NoError(t, Pipe{}.Run(ctx))
 		requireEqualJSONFile(t, tmp, "artifacts.json", modTime)
+		requireMetadataArtifacts(t, ctx)
 	})
 	t.Run("metadata", func(t *testing.T) {
 		tmp := t.TempDir()
 		ctx := getCtx(tmp)
 		require.NoError(t, Pipe{}.Run(ctx))
 		requireEqualJSONFile(t, tmp, "metadata.json", modTime)
+		requireMetadataArtifacts(t, ctx)
 	})
 
 	t.Run("invalid mod metadata", func(t *testing.T) {
@@ -87,6 +89,12 @@ func TestRun(t *testing.T) {
 		ctx.Config.Metadata.ModTimestamp = "{{.Nope}}"
 		testlib.RequireTemplateError(t, Pipe{}.Run(ctx))
 	})
+}
+
+func requireMetadataArtifacts(tb testing.TB, ctx *context.Context) {
+	tb.Helper()
+	metas := ctx.Artifacts.Filter(artifact.ByType(artifact.Metadata)).List()
+	require.Len(tb, metas, 1)
 }
 
 func requireEqualJSONFile(tb testing.TB, tmp, s string, modTime time.Time) {

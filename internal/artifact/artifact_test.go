@@ -554,14 +554,25 @@ func TestPaths(t *testing.T) {
 func TestRefresher(t *testing.T) {
 	t.Run("ok", func(t *testing.T) {
 		artifacts := New()
-		path := filepath.Join(t.TempDir(), "f")
+		path1 := filepath.Join(t.TempDir(), "f1")
+		path2 := filepath.Join(t.TempDir(), "f2")
 		artifacts.Add(&Artifact{
-			Name: "f",
-			Path: path,
+			Name: "f1",
+			Path: path1,
 			Type: Checksum,
 			Extra: map[string]interface{}{
 				"Refresh": func() error {
-					return os.WriteFile(path, []byte("hello"), 0o765)
+					return os.WriteFile(path1, []byte("hello"), 0o765)
+				},
+			},
+		})
+		artifacts.Add(&Artifact{
+			Name: "f2",
+			Path: path2,
+			Type: Metadata,
+			Extra: map[string]interface{}{
+				"Refresh": func() error {
+					return os.WriteFile(path2, []byte("{}"), 0o765)
 				},
 			},
 		})
@@ -572,9 +583,13 @@ func TestRefresher(t *testing.T) {
 
 		require.NoError(t, artifacts.Refresh())
 
-		bts, err := os.ReadFile(path)
+		bts, err := os.ReadFile(path1)
 		require.NoError(t, err)
 		require.Equal(t, "hello", string(bts))
+
+		bts, err = os.ReadFile(path2)
+		require.NoError(t, err)
+		require.Equal(t, "{}", string(bts))
 	})
 
 	t.Run("nok", func(t *testing.T) {
@@ -934,7 +949,7 @@ func TestArtifactStringer(t *testing.T) {
 }
 
 func TestArtifactTypeStringer(t *testing.T) {
-	for i := 1; i <= 29; i++ {
+	for i := 1; i <= 30; i++ {
 		t.Run(fmt.Sprintf("type-%d-%s", i, Type(i).String()), func(t *testing.T) {
 			require.NotEqual(t, "unknown", Type(i).String())
 		})

@@ -160,7 +160,10 @@ func doPublish(ctx *context.Context, client client.Client) error {
 		artifact.ByType(artifact.Certificate),
 		artifact.ByType(artifact.LinuxPackage),
 		artifact.ByType(artifact.SBOM),
-	)
+	}
+	if ctx.Config.Release.IncludeMeta {
+		typeFilters = append(typeFilters, artifact.ByType(artifact.Metadata))
+	}
 	filters := artifact.Or(typeFilters...)
 
 	if len(ctx.Config.Release.IDs) > 0 {

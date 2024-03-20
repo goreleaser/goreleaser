@@ -108,6 +108,11 @@ publishers:
     # Publish checksums.
     checksum: true
 
+    # Upload metadata.json and artifacts.json.
+    #
+    # Since: v1.25
+    meta: true
+
     # Publish signatures.
     signature: true
 

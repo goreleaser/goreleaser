@@ -161,6 +161,9 @@ func Upload(ctx *context.Context, uploads []config.Upload, kind string, check Re
 		if upload.Checksum {
 			filters = append(filters, artifact.ByType(artifact.Checksum))
 		}
+		if upload.Meta {
+			filters = append(filters, artifact.ByType(artifact.Metadata))
+		}
 		if upload.Signature {
 			filters = append(filters, artifact.ByType(artifact.Signature), artifact.ByType(artifact.Certificate))
 		}

@@ -32,6 +32,7 @@ func TestRunPipeWithoutIDsThenDoesNotFilter(t *testing.T) {
 	tarfile := createTmpFile(t, folder, "bin.tar.gz")
 	srcfile := createTmpFile(t, folder, "source.tar.gz")
 	debfile := createTmpFile(t, folder, "bin.deb")
+	metafile := createTmpFile(t, folder, "metadata.json")
 	checksumfile := createTmpFile(t, folder, "checksum")
 	checksumsigfile := createTmpFile(t, folder, "checksum.sig")
 	checksumpemfile := createTmpFile(t, folder, "checksum.pem")
@@ -94,7 +95,16 @@ func TestRunPipeWithoutIDsThenDoesNotFilter(t *testing.T) {
 		Name: "checksum",
 		Path: checksumfile,
 		Extra: map[string]interface{}{
-			artifact.ExtraID: "bar",
+			artifact.ExtraID: "doesnt-matter",
+		},
+	})
+
+	ctx.Artifacts.Add(&artifact.Artifact{
+		Type: artifact.Metadata,
+		Name: "metadta.json",
+		Path: metafile,
+		Extra: map[string]interface{}{
+			artifact.ExtraID: "doesnt-matter",
 		},
 	})
 	ctx.Artifacts.Add(&artifact.Artifact{

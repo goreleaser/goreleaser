@@ -36,6 +36,7 @@ func TestExecute(t *testing.T) {
 		{"archive", "tar", artifact.UploadableArchive},
 		{"ubinary", "ubi", artifact.UploadableBinary},
 		{"checksum", "sum", artifact.Checksum},
+		{"metadata", "json", artifact.Metadata},
 		{"signature", "sig", artifact.Signature},
 		{"signature", "pem", artifact.Certificate},
 	} {
@@ -176,6 +177,30 @@ func TestExecute(t *testing.T) {
 								{ExpectedArgs: []string{"a.ubi"}, ExitCode: 0, ExpectedEnv: osEnv()},
 								{ExpectedArgs: []string{"a.tar"}, ExitCode: 0, ExpectedEnv: osEnv()},
 								{ExpectedArgs: []string{"a.sum"}, ExitCode: 0, ExpectedEnv: osEnv()},
+								{ExpectedArgs: []string{"foo/bar"}, ExitCode: 0, ExpectedEnv: osEnv()},
+								{ExpectedArgs: []string{"foo/bar:amd64"}, ExitCode: 0, ExpectedEnv: osEnv()},
+							},
+						}),
+					},
+				},
+			},
+			nil,
+			nil,
+		},
+		{
+			"include metadata",
+			[]config.Publisher{
+				{
+					Name: "test",
+					Meta: true,
+					Cmd:  MockCmd + " {{ .ArtifactName }}",
+					Env: []string{
+						MarshalMockEnv(&MockData{
+							AnyOf: []MockCall{
+								{ExpectedArgs: []string{"a.deb"}, ExitCode: 0, ExpectedEnv: osEnv()},
+								{ExpectedArgs: []string{"a.ubi"}, ExitCode: 0, ExpectedEnv: osEnv()},
+								{ExpectedArgs: []string{"a.tar"}, ExitCode: 0, ExpectedEnv: osEnv()},
+								{ExpectedArgs: []string{"a.json"}, ExitCode: 0, ExpectedEnv: osEnv()},
 								{ExpectedArgs: []string{"foo/bar"}, ExitCode: 0, ExpectedEnv: osEnv()},
 								{ExpectedArgs: []string{"foo/bar:amd64"}, ExitCode: 0, ExpectedEnv: osEnv()},
 							},

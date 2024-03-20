@@ -34,7 +34,8 @@ func (Pipe) Run(ctx *context.Context) error {
 }
 
 func writeMetadata(ctx *context.Context) error {
-	return writeJSON(ctx, metadata{
+	const name = "metadata.json"
+	path, err := writeJSON(ctx, metadata{
 		ProjectName: ctx.Config.ProjectName,
 		Tag:         ctx.Git.CurrentTag,
 		PreviousTag: ctx.Git.PreviousTag,
@@ -45,7 +46,13 @@ func writeMetadata(ctx *context.Context) error {
 			Goos:   ctx.Runtime.Goos,
 			Goarch: ctx.Runtime.Goarch,
 		},
-	}, "metadata.json")
+	}, name)
+	ctx.Artifacts.Add(&artifact.Artifact{
+		Name: name,
+		Path: path,
+		Type: artifact.Metadata,
+	})
+	return err
 }
 
 func writeArtifacts(ctx *context.Context) error {
@@ -54,21 +61,22 @@ func writeArtifacts(ctx *context.Context) error {
 		a.Path = filepath.ToSlash(filepath.Clean(a.Path))
 		return nil
 	})
-	return writeJSON(ctx, ctx.Artifacts.List(), "artifacts.json")
+	_, err := writeJSON(ctx, ctx.Artifacts.List(), "artifacts.json")
+	return err
 }
 
-func writeJSON(ctx *context.Context, j interface{}, name string) error {
+func writeJSON(ctx *context.Context, j interface{}, name string) (string, error) {
 	bts, err := json.Marshal(j)
 	if err != nil {
-		return err
+		return "", err
 	}
 	path := filepath.Join(ctx.Config.Dist, name)
 	log.Log.WithField("file", path).Info("writing")
 	if err := os.WriteFile(path, bts, 0o644); err != nil {
-		return err
+		return "", err
 	}
 
-	return gio.Chtimes(path, ctx.Config.Metadata.ModTimestamp)
+	return path, gio.Chtimes(path, ctx.Config.Metadata.ModTimestamp)
 }
 
 type metadata struct {

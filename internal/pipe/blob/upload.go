@@ -96,7 +96,7 @@ func doUpload(ctx *context.Context, conf config.Blob) error {
 		return err
 	}
 
-	filter := artifact.Or(
+	byTypes := []artifact.Filter{
 		artifact.ByType(artifact.UploadableArchive),
 		artifact.ByType(artifact.UploadableBinary),
 		artifact.ByType(artifact.UploadableSourceArchive),
@@ -105,7 +105,12 @@ func doUpload(ctx *context.Context, conf config.Blob) error {
 		artifact.ByType(artifact.Certificate),
 		artifact.ByType(artifact.LinuxPackage),
 		artifact.ByType(artifact.SBOM),
-	)
+	}
+	if conf.IncludeMeta {
+		byTypes = append(byTypes, artifact.ByType(artifact.Metadata))
+	}
+
+	filter := artifact.Or(byTypes...)
 	if len(conf.IDs) > 0 {
 		filter = artifact.And(filter, artifact.ByIDs(conf.IDs...))
 	}

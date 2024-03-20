@@ -85,6 +85,8 @@ const (
 	CArchive
 	// CShared is a C shared library, generated via a CGo build with buildmode=c-shared.
 	CShared
+	// Metadata is an internal goreleaser metadata JSON file.
+	Metadata
 )
 
 func (t Type) String() string {
@@ -137,6 +139,8 @@ func (t Type) String() string {
 		return "Winget Manifest"
 	case Nixpkg:
 		return "Nixpkg"
+	case Metadata:
+		return "Metadata"
 	default:
 		return "unknown"
 	}
@@ -475,6 +479,8 @@ func ByIDs(ids ...string) Filter {
 			// checksum and source archive are always for all artifacts, so return always true.
 			return a.Type == Checksum ||
 				a.Type == UploadableSourceArchive ||
+				a.Type == UploadableFile ||
+				a.Type == Metadata ||
 				a.ID() == id
 		})
 	}
