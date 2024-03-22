@@ -315,6 +315,20 @@ func doPublish(ctx *context.Context, cl client.Client, wingets []*artifact.Artif
 		return err
 	}
 
+	base := client.Repo{
+		Name:   winget.Repository.PullRequest.Base.Name,
+		Owner:  winget.Repository.PullRequest.Base.Owner,
+		Branch: winget.Repository.PullRequest.Base.Branch,
+	}
+
+	// try to sync branch
+	fscli, ok := cl.(client.ForkSyncer)
+	if ok && winget.Repository.PullRequest.Enabled {
+		if err := fscli.SyncFork(ctx, repo, base); err != nil {
+			log.WithError(err).Warn("could not sync fork")
+		}
+	}
+
 	for _, file := range files {
 		if err := cl.CreateFile(
 			ctx,
@@ -339,11 +353,7 @@ func doPublish(ctx *context.Context, cl client.Client, wingets []*artifact.Artif
 		return fmt.Errorf("client does not support pull requests")
 	}
 
-	return pcl.OpenPullRequest(ctx, client.Repo{
-		Name:   winget.Repository.PullRequest.Base.Name,
-		Owner:  winget.Repository.PullRequest.Base.Owner,
-		Branch: winget.Repository.PullRequest.Base.Branch,
-	}, repo, msg, winget.Repository.PullRequest.Draft)
+	return pcl.OpenPullRequest(ctx, base, repo, msg, winget.Repository.PullRequest.Draft)
 }
 
 func langserverLineFor(tp artifact.Type) string {

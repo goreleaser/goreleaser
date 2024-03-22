@@ -41,6 +41,7 @@ something: # can be nix, brews, etc...
 
 This will:
 
+- Try to sync the `john/repo` fork with `mike/repo:main` (if on GitHub).
 - Create the files into `john/repo`, in the branch `foo-1.2.3` (assuming
   `ProjectName=foo` and `Version=1.2.3`). [^head]
 - Open a pull request from `john/repo` into `mike/repo`, with the branch `main`
@@ -51,8 +52,6 @@ This will:
 
 ### Things that don't work
 
-- **GoReleaser will not keep your fork in sync!!!** It might or might not be a
-  problem in your case, in which case you'll have to sync it manually.
 - Opening pull requests to a forked repository (`go-github` does not have the
   required fields to do it).
 - Since this can fail for a myriad of reasons, if an error happen, it'll log it
