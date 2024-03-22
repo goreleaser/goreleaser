@@ -307,6 +307,13 @@ func New() *Artifacts {
 	}
 }
 
+// Refresh visits all artifacts and refreshes them.
+func (artifacts *Artifacts) Refresh() error {
+	return artifacts.Visit(func(a *Artifact) error {
+		return a.Refresh()
+	})
+}
+
 // List return the actual list of artifacts.
 func (artifacts *Artifacts) List() []*Artifact {
 	artifacts.lock.Lock()
@@ -467,6 +474,7 @@ func ByIDs(ids ...string) Filter {
 		filters = append(filters, func(a *Artifact) bool {
 			// checksum and source archive are always for all artifacts, so return always true.
 			return a.Type == Checksum ||
+				a.Type == UploadableFile ||
 				a.Type == UploadableSourceArchive ||
 				a.ID() == id
 		})

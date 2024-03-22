@@ -68,7 +68,7 @@ func newGitHub(ctx *context.Context, token string) (*githubClient, error) {
 }
 
 func (c *githubClient) checkRateLimit(ctx *context.Context) {
-	limits, _, err := c.client.RateLimits(ctx)
+	limits, _, err := c.client.RateLimit.Get(ctx)
 	if err != nil {
 		log.Warn("could not check rate limits, hoping for the best...")
 		return
@@ -463,6 +463,50 @@ func (c *githubClient) ReleaseURLTemplate(ctx *context.Context) (string, error) 
 	), nil
 }
 
+func (c *githubClient) deleteReleaseArtifact(ctx *context.Context, releaseID int64, name string, page int) error {
+	c.checkRateLimit(ctx)
+	log.WithField("name", name).Info("delete pre-existing asset from the release")
+	assets, resp, err := c.client.Repositories.ListReleaseAssets(
+		ctx,
+		ctx.Config.Release.GitHub.Owner,
+		ctx.Config.Release.GitHub.Name,
+		releaseID,
+		&github.ListOptions{
+			PerPage: 100,
+			Page:    page,
+		},
+	)
+	if err != nil {
+		githubErrLogger(resp, err).
+			WithField("release-id", releaseID).
+			Warn("could not list release assets")
+		return err
+	}
+	for _, asset := range assets {
+		if asset.GetName() != name {
+			continue
+		}
+		resp, err := c.client.Repositories.DeleteReleaseAsset(
+			ctx,
+			ctx.Config.Release.GitHub.Owner,
+			ctx.Config.Release.GitHub.Name,
+			asset.GetID(),
+		)
+		if err != nil {
+			githubErrLogger(resp, err).
+				WithField("release-id", releaseID).
+				WithField("id", asset.GetID()).
+				WithField("name", name).
+				Warn("could not delete asset")
+		}
+		return err
+	}
+	if next := resp.NextPage; next > 0 {
+		return c.deleteReleaseArtifact(ctx, releaseID, name, next)
+	}
+	return nil
+}
+
 func (c *githubClient) Upload(
 	ctx *context.Context,
 	releaseID string,
@@ -485,20 +529,25 @@ func (c *githubClient) Upload(
 		file,
 	)
 	if err != nil {
-		requestID := ""
-		if resp != nil {
-			requestID = resp.Header.Get("X-GitHub-Request-Id")
-		}
-		log.WithField("name", artifact.Name).
+		githubErrLogger(resp, err).
+			WithField("name", artifact.Name).
 			WithField("release-id", releaseID).
-			WithField("request-id", requestID).
 			Warn("upload failed")
 	}
 	if err == nil {
 		return nil
 	}
+	// this status means the asset already exists
 	if resp != nil && resp.StatusCode == http.StatusUnprocessableEntity {
-		return err
+		if !ctx.Config.Release.ReplaceExistingArtifacts {
+			return err
+		}
+		// if the user allowed to delete assets, we delete it, and return a
+		// retriable error.
+		if err := c.deleteReleaseArtifact(ctx, githubReleaseID, artifact.Name, 1); err != nil {
+			return err
+		}
+		return RetriableError{err}
 	}
 	return RetriableError{err}
 }
@@ -605,4 +654,12 @@ func (c *githubClient) deleteExistingDraftRelease(ctx *context.Context, name str
 		}
 		opt.Page = resp.NextPage
 	}
+}
+
+func githubErrLogger(resp *github.Response, err error) *log.Entry {
+	requestID := ""
+	if resp != nil {
+		requestID = resp.Header.Get("X-GitHub-Request-Id")
+	}
+	return log.WithField("request-id", requestID).WithError(err)
 }
