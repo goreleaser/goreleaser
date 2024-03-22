@@ -90,6 +90,11 @@ type ReleaseNotesGenerator interface {
 	GenerateReleaseNotes(ctx *context.Context, repo Repo, prev, current string) (string, error)
 }
 
+// ForkSyncer can sync forks.
+type ForkSyncer interface {
+	SyncFork(ctx *context.Context, head, base Repo) error
+}
+
 // PullRequestOpener can open pull requests.
 type PullRequestOpener interface {
 	OpenPullRequest(ctx *context.Context, base, head Repo, title string, draft bool) error

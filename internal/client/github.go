@@ -28,6 +28,7 @@ var (
 	_ Client                = &githubClient{}
 	_ ReleaseNotesGenerator = &githubClient{}
 	_ PullRequestOpener     = &githubClient{}
+	_ ForkSyncer            = &githubClient{}
 )
 
 type githubClient struct {
@@ -217,6 +218,7 @@ func (c *githubClient) OpenPullRequest(
 	if len(tpl) > 0 {
 		log.Info("got a pr template")
 	}
+
 	log := log.
 		WithField("base", headString(base, Repo{})).
 		WithField("head", headString(base, head)).
@@ -243,6 +245,31 @@ func (c *githubClient) OpenPullRequest(
 	}
 	log.WithField("url", pr.GetHTMLURL()).Info("pull request created")
 	return nil
+}
+
+func (c *githubClient) SyncFork(ctx *context.Context, head, base Repo) error {
+	branch := base.Branch
+	if branch == "" {
+		def, err := c.getDefaultBranch(ctx, base)
+		if err != nil {
+			return err
+		}
+		branch = def
+	}
+	res, _, err := c.client.Repositories.MergeUpstream(
+		ctx,
+		head.Owner,
+		head.Name,
+		&github.RepoMergeUpstreamRequest{
+			Branch: github.String(branch),
+		},
+	)
+	if res != nil {
+		log.WithField("merge_type", res.GetMergeType()).
+			WithField("base_branch", res.GetBaseBranch()).
+			Info(res.GetMessage())
+	}
+	return err
 }
 
 func (c *githubClient) CreateFile(

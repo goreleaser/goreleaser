@@ -16,6 +16,7 @@ var (
 	_ Client                = &Mock{}
 	_ ReleaseNotesGenerator = &Mock{}
 	_ PullRequestOpener     = &Mock{}
+	_ ForkSyncer            = &Mock{}
 )
 
 func NewMock() *Mock {
@@ -42,6 +43,12 @@ type Mock struct {
 	ReleaseNotes         string
 	ReleaseNotesParams   []string
 	OpenedPullRequest    bool
+	SyncedFork           bool
+}
+
+func (c *Mock) SyncFork(ctx *context.Context, head Repo, base Repo) error {
+	c.SyncedFork = true
+	return nil
 }
 
 func (c *Mock) OpenPullRequest(_ *context.Context, _, _ Repo, _ string, _ bool) error {

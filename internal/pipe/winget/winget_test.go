@@ -127,6 +127,10 @@ func TestRunPipe(t *testing.T) {
 					Branch: "update-{{.Version}}",
 					PullRequest: config.PullRequest{
 						Enabled: true,
+						Base: config.PullRequestBase{
+							Owner: "ms",
+							Name:  "winget",
+						},
 					},
 				},
 			},
@@ -753,6 +757,7 @@ func TestRunPipe(t *testing.T) {
 			}
 
 			if tt.winget.Repository.PullRequest.Enabled {
+				require.True(t, client.SyncedFork)
 				require.True(t, client.OpenedPullRequest)
 			}
 		})
