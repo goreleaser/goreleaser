@@ -12,13 +12,12 @@ import (
 
 	"github.com/caarlos0/log"
 	"github.com/charmbracelet/x/exp/ordered"
-	"golang.org/x/crypto/ssh"
-
 	"github.com/goreleaser/goreleaser/internal/git"
 	"github.com/goreleaser/goreleaser/internal/pipe"
 	"github.com/goreleaser/goreleaser/internal/tmpl"
 	"github.com/goreleaser/goreleaser/pkg/config"
 	"github.com/goreleaser/goreleaser/pkg/context"
+	"golang.org/x/crypto/ssh"
 )
 
 var gil sync.Mutex
