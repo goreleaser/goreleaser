@@ -8,15 +8,17 @@ import (
 	"path/filepath"
 	"strings"
 	"sync"
+	"time"
 
 	"github.com/caarlos0/log"
 	"github.com/charmbracelet/x/exp/ordered"
+	"golang.org/x/crypto/ssh"
+
 	"github.com/goreleaser/goreleaser/internal/git"
 	"github.com/goreleaser/goreleaser/internal/pipe"
 	"github.com/goreleaser/goreleaser/internal/tmpl"
 	"github.com/goreleaser/goreleaser/pkg/config"
 	"github.com/goreleaser/goreleaser/pkg/context"
-	"golang.org/x/crypto/ssh"
 )
 
 var gil sync.Mutex
@@ -85,10 +87,8 @@ func (g *gitClient) CreateFiles(
 			return fmt.Errorf("git: failed to create parent: %w", err)
 		}
 
-		if err := runGitCmds(ctx, parent, env, [][]string{
-			{"clone", url, name},
-		}); err != nil {
-			return fmt.Errorf("git: failed to clone local repository: %w", err)
+		if err := cloneRepoWithRetries(ctx, parent, url, name, env); err != nil {
+			return err
 		}
 
 		if err := runGitCmds(ctx, cwd, env, [][]string{
@@ -198,6 +198,31 @@ func keyPath(key string) (string, error) {
 func isPasswordError(err error) bool {
 	var kerr *ssh.PassphraseMissingError
 	return errors.As(err, &kerr)
+}
+
+func cloneRepoWithRetries(ctx *context.Context, parent, url, name string, env []string) error {
+	var try int
+	for try < 10 {
+		try++
+		err := runGitCmds(ctx, parent, env, [][]string{{"clone", url, name}})
+		if err == nil {
+			return nil
+		}
+		if isRetriableCloneError(err) {
+			log.WithField("try", try).
+				WithField("image", name).
+				WithError(err).
+				Warnf("failed to push image, will retry")
+			time.Sleep(time.Duration(try*10) * time.Second)
+			continue
+		}
+		return fmt.Errorf("failed to clone local repository: %w", err)
+	}
+	return fmt.Errorf("failed to push %s after %d tries", name, try)
+}
+
+func isRetriableCloneError(err error) bool {
+	return strings.Contains(err.Error(), "Connection reset")
 }
 
 func runGitCmds(ctx *context.Context, cwd string, env []string, cmds [][]string) error {
