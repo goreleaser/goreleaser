@@ -368,6 +368,10 @@ func TestRunPipePullRequest(t *testing.T) {
 						Branch: "update-{{.Version}}",
 						PullRequest: config.PullRequest{
 							Enabled: true,
+							Base: config.PullRequestBase{
+								Owner: "og",
+								Name:  "bar",
+							},
 						},
 					},
 				},
@@ -400,6 +404,7 @@ func TestRunPipePullRequest(t *testing.T) {
 	require.NoError(t, publishAll(ctx, client))
 	require.True(t, client.CreatedFile)
 	require.True(t, client.OpenedPullRequest)
+	require.True(t, client.SyncedFork)
 	golden.RequireEqualYaml(t, []byte(client.Content))
 }
 

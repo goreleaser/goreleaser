@@ -335,25 +335,36 @@ func doPublish(ctx *context.Context, manifest *artifact.Artifact, cl client.Clie
 		return err
 	}
 
-	if !cfg.Repository.PullRequest.Enabled {
-		return cl.CreateFile(ctx, author, repo, content, gpath, msg)
+	base := client.Repo{
+		Name:   cfg.Repository.PullRequest.Base.Name,
+		Owner:  cfg.Repository.PullRequest.Base.Owner,
+		Branch: cfg.Repository.PullRequest.Base.Branch,
 	}
 
-	log.Info("brews.pull_request enabled, creating a PR")
-	pcl, ok := cl.(client.PullRequestOpener)
-	if !ok {
-		return fmt.Errorf("client does not support pull requests")
+	// try to sync branch
+	fscli, ok := cl.(client.ForkSyncer)
+	if ok && cfg.Repository.PullRequest.Enabled {
+		if err := fscli.SyncFork(ctx, repo, base); err != nil {
+			log.WithError(err).Warn("could not sync fork")
+		}
 	}
 
 	if err := cl.CreateFile(ctx, author, repo, content, gpath, msg); err != nil {
 		return err
 	}
 
-	return pcl.OpenPullRequest(ctx, client.Repo{
-		Name:   cfg.Repository.PullRequest.Base.Name,
-		Owner:  cfg.Repository.PullRequest.Base.Owner,
-		Branch: cfg.Repository.PullRequest.Base.Branch,
-	}, repo, msg, cfg.Repository.PullRequest.Draft)
+	if !cfg.Repository.PullRequest.Enabled {
+		log.Debug("krews.pull_request disabled")
+		return nil
+	}
+
+	log.Info("krews.pull_request enabled, creating a PR")
+	pcl, ok := cl.(client.PullRequestOpener)
+	if !ok {
+		return fmt.Errorf("client does not support pull requests")
+	}
+
+	return pcl.OpenPullRequest(ctx, base, repo, msg, cfg.Repository.PullRequest.Draft)
 }
 
 func buildManifestPath(folder, filename string) string {
