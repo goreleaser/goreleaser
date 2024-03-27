@@ -134,6 +134,10 @@ func filterArtifacts(artifacts *artifact.Artifacts, publisher config.Publisher) 
 		filters = append(filters, artifact.ByType(artifact.Checksum))
 	}
 
+	if publisher.Meta {
+		filters = append(filters, artifact.ByType(artifact.Metadata))
+	}
+
 	if publisher.Signature {
 		filters = append(filters, artifact.ByType(artifact.Signature), artifact.ByType(artifact.Certificate))
 	}

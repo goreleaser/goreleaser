@@ -32,6 +32,7 @@ func TestRunPipeWithoutIDsThenDoesNotFilter(t *testing.T) {
 	tarfile := createTmpFile(t, folder, "bin.tar.gz")
 	srcfile := createTmpFile(t, folder, "source.tar.gz")
 	debfile := createTmpFile(t, folder, "bin.deb")
+	metafile := createTmpFile(t, folder, "metadata.json")
 	checksumfile := createTmpFile(t, folder, "checksum")
 	checksumsigfile := createTmpFile(t, folder, "checksum.sig")
 	checksumpemfile := createTmpFile(t, folder, "checksum.pem")
@@ -45,6 +46,7 @@ func TestRunPipeWithoutIDsThenDoesNotFilter(t *testing.T) {
 				Owner: "test",
 				Name:  "test",
 			},
+			IncludeMeta: true,
 		},
 	}
 	ctx := testctx.NewWithCfg(config, testctx.WithCurrentTag("v1.0.0"))
@@ -94,7 +96,16 @@ func TestRunPipeWithoutIDsThenDoesNotFilter(t *testing.T) {
 		Name: "checksum",
 		Path: checksumfile,
 		Extra: map[string]interface{}{
-			artifact.ExtraID: "bar",
+			artifact.ExtraID: "doesnt-matter",
+		},
+	})
+
+	ctx.Artifacts.Add(&artifact.Artifact{
+		Type: artifact.Metadata,
+		Name: "metadata.json",
+		Path: metafile,
+		Extra: map[string]interface{}{
+			artifact.ExtraID: "doesnt-matter",
 		},
 	})
 	ctx.Artifacts.Add(&artifact.Artifact{
@@ -123,6 +134,7 @@ func TestRunPipeWithoutIDsThenDoesNotFilter(t *testing.T) {
 	require.Contains(t, client.UploadedFileNames, "bin.tar.gz")
 	require.Contains(t, client.UploadedFileNames, "filtered.deb")
 	require.Contains(t, client.UploadedFileNames, "filtered.tar.gz")
+	require.Contains(t, client.UploadedFileNames, "metadata.json")
 	require.Contains(t, client.UploadedFileNames, "checksum")
 	require.Contains(t, client.UploadedFileNames, "checksum.pem")
 	require.Contains(t, client.UploadedFileNames, "checksum.sig")

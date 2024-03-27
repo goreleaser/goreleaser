@@ -753,6 +753,7 @@ type Release struct {
 
 	ReleaseNotesMode         ReleaseNotesMode `yaml:"mode,omitempty" json:"mode,omitempty" jsonschema:"enum=keep-existing,enum=append,enum=prepend,enum=replace,default=keep-existing"`
 	ReplaceExistingArtifacts bool             `yaml:"replace_existing_artifacts,omitempty" json:"replace_existing_artifacts,omitempty"`
+	IncludeMeta              bool             `yaml:"include_meta,omitempty" json:"include_meta,omitempty"`
 }
 
 // Milestone config used for VCS milestone.
@@ -1120,6 +1121,7 @@ type Blob struct {
 	ACL                string      `yaml:"acl,omitempty" json:"acl,omitempty"`
 	CacheControl       []string    `yaml:"cache_control,omitempty" json:"cache_control,omitempty"`
 	ContentDisposition string      `yaml:"content_disposition,omitempty" json:"content_disposition,omitempty"`
+	IncludeMeta        bool        `yaml:"include_meta,omitempty" json:"include_meta,omitempty"`
 
 	// Deprecated: use disable_ssl instead
 	OldDisableSSL bool `yaml:"disableSSL,omitempty" json:"disableSSL,omitempty" jsonschema:"deprecated=true,description=use disable_ssl instead"` // nolint:tagliatelle
@@ -1142,6 +1144,7 @@ type Upload struct {
 	TrustedCerts       string            `yaml:"trusted_certificates,omitempty" json:"trusted_certificates,omitempty"`
 	Checksum           bool              `yaml:"checksum,omitempty" json:"checksum,omitempty"`
 	Signature          bool              `yaml:"signature,omitempty" json:"signature,omitempty"`
+	Meta               bool              `yaml:"meta,omitempty" json:"meta,omitempty"`
 	CustomArtifactName bool              `yaml:"custom_artifact_name,omitempty" json:"custom_artifact_name,omitempty"`
 	CustomHeaders      map[string]string `yaml:"custom_headers,omitempty" json:"custom_headers,omitempty"`
 }
@@ -1152,6 +1155,7 @@ type Publisher struct {
 	IDs        []string    `yaml:"ids,omitempty" json:"ids,omitempty"`
 	Checksum   bool        `yaml:"checksum,omitempty" json:"checksum,omitempty"`
 	Signature  bool        `yaml:"signature,omitempty" json:"signature,omitempty"`
+	Meta       bool        `yaml:"meta,omitempty" json:"meta,omitempty"`
 	Dir        string      `yaml:"dir,omitempty" json:"dir,omitempty"`
 	Cmd        string      `yaml:"cmd,omitempty" json:"cmd,omitempty"`
 	Env        []string    `yaml:"env,omitempty" json:"env,omitempty"`

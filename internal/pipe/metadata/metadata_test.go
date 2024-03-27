@@ -22,7 +22,8 @@ func TestRunWithError(t *testing.T) {
 		Dist:        "testadata/nope",
 		ProjectName: "foo",
 	})
-	require.ErrorIs(t, Pipe{}.Run(ctx), os.ErrNotExist)
+	require.ErrorIs(t, MetaPipe{}.Run(ctx), os.ErrNotExist)
+	require.ErrorIs(t, ArtifactsPipe{}.Run(ctx), os.ErrNotExist)
 }
 
 func TestRun(t *testing.T) {
@@ -65,20 +66,29 @@ func TestRun(t *testing.T) {
 		tmp := t.TempDir()
 		ctx := getCtx(tmp)
 		require.NoError(t, Pipe{}.Run(ctx))
-		requireEqualJSONFile(t, tmp, "artifacts.json", modTime)
+		require.NoError(t, ArtifactsPipe{}.Run(ctx))
+		requireEqualJSONFile(t, filepath.Join(tmp, "artifacts.json"), modTime)
 	})
+
 	t.Run("metadata", func(t *testing.T) {
 		tmp := t.TempDir()
 		ctx := getCtx(tmp)
 		require.NoError(t, Pipe{}.Run(ctx))
-		requireEqualJSONFile(t, tmp, "metadata.json", modTime)
+		require.NoError(t, MetaPipe{}.Run(ctx))
+
+		metas := ctx.Artifacts.Filter(artifact.ByType(artifact.Metadata)).List()
+		require.Len(t, metas, 1)
+		require.Equal(t, "metadata.json", metas[0].Name)
+		requireEqualJSONFile(t, metas[0].Path, modTime)
 	})
 
 	t.Run("invalid mod metadata", func(t *testing.T) {
 		tmp := t.TempDir()
 		ctx := getCtx(tmp)
 		ctx.Config.Metadata.ModTimestamp = "not a number"
-		require.ErrorIs(t, Pipe{}.Run(ctx), strconv.ErrSyntax)
+		require.NoError(t, Pipe{}.Run(ctx))
+		require.ErrorIs(t, MetaPipe{}.Run(ctx), strconv.ErrSyntax)
+		require.ErrorIs(t, ArtifactsPipe{}.Run(ctx), strconv.ErrSyntax)
 	})
 
 	t.Run("invalid mod metadata tmpl", func(t *testing.T) {
@@ -89,9 +99,8 @@ func TestRun(t *testing.T) {
 	})
 }
 
-func requireEqualJSONFile(tb testing.TB, tmp, s string, modTime time.Time) {
+func requireEqualJSONFile(tb testing.TB, path string, modTime time.Time) {
 	tb.Helper()
-	path := filepath.Join(tmp, s)
 	golden.RequireEqualJSON(tb, golden.RequireReadFile(tb, path))
 	stat, err := os.Stat(path)
 	require.NoError(tb, err)

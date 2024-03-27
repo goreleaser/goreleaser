@@ -73,9 +73,11 @@ func TestMinioUpload(t *testing.T) {
 	tgzpath := filepath.Join(folder, "bin.tar.gz")
 	debpath := filepath.Join(folder, "bin.deb")
 	checkpath := filepath.Join(folder, "check.txt")
+	metapath := filepath.Join(folder, "metadata.json")
 	sigpath := filepath.Join(folder, "f.sig")
 	certpath := filepath.Join(folder, "f.pem")
 	require.NoError(t, os.WriteFile(checkpath, []byte("fake checksums"), 0o744))
+	require.NoError(t, os.WriteFile(metapath, []byte(`{"fake":true}`), 0o744))
 	require.NoError(t, os.WriteFile(srcpath, []byte("fake\nsrc"), 0o744))
 	require.NoError(t, os.WriteFile(tgzpath, []byte("fake\ntargz"), 0o744))
 	require.NoError(t, os.WriteFile(debpath, []byte("fake\ndeb"), 0o744))
@@ -93,6 +95,7 @@ func TestMinioUpload(t *testing.T) {
 				IDs:                []string{"foo", "bar"},
 				CacheControl:       []string{"max-age=9999"},
 				ContentDisposition: "inline",
+				IncludeMeta:        true,
 				ExtraFiles: []config.ExtraFile{
 					{
 						Glob: "./testdata/*.golden",
@@ -101,6 +104,11 @@ func TestMinioUpload(t *testing.T) {
 			},
 		},
 	}, testctx.WithCurrentTag("v1.0.0"))
+	ctx.Artifacts.Add(&artifact.Artifact{
+		Type: artifact.Metadata,
+		Name: "metadata.json",
+		Path: metapath,
+	})
 	ctx.Artifacts.Add(&artifact.Artifact{
 		Type: artifact.Checksum,
 		Name: "checksum.txt",
@@ -154,6 +162,7 @@ func TestMinioUpload(t *testing.T) {
 	require.Subset(t, getFiles(t, ctx, ctx.Config.Blobs[0]), []string{
 		"testupload/v1.0.0/bin.deb",
 		"testupload/v1.0.0/bin.tar.gz",
+		"testupload/v1.0.0/metadata.json",
 		"testupload/v1.0.0/checksum.txt",
 		"testupload/v1.0.0/checksum.txt.sig",
 		"testupload/v1.0.0/checksum.pem",
