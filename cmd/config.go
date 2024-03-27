@@ -27,7 +27,9 @@ func loadConfigCheck(path string) (config.Project, string, error) {
 		p, err := config.Load(path)
 		return p, path, err
 	}
-	for _, f := range [4]string{
+	for _, f := range [6]string{
+		".config/goreleaser.yml",
+		".config/goreleaser.yaml",
 		".goreleaser.yml",
 		".goreleaser.yaml",
 		"goreleaser.yml",

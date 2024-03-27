@@ -11,6 +11,8 @@ import (
 
 func TestConfigFlagNotSetButExists(t *testing.T) {
 	for _, name := range []string{
+		".config/goreleaser.yml",
+		".config/goreleaser.yaml",
 		".goreleaser.yml",
 		".goreleaser.yaml",
 		"goreleaser.yml",
@@ -18,6 +20,7 @@ func TestConfigFlagNotSetButExists(t *testing.T) {
 	} {
 		t.Run(name, func(t *testing.T) {
 			folder := setup(t)
+			require.NoError(t, os.MkdirAll(filepath.Dir(name), 0o755))
 			require.NoError(t, os.Rename(
 				filepath.Join(folder, "goreleaser.yml"),
 				filepath.Join(folder, name),
