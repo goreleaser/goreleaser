@@ -574,6 +574,7 @@ func TestRunPipe(t *testing.T) {
 
 			if tt.nix.Repository.PullRequest.Enabled {
 				require.True(t, client.OpenedPullRequest)
+				require.True(t, client.SyncedFork)
 			}
 			if tt.nix.Path != "" {
 				require.Equal(t, tt.nix.Path, client.Path)
