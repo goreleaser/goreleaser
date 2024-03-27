@@ -48,6 +48,18 @@ func TestShouldGetSpecificFile(t *testing.T) {
 	require.Equal(t, "testdata/file1.golden", files["file1.golden"])
 }
 
+func TestShouldGetAbsoluteFile(t *testing.T) {
+	globs := []config.ExtraFile{
+		{Glob: "/dev/null"},
+	}
+
+	files, err := Find(testctx.New(), globs)
+	require.NoError(t, err)
+	require.Len(t, files, 1)
+
+	require.Equal(t, "/dev/null", files["null"])
+}
+
 func TestFailToGetSpecificFile(t *testing.T) {
 	globs := []config.ExtraFile{
 		{Glob: "./testdata/file453.golden"},

@@ -25,7 +25,7 @@ func Find(ctx *context.Context, files []config.ExtraFile) (map[string]string, er
 			log.Warn("ignoring empty glob")
 			continue
 		}
-		files, err := fileglob.Glob(glob)
+		files, err := fileglob.Glob(glob, fileglob.MaybeRootFS)
 		if err != nil {
 			return result, fmt.Errorf("globbing failed for pattern %s: %w", extra.Glob, err)
 		}
