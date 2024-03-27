@@ -171,9 +171,27 @@ func doPublish(ctx *context.Context, formula *artifact.Artifact, cl client.Clien
 		return err
 	}
 
+	base := client.Repo{
+		Name:   brew.Repository.PullRequest.Base.Name,
+		Owner:  brew.Repository.PullRequest.Base.Owner,
+		Branch: brew.Repository.PullRequest.Base.Branch,
+	}
+
+	// try to sync branch
+	fscli, ok := cl.(client.ForkSyncer)
+	if ok && brew.Repository.PullRequest.Enabled {
+		if err := fscli.SyncFork(ctx, repo, base); err != nil {
+			log.WithError(err).Warn("could not sync fork")
+		}
+	}
+
+	if err := cl.CreateFile(ctx, author, repo, content, gpath, msg); err != nil {
+		return err
+	}
+
 	if !brew.Repository.PullRequest.Enabled {
 		log.Debug("brews.pull_request disabled")
-		return cl.CreateFile(ctx, author, repo, content, gpath, msg)
+		return nil
 	}
 
 	log.Info("brews.pull_request enabled, creating a PR")
@@ -182,15 +200,7 @@ func doPublish(ctx *context.Context, formula *artifact.Artifact, cl client.Clien
 		return fmt.Errorf("client does not support pull requests")
 	}
 
-	if err := cl.CreateFile(ctx, author, repo, content, gpath, msg); err != nil {
-		return err
-	}
-
-	return pcl.OpenPullRequest(ctx, client.Repo{
-		Name:   brew.Repository.PullRequest.Base.Name,
-		Owner:  brew.Repository.PullRequest.Base.Owner,
-		Branch: brew.Repository.PullRequest.Base.Branch,
-	}, repo, msg, brew.Repository.PullRequest.Draft)
+	return pcl.OpenPullRequest(ctx, base, repo, msg, brew.Repository.PullRequest.Draft)
 }
 
 func doRun(ctx *context.Context, brew config.Homebrew, cl client.ReleaseURLTemplater) error {

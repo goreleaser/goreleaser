@@ -1107,6 +1107,7 @@ func TestRunPipePullRequest(t *testing.T) {
 	require.NoError(t, publishAll(ctx, client))
 	require.True(t, client.CreatedFile)
 	require.True(t, client.OpenedPullRequest)
+	require.True(t, client.SyncedFork)
 	golden.RequireEqualRb(t, []byte(client.Content))
 }
 
