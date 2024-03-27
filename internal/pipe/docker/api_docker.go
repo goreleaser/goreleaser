@@ -2,6 +2,8 @@ package docker
 
 import (
 	"fmt"
+	"os"
+	"path/filepath"
 	"regexp"
 
 	"github.com/goreleaser/goreleaser/pkg/context"
@@ -14,6 +16,7 @@ func init() {
 	registerImager(useBuildx, dockerImager{
 		buildx: true,
 	})
+	registerImager(useDepot, depotImager{})
 }
 
 type dockerManifester struct{}
@@ -63,11 +66,12 @@ func (i dockerImager) Push(ctx *context.Context, image string, _ []string) (stri
 	return digest, nil
 }
 
-func (i dockerImager) Build(ctx *context.Context, root string, images, flags []string) error {
-	if err := runCommand(ctx, root, "docker", i.buildCommand(images, flags)...); err != nil {
-		return fmt.Errorf("failed to build %s: %w", images[0], err)
+func (i dockerImager) Build(ctx *context.Context, config buildConfig) (string, error) {
+	args := i.buildCommand(config.Images, config.Flags)
+	if err := runCommand(ctx, config.RootDir, "docker", args...); err != nil {
+		return "", fmt.Errorf("failed to build %s: %w", config.Images[0], err)
 	}
-	return nil
+	return "", nil
 }
 
 func (i dockerImager) buildCommand(images, flags []string) []string {
@@ -80,4 +84,41 @@ func (i dockerImager) buildCommand(images, flags []string) []string {
 	}
 	base = append(base, flags...)
 	return base
+}
+
+type depotImager struct {
+}
+
+// Push is a no-op for depot as the build also pushes the image.
+func (i depotImager) Push(_ *context.Context, _ string, _ []string) (string, error) {
+	return "", nil
+}
+
+func (i depotImager) Build(ctx *context.Context, config buildConfig) (string, error) {
+	flags := depotFlags(config)
+
+	if err := runCommand(ctx, config.RootDir, "depot", flags...); err != nil {
+		return "", fmt.Errorf("failed to build %s: %w", config.Images[0], err)
+	}
+
+	digest, err := os.ReadFile(filepath.Join(config.RootDir, "image-digest.txt"))
+	if err != nil {
+		return "", fmt.Errorf("unable to read image digest: %w", err)
+	}
+
+	return string(digest), nil
+}
+
+func depotFlags(config buildConfig) []string {
+	flags := append([]string{"build", "."}, config.Flags...)
+	flags = append(flags, "--platform", string(config.Platform))
+	for _, image := range config.Images {
+		flags = append(flags, "-t", image)
+	}
+	flags = append(flags, "--push")
+	flags = append(flags, "--iidfile=image-digest.txt")
+	if config.DepotProject != "" {
+		flags = append(flags, "--project", config.DepotProject)
+	}
+	return flags
 }
