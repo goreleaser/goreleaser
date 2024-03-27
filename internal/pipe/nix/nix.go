@@ -390,8 +390,27 @@ func doPublish(ctx *context.Context, prefetcher shaPrefetcher, cl client.Client,
 		return err
 	}
 
+	base := client.Repo{
+		Name:   nix.Repository.PullRequest.Base.Name,
+		Owner:  nix.Repository.PullRequest.Base.Owner,
+		Branch: nix.Repository.PullRequest.Base.Branch,
+	}
+
+	// try to sync branch
+	fscli, ok := cl.(client.ForkSyncer)
+	if ok && nix.Repository.PullRequest.Enabled {
+		if err := fscli.SyncFork(ctx, repo, base); err != nil {
+			log.WithError(err).Warn("could not sync fork")
+		}
+	}
+
+	if err := cl.CreateFile(ctx, author, repo, []byte(content), gpath, msg); err != nil {
+		return err
+	}
+
 	if !nix.Repository.PullRequest.Enabled {
-		return cl.CreateFile(ctx, author, repo, []byte(content), gpath, msg)
+		log.Debug("nix.pull_request disabled")
+		return nil
 	}
 
 	log.Info("nix.pull_request enabled, creating a PR")
@@ -400,15 +419,7 @@ func doPublish(ctx *context.Context, prefetcher shaPrefetcher, cl client.Client,
 		return fmt.Errorf("client does not support pull requests")
 	}
 
-	if err := cl.CreateFile(ctx, author, repo, []byte(content), gpath, msg); err != nil {
-		return err
-	}
-
-	return pcl.OpenPullRequest(ctx, client.Repo{
-		Name:   nix.Repository.PullRequest.Base.Name,
-		Owner:  nix.Repository.PullRequest.Base.Owner,
-		Branch: nix.Repository.PullRequest.Base.Branch,
-	}, repo, msg, nix.Repository.PullRequest.Draft)
+	return pcl.OpenPullRequest(ctx, base, repo, msg, nix.Repository.PullRequest.Draft)
 }
 
 func doBuildPkg(ctx *context.Context, data templateData) (string, error) {
