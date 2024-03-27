@@ -12,6 +12,7 @@ import (
 	"github.com/goreleaser/goreleaser/internal/pipe/blob"
 	"github.com/goreleaser/goreleaser/internal/pipe/brew"
 	"github.com/goreleaser/goreleaser/internal/pipe/chocolatey"
+	"github.com/goreleaser/goreleaser/internal/pipe/container"
 	"github.com/goreleaser/goreleaser/internal/pipe/custompublishers"
 	"github.com/goreleaser/goreleaser/internal/pipe/docker"
 	"github.com/goreleaser/goreleaser/internal/pipe/ko"
@@ -46,6 +47,7 @@ func New() Pipe {
 			custompublishers.Pipe{},
 			docker.Pipe{},
 			docker.ManifestPipe{},
+			container.Pipe{},
 			ko.Pipe{},
 			sign.DockerPipe{},
 			snapcraft.Pipe{},

@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"io/fs"
 	"net/http"
-	"os"
 	"path/filepath"
 	"sort"
 	"strings"
@@ -12,7 +11,7 @@ import (
 
 	"github.com/caarlos0/log"
 	"github.com/goreleaser/goreleaser/internal/artifact"
-	"github.com/goreleaser/goreleaser/internal/gio"
+	"github.com/goreleaser/goreleaser/internal/containers"
 	"github.com/goreleaser/goreleaser/internal/ids"
 	"github.com/goreleaser/goreleaser/internal/pipe"
 	"github.com/goreleaser/goreleaser/internal/semerrgroup"
@@ -59,18 +58,7 @@ func (Pipe) Default(ctx *context.Context) error {
 		if docker.ID != "" {
 			ids.Inc(docker.ID)
 		}
-		if docker.Goos == "" {
-			docker.Goos = "linux"
-		}
-		if docker.Goarch == "" {
-			docker.Goarch = "amd64"
-		}
-		if docker.Goarm == "" {
-			docker.Goarm = "6"
-		}
-		if docker.Goamd64 == "" {
-			docker.Goamd64 = "v1"
-		}
+		containers.DefaultPlatform(&docker.ContainerPlatform)
 		if docker.Dockerfile == "" {
 			docker.Dockerfile = "Dockerfile"
 		}
@@ -123,27 +111,13 @@ func (Pipe) Run(ctx *context.Context) error {
 		g.Go(func() error {
 			log := log.WithField("index", i)
 			log.Debug("looking for artifacts matching")
-			filters := []artifact.Filter{
-				artifact.ByGoos(docker.Goos),
-				artifact.ByGoarch(docker.Goarch),
-				artifact.Or(
-					artifact.ByType(artifact.Binary),
-					artifact.ByType(artifact.LinuxPackage),
-				),
+
+			buildContext, cleanup, err := containers.BuildContext(ctx, docker.ID, docker.ImageDefinition, []config.ContainerPlatform{docker.ContainerPlatform})
+			if err != nil {
+				return err
 			}
-			// TODO: properly test this
-			switch docker.Goarch {
-			case "amd64":
-				filters = append(filters, artifact.ByGoamd64(docker.Goamd64))
-			case "arm":
-				filters = append(filters, artifact.ByGoarm(docker.Goarm))
-			}
-			if len(docker.IDs) > 0 {
-				filters = append(filters, artifact.ByIDs(docker.IDs...))
-			}
-			artifacts := ctx.Artifacts.Filter(artifact.And(filters...))
-			log.WithField("artifacts", artifacts.Paths()).Debug("found artifacts")
-			return process(ctx, docker, artifacts.List())
+			defer cleanup()
+			return process(ctx, buildContext, docker)
 		})
 	}
 	if err := g.Wait(); err != nil {
@@ -155,69 +129,13 @@ func (Pipe) Run(ctx *context.Context) error {
 	return nil
 }
 
-func process(ctx *context.Context, docker config.Docker, artifacts []*artifact.Artifact) error {
-	if len(artifacts) == 0 {
-		log.Warn("no binaries or packages found for the given platform - COPY/ADD may not work")
-	}
-	tmp, err := os.MkdirTemp("", "goreleaserdocker")
-	if err != nil {
-		return fmt.Errorf("failed to create temporary dir: %w", err)
-	}
-	defer os.RemoveAll(tmp)
-
-	images, err := processImageTemplates(ctx, docker)
-	if err != nil {
-		return err
-	}
-
-	if len(images) == 0 {
-		return pipe.Skip("no image templates found")
-	}
-
-	log := log.WithField("image", images[0])
-	log.Debug("tempdir: " + tmp)
-
-	if err := tmpl.New(ctx).ApplyAll(
-		&docker.Dockerfile,
-	); err != nil {
-		return err
-	}
-	if err := gio.Copy(
-		docker.Dockerfile,
-		filepath.Join(tmp, "Dockerfile"),
-	); err != nil {
-		return fmt.Errorf("failed to copy dockerfile: %w", err)
-	}
-
-	for _, file := range docker.Files {
-		if err := os.MkdirAll(filepath.Join(tmp, filepath.Dir(file)), 0o755); err != nil {
-			return fmt.Errorf("failed to copy extra file '%s': %w", file, err)
-		}
-		if err := gio.Copy(file, filepath.Join(tmp, file)); err != nil {
-			return fmt.Errorf("failed to copy extra file '%s': %w", file, err)
-		}
-	}
-	for _, art := range artifacts {
-		target := filepath.Join(tmp, art.Name)
-		if err := os.MkdirAll(filepath.Dir(target), 0o755); err != nil {
-			return fmt.Errorf("failed to make dir for artifact: %w", err)
-		}
-
-		if err := gio.Copy(art.Path, target); err != nil {
-			return fmt.Errorf("failed to copy artifact: %w", err)
-		}
-	}
-
-	buildFlags, err := processBuildFlagTemplates(ctx, docker)
-	if err != nil {
-		return err
-	}
-
+func process(ctx *context.Context, buildContext containers.ImageBuildContext, dockerConfig config.Docker) error {
+	log := buildContext.Log()
 	log.Info("building docker image")
-	if err := imagers[docker.Use].Build(ctx, tmp, images, buildFlags); err != nil {
+	if err := imagers[dockerConfig.Use].Build(ctx, buildContext.BuildPath, buildContext.Images, buildContext.BuildFlags); err != nil {
 		if isFileNotFoundError(err.Error()) {
 			var files []string
-			_ = filepath.Walk(tmp, func(_ string, info fs.FileInfo, _ error) error {
+			_ = filepath.Walk(buildContext.BuildPath, func(_ string, info fs.FileInfo, _ error) error {
 				if info.IsDir() {
 					return nil
 				}
@@ -233,7 +151,7 @@ files in that dir:
  %s
 
 Previous error:
-%w`, tmp, strings.Join(files, "\n "), err)
+%w`, buildContext.BuildPath, strings.Join(files, "\n "), err)
 		}
 		if isBuildxContextError(err.Error()) {
 			return fmt.Errorf("docker buildx is not set to default context - please switch with 'docker context use default'")
@@ -241,16 +159,21 @@ Previous error:
 		return err
 	}
 
-	for _, img := range images {
+	if len(buildContext.Platforms) != 1 {
+		return fmt.Errorf("docker builder supports only single-platform builds")
+	}
+	platform := buildContext.Platforms[0]
+
+	for _, img := range buildContext.Images {
 		ctx.Artifacts.Add(&artifact.Artifact{
 			Type:   artifact.PublishableDockerImage,
 			Name:   img,
 			Path:   img,
-			Goarch: docker.Goarch,
-			Goos:   docker.Goos,
-			Goarm:  docker.Goarm,
+			Goarch: platform.Goarch,
+			Goos:   platform.Goos,
+			Goarm:  platform.Goarm,
 			Extra: map[string]interface{}{
-				dockerConfigExtra: docker,
+				dockerConfigExtra: dockerConfig,
 			},
 		})
 	}
@@ -267,37 +190,6 @@ func isFileNotFoundError(out string) bool {
 
 func isBuildxContextError(out string) bool {
 	return strings.Contains(out, "to switch to context")
-}
-
-func processImageTemplates(ctx *context.Context, docker config.Docker) ([]string, error) {
-	// nolint:prealloc
-	var images []string
-	for _, imageTemplate := range docker.ImageTemplates {
-		image, err := tmpl.New(ctx).Apply(imageTemplate)
-		if err != nil {
-			return nil, fmt.Errorf("failed to execute image template '%s': %w", imageTemplate, err)
-		}
-		if image == "" {
-			continue
-		}
-
-		images = append(images, image)
-	}
-
-	return images, nil
-}
-
-func processBuildFlagTemplates(ctx *context.Context, docker config.Docker) ([]string, error) {
-	// nolint:prealloc
-	var buildFlags []string
-	for _, buildFlagTemplate := range docker.BuildFlagTemplates {
-		buildFlag, err := tmpl.New(ctx).Apply(buildFlagTemplate)
-		if err != nil {
-			return nil, fmt.Errorf("failed to process build flag template '%s': %w", buildFlagTemplate, err)
-		}
-		buildFlags = append(buildFlags, buildFlag)
-	}
-	return buildFlags, nil
 }
 
 func dockerPush(ctx *context.Context, image *artifact.Artifact) error {
