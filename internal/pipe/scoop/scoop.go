@@ -259,25 +259,36 @@ func doPublish(ctx *context.Context, manifest *artifact.Artifact, cl client.Clie
 		return err
 	}
 
-	if !scoop.Repository.PullRequest.Enabled {
-		return cl.CreateFile(ctx, author, repo, content, gpath, commitMessage)
+	base := client.Repo{
+		Name:   scoop.Repository.PullRequest.Base.Name,
+		Owner:  scoop.Repository.PullRequest.Base.Owner,
+		Branch: scoop.Repository.PullRequest.Base.Branch,
 	}
 
-	log.Info("brews.pull_request enabled, creating a PR")
-	pcl, ok := cl.(client.PullRequestOpener)
-	if !ok {
-		return fmt.Errorf("client does not support pull requests")
+	// try to sync branch
+	fscli, ok := cl.(client.ForkSyncer)
+	if ok && scoop.Repository.PullRequest.Enabled {
+		if err := fscli.SyncFork(ctx, repo, base); err != nil {
+			log.WithError(err).Warn("could not sync fork")
+		}
 	}
 
 	if err := cl.CreateFile(ctx, author, repo, content, gpath, commitMessage); err != nil {
 		return err
 	}
 
-	return pcl.OpenPullRequest(ctx, client.Repo{
-		Name:   scoop.Repository.PullRequest.Base.Name,
-		Owner:  scoop.Repository.PullRequest.Base.Owner,
-		Branch: scoop.Repository.PullRequest.Base.Branch,
-	}, repo, commitMessage, scoop.Repository.PullRequest.Draft)
+	if !scoop.Repository.PullRequest.Enabled {
+		log.Debug("scoop.pull_request disabled")
+		return nil
+	}
+
+	log.Info("scoop.pull_request enabled, creating a PR")
+	pcl, ok := cl.(client.PullRequestOpener)
+	if !ok {
+		return fmt.Errorf("client does not support pull requests")
+	}
+
+	return pcl.OpenPullRequest(ctx, base, repo, commitMessage, scoop.Repository.PullRequest.Draft)
 }
 
 // Manifest represents a scoop.sh App Manifest.
