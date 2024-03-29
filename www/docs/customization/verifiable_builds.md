@@ -37,6 +37,12 @@ gomod:
   #
   # Default: `go`.
   gobinary: go1.17
+
+  # Directory in which the go.mod file is.
+  #
+  # Default: ''
+  # Since: v1.25
+  dir: ./src
 ```
 
 !!! tip
@@ -49,7 +55,7 @@ gomod:
     VCS Info will not be embedded in the binary, as in practice it is not being
     built from the source, but from the Go Mod Proxy.
 
-!!! warning 
+!!! warning
 
     If you have a `go.work` file, make sure to run `go work sync`, so the main
     module (`.`) is the first line inside the `use` block.
