@@ -75,6 +75,29 @@ func TestCustomEnv(t *testing.T) {
 	require.NoError(t, Pipe{}.Run(ctx))
 }
 
+func TestRunCustomDir(t *testing.T) {
+	dir := testlib.Mktmp(t)
+	require.NoError(t, os.MkdirAll(filepath.Join(dir, "src"), 0o755))
+	require.NoError(t, os.WriteFile(
+		filepath.Join(dir, "src/main.go"),
+		[]byte("package main\nfunc main() {println(0)}"),
+		0o666,
+	))
+	require.NoError(t, os.WriteFile(
+		filepath.Join(dir, "src/go.mod"),
+		[]byte("module foo"),
+		0o666,
+	))
+	ctx := testctx.NewWithCfg(config.Project{
+		GoMod: config.GoMod{
+			Dir: filepath.Join(dir, "src"),
+		},
+	})
+	require.NoError(t, Pipe{}.Default(ctx))
+	require.NoError(t, Pipe{}.Run(ctx))
+	require.Equal(t, "foo", ctx.ModulePath)
+}
+
 func TestRunOutsideGoModule(t *testing.T) {
 	dir := testlib.Mktmp(t)
 	require.NoError(t, os.WriteFile(

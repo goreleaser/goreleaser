@@ -36,6 +36,9 @@ func (Pipe) Run(ctx *context.Context) error {
 	}
 	cmd := exec.CommandContext(ctx, ctx.Config.GoMod.GoBinary, flags...)
 	cmd.Env = append(ctx.Env.Strings(), ctx.Config.GoMod.Env...)
+	if dir := ctx.Config.GoMod.Dir; dir != "" {
+		cmd.Dir = dir
+	}
 	out, err := cmd.CombinedOutput()
 	result := strings.TrimSpace(string(out))
 	if strings.HasPrefix(result, goPreModulesError) {

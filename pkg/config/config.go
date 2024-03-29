@@ -1247,6 +1247,7 @@ type GoMod struct {
 	Env      []string `yaml:"env,omitempty" json:"env,omitempty"`
 	GoBinary string   `yaml:"gobinary,omitempty" json:"gobinary,omitempty"`
 	Mod      string   `yaml:"mod,omitempty" json:"mod,omitempty"`
+	Dir      string   `yaml:"dir,omitempty" json:"dir,omitempty"`
 }
 
 type Announce struct {
