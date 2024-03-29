@@ -14,7 +14,7 @@ builds:
   - #
     # ID of the build.
     #
-    # Default: Binary name
+    # Default: Project directory name
     id: "my-build"
 
     # Path to main.go file or main package.
