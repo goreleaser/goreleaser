@@ -112,15 +112,20 @@ func (Pipe) Run(ctx *context.Context) error {
 		for group, artifacts := range artifacts {
 			log.Debugf("group %s has %d binaries", group, len(artifacts))
 			artifacts := artifacts
-			if packageFormat(archive, artifacts[0].Goos) == "binary" {
+			format := packageFormat(archive, artifacts[0].Goos)
+			switch format {
+			case "none":
+				// do nothing
+				log.WithField("goos", artifacts[0].Goos).Info("ignored due to format override to 'none'")
+			case "binary":
 				g.Go(func() error {
 					return skip(ctx, archive, artifacts)
 				})
-				continue
+			default:
+				g.Go(func() error {
+					return create(ctx, archive, artifacts, format)
+				})
 			}
-			g.Go(func() error {
-				return create(ctx, archive, artifacts)
-			})
 		}
 	}
 	return g.Wait()
@@ -138,15 +143,10 @@ func checkArtifacts(artifacts map[string][]*artifact.Artifact) error {
 }
 
 func createMeta(ctx *context.Context, arch config.Archive) error {
-	return doCreate(ctx, arch, nil, arch.Format)
+	return create(ctx, arch, nil, arch.Format)
 }
 
-func create(ctx *context.Context, arch config.Archive, binaries []*artifact.Artifact) error {
-	format := packageFormat(arch, binaries[0].Goos)
-	return doCreate(ctx, arch, binaries, format)
-}
-
-func doCreate(ctx *context.Context, arch config.Archive, binaries []*artifact.Artifact, format string) error {
+func create(ctx *context.Context, arch config.Archive, binaries []*artifact.Artifact, format string) error {
 	template := tmpl.New(ctx)
 	if len(binaries) > 0 {
 		template = template.WithArtifact(binaries[0])

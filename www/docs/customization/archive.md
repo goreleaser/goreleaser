@@ -19,10 +19,12 @@ archives:
     builds:
       - default
 
-    # Archive format. Valid options are `tar.gz`, `tgz`, `tar.xz`, `txz`, tar`, `gz`, `zip` and `binary`.
+    # Archive format.
+    #
     # If format is `binary`, no archives are created and the binaries are instead
     # uploaded directly.
     #
+    # Valid options are `tar.gz`, `tgz`, `tar.xz`, `txz`, tar`, `gz`, `zip`, and `binary`.
     # Default: 'tar.gz'
     format: zip
 
@@ -79,7 +81,12 @@ archives:
     # Can be used to change the archive formats for specific GOOSs.
     # Most common use case is to archive as zip on Windows.
     format_overrides:
-      - goos: windows
+      - # Which GOOS to override the format for.
+        goos: windows
+
+        # The format to use for the given GOOS.
+        #
+        # Valid options are `tar.gz`, `tgz`, `tar.xz`, `txz`, tar`, `gz`, `zip`, `binary`, and `none`.
         format: zip
 
     # Additional files/globs you want to add to the archive.

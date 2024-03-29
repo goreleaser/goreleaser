@@ -73,7 +73,7 @@ func TestRunPipe(t *testing.T) {
 				require.NoError(t, f.Close())
 			}
 			require.NoError(t, os.MkdirAll(filepath.Join(folder, "foo", "bar", "foobar"), 0o755))
-			f, err := os.Create(filepath.Join(filepath.Join(folder, "foo", "bar", "foobar", "blah.txt")))
+			f, err := os.Create(filepath.Join(folder, "foo", "bar", "foobar", "blah.txt"))
 			require.NoError(t, err)
 			require.NoError(t, f.Close())
 			ctx := testctx.NewWithCfg(
@@ -98,6 +98,10 @@ func TestRunPipe(t *testing.T) {
 								{
 									Goos:   "windows",
 									Format: "zip",
+								},
+								{
+									Goos:   "freebsd",
+									Format: "none",
 								},
 							},
 						},
@@ -188,6 +192,18 @@ func TestRunPipe(t *testing.T) {
 					artifact.ExtraID:     "default",
 				},
 			}
+			freebsdAmd64Build := &artifact.Artifact{
+				Goos:    "freebsd",
+				Goarch:  "amd64",
+				Goamd64: "v3",
+				Name:    "bin/mybin",
+				Path:    "will be ignored",
+				Type:    artifact.Binary,
+				Extra: map[string]interface{}{
+					artifact.ExtraBinary: "mybin",
+					artifact.ExtraID:     "default",
+				},
+			}
 			ctx.Artifacts.Add(darwinBuild)
 			ctx.Artifacts.Add(darwinUniversalBinary)
 			ctx.Artifacts.Add(linux386Build)
@@ -195,12 +211,23 @@ func TestRunPipe(t *testing.T) {
 			ctx.Artifacts.Add(linuxMipsBuild)
 			ctx.Artifacts.Add(windowsBuild)
 			ctx.Artifacts.Add(linuxAmd64Build)
+			ctx.Artifacts.Add(freebsdAmd64Build)
 			ctx.Version = "0.0.1"
 			ctx.Git.CurrentTag = "v0.0.1"
 			ctx.Config.Archives[0].Format = format
 			require.NoError(t, Pipe{}.Run(ctx))
-			archives := ctx.Artifacts.Filter(artifact.ByType(artifact.UploadableArchive)).List()
 
+			require.Empty(t, ctx.Artifacts.Filter(
+				artifact.And(
+					artifact.ByGoos("freebsd"),
+					artifact.Or(
+						artifact.ByType(artifact.UploadableArchive),
+						artifact.ByType(artifact.UploadableBinary),
+					),
+				),
+			).List(), "shouldn't have archived freebsd in any way")
+
+			archives := ctx.Artifacts.Filter(artifact.ByType(artifact.UploadableArchive)).List()
 			for _, arch := range archives {
 				expectBin := "bin/mybin"
 				if arch.Goos == "windows" {
@@ -820,12 +847,17 @@ func TestFormatFor(t *testing.T) {
 						Goos:   "windows",
 						Format: "zip",
 					},
+					{
+						Goos:   "darwin",
+						Format: "none",
+					},
 				},
 			},
 		},
 	})
 	require.Equal(t, "zip", packageFormat(ctx.Config.Archives[0], "windows"))
 	require.Equal(t, "tar.gz", packageFormat(ctx.Config.Archives[0], "linux"))
+	require.Equal(t, "none", packageFormat(ctx.Config.Archives[0], "darwin"))
 }
 
 func TestBinaryOverride(t *testing.T) {
