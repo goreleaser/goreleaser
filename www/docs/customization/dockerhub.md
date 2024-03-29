@@ -20,7 +20,7 @@ dockerhubs:
   - # Your docker.io username.
     #
     # Templates: allowed
-    usernme: "{{ .Env.DOCKER_USERNAME }}"
+    username: "{{ .Env.DOCKER_USERNAME }}"
 
     # Disables the configuration feature in some conditions, for instance, when
     # publishing patch releases.
