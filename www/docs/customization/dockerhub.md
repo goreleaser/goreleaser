@@ -36,6 +36,13 @@ dockerhubs:
     # Default: 'DOCKER_PASSWORD'
     secret_name: MY_ACCOUNT_DOCKER_PASSWORD
 
+    # Images to apply the description and/or full description to.
+    #
+    # Templates: allowed
+    images:
+      - goreleaser/goreleaser
+      - goreleaser/goreleaser-pro
+
     # The short description of the image.
     #
     # Templates: allowed
