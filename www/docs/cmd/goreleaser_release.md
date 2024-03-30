@@ -10,7 +10,7 @@ goreleaser release [flags]
 
 ```
       --auto-snapshot                Automatically sets --snapshot if the repository is dirty
-      --clean                        Removes the dist folder
+      --clean                        Removes the dist directory
   -f, --config string                Load configuration from file
       --fail-fast                    Whether to abort the release publishing on the first error
   -h, --help                         help for release
