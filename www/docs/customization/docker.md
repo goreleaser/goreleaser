@@ -23,7 +23,7 @@ dockers:
 
     The `image_templates` attribute supports templating. Learn more about the [name template engine](/customization/templates/).
 
-You also need to create a `Dockerfile` in your project's root folder:
+You also need to create a `Dockerfile` in your project's root directory:
 
 ```dockerfile
 FROM scratch
@@ -144,11 +144,11 @@ dockers:
     # If your Dockerfile copies files other than binaries and packages,
     # you should list them here as well.
     # Note that GoReleaser will create the same structure inside a temporary
-    # folder, so if you add `foo/bar.json` here, on your Dockerfile you can
+    # directory, so if you add `foo/bar.json` here, on your Dockerfile you can
     # `COPY foo/bar.json /whatever.json`.
-    # Also note that the paths here are relative to the folder in which
-    # GoReleaser is being run (usually the repository root folder).
-    # This field does not support wildcards, you can add an entire folder here
+    # Also note that the paths here are relative to the directory in which
+    # GoReleaser is being run (usually the repository root directory).
+    # This field does not support wildcards, you can add an entire directory here
     # and use wildcards when you `COPY`/`ADD` in your Dockerfile.
     extra_files:
       - config.yml

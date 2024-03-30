@@ -2,8 +2,8 @@
 
 > Since v1.20
 
-GoReleaser creates some metadata files in the `dist` folder before it finishes
-running.
+GoReleaser creates some metadata files in the `dist` directory before it
+finishes running.
 
 These are the options available:
 

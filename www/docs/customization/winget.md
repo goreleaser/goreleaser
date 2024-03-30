@@ -127,7 +127,7 @@ winget:
     copyright_url: "https://goreleaser.com/copyright"
 
     # Setting this will prevent goreleaser to actually try to commit the updated
-    # package - instead, it will be stored on the dist folder only,
+    # package - instead, it will be stored on the dist directory only,
     # leaving the responsibility of publishing it to the user.
     #
     # If set to auto, the release will not be uploaded to the repository

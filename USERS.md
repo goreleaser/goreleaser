@@ -111,7 +111,7 @@ Feel free to [add yours](https://github.com/goreleaser/goreleaser/edit/main/USER
 Hey! Thanks for looking into this file!
 If you're going to edit it, please:
 - keep a-z ordering :)
-- edit only the USERS.md file at the repository's root folder
+- edit only the USERS.md file at the repository's root directory
 - /www/docs/users.md is auto-copied from /USERS.md
 -->
 

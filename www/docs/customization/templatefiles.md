@@ -27,7 +27,7 @@ template_files:
     src: foo.tpl.sh
 
     # Destination path of the file.
-    # Will be prefixed with the `dist` folder.
+    # Will be prefixed with the `dist` directory.
     # Ignored if empty.
     #
     # Templates: allowed

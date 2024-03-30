@@ -14,12 +14,12 @@ Environment variables will be re-evaluated here, so make sure they are
 available to the announce command as well.
 
 On the other hand, the GoReleaser configuration file will not be parsed again,
-which means you might need to specify the dist folder path if it is different
+which means you might need to specify the dist directory path if it is different
 than the default.
 
 !!! success "GoReleaser Pro"
-    This subcommand is a [GoReleaser Pro feature](https://goreleaser.com/pro/).
 
+    This subcommand is a [GoReleaser Pro feature](https://goreleaser.com/pro/).
 
 ```
 goreleaser announce [flags]
@@ -28,7 +28,7 @@ goreleaser announce [flags]
 ## Options
 
 ```
-  -d, --dist string        dist folder to continue (default "./dist")
+  -d, --dist string        dist directory to continue (default "./dist")
   -h, --help               help for announce
   -k, --key string         GoReleaser Pro license key [$GORELEASER_KEY]
       --merge              Merges multiple parts of a --split release
@@ -46,5 +46,4 @@ goreleaser announce [flags]
 
 ## See also
 
-* [goreleaser](/cmd/goreleaser/)	 - Deliver Go binaries as fast and easily as possible
-
+- [goreleaser](/cmd/goreleaser/) - Deliver Go binaries as fast and easily as possible

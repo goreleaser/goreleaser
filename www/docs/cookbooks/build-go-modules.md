@@ -16,23 +16,23 @@ gomod:
 In practice, what this does is:
 
 - for each of your builds, create a `dist/proxy/{{ build.id }}`;
-- creates a `go.mod` that requires your __main module__ at the __current tag__;
-- copy the project's `go.sum` to that folder.
+- creates a `go.mod` that requires your **main module** at the **current tag**;
+- copy the project's `go.sum` to that directory.
 - runs `go get module@version`
 
 In which:
 
-- __build.id__: the `id` property in your `build` definition;
-- __main module__: is the output of `go list -m`;
-- __main package__: is the __main module__ + your build's `main`;
-- __current tag__: is the tag that is being built.
+- **build.id**: the `id` property in your `build` definition;
+- **main module**: is the output of `go list -m`;
+- **main package**: is the **main module** + your build's `main`;
+- **current tag**: is the tag that is being built.
 
 So, let's say:
 
-- __main module__: `github.com/goreleaser/nfpm/v2`;
-- __build id__: `nfpm`
+- **main module**: `github.com/goreleaser/nfpm/v2`;
+- **build id**: `nfpm`
 - build's `main`: `./cmd/nfpm/`;
-- __current tag__: `v2.5.0`.
+- **current tag**: `v2.5.0`.
 
 GoReleaser will create a `go.mod` like:
 
@@ -40,7 +40,7 @@ GoReleaser will create a `go.mod` like:
 module nfpm
 ```
 
-Then it'll copy the `go.sum` into this folder, and run:
+Then it'll copy the `go.sum` into this directory, and run:
 
 ```sh
 go get github.com/goreleaser/nfpm/v2@v2.5.0
@@ -79,7 +79,7 @@ You can also use `go version -m my_program` to display the go module information
 
 ## Limitations
 
-1. Extra files will still be copied from the current project's root folder and not from the proxy cache;
+1. Extra files will still be copied from the current project's root directory and not from the proxy cache;
 1. You can't build packages that are not contained in the main module;
 1. VCS info will not be available.
 

@@ -51,7 +51,7 @@ source:
     - src: "*.md"
       dst: docs
 
-      # Strip parent folders when adding files to the archive.
+      # Strip parent directories when adding files to the archive.
       strip_parent: true
 
       # File info.

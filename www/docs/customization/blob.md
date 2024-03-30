@@ -49,7 +49,7 @@ blobs:
     #
     # Default: '{{ .ProjectName }}/{{ .Tag }}'
     # Templates: allowed
-    folder: "foo/bar/{{.Version}}"
+    directory: "foo/bar/{{.Version}}"
 
     # Whether to disable this particular upload configuration.
     #
@@ -120,10 +120,10 @@ blobs:
 
   - provider: gs
     bucket: goreleaser-bucket
-    folder: "foo/bar/{{.Version}}"
+    directory: "foo/bar/{{.Version}}"
   - provider: s3
     bucket: goreleaser-bucket
-    folder: "foo/bar/{{.Version}}"
+    directory: "foo/bar/{{.Version}}"
 ```
 
 !!! tip
@@ -175,7 +175,7 @@ in the following order:
 There is no common way to set ACLs across all bucket providers, so, [go-cloud][]
 [does not support it yet][issue1108].
 
-You are expected to set the ACLs on the bucket/folder/etc, depending on your
+You are expected to set the ACLs on the bucket/directory/etc, depending on your
 provider.
 
 [go-cloud]: https://gocloud.dev/howto/blob/

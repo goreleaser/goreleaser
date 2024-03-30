@@ -70,7 +70,7 @@ var BuildPipeline = []Piper{
 	dist.Pipe{},
 	// setup metadata options
 	metadata.Pipe{},
-	// creates a metadta.json files in the dist folder
+	// creates a metadta.json files in the dist directory
 	metadata.MetaPipe{},
 	// setup gomod-related stuff
 	gomod.Pipe{},
@@ -138,7 +138,7 @@ var Pipeline = append(
 	docker.Pipe{},
 	// publishes artifacts
 	publish.New(),
-	// creates a artifacts.json files in the dist folder
+	// creates a artifacts.json files in the dist directory
 	metadata.ArtifactsPipe{},
 	// announce releases
 	announce.Pipe{},
