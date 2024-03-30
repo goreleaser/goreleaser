@@ -1,4 +1,4 @@
-// Package dist provides checks to make sure the dist folder is always
+// Package dist provides checks to make sure the dist directory is always
 // empty.
 package dist
 
@@ -21,7 +21,7 @@ func (Pipe) String() string {
 func (Pipe) Run(ctx *context.Context) (err error) {
 	_, err = os.Stat(ctx.Config.Dist)
 	if os.IsNotExist(err) {
-		log.Debugf("%s doesn't exist, creating empty folder", ctx.Config.Dist)
+		log.Debugf("%s doesn't exist, creating empty directory", ctx.Config.Dist)
 		return mkdir(ctx)
 	}
 	if ctx.Clean {
