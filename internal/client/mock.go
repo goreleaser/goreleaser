@@ -46,7 +46,7 @@ type Mock struct {
 	SyncedFork           bool
 }
 
-func (c *Mock) SyncFork(ctx *context.Context, head Repo, base Repo) error {
+func (c *Mock) SyncFork(_ *context.Context, _ Repo, _ Repo) error {
 	c.SyncedFork = true
 	return nil
 }
