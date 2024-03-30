@@ -59,6 +59,10 @@ func (Pipe) Default(ctx *context.Context) error {
 		if archive.ID == "" {
 			archive.ID = "default"
 		}
+		if archive.StripParentBinaryFolder {
+			archive.StripBinaryDirectory = true
+			deprecate.Notice(ctx, "archives.strip_parent_binary_folder")
+		}
 		if archive.RLCP != "" && archive.Format != "binary" && len(archive.Files) > 0 {
 			deprecate.Notice(ctx, "archives.rlcp")
 		}
@@ -202,7 +206,7 @@ func create(ctx *context.Context, arch config.Archive, binaries []*artifact.Arti
 	bins := []string{}
 	for _, binary := range binaries {
 		dst := binary.Name
-		if arch.StripParentBinaryFolder {
+		if arch.StripBinaryDirectory {
 			dst = filepath.Base(dst)
 		}
 		if err := a.Add(config.File{

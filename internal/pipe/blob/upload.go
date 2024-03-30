@@ -85,11 +85,11 @@ func urlFor(ctx *context.Context, conf config.Blob) (string, error) {
 // upload to destination (eg: gs://gorelease-bucket) using the given uploader
 // implementation.
 func doUpload(ctx *context.Context, conf config.Blob) error {
-	folder, err := tmpl.New(ctx).Apply(conf.Folder)
+	dir, err := tmpl.New(ctx).Apply(conf.Directory)
 	if err != nil {
 		return err
 	}
-	folder = strings.TrimPrefix(folder, "/")
+	dir = strings.TrimPrefix(dir, "/")
 
 	bucketURL, err := urlFor(ctx, conf)
 	if err != nil {
@@ -141,7 +141,7 @@ func doUpload(ctx *context.Context, conf config.Blob) error {
 		g.Go(func() error {
 			// TODO: replace this with ?prefix=folder on the bucket url
 			dataFile := artifact.Path
-			uploadFile := path.Join(folder, artifact.Name)
+			uploadFile := path.Join(dir, artifact.Name)
 
 			return uploadData(ctx, conf, up, dataFile, uploadFile, bucketURL)
 		})
@@ -155,7 +155,7 @@ func doUpload(ctx *context.Context, conf config.Blob) error {
 		name := name
 		fullpath := fullpath
 		g.Go(func() error {
-			uploadFile := path.Join(folder, name)
+			uploadFile := path.Join(dir, name)
 			return uploadData(ctx, conf, up, fullpath, uploadFile, bucketURL)
 		})
 	}

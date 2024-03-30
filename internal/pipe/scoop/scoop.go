@@ -97,6 +97,10 @@ func (Pipe) Default(ctx *context.Context) error {
 		if scoop.Name == "" {
 			scoop.Name = ctx.Config.ProjectName
 		}
+		if scoop.Folder != "" {
+			deprecate.Notice(ctx, "scoops.folder")
+			scoop.Directory = scoop.Folder
+		}
 		scoop.CommitAuthor = commitauthor.Default(scoop.CommitAuthor)
 		if scoop.CommitMessageTemplate == "" {
 			scoop.CommitMessageTemplate = "Scoop update for {{ .ProjectName }} version {{ .Tag }}"
@@ -180,7 +184,7 @@ func doRun(ctx *context.Context, scoop config.Scoop, cl client.ReleaseURLTemplat
 	}
 
 	filename := scoop.Name + ".json"
-	path := filepath.Join(ctx.Config.Dist, "scoop", scoop.Folder, filename)
+	path := filepath.Join(ctx.Config.Dist, "scoop", scoop.Directory, filename)
 	if err := os.MkdirAll(filepath.Dir(path), 0o755); err != nil {
 		return err
 	}
@@ -247,7 +251,7 @@ func doPublish(ctx *context.Context, manifest *artifact.Artifact, cl client.Clie
 	}
 
 	repo := client.RepoFromRef(scoop.Repository)
-	gpath := path.Join(scoop.Folder, manifest.Name)
+	gpath := path.Join(scoop.Directory, manifest.Name)
 
 	if scoop.Repository.Git.URL != "" {
 		return client.NewGitUploadClient(repo.Branch).

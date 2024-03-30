@@ -21,7 +21,7 @@ Template for new deprecations:
 
 ### property
 
-> since yyyy-mm-dd
+> since yyyy-mm-dd (v1.xx)
 
 Description.
 
@@ -38,6 +38,94 @@ Description.
     ```
 
 -->
+
+### archives.strip_parent_binary_folder
+
+> since 2024-03-29 (v1.25)
+
+Property was renamed to be consistent across all configurations.
+
+=== "Before"
+
+    ```yaml
+    archives:
+      -
+        strip_parent_binary_folder: true
+    ```
+
+=== "After"
+
+    ```yaml
+    archives:
+      -
+        strip_binary_directory: true
+    ```
+
+### blobs.folder
+
+> since 2024-03-29 (v1.25)
+
+Property was renamed to be consistent across all configurations.
+
+=== "Before"
+
+    ```yaml
+    blobs:
+      -
+        folder: foo
+    ```
+
+=== "After"
+
+    ```yaml
+    blobs:
+      -
+        directory: foo
+    ```
+
+### brews.folder
+
+> since 2024-03-29 (v1.25)
+
+Property was renamed to be consistent across all configurations.
+
+=== "Before"
+
+    ```yaml
+    brews:
+      -
+        directory: foo
+    ```
+
+=== "After"
+
+    ```yaml
+    brews:
+      -
+        directory: foo
+    ```
+
+### scoops.folder
+
+> since 2024-03-29 (v1.25)
+
+Property was renamed to be consistent across all configurations.
+
+=== "Before"
+
+    ```yaml
+    scoops:
+      -
+        directory: foo
+    ```
+
+=== "After"
+
+    ```yaml
+    scoops:
+      -
+        directory: foo
+    ```
 
 ### furies.skip
 

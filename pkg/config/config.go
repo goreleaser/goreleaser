@@ -225,7 +225,7 @@ type Homebrew struct {
 	Repository            RepoRef              `yaml:"repository,omitempty" json:"repository,omitempty"`
 	CommitAuthor          CommitAuthor         `yaml:"commit_author,omitempty" json:"commit_author,omitempty"`
 	CommitMessageTemplate string               `yaml:"commit_msg_template,omitempty" json:"commit_msg_template,omitempty"`
-	Folder                string               `yaml:"folder,omitempty" json:"folder,omitempty"`
+	Directory             string               `yaml:"directory,omitempty" json:"directory,omitempty"`
 	Caveats               string               `yaml:"caveats,omitempty" json:"caveats,omitempty"`
 	Install               string               `yaml:"install,omitempty" json:"install,omitempty"`
 	ExtraInstall          string               `yaml:"extra_install,omitempty" json:"extra_install,omitempty"`
@@ -252,6 +252,9 @@ type Homebrew struct {
 
 	// Deprecated: use Service instead.
 	Plist string `yaml:"plist,omitempty" json:"plist,omitempty" jsonschema:"deprecated=true,description=use service instead"`
+
+	// Deprecated: use Directory instead.
+	Folder string `yaml:"folder,omitempty" json:"folder,omitempty" jsonschema:"deprecated=true"`
 }
 
 type Nix struct {
@@ -394,7 +397,7 @@ type Scoop struct {
 	Name                  string       `yaml:"name,omitempty" json:"name,omitempty"`
 	IDs                   []string     `yaml:"ids,omitempty" json:"ids,omitempty"`
 	Repository            RepoRef      `yaml:"repository,omitempty" json:"repository,omitempty"`
-	Folder                string       `yaml:"folder,omitempty" json:"folder,omitempty"`
+	Directory             string       `yaml:"directory,omitempty" json:"directory,omitempty"`
 	CommitAuthor          CommitAuthor `yaml:"commit_author,omitempty" json:"commit_author,omitempty"`
 	CommitMessageTemplate string       `yaml:"commit_msg_template,omitempty" json:"commit_msg_template,omitempty"`
 	Homepage              string       `yaml:"homepage,omitempty" json:"homepage,omitempty"`
@@ -411,6 +414,9 @@ type Scoop struct {
 
 	// Deprecated: use Repository instead.
 	Bucket RepoRef `yaml:"bucket,omitempty" json:"bucket,omitempty" jsonschema:"deprecated=true,description=use repository instead"`
+
+	// Deprecated: use Directory instead.
+	Folder string `yaml:"folder,omitempty" json:"folder,omitempty" jsonschema:"deprecated=true"`
 }
 
 // CommitAuthor is the author of a Git commit.
@@ -714,13 +720,16 @@ type Archive struct {
 	Format                    string           `yaml:"format,omitempty" json:"format,omitempty" jsonschema:"enum=tar,enum=tgz,enum=tar.gz,enum=zip,enum=gz,enum=tar.xz,enum=txz,enum=binary,default=tar.gz"`
 	FormatOverrides           []FormatOverride `yaml:"format_overrides,omitempty" json:"format_overrides,omitempty"`
 	WrapInDirectory           string           `yaml:"wrap_in_directory,omitempty" json:"wrap_in_directory,omitempty" jsonschema:"oneof_type=string;boolean"`
-	StripParentBinaryFolder   bool             `yaml:"strip_parent_binary_folder,omitempty" json:"strip_parent_binary_folder,omitempty"`
+	StripBinaryDirectory      bool             `yaml:"strip_binary_directory,omitempty" json:"strip_binary_directory,omitempty"`
 	Files                     []File           `yaml:"files,omitempty" json:"files,omitempty"`
 	Meta                      bool             `yaml:"meta,omitempty" json:"meta,omitempty"`
 	AllowDifferentBinaryCount bool             `yaml:"allow_different_binary_count,omitempty" json:"allow_different_binary_count,omitempty"`
 
 	// Deprecated: don't need to set this anymore.
 	RLCP string `yaml:"rlcp,omitempty" json:"rlcp,omitempty"  jsonschema:"oneof_type=string;boolean,deprecated=true,description=you can now remove this"`
+
+	// Deprecated: use StripBinaryDirectory instead.
+	StripParentBinaryFolder bool `yaml:"strip_parent_binary_folder,omitempty" json:"strip_parent_binary_folder,omitempty" jsonschema:"deprecated=true"`
 }
 
 type ReleaseNotesMode string
@@ -1111,7 +1120,7 @@ type Blob struct {
 	Provider           string      `yaml:"provider,omitempty" json:"provider,omitempty"`
 	Region             string      `yaml:"region,omitempty" json:"region,omitempty"`
 	DisableSSL         bool        `yaml:"disable_ssl,omitempty" json:"disable_ssl,omitempty"`
-	Folder             string      `yaml:"folder,omitempty" json:"folder,omitempty"`
+	Directory          string      `yaml:"directory,omitempty" json:"directory,omitempty"`
 	KMSKey             string      `yaml:"kms_key,omitempty" json:"kms_key,omitempty"`
 	IDs                []string    `yaml:"ids,omitempty" json:"ids,omitempty"`
 	Endpoint           string      `yaml:"endpoint,omitempty" json:"endpoint,omitempty"` // used for minio for example
@@ -1125,8 +1134,12 @@ type Blob struct {
 
 	// Deprecated: use disable_ssl instead
 	OldDisableSSL bool `yaml:"disableSSL,omitempty" json:"disableSSL,omitempty" jsonschema:"deprecated=true,description=use disable_ssl instead"` // nolint:tagliatelle
+
 	// Deprecated: use kms_key instead
 	OldKMSKey string `yaml:"kmskey,omitempty" json:"kmskey,omitempty" jsonschema:"deprecated=true,description=use kms_key instead"`
+
+	// Deprecated: use Directory instead.
+	Folder string `yaml:"folder,omitempty" json:"folder,omitempty" jsonschema:"deprecated=true"`
 }
 
 // Upload configuration.

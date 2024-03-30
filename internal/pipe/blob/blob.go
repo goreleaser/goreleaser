@@ -26,8 +26,12 @@ func (Pipe) Default(ctx *context.Context) error {
 		if blob.Bucket == "" || blob.Provider == "" {
 			return fmt.Errorf("bucket or provider cannot be empty")
 		}
-		if blob.Folder == "" {
-			blob.Folder = "{{ .ProjectName }}/{{ .Tag }}"
+		if blob.Folder != "" {
+			deprecate.Notice(ctx, "blobs.folder")
+			blob.Directory = blob.Folder
+		}
+		if blob.Directory == "" {
+			blob.Directory = "{{ .ProjectName }}/{{ .Tag }}"
 		}
 		if blob.ContentDisposition == "" {
 			blob.ContentDisposition = "attachment;filename={{.Filename}}"
