@@ -16,7 +16,7 @@ You can also have plenty of customization options:
 ```yaml
 # goreleaser.yaml
 
-dockerhubs:
+dockerhub:
   - # Your docker.io username.
     #
     # Templates: allowed
