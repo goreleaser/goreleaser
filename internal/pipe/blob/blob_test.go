@@ -92,20 +92,21 @@ func TestDefaults(t *testing.T) {
 		{
 			Bucket:             "foo",
 			Provider:           "azblob",
-			Folder:             "{{ .ProjectName }}/{{ .Tag }}",
+			Directory:          "{{ .ProjectName }}/{{ .Tag }}",
 			IDs:                []string{"foo", "bar"},
 			ContentDisposition: "inline",
 		},
 		{
 			Bucket:             "foobar",
 			Provider:           "gcs",
-			Folder:             "{{ .ProjectName }}/{{ .Tag }}",
+			Directory:          "{{ .ProjectName }}/{{ .Tag }}",
 			ContentDisposition: "attachment;filename={{.Filename}}",
 		},
 		{
 			Bucket:             "deprecated",
 			Provider:           "s3",
 			Folder:             "static",
+			Directory:          "static",
 			OldDisableSSL:      true,
 			DisableSSL:         true,
 			OldKMSKey:          "fake",

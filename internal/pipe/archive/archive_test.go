@@ -88,8 +88,8 @@ func TestRunPipe(t *testing.T) {
 								Owner: "root",
 								Group: "root",
 							},
-							NameTemplate:            defaultNameTemplate,
-							StripParentBinaryFolder: dets.Strip,
+							NameTemplate:         defaultNameTemplate,
+							StripBinaryDirectory: dets.Strip,
 							Files: []config.File{
 								{Source: "README.{{.Os}}.*"},
 								{Source: "./foo/**/*"},
