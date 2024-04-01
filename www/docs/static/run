@@ -2,10 +2,12 @@
 set -e
 
 is_pro="false"
-if [[ "$VERSION" == *-pro ]]; then
+case "$VERSION" in
+*-pro)
 	DISTRIBUTION="pro"
 	is_pro="true"
-fi
+	;;
+esac
 
 if test "$DISTRIBUTION" = "pro"; then
 	echo "Using Pro distribution..."
