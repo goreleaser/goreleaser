@@ -25,13 +25,13 @@ scoops:
     # Templates: allowed
     url_template: "http://github.mycompany.com/foo/bar/releases/{{ .Tag }}/{{ .ArtifactName }}"
 
-    # Folder inside the repository to put the scoop.
+    # Directory inside the repository to put the scoop.
     #
-    # Note that while scoop works if the manifests are in a folder,
+    # Note that while scoop works if the manifests are in a directory,
     # 'scoop bucket list' will show 0 manifests if they are not in the root
-    # folder.
+    # directory.
     # In short, it's generally better to leave this empty.
-    folder: Scoops
+    directory: Scoops
 
     # Which format to use.
     #

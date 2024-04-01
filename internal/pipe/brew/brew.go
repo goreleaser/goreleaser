@@ -74,6 +74,10 @@ func (Pipe) Default(ctx *context.Context) error {
 		if brew.Plist != "" {
 			deprecate.Notice(ctx, "brews.plist")
 		}
+		if brew.Folder != "" {
+			deprecate.Notice(ctx, "brews.folder")
+			brew.Directory = brew.Folder
+		}
 		if !reflect.DeepEqual(brew.Tap, config.RepoRef{}) {
 			brew.Repository = brew.Tap
 			deprecate.Notice(ctx, "brews.tap")
@@ -144,7 +148,7 @@ func doPublish(ctx *context.Context, formula *artifact.Artifact, cl client.Clien
 
 	repo := client.RepoFromRef(brew.Repository)
 
-	gpath := buildFormulaPath(brew.Folder, formula.Name)
+	gpath := buildFormulaPath(brew.Directory, formula.Name)
 
 	msg, err := tmpl.New(ctx).Apply(brew.CommitMessageTemplate)
 	if err != nil {
@@ -271,7 +275,7 @@ func doRun(ctx *context.Context, brew config.Homebrew, cl client.ReleaseURLTempl
 	}
 
 	filename := brew.Name + ".rb"
-	path := filepath.Join(ctx.Config.Dist, "homebrew", brew.Folder, filename)
+	path := filepath.Join(ctx.Config.Dist, "homebrew", brew.Directory, filename)
 	if err := os.MkdirAll(filepath.Dir(path), 0o755); err != nil {
 		return err
 	}

@@ -20,7 +20,7 @@ goreleaser build [flags]
 ## Options
 
 ```
-      --clean              Remove the dist folder before building
+      --clean              Remove the dist directory before building
   -f, --config string      Load configuration from file
   -h, --help               help for build
       --id stringArray     Builds only the specified build ids

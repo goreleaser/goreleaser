@@ -1,6 +1,8 @@
 # Build does not contain a main function
 
-This usually happens if you're trying to build a library or if you didn't setup the `builds.main` section in your `.goreleaser.yaml` and your `main.go` is not in the root folder.
+This usually happens if you're trying to build a library or if you didn't setup
+the `builds.main` section in your `.goreleaser.yaml` and your `main.go` is not
+in the root directory.
 
 Here's an example error:
 
@@ -17,17 +19,17 @@ Add something like this to your config:
 ```yaml
 # .goreleaser.yaml
 builds:
-- skip: true
+  - skip: true
 ```
 
-## If your `main.go` is not in the root folder
+## If your `main.go` is not in the root directory
 
 Add something like this to your config:
 
 ```yaml
 # .goreleaser.yaml
 builds:
-- main: ./path/to/your/main/pkg/
+  - main: ./path/to/your/main/pkg/
 ```
 
 For more info, check the [builds documentation](/customization/build/).
@@ -43,9 +45,9 @@ You can set `no_main_check` to `true`:
 ```yaml
 # .goreleaser.yaml
 builds:
-- main: ./path/...
-  buildmode: plugin
-  no_main_check: true
+  - main: ./path/...
+    buildmode: plugin
+    no_main_check: true
 ```
 
 For more info, check the [builds documentation](/customization/build/).

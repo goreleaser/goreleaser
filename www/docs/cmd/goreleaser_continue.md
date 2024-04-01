@@ -20,7 +20,7 @@ goreleaser continue [flags]
 ## Options
 
 ```
-  -d, --dist string        dist folder to continue (default "./dist")
+  -d, --dist string        dist directory to continue (default "./dist")
   -h, --help               help for continue
   -k, --key string         GoReleaser Pro license key [$GORELEASER_KEY]
       --merge              Merges multiple parts of a --split release

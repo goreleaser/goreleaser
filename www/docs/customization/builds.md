@@ -204,7 +204,7 @@ builds:
     # By default, GoReleaser will create your binaries inside
     # `dist/${BuildID}_${BuildTarget}`, which is a unique directory per build
     # target in the matrix.
-    # You can set subdirs within that folder using the `binary` property.
+    # You can set subdirs within that directory using the `binary` property.
     #
     # However, if for some reason you don't want that unique directory to be
     # created, you can set this property.
@@ -480,7 +480,7 @@ builds:
     # prebuilt specific options
     prebuilt:
       # Path must be the template path to the binaries.
-      # GoReleaser removes the `dist` folder before running, so you will likely
+      # GoReleaser removes the `dist` directory before running, so you will likely
       # want to put the binaries elsewhere.
       # This field is required when using the `prebuilt` builder.
       path: output/mybin_{{ .Os }}_{{ .Arch }}{{ with .Amd64 }}_{{ . }}{{ end }}/mybin
@@ -531,7 +531,7 @@ There is no difference in how the binaries are handled.
 
 If you'd like to see this in action, check [this example on GitHub](https://github.com/caarlos0/goreleaser-pro-prebuilt-example).
 
-## A note about folder names inside `dist`
+## A note about directory names inside `dist`
 
 By default, GoReleaser will create your binaries inside
 `dist/${BuildID}_${BuildTarget}`, which is a unique directory per build target

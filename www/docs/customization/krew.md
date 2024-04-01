@@ -76,7 +76,7 @@ krews:
     caveats: "How to use this binary"
 
     # Setting this will prevent goreleaser to actually try to commit the updated
-    # krew plugin - instead, the plugin file will be stored on the dist folder
+    # krew plugin - instead, the plugin file will be stored on the dist directory
     # only, leaving the responsibility of publishing it to the user.
     # If set to auto, the release will not be uploaded to the Krew plugin
     # in case there is an indicator for prerelease in the tag e.g. v1.0.0-rc1

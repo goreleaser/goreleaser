@@ -337,6 +337,9 @@
 					"content_disposition": {
 						"type": "string"
 					},
+					"include_meta": {
+						"type": "boolean"
+					},
 					"disableSSL": {
 						"type": "boolean",
 						"description": "use disable_ssl instead"
@@ -440,6 +443,7 @@
 						"enum": [
 							"c-archive",
 							"c-shared",
+							"pie",
 							""
 						],
 						"default": ""
@@ -507,6 +511,7 @@
 						"enum": [
 							"c-archive",
 							"c-shared",
+							"pie",
 							""
 						],
 						"default": ""
@@ -658,6 +663,9 @@
 					},
 					"algorithm": {
 						"type": "string"
+					},
+					"split": {
+						"type": "boolean"
 					},
 					"ids": {
 						"items": {
@@ -1018,6 +1026,33 @@
 				"additionalProperties": false,
 				"type": "object"
 			},
+			"DockerHub": {
+				"properties": {
+					"username": {
+						"type": "string"
+					},
+					"secret_name": {
+						"type": "string"
+					},
+					"images": {
+						"items": {
+							"type": "string"
+						},
+						"type": "array"
+					},
+					"disable": {
+						"type": "string"
+					},
+					"description": {
+						"type": "string"
+					},
+					"full_description": {
+						"$ref": "#/$defs/IncludedMarkdown"
+					}
+				},
+				"additionalProperties": false,
+				"type": "object"
+			},
 			"DockerManifest": {
 				"properties": {
 					"id": {
@@ -1234,8 +1269,19 @@
 					"secret_name": {
 						"type": "string"
 					},
-					"skip": {
+					"disable": {
 						"type": "string"
+					},
+					"skip": {
+						"oneOf": [
+							{
+								"type": "string"
+							},
+							{
+								"type": "boolean"
+							}
+						],
+						"description": "use disable instead"
 					}
 				},
 				"additionalProperties": false,
@@ -1356,6 +1402,9 @@
 					},
 					"mod": {
 						"type": "string"
+					},
+					"dir": {
+						"type": "string"
 					}
 				},
 				"additionalProperties": false,
@@ -1429,6 +1478,12 @@
 					},
 					"url_template": {
 						"type": "string"
+					},
+					"url_headers": {
+						"items": {
+							"type": "string"
+						},
+						"type": "array"
 					},
 					"custom_require": {
 						"type": "string"
@@ -2073,7 +2128,14 @@
 					},
 					"formats": {
 						"items": {
-							"type": "string"
+							"type": "string",
+							"enum": [
+								"apk",
+								"deb",
+								"rpm",
+								"termux.deb",
+								"archlinux"
+							]
 						},
 						"type": "array"
 					},
@@ -2195,6 +2257,27 @@
 						"$ref": "#/$defs/NFPMDebSignature"
 					},
 					"lintian_overrides": {
+						"items": {
+							"type": "string"
+						},
+						"type": "array"
+					},
+					"compression": {
+						"type": "string",
+						"enum": [
+							"gzip",
+							"xz",
+							"none"
+						],
+						"default": "gzip"
+					},
+					"fields": {
+						"additionalProperties": {
+							"type": "string"
+						},
+						"type": "object"
+					},
+					"predepends": {
 						"items": {
 							"type": "string"
 						},
@@ -2845,6 +2928,12 @@
 						},
 						"type": "array"
 					},
+					"dockerhub": {
+						"items": {
+							"$ref": "#/$defs/DockerHub"
+						},
+						"type": "array"
+					},
 					"scoop": {
 						"$ref": "#/$defs/Scoop",
 						"description": "use scoops instead"
@@ -2881,6 +2970,9 @@
 						"type": "boolean"
 					},
 					"signature": {
+						"type": "boolean"
+					},
+					"meta": {
 						"type": "boolean"
 					},
 					"dir": {
@@ -3070,6 +3162,12 @@
 							"replace"
 						],
 						"default": "keep-existing"
+					},
+					"replace_existing_artifacts": {
+						"type": "boolean"
+					},
+					"include_meta": {
+						"type": "boolean"
 					},
 					"templated_extra_files": {
 						"items": {
@@ -4024,6 +4122,9 @@
 					"signature": {
 						"type": "boolean"
 					},
+					"meta": {
+						"type": "boolean"
+					},
 					"custom_artifact_name": {
 						"type": "boolean"
 					},
@@ -4175,7 +4276,6 @@
 				"additionalProperties": false,
 				"type": "object",
 				"required": [
-					"name",
 					"publisher",
 					"repository",
 					"short_description",

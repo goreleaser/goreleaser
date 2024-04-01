@@ -94,8 +94,8 @@ brews:
     # Templates: allowed
     commit_msg_template: "Brew formula update for {{ .ProjectName }} version {{ .Tag }}"
 
-    # Folder inside the repository to put the formula.
-    folder: Formula
+    # Directory inside the repository to put the formula.
+    directory: Formula
 
     # Caveats for the user of your binary.
     caveats: "How to use this binary"
@@ -112,8 +112,8 @@ brews:
     license: "MIT"
 
     # Setting this will prevent goreleaser to actually try to commit the updated
-    # formula - instead, the formula file will be stored on the dist folder only,
-    # leaving the responsibility of publishing it to the user.
+    # formula - instead, the formula file will be stored on the dist directory
+    # only, leaving the responsibility of publishing it to the user.
     # If set to auto, the release will not be uploaded to the homebrew tap
     # in case there is an indicator for prerelease in the tag e.g. v1.0.0-rc1
     #
@@ -203,7 +203,8 @@ brews:
 By defining the `brew` section, GoReleaser will take care of publishing the
 Homebrew tap.
 Assuming that the current tag is `v1.2.3`, the above configuration will generate a
-`program.rb` formula in the `Formula` folder of `user/homebrew-tap` repository:
+`program.rb` formula in the `Formula` directory of `user/homebrew-tap`
+repository:
 
 ```rb
 class Program < Formula

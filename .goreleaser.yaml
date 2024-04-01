@@ -187,7 +187,7 @@ brews:
   - repository:
       owner: goreleaser
       name: homebrew-tap
-    folder: Formula
+    directory: Formula
     goarm: "7"
     homepage: https://goreleaser.com
     description: Deliver Go binaries as fast and easily as possible
@@ -268,7 +268,7 @@ scoops:
   - repository:
       owner: goreleaser
       name: scoop-bucket
-    folder: bucket
+    directory: bucket
     homepage: https://goreleaser.com
     description: Deliver Go binaries as fast and easily as possible
     license: MIT
