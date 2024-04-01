@@ -19,22 +19,16 @@ You can also have plenty of customization options:
 dockerhub:
   - # Your docker.io username.
     #
+    # Default: "{{ .Env.DOCKER_USERNAME }}"
     # Templates: allowed
-    username: "{{ .Env.DOCKER_USERNAME }}"
-
-    # Disables the configuration feature in some conditions, for instance, when
-    # publishing patch releases.
-    # Any value different of 'true' will be considered 'false'.
-    #
-    # Templates: allowed
-    disable: "{{gt .Patch 0}}"
+    username: "john.doe"
 
     # Environment variable name to get the push token from.
     # You might want to change it if you have multiple dockerhub configurations.
     #
     # Templates: allowed
-    # Default: 'DOCKER_PASSWORD'
-    secret_name: MY_ACCOUNT_DOCKER_PASSWORD
+    # Default: "DOCKER_PASSWORD"
+    secret_name: DOCKER_TOKEN
 
     # Images to apply the description and/or full description to.
     #
@@ -42,6 +36,13 @@ dockerhub:
     images:
       - goreleaser/goreleaser
       - goreleaser/goreleaser-pro
+
+    # Disables the configuration feature in some conditions, for instance, when
+    # publishing patch releases.
+    # Any value different of 'true' will be considered 'false'.
+    #
+    # Templates: allowed
+    disable: "{{gt .Patch 0}}"
 
     # The short description of the image.
     #

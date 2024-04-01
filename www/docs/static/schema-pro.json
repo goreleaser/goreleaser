@@ -217,7 +217,7 @@
 							}
 						]
 					},
-					"strip_parent_binary_folder": {
+					"strip_binary_directory": {
 						"type": "boolean"
 					},
 					"files": {
@@ -251,6 +251,9 @@
 							}
 						],
 						"description": "you can now remove this"
+					},
+					"strip_parent_binary_folder": {
+						"type": "boolean"
 					}
 				},
 				"additionalProperties": false,
@@ -291,7 +294,7 @@
 					"disable_ssl": {
 						"type": "boolean"
 					},
-					"folder": {
+					"directory": {
 						"type": "string"
 					},
 					"kms_key": {
@@ -347,6 +350,9 @@
 					"kmskey": {
 						"type": "string",
 						"description": "use kms_key instead"
+					},
+					"folder": {
+						"type": "string"
 					},
 					"templated_extra_files": {
 						"items": {
@@ -1241,7 +1247,8 @@
 							"gz",
 							"tar.xz",
 							"txz",
-							"binary"
+							"binary",
+							"none"
 						],
 						"default": "tar.gz"
 					}
@@ -1424,7 +1431,7 @@
 					"commit_msg_template": {
 						"type": "string"
 					},
-					"folder": {
+					"directory": {
 						"type": "string"
 					},
 					"caveats": {
@@ -1529,6 +1536,9 @@
 					"plist": {
 						"type": "string",
 						"description": "use service instead"
+					},
+					"folder": {
+						"type": "string"
 					}
 				},
 				"additionalProperties": false,
@@ -3320,7 +3330,7 @@
 					"repository": {
 						"$ref": "#/$defs/RepoRef"
 					},
-					"folder": {
+					"directory": {
 						"type": "string"
 					},
 					"commit_author": {
@@ -3398,6 +3408,9 @@
 					"bucket": {
 						"$ref": "#/$defs/RepoRef",
 						"description": "use repository instead"
+					},
+					"folder": {
+						"type": "string"
 					}
 				},
 				"additionalProperties": false,
