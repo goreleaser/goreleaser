@@ -1,8 +1,10 @@
-#!/usr/bin/env bash
+#!/usr/bin/env sh
 set -e
 
+is_pro="false"
 if [[ "$VERSION" == *-pro ]]; then
 	DISTRIBUTION="pro"
+	is_pro="true"
 fi
 
 if test "$DISTRIBUTION" = "pro"; then
@@ -24,7 +26,7 @@ test -z "$VERSION" && {
 	exit 1
 }
 
-if test "$DISTRIBUTION" = "pro" && [[ "$VERSION" != *-pro ]]; then
+if test "$DISTRIBUTION" = "pro" && ! test "$is_pro"; then
 	VERSION="$VERSION-pro"
 fi
 
