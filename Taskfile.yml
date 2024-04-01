@@ -75,6 +75,13 @@ tasks:
       - task: nix:flake:update-vendor
       - nix build .
 
+  nix:flake:update:
+    desc: update flake.lock
+    cmds:
+      - nix flake update
+    generates:
+      - flake.lock
+
   nix:flake:update-vendor:
     desc: update default flake package vendor hash
     cmds:
