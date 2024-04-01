@@ -17,6 +17,11 @@ tasks:
     cmds:
       - go mod tidy
 
+  docker:setup:
+    desc: Setup Docker for multi-arch image builds
+    cmds:
+      - docker run --privileged --rm tonistiigi/binfmt --install all
+
   build:
     desc: Build the binary
     sources:

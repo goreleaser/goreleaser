@@ -40,6 +40,16 @@ A good way of making sure everything is all right is running the test suite:
 task test
 ```
 
+### A note about Docker multi-arch builds
+
+If you want to properly run the Docker tests, or run `goreleaser release
+--snapshot` locally, you might need to setup Docker for it.
+You can do so by running:
+
+```sh
+task docker:setup
+```
+
 ## Test your change
 
 You can create a branch for your changes and try to build from the source as you go:
