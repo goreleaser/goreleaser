@@ -17,7 +17,7 @@
           src = ./.;
           ldflags = [ "-s" "-w" "-X main.version=dev" "-X main.builtBy=flake" ];
           doCheck = false;
-          vendorHash = "sha256-2CoQuiv8lVjdNJwwuX/rezoHRaMph0AsptLAudztqF8=";
+          vendorHash = "sha256-ND9owINZcsEBa1EmLCO40UdQ/11StPheQLJP6Ax13Mw=";
         };
 
         devShells.default = pkgs.mkShellNoCC {
