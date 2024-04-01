@@ -66,6 +66,7 @@ changelog:
   filters:
     exclude:
       - "^test:"
+      - "^test\\("
       - "^chore"
       - "merge conflict"
       - Merge pull request
