@@ -6,18 +6,18 @@
 
     DockerHub is a [GoReleaser Pro feature](/pro/).
 
-DockerHub allows you to set an image description, and a full description.
+DockerHub allows you to set an image description and a full description.
 However, this is not possible via `docker push`.
 This pipe allows you to configure these fields and ensures they are set when
 publishing your releases.
 
-You can also have plenty of customization options:
+You also have plenty of customization options:
 
 ```yaml
 # goreleaser.yaml
 
 dockerhub:
-  - # Your docker.io username.
+  - # Your hub.docker.com username. Must have 'editor' permissions
     #
     # Default: "{{ .Env.DOCKER_USERNAME }}"
     # Templates: allowed
