@@ -13,7 +13,7 @@ import (
 	"text/template"
 	"time"
 
-	"github.com/google/go-github/v59/github"
+	"github.com/google/go-github/v61/github"
 	"github.com/goreleaser/goreleaser/internal/artifact"
 	"github.com/goreleaser/goreleaser/internal/testctx"
 	"github.com/goreleaser/goreleaser/internal/testlib"
