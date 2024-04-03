@@ -417,13 +417,17 @@ func (c *githubClient) CreateRelease(ctx *context.Context, body string) (string,
 	return strconv.FormatInt(release.GetID(), 10), nil
 }
 
-func (c *githubClient) PublishRelease(ctx *context.Context, releaseID string) (err error) {
+func (c *githubClient) PublishRelease(ctx *context.Context, releaseID string) error {
+	draft := ctx.Config.Release.Draft
+	if draft {
+		return nil
+	}
 	releaseIDInt, err := strconv.ParseInt(releaseID, 10, 64)
 	if err != nil {
 		return fmt.Errorf("non-numeric release ID %q: %w", releaseID, err)
 	}
 	if _, err := c.updateRelease(ctx, releaseIDInt, &github.RepositoryRelease{
-		Draft: github.Bool(ctx.Config.Release.Draft),
+		Draft: github.Bool(draft),
 	}); err != nil {
 		return fmt.Errorf("could not update existing release: %w", err)
 	}
@@ -454,6 +458,7 @@ func (c *githubClient) createOrUpdateRelease(ctx *context.Context, data *github.
 		return release, err
 	}
 
+	data.Draft = release.Draft
 	data.Body = github.String(getReleaseNotes(release.GetBody(), body, ctx.Config.Release.ReleaseNotesMode))
 	return c.updateRelease(ctx, release.GetID(), data)
 }
