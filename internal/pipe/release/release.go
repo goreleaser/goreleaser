@@ -131,6 +131,9 @@ func doPublish(ctx *context.Context, client client.Client) error {
 		return err
 	}
 	if skipUpload {
+		if err := client.PublishRelease(ctx, releaseID); err != nil {
+			return err
+		}
 		return pipe.Skip("release.skip_upload is set")
 	}
 
