@@ -665,9 +665,15 @@ func TestSkip(t *testing.T) {
 				SkipUpload: "{{ .Env.FOO }}",
 			},
 		})
+		ctx.Artifacts.Add(&artifact.Artifact{
+			Name: "a",
+			Path: "./doc.go",
+			Type: artifact.UploadableFile,
+		})
 		client := &client.Mock{}
 		testlib.AssertSkipped(t, doPublish(ctx, client))
 		require.True(t, client.CreatedRelease)
+		require.True(t, client.ReleasePublished)
 		require.False(t, client.UploadedFile)
 	})
 
@@ -677,15 +683,30 @@ func TestSkip(t *testing.T) {
 				SkipUpload: "true",
 			},
 		})
+		ctx.Artifacts.Add(&artifact.Artifact{
+			Name: "a",
+			Path: "./doc.go",
+			Type: artifact.UploadableFile,
+		})
 		client := &client.Mock{}
 		testlib.AssertSkipped(t, doPublish(ctx, client))
 		require.True(t, client.CreatedRelease)
+		require.True(t, client.ReleasePublished)
 		require.False(t, client.UploadedFile)
 	})
 
 	t.Run("dont skip", func(t *testing.T) {
-		b, err := Pipe{}.Skip(testctx.New())
-		require.NoError(t, err)
-		require.False(t, b)
+		ctx := testctx.New()
+		ctx.Artifacts.Add(&artifact.Artifact{
+			Name: "a",
+			Path: "./doc.go",
+			Type: artifact.UploadableFile,
+		})
+
+		client := &client.Mock{}
+		require.NoError(t, doPublish(ctx, client))
+		require.True(t, client.CreatedRelease)
+		require.True(t, client.ReleasePublished)
+		require.True(t, client.UploadedFile)
 	})
 }
