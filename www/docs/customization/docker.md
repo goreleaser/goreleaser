@@ -68,6 +68,12 @@ dockers:
     goamd64: "v2"
 
     # IDs to filter the binaries/packages.
+    #
+    # Make sure to only include the IDs of binaries you want to `COPY` in your
+    # Dockerfile.
+    #
+    # If you include IDs that don't exist or are not available for the current
+    # architecture being built, the build of the image will be skipped.
     ids:
       - mybuild
       - mynfpm

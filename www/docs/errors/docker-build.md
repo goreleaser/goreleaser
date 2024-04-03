@@ -17,6 +17,14 @@ its root, so you can just `COPY binaryname /bin/binaryname` and etc.
 
 Below you can find some **don'ts** as well as what you should **do**.
 
+## `expected to find X artifacts for ids [id1 id2], found Y`
+
+The `ids` property in the Dockers configuration tells GoReleaser which build IDs
+to include.
+You need to remove IDs that don't exist and/or don't build for the architecture
+of the image being built.
+Leaving it empty is also fine if you don't need any binaries.
+
 ## `use docker --context=default buildx to switch to context "default"`
 
 The "default" context is a built-in context in "docker buildx", and it is automatically created. This context typically points to the local Docker environment and is used by default for building images. It has to be active for `goreleaser` to build images with "buildx".
