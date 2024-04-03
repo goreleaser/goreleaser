@@ -208,7 +208,7 @@
 							}
 						]
 					},
-					"strip_parent_binary_folder": {
+					"strip_binary_directory": {
 						"type": "boolean"
 					},
 					"files": {
@@ -233,6 +233,9 @@
 							}
 						],
 						"description": "you can now remove this"
+					},
+					"strip_parent_binary_folder": {
+						"type": "boolean"
 					}
 				},
 				"additionalProperties": false,
@@ -264,7 +267,7 @@
 					"disable_ssl": {
 						"type": "boolean"
 					},
-					"folder": {
+					"directory": {
 						"type": "string"
 					},
 					"kms_key": {
@@ -310,6 +313,9 @@
 					"content_disposition": {
 						"type": "string"
 					},
+					"include_meta": {
+						"type": "boolean"
+					},
 					"disableSSL": {
 						"type": "boolean",
 						"description": "use disable_ssl instead"
@@ -317,6 +323,9 @@
 					"kmskey": {
 						"type": "string",
 						"description": "use kms_key instead"
+					},
+					"folder": {
+						"type": "string"
 					}
 				},
 				"additionalProperties": false,
@@ -407,6 +416,7 @@
 						"enum": [
 							"c-archive",
 							"c-shared",
+							"pie",
 							""
 						],
 						"default": ""
@@ -471,6 +481,7 @@
 						"enum": [
 							"c-archive",
 							"c-shared",
+							"pie",
 							""
 						],
 						"default": ""
@@ -592,6 +603,9 @@
 					},
 					"algorithm": {
 						"type": "string"
+					},
+					"split": {
+						"type": "boolean"
 					},
 					"ids": {
 						"items": {
@@ -1070,7 +1084,8 @@
 							"gz",
 							"tar.xz",
 							"txz",
-							"binary"
+							"binary",
+							"none"
 						],
 						"default": "tar.gz"
 					}
@@ -1186,6 +1201,9 @@
 					},
 					"mod": {
 						"type": "string"
+					},
+					"dir": {
+						"type": "string"
 					}
 				},
 				"additionalProperties": false,
@@ -1205,7 +1223,7 @@
 					"commit_msg_template": {
 						"type": "string"
 					},
-					"folder": {
+					"directory": {
 						"type": "string"
 					},
 					"caveats": {
@@ -1260,6 +1278,12 @@
 					"url_template": {
 						"type": "string"
 					},
+					"url_headers": {
+						"items": {
+							"type": "string"
+						},
+						"type": "array"
+					},
 					"custom_require": {
 						"type": "string"
 					},
@@ -1295,6 +1319,9 @@
 					"plist": {
 						"type": "string",
 						"description": "use service instead"
+					},
+					"folder": {
+						"type": "string"
 					}
 				},
 				"additionalProperties": false,
@@ -1732,7 +1759,14 @@
 					},
 					"formats": {
 						"items": {
-							"type": "string"
+							"type": "string",
+							"enum": [
+								"apk",
+								"deb",
+								"rpm",
+								"termux.deb",
+								"archlinux"
+							]
 						},
 						"type": "array"
 					},
@@ -1854,6 +1888,27 @@
 						"$ref": "#/$defs/NFPMDebSignature"
 					},
 					"lintian_overrides": {
+						"items": {
+							"type": "string"
+						},
+						"type": "array"
+					},
+					"compression": {
+						"type": "string",
+						"enum": [
+							"gzip",
+							"xz",
+							"none"
+						],
+						"default": "gzip"
+					},
+					"fields": {
+						"additionalProperties": {
+							"type": "string"
+						},
+						"type": "object"
+					},
+					"predepends": {
 						"items": {
 							"type": "string"
 						},
@@ -2450,6 +2505,9 @@
 					"signature": {
 						"type": "boolean"
 					},
+					"meta": {
+						"type": "boolean"
+					},
 					"dir": {
 						"type": "string"
 					},
@@ -2631,6 +2689,12 @@
 							"replace"
 						],
 						"default": "keep-existing"
+					},
+					"replace_existing_artifacts": {
+						"type": "boolean"
+					},
+					"include_meta": {
+						"type": "boolean"
 					}
 				},
 				"additionalProperties": false,
@@ -2770,7 +2834,7 @@
 					"repository": {
 						"$ref": "#/$defs/RepoRef"
 					},
-					"folder": {
+					"directory": {
 						"type": "string"
 					},
 					"commit_author": {
@@ -2840,6 +2904,9 @@
 					"bucket": {
 						"$ref": "#/$defs/RepoRef",
 						"description": "use repository instead"
+					},
+					"folder": {
+						"type": "string"
 					}
 				},
 				"additionalProperties": false,
@@ -3486,6 +3553,9 @@
 					"signature": {
 						"type": "boolean"
 					},
+					"meta": {
+						"type": "boolean"
+					},
 					"custom_artifact_name": {
 						"type": "boolean"
 					},
@@ -3623,7 +3693,6 @@
 				"additionalProperties": false,
 				"type": "object",
 				"required": [
-					"name",
 					"publisher",
 					"repository",
 					"short_description",
