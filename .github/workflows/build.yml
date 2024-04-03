@@ -58,14 +58,12 @@ jobs:
       - uses: anchore/sbom-action/download-syft@v0.15.10
       - name: setup-validate-krew-manifest
         run: go install sigs.k8s.io/krew/cmd/validate-krew-manifest@latest
-      - name: setup-tparse
-        run: go install github.com/mfridman/tparse@latest
       - name: setup
         run: |
           task setup
           task build
       - name: test
-        run: ./scripts/test.sh
+        run: task test
       - uses: codecov/codecov-action@c16abc29c95fcf9174b58eb7e1abf4c866893bc8 # v4
         with:
           file: ./coverage.txt
