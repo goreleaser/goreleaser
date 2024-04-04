@@ -94,7 +94,7 @@ Property was renamed to be consistent across all configurations.
     ```yaml
     brews:
       -
-        directory: foo
+        folder: foo
     ```
 
 === "After"
@@ -116,7 +116,7 @@ Property was renamed to be consistent across all configurations.
     ```yaml
     scoops:
       -
-        directory: foo
+        folder: foo
     ```
 
 === "After"
