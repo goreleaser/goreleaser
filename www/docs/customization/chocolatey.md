@@ -28,6 +28,10 @@ chocolateys:
       - foo
       - bar
 
+    # Your chocolatey package's source URL.
+    # It point at the location of where someone can find the packaging files for the package.
+    package_source_url: https://github.com/foo/chocolatey-package
+
     # Your app's owner.
     # It basically means you.
     owners: Drum Roll Inc
