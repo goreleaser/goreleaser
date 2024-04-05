@@ -7,7 +7,7 @@ the Docker image build process.
 
 The way GoReleaser works, the correct binary for the platform you're building
 should be already available, so you don't need to build it again and can still
-reuse the `Dockefile`.
+reuse the `Dockerfile`.
 
 Another common misconception is trying to copy the binary as if the context is
 the repository root.

@@ -74,7 +74,7 @@ same `.goreleaser.yaml` file.
 
 [brews]: https://goreleaser.com/customization/homebrew/
 
-### Publish Homebrew taps, Scoop manifests and Krew plugins to plain Git repositores
+### Publish Homebrew taps, Scoop manifests and Krew plugins to plain Git repositories
 
 Historically, you could only publish to GitHub, GitLab and Gitea, which used
 their respective APIs.

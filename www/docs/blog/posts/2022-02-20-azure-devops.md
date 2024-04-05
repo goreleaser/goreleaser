@@ -181,7 +181,7 @@ container, create the SBoM with syft and sign everything via cosign.
 > Here is one first important steps: you need to disable the **release** step in
 > GoReleaser.
 > Azure DevOps does not work the same way as GitHub what releases concerns.
-> We handle the upload of the artefacts differently.
+> We handle the upload of the artifacts differently.
 
 If you need more infos, for the different settings and possibilities inside
 **GoReleaser**, head over to the official documentation
@@ -323,7 +323,7 @@ The pipeline consist of two different jobs parts:
 During the release job, we download [Anchore
 syft](https://github.com/anchore/syft) and
 [cosign](https://github.com/sigstore/cosign) as we going to need them during the
-**gorleaser** task.
+**goreleaser** task.
 Currently there is no native task for this in **Azure DevOps**. We just use the
 **CmdLine** task and curl the binaries.
 
@@ -351,13 +351,13 @@ variables tag.
 
 ![](https://cdn-images-1.medium.com/max/2000/1*CTox6hgrOCgaTs9AFJWUhQ.png)
 
-In this demo, I am going to publish the release artefacts as build artefacts.
+In this demo, I am going to publish the release artifacts as build artifacts.
 
 ![](https://cdn-images-1.medium.com/max/2244/1*nwH4Ej9GbQ6RdE_MfYMelw.png)
 
 The task **CopyFiles** collects some files from the **dist** folder and the
 cosign public key and **PublishBuildArtifacts** publish them.
-You will find the artefacts on the pipeline detail
+You will find the artifacts on the pipeline detail
 
 ![](https://cdn-images-1.medium.com/max/2000/1*GWCiLGBnHOnCjyRuqrPEEw.png)
 

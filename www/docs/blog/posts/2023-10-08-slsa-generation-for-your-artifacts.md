@@ -80,7 +80,7 @@ kos:
       - -s -w
 ```
 
-I trimmed the file a bit to make it easier to read. As you can see, we are building our binaries for the `linux`, `windows`, and `darwin` operating systems as we defined in the `builds` section, thanks to the built-in cross-compliation support in Golang. We are also using the [kos](https://goreleaser.com/customization/ko/) integration to build a container image for our project. It is a new way to build container images your project using [ko](https://ko.build). We are also using the `ghcr.io/goreleaser/goreleaser-example-slsa-provenance` repository to push our container image both with the `latest` and the `{{.Tag}}` tag.
+I trimmed the file a bit to make it easier to read. As you can see, we are building our binaries for the `linux`, `windows`, and `darwin` operating systems as we defined in the `builds` section, thanks to the built-in cross-compilation support in Golang. We are also using the [kos](https://goreleaser.com/customization/ko/) integration to build a container image for our project. It is a new way to build container images your project using [ko](https://ko.build). We are also using the `ghcr.io/goreleaser/goreleaser-example-slsa-provenance` repository to push our container image both with the `latest` and the `{{.Tag}}` tag.
 
 > _If you want to learn more about the ko tool, check out our [blog post](https://blog.kubesimplify.com/getting-started-with-ko-a-fast-container-image-builder-for-your-go-applications/)._
 
@@ -184,7 +184,7 @@ In essence, the artifacts output consists of the contents of the artifacts.json 
 
 During the process of generating SLSA (Supply Chain Levels for Software Artifacts) provenances for both our binaries and container images, we utilize specific jq operations to extract the necessary information such as the `hashes` for the binaries and the `image` and `digest` of our container image from the artifacts.json file.
 
-At the end of the day, you will be having a succesfull workflow run like this:
+At the end of the day, you will be having a successful workflow run like this:
 
 ![image](/static/slsa-provenance-generation.png)
 
