@@ -19,7 +19,7 @@ const (
 	defaultMessageTemplate = `{ "message": "{{ .ProjectName }} {{ .Tag }} is out! Check it out at {{ .ReleaseURL }}"}`
 	ContentTypeHeaderKey   = "Content-Type"
 	UserAgentHeaderKey     = "User-Agent"
-	UserAgentHeaderValue   = "gorleaser"
+	UserAgentHeaderValue   = "goreleaser"
 	AuthorizationHeaderKey = "Authorization"
 	DefaultContentType     = "application/json; charset=utf-8"
 )
