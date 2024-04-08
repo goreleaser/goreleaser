@@ -23,4 +23,4 @@ From here on, you have a couple of options:
   generated);
 - change your build process to not touch any git tracked files.
 - if you are running `goreleaser build`, you might want to add either the
-  `--snapshot` or `--skip-validate` flags to it
+  `--snapshot` or `--skip=validate` flags to it
