@@ -141,7 +141,7 @@ always validated and hopefully free of deprecation notices. 🤝
 
 ### No AUR for v1.18.0
 
-I'm not sure if AUR is under maintainance or if there something else going on,
+I'm not sure if AUR is under maintenance or if there something else going on,
 but I'm unable to clone my AUR packages using their private URLs.
 
 I didn't want to hold the release because of it, so I'll be releasing a patch as

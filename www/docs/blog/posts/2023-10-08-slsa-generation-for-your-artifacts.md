@@ -123,7 +123,7 @@ image-provenance:
     digest: ${{ needs.goreleaser.outputs.digest }}
     registry-username: ${{ github.actor }}
   secrets:
-    registry-password: ${{ secrets.GITHUB_TOKEN }} # you should provive registry-password, if you are using private registry like ghcr.io
+    registry-password: ${{ secrets.GITHUB_TOKEN }} # you should provide registry-password, if you are using private registry like ghcr.io
 ```
 
 At the time of writing this `1.9.0` is the latest version of the slsa-github-generator. As you can see, we are using two different reusable workflows to generate SLSA provenance for our artifacts. The first one is the `generator_generic_slsa3.yml` workflow, which is used to generate SLSA provenance for our binaries. The second one is the `generator_container_slsa3.yml` workflow, which is used to generate SLSA provenance for our container images.
