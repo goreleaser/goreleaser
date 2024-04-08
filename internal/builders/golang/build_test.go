@@ -177,7 +177,7 @@ func TestWithDefaults(t *testing.T) {
 			},
 			goBinary: "go",
 		},
-		"empty with custom dir that doest exist": {
+		"empty with custom dir that doesn't exist": {
 			build: config.Build{
 				ID:     "foo2",
 				Binary: "foo",

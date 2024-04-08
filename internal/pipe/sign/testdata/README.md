@@ -33,7 +33,7 @@ sub rsa2048 2017-12-13 [E]
 echo "bar" > foo
 ```
 
-### 3.2. sign and verfiy
+### 3.2. sign and verify
 
 ```sh
 gpg --homedir . --detach-sign foo
