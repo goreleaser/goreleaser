@@ -10,7 +10,7 @@ authors:
 # How to use GoReleaser with Cloud Native Storage
 
 In this tutorial, I want to describe, how quickly we can deploy our release
-artefacts to a cloud native storage when using GoReleaser.
+artifacts to a cloud native storage when using GoReleaser.
 It’s just a few additional lines in your `.goreleaser.yaml`.
 
 <!-- more -->
@@ -103,7 +103,7 @@ variable "azure_location" {
 }
 
 variable "name" {
-  default = "gorleaser-quickbites"
+  default = "goreleaser-quickbites"
 }
 ```
 
@@ -159,16 +159,16 @@ terraform apply  -var  "gcp_project=xxx"
 
 ```
 ...
-azurerm_storage_container.goreleaser-storage-container: Creation complete after 0s [id=https://gorleaserquickbites.blob.core.windows.net/gorleaser-quickbites]
+azurerm_storage_container.goreleaser-storage-container: Creation complete after 0s [id=https://goreleaserquickbites.blob.core.windows.net/goreleaser-quickbites]
 
 Apply complete! Resources: 6 added, 0 changed, 0 destroyed.
 
 Outputs:
 
-aws-s3-bucket-name = "gorleaser-quickbites"
+aws-s3-bucket-name = "goreleaser-quickbites"
 azure-storage-account-key = <sensitive>
-azure-storage-account-name = "export AZURE_STORAGE_ACCOUNT=gorleaserquickbites"
-gcp-bucket-url = "gs://gorleaser-quickbites"
+azure-storage-account-name = "export AZURE_STORAGE_ACCOUNT=goreleaserquickbites"
+gcp-bucket-url = "gs://goreleaser-quickbites"
 ```
 
 ###### Run this command
@@ -205,11 +205,11 @@ release:
 ---
 blobs:
   - provider: gs
-    bucket: gorleaser-quickbites
+    bucket: goreleaser-quickbites
   - provider: azblob
-    bucket: gorleaser-quickbites
+    bucket: goreleaser-quickbites
   - provider: s3
-    bucket: gorleaser-quickbites
+    bucket: goreleaser-quickbites
     region: eu-central-1
 ```
 
@@ -256,7 +256,7 @@ via the command:
 goreleaser release --rm-dist
 ```
 
-If everything went smooth, you should see a similar output, showing the upload of your artefacts.
+If everything went smooth, you should see a similar output, showing the upload of your artifacts.
 
 ```
   ...
