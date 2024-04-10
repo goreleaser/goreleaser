@@ -6,6 +6,7 @@ require (
 	code.gitea.io/sdk/gitea v0.17.1
 	dario.cat/mergo v1.0.0
 	github.com/Masterminds/semver/v3 v3.2.1
+	github.com/anchore/quill v0.4.1
 	github.com/atc0005/go-teams-notify/v2 v2.10.0
 	github.com/awslabs/amazon-ecr-credential-helper/ecr-login v0.0.0-20231024185945-8841054dbdb8
 	github.com/caarlos0/ctrlc v1.2.0
@@ -54,18 +55,34 @@ require (
 )
 
 require (
+	github.com/anchore/bubbly v0.0.0-20230518153401-87b6af8ccf22 // indirect
+	github.com/anchore/go-logger v0.0.0-20230725134548-c21dafa1ec5a // indirect
+	github.com/anchore/go-macholibre v0.0.0-20220308212642-53e6d0aaf6fb // indirect
+	github.com/blacktop/go-dwarf v1.0.9 // indirect
+	github.com/blacktop/go-macho v1.1.162 // indirect
+	github.com/charmbracelet/bubbletea v0.22.1 // indirect
+	github.com/containerd/console v1.0.3 // indirect
 	github.com/cyphar/filepath-securejoin v0.2.4 // indirect
 	github.com/distribution/reference v0.5.0 // indirect
 	github.com/felixge/httpsnoop v1.0.4 // indirect
+	github.com/gabriel-vasile/mimetype v1.4.2 // indirect
+	github.com/github/smimesign v0.2.0 // indirect
 	github.com/go-logr/logr v1.4.1 // indirect
 	github.com/go-logr/stdr v1.2.2 // indirect
+	github.com/go-restruct/restruct v1.2.0-alpha // indirect
 	github.com/golang-jwt/jwt/v5 v5.2.1 // indirect
+	github.com/mattn/go-localereader v0.0.1 // indirect
 	github.com/matttproud/golang_protobuf_extensions/v2 v2.0.0 // indirect
+	github.com/muesli/ansi v0.0.0-20211031195517-c9f0611b6c70 // indirect
+	github.com/muesli/cancelreader v0.2.2 // indirect
 	github.com/onsi/gomega v1.29.0 // indirect
 	github.com/sagikazarmark/locafero v0.4.0 // indirect
 	github.com/sagikazarmark/slog-shim v0.1.0 // indirect
+	github.com/scylladb/go-set v1.0.2 // indirect
 	github.com/secure-systems-lab/go-securesystemslib v0.8.0 // indirect
 	github.com/sourcegraph/conc v0.3.0 // indirect
+	github.com/wagoodman/go-partybus v0.0.0-20230516145632-8ccac152c651 // indirect
+	github.com/wagoodman/go-progress v0.0.0-20220614130704-4b1c25a33c7c // indirect
 	go.opentelemetry.io/contrib/instrumentation/google.golang.org/grpc/otelgrpc v0.49.0 // indirect
 	go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp v0.49.0 // indirect
 	go.opentelemetry.io/otel v1.24.0 // indirect
@@ -73,6 +90,7 @@ require (
 	go.opentelemetry.io/otel/trace v1.24.0 // indirect
 	go.uber.org/multierr v1.11.0 // indirect
 	gopkg.in/go-jose/go-jose.v2 v2.6.3 // indirect
+	software.sslmate.com/src/go-pkcs12 v0.2.1 // indirect
 )
 
 require (

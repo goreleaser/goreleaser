@@ -24,6 +24,7 @@ import (
 	"github.com/goreleaser/goreleaser/internal/pipe/milestone"
 	"github.com/goreleaser/goreleaser/internal/pipe/nfpm"
 	"github.com/goreleaser/goreleaser/internal/pipe/nix"
+	"github.com/goreleaser/goreleaser/internal/pipe/notary"
 	"github.com/goreleaser/goreleaser/internal/pipe/opencollective"
 	"github.com/goreleaser/goreleaser/internal/pipe/project"
 	"github.com/goreleaser/goreleaser/internal/pipe/reddit"
@@ -65,6 +66,7 @@ var Defaulters = []Defaulter{
 	gomod.Pipe{},
 	build.Pipe{},
 	universalbinary.Pipe{},
+	notary.MacOS{},
 	upx.Pipe{},
 	sourcearchive.Pipe{},
 	archive.Pipe{},

@@ -24,6 +24,7 @@ import (
 	"github.com/goreleaser/goreleaser/internal/pipe/metadata"
 	"github.com/goreleaser/goreleaser/internal/pipe/nfpm"
 	"github.com/goreleaser/goreleaser/internal/pipe/nix"
+	"github.com/goreleaser/goreleaser/internal/pipe/notary"
 	"github.com/goreleaser/goreleaser/internal/pipe/partial"
 	"github.com/goreleaser/goreleaser/internal/pipe/prebuild"
 	"github.com/goreleaser/goreleaser/internal/pipe/publish"
@@ -86,6 +87,8 @@ var BuildPipeline = []Piper{
 	build.Pipe{},
 	// universal binary handling
 	universalbinary.Pipe{},
+	// notarize macos apps
+	notary.MacOS{},
 	// upx
 	upx.Pipe{},
 }
