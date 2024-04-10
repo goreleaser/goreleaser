@@ -57,7 +57,7 @@ notarize:
   macos:
     - enabled: '{{ isEnvSet "MACOS_SIGN_P12" }}'
       sign:
-        p12: "{{.Env.MACOS_SIGN_P12}}"
+        certificate: "{{.Env.MACOS_SIGN_P12}}"
         password: "{{.Env.MACOS_SIGN_PASSWORD}}"
       notarize:
         issuer_id: "{{.Env.MACOS_NOTARY_ISSUER_ID}}"

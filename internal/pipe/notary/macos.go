@@ -1,9 +1,7 @@
 package notary
 
 import (
-	"encoding/base64"
 	"fmt"
-	"os"
 	"strings"
 	"time"
 
@@ -18,7 +16,6 @@ import (
 	"github.com/goreleaser/goreleaser/internal/tmpl"
 	"github.com/goreleaser/goreleaser/pkg/config"
 	"github.com/goreleaser/goreleaser/pkg/context"
-	"software.sslmate.com/src/go-pkcs12"
 )
 
 type MacOS struct{}
@@ -58,7 +55,7 @@ func signAndNotarize(ctx *context.Context, cfg config.MacOSSignNotarize) error {
 	}
 
 	if err := tmpl.New(ctx).ApplyAll(
-		&cfg.Sign.P12,
+		&cfg.Sign.Certificate,
 		&cfg.Sign.Password,
 		&cfg.Notarize.Key,
 		&cfg.Notarize.KeyID,
@@ -67,7 +64,7 @@ func signAndNotarize(ctx *context.Context, cfg config.MacOSSignNotarize) error {
 		return fmt.Errorf("notarize: macos: %w", err)
 	}
 
-	p12, err := loadP12(cfg.Sign)
+	p12, err := load.P12(cfg.Sign.Certificate, cfg.Sign.Password)
 	if err != nil {
 		return fmt.Errorf("notarize: macos: %w", err)
 	}
@@ -138,36 +135,4 @@ func signAndNotarize(ctx *context.Context, cfg config.MacOSSignNotarize) error {
 		return fmt.Errorf("notarize: macos: refresh artifacts: %w", err)
 	}
 	return nil
-}
-
-func loadP12(cfg config.MacOSSign) (*load.P12Contents, error) {
-	pfxData, err := readP12(cfg.P12)
-	if err != nil {
-		return nil, err
-	}
-	key, cert, certs, err := pkcs12.DecodeChain(pfxData, cfg.Password)
-	if err != nil {
-		return nil, fmt.Errorf("could not decode p12 chain: %w", err)
-	}
-	return &load.P12Contents{
-		PrivateKey:   key,
-		Certificate:  cert,
-		Certificates: certs,
-	}, nil
-}
-
-func readP12(in string) ([]byte, error) {
-	if _, err := os.Stat(in); err != nil {
-		bts, err := base64.StdEncoding.DecodeString(in)
-		if err != nil {
-			return nil, fmt.Errorf("could not load p12: %w", err)
-		}
-		return bts, nil
-	}
-
-	bts, err := os.ReadFile(in)
-	if err != nil {
-		return nil, fmt.Errorf("could not load p12: %w", err)
-	}
-	return bts, nil
 }
