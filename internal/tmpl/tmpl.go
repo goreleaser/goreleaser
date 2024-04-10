@@ -230,6 +230,7 @@ func (t *Template) Apply(s string) (string, error) {
 			"reverseFilter":  filter(true),
 			"mdv2escape":     mdv2Escape,
 			"envOrDefault":   t.envOrDefault,
+			"isEnvSet":       t.isEnvSet,
 			"map":            makemap,
 			"indexOrDefault": indexOrDefault,
 		}).
@@ -254,6 +255,11 @@ func (t *Template) ApplyAll(sps ...*string) error {
 		*sp = result
 	}
 	return nil
+}
+
+func (t *Template) isEnvSet(name string) bool {
+	s, ok := t.fields[env].(context.Env)[name]
+	return ok && s != ""
 }
 
 func (t *Template) envOrDefault(name, value string) string {
