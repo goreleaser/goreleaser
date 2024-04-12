@@ -1,21 +1,16 @@
 package bluesky
 
 import (
-	"crypto/tls"
-	"crypto/x509"
-	"errors"
 	"fmt"
-	"net/http"
-	"net/url"
 	"strings"
 	"time"
 
 	"github.com/bluesky-social/indigo/api/atproto"
 	"github.com/bluesky-social/indigo/api/bsky"
 	"github.com/bluesky-social/indigo/lex/util"
+	butil "github.com/bluesky-social/indigo/util"
 	"github.com/bluesky-social/indigo/xrpc"
 	"github.com/caarlos0/env/v9"
-	"github.com/caarlos0/log"
 	"github.com/goreleaser/goreleaser/internal/tmpl"
 	"github.com/goreleaser/goreleaser/pkg/context"
 )
@@ -28,34 +23,22 @@ const (
 type Pipe struct{}
 
 func (Pipe) String() string                 { return "bluesky" }
-func (Pipe) Skip(ctx *context.Context) bool { return !ctx.Config.Announce.BlueSky.Enabled }
+func (Pipe) Skip(ctx *context.Context) bool { return !ctx.Config.Announce.Bluesky.Enabled }
 
 type Config struct {
 	Password string `env:"BLUESKY_ACCOUNT_PASSWORD,notEmpty"`
 }
 
 func (Pipe) Default(ctx *context.Context) error {
-	if ctx.Config.Announce.BlueSky.MessageTemplate == "" {
-		ctx.Config.Announce.BlueSky.MessageTemplate = defaultMessageTemplate
+	if ctx.Config.Announce.Bluesky.MessageTemplate == "" {
+		ctx.Config.Announce.Bluesky.MessageTemplate = defaultMessageTemplate
 	}
-
-	newURL := defaultPDSURL
-	if ctx.Config.Announce.BlueSky.PDSURL != "" {
-		_, err := url.Parse(ctx.Config.Announce.BlueSky.PDSURL)
-		if err != nil {
-			return fmt.Errorf("%q is not a valid BlueSky PDS Url: %w", ctx.Config.Announce.BlueSky.PDSURL, err)
-		}
-
-		newURL = ctx.Config.Announce.BlueSky.PDSURL
-	}
-
-	ctx.Config.Announce.BlueSky.PDSURL = newURL
 
 	return nil
 }
 
 func (p Pipe) Announce(ctx *context.Context) error {
-	msg, err := tmpl.New(ctx).Apply(ctx.Config.Announce.BlueSky.MessageTemplate)
+	msg, err := tmpl.New(ctx).Apply(ctx.Config.Announce.Bluesky.MessageTemplate)
 	if err != nil {
 		return fmt.Errorf("bluesky: %w", err)
 	}
@@ -90,48 +73,24 @@ func (p Pipe) Announce(ctx *context.Context) error {
 		}
 	}
 
-	httpClient := http.DefaultClient
-	if strings.TrimSpace(ctx.Config.Announce.BlueSky.CACerts) != "" || ctx.Config.Announce.BlueSky.SkipTLSVerify {
-		certPool, err := x509.SystemCertPool()
-		if err != nil {
-			log.Infof("could not get system cert pool, starting from scratch: %s", err.Error())
-			certPool = x509.NewCertPool()
-		}
-		if strings.TrimSpace(ctx.Config.Announce.BlueSky.CACerts) != "" {
-			certPool.AppendCertsFromPEM([]byte(ctx.Config.Announce.BlueSky.CACerts))
-		}
-
-		transport, ok := httpClient.Transport.(*http.Transport)
-		if !ok {
-			return errors.New("this shouldn't happen ever but it's better than a panic. http.DefaultClient.Transport was not a (*http.Transport)")
-		}
-
-		transport = transport.Clone()
-		if transport.TLSClientConfig == nil {
-			transport.TLSClientConfig = &tls.Config{
-				InsecureSkipVerify: ctx.Config.Announce.BlueSky.SkipTLSVerify,
-				RootCAs:            certPool,
-			}
-		}
-		httpClient.Transport = transport
-	}
+	httpClient := butil.RobustHTTPClient()
 
 	userAgent := fmt.Sprintf("goreleaser/%s", ctx.Version)
 
 	xrpcClient := &xrpc.Client{
 		Client:    httpClient,
-		Host:      ctx.Config.Announce.BlueSky.PDSURL,
+		Host:      defaultPDSURL,
 		UserAgent: &userAgent,
 	}
 
 	loginInput := &atproto.ServerCreateSession_Input{
-		Identifier: ctx.Config.Announce.BlueSky.Username,
+		Identifier: ctx.Config.Announce.Bluesky.Username,
 		Password:   cfg.Password,
 	}
 
 	authResult, err := atproto.ServerCreateSession(ctx, xrpcClient, loginInput)
 	if err != nil {
-		return fmt.Errorf("could not log in to BlueSky: %w", err)
+		return fmt.Errorf("could not log in to Bluesky: %w", err)
 	}
 
 	xrpcClient.Auth = &xrpc.AuthInfo{

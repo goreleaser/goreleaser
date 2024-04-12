@@ -17,14 +17,13 @@ func TestStringer(t *testing.T) {
 func TestDefault(t *testing.T) {
 	ctx := testctx.New()
 	require.NoError(t, bluesky.Pipe{}.Default(ctx))
-	require.Equal(t, "https://bsky.social", ctx.Config.Announce.BlueSky.PDSURL)
-	require.Equal(t, `{{ .ProjectName }} {{ .Tag }} is out! Check it out at {{ .ReleaseURL }}`, ctx.Config.Announce.BlueSky.MessageTemplate)
+	require.Equal(t, `{{ .ProjectName }} {{ .Tag }} is out! Check it out at {{ .ReleaseURL }}`, ctx.Config.Announce.Bluesky.MessageTemplate)
 }
 
 func TestAnnounceInvalidTemplate(t *testing.T) {
 	ctx := testctx.NewWithCfg(config.Project{
 		Announce: config.Announce{
-			BlueSky: config.BlueSky{
+			Bluesky: config.Bluesky{
 				MessageTemplate: "{{ .Foo }",
 			},
 		},
@@ -35,7 +34,7 @@ func TestAnnounceInvalidTemplate(t *testing.T) {
 func TestAnnounceMissingEnv(t *testing.T) {
 	ctx := testctx.NewWithCfg(config.Project{
 		Announce: config.Announce{
-			Discord: config.Discord{},
+			Bluesky: config.Bluesky{},
 		},
 	})
 	require.NoError(t, bluesky.Pipe{}.Default(ctx))
@@ -50,7 +49,7 @@ func TestSkip(t *testing.T) {
 	t.Run("dont skip", func(t *testing.T) {
 		ctx := testctx.NewWithCfg(config.Project{
 			Announce: config.Announce{
-				BlueSky: config.BlueSky{
+				Bluesky: config.Bluesky{
 					Enabled: true,
 				},
 			},
@@ -65,8 +64,8 @@ func TestLive(t *testing.T) {
 
 	ctx := testctx.NewWithCfg(config.Project{
 		Announce: config.Announce{
-			BlueSky: config.BlueSky{
-				MessageTemplate: "This is a sample announcement from the forthcoming {{ .ProjectName }} BlueSky support. View the details at {{ .ReleaseURL }}",
+			Bluesky: config.Bluesky{
+				MessageTemplate: "This is a sample announcement from the forthcoming {{ .ProjectName }} Bluesky support. View the details at {{ .ReleaseURL }}",
 				Enabled:         true,
 				Username:        "jaygles.bsky.social",
 			},

@@ -1,7 +1,6 @@
 # Bluesky
 
-To use [BlueSky](https://bsky.app/), you need
-to create an account, and set the following
+To use [Bluesky](https://bsky.app/), you need to create an account, and set the following
 environment variable on your pipeline:
 
 - `BLUESKY_ACCOUNT_PASSWORD`
@@ -22,21 +21,8 @@ announce:
     message_template: 'Awesome project {{.Tag}} is out!'
 
     # The username of the account that will post
-    # to BlueSky
+    # to Bluesky
     username: "my-project.bsky.social"
-
-    # The Personal Data Server (PDS) to post to. If you don't know what that is, don't set it,
-    # and it will default to the main BlueSky PDS
-    pds_url: "https://my-custom-pds.example.com"
-
-    # If using a custom PDS or if you have to go through a proxy, you may need to provide
-    # custom CA certificates (recommended) or skip TLS verification (not recommended)
-    ca_certs: |
-      -----BEGIN CERTIFICATE-----
-      MIi....
-      -----END CERTIFICATE-----
-
-    skip_tls_verify: false
 ```
 
 !!! tip
