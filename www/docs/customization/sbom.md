@@ -64,7 +64,7 @@ sboms:
     #
     # Default: ["$artifact", "--output", "spdx-json=$document"]
     # Templates: allowed
-    args: ["$artifact", "--output", "cyclonedx-json:$document"]
+    args: ["$artifact", "--output", "cyclonedx-json=$document"]
 
     # List of environment variables that will be passed to the SBOM command as
     # well as the templates.
