@@ -63,11 +63,11 @@ func setConfigDefaults(cfg *config.SBOM) error {
 	if len(cfg.Documents) == 0 {
 		switch cfg.Artifacts {
 		case "binary":
-			cfg.Documents = []string{"{{ .Binary }}_{{ .Version }}_{{ .Os }}_{{ .Arch }}.sbom"}
+			cfg.Documents = []string{"{{ .Binary }}_{{ .Version }}_{{ .Os }}_{{ .Arch }}.sbom.json"}
 		case "any":
 			cfg.Documents = []string{}
 		default:
-			cfg.Documents = []string{"{{ .ArtifactName }}.sbom"}
+			cfg.Documents = []string{"{{ .ArtifactName }}.sbom.json"}
 		}
 	}
 	if cfg.Cmd == "syft" {

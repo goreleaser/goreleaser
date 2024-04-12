@@ -96,6 +96,7 @@ func TestWithArtifact(t *testing.T) {
 		"state dirty":                      `state {{.GitTreeState}}`,
 		"env bar: barrrrr":                 `env bar: {{ envOrDefault "BAR" "barrrrr" }}`,
 		"env foo: bar":                     `env foo: {{ envOrDefault "FOO" "barrrrr" }}`,
+		"env foo is set: true":             `env foo is set: {{ isEnvSet "FOO" }}`,
 
 		"remove this": "{{ filter .Env.MULTILINE \".*remove.*\" }}",
 		"something with\nmultiple lines\nto test things": "{{ reverseFilter .Env.MULTILINE \".*remove.*\" }}",

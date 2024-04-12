@@ -46,12 +46,12 @@ sboms:
     # "artifacts" is "any".
     #
     # Default:
-    #   When "binary":   ["{{ .Binary }}_{{ .Version }}_{{ .Os }}_{{ .Arch }}.sbom"]
+    #   When "binary":   ["{{ .Binary }}_{{ .Version }}_{{ .Os }}_{{ .Arch }}.sbom.json"]
     #   When "any":      []
-    #   Otherwise:       ["{{ .ArtifactName }}.sbom"]
+    #   Otherwise:       ["{{ .ArtifactName }}.sbom.json"]
     # Templates: allowed
     documents:
-      - "${artifact}.spdx.sbom"
+      - "${artifact}.spdx.sbom.json"
 
     # Path to the SBOM generator command
     #
@@ -64,7 +64,7 @@ sboms:
     #
     # Default: ["$artifact", "--output", "spdx-json=$document"]
     # Templates: allowed
-    args: ["$artifact", "--output", "cyclonedx-json:$document"]
+    args: ["$artifact", "--output", "cyclonedx-json=$document"]
 
     # List of environment variables that will be passed to the SBOM command as
     # well as the templates.
