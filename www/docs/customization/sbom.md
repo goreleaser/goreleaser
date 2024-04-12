@@ -46,12 +46,12 @@ sboms:
     # "artifacts" is "any".
     #
     # Default:
-    #   When "binary":   ["{{ .Binary }}_{{ .Version }}_{{ .Os }}_{{ .Arch }}.sbom"]
+    #   When "binary":   ["{{ .Binary }}_{{ .Version }}_{{ .Os }}_{{ .Arch }}.sbom.json"]
     #   When "any":      []
-    #   Otherwise:       ["{{ .ArtifactName }}.sbom"]
+    #   Otherwise:       ["{{ .ArtifactName }}.sbom.json"]
     # Templates: allowed
     documents:
-      - "${artifact}.spdx.sbom"
+      - "${artifact}.spdx.sbom.json"
 
     # Path to the SBOM generator command
     #
