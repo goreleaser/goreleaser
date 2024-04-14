@@ -12,7 +12,7 @@ import (
 )
 
 const (
-	defaultMessageTemplate = `{{ .ProjectName }} {{ mdv2escape .Tag }} is out! Check it out at {{ mdv2escape .ReleaseURL }}`
+	defaultMessageTemplate = `{{ mdv2escape .ProjectName }} {{ mdv2escape .Tag }} is out! Check it out at {{ mdv2escape .ReleaseURL }}`
 	parseModeHTML          = "HTML"
 	parseModeMarkdown      = "MarkdownV2"
 )
