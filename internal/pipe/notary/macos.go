@@ -20,8 +20,12 @@ import (
 
 type MacOS struct{}
 
-func (MacOS) String() string                 { return "sign & notarize macOS binaries" }
-func (MacOS) Skip(ctx *context.Context) bool { return skips.Any(ctx, skips.Notarize) }
+func (MacOS) String() string { return "sign & notarize macOS binaries" }
+
+func (MacOS) Skip(ctx *context.Context) bool {
+	return skips.Any(ctx, skips.Notarize) || len(ctx.Config.Notarize.MacOS) == 0
+}
+
 func (MacOS) Default(ctx *context.Context) error {
 	for i := range ctx.Config.Notarize.MacOS {
 		n := &ctx.Config.Notarize.MacOS[i]

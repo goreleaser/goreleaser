@@ -59,7 +59,7 @@ notarize:
 
         # Timeout for the notarization, if wait is true.
         #
-        # Default: 15m
+        # Default: 10m
         timeout: 20m
 ```
 
