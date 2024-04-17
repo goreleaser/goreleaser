@@ -167,6 +167,12 @@ func isSupportedArchlinuxArch(arch, arm string) bool {
 	return false
 }
 
+var termuxArchReplacer = strings.NewReplacer(
+	"386", "i686",
+	"amd64", "x86_64",
+	"arm64", "aarch64",
+)
+
 func create(ctx *context.Context, fpm config.NFPM, format string, artifacts []*artifact.Artifact) error {
 	// TODO: improve mips handling on nfpm
 	infoArch := artifacts[0].Goarch + artifacts[0].Goarm + artifacts[0].Gomips // key used for the ConventionalFileName et al
@@ -193,13 +199,8 @@ func create(ctx *context.Context, fpm config.NFPM, format string, artifacts []*a
 			return nil
 		}
 
-		replacer := strings.NewReplacer(
-			"386", "i686",
-			"amd64", "x86_64",
-			"arm64", "aarch64",
-		)
-		infoArch = replacer.Replace(infoArch)
-		arch = replacer.Replace(arch)
+		infoArch = termuxArchReplacer.Replace(infoArch)
+		arch = termuxArchReplacer.Replace(arch)
 		fpm.Bindir = termuxPrefixedDir(fpm.Bindir)
 		fpm.Libdirs.Header = termuxPrefixedDir(fpm.Libdirs.Header)
 		fpm.Libdirs.CArchive = termuxPrefixedDir(fpm.Libdirs.CArchive)

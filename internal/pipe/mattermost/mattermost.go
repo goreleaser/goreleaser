@@ -7,7 +7,7 @@ import (
 	"io"
 	"net/http"
 
-	"github.com/caarlos0/env/v9"
+	"github.com/caarlos0/env/v11"
 	"github.com/caarlos0/log"
 
 	"github.com/goreleaser/goreleaser/internal/tmpl"
@@ -59,8 +59,8 @@ func (Pipe) Announce(ctx *context.Context) error {
 		return fmt.Errorf("teams: %w", err)
 	}
 
-	var cfg Config
-	if err := env.Parse(&cfg); err != nil {
+	cfg, err := env.ParseAs[Config]()
+	if err != nil {
 		return fmt.Errorf("mattermost: %w", err)
 	}
 

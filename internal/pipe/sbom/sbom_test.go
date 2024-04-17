@@ -26,7 +26,7 @@ func TestDescription(t *testing.T) {
 func TestSBOMCatalogDefault(t *testing.T) {
 	defaultArgs := []string{"$artifact", "--output", "spdx-json=$document"}
 	defaultSboms := []string{
-		"{{ .ArtifactName }}.sbom",
+		"{{ .ArtifactName }}.sbom.json",
 	}
 	defaultCmd := "syft"
 	tests := []struct {
@@ -113,7 +113,7 @@ func TestSBOMCatalogDefault(t *testing.T) {
 			},
 			artifact: "binary",
 			cmd:      defaultCmd,
-			sboms:    []string{"{{ .Binary }}_{{ .Version }}_{{ .Os }}_{{ .Arch }}.sbom"},
+			sboms:    []string{"{{ .Binary }}_{{ .Version }}_{{ .Os }}_{{ .Arch }}.sbom.json"},
 			args:     defaultArgs,
 		},
 		{
@@ -261,8 +261,8 @@ func TestSBOMCatalogArtifacts(t *testing.T) {
 					{Artifacts: "source"},
 				},
 			}),
-			sbomPaths: []string{"artifact5.tar.gz.sbom"},
-			sbomNames: []string{"artifact5.tar.gz.sbom"},
+			sbomPaths: []string{"artifact5.tar.gz.sbom.json"},
+			sbomNames: []string{"artifact5.tar.gz.sbom.json"},
 		},
 		{
 			desc: "catalog archives",
@@ -271,8 +271,8 @@ func TestSBOMCatalogArtifacts(t *testing.T) {
 					{Artifacts: "archive"},
 				},
 			}),
-			sbomPaths: []string{"artifact1.sbom", "artifact2.sbom"},
-			sbomNames: []string{"artifact1.sbom", "artifact2.sbom"},
+			sbomPaths: []string{"artifact1.sbom.json", "artifact2.sbom.json"},
+			sbomNames: []string{"artifact1.sbom.json", "artifact2.sbom.json"},
 		},
 		{
 			desc: "catalog linux packages",
@@ -281,8 +281,8 @@ func TestSBOMCatalogArtifacts(t *testing.T) {
 					{Artifacts: "package"},
 				},
 			}),
-			sbomPaths: []string{"package1.deb.sbom"},
-			sbomNames: []string{"package1.deb.sbom"},
+			sbomPaths: []string{"package1.deb.sbom.json"},
+			sbomNames: []string{"package1.deb.sbom.json"},
 		},
 		{
 			desc: "catalog binaries",
@@ -292,12 +292,12 @@ func TestSBOMCatalogArtifacts(t *testing.T) {
 				},
 			}),
 			sbomPaths: []string{
-				"artifact3-name_1.2.2_linux_amd64.sbom",
-				"artifact4-name_1.2.2_linux_amd64.sbom",
+				"artifact3-name_1.2.2_linux_amd64.sbom.json",
+				"artifact4-name_1.2.2_linux_amd64.sbom.json",
 			},
 			sbomNames: []string{
-				"artifact3-name_1.2.2_linux_amd64.sbom",
-				"artifact4-name_1.2.2_linux_amd64.sbom",
+				"artifact3-name_1.2.2_linux_amd64.sbom.json",
+				"artifact4-name_1.2.2_linux_amd64.sbom.json",
 			},
 		},
 		{
@@ -312,13 +312,13 @@ func TestSBOMCatalogArtifacts(t *testing.T) {
 							"artifact5.tar.gz",
 						},
 						Documents: []string{
-							"final.sbom",
+							"final.sbom.json",
 						},
 					},
 				},
 			}),
-			sbomPaths: []string{"final.sbom"},
-			sbomNames: []string{"final.sbom"},
+			sbomPaths: []string{"final.sbom.json"},
+			sbomNames: []string{"final.sbom.json"},
 		},
 		{
 			desc: "multiple SBOM configs",
@@ -334,21 +334,21 @@ func TestSBOMCatalogArtifacts(t *testing.T) {
 					{
 						ID:        "s2",
 						Artifacts: "archive",
-						Documents: []string{"{{ .ArtifactName }}.{{ .Env.SBOM_SUFFIX }}.sbom"},
+						Documents: []string{"{{ .ArtifactName }}.{{ .Env.SBOM_SUFFIX }}.sbom.json"},
 					},
 				},
 			}),
 			sbomPaths: []string{
-				"artifact1.s2-ish.sbom",
-				"artifact2.s2-ish.sbom",
-				"artifact3-name_1.2.2_linux_amd64.sbom",
-				"artifact4-name_1.2.2_linux_amd64.sbom",
+				"artifact1.s2-ish.sbom.json",
+				"artifact2.s2-ish.sbom.json",
+				"artifact3-name_1.2.2_linux_amd64.sbom.json",
+				"artifact4-name_1.2.2_linux_amd64.sbom.json",
 			},
 			sbomNames: []string{
-				"artifact1.s2-ish.sbom",
-				"artifact2.s2-ish.sbom",
-				"artifact3-name_1.2.2_linux_amd64.sbom",
-				"artifact4-name_1.2.2_linux_amd64.sbom",
+				"artifact1.s2-ish.sbom.json",
+				"artifact2.s2-ish.sbom.json",
+				"artifact3-name_1.2.2_linux_amd64.sbom.json",
+				"artifact4-name_1.2.2_linux_amd64.sbom.json",
 			},
 		},
 		{
@@ -362,10 +362,10 @@ func TestSBOMCatalogArtifacts(t *testing.T) {
 				},
 			}),
 			sbomPaths: []string{
-				"artifact3-name_1.2.2_linux_amd64.sbom",
+				"artifact3-name_1.2.2_linux_amd64.sbom.json",
 			},
 			sbomNames: []string{
-				"artifact3-name_1.2.2_linux_amd64.sbom",
+				"artifact3-name_1.2.2_linux_amd64.sbom.json",
 			},
 		},
 		{
@@ -380,7 +380,7 @@ func TestSBOMCatalogArtifacts(t *testing.T) {
 							"$artifact",
 						},
 						Documents: []string{
-							"{{ .ArtifactName }}.{{ .Env.TEST_USER }}.sbom",
+							"{{ .ArtifactName }}.{{ .Env.TEST_USER }}.sbom.json",
 						},
 					},
 				},
@@ -389,12 +389,12 @@ func TestSBOMCatalogArtifacts(t *testing.T) {
 				},
 			}),
 			sbomPaths: []string{
-				"artifact3-name.test-user-name.sbom",
-				"artifact4.test-user-name.sbom",
+				"artifact3-name.test-user-name.sbom.json",
+				"artifact4.test-user-name.sbom.json",
 			},
 			sbomNames: []string{
-				"artifact3-name.test-user-name.sbom",
-				"artifact4.test-user-name.sbom",
+				"artifact3-name.test-user-name.sbom.json",
+				"artifact4.test-user-name.sbom.json",
 			},
 		},
 		{
@@ -647,13 +647,13 @@ func Test_templateNames(t *testing.T) {
 			cfg:      config.SBOM{},
 			dist:     "/somewhere/to/dist",
 			expectedPaths: []string{
-				"/somewhere/to/dist/name-it.sbom",
+				"/somewhere/to/dist/name-it.sbom.json",
 			},
 			expectedValues: map[string]string{
 				"artifact":   "to/a/place",
 				"artifactID": "id-it",
-				"document":   "/somewhere/to/dist/name-it.sbom",
-				"document0":  "/somewhere/to/dist/name-it.sbom",
+				"document":   "/somewhere/to/dist/name-it.sbom.json",
+				"document0":  "/somewhere/to/dist/name-it.sbom.json",
 			},
 		},
 		{
@@ -662,13 +662,13 @@ func Test_templateNames(t *testing.T) {
 			cfg:      config.SBOM{},
 			dist:     "somewhere/to/dist",
 			expectedPaths: []string{
-				filepath.Join(wd, "somewhere/to/dist/name-it.sbom"),
+				filepath.Join(wd, "somewhere/to/dist/name-it.sbom.json"),
 			},
 			expectedValues: map[string]string{
 				"artifact":   "to/a/place", // note: this is always relative to ${dist}
 				"artifactID": "id-it",
-				"document":   filepath.Join(wd, "somewhere/to/dist/name-it.sbom"),
-				"document0":  filepath.Join(wd, "somewhere/to/dist/name-it.sbom"),
+				"document":   filepath.Join(wd, "somewhere/to/dist/name-it.sbom.json"),
+				"document0":  filepath.Join(wd, "somewhere/to/dist/name-it.sbom.json"),
 			},
 		},
 		{
@@ -681,18 +681,18 @@ func Test_templateNames(t *testing.T) {
 					// note: the artifact name is probably an incorrect value here since it can't express all attributes
 					// of the binary (os, arch, etc), so builds with multiple architectures will create SBOMs with the
 					// same name.
-					"${artifact}.cdx.sbom",
+					"${artifact}.cdx.sbom.json",
 				},
 			},
 			dist: "somewhere/to/dist",
 			expectedPaths: []string{
-				filepath.Join(wd, "somewhere/to/dist/to/a/place.cdx.sbom"),
+				filepath.Join(wd, "somewhere/to/dist/to/a/place.cdx.sbom.json"),
 			},
 			expectedValues: map[string]string{
 				"artifact":   "to/a/place",
 				"artifactID": "id-it",
-				"document":   filepath.Join(wd, "somewhere/to/dist/to/a/place.cdx.sbom"),
-				"document0":  filepath.Join(wd, "somewhere/to/dist/to/a/place.cdx.sbom"),
+				"document":   filepath.Join(wd, "somewhere/to/dist/to/a/place.cdx.sbom.json"),
+				"document0":  filepath.Join(wd, "somewhere/to/dist/to/a/place.cdx.sbom.json"),
 			},
 		},
 		{
@@ -700,19 +700,19 @@ func Test_templateNames(t *testing.T) {
 			artifact: art,
 			cfg: config.SBOM{
 				Documents: []string{
-					"{{ .Binary }}_{{ .Version }}_{{ .Os }}_{{ .Arch }}.cdx.sbom",
+					"{{ .Binary }}_{{ .Version }}_{{ .Os }}_{{ .Arch }}.cdx.sbom.json",
 				},
 			},
 			version: "1.0.0",
 			dist:    "somewhere/to/dist",
 			expectedPaths: []string{
-				filepath.Join(wd, "somewhere/to/dist/binary-name_1.0.0_darwin_amd64.cdx.sbom"),
+				filepath.Join(wd, "somewhere/to/dist/binary-name_1.0.0_darwin_amd64.cdx.sbom.json"),
 			},
 			expectedValues: map[string]string{
 				"artifact":   "to/a/place",
 				"artifactID": "id-it",
-				"document":   filepath.Join(wd, "somewhere/to/dist/binary-name_1.0.0_darwin_amd64.cdx.sbom"),
-				"document0":  filepath.Join(wd, "somewhere/to/dist/binary-name_1.0.0_darwin_amd64.cdx.sbom"),
+				"document":   filepath.Join(wd, "somewhere/to/dist/binary-name_1.0.0_darwin_amd64.cdx.sbom.json"),
+				"document0":  filepath.Join(wd, "somewhere/to/dist/binary-name_1.0.0_darwin_amd64.cdx.sbom.json"),
 			},
 		},
 		{
@@ -720,7 +720,7 @@ func Test_templateNames(t *testing.T) {
 			artifact: art,
 			cfg: config.SBOM{
 				Documents: []string{
-					"{{ .Binary }}_{{ .Version }}_{{ .Os }}_{{ .Arch }}.cdx.sbom",
+					"{{ .Binary }}_{{ .Version }}_{{ .Os }}_{{ .Arch }}.cdx.sbom.json",
 				},
 				Env: []string{
 					"with-env-var=value",
@@ -731,7 +731,7 @@ func Test_templateNames(t *testing.T) {
 			version: "1.0.0",
 			dist:    "somewhere/to/dist",
 			expectedPaths: []string{
-				filepath.Join(wd, "somewhere/to/dist/binary-name_1.0.0_darwin_amd64.cdx.sbom"),
+				filepath.Join(wd, "somewhere/to/dist/binary-name_1.0.0_darwin_amd64.cdx.sbom.json"),
 			},
 			expectedValues: map[string]string{
 				"artifact":     "to/a/place",
@@ -739,8 +739,8 @@ func Test_templateNames(t *testing.T) {
 				"with-env-var": "value",
 				"custom-os":    "darwin-unique",
 				"custom-arch":  "amd64-unique",
-				"document":     filepath.Join(wd, "somewhere/to/dist/binary-name_1.0.0_darwin_amd64.cdx.sbom"),
-				"document0":    filepath.Join(wd, "somewhere/to/dist/binary-name_1.0.0_darwin_amd64.cdx.sbom"),
+				"document":     filepath.Join(wd, "somewhere/to/dist/binary-name_1.0.0_darwin_amd64.cdx.sbom.json"),
+				"document0":    filepath.Join(wd, "somewhere/to/dist/binary-name_1.0.0_darwin_amd64.cdx.sbom.json"),
 			},
 		},
 	}
