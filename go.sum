@@ -165,8 +165,8 @@ github.com/buger/jsonparser v1.1.1/go.mod h1:6RYKKt7H4d4+iWqouImQ9R2FZql3VbhNgx2
 github.com/bwesterb/go-ristretto v1.2.3/go.mod h1:fUIoIZaG73pV5biE2Blr2xEzDoMj7NFEuV9ekS419A0=
 github.com/caarlos0/ctrlc v1.2.0 h1:AtbThhmbeYx1WW3WXdWrd94EHKi+0NPRGS4/4pzrjwk=
 github.com/caarlos0/ctrlc v1.2.0/go.mod h1:n3gDlSjsXZ7rbD9/RprIR040b7oaLfNStikPd4gFago=
-github.com/caarlos0/env/v9 v9.0.0 h1:SI6JNsOA+y5gj9njpgybykATIylrRMklbs5ch6wO6pc=
-github.com/caarlos0/env/v9 v9.0.0/go.mod h1:ye5mlCVMYh6tZ+vCgrs/B95sj88cg5Tlnc0XIzgZ020=
+github.com/caarlos0/env/v11 v11.0.0 h1:ZIlkOjuL3xoZS0kmUJlF74j2Qj8GMOq3CDLX/Viak8Q=
+github.com/caarlos0/env/v11 v11.0.0/go.mod h1:2RC3HQu8BQqtEK3V4iHPxj0jOdWdbPpWJ6pOueeU1xM=
 github.com/caarlos0/go-reddit/v3 v3.0.1 h1:w8ugvsrHhaE/m4ez0BO/sTBOBWI9WZTjG7VTecHnql4=
 github.com/caarlos0/go-reddit/v3 v3.0.1/go.mod h1:QlwgmG5SAqxMeQvg/A2dD1x9cIZCO56BMnMdjXLoisI=
 github.com/caarlos0/go-rpmutils v0.2.1-0.20240105125627-01185134a559 h1:5TPRjT2njvPKzXUcrcg6Dt+JPzQF+M5K7xb5V1Nwteg=

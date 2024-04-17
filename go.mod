@@ -9,7 +9,7 @@ require (
 	github.com/atc0005/go-teams-notify/v2 v2.10.0
 	github.com/awslabs/amazon-ecr-credential-helper/ecr-login v0.0.0-20231024185945-8841054dbdb8
 	github.com/caarlos0/ctrlc v1.2.0
-	github.com/caarlos0/env/v9 v9.0.0
+	github.com/caarlos0/env/v11 v11.0.0
 	github.com/caarlos0/go-reddit/v3 v3.0.1
 	github.com/caarlos0/go-shellwords v1.0.12
 	github.com/caarlos0/go-version v0.1.1
