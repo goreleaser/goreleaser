@@ -500,6 +500,22 @@ func TestGitLabCreateFile(t *testing.T) {
 			require.NoError(t, err)
 			return
 		}
+		// Handle the test where the branch doesn't exist already
+		if strings.HasSuffix(r.URL.Path, "projects/someone/something/repository/branches/non-existing-branch") {
+			w.WriteHeader(http.StatusNotFound)
+			return
+		}
+		if strings.HasSuffix(r.URL.Path, "projects/someone/something/repository/files/newfile-on-new-branch.txt") {
+			if r.Method == "POST" {
+				var resBody map[string]string
+				require.NoError(t, json.NewDecoder(r.Body).Decode(&resBody))
+				require.Equal(t, "master", resBody["start_branch"])
+			}
+			_, err := io.Copy(w, strings.NewReader(`{"file_path":"newfile-on-new-branch.txt","branch":"non-existing-branch"}`))
+			require.NoError(t, err)
+			return
+		}
+
 		// Handle the case with a projectID
 		if strings.HasSuffix(r.URL.Path, "projects/123456789/repository/files/newfile-projectID.txt") {
 			_, err := io.Copy(w, strings.NewReader(`{ "file_path": "newfile-projectID.txt", "branch": "main" }`))
@@ -548,6 +564,16 @@ func TestGitLabCreateFile(t *testing.T) {
 	}
 
 	err = client.CreateFile(ctx, config.CommitAuthor{Name: repo.Owner}, repo, []byte("Hello there"), "newfile-in-default.txt", "test: test commit")
+	require.NoError(t, err)
+
+	// Test creating a new branch
+	repo = Repo{
+		Owner:  "someone",
+		Name:   "something",
+		Branch: "non-existing-branch",
+	}
+
+	err = client.CreateFile(ctx, config.CommitAuthor{Name: repo.Owner}, repo, []byte("Hello there"), "newfile-on-new-branch.txt", "test: test commit")
 	require.NoError(t, err)
 
 	// Test using projectID

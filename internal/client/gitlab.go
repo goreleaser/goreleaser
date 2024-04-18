@@ -181,6 +181,7 @@ func (c *gitlabClient) CreateFile(
 		WithField("projectID", projectID).
 		Info("pushing")
 
+	// Check if the file already exists
 	_, res, err := c.client.RepositoryFiles.GetFile(projectID, fileName, opts)
 	if err != nil && (res == nil || res.StatusCode != 404) {
 		log := log.
@@ -197,11 +198,32 @@ func (c *gitlabClient) CreateFile(
 
 	log.
 		WithField("fileName", fileName).
-		WithField("branch", branch).
-		WithField("projectID", projectID).
-		Debug("found already existing brew formula file")
+		WithField("ref", ref).
+		WithField("StatusCode", res.StatusCode).
+		Debug("GetFile")
 
 	if res.StatusCode == 404 {
+		// Create a new file because it's not already there
+
+		// Verify if branch exists
+		_, res, err := c.client.Branches.GetBranch(projectID, branch)
+		if err != nil && res.StatusCode != 404 {
+			log.WithError(err).
+				Error("error verify branch existence")
+			return err
+		}
+
+		// Branch not found, thus Gitlab requires a "start branch" to create the file
+		var startBranch string
+		if res.StatusCode == 404 {
+			startBranch, err = c.getDefaultBranch(ctx, repo)
+			if err != nil {
+				log.WithError(err).
+					Error("error retrieving default branch")
+				return err
+			}
+		}
+
 		log.
 			WithField("fileName", fileName).
 			WithField("ref", ref).
@@ -214,6 +236,11 @@ func (c *gitlabClient) CreateFile(
 			Branch:        &branch,
 			CommitMessage: &message,
 		}
+
+		if startBranch != "" {
+			createOpts.StartBranch = &startBranch
+		}
+
 		fileInfo, res, err := c.client.RepositoryFiles.CreateFile(projectID, fileName, createOpts)
 		if err != nil {
 			log := log.
@@ -235,45 +262,52 @@ func (c *gitlabClient) CreateFile(
 			WithField("filePath", fileInfo.FilePath).
 			Debug("created brew formula file")
 		return nil
-	}
+	} else {
+		// Update the existing file
+		log.
+			WithField("fileName", fileName).
+			WithField("branch", branch).
+			WithField("projectID", projectID).
+			Debug("found already existing brew formula file")
 
-	log.
-		WithField("fileName", fileName).
-		WithField("ref", ref).
-		WithField("projectID", projectID).
-		Debug("updating brew formula")
-	updateOpts := &gitlab.UpdateFileOptions{
-		AuthorName:    &commitAuthor.Name,
-		AuthorEmail:   &commitAuthor.Email,
-		Content:       &castedContent,
-		Branch:        &branch,
-		CommitMessage: &message,
-	}
+		log.
+			WithField("fileName", fileName).
+			WithField("ref", ref).
+			WithField("projectID", projectID).
+			Debug("updating brew formula")
+		updateOpts := &gitlab.UpdateFileOptions{
+			AuthorName:    &commitAuthor.Name,
+			AuthorEmail:   &commitAuthor.Email,
+			Content:       &castedContent,
+			Branch:        &branch,
+			CommitMessage: &message,
+		}
 
-	updateFileInfo, res, err := c.client.RepositoryFiles.UpdateFile(projectID, fileName, updateOpts)
-	if err != nil {
+		updateFileInfo, res, err := c.client.RepositoryFiles.UpdateFile(projectID, fileName, updateOpts)
+		if err != nil {
+			log := log.
+				WithField("fileName", fileName).
+				WithField("branch", branch).
+				WithField("projectID", projectID)
+			if res != nil {
+				log = log.WithField("statusCode", res.StatusCode)
+			}
+			log.WithError(err).
+				Error("error updating brew formula file")
+			return err
+		}
+
 		log := log.
 			WithField("fileName", fileName).
 			WithField("branch", branch).
-			WithField("projectID", projectID)
+			WithField("projectID", projectID).
+			WithField("filePath", updateFileInfo.FilePath)
 		if res != nil {
 			log = log.WithField("statusCode", res.StatusCode)
 		}
-		log.WithError(err).
-			Error("error updating brew formula file")
-		return err
+		log.Debug("updated brew formula file")
+		return nil
 	}
-
-	log := log.
-		WithField("fileName", fileName).
-		WithField("branch", branch).
-		WithField("projectID", projectID).
-		WithField("filePath", updateFileInfo.FilePath)
-	if res != nil {
-		log = log.WithField("statusCode", res.StatusCode)
-	}
-	log.Debug("updated brew formula file")
-	return nil
 }
 
 // CreateRelease creates a new release or updates it by keeping
