@@ -113,7 +113,11 @@ func (c *gitlabClient) checkBranchExists(_ *context.Context, repo Repo, branch s
 		return false, err
 	}
 
-	return true, err
+	if res.StatusCode == 404 {
+		return false, nil
+	} else {
+		return true, nil
+	}
 }
 
 // CloseMilestone closes a given milestone.
@@ -161,30 +165,60 @@ func (c *gitlabClient) CreateFile(
 		projectID = repo.Owner + "/" + projectID
 	}
 
-	var branch string
+	log.
+		WithField("projectID", projectID).
+		Debug("projectID at brew")
+
+	var branch, defaultBranch string
+	var branchExists bool
+	var err error
 	// Use the branch if given one
 	if repo.Branch != "" {
 		branch = repo.Branch
+		branchExists, err = c.checkBranchExists(ctx, repo, branch)
+		if err != nil {
+			return err
+		}
+
+		// Retrieving default branch because we need it for `start_branch`
+		if !branchExists {
+			defaultBranch, err = c.getDefaultBranch(ctx, repo)
+			if err != nil {
+				return err
+			}
+		}
+
+		log.
+			WithField("projectID", projectID).
+			WithField("branch", branch).
+			WithField("branchExists", branchExists).
+			Debug("useing given branch")
 	} else {
 		// Try to get the default branch from the Git provider
-		var err error
 		branch, err = c.getDefaultBranch(ctx, repo)
 		if err != nil {
 			return err
 		}
+
+		defaultBranch = branch
+		branchExists = true
+
+		log.
+			WithField("projectID", projectID).
+			WithField("branch", branch).
+			Debug("no branch given, using default branch")
 	}
 
-	opts := &gitlab.GetFileOptions{Ref: &branch}
+	// If the branch doesn't exist, we need to check the default branch
+	// because that's what we use as `start_branch` later if the file needs
+	// to be created.
+	opts := &gitlab.GetFileOptions{}
+	if branchExists {
+		opts = &gitlab.GetFileOptions{Ref: &branch}
+	} else {
+		opts = &gitlab.GetFileOptions{Ref: &defaultBranch}
+	}
 	castedContent := string(content)
-
-	log.
-		WithField("projectID", projectID).
-		WithField("branch", branch).
-		Debug("projectID at brew")
-
-	log.
-		WithField("projectID", projectID).
-		Info("pushing")
 
 	// Check if the file already exists
 	_, res, err := c.client.RepositoryFiles.GetFile(projectID, fileName, opts)
@@ -202,34 +236,19 @@ func (c *gitlabClient) CreateFile(
 	}
 
 	log.
+		WithField("projectID", projectID).
+		WithField("branch", branch).
 		WithField("fileName", fileName).
-		WithField("ref", ref).
-		WithField("StatusCode", res.StatusCode).
-		Debug("GetFile")
+		Info("pushing brew formula")
 
 	if res.StatusCode == 404 {
 		// Create a new file because it's not already there
-
-		// Verify if branch exists
-		branchExists, err := c.checkBranchExists(ctx, repo, branch)
-		if err != nil {
-			return err
-		}
-
-		// Branch not found, thus Gitlab requires a "start branch" to create the file
-		var startBranch string
-		if branchExists {
-			startBranch, err = c.getDefaultBranch(ctx, repo)
-			if err != nil {
-				return err
-			}
-		}
-
 		log.
-			WithField("fileName", fileName).
-			WithField("branch", branch).
 			WithField("projectID", projectID).
-			Debug("creating brew formula")
+			WithField("branch", branch).
+			WithField("fileName", fileName).
+			Debug("formula file doesn't exist, creating it.")
+
 		createOpts := &gitlab.CreateFileOptions{
 			AuthorName:    &commitAuthor.Name,
 			AuthorEmail:   &commitAuthor.Email,
@@ -238,8 +257,9 @@ func (c *gitlabClient) CreateFile(
 			CommitMessage: &message,
 		}
 
-		if startBranch != "" {
-			createOpts.StartBranch = &startBranch
+		// Branch not found, thus Gitlab requires a "start branch" to create the file
+		if !branchExists {
+			createOpts.StartBranch = &defaultBranch
 		}
 
 		fileInfo, res, err := c.client.RepositoryFiles.CreateFile(projectID, fileName, createOpts)
@@ -269,19 +289,19 @@ func (c *gitlabClient) CreateFile(
 			WithField("fileName", fileName).
 			WithField("branch", branch).
 			WithField("projectID", projectID).
-			Debug("found already existing brew formula file")
+			Debug("formula file exists, updating it.")
 
-		log.
-			WithField("fileName", fileName).
-			WithField("branch", branch).
-			WithField("projectID", projectID).
-			Debug("updating brew formula")
 		updateOpts := &gitlab.UpdateFileOptions{
 			AuthorName:    &commitAuthor.Name,
 			AuthorEmail:   &commitAuthor.Email,
 			Content:       &castedContent,
 			Branch:        &branch,
 			CommitMessage: &message,
+		}
+
+		// Branch not found, thus Gitlab requires a "start branch" to update the file
+		if !branchExists {
+			updateOpts.StartBranch = &defaultBranch
 		}
 
 		updateFileInfo, res, err := c.client.RepositoryFiles.UpdateFile(projectID, fileName, updateOpts)
