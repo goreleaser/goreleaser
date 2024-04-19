@@ -98,6 +98,24 @@ func (c *gitlabClient) getDefaultBranch(_ *context.Context, repo Repo) (string, 
 	return p.DefaultBranch, nil
 }
 
+// checkBranchExists checks if a branch exists
+func (c *gitlabClient) checkBranchExists(_ *context.Context, repo Repo, branch string) (bool, error) {
+	projectID := repo.Name
+	if repo.Owner != "" {
+		projectID = repo.Owner + "/" + projectID
+	}
+
+	// Verify if branch exists
+	_, res, err := c.client.Branches.GetBranch(projectID, branch)
+	if err != nil && res.StatusCode != 404 {
+		log.WithError(err).
+			Error("error verify branch existence")
+		return false, err
+	}
+
+	return true, err
+}
+
 // CloseMilestone closes a given milestone.
 func (c *gitlabClient) CloseMilestone(_ *context.Context, repo Repo, title string) error {
 	milestone, err := c.getMilestoneByTitle(repo, title)
@@ -206,20 +224,16 @@ func (c *gitlabClient) CreateFile(
 		// Create a new file because it's not already there
 
 		// Verify if branch exists
-		_, res, err := c.client.Branches.GetBranch(projectID, branch)
-		if err != nil && res.StatusCode != 404 {
-			log.WithError(err).
-				Error("error verify branch existence")
+		branchExists, err := c.checkBranchExists(ctx, repo, branch)
+		if err != nil {
 			return err
 		}
 
 		// Branch not found, thus Gitlab requires a "start branch" to create the file
 		var startBranch string
-		if res.StatusCode == 404 {
+		if branchExists {
 			startBranch, err = c.getDefaultBranch(ctx, repo)
 			if err != nil {
-				log.WithError(err).
-					Error("error retrieving default branch")
 				return err
 			}
 		}
