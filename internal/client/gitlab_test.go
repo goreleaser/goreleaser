@@ -16,6 +16,7 @@ import (
 	"github.com/goreleaser/goreleaser/internal/testctx"
 	"github.com/goreleaser/goreleaser/pkg/config"
 	"github.com/stretchr/testify/require"
+	"github.com/xanzy/go-gitlab"
 )
 
 func TestGitLabReleaseURLTemplate(t *testing.T) {
@@ -707,4 +708,190 @@ func TestGitLabCheckUseJobToken(t *testing.T) {
 			require.Equal(t, tt.want, got, tt.desc)
 		})
 	}
+}
+
+func TestGitLabOpenPullRequestCrossRepo(t *testing.T) {
+	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		defer r.Body.Close()
+
+		if r.URL.Path == "/api/v4/projects/someone/something" {
+			_, err := io.Copy(w, strings.NewReader(`{ "id": 32156 }`))
+			require.NoError(t, err)
+			return
+		}
+
+		if r.URL.Path == "/api/v4/projects/someoneelse/something/merge_requests" {
+			got, err := io.ReadAll(r.Body)
+			require.NoError(t, err)
+			var pr gitlab.MergeRequest
+			require.NoError(t, json.Unmarshal(got, &pr))
+			require.Equal(t, "main", pr.TargetBranch)
+			require.Equal(t, "foo", pr.SourceBranch)
+			require.Equal(t, "some title", pr.Title)
+			require.Equal(t, 32156, pr.TargetProjectID)
+
+			_, err = io.Copy(w, strings.NewReader(`{"web_url": "https://gitlab.com/someoneelse/something/merge_requests/1"}`))
+			require.NoError(t, err)
+			return
+		}
+
+		t.Error("unhandled request: " + r.URL.Path)
+	}))
+	defer srv.Close()
+
+	ctx := testctx.NewWithCfg(config.Project{
+		GitLabURLs: config.GitLabURLs{
+			API: srv.URL,
+		},
+	})
+
+	client, err := newGitLab(ctx, "test-token")
+	require.NoError(t, err)
+
+	base := Repo{
+		Owner:  "someone",
+		Name:   "something",
+		Branch: "main",
+	}
+	head := Repo{
+		Owner:  "someoneelse",
+		Name:   "something",
+		Branch: "foo",
+	}
+	require.NoError(t, client.OpenPullRequest(ctx, base, head, "some title", false))
+}
+
+func TestGitLabOpenPullRequestBaseEmpty(t *testing.T) {
+	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		defer r.Body.Close()
+
+		if r.URL.Path == "/api/v4/projects/someone/something" {
+			_, err := io.Copy(w, strings.NewReader(`{ "default_branch": "main" }`))
+			require.NoError(t, err)
+			return
+		}
+
+		if r.URL.Path == "/api/v4/projects/someone/something/merge_requests" {
+			got, err := io.ReadAll(r.Body)
+			require.NoError(t, err)
+			var pr gitlab.MergeRequest
+			require.NoError(t, json.Unmarshal(got, &pr))
+			require.Equal(t, "main", pr.TargetBranch)
+			require.Equal(t, "foo", pr.SourceBranch)
+			require.Equal(t, "some title", pr.Title)
+			require.Equal(t, 0, pr.TargetProjectID)
+
+			_, err = io.Copy(w, strings.NewReader(`{"web_url": "https://gitlab.com/someoneelse/something/merge_requests/1"}`))
+			require.NoError(t, err)
+			return
+		}
+
+		t.Error("unhandled request: " + r.URL.Path)
+	}))
+	defer srv.Close()
+
+	ctx := testctx.NewWithCfg(config.Project{
+		GitLabURLs: config.GitLabURLs{
+			API: srv.URL,
+		},
+	})
+
+	client, err := newGitLab(ctx, "test-token")
+	require.NoError(t, err)
+
+	repo := Repo{
+		Owner:  "someone",
+		Name:   "something",
+		Branch: "foo",
+	}
+
+	require.NoError(t, client.OpenPullRequest(ctx, Repo{}, repo, "some title", false))
+}
+
+func TestGitLabOpenPullRequestDraft(t *testing.T) {
+	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		defer r.Body.Close()
+
+		if r.URL.Path == "/api/v4/projects/someone/something" {
+			_, err := io.Copy(w, strings.NewReader(`{ "default_branch": "main" }`))
+			require.NoError(t, err)
+			return
+		}
+
+		if r.URL.Path == "/api/v4/projects/someone/something/merge_requests" {
+			got, err := io.ReadAll(r.Body)
+			require.NoError(t, err)
+			var pr gitlab.MergeRequest
+			require.NoError(t, json.Unmarshal(got, &pr))
+			require.Equal(t, "main", pr.TargetBranch)
+			require.Equal(t, "main", pr.SourceBranch)
+			require.Equal(t, "Draft: some title", pr.Title)
+			require.Equal(t, 0, pr.TargetProjectID)
+
+			_, err = io.Copy(w, strings.NewReader(`{"web_url": "https://gitlab.com/someoneelse/something/merge_requests/1"}`))
+			require.NoError(t, err)
+			return
+		}
+
+		t.Error("unhandled request: " + r.URL.Path)
+	}))
+	defer srv.Close()
+
+	ctx := testctx.NewWithCfg(config.Project{
+		GitLabURLs: config.GitLabURLs{
+			API: srv.URL,
+		},
+	})
+
+	client, err := newGitLab(ctx, "test-token")
+	require.NoError(t, err)
+
+	repo := Repo{
+		Owner:  "someone",
+		Name:   "something",
+		Branch: "main",
+	}
+
+	require.NoError(t, client.OpenPullRequest(ctx, Repo{}, repo, "some title", true))
+}
+
+func TestGitLabOpenPullBaseBranchGiven(t *testing.T) {
+	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		defer r.Body.Close()
+
+		if r.URL.Path == "/api/v4/projects/someone/something/merge_requests" {
+			got, err := io.ReadAll(r.Body)
+			require.NoError(t, err)
+			var pr gitlab.MergeRequest
+			require.NoError(t, json.Unmarshal(got, &pr))
+			require.Equal(t, "main", pr.TargetBranch)
+			require.Equal(t, "foo", pr.SourceBranch)
+			require.Equal(t, "some title", pr.Title)
+			require.Equal(t, 0, pr.TargetProjectID)
+
+			_, err = io.Copy(w, strings.NewReader(`{"web_url": "https://gitlab.com/someoneelse/something/merge_requests/1"}`))
+			require.NoError(t, err)
+			return
+		}
+
+		t.Error("unhandled request: " + r.URL.Path)
+	}))
+	defer srv.Close()
+
+	ctx := testctx.NewWithCfg(config.Project{
+		GitLabURLs: config.GitLabURLs{
+			API: srv.URL,
+		},
+	})
+
+	client, err := newGitLab(ctx, "test-token")
+	require.NoError(t, err)
+
+	repo := Repo{
+		Owner:  "someone",
+		Name:   "something",
+		Branch: "foo",
+	}
+
+	require.NoError(t, client.OpenPullRequest(ctx, Repo{Branch: "main"}, repo, "some title", false))
 }
