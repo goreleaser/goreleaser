@@ -153,45 +153,32 @@ func (c *gitlabClient) CreateFile(
 	commitAuthor config.CommitAuthor,
 	repo Repo,
 	content []byte, // the content of the formula.rb
-	path, // the path to the formula.rb
+	fileName, // the path to the formula.rb
 	message string, // the commit msg
 ) error {
-	fileName := path
-
 	projectID := repo.Name
 	if repo.Owner != "" {
 		projectID = repo.Owner + "/" + projectID
 	}
 
-	// Use the project default branch if we can get it...otherwise, just use
-	// 'master'
-	var branch, ref string
-	var err error
+	var branch string
 	// Use the branch if given one
 	if repo.Branch != "" {
 		branch = repo.Branch
 	} else {
 		// Try to get the default branch from the Git provider
+		var err error
 		branch, err = c.getDefaultBranch(ctx, repo)
 		if err != nil {
-			// Fall back to 'master' 😭
-			log.
-				WithField("fileName", fileName).
-				WithField("projectID", projectID).
-				WithField("requestedBranch", branch).
-				WithError(err).
-				Warn("error checking for default branch, using master")
-			ref = "master"
-			branch = "master"
+			return err
 		}
 	}
-	ref = branch
-	opts := &gitlab.GetFileOptions{Ref: &ref}
+
+	opts := &gitlab.GetFileOptions{Ref: &branch}
 	castedContent := string(content)
 
 	log.
 		WithField("projectID", projectID).
-		WithField("ref", ref).
 		WithField("branch", branch).
 		Debug("projectID at brew")
 
@@ -204,7 +191,7 @@ func (c *gitlabClient) CreateFile(
 	if err != nil && (res == nil || res.StatusCode != 404) {
 		log := log.
 			WithField("fileName", fileName).
-			WithField("ref", ref).
+			WithField("branch", branch).
 			WithField("projectID", projectID)
 		if res != nil {
 			log = log.WithField("statusCode", res.StatusCode)
@@ -240,7 +227,7 @@ func (c *gitlabClient) CreateFile(
 
 		log.
 			WithField("fileName", fileName).
-			WithField("ref", ref).
+			WithField("branch", branch).
 			WithField("projectID", projectID).
 			Debug("creating brew formula")
 		createOpts := &gitlab.CreateFileOptions{
@@ -286,7 +273,7 @@ func (c *gitlabClient) CreateFile(
 
 		log.
 			WithField("fileName", fileName).
-			WithField("ref", ref).
+			WithField("branch", branch).
 			WithField("projectID", projectID).
 			Debug("updating brew formula")
 		updateOpts := &gitlab.UpdateFileOptions{
