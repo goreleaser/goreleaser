@@ -663,6 +663,18 @@ func TestGetChangeloger(t *testing.T) {
 		require.Nil(t, c)
 	})
 
+	t.Run(useGitea, func(t *testing.T) {
+		ctx := context.New(config.Project{
+			Changelog: config.Changelog{
+				Use: useGitea,
+			},
+		})
+		ctx.TokenType = context.TokenTypeGitea
+		c, err := getChangeloger(ctx)
+		require.NoError(t, err)
+		require.IsType(t, c, &scmChangeloger{})
+	})
+
 	t.Run("invalid", func(t *testing.T) {
 		c, err := getChangeloger(testctx.NewWithCfg(config.Project{
 			Changelog: config.Changelog{
@@ -815,7 +827,7 @@ func TestChangelogFormat(t *testing.T) {
 			return config.Project{Changelog: config.Changelog{Use: u}}
 		}
 
-		for _, use := range []string{useGit, useGitHub, useGitLab} {
+		for _, use := range []string{useGit, useGitHub, useGitLab, useGitea} {
 			t.Run(use, func(t *testing.T) {
 				out, err := formatChangelog(
 					testctx.NewWithCfg(makeConf(use)),
@@ -873,7 +885,7 @@ func TestChangelogFormat(t *testing.T) {
 * aea123 foo
 * aef653 bar`, out)
 		})
-		for _, use := range []string{useGit, useGitHub, useGitLab} {
+		for _, use := range []string{useGit, useGitHub, useGitLab, useGitea} {
 			t.Run(use, func(t *testing.T) {
 				out, err := formatChangelog(
 					testctx.NewWithCfg(makeConf(use)),

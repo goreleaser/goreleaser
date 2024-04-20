@@ -32,6 +32,7 @@ func (u useChangelog) formatable() bool {
 const (
 	useGit          = "git"
 	useGitHub       = "github"
+	useGitea        = "gitea"
 	useGitLab       = "gitlab"
 	useGitHubNative = "github-native"
 )
@@ -346,6 +347,8 @@ func getChangeloger(ctx *context.Context) (changeloger, error) {
 	case useGitHub:
 		fallthrough
 	case useGitLab:
+		return newSCMChangeloger(ctx)
+	case useGitea:
 		return newSCMChangeloger(ctx)
 	case useGitHubNative:
 		return newGithubChangeloger(ctx)
