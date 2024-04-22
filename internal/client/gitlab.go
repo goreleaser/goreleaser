@@ -281,52 +281,53 @@ func (c *gitlabClient) CreateFile(
 			WithField("filePath", fileInfo.FilePath).
 			Debug("created brew formula file")
 		return nil
-	} else {
-		// Update the existing file
-		log.
-			WithField("fileName", fileName).
-			WithField("branch", branch).
-			WithField("projectID", projectID).
-			Debug("file exists, updating it")
+	}
 
-		updateOpts := &gitlab.UpdateFileOptions{
-			AuthorName:    &commitAuthor.Name,
-			AuthorEmail:   &commitAuthor.Email,
-			Content:       &castedContent,
-			Branch:        &branch,
-			CommitMessage: &message,
-		}
+	// Update the existing file
+	log.
+		WithField("fileName", fileName).
+		WithField("branch", branch).
+		WithField("projectID", projectID).
+		Debug("file exists, updating it")
 
-		// Branch not found, thus Gitlab requires a "start branch" to update the file
-		if !branchExists {
-			updateOpts.StartBranch = &defaultBranch
-		}
+	updateOpts := &gitlab.UpdateFileOptions{
+		AuthorName:    &commitAuthor.Name,
+		AuthorEmail:   &commitAuthor.Email,
+		Content:       &castedContent,
+		Branch:        &branch,
+		CommitMessage: &message,
+	}
 
-		updateFileInfo, res, err := c.client.RepositoryFiles.UpdateFile(projectID, fileName, updateOpts)
-		if err != nil {
-			log := log.
-				WithField("fileName", fileName).
-				WithField("branch", branch).
-				WithField("projectID", projectID)
-			if res != nil {
-				log = log.WithField("statusCode", res.StatusCode)
-			}
-			log.WithError(err).
-				Error("error updating file")
-			return err
-		}
+	// Branch not found, thus Gitlab requires a "start branch" to update the file
+	if !branchExists {
+		updateOpts.StartBranch = &defaultBranch
+	}
 
+	updateFileInfo, res, err := c.client.RepositoryFiles.UpdateFile(projectID, fileName, updateOpts)
+	if err != nil {
 		log := log.
 			WithField("fileName", fileName).
 			WithField("branch", branch).
-			WithField("projectID", projectID).
-			WithField("filePath", updateFileInfo.FilePath)
+			WithField("projectID", projectID)
 		if res != nil {
 			log = log.WithField("statusCode", res.StatusCode)
 		}
-		log.Debug("updated file")
-		return nil
+		log.WithError(err).
+			Error("error updating file")
+		return err
 	}
+
+	log := log.
+		WithField("fileName", fileName).
+		WithField("branch", branch).
+		WithField("projectID", projectID).
+		WithField("filePath", updateFileInfo.FilePath)
+	if res != nil {
+		log = log.WithField("statusCode", res.StatusCode)
+	}
+	log.Debug("updated file")
+	return nil
+
 }
 
 // CreateRelease creates a new release or updates it by keeping
