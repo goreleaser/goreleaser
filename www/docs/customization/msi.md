@@ -1,6 +1,6 @@
 # MSI
 
-> Since: v1.24 pro
+> Since: v1.24 (pro)
 
 !!! success "GoReleaser Pro"
 

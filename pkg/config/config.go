@@ -956,6 +956,30 @@ type Sign struct {
 	Output      bool     `yaml:"output,omitempty" json:"output,omitempty"`
 }
 
+type Notarize struct {
+	MacOS []MacOSSignNotarize `yaml:"macos" json:"macos"`
+}
+
+type MacOSSignNotarize struct {
+	IDs      []string      `yaml:"ids,omitempty" json:"ids,omitempty"`
+	Enabled  string        `yaml:"enabled,omitempty" json:"enabled,omitempty" jsonschema:"oneof_type=string;boolean"`
+	Sign     MacOSSign     `yaml:"sign" json:"sign"`
+	Notarize MacOSNotarize `yaml:"notarize" json:"notarize"`
+}
+
+type MacOSNotarize struct {
+	IssuerID string        `yaml:"issuer_id" json:"issuer_id"`
+	Key      string        `yaml:"key" json:"key"`
+	KeyID    string        `yaml:"key_id" json:"key_id"`
+	Timeout  time.Duration `yaml:"timeout,omitempty" json:"timeout,omitempty"`
+	Wait     bool          `yaml:"wait,omitempty" json:"wait,omitempty"`
+}
+
+type MacOSSign struct {
+	Certificate string `yaml:"certificate" json:"certificate"`
+	Password    string `yaml:"password" json:"password"`
+}
+
 // SnapcraftAppMetadata for the binaries that will be in the snap package.
 type SnapcraftAppMetadata struct {
 	Command string `yaml:"command" json:"command"`
@@ -1217,6 +1241,7 @@ type Project struct {
 	Changelog       Changelog        `yaml:"changelog,omitempty" json:"changelog,omitempty"`
 	Dist            string           `yaml:"dist,omitempty" json:"dist,omitempty"`
 	Signs           []Sign           `yaml:"signs,omitempty" json:"signs,omitempty"`
+	Notarize        Notarize         `yaml:"notarize,omitempty" json:"notarize,omitempty"`
 	DockerSigns     []Sign           `yaml:"docker_signs,omitempty" json:"docker_signs,omitempty"`
 	EnvFiles        EnvFiles         `yaml:"env_files,omitempty" json:"env_files,omitempty"`
 	Before          Before           `yaml:"before,omitempty" json:"before,omitempty"`
