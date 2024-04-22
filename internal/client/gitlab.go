@@ -167,7 +167,7 @@ func (c *gitlabClient) CreateFile(
 
 	log.
 		WithField("projectID", projectID).
-		Debug("projectID at brew")
+		Debug("project id")
 
 	var branch, defaultBranch string
 	var branchExists bool
@@ -192,7 +192,7 @@ func (c *gitlabClient) CreateFile(
 			WithField("projectID", projectID).
 			WithField("branch", branch).
 			WithField("branchExists", branchExists).
-			Debug("useing given branch")
+			Debug("using given branch")
 	} else {
 		// Try to get the default branch from the Git provider
 		branch, err = c.getDefaultBranch(ctx, repo)
@@ -212,11 +212,9 @@ func (c *gitlabClient) CreateFile(
 	// If the branch doesn't exist, we need to check the default branch
 	// because that's what we use as `start_branch` later if the file needs
 	// to be created.
-	opts := &gitlab.GetFileOptions{}
+	opts := &gitlab.GetFileOptions{Ref: &defaultBranch}
 	if branchExists {
-		opts = &gitlab.GetFileOptions{Ref: &branch}
-	} else {
-		opts = &gitlab.GetFileOptions{Ref: &defaultBranch}
+		opts.Ref = &branch
 	}
 	castedContent := string(content)
 
@@ -239,7 +237,7 @@ func (c *gitlabClient) CreateFile(
 		WithField("projectID", projectID).
 		WithField("branch", branch).
 		WithField("fileName", fileName).
-		Info("pushing brew formula")
+		Info("pushing file")
 
 	if res.StatusCode == 404 {
 		// Create a new file because it's not already there
@@ -247,7 +245,7 @@ func (c *gitlabClient) CreateFile(
 			WithField("projectID", projectID).
 			WithField("branch", branch).
 			WithField("fileName", fileName).
-			Debug("formula file doesn't exist, creating it.")
+			Debug("file doesn't exist, creating it")
 
 		createOpts := &gitlab.CreateFileOptions{
 			AuthorName:    &commitAuthor.Name,
@@ -289,7 +287,7 @@ func (c *gitlabClient) CreateFile(
 			WithField("fileName", fileName).
 			WithField("branch", branch).
 			WithField("projectID", projectID).
-			Debug("formula file exists, updating it.")
+			Debug("file exists, updating it")
 
 		updateOpts := &gitlab.UpdateFileOptions{
 			AuthorName:    &commitAuthor.Name,
@@ -314,7 +312,7 @@ func (c *gitlabClient) CreateFile(
 				log = log.WithField("statusCode", res.StatusCode)
 			}
 			log.WithError(err).
-				Error("error updating brew formula file")
+				Error("error updating file")
 			return err
 		}
 
@@ -326,7 +324,7 @@ func (c *gitlabClient) CreateFile(
 		if res != nil {
 			log = log.WithField("statusCode", res.StatusCode)
 		}
-		log.Debug("updated brew formula file")
+		log.Debug("updated file")
 		return nil
 	}
 }
