@@ -344,11 +344,7 @@ func getChangeloger(ctx *context.Context) (changeloger, error) {
 		fallthrough
 	case "":
 		return gitChangeloger{}, nil
-	case useGitHub:
-		fallthrough
-	case useGitLab:
-		return newSCMChangeloger(ctx)
-	case useGitea:
+	case useGitLab, useGitea, useGitHub:
 		return newSCMChangeloger(ctx)
 	case useGitHubNative:
 		return newGithubChangeloger(ctx)
