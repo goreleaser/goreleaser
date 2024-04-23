@@ -113,7 +113,7 @@ func (c *gitlabClient) checkBranchExists(_ *context.Context, repo Repo, branch s
 		return false, err
 	}
 
-	return res.StatusCode != 404 
+	return res.StatusCode != 404
 }
 
 // CloseMilestone closes a given milestone.
@@ -212,7 +212,6 @@ func (c *gitlabClient) CreateFile(
 	if branchExists {
 		opts.Ref = &branch
 	}
-	castedContent := string(content)
 
 	// Check if the file already exists
 	_, res, err := c.client.RepositoryFiles.GetFile(projectID, fileName, opts)
@@ -235,6 +234,8 @@ func (c *gitlabClient) CreateFile(
 		WithField("fileName", fileName).
 		Info("pushing file")
 
+	stringContents := string(content)
+
 	if res.StatusCode == 404 {
 		// Create a new file because it's not already there
 		log.
@@ -246,7 +247,7 @@ func (c *gitlabClient) CreateFile(
 		createOpts := &gitlab.CreateFileOptions{
 			AuthorName:    &commitAuthor.Name,
 			AuthorEmail:   &commitAuthor.Email,
-			Content:       &castedContent,
+			Content:       &stringContents,
 			Branch:        &branch,
 			CommitMessage: &message,
 		}
@@ -289,7 +290,7 @@ func (c *gitlabClient) CreateFile(
 	updateOpts := &gitlab.UpdateFileOptions{
 		AuthorName:    &commitAuthor.Name,
 		AuthorEmail:   &commitAuthor.Email,
-		Content:       &castedContent,
+		Content:       &stringContents,
 		Branch:        &branch,
 		CommitMessage: &message,
 	}
