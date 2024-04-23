@@ -1,6 +1,9 @@
 package changelog
 
 import (
+	"fmt"
+	"net/http"
+	"net/http/httptest"
 	"os"
 	"path/filepath"
 	"strings"
@@ -643,7 +646,7 @@ func TestGetChangeloger(t *testing.T) {
 			Changelog: config.Changelog{
 				Use: useGitLab,
 			},
-		}, testctx.GitHubTokenType)
+		}, testctx.GitLabTokenType)
 		c, err := getChangeloger(ctx)
 		require.NoError(t, err)
 		require.IsType(t, &scmChangeloger{}, c)
@@ -664,12 +667,22 @@ func TestGetChangeloger(t *testing.T) {
 	})
 
 	t.Run(useGitea, func(t *testing.T) {
-		ctx := context.New(config.Project{
+		srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			defer r.Body.Close()
+			if strings.HasSuffix(r.URL.Path, "api/v1/version") {
+				w.WriteHeader(http.StatusOK)
+				fmt.Fprint(w, "{\"version\":\"1.22.0\"}")
+			}
+		}))
+		defer srv.Close()
+		ctx := testctx.NewWithCfg(config.Project{
 			Changelog: config.Changelog{
 				Use: useGitea,
 			},
-		})
-		ctx.TokenType = context.TokenTypeGitea
+			GiteaURLs: config.GiteaURLs{
+				API: srv.URL,
+			},
+		}, testctx.GiteaTokenType)
 		c, err := getChangeloger(ctx)
 		require.NoError(t, err)
 		require.IsType(t, &scmChangeloger{}, c)
