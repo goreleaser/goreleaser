@@ -150,6 +150,7 @@ nav:
               - scm/gitea.md
       - Announce:
           - customization/announce/index.md
+          - customization/announce/bluesky.md
           - customization/announce/discord.md
           - customization/announce/linkedin.md
           - customization/announce/mastodon.md

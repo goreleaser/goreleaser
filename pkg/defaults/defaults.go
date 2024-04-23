@@ -9,6 +9,7 @@ import (
 	"github.com/goreleaser/goreleaser/internal/pipe/artifactory"
 	"github.com/goreleaser/goreleaser/internal/pipe/aur"
 	"github.com/goreleaser/goreleaser/internal/pipe/blob"
+	"github.com/goreleaser/goreleaser/internal/pipe/bluesky"
 	"github.com/goreleaser/goreleaser/internal/pipe/brew"
 	"github.com/goreleaser/goreleaser/internal/pipe/build"
 	"github.com/goreleaser/goreleaser/internal/pipe/checksums"
@@ -102,4 +103,5 @@ var Defaulters = []Defaulter{
 	webhook.Pipe{},
 	chocolatey.Pipe{},
 	opencollective.Pipe{},
+	bluesky.Pipe{},
 }

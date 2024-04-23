@@ -1302,6 +1302,7 @@ type Announce struct {
 	Telegram       Telegram       `yaml:"telegram,omitempty" json:"telegram,omitempty"`
 	Webhook        Webhook        `yaml:"webhook,omitempty" json:"webhook,omitempty"`
 	OpenCollective OpenCollective `yaml:"opencollective,omitempty" json:"opencolletive,omitempty"`
+	Bluesky        Bluesky        `yaml:"bluesky,omitempty" json:"bluesky,omitempty"`
 }
 
 type Webhook struct {
@@ -1399,6 +1400,13 @@ type OpenCollective struct {
 	Enabled         bool   `yaml:"enabled,omitempty" json:"enabled,omitempty"`
 	Slug            string `yaml:"slug,omitempty" json:"slug,omitempty"`
 	TitleTemplate   string `yaml:"title_template,omitempty" json:"title_template,omitempty"`
+	MessageTemplate string `yaml:"message_template,omitempty" json:"message_template,omitempty"`
+}
+
+// Bluesky represents the data required to announce to the Bluesky social network
+type Bluesky struct {
+	Enabled         bool   `yaml:"enabled,omitempty" json:"enabled,omitempty"`
+	Username        string `yaml:"username,omitempty" json:"username,omitempty"`
 	MessageTemplate string `yaml:"message_template,omitempty" json:"message_template,omitempty"`
 }
 
