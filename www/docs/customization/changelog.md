@@ -21,7 +21,7 @@ changelog:
   # - `git`: uses `git log`;
   # - `github`: uses the compare GitHub API, appending the author username to the changelog.
   # - `gitlab`: uses the compare GitLab API, appending the author name and email to the changelog.
-  # - `gitea`: uses the compare Gitea API, appending the author username to the changelog.
+  # - `gitea`: uses the compare Gitea API, appending the author username and name to the changelog.
   # - `github-native`: uses the GitHub release notes generation API, disables the groups feature.
   #
   # Default: 'git'
