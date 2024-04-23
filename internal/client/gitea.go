@@ -8,6 +8,7 @@ import (
 	"net/url"
 	"os"
 	"strconv"
+	"strings"
 
 	"code.gitea.io/sdk/gitea"
 	"github.com/caarlos0/log"
@@ -73,8 +74,24 @@ func newGitea(ctx *context.Context, token string) (*giteaClient, error) {
 	return &giteaClient{client: client}, nil
 }
 
-func (c *giteaClient) Changelog(_ *context.Context, _ Repo, _, _ string) (string, error) {
-	return "", ErrNotImplemented
+// Changelog fetches the changelog between two revisions.
+func (c *giteaClient) Changelog(_ *context.Context, repo Repo, prev, current string) (string, error) {
+	result, _, err := c.client.CompareCommits(repo.Owner, repo.Name, prev, current)
+	if err != nil {
+		return "", err
+	}
+	var log []string
+
+	for _, commit := range result.Commits {
+		log = append(log, fmt.Sprintf(
+			"%s: %s (@%s <%s>)",
+			commit.SHA[:7],
+			strings.Split(commit.RepoCommit.Message, "\n")[0],
+			commit.Author.UserName,
+			commit.RepoCommit.Author.Email,
+		))
+	}
+	return strings.Join(log, "\n"), nil
 }
 
 // CloseMilestone closes a given milestone.
