@@ -113,11 +113,7 @@ func (c *gitlabClient) checkBranchExists(_ *context.Context, repo Repo, branch s
 		return false, err
 	}
 
-	if res.StatusCode == 404 {
-		return false, nil
-	} else {
-		return true, nil
-	}
+	return res.StatusCode != 404 
 }
 
 // CloseMilestone closes a given milestone.
@@ -327,7 +323,6 @@ func (c *gitlabClient) CreateFile(
 	}
 	log.Debug("updated file")
 	return nil
-
 }
 
 // CreateRelease creates a new release or updates it by keeping
