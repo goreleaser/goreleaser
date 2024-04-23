@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"fmt"
 	"os"
-	"path/filepath"
 	"strings"
 	"testing"
 
@@ -50,7 +49,7 @@ func TestFile(t *testing.T) {
 	f, err := os.CreateTemp(t.TempDir(), "config")
 	require.NoError(t, err)
 	require.NoError(t, f.Close())
-	_, err = Load(filepath.Join(f.Name()))
+	_, err = Load(f.Name())
 	require.NoError(t, err)
 }
 

@@ -173,10 +173,6 @@ func TestFindBinaries(t *testing.T) {
 			goarm := ""
 			gomips := ""
 			goamd64 := ""
-			switch goos {
-			case "windows":
-				ext = ".exe"
-			}
 			if goos == "windows" {
 				ext = ".exe"
 			}

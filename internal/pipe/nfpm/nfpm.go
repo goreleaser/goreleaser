@@ -458,7 +458,7 @@ func create(ctx *context.Context, fpm config.NFPM, format string, artifacts []*a
 	}
 
 	if !strings.HasSuffix(packageFilename, ext) {
-		packageFilename = packageFilename + ext
+		packageFilename += ext
 	}
 
 	path := filepath.Join(ctx.Config.Dist, packageFilename)

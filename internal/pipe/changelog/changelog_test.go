@@ -672,7 +672,7 @@ func TestGetChangeloger(t *testing.T) {
 		ctx.TokenType = context.TokenTypeGitea
 		c, err := getChangeloger(ctx)
 		require.NoError(t, err)
-		require.IsType(t, c, &scmChangeloger{})
+		require.IsType(t, &scmChangeloger{}, c)
 	})
 
 	t.Run("invalid", func(t *testing.T) {
