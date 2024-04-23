@@ -21,7 +21,7 @@ const DefaultGitLabDownloadURL = "https://gitlab.com"
 
 var (
 	_ Client            = &gitlabClient{}
-	_ PullRequestOpener = &githubClient{}
+	_ PullRequestOpener = &gitlabClient{}
 )
 
 type gitlabClient struct {
