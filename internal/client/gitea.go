@@ -84,11 +84,10 @@ func (c *giteaClient) Changelog(_ *context.Context, repo Repo, prev, current str
 
 	for _, commit := range result.Commits {
 		log = append(log, fmt.Sprintf(
-			"%s: %s (@%s <%s>)",
+			"%s: %s (@%s)",
 			commit.SHA[:7],
 			strings.Split(commit.RepoCommit.Message, "\n")[0],
 			commit.Author.UserName,
-			commit.RepoCommit.Author.Email,
 		))
 	}
 	return strings.Join(log, "\n"), nil
