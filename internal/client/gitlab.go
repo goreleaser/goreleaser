@@ -113,7 +113,7 @@ func (c *gitlabClient) checkBranchExists(_ *context.Context, repo Repo, branch s
 		return false, err
 	}
 
-	return res.StatusCode != 404
+	return res.StatusCode != 404, nil
 }
 
 // CloseMilestone closes a given milestone.
