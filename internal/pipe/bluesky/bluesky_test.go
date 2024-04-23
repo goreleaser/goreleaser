@@ -38,7 +38,7 @@ func TestAnnounceMissingEnv(t *testing.T) {
 		},
 	})
 	require.NoError(t, bluesky.Pipe{}.Default(ctx))
-	require.EqualError(t, bluesky.Pipe{}.Announce(ctx), `bluesky: env: environment variable "BLUESKY_ACCOUNT_PASSWORD" should not be empty`)
+	require.EqualError(t, bluesky.Pipe{}.Announce(ctx), `bluesky: env: environment variable "BLUESKY_APP_PASSWORD" should not be empty`)
 }
 
 func TestSkip(t *testing.T) {
@@ -60,21 +60,21 @@ func TestSkip(t *testing.T) {
 
 func TestLive(t *testing.T) {
 	t.SkipNow()
-	t.Setenv("BLUESKY_ACCOUNT_PASSWORD", "TODO")
+	t.Setenv("BLUESKY_APP_PASSWORD", "TODO")
 
 	ctx := testctx.NewWithCfg(config.Project{
 		Announce: config.Announce{
 			Bluesky: config.Bluesky{
 				MessageTemplate: "This is a sample announcement from the forthcoming {{ .ProjectName }} Bluesky support. View the details at {{ .ReleaseURL }}",
 				Enabled:         true,
-				Username:        "jaygles.bsky.social",
+				Username:        "caarlos0.dev",
 			},
 		},
 	})
 
 	ctx.Config.ProjectName = "Goreleaser"
-	ctx.ReleaseURL = "https://en.wikipedia.org/wiki/ALF_(TV_series)"
-	ctx.Version = "dev-bluesky"
+	ctx.ReleaseURL = "https://goreleaser.com/customization/announce/bluesky"
+	ctx.Version = "v1.26.0"
 
 	require.NoError(t, bluesky.Pipe{}.Default(ctx))
 	require.NoError(t, bluesky.Pipe{}.Announce(ctx))

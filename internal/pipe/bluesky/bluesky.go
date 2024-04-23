@@ -10,7 +10,7 @@ import (
 	"github.com/bluesky-social/indigo/lex/util"
 	butil "github.com/bluesky-social/indigo/util"
 	"github.com/bluesky-social/indigo/xrpc"
-	"github.com/caarlos0/env/v9"
+	"github.com/caarlos0/env/v11"
 	"github.com/goreleaser/goreleaser/internal/tmpl"
 	"github.com/goreleaser/goreleaser/pkg/context"
 )
@@ -26,7 +26,7 @@ func (Pipe) String() string                 { return "bluesky" }
 func (Pipe) Skip(ctx *context.Context) bool { return !ctx.Config.Announce.Bluesky.Enabled }
 
 type Config struct {
-	Password string `env:"BLUESKY_ACCOUNT_PASSWORD,notEmpty"`
+	Password string `env:"BLUESKY_APP_PASSWORD,notEmpty"`
 }
 
 func (Pipe) Default(ctx *context.Context) error {
@@ -74,8 +74,7 @@ func (p Pipe) Announce(ctx *context.Context) error {
 	}
 
 	httpClient := butil.RobustHTTPClient()
-
-	userAgent := fmt.Sprintf("goreleaser/%s", ctx.Version)
+	userAgent := "goreleaser/v1"
 
 	xrpcClient := &xrpc.Client{
 		Client:    httpClient,
