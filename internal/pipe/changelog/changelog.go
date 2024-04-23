@@ -340,15 +340,9 @@ func extractCommitInfo(line string) string {
 
 func getChangeloger(ctx *context.Context) (changeloger, error) {
 	switch ctx.Config.Changelog.Use {
-	case useGit:
-		fallthrough
-	case "":
+	case useGit, "":
 		return gitChangeloger{}, nil
-	case useGitHub:
-		fallthrough
-	case useGitLab:
-		return newSCMChangeloger(ctx)
-	case useGitea:
+	case useGitLab, useGitea, useGitHub:
 		return newSCMChangeloger(ctx)
 	case useGitHubNative:
 		return newGithubChangeloger(ctx)
