@@ -3,7 +3,7 @@ package twitter
 import (
 	"fmt"
 
-	"github.com/caarlos0/env/v9"
+	"github.com/caarlos0/env/v11"
 	"github.com/caarlos0/log"
 	"github.com/dghubble/go-twitter/twitter"
 	"github.com/dghubble/oauth1"
@@ -38,8 +38,8 @@ func (Pipe) Announce(ctx *context.Context) error {
 		return fmt.Errorf("twitter: %w", err)
 	}
 
-	var cfg Config
-	if err := env.Parse(&cfg); err != nil {
+	cfg, err := env.ParseAs[Config]()
+	if err != nil {
 		return fmt.Errorf("twitter: %w", err)
 	}
 

@@ -6,7 +6,7 @@ import (
 	"fmt"
 	"net/http"
 
-	"github.com/caarlos0/env/v9"
+	"github.com/caarlos0/env/v11"
 	"github.com/caarlos0/log"
 	"github.com/goreleaser/goreleaser/internal/tmpl"
 	"github.com/goreleaser/goreleaser/pkg/context"
@@ -50,8 +50,8 @@ func (Pipe) Announce(ctx *context.Context) error {
 		return fmt.Errorf("opencollective: %w", err)
 	}
 
-	var cfg Config
-	if err := env.Parse(&cfg); err != nil {
+	cfg, err := env.ParseAs[Config]()
+	if err != nil {
 		return fmt.Errorf("opencollective: %w", err)
 	}
 

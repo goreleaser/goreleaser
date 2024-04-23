@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"strconv"
 
-	"github.com/caarlos0/env/v9"
+	"github.com/caarlos0/env/v11"
 	"github.com/caarlos0/log"
 	api "github.com/go-telegram-bot-api/telegram-bot-api"
 	"github.com/goreleaser/goreleaser/internal/tmpl"
@@ -12,7 +12,7 @@ import (
 )
 
 const (
-	defaultMessageTemplate = `{{ .ProjectName }} {{ mdv2escape .Tag }} is out! Check it out at {{ mdv2escape .ReleaseURL }}`
+	defaultMessageTemplate = `{{ mdv2escape .ProjectName }} {{ mdv2escape .Tag }} is out! Check it out at {{ mdv2escape .ReleaseURL }}`
 	parseModeHTML          = "HTML"
 	parseModeMarkdown      = "MarkdownV2"
 )
@@ -45,8 +45,8 @@ func (Pipe) Announce(ctx *context.Context) error {
 		return err
 	}
 
-	var cfg Config
-	if err := env.Parse(&cfg); err != nil {
+	cfg, err := env.ParseAs[Config]()
+	if err != nil {
 		return fmt.Errorf("telegram: %w", err)
 	}
 

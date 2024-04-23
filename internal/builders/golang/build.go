@@ -380,7 +380,9 @@ func run(ctx *context.Context, command, env []string, dir string) error {
 	if err != nil {
 		return fmt.Errorf("%w: %s", err, string(out))
 	}
-	log.Debug(string(out))
+	if s := strings.TrimSpace(string(out)); s != "" {
+		log.Info(s)
+	}
 	return nil
 }
 

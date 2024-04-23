@@ -343,27 +343,29 @@ func filter(reverse bool) func(content, exp string) string {
 	}
 }
 
+var mdv2EscapeReplacer = strings.NewReplacer(
+	"_", "\\_",
+	"*", "\\*",
+	"[", "\\[",
+	"]", "\\]",
+	"(", "\\(",
+	")", "\\)",
+	"~", "\\~",
+	"`", "\\`",
+	">", "\\>",
+	"#", "\\#",
+	"+", "\\+",
+	"-", "\\-",
+	"=", "\\=",
+	"|", "\\|",
+	"{", "\\{",
+	"}", "\\}",
+	".", "\\.",
+	"!", "\\!",
+)
+
 func mdv2Escape(s string) string {
-	return strings.NewReplacer(
-		"_", "\\_",
-		"*", "\\*",
-		"[", "\\[",
-		"]", "\\]",
-		"(", "\\(",
-		")", "\\)",
-		"~", "\\~",
-		"`", "\\`",
-		">", "\\>",
-		"#", "\\#",
-		"+", "\\+",
-		"-", "\\-",
-		"=", "\\=",
-		"|", "\\|",
-		"{", "\\{",
-		"}", "\\}",
-		".", "\\.",
-		"!", "\\!",
-	).Replace(s)
+	return mdv2EscapeReplacer.Replace(s)
 }
 
 func makemap(kvs ...string) (map[string]string, error) {
