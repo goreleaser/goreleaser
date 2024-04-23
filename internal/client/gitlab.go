@@ -98,6 +98,24 @@ func (c *gitlabClient) getDefaultBranch(_ *context.Context, repo Repo) (string, 
 	return p.DefaultBranch, nil
 }
 
+// checkBranchExists checks if a branch exists
+func (c *gitlabClient) checkBranchExists(_ *context.Context, repo Repo, branch string) (bool, error) {
+	projectID := repo.Name
+	if repo.Owner != "" {
+		projectID = repo.Owner + "/" + projectID
+	}
+
+	// Verify if branch exists
+	_, res, err := c.client.Branches.GetBranch(projectID, branch)
+	if err != nil && res.StatusCode != 404 {
+		log.WithError(err).
+			Error("error verify branch existence")
+		return false, err
+	}
+
+	return res.StatusCode != 404, nil
+}
+
 // CloseMilestone closes a given milestone.
 func (c *gitlabClient) CloseMilestone(_ *context.Context, repo Repo, title string) error {
 	milestone, err := c.getMilestoneByTitle(repo, title)
@@ -135,57 +153,72 @@ func (c *gitlabClient) CreateFile(
 	commitAuthor config.CommitAuthor,
 	repo Repo,
 	content []byte, // the content of the formula.rb
-	path, // the path to the formula.rb
+	fileName, // the path to the formula.rb
 	message string, // the commit msg
 ) error {
-	fileName := path
-
 	projectID := repo.Name
 	if repo.Owner != "" {
 		projectID = repo.Owner + "/" + projectID
 	}
 
-	// Use the project default branch if we can get it...otherwise, just use
-	// 'master'
-	var branch, ref string
+	log.
+		WithField("projectID", projectID).
+		Debug("project id")
+
+	var branch, defaultBranch string
+	var branchExists bool
 	var err error
 	// Use the branch if given one
 	if repo.Branch != "" {
 		branch = repo.Branch
+		branchExists, err = c.checkBranchExists(ctx, repo, branch)
+		if err != nil {
+			return err
+		}
+
+		// Retrieving default branch because we need it for `start_branch`
+		if !branchExists {
+			defaultBranch, err = c.getDefaultBranch(ctx, repo)
+			if err != nil {
+				return err
+			}
+		}
+
+		log.
+			WithField("projectID", projectID).
+			WithField("branch", branch).
+			WithField("branchExists", branchExists).
+			Debug("using given branch")
 	} else {
 		// Try to get the default branch from the Git provider
 		branch, err = c.getDefaultBranch(ctx, repo)
 		if err != nil {
-			// Fall back to 'master' 😭
-			log.
-				WithField("fileName", fileName).
-				WithField("projectID", projectID).
-				WithField("requestedBranch", branch).
-				WithError(err).
-				Warn("error checking for default branch, using master")
-			ref = "master"
-			branch = "master"
+			return err
 		}
+
+		defaultBranch = branch
+		branchExists = true
+
+		log.
+			WithField("projectID", projectID).
+			WithField("branch", branch).
+			Debug("no branch given, using default branch")
 	}
-	ref = branch
-	opts := &gitlab.GetFileOptions{Ref: &ref}
-	castedContent := string(content)
 
-	log.
-		WithField("projectID", projectID).
-		WithField("ref", ref).
-		WithField("branch", branch).
-		Debug("projectID at brew")
+	// If the branch doesn't exist, we need to check the default branch
+	// because that's what we use as `start_branch` later if the file needs
+	// to be created.
+	opts := &gitlab.GetFileOptions{Ref: &defaultBranch}
+	if branchExists {
+		opts.Ref = &branch
+	}
 
-	log.
-		WithField("projectID", projectID).
-		Info("pushing")
-
+	// Check if the file already exists
 	_, res, err := c.client.RepositoryFiles.GetFile(projectID, fileName, opts)
 	if err != nil && (res == nil || res.StatusCode != 404) {
 		log := log.
 			WithField("fileName", fileName).
-			WithField("ref", ref).
+			WithField("branch", branch).
 			WithField("projectID", projectID)
 		if res != nil {
 			log = log.WithField("statusCode", res.StatusCode)
@@ -196,24 +229,34 @@ func (c *gitlabClient) CreateFile(
 	}
 
 	log.
-		WithField("fileName", fileName).
-		WithField("branch", branch).
 		WithField("projectID", projectID).
-		Debug("found already existing brew formula file")
+		WithField("branch", branch).
+		WithField("fileName", fileName).
+		Info("pushing file")
+
+	stringContents := string(content)
 
 	if res.StatusCode == 404 {
+		// Create a new file because it's not already there
 		log.
-			WithField("fileName", fileName).
-			WithField("ref", ref).
 			WithField("projectID", projectID).
-			Debug("creating brew formula")
+			WithField("branch", branch).
+			WithField("fileName", fileName).
+			Debug("file doesn't exist, creating it")
+
 		createOpts := &gitlab.CreateFileOptions{
 			AuthorName:    &commitAuthor.Name,
 			AuthorEmail:   &commitAuthor.Email,
-			Content:       &castedContent,
+			Content:       &stringContents,
 			Branch:        &branch,
 			CommitMessage: &message,
 		}
+
+		// Branch not found, thus Gitlab requires a "start branch" to create the file
+		if !branchExists {
+			createOpts.StartBranch = &defaultBranch
+		}
+
 		fileInfo, res, err := c.client.RepositoryFiles.CreateFile(projectID, fileName, createOpts)
 		if err != nil {
 			log := log.
@@ -237,17 +280,24 @@ func (c *gitlabClient) CreateFile(
 		return nil
 	}
 
+	// Update the existing file
 	log.
 		WithField("fileName", fileName).
-		WithField("ref", ref).
+		WithField("branch", branch).
 		WithField("projectID", projectID).
-		Debug("updating brew formula")
+		Debug("file exists, updating it")
+
 	updateOpts := &gitlab.UpdateFileOptions{
 		AuthorName:    &commitAuthor.Name,
 		AuthorEmail:   &commitAuthor.Email,
-		Content:       &castedContent,
+		Content:       &stringContents,
 		Branch:        &branch,
 		CommitMessage: &message,
+	}
+
+	// Branch not found, thus Gitlab requires a "start branch" to update the file
+	if !branchExists {
+		updateOpts.StartBranch = &defaultBranch
 	}
 
 	updateFileInfo, res, err := c.client.RepositoryFiles.UpdateFile(projectID, fileName, updateOpts)
@@ -260,7 +310,7 @@ func (c *gitlabClient) CreateFile(
 			log = log.WithField("statusCode", res.StatusCode)
 		}
 		log.WithError(err).
-			Error("error updating brew formula file")
+			Error("error updating file")
 		return err
 	}
 
@@ -272,7 +322,7 @@ func (c *gitlabClient) CreateFile(
 	if res != nil {
 		log = log.WithField("statusCode", res.StatusCode)
 	}
-	log.Debug("updated brew formula file")
+	log.Debug("updated file")
 	return nil
 }
 
