@@ -617,6 +617,8 @@ func TestGiteaChangelog(t *testing.T) {
 						},
 						Author: &gitea.User{
 							UserName: "johndoe",
+							FullName: "John Doe",
+							Email:    "nope@nope.nope",
 						},
 						RepoCommit: &gitea.RepoCommit{
 							Message: "feat: impl something\n\nnsome other lines",
@@ -646,7 +648,15 @@ func TestGiteaChangelog(t *testing.T) {
 
 	result, err := client.Changelog(ctx, repo, "v1.0.0", "v1.1.0")
 	require.NoError(t, err)
-	require.Equal(t, "c8488dc: feat: impl something (@johndoe)", result)
+	require.Equal(t, []ChangelogItem{
+		{
+			SHA:            "c8488dc",
+			Message:        "feat: impl something",
+			AuthorUsername: "johndoe",
+			AuthorName:     "John Doe",
+			AuthorEmail:    "nope@nope.nope",
+		},
+	}, result)
 }
 
 func TestGiteatGetInstanceURL(t *testing.T) {

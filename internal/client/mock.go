@@ -39,7 +39,7 @@ type Mock struct {
 	Lock                 sync.Mutex
 	ClosedMilestone      string
 	FailToCloseMilestone bool
-	Changes              string
+	Changes              []ChangelogItem
 	ReleaseNotes         string
 	ReleaseNotesParams   []string
 	OpenedPullRequest    bool
@@ -56,11 +56,11 @@ func (c *Mock) OpenPullRequest(_ *context.Context, _, _ Repo, _ string, _ bool) 
 	return nil
 }
 
-func (c *Mock) Changelog(_ *context.Context, _ Repo, _, _ string) (string, error) {
-	if c.Changes != "" {
+func (c *Mock) Changelog(_ *context.Context, _ Repo, _, _ string) ([]ChangelogItem, error) {
+	if len(c.Changes) > 0 {
 		return c.Changes, nil
 	}
-	return "", ErrNotImplemented
+	return nil, ErrNotImplemented
 }
 
 func (c *Mock) GenerateReleaseNotes(_ *context.Context, _ Repo, prev, current string) (string, error) {

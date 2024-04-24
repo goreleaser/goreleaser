@@ -75,22 +75,23 @@ func newGitea(ctx *context.Context, token string) (*giteaClient, error) {
 }
 
 // Changelog fetches the changelog between two revisions.
-func (c *giteaClient) Changelog(_ *context.Context, repo Repo, prev, current string) (string, error) {
+func (c *giteaClient) Changelog(_ *context.Context, repo Repo, prev, current string) ([]ChangelogItem, error) {
 	result, _, err := c.client.CompareCommits(repo.Owner, repo.Name, prev, current)
 	if err != nil {
-		return "", err
+		return nil, err
 	}
-	var log []string
+	var log []ChangelogItem
 
 	for _, commit := range result.Commits {
-		log = append(log, fmt.Sprintf(
-			"%s: %s (@%s)",
-			commit.SHA[:7],
-			strings.Split(commit.RepoCommit.Message, "\n")[0],
-			commit.Author.UserName,
-		))
+		log = append(log, ChangelogItem{
+			SHA:            commit.SHA[:7],
+			Message:        strings.Split(commit.RepoCommit.Message, "\n")[0],
+			AuthorName:     commit.Author.FullName,
+			AuthorEmail:    commit.Author.Email,
+			AuthorUsername: commit.Author.UserName,
+		})
 	}
-	return strings.Join(log, "\n"), nil
+	return log, nil
 }
 
 // CloseMilestone closes a given milestone.

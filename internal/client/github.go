@@ -101,23 +101,24 @@ func (c *githubClient) GenerateReleaseNotes(ctx *context.Context, repo Repo, pre
 	return notes.Body, err
 }
 
-func (c *githubClient) Changelog(ctx *context.Context, repo Repo, prev, current string) (string, error) {
+func (c *githubClient) Changelog(ctx *context.Context, repo Repo, prev, current string) ([]ChangelogItem, error) {
 	c.checkRateLimit(ctx)
-	var log []string
+	var log []ChangelogItem
 	opts := &github.ListOptions{PerPage: 100}
 
 	for {
 		result, resp, err := c.client.Repositories.CompareCommits(ctx, repo.Owner, repo.Name, prev, current, opts)
 		if err != nil {
-			return "", err
+			return nil, err
 		}
 		for _, commit := range result.Commits {
-			log = append(log, fmt.Sprintf(
-				"%s: %s (@%s)",
-				commit.GetSHA(),
-				strings.Split(commit.Commit.GetMessage(), "\n")[0],
-				commit.GetAuthor().GetLogin(),
-			))
+			log = append(log, ChangelogItem{
+				SHA:            commit.GetSHA(),
+				Message:        strings.Split(commit.Commit.GetMessage(), "\n")[0],
+				AuthorName:     commit.GetAuthor().GetName(),
+				AuthorEmail:    commit.GetAuthor().GetEmail(),
+				AuthorUsername: commit.GetAuthor().GetLogin(),
+			})
 		}
 		if resp.NextPage == 0 {
 			break
@@ -125,7 +126,7 @@ func (c *githubClient) Changelog(ctx *context.Context, repo Repo, prev, current 
 		opts.Page = resp.NextPage
 	}
 
-	return strings.Join(log, "\n"), nil
+	return log, nil
 }
 
 // getDefaultBranch returns the default branch of a github repo

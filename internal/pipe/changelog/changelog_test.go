@@ -515,10 +515,19 @@ func TestGetChangelogGitHub(t *testing.T) {
 			Use: useGitHub,
 		},
 	}, testctx.WithCurrentTag("v0.180.2"), testctx.WithPreviousTag("v0.180.1"))
+	require.NoError(t, Pipe{}.Default(ctx))
 
 	expected := "c90f1085f255d0af0b055160bfff5ee40f47af79: fix: do not skip any defaults (#2521) (@caarlos0)"
 	mock := client.NewMock()
-	mock.Changes = expected
+	mock.Changes = []client.ChangelogItem{
+		{
+			SHA:            "c90f1085f255d0af0b055160bfff5ee40f47af79",
+			Message:        "fix: do not skip any defaults (#2521)",
+			AuthorName:     "Carlos",
+			AuthorEmail:    "nope@nope.com",
+			AuthorUsername: "@caarlos0",
+		},
+	}
 	l := scmChangeloger{
 		client: mock,
 		repo: client.Repo{

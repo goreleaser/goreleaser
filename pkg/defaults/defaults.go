@@ -12,6 +12,7 @@ import (
 	"github.com/goreleaser/goreleaser/internal/pipe/bluesky"
 	"github.com/goreleaser/goreleaser/internal/pipe/brew"
 	"github.com/goreleaser/goreleaser/internal/pipe/build"
+	"github.com/goreleaser/goreleaser/internal/pipe/changelog"
 	"github.com/goreleaser/goreleaser/internal/pipe/checksums"
 	"github.com/goreleaser/goreleaser/internal/pipe/chocolatey"
 	"github.com/goreleaser/goreleaser/internal/pipe/discord"
@@ -64,6 +65,7 @@ var Defaulters = []Defaulter{
 	snapshot.Pipe{},
 	release.Pipe{},
 	project.Pipe{},
+	changelog.Pipe{},
 	gomod.Pipe{},
 	build.Pipe{},
 	universalbinary.Pipe{},
