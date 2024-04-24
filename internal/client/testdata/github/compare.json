@@ -6,7 +6,9 @@
         "message": "Fix all the bugs\nlalalal"
       },
       "author": {
-        "login": "octocat"
+        "login": "octocat",
+        "name": "Octocat",
+        "email": "octo@cat"
       }
     }
   ]

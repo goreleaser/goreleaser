@@ -27,6 +27,15 @@ changelog:
   # Default: 'git'
   use: github
 
+  # Format to use for commit formatting.
+  # Only available when use is one of `github`, `gitea`, or `gitlab`.
+  #
+  # Default: '{{ .SHA }}: {{ .Message }} ({{ with .AuthorUsername }}@{{ . }}{{ else }}{{ .AuthorName }} <{{ .AuthorEmail }}>{{ end }})'
+  # Extra template fields: `SHA`, `Message`, `AuthorName`, `AuthorEmail`, and
+  # `AuthorUsername`.
+  # Since: v1.26
+  format: "{{.SHA}}: {{.Message}} (@{{.AuthorUsername}})"
+
   # Sorts the changelog by the commit's messages.
   # Could either be asc, desc or empty
   # Empty means 'no sorting', it'll use the output of `git log` as is.

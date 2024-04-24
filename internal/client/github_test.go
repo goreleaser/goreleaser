@@ -300,7 +300,15 @@ func TestGitHubChangelog(t *testing.T) {
 
 	log, err := client.Changelog(ctx, repo, "v1.0.0", "v1.1.0")
 	require.NoError(t, err)
-	require.Equal(t, "6dcb09b5b57875f334f61aebed695e2e4193db5e: Fix all the bugs (@octocat)", log)
+	require.Equal(t, []ChangelogItem{
+		{
+			SHA:            "6dcb09b5b57875f334f61aebed695e2e4193db5e",
+			Message:        "Fix all the bugs",
+			AuthorName:     "Octocat",
+			AuthorEmail:    "octo@cat",
+			AuthorUsername: "octocat",
+		},
+	}, log)
 }
 
 func TestGitHubReleaseNotes(t *testing.T) {

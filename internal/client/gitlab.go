@@ -64,27 +64,26 @@ func newGitLab(ctx *context.Context, token string) (*gitlabClient, error) {
 	return &gitlabClient{client: client}, nil
 }
 
-func (c *gitlabClient) Changelog(_ *context.Context, repo Repo, prev, current string) (string, error) {
+func (c *gitlabClient) Changelog(_ *context.Context, repo Repo, prev, current string) ([]ChangelogItem, error) {
 	cmpOpts := &gitlab.CompareOptions{
 		From: &prev,
 		To:   &current,
 	}
 	result, _, err := c.client.Repositories.Compare(repo.String(), cmpOpts)
-	var log []string
+	var log []ChangelogItem
 	if err != nil {
-		return "", err
+		return nil, err
 	}
 
 	for _, commit := range result.Commits {
-		log = append(log, fmt.Sprintf(
-			"%s: %s (%s <%s>)",
-			commit.ShortID,
-			strings.Split(commit.Message, "\n")[0],
-			commit.AuthorName,
-			commit.AuthorEmail,
-		))
+		log = append(log, ChangelogItem{
+			SHA:         commit.ShortID,
+			Message:     strings.Split(commit.Message, "\n")[0],
+			AuthorName:  commit.AuthorName,
+			AuthorEmail: commit.AuthorEmail,
+		})
 	}
-	return strings.Join(log, "\n"), nil
+	return log, nil
 }
 
 // getDefaultBranch get the default branch

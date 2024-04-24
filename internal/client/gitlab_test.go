@@ -484,7 +484,15 @@ func TestGitLabChangelog(t *testing.T) {
 
 	log, err := client.Changelog(ctx, repo, "v1.0.0", "v1.1.0")
 	require.NoError(t, err)
-	require.Equal(t, "6dcb09b5: Fix all the bugs (Joey User <joey@user.edu>)", log)
+	require.Equal(t, []ChangelogItem{
+		{
+			SHA:            "6dcb09b5",
+			Message:        "Fix all the bugs",
+			AuthorName:     "Joey User",
+			AuthorEmail:    "joey@user.edu",
+			AuthorUsername: "",
+		},
+	}, log)
 }
 
 func TestGitLabCreateFile(t *testing.T) {
