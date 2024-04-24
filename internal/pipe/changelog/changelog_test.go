@@ -525,7 +525,7 @@ func TestGetChangelogGitHub(t *testing.T) {
 			Message:        "fix: do not skip any defaults (#2521)",
 			AuthorName:     "Carlos",
 			AuthorEmail:    "nope@nope.com",
-			AuthorUsername: "@caarlos0",
+			AuthorUsername: "caarlos0",
 		},
 	}
 	l := scmChangeloger{
