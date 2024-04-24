@@ -2,6 +2,8 @@ package client
 
 import "github.com/goreleaser/goreleaser/pkg/config"
 
+const prFooter = "###### Automated with [GoReleaser](https://goreleaser.com)"
+
 // RepoFromRef converts a config.RepoRef into a Repo.
 func RepoFromRef(ref config.RepoRef) Repo {
 	return Repo{

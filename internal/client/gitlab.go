@@ -9,6 +9,7 @@ import (
 	"strings"
 
 	"github.com/caarlos0/log"
+	"github.com/charmbracelet/x/exp/ordered"
 	"github.com/goreleaser/goreleaser/internal/artifact"
 	"github.com/goreleaser/goreleaser/internal/tmpl"
 	"github.com/goreleaser/goreleaser/pkg/config"
@@ -18,11 +19,14 @@ import (
 
 const DefaultGitLabDownloadURL = "https://gitlab.com"
 
+var (
+	_ Client            = &gitlabClient{}
+	_ PullRequestOpener = &gitlabClient{}
+)
+
 type gitlabClient struct {
 	client *gitlab.Client
 }
-
-var _ Client = &gitlabClient{}
 
 // newGitLab returns a gitlab client implementation.
 func newGitLab(ctx *context.Context, token string) (*gitlabClient, error) {
@@ -578,4 +582,64 @@ func checkUseJobToken(ctx context.Context, token string) bool {
 		return token == ciToken
 	}
 	return false
+}
+
+func (c *gitlabClient) OpenPullRequest(
+	ctx *context.Context,
+	base, head Repo,
+	title string,
+	draft bool,
+) error {
+	var targetProjectID int
+	if base.Owner != "" {
+		fullProjectPath := fmt.Sprintf("%s/%s", base.Owner, base.Name)
+
+		p, res, err := c.client.Projects.GetProject(fullProjectPath, nil)
+		if err != nil {
+			log := log.WithField("project", fullProjectPath)
+			if res != nil {
+				log = log.WithField("statusCode", res.StatusCode)
+			}
+			log.WithError(err).Warn("error getting base project id")
+			return err
+		}
+		targetProjectID = p.ID
+	}
+
+	base.Owner = ordered.First(base.Owner, head.Owner)
+	base.Name = ordered.First(base.Name, head.Name)
+
+	if base.Branch == "" {
+		def, err := c.getDefaultBranch(ctx, base)
+		if err != nil {
+			return err
+		}
+		base.Branch = def
+	}
+
+	if draft {
+		title = fmt.Sprintf("Draft: %s", title)
+	}
+
+	log.WithField("base", headString(base, Repo{})).
+		WithField("head", headString(base, head)).
+		WithField("draft", draft).
+		Info("opening pull request")
+
+	mrOptions := &gitlab.CreateMergeRequestOptions{
+		SourceBranch: &head.Branch,
+		TargetBranch: &base.Branch,
+		Title:        &title,
+	}
+
+	if targetProjectID != 0 {
+		mrOptions.TargetProjectID = &targetProjectID
+	}
+
+	pr, _, err := c.client.MergeRequests.CreateMergeRequest(fmt.Sprintf("%s/%s", head.Owner, head.Name), mrOptions)
+	if err != nil {
+		return fmt.Errorf("could not create pull request: %w", err)
+	}
+	log.WithField("url", pr.WebURL).Info("pull request created")
+	return nil
 }

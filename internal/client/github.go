@@ -193,8 +193,6 @@ func (c *githubClient) getPRTemplate(ctx *context.Context, repo Repo) (string, e
 	return content.GetContent()
 }
 
-const prFooter = "###### Automated with [GoReleaser](https://goreleaser.com)"
-
 func (c *githubClient) OpenPullRequest(
 	ctx *context.Context,
 	base, head Repo,
