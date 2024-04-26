@@ -967,7 +967,7 @@ func TestDefault(t *testing.T) {
 		ProjectName: "myproject",
 		Krews: []config.Krew{
 			{
-				Index: config.RepoRef{
+				Repository: config.RepoRef{
 					Git: config.GitRepoRef{
 						URL: "foo/bar",
 					},

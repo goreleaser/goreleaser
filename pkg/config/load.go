@@ -5,6 +5,7 @@ import (
 	"io"
 	"os"
 
+	"github.com/caarlos0/log"
 	"github.com/goreleaser/goreleaser/internal/logext"
 	"github.com/goreleaser/goreleaser/internal/yaml"
 )
@@ -42,10 +43,15 @@ func LoadReader(fd io.Reader) (config Project, err error) {
 
 	var versioned Versioned
 	_ = yaml.Unmarshal(data, &versioned)
-	if versioned.Version != 0 && versioned.Version != 1 {
-		return config, VersionError{versioned.Version}
+
+	validVersion := versioned.Version == 2
+	if !validVersion {
+		log.Warn(VersionError{versioned.Version}.Error())
 	}
 
 	err = yaml.UnmarshalStrict(data, &config)
+	if err != nil && !validVersion {
+		return config, VersionError{versioned.Version}
+	}
 	return config, err
 }

@@ -4,7 +4,6 @@ package blob
 import (
 	"fmt"
 
-	"github.com/goreleaser/goreleaser/internal/deprecate"
 	"github.com/goreleaser/goreleaser/internal/pipe"
 	"github.com/goreleaser/goreleaser/internal/semerrgroup"
 	"github.com/goreleaser/goreleaser/internal/tmpl"
@@ -22,27 +21,14 @@ func (Pipe) Skip(ctx *context.Context) bool { return len(ctx.Config.Blobs) == 0 
 func (Pipe) Default(ctx *context.Context) error {
 	for i := range ctx.Config.Blobs {
 		blob := &ctx.Config.Blobs[i]
-
 		if blob.Bucket == "" || blob.Provider == "" {
 			return fmt.Errorf("bucket or provider cannot be empty")
-		}
-		if blob.Folder != "" {
-			deprecate.Notice(ctx, "blobs.folder")
-			blob.Directory = blob.Folder
 		}
 		if blob.Directory == "" {
 			blob.Directory = "{{ .ProjectName }}/{{ .Tag }}"
 		}
 		if blob.ContentDisposition == "" {
 			blob.ContentDisposition = "attachment;filename={{.Filename}}"
-		}
-		if blob.OldDisableSSL {
-			deprecate.Notice(ctx, "blobs.disableSSL")
-			blob.DisableSSL = true
-		}
-		if blob.OldKMSKey != "" {
-			deprecate.Notice(ctx, "blobs.kmskey")
-			blob.KMSKey = blob.OldKMSKey
 		}
 	}
 	return nil

@@ -68,14 +68,14 @@ func TestMain(m *testing.M) {
 
 func TestMinioUpload(t *testing.T) {
 	name := "basic"
-	folder := t.TempDir()
-	srcpath := filepath.Join(folder, "source.tar.gz")
-	tgzpath := filepath.Join(folder, "bin.tar.gz")
-	debpath := filepath.Join(folder, "bin.deb")
-	checkpath := filepath.Join(folder, "check.txt")
-	metapath := filepath.Join(folder, "metadata.json")
-	sigpath := filepath.Join(folder, "f.sig")
-	certpath := filepath.Join(folder, "f.pem")
+	Directory := t.TempDir()
+	srcpath := filepath.Join(Directory, "source.tar.gz")
+	tgzpath := filepath.Join(Directory, "bin.tar.gz")
+	debpath := filepath.Join(Directory, "bin.deb")
+	checkpath := filepath.Join(Directory, "check.txt")
+	metapath := filepath.Join(Directory, "metadata.json")
+	sigpath := filepath.Join(Directory, "f.sig")
+	certpath := filepath.Join(Directory, "f.pem")
 	require.NoError(t, os.WriteFile(checkpath, []byte("fake checksums"), 0o744))
 	require.NoError(t, os.WriteFile(metapath, []byte(`{"fake":true}`), 0o744))
 	require.NoError(t, os.WriteFile(srcpath, []byte("fake\nsrc"), 0o744))
@@ -84,7 +84,7 @@ func TestMinioUpload(t *testing.T) {
 	require.NoError(t, os.WriteFile(sigpath, []byte("fake\nsig"), 0o744))
 	require.NoError(t, os.WriteFile(certpath, []byte("fake\ncert"), 0o744))
 	ctx := testctx.NewWithCfg(config.Project{
-		Dist:        folder,
+		Dist:        Directory,
 		ProjectName: "testupload",
 		Blobs: []config.Blob{
 			{
@@ -173,15 +173,15 @@ func TestMinioUpload(t *testing.T) {
 
 func TestMinioUploadCustomBucketID(t *testing.T) {
 	name := "fromenv"
-	folder := t.TempDir()
-	tgzpath := filepath.Join(folder, "bin.tar.gz")
-	debpath := filepath.Join(folder, "bin.deb")
+	Directory := t.TempDir()
+	tgzpath := filepath.Join(Directory, "bin.tar.gz")
+	debpath := filepath.Join(Directory, "bin.deb")
 	require.NoError(t, os.WriteFile(tgzpath, []byte("fake\ntargz"), 0o744))
 	require.NoError(t, os.WriteFile(debpath, []byte("fake\ndeb"), 0o744))
 	// Set custom BUCKET_ID env variable.
 	t.Setenv("BUCKET_ID", name)
 	ctx := testctx.NewWithCfg(config.Project{
-		Dist:        folder,
+		Dist:        Directory,
 		ProjectName: "testupload",
 		Blobs: []config.Blob{
 			{
@@ -207,22 +207,22 @@ func TestMinioUploadCustomBucketID(t *testing.T) {
 	require.NoError(t, Pipe{}.Publish(ctx))
 }
 
-func TestMinioUploadRootFolder(t *testing.T) {
+func TestMinioUploadRootDirectory(t *testing.T) {
 	name := "rootdir"
-	folder := t.TempDir()
-	tgzpath := filepath.Join(folder, "bin.tar.gz")
-	debpath := filepath.Join(folder, "bin.deb")
+	Directory := t.TempDir()
+	tgzpath := filepath.Join(Directory, "bin.tar.gz")
+	debpath := filepath.Join(Directory, "bin.deb")
 	require.NoError(t, os.WriteFile(tgzpath, []byte("fake\ntargz"), 0o744))
 	require.NoError(t, os.WriteFile(debpath, []byte("fake\ndeb"), 0o744))
 	ctx := testctx.NewWithCfg(config.Project{
-		Dist:        folder,
+		Dist:        Directory,
 		ProjectName: "testupload",
 		Blobs: []config.Blob{
 			{
-				Provider: "s3",
-				Bucket:   name,
-				Folder:   "/",
-				Endpoint: "http://" + listen,
+				Provider:  "s3",
+				Bucket:    name,
+				Directory: "/",
+				Endpoint:  "http://" + listen,
 			},
 		},
 	}, testctx.WithCurrentTag("v1.0.0"))
@@ -243,13 +243,13 @@ func TestMinioUploadRootFolder(t *testing.T) {
 }
 
 func TestMinioUploadInvalidCustomBucketID(t *testing.T) {
-	folder := t.TempDir()
-	tgzpath := filepath.Join(folder, "bin.tar.gz")
-	debpath := filepath.Join(folder, "bin.deb")
+	Directory := t.TempDir()
+	tgzpath := filepath.Join(Directory, "bin.tar.gz")
+	debpath := filepath.Join(Directory, "bin.deb")
 	require.NoError(t, os.WriteFile(tgzpath, []byte("fake\ntargz"), 0o744))
 	require.NoError(t, os.WriteFile(debpath, []byte("fake\ndeb"), 0o744))
 	ctx := testctx.NewWithCfg(config.Project{
-		Dist:        folder,
+		Dist:        Directory,
 		ProjectName: "testupload",
 		Blobs: []config.Blob{
 			{
@@ -276,16 +276,16 @@ func TestMinioUploadInvalidCustomBucketID(t *testing.T) {
 
 func TestMinioUploadSkip(t *testing.T) {
 	name := "basic"
-	folder := t.TempDir()
-	debpath := filepath.Join(folder, "bin.deb")
-	tgzpath := filepath.Join(folder, "bin.tar.gz")
+	Directory := t.TempDir()
+	debpath := filepath.Join(Directory, "bin.deb")
+	tgzpath := filepath.Join(Directory, "bin.tar.gz")
 	require.NoError(t, os.WriteFile(tgzpath, []byte("fake\ntargz"), 0o744))
 	require.NoError(t, os.WriteFile(debpath, []byte("fake\ndeb"), 0o744))
 
 	buildCtx := func(uploadID string) *context.Context {
 		ctx := testctx.NewWithCfg(
 			config.Project{
-				Dist:        folder,
+				Dist:        Directory,
 				ProjectName: "testupload",
 				Blobs: []config.Blob{
 					{

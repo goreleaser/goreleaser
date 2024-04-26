@@ -381,7 +381,7 @@ func TestExtra(t *testing.T) {
 				Use: "docker",
 			},
 			"fail-plz": config.Homebrew{
-				Plist: "aaaa",
+				Service: "aaaa",
 			},
 			"unsupported": func() {},
 			"binaries":    []string{"foo", "bar"},

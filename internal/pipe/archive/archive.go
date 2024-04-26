@@ -15,7 +15,6 @@ import (
 	"github.com/caarlos0/log"
 	"github.com/goreleaser/goreleaser/internal/archivefiles"
 	"github.com/goreleaser/goreleaser/internal/artifact"
-	"github.com/goreleaser/goreleaser/internal/deprecate"
 	"github.com/goreleaser/goreleaser/internal/ids"
 	"github.com/goreleaser/goreleaser/internal/semerrgroup"
 	"github.com/goreleaser/goreleaser/internal/tmpl"
@@ -58,13 +57,6 @@ func (Pipe) Default(ctx *context.Context) error {
 		}
 		if archive.ID == "" {
 			archive.ID = "default"
-		}
-		if archive.StripParentBinaryFolder {
-			archive.StripBinaryDirectory = true
-			deprecate.Notice(ctx, "archives.strip_parent_binary_folder")
-		}
-		if archive.RLCP != "" && archive.Format != "binary" && len(archive.Files) > 0 {
-			deprecate.Notice(ctx, "archives.rlcp")
 		}
 		if len(archive.Files) == 0 {
 			archive.Files = []config.File{
