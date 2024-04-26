@@ -311,7 +311,11 @@ func doPublish(ctx *context.Context, cl client.Client, wingets []*artifact.Artif
 			CreateFiles(ctx, author, repo, msg, files)
 	}
 
-	cl, err = client.NewIfToken(ctx, cl, winget.Repository.Token)
+	tokenType, err := client.TokenTypeFromStringOrDefault(ctx, winget.Repository.TokenType)
+	if err != nil {
+		return err
+	}
+	cl, err = client.NewIfToken(ctx, cl, winget.Repository.Token, tokenType)
 	if err != nil {
 		return err
 	}

@@ -111,7 +111,7 @@ type PullRequestOpener interface {
 
 // New creates a new client depending on the token type.
 func New(ctx *context.Context) (Client, error) {
-	return newWithToken(ctx, ctx.Token)
+	return newWithToken(ctx, ctx.Token, ctx.TokenType)
 }
 
 // NewReleaseClient returns a ReleaserURLTemplater, handling the possibility of
@@ -135,9 +135,9 @@ func (errURLTemplater) ReleaseURLTemplate(_ *context.Context) (string, error) {
 	return "", ErrReleaseDisabled
 }
 
-func newWithToken(ctx *context.Context, token string) (Client, error) {
-	log.WithField("type", ctx.TokenType).Debug("token type")
-	switch ctx.TokenType {
+func newWithToken(ctx *context.Context, token string, tokenType context.TokenType) (Client, error) {
+	log.WithField("type", tokenType).Debug("token type")
+	switch tokenType {
 	case context.TokenTypeGitHub:
 		return newGitHub(ctx, token)
 	case context.TokenTypeGitLab:
@@ -149,7 +149,22 @@ func newWithToken(ctx *context.Context, token string) (Client, error) {
 	}
 }
 
-func NewIfToken(ctx *context.Context, cli Client, token string) (Client, error) {
+func TokenTypeFromStringOrDefault(ctx *context.Context, s string) (context.TokenType, error) {
+	switch s {
+	case "":
+		return ctx.TokenType, nil
+	case "github":
+		return context.TokenTypeGitHub, nil
+	case "gitlab":
+		return context.TokenTypeGitLab, nil
+	case "gitea":
+		return context.TokenTypeGitea, nil
+	default:
+		return context.TokenType(""), fmt.Errorf("invalid token type: %s", s)
+	}
+}
+
+func NewIfToken(ctx *context.Context, cli Client, token string, tokenType context.TokenType) (Client, error) {
 	if token == "" {
 		return cli, nil
 	}
@@ -158,7 +173,7 @@ func NewIfToken(ctx *context.Context, cli Client, token string) (Client, error) 
 		return nil, err
 	}
 	log.Debug("using custom token")
-	return newWithToken(ctx, token)
+	return newWithToken(ctx, token, tokenType)
 }
 
 func truncateReleaseBody(body string) string {

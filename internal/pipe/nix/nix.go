@@ -385,7 +385,11 @@ func doPublish(ctx *context.Context, prefetcher shaPrefetcher, cl client.Client,
 			CreateFile(ctx, author, repo, []byte(content), gpath, msg)
 	}
 
-	cl, err = client.NewIfToken(ctx, cl, nix.Repository.Token)
+	tokenType, err := client.TokenTypeFromStringOrDefault(ctx, nix.Repository.TokenType)
+	if err != nil {
+		return err
+	}
+	cl, err = client.NewIfToken(ctx, cl, nix.Repository.Token, tokenType)
 	if err != nil {
 		return err
 	}

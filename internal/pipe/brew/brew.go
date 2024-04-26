@@ -170,7 +170,11 @@ func doPublish(ctx *context.Context, formula *artifact.Artifact, cl client.Clien
 			CreateFile(ctx, author, repo, content, gpath, msg)
 	}
 
-	cl, err = client.NewIfToken(ctx, cl, brew.Repository.Token)
+	tokenType, err := client.TokenTypeFromStringOrDefault(ctx, brew.Repository.TokenType)
+	if err != nil {
+		return err
+	}
+	cl, err = client.NewIfToken(ctx, cl, brew.Repository.Token, tokenType)
 	if err != nil {
 		return err
 	}

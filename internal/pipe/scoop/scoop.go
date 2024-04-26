@@ -258,7 +258,11 @@ func doPublish(ctx *context.Context, manifest *artifact.Artifact, cl client.Clie
 			CreateFile(ctx, author, repo, content, gpath, commitMessage)
 	}
 
-	cl, err = client.NewIfToken(ctx, cl, scoop.Repository.Token)
+	tokenType, err := client.TokenTypeFromStringOrDefault(ctx, scoop.Repository.TokenType)
+	if err != nil {
+		return err
+	}
+	cl, err = client.NewIfToken(ctx, cl, scoop.Repository.Token, tokenType)
 	if err != nil {
 		return err
 	}

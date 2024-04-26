@@ -83,10 +83,11 @@ func (r Repo) isSCM() bool {
 // also require separate authentication
 // e.g. Homebrew Tap, Scoop bucket.
 type RepoRef struct {
-	Owner  string `yaml:"owner,omitempty" json:"owner,omitempty"`
-	Name   string `yaml:"name,omitempty" json:"name,omitempty"`
-	Token  string `yaml:"token,omitempty" json:"token,omitempty"`
-	Branch string `yaml:"branch,omitempty" json:"branch,omitempty"`
+	Owner     string `yaml:"owner,omitempty" json:"owner,omitempty"`
+	Name      string `yaml:"name,omitempty" json:"name,omitempty"`
+	Token     string `yaml:"token,omitempty" json:"token,omitempty"`
+	TokenType string `yaml:"token_type,omitempty" json:"token_type,omitempty" jsonschema:"enum=github,enum=gitlab,enum=gitea"`
+	Branch    string `yaml:"branch,omitempty" json:"branch,omitempty"`
 
 	Git         GitRepoRef  `yaml:"git,omitempty" json:"git,omitempty"`
 	PullRequest PullRequest `yaml:"pull_request,omitempty" json:"pull_request,omitempty"`
