@@ -38,7 +38,8 @@
         # If the pull request template has checkboxes, enabling this will
         # check all of them.
         #
-        # This feature is only available in GoReleaser Pro.
+        # This feature is only available in GoReleaser Pro, and when the pull
+        # request is being opened on GitHub.
         # Since: v1.20 (pro)
         check_boxes: true
 
