@@ -18,8 +18,23 @@
 
       # Optionally a token can be provided, if it differs from the token
       # provided to GoReleaser
+      #
       # Templates: allowed
       token: "{{ .Env.GITHUB_PERSONAL_AUTH_TOKEN }}"
+
+      # Optionally specify if this is a token from another SCM, allowing to
+      # cross-publish.
+      #
+      # Only taken into account if `token` is set.
+      #
+      # Valid options:
+      # - 'github'
+      # - 'gitlab'
+      # - 'gitea'
+      #
+      # This feature is only available in GoReleaser Pro.
+      # Since: v1.26 (pro)
+      token_type: "github"
 
       # Sets up pull request creation instead of just pushing to the given branch.
       # Make sure the 'branch' property is different from base before enabling
