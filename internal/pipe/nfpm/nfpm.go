@@ -103,6 +103,7 @@ func doRun(ctx *context.Context, fpm config.NFPM) error {
 		artifact.Or(
 			artifact.ByGoos("linux"),
 			artifact.ByGoos("ios"),
+			artifact.ByGoos("android"),
 		),
 	}
 	if len(fpm.Builds) > 0 {
@@ -144,7 +145,10 @@ func mergeOverrides(fpm config.NFPM, format string) (*config.NFPMOverridables, e
 
 const termuxFormat = "termux.deb"
 
-func isSupportedTermuxArch(arch string) bool {
+func isSupportedTermuxArch(arch, goos string) bool {
+	if goos != "android" {
+		return false
+	}
 	for _, a := range []string{"amd64", "arm64", "386"} {
 		if strings.HasPrefix(arch, a) {
 			return true
@@ -194,13 +198,14 @@ func create(ctx *context.Context, fpm config.NFPM, format string, artifacts []*a
 			return nil
 		}
 	case termuxFormat:
-		if !isSupportedTermuxArch(artifacts[0].Goarch) {
+		if !isSupportedTermuxArch(artifacts[0].Goarch, artifacts[0].Goos) {
 			log.Debugf("skipping termux.deb for %s as its not supported by termux", arch)
 			return nil
 		}
 
 		infoArch = termuxArchReplacer.Replace(infoArch)
 		arch = termuxArchReplacer.Replace(arch)
+		infoPlatform = "linux"
 		fpm.Bindir = termuxPrefixedDir(fpm.Bindir)
 		fpm.Libdirs.Header = termuxPrefixedDir(fpm.Libdirs.Header)
 		fpm.Libdirs.CArchive = termuxPrefixedDir(fpm.Libdirs.CArchive)
