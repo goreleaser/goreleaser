@@ -3,7 +3,7 @@
 GoReleaser Pro is a paid, closed-source GoReleaser distribution with some
 additional features:
 
-- [x] Cross publish (e.g. releases to GitLab, homebrew to GitHub);
+- [x] Cross publish (e.g. releases to GitLab, pushes Homebrew Tap to GitHub);
 - [x] Keep [DockerHub image descriptions up to date](/customization/dockerhub);
 - [x] Create [macOS disk images (DMGs)](/customization/dmg);
 - [x] Create [Windows installers](/customization/msi);
