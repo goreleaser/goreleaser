@@ -498,6 +498,7 @@ Termux is the same format as `deb`, the differences are:
 
 - it uses a different `bindir` (prefixed with `/data/data/com.termux/files/`)
 - it uses slightly different architecture names than Debian
+- it will only package binaries built for Android
 
 ## Conventional file names, Debian, and ARMv6
 
