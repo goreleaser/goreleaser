@@ -15,7 +15,7 @@ class CustomRequire < Formula
   depends_on "zsh" => :optional
 
   on_macos do
-    if Hardware::CPU.intel?
+    on_intel do
       url "https://dummyhost/download/v1.0.1/bin.tar.gz", using: CustomDownloadStrategy
       sha256 "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
 
@@ -23,7 +23,7 @@ class CustomRequire < Formula
         bin.install "custom_require_darwin_amd64 => custom_require"
       end
     end
-    if Hardware::CPU.arm?
+    on_arm do
       url "https://dummyhost/download/v1.0.1/bin.tar.gz", using: CustomDownloadStrategy
       sha256 "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
 
