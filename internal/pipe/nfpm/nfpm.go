@@ -145,12 +145,12 @@ func mergeOverrides(fpm config.NFPM, format string) (*config.NFPMOverridables, e
 
 const termuxFormat = "termux.deb"
 
-func isSupportedTermuxArch(arch, goos string) bool {
+func isSupportedTermuxArch(goos, goarch string) bool {
 	if goos != "android" {
 		return false
 	}
-	for _, a := range []string{"amd64", "arm64", "386"} {
-		if strings.HasPrefix(arch, a) {
+	for _, arch := range []string{"amd64", "arm64", "386"} {
+		if strings.HasPrefix(goarch, arch) {
 			return true
 		}
 	}
@@ -159,12 +159,12 @@ func isSupportedTermuxArch(arch, goos string) bool {
 
 // arch officially only supports x86_64.
 // however, there are unofficial ports for 686, arm64, and armv7
-func isSupportedArchlinuxArch(arch, arm string) bool {
-	if arch == "arm" && arm == "7" {
+func isSupportedArchlinuxArch(goarch, goarm string) bool {
+	if goarch == "arm" && goarm == "7" {
 		return true
 	}
-	for _, a := range []string{"amd64", "arm64", "386"} {
-		if strings.HasPrefix(arch, a) {
+	for _, arch := range []string{"amd64", "arm64", "386"} {
+		if strings.HasPrefix(goarch, arch) {
 			return true
 		}
 	}
@@ -198,7 +198,7 @@ func create(ctx *context.Context, fpm config.NFPM, format string, artifacts []*a
 			return nil
 		}
 	case termuxFormat:
-		if !isSupportedTermuxArch(artifacts[0].Goarch, artifacts[0].Goos) {
+		if !isSupportedTermuxArch(artifacts[0].Goos, artifacts[0].Goarch) {
 			log.Debugf("skipping termux.deb for %s as its not supported by termux", arch)
 			return nil
 		}
@@ -210,6 +210,11 @@ func create(ctx *context.Context, fpm config.NFPM, format string, artifacts []*a
 		fpm.Libdirs.Header = termuxPrefixedDir(fpm.Libdirs.Header)
 		fpm.Libdirs.CArchive = termuxPrefixedDir(fpm.Libdirs.CArchive)
 		fpm.Libdirs.CShared = termuxPrefixedDir(fpm.Libdirs.CShared)
+	}
+
+	if artifacts[0].Goos == "android" && format != termuxFormat {
+		log.Debugf("skipping android packaging as its not supported by %s", format)
+		return nil
 	}
 
 	overridden, err := mergeOverrides(fpm, format)
