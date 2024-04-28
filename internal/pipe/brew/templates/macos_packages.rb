@@ -42,10 +42,10 @@
   end
   {{- else }}
   {{- if eq $element.Arch "amd64" }}
-  if Hardware::CPU.intel?
+  on_intel do
   {{- end }}
   {{- if eq $element.Arch "arm64" }}
-  if Hardware::CPU.arm?
+  on_arm do
   {{- end}}
     url "{{ $element.DownloadURL }}"
     {{- if .DownloadStrategy }}, using: {{ .DownloadStrategy }}{{- end }}

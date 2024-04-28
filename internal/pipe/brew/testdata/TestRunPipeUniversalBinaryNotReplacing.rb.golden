@@ -8,7 +8,7 @@ class Unibin < Formula
   version "1.0.1"
   depends_on :macos
 
-  if Hardware::CPU.intel?
+  on_intel do
     url "https://dummyhost/download/v1.0.1/bin_amd64.tar.gz"
     sha256 "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
 
@@ -16,7 +16,7 @@ class Unibin < Formula
       bin.install "unibin"
     end
   end
-  if Hardware::CPU.arm?
+  on_arm do
     url "https://dummyhost/download/v1.0.1/bin_arm64.tar.gz"
     sha256 "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
 
