@@ -116,6 +116,6 @@ func TestGetMessageDetails(t *testing.T) {
 		require.NoError(t, Pipe{}.Default(ctx))
 		msg, _, err := getMessageDetails(ctx)
 		require.NoError(t, err)
-		require.Equal(t, "foo v1\\.0\\.0 is out! Check it out at ", msg)
+		require.Equal(t, "foo v1\\.0\\.0 is out\\! Check it out at ", msg)
 	})
 }
