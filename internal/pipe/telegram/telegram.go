@@ -6,7 +6,7 @@ import (
 
 	"github.com/caarlos0/env/v11"
 	"github.com/caarlos0/log"
-	api "github.com/go-telegram-bot-api/telegram-bot-api"
+	api "github.com/go-telegram-bot-api/telegram-bot-api/v5"
 	"github.com/goreleaser/goreleaser/internal/tmpl"
 	"github.com/goreleaser/goreleaser/pkg/context"
 )
