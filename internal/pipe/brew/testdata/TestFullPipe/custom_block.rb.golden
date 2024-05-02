@@ -34,11 +34,13 @@ class CustomBlock < Formula
 
   on_linux do
     on_intel do
-      url "https://dummyhost/download/v1.0.1/bin.tar.gz"
-      sha256 "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+          url "https://dummyhost/download/v1.0.1/bin.tar.gz"
+          sha256 "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
 
-      def install
-        bin.install "custom_block_linux_amd64 => custom_block"
+          def install
+            bin.install "custom_block_linux_amd64 => custom_block"
+          end
+        end
       end
     end
   end
