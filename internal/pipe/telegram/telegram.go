@@ -6,13 +6,13 @@ import (
 
 	"github.com/caarlos0/env/v11"
 	"github.com/caarlos0/log"
-	api "github.com/go-telegram-bot-api/telegram-bot-api"
+	api "github.com/go-telegram-bot-api/telegram-bot-api/v5"
 	"github.com/goreleaser/goreleaser/internal/tmpl"
 	"github.com/goreleaser/goreleaser/pkg/context"
 )
 
 const (
-	defaultMessageTemplate = `{{ mdv2escape .ProjectName }} {{ mdv2escape .Tag }} is out! Check it out at {{ mdv2escape .ReleaseURL }}`
+	defaultMessageTemplate = `{{ mdv2escape .ProjectName }} {{ mdv2escape .Tag }} is out{{ mdv2escape "!" }} Check it out at {{ mdv2escape .ReleaseURL }}`
 	parseModeHTML          = "HTML"
 	parseModeMarkdown      = "MarkdownV2"
 )
