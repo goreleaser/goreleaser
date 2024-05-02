@@ -31,7 +31,7 @@
     {{- end }}
   end
 
-  if Hardware::CPU.arm?
+  on_arm do
     def caveats
       <<~EOS
         The darwin_arm64 architecture is not supported for the {{ $.Name }}
