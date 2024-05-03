@@ -84,6 +84,7 @@ jobs:
         run: |
           sudo apt-get update
           sudo apt-get -yq --no-install-suggests --no-install-recommends install snapcraft
+          sudo snap refresh snapcraft --revision 11040
           mkdir -p $HOME/.cache/snapcraft/download
           mkdir -p $HOME/.cache/snapcraft/stage-packages
       - uses: actions/setup-go@cdcb36043654635271a94b9a6d1392de5bb323a7 # v4
