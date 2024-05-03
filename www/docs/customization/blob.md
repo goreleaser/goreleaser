@@ -116,6 +116,7 @@ blobs:
     # Since: v1.24
     # Default: attachment;filename={{.Filename}}
     # Templates: allowed
+    # Disable by setting the value to '-'
     content_disposition: "inline"
 
   - provider: gs

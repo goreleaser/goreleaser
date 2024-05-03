@@ -33,9 +33,13 @@ func (Pipe) Default(ctx *context.Context) error {
 		if blob.Directory == "" {
 			blob.Directory = "{{ .ProjectName }}/{{ .Tag }}"
 		}
+
 		if blob.ContentDisposition == "" {
 			blob.ContentDisposition = "attachment;filename={{.Filename}}"
+		} else if blob.ContentDisposition == "-" {
+			blob.ContentDisposition = ""
 		}
+
 		if blob.OldDisableSSL {
 			deprecate.Notice(ctx, "blobs.disableSSL")
 			blob.DisableSSL = true
