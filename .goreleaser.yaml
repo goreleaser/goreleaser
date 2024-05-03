@@ -343,7 +343,7 @@ snapcrafts:
     grade: stable
     confinement: classic
     publish: true
-    disable: "{{ if .IsNightly }}true{{ end }}"
+    disable: true # "{{ if .IsNightly }}true{{ end }}"
 
 sboms:
   - artifacts: archive
