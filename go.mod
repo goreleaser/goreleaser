@@ -49,7 +49,7 @@ require (
 	github.com/xanzy/go-gitlab v0.104.0
 	gocloud.dev v0.37.0
 	golang.org/x/crypto v0.22.0
-	golang.org/x/oauth2 v0.19.0
+	golang.org/x/oauth2 v0.20.0
 	golang.org/x/sync v0.7.0
 	golang.org/x/text v0.14.0
 	golang.org/x/tools v0.20.0
@@ -59,8 +59,7 @@ require (
 
 require (
 	cloud.google.com/go v0.112.1 // indirect
-	cloud.google.com/go/compute v1.25.0 // indirect
-	cloud.google.com/go/compute/metadata v0.2.3 // indirect
+	cloud.google.com/go/compute/metadata v0.3.0 // indirect
 	cloud.google.com/go/iam v1.1.6 // indirect
 	cloud.google.com/go/kms v1.15.8 // indirect
 	cloud.google.com/go/storage v1.39.1 // indirect
