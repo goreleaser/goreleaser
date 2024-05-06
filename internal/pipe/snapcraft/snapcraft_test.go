@@ -48,7 +48,6 @@ func TestRunPipeMissingInfo(t *testing.T) {
 }
 
 func TestRunPipe(t *testing.T) {
-	t.Skip("https://github.com/goreleaser/goreleaser/issues/4816")
 	testlib.CheckPath(t, "snapcraft")
 	folder := t.TempDir()
 	dist := filepath.Join(folder, "dist")
@@ -154,7 +153,6 @@ func TestRunPipeInvalidNameTemplate(t *testing.T) {
 }
 
 func TestRunPipeWithName(t *testing.T) {
-	t.Skip("https://github.com/goreleaser/goreleaser/issues/4816")
 	testlib.CheckPath(t, "snapcraft")
 	folder := t.TempDir()
 	dist := filepath.Join(folder, "dist")
@@ -189,7 +187,6 @@ func TestRunPipeWithName(t *testing.T) {
 }
 
 func TestRunPipeMetadata(t *testing.T) {
-	t.Skip("https://github.com/goreleaser/goreleaser/issues/4816")
 	testlib.CheckPath(t, "snapcraft")
 	folder := t.TempDir()
 	dist := filepath.Join(folder, "dist")
@@ -345,7 +342,6 @@ func TestNoSnapcraftInPath(t *testing.T) {
 }
 
 func TestRunNoArguments(t *testing.T) {
-	t.Skip("https://github.com/goreleaser/goreleaser/issues/4816")
 	testlib.CheckPath(t, "snapcraft")
 	folder := t.TempDir()
 	dist := filepath.Join(folder, "dist")
@@ -380,7 +376,6 @@ func TestRunNoArguments(t *testing.T) {
 }
 
 func TestCompleter(t *testing.T) {
-	t.Skip("https://github.com/goreleaser/goreleaser/issues/4816")
 	testlib.CheckPath(t, "snapcraft")
 	folder := t.TempDir()
 	dist := filepath.Join(folder, "dist")
@@ -418,7 +413,6 @@ func TestCompleter(t *testing.T) {
 }
 
 func TestCommand(t *testing.T) {
-	t.Skip("https://github.com/goreleaser/goreleaser/issues/4816")
 	testlib.CheckPath(t, "snapcraft")
 	folder := t.TempDir()
 	dist := filepath.Join(folder, "dist")
@@ -454,7 +448,6 @@ func TestCommand(t *testing.T) {
 }
 
 func TestExtraFile(t *testing.T) {
-	t.Skip("https://github.com/goreleaser/goreleaser/issues/4816")
 	testlib.CheckPath(t, "snapcraft")
 	folder := t.TempDir()
 	dist := filepath.Join(folder, "dist")
