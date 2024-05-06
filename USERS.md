@@ -17,6 +17,7 @@ Here's a running list of some organizations using GoReleaser[^1]:
 1. [Centrifugal Labs](https://github.com/centrifugal)
 1. [Charm](https://charm.sh)
 1. [CloudQuery](https://github.com/cloudquery)
+1. [CloudScript](https://cloudscript.com.br)
 1. [Comcast](https://comcast.github.io)
 1. [Compose Generator](https://www.compose-generator.com)
 1. [Conduit](https://www.conduit.io/)
