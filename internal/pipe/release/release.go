@@ -201,7 +201,7 @@ func upload(ctx *context.Context, cli client.Client, releaseID string, artifact 
 			log.WithField("try", try).
 				WithField("artifact", artifact.Name).
 				WithError(err).
-				Warnf("failed to upload artifact, will retry")
+				Warn("failed to upload artifact, will retry")
 			return err
 		}
 		return nil
