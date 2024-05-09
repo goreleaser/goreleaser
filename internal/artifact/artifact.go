@@ -20,6 +20,8 @@ import (
 	"sync"
 
 	"github.com/caarlos0/log"
+	"golang.org/x/crypto/blake2b"
+	"golang.org/x/crypto/blake2s"
 )
 
 // Type defines the type of an artifact.
@@ -243,6 +245,16 @@ func (a Artifact) Checksum(algorithm string) (string, error) {
 	defer file.Close()
 	var h hash.Hash
 	switch algorithm {
+	case "blake2b":
+		h, err = blake2b.New512(nil)
+		if err != nil {
+			return "", fmt.Errorf("failed to checksum: %w", err)
+		}
+	case "blake2s":
+		h, err = blake2s.New256(nil)
+		if err != nil {
+			return "", fmt.Errorf("failed to checksum: %w", err)
+		}
 	case "crc32":
 		h = crc32.NewIEEE()
 	case "md5":

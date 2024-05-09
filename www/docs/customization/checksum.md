@@ -16,7 +16,17 @@ checksum:
   name_template: "{{ .ProjectName }}_checksums.txt"
 
   # Algorithm to be used.
-  # Accepted options are sha256, sha512, sha1, crc32, md5, sha224 and sha384.
+  #
+  # Accepted options are:
+  # - sha256
+  # - sha512
+  # - sha1
+  # - crc32
+  # - md5
+  # - sha224
+  # - sha384
+  # - blake2s
+  # - blake2b
   #
   # Default: sha256.
   algorithm: sha256
