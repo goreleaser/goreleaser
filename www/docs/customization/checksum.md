@@ -25,6 +25,10 @@ checksum:
   # - md5
   # - sha224
   # - sha384
+  # - sha3-256
+  # - sha3-512
+  # - sha3-224
+  # - sha3-384
   # - blake2s
   # - blake2b
   #
