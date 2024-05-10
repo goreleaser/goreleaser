@@ -20,6 +20,9 @@ import (
 	"sync"
 
 	"github.com/caarlos0/log"
+	"golang.org/x/crypto/blake2b"
+	"golang.org/x/crypto/blake2s"
+	"golang.org/x/crypto/sha3"
 )
 
 // Type defines the type of an artifact.
@@ -243,6 +246,16 @@ func (a Artifact) Checksum(algorithm string) (string, error) {
 	defer file.Close()
 	var h hash.Hash
 	switch algorithm {
+	case "blake2b":
+		h, err = blake2b.New512(nil)
+		if err != nil {
+			return "", fmt.Errorf("failed to checksum: %w", err)
+		}
+	case "blake2s":
+		h, err = blake2s.New256(nil)
+		if err != nil {
+			return "", fmt.Errorf("failed to checksum: %w", err)
+		}
 	case "crc32":
 		h = crc32.NewIEEE()
 	case "md5":
@@ -257,6 +270,14 @@ func (a Artifact) Checksum(algorithm string) (string, error) {
 		h = sha1.New()
 	case "sha512":
 		h = sha512.New()
+	case "sha3-224":
+		h = sha3.New224()
+	case "sha3-384":
+		h = sha3.New384()
+	case "sha3-256":
+		h = sha3.New256()
+	case "sha3-512":
+		h = sha3.New512()
 	default:
 		return "", fmt.Errorf("invalid algorithm: %s", algorithm)
 	}
