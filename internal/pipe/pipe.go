@@ -11,18 +11,18 @@ import (
 // It usually means that publishing and maybe some validations were skipped.
 var ErrSnapshotEnabled = Skip("disabled during snapshot mode")
 
-// ErrSkipPublishEnabled happens if --skip-publish is set.
+// ErrSkipPublishEnabled happens if --skip=publish is set.
 // It means that the part of a Piper that publishes its artifacts was not run.
 var ErrSkipPublishEnabled = Skip("publishing is disabled")
 
-// ErrSkipAnnounceEnabled happens if --skip-announce is set.
+// ErrSkipAnnounceEnabled happens if --skip=announce is set.
 var ErrSkipAnnounceEnabled = Skip("announcing is disabled")
 
-// ErrSkipSignEnabled happens if --skip-sign is set.
+// ErrSkipSignEnabled happens if --skip=sign is set.
 // It means that the part of a Piper that signs some things was not run.
 var ErrSkipSignEnabled = Skip("artifact signing is disabled")
 
-// ErrSkipValidateEnabled happens if --skip-validate is set.
+// ErrSkipValidateEnabled happens if --skip=validate is set.
 // It means that the part of a Piper that validates some things was not run.
 var ErrSkipValidateEnabled = Skip("validation is disabled")
 

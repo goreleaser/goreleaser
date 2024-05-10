@@ -23,7 +23,7 @@ A GoReleaser run is split into 4 major steps:
   registries, blob storages...
 - **announcing**: announces your release to the configured channels
 
-Some steps might be skipped with `--skip-foo`-like flags (check the
+Some steps might be skipped with `--skip` flags (check the
 [command line docs](./cmd/goreleaser.md) for details).
 
 If any of the previous steps fails, the next steps will not run.
