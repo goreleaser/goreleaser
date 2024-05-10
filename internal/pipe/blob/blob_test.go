@@ -75,6 +75,10 @@ func TestDefaults(t *testing.T) {
 				ContentDisposition: "inline",
 			},
 			{
+				Bucket:   "foobar2",
+				Provider: "gcs",
+			},
+			{
 				Bucket:             "foobar",
 				Provider:           "gcs",
 				ContentDisposition: "-",
@@ -96,6 +100,12 @@ func TestDefaults(t *testing.T) {
 			Directory:          "{{ .ProjectName }}/{{ .Tag }}",
 			IDs:                []string{"foo", "bar"},
 			ContentDisposition: "inline",
+		},
+		{
+			Bucket:             "foobar2",
+			Provider:           "gcs",
+			Directory:          "{{ .ProjectName }}/{{ .Tag }}",
+			ContentDisposition: "attachment;filename={{.Filename}}",
 		},
 		{
 			Bucket:             "foobar",
