@@ -138,7 +138,7 @@ func contains(s string, ss []string) bool {
 	return false
 }
 
-// lists from https://golang.org/doc/install/source#environment
+// lists from https://go.dev/doc/install/source#environment
 // nolint: gochecknoglobals
 var (
 	validTargets = []string{
