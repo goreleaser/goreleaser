@@ -46,9 +46,11 @@ updates are included in this release as well.
   [Join the conversation][discord]!
 - nFPM had new releases as well, 
   [check it out](https://github.com/goreleaser/nfpm/releases).
-- In preparation for v2, the latest version of our GitHub Action now defaults to
-  `version: '~> v1'` instead of `latest`. This should help prevent unwanted
-  breaking changes.
+- In preparation for v2, the
+  [v5.1.0 of our GitHub Action](https://github.com/goreleaser/goreleaser-action/releases/tag/v5.1.0)
+  now defaults to `version: '~> v1'` instead of `latest`.
+  This should help prevent unwanted breaking changes.
+  [More details](https://github.com/goreleaser/goreleaser-action/pull/461).
 
 ## Download
 
