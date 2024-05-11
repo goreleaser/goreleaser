@@ -483,7 +483,6 @@ func ByType(t Type) Filter {
 func ByFormats(formats ...string) Filter {
 	filters := make([]Filter, 0, len(formats))
 	for _, format := range formats {
-		format := format
 		filters = append(filters, func(a *Artifact) bool {
 			return a.Format() == format
 		})
@@ -495,7 +494,6 @@ func ByFormats(formats ...string) Filter {
 func ByIDs(ids ...string) Filter {
 	filters := make([]Filter, 0, len(ids))
 	for _, id := range ids {
-		id := id
 		filters = append(filters, func(a *Artifact) bool {
 			// checksum and source archive are always for all artifacts, so return always true.
 			return a.Type == Checksum ||
@@ -512,7 +510,6 @@ func ByIDs(ids ...string) Filter {
 func ByExt(exts ...string) Filter {
 	filters := make([]Filter, 0, len(exts))
 	for _, ext := range exts {
-		ext := ext
 		filters = append(filters, func(a *Artifact) bool {
 			return ExtraOr(*a, ExtraExt, "") == ext
 		})

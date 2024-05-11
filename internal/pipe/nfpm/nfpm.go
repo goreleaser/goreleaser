@@ -118,8 +118,6 @@ func doRun(ctx *context.Context, fpm config.NFPM) error {
 	g := semerrgroup.New(ctx.Parallelism)
 	for _, format := range fpm.Formats {
 		for _, artifacts := range linuxBinaries {
-			format := format
-			artifacts := artifacts
 			g.Go(func() error {
 				return create(ctx, fpm, format, artifacts)
 			})

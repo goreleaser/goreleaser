@@ -193,7 +193,6 @@ func TestPublishPipeSuccess(t *testing.T) {
 	repository := fmt.Sprintf("%sgoreleasertest/testapp", registry)
 
 	for _, table := range table {
-		table := table
 		t.Run(table.Name, func(t *testing.T) {
 			if len(table.Tags) == 0 {
 				table.Tags = []string{table.Name}
