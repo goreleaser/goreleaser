@@ -560,7 +560,7 @@ func testSBOMCataloging(
 		}),
 	)
 
-	wantFiles := append(artifacts, sbomPaths...) //nolint: gocritic
+	wantFiles := append(artifacts, sbomPaths...)
 	sort.Strings(wantFiles)
 	require.ElementsMatch(tb, wantFiles, gotFiles, "SBOM paths differ")
 

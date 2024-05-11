@@ -18,9 +18,9 @@ func TestTarZstFile(t *testing.T) {
 	tmp := t.TempDir()
 	f, err := os.Create(filepath.Join(tmp, "test.tar.zst"))
 	require.NoError(t, err)
-	defer f.Close() // nolint: errcheck
+	defer f.Close()
 	archive := New(f)
-	defer archive.Close() // nolint: errcheck
+	defer archive.Close()
 
 	require.Error(t, archive.Add(config.File{
 		Source:      "../testdata/nope.txt",
@@ -68,7 +68,7 @@ func TestTarZstFile(t *testing.T) {
 
 	f, err = os.Open(f.Name())
 	require.NoError(t, err)
-	defer f.Close() // nolint: errcheck
+	defer f.Close()
 
 	info, err := f.Stat()
 	require.NoError(t, err)
@@ -110,9 +110,9 @@ func TestTarZstFileInfo(t *testing.T) {
 	now := time.Now().Truncate(time.Second)
 	f, err := os.Create(filepath.Join(t.TempDir(), "test.tar.gz"))
 	require.NoError(t, err)
-	defer f.Close() // nolint: errcheck
+	defer f.Close()
 	archive := New(f)
-	defer archive.Close() // nolint: errcheck
+	defer archive.Close()
 
 	require.NoError(t, archive.Add(config.File{
 		Source:      "../testdata/foo.txt",
@@ -130,7 +130,7 @@ func TestTarZstFileInfo(t *testing.T) {
 
 	f, err = os.Open(f.Name())
 	require.NoError(t, err)
-	defer f.Close() // nolint: errcheck
+	defer f.Close()
 
 	zstf, err := zstd.NewReader(f)
 	require.NoError(t, err)

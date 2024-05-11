@@ -52,7 +52,7 @@ type buildOpts struct {
 
 func newBuildCmd() *buildCmd {
 	root := &buildCmd{}
-	// nolint: dupl
+	//nolint:dupl
 	cmd := &cobra.Command{
 		Use:     "build",
 		Aliases: []string{"b"},

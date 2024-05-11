@@ -34,11 +34,12 @@ type asset struct {
 
 type assetOpenFunc func(string, *artifact.Artifact) (*asset, error)
 
-// nolint: gochecknoglobals
+//nolint:gochecknoglobals
 var assetOpen assetOpenFunc
 
 // TODO: fix this.
-// nolint: gochecknoinits
+//
+//nolint:gochecknoinits
 func init() {
 	assetOpenReset()
 }

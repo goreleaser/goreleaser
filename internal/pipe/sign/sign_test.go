@@ -705,7 +705,7 @@ func testSign(
 		}),
 	)
 
-	wantFiles := append(artifacts, signaturePaths...) //nolint: gocritic
+	wantFiles := append(artifacts, signaturePaths...)
 	sort.Strings(wantFiles)
 	require.ElementsMatch(tb, wantFiles, gotFiles)
 

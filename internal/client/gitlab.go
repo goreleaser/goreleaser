@@ -33,7 +33,7 @@ func newGitLab(ctx *context.Context, token string) (*gitlabClient, error) {
 	transport := &http.Transport{
 		Proxy: http.ProxyFromEnvironment,
 		TLSClientConfig: &tls.Config{
-			// nolint: gosec
+			//nolint:gosec
 			InsecureSkipVerify: ctx.Config.GitLabURLs.SkipTLSVerify,
 		},
 	}

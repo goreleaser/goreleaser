@@ -89,7 +89,7 @@ func executeCommand(c *command, artifact *artifact.Artifact) error {
 		WithField("artifact", artifact.Name).
 		Debug("executing command")
 
-	// nolint: gosec
+	//nolint:gosec
 	cmd := exec.CommandContext(c.Ctx, c.Args[0], c.Args[1:]...)
 	cmd.Env = []string{}
 	for _, key := range passthroughEnvVars {
@@ -164,7 +164,6 @@ func resolveCommand(ctx *context.Context, publisher config.Publisher, artifact *
 	var err error
 	dir := publisher.Dir
 
-	// nolint:staticcheck
 	tpl := tmpl.New(ctx).WithArtifact(artifact)
 	if dir != "" {
 		dir, err = tpl.Apply(dir)

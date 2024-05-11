@@ -23,9 +23,9 @@ func (t target) String() string {
 
 // List compiles the list of targets for the given builds.
 func List(build config.Build) ([]string, error) {
-	// nolint:prealloc
+	//nolint:prealloc
 	var targets []target
-	// nolint:prealloc
+	//nolint:prealloc
 	var result []string
 	for _, target := range allBuildTargets(build) {
 		if !contains(target.os, validGoos) {
@@ -139,7 +139,8 @@ func contains(s string, ss []string) bool {
 }
 
 // lists from https://golang.org/doc/install/source#environment
-// nolint: gochecknoglobals
+//
+//nolint:gochecknoglobals
 var (
 	validTargets = []string{
 		"aixppc64",
