@@ -7,11 +7,11 @@ authors: [caarlos0]
 
 # Announcing GoReleaser v1.26 - The last v1, probably
 
-Happy Brazilian mother's day (tomorrow)!
+Happy mother's day!
 
 This will be probably the last minor v1 release of GoReleaser.
-Things are walking in the direction of a v2, which will likely be the same as
-this one, but with the deprecations removed.
+V2 will not be a big update, rather, it'll be the same as v1.26, but removing
+all the deprecated stuff.
 
 That said, let's see what's new on this version!
 
