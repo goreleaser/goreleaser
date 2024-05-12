@@ -1017,10 +1017,10 @@ func Test_buildManifest(t *testing.T) {
 	}
 }
 
-func getScoopPipeSkipCtx(Directory string) (*context.Context, string) {
+func getScoopPipeSkipCtx(directory string) (*context.Context, string) {
 	ctx := testctx.NewWithCfg(
 		config.Project{
-			Dist:        Directory,
+			Dist:        directory,
 			ProjectName: "run-pipe",
 			Scoops: []config.Scoop{
 				{
@@ -1038,7 +1038,7 @@ func getScoopPipeSkipCtx(Directory string) (*context.Context, string) {
 		testctx.WithVersion("1.0.1"),
 	)
 
-	path := filepath.Join(Directory, "bin.tar.gz")
+	path := filepath.Join(directory, "bin.tar.gz")
 
 	ctx.Artifacts.Add(&artifact.Artifact{
 		Name:    "bin.tar.gz",

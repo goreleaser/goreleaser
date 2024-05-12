@@ -725,7 +725,6 @@ func TestSkip(t *testing.T) {
 		b, err := Pipe{}.Skip(ctx)
 		require.NoError(t, err)
 		require.True(t, b)
-		require.Equal(t, ctx.Config.Changelog.Disable, ctx.Config.Changelog.Disable)
 	})
 
 	t.Run("disable on patches", func(t *testing.T) {
