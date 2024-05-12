@@ -137,7 +137,6 @@ func doUpload(ctx *context.Context, conf config.Blob) error {
 
 	g := semerrgroup.New(ctx.Parallelism)
 	for _, artifact := range ctx.Artifacts.Filter(filter).List() {
-		artifact := artifact
 		g.Go(func() error {
 			// TODO: replace this with ?prefix=folder on the bucket url
 			dataFile := artifact.Path
@@ -152,8 +151,6 @@ func doUpload(ctx *context.Context, conf config.Blob) error {
 		return err
 	}
 	for name, fullpath := range files {
-		name := name
-		fullpath := fullpath
 		g.Go(func() error {
 			uploadFile := path.Join(dir, name)
 			return uploadData(ctx, conf, up, fullpath, uploadFile, bucketURL)

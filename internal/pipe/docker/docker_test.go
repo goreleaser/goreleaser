@@ -1398,7 +1398,6 @@ func TestWithDigest(t *testing.T) {
 	})
 
 	for _, use := range []string{useDocker, useBuildx} {
-		use := use
 		t.Run(use, func(t *testing.T) {
 			t.Run("good", func(t *testing.T) {
 				require.Equal(t, "localhost:5050/owner/img:t1@sha256:d1", withDigest(use, "localhost:5050/owner/img:t1", artifacts.List()))

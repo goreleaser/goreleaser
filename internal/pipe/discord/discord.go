@@ -91,6 +91,7 @@ func (p Pipe) Announce(ctx *context.Context) error {
 	if err != nil {
 		return fmt.Errorf("discord: %w", err)
 	}
+	defer resp.Body.Close()
 
 	if resp.StatusCode != 204 && resp.StatusCode != 200 {
 		return fmt.Errorf("discord: %s", resp.Status)

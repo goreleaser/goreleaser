@@ -118,8 +118,6 @@ func (Pipe) Publish(ctx *context.Context) error {
 func (Pipe) Run(ctx *context.Context) error {
 	g := semerrgroup.NewSkipAware(semerrgroup.New(ctx.Parallelism))
 	for i, docker := range ctx.Config.Dockers {
-		i := i
-		docker := docker
 		g.Go(func() error {
 			log := log.WithField("index", i)
 			log.Debug("looking for artifacts matching")
