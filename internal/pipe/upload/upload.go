@@ -27,7 +27,6 @@ func (Pipe) Publish(ctx *context.Context) error {
 	// Check requirements for every instance we have configured.
 	// If not fulfilled, we can skip this pipeline
 	for _, instance := range ctx.Config.Uploads {
-		instance := instance
 		if skip := http.CheckConfig(ctx, &instance, "upload"); skip != nil {
 			return pipe.Skip(skip.Error())
 		}

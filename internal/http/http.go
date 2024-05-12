@@ -156,7 +156,6 @@ type ResponseChecker func(*h.Response) error
 func Upload(ctx *context.Context, uploads []config.Upload, kind string, check ResponseChecker) error {
 	// Handle every configured upload
 	for _, upload := range uploads {
-		upload := upload
 		filters := []artifact.Filter{}
 		if upload.Checksum {
 			filters = append(filters, artifact.ByType(artifact.Checksum))
@@ -206,7 +205,6 @@ func uploadWithFilter(ctx *context.Context, upload *config.Upload, filter artifa
 	log.Debugf("will upload %d artifacts", len(artifacts))
 	g := semerrgroup.New(ctx.Parallelism)
 	for _, artifact := range artifacts {
-		artifact := artifact
 		g.Go(func() error {
 			return uploadAsset(ctx, upload, artifact, kind, check)
 		})
