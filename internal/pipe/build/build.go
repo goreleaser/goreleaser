@@ -83,8 +83,6 @@ func buildWithDefaults(ctx *context.Context, build config.Build) (config.Build, 
 
 func runPipeOnBuild(ctx *context.Context, g semerrgroup.Group, build config.Build) {
 	for _, target := range filter(ctx, build.Targets) {
-		target := target
-		build := build
 		g.Go(func() error {
 			opts, err := buildOptionsForTarget(ctx, build, target)
 			if err != nil {

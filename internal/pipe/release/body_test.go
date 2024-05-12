@@ -56,8 +56,6 @@ func TestDescribeBodyMultipleChecksums(t *testing.T) {
 		"foo.zip": "271a74b75a12f6c3affc88df101f9ef29af79717b1b2f4bdd5964aacf65bcf40",
 	}
 	for name, check := range checksums {
-		name := name
-		check := check
 		checksumPath := filepath.Join(t.TempDir(), name+".sha256")
 		ctx.Artifacts.Add(&artifact.Artifact{
 			Name: name + ".sha256",

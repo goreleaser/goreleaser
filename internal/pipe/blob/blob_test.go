@@ -75,15 +75,13 @@ func TestDefaults(t *testing.T) {
 				ContentDisposition: "inline",
 			},
 			{
-				Bucket:   "foobar",
+				Bucket:   "foobar2",
 				Provider: "gcs",
 			},
 			{
-				Bucket:     "deprecated",
-				Provider:   "s3",
-				Directory:  "static",
-				DisableSSL: true,
-				KMSKey:     "fake",
+				Bucket:             "foobar",
+				Provider:           "gcs",
+				ContentDisposition: "-",
 			},
 		},
 	})
@@ -97,10 +95,16 @@ func TestDefaults(t *testing.T) {
 			ContentDisposition: "inline",
 		},
 		{
-			Bucket:             "foobar",
+			Bucket:             "foobar2",
 			Provider:           "gcs",
 			Directory:          "{{ .ProjectName }}/{{ .Tag }}",
 			ContentDisposition: "attachment;filename={{.Filename}}",
+		},
+		{
+			Bucket:             "foobar",
+			Provider:           "gcs",
+			Directory:          "{{ .ProjectName }}/{{ .Tag }}",
+			ContentDisposition: "",
 		},
 		{
 			Bucket:             "deprecated",

@@ -175,7 +175,6 @@ func doPublish(ctx *context.Context, client client.Client) error {
 
 	g := semerrgroup.New(ctx.Parallelism)
 	for _, artifact := range ctx.Artifacts.Filter(filters).List() {
-		artifact := artifact
 		g.Go(func() error {
 			return upload(ctx, client, releaseID, artifact)
 		})
@@ -201,7 +200,7 @@ func upload(ctx *context.Context, cli client.Client, releaseID string, artifact 
 			log.WithField("try", try).
 				WithField("artifact", artifact.Name).
 				WithError(err).
-				Warnf("failed to upload artifact, will retry")
+				Warn("failed to upload artifact, will retry")
 			return err
 		}
 		return nil

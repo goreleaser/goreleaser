@@ -3,8 +3,10 @@ run:
   timeout: 5m
 linters:
   enable:
+    - copyloopvar
     - thelper
     - gofumpt
+    - bodyclose
     - tparallel
     - unconvert
     - unparam

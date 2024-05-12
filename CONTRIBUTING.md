@@ -5,7 +5,7 @@ By participating in this project, you agree to abide our
 
 ## Set up your machine
 
-`goreleaser` is written in [Go](https://golang.org/).
+`goreleaser` is written in [Go](https://go.dev/).
 
 Prerequisites:
 

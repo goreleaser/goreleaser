@@ -522,7 +522,7 @@ func TestBuild(t *testing.T) {
 		fi, err := os.Stat(bin.Path)
 		require.NoError(t, err)
 
-		// make this a suitable map key, per docs: https://golang.org/pkg/time/#Time
+		// make this a suitable map key, per docs: https://pkg.go.dev/time#Time
 		modTime := fi.ModTime().UTC().Round(0).Unix()
 
 		if modTimes[modTime] {

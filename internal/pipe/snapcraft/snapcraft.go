@@ -193,7 +193,6 @@ func doRun(ctx *context.Context, snap config.Snapcraft) error {
 			log.WithField("arch", arch).Warn("ignored unsupported arch")
 			continue
 		}
-		binaries := binaries
 		g.Go(func() error {
 			return create(ctx, snap, arch, binaries)
 		})

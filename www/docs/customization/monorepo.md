@@ -74,3 +74,16 @@ goreleaser release --clean
 
 GoReleaser will then ignore the tags that are not prefixed with `v`, and it
 should work as expected from there on.
+
+## A note about gomods and prefixed tags
+
+!!! note
+
+    If you have a `github.com/user/repo/moda` module, its tags should be named
+    `moda/v1.2.3`.
+    This will allow users to `go get github.com/user/repo/moda@v1.2.3`, and
+    everything should work as you'd expect.
+
+!!! warning
+
+    Tag prefixes that do not match the module name are not supported by go mods.

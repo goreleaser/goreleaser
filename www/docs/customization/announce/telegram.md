@@ -25,9 +25,9 @@ announce:
 
     # Message template to use while publishing.
     #
-    # Default: '{{ mdv2escape .ProjectName }} {{ mdv2escape .Tag }} is out! Check it out at {{ mdv2escape .ReleaseURL }}'
+    # Default: '{{ mdv2escape .ProjectName }} {{ mdv2escape .Tag }} is out{{ mdv2escape "!" }} Check it out at {{ mdv2escape .ReleaseURL }}'
     # Templates: allowed
-    message_template: 'Awesome project {{.Tag}} is out!'
+    message_template: 'Awesome project {{.Tag}} is out{{ mdv2escape "!" }}'
 
     # Parse mode.
     #

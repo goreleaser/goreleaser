@@ -27,8 +27,11 @@ func (Pipe) Default(ctx *context.Context) error {
 		if blob.Directory == "" {
 			blob.Directory = "{{ .ProjectName }}/{{ .Tag }}"
 		}
+
 		if blob.ContentDisposition == "" {
 			blob.ContentDisposition = "attachment;filename={{.Filename}}"
+		} else if blob.ContentDisposition == "-" {
+			blob.ContentDisposition = ""
 		}
 	}
 	return nil
@@ -39,7 +42,6 @@ func (Pipe) Publish(ctx *context.Context) error {
 	g := semerrgroup.New(ctx.Parallelism)
 	skips := pipe.SkipMemento{}
 	for _, conf := range ctx.Config.Blobs {
-		conf := conf
 		g.Go(func() error {
 			b, err := tmpl.New(ctx).Bool(conf.Disable)
 			if err != nil {

@@ -37,7 +37,6 @@ func TestSemaphoreOrder(t *testing.T) {
 	g := New(1)
 	output := []int{}
 	for i := 0; i < num; i++ {
-		i := i
 		g.Go(func() error {
 			output = append(output, i)
 			return nil
@@ -54,7 +53,6 @@ func TestSemaphoreError(t *testing.T) {
 			var lock sync.Mutex
 			output := []int{}
 			for i := 0; i < 10; i++ {
-				i := i
 				g.Go(func() error {
 					lock.Lock()
 					defer lock.Unlock()
@@ -90,7 +88,6 @@ func TestSemaphoreSkipAwareSingleError(t *testing.T) {
 		t.Run(fmt.Sprintf("limit-%d", i), func(t *testing.T) {
 			g := NewSkipAware(New(i))
 			for i := 0; i < 10; i++ {
-				i := i
 				g.Go(func() error {
 					time.Sleep(10 * time.Millisecond)
 					if i == 5 {

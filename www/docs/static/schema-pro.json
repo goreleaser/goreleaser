@@ -165,6 +165,9 @@
 					},
 					"opencolletive": {
 						"$ref": "#/$defs/OpenCollective"
+					},
+					"bluesky": {
+						"$ref": "#/$defs/Bluesky"
 					}
 				},
 				"additionalProperties": false,
@@ -359,6 +362,21 @@
 							"$ref": "#/$defs/TemplatedExtraFile"
 						},
 						"type": "array"
+					}
+				},
+				"additionalProperties": false,
+				"type": "object"
+			},
+			"Bluesky": {
+				"properties": {
+					"enabled": {
+						"type": "boolean"
+					},
+					"username": {
+						"type": "string"
+					},
+					"message_template": {
+						"type": "string"
 					}
 				},
 				"additionalProperties": false,
@@ -592,6 +610,9 @@
 							"gitlab"
 						],
 						"default": "git"
+					},
+					"format": {
+						"type": "string"
 					},
 					"groups": {
 						"items": {
@@ -1951,6 +1972,80 @@
 					"wxs"
 				]
 			},
+			"MacOSNotarize": {
+				"properties": {
+					"issuer_id": {
+						"type": "string"
+					},
+					"key": {
+						"type": "string"
+					},
+					"key_id": {
+						"type": "string"
+					},
+					"timeout": {
+						"type": "integer"
+					},
+					"wait": {
+						"type": "boolean"
+					}
+				},
+				"additionalProperties": false,
+				"type": "object",
+				"required": [
+					"issuer_id",
+					"key",
+					"key_id"
+				]
+			},
+			"MacOSSign": {
+				"properties": {
+					"certificate": {
+						"type": "string"
+					},
+					"password": {
+						"type": "string"
+					}
+				},
+				"additionalProperties": false,
+				"type": "object",
+				"required": [
+					"certificate",
+					"password"
+				]
+			},
+			"MacOSSignNotarize": {
+				"properties": {
+					"ids": {
+						"items": {
+							"type": "string"
+						},
+						"type": "array"
+					},
+					"enabled": {
+						"oneOf": [
+							{
+								"type": "string"
+							},
+							{
+								"type": "boolean"
+							}
+						]
+					},
+					"sign": {
+						"$ref": "#/$defs/MacOSSign"
+					},
+					"notarize": {
+						"$ref": "#/$defs/MacOSNotarize"
+					}
+				},
+				"additionalProperties": false,
+				"type": "object",
+				"required": [
+					"sign",
+					"notarize"
+				]
+			},
 			"Mastodon": {
 				"properties": {
 					"enabled": {
@@ -2632,6 +2727,21 @@
 					}
 				]
 			},
+			"Notarize": {
+				"properties": {
+					"macos": {
+						"items": {
+							"$ref": "#/$defs/MacOSSignNotarize"
+						},
+						"type": "array"
+					}
+				},
+				"additionalProperties": false,
+				"type": "object",
+				"required": [
+					"macos"
+				]
+			},
 			"OpenCollective": {
 				"properties": {
 					"enabled": {
@@ -2831,6 +2941,9 @@
 							"$ref": "#/$defs/Sign"
 						},
 						"type": "array"
+					},
+					"notarize": {
+						"$ref": "#/$defs/Notarize"
 					},
 					"docker_signs": {
 						"items": {
@@ -3217,6 +3330,14 @@
 					},
 					"token": {
 						"type": "string"
+					},
+					"token_type": {
+						"type": "string",
+						"enum": [
+							"github",
+							"gitlab",
+							"gitea"
+						]
 					},
 					"branch": {
 						"type": "string"

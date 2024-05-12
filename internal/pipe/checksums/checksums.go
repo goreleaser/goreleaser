@@ -141,8 +141,6 @@ func refreshAll(ctx *context.Context, filepath string) error {
 	g := semerrgroup.New(ctx.Parallelism)
 	sumLines := make([]string, len(artifactList))
 	for i, artifact := range artifactList {
-		i := i
-		artifact := artifact
 		g.Go(func() error {
 			sumLine, err := checksums(ctx.Config.Checksum.Algorithm, artifact)
 			if err != nil {

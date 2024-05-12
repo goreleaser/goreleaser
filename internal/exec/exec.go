@@ -70,7 +70,6 @@ func executePublisher(ctx *context.Context, publisher config.Publisher) error {
 
 	g := semerrgroup.New(ctx.Parallelism)
 	for _, artifact := range artifacts {
-		artifact := artifact
 		g.Go(func() error {
 			c, err := resolveCommand(ctx, publisher, artifact)
 			if err != nil {

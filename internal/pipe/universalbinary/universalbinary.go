@@ -53,7 +53,6 @@ func (Pipe) Default(ctx *context.Context) error {
 func (Pipe) Run(ctx *context.Context) error {
 	g := semerrgroup.NewSkipAware(semerrgroup.New(ctx.Parallelism))
 	for _, unibin := range ctx.Config.UniversalBinaries {
-		unibin := unibin
 		g.Go(func() error {
 			opts := build.Options{
 				Target: "darwin_all",

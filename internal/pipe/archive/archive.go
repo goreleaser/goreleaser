@@ -83,7 +83,6 @@ func (Pipe) Default(ctx *context.Context) error {
 func (Pipe) Run(ctx *context.Context) error {
 	g := semerrgroup.New(ctx.Parallelism)
 	for i, archive := range ctx.Config.Archives {
-		archive := archive
 		if archive.Meta {
 			g.Go(func() error {
 				return createMeta(ctx, archive)
@@ -107,7 +106,6 @@ func (Pipe) Run(ctx *context.Context) error {
 		}
 		for group, artifacts := range artifacts {
 			log.Debugf("group %s has %d binaries", group, len(artifacts))
-			artifacts := artifacts
 			format := packageFormat(archive, artifacts[0].Goos)
 			switch format {
 			case "none":

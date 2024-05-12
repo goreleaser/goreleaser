@@ -10,6 +10,7 @@ import (
 	"github.com/goreleaser/goreleaser/pkg/archive/tar"
 	"github.com/goreleaser/goreleaser/pkg/archive/targz"
 	"github.com/goreleaser/goreleaser/pkg/archive/tarxz"
+	"github.com/goreleaser/goreleaser/pkg/archive/tarzst"
 	"github.com/goreleaser/goreleaser/pkg/archive/zip"
 	"github.com/goreleaser/goreleaser/pkg/config"
 )
@@ -31,6 +32,8 @@ func New(w io.Writer, format string) (Archive, error) {
 		return gzip.New(w), nil
 	case "tar.xz", "txz":
 		return tarxz.New(w), nil
+	case "tar.zst":
+		return tarzst.New(w), nil
 	case "zip":
 		return zip.New(w), nil
 	}

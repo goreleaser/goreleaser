@@ -24,7 +24,17 @@ archives:
     # If format is `binary`, no archives are created and the binaries are instead
     # uploaded directly.
     #
-    # Valid options are `tar.gz`, `tgz`, `tar.xz`, `txz`, tar`, `gz`, `zip`, and `binary`.
+    # Valid options are:
+    # - `tar.gz`
+    # - `tgz`
+    # - `tar.xz`
+    # - `txz`
+    # - `tar.zst` (Since v1.26)
+    # - `tar`
+    # - `gz`
+    # - `zip`
+    # - `binary`
+    #
     # Default: 'tar.gz'
     format: zip
 

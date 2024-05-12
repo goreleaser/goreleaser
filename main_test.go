@@ -36,7 +36,6 @@ func TestVersion(t *testing.T) {
 			builtBy: "me",
 		},
 	} {
-		tt := tt
 		t.Run(name, func(t *testing.T) {
 			v := buildVersion(tt.version, tt.commit, tt.date, tt.builtBy, tt.treeState)
 			v.GoVersion = goVersion

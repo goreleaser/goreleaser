@@ -30,6 +30,7 @@
             cosign
             gnupg
             nix-prefetch
+            snapcraft
           ];
           shellHook = "go mod tidy";
         };

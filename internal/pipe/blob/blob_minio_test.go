@@ -55,8 +55,12 @@ func TestMain(m *testing.M) {
 	})
 	requireNoErr(err)
 	requireNoErr(pool.Retry(func() error {
-		_, err := http.Get(fmt.Sprintf("http://localhost:%s/minio/health/ready", resource.GetPort("9000/tcp")))
-		return err
+		resp, err := http.Get(fmt.Sprintf("http://localhost:%s/minio/health/ready", resource.GetPort("9000/tcp")))
+		if err != nil {
+			return err
+		}
+		resp.Body.Close()
+		return nil
 	}))
 	listen = "localhost:" + resource.GetPort("9000/tcp")
 
