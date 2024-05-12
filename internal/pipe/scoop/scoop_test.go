@@ -75,8 +75,8 @@ func TestDefaultDeprecated(t *testing.T) {
 }
 
 func Test_doRun(t *testing.T) {
-	Directory := t.TempDir()
-	file := filepath.Join(Directory, "archive")
+	directory := t.TempDir()
+	file := filepath.Join(directory, "archive")
 	require.NoError(t, os.WriteFile(file, []byte("lorem ipsum"), 0o644))
 
 	type args struct {
@@ -766,10 +766,10 @@ func Test_doRun(t *testing.T) {
 }
 
 func TestRunPipePullRequest(t *testing.T) {
-	Directory := t.TempDir()
+	directory := t.TempDir()
 	ctx := testctx.NewWithCfg(
 		config.Project{
-			Dist:        Directory,
+			Dist:        directory,
 			ProjectName: "foo",
 			Scoops: []config.Scoop{{
 				Name:        "{{.Env.FOO}}",
@@ -789,7 +789,7 @@ func TestRunPipePullRequest(t *testing.T) {
 		testctx.WithCurrentTag("v1.2.1"),
 		testctx.WithEnv(map[string]string{"FOO": "foobar"}),
 	)
-	path := filepath.Join(Directory, "dist/foo_windows_amd64/foo.exe")
+	path := filepath.Join(directory, "dist/foo_windows_amd64/foo.exe")
 	ctx.Artifacts.Add(&artifact.Artifact{
 		Name:   "foo_windows_amd64.tar.gz",
 		Path:   path,
@@ -818,8 +818,8 @@ func TestRunPipePullRequest(t *testing.T) {
 }
 
 func Test_buildManifest(t *testing.T) {
-	Directory := t.TempDir()
-	file := filepath.Join(Directory, "archive")
+	directory := t.TempDir()
+	file := filepath.Join(directory, "archive")
 	require.NoError(t, os.WriteFile(file, []byte("lorem ipsum"), 0o644))
 
 	tests := []struct {
@@ -1069,8 +1069,8 @@ func getScoopPipeSkipCtx(directory string) (*context.Context, string) {
 }
 
 func TestRunPipeScoopWithSkipUpload(t *testing.T) {
-	Directory := t.TempDir()
-	ctx, path := getScoopPipeSkipCtx(Directory)
+	directory := t.TempDir()
+	ctx, path := getScoopPipeSkipCtx(directory)
 	ctx.Config.Scoops[0].SkipUpload = "true"
 
 	f, err := os.Create(path)
@@ -1082,14 +1082,14 @@ func TestRunPipeScoopWithSkipUpload(t *testing.T) {
 	require.NoError(t, runAll(ctx, cli))
 	require.EqualError(t, publishAll(ctx, cli), `scoop.skip_upload is true`)
 
-	distFile := filepath.Join(Directory, "scoop", ctx.Config.Scoops[0].Name+".json")
+	distFile := filepath.Join(directory, "scoop", ctx.Config.Scoops[0].Name+".json")
 	_, err = os.Stat(distFile)
 	require.NoError(t, err, "file should exist: "+distFile)
 }
 
 func TestWrapInDirectory(t *testing.T) {
-	Directory := t.TempDir()
-	file := filepath.Join(Directory, "archive")
+	directory := t.TempDir()
+	file := filepath.Join(directory, "archive")
 	require.NoError(t, os.WriteFile(file, []byte("lorem ipsum"), 0o644))
 
 	ctx := testctx.NewWithCfg(
