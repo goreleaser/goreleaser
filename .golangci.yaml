@@ -5,6 +5,7 @@ linters:
   enable:
     - thelper
     - gofumpt
+    - bodyclose
     - tparallel
     - unconvert
     - unparam
