@@ -16,9 +16,9 @@ func TestGzFile(t *testing.T) {
 	tmp := t.TempDir()
 	f, err := os.Create(filepath.Join(tmp, "test.gz"))
 	require.NoError(t, err)
-	defer f.Close() // nolint: errcheck
+	defer f.Close()
 	archive := New(f)
-	defer archive.Close() // nolint: errcheck
+	defer archive.Close()
 
 	require.NoError(t, archive.Add(config.File{
 		Destination: "sub1/sub2/subfoo.txt",
@@ -33,7 +33,7 @@ func TestGzFile(t *testing.T) {
 
 	f, err = os.Open(f.Name())
 	require.NoError(t, err)
-	defer f.Close() // nolint: errcheck
+	defer f.Close()
 
 	info, err := f.Stat()
 	require.NoError(t, err)
@@ -41,7 +41,7 @@ func TestGzFile(t *testing.T) {
 
 	gzf, err := gzip.NewReader(f)
 	require.NoError(t, err)
-	defer gzf.Close() // nolint: errcheck
+	defer gzf.Close()
 
 	require.Equal(t, "sub1/sub2/subfoo.txt", gzf.Name)
 
@@ -53,9 +53,9 @@ func TestGzFile(t *testing.T) {
 func TestGzFileCustomMtime(t *testing.T) {
 	f, err := os.Create(filepath.Join(t.TempDir(), "test.gz"))
 	require.NoError(t, err)
-	defer f.Close() // nolint: errcheck
+	defer f.Close()
 	archive := New(f)
-	defer archive.Close() // nolint: errcheck
+	defer archive.Close()
 
 	now := time.Now().Truncate(time.Second)
 
@@ -71,7 +71,7 @@ func TestGzFileCustomMtime(t *testing.T) {
 
 	f, err = os.Open(f.Name())
 	require.NoError(t, err)
-	defer f.Close() // nolint: errcheck
+	defer f.Close()
 
 	info, err := f.Stat()
 	require.NoError(t, err)
@@ -79,7 +79,7 @@ func TestGzFileCustomMtime(t *testing.T) {
 
 	gzf, err := gzip.NewReader(f)
 	require.NoError(t, err)
-	defer gzf.Close() // nolint: errcheck
+	defer gzf.Close()
 
 	require.Equal(t, "sub1/sub2/subfoo.txt", gzf.Name)
 	require.Equal(t, now, gzf.Header.ModTime)

@@ -383,7 +383,7 @@ func dataFor(ctx *context.Context, scoop config.Scoop, cl client.ReleaseURLTempl
 }
 
 func binaries(a artifact.Artifact) ([]string, error) {
-	// nolint: prealloc
+	//nolint:prealloc
 	var result []string
 	wrap := artifact.ExtraOr(a, artifact.ExtraWrappedIn, "")
 	bins, err := artifact.Extra[[]string](a, artifact.ExtraBinaries)

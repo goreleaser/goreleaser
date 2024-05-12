@@ -151,7 +151,7 @@ func (Pipe) Run(ctx *context.Context) error {
 		if pipe.IsSkip(err) {
 			return err
 		}
-		return fmt.Errorf("docker build failed: %w\nLearn more at https://goreleaser.com/errors/docker-build\n", err) // nolint:revive
+		return fmt.Errorf("docker build failed: %w\nLearn more at https://goreleaser.com/errors/docker-build\n", err) //nolint:revive
 	}
 	return nil
 }
@@ -271,7 +271,7 @@ func isBuildxContextError(out string) bool {
 }
 
 func processImageTemplates(ctx *context.Context, docker config.Docker) ([]string, error) {
-	// nolint:prealloc
+	//nolint:prealloc
 	var images []string
 	for _, imageTemplate := range docker.ImageTemplates {
 		image, err := tmpl.New(ctx).Apply(imageTemplate)
@@ -289,7 +289,7 @@ func processImageTemplates(ctx *context.Context, docker config.Docker) ([]string
 }
 
 func processBuildFlagTemplates(ctx *context.Context, docker config.Docker) ([]string, error) {
-	// nolint:prealloc
+	//nolint:prealloc
 	var buildFlags []string
 	for _, buildFlagTemplate := range docker.BuildFlagTemplates {
 		buildFlag, err := tmpl.New(ctx).Apply(buildFlagTemplate)

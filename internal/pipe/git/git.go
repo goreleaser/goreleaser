@@ -54,7 +54,7 @@ func (Pipe) Run(ctx *context.Context) error {
 	return validate(ctx)
 }
 
-// nolint: gochecknoglobals
+//nolint:gochecknoglobals
 var fakeInfo = context.GitInfo{
 	Branch:      "none",
 	CurrentTag:  "v0.0.0",

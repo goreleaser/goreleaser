@@ -60,7 +60,8 @@ type Defaulter interface {
 }
 
 // Defaulters is the list of defaulters.
-// nolint: gochecknoglobals
+//
+//nolint:gochecknoglobals
 var Defaulters = []Defaulter{
 	snapshot.Pipe{},
 	release.Pipe{},
