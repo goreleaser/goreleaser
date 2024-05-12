@@ -18,9 +18,9 @@ func TestZipFile(t *testing.T) {
 	tmp := t.TempDir()
 	f, err := os.Create(filepath.Join(tmp, "test.zip"))
 	require.NoError(t, err)
-	defer f.Close() // nolint: errcheck
+	defer f.Close()
 	archive := New(f)
-	defer archive.Close() // nolint: errcheck
+	defer archive.Close()
 
 	require.Error(t, archive.Add(config.File{
 		Source:      "../testdata/nope.txt",
@@ -73,7 +73,7 @@ func TestZipFile(t *testing.T) {
 
 	f, err = os.Open(f.Name())
 	require.NoError(t, err)
-	defer f.Close() // nolint: errcheck
+	defer f.Close()
 
 	info, err := f.Stat()
 	require.NoError(t, err)
@@ -114,9 +114,9 @@ func TestZipFileInfo(t *testing.T) {
 	now := time.Now().Truncate(time.Second)
 	f, err := os.Create(filepath.Join(t.TempDir(), "test.zip"))
 	require.NoError(t, err)
-	defer f.Close() // nolint: errcheck
+	defer f.Close()
 	archive := New(f)
-	defer archive.Close() // nolint: errcheck
+	defer archive.Close()
 
 	require.NoError(t, archive.Add(config.File{
 		Source:      "../testdata/foo.txt",
@@ -134,7 +134,7 @@ func TestZipFileInfo(t *testing.T) {
 
 	f, err = os.Open(f.Name())
 	require.NoError(t, err)
-	defer f.Close() // nolint: errcheck
+	defer f.Close()
 
 	info, err := f.Stat()
 	require.NoError(t, err)
@@ -152,7 +152,7 @@ func TestZipFileInfo(t *testing.T) {
 
 func TestTarInvalidLink(t *testing.T) {
 	archive := New(io.Discard)
-	defer archive.Close() // nolint: errcheck
+	defer archive.Close()
 
 	require.NoError(t, archive.Add(config.File{
 		Source:      "../testdata/badlink.txt",

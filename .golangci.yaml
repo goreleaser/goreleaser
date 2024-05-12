@@ -18,6 +18,7 @@ linters:
     - depguard
     - testifylint
     - gocritic
+    - nolintlint
 linters-settings:
   staticcheck:
     checks:

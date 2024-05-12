@@ -24,10 +24,11 @@ import (
 )
 
 // Default builder instance.
-// nolint: gochecknoglobals
+//
+//nolint:gochecknoglobals
 var Default = &Builder{}
 
-// nolint: gochecknoinits
+//nolint:gochecknoinits
 func init() {
 	api.Register("go", Default)
 }

@@ -51,7 +51,7 @@ func newGitea(ctx *context.Context, token string) (*giteaClient, error) {
 	transport := &http.Transport{
 		Proxy: http.ProxyFromEnvironment,
 		TLSClientConfig: &tls.Config{
-			// nolint: gosec
+			//nolint:gosec
 			InsecureSkipVerify: ctx.Config.GiteaURLs.SkipTLSVerify,
 		},
 	}

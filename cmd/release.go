@@ -64,7 +64,7 @@ type releaseOpts struct {
 
 func newReleaseCmd() *releaseCmd {
 	root := &releaseCmd{}
-	// nolint: dupl
+	//nolint:dupl
 	cmd := &cobra.Command{
 		Use:               "release",
 		Aliases:           []string{"r"},

@@ -52,7 +52,7 @@ func newGitHub(ctx *context.Context, token string) (*githubClient, error) {
 	if base == nil || reflect.ValueOf(base).IsNil() {
 		base = http.DefaultTransport
 	}
-	// nolint: gosec
+	//nolint:gosec
 	base.(*http.Transport).TLSClientConfig = &tls.Config{
 		InsecureSkipVerify: ctx.Config.GitHubURLs.SkipTLSVerify,
 	}

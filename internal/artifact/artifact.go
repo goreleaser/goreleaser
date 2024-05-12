@@ -1,7 +1,7 @@
 // Package artifact provides the core artifact storage for goreleaser.
 package artifact
 
-// nolint: gosec
+//nolint:gosec
 import (
 	"bytes"
 	"crypto/md5"
@@ -236,7 +236,8 @@ func ExtraOr[T any](a Artifact, key string, or T) T {
 }
 
 // Checksum calculates the checksum of the artifact.
-// nolint: gosec
+//
+//nolint:gosec
 func (a Artifact) Checksum(algorithm string) (string, error) {
 	log.Debugf("calculating checksum for %s", a.Path)
 	file, err := os.Open(a.Path)

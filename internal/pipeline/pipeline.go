@@ -51,7 +51,8 @@ type Piper interface {
 }
 
 // BuildPipeline contains all build-related pipe implementations in order.
-// nolint:gochecknoglobals
+//
+//nolint:gochecknoglobals
 var BuildPipeline = []Piper{
 	// load and validate environment variables
 	env.Pipe{},
@@ -94,7 +95,8 @@ var BuildPipeline = []Piper{
 }
 
 // BuildCmdPipeline is the pipeline run by goreleaser build.
-// nolint:gochecknoglobals
+//
+//nolint:gochecknoglobals
 var BuildCmdPipeline = append(
 	BuildPipeline,
 	reportsizes.Pipe{},
@@ -102,7 +104,8 @@ var BuildCmdPipeline = append(
 )
 
 // Pipeline contains all pipe implementations in order.
-// nolint: gochecknoglobals
+//
+//nolint:gochecknoglobals
 var Pipeline = append(
 	BuildPipeline,
 	// builds the release changelog
