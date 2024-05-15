@@ -373,7 +373,6 @@ func processFlag(ctx *context.Context, a *artifact.Artifact, env []string, rawFl
 func run(ctx *context.Context, command, env []string, dir string) error {
 	/* #nosec */
 	cmd := exec.CommandContext(ctx, command[0], command[1:]...)
-	log := log.WithField("env", env).WithField("cmd", command)
 	cmd.Env = env
 	cmd.Dir = dir
 	log.Debug("running")
@@ -382,7 +381,7 @@ func run(ctx *context.Context, command, env []string, dir string) error {
 		return fmt.Errorf("%w: %s", err, string(out))
 	}
 	if s := buildOutput(out); s != "" {
-		log.Info(s)
+		log.WithField("cmd", command).Info(s)
 	}
 	return nil
 }
