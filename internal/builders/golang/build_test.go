@@ -1433,6 +1433,25 @@ func TestInvalidGoBinaryTpl(t *testing.T) {
 	}))
 }
 
+func TestBuildOutput(t *testing.T) {
+	t.Run("empty", func(t *testing.T) {
+		require.Empty(t, buildOutput([]byte{}))
+	})
+	t.Run("downloading only", func(t *testing.T) {
+		require.Empty(t, buildOutput([]byte(`
+go: downloading github.com/atotto/clipboard v0.1.4
+go: downloading github.com/caarlos0/duration v0.0.0-20240108180406-5d492514f3c7
+		`)))
+	})
+	t.Run("mixed", func(t *testing.T) {
+		require.NotEmpty(t, buildOutput([]byte(`
+go: downloading github.com/atotto/clipboard v0.1.4
+go: downloading github.com/caarlos0/duration v0.0.0-20240108180406-5d492514f3c7
+something something
+		`)))
+	})
+}
+
 //
 // Helpers
 //
