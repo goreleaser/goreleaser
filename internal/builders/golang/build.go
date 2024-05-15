@@ -381,10 +381,21 @@ func run(ctx *context.Context, command, env []string, dir string) error {
 	if err != nil {
 		return fmt.Errorf("%w: %s", err, string(out))
 	}
-	if s := strings.TrimSpace(string(out)); s != "" {
+	if s := buildOutput(out); s != "" {
 		log.Info(s)
 	}
 	return nil
+}
+
+func buildOutput(out []byte) string {
+	var lines []string
+	for _, line := range strings.Split(strings.TrimSpace(string(out)), "\n") {
+		if strings.HasPrefix(line, "go: downloading") {
+			continue
+		}
+		lines = append(lines, line)
+	}
+	return strings.Join(lines, "\n")
 }
 
 func checkMain(build config.Build) error {
