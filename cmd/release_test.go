@@ -41,7 +41,7 @@ func TestReleaseAutoSnapshot(t *testing.T) {
 
 func TestReleaseInvalidConfig(t *testing.T) {
 	setup(t)
-	createFile(t, "goreleaser.yml", "foo: bar")
+	createFile(t, "goreleaser.yml", "foo: bar\nversion: 2")
 	cmd := newReleaseCmd()
 	cmd.cmd.SetArgs([]string{"--snapshot", "--timeout=1m", "--parallelism=2", "--deprecated"})
 	require.EqualError(t, cmd.cmd.Execute(), "yaml: unmarshal errors:\n  line 1: field foo not found in type config.Project")

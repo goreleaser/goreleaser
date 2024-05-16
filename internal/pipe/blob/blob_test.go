@@ -106,14 +106,6 @@ func TestDefaults(t *testing.T) {
 			Directory:          "{{ .ProjectName }}/{{ .Tag }}",
 			ContentDisposition: "",
 		},
-		{
-			Bucket:             "deprecated",
-			Provider:           "s3",
-			Directory:          "static",
-			DisableSSL:         true,
-			KMSKey:             "fake",
-			ContentDisposition: "attachment;filename={{.Filename}}",
-		},
 	}, ctx.Config.Blobs)
 }
 

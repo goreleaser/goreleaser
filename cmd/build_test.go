@@ -27,10 +27,10 @@ func TestBuildSingleTarget(t *testing.T) {
 
 func TestBuildInvalidConfig(t *testing.T) {
 	setup(t)
-	createFile(t, "goreleaser.yml", "foo: bar")
+	createFile(t, "goreleaser.yml", "version: 2\nfoo: bar")
 	cmd := newBuildCmd()
 	cmd.cmd.SetArgs([]string{"--snapshot", "--timeout=1m", "--parallelism=2", "--deprecated"})
-	require.EqualError(t, cmd.cmd.Execute(), "yaml: unmarshal errors:\n  line 1: field foo not found in type config.Project")
+	require.EqualError(t, cmd.cmd.Execute(), "yaml: unmarshal errors:\n  line 2: field foo not found in type config.Project")
 }
 
 func TestBuildBrokenProject(t *testing.T) {

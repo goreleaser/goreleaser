@@ -48,32 +48,6 @@ func TestDefault(t *testing.T) {
 	require.NotEmpty(t, ctx.Config.Scoops[0].CommitMessageTemplate)
 }
 
-func TestDefaultDeprecated(t *testing.T) {
-	testlib.Mktmp(t)
-
-	ctx := testctx.NewWithCfg(
-		config.Project{
-			ProjectName: "barr",
-			Scoops: []config.Scoop{
-				{
-					Repository: config.RepoRef{
-						Name: "foo",
-					},
-				},
-			},
-		},
-		testctx.GitHubTokenType,
-	)
-	require.NoError(t, Pipe{}.Default(ctx))
-	require.Len(t, ctx.Config.Scoops, 1)
-	require.Equal(t, ctx.Config.ProjectName, ctx.Config.Scoops[0].Name)
-	require.NotEmpty(t, ctx.Config.Scoops[0].CommitAuthor.Name)
-	require.NotEmpty(t, ctx.Config.Scoops[0].CommitAuthor.Email)
-	require.NotEmpty(t, ctx.Config.Scoops[0].CommitMessageTemplate)
-	require.Equal(t, "foo", ctx.Config.Scoops[0].Repository.Name)
-	require.True(t, ctx.Deprecated)
-}
-
 func Test_doRun(t *testing.T) {
 	directory := t.TempDir()
 	file := filepath.Join(directory, "archive")

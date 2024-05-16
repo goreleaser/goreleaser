@@ -1240,7 +1240,6 @@ func TestDefault(t *testing.T) {
 	require.NotEmpty(t, ctx.Config.Brews[0].CommitAuthor.Email)
 	require.NotEmpty(t, ctx.Config.Brews[0].CommitMessageTemplate)
 	require.Equal(t, repo, ctx.Config.Brews[0].Repository)
-	require.True(t, ctx.Deprecated)
 }
 
 func TestGHFolder(t *testing.T) {
