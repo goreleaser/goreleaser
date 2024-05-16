@@ -20,6 +20,9 @@ linters:
     - gocritic
     - nolintlint
 linters-settings:
+  gocritic:
+    disabled-checks:
+      - appendAssign
   staticcheck:
     checks:
       - all

@@ -46,7 +46,7 @@ require (
 	github.com/spf13/cobra v1.8.0
 	github.com/stretchr/testify v1.9.0
 	github.com/ulikunitz/xz v0.5.12
-	github.com/xanzy/go-gitlab v0.104.1
+	github.com/xanzy/go-gitlab v0.105.0
 	gocloud.dev v0.37.0
 	golang.org/x/crypto v0.23.0
 	golang.org/x/oauth2 v0.20.0
@@ -93,7 +93,7 @@ require (
 	github.com/anchore/go-logger v0.0.0-20230725134548-c21dafa1ec5a // indirect
 	github.com/anchore/go-macholibre v0.0.0-20220308212642-53e6d0aaf6fb // indirect
 	github.com/asaskevich/govalidator v0.0.0-20230301143203-a9d515a09cc2 // indirect
-	github.com/aws/aws-sdk-go v1.52.0
+	github.com/aws/aws-sdk-go v1.53.0
 	github.com/aws/aws-sdk-go-v2 v1.26.0 // indirect
 	github.com/aws/aws-sdk-go-v2/aws/protocol/eventstream v1.6.1 // indirect
 	github.com/aws/aws-sdk-go-v2/config v1.27.9 // indirect

@@ -2,9 +2,11 @@ package cmd
 
 import (
 	"bytes"
+	"strings"
 	"testing"
 
 	goversion "github.com/caarlos0/go-version"
+	"github.com/spf13/cobra"
 	"github.com/stretchr/testify/require"
 )
 
@@ -99,4 +101,27 @@ func TestShouldPrependRelease(t *testing.T) {
 	t.Run("__completeNoDesc", func(t *testing.T) {
 		require.False(t, result([]string{"__completeNoDesc"}))
 	})
+}
+
+func TestShouldDisableLogs(t *testing.T) {
+	testCases := []struct {
+		args   []string
+		expect bool
+	}{
+		{nil, false},
+		{[]string{"release"}, false},
+		{[]string{"release", "--clean"}, false},
+		{[]string{"help"}, true},
+		{[]string{"completion"}, true},
+		{[]string{"man"}, true},
+		{[]string{"jsonschema"}, true},
+		{[]string{"docs"}, true},
+		{[]string{cobra.ShellCompRequestCmd}, true},
+		{[]string{cobra.ShellCompNoDescRequestCmd}, true},
+	}
+	for _, tC := range testCases {
+		t.Run(strings.Join(tC.args, " "), func(t *testing.T) {
+			require.Equal(t, tC.expect, shouldDisableLogs(tC.args))
+		})
+	}
 }

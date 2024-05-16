@@ -109,8 +109,8 @@ github.com/asaskevich/govalidator v0.0.0-20230301143203-a9d515a09cc2 h1:DklsrG3d
 github.com/asaskevich/govalidator v0.0.0-20230301143203-a9d515a09cc2/go.mod h1:WaHUgvxTVq04UNunO+XhnAqY/wQc+bxr74GqbsZ/Jqw=
 github.com/atc0005/go-teams-notify/v2 v2.10.0 h1:eQvRIkyESQgBvlUdQ/iPol/lj3QcRyrdEQM3+c/nXhM=
 github.com/atc0005/go-teams-notify/v2 v2.10.0/go.mod h1:SIeE1UfCcVRYMqP5b+r1ZteHyA/2UAjzWF5COnZ8q0w=
-github.com/aws/aws-sdk-go v1.52.0 h1:ptgek/4B2v/ljsjYSEvLQ8LTD+SQyrqhOOWvHc/VGPI=
-github.com/aws/aws-sdk-go v1.52.0/go.mod h1:LF8svs817+Nz+DmiMQKTO3ubZ/6IaTpq3TjupRn3Eqk=
+github.com/aws/aws-sdk-go v1.53.0 h1:MMo1x1ggPPxDfHMXJnQudTbGXYlD4UigUAud1DJxPVo=
+github.com/aws/aws-sdk-go v1.53.0/go.mod h1:LF8svs817+Nz+DmiMQKTO3ubZ/6IaTpq3TjupRn3Eqk=
 github.com/aws/aws-sdk-go-v2 v1.21.2/go.mod h1:ErQhvNuEMhJjweavOYhxVkn2RUx7kQXVATHrjKtxIpM=
 github.com/aws/aws-sdk-go-v2 v1.26.0 h1:/Ce4OCiM3EkpW7Y+xUnfAFpchU78K7/Ug01sZni9PgA=
 github.com/aws/aws-sdk-go-v2 v1.26.0/go.mod h1:35hUlJVYd+M++iLI3ALmVwMOyRYMmRqUXpTtRGW+K9I=
@@ -780,8 +780,8 @@ github.com/whyrusleeping/cbor-gen v0.1.1-0.20240311221002-68b9f235c302 h1:MhInbX
 github.com/whyrusleeping/cbor-gen v0.1.1-0.20240311221002-68b9f235c302/go.mod h1:pM99HXyEbSQHcosHc0iW7YFmwnscr+t9Te4ibko05so=
 github.com/wk8/go-ordered-map/v2 v2.1.8 h1:5h/BUHu93oj4gIdvHHHGsScSTMijfx5PeYkE/fJgbpc=
 github.com/wk8/go-ordered-map/v2 v2.1.8/go.mod h1:5nJHM5DyteebpVlHnWMV0rPz6Zp7+xBAnxjb1X5vnTw=
-github.com/xanzy/go-gitlab v0.104.1 h1:g/liXIPJH0jsTwVuzTAUMiKdTf6Qup3u2XZq5Rp90Wc=
-github.com/xanzy/go-gitlab v0.104.1/go.mod h1:ETg8tcj4OhrB84UEgeE8dSuV/0h4BBL1uOV/qK0vlyI=
+github.com/xanzy/go-gitlab v0.105.0 h1:3nyLq0ESez0crcaM19o5S//SvezOQguuIHZ3wgX64hM=
+github.com/xanzy/go-gitlab v0.105.0/go.mod h1:ETg8tcj4OhrB84UEgeE8dSuV/0h4BBL1uOV/qK0vlyI=
 github.com/xanzy/ssh-agent v0.3.3 h1:+/15pJfg/RsTxqYcX6fHqOXZwwMP+2VyYWJeWM2qQFM=
 github.com/xanzy/ssh-agent v0.3.3/go.mod h1:6dzNDKs0J9rVPHPhaGCukekBHKqfl+L3KghI1Bc68Uw=
 github.com/xeipuuv/gojsonpointer v0.0.0-20180127040702-4e3ac2762d5f/go.mod h1:N2zxlSyiKSe5eX1tZViRH5QA0qijqEDrYZiPEAiq3wU=
