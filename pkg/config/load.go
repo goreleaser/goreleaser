@@ -19,7 +19,7 @@ type VersionError struct {
 func (e VersionError) Error() string {
 	return fmt.Sprintf(
 		"only configurations files on %s are supported, yours is %s, please update your configuration",
-		logext.Keyword("version: 1"),
+		logext.Keyword("version: 2"),
 		logext.Keyword(fmt.Sprintf("version: %d", e.current)),
 	)
 }
@@ -42,7 +42,9 @@ func LoadReader(fd io.Reader) (config Project, err error) {
 	}
 
 	var versioned Versioned
-	_ = yaml.Unmarshal(data, &versioned)
+	if err := yaml.Unmarshal(data, &versioned); err != nil {
+		return config, err
+	}
 
 	validVersion := versioned.Version == 2
 	if !validVersion {
