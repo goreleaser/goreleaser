@@ -30,6 +30,7 @@ archives:
     # - `tar.xz`
     # - `txz`
     # - `tar.zst` (Since v1.26)
+    # - `tzst`
     # - `tar`
     # - `gz`
     # - `zip`

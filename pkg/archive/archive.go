@@ -32,7 +32,7 @@ func New(w io.Writer, format string) (Archive, error) {
 		return gzip.New(w), nil
 	case "tar.xz", "txz":
 		return tarxz.New(w), nil
-	case "tar.zst":
+	case "tar.zst", "tzst":
 		return tarzst.New(w), nil
 	case "zip":
 		return zip.New(w), nil
