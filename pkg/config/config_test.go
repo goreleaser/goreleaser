@@ -1,6 +1,7 @@
 package config
 
 import (
+	"bytes"
 	"fmt"
 	"os"
 	"strings"
@@ -73,17 +74,29 @@ func TestConfigWithAnchors(t *testing.T) {
 }
 
 func TestVersion(t *testing.T) {
-	t.Run("do not allow no version", func(t *testing.T) {
+	t.Run("allow no version", func(t *testing.T) {
+		_, err := LoadReader(bytes.NewReader(nil))
+		require.NoError(t, err)
+	})
+	t.Run("do not allow no version with errors", func(t *testing.T) {
 		_, err := LoadReader(strings.NewReader("nope: nope"))
 		require.Error(t, err)
 		require.ErrorIs(t, err, VersionError{0})
 	})
-	t.Run("do not allow v0", func(t *testing.T) {
+	t.Run("allow v0", func(t *testing.T) {
+		_, err := LoadReader(strings.NewReader("version: 0"))
+		require.NoError(t, err)
+	})
+	t.Run("do not allow v0 with errors", func(t *testing.T) {
 		_, err := LoadReader(strings.NewReader("version: 0\nnope: nope"))
 		require.Error(t, err)
 		require.ErrorIs(t, err, VersionError{0})
 	})
-	t.Run("do not allow v1", func(t *testing.T) {
+	t.Run("allow v1", func(t *testing.T) {
+		_, err := LoadReader(strings.NewReader("version: 1"))
+		require.NoError(t, err)
+	})
+	t.Run("do not allow v1 with errors", func(t *testing.T) {
 		_, err := LoadReader(strings.NewReader("version: 1\nnope: nope"))
 		require.Error(t, err)
 		require.ErrorIs(t, err, VersionError{1})
