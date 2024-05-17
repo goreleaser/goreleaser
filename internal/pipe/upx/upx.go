@@ -32,7 +32,6 @@ func (Pipe) Skip(ctx *context.Context) bool { return len(ctx.Config.UPXs) == 0 }
 func (Pipe) Run(ctx *context.Context) error {
 	g := semerrgroup.NewSkipAware(semerrgroup.New(ctx.Parallelism))
 	for _, upx := range ctx.Config.UPXs {
-		upx := upx
 		enabled, err := tmpl.New(ctx).Bool(upx.Enabled)
 		if err != nil {
 			return err
@@ -44,7 +43,6 @@ func (Pipe) Run(ctx *context.Context) error {
 			return pipe.Skipf("%s not found in PATH", upx.Binary)
 		}
 		for _, bin := range findBinaries(ctx, upx) {
-			bin := bin
 			g.Go(func() error {
 				sizeBefore := sizeOf(bin.Path)
 				args := []string{

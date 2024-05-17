@@ -48,7 +48,7 @@ jobs:
       - uses: crazy-max/ghaction-upx@v3
         with:
           install-only: true
-      - uses: cachix/install-nix-action@v26
+      - uses: cachix/install-nix-action@V27
         with:
           github_access_token: ${{ secrets.GITHUB_TOKEN }}
       - uses: actions/setup-go@cdcb36043654635271a94b9a6d1392de5bb323a7 # v4
@@ -64,7 +64,7 @@ jobs:
           task build
       - name: test
         run: task test
-      - uses: codecov/codecov-action@5ecb98a3c6b747ed38dc09f787459979aebb39be # v4
+      - uses: codecov/codecov-action@6d798873df2b1b8e5846dba6fb86631229fbcb17 # v4
         with:
           file: ./coverage.txt
       - run: ./goreleaser check

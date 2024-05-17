@@ -106,7 +106,9 @@ func (Pipe) Publish(ctx *context.Context) error {
 	if err := doPublish(ctx, c); err != nil {
 		return err
 	}
-	log.WithField("url", ctx.ReleaseURL).WithField("published", !ctx.Config.Release.Draft).Info("release created/updated")
+	log.WithField("url", ctx.ReleaseURL).
+		WithField("published", !ctx.Config.Release.Draft).
+		Info("release created/updated")
 	return nil
 }
 
@@ -175,7 +177,6 @@ func doPublish(ctx *context.Context, client client.Client) error {
 
 	g := semerrgroup.New(ctx.Parallelism)
 	for _, artifact := range ctx.Artifacts.Filter(filters).List() {
-		artifact := artifact
 		g.Go(func() error {
 			return upload(ctx, client, releaseID, artifact)
 		})

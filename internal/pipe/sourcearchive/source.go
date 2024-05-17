@@ -96,7 +96,7 @@ func appendExtraFilesToArchive(ctx *context.Context, prefix, path, format string
 	if err != nil {
 		return fmt.Errorf("could not open archive: %w", err)
 	}
-	defer af.Close() //nolint:errcheck
+	defer af.Close()
 
 	arch, err := archive.Copying(of, af, format)
 	if err != nil {

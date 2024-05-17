@@ -527,17 +527,17 @@ type Build struct {
 	UnproxiedMain   string          `yaml:"-" json:"-"` // used by gomod.proxy
 	UnproxiedDir    string          `yaml:"-" json:"-"` // used by gomod.proxy
 
-	BuildDetails          `yaml:",inline" json:",inline"` // nolint: tagliatelle
-	BuildDetailsOverrides []BuildDetailsOverride          `yaml:"overrides,omitempty" json:"overrides,omitempty"`
+	BuildDetails          `yaml:",inline" json:",inline"`
+	BuildDetailsOverrides []BuildDetailsOverride `yaml:"overrides,omitempty" json:"overrides,omitempty"`
 }
 
 type BuildDetailsOverride struct {
-	Goos         string                          `yaml:"goos,omitempty" json:"goos,omitempty"`
-	Goarch       string                          `yaml:"goarch,omitempty" json:"goarch,omitempty"`
-	Goarm        string                          `yaml:"goarm,omitempty" json:"goarm,omitempty" jsonschema:"oneof_type=string;integer"`
-	Gomips       string                          `yaml:"gomips,omitempty" json:"gomips,omitempty"`
-	Goamd64      string                          `yaml:"goamd64,omitempty" json:"goamd64,omitempty"`
-	BuildDetails `yaml:",inline" json:",inline"` // nolint: tagliatelle
+	Goos         string `yaml:"goos,omitempty" json:"goos,omitempty"`
+	Goarch       string `yaml:"goarch,omitempty" json:"goarch,omitempty"`
+	Goarm        string `yaml:"goarm,omitempty" json:"goarm,omitempty" jsonschema:"oneof_type=string;integer"`
+	Gomips       string `yaml:"gomips,omitempty" json:"gomips,omitempty"`
+	Goamd64      string `yaml:"goamd64,omitempty" json:"goamd64,omitempty"`
+	BuildDetails `yaml:",inline" json:",inline"`
 }
 
 type BuildDetails struct {
@@ -782,8 +782,8 @@ type ExtraFile struct {
 
 // NFPM config.
 type NFPM struct {
-	NFPMOverridables `yaml:",inline" json:",inline"` // nolint: tagliatelle
-	Overrides        map[string]NFPMOverridables     `yaml:"overrides,omitempty" json:"overrides,omitempty"`
+	NFPMOverridables `yaml:",inline" json:",inline"`
+	Overrides        map[string]NFPMOverridables `yaml:"overrides,omitempty" json:"overrides,omitempty"`
 
 	ID          string   `yaml:"id,omitempty" json:"id,omitempty"`
 	Builds      []string `yaml:"builds,omitempty" json:"builds,omitempty"`
@@ -1193,7 +1193,7 @@ type Blob struct {
 	IncludeMeta        bool        `yaml:"include_meta,omitempty" json:"include_meta,omitempty"`
 
 	// Deprecated: use disable_ssl instead
-	OldDisableSSL bool `yaml:"disableSSL,omitempty" json:"disableSSL,omitempty" jsonschema:"deprecated=true,description=use disable_ssl instead"` // nolint:tagliatelle
+	OldDisableSSL bool `yaml:"disableSSL,omitempty" json:"disableSSL,omitempty" jsonschema:"deprecated=true,description=use disable_ssl instead"` //nolint:tagliatelle
 
 	// Deprecated: use kms_key instead
 	OldKMSKey string `yaml:"kmskey,omitempty" json:"kmskey,omitempty" jsonschema:"deprecated=true,description=use kms_key instead"`

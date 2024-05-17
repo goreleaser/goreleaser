@@ -3,8 +3,10 @@ run:
   timeout: 5m
 linters:
   enable:
+    - copyloopvar
     - thelper
     - gofumpt
+    - bodyclose
     - tparallel
     - unconvert
     - unparam
@@ -16,7 +18,11 @@ linters:
     - depguard
     - testifylint
     - gocritic
+    - nolintlint
 linters-settings:
+  gocritic:
+    disabled-checks:
+      - appendAssign
   staticcheck:
     checks:
       - all
@@ -36,9 +42,6 @@ linters-settings:
         deny:
           - pkg: "github.com/pkg/errors"
             desc: "use stdlib instead"
-  gocritic:
-    enabled-checks:
-      - exitAfterDefer
   testifylint:
     enable-all: true
     disable:

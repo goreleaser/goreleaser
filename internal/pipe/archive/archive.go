@@ -33,9 +33,9 @@ const (
 // ErrArchiveDifferentBinaryCount happens when an archive uses several builds which have different goos/goarch/etc sets,
 // causing the archives for some platforms to have more binaries than others.
 // GoReleaser breaks in these cases as it will only cause confusion to other users.
-var ErrArchiveDifferentBinaryCount = errors.New("archive has different count of binaries for each platform, which may cause your users confusion.\nLearn more at https://goreleaser.com/errors/multiple-binaries-archive\n") // nolint:revive
+var ErrArchiveDifferentBinaryCount = errors.New("archive has different count of binaries for each platform, which may cause your users confusion.\nLearn more at https://goreleaser.com/errors/multiple-binaries-archive\n") //nolint:revive
 
-// nolint: gochecknoglobals
+//nolint:gochecknoglobals
 var lock sync.Mutex
 
 // Pipe for archive.
@@ -91,7 +91,6 @@ func (Pipe) Default(ctx *context.Context) error {
 func (Pipe) Run(ctx *context.Context) error {
 	g := semerrgroup.New(ctx.Parallelism)
 	for i, archive := range ctx.Config.Archives {
-		archive := archive
 		if archive.Meta {
 			g.Go(func() error {
 				return createMeta(ctx, archive)
@@ -115,7 +114,6 @@ func (Pipe) Run(ctx *context.Context) error {
 		}
 		for group, artifacts := range artifacts {
 			log.Debugf("group %s has %d binaries", group, len(artifacts))
-			artifacts := artifacts
 			format := packageFormat(archive, artifacts[0].Goos)
 			switch format {
 			case "none":

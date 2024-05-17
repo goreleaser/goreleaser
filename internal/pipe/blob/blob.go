@@ -57,7 +57,6 @@ func (Pipe) Publish(ctx *context.Context) error {
 	g := semerrgroup.New(ctx.Parallelism)
 	skips := pipe.SkipMemento{}
 	for _, conf := range ctx.Config.Blobs {
-		conf := conf
 		g.Go(func() error {
 			b, err := tmpl.New(ctx).Bool(conf.Disable)
 			if err != nil {

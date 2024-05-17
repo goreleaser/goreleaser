@@ -64,7 +64,7 @@ type releaseOpts struct {
 
 func newReleaseCmd() *releaseCmd {
 	root := &releaseCmd{}
-	// nolint: dupl
+	//nolint:dupl
 	cmd := &cobra.Command{
 		Use:               "release",
 		Aliases:           []string{"r"},
@@ -194,7 +194,9 @@ func setupReleaseContext(ctx *context.Context, options releaseOpts) error {
 		ctx.Snapshot = true
 	}
 
-	ctx.Config.Release.Draft = options.draft
+	if options.draft {
+		ctx.Config.Release.Draft = true
+	}
 
 	if err := skips.SetRelease(ctx, options.skips...); err != nil {
 		return err

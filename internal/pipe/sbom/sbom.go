@@ -307,7 +307,7 @@ func applyTemplate(ctx *context.Context, cfg config.SBOM, a *artifact.Artifact) 
 		paths = append(paths, procPath)
 	}
 
-	// nolint:prealloc
+	//nolint:prealloc
 	var args []string
 	for _, arg := range cfg.Args {
 		renderedArg, err := templater.Apply(expand(arg, env))

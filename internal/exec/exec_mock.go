@@ -9,7 +9,7 @@ import (
 	"strings"
 )
 
-// nolint: gochecknoglobals
+//nolint:gochecknoglobals
 var (
 	MockEnvVar = "GORELEASER_MOCK_DATA"
 	MockCmd    = os.Args[0]
@@ -39,7 +39,7 @@ func (m *MockData) UnmarshalJSON(b []byte) error {
 
 // MarshalMockEnv mocks marshal.
 //
-// nolint: interfacer
+//nolint:interfacer
 func MarshalMockEnv(data *MockData) string {
 	b, err := data.MarshalJSON()
 	if err != nil {

@@ -60,7 +60,6 @@ func (ManifestPipe) Default(ctx *context.Context) error {
 func (ManifestPipe) Publish(ctx *context.Context) error {
 	g := semerrgroup.NewSkipAware(semerrgroup.New(1))
 	for _, manifest := range ctx.Config.DockerManifests {
-		manifest := manifest
 		g.Go(func() error {
 			skip, err := tmpl.New(ctx).Apply(manifest.SkipPush)
 			if err != nil {

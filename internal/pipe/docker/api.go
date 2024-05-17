@@ -43,7 +43,6 @@ type manifester interface {
 	Push(ctx *context.Context, manifest string, flags []string) (digest string, err error)
 }
 
-// nolint: unparam
 func runCommand(ctx *context.Context, dir, binary string, args ...string) error {
 	/* #nosec */
 	cmd := exec.CommandContext(ctx, binary, args...)

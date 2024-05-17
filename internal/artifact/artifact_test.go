@@ -44,7 +44,6 @@ func TestAdd(t *testing.T) {
 			Type: Checksum,
 		},
 	} {
-		a := a
 		g.Go(func() error {
 			artifacts.Add(a)
 			return nil

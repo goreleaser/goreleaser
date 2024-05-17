@@ -522,7 +522,7 @@ func TestBuild(t *testing.T) {
 		fi, err := os.Stat(bin.Path)
 		require.NoError(t, err)
 
-		// make this a suitable map key, per docs: https://golang.org/pkg/time/#Time
+		// make this a suitable map key, per docs: https://pkg.go.dev/time#Time
 		modTime := fi.ModTime().UTC().Round(0).Unix()
 
 		if modTimes[modTime] {
@@ -1431,6 +1431,25 @@ func TestInvalidGoBinaryTpl(t *testing.T) {
 		Path:   filepath.Join("dist", runtimeTarget, build.Binary),
 		Ext:    "",
 	}))
+}
+
+func TestBuildOutput(t *testing.T) {
+	t.Run("empty", func(t *testing.T) {
+		require.Empty(t, buildOutput([]byte{}))
+	})
+	t.Run("downloading only", func(t *testing.T) {
+		require.Empty(t, buildOutput([]byte(`
+go: downloading github.com/atotto/clipboard v0.1.4
+go: downloading github.com/caarlos0/duration v0.0.0-20240108180406-5d492514f3c7
+		`)))
+	})
+	t.Run("mixed", func(t *testing.T) {
+		require.NotEmpty(t, buildOutput([]byte(`
+go: downloading github.com/atotto/clipboard v0.1.4
+go: downloading github.com/caarlos0/duration v0.0.0-20240108180406-5d492514f3c7
+something something
+		`)))
+	})
 }
 
 //

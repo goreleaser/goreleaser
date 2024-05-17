@@ -1,6 +1,6 @@
 // Package snapcraft implements the Pipe interface providing Snapcraft bindings.
 //
-// nolint:tagliatelle
+//nolint:tagliatelle
 package snapcraft
 
 import (
@@ -193,7 +193,6 @@ func doRun(ctx *context.Context, snap config.Snapcraft) error {
 			log.WithField("arch", arch).Warn("ignored unsupported arch")
 			continue
 		}
-		binaries := binaries
 		g.Go(func() error {
 			return create(ctx, snap, arch, binaries)
 		})
@@ -454,7 +453,7 @@ func push(ctx *context.Context, snap *artifact.Artifact) error {
 }
 
 func processChannelsTemplates(ctx *context.Context, snap config.Snapcraft) ([]string, error) {
-	// nolint:prealloc
+	//nolint:prealloc
 	var channels []string
 	for _, channeltemplate := range snap.ChannelTemplates {
 		channel, err := tmpl.New(ctx).Apply(channeltemplate)

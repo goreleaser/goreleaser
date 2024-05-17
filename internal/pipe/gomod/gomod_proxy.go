@@ -160,7 +160,7 @@ func proxyBuild(ctx *context.Context, build *config.Build) error {
 	log.Debugf("tidying")
 	cmd := exec.CommandContext(ctx, ctx.Config.GoMod.GoBinary, "get", ctx.ModulePath+"@"+ctx.Git.CurrentTag)
 	cmd.Dir = dir
-	cmd.Env = append(ctx.Config.GoMod.Env, os.Environ()...) //nolint: gocritic
+	cmd.Env = append(ctx.Config.GoMod.Env, os.Environ()...)
 	if out, err := cmd.CombinedOutput(); err != nil {
 		return newDetailedErrProxy(err, string(out))
 	}

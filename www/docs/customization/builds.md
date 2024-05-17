@@ -93,7 +93,7 @@ builds:
         {{- end }}
 
     # GOOS list to build for.
-    # For more info refer to: https://golang.org/doc/install/source#environment
+    # For more info refer to: https://go.dev/doc/install/source#environment
     #
     # Default: [ 'darwin', 'linux', 'windows' ]
     goos:
@@ -101,7 +101,7 @@ builds:
       - windows
 
     # GOARCH to build for.
-    # For more info refer to: https://golang.org/doc/install/source#environment
+    # For more info refer to: https://go.dev/doc/install/source#environment
     #
     # Default: [ '386', 'amd64', 'arm64' ]
     goarch:
@@ -110,7 +110,7 @@ builds:
       - arm64
 
     # GOARM to build for when GOARCH is arm.
-    # For more info refer to: https://golang.org/doc/install/source#environment
+    # For more info refer to: https://go.dev/doc/install/source#environment
     #
     # Default: [ 6 ]
     goarm:
@@ -118,7 +118,7 @@ builds:
       - 7
 
     # GOAMD64 to build when GOARCH is amd64.
-    # For more info refer to: https://golang.org/doc/install/source#environment
+    # For more info refer to: https://go.dev/doc/install/source#environment
     #
     # Default: [ 'v1' ]
     goamd64:
@@ -126,7 +126,7 @@ builds:
       - v3
 
     # GOMIPS and GOMIPS64 to build when GOARCH is mips, mips64, mipsle or mips64le.
-    # For more info refer to: https://golang.org/doc/install/source#environment
+    # For more info refer to: https://go.dev/doc/install/source#environment
     #
     # Default: [ 'hardfloat' ]
     gomips:

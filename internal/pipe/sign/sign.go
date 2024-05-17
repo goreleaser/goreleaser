@@ -198,7 +198,7 @@ func signone(ctx *context.Context, cfg config.Sign, art *artifact.Artifact) ([]*
 	}
 	env["certificate"] = cert
 
-	// nolint:prealloc
+	//nolint:prealloc
 	var args []string
 	for _, a := range cfg.Args {
 		arg, err := tmpl.New(ctx).WithEnv(env).Apply(expand(a, env))
