@@ -10,6 +10,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/goreleaser/nfpm/v2"
 	"github.com/goreleaser/nfpm/v2/files"
 	"github.com/invopop/jsonschema"
 )
@@ -907,6 +908,39 @@ type NFPMArchLinux struct {
 	Scripts  NFPMArchLinuxScripts `yaml:"scripts,omitempty" json:"scripts,omitempty"`
 }
 
+// NFPMIPK is custom config only available on ipk packages.
+type NFPMIPKAlternative struct {
+	Priority int    `yaml:"priority,omitempty" json:"priority,omitempty"`
+	Target   string `yaml:"target,omitempty" json:"target,omitempty"`
+	LinkName string `yaml:"link_name,omitempty" json:"link_name,omitempty"`
+}
+
+func (alt NFPMIPKAlternative) ToNFP() nfpm.IPKAlternative {
+	return nfpm.IPKAlternative{
+		Priority: alt.Priority,
+		Target:   alt.Target,
+		LinkName: alt.LinkName,
+	}
+}
+
+type NFPMIPK struct {
+	ABIVersion    string               `yaml:"abi_version,omitempty" json:"abi_version,omitempty"`
+	Alternatives  []NFPMIPKAlternative `yaml:"alternatives,omitempty" json:"alternatives,omitempty"`
+	AutoInstalled bool                 `yaml:"auto_installed,omitempty" json:"auto_installed,omitempty"`
+	Essential     bool                 `yaml:"essential,omitempty" json:"essential,omitempty"`
+	Predepends    []string             `yaml:"predepends,omitempty" json:"predepends,omitempty"`
+	Tags          []string             `yaml:"tags,omitempty" json:"tags,omitempty"`
+	Fields        map[string]string    `yaml:"fields,omitempty" json:"fields,omitempty"`
+}
+
+func (ipk NFPMIPK) ToNFPAlts() []nfpm.IPKAlternative {
+	alts := make([]nfpm.IPKAlternative, len(ipk.Alternatives))
+	for i, alt := range ipk.Alternatives {
+		alts[i] = alt.ToNFP()
+	}
+	return alts
+}
+
 // NFPMOverridables is used to specify per package format settings.
 type NFPMOverridables struct {
 	FileNameTemplate string         `yaml:"file_name_template,omitempty" json:"file_name_template,omitempty"`
@@ -928,6 +962,7 @@ type NFPMOverridables struct {
 	Deb              NFPMDeb        `yaml:"deb,omitempty" json:"deb,omitempty"`
 	APK              NFPMAPK        `yaml:"apk,omitempty" json:"apk,omitempty"`
 	ArchLinux        NFPMArchLinux  `yaml:"archlinux,omitempty" json:"archlinux,omitempty"`
+	IPK              NFPMIPK        `yaml:"ipk,omitempty" json:"ipk,omitempty"`
 }
 
 // SBOM config.
