@@ -100,8 +100,8 @@ winget:
 
     # Path for the file inside the repository.
     #
-    # Default: manifests/<lowercased first char of publisher>/<publisher>/<version>
-    path: manifests/g/goreleaser/1.19
+    # Default: manifests/<lowercased first char of publisher>/<publisher>/<name>/<version>
+    path: manifests/g/goreleaser/myproject/1.19
 
     # Your app's homepage.
     homepage: "https://example.com/"
