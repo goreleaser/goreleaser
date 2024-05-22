@@ -78,7 +78,6 @@ changelog:
     exclude:
       - "^test:"
       - "^test\\("
-      - "^chore"
       - "merge conflict"
       - Merge pull request
       - Merge remote-tracking branch
@@ -86,7 +85,7 @@ changelog:
       - go mod tidy
   groups:
     - title: Dependency updates
-      regexp: '^.*?(feat|fix|chore)\(deps\)!?:.+$'
+      regexp: '^.*?(.+)\(deps\)!?:.+$'
       order: 300
     - title: "New Features"
       regexp: '^.*?feat(\(.+\))??!?:.+$'
