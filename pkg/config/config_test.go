@@ -60,12 +60,12 @@ func TestFileNotFound(t *testing.T) {
 
 func TestInvalidFields(t *testing.T) {
 	_, err := Load("testdata/invalid_config.yml")
-	require.EqualError(t, err, "yaml: unmarshal errors:\n  line 2: field invalid_yaml not found in type config.Build")
+	require.EqualError(t, err, "yaml: unmarshal errors:\n  line 3: field invalid_yaml not found in type config.Build")
 }
 
 func TestInvalidYaml(t *testing.T) {
 	_, err := Load("testdata/invalid.yml")
-	require.EqualError(t, err, "yaml: line 1: did not find expected node content")
+	require.EqualError(t, err, "yaml: line 2: did not find expected node content")
 }
 
 func TestConfigWithAnchors(t *testing.T) {
@@ -78,17 +78,31 @@ func TestVersion(t *testing.T) {
 		_, err := LoadReader(bytes.NewReader(nil))
 		require.NoError(t, err)
 	})
+	t.Run("do not allow no version with errors", func(t *testing.T) {
+		_, err := LoadReader(strings.NewReader("nope: nope"))
+		require.Error(t, err)
+		require.ErrorIs(t, err, VersionError{0})
+	})
 	t.Run("allow v0", func(t *testing.T) {
 		_, err := LoadReader(strings.NewReader("version: 0"))
 		require.NoError(t, err)
+	})
+	t.Run("do not allow v0 with errors", func(t *testing.T) {
+		_, err := LoadReader(strings.NewReader("version: 0\nnope: nope"))
+		require.Error(t, err)
+		require.ErrorIs(t, err, VersionError{0})
 	})
 	t.Run("allow v1", func(t *testing.T) {
 		_, err := LoadReader(strings.NewReader("version: 1"))
 		require.NoError(t, err)
 	})
-	t.Run("do not allow v2", func(t *testing.T) {
-		_, err := LoadReader(strings.NewReader("version: 2"))
+	t.Run("do not allow v1 with errors", func(t *testing.T) {
+		_, err := LoadReader(strings.NewReader("version: 1\nnope: nope"))
 		require.Error(t, err)
-		require.ErrorIs(t, err, VersionError{2})
+		require.ErrorIs(t, err, VersionError{1})
+	})
+	t.Run("allow v2", func(t *testing.T) {
+		_, err := LoadReader(strings.NewReader("version: 2\nbuilds: []"))
+		require.NoError(t, err)
 	})
 }

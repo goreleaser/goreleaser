@@ -399,33 +399,6 @@ func TestDefaultPartialBuilds(t *testing.T) {
 	})
 }
 
-func TestDefaultFillSingleBuild(t *testing.T) {
-	testlib.Mktmp(t)
-
-	ctx := testctx.NewWithCfg(config.Project{
-		ProjectName: "foo",
-		SingleBuild: config.Build{
-			Main: "testreleaser",
-		},
-	})
-	require.NoError(t, Pipe{}.Default(ctx))
-	require.Len(t, ctx.Config.Builds, 1)
-	require.Equal(t, "foo", ctx.Config.Builds[0].Binary)
-}
-
-func TestDefaultFailSingleBuild(t *testing.T) {
-	folder := testlib.Mktmp(t)
-	config := config.Project{
-		Dist: folder,
-		SingleBuild: config.Build{
-			Builder: "fakeFailDefault",
-		},
-	}
-	ctx := testctx.NewWithCfg(config)
-	require.EqualError(t, Pipe{}.Default(ctx), errFailedDefault.Error())
-	require.Empty(t, ctx.Artifacts.List())
-}
-
 func TestSkipBuild(t *testing.T) {
 	folder := testlib.Mktmp(t)
 	config := config.Project{

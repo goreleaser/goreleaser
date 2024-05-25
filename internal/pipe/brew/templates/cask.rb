@@ -78,17 +78,6 @@ class {{ .Name }} < Formula
   end
   {{- end -}}
 
-  {{- with .Plist }}
-
-  plist_options startup: false
-
-  def plist
-    <<~EOS
-      {{ . }}
-    EOS
-  end
-  {{- end -}}
-
   {{- with .Service }}
 
   service do

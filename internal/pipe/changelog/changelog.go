@@ -12,7 +12,6 @@ import (
 
 	"github.com/caarlos0/log"
 	"github.com/goreleaser/goreleaser/internal/client"
-	"github.com/goreleaser/goreleaser/internal/deprecate"
 	"github.com/goreleaser/goreleaser/internal/git"
 	"github.com/goreleaser/goreleaser/internal/tmpl"
 	"github.com/goreleaser/goreleaser/pkg/context"
@@ -45,10 +44,6 @@ func (Pipe) String() string { return "generating changelog" }
 func (Pipe) Skip(ctx *context.Context) (bool, error) {
 	if ctx.Snapshot {
 		return true, nil
-	}
-	if ctx.Config.Changelog.Skip != "" {
-		deprecate.Notice(ctx, "changelog.skip")
-		ctx.Config.Changelog.Disable = ctx.Config.Changelog.Skip
 	}
 
 	return tmpl.New(ctx).Bool(ctx.Config.Changelog.Disable)

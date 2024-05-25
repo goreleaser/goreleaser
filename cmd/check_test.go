@@ -37,7 +37,7 @@ func TestCheckConfigThatDoesNotExist(t *testing.T) {
 func TestCheckConfigUnmarshalError(t *testing.T) {
 	cmd := newCheckCmd()
 	cmd.cmd.SetArgs([]string{"-f", "testdata/unmarshal_error.yml"})
-	require.EqualError(t, cmd.cmd.Execute(), "yaml: unmarshal errors:\n  line 1: field foo not found in type config.Project")
+	require.EqualError(t, cmd.cmd.Execute(), "yaml: unmarshal errors:\n  line 2: field foo not found in type config.Project")
 	require.Equal(t, 0, cmd.checked)
 }
 
