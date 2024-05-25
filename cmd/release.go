@@ -7,7 +7,6 @@ import (
 
 	"github.com/caarlos0/ctrlc"
 	"github.com/caarlos0/log"
-	"github.com/goreleaser/goreleaser/internal/deprecate"
 	"github.com/goreleaser/goreleaser/internal/logext"
 	"github.com/goreleaser/goreleaser/internal/middleware/errhandler"
 	"github.com/goreleaser/goreleaser/internal/middleware/logging"
@@ -41,25 +40,6 @@ type releaseOpts struct {
 	parallelism       int
 	timeout           time.Duration
 	skips             []string
-
-	// Deprecated: use clean instead.
-	rmDist bool
-	// Deprecated: use skips instead.
-	skipPublish bool
-	// Deprecated: use skips instead.
-	skipSign bool
-	// Deprecated: use skips instead.
-	skipValidate bool
-	// Deprecated: use skips instead.
-	skipAnnounce bool
-	// Deprecated: use skips instead.
-	skipSBOMCataloging bool
-	// Deprecated: use skips instead.
-	skipDocker bool
-	// Deprecated: use skips instead.
-	skipKo bool
-	// Deprecated: use skips instead.
-	skipBefore bool
 }
 
 func newReleaseCmd() *releaseCmd {
@@ -101,37 +81,13 @@ func newReleaseCmd() *releaseCmd {
 	cmd.Flags().BoolVar(&root.opts.snapshot, "snapshot", false, "Generate an unversioned snapshot release, skipping all validations and without publishing any artifacts (implies --skip=announce,publish,validate)")
 	cmd.Flags().BoolVar(&root.opts.draft, "draft", false, "Whether to set the release to draft. Overrides release.draft in the configuration file")
 	cmd.Flags().BoolVar(&root.opts.failFast, "fail-fast", false, "Whether to abort the release publishing on the first error")
-	cmd.Flags().BoolVar(&root.opts.skipPublish, "skip-publish", false, "Skips publishing artifacts (implies --skip=announce)")
-	cmd.Flags().BoolVar(&root.opts.skipAnnounce, "skip-announce", false, "Skips announcing releases (implies --skip=validate)")
-	cmd.Flags().BoolVar(&root.opts.skipSign, "skip-sign", false, "Skips signing artifacts")
-	cmd.Flags().BoolVar(&root.opts.skipSBOMCataloging, "skip-sbom", false, "Skips cataloging artifacts")
-	cmd.Flags().BoolVar(&root.opts.skipDocker, "skip-docker", false, "Skips Docker Images/Manifests builds")
-	cmd.Flags().BoolVar(&root.opts.skipKo, "skip-ko", false, "Skips Ko builds")
-	cmd.Flags().BoolVar(&root.opts.skipBefore, "skip-before", false, "Skips global before hooks")
-	cmd.Flags().BoolVar(&root.opts.skipValidate, "skip-validate", false, "Skips git checks")
 	cmd.Flags().BoolVar(&root.opts.clean, "clean", false, "Removes the 'dist' directory")
-	cmd.Flags().BoolVar(&root.opts.rmDist, "rm-dist", false, "Removes the 'dist' directory")
 	cmd.Flags().IntVarP(&root.opts.parallelism, "parallelism", "p", 0, "Amount tasks to run concurrently (default: number of CPUs)")
 	_ = cmd.RegisterFlagCompletionFunc("parallelism", cobra.NoFileCompletions)
 	cmd.Flags().DurationVar(&root.opts.timeout, "timeout", 30*time.Minute, "Timeout to the entire release process")
 	_ = cmd.RegisterFlagCompletionFunc("timeout", cobra.NoFileCompletions)
 	cmd.Flags().BoolVar(&root.opts.deprecated, "deprecated", false, "Force print the deprecation message - tests only")
 	_ = cmd.Flags().MarkHidden("deprecated")
-	_ = cmd.Flags().MarkHidden("rm-dist")
-	_ = cmd.Flags().MarkDeprecated("rm-dist", "please use --clean instead")
-	for _, f := range []string{
-		"publish",
-		"announce",
-		"sign",
-		"sbom",
-		"docker",
-		"ko",
-		"before",
-		"validate",
-	} {
-		_ = cmd.Flags().MarkHidden("skip-" + f)
-		_ = cmd.Flags().MarkDeprecated("skip"+f, fmt.Sprintf("please use --skip=%s instead", f))
-	}
 	cmd.Flags().StringSliceVar(
 		&root.opts.skips,
 		"skip",
@@ -188,7 +144,7 @@ func setupReleaseContext(ctx *context.Context, options releaseOpts) error {
 	ctx.ReleaseFooterTmpl = options.releaseFooterTmpl
 	ctx.Snapshot = options.snapshot
 	ctx.FailFast = options.failFast
-	ctx.Clean = options.clean || options.rmDist
+	ctx.Clean = options.clean
 	if options.autoSnapshot && git.CheckDirty(ctx) != nil {
 		log.Info("git repository is dirty and --auto-snapshot is set, implying --snapshot")
 		ctx.Snapshot = true
@@ -200,44 +156,6 @@ func setupReleaseContext(ctx *context.Context, options releaseOpts) error {
 
 	if err := skips.SetRelease(ctx, options.skips...); err != nil {
 		return err
-	}
-
-	// wire deprecated options
-	// XXX: remove soon
-	if options.skipPublish {
-		skips.Set(ctx, skips.Publish)
-		deprecate.NoticeCustom(ctx, "-skip", "--skip-publish was deprecated in favor of --skip=publish, check {{ .URL }} for more details")
-	}
-	if options.skipSign {
-		skips.Set(ctx, skips.Sign)
-		deprecate.NoticeCustom(ctx, "-skip", "--skip-sign was deprecated in favor of --skip=sign, check {{ .URL }} for more details")
-	}
-	if options.skipValidate {
-		skips.Set(ctx, skips.Validate)
-		deprecate.NoticeCustom(ctx, "-skip", "--skip-validate was deprecated in favor of --skip=validate, check {{ .URL }} for more details")
-	}
-	if options.skipAnnounce {
-		skips.Set(ctx, skips.Announce)
-		deprecate.NoticeCustom(ctx, "-skip", "--skip-announce was deprecated in favor of --skip=announce, check {{ .URL }} for more details")
-	}
-	if options.skipSBOMCataloging {
-		skips.Set(ctx, skips.SBOM)
-		deprecate.NoticeCustom(ctx, "-skip", "--skip-sbom was deprecated in favor of --skip=sbom, check {{ .URL }} for more details")
-	}
-	if options.skipDocker {
-		skips.Set(ctx, skips.Docker)
-		deprecate.NoticeCustom(ctx, "-skip", "--skip-docker was deprecated in favor of --skip=docker, check {{ .URL }} for more details")
-	}
-	if options.skipKo {
-		skips.Set(ctx, skips.Ko)
-		deprecate.NoticeCustom(ctx, "-skip", "--skip-ko was deprecated in favor of --skip=ko, check {{ .URL }} for more details")
-	}
-	if options.skipBefore {
-		skips.Set(ctx, skips.Before)
-		deprecate.NoticeCustom(ctx, "-skip", "--skip-before was deprecated in favor of --skip=before, check {{ .URL }} for more details")
-	}
-	if options.rmDist {
-		deprecate.NoticeCustom(ctx, "-rm-dist", "--rm-dist was deprecated in favor of --clean, check {{ .URL }} for more details")
 	}
 
 	if ctx.Snapshot {
