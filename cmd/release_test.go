@@ -100,16 +100,6 @@ func TestReleaseFlags(t *testing.T) {
 		requireAll(t, ctx, skips.Publish, skips.Validate, skips.Announce)
 	})
 
-	t.Run("skips (old)", func(t *testing.T) {
-		ctx := setup(t, releaseOpts{
-			skipPublish:  true,
-			skipSign:     true,
-			skipValidate: true,
-		})
-
-		requireAll(t, ctx, skips.Sign, skips.Publish, skips.Validate, skips.Announce)
-	})
-
 	t.Run("skips", func(t *testing.T) {
 		ctx := setup(t, releaseOpts{
 			skips: []string{

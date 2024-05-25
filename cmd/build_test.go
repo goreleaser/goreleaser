@@ -151,15 +151,6 @@ func TestBuildFlags(t *testing.T) {
 		require.True(t, ctx.SkipTokenCheck)
 	})
 
-	t.Run("skips (old)", func(t *testing.T) {
-		ctx := setup(buildOpts{
-			skipValidate:  true,
-			skipPostHooks: true,
-		})
-		requireAll(t, ctx, skips.Validate, skips.PostBuildHooks)
-		require.True(t, ctx.SkipTokenCheck)
-	})
-
 	t.Run("skips", func(t *testing.T) {
 		ctx := setup(buildOpts{
 			skips: []string{
