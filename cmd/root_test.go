@@ -73,11 +73,11 @@ func TestShouldPrependRelease(t *testing.T) {
 	})
 
 	t.Run("release args", func(t *testing.T) {
-		require.True(t, result([]string{"--skip-validate"}))
+		require.True(t, result([]string{"--skip=validate"}))
 	})
 
 	t.Run("several release args", func(t *testing.T) {
-		require.True(t, result([]string{"--skip-validate", "--snapshot"}))
+		require.True(t, result([]string{"--skip=validate", "--snapshot"}))
 	})
 
 	for _, s := range []string{"--help", "-h", "-v", "--version"} {

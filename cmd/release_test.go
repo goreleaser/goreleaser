@@ -22,7 +22,7 @@ func TestReleaseAutoSnapshot(t *testing.T) {
 	t.Run("clean", func(t *testing.T) {
 		setup(t)
 		cmd := newReleaseCmd()
-		cmd.cmd.SetArgs([]string{"--auto-snapshot", "--skip-publish"})
+		cmd.cmd.SetArgs([]string{"--auto-snapshot", "--skip=publish"})
 		require.NoError(t, cmd.cmd.Execute())
 		require.FileExists(t, "dist/fake_0.0.2_checksums.txt", "should have created checksums when run with --snapshot")
 	})
@@ -31,7 +31,7 @@ func TestReleaseAutoSnapshot(t *testing.T) {
 		setup(t)
 		createFile(t, "foo", "force dirty tree")
 		cmd := newReleaseCmd()
-		cmd.cmd.SetArgs([]string{"--auto-snapshot", "--skip-publish"})
+		cmd.cmd.SetArgs([]string{"--auto-snapshot", "--skip=publish"})
 		require.NoError(t, cmd.cmd.Execute())
 		matches, err := filepath.Glob("./dist/fake_0.0.2-SNAPSHOT-*_checksums.txt")
 		require.NoError(t, err)

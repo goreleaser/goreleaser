@@ -10,7 +10,6 @@ import (
 	"github.com/caarlos0/ctrlc"
 	"github.com/caarlos0/log"
 	"github.com/goreleaser/goreleaser/internal/artifact"
-	"github.com/goreleaser/goreleaser/internal/deprecate"
 	"github.com/goreleaser/goreleaser/internal/gio"
 	"github.com/goreleaser/goreleaser/internal/logext"
 	"github.com/goreleaser/goreleaser/internal/middleware/errhandler"
@@ -39,15 +38,6 @@ type buildOpts struct {
 	singleTarget bool
 	output       string
 	skips        []string
-
-	// Deprecated: use clean instead.
-	rmDist bool
-	// Deprecated: use skip instead.
-	skipValidate bool
-	// Deprecated: use skip instead.
-	skipBefore bool
-	// Deprecated: use skip instead.
-	skipPostHooks bool
 }
 
 func newBuildCmd() *buildCmd {
@@ -82,11 +72,7 @@ When using ` + "`--single-target`" + `, the ` + "`GOOS`" + ` and ` + "`GOARCH`" 
 	cmd.Flags().StringVarP(&root.opts.config, "config", "f", "", "Load configuration from file")
 	_ = cmd.MarkFlagFilename("config", "yaml", "yml")
 	cmd.Flags().BoolVar(&root.opts.snapshot, "snapshot", false, "Generate an unversioned snapshot build, skipping all validations")
-	cmd.Flags().BoolVar(&root.opts.skipValidate, "skip-validate", false, "Skips several sanity checks")
-	cmd.Flags().BoolVar(&root.opts.skipBefore, "skip-before", false, "Skips global before hooks")
-	cmd.Flags().BoolVar(&root.opts.skipPostHooks, "skip-post-hooks", false, "Skips all post-build hooks")
 	cmd.Flags().BoolVar(&root.opts.clean, "clean", false, "Removes the 'dist' directory before building")
-	cmd.Flags().BoolVar(&root.opts.rmDist, "rm-dist", false, "Removes the 'dist' directory before building")
 	cmd.Flags().IntVarP(&root.opts.parallelism, "parallelism", "p", 0, "Number of tasks to run concurrently (default: number of CPUs)")
 	_ = cmd.RegisterFlagCompletionFunc("parallelism", cobra.NoFileCompletions)
 	cmd.Flags().DurationVar(&root.opts.timeout, "timeout", 30*time.Minute, "Timeout to the entire build process")
@@ -108,17 +94,8 @@ When using ` + "`--single-target`" + `, the ` + "`GOOS`" + ` and ` + "`GOARCH`" 
 	cmd.Flags().BoolVar(&root.opts.deprecated, "deprecated", false, "Force print the deprecation message - tests only")
 	cmd.Flags().StringVarP(&root.opts.output, "output", "o", "", "Copy the binary to the path after the build. Only taken into account when using --single-target and a single id (either with --id or if configuration only has one build)")
 	_ = cmd.MarkFlagFilename("output", "")
-	_ = cmd.Flags().MarkHidden("rm-dist")
 	_ = cmd.Flags().MarkHidden("deprecated")
 
-	for _, f := range []string{
-		"post-hooks",
-		"before",
-		"validate",
-	} {
-		_ = cmd.Flags().MarkHidden("skip-" + f)
-		_ = cmd.Flags().MarkDeprecated("skip-"+f, fmt.Sprintf("please use --skip=%s instead", f))
-	}
 	cmd.Flags().StringSliceVar(
 		&root.opts.skips,
 		"skip",
@@ -180,29 +157,12 @@ func setupBuildContext(ctx *context.Context, options buildOpts) error {
 		return err
 	}
 
-	if options.skipValidate {
-		skips.Set(ctx, skips.Validate)
-		deprecate.NoticeCustom(ctx, "-skip", "--skip-validate was deprecated in favor of --skip=validate, check {{ .URL }} for more details")
-	}
-	if options.skipBefore {
-		skips.Set(ctx, skips.Before)
-		deprecate.NoticeCustom(ctx, "-skip", "--skip-before was deprecated in favor of --skip=before, check {{ .URL }} for more details")
-	}
-	if options.skipPostHooks {
-		skips.Set(ctx, skips.PostBuildHooks)
-		deprecate.NoticeCustom(ctx, "-skip", "--skip-post-hooks was deprecated in favor of --skip=post-hooks, check {{ .URL }} for more details")
-	}
-
-	if options.rmDist {
-		deprecate.NoticeCustom(ctx, "-rm-dist", "--rm-dist was deprecated in favor of --clean, check {{ .URL }} for more details")
-	}
-
 	if ctx.Snapshot {
 		skips.Set(ctx, skips.Validate)
 	}
 
 	ctx.SkipTokenCheck = true
-	ctx.Clean = options.clean || options.rmDist
+	ctx.Clean = options.clean
 
 	if options.singleTarget {
 		ctx.Partial = true
