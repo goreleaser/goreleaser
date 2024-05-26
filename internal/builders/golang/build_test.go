@@ -818,7 +818,7 @@ func TestRunPipeWithProxiedRepo(t *testing.T) {
 		[]byte(`// +build main
 package main
 
-import _ "github.com/goreleaser/goreleaser/v2"
+import _ "github.com/goreleaser/goreleaser"
 `),
 		0o666,
 	))
@@ -839,7 +839,7 @@ import _ "github.com/goreleaser/goreleaser/v2"
 		Builds: []config.Build{
 			{
 				Binary:        "foo",
-				Main:          "github.com/goreleaser/goreleaser/v2",
+				Main:          "github.com/goreleaser/goreleaser",
 				Dir:           proxied,
 				UnproxiedMain: ".",
 				UnproxiedDir:  ".",
