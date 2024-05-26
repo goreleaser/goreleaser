@@ -1,7 +1,7 @@
 // Package middleware define middlewares for Actions.
 package middleware
 
-import "github.com/goreleaser/goreleaser/pkg/context"
+import "github.com/goreleaser/goreleaser/v2/pkg/context"
 
 // Action is a function that takes a context and returns an error.
 // It is used on Pipers, Defaulters and Publishers, although they are not
