@@ -300,7 +300,7 @@ func fakeGoMod(tb testing.TB, module string) {
 }
 
 func withGoReleaserModulePath(ctx *context.Context) {
-	ctx.ModulePath = "github.com/goreleaser/goreleaser/v2"
+	ctx.ModulePath = "github.com/goreleaser/goreleaser"
 }
 
 func withNfpmModulePath(ctx *context.Context) {
