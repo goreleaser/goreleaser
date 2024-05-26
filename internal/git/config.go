@@ -9,7 +9,7 @@ import (
 	"strings"
 
 	"github.com/caarlos0/log"
-	"github.com/goreleaser/goreleaser/pkg/config"
+	"github.com/goreleaser/goreleaser/v2/pkg/config"
 )
 
 // ExtractRepoFromConfig gets the repo name from the Git config.

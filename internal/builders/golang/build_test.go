@@ -10,13 +10,13 @@ import (
 	"testing"
 	"time"
 
-	"github.com/goreleaser/goreleaser/internal/artifact"
-	"github.com/goreleaser/goreleaser/internal/testctx"
-	"github.com/goreleaser/goreleaser/internal/testlib"
-	"github.com/goreleaser/goreleaser/internal/tmpl"
-	api "github.com/goreleaser/goreleaser/pkg/build"
-	"github.com/goreleaser/goreleaser/pkg/config"
-	"github.com/goreleaser/goreleaser/pkg/context"
+	"github.com/goreleaser/goreleaser/v2/internal/artifact"
+	"github.com/goreleaser/goreleaser/v2/internal/testctx"
+	"github.com/goreleaser/goreleaser/v2/internal/testlib"
+	"github.com/goreleaser/goreleaser/v2/internal/tmpl"
+	api "github.com/goreleaser/goreleaser/v2/pkg/build"
+	"github.com/goreleaser/goreleaser/v2/pkg/config"
+	"github.com/goreleaser/goreleaser/v2/pkg/context"
 	"github.com/stretchr/testify/require"
 )
 
@@ -818,7 +818,7 @@ func TestRunPipeWithProxiedRepo(t *testing.T) {
 		[]byte(`// +build main
 package main
 
-import _ "github.com/goreleaser/goreleaser"
+import _ "github.com/goreleaser/goreleaser/v2"
 `),
 		0o666,
 	))
@@ -839,7 +839,7 @@ import _ "github.com/goreleaser/goreleaser"
 		Builds: []config.Build{
 			{
 				Binary:        "foo",
-				Main:          "github.com/goreleaser/goreleaser",
+				Main:          "github.com/goreleaser/goreleaser/v2",
 				Dir:           proxied,
 				UnproxiedMain: ".",
 				UnproxiedDir:  ".",

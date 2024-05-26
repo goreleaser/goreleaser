@@ -3,7 +3,7 @@ package brew
 import (
 	"embed"
 
-	"github.com/goreleaser/goreleaser/pkg/config"
+	"github.com/goreleaser/goreleaser/v2/pkg/config"
 )
 
 type templateData struct {

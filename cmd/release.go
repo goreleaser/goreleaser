@@ -7,14 +7,14 @@ import (
 
 	"github.com/caarlos0/ctrlc"
 	"github.com/caarlos0/log"
-	"github.com/goreleaser/goreleaser/internal/logext"
-	"github.com/goreleaser/goreleaser/internal/middleware/errhandler"
-	"github.com/goreleaser/goreleaser/internal/middleware/logging"
-	"github.com/goreleaser/goreleaser/internal/middleware/skip"
-	"github.com/goreleaser/goreleaser/internal/pipe/git"
-	"github.com/goreleaser/goreleaser/internal/pipeline"
-	"github.com/goreleaser/goreleaser/internal/skips"
-	"github.com/goreleaser/goreleaser/pkg/context"
+	"github.com/goreleaser/goreleaser/v2/internal/logext"
+	"github.com/goreleaser/goreleaser/v2/internal/middleware/errhandler"
+	"github.com/goreleaser/goreleaser/v2/internal/middleware/logging"
+	"github.com/goreleaser/goreleaser/v2/internal/middleware/skip"
+	"github.com/goreleaser/goreleaser/v2/internal/pipe/git"
+	"github.com/goreleaser/goreleaser/v2/internal/pipeline"
+	"github.com/goreleaser/goreleaser/v2/internal/skips"
+	"github.com/goreleaser/goreleaser/v2/pkg/context"
 	"github.com/spf13/cobra"
 )
 

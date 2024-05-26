@@ -11,10 +11,10 @@ import (
 	"strings"
 
 	"github.com/caarlos0/log"
-	"github.com/goreleaser/goreleaser/internal/logext"
-	"github.com/goreleaser/goreleaser/internal/skips"
-	"github.com/goreleaser/goreleaser/internal/tmpl"
-	"github.com/goreleaser/goreleaser/pkg/context"
+	"github.com/goreleaser/goreleaser/v2/internal/logext"
+	"github.com/goreleaser/goreleaser/v2/internal/skips"
+	"github.com/goreleaser/goreleaser/v2/internal/tmpl"
+	"github.com/goreleaser/goreleaser/v2/pkg/context"
 	homedir "github.com/mitchellh/go-homedir"
 )
 

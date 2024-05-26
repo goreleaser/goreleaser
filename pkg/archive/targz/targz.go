@@ -6,8 +6,8 @@ import (
 	"compress/gzip"
 	"io"
 
-	"github.com/goreleaser/goreleaser/pkg/archive/tar"
-	"github.com/goreleaser/goreleaser/pkg/config"
+	"github.com/goreleaser/goreleaser/v2/pkg/archive/tar"
+	"github.com/goreleaser/goreleaser/v2/pkg/config"
 )
 
 // Archive as tar.gz.

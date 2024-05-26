@@ -3,11 +3,11 @@ package cmd
 import (
 	"testing"
 
-	"github.com/goreleaser/goreleaser/internal/pipeline"
-	"github.com/goreleaser/goreleaser/internal/skips"
-	"github.com/goreleaser/goreleaser/internal/testctx"
-	"github.com/goreleaser/goreleaser/pkg/config"
-	"github.com/goreleaser/goreleaser/pkg/context"
+	"github.com/goreleaser/goreleaser/v2/internal/pipeline"
+	"github.com/goreleaser/goreleaser/v2/internal/skips"
+	"github.com/goreleaser/goreleaser/v2/internal/testctx"
+	"github.com/goreleaser/goreleaser/v2/pkg/config"
+	"github.com/goreleaser/goreleaser/v2/pkg/context"
 	"github.com/stretchr/testify/require"
 )
 

@@ -5,7 +5,7 @@ import (
 	"sort"
 	"strings"
 
-	"github.com/goreleaser/goreleaser/pkg/context"
+	"github.com/goreleaser/goreleaser/v2/pkg/context"
 	"golang.org/x/exp/maps"
 	"golang.org/x/exp/slices"
 )

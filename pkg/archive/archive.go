@@ -6,13 +6,13 @@ import (
 	"io"
 	"os"
 
-	"github.com/goreleaser/goreleaser/pkg/archive/gzip"
-	"github.com/goreleaser/goreleaser/pkg/archive/tar"
-	"github.com/goreleaser/goreleaser/pkg/archive/targz"
-	"github.com/goreleaser/goreleaser/pkg/archive/tarxz"
-	"github.com/goreleaser/goreleaser/pkg/archive/tarzst"
-	"github.com/goreleaser/goreleaser/pkg/archive/zip"
-	"github.com/goreleaser/goreleaser/pkg/config"
+	"github.com/goreleaser/goreleaser/v2/pkg/archive/gzip"
+	"github.com/goreleaser/goreleaser/v2/pkg/archive/tar"
+	"github.com/goreleaser/goreleaser/v2/pkg/archive/targz"
+	"github.com/goreleaser/goreleaser/v2/pkg/archive/tarxz"
+	"github.com/goreleaser/goreleaser/v2/pkg/archive/tarzst"
+	"github.com/goreleaser/goreleaser/v2/pkg/archive/zip"
+	"github.com/goreleaser/goreleaser/v2/pkg/config"
 )
 
 // Archive represents a compression archive files from disk can be written to.

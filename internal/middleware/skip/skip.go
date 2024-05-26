@@ -5,8 +5,8 @@ import (
 	"fmt"
 
 	"github.com/caarlos0/log"
-	"github.com/goreleaser/goreleaser/internal/middleware"
-	"github.com/goreleaser/goreleaser/pkg/context"
+	"github.com/goreleaser/goreleaser/v2/internal/middleware"
+	"github.com/goreleaser/goreleaser/v2/pkg/context"
 )
 
 // Skipper defines a method to skip an entire Piper.

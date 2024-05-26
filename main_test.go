@@ -3,7 +3,7 @@ package main
 import (
 	"testing"
 
-	"github.com/goreleaser/goreleaser/internal/golden"
+	"github.com/goreleaser/goreleaser/v2/internal/golden"
 	"github.com/stretchr/testify/require"
 )
 
