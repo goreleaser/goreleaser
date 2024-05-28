@@ -13,6 +13,7 @@ Here's a running list of some organizations using GoReleaser[^1]:
 1. [Ayedo](https://www.ayedo.de/)
 1. [Banzai Cloud](https://banzaicloud.com)
 1. [Bitnami](https://bitnami.com)
+1. [Buildkite](https://buildkite.com)
 1. [Caddy](https://caddyserver.com)
 1. [Centrifugal Labs](https://github.com/centrifugal)
 1. [Charm](https://charm.sh)
