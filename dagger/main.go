@@ -8,19 +8,22 @@ import (
 )
 
 type Goreleaser struct {
-	Source *Directory
+	Source    *Directory
+	GoVersion string
 }
 
 func New(
 	// The Goreleaser source code to use
 	Source *Directory,
+	// The Go version to use
+	// +default="1.22.3"
+	GoVersion string,
 ) *Goreleaser {
-	return &Goreleaser{Source: Source}
+	return &Goreleaser{Source: Source, GoVersion: GoVersion}
 }
 
 func (g *Goreleaser) Lint(
 	ctx context.Context,
-	// +optional
 	// +default="v1.58.1"
 	golangciLintVersion string,
 ) (string, error) {
@@ -32,17 +35,13 @@ func (g *Goreleaser) Lint(
 		Stdout(ctx)
 }
 
-// Returns a container that echoes whatever string argument is provided
-func (m *Goreleaser) ContainerEcho(stringArg string) *Container {
-	return dag.Container().From("alpine:latest").WithExec([]string{"echo", stringArg})
+func (g *Goreleaser) BuildEnv() *Container {
+	return dag.Container().
+		From(fmt.Sprintf("golang:%s-bullseye", g.GoVersion)).
+		WithMountedDirectory("/src", g.Source).
+		WithWorkdir("/src")
 }
 
-// Returns lines that match a pattern in the files of the provided Directory
-func (m *Goreleaser) GrepDir(ctx context.Context, directoryArg *Directory, pattern string) (string, error) {
-	return dag.Container().
-		From("alpine:latest").
-		WithMountedDirectory("/mnt", directoryArg).
-		WithWorkdir("/mnt").
-		WithExec([]string{"grep", "-R", pattern, "."}).
-		Stdout(ctx)
+func (g *Goreleaser) TestEnv() *Container {
+	return g.BuildEnv()
 }
