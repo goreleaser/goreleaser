@@ -2,5 +2,29 @@
   "name": "goreleaser",
   "sdk": "go",
   "source": "dagger",
-  "engineVersion": "v0.11.5"
+  "engineVersion": "v0.11.5",
+  "views": [
+    {
+      "name": "default",
+      "patterns": [
+        "!bin",
+        "!.git",
+        "!dist",
+        "!coverage.txt",
+        "!goreleaser",
+        "!goreleaser.exe",
+        "!debug.test",
+        "!snap.login",
+        "!site/",
+        "!.vercel",
+        "!completions/",
+        "!.vscode/",
+        "!.task/",
+        "!.idea/",
+        "!manpages",
+        "!output.json",
+        "!.direnv"
+      ]
+    }
+  ]
 }
