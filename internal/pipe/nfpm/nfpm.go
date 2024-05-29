@@ -105,6 +105,7 @@ func doRun(ctx *context.Context, fpm config.NFPM) error {
 			artifact.ByGoos("linux"),
 			artifact.ByGoos("ios"),
 			artifact.ByGoos("android"),
+			artifact.ByGoos("aix"),
 		),
 	}
 	if len(fpm.Builds) > 0 {
@@ -114,7 +115,7 @@ func doRun(ctx *context.Context, fpm config.NFPM) error {
 		Filter(artifact.And(filters...)).
 		GroupByPlatform()
 	if len(linuxBinaries) == 0 {
-		return fmt.Errorf("no linux binaries found for builds %v", fpm.Builds)
+		return fmt.Errorf("no linux/unix binaries found for builds %v", fpm.Builds)
 	}
 	g := semerrgroup.New(ctx.Parallelism)
 	for _, format := range fpm.Formats {
@@ -182,11 +183,32 @@ func create(ctx *context.Context, fpm config.NFPM, format string, artifacts []*a
 	infoArch := artifacts[0].Goarch + artifacts[0].Goarm + artifacts[0].Gomips // key used for the ConventionalFileName et al
 	arch := infoArch + artifacts[0].Goamd64                                    // unique arch key
 	infoPlatform := artifacts[0].Goos
+	rpmArch := arch
 	if infoPlatform == "ios" {
 		if format == "deb" {
 			infoPlatform = "iphoneos-arm64"
 		} else {
 			log.Debugf("skipping ios for %s as its not supported", format)
+			return nil
+		}
+	}
+
+	// AIX is weird, so we default to 7.2 as the earliest release
+	// that supports golang. This can be overridden by setting platform
+	// in your .goreleaser.yaml. See the following:
+	// https://www.unix.com/aix/266963-tip-problem-rpm-different-operating-system.html
+	// Additionally, it is recommended to set the rpmArch to ppc
+	// As AIX, while being ppc64, expects the rpms to specify ppc.
+	// We will default to setting ppc here, but again this can be
+	// overriden by setting it in your .goreleaser.yaml See the following:
+	// https://developer.ibm.com/articles/au-aix-build-open-source-rpm-packages/
+	// https://developer.ibm.com/articles/configure-yum-on-aix/
+	if infoPlatform == "aix" {
+		if format == "rpm" {
+			infoPlatform = "aix7.2"
+			rpmArch = "ppc"
+		} else {
+			log.Debugf("skipping aix for %s as its not supported", format)
 			return nil
 		}
 	}
@@ -338,6 +360,16 @@ func create(ctx *context.Context, fpm config.NFPM, format string, artifacts []*a
 		}
 	}
 
+	// If platform is manually set, prefer it
+	if len(fpm.Platform) > 0 {
+		infoPlatform = fpm.Platform
+	}
+
+	// If rpmArch is manually set, prefer it
+	if len(overridden.RPM.Arch) > 0 {
+		rpmArch = overridden.RPM.Arch
+	}
+
 	log.WithField("files", destinations(contents)).Debug("all archive files")
 
 	info := &nfpm.Info{
@@ -399,6 +431,7 @@ func create(ctx *context.Context, fpm config.NFPM, format string, artifacts []*a
 				},
 			},
 			RPM: nfpm.RPM{
+				Arch:        rpmArch,
 				Summary:     overridden.RPM.Summary,
 				Group:       overridden.RPM.Group,
 				Compression: overridden.RPM.Compression,
