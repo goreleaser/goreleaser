@@ -22,6 +22,7 @@ func New(
 	return &Goreleaser{Source: Source, GoVersion: GoVersion}
 }
 
+// Lint Goreleaser
 func (g *Goreleaser) Lint(
 	ctx context.Context,
 	// +default="v1.58.1"
@@ -35,13 +36,31 @@ func (g *Goreleaser) Lint(
 		Stdout(ctx)
 }
 
+// Test Goreleaser
+func (g *Goreleaser) Test(ctx context.Context) (string, error) {
+	return g.TestEnv().
+		WithExec([]string{"go", "test", "./..."}).
+		Stdout(ctx)
+}
+
+// Build Goreleaser
+func (g *Goreleaser) Build() *File {
+	return g.BuildEnv().
+		WithExec([]string{"go", "build", "-o", "/src/dist/goreleaser"}).
+		File("/src/dist/goreleaser")
+}
+
+// Build environment to build Goreleaser
 func (g *Goreleaser) BuildEnv() *Container {
 	return dag.Container().
 		From(fmt.Sprintf("golang:%s-bullseye", g.GoVersion)).
+		WithMountedCache("/go/pkg/mod", dag.CacheVolume("goreleaser-gomod")).
+		WithMountedCache("/root/.cache/go-build", dag.CacheVolume("goreleaser-gobuild")).
 		WithMountedDirectory("/src", g.Source).
 		WithWorkdir("/src")
 }
 
+// Test environment to test Goreleaser
 func (g *Goreleaser) TestEnv() *Container {
 	return g.BuildEnv()
 }
