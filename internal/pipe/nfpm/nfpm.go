@@ -200,7 +200,7 @@ func create(ctx *context.Context, fpm config.NFPM, format string, artifacts []*a
 	// Additionally, it is recommended to set the rpmArch to ppc
 	// As AIX, while being ppc64, expects the rpms to specify ppc.
 	// We will default to setting ppc here, but again this can be
-	// overriden by setting it in your .goreleaser.yaml See the following:
+	// overridden by setting it in your .goreleaser.yaml See the following:
 	// https://developer.ibm.com/articles/au-aix-build-open-source-rpm-packages/
 	// https://developer.ibm.com/articles/configure-yum-on-aix/
 	if infoPlatform == "aix" {
