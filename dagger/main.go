@@ -9,12 +9,15 @@ import (
 )
 
 type Goreleaser struct {
-	Source    *Directory
+	// +private
+	Source *Directory
+	// +private
 	GoVersion string
 }
 
 func New(
 	// The Goreleaser source code to use
+	// +default="https://github.com/goreleaser/goreleaser#main"
 	Source *Directory,
 	// The Go version to use // TODO: look up default based on "stable"
 	// +default="1.22.3"

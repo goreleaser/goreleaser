@@ -2,7 +2,7 @@
   "name": "goreleaser",
   "sdk": "go",
   "source": "dagger",
-  "engineVersion": "v0.11.5",
+  "engineVersion": "v0.11.6",
   "views": [
     {
       "name": "default",
