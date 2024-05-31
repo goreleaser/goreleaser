@@ -5,6 +5,7 @@ package main
 import (
 	"context"
 	"fmt"
+	"runtime"
 )
 
 type Goreleaser struct {
@@ -44,8 +45,18 @@ func (g *Goreleaser) Test(ctx context.Context) (string, error) {
 }
 
 // Build Goreleaser
-func (g *Goreleaser) Build() *File {
+func (g *Goreleaser) Build(
+	// +default="linux"
+	os string,
+	// +optional
+	arch string,
+) *File {
+	if arch == "" {
+		arch = runtime.GOARCH
+	}
 	return g.BuildEnv().
+		WithEnvVariable("GOOS", os).
+		WithEnvVariable("GOARCH", arch).
 		WithExec([]string{"go", "build", "-o", "/src/dist/goreleaser"}).
 		File("/src/dist/goreleaser")
 }
