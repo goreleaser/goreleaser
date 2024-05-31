@@ -16,7 +16,7 @@ type Goreleaser struct {
 func New(
 	// The Goreleaser source code to use
 	Source *Directory,
-	// The Go version to use
+	// The Go version to use // TODO: look up default based on "stable"
 	// +default="1.22.3"
 	GoVersion string,
 ) *Goreleaser {
@@ -61,7 +61,26 @@ func (g *Goreleaser) Build(
 		File("/src/dist/goreleaser")
 }
 
-// Build environment to build Goreleaser
+// Run Goreleaser
+func (g *Goreleaser) Run(
+	ctx context.Context,
+	// Context directory to run in
+	context *Directory,
+	// Arguments to pass to Goreleaser
+	args []string,
+) (string, error) {
+	binary := g.Build("linux", runtime.GOARCH)
+
+	return dag.Container().
+		From("cgr.dev/chainguard/wolfi-base").
+		WithMountedFile("/bin/goreleaser", binary).
+		WithMountedDirectory("/src", context).
+		WithWorkdir("/src").
+		WithExec(append([]string{"/bin/goreleaser"}, args...)).
+		Stdout(ctx)
+}
+
+// Container to build Goreleaser
 func (g *Goreleaser) BuildEnv() *Container {
 	return dag.Container().
 		From(fmt.Sprintf("golang:%s-bullseye", g.GoVersion)).
@@ -71,7 +90,7 @@ func (g *Goreleaser) BuildEnv() *Container {
 		WithWorkdir("/src")
 }
 
-// Test environment to test Goreleaser
+// Container to test Goreleaser
 func (g *Goreleaser) TestEnv() *Container {
 	return g.BuildEnv()
 }
