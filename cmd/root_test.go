@@ -55,11 +55,11 @@ func TestRootRelease(t *testing.T) {
 	require.Equal(t, 1, mem.code)
 }
 
-func TestRootReleaseDebug(t *testing.T) {
+func TestRootReleaseVerbose(t *testing.T) {
 	setup(t)
 	mem := &exitMemento{}
 	cmd := newRootCmd(testversion, mem.Exit)
-	cmd.Execute([]string{"r", "--debug"})
+	cmd.Execute([]string{"r", "--verbose"})
 	require.Equal(t, 1, mem.code)
 }
 
