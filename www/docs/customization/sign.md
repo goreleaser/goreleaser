@@ -103,7 +103,7 @@ signs:
       - HONK=honkhonk
 
     # By default, the stdout and stderr of the signing cmd are discarded unless
-    # GoReleaser is running with `--debug` set.
+    # GoReleaser is running with `--verbose` set.
     # You can set this to true if you want them to be displayed regardless.
     #
     # Since: v1.2
