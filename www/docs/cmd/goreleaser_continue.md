@@ -32,7 +32,6 @@ goreleaser continue [flags]
 ## Options inherited from parent commands
 
 ```
-      --debug     Enable verbose mode (deprecated)
       --verbose   Enable verbose mode
 ```
 
