@@ -2726,9 +2726,9 @@
 					"version": {
 						"type": "integer",
 						"enum": [
-							1
+							2
 						],
-						"default": 1
+						"default": 2
 					},
 					"project_name": {
 						"type": "string"
