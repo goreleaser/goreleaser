@@ -17,9 +17,9 @@ require (
 	github.com/caarlos0/go-reddit/v3 v3.0.1
 	github.com/caarlos0/go-shellwords v1.0.12
 	github.com/caarlos0/go-version v0.1.1
-	github.com/caarlos0/log v0.4.4
+	github.com/caarlos0/log v0.4.5
 	github.com/charmbracelet/keygen v0.5.0
-	github.com/charmbracelet/lipgloss v0.10.0
+	github.com/charmbracelet/lipgloss v0.11.0
 	github.com/charmbracelet/x/exp/ordered v0.0.0-20231010190216-1cb11efc897d
 	github.com/chrismellard/docker-credential-acr-env v0.0.0-20230304212654-82a0ddb27589
 	github.com/dghubble/go-twitter v0.0.0-20211115160449-93a8679adecb
@@ -57,7 +57,10 @@ require (
 	gopkg.in/yaml.v3 v3.0.1
 )
 
-require github.com/moby/docker-image-spec v1.3.1 // indirect
+require (
+	github.com/charmbracelet/x/ansi v0.1.1 // indirect
+	github.com/moby/docker-image-spec v1.3.1 // indirect
+)
 
 require (
 	cloud.google.com/go v0.112.1 // indirect
