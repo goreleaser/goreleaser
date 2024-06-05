@@ -11,7 +11,7 @@ authors:
 
 The new major version of [GoReleaser][gorel] is here!
 
-<!--more-->
+<!-- more -->
 
 ![GoReelaser banner](https://carlosbecker.com/posts/goreleaser-v2/header.png)
 
