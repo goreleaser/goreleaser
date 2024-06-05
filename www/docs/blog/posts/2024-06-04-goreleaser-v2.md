@@ -139,6 +139,5 @@ Happy releasing! 🚀
 [nix]: https://nixos.org
 [aur]: http://aur.archlinux.org
 [Cosign]: https://github.com/sigstore/cosign
-
-[last-v1]: {{< ref "/posts/goreleaser-v1.26/index.md" >}}
-[v1]: {{< ref "/posts/goreleaser-v1/index.md" >}}
+[last-v1]: https://goreleaser.com/blog/goreleaser-v1.26
+[v1]: https://goreleaser.com/blog/goreleaser-v1
