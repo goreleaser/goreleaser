@@ -177,7 +177,7 @@ Once you do that, you can install the packages.
 === "OSS"
 
     ```bash
-    go install github.com/goreleaser/goreleaser@latest
+    go install github.com/goreleaser/goreleaser/v2@v2.0.0
     ```
 
     Requires Go 1.22.
