@@ -121,6 +121,14 @@ jobs:
         # GORELEASER_KEY: ${{ secrets.GORELEASER_KEY }} # if using goreleaser-pro
 ```
 
+## Other news
+
+- GoReleaser now has ~13.2k stars and 394 contributors! Thanks, everyone!
+- We eventually discuss new features in our Discord server. 
+  You are invited to [join the conversation][discord]!
+- [goreleaser-action@v6](https://github.com/goreleaser/goreleaser-action/releases/tag/v6.0.0)
+  was also released, now defaults to `version: '~> v2'` instead of `latest`.
+
 ---
 
 That's all for today!
@@ -141,3 +149,4 @@ Happy releasing! 🚀
 [Cosign]: https://github.com/sigstore/cosign
 [last-v1]: https://goreleaser.com/blog/goreleaser-v1.26
 [v1]: https://goreleaser.com/blog/goreleaser-v1
+[discord]: https://goreleaser.com/discord
