@@ -72,10 +72,10 @@ func newGitLab(ctx *context.Context, token string) (*gitlabClient, error) {
 }
 
 func (c *gitlabClient) isPrivateToken() error {
-	if c.authType == gitlab.JobToken {
-		return fmt.Errorf("the necessary APIs are not available when using CI_JOB_TOKEN")
+	if c.authType == gitlab.PrivateToken {
+		return nil
 	}
-	return nil
+	return fmt.Errorf("the necessary APIs are not available when using CI_JOB_TOKEN")
 }
 
 func (c *gitlabClient) Changelog(_ *context.Context, repo Repo, prev, current string) ([]ChangelogItem, error) {
