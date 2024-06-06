@@ -71,7 +71,7 @@ func newGitLab(ctx *context.Context, token string) (*gitlabClient, error) {
 	}, nil
 }
 
-func (c *gitlabClient) isPrivateToken() error {
+func (c *gitlabClient) checkIsPrivateToken() error {
 	if c.authType == gitlab.PrivateToken {
 		return nil
 	}
@@ -79,7 +79,7 @@ func (c *gitlabClient) isPrivateToken() error {
 }
 
 func (c *gitlabClient) Changelog(_ *context.Context, repo Repo, prev, current string) ([]ChangelogItem, error) {
-	if err := c.isPrivateToken(); err != nil {
+	if err := c.checkIsPrivateToken(); err != nil {
 		return nil, fmt.Errorf("changelog: %w", err)
 	}
 	cmpOpts := &gitlab.CompareOptions{
@@ -108,7 +108,7 @@ func (c *gitlabClient) getDefaultBranch(_ *context.Context, repo Repo) (string, 
 	if branch := os.Getenv("CI_DEFAULT_BRANCH"); branch != "" {
 		return branch, nil
 	}
-	if err := c.isPrivateToken(); err != nil {
+	if err := c.checkIsPrivateToken(); err != nil {
 		return "", fmt.Errorf("get default branch: %w", err)
 	}
 	projectID := repo.String()
@@ -182,7 +182,7 @@ func (c *gitlabClient) CreateFile(
 	fileName, // the path to the formula.rb
 	message string, // the commit msg
 ) error {
-	if err := c.isPrivateToken(); err != nil {
+	if err := c.checkIsPrivateToken(); err != nil {
 		return fmt.Errorf("create file: %w", err)
 	}
 
@@ -617,7 +617,7 @@ func (c *gitlabClient) OpenPullRequest(
 	title string,
 	draft bool,
 ) error {
-	if err := c.isPrivateToken(); err != nil {
+	if err := c.checkIsPrivateToken(); err != nil {
 		return fmt.Errorf("open merge request: %w", err)
 	}
 	var targetProjectID int
