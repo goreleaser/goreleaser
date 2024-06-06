@@ -100,6 +100,13 @@ func signAndNotarize(ctx *context.Context, cfg config.MacOSSignNotarize) error {
 			return fmt.Errorf("notarize: macos: %s: %w", bin.Path, err)
 		}
 
+		if cfg.Notarize.IssuerID == "" ||
+			cfg.Notarize.KeyID == "" ||
+			cfg.Notarize.Key == "" {
+			log.WithField("binary", bin.Path).Info("will not try to notarize")
+			continue
+		}
+
 		notarizeCfg := quill.NewNotarizeConfig(
 			cfg.Notarize.IssuerID,
 			cfg.Notarize.KeyID,
