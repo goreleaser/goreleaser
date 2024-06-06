@@ -88,6 +88,9 @@ func (c *gitlabClient) Changelog(_ *context.Context, repo Repo, prev, current st
 
 // getDefaultBranch get the default branch
 func (c *gitlabClient) getDefaultBranch(_ *context.Context, repo Repo) (string, error) {
+	if branch := os.Getenv("CI_DEFAULT_BRANCH"); branch != "" {
+		return branch, nil
+	}
 	projectID := repo.String()
 	p, res, err := c.client.Projects.GetProject(projectID, nil)
 	if err != nil {
