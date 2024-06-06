@@ -1,6 +1,7 @@
 package cmd
 
 import (
+	"path/filepath"
 	"testing"
 
 	"github.com/goreleaser/goreleaser/v2/internal/pipeline"
@@ -16,6 +17,29 @@ func TestBuild(t *testing.T) {
 	cmd := newBuildCmd()
 	cmd.cmd.SetArgs([]string{"--snapshot", "--timeout=1m", "--parallelism=2", "--deprecated"})
 	require.NoError(t, cmd.cmd.Execute())
+}
+
+func TestBuildAutoSnapshot(t *testing.T) {
+	t.Run("clean", func(t *testing.T) {
+		setup(t)
+		cmd := newBuildCmd()
+		cmd.cmd.SetArgs([]string{"--auto-snapshot"})
+		require.NoError(t, cmd.cmd.Execute())
+		matches, err := filepath.Glob("./dist/fake_*/fake")
+		require.NoError(t, err)
+		require.Len(t, matches, 1)
+	})
+
+	t.Run("dirty", func(t *testing.T) {
+		setup(t)
+		createFile(t, "foo", "force dirty tree")
+		cmd := newBuildCmd()
+		cmd.cmd.SetArgs([]string{"--auto-snapshot"})
+		require.NoError(t, cmd.cmd.Execute())
+		matches, err := filepath.Glob("./dist/fake_*/fake_snapshot")
+		require.NoError(t, err)
+		require.Len(t, matches, 1)
+	})
 }
 
 func TestBuildSingleTarget(t *testing.T) {
@@ -145,6 +169,15 @@ func TestBuildFlags(t *testing.T) {
 	t.Run("snapshot", func(t *testing.T) {
 		ctx := setup(buildOpts{
 			snapshot: true,
+		})
+		require.True(t, ctx.Snapshot)
+		requireAll(t, ctx, skips.Validate)
+		require.True(t, ctx.SkipTokenCheck)
+	})
+
+	t.Run("auto-snapshot", func(t *testing.T) {
+		ctx := setup(buildOpts{
+			autoSnapshot: true,
 		})
 		require.True(t, ctx.Snapshot)
 		requireAll(t, ctx, skips.Validate)

@@ -15,6 +15,7 @@ import (
 	"github.com/goreleaser/goreleaser/v2/internal/middleware/errhandler"
 	"github.com/goreleaser/goreleaser/v2/internal/middleware/logging"
 	"github.com/goreleaser/goreleaser/v2/internal/middleware/skip"
+	"github.com/goreleaser/goreleaser/v2/internal/pipe/git"
 	"github.com/goreleaser/goreleaser/v2/internal/pipeline"
 	"github.com/goreleaser/goreleaser/v2/internal/skips"
 	"github.com/goreleaser/goreleaser/v2/pkg/config"
@@ -31,6 +32,7 @@ type buildOpts struct {
 	config       string
 	ids          []string
 	snapshot     bool
+	autoSnapshot bool
 	clean        bool
 	deprecated   bool
 	parallelism  int
@@ -72,6 +74,7 @@ When using ` + "`--single-target`" + `, the ` + "`GOOS`" + ` and ` + "`GOARCH`" 
 	cmd.Flags().StringVarP(&root.opts.config, "config", "f", "", "Load configuration from file")
 	_ = cmd.MarkFlagFilename("config", "yaml", "yml")
 	cmd.Flags().BoolVar(&root.opts.snapshot, "snapshot", false, "Generate an unversioned snapshot build, skipping all validations")
+	cmd.Flags().BoolVar(&root.opts.autoSnapshot, "auto-snapshot", false, "Automatically sets --snapshot if the repository is dirty")
 	cmd.Flags().BoolVar(&root.opts.clean, "clean", false, "Removes the 'dist' directory before building")
 	cmd.Flags().IntVarP(&root.opts.parallelism, "parallelism", "p", 0, "Number of tasks to run concurrently (default: number of CPUs)")
 	_ = cmd.RegisterFlagCompletionFunc("parallelism", cobra.NoFileCompletions)
@@ -152,6 +155,11 @@ func setupBuildContext(ctx *context.Context, options buildOpts) error {
 	}
 	log.Debugf("parallelism: %v", ctx.Parallelism)
 	ctx.Snapshot = options.snapshot
+
+	if options.autoSnapshot && git.CheckDirty(ctx) != nil {
+		log.Info("git repository is dirty and --auto-snapshot is set, implying --snapshot")
+		ctx.Snapshot = true
+	}
 
 	if err := skips.SetBuild(ctx, options.skips...); err != nil {
 		return err
