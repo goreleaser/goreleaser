@@ -150,3 +150,4 @@ Happy releasing! 🚀
 [last-v1]: https://goreleaser.com/blog/goreleaser-v1.26
 [v1]: https://goreleaser.com/blog/goreleaser-v1
 [discord]: https://goreleaser.com/discord
+[notices]: https://goreleaser.com/deprecations/#removed-in-v2
