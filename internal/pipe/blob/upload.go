@@ -111,7 +111,7 @@ func doUpload(ctx *context.Context, conf config.Blob) error {
 	}
 
 	filter := artifact.Or(byTypes...)
-	if len(conf.IDs) > 0 {
+	if conf.IDs != nil {
 		filter = artifact.And(filter, artifact.ByIDs(conf.IDs...))
 	}
 
