@@ -1129,6 +1129,7 @@ type Blob struct {
 	CacheControl       []string    `yaml:"cache_control,omitempty" json:"cache_control,omitempty"`
 	ContentDisposition string      `yaml:"content_disposition,omitempty" json:"content_disposition,omitempty"`
 	IncludeMeta        bool        `yaml:"include_meta,omitempty" json:"include_meta,omitempty"`
+	NoArtifacts        bool        `yaml:"no_artifacts,omitempty" json:"no_artifacts,omitempty"`
 }
 
 // Upload configuration.
