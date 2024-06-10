@@ -17,12 +17,18 @@ type Goreleaser struct {
 
 func New(
 	// The Goreleaser source code to use
-	// +default="https://github.com/goreleaser/goreleaser#main"
+	// +optional
 	Source *Directory,
 	// The Go version to use // TODO: look up default based on "stable"
 	// +default="1.22.3"
 	GoVersion string,
 ) *Goreleaser {
+	// TODO: remove
+	if Source == nil {
+		Source = dag.Git("https://github.com/goreleaser/goreleaser.git", GitOpts{KeepGitDir: true}).
+			Branch("main").
+			Tree()
+	}
 	return &Goreleaser{Source: Source, GoVersion: GoVersion}
 }
 
@@ -86,7 +92,7 @@ func (g *Goreleaser) Run(
 // Container to build Goreleaser
 func (g *Goreleaser) BuildEnv() *Container {
 	return dag.Container().
-		From(fmt.Sprintf("golang:%s-bullseye", g.GoVersion)).
+		From(fmt.Sprintf("golang:%s-alpine", g.GoVersion)).
 		WithMountedCache("/go/pkg/mod", dag.CacheVolume("goreleaser-gomod")).
 		WithMountedCache("/root/.cache/go-build", dag.CacheVolume("goreleaser-gobuild")).
 		WithMountedDirectory("/src", g.Source).
@@ -95,5 +101,18 @@ func (g *Goreleaser) BuildEnv() *Container {
 
 // Container to test Goreleaser
 func (g *Goreleaser) TestEnv() *Container {
-	return g.BuildEnv()
+	// install krew
+	// install snapcraft
+	// install tparse
+	return g.BuildEnv().WithExec(
+		[]string{"apk", "add",
+			"git",
+			"gpg",
+			"gpg-agent",
+			"nix",
+			"upx",
+			"cosign",
+			"docker",
+			"syft",
+		})
 }

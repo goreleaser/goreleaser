@@ -8,7 +8,6 @@
       "name": "default",
       "patterns": [
         "!bin",
-        "!.git",
         "!dist",
         "!coverage.txt",
         "!goreleaser",
