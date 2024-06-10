@@ -70,6 +70,8 @@ chocolateys:
     icon_url: "https://rawcdn.githack.com/foo/bar/efbdc760-395b-43f1-bf69-ba25c374d473/icon.png"
 
     # Your app's copyright details.
+    #
+    # Templates: allowed (since v2.1)
     copyright: 2022 Drummer Roll Inc
 
     # App's license information url.
