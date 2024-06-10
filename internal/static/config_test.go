@@ -9,7 +9,8 @@ import (
 )
 
 func TestExampleConfig(t *testing.T) {
-	_, err := config.LoadReader(bytes.NewReader(ExampleConfig))
+	cfg, err := config.LoadReader(bytes.NewReader(ExampleConfig))
 	require.NoError(t, err)
 	require.NotEmpty(t, ExampleConfig)
+	require.Equal(t, 2, cfg.Version)
 }

@@ -1,6 +1,6 @@
 {
 		"$schema": "https://json-schema.org/draft/2020-12/schema",
-		"$id": "https://github.com/goreleaser/goreleaser/pkg/config/project",
+		"$id": "https://github.com/goreleaser/goreleaser/v2/pkg/config/project",
 		"$ref": "#/$defs/Project",
 		"$defs": {
 			"AUR": {
@@ -243,20 +243,6 @@
 							"$ref": "#/$defs/TemplatedFile"
 						},
 						"type": "array"
-					},
-					"rlcp": {
-						"oneOf": [
-							{
-								"type": "string"
-							},
-							{
-								"type": "boolean"
-							}
-						],
-						"description": "you can now remove this"
-					},
-					"strip_parent_binary_folder": {
-						"type": "boolean"
 					}
 				},
 				"additionalProperties": false,
@@ -345,17 +331,6 @@
 					},
 					"include_meta": {
 						"type": "boolean"
-					},
-					"disableSSL": {
-						"type": "boolean",
-						"description": "use disable_ssl instead"
-					},
-					"kmskey": {
-						"type": "string",
-						"description": "use kms_key instead"
-					},
-					"folder": {
-						"type": "string"
 					},
 					"templated_extra_files": {
 						"items": {
@@ -631,17 +606,6 @@
 							"type": "string"
 						},
 						"type": "array"
-					},
-					"skip": {
-						"oneOf": [
-							{
-								"type": "string"
-							},
-							{
-								"type": "boolean"
-							}
-						],
-						"description": "use disable instead"
 					}
 				},
 				"additionalProperties": false,
@@ -1157,7 +1121,7 @@
 					},
 					{
 						"$schema": "https://json-schema.org/draft/2020-12/schema",
-						"$id": "https://github.com/goreleaser/goreleaser/pkg/config/file-alias",
+						"$id": "https://github.com/goreleaser/goreleaser/v2/pkg/config/file-alias",
 						"$defs": {
 							"FileInfo": {
 								"properties": {
@@ -1199,7 +1163,7 @@
 			},
 			"FileInfo": {
 				"$schema": "https://json-schema.org/draft/2020-12/schema",
-				"$id": "https://github.com/goreleaser/goreleaser/pkg/config/file-info",
+				"$id": "https://github.com/goreleaser/goreleaser/v2/pkg/config/file-info",
 				"$ref": "#/$defs/FileInfo",
 				"$defs": {
 					"FileInfo": {
@@ -1299,17 +1263,6 @@
 					},
 					"disable": {
 						"type": "string"
-					},
-					"skip": {
-						"oneOf": [
-							{
-								"type": "string"
-							},
-							{
-								"type": "boolean"
-							}
-						],
-						"description": "use disable instead"
 					}
 				},
 				"additionalProperties": false,
@@ -1549,17 +1502,6 @@
 					},
 					"app": {
 						"type": "string"
-					},
-					"tap": {
-						"$ref": "#/$defs/RepoRef",
-						"description": "use repository instead"
-					},
-					"plist": {
-						"type": "string",
-						"description": "use service instead"
-					},
-					"folder": {
-						"type": "string"
 					}
 				},
 				"additionalProperties": false,
@@ -1572,7 +1514,7 @@
 					},
 					{
 						"$schema": "https://json-schema.org/draft/2020-12/schema",
-						"$id": "https://github.com/goreleaser/goreleaser/pkg/config/homebrew-dependency",
+						"$id": "https://github.com/goreleaser/goreleaser/v2/pkg/config/homebrew-dependency",
 						"properties": {
 							"name": {
 								"type": "string"
@@ -1604,14 +1546,14 @@
 					{
 						"items": {
 							"$schema": "https://json-schema.org/draft/2020-12/schema",
-							"$id": "https://github.com/goreleaser/goreleaser/pkg/config/hook",
+							"$id": "https://github.com/goreleaser/goreleaser/v2/pkg/config/hook",
 							"oneOf": [
 								{
 									"type": "string"
 								},
 								{
 									"$schema": "https://json-schema.org/draft/2020-12/schema",
-									"$id": "https://github.com/goreleaser/goreleaser/pkg/config/hook-alias",
+									"$id": "https://github.com/goreleaser/goreleaser/v2/pkg/config/hook-alias",
 									"properties": {
 										"dir": {
 											"type": "string"
@@ -1715,7 +1657,7 @@
 					},
 					{
 						"$schema": "https://json-schema.org/draft/2020-12/schema",
-						"$id": "https://github.com/goreleaser/goreleaser/pkg/config/include",
+						"$id": "https://github.com/goreleaser/goreleaser/v2/pkg/config/include",
 						"$defs": {
 							"IncludeFromFile": {
 								"properties": {
@@ -1896,10 +1838,6 @@
 								"type": "boolean"
 							}
 						]
-					},
-					"index": {
-						"$ref": "#/$defs/RepoRef",
-						"description": "use repository instead"
 					}
 				},
 				"additionalProperties": false,
@@ -2706,7 +2644,7 @@
 					},
 					{
 						"$schema": "https://json-schema.org/draft/2020-12/schema",
-						"$id": "https://github.com/goreleaser/goreleaser/pkg/config/nix-dependency-alias",
+						"$id": "https://github.com/goreleaser/goreleaser/v2/pkg/config/nix-dependency-alias",
 						"properties": {
 							"name": {
 								"type": "string"
@@ -2788,9 +2726,9 @@
 					"version": {
 						"type": "integer",
 						"enum": [
-							1
+							2
 						],
-						"default": 1
+						"default": 2
 					},
 					"project_name": {
 						"type": "string"
@@ -3056,14 +2994,6 @@
 							"$ref": "#/$defs/DockerHub"
 						},
 						"type": "array"
-					},
-					"scoop": {
-						"$ref": "#/$defs/Scoop",
-						"description": "use scoops instead"
-					},
-					"build": {
-						"$ref": "#/$defs/Build",
-						"description": "use builds instead"
 					}
 				},
 				"additionalProperties": false,
@@ -3161,7 +3091,7 @@
 					},
 					{
 						"$schema": "https://json-schema.org/draft/2020-12/schema",
-						"$id": "https://github.com/goreleaser/goreleaser/pkg/config/pull-request-base",
+						"$id": "https://github.com/goreleaser/goreleaser/v2/pkg/config/pull-request-base",
 						"properties": {
 							"owner": {
 								"type": "string"
@@ -3525,13 +3455,6 @@
 							"msi"
 						],
 						"default": "archive"
-					},
-					"bucket": {
-						"$ref": "#/$defs/RepoRef",
-						"description": "use repository instead"
-					},
-					"folder": {
-						"type": "string"
 					}
 				},
 				"additionalProperties": false,
@@ -3954,17 +3877,6 @@
 							"$ref": "#/$defs/TemplatedFile"
 						},
 						"type": "array"
-					},
-					"rlcp": {
-						"oneOf": [
-							{
-								"type": "string"
-							},
-							{
-								"type": "boolean"
-							}
-						],
-						"description": "you can now remove this"
 					}
 				},
 				"additionalProperties": false,

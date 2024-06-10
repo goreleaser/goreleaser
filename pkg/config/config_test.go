@@ -34,6 +34,21 @@ nfpms:
 	require.Equal(t, "http://goreleaser.github.io", prop.NFPMs[0].Homepage, "yaml did not load correctly")
 }
 
+func TestArrayEmptyVsNil(t *testing.T) {
+	conf := `
+builds: []
+# blobs:
+`
+	buf := strings.NewReader(conf)
+	prop, err := LoadReader(buf)
+
+	require.NoError(t, err)
+	require.NotNil(t, prop.Builds)
+	require.Empty(t, prop.Builds)
+	require.Nil(t, prop.Blobs)
+	require.Empty(t, prop.Blobs)
+}
+
 type errorReader struct{}
 
 func (errorReader) Read(_ []byte) (n int, err error) {
