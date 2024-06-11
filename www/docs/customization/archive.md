@@ -29,8 +29,8 @@ archives:
     # - `tgz`
     # - `tar.xz`
     # - `txz`
-    # - `tar.zst` (Since v1.26)
-    # - `tzst`
+    # - `tar.zst` (since v1.26)
+    # - `tzst` (since v2.1)
     # - `tar`
     # - `gz`
     # - `zip`
