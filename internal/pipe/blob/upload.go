@@ -142,7 +142,7 @@ func doUpload(ctx *context.Context, conf config.Blob) error {
 }
 
 func artifactList(ctx *context.Context, conf config.Blob) []*artifact.Artifact {
-	if conf.NoArtifacts {
+	if conf.ExtraFilesOnly {
 		return nil
 	}
 	byTypes := []artifact.Filter{

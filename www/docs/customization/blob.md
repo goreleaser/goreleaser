@@ -135,7 +135,7 @@ blobs:
   # Upload only the files defined in extra_files.
   #
   # Since: v2.1
-  no_artifacts: true
+  extra_files_only: true
 ```
 
 !!! tip

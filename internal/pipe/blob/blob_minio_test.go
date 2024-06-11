@@ -71,7 +71,8 @@ func TestMain(m *testing.M) {
 }
 
 func TestMinioUpload(t *testing.T) {
-	name := "basic"
+	name1 := "testminio1"
+	name2 := "testminio2"
 	directory := t.TempDir()
 	srcpath := filepath.Join(directory, "source.tar.gz")
 	tgzpath := filepath.Join(directory, "bin.tar.gz")
@@ -93,7 +94,7 @@ func TestMinioUpload(t *testing.T) {
 		Blobs: []config.Blob{
 			{
 				Provider:           "s3",
-				Bucket:             name,
+				Bucket:             name1,
 				Region:             "us-east",
 				Endpoint:           "http://" + listen,
 				IDs:                []string{"foo", "bar"},
@@ -103,6 +104,19 @@ func TestMinioUpload(t *testing.T) {
 				ExtraFiles: []config.ExtraFile{
 					{
 						Glob: "./testdata/*.golden",
+					},
+				},
+			},
+			{
+				Provider:       "s3",
+				Bucket:         name2,
+				Region:         "us-east",
+				Endpoint:       "http://" + listen,
+				IncludeMeta:    true,
+				ExtraFilesOnly: true,
+				ExtraFiles: []config.ExtraFile{
+					{
+						Glob: "./testdata/*.txt",
 					},
 				},
 			},
@@ -159,11 +173,11 @@ func TestMinioUpload(t *testing.T) {
 		},
 	})
 
-	setupBucket(t, testlib.MustDockerPool(t), name)
+	setupBucket(t, testlib.MustDockerPool(t), name1)
 	require.NoError(t, Pipe{}.Default(ctx))
 	require.NoError(t, Pipe{}.Publish(ctx))
 
-	require.Subset(t, getFiles(t, ctx, ctx.Config.Blobs[0]), []string{
+	require.ElementsMatch(t, getFiles(t, ctx, ctx.Config.Blobs[0]), []string{
 		"testupload/v1.0.0/bin.deb",
 		"testupload/v1.0.0/bin.tar.gz",
 		"testupload/v1.0.0/metadata.json",
@@ -172,6 +186,10 @@ func TestMinioUpload(t *testing.T) {
 		"testupload/v1.0.0/checksum.pem",
 		"testupload/v1.0.0/source.tar.gz",
 		"testupload/v1.0.0/file.golden",
+	})
+
+	require.ElementsMatch(t, getFiles(t, ctx, ctx.Config.Blobs[1]), []string{
+		"testupload/v1.0.0/file.txt",
 	})
 }
 
