@@ -88,5 +88,12 @@ notarize:
     base64 -w0 < ./ApiKey_AAABBBCCC.p8
     ```
 
+## Signing only
+
+> Since v2.1
+
+If you want to only sign the binaries, but not notarize them, you can simply
+leave the `notarize` section of your configuration empty.
+
 [unibin]: ./universalbinaries.md
 [quill]: https://github.com/anchore/quill
