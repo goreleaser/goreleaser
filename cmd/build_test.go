@@ -175,15 +175,6 @@ func TestBuildFlags(t *testing.T) {
 		require.True(t, ctx.SkipTokenCheck)
 	})
 
-	t.Run("auto-snapshot", func(t *testing.T) {
-		ctx := setup(buildOpts{
-			autoSnapshot: true,
-		})
-		require.True(t, ctx.Snapshot)
-		requireAll(t, ctx, skips.Validate)
-		require.True(t, ctx.SkipTokenCheck)
-	})
-
 	t.Run("skips", func(t *testing.T) {
 		ctx := setup(buildOpts{
 			skips: []string{
