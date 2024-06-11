@@ -17,6 +17,7 @@ import (
 	"github.com/goreleaser/goreleaser/v2/internal/artifact"
 	"github.com/goreleaser/goreleaser/v2/internal/ids"
 	"github.com/goreleaser/goreleaser/v2/internal/semerrgroup"
+	"github.com/goreleaser/goreleaser/v2/internal/skips"
 	"github.com/goreleaser/goreleaser/v2/internal/tmpl"
 	"github.com/goreleaser/goreleaser/v2/pkg/archive"
 	"github.com/goreleaser/goreleaser/v2/pkg/config"
@@ -42,6 +43,10 @@ type Pipe struct{}
 
 func (Pipe) String() string {
 	return "archives"
+}
+
+func (Pipe) Skip(ctx *context.Context) bool {
+	return skips.Any(ctx, skips.Archive)
 }
 
 // Default sets the pipe defaults.
