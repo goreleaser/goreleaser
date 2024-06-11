@@ -31,8 +31,8 @@ additional features:
 - [x] Continuously release [nightly builds](/customization/nightlies/);
 - [x] Import pre-built binaries with the
       [`prebuilt` builder](./customization/builds.md#import-pre-built-binaries);
-- [x] Rootless build [Docker images](./customization/docker.md#podman) and
-      [manifests](./customization/docker_manifest.md#podman) with
+- [x] Rootless build [Docker images](./customization/docker.md#using-podman) and
+      [manifests](./customization/docker_manifest.md#using-podman) with
       [Podman](https://podman.io);
 - [x] Easily create `apt` and `yum` repositories with the
       [fury.io integration](/customization/fury/);
