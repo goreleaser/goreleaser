@@ -372,6 +372,7 @@ nfpms:
       scripts:
         # Deb rules script.
         rules: foo.sh
+
         # Deb templates file, when using debconf.
         templates: templates
 
@@ -381,16 +382,11 @@ nfpms:
         # (also available: interest_await, interest_noawait)
         interest:
           - some-trigger-name
+
         # activate a trigger for another package
         # (also available: activate_await, activate_noawait)
         activate:
           - another-trigger-name
-
-      # Packages which would break if this package would be installed.
-      # The installation of this package is blocked if `some-package`
-      # is already installed.
-      breaks:
-        - some-package
 
       # Packages which would break if this package would be installed.
       # The installation of this package is blocked if `some-package`
@@ -431,6 +427,7 @@ nfpms:
       scripts:
         # The preupgrade script runs before APK upgrade.
         preupgrade: ./scripts/preupgrade.sh
+
         # The postupgrade script runs after APK.
         postupgrade: ./scripts/postupgrade.sh
 
@@ -455,6 +452,7 @@ nfpms:
       scripts:
         # The preupgrade script runs before pacman upgrades the package.
         preupgrade: ./scripts/preupgrade.sh
+
         # The postupgrade script runs after pacman upgrades the package.
         postupgrade: ./scripts/postupgrade.sh
 
