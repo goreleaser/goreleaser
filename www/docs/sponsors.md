@@ -41,6 +41,12 @@ Below you can see a list of the current sponsors and backers on OpenCollective:
 
 <script src="https://opencollective.com/goreleaser/banner.js"></script>
 
+## GitHub Star program
+
+You can also [nominate me (`@caarlos0`)](https://stars.github.com/nominate/) as
+a GitHub Star.
+This costs you nothing, and would nevertheless be greatly appreciated. 🫶
+
 ---
 
 **✨✨ Thanks for your support! ✨✨**
