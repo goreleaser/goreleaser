@@ -163,7 +163,7 @@ func TestMinioUpload(t *testing.T) {
 	require.NoError(t, Pipe{}.Default(ctx))
 	require.NoError(t, Pipe{}.Publish(ctx))
 
-	require.Subset(t, getFiles(t, ctx, ctx.Config.Blobs[0]), []string{
+	require.ElementsMatch(t, getFiles(t, ctx, ctx.Config.Blobs[0]), []string{
 		"testupload/v1.0.0/bin.deb",
 		"testupload/v1.0.0/bin.tar.gz",
 		"testupload/v1.0.0/metadata.json",
@@ -209,6 +209,51 @@ func TestMinioUploadCustomBucketID(t *testing.T) {
 	setupBucket(t, testlib.MustDockerPool(t), name)
 	require.NoError(t, Pipe{}.Default(ctx))
 	require.NoError(t, Pipe{}.Publish(ctx))
+}
+
+func TestMinioUploadExtraFilesOnly(t *testing.T) {
+	name := "only-extra-files"
+	directory := t.TempDir()
+	tgzpath := filepath.Join(directory, "bin.tar.gz")
+	debpath := filepath.Join(directory, "bin.deb")
+	require.NoError(t, os.WriteFile(tgzpath, []byte("fake\ntargz"), 0o744))
+	require.NoError(t, os.WriteFile(debpath, []byte("fake\ndeb"), 0o744))
+	ctx := testctx.NewWithCfg(config.Project{
+		Dist:        directory,
+		ProjectName: "testupload",
+		Blobs: []config.Blob{
+			{
+				Provider:       "s3",
+				Bucket:         name,
+				Endpoint:       "http://" + listen,
+				IncludeMeta:    true,
+				ExtraFilesOnly: true,
+				ExtraFiles: []config.ExtraFile{
+					{
+						Glob: "./testdata/*.golden",
+					},
+				},
+			},
+		},
+	}, testctx.WithCurrentTag("v1.0.0"))
+	ctx.Artifacts.Add(&artifact.Artifact{
+		Type: artifact.UploadableArchive,
+		Name: "bin.tar.gz",
+		Path: tgzpath,
+	})
+	ctx.Artifacts.Add(&artifact.Artifact{
+		Type: artifact.LinuxPackage,
+		Name: "bin.deb",
+		Path: debpath,
+	})
+
+	setupBucket(t, testlib.MustDockerPool(t), name)
+	require.NoError(t, Pipe{}.Default(ctx))
+	require.NoError(t, Pipe{}.Publish(ctx))
+
+	require.ElementsMatch(t, getFiles(t, ctx, ctx.Config.Blobs[0]), []string{
+		"testupload/v1.0.0/file.golden",
+	})
 }
 
 func TestMinioUploadRootDirectory(t *testing.T) {

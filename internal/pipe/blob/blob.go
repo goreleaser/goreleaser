@@ -28,9 +28,10 @@ func (Pipe) Default(ctx *context.Context) error {
 			blob.Directory = "{{ .ProjectName }}/{{ .Tag }}"
 		}
 
-		if blob.ContentDisposition == "" {
+		switch blob.ContentDisposition {
+		case "":
 			blob.ContentDisposition = "attachment;filename={{.Filename}}"
-		} else if blob.ContentDisposition == "-" {
+		case "-":
 			blob.ContentDisposition = ""
 		}
 	}

@@ -125,6 +125,17 @@ blobs:
   - provider: s3
     bucket: goreleaser-bucket
     directory: "foo/bar/{{.Version}}"
+
+
+  # Upload metadata.json and artifacts.json to the release as well.
+  #
+  # Since: v1.25
+  include_meta: true
+
+  # Upload only the files defined in extra_files.
+  #
+  # Since: v2.1
+  extra_files_only: true
 ```
 
 !!! tip
