@@ -211,6 +211,37 @@ artifactories:
       ...(edited content)...
       TyzMJasj5BPZrmKjJb6O/tOtEIJ66xPSBTxPShkEYHnB7A==
       -----END CERTIFICATE-----
+
+    # You can add extra pre-existing files to the upload.
+    #
+    # The filename on the release will be the last part of the path (base).
+    # If another file with the same name exists, the last one found will be used.
+    # These globs can also include templates.
+    #
+    # Since: v2.1
+    extra_files:
+      - glob: ./path/to/file.txt
+      - glob: ./glob/**/to/**/file/**/*
+      - glob: ./glob/foo/to/bar/file/foobar/override_from_previous
+      - glob: ./single_file.txt
+        # Templates: allowed
+        name_template: file.txt # note that this only works if glob matches 1 file only
+
+    # Additional templated extra files to uploaded.
+    # Those files will have their contents pass through the template engine,
+    # and its results will be uploaded.
+    #
+    # This feature is only available in GoReleaser Pro.
+    # Since: v2.1 (pro)
+    # Templates: allowed
+    templated_extra_files:
+      - src: LICENSE.tpl
+        dst: LICENSE.txt
+
+    # Upload only the files defined in extra_files.
+    #
+    # Since: v2.1
+    extra_files_only: true
 ```
 
 !!! success "GoReleaser Pro"

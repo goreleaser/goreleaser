@@ -13,6 +13,7 @@ import (
 
 	"github.com/caarlos0/log"
 	"github.com/goreleaser/goreleaser/v2/internal/artifact"
+	"github.com/goreleaser/goreleaser/v2/internal/extrafiles"
 	"github.com/goreleaser/goreleaser/v2/internal/pipe"
 	"github.com/goreleaser/goreleaser/v2/internal/semerrgroup"
 	"github.com/goreleaser/goreleaser/v2/internal/tmpl"
@@ -199,7 +200,24 @@ func Upload(ctx *context.Context, uploads []config.Upload, kind string, check Re
 }
 
 func uploadWithFilter(ctx *context.Context, upload *config.Upload, filter artifact.Filter, kind string, check ResponseChecker) error {
-	artifacts := ctx.Artifacts.Filter(filter).List()
+	var artifacts []*artifact.Artifact
+	extraFiles, err := extrafiles.Find(ctx, upload.ExtraFiles)
+	if err != nil {
+		return err
+	}
+
+	for name, path := range extraFiles {
+		artifacts = append(artifacts, &artifact.Artifact{
+			Name: name,
+			Path: path,
+			Type: artifact.UploadableFile,
+		})
+	}
+
+	if !upload.ExtraFilesOnly {
+		artifacts = append(artifacts, ctx.Artifacts.Filter(filter).List()...)
+	}
+
 	if len(artifacts) == 0 {
 		log.Info("no artifacts found")
 	}
