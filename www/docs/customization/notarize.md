@@ -9,7 +9,7 @@ To use it, you'll need:
 
 - An [Apple Developer Account](https://developer.apple.com/) ($99/year).
 - A [certificate](https://developer.apple.com/account/resources/certificates/add)
-  from said account. It should be of "Developer ID Installer" type.
+  from said account. It should be of "Developer ID Application" type.
   This will give you a `.cer` file. You'll need to import it into KeyChain.app,
   and then export it as a `.p12` file. It'll will have a password.
 - An App Store Connect
