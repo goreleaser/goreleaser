@@ -219,6 +219,10 @@ func (*Builder) Build(ctx *context.Context, build config.Build, options api.Opti
 		"GOAMD64="+options.Goamd64,
 	)
 
+	if v := os.Getenv("GOCACHEPROG"); v != "" {
+		env = append(env, "GOCACHEPROG="+v)
+	}
+
 	if len(testEnvs) > 0 {
 		a.Extra["testEnvs"] = testEnvs
 	}
