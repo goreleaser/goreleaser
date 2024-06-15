@@ -1,7 +1,8 @@
 # Nightlies
 
 !!! success "GoReleaser Pro"
-The nightly build feature is a [GoReleaser Pro feature](/pro/).
+
+    The nightly build feature is a [GoReleaser Pro feature](/pro/).
 
 Whether if you need beta builds or a rolling-release system, the nightly builds
 feature will do it for you.
@@ -42,7 +43,8 @@ variable to the evaluation of `nightly.name_template`. This means that if you
 use `{{ .Version }}` on your name templates, you'll get the nightly version.
 
 !!! tip
-Learn more about the [name template engine](/customization/templates/).
+
+    Learn more about the [name template engine](/customization/templates/).
 
 ## What is skipped when using `--nightly`?
 
@@ -63,6 +65,9 @@ You can also check if it is a nightly build inside a template with:
 {{ if .IsNightly }}something{{ else }}something else{{ end }}
 ```
 
-!!! info "Maybe you are looking for something else?" - If just want to build the binaries, and no packages at all, check the
-[`goreleaser build` command](/cmd/goreleaser_build/); - If you actually want to create a local "snapshot" build, check out the
-[snapshots documentation](/customization/snapshots/).
+!!! info "Maybe you are looking for something else?"
+
+    - If just want to build the binaries, and no packages at all, check the
+      [`goreleaser build` command](/cmd/goreleaser_build/);
+    - If you actually want to create a local "snapshot" build, check out the
+      [snapshots documentation](/customization/snapshots/).
