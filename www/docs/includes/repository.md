@@ -40,6 +40,8 @@
       # Make sure the 'branch' property is different from base before enabling
       # it.
       #
+      # This might require a personal access token.
+      #
       # Since: v1.17
       pull_request:
         # Whether to enable it or not.
