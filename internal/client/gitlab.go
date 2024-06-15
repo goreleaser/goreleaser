@@ -94,7 +94,7 @@ func (c *gitlabClient) Changelog(_ *context.Context, repo Repo, prev, current st
 
 	for _, commit := range result.Commits {
 		log = append(log, ChangelogItem{
-			SHA:         commit.ShortID,
+			SHA:         commit.ID,
 			Message:     strings.Split(commit.Message, "\n")[0],
 			AuthorName:  commit.AuthorName,
 			AuthorEmail: commit.AuthorEmail,

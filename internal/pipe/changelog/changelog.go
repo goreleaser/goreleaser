@@ -431,7 +431,7 @@ type gitChangeloger struct{}
 var validSHA1 = regexp.MustCompile(`^[a-fA-F0-9]{40}$`)
 
 func (g gitChangeloger) Log(ctx *context.Context) (string, error) {
-	args := []string{"log", "--pretty=oneline", "--abbrev-commit", "--no-decorate", "--no-color"}
+	args := []string{"log", "--pretty=oneline", "--no-decorate", "--no-color"}
 	prev, current := comparePair(ctx)
 	if validSHA1.MatchString(prev) {
 		args = append(args, prev, current)
