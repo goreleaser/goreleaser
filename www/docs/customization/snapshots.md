@@ -14,8 +14,8 @@ snapshot:
   # Note that some pipes require this to be semantic version compliant (nfpm,
   # for example).
   #
-  # Default is `{{ .Version }}-SNAPSHOT-{{.ShortCommit}}`.
-  # Templates: allowed
+  # Default: `{{ .Version }}-SNAPSHOT-{{.ShortCommit}}`.
+  # Templates: allowed.
   name_template: "{{ incpatch .Version }}-devel"
 ```
 

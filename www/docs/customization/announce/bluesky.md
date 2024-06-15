@@ -1,7 +1,5 @@
 # Bluesky
 
-> Since v1.26
-
 To use [Bluesky](https://bsky.app/), you need to create an account, and set the
 following environment variable on your pipeline:
 
@@ -19,8 +17,8 @@ announce:
 
     # Message template to use while publishing.
     #
-    # Default: '{{ .ProjectName }} {{ .Tag }} is out! Check it out at {{ .ReleaseURL }}'
-    # Templates: allowed
+    # Default: '{{ .ProjectName }} {{ .Tag }} is out! Check it out at {{ .ReleaseURL }}'.
+    # Templates: allowed.
     message_template: "Awesome project {{.Tag}} is out!"
 
     # The username of the account that will post

@@ -12,22 +12,23 @@ nfpms:
   - #
     # ID of the nfpm config, must be unique.
     #
-    # Default: 'default'
+    # Default: 'default'.
     id: foo
 
     # Name of the package.
-    # Default: ProjectName
-    # Templates: allowed (since v1.18)
+    #
+    # Default: ProjectName.
+    # Templates: allowed.
     package_name: foo
 
     # You can change the file name of the package.
     #
-    # Default: '{{ .PackageName }}_{{ .Version }}_{{ .Os }}_{{ .Arch }}{{ with .Arm }}v{{ . }}{{ end }}{{ with .Mips }}_{{ . }}{{ end }}{{ if not (eq .Amd64 "v1") }}{{ .Amd64 }}{{ end }}'
-    # Templates: allowed
+    # Default: '{{ .PackageName }}_{{ .Version }}_{{ .Os }}_{{ .Arch }}{{ with .Arm }}v{{ . }}{{ end }}{{ with .Mips }}_{{ . }}{{ end }}{{ if not (eq .Amd64 "v1") }}{{ .Amd64 }}{{ end }}'.
+    # Templates: allowed.
     file_name_template: "{{ .ConventionalFileName }}"
 
     # Build IDs for the builds you want to create NFPM packages for.
-    # Defaults empty, which means no filtering.
+    # Default: '' (no filtering).
     builds:
       - foo
       - bar
@@ -54,13 +55,12 @@ nfpms:
       - apk
       - deb
       - rpm
-      - termux.deb # Since: v1.11
-      - archlinux # Since: v1.13
+      - termux.deb
+      - archlinux
 
     # Umask to be used on files without explicit mode set. (overridable)
     #
-    # Default: 0o002 (will remove world-writable permissions)
-    # Since: v1.19
+    # Default: 0o002 (will remove world-writable permissions).
     umask: 0o002
 
     # Packages your package depends on. (overridable)
@@ -69,8 +69,6 @@ nfpms:
       - zsh
 
     # Packages it provides. (overridable)
-    #
-    # Since: v1.11
     provides:
       - bar
 
@@ -95,7 +93,7 @@ nfpms:
 
     # Path that the binaries should be installed.
     #
-    # Default: '/usr/bin'
+    # Default: '/usr/bin'.
     bindir: /usr/bin
 
     # Paths to the directories where to put specific types of libraries that
@@ -103,31 +101,32 @@ nfpms:
     #
     # This should be used together with `builds.buildmode`
     #
-    # Since: v1.24.
-    # Templates: allowed
+    # Templates: allowed.
     libdirs:
-      # Default: '/usr/include'
+      # Default: '/usr/include'.
       headers: /usr/include/something
 
-      # Default: '/usr/lib'
+      # Default: '/usr/lib'.
       cshared: /usr/lib/foo
 
-      # Default: '/usr/lib'
+      # Default: '/usr/lib'.
       carchive: /usr/lib/foobar
 
     # Version Epoch.
-    # Default: extracted from `version` if it is semver compatible
+    #
+    # Default: extracted from `version` if it is semver compatible.
     epoch: 2
 
     # Version Prerelease.
-    # Default: extracted from `version` if it is semver compatible
+    #
+    # Default: extracted from `version` if it is semver compatible.
     prerelease: beta1
 
     # Version Metadata (previously deb.metadata).
     # Setting metadata might interfere with version comparisons depending on the
     # packager.
     #
-    # Default: extracted from `version` if it is semver compatible
+    # Default: extracted from `version` if it is semver compatible.
     version_metadata: git
 
     # Version Release.
@@ -152,7 +151,6 @@ nfpms:
     # formats (deb and rpm at the moment).
     #
     # Experimental.
-    # Since: v1.11
     changelog: ./foo.yml
 
     # Contents to add to the package.
@@ -171,8 +169,7 @@ nfpms:
       # This will replicate the directory structure under some/directory at
       # /etc, using the "tree" type.
       #
-      # Since: v1.17
-      # Templates: allowed
+      # Templates: allowed.
       - src: some/directory/
         dst: /etc
         type: tree
@@ -203,8 +200,7 @@ nfpms:
     # and its results will be added to the package.
     #
     # This feature is only available in GoReleaser Pro.
-    # Since: v1.17 (pro)
-    # Templates: allowed
+    # Templates: allowed.
     templated_contents:
       # a more complete example, check the globbing deep dive below
       - src: "LICENSE.md.tpl"
@@ -278,7 +274,7 @@ nfpms:
     # Keys are the possible targets during the installation process
     # Values are the paths to the scripts which will be executed.
     #
-    # Templates: allowed (since v1.20)
+    # Templates: allowed.
     scripts:
       preinstall: "scripts/preinstall.sh"
       postinstall: "scripts/postinstall.sh"
@@ -291,8 +287,7 @@ nfpms:
     # Values are the paths to the scripts which will be executed.
     #
     # This feature is only available in GoReleaser Pro.
-    # Since: v1.20 (pro)
-    # Templates: allowed
+    # Templates: allowed.
     templated_scripts:
       preinstall: "scripts/preinstall.sh"
       postinstall: "scripts/postinstall.sh"
@@ -329,7 +324,7 @@ nfpms:
 
       # The package summary.
       #
-      # Default: first line of the description
+      # Default: first line of the description.
       summary: Explicit Summary for Sample Package
 
       # The package group.
@@ -347,8 +342,6 @@ nfpms:
       compression: lzma
 
       # Prefixes for relocatable packages.
-      #
-      # Since: v1.20
       prefixes:
         - /usr/bin
 
@@ -358,7 +351,7 @@ nfpms:
         #
         # See "Signing key passphrases" below for more information.
         #
-        # Templates: allowed
+        # Templates: allowed.
         key_file: "{{ .Env.GPG_KEY_PATH }}"
 
     # Custom configuration applied only to the Deb packager.
@@ -391,8 +384,6 @@ nfpms:
       # Packages which would break if this package would be installed.
       # The installation of this package is blocked if `some-package`
       # is already installed.
-      #
-      # Since: v1.25.
       breaks:
         - some-package
 
@@ -402,13 +393,13 @@ nfpms:
         #
         # See "Signing key passphrases" below for more information.
         #
-        # Templates: allowed
+        # Templates: allowed.
         key_file: "{{ .Env.GPG_KEY_PATH }}"
 
         # The type describes the signers role, possible values are "origin",
         # "maint" and "archive".
         #
-        # Default: 'origin'
+        # Default: 'origin'.
         type: origin
 
       # Additional fields for the control file. Empty fields are ignored.
@@ -437,14 +428,14 @@ nfpms:
         #
         # See "Signing key passphrases" below for more information.
         #
-        # Templates: allowed
+        # Templates: allowed.
         key_file: "{{ .Env.GPG_KEY_PATH }}"
 
         # The name of the signing key. When verifying a package, the signature
         # is matched to the public key store in /etc/apk/keys/<key_name>.rsa.pub.
         #
-        # Default: maintainer's email address
-        # Templates: allowed (since v1.15)
+        # Default: maintainer's email address.
+        # Templates: allowed.
         key_name: origin
 
     archlinux:

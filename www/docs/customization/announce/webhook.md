@@ -1,7 +1,5 @@
 # WebHooks
 
-> Since: v1.3
-
 WebHooks are a way to receive notifications.
 With this GoReleaser functionality, you can send events to any server
 exposing a WebHook.
@@ -25,13 +23,13 @@ announce:
 
     # Message template to use while publishing.
     #
-    # Default: '{{ .ProjectName }} {{ .Tag }} is out! Check it out at {{ .ReleaseURL }}'
-    # Templates: allowed
+    # Default: '{{ .ProjectName }} {{ .Tag }} is out! Check it out at {{ .ReleaseURL }}'.
+    # Templates: allowed.
     message_template: '{ "title": "Awesome project {{.Tag}} is out!"}'
 
     # Content type to use.
     #
-    # Default: 'application/json; charset=utf-8'
+    # Default: 'application/json; charset=utf-8'.
     content_type: "application/json"
 
     # Endpoint to send the webhook to.
@@ -42,8 +40,8 @@ announce:
     #   Authorization: "Bearer <token>"
     headers:
       User-Agent: "goreleaser"
-
 ```
 
 !!! tip
-  Learn more about the [name template engine](/customization/templates/).
+
+    Learn more about the [name template engine](/customization/templates/).

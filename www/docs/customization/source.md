@@ -11,35 +11,32 @@ source:
 
   # Name template of the final archive.
   #
-  # Default: '{{ .ProjectName }}-{{ .Version }}'
-  # Templates: allowed
+  # Default: '{{ .ProjectName }}-{{ .Version }}'.
+  # Templates: allowed.
   name_template: "{{ .ProjectName }}"
 
   # Format of the archive.
   #
   # Valid formats are: tar, tgz, tar.gz, and zip.
   #
-  # Default: 'tar.gz'
+  # Default: 'tar.gz'.
   format: "tar"
 
   # Prefix.
   # String to prepend to each filename in the archive.
   #
-  # Templates: allowed
+  # Templates: allowed.
   prefix_template: "{{ .ProjectName }}-{{ .Version }}/"
 
   # This will make the destination paths be relative to the longest common
   # path prefix between all the files matched and the source glob.
   # Enabling this essentially mimic the behavior of nfpm's contents section.
   # It will be the default by June 2023.
-  #
-  # Since: v1.14
   rlcp: true
 
   # Additional files/globs you want to add to the source archive.
   #
-  # Since: v1.11
-  # Templates: allowed
+  # Templates: allowed.
   files:
     - LICENSE.txt
     - README_{{.Os}}.md
@@ -56,7 +53,7 @@ source:
 
       # File info.
       # Not all fields are supported by all formats available formats.
-      # Default: file info of the source file
+      # Default: file info of the source file.
       info:
         owner: root
         group: root
@@ -69,8 +66,7 @@ source:
   # and its results will be added to the source archive.
   #
   # This feature is only available in GoReleaser Pro.
-  # Since: v1.17 (pro)
-  # Templates: allowed
+  # Templates: allowed.
   templated_files:
     # a more complete example, check the globbing deep dive below
     - src: "LICENSE.md.tpl"
