@@ -115,12 +115,12 @@ func (g *Goreleaser) BuildEnv() *Container {
 		From(fmt.Sprintf("golang:%s-alpine", g.GoVersion)). // "cgr.dev/chainguard/wolfi-base"
 		WithExec([]string{"apk", "add", "go"}).
 		WithExec([]string{"adduser", "-D", "nonroot"}).
-		// WithMountedCache("/go/pkg/mod", dag.CacheVolume("goreleaser-gomod")). // TODO: fix caching
-		// WithEnvVariable("GOMODCACHE", "/go/pkg/mod").
-		// WithExec([]string{"chown", "-R", "nonroot", "/go"}).
-		// WithMountedCache("/gocache", dag.CacheVolume("goreleaser-gobuild")).
-		// WithEnvVariable("GOCACHE", "/gocache").
-		// WithExec([]string{"chown", "-R", "nonroot", "/gocache"}).
+		WithMountedCache("/go", dag.CacheVolume("goreleaser-goroot")).
+		WithEnvVariable("GOMODCACHE", "/go/pkg/mod").
+		WithExec([]string{"chown", "-R", "nonroot", "/go"}).
+		WithMountedCache("/gocache", dag.CacheVolume("goreleaser-gobuild")).
+		WithEnvVariable("GOCACHE", "/gocache").
+		WithExec([]string{"chown", "-R", "nonroot", "/gocache"}).
 		WithMountedDirectory("/src", g.Source).
 		WithExec([]string{"chown", "-R", "nonroot", "/src"}).
 		WithWorkdir("/src")
@@ -128,9 +128,6 @@ func (g *Goreleaser) BuildEnv() *Container {
 
 // Container to test Goreleaser
 func (g *Goreleaser) TestEnv() *Container {
-	// install krew
-	// install snapcraft
-	// install tparse
 	return g.BuildEnv().
 		// WithEnvVariable("CGO_ENABLED", "1"). // TODO: change base
 		WithServiceBinding("localhost", dag.Docker().Engine()). // TODO: fix localhost
