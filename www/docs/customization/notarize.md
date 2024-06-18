@@ -31,7 +31,7 @@ notarize:
       #
       # Default: false
       # Templates: allowed
-      enabled: '{{ isEnvSet "MACOS_SIGN_P12 }}'
+      enabled: '{{ isEnvSet "MACOS_SIGN_P12" }}'
 
       # IDs to use to filter the built binaries.
       #
