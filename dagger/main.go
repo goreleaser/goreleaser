@@ -25,7 +25,10 @@ func New(
 ) *Goreleaser {
 	// TODO: remove
 	if Source == nil {
-		Source = dag.Git("https://github.com/goreleaser/goreleaser.git", GitOpts{KeepGitDir: true}).
+		Source = dag.Git(
+			"https://github.com/goreleaser/goreleaser.git",
+			GitOpts{KeepGitDir: true},
+		).
 			Branch("main").
 			Tree()
 	}
@@ -42,14 +45,31 @@ func (g *Goreleaser) Lint(
 	return dag.Container().From(lintImage).
 		WithMountedDirectory("/src", g.Source).
 		WithWorkdir("/src").
-		WithExec([]string{"golangci-lint", "run", "--config", "./.golangci.yaml", "./..."}).
+		WithExec([]string{
+			"golangci-lint",
+			"run",
+			"--config",
+			"./.golangci.yaml",
+			"./...",
+		}).
 		Stdout(ctx)
 }
 
 // Test Goreleaser
 func (g *Goreleaser) Test(ctx context.Context) (string, error) {
 	return g.TestEnv().
-		WithExec([]string{"go", "test", "./..."}).
+		WithExec([]string{
+			"go",
+			"test",
+			"-failfast",
+			// "-race", // TODO: change base
+			"-coverpkg=./...",
+			"-covermode=atomic",
+			"-coverprofile=coverage.txt",
+			"./...",
+			"-run",
+			".",
+		}).
 		Stdout(ctx)
 }
 
@@ -92,10 +112,17 @@ func (g *Goreleaser) Run(
 // Container to build Goreleaser
 func (g *Goreleaser) BuildEnv() *Container {
 	return dag.Container().
-		From(fmt.Sprintf("golang:%s-alpine", g.GoVersion)).
-		WithMountedCache("/go/pkg/mod", dag.CacheVolume("goreleaser-gomod")).
-		WithMountedCache("/root/.cache/go-build", dag.CacheVolume("goreleaser-gobuild")).
+		From(fmt.Sprintf("golang:%s-alpine", g.GoVersion)). // "cgr.dev/chainguard/wolfi-base"
+		WithExec([]string{"apk", "add", "go"}).
+		WithExec([]string{"adduser", "-D", "nonroot"}).
+		// WithMountedCache("/go/pkg/mod", dag.CacheVolume("goreleaser-gomod")). // TODO: fix caching
+		// WithEnvVariable("GOMODCACHE", "/go/pkg/mod").
+		// WithExec([]string{"chown", "-R", "nonroot", "/go"}).
+		// WithMountedCache("/gocache", dag.CacheVolume("goreleaser-gobuild")).
+		// WithEnvVariable("GOCACHE", "/gocache").
+		// WithExec([]string{"chown", "-R", "nonroot", "/gocache"}).
 		WithMountedDirectory("/src", g.Source).
+		WithExec([]string{"chown", "-R", "nonroot", "/src"}).
 		WithWorkdir("/src")
 }
 
@@ -104,15 +131,25 @@ func (g *Goreleaser) TestEnv() *Container {
 	// install krew
 	// install snapcraft
 	// install tparse
-	return g.BuildEnv().WithExec(
-		[]string{"apk", "add",
-			"git",
-			"gpg",
-			"gpg-agent",
-			"nix",
-			"upx",
-			"cosign",
-			"docker",
-			"syft",
-		})
+	return g.BuildEnv().
+		// WithEnvVariable("CGO_ENABLED", "1"). // TODO: change base
+		WithServiceBinding("localhost", dag.Docker().Engine()). // TODO: fix localhost
+		WithEnvVariable("DOCKER_HOST", "tcp://localhost:2375").
+		WithExec(
+			[]string{"apk", "add",
+				"bash",
+				"curl",
+				"git",
+				"gpg",
+				"gpg-agent",
+				"nix",
+				"upx",
+				"cosign",
+				"docker",
+				"syft",
+			}).
+		// WithExec([]string{"sh", "-c", "sh <(curl -L https://nixos.org/nix/install) --no-daemon"})
+		WithExec([]string{"chown", "-R", "nonroot", "/nix"}).
+		WithUser("nonroot").
+		WithExec([]string{"go", "install", "github.com/google/ko@latest"})
 }
