@@ -8,6 +8,7 @@ import (
 // Lint Goreleaser
 func (g *Goreleaser) Lint(
 	ctx context.Context,
+	// Version of golangci-lint to use
 	// +default="v1.58.1"
 	golangciLintVersion string,
 ) (string, error) {
