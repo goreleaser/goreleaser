@@ -20,13 +20,13 @@ require (
 	github.com/caarlos0/log v0.4.5
 	github.com/charmbracelet/keygen v0.5.0
 	github.com/charmbracelet/lipgloss v0.11.0
-	github.com/charmbracelet/x/exp/ordered v0.0.0-20231010190216-1cb11efc897d
+	github.com/charmbracelet/x/exp/ordered v0.1.0
 	github.com/chrismellard/docker-credential-acr-env v0.0.0-20230304212654-82a0ddb27589
 	github.com/dghubble/go-twitter v0.0.0-20211115160449-93a8679adecb
 	github.com/dghubble/oauth1 v0.7.3
 	github.com/distribution/distribution/v3 v3.0.0-alpha.1
 	github.com/go-telegram-bot-api/telegram-bot-api/v5 v5.5.1
-	github.com/google/go-containerregistry v0.19.1
+	github.com/google/go-containerregistry v0.19.2
 	github.com/google/go-github/v62 v62.0.0
 	github.com/google/ko v0.15.4
 	github.com/google/uuid v1.6.0
@@ -43,7 +43,7 @@ require (
 	github.com/muesli/termenv v0.15.2
 	github.com/ory/dockertest/v3 v3.10.0
 	github.com/slack-go/slack v0.13.0
-	github.com/spf13/cobra v1.8.0
+	github.com/spf13/cobra v1.8.1
 	github.com/stretchr/testify v1.9.0
 	github.com/ulikunitz/xz v0.5.12
 	github.com/xanzy/go-gitlab v0.105.0
@@ -133,7 +133,7 @@ require (
 	github.com/containerd/console v1.0.4 // indirect
 	github.com/containerd/continuity v0.3.0 // indirect
 	github.com/containerd/stargz-snapshotter/estargz v0.14.3 // indirect
-	github.com/cpuguy83/go-md2man/v2 v2.0.3 // indirect
+	github.com/cpuguy83/go-md2man/v2 v2.0.4 // indirect
 	github.com/cyphar/filepath-securejoin v0.2.4 // indirect
 	github.com/davecgh/go-spew v1.1.2-0.20180830191138-d8f796af33cc // indirect
 	github.com/davidmz/go-pageant v1.0.2 // indirect
