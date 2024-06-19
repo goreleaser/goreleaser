@@ -14,7 +14,7 @@ blobs:
     # - azblob for Azure Blob Storage
     # - gs for Google Cloud Storage
     #
-    # Templates: allowed
+    # Templates: allowed.
     provider: azblob
 
     # Set a custom endpoint, useful if you're using a minio backend or
@@ -22,13 +22,13 @@ blobs:
     #
     # Implies s3ForcePathStyle and requires provider to be `s3`
     #
-    # Templates: allowed
+    # Templates: allowed.
     endpoint: https://minio.foo.bar
 
     # Sets the bucket region.
     # Requires provider to be `s3`
     #
-    # Templates: allowed
+    # Templates: allowed.
     region: us-west-1
 
     # Disables SSL
@@ -37,7 +37,7 @@ blobs:
 
     # Bucket name.
     #
-    # Templates: allowed
+    # Templates: allowed.
     bucket: goreleaser-bucket
 
     # IDs of the artifacts you want to upload.
@@ -47,14 +47,13 @@ blobs:
 
     # Path/name inside the bucket.
     #
-    # Default: '{{ .ProjectName }}/{{ .Tag }}'
-    # Templates: allowed
+    # Default: '{{ .ProjectName }}/{{ .Tag }}'.
+    # Templates: allowed.
     directory: "foo/bar/{{.Version}}"
 
     # Whether to disable this particular upload configuration.
     #
-    # Since: v1.17
-    # Templates: allowed
+    # Templates: allowed.
     disable: '{{ neq .BLOB_UPLOAD_ONLY "foo" }}'
 
     # You can add extra pre-existing files to the bucket.
@@ -67,7 +66,7 @@ blobs:
       - glob: ./glob/**/to/**/file/**/*
       - glob: ./glob/foo/to/bar/file/foobar/override_from_previous
       - glob: ./single_file.txt
-        # Templates: allowed
+        # Templates: allowed.
         name_template: file.txt # note that this only works if glob matches 1 file only
 
     # Additional templated extra files to uploaded.
@@ -75,16 +74,14 @@ blobs:
     # and its results will be uploaded.
     #
     # This feature is only available in GoReleaser Pro.
-    # Since: v1.17 (pro)
-    # Templates: allowed
+    # Templates: allowed.
     templated_extra_files:
       - src: LICENSE.tpl
         dst: LICENSE.txt
 
     # Allow to disable `s3ForcePathStyle`.
     #
-    # Default: true
-    # Since: v1.24
+    # Default: true.
     s3_force_path_style: false
 
     # ACL to be applied to all files in this configuration.
@@ -94,8 +91,7 @@ blobs:
     #
     # Only available when `provider` is S3.
     #
-    # Default: empty
-    # Since: v1.24
+    # Default: ''.
     acl: foo
 
     # Cache control options.
@@ -103,8 +99,7 @@ blobs:
     # If you need different `cache_control` options for different files,
     # create multiple `blobs` configurations.
     #
-    # Default: empty
-    # Since: v1.24
+    # Default: ''.
     cache_control:
       - max-age=9999
       - public
@@ -114,9 +109,8 @@ blobs:
     # If you need different `content_disposition` options for different files,
     # create multiple `blobs` configurations.
     #
-    # Since: v1.24
-    # Default: attachment;filename={{.Filename}}
-    # Templates: allowed
+    # Default: attachment;filename={{.Filename}}.
+    # Templates: allowed.
     # Disable by setting the value to '-'
     content_disposition: "inline"
 
@@ -129,13 +123,9 @@ blobs:
 
 
   # Upload metadata.json and artifacts.json to the release as well.
-  #
-  # Since: v1.25
   include_meta: true
 
   # Upload only the files defined in extra_files.
-  #
-  # Since: v2.1
   extra_files_only: true
 ```
 

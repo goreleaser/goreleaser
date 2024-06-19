@@ -1,7 +1,5 @@
 # Notarize macOS binaries
 
-> Since v1.26
-
 GoReleaser can sign & notarize macOS binaries
 (and [Universal Binaries][unibin]) using [anchore/quill][quill].
 
@@ -29,13 +27,13 @@ notarize:
   macos:
     - # Whether this configuration is enabled or not.
       #
-      # Default: false
-      # Templates: allowed
+      # Default: false.
+      # Templates: allowed.
       enabled: '{{ isEnvSet "MACOS_SIGN_P12" }}'
 
       # IDs to use to filter the built binaries.
       #
-      # Default: Project Name
+      # Default: the project name.
       ids:
         - build1
         - build2
@@ -71,7 +69,7 @@ notarize:
         # Beware of the overall `--timeout` time.
         # This only has any effect if `wait` is true.
         #
-        # Default: 10m
+        # Default: 10m.
         timeout: 20m
 ```
 

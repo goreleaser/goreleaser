@@ -150,8 +150,6 @@ artifactories:
     # This might be useful if you have multiple packages with different
     # extensions with the same ID, and need to upload each extension to
     # a different place (e.g. nFPM packages).
-    #
-    # Since: v1.7
     exts:
       - deb
       - rpm
@@ -162,7 +160,6 @@ artifactories:
     # `custom_headers` fields.
     #
     # This feature is only available in GoReleaser Pro.
-    # Since: v1.20 (pro)
     matrix:
       foo: [bar zaz]
       something: [foobar somethingelse anotherthing]
@@ -175,7 +172,7 @@ artifactories:
     # If mode is `binary`, you'll need to have the archives section setup with
     #   format "binary" as well.
     #
-    # Default: 'archive'
+    # Default: 'archive'.
     mode: archive
 
     # URL of your Artifactory instance + path to deploy to
@@ -188,8 +185,6 @@ artifactories:
     username: deployuser
 
     # Client certificate and key (when provided, added as client cert to TLS connections)
-    #
-    # Since: v1.11
     client_x509_cert: /path/to/client.cert.pem
     client_x509_key: /path/to/client.key.pem
 
@@ -197,8 +192,6 @@ artifactories:
     checksum: true
 
     # Upload metadata.json and artifacts.json.
-    #
-    # Since: v1.25
     meta: true
 
     # Upload signatures.
@@ -218,13 +211,13 @@ artifactories:
     # If another file with the same name exists, the last one found will be used.
     # These globs can also include templates.
     #
-    # Since: v2.1
+    # Since: v2.1.
     extra_files:
       - glob: ./path/to/file.txt
       - glob: ./glob/**/to/**/file/**/*
       - glob: ./glob/foo/to/bar/file/foobar/override_from_previous
       - glob: ./single_file.txt
-        # Templates: allowed
+        # Templates: allowed.
         name_template: file.txt # note that this only works if glob matches 1 file only
 
     # Additional templated extra files to uploaded.
@@ -232,15 +225,15 @@ artifactories:
     # and its results will be uploaded.
     #
     # This feature is only available in GoReleaser Pro.
-    # Since: v2.1 (pro)
-    # Templates: allowed
+    # Since: v2.1 (pro).
+    # Templates: allowed.
     templated_extra_files:
       - src: LICENSE.tpl
         dst: LICENSE.txt
 
     # Upload only the files defined in extra_files.
     #
-    # Since: v2.1
+    # Since: v2.1.
     extra_files_only: true
 ```
 

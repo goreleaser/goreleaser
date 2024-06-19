@@ -1,7 +1,5 @@
 # Template Files
 
-> Since v1.16 (pro)
-
 !!! success "GoReleaser Pro"
 
     Template Files is a [GoReleaser Pro feature](/pro/).
@@ -17,20 +15,20 @@ All the templated files are uploaded to the release by default.
 template_files:
   - # ID of this particular file.
     #
-    # Default: 'default'
+    # Default: 'default'.
     id: default
 
     # Source path of the template file.
     # Ignored if empty.
     #
-    # Templates: allowed
+    # Templates: allowed.
     src: foo.tpl.sh
 
     # Destination path of the file.
     # Will be prefixed with the `dist` directory.
     # Ignored if empty.
     #
-    # Templates: allowed
+    # Templates: allowed.
     dst: foo.sh
 
     # File mode.

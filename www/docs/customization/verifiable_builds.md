@@ -29,8 +29,6 @@ gomod:
     - GOPRIVATE=example.com/blah
 
   # Sets the `-mod` flag value.
-  #
-  # Since: v1.7
   mod: mod
 
   # Which Go binary to use.
@@ -40,8 +38,7 @@ gomod:
 
   # Directory in which the go.mod file is.
   #
-  # Default: ''
-  # Since: v1.25
+  # Default: ''.
   dir: ./src
 ```
 

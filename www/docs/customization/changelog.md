@@ -12,7 +12,7 @@ changelog:
   #
   # This may result in an empty release notes on GitHub/GitLab/Gitea.
   #
-  # Templates: allowed
+  # Templates: allowed.
   disable: "{{ .Env.CREATE_CHANGELOG }}"
 
   # Changelog generation implementation to use.
@@ -24,16 +24,15 @@ changelog:
   # - `gitea`: uses the compare Gitea API, appending the author username to the changelog.
   # - `github-native`: uses the GitHub release notes generation API, disables the groups feature.
   #
-  # Default: 'git'
+  # Default: 'git'.
   use: github
 
   # Format to use for commit formatting.
   # Only available when use is one of `github`, `gitea`, or `gitlab`.
   #
-  # Default: '{{ .SHA }}: {{ .Message }} ({{ with .AuthorUsername }}@{{ . }}{{ else }}{{ .AuthorName }} <{{ .AuthorEmail }}>{{ end }})'
+  # Default: '{{ .SHA }}: {{ .Message }} ({{ with .AuthorUsername }}@{{ . }}{{ else }}{{ .AuthorName }} <{{ .AuthorEmail }}>{{ end }})'.
   # Extra template fields: `SHA`, `Message`, `AuthorName`, `AuthorEmail`, and
   # `AuthorUsername`.
-  # Since: v1.26
   format: "{{.SHA}}: {{.Message}} (@{{.AuthorUsername}})"
 
   # Sorts the changelog by the commit's messages.
@@ -46,16 +45,13 @@ changelog:
   # 0: use whatever the changelog implementation gives you
   # -1: remove the commit hash from the changelog
   # any other number: max length.
-  #
-  # Since: v1.11.2
   abbrev: -1
 
   # Paths to filter the commits for.
   # Only works when `use: git`, otherwise ignored.
   #
-  # Default: monorepo.dir value, or empty if no monorepo
   # This feature is only available in GoReleaser Pro.
-  # Since: v1.12 (pro)
+  # Default: monorepo.dir value, or empty if no monorepo.
   paths:
     - foo/
     - bar/
@@ -91,7 +87,6 @@ changelog:
       # subgroups within it.
       #
       # This feature is only available in GoReleaser Pro.
-      # Since: v1.15 (pro)
       groups:
         - title: "Docs"
           regex: ".*docs.*"
@@ -103,7 +98,6 @@ changelog:
   # Divider to use between groups.
   #
   # This feature is only available in GoReleaser Pro.
-  # Since: v1.16 (pro)
   divider: "---"
 
   filters:
@@ -126,8 +120,6 @@ changelog:
     # Matches are performed against the first line of the commit message only,
     # prefixed with the commit SHA1, usually in the form of
     # `<abbrev-commit>[:] <title-commit>`.
-    #
-    # Since: v1.19
     include:
       - "^feat:"
 ```

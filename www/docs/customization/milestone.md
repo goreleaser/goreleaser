@@ -9,9 +9,9 @@ Let's see what can be customized in the `milestones` section:
 # .goreleaser.yaml
 milestones:
   # You can have multiple milestone configs
-  -
-    # Repository for the milestone
-    # Default is extracted from the origin remote URL
+  - # Repository for the milestone
+    #
+    # Default: extracted from the origin remote URL.
     repo:
       owner: user
       name: repo
@@ -24,9 +24,10 @@ milestones:
 
     # Name of the milestone
     #
-    # Default: '{{ .Tag }}'
+    # Default: '{{ .Tag }}'.
     name_template: "Current Release"
 ```
 
 !!! tip
+
     Learn more about the [name template engine](/customization/templates/).

@@ -75,19 +75,19 @@ dockers:
     id: myimg
 
     # GOOS of the built binaries/packages that should be used.
-    # Default: 'linux'
+    # Default: 'linux'.
     goos: linux
 
     # GOARCH of the built binaries/packages that should be used.
-    # Default: 'amd64'
+    # Default: 'amd64'.
     goarch: amd64
 
     # GOARM of the built binaries/packages that should be used.
-    # Default: '6'
+    # Default: '6'.
     goarm: ""
 
     # GOAMD64 of the built binaries/packages that should be used.
-    # Default: 'v1'
+    # Default: 'v1'.
     goamd64: "v2"
 
     # IDs to filter the binaries/packages.
@@ -103,7 +103,7 @@ dockers:
 
     # Templates of the Docker image names.
     #
-    # Templates: allowed
+    # Templates: allowed.
     image_templates:
       - "myuser/myimage:latest"
       - "myuser/myimage:{{ .Tag }}"
@@ -116,8 +116,7 @@ dockers:
     # linux, for example.
     #
     # This option is only available on GoReleaser Pro.
-    # Since: v1.14 (pro)
-    # Templates: allowed
+    # Templates: allowed.
     skip_build: false
 
     # Skips the docker push.
@@ -126,13 +125,13 @@ dockers:
     # If set to auto, the release will not be pushed to the Docker repository
     #  in case there is an indicator of a prerelease in the tag, e.g. v1.0.0-rc1.
     #
-    # Templates: allowed (since v1.19)
+    # Templates: allowed.
     skip_push: false
 
     # Path to the Dockerfile (from the project root).
     #
-    # Default: 'Dockerfile'
-    # Templates: allowed
+    # Default: 'Dockerfile'.
+    # Templates: allowed.
     dockerfile: "{{ .Env.DOCKERFILE }}"
 
     # Use this instead of `dockerfile` if the contents of your Dockerfile are
@@ -141,8 +140,7 @@ dockers:
     # `dockerfile` is ignored when this is set.
     #
     # This feature is only available in GoReleaser Pro.
-    # Since: v1.20 (pro)
-    # Templates: allowed
+    # Templates: allowed.
     templated_dockerfile: "{{.Env.DOCKERFILE }}"
 
     # Set the "backend" for the Docker pipe.
@@ -151,12 +149,12 @@ dockers:
     #
     # Podman is a GoReleaser Pro feature and is only available on Linux.
     #
-    # Default: 'docker'
+    # Default: 'docker'.
     use: docker
 
     # Docker build flags.
     #
-    # Templates: allowed
+    # Templates: allowed.
     build_flag_templates:
       - "--pull"
       - "--label=org.opencontainers.image.created={{.Date}}"
@@ -188,8 +186,7 @@ dockers:
     # extra_files field above.
     #
     # This feature is only available in GoReleaser Pro.
-    # Since: v1.17 (pro)
-    # Templates: allowed
+    # Templates: allowed.
     templated_extra_files:
       - src: LICENSE.tpl
         dst: LICENSE.txt

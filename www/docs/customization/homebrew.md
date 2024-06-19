@@ -16,8 +16,8 @@ brews:
   -
     # Name of the recipe
     #
-    # Default: ProjectName
-    # Templates: allowed
+    # Default: the project name.
+    # Templates: allowed.
     name: myproject
 
     # Alternative names for the current recipe.
@@ -25,8 +25,8 @@ brews:
     # Useful if you want to publish a versioned formula as well, so users can
     # more easily downgrade.
     #
-    # Since: v1.20 (pro)
-    # Templates: allowed
+    # This feature is only available in GoReleaser Pro.
+    # Templates: allowed.
     alternative_names:
       - myproject@{{ .Version }}
       - myproject@{{ .Major }}
@@ -39,20 +39,20 @@ brews:
 
     # Sets the app file within a DMG.
     #
-    # Since: 1.24 (pro)
+    # This feature is only available in GoReleaser Pro.
     app: MyApp.app
 
     # GOARM to specify which 32-bit arm version to use if there are multiple
     # versions from the build section. Brew formulas support only one 32-bit
     # version.
     #
-    # Default: 6
+    # Default: 6.
     goarm: 6
 
     # GOAMD64 to specify which amd64 version to use if there are multiple
     # versions from the build section.
     #
-    # Default: v1
+    # Default: v1.
     goamd64: v1
 
     # NOTE: make sure the url_template, the token and given repo (github or
@@ -63,14 +63,12 @@ brews:
     # URL which is determined by the given Token (github, gitlab or gitea).
     #
     # Default depends on the client.
-    # Templates: allowed
+    # Templates: allowed.
     url_template: "https://github.mycompany.com/foo/bar/releases/download/{{ .Tag }}/{{ .ArtifactName }}"
 
     # Headers to include in the `url` stanza.
     # This can be a more modern alternative to `download_strategy` in some
     # cases.
-    #
-    # Since: v1.25
     url_headers:
       - "Accept: application/octet-stream"
       - 'Authorization: bearer #{ENV["HOMEBREW_GITHUB_API_TOKEN"]}'
@@ -91,7 +89,7 @@ brews:
 
     # The project name and current git tag are used in the format string.
     #
-    # Templates: allowed
+    # Templates: allowed.
     commit_msg_template: "Brew formula update for {{ .ProjectName }} version {{ .Tag }}"
 
     # Directory inside the repository to put the formula.
@@ -105,7 +103,7 @@ brews:
 
     # Your app's description.
     #
-    # Templates: allowed
+    # Templates: allowed.
     description: "Software to create fast and easy drum rolls."
 
     # SPDX identifier of your app's license.
@@ -117,7 +115,7 @@ brews:
     # If set to auto, the release will not be uploaded to the homebrew tap
     # in case there is an indicator for prerelease in the tag e.g. v1.0.0-rc1
     #
-    # Templates: allowed
+    # Templates: allowed.
     skip_upload: true
 
     # Custom block for brew.
@@ -131,8 +129,6 @@ brews:
       - name: git
         # Allow to specify the OS in which the dependency is required.
         # Valid options are `mac` and `linux`.
-        #
-        # Since: v1.23.0
         os: mac
       - name: zsh
         type: optional
@@ -156,8 +152,6 @@ brews:
       # ...
 
     # Service block.
-    #
-    # Since: v1.7
     service: |
       run: foo/bar
       # ...
@@ -172,7 +166,7 @@ brews:
     # Custom install script for brew.
     #
     # Template: allowed
-    # Default: 'bin.install "BinaryName"'
+    # Default: 'bin.install "BinaryName"'.
     install: |
       bin.install "some_other_name"
       bash_completion.install "completions/foo.bash" => "foo"
@@ -181,7 +175,6 @@ brews:
     # Additional install instructions so you don't need to override `install`.
     #
     # Template: allowed
-    # Since: v1.20
     extra_install: |
       bash_completion.install "completions/foo.bash" => "foo"
       man1.install "man/foo.1.gz"

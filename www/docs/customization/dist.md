@@ -6,7 +6,7 @@ If you must, you can change it by setting it in the `.goreleaser.yaml` file:
 ```yaml
 # .goreleaser.yaml
 #
-# Default: './dist'
+# Default: './dist'.
 dist: another-folder-that-is-not-dist
 ```
 
