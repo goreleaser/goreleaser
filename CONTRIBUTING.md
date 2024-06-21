@@ -9,18 +9,7 @@ By participating in this project, you agree to abide our
 
 Prerequisites:
 
-- [Task](https://taskfile.dev/installation)
-- [Go 1.22+](https://go.dev/doc/install)
-
-Other things you might need to run the tests:
-
-- [cosign](https://github.com/sigstore/cosign)
-- [Docker](https://www.docker.com/)
-- [GPG](https://gnupg.org)
-- [Podman](https://podman.io/)
-- [Snapcraft](https://snapcraft.io/)
-- [Syft](https://github.com/anchore/syft)
-- [upx](https://upx.github.io/)
+- [Dagger](https://dagger.io/)
 
 Clone `goreleaser` anywhere:
 
