@@ -332,6 +332,9 @@
 					"include_meta": {
 						"type": "boolean"
 					},
+					"extra_files_only": {
+						"type": "boolean"
+					},
 					"templated_extra_files": {
 						"items": {
 							"$ref": "#/$defs/TemplatedExtraFile"
@@ -4180,8 +4183,23 @@
 						},
 						"type": "object"
 					},
+					"extra_files": {
+						"items": {
+							"$ref": "#/$defs/ExtraFile"
+						},
+						"type": "array"
+					},
+					"extra_files_only": {
+						"type": "boolean"
+					},
 					"matrix": {
 						"$ref": "#/$defs/Matrix"
+					},
+					"templated_extra_files": {
+						"items": {
+							"$ref": "#/$defs/TemplatedExtraFile"
+						},
+						"type": "array"
 					}
 				},
 				"additionalProperties": false,

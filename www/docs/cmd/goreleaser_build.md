@@ -20,6 +20,7 @@ goreleaser build [flags]
 ## Options
 
 ```
+      --auto-snapshot      Automatically sets --snapshot if the repository is dirty
       --clean              Removes the 'dist' directory before building
   -f, --config string      Load configuration from file
   -h, --help               help for build
