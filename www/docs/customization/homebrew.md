@@ -34,8 +34,8 @@ brews:
     # IDs of the archives to use.
     # Empty means all IDs.
     ids:
-    - foo
-    - bar
+      - foo
+      - bar
 
     # Sets the app file within a DMG.
     #

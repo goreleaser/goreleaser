@@ -126,6 +126,7 @@ nav:
           - Docker Images and Manifests: customization/docker_sign.md
           - customization/notarize.md
       - Publish:
+          - customization/beforepublish.md
           - customization/release.md
           - customization/snapshots.md
           - customization/nightlies.md
