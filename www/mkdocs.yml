@@ -72,12 +72,14 @@ extra:
     provider: google
     property: "G-3MZGQS8EPS"
   social:
-    - icon: fontawesome/brands/github-alt
-      link: https://github.com/goreleaser
-    - icon: fontawesome/brands/twitter
-      link: https://twitter.com/goreleaser
+    - icon: fontawesome/brands/x-twitter
+      link: https://x.com/goreleaser
     - icon: fontawesome/brands/mastodon
       link: https://fosstodon.org/@goreleaser
+    - icon: fontawesome/brands/github
+      link: https://github.com/goreleaser
+    - icon: fontawesome/brands/discord
+      link: /discord
 
 nav:
   - Home: index.md
