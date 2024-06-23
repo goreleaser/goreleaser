@@ -106,7 +106,7 @@ func (Pipe) Run(ctx *context.Context) error {
 	}
 
 	path := filepath.Join(ctx.Config.Dist, "CHANGELOG.md")
-	log.WithField("changelog", path).Info("writing")
+	log.WithField("path", path).Debug("writing changelog")
 	return os.WriteFile(path, []byte(ctx.ReleaseNotes), 0o644) //nolint: gosec
 }
 

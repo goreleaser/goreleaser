@@ -448,12 +448,10 @@ func (c *githubClient) createOrUpdateRelease(ctx *context.Context, data *github.
 			ctx.Config.Release.GitHub.Name,
 			data,
 		)
-		if err == nil {
-			log.WithField("name", data.GetName()).
-				WithField("release-id", release.GetID()).
-				WithField("request-id", resp.Header.Get("X-GitHub-Request-Id")).
-				Info("release created")
-		}
+		log.WithField("name", data.GetName()).
+			WithField("release-id", release.GetID()).
+			WithField("request-id", resp.Header.Get("X-GitHub-Request-Id")).
+			Debug("release created")
 		return release, err
 	}
 
@@ -471,12 +469,10 @@ func (c *githubClient) updateRelease(ctx *context.Context, id int64, data *githu
 		id,
 		data,
 	)
-	if err == nil {
-		log.WithField("name", data.GetName()).
-			WithField("release-id", release.GetID()).
-			WithField("request-id", resp.Header.Get("X-GitHub-Request-Id")).
-			Info("release updated")
-	}
+	log.WithField("name", data.GetName()).
+		WithField("release-id", release.GetID()).
+		WithField("request-id", resp.Header.Get("X-GitHub-Request-Id")).
+		Debug("release updated")
 	return release, err
 }
 

@@ -18,7 +18,8 @@ const (
 // Pipe for gomod.
 type Pipe struct{}
 
-func (Pipe) String() string { return "loading go mod information" }
+func (Pipe) String() string                 { return "loading go mod information" }
+func (Pipe) Skip(ctx *context.Context) bool { return !ctx.Config.GoMod.Proxy }
 
 // Default sets the pipe defaults.
 func (Pipe) Default(ctx *context.Context) error {

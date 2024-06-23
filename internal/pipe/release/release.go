@@ -106,16 +106,17 @@ func (Pipe) Publish(ctx *context.Context) error {
 	if err := doPublish(ctx, c); err != nil {
 		return err
 	}
-	log.WithField("url", ctx.ReleaseURL).
-		WithField("published", !ctx.Config.Release.Draft).
-		Info("release created/updated")
+	if !ctx.Config.Release.Draft {
+		log.WithField("url", ctx.ReleaseURL).
+			Info("release published")
+	}
 	return nil
 }
 
 func doPublish(ctx *context.Context, client client.Client) error {
 	log.WithField("tag", ctx.Git.CurrentTag).
 		WithField("repo", ctx.Config.Release.GitHub.String()).
-		Info("creating or updating release")
+		Info("releasing")
 	if err := ctx.Artifacts.Refresh(); err != nil {
 		return err
 	}

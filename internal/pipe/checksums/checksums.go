@@ -86,7 +86,7 @@ func splitChecksum(ctx *context.Context) error {
 			Extra: map[string]interface{}{
 				artifact.ExtraChecksumOf: art.Path,
 				artifact.ExtraRefresh: func() error {
-					log.WithField("file", filename).Info("refreshing checksums")
+					log.WithField("file", filename).Debug("refreshing checksums")
 					return refreshOne(ctx, *art, filepath)
 				},
 			},
@@ -113,7 +113,7 @@ func singleChecksum(ctx *context.Context) error {
 		Name: filename,
 		Extra: map[string]interface{}{
 			artifact.ExtraRefresh: func() error {
-				log.WithField("file", filename).Info("refreshing checksums")
+				log.WithField("file", filename).Debug("refreshing checksums")
 				return refreshAll(ctx, filepath)
 			},
 		},
