@@ -1,7 +1,6 @@
 package main
 
 import (
-	"fmt"
 	"runtime"
 )
 
@@ -28,8 +27,10 @@ func (g *Goreleaser) Build(
 func (g *Goreleaser) BuildEnv() *Container {
 	// Base image with Go
 	env := dag.Container().
-		From(fmt.Sprintf("golang:%s-alpine", g.GoVersion)). // "cgr.dev/chainguard/wolfi-base"
-		WithExec([]string{"adduser", "-D", "nonroot"})
+		From("cgr.dev/chainguard/wolfi-base").
+		WithExec([]string{"apk", "add", "go"})
+		// From(fmt.Sprintf("golang:%s-alpine", g.GoVersion)).
+		// WithExec([]string{"adduser", "-D", "nonroot"})
 
 	// Mount the Go cache
 	env = env.

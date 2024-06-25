@@ -13,7 +13,7 @@ func New(
 	// The Goreleaser source code to use
 	// +optional
 	Source *Directory,
-	// The Go version to use // TODO: look up default based on "stable"
+	// The Go version to use
 	// +default="1.22.3"
 	GoVersion string,
 ) *Goreleaser {
