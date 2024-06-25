@@ -1,4 +1,8 @@
-{% extends "main.html" %} {% block tabs %} {{ super() }}
+<!-- prettier-ignore -->
+{% extends "main.html" %}
+{% block tabs %}
+{{ super() }}
+
 <style>
 	:root {
 		--goreleaser-primary-color: #3b5672;
@@ -169,7 +173,7 @@
 				<img src="static/logo.png" alt="" draggable="false" />
 			</div>
 			<div class="tx-hero__content">
-				<h1>Seamless Go Releases Across Platforms!</h1>
+				<h1>Release Go projects as fast and easily as possible!</h1>
 				<p>
 					GoReleaser is an open-source tool that simplifies the
 					process of releasing your Go projects to multiple platforms,
@@ -203,7 +207,7 @@
 			</p>
 		</div>
 
-		<div class="mx-auto grid items-center" >
+		<div class="mx-auto grid items-center">
 			<img
 				src="/static/goreleaser.svg"
 				alt="GoReleaser running against an example project."
@@ -215,7 +219,9 @@
 						<div class="grid gap-1">
 							<h3>Cross-platform</h3>
 							<p>
-								Build and release your Go projects for and from multiple platforms, including Windows, macOS, and Linux.
+								Build and release your Go projects for and from
+								multiple platforms, including Windows, macOS,
+								and Linux.
 							</p>
 						</div>
 					</li>
@@ -223,16 +229,20 @@
 						<div class="grid gap-1">
 							<h3>Distribution & Security</h3>
 							<p>
-								Make your software easy to install and run with Homebrew, Nix, Linux packages, DMGs, MSIs, Docker images, and more.
-								Easily create SBOMs, sign, and notarize your software.
+								Make your software easy to install and run with
+								Homebrew, Nix, Linux packages, DMGs, MSIs,
+								Docker images, Archives, Snaps, and more. Create
+								SBOMs, sign, and notarize your software.
 							</p>
 						</div>
 					</li>
 					<li>
 						<div class="grid gap-1">
-							<h3>Releases and announcements</h3>
+							<h3>Releases & Announcements</h3>
 							<p>
-								Release to GitHub, Gitlab, or Gitea, with automatically generated changelogs. Announce to X, Slack, Discord, and others.
+								Release to GitHub, Gitlab, or Gitea, with
+								automatically generated changelogs. Announce to
+								X, Slack, Discord, and others.
 							</p>
 						</div>
 					</li>
@@ -244,12 +254,20 @@
 <section class="tx-container-2" style="padding-top: 5rem; padding-bottom: 2rem">
 	<div class="md-grid md-typeset">
 		<div class="tx-intro">
-			<h1>Trusted and loved</h1>
+			<h1>Trusted and loved by the industry</h1>
 			<p class="text-bold">
-				GoReleaser is trusted and used by <a href="/users/">industry-leading companies and open source organizations</a>, including Google, GitHub, Amazon, Grafana, Microsoft, Hashicorp, Shopify, Sigstore, and Uber.
+				GoReleaser is used by
+				<a href="/users/">
+					industry-leading companies and open source organizations
+				</a>
+				, including Google, GitHub, Amazon, Grafana, Microsoft,
+				Hashicorp, Shopify, Sigstore, and Uber.
 			</p>
 		</div>
 	</div>
 </section>
 <a style="display: none" rel="me" href="https://fosstodon.org/@goreleaser"></a>
-{% endblock %}{% block content %}{% endblock %}
+<!-- prettier-ignore -->
+{% endblock %}
+{% block content %}
+{% endblock %}
