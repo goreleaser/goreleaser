@@ -74,9 +74,7 @@ docker_manifests:
     use: docker
 ```
 
-!!! tip
-
-    Learn more about the [name template engine](/customization/templates/).
+{% include-markdown "../includes/templates.md" comments=false %}
 
 ## How it works
 

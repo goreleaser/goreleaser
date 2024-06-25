@@ -14,32 +14,33 @@ func main() {
 ```
 
 Initialize modules with
+
 ```sh
 go mod init main
 ```
 
-Run the [init](/cmd/goreleaser_init/) command to create an example `.goreleaser.yaml` file:
+Run the [init](cmd/goreleaser_init.md) command to create an example `.goreleaser.yaml` file:
 
 ```sh
 goreleaser init
 ```
 
-Now, lets run a "local-only" release to see if it works using the [release](/cmd/goreleaser_release/) command:
+Now, lets run a "local-only" release to see if it works using the [release](cmd/goreleaser_release.md) command:
 
 ```sh
 goreleaser release --snapshot --clean
 ```
 
-At this point, you can [customize](/customization/) the generated `.goreleaser.yaml` or leave it as-is, it's up to you.
+At this point, you can [customize](customization/index.md) the generated `.goreleaser.yaml` or leave it as-is, it's up to you.
 It is best practice to check `.goreleaser.yaml` into the source control.
 
-You can verify your `.goreleaser.yaml` is valid by running the [check](/cmd/goreleaser_check/) command:
+You can verify your `.goreleaser.yaml` is valid by running the [check](cmd/goreleaser_check.md) command:
 
 ```sh
 goreleaser check
 ```
 
-You can also use GoReleaser to [build](/cmd/goreleaser_build/) the binary only for a given GOOS/GOARCH, which is useful for local development:
+You can also use GoReleaser to [build](cmd/goreleaser_build.md) the binary only for a given GOOS/GOARCH, which is useful for local development:
 
 ```sh
 goreleaser build --single-target
@@ -50,7 +51,7 @@ It will be used to deploy releases to your GitHub repository.
 You can create a new GitHub token [here](https://github.com/settings/tokens/new?scopes=repo,write:packages).
 
 !!! info
-    The minimum permissions the `GITHUB_TOKEN` should have to run this are `write:packages`
+The minimum permissions the `GITHUB_TOKEN` should have to run this are `write:packages`
 
 ```sh
 export GITHUB_TOKEN="YOUR_GH_TOKEN"
@@ -66,10 +67,13 @@ git push origin v0.1.0
 ```
 
 !!! info
+
     Check if your tag adheres to [semantic versioning](/limitations/semver/).
 
 !!! info
-    If you don't want to create a tag yet, you can also run GoReleaser without publishing based on the latest commit by using the `--snapshot` flag:
+
+    If you don't want to create a tag yet, you can also run GoReleaser without
+    publishing based on the latest commit by using the `--snapshot` flag:
 
     ```sh
     goreleaser release --snapshot

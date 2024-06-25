@@ -244,6 +244,4 @@ artifactories:
 These settings should allow you to push your artifacts into multiple
 **Artifactory** instances.
 
-!!! tip
-
-    Learn more about the [name template engine](/customization/templates/).
+{% include-markdown "../includes/templates.md" comments=false %}

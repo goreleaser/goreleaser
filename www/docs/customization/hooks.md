@@ -77,6 +77,4 @@ If you need to do anything more complex, it is recommended to create a shell
 script and call it instead. You can also go crazy with `sh -c "my commands"`,
 but it gets ugly really fast.
 
-!!! tip
-
-    Learn more about the [name template engine](/customization/templates/).
+{% include-markdown "../includes/templates.md" comments=false %}

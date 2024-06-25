@@ -5,15 +5,14 @@ running it as part of the CI pipeline in mind.
 
 Let's see how we can get it working on popular CI software:
 
- - [GitHub Actions](/ci/actions)
- - [Azure Pipelines](/ci/azurepipelines)
- - [Circle CI](/ci/circle)
- - [Cirrus CI](/ci/cirrus)
- - [Google CloudBuild](/ci/cloudbuild)
- - [Codefresh](/ci/codefresh)
- - [Drone](/ci/drone)
- - [GitLab CI](/ci/gitlab)
- - [Jenkins](/ci/jenkins)
- - [Semaphore](/ci/semaphore)
- - [Travis CI](/ci/travis)
-
+- [GitHub Actions](actions.md)
+- [Azure Pipelines](azurepipelines.md)
+- [Circle CI](circle.md)
+- [Cirrus CI](cirrus.md)
+- [Google CloudBuild](cloudbuild.md)
+- [Codefresh](codefresh.md)
+- [Drone](drone.md)
+- [GitLab CI](gitlab.md)
+- [Jenkins](jenkins.md)
+- [Semaphore](semaphore.md)
+- [Travis CI](travis.md)
