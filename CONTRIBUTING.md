@@ -9,7 +9,8 @@ By participating in this project, you agree to abide our
 
 Prerequisites:
 
-- [Dagger](https://dagger.io/)
+- [Task](https://taskfile.dev/installation)
+- [Dagger](https://docs.dagger.io/install)
 
 Clone `goreleaser` anywhere:
 
@@ -26,7 +27,7 @@ task setup
 A good way of making sure everything is all right is running the test suite:
 
 ```sh
-task test
+dagger call --source=.:default test
 ```
 
 ### A note about Docker multi-arch builds

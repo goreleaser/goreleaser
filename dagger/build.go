@@ -29,8 +29,6 @@ func (g *Goreleaser) BuildEnv() *Container {
 	env := dag.Container().
 		From("cgr.dev/chainguard/wolfi-base").
 		WithExec([]string{"apk", "add", "go"})
-		// From(fmt.Sprintf("golang:%s-alpine", g.GoVersion)).
-		// WithExec([]string{"adduser", "-D", "nonroot"})
 
 	// Mount the Go cache
 	env = env.

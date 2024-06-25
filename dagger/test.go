@@ -13,7 +13,7 @@ func (g *Goreleaser) Test(ctx context.Context) (string, error) {
 			"go",
 			"test",
 			"-failfast",
-			// "-race", // TODO: change base
+			"-race",
 			"-coverpkg=./...",
 			"-covermode=atomic",
 			"-coverprofile=coverage.txt",
@@ -33,21 +33,18 @@ func (g *Goreleaser) TestEnv() *Container {
 		"git",
 		"gpg",
 		"gpg-agent",
-		// "nix",
 		"upx",
 		"cosign",
 		"docker",
 		"syft",
 	}
 	return g.BuildEnv().
-		// WithEnvVariable("CGO_ENABLED", "1"). // TODO: change base
-		WithServiceBinding("localhost", dag.Docker().Engine()). // TODO: fix localhost
+		WithEnvVariable("CGO_ENABLED", "1").
+		WithServiceBinding("localhost", dag.Docker().Engine()).
 		WithEnvVariable("DOCKER_HOST", "tcp://localhost:2375").
 		WithExec(append([]string{"apk", "add"}, testDeps...)).
 		With(installNix).
 		With(installBuildx).
-		// WithExec([]string{"sh", "-c", "sh <(curl -L https://nixos.org/nix/install) --no-daemon"})
-		// WithExec([]string{"chown", "-R", "nonroot", "/nix"}).
 		WithUser("nonroot").
 		WithExec([]string{"go", "install", "github.com/google/ko@latest"})
 }
