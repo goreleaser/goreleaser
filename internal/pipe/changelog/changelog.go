@@ -106,7 +106,7 @@ func (Pipe) Run(ctx *context.Context) error {
 	}
 
 	path := filepath.Join(ctx.Config.Dist, "CHANGELOG.md")
-	log.WithField("changelog", path).Info("writing")
+	log.WithField("path", path).Debug("writing changelog")
 	return os.WriteFile(path, []byte(ctx.ReleaseNotes), 0o644) //nolint: gosec
 }
 
@@ -431,7 +431,7 @@ type gitChangeloger struct{}
 var validSHA1 = regexp.MustCompile(`^[a-fA-F0-9]{40}$`)
 
 func (g gitChangeloger) Log(ctx *context.Context) (string, error) {
-	args := []string{"log", "--pretty=oneline", "--abbrev-commit", "--no-decorate", "--no-color"}
+	args := []string{"log", "--pretty=oneline", "--no-decorate", "--no-color"}
 	prev, current := comparePair(ctx)
 	if validSHA1.MatchString(prev) {
 		args = append(args, prev, current)

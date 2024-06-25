@@ -13,8 +13,8 @@ krews:
   -
     # Name of the recipe
     #
-    # Default: ProjectName
-    # Templates: allowed
+    # Default: the project name.
+    # Templates: allowed.
     name: myproject
 
     # IDs of the archives to use.
@@ -26,13 +26,13 @@ krews:
     # versions from the build section. Krew plugin supports at this moment only
     # one 32-bit version.
     #
-    # Default: 6
+    # Default: 6.
     goarm: 6
 
     # GOAMD64 to specify which amd64 version to use if there are multiple
     # versions from the build section.
     #
-    # Default: 'v1'
+    # Default: 'v1'.
     goamd64: v3
 
     # NOTE: make sure the url_template, the token and given repo (github or
@@ -45,7 +45,7 @@ krews:
     #   GitHub: 'https://github.com/<repo_owner>/<repo_name>/releases/download/{{ .Tag }}/{{ .ArtifactName }}'
     #   GitLab: 'https://gitlab.com/<repo_owner>/<repo_name>/-/releases/{{ .Tag }}/downloads/{{ .ArtifactName }}'
     #   Gitea: 'https://gitea.com/<repo_owner>/<repo_name>/releases/download/{{ .Tag }}/{{ .ArtifactName }}'
-    # Templates: allowed
+    # Templates: allowed.
     url_template: "http://github.mycompany.com/foo/bar/releases/{{ .Tag }}/{{ .ArtifactName }}"
 
     # Git author used to commit to the repository.
@@ -62,13 +62,13 @@ krews:
     # Your app's description.
     # The usual guideline for this is to wrap the line at 80 chars.
     #
-    # Templates: allowed
+    # Templates: allowed.
     description: "Software to create fast and easy drum rolls."
 
     # Your app's short description.
     # The usual guideline for this is to be at most 50 chars long.
     #
-    # Templates: allowed
+    # Templates: allowed.
     short_description: "Software to create fast and easy drum rolls."
 
     # Caveats for the user of your binary.

@@ -650,7 +650,7 @@ func TestGiteaChangelog(t *testing.T) {
 	require.NoError(t, err)
 	require.Equal(t, []ChangelogItem{
 		{
-			SHA:            "c8488dc",
+			SHA:            "c8488dc825debca26ade35aefca234b142a515c9",
 			Message:        "feat: impl something",
 			AuthorUsername: "johndoe",
 			AuthorName:     "John Doe",

@@ -69,7 +69,7 @@ go 1.22
 func createGoReleaserYaml(tb testing.TB) {
 	tb.Helper()
 	yaml := `builds:
-- binary: fake
+- binary: 'fake{{if .IsSnapshot}}_snapshot{{end}}'
   goos:
     - linux
   goarch:

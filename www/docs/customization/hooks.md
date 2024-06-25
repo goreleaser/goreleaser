@@ -4,6 +4,7 @@ Some release cycles may need to run something before or after everything else.
 
 GoReleaser allows this with the global hooks feature.
 
+<!-- prettier-ignore -->
 === "OSS"
     The `before` section allows for global hooks that will be executed
     **before** the release is started.
@@ -22,8 +23,10 @@ GoReleaser allows this with the global hooks feature.
       - touch {{ .Env.FILE_TO_TOUCH }}
     ```
 
+<!-- prettier-ignore -->
 === "Pro"
     !!! success "GoReleaser Pro"
+
         Global after hooks, and the additional options in before hooks (`dir`
         and `env`) are [GoReleaser Pro features](/pro/).
 
@@ -40,14 +43,12 @@ GoReleaser allows this with the global hooks feature.
     before:
       # Commands to be ran.
       #
-      # Templates: allowed
+      # Templates: allowed.
       hooks:
       - make clean # simple string
       - cmd: go generate ./... # specify cmd
       - cmd: go mod tidy
         # Always prints command output.
-        #
-        # Since: v1.5
         output: true
         dir: ./submodule # specify command working directory
       - cmd: touch {{ .Env.FILE_TO_TOUCH }}
@@ -58,7 +59,7 @@ GoReleaser allows this with the global hooks feature.
     after:
       # Commands to be ran.
       #
-      # Templates: allowed
+      # Templates: allowed.
       hooks:
       - make clean
       - cmd: cat *.yaml
@@ -67,7 +68,6 @@ GoReleaser allows this with the global hooks feature.
         env:
         - 'RELEASE_DONE=something-{{ .ProjectName }}' # specify hook level environment variables
     ```
-
 
 Note that if any of the hooks fails the release process is aborted.
 
@@ -78,4 +78,5 @@ script and call it instead. You can also go crazy with `sh -c "my commands"`,
 but it gets ugly really fast.
 
 !!! tip
+
     Learn more about the [name template engine](/customization/templates/).

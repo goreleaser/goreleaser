@@ -949,7 +949,7 @@ func TestAbbrev(t *testing.T) {
 		}, testctx.WithCurrentTag("v0.0.2"), withFirstCommit(t))
 
 		require.NoError(t, Pipe{}.Run(ctx))
-		ensureCommitHashLen(t, ctx.ReleaseNotes, 7)
+		ensureCommitHashLen(t, ctx.ReleaseNotes, 40)
 	})
 
 	t.Run("abbrev -1", func(t *testing.T) {
@@ -984,15 +984,15 @@ func TestAbbrev(t *testing.T) {
 		ensureCommitHashLen(t, ctx.ReleaseNotes, 7)
 	})
 
-	t.Run("abbrev 40", func(t *testing.T) {
+	t.Run("abbrev 50", func(t *testing.T) {
 		ctx := testctx.NewWithCfg(config.Project{
 			Dist: folder,
 			Changelog: config.Changelog{
-				Abbrev: 40,
+				Abbrev: 50,
 			},
 		}, testctx.WithCurrentTag("v0.0.2"), withFirstCommit(t))
 		require.NoError(t, Pipe{}.Run(ctx))
-		ensureCommitHashLen(t, ctx.ReleaseNotes, 7)
+		ensureCommitHashLen(t, ctx.ReleaseNotes, 40)
 	})
 }
 

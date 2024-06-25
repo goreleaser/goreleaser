@@ -21,7 +21,7 @@ snapcrafts:
   - #
     # ID of the snapcraft config, must be unique.
     #
-    # Default: 'default'
+    # Default: 'default'.
     id: foo
 
     # Build IDs for the builds you want to create snapcraft packages for.
@@ -31,25 +31,21 @@ snapcrafts:
 
     # You can change the name of the package.
     #
-    # Default: '{{ .ProjectName }}_{{ .Version }}_{{ .Os }}_{{ .Arch }}{{ with .Arm }}v{{ . }}{{ end }}{{ with .Mips }}_{{ . }}{{ end }}{{ if not (eq .Amd64 "v1") }}{{ .Amd64 }}{{ end }}'
-    # Templates: allowed
+    # Default: '{{ .ProjectName }}_{{ .Version }}_{{ .Os }}_{{ .Arch }}{{ with .Arm }}v{{ . }}{{ end }}{{ with .Mips }}_{{ . }}{{ end }}{{ if not (eq .Amd64 "v1") }}{{ .Amd64 }}{{ end }}'.
+    # Templates: allowed.
     name_template: "{{ .ProjectName }}_{{ .Version }}_{{ .Os }}_{{ .Arch }}"
 
     # The name of the snap. This is optional.
     #
-    # Default: ProjectName
+    # Default: the project name.
     name: drumroll
 
     # The canonical title of the application, displayed in the software
     # centre graphical frontends.
-    #
-    # Since: v1.19
     title: Drum Roll
 
     # Path to icon image that represents the snap in the snapcraft.io store
     # pages and other graphical store fronts.
-    #
-    # Since: v1.19
     icon: ./icon.png
 
     # Whether to publish the snap to the snapcraft store.
@@ -68,7 +64,7 @@ snapcrafts:
 
     # Disable this configuration.
     #
-    # Templates: allowed (since v1.20)
+    # Templates: allowed.
     disable: true
 
     # Channels in store where snap will be pushed.
@@ -79,7 +75,7 @@ snapcrafts:
     # Default:
     #   grade is 'stable': ["edge", "beta", "candidate", "stable"]
     #   grade is 'devel': ["edge", "beta"]
-    # Templates: allowed (since v1.15)
+    # Templates: allowed.
     channel_templates:
       - edge
       - beta
@@ -118,15 +114,11 @@ snapcrafts:
 
     # A list of features that must be supported by the core in order for
     # this snap to install.
-    #
-    # Since: v1.19
     assumes:
       - snapd2.38
 
     # his top-level keyword to define a hook with a plug to access more
     # privileges.
-    #
-    # Since: v1.19
     hooks:
       install:
         - network
@@ -145,8 +137,7 @@ snapcrafts:
     # and its results will be added to the package.
     #
     # This feature is only available in GoReleaser Pro.
-    # Since: v1.17 (pro)
-    # Templates: allowed
+    # Templates: allowed.
     templated_extra_files:
       - source: LICENSE.tpl
         destination: LICENSE.txt
@@ -194,50 +185,34 @@ snapcrafts:
         args: --foo
 
         # The kind of wrapper to generate for the given command.
-        #
-        # Since: v1.6
         adapter: none
 
         # List of applications that are ordered to be started after the current
         # one.
-        #
-        # Since: v1.6
         after: ["postdrum"]
 
         # Aliases for the app command.
         # https://snapcraft.io/docs/commands-and-aliases#heading--aliases
-        #
-        # Since: v1.6
         aliases: ["droll"]
 
         # Defines the name of the .desktop file used to start an application
         # with the desktop session.
         # https://snapcraft.io/docs/snap-format#heading--autostart
-        #
-        # Since: v1.6
         autostart: drumroll.desktop
 
         # List of applications that are ordered to be started before the current
         # one.
-        #
-        # Since: v1.6
         before: ["predrum"]
 
         # D-Bus name this service is reachable as. Mandatory if daemon=dbus.
-        #
-        # Since: v1.6
         bus_name: drumbus
 
         # A list of commands to be executed in order before the command of this
         # app.
-        #
-        # Since: v1.6
         command_chain: ["foo", "bar", "baz"]
 
         # An identifier to a desktop-id within an external appstream file.
         # https://snapcraft.io/docs/using-external-metadata
-        #
-        # Since: v1.6
         common_id: "com.example.drumroll"
 
         # Bash completion snippet. More information about completion here:
@@ -246,7 +221,7 @@ snapcrafts:
 
         # You can override the command name.
         #
-        # Default: AppName
+        # Default: AppName.
         command: bin/drumroll.wrapper
 
         # If you want your app to be autostarted and to always run in the
@@ -254,35 +229,25 @@ snapcrafts:
         daemon: simple
 
         # Location of the .desktop file.
-        #
-        # Since: v1.6
         desktop: usr/share/applications/drumroll.desktop
 
         # A set of key-value pairs specifying environment variables.
-        #
-        # Since: v1.6
         environment:
           foo: bar
           baz: quo
 
         # A list of Snapcraft extensions this app depends on.
         # https://snapcraft.io/docs/snapcraft-extensions
-        #
-        # Since: v1.6
         extensions: ["gnome-3-38"]
 
         # Defines whether a freshly installed daemon is started automatically,
         # or whether startup control is deferred to the snap.
         # Requires `daemon` to be set.
-        #
-        # Since: v1.6
         install_mode: "disable"
 
         # A set of key-value attributes passed through to snap.yaml without
         # snapcraft validation.
         # https://snapcraft.io/docs/using-in-development-features
-        #
-        # Since: v1.6
         passthrough:
           foo: bar
 
@@ -294,19 +259,13 @@ snapcrafts:
         plugs: ["home", "network", "personal-files"]
 
         # Sets a command to run from inside the snap after a service stops.
-        #
-        # Since: v1.6
         post_stop_command: foo
 
         # Controls whether the daemon should be restarted during a snap refresh.
-        #
-        # Since: v1.6
         refresh_mode: endure
 
         # Command to use to ask the service to reload its configuration.
         # Requires `daemon` to be set.
-        #
-        # Since: v1.6
         reload_command: foo
 
         # Restart condition of the snap.
@@ -314,14 +273,10 @@ snapcrafts:
         restart_condition: "always"
 
         # List of slots for interfaces to connect to.
-        #
-        # Since: v1.6
         slots: ["foo", "bar", "baz"]
 
         # Maps a daemon’s sockets to services and activates them.
         # Requires `plugs` to contain `network-bind`.
-        #
-        # Since: v1.6
         sockets:
           sock:
             listen-stream: $SNAP_COMMON/socket
@@ -329,38 +284,26 @@ snapcrafts:
             socket-mode: 416
 
         # Time to wait for daemon to start.
-        #
-        # Since: v1.6
         start_timeout: 42ms
 
         # Command to use to stop the service.
         # Requires `daemon` to be set.
-        #
-        # Since: v1.6
         stop_command: foo
 
         # Controls how the daemon should be stopped.
         # Requires `daemon` to be set.
-        #
-        # Since: v1.6
         stop_mode: sigterm
 
         # Time to wait for daemon to stop.
-        #
-        # Since: v1.6
         stop_timeout: 42ms
 
         # Schedules when, or how often, to run a service or command.
         # Requires `daemon` to be set.
         # https://snapcraft.io/docs/services-and-daemons
-        #
-        # Since: v1.6
         timer: "00:00-24:00/24"
 
         # Declares the service watchdog timeout.
         # Requires `plugs` to contain `daemon-notify`.
-        #
-        # Since: v1.6
         watchdog_timeout: 42ms
 
     # Allows plugs to be configured. Plugs like system-files and personal-files

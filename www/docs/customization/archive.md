@@ -12,7 +12,7 @@ archives:
   - #
     # ID of this archive.
     #
-    # Default: 'default'
+    # Default: 'default'.
     id: my-archive
 
     # Builds reference which build instances should be archived in this archive.
@@ -29,20 +29,20 @@ archives:
     # - `tgz`
     # - `tar.xz`
     # - `txz`
-    # - `tar.zst` (Since v1.26)
+    # - `tar.zst`
+    # - `tzst` (since v2.1)
     # - `tar`
     # - `gz`
     # - `zip`
     # - `binary`
     #
-    # Default: 'tar.gz'
+    # Default: 'tar.gz'.
     format: zip
 
     # This will create an archive without any binaries, only the files are there.
     # The name template must not contain any references to `Os`, `Arch` and etc, since the archive will be meta.
     #
-    # Since: v1.9
-    # Templates: allowed
+    # Templates: allowed.
     meta: true
 
     # Archive name.
@@ -52,13 +52,12 @@ archives:
     #   - `{{ .Binary }}_{{ .Version }}_{{ .Os }}_{{ .Arch }}{{ with .Arm }}v{{ . }}{{ end }}{{ with .Mips }}_{{ . }}{{ end }}{{ if not (eq .Amd64 "v1") }}{{ .Amd64 }}{{ end }}`
     # - if format is anything else:
     #   - `{{ .ProjectName }}_{{ .Version }}_{{ .Os }}_{{ .Arch }}{{ with .Arm }}v{{ . }}{{ end }}{{ with .Mips }}_{{ . }}{{ end }}{{ if not (eq .Amd64 "v1") }}{{ .Amd64 }}{{ end }}`
-    # Templates: allowed
+    # Templates: allowed.
     name_template: "{{ .ProjectName }}_{{ .Version }}_{{ .Os }}_{{ .Arch }}"
 
     # Sets the given file info to all the binaries included from the `builds`.
     #
     # Default: copied from the source binary.
-    # Since: v1.14
     builds_info:
       group: root
       owner: root
@@ -77,16 +76,12 @@ archives:
     #
     # This might be useful if you have your binary be built with a sub-directory
     # for some reason, but do no want that sub-directory inside the archive.
-    #
-    # Since: v1.11
     strip_binary_directory: true
 
     # This will make the destination paths be relative to the longest common
     # path prefix between all the files matched and the source glob.
     # Enabling this essentially mimic the behavior of nfpm's contents section.
     # It will be the default by June 2023.
-    #
-    # Since: v1.14
     rlcp: true
 
     # Can be used to change the archive formats for specific GOOSs.
@@ -102,8 +97,8 @@ archives:
 
     # Additional files/globs you want to add to the archive.
     #
-    # Default: [ 'LICENSE*', 'README*', 'CHANGELOG', 'license*', 'readme*', 'changelog']
-    # Templates: allowed
+    # Default: [ 'LICENSE*', 'README*', 'CHANGELOG', 'license*', 'readme*', 'changelog'].
+    # Templates: allowed.
     files:
       - LICENSE.txt
       - README_{{.Os}}.md
@@ -121,17 +116,17 @@ archives:
         # File info.
         # Not all fields are supported by all formats available formats.
         #
-        # Default: copied from the source file
+        # Default: copied from the source file.
         info:
-          # Templates: allowed (since v1.14)
+          # Templates: allowed.
           owner: root
 
-          # Templates: allowed (since v1.14)
+          # Templates: allowed.
           group: root
 
           # Must be in time.RFC3339Nano format.
           #
-          # Templates: allowed (since v1.14)
+          # Templates: allowed.
           mtime: "{{ .CommitDate }}"
 
           # File mode.
@@ -142,8 +137,7 @@ archives:
     # and its results will be added to the archive.
     #
     # This feature is only available in GoReleaser Pro.
-    # Since: v1.17 (pro)
-    # Templates: allowed
+    # Templates: allowed.
     templated_files:
       # a more complete example, check the globbing deep dive below
       - src: "LICENSE.md.tpl"
@@ -152,16 +146,17 @@ archives:
         # File info.
         # Not all fields are supported by all formats available formats.
         #
-        # Default: copied from the source file
+        # Default: copied from the source file.
         info:
-          # Templateable (since v1.14)
+          # Templates: allowed.
           owner: root
 
-          # Templateable (since v1.14)
+          # Templates: allowed.
           group: root
 
           # Must be in time.RFC3339Nano format.
-          # Templateable (since v1.14)
+          #
+          # Templates: allowed.
           mtime: "{{ .CommitDate }}"
 
           # File mode.

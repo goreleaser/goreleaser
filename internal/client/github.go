@@ -390,10 +390,6 @@ func (c *githubClient) CreateRelease(ctx *context.Context, body string) (string,
 		MakeLatest: github.String("true"),
 	}
 
-	if ctx.Config.Release.DiscussionCategoryName != "" {
-		data.DiscussionCategoryName = github.String(ctx.Config.Release.DiscussionCategoryName)
-	}
-
 	if target := ctx.Config.Release.TargetCommitish; target != "" {
 		target, err := tmpl.New(ctx).Apply(target)
 		if err != nil {
@@ -425,9 +421,13 @@ func (c *githubClient) PublishRelease(ctx *context.Context, releaseID string) er
 	if err != nil {
 		return fmt.Errorf("non-numeric release ID %q: %w", releaseID, err)
 	}
-	if _, err := c.updateRelease(ctx, releaseIDInt, &github.RepositoryRelease{
+	data := &github.RepositoryRelease{
 		Draft: github.Bool(draft),
-	}); err != nil {
+	}
+	if ctx.Config.Release.DiscussionCategoryName != "" {
+		data.DiscussionCategoryName = github.String(ctx.Config.Release.DiscussionCategoryName)
+	}
+	if _, err := c.updateRelease(ctx, releaseIDInt, data); err != nil {
 		return fmt.Errorf("could not update existing release: %w", err)
 	}
 	return nil
@@ -448,12 +448,10 @@ func (c *githubClient) createOrUpdateRelease(ctx *context.Context, data *github.
 			ctx.Config.Release.GitHub.Name,
 			data,
 		)
-		if err == nil {
-			log.WithField("name", data.GetName()).
-				WithField("release-id", release.GetID()).
-				WithField("request-id", resp.Header.Get("X-GitHub-Request-Id")).
-				Info("release created")
-		}
+		log.WithField("name", data.GetName()).
+			WithField("release-id", release.GetID()).
+			WithField("request-id", resp.Header.Get("X-GitHub-Request-Id")).
+			Debug("release created")
 		return release, err
 	}
 
@@ -471,12 +469,10 @@ func (c *githubClient) updateRelease(ctx *context.Context, id int64, data *githu
 		id,
 		data,
 	)
-	if err == nil {
-		log.WithField("name", data.GetName()).
-			WithField("release-id", release.GetID()).
-			WithField("request-id", resp.Header.Get("X-GitHub-Request-Id")).
-			Info("release updated")
-	}
+	log.WithField("name", data.GetName()).
+		WithField("release-id", release.GetID()).
+		WithField("request-id", resp.Header.Get("X-GitHub-Request-Id")).
+		Debug("release updated")
 	return release, err
 }
 

@@ -1,7 +1,5 @@
 # DockerHub
 
-> Since v1.25 (pro)
-
 !!! success "GoReleaser Pro"
 
     DockerHub is a [GoReleaser Pro feature](/pro/).
@@ -19,20 +17,20 @@ You also have plenty of customization options:
 dockerhub:
   - # Your hub.docker.com username. Must have 'editor' permissions
     #
-    # Default: "{{ .Env.DOCKER_USERNAME }}"
-    # Templates: allowed
+    # Default: "{{ .Env.DOCKER_USERNAME }}".
+    # Templates: allowed.
     username: "john.doe"
 
     # Environment variable name to get the push token from.
     # You might want to change it if you have multiple dockerhub configurations.
     #
-    # Templates: allowed
-    # Default: "DOCKER_PASSWORD"
+    # Templates: allowed.
+    # Default: "DOCKER_PASSWORD".
     secret_name: DOCKER_TOKEN
 
     # Images to apply the description and/or full description to.
     #
-    # Templates: allowed
+    # Templates: allowed.
     images:
       - goreleaser/goreleaser
       - goreleaser/goreleaser-pro
@@ -41,12 +39,12 @@ dockerhub:
     # publishing patch releases.
     # Any value different of 'true' will be considered 'false'.
     #
-    # Templates: allowed
+    # Templates: allowed.
     disable: "{{gt .Patch 0}}"
 
     # The short description of the image.
     #
-    # Templates: allowed
+    # Templates: allowed.
     description: A short description
 
     # The full description of the image.
@@ -54,11 +52,11 @@ dockerhub:
     # It can be a string directly, or you can use `from_url` or `from_file` to
     # source it from somewhere else.
     #
-    # Templates: allowed
+    # Templates: allowed.
     full_description:
       # Loads from an URL.
       from_url:
-        # Templates: allowed
+        # Templates: allowed.
         url: https://foo.bar/README.md
         headers:
           x-api-token: "${MYCOMPANY_TOKEN}"
@@ -66,7 +64,7 @@ dockerhub:
       # Loads from a local file.
       # Overrides `from_url`.
       from_file:
-        # Templates: allowed
+        # Templates: allowed.
         path: ./README.md
 ```
 

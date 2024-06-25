@@ -20,21 +20,20 @@ announce:
 
     # Integer representation of your channel
     #
-    # Templates: allowed (since v1.15)
+    # Templates: allowed.
     chat_id: 123456
 
     # Message template to use while publishing.
     #
-    # Default: '{{ mdv2escape .ProjectName }} {{ mdv2escape .Tag }} is out{{ mdv2escape "!" }} Check it out at {{ mdv2escape .ReleaseURL }}'
-    # Templates: allowed
+    # Default: '{{ mdv2escape .ProjectName }} {{ mdv2escape .Tag }} is out{{ mdv2escape "!" }} Check it out at {{ mdv2escape .ReleaseURL }}'.
+    # Templates: allowed.
     message_template: 'Awesome project {{.Tag}} is out{{ mdv2escape "!" }}'
 
     # Parse mode.
     #
     # Valid options are MarkdownV2 and HTML.
     #
-    # Default: MarkdownV2
-    # Since: v1.19
+    # Default: 'MarkdownV2'.
     parse_mode: HTML
 ```
 
@@ -42,6 +41,7 @@ You can format your message using `MarkdownV2`, for reference, see the
 [Telegram Bot API](https://core.telegram.org/bots/api#markdownv2-style).
 
 !!! tip
+
     Learn more about the [name template engine](/customization/templates/).
     In the specific case of `MarkdownV2`, you'll probably need the `mdv2escape`
     function.

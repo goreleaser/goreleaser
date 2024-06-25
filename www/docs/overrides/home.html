@@ -1,70 +1,119 @@
+<!-- prettier-ignore -->
 {% extends "main.html" %}
 {% block tabs %}
 {{ super() }}
+
 <style>
 	:root {
 		--goreleaser-primary-color: #3b5672;
 	}
 
 	.md-header {
-		position: initial
+		position: initial;
 	}
 
 	.md-main__inner {
-		margin: 0
+		margin: 0;
 	}
 
 	.md-content {
-		display: none
+		display: none;
 	}
 
-	[data-md-color-scheme=slate] .tx-container {
+	[data-md-color-scheme="slate"] .tx-container {
 		padding-top: 1rem;
-		background: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1123 258'><path d='M1124,2c0,0 0,256 0,256l-1125,0l0,-48c0,0 16,5 55,5c116,0 197,-92 325,-92c121,0 114,46 254,46c140,0 214,-167 572,-166Z' style='fill: hsla(232, 15%, 21%, 1)'/></svg>") no-repeat bottom, linear-gradient(to bottom, var(--md-primary-fg-color), var(--goreleaser-primary-color) 99%, #fff 99%)
+		background:
+			url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1123 258'><path d='M1124,2c0,0 0,256 0,256l-1125,0l0,-48c0,0 16,5 55,5c116,0 197,-92 325,-92c121,0 114,46 254,46c140,0 214,-167 572,-166Z' style='fill: hsla(232, 15%, 21%, 1)'/></svg>")
+				no-repeat bottom,
+			linear-gradient(
+				to bottom,
+				var(--md-primary-fg-color),
+				var(--goreleaser-primary-color) 99%,
+				#fff 99%
+			);
 	}
 
 	.tx-container {
 		padding-top: 1rem;
-		background: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1123 258'><path d='M1124,2c0,0 0,256 0,256l-1125,0l0,-48c0,0 16,5 55,5c116,0 197,-92 325,-92c121,0 114,46 254,46c140,0 214,-167 572,-166Z' style='fill: white' /></svg>") no-repeat bottom, linear-gradient(to bottom, var(--md-primary-fg-color), var(--goreleaser-primary-color) 99%, #fff 99%)
+		background:
+			url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1123 258'><path d='M1124,2c0,0 0,256 0,256l-1125,0l0,-48c0,0 16,5 55,5c116,0 197,-92 325,-92c121,0 114,46 254,46c140,0 214,-167 572,-166Z' style='fill: white' /></svg>")
+				no-repeat bottom,
+			linear-gradient(
+				to bottom,
+				var(--md-primary-fg-color),
+				var(--goreleaser-primary-color) 99%,
+				#fff 99%
+			);
+	}
+
+	[data-md-color-scheme="slate"] .tx-container-2 {
+		margin-top: -50px;
+		background-color: hsla(232, 15%, 21%, 1);
+	}
+
+	.tx-container-2 {
+		margin-top: -50px;
+		background-color: var(--md-primary-bg-color);
+	}
+
+	.tx-container-2 ul {
+		list-style-type: none;
+	}
+
+	[data-md-color-scheme="slate"] .tx-container-2 li h3 {
+		color: var(--md-primary-bg-color);
+	}
+
+	.tx-intro {
+		text-align: center;
+	}
+
+	.tx-intro h1 {
+		font-weight: 600;
+		margin: 0;
+	}
+
+	[data-md-color-scheme="slate"] .tx-intro h1 {
+		color: var(--md-primary-bg-color);
 	}
 
 	.tx-hero {
-		margin: 0 .8rem;
-		color: var(--md-primary-bg-color)
+		margin: 0 0.8rem;
+		color: var(--md-primary-bg-color);
 	}
 
 	.tx-hero h1 {
-		margin-bottom: 1rem;
+		margin-bottom: 2rem;
 		color: currentColor;
-		font-weight: 700
+		font-weight: 700;
 	}
 
 	.tx-hero__content {
-		padding-bottom: 6rem
+		padding-bottom: 6rem;
 	}
 
 	.tx-hero .md-button {
-		margin-top: .5rem;
-		margin-right: .5rem;
-		color: var(--md-primary-bg-color)
+		margin-top: 0.5rem;
+		margin-right: 0.5rem;
+		color: var(--md-primary-bg-color);
 	}
 
 	.tx-hero .md-button--primary {
 		background-color: var(--md-primary-bg-color);
 		color: var(--goreleaser-primary-color);
-		border-color: var(--md-primary-bg-color)
+		border-color: var(--md-primary-bg-color);
 	}
 
 	.tx-hero .md-button:focus,
 	.tx-hero .md-button:hover {
 		background-color: var(--md-accent-fg-color);
 		color: var(--md-default-bg-color);
-		border-color: var(--md-accent-fg-color)
+		border-color: var(--md-accent-fg-color);
 	}
 
-	@media screen and (max-width:70em) {
+	@media screen and (max-width: 70em) {
 		.tx-hero h1 {
-			font-size: 1.4rem
+			font-size: 1.4rem;
 		}
 
 		.tx-hero__image {
@@ -76,20 +125,20 @@
 		}
 	}
 
-	@media screen and (min-width:70em) {
+	@media screen and (min-width: 70em) {
 		.md-sidebar--secondary {
-			display: none
+			display: none;
 		}
 
 		.tx-hero {
 			display: flex;
-			align-items: stretch
+			align-items: stretch;
 		}
 
 		.tx-hero__content {
 			max-width: 30rem;
 			margin-top: 3.5rem;
-			padding-bottom: 14vw
+			padding-bottom: 14vw;
 		}
 
 		.tx-hero__image {
@@ -103,9 +152,9 @@
 		}
 	}
 
-	@media screen and (min-width:76.25em) {
+	@media screen and (min-width: 76.25em) {
 		.md-sidebar--primary {
-			display: none
+			display: none;
 		}
 
 		.tx-hero__image {
@@ -116,41 +165,109 @@
 			max-width: 20rem;
 		}
 	}
-
 </style>
 <section class="tx-container">
 	<div class="md-grid md-typeset">
 		<div class="tx-hero">
 			<div class="tx-hero__image">
-				<img src="static/logo.png" alt="" draggable="false">
+				<img src="static/logo.png" alt="" draggable="false" />
 			</div>
 			<div class="tx-hero__content">
-				<h1>GoReleaser</h1>
-				<h2>Release Go projects as fast and easily as possible!</h2>
-				<p>With GoReleaser, you can:</p>
-				<ul>
-					<li>Cross-compile your Go project</li>
-					<li>Release to GitHub, GitLab and Gitea</li>
-					<li>Create nightly builds</li>
-					<li>Create Docker images and manifests</li>
-					<li>Create Linux packages and Homebrew taps</li>
-					<li>Sign artifacts, checksums and container images</li>
-					<li>Announce new releases on Twitter, Slack, Discord and others</li>
-					<li>Generate SBOMs (Software Bill of Materials) for binaries and container images</li>
-					<li>... and much more!</li>
-				</ul>
-				<a href="{{ page.next_page.url | url }}" title="{{ page.next_page.title | striptags }}"
-					class="md-button md-button--primary">
+				<h1>Release Go projects as fast and easily as possible!</h1>
+				<p>
+					GoReleaser is an open-source tool that simplifies the
+					process of releasing your Go projects to multiple platforms,
+					ensuring a consistent and reliable deployment experience.
+				</p>
+				<a
+					href="{{ page.next_page.url | url }}"
+					title="{{ page.next_page.title | striptags }}"
+					class="md-button md-button--primary"
+				>
 					Get started
 				</a>
-				<a href="/pro/" title="{{ lang.t('source.link.title') }}" class="md-button">
+				<a
+					href="/pro/"
+					title="{{ lang.t('source.link.title') }}"
+					class="md-button"
+				>
 					Get Pro
 				</a>
 			</div>
 		</div>
 	</div>
 </section>
-<a style="display: none;" rel="me" href="https://fosstodon.org/@goreleaser"></a>
+<section class="tx-container-2">
+	<div class="md-grid md-typeset">
+		<div class="tx-intro">
+			<h1>Streamline your releases</h1>
+			<p class="subtext">
+				GoReleaser takes the hassle out of releasing your Go projects,
+				allowing you to focus on building great software.
+			</p>
+		</div>
+
+		<div class="mx-auto grid items-center">
+			<img
+				src="/static/goreleaser.svg"
+				alt="GoReleaser running against an example project."
+				style="margin-top: 1.5rem"
+			/>
+			<div class="flex flex-col justify-center">
+				<ul class="grid gap-6">
+					<li>
+						<div class="grid gap-1">
+							<h3>Cross-platform</h3>
+							<p>
+								Build and release your Go projects for and from
+								multiple platforms, including Windows, macOS,
+								and Linux.
+							</p>
+						</div>
+					</li>
+					<li>
+						<div class="grid gap-1">
+							<h3>Distribution & Security</h3>
+							<p>
+								Make your software easy to install and run with
+								Homebrew, Nix, Linux packages, DMGs, MSIs,
+								Docker images, Archives, Snaps, and more. Create
+								SBOMs, sign, and notarize your software.
+							</p>
+						</div>
+					</li>
+					<li>
+						<div class="grid gap-1">
+							<h3>Releases & Announcements</h3>
+							<p>
+								Release to GitHub, Gitlab, or Gitea, with
+								automatically generated changelogs. Announce to
+								X, Slack, Discord, and others.
+							</p>
+						</div>
+					</li>
+				</ul>
+			</div>
+		</div>
+	</div>
+</section>
+<section class="tx-container-2" style="padding-top: 5rem; padding-bottom: 2rem">
+	<div class="md-grid md-typeset" style="max-width: 40rem">
+		<div class="tx-intro">
+			<h1>Releases for everyone</h1>
+			<p class="text-bold">
+				GoReleaser is used by
+				<a href="/users/">
+					industry-leading companies and open source organizations
+				</a>
+				including Google, GitHub, Amazon, Grafana, Microsoft, Hashicorp,
+				Shopify, Sigstore, NATS, NGinx, Uber, and more.
+			</p>
+		</div>
+	</div>
+</section>
+<a style="display: none" rel="me" href="https://fosstodon.org/@goreleaser"></a>
+<!-- prettier-ignore -->
 {% endblock %}
-{% block content %}{% endblock %}
-{% block footer %}{% endblock %}
+{% block content %}
+{% endblock %}

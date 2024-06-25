@@ -15,6 +15,6 @@ announce:
   #
   # Any value different from 'true' is evaluated to false.
   #
-  # Templates: allowed
+  # Templates: allowed.
   skip: "{{gt .Patch 0}}"
 ```

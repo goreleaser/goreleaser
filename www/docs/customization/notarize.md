@@ -1,7 +1,5 @@
 # Notarize macOS binaries
 
-> Since v1.26
-
 GoReleaser can sign & notarize macOS binaries
 (and [Universal Binaries][unibin]) using [anchore/quill][quill].
 
@@ -9,7 +7,7 @@ To use it, you'll need:
 
 - An [Apple Developer Account](https://developer.apple.com/) ($99/year).
 - A [certificate](https://developer.apple.com/account/resources/certificates/add)
-  from said account. It should be of "Developer ID Installer" type.
+  from said account. It should be of "Developer ID Application" type.
   This will give you a `.cer` file. You'll need to import it into KeyChain.app,
   and then export it as a `.p12` file. It'll will have a password.
 - An App Store Connect
@@ -29,13 +27,13 @@ notarize:
   macos:
     - # Whether this configuration is enabled or not.
       #
-      # Default: false
-      # Templates: allowed
-      enabled: '{{ isEnvSet "MACOS_SIGN_P12 }}'
+      # Default: false.
+      # Templates: allowed.
+      enabled: '{{ isEnvSet "MACOS_SIGN_P12" }}'
 
       # IDs to use to filter the built binaries.
       #
-      # Default: Project Name
+      # Default: the project name.
       ids:
         - build1
         - build2
@@ -71,7 +69,7 @@ notarize:
         # Beware of the overall `--timeout` time.
         # This only has any effect if `wait` is true.
         #
-        # Default: 10m
+        # Default: 10m.
         timeout: 20m
 ```
 
@@ -87,6 +85,13 @@ notarize:
     base64 -w0 < ./Certificates.p12
     base64 -w0 < ./ApiKey_AAABBBCCC.p8
     ```
+
+## Signing only
+
+> Since v2.1.
+
+If you want to only sign the binaries, but not notarize them, you can simply
+leave the `notarize` section of your configuration empty.
 
 [unibin]: ./universalbinaries.md
 [quill]: https://github.com/anchore/quill

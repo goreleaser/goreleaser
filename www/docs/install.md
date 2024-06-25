@@ -166,11 +166,19 @@ Once you do that, you can install the packages.
 
 === "OSS"
 
-    Download the `.deb`, `.rpm` or `.apk` packages from the [OSS releases page][releases] and install them with the appropriate tools.
+    Download the `.deb`, `.rpm`, or `.apk` packages from the [OSS releases page][releases] and install them with the appropriate tools.
 
 === "Pro"
 
-    Download the `.deb`, `.rpm` or `.apk` packages from the [Pro releases page][pro-releases] and install them with the appropriate tools.
+    Download the `.deb`, `.rpm`, or `.apk` packages from the [Pro releases page][pro-releases] and install them with the appropriate tools.
+
+To install, after downloading the files, run:
+
+```bash
+dpkg -i goreleaser*.deb
+rpm -ivh goreleaser*.rpm
+apk add --allow-untrusted goreleaser*.apk
+```
 
 ### go install
 

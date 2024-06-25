@@ -219,7 +219,10 @@ func doPush(ctx *context.Context, art *artifact.Artifact) error {
 func buildNuspec(ctx *context.Context, choco config.Chocolatey) ([]byte, error) {
 	tpl := tmpl.New(ctx)
 
-	if err := tpl.ApplyAll(
+	if err := tpl.WithExtraFields(tmpl.Fields{
+		"Changelog": ctx.ReleaseNotes,
+	}).ApplyAll(
+		&choco.Copyright,
 		&choco.Summary,
 		&choco.Description,
 		&choco.ReleaseNotes,

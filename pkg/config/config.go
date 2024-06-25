@@ -1129,6 +1129,7 @@ type Blob struct {
 	CacheControl       []string    `yaml:"cache_control,omitempty" json:"cache_control,omitempty"`
 	ContentDisposition string      `yaml:"content_disposition,omitempty" json:"content_disposition,omitempty"`
 	IncludeMeta        bool        `yaml:"include_meta,omitempty" json:"include_meta,omitempty"`
+	ExtraFilesOnly     bool        `yaml:"extra_files_only,omitempty" json:"extra_files_only,omitempty"`
 }
 
 // Upload configuration.
@@ -1149,6 +1150,8 @@ type Upload struct {
 	Meta               bool              `yaml:"meta,omitempty" json:"meta,omitempty"`
 	CustomArtifactName bool              `yaml:"custom_artifact_name,omitempty" json:"custom_artifact_name,omitempty"`
 	CustomHeaders      map[string]string `yaml:"custom_headers,omitempty" json:"custom_headers,omitempty"`
+	ExtraFiles         []ExtraFile       `yaml:"extra_files,omitempty" json:"extra_files,omitempty"`
+	ExtraFilesOnly     bool              `yaml:"extra_files_only,omitempty" json:"extra_files_only,omitempty"`
 }
 
 // Publisher configuration.

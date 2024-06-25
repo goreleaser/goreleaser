@@ -269,6 +269,50 @@
 				"additionalProperties": false,
 				"type": "object"
 			},
+			"BeforePublishHook": {
+				"properties": {
+					"ids": {
+						"items": {
+							"type": "string"
+						},
+						"type": "array"
+					},
+					"dir": {
+						"type": "string"
+					},
+					"cmd": {
+						"type": "string"
+					},
+					"env": {
+						"items": {
+							"type": "string"
+						},
+						"type": "array"
+					},
+					"artifacts": {
+						"items": {
+							"type": "string",
+							"enum": [
+								"image",
+								"checksum",
+								"source",
+								"package",
+								"archive",
+								"binary",
+								"sbom",
+								"installer",
+								"diskimage"
+							]
+						},
+						"type": "array"
+					},
+					"output": {
+						"type": "boolean"
+					}
+				},
+				"additionalProperties": false,
+				"type": "object"
+			},
 			"Blob": {
 				"properties": {
 					"bucket": {
@@ -330,6 +374,9 @@
 						"type": "string"
 					},
 					"include_meta": {
+						"type": "boolean"
+					},
+					"extra_files_only": {
 						"type": "boolean"
 					},
 					"templated_extra_files": {
@@ -2994,6 +3041,12 @@
 							"$ref": "#/$defs/DockerHub"
 						},
 						"type": "array"
+					},
+					"before_publish": {
+						"items": {
+							"$ref": "#/$defs/BeforePublishHook"
+						},
+						"type": "array"
 					}
 				},
 				"additionalProperties": false,
@@ -4180,8 +4233,23 @@
 						},
 						"type": "object"
 					},
+					"extra_files": {
+						"items": {
+							"$ref": "#/$defs/ExtraFile"
+						},
+						"type": "array"
+					},
+					"extra_files_only": {
+						"type": "boolean"
+					},
 					"matrix": {
 						"$ref": "#/$defs/Matrix"
+					},
+					"templated_extra_files": {
+						"items": {
+							"$ref": "#/$defs/TemplatedExtraFile"
+						},
+						"type": "array"
 					}
 				},
 				"additionalProperties": false,

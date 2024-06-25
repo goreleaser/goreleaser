@@ -1,8 +1,8 @@
 # Twitter
 
 !!! warning
-    Twitter has [announced][tw] that API usage will no longer be free starting
-    Feb 9, 2023.
+Twitter has [announced][tw] that API usage will no longer be free starting
+Feb 9, 2023.
 
 [tw]: https://twitter.com/TwitterDev/status/1621026986784337922
 
@@ -25,10 +25,11 @@ announce:
 
     # Message template to use while publishing.
     #
-    # Default: '{{ .ProjectName }} {{ .Tag }} is out! Check it out at {{ .ReleaseURL }}'
-    # Templates: allowed
-    message_template: 'Awesome project {{.Tag}} is out!'
+    # Default: '{{ .ProjectName }} {{ .Tag }} is out! Check it out at {{ .ReleaseURL }}'.
+    # Templates: allowed.
+    message_template: "Awesome project {{.Tag}} is out!"
 ```
 
 !!! tip
+
     Learn more about the [name template engine](/customization/templates/).

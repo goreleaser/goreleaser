@@ -23,8 +23,10 @@ func Log(title string, next middleware.Action) middleware.Action {
 			logDuration(start)
 			log.ResetPadding()
 		}()
-		log.Infof(bold.Render(title))
-		log.IncreasePadding()
+		if title != "" {
+			log.Infof(bold.Render(title))
+			log.IncreasePadding()
+		}
 		return next(ctx)
 	}
 }
@@ -46,7 +48,7 @@ func PadLog(title string, next middleware.Action) middleware.Action {
 }
 
 func logDuration(start time.Time) {
-	if took := time.Since(start).Round(time.Second); took > 0 {
+	if took := time.Since(start).Round(time.Second); took > 10*time.Second {
 		log.Info(faint.Render(fmt.Sprintf("took: %s", took)))
 	}
 }

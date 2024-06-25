@@ -17,18 +17,18 @@ docker_signs:
   - # ID of the sign config, must be unique.
     # Only relevant if you want to produce some sort of signature file.
     #
-    # Default: 'default'
+    # Default: 'default'.
     id: foo
 
     # Path to the signature command.
     #
-    # Default: 'cosign'
+    # Default: 'cosign'.
     cmd: cosign
 
     # Command line arguments for the command.
     #
-    # Default: ["sign", "--key=cosign.key", "${artifact}", "--yes"]
-    # Templates: allowed
+    # Default: ["sign", "--key=cosign.key", "${artifact}", "--yes"].
+    # Templates: allowed.
     args:
       - "sign"
       - "--key=cosign.key"
@@ -43,7 +43,7 @@ docker_signs:
     #   images:    only docker images
     #   manifests: only docker manifests
     #
-    # Default: 'none'
+    # Default: 'none'.
     artifacts: all
 
     # IDs of the artifacts to sign.
@@ -53,7 +53,7 @@ docker_signs:
 
     # Stdin data to be given to the signature command as stdin.
     #
-    # Templates: allowed
+    # Templates: allowed.
     stdin: "{{ .Env.COSIGN_PWD }}"
 
     # StdinFile file to be given to the signature command as stdin.
@@ -68,8 +68,6 @@ docker_signs:
     # By default, the stdout and stderr of the signing cmd are discarded unless
     # GoReleaser is running with `--verbose` set.
     # You can set this to true if you want them to be displayed regardless.
-    #
-    # Since: v1.2
     output: true
 ```
 

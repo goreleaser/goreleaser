@@ -429,6 +429,31 @@ func TestGitLabGetDefaultBranch(t *testing.T) {
 	require.Equal(t, 1, totalRequests)
 }
 
+func TestGitLabGetDefaultBranchEnv(t *testing.T) {
+	srv := httptest.NewServer(http.HandlerFunc(func(http.ResponseWriter, *http.Request) {
+		t.Error("shouldn't have made any calls to the API")
+	}))
+	defer srv.Close()
+
+	ctx := testctx.NewWithCfg(config.Project{
+		GitLabURLs: config.GitLabURLs{
+			API: srv.URL,
+		},
+	})
+	client, err := newGitLab(ctx, "test-token")
+	require.NoError(t, err)
+	repo := Repo{
+		Owner:  "someone",
+		Name:   "something",
+		Branch: "somebranch",
+	}
+
+	t.Setenv("CI_DEFAULT_BRANCH", "foo")
+	b, err := client.getDefaultBranch(ctx, repo)
+	require.NoError(t, err)
+	require.Equal(t, "foo", b)
+}
+
 func TestGitLabGetDefaultBranchErr(t *testing.T) {
 	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		defer r.Body.Close()
@@ -486,7 +511,7 @@ func TestGitLabChangelog(t *testing.T) {
 	require.NoError(t, err)
 	require.Equal(t, []ChangelogItem{
 		{
-			SHA:            "6dcb09b5",
+			SHA:            "6dcb09b5b57875f334f61aebed695e2e4193db5e",
 			Message:        "Fix all the bugs",
 			AuthorName:     "Joey User",
 			AuthorEmail:    "joey@user.edu",

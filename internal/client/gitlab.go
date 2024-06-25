@@ -25,7 +25,8 @@ var (
 )
 
 type gitlabClient struct {
-	client *gitlab.Client
+	client   *gitlab.Client
+	authType gitlab.AuthType
 }
 
 // newGitLab returns a gitlab client implementation.
@@ -52,19 +53,35 @@ func newGitLab(ctx *context.Context, token string) (*gitlabClient, error) {
 	}
 
 	var client *gitlab.Client
+	var authType gitlab.AuthType
 	var err error
 	if checkUseJobToken(*ctx, token) {
 		client, err = gitlab.NewJobClient(token, options...)
+		authType = gitlab.JobToken
 	} else {
 		client, err = gitlab.NewClient(token, options...)
+		authType = gitlab.PrivateToken
 	}
 	if err != nil {
 		return &gitlabClient{}, err
 	}
-	return &gitlabClient{client: client}, nil
+	return &gitlabClient{
+		client:   client,
+		authType: authType,
+	}, nil
+}
+
+func (c *gitlabClient) checkIsPrivateToken() error {
+	if c.authType == gitlab.PrivateToken {
+		return nil
+	}
+	return fmt.Errorf("the necessary APIs are not available when using CI_JOB_TOKEN")
 }
 
 func (c *gitlabClient) Changelog(_ *context.Context, repo Repo, prev, current string) ([]ChangelogItem, error) {
+	if err := c.checkIsPrivateToken(); err != nil {
+		return nil, fmt.Errorf("changelog: %w", err)
+	}
 	cmpOpts := &gitlab.CompareOptions{
 		From: &prev,
 		To:   &current,
@@ -77,7 +94,7 @@ func (c *gitlabClient) Changelog(_ *context.Context, repo Repo, prev, current st
 
 	for _, commit := range result.Commits {
 		log = append(log, ChangelogItem{
-			SHA:         commit.ShortID,
+			SHA:         commit.ID,
 			Message:     strings.Split(commit.Message, "\n")[0],
 			AuthorName:  commit.AuthorName,
 			AuthorEmail: commit.AuthorEmail,
@@ -88,6 +105,12 @@ func (c *gitlabClient) Changelog(_ *context.Context, repo Repo, prev, current st
 
 // getDefaultBranch get the default branch
 func (c *gitlabClient) getDefaultBranch(_ *context.Context, repo Repo) (string, error) {
+	if branch := os.Getenv("CI_DEFAULT_BRANCH"); branch != "" {
+		return branch, nil
+	}
+	if err := c.checkIsPrivateToken(); err != nil {
+		return "", fmt.Errorf("get default branch: %w", err)
+	}
 	projectID := repo.String()
 	p, res, err := c.client.Projects.GetProject(projectID, nil)
 	if err != nil {
@@ -159,6 +182,10 @@ func (c *gitlabClient) CreateFile(
 	fileName, // the path to the formula.rb
 	message string, // the commit msg
 ) error {
+	if err := c.checkIsPrivateToken(); err != nil {
+		return fmt.Errorf("create file: %w", err)
+	}
+
 	projectID := repo.Name
 	if repo.Owner != "" {
 		projectID = repo.Owner + "/" + projectID
@@ -227,7 +254,7 @@ func (c *gitlabClient) CreateFile(
 			log = log.WithField("statusCode", res.StatusCode)
 		}
 		log.WithError(err).
-			Error("error getting file for brew formula")
+			Error("could not get file")
 		return err
 	}
 
@@ -270,7 +297,7 @@ func (c *gitlabClient) CreateFile(
 				log = log.WithField("statusCode", res.StatusCode)
 			}
 			log.WithError(err).
-				Error("error creating brew formula file")
+				Error("could not create file")
 			return err
 		}
 
@@ -279,7 +306,7 @@ func (c *gitlabClient) CreateFile(
 			WithField("branch", branch).
 			WithField("projectID", projectID).
 			WithField("filePath", fileInfo.FilePath).
-			Debug("created brew formula file")
+			Debug("created file")
 		return nil
 	}
 
@@ -455,7 +482,7 @@ func (c *gitlabClient) Upload(
 
 	var baseLinkURL string
 	var linkURL string
-	if ctx.Config.GitLabURLs.UsePackageRegistry {
+	if ctx.Config.GitLabURLs.UsePackageRegistry || c.authType == gitlab.JobToken {
 		log.WithField("file", file.Name()).Debug("uploading file as generic package")
 		if _, _, err := c.client.GenericPackages.PublishPackageFile(
 			projectID,
@@ -562,7 +589,8 @@ func (c *gitlabClient) getMilestoneByTitle(repo Repo, title string) (*gitlab.Mil
 	return nil, nil
 }
 
-// checkUseJobToken examines the context and given token, and determines if We should use NewJobClient vs NewClient
+// checkUseJobToken examines the context and given token, and determines if we
+// should use NewJobClient vs NewClient
 func checkUseJobToken(ctx context.Context, token string) bool {
 	// The CI_JOB_TOKEN env var is set automatically in all GitLab runners.
 	// If this comes back as empty, we aren't in a functional GitLab runner
@@ -589,6 +617,9 @@ func (c *gitlabClient) OpenPullRequest(
 	title string,
 	draft bool,
 ) error {
+	if err := c.checkIsPrivateToken(); err != nil {
+		return fmt.Errorf("open merge request: %w", err)
+	}
 	var targetProjectID int
 	if base.Owner != "" {
 		fullProjectPath := fmt.Sprintf("%s/%s", base.Owner, base.Name)

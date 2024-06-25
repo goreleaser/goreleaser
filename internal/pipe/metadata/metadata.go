@@ -28,10 +28,10 @@ func (Pipe) Run(ctx *context.Context) error {
 	return tmpl.New(ctx).ApplyAll(&ctx.Config.Metadata.ModTimestamp)
 }
 
-func (MetaPipe) String() string                 { return "storing release metadata" }
+func (MetaPipe) String() string                 { return "writing release metadata" }
 func (MetaPipe) Run(ctx *context.Context) error { return writeMetadata(ctx) }
 
-func (ArtifactsPipe) String() string                 { return "storing artifacts metadata" }
+func (ArtifactsPipe) String() string                 { return "writing artifacts metadata" }
 func (ArtifactsPipe) Run(ctx *context.Context) error { return writeArtifacts(ctx) }
 
 func writeMetadata(ctx *context.Context) error {
@@ -72,7 +72,7 @@ func writeJSON(ctx *context.Context, j interface{}, name string) (string, error)
 		return "", err
 	}
 	path := filepath.Join(ctx.Config.Dist, name)
-	log.Log.WithField("file", path).Info("writing")
+	log.Log.WithField("path", path).Debug("writing")
 	if err := os.WriteFile(path, bts, 0o644); err != nil {
 		return "", err
 	}

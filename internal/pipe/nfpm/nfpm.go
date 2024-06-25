@@ -147,7 +147,7 @@ func isSupportedTermuxArch(goos, goarch string) bool {
 	if goos != "android" {
 		return false
 	}
-	for _, arch := range []string{"amd64", "arm64", "386"} {
+	for _, arch := range []string{"amd64", "arm64", "arm", "386"} {
 		if strings.HasPrefix(goarch, arch) {
 			return true
 		}
@@ -173,6 +173,7 @@ var termuxArchReplacer = strings.NewReplacer(
 	"386", "i686",
 	"amd64", "x86_64",
 	"arm64", "aarch64",
+	"arm6", "arm",
 )
 
 func create(ctx *context.Context, fpm config.NFPM, format string, artifacts []*artifact.Artifact) error {

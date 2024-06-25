@@ -37,14 +37,14 @@ furies:
     # publishing patch releases.
     # Any value different of 'true' will be considered 'false'.
     #
-    # Templates: allowed
+    # Templates: allowed.
     skip: "{{gt .Patch 0}}"
 
     # Environment variable name to get the push token from.
     # You might want to change it if you have multiple fury configurations for
     # some reason.
     #
-    # Default: 'FURY_TOKEN'
+    # Default: 'FURY_TOKEN'.
     secret_name: MY_ACCOUNT_FURY_TOKEN
 
     # IDs to filter by.
@@ -55,7 +55,7 @@ furies:
     # Formats to upload.
     # Available options are `deb` and `rpm`.
     #
-    # Default: ['deb', 'rpm']
+    # Default: ['deb', 'rpm'].
     formats:
       - deb
 ```

@@ -1,7 +1,5 @@
 # Chocolatey Packages
 
-> Since: v1.13
-
 GoReleaser can also generate `nupkg` packages.
 [Chocolatey](http://chocolatey.org/) are packages based on `nupkg` format, that
 will let you publish your project directly to the Chocolatey Repository. From
@@ -18,7 +16,7 @@ chocolateys:
     # The value may not contain spaces or character that are not valid for a URL.
     # If you want a good separator for words, use '-', not  '.'.
     #
-    # Default: ProjectName
+    # Default: the project name.
     name: foo
 
     # IDs of the archives to use.
@@ -39,7 +37,7 @@ chocolateys:
     # The app's title.
     # A human-friendly title of the package.
     #
-    # Default: ProjectName
+    # Default: the project name.
     title: Foo Bar
 
     # Your app's authors (probably you).
@@ -55,21 +53,23 @@ chocolateys:
     # - 'msi':     msi installers (requires the MSI pipe configured, Pro only)
     # - 'archive': archives (only if format is zip),
     #
-    # Default: 'archive'
-    # Since: v1.24 (pro)
+    # Default: 'archive'.
+    # This feature is only available in GoReleaser Pro.
     use: msi
 
     # URL which is determined by the given Token (github,
     # gitlab or gitea).
     #
-    # Default: depends on the git remote
-    # Templates: allowed
+    # Default: depends on the git remote.
+    # Templates: allowed.
     url_template: "https://github.com/foo/bar/releases/download/{{ .Tag }}/{{ .ArtifactName }}"
 
     # App's icon.
     icon_url: "https://rawcdn.githack.com/foo/bar/efbdc760-395b-43f1-bf69-ba25c374d473/icon.png"
 
     # Your app's copyright details.
+    #
+    # Templates: allowed.
     copyright: 2022 Drummer Roll Inc
 
     # App's license information url.
@@ -130,7 +130,7 @@ chocolateys:
     # GOAMD64 to specify which amd64 version to use if there are multiple
     # versions from the build section.
     #
-    # Default: 'v1'
+    # Default: 'v1'.
     goamd64: v1
 ```
 
