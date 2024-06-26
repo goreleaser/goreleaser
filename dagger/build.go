@@ -4,6 +4,11 @@ import (
 	"runtime"
 )
 
+const (
+	// cgr.dev/chainguard/wolfi-base:latest 6/26/2024
+	wolfiBase = "cgr.dev/chainguard/wolfi-base@sha256:7a5b796ae54f72b78b7fc33c8fffee9a363af2c6796dac7c4ef65de8d67d348d"
+)
+
 // Build Goreleaser
 func (g *Goreleaser) Build(
 	// Target OS to build
@@ -27,7 +32,7 @@ func (g *Goreleaser) Build(
 func (g *Goreleaser) BuildEnv() *Container {
 	// Base image with Go
 	env := dag.Container().
-		From("cgr.dev/chainguard/wolfi-base").
+		From(wolfiBase).
 		WithExec([]string{"apk", "add", "go"})
 
 	// Mount the Go cache

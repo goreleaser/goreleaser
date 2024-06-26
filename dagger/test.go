@@ -6,6 +6,12 @@ import (
 	"runtime"
 )
 
+const (
+	// nixos/nix:2.18.3
+	nixBase       = "nixos/nix@sha256:aca59490a372258b1104bb101ed5aaab35113811f11eafdd001093f012d4b738"
+	buildxVersion = "v0.15.1"
+)
+
 // Test Goreleaser
 func (g *Goreleaser) Test(ctx context.Context) *Container {
 	return g.TestEnv().
@@ -78,7 +84,7 @@ func installNix(target *Container) *Container {
 
 func installBuildx(target *Container) *Container {
 	arch := runtime.GOARCH
-	url := fmt.Sprintf("https://github.com/docker/buildx/releases/download/v0.15.1/buildx-v0.15.1.linux-%s", arch)
+	url := fmt.Sprintf("https://github.com/docker/buildx/releases/download/%s/buildx-%s.linux-%s", buildxVersion, buildxVersion, arch)
 
 	bin := dag.HTTP(url)
 

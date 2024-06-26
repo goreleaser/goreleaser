@@ -32,7 +32,7 @@ jobs:
           fetch-depth: 0
       - uses: dagger/dagger-for-github@v5
         with:
-          args: --source .:default test
+          args: --source .:default test file --path "coverage.txt" -o ./coverage.txt
       - uses: codecov/codecov-action@e28ff129e5465c2c0dcc6f003fc735cb6ae0c673 # v4
         with:
           file: ./coverage.txt
