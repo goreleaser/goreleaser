@@ -45,17 +45,17 @@ func (g *Goreleaser) TestEnv() *Container {
 	}
 	return g.BuildEnv().
 		WithEnvVariable("CGO_ENABLED", "1").
-		WithServiceBinding("localhost", dag.Docker().Engine()).
-		WithEnvVariable("DOCKER_HOST", "tcp://localhost:2375").
 		WithExec(append([]string{"apk", "add"}, testDeps...)).
 		With(installNix).
 		With(installBuildx).
 		WithUser("nonroot").
-		WithExec([]string{"go", "install", "github.com/google/ko@latest"})
+		WithExec([]string{"go", "install", "github.com/google/ko@latest"}).
+		WithServiceBinding("localhost", dag.Docker().Engine()).
+		WithEnvVariable("DOCKER_HOST", "tcp://localhost:2375")
 }
 
 func installNix(target *Container) *Container {
-	nix := dag.Container().From("nixos/nix:2.18.3")
+	nix := dag.Container().From(nixBase)
 	nixBin := "/root/.nix-profile/bin"
 
 	binaries := []string{
