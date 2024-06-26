@@ -11,6 +11,8 @@ Prerequisites:
 
 - [Task](https://taskfile.dev/installation)
 - [Dagger](https://docs.dagger.io/install)
+- [Go 1.22+](https://go.dev/doc/install)
+- [Docker](https://www.docker.com/)
 
 Clone `goreleaser` anywhere:
 
@@ -27,7 +29,7 @@ task setup
 A good way of making sure everything is all right is running the test suite:
 
 ```sh
-dagger call --source=.:default test
+dagger call --source=.:default test stdout
 ```
 
 ### A note about Docker multi-arch builds

@@ -7,7 +7,7 @@ import (
 )
 
 // Test Goreleaser
-func (g *Goreleaser) Test(ctx context.Context) (string, error) {
+func (g *Goreleaser) Test(ctx context.Context) *Container {
 	return g.TestEnv().
 		WithExec([]string{
 			"go",
@@ -20,8 +20,7 @@ func (g *Goreleaser) Test(ctx context.Context) (string, error) {
 			"./...",
 			"-run",
 			".",
-		}).
-		Stdout(ctx)
+		})
 }
 
 // Container to test Goreleaser
@@ -50,7 +49,7 @@ func (g *Goreleaser) TestEnv() *Container {
 }
 
 func installNix(target *Container) *Container {
-	nix := dag.Container().From("nixos/nix")
+	nix := dag.Container().From("nixos/nix:2.18.3")
 	nixBin := "/root/.nix-profile/bin"
 
 	binaries := []string{

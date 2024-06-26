@@ -32,20 +32,29 @@ func (g *Goreleaser) BuildEnv() *Container {
 
 	// Mount the Go cache
 	env = env.
-		WithMountedCache("/go", dag.CacheVolume("goreleaser-goroot")).
-		WithEnvVariable("GOMODCACHE", "/go/pkg/mod").
-		WithExec([]string{"chown", "-R", "nonroot", "/go"})
+		WithMountedCache(
+			"/go",
+			dag.CacheVolume("goreleaser-goroot"),
+			ContainerWithMountedCacheOpts{
+				Owner: "nonroot",
+			}).
+		WithEnvVariable("GOMODCACHE", "/go/pkg/mod")
 
 	// Mount the Go build cache
 	env = env.
-		WithMountedCache("/gocache", dag.CacheVolume("goreleaser-gobuild")).
-		WithEnvVariable("GOCACHE", "/gocache").
-		WithExec([]string{"chown", "-R", "nonroot", "/gocache"})
+		WithMountedCache(
+			"/gocache",
+			dag.CacheVolume("goreleaser-gobuild"),
+			ContainerWithMountedCacheOpts{
+				Owner: "nonroot",
+			}).
+		WithEnvVariable("GOCACHE", "/gocache")
 
 	// Mount the source code
 	env = env.
-		WithMountedDirectory("/src", g.Source).
-		WithExec([]string{"chown", "-R", "nonroot", "/src"}).
+		WithMountedDirectory("/src", g.Source, ContainerWithMountedDirectoryOpts{
+			Owner: "nonroot",
+		}).
 		WithWorkdir("/src")
 
 	return env
