@@ -12,7 +12,7 @@ import (
 )
 
 func TestPipeDescription(t *testing.T) {
-	require.NotEmpty(t, Pipe{}.String())
+	require.Empty(t, Pipe{}.String())
 }
 
 func TestRun(t *testing.T) {
