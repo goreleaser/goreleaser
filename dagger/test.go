@@ -8,7 +8,7 @@ import (
 
 const (
 	// nixos/nix:2.18.3
-	nixBase       = "nixos/nix@sha256:aca59490a372258b1104bb101ed5aaab35113811f11eafdd001093f012d4b738"
+	nixBase       = "nixos/nix@sha256:3f8fec6acf10ae6f1c8843ccc607490d4635d620a75afc0b523eedba7617c16e"
 	buildxVersion = "v0.15.1"
 )
 
