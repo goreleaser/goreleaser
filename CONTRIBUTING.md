@@ -29,7 +29,7 @@ task setup
 A good way of making sure everything is all right is running the test suite:
 
 ```sh
-dagger call --source=.:default test stdout
+dagger call --source=.:default test output
 ```
 
 ### A note about Docker multi-arch builds
