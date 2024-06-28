@@ -33,14 +33,18 @@ func (g *Goreleaser) Test(ctx context.Context) *TestResult {
 	}
 }
 
+// Custom type for test results
 type TestResult struct {
+	// Container with the test executed
 	Container *Container
 }
 
+// Coverage report from the test. Save with '-o ./coverage.txt'
 func (t *TestResult) CoverageReport() *File {
 	return t.Container.File("coverage.txt")
 }
 
+// Stdout from the test command
 func (t *TestResult) Output(ctx context.Context) (string, error) {
 	return t.Container.Stdout(ctx)
 }

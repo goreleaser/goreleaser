@@ -76,6 +76,7 @@ func (g *Goreleaser) BuildEnv() *Container {
 	return env
 }
 
+// Helper function to mount the project source into a container
 func WithSource(g *Goreleaser) WithContainerFunc {
 	return func(c *Container) *Container {
 		return c.
