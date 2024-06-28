@@ -180,7 +180,7 @@ func doRun(ctx *context.Context, snap config.Snapcraft) error {
 		return ErrNoSnapcraft
 	}
 
-	g := semerrgroup.New(ctx.Parallelism)
+	g := semerrgroup.NewGrowing(ctx.Parallelism)
 	for platform, binaries := range ctx.Artifacts.Filter(
 		artifact.And(
 			artifact.ByGoos("linux"),

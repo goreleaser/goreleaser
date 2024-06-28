@@ -23,6 +23,42 @@ func New(size int) Group {
 	return &g
 }
 
+var _ Group = &growAfterFirstUseGroup{}
+
+func NewGrowAfterFirstUse(size int) Group {
+	var g errgroup.Group
+	g.SetLimit(1)
+	return &growAfterFirstUseGroup{
+		g:       &g,
+		newSize: size,
+	}
+}
+
+type growAfterFirstUseGroup struct {
+	g *errgroup.Group
+
+	newSizeOnce sync.Once
+	newSize     int
+}
+
+func (g *growAfterFirstUseGroup) grow() {
+	g.newSizeOnce.Do(func() {
+		g.g.SetLimit(g.newSize)
+	})
+}
+
+func (g *growAfterFirstUseGroup) Go(fn func() error) {
+	g.g.Go(func() error {
+		defer g.grow()
+		return fn()
+	})
+}
+
+// Wait implements Group.
+func (g *growAfterFirstUseGroup) Wait() error {
+	return g.g.Wait()
+}
+
 var _ Group = &skipAwareGroup{}
 
 // NewSkipAware returns a new Group of a given size and aware of pipe skips.
