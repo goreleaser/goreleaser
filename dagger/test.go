@@ -13,8 +13,8 @@ const (
 )
 
 // Test Goreleaser
-func (g *Goreleaser) Test(ctx context.Context) *Container {
-	return g.TestEnv().
+func (g *Goreleaser) Test(ctx context.Context) *TestResult {
+	test := g.TestEnv().
 		WithExec([]string{
 			"go",
 			"test",
@@ -27,6 +27,22 @@ func (g *Goreleaser) Test(ctx context.Context) *Container {
 			"-run",
 			".",
 		})
+
+	return &TestResult{
+		Container: test,
+	}
+}
+
+type TestResult struct {
+	Container *Container
+}
+
+func (t *TestResult) CoverageReport() *File {
+	return t.Container.File("coverage.txt")
+}
+
+func (t *TestResult) Output(ctx context.Context) (string, error) {
+	return t.Container.Stdout(ctx)
 }
 
 // Container to test Goreleaser
@@ -43,7 +59,7 @@ func (g *Goreleaser) TestEnv() *Container {
 		"docker",
 		"syft",
 	}
-	return g.BuildEnv().
+	return g.Base().
 		WithEnvVariable("CGO_ENABLED", "1").
 		WithExec(append([]string{"apk", "add"}, testDeps...)).
 		With(installNix).
@@ -51,7 +67,8 @@ func (g *Goreleaser) TestEnv() *Container {
 		WithUser("nonroot").
 		WithExec([]string{"go", "install", "github.com/google/ko@latest"}).
 		WithServiceBinding("localhost", dag.Docker().Engine()).
-		WithEnvVariable("DOCKER_HOST", "tcp://localhost:2375")
+		WithEnvVariable("DOCKER_HOST", "tcp://localhost:2375").
+		With(WithSource(g))
 }
 
 func installNix(target *Container) *Container {
