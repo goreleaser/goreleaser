@@ -1,4 +1,4 @@
-# Configuration version errors
+# Unsupported configuration version
 
 This can show as an error or as an warning:
 
@@ -22,3 +22,7 @@ parts of the configuration need to be fixed.
 
 You can check the [deprecations](../deprecations.md) page to see how to fix
 them.
+
+Also worth reading the
+[v2 announcement](../blog/posts/2024-06-04-goreleaser-v2.md), which contains an
+upgrade guide.
