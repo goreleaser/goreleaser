@@ -30,8 +30,7 @@ func (g *blockingFirstGroup) Go(fn func() error) {
 		g.firstMu.Unlock()
 		return
 	}
-	err := fn()
-	if err != nil {
+	if err := fn(); err != nil {
 		g.g.Go(func() error { return err })
 	}
 	g.firstDone = true
