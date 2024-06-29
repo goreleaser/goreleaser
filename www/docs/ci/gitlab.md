@@ -40,8 +40,8 @@ release:
   image:
     name: goreleaser/goreleaser
     entrypoint: [""]
-  only:
-    - tags
+  rules:
+    - if: $CI_COMMIT_TAG
   variables:
     # Disable shallow cloning so that goreleaser can diff between tags to
     # generate a changelog.
@@ -88,9 +88,8 @@ release:
     GIT_DEPTH: 0
 
   # Only run this release job for tags, not every commit (for example).
-  only:
-    refs:
-      - tags
+  rules:
+    - if: $CI_COMMIT_TAG
 
   script: |
     # GITLAB_TOKEN is needed to create GitLab releases.
