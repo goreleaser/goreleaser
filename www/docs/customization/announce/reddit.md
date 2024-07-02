@@ -34,6 +34,4 @@ announce:
     title_template: ''GoReleaser {{ .Tag }} was just released!''
 ```
 
-!!! tip
-
-    Learn more about the [name template engine](/customization/templates/).
+{% include-markdown "../../includes/templates.md" comments=false %}

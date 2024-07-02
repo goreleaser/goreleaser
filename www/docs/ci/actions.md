@@ -170,14 +170,14 @@ The following
 are required by GoReleaser:
 
 - `contents: write` if you wish to
-  - [upload archives as GitHub Releases](/customization/release/), or
-  - publish to [Homebrew](/customization/homebrew/), or
-    [Scoop](/customization/scoop/) (assuming it's part of the same repository)
+  - [upload archives as GitHub Releases](../customization/release.md), or
+  - publish to [Homebrew](../customization/homebrew.md), or
+    [Scoop](../customization/scoop.md) (assuming it's part of the same repository)
 - or just `contents: read` if you don't need any of the above
-- `packages: write` if you [push Docker images](/customization/docker/) to
+- `packages: write` if you [push Docker images](../customization/docker.md) to
   GitHub
 - `issues: write` if you use [milestone closing
-  capability](/customization/milestone/)
+  capability](../customization/milestone.md)
 
 `GITHUB_TOKEN` permissions [are limited to the repository][about-github-token]
 that contains your workflow.
@@ -221,7 +221,7 @@ You can check [this example repository](https://github.com/goreleaser/example) f
 [goreleaser-action]: https://github.com/goreleaser/goreleaser-action
 [actions]: https://github.com/features/actions
 [syntax]: https://help.github.com/en/articles/workflow-syntax-for-github-actions#About-yaml-syntax-for-workflows
-[signing]: https://goreleaser.com/customization/sign/
+[signing]: ../customization/sign.md
 [import-gpg]: https://github.com/crazy-max/ghaction-import-gpg
 [github-token]: https://help.github.com/en/actions/configuring-and-managing-workflows/authenticating-with-the-github_token
 [about-github-token]: https://help.github.com/en/actions/configuring-and-managing-workflows/authenticating-with-the-github_token#about-the-github_token-secret

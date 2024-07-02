@@ -12,15 +12,14 @@ For instance, this won't work:
 
 ```yaml
 archives:
-- format: binary
+  - format: binary
 ```
-
 
 But this would:
 
 ```yaml
 archives:
-- format: zip
+  - format: zip
 ```
 
 ## 2. Multiple archives for the same GOOS/GOARCH
@@ -34,12 +33,12 @@ something like this:
 
 ```yaml
 scoops:
-- ids: [ client ]
-  name: foo
-  # ...
-- ids: [ server ]
-  name: food
-  # ...
+  - ids: [client]
+    name: foo
+    # ...
+  - ids: [server]
+    name: food
+    # ...
 ```
 
 ## Footnotes
@@ -47,4 +46,4 @@ scoops:
 Also notice the `goamd64` options, it must match the one from your build.
 By default, only `GOAMD64` `v1` is built.
 
-Please refer to the [documentation](/customization/scoop) for more details.
+Please refer to the [documentation](../customization/scoop.md) for more details.

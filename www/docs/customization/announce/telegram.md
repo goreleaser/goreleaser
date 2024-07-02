@@ -40,8 +40,4 @@ announce:
 You can format your message using `MarkdownV2`, for reference, see the
 [Telegram Bot API](https://core.telegram.org/bots/api#markdownv2-style).
 
-!!! tip
-
-    Learn more about the [name template engine](/customization/templates/).
-    In the specific case of `MarkdownV2`, you'll probably need the `mdv2escape`
-    function.
+{% include-markdown "../../includes/templates.md" comments=false %}

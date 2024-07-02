@@ -36,7 +36,7 @@ with
 [thousands of projects and companies](https://github.com/search?q=path%3A.goreleaser.yml+OR+path%3A.goreleaser.yaml+&type=code)
 using it to manage their releases.
 
-You can check some of our users out [here](/users).
+You can check some of our users out [here](users.md).
 
 ## Use cases
 

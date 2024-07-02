@@ -1,6 +1,6 @@
 # Install
 
-There are two GoReleaser distributions: OSS and [Pro](/pro/).
+There are two GoReleaser distributions: OSS and [Pro](pro.md).
 
 You can install the pre-compiled binary (in several ways), use Docker or compile
 from source (when on OSS).
@@ -439,7 +439,7 @@ and iterate from that.
 Here you have two options:
 
 If you want to contribute to the project, please follow the
-steps on our [contributing guide](/contributing).
+steps on our [contributing guide](contributing.md).
 
 If you just want to build from source for whatever reason, follow these steps:
 

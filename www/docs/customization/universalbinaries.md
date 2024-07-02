@@ -53,9 +53,7 @@ universal_binaries:
       post: ./script.sh {{ .Path }}
 ```
 
-!!! tip
-
-    Learn more about the [name template engine](/customization/templates/).
+{% include-markdown "../includes/templates.md" comments=false %}
 
 For more info about hooks, see the [build section](./builds.md#build-hooks).
 
@@ -90,7 +88,7 @@ You can use the Go template engine to remove it if you'd like.
 
 ## Naming templates
 
-Most fields that support [templates](/customization/templates/) will also
+Most fields that support [templates](templates.md) will also
 support the following build details:
 
 <!-- to format the tables, use: https://tabletomarkdown.com/format-markdown-table/ -->

@@ -250,9 +250,7 @@ builds:
           - CGO_ENABLED=1
 ```
 
-!!! tip
-
-    Learn more about the [name template engine](/customization/templates/).
+{% include-markdown "../includes/templates.md" comments=false %}
 
 !!! info
 
@@ -292,7 +290,7 @@ builds:
       - windows
 ```
 
-The binary name field supports [templating](/customization/templates/). The
+The binary name field supports [templating](templates.md). The
 following build details are exposed:
 
 <!-- to format the tables, use: https://tabletomarkdown.com/format-markdown-table/ -->
@@ -371,7 +369,7 @@ builds:
 ```
 
 All properties of a hook (`cmd`, `dir` and `env`) support
-[templating](/customization/templates/) with `post` hooks having binary artifact
+[templating](templates.md) with `post` hooks having binary artifact
 available (as these run _after_ the build).
 Additionally the following build details are exposed to both `pre` and `post`
 hooks:

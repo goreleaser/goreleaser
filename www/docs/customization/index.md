@@ -3,11 +3,11 @@
 GoReleaser can be customized by tweaking a `.goreleaser.yaml` file.
 
 You can generate an example config by running
-[`goreleaser init`](/cmd/goreleaser_init/) or start from scratch.
+[`goreleaser init`](../cmd/goreleaser_init.md) or start from scratch.
 
 You can also check if your config is valid by running
-[`goreleaser check`](/cmd/goreleaser_check/), which will tell you if are using
-deprecated or invalid options.
+[`goreleaser check`](../cmd/goreleaser_check.md), which will tell you if are
+using deprecated or invalid options.
 
 ## JSON Schema
 
@@ -59,4 +59,4 @@ for v1.12.0:
     ```
 
 [jsonschema]: http://json-schema.org/draft/2020-12/json-schema-validation.html
-[schema]: /cmd/goreleaser_jsonschema/
+[schema]: ../cmd/goreleaser_jsonschema.md

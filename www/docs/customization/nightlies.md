@@ -42,9 +42,7 @@ When you run GoReleaser with `--nightly`, it will set the `Version` template
 variable to the evaluation of `nightly.name_template`. This means that if you
 use `{{ .Version }}` on your name templates, you'll get the nightly version.
 
-!!! tip
-
-    Learn more about the [name template engine](/customization/templates/).
+{% include-markdown "../includes/templates.md" comments=false %}
 
 ## What is skipped when using `--nightly`?
 

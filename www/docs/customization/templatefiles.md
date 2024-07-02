@@ -37,6 +37,4 @@ template_files:
     mode: 0755
 ```
 
-!!! tip
-
-    Learn more about the [name template engine](/customization/templates/).
+{% include-markdown "../includes/templates.md" comments=false %}

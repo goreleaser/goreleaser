@@ -192,9 +192,7 @@ archives:
 
     Archive hooks is a [GoReleaser Pro feature](/pro/).
 
-!!! tip
-
-    Learn more about the [name template engine](/customization/templates/).
+{% include-markdown "../includes/templates.md" comments=false %}
 
 !!! tip
 
