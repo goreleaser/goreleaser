@@ -17,7 +17,6 @@ func New(
 	// +default="1.22.3"
 	GoVersion string,
 ) *Goreleaser {
-	// TODO: remove
 	if Source == nil {
 		Source = dag.Git(
 			"https://github.com/goreleaser/goreleaser.git",
