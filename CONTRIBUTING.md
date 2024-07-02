@@ -10,17 +10,9 @@ By participating in this project, you agree to abide our
 Prerequisites:
 
 - [Task](https://taskfile.dev/installation)
+- [Dagger](https://docs.dagger.io/install)
 - [Go 1.22+](https://go.dev/doc/install)
-
-Other things you might need to run the tests:
-
-- [cosign](https://github.com/sigstore/cosign)
 - [Docker](https://www.docker.com/)
-- [GPG](https://gnupg.org)
-- [Podman](https://podman.io/)
-- [Snapcraft](https://snapcraft.io/)
-- [Syft](https://github.com/anchore/syft)
-- [upx](https://upx.github.io/)
 
 Clone `goreleaser` anywhere:
 
@@ -37,7 +29,7 @@ task setup
 A good way of making sure everything is all right is running the test suite:
 
 ```sh
-task test
+dagger call --source=.:default test output
 ```
 
 ### A note about Docker multi-arch builds
