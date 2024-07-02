@@ -30,11 +30,11 @@ jobs:
       - uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332 # v4
         with:
           fetch-depth: 0
-      - uses: dagger/dagger-for-github@v5
+      - uses: dagger/dagger-for-github@11048419d80c283890d0dd68187d44541f63dd89 # v5
         with:
           args: --source .:default build -o ./goreleaser
           engine-stop: false
-      - uses: dagger/dagger-for-github@v5
+      - uses: dagger/dagger-for-github@11048419d80c283890d0dd68187d44541f63dd89 # v5
         with:
           args: --source .:default test coverage-report -o ./coverage.txt
       - uses: codecov/codecov-action@e28ff129e5465c2c0dcc6f003fc735cb6ae0c673 # v4
