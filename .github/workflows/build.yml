@@ -32,6 +32,10 @@ jobs:
           fetch-depth: 0
       - uses: dagger/dagger-for-github@v5
         with:
+          args: --source .:default build -o ./goreleaser
+          engine-stop: false
+      - uses: dagger/dagger-for-github@v5
+        with:
           args: --source .:default test coverage-report -o ./coverage.txt
       - uses: codecov/codecov-action@e28ff129e5465c2c0dcc6f003fc735cb6ae0c673 # v4
         with:
