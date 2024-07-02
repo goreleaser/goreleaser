@@ -16,6 +16,40 @@ type Group interface {
 	Wait() error
 }
 
+type blockingFirstGroup struct {
+	g Group
+
+	firstMu   sync.Mutex
+	firstDone bool
+}
+
+func (g *blockingFirstGroup) Go(fn func() error) {
+	g.firstMu.Lock()
+	if g.firstDone {
+		g.g.Go(fn)
+		g.firstMu.Unlock()
+		return
+	}
+	if err := fn(); err != nil {
+		g.g.Go(func() error { return err })
+	}
+	g.firstDone = true
+	g.firstMu.Unlock()
+}
+
+func (g *blockingFirstGroup) Wait() error {
+	return g.g.Wait()
+}
+
+// NewBlockingFirst creates a new group that runs the first item,
+// waiting for its return, and only then starts scheduling/running the
+// other tasks.
+func NewBlockingFirst(g Group) Group {
+	return &blockingFirstGroup{
+		g: g,
+	}
+}
+
 // New returns a new Group of a given size.
 func New(size int) Group {
 	var g errgroup.Group

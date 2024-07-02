@@ -187,6 +187,7 @@ nav:
       - users.md
       - deprecations.md
       - Common errors:
+          - errors/version.md
           - errors/dirty.md
           - errors/multiple-tokens.md
           - errors/release-upload.md
