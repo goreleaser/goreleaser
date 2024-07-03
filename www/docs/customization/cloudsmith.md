@@ -1,4 +1,4 @@
-# Cloudsmith (deb, rpm, and alpine repositories)
+# Cloudsmith - apt, rpm, and alpine repositories
 
 > Since v2.1 (Pro).
 
