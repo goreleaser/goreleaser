@@ -28,25 +28,21 @@ func (g *Goreleaser) Build(
 		File("/src/dist/goreleaser")
 }
 
-// Base container to build Goreleaser
+// Base container to build and test Goreleaser
 func (g *Goreleaser) Base() *Container {
 	// Base image with Go
-	env := dag.Container().
+	return dag.Container().
 		From(wolfiBase).
-		WithExec([]string{"apk", "add", "go"})
-
-	// Mount the Go cache
-	env = env.
+		WithExec([]string{"apk", "add", "go"}).
+		// Mount the Go cache
 		WithMountedCache(
 			"/go",
 			dag.CacheVolume("goreleaser-goroot"),
 			ContainerWithMountedCacheOpts{
 				Owner: "nonroot",
 			}).
-		WithEnvVariable("GOMODCACHE", "/go/pkg/mod")
-
-	// Mount the Go build cache
-	env = env.
+		WithEnvVariable("GOMODCACHE", "/go/pkg/mod").
+		// Mount the Go build cache
 		WithMountedCache(
 			"/gocache",
 			dag.CacheVolume("goreleaser-gobuild"),
@@ -54,26 +50,14 @@ func (g *Goreleaser) Base() *Container {
 				Owner: "nonroot",
 			}).
 		WithEnvVariable("GOCACHE", "/gocache")
-
-	// Mount the source code
-	env = env.
-		WithMountedDirectory("/src", g.Source, ContainerWithMountedDirectoryOpts{
-			Owner: "nonroot",
-		}).
-		WithWorkdir("/src")
-
-	return env
 }
 
 // Container to build Goreleaser
 func (g *Goreleaser) BuildEnv() *Container {
 	// Base image with Go
-	env := g.Base()
-
-	// Mount the source code
-	env = env.With(WithSource(g))
-
-	return env
+	return g.Base().
+		// Mount the source code last to optimize cache
+		With(WithSource(g))
 }
 
 // Helper function to mount the project source into a container

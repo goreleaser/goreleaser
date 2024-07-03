@@ -70,8 +70,10 @@ func (g *Goreleaser) TestEnv() *Container {
 		With(installBuildx).
 		WithUser("nonroot").
 		WithExec([]string{"go", "install", "github.com/google/ko@latest"}).
+		// This is bound at localhost for the hardcoded docker and ko registry tests
 		WithServiceBinding("localhost", dag.Docker().Engine()).
 		WithEnvVariable("DOCKER_HOST", "tcp://localhost:2375").
+		// Mount the source code last to optimize cache
 		With(WithSource(g))
 }
 
