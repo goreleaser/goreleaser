@@ -4,7 +4,7 @@
 
 !!! success "GoReleaser Pro"
 
-    DockerHub is a [GoReleaser Pro feature](/pro/).
+    Before publish hooks is a [GoReleaser Pro feature](/pro/).
 
 You can use the `before_publish` hooks to run command against artifacts before
 the publishing step kicks in.
