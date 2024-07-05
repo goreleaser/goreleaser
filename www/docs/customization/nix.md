@@ -52,14 +52,18 @@ nix:
     # Your app's homepage.
     #
     # Templates: allowed.
+    # Default: inferred from global metadata.
     homepage: "https://example.com/"
 
     # Your app's description.
     #
     # Templates: allowed.
+    # Default: inferred from global metadata.
     description: "Software to create fast and easy drum rolls."
 
     # License name.
+    #
+    # Default: inferred from global metadata.
     license: "mit"
 
     # Setting this will prevent goreleaser to actually try to commit the updated

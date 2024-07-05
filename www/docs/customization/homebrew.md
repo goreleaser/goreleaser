@@ -99,14 +99,19 @@ brews:
     caveats: "How to use this binary"
 
     # Your app's homepage.
+    #
+    # Default: inferred from global metadata.
     homepage: "https://example.com/"
 
     # Your app's description.
     #
     # Templates: allowed.
+    # Default: inferred from global metadata.
     description: "Software to create fast and easy drum rolls."
 
     # SPDX identifier of your app's license.
+    #
+    # Default: inferred from global metadata.
     license: "MIT"
 
     # Setting this will prevent goreleaser to actually try to commit the updated

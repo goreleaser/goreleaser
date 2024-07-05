@@ -834,6 +834,47 @@
 				"additionalProperties": false,
 				"type": "object"
 			},
+			"Cloudsmith": {
+				"properties": {
+					"ids": {
+						"items": {
+							"type": "string"
+						},
+						"type": "array"
+					},
+					"organization": {
+						"type": "string"
+					},
+					"repository": {
+						"type": "string"
+					},
+					"formats": {
+						"items": {
+							"type": "string"
+						},
+						"type": "array"
+					},
+					"secret_name": {
+						"type": "string"
+					},
+					"disable": {
+						"type": "string"
+					},
+					"distributions": {
+						"additionalProperties": {
+							"type": "string"
+						},
+						"type": "object"
+					}
+				},
+				"additionalProperties": false,
+				"type": "object",
+				"required": [
+					"organization",
+					"repository",
+					"distributions"
+				]
+			},
 			"CommitAuthor": {
 				"properties": {
 					"name": {
@@ -1313,7 +1354,10 @@
 					}
 				},
 				"additionalProperties": false,
-				"type": "object"
+				"type": "object",
+				"required": [
+					"account"
+				]
 			},
 			"Git": {
 				"properties": {
@@ -3036,6 +3080,12 @@
 						},
 						"type": "array"
 					},
+					"cloudsmiths": {
+						"items": {
+							"$ref": "#/$defs/Cloudsmith"
+						},
+						"type": "array"
+					},
 					"dockerhub": {
 						"items": {
 							"$ref": "#/$defs/DockerHub"
@@ -3056,6 +3106,24 @@
 				"properties": {
 					"mod_timestamp": {
 						"type": "string"
+					},
+					"description": {
+						"type": "string"
+					},
+					"homepage": {
+						"type": "string"
+					},
+					"license": {
+						"type": "string"
+					},
+					"maintainers": {
+						"items": {
+							"type": "string"
+						},
+						"type": "array"
+					},
+					"full_description": {
+						"$ref": "#/$defs/IncludedMarkdown"
 					}
 				},
 				"additionalProperties": false,

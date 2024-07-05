@@ -133,6 +133,7 @@ nav:
           - customization/snapshots.md
           - customization/nightlies.md
           - customization/blob.md
+          - customization/cloudsmith.md
           - customization/fury.md
           - customization/dockerhub.md
           - customization/homebrew.md
