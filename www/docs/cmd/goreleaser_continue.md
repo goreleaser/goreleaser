@@ -9,7 +9,9 @@ If you have a previously prepared release (run with `goreleaser release --prepar
 Environment variables will be re-evaluated here, so make sure they are
 available to the continue command as well.
 
-{% include-markdown "../includes/pro.md" comments=false %}
+!!! success "GoReleaser Pro"
+    This subcommand is a [GoReleaser Pro feature](https://goreleaser.com/pro/).
+
 
 ```
 goreleaser continue [flags]
@@ -35,4 +37,5 @@ goreleaser continue [flags]
 
 ## See also
 
-- [goreleaser](/cmd/goreleaser/) - Deliver Go binaries as fast and easily as possible
+* [goreleaser](goreleaser.md)	 - Deliver Go binaries as fast and easily as possible
+

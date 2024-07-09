@@ -13,7 +13,9 @@ the release and its artifacts.
 Environment variables will be re-evaluated here, so make sure they are
 available to the publish command as well.
 
-{% include-markdown "../includes/pro.md" comments=false %}
+!!! success "GoReleaser Pro"
+    This subcommand is a [GoReleaser Pro feature](https://goreleaser.com/pro/).
+
 
 ```
 goreleaser publish [flags]
@@ -39,4 +41,5 @@ goreleaser publish [flags]
 
 ## See also
 
-- [goreleaser](/cmd/goreleaser/) - Deliver Go binaries as fast and easily as possible
+* [goreleaser](goreleaser.md)	 - Deliver Go binaries as fast and easily as possible
+
