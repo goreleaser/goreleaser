@@ -769,7 +769,7 @@ You can still use any of the other install methods.
 This also includes `install.goreleaser.com`.
 
 Most common tools installed via that website were probably
-[GoReleaser](/install/) itself and
+[GoReleaser](install.md) itself and
 [golangci-lint](https://golangci-lint.run/welcome/install/).
 
 Please follow to the check their documentation for alternative install methods.

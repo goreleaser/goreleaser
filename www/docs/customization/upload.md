@@ -266,7 +266,7 @@ uploads:
 
 !!! success "GoReleaser Pro"
 
-    Some options are only available in [GoReleaser Pro feature](/pro/).
+    Some options are only available in [GoReleaser Pro feature](../pro.md).
 
 These settings should allow you to push your artifacts into multiple HTTP
 servers.

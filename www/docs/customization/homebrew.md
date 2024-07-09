@@ -264,7 +264,7 @@ Our suggestion is to create a `my-app-head.rb` file on your tap following
 
 !!! success "GoReleaser Pro"
 
-    This requires [GoReleaser Pro](/pro/).
+    This requires [GoReleaser Pro](../pro.md).
 
 GoReleaser can also create a versioned formula.
 For instance, you might want to make keep previous minor versions available to

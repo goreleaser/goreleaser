@@ -200,7 +200,7 @@ dockers:
 
 !!! tip
 
-    You can also create multi-platform images using the [docker_manifests](/customization/docker_manifest/) config.
+    You can also create multi-platform images using the [docker_manifests](docker_manifest.md) config.
 
 These settings should allow you to generate multiple Docker images,
 for example, using multiple `FROM` statements,
@@ -332,7 +332,7 @@ dockers:
 
 !!! success "GoReleaser Pro"
 
-    The podman backend is a [GoReleaser Pro feature](/pro/).
+    The podman backend is a [GoReleaser Pro feature](../pro.md).
 
 You can use [`podman`](https://podman.io) instead of `docker` by setting `use` to `podman` on your config:
 

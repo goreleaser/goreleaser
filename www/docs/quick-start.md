@@ -68,7 +68,7 @@ git push origin v0.1.0
 
 !!! info
 
-    Check if your tag adheres to [semantic versioning](/limitations/semver/).
+    Check if your tag adheres to [semantic versioning](limitations/semver.md).
 
 !!! info
 
@@ -88,11 +88,11 @@ goreleaser release
 That's all it takes!
 
 GoReleaser will build the binaries for your app for Windows, Linux and macOS, both amd64 and i386 architectures.
-You can customize that by changing the `builds` section. Check the [documentation](/customization/build/) for more information.
+You can customize that by changing the `builds` section. Check the [documentation](customization/builds.md) for more information.
 
 After building the binaries, GoReleaser will create an archive for each OS/Arch pair into a separate file.
 You can customize several things by changing the `archive` section, including releasing only the binaries and not creating archives at all.
-Check the [documentation](/customization/archive/) for more information.
+Check the [documentation](customization/archive.md) for more information.
 
 Finally, it will create a release on GitHub with all the artifacts.
 

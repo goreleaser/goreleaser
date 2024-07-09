@@ -135,7 +135,7 @@ cannot use the default action token.
 You must use a separate token with content write privileges for the tap
 repository.
 You can check the
-[resource not accessible by integration](/errors/resource-not-accessible-by-integration/)
+[resource not accessible by integration](../errors/resource-not-accessible-by-integration.md)
 for more information.
 
 ## Setting up a NUR

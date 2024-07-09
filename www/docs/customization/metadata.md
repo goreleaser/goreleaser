@@ -66,3 +66,5 @@ metadata:
       # Templates: allowed.
       path: ./README.md
 ```
+
+{% include-markdown "../includes/templates.md" comments=false %}

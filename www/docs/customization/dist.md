@@ -15,5 +15,5 @@ More often than not, you won't need to change this.
 !!! warning
 
     If you change this value, and use
-    [`goreleaser continue`](/cmd/goreleaser_continue/),
+    [`goreleaser continue`](../cmd/goreleaser_continue.md),
     you'll need to specify `--dist` when running it.

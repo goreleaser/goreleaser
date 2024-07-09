@@ -2,7 +2,7 @@
 
 !!! success "GoReleaser Pro"
 
-    DockerHub is a [GoReleaser Pro feature](/pro/).
+    DockerHub is a [GoReleaser Pro feature](../pro.md).
 
 DockerHub allows you to set an image description and a full description.
 However, this is not possible via `docker push`.

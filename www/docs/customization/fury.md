@@ -2,7 +2,7 @@
 
 !!! success "GoReleaser Pro"
 
-    The Fury publisher is available only in [GoReleaser Pro feature](/pro/).
+    The Fury publisher is available only in [GoReleaser Pro feature](../pro.md).
 
 You can easily create `deb` and `yum` repositories on [Fury][fury] using GoReleaser.
 

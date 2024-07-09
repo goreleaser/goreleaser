@@ -190,7 +190,7 @@ archives:
 
 !!! success "GoReleaser Pro"
 
-    Archive hooks is a [GoReleaser Pro feature](/pro/).
+    Archive hooks is a [GoReleaser Pro feature](../pro.md).
 
 {% include-markdown "../includes/templates.md" comments=false %}
 

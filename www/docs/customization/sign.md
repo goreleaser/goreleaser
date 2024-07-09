@@ -242,7 +242,7 @@ While this works, I would recommend using the signing pipe directly.
 
 ## Signing Docker images and manifests
 
-Please refer to [Docker Images Signing](/customization/docker_sign/).
+Please refer to [Docker Images Signing](docker_sign.md).
 
 ## Limitations
 

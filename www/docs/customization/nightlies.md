@@ -2,12 +2,13 @@
 
 !!! success "GoReleaser Pro"
 
-    The nightly build feature is a [GoReleaser Pro feature](/pro/).
+    The nightly build feature is a [GoReleaser Pro feature](../pro.md).
 
 Whether if you need beta builds or a rolling-release system, the nightly builds
 feature will do it for you.
 
-To enable it, you must use the `--nightly` flag in the [`goreleaser release` command](/cmd/goreleaser_release/).
+To enable it, you must use the `--nightly` flag in the
+[`goreleaser release` command](../cmd/goreleaser_release.md).
 
 You also have some customization options available:
 
@@ -66,6 +67,6 @@ You can also check if it is a nightly build inside a template with:
 !!! info "Maybe you are looking for something else?"
 
     - If just want to build the binaries, and no packages at all, check the
-      [`goreleaser build` command](/cmd/goreleaser_build/);
+      [`goreleaser build` command](../cmd/goreleaser_build.md);
     - If you actually want to create a local "snapshot" build, check out the
-      [snapshots documentation](/customization/snapshots/).
+      [snapshots documentation](snapshots.md).

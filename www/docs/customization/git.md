@@ -51,4 +51,4 @@ which is different from what other git sorting options might give you.
 
 !!! success "GoReleaser Pro"
 
-    Semver sorting is a [GoReleaser Pro feature](/pro/).
+    Semver sorting is a [GoReleaser Pro feature](../pro.md).

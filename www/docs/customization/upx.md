@@ -63,4 +63,4 @@ OS, for instance - or even to run it only on a few selected platforms.
 
 [upx]: https://upx.github.io/
 [upx-issues]: https://github.com/upx/upx/issues
-[bhooks]: /customization/builds/#build-hooks
+[bhooks]: builds.md#build-hooks

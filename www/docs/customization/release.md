@@ -201,11 +201,11 @@ release:
 
 !!! tip
 
-    [Learn how to set up an API token, GitHub Enterprise, etc](/scm/github/).
+    [Learn how to set up an API token, GitHub Enterprise, etc](../scm/github.md).
 
 !!! success "GoReleaser Pro"
 
-    Some options are exclusive [GoReleaser Pro features](/pro/).
+    Some options are exclusive [GoReleaser Pro features](../pro.md).
 
 ## GitLab
 
@@ -262,7 +262,7 @@ release:
 
 !!! tip
 
-    [Learn how to set up an API token, self-hosted GitLab, etc](/scm/gitlab/).
+    [Learn how to set up an API token, self-hosted GitLab, etc](../scm/gitlab.md).
 
 !!! tip
 
@@ -332,7 +332,7 @@ ALLOWED_TYPES = application/gzip|application/x-gzip|application/x-gtar|applicati
 
 !!! tip
 
-    [Learn how to set up an API token](/scm/gitea/).
+    [Learn how to set up an API token](../scm/gitea.md).
 
 {% include-markdown "../includes/templates.md" comments=false %}
 
@@ -353,7 +353,7 @@ Changelog. You can set a different build tag using the environment variable
 `GORELEASER_PREVIOUS_TAG`. This is useful in scenarios where two tags point to
 the same commit.
 
-The [Nightly](/customization/nightlies) is automatically ignored, even if set
+The [Nightly](nightlies.md) is automatically ignored, even if set
 via the environment variables above.
 
 ## Custom release notes

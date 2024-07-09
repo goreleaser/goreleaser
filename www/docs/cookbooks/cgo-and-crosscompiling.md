@@ -7,9 +7,9 @@ using Docker image.
 with a bunch of ready-to-use cross-compilers as well as how-to make a `sysroot`.
 All that wrapped into [this example](https://github.com/goreleaser/goreleaser-cross-example)
 
-If you have [GoReleaser Pro](/pro), you can also use the split and merge feature
+If you have [GoReleaser Pro](../pro.md), you can also use the split and merge feature
 to build for each platform natively and merge the builds later.
 Check [this article][1] for an example, and the [documentation here][2].
 
 [1]: https://carlosbecker.com/posts/goreleaser-split-merge/
-[2]: /customization/partial
+[2]: ../customization/partial.md

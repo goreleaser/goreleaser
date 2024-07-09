@@ -406,7 +406,7 @@ before:
 # rest of the file...
 ```
 
-[hook]: /customization/hooks
+[hook]: hooks.md
 
 ## Define Build Tag
 
@@ -435,7 +435,7 @@ GoReleaser:
 
 !!! success "GoReleaser Pro"
 
-    The prebuilt builder is a [GoReleaser Pro feature](/pro/).
+    The prebuilt builder is a [GoReleaser Pro feature](../pro.md).
 
 It is also possible to import pre-built binaries into the GoReleaser lifecycle.
 
@@ -499,7 +499,7 @@ There is no difference in how the binaries are handled.
 
     A cool tip here, specially when using CGO, is that you can have one
     `.goreleaser.yaml` file just for the builds, build each in its own machine
-    with [`goreleaser build --single-target`](/cmd/goreleaser_build/) and
+    with [`goreleaser build --single-target`](../cmd/goreleaser_build.md) and
     have a second `.goreleaser.yaml` file that imports those binaries
     and release them.
     This tip can also be used to speed up the build process if you run all the

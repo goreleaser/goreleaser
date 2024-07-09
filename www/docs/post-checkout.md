@@ -24,6 +24,6 @@ Thank you!
 
 [^install]: Check out all the installation methods [here](install.md).
 
-[^schema]: More about our JSONSchemas [here](customization.md).
+[^schema]: More about our JSONSchemas [here](customization/index.md).
 
 [^links]: All our contact, forums and media links are available [here](links.md).

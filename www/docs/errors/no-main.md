@@ -32,7 +32,7 @@ builds:
   - main: ./path/to/your/main/pkg/
 ```
 
-For more info, check the [builds documentation](/customization/build/).
+For more info, check the [builds documentation](../customization/builds.md).
 
 ## If you ran goreleaser outside the root of the project
 
@@ -50,4 +50,4 @@ builds:
     no_main_check: true
 ```
 
-For more info, check the [builds documentation](/customization/build/).
+For more info, check the [builds documentation](../customization/builds.md).
