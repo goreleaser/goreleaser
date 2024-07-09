@@ -433,9 +433,7 @@ GoReleaser:
 
 ## Import pre-built binaries
 
-!!! success "GoReleaser Pro"
-
-    The prebuilt builder is a [GoReleaser Pro feature](../pro.md).
+{% include-markdown "../includes/pro.md" comments=false %}
 
 It is also possible to import pre-built binaries into the GoReleaser lifecycle.
 

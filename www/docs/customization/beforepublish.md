@@ -2,9 +2,7 @@
 
 > Since v2.1 (Pro).
 
-!!! success "GoReleaser Pro"
-
-    Before publish hooks is a [GoReleaser Pro feature](../pro.md).
+{% include-markdown "../includes/pro.md" comments=false %}
 
 You can use the `before_publish` hooks to run command against artifacts before
 the publishing step kicks in.

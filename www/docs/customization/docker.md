@@ -330,9 +330,7 @@ dockers:
 
 ## Using Podman
 
-!!! success "GoReleaser Pro"
-
-    The podman backend is a [GoReleaser Pro feature](../pro.md).
+{% include-markdown "../includes/pro.md" comments=false %}
 
 You can use [`podman`](https://podman.io) instead of `docker` by setting `use` to `podman` on your config:
 

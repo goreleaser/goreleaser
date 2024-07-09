@@ -2,10 +2,7 @@
 
 > Since v2.1 (Pro).
 
-!!! success "GoReleaser Pro"
-
-    The Cloudsmith publisher is available only in
-    [GoReleaser Pro feature](../pro.md).
+{% include-markdown "../includes/pro.md" comments=false %}
 
 You can easily create `deb`, `alpine`, and `yum` repositories on
 [Cloudsmith][cloudsmith] using GoReleaser.

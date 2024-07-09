@@ -188,9 +188,7 @@ archives:
     allow_different_binary_count: true
 ```
 
-!!! success "GoReleaser Pro"
-
-    Archive hooks is a [GoReleaser Pro feature](../pro.md).
+{% include-markdown "../includes/pro.md" comments=false %}
 
 {% include-markdown "../includes/templates.md" comments=false %}
 

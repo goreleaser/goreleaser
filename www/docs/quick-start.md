@@ -51,7 +51,8 @@ It will be used to deploy releases to your GitHub repository.
 You can create a new GitHub token [here](https://github.com/settings/tokens/new?scopes=repo,write:packages).
 
 !!! info
-The minimum permissions the `GITHUB_TOKEN` should have to run this are `write:packages`
+
+    The minimum permissions the `GITHUB_TOKEN` should have to run this are `write:packages`
 
 ```sh
 export GITHUB_TOKEN="YOUR_GH_TOKEN"

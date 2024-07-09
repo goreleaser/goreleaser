@@ -1,8 +1,6 @@
 # Nightlies
 
-!!! success "GoReleaser Pro"
-
-    The nightly build feature is a [GoReleaser Pro feature](../pro.md).
+{% include-markdown "../includes/pro.md" comments=false %}
 
 Whether if you need beta builds or a rolling-release system, the nightly builds
 feature will do it for you.

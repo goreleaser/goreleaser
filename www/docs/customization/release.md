@@ -203,9 +203,7 @@ release:
 
     [Learn how to set up an API token, GitHub Enterprise, etc](../scm/github.md).
 
-!!! success "GoReleaser Pro"
-
-    Some options are exclusive [GoReleaser Pro features](../pro.md).
+{% include-markdown "../includes/pro.md" comments=false %}
 
 ## GitLab
 

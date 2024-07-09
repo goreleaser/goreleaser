@@ -264,9 +264,7 @@ uploads:
     extra_files_only: true
 ```
 
-!!! success "GoReleaser Pro"
-
-    Some options are only available in [GoReleaser Pro feature](../pro.md).
+{% include-markdown "../includes/pro.md" comments=false %}
 
 These settings should allow you to push your artifacts into multiple HTTP
 servers.

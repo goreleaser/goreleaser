@@ -1,8 +1,6 @@
 # Template Files
 
-!!! success "GoReleaser Pro"
-
-    Template Files is a [GoReleaser Pro feature](../pro.md).
+{% include-markdown "../includes/pro.md" comments=false %}
 
 Template Files allow you to create custom files and/or scripts using
 GoReleaser's internal state and template variables, for example, an installer

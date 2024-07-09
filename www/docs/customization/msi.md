@@ -1,8 +1,6 @@
 # MSI
 
-!!! success "GoReleaser Pro"
-
-    The msi feature is available only in [GoReleaser Pro feature](../pro.md).
+{% include-markdown "../includes/pro.md" comments=false %}
 
 GoReleaser can create MSI installers for windows binaries using [msitools][].
 

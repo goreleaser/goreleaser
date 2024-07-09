@@ -94,9 +94,7 @@ You should be able to use all its fields on each item:
 - `.Type`
 - `.Extra`
 
-!!! success "GoReleaser Pro"
-
-    The `.Artifacts` template variable is [GoReleaser Pro feature](../pro.md).
+{% include-markdown "../includes/pro.md" comments=false %}
 
 ## Single-artifact extra fields
 
@@ -195,9 +193,7 @@ GOVERSION_NR=$(go version | awk '{print $3;}') goreleaser
 
 ## Custom variables
 
-!!! success "GoReleaser Pro"
-
-    Custom template variables support is a [GoReleaser Pro feature](../pro.md).
+{% include-markdown "../includes/pro.md" comments=false %}
 
 You can also declare custom variables. This feature is specially useful with
 [includes](includes.md), so you can have more generic configuration

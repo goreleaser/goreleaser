@@ -25,10 +25,7 @@ GoReleaser allows this with the global hooks feature.
 
 <!-- prettier-ignore -->
 === "Pro"
-    !!! success "GoReleaser Pro"
-
-        Global after hooks, and the additional options in before hooks (`dir`
-        and `env`) are [GoReleaser Pro features](../pro.md).
+    {% include-markdown "../includes/pro.md" comments=false %}
 
     The `before` section allows for global hooks that will be executed
     **before** the release is started. Likewise, the `after` section allows for
