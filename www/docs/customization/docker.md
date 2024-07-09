@@ -19,9 +19,7 @@ dockers:
       - user/repo
 ```
 
-!!! tip
-
-    The `image_templates` attribute supports templating. Learn more about the [name template engine](/customization/templates/).
+{% include-markdown "../includes/templates.md" comments=false %}
 
 You also need to create a `Dockerfile` in your project's root directory:
 
@@ -198,13 +196,11 @@ dockers:
     Note that you will have to manually login into the Docker registries you
     want to push to — GoReleaser does not login by itself.
 
-!!! tip
-
-    Learn more about the [name template engine](/customization/templates/).
+{% include-markdown "../includes/templates.md" comments=false %}
 
 !!! tip
 
-    You can also create multi-platform images using the [docker_manifests](/customization/docker_manifest/) config.
+    You can also create multi-platform images using the [docker_manifests](docker_manifest.md) config.
 
 These settings should allow you to generate multiple Docker images,
 for example, using multiple `FROM` statements,
@@ -228,9 +224,7 @@ This will build and publish the following images:
 
 - `myuser/foo`
 
-!!! tip
-
-    Learn more about the [name template engine](/customization/templates/).
+{% include-markdown "../includes/templates.md" comments=false %}
 
 ## Keeping docker images updated for current major
 
@@ -258,9 +252,7 @@ This will build and publish the following images:
 With these settings you can hopefully push several Docker images
 with multiple tags.
 
-!!! tip
-
-    Learn more about the [name template engine](/customization/templates/).
+{% include-markdown "../includes/templates.md" comments=false %}
 
 ## Publishing to multiple docker registries
 
@@ -313,9 +305,7 @@ docker build -t myuser/myimage . \
   --label=org.opencontainers.image.version=1.6.4
 ```
 
-!!! tip
-
-    Learn more about the [name template engine](/customization/templates/).
+{% include-markdown "../includes/templates.md" comments=false %}
 
 ## Use a specific builder with Docker buildx
 
@@ -340,9 +330,7 @@ dockers:
 
 ## Using Podman
 
-!!! success "GoReleaser Pro"
-
-    The podman backend is a [GoReleaser Pro feature](/pro/).
+{% include-markdown "../includes/pro.md" comments=false %}
 
 You can use [`podman`](https://podman.io) instead of `docker` by setting `use` to `podman` on your config:
 

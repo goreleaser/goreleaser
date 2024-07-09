@@ -78,6 +78,4 @@ source:
         mtime: 2008-01-02T15:04:05Z
 ```
 
-!!! tip
-
-    Learn more about the [name template engine](/customization/templates/).
+{% include-markdown "../includes/templates.md" comments=false %}

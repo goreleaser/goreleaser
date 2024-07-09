@@ -41,5 +41,5 @@ goreleaser release [flags]
 
 ## See also
 
-* [goreleaser](/cmd/goreleaser/)	 - Deliver Go binaries as fast and easily as possible
+* [goreleaser](goreleaser.md)	 - Deliver Go binaries as fast and easily as possible
 

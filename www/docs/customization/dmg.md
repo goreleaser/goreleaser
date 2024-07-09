@@ -1,8 +1,6 @@
 # DMG
 
-!!! success "GoReleaser Pro"
-
-    The dmg feature is available only in [GoReleaser Pro feature](/pro/).
+{% include-markdown "../includes/pro.md" comments=false %}
 
 GoReleaser can create DMG images for macOS using `mkisofs` or `hdiutil`.
 
@@ -58,6 +56,4 @@ dmg:
    link inside the image might not work if the image was built on Windows.
 1. If running outside macOS, make sure to have `mkisofs` installed.
 
-!!! tip
-
-    Learn more about the [name template engine](/customization/templates/).
+{% include-markdown "../includes/templates.md" comments=false %}

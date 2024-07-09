@@ -162,4 +162,4 @@ docker_signs:
 ```
 
 [ko]: https://ko.build
-[build]: /customization/build/
+[build]: builds.md

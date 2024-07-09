@@ -1,8 +1,6 @@
 # Fury - apt and rpm repositories
 
-!!! success "GoReleaser Pro"
-
-    The Fury publisher is available only in [GoReleaser Pro feature](/pro/).
+{% include-markdown "../includes/pro.md" comments=false %}
 
 You can easily create `deb` and `yum` repositories on [Fury][fury] using GoReleaser.
 
@@ -62,6 +60,4 @@ furies:
 
 [fury]: https://gemfury.com
 
-!!! tip
-
-    Learn more about the [name template engine](/customization/templates/).
+{% include-markdown "../includes/templates.md" comments=false %}

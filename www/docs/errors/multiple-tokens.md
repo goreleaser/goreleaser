@@ -12,7 +12,7 @@ Learn more at https://goreleaser.com/errors/multiple-tokens
 ```
 
 In this case, you either unset `GITHUB_TOKEN` or `GITLAB_TOKEN`.
-You can read more about it in the [SCM docs](/scm/github/).
+You can read more about it in the [SCM docs](../scm/github.md).
 
 This can also happen if you load the tokens from files.
 The default paths are:

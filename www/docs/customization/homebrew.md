@@ -194,9 +194,7 @@ brews:
 {% include-markdown "../includes/repository.md" comments=false %}
 ```
 
-!!! tip
-
-    Learn more about the [name template engine](/customization/templates/).
+{% include-markdown "../includes/templates.md" comments=false %}
 
 By defining the `brew` section, GoReleaser will take care of publishing the
 Homebrew tap.
@@ -264,9 +262,7 @@ Our suggestion is to create a `my-app-head.rb` file on your tap following
 
 ## Versioned formulas
 
-!!! success "GoReleaser Pro"
-
-    This requires [GoReleaser Pro](/pro/).
+{% include-markdown "../includes/pro.md" comments=false %}
 
 GoReleaser can also create a versioned formula.
 For instance, you might want to make keep previous minor versions available to

@@ -1,8 +1,6 @@
 # Includes
 
-!!! success "GoReleaser Pro"
-
-    Includes is a [GoReleaser Pro feature](../pro.md).
+{% include-markdown "../includes/pro.md" comments=false %}
 
 GoReleaser allows you to reuse configuration files by including them from either
 a URL or a file path.
