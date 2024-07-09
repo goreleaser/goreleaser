@@ -25,12 +25,14 @@ winget:
     #
     # Templates: allowed.
     # Required
+    # Default: inferred from global metadata.
     short_description: "Software to create fast and easy drum rolls."
 
     # License name.
     #
     # Templates: allowed.
     # Required
+    # Default: inferred from global metadata.
     license: "mit"
 
     # Publisher URL.
@@ -102,11 +104,14 @@ winget:
     path: manifests/g/goreleaser/myproject/1.19
 
     # Your app's homepage.
+    #
+    # Default: inferred from global metadata.
     homepage: "https://example.com/"
 
     # Your app's long description.
     #
     # Templates: allowed.
+    # Default: inferred from global metadata.
     description: "Software to create fast and easy drum rolls."
 
     # License URL.

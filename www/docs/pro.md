@@ -3,7 +3,10 @@
 GoReleaser Pro is a paid, closed-source GoReleaser distribution with some
 additional features:
 
-- [x] Run [hooks before publishing](customization/beforepublish.md) artifacts;
+- [x] Easily create `alpine`, `apt`, and `yum` repositories with the
+      [CloudSmith integration](customization/cloudsmith.md);
+- [x] Have [global defaults for homepage, description, etc](customization/metadata.md);
+- [x] Run [hooks before publishing](customization/beforepublish) artifacts;
 - [x] Cross publish (e.g. releases to GitLab, pushes Homebrew Tap to GitHub);
 - [x] Keep [DockerHub image descriptions up to date](customization/dockerhub.md);
 - [x] Create [macOS disk images (DMGs)](customization/dmg.md);

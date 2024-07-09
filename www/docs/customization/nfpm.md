@@ -37,17 +37,25 @@ nfpms:
     vendor: Drum Roll Inc.
 
     # Your app's homepage.
+    #
+    # Default: inferred from global metadata.
     homepage: https://example.com/
 
     # Your app's maintainer (probably you).
+    #
+    # Default: inferred from global metadata.
     maintainer: Drummer <drum-roll@example.com>
 
     # Your app's description.
+    #
+    # Default: inferred from global metadata.
     description: |-
       Drum rolls installer package.
       Software to create fast and easy drum rolls.
 
     # Your app's license.
+    #
+    # Default: inferred from global metadata.
     license: Apache 2.0
 
     # Formats to be generated.
