@@ -4,8 +4,8 @@ Some release cycles may need to run something before or after everything else.
 
 GoReleaser allows this with the global hooks feature.
 
-<!-- prettier-ignore -->
 === "OSS"
+
     The `before` section allows for global hooks that will be executed
     **before** the release is started.
 
@@ -23,8 +23,8 @@ GoReleaser allows this with the global hooks feature.
       - touch {{ .Env.FILE_TO_TOUCH }}
     ```
 
-<!-- prettier-ignore -->
 === "Pro"
+
     {% include-markdown "../includes/pro.md" comments=false %}
 
     The `before` section allows for global hooks that will be executed

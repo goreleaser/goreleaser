@@ -157,7 +157,7 @@ tasks:
     desc: Start documentation server
     cmds:
       - task: docs:generate
-      - "mkdocs serve -f www/mkdocs.yml -a 0.0.0.0:8000 --dirty"
+      - "mkdocs serve -f www/mkdocs.yml -a 0.0.0.0:8000"
 
   docs:build:
     desc: Build docs

@@ -344,7 +344,7 @@ Verify the signatures:
     ```bash
     cosign verify \
       --certificate-identity 'https://github.com/goreleaser/goreleaser/.github/workflows/release.yml@refs/tags/__VERSION__' \
-        --certificate-oidc-issuer 'https://token.actions.githubusercontent.com' \
+      --certificate-oidc-issuer 'https://token.actions.githubusercontent.com' \
       goreleaser/goreleaser
     ```
 
