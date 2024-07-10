@@ -38,6 +38,7 @@ theme:
     - navigation.instant
     - navigation.tracking
     - navigation.tabs
+    - content.tabs.link
 
 plugins:
   - search
