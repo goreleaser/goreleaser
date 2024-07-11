@@ -18,7 +18,7 @@ jobs:
 
     steps:
     - uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332 # v4
-    - uses: anchore/scan-action@v3
+    - uses: anchore/scan-action@v4
       with:
         path: "."
         fail-build: true
