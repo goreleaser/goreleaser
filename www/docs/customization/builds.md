@@ -234,8 +234,8 @@ builds:
     # Note: it'll only match if the full target matches.
     overrides:
       - goos: darwin
-        goarch: arm64
-        goamd64: v1
+        goarch: amd64
+        goamd64: v1 # Note: if you leave this
         goarm: ""
         gomips: ""
         ldflags:
@@ -249,6 +249,11 @@ builds:
         env:
           - CGO_ENABLED=1
 ```
+
+!!! warning "GOAMD64"
+
+    You usually will need to specify the `goamd64` version beign used, e.g., in
+    `overrides`, and other places too.
 
 {% include-markdown "../includes/templates.md" comments=false %}
 
