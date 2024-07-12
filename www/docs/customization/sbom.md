@@ -1,7 +1,5 @@
 # Cataloging artifacts
 
-> Since: v1.2
-
 A Software Bill of Materials (SBOM) is a description of the components that make
 up a software artifact.
 
@@ -29,7 +27,7 @@ To customize the artifact cataloging pipeline you can use the following options:
 sboms:
   - # ID of the sbom config, must be unique.
     #
-    # Default: 'default'
+    # Default: 'default'.
     id: foo
 
     # List of names of the SBOM documents created at this step
@@ -49,7 +47,7 @@ sboms:
     #   When "binary":   ["{{ .Binary }}_{{ .Version }}_{{ .Os }}_{{ .Arch }}.sbom.json"]
     #   When "any":      []
     #   Otherwise:       ["{{ .ArtifactName }}.sbom.json"]
-    # Templates: allowed
+    # Templates: allowed.
     documents:
       - "${artifact}.spdx.sbom.json"
 
@@ -57,19 +55,19 @@ sboms:
     #
     # Note: the process CWD will be set to the same location as "dist"
     #
-    # Default: 'syft'
+    # Default: 'syft'.
     cmd: syft
 
     # Command line arguments for the command
     #
-    # Default: ["$artifact", "--output", "spdx-json=$document"]
-    # Templates: allowed
+    # Default: ["$artifact", "--output", "spdx-json=$document"].
+    # Templates: allowed.
     args: ["$artifact", "--output", "cyclonedx-json=$document"]
 
     # List of environment variables that will be passed to the SBOM command as
     # well as the templates.
     #
-    # Default: [ "SYFT_FILE_METADATA_CATALOGER_ENABLED=true" ]
+    # Default: [ "SYFT_FILE_METADATA_CATALOGER_ENABLED=true" ].
     env:
       - FOO=bar
       - HONK=honkhonk
@@ -86,7 +84,7 @@ sboms:
     # - archive:    archives from archive pipe
     # - binary:     binaries output from the build stage
     #
-    # Default: 'archive'
+    # Default: 'archive'.
     artifacts: archive
 
     # IDs of the artifacts to catalog.

@@ -8,10 +8,10 @@ import (
 	"time"
 
 	"github.com/caarlos0/log"
-	"github.com/goreleaser/goreleaser/internal/artifact"
-	"github.com/goreleaser/goreleaser/internal/gio"
-	"github.com/goreleaser/goreleaser/internal/tmpl"
-	"github.com/goreleaser/goreleaser/pkg/context"
+	"github.com/goreleaser/goreleaser/v2/internal/artifact"
+	"github.com/goreleaser/goreleaser/v2/internal/gio"
+	"github.com/goreleaser/goreleaser/v2/internal/tmpl"
+	"github.com/goreleaser/goreleaser/v2/pkg/context"
 )
 
 type (
@@ -28,10 +28,10 @@ func (Pipe) Run(ctx *context.Context) error {
 	return tmpl.New(ctx).ApplyAll(&ctx.Config.Metadata.ModTimestamp)
 }
 
-func (MetaPipe) String() string                 { return "storing release metadata" }
+func (MetaPipe) String() string                 { return "writing release metadata" }
 func (MetaPipe) Run(ctx *context.Context) error { return writeMetadata(ctx) }
 
-func (ArtifactsPipe) String() string                 { return "storing artifacts metadata" }
+func (ArtifactsPipe) String() string                 { return "writing artifacts metadata" }
 func (ArtifactsPipe) Run(ctx *context.Context) error { return writeArtifacts(ctx) }
 
 func writeMetadata(ctx *context.Context) error {
@@ -72,7 +72,7 @@ func writeJSON(ctx *context.Context, j interface{}, name string) (string, error)
 		return "", err
 	}
 	path := filepath.Join(ctx.Config.Dist, name)
-	log.Log.WithField("file", path).Info("writing")
+	log.Log.WithField("path", path).Debug("writing")
 	if err := os.WriteFile(path, bts, 0o644); err != nil {
 		return "", err
 	}

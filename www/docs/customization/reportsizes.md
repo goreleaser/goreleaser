@@ -1,7 +1,5 @@
 # Report Sizes
 
-> Since v1.18
-
 You might want to enable this if you want to keep an eye on your binary/package
 sizes.
 

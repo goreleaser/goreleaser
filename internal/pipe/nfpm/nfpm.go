@@ -10,15 +10,15 @@ import (
 
 	"dario.cat/mergo"
 	"github.com/caarlos0/log"
-	"github.com/goreleaser/goreleaser/internal/artifact"
-	"github.com/goreleaser/goreleaser/internal/deprecate"
-	"github.com/goreleaser/goreleaser/internal/ids"
-	"github.com/goreleaser/goreleaser/internal/pipe"
-	"github.com/goreleaser/goreleaser/internal/semerrgroup"
-	"github.com/goreleaser/goreleaser/internal/skips"
-	"github.com/goreleaser/goreleaser/internal/tmpl"
-	"github.com/goreleaser/goreleaser/pkg/config"
-	"github.com/goreleaser/goreleaser/pkg/context"
+	"github.com/goreleaser/goreleaser/v2/internal/artifact"
+	"github.com/goreleaser/goreleaser/v2/internal/deprecate"
+	"github.com/goreleaser/goreleaser/v2/internal/ids"
+	"github.com/goreleaser/goreleaser/v2/internal/pipe"
+	"github.com/goreleaser/goreleaser/v2/internal/semerrgroup"
+	"github.com/goreleaser/goreleaser/v2/internal/skips"
+	"github.com/goreleaser/goreleaser/v2/internal/tmpl"
+	"github.com/goreleaser/goreleaser/v2/pkg/config"
+	"github.com/goreleaser/goreleaser/v2/pkg/context"
 	"github.com/goreleaser/nfpm/v2"
 	"github.com/goreleaser/nfpm/v2/deprecation"
 	"github.com/goreleaser/nfpm/v2/files"
@@ -148,7 +148,7 @@ func isSupportedTermuxArch(goos, goarch string) bool {
 	if goos != "android" {
 		return false
 	}
-	for _, arch := range []string{"amd64", "arm64", "386"} {
+	for _, arch := range []string{"amd64", "arm64", "arm", "386"} {
 		if strings.HasPrefix(goarch, arch) {
 			return true
 		}
@@ -174,6 +174,7 @@ var termuxArchReplacer = strings.NewReplacer(
 	"386", "i686",
 	"amd64", "x86_64",
 	"arm64", "aarch64",
+	"arm6", "arm",
 )
 
 func create(ctx *context.Context, fpm config.NFPM, format string, artifacts []*artifact.Artifact) error {

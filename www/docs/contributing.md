@@ -30,14 +30,15 @@ git clone git@github.com:goreleaser/goreleaser.git
 
 `cd` into the directory and install the dependencies:
 
-```sh
-task setup
+```bash
+go mod tidy
 ```
 
-A good way of making sure everything is all right is running the test suite:
+You should then be able to build the binary:
 
-```sh
-task test
+```bash
+go build -o goreleaser .
+./goreleaser --version
 ```
 
 ### A note about Docker multi-arch builds

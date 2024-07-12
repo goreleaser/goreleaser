@@ -12,7 +12,7 @@ Learn more at https://goreleaser.com/errors/multiple-tokens
 ```
 
 In this case, you either unset `GITHUB_TOKEN` or `GITLAB_TOKEN`.
-You can read more about it in the [SCM docs](/scm/github/).
+You can read more about it in the [SCM docs](../scm/github.md).
 
 This can also happen if you load the tokens from files.
 The default paths are:
@@ -36,8 +36,6 @@ This will prevent using both GitLab and Gitea tokens.
 
 ## Forcing a specific token
 
-> Since: v1.17
-
 If GoReleaser is being run with more than one of the `*_TOKEN` environment
 variables and you can't unset any of them, you can force GoReleaser to use a
 specific one by exporting a `GORELEASER_FORCE_TOKEN` environment variable.
@@ -52,4 +50,3 @@ You can also force a token by using `force_token` in your config:
 # .goreleaser.yaml
 force_token: gitea
 ```
-

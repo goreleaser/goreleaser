@@ -19,14 +19,14 @@ theme:
       scheme: default
       toggle:
         icon: material/lightbulb-outline
-        name: Switch to light mode
+        name: Switch to dark mode
     - media: "(prefers-color-scheme: dark)" # Dark mode
       scheme: slate
       primary: light blue
       accent: indigo
       toggle:
         icon: material/lightbulb
-        name: Switch to dark mode
+        name: Switch to light mode
   features:
     - announce.dismiss
     - search.suggest
@@ -38,6 +38,7 @@ theme:
     - navigation.instant
     - navigation.tracking
     - navigation.tabs
+    - content.tabs.link
 
 plugins:
   - search
@@ -72,12 +73,14 @@ extra:
     provider: google
     property: "G-3MZGQS8EPS"
   social:
-    - icon: fontawesome/brands/github-alt
-      link: https://github.com/goreleaser
-    - icon: fontawesome/brands/twitter
-      link: https://twitter.com/goreleaser
+    - icon: fontawesome/brands/x-twitter
+      link: https://x.com/goreleaser
     - icon: fontawesome/brands/mastodon
       link: https://fosstodon.org/@goreleaser
+    - icon: fontawesome/brands/github
+      link: https://github.com/goreleaser
+    - icon: fontawesome/brands/discord
+      link: /discord
 
 nav:
   - Home: index.md
@@ -126,10 +129,12 @@ nav:
           - Docker Images and Manifests: customization/docker_sign.md
           - customization/notarize.md
       - Publish:
+          - customization/beforepublish.md
           - customization/release.md
           - customization/snapshots.md
           - customization/nightlies.md
           - customization/blob.md
+          - customization/cloudsmith.md
           - customization/fury.md
           - customization/dockerhub.md
           - customization/homebrew.md
@@ -184,6 +189,7 @@ nav:
       - users.md
       - deprecations.md
       - Common errors:
+          - errors/version.md
           - errors/dirty.md
           - errors/multiple-tokens.md
           - errors/release-upload.md
@@ -242,6 +248,9 @@ markdown_extensions:
       permalink: true
   - pymdownx.tabbed:
       alternate_style: true
+      slugify: !!python/object/apply:pymdownx.slugs.slugify
+        kwds:
+          case: lower
   - pymdownx.superfences
   - pymdownx.tasklist:
       custom_checkbox: true

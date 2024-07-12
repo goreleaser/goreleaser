@@ -27,4 +27,4 @@ func main() {
 ```
 
 You can override this by changing the `ldflags` option in the
-[`build` section](/customization/build/).
+[`build` section](../customization/builds.md).

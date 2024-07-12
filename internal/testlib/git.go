@@ -7,7 +7,7 @@ import (
 	"testing"
 
 	"github.com/charmbracelet/keygen"
-	"github.com/goreleaser/goreleaser/internal/git"
+	"github.com/goreleaser/goreleaser/v2/internal/git"
 	"github.com/stretchr/testify/require"
 )
 

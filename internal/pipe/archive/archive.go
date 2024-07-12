@@ -13,15 +13,15 @@ import (
 	"sync"
 
 	"github.com/caarlos0/log"
-	"github.com/goreleaser/goreleaser/internal/archivefiles"
-	"github.com/goreleaser/goreleaser/internal/artifact"
-	"github.com/goreleaser/goreleaser/internal/deprecate"
-	"github.com/goreleaser/goreleaser/internal/ids"
-	"github.com/goreleaser/goreleaser/internal/semerrgroup"
-	"github.com/goreleaser/goreleaser/internal/tmpl"
-	"github.com/goreleaser/goreleaser/pkg/archive"
-	"github.com/goreleaser/goreleaser/pkg/config"
-	"github.com/goreleaser/goreleaser/pkg/context"
+	"github.com/goreleaser/goreleaser/v2/internal/archivefiles"
+	"github.com/goreleaser/goreleaser/v2/internal/artifact"
+	"github.com/goreleaser/goreleaser/v2/internal/ids"
+	"github.com/goreleaser/goreleaser/v2/internal/semerrgroup"
+	"github.com/goreleaser/goreleaser/v2/internal/skips"
+	"github.com/goreleaser/goreleaser/v2/internal/tmpl"
+	"github.com/goreleaser/goreleaser/v2/pkg/archive"
+	"github.com/goreleaser/goreleaser/v2/pkg/config"
+	"github.com/goreleaser/goreleaser/v2/pkg/context"
 )
 
 const (
@@ -45,6 +45,10 @@ func (Pipe) String() string {
 	return "archives"
 }
 
+func (Pipe) Skip(ctx *context.Context) bool {
+	return skips.Any(ctx, skips.Archive)
+}
+
 // Default sets the pipe defaults.
 func (Pipe) Default(ctx *context.Context) error {
 	ids := ids.New("archives")
@@ -58,13 +62,6 @@ func (Pipe) Default(ctx *context.Context) error {
 		}
 		if archive.ID == "" {
 			archive.ID = "default"
-		}
-		if archive.StripParentBinaryFolder {
-			archive.StripBinaryDirectory = true
-			deprecate.Notice(ctx, "archives.strip_parent_binary_folder")
-		}
-		if archive.RLCP != "" && archive.Format != "binary" && len(archive.Files) > 0 {
-			deprecate.Notice(ctx, "archives.rlcp")
 		}
 		if len(archive.Files) == 0 {
 			archive.Files = []config.File{

@@ -16,11 +16,10 @@ goreleaser jsonschema [flags]
 ## Options inherited from parent commands
 
 ```
-      --debug     Enable verbose mode (deprecated)
       --verbose   Enable verbose mode
 ```
 
 ## See also
 
-* [goreleaser](/cmd/goreleaser/)	 - Deliver Go binaries as fast and easily as possible
+* [goreleaser](goreleaser.md)	 - Deliver Go binaries as fast and easily as possible
 

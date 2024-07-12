@@ -11,11 +11,10 @@ import (
 	"strings"
 
 	"github.com/caarlos0/log"
-	"github.com/goreleaser/goreleaser/internal/client"
-	"github.com/goreleaser/goreleaser/internal/deprecate"
-	"github.com/goreleaser/goreleaser/internal/git"
-	"github.com/goreleaser/goreleaser/internal/tmpl"
-	"github.com/goreleaser/goreleaser/pkg/context"
+	"github.com/goreleaser/goreleaser/v2/internal/client"
+	"github.com/goreleaser/goreleaser/v2/internal/git"
+	"github.com/goreleaser/goreleaser/v2/internal/tmpl"
+	"github.com/goreleaser/goreleaser/v2/pkg/context"
 )
 
 // ErrInvalidSortDirection happens when the sort order is invalid.
@@ -45,10 +44,6 @@ func (Pipe) String() string { return "generating changelog" }
 func (Pipe) Skip(ctx *context.Context) (bool, error) {
 	if ctx.Snapshot {
 		return true, nil
-	}
-	if ctx.Config.Changelog.Skip != "" {
-		deprecate.Notice(ctx, "changelog.skip")
-		ctx.Config.Changelog.Disable = ctx.Config.Changelog.Skip
 	}
 
 	return tmpl.New(ctx).Bool(ctx.Config.Changelog.Disable)
@@ -111,7 +106,7 @@ func (Pipe) Run(ctx *context.Context) error {
 	}
 
 	path := filepath.Join(ctx.Config.Dist, "CHANGELOG.md")
-	log.WithField("changelog", path).Info("writing")
+	log.WithField("path", path).Debug("writing changelog")
 	return os.WriteFile(path, []byte(ctx.ReleaseNotes), 0o644) //nolint: gosec
 }
 
@@ -436,7 +431,7 @@ type gitChangeloger struct{}
 var validSHA1 = regexp.MustCompile(`^[a-fA-F0-9]{40}$`)
 
 func (g gitChangeloger) Log(ctx *context.Context) (string, error) {
-	args := []string{"log", "--pretty=oneline", "--abbrev-commit", "--no-decorate", "--no-color"}
+	args := []string{"log", "--pretty=oneline", "--no-decorate", "--no-color"}
 	prev, current := comparePair(ctx)
 	if validSHA1.MatchString(prev) {
 		args = append(args, prev, current)

@@ -5,7 +5,7 @@ import (
 	"sort"
 	"strings"
 
-	"github.com/goreleaser/goreleaser/pkg/context"
+	"github.com/goreleaser/goreleaser/v2/pkg/context"
 	"golang.org/x/exp/maps"
 	"golang.org/x/exp/slices"
 )
@@ -32,6 +32,7 @@ const (
 	NFPM           Key = "nfpm"
 	Chocolatey     Key = "chocolatey"
 	Notarize       Key = "notarize"
+	Archive        Key = "archive"
 )
 
 func String(ctx *context.Context) string {
@@ -116,6 +117,7 @@ var Release = Keys{
 	NFPM,
 	Before,
 	Notarize,
+	Archive,
 }
 
 var Build = Keys{

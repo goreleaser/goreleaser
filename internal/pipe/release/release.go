@@ -8,15 +8,15 @@ import (
 	"time"
 
 	"github.com/caarlos0/log"
-	"github.com/goreleaser/goreleaser/internal/artifact"
-	"github.com/goreleaser/goreleaser/internal/client"
-	"github.com/goreleaser/goreleaser/internal/extrafiles"
-	"github.com/goreleaser/goreleaser/internal/git"
-	"github.com/goreleaser/goreleaser/internal/pipe"
-	"github.com/goreleaser/goreleaser/internal/semerrgroup"
-	"github.com/goreleaser/goreleaser/internal/tmpl"
-	"github.com/goreleaser/goreleaser/pkg/config"
-	"github.com/goreleaser/goreleaser/pkg/context"
+	"github.com/goreleaser/goreleaser/v2/internal/artifact"
+	"github.com/goreleaser/goreleaser/v2/internal/client"
+	"github.com/goreleaser/goreleaser/v2/internal/extrafiles"
+	"github.com/goreleaser/goreleaser/v2/internal/git"
+	"github.com/goreleaser/goreleaser/v2/internal/pipe"
+	"github.com/goreleaser/goreleaser/v2/internal/semerrgroup"
+	"github.com/goreleaser/goreleaser/v2/internal/tmpl"
+	"github.com/goreleaser/goreleaser/v2/pkg/config"
+	"github.com/goreleaser/goreleaser/v2/pkg/context"
 )
 
 // ErrMultipleReleases indicates that multiple releases are defined. ATM only one of them is allowed.
@@ -106,16 +106,17 @@ func (Pipe) Publish(ctx *context.Context) error {
 	if err := doPublish(ctx, c); err != nil {
 		return err
 	}
-	log.WithField("url", ctx.ReleaseURL).
-		WithField("published", !ctx.Config.Release.Draft).
-		Info("release created/updated")
+	if !ctx.Config.Release.Draft {
+		log.WithField("url", ctx.ReleaseURL).
+			Info("release published")
+	}
 	return nil
 }
 
 func doPublish(ctx *context.Context, client client.Client) error {
 	log.WithField("tag", ctx.Git.CurrentTag).
 		WithField("repo", ctx.Config.Release.GitHub.String()).
-		Info("creating or updating release")
+		Info("releasing")
 	if err := ctx.Artifacts.Refresh(); err != nil {
 		return err
 	}

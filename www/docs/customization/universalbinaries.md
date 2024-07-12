@@ -11,7 +11,7 @@ Here's how to use it:
 universal_binaries:
   - # ID of the resulting universal binary.
     #
-    # Default: the project name
+    # Default: the project name.
     id: foo
 
     # IDs to use to filter the built binaries.
@@ -19,8 +19,7 @@ universal_binaries:
     # Notice that you shouldn't include different apps' IDs here.
     # This field is usually only required if you are using CGO.
     #
-    # Default: the value of the id field
-    # Since: v1.3
+    # Default: the value of the id field.
     ids:
       - build1
       - build2
@@ -29,8 +28,8 @@ universal_binaries:
     #
     # You will want to change this if you have multiple builds!
     #
-    # Default: '{{ .ProjectName }}'
-    # Templates: allowed
+    # Default: '{{ .ProjectName }}'.
+    # Templates: allowed.
     name_template: "{{.ProjectName}}_{{.Version}}"
 
     # Whether to remove the previous single-arch binaries from the artifact list.
@@ -42,22 +41,19 @@ universal_binaries:
     # you would do this to ensure a build was reproducible.
     # Pass an empty string to skip modifying the output.
     #
-    # Since: v1.20
-    # Templates: allowed
+    # Templates: allowed.
     mod_timestamp: "{{ .CommitTimestamp }}"
 
     # Hooks can be used to customize the final binary,
     # for example, to run generators.
     #
-    # Templates: allowed
+    # Templates: allowed.
     hooks:
       pre: rice embed-go
       post: ./script.sh {{ .Path }}
 ```
 
-!!! tip
-
-    Learn more about the [name template engine](/customization/templates/).
+{% include-markdown "../includes/templates.md" comments=false %}
 
 For more info about hooks, see the [build section](./builds.md#build-hooks).
 
@@ -92,7 +88,7 @@ You can use the Go template engine to remove it if you'd like.
 
 ## Naming templates
 
-Most fields that support [templates](/customization/templates/) will also
+Most fields that support [templates](templates.md) will also
 support the following build details:
 
 <!-- to format the tables, use: https://tabletomarkdown.com/format-markdown-table/ -->

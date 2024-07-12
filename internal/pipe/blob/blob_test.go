@@ -4,9 +4,9 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/goreleaser/goreleaser/internal/testctx"
-	"github.com/goreleaser/goreleaser/internal/testlib"
-	"github.com/goreleaser/goreleaser/pkg/config"
+	"github.com/goreleaser/goreleaser/v2/internal/testctx"
+	"github.com/goreleaser/goreleaser/v2/internal/testlib"
+	"github.com/goreleaser/goreleaser/v2/pkg/config"
 	"github.com/stretchr/testify/require"
 )
 
@@ -83,13 +83,6 @@ func TestDefaults(t *testing.T) {
 				Provider:           "gcs",
 				ContentDisposition: "-",
 			},
-			{
-				Bucket:        "deprecated",
-				Provider:      "s3",
-				Folder:        "static",
-				OldDisableSSL: true,
-				OldKMSKey:     "fake",
-			},
 		},
 	})
 	require.NoError(t, Pipe{}.Default(ctx))
@@ -112,17 +105,6 @@ func TestDefaults(t *testing.T) {
 			Provider:           "gcs",
 			Directory:          "{{ .ProjectName }}/{{ .Tag }}",
 			ContentDisposition: "",
-		},
-		{
-			Bucket:             "deprecated",
-			Provider:           "s3",
-			Folder:             "static",
-			Directory:          "static",
-			OldDisableSSL:      true,
-			DisableSSL:         true,
-			OldKMSKey:          "fake",
-			KMSKey:             "fake",
-			ContentDisposition: "attachment;filename={{.Filename}}",
 		},
 	}, ctx.Config.Blobs)
 }
@@ -153,7 +135,7 @@ func TestURL(t *testing.T) {
 			Bucket:     "foo",
 			Provider:   "s3",
 			Region:     "us-west-1",
-			Folder:     "foo",
+			Directory:  "foo",
 			Endpoint:   "s3.foobar.com",
 			DisableSSL: true,
 		})
@@ -177,7 +159,7 @@ func TestURL(t *testing.T) {
 			Bucket:     "foo",
 			Provider:   "gs",
 			Region:     "us-west-1",
-			Folder:     "foo",
+			Directory:  "foo",
 			Endpoint:   "s3.foobar.com",
 			DisableSSL: true,
 		})

@@ -13,14 +13,14 @@ import (
 
 	"dario.cat/mergo"
 	"github.com/caarlos0/log"
-	"github.com/goreleaser/goreleaser/internal/artifact"
-	"github.com/goreleaser/goreleaser/internal/builders/buildtarget"
-	"github.com/goreleaser/goreleaser/internal/gio"
-	"github.com/goreleaser/goreleaser/internal/logext"
-	"github.com/goreleaser/goreleaser/internal/tmpl"
-	api "github.com/goreleaser/goreleaser/pkg/build"
-	"github.com/goreleaser/goreleaser/pkg/config"
-	"github.com/goreleaser/goreleaser/pkg/context"
+	"github.com/goreleaser/goreleaser/v2/internal/artifact"
+	"github.com/goreleaser/goreleaser/v2/internal/builders/buildtarget"
+	"github.com/goreleaser/goreleaser/v2/internal/gio"
+	"github.com/goreleaser/goreleaser/v2/internal/logext"
+	"github.com/goreleaser/goreleaser/v2/internal/tmpl"
+	api "github.com/goreleaser/goreleaser/v2/pkg/build"
+	"github.com/goreleaser/goreleaser/v2/pkg/config"
+	"github.com/goreleaser/goreleaser/v2/pkg/context"
 )
 
 // Default builder instance.
@@ -218,6 +218,10 @@ func (*Builder) Build(ctx *context.Context, build config.Build, options api.Opti
 		"GOMIPS64="+options.Gomips,
 		"GOAMD64="+options.Goamd64,
 	)
+
+	if v := os.Getenv("GOCACHEPROG"); v != "" {
+		env = append(env, "GOCACHEPROG="+v)
+	}
 
 	if len(testEnvs) > 0 {
 		a.Extra["testEnvs"] = testEnvs

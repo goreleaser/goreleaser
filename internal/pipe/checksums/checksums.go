@@ -12,11 +12,11 @@ import (
 	"sync"
 
 	"github.com/caarlos0/log"
-	"github.com/goreleaser/goreleaser/internal/artifact"
-	"github.com/goreleaser/goreleaser/internal/extrafiles"
-	"github.com/goreleaser/goreleaser/internal/semerrgroup"
-	"github.com/goreleaser/goreleaser/internal/tmpl"
-	"github.com/goreleaser/goreleaser/pkg/context"
+	"github.com/goreleaser/goreleaser/v2/internal/artifact"
+	"github.com/goreleaser/goreleaser/v2/internal/extrafiles"
+	"github.com/goreleaser/goreleaser/v2/internal/semerrgroup"
+	"github.com/goreleaser/goreleaser/v2/internal/tmpl"
+	"github.com/goreleaser/goreleaser/v2/pkg/context"
 )
 
 const (
@@ -86,7 +86,7 @@ func splitChecksum(ctx *context.Context) error {
 			Extra: map[string]interface{}{
 				artifact.ExtraChecksumOf: art.Path,
 				artifact.ExtraRefresh: func() error {
-					log.WithField("file", filename).Info("refreshing checksums")
+					log.WithField("file", filename).Debug("refreshing checksums")
 					return refreshOne(ctx, *art, filepath)
 				},
 			},
@@ -113,7 +113,7 @@ func singleChecksum(ctx *context.Context) error {
 		Name: filename,
 		Extra: map[string]interface{}{
 			artifact.ExtraRefresh: func() error {
-				log.WithField("file", filename).Info("refreshing checksums")
+				log.WithField("file", filename).Debug("refreshing checksums")
 				return refreshAll(ctx, filepath)
 			},
 		},

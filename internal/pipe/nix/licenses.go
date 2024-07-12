@@ -168,6 +168,7 @@ var validLicenses = []string{
 	"mspl",
 	"mulan-psl2",
 	"nasa13",
+	"ncbiPd",
 	"ncsa",
 	"ncul1",
 	"nistSoftware",

@@ -29,18 +29,18 @@ signs:
   - #
     # ID of the sign config, must be unique.
     #
-    # Default: 'default'
+    # Default: 'default'.
     id: foo
 
     # Name of the signature file.
     #
-    # Default: '${artifact}.sig'
-    # Templates: allowed
+    # Default: '${artifact}.sig'.
+    # Templates: allowed.
     signature: "${artifact}_sig"
 
     # Path to the signature command
     #
-    # Default: 'gpg'
+    # Default: 'gpg'.
     cmd: gpg2
 
     # Command line arguments for the command
@@ -48,8 +48,8 @@ signs:
     # to sign with a specific key use
     # args: ["-u", "<key id, fingerprint, email, ...>", "--output", "${signature}", "--detach-sign", "${artifact}"]
     #
-    # Default: ["--output", "${signature}", "--detach-sign", "${artifact}"]
-    # Templates: allowed
+    # Default: ["--output", "${signature}", "--detach-sign", "${artifact}"].
+    # Templates: allowed.
     args: ["--output", "${signature}", "${artifact}", "{{ .ProjectName }}"]
 
     # Which artifacts to sign
@@ -66,7 +66,7 @@ signs:
     # - binary:     binaries output from the build stage
     # - sbom:       any SBOMs generated for other artifacts
     #
-    # Default: 'none'
+    # Default: 'none'.
     artifacts: all
 
     # IDs of the artifacts to sign.
@@ -78,7 +78,7 @@ signs:
 
     # Stdin data to be given to the signature command as stdin.
     #
-    # Templates: allowed
+    # Templates: allowed.
     stdin: "{{ .Env.GPG_PASSWORD }}"
 
     # StdinFile file to be given to the signature command as stdin.
@@ -93,7 +93,7 @@ signs:
     #
     # Note that this should be a name, not a path.
     #
-    # Templates: allowed
+    # Templates: allowed.
     certificate: '{{ trimsuffix .Env.artifact ".tar.gz" }}.pem'
 
     # List of environment variables that will be passed to the signing command
@@ -103,10 +103,8 @@ signs:
       - HONK=honkhonk
 
     # By default, the stdout and stderr of the signing cmd are discarded unless
-    # GoReleaser is running with `--debug` set.
+    # GoReleaser is running with `--verbose` set.
     # You can set this to true if you want them to be displayed regardless.
-    #
-    # Since: v1.2
     output: true
 ```
 
@@ -244,7 +242,7 @@ While this works, I would recommend using the signing pipe directly.
 
 ## Signing Docker images and manifests
 
-Please refer to [Docker Images Signing](/customization/docker_sign/).
+Please refer to [Docker Images Signing](docker_sign.md).
 
 ## Limitations
 

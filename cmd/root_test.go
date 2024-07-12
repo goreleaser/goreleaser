@@ -55,11 +55,11 @@ func TestRootRelease(t *testing.T) {
 	require.Equal(t, 1, mem.code)
 }
 
-func TestRootReleaseDebug(t *testing.T) {
+func TestRootReleaseVerbose(t *testing.T) {
 	setup(t)
 	mem := &exitMemento{}
 	cmd := newRootCmd(testversion, mem.Exit)
-	cmd.Execute([]string{"r", "--debug"})
+	cmd.Execute([]string{"r", "--verbose"})
 	require.Equal(t, 1, mem.code)
 }
 
@@ -73,11 +73,11 @@ func TestShouldPrependRelease(t *testing.T) {
 	})
 
 	t.Run("release args", func(t *testing.T) {
-		require.True(t, result([]string{"--skip-validate"}))
+		require.True(t, result([]string{"--skip=validate"}))
 	})
 
 	t.Run("several release args", func(t *testing.T) {
-		require.True(t, result([]string{"--skip-validate", "--snapshot"}))
+		require.True(t, result([]string{"--skip=validate", "--snapshot"}))
 	})
 
 	for _, s := range []string{"--help", "-h", "-v", "--version"} {

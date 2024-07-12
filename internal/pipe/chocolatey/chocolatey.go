@@ -10,12 +10,12 @@ import (
 	"text/template"
 
 	"github.com/caarlos0/log"
-	"github.com/goreleaser/goreleaser/internal/artifact"
-	"github.com/goreleaser/goreleaser/internal/client"
-	"github.com/goreleaser/goreleaser/internal/skips"
-	"github.com/goreleaser/goreleaser/internal/tmpl"
-	"github.com/goreleaser/goreleaser/pkg/config"
-	"github.com/goreleaser/goreleaser/pkg/context"
+	"github.com/goreleaser/goreleaser/v2/internal/artifact"
+	"github.com/goreleaser/goreleaser/v2/internal/client"
+	"github.com/goreleaser/goreleaser/v2/internal/skips"
+	"github.com/goreleaser/goreleaser/v2/internal/tmpl"
+	"github.com/goreleaser/goreleaser/v2/pkg/config"
+	"github.com/goreleaser/goreleaser/v2/pkg/context"
 )
 
 var errNoWindowsArchive = errors.New("chocolatey requires at least one windows archive")
@@ -219,7 +219,10 @@ func doPush(ctx *context.Context, art *artifact.Artifact) error {
 func buildNuspec(ctx *context.Context, choco config.Chocolatey) ([]byte, error) {
 	tpl := tmpl.New(ctx)
 
-	if err := tpl.ApplyAll(
+	if err := tpl.WithExtraFields(tmpl.Fields{
+		"Changelog": ctx.ReleaseNotes,
+	}).ApplyAll(
+		&choco.Copyright,
 		&choco.Summary,
 		&choco.Description,
 		&choco.ReleaseNotes,

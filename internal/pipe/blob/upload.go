@@ -11,12 +11,12 @@ import (
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/s3/s3manager"
 	"github.com/caarlos0/log"
-	"github.com/goreleaser/goreleaser/internal/artifact"
-	"github.com/goreleaser/goreleaser/internal/extrafiles"
-	"github.com/goreleaser/goreleaser/internal/semerrgroup"
-	"github.com/goreleaser/goreleaser/internal/tmpl"
-	"github.com/goreleaser/goreleaser/pkg/config"
-	"github.com/goreleaser/goreleaser/pkg/context"
+	"github.com/goreleaser/goreleaser/v2/internal/artifact"
+	"github.com/goreleaser/goreleaser/v2/internal/extrafiles"
+	"github.com/goreleaser/goreleaser/v2/internal/semerrgroup"
+	"github.com/goreleaser/goreleaser/v2/internal/tmpl"
+	"github.com/goreleaser/goreleaser/v2/pkg/config"
+	"github.com/goreleaser/goreleaser/v2/pkg/context"
 	"gocloud.dev/blob"
 	"gocloud.dev/secrets"
 
@@ -96,25 +96,6 @@ func doUpload(ctx *context.Context, conf config.Blob) error {
 		return err
 	}
 
-	byTypes := []artifact.Filter{
-		artifact.ByType(artifact.UploadableArchive),
-		artifact.ByType(artifact.UploadableBinary),
-		artifact.ByType(artifact.UploadableSourceArchive),
-		artifact.ByType(artifact.Checksum),
-		artifact.ByType(artifact.Signature),
-		artifact.ByType(artifact.Certificate),
-		artifact.ByType(artifact.LinuxPackage),
-		artifact.ByType(artifact.SBOM),
-	}
-	if conf.IncludeMeta {
-		byTypes = append(byTypes, artifact.ByType(artifact.Metadata))
-	}
-
-	filter := artifact.Or(byTypes...)
-	if len(conf.IDs) > 0 {
-		filter = artifact.And(filter, artifact.ByIDs(conf.IDs...))
-	}
-
 	up := &productionUploader{
 		cacheControl:       conf.CacheControl,
 		contentDisposition: conf.ContentDisposition,
@@ -136,7 +117,7 @@ func doUpload(ctx *context.Context, conf config.Blob) error {
 	defer up.Close()
 
 	g := semerrgroup.New(ctx.Parallelism)
-	for _, artifact := range ctx.Artifacts.Filter(filter).List() {
+	for _, artifact := range artifactList(ctx, conf) {
 		g.Go(func() error {
 			// TODO: replace this with ?prefix=folder on the bucket url
 			dataFile := artifact.Path
@@ -158,6 +139,31 @@ func doUpload(ctx *context.Context, conf config.Blob) error {
 	}
 
 	return g.Wait()
+}
+
+func artifactList(ctx *context.Context, conf config.Blob) []*artifact.Artifact {
+	if conf.ExtraFilesOnly {
+		return nil
+	}
+	byTypes := []artifact.Filter{
+		artifact.ByType(artifact.UploadableArchive),
+		artifact.ByType(artifact.UploadableBinary),
+		artifact.ByType(artifact.UploadableSourceArchive),
+		artifact.ByType(artifact.Checksum),
+		artifact.ByType(artifact.Signature),
+		artifact.ByType(artifact.Certificate),
+		artifact.ByType(artifact.LinuxPackage),
+		artifact.ByType(artifact.SBOM),
+	}
+	if conf.IncludeMeta {
+		byTypes = append(byTypes, artifact.ByType(artifact.Metadata))
+	}
+
+	filter := artifact.Or(byTypes...)
+	if len(conf.IDs) > 0 {
+		filter = artifact.And(filter, artifact.ByIDs(conf.IDs...))
+	}
+	return ctx.Artifacts.Filter(filter).List()
 }
 
 func uploadData(ctx *context.Context, conf config.Blob, up uploader, dataFile, uploadFile, bucketURL string) error {

@@ -155,7 +155,7 @@ uploads:
 
     # HTTP method to use.
     #
-    # Default: 'PUT'
+    # Default: 'PUT'.
     method: POST
 
     # IDs of the artifacts you want to upload.
@@ -167,8 +167,6 @@ uploads:
     # This might be useful if you have multiple packages with different
     # extensions with the same ID, and need to upload each extension to
     # a different place (e.g. nFPM packages).
-    #
-    # Since: v1.7
     exts:
       - deb
       - rpm
@@ -179,7 +177,6 @@ uploads:
     # `custom_headers` fields.
     #
     # This feature is only available in GoReleaser Pro.
-    # Since: v1.20 (pro)
     matrix:
       foo: [bar zaz]
       something: [foobar somethingelse anotherthing]
@@ -188,12 +185,12 @@ uploads:
     # If mode is `archive`, variables _Os_, _Arch_ and _Arm_ for target name are not supported.
     # In that case these variables are empty.
     #
-    # Default: 'archive'
+    # Default: 'archive'.
     mode: archive
 
     # URL to be used as target of the HTTP request
     #
-    # Templates: allowed
+    # Templates: allowed.
     target: https://some.server/some/path/example-repo-local/{{ .ProjectName }}/{{ .Version }}/
 
     # Custom artifact name.
@@ -207,8 +204,6 @@ uploads:
     username: deployuser
 
     # Client certificate and key (when provided, added as client cert to TLS connections)
-    #
-    # Since: v1.11
     client_x509_cert: /path/to/client.cert.pem
     client_x509_key: /path/to/client.key.pem
 
@@ -224,8 +219,6 @@ uploads:
     checksum: true
 
     # Upload metadata.json and artifacts.json.
-    #
-    # Since: v1.25
     meta: true
 
     # Upload signatures.
@@ -238,15 +231,42 @@ uploads:
       ...(edited content)...
       TyzMJasj5BPZrmKjJb6O/tOtEIJ66xPSBTxPShkEYHnB7A==
       -----END CERTIFICATE-----
+
+    # You can add extra pre-existing files to the upload.
+    #
+    # The filename on the release will be the last part of the path (base).
+    # If another file with the same name exists, the last one found will be used.
+    # These globs can also include templates.
+    #
+    # Since: v2.1.
+    extra_files:
+      - glob: ./path/to/file.txt
+      - glob: ./glob/**/to/**/file/**/*
+      - glob: ./glob/foo/to/bar/file/foobar/override_from_previous
+      - glob: ./single_file.txt
+        # Templates: allowed.
+        name_template: file.txt # note that this only works if glob matches 1 file only
+
+    # Additional templated extra files to uploaded.
+    # Those files will have their contents pass through the template engine,
+    # and its results will be uploaded.
+    #
+    # This feature is only available in GoReleaser Pro.
+    # Since: v2.1 (pro).
+    # Templates: allowed.
+    templated_extra_files:
+      - src: LICENSE.tpl
+        dst: LICENSE.txt
+
+    # Upload only the files defined in extra_files.
+    #
+    # Since: v2.1.
+    extra_files_only: true
 ```
 
-!!! success "GoReleaser Pro"
-
-    Some options are only available in [GoReleaser Pro feature](/pro/).
+{% include-markdown "../includes/pro.md" comments=false %}
 
 These settings should allow you to push your artifacts into multiple HTTP
 servers.
 
-!!! tip
-
-    Learn more about the [name template engine](/customization/templates/).
+{% include-markdown "../includes/templates.md" comments=false %}

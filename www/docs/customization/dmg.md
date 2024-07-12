@@ -1,10 +1,6 @@
 # DMG
 
-> Since: v1.24 pro
-
-!!! success "GoReleaser Pro"
-
-    The dmg feature is available only in [GoReleaser Pro feature](/pro/).
+{% include-markdown "../includes/pro.md" comments=false %}
 
 GoReleaser can create DMG images for macOS using `mkisofs` or `hdiutil`.
 
@@ -15,13 +11,13 @@ The `dmg` section specifies how the images should be created:
 dmg:
   - # ID of the resulting image.
     #
-    # Default: the project name
+    # Default: the project name.
     id: foo
 
     # Filename of the image (without the extension).
     #
-    # Default: '{{.ProjectName}}_{{.Arch}}'
-    # Templates: allowed
+    # Default: '{{.ProjectName}}_{{.Arch}}'.
+    # Templates: allowed.
     name: "myproject-{{.Arch}}"
 
     # IDs of the archives to use.
@@ -33,7 +29,7 @@ dmg:
     # GOAMD64 to specify which amd64 version to use if there are multiple
     # versions from the build section.
     #
-    # Default: v1
+    # Default: v1.
     goamd64: v1
 
     # More files that will be available in the context in which the image
@@ -60,6 +56,4 @@ dmg:
    link inside the image might not work if the image was built on Windows.
 1. If running outside macOS, make sure to have `mkisofs` installed.
 
-!!! tip
-
-    Learn more about the [name template engine](/customization/templates/).
+{% include-markdown "../includes/templates.md" comments=false %}

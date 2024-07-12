@@ -6,10 +6,47 @@ import (
 	"testing"
 	"time"
 
-	"github.com/goreleaser/goreleaser/internal/pipe"
+	"github.com/goreleaser/goreleaser/v2/internal/pipe"
 	"github.com/hashicorp/go-multierror"
 	"github.com/stretchr/testify/require"
 )
+
+func TestBlockingFirst(t *testing.T) {
+	g := NewBlockingFirst(New(5))
+	var lock sync.Mutex
+	var counter int
+	for i := 0; i < 10; i++ {
+		g.Go(func() error {
+			time.Sleep(10 * time.Millisecond)
+			lock.Lock()
+			defer lock.Unlock()
+			counter++
+			return nil
+		})
+	}
+	require.NoError(t, g.Wait())
+	require.Equal(t, 10, counter)
+}
+
+func TestBlockingFirstError(t *testing.T) {
+	g := NewBlockingFirst(New(5))
+	var lock sync.Mutex
+	var counter int
+	for i := 0; i < 10; i++ {
+		g.Go(func() error {
+			time.Sleep(10 * time.Millisecond)
+			lock.Lock()
+			defer lock.Unlock()
+			if counter == 0 {
+				return fmt.Errorf("my error")
+			}
+			counter++
+			return nil
+		})
+	}
+	require.EqualError(t, g.Wait(), "my error")
+	require.Equal(t, 0, counter)
+}
 
 func TestSemaphore(t *testing.T) {
 	for _, i := range []int{1, 4} {

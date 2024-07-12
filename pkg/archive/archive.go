@@ -6,13 +6,13 @@ import (
 	"io"
 	"os"
 
-	"github.com/goreleaser/goreleaser/pkg/archive/gzip"
-	"github.com/goreleaser/goreleaser/pkg/archive/tar"
-	"github.com/goreleaser/goreleaser/pkg/archive/targz"
-	"github.com/goreleaser/goreleaser/pkg/archive/tarxz"
-	"github.com/goreleaser/goreleaser/pkg/archive/tarzst"
-	"github.com/goreleaser/goreleaser/pkg/archive/zip"
-	"github.com/goreleaser/goreleaser/pkg/config"
+	"github.com/goreleaser/goreleaser/v2/pkg/archive/gzip"
+	"github.com/goreleaser/goreleaser/v2/pkg/archive/tar"
+	"github.com/goreleaser/goreleaser/v2/pkg/archive/targz"
+	"github.com/goreleaser/goreleaser/v2/pkg/archive/tarxz"
+	"github.com/goreleaser/goreleaser/v2/pkg/archive/tarzst"
+	"github.com/goreleaser/goreleaser/v2/pkg/archive/zip"
+	"github.com/goreleaser/goreleaser/v2/pkg/config"
 )
 
 // Archive represents a compression archive files from disk can be written to.
@@ -32,7 +32,7 @@ func New(w io.Writer, format string) (Archive, error) {
 		return gzip.New(w), nil
 	case "tar.xz", "txz":
 		return tarxz.New(w), nil
-	case "tar.zst":
+	case "tar.zst", "tzst":
 		return tarzst.New(w), nil
 	case "zip":
 		return zip.New(w), nil

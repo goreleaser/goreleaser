@@ -6,14 +6,14 @@ import (
 	"os"
 
 	"github.com/caarlos0/log"
-	"github.com/goreleaser/goreleaser/internal/logext"
-	"github.com/goreleaser/goreleaser/pkg/config"
+	"github.com/goreleaser/goreleaser/v2/internal/logext"
+	"github.com/goreleaser/goreleaser/v2/pkg/config"
 )
 
 func loadConfig(path string) (config.Project, error) {
 	p, path, err := loadConfigCheck(path)
 	if err == nil {
-		log.WithField("path", path).Info("loading")
+		log.WithField("path", path).Debug("using configuration")
 	}
 	return p, err
 }

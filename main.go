@@ -8,7 +8,7 @@ import (
 	goversion "github.com/caarlos0/go-version"
 	"github.com/caarlos0/log"
 	"github.com/charmbracelet/lipgloss"
-	"github.com/goreleaser/goreleaser/cmd"
+	"github.com/goreleaser/goreleaser/v2/cmd"
 	"github.com/muesli/termenv"
 	"go.uber.org/automaxprocs/maxprocs"
 )

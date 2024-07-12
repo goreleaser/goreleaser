@@ -5,14 +5,14 @@ import (
 	"path/filepath"
 	"testing"
 
-	"github.com/goreleaser/goreleaser/internal/artifact"
-	"github.com/goreleaser/goreleaser/internal/client"
-	"github.com/goreleaser/goreleaser/internal/golden"
-	"github.com/goreleaser/goreleaser/internal/skips"
-	"github.com/goreleaser/goreleaser/internal/testctx"
-	"github.com/goreleaser/goreleaser/internal/testlib"
-	"github.com/goreleaser/goreleaser/pkg/config"
-	"github.com/goreleaser/goreleaser/pkg/context"
+	"github.com/goreleaser/goreleaser/v2/internal/artifact"
+	"github.com/goreleaser/goreleaser/v2/internal/client"
+	"github.com/goreleaser/goreleaser/v2/internal/golden"
+	"github.com/goreleaser/goreleaser/v2/internal/skips"
+	"github.com/goreleaser/goreleaser/v2/internal/testctx"
+	"github.com/goreleaser/goreleaser/v2/internal/testlib"
+	"github.com/goreleaser/goreleaser/v2/pkg/config"
+	"github.com/goreleaser/goreleaser/v2/pkg/context"
 	"github.com/stretchr/testify/require"
 )
 
@@ -48,33 +48,9 @@ func TestDefault(t *testing.T) {
 	require.NotEmpty(t, ctx.Config.Scoops[0].CommitMessageTemplate)
 }
 
-func TestDefaultDeprecated(t *testing.T) {
-	testlib.Mktmp(t)
-
-	ctx := testctx.NewWithCfg(
-		config.Project{
-			ProjectName: "barr",
-			Scoop: config.Scoop{
-				Bucket: config.RepoRef{
-					Name: "foo",
-				},
-			},
-		},
-		testctx.GitHubTokenType,
-	)
-	require.NoError(t, Pipe{}.Default(ctx))
-	require.Len(t, ctx.Config.Scoops, 1)
-	require.Equal(t, ctx.Config.ProjectName, ctx.Config.Scoops[0].Name)
-	require.NotEmpty(t, ctx.Config.Scoops[0].CommitAuthor.Name)
-	require.NotEmpty(t, ctx.Config.Scoops[0].CommitAuthor.Email)
-	require.NotEmpty(t, ctx.Config.Scoops[0].CommitMessageTemplate)
-	require.Equal(t, "foo", ctx.Config.Scoops[0].Repository.Name)
-	require.True(t, ctx.Deprecated)
-}
-
 func Test_doRun(t *testing.T) {
-	folder := t.TempDir()
-	file := filepath.Join(folder, "archive")
+	directory := t.TempDir()
+	file := filepath.Join(directory, "archive")
 	require.NoError(t, os.WriteFile(file, []byte("lorem ipsum"), 0o644))
 
 	type args struct {
@@ -119,7 +95,7 @@ func Test_doRun(t *testing.T) {
 								Owner: "test",
 								Name:  "test",
 							},
-							Folder:      "scoops",
+							Directory:   "scoops",
 							Description: "A run pipe test formula",
 							Homepage:    "https://github.com/goreleaser",
 						}},
@@ -162,7 +138,7 @@ func Test_doRun(t *testing.T) {
 								Name:  "test",
 							},
 							IDs:         []string{"id2"},
-							Folder:      "scoops",
+							Directory:   "scoops",
 							Description: "A run pipe test formula",
 							Homepage:    "https://github.com/goreleaser",
 						}},
@@ -198,14 +174,16 @@ func Test_doRun(t *testing.T) {
 					config.Project{
 						Dist:        t.TempDir(),
 						ProjectName: "run-pipe",
-						Scoop: config.Scoop{
-							Repository: config.RepoRef{
-								Owner: "test",
-								Name:  "test",
+						Scoops: []config.Scoop{
+							{
+								Repository: config.RepoRef{
+									Owner: "test",
+									Name:  "test",
+								},
+								Directory:   "scoops",
+								Description: "A run pipe test formula",
+								Homepage:    "https://github.com/goreleaser",
 							},
-							Folder:      "scoops",
-							Description: "A run pipe test formula",
-							Homepage:    "https://github.com/goreleaser",
 						},
 					},
 					testctx.GitHubTokenType,
@@ -233,18 +211,20 @@ func Test_doRun(t *testing.T) {
 					config.Project{
 						ProjectName: "git-run-pipe",
 						Dist:        t.TempDir(),
-						Scoop: config.Scoop{
-							Repository: config.RepoRef{
-								Name:   "test",
-								Branch: "main",
-								Git: config.GitRepoRef{
-									URL:        testlib.GitMakeBareRepository(t),
-									PrivateKey: testlib.MakeNewSSHKey(t, ""),
+						Scoops: []config.Scoop{
+							{
+								Repository: config.RepoRef{
+									Name:   "test",
+									Branch: "main",
+									Git: config.GitRepoRef{
+										URL:        testlib.GitMakeBareRepository(t),
+										PrivateKey: testlib.MakeNewSSHKey(t, ""),
+									},
 								},
+								Directory:   "scoops",
+								Description: "A run pipe test formula",
+								Homepage:    "https://github.com/goreleaser",
 							},
-							Folder:      "scoops",
-							Description: "A run pipe test formula",
-							Homepage:    "https://github.com/goreleaser",
 						},
 					},
 					testctx.GitHubTokenType,
@@ -263,8 +243,8 @@ func Test_doRun(t *testing.T) {
 				tb.Helper()
 				content := testlib.CatFileFromBareRepositoryOnBranch(
 					tb,
-					a.ctx.Config.Scoop.Repository.Git.URL,
-					a.ctx.Config.Scoop.Repository.Branch,
+					a.ctx.Config.Scoops[0].Repository.Git.URL,
+					a.ctx.Config.Scoops[0].Repository.Branch,
 					"scoops/git-run-pipe.json",
 				)
 				golden.RequireEqualJSON(tb, content)
@@ -276,13 +256,15 @@ func Test_doRun(t *testing.T) {
 				testctx.NewWithCfg(
 					config.Project{
 						ProjectName: "run-pipe",
-						Scoop: config.Scoop{
-							Repository: config.RepoRef{
-								Owner: "test",
-								Name:  "test",
+						Scoops: []config.Scoop{
+							{
+								Repository: config.RepoRef{
+									Owner: "test",
+									Name:  "test",
+								},
+								Description: "A run pipe test formula",
+								Homepage:    "https://github.com/goreleaser",
 							},
-							Description: "A run pipe test formula",
-							Homepage:    "https://github.com/goreleaser",
 						},
 					},
 					testctx.GitHubTokenType,
@@ -323,13 +305,15 @@ func Test_doRun(t *testing.T) {
 					config.Project{
 						GitHubURLs:  config.GitHubURLs{Download: "https://api.custom.github.enterprise.com"},
 						ProjectName: "run-pipe",
-						Scoop: config.Scoop{
-							Repository: config.RepoRef{
-								Owner: "test",
-								Name:  "test",
+						Scoops: []config.Scoop{
+							{
+								Repository: config.RepoRef{
+									Owner: "test",
+									Name:  "test",
+								},
+								Description: "A run pipe test formula",
+								Homepage:    "https://github.com/goreleaser",
 							},
-							Description: "A run pipe test formula",
-							Homepage:    "https://github.com/goreleaser",
 						},
 					},
 					testctx.GitHubTokenType,
@@ -355,13 +339,15 @@ func Test_doRun(t *testing.T) {
 				testctx.NewWithCfg(
 					config.Project{
 						ProjectName: "run-pipe",
-						Scoop: config.Scoop{
-							Repository: config.RepoRef{
-								Owner: "test",
-								Name:  "test",
+						Scoops: []config.Scoop{
+							{
+								Repository: config.RepoRef{
+									Owner: "test",
+									Name:  "test",
+								},
+								Description: "A run pipe test formula",
+								Homepage:    "https://gitlab.com/goreleaser",
 							},
-							Description: "A run pipe test formula",
-							Homepage:    "https://gitlab.com/goreleaser",
 						},
 					},
 					testctx.GitHubTokenType,
@@ -396,13 +382,15 @@ func Test_doRun(t *testing.T) {
 					config.Project{
 						GitHubURLs:  config.GitHubURLs{Download: "https://api.custom.gitlab.enterprise.com"},
 						ProjectName: "run-pipe",
-						Scoop: config.Scoop{
-							Repository: config.RepoRef{
-								Owner: "test",
-								Name:  "test",
+						Scoops: []config.Scoop{
+							{
+								Repository: config.RepoRef{
+									Owner: "test",
+									Name:  "test",
+								},
+								Description: "A run pipe test formula",
+								Homepage:    "https://gitlab.com/goreleaser",
 							},
-							Description: "A run pipe test formula",
-							Homepage:    "https://gitlab.com/goreleaser",
 						},
 					},
 					testctx.GitHubTokenType,
@@ -436,13 +424,15 @@ func Test_doRun(t *testing.T) {
 				testctx.NewWithCfg(
 					config.Project{
 						ProjectName: "run-pipe",
-						Scoop: config.Scoop{
-							Repository: config.RepoRef{
-								Owner: "test",
-								Name:  "test",
+						Scoops: []config.Scoop{
+							{
+								Repository: config.RepoRef{
+									Owner: "test",
+									Name:  "test",
+								},
+								Description: "A run pipe test formula",
+								Homepage:    "https://github.com/goreleaser",
 							},
-							Description: "A run pipe test formula",
-							Homepage:    "https://github.com/goreleaser",
 						},
 					},
 					testctx.GitHubTokenType,
@@ -462,14 +452,16 @@ func Test_doRun(t *testing.T) {
 				testctx.NewWithCfg(
 					config.Project{
 						ProjectName: "run-pipe",
-						Scoop: config.Scoop{
-							SkipUpload: "auto",
-							Repository: config.RepoRef{
-								Owner: "test",
-								Name:  "test",
+						Scoops: []config.Scoop{
+							{
+								SkipUpload: "auto",
+								Repository: config.RepoRef{
+									Owner: "test",
+									Name:  "test",
+								},
+								Description: "A run pipe test formula",
+								Homepage:    "https://github.com/goreleaser",
 							},
-							Description: "A run pipe test formula",
-							Homepage:    "https://github.com/goreleaser",
 						},
 					},
 					testctx.GitHubTokenType,
@@ -493,14 +485,16 @@ func Test_doRun(t *testing.T) {
 				testctx.NewWithCfg(
 					config.Project{
 						ProjectName: "run-pipe",
-						Scoop: config.Scoop{
-							SkipUpload: "true",
-							Repository: config.RepoRef{
-								Owner: "test",
-								Name:  "test",
+						Scoops: []config.Scoop{
+							{
+								SkipUpload: "true",
+								Repository: config.RepoRef{
+									Owner: "test",
+									Name:  "test",
+								},
+								Description: "A run pipe test formula",
+								Homepage:    "https://github.com/goreleaser",
 							},
-							Description: "A run pipe test formula",
-							Homepage:    "https://github.com/goreleaser",
 						},
 					},
 					testctx.GitHubTokenType,
@@ -523,13 +517,15 @@ func Test_doRun(t *testing.T) {
 				testctx.NewWithCfg(
 					config.Project{
 						ProjectName: "run-pipe",
-						Scoop: config.Scoop{
-							Repository: config.RepoRef{
-								Owner: "test",
-								Name:  "test",
+						Scoops: []config.Scoop{
+							{
+								Repository: config.RepoRef{
+									Owner: "test",
+									Name:  "test",
+								},
+								Description: "A run pipe test formula",
+								Homepage:    "https://github.com/goreleaser",
 							},
-							Description: "A run pipe test formula",
-							Homepage:    "https://github.com/goreleaser",
 						},
 					},
 					testctx.GitHubTokenType,
@@ -549,12 +545,14 @@ func Test_doRun(t *testing.T) {
 				testctx.NewWithCfg(
 					config.Project{
 						ProjectName: "run-pipe",
-						Scoop: config.Scoop{
-							Repository: config.RepoRef{
-								Owner: "test",
-								Name:  "test",
+						Scoops: []config.Scoop{
+							{
+								Repository: config.RepoRef{
+									Owner: "test",
+									Name:  "test",
+								},
+								Name: "{{.Nope}}",
 							},
-							Name: "{{.Nope}}",
 						},
 					},
 					testctx.GitHubTokenType,
@@ -576,12 +574,14 @@ func Test_doRun(t *testing.T) {
 				testctx.NewWithCfg(
 					config.Project{
 						ProjectName: "run-pipe",
-						Scoop: config.Scoop{
-							Repository: config.RepoRef{
-								Owner: "test",
-								Name:  "test",
+						Scoops: []config.Scoop{
+							{
+								Repository: config.RepoRef{
+									Owner: "test",
+									Name:  "test",
+								},
+								Description: "{{.Nope}}",
 							},
-							Description: "{{.Nope}}",
 						},
 					},
 					testctx.GitHubTokenType,
@@ -603,12 +603,14 @@ func Test_doRun(t *testing.T) {
 				testctx.NewWithCfg(
 					config.Project{
 						ProjectName: "run-pipe",
-						Scoop: config.Scoop{
-							Repository: config.RepoRef{
-								Owner: "test",
-								Name:  "test",
+						Scoops: []config.Scoop{
+							{
+								Repository: config.RepoRef{
+									Owner: "test",
+									Name:  "test",
+								},
+								Homepage: "{{.Nope}}",
 							},
-							Homepage: "{{.Nope}}",
 						},
 					},
 					testctx.GitHubTokenType,
@@ -630,12 +632,14 @@ func Test_doRun(t *testing.T) {
 				testctx.NewWithCfg(
 					config.Project{
 						ProjectName: "run-pipe",
-						Scoop: config.Scoop{
-							Repository: config.RepoRef{
-								Owner: "test",
-								Name:  "test",
+						Scoops: []config.Scoop{
+							{
+								Repository: config.RepoRef{
+									Owner: "test",
+									Name:  "test",
+								},
+								SkipUpload: "{{.Nope}}",
 							},
-							SkipUpload: "{{.Nope}}",
 						},
 					},
 					testctx.GitHubTokenType,
@@ -657,14 +661,16 @@ func Test_doRun(t *testing.T) {
 				testctx.NewWithCfg(
 					config.Project{
 						ProjectName: "run-pipe",
-						Scoop: config.Scoop{
-							Repository: config.RepoRef{
-								Owner: "{{ .Env.aaaaaa }}",
-								Name:  "test",
+						Scoops: []config.Scoop{
+							{
+								Repository: config.RepoRef{
+									Owner: "{{ .Env.aaaaaa }}",
+									Name:  "test",
+								},
+								Directory:   "scoops",
+								Description: "A run pipe test formula",
+								Homepage:    "https://github.com/goreleaser",
 							},
-							Folder:      "scoops",
-							Description: "A run pipe test formula",
-							Homepage:    "https://github.com/goreleaser",
 						},
 					},
 					testctx.GitHubTokenType,
@@ -693,7 +699,7 @@ func Test_doRun(t *testing.T) {
 								Name:   "{{ .Env.FOO }}",
 								Branch: "{{ .Env.BRANCH }}",
 							},
-							Folder:      "scoops",
+							Directory:   "scoops",
 							Description: "A run pipe test formula",
 							Homepage:    "https://github.com/goreleaser",
 						}},
@@ -734,10 +740,10 @@ func Test_doRun(t *testing.T) {
 }
 
 func TestRunPipePullRequest(t *testing.T) {
-	folder := t.TempDir()
+	directory := t.TempDir()
 	ctx := testctx.NewWithCfg(
 		config.Project{
-			Dist:        folder,
+			Dist:        directory,
 			ProjectName: "foo",
 			Scoops: []config.Scoop{{
 				Name:        "{{.Env.FOO}}",
@@ -757,7 +763,7 @@ func TestRunPipePullRequest(t *testing.T) {
 		testctx.WithCurrentTag("v1.2.1"),
 		testctx.WithEnv(map[string]string{"FOO": "foobar"}),
 	)
-	path := filepath.Join(folder, "dist/foo_windows_amd64/foo.exe")
+	path := filepath.Join(directory, "dist/foo_windows_amd64/foo.exe")
 	ctx.Artifacts.Add(&artifact.Artifact{
 		Name:   "foo_windows_amd64.tar.gz",
 		Path:   path,
@@ -786,8 +792,8 @@ func TestRunPipePullRequest(t *testing.T) {
 }
 
 func Test_buildManifest(t *testing.T) {
-	folder := t.TempDir()
-	file := filepath.Join(folder, "archive")
+	directory := t.TempDir()
+	file := filepath.Join(directory, "archive")
 	require.NoError(t, os.WriteFile(file, []byte("lorem ipsum"), 0o644))
 
 	tests := []struct {
@@ -808,14 +814,16 @@ func Test_buildManifest(t *testing.T) {
 							Name:  "test",
 						},
 					},
-					Scoop: config.Scoop{
-						Repository: config.RepoRef{
-							Owner: "test",
-							Name:  "test",
+					Scoops: []config.Scoop{
+						{
+							Repository: config.RepoRef{
+								Owner: "test",
+								Name:  "test",
+							},
+							Description: "A run pipe test formula",
+							Homepage:    "https://github.com/goreleaser",
+							Persist:     []string{"data", "config", "test.ini"},
 						},
-						Description: "A run pipe test formula",
-						Homepage:    "https://github.com/goreleaser",
-						Persist:     []string{"data", "config", "test.ini"},
 					},
 				},
 				testctx.GitHubTokenType,
@@ -837,16 +845,18 @@ func Test_buildManifest(t *testing.T) {
 							Name:  "test",
 						},
 					},
-					Scoop: config.Scoop{
-						Repository: config.RepoRef{
-							Owner: "test",
-							Name:  "test",
+					Scoops: []config.Scoop{
+						{
+							Repository: config.RepoRef{
+								Owner: "test",
+								Name:  "test",
+							},
+							Description: "A run pipe test formula",
+							Homepage:    "https://github.com/goreleaser",
+							Persist:     []string{"data", "config", "test.ini"},
+							PreInstall:  []string{"Write-Host 'Running preinstall command'"},
+							PostInstall: []string{"Write-Host 'Running postinstall command'"},
 						},
-						Description: "A run pipe test formula",
-						Homepage:    "https://github.com/goreleaser",
-						Persist:     []string{"data", "config", "test.ini"},
-						PreInstall:  []string{"Write-Host 'Running preinstall command'"},
-						PostInstall: []string{"Write-Host 'Running postinstall command'"},
 					},
 				},
 				testctx.GitHubTokenType,
@@ -862,16 +872,18 @@ func Test_buildManifest(t *testing.T) {
 						Download: "https://github.com",
 					},
 					ProjectName: "run-pipe",
-					Scoop: config.Scoop{
-						Repository: config.RepoRef{
-							Owner: "test",
-							Name:  "test",
+					Scoops: []config.Scoop{
+						{
+							Repository: config.RepoRef{
+								Owner: "test",
+								Name:  "test",
+							},
+							Description:           "A run pipe test formula",
+							Homepage:              "https://github.com/goreleaser",
+							URLTemplate:           "http://github.mycompany.com/foo/bar/{{ .Tag }}/{{ .ArtifactName }}",
+							CommitMessageTemplate: "chore(scoop): update {{ .ProjectName }} version {{ .Tag }}",
+							Persist:               []string{"data.cfg", "etc"},
 						},
-						Description:           "A run pipe test formula",
-						Homepage:              "https://github.com/goreleaser",
-						URLTemplate:           "http://github.mycompany.com/foo/bar/{{ .Tag }}/{{ .ArtifactName }}",
-						CommitMessageTemplate: "chore(scoop): update {{ .ProjectName }} version {{ .Tag }}",
-						Persist:               []string{"data.cfg", "etc"},
 					},
 				},
 				testctx.WithCurrentTag("v1.0.1"),
@@ -887,16 +899,18 @@ func Test_buildManifest(t *testing.T) {
 						Download: "https://gitlab.com",
 					},
 					ProjectName: "run-pipe",
-					Scoop: config.Scoop{
-						Repository: config.RepoRef{
-							Owner: "test",
-							Name:  "test",
+					Scoops: []config.Scoop{
+						{
+							Repository: config.RepoRef{
+								Owner: "test",
+								Name:  "test",
+							},
+							Description:           "A run pipe test formula",
+							Homepage:              "https://gitlab.com/goreleaser",
+							URLTemplate:           "http://gitlab.mycompany.com/foo/bar/-/releases/{{ .Tag }}/downloads/{{ .ArtifactName }}",
+							CommitMessageTemplate: "chore(scoop): update {{ .ProjectName }} version {{ .Tag }}",
+							Persist:               []string{"data.cfg", "etc"},
 						},
-						Description:           "A run pipe test formula",
-						Homepage:              "https://gitlab.com/goreleaser",
-						URLTemplate:           "http://gitlab.mycompany.com/foo/bar/-/releases/{{ .Tag }}/downloads/{{ .ArtifactName }}",
-						CommitMessageTemplate: "chore(scoop): update {{ .ProjectName }} version {{ .Tag }}",
-						Persist:               []string{"data.cfg", "etc"},
 					},
 				},
 				testctx.GitHubTokenType,
@@ -977,26 +991,28 @@ func Test_buildManifest(t *testing.T) {
 	}
 }
 
-func getScoopPipeSkipCtx(folder string) (*context.Context, string) {
+func getScoopPipeSkipCtx(directory string) (*context.Context, string) {
 	ctx := testctx.NewWithCfg(
 		config.Project{
-			Dist:        folder,
+			Dist:        directory,
 			ProjectName: "run-pipe",
-			Scoop: config.Scoop{
-				Repository: config.RepoRef{
-					Owner: "test",
-					Name:  "test",
+			Scoops: []config.Scoop{
+				{
+					Repository: config.RepoRef{
+						Owner: "test",
+						Name:  "test",
+					},
+					Description: "A run pipe test formula",
+					Homepage:    "https://github.com/goreleaser",
+					Name:        "run-pipe",
 				},
-				Description: "A run pipe test formula",
-				Homepage:    "https://github.com/goreleaser",
-				Name:        "run-pipe",
 			},
 		},
 		testctx.WithCurrentTag("v1.0.1"),
 		testctx.WithVersion("1.0.1"),
 	)
 
-	path := filepath.Join(folder, "bin.tar.gz")
+	path := filepath.Join(directory, "bin.tar.gz")
 
 	ctx.Artifacts.Add(&artifact.Artifact{
 		Name:    "bin.tar.gz",
@@ -1027,9 +1043,9 @@ func getScoopPipeSkipCtx(folder string) (*context.Context, string) {
 }
 
 func TestRunPipeScoopWithSkipUpload(t *testing.T) {
-	folder := t.TempDir()
-	ctx, path := getScoopPipeSkipCtx(folder)
-	ctx.Config.Scoop.SkipUpload = "true"
+	directory := t.TempDir()
+	ctx, path := getScoopPipeSkipCtx(directory)
+	ctx.Config.Scoops[0].SkipUpload = "true"
 
 	f, err := os.Create(path)
 	require.NoError(t, err)
@@ -1040,14 +1056,14 @@ func TestRunPipeScoopWithSkipUpload(t *testing.T) {
 	require.NoError(t, runAll(ctx, cli))
 	require.EqualError(t, publishAll(ctx, cli), `scoop.skip_upload is true`)
 
-	distFile := filepath.Join(folder, "scoop", ctx.Config.Scoop.Name+".json")
+	distFile := filepath.Join(directory, "scoop", ctx.Config.Scoops[0].Name+".json")
 	_, err = os.Stat(distFile)
 	require.NoError(t, err, "file should exist: "+distFile)
 }
 
 func TestWrapInDirectory(t *testing.T) {
-	folder := t.TempDir()
-	file := filepath.Join(folder, "archive")
+	directory := t.TempDir()
+	file := filepath.Join(directory, "archive")
 	require.NoError(t, os.WriteFile(file, []byte("lorem ipsum"), 0o644))
 
 	ctx := testctx.NewWithCfg(
@@ -1105,9 +1121,11 @@ func TestSkip(t *testing.T) {
 	})
 	t.Run("skip flag", func(t *testing.T) {
 		ctx := testctx.NewWithCfg(config.Project{
-			Scoop: config.Scoop{
-				Repository: config.RepoRef{
-					Name: "a",
+			Scoops: []config.Scoop{
+				{
+					Repository: config.RepoRef{
+						Name: "a",
+					},
 				},
 			},
 		}, testctx.Skip(skips.Scoop))
@@ -1115,9 +1133,11 @@ func TestSkip(t *testing.T) {
 	})
 	t.Run("dont skip", func(t *testing.T) {
 		ctx := testctx.NewWithCfg(config.Project{
-			Scoop: config.Scoop{
-				Repository: config.RepoRef{
-					Name: "a",
+			Scoops: []config.Scoop{
+				{
+					Repository: config.RepoRef{
+						Name: "a",
+					},
 				},
 			},
 		})

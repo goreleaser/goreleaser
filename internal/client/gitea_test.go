@@ -10,11 +10,11 @@ import (
 	"testing"
 
 	"code.gitea.io/sdk/gitea"
-	"github.com/goreleaser/goreleaser/internal/artifact"
-	"github.com/goreleaser/goreleaser/internal/testctx"
-	"github.com/goreleaser/goreleaser/internal/tmpl"
-	"github.com/goreleaser/goreleaser/pkg/config"
-	"github.com/goreleaser/goreleaser/pkg/context"
+	"github.com/goreleaser/goreleaser/v2/internal/artifact"
+	"github.com/goreleaser/goreleaser/v2/internal/testctx"
+	"github.com/goreleaser/goreleaser/v2/internal/tmpl"
+	"github.com/goreleaser/goreleaser/v2/pkg/config"
+	"github.com/goreleaser/goreleaser/v2/pkg/context"
 	"github.com/jarcoal/httpmock"
 	"github.com/stretchr/testify/require"
 	"github.com/stretchr/testify/suite"
@@ -650,7 +650,7 @@ func TestGiteaChangelog(t *testing.T) {
 	require.NoError(t, err)
 	require.Equal(t, []ChangelogItem{
 		{
-			SHA:            "c8488dc",
+			SHA:            "c8488dc825debca26ade35aefca234b142a515c9",
 			Message:        "feat: impl something",
 			AuthorUsername: "johndoe",
 			AuthorName:     "John Doe",

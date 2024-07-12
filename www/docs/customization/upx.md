@@ -1,7 +1,5 @@
 # UPX
 
-> Since: v1.18
-
 Having small binary sizes are important, and Go is known for generating rather
 big binaries.
 
@@ -24,30 +22,22 @@ and now UPX has its own configuration section:
 upx:
   - # Whether to enable it or not.
     #
-    # Templates: allowed (since v1.21)
+    # Templates: allowed.
     enabled: true
 
     # Filter by build ID.
     ids: [build1, build2]
 
     # Filter by GOOS.
-    #
-    # Since: v1.19
     goos: [linux, darwin]
 
     # Filter by GOARCH.
-    #
-    # Since: v1.19
     goarch: [arm, amd64]
 
     # Filter by GOARM.
-    #
-    # Since: v1.19
     goarm: [8]
 
     # Filter by GOAMD64.
-    #
-    # Since: v1.19
     goamd64: [v1]
 
     # Compress argument.
@@ -69,10 +59,8 @@ Notice you can define multiple `upx` definitions, filtering by various fields.
 You can use that to have different compression options depending on the target
 OS, for instance - or even to run it only on a few selected platforms.
 
-!!! tip
-
-    Learn more about the [name template engine](templates.md).
+{% include-markdown "../includes/templates.md" comments=false %}
 
 [upx]: https://upx.github.io/
 [upx-issues]: https://github.com/upx/upx/issues
-[bhooks]: /customization/builds/#build-hooks
+[bhooks]: builds.md#build-hooks

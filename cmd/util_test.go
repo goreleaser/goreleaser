@@ -4,7 +4,7 @@ import (
 	"os"
 	"testing"
 
-	"github.com/goreleaser/goreleaser/internal/testlib"
+	"github.com/goreleaser/goreleaser/v2/internal/testlib"
 	"github.com/stretchr/testify/require"
 )
 
@@ -68,8 +68,8 @@ go 1.22
 
 func createGoReleaserYaml(tb testing.TB) {
 	tb.Helper()
-	yaml := `build:
-  binary: fake
+	yaml := `builds:
+- binary: 'fake{{if .IsSnapshot}}_snapshot{{end}}'
   goos:
     - linux
   goarch:

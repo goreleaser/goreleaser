@@ -31,11 +31,10 @@ goreleaser completion fish [flags]
 ## Options inherited from parent commands
 
 ```
-      --debug     Enable verbose mode (deprecated)
       --verbose   Enable verbose mode
 ```
 
 ## See also
 
-* [goreleaser completion](/cmd/goreleaser_completion/)	 - Generate the autocompletion script for the specified shell
+* [goreleaser completion](goreleaser_completion.md)	 - Generate the autocompletion script for the specified shell
 

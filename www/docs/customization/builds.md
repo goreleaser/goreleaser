@@ -14,46 +14,46 @@ builds:
   - #
     # ID of the build.
     #
-    # Default: Project directory name
+    # Default: Project directory name.
     id: "my-build"
 
     # Path to main.go file or main package.
     # Notice: when used with `gomod.proxy`, this must be a package.
     #
-    # Default is `.`.
+    # Default: `.`.
     main: ./cmd/my-app
 
     # Binary name.
     # Can be a path (e.g. `bin/app`) to wrap the binary in a directory.
     #
-    # Default: Project directory name
+    # Default: Project directory name.
     binary: program
 
     # Custom flags.
     #
-    # Templates: allowed
+    # Templates: allowed.
     flags:
       - -tags=dev
       - -v
 
     # Custom asmflags.
     #
-    # Templates: allowed
+    # Templates: allowed.
     asmflags:
       - -D mysymbol
       - all=-trimpath={{.Env.GOPATH}}
 
     # Custom gcflags.
     #
-    # Templates: allowed
+    # Templates: allowed.
     gcflags:
       - all=-trimpath={{.Env.GOPATH}}
       - ./dontoptimizeme=-N
 
     # Custom ldflags.
     #
-    # Default: '-s -w -X main.version={{.Version}} -X main.commit={{.Commit}} -X main.date={{.Date}} -X main.builtBy=goreleaser'
-    # Templates: allowed
+    # Default: '-s -w -X main.version={{.Version}} -X main.commit={{.Commit}} -X main.date={{.Date}} -X main.builtBy=goreleaser'.
+    # Templates: allowed.
     ldflags:
       - -s -w -X main.build={{.Version}}
       - ./usemsan=-msan
@@ -64,8 +64,6 @@ builds:
     # - `c-shared`
     # - `c-archive`
     # - `pie`
-    #
-    # Since: v1.13
     buildmode: c-shared
 
     # Custom build tags templates.
@@ -78,8 +76,8 @@ builds:
     # Custom environment variables to be set during the builds.
     # Invalid environment variables will be ignored.
     #
-    # Default: os.Environ() ++ env config section
-    # Templates: allowed (since v1.14)
+    # Default: os.Environ() ++ env config section.
+    # Templates: allowed.
     env:
       - CGO_ENABLED=0
       # complex, templated envs (v1.14+):
@@ -95,7 +93,7 @@ builds:
     # GOOS list to build for.
     # For more info refer to: https://go.dev/doc/install/source#environment
     #
-    # Default: [ 'darwin', 'linux', 'windows' ]
+    # Default: [ 'darwin', 'linux', 'windows' ].
     goos:
       - freebsd
       - windows
@@ -103,7 +101,7 @@ builds:
     # GOARCH to build for.
     # For more info refer to: https://go.dev/doc/install/source#environment
     #
-    # Default: [ '386', 'amd64', 'arm64' ]
+    # Default: [ '386', 'amd64', 'arm64' ].
     goarch:
       - amd64
       - arm
@@ -112,7 +110,7 @@ builds:
     # GOARM to build for when GOARCH is arm.
     # For more info refer to: https://go.dev/doc/install/source#environment
     #
-    # Default: [ 6 ]
+    # Default: [ 6 ].
     goarm:
       - 6
       - 7
@@ -120,7 +118,7 @@ builds:
     # GOAMD64 to build when GOARCH is amd64.
     # For more info refer to: https://go.dev/doc/install/source#environment
     #
-    # Default: [ 'v1' ]
+    # Default: [ 'v1' ].
     goamd64:
       - v2
       - v3
@@ -128,7 +126,7 @@ builds:
     # GOMIPS and GOMIPS64 to build when GOARCH is mips, mips64, mipsle or mips64le.
     # For more info refer to: https://go.dev/doc/install/source#environment
     #
-    # Default: [ 'hardfloat' ]
+    # Default: [ 'hardfloat' ].
     gomips:
       - hardfloat
       - softfloat
@@ -158,9 +156,7 @@ builds:
     # This overrides `goos`, `goarch`, `goarm`, `gomips`, `goamd64` and
     # `ignores`.
     targets:
-      # Since: v1.9
       - go_first_class
-      # Since: v1.9
       - go_118_first_class
       - linux_amd64_v1
       - darwin_arm64
@@ -169,8 +165,8 @@ builds:
     # Set a specific go binary to use when building.
     # It is safe to ignore this option in most cases.
     #
-    # Default is "go"
-    # Templates: allowed (since v1.23).
+    # Default: "go".
+    # Templates: allowed.
     gobinary: "go1.13.4"
 
     # Sets the command to run to build.
@@ -179,20 +175,19 @@ builds:
     # It is safe to ignore this option in most cases.
     #
     # Default: build.
-    # Since: v1.9
     command: test
 
     # Set the modified timestamp on the output binary, typically
     # you would do this to ensure a build was reproducible.
     # Pass an empty string to skip modifying the output.
     #
-    # Templates: allowed
+    # Templates: allowed.
     mod_timestamp: "{{ .CommitTimestamp }}"
 
     # Hooks can be used to customize the final binary,
     # for example, to run generators.
     #
-    # Templates: allowed
+    # Templates: allowed.
     hooks:
       pre: rice embed-go
       post: ./script.sh {{ .Path }}
@@ -216,8 +211,6 @@ builds:
     # function.
     # This can be used to skip that check, in case you're building tests, for
     # example.
-    #
-    # Since: v1.9
     no_main_check: true
 
     # Path to project's (sub)directory containing Go code.
@@ -226,21 +219,19 @@ builds:
     # produced binaries will be invalid.
     # You would likely want to use `main` instead of this.
     #
-    # Default: '.'
+    # Default: '.'.
     dir: go
 
     # Builder allows you to use a different build implementation.
     # This is a GoReleaser Pro feature.
     # Valid options are: `go` and `prebuilt`.
     #
-    # Default: 'go'
+    # Default: 'go'.
     builder: prebuilt
 
     # Overrides allows to override some fields for specific targets.
     # This can be specially useful when using CGO.
     # Note: it'll only match if the full target matches.
-    #
-    # Since: v1.5
     overrides:
       - goos: darwin
         goarch: arm64
@@ -259,9 +250,7 @@ builds:
           - CGO_ENABLED=1
 ```
 
-!!! tip
-
-    Learn more about the [name template engine](/customization/templates/).
+{% include-markdown "../includes/templates.md" comments=false %}
 
 !!! info
 
@@ -301,7 +290,7 @@ builds:
       - windows
 ```
 
-The binary name field supports [templating](/customization/templates/). The
+The binary name field supports [templating](templates.md). The
 following build details are exposed:
 
 <!-- to format the tables, use: https://tabletomarkdown.com/format-markdown-table/ -->
@@ -373,7 +362,6 @@ builds:
           dir:
             "{{ dir .Dist}}"
             # Always print command output, otherwise only visible in debug mode.
-            # Since: v1.5
           output: true
           env:
             - HOOK_SPECIFIC_VAR={{ .Env.GLOBAL_VAR }}
@@ -381,7 +369,7 @@ builds:
 ```
 
 All properties of a hook (`cmd`, `dir` and `env`) support
-[templating](/customization/templates/) with `post` hooks having binary artifact
+[templating](templates.md) with `post` hooks having binary artifact
 available (as these run _after_ the build).
 Additionally the following build details are exposed to both `pre` and `post`
 hooks:
@@ -418,7 +406,7 @@ before:
 # rest of the file...
 ```
 
-[hook]: /customization/hooks
+[hook]: hooks.md
 
 ## Define Build Tag
 
@@ -445,9 +433,7 @@ GoReleaser:
 
 ## Import pre-built binaries
 
-!!! success "GoReleaser Pro"
-
-    The prebuilt builder is a [GoReleaser Pro feature](/pro/).
+{% include-markdown "../includes/pro.md" comments=false %}
 
 It is also possible to import pre-built binaries into the GoReleaser lifecycle.
 
@@ -511,7 +497,7 @@ There is no difference in how the binaries are handled.
 
     A cool tip here, specially when using CGO, is that you can have one
     `.goreleaser.yaml` file just for the builds, build each in its own machine
-    with [`goreleaser build --single-target`](/cmd/goreleaser_build/) and
+    with [`goreleaser build --single-target`](../cmd/goreleaser_build.md) and
     have a second `.goreleaser.yaml` file that imports those binaries
     and release them.
     This tip can also be used to speed up the build process if you run all the
@@ -564,8 +550,6 @@ You can read more about it
 
 ## Building shared or static libraries
 
-> Since: v1.13
-
 GoReleaser supports compiling and releasing C shared or static libraries, by
 configuring the [Go build mode](https://pkg.go.dev/cmd/go#hdr-Build_modes).
 
@@ -591,8 +575,6 @@ builds:
 ```
 
 ## Complex template environment variables
-
-> Since v1.14
 
 Builds environment variables accept templates.
 

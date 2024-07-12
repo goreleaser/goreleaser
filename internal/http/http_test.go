@@ -15,10 +15,10 @@ import (
 	"sync"
 	"testing"
 
-	"github.com/goreleaser/goreleaser/internal/artifact"
-	"github.com/goreleaser/goreleaser/internal/testctx"
-	"github.com/goreleaser/goreleaser/pkg/config"
-	"github.com/goreleaser/goreleaser/pkg/context"
+	"github.com/goreleaser/goreleaser/v2/internal/artifact"
+	"github.com/goreleaser/goreleaser/v2/internal/testctx"
+	"github.com/goreleaser/goreleaser/v2/pkg/config"
+	"github.com/goreleaser/goreleaser/v2/pkg/context"
 	"github.com/stretchr/testify/require"
 )
 
@@ -573,6 +573,27 @@ func TestUpload(t *testing.T) {
 				}
 			},
 			checks(),
+		},
+		{
+			"extra files", true, true, false, false,
+			func(s *httptest.Server) (*context.Context, config.Upload) {
+				return ctx, config.Upload{
+					Mode:           ModeArchive,
+					Name:           "a",
+					Target:         s.URL + "/{{.ProjectName}}/{{.Version}}/",
+					Username:       "u3",
+					TrustedCerts:   cert(s),
+					ExtraFilesOnly: true,
+					ExtraFiles: []config.ExtraFile{
+						{
+							Glob: "testdata/*.txt",
+						},
+					},
+				}
+			},
+			checks(
+				check{"/blah/2.1.0/foo.txt", "u3", "x", content, map[string]string{}},
+			),
 		},
 		{
 			"filtering-by-ext", true, true, false, false,

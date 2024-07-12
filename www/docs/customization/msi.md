@@ -1,10 +1,6 @@
 # MSI
 
-> Since: v1.24 (pro)
-
-!!! success "GoReleaser Pro"
-
-    The msi feature is available only in [GoReleaser Pro feature](/pro/).
+{% include-markdown "../includes/pro.md" comments=false %}
 
 GoReleaser can create MSI installers for windows binaries using [msitools][].
 
@@ -15,20 +11,20 @@ The `msi` section specifies how the **installers** should be created:
 msi:
   - # ID of the resulting installer.
     #
-    # Default: the project name
+    # Default: the project name.
     id: foo
 
     # Filename of the installer (without the extension).
     #
-    # Default: '{{.ProjectName}}_{{.MsiArch}}'
-    # Templates: allowed
+    # Default: '{{.ProjectName}}_{{.MsiArch}}'.
+    # Templates: allowed.
     name: "myproject-{{.MsiArch}}"
 
     # The WXS file used to create the installers.
     # The file contents go through the templating engine, so you can do things
     # like `{{.Version}}` inside of it.
     #
-    # Templates: allowed
+    # Templates: allowed.
     # Required.
     wxs: ./windows/app.wsx
 
@@ -41,7 +37,7 @@ msi:
     # GOAMD64 to specify which amd64 version to use if there are multiple
     # versions from the build section.
     #
-    # Default: v1
+    # Default: v1.
     goamd64: v1
 
     # More files that will be available in the context in which the installer
@@ -135,9 +131,7 @@ Here's an example `wsx` file that you can build upon:
    [msitools][], run a snapshot build and verify the generated installers.
 1. Only `amd64` and `386` are supported.
 
-!!! tip
-
-    Learn more about the [name template engine](/customization/templates/).
+{% include-markdown "../includes/templates.md" comments=false %}
 
 [msitools]: https://wiki.gnome.org/msitools
 [wix]: https://wixtoolset.org

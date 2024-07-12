@@ -1,13 +1,14 @@
 package cmd
 
 import (
+	"path/filepath"
 	"testing"
 
-	"github.com/goreleaser/goreleaser/internal/pipeline"
-	"github.com/goreleaser/goreleaser/internal/skips"
-	"github.com/goreleaser/goreleaser/internal/testctx"
-	"github.com/goreleaser/goreleaser/pkg/config"
-	"github.com/goreleaser/goreleaser/pkg/context"
+	"github.com/goreleaser/goreleaser/v2/internal/pipeline"
+	"github.com/goreleaser/goreleaser/v2/internal/skips"
+	"github.com/goreleaser/goreleaser/v2/internal/testctx"
+	"github.com/goreleaser/goreleaser/v2/pkg/config"
+	"github.com/goreleaser/goreleaser/v2/pkg/context"
 	"github.com/stretchr/testify/require"
 )
 
@@ -16,6 +17,29 @@ func TestBuild(t *testing.T) {
 	cmd := newBuildCmd()
 	cmd.cmd.SetArgs([]string{"--snapshot", "--timeout=1m", "--parallelism=2", "--deprecated"})
 	require.NoError(t, cmd.cmd.Execute())
+}
+
+func TestBuildAutoSnapshot(t *testing.T) {
+	t.Run("clean", func(t *testing.T) {
+		setup(t)
+		cmd := newBuildCmd()
+		cmd.cmd.SetArgs([]string{"--auto-snapshot"})
+		require.NoError(t, cmd.cmd.Execute())
+		matches, err := filepath.Glob("./dist/fake_*/fake")
+		require.NoError(t, err)
+		require.Len(t, matches, 1)
+	})
+
+	t.Run("dirty", func(t *testing.T) {
+		setup(t)
+		createFile(t, "foo", "force dirty tree")
+		cmd := newBuildCmd()
+		cmd.cmd.SetArgs([]string{"--auto-snapshot"})
+		require.NoError(t, cmd.cmd.Execute())
+		matches, err := filepath.Glob("./dist/fake_*/fake_snapshot")
+		require.NoError(t, err)
+		require.Len(t, matches, 1)
+	})
 }
 
 func TestBuildSingleTarget(t *testing.T) {
@@ -27,10 +51,10 @@ func TestBuildSingleTarget(t *testing.T) {
 
 func TestBuildInvalidConfig(t *testing.T) {
 	setup(t)
-	createFile(t, "goreleaser.yml", "foo: bar")
+	createFile(t, "goreleaser.yml", "version: 2\nfoo: bar")
 	cmd := newBuildCmd()
 	cmd.cmd.SetArgs([]string{"--snapshot", "--timeout=1m", "--parallelism=2", "--deprecated"})
-	require.EqualError(t, cmd.cmd.Execute(), "yaml: unmarshal errors:\n  line 1: field foo not found in type config.Project")
+	require.EqualError(t, cmd.cmd.Execute(), "yaml: unmarshal errors:\n  line 2: field foo not found in type config.Project")
 }
 
 func TestBuildBrokenProject(t *testing.T) {
@@ -148,15 +172,6 @@ func TestBuildFlags(t *testing.T) {
 		})
 		require.True(t, ctx.Snapshot)
 		requireAll(t, ctx, skips.Validate)
-		require.True(t, ctx.SkipTokenCheck)
-	})
-
-	t.Run("skips (old)", func(t *testing.T) {
-		ctx := setup(buildOpts{
-			skipValidate:  true,
-			skipPostHooks: true,
-		})
-		requireAll(t, ctx, skips.Validate, skips.PostBuildHooks)
 		require.True(t, ctx.SkipTokenCheck)
 	})
 

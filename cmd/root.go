@@ -8,7 +8,7 @@ import (
 	goversion "github.com/caarlos0/go-version"
 	"github.com/caarlos0/log"
 	"github.com/charmbracelet/lipgloss"
-	"github.com/goreleaser/goreleaser/pkg/context"
+	"github.com/goreleaser/goreleaser/v2/pkg/context"
 	"github.com/spf13/cobra"
 )
 
@@ -51,9 +51,6 @@ type rootCmd struct {
 	cmd     *cobra.Command
 	verbose bool
 	exit    func(int)
-
-	// Deprecated: use verbose instead.
-	debug bool
 }
 
 func newRootCmd(version goversion.Info, exit func(int)) *rootCmd {
@@ -78,7 +75,7 @@ Check out our website for more information, examples and documentation: https://
 		Args:              cobra.NoArgs,
 		ValidArgsFunction: cobra.NoFileCompletions,
 		PersistentPreRun: func(*cobra.Command, []string) {
-			if root.verbose || root.debug {
+			if root.verbose {
 				log.SetLevel(log.DebugLevel)
 				log.Debug("verbose output enabled")
 			}
@@ -89,10 +86,7 @@ Check out our website for more information, examples and documentation: https://
 	}
 	cmd.SetVersionTemplate("{{.Version}}")
 
-	cmd.PersistentFlags().BoolVar(&root.debug, "debug", false, "Enable verbose mode")
 	cmd.PersistentFlags().BoolVar(&root.verbose, "verbose", false, "Enable verbose mode")
-	_ = cmd.Flags().MarkDeprecated("debug", "please use --verbose instead")
-	_ = cmd.Flags().MarkHidden("debug")
 	cmd.AddCommand(
 		newBuildCmd().cmd,
 		newReleaseCmd().cmd,
@@ -158,8 +152,6 @@ func deprecateWarn(ctx *context.Context) {
 func timedRunE(verb string, rune func(cmd *cobra.Command, args []string) error) func(cmd *cobra.Command, args []string) error {
 	return func(cmd *cobra.Command, args []string) error {
 		start := time.Now()
-
-		log.Infof(boldStyle.Render(fmt.Sprintf("starting %s...", verb)))
 
 		if err := rune(cmd, args); err != nil {
 			return wrapError(err, boldStyle.Render(fmt.Sprintf("%s failed after %s", verb, time.Since(start).Truncate(time.Second))))

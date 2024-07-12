@@ -109,8 +109,6 @@ publishers:
     checksum: true
 
     # Upload metadata.json and artifacts.json.
-    #
-    # Since: v1.25
     meta: true
 
     # Publish signatures.
@@ -128,15 +126,14 @@ publishers:
 
     # Whether to disable this particular upload configuration.
     #
-    # Since: v1.20
-    # Templates: allowed
+    # Templates: allowed.
     disable: "{{ if .IsNightly }}true{{ end }}"
 
     # You can publish extra pre-existing files.
     # The filename published will be the last part of the path (base).
     # If another file with the same name exists, the last one found will be used.
     #
-    # Templates: allowed
+    # Templates: allowed.
     extra_files:
       - glob: ./path/to/file.txt
       - glob: ./glob/**/to/**/file/**/*
@@ -149,8 +146,7 @@ publishers:
     # and its results will be published.
     #
     # This feature is only available in GoReleaser Pro.
-    # Since: v1.17 (pro)
-    # Templates: allowed
+    # Templates: allowed.
     templated_extra_files:
       - src: LICENSE.tpl
         dst: LICENSE.txt
@@ -160,6 +156,4 @@ These settings should allow you to push your artifacts to any number of
 endpoints, which may require non-trivial authentication or has otherwise complex
 requirements.
 
-!!! tip
-
-    Learn more about the [name template engine](/customization/templates/).
+{% include-markdown "../includes/templates.md" comments=false %}

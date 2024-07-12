@@ -1,7 +1,5 @@
 # Arch User Repositories
 
-> Since: v1.4
-
 After releasing to GitHub, GitLab, or Gitea, GoReleaser can generate and publish
 a `PKGBUILD` to an _Arch User Repository_.
 
@@ -31,14 +29,19 @@ aurs:
       - bar
 
     # Your app's homepage.
+    #
+    # Default: inferred from global metadata.
     homepage: "https://example.com/"
 
     # Your app's description.
     #
-    # Templates: allowed
+    # Templates: allowed.
+    # Default: inferred from global metadata.
     description: "Software to create fast and easy drum rolls."
 
     # The maintainers of the package.
+    #
+    # Default: inferred from global metadata.
     maintainers:
       - "Foo Bar <foo at bar dot com>"
 
@@ -47,6 +50,8 @@ aurs:
       - "Foo Zaz <foo at zaz dot com>"
 
     # SPDX identifier of your app's license.
+    #
+    # Default: inferred from global metadata.
     license: "MIT"
 
     # The SSH private key that should be used to commit to the Git repository.
@@ -71,13 +76,13 @@ aurs:
 
     # List of additional packages that the software provides the features of.
     #
-    # Default: ProjectName
+    # Default: the project name.
     provides:
       - mybin
 
     # List of packages that conflict with, or cause problems with the package.
     #
-    # Default: ProjectName
+    # Default: the project name.
     conflicts:
       - mybin
 
@@ -94,8 +99,6 @@ aurs:
 
     # List of files that can contain user-made changes and should be preserved
     # during package upgrades and removals.
-    #
-    # Since: v1.12
     backup:
       - /etc/foo.conf
 
@@ -105,7 +108,7 @@ aurs:
     # We recommend you override this, installing the binary, license and
     # everything else your package needs.
     #
-    # Default: 'install -Dm755 "./PROJECT_NAME" "${pkgdir}/usr/bin/PROJECT_NAME"'
+    # Default: 'install -Dm755 "./PROJECT_NAME" "${pkgdir}/usr/bin/PROJECT_NAME"'.
     package: |-
       # bin
       install -Dm755 "./mybin" "${pkgdir}/usr/bin/mybin"
@@ -131,8 +134,8 @@ aurs:
 
     # Commit message.
     #
-    # Default: 'Update to {{ .Tag }}'
-    # Templates: allowed
+    # Default: 'Update to {{ .Tag }}'.
+    # Templates: allowed.
     commit_msg_template: "pkgbuild updates"
 
     # If you build for multiple GOAMD64 versions, you may use this to choose which one to use.
@@ -144,29 +147,26 @@ aurs:
     # This is mainly used to specify the SSH private key used to pull/push to
     # the Git URL.
     #
-    # Default: 'ssh -i {{ .KeyPath }} -o StrictHostKeyChecking=accept-new -F /dev/null'
+    # Default: 'ssh -i {{ .KeyPath }} -o StrictHostKeyChecking=accept-new -F /dev/null'.
     git_ssh_command: "ssh -i {{ .Env.KEY }} -o SomeOption=yes"
 
     # URL which is determined by the given Token
     # (github, gitlab or gitea).
     #
-    # Default: depends on the client
-    # Templates: allowed
+    # Default: depends on the client.
+    # Templates: allowed.
     url_template: "http://github.mycompany.com/foo/bar/releases/{{ .Tag }}/{{ .ArtifactName }}"
 
     # Directory in which the files will be created inside the repository.
     # Only useful if you're creating your own AUR with multiple packages in a
     # single repository.
     #
-    # Since: v1.23
-    # Default: .
-    # Templates: allowed
+    # Default: '.'.
+    # Templates: allowed.
     directory: "."
 ```
 
-!!! tip
-
-    Learn more about the [name template engine](/customization/templates/).
+{% include-markdown "../includes/templates.md" comments=false %}
 
 !!! tip
 

@@ -7,15 +7,15 @@ import (
 	"path/filepath"
 	"testing"
 
-	"github.com/goreleaser/goreleaser/internal/artifact"
-	"github.com/goreleaser/goreleaser/internal/semerrgroup"
-	"github.com/goreleaser/goreleaser/internal/skips"
-	"github.com/goreleaser/goreleaser/internal/testctx"
-	"github.com/goreleaser/goreleaser/internal/testlib"
-	"github.com/goreleaser/goreleaser/internal/tmpl"
-	api "github.com/goreleaser/goreleaser/pkg/build"
-	"github.com/goreleaser/goreleaser/pkg/config"
-	"github.com/goreleaser/goreleaser/pkg/context"
+	"github.com/goreleaser/goreleaser/v2/internal/artifact"
+	"github.com/goreleaser/goreleaser/v2/internal/semerrgroup"
+	"github.com/goreleaser/goreleaser/v2/internal/skips"
+	"github.com/goreleaser/goreleaser/v2/internal/testctx"
+	"github.com/goreleaser/goreleaser/v2/internal/testlib"
+	"github.com/goreleaser/goreleaser/v2/internal/tmpl"
+	api "github.com/goreleaser/goreleaser/v2/pkg/build"
+	"github.com/goreleaser/goreleaser/v2/pkg/config"
+	"github.com/goreleaser/goreleaser/v2/pkg/context"
 	"github.com/stretchr/testify/require"
 )
 
@@ -397,33 +397,6 @@ func TestDefaultPartialBuilds(t *testing.T) {
 		require.Len(t, build.Ldflags, 1)
 		require.Equal(t, "-s -w", build.Ldflags[0])
 	})
-}
-
-func TestDefaultFillSingleBuild(t *testing.T) {
-	testlib.Mktmp(t)
-
-	ctx := testctx.NewWithCfg(config.Project{
-		ProjectName: "foo",
-		SingleBuild: config.Build{
-			Main: "testreleaser",
-		},
-	})
-	require.NoError(t, Pipe{}.Default(ctx))
-	require.Len(t, ctx.Config.Builds, 1)
-	require.Equal(t, "foo", ctx.Config.Builds[0].Binary)
-}
-
-func TestDefaultFailSingleBuild(t *testing.T) {
-	folder := testlib.Mktmp(t)
-	config := config.Project{
-		Dist: folder,
-		SingleBuild: config.Build{
-			Builder: "fakeFailDefault",
-		},
-	}
-	ctx := testctx.NewWithCfg(config)
-	require.EqualError(t, Pipe{}.Default(ctx), errFailedDefault.Error())
-	require.Empty(t, ctx.Artifacts.List())
 }
 
 func TestSkipBuild(t *testing.T) {

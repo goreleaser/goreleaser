@@ -7,14 +7,13 @@ import (
 	"path/filepath"
 
 	"github.com/caarlos0/log"
-	"github.com/goreleaser/goreleaser/internal/archivefiles"
-	"github.com/goreleaser/goreleaser/internal/artifact"
-	"github.com/goreleaser/goreleaser/internal/deprecate"
-	"github.com/goreleaser/goreleaser/internal/gio"
-	"github.com/goreleaser/goreleaser/internal/git"
-	"github.com/goreleaser/goreleaser/internal/tmpl"
-	"github.com/goreleaser/goreleaser/pkg/archive"
-	"github.com/goreleaser/goreleaser/pkg/context"
+	"github.com/goreleaser/goreleaser/v2/internal/archivefiles"
+	"github.com/goreleaser/goreleaser/v2/internal/artifact"
+	"github.com/goreleaser/goreleaser/v2/internal/gio"
+	"github.com/goreleaser/goreleaser/v2/internal/git"
+	"github.com/goreleaser/goreleaser/v2/internal/tmpl"
+	"github.com/goreleaser/goreleaser/v2/pkg/archive"
+	"github.com/goreleaser/goreleaser/v2/pkg/context"
 )
 
 // Pipe for source archive.
@@ -129,13 +128,8 @@ func (Pipe) Default(ctx *context.Context) error {
 	if archive.Format == "" {
 		archive.Format = "tar.gz"
 	}
-
 	if archive.NameTemplate == "" {
 		archive.NameTemplate = "{{ .ProjectName }}-{{ .Version }}"
-	}
-
-	if archive.Enabled && archive.RLCP != "" {
-		deprecate.Notice(ctx, "source.rlcp")
 	}
 	return nil
 }

@@ -8,12 +8,11 @@ commented example below:
 
 ```yaml
 # .goreleaser.yaml
-# Since: v1.18
 scoops:
   - # Name of the recipe
     #
-    # Default: ProjectName
-    # Templates: allowed (since v1.19)
+    # Default: the project name.
+    # Templates: allowed.
     name: myproject
 
     # URL which is determined by the given Token (github or gitlab)
@@ -22,7 +21,7 @@ scoops:
     #   GitHub: 'https://github.com/<repo_owner>/<repo_name>/releases/download/{{ .Tag }}/{{ .ArtifactName }}'
     #   GitLab: 'https://gitlab.com/<repo_owner>/<repo_name>/-/releases/{{ .Tag }}/downloads/{{ .ArtifactName }}'
     #   Gitea: 'https://gitea.com/<repo_owner>/<repo_name>/releases/download/{{ .Tag }}/{{ .ArtifactName }}'
-    # Templates: allowed
+    # Templates: allowed.
     url_template: "http://github.mycompany.com/foo/bar/releases/{{ .Tag }}/{{ .ArtifactName }}"
 
     # Directory inside the repository to put the scoop.
@@ -39,8 +38,8 @@ scoops:
     # - 'msi':     msi installers (requires the MSI pipe configured, Pro only)
     # - 'archive': archives (only if format is zip),
     #
-    # Default: 'archive'
-    # Since: v1.24 (pro)
+    # This feature is only available in GoReleaser Pro.
+    # Default: 'archive'.
     use: msi
 
     # Git author used to commit to the repository.
@@ -50,20 +49,24 @@ scoops:
 
     # The project name and current git tag are used in the format string.
     #
-    # Templates: allowed
+    # Templates: allowed.
     commit_msg_template: "Scoop update for {{ .ProjectName }} version {{ .Tag }}"
 
     # Your app's homepage.
     #
-    # Templates: allowed (since v1.19)
+    # Templates: allowed.
+    # Default: inferred from global metadata.
     homepage: "https://example.com/"
 
     # Your app's description.
     #
-    # Templates: allowed (since v1.19)
+    # Templates: allowed.
+    # Default: inferred from global metadata.
     description: "Software to create fast and easy drum rolls."
 
     # Your app's license
+    #
+    # Default: inferred from global metadata.
     license: MIT
 
     # Setting this will prevent goreleaser to actually try to commit the updated
@@ -71,7 +74,7 @@ scoops:
     # If set to auto, the release will not be uploaded to the scoop bucket
     # in case there is an indicator for prerelease in the tag e.g. v1.0.0-rc1
     #
-    # Templates: allowed (since v1.19)
+    # Templates: allowed.
     skip_upload: true
 
     # Persist data between application updates
@@ -86,28 +89,22 @@ scoops:
     post_install: ["Write-Host 'Running postinstall command'"]
 
     # An array of dependencies.
-    #
-    # Since: v1.16
     depends: ["git", "foo"]
 
     # A two-dimensional array of string, specifies the shortcut values to make available in the startmenu.
     # The array has to contain an executable/label pair. The third and fourth element are optional.
-    #
-    # Since: v1.17
     shortcuts: [["drumroll.exe", "drumroll"]]
 
     # GOAMD64 to specify which amd64 version to use if there are multiple versions
     # from the build section.
     #
-    # Default: 'v1'
+    # Default: 'v1'.
     goamd64: v3
 
 {% include-markdown "../includes/repository.md" comments=false %}
 ```
 
-!!! tip
-
-    Learn more about the [name template engine](/customization/templates/).
+{% include-markdown "../includes/templates.md" comments=false %}
 
 By defining the `scoop` section, GoReleaser will take care of publishing the
 Scoop app. Assuming that the project name is `drumroll`, and the current tag is

@@ -12,7 +12,7 @@ Let's see what can be customized in the `release` section for GitHub:
 # .goreleaser.yaml
 release:
   # Repo in which the release will be created.
-  # Default is extracted from the origin remote URL or empty if its private hosted.
+  # Default: extracted from the origin remote URL or empty if its private hosted.
   github:
     owner: user
     name: repo
@@ -20,7 +20,7 @@ release:
   # IDs of the archives to use.
   # Empty means all IDs.
   #
-  # Default: []
+  # Default: [].
   ids:
     - foo
     - bar
@@ -35,8 +35,6 @@ release:
   #
   # Only effective if `draft` is set to true.
   # Available only for GitHub.
-  #
-  # Since: v1.11
   replace_existing_draft: true
 
   # Whether to remove an artifact that already exists.
@@ -48,8 +46,6 @@ release:
   # We then grab the list of artifacts from the release, and delete the file
   # that matches the one we're trying to upload.
   # GoReleaser will then retry its upload.
-  #
-  # Since: v1.25
   replace_existing_artifacts: true
 
   # Useful if you want to delay the creation of the tag in the remote.
@@ -58,9 +54,8 @@ release:
   # value of this field.
   # Only works on GitHub.
   #
-  # Since: v1.11
-  # Default: ''
-  # Templates: allowed
+  # Default: ''.
+  # Templates: allowed.
   target_commitish: "{{ .Commit }}"
 
   # This allows to change which tag GitHub will create.
@@ -68,9 +63,9 @@ release:
   # publish a binary from a monorepo into a public repository somewhere, without
   # the tag prefix.
   #
-  # Since: v1.19 (pro)
-  # Default: '{{ .PrefixedCurrentTag }}'
-  # Templates: allowed
+  # This feature is only available in GoReleaser Pro.
+  # Default: '{{ .PrefixedCurrentTag }}'.
+  # Templates: allowed.
   tag: "{{ .CurrentTag }}"
 
   # If set, will create a release discussion in the category specified.
@@ -78,13 +73,13 @@ release:
   # Warning: do not use categories in the 'Announcement' format.
   #  Check https://github.com/goreleaser/goreleaser/issues/2304 for more info.
   #
-  # Default is empty.
+  # Default: ''.
   discussion_category_name: General
 
   # If set to auto, will mark the release as not ready for production
   # in case there is an indicator for this in the tag e.g. v1.0.0-rc1
   # If set to true, will mark the release as not ready for production.
-  # Default is false.
+  # Default: false.
   prerelease: auto
 
   # If set to false, will NOT mark the release as "latest".
@@ -93,8 +88,7 @@ release:
   #
   # Available only for GitHub.
   #
-  # Default is true.
-  # Since: v1.20
+  # Default: true.
   make_latest: true
 
   # What to do with the release notes in case there the release already exists.
@@ -105,12 +99,12 @@ release:
   # - `prepend`: prepend the current release notes to the existing notes
   # - `replace`: replace existing notes
   #
-  # Default is `keep-existing`.
+  # Default: `keep-existing`.
   mode: append
 
   # Header for the release body.
   #
-  # Templates: allowed
+  # Templates: allowed.
   header: |
     ## Some title ({{ .Date }})
 
@@ -119,11 +113,10 @@ release:
   # Header for the release body.
   #
   # This feature is only available in GoReleaser Pro.
-  # Since v1.20 (pro)
   header:
     # Loads from an URL.
     from_url:
-      # Templates: allowed
+      # Templates: allowed.
       url: https://foo.bar/header.md
       headers:
         x-api-token: "${MYCOMPANY_TOKEN}"
@@ -131,12 +124,12 @@ release:
     # Loads from a local file.
     # Overrides `from_url`.
     from_file:
-      # Templates: allowed
+      # Templates: allowed.
       path: ./header.md
 
   # Footer for the release body.
   #
-  # Templates: allowed
+  # Templates: allowed.
   footer: |
     ## Thanks
 
@@ -145,11 +138,10 @@ release:
   # Footer for the release body.
   #
   # This feature is only available in GoReleaser Pro.
-  # Since v1.20 (pro)
   footer:
     # Loads from an URL.
     from_url:
-      # Templates: allowed
+      # Templates: allowed.
       url: https://foo.bar/footer.md
       footers:
         x-api-token: "${MYCOMPANY_TOKEN}"
@@ -157,35 +149,34 @@ release:
     # Loads from a local file.
     # Overrides `from_url`.
     from_file:
-      # Templates: allowed
+      # Templates: allowed.
       path: ./footer.md
 
   # You can change the name of the release.
   #
-  # Default: '{{.Tag}}' ('{{.PrefixedTag}}' on Pro)
-  # Templates: allowed
+  # Default: '{{.Tag}}' ('{{.PrefixedTag}}' on Pro).
+  # Templates: allowed.
   name_template: "{{.ProjectName}}-v{{.Version}} {{.Env.USER}}"
 
   # You can disable this pipe in order to not create the release on any SCM.
   # Keep in mind that this might also break things that depend on the release
   # URL, for instance, homebrew taps.
   #
-  # Templates: allowed (since v1.15)
+  # Templates: allowed.
   disable: true
 
   # Set this to true if you want to disable just the artifact upload to the SCM.
   # If this is true, GoReleaser will still create the release with the
   # changelog, but won't upload anything to it.
   #
-  # Since: v1.11
-  # Templates: allowed (since v1.15)
+  # Templates: allowed.
   skip_upload: true
 
   # You can add extra pre-existing files to the release.
   # The filename on the release will be the last part of the path (base).
   # If another file with the same name exists, the last one found will be used.
   #
-  # Templates: allowed
+  # Templates: allowed.
   extra_files:
     - glob: ./path/to/file.txt
     - glob: ./glob/**/to/**/file/**/*
@@ -198,26 +189,21 @@ release:
   # and its results will be added to the release.
   #
   # This feature is only available in GoReleaser Pro.
-  # Since: v1.17 (pro)
-  # Templates: allowed
+  # Templates: allowed.
   templated_extra_files:
     - src: LICENSE.tpl
       dst: LICENSE.txt
 
   # Upload metadata.json and artifacts.json to the release as well.
-  #
-  # Since: v1.25
   include_meta: true
 
 ```
 
 !!! tip
 
-    [Learn how to set up an API token, GitHub Enterprise, etc](/scm/github/).
+    [Learn how to set up an API token, GitHub Enterprise, etc](../scm/github.md).
 
-!!! success "GoReleaser Pro"
-
-    Some options are exclusive [GoReleaser Pro features](/pro/).
+{% include-markdown "../includes/pro.md" comments=false %}
 
 ## GitLab
 
@@ -226,8 +212,8 @@ Let's see what can be customized in the `release` section for GitLab.
 ```yaml
 # .goreleaser.yaml
 release:
-  # Default is extracted from the origin remote URL or empty if its private
-  # hosted.
+  # Default: extracted from the origin remote URL or empty if its private
+  #  hosted.
   # You can also use Gitlab's internal project id by setting it in the name
   #  field and leaving the owner field empty.
   gitlab:
@@ -241,8 +227,8 @@ release:
 
   # You can change the name of the release.
   #
-  # Default: '{{.Tag}}' ('{{.PrefixedTag}}' on Pro)
-  # Templates: allowed
+  # Default: '{{.Tag}}' ('{{.PrefixedTag}}' on Pro).
+  # Templates: allowed.
   name_template: "{{.ProjectName}}-v{{.Version}} {{.Env.USER}}"
 
   # You can disable this pipe in order to not upload any artifacts.
@@ -256,14 +242,14 @@ release:
   # - `prepend`: prepend the current release notes to the existing notes
   # - `replace`: replace existing notes
   #
-  # Default: 'keep-existing'
+  # Default: 'keep-existing'.
   mode: append
 
   # You can add extra pre-existing files to the release.
   # The filename on the release will be the last part of the path (base).
   # If another file with the same name exists, the last one found will be used.
   #
-  # Templates: allowed
+  # Templates: allowed.
   extra_files:
     - glob: ./path/to/file.txt
     - glob: ./glob/**/to/**/file/**/*
@@ -274,7 +260,7 @@ release:
 
 !!! tip
 
-    [Learn how to set up an API token, self-hosted GitLab, etc](/scm/gitlab/).
+    [Learn how to set up an API token, self-hosted GitLab, etc](../scm/gitlab.md).
 
 !!! tip
 
@@ -303,8 +289,8 @@ release:
 
   # You can change the name of the release.
   #
-  # Default: '{{.Tag}}' ('{{.PrefixedTag}}' on Pro)
-  # Templates: allowed
+  # Default: '{{.Tag}}' ('{{.PrefixedTag}}' on Pro).
+  # Templates: allowed.
   name_template: "{{.ProjectName}}-v{{.Version}} {{.Env.USER}}"
 
   # You can disable this pipe in order to not upload any artifacts.
@@ -318,14 +304,14 @@ release:
   # - `prepend`: prepend the current release notes to the existing notes
   # - `replace`: replace existing notes
   #
-  # Default: 'keep-existing'
+  # Default: 'keep-existing'.
   mode: append
 
   # You can add extra pre-existing files to the release.
   # The filename on the release will be the last part of the path (base).
   # If another file with the same name exists, the last one found will be used.
   #
-  # Templates: allowed
+  # Templates: allowed.
   extra_files:
     - glob: ./path/to/file.txt
     - glob: ./glob/**/to/**/file/**/*
@@ -344,11 +330,9 @@ ALLOWED_TYPES = application/gzip|application/x-gzip|application/x-gtar|applicati
 
 !!! tip
 
-    [Learn how to set up an API token](/scm/gitea/).
+    [Learn how to set up an API token](../scm/gitea.md).
 
-!!! tip
-
-    Learn more about the [name template engine](/customization/templates/).
+{% include-markdown "../includes/templates.md" comments=false %}
 
 !!! warning
 
@@ -367,7 +351,7 @@ Changelog. You can set a different build tag using the environment variable
 `GORELEASER_PREVIOUS_TAG`. This is useful in scenarios where two tags point to
 the same commit.
 
-The [Nightly](/customization/nightlies) is automatically ignored, even if set
+The [Nightly](nightlies.md) is automatically ignored, even if set
 via the environment variables above.
 
 ## Custom release notes

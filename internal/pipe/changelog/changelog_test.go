@@ -11,12 +11,12 @@ import (
 
 	"github.com/stretchr/testify/require"
 
-	"github.com/goreleaser/goreleaser/internal/client"
-	"github.com/goreleaser/goreleaser/internal/git"
-	"github.com/goreleaser/goreleaser/internal/testctx"
-	"github.com/goreleaser/goreleaser/internal/testlib"
-	"github.com/goreleaser/goreleaser/pkg/config"
-	"github.com/goreleaser/goreleaser/pkg/context"
+	"github.com/goreleaser/goreleaser/v2/internal/client"
+	"github.com/goreleaser/goreleaser/v2/internal/git"
+	"github.com/goreleaser/goreleaser/v2/internal/testctx"
+	"github.com/goreleaser/goreleaser/v2/internal/testlib"
+	"github.com/goreleaser/goreleaser/v2/pkg/config"
+	"github.com/goreleaser/goreleaser/v2/pkg/context"
 )
 
 func TestDescription(t *testing.T) {
@@ -719,13 +719,12 @@ func TestSkip(t *testing.T) {
 	t.Run("skip/disable", func(t *testing.T) {
 		ctx := testctx.NewWithCfg(config.Project{
 			Changelog: config.Changelog{
-				Skip: "{{gt .Patch 0}}",
+				Disable: "{{gt .Patch 0}}",
 			},
 		}, testctx.WithSemver(0, 0, 1, ""))
 		b, err := Pipe{}.Skip(ctx)
 		require.NoError(t, err)
 		require.True(t, b)
-		require.Equal(t, ctx.Config.Changelog.Skip, ctx.Config.Changelog.Disable)
 	})
 
 	t.Run("disable on patches", func(t *testing.T) {
@@ -950,7 +949,7 @@ func TestAbbrev(t *testing.T) {
 		}, testctx.WithCurrentTag("v0.0.2"), withFirstCommit(t))
 
 		require.NoError(t, Pipe{}.Run(ctx))
-		ensureCommitHashLen(t, ctx.ReleaseNotes, 7)
+		ensureCommitHashLen(t, ctx.ReleaseNotes, 40)
 	})
 
 	t.Run("abbrev -1", func(t *testing.T) {
@@ -985,15 +984,15 @@ func TestAbbrev(t *testing.T) {
 		ensureCommitHashLen(t, ctx.ReleaseNotes, 7)
 	})
 
-	t.Run("abbrev 40", func(t *testing.T) {
+	t.Run("abbrev 50", func(t *testing.T) {
 		ctx := testctx.NewWithCfg(config.Project{
 			Dist: folder,
 			Changelog: config.Changelog{
-				Abbrev: 40,
+				Abbrev: 50,
 			},
 		}, testctx.WithCurrentTag("v0.0.2"), withFirstCommit(t))
 		require.NoError(t, Pipe{}.Run(ctx))
-		ensureCommitHashLen(t, ctx.ReleaseNotes, 7)
+		ensureCommitHashLen(t, ctx.ReleaseNotes, 40)
 	})
 }
 

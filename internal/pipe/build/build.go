@@ -6,23 +6,21 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
-	"reflect"
 	"strings"
 
 	"github.com/caarlos0/go-shellwords"
 	"github.com/caarlos0/log"
-	"github.com/goreleaser/goreleaser/internal/deprecate"
-	"github.com/goreleaser/goreleaser/internal/ids"
-	"github.com/goreleaser/goreleaser/internal/semerrgroup"
-	"github.com/goreleaser/goreleaser/internal/shell"
-	"github.com/goreleaser/goreleaser/internal/skips"
-	"github.com/goreleaser/goreleaser/internal/tmpl"
-	builders "github.com/goreleaser/goreleaser/pkg/build"
-	"github.com/goreleaser/goreleaser/pkg/config"
-	"github.com/goreleaser/goreleaser/pkg/context"
+	"github.com/goreleaser/goreleaser/v2/internal/ids"
+	"github.com/goreleaser/goreleaser/v2/internal/semerrgroup"
+	"github.com/goreleaser/goreleaser/v2/internal/shell"
+	"github.com/goreleaser/goreleaser/v2/internal/skips"
+	"github.com/goreleaser/goreleaser/v2/internal/tmpl"
+	builders "github.com/goreleaser/goreleaser/v2/pkg/build"
+	"github.com/goreleaser/goreleaser/v2/pkg/config"
+	"github.com/goreleaser/goreleaser/v2/pkg/context"
 
 	// langs to init.
-	_ "github.com/goreleaser/goreleaser/internal/builders/golang"
+	_ "github.com/goreleaser/goreleaser/v2/internal/builders/golang"
 )
 
 // Pipe for build.
@@ -48,10 +46,6 @@ func (Pipe) Run(ctx *context.Context) error {
 
 // Default sets the pipe defaults.
 func (Pipe) Default(ctx *context.Context) error {
-	if !reflect.DeepEqual(ctx.Config.SingleBuild, config.Build{}) {
-		deprecate.Notice(ctx, "build")
-	}
-
 	ids := ids.New("builds")
 	for i, build := range ctx.Config.Builds {
 		build, err := buildWithDefaults(ctx, build)
@@ -62,7 +56,7 @@ func (Pipe) Default(ctx *context.Context) error {
 		ids.Inc(ctx.Config.Builds[i].ID)
 	}
 	if len(ctx.Config.Builds) == 0 {
-		build, err := buildWithDefaults(ctx, ctx.Config.SingleBuild)
+		build, err := buildWithDefaults(ctx, config.Build{})
 		if err != nil {
 			return err
 		}
