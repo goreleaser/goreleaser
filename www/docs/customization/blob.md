@@ -54,7 +54,7 @@ blobs:
     # Whether to disable this particular upload configuration.
     #
     # Templates: allowed.
-    disable: '{{ neq .BLOB_UPLOAD_ONLY "foo" }}'
+    disable: '{{ ne .BLOB_UPLOAD_ONLY "foo" }}'
 
     # You can add extra pre-existing files to the bucket.
     #
