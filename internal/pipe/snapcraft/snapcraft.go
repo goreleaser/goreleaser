@@ -215,6 +215,9 @@ func isValidArch(arch string) bool {
 
 // Publish packages.
 func (Pipe) Publish(ctx *context.Context) error {
+	if _, err := exec.CommandContext(ctx, "snapcraft", "whoami").CombinedOutput(); err != nil {
+		return pipe.Skip("snapcraft is not authorized, cannot publish")
+	}
 	snaps := ctx.Artifacts.Filter(artifact.ByType(artifact.PublishableSnapcraft)).List()
 	for _, snap := range snaps {
 		if err := push(ctx, snap); err != nil {
