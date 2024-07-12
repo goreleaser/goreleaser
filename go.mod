@@ -1,8 +1,7 @@
 module github.com/goreleaser/goreleaser/v2
 
 go 1.22
-
-toolchain go1.22.1
+toolchain go1.22.5
 
 require (
 	code.gitea.io/sdk/gitea v0.18.0
@@ -24,7 +23,7 @@ require (
 	github.com/chrismellard/docker-credential-acr-env v0.0.0-20230304212654-82a0ddb27589
 	github.com/dghubble/go-twitter v0.0.0-20211115160449-93a8679adecb
 	github.com/dghubble/oauth1 v0.7.3
-	github.com/distribution/distribution/v3 v3.0.0-alpha.1
+	github.com/distribution/distribution/v3 v3.0.0-beta.1
 	github.com/go-telegram-bot-api/telegram-bot-api/v5 v5.5.1
 	github.com/google/go-containerregistry v0.20.0
 	github.com/google/go-github/v63 v63.0.0
@@ -55,6 +54,22 @@ require (
 	golang.org/x/tools v0.23.0
 	gopkg.in/mail.v2 v2.3.1
 	gopkg.in/yaml.v3 v3.0.1
+)
+
+require (
+	github.com/grpc-ecosystem/grpc-gateway/v2 v2.18.1 // indirect
+	go.opentelemetry.io/contrib/exporters/autoexport v0.46.1 // indirect
+	go.opentelemetry.io/otel/exporters/otlp/otlpmetric/otlpmetricgrpc v0.44.0 // indirect
+	go.opentelemetry.io/otel/exporters/otlp/otlpmetric/otlpmetrichttp v0.44.0 // indirect
+	go.opentelemetry.io/otel/exporters/otlp/otlptrace v1.22.0 // indirect
+	go.opentelemetry.io/otel/exporters/otlp/otlptrace/otlptracegrpc v1.21.0 // indirect
+	go.opentelemetry.io/otel/exporters/otlp/otlptrace/otlptracehttp v1.22.0 // indirect
+	go.opentelemetry.io/otel/exporters/prometheus v0.44.0 // indirect
+	go.opentelemetry.io/otel/exporters/stdout/stdoutmetric v0.44.0 // indirect
+	go.opentelemetry.io/otel/exporters/stdout/stdouttrace v1.21.0 // indirect
+	go.opentelemetry.io/otel/sdk v1.24.0 // indirect
+	go.opentelemetry.io/otel/sdk/metric v1.21.0 // indirect
+	go.opentelemetry.io/proto/otlp v1.0.0 // indirect
 )
 
 require (
@@ -139,7 +154,7 @@ require (
 	github.com/davidmz/go-pageant v1.0.2 // indirect
 	github.com/dghubble/sling v1.4.0 // indirect
 	github.com/dimchansky/utfbom v1.1.1 // indirect
-	github.com/distribution/reference v0.5.0 // indirect
+	github.com/distribution/reference v0.6.0 // indirect
 	github.com/docker/cli v25.0.4+incompatible // indirect
 	github.com/docker/distribution v2.8.3+incompatible // indirect
 	github.com/docker/docker v26.1.3+incompatible // indirect
