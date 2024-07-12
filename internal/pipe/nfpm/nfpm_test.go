@@ -390,7 +390,7 @@ func TestRunPipe(t *testing.T) {
 	require.NoError(t, Pipe{}.Run(ctx))
 	packages := ctx.Artifacts.Filter(artifact.ByType(artifact.LinuxPackage)).List()
 	require.Len(t, packages, 56)
-  
+
 	for _, pkg := range packages {
 		format := pkg.Format()
 		require.NotEmpty(t, format)
@@ -1356,8 +1356,6 @@ func TestAPKSpecificScriptsConfig(t *testing.T) {
 	})
 }
 
-// TODO: I need some help on advice to test the IPK specific code properly.  It
-// looks like this test is not testing anything at all.
 func TestIPKSpecificConfig(t *testing.T) {
 	folder := t.TempDir()
 	dist := filepath.Join(folder, "dist")
@@ -1423,6 +1421,10 @@ func TestIPKSpecificConfig(t *testing.T) {
 
 	t.Run("everything is fine", func(t *testing.T) {
 		require.NoError(t, Pipe{}.Run(ctx))
+		ipks := ctx.Artifacts.
+			Filter(artifact.ByExt("ipk")).
+			List()
+		require.Len(t, ipks, 2)
 	})
 }
 
