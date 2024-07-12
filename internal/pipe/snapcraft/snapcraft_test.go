@@ -494,6 +494,7 @@ func TestDefault(t *testing.T) {
 	require.Equal(t, []string{"foo"}, ctx.Config.Snapcrafts[0].Builds)
 	require.Equal(t, []string{"edge", "beta", "candidate", "stable"}, ctx.Config.Snapcrafts[0].ChannelTemplates)
 	require.Equal(t, "stable", ctx.Config.Snapcrafts[0].Grade)
+	require.Equal(t, "strict", ctx.Config.Snapcrafts[0].Confinement)
 }
 
 func TestDefaultGradeTmpl(t *testing.T) {
