@@ -34,5 +34,6 @@ Check out our website for more information, examples and documentation: https://
 * [goreleaser jsonschema](goreleaser_jsonschema.md)	 - outputs goreleaser's JSON schema
 * [goreleaser publish](goreleaser_publish.md)	 - Publishes a previously prepared release
 * [goreleaser release](goreleaser_release.md)	 - Releases the current project
+* [goreleaser subscribe](goreleaser_subscribe.md)	 - Subscribe to GoReleaser Pro, or manage your subscription
 * [goreleaser verify-license](goreleaser_verify-license.md)	 - Verify if the given license is valid
 
