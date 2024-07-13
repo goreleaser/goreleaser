@@ -129,6 +129,12 @@ func (Pipe) Default(ctx *context.Context) error {
 		if snap.Confinement == "" {
 			snap.Confinement = "strict"
 		}
+		if snap.Description == "" {
+			return fmt.Errorf("description is required")
+		}
+		if snap.Summary == "" {
+			return fmt.Errorf("summary is required")
+		}
 		if len(snap.ChannelTemplates) == 0 {
 			switch snap.Grade {
 			case "devel":

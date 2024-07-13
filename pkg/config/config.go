@@ -1042,14 +1042,14 @@ type Snapcraft struct {
 	Builds           []string                           `yaml:"builds,omitempty" json:"builds,omitempty"`
 	Name             string                             `yaml:"name,omitempty" json:"name,omitempty"`
 	Title            string                             `yaml:"title,omitempty" json:"title,omitempty"`
-	Summary          string                             `yaml:"summary,omitempty" json:"summary,omitempty"`
-	Description      string                             `yaml:"description,omitempty" json:"description,omitempty"`
+	Summary          string                             `yaml:"summary" json:"summary"`
+	Description      string                             `yaml:"description" json:"description"`
 	Icon             string                             `yaml:"icon,omitempty" json:"icon,omitempty"`
 	Base             string                             `yaml:"base,omitempty" json:"base,omitempty"`
 	License          string                             `yaml:"license,omitempty" json:"license,omitempty"`
-	Grade            string                             `yaml:"grade,omitempty" json:"grade,omitempty"`
+	Grade            string                             `yaml:"grade,omitempty" json:"grade,omitempty" jsonschema:"enum=stable,enum=devel,default=stable"`
 	ChannelTemplates []string                           `yaml:"channel_templates,omitempty" json:"channel_templates,omitempty"`
-	Confinement      string                             `yaml:"confinement,omitempty" json:"confinement,omitempty"`
+	Confinement      string                             `yaml:"confinement,omitempty" json:"confinement,omitempty" jsonschema:"enum=strict,enum=classic,enum=devmode,classic=strict"`
 	Assumes          []string                           `yaml:"assumes,omitempty" json:"assumes,omitempty"`
 	Layout           map[string]SnapcraftLayoutMetadata `yaml:"layout,omitempty" json:"layout,omitempty"`
 	Apps             map[string]SnapcraftAppMetadata    `yaml:"apps,omitempty" json:"apps,omitempty"`
