@@ -2239,6 +2239,9 @@
 					"archlinux": {
 						"$ref": "#/$defs/NFPMArchLinux"
 					},
+					"ipk": {
+						"$ref": "#/$defs/NFPMIPK"
+					},
 					"templated_contents": {
 						"$ref": "#/$defs/Contents"
 					},
@@ -2487,6 +2490,60 @@
 				"additionalProperties": false,
 				"type": "object"
 			},
+			"NFPMIPK": {
+				"properties": {
+					"abi_version": {
+						"type": "string"
+					},
+					"alternatives": {
+						"items": {
+							"$ref": "#/$defs/NFPMIPKAlternative"
+						},
+						"type": "array"
+					},
+					"auto_installed": {
+						"type": "boolean"
+					},
+					"essential": {
+						"type": "boolean"
+					},
+					"predepends": {
+						"items": {
+							"type": "string"
+						},
+						"type": "array"
+					},
+					"tags": {
+						"items": {
+							"type": "string"
+						},
+						"type": "array"
+					},
+					"fields": {
+						"additionalProperties": {
+							"type": "string"
+						},
+						"type": "object"
+					}
+				},
+				"additionalProperties": false,
+				"type": "object"
+			},
+			"NFPMIPKAlternative": {
+				"properties": {
+					"priority": {
+						"type": "integer"
+					},
+					"target": {
+						"type": "string"
+					},
+					"link_name": {
+						"type": "string"
+					}
+				},
+				"additionalProperties": false,
+				"type": "object"
+			},
 			"NFPMOverridables": {
 				"properties": {
 					"file_name_template": {
@@ -2563,6 +2620,9 @@
 					},
 					"archlinux": {
 						"$ref": "#/$defs/NFPMArchLinux"
+					},
+					"ipk": {
+						"$ref": "#/$defs/NFPMIPK"
 					},
 					"templated_contents": {
 						"$ref": "#/$defs/Contents"
@@ -3737,7 +3797,12 @@
 						"type": "string"
 					},
 					"grade": {
-						"type": "string"
+						"type": "string",
+						"enum": [
+							"stable",
+							"devel"
+						],
+						"default": "stable"
 					},
 					"channel_templates": {
 						"items": {
@@ -3746,7 +3811,12 @@
 						"type": "array"
 					},
 					"confinement": {
-						"type": "string"
+						"type": "string",
+						"enum": [
+							"strict",
+							"classic",
+							"devmode"
+						]
 					},
 					"assumes": {
 						"items": {
@@ -3796,7 +3866,11 @@
 					}
 				},
 				"additionalProperties": false,
-				"type": "object"
+				"type": "object",
+				"required": [
+					"summary",
+					"description"
+				]
 			},
 			"SnapcraftAppMetadata": {
 				"properties": {
