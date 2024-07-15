@@ -17,7 +17,7 @@ require (
 	github.com/caarlos0/go-reddit/v3 v3.0.1
 	github.com/caarlos0/go-shellwords v1.0.12
 	github.com/caarlos0/go-version v0.1.1
-	github.com/caarlos0/log v0.4.5
+	github.com/caarlos0/log v0.4.6
 	github.com/charmbracelet/keygen v0.5.0
 	github.com/charmbracelet/lipgloss v0.12.0
 	github.com/charmbracelet/x/exp/ordered v0.1.0
