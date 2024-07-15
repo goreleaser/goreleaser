@@ -1815,7 +1815,8 @@
 								"deb",
 								"rpm",
 								"termux.deb",
-								"archlinux"
+								"archlinux",
+								"ipk"
 							]
 						},
 						"type": "array"
