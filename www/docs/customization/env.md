@@ -14,7 +14,7 @@ before:
   hooks:
     - go mod tidy
 builds:
-- binary: program
+  - binary: program
 ```
 
 This way, both your before hooks (in this example, `go mod tidy`) and the
@@ -22,5 +22,4 @@ underlying builds (using `go build`) will have `FOO` set to `on`.
 
 The root `env` section also accepts templates.
 
-!!! tip
-    Learn more about the [name template engine](/customization/templates/).
+{% include-markdown "../includes/templates.md" comments=false %}

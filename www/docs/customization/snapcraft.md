@@ -91,6 +91,8 @@ snapcrafts:
     # `devel` will let you release only to the `edge` and `beta` channels in the
     # store. `stable` will let you release also to the `candidate` and `stable`
     # channels.
+    #
+    # Default: 'stable'
     grade: stable
 
     # Snaps can be setup to follow three different confinement policies:
@@ -99,6 +101,8 @@ snapcrafts:
     # permissions for strict snaps can be declared as `plugs` for the app, which
     # are explained later. More info about confinement here:
     # https://snapcraft.io/docs/reference/confinement
+    #
+    # Default: 'strict'
     confinement: strict
 
     # Your app's license, based on SPDX license expressions:
@@ -317,9 +321,7 @@ snapcrafts:
           - $HOME/.foobar
 ```
 
-!!! tip
-
-    Learn more about the [name template engine](/customization/templates/).
+{% include-markdown "../includes/templates.md" comments=false %}
 
 !!! note
 

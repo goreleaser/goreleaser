@@ -123,7 +123,7 @@ func TestRunPipe(t *testing.T) {
 				ID:          "someid",
 				Bindir:      "/usr/bin",
 				Builds:      []string{"default", "lib1", "lib2", "lib3"},
-				Formats:     []string{"deb", "rpm", "apk", "termux.deb", "archlinux"},
+				Formats:     []string{"deb", "rpm", "apk", "termux.deb", "archlinux", "ipk"},
 				Section:     "somesection",
 				Priority:    "standard",
 				Description: "Some description with {{ .Env.DESC }}",
@@ -389,7 +389,8 @@ func TestRunPipe(t *testing.T) {
 	}
 	require.NoError(t, Pipe{}.Run(ctx))
 	packages := ctx.Artifacts.Filter(artifact.ByType(artifact.LinuxPackage)).List()
-	require.Len(t, packages, 46)
+	require.Len(t, packages, 56)
+
 	for _, pkg := range packages {
 		format := pkg.Format()
 		require.NotEmpty(t, format)
@@ -502,7 +503,7 @@ func doTestRunPipeConventionalNameTemplate(t *testing.T, snapshot bool) {
 			{
 				ID:          "someid",
 				Builds:      []string{"default"},
-				Formats:     []string{"deb", "rpm", "apk", "archlinux"},
+				Formats:     []string{"deb", "rpm", "apk", "archlinux", "ipk"},
 				Section:     "somesection",
 				Priority:    "standard",
 				Description: "Some description ",
@@ -587,7 +588,7 @@ func doTestRunPipeConventionalNameTemplate(t *testing.T, snapshot bool) {
 	}
 	require.NoError(t, Pipe{}.Run(ctx))
 	packages := ctx.Artifacts.Filter(artifact.ByType(artifact.LinuxPackage)).List()
-	require.Len(t, packages, 37)
+	require.Len(t, packages, 47)
 	prefix := "foo"
 	if snapshot {
 		prefix += "-snapshot"
@@ -608,24 +609,39 @@ func doTestRunPipeConventionalNameTemplate(t *testing.T, snapshot bool) {
 			prefix + "-1.0.0-1.x86_64v4.rpm",
 			prefix + "_1.0.0_aarch64.apk",
 			prefix + "_1.0.0_amd64.deb",
+			prefix + "_1.0.0_amd64.ipk",
 			prefix + "_1.0.0_amd64v2.deb",
+			prefix + "_1.0.0_amd64v2.ipk",
 			prefix + "_1.0.0_amd64v3.deb",
+			prefix + "_1.0.0_amd64v3.ipk",
 			prefix + "_1.0.0_amd64v4.deb",
+			prefix + "_1.0.0_amd64v4.ipk",
 			prefix + "_1.0.0_arm64.deb",
+			prefix + "_1.0.0_arm64.ipk",
 			prefix + "_1.0.0_armhf.apk",
 			prefix + "_1.0.0_armhf.deb",
+			prefix + "_1.0.0_armhf.ipk",
 			prefix + "_1.0.0_armhf6.deb",
+			prefix + "_1.0.0_armhf6.ipk",
 			prefix + "_1.0.0_armv7.apk",
 			prefix + "_1.0.0_i386.deb",
+			prefix + "_1.0.0_i386.ipk",
 			prefix + "_1.0.0_mips.apk",
 			prefix + "_1.0.0_mips.deb",
+			prefix + "_1.0.0_mips.ipk",
 			prefix + "_1.0.0_mips.apk",
 			prefix + "_1.0.0_mips.deb",
+			prefix + "_1.0.0_mips.ipk",
 			prefix + "_1.0.0_x86.apk",
+			prefix + "_1.0.0_x86.ipk",
 			prefix + "_1.0.0_x86_64.apk",
+			prefix + "_1.0.0_x86_64.ipk",
 			prefix + "_1.0.0_x86_64v2.apk",
+			prefix + "_1.0.0_x86_64v2.ipk",
 			prefix + "_1.0.0_x86_64v3.apk",
+			prefix + "_1.0.0_x86_64v3.ipk",
 			prefix + "_1.0.0_x86_64v4.apk",
+			prefix + "_1.0.0_x86_64v4.ipk",
 			prefix + "-1.0.0-1-aarch64.pkg.tar.zst",
 			prefix + "-1.0.0-1-armv6h.pkg.tar.zst",
 			prefix + "-1.0.0-1-armv7h.pkg.tar.zst",
@@ -815,7 +831,7 @@ func TestCreateFileDoesntExist(t *testing.T) {
 		ProjectName: "asd",
 		NFPMs: []config.NFPM{
 			{
-				Formats: []string{"deb", "rpm"},
+				Formats: []string{"deb", "rpm", "ipk"},
 				Builds:  []string{"default"},
 				NFPMOverridables: config.NFPMOverridables{
 					PackageName: "foo",
@@ -1023,10 +1039,10 @@ func TestDebSpecificConfig(t *testing.T) {
 			"statically-linked-binary",
 			"changelog-file-missing-in-native-package",
 		}
-		ctx.Config.NFPMs[0].Formats = []string{"apk", "rpm", "deb", "termux.deb"}
+		ctx.Config.NFPMs[0].Formats = []string{"apk", "rpm", "deb", "termux.deb", "ipk"}
 
 		require.NoError(t, Pipe{}.Run(ctx))
-		for _, format := range []string{"apk", "rpm"} {
+		for _, format := range []string{"apk", "rpm", "ipk"} {
 			require.NoDirExists(t, filepath.Join(ctx.Config.Dist, format))
 		}
 		require.DirExists(t, filepath.Join(ctx.Config.Dist, "deb"))
@@ -1053,7 +1069,7 @@ func TestDebSpecificConfig(t *testing.T) {
 			"statically-linked-binary",
 			"changelog-file-missing-in-native-package",
 		}
-		ctx.Config.NFPMs[0].Formats = []string{"apk", "rpm"}
+		ctx.Config.NFPMs[0].Formats = []string{"apk", "rpm", "ipk"}
 
 		require.NoError(t, Pipe{}.Run(ctx))
 		for _, format := range []string{"deb", "termux.deb"} {
@@ -1337,6 +1353,78 @@ func TestAPKSpecificScriptsConfig(t *testing.T) {
 		ctx.Config.NFPMs[0].APK.Scripts.PostUpgrade = "testdata/testfile.txt"
 
 		require.NoError(t, Pipe{}.Run(ctx))
+	})
+}
+
+func TestIPKSpecificConfig(t *testing.T) {
+	folder := t.TempDir()
+	dist := filepath.Join(folder, "dist")
+	require.NoError(t, os.Mkdir(dist, 0o755))
+	require.NoError(t, os.Mkdir(filepath.Join(dist, "mybin"), 0o755))
+	binPath := filepath.Join(dist, "mybin", "mybin")
+	f, err := os.Create(binPath)
+	require.NoError(t, err)
+	require.NoError(t, f.Close())
+
+	ctx := testctx.NewWithCfg(config.Project{
+		ProjectName: "mybin",
+		Dist:        dist,
+		NFPMs: []config.NFPM{
+			{
+				ID:         "someid",
+				Maintainer: "me@me",
+				Builds:     []string{"default"},
+				Formats:    []string{"ipk"},
+				NFPMOverridables: config.NFPMOverridables{
+					PackageName: "foo",
+					Contents: []*files.Content{
+						{
+							Source:      "testdata/testfile.txt",
+							Destination: "/usr/share/testfile.txt",
+						},
+					},
+					IPK: config.NFPMIPK{
+						ABIVersion: "1.0",
+						Alternatives: []config.NFPMIPKAlternative{
+							{
+								Priority: 100,
+								Target:   "/usr/bin/mybin",
+								LinkName: "/usr/bin/myaltbin",
+							},
+						},
+						AutoInstalled: true,
+						Essential:     true,
+						Predepends:    []string{"libc"},
+						Tags:          []string{"foo", "bar"},
+						Fields: map[string]string{
+							"CustomField": "customValue",
+						},
+					},
+				},
+			},
+		},
+	}, testctx.WithVersion("1.0.0"), testctx.WithCurrentTag("v1.0.0"))
+	for _, goos := range []string{"linux", "darwin"} {
+		for _, goarch := range []string{"amd64", "386"} {
+			ctx.Artifacts.Add(&artifact.Artifact{
+				Name:   "mybin",
+				Path:   binPath,
+				Goarch: goarch,
+				Goos:   goos,
+				Type:   artifact.Binary,
+				Extra: map[string]interface{}{
+					artifact.ExtraID: "default",
+				},
+			})
+		}
+	}
+
+	t.Run("everything is fine", func(t *testing.T) {
+		require.NoError(t, Pipe{}.Run(ctx))
+		ipks := ctx.Artifacts.
+			Filter(artifact.ByExt("ipk")).
+			List()
+		require.Len(t, ipks, 2)
 	})
 }
 

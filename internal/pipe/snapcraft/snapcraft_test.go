@@ -486,21 +486,51 @@ func TestExtraFile(t *testing.T) {
 
 func TestDefault(t *testing.T) {
 	ctx := testctx.NewWithCfg(config.Project{
-		Builds:     []config.Build{{ID: "foo"}},
-		Snapcrafts: []config.Snapcraft{{}},
+		Builds: []config.Build{{ID: "foo"}},
+		Snapcrafts: []config.Snapcraft{{
+			Description: "hi",
+			Summary:     "hi",
+		}},
 	})
 	require.NoError(t, Pipe{}.Default(ctx))
 	require.Equal(t, defaultNameTemplate, ctx.Config.Snapcrafts[0].NameTemplate)
 	require.Equal(t, []string{"foo"}, ctx.Config.Snapcrafts[0].Builds)
 	require.Equal(t, []string{"edge", "beta", "candidate", "stable"}, ctx.Config.Snapcrafts[0].ChannelTemplates)
 	require.Equal(t, "stable", ctx.Config.Snapcrafts[0].Grade)
+	require.Equal(t, "strict", ctx.Config.Snapcrafts[0].Confinement)
+}
+
+func TestDefaultNoDescription(t *testing.T) {
+	ctx := testctx.NewWithCfg(config.Project{
+		Builds: []config.Build{{ID: "foo"}},
+		Snapcrafts: []config.Snapcraft{{
+			Summary: "hi",
+		}},
+	})
+	require.Error(t, Pipe{}.Default(ctx))
+}
+
+func TestDefaultNoSummary(t *testing.T) {
+	ctx := testctx.NewWithCfg(config.Project{
+		Builds: []config.Build{{ID: "foo"}},
+		Snapcrafts: []config.Snapcraft{{
+			Description: "hi",
+		}},
+	})
+	require.Error(t, Pipe{}.Default(ctx))
 }
 
 func TestDefaultGradeTmpl(t *testing.T) {
 	ctx := testctx.NewWithCfg(config.Project{
-		Env:        []string{"Grade=devel"},
-		Builds:     []config.Build{{ID: "foo"}},
-		Snapcrafts: []config.Snapcraft{{Grade: "{{.Env.Grade}}"}},
+		Env:    []string{"Grade=devel"},
+		Builds: []config.Build{{ID: "foo"}},
+		Snapcrafts: []config.Snapcraft{
+			{
+				Grade:       "{{.Env.Grade}}",
+				Description: "hi",
+				Summary:     "hi",
+			},
+		},
 	})
 	require.NoError(t, Pipe{}.Default(ctx))
 	require.Equal(t, defaultNameTemplate, ctx.Config.Snapcrafts[0].NameTemplate)
@@ -540,11 +570,15 @@ func TestDefaultSet(t *testing.T) {
 				ID:           "devel",
 				NameTemplate: "foo",
 				Grade:        "devel",
+				Description:  "hi",
+				Summary:      "hi",
 			},
 			{
 				ID:           "stable",
 				NameTemplate: "bar",
 				Grade:        "stable",
+				Description:  "hi",
+				Summary:      "hi",
 			},
 		},
 	})
@@ -564,7 +598,9 @@ func Test_processChannelsTemplates(t *testing.T) {
 			},
 			Snapcrafts: []config.Snapcraft{
 				{
-					Name: "mybin",
+					Name:        "mybin",
+					Description: "hi",
+					Summary:     "hi",
 					ChannelTemplates: []string{
 						"{{.Major}}.{{.Minor}}/stable",
 						"stable",
@@ -646,10 +682,14 @@ func TestSeveralSnapssWithTheSameID(t *testing.T) {
 	ctx := testctx.NewWithCfg(config.Project{
 		Snapcrafts: []config.Snapcraft{
 			{
-				ID: "a",
+				ID:          "a",
+				Description: "hi",
+				Summary:     "hi",
 			},
 			{
-				ID: "a",
+				ID:          "a",
+				Description: "hi",
+				Summary:     "hi",
 			},
 		},
 	})

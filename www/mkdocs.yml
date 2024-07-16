@@ -38,6 +38,7 @@ theme:
     - navigation.instant
     - navigation.tracking
     - navigation.tabs
+    - content.tabs.link
 
 plugins:
   - search
@@ -247,6 +248,9 @@ markdown_extensions:
       permalink: true
   - pymdownx.tabbed:
       alternate_style: true
+      slugify: !!python/object/apply:pymdownx.slugs.slugify
+        kwds:
+          case: lower
   - pymdownx.superfences
   - pymdownx.tasklist:
       custom_checkbox: true

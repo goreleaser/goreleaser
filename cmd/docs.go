@@ -1,8 +1,6 @@
 package cmd
 
 import (
-	"strings"
-
 	"github.com/spf13/cobra"
 	"github.com/spf13/cobra/doc"
 )
@@ -26,7 +24,7 @@ func newDocsCmd() *docsCmd {
 			return doc.GenMarkdownTreeCustom(root.cmd.Root(), "www/docs/cmd", func(_ string) string {
 				return ""
 			}, func(s string) string {
-				return "/cmd/" + strings.TrimSuffix(s, ".md") + "/"
+				return s
 			})
 		},
 	}

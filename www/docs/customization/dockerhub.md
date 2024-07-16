@@ -1,8 +1,6 @@
 # DockerHub
 
-!!! success "GoReleaser Pro"
-
-    DockerHub is a [GoReleaser Pro feature](/pro/).
+{% include-markdown "../includes/pro.md" comments=false %}
 
 DockerHub allows you to set an image description and a full description.
 However, this is not possible via `docker push`.
@@ -68,6 +66,4 @@ dockerhub:
         path: ./README.md
 ```
 
-!!! tip
-
-    Learn more about the [name template engine](/customization/templates/).
+{% include-markdown "../includes/templates.md" comments=false %}

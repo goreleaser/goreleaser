@@ -1,16 +1,15 @@
-# goreleaser init
+# goreleaser subscribe
 
-Generates a .goreleaser.yaml file
+Subscribe to GoReleaser Pro, or manage your subscription
 
 ```
-goreleaser init [flags]
+goreleaser subscribe [flags]
 ```
 
 ## Options
 
 ```
-  -f, --config string   Load configuration from file (default ".goreleaser.yaml")
-  -h, --help            help for init
+  -h, --help   help for subscribe
 ```
 
 ## Options inherited from parent commands

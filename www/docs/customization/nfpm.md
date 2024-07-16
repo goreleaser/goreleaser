@@ -462,11 +462,63 @@ nfpms:
       # The packager refers to the organization packaging the software, not to be confused
       # with the maintainer, which is the person who maintains the software.
       packager: GoReleaser <staff@goreleaser.com>
+
+    # Custom configuration applied only to the IPK packager.
+    #
+    # Since: v2.1
+    ipk:
+      # The ABI version to specify.
+      #
+      # Default: none
+      abi_version:
+
+      # Alternate names for files created using symlinks
+      #
+      # Default: none
+      alternatives:
+        - #
+          # The IPK priority used when creating the alternative link.
+          priority: 4
+
+          # The target path and file the alternative is linked to.
+          target: /usr/bin/ls
+
+          # The alternative path and file created.
+          link_name: /usr/bin/alternate_ls
+
+      # Mark the package to be auto installed.
+      #
+      # Default: false
+      auto_install: false
+
+      # Mark the package as essential.
+      #
+      # Default: false
+      essential: false
+
+      # Additional fields for the control file. Empty fields are ignored.
+      # This will expand any env vars you set in the field values, e.g. Vcs-Browser: ${CI_PROJECT_URL}
+      #
+      # Default: none
+      fields:
+        Bugs: https://github.com/goreleaser/nfpm/issues
+
+      # The IPK-specific "predepends" field can be used to ensure the complete installation of a list of
+      # packages (including unpacking, pre- and post installation scripts) prior to the installation of the
+      # built package.
+      #
+      # Default: none
+      predepends:
+        - baz
+
+      # A list of tags to associate with the package.
+      #
+      # Default: none
+      tags:
+        - foo
 ```
 
-!!! tip
-
-    Learn more about the [name template engine](/customization/templates/).
+{% include-markdown "../includes/templates.md" comments=false %}
 
 !!! info
 

@@ -83,7 +83,7 @@ jobs:
         run: |
           sudo apt-get update
           sudo apt-get -yq --no-install-suggests --no-install-recommends install snapcraft
-      - uses: actions/setup-go@cdcb36043654635271a94b9a6d1392de5bb323a7 # v4
+      - uses: actions/setup-go@0a12ed9d6a96ab950c8f026ed9f722fe0da7ef32 # v4
         with:
           go-version: stable
       - uses: actions/cache@0c45773b623bea8c8e75f6c82b208c3cf94ea4f9 # v4
@@ -94,7 +94,7 @@ jobs:
             ./dist/*.apk
           key: ${{ github.ref }}
       - uses: sigstore/cosign-installer@v3.5.0
-      - uses: anchore/sbom-action/download-syft@v0.16.0
+      - uses: anchore/sbom-action/download-syft@v0.17.0
       - uses: crazy-max/ghaction-upx@v3
         with:
           install-only: true

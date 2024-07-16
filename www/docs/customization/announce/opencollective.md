@@ -29,3 +29,5 @@ announce:
     # Templates: allowed.
     message_template: "Awesome project {{.Tag}} is out!"
 ```
+
+{% include-markdown "../../includes/templates.md" comments=false %}

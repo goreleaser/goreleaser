@@ -25,11 +25,11 @@ jobs:
           repo-token: ${{ secrets.GITHUB_TOKEN }}
       - uses: docker/setup-qemu-action@5927c834f5b4fdf503fca6f4c7eccda82949e1ee # v2
       - uses: docker/setup-buildx-action@4fd812986e6c8c2a69e18311145f9371337f27d4 # v3
-      - uses: actions/setup-go@cdcb36043654635271a94b9a6d1392de5bb323a7 # v4
+      - uses: actions/setup-go@0a12ed9d6a96ab950c8f026ed9f722fe0da7ef32 # v4
         with:
           go-version: stable
       - uses: sigstore/cosign-installer@v3.5.0
-      - uses: anchore/sbom-action/download-syft@v0.16.0
+      - uses: anchore/sbom-action/download-syft@v0.17.0
       - uses: crazy-max/ghaction-upx@v3
         with:
           install-only: true

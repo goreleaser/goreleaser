@@ -1,15 +1,11 @@
 # Install
 
-There are two GoReleaser distributions: OSS and [Pro](/pro/).
+There are two GoReleaser distributions: OSS and [Pro](pro.md), each have a
+multitude of installation options.
 
-You can install the pre-compiled binary (in several ways), use Docker or compile
-from source (when on OSS).
+You can see the instructions for each of them below.
 
-Below you can find the steps for each of them.
-
-## Install the pre-compiled binary
-
-### homebrew tap
+## Homebrew Tap
 
 === "OSS"
 
@@ -23,7 +19,7 @@ Below you can find the steps for each of them.
     brew install goreleaser/tap/goreleaser-pro
     ```
 
-### homebrew
+## Homebrew
 
 === "OSS"
 
@@ -31,12 +27,18 @@ Below you can find the steps for each of them.
     brew install goreleaser
     ```
 
-!!! info
+    !!! warning
 
-    The [formula in homebrew-core](https://github.com/Homebrew/homebrew-core/blob/master/Formula/g/goreleaser.rb) might be slightly outdated.
-    Use our homebrew tap to always get the latest updates.
+        The [formula in homebrew-core] might be slightly outdated.
+        Use our homebrew tap to always get the latest updates.
 
-### snapcraft
+=== "Pro"
+
+    Not available.
+
+[formula in homebrew-core]: https://github.com/Homebrew/homebrew-core/blob/master/Formula/g/goreleaser.rb
+
+## Snapcraft
 
 === "OSS"
 
@@ -44,7 +46,11 @@ Below you can find the steps for each of them.
     sudo snap install --classic goreleaser
     ```
 
-### scoop
+=== "Pro"
+
+    Not available.
+
+## Scoop
 
 === "OSS"
 
@@ -60,7 +66,7 @@ Below you can find the steps for each of them.
     scoop install goreleaser-pro
     ```
 
-### apt
+## Apt Repository
 
 === "OSS"
 
@@ -78,7 +84,7 @@ Below you can find the steps for each of them.
     sudo apt install goreleaser-pro
     ```
 
-### yum
+## Yum Repository
 
 === "OSS"
 
@@ -102,7 +108,7 @@ Below you can find the steps for each of them.
     sudo yum install goreleaser-pro
     ```
 
-### aur
+## AUR
 
 === "OSS"
 
@@ -116,23 +122,27 @@ Below you can find the steps for each of them.
     yay -S goreleaser-pro-bin
     ```
 
-### nix
-
-#### nixpkgs
+## Nixpkgs
 
 === "OSS"
 
     ```bash
-    nix-env -iA goreleaser
+    nix-shell -p goreleaser
     ```
 
-!!! info
+    !!! warning
 
-    The [package in nixpkgs](https://github.com/NixOS/nixpkgs/blob/master/pkgs/tools/misc/goreleaser/default.nix)
-    might be slightly outdated, as it is not updated automatically.
-    Use our NUR to always get the latest updates.
+        The [package in nixpkgs] might be slightly outdated, as it is not
+        updated automatically.
+        Use our NUR to always get the latest updates.
 
-#### nur
+=== "Pro"
+
+    Not available.
+
+[package in nixpkgs]: https://github.com/NixOS/nixpkgs/blob/master/pkgs/tools/misc/goreleaser/default.nix
+
+## NUR
 
 First, you'll need to add our [NUR][nur] to your nix configuration.
 You can follow the guides
@@ -162,15 +172,75 @@ Once you do that, you can install the packages.
     }
     ```
 
-### deb, rpm and apk packages
+## Docker
 
 === "OSS"
 
-    Download the `.deb`, `.rpm`, or `.apk` packages from the [OSS releases page][releases] and install them with the appropriate tools.
+    Registries:
+
+    - [`goreleaser/goreleaser`](https://hub.docker.com/r/goreleaser/goreleaser)
+    - [`ghcr.io/goreleaser/goreleaser`](https://github.com/goreleaser/goreleaser/pkgs/container/goreleaser)
+
+    **Example usage:**
+
+    ```bash
+    docker run --rm --privileged \
+      -v $PWD:/go/src/github.com/user/repo \
+      -v /var/run/docker.sock:/var/run/docker.sock \
+      -w /go/src/github.com/user/repo \
+      -e GITHUB_TOKEN \
+      -e DOCKER_USERNAME \
+      -e DOCKER_PASSWORD \
+      -e DOCKER_REGISTRY \
+      goreleaser/goreleaser release
+    ```
 
 === "Pro"
 
-    Download the `.deb`, `.rpm`, or `.apk` packages from the [Pro releases page][pro-releases] and install them with the appropriate tools.
+    Registries:
+
+    - [`goreleaser/goreleaser-pro`](https://hub.docker.com/r/goreleaser/goreleaser-pro)
+    - [`ghcr.io/goreleaser/goreleaser-pro`](https://github.com/goreleaser/goreleaser/pkgs/container/goreleaser-pro)
+
+    **Example usage:**
+
+    ```bash
+    docker run --rm --privileged \
+      -v $PWD:/go/src/github.com/user/repo \
+      -v /var/run/docker.sock:/var/run/docker.sock \
+      -w /go/src/github.com/user/repo \
+      -e GITHUB_TOKEN \
+      -e DOCKER_USERNAME \
+      -e DOCKER_PASSWORD \
+      -e DOCKER_REGISTRY \
+      -e GORELEASER_KEY \
+      goreleaser/goreleaser-pro release
+    ```
+
+!!! warning
+
+    The provided docker image does not support the Snapcraft feature.
+
+The `DOCKER_REGISTRY` environment variable can be left empty when you are
+releasing to the public docker registry.
+
+If you need more things, you are encouraged to keep your own image. You can
+always use GoReleaser's [own Dockerfile][dockerfile] as an example though
+and iterate from that.
+
+!!! tip
+
+    There are also `:nightly` tags available with the latest nightly builds.
+
+## Linux packages
+
+=== "OSS"
+
+    Download the `.deb`, `.rpm`, or `.apk` packages from the [releases page][releases] and install them with the appropriate tools.
+
+=== "Pro"
+
+    Download the `.deb`, `.rpm`, or `.apk` packages from the [releases page][pro-releases] and install them with the appropriate tools.
 
 To install, after downloading the files, run:
 
@@ -180,7 +250,7 @@ rpm -ivh goreleaser*.rpm
 apk add --allow-untrusted goreleaser*.apk
 ```
 
-### go install
+## `go install`
 
 === "OSS"
 
@@ -190,106 +260,46 @@ apk add --allow-untrusted goreleaser*.apk
 
     Requires Go 1.22.
 
-### bash script
+=== "Pro"
+
+    Not available.
+
+## Bash Script
+
+This script does not install anything, it just downloads, verifies and runs
+GoReleaser.
+Its purpose is to be used within scripts and CIs.
 
 === "OSS"
 
     ```bash
-    curl -sfL https://goreleaser.com/static/run | bash
+    curl -sfL https://goreleaser.com/static/run | bash VERSION=__VERSION__ -s -- check
     ```
 
 === "Pro"
 
     ```bash
-    curl -sfL https://goreleaser.com/static/run | DISTRIBUTION=pro bash
-    ```
-
-=== "Additional Options"
-
-    You can also set the `VERSION` and `DISTRIBUTION` variables to specify
-    a version instead of using latest and `pro` or `oss` distributions,
-    respectively.
-
-    You can also pass flags and args to GoReleaser:
-
-    ```bash
-    curl -sfL https://goreleaser.com/static/run |
-      VERSION=__VERSION__ DISTRIBUTION=oss bash -s -- check
-
-    curl -sfL https://goreleaser.com/static/run |
-      VERSION=__VERSION__ DISTRIBUTION=pro bash -s -- check
+    curl -sfL https://goreleaser.com/static/run | DISTRIBUTION=pro VERSION=__VERSION__ bash -s -- check
     ```
 
 !!! tip
 
-    This script does not install anything, it just downloads, verifies and
-    runs GoReleaser.
-    Its purpose is to be used within scripts and CIs.
+    The `VERSION` environment variable can be ommited to get the latest stable
+    version, or you can set it to `nightly` to get the last nightly build.
 
-### manually
-
-=== "OSS"
-
-    Download the pre-compiled binaries from the [OSS releases page][releases] and copy them to the desired location.
-
-=== "Pro"
-
-    Download the pre-compiled binaries from the [Pro releases page][pro-releases] and copy them to the desired location.
-
-### nightly
-
-Nightly build are pre-releases of the current code into the main branch.
-Use it for testing out new features only.
-
-#### manually
+## Manually
 
 === "OSS"
 
-    Download the pre-compiled binaries from the [nightly release][nightly-releases] and copy them to the desired location.
+    Download the pre-compiled binaries from the [releases page][releases] and copy them to the desired location.
 
 === "Pro"
 
-    Download the pre-compiled binaries from the [nightly release][nightly-pro-releases] and copy them to the desired location.
-
-### bash script
-
-=== "OSS"
-
-    ```bash
-    curl -sfL https://goreleaser.com/static/run |
-      VERSION=nightly DISTRIBUTION=oss bash -s -- release --clean
-    ```
-
-=== "Pro"
-
-    ```bash
-    curl -sfL https://goreleaser.com/static/run |
-      VERSION=nightly DISTRIBUTION=pro bash -s -- release --clean
-    ```
-
-#### docker
-
-Docker images are also available, look for tags with a `-nightly` suffix for
-the last nightly of a specific release, or the `:nightly` tag,
-which is always the latest nightly build available.
-
-=== "OSS"
-
-    Registries:
-
-    - [`goreleaser/goreleaser`](https://hub.docker.com/r/goreleaser/goreleaser)
-    - [`ghcr.io/goreleaser/goreleaser`](https://github.com/goreleaser/goreleaser/pkgs/container/goreleaser)
-
-=== "Pro"
-
-    Registries:
-
-    - [`goreleaser/goreleaser-pro`](https://hub.docker.com/r/goreleaser/goreleaser-pro)
-    - [`ghcr.io/goreleaser/goreleaser-pro`](https://github.com/goreleaser/goreleaser/pkgs/container/goreleaser-pro)
+    Download the pre-compiled binaries from the [releases page][pro-releases] and copy them to the desired location.
 
 ## Verifying the artifacts
 
-### binaries
+### Binaries
 
 All artifacts are checksummed, and the checksum file is signed with [cosign][].
 
@@ -333,7 +343,7 @@ All artifacts are checksummed, and the checksum file is signed with [cosign][].
       sha256sum --ignore-missing -c checksums.txt
       ```
 
-### docker images
+### Docker images
 
 Our Docker images are signed with [cosign][].
 
@@ -344,7 +354,7 @@ Verify the signatures:
     ```bash
     cosign verify \
       --certificate-identity 'https://github.com/goreleaser/goreleaser/.github/workflows/release.yml@refs/tags/__VERSION__' \
-        --certificate-oidc-issuer 'https://token.actions.githubusercontent.com' \
+      --certificate-oidc-issuer 'https://token.actions.githubusercontent.com' \
       goreleaser/goreleaser
     ```
 
@@ -361,67 +371,29 @@ Verify the signatures:
 
     The `.pem` and `.sig` files are the image `name:tag`, replacing `/` and `:` with `-`.
 
-## Running with Docker
+## Nightly builds
 
-You can also use it within a Docker container.
-To do that, you'll need to execute something more-or-less like the examples below.
+Nightly build are pre-releases of the current code into the main branch.
+Use it for testing out new features only.
 
 === "OSS"
 
-    Registries:
-
-    - [`goreleaser/goreleaser`](https://hub.docker.com/r/goreleaser/goreleaser)
-    - [`ghcr.io/goreleaser/goreleaser`](https://github.com/goreleaser/goreleaser/pkgs/container/goreleaser)
-
-    Example usage:
-
-    ```bash
-    docker run --rm --privileged \
-      -v $PWD:/go/src/github.com/user/repo \
-      -v /var/run/docker.sock:/var/run/docker.sock \
-      -w /go/src/github.com/user/repo \
-      -e GITHUB_TOKEN \
-      -e DOCKER_USERNAME \
-      -e DOCKER_PASSWORD \
-      -e DOCKER_REGISTRY \
-      goreleaser/goreleaser release
-    ```
+    Download the pre-compiled binaries from the [nightly release][nightly-releases] and copy them to the desired location.
 
 === "Pro"
 
-    Registries:
+    Download the pre-compiled binaries from the [nightly release][nightly-pro-releases] and copy them to the desired location.
 
-    - [`goreleaser/goreleaser-pro`](https://hub.docker.com/r/goreleaser/goreleaser-pro)
-    - [`ghcr.io/goreleaser/goreleaser-pro`](https://github.com/goreleaser/goreleaser/pkgs/container/goreleaser-pro)
+[Docker](#docker) images are also available, look for tags with a `-nightly`
+suffix for the last nightly of a specific release, or the `:nightly` tag,
+which is always the latest nightly build available.
 
-    Example usage:
+You may also use the [Bash Script method](#bash-script) by setting the `VERSION`
+environment variable to `nightly`.
 
-    ```bash
-    docker run --rm --privileged \
-      -v $PWD:/go/src/github.com/user/repo \
-      -v /var/run/docker.sock:/var/run/docker.sock \
-      -w /go/src/github.com/user/repo \
-      -e GITHUB_TOKEN \
-      -e DOCKER_USERNAME \
-      -e DOCKER_PASSWORD \
-      -e DOCKER_REGISTRY \
-      -e GORELEASER_KEY \
-      goreleaser/goreleaser-pro release
-    ```
+## Packaging status
 
-!!! info
-
-    Now, the provided docker image does not support
-    the generation of Snapcraft packages.
-
-Note that the image will almost always have the last stable Go version.
-
-The `DOCKER_REGISTRY` environment variable can be left empty when you are
-releasing to the public docker registry.
-
-If you need more things, you are encouraged to keep your own image. You can
-always use GoReleaser's [own Dockerfile][dockerfile] as an example though
-and iterate from that.
+[![Packaging status](https://repology.org/badge/vertical-allrepos/goreleaser.svg)](https://repology.org/project/goreleaser/versions)
 
 [dockerfile]: https://github.com/goreleaser/goreleaser/blob/main/Dockerfile
 [releases]: https://github.com/goreleaser/goreleaser/releases
@@ -429,41 +401,3 @@ and iterate from that.
 [nightly-pro-releases]: https://github.com/goreleaser/goreleaser-pro/releases/nightly
 [nightly-releases]: https://github.com/goreleaser/goreleaser/releases/nightly
 [cosign]: https://github.com/sigstore/cosign
-
-## Packaging status
-
-[![Packaging status](https://repology.org/badge/vertical-allrepos/goreleaser.svg)](https://repology.org/project/goreleaser/versions)
-
-## Compiling from source
-
-Here you have two options:
-
-If you want to contribute to the project, please follow the
-steps on our [contributing guide](/contributing).
-
-If you just want to build from source for whatever reason, follow these steps:
-
-**clone:**
-
-```bash
-git clone https://github.com/goreleaser/goreleaser
-cd goreleaser
-```
-
-**get the dependencies:**
-
-```bash
-go mod tidy
-```
-
-**build:**
-
-```bash
-go build -o goreleaser .
-```
-
-**verify it works:**
-
-```bash
-./goreleaser --version
-```

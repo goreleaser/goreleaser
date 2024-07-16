@@ -22,9 +22,9 @@ See each sub-command's help for details on how to use the generated script.
 
 ## See also
 
-* [goreleaser](/cmd/goreleaser/)	 - Deliver Go binaries as fast and easily as possible
-* [goreleaser completion bash](/cmd/goreleaser_completion_bash/)	 - Generate the autocompletion script for bash
-* [goreleaser completion fish](/cmd/goreleaser_completion_fish/)	 - Generate the autocompletion script for fish
-* [goreleaser completion powershell](/cmd/goreleaser_completion_powershell/)	 - Generate the autocompletion script for powershell
-* [goreleaser completion zsh](/cmd/goreleaser_completion_zsh/)	 - Generate the autocompletion script for zsh
+* [goreleaser](goreleaser.md)	 - Deliver Go binaries as fast and easily as possible
+* [goreleaser completion bash](goreleaser_completion_bash.md)	 - Generate the autocompletion script for bash
+* [goreleaser completion fish](goreleaser_completion_fish.md)	 - Generate the autocompletion script for fish
+* [goreleaser completion powershell](goreleaser_completion_powershell.md)	 - Generate the autocompletion script for powershell
+* [goreleaser completion zsh](goreleaser_completion_zsh.md)	 - Generate the autocompletion script for zsh
 

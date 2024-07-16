@@ -4,8 +4,8 @@ Some release cycles may need to run something before or after everything else.
 
 GoReleaser allows this with the global hooks feature.
 
-<!-- prettier-ignore -->
 === "OSS"
+
     The `before` section allows for global hooks that will be executed
     **before** the release is started.
 
@@ -23,12 +23,9 @@ GoReleaser allows this with the global hooks feature.
       - touch {{ .Env.FILE_TO_TOUCH }}
     ```
 
-<!-- prettier-ignore -->
 === "Pro"
-    !!! success "GoReleaser Pro"
 
-        Global after hooks, and the additional options in before hooks (`dir`
-        and `env`) are [GoReleaser Pro features](/pro/).
+    {% include-markdown "../includes/pro.md" comments=false %}
 
     The `before` section allows for global hooks that will be executed
     **before** the release is started. Likewise, the `after` section allows for
@@ -77,6 +74,4 @@ If you need to do anything more complex, it is recommended to create a shell
 script and call it instead. You can also go crazy with `sh -c "my commands"`,
 but it gets ugly really fast.
 
-!!! tip
-
-    Learn more about the [name template engine](/customization/templates/).
+{% include-markdown "../includes/templates.md" comments=false %}

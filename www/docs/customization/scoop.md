@@ -104,9 +104,7 @@ scoops:
 {% include-markdown "../includes/repository.md" comments=false %}
 ```
 
-!!! tip
-
-    Learn more about the [name template engine](/customization/templates/).
+{% include-markdown "../includes/templates.md" comments=false %}
 
 By defining the `scoop` section, GoReleaser will take care of publishing the
 Scoop app. Assuming that the project name is `drumroll`, and the current tag is

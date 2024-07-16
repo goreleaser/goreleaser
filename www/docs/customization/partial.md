@@ -2,9 +2,7 @@
 
 GoReleaser can also split and merge builds.
 
-!!! success "GoReleaser Pro"
-
-    This subcommand is a [GoReleaser Pro feature](https://goreleaser.com/pro/).
+{% include-markdown "../includes/pro.md" comments=false %}
 
 This feature can help in some areas:
 

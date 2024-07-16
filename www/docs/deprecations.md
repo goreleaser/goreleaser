@@ -407,7 +407,7 @@ instead.
 > since 2023-04-30 (v1.18.0), removed 2024-05-26 (v2.0)
 
 GoReleaser now allows many `scoop` configurations, so it should be pluralized
-[accordingly](/customization/scoop).
+[accordingly](customization/scoop.md).
 
 === "Before"
 
@@ -431,7 +431,7 @@ This option was still being supported, even though undocumented, for a couple
 of years now. It's finally time to sunset it.
 
 Simply use the pluralized form, `builds`, according to the
-[documentation](/customization/builds).
+[documentation](customization/builds.md).
 
 === "Before"
 
@@ -679,7 +679,7 @@ instead of custom templates.
 
 > since 2022-01-20 (v1.4.0), removed 2023-05-01 (v1.18.0)
 
-On [GoReleaser PRO](/pro/) custom variables should now be prefixed with `.Var`.
+In [GoReleaser PRO](pro.md) custom variables should now be prefixed with `.Var`.
 
 === "Before"
 
@@ -769,7 +769,7 @@ You can still use any of the other install methods.
 This also includes `install.goreleaser.com`.
 
 Most common tools installed via that website were probably
-[GoReleaser](/install/) itself and
+[GoReleaser](install.md) itself and
 [golangci-lint](https://golangci-lint.run/welcome/install/).
 
 Please follow to the check their documentation for alternative install methods.

@@ -10,6 +10,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/goreleaser/nfpm/v2"
 	"github.com/goreleaser/nfpm/v2/files"
 	"github.com/invopop/jsonschema"
 )
@@ -762,7 +763,7 @@ type NFPM struct {
 
 	ID          string   `yaml:"id,omitempty" json:"id,omitempty"`
 	Builds      []string `yaml:"builds,omitempty" json:"builds,omitempty"`
-	Formats     []string `yaml:"formats,omitempty" json:"formats,omitempty" jsonschema:"enum=apk,enum=deb,enum=rpm,enum=termux.deb,enum=archlinux"`
+	Formats     []string `yaml:"formats,omitempty" json:"formats,omitempty" jsonschema:"enum=apk,enum=deb,enum=rpm,enum=termux.deb,enum=archlinux,enum=ipk"`
 	Section     string   `yaml:"section,omitempty" json:"section,omitempty"`
 	Priority    string   `yaml:"priority,omitempty" json:"priority,omitempty"`
 	Vendor      string   `yaml:"vendor,omitempty" json:"vendor,omitempty"`
@@ -883,6 +884,39 @@ type NFPMArchLinux struct {
 	Scripts  NFPMArchLinuxScripts `yaml:"scripts,omitempty" json:"scripts,omitempty"`
 }
 
+// NFPMIPK is custom config only available on ipk packages.
+type NFPMIPKAlternative struct {
+	Priority int    `yaml:"priority,omitempty" json:"priority,omitempty"`
+	Target   string `yaml:"target,omitempty" json:"target,omitempty"`
+	LinkName string `yaml:"link_name,omitempty" json:"link_name,omitempty"`
+}
+
+func (alt NFPMIPKAlternative) ToNFP() nfpm.IPKAlternative {
+	return nfpm.IPKAlternative{
+		Priority: alt.Priority,
+		Target:   alt.Target,
+		LinkName: alt.LinkName,
+	}
+}
+
+type NFPMIPK struct {
+	ABIVersion    string               `yaml:"abi_version,omitempty" json:"abi_version,omitempty"`
+	Alternatives  []NFPMIPKAlternative `yaml:"alternatives,omitempty" json:"alternatives,omitempty"`
+	AutoInstalled bool                 `yaml:"auto_installed,omitempty" json:"auto_installed,omitempty"`
+	Essential     bool                 `yaml:"essential,omitempty" json:"essential,omitempty"`
+	Predepends    []string             `yaml:"predepends,omitempty" json:"predepends,omitempty"`
+	Tags          []string             `yaml:"tags,omitempty" json:"tags,omitempty"`
+	Fields        map[string]string    `yaml:"fields,omitempty" json:"fields,omitempty"`
+}
+
+func (ipk NFPMIPK) ToNFPAlts() []nfpm.IPKAlternative {
+	alts := make([]nfpm.IPKAlternative, len(ipk.Alternatives))
+	for i, alt := range ipk.Alternatives {
+		alts[i] = alt.ToNFP()
+	}
+	return alts
+}
+
 // NFPMOverridables is used to specify per package format settings.
 type NFPMOverridables struct {
 	FileNameTemplate string         `yaml:"file_name_template,omitempty" json:"file_name_template,omitempty"`
@@ -904,6 +938,7 @@ type NFPMOverridables struct {
 	Deb              NFPMDeb        `yaml:"deb,omitempty" json:"deb,omitempty"`
 	APK              NFPMAPK        `yaml:"apk,omitempty" json:"apk,omitempty"`
 	ArchLinux        NFPMArchLinux  `yaml:"archlinux,omitempty" json:"archlinux,omitempty"`
+	IPK              NFPMIPK        `yaml:"ipk,omitempty" json:"ipk,omitempty"`
 }
 
 // SBOM config.
@@ -1007,14 +1042,14 @@ type Snapcraft struct {
 	Builds           []string                           `yaml:"builds,omitempty" json:"builds,omitempty"`
 	Name             string                             `yaml:"name,omitempty" json:"name,omitempty"`
 	Title            string                             `yaml:"title,omitempty" json:"title,omitempty"`
-	Summary          string                             `yaml:"summary,omitempty" json:"summary,omitempty"`
-	Description      string                             `yaml:"description,omitempty" json:"description,omitempty"`
+	Summary          string                             `yaml:"summary" json:"summary"`
+	Description      string                             `yaml:"description" json:"description"`
 	Icon             string                             `yaml:"icon,omitempty" json:"icon,omitempty"`
 	Base             string                             `yaml:"base,omitempty" json:"base,omitempty"`
 	License          string                             `yaml:"license,omitempty" json:"license,omitempty"`
-	Grade            string                             `yaml:"grade,omitempty" json:"grade,omitempty"`
+	Grade            string                             `yaml:"grade,omitempty" json:"grade,omitempty" jsonschema:"enum=stable,enum=devel,default=stable"`
 	ChannelTemplates []string                           `yaml:"channel_templates,omitempty" json:"channel_templates,omitempty"`
-	Confinement      string                             `yaml:"confinement,omitempty" json:"confinement,omitempty"`
+	Confinement      string                             `yaml:"confinement,omitempty" json:"confinement,omitempty" jsonschema:"enum=strict,enum=classic,enum=devmode,default=strict"`
 	Assumes          []string                           `yaml:"assumes,omitempty" json:"assumes,omitempty"`
 	Layout           map[string]SnapcraftLayoutMetadata `yaml:"layout,omitempty" json:"layout,omitempty"`
 	Apps             map[string]SnapcraftAppMetadata    `yaml:"apps,omitempty" json:"apps,omitempty"`

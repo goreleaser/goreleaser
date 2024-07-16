@@ -234,8 +234,8 @@ builds:
     # Note: it'll only match if the full target matches.
     overrides:
       - goos: darwin
-        goarch: arm64
-        goamd64: v1
+        goarch: amd64
+        goamd64: v1 # Note: if you leave this
         goarm: ""
         gomips: ""
         ldflags:
@@ -250,9 +250,12 @@ builds:
           - CGO_ENABLED=1
 ```
 
-!!! tip
+!!! warning "GOAMD64"
 
-    Learn more about the [name template engine](/customization/templates/).
+    You usually will need to specify the `goamd64` version beign used, e.g., in
+    `overrides`, and other places too.
+
+{% include-markdown "../includes/templates.md" comments=false %}
 
 !!! info
 
@@ -292,7 +295,7 @@ builds:
       - windows
 ```
 
-The binary name field supports [templating](/customization/templates/). The
+The binary name field supports [templating](templates.md). The
 following build details are exposed:
 
 <!-- to format the tables, use: https://tabletomarkdown.com/format-markdown-table/ -->
@@ -371,7 +374,7 @@ builds:
 ```
 
 All properties of a hook (`cmd`, `dir` and `env`) support
-[templating](/customization/templates/) with `post` hooks having binary artifact
+[templating](templates.md) with `post` hooks having binary artifact
 available (as these run _after_ the build).
 Additionally the following build details are exposed to both `pre` and `post`
 hooks:
@@ -408,7 +411,7 @@ before:
 # rest of the file...
 ```
 
-[hook]: /customization/hooks
+[hook]: hooks.md
 
 ## Define Build Tag
 
@@ -435,9 +438,7 @@ GoReleaser:
 
 ## Import pre-built binaries
 
-!!! success "GoReleaser Pro"
-
-    The prebuilt builder is a [GoReleaser Pro feature](/pro/).
+{% include-markdown "../includes/pro.md" comments=false %}
 
 It is also possible to import pre-built binaries into the GoReleaser lifecycle.
 
@@ -501,7 +502,7 @@ There is no difference in how the binaries are handled.
 
     A cool tip here, specially when using CGO, is that you can have one
     `.goreleaser.yaml` file just for the builds, build each in its own machine
-    with [`goreleaser build --single-target`](/cmd/goreleaser_build/) and
+    with [`goreleaser build --single-target`](../cmd/goreleaser_build.md) and
     have a second `.goreleaser.yaml` file that imports those binaries
     and release them.
     This tip can also be used to speed up the build process if you run all the

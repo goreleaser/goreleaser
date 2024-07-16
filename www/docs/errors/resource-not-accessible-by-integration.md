@@ -71,8 +71,8 @@ brews:
 
 Read the documentation for each topic:
 
-- [GitHub](/scm/github/)
-- [GitHub Actions](/ci/actions/)
-- [Homebrew Tap](/customization/homebrew/)
-- [Krew Plugin Manifests](/customization/krew/)
-- [Scoop Manifests](/customization/scoop/)
+- [GitHub](../scm/github.md)
+- [GitHub Actions](../ci/actions.md)
+- [Homebrew Tap](../customization/homebrew.md)
+- [Krew Plugin Manifests](../customization/krew.md)
+- [Scoop Manifests](../customization/scoop.md)

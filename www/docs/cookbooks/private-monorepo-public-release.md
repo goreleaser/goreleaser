@@ -5,12 +5,10 @@ private monorepo, but publish its binaries to a public repository.
 
 This cookbook gives some suggestions on how to handle that.
 
-!!! success "GoReleaser Pro"
-    This cookbook uses [GoReleaser Pro](/pro).
+{% include-markdown "../includes/pro.md" comments=false %}
 
 Usually, you'll rely on tag prefixes for each sub-project within your monorepo.
-GoReleaser can handle that within its [monorepo
-configuration](/customization/monorepo):
+GoReleaser can handle that within its [monorepo configuration][Monorepo]:
 
 ```yaml
 monorepo:
@@ -22,7 +20,7 @@ With that you can already push a tag `app1/v1.0.0`, for example, and GoReleaser
 should gracefully handling everything.
 
 But, if you want the release to happen in another repository, you'll also need
-to add some [release](/customization/release) settings:
+to add some [release][Release] settings:
 
 ```yaml
 release:
@@ -44,22 +42,22 @@ You can remove it by setting the `release.tag` field:
 
 ```yaml
 release:
-  tag: '{{ .Tag }}'
+  tag: "{{ .Tag }}"
   github:
     owner: myorg
     name: app1
 ```
 
 !!! info
+
     On GoReleaser Pro, `{{.Tag}}` is the tag without the prefix, and the
     prefixed tag can be accessed with `{{.PrefixedTag}}`. Check the
-    [documentation](/customization/templates) for more information.
+    [documentation][Template variables] for more information.
 
 ## Learning more
 
 Make sure to take a look at the following documentation pages:
 
-- [Monorepo](/customization/monorepo)
-- [Release](/customization/release)
-- [Template variables](/customization/templates)
-
+- [Monorepo](../customization/monorepo.md)
+- [Release](../customization/release.md)
+- [Template variables](../customization/templates.md)

@@ -3,7 +3,7 @@
 On GoReleaser there are two main ways of doing that: the easier one is to use
 the [ko integration][ko].
 
-[ko]: /customization/ko
+[ko]: ../customization/ko.md
 
 If you don't want to, or can't, use Ko for whatever reason, this guide is for
 you!
@@ -20,20 +20,19 @@ It is also important to use `buildx`. Here's an example:
 ```yaml
 # .goreleaser.yaml
 dockers:
-- image_templates:
-  - 'myorg/myuser:{{ .Tag }}-amd64'
-  use: buildx
-  build_flag_templates:
-  - "--pull"
-  - "--platform=linux/amd64"
-- image_templates:
-  - 'myorg/myuser:{{ .Tag }}-arm64'
-  use: buildx
-  build_flag_templates:
-  - "--pull"
-  - "--platform=linux/arm64"
-  goarch: arm64
-
+  - image_templates:
+      - "myorg/myuser:{{ .Tag }}-amd64"
+    use: buildx
+    build_flag_templates:
+      - "--pull"
+      - "--platform=linux/amd64"
+  - image_templates:
+      - "myorg/myuser:{{ .Tag }}-arm64"
+    use: buildx
+    build_flag_templates:
+      - "--pull"
+      - "--platform=linux/arm64"
+    goarch: arm64
 ```
 
 This will, on build time, create two Docker images (`myorg/myuser:v1.2.3-amd64`
@@ -46,10 +45,10 @@ publish them behind that single name. Here's how it would look like:
 ```yaml
 # .goreleaser.yaml
 docker_manifests:
-- name_template: 'myorg/myuser:{{ .Tag }}'
-  image_templates:
-  - 'myorg/myuser:{{ .Tag }}-amd64'
-  - 'myorg/myuser:{{ .Tag }}-arm64'
+  - name_template: "myorg/myuser:{{ .Tag }}"
+    image_templates:
+      - "myorg/myuser:{{ .Tag }}-amd64"
+      - "myorg/myuser:{{ .Tag }}-arm64"
 ```
 
 And that is it!

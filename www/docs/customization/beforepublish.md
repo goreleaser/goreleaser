@@ -2,9 +2,7 @@
 
 > Since v2.1 (Pro).
 
-!!! success "GoReleaser Pro"
-
-    Before publish hooks is a [GoReleaser Pro feature](/pro/).
+{% include-markdown "../includes/pro.md" comments=false %}
 
 You can use the `before_publish` hooks to run command against artifacts before
 the publishing step kicks in.
@@ -66,6 +64,4 @@ before_publish:
       - "FILE_TO_TOUCH=something-{{ .ProjectName }}" # specify hook level environment variables
 ```
 
-!!! tip
-
-    Learn more about the [name template engine](/customization/templates/).
+{% include-markdown "../includes/templates.md" comments=false %}

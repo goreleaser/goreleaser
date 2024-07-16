@@ -49,6 +49,4 @@ to oldest, so the latest tag is returned.
 This has the effect of sorting non-pre-release tags before pre-release ones,
 which is different from what other git sorting options might give you.
 
-!!! success "GoReleaser Pro"
-
-    Semver sorting is a [GoReleaser Pro feature](/pro/).
+{% include-markdown "../includes/pro.md" comments=false %}

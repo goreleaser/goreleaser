@@ -22,13 +22,20 @@ git clone git@github.com:goreleaser/goreleaser.git
 
 `cd` into the directory and install the dependencies:
 
-```sh
-task setup
+```bash
+go mod tidy
 ```
 
-A good way of making sure everything is all right is running the test suite:
+You should then be able to build the binary:
 
-```sh
+```bash
+go build -o goreleaser .
+./goreleaser --version
+```
+
+A good way to check if everything is alright is to run the test suite: 
+
+```bash
 dagger call --source=.:default test output
 ```
 

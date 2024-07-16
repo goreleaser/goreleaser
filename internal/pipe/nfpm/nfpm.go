@@ -26,6 +26,7 @@ import (
 	_ "github.com/goreleaser/nfpm/v2/apk"  // blank import to register the format
 	_ "github.com/goreleaser/nfpm/v2/arch" // blank import to register the format
 	_ "github.com/goreleaser/nfpm/v2/deb"  // blank import to register the format
+	_ "github.com/goreleaser/nfpm/v2/ipk"  // blank import to register the format
 	_ "github.com/goreleaser/nfpm/v2/rpm"  // blank import to register the format
 )
 
@@ -435,6 +436,15 @@ func create(ctx *context.Context, fpm config.NFPM, format string, artifacts []*a
 					PreUpgrade:  overridden.ArchLinux.Scripts.PreUpgrade,
 					PostUpgrade: overridden.ArchLinux.Scripts.PostUpgrade,
 				},
+			},
+			IPK: nfpm.IPK{
+				ABIVersion:    overridden.IPK.ABIVersion,
+				AutoInstalled: overridden.IPK.AutoInstalled,
+				Alternatives:  overridden.IPK.ToNFPAlts(),
+				Essential:     overridden.IPK.Essential,
+				Predepends:    overridden.IPK.Predepends,
+				Tags:          overridden.IPK.Tags,
+				Fields:        overridden.IPK.Fields,
 			},
 		},
 	}

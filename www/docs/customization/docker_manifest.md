@@ -74,9 +74,7 @@ docker_manifests:
     use: docker
 ```
 
-!!! tip
-
-    Learn more about the [name template engine](/customization/templates/).
+{% include-markdown "../includes/templates.md" comments=false %}
 
 ## How it works
 
@@ -147,9 +145,7 @@ and push everything to Docker Hub.
 
 ## Using Podman
 
-!!! success "GoReleaser Pro"
-
-    The podman backend is a [GoReleaser Pro feature](/pro/).
+{% include-markdown "../includes/pro.md" comments=false %}
 
 You can use [`podman`](https://podman.io) instead of `docker` by setting `use`
 to `podman` on your configuration:
