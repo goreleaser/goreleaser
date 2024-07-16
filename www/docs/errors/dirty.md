@@ -8,7 +8,7 @@ show you, which files were created/modified.
 
 Here's an example error:
 
-```sh
+```
    ⨯ release failed after 0.02s error=git is currently in a dirty state
 Please check in your pipeline what can be changing the following files:
  M modified.go
@@ -24,3 +24,14 @@ From here on, you have a couple of options:
 - change your build process to not touch any git tracked files.
 - if you are running `goreleaser build`, you might want to add either the
   `--snapshot` or `--skip=validate` flags to it
+
+!!! tip "./dist"
+
+    The `dist` folder (usually `./dist`) needs to be added to `.gitignore`, or
+    deleted before running GoReleaser.
+    `goreleaser init` takes care of that for you, if you used it to start your
+    project, if not, you'll need to do it manually:
+
+    ```sh
+    echo './dist' >>.gitignore
+    ```
