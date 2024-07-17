@@ -1,6 +1,6 @@
 # MSI
 
-{% include-markdown "../includes/pro.md" comments=false %}
+<!-- md:pro -->
 
 GoReleaser can create MSI installers for windows binaries using [msitools][].
 
@@ -131,7 +131,7 @@ Here's an example `wsx` file that you can build upon:
    [msitools][], run a snapshot build and verify the generated installers.
 1. Only `amd64` and `386` are supported.
 
-{% include-markdown "../includes/templates.md" comments=false %}
+<!-- md:templates -->
 
 [msitools]: https://wiki.gnome.org/msitools
 [wix]: https://wixtoolset.org

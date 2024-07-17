@@ -72,4 +72,4 @@ checksum:
       dst: LICENSE.txt
 ```
 
-{% include-markdown "../includes/templates.md" comments=false %}
+<!-- md:templates -->

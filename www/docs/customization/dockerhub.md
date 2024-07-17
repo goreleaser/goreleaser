@@ -1,6 +1,6 @@
 # DockerHub
 
-{% include-markdown "../includes/pro.md" comments=false %}
+<!-- md:pro -->
 
 DockerHub allows you to set an image description and a full description.
 However, this is not possible via `docker push`.
@@ -66,4 +66,4 @@ dockerhub:
         path: ./README.md
 ```
 
-{% include-markdown "../includes/templates.md" comments=false %}
+<!-- md:templates -->

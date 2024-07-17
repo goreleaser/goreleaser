@@ -28,4 +28,4 @@ announce:
     server: https://mastodon.social
 ```
 
-{% include-markdown "../../includes/templates.md" comments=false %}
+<!-- md:templates -->

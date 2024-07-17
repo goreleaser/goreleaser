@@ -28,4 +28,4 @@ milestones:
     name_template: "Current Release"
 ```
 
-{% include-markdown "../includes/templates.md" comments=false %}
+<!-- md:templates -->

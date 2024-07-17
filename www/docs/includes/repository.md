@@ -1,3 +1,8 @@
+---
+search:
+  exclude: true
+---
+
     # Repository to push the generated files to.
     repository:
       # Repository owner.

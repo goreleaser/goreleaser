@@ -191,10 +191,10 @@ brews:
     	etc.install "app-config.conf"
       # ...
 
-{% include-markdown "../includes/repository.md" comments=false %}
+{% include-markdown "../includes/repository.md" comments=false start='---\n\n' %}
 ```
 
-{% include-markdown "../includes/templates.md" comments=false %}
+<!-- md:templates -->
 
 By defining the `brew` section, GoReleaser will take care of publishing the
 Homebrew tap.
@@ -262,7 +262,7 @@ Our suggestion is to create a `my-app-head.rb` file on your tap following
 
 ## Versioned formulas
 
-{% include-markdown "../includes/pro.md" comments=false %}
+<!-- md:pro -->
 
 GoReleaser can also create a versioned formula.
 For instance, you might want to make keep previous minor versions available to
@@ -296,4 +296,4 @@ You can check the [resource not accessible by integration](https://goreleaser.co
 
 - Only one `GOARM` build is allowed;
 
-{% include-markdown "../includes/prs.md" comments=false %}
+{% include-markdown "../includes/prs.md" comments=false start='---\n\n' %}

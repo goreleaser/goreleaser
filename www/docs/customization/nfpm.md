@@ -518,7 +518,7 @@ nfpms:
         - foo
 ```
 
-{% include-markdown "../includes/templates.md" comments=false %}
+<!-- md:templates -->
 
 !!! info
 

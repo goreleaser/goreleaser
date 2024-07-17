@@ -59,7 +59,7 @@ Notice you can define multiple `upx` definitions, filtering by various fields.
 You can use that to have different compression options depending on the target
 OS, for instance - or even to run it only on a few selected platforms.
 
-{% include-markdown "../includes/templates.md" comments=false %}
+<!-- md:templates -->
 
 [upx]: https://upx.github.io/
 [upx-issues]: https://github.com/upx/upx/issues

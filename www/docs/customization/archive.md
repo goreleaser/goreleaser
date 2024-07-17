@@ -188,9 +188,9 @@ archives:
     allow_different_binary_count: true
 ```
 
-{% include-markdown "../includes/pro.md" comments=false %}
+<!-- md:pro -->
 
-{% include-markdown "../includes/templates.md" comments=false %}
+<!-- md:templates -->
 
 !!! tip
 

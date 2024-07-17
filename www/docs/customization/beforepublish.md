@@ -1,8 +1,8 @@
 # Before Publish Hooks
 
-> Since v2.1 (Pro).
+<!-- md:version v2.1 -->
 
-{% include-markdown "../includes/pro.md" comments=false %}
+<!-- md:pro -->
 
 You can use the `before_publish` hooks to run command against artifacts before
 the publishing step kicks in.
@@ -64,4 +64,4 @@ before_publish:
       - "FILE_TO_TOUCH=something-{{ .ProjectName }}" # specify hook level environment variables
 ```
 
-{% include-markdown "../includes/templates.md" comments=false %}
+<!-- md:templates -->

@@ -1,8 +1,8 @@
 # Cloudsmith - apt, rpm, and alpine repositories
 
-> Since v2.1 (Pro).
+<!-- md:version v2.1 -->
 
-{% include-markdown "../includes/pro.md" comments=false %}
+<!-- md:pro -->
 
 You can easily create `deb`, `alpine`, and `yum` repositories on
 [Cloudsmith][cloudsmith] using GoReleaser.
@@ -17,7 +17,7 @@ as an environment variable named `CLOUDSMITH_TOKEN`:
 
 ```yaml
 # .goreleaser.yaml
-furies:
+cloudsmiths:
   - organization: myorg
     repository: myrepo
     distributions:
@@ -83,4 +83,4 @@ cloudsmiths:
 
 [cloudsmith]: https://cloudsmith.io/
 
-{% include-markdown "../includes/templates.md" comments=false %}
+<!-- md:templates -->
