@@ -353,7 +353,7 @@ func TestKoValidateMainPathIssue4382(t *testing.T) {
 	require.ErrorIs(t, validateMainPath("app/"), errInvalidMainPath)
 	require.ErrorIs(t, validateMainPath("/src/"), errInvalidMainPath)
 	require.ErrorIs(t, validateMainPath("/src/app"), errInvalidMainPath)
-	require.ErrorIs(t, validateMainPath("./testdata/app/main.go"), errInvalidMainPath)
+	require.ErrorIs(t, validateMainPath("./testdata/app/main.go"), errInvalidMainGoPath)
 
 	// testing with real context
 	ctxOk := testctx.NewWithCfg(config.Project{

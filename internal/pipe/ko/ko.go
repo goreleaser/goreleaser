@@ -49,8 +49,9 @@ var (
 		azureKeychain,
 	)
 
-	errNoRepository    = errors.New("ko: missing repository: please set either the repository field or a $KO_DOCKER_REPO environment variable")
-	errInvalidMainPath = errors.New("ko: invalid Main path: ko.main (or build.main if ko.main is not set) should be a relative path")
+	errNoRepository      = errors.New("ko: missing repository: please set either the repository field or a $KO_DOCKER_REPO environment variable")
+	errInvalidMainPath   = errors.New("ko: invalid Main path: ko.main (or build.main if ko.main is not set) should be a relative path")
+	errInvalidMainGoPath = errors.New("ko: invalid Main path: your path should point to a directory instead of a .go file")
 )
 
 // Pipe that build OCI compliant images with ko.
@@ -437,7 +438,7 @@ func validateMainPath(path string) error {
 	}
 	// paths sure can have dots in them, but if the path ends in .go, it's propably a file that one misundertood as a valid value
 	if strings.HasSuffix(path, ".go") {
-		return errInvalidMainPath
+		return errInvalidMainGoPath
 	}
 	return nil
 }
