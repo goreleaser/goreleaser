@@ -19,7 +19,7 @@ dockers:
       - user/repo
 ```
 
-{% include-markdown "../includes/templates.md" comments=false %}
+<!-- md:templates -->
 
 You also need to create a `Dockerfile` in your project's root directory:
 
@@ -196,7 +196,7 @@ dockers:
     Note that you will have to manually login into the Docker registries you
     want to push to — GoReleaser does not login by itself.
 
-{% include-markdown "../includes/templates.md" comments=false %}
+<!-- md:templates -->
 
 !!! tip
 
@@ -224,7 +224,7 @@ This will build and publish the following images:
 
 - `myuser/foo`
 
-{% include-markdown "../includes/templates.md" comments=false %}
+<!-- md:templates -->
 
 ## Keeping docker images updated for current major
 
@@ -252,7 +252,7 @@ This will build and publish the following images:
 With these settings you can hopefully push several Docker images
 with multiple tags.
 
-{% include-markdown "../includes/templates.md" comments=false %}
+<!-- md:templates -->
 
 ## Publishing to multiple docker registries
 
@@ -305,7 +305,7 @@ docker build -t myuser/myimage . \
   --label=org.opencontainers.image.version=1.6.4
 ```
 
-{% include-markdown "../includes/templates.md" comments=false %}
+<!-- md:templates -->
 
 ## Use a specific builder with Docker buildx
 
@@ -330,7 +330,7 @@ dockers:
 
 ## Using Podman
 
-{% include-markdown "../includes/pro.md" comments=false %}
+<!-- md:pro -->
 
 You can use [`podman`](https://podman.io) instead of `docker` by setting `use` to `podman` on your config:
 

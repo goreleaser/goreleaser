@@ -321,7 +321,7 @@ snapcrafts:
           - $HOME/.foobar
 ```
 
-{% include-markdown "../includes/templates.md" comments=false %}
+<!-- md:templates -->
 
 !!! note
 

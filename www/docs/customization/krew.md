@@ -86,10 +86,10 @@ krews:
     # in case there is an indicator for prerelease in the tag e.g. v1.0.0-rc1
     skip_upload: true
 
-{% include-markdown "../includes/repository.md" comments=false %}
+{% include-markdown "../includes/repository.md" comments=false start='---\n\n' %}
 ```
 
-{% include-markdown "../includes/templates.md" comments=false %}
+<!-- md:templates -->
 
 ## Limitations
 
@@ -97,4 +97,4 @@ krews:
 - Binary releases (when `archives.format` is set to `binary`) are not allowed;
 - Only one `GOARM` build is allowed;
 
-{% include-markdown "../includes/prs.md" comments=false %}
+{% include-markdown "../includes/prs.md" comments=false start='---\n\n' %}

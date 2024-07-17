@@ -2,7 +2,7 @@
 
 GoReleaser can also split and merge builds.
 
-{% include-markdown "../includes/pro.md" comments=false %}
+<!-- md:pro -->
 
 This feature can help in some areas:
 

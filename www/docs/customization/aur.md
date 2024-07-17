@@ -166,7 +166,7 @@ aurs:
     directory: "."
 ```
 
-{% include-markdown "../includes/templates.md" comments=false %}
+<!-- md:templates -->
 
 !!! tip
 

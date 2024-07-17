@@ -1,6 +1,6 @@
 # Template Files
 
-{% include-markdown "../includes/pro.md" comments=false %}
+<!-- md:pro -->
 
 Template Files allow you to create custom files and/or scripts using
 GoReleaser's internal state and template variables, for example, an installer
@@ -35,4 +35,4 @@ template_files:
     mode: 0755
 ```
 
-{% include-markdown "../includes/templates.md" comments=false %}
+<!-- md:templates -->

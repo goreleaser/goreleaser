@@ -1,6 +1,6 @@
 # Includes
 
-{% include-markdown "../includes/pro.md" comments=false %}
+<!-- md:pro -->
 
 GoReleaser allows you to reuse configuration files by including them from either
 a URL or a file path.

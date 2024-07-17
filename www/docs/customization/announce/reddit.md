@@ -34,4 +34,4 @@ announce:
     title_template: ''GoReleaser {{ .Tag }} was just released!''
 ```
 
-{% include-markdown "../../includes/templates.md" comments=false %}
+<!-- md:templates -->

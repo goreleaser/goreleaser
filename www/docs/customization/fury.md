@@ -1,6 +1,6 @@
 # Fury - apt and rpm repositories
 
-{% include-markdown "../includes/pro.md" comments=false %}
+<!-- md:pro -->
 
 You can easily create `deb` and `yum` repositories on [Fury][fury] using GoReleaser.
 
@@ -60,4 +60,4 @@ furies:
 
 [fury]: https://gemfury.com
 
-{% include-markdown "../includes/templates.md" comments=false %}
+<!-- md:templates -->

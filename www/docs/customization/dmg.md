@@ -1,6 +1,6 @@
 # DMG
 
-{% include-markdown "../includes/pro.md" comments=false %}
+<!-- md:pro -->
 
 GoReleaser can create DMG images for macOS using `mkisofs` or `hdiutil`.
 
@@ -56,4 +56,4 @@ dmg:
    link inside the image might not work if the image was built on Windows.
 1. If running outside macOS, make sure to have `mkisofs` installed.
 
-{% include-markdown "../includes/templates.md" comments=false %}
+<!-- md:templates -->

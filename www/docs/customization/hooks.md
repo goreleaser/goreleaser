@@ -25,7 +25,7 @@ GoReleaser allows this with the global hooks feature.
 
 === "Pro"
 
-    {% include-markdown "../includes/pro.md" comments=false %}
+    <!-- md:pro -->
 
     The `before` section allows for global hooks that will be executed
     **before** the release is started. Likewise, the `after` section allows for
@@ -74,4 +74,4 @@ If you need to do anything more complex, it is recommended to create a shell
 script and call it instead. You can also go crazy with `sh -c "my commands"`,
 but it gets ugly really fast.
 
-{% include-markdown "../includes/templates.md" comments=false %}
+<!-- md:templates -->

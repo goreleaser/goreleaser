@@ -5,6 +5,8 @@ copyright: Made with ❤️ by GoReleaser contributors.
 repo_name: goreleaser/goreleaser
 repo_url: https://github.com/goreleaser/goreleaser
 edit_uri: edit/main/www/docs/
+hooks:
+  - docs/overrides/hooks/shortcodes.py
 
 theme:
   name: material
@@ -14,6 +16,9 @@ theme:
   favicon: static/favicon.ico
   include_search_page: false
   search_index_only: true
+  icon:
+    admonition:
+      example: material/professional-hexagon
   palette:
     - media: "(prefers-color-scheme: light)" # Light mode
       scheme: default
@@ -255,3 +260,6 @@ markdown_extensions:
   - pymdownx.tasklist:
       custom_checkbox: true
   - footnotes
+  - pymdownx.emoji:
+      emoji_index: !!python/name:material.extensions.emoji.twemoji
+      emoji_generator: !!python/name:material.extensions.emoji.to_svg

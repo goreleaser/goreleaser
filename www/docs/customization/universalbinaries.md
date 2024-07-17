@@ -53,7 +53,7 @@ universal_binaries:
       post: ./script.sh {{ .Path }}
 ```
 
-{% include-markdown "../includes/templates.md" comments=false %}
+<!-- md:templates -->
 
 For more info about hooks, see the [build section](./builds.md#build-hooks).
 

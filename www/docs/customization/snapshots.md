@@ -31,7 +31,7 @@ You can also check if it's a snapshot build inside a template with:
 {{ if .IsSnapshot }}something{{ else }}something else{{ end }}
 ```
 
-{% include-markdown "../includes/templates.md" comments=false %}
+<!-- md:templates -->
 
 Note that the idea behind GoReleaser's snapshots is for local builds or to
 validate your build on the CI pipeline. Artifacts won't be uploaded and will

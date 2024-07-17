@@ -26,4 +26,4 @@ announce:
     username: "my-project.bsky.social"
 ```
 
-{% include-markdown "../../includes/templates.md" comments=false %}
+<!-- md:templates -->

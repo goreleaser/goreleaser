@@ -94,7 +94,7 @@ You should be able to use all its fields on each item:
 - `.Type`
 - `.Extra`
 
-{% include-markdown "../includes/pro.md" comments=false %}
+<!-- md:pro -->
 
 ## Single-artifact extra fields
 
@@ -193,7 +193,7 @@ GOVERSION_NR=$(go version | awk '{print $3;}') goreleaser
 
 ## Custom variables
 
-{% include-markdown "../includes/pro.md" comments=false %}
+<!-- md:pro -->
 
 You can also declare custom variables. This feature is specially useful with
 [includes](includes.md), so you can have more generic configuration

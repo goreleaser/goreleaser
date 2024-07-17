@@ -67,4 +67,4 @@ metadata:
       path: ./README.md
 ```
 
-{% include-markdown "../includes/templates.md" comments=false %}
+<!-- md:templates -->

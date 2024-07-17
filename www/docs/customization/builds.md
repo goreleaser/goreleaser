@@ -255,7 +255,7 @@ builds:
     You usually will need to specify the `goamd64` version beign used, e.g., in
     `overrides`, and other places too.
 
-{% include-markdown "../includes/templates.md" comments=false %}
+<!-- md:templates -->
 
 !!! info
 
@@ -438,7 +438,7 @@ GoReleaser:
 
 ## Import pre-built binaries
 
-{% include-markdown "../includes/pro.md" comments=false %}
+<!-- md:pro -->
 
 It is also possible to import pre-built binaries into the GoReleaser lifecycle.
 

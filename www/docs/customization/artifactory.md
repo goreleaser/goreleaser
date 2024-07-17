@@ -237,9 +237,9 @@ artifactories:
     extra_files_only: true
 ```
 
-{% include-markdown "../includes/pro.md" comments=false %}
+<!-- md:pro -->
 
 These settings should allow you to push your artifacts into multiple
 **Artifactory** instances.
 
-{% include-markdown "../includes/templates.md" comments=false %}
+<!-- md:templates -->

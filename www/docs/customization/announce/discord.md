@@ -38,4 +38,4 @@ announce:
     icon_url: ""
 ```
 
-{% include-markdown "../../includes/templates.md" comments=false %}
+<!-- md:templates -->

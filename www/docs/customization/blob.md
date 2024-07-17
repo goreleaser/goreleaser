@@ -129,7 +129,7 @@ blobs:
   extra_files_only: true
 ```
 
-{% include-markdown "../includes/templates.md" comments=false %}
+<!-- md:templates -->
 
 ## Authentication
 
