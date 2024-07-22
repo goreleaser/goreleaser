@@ -78,4 +78,4 @@ source:
         mtime: 2008-01-02T15:04:05Z
 ```
 
-{% include-markdown "../includes/templates.md" comments=false %}
+<!-- md:templates -->

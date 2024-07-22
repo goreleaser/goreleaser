@@ -134,7 +134,7 @@ chocolateys:
     goamd64: v1
 ```
 
-{% include-markdown "../includes/templates.md" comments=false %}
+<!-- md:templates -->
 
 !!! note
 

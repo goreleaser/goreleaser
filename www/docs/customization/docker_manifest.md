@@ -74,7 +74,7 @@ docker_manifests:
     use: docker
 ```
 
-{% include-markdown "../includes/templates.md" comments=false %}
+<!-- md:templates -->
 
 ## How it works
 
@@ -145,7 +145,7 @@ and push everything to Docker Hub.
 
 ## Using Podman
 
-{% include-markdown "../includes/pro.md" comments=false %}
+<!-- md:pro -->
 
 You can use [`podman`](https://podman.io) instead of `docker` by setting `use`
 to `podman` on your configuration:

@@ -109,10 +109,10 @@ nix:
     post_install: |
       installShellCompletion ./completions/*
 
-{% include-markdown "../includes/repository.md" comments=false %}
+{% include-markdown "../includes/repository.md" comments=false start='---\n\n' %}
 ```
 
-{% include-markdown "../includes/templates.md" comments=false %}
+<!-- md:templates -->
 
 ## Things not supported
 
@@ -156,4 +156,4 @@ That's it!
 
 [nur]: https://github.com/nix-community/NUR
 
-{% include-markdown "../includes/prs.md" comments=false %}
+{% include-markdown "../includes/prs.md" comments=false start='---\n\n' %}

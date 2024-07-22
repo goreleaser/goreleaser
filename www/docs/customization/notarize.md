@@ -73,7 +73,7 @@ notarize:
         timeout: 20m
 ```
 
-{% include-markdown "../includes/templates.md" comments=false %}
+<!-- md:templates -->
 
 !!! tip "base64"
 
@@ -86,7 +86,7 @@ notarize:
 
 ## Signing only
 
-> Since v2.1.
+<!-- md:version v2.1 -->
 
 If you want to only sign the binaries, but not notarize them, you can simply
 leave the `notarize` section of your configuration empty.

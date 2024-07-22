@@ -5,7 +5,7 @@ private monorepo, but publish its binaries to a public repository.
 
 This cookbook gives some suggestions on how to handle that.
 
-{% include-markdown "../includes/pro.md" comments=false %}
+<!-- md:pro -->
 
 Usually, you'll rely on tag prefixes for each sub-project within your monorepo.
 GoReleaser can handle that within its [monorepo configuration][Monorepo]:

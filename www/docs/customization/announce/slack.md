@@ -50,4 +50,4 @@ announce:
     attachments: []
 ```
 
-{% include-markdown "../../includes/templates.md" comments=false %}
+<!-- md:templates -->

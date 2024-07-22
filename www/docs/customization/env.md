@@ -22,4 +22,4 @@ underlying builds (using `go build`) will have `FOO` set to `on`.
 
 The root `env` section also accepts templates.
 
-{% include-markdown "../includes/templates.md" comments=false %}
+<!-- md:templates -->

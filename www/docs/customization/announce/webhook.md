@@ -42,4 +42,4 @@ announce:
       User-Agent: "goreleaser"
 ```
 
-{% include-markdown "../../includes/templates.md" comments=false %}
+<!-- md:templates -->

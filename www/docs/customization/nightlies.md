@@ -1,6 +1,6 @@
 # Nightlies
 
-{% include-markdown "../includes/pro.md" comments=false %}
+<!-- md:pro -->
 
 Whether if you need beta builds or a rolling-release system, the nightly builds
 feature will do it for you.
@@ -41,7 +41,7 @@ When you run GoReleaser with `--nightly`, it will set the `Version` template
 variable to the evaluation of `nightly.name_template`. This means that if you
 use `{{ .Version }}` on your name templates, you'll get the nightly version.
 
-{% include-markdown "../includes/templates.md" comments=false %}
+<!-- md:templates -->
 
 ## What is skipped when using `--nightly`?
 

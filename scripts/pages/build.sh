@@ -10,7 +10,7 @@ pip install -U mkdocs-material mkdocs-redirects mkdocs-minify-plugin mkdocs-incl
 
 # prepare
 version="$(cat ./www/docs/static/latest)"
-sed -s'' -i "s/__VERSION__/$version/g" www/docs/install.md
+sed -s'' -i "s/__VERSION__/$version/g" www/docs/install.md www/docs/customization/index.md
 
 # build
 mkdocs build -f www/mkdocs.yml

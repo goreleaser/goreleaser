@@ -203,7 +203,7 @@ release:
 
     [Learn how to set up an API token, GitHub Enterprise, etc](../scm/github.md).
 
-{% include-markdown "../includes/pro.md" comments=false %}
+<!-- md:pro -->
 
 ## GitLab
 
@@ -332,7 +332,7 @@ ALLOWED_TYPES = application/gzip|application/x-gzip|application/x-gtar|applicati
 
     [Learn how to set up an API token](../scm/gitea.md).
 
-{% include-markdown "../includes/templates.md" comments=false %}
+<!-- md:templates -->
 
 !!! warning
 

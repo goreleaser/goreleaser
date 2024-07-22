@@ -156,4 +156,4 @@ These settings should allow you to push your artifacts to any number of
 endpoints, which may require non-trivial authentication or has otherwise complex
 requirements.
 
-{% include-markdown "../includes/templates.md" comments=false %}
+<!-- md:templates -->
