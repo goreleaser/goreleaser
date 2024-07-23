@@ -70,6 +70,7 @@ var Defaulters = []Defaulter{
 	gomod.Pipe{},
 	build.Pipe{},
 	universalbinary.Pipe{},
+	sign.BinaryPipe{},
 	notary.MacOS{},
 	upx.Pipe{},
 	sourcearchive.Pipe{},

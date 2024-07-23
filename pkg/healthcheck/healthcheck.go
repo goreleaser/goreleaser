@@ -29,6 +29,7 @@ var Healthcheckers = []Healthchecker{
 	system{},
 	snapcraft.Pipe{},
 	sign.Pipe{},
+	sign.BinaryPipe{},
 	sign.DockerPipe{},
 	sbom.Pipe{},
 	docker.Pipe{},

@@ -12,8 +12,9 @@ Signing works in combination with checksum files, and it is generally enough
 to sign the checksum files only.
 
 The default is configured to create a detached signature for the checksum files
-with [GnuPG](https://www.gnupg.org/), and your default key. To enable signing
-just add
+with [GnuPG](https://www.gnupg.org/), and your default key.
+
+To enable signing just add this to your configuration:
 
 ```yaml
 # .goreleaser.yaml

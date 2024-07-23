@@ -88,6 +88,8 @@ var BuildPipeline = []Piper{
 	build.Pipe{},
 	// universal binary handling
 	universalbinary.Pipe{},
+	// sign binaries
+	sign.BinaryPipe{},
 	// notarize macos apps
 	notary.MacOS{},
 	// upx
