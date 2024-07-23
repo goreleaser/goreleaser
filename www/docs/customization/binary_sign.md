@@ -1,5 +1,7 @@
 # Signing Binaries
 
+<!-- md:version v2.2 -->
+
 This can be used to archive the binaries with their signatures, instead of
 signing the whole archive.
 
