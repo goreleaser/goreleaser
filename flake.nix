@@ -30,8 +30,10 @@
             cosign
             gnupg
             nix-prefetch
+          ] ++ (lib.optionals pkgs.stdenv.isLinux [
             snapcraft
-          ];
+          ]);
+
           shellHook = "go mod tidy";
         };
 
