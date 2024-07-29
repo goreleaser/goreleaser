@@ -2,6 +2,8 @@ package main
 
 import (
 	"runtime"
+
+	"github.com/goreleaser/goreleaser/dagger/internal/dagger"
 )
 
 const (
@@ -17,7 +19,7 @@ func (g *Goreleaser) Build(
 	// Target architecture to build
 	// +optional
 	arch string,
-) *File {
+) *dagger.File {
 	if arch == "" {
 		arch = runtime.GOARCH
 	}
@@ -29,7 +31,7 @@ func (g *Goreleaser) Build(
 }
 
 // Base container to build and test Goreleaser
-func (g *Goreleaser) Base() *Container {
+func (g *Goreleaser) Base() *dagger.Container {
 	// Base image with Go
 	return dag.Container().
 		From(wolfiBase).
@@ -38,7 +40,7 @@ func (g *Goreleaser) Base() *Container {
 		WithMountedCache(
 			"/go",
 			dag.CacheVolume("goreleaser-goroot"),
-			ContainerWithMountedCacheOpts{
+			dagger.ContainerWithMountedCacheOpts{
 				Owner: "nonroot",
 			}).
 		WithEnvVariable("GOMODCACHE", "/go/pkg/mod").
@@ -46,14 +48,14 @@ func (g *Goreleaser) Base() *Container {
 		WithMountedCache(
 			"/gocache",
 			dag.CacheVolume("goreleaser-gobuild"),
-			ContainerWithMountedCacheOpts{
+			dagger.ContainerWithMountedCacheOpts{
 				Owner: "nonroot",
 			}).
 		WithEnvVariable("GOCACHE", "/gocache")
 }
 
 // Container to build Goreleaser
-func (g *Goreleaser) BuildEnv() *Container {
+func (g *Goreleaser) BuildEnv() *dagger.Container {
 	// Base image with Go
 	return g.Base().
 		// Mount the source code last to optimize cache
@@ -61,10 +63,10 @@ func (g *Goreleaser) BuildEnv() *Container {
 }
 
 // Helper function to mount the project source into a container
-func WithSource(g *Goreleaser) WithContainerFunc {
-	return func(c *Container) *Container {
+func WithSource(g *Goreleaser) dagger.WithContainerFunc {
+	return func(c *dagger.Container) *dagger.Container {
 		return c.
-			WithMountedDirectory("/src", g.Source, ContainerWithMountedDirectoryOpts{
+			WithMountedDirectory("/src", g.Source, dagger.ContainerWithMountedDirectoryOpts{
 				Owner: "nonroot",
 			}).
 			WithWorkdir("/src")

@@ -3,13 +3,15 @@ package main
 import (
 	"context"
 	"runtime"
+
+	"github.com/goreleaser/goreleaser/dagger/internal/dagger"
 )
 
 // Run Goreleaser
 func (g *Goreleaser) Run(
 	ctx context.Context,
 	// Context directory to run in
-	context *Directory,
+	context *dagger.Directory,
 	// Arguments to pass to Goreleaser
 	args []string,
 ) (string, error) {

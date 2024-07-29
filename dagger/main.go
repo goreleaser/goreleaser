@@ -2,20 +2,22 @@
 
 package main
 
+import "github.com/goreleaser/goreleaser/dagger/internal/dagger"
+
 type Goreleaser struct {
 	// +private
-	Source *Directory
+	Source *dagger.Directory
 }
 
 func New(
 	// The Goreleaser source code to use
 	// +optional
-	Source *Directory,
+	Source *dagger.Directory,
 ) *Goreleaser {
 	if Source == nil {
 		Source = dag.Git(
 			"https://github.com/goreleaser/goreleaser.git",
-			GitOpts{KeepGitDir: true},
+			dagger.GitOpts{KeepGitDir: true},
 		).
 			Branch("main").
 			Tree()

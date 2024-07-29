@@ -4,6 +4,8 @@ import (
 	"context"
 	"fmt"
 	"runtime"
+
+	"github.com/goreleaser/goreleaser/dagger/internal/dagger"
 )
 
 const (
@@ -36,11 +38,11 @@ func (g *Goreleaser) Test(ctx context.Context) *TestResult {
 // Custom type for test results
 type TestResult struct {
 	// Container with the test executed
-	Container *Container
+	Container *dagger.Container
 }
 
 // Coverage report from the test. Save with '-o ./coverage.txt'
-func (t *TestResult) CoverageReport() *File {
+func (t *TestResult) CoverageReport() *dagger.File {
 	return t.Container.File("coverage.txt")
 }
 
@@ -50,7 +52,7 @@ func (t *TestResult) Output(ctx context.Context) (string, error) {
 }
 
 // Container to test Goreleaser
-func (g *Goreleaser) TestEnv() *Container {
+func (g *Goreleaser) TestEnv() *dagger.Container {
 	// Dependencies needed for testing
 	testDeps := []string{
 		"bash",
@@ -78,7 +80,7 @@ func (g *Goreleaser) TestEnv() *Container {
 }
 
 // Install Nix binaries from nixos image
-func installNix(target *Container) *Container {
+func installNix(target *dagger.Container) *dagger.Container {
 	nix := dag.Container().From(nixBase)
 	nixBin := "/root/.nix-profile/bin"
 
@@ -107,7 +109,7 @@ func installNix(target *Container) *Container {
 }
 
 // Install buildx plugin for Docker from buildx github release
-func installBuildx(target *Container) *Container {
+func installBuildx(target *dagger.Container) *dagger.Container {
 	arch := runtime.GOARCH
 	url := fmt.Sprintf("https://github.com/docker/buildx/releases/download/%s/buildx-%s.linux-%s", buildxVersion, buildxVersion, arch)
 
@@ -116,7 +118,7 @@ func installBuildx(target *Container) *Container {
 	return target.WithFile(
 		"/usr/lib/docker/cli-plugins/docker-buildx",
 		bin,
-		ContainerWithFileOpts{
+		dagger.ContainerWithFileOpts{
 			Permissions: 0777,
 		})
 }
