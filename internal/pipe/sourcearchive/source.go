@@ -39,7 +39,7 @@ func (Pipe) Run(ctx *context.Context) error {
 	}
 	filename := name + "." + format
 	path := filepath.Join(ctx.Config.Dist, filename)
-	log.WithField("file", filename).Info("creating source archive")
+	log.WithField("file", path).Info("creating source archive")
 	args := []string{
 		"archive",
 		"-o", path,

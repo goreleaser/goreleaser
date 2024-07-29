@@ -22,7 +22,6 @@
 
         devShells.default = pkgs.mkShellNoCC {
           packages = with pkgs; [
-            go_1_22
             go-task
             gofumpt
             syft
@@ -30,8 +29,11 @@
             cosign
             gnupg
             nix-prefetch
+          ] ++ (lib.optionals pkgs.stdenv.isLinux [
+            go_1_22
             snapcraft
-          ];
+          ]);
+
           shellHook = "go mod tidy";
         };
 
