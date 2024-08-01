@@ -24,6 +24,7 @@ func (g *Goreleaser) Build(
 		arch = runtime.GOARCH
 	}
 	return g.BuildEnv().
+		WithUser("nonroot").
 		WithEnvVariable("GOOS", os).
 		WithEnvVariable("GOARCH", arch).
 		WithExec([]string{"go", "build", "-o", "/src/dist/goreleaser"}).
