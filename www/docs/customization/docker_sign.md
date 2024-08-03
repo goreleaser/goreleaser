@@ -57,7 +57,7 @@ docker_signs:
     #
     # Since: v2.2 (pro).
     # Templates: allowed.
-    if: '{{ if eq .Os "linux" }}'
+    if: '{{ eq .Os "linux" }}'
 
     # Stdin data to be given to the signature command as stdin.
     #

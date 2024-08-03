@@ -3041,6 +3041,12 @@
 						},
 						"type": "array"
 					},
+					"binary_signs": {
+						"items": {
+							"$ref": "#/$defs/Sign"
+						},
+						"type": "array"
+					},
 					"env_files": {
 						"$ref": "#/$defs/EnvFiles"
 					},

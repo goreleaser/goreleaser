@@ -63,6 +63,14 @@ binary_signs:
       - foo
       - bar
 
+    # Allows to further filter the artifacts.
+    #
+    # Artifacts that do not match this expression will be ignored.
+    #
+    # Pro only.
+    # Templates: allowed.
+    if: '{{ eq .Os "linux" }}'
+
     # Stdin data to be given to the signature command as stdin.
     #
     # Templates: allowed.
