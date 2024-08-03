@@ -113,6 +113,15 @@ templates:
 - `${certificate}`: the certificate filename, if provided
 - `${signature}`: the signature filename
 
+### Differences from the default `signs`
+
+The only difference is the artifact filtering and that this pipe also runs in
+the build phase.
+
+In `signs`, if you set `artifacts` to `binary`, it'll only work if you also set
+`archives` `format` to `binary`.
+Here, it'll work anyway.
+
 ## Signing with cosign
 
 You can sign your artifacts with [cosign][] as well.

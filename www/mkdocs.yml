@@ -115,7 +115,7 @@ nav:
           - customization/universalbinaries.md
           - customization/upx.md
       - customization/partial.md
-      - Packaging and Archiving:
+      - Package & Archive:
           - customization/archive.md
           - customization/nfpm.md
           - customization/dmg.md
@@ -129,9 +129,9 @@ nav:
       - customization/sbom.md
       - customization/reportsizes.md
       - customization/metadata.md
-      - Signing & Notarizing:
-          - Checksums and artifacts: customization/sign.md
+      - Sign & Notarize:
           - Binaries: customization/binary_sign.md
+          - Archives, installers, packages, and checksums: customization/sign.md
           - Docker Images and Manifests: customization/docker_sign.md
           - customization/notarize.md
       - Publish:
