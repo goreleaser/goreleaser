@@ -162,8 +162,8 @@ func relativeToDist(dist, f string) (string, error) {
 	return filepath.Join(dist, f), nil
 }
 
-func tmplPath(ctx *context.Context, env map[string]string, s string) (string, error) {
-	result, err := tmpl.New(ctx).WithEnv(env).Apply(expand(s, env))
+func tmplPath(ctx *context.Context, env map[string]string, a *artifact.Artifact, s string) (string, error) {
+	result, err := tmpl.New(ctx).WithArtifact(a).WithEnv(env).Apply(expand(s, env))
 	if err != nil || result == "" {
 		return "", err
 	}
@@ -186,13 +186,13 @@ func signone(ctx *context.Context, cfg config.Sign, art *artifact.Artifact) ([]*
 		env[k] = v
 	}
 
-	name, err := tmplPath(ctx, env, cfg.Signature)
+	name, err := tmplPath(ctx, env, art, cfg.Signature)
 	if err != nil {
 		return nil, fmt.Errorf("sign failed: %s: %w", art.Name, err)
 	}
 	env["signature"] = name
 
-	cert, err := tmplPath(ctx, env, cfg.Certificate)
+	cert, err := tmplPath(ctx, env, art, cfg.Certificate)
 	if err != nil {
 		return nil, fmt.Errorf("sign failed: %s: %w", art.Name, err)
 	}

@@ -1245,6 +1245,7 @@ type Project struct {
 	Signs           []Sign           `yaml:"signs,omitempty" json:"signs,omitempty"`
 	Notarize        Notarize         `yaml:"notarize,omitempty" json:"notarize,omitempty"`
 	DockerSigns     []Sign           `yaml:"docker_signs,omitempty" json:"docker_signs,omitempty"`
+	BinarySigns     []Sign           `yaml:"binary_signs,omitempty" json:"binary_signs,omitempty"`
 	EnvFiles        EnvFiles         `yaml:"env_files,omitempty" json:"env_files,omitempty"`
 	Before          Before           `yaml:"before,omitempty" json:"before,omitempty"`
 	Source          Source           `yaml:"source,omitempty" json:"source,omitempty"`
