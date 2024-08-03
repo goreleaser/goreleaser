@@ -99,7 +99,7 @@ nav:
           - limitations/semver.md
   - Customization:
       - customization/index.md
-      - Basics:
+      - General:
           - customization/includes.md
           - customization/templates.md
           - customization/templatefiles.md
@@ -108,16 +108,16 @@ nav:
           - customization/dist.md
           - customization/project.md
           - customization/git.md
+          - Split & Merge: customization/partial.md
       - Build:
           - customization/builds.md
           - customization/verifiable_builds.md
           - customization/monorepo.md
           - customization/universalbinaries.md
           - customization/upx.md
-      - customization/partial.md
       - Package & Archive:
           - customization/archive.md
-          - customization/nfpm.md
+          - Linux Packages: customization/nfpm.md
           - customization/dmg.md
           - customization/msi.md
           - customization/checksum.md
@@ -126,7 +126,7 @@ nav:
           - customization/docker.md
           - customization/docker_manifest.md
           - customization/ko.md
-      - customization/sbom.md
+      - Catalog (SBOMs): customization/sbom.md
       - customization/reportsizes.md
       - customization/metadata.md
       - Sign & Notarize:
@@ -135,32 +135,32 @@ nav:
           - Docker Images and Manifests: customization/docker_sign.md
           - customization/notarize.md
       - Publish:
-          - customization/beforepublish.md
+          - Hooks: customization/beforepublish.md
           - customization/release.md
           - customization/snapshots.md
           - customization/nightlies.md
           - customization/blob.md
-          - customization/cloudsmith.md
-          - customization/fury.md
+          - Cloudsmith: customization/cloudsmith.md
+          - Fury: customization/fury.md
           - customization/dockerhub.md
           - customization/homebrew.md
           - customization/nix.md
           - customization/winget.md
-          - customization/aur.md
-          - customization/krew.md
-          - customization/scoop.md
+          - AUR: customization/aur.md
+          - Krew: customization/krew.md
+          - Scoop: customization/scoop.md
           - customization/changelog.md
           - customization/upload.md
           - customization/source.md
-          - customization/publishers.md
           - customization/artifactory.md
+          - Custom: customization/publishers.md
           - customization/milestone.md
           - SCM:
               - scm/github.md
               - scm/gitlab.md
               - scm/gitea.md
       - Announce:
-          - customization/announce/index.md
+          - About: customization/announce/index.md
           - customization/announce/bluesky.md
           - customization/announce/discord.md
           - customization/announce/linkedin.md
