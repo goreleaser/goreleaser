@@ -367,10 +367,6 @@ Verify the signatures:
       goreleaser/goreleaser-pro
     ```
 
-!!! info
-
-    The `.pem` and `.sig` files are the image `name:tag`, replacing `/` and `:` with `-`.
-
 ## Nightly builds
 
 Nightly build are pre-releases of the current code into the main branch.
