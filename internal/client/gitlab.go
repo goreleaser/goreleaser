@@ -523,12 +523,7 @@ func (c *gitlabClient) Upload(
 			return fmt.Errorf("templating GitLab Download URL: %w", err)
 		}
 
-		// search for project details based on projectID
-		projectDetails, _, err := c.client.Projects.GetProject(projectID, nil)
-		if err != nil {
-			return err
-		}
-		linkURL = gitlabBaseURL + "/" + projectDetails.PathWithNamespace + baseLinkURL
+		linkURL = gitlabBaseURL + "/" + projectFile.FullPath
 	}
 
 	log.WithField("file", file.Name()).
