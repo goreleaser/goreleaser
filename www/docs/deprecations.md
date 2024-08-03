@@ -15,15 +15,13 @@ goreleaser check
 
 ## Active deprecation notices
 
-None so far!
-
 <!--
 
 Template for new deprecations:
 
 ### property
 
-> since yyyy-mm-dd (v1.xx)
+> since yyyy-mm-dd (v2.xx)
 
 Description.
 
@@ -40,6 +38,26 @@ Description.
     ```
 
 -->
+
+### snapshot.name_template
+
+> since 2024-07-28 (v2.2)
+
+Property renamed so its easier to reason about.
+
+=== "Before"
+
+    ```yaml
+    snapshot:
+      name_template: 'foo'
+    ```
+
+=== "After"
+
+    ```yaml
+    snapshot:
+      version_template: 'foo'
+    ```
 
 ## Removed in v2
 

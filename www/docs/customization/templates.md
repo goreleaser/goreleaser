@@ -42,9 +42,6 @@ In fields that support templates, these fields are always available:
 | `.Now`                 | current UTC date as `time.Time` struct, allows all `time.Time` functions (e.g. `{{ .Now.Format "2006" }}`) |
 | `.Timestamp`           | current UTC time in Unix format                                                                            |
 | `.ModulePath`          | the go module path, as reported by `go list -m`                                                            |
-| `incpatch "v1.2.4"`    | increments the patch of the given version[^panic-if-not-semver]                                            |
-| `incminor "v1.2.4"`    | increments the minor of the given version[^panic-if-not-semver]                                            |
-| `incmajor "v1.2.4"`    | increments the major of the given version[^panic-if-not-semver]                                            |
 | `.ReleaseURL`          | the current release download url[^scm-release-url]                                                         |
 | `.Summary`             | the git summary, e.g. `v1.0.0-10-g34f56g3`[^git-summary]                                                   |
 | `.PrefixedSummary`     | the git summary prefixed with the monorepo config tag prefix (if any)                                      |
@@ -62,8 +59,6 @@ In fields that support templates, these fields are always available:
     `snapshot` and `nightly` builds.
 
 [^tag-is-semver]: Assuming `Tag` is a valid a SemVer, otherwise empty/zeroed.
-
-[^panic-if-not-semver]: Will panic if not a semantic version.
 
 [^scm-release-url]:
     Composed of the current SCM's download URL and current tag.
@@ -166,6 +161,13 @@ On all fields, you have these available functions:
 | `isEnvSet "NAME"`                 | returns true if the env is set and not empty, false otherwise                                                              |
 | `$m := map "KEY" "VALUE"`         | creates a map from a list of key and value pairs. Both keys and values must be of type `string`                            |
 | `indexOrDefault $m "KEY" "value"` | either gets the value of the given key or the given default value from the given map                                       |
+| `incpatch "v1.2.4"`               | increments the patch of the given version[^panic-if-not-semver]                                                            |
+| `incminor "v1.2.4"`               | increments the minor of the given version[^panic-if-not-semver]                                                            |
+| `incmajor "v1.2.4"`               | increments the major of the given version[^panic-if-not-semver]                                                            |
+| `list "a" "b" "c"`                | makes a list of strings[^pro]                                                                                              |
+| `in (list "a" "b" "c") "b"`       | checks if a slice contains a value[^pro]                                                                                   |
+
+[^panic-if-not-semver]: Will panic if not a semantic version.
 
 With all those fields, you may be able to compose the name of your artifacts
 pretty much the way you want:

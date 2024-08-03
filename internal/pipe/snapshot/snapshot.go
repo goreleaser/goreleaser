@@ -5,6 +5,7 @@ import (
 	"fmt"
 
 	"github.com/caarlos0/log"
+	"github.com/goreleaser/goreleaser/v2/internal/deprecate"
 	"github.com/goreleaser/goreleaser/v2/internal/tmpl"
 	"github.com/goreleaser/goreleaser/v2/pkg/context"
 )
@@ -17,14 +18,18 @@ func (Pipe) Skip(ctx *context.Context) bool { return !ctx.Snapshot }
 
 // Default sets the pipe defaults.
 func (Pipe) Default(ctx *context.Context) error {
-	if ctx.Config.Snapshot.NameTemplate == "" {
-		ctx.Config.Snapshot.NameTemplate = "{{ .Version }}-SNAPSHOT-{{ .ShortCommit }}"
+	if ctx.Config.Snapshot.VersionTemplate == "" {
+		ctx.Config.Snapshot.VersionTemplate = "{{ .Version }}-SNAPSHOT-{{ .ShortCommit }}"
+	}
+	if ctx.Config.Snapshot.NameTemplate != "" {
+		deprecate.Notice(ctx, "snapshot.name_template")
+		ctx.Config.Snapshot.VersionTemplate = ctx.Config.Snapshot.NameTemplate
 	}
 	return nil
 }
 
 func (Pipe) Run(ctx *context.Context) error {
-	name, err := tmpl.New(ctx).Apply(ctx.Config.Snapshot.NameTemplate)
+	name, err := tmpl.New(ctx).Apply(ctx.Config.Snapshot.VersionTemplate)
 	if err != nil {
 		return fmt.Errorf("failed to parse snapshot name: %w", err)
 	}

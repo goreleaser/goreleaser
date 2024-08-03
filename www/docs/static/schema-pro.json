@@ -2271,7 +2271,8 @@
 								"deb",
 								"rpm",
 								"termux.deb",
-								"archlinux"
+								"archlinux",
+								"ipk"
 							]
 						},
 						"type": "array"
@@ -3680,6 +3681,9 @@
 						},
 						"type": "array"
 					},
+					"if": {
+						"type": "string"
+					},
 					"stdin": {
 						"type": "string"
 					},
@@ -3816,7 +3820,8 @@
 							"strict",
 							"classic",
 							"devmode"
-						]
+						],
+						"default": "strict"
 					},
 					"assumes": {
 						"items": {
@@ -4034,6 +4039,9 @@
 			"Snapshot": {
 				"properties": {
 					"name_template": {
+						"type": "string"
+					},
+					"version_template": {
 						"type": "string"
 					}
 				},

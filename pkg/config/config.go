@@ -1069,7 +1069,9 @@ type SnapcraftExtraFiles struct {
 
 // Snapshot config.
 type Snapshot struct {
-	NameTemplate string `yaml:"name_template,omitempty" json:"name_template,omitempty"`
+	// Deprecated: use VersionTemplate.
+	NameTemplate    string `yaml:"name_template,omitempty" json:"name_template,omitempty"`
+	VersionTemplate string `yaml:"version_template,omitempty" json:"version_template,omitempty"`
 }
 
 // Checksum config.

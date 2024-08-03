@@ -77,6 +77,14 @@ signs:
       - foo
       - bar
 
+    # Allows to further filter the artifacts.
+    #
+    # Artifacts that do not match this expression will be ignored.
+    #
+    # Since: v2.2 (pro).
+    # Templates: allowed.
+    if: '{{ if eq .Os "linux" }}'
+
     # Stdin data to be given to the signature command as stdin.
     #
     # Templates: allowed.

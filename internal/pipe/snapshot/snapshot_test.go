@@ -18,23 +18,33 @@ func TestDefault(t *testing.T) {
 		Snapshot: config.Snapshot{},
 	})
 	require.NoError(t, Pipe{}.Default(ctx))
-	require.Equal(t, "{{ .Version }}-SNAPSHOT-{{ .ShortCommit }}", ctx.Config.Snapshot.NameTemplate)
+	require.Equal(t, "{{ .Version }}-SNAPSHOT-{{ .ShortCommit }}", ctx.Config.Snapshot.VersionTemplate)
 }
 
-func TestDefaultSet(t *testing.T) {
+func TestDefaultDeprecated(t *testing.T) {
 	ctx := testctx.NewWithCfg(config.Project{
 		Snapshot: config.Snapshot{
 			NameTemplate: "snap",
 		},
 	})
 	require.NoError(t, Pipe{}.Default(ctx))
-	require.Equal(t, "snap", ctx.Config.Snapshot.NameTemplate)
+	require.Equal(t, "snap", ctx.Config.Snapshot.VersionTemplate)
 }
 
-func TestSnapshotInvalidNametemplate(t *testing.T) {
+func TestDefaultSet(t *testing.T) {
 	ctx := testctx.NewWithCfg(config.Project{
 		Snapshot: config.Snapshot{
-			NameTemplate: "{{.ShortCommit}{{{sss}}}",
+			VersionTemplate: "snap",
+		},
+	})
+	require.NoError(t, Pipe{}.Default(ctx))
+	require.Equal(t, "snap", ctx.Config.Snapshot.VersionTemplate)
+}
+
+func TestSnapshotInvalidVersionTemplate(t *testing.T) {
+	ctx := testctx.NewWithCfg(config.Project{
+		Snapshot: config.Snapshot{
+			VersionTemplate: "{{.ShortCommit}{{{sss}}}",
 		},
 	})
 	testlib.RequireTemplateError(t, Pipe{}.Run(ctx))
@@ -43,7 +53,7 @@ func TestSnapshotInvalidNametemplate(t *testing.T) {
 func TestSnapshotEmptyFinalName(t *testing.T) {
 	ctx := testctx.NewWithCfg(config.Project{
 		Snapshot: config.Snapshot{
-			NameTemplate: "{{ .Commit }}",
+			VersionTemplate: "{{ .Commit }}",
 		},
 	}, testctx.WithCurrentTag("v1.2.3"))
 	require.EqualError(t, Pipe{}.Run(ctx), "empty snapshot name")
@@ -52,7 +62,7 @@ func TestSnapshotEmptyFinalName(t *testing.T) {
 func TestSnapshot(t *testing.T) {
 	ctx := testctx.NewWithCfg(config.Project{
 		Snapshot: config.Snapshot{
-			NameTemplate: "{{ incpatch .Tag }}",
+			VersionTemplate: "{{ incpatch .Tag }}",
 		},
 	}, testctx.WithCurrentTag("v1.2.3"))
 	require.NoError(t, Pipe{}.Run(ctx))

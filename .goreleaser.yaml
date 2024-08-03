@@ -12,7 +12,7 @@ before:
     - ./scripts/manpages.sh
 
 snapshot:
-  name_template: "{{ incpatch .Version }}-next"
+  version_template: "{{ incpatch .Version }}-next"
 
 gomod:
   proxy: true
