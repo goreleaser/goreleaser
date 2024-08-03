@@ -144,8 +144,8 @@ nav:
           - Fury: customization/fury.md
           - customization/dockerhub.md
           - customization/homebrew.md
-          - customization/nix.md
           - customization/winget.md
+          - NUR: customization/nix.md
           - AUR: customization/aur.md
           - Krew: customization/krew.md
           - Scoop: customization/scoop.md
