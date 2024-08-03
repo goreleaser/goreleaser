@@ -23,7 +23,7 @@ func TestBinarySignDefault(t *testing.T) {
 	err := BinaryPipe{}.Default(ctx)
 	require.NoError(t, err)
 	require.Equal(t, "gpg", ctx.Config.BinarySigns[0].Cmd)
-	require.Equal(t, "${artifact}.sig", ctx.Config.BinarySigns[0].Signature)
+	require.Equal(t, defaultSignatureName, ctx.Config.BinarySigns[0].Signature)
 	require.Equal(t, []string{"--output", "$signature", "--detach-sig", "$artifact"}, ctx.Config.BinarySigns[0].Args)
 	require.Equal(t, "binary", ctx.Config.BinarySigns[0].Artifacts)
 }
