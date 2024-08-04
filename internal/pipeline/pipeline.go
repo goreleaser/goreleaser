@@ -56,20 +56,20 @@ type Piper interface {
 var BuildPipeline = []Piper{
 	// load and validate environment variables
 	env.Pipe{},
+	// load default configs
+	defaults.Pipe{},
+	// ensure ./dist is clean
+	dist.Pipe{},
 	// get and validate git repo state
 	git.Pipe{},
 	// parse current tag to a semver
 	semver.Pipe{},
-	// load default configs
-	defaults.Pipe{},
 	// setup things for partial builds/releases
 	partial.Pipe{},
 	// snapshot version handling
 	snapshot.Pipe{},
 	// run global hooks before build
 	before.Pipe{},
-	// ensure ./dist is clean
-	dist.Pipe{},
 	// setup metadata options
 	metadata.Pipe{},
 	// creates a metadta.json files in the dist directory
