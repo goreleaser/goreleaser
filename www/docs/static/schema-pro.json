@@ -2706,6 +2706,9 @@
 			},
 			"Nightly": {
 				"properties": {
+					"version_template": {
+						"type": "string"
+					},
 					"name_template": {
 						"type": "string"
 					},

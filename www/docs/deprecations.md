@@ -21,7 +21,7 @@ Template for new deprecations:
 
 ### property
 
-> since yyyy-mm-dd (v2.xx)
+> since v2.xx
 
 Description.
 
@@ -39,9 +39,29 @@ Description.
 
 -->
 
+### nightly.name_template
+
+> since v2.2
+
+Property renamed so its easier to reason about.
+
+=== "Before"
+
+    ```yaml
+    nightly:
+      name_template: 'foo'
+    ```
+
+=== "After"
+
+    ```yaml
+    nightly:
+      version_template: 'foo'
+    ```
+
 ### snapshot.name_template
 
-> since 2024-07-28 (v2.2)
+> since v2.2
 
 Property renamed so its easier to reason about.
 

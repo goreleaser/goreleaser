@@ -20,7 +20,7 @@ nightly:
   #
   # Default: `{{ incpatch .Version }}-{{ .ShortCommit }}-nightly`.
   # Templates: allowed.
-  name_template: "{{ incpatch .Version }}-devel"
+  version_template: "{{ incpatch .Version }}-devel"
 
   # Tag name to create if publish_release is enabled.
   tag_name: devel
