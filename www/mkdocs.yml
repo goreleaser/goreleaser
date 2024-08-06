@@ -117,16 +117,17 @@ nav:
           - customization/upx.md
       - Package & Archive:
           - customization/archive.md
+          - customization/source.md
           - Linux Packages: customization/nfpm.md
           - customization/dmg.md
           - customization/msi.md
           - customization/checksum.md
-          - customization/snapcraft.md
-          - customization/chocolatey.md
-          - customization/docker.md
-          - customization/docker_manifest.md
-          - customization/ko.md
-      - Catalog (SBOMs): customization/sbom.md
+          - Snaps: customization/snapcraft.md
+          - Chocolatey: customization/chocolatey.md
+          - Docker: customization/docker.md
+          - Docker Manifests: customization/docker_manifest.md
+          - Ko: customization/ko.md
+      - SBOMs: customization/sbom.md
       - customization/reportsizes.md
       - customization/metadata.md
       - Sign & Notarize:
@@ -151,14 +152,13 @@ nav:
           - Scoop: customization/scoop.md
           - customization/changelog.md
           - customization/upload.md
-          - customization/source.md
           - customization/artifactory.md
           - Custom: customization/publishers.md
-          - customization/milestone.md
           - SCM:
               - scm/github.md
               - scm/gitlab.md
               - scm/gitea.md
+          - customization/milestone.md
       - Announce:
           - About: customization/announce/index.md
           - customization/announce/bluesky.md
