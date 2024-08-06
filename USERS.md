@@ -32,6 +32,7 @@ Here's a running list of some organizations using GoReleaser[^1]:
 1. [DeepSource](https://deepsource.com)
 1. [EVCC](https://evcc.io)
 1. [FabioLB](https://fabiolb.net)
+1. [Fairwinds](https://github.com/FairwindsOps)
 1. [Farmblox](https://github.com/farmblox)
 1. [Fleet for osquery](https://fleetdm.com)
 1. [Flipt](https://www.flipt.io)
