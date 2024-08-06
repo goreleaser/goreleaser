@@ -1,7 +1,7 @@
 # Linux packages (via nFPM)
 
 GoReleaser can be wired to [nfpm](https://github.com/goreleaser/nfpm) to
-generate and publish `.deb`, `.rpm`, `.apk`, and Archlinux packages.
+generate and publish `.deb`, `.rpm`, `.apk`, `.ipk`, and Archlinux packages.
 
 Available options:
 
