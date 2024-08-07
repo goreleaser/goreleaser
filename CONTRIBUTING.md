@@ -10,17 +10,9 @@ By participating in this project, you agree to abide our
 Prerequisites:
 
 - [Task](https://taskfile.dev/installation)
+- [Dagger](https://docs.dagger.io/install)
 - [Go 1.22+](https://go.dev/doc/install)
-
-Other things you might need to run the tests:
-
-- [cosign](https://github.com/sigstore/cosign)
 - [Docker](https://www.docker.com/)
-- [GPG](https://gnupg.org)
-- [Podman](https://podman.io/)
-- [Snapcraft](https://snapcraft.io/)
-- [Syft](https://github.com/anchore/syft)
-- [upx](https://upx.github.io/)
 
 Clone `goreleaser` anywhere:
 
@@ -39,6 +31,12 @@ You should then be able to build the binary:
 ```bash
 go build -o goreleaser .
 ./goreleaser --version
+```
+
+A good way to check if everything is alright is to run the test suite: 
+
+```bash
+dagger call --source=.:default test output
 ```
 
 ### A note about Docker multi-arch builds
