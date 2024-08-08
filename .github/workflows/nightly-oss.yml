@@ -60,3 +60,19 @@ jobs:
           MACOS_NOTARY_ISSUER_ID: ${{ secrets.MACOS_NOTARY_ISSUER_ID }}
           MACOS_NOTARY_KEY_ID: ${{ secrets.MACOS_NOTARY_KEY_ID }}
           MACOS_NOTARY_KEY: ${{ secrets.MACOS_NOTARY_KEY }}
+  notify:
+    runs-on: ubuntu-latest
+    needs:
+      - goreleaser
+    if: ${{ always() }}
+    steps:
+      - name: Notify
+        uses: nobrayner/discord-webhook@v1
+        with:
+          github-token: ${{ secrets.github_token }}
+          title: "nightly"
+          description: "build finished with status {{STATUS}}"
+          discord-webhook: ${{ secrets.NIGHTLY_DISCORD_WEBHOOK }}
+          username: GoReleaser
+          avatar-url: https://avatars.githubusercontent.com/u/24697112?v=4
+          include-details: false
