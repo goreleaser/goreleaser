@@ -125,6 +125,12 @@ func TestPublishPipeNoMatchingBuild(t *testing.T) {
 func TestPublishPipeSuccess(t *testing.T) {
 	testlib.StartRegistry(t, "ko_registry", registryPort)
 
+	chainguardStaticLabels := map[string]string{
+		"org.opencontainers.image.authors": "Chainguard Team https://www.chainguard.dev/",
+		"org.opencontainers.image.source":  "https://github.com/chainguard-images/images/tree/main/images/static",
+		"org.opencontainers.image.url":     "https://edu.chainguard.dev/chainguard/chainguard-images/reference/static/",
+	}
+
 	table := []struct {
 		Name               string
 		SBOM               string
@@ -138,41 +144,51 @@ func TestPublishPipeSuccess(t *testing.T) {
 	}{
 		{
 			// Must be first as others add an SBOM for the same image
-			Name: "sbom-none",
-			SBOM: "none",
+			Name:           "sbom-none",
+			SBOM:           "none",
+			ExpectedLabels: chainguardStaticLabels,
 		},
 		{
-			Name: "sbom-spdx",
-			SBOM: "spdx",
+			Name:           "sbom-spdx",
+			SBOM:           "spdx",
+			ExpectedLabels: chainguardStaticLabels,
 		},
 		{
-			Name: "sbom-cyclonedx",
-			SBOM: "cyclonedx",
+			Name:           "sbom-cyclonedx",
+			SBOM:           "cyclonedx",
+			ExpectedLabels: chainguardStaticLabels,
 		},
 		{
-			Name: "sbom-go.version-m",
-			SBOM: "go.version-m",
+			Name:           "sbom-go.version-m",
+			SBOM:           "go.version-m",
+			ExpectedLabels: chainguardStaticLabels,
 		},
 		{
 			Name:      "base-image-is-not-index",
 			BaseImage: "alpine:latest@sha256:c0d488a800e4127c334ad20d61d7bc21b4097540327217dfab52262adc02380c",
 		},
 		{
-			Name:      "multiple-platforms",
-			Platforms: []string{"linux/amd64", "linux/arm64"},
+			Name:           "multiple-platforms",
+			Platforms:      []string{"linux/amd64", "linux/arm64"},
+			ExpectedLabels: chainguardStaticLabels,
 		},
 		{
-			Name:           "labels",
-			Labels:         map[string]string{"foo": "bar", "project": "{{.ProjectName}}"},
-			ExpectedLabels: map[string]string{"foo": "bar", "project": "test"},
+			Name:   "labels",
+			Labels: map[string]string{"foo": "bar", "project": "{{.ProjectName}}"},
+			ExpectedLabels: mapsMerge(
+				map[string]string{"foo": "bar", "project": "test"},
+				chainguardStaticLabels,
+			),
 		},
 		{
-			Name:         "creation-time",
-			CreationTime: "1672531200",
+			Name:           "creation-time",
+			CreationTime:   "1672531200",
+			ExpectedLabels: chainguardStaticLabels,
 		},
 		{
 			Name:               "kodata-creation-time",
 			KoDataCreationTime: "1672531200",
+			ExpectedLabels:     chainguardStaticLabels,
 		},
 		{
 			Name: "tag-templates",
@@ -180,6 +196,7 @@ func TestPublishPipeSuccess(t *testing.T) {
 				"{{if not .Prerelease }}{{.Version}}{{ end }}",
 				"   ", // empty
 			},
+			ExpectedLabels: chainguardStaticLabels,
 		},
 		{
 			Name: "tag-template-eval-empty",
@@ -187,6 +204,7 @@ func TestPublishPipeSuccess(t *testing.T) {
 				"{{.Version}}",
 				"{{if .Prerelease }}latest{{ end }}",
 			},
+			ExpectedLabels: chainguardStaticLabels,
 		},
 	}
 
@@ -522,4 +540,15 @@ func TestApplyTemplate(t *testing.T) {
 		_, err := applyTemplate(testctx.New(), []string{"{{ .Nope}}"})
 		require.Error(t, err)
 	})
+}
+
+func mapsMerge(m1, m2 map[string]string) map[string]string {
+	result := map[string]string{}
+	for k, v := range m1 {
+		result[k] = v
+	}
+	for k, v := range m2 {
+		result[k] = v
+	}
+	return result
 }
