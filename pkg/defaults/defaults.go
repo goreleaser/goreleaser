@@ -16,6 +16,7 @@ import (
 	"github.com/goreleaser/goreleaser/v2/internal/pipe/checksums"
 	"github.com/goreleaser/goreleaser/v2/internal/pipe/chocolatey"
 	"github.com/goreleaser/goreleaser/v2/internal/pipe/discord"
+	"github.com/goreleaser/goreleaser/v2/internal/pipe/dist"
 	"github.com/goreleaser/goreleaser/v2/internal/pipe/docker"
 	"github.com/goreleaser/goreleaser/v2/internal/pipe/gomod"
 	"github.com/goreleaser/goreleaser/v2/internal/pipe/ko"
@@ -63,6 +64,7 @@ type Defaulter interface {
 //
 //nolint:gochecknoglobals
 var Defaulters = []Defaulter{
+	dist.Pipe{},
 	snapshot.Pipe{},
 	release.Pipe{},
 	project.Pipe{},

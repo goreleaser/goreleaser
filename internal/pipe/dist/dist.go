@@ -16,12 +16,10 @@ type CleanPipe struct{}
 func (CleanPipe) Skip(ctx *context.Context) bool { return !ctx.Clean }
 func (CleanPipe) String() string                 { return "cleaning distribution directory" }
 func (CleanPipe) Run(ctx *context.Context) error {
-	// here we are setting a default outside a Default method... but there's no
-	// other good way of handling this... tbh no one ever change this directory
-	// either...
-	if ctx.Config.Dist == "" {
-		ctx.Config.Dist = "dist"
-	}
+	// here we are setting a default outside a Default method...
+	// this is needed because when this run, the defaults are not set yet
+	// there's no good way of handling this...
+	_ = Pipe{}.Default(ctx)
 	return os.RemoveAll(ctx.Config.Dist)
 }
 
@@ -29,6 +27,12 @@ func (CleanPipe) Run(ctx *context.Context) error {
 type Pipe struct{}
 
 func (Pipe) String() string { return "ensuring distribution directory" }
+func (Pipe) Default(ctx *context.Context) error {
+	if ctx.Config.Dist == "" {
+		ctx.Config.Dist = "dist"
+	}
+	return nil
+}
 
 // Run the pipe.
 func (Pipe) Run(ctx *context.Context) error {

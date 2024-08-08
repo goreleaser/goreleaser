@@ -11,6 +11,12 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
+func TestDefault(t *testing.T) {
+	ctx := testctx.New()
+	require.NoError(t, Pipe{}.Default(ctx))
+	require.Equal(t, "dist", ctx.Config.Dist)
+}
+
 func TestDistDoesNotExist(t *testing.T) {
 	folder := t.TempDir()
 	dist := filepath.Join(folder, "dist")
