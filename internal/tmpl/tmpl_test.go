@@ -178,7 +178,7 @@ func TestEnv(t *testing.T) {
 	}
 }
 
-func TestWithEnv(t *testing.T) {
+func TestWithEnvS(t *testing.T) {
 	ctx := testctx.New(
 		testctx.WithEnv(map[string]string{"FOO": "BAR"}),
 		testctx.WithCurrentTag("v1.2.3"),
@@ -198,6 +198,14 @@ func TestWithEnv(t *testing.T) {
 	out, err = tpl.Apply(`{{ range $idx, $key := .Env }}{{ $idx }},{{ end }}`)
 	require.NoError(t, err)
 	require.Equal(t, "BAR,FOO,NOVAL,", out)
+
+	out, err = tpl.Apply(`{{ envOrDefault "NOPE" "no" }}`)
+	require.NoError(t, err)
+	require.Equal(t, "no", out)
+
+	out, err = tpl.Apply(`{{ isEnvSet "NOPE" }}`)
+	require.NoError(t, err)
+	require.Equal(t, "false", out)
 }
 
 func TestFuncMap(t *testing.T) {

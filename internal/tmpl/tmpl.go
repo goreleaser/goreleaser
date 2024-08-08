@@ -151,7 +151,7 @@ func (t *Template) WithEnvS(envs []string) *Template {
 
 // WithEnv overrides template's env field with the given environment map.
 func (t *Template) WithEnv(e map[string]string) *Template {
-	t.fields[env] = e
+	t.fields[env] = context.Env(e)
 	return t
 }
 
