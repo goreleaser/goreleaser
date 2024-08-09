@@ -215,10 +215,6 @@ func (o *buildOptions) makeBuilder(ctx *context.Context) (*build.Caching, error)
 	switch o.sbom {
 	case "spdx":
 		buildOptions = append(buildOptions, build.WithSPDX("devel"))
-	case "cyclonedx":
-		buildOptions = append(buildOptions, build.WithCycloneDX())
-	case "go.version-m":
-		buildOptions = append(buildOptions, build.WithGoVersionSBOM())
 	case "none":
 		buildOptions = append(buildOptions, build.WithDisabledSBOM())
 	default:

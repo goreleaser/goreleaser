@@ -154,16 +154,6 @@ func TestPublishPipeSuccess(t *testing.T) {
 			ExpectedLabels: chainguardStaticLabels,
 		},
 		{
-			Name:           "sbom-cyclonedx",
-			SBOM:           "cyclonedx",
-			ExpectedLabels: chainguardStaticLabels,
-		},
-		{
-			Name:           "sbom-go.version-m",
-			SBOM:           "go.version-m",
-			ExpectedLabels: chainguardStaticLabels,
-		},
-		{
 			Name:      "base-image-is-not-index",
 			BaseImage: "alpine:latest@sha256:c0d488a800e4127c334ad20d61d7bc21b4097540327217dfab52262adc02380c",
 		},
@@ -321,10 +311,6 @@ func TestPublishPipeSuccess(t *testing.T) {
 				switch table.SBOM {
 				case "spdx", "":
 					require.Equal(t, "text/spdx+json", string(mediaType))
-				case "cyclonedx":
-					require.Equal(t, "application/vnd.cyclonedx+json", string(mediaType))
-				case "go.version-m":
-					require.Equal(t, "application/vnd.go.version-m", string(mediaType))
 				default:
 					require.Fail(t, "unknown SBOM type", table.SBOM)
 				}
