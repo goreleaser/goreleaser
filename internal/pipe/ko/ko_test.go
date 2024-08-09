@@ -66,6 +66,28 @@ func TestDefault(t *testing.T) {
 	}, ctx.Config.Kos[0])
 }
 
+func TestDefaultCycloneDX(t *testing.T) {
+	ctx := testctx.NewWithCfg(config.Project{
+		Kos: []config.Ko{
+			{SBOM: "cyclonedx"},
+		},
+	})
+	require.NoError(t, Pipe{}.Default(ctx))
+	require.True(t, ctx.Deprecated)
+	require.Equal(t, "none", ctx.Config.Kos[0].SBOM)
+}
+
+func TestDefaultGoVersionM(t *testing.T) {
+	ctx := testctx.NewWithCfg(config.Project{
+		Kos: []config.Ko{
+			{SBOM: "go.version-m"},
+		},
+	})
+	require.NoError(t, Pipe{}.Default(ctx))
+	require.True(t, ctx.Deprecated)
+	require.Equal(t, "none", ctx.Config.Kos[0].SBOM)
+}
+
 func TestDefaultNoImage(t *testing.T) {
 	ctx := testctx.NewWithCfg(config.Project{
 		ProjectName: "test",

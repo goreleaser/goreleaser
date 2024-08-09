@@ -15,7 +15,6 @@ import (
 	"time"
 
 	"github.com/awslabs/amazon-ecr-credential-helper/ecr-login"
-	"github.com/caarlos0/log"
 	"github.com/chrismellard/docker-credential-acr-env/pkg/credhelper"
 	"github.com/google/go-containerregistry/pkg/authn"
 	"github.com/google/go-containerregistry/pkg/authn/github"
@@ -27,6 +26,7 @@ import (
 	"github.com/google/ko/pkg/commands/options"
 	"github.com/google/ko/pkg/publish"
 	"github.com/goreleaser/goreleaser/v2/internal/artifact"
+	"github.com/goreleaser/goreleaser/v2/internal/deprecate"
 	"github.com/goreleaser/goreleaser/v2/internal/ids"
 	"github.com/goreleaser/goreleaser/v2/internal/semerrgroup"
 	"github.com/goreleaser/goreleaser/v2/internal/skips"
@@ -117,7 +117,12 @@ func (Pipe) Default(ctx *context.Context) error {
 			ko.Tags = []string{"latest"}
 		}
 
-		if ko.SBOM == "" {
+		switch ko.SBOM {
+		case "spdx", "none":
+		case "cyclonedx", "go.version-m":
+			deprecate.Notice(ctx, "kos.sbom")
+			ko.SBOM = "none"
+		default:
 			ko.SBOM = "spdx"
 		}
 
@@ -216,10 +221,6 @@ func (o *buildOptions) makeBuilder(ctx *context.Context) (*build.Caching, error)
 	switch o.sbom {
 	case "spdx":
 		buildOptions = append(buildOptions, build.WithSPDX("devel"))
-	case "cyclonedx":
-		log.Error("cyclonedx no longer available")
-	case "go.version-m":
-		log.Error("go.version-m no longer available")
 	case "none":
 		buildOptions = append(buildOptions, build.WithDisabledSBOM())
 	default:
