@@ -15,6 +15,7 @@ import (
 	"time"
 
 	"github.com/awslabs/amazon-ecr-credential-helper/ecr-login"
+	"github.com/caarlos0/log"
 	"github.com/chrismellard/docker-credential-acr-env/pkg/credhelper"
 	"github.com/google/go-containerregistry/pkg/authn"
 	"github.com/google/go-containerregistry/pkg/authn/github"
@@ -215,6 +216,10 @@ func (o *buildOptions) makeBuilder(ctx *context.Context) (*build.Caching, error)
 	switch o.sbom {
 	case "spdx":
 		buildOptions = append(buildOptions, build.WithSPDX("devel"))
+	case "cyclonedx":
+		log.Error("cyclonedx no longer available")
+	case "go.version-m":
+		log.Error("go.version-m no longer available")
 	case "none":
 		buildOptions = append(buildOptions, build.WithDisabledSBOM())
 	default:
