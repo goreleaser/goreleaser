@@ -818,7 +818,7 @@ func TestNoBuildsFound(t *testing.T) {
 			artifact.ExtraID: "default",
 		},
 	})
-	require.EqualError(t, Pipe{}.Run(ctx), `no linux binaries found for builds [nope]`)
+	require.EqualError(t, Pipe{}.Run(ctx), `no linux/unix binaries found for builds [nope]`)
 }
 
 func TestCreateFileDoesntExist(t *testing.T) {
