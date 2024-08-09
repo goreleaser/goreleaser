@@ -68,8 +68,13 @@ func TestDefault(t *testing.T) {
 
 func TestDefaultCycloneDX(t *testing.T) {
 	ctx := testctx.NewWithCfg(config.Project{
+		ProjectName: "test",
+		Env:         []string{"KO_DOCKER_REPO=" + registry},
 		Kos: []config.Ko{
 			{SBOM: "cyclonedx"},
+		},
+		Builds: []config.Build{
+			{ID: "test"},
 		},
 	})
 	require.NoError(t, Pipe{}.Default(ctx))
@@ -79,8 +84,13 @@ func TestDefaultCycloneDX(t *testing.T) {
 
 func TestDefaultGoVersionM(t *testing.T) {
 	ctx := testctx.NewWithCfg(config.Project{
+		ProjectName: "test",
+		Env:         []string{"KO_DOCKER_REPO=" + registry},
 		Kos: []config.Ko{
 			{SBOM: "go.version-m"},
+		},
+		Builds: []config.Build{
+			{ID: "test"},
 		},
 	})
 	require.NoError(t, Pipe{}.Default(ctx))
