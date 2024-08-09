@@ -39,6 +39,15 @@ Description.
 
 -->
 
+### kos.sbom
+
+> since v2.2
+
+Ko removed support for `cyclonedx` and `go.version-m` SBOMs from upstream.
+You can now either use `spdx` or `none`.
+From now on, these two options will be replaced by `none`.
+We recommend you change it to `spdx`.
+
 ### nightly.name_template
 
 > since v2.2

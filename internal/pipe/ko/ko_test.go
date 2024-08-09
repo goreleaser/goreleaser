@@ -66,6 +66,28 @@ func TestDefault(t *testing.T) {
 	}, ctx.Config.Kos[0])
 }
 
+func TestDefaultCycloneDX(t *testing.T) {
+	ctx := testctx.NewWithCfg(config.Project{
+		Kos: []config.Ko{
+			{SBOM: "cyclonedx"},
+		},
+	})
+	require.NoError(t, Pipe{}.Default(ctx))
+	require.True(t, ctx.Deprecated)
+	require.Equal(t, "none", ctx.Config.Kos[0].SBOM)
+}
+
+func TestDefaultGoVersionM(t *testing.T) {
+	ctx := testctx.NewWithCfg(config.Project{
+		Kos: []config.Ko{
+			{SBOM: "go.version-m"},
+		},
+	})
+	require.NoError(t, Pipe{}.Default(ctx))
+	require.True(t, ctx.Deprecated)
+	require.Equal(t, "none", ctx.Config.Kos[0].SBOM)
+}
+
 func TestDefaultNoImage(t *testing.T) {
 	ctx := testctx.NewWithCfg(config.Project{
 		ProjectName: "test",
@@ -151,16 +173,6 @@ func TestPublishPipeSuccess(t *testing.T) {
 		{
 			Name:           "sbom-spdx",
 			SBOM:           "spdx",
-			ExpectedLabels: chainguardStaticLabels,
-		},
-		{
-			Name:           "sbom-cyclonedx",
-			SBOM:           "cyclonedx",
-			ExpectedLabels: chainguardStaticLabels,
-		},
-		{
-			Name:           "sbom-go.version-m",
-			SBOM:           "go.version-m",
 			ExpectedLabels: chainguardStaticLabels,
 		},
 		{
@@ -321,10 +333,6 @@ func TestPublishPipeSuccess(t *testing.T) {
 				switch table.SBOM {
 				case "spdx", "":
 					require.Equal(t, "text/spdx+json", string(mediaType))
-				case "cyclonedx":
-					require.Equal(t, "application/vnd.cyclonedx+json", string(mediaType))
-				case "go.version-m":
-					require.Equal(t, "application/vnd.go.version-m", string(mediaType))
 				default:
 					require.Fail(t, "unknown SBOM type", table.SBOM)
 				}
