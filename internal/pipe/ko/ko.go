@@ -118,11 +118,10 @@ func (Pipe) Default(ctx *context.Context) error {
 		}
 
 		switch ko.SBOM {
-		case "spdx", "none":
 		case "cyclonedx", "go.version-m":
 			deprecate.Notice(ctx, "kos.sbom")
 			ko.SBOM = "none"
-		default:
+		case "":
 			ko.SBOM = "spdx"
 		}
 
