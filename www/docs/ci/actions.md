@@ -48,7 +48,7 @@ jobs:
           # either 'goreleaser' (default) or 'goreleaser-pro'
           distribution: goreleaser
           # 'latest', 'nightly', or a semver
-          version: "~> v1"
+          version: "~> v2"
           args: release --clean
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -101,7 +101,7 @@ jobs:
       - name: Run GoReleaser
         uses: goreleaser/goreleaser-action@v6
         with:
-          version: "~> v1"
+          version: "~> v2"
           args: release --clean
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -136,7 +136,7 @@ Following inputs can be used as `step.with` keys
 | Name           | Type   | Default      | Description                                                      |
 | -------------- | ------ | ------------ | ---------------------------------------------------------------- |
 | `distribution` | String | `goreleaser` | GoReleaser distribution, either `goreleaser` or `goreleaser-pro` |
-| `version`[^1]  | String | `~> v1`      | GoReleaser version                                               |
+| `version`[^1]  | String | `~> v2`      | GoReleaser version                                               |
 | `args`         | String |              | Arguments to pass to GoReleaser                                  |
 | `workdir`      | String | `.`          | Working directory (below repository root)                        |
 | `install-only` | Bool   | `false`      | Just install GoReleaser                                          |
@@ -198,7 +198,7 @@ jobs:
       - name: Run GoReleaser
         uses: goreleaser/goreleaser-action@v6
         with:
-          version: "~> v1"
+          version: "~> v2"
           args: release --clean
         env:
           GITHUB_TOKEN: ${{ secrets.GH_PAT }}
