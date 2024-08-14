@@ -196,9 +196,12 @@ func TestRunPipe(t *testing.T) {
 			},
 		},
 	}, testctx.WithVersion("1.0.0"), testctx.WithCurrentTag("v1.0.0"))
-	for _, goos := range []string{"linux", "darwin", "ios", "android"} {
-		for _, goarch := range []string{"amd64", "386", "arm64", "arm", "mips"} {
+	for _, goos := range []string{"linux", "darwin", "ios", "android", "aix"} {
+		for _, goarch := range []string{"amd64", "386", "arm64", "arm", "mips", "ppc"} {
 			if goos == "ios" && goarch != "arm64" {
+				continue
+			}
+			if goos == "aix" && goarch != "ppc" {
 				continue
 			}
 			switch goarch {
@@ -389,7 +392,7 @@ func TestRunPipe(t *testing.T) {
 	}
 	require.NoError(t, Pipe{}.Run(ctx))
 	packages := ctx.Artifacts.Filter(artifact.ByType(artifact.LinuxPackage)).List()
-	require.Len(t, packages, 56)
+	require.Len(t, packages, 61)
 
 	for _, pkg := range packages {
 		format := pkg.Format()
@@ -421,6 +424,8 @@ func TestRunPipe(t *testing.T) {
 			require.Equal(t, "foo_1.0.0_linux_"+arch+"-10-20"+ext, pkg.Name)
 		case "android":
 			require.Equal(t, "foo_1.0.0_android_"+arch+"-10-20"+ext, pkg.Name)
+		case "aix":
+			require.Equal(t, "foo_1.0.0_aix_ppc-10-20"+ext, pkg.Name)
 		default:
 			require.Equal(t, "foo_1.0.0_ios_arm64-10-20"+ext, pkg.Name)
 		}

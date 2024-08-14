@@ -183,7 +183,6 @@ func create(ctx *context.Context, fpm config.NFPM, format string, artifacts []*a
 	infoArch := artifacts[0].Goarch + artifacts[0].Goarm + artifacts[0].Gomips // key used for the ConventionalFileName et al
 	arch := infoArch + artifacts[0].Goamd64                                    // unique arch key
 	infoPlatform := artifacts[0].Goos
-	rpmArch := arch
 	if infoPlatform == "ios" {
 		if format == "deb" {
 			infoPlatform = "iphoneos-arm64"
@@ -203,12 +202,13 @@ func create(ctx *context.Context, fpm config.NFPM, format string, artifacts []*a
 	// overridden by setting it in your .goreleaser.yaml See the following:
 	// https://developer.ibm.com/articles/au-aix-build-open-source-rpm-packages/
 	// https://developer.ibm.com/articles/configure-yum-on-aix/
+	var rpmArch string
 	if infoPlatform == "aix" {
 		if format == "rpm" {
 			infoPlatform = "aix7.2"
 			rpmArch = "ppc"
 		} else {
-			log.Debugf("skipping aix for %s as its not supported", format)
+			log.Infof("skipping aix for %s as its not supported", format)
 			return nil
 		}
 	}
