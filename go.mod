@@ -29,7 +29,7 @@ require (
 	github.com/google/ko v0.16.0
 	github.com/google/uuid v1.6.0
 	github.com/goreleaser/fileglob v1.3.0
-	github.com/goreleaser/nfpm/v2 v2.38.0
+	github.com/goreleaser/nfpm/v2 v2.39.0
 	github.com/hashicorp/go-multierror v1.1.1
 	github.com/invopop/jsonschema v0.12.0
 	github.com/jarcoal/httpmock v1.3.1
