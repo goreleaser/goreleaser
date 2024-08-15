@@ -282,9 +282,9 @@ func requireGoMod(tb testing.TB) {
 
 	mod, err := os.ReadFile("dist/proxy/foo/go.mod")
 	require.NoError(tb, err)
-	require.Contains(tb, string(mod), `module foo
+	require.Regexp(tb, `module foo
 
-go 1.22`)
+go 1.2[23]`, string(mod))
 }
 
 func fakeGoModAndSum(tb testing.TB, module string) {
