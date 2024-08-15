@@ -146,12 +146,6 @@ nfpms:
     # Priority.
     priority: extra
 
-    # Set the platform.
-    #
-    # Default: inferred from binary's GOOS based on the format.
-    # Since: v1.22.
-    platform: aix
-
     # Makes a meta package - an empty package that contains only supporting
     # files and dependencies.
     # When set to `true`, the `builds` option is ignored.
@@ -367,12 +361,6 @@ nfpms:
         #
         # Templates: allowed.
         key_file: "{{ .Env.GPG_KEY_PATH }}"
-
-      # Set the arch.
-      #
-      # Default: inferred from binary's GOARCH based on the format.
-      # Since: v1.22.
-      arch: arm64
 
     # Custom configuration applied only to the Deb packager.
     deb:

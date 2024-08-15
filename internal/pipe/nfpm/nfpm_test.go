@@ -197,11 +197,11 @@ func TestRunPipe(t *testing.T) {
 		},
 	}, testctx.WithVersion("1.0.0"), testctx.WithCurrentTag("v1.0.0"))
 	for _, goos := range []string{"linux", "darwin", "ios", "android", "aix"} {
-		for _, goarch := range []string{"amd64", "386", "arm64", "arm", "mips", "ppc"} {
+		for _, goarch := range []string{"amd64", "386", "arm64", "arm", "mips", "ppc64"} {
 			if goos == "ios" && goarch != "arm64" {
 				continue
 			}
-			if goos == "aix" && goarch != "ppc" {
+			if goarch == "ppc64" && goos != "aix" {
 				continue
 			}
 			switch goarch {
@@ -392,7 +392,7 @@ func TestRunPipe(t *testing.T) {
 	}
 	require.NoError(t, Pipe{}.Run(ctx))
 	packages := ctx.Artifacts.Filter(artifact.ByType(artifact.LinuxPackage)).List()
-	require.Len(t, packages, 61)
+	require.Len(t, packages, 57)
 
 	for _, pkg := range packages {
 		format := pkg.Format()
@@ -425,7 +425,7 @@ func TestRunPipe(t *testing.T) {
 		case "android":
 			require.Equal(t, "foo_1.0.0_android_"+arch+"-10-20"+ext, pkg.Name)
 		case "aix":
-			require.Equal(t, "foo_1.0.0_aix_ppc-10-20"+ext, pkg.Name)
+			require.Equal(t, "foo_1.0.0_aix_ppc64-10-20"+ext, pkg.Name)
 		default:
 			require.Equal(t, "foo_1.0.0_ios_arm64-10-20"+ext, pkg.Name)
 		}
@@ -532,8 +532,12 @@ func doTestRunPipeConventionalNameTemplate(t *testing.T, snapshot bool) {
 	if snapshot {
 		ctx.Snapshot = true
 	}
-	for _, goos := range []string{"linux", "darwin"} {
-		for _, goarch := range []string{"amd64", "386", "arm64", "arm", "mips"} {
+	for _, goos := range []string{"linux", "darwin", "aix"} {
+		for _, goarch := range []string{"amd64", "386", "arm64", "arm", "mips", "ppc64"} {
+			if goarch == "ppc64" && goos != "aix" {
+				continue
+			}
+
 			switch goarch {
 			case "arm":
 				for _, goarm := range []string{"6", "7"} {
@@ -593,7 +597,7 @@ func doTestRunPipeConventionalNameTemplate(t *testing.T, snapshot bool) {
 	}
 	require.NoError(t, Pipe{}.Run(ctx))
 	packages := ctx.Artifacts.Filter(artifact.ByType(artifact.LinuxPackage)).List()
-	require.Len(t, packages, 47)
+	require.Len(t, packages, 48)
 	prefix := "foo"
 	if snapshot {
 		prefix += "-snapshot"
@@ -612,6 +616,7 @@ func doTestRunPipeConventionalNameTemplate(t *testing.T, snapshot bool) {
 			prefix + "-1.0.0-1.x86_64v2.rpm",
 			prefix + "-1.0.0-1.x86_64v3.rpm",
 			prefix + "-1.0.0-1.x86_64v4.rpm",
+			prefix + "-1.0.0-1.ppc.rpm",
 			prefix + "_1.0.0_aarch64.apk",
 			prefix + "_1.0.0_amd64.deb",
 			prefix + "_1.0.0_amd64.ipk",

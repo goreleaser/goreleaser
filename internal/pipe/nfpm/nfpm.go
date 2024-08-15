@@ -202,11 +202,14 @@ func create(ctx *context.Context, fpm config.NFPM, format string, artifacts []*a
 	// overridden by setting it in your .goreleaser.yaml See the following:
 	// https://developer.ibm.com/articles/au-aix-build-open-source-rpm-packages/
 	// https://developer.ibm.com/articles/configure-yum-on-aix/
-	var rpmArch string
 	if infoPlatform == "aix" {
+		if artifacts[0].Goarch != "ppc64" {
+			log.Debugf("skipping aix/%s as its not supported", infoArch)
+			return nil
+		}
 		if format == "rpm" {
 			infoPlatform = "aix7.2"
-			rpmArch = "ppc"
+			infoArch = "ppc"
 		} else {
 			log.Infof("skipping aix for %s as its not supported", format)
 			return nil
@@ -360,16 +363,6 @@ func create(ctx *context.Context, fpm config.NFPM, format string, artifacts []*a
 		}
 	}
 
-	// If platform is manually set, prefer it
-	if len(fpm.Platform) > 0 {
-		infoPlatform = fpm.Platform
-	}
-
-	// If rpmArch is manually set, prefer it
-	if len(overridden.RPM.Arch) > 0 {
-		rpmArch = overridden.RPM.Arch
-	}
-
 	log.WithField("files", destinations(contents)).Debug("all archive files")
 
 	info := &nfpm.Info{
@@ -431,7 +424,6 @@ func create(ctx *context.Context, fpm config.NFPM, format string, artifacts []*a
 				},
 			},
 			RPM: nfpm.RPM{
-				Arch:        rpmArch,
 				Summary:     overridden.RPM.Summary,
 				Group:       overridden.RPM.Group,
 				Compression: overridden.RPM.Compression,

@@ -765,7 +765,6 @@ type NFPM struct {
 	Builds      []string `yaml:"builds,omitempty" json:"builds,omitempty"`
 	Formats     []string `yaml:"formats,omitempty" json:"formats,omitempty" jsonschema:"enum=apk,enum=deb,enum=rpm,enum=termux.deb,enum=archlinux,enum=ipk"`
 	Section     string   `yaml:"section,omitempty" json:"section,omitempty"`
-	Platform    string   `yaml:"platform,omitempty" json:"platform,omitempty"`
 	Priority    string   `yaml:"priority,omitempty" json:"priority,omitempty"`
 	Vendor      string   `yaml:"vendor,omitempty" json:"vendor,omitempty"`
 	Homepage    string   `yaml:"homepage,omitempty" json:"homepage,omitempty"`
@@ -813,7 +812,6 @@ type NFPMRPM struct {
 	Scripts     NFPMRPMScripts   `yaml:"scripts,omitempty" json:"scripts,omitempty"`
 	Prefixes    []string         `yaml:"prefixes,omitempty" json:"prefixes,omitempty"`
 	Packager    string           `yaml:"packager,omitempty" json:"packager,omitempty"`
-	Arch        string           `yaml:"arch,omitempty" json:"arch,omitempty"`
 }
 
 // NFPMDebScripts is scripts only available on deb packages.
