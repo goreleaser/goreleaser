@@ -501,7 +501,7 @@ type Build struct {
 	Hooks           BuildHookConfig `yaml:"hooks,omitempty" json:"hooks,omitempty"`
 	Builder         string          `yaml:"builder,omitempty" json:"builder,omitempty"`
 	ModTimestamp    string          `yaml:"mod_timestamp,omitempty" json:"mod_timestamp,omitempty"`
-	Skip            bool            `yaml:"skip,omitempty" json:"skip,omitempty"`
+	Skip            string          `yaml:"skip,omitempty" json:"skip,omitempty" jsonschema:"oneof_type=string;boolean"`
 	GoBinary        string          `yaml:"gobinary,omitempty" json:"gobinary,omitempty"`
 	Command         string          `yaml:"command,omitempty" json:"command,omitempty"`
 	NoUniqueDistDir bool            `yaml:"no_unique_dist_dir,omitempty" json:"no_unique_dist_dir,omitempty"`

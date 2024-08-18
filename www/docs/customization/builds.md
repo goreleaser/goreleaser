@@ -194,6 +194,8 @@ builds:
 
     # If true, skip the build.
     # Useful for library projects.
+    #
+    # Templates: allowed (since v2.3).
     skip: false
 
     # By default, GoReleaser will create your binaries inside

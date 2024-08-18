@@ -34,7 +34,11 @@ func (Pipe) String() string {
 func (Pipe) Run(ctx *context.Context) error {
 	g := semerrgroup.New(ctx.Parallelism)
 	for _, build := range ctx.Config.Builds {
-		if build.Skip {
+		skip, err := tmpl.New(ctx).Bool(build.Skip)
+		if err != nil {
+			return err
+		}
+		if skip {
 			log.WithField("id", build.ID).Info("skip is set")
 			continue
 		}
