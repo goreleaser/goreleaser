@@ -9,14 +9,14 @@ require (
 	github.com/anchore/quill v0.4.2
 	github.com/atc0005/go-teams-notify/v2 v2.11.0
 	github.com/awslabs/amazon-ecr-credential-helper/ecr-login v0.0.0-20240514230400-03fa26f5508f
-	github.com/bluesky-social/indigo v0.0.0-20240411170459-440932307e0d
+	github.com/bluesky-social/indigo v0.0.0-20240813042137-4006c0eca043
 	github.com/caarlos0/ctrlc v1.2.0
 	github.com/caarlos0/env/v11 v11.2.2
 	github.com/caarlos0/go-reddit/v3 v3.0.1
 	github.com/caarlos0/go-shellwords v1.0.12
 	github.com/caarlos0/go-version v0.1.1
 	github.com/caarlos0/log v0.4.6
-	github.com/charmbracelet/keygen v0.5.0
+	github.com/charmbracelet/keygen v0.5.1
 	github.com/charmbracelet/lipgloss v0.12.1
 	github.com/charmbracelet/x/exp/ordered v0.1.0
 	github.com/chrismellard/docker-credential-acr-env v0.0.0-20230304212654-82a0ddb27589
@@ -40,7 +40,7 @@ require (
 	github.com/muesli/roff v0.1.0
 	github.com/muesli/termenv v0.15.2
 	github.com/ory/dockertest/v3 v3.11.0
-	github.com/slack-go/slack v0.13.1
+	github.com/slack-go/slack v0.14.0
 	github.com/spf13/cobra v1.8.1
 	github.com/stretchr/testify v1.9.0
 	github.com/ulikunitz/xz v0.5.12
@@ -289,7 +289,7 @@ require (
 	github.com/vbatts/tar-split v0.11.5 // indirect
 	github.com/wagoodman/go-partybus v0.0.0-20230516145632-8ccac152c651 // indirect
 	github.com/wagoodman/go-progress v0.0.0-20220614130704-4b1c25a33c7c // indirect
-	github.com/whyrusleeping/cbor-gen v0.1.1-0.20240311221002-68b9f235c302 // indirect
+	github.com/whyrusleeping/cbor-gen v0.1.3-0.20240731173018-74d74643234c // indirect
 	github.com/wk8/go-ordered-map/v2 v2.1.8 // indirect
 	github.com/xanzy/ssh-agent v0.3.3 // indirect
 	github.com/xeipuuv/gojsonpointer v0.0.0-20190905194746-02993c407bfb // indirect
