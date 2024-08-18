@@ -188,11 +188,28 @@ archives:
     builds_info:
       group: root
       owner: root
+      mtime: "{{ .CommitDate }}"
     files:
-      - README.md
-      - LICENSE.md
-      - completions/*
-      - manpages/*
+      - src: README.md
+        info:
+          owner: root
+          group: root
+          mtime: "{{ .CommitDate }}"
+      - src: LICENSE.md
+        info:
+          owner: root
+          group: root
+          mtime: "{{ .CommitDate }}"
+      - src: completions/*
+        info:
+          owner: root
+          group: root
+          mtime: "{{ .CommitDate }}"
+      - src: manpages/*
+        info:
+          owner: root
+          group: root
+          mtime: "{{ .CommitDate }}"
 
 brews:
   - repository:
