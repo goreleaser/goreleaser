@@ -5,7 +5,7 @@ version: 2
 nightly:
   publish_release: true
   keep_single_release: true
-  name_template: "{{ incminor .Version }}-nightly"
+  version_template: "{{ incminor .Version }}-nightly"
 
 includes:
   - from_file:
