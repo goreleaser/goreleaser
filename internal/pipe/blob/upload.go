@@ -49,6 +49,11 @@ func urlFor(ctx *context.Context, conf config.Blob) (string, error) {
 
 	query := url.Values{}
 
+	// FIXME: this needs to be removed eventually.
+	// See: https://github.com/google/go-cloud/issues/3472
+	// See: https://github.com/google/go-cloud/releases/tag/v0.39.0
+	query.Add("awssdk", "v1")
+
 	endpoint, err := tmpl.New(ctx).Apply(conf.Endpoint)
 	if err != nil {
 		return "", err
