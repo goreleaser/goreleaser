@@ -7,7 +7,7 @@ require (
 	dario.cat/mergo v1.0.0
 	github.com/Masterminds/semver/v3 v3.2.1
 	github.com/anchore/quill v0.4.2
-	github.com/atc0005/go-teams-notify/v2 v2.11.0
+	github.com/atc0005/go-teams-notify/v2 v2.12.0
 	github.com/awslabs/amazon-ecr-credential-helper/ecr-login v0.0.0-20240514230400-03fa26f5508f
 	github.com/bluesky-social/indigo v0.0.0-20240813042137-4006c0eca043
 	github.com/caarlos0/ctrlc v1.2.0
