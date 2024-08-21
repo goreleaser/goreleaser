@@ -17,7 +17,7 @@ require (
 	github.com/caarlos0/go-version v0.1.1
 	github.com/caarlos0/log v0.4.6
 	github.com/charmbracelet/keygen v0.5.1
-	github.com/charmbracelet/lipgloss v0.12.1
+	github.com/charmbracelet/lipgloss v0.13.0
 	github.com/charmbracelet/x/exp/ordered v0.1.0
 	github.com/chrismellard/docker-credential-acr-env v0.0.0-20230304212654-82a0ddb27589
 	github.com/dghubble/go-twitter v0.0.0-20211115160449-93a8679adecb
