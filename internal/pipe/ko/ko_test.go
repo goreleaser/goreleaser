@@ -160,7 +160,8 @@ func TestPublishPipeSuccess(t *testing.T) {
 	chainguardStaticLabels := map[string]string{
 		"org.opencontainers.image.authors": "Chainguard Team https://www.chainguard.dev/",
 		"org.opencontainers.image.source":  "https://github.com/chainguard-images/images/tree/main/images/static",
-		"org.opencontainers.image.url":     "https://edu.chainguard.dev/chainguard/chainguard-images/reference/static/",
+		"org.opencontainers.image.url":     "https://images.chainguard.dev/directory/image/static/overview",
+		"org.opencontainers.image.vendor":  "Chainguard",
 	}
 
 	table := []struct {
