@@ -365,6 +365,11 @@ func processFlags(ctx *context.Context, a *artifact.Artifact, env, flags []strin
 		if err != nil {
 			return nil, err
 		}
+
+		if flag == "" {
+			continue
+		}
+
 		processed = append(processed, flagPrefix+flag)
 	}
 	return processed, nil
