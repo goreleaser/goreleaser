@@ -5,7 +5,7 @@ go 1.23.0
 require (
 	code.gitea.io/sdk/gitea v0.19.0
 	dario.cat/mergo v1.0.1
-	github.com/Masterminds/semver/v3 v3.2.1
+	github.com/Masterminds/semver/v3 v3.3.0
 	github.com/anchore/quill v0.4.2
 	github.com/atc0005/go-teams-notify/v2 v2.12.0
 	github.com/awslabs/amazon-ecr-credential-helper/ecr-login v0.0.0-20240514230400-03fa26f5508f
