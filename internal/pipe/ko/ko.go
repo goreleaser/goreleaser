@@ -26,6 +26,7 @@ import (
 	"github.com/google/ko/pkg/commands/options"
 	"github.com/google/ko/pkg/publish"
 	"github.com/goreleaser/goreleaser/v2/internal/artifact"
+	"github.com/goreleaser/goreleaser/v2/internal/deprecate"
 	"github.com/goreleaser/goreleaser/v2/internal/ids"
 	"github.com/goreleaser/goreleaser/v2/internal/semerrgroup"
 	"github.com/goreleaser/goreleaser/v2/internal/skips"
@@ -116,7 +117,11 @@ func (Pipe) Default(ctx *context.Context) error {
 			ko.Tags = []string{"latest"}
 		}
 
-		if ko.SBOM == "" {
+		switch ko.SBOM {
+		case "cyclonedx", "go.version-m":
+			deprecate.Notice(ctx, "kos.sbom")
+			ko.SBOM = "none"
+		case "":
 			ko.SBOM = "spdx"
 		}
 
@@ -215,10 +220,6 @@ func (o *buildOptions) makeBuilder(ctx *context.Context) (*build.Caching, error)
 	switch o.sbom {
 	case "spdx":
 		buildOptions = append(buildOptions, build.WithSPDX("devel"))
-	case "cyclonedx":
-		buildOptions = append(buildOptions, build.WithCycloneDX())
-	case "go.version-m":
-		buildOptions = append(buildOptions, build.WithGoVersionSBOM())
 	case "none":
 		buildOptions = append(buildOptions, build.WithDisabledSBOM())
 	default:

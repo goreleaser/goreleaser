@@ -405,7 +405,23 @@ func TestSkipBuild(t *testing.T) {
 		Dist: folder,
 		Builds: []config.Build{
 			{
-				Skip: true,
+				Skip: "true",
+			},
+		},
+	}
+	ctx := testctx.NewWithCfg(config, testctx.WithCurrentTag("2.4.5"))
+	require.NoError(t, Pipe{}.Run(ctx))
+	require.Empty(t, ctx.Artifacts.List())
+}
+
+func TestSkipBuildTmpl(t *testing.T) {
+	folder := testlib.Mktmp(t)
+	config := config.Project{
+		Dist: folder,
+		Env:  []string{"FOO=bar"},
+		Builds: []config.Build{
+			{
+				Skip: "{{ eq .Env.FOO \"bar\" }}",
 			},
 		},
 	}

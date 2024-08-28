@@ -48,7 +48,7 @@ func TestMain(m *testing.M) {
 			"MINIO_ROOT_USER=" + minioUser,
 			"MINIO_ROOT_PASSWORD=" + minioPwd,
 		},
-		ExposedPorts: []string{"9000", "9001"},
+		ExposedPorts: []string{"9000/tcp", "9001/tcp"},
 		Cmd:          []string{"server", "/data", "--console-address", ":9001"},
 	}, func(hc *docker.HostConfig) {
 		hc.AutoRemove = true

@@ -12,7 +12,7 @@ maintainer, [caarlos0](https://github.com/caarlos0).
 This money usually goes to buying coffee, beer, better hardware, and, hopefully,
 one day, paying the bills.
 
-### High-tier sponsors:
+### High-tier sponsors
 
 <a href="https://smallstep.com" target="_blank"><img width="200" src="https://github.com/goreleaser/goreleaser/assets/245435/05ade839-6652-474a-af90-da3ea67dde24"></a>
 
@@ -34,8 +34,8 @@ organization.
 This ultimately is used to buy/renew domains, keep servers up, print and send
 stickers to contributors and users, among other things.
 
-You can start sponsoring at the [OpenCollective
-website](https://opencollective.com/goreleaser).
+You can start sponsoring at the
+[OpenCollective website](https://opencollective.com/goreleaser).
 
 Below you can see a list of the current sponsors and backers on OpenCollective:
 

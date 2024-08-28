@@ -258,7 +258,7 @@ apk add --allow-untrusted goreleaser*.apk
     go install github.com/goreleaser/goreleaser/v2@latest
     ```
 
-    Requires Go 1.22.
+    Requires Go 1.23.
 
 === "Pro"
 
@@ -366,10 +366,6 @@ Verify the signatures:
       --certificate-oidc-issuer 'https://token.actions.githubusercontent.com' \
       goreleaser/goreleaser-pro
     ```
-
-!!! info
-
-    The `.pem` and `.sig` files are the image `name:tag`, replacing `/` and `:` with `-`.
 
 ## Nightly builds
 

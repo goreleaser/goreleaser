@@ -79,7 +79,7 @@ kos:
     # SBOM format to use.
     #
     # Default: 'spdx'.
-    # Valid options are: spdx, cyclonedx, go.version-m and none.
+    # Valid options are: spdx and none.
     sbom: none
 
     # Ldflags to use on build.

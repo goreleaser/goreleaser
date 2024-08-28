@@ -1,7 +1,7 @@
-# Nixpkgs
+# Nix User Repositories
 
 After releasing to GitHub, GitLab, or Gitea, GoReleaser can generate and publish
-a _nixpkg_ to a [Nix User Repository][nur].
+a _nix derivation_ to an existing [Nix User Repository][nur].
 
 The `nix` section specifies how the pkgs should be created:
 

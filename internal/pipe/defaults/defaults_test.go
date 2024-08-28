@@ -34,7 +34,6 @@ func TestFillBasicData(t *testing.T) {
 	require.NotEmpty(t, ctx.Config.Archives[0].NameTemplate)
 	require.NotEmpty(t, ctx.Config.Builds[0].Ldflags)
 	require.NotEmpty(t, ctx.Config.Archives[0].Files)
-	require.NotEmpty(t, ctx.Config.Dist)
 }
 
 func TestFillPartial(t *testing.T) {

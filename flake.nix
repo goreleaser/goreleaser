@@ -21,6 +21,11 @@
         };
 
         devShells.default = pkgs.mkShellNoCC {
+          shellHook = "go mod tidy";
+        };
+
+        # nix develop .#dev
+        devShells.dev = pkgs.mkShellNoCC {
           packages = with pkgs; [
             go-task
             gofumpt
@@ -30,13 +35,11 @@
             gnupg
             nix-prefetch
           ] ++ (lib.optionals pkgs.stdenv.isLinux [
-            go_1_22
             snapcraft
           ]);
-
-          shellHook = "go mod tidy";
         };
 
+        # nix develop .#docs
         devShells.docs = pkgs.mkShellNoCC {
           packages = with pkgs; with pkgs.python311Packages; [
             go-task
@@ -44,7 +47,7 @@
             mkdocs-material
             mkdocs-redirects
             mkdocs-minify
-            cpkgs.mkdocs-rss-plugin # https://github.com/NixOS/nixpkgs/pull/277350
+            mkdocs-rss-plugin
             cpkgs.mkdocs-include-markdown-plugin # https://github.com/NixOS/nixpkgs/pull/277351
           ] ++ mkdocs-material.passthru.optional-dependencies.git;
         };

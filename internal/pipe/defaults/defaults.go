@@ -20,9 +20,6 @@ func (Pipe) String() string { return "setting defaults" }
 
 // Run the pipe.
 func (Pipe) Run(ctx *context.Context) error {
-	if ctx.Config.Dist == "" {
-		ctx.Config.Dist = "dist"
-	}
 	if ctx.Config.GitHubURLs.Download == "" {
 		ctx.Config.GitHubURLs.Download = client.DefaultGitHubDownloadURL
 	}

@@ -105,6 +105,7 @@ func doRun(ctx *context.Context, fpm config.NFPM) error {
 			artifact.ByGoos("linux"),
 			artifact.ByGoos("ios"),
 			artifact.ByGoos("android"),
+			artifact.ByGoos("aix"),
 		),
 	}
 	if len(fpm.Builds) > 0 {
@@ -114,7 +115,7 @@ func doRun(ctx *context.Context, fpm config.NFPM) error {
 		Filter(artifact.And(filters...)).
 		GroupByPlatform()
 	if len(linuxBinaries) == 0 {
-		return fmt.Errorf("no linux binaries found for builds %v", fpm.Builds)
+		return fmt.Errorf("no linux/unix binaries found for builds %v", fpm.Builds)
 	}
 	g := semerrgroup.New(ctx.Parallelism)
 	for _, format := range fpm.Formats {
@@ -187,6 +188,30 @@ func create(ctx *context.Context, fpm config.NFPM, format string, artifacts []*a
 			infoPlatform = "iphoneos-arm64"
 		} else {
 			log.Debugf("skipping ios for %s as its not supported", format)
+			return nil
+		}
+	}
+
+	// AIX is weird, so we default to 7.2 as the earliest release
+	// that supports golang. This can be overridden by setting platform
+	// in your .goreleaser.yaml. See the following:
+	// https://www.unix.com/aix/266963-tip-problem-rpm-different-operating-system.html
+	// Additionally, it is recommended to set the rpmArch to ppc
+	// As AIX, while being ppc64, expects the rpms to specify ppc.
+	// We will default to setting ppc here, but again this can be
+	// overridden by setting it in your .goreleaser.yaml See the following:
+	// https://developer.ibm.com/articles/au-aix-build-open-source-rpm-packages/
+	// https://developer.ibm.com/articles/configure-yum-on-aix/
+	if infoPlatform == "aix" {
+		if artifacts[0].Goarch != "ppc64" {
+			log.Debugf("skipping aix/%s as its not supported", infoArch)
+			return nil
+		}
+		if format == "rpm" {
+			infoPlatform = "aix7.2"
+			infoArch = "ppc"
+		} else {
+			log.Infof("skipping aix for %s as its not supported", format)
 			return nil
 		}
 	}

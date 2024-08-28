@@ -54,6 +54,8 @@ type Piper interface {
 //
 //nolint:gochecknoglobals
 var BuildPipeline = []Piper{
+	// set default dist folder and remove it if `--clean` is set
+	dist.CleanPipe{},
 	// load and validate environment variables
 	env.Pipe{},
 	// get and validate git repo state
@@ -68,7 +70,7 @@ var BuildPipeline = []Piper{
 	snapshot.Pipe{},
 	// run global hooks before build
 	before.Pipe{},
-	// ensure ./dist is clean
+	// ensure ./dist exists and is empty
 	dist.Pipe{},
 	// setup metadata options
 	metadata.Pipe{},
@@ -88,6 +90,8 @@ var BuildPipeline = []Piper{
 	build.Pipe{},
 	// universal binary handling
 	universalbinary.Pipe{},
+	// sign binaries
+	sign.BinaryPipe{},
 	// notarize macos apps
 	notary.MacOS{},
 	// upx

@@ -16,3 +16,4 @@ Let's see how we can get it working on popular CI software:
 - [Jenkins](jenkins.md)
 - [Semaphore](semaphore.md)
 - [Travis CI](travis.md)
+- [Woodpecker](woodpecker.md)

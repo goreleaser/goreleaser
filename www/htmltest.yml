@@ -10,7 +10,9 @@ IgnoreURLs:
   - getrevue.co
   - docs.github.com
   - help.github.com
+  - github.com
   - twitter.com
+  - x.com
   - medium.com
 IgnoreDirs:
   - overrides

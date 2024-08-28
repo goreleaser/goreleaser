@@ -992,6 +992,16 @@ func TestProcessFlagsInvalid(t *testing.T) {
 	require.Nil(t, flags)
 }
 
+func TestProcessFlagsIgnoreEmptyFlags(t *testing.T) {
+	ctx := testctx.New()
+	source := []string{
+		"{{if eq 1 2}}-ignore-me{{end}}",
+	}
+	flags, err := processFlags(ctx, &artifact.Artifact{}, []string{}, source, "")
+	require.NoError(t, err)
+	require.Len(t, flags, 0)
+}
+
 func TestBuildModTimestamp(t *testing.T) {
 	// round to seconds since this will be a unix timestamp
 	modTime := time.Now().AddDate(-1, 0, 0).Round(1 * time.Second).UTC()

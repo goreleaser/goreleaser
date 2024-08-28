@@ -16,7 +16,7 @@ snapshot:
   #
   # Default: `{{ .Version }}-SNAPSHOT-{{.ShortCommit}}`.
   # Templates: allowed.
-  name_template: "{{ incpatch .Version }}-devel"
+  version_template: "{{ incpatch .Version }}-devel"
 ```
 
 ## How it works

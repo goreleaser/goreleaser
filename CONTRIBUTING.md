@@ -11,7 +11,7 @@ Prerequisites:
 
 - [Task](https://taskfile.dev/installation)
 - [Dagger](https://docs.dagger.io/install)
-- [Go 1.22+](https://go.dev/doc/install)
+- [Go 1.23+](https://go.dev/doc/install)
 - [Docker](https://www.docker.com/)
 
 Clone `goreleaser` anywhere:
@@ -33,7 +33,7 @@ go build -o goreleaser .
 ./goreleaser --version
 ```
 
-A good way to check if everything is alright is to run the test suite: 
+A good way to check if everything is alright is to run the test suite:
 
 ```bash
 dagger call --source=.:default test output
