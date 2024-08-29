@@ -47,6 +47,7 @@ func TestSkip(t *testing.T) {
 }
 
 func TestRun(t *testing.T) {
+	testlib.CheckPath(t, "upx")
 	ctx := testctx.NewWithCfg(config.Project{
 		UPXs: []config.UPX{
 			{
