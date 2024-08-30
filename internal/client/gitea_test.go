@@ -16,6 +16,7 @@ import (
 	"github.com/goreleaser/goreleaser/v2/pkg/config"
 	"github.com/goreleaser/goreleaser/v2/pkg/context"
 	"github.com/jarcoal/httpmock"
+	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"github.com/stretchr/testify/suite"
 )
@@ -626,9 +627,9 @@ func TestGiteaChangelog(t *testing.T) {
 					},
 				},
 			})
-			require.NoError(t, err)
+			assert.NoError(t, err)
 			_, err = w.Write(bts)
-			require.NoError(t, err)
+			assert.NoError(t, err)
 		}
 	}))
 	defer srv.Close()

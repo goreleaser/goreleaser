@@ -15,6 +15,7 @@ import (
 	"github.com/goreleaser/goreleaser/v2/internal/artifact"
 	"github.com/goreleaser/goreleaser/v2/internal/testctx"
 	"github.com/goreleaser/goreleaser/v2/pkg/config"
+	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"github.com/xanzy/go-gitlab"
 )
@@ -205,14 +206,14 @@ func TestGitLabURLsDownloadTemplate(t *testing.T) {
 				}
 
 				b, err := io.ReadAll(r.Body)
-				require.NoError(t, err)
+				assert.NoError(t, err)
 
 				reqBody := map[string]interface{}{}
 				err = json.Unmarshal(b, &reqBody)
-				require.NoError(t, err)
+				assert.NoError(t, err)
 
 				url := reqBody["url"].(string)
-				require.Truef(t, strings.HasSuffix(url, tt.wantURL), "expected %q to end with %q", url, tt.wantURL)
+				assert.Truef(t, strings.HasSuffix(url, tt.wantURL), "expected %q to end with %q", url, tt.wantURL)
 			}))
 			defer srv.Close()
 
@@ -301,7 +302,7 @@ func TestGitLabCreateReleaseReleaseNotExists(t *testing.T) {
 					return
 				}
 
-				require.FailNow(t, "should not reach here")
+				assert.Empty(t, "should not reach here")
 			}))
 			defer srv.Close()
 
@@ -337,7 +338,7 @@ func TestGitLabCreateReleaseReleaseExists(t *testing.T) {
 		// Check if release exists
 		if r.Method == http.MethodGet {
 			w.WriteHeader(200)
-			require.NoError(t, json.NewEncoder(w).Encode(map[string]string{
+			assert.NoError(t, json.NewEncoder(w).Encode(map[string]string{
 				"description": "original description",
 			}))
 			return
@@ -347,14 +348,14 @@ func TestGitLabCreateReleaseReleaseExists(t *testing.T) {
 		if r.Method == http.MethodPut {
 			createdRelease = true
 			var resBody map[string]string
-			require.NoError(t, json.NewDecoder(r.Body).Decode(&resBody))
-			require.Equal(t, "original description", resBody["description"])
+			assert.NoError(t, json.NewDecoder(r.Body).Decode(&resBody))
+			assert.Equal(t, "original description", resBody["description"])
 			w.WriteHeader(http.StatusOK)
 			fmt.Fprint(w, "{}")
 			return
 		}
 
-		require.FailNow(t, "should not reach here")
+		assert.Empty(t, "should not reach here")
 	}))
 	defer srv.Close()
 
@@ -485,9 +486,9 @@ func TestGitLabChangelog(t *testing.T) {
 	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		if strings.HasSuffix(r.URL.Path, "projects/someone/something/repository/compare") {
 			r, err := os.Open("testdata/gitlab/compare.json")
-			require.NoError(t, err)
+			assert.NoError(t, err)
 			_, err = io.Copy(w, r)
-			require.NoError(t, err)
+			assert.NoError(t, err)
 			return
 		}
 		defer r.Body.Close()
@@ -530,19 +531,19 @@ func TestGitLabCreateFile(t *testing.T) {
 		}
 		if strings.HasSuffix(r.URL.Path, "projects/someone/something/repository/files/newfile.txt") {
 			_, err := io.Copy(w, strings.NewReader(`{ "file_path": "newfile.txt", "branch": "somebranch" }`))
-			require.NoError(t, err)
+			assert.NoError(t, err)
 			return
 		}
 
 		// Handle the test where we detect the branch
 		if strings.HasSuffix(r.URL.Path, "projects/someone/something") {
 			_, err := io.Copy(w, strings.NewReader(`{ "default_branch": "main" }`))
-			require.NoError(t, err)
+			assert.NoError(t, err)
 			return
 		}
 		if strings.HasSuffix(r.URL.Path, "projects/someone/something/repository/files/newfile-in-default.txt") {
 			_, err := io.Copy(w, strings.NewReader(`{ "file_path": "newfile.txt", "branch": "main" }`))
-			require.NoError(t, err)
+			assert.NoError(t, err)
 			return
 		}
 
@@ -554,11 +555,11 @@ func TestGitLabCreateFile(t *testing.T) {
 		if strings.HasSuffix(r.URL.Path, "projects/someone/something/repository/files/newfile-on-new-branch.txt") {
 			if r.Method == "POST" {
 				var resBody map[string]string
-				require.NoError(t, json.NewDecoder(r.Body).Decode(&resBody))
-				require.Equal(t, "master", resBody["start_branch"])
+				assert.NoError(t, json.NewDecoder(r.Body).Decode(&resBody))
+				assert.Equal(t, "master", resBody["start_branch"])
 			}
 			_, err := io.Copy(w, strings.NewReader(`{"file_path":"newfile-on-new-branch.txt","branch":"non-existing-branch"}`))
-			require.NoError(t, err)
+			assert.NoError(t, err)
 			return
 		}
 
@@ -570,14 +571,14 @@ func TestGitLabCreateFile(t *testing.T) {
 		}
 		if strings.HasSuffix(r.URL.Path, "projects/123456789/repository/files/newfile-projectID.txt") {
 			_, err := io.Copy(w, strings.NewReader(`{ "file_path": "newfile-projectID.txt", "branch": "main" }`))
-			require.NoError(t, err)
+			assert.NoError(t, err)
 			return
 		}
 		// File of doooom...gets created, but 404s when getting fetched
 		if strings.HasSuffix(r.URL.Path, "projects/someone/something/repository/files/doomed-file-404.txt") {
 			if r.Method == "PUT" {
 				_, err := io.Copy(w, strings.NewReader(`{ "file_path": "doomed-file-404.txt", "branch": "main" }`))
-				require.NoError(t, err)
+				assert.NoError(t, err)
 			} else {
 				w.WriteHeader(http.StatusNotFound)
 			}
@@ -651,15 +652,15 @@ func TestGitLabCloseMilestone(t *testing.T) {
 	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		if strings.HasSuffix(r.URL.Path, "projects/someone/something/milestones") {
 			r, err := os.Open("testdata/gitlab/milestones.json")
-			require.NoError(t, err)
+			assert.NoError(t, err)
 			_, err = io.Copy(w, r)
-			require.NoError(t, err)
+			assert.NoError(t, err)
 			return
 		} else if strings.HasSuffix(r.URL.Path, "projects/someone/something/milestones/12") {
 			r, err := os.Open("testdata/gitlab/milestone.json")
-			require.NoError(t, err)
+			assert.NoError(t, err)
 			_, err = io.Copy(w, r)
-			require.NoError(t, err)
+			assert.NoError(t, err)
 			return
 		}
 		defer r.Body.Close()
@@ -749,22 +750,22 @@ func TestGitLabOpenPullRequestCrossRepo(t *testing.T) {
 
 		if r.URL.Path == "/api/v4/projects/someone/something" {
 			_, err := io.Copy(w, strings.NewReader(`{ "id": 32156 }`))
-			require.NoError(t, err)
+			assert.NoError(t, err)
 			return
 		}
 
 		if r.URL.Path == "/api/v4/projects/someoneelse/something/merge_requests" {
 			got, err := io.ReadAll(r.Body)
-			require.NoError(t, err)
+			assert.NoError(t, err)
 			var pr gitlab.MergeRequest
-			require.NoError(t, json.Unmarshal(got, &pr))
-			require.Equal(t, "main", pr.TargetBranch)
-			require.Equal(t, "foo", pr.SourceBranch)
-			require.Equal(t, "some title", pr.Title)
-			require.Equal(t, 32156, pr.TargetProjectID)
+			assert.NoError(t, json.Unmarshal(got, &pr))
+			assert.Equal(t, "main", pr.TargetBranch)
+			assert.Equal(t, "foo", pr.SourceBranch)
+			assert.Equal(t, "some title", pr.Title)
+			assert.Equal(t, 32156, pr.TargetProjectID)
 
 			_, err = io.Copy(w, strings.NewReader(`{"web_url": "https://gitlab.com/someoneelse/something/merge_requests/1"}`))
-			require.NoError(t, err)
+			assert.NoError(t, err)
 			return
 		}
 
@@ -800,22 +801,22 @@ func TestGitLabOpenPullRequestBaseEmpty(t *testing.T) {
 
 		if r.URL.Path == "/api/v4/projects/someone/something" {
 			_, err := io.Copy(w, strings.NewReader(`{ "default_branch": "main" }`))
-			require.NoError(t, err)
+			assert.NoError(t, err)
 			return
 		}
 
 		if r.URL.Path == "/api/v4/projects/someone/something/merge_requests" {
 			got, err := io.ReadAll(r.Body)
-			require.NoError(t, err)
+			assert.NoError(t, err)
 			var pr gitlab.MergeRequest
-			require.NoError(t, json.Unmarshal(got, &pr))
-			require.Equal(t, "main", pr.TargetBranch)
-			require.Equal(t, "foo", pr.SourceBranch)
-			require.Equal(t, "some title", pr.Title)
-			require.Equal(t, 0, pr.TargetProjectID)
+			assert.NoError(t, json.Unmarshal(got, &pr))
+			assert.Equal(t, "main", pr.TargetBranch)
+			assert.Equal(t, "foo", pr.SourceBranch)
+			assert.Equal(t, "some title", pr.Title)
+			assert.Equal(t, 0, pr.TargetProjectID)
 
 			_, err = io.Copy(w, strings.NewReader(`{"web_url": "https://gitlab.com/someoneelse/something/merge_requests/1"}`))
-			require.NoError(t, err)
+			assert.NoError(t, err)
 			return
 		}
 
@@ -847,22 +848,22 @@ func TestGitLabOpenPullRequestDraft(t *testing.T) {
 
 		if r.URL.Path == "/api/v4/projects/someone/something" {
 			_, err := io.Copy(w, strings.NewReader(`{ "default_branch": "main" }`))
-			require.NoError(t, err)
+			assert.NoError(t, err)
 			return
 		}
 
 		if r.URL.Path == "/api/v4/projects/someone/something/merge_requests" {
 			got, err := io.ReadAll(r.Body)
-			require.NoError(t, err)
+			assert.NoError(t, err)
 			var pr gitlab.MergeRequest
-			require.NoError(t, json.Unmarshal(got, &pr))
-			require.Equal(t, "main", pr.TargetBranch)
-			require.Equal(t, "main", pr.SourceBranch)
-			require.Equal(t, "Draft: some title", pr.Title)
-			require.Equal(t, 0, pr.TargetProjectID)
+			assert.NoError(t, json.Unmarshal(got, &pr))
+			assert.Equal(t, "main", pr.TargetBranch)
+			assert.Equal(t, "main", pr.SourceBranch)
+			assert.Equal(t, "Draft: some title", pr.Title)
+			assert.Equal(t, 0, pr.TargetProjectID)
 
 			_, err = io.Copy(w, strings.NewReader(`{"web_url": "https://gitlab.com/someoneelse/something/merge_requests/1"}`))
-			require.NoError(t, err)
+			assert.NoError(t, err)
 			return
 		}
 
@@ -894,16 +895,16 @@ func TestGitLabOpenPullBaseBranchGiven(t *testing.T) {
 
 		if r.URL.Path == "/api/v4/projects/someone/something/merge_requests" {
 			got, err := io.ReadAll(r.Body)
-			require.NoError(t, err)
+			assert.NoError(t, err)
 			var pr gitlab.MergeRequest
-			require.NoError(t, json.Unmarshal(got, &pr))
-			require.Equal(t, "main", pr.TargetBranch)
-			require.Equal(t, "foo", pr.SourceBranch)
-			require.Equal(t, "some title", pr.Title)
-			require.Equal(t, 0, pr.TargetProjectID)
+			assert.NoError(t, json.Unmarshal(got, &pr))
+			assert.Equal(t, "main", pr.TargetBranch)
+			assert.Equal(t, "foo", pr.SourceBranch)
+			assert.Equal(t, "some title", pr.Title)
+			assert.Equal(t, 0, pr.TargetProjectID)
 
 			_, err = io.Copy(w, strings.NewReader(`{"web_url": "https://gitlab.com/someoneelse/something/merge_requests/1"}`))
-			require.NoError(t, err)
+			assert.NoError(t, err)
 			return
 		}
 

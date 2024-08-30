@@ -7,6 +7,7 @@ import (
 	"net/http/httptest"
 	"testing"
 
+	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
 	"github.com/goreleaser/goreleaser/v2/internal/testctx"
@@ -68,14 +69,14 @@ func TestPostWebhook(t *testing.T) {
 
 		body, _ := io.ReadAll(r.Body)
 		err := json.Unmarshal(body, rc)
-		require.NoError(t, err)
-		require.Equal(t, defaultColor, rc.Attachments[0].Color)
-		require.Equal(t, "Honk v1.0.0 is out!", rc.Attachments[0].Title)
-		require.Equal(t, "Honk v1.0.0 is out! Check it out at https://github.com/honk/honk/releases/tag/v1.0.0", rc.Attachments[0].Text)
+		assert.NoError(t, err)
+		assert.Equal(t, defaultColor, rc.Attachments[0].Color)
+		assert.Equal(t, "Honk v1.0.0 is out!", rc.Attachments[0].Title)
+		assert.Equal(t, "Honk v1.0.0 is out! Check it out at https://github.com/honk/honk/releases/tag/v1.0.0", rc.Attachments[0].Text)
 
 		w.WriteHeader(200)
 		_, err = w.Write([]byte{})
-		require.NoError(t, err)
+		assert.NoError(t, err)
 	}))
 	defer ts.Close()
 
