@@ -999,7 +999,7 @@ func TestProcessFlagsIgnoreEmptyFlags(t *testing.T) {
 	}
 	flags, err := processFlags(ctx, &artifact.Artifact{}, []string{}, source, "")
 	require.NoError(t, err)
-	require.Len(t, flags, 0)
+	require.Empty(t, flags)
 }
 
 func TestBuildModTimestamp(t *testing.T) {
