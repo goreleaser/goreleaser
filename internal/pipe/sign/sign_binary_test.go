@@ -8,6 +8,7 @@ import (
 	"github.com/goreleaser/goreleaser/v2/internal/artifact"
 	"github.com/goreleaser/goreleaser/v2/internal/skips"
 	"github.com/goreleaser/goreleaser/v2/internal/testctx"
+	"github.com/goreleaser/goreleaser/v2/internal/testlib"
 	"github.com/goreleaser/goreleaser/v2/pkg/config"
 	"github.com/stretchr/testify/require"
 )
@@ -79,6 +80,7 @@ func TestBinaryDependencies(t *testing.T) {
 }
 
 func TestBinarySign(t *testing.T) {
+	testlib.CheckPath(t, "gpg")
 	doTest := func(tb testing.TB, sign config.Sign) []*artifact.Artifact {
 		tb.Helper()
 		tmpdir := tb.TempDir()
