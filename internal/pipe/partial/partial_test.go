@@ -104,8 +104,8 @@ func TestRun(t *testing.T) {
 		}, testctx.Partial)
 		require.NoError(t, pipe.Run(ctx))
 		target := fmt.Sprintf("%s_%s", runtime.GOOS, runtime.GOARCH)
-		switch runtime.GOARCH {
-		case "amd64":
+		// commonly tests will run on either arm64 or amd64.
+		if runtime.GOARCH == "amd64" {
 			target += "_v1"
 		}
 		require.Equal(t, target, ctx.PartialTarget)
