@@ -138,6 +138,17 @@ func (Pipe) Default(ctx *context.Context) error {
 	return ids.Validate()
 }
 
+func (Pipe) Run(ctx *context.Context) error {
+	if !ctx.Snapshot {
+		return nil
+	}
+	g := semerrgroup.New(ctx.Parallelism)
+	for _, ko := range ctx.Config.Kos {
+		g.Go(doBuild(ctx, ko))
+	}
+	return g.Wait()
+}
+
 // Publish executes the Pipe.
 func (Pipe) Publish(ctx *context.Context) error {
 	g := semerrgroup.New(ctx.Parallelism)
@@ -249,15 +260,27 @@ func doBuild(ctx *context.Context, ko config.Ko) func() error {
 			return fmt.Errorf("build: %w", err)
 		}
 
-		po := []publish.Option{publish.WithTags(opts.tags), publish.WithNamer(options.MakeNamer(&options.PublishOptions{
+		namer := options.MakeNamer(&options.PublishOptions{
 			DockerRepo:          opts.imageRepo,
 			Bare:                opts.bare,
 			PreserveImportPaths: opts.preserveImportPaths,
 			BaseImportPaths:     opts.baseImportPaths,
 			Tags:                opts.tags,
-		})), publish.WithAuthFromKeychain(keychain)}
+		})
+		po := []publish.Option{
+			publish.WithTags(opts.tags),
+			publish.WithNamer(namer),
+			publish.WithAuthFromKeychain(keychain),
+		}
 
-		p, err := publish.NewDefault(opts.imageRepo, po...)
+		var p publish.Interface
+		if ctx.Snapshot {
+			p, err = publish.NewDaemon(namer, opts.tags,
+				publish.WithLocalDomain("goreleaser.ko.local"),
+			)
+		} else {
+			p, err = publish.NewDefault(opts.imageRepo, po...)
+		}
 		if err != nil {
 			return fmt.Errorf("newDefault: %w", err)
 		}
