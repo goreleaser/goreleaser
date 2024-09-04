@@ -260,29 +260,32 @@ func doBuild(ctx *context.Context, ko config.Ko) func() error {
 			return fmt.Errorf("build: %w", err)
 		}
 
-		namer := options.MakeNamer(&options.PublishOptions{
+		po := &options.PublishOptions{
 			DockerRepo:          opts.imageRepo,
 			Bare:                opts.bare,
 			PreserveImportPaths: opts.preserveImportPaths,
 			BaseImportPaths:     opts.baseImportPaths,
 			Tags:                opts.tags,
-		})
-		po := []publish.Option{
-			publish.WithTags(opts.tags),
-			publish.WithNamer(namer),
-			publish.WithAuthFromKeychain(keychain),
+			Local:               ctx.Snapshot,
+			LocalDomain:         "goreleaser.ko.local",
 		}
-
 		var p publish.Interface
 		if ctx.Snapshot {
-			p, err = publish.NewDaemon(namer, opts.tags,
-				publish.WithLocalDomain("goreleaser.ko.local"),
+			p, err = publish.NewDaemon(
+				options.MakeNamer(po),
+				opts.tags,
+				publish.WithLocalDomain(po.LocalDomain),
 			)
 		} else {
-			p, err = publish.NewDefault(opts.imageRepo, po...)
+			p, err = publish.NewDefault(
+				opts.imageRepo,
+				publish.WithTags(opts.tags),
+				publish.WithNamer(options.MakeNamer(po)),
+				publish.WithAuthFromKeychain(keychain),
+			)
 		}
 		if err != nil {
-			return fmt.Errorf("newDefault: %w", err)
+			return fmt.Errorf("newPublisher: %w", err)
 		}
 		defer func() { _ = p.Close() }()
 		ref, err := p.Publish(ctx, r, opts.importPath)
