@@ -138,15 +138,13 @@ func (Pipe) Default(ctx *context.Context) error {
 	return ids.Validate()
 }
 
-func (Pipe) Run(ctx *context.Context) error {
-	if !ctx.Snapshot {
-		return nil
+func (p Pipe) Run(ctx *context.Context) error {
+	if ctx.Snapshot {
+		// publish actually handles pushing to the local docker daemon when
+		// snapshot is true.
+		return p.Publish(ctx)
 	}
-	g := semerrgroup.New(ctx.Parallelism)
-	for _, ko := range ctx.Config.Kos {
-		g.Go(doBuild(ctx, ko))
-	}
-	return g.Wait()
+	return nil
 }
 
 // Publish executes the Pipe.
