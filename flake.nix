@@ -48,6 +48,7 @@
             mkdocs-redirects
             mkdocs-minify
             mkdocs-rss-plugin
+            filelock
             cpkgs.mkdocs-include-markdown-plugin # https://github.com/NixOS/nixpkgs/pull/277351
           ] ++ mkdocs-material.passthru.optional-dependencies.git;
         };

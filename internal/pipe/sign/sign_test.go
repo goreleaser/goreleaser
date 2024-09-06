@@ -528,6 +528,7 @@ func TestSignArtifacts(t *testing.T) {
 		}
 
 		t.Run(test.desc, func(t *testing.T) {
+			testlib.CheckPath(t, "gpg")
 			testSign(
 				t,
 				test.ctx,

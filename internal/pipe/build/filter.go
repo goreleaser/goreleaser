@@ -2,7 +2,6 @@ package build
 
 import (
 	"fmt"
-	"strings"
 
 	"github.com/caarlos0/log"
 	"github.com/goreleaser/goreleaser/v2/pkg/context"
@@ -18,7 +17,7 @@ func filter(ctx *context.Context, targets []string) []string {
 
 	var result []string
 	for _, t := range targets {
-		if !strings.HasPrefix(t, target) {
+		if t != target {
 			continue
 		}
 		result = append(result, t)

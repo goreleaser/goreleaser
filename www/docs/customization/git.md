@@ -35,6 +35,8 @@ git:
 
 ## Semver sorting
 
+<!-- md:featpro -->
+
 This allows you to sort tags by semver:
 
 ```yaml
@@ -48,5 +50,3 @@ to oldest, so the latest tag is returned.
 
 This has the effect of sorting non-pre-release tags before pre-release ones,
 which is different from what other git sorting options might give you.
-
-<!-- md:pro -->

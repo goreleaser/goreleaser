@@ -1,7 +1,7 @@
 package blob
 
 import (
-	"fmt"
+	"errors"
 	"testing"
 
 	"github.com/goreleaser/goreleaser/v2/internal/testctx"
@@ -28,7 +28,7 @@ func TestErrors(t *testing.T) {
 		"other":                        "failed to write to bucket: other",
 	} {
 		t.Run(k, func(t *testing.T) {
-			require.EqualError(t, handleError(fmt.Errorf(k), "someurl"), v)
+			require.EqualError(t, handleError(errors.New(k), "someurl"), v)
 		})
 	}
 }

@@ -155,6 +155,7 @@ func TestPublishPipeNoMatchingBuild(t *testing.T) {
 }
 
 func TestPublishPipeSuccess(t *testing.T) {
+	testlib.CheckPath(t, "docker")
 	testlib.StartRegistry(t, "ko_registry", registryPort)
 
 	chainguardStaticLabels := map[string]string{

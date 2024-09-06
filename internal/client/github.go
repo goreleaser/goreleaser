@@ -449,6 +449,19 @@ func (c *githubClient) createOrUpdateRelease(ctx *context.Context, data *github.
 			ctx.Config.Release.GitHub.Name,
 			data,
 		)
+		if resp == nil {
+			log.WithField("name", data.GetName()).
+				WithError(err).
+				Debug("release creation failed")
+			return nil, err
+		}
+		if err != nil {
+			log.WithField("name", data.GetName()).
+				WithField("request-id", resp.Header.Get("X-Github-Request-Id")).
+				WithError(err).
+				Debug("release creation failed")
+			return nil, err
+		}
 		log.WithField("name", data.GetName()).
 			WithField("release-id", release.GetID()).
 			WithField("request-id", resp.Header.Get("X-GitHub-Request-Id")).
