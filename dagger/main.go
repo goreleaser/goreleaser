@@ -12,6 +12,7 @@ type Goreleaser struct {
 func New(
 	// The Goreleaser source code to use
 	// +optional
+	// +defaultPath="/"
 	Source *dagger.Directory,
 ) *Goreleaser {
 	if Source == nil {

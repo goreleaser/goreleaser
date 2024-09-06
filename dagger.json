@@ -8,28 +8,5 @@
     }
   ],
   "source": "dagger",
-  "engineVersion": "v0.12.3",
-  "views": [
-    {
-      "name": "default",
-      "patterns": [
-        "!bin",
-        "!dist",
-        "!coverage.txt",
-        "!goreleaser",
-        "!goreleaser.exe",
-        "!debug.test",
-        "!snap.login",
-        "!site/",
-        "!.vercel",
-        "!completions/",
-        "!.vscode/",
-        "!.task/",
-        "!.idea/",
-        "!manpages",
-        "!output.json",
-        "!.direnv"
-      ]
-    }
-  ]
+  "engineVersion": "v0.12.3"
 }
