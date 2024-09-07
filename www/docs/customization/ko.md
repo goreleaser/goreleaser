@@ -133,7 +133,7 @@ builds:
       - linux
     goarch:
       - amd64
-      - arch64
+      - arm64
 
 kos:
   - repository: ghcr.io/caarlos0/test-ko

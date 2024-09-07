@@ -377,6 +377,41 @@ func TestPublishPipeSuccess(t *testing.T) {
 	}
 }
 
+func TestSnapshot(t *testing.T) {
+	ctx := testctx.NewWithCfg(config.Project{
+		ProjectName: "test",
+		Builds: []config.Build{
+			{
+				ID: "foo",
+				BuildDetails: config.BuildDetails{
+					Ldflags: []string{"-s", "-w"},
+					Flags:   []string{"-tags", "netgo"},
+					Env:     []string{"GOCACHE=" + t.TempDir()},
+				},
+			},
+		},
+		Kos: []config.Ko{
+			{
+				ID:         "default",
+				Build:      "foo",
+				Repository: "testimage",
+				WorkingDir: "./testdata/app/",
+				Tags:       []string{"latest"},
+			},
+		},
+	}, testctx.WithVersion("1.2.0"), testctx.Snapshot)
+
+	require.NoError(t, Pipe{}.Default(ctx))
+	require.NoError(t, Pipe{}.Run(ctx))
+
+	manifests := ctx.Artifacts.Filter(artifact.ByType(artifact.DockerManifest)).List()
+	require.Len(t, manifests, 1)
+	require.NotEmpty(t, manifests[0].Name)
+	require.Equal(t, manifests[0].Name, manifests[0].Path)
+	require.NotEmpty(t, manifests[0].Extra[artifact.ExtraDigest])
+	require.Equal(t, "default", manifests[0].Extra[artifact.ExtraID])
+}
+
 func TestKoValidateMainPathIssue4382(t *testing.T) {
 	// testing the validation of the main path directly to cover many cases
 	require.NoError(t, validateMainPath(""))

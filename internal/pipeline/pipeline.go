@@ -20,6 +20,7 @@ import (
 	"github.com/goreleaser/goreleaser/v2/internal/pipe/env"
 	"github.com/goreleaser/goreleaser/v2/internal/pipe/git"
 	"github.com/goreleaser/goreleaser/v2/internal/pipe/gomod"
+	"github.com/goreleaser/goreleaser/v2/internal/pipe/ko"
 	"github.com/goreleaser/goreleaser/v2/internal/pipe/krew"
 	"github.com/goreleaser/goreleaser/v2/internal/pipe/metadata"
 	"github.com/goreleaser/goreleaser/v2/internal/pipe/nfpm"
@@ -146,6 +147,8 @@ var Pipeline = append(
 	reportsizes.Pipe{},
 	// create and push docker images
 	docker.Pipe{},
+	// create and push docker images using ko
+	ko.Pipe{},
 	// publishes artifacts
 	publish.New(),
 	// creates a artifacts.json files in the dist directory
