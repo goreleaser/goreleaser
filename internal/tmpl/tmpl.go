@@ -53,6 +53,7 @@ const (
 	patch           = "Patch"
 	prerelease      = "Prerelease"
 	isSnapshot      = "IsSnapshot"
+	isSingleTarget  = "IsSingleTarget"
 	isNightly       = "IsNightly"
 	isDraft         = "IsDraft"
 	env             = "Env"
@@ -118,6 +119,7 @@ func New(ctx *context.Context) *Template {
 		patch:           ctx.Semver.Patch,
 		prerelease:      ctx.Semver.Prerelease,
 		isSnapshot:      ctx.Snapshot,
+		isSingleTarget:  ctx.SingleTarget,
 		isNightly:       false,
 		isDraft:         ctx.Config.Release.Draft,
 		releaseNotes:    ctx.ReleaseNotes,

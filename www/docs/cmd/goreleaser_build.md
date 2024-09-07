@@ -10,7 +10,7 @@ Its intended usage is, for example, within Makefiles to avoid setting up ldflags
 
 It also allows you to generate a local build for your current machine only using the `--single-target` option, and specific build IDs using the `--id` option in case you have more than one.
 
-When using `--single-target`, the `GOOS` and `GOARCH` environment variables are used to determine the target, defaulting to the current machine target if not set.
+When using `--single-target`, the `GOOS`, `GOARCH`, `GOARM`, `GOAMD64`, and `GOMIPS` environment variables are used to determine the target, defaulting to the current machine target if not set.
 
 
 ```
