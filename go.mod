@@ -44,7 +44,7 @@ require (
 	github.com/spf13/cobra v1.8.1
 	github.com/stretchr/testify v1.9.0
 	github.com/ulikunitz/xz v0.5.12
-	github.com/xanzy/go-gitlab v0.108.0
+	github.com/xanzy/go-gitlab v0.109.0
 	gocloud.dev v0.39.0
 	golang.org/x/crypto v0.27.0
 	golang.org/x/oauth2 v0.23.0
