@@ -462,6 +462,8 @@ func TestExtWindows(t *testing.T) {
 
 func TestExtWasm(t *testing.T) {
 	require.Equal(t, ".wasm", extFor("js_wasm", config.BuildDetails{}))
+	require.Equal(t, ".wasm", extFor("wasip1_wasm", config.BuildDetails{}))
+	require.Equal(t, ".wasm", extFor("wasip1_wasm", config.BuildDetails{Buildmode: "c-shared"}))
 }
 
 func TestExtOthers(t *testing.T) {

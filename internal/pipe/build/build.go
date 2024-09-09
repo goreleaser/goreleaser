@@ -228,6 +228,9 @@ func extFor(target string, build config.BuildDetails) string {
 		if strings.Contains(target, "windows") {
 			return ".dll"
 		}
+		if strings.Contains(target, "wasm") {
+			return ".wasm"
+		}
 		return ".so"
 	case "c-archive":
 		if strings.Contains(target, "windows") {
@@ -236,7 +239,7 @@ func extFor(target string, build config.BuildDetails) string {
 		return ".a"
 	}
 
-	if target == "js_wasm" {
+	if strings.Contains(target, "wasm") {
 		return ".wasm"
 	}
 
