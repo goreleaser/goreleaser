@@ -175,6 +175,8 @@ func (a *HomebrewDependency) UnmarshalYAML(unmarshal func(interface{}) error) er
 
 	a.Name = dep.Name
 	a.Type = dep.Type
+	a.Version = dep.Version
+	a.OS = dep.OS
 
 	return nil
 }
