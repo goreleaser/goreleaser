@@ -182,7 +182,7 @@ func (*Builder) Build(ctx *context.Context, build config.Build, options api.Opti
 		a.Type = artifact.CArchive
 		ctx.Artifacts.Add(getHeaderArtifactForLibrary(build, options))
 	}
-	if build.Buildmode == "c-shared" {
+	if build.Buildmode == "c-shared" && !strings.Contains(options.Target, "wasm") {
 		a.Type = artifact.CShared
 		ctx.Artifacts.Add(getHeaderArtifactForLibrary(build, options))
 	}
