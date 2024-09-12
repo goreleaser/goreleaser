@@ -36,7 +36,7 @@ go build -o goreleaser .
 A good way to check if everything is alright is to run the test suite:
 
 ```bash
-dagger call --source=.:default test output
+dagger call test
 ```
 
 ### A note about Docker multi-arch builds
