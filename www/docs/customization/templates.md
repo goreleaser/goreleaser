@@ -53,7 +53,7 @@ In fields that support templates, these fields are always available:
 | `.Runtime.Goarch`      | equivalent to `runtime.GOARCH`                                                                             |
 | `.Artifacts`           | the current artifact list. See table below for fields[^pro]                                                |
 
-[^pro]: This feature is only available in GoReleaser Pro.
+[^pro]: This feature is only available in [GoReleaser Pro](/pro).
 
 [^version-prefix]:
     The `v` prefix is stripped, and it might be changed in
@@ -105,6 +105,7 @@ may have some extra fields:
 | `.Mips`         | `GOMIPS`                       |
 | `.Amd64`        | `GOAMD64`                      |
 | `.Binary`       | binary name                    |
+| `.ArtifactID`   | archive id (since v2.3[^pro])  |
 | `.ArtifactName` | archive name                   |
 | `.ArtifactPath` | absolute path to artifact      |
 | `.ArtifactExt`  | binary extension (e.g. `.exe`) |

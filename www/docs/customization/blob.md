@@ -45,6 +45,14 @@ blobs:
       - foo
       - bar
 
+    # Allows to further filter the artifacts.
+    #
+    # Artifacts that do not match this expression will be ignored.
+    #
+    # Since: v2.3 (pro).
+    # Templates: allowed.
+    if: '{{ eq .Os "linux" }}'
+
     # Path/name inside the bucket.
     #
     # Default: '{{ .ProjectName }}/{{ .Tag }}'.
