@@ -37,6 +37,7 @@ In fields that support templates, these fields are always available:
 | `.IsDraft`             | `true` if `release.draft` is set in the configuration, `false` otherwise                                   |
 | `.IsSnapshot`          | `true` if `--snapshot` is set, `false` otherwise                                                           |
 | `.IsNightly`           | `true` if `--nightly` is set, `false` otherwise                                                            |
+| `.IsSingleTarget`      | `true` if `--single-target` is set, `false` otherwise (since v2.3)                                         |
 | `.Env`                 | a map with system's environment variables                                                                  |
 | `.Date`                | current UTC date in RFC 3339 format                                                                        |
 | `.Now`                 | current UTC date as `time.Time` struct, allows all `time.Time` functions (e.g. `{{ .Now.Format "2006" }}`) |
@@ -52,7 +53,7 @@ In fields that support templates, these fields are always available:
 | `.Runtime.Goarch`      | equivalent to `runtime.GOARCH`                                                                             |
 | `.Artifacts`           | the current artifact list. See table below for fields[^pro]                                                |
 
-[^pro]: This feature is only available in GoReleaser Pro.
+[^pro]: This feature is only available in [GoReleaser Pro](/pro).
 
 [^version-prefix]:
     The `v` prefix is stripped, and it might be changed in
@@ -104,6 +105,7 @@ may have some extra fields:
 | `.Mips`         | `GOMIPS`                       |
 | `.Amd64`        | `GOAMD64`                      |
 | `.Binary`       | binary name                    |
+| `.ArtifactID`   | archive id (since v2.3[^pro])  |
 | `.ArtifactName` | archive name                   |
 | `.ArtifactPath` | absolute path to artifact      |
 | `.ArtifactExt`  | binary extension (e.g. `.exe`) |

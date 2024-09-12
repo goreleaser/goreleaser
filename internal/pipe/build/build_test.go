@@ -462,6 +462,8 @@ func TestExtWindows(t *testing.T) {
 
 func TestExtWasm(t *testing.T) {
 	require.Equal(t, ".wasm", extFor("js_wasm", config.BuildDetails{}))
+	require.Equal(t, ".wasm", extFor("wasip1_wasm", config.BuildDetails{}))
+	require.Equal(t, ".wasm", extFor("wasip1_wasm", config.BuildDetails{Buildmode: "c-shared"}))
 }
 
 func TestExtOthers(t *testing.T) {
@@ -623,18 +625,37 @@ func TestBuildOptionsForTarget(t *testing.T) {
 			},
 		},
 		{
-			name: "overriding dist path",
+			name: "no unique dist path evals true",
 			build: config.Build{
 				ID:     "testid",
-				Binary: "distpath/{{.Os}}/{{.Arch}}/testbinary_{{.Os}}_{{.Arch}}",
+				Binary: "distpath/{{.Os}}/{{.Arch}}/testbinary",
 				Targets: []string{
 					"linux_amd64",
 				},
-				NoUniqueDistDir: true,
+				NoUniqueDistDir: `{{ printf "true"}}`,
 			},
 			expectedOpts: &api.Options{
-				Name:    "distpath/linux/amd64/testbinary_linux_amd64",
-				Path:    filepath.Join(tmpDir, "distpath", "linux", "amd64", "testbinary_linux_amd64"),
+				Name:    "distpath/linux/amd64/testbinary",
+				Path:    filepath.Join(tmpDir, "distpath", "linux", "amd64", "testbinary"),
+				Target:  "linux_amd64_v1",
+				Goos:    "linux",
+				Goarch:  "amd64",
+				Goamd64: "v1",
+			},
+		},
+		{
+			name: "no unique dist path evals false",
+			build: config.Build{
+				ID:     "testid",
+				Binary: "testbinary",
+				Targets: []string{
+					"linux_amd64",
+				},
+				NoUniqueDistDir: `{{ printf "false"}}`,
+			},
+			expectedOpts: &api.Options{
+				Name:    "testbinary",
+				Path:    filepath.Join(tmpDir, "testid_linux_amd64_v1", "testbinary"),
 				Target:  "linux_amd64_v1",
 				Goos:    "linux",
 				Goarch:  "amd64",

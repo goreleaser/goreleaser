@@ -48,6 +48,7 @@ func TestWithArtifact(t *testing.T) {
 			ctx.ModulePath = "github.com/goreleaser/goreleaser/v2"
 			ctx.ReleaseNotes = "test release notes"
 			ctx.Date = time.Unix(1678327562, 0)
+			ctx.SingleTarget = true
 		},
 	)
 	for expect, tmpl := range map[string]string{
@@ -89,6 +90,7 @@ func TestWithArtifact(t *testing.T) {
 		"2023-03-09T02:06:02Z":                `{{ .Date }}`,
 		"1678327562":                          `{{ .Timestamp }}`,
 		"snapshot true":                       `snapshot {{.IsSnapshot}}`,
+		"singletarget true":                   `singletarget {{.IsSingleTarget}}`,
 		"nightly false":                       `nightly {{.IsNightly}}`,
 		"draft true":                          `draft {{.IsDraft}}`,
 		"dirty true":                          `dirty {{.IsGitDirty}}`,

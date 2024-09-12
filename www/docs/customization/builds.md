@@ -207,6 +207,8 @@ builds:
     # created, you can set this property.
     # If you do, you are responsible for keeping different builds from
     # overriding each other.
+    #
+    # Templates: allowed (since v2.3).
     no_unique_dist_dir: true
 
     # By default, GoReleaser will check if the main filepath has a main

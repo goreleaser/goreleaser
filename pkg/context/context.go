@@ -102,6 +102,7 @@ type Context struct {
 	Snapshot          bool
 	FailFast          bool
 	Partial           bool
+	SingleTarget      bool
 	SkipTokenCheck    bool
 	Clean             bool
 	PreRelease        bool

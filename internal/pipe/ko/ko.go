@@ -138,6 +138,15 @@ func (Pipe) Default(ctx *context.Context) error {
 	return ids.Validate()
 }
 
+func (p Pipe) Run(ctx *context.Context) error {
+	if ctx.Snapshot {
+		// publish actually handles pushing to the local docker daemon when
+		// snapshot is true.
+		return p.Publish(ctx)
+	}
+	return nil
+}
+
 // Publish executes the Pipe.
 func (Pipe) Publish(ctx *context.Context) error {
 	g := semerrgroup.New(ctx.Parallelism)
@@ -249,17 +258,32 @@ func doBuild(ctx *context.Context, ko config.Ko) func() error {
 			return fmt.Errorf("build: %w", err)
 		}
 
-		po := []publish.Option{publish.WithTags(opts.tags), publish.WithNamer(options.MakeNamer(&options.PublishOptions{
+		po := &options.PublishOptions{
 			DockerRepo:          opts.imageRepo,
 			Bare:                opts.bare,
 			PreserveImportPaths: opts.preserveImportPaths,
 			BaseImportPaths:     opts.baseImportPaths,
 			Tags:                opts.tags,
-		})), publish.WithAuthFromKeychain(keychain)}
-
-		p, err := publish.NewDefault(opts.imageRepo, po...)
+			Local:               ctx.Snapshot,
+			LocalDomain:         "goreleaser.ko.local",
+		}
+		var p publish.Interface
+		if ctx.Snapshot {
+			p, err = publish.NewDaemon(
+				options.MakeNamer(po),
+				opts.tags,
+				publish.WithLocalDomain(po.LocalDomain),
+			)
+		} else {
+			p, err = publish.NewDefault(
+				opts.imageRepo,
+				publish.WithTags(opts.tags),
+				publish.WithNamer(options.MakeNamer(po)),
+				publish.WithAuthFromKeychain(keychain),
+			)
+		}
 		if err != nil {
-			return fmt.Errorf("newDefault: %w", err)
+			return fmt.Errorf("newPublisher: %w", err)
 		}
 		defer func() { _ = p.Close() }()
 		ref, err := p.Publish(ctx, r, opts.importPath)

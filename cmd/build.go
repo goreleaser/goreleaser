@@ -173,6 +173,7 @@ func setupBuildContext(ctx *context.Context, options buildOpts) error {
 	ctx.Clean = options.clean
 
 	if options.singleTarget {
+		ctx.SingleTarget = true
 		ctx.Partial = true
 	}
 
