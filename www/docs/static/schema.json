@@ -409,7 +409,14 @@
 						"type": "string"
 					},
 					"no_unique_dist_dir": {
-						"type": "string"
+						"oneOf": [
+							{
+								"type": "string"
+							},
+							{
+								"type": "boolean"
+							}
+						]
 					},
 					"no_main_check": {
 						"type": "boolean"
