@@ -10,7 +10,8 @@ RUN apk add --no-cache bash \
 	make \
 	openssh-client \
 	build-base \
-	tini
+	tini \
+	upx
 
 # install cosign
 COPY --from=gcr.io/projectsigstore/cosign:v2.4.0@sha256:9d50ceb15f023eda8f58032849eedc0216236d2e2f4cfe1cdf97c00ae7798cfe /ko-app/cosign /usr/bin/cosign
