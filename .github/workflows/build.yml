@@ -26,17 +26,41 @@ jobs:
       args: "-disable largeloopcopy"
   test:
     runs-on: ubuntu-latest
+    env:
+      DOCKER_CLI_EXPERIMENTAL: "enabled"
     steps:
       - uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332 # v4
         with:
           fetch-depth: 0
-      - uses: dagger/dagger-for-github@v6.7.0
+      - uses: arduino/setup-task@b91d5d2c96a56797b48ac1e0e89220bf64044611 # v1
         with:
-          args: build -o ./goreleaser
-          engine-stop: false
-      - uses: dagger/dagger-for-github@v6.7.0
+          version: 3.x
+          repo-token: ${{ secrets.GITHUB_TOKEN }}
+      - uses: docker/setup-qemu-action@49b3bc8e6bdd4a60e6116a5414239cba5943d3cf # v2
+      - uses: docker/setup-buildx-action@988b5a0280414f521da01fcc63a27aeeb4b104db # v3
+      - name: setup-snapcraft
+        run: |
+          sudo apt-get update
+          sudo apt-get -yq --no-install-suggests --no-install-recommends install snapcraft
+      - uses: crazy-max/ghaction-upx@v3
         with:
-          args: coverage-report -o ./coverage.txt
+          install-only: true
+      - uses: cachix/install-nix-action@V27
+        with:
+          github_access_token: ${{ secrets.GITHUB_TOKEN }}
+      - uses: actions/setup-go@0a12ed9d6a96ab950c8f026ed9f722fe0da7ef32 # v4
+        with:
+          go-version: stable
+      - uses: sigstore/cosign-installer@v3.6.0
+      - uses: anchore/sbom-action/download-syft@v0.17.2
+      - name: setup-validate-krew-manifest
+        run: go install sigs.k8s.io/krew/cmd/validate-krew-manifest@latest
+      - name: setup
+        run: |
+          task setup
+          task build
+      - name: test
+        run: task test
       - uses: codecov/codecov-action@e28ff129e5465c2c0dcc6f003fc735cb6ae0c673 # v4
         with:
           file: ./coverage.txt
