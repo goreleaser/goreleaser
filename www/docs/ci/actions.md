@@ -27,6 +27,7 @@ permissions:
   contents: write
   # packages: write
   # issues: write
+  # id-token: write
 
 jobs:
   goreleaser:
@@ -178,6 +179,7 @@ are required by GoReleaser:
   GitHub
 - `issues: write` if you use [milestone closing
   capability](../customization/milestone.md)
+- `id-token: write` if you wish use [Cosign][cosign] with [GitHub OIDC][oidc]
 
 `GITHUB_TOKEN` permissions [are limited to the repository][about-github-token]
 that contains your workflow.
@@ -227,3 +229,5 @@ You can check [this example repository](https://github.com/goreleaser/example) f
 [about-github-token]: https://help.github.com/en/actions/configuring-and-managing-workflows/authenticating-with-the-github_token#about-the-github_token-secret
 [pat]: https://help.github.com/articles/creating-a-personal-access-token-for-the-command-line/
 [secrets]: https://help.github.com/en/actions/automating-your-workflow-with-github-actions/creating-and-using-encrypted-secrets
+[oidc]: https://docs.github.com/en/actions/security-for-github-actions/security-hardening-your-deployments/about-security-hardening-with-openid-connect#adding-permissions-settings
+[cosign]: https://github.com/sigstore/cosign
