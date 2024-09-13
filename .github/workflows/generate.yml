@@ -28,7 +28,7 @@ jobs:
       - run: task docs:releases
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      - uses: cachix/install-nix-action@V27
+      - uses: cachix/install-nix-action@V28
         with:
           github_access_token: ${{ secrets.GITHUB_TOKEN }}
       - run: task docs:generate
