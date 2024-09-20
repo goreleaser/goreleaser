@@ -74,7 +74,7 @@ func TestLive(t *testing.T) {
 
 	ctx.Config.ProjectName = "Goreleaser"
 	ctx.ReleaseURL = "https://goreleaser.com/customization/announce/bluesky"
-	ctx.Version = "v1.26.0"
+	ctx.Version = "1.26.0"
 
 	require.NoError(t, bluesky.Pipe{}.Default(ctx))
 	require.NoError(t, bluesky.Pipe{}.Announce(ctx))

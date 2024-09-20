@@ -19,6 +19,11 @@ snapshot:
   version_template: "{{ incpatch .Version }}-devel"
 ```
 
+!!! warning
+
+    Do not use the `{{.Tag}}` field in the `version_template`, as the version
+    should not have the leading `v`.
+
 ## How it works
 
 When you run GoReleaser with `--snapshot`, it will set the `Version` template

@@ -62,11 +62,11 @@ func TestSnapshotEmptyFinalName(t *testing.T) {
 func TestSnapshot(t *testing.T) {
 	ctx := testctx.NewWithCfg(config.Project{
 		Snapshot: config.Snapshot{
-			VersionTemplate: "{{ incpatch .Tag }}",
+			VersionTemplate: "{{ incpatch .Version }}",
 		},
-	}, testctx.WithCurrentTag("v1.2.3"))
+	}, testctx.WithVersion("1.2.3"))
 	require.NoError(t, Pipe{}.Run(ctx))
-	require.Equal(t, "v1.2.4", ctx.Version)
+	require.Equal(t, "1.2.4", ctx.Version)
 }
 
 func TestSkip(t *testing.T) {

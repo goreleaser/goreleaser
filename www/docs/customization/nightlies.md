@@ -35,6 +35,11 @@ nightly:
   keep_single_release: true
 ```
 
+!!! warning
+
+    Do not use the `{{.Tag}}` field in the `version_template`, as the version
+    should not have the leading `v`.
+
 ## How it works
 
 When you run GoReleaser with `--nightly`, it will set the `Version` template
