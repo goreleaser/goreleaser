@@ -1,0 +1,50 @@
+name: daggerized build
+
+on:
+  push:
+    branches:
+      - "main"
+  pull_request:
+    paths:
+      - "go.*"
+      - "**/*.go"
+      - "Taskfile.yml"
+      - "Dockerfile"
+      - ".github/workflows/*.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  govulncheck:
+    uses: caarlos0/meta/.github/workflows/govulncheck.yml@main
+  semgrep:
+    uses: caarlos0/meta/.github/workflows/semgrep.yml@main
+  ruleguard:
+    uses: caarlos0/meta/.github/workflows/ruleguard.yml@main
+    with:
+      args: "-disable largeloopcopy"
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332 # v4
+        with:
+          fetch-depth: 0
+      - uses: dagger/dagger-for-github@v6.8.0
+        with:
+          args: build -o ./goreleaser
+          engine-stop: false
+      - uses: dagger/dagger-for-github@v6.8.0
+        with:
+          args: test coverage-report -o ./coverage.txt
+      # - uses: codecov/codecov-action@e28ff129e5465c2c0dcc6f003fc735cb6ae0c673 # v4
+      #   with:
+      #     file: ./coverage.txt
+      - run: git diff
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332 # v4
+        with:
+          fetch-depth: 0
+      - run: go run . check
