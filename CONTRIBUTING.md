@@ -7,12 +7,37 @@ By participating in this project, you agree to abide our
 
 `goreleaser` is written in [Go](https://go.dev/).
 
+That said, we have two different ways of running the tests, regular, and with
+Dagger.
+
+### Regular
+
+Prerequisites:
+
+- [Task](https://taskfile.dev/installation)
+- [Go 1.23+](https://go.dev/doc/install)
+
+Other things you might need to run some of the tests (they should get
+automatically skipped if a needed tool isn't present):
+
+- [cosign](https://github.com/sigstore/cosign)
+- [Docker](https://www.docker.com/)
+- [GPG](https://gnupg.org)
+- [Podman](https://podman.io/)
+- [Snapcraft](https://snapcraft.io/)
+- [Syft](https://github.com/anchore/syft)
+- [upx](https://upx.github.io/)
+
+### Dagger
+
 Prerequisites:
 
 - [Task](https://taskfile.dev/installation)
 - [Dagger](https://docs.dagger.io/install)
 - [Go 1.23+](https://go.dev/doc/install)
 - [Docker](https://www.docker.com/)
+
+## Building
 
 Clone `goreleaser` anywhere:
 
@@ -33,23 +58,7 @@ go build -o goreleaser .
 ./goreleaser --version
 ```
 
-A good way to check if everything is alright is to run the test suite:
-
-```bash
-dagger call test
-```
-
-### A note about Docker multi-arch builds
-
-If you want to properly run the Docker tests, or run `goreleaser release
---snapshot` locally, you might need to setup Docker for it.
-You can do so by running:
-
-```sh
-task docker:setup
-```
-
-## Test your change
+## Testing your changes
 
 You can create a branch for your changes and try to build from the source as you go:
 
@@ -69,7 +78,23 @@ Before you commit the changes, we also suggest you run:
 task fmt
 ```
 
-## Create a commit
+You can also test it with Dagger:
+
+```bash
+dagger call test
+```
+
+### A note about Docker multi-arch builds
+
+If you want to properly run the Docker tests, or run `goreleaser release
+--snapshot` locally, you might need to setup Docker for it.
+You can do so by running:
+
+```sh
+task docker:setup
+```
+
+## Creating a commit
 
 Commit messages should be well formatted, and to make that "standardized", we
 are using Conventional Commits.
@@ -77,7 +102,7 @@ are using Conventional Commits.
 You can follow the documentation on
 [their website](https://www.conventionalcommits.org).
 
-## Submit a pull request
+## Submitting a pull request
 
 Push your branch to your `goreleaser` fork and open a pull request against the main branch.
 
