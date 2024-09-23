@@ -284,7 +284,7 @@ Its purpose is to be used within scripts and CIs.
 
 !!! tip
 
-    The `VERSION` environment variable can be ommited to get the latest stable
+    The `VERSION` environment variable can be omitted to get the latest stable
     version, or you can set it to `nightly` to get the last nightly build.
 
 ## Manually
