@@ -93,17 +93,19 @@ func TestBinarySign(t *testing.T) {
 		require.NoError(tb, os.WriteFile(filepath.Join(tmpdir, "bin2"), []byte("foo"), 0o644))
 
 		ctx.Artifacts.Add(&artifact.Artifact{
-			Name: "bin1",
-			Path: filepath.Join(tmpdir, "bin1"),
-			Type: artifact.Binary,
+			Name:   "bin1",
+			Path:   filepath.Join(tmpdir, "bin1"),
+			Type:   artifact.Binary,
+			Goarch: "amd64",
 			Extra: map[string]interface{}{
 				artifact.ExtraID: "foo",
 			},
 		})
 		ctx.Artifacts.Add(&artifact.Artifact{
-			Name: "bin2",
-			Path: filepath.Join(tmpdir, "bin2"),
-			Type: artifact.Binary,
+			Name:   "bin2",
+			Path:   filepath.Join(tmpdir, "bin2"),
+			Type:   artifact.Binary,
+			Goarch: "arm64",
 			Extra: map[string]interface{}{
 				artifact.ExtraID: "bar",
 			},
@@ -113,9 +115,9 @@ func TestBinarySign(t *testing.T) {
 		require.NoError(tb, pipe.Default(ctx))
 
 		for i := range ctx.Config.BinarySigns {
-			ctx.Config.BinarySigns[i].Args = append(
-				[]string{"--homedir", keyring},
-				ctx.Config.BinarySigns[i].Args...,
+			ctx.Config.BinarySigns[i].Env = append(
+				ctx.Config.BinarySigns[i].Env,
+				"GNUPGHOME="+keyring,
 			)
 		}
 		require.NoError(tb, pipe.Run(ctx))
@@ -127,6 +129,26 @@ func TestBinarySign(t *testing.T) {
 	t.Run("default", func(t *testing.T) {
 		sigs := doTest(t, config.Sign{})
 		require.Len(t, sigs, 2)
+	})
+
+	t.Run("templated-signature", func(t *testing.T) {
+		sigs := doTest(t, config.Sign{
+			Signature: "prefix_{{ .Arch }}_suffix",
+			Cmd:       "/bin/sh",
+			Args: []string{
+				"-c",
+				`echo "siging signature=$signature artifact=$artifact"`,
+				"shell",
+			},
+		})
+		require.Len(t, sigs, 2)
+		require.Equal(t,
+			[]*artifact.Artifact{
+				{Name: "prefix_amd64_suffix", Path: "prefix_amd64_suffix", Type: 13, Extra: artifact.Extras{"ID": "default"}},
+				{Name: "prefix_arm64_suffix", Path: "prefix_arm64_suffix", Type: 13, Extra: artifact.Extras{"ID": "default"}},
+			},
+			sigs,
+		)
 	})
 
 	t.Run("filter", func(t *testing.T) {
