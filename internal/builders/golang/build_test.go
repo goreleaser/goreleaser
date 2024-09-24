@@ -74,13 +74,13 @@ func TestWithDefaults(t *testing.T) {
 			},
 			targets: []string{
 				"linux_amd64_v1",
-				"linux_386",
-				"linux_arm64",
+				"linux_386_sse2",
+				"linux_arm64_v8.0",
 				"darwin_amd64_v1",
-				"darwin_arm64",
+				"darwin_arm64_v8.0",
 				"windows_amd64_v1",
-				"windows_arm64",
-				"windows_386",
+				"windows_arm64_v8.0",
+				"windows_386_sse2",
 			},
 			goBinary: "go",
 		},
@@ -120,7 +120,7 @@ func TestWithDefaults(t *testing.T) {
 				Binary:  "foo",
 				Targets: []string{"linux_arm"},
 			},
-			targets:  []string{"linux_arm_6"},
+			targets:  []string{"linux_arm_7"},
 			goBinary: "go",
 		},
 		"custom targets no mips": {
@@ -167,13 +167,13 @@ func TestWithDefaults(t *testing.T) {
 			},
 			targets: []string{
 				"linux_amd64_v1",
-				"linux_386",
-				"linux_arm64",
+				"linux_386_sse2",
+				"linux_arm64_v8.0",
 				"darwin_amd64_v1",
-				"darwin_arm64",
+				"darwin_arm64_v8.0",
 				"windows_amd64_v1",
-				"windows_arm64",
-				"windows_386",
+				"windows_arm64_v8.0",
+				"windows_386_sse2",
 			},
 			goBinary: "go",
 		},
@@ -185,13 +185,13 @@ func TestWithDefaults(t *testing.T) {
 			},
 			targets: []string{
 				"linux_amd64_v1",
-				"linux_386",
-				"linux_arm64",
+				"linux_386_sse2",
+				"linux_arm64_v8.0",
 				"darwin_amd64_v1",
-				"darwin_arm64",
+				"darwin_arm64_v8.0",
 				"windows_amd64_v1",
-				"windows_arm64",
-				"windows_386",
+				"windows_arm64_v8.0",
+				"windows_386_sse2",
 			},
 			goBinary: "go",
 		},
@@ -1397,17 +1397,21 @@ func TestWarnIfTargetsAndOtherOptionsTogether(t *testing.T) {
 	nonEmpty := []string{"foo", "bar"}
 	for name, fn := range map[string]func(*config.Build){
 		"goos":    func(b *config.Build) { b.Goos = nonEmpty },
+		"goamd64": func(b *config.Build) { b.Goamd64 = nonEmpty },
 		"goarch":  func(b *config.Build) { b.Goarch = nonEmpty },
 		"goarm":   func(b *config.Build) { b.Goarm = nonEmpty },
 		"gomips":  func(b *config.Build) { b.Gomips = nonEmpty },
-		"goamd64": func(b *config.Build) { b.Goamd64 = nonEmpty },
 		"ignores": func(b *config.Build) { b.Ignore = []config.IgnoredBuild{{Goos: "linux"}} },
 		"multiple": func(b *config.Build) {
 			b.Goos = nonEmpty
 			b.Goarch = nonEmpty
-			b.Goarm = nonEmpty
-			b.Gomips = nonEmpty
 			b.Goamd64 = nonEmpty
+			b.Go386 = nonEmpty
+			b.Goarm = nonEmpty
+			b.Goarm64 = nonEmpty
+			b.Gomips = nonEmpty
+			b.Goppc64 = nonEmpty
+			b.Goriscv64 = nonEmpty
 			b.Ignore = []config.IgnoredBuild{{Goos: "linux"}}
 		},
 	} {
