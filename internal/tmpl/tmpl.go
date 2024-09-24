@@ -66,10 +66,14 @@ const (
 
 	// artifact-only keys.
 	osKey        = "Os"
-	amd64        = "Amd64"
 	arch         = "Arch"
+	amd64        = "Amd64"
+	go386        = "386"
 	arm          = "Arm"
+	arm64        = "Arm64"
 	mips         = "Mips"
+	ppc64        = "Ppc64"
+	riscv64      = "Riscv64"
 	binary       = "Binary"
 	artifactName = "ArtifactName"
 	artifactExt  = "ArtifactExt"
@@ -170,9 +174,13 @@ func (t *Template) WithExtraFields(f Fields) *Template {
 func (t *Template) WithArtifact(a *artifact.Artifact) *Template {
 	t.fields[osKey] = a.Goos
 	t.fields[arch] = a.Goarch
-	t.fields[arm] = a.Goarm
-	t.fields[mips] = a.Gomips
 	t.fields[amd64] = a.Goamd64
+	t.fields[go386] = a.Go386
+	t.fields[arm] = a.Goarm
+	t.fields[arm64] = a.Goarm64
+	t.fields[mips] = a.Gomips
+	t.fields[ppc64] = a.Goppc64
+	t.fields[riscv64] = a.Goriscv64
 	t.fields[binary] = artifact.ExtraOr(*a, binary, t.fields[projectName].(string))
 	t.fields[artifactName] = a.Name
 	t.fields[artifactExt] = artifact.ExtraOr(*a, artifact.ExtraExt, "")
@@ -186,15 +194,19 @@ func (t *Template) WithBuildOptions(opts build.Options) *Template {
 
 func buildOptsToFields(opts build.Options) Fields {
 	return Fields{
-		target: opts.Target,
-		ext:    opts.Ext,
-		name:   opts.Name,
-		path:   opts.Path,
-		osKey:  opts.Goos,
-		arch:   opts.Goarch,
-		arm:    opts.Goarm,
-		amd64:  opts.Goamd64,
-		mips:   opts.Gomips,
+		target:  opts.Target,
+		ext:     opts.Ext,
+		name:    opts.Name,
+		path:    opts.Path,
+		osKey:   opts.Goos,
+		arch:    opts.Goarch,
+		amd64:   opts.Goamd64,
+		go386:   opts.Go386,
+		arm:     opts.Goarm,
+		arm64:   opts.Goarm64,
+		mips:    opts.Gomips,
+		ppc64:   opts.Goppc64,
+		riscv64: opts.Goriscv64,
 	}
 }
 

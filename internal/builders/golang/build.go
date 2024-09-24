@@ -164,14 +164,18 @@ func (*Builder) Build(ctx *context.Context, build config.Build, options api.Opti
 	}
 
 	a := &artifact.Artifact{
-		Type:    artifact.Binary,
-		Path:    options.Path,
-		Name:    options.Name,
-		Goos:    options.Goos,
-		Goarch:  options.Goarch,
-		Goamd64: options.Goamd64,
-		Goarm:   options.Goarm,
-		Gomips:  options.Gomips,
+		Type:      artifact.Binary,
+		Path:      options.Path,
+		Name:      options.Name,
+		Goos:      options.Goos,
+		Goarch:    options.Goarch,
+		Goamd64:   options.Goamd64,
+		Go386:     options.Go386,
+		Goarm:     options.Goarm,
+		Goarm64:   options.Goarm64,
+		Gomips:    options.Gomips,
+		Goppc64:   options.Goppc64,
+		Goriscv64: options.Goriscv64,
 		Extra: map[string]interface{}{
 			artifact.ExtraBinary: strings.TrimSuffix(filepath.Base(options.Path), options.Ext),
 			artifact.ExtraExt:    options.Ext,
@@ -214,10 +218,14 @@ func (*Builder) Build(ctx *context.Context, build config.Build, options api.Opti
 		env,
 		"GOOS="+options.Goos,
 		"GOARCH="+options.Goarch,
+		"GOAMD64="+options.Goamd64,
+		"GO386="+options.Go386,
 		"GOARM="+options.Goarm,
+		"GOARM64="+options.Goarm64,
 		"GOMIPS="+options.Gomips,
 		"GOMIPS64="+options.Gomips,
-		"GOAMD64="+options.Goamd64,
+		"GOPPC64="+options.Goppc64,
+		"GORISCV64"+options.Goriscv64,
 	)
 
 	if v := os.Getenv("GOCACHEPROG"); v != "" {
@@ -250,7 +258,7 @@ func (*Builder) Build(ctx *context.Context, build config.Build, options api.Opti
 }
 
 func withOverrides(ctx *context.Context, build config.Build, options api.Options) (config.BuildDetails, error) {
-	optsTarget := options.Goos + options.Goarch + options.Goarm + options.Gomips + options.Goamd64
+	optsTarget := options.Goos + options.Goarch + options.Goamd64 + options.Go386 + options.Goarm + options.Gomips
 	for _, o := range build.BuildDetailsOverrides {
 		overrideTarget, err := tmpl.New(ctx).Apply(o.Goos + o.Goarch + o.Gomips + o.Goarm + o.Goamd64)
 		if err != nil {
@@ -482,14 +490,18 @@ func getHeaderArtifactForLibrary(build config.Build, options api.Options) *artif
 	headerName := basePath + ".h"
 
 	return &artifact.Artifact{
-		Type:    artifact.Header,
-		Path:    fullPath,
-		Name:    headerName,
-		Goos:    options.Goos,
-		Goarch:  options.Goarch,
-		Goamd64: options.Goamd64,
-		Goarm:   options.Goarm,
-		Gomips:  options.Gomips,
+		Type:      artifact.Header,
+		Path:      fullPath,
+		Name:      headerName,
+		Goos:      options.Goos,
+		Goarch:    options.Goarch,
+		Goamd64:   options.Goamd64,
+		Go386:     options.Go386,
+		Goarm:     options.Goarm,
+		Goarm64:   options.Goarm64,
+		Gomips:    options.Gomips,
+		Goppc64:   options.Goppc64,
+		Goriscv64: options.Goriscv64,
 		Extra: map[string]interface{}{
 			artifact.ExtraBinary: headerName,
 			artifact.ExtraExt:    ".h",
