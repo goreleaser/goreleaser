@@ -16,6 +16,7 @@ import (
 	"github.com/goreleaser/goreleaser/v2/internal/artifact"
 	"github.com/goreleaser/goreleaser/v2/internal/client"
 	"github.com/goreleaser/goreleaser/v2/internal/commitauthor"
+	"github.com/goreleaser/goreleaser/v2/internal/experimental"
 	"github.com/goreleaser/goreleaser/v2/internal/pipe"
 	"github.com/goreleaser/goreleaser/v2/internal/skips"
 	"github.com/goreleaser/goreleaser/v2/internal/tmpl"
@@ -64,7 +65,7 @@ func (Pipe) Default(ctx *context.Context) error {
 			brew.Name = ctx.Config.ProjectName
 		}
 		if brew.Goarm == "" {
-			brew.Goarm = "6"
+			brew.Goarm = experimental.DefaultGOARM()
 		}
 		if brew.Goamd64 == "" {
 			brew.Goamd64 = "v1"
