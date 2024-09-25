@@ -9,9 +9,13 @@ cached.
 
 !!! warning
 
-    Ko only runs on the publishing phase, so it might be a bit hard to test —
-    you might need to push to a fake repository (or a fake tag) when playing
-    around with its configuration.
+    When on `--snapshot` mode, Ko will publish the image to `ko.local`.
+    If its a regular build, Ko will only run in the publishing phase.
+
+!!! info
+
+    For Ko to work you still need to login, either with `docker login` or
+    something else.
 
 ```yaml
 # .goreleaser.yaml
