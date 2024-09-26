@@ -4,7 +4,7 @@ package buildtarget
 
 import (
 	"fmt"
-	"strconv"
+	"regexp"
 	"strings"
 
 	"github.com/caarlos0/log"
@@ -44,7 +44,7 @@ func List(build config.Build) ([]string, error) {
 		if target.arm != "" && !contains(target.arm, validGoarm) {
 			return result, fmt.Errorf("invalid goarm: %s", target.arm)
 		}
-		if target.arm64 != "" && !validGoarm64(target.arm64) {
+		if target.arm64 != "" && !validGoarm64.MatchString(target.arm64) {
 			return result, fmt.Errorf("invalid goarm64: %s", target.arm64)
 		}
 		if target.mips != "" && !contains(target.mips, validGomips) {
@@ -282,43 +282,8 @@ var (
 	validGoamd64   = []string{"v1", "v2", "v3", "v4"}
 	validGo386     = []string{"sse2", "softfloat"}
 	validGoarm     = []string{"5", "6", "7"}
+	validGoarm64   = regexp.MustCompile(`(v8\.[0-9]|v9\.[0-5])((,lse|,crypto)?)+`)
 	validGomips    = []string{"hardfloat", "softfloat"}
 	validGoppc64   = []string{"power8", "power9", "power10"}
 	validGoriscv64 = []string{"rva20u64", "rva22u64"}
 )
-
-func validGoarm64(archArg string) bool {
-	if !strings.HasPrefix(archArg, "v") {
-		return false
-	}
-	archArg = archArg[1:]
-	argParts := strings.Split(archArg, ",")
-	versionParts := strings.Split(argParts[0], ".")
-	if len(versionParts) != 2 {
-		return false
-	}
-	minorVersion, err := strconv.ParseInt(versionParts[1], 10, 8)
-	if err != nil {
-		return false
-	}
-	switch versionParts[0] {
-	case "8":
-		if minorVersion > 9 {
-			return false
-		}
-	case "9":
-		if minorVersion > 5 {
-			return false
-		}
-	default:
-		return false
-	}
-	for _, part := range argParts[1:] {
-		switch part {
-		case "lse", "crypto":
-		default:
-			return false
-		}
-	}
-	return true
-}
