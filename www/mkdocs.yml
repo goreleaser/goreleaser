@@ -194,6 +194,7 @@ nav:
       - sponsors.md
       - users.md
       - deprecations.md
+      - experiments.md
       - Common errors:
           - errors/version.md
           - errors/dirty.md

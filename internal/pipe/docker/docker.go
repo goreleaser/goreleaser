@@ -12,6 +12,7 @@ import (
 
 	"github.com/caarlos0/log"
 	"github.com/goreleaser/goreleaser/v2/internal/artifact"
+	"github.com/goreleaser/goreleaser/v2/internal/experimental"
 	"github.com/goreleaser/goreleaser/v2/internal/gio"
 	"github.com/goreleaser/goreleaser/v2/internal/ids"
 	"github.com/goreleaser/goreleaser/v2/internal/pipe"
@@ -66,7 +67,7 @@ func (Pipe) Default(ctx *context.Context) error {
 			docker.Goarch = "amd64"
 		}
 		if docker.Goarm == "" {
-			docker.Goarm = "6"
+			docker.Goarm = experimental.DefaultGOARM()
 		}
 		if docker.Goamd64 == "" {
 			docker.Goamd64 = "v1"

@@ -15,6 +15,7 @@ import (
 	"github.com/caarlos0/log"
 	"github.com/goreleaser/goreleaser/v2/internal/artifact"
 	"github.com/goreleaser/goreleaser/v2/internal/builders/buildtarget"
+	"github.com/goreleaser/goreleaser/v2/internal/experimental"
 	"github.com/goreleaser/goreleaser/v2/internal/gio"
 	"github.com/goreleaser/goreleaser/v2/internal/logext"
 	"github.com/goreleaser/goreleaser/v2/internal/tmpl"
@@ -63,7 +64,7 @@ func (*Builder) WithDefaults(build config.Build) (config.Build, error) {
 			build.Goarch = []string{"amd64", "arm64", "386"}
 		}
 		if len(build.Goarm) == 0 {
-			build.Goarm = []string{"6"}
+			build.Goarm = []string{experimental.DefaultGOARM()}
 		}
 		if len(build.Gomips) == 0 {
 			build.Gomips = []string{"hardfloat"}

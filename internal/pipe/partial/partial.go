@@ -6,6 +6,7 @@ import (
 	"strings"
 
 	"github.com/charmbracelet/x/exp/ordered"
+	"github.com/goreleaser/goreleaser/v2/internal/experimental"
 	"github.com/goreleaser/goreleaser/v2/pkg/context"
 )
 
@@ -29,7 +30,7 @@ func getFilter() string {
 		target = target + "_" + goamd64
 	}
 	if strings.HasSuffix(target, "_arm") {
-		goarm := ordered.First(os.Getenv("GGOARM"), os.Getenv("GOARM"), "6")
+		goarm := ordered.First(os.Getenv("GGOARM"), os.Getenv("GOARM"), experimental.DefaultGOARM())
 		target = target + "_" + goarm
 	}
 	if strings.HasSuffix(target, "_mips") ||

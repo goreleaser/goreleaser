@@ -162,6 +162,9 @@ func ToEnv(env []string) Env {
 		if !ok || k == "" {
 			continue
 		}
+		if k == "GORELEASER_EXPERIMENTAL" {
+			os.Setenv(k, v)
+		}
 		r[k] = v
 	}
 	return r
