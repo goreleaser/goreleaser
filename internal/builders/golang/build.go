@@ -64,7 +64,7 @@ func (*Builder) WithDefaults(build config.Build) (config.Build, error) {
 			build.Goarch = []string{"amd64", "arm64", "386"}
 		}
 		if len(build.Goarm) == 0 {
-			build.Goarch = []string{experimental.DefaultGOARM()}
+			build.Goarm = []string{experimental.DefaultGOARM()}
 		}
 		if len(build.Gomips) == 0 {
 			build.Gomips = []string{"hardfloat"}
