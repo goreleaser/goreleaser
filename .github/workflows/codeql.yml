@@ -15,10 +15,10 @@ jobs:
       contents: read
 
     steps:
-    - uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332 # v4
+    - uses: actions/checkout@d632683dd7b4114ad314bca15554477dd762a938 # v4
     - uses: actions/setup-go@0a12ed9d6a96ab950c8f026ed9f722fe0da7ef32 # v4
       with:
         go-version: stable
-    - uses: github/codeql-action/init@294a9d92911152fe08befb9ec03e240add280cb3 # v3
-    - uses: github/codeql-action/autobuild@294a9d92911152fe08befb9ec03e240add280cb3 # v3
-    - uses: github/codeql-action/analyze@294a9d92911152fe08befb9ec03e240add280cb3 # v3
+    - uses: github/codeql-action/init@461ef6c76dfe95d5c364de2f431ddbd31a417628 # v3
+    - uses: github/codeql-action/autobuild@461ef6c76dfe95d5c364de2f431ddbd31a417628 # v3
+    - uses: github/codeql-action/analyze@461ef6c76dfe95d5c364de2f431ddbd31a417628 # v3
