@@ -9,14 +9,13 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/stretchr/testify/require"
-
 	"github.com/goreleaser/goreleaser/v2/internal/client"
 	"github.com/goreleaser/goreleaser/v2/internal/git"
 	"github.com/goreleaser/goreleaser/v2/internal/testctx"
 	"github.com/goreleaser/goreleaser/v2/internal/testlib"
 	"github.com/goreleaser/goreleaser/v2/pkg/config"
 	"github.com/goreleaser/goreleaser/v2/pkg/context"
+	"github.com/stretchr/testify/require"
 )
 
 func TestDescription(t *testing.T) {
@@ -287,6 +286,33 @@ func TestChangelogSort(t *testing.T) {
 			require.EqualValues(t, cfg.Entries, changes)
 		})
 	}
+}
+
+func Benchmark_sortEntries(b *testing.B) {
+	ctx := testctx.New()
+	entries := []string{
+		"added feature 1",
+		"fixed bug 2",
+		"ignored: whatever",
+		"docs: whatever",
+		"something about cArs we dont need",
+		"feat: added that thing",
+		"Merge pull request #999 from goreleaser/some-branch",
+		"this is not a Merge pull request",
+	}
+
+	b.Run("asc", func(b *testing.B) {
+		ctx.Config.Changelog.Sort = "asc"
+		for range b.N {
+			sortEntries(ctx, entries)
+		}
+	})
+	b.Run("desc", func(b *testing.B) {
+		ctx.Config.Changelog.Sort = "desc"
+		for range b.N {
+			sortEntries(ctx, entries)
+		}
+	})
 }
 
 func TestChangelogInvalidSort(t *testing.T) {
@@ -814,12 +840,23 @@ func TestGroup(t *testing.T) {
 		},
 	}, testctx.WithCurrentTag("v0.0.2"), withFirstCommit(t))
 	require.NoError(t, Pipe{}.Run(ctx))
-	require.Contains(t, ctx.ReleaseNotes, "## Changelog")
-	require.Contains(t, ctx.ReleaseNotes, "### Bots")
-	require.Contains(t, ctx.ReleaseNotes, "### Features")
-	require.Contains(t, ctx.ReleaseNotes, "### Bug Fixes")
-	require.NotContains(t, ctx.ReleaseNotes, "### Catch nothing")
-	require.Contains(t, ctx.ReleaseNotes, "### Others")
+	require.Regexp(t, `## Changelog
+### Features
+\* \w+ feat: added that thing
+### Bug Fixes
+\* \w+ bug: Merge pull request #999 from goreleaser\/some-branch
+### Bots
+\* \w+ feat\(deps\): update foobar \[bot\]
+### Others
+\* \w+ first
+\* \w+ this is not a Merge pull request
+\* \w+ chore: something about cArs we dont need
+\* \w+ docs: whatever
+\* \w+ fix: whatever
+\* \w+ ignored: whatever
+\* \w+ fixed bug 2
+\* \w+ added feature 1
+`, ctx.ReleaseNotes)
 }
 
 func TestGroupBadRegex(t *testing.T) {
