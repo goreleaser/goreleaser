@@ -273,9 +273,11 @@ func TestGitHubChangelog(t *testing.T) {
 
 		if r.URL.Path == "/repos/someone/something/compare/v1.0.0...v1.1.0" {
 			r, err := os.Open("testdata/github/compare.json")
-			assert.NoError(t, err)
-			_, err = io.Copy(w, r)
-			assert.NoError(t, err)
+			if assert.NoError(t, err) {
+				defer r.Close()
+				_, err = io.Copy(w, r)
+				assert.NoError(t, err)
+			}
 			return
 		}
 		if r.URL.Path == "/rate_limit" {
@@ -318,9 +320,11 @@ func TestGitHubReleaseNotes(t *testing.T) {
 
 		if r.URL.Path == "/repos/someone/something/releases/generate-notes" {
 			r, err := os.Open("testdata/github/releasenotes.json")
-			assert.NoError(t, err)
-			_, err = io.Copy(w, r)
-			assert.NoError(t, err)
+			if assert.NoError(t, err) {
+				defer r.Close()
+				_, err = io.Copy(w, r)
+				assert.NoError(t, err)
+			}
 			return
 		}
 		if r.URL.Path == "/rate_limit" {
@@ -388,9 +392,11 @@ func TestGitHubCloseMilestone(t *testing.T) {
 
 		if r.URL.Path == "/repos/someone/something/milestones" {
 			r, err := os.Open("testdata/github/milestones.json")
-			assert.NoError(t, err)
-			_, err = io.Copy(w, r)
-			assert.NoError(t, err)
+			if assert.NoError(t, err) {
+				defer r.Close()
+				_, err = io.Copy(w, r)
+				assert.NoError(t, err)
+			}
 			return
 		}
 
@@ -442,9 +448,11 @@ func TestGitHubOpenPullRequestCrossRepo(t *testing.T) {
 			assert.Equal(t, "someoneelse:something:foo", pr.GetHead())
 			assert.Equal(t, testPRTemplate+"\n"+prFooter, pr.GetBody())
 			r, err := os.Open("testdata/github/pull.json")
-			assert.NoError(t, err)
-			_, err = io.Copy(w, r)
-			assert.NoError(t, err)
+			if assert.NoError(t, err) {
+				defer r.Close()
+				_, err = io.Copy(w, r)
+				assert.NoError(t, err)
+			}
 			return
 		}
 
@@ -494,9 +502,11 @@ func TestGitHubOpenPullRequestHappyPath(t *testing.T) {
 
 		if r.URL.Path == "/repos/someone/something/pulls" {
 			r, err := os.Open("testdata/github/pull.json")
-			assert.NoError(t, err)
-			_, err = io.Copy(w, r)
-			assert.NoError(t, err)
+			if assert.NoError(t, err) {
+				defer r.Close()
+				_, err = io.Copy(w, r)
+				assert.NoError(t, err)
+			}
 			return
 		}
 
@@ -545,9 +555,11 @@ func TestGitHubOpenPullRequestNoBaseBranchDraft(t *testing.T) {
 			assert.True(t, pr.GetDraft())
 
 			r, err := os.Open("testdata/github/pull.json")
-			assert.NoError(t, err)
-			_, err = io.Copy(w, r)
-			assert.NoError(t, err)
+			if assert.NoError(t, err) {
+				defer r.Close()
+				_, err = io.Copy(w, r)
+				assert.NoError(t, err)
+			}
 			return
 		}
 
@@ -596,9 +608,11 @@ func TestGitHubOpenPullRequestPRExists(t *testing.T) {
 		if r.URL.Path == "/repos/someone/something/pulls" {
 			w.WriteHeader(http.StatusUnprocessableEntity)
 			r, err := os.Open("testdata/github/pull.json")
-			assert.NoError(t, err)
-			_, err = io.Copy(w, r)
-			assert.NoError(t, err)
+			if assert.NoError(t, err) {
+				defer r.Close()
+				_, err = io.Copy(w, r)
+				assert.NoError(t, err)
+			}
 			return
 		}
 
@@ -639,9 +653,11 @@ func TestGitHubOpenPullRequestBaseEmpty(t *testing.T) {
 
 		if r.URL.Path == "/repos/someone/something/pulls" {
 			r, err := os.Open("testdata/github/pull.json")
-			assert.NoError(t, err)
-			_, err = io.Copy(w, r)
-			assert.NoError(t, err)
+			if assert.NoError(t, err) {
+				defer r.Close()
+				_, err = io.Copy(w, r)
+				assert.NoError(t, err)
+			}
 			return
 		}
 
@@ -688,9 +704,11 @@ func TestGitHubOpenPullRequestHeadEmpty(t *testing.T) {
 
 		if r.URL.Path == "/repos/someone/something/pulls" {
 			r, err := os.Open("testdata/github/pull.json")
-			assert.NoError(t, err)
-			_, err = io.Copy(w, r)
-			assert.NoError(t, err)
+			if assert.NoError(t, err) {
+				defer r.Close()
+				_, err = io.Copy(w, r)
+				assert.NoError(t, err)
+			}
 			return
 		}
 
