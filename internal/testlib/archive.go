@@ -148,5 +148,6 @@ func openFile(tb testing.TB, path string) *os.File {
 	tb.Helper()
 	f, err := os.Open(path)
 	require.NoError(tb, err)
+	tb.Cleanup(func() { f.Close() })
 	return f
 }
