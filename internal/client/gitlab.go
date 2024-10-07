@@ -532,7 +532,7 @@ func (c *gitlabClient) Upload(
 
 	name := artifact.Name
 	filename := "/" + name
-	releaseLink, _, err := c.client.ReleaseLinks.CreateReleaseLink(
+	releaseLink, resp, err := c.client.ReleaseLinks.CreateReleaseLink(
 		projectID,
 		releaseID,
 		&gitlab.CreateReleaseLinkOptions{
@@ -541,6 +541,22 @@ func (c *gitlabClient) Upload(
 			FilePath: &filename,
 		})
 	if err != nil {
+		// this status means the asset already exists
+		if resp != nil && resp.StatusCode == http.StatusBadRequest && releaseLink != nil {
+			if !ctx.Config.Release.ReplaceExistingArtifacts {
+				return err
+			}
+			// if the user allowed to delete assets, we delete it, and return a
+			// retriable error.
+			if _, _, err := c.client.ReleaseLinks.DeleteReleaseLink(
+				projectID,
+				releaseID,
+				releaseLink.ID,
+			); err != nil {
+				return err
+			}
+			return RetriableError{err}
+		}
 		return RetriableError{err}
 	}
 
