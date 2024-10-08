@@ -89,12 +89,12 @@ func TestWithDefaults(t *testing.T) {
 				ID:     "foo3",
 				Binary: "foo",
 				Targets: []string{
-					"linux_386",
+					"linux_386_sse2",
 					"darwin_amd64_v2",
 				},
 			},
 			targets: []string{
-				"linux_386",
+				"linux_386_sse2",
 				"darwin_amd64_v2",
 			},
 			goBinary: "go",
@@ -104,12 +104,12 @@ func TestWithDefaults(t *testing.T) {
 				ID:     "foo3",
 				Binary: "foo",
 				Targets: []string{
-					"linux_386",
+					"linux_386_sse2",
 					"darwin_amd64",
 				},
 			},
 			targets: []string{
-				"linux_386",
+				"linux_386_sse2",
 				"darwin_amd64_v1",
 			},
 			goBinary: "go",
