@@ -87,11 +87,11 @@ You should be able to use all its fields on each item:
 - `.Goarm`
 - `.Gomips`
 - `.Goamd64`
-- `.Goarm64`
-- `.Gomips64`
-- `.Goppc64`
-- `.Goriscv64`
-- `.Go386`
+- `.Goarm64` (since v2.4)
+- `.Gomips64` (since v2.4)
+- `.Goppc64` (since v2.4)
+- `.Goriscv64` (since v2.4)
+- `.Go386` (since v2.4)
 - `.Type`
 - `.Extra`
 
@@ -109,11 +109,11 @@ may have some extra fields:
 | `.Arm`          | `GOARM`                        |
 | `.Mips`         | `GOMIPS`                       |
 | `.Amd64`        | `GOAMD64`                      |
-| `.Arm64`        | `GOARM64`                      |
-| `.Mips64`       | `GOMIPS64`                     |
-| `.PPC64`        | `GOPPC64`                      |
-| `.Riscv64`      | `GORISCV64`                    |
-| `.386`          | `GO386`                        |
+| `.Arm64`        | `GOARM64` (since v2.4)         |
+| `.Mips64`       | `GOMIPS64` (since v2.4)        |
+| `.PPC64`        | `GOPPC64` (since v2.4)         |
+| `.Riscv64`      | `GORISCV64` (since v2.4)       |
+| `.386`          | `GO386` (since v2.4)           |
 | `.Binary`       | binary name                    |
 | `.ArtifactID`   | archive id (since v2.3[^pro])  |
 | `.ArtifactName` | archive name                   |
@@ -197,7 +197,7 @@ foo_template: "foo_{{ .Env.GOVERSION }}"
 And then you can run:
 
 ```sh
-GOVERSION_NR=$(go version | awk '{print $3;}') goreleaser
+GOVERSION=$(go version | awk '{print $3;}') goreleaser
 ```
 
 !!! warning
