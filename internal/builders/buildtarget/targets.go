@@ -4,6 +4,7 @@ package buildtarget
 
 import (
 	"fmt"
+	"regexp"
 	"strings"
 
 	"github.com/caarlos0/log"
@@ -11,11 +12,11 @@ import (
 )
 
 type target struct {
-	os, arch, arm, mips, amd64 string
+	os, arch, amd64, go386, arm, arm64, mips, ppc64, riscv64 string
 }
 
 func (t target) String() string {
-	if extra := t.arm + t.mips + t.amd64; extra != "" {
+	if extra := t.amd64 + t.go386 + t.arm + t.arm64 + t.mips + t.ppc64 + t.riscv64; extra != "" {
 		return fmt.Sprintf("%s_%s_%s", t.os, t.arch, extra)
 	}
 	return fmt.Sprintf("%s_%s", t.os, t.arch)
@@ -34,14 +35,26 @@ func List(build config.Build) ([]string, error) {
 		if !contains(target.arch, validGoarch) {
 			return result, fmt.Errorf("invalid goarch: %s", target.arch)
 		}
+		if target.amd64 != "" && !contains(target.amd64, validGoamd64) {
+			return result, fmt.Errorf("invalid goamd64: %s", target.amd64)
+		}
+		if target.go386 != "" && !contains(target.go386, validGo386) {
+			return result, fmt.Errorf("invalid go386: %s", target.go386)
+		}
 		if target.arm != "" && !contains(target.arm, validGoarm) {
 			return result, fmt.Errorf("invalid goarm: %s", target.arm)
+		}
+		if target.arm64 != "" && !validGoarm64.MatchString(target.arm64) {
+			return result, fmt.Errorf("invalid goarm64: %s", target.arm64)
 		}
 		if target.mips != "" && !contains(target.mips, validGomips) {
 			return result, fmt.Errorf("invalid gomips: %s", target.mips)
 		}
-		if target.amd64 != "" && !contains(target.amd64, validGoamd64) {
-			return result, fmt.Errorf("invalid goamd64: %s", target.amd64)
+		if target.ppc64 != "" && !contains(target.ppc64, validGoppc64) {
+			return result, fmt.Errorf("invalid goppc64: %s", target.ppc64)
+		}
+		if target.riscv64 != "" && !contains(target.riscv64, validGoriscv64) {
+			return result, fmt.Errorf("invalid goriscv64: %s", target.riscv64)
 		}
 		if !valid(target) {
 			log.WithField("target", target).Debug("skipped invalid build")
@@ -62,7 +75,32 @@ func List(build config.Build) ([]string, error) {
 func allBuildTargets(build config.Build) (targets []target) {
 	for _, goos := range build.Goos {
 		for _, goarch := range build.Goarch {
-			if goarch == "arm" {
+			//nolint:gocritic
+			if strings.HasPrefix(goarch, "amd64") {
+				for _, goamd64 := range build.Goamd64 {
+					targets = append(targets, target{
+						os:    goos,
+						arch:  goarch,
+						amd64: goamd64,
+					})
+				}
+			} else if goarch == "386" {
+				for _, go386 := range build.Go386 {
+					targets = append(targets, target{
+						os:    goos,
+						arch:  goarch,
+						go386: go386,
+					})
+				}
+			} else if strings.HasPrefix(goarch, "arm64") {
+				for _, goarm64 := range build.Goarm64 {
+					targets = append(targets, target{
+						os:    goos,
+						arch:  goarch,
+						arm64: goarm64,
+					})
+				}
+			} else if strings.HasPrefix(goarch, "arm") {
 				for _, goarm := range build.Goarm {
 					targets = append(targets, target{
 						os:   goos,
@@ -70,19 +108,7 @@ func allBuildTargets(build config.Build) (targets []target) {
 						arm:  goarm,
 					})
 				}
-				continue
-			}
-			if strings.HasPrefix(goarch, "amd64") {
-				for _, goamd := range build.Goamd64 {
-					targets = append(targets, target{
-						os:    goos,
-						arch:  goarch,
-						amd64: goamd,
-					})
-				}
-				continue
-			}
-			if strings.HasPrefix(goarch, "mips") {
+			} else if strings.HasPrefix(goarch, "mips") {
 				for _, gomips := range build.Gomips {
 					targets = append(targets, target{
 						os:   goos,
@@ -90,12 +116,28 @@ func allBuildTargets(build config.Build) (targets []target) {
 						mips: gomips,
 					})
 				}
-				continue
+			} else if strings.HasPrefix(goarch, "ppc64") {
+				for _, goppc64 := range build.Goppc64 {
+					targets = append(targets, target{
+						os:    goos,
+						arch:  goarch,
+						ppc64: goppc64,
+					})
+				}
+			} else if strings.HasPrefix(goarch, "riscv64") {
+				for _, goriscv64 := range build.Goriscv64 {
+					targets = append(targets, target{
+						os:      goos,
+						arch:    goarch,
+						riscv64: goriscv64,
+					})
+				}
+			} else {
+				targets = append(targets, target{
+					os:   goos,
+					arch: goarch,
+				})
 			}
-			targets = append(targets, target{
-				os:   goos,
-				arch: goarch,
-			})
 		}
 	}
 	return
@@ -111,13 +153,25 @@ func ignored(build config.Build, target target) bool {
 		if ig.Goarch != "" && ig.Goarch != target.arch {
 			continue
 		}
+		if ig.Goamd64 != "" && ig.Goamd64 != target.amd64 {
+			continue
+		}
+		if ig.Go386 != "" && ig.Go386 != target.go386 {
+			continue
+		}
 		if ig.Goarm != "" && ig.Goarm != target.arm {
+			continue
+		}
+		if ig.Goarm64 != "" && ig.Goarm64 != target.arm64 {
 			continue
 		}
 		if ig.Gomips != "" && ig.Gomips != target.mips {
 			continue
 		}
-		if ig.Goamd64 != "" && ig.Goamd64 != target.amd64 {
+		if ig.Goppc64 != "" && ig.Goppc64 != target.ppc64 {
+			continue
+		}
+		if ig.Goriscv64 != "" && ig.Goriscv64 != target.riscv64 {
 			continue
 		}
 		return true
@@ -225,7 +279,11 @@ var (
 		"loong64",
 	}
 
-	validGoarm   = []string{"5", "6", "7"}
-	validGomips  = []string{"hardfloat", "softfloat"}
-	validGoamd64 = []string{"v1", "v2", "v3", "v4"}
+	validGoamd64   = []string{"v1", "v2", "v3", "v4"}
+	validGo386     = []string{"sse2", "softfloat"}
+	validGoarm     = []string{"5", "6", "7"}
+	validGoarm64   = regexp.MustCompile(`(v8\.[0-9]|v9\.[0-5])((,lse|,crypto)?)+`)
+	validGomips    = []string{"hardfloat", "softfloat"}
+	validGoppc64   = []string{"power8", "power9", "power10"}
+	validGoriscv64 = []string{"rva20u64", "rva22u64"}
 )

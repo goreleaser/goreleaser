@@ -418,11 +418,15 @@ type BuildHooks struct { // renamed on pro
 
 // IgnoredBuild represents a build ignored by the user.
 type IgnoredBuild struct {
-	Goos    string `yaml:"goos,omitempty" json:"goos,omitempty"`
-	Goarch  string `yaml:"goarch,omitempty" json:"goarch,omitempty"`
-	Goarm   string `yaml:"goarm,omitempty" json:"goarm,omitempty" jsonschema:"oneof_type=string;integer"`
-	Gomips  string `yaml:"gomips,omitempty" json:"gomips,omitempty"`
-	Goamd64 string `yaml:"goamd64,omitempty" json:"goamd64,omitempty"`
+	Goos      string `yaml:"goos,omitempty" json:"goos,omitempty"`
+	Goarch    string `yaml:"goarch,omitempty" json:"goarch,omitempty"`
+	Goamd64   string `yaml:"goamd64,omitempty" json:"goamd64,omitempty"`
+	Go386     string `yaml:"go386,omitempty" json:"go386,omitempty"`
+	Goarm     string `yaml:"goarm,omitempty" json:"goarm,omitempty" jsonschema:"oneof_type=string;integer"`
+	Goarm64   string `yaml:"goarm64,omitempty" json:"goarm64,omitempty"`
+	Gomips    string `yaml:"gomips,omitempty" json:"gomips,omitempty"`
+	Goppc64   string `yaml:"goppc64,omitempty" json:"goppc64,omitempty"`
+	Goriscv64 string `yaml:"goriscv64,omitempty" json:"goriscv64,omitempty"`
 }
 
 // StringArray is a wrapper for an array of strings.
@@ -492,9 +496,13 @@ type Build struct {
 	ID              string          `yaml:"id,omitempty" json:"id,omitempty"`
 	Goos            []string        `yaml:"goos,omitempty" json:"goos,omitempty"`
 	Goarch          []string        `yaml:"goarch,omitempty" json:"goarch,omitempty"`
-	Goarm           []string        `yaml:"goarm,omitempty" json:"goarm,omitempty"`
-	Gomips          []string        `yaml:"gomips,omitempty" json:"gomips,omitempty"`
 	Goamd64         []string        `yaml:"goamd64,omitempty" json:"goamd64,omitempty"`
+	Go386           []string        `yaml:"go386,omitempty" json:"go386,omitempty"`
+	Goarm           []string        `yaml:"goarm,omitempty" json:"goarm,omitempty"`
+	Goarm64         []string        `yaml:"goarm64,omitempty" json:"goarm64,omitempty"`
+	Gomips          []string        `yaml:"gomips,omitempty" json:"gomips,omitempty"`
+	Goppc64         []string        `yaml:"goppc64,omitempty" json:"goppc64,omitempty"`
+	Goriscv64       []string        `yaml:"goriscv64,omitempty" json:"goriscv64,omitempty"`
 	Targets         []string        `yaml:"targets,omitempty" json:"targets,omitempty"`
 	Ignore          []IgnoredBuild  `yaml:"ignore,omitempty" json:"ignore,omitempty"`
 	Dir             string          `yaml:"dir,omitempty" json:"dir,omitempty"`
