@@ -20,7 +20,6 @@ $toolsDir = "$(Split-Path -parent $MyInvocation.MyCommand.Definition)"
 $packageArgs = @{
     packageName    = $packageName
     unzipLocation  = $toolsDir
-    fileType       = 'exe'
     {{- range $release := .Packages }}
     {{- if eq $release.Arch "amd64" }}
     url64bit       = '{{ $release.DownloadURL }}'

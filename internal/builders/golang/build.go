@@ -70,7 +70,7 @@ func (*Builder) WithDefaults(build config.Build) (config.Build, error) {
 			build.Go386 = []string{"sse2"}
 		}
 		if len(build.Goarm) == 0 {
-			build.Goarch = []string{experimental.DefaultGOARM()}
+			build.Goarm = []string{experimental.DefaultGOARM()}
 		}
 		if len(build.Goarm64) == 0 {
 			build.Goarm64 = []string{"v8.0"}

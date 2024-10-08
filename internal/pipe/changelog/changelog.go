@@ -2,12 +2,13 @@
 package changelog
 
 import (
+	"cmp"
 	"errors"
 	"fmt"
 	"os"
 	"path/filepath"
 	"regexp"
-	"sort"
+	"slices"
 	"strings"
 
 	"github.com/caarlos0/log"
@@ -211,7 +212,7 @@ func formatChangelog(ctx *context.Context, entries []string) (string, error) {
 		}
 	}
 
-	sort.Slice(groups, groupSort(groups))
+	slices.SortFunc(groups, groupSort)
 	for _, group := range groups {
 		if len(group.entries) > 0 {
 			result = append(result, group.title)
@@ -221,10 +222,8 @@ func formatChangelog(ctx *context.Context, entries []string) (string, error) {
 	return strings.Join(result, newLineFor(ctx)), nil
 }
 
-func groupSort(groups []changelogGroup) func(i, j int) bool {
-	return func(i, j int) bool {
-		return groups[i].order < groups[j].order
-	}
+func groupSort(i, j changelogGroup) int {
+	return cmp.Compare(i.order, j.order)
 }
 
 func filterAndPrefixItems(ss []string) []string {
@@ -306,17 +305,16 @@ func sortEntries(ctx *context.Context, entries []string) []string {
 	if direction == "" {
 		return entries
 	}
-	result := make([]string, len(entries))
-	copy(result, entries)
-	sort.Slice(result, func(i, j int) bool {
-		imsg := extractCommitInfo(result[i])
-		jmsg := extractCommitInfo(result[j])
+	slices.SortFunc(entries, func(i, j string) int {
+		imsg := extractCommitInfo(i)
+		jmsg := extractCommitInfo(j)
+		compareRes := strings.Compare(imsg, jmsg)
 		if direction == "asc" {
-			return strings.Compare(imsg, jmsg) < 0
+			return compareRes
 		}
-		return strings.Compare(imsg, jmsg) > 0
+		return -compareRes
 	})
-	return result
+	return entries
 }
 
 func keep(filter *regexp.Regexp, entries []string) (result []string) {
@@ -428,13 +426,12 @@ type changeloger interface {
 
 type gitChangeloger struct{}
 
-var validSHA1 = regexp.MustCompile(`^[a-fA-F0-9]{40}$`)
-
 func (g gitChangeloger) Log(ctx *context.Context) (string, error) {
 	args := []string{"log", "--pretty=oneline", "--no-decorate", "--no-color"}
 	prev, current := comparePair(ctx)
-	if validSHA1.MatchString(prev) {
-		args = append(args, prev, current)
+	if prev == "" {
+		// log all commits since the first commit
+		args = append(args, current)
 	} else {
 		args = append(args, fmt.Sprintf("tags/%s..tags/%s", ctx.Git.PreviousTag, ctx.Git.CurrentTag))
 	}
@@ -481,8 +478,5 @@ func (c *githubNativeChangeloger) Log(ctx *context.Context) (string, error) {
 func comparePair(ctx *context.Context) (prev string, current string) {
 	prev = ctx.Git.PreviousTag
 	current = ctx.Git.CurrentTag
-	if prev == "" {
-		prev = ctx.Git.FirstCommit
-	}
 	return
 }
