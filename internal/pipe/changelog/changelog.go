@@ -426,13 +426,12 @@ type changeloger interface {
 
 type gitChangeloger struct{}
 
-var validSHA1 = regexp.MustCompile(`^[a-fA-F0-9]{40}$`)
-
 func (g gitChangeloger) Log(ctx *context.Context) (string, error) {
 	args := []string{"log", "--pretty=oneline", "--no-decorate", "--no-color"}
 	prev, current := comparePair(ctx)
-	if validSHA1.MatchString(prev) {
-		args = append(args, prev, current)
+	if prev == "" {
+		// log all commits since the first commit
+		args = append(args, current)
 	} else {
 		args = append(args, fmt.Sprintf("tags/%s..tags/%s", ctx.Git.PreviousTag, ctx.Git.CurrentTag))
 	}
@@ -479,8 +478,5 @@ func (c *githubNativeChangeloger) Log(ctx *context.Context) (string, error) {
 func comparePair(ctx *context.Context) (prev string, current string) {
 	prev = ctx.Git.PreviousTag
 	current = ctx.Git.CurrentTag
-	if prev == "" {
-		prev = ctx.Git.FirstCommit
-	}
 	return
 }

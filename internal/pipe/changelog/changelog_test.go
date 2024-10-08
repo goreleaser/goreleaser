@@ -848,7 +848,6 @@ func TestGroup(t *testing.T) {
 ### Bots
 \* \w+ feat\(deps\): update foobar \[bot\]
 ### Others
-\* \w+ first
 \* \w+ this is not a Merge pull request
 \* \w+ chore: something about cArs we dont need
 \* \w+ docs: whatever
@@ -856,6 +855,7 @@ func TestGroup(t *testing.T) {
 \* \w+ ignored: whatever
 \* \w+ fixed bug 2
 \* \w+ added feature 1
+\* \w+ first
 `, ctx.ReleaseNotes)
 }
 
