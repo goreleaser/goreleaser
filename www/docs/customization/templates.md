@@ -87,6 +87,11 @@ You should be able to use all its fields on each item:
 - `.Goarm`
 - `.Gomips`
 - `.Goamd64`
+- `.Goarm64`
+- `.Gomips64`
+- `.Goppc64`
+- `.Goriscv64`
+- `.Go386`
 - `.Type`
 - `.Extra`
 
@@ -104,6 +109,11 @@ may have some extra fields:
 | `.Arm`          | `GOARM`                        |
 | `.Mips`         | `GOMIPS`                       |
 | `.Amd64`        | `GOAMD64`                      |
+| `.Arm64`        | `GOARM64`                      |
+| `.Mips64`       | `GOMIPS64`                     |
+| `.PPC64`        | `GOPPC64`                      |
+| `.Riscv64`      | `GORISCV64`                    |
+| `.386`          | `GO386`                        |
 | `.Binary`       | binary name                    |
 | `.ArtifactID`   | archive id (since v2.3[^pro])  |
 | `.ArtifactName` | archive name                   |

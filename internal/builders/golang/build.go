@@ -104,7 +104,7 @@ func (*Builder) WithDefaults(build config.Build) (config.Build, error) {
 				targets[target+"_v1"] = true
 				continue
 			}
-			if strings.HasSuffix(target, "_i386") {
+			if strings.HasSuffix(target, "_386") {
 				targets[target+"_sse2"] = true
 				continue
 			}
