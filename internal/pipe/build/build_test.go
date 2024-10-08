@@ -301,7 +301,7 @@ func TestDefaultEmptyBuild(t *testing.T) {
 	require.Equal(t, ".", build.Main)
 	require.Equal(t, []string{"linux", "darwin", "windows"}, build.Goos)
 	require.Equal(t, []string{"amd64", "arm64", "386"}, build.Goarch)
-	require.Equal(t, []string{"7"}, build.Goarm)
+	require.Equal(t, []string{"6"}, build.Goarm)
 	require.Equal(t, []string{"hardfloat"}, build.Gomips)
 	require.Equal(t, []string{"v1"}, build.Goamd64)
 	require.Len(t, build.Ldflags, 1)
