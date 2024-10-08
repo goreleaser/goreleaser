@@ -34,19 +34,37 @@ func TestAllBuildTargets(t *testing.T) {
 			"riscv64",
 			"loong64",
 		},
-		Goarm: []string{
-			"6",
-			"7",
-		},
-		Gomips: []string{
-			"hardfloat",
-			"softfloat",
-		},
 		Goamd64: []string{
 			"v1",
 			"v2",
 			"v3",
 			"v4",
+		},
+		Go386: []string{
+			"sse2",
+			"softfloat",
+		},
+		Goarm: []string{
+			"5",
+			"6",
+			"7",
+		},
+		Goarm64: []string{
+			"v8.0",
+			"v9.0",
+		},
+		Gomips: []string{
+			"hardfloat",
+			"softfloat",
+		},
+		Goppc64: []string{
+			"power8",
+			"power9",
+			"power10",
+		},
+		Goriscv64: []string{
+			"rva20u64",
+			"rva22u64",
 		},
 		Ignore: []config.IgnoredBuild{
 			{
@@ -57,14 +75,35 @@ func TestAllBuildTargets(t *testing.T) {
 				Goos:   "openbsd",
 				Goarch: "arm",
 			}, {
+				Goarch:  "amd64",
+				Goamd64: "v1",
+			}, {
+				Goarch: "386",
+				Go386:  "sse2",
+			}, {
+				Goarch:  "arm64",
+				Goarm64: "v8.0",
+			}, {
+				Goarch: "mips",
+				Gomips: "hardfloat",
+			}, {
+				Goarch: "mipsle",
+				Gomips: "hardfloat",
+			}, {
 				Goarch: "mips64",
 				Gomips: "hardfloat",
 			}, {
 				Goarch: "mips64le",
-				Gomips: "softfloat",
+				Gomips: "hardfloat",
 			}, {
-				Goarch:  "amd64",
-				Goamd64: "v3",
+				Goarch:  "ppc64",
+				Goppc64: "power8",
+			}, {
+				Goarch:  "ppc64le",
+				Goppc64: "power8",
+			}, {
+				Goarch:    "riscv64",
+				Goriscv64: "rva20u64",
 			},
 		},
 	}
@@ -73,45 +112,46 @@ func TestAllBuildTargets(t *testing.T) {
 		result, err := List(build)
 		require.NoError(t, err)
 		require.Equal(t, []string{
-			"linux_386",
-			"linux_amd64_v1",
+			"linux_386_softfloat",
 			"linux_amd64_v2",
+			"linux_amd64_v3",
 			"linux_amd64_v4",
+			"linux_arm_5",
 			"linux_arm_6",
-			"linux_arm64",
-			"linux_mips_hardfloat",
+			"linux_arm64_v9.0",
 			"linux_mips_softfloat",
 			"linux_mips64_softfloat",
-			"linux_mipsle_hardfloat",
 			"linux_mipsle_softfloat",
-			"linux_mips64le_hardfloat",
-			"linux_riscv64",
+			"linux_mips64le_softfloat",
+			"linux_riscv64_rva22u64",
 			"linux_loong64",
-			"darwin_amd64_v1",
 			"darwin_amd64_v2",
+			"darwin_amd64_v3",
 			"darwin_amd64_v4",
-			"darwin_arm64",
-			"freebsd_386",
-			"freebsd_amd64_v1",
+			"darwin_arm64_v9.0",
+			"freebsd_386_softfloat",
 			"freebsd_amd64_v2",
+			"freebsd_amd64_v3",
 			"freebsd_amd64_v4",
+			"freebsd_arm_5",
 			"freebsd_arm_6",
 			"freebsd_arm_7",
-			"freebsd_arm64",
-			"openbsd_386",
-			"openbsd_amd64_v1",
+			"freebsd_arm64_v9.0",
+			"openbsd_386_softfloat",
 			"openbsd_amd64_v2",
+			"openbsd_amd64_v3",
 			"openbsd_amd64_v4",
-			"openbsd_arm64",
-			"windows_386",
-			"windows_amd64_v1",
+			"openbsd_arm64_v9.0",
+			"windows_386_softfloat",
 			"windows_amd64_v2",
+			"windows_amd64_v3",
 			"windows_amd64_v4",
+			"windows_arm_5",
 			"windows_arm_6",
 			"windows_arm_7",
-			"windows_arm64",
+			"windows_arm64_v9.0",
 			"js_wasm",
-			"ios_arm64",
+			"ios_arm64_v9.0",
 			"wasip1_wasm",
 		}, result)
 	})
@@ -219,7 +259,7 @@ func TestGoosGoarchCombos(t *testing.T) {
 	}
 	for _, p := range platforms {
 		t.Run(fmt.Sprintf("%v %v valid=%v", p.os, p.arch, p.valid), func(t *testing.T) {
-			require.Equal(t, p.valid, valid(target{p.os, p.arch, "", "", ""}))
+			require.Equal(t, p.valid, valid(target{os: p.os, arch: p.arch}))
 		})
 	}
 }
