@@ -22,8 +22,6 @@ import (
 	"github.com/goreleaser/goreleaser/v2/internal/tmpl"
 	"github.com/goreleaser/goreleaser/v2/pkg/config"
 	"github.com/goreleaser/goreleaser/v2/pkg/context"
-	"golang.org/x/text/cases"
-	"golang.org/x/text/language"
 )
 
 const brewConfigExtra = "BrewConfig"
@@ -489,12 +487,52 @@ func split(s string) []string {
 // formulaNameFor transforms the formula name into a form
 // that more resembles a valid Ruby class name
 // e.g. foo_bar@v6.0.0-rc is turned into FooBarATv6_0_0RC
-// The order of these replacements is important
+//
+// This function must match the behavoir of Homewbrews's Formulary.class_s function:
+//
+//	<https://github.com/Homebrew/brew/blob/587949bd8417c486795be04194f9e9baeaa9f5a7/Library/Homebrew/formulary.rb#L522-L528>
 func formulaNameFor(name string) string {
-	name = strings.ReplaceAll(name, "-", " ")
-	name = strings.ReplaceAll(name, "_", " ")
-	name = strings.ReplaceAll(name, ".", "")
-	name = cases.Title(language.English).String(name)
-	name = strings.ReplaceAll(name, " ", "")
-	return strings.ReplaceAll(name, "@", "AT")
+	if len(name) == 0 {
+		return name
+	}
+
+	var output strings.Builder
+	name = strings.ToLower(name)
+
+	// Capitalize the first character
+	output.WriteByte(strings.ToUpper(name[:1])[0])
+
+	// Traverse the rest of the string
+	for i := 1; i < len(name); i++ {
+		c := name[i]
+
+		switch c {
+		case '-', '_', '.', ' ':
+			// Capitalize the next character after a symbol
+			if i+1 < len(name) {
+				output.WriteByte(strings.ToUpper(name[i+1 : i+2])[0])
+				i++ // Skip the next character as it's already processed
+			}
+		case '+':
+			// Replace '+' with 'x'
+			output.WriteByte('x')
+		case '@':
+			// Replace occurrences of (.)@(\d) with \1AT\2
+			if i+1 < len(name) && isDigit(name[i+1]) {
+				output.WriteString("AT")
+				output.WriteByte(name[i+1])
+				i++ // Skip the next character as it's already processed
+			} else {
+				output.WriteByte(c)
+			}
+		default:
+			output.WriteByte(c)
+		}
+	}
+
+	return output.String()
+}
+
+func isDigit(b byte) bool {
+	return b >= '0' && b <= '9'
 }
