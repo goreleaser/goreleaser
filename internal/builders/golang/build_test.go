@@ -22,6 +22,17 @@ import (
 
 var runtimeTarget = runtime.GOOS + "_" + runtime.GOARCH
 
+var go118FirstClassAdjustedTargets = []string{
+	"darwin_amd64_v1",
+	"darwin_arm64_v8.0",
+	"linux_386_sse2",
+	"linux_amd64_v1",
+	"linux_arm_6",
+	"linux_arm64_v8.0",
+	"windows_386_sse2",
+	"windows_amd64_v1",
+}
+
 func TestWithDefaults(t *testing.T) {
 	for name, testcase := range map[string]struct {
 		build    config.Build
@@ -120,7 +131,7 @@ func TestWithDefaults(t *testing.T) {
 				Binary:  "foo",
 				Targets: []string{"linux_arm"},
 			},
-			targets:  []string{"linux_arm_7"},
+			targets:  []string{"linux_arm_6"},
 			goBinary: "go",
 		},
 		"custom targets no mips": {
@@ -201,7 +212,7 @@ func TestWithDefaults(t *testing.T) {
 				Binary:  "foo",
 				Targets: []string{goStableFirstClassTargetsName},
 			},
-			targets:  go118FirstClassTargets,
+			targets:  go118FirstClassAdjustedTargets,
 			goBinary: "go",
 		},
 		"go 1.18 first class targets": {
@@ -210,7 +221,7 @@ func TestWithDefaults(t *testing.T) {
 				Binary:  "foo",
 				Targets: []string{go118FirstClassTargetsName},
 			},
-			targets:  go118FirstClassTargets,
+			targets:  go118FirstClassAdjustedTargets,
 			goBinary: "go",
 		},
 		"go 1.18 first class targets plus custom": {
@@ -219,7 +230,7 @@ func TestWithDefaults(t *testing.T) {
 				Binary:  "foo",
 				Targets: []string{"linux_amd64_v1", go118FirstClassTargetsName, "darwin_amd64_v2"},
 			},
-			targets:  append(go118FirstClassTargets, "darwin_amd64_v2"),
+			targets:  append(go118FirstClassAdjustedTargets, "darwin_amd64_v2"),
 			goBinary: "go",
 		},
 		"repeatin targets": {
@@ -228,7 +239,7 @@ func TestWithDefaults(t *testing.T) {
 				Binary:  "foo",
 				Targets: []string{go118FirstClassTargetsName, go118FirstClassTargetsName, goStableFirstClassTargetsName},
 			},
-			targets:  go118FirstClassTargets,
+			targets:  go118FirstClassAdjustedTargets,
 			goBinary: "go",
 		},
 	} {
@@ -416,7 +427,13 @@ func TestBuild(t *testing.T) {
 		})
 		require.NoError(t, err)
 	}
-	require.ElementsMatch(t, ctx.Artifacts.List(), []*artifact.Artifact{
+	list := ctx.Artifacts
+	require.NoError(t, list.Visit(func(a *artifact.Artifact) error {
+		s, err := filepath.Rel(folder, a.Path)
+		a.Path = s
+		return err
+	}))
+	require.ElementsMatch(t, list.List(), []*artifact.Artifact{
 		{
 			Name:   "bin/foo-v5.6.7",
 			Path:   filepath.Join("dist", "linux_amd64", "bin", "foo-v5.6.7"),

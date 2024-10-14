@@ -96,45 +96,44 @@ func (*Builder) WithDefaults(build config.Build) (config.Build, error) {
 			if target == go118FirstClassTargetsName ||
 				target == goStableFirstClassTargetsName {
 				for _, t := range go118FirstClassTargets {
-					targets[t] = true
+					targets[fixTarget(t)] = true
 				}
 				continue
 			}
-			if strings.HasSuffix(target, "_amd64") {
-				targets[target+"_v1"] = true
-				continue
-			}
-			if strings.HasSuffix(target, "_386") {
-				targets[target+"_sse2"] = true
-				continue
-			}
-			if strings.HasSuffix(target, "_arm") {
-				targets[target+"_7"] = true
-				continue
-			}
-			if strings.HasSuffix(target, "_arm64") {
-				targets[target+"_v8.0"] = true
-				continue
-			}
-			if strings.HasSuffix(target, "_mips") ||
-				strings.HasSuffix(target, "_mips64") ||
-				strings.HasSuffix(target, "_mipsle") ||
-				strings.HasSuffix(target, "_mips64le") {
-				targets[target+"_hardfloat"] = true
-				continue
-			}
-			if strings.HasSuffix(target, "_ppc64") ||
-				strings.HasSuffix(target, "_ppc64le") {
-				targets[target+"_power8"] = true
-			}
-			if strings.HasSuffix(target, "_riscv64") {
-				targets[target+"_rva20u64"] = true
-			}
-			targets[target] = true
+			targets[fixTarget(target)] = true
 		}
 		build.Targets = keys(targets)
 	}
 	return build, nil
+}
+
+func fixTarget(target string) string {
+	if strings.HasSuffix(target, "_amd64") {
+		return target + "_v1"
+	}
+	if strings.HasSuffix(target, "_386") {
+		return target + "_sse2"
+	}
+	if strings.HasSuffix(target, "_arm") {
+		return target + "_" + experimental.DefaultGOARM()
+	}
+	if strings.HasSuffix(target, "_arm64") {
+		return target + "_v8.0"
+	}
+	if strings.HasSuffix(target, "_mips") ||
+		strings.HasSuffix(target, "_mips64") ||
+		strings.HasSuffix(target, "_mipsle") ||
+		strings.HasSuffix(target, "_mips64le") {
+		return target + "_hardfloat"
+	}
+	if strings.HasSuffix(target, "_ppc64") ||
+		strings.HasSuffix(target, "_ppc64le") {
+		return target + "_power8"
+	}
+	if strings.HasSuffix(target, "_riscv64") {
+		return target + "_rva20u64"
+	}
+	return target
 }
 
 func warnIfTargetsAndOtherOptionTogether(build config.Build) bool {
@@ -179,14 +178,14 @@ const (
 
 // go tool dist list -json | jq -r '.[] | select(.FirstClass) | [.GOOS, .GOARCH] | @tsv'
 var go118FirstClassTargets = []string{
-	"darwin_amd64_v1",
+	"darwin_amd64",
 	"darwin_arm64",
 	"linux_386",
-	"linux_amd64_v1",
-	"linux_arm_6",
+	"linux_amd64",
+	"linux_arm",
 	"linux_arm64",
 	"windows_386",
-	"windows_amd64_v1",
+	"windows_amd64",
 }
 
 // Build builds a golang build.
