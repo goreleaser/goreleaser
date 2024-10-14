@@ -423,13 +423,18 @@ func create(ctx *context.Context, snap config.Snapcraft, arch string, binaries [
 		return nil
 	}
 	ctx.Artifacts.Add(&artifact.Artifact{
-		Type:    artifact.PublishableSnapcraft,
-		Name:    folder + ".snap",
-		Path:    snapFile,
-		Goos:    binaries[0].Goos,
-		Goarch:  binaries[0].Goarch,
-		Goarm:   binaries[0].Goarm,
-		Goamd64: binaries[0].Goamd64,
+		Type:      artifact.PublishableSnapcraft,
+		Name:      folder + ".snap",
+		Path:      snapFile,
+		Goos:      binaries[0].Goos,
+		Goarch:    binaries[0].Goarch,
+		Goamd64:   binaries[0].Goamd64,
+		Go386:     binaries[0].Go386,
+		Goarm:     binaries[0].Goarm,
+		Goarm64:   binaries[0].Goarm64,
+		Gomips:    binaries[0].Gomips,
+		Goppc64:   binaries[0].Goppc64,
+		Goriscv64: binaries[0].Goriscv64,
 		Extra: map[string]interface{}{
 			releasesExtra: channels,
 		},
