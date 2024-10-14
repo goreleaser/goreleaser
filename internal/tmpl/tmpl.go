@@ -68,7 +68,7 @@ const (
 	osKey        = "Os"
 	arch         = "Arch"
 	amd64        = "Amd64"
-	go386        = "386"
+	go386        = "I386"
 	arm          = "Arm"
 	arm64        = "Arm64"
 	mips         = "Mips"
