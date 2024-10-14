@@ -111,7 +111,7 @@ may have some extra fields:
 | `.Amd64`        | `GOAMD64`                      |
 | `.Arm64`        | `GOARM64` (since v2.4)         |
 | `.Mips64`       | `GOMIPS64` (since v2.4)        |
-| `.PPC64`        | `GOPPC64` (since v2.4)         |
+| `.Ppc64`        | `GOPPC64` (since v2.4)         |
 | `.Riscv64`      | `GORISCV64` (since v2.4)       |
 | `.I386`         | `GO386` (since v2.4)           |
 | `.Binary`       | binary name                    |
