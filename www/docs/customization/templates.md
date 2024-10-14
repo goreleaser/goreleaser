@@ -113,7 +113,7 @@ may have some extra fields:
 | `.Mips64`       | `GOMIPS64` (since v2.4)        |
 | `.PPC64`        | `GOPPC64` (since v2.4)         |
 | `.Riscv64`      | `GORISCV64` (since v2.4)       |
-| `.386`          | `GO386` (since v2.4)           |
+| `.I386`         | `GO386` (since v2.4)           |
 | `.Binary`       | binary name                    |
 | `.ArtifactID`   | archive id (since v2.3[^pro])  |
 | `.ArtifactName` | archive name                   |
