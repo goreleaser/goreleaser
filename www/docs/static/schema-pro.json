@@ -424,7 +424,25 @@
 						},
 						"type": "array"
 					},
+					"goamd64": {
+						"items": {
+							"type": "string"
+						},
+						"type": "array"
+					},
+					"go386": {
+						"items": {
+							"type": "string"
+						},
+						"type": "array"
+					},
 					"goarm": {
+						"items": {
+							"type": "string"
+						},
+						"type": "array"
+					},
+					"goarm64": {
 						"items": {
 							"type": "string"
 						},
@@ -436,7 +454,13 @@
 						},
 						"type": "array"
 					},
-					"goamd64": {
+					"goppc64": {
+						"items": {
+							"type": "string"
+						},
+						"type": "array"
+					},
+					"goriscv64": {
 						"items": {
 							"type": "string"
 						},
@@ -1696,6 +1720,12 @@
 					"goarch": {
 						"type": "string"
 					},
+					"goamd64": {
+						"type": "string"
+					},
+					"go386": {
+						"type": "string"
+					},
 					"goarm": {
 						"oneOf": [
 							{
@@ -1706,10 +1736,16 @@
 							}
 						]
 					},
+					"goarm64": {
+						"type": "string"
+					},
 					"gomips": {
 						"type": "string"
 					},
-					"goamd64": {
+					"goppc64": {
+						"type": "string"
+					},
+					"goriscv64": {
 						"type": "string"
 					}
 				},
