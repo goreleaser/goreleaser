@@ -507,6 +507,7 @@ func create(ctx *context.Context, fpm config.NFPM, format string, artifacts []*a
 
 	path := filepath.Join(ctx.Config.Dist, packageFilename)
 	log.WithField("file", path).Info("creating")
+	os.MkdirAll(filepath.Dir(path), 0750)
 	w, err := os.Create(path)
 	if err != nil {
 		return err
