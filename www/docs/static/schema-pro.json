@@ -1018,6 +1018,9 @@
 					},
 					"mod_timestamp": {
 						"type": "string"
+					},
+					"if": {
+						"type": "string"
 					}
 				},
 				"additionalProperties": false,
@@ -2315,6 +2318,9 @@
 							"type": "string"
 						},
 						"type": "array"
+					},
+					"if": {
+						"type": "string"
 					},
 					"formats": {
 						"items": {
