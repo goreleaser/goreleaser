@@ -3,6 +3,7 @@
 GoReleaser Pro is a paid, closed-source GoReleaser distribution with some
 additional features:
 
+- [x] Further filter artifacts with `if` statements;
 - [x] Easily create `alpine`, `apt`, and `yum` repositories with the
       [CloudSmith integration](customization/cloudsmith.md);
 - [x] Have [global defaults for homepage, description, etc](customization/metadata.md);

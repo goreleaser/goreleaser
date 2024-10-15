@@ -430,8 +430,10 @@ func TestBuild(t *testing.T) {
 	list := ctx.Artifacts
 	require.NoError(t, list.Visit(func(a *artifact.Artifact) error {
 		s, err := filepath.Rel(folder, a.Path)
-		a.Path = s
-		return err
+		if err == nil {
+			a.Path = s
+		}
+		return nil
 	}))
 	require.ElementsMatch(t, list.List(), []*artifact.Artifact{
 		{

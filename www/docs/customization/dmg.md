@@ -26,6 +26,14 @@ dmg:
       - foo
       - bar
 
+    # Allows to further filter the artifacts.
+    #
+    # Artifacts that do not match this expression will be ignored.
+    #
+    # Since: v2.4 (pro).
+    # Templates: allowed.
+    if: '{{ eq .Os "linux" }}'
+
     # GOAMD64 to specify which amd64 version to use if there are multiple
     # versions from the build section.
     #
