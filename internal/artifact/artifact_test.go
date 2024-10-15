@@ -477,7 +477,7 @@ func TestByExts(t *testing.T) {
 		{
 			Name: "foo",
 			Extra: map[string]interface{}{
-				ExtraExt: "deb",
+				ExtraExt: ".deb",
 			},
 		},
 		{
@@ -504,7 +504,7 @@ func TestByExts(t *testing.T) {
 
 	require.Len(t, artifacts.Filter(ByExt("deb")).items, 2)
 	require.Len(t, artifacts.Filter(ByExt("rpm")).items, 1)
-	require.Len(t, artifacts.Filter(ByExt("rpm", "deb")).items, 3)
+	require.Len(t, artifacts.Filter(ByExt("rpm", ".deb")).items, 3)
 	require.Empty(t, artifacts.Filter(ByExt("foo")).items)
 }
 
