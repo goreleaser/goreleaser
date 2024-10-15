@@ -180,7 +180,7 @@ func buildOptionsForTarget(ctx *context.Context, build config.Build, target stri
 		if strings.HasPrefix(goarch, "amd64") {
 			buildOpts.Goamd64 = parts[2]
 		} else if goarch == "386" {
-			buildOpts.Gomips = parts[2]
+			buildOpts.Go386 = parts[2]
 		} else if strings.HasPrefix(goarch, "arm64") {
 			buildOpts.Goarm64 = parts[2]
 		} else if strings.HasPrefix(goarch, "arm") {
