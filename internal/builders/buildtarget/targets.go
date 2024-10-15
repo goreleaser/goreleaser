@@ -5,7 +5,6 @@ package buildtarget
 import (
 	"fmt"
 	"regexp"
-	"strings"
 
 	"github.com/caarlos0/log"
 	"github.com/goreleaser/goreleaser/v2/pkg/config"
@@ -76,15 +75,8 @@ func allBuildTargets(build config.Build) (targets []target) {
 	for _, goos := range build.Goos {
 		for _, goarch := range build.Goarch {
 			//nolint:gocritic
-			if strings.HasPrefix(goarch, "amd64") {
-				for _, goamd64 := range build.Goamd64 {
-					targets = append(targets, target{
-						os:    goos,
-						arch:  goarch,
-						amd64: goamd64,
-					})
-				}
-			} else if goarch == "386" {
+			switch goarch {
+			case "386":
 				for _, go386 := range build.Go386 {
 					targets = append(targets, target{
 						os:    goos,
@@ -92,7 +84,15 @@ func allBuildTargets(build config.Build) (targets []target) {
 						go386: go386,
 					})
 				}
-			} else if strings.HasPrefix(goarch, "arm64") {
+			case "amd64":
+				for _, goamd64 := range build.Goamd64 {
+					targets = append(targets, target{
+						os:    goos,
+						arch:  goarch,
+						amd64: goamd64,
+					})
+				}
+			case "arm64":
 				for _, goarm64 := range build.Goarm64 {
 					targets = append(targets, target{
 						os:    goos,
@@ -100,7 +100,7 @@ func allBuildTargets(build config.Build) (targets []target) {
 						arm64: goarm64,
 					})
 				}
-			} else if strings.HasPrefix(goarch, "arm") {
+			case "arm":
 				for _, goarm := range build.Goarm {
 					targets = append(targets, target{
 						os:   goos,
@@ -108,7 +108,7 @@ func allBuildTargets(build config.Build) (targets []target) {
 						arm:  goarm,
 					})
 				}
-			} else if strings.HasPrefix(goarch, "mips") {
+			case "mips", "mipsle", "mips64", "mips64le":
 				for _, gomips := range build.Gomips {
 					targets = append(targets, target{
 						os:   goos,
@@ -116,7 +116,7 @@ func allBuildTargets(build config.Build) (targets []target) {
 						mips: gomips,
 					})
 				}
-			} else if strings.HasPrefix(goarch, "ppc64") {
+			case "ppc64":
 				for _, goppc64 := range build.Goppc64 {
 					targets = append(targets, target{
 						os:    goos,
@@ -124,7 +124,7 @@ func allBuildTargets(build config.Build) (targets []target) {
 						ppc64: goppc64,
 					})
 				}
-			} else if strings.HasPrefix(goarch, "riscv64") {
+			case "riscv64":
 				for _, goriscv64 := range build.Goriscv64 {
 					targets = append(targets, target{
 						os:      goos,
@@ -132,7 +132,7 @@ func allBuildTargets(build config.Build) (targets []target) {
 						riscv64: goriscv64,
 					})
 				}
-			} else {
+			default:
 				targets = append(targets, target{
 					os:   goos,
 					arch: goarch,
