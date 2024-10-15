@@ -397,7 +397,7 @@ func TestRunPipe(t *testing.T) {
 	for _, pkg := range packages {
 		format := pkg.Format()
 		require.NotEmpty(t, format)
-		require.Equal(t, pkg.Format(), artifact.ExtraOr(*pkg, artifact.ExtraExt, ""))
+		require.Equal(t, "."+pkg.Format(), artifact.ExtraOr(*pkg, artifact.ExtraExt, ""))
 		arch := pkg.Goarch
 		if pkg.Goarm != "" {
 			arch += "v" + pkg.Goarm

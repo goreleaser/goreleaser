@@ -531,7 +531,7 @@ func create(ctx *context.Context, fpm config.NFPM, format string, artifacts []*a
 		Extra: map[string]interface{}{
 			artifact.ExtraID:     fpm.ID,
 			artifact.ExtraFormat: format,
-			artifact.ExtraExt:    format,
+			artifact.ExtraExt:    "." + format,
 			extraFiles:           contents,
 		},
 	})

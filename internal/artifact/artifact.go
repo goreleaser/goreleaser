@@ -152,7 +152,7 @@ func (t Type) String() string {
 const (
 	ExtraID         = "ID"
 	ExtraBinary     = "Binary"
-	ExtraExt        = "Ext"
+	ExtraExt        = "Ext" // should always have the preceding '.'
 	ExtraFormat     = "Format"
 	ExtraWrappedIn  = "WrappedIn"
 	ExtraBinaries   = "Binaries"
@@ -512,11 +512,15 @@ func ByIDs(ids ...string) Filter {
 }
 
 // ByExt filter artifact by their 'Ext' extra field.
+//
+// The comp is done ignoring the preceding '.', so `ByExt("deb")` and
+// `ByExt(".deb")` have the same result.
 func ByExt(exts ...string) Filter {
 	filters := make([]Filter, 0, len(exts))
 	for _, ext := range exts {
 		filters = append(filters, func(a *Artifact) bool {
-			return ExtraOr(*a, ExtraExt, "") == ext
+			actual := ExtraOr(*a, ExtraExt, "")
+			return strings.TrimPrefix(actual, ".") == strings.TrimPrefix(ext, ".")
 		})
 	}
 	return Or(filters...)

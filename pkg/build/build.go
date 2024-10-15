@@ -30,7 +30,7 @@ func For(name string) Builder {
 type Options struct {
 	Name      string
 	Path      string
-	Ext       string
+	Ext       string // with the leading `.`.
 	Target    string
 	Goos      string
 	Goarch    string
