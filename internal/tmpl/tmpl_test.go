@@ -471,3 +471,20 @@ func TestWithBuildOptions(t *testing.T) {
 	require.NoError(t, err)
 	require.Equal(t, "name_./path_.ext_target_os_arch_amd64_arm_mips", out)
 }
+
+func TestReuseTpl(t *testing.T) {
+	tp := New(testctx.New()).WithExtraFields(Fields{
+		"foo": "bar",
+	})
+	s1, err := tp.Apply("{{.foo}}")
+	require.NoError(t, err)
+	require.Equal(t, "bar", s1)
+
+	s2, err := tp.WithExtraFields(Fields{"foo": "not-bar"}).Apply("{{.foo}}")
+	require.NoError(t, err)
+	require.Equal(t, "not-bar", s2)
+
+	s3, err := tp.Apply("{{.foo}}")
+	require.NoError(t, err)
+	require.Equal(t, "bar", s3)
+}
