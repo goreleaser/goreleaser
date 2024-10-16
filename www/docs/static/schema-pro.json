@@ -173,6 +173,40 @@
 				"additionalProperties": false,
 				"type": "object"
 			},
+			"AppBundle": {
+				"properties": {
+					"id": {
+						"type": "string"
+					},
+					"name": {
+						"type": "string"
+					},
+					"ids": {
+						"items": {
+							"type": "string"
+						},
+						"type": "array"
+					},
+					"if": {
+						"type": "string"
+					},
+					"mod_timestamp": {
+						"type": "string"
+					},
+					"icon": {
+						"type": "string"
+					},
+					"bundle": {
+						"type": "string"
+					}
+				},
+				"additionalProperties": false,
+				"type": "object",
+				"required": [
+					"icon",
+					"bundle"
+				]
+			},
 			"Archive": {
 				"properties": {
 					"id": {
@@ -1021,6 +1055,13 @@
 					},
 					"if": {
 						"type": "string"
+					},
+					"use": {
+						"type": "string",
+						"enum": [
+							"enum=binary",
+							"appbundle"
+						]
 					}
 				},
 				"additionalProperties": false,
@@ -2983,6 +3024,12 @@
 					"msi": {
 						"items": {
 							"$ref": "#/$defs/MSI"
+						},
+						"type": "array"
+					},
+					"app_bundles": {
+						"items": {
+							"$ref": "#/$defs/AppBundle"
 						},
 						"type": "array"
 					},
