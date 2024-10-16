@@ -74,7 +74,6 @@ func List(build config.Build) ([]string, error) {
 func allBuildTargets(build config.Build) (targets []target) {
 	for _, goos := range build.Goos {
 		for _, goarch := range build.Goarch {
-			//nolint:gocritic
 			switch goarch {
 			case "386":
 				for _, go386 := range build.Go386 {
