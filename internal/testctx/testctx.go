@@ -68,10 +68,10 @@ func WithCurrentTag(tag string) Opt {
 	}
 }
 
-func WithCommit(commig string) Opt {
+func WithCommit(commit string) Opt {
 	return func(ctx *context.Context) {
-		ctx.Git.Commit = commig
-		ctx.Git.FullCommit = commig
+		ctx.Git.Commit = commit
+		ctx.Git.FullCommit = commit
 	}
 }
 
