@@ -2,12 +2,12 @@ package skips
 
 import (
 	"fmt"
+	"maps"
+	"slices"
 	"sort"
 	"strings"
 
 	"github.com/goreleaser/goreleaser/v2/pkg/context"
-	"golang.org/x/exp/maps"
-	"golang.org/x/exp/slices"
 )
 
 type Key string
@@ -36,8 +36,7 @@ const (
 )
 
 func String(ctx *context.Context) string {
-	keys := maps.Keys(ctx.Skips)
-	sort.Strings(keys)
+	keys := slices.Sorted(maps.Keys(ctx.Skips))
 	str := strings.Join(keys, ", ")
 	if idx := strings.LastIndex(str, ","); idx > -1 {
 		str = str[:idx] + " and" + str[idx+1:]
