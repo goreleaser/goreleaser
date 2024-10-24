@@ -5,9 +5,11 @@ import (
 	"bytes"
 	"errors"
 	"fmt"
+	"maps"
 	"os"
 	"path"
 	"path/filepath"
+	"slices"
 	"sort"
 	"strings"
 	"text/template"
@@ -377,19 +379,10 @@ func installs(ctx *context.Context, cfg config.Homebrew, art *artifact.Artifact)
 		}
 	}
 
-	result := keys(installMap)
-	sort.Strings(result)
+	result := slices.Sorted(maps.Keys(installMap))
 	log.WithField("install", result).Info("guessing install")
 
 	return append(result, split(extraInstall)...), nil
-}
-
-func keys(m map[string]bool) []string {
-	keys := make([]string, 0, len(m))
-	for k := range m {
-		keys = append(keys, k)
-	}
-	return keys
 }
 
 func dataFor(ctx *context.Context, cfg config.Homebrew, cl client.ReleaseURLTemplater, artifacts []*artifact.Artifact) (templateData, error) {

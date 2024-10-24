@@ -5,6 +5,7 @@ import (
 	"go/ast"
 	"go/parser"
 	"go/token"
+	"maps"
 	"os"
 	"os/exec"
 	"path/filepath"
@@ -102,7 +103,7 @@ func (*Builder) WithDefaults(build config.Build) (config.Build, error) {
 			}
 			targets[fixTarget(target)] = true
 		}
-		build.Targets = keys(targets)
+		build.Targets = slices.Collect(maps.Keys(targets))
 	}
 	return build, nil
 }
@@ -161,14 +162,6 @@ func warnIfTargetsAndOtherOptionTogether(build config.Build) bool {
 		res = true
 	}
 	return res
-}
-
-func keys(m map[string]bool) []string {
-	result := make([]string, 0, len(m))
-	for k := range m {
-		result = append(result, k)
-	}
-	return result
 }
 
 const (

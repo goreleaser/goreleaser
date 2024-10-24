@@ -5,12 +5,12 @@ import (
 	"bytes"
 	"errors"
 	"fmt"
+	"maps"
 	"os"
 	"os/exec"
 	"path"
 	"path/filepath"
 	"slices"
-	"sort"
 	"strings"
 	"text/template"
 
@@ -23,7 +23,6 @@ import (
 	"github.com/goreleaser/goreleaser/v2/internal/tmpl"
 	"github.com/goreleaser/goreleaser/v2/pkg/config"
 	"github.com/goreleaser/goreleaser/v2/pkg/context"
-	"golang.org/x/exp/maps"
 )
 
 const nixConfigExtra = "NixConfig"
@@ -313,11 +312,10 @@ func preparePkg(
 		}
 	}
 
-	if roots := slices.Compact(maps.Values(data.SourceRoots)); len(roots) == 1 {
+	if roots := slices.Compact(slices.Collect(maps.Values(data.SourceRoots))); len(roots) == 1 {
 		data.SourceRoot = roots[0]
 	}
-	data.Platforms = keys(platforms)
-	sort.Strings(data.Platforms)
+	data.Platforms = slices.Sorted(maps.Keys(platforms))
 
 	return doBuildPkg(ctx, data)
 }
@@ -337,14 +335,6 @@ var goosToPlatform = map[string]string{
 	"linux386":    "i686-linux",
 	"darwinamd64": "x86_64-darwin",
 	"darwinarm64": "aarch64-darwin",
-}
-
-func keys(m map[string]bool) []string {
-	keys := make([]string, 0, len(m))
-	for k := range m {
-		keys = append(keys, k)
-	}
-	return keys
 }
 
 func doPublish(ctx *context.Context, prefetcher shaPrefetcher, cl client.Client, pkg *artifact.Artifact) error {
