@@ -58,6 +58,10 @@ func TestWithArtifact(t *testing.T) {
 		"6":                                   "{{.Arm}}",
 		"softfloat":                           "{{.Mips}}",
 		"v3":                                  "{{.Amd64}}",
+		"sse2":                                "{{.I386}}",
+		"power8":                              "{{.Ppc64}}",
+		"rva22u64":                            "{{.Riscv64}}",
+		"v8.0":                                "{{.Arm64}}",
 		"1.2.3":                               "{{.Version}}",
 		"v1.2.3":                              "{{.Tag}}",
 		"1-2-3":                               "{{.Major}}-{{.Minor}}-{{.Patch}}",
@@ -110,13 +114,17 @@ func TestWithArtifact(t *testing.T) {
 			t.Parallel()
 			result, err := New(ctx).WithArtifact(
 				&artifact.Artifact{
-					Name:    "not-this-binary",
-					Path:    "/tmp/foo.exe",
-					Goarch:  "amd64",
-					Goos:    "linux",
-					Goarm:   "6",
-					Gomips:  "softfloat",
-					Goamd64: "v3",
+					Name:      "not-this-binary",
+					Path:      "/tmp/foo.exe",
+					Goarch:    "amd64",
+					Goos:      "linux",
+					Goarm:     "6",
+					Gomips:    "softfloat",
+					Goamd64:   "v3",
+					Goarm64:   "v8.0",
+					Go386:     "sse2",
+					Goppc64:   "power8",
+					Goriscv64: "rva22u64",
 					Extra: map[string]interface{}{
 						artifact.ExtraBinary: "binary",
 						artifact.ExtraExt:    ".exe",
@@ -462,4 +470,21 @@ func TestWithBuildOptions(t *testing.T) {
 	}).Apply("{{.Name}}_{{.Path}}_{{.Ext}}_{{.Target}}_{{.Os}}_{{.Arch}}_{{.Amd64}}_{{.Arm}}_{{.Mips}}")
 	require.NoError(t, err)
 	require.Equal(t, "name_./path_.ext_target_os_arch_amd64_arm_mips", out)
+}
+
+func TestReuseTpl(t *testing.T) {
+	tp := New(testctx.New()).WithExtraFields(Fields{
+		"foo": "bar",
+	})
+	s1, err := tp.Apply("{{.foo}}")
+	require.NoError(t, err)
+	require.Equal(t, "bar", s1)
+
+	s2, err := tp.WithExtraFields(Fields{"foo": "not-bar"}).Apply("{{.foo}}")
+	require.NoError(t, err)
+	require.Equal(t, "not-bar", s2)
+
+	s3, err := tp.Apply("{{.foo}}")
+	require.NoError(t, err)
+	require.Equal(t, "bar", s3)
 }

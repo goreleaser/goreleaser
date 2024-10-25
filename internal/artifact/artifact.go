@@ -152,7 +152,7 @@ func (t Type) String() string {
 const (
 	ExtraID         = "ID"
 	ExtraBinary     = "Binary"
-	ExtraExt        = "Ext"
+	ExtraExt        = "Ext" // should always have the preceding '.'
 	ExtraFormat     = "Format"
 	ExtraWrappedIn  = "WrappedIn"
 	ExtraBinaries   = "Binaries"
@@ -181,16 +181,20 @@ func (e Extras) MarshalJSON() ([]byte, error) {
 
 // Artifact represents an artifact and its relevant info.
 type Artifact struct {
-	Name    string `json:"name,omitempty"`
-	Path    string `json:"path,omitempty"`
-	Goos    string `json:"goos,omitempty"`
-	Goarch  string `json:"goarch,omitempty"`
-	Goarm   string `json:"goarm,omitempty"`
-	Gomips  string `json:"gomips,omitempty"`
-	Goamd64 string `json:"goamd64,omitempty"`
-	Type    Type   `json:"internal_type,omitempty"`
-	TypeS   string `json:"type,omitempty"`
-	Extra   Extras `json:"extra,omitempty"`
+	Name      string `json:"name,omitempty"`
+	Path      string `json:"path,omitempty"`
+	Goos      string `json:"goos,omitempty"`
+	Goarch    string `json:"goarch,omitempty"`
+	Goamd64   string `json:"goamd64,omitempty"`
+	Go386     string `json:"go386,omitempty"`
+	Goarm     string `json:"goarm,omitempty"`
+	Goarm64   string `json:"goarm64,omitempty"`
+	Gomips    string `json:"gomips,omitempty"`
+	Goppc64   string `json:"goppc64,omitempty"`
+	Goriscv64 string `json:"goriscv64,omitempty"`
+	Type      Type   `json:"internal_type,omitempty"`
+	TypeS     string `json:"type,omitempty"`
+	Extra     Extras `json:"extra,omitempty"`
 }
 
 func (a Artifact) String() string {
@@ -508,11 +512,15 @@ func ByIDs(ids ...string) Filter {
 }
 
 // ByExt filter artifact by their 'Ext' extra field.
+//
+// The comp is done ignoring the preceding '.', so `ByExt("deb")` and
+// `ByExt(".deb")` have the same result.
 func ByExt(exts ...string) Filter {
 	filters := make([]Filter, 0, len(exts))
 	for _, ext := range exts {
 		filters = append(filters, func(a *Artifact) bool {
-			return ExtraOr(*a, ExtraExt, "") == ext
+			actual := ExtraOr(*a, ExtraExt, "")
+			return strings.TrimPrefix(actual, ".") == strings.TrimPrefix(ext, ".")
 		})
 	}
 	return Or(filters...)

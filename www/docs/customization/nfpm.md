@@ -33,6 +33,14 @@ nfpms:
       - foo
       - bar
 
+    # Allows to further filter the artifacts.
+    #
+    # Artifacts that do not match this expression will be ignored.
+    #
+    # Since: v2.4 (pro).
+    # Templates: allowed.
+    if: '{{ eq .Os "linux" }}'
+
     # Your app's vendor.
     vendor: Drum Roll Inc.
 

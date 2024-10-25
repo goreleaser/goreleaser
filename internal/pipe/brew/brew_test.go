@@ -30,6 +30,10 @@ func TestNameWithDash(t *testing.T) {
 	require.Equal(t, "SomeBinary", formulaNameFor("some-binary"))
 }
 
+func TestNameNumberThenWord(t *testing.T) {
+	require.Equal(t, "Baton1password", formulaNameFor("baton-1password"))
+}
+
 func TestNameWithUnderline(t *testing.T) {
 	require.Equal(t, "SomeBinary", formulaNameFor("some_binary"))
 }

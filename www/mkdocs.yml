@@ -119,6 +119,7 @@ nav:
           - customization/archive.md
           - customization/source.md
           - Linux Packages: customization/nfpm.md
+          - customization/app_bundles.md
           - customization/dmg.md
           - customization/msi.md
           - customization/checksum.md

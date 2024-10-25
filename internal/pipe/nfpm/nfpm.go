@@ -180,8 +180,8 @@ var termuxArchReplacer = strings.NewReplacer(
 
 func create(ctx *context.Context, fpm config.NFPM, format string, artifacts []*artifact.Artifact) error {
 	// TODO: improve mips handling on nfpm
-	infoArch := artifacts[0].Goarch + artifacts[0].Goarm + artifacts[0].Gomips // key used for the ConventionalFileName et al
-	arch := infoArch + artifacts[0].Goamd64                                    // unique arch key
+	infoArch := artifacts[0].Goarch + artifacts[0].Go386 + artifacts[0].Goarm + artifacts[0].Goarm64 + artifacts[0].Gomips + artifacts[0].Goppc64 + artifacts[0].Goriscv64 // key used for the ConventionalFileName et al
+	arch := infoArch + artifacts[0].Goamd64                                                                                                                                // unique arch key
 	infoPlatform := artifacts[0].Goos
 	if infoPlatform == "ios" {
 		if format == "deb" {
@@ -531,7 +531,7 @@ func create(ctx *context.Context, fpm config.NFPM, format string, artifacts []*a
 		Extra: map[string]interface{}{
 			artifact.ExtraID:     fpm.ID,
 			artifact.ExtraFormat: format,
-			artifact.ExtraExt:    format,
+			artifact.ExtraExt:    "." + format,
 			extraFiles:           contents,
 		},
 	})

@@ -239,21 +239,21 @@ func TestUpload(t *testing.T) {
 		ext string
 		typ artifact.Type
 	}{
-		{"---", artifact.DockerImage},
-		{"deb", artifact.LinuxPackage},
-		{"bin", artifact.Binary},
-		{"tar", artifact.UploadableArchive},
-		{"tar.gz", artifact.UploadableSourceArchive},
-		{"ubi", artifact.UploadableBinary},
-		{"sum", artifact.Checksum},
-		{"meta", artifact.Metadata},
-		{"sig", artifact.Signature},
-		{"pem", artifact.Certificate},
+		{"", artifact.DockerImage},
+		{".deb", artifact.LinuxPackage},
+		{".bin", artifact.Binary},
+		{".tar", artifact.UploadableArchive},
+		{".tar.gz", artifact.UploadableSourceArchive},
+		{".ubi", artifact.UploadableBinary},
+		{".sum", artifact.Checksum},
+		{".meta", artifact.Metadata},
+		{".sig", artifact.Signature},
+		{".pem", artifact.Certificate},
 	} {
-		file := filepath.Join(folder, "a."+a.ext)
+		file := filepath.Join(folder, "a"+a.ext)
 		require.NoError(t, os.WriteFile(file, []byte("lorem ipsum"), 0o644))
 		ctx.Artifacts.Add(&artifact.Artifact{
-			Name:   "a." + a.ext,
+			Name:   "a" + a.ext,
 			Goos:   "linux",
 			Goarch: "amd64",
 			Path:   file,

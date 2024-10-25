@@ -4,6 +4,7 @@ package tmpl
 import (
 	"bytes"
 	"fmt"
+	"maps"
 	"path/filepath"
 	"regexp"
 	"strings"
@@ -66,10 +67,14 @@ const (
 
 	// artifact-only keys.
 	osKey        = "Os"
-	amd64        = "Amd64"
 	arch         = "Arch"
+	amd64        = "Amd64"
+	go386        = "I386"
 	arm          = "Arm"
+	arm64        = "Arm64"
 	mips         = "Mips"
+	ppc64        = "Ppc64"
+	riscv64      = "Riscv64"
 	binary       = "Binary"
 	artifactName = "ArtifactName"
 	artifactExt  = "ArtifactExt"
@@ -137,6 +142,16 @@ func New(ctx *context.Context) *Template {
 	}
 }
 
+// WithExtraFields allows to add new more custom fields to the template.
+// It will override fields with the same name.
+func (t *Template) WithExtraFields(f Fields) *Template {
+	tt := t.copying()
+	for k, v := range f {
+		tt.fields[k] = v
+	}
+	return tt
+}
+
 // WithEnvS overrides template's env field with the given KEY=VALUE list of
 // environment variables.
 func (t *Template) WithEnvS(envs []string) *Template {
@@ -153,31 +168,28 @@ func (t *Template) WithEnvS(envs []string) *Template {
 
 // WithEnv overrides template's env field with the given environment map.
 func (t *Template) WithEnv(e map[string]string) *Template {
-	t.fields[env] = context.Env(e)
-	return t
-}
-
-// WithExtraFields allows to add new more custom fields to the template.
-// It will override fields with the same name.
-func (t *Template) WithExtraFields(f Fields) *Template {
-	for k, v := range f {
-		t.fields[k] = v
-	}
-	return t
+	return t.WithExtraFields(Fields{
+		env: context.Env(e),
+	})
 }
 
 // WithArtifact populates Fields from the artifact.
 func (t *Template) WithArtifact(a *artifact.Artifact) *Template {
-	t.fields[osKey] = a.Goos
-	t.fields[arch] = a.Goarch
-	t.fields[arm] = a.Goarm
-	t.fields[mips] = a.Gomips
-	t.fields[amd64] = a.Goamd64
-	t.fields[binary] = artifact.ExtraOr(*a, binary, t.fields[projectName].(string))
-	t.fields[artifactName] = a.Name
-	t.fields[artifactExt] = artifact.ExtraOr(*a, artifact.ExtraExt, "")
-	t.fields[artifactPath] = a.Path
-	return t
+	return t.WithExtraFields(Fields{
+		osKey:        a.Goos,
+		arch:         a.Goarch,
+		amd64:        a.Goamd64,
+		go386:        a.Go386,
+		arm:          a.Goarm,
+		arm64:        a.Goarm64,
+		mips:         a.Gomips,
+		ppc64:        a.Goppc64,
+		riscv64:      a.Goriscv64,
+		binary:       artifact.ExtraOr(*a, binary, t.fields[projectName].(string)),
+		artifactName: a.Name,
+		artifactExt:  artifact.ExtraOr(*a, artifact.ExtraExt, ""),
+		artifactPath: a.Path,
+	})
 }
 
 func (t *Template) WithBuildOptions(opts build.Options) *Template {
@@ -186,15 +198,19 @@ func (t *Template) WithBuildOptions(opts build.Options) *Template {
 
 func buildOptsToFields(opts build.Options) Fields {
 	return Fields{
-		target: opts.Target,
-		ext:    opts.Ext,
-		name:   opts.Name,
-		path:   opts.Path,
-		osKey:  opts.Goos,
-		arch:   opts.Goarch,
-		arm:    opts.Goarm,
-		amd64:  opts.Goamd64,
-		mips:   opts.Gomips,
+		target:  opts.Target,
+		ext:     opts.Ext,
+		name:    opts.Name,
+		path:    opts.Path,
+		osKey:   opts.Goos,
+		arch:    opts.Goarch,
+		amd64:   opts.Goamd64,
+		go386:   opts.Go386,
+		arm:     opts.Goarm,
+		arm64:   opts.Goarm64,
+		mips:    opts.Gomips,
+		ppc64:   opts.Goppc64,
+		riscv64: opts.Goriscv64,
 	}
 }
 
@@ -270,6 +286,14 @@ func (t *Template) envOrDefault(name, value string) string {
 		return value
 	}
 	return s
+}
+
+func (t *Template) copying() *Template {
+	tpl := &Template{
+		fields: Fields{},
+	}
+	maps.Copy(tpl.fields, t.fields)
+	return tpl
 }
 
 type ExpectedSingleEnvErr struct{}

@@ -227,9 +227,13 @@ func create(ctx *context.Context, arch config.Archive, binaries []*artifact.Arti
 	if len(binaries) > 0 {
 		art.Goos = binaries[0].Goos
 		art.Goarch = binaries[0].Goarch
-		art.Goarm = binaries[0].Goarm
-		art.Gomips = binaries[0].Gomips
 		art.Goamd64 = binaries[0].Goamd64
+		art.Go386 = binaries[0].Go386
+		art.Goarm = binaries[0].Goarm
+		art.Goarm64 = binaries[0].Goarm64
+		art.Gomips = binaries[0].Gomips
+		art.Goppc64 = binaries[0].Goppc64
+		art.Goriscv64 = binaries[0].Goriscv64
 		art.Extra[artifact.ExtraReplaces] = binaries[0].Extra[artifact.ExtraReplaces]
 	}
 
@@ -259,14 +263,18 @@ func skip(ctx *context.Context, archive config.Archive, binaries []*artifact.Art
 			WithField("name", finalName).
 			Info("skip archiving")
 		ctx.Artifacts.Add(&artifact.Artifact{
-			Type:    artifact.UploadableBinary,
-			Name:    finalName,
-			Path:    binary.Path,
-			Goos:    binary.Goos,
-			Goarch:  binary.Goarch,
-			Goarm:   binary.Goarm,
-			Gomips:  binary.Gomips,
-			Goamd64: binary.Goamd64,
+			Type:      artifact.UploadableBinary,
+			Name:      finalName,
+			Path:      binary.Path,
+			Goos:      binary.Goos,
+			Goarch:    binary.Goarch,
+			Goamd64:   binary.Goamd64,
+			Go386:     binary.Go386,
+			Goarm:     binary.Goarm,
+			Goarm64:   binary.Goarm64,
+			Gomips:    binary.Gomips,
+			Goppc64:   binary.Goppc64,
+			Goriscv64: binary.Goriscv64,
 			Extra: map[string]interface{}{
 				artifact.ExtraID:       archive.ID,
 				artifact.ExtraFormat:   archive.Format,

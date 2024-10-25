@@ -172,27 +172,30 @@ func buildOptionsForTarget(ctx *context.Context, build config.Build, target stri
 	goos := parts[0]
 	goarch := parts[1]
 
-	var gomips string
-	var goarm string
-	var goamd64 string
-	if strings.HasPrefix(goarch, "arm") && len(parts) > 2 {
-		goarm = parts[2]
-	}
-	if strings.HasPrefix(goarch, "mips") && len(parts) > 2 {
-		gomips = parts[2]
-	}
-	if strings.HasPrefix(goarch, "amd64") && len(parts) > 2 {
-		goamd64 = parts[2]
+	buildOpts := builders.Options{
+		Target: target,
+		Ext:    ext,
+		Goos:   goos,
+		Goarch: goarch,
 	}
 
-	buildOpts := builders.Options{
-		Target:  target,
-		Ext:     ext,
-		Goos:    goos,
-		Goarch:  goarch,
-		Goarm:   goarm,
-		Gomips:  gomips,
-		Goamd64: goamd64,
+	if len(parts) > 2 {
+		//nolint:gocritic
+		if strings.HasPrefix(goarch, "amd64") {
+			buildOpts.Goamd64 = parts[2]
+		} else if goarch == "386" {
+			buildOpts.Go386 = parts[2]
+		} else if strings.HasPrefix(goarch, "arm64") {
+			buildOpts.Goarm64 = parts[2]
+		} else if strings.HasPrefix(goarch, "arm") {
+			buildOpts.Goarm = parts[2]
+		} else if strings.HasPrefix(goarch, "mips") {
+			buildOpts.Gomips = parts[2]
+		} else if strings.HasPrefix(goarch, "ppc64") {
+			buildOpts.Goppc64 = parts[2]
+		} else if goarch == "riscv64" {
+			buildOpts.Goriscv64 = parts[2]
+		}
 	}
 
 	bin, err := tmpl.New(ctx).WithBuildOptions(buildOpts).Apply(build.Binary)

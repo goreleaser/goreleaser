@@ -1,12 +1,13 @@
 package skips_test
 
 import (
+	"maps"
+	"slices"
 	"testing"
 
 	"github.com/goreleaser/goreleaser/v2/internal/skips"
 	"github.com/goreleaser/goreleaser/v2/internal/testctx"
 	"github.com/stretchr/testify/require"
-	"golang.org/x/exp/maps"
 )
 
 func TestString(t *testing.T) {
@@ -36,5 +37,5 @@ func TestAny(t *testing.T) {
 func TestSet(t *testing.T) {
 	ctx := testctx.New()
 	skips.Set(ctx, skips.Publish, skips.Announce)
-	require.ElementsMatch(t, []string{"publish", "announce"}, maps.Keys(ctx.Skips))
+	require.ElementsMatch(t, []string{"publish", "announce"}, slices.Collect(maps.Keys(ctx.Skips)))
 }

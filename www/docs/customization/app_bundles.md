@@ -1,14 +1,15 @@
-# DMG
+# App Bundles
 
 <!-- md:pro -->
+<!-- md:version v2.4 -->
 
-GoReleaser can create DMG images for macOS using `mkisofs` or `hdiutil`.
+GoReleaser can create macOS App Bundles (a.k.a. `.app` files).
 
-The `dmg` section specifies how the images should be created:
+The `app_bundles` section specifies how the images should be created:
 
 ```yaml
 # .goreleaser.yaml
-dmg:
+app_bundles:
   - # ID of the resulting image.
     #
     # Default: the project name.
@@ -16,9 +17,9 @@ dmg:
 
     # Filename of the image (without the extension).
     #
-    # Default: '{{.ProjectName}}_{{.Arch}}'.
+    # Default: '{{.ProjectName}}'.
     # Templates: allowed.
-    name: "myproject-{{.Arch}}"
+    name: "myproject"
 
     # IDs of the archives to use.
     # Empty means all IDs.
@@ -30,25 +31,24 @@ dmg:
     #
     # Artifacts that do not match this expression will be ignored.
     #
-    # Since: v2.4 (pro).
     # Templates: allowed.
     if: '{{ eq .Os "linux" }}'
-
-    # GOAMD64 to specify which amd64 version to use if there are multiple
-    # versions from the build section.
-    #
-    # Default: v1.
-    goamd64: v1
 
     # More files that will be available in the context in which the image
     # will be built.
     extra_files:
-      - logo.ico
+      - README.md
 
-    # Whether to remove the archives from the artifact list.
-    # If left as false, your end release will have both the archives and the
-    # dmg files.
-    replace: true
+    # Icon file to use in the app.
+    # Must be a `icns` file.
+    #
+    # Templates: allowed.
+    icon: ./static/myapp.icns
+
+    # App bundle name.
+    #
+    # Templates: allowed.
+    bundle: com.example.myapp
 
     # Set the modified timestamp on the output image, typically
     # you would do this to ensure a build was reproducible. Pass an
@@ -60,8 +60,7 @@ dmg:
 
 ## Limitations
 
-1. Due to the way symbolic links are handled on Windows, the `/Applications`
-   link inside the image might not work if the image was built on Windows.
-1. If running outside macOS, make sure to have `mkisofs` installed.
+1. As of v2.4, App Bundles can only be used together with [DMGs](dmg.md). This
+   might change in the future.
 
 <!-- md:templates -->

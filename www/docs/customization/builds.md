@@ -123,6 +123,13 @@ builds:
       - v2
       - v3
 
+    # GOARM64 to build when GOARCH is arm64.
+    # For more info refer to: https://go.dev/doc/install/source#environment
+    #
+    # Default: [ 'v8.0' ].
+    goarm64:
+      - v9.0
+
     # GOMIPS and GOMIPS64 to build when GOARCH is mips, mips64, mipsle or mips64le.
     # For more info refer to: https://go.dev/doc/install/source#environment
     #
@@ -130,6 +137,29 @@ builds:
     gomips:
       - hardfloat
       - softfloat
+
+    # GO386 to build when GOARCH is 386.
+    # For more info refer to: https://go.dev/doc/install/source#environment
+    #
+    # Default: [ 'sse2' ].
+    go386:
+      - sse2
+      - softfloat
+
+    # GOPPC64 to build when GOARCH is PPC64.
+    # For more info refer to: https://go.dev/doc/install/source#environment
+    #
+    # Default: [ 'power8' ].
+    goppc64:
+      - power8
+      - power9
+
+    # GORISCV64 to build when GOARCH is RISCV64.
+    # For more info refer to: https://go.dev/doc/install/source#environment
+    #
+    # Default: [ 'rva20u64' ].
+    goriscv64:
+      - rva22u64
 
     # List of combinations of GOOS + GOARCH + GOARM to ignore.
     ignore:

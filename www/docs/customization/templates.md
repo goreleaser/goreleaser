@@ -87,6 +87,11 @@ You should be able to use all its fields on each item:
 - `.Goarm`
 - `.Gomips`
 - `.Goamd64`
+- `.Goarm64` (since v2.4)
+- `.Gomips64` (since v2.4)
+- `.Goppc64` (since v2.4)
+- `.Goriscv64` (since v2.4)
+- `.Go386` (since v2.4)
 - `.Type`
 - `.Extra`
 
@@ -97,18 +102,23 @@ You should be able to use all its fields on each item:
 On fields that are related to a single artifact (e.g., the binary name), you
 may have some extra fields:
 
-| Key             | Description                    |
-| --------------- | ------------------------------ |
-| `.Os`           | `GOOS`                         |
-| `.Arch`         | `GOARCH`                       |
-| `.Arm`          | `GOARM`                        |
-| `.Mips`         | `GOMIPS`                       |
-| `.Amd64`        | `GOAMD64`                      |
-| `.Binary`       | binary name                    |
-| `.ArtifactID`   | archive id (since v2.3[^pro])  |
-| `.ArtifactName` | archive name                   |
-| `.ArtifactPath` | absolute path to artifact      |
-| `.ArtifactExt`  | binary extension (e.g. `.exe`) |
+| Key             | Description                                   |
+| --------------- | --------------------------------------------- |
+| `.Os`           | `GOOS`                                        |
+| `.Arch`         | `GOARCH`                                      |
+| `.Arm`          | `GOARM`                                       |
+| `.Mips`         | `GOMIPS`                                      |
+| `.Amd64`        | `GOAMD64`                                     |
+| `.Arm64`        | `GOARM64` (since v2.4)                        |
+| `.Mips64`       | `GOMIPS64` (since v2.4)                       |
+| `.Ppc64`        | `GOPPC64` (since v2.4)                        |
+| `.Riscv64`      | `GORISCV64` (since v2.4)                      |
+| `.I386`         | `GO386` (since v2.4)                          |
+| `.Binary`       | artifact name                                 |
+| `.ArtifactID`   | artifact id (since v2.3[^pro])                |
+| `.ArtifactName` | artifact name                                 |
+| `.ArtifactPath` | absolute path to artifact                     |
+| `.ArtifactExt`  | artifact extension (e.g. `.exe`, `.dmg`, etc) |
 
 ## nFPM extra fields
 
@@ -187,7 +197,7 @@ foo_template: "foo_{{ .Env.GOVERSION }}"
 And then you can run:
 
 ```sh
-GOVERSION_NR=$(go version | awk '{print $3;}') goreleaser
+GOVERSION=$(go version | awk '{print $3;}') goreleaser
 ```
 
 !!! warning

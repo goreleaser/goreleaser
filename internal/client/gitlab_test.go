@@ -2,6 +2,7 @@ package client
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io"
 	"net/http"
@@ -195,16 +196,25 @@ func TestGitLabURLsDownloadTemplate(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			first := true
 			srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-				defer fmt.Fprint(w, "{}")
-				defer w.WriteHeader(http.StatusOK)
 				defer r.Body.Close()
 
 				if !strings.Contains(r.URL.Path, "assets/links") {
 					_, _ = io.Copy(io.Discard, r.Body)
+					w.WriteHeader(http.StatusOK)
+					fmt.Fprint(w, "{}")
 					return
 				}
 
+				if first {
+					http.Error(w, `{"message":{"name":["has already been taken"]}}`, http.StatusBadRequest)
+					first = false
+					return
+				}
+
+				defer w.WriteHeader(http.StatusOK)
+				defer fmt.Fprint(w, "{}")
 				b, err := io.ReadAll(r.Body)
 				assert.NoError(t, err)
 
@@ -227,6 +237,7 @@ func TestGitLabURLsDownloadTemplate(t *testing.T) {
 						Owner: "test",
 						Name:  "test",
 					},
+					ReplaceExistingArtifacts: true,
 				},
 				GitLabURLs: config.GitLabURLs{
 					API:                srv.URL,
@@ -242,8 +253,13 @@ func TestGitLabURLsDownloadTemplate(t *testing.T) {
 			require.NoError(t, err)
 
 			err = client.Upload(ctx, "1234", &artifact.Artifact{Name: "test", Path: "some-path"}, tmpFile)
+			if errors.As(err, &RetriableError{}) {
+				err = client.Upload(ctx, "1234", &artifact.Artifact{Name: "test", Path: "some-path"}, tmpFile)
+			}
 			if tt.wantErr {
 				require.Error(t, err)
+				retriable := errors.As(err, &RetriableError{})
+				require.False(t, retriable, "should be a final error")
 				return
 			}
 			require.NoError(t, err)

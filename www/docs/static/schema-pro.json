@@ -173,6 +173,40 @@
 				"additionalProperties": false,
 				"type": "object"
 			},
+			"AppBundle": {
+				"properties": {
+					"id": {
+						"type": "string"
+					},
+					"name": {
+						"type": "string"
+					},
+					"ids": {
+						"items": {
+							"type": "string"
+						},
+						"type": "array"
+					},
+					"if": {
+						"type": "string"
+					},
+					"mod_timestamp": {
+						"type": "string"
+					},
+					"icon": {
+						"type": "string"
+					},
+					"bundle": {
+						"type": "string"
+					}
+				},
+				"additionalProperties": false,
+				"type": "object",
+				"required": [
+					"icon",
+					"bundle"
+				]
+			},
 			"Archive": {
 				"properties": {
 					"id": {
@@ -424,7 +458,25 @@
 						},
 						"type": "array"
 					},
+					"goamd64": {
+						"items": {
+							"type": "string"
+						},
+						"type": "array"
+					},
+					"go386": {
+						"items": {
+							"type": "string"
+						},
+						"type": "array"
+					},
 					"goarm": {
+						"items": {
+							"type": "string"
+						},
+						"type": "array"
+					},
+					"goarm64": {
 						"items": {
 							"type": "string"
 						},
@@ -436,7 +488,13 @@
 						},
 						"type": "array"
 					},
-					"goamd64": {
+					"goppc64": {
+						"items": {
+							"type": "string"
+						},
+						"type": "array"
+					},
+					"goriscv64": {
 						"items": {
 							"type": "string"
 						},
@@ -994,6 +1052,16 @@
 					},
 					"mod_timestamp": {
 						"type": "string"
+					},
+					"if": {
+						"type": "string"
+					},
+					"use": {
+						"type": "string",
+						"enum": [
+							"enum=binary",
+							"appbundle"
+						]
 					}
 				},
 				"additionalProperties": false,
@@ -1696,6 +1764,12 @@
 					"goarch": {
 						"type": "string"
 					},
+					"goamd64": {
+						"type": "string"
+					},
+					"go386": {
+						"type": "string"
+					},
 					"goarm": {
 						"oneOf": [
 							{
@@ -1706,10 +1780,16 @@
 							}
 						]
 					},
+					"goarm64": {
+						"type": "string"
+					},
 					"gomips": {
 						"type": "string"
 					},
-					"goamd64": {
+					"goppc64": {
+						"type": "string"
+					},
+					"goriscv64": {
 						"type": "string"
 					}
 				},
@@ -2279,6 +2359,9 @@
 							"type": "string"
 						},
 						"type": "array"
+					},
+					"if": {
+						"type": "string"
 					},
 					"formats": {
 						"items": {
@@ -2941,6 +3024,12 @@
 					"msi": {
 						"items": {
 							"$ref": "#/$defs/MSI"
+						},
+						"type": "array"
+					},
+					"app_bundles": {
+						"items": {
+							"$ref": "#/$defs/AppBundle"
 						},
 						"type": "array"
 					},
