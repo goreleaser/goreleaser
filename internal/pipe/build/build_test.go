@@ -761,3 +761,31 @@ func TestRunHookFailWithLogs(t *testing.T) {
 	require.ErrorContains(t, err, "pre hook failed")
 	require.Empty(t, ctx.Artifacts.List())
 }
+
+func TestRunHookWithIgnore(t *testing.T) {
+	folder := testlib.Mktmp(t)
+	config := config.Project{
+		Dist: folder,
+		Builds: []config.Build{
+			{
+				Builder: "fakeIgnoredFail",
+				Binary:  "testing",
+				BuildDetails: config.BuildDetails{
+					Flags: []string{"-v"},
+				},
+				Hooks: config.BuildHookConfig{
+					Pre: []config.Hook{
+						{
+							Cmd:           "sh -c 'echo foo; exit 1'",
+							IgnoreFailure: true,
+						},
+					},
+				},
+				Targets: []string{"linux_amd64"},
+			},
+		},
+	}
+	ctx := testctx.NewWithCfg(config, testctx.WithCurrentTag("2.4.5"))
+	err := Pipe{}.Run(ctx)
+	require.NoError(t, err)
+}

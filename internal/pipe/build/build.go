@@ -146,8 +146,12 @@ func runHook(ctx *context.Context, opts builders.Options, buildEnv []string, hoo
 			return err
 		}
 
-		if err := shell.Run(ctx, dir, cmd, env, hook.Output); err != nil {
-			return err
+		err = shell.Run(ctx, dir, cmd, env, hook.Output)
+		if err != nil {
+			if !hook.IgnoreFailure {
+				return err
+			}
+			log.WithError(err).Warn("ignorning hook failure")
 		}
 	}
 

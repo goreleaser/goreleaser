@@ -580,6 +580,8 @@ type Hook struct {
 	Cmd    string   `yaml:"cmd,omitempty" json:"cmd,omitempty"`
 	Env    []string `yaml:"env,omitempty" json:"env,omitempty"`
 	Output bool     `yaml:"output,omitempty" json:"output,omitempty"`
+
+	IgnoreFailure bool `yaml:"ignore_failure,omitempty" json:"ignore_failure,omitempty"`
 }
 
 // UnmarshalYAML is a custom unmarshaler that allows simplified declarations of commands as strings.
