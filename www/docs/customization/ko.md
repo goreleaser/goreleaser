@@ -46,6 +46,13 @@ kos:
     labels:
       foo: bar
 
+    # Annotations for the OCI manifest.
+    annotations:
+      foo: bar
+
+    # The default user the image should be run as.
+    user: "1234:1234"
+
     # Repository to push to.
     #
     # Default: '$KO_DOCKER_REPO'.
