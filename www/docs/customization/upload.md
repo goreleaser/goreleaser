@@ -241,11 +241,13 @@ uploads:
     # Since: v2.1.
     extra_files:
       - glob: ./path/to/file.txt
+      - glob: ./docs/*.md
       - glob: ./glob/**/to/**/file/**/*
       - glob: ./glob/foo/to/bar/file/foobar/override_from_previous
       - glob: ./single_file.txt
         # Templates: allowed.
-        name_template: file.txt # note that this only works if glob matches 1 file only
+        # Note that this only works if glob matches exactly 1 file.
+        name_template: file.txt
 
     # Additional templated extra files to uploaded.
     # Those files will have their contents pass through the template engine,

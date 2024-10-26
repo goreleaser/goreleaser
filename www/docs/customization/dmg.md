@@ -44,6 +44,23 @@ dmg:
     # will be built.
     extra_files:
       - logo.ico
+      - glob: ./docs/*.md
+      - glob: ./single_file.txt
+        # Templates: allowed.
+        # Note that this only works if glob matches exactly 1 file.
+        name_template: file.txt
+
+    # Additional templated extra files to add to the DMG.
+    # Those files will have their contents pass through the template engine,
+    # and its results will be added to the image as it would with the
+    # extra_files field above.
+    #
+    # Since: v2.4 (pro).
+    # Templates: allowed.
+    templated_extra_files:
+      - src: LICENSE.tpl
+        dst: LICENSE.txt
+        mode: 0644
 
     # Whether to remove the archives from the artifact list.
     # If left as false, your end release will have both the archives and the

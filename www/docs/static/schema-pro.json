@@ -1043,7 +1043,7 @@
 					},
 					"extra_files": {
 						"items": {
-							"type": "string"
+							"$ref": "#/$defs/ExtraFile"
 						},
 						"type": "array"
 					},
@@ -1062,6 +1062,12 @@
 							"enum=binary",
 							"appbundle"
 						]
+					},
+					"templated_extra_files": {
+						"items": {
+							"$ref": "#/$defs/TemplatedExtraFile"
+						},
+						"type": "array"
 					}
 				},
 				"additionalProperties": false,
@@ -1276,16 +1282,25 @@
 				"type": "object"
 			},
 			"ExtraFile": {
-				"properties": {
-					"glob": {
+				"oneOf": [
+					{
 						"type": "string"
 					},
-					"name_template": {
-						"type": "string"
+					{
+						"$schema": "https://json-schema.org/draft/2020-12/schema",
+						"$id": "https://github.com/goreleaser/goreleaser/v2/pkg/config/file-alias",
+						"properties": {
+							"glob": {
+								"type": "string"
+							},
+							"name_template": {
+								"type": "string"
+							}
+						},
+						"additionalProperties": false,
+						"type": "object"
 					}
-				},
-				"additionalProperties": false,
-				"type": "object"
+				]
 			},
 			"File": {
 				"oneOf": [
