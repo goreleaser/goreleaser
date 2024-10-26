@@ -4657,8 +4657,7 @@
 				"required": [
 					"publisher",
 					"repository",
-					"short_description",
-					"license"
+					"short_description"
 				]
 			},
 			"WingetDependency": {
