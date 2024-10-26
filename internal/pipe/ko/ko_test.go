@@ -163,6 +163,7 @@ func TestPublishPipeSuccess(t *testing.T) {
 		"org.opencontainers.image.source":  "https://github.com/chainguard-images/images/tree/main/images/static",
 		"org.opencontainers.image.url":     "https://images.chainguard.dev/directory/image/static/overview",
 		"org.opencontainers.image.vendor":  "Chainguard",
+		"org.opencontainers.image.created": ".*",
 	}
 
 	table := []struct {
@@ -354,7 +355,12 @@ func TestPublishPipeSuccess(t *testing.T) {
 			require.NoError(t, err)
 			require.GreaterOrEqual(t, len(configFile.History), 3)
 
-			require.Equal(t, table.ExpectedLabels, configFile.Config.Labels)
+			require.Len(t, configFile.Config.Labels, len(table.ExpectedLabels))
+			for k, v := range table.ExpectedLabels {
+				got, ok := configFile.Config.Labels[k]
+				require.True(t, ok, "missing label")
+				require.Regexp(t, v, got)
+			}
 
 			var creationTime time.Time
 			if table.CreationTime != "" {
