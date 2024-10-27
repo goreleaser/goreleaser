@@ -2,6 +2,7 @@ package ko
 
 import (
 	"fmt"
+	"maps"
 	"strconv"
 	"strings"
 	"testing"
@@ -165,55 +166,63 @@ func TestPublishPipeSuccess(t *testing.T) {
 		"org.opencontainers.image.vendor":  "Chainguard",
 		"org.opencontainers.image.created": ".*",
 	}
+	baseImageAnnotations := map[string]string{
+		"org.opencontainers.image.base.name":   ".*",
+		"org.opencontainers.image.base.digest": ".*",
+	}
 
 	table := []struct {
-		Name               string
-		SBOM               string
-		BaseImage          string
-		Labels             map[string]string
-		ExpectedLabels     map[string]string
-		Platforms          []string
-		Tags               []string
-		CreationTime       string
-		KoDataCreationTime string
+		Name                string
+		SBOM                string
+		BaseImage           string
+		Labels              map[string]string
+		ExpectedLabels      map[string]string
+		Annotations         map[string]string
+		ExpectedAnnotations map[string]string
+		User                string
+		Platforms           []string
+		Tags                []string
+		CreationTime        string
+		KoDataCreationTime  string
 	}{
 		{
 			// Must be first as others add an SBOM for the same image
-			Name:           "sbom-none",
-			SBOM:           "none",
-			ExpectedLabels: chainguardStaticLabels,
+			Name: "sbom-none",
+			SBOM: "none",
 		},
 		{
-			Name:           "sbom-spdx",
-			SBOM:           "spdx",
-			ExpectedLabels: chainguardStaticLabels,
+			Name: "sbom-spdx",
+			SBOM: "spdx",
 		},
 		{
 			Name:      "base-image-is-not-index",
 			BaseImage: "alpine:latest@sha256:c0d488a800e4127c334ad20d61d7bc21b4097540327217dfab52262adc02380c",
 		},
 		{
-			Name:           "multiple-platforms",
-			Platforms:      []string{"linux/amd64", "linux/arm64"},
-			ExpectedLabels: chainguardStaticLabels,
+			Name:      "multiple-platforms",
+			Platforms: []string{"linux/amd64", "linux/arm64"},
 		},
 		{
-			Name:   "labels",
-			Labels: map[string]string{"foo": "bar", "project": "{{.ProjectName}}"},
-			ExpectedLabels: mapsMerge(
-				map[string]string{"foo": "bar", "project": "test"},
-				chainguardStaticLabels,
-			),
+			Name:           "labels",
+			Labels:         map[string]string{"foo": "bar", "project": "{{.ProjectName}}"},
+			ExpectedLabels: map[string]string{"foo": "bar", "project": "test"},
 		},
 		{
-			Name:           "creation-time",
-			CreationTime:   "1672531200",
-			ExpectedLabels: chainguardStaticLabels,
+			Name:                "annotations",
+			Annotations:         map[string]string{"foo": "bar", "project": "{{.ProjectName}}"},
+			ExpectedAnnotations: map[string]string{"foo": "bar", "project": "test"},
+		},
+		{
+			Name: "user",
+			User: "1234:1234",
+		},
+		{
+			Name:         "creation-time",
+			CreationTime: "1672531200",
 		},
 		{
 			Name:               "kodata-creation-time",
 			KoDataCreationTime: "1672531200",
-			ExpectedLabels:     chainguardStaticLabels,
 		},
 		{
 			Name: "tag-templates",
@@ -221,7 +230,6 @@ func TestPublishPipeSuccess(t *testing.T) {
 				"{{if not .Prerelease }}{{.Version}}{{ end }}",
 				"   ", // empty
 			},
-			ExpectedLabels: chainguardStaticLabels,
 		},
 		{
 			Name: "tag-template-eval-empty",
@@ -229,7 +237,6 @@ func TestPublishPipeSuccess(t *testing.T) {
 				"{{.Version}}",
 				"{{if .Prerelease }}latest{{ end }}",
 			},
-			ExpectedLabels: chainguardStaticLabels,
 		},
 	}
 
@@ -260,6 +267,8 @@ func TestPublishPipeSuccess(t *testing.T) {
 						BaseImage:          table.BaseImage,
 						Repository:         repository,
 						Labels:             table.Labels,
+						Annotations:        table.Annotations,
+						User:               table.User,
 						Platforms:          table.Platforms,
 						Tags:               table.Tags,
 						CreationTime:       table.CreationTime,
@@ -269,6 +278,14 @@ func TestPublishPipeSuccess(t *testing.T) {
 					},
 				},
 			}, testctx.WithVersion("1.2.0"))
+
+			if table.BaseImage == "" {
+				if table.User == "" {
+					table.User = "65532"
+				}
+				table.ExpectedLabels = mergeMaps(table.ExpectedLabels, chainguardStaticLabels)
+			}
+			table.ExpectedAnnotations = mergeMaps(table.ExpectedAnnotations, baseImageAnnotations)
 
 			require.NoError(t, Pipe{}.Default(ctx))
 			require.NoError(t, Pipe{}.Publish(ctx))
@@ -304,6 +321,8 @@ func TestPublishPipeSuccess(t *testing.T) {
 				require.NoError(t, err)
 				imf, err := index.IndexManifest()
 				require.NoError(t, err)
+
+				compareMaps(t, table.ExpectedAnnotations, imf.Annotations)
 
 				platforms := make([]string, 0, len(imf.Manifests))
 				for _, mf := range imf.Manifests {
@@ -351,16 +370,24 @@ func TestPublishPipeSuccess(t *testing.T) {
 				}
 			}
 
+			mf, err := image.Manifest()
+			require.NoError(t, err)
+
+			expectedAnnotations := table.ExpectedAnnotations
+			if table.BaseImage == "" {
+				expectedAnnotations = mergeMaps(
+					expectedAnnotations,
+					chainguardStaticLabels,
+				)
+			}
+			compareMaps(t, expectedAnnotations, mf.Annotations)
+
 			configFile, err := image.ConfigFile()
 			require.NoError(t, err)
 			require.GreaterOrEqual(t, len(configFile.History), 3)
 
-			require.Len(t, configFile.Config.Labels, len(table.ExpectedLabels))
-			for k, v := range table.ExpectedLabels {
-				got, ok := configFile.Config.Labels[k]
-				require.True(t, ok, "missing label")
-				require.Regexp(t, v, got)
-			}
+			compareMaps(t, table.ExpectedLabels, configFile.Config.Labels)
+			require.Equal(t, table.User, configFile.Config.User)
 
 			var creationTime time.Time
 			if table.CreationTime != "" {
@@ -603,13 +630,22 @@ func TestApplyTemplate(t *testing.T) {
 	})
 }
 
-func mapsMerge(m1, m2 map[string]string) map[string]string {
+func mergeMaps(ms ...map[string]string) map[string]string {
 	result := map[string]string{}
-	for k, v := range m1 {
-		result[k] = v
-	}
-	for k, v := range m2 {
-		result[k] = v
+	for _, m := range ms {
+		if m != nil {
+			maps.Copy(result, m)
+		}
 	}
 	return result
+}
+
+func compareMaps(t *testing.T, expected, actual map[string]string) {
+	t.Helper()
+	require.Len(t, actual, len(expected), "expected: %v", expected)
+	for k, v := range expected {
+		got, ok := actual[k]
+		require.True(t, ok, "missing key: %s", k)
+		require.Regexp(t, v, got, "key: %s", k)
+	}
 }

@@ -1929,6 +1929,15 @@
 						},
 						"type": "object"
 					},
+					"annotations": {
+						"additionalProperties": {
+							"type": "string"
+						},
+						"type": "object"
+					},
+					"user": {
+						"type": "string"
+					},
 					"repository": {
 						"type": "string"
 					},

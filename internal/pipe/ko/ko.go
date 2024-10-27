@@ -166,6 +166,8 @@ type buildOptions struct {
 	platforms           []string
 	baseImage           string
 	labels              map[string]string
+	annotations         map[string]string
+	user                string
 	tags                []string
 	creationTime        *v1.Time
 	koDataCreationTime  *v1.Time
@@ -225,6 +227,12 @@ func (o *buildOptions) makeBuilder(ctx *context.Context) (*build.Caching, error)
 	}
 	for k, v := range o.labels {
 		buildOptions = append(buildOptions, build.WithLabel(k, v))
+	}
+	for k, v := range o.annotations {
+		buildOptions = append(buildOptions, build.WithAnnotation(k, v))
+	}
+	if o.user != "" {
+		buildOptions = append(buildOptions, build.WithUser(o.user))
 	}
 	switch o.sbom {
 	case "spdx":
@@ -356,6 +364,7 @@ func buildBuildOptions(ctx *context.Context, cfg config.Ko) (*buildOptions, erro
 		platforms:           cfg.Platforms,
 		sbom:                cfg.SBOM,
 		imageRepo:           cfg.Repository,
+		user:                cfg.User,
 	}
 
 	tags, err := applyTemplate(ctx, cfg.Tags)
@@ -381,14 +390,19 @@ func buildBuildOptions(ctx *context.Context, cfg config.Ko) (*buildOptions, erro
 	}
 
 	if len(cfg.Labels) > 0 {
-		opts.labels = make(map[string]string, len(cfg.Labels))
-		for k, v := range cfg.Labels {
-			tv, err := tmpl.New(ctx).Apply(v)
-			if err != nil {
-				return nil, err
-			}
-			opts.labels[k] = tv
+		labels, err := applyTemplateToMapValues(ctx, cfg.Labels)
+		if err != nil {
+			return nil, err
 		}
+		opts.labels = labels
+	}
+
+	if len(cfg.Annotations) > 0 {
+		annotations, err := applyTemplateToMapValues(ctx, cfg.Annotations)
+		if err != nil {
+			return nil, err
+		}
+		opts.annotations = annotations
 	}
 
 	if len(cfg.Env) > 0 {
@@ -429,13 +443,25 @@ func removeEmpty(strs []string) []string {
 }
 
 func applyTemplate(ctx *context.Context, templateable []string) ([]string, error) {
-	var templated []string
+	templated := make([]string, 0, len(templateable))
 	for _, t := range templateable {
 		tlf, err := tmpl.New(ctx).Apply(t)
 		if err != nil {
 			return nil, err
 		}
 		templated = append(templated, tlf)
+	}
+	return templated, nil
+}
+
+func applyTemplateToMapValues(ctx *context.Context, templateable map[string]string) (map[string]string, error) {
+	templated := make(map[string]string, len(templateable))
+	for k, v := range templateable {
+		tv, err := tmpl.New(ctx).Apply(v)
+		if err != nil {
+			return nil, err
+		}
+		templated[k] = tv
 	}
 	return templated, nil
 }

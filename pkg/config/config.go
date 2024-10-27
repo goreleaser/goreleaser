@@ -369,6 +369,8 @@ type Ko struct {
 	WorkingDir          string            `yaml:"working_dir,omitempty" json:"working_dir,omitempty"`
 	BaseImage           string            `yaml:"base_image,omitempty" json:"base_image,omitempty"`
 	Labels              map[string]string `yaml:"labels,omitempty" json:"labels,omitempty"`
+	Annotations         map[string]string `yaml:"annotations,omitempty" json:"annotations,omitempty"`
+	User                string            `yaml:"user,omitempty" json:"user,omitempty"`
 	Repository          string            `yaml:"repository,omitempty" json:"repository,omitempty"`
 	Platforms           []string          `yaml:"platforms,omitempty" json:"platforms,omitempty"`
 	Tags                []string          `yaml:"tags,omitempty" json:"tags,omitempty"`
