@@ -27,6 +27,7 @@ func (Pipe) String() string                 { return "discord" }
 func (Pipe) Skip(ctx *context.Context) bool { return !ctx.Config.Announce.Discord.Enabled }
 
 type Config struct {
+	API          string `env:"DISCORD_API" envDefault:"https://discord.com/api"`
 	WebhookID    string `env:"DISCORD_WEBHOOK_ID,notEmpty"`
 	WebhookToken string `env:"DISCORD_WEBHOOK_TOKEN,notEmpty"`
 }
@@ -65,7 +66,7 @@ func (p Pipe) Announce(ctx *context.Context) error {
 		return fmt.Errorf("discord: %w", err)
 	}
 
-	u, err := url.Parse("https://discord.com/api")
+	u, err := url.Parse(cfg.API)
 	if err != nil {
 		return fmt.Errorf("discord: %w", err)
 	}
@@ -87,7 +88,13 @@ func (p Pipe) Announce(ctx *context.Context) error {
 		return fmt.Errorf("discord: %w", err)
 	}
 
-	resp, err := http.Post(u.String(), "application/json", bytes.NewReader(bts))
+	req, err := http.NewRequestWithContext(ctx, http.MethodPost, u.String(), bytes.NewReader(bts))
+	if err != nil {
+		return fmt.Errorf("discord: %w", err)
+	}
+	req.Header.Set("Content-Type", "application/json")
+
+	resp, err := http.DefaultClient.Do(req)
 	if err != nil {
 		return fmt.Errorf("discord: %w", err)
 	}
