@@ -97,7 +97,7 @@ func appendExtraFilesToArchive(ctx *context.Context, prefix, path, format string
 	}
 	defer af.Close()
 
-	arch, err := archive.Copying(of, af, format)
+	arch, err := archive.Copy(of, af, format)
 	if err != nil {
 		return err
 	}

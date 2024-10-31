@@ -186,7 +186,7 @@ func TestCopying(t *testing.T) {
 	f1, err = os.Open(f1.Name())
 	require.NoError(t, err)
 
-	t2, err := Copying(f1, f2)
+	t2, err := Copy(f1, f2)
 	require.NoError(t, err)
 	require.NoError(t, t2.Add(config.File{
 		Source:      "../testdata/sub1/executable",
