@@ -239,7 +239,6 @@ func catalogArtifact(ctx *context.Context, cfg config.SBOM, a *artifact.Artifact
 				},
 			})
 		}
-
 	}
 
 	if len(artifacts) == 0 {

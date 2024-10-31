@@ -105,7 +105,6 @@ func TestRunPipe(t *testing.T) {
 		f, err := os.Create(name)
 		require.NoError(t, err)
 		require.NoError(t, f.Close())
-
 	}
 	libPrefix := `/usr/lib
       {{- if eq .Arch "amd64" }}{{if eq .Format "rpm"}}_rpm{{end}}64{{- end -}}

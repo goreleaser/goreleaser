@@ -269,7 +269,6 @@ func TestRunPipe(t *testing.T) {
 					header := tarInfo(t, filepath.Join(dist, name), expectBin)
 					require.Equal(t, "root", header.Uname)
 					require.Equal(t, "root", header.Gname)
-
 				}
 			}
 			if format == "zip" {

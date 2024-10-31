@@ -550,7 +550,6 @@ func TestRunPipe(t *testing.T) {
 				err := bpipe.Default(ctx)
 				require.ErrorAs(t, err, &tt.expectDefaultErrorIs)
 				return
-
 			}
 			require.NoError(t, bpipe.Default(ctx))
 

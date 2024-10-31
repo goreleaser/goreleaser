@@ -43,7 +43,6 @@ func Copy(source *os.File, target io.Writer) (Archive, error) {
 	}
 	w := New(target)
 	for _, zf := range r.File {
-
 		w.files[zf.Name] = true
 		hdr := zip.FileHeader{
 			Name:               zf.Name,

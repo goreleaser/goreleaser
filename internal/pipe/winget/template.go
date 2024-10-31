@@ -31,7 +31,7 @@ func createYAML(ctx *context.Context, winget config.Winget, in any, tp artifact.
 		generatedHeader,
 		langserverLineFor(tp),
 		string(versionContent),
-	}, "\n")), 0o644); err != nil { //nolint: gosec
+	}, "\n")), 0o644); err != nil { //nolint:gosec
 		return fmt.Errorf("failed to write winget version: %w", err)
 	}
 

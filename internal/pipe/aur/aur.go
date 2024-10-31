@@ -178,7 +178,7 @@ func doRun(ctx *context.Context, aur config.AUR, cl client.ReleaseURLTemplater) 
 			return fmt.Errorf("failed to write %s: %w", info.kind, err)
 		}
 		log.WithField("file", path).Info("writing")
-		if err := os.WriteFile(path, []byte(pkgContent), 0o644); err != nil { //nolint: gosec
+		if err := os.WriteFile(path, []byte(pkgContent), 0o644); err != nil { //nolint:gosec
 			return fmt.Errorf("failed to write %s: %w", info.kind, err)
 		}
 
