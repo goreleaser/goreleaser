@@ -149,7 +149,6 @@ func (c *giteaClient) CreateFile(
 				WithError(err).
 				Warn("error checking for default branch, using master")
 		}
-
 	}
 
 	fileOptions := gitea.FileOptions{

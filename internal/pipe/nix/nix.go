@@ -174,7 +174,7 @@ func (p Pipe) doRun(ctx *context.Context, nix config.Nix, cl client.ReleaseURLTe
 	}
 
 	log.WithField("nixpkg", path).Info("writing")
-	if err := os.WriteFile(path, []byte(content), 0o644); err != nil { //nolint: gosec
+	if err := os.WriteFile(path, []byte(content), 0o644); err != nil { //nolint:gosec
 		return fmt.Errorf("failed to write nixpkg: %w", err)
 	}
 

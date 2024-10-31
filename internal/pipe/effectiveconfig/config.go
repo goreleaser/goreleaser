@@ -22,5 +22,5 @@ func (Pipe) Run(ctx *context.Context) (err error) {
 		return err
 	}
 	log.WithField("path", path).Debug("writing effective configuration")
-	return os.WriteFile(path, bts, 0o644) //nolint: gosec
+	return os.WriteFile(path, bts, 0o644) //nolint:gosec
 }

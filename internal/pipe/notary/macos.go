@@ -139,7 +139,6 @@ func signAndNotarize(ctx *context.Context, cfg config.MacOSSignNotarize) error {
 		default:
 			log.WithField("binary", bin.Path).Info("notarize still pending")
 		}
-
 	}
 
 	if err := binaries.Refresh(); err != nil {

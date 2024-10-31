@@ -112,7 +112,6 @@ func TestRun(t *testing.T) {
 					},
 				})
 			}
-
 		}
 	}
 
@@ -229,7 +228,6 @@ func TestFindBinaries(t *testing.T) {
 					},
 				})
 			}
-
 		}
 	}
 

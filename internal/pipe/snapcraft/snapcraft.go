@@ -408,7 +408,7 @@ func create(ctx *context.Context, snap config.Snapcraft, arch string, binaries [
 	}
 
 	log.WithField("file", file).Debugf("writing metadata file")
-	if err = os.WriteFile(file, out, 0o644); err != nil { //nolint: gosec
+	if err = os.WriteFile(file, out, 0o644); err != nil { //nolint:gosec
 		return err
 	}
 
