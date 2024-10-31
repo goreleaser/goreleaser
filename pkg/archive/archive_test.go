@@ -37,7 +37,7 @@ func TestArchive(t *testing.T) {
 			require.NoError(t, f1.Close())
 
 			if format == "tar.xz" || format == "txz" || format == "gz" || format == "tar.zst" || format == "tzst" {
-				_, err := Copying(f1, io.Discard, format)
+				_, err := Copy(f1, io.Discard, format)
 				require.Error(t, err)
 				return
 			}
@@ -47,7 +47,7 @@ func TestArchive(t *testing.T) {
 			f2, err := os.Create(filepath.Join(t.TempDir(), "2.tar"))
 			require.NoError(t, err)
 
-			a, err := Copying(f1, f2, format)
+			a, err := Copy(f1, f2, format)
 			require.NoError(t, err)
 			require.NoError(t, f1.Close())
 

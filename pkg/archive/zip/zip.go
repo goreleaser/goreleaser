@@ -32,8 +32,7 @@ func New(target io.Writer) Archive {
 	}
 }
 
-// New zip archive.
-func Copying(source *os.File, target io.Writer) (Archive, error) {
+func Copy(source *os.File, target io.Writer) (Archive, error) {
 	info, err := source.Stat()
 	if err != nil {
 		return Archive{}, err

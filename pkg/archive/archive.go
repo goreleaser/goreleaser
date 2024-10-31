@@ -40,16 +40,16 @@ func New(w io.Writer, format string) (Archive, error) {
 	return nil, fmt.Errorf("invalid archive format: %s", format)
 }
 
-// Copying copies the source archive into a new one, which can be appended at.
+// Copy copies the source archive into a new one, which can be appended at.
 // Source needs to be in the specified format.
-func Copying(r *os.File, w io.Writer, format string) (Archive, error) {
+func Copy(r *os.File, w io.Writer, format string) (Archive, error) {
 	switch format {
 	case "tar.gz", "tgz":
-		return targz.Copying(r, w)
+		return targz.Copy(r, w)
 	case "tar":
-		return tar.Copying(r, w)
+		return tar.Copy(r, w)
 	case "zip":
-		return zip.Copying(r, w)
+		return zip.Copy(r, w)
 	}
 	return nil, fmt.Errorf("invalid archive format: %s", format)
 }

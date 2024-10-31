@@ -25,8 +25,8 @@ func New(target io.Writer) Archive {
 	}
 }
 
-// Copying creates a new tar with the contents of the given tar.
-func Copying(source io.Reader, target io.Writer) (Archive, error) {
+// Copy creates a new tar with the contents of the given tar.
+func Copy(source io.Reader, target io.Writer) (Archive, error) {
 	w := New(target)
 	r := tar.NewReader(source)
 	for {
