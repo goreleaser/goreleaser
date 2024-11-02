@@ -592,6 +592,18 @@ func doTestRunPipeConventionalNameTemplate(t *testing.T, snapshot bool) {
 						},
 					})
 				}
+			case "386":
+				ctx.Artifacts.Add(&artifact.Artifact{
+					Name:   "subdir/mybin",
+					Path:   binPath,
+					Goarch: goarch,
+					Goos:   goos,
+					Go386:  "sse2",
+					Type:   artifact.Binary,
+					Extra: map[string]interface{}{
+						artifact.ExtraID: "default",
+					},
+				})
 			case "riscv64":
 				ctx.Artifacts.Add(&artifact.Artifact{
 					Name:      "subdir/mybin",
