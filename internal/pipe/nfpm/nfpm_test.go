@@ -532,7 +532,7 @@ func doTestRunPipeConventionalNameTemplate(t *testing.T, snapshot bool) {
 		ctx.Snapshot = true
 	}
 	for _, goos := range []string{"linux", "darwin", "aix"} {
-		for _, goarch := range []string{"amd64", "386", "arm64", "arm", "mips", "ppc64"} {
+		for _, goarch := range []string{"amd64", "386", "arm64", "arm", "mips", "ppc64", "riscv64"} {
 			if goarch == "ppc64" && goos != "aix" {
 				continue
 			}
@@ -592,6 +592,30 @@ func doTestRunPipeConventionalNameTemplate(t *testing.T, snapshot bool) {
 						},
 					})
 				}
+			case "riscv64":
+				ctx.Artifacts.Add(&artifact.Artifact{
+					Name:      "subdir/mybin",
+					Path:      binPath,
+					Goarch:    goarch,
+					Goos:      goos,
+					Goriscv64: "rva22u64",
+					Type:      artifact.Binary,
+					Extra: map[string]interface{}{
+						artifact.ExtraID: "default",
+					},
+				})
+			case "ppc64":
+				ctx.Artifacts.Add(&artifact.Artifact{
+					Name:    "subdir/mybin",
+					Path:    binPath,
+					Goarch:  goarch,
+					Goos:    goos,
+					Goppc64: "power9",
+					Type:    artifact.Binary,
+					Extra: map[string]interface{}{
+						artifact.ExtraID: "default",
+					},
+				})
 			default:
 				ctx.Artifacts.Add(&artifact.Artifact{
 					Name:   "subdir/mybin",
@@ -608,7 +632,7 @@ func doTestRunPipeConventionalNameTemplate(t *testing.T, snapshot bool) {
 	}
 	require.NoError(t, Pipe{}.Run(ctx))
 	packages := ctx.Artifacts.Filter(artifact.ByType(artifact.LinuxPackage)).List()
-	require.Len(t, packages, 48)
+	require.Len(t, packages, 52)
 	prefix := "foo"
 	if snapshot {
 		prefix += "-snapshot"
@@ -673,6 +697,11 @@ func doTestRunPipeConventionalNameTemplate(t *testing.T, snapshot bool) {
 			prefix + "-1.0.0-1-x86_64v4.pkg.tar.zst",
 			prefix + "-1.0.0-1-mips.pkg.tar.zst",
 			prefix + "-1.0.0-1-mips.pkg.tar.zst",
+			prefix + "-1.0.0-1-riscv64.pkg.tar.zst",
+			prefix + "_1.0.0_riscv64.apk",
+			prefix + "-1.0.0-1.riscv64.rpm",
+			prefix + "_1.0.0_riscv64.ipk",
+			prefix + "_1.0.0_riscv64.deb",
 		}, pkg.Name, "package name is not expected")
 		require.Equal(t, "someid", pkg.ID())
 		require.ElementsMatch(t, []string{binPath}, sources(artifact.ExtraOr(*pkg, extraFiles, files.Contents{})))
