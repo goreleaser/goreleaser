@@ -538,6 +538,18 @@ func doTestRunPipeConventionalNameTemplate(t *testing.T, snapshot bool) {
 			}
 
 			switch goarch {
+			case "arm64":
+				ctx.Artifacts.Add(&artifact.Artifact{
+					Name:    "subdir/mybin",
+					Path:    binPath,
+					Goarch:  goarch,
+					Goos:    goos,
+					Goarm64: "v8.0",
+					Type:    artifact.Binary,
+					Extra: map[string]interface{}{
+						artifact.ExtraID: "default",
+					},
+				})
 			case "arm":
 				for _, goarm := range []string{"6", "7"} {
 					ctx.Artifacts.Add(&artifact.Artifact{
