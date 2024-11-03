@@ -26,6 +26,16 @@ dmg:
       - foo
       - bar
 
+    # Which kind of artifact to use.
+    #
+    # Valid options are:
+    # - 'binary':    binary
+    # - 'appbundle': app bundles
+    #
+    # Default: 'binary'
+    # Since: v2.4 (pro).
+    use: appbundle
+
     # Allows to further filter the artifacts.
     #
     # Artifacts that do not match this expression will be ignored.
