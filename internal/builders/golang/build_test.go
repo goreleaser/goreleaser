@@ -134,6 +134,33 @@ func TestWithDefaults(t *testing.T) {
 			targets:  []string{"linux_arm_6"},
 			goBinary: "go",
 		},
+		"custom targets no arm64": {
+			build: config.Build{
+				ID:      "foo3",
+				Binary:  "foo",
+				Targets: []string{"linux_arm64"},
+			},
+			targets:  []string{"linux_arm64_v8.0"},
+			goBinary: "go",
+		},
+		"custom targets no ppc64": {
+			build: config.Build{
+				ID:      "foo3",
+				Binary:  "foo",
+				Targets: []string{"linux_ppc64le", "linux_ppc64"},
+			},
+			targets:  []string{"linux_ppc64le_power8", "linux_ppc64_power8"},
+			goBinary: "go",
+		},
+		"custom targets no riscv64": {
+			build: config.Build{
+				ID:      "foo3",
+				Binary:  "foo",
+				Targets: []string{"linux_riscv64"},
+			},
+			targets:  []string{"linux_riscv64_rva20u64"},
+			goBinary: "go",
+		},
 		"custom targets no mips": {
 			build: config.Build{
 				ID:      "foo3",
@@ -1244,33 +1271,43 @@ func TestBuildGoBuildLine(t *testing.T) {
 }
 
 func TestOverrides(t *testing.T) {
-	t.Run("linux amd64", func(t *testing.T) {
-		dets, err := withOverrides(
-			testctx.New(),
-			config.Build{
-				BuildDetails: config.BuildDetails{
-					Ldflags: []string{"original"},
-					Env:     []string{"BAR=foo", "FOO=bar"},
-				},
-				BuildDetailsOverrides: []config.BuildDetailsOverride{
-					{
-						Goos:   "linux",
-						Goarch: "amd64",
-						BuildDetails: config.BuildDetails{
-							Ldflags: []string{"overridden"},
-							Env:     []string{"FOO=overridden"},
+	for _, arch := range []string{
+		"amd64",
+		"arm64",
+		"ppc64",
+		"ppc64le",
+		"riscv64",
+		"386",
+		"mips",
+	} {
+		t.Run("linux "+arch, func(t *testing.T) {
+			dets, err := withOverrides(
+				testctx.New(),
+				config.Build{
+					BuildDetails: config.BuildDetails{
+						Ldflags: []string{"original"},
+						Env:     []string{"BAR=foo", "FOO=bar"},
+					},
+					BuildDetailsOverrides: []config.BuildDetailsOverride{
+						{
+							Goos:   "linux",
+							Goarch: arch,
+							BuildDetails: config.BuildDetails{
+								Ldflags: []string{"overridden"},
+								Env:     []string{"FOO=overridden"},
+							},
 						},
 					},
+				}, api.Options{
+					Goos:   "linux",
+					Goarch: arch,
 				},
-			}, api.Options{
-				Goos:   "linux",
-				Goarch: "amd64",
-			},
-		)
-		require.NoError(t, err)
-		require.ElementsMatch(t, dets.Ldflags, []string{"overridden"})
-		require.ElementsMatch(t, dets.Env, []string{"BAR=foo", "FOO=overridden"})
-	})
+			)
+			require.NoError(t, err)
+			require.ElementsMatch(t, dets.Ldflags, []string{"overridden"})
+			require.ElementsMatch(t, dets.Env, []string{"BAR=foo", "FOO=overridden"})
+		})
+	}
 
 	t.Run("single sided", func(t *testing.T) {
 		dets, err := withOverrides(
@@ -1351,6 +1388,36 @@ func TestOverrides(t *testing.T) {
 		testlib.RequireTemplateError(t, err)
 	})
 
+	t.Run("with goarm64", func(t *testing.T) {
+		dets, err := withOverrides(
+			testctx.New(),
+			config.Build{
+				BuildDetails: config.BuildDetails{
+					Ldflags: []string{"original"},
+				},
+				BuildDetailsOverrides: []config.BuildDetailsOverride{
+					{
+						Goos:    "linux",
+						Goarch:  "arm64",
+						Goarm64: "v8.0",
+						BuildDetails: config.BuildDetails{
+							Ldflags: []string{"overridden"},
+						},
+					},
+				},
+			}, api.Options{
+				Goos:    "linux",
+				Goarch:  "arm64",
+				Goarm64: "v8.0",
+			},
+		)
+		require.NoError(t, err)
+		require.Equal(t, config.BuildDetails{
+			Ldflags: []string{"overridden"},
+			Env:     []string{},
+		}, dets)
+	})
+
 	t.Run("with goarm", func(t *testing.T) {
 		dets, err := withOverrides(
 			testctx.New(),
@@ -1402,6 +1469,66 @@ func TestOverrides(t *testing.T) {
 				Goos:   "linux",
 				Goarch: "mips",
 				Gomips: "softfloat",
+			},
+		)
+		require.NoError(t, err)
+		require.Equal(t, config.BuildDetails{
+			Ldflags: []string{"overridden"},
+			Env:     []string{},
+		}, dets)
+	})
+
+	t.Run("with goriscv64", func(t *testing.T) {
+		dets, err := withOverrides(
+			testctx.New(),
+			config.Build{
+				BuildDetails: config.BuildDetails{
+					Ldflags: []string{"original"},
+				},
+				BuildDetailsOverrides: []config.BuildDetailsOverride{
+					{
+						Goos:      "linux",
+						Goarch:    "riscv64",
+						Goriscv64: "rva22u64",
+						BuildDetails: config.BuildDetails{
+							Ldflags: []string{"overridden"},
+						},
+					},
+				},
+			}, api.Options{
+				Goos:      "linux",
+				Goarch:    "riscv64",
+				Goriscv64: "rva22u64",
+			},
+		)
+		require.NoError(t, err)
+		require.Equal(t, config.BuildDetails{
+			Ldflags: []string{"overridden"},
+			Env:     []string{},
+		}, dets)
+	})
+
+	t.Run("with go386", func(t *testing.T) {
+		dets, err := withOverrides(
+			testctx.New(),
+			config.Build{
+				BuildDetails: config.BuildDetails{
+					Ldflags: []string{"original"},
+				},
+				BuildDetailsOverrides: []config.BuildDetailsOverride{
+					{
+						Goos:   "linux",
+						Goarch: "386",
+						Go386:  "sse2",
+						BuildDetails: config.BuildDetails{
+							Ldflags: []string{"overridden"},
+						},
+					},
+				},
+			}, api.Options{
+				Goos:   "linux",
+				Goarch: "386",
+				Go386:  "sse2",
 			},
 		)
 		require.NoError(t, err)
