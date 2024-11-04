@@ -345,6 +345,7 @@ func getChangeloger(ctx *context.Context) (changeloger, error) {
 		return gitChangeloger{}, nil
 	case useGitLab, useGitea, useGitHub:
 		if ctx.Git.PreviousTag == "" {
+			log.Warnf("there's no previous tag, using 'git' instead of '%s'", ctx.Config.Changelog.Use)
 			return gitChangeloger{}, nil
 		}
 		return newSCMChangeloger(ctx)
