@@ -221,6 +221,7 @@ var validLicenses = []string{
 	"sustainableUse",
 	"tsl",
 	"tcltk",
+	"tost",
 	"ucd",
 	"ufl",
 	"unfree",
