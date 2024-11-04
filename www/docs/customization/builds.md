@@ -176,15 +176,16 @@ builds:
     # of targets.
     #
     # Format is `{goos}_{goarch}` with their respective suffixes when
-    # applicable: `_{goarm}`, `_{goamd64}`, `_{gomips}`.
+    # applicable: `_{goarm}`, `_{goamd64}`, `_{gomips}`, `_{go386}`,
+    #             `_{goriscv64}`, `_{goarm64}`, `_{goppc64}`.
     #
     # Special values:
     # - go_118_first_class: evaluates to the first-class ports of go1.18.
     # - go_first_class: evaluates to latest stable go first-class ports,
     #   currently same as 1.18.
     #
-    # This overrides `goos`, `goarch`, `goarm`, `gomips`, `goamd64` and
-    # `ignores`.
+    # This overrides `goos`, `goarch`, `goarm`, `gomips`, `goamd64`, `go386`,
+    #                `goriscv64`, `goarm64`, `goppc64`, and `ignores`.
     targets:
       - go_first_class
       - go_118_first_class
@@ -284,10 +285,11 @@ builds:
           - CGO_ENABLED=1
 ```
 
-!!! warning "GOAMD64"
+!!! warning "GOAMD64, GORISCV64, GOPPC64, GO386, GOARM, GOARM64"
 
-    You usually will need to specify the `goamd64` version beign used, e.g., in
-    `overrides`, and other places too.
+    You usually will need to specify the complete target in places like `targets` and `overrides`.
+    This includes the `_{goamd64}` suffix, as well as the other
+    GOARCH-specific values.
 
 <!-- md:templates -->
 
