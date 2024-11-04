@@ -494,6 +494,15 @@
 					"goarch": {
 						"type": "string"
 					},
+					"goamd64": {
+						"type": "string"
+					},
+					"go386": {
+						"type": "string"
+					},
+					"goarm64": {
+						"type": "string"
+					},
 					"goarm": {
 						"oneOf": [
 							{
@@ -507,7 +516,10 @@
 					"gomips": {
 						"type": "string"
 					},
-					"goamd64": {
+					"goppc64": {
+						"type": "string"
+					},
+					"goriscv64": {
 						"type": "string"
 					},
 					"buildmode": {
