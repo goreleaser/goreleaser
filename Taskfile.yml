@@ -177,6 +177,7 @@ tasks:
       NEXT:
         sh: svu n
     cmds:
+      - git tag -d nightly
       - git tag {{.NEXT}}
       - echo {{.NEXT}}
       - git push origin --tags
