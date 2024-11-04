@@ -35,7 +35,7 @@ func TestRun(t *testing.T) {
 		t.Setenv("GOOS", "windows")
 		t.Setenv("GOARCH", "arm64")
 		require.NoError(t, pipe.Run(ctx))
-		require.Equal(t, "windows_arm64", ctx.PartialTarget)
+		require.Equal(t, "windows_arm64_v8.0", ctx.PartialTarget)
 	})
 	t.Run("using GGOOS and GGOARCH", func(t *testing.T) {
 		ctx := testctx.NewWithCfg(config.Project{
@@ -44,7 +44,7 @@ func TestRun(t *testing.T) {
 		t.Setenv("GGOOS", "windows")
 		t.Setenv("GGOARCH", "arm64")
 		require.NoError(t, pipe.Run(ctx))
-		require.Equal(t, "windows_arm64", ctx.PartialTarget)
+		require.Equal(t, "windows_arm64_v8.0", ctx.PartialTarget)
 	})
 	t.Run("custom GGOARM", func(t *testing.T) {
 		ctx := testctx.NewWithCfg(config.Project{
@@ -60,6 +60,22 @@ func TestRun(t *testing.T) {
 			t.Setenv("GGOARM", "7")
 			require.NoError(t, pipe.Run(ctx))
 			require.Equal(t, "linux_arm_7", ctx.PartialTarget)
+		})
+	})
+	t.Run("custom GGOARM64", func(t *testing.T) {
+		ctx := testctx.NewWithCfg(config.Project{
+			Dist: "dist",
+		}, testctx.Partial)
+		t.Setenv("GGOOS", "linux")
+		t.Setenv("GGOARCH", "arm64")
+		t.Run("default", func(t *testing.T) {
+			require.NoError(t, pipe.Run(ctx))
+			require.Equal(t, "linux_arm64_v8.0", ctx.PartialTarget)
+		})
+		t.Run("default", func(t *testing.T) {
+			t.Setenv("GGOARM64", "v9.0")
+			require.NoError(t, pipe.Run(ctx))
+			require.Equal(t, "linux_arm64_v9.0", ctx.PartialTarget)
 		})
 	})
 	t.Run("custom GGOAMD64", func(t *testing.T) {
@@ -98,6 +114,54 @@ func TestRun(t *testing.T) {
 			})
 		}
 	})
+	t.Run("custom GGO386", func(t *testing.T) {
+		ctx := testctx.NewWithCfg(config.Project{
+			Dist: "dist",
+		}, testctx.Partial)
+		t.Setenv("GGOOS", "linux")
+		t.Setenv("GGOARCH", "386")
+		t.Run("default", func(t *testing.T) {
+			require.NoError(t, pipe.Run(ctx))
+			require.Equal(t, "linux_386_sse2", ctx.PartialTarget)
+		})
+		t.Run("default", func(t *testing.T) {
+			t.Setenv("GGO386", "softfloat")
+			require.NoError(t, pipe.Run(ctx))
+			require.Equal(t, "linux_386_softfloat", ctx.PartialTarget)
+		})
+	})
+	t.Run("custom GGOPPC64", func(t *testing.T) {
+		ctx := testctx.NewWithCfg(config.Project{
+			Dist: "dist",
+		}, testctx.Partial)
+		t.Setenv("GGOOS", "linux")
+		t.Setenv("GGOARCH", "ppc64")
+		t.Run("default", func(t *testing.T) {
+			require.NoError(t, pipe.Run(ctx))
+			require.Equal(t, "linux_ppc64_power8", ctx.PartialTarget)
+		})
+		t.Run("default", func(t *testing.T) {
+			t.Setenv("GGOPPC64", "power9")
+			require.NoError(t, pipe.Run(ctx))
+			require.Equal(t, "linux_ppc64_power9", ctx.PartialTarget)
+		})
+	})
+	t.Run("custom GGORISCV64", func(t *testing.T) {
+		ctx := testctx.NewWithCfg(config.Project{
+			Dist: "dist",
+		}, testctx.Partial)
+		t.Setenv("GGOOS", "linux")
+		t.Setenv("GGOARCH", "riscv64")
+		t.Run("default", func(t *testing.T) {
+			require.NoError(t, pipe.Run(ctx))
+			require.Equal(t, "linux_riscv64_rva20u64", ctx.PartialTarget)
+		})
+		t.Run("default", func(t *testing.T) {
+			t.Setenv("GGORISCV64", "rva22u64")
+			require.NoError(t, pipe.Run(ctx))
+			require.Equal(t, "linux_riscv64_rva22u64", ctx.PartialTarget)
+		})
+	})
 	t.Run("using runtime", func(t *testing.T) {
 		ctx := testctx.NewWithCfg(config.Project{
 			Dist: "dist",
@@ -105,8 +169,11 @@ func TestRun(t *testing.T) {
 		require.NoError(t, pipe.Run(ctx))
 		target := fmt.Sprintf("%s_%s", runtime.GOOS, runtime.GOARCH)
 		// commonly tests will run on either arm64 or amd64.
-		if runtime.GOARCH == "amd64" {
+		switch runtime.GOARCH {
+		case "amd64":
 			target += "_v1"
+		case "arm64":
+			target += "_v8.0"
 		}
 		require.Equal(t, target, ctx.PartialTarget)
 	})

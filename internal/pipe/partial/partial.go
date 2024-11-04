@@ -33,6 +33,22 @@ func getFilter() string {
 		goarm := ordered.First(os.Getenv("GGOARM"), os.Getenv("GOARM"), experimental.DefaultGOARM())
 		target = target + "_" + goarm
 	}
+	if strings.HasSuffix(target, "_arm64") {
+		goarm := ordered.First(os.Getenv("GGOARM64"), os.Getenv("GOARM64"), "v8.0")
+		target = target + "_" + goarm
+	}
+	if strings.HasSuffix(target, "_386") {
+		goarm := ordered.First(os.Getenv("GGO386"), os.Getenv("GO386"), "sse2")
+		target = target + "_" + goarm
+	}
+	if strings.HasSuffix(target, "_ppc64") {
+		goarm := ordered.First(os.Getenv("GGOPPC64"), os.Getenv("GOPPC64"), "power8")
+		target = target + "_" + goarm
+	}
+	if strings.HasSuffix(target, "_riscv64") {
+		goarm := ordered.First(os.Getenv("GGORISCV64"), os.Getenv("GORISCV64"), "rva20u64")
+		target = target + "_" + goarm
+	}
 	if strings.HasSuffix(target, "_mips") ||
 		strings.HasSuffix(target, "_mips64") ||
 		strings.HasSuffix(target, "_mipsle") ||
