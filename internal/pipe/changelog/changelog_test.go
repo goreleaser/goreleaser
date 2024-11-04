@@ -645,10 +645,21 @@ func TestGetChangeloger(t *testing.T) {
 			Changelog: config.Changelog{
 				Use: useGitHub,
 			},
-		}, testctx.GitHubTokenType)
+		}, testctx.GitHubTokenType, testctx.WithPreviousTag("v1.2.3"))
 		c, err := getChangeloger(ctx)
 		require.NoError(t, err)
 		require.IsType(t, &scmChangeloger{}, c)
+	})
+
+	t.Run(useGitHub+" no previous", func(t *testing.T) {
+		ctx := testctx.NewWithCfg(config.Project{
+			Changelog: config.Changelog{
+				Use: useGitHub,
+			},
+		}, testctx.GitHubTokenType)
+		c, err := getChangeloger(ctx)
+		require.NoError(t, err)
+		require.IsType(t, gitChangeloger{}, c)
 	})
 
 	t.Run(useGitHubNative, func(t *testing.T) {
@@ -656,7 +667,7 @@ func TestGetChangeloger(t *testing.T) {
 			Changelog: config.Changelog{
 				Use: useGitHubNative,
 			},
-		}, testctx.GitHubTokenType)
+		}, testctx.GitHubTokenType, testctx.WithPreviousTag("v1.2.3"))
 		c, err := getChangeloger(ctx)
 		require.NoError(t, err)
 		require.IsType(t, &githubNativeChangeloger{}, c)
@@ -681,7 +692,7 @@ func TestGetChangeloger(t *testing.T) {
 			Changelog: config.Changelog{
 				Use: useGitLab,
 			},
-		}, testctx.GitLabTokenType)
+		}, testctx.GitLabTokenType, testctx.WithPreviousTag("v1.2.3"))
 		c, err := getChangeloger(ctx)
 		require.NoError(t, err)
 		require.IsType(t, &scmChangeloger{}, c)
@@ -695,7 +706,7 @@ func TestGetChangeloger(t *testing.T) {
 			Changelog: config.Changelog{
 				Use: useGitHub,
 			},
-		}, testctx.GitHubTokenType)
+		}, testctx.GitHubTokenType, testctx.WithPreviousTag("v1.2.3"))
 		c, err := getChangeloger(ctx)
 		require.EqualError(t, err, "unsupported repository URL: https://gist.github.com/")
 		require.Nil(t, c)
@@ -717,7 +728,7 @@ func TestGetChangeloger(t *testing.T) {
 			GiteaURLs: config.GiteaURLs{
 				API: srv.URL,
 			},
-		}, testctx.GiteaTokenType)
+		}, testctx.GiteaTokenType, testctx.WithPreviousTag("v1.2.3"))
 		c, err := getChangeloger(ctx)
 		require.NoError(t, err)
 		require.IsType(t, &scmChangeloger{}, c)

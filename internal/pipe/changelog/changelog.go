@@ -344,6 +344,9 @@ func getChangeloger(ctx *context.Context) (changeloger, error) {
 	case useGit, "":
 		return gitChangeloger{}, nil
 	case useGitLab, useGitea, useGitHub:
+		if ctx.Git.PreviousTag == "" {
+			return gitChangeloger{}, nil
+		}
 		return newSCMChangeloger(ctx)
 	case useGitHubNative:
 		return newGithubChangeloger(ctx)
