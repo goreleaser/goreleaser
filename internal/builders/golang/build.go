@@ -249,7 +249,7 @@ func (*Builder) Build(ctx *context.Context, build config.Build, options api.Opti
 		"GOMIPS="+options.Gomips,
 		"GOMIPS64="+options.Gomips,
 		"GOPPC64="+options.Goppc64,
-		"GORISCV64"+options.Goriscv64,
+		"GORISCV64="+options.Goriscv64,
 	)
 
 	if v := os.Getenv("GOCACHEPROG"); v != "" {
