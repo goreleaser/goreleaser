@@ -39,3 +39,24 @@ func TestSet(t *testing.T) {
 	skips.Set(ctx, skips.Publish, skips.Announce)
 	require.ElementsMatch(t, []string{"publish", "announce"}, slices.Collect(maps.Keys(ctx.Skips)))
 }
+
+func TestSetAllowed(t *testing.T) {
+	t.Run("success", func(t *testing.T) {
+		ctx := testctx.New()
+		require.NoError(t, skips.SetBuild(ctx, "", "validate", ""))
+		require.ElementsMatch(t, []string{"validate"}, slices.Collect(maps.Keys(ctx.Skips)))
+	})
+	t.Run("error", func(t *testing.T) {
+		ctx := testctx.New()
+		require.ErrorContains(t, skips.SetBuild(ctx, "validate", "", "publish", ""), "--skip=publish is not allowed.")
+		require.ElementsMatch(t, []string{"validate"}, slices.Collect(maps.Keys(ctx.Skips)))
+	})
+}
+
+func TestComplete(t *testing.T) {
+	require.Equal(
+		t,
+		[]string{"announce", "archive", "aur"},
+		skips.Release.Complete("a"),
+	)
+}

@@ -67,6 +67,9 @@ var (
 func set(allowed Keys) func(ctx *context.Context, keys ...string) error {
 	return func(ctx *context.Context, keys ...string) error {
 		for _, key := range keys {
+			if key == "" {
+				continue
+			}
 			if !slices.Contains(allowed, Key(key)) {
 				return fmt.Errorf("--skip=%s is not allowed. Valid options for skip are [%s]", key, allowed)
 			}
