@@ -1495,7 +1495,7 @@ type Chocolatey struct {
 	Goamd64                  string                 `yaml:"goamd64,omitempty" json:"goamd64,omitempty"`
 }
 
-// ChcolateyDependency represents Chocolatey dependency.
+// ChocolateyDependency represents Chocolatey dependency.
 type ChocolateyDependency struct {
 	ID      string `yaml:"id,omitempty" json:"id,omitempty"`
 	Version string `yaml:"version,omitempty" json:"version,omitempty"`

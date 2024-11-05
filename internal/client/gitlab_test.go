@@ -105,7 +105,7 @@ func TestGitLabURLsAPITemplate(t *testing.T) {
 			wantHost: "gitlab.com",
 		},
 		{
-			name:     "speicifed_api_env_key",
+			name:     "specified_api_env_key",
 			apiURL:   "https://gitlab.mycompany.com",
 			wantHost: "gitlab.mycompany.com",
 		},

@@ -75,7 +75,7 @@ var BuildPipeline = []Piper{
 	dist.Pipe{},
 	// setup metadata options
 	metadata.Pipe{},
-	// creates a metadta.json files in the dist directory
+	// creates a metadata.json files in the dist directory
 	metadata.MetaPipe{},
 	// setup gomod-related stuff
 	gomod.Pipe{},

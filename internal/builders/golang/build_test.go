@@ -260,7 +260,7 @@ func TestWithDefaults(t *testing.T) {
 			targets:  append(go118FirstClassAdjustedTargets, "darwin_amd64_v2"),
 			goBinary: "go",
 		},
-		"repeatin targets": {
+		"repeating targets": {
 			build: config.Build{
 				ID:      "foo3",
 				Binary:  "foo",
