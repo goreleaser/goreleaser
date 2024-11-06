@@ -156,7 +156,7 @@ func TestRichText(t *testing.T) {
 	})
 }
 
-func TestUnmarshall(t *testing.T) {
+func TestUnmarshal(t *testing.T) {
 	t.Parallel()
 
 	t.Run("happy unmarshal", func(t *testing.T) {

@@ -98,7 +98,7 @@ func TestRunPipe(t *testing.T) {
 	require.Len(t, list, 9)
 }
 
-func TestBadTemolate(t *testing.T) {
+func TestBadTemplate(t *testing.T) {
 	testlib.CheckPath(t, "snapcraft")
 	folder := t.TempDir()
 	dist := filepath.Join(folder, "dist")
