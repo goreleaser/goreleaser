@@ -1314,7 +1314,7 @@ type Announce struct {
 	LinkedIn       LinkedIn       `yaml:"linkedin,omitempty" json:"linkedin,omitempty"`
 	Telegram       Telegram       `yaml:"telegram,omitempty" json:"telegram,omitempty"`
 	Webhook        Webhook        `yaml:"webhook,omitempty" json:"webhook,omitempty"`
-	OpenCollective OpenCollective `yaml:"opencollective,omitempty" json:"opencolletive,omitempty"`
+	OpenCollective OpenCollective `yaml:"opencollective,omitempty" json:"opencollective,omitempty"`
 	Bluesky        Bluesky        `yaml:"bluesky,omitempty" json:"bluesky,omitempty"`
 }
 
