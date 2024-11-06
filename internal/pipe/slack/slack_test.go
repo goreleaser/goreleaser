@@ -120,7 +120,6 @@ func TestParseRichText(t *testing.T) {
 		require.NoError(t, yaml.Unmarshal(badBlocksSlackConf(), &project))
 		ctx := testctx.NewWithCfg(project, testctx.WithVersion(testVersion))
 		_, _, err := parseAdvancedFormatting(ctx)
-		require.Error(t, err)
 		require.ErrorContains(t, err, "json")
 	})
 
@@ -130,7 +129,6 @@ func TestParseRichText(t *testing.T) {
 		require.NoError(t, yaml.Unmarshal(badAttachmentsSlackConf(), &project))
 		ctx := testctx.NewWithCfg(project, testctx.WithVersion(testVersion))
 		_, _, err := parseAdvancedFormatting(ctx)
-		require.Error(t, err)
 		require.ErrorContains(t, err, "json")
 	})
 }
@@ -151,7 +149,6 @@ func TestRichText(t *testing.T) {
 		require.NoError(t, yaml.Unmarshal(badBlocksSlackConf(), &project))
 		ctx := testctx.NewWithCfg(project, testctx.WithVersion(testVersion))
 		err := Pipe{}.Announce(ctx)
-		require.Error(t, err)
 		require.ErrorContains(t, err, "json")
 	})
 }
