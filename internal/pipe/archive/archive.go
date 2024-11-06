@@ -35,7 +35,6 @@ const (
 // GoReleaser breaks in these cases as it will only cause confusion to other users.
 var ErrArchiveDifferentBinaryCount = errors.New("archive has different count of binaries for each platform, which may cause your users confusion.\nLearn more at https://goreleaser.com/errors/multiple-binaries-archive\n") //nolint:revive
 
-//nolint:gochecknoglobals
 var lock sync.Mutex
 
 // Pipe for archive.

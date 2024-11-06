@@ -9,7 +9,6 @@ import (
 	"strings"
 )
 
-//nolint:gochecknoglobals
 var (
 	MockEnvVar = "GORELEASER_MOCK_DATA"
 	MockCmd    = os.Args[0]

@@ -192,8 +192,6 @@ func contains(s string, ss []string) bool {
 }
 
 // lists from https://go.dev/doc/install/source#environment
-//
-//nolint:gochecknoglobals
 var (
 	validTargets = []string{
 		"aixppc64",

@@ -26,8 +26,6 @@ import (
 )
 
 // Default builder instance.
-//
-//nolint:gochecknoglobals
 var Default = &Builder{}
 
 //nolint:gochecknoinits

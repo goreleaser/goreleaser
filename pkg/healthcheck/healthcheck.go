@@ -23,8 +23,6 @@ type Healthchecker interface {
 }
 
 // Healthcheckers is the list of healthchekers.
-//
-//nolint:gochecknoglobals
 var Healthcheckers = []Healthchecker{
 	system{},
 	snapcraft.Pipe{},

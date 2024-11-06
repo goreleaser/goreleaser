@@ -2,6 +2,8 @@ run:
   go: "1.23"
   timeout: 5m
 linters:
+  disable:
+    - gochecknoglobals
   enable:
     - copyloopvar
     - thelper

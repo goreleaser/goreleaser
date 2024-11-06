@@ -13,7 +13,6 @@ import (
 	"go.uber.org/automaxprocs/maxprocs"
 )
 
-//nolint:gochecknoglobals
 var (
 	version   = ""
 	commit    = ""

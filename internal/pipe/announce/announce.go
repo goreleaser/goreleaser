@@ -31,7 +31,6 @@ type Announcer interface {
 	Announce(ctx *context.Context) error
 }
 
-//nolint:gochecknoglobals
 var announcers = []Announcer{
 	// XXX: keep asc sorting
 	bluesky.Pipe{},

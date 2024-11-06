@@ -8,7 +8,6 @@ import (
 	"github.com/goreleaser/goreleaser/v2/pkg/context"
 )
 
-//nolint:gochecknoglobals
 var (
 	builders = map[string]Builder{}
 	lock     sync.Mutex

@@ -52,8 +52,6 @@ type Piper interface {
 }
 
 // BuildPipeline contains all build-related pipe implementations in order.
-//
-//nolint:gochecknoglobals
 var BuildPipeline = []Piper{
 	// set default dist folder and remove it if `--clean` is set
 	dist.CleanPipe{},
@@ -100,8 +98,6 @@ var BuildPipeline = []Piper{
 }
 
 // BuildCmdPipeline is the pipeline run by goreleaser build.
-//
-//nolint:gochecknoglobals
 var BuildCmdPipeline = append(
 	BuildPipeline,
 	reportsizes.Pipe{},
@@ -109,8 +105,6 @@ var BuildCmdPipeline = append(
 )
 
 // Pipeline contains all pipe implementations in order.
-//
-//nolint:gochecknoglobals
 var Pipeline = append(
 	BuildPipeline,
 	// builds the release changelog
