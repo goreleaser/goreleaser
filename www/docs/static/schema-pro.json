@@ -163,7 +163,7 @@
 					"webhook": {
 						"$ref": "#/$defs/Webhook"
 					},
-					"opencolletive": {
+					"opencollective": {
 						"$ref": "#/$defs/OpenCollective"
 					},
 					"bluesky": {
