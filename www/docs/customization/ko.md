@@ -126,6 +126,13 @@ kos:
 
 Refer to [ko's project page][ko] for more information.
 
+!!! warning
+
+    Note that while GoReleaser's build section will evaluate environment
+    variables for each target being built, Ko doesn't.
+    This means that variables like `.Os`, `.Arch`, and the sorts, will not be
+    available.
+
 ## Example
 
 Here's a minimal example:
