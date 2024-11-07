@@ -24,13 +24,11 @@ func TestMain(m *testing.M) {
 		}
 	}
 
-	code := m.Run()
+	m.Run()
 
 	for k, v := range restores {
 		_ = os.Setenv(k, v)
 	}
-
-	os.Exit(code)
 }
 
 func TestDescription(t *testing.T) {

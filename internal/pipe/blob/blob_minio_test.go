@@ -30,7 +30,8 @@ var listen string
 
 func TestMain(m *testing.M) {
 	if !testlib.InPath("docker") {
-		os.Exit(m.Run())
+		m.Run()
+		return
 	}
 	prepareEnv()
 
@@ -67,10 +68,9 @@ func TestMain(m *testing.M) {
 	}))
 	listen = "localhost:" + resource.GetPort("9000/tcp")
 
-	code := m.Run()
+	m.Run()
 
 	requireNoErr(pool.Purge(resource))
-	os.Exit(code)
 }
 
 func TestMinioUpload(t *testing.T) {

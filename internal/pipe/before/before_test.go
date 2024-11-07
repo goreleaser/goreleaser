@@ -1,7 +1,6 @@
 package before
 
 import (
-	"os"
 	"path/filepath"
 	"testing"
 
@@ -15,9 +14,8 @@ import (
 
 func TestMain(m *testing.M) {
 	log.SetLevel(log.DebugLevel)
-	code := m.Run()
+	m.Run()
 	log.SetLevel(log.InfoLevel)
-	os.Exit(code)
 }
 
 func TestDescription(t *testing.T) {

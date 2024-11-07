@@ -11,5 +11,5 @@ func TestMain(m *testing.M) {
 		return
 	}
 
-	os.Exit(m.Run())
+	m.Run()
 }
