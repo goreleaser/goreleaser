@@ -125,7 +125,6 @@ func TestUnmarshalYAMLSlackBlocks(t *testing.T) {
 
 		var block SlackBlock
 		err := block.UnmarshalYAML(erf)
-		require.Error(t, err)
 		require.ErrorContains(t, err, testError)
 	})
 
@@ -134,7 +133,6 @@ func TestUnmarshalYAMLSlackBlocks(t *testing.T) {
 
 		var attachment SlackAttachment
 		err := attachment.UnmarshalYAML(erf)
-		require.Error(t, err)
 		require.ErrorContains(t, err, testError)
 	})
 }
