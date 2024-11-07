@@ -85,7 +85,7 @@ tasks:
   nix:flake:update-vendor:
     desc: update default flake package vendor hash
     cmds:
-      - bash ./scripts/nix-udpate-flake.sh
+      - bash ./scripts/nix-update-flake.sh
     generates:
       - flake.nix
     sources:
