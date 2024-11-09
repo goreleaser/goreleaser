@@ -46,9 +46,8 @@ func TestMain(m *testing.M) {
 		os.Exit(1)
 	}
 
-	code := m.Run()
+	m.Run()
 	_ = os.RemoveAll(keyring)
-	os.Exit(code)
 }
 
 func TestDescription(t *testing.T) {
