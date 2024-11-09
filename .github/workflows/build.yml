@@ -53,6 +53,7 @@ jobs:
         with:
           install-only: true
       - uses: cachix/install-nix-action@v30
+        if: matrix.os == 'ubuntu-latest'
         with:
           github_access_token: ${{ secrets.GITHUB_TOKEN }}
       - uses: actions/setup-go@41dfa10bad2bb2ae585af6ee5bb4d7d973ad74ed # v4
