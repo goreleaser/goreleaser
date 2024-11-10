@@ -94,9 +94,10 @@ func TestTarFile(t *testing.T) {
 			continue
 		}
 		if next.Name == "sub1/executable" {
-			require.Truef(
+			require.NotEqualf(
 				t,
-				next.FileInfo().Mode()&0o111 != 0,
+				0,
+				next.FileInfo().Mode()&0o111,
 				"expected executable perms, got %s",
 				next.FileInfo().Mode().String(),
 			)
