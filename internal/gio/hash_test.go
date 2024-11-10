@@ -1,9 +1,9 @@
 package gio
 
 import (
-	"runtime"
 	"testing"
 
+	"github.com/goreleaser/goreleaser/v2/internal/testlib"
 	"github.com/stretchr/testify/require"
 )
 
@@ -54,7 +54,8 @@ func TestEqualFileContents(t *testing.T) {
 	for _, test := range tests {
 		equal, err := EqualFiles(test.a, test.b)
 		require.NoError(t, err)
-		if runtime.GOOS != "windows" {
+		if !testlib.IsWindows() {
+			// this fails on windows due to perms being ignored
 			require.False(t, equal)
 		}
 

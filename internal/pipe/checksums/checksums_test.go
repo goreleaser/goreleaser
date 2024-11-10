@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
-	"runtime"
 	"strings"
 	"syscall"
 	"testing"
@@ -310,7 +309,8 @@ func TestPipeCouldNotOpenChecksumsTxt(t *testing.T) {
 	})
 	err = Pipe{}.Run(ctx)
 	require.Error(t, err)
-	if runtime.GOOS != "windows" {
+	if !testlib.IsWindows() {
+		// this fails on windows
 		require.ErrorIs(t, Pipe{}.Run(ctx), syscall.EACCES)
 	}
 }

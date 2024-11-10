@@ -203,7 +203,12 @@ func TestGoModProxy(t *testing.T) {
 
 				// change perms of a file and run again, which should now fail on that file.
 				require.NoError(t, os.Chmod(filepath.Join(dist, "proxy", "foo", file), mode))
-				require.ErrorIs(t, ProxyPipe{}.Run(ctx), syscall.EACCES)
+				err := ProxyPipe{}.Run(ctx)
+				require.Error(t, err)
+				if !testlib.IsWindows() {
+					// this fails on windows
+					require.ErrorIs(t, err, syscall.EACCES)
+				}
 			})
 		}
 	})

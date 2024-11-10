@@ -7,10 +7,10 @@ import (
 	"io/fs"
 	"os"
 	"path/filepath"
-	"runtime"
 	"testing"
 	"time"
 
+	"github.com/goreleaser/goreleaser/v2/internal/testlib"
 	"github.com/goreleaser/goreleaser/v2/pkg/config"
 	"github.com/stretchr/testify/require"
 )
@@ -86,7 +86,7 @@ func TestZipFile(t *testing.T) {
 	paths := make([]string, len(r.File))
 	for i, zf := range r.File {
 		paths[i] = zf.Name
-		if zf.Name == "sub1/executable" && runtime.GOOS != "windows" {
+		if zf.Name == "sub1/executable" && !testlib.IsWindows() {
 			require.NotEqualf(
 				t,
 				0,

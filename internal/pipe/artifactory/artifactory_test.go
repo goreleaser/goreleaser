@@ -331,10 +331,10 @@ func TestRunPipe_ArtifactoryDown(t *testing.T) {
 	})
 
 	require.NoError(t, Pipe{}.Default(ctx))
-	if testlib.IsWindows() {
-		require.Error(t, Pipe{}.Publish(ctx))
-	} else {
-		require.ErrorIs(t, Pipe{}.Publish(ctx), syscall.ECONNREFUSED)
+	err = Pipe{}.Publish(ctx)
+	require.Error(t, err)
+	if !testlib.IsWindows() {
+		require.ErrorIs(t, err, syscall.ECONNREFUSED)
 	}
 }
 

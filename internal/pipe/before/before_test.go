@@ -2,7 +2,6 @@ package before
 
 import (
 	"path/filepath"
-	"runtime"
 	"testing"
 
 	"github.com/caarlos0/log"
@@ -30,7 +29,7 @@ func TestRunPipe(t *testing.T) {
 		{"go version"},
 		{"go version", "go list"},
 	}
-	if runtime.GOOS != "windows" {
+	if testlib.InPath("bash") {
 		table = append(table, []string{`bash -c "go version; echo \"lala spaces and such\""`})
 	}
 	for _, tc := range table {

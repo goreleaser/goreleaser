@@ -307,6 +307,7 @@ func TestLoadEnv(t *testing.T) {
 
 func requireErrAccess(tb testing.TB, err error) {
 	tb.Helper()
+	require.Error(tb, err)
 	// unsupported
 	if testlib.IsWindows() {
 		return
