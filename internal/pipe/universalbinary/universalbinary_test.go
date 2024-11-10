@@ -183,11 +183,11 @@ func TestRun(t *testing.T) {
 				NameTemplate: "foo",
 				Hooks: config.BuildHookConfig{
 					Pre: []config.Hook{
-						{Cmd: "touch " + pre},
+						{Cmd: touch + pre},
 					},
 					Post: []config.Hook{
-						{Cmd: "touch " + post},
-						{Cmd: `sh -c 'echo "{{ .Name }} {{ .Os }} {{ .Arch }} {{ .Arm }} {{ .Target }} {{ .Ext }}" > {{ .Path }}.post'`, Output: true},
+						{Cmd: touch + post},
+						{Cmd: shc(`echo "{{ .Name }} {{ .Os }} {{ .Arch }} {{ .Arm }} {{ .Target }} {{ .Ext }}" > {{ .Path }}.post`), Output: true},
 					},
 				},
 			},
