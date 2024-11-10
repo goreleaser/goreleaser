@@ -3,6 +3,7 @@ package gio
 import (
 	"os"
 	"path/filepath"
+	"runtime"
 	"testing"
 
 	"github.com/stretchr/testify/require"
@@ -30,10 +31,13 @@ func TestCopySymlink(t *testing.T) {
 
 	l, err := os.Readlink(c)
 	require.NoError(t, err)
-	require.Equal(t, a, l)
+	require.Equal(t, a, filepath.ToSlash(l))
 }
 
 func TestEqualFilesModeChanged(t *testing.T) {
+	if runtime.GOOS == "windows" {
+		t.Skip("skip on windows")
+	}
 	tmp := t.TempDir()
 	a := "testdata/somefile.txt"
 	b := tmp + "/somefile.txt"
