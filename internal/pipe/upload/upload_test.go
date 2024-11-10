@@ -6,6 +6,7 @@ import (
 	"net/http/httptest"
 	"os"
 	"path/filepath"
+	"runtime"
 	"sync"
 	"syscall"
 	"testing"
@@ -362,7 +363,11 @@ func TestRunPipe_ServerDown(t *testing.T) {
 		Name: "bin.tar.gz",
 		Path: tarfile.Name(),
 	})
-	require.ErrorIs(t, Pipe{}.Publish(ctx), syscall.ECONNREFUSED)
+	if runtime.GOOS == "windows" {
+		require.Error(t, Pipe{}.Publish(ctx))
+	} else {
+		require.ErrorIs(t, Pipe{}.Publish(ctx), syscall.ECONNREFUSED)
+	}
 }
 
 func TestRunPipe_TargetTemplateError(t *testing.T) {

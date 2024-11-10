@@ -49,6 +49,8 @@ func assetOpenReset() {
 	assetOpen = assetOpenDefault
 }
 
+// TODO: this should probably return a func()error always so we can properly
+// handle closing the file.
 func assetOpenDefault(kind string, a *artifact.Artifact) (*asset, error) {
 	f, err := os.Open(a.Path)
 	if err != nil {
@@ -56,9 +58,11 @@ func assetOpenDefault(kind string, a *artifact.Artifact) (*asset, error) {
 	}
 	s, err := f.Stat()
 	if err != nil {
+		_ = f.Close()
 		return nil, err
 	}
 	if s.IsDir() {
+		_ = f.Close()
 		return nil, fmt.Errorf("%s: upload failed: the asset to upload can't be a directory", kind)
 	}
 	return &asset{
