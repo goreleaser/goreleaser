@@ -5,6 +5,7 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
+	"runtime"
 	"testing"
 
 	"github.com/goreleaser/goreleaser/v2/internal/artifact"
@@ -22,7 +23,16 @@ import (
 var (
 	errFailedBuild   = errors.New("fake builder failed")
 	errFailedDefault = errors.New("fake builder defaults failed")
+
+	touch = "touch "
 )
+
+func init() {
+	if runtime.GOOS == "windows" {
+		// powershell new-item
+		touch = "ni "
+	}
+}
 
 type fakeBuilder struct {
 	fail        bool
@@ -136,12 +146,12 @@ func TestRunFullPipe(t *testing.T) {
 				},
 				Hooks: config.BuildHookConfig{
 					Pre: []config.Hook{
-						{Cmd: "touch " + pre},
-						{Cmd: "touch pre_{{ .Env.THE_OS}}"},
+						{Cmd: touch + pre},
+						{Cmd: touch + " pre_{{ .Env.THE_OS}}"},
 					},
 					Post: []config.Hook{
-						{Cmd: "touch " + post},
-						{Cmd: "touch post_{{ .Env.THE_OS}}"},
+						{Cmd: touch + post},
+						{Cmd: touch + " post_{{ .Env.THE_OS}}"},
 					},
 				},
 				Targets: []string{"linux_amd64"},
@@ -178,10 +188,10 @@ func TestRunFullPipeFail(t *testing.T) {
 				},
 				Hooks: config.BuildHookConfig{
 					Pre: []config.Hook{
-						{Cmd: "touch " + pre},
+						{Cmd: touch + pre},
 					},
 					Post: []config.Hook{
-						{Cmd: "touch " + post},
+						{Cmd: touch + post},
 					},
 				},
 				Targets: []string{"linux_amd64"},
@@ -505,10 +515,10 @@ func TestBuild_hooksKnowGoosGoarch(t *testing.T) {
 		},
 		Hooks: config.BuildHookConfig{
 			Pre: []config.Hook{
-				{Cmd: "touch pre-hook-{{.Arch}}-{{.Os}}", Dir: tmpDir},
+				{Cmd: touch + " pre-hook-{{.Arch}}-{{.Os}}", Dir: tmpDir},
 			},
 			Post: config.Hooks{
-				{Cmd: "touch post-hook-{{.Arch}}-{{.Os}}", Dir: tmpDir},
+				{Cmd: touch + " post-hook-{{.Arch}}-{{.Os}}", Dir: tmpDir},
 			},
 		},
 	}
@@ -538,10 +548,10 @@ func TestPipeOnBuild_hooksRunPerTarget(t *testing.T) {
 		},
 		Hooks: config.BuildHookConfig{
 			Pre: []config.Hook{
-				{Cmd: "touch pre-hook-{{.Target}}", Dir: tmpDir},
+				{Cmd: touch + " pre-hook-{{.Target}}", Dir: tmpDir},
 			},
 			Post: config.Hooks{
-				{Cmd: "touch post-hook-{{.Target}}", Dir: tmpDir},
+				{Cmd: touch + " post-hook-{{.Target}}", Dir: tmpDir},
 			},
 		},
 	}
