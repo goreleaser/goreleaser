@@ -110,7 +110,7 @@ func GitMakeBareRepository(tb testing.TB) string {
 		".",
 	)
 	require.NoError(tb, err)
-	return dir
+	return filepath.ToSlash(dir)
 }
 
 func MakeNewSSHKey(tb testing.TB, pass string) string {
