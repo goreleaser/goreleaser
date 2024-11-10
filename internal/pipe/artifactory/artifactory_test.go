@@ -6,7 +6,6 @@ import (
 	"net/http/httptest"
 	"os"
 	"path/filepath"
-	"runtime"
 	"sync"
 	"syscall"
 	"testing"
@@ -332,7 +331,7 @@ func TestRunPipe_ArtifactoryDown(t *testing.T) {
 	})
 
 	require.NoError(t, Pipe{}.Default(ctx))
-	if runtime.GOOS == "windows" {
+	if testlib.IsWindows() {
 		require.Error(t, Pipe{}.Publish(ctx))
 	} else {
 		require.ErrorIs(t, Pipe{}.Publish(ctx), syscall.ECONNREFUSED)

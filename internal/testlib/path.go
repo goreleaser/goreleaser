@@ -24,10 +24,13 @@ func InPath(cmd string) bool {
 	return err == nil
 }
 
+// IsWindows returns true if current OS is Windows.
+func IsWindows() bool { return runtime.GOOS == "windows" }
+
 // SkipIfWindows skips the test if runtime OS is windows.
 func SkipIfWindows(t testing.TB) {
 	t.Helper()
-	if runtime.GOOS == "windows" {
+	if IsWindows() {
 		t.Skip("test skipped on windows")
 	}
 }

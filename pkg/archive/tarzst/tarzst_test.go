@@ -6,10 +6,10 @@ import (
 	"io/fs"
 	"os"
 	"path/filepath"
-	"runtime"
 	"testing"
 	"time"
 
+	"github.com/goreleaser/goreleaser/v2/internal/testlib"
 	"github.com/goreleaser/goreleaser/v2/pkg/config"
 	"github.com/klauspost/compress/zstd"
 	"github.com/stretchr/testify/require"
@@ -87,7 +87,7 @@ func TestTarZstFile(t *testing.T) {
 		}
 		require.NoError(t, err)
 		paths = append(paths, next.Name)
-		if runtime.GOOS == "windows" {
+		if testlib.IsWindows() {
 			// both of the following checks don't work on windows.
 			continue
 		}

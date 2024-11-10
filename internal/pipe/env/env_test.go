@@ -3,7 +3,6 @@ package env
 import (
 	"fmt"
 	"os"
-	"runtime"
 	"syscall"
 	"testing"
 
@@ -309,7 +308,7 @@ func TestLoadEnv(t *testing.T) {
 func requireErrAccess(tb testing.TB, err error) {
 	tb.Helper()
 	// unsupported
-	if runtime.GOOS == "windows" {
+	if testlib.IsWindows() {
 		return
 	}
 	require.ErrorIs(tb, err, syscall.EACCES)

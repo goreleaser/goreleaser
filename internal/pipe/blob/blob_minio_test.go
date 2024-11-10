@@ -29,7 +29,7 @@ const (
 var listen string
 
 func TestMain(m *testing.M) {
-	if !testlib.InPath("docker") {
+	if !testlib.InPath("docker") || testlib.IsWindows() {
 		m.Run()
 		return
 	}

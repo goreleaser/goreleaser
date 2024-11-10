@@ -5,7 +5,6 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
-	"runtime"
 	"testing"
 
 	"github.com/goreleaser/goreleaser/v2/internal/artifact"
@@ -29,7 +28,7 @@ var (
 )
 
 func init() {
-	if runtime.GOOS == "windows" {
+	if testlib.IsWindows() {
 		touch = "cmd.exe /c copy nul "
 		echo = "cmd.exe /c echo "
 	}
