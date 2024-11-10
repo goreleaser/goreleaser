@@ -29,8 +29,8 @@ var (
 
 func init() {
 	if runtime.GOOS == "windows" {
-		// powershell new-item
-		touch = "ni "
+		// cmd copy null to file
+		touch = "copy nul "
 	}
 }
 
