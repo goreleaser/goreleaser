@@ -411,6 +411,7 @@ func TestPublishPipeSuccess(t *testing.T) {
 }
 
 func TestSnapshot(t *testing.T) {
+	testlib.CheckDocker(t)
 	ctx := testctx.NewWithCfg(config.Project{
 		ProjectName: "test",
 		Builds: []config.Build{
