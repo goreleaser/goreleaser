@@ -89,7 +89,11 @@ func TestTarFile(t *testing.T) {
 		}
 		require.NoError(t, err)
 		paths = append(paths, next.Name)
-		if next.Name == "sub1/executable" && runtime.GOOS != "windows" {
+		if runtime.GOOS == "windows" {
+			// both of the following checks don't work on windows.
+			continue
+		}
+		if next.Name == "sub1/executable" {
 			require.Truef(
 				t,
 				next.FileInfo().Mode()&0o111 != 0,
