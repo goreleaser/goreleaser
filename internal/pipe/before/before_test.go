@@ -2,6 +2,7 @@ package before
 
 import (
 	"path/filepath"
+	"runtime"
 	"testing"
 
 	"github.com/caarlos0/log"
@@ -23,13 +24,16 @@ func TestDescription(t *testing.T) {
 }
 
 func TestRunPipe(t *testing.T) {
-	for _, tc := range [][]string{
+	table := [][]string{
 		nil,
 		{},
 		{"go version"},
 		{"go version", "go list"},
-		{`bash -c "go version; echo \"lala spaces and such\""`},
-	} {
+	}
+	if runtime.GOOS != "windows" {
+		table = append(table, []string{`bash -c "go version; echo \"lala spaces and such\""`})
+	}
+	for _, tc := range table {
 		ctx := testctx.NewWithCfg(
 			config.Project{
 				Before: config.Before{
@@ -70,6 +74,9 @@ func TestRunPipeFail(t *testing.T) {
 }
 
 func TestRunWithEnv(t *testing.T) {
+	if runtime.GOOS == "windows" {
+		t.Skip("skip on windows")
+	}
 	f := filepath.Join(t.TempDir(), "testfile")
 	require.NoError(t, Pipe{}.Run(testctx.NewWithCfg(
 		config.Project{
