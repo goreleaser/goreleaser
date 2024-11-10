@@ -19,6 +19,14 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
+var touch = "touch "
+
+func init() {
+	if testlib.IsWindows() {
+		touch = "cmd.exe /c copy nul "
+	}
+}
+
 func TestDescription(t *testing.T) {
 	require.NotEmpty(t, Pipe{}.String())
 }
@@ -208,11 +216,14 @@ func TestRun(t *testing.T) {
 				ModTimestamp: fmt.Sprintf("%d", modTime.Unix()),
 				Hooks: config.BuildHookConfig{
 					Pre: []config.Hook{
-						{Cmd: "touch " + pre},
+						{Cmd: touch + pre},
 					},
 					Post: []config.Hook{
-						{Cmd: "touch " + post},
-						{Cmd: `sh -c 'echo "{{ .Name }} {{ .Os }} {{ .Arch }} {{ .Arm }} {{ .Target }} {{ .Ext }}" > {{ .Path }}.post'`, Output: true},
+						{Cmd: touch + post},
+						{
+							Cmd:    shc(`echo "{{ .Name }} {{ .Os }} {{ .Arch }} {{ .Arm }} {{ .Target }} {{ .Ext }}" > {{ .Path }}.post`),
+							Output: true,
+						},
 					},
 				},
 			},
@@ -413,4 +424,11 @@ func checkUniversalBinary(tb testing.TB, unibin *artifact.Artifact) {
 	f, err := macho.OpenFat(unibin.Path)
 	require.NoError(tb, err)
 	require.Len(tb, f.Arches, 2)
+}
+
+func shc(cmd string) string {
+	if testlib.IsWindows() {
+		return "cmd.exe /c " + cmd
+	}
+	return fmt.Sprintf("sh -c '%s'", cmd)
 }
