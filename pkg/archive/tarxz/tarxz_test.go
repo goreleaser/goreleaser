@@ -6,6 +6,7 @@ import (
 	"io/fs"
 	"os"
 	"path/filepath"
+	"runtime"
 	"testing"
 	"time"
 
@@ -86,9 +87,13 @@ func TestTarXzFile(t *testing.T) {
 		}
 		require.NoError(t, err)
 		paths = append(paths, next.Name)
-		if next.Name == "sub1/executable" {
-			ex := next.FileInfo().Mode()&0o111 != 0
-			require.True(t, ex, "expected executable permissions, got %s", next.FileInfo().Mode())
+		if next.Name == "sub1/executable" && runtime.GOOS != "windows" {
+			require.Truef(
+				t,
+				next.FileInfo().Mode()&0o111 != 0,
+				"expected executable perms, got %s",
+				next.FileInfo().Mode().String(),
+			)
 		}
 		if next.Name == "link.txt" {
 			require.Equal(t, "regular.txt", next.Linkname)
