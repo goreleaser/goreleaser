@@ -611,7 +611,7 @@ func Test_subprocessDistPath(t *testing.T) {
 		t.Run(test.name, func(t *testing.T) {
 			actual, err := subprocessDistPath(test.distDir, test.pathRelativeToCwd)
 			require.NoError(t, err)
-			assert.Equal(t, test.expects, actual)
+			assert.Equal(t, filepath.ToSlash(test.expects), filepath.ToSlash(actual))
 		})
 	}
 }
