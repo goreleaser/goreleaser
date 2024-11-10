@@ -3,9 +3,9 @@ package gio
 import (
 	"os"
 	"path/filepath"
-	"runtime"
 	"testing"
 
+	"github.com/goreleaser/goreleaser/v2/internal/testlib"
 	"github.com/stretchr/testify/require"
 )
 
@@ -35,9 +35,7 @@ func TestCopySymlink(t *testing.T) {
 }
 
 func TestEqualFilesModeChanged(t *testing.T) {
-	if runtime.GOOS == "windows" {
-		t.Skip("skip on windows")
-	}
+	testlib.SkipIfWindows(t)
 	tmp := t.TempDir()
 	a := "testdata/somefile.txt"
 	b := tmp + "/somefile.txt"

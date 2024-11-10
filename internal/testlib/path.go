@@ -3,6 +3,7 @@ package testlib
 import (
 	"os"
 	"os/exec"
+	"runtime"
 	"testing"
 )
 
@@ -21,4 +22,12 @@ func InPath(cmd string) bool {
 	}
 	_, err := exec.LookPath(cmd)
 	return err == nil
+}
+
+// SkipIfWindows skips the test if runtime OS is windows.
+func SkipIfWindows(t testing.TB) {
+	t.Helper()
+	if runtime.GOOS == "windows" {
+		t.Skip("test skipped on windows")
+	}
 }

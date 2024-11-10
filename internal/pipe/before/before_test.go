@@ -74,9 +74,7 @@ func TestRunPipeFail(t *testing.T) {
 }
 
 func TestRunWithEnv(t *testing.T) {
-	if runtime.GOOS == "windows" {
-		t.Skip("skip on windows")
-	}
+	testlib.SkipIfWindows(t)
 	f := filepath.Join(t.TempDir(), "testfile")
 	require.NoError(t, Pipe{}.Run(testctx.NewWithCfg(
 		config.Project{

@@ -25,12 +25,13 @@ var (
 	errFailedDefault = errors.New("fake builder defaults failed")
 
 	touch = "touch "
+	echo  = "echo "
 )
 
 func init() {
 	if runtime.GOOS == "windows" {
-		// cmd copy null to file
-		touch = "copy nul "
+		touch = "cmd.exe /c copy nul "
+		echo = "cmd.exe /c echo "
 	}
 }
 
@@ -220,7 +221,7 @@ func TestRunPipeFailingHooks(t *testing.T) {
 	t.Run("pre-hook", func(t *testing.T) {
 		ctx := testctx.NewWithCfg(cfg, testctx.WithCurrentTag("2.4.5"))
 		ctx.Config.Builds[0].Hooks.Pre = []config.Hook{{Cmd: "exit 1"}}
-		ctx.Config.Builds[0].Hooks.Post = []config.Hook{{Cmd: "echo post"}}
+		ctx.Config.Builds[0].Hooks.Post = []config.Hook{{Cmd: echo + " post"}}
 
 		err := Pipe{}.Run(ctx)
 		require.ErrorIs(t, err, exec.ErrNotFound)
@@ -228,7 +229,7 @@ func TestRunPipeFailingHooks(t *testing.T) {
 	})
 	t.Run("post-hook", func(t *testing.T) {
 		ctx := testctx.NewWithCfg(cfg, testctx.WithCurrentTag("2.4.5"))
-		ctx.Config.Builds[0].Hooks.Pre = []config.Hook{{Cmd: "echo pre"}}
+		ctx.Config.Builds[0].Hooks.Pre = []config.Hook{{Cmd: echo + " pre"}}
 		ctx.Config.Builds[0].Hooks.Post = []config.Hook{{Cmd: "exit 1"}}
 		err := Pipe{}.Run(ctx)
 		require.ErrorIs(t, err, exec.ErrNotFound)
@@ -241,7 +242,7 @@ func TestRunPipeFailingHooks(t *testing.T) {
 			testctx.WithCurrentTag("2.4.5"),
 			testctx.Skip(skips.PostBuildHooks),
 		)
-		ctx.Config.Builds[0].Hooks.Pre = []config.Hook{{Cmd: "echo pre"}}
+		ctx.Config.Builds[0].Hooks.Pre = []config.Hook{{Cmd: echo + " pre"}}
 		ctx.Config.Builds[0].Hooks.Post = []config.Hook{{Cmd: "exit 1"}}
 		require.NoError(t, Pipe{}.Run(ctx))
 	})
@@ -252,7 +253,7 @@ func TestRunPipeFailingHooks(t *testing.T) {
 			testctx.WithCurrentTag("2.4.5"),
 			testctx.Skip(skips.PreBuildHooks),
 		)
-		ctx.Config.Builds[0].Hooks.Post = []config.Hook{{Cmd: "echo pre"}}
+		ctx.Config.Builds[0].Hooks.Post = []config.Hook{{Cmd: echo + " pre"}}
 		ctx.Config.Builds[0].Hooks.Pre = []config.Hook{{Cmd: "exit 1"}}
 		require.NoError(t, Pipe{}.Run(ctx))
 	})
@@ -747,6 +748,7 @@ func TestBuildOptionsForTarget(t *testing.T) {
 }
 
 func TestRunHookFailWithLogs(t *testing.T) {
+	testlib.SkipIfWindows(t)
 	folder := testlib.Mktmp(t)
 	config := config.Project{
 		Dist: folder,
