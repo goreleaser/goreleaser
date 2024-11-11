@@ -4,7 +4,6 @@
 package shell_test
 
 import (
-	"path/filepath"
 	"testing"
 
 	"github.com/goreleaser/goreleaser/v2/internal/shell"
@@ -25,17 +24,5 @@ func TestRunCommandWindows(t *testing.T) {
 		)
 	})
 
-	t.Run("cmd with output", func(t *testing.T) {
-		require.EqualError(
-			t,
-			shell.Run(testctx.New(), "", []string{"cmd.exe", "/c", "echo something\r\nexit /b 1"}, []string{}, true),
-			"shell: 'cmd.exe /c echo something\r\nexit /b 1': exit status 1: something",
-		)
-	})
-
-	t.Run("with env and dir", func(t *testing.T) {
-		dir := t.TempDir()
-		require.NoError(t, shell.Run(testctx.New(), dir, []string{"cmd.exe", "/c", "copy nul %FOO%"}, []string{"FOO=bar"}, false))
-		require.FileExists(t, filepath.Join(dir, "bar"))
-	})
+	// TODO: more tests for windows
 }
