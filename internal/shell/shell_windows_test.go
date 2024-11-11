@@ -1,5 +1,5 @@
-//go:build !windows
-// +build !windows
+//go:build windows
+// +build windows
 
 package shell_test
 
@@ -12,15 +12,15 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func TestRunCommand(t *testing.T) {
+func TestRunCommandWindows(t *testing.T) {
 	t.Run("simple", func(t *testing.T) {
-		require.NoError(t, shell.Run(testctx.New(), "", []string{"echo", "oi"}, []string{}, false))
+		require.NoError(t, shell.Run(testctx.New(), "", []string{"cmd.exe", "/c", "echo", "oi"}, []string{}, false))
 	})
 
 	t.Run("cmd failed", func(t *testing.T) {
 		require.EqualError(
 			t,
-			shell.Run(testctx.New(), "", []string{"sh", "-c", "exit 1"}, []string{}, false),
+			shell.Run(testctx.New(), "", []string{"cmd.exe", "/c", "exit /b 1"}, []string{}, false),
 			`shell: 'sh -c exit 1': exit status 1: [no output]`,
 		)
 	})
@@ -28,14 +28,14 @@ func TestRunCommand(t *testing.T) {
 	t.Run("cmd with output", func(t *testing.T) {
 		require.EqualError(
 			t,
-			shell.Run(testctx.New(), "", []string{"sh", "-c", `echo something; exit 1`}, []string{}, true),
-			`shell: 'sh -c echo something; exit 1': exit status 1: something`,
+			shell.Run(testctx.New(), "", []string{"cmd.exe", "/c", "echo something\r\nexit /b 1"}, []string{}, true),
+			`shell: 'cmd.exe /c echo something; exit 1': exit status 1: something`,
 		)
 	})
 
 	t.Run("with env and dir", func(t *testing.T) {
 		dir := t.TempDir()
-		require.NoError(t, shell.Run(testctx.New(), dir, []string{"sh", "-c", "touch $FOO"}, []string{"FOO=bar"}, false))
+		require.NoError(t, shell.Run(testctx.New(), dir, []string{"cmd.exe", "/c", "copy nul %FOO%"}, []string{"FOO=bar"}, false))
 		require.FileExists(t, filepath.Join(dir, "bar"))
 	})
 }
