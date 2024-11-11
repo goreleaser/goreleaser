@@ -60,11 +60,11 @@ func TestRunCustomMod(t *testing.T) {
 
 func TestCustomEnv(t *testing.T) {
 	bin := filepath.Join(t.TempDir(), "go.bin")
-	require.NoError(t, os.WriteFile(
-		bin,
-		[]byte("#!/bin/sh\nenv | grep -qw FOO=bar"),
-		0o755,
-	))
+	content := []byte("#!/bin/sh\nenv | grep -qw FOO=bar")
+	if testlib.IsWindows() {
+		content = []byte("@echo off\nif not \"%FOO%\"==\"bar\" exit /b 1")
+	}
+	require.NoError(t, os.WriteFile(bin, content, 0o755))
 	ctx := testctx.NewWithCfg(config.Project{
 		GoMod: config.GoMod{
 			GoBinary: bin,
