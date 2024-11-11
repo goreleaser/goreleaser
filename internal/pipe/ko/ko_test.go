@@ -156,6 +156,7 @@ func TestPublishPipeNoMatchingBuild(t *testing.T) {
 }
 
 func TestPublishPipeSuccess(t *testing.T) {
+	testlib.SkipIfWindows(t)
 	testlib.CheckPath(t, "docker")
 	testlib.StartRegistry(t, "ko_registry", registryPort)
 
