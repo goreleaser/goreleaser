@@ -62,7 +62,8 @@ func TestCustomEnv(t *testing.T) {
 	bin := filepath.Join(t.TempDir(), "go.bin")
 	content := []byte("#!/bin/sh\nenv | grep -qw FOO=bar")
 	if testlib.IsWindows() {
-		content = []byte("@echo off\nif not \"%FOO%\"==\"bar\" exit /b 1")
+		bin = strings.Replace(bin, ".bin", ".bat", 1)
+		content = []byte("@echo off\r\nif not \"%FOO%\"==\"bar\" exit /b 1")
 	}
 	require.NoError(t, os.WriteFile(bin, content, 0o755))
 	ctx := testctx.NewWithCfg(config.Project{
