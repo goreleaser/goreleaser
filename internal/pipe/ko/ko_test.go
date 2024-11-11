@@ -412,6 +412,7 @@ func TestPublishPipeSuccess(t *testing.T) {
 }
 
 func TestSnapshot(t *testing.T) {
+	testlib.SkipIfWindows(t)
 	testlib.CheckDocker(t)
 	ctx := testctx.NewWithCfg(config.Project{
 		ProjectName: "test",
