@@ -21,7 +21,7 @@ func TestRunCommandWindows(t *testing.T) {
 		require.EqualError(
 			t,
 			shell.Run(testctx.New(), "", []string{"cmd.exe", "/c", "exit /b 1"}, []string{}, false),
-			`shell: 'cmd.exe /c exit 1': exit status 1: [no output]`,
+			`shell: 'cmd.exe /c exit /b 1': exit status 1: [no output]`,
 		)
 	})
 
@@ -29,7 +29,7 @@ func TestRunCommandWindows(t *testing.T) {
 		require.EqualError(
 			t,
 			shell.Run(testctx.New(), "", []string{"cmd.exe", "/c", "echo something\r\nexit /b 1"}, []string{}, true),
-			`shell: 'cmd.exe /c echo something; exit 1': exit status 1: something`,
+			"shell: 'cmd.exe /c echo something\r\nexit /b 1': exit status 1: something",
 		)
 	})
 
