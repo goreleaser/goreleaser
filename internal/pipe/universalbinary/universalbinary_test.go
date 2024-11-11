@@ -428,7 +428,7 @@ func checkUniversalBinary(tb testing.TB, unibin *artifact.Artifact) {
 
 func shc(cmd string) string {
 	if testlib.IsWindows() {
-		return "cmd.exe /c " + cmd
+		return fmt.Sprintf("cmd.exe /c '%s'", cmd)
 	}
 	return fmt.Sprintf("sh -c '%s'", cmd)
 }
