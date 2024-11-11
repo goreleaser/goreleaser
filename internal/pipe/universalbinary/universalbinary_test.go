@@ -320,7 +320,7 @@ func TestRun(t *testing.T) {
 		require.FileExists(t, post)
 		bts, err := os.ReadFile(post)
 		require.NoError(t, err)
-		require.Equal(t, "foo darwin all  darwin_all \n", string(bts))
+		require.Equal(t, "foo darwin all  darwin_all \n", strings.ReplaceAll(string(bts), "\r\n", "\n"))
 	})
 
 	t.Run("failing pre-hook", func(t *testing.T) {
