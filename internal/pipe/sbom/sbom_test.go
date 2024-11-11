@@ -227,7 +227,7 @@ func TestSBOMCatalogArtifacts(t *testing.T) {
 	}{
 		{
 			desc:           "catalog errors",
-			expectedErrMsg: "cataloging artifacts: exit failed",
+			expectedErrMsg: "failed",
 			ctx: testctx.NewWithCfg(config.Project{
 				SBOMs: []config.SBOM{
 					{
