@@ -135,7 +135,7 @@ func TestRunOldGoVersion(t *testing.T) {
 	content := []byte("#!/bin/sh\necho \"flag provided but not defined: -m\"\nexit 1")
 	if testlib.IsWindows() {
 		bin = strings.Replace(bin, ".bin", ".bat", 1)
-		content = []byte("@echo off\r\necho \"flag provided but not defined: -m\"\r\nexit /b 1")
+		content = []byte("@echo off\r\necho flag provided but not defined: -m\r\nexit /b 1")
 	}
 	require.NoError(t, os.WriteFile(bin, content, 0o755))
 	ctx := testctx.NewWithCfg(config.Project{
