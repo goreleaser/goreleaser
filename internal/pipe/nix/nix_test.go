@@ -37,6 +37,7 @@ func TestSkip(t *testing.T) {
 	})
 	t.Run("nix-all-good", func(t *testing.T) {
 		testlib.CheckPath(t, "nix-prefetch-url")
+		testlib.SkipIfWindows(t)
 		require.False(t, NewPublish().Skip(testctx.NewWithCfg(config.Project{
 			Nix: []config.Nix{{}},
 		})))
@@ -65,6 +66,7 @@ func TestPrefetcher(t *testing.T) {
 			})
 			t.Run("valid", func(t *testing.T) {
 				testlib.CheckPath(t, "nix-prefetch-url")
+				testlib.SkipIfWindows(t)
 				sha, err := publishShaPrefetcher{nixPrefetchURLBin}.Prefetch("https://github.com/goreleaser/goreleaser/releases/download/v1.18.2/goreleaser_Darwin_arm64.tar.gz")
 				require.NoError(t, err)
 				require.Equal(t, "0girjxp07srylyq36xk1ska8p68m2fhp05xgyv4wkcl61d6rzv3y", sha)
@@ -81,6 +83,7 @@ func TestPrefetcher(t *testing.T) {
 			})
 			t.Run("valid", func(t *testing.T) {
 				testlib.CheckPath(t, "nix-prefetch-url")
+				testlib.SkipIfWindows(t)
 				require.True(t, publishShaPrefetcher{nixPrefetchURLBin}.Available())
 			})
 		})
