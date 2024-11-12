@@ -551,7 +551,7 @@ func testSBOMCataloging(
 			if info.IsDir() {
 				return nil
 			}
-			relPath, err := filepath.Rel(tmpdir, path)
+			relPath, err := filepath.Rel(filepath.FromSlash(tmpdir), filepath.FromSlash(path))
 			if err != nil {
 				return err
 			}
