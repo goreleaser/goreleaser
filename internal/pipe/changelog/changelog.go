@@ -348,9 +348,9 @@ func getChangeloger(ctx *context.Context) (changeloger, error) {
 			log.Warnf("there's no previous tag, using 'git' instead of '%s'", ctx.Config.Changelog.Use)
 			return gitChangeloger{}, nil
 		}
-		return newSCMChangeloger(ctx)
+		return newFallbackChangeloger(newSCMChangeloger(ctx))
 	case useGitHubNative:
-		return newGithubChangeloger(ctx)
+		return newFallbackChangeloger(newGithubChangeloger(ctx))
 	default:
 		return nil, fmt.Errorf("invalid changelog.use: %q", ctx.Config.Changelog.Use)
 	}
@@ -483,4 +483,28 @@ func comparePair(ctx *context.Context) (prev string, current string) {
 	prev = ctx.Git.PreviousTag
 	current = ctx.Git.CurrentTag
 	return
+}
+
+func newFallbackChangeloger(primary changeloger, err error) (changeloger, error) {
+	if err != nil {
+		log.WithError(err).Error("changelog failed, using 'git' as a fallback")
+		return &fallbackChangeloger{primary}, nil
+	}
+	return primary, nil
+}
+
+var _ changeloger = &fallbackChangeloger{}
+
+type fallbackChangeloger struct {
+	primary changeloger
+}
+
+// Log implements changeloger.
+func (f *fallbackChangeloger) Log(ctx *context.Context) (string, error) {
+	changes, err := f.primary.Log(ctx)
+	if err != nil {
+		log.WithError(err).Error("changelog failed, using 'git' as a fallback")
+		return gitChangeloger{}.Log(ctx)
+	}
+	return changes, nil
 }
