@@ -90,14 +90,14 @@ func TestRunPipe(t *testing.T) {
 					Goos:               "linux",
 					Goarch:             "amd64",
 					Dockerfile:         "testdata/Dockerfile.arch",
-					BuildFlagTemplates: []string{"--build-arg", "ARCH=amd64"},
+					BuildFlagTemplates: []string{"--build-arg", "ARCH=amd64", "--platform", "amd64"},
 				},
 				{
 					ImageTemplates:     []string{registry + "goreleaser/test_multiarch:test-arm64v8"},
 					Goos:               "linux",
 					Goarch:             "arm64",
 					Dockerfile:         "testdata/Dockerfile.arch",
-					BuildFlagTemplates: []string{"--build-arg", "ARCH=arm64v8"},
+					BuildFlagTemplates: []string{"--build-arg", "ARCH=arm64v8", "--platform", "arm64"},
 				},
 			},
 			manifests: []config.DockerManifest{
@@ -208,14 +208,14 @@ func TestRunPipe(t *testing.T) {
 					Goos:               "linux",
 					Goarch:             "amd64",
 					Dockerfile:         "testdata/Dockerfile.arch",
-					BuildFlagTemplates: []string{"--build-arg", "ARCH=amd64"},
+					BuildFlagTemplates: []string{"--build-arg", "ARCH=amd64", "--platform", "amd64"},
 				},
 				{
 					ImageTemplates:     []string{registry + "goreleaser/test_multiarch:2test-arm64v8"},
 					Goos:               "linux",
 					Goarch:             "arm64",
 					Dockerfile:         "testdata/Dockerfile.arch",
-					BuildFlagTemplates: []string{"--build-arg", "ARCH=arm64v8"},
+					BuildFlagTemplates: []string{"--build-arg", "ARCH=arm64v8", "--platform", "arm64"},
 				},
 			},
 			manifests: []config.DockerManifest{
@@ -258,7 +258,7 @@ func TestRunPipe(t *testing.T) {
 					Goos:               "linux",
 					Goarch:             "arm64",
 					Dockerfile:         "testdata/Dockerfile.arch",
-					BuildFlagTemplates: []string{"--build-arg", "ARCH=arm64v8"},
+					BuildFlagTemplates: []string{"--build-arg", "ARCH=arm64v8", "--platform", "arm64"},
 				},
 			},
 			manifests: []config.DockerManifest{
