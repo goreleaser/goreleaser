@@ -20,9 +20,9 @@ func (s skipper) Fatal(...any) {
 	s("docker is not available")
 }
 
-func CheckDocker(t testing.TB) {
-	t.Helper()
-	MustDockerPool(skipper(t.Skip))
+func CheckDocker(tb testing.TB) {
+	tb.Helper()
+	MustDockerPool(skipper(tb.Skip))
 }
 
 // MustDockerPool gets a single dockertet.Pool.
