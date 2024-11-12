@@ -403,11 +403,11 @@ func TestSBOMCatalogArtifacts(t *testing.T) {
 				SBOMs: []config.SBOM{
 					{
 						Artifacts: "any",
-						Cmd:       failCmd(),
+						Cmd:       "false",
 					},
 				},
 			}),
-			expectedErrMsg: "cataloging artifacts: false failed: exit status 1: ",
+			expectedErrMsg: "cataloging artifacts: false failed: ",
 		},
 		{
 			desc: "catalog wrong command",
@@ -795,11 +795,4 @@ func TestDependencies(t *testing.T) {
 		},
 	})
 	require.Equal(t, []string{"syft", "foobar"}, Pipe{}.Dependencies(ctx))
-}
-
-func failCmd() string {
-	if testlib.IsWindows() {
-		return "exit /b 1"
-	}
-	return "false"
 }
