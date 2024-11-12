@@ -555,7 +555,7 @@ func testSBOMCataloging(
 			if err != nil {
 				return err
 			}
-			gotFiles = append(gotFiles, relPath)
+			gotFiles = append(gotFiles, filepath.ToSlash(relPath))
 			return nil
 		}),
 	)
