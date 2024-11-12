@@ -682,7 +682,7 @@ func TestGetChangeloger(t *testing.T) {
 				Use: useGitHubNative,
 			},
 		}, testctx.GitHubTokenType)
-		c, err := getChangeloger(ctx)
+		c, err := newGithubChangeloger(ctx)
 		require.EqualError(t, err, "unsupported repository URL: https://gist.github.com/")
 		require.Nil(t, c)
 	})
@@ -707,7 +707,7 @@ func TestGetChangeloger(t *testing.T) {
 				Use: useGitHub,
 			},
 		}, testctx.GitHubTokenType, testctx.WithPreviousTag("v1.2.3"))
-		c, err := getChangeloger(ctx)
+		c, err := newGithubChangeloger(ctx)
 		require.EqualError(t, err, "unsupported repository URL: https://gist.github.com/")
 		require.Nil(t, c)
 	})
@@ -742,6 +742,20 @@ func TestGetChangeloger(t *testing.T) {
 		}))
 		require.EqualError(t, err, `invalid changelog.use: "nope"`)
 		require.Nil(t, c)
+	})
+
+	t.Run(useGitHubNative+"-with-fallback", func(t *testing.T) {
+		testlib.Mktmp(t)
+		testlib.GitInit(t)
+		testlib.GitRemoteAdd(t, "https://gist.github.com/")
+		ctx := testctx.NewWithCfg(config.Project{
+			Changelog: config.Changelog{
+				Use: useGitHubNative,
+			},
+		}, testctx.GitHubTokenType)
+		c, err := getChangeloger(ctx)
+		require.NoError(t, err)
+		require.NotNil(t, c)
 	})
 }
 
