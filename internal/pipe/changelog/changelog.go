@@ -433,11 +433,14 @@ type gitChangeloger struct{}
 func (g gitChangeloger) Log(ctx *context.Context) (string, error) {
 	args := []string{"log", "--pretty=oneline", "--no-decorate", "--no-color"}
 	prev, current := comparePair(ctx)
+	if current == "" {
+		current = ctx.Git.Commit
+	}
 	if prev == "" {
 		// log all commits since the first commit
 		args = append(args, current)
 	} else {
-		args = append(args, fmt.Sprintf("tags/%s..tags/%s", ctx.Git.PreviousTag, ctx.Git.CurrentTag))
+		args = append(args, fmt.Sprintf("%s..%s", prev, current))
 	}
 	return git.Run(ctx, args...)
 }
