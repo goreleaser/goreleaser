@@ -19,6 +19,6 @@ jobs:
     - uses: actions/setup-go@41dfa10bad2bb2ae585af6ee5bb4d7d973ad74ed # v4
       with:
         go-version: stable
-    - uses: github/codeql-action/init@4f3212b61783c3c68e8309a0f18a699764811cda # v3
-    - uses: github/codeql-action/autobuild@4f3212b61783c3c68e8309a0f18a699764811cda # v3
-    - uses: github/codeql-action/analyze@4f3212b61783c3c68e8309a0f18a699764811cda # v3
+    - uses: github/codeql-action/init@396bb3e45325a47dd9ef434068033c6d5bb0d11a # v3
+    - uses: github/codeql-action/autobuild@396bb3e45325a47dd9ef434068033c6d5bb0d11a # v3
+    - uses: github/codeql-action/analyze@396bb3e45325a47dd9ef434068033c6d5bb0d11a # v3
