@@ -432,14 +432,11 @@ type gitChangeloger struct{}
 
 func (g gitChangeloger) Log(ctx *context.Context) (string, error) {
 	args := []string{"log", "--pretty=oneline", "--no-decorate", "--no-color"}
-	prev, current := ctx.Git.PreviousTag, ctx.Git.CurrentTag
-	if current == "" {
-		current = ctx.Git.Commit
-	}
 	// if prev is empty, it means we don't have a previous tag, so we don't
 	// pass any more args, which should everything.
 	// if current is empty, it shouldn't matter, as it will then log
 	// `{prev}..`, which should log everything from prev to HEAD.
+	prev, current := ctx.Git.PreviousTag, ctx.Git.CurrentTag
 	if prev != "" {
 		args = append(args, fmt.Sprintf("%s..%s", prev, current))
 	}
