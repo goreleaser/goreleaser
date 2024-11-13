@@ -508,6 +508,7 @@ type Build struct {
 	Targets         []string        `yaml:"targets,omitempty" json:"targets,omitempty"`
 	Ignore          []IgnoredBuild  `yaml:"ignore,omitempty" json:"ignore,omitempty"`
 	Dir             string          `yaml:"dir,omitempty" json:"dir,omitempty"`
+	Glob            string          `yaml:"glob,omitempty" json:"glob,omitempty"`
 	Main            string          `yaml:"main,omitempty" json:"main,omitempty"`
 	Binary          string          `yaml:"binary,omitempty" json:"binary,omitempty"`
 	Hooks           BuildHookConfig `yaml:"hooks,omitempty" json:"hooks,omitempty"`
