@@ -386,12 +386,17 @@ func TestChangelogFilterIncludeInvalidRegex(t *testing.T) {
 func TestChangelogNoTags(t *testing.T) {
 	testlib.Mktmp(t)
 	testlib.GitInit(t)
-	testlib.GitCommit(t, "first")
-	testlib.GitCommit(t, "second")
-	testlib.GitCommit(t, "third")
+	msgs := []string{"first", "second", "third"}
+	for _, msg := range msgs {
+		testlib.GitCommit(t, msg)
+	}
 	ctx := testctx.New()
 	require.NoError(t, Pipe{}.Run(ctx))
 	require.NotEmpty(t, ctx.ReleaseNotes)
+	require.Contains(t, ctx.ReleaseNotes, "## Changelog")
+	for _, msg := range msgs {
+		require.Contains(t, ctx.ReleaseNotes, msg)
+	}
 }
 
 func TestChangelogOnBranchWithSameNameAsTag(t *testing.T) {
