@@ -436,9 +436,8 @@ func (g gitChangeloger) Log(ctx *context.Context) (string, error) {
 	if current == "" {
 		current = ctx.Git.Commit
 	}
-	if prev == "" {
-		// log all commits since the first commit
-	} else {
+	// if prev is empty, we don't pass any more args and log everything.
+	if prev != "" {
 		args = append(args, fmt.Sprintf("%s..%s", prev, current))
 	}
 	return git.Run(ctx, args...)
