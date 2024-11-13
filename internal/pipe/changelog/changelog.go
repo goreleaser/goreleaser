@@ -432,12 +432,13 @@ type gitChangeloger struct{}
 
 func (g gitChangeloger) Log(ctx *context.Context) (string, error) {
 	args := []string{"log", "--pretty=oneline", "--no-decorate", "--no-color"}
-	prev, current := comparePair(ctx)
-	if prev == "" {
-		// log all commits since the first commit
-		args = append(args, current)
-	} else {
-		args = append(args, fmt.Sprintf("tags/%s..tags/%s", ctx.Git.PreviousTag, ctx.Git.CurrentTag))
+	// if prev is empty, it means we don't have a previous tag, so we don't
+	// pass any more args, which should everything.
+	// if current is empty, it shouldn't matter, as it will then log
+	// `{prev}..`, which should log everything from prev to HEAD.
+	prev, current := ctx.Git.PreviousTag, ctx.Git.CurrentTag
+	if prev != "" {
+		args = append(args, fmt.Sprintf("%s..%s", prev, current))
 	}
 	return git.Run(ctx, args...)
 }
@@ -448,7 +449,7 @@ type scmChangeloger struct {
 }
 
 func (c *scmChangeloger) Log(ctx *context.Context) (string, error) {
-	prev, current := comparePair(ctx)
+	prev, current := ctx.Git.PreviousTag, ctx.Git.CurrentTag
 	items, err := c.client.Changelog(ctx, c.repo, prev, current)
 	if err != nil {
 		return "", err
@@ -477,10 +478,4 @@ type githubNativeChangeloger struct {
 
 func (c *githubNativeChangeloger) Log(ctx *context.Context) (string, error) {
 	return c.client.GenerateReleaseNotes(ctx, c.repo, ctx.Git.PreviousTag, ctx.Git.CurrentTag)
-}
-
-func comparePair(ctx *context.Context) (prev string, current string) {
-	prev = ctx.Git.PreviousTag
-	current = ctx.Git.CurrentTag
-	return
 }
