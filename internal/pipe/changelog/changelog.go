@@ -438,7 +438,6 @@ func (g gitChangeloger) Log(ctx *context.Context) (string, error) {
 	}
 	if prev == "" {
 		// log all commits since the first commit
-		args = append(args, current)
 	} else {
 		args = append(args, fmt.Sprintf("%s..%s", prev, current))
 	}

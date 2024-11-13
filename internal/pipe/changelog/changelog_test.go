@@ -387,9 +387,11 @@ func TestChangelogNoTags(t *testing.T) {
 	testlib.Mktmp(t)
 	testlib.GitInit(t)
 	testlib.GitCommit(t, "first")
+	testlib.GitCommit(t, "second")
+	testlib.GitCommit(t, "third")
 	ctx := testctx.New()
-	require.Error(t, Pipe{}.Run(ctx))
-	require.Empty(t, ctx.ReleaseNotes)
+	require.NoError(t, Pipe{}.Run(ctx))
+	require.NotEmpty(t, ctx.ReleaseNotes)
 }
 
 func TestChangelogOnBranchWithSameNameAsTag(t *testing.T) {
