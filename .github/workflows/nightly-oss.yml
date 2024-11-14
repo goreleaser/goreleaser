@@ -17,60 +17,45 @@ jobs:
       DOCKER_CLI_EXPERIMENTAL: "enabled"
     steps:
       - run: df -h
-      - run: sudo rm -rf /usr/share/dotnet
-      - run: df -h
-      - run: sudo rm -rf /usr/local/lib/android
-      - run: df -h
-      - run: sudo rm -rf /opt/ghc
-      - run: df -h
-      - run: sudo rm -rf /opt/hostedtoolcache/CodeQL
-      - run: df -h
-      - run: sudo docker image prune --all --force
-      - run: df -h
-      - run: sudo docker builder prune -a
+      - name: "node-cleanup"
+        # this should increase free space from ~21gb to ~38gb
+        run: |
+          sudo rm -rf /usr/share/dotnet /usr/local/lib/android /opt/ghc /opt/hostedtoolcache/CodeQL
+          sudo docker image prune --all --force
+          sudo docker builder prune -a
       - run: df -h
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4
         with:
           fetch-depth: 1000 # never anything near had that many commits in a release anyway.
-      - run: df -h
+          fetch-tags: true
       - uses: arduino/setup-task@b91d5d2c96a56797b48ac1e0e89220bf64044611 # v1
         with:
           version: 3.x
           repo-token: ${{ secrets.GITHUB_TOKEN }}
-      - run: df -h
       - uses: docker/setup-qemu-action@49b3bc8e6bdd4a60e6116a5414239cba5943d3cf # v2
-      - run: df -h
       - uses: docker/setup-buildx-action@c47758b77c9736f4b2ef4073d4d51994fabfe349 # v3
-      - run: df -h
       - uses: actions/setup-go@41dfa10bad2bb2ae585af6ee5bb4d7d973ad74ed # v4
         with:
           go-version: stable
-      - run: df -h
       - uses: sigstore/cosign-installer@v3.7.0
-      - run: df -h
       - uses: anchore/sbom-action/download-syft@v0.17.7
-      - run: df -h
       - uses: crazy-max/ghaction-upx@v3
         with:
           install-only: true
-      - run: df -h
       - uses: cachix/install-nix-action@v30
         with:
           github_access_token: ${{ secrets.GITHUB_TOKEN }}
-      - run: df -h
       - name: dockerhub-login
         uses: docker/login-action@9780b0c442fbb1117ed29e0efdff1e18412f7567 # v3
         with:
           username: ${{ secrets.DOCKER_USERNAME }}
           password: ${{ secrets.DOCKER_PASSWORD }}
-      - run: df -h
       - name: ghcr-login
         uses: docker/login-action@9780b0c442fbb1117ed29e0efdff1e18412f7567 # v3
         with:
           registry: ghcr.io
           username: ${{ github.repository_owner }}
           password: ${{ secrets.GITHUB_TOKEN }}
-      - run: df -h
       - uses: goreleaser/goreleaser-action@v6
         with:
           distribution: goreleaser-pro
