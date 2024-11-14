@@ -97,6 +97,8 @@ func TestSignInvalidArtifacts(t *testing.T) {
 }
 
 func TestSignArtifacts(t *testing.T) {
+	// dunno why this tries to use /usr/bin/gpg-agent on a windows machine
+	testlib.SkipIfWindows(t)
 	stdin := passwordUser
 	tmplStdin := passwordUserTmpl
 	tests := []struct {
