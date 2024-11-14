@@ -164,7 +164,7 @@ func subprocessDistPath(distDir string, pathRelativeToCwd string) (string, error
 			return "", err
 		}
 	}
-	relativePath, err := filepath.Rel(filepath.FromSlash(cwd), filepath.FromSlash(distDir))
+	relativePath, err := filepath.Rel(cwd, distDir)
 	if err != nil {
 		return "", err
 	}
