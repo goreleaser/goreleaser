@@ -451,7 +451,7 @@ func testSBOMCataloging(
 ) {
 	tb.Helper()
 	testlib.CheckPath(tb, "syft")
-	tmpdir := tb.TempDir()
+	tmpdir := testlib.Mktmp(tb)
 
 	ctx.Config.Dist = tmpdir
 	ctx.Version = "1.2.2"
