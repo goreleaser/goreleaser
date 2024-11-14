@@ -70,9 +70,18 @@ jobs:
     env:
       DOCKER_CLI_EXPERIMENTAL: "enabled"
     steps:
+      - run: df -h
+      - name: "node-cleanup"
+        # this should increase free space from ~21gb to ~38gb
+        run: |
+          sudo rm -rf /usr/share/dotnet /usr/local/lib/android /opt/ghc /opt/hostedtoolcache/CodeQL
+          sudo docker image prune --all --force
+          sudo docker builder prune -a
+      - run: df -h
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4
         with:
-          fetch-depth: 0
+          fetch-depth: 1000 # never anything near had that many commits in a release anyway.
+          fetch-tags: true
       - uses: arduino/setup-task@b91d5d2c96a56797b48ac1e0e89220bf64044611 # v1
         with:
           version: 3.x
@@ -136,3 +145,5 @@ jobs:
           MACOS_NOTARY_KEY: ${{ secrets.MACOS_NOTARY_KEY }}
           SNAPCRAFT_STORE_CREDENTIALS: ${{ secrets.SNAPCRAFT_LOGIN }}
         run: task goreleaser
+      - run: df -h
+        if: ${{ always() }}
