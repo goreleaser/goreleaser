@@ -447,14 +447,14 @@ func (c *gitlabClient) ReleaseURLTemplate(ctx *context.Context) (string, error) 
 
 	if ctx.Config.Release.GitLab.Owner != "" {
 		urlTemplate = fmt.Sprintf(
-			"%s/%s/%s/-/releases/{{ .Tag }}/downloads/{{ .ArtifactName }}",
+			"%s/%s/%s/-/releases/{{ urlPathEscape .Tag }}/downloads/{{ .ArtifactName }}",
 			downloadURL,
 			ctx.Config.Release.GitLab.Owner,
 			gitlabName,
 		)
 	} else {
 		urlTemplate = fmt.Sprintf(
-			"%s/%s/-/releases/{{ .Tag }}/downloads/{{ .ArtifactName }}",
+			"%s/%s/-/releases/{{ urlPathEscape .Tag }}/downloads/{{ .ArtifactName }}",
 			downloadURL,
 			gitlabName,
 		)

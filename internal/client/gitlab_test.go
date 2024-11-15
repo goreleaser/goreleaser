@@ -37,19 +37,19 @@ func TestGitLabReleaseURLTemplate(t *testing.T) {
 			name:            "default_download_url",
 			downloadURL:     DefaultGitLabDownloadURL,
 			repo:            repo,
-			wantDownloadURL: "https://gitlab.com/owner/name/-/releases/{{ .Tag }}/downloads/{{ .ArtifactName }}",
+			wantDownloadURL: "https://gitlab.com/owner/name/-/releases/{{ urlPathEscape .Tag }}/downloads/{{ .ArtifactName }}",
 		},
 		{
 			name:            "default_download_url_no_owner",
 			downloadURL:     DefaultGitLabDownloadURL,
 			repo:            config.Repo{Name: "name"},
-			wantDownloadURL: "https://gitlab.com/name/-/releases/{{ .Tag }}/downloads/{{ .ArtifactName }}",
+			wantDownloadURL: "https://gitlab.com/name/-/releases/{{ urlPathEscape .Tag }}/downloads/{{ .ArtifactName }}",
 		},
 		{
 			name:            "download_url_template",
 			repo:            repo,
 			downloadURL:     "{{ .Env.GORELEASER_TEST_GITLAB_URLS_DOWNLOAD }}",
-			wantDownloadURL: "https://gitlab.mycompany.com/owner/name/-/releases/{{ .Tag }}/downloads/{{ .ArtifactName }}",
+			wantDownloadURL: "https://gitlab.mycompany.com/owner/name/-/releases/{{ urlPathEscape .Tag }}/downloads/{{ .ArtifactName }}",
 		},
 		{
 			name:        "download_url_template_invalid_value",

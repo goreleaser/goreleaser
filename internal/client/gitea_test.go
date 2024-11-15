@@ -486,12 +486,12 @@ func TestGiteaReleaseURLTemplate(t *testing.T) {
 		{
 			name:            "string_url",
 			downloadURL:     "https://gitea.com",
-			wantDownloadURL: "https://gitea.com/owner/name/releases/download/{{ .Tag }}/{{ .ArtifactName }}",
+			wantDownloadURL: "https://gitea.com/owner/name/releases/download/{{ urlPathEscape .Tag }}/{{ .ArtifactName }}",
 		},
 		{
 			name:            "download_url_template",
 			downloadURL:     "{{ .Env.GORELEASER_TEST_GITEA_URLS_DOWNLOAD }}",
-			wantDownloadURL: "https://gitea.mycompany.com/owner/name/releases/download/{{ .Tag }}/{{ .ArtifactName }}",
+			wantDownloadURL: "https://gitea.mycompany.com/owner/name/releases/download/{{ urlPathEscape .Tag }}/{{ .ArtifactName }}",
 		},
 		{
 			name:        "download_url_template_invalid_value",

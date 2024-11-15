@@ -497,7 +497,7 @@ func (c *githubClient) ReleaseURLTemplate(ctx *context.Context) (string, error) 
 	}
 
 	return fmt.Sprintf(
-		"%s/%s/%s/releases/download/{{ .Tag }}/{{ .ArtifactName }}",
+		"%s/%s/%s/releases/download/{{ urlPathEscape .Tag }}/{{ .ArtifactName }}",
 		downloadURL,
 		ctx.Config.Release.GitHub.Owner,
 		ctx.Config.Release.GitHub.Name,

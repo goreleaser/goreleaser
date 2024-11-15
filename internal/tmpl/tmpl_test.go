@@ -39,8 +39,9 @@ func TestWithArtifact(t *testing.T) {
 			Dirty:       true,
 		}),
 		testctx.WithEnv(map[string]string{
-			"FOO":       "bar",
-			"MULTILINE": "something with\nmultiple lines\nremove this\nto test things",
+			"FOO":          "bar",
+			"MULTILINE":    "something with\nmultiple lines\nremove this\nto test things",
+			"WITH_SLASHES": "foo/bar",
 		}),
 		testctx.WithSemver(1, 2, 3, ""),
 		testctx.Snapshot,
@@ -103,6 +104,7 @@ func TestWithArtifact(t *testing.T) {
 		"env bar: barrrrr":                    `env bar: {{ envOrDefault "BAR" "barrrrr" }}`,
 		"env foo: bar":                        `env foo: {{ envOrDefault "FOO" "barrrrr" }}`,
 		"env foo is set: true":                `env foo is set: {{ isEnvSet "FOO" }}`,
+		"/foo%2Fbar":                          `/{{ urlPathEscape .Env.WITH_SLASHES}}`,
 
 		"remove this": "{{ filter .Env.MULTILINE \".*remove.*\" }}",
 		"something with\nmultiple lines\nto test things": "{{ reverseFilter .Env.MULTILINE \".*remove.*\" }}",
