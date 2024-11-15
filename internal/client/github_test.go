@@ -138,12 +138,12 @@ func TestGitHubReleaseURLTemplate(t *testing.T) {
 		{
 			name:            "default_download_url",
 			downloadURL:     DefaultGitHubDownloadURL,
-			wantDownloadURL: "https://github.com/owner/name/releases/download/{{ .Tag }}/{{ .ArtifactName }}",
+			wantDownloadURL: "https://github.com/owner/name/releases/download/{{ urlPathEscape .Tag }}/{{ .ArtifactName }}",
 		},
 		{
 			name:            "download_url_template",
 			downloadURL:     "{{ .Env.GORELEASER_TEST_GITHUB_URLS_DOWNLOAD }}",
-			wantDownloadURL: "https://github.mycompany.com/owner/name/releases/download/{{ .Tag }}/{{ .ArtifactName }}",
+			wantDownloadURL: "https://github.mycompany.com/owner/name/releases/download/{{ urlPathEscape .Tag }}/{{ .ArtifactName }}",
 		},
 		{
 			name:        "download_url_template_invalid_value",

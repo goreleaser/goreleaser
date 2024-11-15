@@ -5,6 +5,7 @@ import (
 	"bytes"
 	"fmt"
 	"maps"
+	"net/url"
 	"path/filepath"
 	"regexp"
 	"strings"
@@ -251,6 +252,7 @@ func (t *Template) Apply(s string) (string, error) {
 			"isEnvSet":       t.isEnvSet,
 			"map":            makemap,
 			"indexOrDefault": indexOrDefault,
+			"urlPathEscape":  url.PathEscape,
 		}).
 		Parse(s)
 	if err != nil {
