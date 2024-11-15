@@ -22,6 +22,7 @@ jobs:
           go-version: stable
       - uses: github/codeql-action/init@ea9e4e37992a54ee68a9622e985e60c8e8f12d9f # v3
         with:
-          paths-ignore: ./dagger
+          config: |
+            paths-ignore: ./dagger
       - uses: github/codeql-action/autobuild@ea9e4e37992a54ee68a9622e985e60c8e8f12d9f # v3
       - uses: github/codeql-action/analyze@ea9e4e37992a54ee68a9622e985e60c8e8f12d9f # v3
