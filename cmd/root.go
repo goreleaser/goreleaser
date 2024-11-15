@@ -149,11 +149,11 @@ func deprecateWarn(ctx *context.Context) {
 	}
 }
 
-func timedRunE(verb string, rune func(cmd *cobra.Command, args []string) error) func(cmd *cobra.Command, args []string) error {
+func timedRunE(verb string, runE func(cmd *cobra.Command, args []string) error) func(cmd *cobra.Command, args []string) error {
 	return func(cmd *cobra.Command, args []string) error {
 		start := time.Now()
 
-		if err := rune(cmd, args); err != nil {
+		if err := runE(cmd, args); err != nil {
 			return wrapError(err, boldStyle.Render(fmt.Sprintf("%s failed after %s", verb, time.Since(start).Truncate(time.Second))))
 		}
 

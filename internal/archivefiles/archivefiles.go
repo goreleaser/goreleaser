@@ -140,6 +140,8 @@ func longestCommonPrefix(strs []string) string {
 }
 
 // copied from nfpm
+//
+//nolint:revive // redefines-builtin-id
 func strlcp(a, b string) string {
 	var min int
 	if len(a) > len(b) {
