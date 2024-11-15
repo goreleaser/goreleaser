@@ -1,6 +1,7 @@
 name: "codeql"
 
 on:
+  pull_request:
   push:
     branches: [main]
 
