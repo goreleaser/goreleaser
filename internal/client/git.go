@@ -22,8 +22,8 @@ import (
 
 var gil sync.Mutex
 
-// DefaulGitSSHCommand used for git over SSH.
-const DefaulGitSSHCommand = `ssh -i "{{ .KeyPath }}" -o StrictHostKeyChecking=accept-new -F /dev/null`
+// DefaultGitSSHCommand used for git over SSH.
+const DefaultGitSSHCommand = `ssh -i "{{ .KeyPath }}" -o StrictHostKeyChecking=accept-new -F /dev/null`
 
 type gitClient struct {
 	branch string
@@ -70,7 +70,7 @@ func (g *gitClient) CreateFiles(
 
 	sshcmd, err := tmpl.New(ctx).WithExtraFields(tmpl.Fields{
 		"KeyPath": key,
-	}).Apply(ordered.First(repo.GitSSHCommand, DefaulGitSSHCommand))
+	}).Apply(ordered.First(repo.GitSSHCommand, DefaultGitSSHCommand))
 	if err != nil {
 		return fmt.Errorf("git: failed to template ssh command: %w", err)
 	}
