@@ -73,7 +73,6 @@ func TestRunPipeFail(t *testing.T) {
 }
 
 func TestRunWithEnv(t *testing.T) {
-	testlib.SkipIfWindows(t)
 	f := filepath.Join(t.TempDir(), "testfile")
 	require.NoError(t, Pipe{}.Run(testctx.NewWithCfg(
 		config.Project{
@@ -81,7 +80,7 @@ func TestRunWithEnv(t *testing.T) {
 				"TEST_FILE=" + f,
 			},
 			Before: config.Before{
-				Hooks: []string{"touch {{ .Env.TEST_FILE }}"},
+				Hooks: []string{testlib.Touch("{{ .Env.TEST_FILE }}")},
 			},
 		},
 	)))
@@ -92,7 +91,7 @@ func TestInvalidTemplate(t *testing.T) {
 	testlib.RequireTemplateError(t, Pipe{}.Run(testctx.NewWithCfg(
 		config.Project{
 			Before: config.Before{
-				Hooks: []string{"touch {{ .fasdsd }"},
+				Hooks: []string{"doesnt-matter {{ .fasdsd }"},
 			},
 		},
 	)))

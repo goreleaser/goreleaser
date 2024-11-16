@@ -19,18 +19,6 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-var (
-	echo  = "echo "
-	touch = "touch "
-)
-
-func init() {
-	if testlib.IsWindows() {
-		touch = "cmd.exe /c copy nul "
-		echo = "cmd.exe /c echo "
-	}
-}
-
 func TestDescription(t *testing.T) {
 	require.NotEmpty(t, Pipe{}.String())
 }
@@ -187,11 +175,11 @@ func TestRun(t *testing.T) {
 				NameTemplate: "foo",
 				Hooks: config.BuildHookConfig{
 					Pre: []config.Hook{
-						{Cmd: touch + pre},
+						{Cmd: testlib.Touch(pre)},
 					},
 					Post: []config.Hook{
-						{Cmd: touch + post},
-						{Cmd: shc(`echo "{{ .Name }} {{ .Os }} {{ .Arch }} {{ .Arm }} {{ .Target }} {{ .Ext }}" > {{ .Path }}.post`), Output: true},
+						{Cmd: testlib.Touch(post)},
+						{Cmd: testlib.ShC(`echo "{{ .Name }} {{ .Os }} {{ .Arch }} {{ .Arm }} {{ .Target }} {{ .Ext }}" > {{ .Path }}.post`), Output: true},
 					},
 				},
 			},
@@ -220,12 +208,12 @@ func TestRun(t *testing.T) {
 				ModTimestamp: fmt.Sprintf("%d", modTime.Unix()),
 				Hooks: config.BuildHookConfig{
 					Pre: []config.Hook{
-						{Cmd: touch + pre},
+						{Cmd: testlib.Touch(pre)},
 					},
 					Post: []config.Hook{
-						{Cmd: touch + post},
+						{Cmd: testlib.Touch(post)},
 						{
-							Cmd:    shc(`echo "{{ .Name }} {{ .Os }} {{ .Arch }} {{ .Arm }} {{ .Target }} {{ .Ext }}" > {{ .Path }}.post`),
+							Cmd:    testlib.ShC(`echo "{{ .Name }} {{ .Os }} {{ .Arch }} {{ .Arm }} {{ .Target }} {{ .Ext }}" > {{ .Path }}.post`),
 							Output: true,
 						},
 					},
@@ -330,7 +318,7 @@ func TestRun(t *testing.T) {
 	t.Run("failing pre-hook", func(t *testing.T) {
 		ctx := ctx5
 		ctx.Config.UniversalBinaries[0].Hooks.Pre = []config.Hook{{Cmd: "exit 1"}}
-		ctx.Config.UniversalBinaries[0].Hooks.Post = []config.Hook{{Cmd: echo + "post"}}
+		ctx.Config.UniversalBinaries[0].Hooks.Post = []config.Hook{{Cmd: "doesnt-matter"}}
 		err := Pipe{}.Run(ctx)
 		require.ErrorIs(t, err, exec.ErrNotFound)
 		require.ErrorContains(t, err, "pre hook failed")
@@ -338,7 +326,7 @@ func TestRun(t *testing.T) {
 
 	t.Run("failing post-hook", func(t *testing.T) {
 		ctx := ctx5
-		ctx.Config.UniversalBinaries[0].Hooks.Pre = []config.Hook{{Cmd: echo + "pre"}}
+		ctx.Config.UniversalBinaries[0].Hooks.Pre = []config.Hook{{Cmd: testlib.Echo("pre")}}
 		ctx.Config.UniversalBinaries[0].Hooks.Post = []config.Hook{{Cmd: "exit 1"}}
 		err := Pipe{}.Run(ctx)
 		require.ErrorIs(t, err, exec.ErrNotFound)
@@ -364,7 +352,7 @@ func TestRun(t *testing.T) {
 		ctx.Skips[string(skips.PostBuildHooks)] = false
 		ctx.Skips[string(skips.PreBuildHooks)] = false
 		ctx.Config.UniversalBinaries[0].Hooks.Pre = []config.Hook{{
-			Cmd: echo + "{{.Env.FOO}}",
+			Cmd: testlib.Echo("{{.Env.FOO}}"),
 			Env: []string{"FOO=foo-{{.Tag}}"},
 		}}
 		ctx.Config.UniversalBinaries[0].Hooks.Post = []config.Hook{}
@@ -376,7 +364,7 @@ func TestRun(t *testing.T) {
 		ctx.Skips[string(skips.PostBuildHooks)] = false
 		ctx.Skips[string(skips.PreBuildHooks)] = false
 		ctx.Config.UniversalBinaries[0].Hooks.Pre = []config.Hook{{
-			Cmd: echo + "blah",
+			Cmd: testlib.Echo("blah"),
 			Env: []string{"FOO=foo-{{.Tag}"},
 		}}
 		ctx.Config.UniversalBinaries[0].Hooks.Post = []config.Hook{}
@@ -386,7 +374,7 @@ func TestRun(t *testing.T) {
 	t.Run("hook with bad dir tmpl", func(t *testing.T) {
 		ctx := ctx5
 		ctx.Config.UniversalBinaries[0].Hooks.Pre = []config.Hook{{
-			Cmd: echo + "blah",
+			Cmd: testlib.Echo("blah"),
 			Dir: "{{.Tag}",
 		}}
 		ctx.Config.UniversalBinaries[0].Hooks.Post = []config.Hook{}
@@ -396,7 +384,7 @@ func TestRun(t *testing.T) {
 	t.Run("hook with bad cmd tmpl", func(t *testing.T) {
 		ctx := ctx5
 		ctx.Config.UniversalBinaries[0].Hooks.Pre = []config.Hook{{
-			Cmd: echo + "blah-{{.Tag }",
+			Cmd: testlib.Echo("blah-{{.Tag }"),
 		}}
 		ctx.Config.UniversalBinaries[0].Hooks.Post = []config.Hook{}
 		testlib.RequireTemplateError(t, Pipe{}.Run(ctx))
@@ -428,11 +416,4 @@ func checkUniversalBinary(tb testing.TB, unibin *artifact.Artifact) {
 	f, err := macho.OpenFat(unibin.Path)
 	require.NoError(tb, err)
 	require.Len(tb, f.Arches, 2)
-}
-
-func shc(cmd string) string {
-	if testlib.IsWindows() {
-		return fmt.Sprintf("cmd.exe /c '%s'", cmd)
-	}
-	return fmt.Sprintf("sh -c '%s'", cmd)
 }

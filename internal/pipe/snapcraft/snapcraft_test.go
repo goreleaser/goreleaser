@@ -48,8 +48,7 @@ func TestRunPipeMissingInfo(t *testing.T) {
 }
 
 func TestRunPipe(t *testing.T) {
-	// snap doesn't work on windows apparently
-	testlib.SkipIfWindows(t)
+	testlib.SkipIfWindows(t, "snap doesn't work in windows")
 	testlib.CheckPath(t, "snapcraft")
 	folder := t.TempDir()
 	dist := filepath.Join(folder, "dist")
@@ -101,8 +100,7 @@ func TestRunPipe(t *testing.T) {
 }
 
 func TestBadTemplate(t *testing.T) {
-	// snap doesn't work on windows apparently
-	testlib.SkipIfWindows(t)
+	testlib.SkipIfWindows(t, "snap doesn't work in windows")
 	testlib.CheckPath(t, "snapcraft")
 	folder := t.TempDir()
 	dist := filepath.Join(folder, "dist")
@@ -135,8 +133,7 @@ func TestBadTemplate(t *testing.T) {
 }
 
 func TestRunPipeInvalidNameTemplate(t *testing.T) {
-	// snap doesn't work on windows apparently
-	testlib.SkipIfWindows(t)
+	testlib.SkipIfWindows(t, "snap doesn't work in windows")
 	testlib.CheckPath(t, "snapcraft")
 	folder := t.TempDir()
 	dist := filepath.Join(folder, "dist")
@@ -159,8 +156,7 @@ func TestRunPipeInvalidNameTemplate(t *testing.T) {
 }
 
 func TestRunPipeWithName(t *testing.T) {
-	// snap doesn't work on windows apparently
-	testlib.SkipIfWindows(t)
+	testlib.SkipIfWindows(t, "snap doesn't work in windows")
 	testlib.CheckPath(t, "snapcraft")
 	folder := t.TempDir()
 	dist := filepath.Join(folder, "dist")
@@ -195,8 +191,7 @@ func TestRunPipeWithName(t *testing.T) {
 }
 
 func TestRunPipeMetadata(t *testing.T) {
-	// snap doesn't work on windows apparently
-	testlib.SkipIfWindows(t)
+	testlib.SkipIfWindows(t, "snap doesn't work in windows")
 	testlib.CheckPath(t, "snapcraft")
 	folder := t.TempDir()
 	dist := filepath.Join(folder, "dist")
@@ -352,8 +347,7 @@ func TestNoSnapcraftInPath(t *testing.T) {
 }
 
 func TestRunNoArguments(t *testing.T) {
-	// snap doesn't work on windows apparently
-	testlib.SkipIfWindows(t)
+	testlib.SkipIfWindows(t, "snap doesn't work in windows")
 	testlib.CheckPath(t, "snapcraft")
 	folder := t.TempDir()
 	dist := filepath.Join(folder, "dist")
@@ -388,8 +382,7 @@ func TestRunNoArguments(t *testing.T) {
 }
 
 func TestCompleter(t *testing.T) {
-	// snap doesn't work on windows apparently
-	testlib.SkipIfWindows(t)
+	testlib.SkipIfWindows(t, "snap doesn't work in windows")
 	testlib.CheckPath(t, "snapcraft")
 	folder := t.TempDir()
 	dist := filepath.Join(folder, "dist")
@@ -427,8 +420,7 @@ func TestCompleter(t *testing.T) {
 }
 
 func TestCommand(t *testing.T) {
-	// snap doesn't work on windows apparently
-	testlib.SkipIfWindows(t)
+	testlib.SkipIfWindows(t, "snap doesn't work in windows")
 	testlib.CheckPath(t, "snapcraft")
 	folder := t.TempDir()
 	dist := filepath.Join(folder, "dist")
@@ -464,8 +456,7 @@ func TestCommand(t *testing.T) {
 }
 
 func TestExtraFile(t *testing.T) {
-	// snap doesn't work on windows apparently
-	testlib.SkipIfWindows(t)
+	testlib.SkipIfWindows(t, "snap doesn't work in windows")
 	testlib.CheckPath(t, "snapcraft")
 	folder := t.TempDir()
 	dist := filepath.Join(folder, "dist")

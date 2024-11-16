@@ -56,7 +56,7 @@ func TestInitGitIgnoreExists(t *testing.T) {
 }
 
 func TestInitFileError(t *testing.T) {
-	testlib.SkipIfWindows(t)
+	testlib.SkipIfWindows(t, "windows permissions don't work the same way")
 	folder := setupInitTest(t)
 	cmd := newInitCmd().cmd
 	path := filepath.Join(folder, "nope.yaml")

@@ -292,7 +292,7 @@ func TestLoadEnv(t *testing.T) {
 		require.Equal(t, "123", v)
 	})
 	t.Run("env file is not readable", func(t *testing.T) {
-		testlib.SkipIfWindows(t)
+		testlib.SkipIfWindows(t, "permissions work differently in windows")
 		f, err := os.CreateTemp(t.TempDir(), "token")
 		require.NoError(t, err)
 		fmt.Fprintf(f, "123")

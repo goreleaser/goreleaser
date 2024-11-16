@@ -175,7 +175,7 @@ func TestGoModProxy(t *testing.T) {
 	})
 
 	t.Run("no perms", func(t *testing.T) {
-		testlib.SkipIfWindows(t)
+		testlib.SkipIfWindows(t, "windows permissions work differently")
 		for file, mode := range map[string]os.FileMode{
 			"go.mod":          0o500,
 			"go.sum":          0o500,

@@ -156,7 +156,7 @@ func TestPublishPipeNoMatchingBuild(t *testing.T) {
 }
 
 func TestPublishPipeSuccess(t *testing.T) {
-	testlib.SkipIfWindows(t)
+	testlib.SkipIfWindows(t, "ko doesn't work in windows")
 	testlib.CheckPath(t, "docker")
 	testlib.StartRegistry(t, "ko_registry", registryPort)
 
@@ -412,7 +412,7 @@ func TestPublishPipeSuccess(t *testing.T) {
 }
 
 func TestSnapshot(t *testing.T) {
-	testlib.SkipIfWindows(t)
+	testlib.SkipIfWindows(t, "ko doesn't work in windows")
 	testlib.CheckDocker(t)
 	ctx := testctx.NewWithCfg(config.Project{
 		ProjectName: "test",
