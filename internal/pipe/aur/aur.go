@@ -272,8 +272,6 @@ func toPkgBuildArch(arch string) string {
 		return "i686"
 	case "arm64":
 		return "aarch64"
-	case "arm6":
-		return "armv6h"
 	case "arm7":
 		return "armv7h"
 	default:
