@@ -242,8 +242,8 @@ func TestRunPipeFailingHooks(t *testing.T) {
 			testctx.WithCurrentTag("2.4.5"),
 			testctx.Skip(skips.PreBuildHooks),
 		)
-		ctx.Config.Builds[0].Hooks.Pre = []config.Hook{{Cmd: testlib.Echo("pre")}}
 		ctx.Config.Builds[0].Hooks.Pre = []config.Hook{{Cmd: "exit 1"}}
+		ctx.Config.Builds[0].Hooks.Post = []config.Hook{{Cmd: testlib.Echo("pre")}}
 		require.NoError(t, Pipe{}.Run(ctx))
 	})
 }
