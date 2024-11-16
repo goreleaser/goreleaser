@@ -2,7 +2,6 @@ package git_test
 
 import (
 	"context"
-	"strings"
 	"testing"
 
 	"github.com/goreleaser/goreleaser/v2/internal/git"
@@ -36,7 +35,7 @@ func TestRelativeRemote(t *testing.T) {
 	require.NoError(t, err)
 	gitCfg, err := git.Run(ctx, "config", "--local", "--list")
 	require.NoError(t, err)
-	require.True(t, strings.Contains(gitCfg, "branch.relative_branch.remote=."))
+	require.Contains(t, gitCfg, "branch.relative_branch.remote=.")
 	repo, err := git.ExtractRepoFromConfig(ctx)
 	require.NoError(t, err)
 	require.Equal(t, "goreleaser/goreleaser", repo.String())
