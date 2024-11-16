@@ -22,7 +22,17 @@ import (
 var (
 	errFailedBuild   = errors.New("fake builder failed")
 	errFailedDefault = errors.New("fake builder defaults failed")
+
+	touch = "touch "
+	echo  = "echo "
 )
+
+func init() {
+	if testlib.IsWindows() {
+		touch = "cmd.exe /c copy nul "
+		echo = "cmd.exe /c echo "
+	}
+}
 
 type fakeBuilder struct {
 	fail        bool
@@ -136,12 +146,12 @@ func TestRunFullPipe(t *testing.T) {
 				},
 				Hooks: config.BuildHookConfig{
 					Pre: []config.Hook{
-						{Cmd: "touch " + pre},
-						{Cmd: "touch pre_{{ .Env.THE_OS}}"},
+						{Cmd: touch + pre},
+						{Cmd: touch + " pre_{{ .Env.THE_OS}}"},
 					},
 					Post: []config.Hook{
-						{Cmd: "touch " + post},
-						{Cmd: "touch post_{{ .Env.THE_OS}}"},
+						{Cmd: touch + post},
+						{Cmd: touch + " post_{{ .Env.THE_OS}}"},
 					},
 				},
 				Targets: []string{"linux_amd64"},
@@ -178,10 +188,10 @@ func TestRunFullPipeFail(t *testing.T) {
 				},
 				Hooks: config.BuildHookConfig{
 					Pre: []config.Hook{
-						{Cmd: "touch " + pre},
+						{Cmd: touch + pre},
 					},
 					Post: []config.Hook{
-						{Cmd: "touch " + post},
+						{Cmd: touch + post},
 					},
 				},
 				Targets: []string{"linux_amd64"},
@@ -210,7 +220,7 @@ func TestRunPipeFailingHooks(t *testing.T) {
 	t.Run("pre-hook", func(t *testing.T) {
 		ctx := testctx.NewWithCfg(cfg, testctx.WithCurrentTag("2.4.5"))
 		ctx.Config.Builds[0].Hooks.Pre = []config.Hook{{Cmd: "exit 1"}}
-		ctx.Config.Builds[0].Hooks.Post = []config.Hook{{Cmd: "echo post"}}
+		ctx.Config.Builds[0].Hooks.Post = []config.Hook{{Cmd: echo + " post"}}
 
 		err := Pipe{}.Run(ctx)
 		require.ErrorIs(t, err, exec.ErrNotFound)
@@ -218,7 +228,7 @@ func TestRunPipeFailingHooks(t *testing.T) {
 	})
 	t.Run("post-hook", func(t *testing.T) {
 		ctx := testctx.NewWithCfg(cfg, testctx.WithCurrentTag("2.4.5"))
-		ctx.Config.Builds[0].Hooks.Pre = []config.Hook{{Cmd: "echo pre"}}
+		ctx.Config.Builds[0].Hooks.Pre = []config.Hook{{Cmd: echo + " pre"}}
 		ctx.Config.Builds[0].Hooks.Post = []config.Hook{{Cmd: "exit 1"}}
 		err := Pipe{}.Run(ctx)
 		require.ErrorIs(t, err, exec.ErrNotFound)
@@ -231,7 +241,7 @@ func TestRunPipeFailingHooks(t *testing.T) {
 			testctx.WithCurrentTag("2.4.5"),
 			testctx.Skip(skips.PostBuildHooks),
 		)
-		ctx.Config.Builds[0].Hooks.Pre = []config.Hook{{Cmd: "echo pre"}}
+		ctx.Config.Builds[0].Hooks.Pre = []config.Hook{{Cmd: echo + " pre"}}
 		ctx.Config.Builds[0].Hooks.Post = []config.Hook{{Cmd: "exit 1"}}
 		require.NoError(t, Pipe{}.Run(ctx))
 	})
@@ -242,7 +252,7 @@ func TestRunPipeFailingHooks(t *testing.T) {
 			testctx.WithCurrentTag("2.4.5"),
 			testctx.Skip(skips.PreBuildHooks),
 		)
-		ctx.Config.Builds[0].Hooks.Post = []config.Hook{{Cmd: "echo pre"}}
+		ctx.Config.Builds[0].Hooks.Post = []config.Hook{{Cmd: echo + " pre"}}
 		ctx.Config.Builds[0].Hooks.Pre = []config.Hook{{Cmd: "exit 1"}}
 		require.NoError(t, Pipe{}.Run(ctx))
 	})
@@ -364,10 +374,10 @@ func TestDefaultPartialBuilds(t *testing.T) {
 		},
 	})
 	// Create any 'Dir' paths necessary for builds.
-	cwd, err := os.Getwd()
+	previous, err := os.Getwd()
 	require.NoError(t, err)
-	t.Cleanup(func() { require.NoError(t, os.Chdir(cwd)) })
 	require.NoError(t, os.Chdir(t.TempDir()))
+	t.Cleanup(func() { require.NoError(t, os.Chdir(previous)) })
 	for _, b := range ctx.Config.Builds {
 		if b.Dir != "" {
 			require.NoError(t, os.Mkdir(b.Dir, 0o755))
@@ -505,10 +515,10 @@ func TestBuild_hooksKnowGoosGoarch(t *testing.T) {
 		},
 		Hooks: config.BuildHookConfig{
 			Pre: []config.Hook{
-				{Cmd: "touch pre-hook-{{.Arch}}-{{.Os}}", Dir: tmpDir},
+				{Cmd: touch + " pre-hook-{{.Arch}}-{{.Os}}", Dir: tmpDir},
 			},
 			Post: config.Hooks{
-				{Cmd: "touch post-hook-{{.Arch}}-{{.Os}}", Dir: tmpDir},
+				{Cmd: touch + " post-hook-{{.Arch}}-{{.Os}}", Dir: tmpDir},
 			},
 		},
 	}
@@ -538,10 +548,10 @@ func TestPipeOnBuild_hooksRunPerTarget(t *testing.T) {
 		},
 		Hooks: config.BuildHookConfig{
 			Pre: []config.Hook{
-				{Cmd: "touch pre-hook-{{.Target}}", Dir: tmpDir},
+				{Cmd: touch + " pre-hook-{{.Target}}", Dir: tmpDir},
 			},
 			Post: config.Hooks{
-				{Cmd: "touch post-hook-{{.Target}}", Dir: tmpDir},
+				{Cmd: touch + " post-hook-{{.Target}}", Dir: tmpDir},
 			},
 		},
 	}
@@ -737,6 +747,7 @@ func TestBuildOptionsForTarget(t *testing.T) {
 }
 
 func TestRunHookFailWithLogs(t *testing.T) {
+	testlib.SkipIfWindows(t)
 	folder := testlib.Mktmp(t)
 	config := config.Project{
 		Dist: folder,

@@ -60,11 +60,12 @@ func TestRunCustomMod(t *testing.T) {
 
 func TestCustomEnv(t *testing.T) {
 	bin := filepath.Join(t.TempDir(), "go.bin")
-	require.NoError(t, os.WriteFile(
-		bin,
-		[]byte("#!/bin/sh\nenv | grep -qw FOO=bar"),
-		0o755,
-	))
+	content := []byte("#!/bin/sh\nenv | grep -qw FOO=bar")
+	if testlib.IsWindows() {
+		bin = strings.Replace(bin, ".bin", ".bat", 1)
+		content = []byte("@echo off\r\nif not \"%FOO%\"==\"bar\" exit /b 1")
+	}
+	require.NoError(t, os.WriteFile(bin, content, 0o755))
 	ctx := testctx.NewWithCfg(config.Project{
 		GoMod: config.GoMod{
 			GoBinary: bin,
@@ -117,21 +118,26 @@ func TestRunCommandError(t *testing.T) {
 			GoBinary: "not-a-valid-binary",
 		},
 	})
-	require.EqualError(
+	path := "$PATH"
+	if testlib.IsWindows() {
+		path = "%PATH%"
+	}
+	require.ErrorContains(
 		t,
 		Pipe{}.Run(ctx),
-		`failed to get module path: exec: "not-a-valid-binary": executable file not found in $PATH: `,
+		`failed to get module path: exec: "not-a-valid-binary": executable file not found in `+path,
 	)
 	require.Empty(t, ctx.ModulePath)
 }
 
 func TestRunOldGoVersion(t *testing.T) {
 	bin := filepath.Join(t.TempDir(), "go.bin")
-	require.NoError(t, os.WriteFile(
-		bin,
-		[]byte("#!/bin/sh\necho \"flag provided but not defined: -m\"\nexit 1"),
-		0o755,
-	))
+	content := []byte("#!/bin/sh\necho \"flag provided but not defined: -m\"\nexit 1")
+	if testlib.IsWindows() {
+		bin = strings.Replace(bin, ".bin", ".bat", 1)
+		content = []byte("@echo off\r\necho flag provided but not defined: -m\r\nexit /b 1")
+	}
+	require.NoError(t, os.WriteFile(bin, content, 0o755))
 	ctx := testctx.NewWithCfg(config.Project{
 		GoMod: config.GoMod{
 			GoBinary: bin,

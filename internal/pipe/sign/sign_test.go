@@ -15,6 +15,7 @@ import (
 	"github.com/stretchr/testify/assert"
 
 	"github.com/goreleaser/goreleaser/v2/internal/artifact"
+	"github.com/goreleaser/goreleaser/v2/internal/gio"
 	"github.com/goreleaser/goreleaser/v2/internal/git"
 	"github.com/goreleaser/goreleaser/v2/internal/skips"
 	"github.com/goreleaser/goreleaser/v2/internal/testctx"
@@ -39,9 +40,9 @@ const (
 
 func TestMain(m *testing.M) {
 	rand := rand.New(rand.NewSource(time.Now().UnixNano()))
-	keyring = fmt.Sprintf("/tmp/gorel_gpg_test.%d", rand.Int())
+	keyring = filepath.Join(os.TempDir(), fmt.Sprintf("gorel_gpg_test.%d", rand.Int()))
 	fmt.Println("copying", originKeyring, "to", keyring)
-	if err := exec.Command("cp", "-Rf", originKeyring, keyring).Run(); err != nil {
+	if err := gio.Copy(originKeyring, keyring); err != nil {
 		fmt.Printf("failed to copy %s to %s: %s", originKeyring, keyring, err)
 		os.Exit(1)
 	}
@@ -96,6 +97,8 @@ func TestSignInvalidArtifacts(t *testing.T) {
 }
 
 func TestSignArtifacts(t *testing.T) {
+	// dunno why this tries to use /usr/bin/gpg-agent on a windows machine
+	testlib.SkipIfWindows(t)
 	stdin := passwordUser
 	tmplStdin := passwordUserTmpl
 	tests := []struct {

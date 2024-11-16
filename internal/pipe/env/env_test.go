@@ -184,7 +184,7 @@ func TestEmptyGithubEnvFile(t *testing.T) {
 		},
 	})
 	err = Pipe{}.Run(ctx)
-	require.ErrorIs(t, err, syscall.EACCES)
+	requireErrAccess(t, err)
 	require.ErrorContains(t, err, "failed to load github token")
 }
 
@@ -199,7 +199,7 @@ func TestEmptyGitlabEnvFile(t *testing.T) {
 		},
 	})
 	err = Pipe{}.Run(ctx)
-	require.ErrorIs(t, err, syscall.EACCES)
+	requireErrAccess(t, err)
 	require.ErrorContains(t, err, "failed to load gitlab token")
 }
 
@@ -214,7 +214,7 @@ func TestEmptyGiteaEnvFile(t *testing.T) {
 		},
 	})
 	err = Pipe{}.Run(ctx)
-	require.ErrorIs(t, err, syscall.EACCES)
+	requireErrAccess(t, err)
 	require.ErrorContains(t, err, "failed to load gitea token")
 }
 
@@ -292,6 +292,7 @@ func TestLoadEnv(t *testing.T) {
 		require.Equal(t, "123", v)
 	})
 	t.Run("env file is not readable", func(t *testing.T) {
+		testlib.SkipIfWindows(t)
 		f, err := os.CreateTemp(t.TempDir(), "token")
 		require.NoError(t, err)
 		fmt.Fprintf(f, "123")
@@ -302,4 +303,14 @@ func TestLoadEnv(t *testing.T) {
 		require.EqualError(t, err, fmt.Sprintf("open %s: permission denied", f.Name()))
 		require.Equal(t, "", v)
 	})
+}
+
+func requireErrAccess(tb testing.TB, err error) {
+	tb.Helper()
+	require.Error(tb, err)
+	// unsupported
+	if testlib.IsWindows() {
+		return
+	}
+	require.ErrorIs(tb, err, syscall.EACCES)
 }

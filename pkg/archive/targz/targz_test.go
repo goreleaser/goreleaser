@@ -10,6 +10,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/goreleaser/goreleaser/v2/internal/testlib"
 	"github.com/goreleaser/goreleaser/v2/pkg/config"
 	"github.com/stretchr/testify/require"
 )
@@ -87,9 +88,17 @@ func TestTarGzFile(t *testing.T) {
 		}
 		require.NoError(t, err)
 		paths = append(paths, next.Name)
+		if testlib.IsWindows() {
+			// both of the following checks don't work on windows.
+			continue
+		}
 		if next.Name == "sub1/executable" {
-			ex := next.FileInfo().Mode()&0o111 != 0
-			require.True(t, ex, "expected executable permissions, got %s", next.FileInfo().Mode())
+			require.NotEqualf(
+				t,
+				0, next.FileInfo().Mode()&0o111,
+				"expected executable perms, got %s",
+				next.FileInfo().Mode().String(),
+			)
 		}
 		if next.Name == "link.txt" {
 			require.Equal(t, "regular.txt", next.Linkname)

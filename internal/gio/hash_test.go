@@ -3,6 +3,7 @@ package gio
 import (
 	"testing"
 
+	"github.com/goreleaser/goreleaser/v2/internal/testlib"
 	"github.com/stretchr/testify/require"
 )
 
@@ -43,7 +44,7 @@ func TestEqualFiles(t *testing.T) {
 	}
 }
 
-func TestEqualFileCointents(t *testing.T) {
+func TestEqualFileContents(t *testing.T) {
 	tests := []struct {
 		a string
 		b string
@@ -53,7 +54,10 @@ func TestEqualFileCointents(t *testing.T) {
 	for _, test := range tests {
 		equal, err := EqualFiles(test.a, test.b)
 		require.NoError(t, err)
-		require.False(t, equal)
+		if !testlib.IsWindows() {
+			// this fails on windows due to perms being ignored
+			require.False(t, equal)
+		}
 
 		equalContents, err := EqualFileContents(test.a, test.b)
 		require.NoError(t, err)

@@ -97,10 +97,10 @@ func TestRunPipe(t *testing.T) {
 	dist := filepath.Join(folder, "dist")
 	require.NoError(t, os.Mkdir(dist, 0o755))
 	require.NoError(t, os.Mkdir(filepath.Join(dist, "mybin"), 0o755))
-	binPath := filepath.Join(dist, "mybin", "mybin")
-	foohPath := filepath.Join(dist, "foo.h")
-	foosoPath := filepath.Join(dist, "foo.so")
-	fooaPath := filepath.Join(dist, "foo.a")
+	binPath := filepath.ToSlash(filepath.Join(dist, "mybin", "mybin"))
+	foohPath := filepath.ToSlash(filepath.Join(dist, "foo.h"))
+	foosoPath := filepath.ToSlash(filepath.Join(dist, "foo.so"))
+	fooaPath := filepath.ToSlash(filepath.Join(dist, "foo.a"))
 	for _, name := range []string{binPath, foosoPath, foohPath, fooaPath} {
 		f, err := os.Create(name)
 		require.NoError(t, err)
@@ -463,10 +463,10 @@ func TestRunPipe(t *testing.T) {
 			cshared = filepath.Join("/data/data/com.termux/files", cshared)
 			carchive = filepath.Join("/data/data/com.termux/files", carchive)
 		}
-		bin = filepath.Join(bin, "mybin")
-		header = filepath.Join(header, "foo.h")
-		cshared = filepath.Join(cshared, "foo.so")
-		carchive = filepath.Join(carchive, "foo.a")
+		bin = filepath.ToSlash(filepath.Join(bin, "mybin"))
+		header = filepath.ToSlash(filepath.Join(header, "foo.h"))
+		cshared = filepath.ToSlash(filepath.Join(cshared, "foo.so"))
+		carchive = filepath.ToSlash(filepath.Join(carchive, "foo.a"))
 		require.ElementsMatch(t, []string{
 			"/var/log/foobar",
 			"/usr/share/testfile.txt",
@@ -496,10 +496,8 @@ func doTestRunPipeConventionalNameTemplate(t *testing.T, snapshot bool) {
 	dist := filepath.Join(folder, "dist")
 	require.NoError(t, os.Mkdir(dist, 0o755))
 	require.NoError(t, os.Mkdir(filepath.Join(dist, "mybin"), 0o755))
-	binPath := filepath.Join(dist, "mybin", "mybin")
-	f, err := os.Create(binPath)
-	require.NoError(t, err)
-	require.NoError(t, f.Close())
+	binPath := filepath.ToSlash(filepath.Join(dist, "mybin", "mybin"))
+	require.NoError(t, os.WriteFile(binPath, []byte("nope"), 0o755))
 	ctx := testctx.NewWithCfg(config.Project{
 		ProjectName: "mybin",
 		Dist:        dist,

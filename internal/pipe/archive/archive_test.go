@@ -1004,9 +1004,7 @@ func TestDuplicateFilesInsideArchive(t *testing.T) {
 
 	f, err := os.CreateTemp(folder, "")
 	require.NoError(t, err)
-	t.Cleanup(func() {
-		require.NoError(t, f.Close())
-	})
+	t.Cleanup(func() { require.NoError(t, f.Close()) })
 
 	ff, err := os.CreateTemp(folder, "")
 	require.NoError(t, err)
@@ -1066,6 +1064,7 @@ func TestArchive_globbing(t *testing.T) {
 		t.Helper()
 		bin, err := os.CreateTemp(t.TempDir(), "binary")
 		require.NoError(t, err)
+		t.Cleanup(func() { require.NoError(t, bin.Close()) })
 		dist := t.TempDir()
 		ctx := testctx.NewWithCfg(config.Project{
 			Dist: dist,

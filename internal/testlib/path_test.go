@@ -19,7 +19,11 @@ func TestCheckPath(t *testing.T) {
 
 		t.Run("in path", func(t *testing.T) {
 			requireSkipped(t, false)
-			CheckPath(t, "echo")
+			if IsWindows() {
+				CheckPath(t, "cmd.exe")
+			} else {
+				CheckPath(t, "echo")
+			}
 		})
 
 		t.Run("not in path", func(t *testing.T) {

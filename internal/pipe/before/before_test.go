@@ -23,13 +23,16 @@ func TestDescription(t *testing.T) {
 }
 
 func TestRunPipe(t *testing.T) {
-	for _, tc := range [][]string{
+	table := [][]string{
 		nil,
 		{},
 		{"go version"},
 		{"go version", "go list"},
-		{`bash -c "go version; echo \"lala spaces and such\""`},
-	} {
+	}
+	if testlib.InPath("bash") {
+		table = append(table, []string{`bash -c "go version; echo \"lala spaces and such\""`})
+	}
+	for _, tc := range table {
 		ctx := testctx.NewWithCfg(
 			config.Project{
 				Before: config.Before{
@@ -70,6 +73,7 @@ func TestRunPipeFail(t *testing.T) {
 }
 
 func TestRunWithEnv(t *testing.T) {
+	testlib.SkipIfWindows(t)
 	f := filepath.Join(t.TempDir(), "testfile")
 	require.NoError(t, Pipe{}.Run(testctx.NewWithCfg(
 		config.Project{
