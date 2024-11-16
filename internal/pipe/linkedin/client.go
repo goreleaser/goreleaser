@@ -2,6 +2,7 @@ package linkedin
 
 import (
 	"bytes"
+	stdctx "context"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -64,8 +65,12 @@ func createLinkedInClient(cfg oauthClientConfig) (client, error) {
 // POST Share API requires a Profile ID in the 'owner' field
 // Format must be in: 'urn:li:person:PROFILE_ID'
 // https://docs.microsoft.com/en-us/linkedin/shared/integrations/people/profile-api#retrieve-current-members-profile
-func (c client) getProfileIDLegacy() (string, error) {
-	resp, err := c.client.Get(c.baseURL + "/v2/me")
+func (c client) getProfileIDLegacy(ctx stdctx.Context) (string, error) {
+	req, err := http.NewRequestWithContext(ctx, http.MethodGet, c.baseURL+"/v2/me", http.NoBody)
+	if err != nil {
+		return "", fmt.Errorf("could not create GET request: %w", err)
+	}
+	resp, err := c.client.Do(req)
 	if err != nil {
 		return "", fmt.Errorf("could not GET /v2/me: %w", err)
 	}
@@ -97,8 +102,12 @@ func (c client) getProfileIDLegacy() (string, error) {
 // POST Share API requires a Profile ID in the 'owner' field
 // Format must be in: 'urn:li:person:PROFILE_SUB'
 // https://learn.microsoft.com/en-us/linkedin/consumer/integrations/self-serve/sign-in-with-linkedin-v2#api-request-to-retreive-member-details
-func (c client) getProfileSub() (string, error) {
-	resp, err := c.client.Get(c.baseURL + "/v2/userinfo")
+func (c client) getProfileSub(ctx stdctx.Context) (string, error) {
+	req, err := http.NewRequestWithContext(ctx, http.MethodGet, c.baseURL+"/v2/userinfo", http.NoBody)
+	if err != nil {
+		return "", fmt.Errorf("could not create GET request: %w", err)
+	}
+	resp, err := c.client.Do(req)
 	if err != nil {
 		return "", fmt.Errorf("could not GET /v2/userinfo: %w", err)
 	}
@@ -129,9 +138,9 @@ func (c client) getProfileSub() (string, error) {
 // Owner of the share. Required on create.
 // tries to get the profile sub (formally id) first, if it fails, it tries to get the profile id (legacy)
 // https://docs.microsoft.com/en-us/linkedin/marketing/integrations/community-management/shares/share-api?tabs=http#schema
-func (c client) getProfileURN() (string, error) {
+func (c client) getProfileURN(ctx stdctx.Context) (string, error) {
 	// To build the URN, we need to get the profile sub (formally id)
-	profileSub, err := c.getProfileSub()
+	profileSub, err := c.getProfileSub(ctx)
 	if err != nil {
 		if !errors.Is(err, ErrLinkedinForbidden) {
 			return "", fmt.Errorf("could not get profile sub: %w", err)
@@ -139,7 +148,7 @@ func (c client) getProfileURN() (string, error) {
 
 		log.Debug("could not get linkedin profile sub due to permission, getting profile id (legacy)")
 
-		profileSub, err = c.getProfileIDLegacy()
+		profileSub, err = c.getProfileIDLegacy(ctx)
 		if err != nil {
 			return "", fmt.Errorf("could not get profile id: %w", err)
 		}
@@ -148,28 +157,34 @@ func (c client) getProfileURN() (string, error) {
 	return fmt.Sprintf("urn:li:person:%s", profileSub), nil
 }
 
-func (c client) Share(message string) (string, error) {
+func (c client) Share(ctx stdctx.Context, message string) (string, error) {
 	// To get Owner of the share, we need to get the profile URN
-	profileURN, err := c.getProfileURN()
+	profileURN, err := c.getProfileURN(ctx)
 	if err != nil {
 		return "", fmt.Errorf("could not get profile URN: %w", err)
 	}
 
-	req := postShareRequest{
+	reqBody := postShareRequest{
 		Text: postShareText{
 			Text: message,
 		},
 		Owner: profileURN,
 	}
 
-	reqBytes, err := json.Marshal(req)
+	reqBodyBytes, err := json.Marshal(reqBody)
 	if err != nil {
 		return "", fmt.Errorf("could not marshal request: %w", err)
 	}
 
 	// Filling only required 'owner' and 'text' field is OK
 	// https://docs.microsoft.com/en-us/linkedin/marketing/integrations/community-management/shares/share-api?tabs=http#sample-request-3
-	resp, err := c.client.Post(c.baseURL+"/v2/shares", "application/json", bytes.NewReader(reqBytes))
+	req, err := http.NewRequestWithContext(ctx, http.MethodPost, c.baseURL+"/v2/shares", bytes.NewReader(reqBodyBytes))
+	if err != nil {
+		return "", fmt.Errorf("could not create POST request: %w", err)
+	}
+	req.Header.Set("Content-Type", "application/json")
+
+	resp, err := c.client.Do(req)
 	if err != nil {
 		return "", fmt.Errorf("could not POST /v2/shares: %w", err)
 	}
