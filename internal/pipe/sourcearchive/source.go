@@ -4,6 +4,7 @@ package sourcearchive
 import (
 	"fmt"
 	"os"
+	"path"
 	"path/filepath"
 
 	"github.com/caarlos0/log"
@@ -77,10 +78,10 @@ func (Pipe) Run(ctx *context.Context) error {
 	return err
 }
 
-func appendExtraFilesToArchive(ctx *context.Context, prefix, path, format string) error {
-	oldPath := path + ".bkp"
-	if err := gio.Copy(path, oldPath); err != nil {
-		return fmt.Errorf("failed make a backup of %q: %w", path, err)
+func appendExtraFilesToArchive(ctx *context.Context, prefix, name, format string) error {
+	oldPath := name + ".bkp"
+	if err := gio.Copy(name, oldPath); err != nil {
+		return fmt.Errorf("failed make a backup of %q: %w", name, err)
 	}
 
 	// i could spend a lot of time trying to figure out how to append to a tar,
@@ -91,7 +92,7 @@ func appendExtraFilesToArchive(ctx *context.Context, prefix, path, format string
 	}
 	defer of.Close()
 
-	af, err := os.OpenFile(path, os.O_WRONLY|os.O_TRUNC, 0o644)
+	af, err := os.OpenFile(name, os.O_WRONLY|os.O_TRUNC, 0o644)
 	if err != nil {
 		return fmt.Errorf("could not open archive: %w", err)
 	}
@@ -107,7 +108,7 @@ func appendExtraFilesToArchive(ctx *context.Context, prefix, path, format string
 		return err
 	}
 	for _, f := range files {
-		f.Destination = filepath.Join(prefix, f.Destination)
+		f.Destination = path.Join(prefix, f.Destination)
 		if err := arch.Add(f); err != nil {
 			return fmt.Errorf("could not add %q to archive: %w", f.Source, err)
 		}

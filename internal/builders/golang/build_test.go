@@ -465,7 +465,7 @@ func TestBuild(t *testing.T) {
 	require.ElementsMatch(t, list.List(), []*artifact.Artifact{
 		{
 			Name:   "bin/foo-v5.6.7",
-			Path:   filepath.Join("dist", "linux_amd64", "bin", "foo-v5.6.7"),
+			Path:   filepath.ToSlash(filepath.Join("dist", "linux_amd64", "bin", "foo-v5.6.7")),
 			Goos:   "linux",
 			Goarch: "amd64",
 			Type:   artifact.Binary,
@@ -478,7 +478,7 @@ func TestBuild(t *testing.T) {
 		},
 		{
 			Name:   "bin/foo-v5.6.7",
-			Path:   filepath.Join("dist", "linux_mips_softfloat", "bin", "foo-v5.6.7"),
+			Path:   filepath.ToSlash(filepath.Join("dist", "linux_mips_softfloat", "bin", "foo-v5.6.7")),
 			Goos:   "linux",
 			Goarch: "mips",
 			Gomips: "softfloat",
@@ -492,7 +492,7 @@ func TestBuild(t *testing.T) {
 		},
 		{
 			Name:   "bin/foo-v5.6.7",
-			Path:   filepath.Join("dist", "linux_mips64le_softfloat", "bin", "foo-v5.6.7"),
+			Path:   filepath.ToSlash(filepath.Join("dist", "linux_mips64le_softfloat", "bin", "foo-v5.6.7")),
 			Goos:   "linux",
 			Goarch: "mips64le",
 			Gomips: "softfloat",
@@ -506,7 +506,7 @@ func TestBuild(t *testing.T) {
 		},
 		{
 			Name:   "bin/foo-v5.6.7",
-			Path:   filepath.Join("dist", "darwin_amd64", "bin", "foo-v5.6.7"),
+			Path:   filepath.ToSlash(filepath.Join("dist", "darwin_amd64", "bin", "foo-v5.6.7")),
 			Goos:   "darwin",
 			Goarch: "amd64",
 			Type:   artifact.Binary,
@@ -519,7 +519,7 @@ func TestBuild(t *testing.T) {
 		},
 		{
 			Name:   "bin/foo-v5.6.7",
-			Path:   filepath.Join("dist", "linux_arm_6", "bin", "foo-v5.6.7"),
+			Path:   filepath.ToSlash(filepath.Join("dist", "linux_arm_6", "bin", "foo-v5.6.7")),
 			Goos:   "linux",
 			Goarch: "arm",
 			Goarm:  "6",
@@ -533,7 +533,7 @@ func TestBuild(t *testing.T) {
 		},
 		{
 			Name:   "bin/foo-v5.6.7.exe",
-			Path:   filepath.Join("dist", "windows_amd64", "bin", "foo-v5.6.7.exe"),
+			Path:   filepath.ToSlash(filepath.Join("dist", "windows_amd64", "bin", "foo-v5.6.7.exe")),
 			Goos:   "windows",
 			Goarch: "amd64",
 			Type:   artifact.Binary,
@@ -546,7 +546,7 @@ func TestBuild(t *testing.T) {
 		},
 		{
 			Name:   "bin/foo-v5.6.7.wasm",
-			Path:   filepath.Join("dist", "js_wasm", "bin", "foo-v5.6.7.wasm"),
+			Path:   filepath.ToSlash(filepath.Join("dist", "js_wasm", "bin", "foo-v5.6.7.wasm")),
 			Goos:   "js",
 			Goarch: "wasm",
 			Type:   artifact.Binary,

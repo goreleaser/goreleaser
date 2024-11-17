@@ -96,6 +96,7 @@ var knownExceptions = []string{
 	"AlreadyPackedException",
 	"NotCompressibleException",
 	"UnknownExecutableFormatException",
+	"IOException",
 }
 
 func findBinaries(ctx *context.Context, upx config.UPX) []*artifact.Artifact {

@@ -2,6 +2,7 @@
 package golden
 
 import (
+	"bytes"
 	"flag"
 	"os"
 	"path/filepath"
@@ -59,6 +60,8 @@ func RequireReadFile(tb testing.TB, path string) []byte {
 func doRequireEqual(tb testing.TB, out []byte, ext, suffix string, folder bool) {
 	tb.Helper()
 
+	out = fixLineEndings(out)
+
 	golden := filepath.Join("testdata", tb.Name()+ext+suffix)
 	if folder {
 		golden = filepath.Join("testdata", tb.Name(), filepath.Base(tb.Name())+ext+suffix)
@@ -70,6 +73,11 @@ func doRequireEqual(tb testing.TB, out []byte, ext, suffix string, folder bool) 
 
 	gbts, err := os.ReadFile(golden)
 	require.NoError(tb, err)
+	gbts = fixLineEndings(gbts)
 
 	require.Equal(tb, string(gbts), string(out))
+}
+
+func fixLineEndings(in []byte) []byte {
+	return bytes.ReplaceAll(in, []byte("\r\n"), []byte{'\n'})
 }

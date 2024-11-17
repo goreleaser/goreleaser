@@ -304,7 +304,7 @@ func (c *giteaClient) ReleaseURLTemplate(ctx *context.Context) (string, error) {
 	}
 
 	return fmt.Sprintf(
-		"%s/%s/%s/releases/download/{{ .Tag }}/{{ .ArtifactName }}",
+		"%s/%s/%s/releases/download/{{ urlPathEscape .Tag }}/{{ .ArtifactName }}",
 		downloadURL,
 		ctx.Config.Release.Gitea.Owner,
 		ctx.Config.Release.Gitea.Name,

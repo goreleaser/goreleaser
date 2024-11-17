@@ -22,7 +22,7 @@ import (
 )
 
 // Environment variables to pass through to exec
-var passthroughEnvVars = []string{"HOME", "USER", "USERPROFILE", "TMPDIR", "TMP", "TEMP", "PATH"}
+var passthroughEnvVars = []string{"HOME", "USER", "USERPROFILE", "TMPDIR", "TMP", "TEMP", "PATH", "SYSTEMROOT"}
 
 // Execute the given publisher
 func Execute(ctx *context.Context, publishers []config.Publisher) error {

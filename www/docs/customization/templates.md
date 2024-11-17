@@ -178,6 +178,7 @@ On all fields, you have these available functions:
 | `incmajor "v1.2.4"`               | increments the major of the given version[^panic-if-not-semver]                                                            |
 | `list "a" "b" "c"`                | makes a list of strings[^pro]                                                                                              |
 | `in (list "a" "b" "c") "b"`       | checks if a slice contains a value[^pro]                                                                                   |
+| `urlPathEscape "foo/bar"`         | escapes URL paths. See [PathEscape](https://pkg.go.dev/net/url#PathEscape) (since v2.5)                                    |
 
 [^panic-if-not-semver]: Will panic if not a semantic version.
 

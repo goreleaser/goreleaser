@@ -47,7 +47,7 @@ func (Pipe) Announce(ctx *context.Context) error {
 		return fmt.Errorf("linkedin: %w", err)
 	}
 
-	url, err := c.Share(message)
+	url, err := c.Share(ctx, message)
 	if err != nil {
 		return fmt.Errorf("linkedin: %w", err)
 	}

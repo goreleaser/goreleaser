@@ -5,6 +5,7 @@ import (
 	"path/filepath"
 	"testing"
 
+	"github.com/goreleaser/goreleaser/v2/internal/testlib"
 	"github.com/stretchr/testify/require"
 )
 
@@ -30,10 +31,11 @@ func TestCopySymlink(t *testing.T) {
 
 	l, err := os.Readlink(c)
 	require.NoError(t, err)
-	require.Equal(t, a, l)
+	require.Equal(t, a, filepath.ToSlash(l))
 }
 
 func TestEqualFilesModeChanged(t *testing.T) {
+	testlib.SkipIfWindows(t)
 	tmp := t.TempDir()
 	a := "testdata/somefile.txt"
 	b := tmp + "/somefile.txt"

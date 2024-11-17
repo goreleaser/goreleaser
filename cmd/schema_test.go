@@ -18,6 +18,9 @@ func TestGenerateSchema(t *testing.T) {
 
 	outFile, err := os.Open(destination)
 	require.NoError(t, err)
+	t.Cleanup(func() {
+		require.NoError(t, outFile.Close())
+	})
 
 	schema := map[string]interface{}{}
 	require.NoError(t, json.NewDecoder(outFile).Decode(&schema))

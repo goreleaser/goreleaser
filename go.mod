@@ -28,7 +28,7 @@ require (
 	github.com/google/ko v0.17.1
 	github.com/google/uuid v1.6.0
 	github.com/goreleaser/fileglob v1.3.0
-	github.com/goreleaser/nfpm/v2 v2.41.0
+	github.com/goreleaser/nfpm/v2 v2.41.1
 	github.com/goreleaser/quill v0.0.0-20241025150139-731751b4046d
 	github.com/hashicorp/go-multierror v1.1.1
 	github.com/invopop/jsonschema v0.12.0

@@ -1,5 +1,9 @@
 name: build
 
+concurrency:
+  group: ${{ github.head_ref || github.ref_name }}
+  cancel-in-progress: true
+
 on:
   push:
     branches:
@@ -25,7 +29,11 @@ jobs:
     with:
       args: "-disable largeloopcopy"
   test:
-    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+    runs-on: ${{ matrix.os }}
     env:
       DOCKER_CLI_EXPERIMENTAL: "enabled"
     steps:
@@ -37,8 +45,11 @@ jobs:
           version: 3.x
           repo-token: ${{ secrets.GITHUB_TOKEN }}
       - uses: docker/setup-qemu-action@49b3bc8e6bdd4a60e6116a5414239cba5943d3cf # v2
+        if: matrix.os == 'ubuntu-latest'
       - uses: docker/setup-buildx-action@c47758b77c9736f4b2ef4073d4d51994fabfe349 # v3
+        if: matrix.os == 'ubuntu-latest'
       - name: setup-snapcraft
+        if: matrix.os == 'ubuntu-latest'
         run: |
           sudo apt-get update
           sudo apt-get -yq --no-install-suggests --no-install-recommends install snapcraft
@@ -46,6 +57,7 @@ jobs:
         with:
           install-only: true
       - uses: cachix/install-nix-action@v30
+        if: matrix.os == 'ubuntu-latest'
         with:
           github_access_token: ${{ secrets.GITHUB_TOKEN }}
       - uses: actions/setup-go@41dfa10bad2bb2ae585af6ee5bb4d7d973ad74ed # v4
@@ -61,7 +73,7 @@ jobs:
           task build
       - name: test
         run: task test
-      - uses: codecov/codecov-action@b9fd7d16f6d7d1b5d2bec1a2887e65ceed900238 # v4
+      - uses: codecov/codecov-action@968872560f81e7bdde9272853e65f2507c0eca7c # v4
         with:
           file: ./coverage.txt
       - run: git diff

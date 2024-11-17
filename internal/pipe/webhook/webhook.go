@@ -82,7 +82,7 @@ func (p Pipe) Announce(ctx *context.Context) error {
 		Transport: customTransport,
 	}
 
-	req, err := http.NewRequest(http.MethodPost, endpointURL.String(), strings.NewReader(msg))
+	req, err := http.NewRequestWithContext(ctx, http.MethodPost, endpointURL.String(), strings.NewReader(msg))
 	if err != nil {
 		return fmt.Errorf("webhook: %w", err)
 	}

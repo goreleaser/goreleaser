@@ -946,7 +946,7 @@ type NFPMOverridables struct {
 	Recommends       []string       `yaml:"recommends,omitempty" json:"recommends,omitempty"`
 	Suggests         []string       `yaml:"suggests,omitempty" json:"suggests,omitempty"`
 	Conflicts        []string       `yaml:"conflicts,omitempty" json:"conflicts,omitempty"`
-	Umask            fs.FileMode    `yaml:"umask,omitempty" json:"umask,omitempty"`
+	Umask            fs.FileMode    `yaml:"umask,omitempty" json:"umask,omitempty" jsonschema:"oneof_type=string;integer"`
 	Replaces         []string       `yaml:"replaces,omitempty" json:"replaces,omitempty"`
 	Provides         []string       `yaml:"provides,omitempty" json:"provides,omitempty"`
 	Contents         files.Contents `yaml:"contents,omitempty" json:"contents,omitempty"`

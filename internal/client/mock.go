@@ -95,7 +95,7 @@ func (c *Mock) PublishRelease(_ *context.Context, _ string /* releaseID */) (err
 }
 
 func (c *Mock) ReleaseURLTemplate(_ *context.Context) (string, error) {
-	return "https://dummyhost/download/{{ .Tag }}/{{ .ArtifactName }}", nil
+	return "https://dummyhost/download/{{ urlPathEscape .Tag }}/{{ .ArtifactName }}", nil
 }
 
 func (c *Mock) CreateFile(_ *context.Context, _ config.CommitAuthor, _ Repo, content []byte, path, msg string) error {

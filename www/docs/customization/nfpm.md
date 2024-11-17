@@ -473,7 +473,7 @@ nfpms:
 
     # Custom configuration applied only to the IPK packager.
     #
-    # Since: v2.1
+    # Since: v2.1.
     ipk:
       # The ABI version to specify.
       #

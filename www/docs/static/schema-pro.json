@@ -2340,7 +2340,14 @@
 						"type": "array"
 					},
 					"umask": {
-						"type": "integer"
+						"oneOf": [
+							{
+								"type": "string"
+							},
+							{
+								"type": "integer"
+							}
+						]
 					},
 					"replaces": {
 						"items": {
@@ -2726,7 +2733,14 @@
 						"type": "array"
 					},
 					"umask": {
-						"type": "integer"
+						"oneOf": [
+							{
+								"type": "string"
+							},
+							{
+								"type": "integer"
+							}
+						]
 					},
 					"replaces": {
 						"items": {
