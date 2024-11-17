@@ -22,7 +22,7 @@ jobs:
           go-version: stable
       - uses: github/codeql-action/init@ea9e4e37992a54ee68a9622e985e60c8e8f12d9f # v3
         with:
-          language: go
+          languages: go
           config: |
             paths-ignore:
               - ./dagger
