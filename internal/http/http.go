@@ -8,7 +8,6 @@ import (
 	"io"
 	h "net/http"
 	"os"
-	"runtime"
 	"strings"
 
 	"github.com/caarlos0/log"
@@ -16,6 +15,7 @@ import (
 	"github.com/goreleaser/goreleaser/v2/internal/extrafiles"
 	"github.com/goreleaser/goreleaser/v2/internal/pipe"
 	"github.com/goreleaser/goreleaser/v2/internal/semerrgroup"
+	"github.com/goreleaser/goreleaser/v2/internal/testlib"
 	"github.com/goreleaser/goreleaser/v2/internal/tmpl"
 	"github.com/goreleaser/goreleaser/v2/pkg/config"
 	"github.com/goreleaser/goreleaser/v2/pkg/context"
@@ -49,6 +49,8 @@ func assetOpenReset() {
 	assetOpen = assetOpenDefault
 }
 
+// TODO: this should probably return a func()error always so we can properly
+// handle closing the file.
 func assetOpenDefault(kind string, a *artifact.Artifact) (*asset, error) {
 	f, err := os.Open(a.Path)
 	if err != nil {
@@ -56,9 +58,11 @@ func assetOpenDefault(kind string, a *artifact.Artifact) (*asset, error) {
 	}
 	s, err := f.Stat()
 	if err != nil {
+		_ = f.Close()
 		return nil, err
 	}
 	if s.IsDir() {
+		_ = f.Close()
 		return nil, fmt.Errorf("%s: upload failed: the asset to upload can't be a directory", kind)
 	}
 	return &asset{
@@ -332,7 +336,7 @@ func getHTTPClient(upload *config.Upload) (*h.Client, error) {
 	if upload.TrustedCerts != "" {
 		pool, err := x509.SystemCertPool()
 		if err != nil {
-			if runtime.GOOS == "windows" {
+			if testlib.IsWindows() {
 				// on windows ignore errors until golang issues #16736 & #18609 get fixed
 				pool = x509.NewCertPool()
 			} else {

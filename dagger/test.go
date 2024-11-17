@@ -119,6 +119,6 @@ func installBuildx(target *dagger.Container) *dagger.Container {
 		"/usr/lib/docker/cli-plugins/docker-buildx",
 		bin,
 		dagger.ContainerWithFileOpts{
-			Permissions: 0777,
+			Permissions: 0o777,
 		})
 }

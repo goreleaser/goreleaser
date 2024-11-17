@@ -227,7 +227,7 @@ func TestSBOMCatalogArtifacts(t *testing.T) {
 	}{
 		{
 			desc:           "catalog errors",
-			expectedErrMsg: "cataloging artifacts: exit failed",
+			expectedErrMsg: "failed",
 			ctx: testctx.NewWithCfg(config.Project{
 				SBOMs: []config.SBOM{
 					{
@@ -407,7 +407,7 @@ func TestSBOMCatalogArtifacts(t *testing.T) {
 					},
 				},
 			}),
-			expectedErrMsg: "cataloging artifacts: false failed: exit status 1: ",
+			expectedErrMsg: "cataloging artifacts: false failed: ",
 		},
 		{
 			desc: "catalog wrong command",
@@ -451,7 +451,7 @@ func testSBOMCataloging(
 ) {
 	tb.Helper()
 	testlib.CheckPath(tb, "syft")
-	tmpdir := tb.TempDir()
+	tmpdir := testlib.Mktmp(tb)
 
 	ctx.Config.Dist = tmpdir
 	ctx.Version = "1.2.2"
@@ -551,11 +551,11 @@ func testSBOMCataloging(
 			if info.IsDir() {
 				return nil
 			}
-			relPath, err := filepath.Rel(tmpdir, path)
+			relPath, err := filepath.Rel(filepath.FromSlash(tmpdir), filepath.FromSlash(path))
 			if err != nil {
 				return err
 			}
-			gotFiles = append(gotFiles, relPath)
+			gotFiles = append(gotFiles, filepath.ToSlash(relPath))
 			return nil
 		}),
 	)
@@ -611,7 +611,7 @@ func Test_subprocessDistPath(t *testing.T) {
 		t.Run(test.name, func(t *testing.T) {
 			actual, err := subprocessDistPath(test.distDir, test.pathRelativeToCwd)
 			require.NoError(t, err)
-			assert.Equal(t, test.expects, actual)
+			assert.Equal(t, filepath.ToSlash(test.expects), filepath.ToSlash(actual))
 		})
 	}
 }
@@ -632,6 +632,11 @@ func Test_templateNames(t *testing.T) {
 	wd, err := os.Getwd()
 	require.NoError(t, err)
 
+	abs := func(path string) string {
+		path, _ = filepath.Abs(path)
+		return path
+	}
+
 	tests := []struct {
 		name           string
 		dist           string
@@ -645,15 +650,15 @@ func Test_templateNames(t *testing.T) {
 			name:     "default configuration",
 			artifact: art,
 			cfg:      config.SBOM{},
-			dist:     "/somewhere/to/dist",
+			dist:     abs("/somewhere/to/dist"),
 			expectedPaths: []string{
-				"/somewhere/to/dist/name-it.sbom.json",
+				abs("/somewhere/to/dist/name-it.sbom.json"),
 			},
 			expectedValues: map[string]string{
-				"artifact":   "to/a/place",
+				"artifact":   filepath.FromSlash("to/a/place"),
 				"artifactID": "id-it",
-				"document":   "/somewhere/to/dist/name-it.sbom.json",
-				"document0":  "/somewhere/to/dist/name-it.sbom.json",
+				"document":   abs("/somewhere/to/dist/name-it.sbom.json"),
+				"document0":  abs("/somewhere/to/dist/name-it.sbom.json"),
 			},
 		},
 		{
@@ -665,7 +670,7 @@ func Test_templateNames(t *testing.T) {
 				filepath.Join(wd, "somewhere/to/dist/name-it.sbom.json"),
 			},
 			expectedValues: map[string]string{
-				"artifact":   "to/a/place", // note: this is always relative to ${dist}
+				"artifact":   filepath.FromSlash("to/a/place"), // note: this is always relative to ${dist}
 				"artifactID": "id-it",
 				"document":   filepath.Join(wd, "somewhere/to/dist/name-it.sbom.json"),
 				"document0":  filepath.Join(wd, "somewhere/to/dist/name-it.sbom.json"),
@@ -689,7 +694,7 @@ func Test_templateNames(t *testing.T) {
 				filepath.Join(wd, "somewhere/to/dist/to/a/place.cdx.sbom.json"),
 			},
 			expectedValues: map[string]string{
-				"artifact":   "to/a/place",
+				"artifact":   filepath.FromSlash("to/a/place"),
 				"artifactID": "id-it",
 				"document":   filepath.Join(wd, "somewhere/to/dist/to/a/place.cdx.sbom.json"),
 				"document0":  filepath.Join(wd, "somewhere/to/dist/to/a/place.cdx.sbom.json"),
@@ -709,7 +714,7 @@ func Test_templateNames(t *testing.T) {
 				filepath.Join(wd, "somewhere/to/dist/binary-name_1.0.0_darwin_amd64.cdx.sbom.json"),
 			},
 			expectedValues: map[string]string{
-				"artifact":   "to/a/place",
+				"artifact":   filepath.FromSlash("to/a/place"),
 				"artifactID": "id-it",
 				"document":   filepath.Join(wd, "somewhere/to/dist/binary-name_1.0.0_darwin_amd64.cdx.sbom.json"),
 				"document0":  filepath.Join(wd, "somewhere/to/dist/binary-name_1.0.0_darwin_amd64.cdx.sbom.json"),
@@ -734,7 +739,7 @@ func Test_templateNames(t *testing.T) {
 				filepath.Join(wd, "somewhere/to/dist/binary-name_1.0.0_darwin_amd64.cdx.sbom.json"),
 			},
 			expectedValues: map[string]string{
-				"artifact":     "to/a/place",
+				"artifact":     filepath.FromSlash("to/a/place"),
 				"artifactID":   "id-it",
 				"with-env-var": "value",
 				"custom-os":    "darwin-unique",

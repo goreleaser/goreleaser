@@ -14,6 +14,17 @@ var (
 	dockerPool     *dockertest.Pool
 )
 
+type skipper func(args ...any)
+
+func (s skipper) Fatal(...any) {
+	s("docker is not available")
+}
+
+func CheckDocker(tb testing.TB) {
+	tb.Helper()
+	MustDockerPool(skipper(tb.Skip))
+}
+
 // MustDockerPool gets a single dockertet.Pool.
 func MustDockerPool(f Fataler) *dockertest.Pool {
 	dockerPoolOnce.Do(func() {

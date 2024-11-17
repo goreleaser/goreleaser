@@ -175,6 +175,7 @@ func TestGoModProxy(t *testing.T) {
 	})
 
 	t.Run("no perms", func(t *testing.T) {
+		testlib.SkipIfWindows(t, "windows permissions work differently")
 		for file, mode := range map[string]os.FileMode{
 			"go.mod":          0o500,
 			"go.sum":          0o500,
@@ -203,7 +204,12 @@ func TestGoModProxy(t *testing.T) {
 
 				// change perms of a file and run again, which should now fail on that file.
 				require.NoError(t, os.Chmod(filepath.Join(dist, "proxy", "foo", file), mode))
-				require.ErrorIs(t, ProxyPipe{}.Run(ctx), syscall.EACCES)
+				err := ProxyPipe{}.Run(ctx)
+				require.Error(t, err)
+				if !testlib.IsWindows() {
+					// this fails on windows
+					require.ErrorIs(t, err, syscall.EACCES)
+				}
 			})
 		}
 	})

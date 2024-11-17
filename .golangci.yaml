@@ -19,6 +19,7 @@ linters:
     - testifylint
     - gocritic
     - nolintlint
+    - noctx
 linters-settings:
   gocritic:
     disabled-checks:
@@ -74,3 +75,8 @@ linters-settings:
     enable-all: true
     disable:
       - error-is-as # false positive
+issues:
+  exclude-rules:
+    - path: _test\.go
+      linters:
+        - noctx

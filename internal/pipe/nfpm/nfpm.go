@@ -326,8 +326,8 @@ func create(ctx *context.Context, fpm config.NFPM, format string, artifacts []*a
 			return err
 		}
 		contents = append(contents, &files.Content{
-			Source:      src,
-			Destination: dst,
+			Source:      filepath.ToSlash(src),
+			Destination: filepath.ToSlash(dst),
 			Type:        content.Type,
 			Packager:    content.Packager,
 			FileInfo:    content.FileInfo,

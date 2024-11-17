@@ -248,6 +248,9 @@ func TestGitLabURLsDownloadTemplate(t *testing.T) {
 
 			tmpFile, err := os.CreateTemp(t.TempDir(), "")
 			require.NoError(t, err)
+			t.Cleanup(func() {
+				_ = tmpFile.Close()
+			})
 
 			client, err := newGitLab(ctx, ctx.Token)
 			require.NoError(t, err)

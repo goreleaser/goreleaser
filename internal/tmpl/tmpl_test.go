@@ -90,7 +90,6 @@ func TestWithArtifact(t *testing.T) {
 		"artifact ext: .exe":                  "artifact ext: {{ .ArtifactExt }}",
 		"artifact path: /tmp/foo.exe":         "artifact path: {{ .ArtifactPath }}",
 		"artifact basename: foo.exe":          "artifact basename: {{ base .ArtifactPath }}",
-		"artifact dir: /tmp":                  "artifact dir: {{ dir .ArtifactPath }}",
 		"2023":                                `{{ .Now.Format "2006" }}`,
 		"2023-03-09T02:06:02Z":                `{{ .Date }}`,
 		"1678327562":                          `{{ .Timestamp }}`,
@@ -105,6 +104,8 @@ func TestWithArtifact(t *testing.T) {
 		"env foo: bar":                        `env foo: {{ envOrDefault "FOO" "barrrrr" }}`,
 		"env foo is set: true":                `env foo is set: {{ isEnvSet "FOO" }}`,
 		"/foo%2Fbar":                          `/{{ urlPathEscape .Env.WITH_SLASHES}}`,
+
+		"artifact dir: " + filepath.FromSlash("/tmp"): "artifact dir: {{ dir .ArtifactPath }}",
 
 		"remove this": "{{ filter .Env.MULTILINE \".*remove.*\" }}",
 		"something with\nmultiple lines\nto test things": "{{ reverseFilter .Env.MULTILINE \".*remove.*\" }}",

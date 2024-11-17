@@ -3,6 +3,7 @@ package exec
 import (
 	"fmt"
 	"os"
+	"path"
 	"path/filepath"
 	"strings"
 	"testing"
@@ -40,7 +41,7 @@ func TestExecute(t *testing.T) {
 		{"signature", "sig", artifact.Signature},
 		{"signature", "pem", artifact.Certificate},
 	} {
-		file := filepath.Join(folder, "a."+a.ext)
+		file := filepath.ToSlash(filepath.Join(folder, "a."+a.ext))
 		require.NoError(t, os.WriteFile(file, []byte("lorem ipsum"), 0o644))
 		ctx.Artifacts.Add(&artifact.Artifact{
 			Name:   "a." + a.ext,
@@ -275,7 +276,7 @@ func TestExecute(t *testing.T) {
 						}),
 					},
 					ExtraFiles: []config.ExtraFile{
-						{Glob: filepath.Join("testdata", "*.txt")},
+						{Glob: path.Join("testdata", "*.txt")},
 					},
 				},
 			},
@@ -302,7 +303,7 @@ func TestExecute(t *testing.T) {
 					},
 					ExtraFiles: []config.ExtraFile{
 						{
-							Glob:         filepath.Join("testdata", "*.txt"),
+							Glob:         path.Join("testdata", "*.txt"),
 							NameTemplate: "b.txt",
 						},
 					},

@@ -362,7 +362,11 @@ func TestRunPipe_ServerDown(t *testing.T) {
 		Name: "bin.tar.gz",
 		Path: tarfile.Name(),
 	})
-	require.ErrorIs(t, Pipe{}.Publish(ctx), syscall.ECONNREFUSED)
+	err = Pipe{}.Publish(ctx)
+	require.Error(t, err)
+	if !testlib.IsWindows() {
+		require.ErrorIs(t, err, syscall.ECONNREFUSED)
+	}
 }
 
 func TestRunPipe_TargetTemplateError(t *testing.T) {

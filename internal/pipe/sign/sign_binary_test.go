@@ -81,6 +81,7 @@ func TestBinaryDependencies(t *testing.T) {
 
 func TestBinarySign(t *testing.T) {
 	testlib.CheckPath(t, "gpg")
+	testlib.SkipIfWindows(t, "tries to use /usr/bin/gpg-agent")
 	doTest := func(tb testing.TB, sign config.Sign) []*artifact.Artifact {
 		tb.Helper()
 		tmpdir := tb.TempDir()

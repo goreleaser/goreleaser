@@ -5,6 +5,7 @@ import (
 	"path/filepath"
 	"testing"
 
+	"github.com/goreleaser/goreleaser/v2/internal/testlib"
 	"github.com/stretchr/testify/require"
 )
 
@@ -55,6 +56,7 @@ func TestInitGitIgnoreExists(t *testing.T) {
 }
 
 func TestInitFileError(t *testing.T) {
+	testlib.SkipIfWindows(t, "windows permissions don't work the same way")
 	folder := setupInitTest(t)
 	cmd := newInitCmd().cmd
 	path := filepath.Join(folder, "nope.yaml")
