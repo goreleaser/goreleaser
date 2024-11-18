@@ -2,6 +2,7 @@ package client
 
 import (
 	"crypto/tls"
+	"errors"
 	"fmt"
 	"net/http"
 	"os"
@@ -75,7 +76,7 @@ func (c *gitlabClient) checkIsPrivateToken() error {
 	if c.authType == gitlab.PrivateToken {
 		return nil
 	}
-	return fmt.Errorf("the necessary APIs are not available when using CI_JOB_TOKEN")
+	return errors.New("the necessary APIs are not available when using CI_JOB_TOKEN")
 }
 
 func (c *gitlabClient) Changelog(_ *context.Context, repo Repo, prev, current string) ([]ChangelogItem, error) {

@@ -4,6 +4,7 @@ package scoop
 import (
 	"bytes"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"os"
 	"path"
@@ -273,7 +274,7 @@ func doPublish(ctx *context.Context, manifest *artifact.Artifact, cl client.Clie
 	log.Info("scoop.pull_request enabled, creating a PR")
 	pcl, ok := cl.(client.PullRequestOpener)
 	if !ok {
-		return fmt.Errorf("client does not support pull requests")
+		return errors.New("client does not support pull requests")
 	}
 
 	return pcl.OpenPullRequest(ctx, base, repo, commitMessage, scoop.Repository.PullRequest.Draft)

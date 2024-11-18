@@ -2,6 +2,7 @@
 package snapshot
 
 import (
+	"errors"
 	"fmt"
 
 	"github.com/caarlos0/log"
@@ -34,7 +35,7 @@ func (Pipe) Run(ctx *context.Context) error {
 		return fmt.Errorf("failed to parse snapshot name: %w", err)
 	}
 	if name == "" {
-		return fmt.Errorf("empty snapshot name")
+		return errors.New("empty snapshot name")
 	}
 	ctx.Version = name
 	log.WithField("version", ctx.Version).Infof("building snapshot...")

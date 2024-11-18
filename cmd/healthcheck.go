@@ -1,7 +1,7 @@
 package cmd
 
 import (
-	"fmt"
+	"errors"
 	"io"
 	"os/exec"
 	"sync"
@@ -71,7 +71,7 @@ func newHealthcheckCmd() *healthcheckCmd {
 					return nil
 				}
 
-				return fmt.Errorf("one or more needed tools are not present")
+				return errors.New("one or more needed tools are not present")
 			}); err != nil {
 				return err
 			}

@@ -1,6 +1,7 @@
 package docker
 
 import (
+	"errors"
 	"fmt"
 	"io/fs"
 	"net/http"
@@ -238,7 +239,7 @@ Previous error:
 %w`, tmp, strings.Join(files, "\n "), err)
 		}
 		if isBuildxContextError(err.Error()) {
-			return fmt.Errorf("docker buildx is not set to default context - please switch with 'docker context use default'")
+			return errors.New("docker buildx is not set to default context - please switch with 'docker context use default'")
 		}
 		return err
 	}

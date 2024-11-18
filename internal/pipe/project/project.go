@@ -2,7 +2,7 @@
 package project
 
 import (
-	"fmt"
+	"errors"
 	"os/exec"
 	"strings"
 
@@ -37,7 +37,7 @@ func (Pipe) Default(ctx *context.Context) error {
 		return nil
 	}
 
-	return fmt.Errorf("couldn't guess project_name, please add it to your config")
+	return errors.New("couldn't guess project_name, please add it to your config")
 }
 
 func moduleName() string {

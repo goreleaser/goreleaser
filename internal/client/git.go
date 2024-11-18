@@ -155,7 +155,7 @@ func keyPath(key string) (string, error) {
 
 	_, err := ssh.ParsePrivateKey([]byte(key))
 	if isPasswordError(err) {
-		return "", fmt.Errorf("git: key is password-protected")
+		return "", errors.New("git: key is password-protected")
 	}
 
 	if err == nil {
