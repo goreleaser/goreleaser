@@ -8,6 +8,7 @@ import (
 	"io"
 	h "net/http"
 	"os"
+	"runtime"
 	"strings"
 
 	"github.com/caarlos0/log"
@@ -15,7 +16,6 @@ import (
 	"github.com/goreleaser/goreleaser/v2/internal/extrafiles"
 	"github.com/goreleaser/goreleaser/v2/internal/pipe"
 	"github.com/goreleaser/goreleaser/v2/internal/semerrgroup"
-	"github.com/goreleaser/goreleaser/v2/internal/testlib"
 	"github.com/goreleaser/goreleaser/v2/internal/tmpl"
 	"github.com/goreleaser/goreleaser/v2/pkg/config"
 	"github.com/goreleaser/goreleaser/v2/pkg/context"
@@ -336,7 +336,7 @@ func getHTTPClient(upload *config.Upload) (*h.Client, error) {
 	if upload.TrustedCerts != "" {
 		pool, err := x509.SystemCertPool()
 		if err != nil {
-			if testlib.IsWindows() {
+			if runtime.GOOS == "windows" {
 				// on windows ignore errors until golang issues #16736 & #18609 get fixed
 				pool = x509.NewCertPool()
 			} else {
