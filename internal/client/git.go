@@ -1,6 +1,7 @@
 package client
 
 import (
+	"cmp"
 	"errors"
 	"fmt"
 	"io"
@@ -11,7 +12,6 @@ import (
 	"time"
 
 	"github.com/caarlos0/log"
-	"github.com/charmbracelet/x/exp/ordered"
 	"github.com/goreleaser/goreleaser/v2/internal/git"
 	"github.com/goreleaser/goreleaser/v2/internal/pipe"
 	"github.com/goreleaser/goreleaser/v2/internal/tmpl"
@@ -56,7 +56,7 @@ func (g *gitClient) CreateFiles(
 		return pipe.Skip("url is empty")
 	}
 
-	repo.Name = ordered.First(repo.Name, nameFromURL(url))
+	repo.Name = cmp.Or(repo.Name, nameFromURL(url))
 
 	key, err := tmpl.New(ctx).Apply(repo.PrivateKey)
 	if err != nil {
@@ -70,7 +70,7 @@ func (g *gitClient) CreateFiles(
 
 	sshcmd, err := tmpl.New(ctx).WithExtraFields(tmpl.Fields{
 		"KeyPath": key,
-	}).Apply(ordered.First(repo.GitSSHCommand, DefaultGitSSHCommand))
+	}).Apply(cmp.Or(repo.GitSSHCommand, DefaultGitSSHCommand))
 	if err != nil {
 		return fmt.Errorf("git: failed to template ssh command: %w", err)
 	}
@@ -94,7 +94,7 @@ func (g *gitClient) CreateFiles(
 			{"config", "--local", "user.name", commitAuthor.Name},
 			{"config", "--local", "user.email", commitAuthor.Email},
 			{"config", "--local", "commit.gpgSign", "false"},
-			{"config", "--local", "init.defaultBranch", ordered.First(g.branch, "master")},
+			{"config", "--local", "init.defaultBranch", cmp.Or(g.branch, "master")},
 		}); err != nil {
 			return fmt.Errorf("git: failed to setup local repository: %w", err)
 		}

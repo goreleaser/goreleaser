@@ -1,6 +1,7 @@
 package client
 
 import (
+	"cmp"
 	"crypto/tls"
 	"fmt"
 	"net/http"
@@ -9,7 +10,6 @@ import (
 	"strings"
 
 	"github.com/caarlos0/log"
-	"github.com/charmbracelet/x/exp/ordered"
 	"github.com/goreleaser/goreleaser/v2/internal/artifact"
 	"github.com/goreleaser/goreleaser/v2/internal/tmpl"
 	"github.com/goreleaser/goreleaser/v2/pkg/config"
@@ -647,8 +647,8 @@ func (c *gitlabClient) OpenPullRequest(
 		targetProjectID = p.ID
 	}
 
-	base.Owner = ordered.First(base.Owner, head.Owner)
-	base.Name = ordered.First(base.Name, head.Name)
+	base.Owner = cmp.Or(base.Owner, head.Owner)
+	base.Name = cmp.Or(base.Name, head.Name)
 
 	if base.Branch == "" {
 		def, err := c.getDefaultBranch(ctx, base)

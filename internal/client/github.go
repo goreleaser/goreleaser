@@ -1,6 +1,7 @@
 package client
 
 import (
+	"cmp"
 	"crypto/tls"
 	"errors"
 	"fmt"
@@ -13,7 +14,6 @@ import (
 	"time"
 
 	"github.com/caarlos0/log"
-	"github.com/charmbracelet/x/exp/ordered"
 	"github.com/google/go-github/v66/github"
 	"github.com/goreleaser/goreleaser/v2/internal/artifact"
 	"github.com/goreleaser/goreleaser/v2/internal/tmpl"
@@ -174,9 +174,9 @@ func (c *githubClient) CloseMilestone(ctx *context.Context, repo Repo, title str
 
 func headString(base, head Repo) string {
 	return strings.Join([]string{
-		ordered.First(head.Owner, base.Owner),
-		ordered.First(head.Name, base.Name),
-		ordered.First(head.Branch, base.Branch),
+		cmp.Or(head.Owner, base.Owner),
+		cmp.Or(head.Name, base.Name),
+		cmp.Or(head.Branch, base.Branch),
 	}, ":")
 }
 
@@ -201,8 +201,8 @@ func (c *githubClient) OpenPullRequest(
 	draft bool,
 ) error {
 	c.checkRateLimit(ctx)
-	base.Owner = ordered.First(base.Owner, head.Owner)
-	base.Name = ordered.First(base.Name, head.Name)
+	base.Owner = cmp.Or(base.Owner, head.Owner)
+	base.Name = cmp.Or(base.Name, head.Name)
 	if base.Branch == "" {
 		def, err := c.getDefaultBranch(ctx, base)
 		if err != nil {

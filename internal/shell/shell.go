@@ -2,13 +2,13 @@ package shell
 
 import (
 	"bytes"
+	"cmp"
 	"fmt"
 	"io"
 	"os/exec"
 	"strings"
 
 	"github.com/caarlos0/log"
-	"github.com/charmbracelet/x/exp/ordered"
 	"github.com/goreleaser/goreleaser/v2/internal/gio"
 	"github.com/goreleaser/goreleaser/v2/internal/logext"
 	"github.com/goreleaser/goreleaser/v2/pkg/context"
@@ -40,10 +40,7 @@ func Run(ctx *context.Context, dir string, command, env []string, output bool) e
 			"shell: '%s': %w: %s",
 			strings.Join(command, " "),
 			err,
-			ordered.First(
-				strings.TrimSpace(b.String()),
-				"[no output]",
-			),
+			cmp.Or(strings.TrimSpace(b.String()), "[no output]"),
 		)
 	}
 
