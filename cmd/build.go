@@ -1,6 +1,7 @@
 package cmd
 
 import (
+	"errors"
 	"fmt"
 	"path/filepath"
 	"runtime"
@@ -229,7 +230,7 @@ func (w withOutputPipe) String() string {
 func (w withOutputPipe) Run(ctx *context.Context) error {
 	bins := ctx.Artifacts.Filter(artifact.ByType(artifact.Binary)).List()
 	if len(bins) == 0 {
-		return fmt.Errorf("no binary found")
+		return errors.New("no binary found")
 	}
 	path := bins[0].Path
 	out := w.output

@@ -191,7 +191,7 @@ func create(ctx *context.Context, arch config.Archive, binaries []*artifact.Arti
 		return fmt.Errorf("failed to find files to archive: %w", err)
 	}
 	if arch.Meta && len(files) == 0 {
-		return fmt.Errorf("no files found")
+		return errors.New("no files found")
 	}
 	for _, f := range files {
 		if err = a.Add(f); err != nil {

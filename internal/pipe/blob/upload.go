@@ -1,11 +1,13 @@
 package blob
 
 import (
+	"errors"
 	"fmt"
 	"io"
 	"net/url"
 	"os"
 	"path"
+	"strconv"
 	"strings"
 
 	"github.com/aws/aws-sdk-go/aws"
@@ -63,7 +65,7 @@ func urlFor(ctx *context.Context, conf config.Blob) (string, error) {
 		if conf.S3ForcePathStyle == nil {
 			query.Add("s3ForcePathStyle", "true")
 		} else {
-			query.Add("s3ForcePathStyle", fmt.Sprintf("%t", *conf.S3ForcePathStyle))
+			query.Add("s3ForcePathStyle", strconv.FormatBool(*conf.S3ForcePathStyle))
 		}
 	}
 
@@ -109,7 +111,7 @@ func doUpload(ctx *context.Context, conf config.Blob) error {
 		up.beforeWrite = func(asFunc func(interface{}) bool) error {
 			req := &s3manager.UploadInput{}
 			if !asFunc(&req) {
-				return fmt.Errorf("could not apply before write")
+				return errors.New("could not apply before write")
 			}
 			req.ACL = aws.String(conf.ACL)
 			return nil

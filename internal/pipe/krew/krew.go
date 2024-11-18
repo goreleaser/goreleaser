@@ -83,10 +83,10 @@ func doRun(ctx *context.Context, krew config.Krew, cl client.ReleaseURLTemplater
 		return pipe.Skip("krew: manifest name is not set")
 	}
 	if krew.Description == "" {
-		return fmt.Errorf("krew: manifest description is not set")
+		return errors.New("krew: manifest description is not set")
 	}
 	if krew.ShortDescription == "" {
-		return fmt.Errorf("krew: manifest short description is not set")
+		return errors.New("krew: manifest short description is not set")
 	}
 
 	filters := []artifact.Filter{
@@ -355,7 +355,7 @@ func doPublish(ctx *context.Context, manifest *artifact.Artifact, cl client.Clie
 	log.Info("krews.pull_request enabled, creating a PR")
 	pcl, ok := cl.(client.PullRequestOpener)
 	if !ok {
-		return fmt.Errorf("client does not support pull requests")
+		return errors.New("client does not support pull requests")
 	}
 
 	return pcl.OpenPullRequest(ctx, base, repo, msg, cfg.Repository.PullRequest.Draft)

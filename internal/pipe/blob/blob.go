@@ -2,7 +2,7 @@
 package blob
 
 import (
-	"fmt"
+	"errors"
 
 	"github.com/goreleaser/goreleaser/v2/internal/pipe"
 	"github.com/goreleaser/goreleaser/v2/internal/semerrgroup"
@@ -22,7 +22,7 @@ func (Pipe) Default(ctx *context.Context) error {
 	for i := range ctx.Config.Blobs {
 		blob := &ctx.Config.Blobs[i]
 		if blob.Bucket == "" || blob.Provider == "" {
-			return fmt.Errorf("bucket or provider cannot be empty")
+			return errors.New("bucket or provider cannot be empty")
 		}
 		if blob.Directory == "" {
 			blob.Directory = "{{ .ProjectName }}/{{ .Tag }}"
