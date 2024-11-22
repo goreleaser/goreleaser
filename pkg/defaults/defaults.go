@@ -8,6 +8,7 @@ import (
 	"github.com/goreleaser/goreleaser/v2/internal/pipe/archive"
 	"github.com/goreleaser/goreleaser/v2/internal/pipe/artifactory"
 	"github.com/goreleaser/goreleaser/v2/internal/pipe/aur"
+	"github.com/goreleaser/goreleaser/v2/internal/pipe/aursources"
 	"github.com/goreleaser/goreleaser/v2/internal/pipe/blob"
 	"github.com/goreleaser/goreleaser/v2/internal/pipe/bluesky"
 	"github.com/goreleaser/goreleaser/v2/internal/pipe/brew"
@@ -89,6 +90,7 @@ var Defaulters = []Defaulter{
 	blob.Pipe{},
 	upload.Pipe{},
 	aur.Pipe{},
+	aursources.Pipe{},
 	nix.Pipe{},
 	winget.Pipe{},
 	brew.Pipe{},

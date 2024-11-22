@@ -222,6 +222,36 @@ type AUR struct {
 	Directory             string       `yaml:"directory,omitempty" json:"directory,omitempty"`
 }
 
+type AURSource struct {
+	Name                  string       `yaml:"name,omitempty" json:"name,omitempty"`
+	IDs                   []string     `yaml:"ids,omitempty" json:"ids,omitempty"`
+	CommitAuthor          CommitAuthor `yaml:"commit_author,omitempty" json:"commit_author,omitempty"`
+	CommitMessageTemplate string       `yaml:"commit_msg_template,omitempty" json:"commit_msg_template,omitempty"`
+	Description           string       `yaml:"description,omitempty" json:"description,omitempty"`
+	Homepage              string       `yaml:"homepage,omitempty" json:"homepage,omitempty"`
+	License               string       `yaml:"license,omitempty" json:"license,omitempty"`
+	SkipUpload            string       `yaml:"skip_upload,omitempty" json:"skip_upload,omitempty" jsonschema:"oneof_type=string;boolean"`
+	URLTemplate           string       `yaml:"url_template,omitempty" json:"url_template,omitempty"`
+	Maintainers           []string     `yaml:"maintainers,omitempty" json:"maintainers,omitempty"`
+	Contributors          []string     `yaml:"contributors,omitempty" json:"contributors,omitempty"`
+	Arches                []string     `yaml:"arches,omitempty" json:"arches,omitempty"`
+	Provides              []string     `yaml:"provides,omitempty" json:"provides,omitempty"`
+	Conflicts             []string     `yaml:"conflicts,omitempty" json:"conflicts,omitempty"`
+	Depends               []string     `yaml:"depends,omitempty" json:"depends,omitempty"`
+	OptDepends            []string     `yaml:"optdepends,omitempty" json:"optdepends,omitempty"`
+	MakeDepends           []string     `yaml:"makedepends,omitempty" json:"makedepends,omitempty"`
+	Backup                []string     `yaml:"backup,omitempty" json:"backup,omitempty"`
+	Rel                   string       `yaml:"rel,omitempty" json:"rel,omitempty"`
+	Prepare               string       `yaml:"prepare,omitempty" json:"prepare,omitempty"`
+	Build                 string       `yaml:"build,omitempty" json:"build,omitempty"`
+	Package               string       `yaml:"package,omitempty" json:"package,omitempty"`
+	GitURL                string       `yaml:"git_url,omitempty" json:"git_url,omitempty"`
+	GitSSHCommand         string       `yaml:"git_ssh_command,omitempty" json:"git_ssh_command,omitempty"`
+	PrivateKey            string       `yaml:"private_key,omitempty" json:"private_key,omitempty"`
+	Goamd64               string       `yaml:"goamd64,omitempty" json:"goamd64,omitempty"`
+	Directory             string       `yaml:"directory,omitempty" json:"directory,omitempty"`
+}
+
 // Homebrew contains the brew section.
 type Homebrew struct {
 	Name                  string               `yaml:"name,omitempty" json:"name,omitempty"`
@@ -1241,6 +1271,7 @@ type Project struct {
 	Nix             []Nix            `yaml:"nix,omitempty" json:"nix,omitempty"`
 	Winget          []Winget         `yaml:"winget,omitempty" json:"winget,omitempty"`
 	AURs            []AUR            `yaml:"aurs,omitempty" json:"aurs,omitempty"`
+	AURSources      []AURSource      `yaml:"aur_sources,omitempty" json:"aur_sources,omitempty"`
 	Krews           []Krew           `yaml:"krews,omitempty" json:"krews,omitempty"`
 	Kos             []Ko             `yaml:"kos,omitempty" json:"kos,omitempty"`
 	Scoops          []Scoop          `yaml:"scoops,omitempty" json:"scoops,omitempty"`

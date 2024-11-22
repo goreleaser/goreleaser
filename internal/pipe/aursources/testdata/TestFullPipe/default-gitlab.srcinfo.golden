@@ -1,0 +1,17 @@
+pkgbase = default-gitlab
+	pkgdesc = A run pipe test fish food and FOO=foo_is_bar
+	pkgver = 1.0.1
+	pkgrel = 1
+	url = https://gitlab.com/goreleaser
+	arch = aarch64
+	arch = x86_64
+	license = MIT
+	makedepends = go
+	makedepends = git
+	conflicts = default-gitlab
+	provides = default-gitlab
+	
+	source = https://dummyhost/download/v1.0.1-foo/sources.tar.gz
+	sha256sums = e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
+	
+pkgname = default-gitlab

@@ -56,7 +56,7 @@ func TestSetAllowed(t *testing.T) {
 func TestComplete(t *testing.T) {
 	require.Equal(
 		t,
-		[]string{"announce", "archive", "aur"},
+		[]string{"announce", "archive", "aur", "aur-source"},
 		skips.Release.Complete("a"),
 	)
 }
