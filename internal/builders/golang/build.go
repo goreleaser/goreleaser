@@ -282,12 +282,21 @@ func (*Builder) Build(ctx *context.Context, build config.Build, options api.Opti
 }
 
 func withOverrides(ctx *context.Context, build config.Build, options api.Options) (config.BuildDetails, error) {
-	optsTarget := options.Goos + options.Goarch + options.Goamd64 + options.Go386 + options.Goarm + options.Goarm64 + options.Gomips + options.Goppc64 + options.Goriscv64
+	optsTarget := options.Goos + "_" + options.Goarch
+	if extra := options.Goamd64 + options.Go386 + options.Goarm + options.Goarm64 + options.Gomips + options.Goppc64 + options.Goriscv64; extra != "" {
+		optsTarget += "_" + extra
+	}
+	optsTarget = fixTarget(optsTarget)
 	for _, o := range build.BuildDetailsOverrides {
-		overrideTarget, err := tmpl.New(ctx).Apply(o.Goos + o.Goarch + o.Goamd64 + o.Go386 + o.Goarm + o.Goarm64 + o.Gomips + o.Goppc64 + o.Goriscv64)
+		s := o.Goos + "_" + o.Goarch
+		if extra := o.Goamd64 + o.Go386 + o.Goarm + o.Goarm64 + o.Gomips + o.Goppc64 + o.Goriscv64; extra != "" {
+			s += "_" + extra
+		}
+		overrideTarget, err := tmpl.New(ctx).Apply(s)
 		if err != nil {
 			return build.BuildDetails, err
 		}
+		overrideTarget = fixTarget(overrideTarget)
 
 		if optsTarget == overrideTarget {
 			dets := config.BuildDetails{
