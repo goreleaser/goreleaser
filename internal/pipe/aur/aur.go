@@ -218,12 +218,27 @@ func fixLines(s string) string {
 	return strings.Join(result, "\n")
 }
 
+func quoteField(v string) string {
+	simpleQuote := strings.Contains(v, `'`)
+	doubleQuote := strings.Contains(v, `"`)
+
+	switch {
+	case simpleQuote && doubleQuote:
+		return `"` + strings.ReplaceAll(v, `"`, `'`) + `"`
+	case simpleQuote:
+		return `"` + v + `"`
+	default:
+		return `'` + v + `'`
+	}
+}
+
 func applyTemplate(ctx *context.Context, tpl string, data templateData) (string, error) {
 	t := template.Must(
 		template.New(data.Name).
 			Funcs(template.FuncMap{
-				"fixLines": fixLines,
-				"pkgArray": toPkgBuildArray,
+				"fixLines":   fixLines,
+				"pkgArray":   toPkgBuildArray,
+				"quoteField": quoteField,
 			}).
 			Parse(tpl),
 	)
