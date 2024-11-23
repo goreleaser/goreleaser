@@ -65,16 +65,10 @@ jobs:
     Syft, Cosign and any other tools the release might need. It's also the
     user's responsibility to log in into tools that need it, such as docker.
 
-    #### Fetch depthness
-    Notice the `fetch-depth: 0` option on the `Checkout` workflow step.
-    It is required for GoReleaser to work properly.
-    Without that, GoReleaser might fail or behave incorrectly.
-
-    #### Tag fetching
-    Notice the `git fetch --force -tags`. This is needed if you use fields like
-    `TagBody`, `TagSubject` or `TagContents` in your templates.
-    For more information, take a look at
-    [actions/checkout#290](https://github.com/actions/checkout/issues/290).
+    #### Fetch all history
+    Notice the `fetch-depth: 0` option in the `Checkout` workflow step.
+    This is required for GoReleaser to work properly, as it will need the full
+    history to work properly.
 
 !!! tip
 
