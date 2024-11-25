@@ -23,7 +23,7 @@ func (d dummyTarget) Fields() map[string]string {
 type dummy struct{}
 
 // Parse implements Builder.
-func (d *dummy) Parse(target string) (Target, error) {
+func (d *dummy) Parse(string) (Target, error) {
 	return dummyTarget{}, nil
 }
 
