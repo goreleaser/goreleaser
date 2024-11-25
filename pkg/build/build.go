@@ -28,23 +28,27 @@ func For(name string) Builder {
 
 // Options to be passed down to a builder.
 type Options struct {
-	Name      string
-	Path      string
-	Ext       string // with the leading `.`.
-	Target    string
-	Goos      string
-	Goarch    string
-	Goamd64   string
-	Go386     string
-	Goarm     string
-	Goarm64   string
-	Gomips    string
-	Goppc64   string
-	Goriscv64 string
+	Name   string
+	Path   string
+	Ext    string // with the leading `.`.
+	Target Target
+}
+
+// Target represents a build target.
+//
+// Each Builder implementation can implement its own.
+type Target interface {
+	// String returns the original target.
+	String() string
+
+	// Fields returns the template fields that will be available for this
+	// target (e.g. Os, Arch, etc).
+	Fields() map[string]string
 }
 
 // Builder defines a builder.
 type Builder interface {
 	WithDefaults(build config.Build) (config.Build, error)
 	Build(ctx *context.Context, build config.Build, options Options) error
+	Parse(target string) (Target, error)
 }

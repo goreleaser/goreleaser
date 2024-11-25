@@ -55,9 +55,7 @@ func (Pipe) Run(ctx *context.Context) error {
 	for _, unibin := range ctx.Config.UniversalBinaries {
 		g.Go(func() error {
 			opts := build.Options{
-				Target: "darwin_all",
-				Goos:   "darwin",
-				Goarch: "all",
+				Target: unitarget{},
 			}
 			if !skips.Any(ctx, skips.PreBuildHooks) {
 				if err := runHook(ctx, &opts, unibin.Hooks.Pre); err != nil {
