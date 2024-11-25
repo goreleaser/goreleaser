@@ -211,6 +211,19 @@ func buildOptsToFields(opts build.Options) Fields {
 		ext:    opts.Ext,
 		name:   opts.Name,
 		path:   opts.Path,
+
+		// set them all to empty, which should prevent breaking templates.
+		// the .Fields() call will override whichever values are actually
+		// available.
+		KeyOS:      "",
+		KeyArch:    "",
+		KeyAmd64:   "",
+		Key386:     "",
+		KeyArm:     "",
+		KeyArm64:   "",
+		KeyMips:    "",
+		KeyPpc64:   "",
+		KeyRiscv64: "",
 	}
 	for k, v := range opts.Target.Fields() {
 		f[k] = v

@@ -460,6 +460,8 @@ func TestInvalidMap(t *testing.T) {
 }
 
 func TestWithBuildOptions(t *testing.T) {
+	// testtarget doesn ot set riscv64, it still should not fail to compile the template
+	ts := "{{.Name}}_{{.Path}}_{{.Ext}}_{{.Target}}_{{.Os}}_{{.Arch}}_{{.Amd64}}_{{.Arm}}_{{.Mips}}{{with .Riscv64}}{{.}}{{end}}"
 	out, err := New(testctx.New()).WithBuildOptions(build.Options{
 		Name: "name",
 		Path: "./path",
@@ -472,7 +474,7 @@ func TestWithBuildOptions(t *testing.T) {
 			Goarm:   "arm",
 			Gomips:  "mips",
 		},
-	}).Apply("{{.Name}}_{{.Path}}_{{.Ext}}_{{.Target}}_{{.Os}}_{{.Arch}}_{{.Amd64}}_{{.Arm}}_{{.Mips}}")
+	}).Apply(ts)
 	require.NoError(t, err)
 	require.Equal(t, "name_./path_.ext_target_os_arch_amd64_arm_mips", out)
 }
