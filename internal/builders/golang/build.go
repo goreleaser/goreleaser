@@ -56,22 +56,22 @@ func (b *Builder) Parse(target string) (api.Target, error) {
 	}
 
 	if len(parts) > 2 {
-		// TODO: use a switch here
-		//nolint:gocritic
-		if strings.HasPrefix(goarch, "amd64") {
-			t.Goamd64 = parts[2]
-		} else if goarch == "386" {
-			t.Go386 = parts[2]
-		} else if strings.HasPrefix(goarch, "arm64") {
-			t.Goarm64 = parts[2]
-		} else if strings.HasPrefix(goarch, "arm") {
-			t.Goarm = parts[2]
-		} else if strings.HasPrefix(goarch, "mips") {
-			t.Gomips = parts[2]
-		} else if strings.HasPrefix(goarch, "ppc64") {
-			t.Goppc64 = parts[2]
-		} else if goarch == "riscv64" {
-			t.Goriscv64 = parts[2]
+		extra := parts[2]
+		switch goarch {
+		case "amd64":
+			t.Goamd64 = extra
+		case "arm64":
+			t.Goarm64 = extra
+		case "386":
+			t.Go386 = extra
+		case "arm":
+			t.Goarm = extra
+		case "mips", "mipsle", "mips64", "mips64le":
+			t.Gomips = extra
+		case "ppc64":
+			t.Goppc64 = extra
+		case "riscv":
+			t.Goriscv64 = extra
 		}
 	}
 
