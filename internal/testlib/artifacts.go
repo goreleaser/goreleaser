@@ -28,14 +28,3 @@ func filenames(ts []*artifact.Artifact) []string {
 	}
 	return result
 }
-
-func byPath(tb testing.TB, ts []*artifact.Artifact, path string) *artifact.Artifact {
-	tb.Helper()
-	for _, a := range ts {
-		if a.Path == path {
-			return a
-		}
-	}
-	tb.Errorf("%q is not in the expected list", path)
-	return nil
-}
