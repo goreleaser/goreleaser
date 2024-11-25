@@ -41,7 +41,7 @@ require (
 	github.com/ory/dockertest/v3 v3.11.0
 	github.com/slack-go/slack v0.15.0
 	github.com/spf13/cobra v1.8.1
-	github.com/stretchr/testify v1.9.0
+	github.com/stretchr/testify v1.10.0
 	github.com/ulikunitz/xz v0.5.12
 	github.com/xanzy/go-gitlab v0.114.0
 	gocloud.dev v0.40.0
