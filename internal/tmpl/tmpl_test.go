@@ -63,6 +63,7 @@ func TestWithArtifact(t *testing.T) {
 		"power8":                              "{{.Ppc64}}",
 		"rva22u64":                            "{{.Riscv64}}",
 		"v8.0":                                "{{.Arm64}}",
+		"a_fake_target":                       "{{.Target}}",
 		"1.2.3":                               "{{.Version}}",
 		"v1.2.3":                              "{{.Tag}}",
 		"1-2-3":                               "{{.Major}}-{{.Minor}}-{{.Patch}}",
@@ -128,6 +129,7 @@ func TestWithArtifact(t *testing.T) {
 					Go386:     "sse2",
 					Goppc64:   "power8",
 					Goriscv64: "rva22u64",
+					Target:    "a_fake_target",
 					Extra: map[string]interface{}{
 						artifact.ExtraBinary: "binary",
 						artifact.ExtraExt:    ".exe",

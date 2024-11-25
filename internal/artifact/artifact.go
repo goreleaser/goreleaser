@@ -192,6 +192,7 @@ type Artifact struct {
 	Gomips    string `json:"gomips,omitempty"`
 	Goppc64   string `json:"goppc64,omitempty"`
 	Goriscv64 string `json:"goriscv64,omitempty"`
+	Target    string `json:"target,omitempty"`
 	Type      Type   `json:"internal_type,omitempty"`
 	TypeS     string `json:"type,omitempty"`
 	Extra     Extras `json:"extra,omitempty"`

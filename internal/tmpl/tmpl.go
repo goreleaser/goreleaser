@@ -186,6 +186,7 @@ func (t *Template) WithArtifact(a *artifact.Artifact) *Template {
 		mips:         a.Gomips,
 		ppc64:        a.Goppc64,
 		riscv64:      a.Goriscv64,
+		target:       a.Target,
 		binary:       artifact.ExtraOr(*a, binary, t.fields[projectName].(string)),
 		artifactName: a.Name,
 		artifactExt:  artifact.ExtraOr(*a, artifact.ExtraExt, ""),

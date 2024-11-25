@@ -435,6 +435,7 @@ func create(ctx *context.Context, snap config.Snapcraft, arch string, binaries [
 		Gomips:    binaries[0].Gomips,
 		Goppc64:   binaries[0].Goppc64,
 		Goriscv64: binaries[0].Goriscv64,
+		Target:    binaries[0].Target,
 		Extra: map[string]interface{}{
 			releasesExtra: channels,
 		},
