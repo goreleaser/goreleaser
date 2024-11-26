@@ -162,6 +162,7 @@ const (
 	ExtraSize       = "Size"
 	ExtraChecksum   = "Checksum"
 	ExtraChecksumOf = "ChecksumOf"
+	ExtraBuilder    = "Builder"
 )
 
 // Extras represents the extra fields in an artifact.
@@ -467,14 +468,24 @@ func ByGoarch(s string) Filter {
 // ByGoarm is a predefined filter that filters by the given goarm.
 func ByGoarm(s string) Filter {
 	return func(a *Artifact) bool {
-		return a.Goarm == s
+		switch ExtraOr(*a, ExtraBuilder, "") {
+		case "zig":
+			return true
+		default:
+			return a.Goarm == s
+		}
 	}
 }
 
 // ByGoamd64 is a predefined filter that filters by the given goamd64.
 func ByGoamd64(s string) Filter {
 	return func(a *Artifact) bool {
-		return a.Goamd64 == s
+		switch ExtraOr(*a, ExtraBuilder, "") {
+		case "zig":
+			return true
+		default:
+			return a.Goamd64 == s
+		}
 	}
 }
 

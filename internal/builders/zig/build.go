@@ -140,9 +140,10 @@ func (b *Builder) Build(ctx *context.Context, build config.Build, options api.Op
 		Goarch: convertToGoarch(t.Arch),
 		Target: t.Target,
 		Extra: map[string]interface{}{
-			artifact.ExtraBinary: strings.TrimSuffix(filepath.Base(options.Path), options.Ext),
-			artifact.ExtraExt:    options.Ext,
-			artifact.ExtraID:     build.ID,
+			artifact.ExtraBinary:  strings.TrimSuffix(filepath.Base(options.Path), options.Ext),
+			artifact.ExtraExt:     options.Ext,
+			artifact.ExtraID:      build.ID,
+			artifact.ExtraBuilder: "zig",
 		},
 	}
 
