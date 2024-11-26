@@ -19,7 +19,7 @@ def on_page_markdown(markdown: str, *, page: Page, config: MkDocsConfig, files: 
         elif type == "pro":       return _pro_ad(page, files)
         elif type == "featpro":       return _pro_feat_ad(page, files)
         elif type == "templates": return _templates_ad()
-		elif type == "alpha": return _alpha_block()
+        elif type == "alpha": return _alpha_block()
 
         # Otherwise, raise an error
         raise RuntimeError(f"Unknown shortcode: {type}")
