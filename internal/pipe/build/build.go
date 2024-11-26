@@ -21,6 +21,7 @@ import (
 
 	// langs to init.
 	_ "github.com/goreleaser/goreleaser/v2/internal/builders/golang"
+	_ "github.com/goreleaser/goreleaser/v2/internal/builders/zig"
 )
 
 // Pipe for build.
