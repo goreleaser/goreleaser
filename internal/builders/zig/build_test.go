@@ -167,6 +167,7 @@ func TestBuild(t *testing.T) {
 		Target: nil,
 	}
 	options.Target, err = Default.Parse("aarch64-macos")
+	require.NoError(t, err)
 
 	require.NoError(t, Default.Build(ctx, build, options))
 

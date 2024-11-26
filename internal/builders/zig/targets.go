@@ -20,22 +20,6 @@ var (
 	allTargets  []string
 	errTargets  []string
 	targetsOnce sync.Once
-
-	// extracted with:
-	//  cat all_targets.txt | cut -f3 -d- | sort | uniq
-	allAbis = []string{
-		"gnu",
-		"gnuabi64",
-		"gnuabin32",
-		"gnueabi",
-		"gnueabihf",
-		"gnuilp32",
-		"gnux32",
-		"musl",
-		"musleabi",
-		"musleabihf",
-		"none",
-	}
 )
 
 const keyAbi = "Abi"
