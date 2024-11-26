@@ -11,10 +11,10 @@ import (
 )
 
 var (
-	//go:embed ./all_targets.txt
+	//go:embed all_targets.txt
 	allTargetsBts []byte
 
-	//go:embed ./error_targets.txt
+	//go:embed error_targets.txt
 	errTargetsBts []byte
 
 	allTargets  []string
@@ -86,10 +86,18 @@ func convertToGoarch(s string) string {
 type targetStatus uint8
 
 const (
-	targetInvalid = iota
+	targetInvalid targetStatus = iota
 	targetBroken
 	targetValid
 )
+
+func (t targetStatus) String() string {
+	return [3]string{
+		"invalid",
+		"broken",
+		"valid",
+	}[t]
+}
 
 func checkTarget(target string) targetStatus {
 	targetsOnce.Do(func() {
@@ -97,18 +105,10 @@ func checkTarget(target string) targetStatus {
 		errTargets = strings.Split(string(errTargetsBts), "\n")
 	})
 
-	s := target
-	// TODO: can we make this more correct?
-	if len(strings.Split(target, "-")) == 2 {
-		for _, abi := range allAbis {
-			s = strings.TrimSuffix(target, "-"+abi)
-		}
-	}
-
-	if slices.Contains(errTargets, s) {
+	if slices.Contains(errTargets, target) {
 		return targetBroken
 	}
-	if slices.Contains(allTargets, s) {
+	if slices.Contains(allTargets, target) {
 		return targetValid
 	}
 	return targetInvalid

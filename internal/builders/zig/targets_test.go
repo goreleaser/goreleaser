@@ -15,17 +15,7 @@ func TestCheckTarget(t *testing.T) {
 		require.Equal(t, targetBroken, checkTarget("arm-windows"))
 	})
 	t.Run("valid", func(t *testing.T) {
-		require.Equal(t, targetBroken, checkTarget("aarch64-linux-musl"))
-		require.Equal(t, targetBroken, checkTarget("aarch64-linux"))
-	})
-	t.Run("abis", func(t *testing.T) {
-		for _, abi := range allAbis {
-			t.Run("broken", func(t *testing.T) {
-				require.Equal(t, targetBroken, checkTarget("arm-windows-"+abi))
-			})
-			t.Run("valid", func(t *testing.T) {
-				require.Equal(t, targetValid, checkTarget("arm-windows-"+abi))
-			})
-		}
+		require.Equal(t, targetValid, checkTarget("aarch64-linux-musl"))
+		require.Equal(t, targetValid, checkTarget("aarch64-linux"))
 	})
 }
