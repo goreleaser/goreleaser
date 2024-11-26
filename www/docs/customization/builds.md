@@ -258,8 +258,7 @@ builds:
     dir: go
 
     # Builder allows you to use a different build implementation.
-    # This is a GoReleaser Pro feature.
-    # Valid options are: `go` and `prebuilt`.
+    # Valid options are: `go`, `zig`, and `prebuilt` (pro-only).
     #
     # Default: 'go'.
     builder: prebuilt
@@ -471,6 +470,38 @@ GoReleaser:
   `-trimpath` to `flags`.
 - Remove uses of the `time` template function. This function returns a new value
   on every call and is not deterministic.
+
+## Build Zig binaries
+
+<!-- md:version 2.5 -->
+<!-- md:alpha -->
+
+You can now build Zig binaries using `zig build` and GoReleaser!
+
+Simply set the `builder` to `zig`, for instance:
+
+```yml
+# .goreleaser.yaml
+builds:
+  - # Use zig
+    builder: zig
+    targets:
+      - aarch64-macos
+      - x86_64-linux-gnu
+```
+
+Some options are not supported yet[^fail], but it should be usable at least for
+simple projects already!
+
+### Caveats
+
+GoReleaser will translate Zig's Os/Arch pair into a GOOS/GOARCH pair, so
+templates should work the same as before. The original target name is available
+in templates as `.Target`, and so is the ABI as `.Abi`.
+
+[^fail]:
+    GoReleaser will error if you try to use them. Give it a try with
+    `goreleaser r --snapshot --clean`.
 
 ## Import pre-built binaries
 
