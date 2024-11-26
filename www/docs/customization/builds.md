@@ -613,7 +613,7 @@ Since you can have GoReleaser build for multiple different `GOAMD64` targets, it
 adds that suffix to prevent name conflicts. The same thing happens for `arm` and
 `GOARM`, `mips` and `GOMIPS` and others.
 
-### Go's first class ports
+## Go's first class ports
 
 The `targets` option can take a `go_first_class` special value as target, which
 will evaluate to the list of first class ports as defined in the Go wiki.
