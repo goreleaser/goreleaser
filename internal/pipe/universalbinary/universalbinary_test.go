@@ -179,7 +179,7 @@ func TestRun(t *testing.T) {
 					},
 					Post: []config.Hook{
 						{Cmd: testlib.Touch(post)},
-						{Cmd: testlib.ShC(`echo "{{ .Name }} {{ .Os }} {{ .Arch }} {{ .Arm }} {{ .Target }} {{ .Ext }}" > {{ .Path }}.post`), Output: true},
+						{Cmd: testlib.ShC(`echo "{{ .Name }} {{ .Os }} {{ .Arch }} {{ .Target }} {{ .Ext }}" > {{ .Path }}.post`), Output: true},
 					},
 				},
 			},
@@ -213,7 +213,7 @@ func TestRun(t *testing.T) {
 					Post: []config.Hook{
 						{Cmd: testlib.Touch(post)},
 						{
-							Cmd:    testlib.ShC(`echo "{{ .Name }} {{ .Os }} {{ .Arch }} {{ .Arm }} {{ .Target }} {{ .Ext }}" > {{ .Path }}.post`),
+							Cmd:    testlib.ShC(`echo "{{ .Name }} {{ .Os }} {{ .Arch }} {{ .Target }} {{ .Ext }}" > {{ .Path }}.post`),
 							Output: true,
 						},
 					},
@@ -312,7 +312,7 @@ func TestRun(t *testing.T) {
 		require.FileExists(t, post)
 		bts, err := os.ReadFile(post)
 		require.NoError(t, err)
-		require.Contains(t, string(bts), "foo darwin all  darwin_all")
+		require.Contains(t, string(bts), "foo darwin all darwin_all")
 	})
 
 	t.Run("failing pre-hook", func(t *testing.T) {

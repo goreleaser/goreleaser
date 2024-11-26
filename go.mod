@@ -13,7 +13,7 @@ require (
 	github.com/caarlos0/env/v11 v11.2.2
 	github.com/caarlos0/go-reddit/v3 v3.0.1
 	github.com/caarlos0/go-shellwords v1.0.12
-	github.com/caarlos0/go-version v0.1.1
+	github.com/caarlos0/go-version v0.2.0
 	github.com/caarlos0/log v0.4.6
 	github.com/charmbracelet/keygen v0.5.1
 	github.com/charmbracelet/lipgloss v1.0.0
@@ -41,7 +41,7 @@ require (
 	github.com/ory/dockertest/v3 v3.11.0
 	github.com/slack-go/slack v0.15.0
 	github.com/spf13/cobra v1.8.1
-	github.com/stretchr/testify v1.9.0
+	github.com/stretchr/testify v1.10.0
 	github.com/ulikunitz/xz v0.5.12
 	github.com/xanzy/go-gitlab v0.114.0
 	gocloud.dev v0.40.0
