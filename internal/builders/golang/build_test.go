@@ -526,6 +526,7 @@ func TestBuild(t *testing.T) {
 			Goos:    "linux",
 			Goarch:  "amd64",
 			Goamd64: "v1",
+			Target:  "linux_amd64_v1",
 			Type:    artifact.Binary,
 			Extra: map[string]interface{}{
 				artifact.ExtraExt:    "",
@@ -540,6 +541,7 @@ func TestBuild(t *testing.T) {
 			Goos:   "linux",
 			Goarch: "mips",
 			Gomips: "softfloat",
+			Target: "linux_mips_softfloat",
 			Type:   artifact.Binary,
 			Extra: map[string]interface{}{
 				artifact.ExtraExt:    "",
@@ -554,6 +556,7 @@ func TestBuild(t *testing.T) {
 			Goos:   "linux",
 			Goarch: "mips64le",
 			Gomips: "softfloat",
+			Target: "linux_mips64le_softfloat",
 			Type:   artifact.Binary,
 			Extra: map[string]interface{}{
 				artifact.ExtraExt:    "",
@@ -568,6 +571,7 @@ func TestBuild(t *testing.T) {
 			Goos:    "darwin",
 			Goarch:  "amd64",
 			Goamd64: "v1",
+			Target:  "darwin_amd64_v1",
 			Type:    artifact.Binary,
 			Extra: map[string]interface{}{
 				artifact.ExtraExt:    "",
@@ -582,6 +586,7 @@ func TestBuild(t *testing.T) {
 			Goos:   "linux",
 			Goarch: "arm",
 			Goarm:  "6",
+			Target: "linux_arm_6",
 			Type:   artifact.Binary,
 			Extra: map[string]interface{}{
 				artifact.ExtraExt:    "",
@@ -596,6 +601,7 @@ func TestBuild(t *testing.T) {
 			Goos:    "windows",
 			Goarch:  "amd64",
 			Goamd64: "v1",
+			Target:  "windows_amd64_v1",
 			Type:    artifact.Binary,
 			Extra: map[string]interface{}{
 				artifact.ExtraExt:    ".exe",
@@ -609,6 +615,7 @@ func TestBuild(t *testing.T) {
 			Path:   filepath.ToSlash(filepath.Join("dist", "js_wasm", "bin", "foo-v5.6.7.wasm")),
 			Goos:   "js",
 			Goarch: "wasm",
+			Target: "js_wasm",
 			Type:   artifact.Binary,
 			Extra: map[string]interface{}{
 				artifact.ExtraExt:    ".wasm",
