@@ -474,6 +474,7 @@ GoReleaser:
 ## Build Zig binaries
 
 <!-- md:version 2.5 -->
+
 <!-- md:alpha -->
 
 You can now build Zig binaries using `zig build` and GoReleaser!
