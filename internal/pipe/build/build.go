@@ -161,11 +161,6 @@ func doBuild(ctx *context.Context, build config.Build, opts builders.Options) er
 
 func buildOptionsForTarget(ctx *context.Context, build config.Build, target string) (*builders.Options, error) {
 	ext := extFor(target, build.BuildDetails)
-	parts := strings.Split(target, "_")
-	if len(parts) < 2 {
-		return nil, fmt.Errorf("%s is not a valid build target", target)
-	}
-
 	buildOpts := builders.Options{
 		Ext: ext,
 	}
