@@ -50,7 +50,7 @@ def _version_block(text: str):
     return f"> Since :material-tag-outline: <a href=\"/blog/goreleaser-{text}\">{text}</a>."
 
 def _alpha_block():
-    return f"> :material-flask-outline This feature is in <b>alpha<b>, and your feedback is very wellcome!"
+    return f"> :material-flask-outline: This feature is in alpha, and your feedback is very welcome!"
 
 def _templates_ad():
     return "".join([
