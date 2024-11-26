@@ -10,3 +10,6 @@ zig targets | jq -r '.libc[]' | grep -v freestanding | sort | uniq | tee ./all_t
 		echo "$target" >>./error_targets.txt
 	fi
 done
+
+cp -f ./all_targets.txt ../all_targets.txt
+cp -f ./error_targets.txt ../error_targets.txt

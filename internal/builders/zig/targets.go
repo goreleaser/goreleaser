@@ -11,10 +11,10 @@ import (
 )
 
 var (
-	//go:embed ./testdata/all_targets.txt
+	//go:embed ./all_targets.txt
 	allTargetsBts []byte
 
-	//go:embed ./testdata/error_targets.txt
+	//go:embed ./error_targets.txt
 	errTargetsBts []byte
 
 	allTargets  []string
