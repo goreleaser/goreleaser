@@ -11,6 +11,7 @@ import (
 	"time"
 
 	"github.com/goreleaser/goreleaser/v2/internal/artifact"
+	"github.com/goreleaser/goreleaser/v2/internal/experimental"
 	"github.com/goreleaser/goreleaser/v2/internal/testctx"
 	"github.com/goreleaser/goreleaser/v2/internal/testlib"
 	"github.com/goreleaser/goreleaser/v2/internal/tmpl"
@@ -31,6 +32,78 @@ var go118FirstClassAdjustedTargets = []string{
 	"linux_arm64_v8.0",
 	"windows_386_sse2",
 	"windows_amd64_v1",
+}
+
+func TestParse(t *testing.T) {
+	for target, dst := range map[string]Target{
+		"linux_amd64": {
+			Target:  "linux_amd64_v1",
+			Goos:    "linux",
+			Goarch:  "amd64",
+			Goamd64: "v1",
+		},
+		"linux_amd64_v2": {
+			Target:  "linux_amd64_v2",
+			Goos:    "linux",
+			Goarch:  "amd64",
+			Goamd64: "v2",
+		},
+		"linux_arm": {
+			Target: "linux_arm_" + experimental.DefaultGOARM(),
+			Goos:   "linux",
+			Goarch: "arm",
+			Goarm:  experimental.DefaultGOARM(),
+		},
+		"linux_arm_7": {
+			Target: "linux_arm_7",
+			Goos:   "linux",
+			Goarch: "arm",
+			Goarm:  "7",
+		},
+		"linux_mips": {
+			Target: "linux_mips_hardfloat",
+			Goos:   "linux",
+			Goarch: "mips",
+			Gomips: "hardfloat",
+		},
+		"linux_mips_softfloat": {
+			Target: "linux_mips_softfloat",
+			Goos:   "linux",
+			Goarch: "mips",
+			Gomips: "softfloat",
+		},
+		"linux_386": {
+			Target: "linux_386_sse2",
+			Goos:   "linux",
+			Goarch: "386",
+			Go386:  "sse2",
+		},
+		"linux_386_hardfloat": {
+			Target: "linux_386_hardfloat",
+			Goos:   "linux",
+			Goarch: "386",
+			Go386:  "hardfloat",
+		},
+		"linux_arm64": {
+			Target:  "linux_arm64_v8.0",
+			Goos:    "linux",
+			Goarch:  "arm64",
+			Goarm64: "v8.0",
+		},
+		"linux_arm64_v9.0": {
+			Target:  "linux_arm64_v9.0",
+			Goos:    "linux",
+			Goarch:  "arm64",
+			Goarm64: "v9.0",
+		},
+	} {
+		t.Run(target, func(t *testing.T) {
+			got, err := Default.Parse(target)
+			require.NoError(t, err)
+			require.IsType(t, Target{}, got)
+			require.Equal(t, dst, got.(Target))
+		})
+	}
 }
 
 func TestWithDefaults(t *testing.T) {
@@ -429,30 +502,14 @@ func TestBuild(t *testing.T) {
 		// injecting some delay here to force inconsistent mod times on bins
 		time.Sleep(2 * time.Second)
 
-		parts := strings.Split(target, "_")
-		goos := parts[0]
-		goarch := parts[1]
-		goarm := ""
-		gomips := ""
-		if len(parts) > 2 {
-			if strings.Contains(goarch, "arm") {
-				goarm = parts[2]
-			}
-			if strings.Contains(goarch, "mips") {
-				gomips = parts[2]
-			}
-		}
-		err := Default.Build(ctx, build, api.Options{
-			Target: target,
+		gtarget, err := Default.Parse(target)
+		require.NoError(t, err)
+		require.NoError(t, Default.Build(ctx, build, api.Options{
+			Target: gtarget,
 			Name:   bin + ext,
 			Path:   filepath.Join(folder, "dist", target, bin+ext),
-			Goos:   goos,
-			Goarch: goarch,
-			Goarm:  goarm,
-			Gomips: gomips,
 			Ext:    ext,
-		})
-		require.NoError(t, err)
+		}))
 	}
 	list := ctx.Artifacts
 	require.NoError(t, list.Visit(func(a *artifact.Artifact) error {
@@ -462,13 +519,14 @@ func TestBuild(t *testing.T) {
 		}
 		return nil
 	}))
-	require.ElementsMatch(t, list.List(), []*artifact.Artifact{
+	expected := []*artifact.Artifact{
 		{
-			Name:   "bin/foo-v5.6.7",
-			Path:   filepath.ToSlash(filepath.Join("dist", "linux_amd64", "bin", "foo-v5.6.7")),
-			Goos:   "linux",
-			Goarch: "amd64",
-			Type:   artifact.Binary,
+			Name:    "bin/foo-v5.6.7",
+			Path:    filepath.ToSlash(filepath.Join("dist", "linux_amd64", "bin", "foo-v5.6.7")),
+			Goos:    "linux",
+			Goarch:  "amd64",
+			Goamd64: "v1",
+			Type:    artifact.Binary,
 			Extra: map[string]interface{}{
 				artifact.ExtraExt:    "",
 				artifact.ExtraBinary: "foo-v5.6.7",
@@ -505,11 +563,12 @@ func TestBuild(t *testing.T) {
 			},
 		},
 		{
-			Name:   "bin/foo-v5.6.7",
-			Path:   filepath.ToSlash(filepath.Join("dist", "darwin_amd64", "bin", "foo-v5.6.7")),
-			Goos:   "darwin",
-			Goarch: "amd64",
-			Type:   artifact.Binary,
+			Name:    "bin/foo-v5.6.7",
+			Path:    filepath.ToSlash(filepath.Join("dist", "darwin_amd64", "bin", "foo-v5.6.7")),
+			Goos:    "darwin",
+			Goarch:  "amd64",
+			Goamd64: "v1",
+			Type:    artifact.Binary,
 			Extra: map[string]interface{}{
 				artifact.ExtraExt:    "",
 				artifact.ExtraBinary: "foo-v5.6.7",
@@ -532,11 +591,12 @@ func TestBuild(t *testing.T) {
 			},
 		},
 		{
-			Name:   "bin/foo-v5.6.7.exe",
-			Path:   filepath.ToSlash(filepath.Join("dist", "windows_amd64", "bin", "foo-v5.6.7.exe")),
-			Goos:   "windows",
-			Goarch: "amd64",
-			Type:   artifact.Binary,
+			Name:    "bin/foo-v5.6.7.exe",
+			Path:    filepath.ToSlash(filepath.Join("dist", "windows_amd64", "bin", "foo-v5.6.7.exe")),
+			Goos:    "windows",
+			Goarch:  "amd64",
+			Goamd64: "v1",
+			Type:    artifact.Binary,
 			Extra: map[string]interface{}{
 				artifact.ExtraExt:    ".exe",
 				artifact.ExtraBinary: "foo-v5.6.7",
@@ -557,7 +617,10 @@ func TestBuild(t *testing.T) {
 				"testEnvs":           []string{"TEST_T="},
 			},
 		},
-	})
+	}
+
+	got := list.List()
+	testlib.RequireEqualArtifacts(t, expected, got)
 
 	modTimes := map[int64]bool{}
 	for _, bin := range ctx.Artifacts.List() {
@@ -599,7 +662,7 @@ func TestBuildInvalidEnv(t *testing.T) {
 	}, testctx.WithCurrentTag("5.6.7"))
 	build := ctx.Config.Builds[0]
 	err := Default.Build(ctx, build, api.Options{
-		Target: runtimeTarget,
+		Target: mustParse(t, runtimeTarget),
 		Name:   build.Binary,
 		Path:   filepath.Join("dist", runtimeTarget, build.Binary),
 		Ext:    "",
@@ -632,7 +695,7 @@ func TestBuildCodeInSubdir(t *testing.T) {
 	}, testctx.WithCurrentTag("5.6.7"))
 	build := ctx.Config.Builds[0]
 	err = Default.Build(ctx, build, api.Options{
-		Target: runtimeTarget,
+		Target: mustParse(t, runtimeTarget),
 		Name:   build.Binary,
 		Path:   filepath.Join("dist", runtimeTarget, build.Binary),
 		Ext:    "",
@@ -660,7 +723,7 @@ func TestBuildWithDotGoDir(t *testing.T) {
 	}, testctx.WithCurrentTag("5.6.7"))
 	build := ctx.Config.Builds[0]
 	require.NoError(t, Default.Build(ctx, build, api.Options{
-		Target: runtimeTarget,
+		Target: mustParse(t, runtimeTarget),
 		Name:   build.Binary,
 		Path:   filepath.Join("dist", runtimeTarget, build.Binary),
 		Ext:    "",
@@ -686,7 +749,7 @@ func TestBuildFailed(t *testing.T) {
 		},
 	}, testctx.WithCurrentTag("5.6.7"))
 	err := Default.Build(ctx, ctx.Config.Builds[0], api.Options{
-		Target: "darwin_amd64",
+		Target: mustParse(t, "darwin_amd64"),
 	})
 	require.ErrorContains(t, err, `flag provided but not defined: -flag-that-dont-exists-to-force-failure`)
 	require.Empty(t, ctx.Artifacts.List())
@@ -709,7 +772,7 @@ func TestRunInvalidAsmflags(t *testing.T) {
 		},
 	}, testctx.WithCurrentTag("5.6.7"))
 	err := Default.Build(ctx, ctx.Config.Builds[0], api.Options{
-		Target: runtimeTarget,
+		Target: mustParse(t, runtimeTarget),
 	})
 	testlib.RequireTemplateError(t, err)
 }
@@ -731,7 +794,7 @@ func TestRunInvalidGcflags(t *testing.T) {
 		},
 	}, testctx.WithCurrentTag("5.6.7"))
 	err := Default.Build(ctx, ctx.Config.Builds[0], api.Options{
-		Target: runtimeTarget,
+		Target: mustParse(t, runtimeTarget),
 	})
 	testlib.RequireTemplateError(t, err)
 }
@@ -754,7 +817,7 @@ func TestRunInvalidLdflags(t *testing.T) {
 		},
 	}, testctx.WithCurrentTag("5.6.7"))
 	err := Default.Build(ctx, ctx.Config.Builds[0], api.Options{
-		Target: runtimeTarget,
+		Target: mustParse(t, runtimeTarget),
 	})
 	testlib.RequireTemplateError(t, err)
 }
@@ -776,7 +839,7 @@ func TestRunInvalidFlags(t *testing.T) {
 		},
 	})
 	err := Default.Build(ctx, ctx.Config.Builds[0], api.Options{
-		Target: runtimeTarget,
+		Target: mustParse(t, runtimeTarget),
 	})
 	testlib.RequireTemplateError(t, err)
 }
@@ -795,28 +858,28 @@ func TestRunPipeWithoutMainFunc(t *testing.T) {
 		ctx := newCtx(t)
 		ctx.Config.Builds[0].Main = ""
 		require.EqualError(t, Default.Build(ctx, ctx.Config.Builds[0], api.Options{
-			Target: runtimeTarget,
+			Target: mustParse(t, runtimeTarget),
 		}), errNoMain{"no-main"}.Error())
 	})
 	t.Run("not main.go", func(t *testing.T) {
 		ctx := newCtx(t)
 		ctx.Config.Builds[0].Main = "foo.go"
 		require.ErrorIs(t, Default.Build(ctx, ctx.Config.Builds[0], api.Options{
-			Target: runtimeTarget,
+			Target: mustParse(t, runtimeTarget),
 		}), os.ErrNotExist)
 	})
 	t.Run("glob", func(t *testing.T) {
 		ctx := newCtx(t)
 		ctx.Config.Builds[0].Main = "."
 		require.EqualError(t, Default.Build(ctx, ctx.Config.Builds[0], api.Options{
-			Target: runtimeTarget,
+			Target: mustParse(t, runtimeTarget),
 		}), errNoMain{"no-main"}.Error())
 	})
 	t.Run("fixed main.go", func(t *testing.T) {
 		ctx := newCtx(t)
 		ctx.Config.Builds[0].Main = "main.go"
 		require.EqualError(t, Default.Build(ctx, ctx.Config.Builds[0], api.Options{
-			Target: runtimeTarget,
+			Target: mustParse(t, runtimeTarget),
 		}), errNoMain{"no-main"}.Error())
 	})
 	t.Run("using gomod.proxy", func(t *testing.T) {
@@ -827,7 +890,7 @@ func TestRunPipeWithoutMainFunc(t *testing.T) {
 		ctx.Config.Builds[0].UnproxiedDir = "."
 		ctx.Config.Builds[0].UnproxiedMain = "."
 		require.EqualError(t, Default.Build(ctx, ctx.Config.Builds[0], api.Options{
-			Target: runtimeTarget,
+			Target: mustParse(t, runtimeTarget),
 		}), errNoMain{"no-main"}.Error())
 	})
 }
@@ -848,7 +911,7 @@ func TestBuildTests(t *testing.T) {
 	build, err := Default.WithDefaults(ctx.Config.Builds[0])
 	require.NoError(t, err)
 	require.NoError(t, Default.Build(ctx, build, api.Options{
-		Target: runtimeTarget,
+		Target: mustParse(t, runtimeTarget),
 	}))
 }
 
@@ -899,7 +962,7 @@ import _ "github.com/goreleaser/goreleaser"
 	})
 
 	require.NoError(t, Default.Build(ctx, ctx.Config.Builds[0], api.Options{
-		Target: runtimeTarget,
+		Target: mustParse(t, runtimeTarget),
 	}))
 }
 
@@ -929,19 +992,19 @@ func TestRunPipeWithMainFuncNotInMainGoFile(t *testing.T) {
 	t.Run("empty", func(t *testing.T) {
 		ctx.Config.Builds[0].Main = ""
 		require.NoError(t, Default.Build(ctx, ctx.Config.Builds[0], api.Options{
-			Target: runtimeTarget,
+			Target: mustParse(t, runtimeTarget),
 		}))
 	})
 	t.Run("foo.go", func(t *testing.T) {
 		ctx.Config.Builds[0].Main = "foo.go"
 		require.NoError(t, Default.Build(ctx, ctx.Config.Builds[0], api.Options{
-			Target: runtimeTarget,
+			Target: mustParse(t, runtimeTarget),
 		}))
 	})
 	t.Run("glob", func(t *testing.T) {
 		ctx.Config.Builds[0].Main = "."
 		require.NoError(t, Default.Build(ctx, ctx.Config.Builds[0], api.Options{
-			Target: runtimeTarget,
+			Target: mustParse(t, runtimeTarget),
 		}))
 	})
 }
@@ -1099,7 +1162,7 @@ func TestBuildModTimestamp(t *testing.T) {
 		time.Sleep(2 * time.Second)
 
 		err := Default.Build(ctx, build, api.Options{
-			Target: target,
+			Target: mustParse(t, runtimeTarget),
 			Name:   bin + ext,
 			Path:   filepath.Join(folder, "dist", target, bin+ext),
 			Ext:    ext,
@@ -1131,11 +1194,10 @@ func TestBuildGoBuildLine(t *testing.T) {
 		)
 		options := api.Options{
 			Path:   ctx.Config.Builds[0].Binary,
-			Goos:   "linux",
-			Goarch: "amd64",
+			Target: mustParse(t, "linux_amd64"),
 		}
 
-		dets, err := withOverrides(ctx, build, options)
+		dets, err := withOverrides(ctx, build, options.Target.(Target))
 		require.NoError(t, err)
 
 		line, err := buildGoBuildLine(
@@ -1298,10 +1360,7 @@ func TestOverrides(t *testing.T) {
 							},
 						},
 					},
-				}, api.Options{
-					Goos:   "linux",
-					Goarch: arch,
-				},
+				}, mustParse(t, "linux_"+arch),
 			)
 			require.NoError(t, err)
 			require.ElementsMatch(t, dets.Ldflags, []string{"overridden"})
@@ -1326,10 +1385,7 @@ func TestOverrides(t *testing.T) {
 						},
 					},
 				},
-			}, api.Options{
-				Goos:   "linux",
-				Goarch: "amd64",
-			},
+			}, mustParse(t, "linux_amd64"),
 		)
 		require.NoError(t, err)
 		require.Equal(t, config.BuildDetails{
@@ -1358,10 +1414,7 @@ func TestOverrides(t *testing.T) {
 						},
 					},
 				},
-			}, api.Options{
-				Goos:   runtime.GOOS,
-				Goarch: runtime.GOARCH,
-			},
+			}, mustParse(t, runtimeTarget),
 		)
 		require.NoError(t, err)
 		require.Equal(t, config.BuildDetails{
@@ -1380,10 +1433,7 @@ func TestOverrides(t *testing.T) {
 						Goos: "{{ .Runtime.Goos }",
 					},
 				},
-			}, api.Options{
-				Goos:   runtime.GOOS,
-				Goarch: runtime.GOARCH,
-			},
+			}, mustParse(t, runtimeTarget),
 		)
 		testlib.RequireTemplateError(t, err)
 	})
@@ -1405,11 +1455,7 @@ func TestOverrides(t *testing.T) {
 						},
 					},
 				},
-			}, api.Options{
-				Goos:    "linux",
-				Goarch:  "arm64",
-				Goarm64: "v8.0",
-			},
+			}, mustParse(t, "linux_arm64_v8.0"),
 		)
 		require.NoError(t, err)
 		require.Equal(t, config.BuildDetails{
@@ -1434,11 +1480,7 @@ func TestOverrides(t *testing.T) {
 						},
 					},
 				},
-			}, api.Options{
-				Goos:    "linux",
-				Goarch:  "arm64",
-				Goarm64: "v8.0",
-			},
+			}, mustParse(t, "linux_arm64_v8.0"),
 		)
 		require.NoError(t, err)
 		require.Equal(t, config.BuildDetails{
@@ -1464,11 +1506,7 @@ func TestOverrides(t *testing.T) {
 						},
 					},
 				},
-			}, api.Options{
-				Goos:   "linux",
-				Goarch: "arm",
-				Goarm:  "6",
-			},
+			}, mustParse(t, "linux_arm_6"),
 		)
 		require.NoError(t, err)
 		require.Equal(t, config.BuildDetails{
@@ -1493,11 +1531,7 @@ func TestOverrides(t *testing.T) {
 						},
 					},
 				},
-			}, api.Options{
-				Goos:   "linux",
-				Goarch: "arm",
-				Goarm:  "6",
-			},
+			}, mustParse(t, "linux_arm_6"),
 		)
 		require.NoError(t, err)
 		require.Equal(t, config.BuildDetails{
@@ -1523,11 +1557,7 @@ func TestOverrides(t *testing.T) {
 						},
 					},
 				},
-			}, api.Options{
-				Goos:   "linux",
-				Goarch: "mips",
-				Gomips: "softfloat",
-			},
+			}, mustParse(t, "linux_mips_softfloat"),
 		)
 		require.NoError(t, err)
 		require.Equal(t, config.BuildDetails{
@@ -1552,11 +1582,7 @@ func TestOverrides(t *testing.T) {
 						},
 					},
 				},
-			}, api.Options{
-				Goos:   "linux",
-				Goarch: "mips",
-				Gomips: "hardfloat",
-			},
+			}, mustParse(t, "linux_mips_hardfloat"),
 		)
 		require.NoError(t, err)
 		require.Equal(t, config.BuildDetails{
@@ -1582,11 +1608,7 @@ func TestOverrides(t *testing.T) {
 						},
 					},
 				},
-			}, api.Options{
-				Goos:      "linux",
-				Goarch:    "riscv64",
-				Goriscv64: "rva22u64",
-			},
+			}, mustParse(t, "linux_riscv64_rva22u64"),
 		)
 		require.NoError(t, err)
 		require.Equal(t, config.BuildDetails{
@@ -1612,11 +1634,7 @@ func TestOverrides(t *testing.T) {
 						},
 					},
 				},
-			}, api.Options{
-				Goos:      "linux",
-				Goarch:    "riscv64",
-				Goriscv64: "rva22u64",
-			},
+			}, mustParse(t, "linux_riscv64_rva22u64"),
 		)
 		require.NoError(t, err)
 		require.Equal(t, config.BuildDetails{
@@ -1642,11 +1660,7 @@ func TestOverrides(t *testing.T) {
 						},
 					},
 				},
-			}, api.Options{
-				Goos:   "linux",
-				Goarch: "386",
-				Go386:  "sse2",
-			},
+			}, mustParse(t, "linux_386_sse2"),
 		)
 		require.NoError(t, err)
 		require.Equal(t, config.BuildDetails{
@@ -1672,11 +1686,7 @@ func TestOverrides(t *testing.T) {
 						},
 					},
 				},
-			}, api.Options{
-				Goos:   "linux",
-				Goarch: "386",
-				Go386:  "sse2",
-			},
+			}, mustParse(t, "linux_386_sse2"),
 		)
 		require.NoError(t, err)
 		require.Equal(t, config.BuildDetails{
@@ -1733,7 +1743,7 @@ func TestInvalidGoBinaryTpl(t *testing.T) {
 	})
 	build := ctx.Config.Builds[0]
 	testlib.RequireTemplateError(t, Default.Build(ctx, build, api.Options{
-		Target: runtimeTarget,
+		Target: mustParse(t, runtimeTarget),
 		Name:   build.Binary,
 		Path:   filepath.Join("dist", runtimeTarget, build.Binary),
 		Ext:    "",
@@ -1793,4 +1803,11 @@ func writeTest(t *testing.T, folder string) {
 		[]byte("module foo\n"),
 		0o666,
 	))
+}
+
+func mustParse(tb testing.TB, target string) Target {
+	tb.Helper()
+	got, err := Default.Parse(target)
+	require.NoError(tb, err)
+	return got.(Target)
 }

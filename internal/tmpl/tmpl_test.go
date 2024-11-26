@@ -460,17 +460,21 @@ func TestInvalidMap(t *testing.T) {
 }
 
 func TestWithBuildOptions(t *testing.T) {
+	// testtarget doesn ot set riscv64, it still should not fail to compile the template
+	ts := "{{.Name}}_{{.Path}}_{{.Ext}}_{{.Target}}_{{.Os}}_{{.Arch}}_{{.Amd64}}_{{.Arm}}_{{.Mips}}{{with .Riscv64}}{{.}}{{end}}"
 	out, err := New(testctx.New()).WithBuildOptions(build.Options{
-		Name:    "name",
-		Path:    "./path",
-		Ext:     ".ext",
-		Target:  "target",
-		Goos:    "os",
-		Goarch:  "arch",
-		Goamd64: "amd64",
-		Goarm:   "arm",
-		Gomips:  "mips",
-	}).Apply("{{.Name}}_{{.Path}}_{{.Ext}}_{{.Target}}_{{.Os}}_{{.Arch}}_{{.Amd64}}_{{.Arm}}_{{.Mips}}")
+		Name: "name",
+		Path: "./path",
+		Ext:  ".ext",
+		Target: testTarget{
+			Target:  "target",
+			Goos:    "os",
+			Goarch:  "arch",
+			Goamd64: "amd64",
+			Goarm:   "arm",
+			Gomips:  "mips",
+		},
+	}).Apply(ts)
 	require.NoError(t, err)
 	require.Equal(t, "name_./path_.ext_target_os_arch_amd64_arm_mips", out)
 }
@@ -490,4 +494,26 @@ func TestReuseTpl(t *testing.T) {
 	s3, err := tp.Apply("{{.foo}}")
 	require.NoError(t, err)
 	require.Equal(t, "bar", s3)
+}
+
+type testTarget struct {
+	Target  string
+	Goos    string
+	Goarch  string
+	Goamd64 string
+	Goarm   string
+	Gomips  string
+}
+
+func (t testTarget) String() string { return t.Target }
+
+func (t testTarget) Fields() map[string]string {
+	return map[string]string{
+		target:   t.Target,
+		KeyOS:    t.Goos,
+		KeyArch:  t.Goarch,
+		KeyAmd64: t.Goamd64,
+		KeyArm:   t.Goarm,
+		KeyMips:  t.Gomips,
+	}
 }
