@@ -177,7 +177,7 @@ func TestBuild(t *testing.T) {
 	require.Len(t, bins, 1)
 
 	bin := bins[0]
-	require.Equal(t, filepath.Join(dist, "proj-aarch64-macos", "bin", "proj"), bin.Path)
+	require.Equal(t, filepath.Join(dist, "proj-aarch64-macos", "bin", "proj"), filepath.FromSlash(bin.Path))
 
 	require.FileExists(t, bin.Path)
 	fi, err := os.Stat(bin.Path)
