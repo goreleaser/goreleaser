@@ -63,6 +63,7 @@ jobs:
       - uses: actions/setup-go@41dfa10bad2bb2ae585af6ee5bb4d7d973ad74ed # v4
         with:
           go-version: stable
+      - uses: mlugg/setup-zig@v1
       - uses: sigstore/cosign-installer@v3.7.0
       - uses: anchore/sbom-action/download-syft@v0.17.8
       - name: setup-validate-krew-manifest

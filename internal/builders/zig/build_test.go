@@ -8,6 +8,7 @@ import (
 	"time"
 
 	"github.com/goreleaser/goreleaser/v2/internal/testctx"
+	"github.com/goreleaser/goreleaser/v2/internal/testlib"
 	api "github.com/goreleaser/goreleaser/v2/pkg/build"
 	"github.com/goreleaser/goreleaser/v2/pkg/config"
 	"github.com/stretchr/testify/require"
@@ -137,6 +138,7 @@ func TestWithDefaults(t *testing.T) {
 }
 
 func TestBuild(t *testing.T) {
+	testlib.CheckPath(t, "zig")
 	modTime := time.Now().AddDate(-1, 0, 0).Round(1 * time.Second).UTC()
 	dist := t.TempDir()
 	ctx := testctx.NewWithCfg(config.Project{
