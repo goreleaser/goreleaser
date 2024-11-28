@@ -223,6 +223,39 @@ func TestAnnounceAdditionalHeadersWebhook(t *testing.T) {
 	require.NoError(t, Pipe{}.Announce(ctx))
 }
 
+func TestAnnounceExepectedStatusCodesWebhook(t *testing.T) {
+	responseServer := WebHookServerMockMessage{
+		Response: "Thanks for the announcement!",
+		UUID:     uuid.New(),
+	}
+
+	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		defer r.Body.Close()
+
+		body, err := io.ReadAll(r.Body)
+		assert.NoError(t, err)
+		assert.Equal(t, "webhook-test", string(body))
+
+		w.WriteHeader(418)
+		w.Header().Set("Content-Type", "application/json")
+		err = json.NewEncoder(w).Encode(responseServer)
+		assert.NoError(t, err)
+	}))
+	defer srv.Close()
+
+	ctx := testctx.NewWithCfg(config.Project{
+		ProjectName: "webhook-test",
+		Announce: config.Announce{
+			Webhook: config.Webhook{
+				EndpointURL:         srv.URL,
+				MessageTemplate:     "{{ .ProjectName }}",
+				ExpectedStatusCodes: []int{418},
+			},
+		},
+	})
+	require.NoError(t, Pipe{}.Announce(ctx))
+}
+
 func TestSkip(t *testing.T) {
 	t.Run("skip", func(t *testing.T) {
 		require.True(t, Pipe{}.Skip(testctx.New()))

@@ -40,6 +40,11 @@ announce:
     #   Authorization: "Bearer <token>"
     headers:
       User-Agent: "goreleaser"
+
+    # HTTP status codes to be considered as a successful response.
+    #
+    # Default: 200, 201, 202, 204
+    expected_status_codes: [418, 200, 201]
 ```
 
 <!-- md:templates -->
