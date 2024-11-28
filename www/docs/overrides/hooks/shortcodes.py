@@ -19,6 +19,7 @@ def on_page_markdown(markdown: str, *, page: Page, config: MkDocsConfig, files: 
         elif type == "pro":       return _pro_ad(page, files)
         elif type == "featpro":       return _pro_feat_ad(page, files)
         elif type == "templates": return _templates_ad()
+        elif type == "alpha": return _alpha_block()
 
         # Otherwise, raise an error
         raise RuntimeError(f"Unknown shortcode: {type}")
@@ -47,6 +48,9 @@ def _pro_ad(page: Page, files: Files):
 
 def _version_block(text: str):
     return f"> Since :material-tag-outline: <a href=\"/blog/goreleaser-{text}\">{text}</a>."
+
+def _alpha_block():
+    return f"> :material-flask-outline: This feature is in alpha, and your feedback is very welcome!"
 
 def _templates_ad():
     return "".join([
