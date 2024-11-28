@@ -37,6 +37,7 @@ jobs:
         with:
           token: ${{ secrets.GH_PAT }}
           repo: goreleaser/goreleaser-cross
+          ref: master
           workflow: goreleaser-bump
           inputs: '{ "tag" : "${{ env.RELEASE_TAG }}" }'
   goreleaser-check-pkgs:
