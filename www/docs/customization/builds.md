@@ -273,9 +273,13 @@ builds:
     overrides:
       - goos: darwin
         goarch: amd64
-        goamd64: v1 # Note: if you leave this
+        goamd64: v1
         goarm: ""
+        goarm64: ""
         gomips: ""
+        go386: ""
+        goriscv64: ""
+        goppc64: ""
         ldflags:
           - foo
         tags:
@@ -290,7 +294,8 @@ builds:
 
 !!! warning "GOAMD64, GORISCV64, GOPPC64, GO386, GOARM, GOARM64"
 
-    You usually will need to specify the complete target in places like `targets` and `overrides`.
+    You usually will need to specify the complete target in places like
+    `targets` and `overrides`.
     This includes the `_{goamd64}` suffix, as well as the other
     GOARCH-specific values.
 
