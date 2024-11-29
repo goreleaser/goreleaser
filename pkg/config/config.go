@@ -1319,12 +1319,13 @@ type Announce struct {
 }
 
 type Webhook struct {
-	Enabled         bool              `yaml:"enabled,omitempty" json:"enabled,omitempty"`
-	SkipTLSVerify   bool              `yaml:"skip_tls_verify,omitempty" json:"skip_tls_verify,omitempty"`
-	MessageTemplate string            `yaml:"message_template,omitempty" json:"message_template,omitempty"`
-	EndpointURL     string            `yaml:"endpoint_url,omitempty" json:"endpoint_url,omitempty"`
-	Headers         map[string]string `yaml:"headers,omitempty" json:"headers,omitempty"`
-	ContentType     string            `yaml:"content_type,omitempty" json:"content_type,omitempty"`
+	Enabled             bool              `yaml:"enabled,omitempty" json:"enabled,omitempty"`
+	SkipTLSVerify       bool              `yaml:"skip_tls_verify,omitempty" json:"skip_tls_verify,omitempty"`
+	MessageTemplate     string            `yaml:"message_template,omitempty" json:"message_template,omitempty"`
+	EndpointURL         string            `yaml:"endpoint_url,omitempty" json:"endpoint_url,omitempty"`
+	Headers             map[string]string `yaml:"headers,omitempty" json:"headers,omitempty"`
+	ContentType         string            `yaml:"content_type,omitempty" json:"content_type,omitempty"`
+	ExpectedStatusCodes []int             `yaml:"exected_status_codes,omitempty" json:"expected_status_codes,omitempty"`
 }
 
 type Twitter struct {

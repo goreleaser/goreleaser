@@ -3809,6 +3809,12 @@
 					},
 					"content_type": {
 						"type": "string"
+					},
+					"expected_status_codes": {
+						"items": {
+							"type": "integer"
+						},
+						"type": "array"
 					}
 				},
 				"additionalProperties": false,
