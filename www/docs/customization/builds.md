@@ -269,7 +269,9 @@ builds:
 
     # Overrides allows to override some fields for specific targets.
     # This can be specially useful when using CGO.
-    # Note: it'll only match if the full target matches.
+    #
+    # Attention: you need to set at least goos and goarch, otherwise it won't
+    # match anything.
     overrides:
       - goos: darwin
         goarch: amd64
