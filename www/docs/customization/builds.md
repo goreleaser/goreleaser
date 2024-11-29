@@ -473,7 +473,7 @@ GoReleaser:
 
 ## Build Zig binaries
 
-<!-- md:version 2.5 -->
+<!-- md:version v2.5 -->
 
 <!-- md:alpha -->
 

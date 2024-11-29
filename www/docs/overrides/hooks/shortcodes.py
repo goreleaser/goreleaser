@@ -47,10 +47,10 @@ def _pro_ad(page: Page, files: Files):
     ])
 
 def _version_block(text: str):
-    return f"> Since :material-tag-outline: <a href=\"/blog/goreleaser-{text}\">{text}</a>."
+    return f"> :material-tag-outline: Since <a href=\"/blog/goreleaser-{text}\">{text}</a>."
 
 def _alpha_block():
-    return f"> :material-flask-outline: This feature is in alpha, and your feedback is very welcome!"
+    return f"> :material-flask-outline: This feature is currently in alpha. Feedback is greatly appreciated!"
 
 def _templates_ad():
     return "".join([
