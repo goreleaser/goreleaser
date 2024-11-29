@@ -63,7 +63,7 @@ If none are set, they default to GitLab's public URLs.
 
 GitLab introduced the [Generic Package Registry](https://docs.gitlab.com/ee/user/packages/package_registry/index.html) in Gitlab 13.5.
 
-Normally, `goreleaser` uploads release files as "attachments", which may have [administrative limits](https://docs.gitlab.com/ee/user/admin_area/settings/account_and_limit_settings.html).
+Normally, `goreleaser` uploads release files as "attachments", which may have [administrative limits](https://docs.gitlab.com/ee/administration/settings/account_and_limit_settings.html).
 Notably, hosted GitLab instances have a 10MB attachment limit, which cannot be changed.
 
 Uploading to the Generic Package Registry does not have this restriction.

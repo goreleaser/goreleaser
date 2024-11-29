@@ -14,6 +14,9 @@ IgnoreURLs:
   - twitter.com
   - x.com
   - medium.com
+  - gofi.sh
+  - visualstudio.com
+  - iron.security
 IgnoreDirs:
   - overrides
 IgnoreDirectoryMissingTrailingSlash: true
