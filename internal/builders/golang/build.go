@@ -345,9 +345,8 @@ func withOverrides(ctx *context.Context, build config.Build, target Target) (con
 			dets.Env = context.ToEnv(append(build.Env, o.BuildDetails.Env...)).Strings()
 			log.WithField("details", dets).Infof("overridden build details for %s", optsTarget)
 			return dets, nil
-		} else {
-			log.Debugf("targets don't match: %s != %s", optsTarget, overrideTarget)
 		}
+		log.Debugf("targets don't match: %s != %s", optsTarget, overrideTarget)
 	}
 
 	return build.BuildDetails, nil
