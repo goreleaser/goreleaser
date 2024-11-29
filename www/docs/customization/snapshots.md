@@ -6,8 +6,7 @@ but neither want to validate anything nor upload it to anywhere.
 GoReleaser supports this with the `--snapshot` flag and with the `snapshot`
 customization section:
 
-```yaml
-# .goreleaser.yaml
+```yaml title=".goreleaser.yaml"
 snapshot:
   # Allows you to change the name of the generated snapshot
   #

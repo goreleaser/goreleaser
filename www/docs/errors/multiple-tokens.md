@@ -25,8 +25,7 @@ If you have more than one of these files, but for a particular project, you want
 to force one of them, you can explicitly disable the others by setting them to a
 file you know won't exist:
 
-```yaml
-# .goreleaser.yaml
+```yaml title=".goreleaser.yaml"
 env_files:
   gitlab_token: ~/nope
   gitea_token: ~/nope
@@ -46,7 +45,6 @@ GoReleaser will then unset `GITHUB_TOKEN` and proceed.
 
 You can also force a token by using `force_token` in your config:
 
-```yaml
-# .goreleaser.yaml
+```yaml title=".goreleaser.yaml"
 force_token: gitea
 ```

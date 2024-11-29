@@ -6,8 +6,7 @@ _Scoop App Manifest_ into a repository that you have access to.
 The `scoop` section specifies how the manifest should be created. See the
 commented example below:
 
-```yaml
-# .goreleaser.yaml
+```yaml title=".goreleaser.yaml"
 scoops:
   - # Name of the recipe
     #

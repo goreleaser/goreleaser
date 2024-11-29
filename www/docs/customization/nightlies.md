@@ -10,8 +10,7 @@ To enable it, you must use the `--nightly` flag in the
 
 You also have some customization options available:
 
-```yaml
-# .goreleaser.yml
+```yaml title=".goreleaser.yaml"
 nightly:
   # Allows you to change the version of the generated nightly release.
   #

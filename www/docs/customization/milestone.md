@@ -5,8 +5,7 @@ artifacts.
 
 Let's see what can be customized in the `milestones` section:
 
-```yaml
-# .goreleaser.yaml
+```yaml title=".goreleaser.yaml"
 milestones:
   # You can have multiple milestone configs
   - # Repository for the milestone

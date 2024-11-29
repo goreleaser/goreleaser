@@ -218,8 +218,7 @@ files.
 
 Usage is as simple as you would expect:
 
-```yaml
-# .goreleaser.yaml
+```yaml title=".goreleaser.yaml"
 variables:
   description: my project description
   somethingElse: yada yada yada

@@ -2,8 +2,7 @@
 
 This allows you to change the behavior of some Git commands.
 
-```yaml
-# .goreleaser.yaml
+```yaml title=".goreleaser.yaml"
 git:
   # What should be used to sort tags when gathering the current and previous
   # tags if there are more than one tag in the same commit.
@@ -39,8 +38,7 @@ git:
 
 This allows you to sort tags by semver:
 
-```yaml
-# .goreleaser.yml
+```yaml title=".goreleaser.yaml"
 git:
   tag_sort: semver
 ```

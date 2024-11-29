@@ -15,8 +15,7 @@ token.
 Then, you need to pass your account name to GoReleaser and have your push token
 as an environment variable named `CLOUDSMITH_TOKEN`:
 
-```yaml
-# .goreleaser.yaml
+```yaml title=".goreleaser.yaml"
 cloudsmiths:
   - organization: myorg
     repository: myrepo

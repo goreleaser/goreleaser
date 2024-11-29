@@ -11,8 +11,7 @@ First, you need to create an account on [Fury][fury] and get a push token.
 Then, you need to pass your account name to GoReleaser and have your push token
 as an environment variable named `FURY_TOKEN`:
 
-```yaml
-# .goreleaser.yaml
+```yaml title=".goreleaser.yaml"
 furies:
   - account: myaccount
 ```

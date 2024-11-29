@@ -21,8 +21,7 @@ So you should end up with:
 
 Read the commented configuration excerpt below to learn how to use these files.
 
-```yaml
-# .goreleaser.yaml
+```yaml title=".goreleaser.yaml"
 notarize:
   macos:
     - # Whether this configuration is enabled or not.

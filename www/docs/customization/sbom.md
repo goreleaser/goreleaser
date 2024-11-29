@@ -14,16 +14,14 @@ GoReleaser and output one or more SBOM files into the dist directory.
 The default is configured to create an SBOM for each binary produced with
 [Syft](https://github.com/anchore/syft). To enable artifact cataloging just add:
 
-```yaml
-# .goreleaser.yml
+```yaml title=".goreleaser.yaml"
 sboms:
   - artifacts: archive
 ```
 
 To customize the artifact cataloging pipeline you can use the following options:
 
-```yaml
-# .goreleaser.yml
+```yaml title=".goreleaser.yaml"
 sboms:
   - # ID of the sbom config, must be unique.
     #

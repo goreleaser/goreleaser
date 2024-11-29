@@ -107,8 +107,7 @@ jobs:
 And reference the fingerprint in your signing configuration using the
 `GPG_FINGERPRINT` environment variable:
 
-```yaml
-# .goreleaser.yaml
+```yaml title=".goreleaser.yaml"
 signs:
   - artifacts: checksum
     cmd: gpg2

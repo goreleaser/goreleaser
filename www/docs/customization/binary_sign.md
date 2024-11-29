@@ -10,16 +10,14 @@ with [GnuPG](https://www.gnupg.org/), and your default key.
 
 To enable binary signing just add this to your configuration:
 
-```yaml
-# .goreleaser.yaml
+```yaml title=".goreleaser.yaml"
 binary_signs:
   - {}
 ```
 
 To customize the binary signing pipeline you can use the following options:
 
-```yaml
-# .goreleaser.yml
+```yaml title=".goreleaser.yaml"
 binary_signs:
   - #
     # ID of the sign config, must be unique.
@@ -129,8 +127,7 @@ You can sign your artifacts with [cosign][] as well.
 Assuming you have a `cosign.key` in the repository root and a `COSIGN_PWD`
 environment variable set, a simple usage example would look like this:
 
-```yaml
-# .goreleaser.yaml
+```yaml title=".goreleaser.yaml"
 binary_signs:
   - cmd: cosign
     stdin: "{{ .Env.COSIGN_PWD }}"

@@ -6,8 +6,7 @@ For it to work, you'll need to create a personal token (`https://opencollective.
 
 Then, you can add something like the following to your `.goreleaser.yaml` config:
 
-```yaml
-# .goreleaser.yaml
+```yaml title=".goreleaser.yaml"
 announce:
   opencollective:
     # Whether its enabled or not.
