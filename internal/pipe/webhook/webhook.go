@@ -116,7 +116,7 @@ func (p Pipe) Announce(ctx *context.Context) error {
 	defer resp.Body.Close()
 
 	if !slices.Contains(ctx.Config.Announce.Webhook.ExpectedStatusCodes, resp.StatusCode) {
-		io.Copy(io.Discard, resp.Body)
+		_, _ = io.Copy(io.Discard, resp.Body)
 		return fmt.Errorf("request failed with status %v", resp.Status)
 	}
 
