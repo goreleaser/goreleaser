@@ -361,7 +361,7 @@ func doPush(ctx *context.Context, img imager, name string, flags []string) (stri
 			try++
 			continue
 		}
-		return "", fmt.Errorf("failed to push %s after %d tries: %w", name, try, err)
+		return "", fmt.Errorf("failed to push %s after %d tries: %w", name, try+1, err)
 	}
 	return "", nil // will never happen
 }
