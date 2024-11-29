@@ -2,9 +2,11 @@ package cmd
 
 import (
 	"os"
+	"os/exec"
 	"path/filepath"
 	"testing"
 
+	"github.com/goreleaser/goreleaser/v2/internal/static"
 	"github.com/goreleaser/goreleaser/v2/internal/testlib"
 	"github.com/stretchr/testify/require"
 )
@@ -17,6 +19,43 @@ func TestInit(t *testing.T) {
 	require.NoError(t, cmd.Execute())
 	require.FileExists(t, filepath.Join(folder, config))
 	require.FileExists(t, filepath.Join(folder, ".gitignore"))
+
+	bts, err := os.ReadFile(config)
+	require.NoError(t, err)
+	require.Equal(t, string(static.GoExampleConfig), string(bts))
+}
+
+func TestInitSpecifyLanguage(t *testing.T) {
+	folder := setupInitTest(t)
+	cmd := newInitCmd().cmd
+	config := "zigreleaser.yaml"
+	cmd.SetArgs([]string{"-f", config, "-l", "zig"})
+	require.NoError(t, cmd.Execute())
+	require.FileExists(t, filepath.Join(folder, config))
+	require.FileExists(t, filepath.Join(folder, ".gitignore"))
+
+	bts, err := os.ReadFile(config)
+	require.NoError(t, err)
+	require.Equal(t, string(static.ZigExampleConfig), string(bts))
+}
+
+func TestInitZigInferred(t *testing.T) {
+	testlib.CheckPath(t, "zig")
+	folder := setupInitTest(t)
+
+	_, err := exec.Command("zig", "init").CombinedOutput()
+	require.NoError(t, err)
+
+	cmd := newInitCmd().cmd
+	config := "zigreleaser.yaml"
+	cmd.SetArgs([]string{"-f", config})
+	require.NoError(t, cmd.Execute())
+	require.FileExists(t, filepath.Join(folder, config))
+	require.FileExists(t, filepath.Join(folder, ".gitignore"))
+
+	bts, err := os.ReadFile(config)
+	require.NoError(t, err)
+	require.Equal(t, string(static.ZigExampleConfig), string(bts))
 }
 
 func TestInitConfigAlreadyExist(t *testing.T) {

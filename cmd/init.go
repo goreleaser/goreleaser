@@ -13,6 +13,7 @@ import (
 type initCmd struct {
 	cmd    *cobra.Command
 	config string
+	lang   string
 }
 
 const gitignorePath = ".gitignore"
@@ -27,6 +28,18 @@ func newInitCmd() *initCmd {
 		SilenceErrors:     true,
 		Args:              cobra.NoArgs,
 		ValidArgsFunction: cobra.NoFileCompletions,
+		PreRun: func(cmd *cobra.Command, args []string) {
+			if cmd.Flags().Lookup("language").Changed {
+				return
+			}
+
+			// try to figure out which kind of project is this...
+			if _, err := os.Stat("build.zig"); err == nil {
+				root.lang = "zig"
+				log.Info("project contains a 'build.zig', using default zig configuration")
+				return
+			}
+		},
 		RunE: func(_ *cobra.Command, _ []string) error {
 			if _, err := os.Stat(root.config); err == nil {
 				return fmt.Errorf("%s already exists, delete it and run the command again", root.config)
@@ -38,7 +51,18 @@ func newInitCmd() *initCmd {
 			defer conf.Close()
 
 			log.Infof(boldStyle.Render(fmt.Sprintf("Generating %s file", root.config)))
-			if _, err := conf.Write(static.ExampleConfig); err != nil {
+
+			var example []byte
+			switch root.lang {
+			case "zig":
+				example = static.ZigExampleConfig
+			case "go":
+				example = static.GoExampleConfig
+			default:
+				return fmt.Errorf("invalid language: %s", root.lang)
+			}
+
+			if _, err := conf.Write(example); err != nil {
 				return err
 			}
 
@@ -57,8 +81,13 @@ func newInitCmd() *initCmd {
 		},
 	}
 
+	cmd.Flags().StringVarP(&root.lang, "language", "l", "go", "Which language will be used")
 	cmd.Flags().StringVarP(&root.config, "config", "f", ".goreleaser.yaml", "Load configuration from file")
 	_ = cmd.MarkFlagFilename("config", "yaml", "yml")
+
+	_ = cmd.RegisterFlagCompletionFunc("language", func(_ *cobra.Command, _ []string, toComplete string) ([]string, cobra.ShellCompDirective) {
+		return []string{"go", "zig"}, cobra.ShellCompDirectiveDefault
+	})
 
 	root.cmd = cmd
 	return root
