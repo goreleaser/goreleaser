@@ -46,6 +46,9 @@ func (p Pipe) Default(ctx *context.Context) error {
 	if ctx.Config.Announce.Webhook.ContentType == "" {
 		ctx.Config.Announce.Webhook.ContentType = DefaultContentType
 	}
+	if len(ctx.Config.Announce.Webhook.ExpectedStatusCodes) == 0 {
+		ctx.Config.Announce.Webhook.ExpectedStatusCodes = defaultExepctedStatusCodes
+	}
 	return nil
 }
 
@@ -74,11 +77,6 @@ func (p Pipe) Announce(ctx *context.Context) error {
 	msg, err := tmpl.New(ctx).Apply(ctx.Config.Announce.Webhook.MessageTemplate)
 	if err != nil {
 		return fmt.Errorf("webhook: %w", err)
-	}
-
-	expectedStatusCodes := ctx.Config.Announce.Webhook.ExpectedStatusCodes
-	if len(expectedStatusCodes) == 0 {
-		expectedStatusCodes = defaultExepctedStatusCodes
 	}
 
 	log.Infof("posting: '%s'", msg)
@@ -117,7 +115,7 @@ func (p Pipe) Announce(ctx *context.Context) error {
 	}
 	defer resp.Body.Close()
 
-	if !slices.Contains(expectedStatusCodes, resp.StatusCode) {
+	if !slices.Contains(ctx.Config.Announce.Webhook.ExpectedStatusCodes, resp.StatusCode) {
 		io.Copy(io.Discard, resp.Body)
 		return fmt.Errorf("request failed with status %v", resp.Status)
 	}

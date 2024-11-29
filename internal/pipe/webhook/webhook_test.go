@@ -27,6 +27,7 @@ func TestNoEndpoint(t *testing.T) {
 			Webhook: config.Webhook{},
 		},
 	})
+	require.NoError(t, Pipe{}.Default(ctx))
 	require.EqualError(t, Pipe{}.Announce(ctx), `webhook: no endpoint url`)
 }
 
@@ -50,6 +51,7 @@ func TestAnnounceInvalidMessageTemplate(t *testing.T) {
 			},
 		},
 	})
+	require.NoError(t, Pipe{}.Default(ctx))
 	testlib.RequireTemplateError(t, Pipe{}.Announce(ctx))
 }
 
@@ -87,6 +89,7 @@ func TestAnnounceWebhook(t *testing.T) {
 			},
 		},
 	})
+	require.NoError(t, Pipe{}.Default(ctx))
 	require.NoError(t, Pipe{}.Announce(ctx))
 }
 
@@ -118,6 +121,7 @@ func TestAnnounceTLSWebhook(t *testing.T) {
 			},
 		},
 	})
+	require.NoError(t, Pipe{}.Default(ctx))
 	require.NoError(t, Pipe{}.Announce(ctx))
 }
 
@@ -145,6 +149,7 @@ func TestAnnounceTLSCheckCertWebhook(t *testing.T) {
 			},
 		},
 	})
+	require.NoError(t, Pipe{}.Default(ctx))
 	require.Error(t, Pipe{}.Announce(ctx))
 }
 
@@ -182,6 +187,7 @@ func TestAnnounceBasicAuthWebhook(t *testing.T) {
 		},
 	})
 	t.Setenv("BASIC_AUTH_HEADER_VALUE", fmt.Sprintf("Basic %s", base64.StdEncoding.EncodeToString([]byte("user:pass"))))
+	require.NoError(t, Pipe{}.Default(ctx))
 	require.NoError(t, Pipe{}.Announce(ctx))
 }
 
@@ -220,6 +226,7 @@ func TestAnnounceAdditionalHeadersWebhook(t *testing.T) {
 			},
 		},
 	})
+	require.NoError(t, Pipe{}.Default(ctx))
 	require.NoError(t, Pipe{}.Announce(ctx))
 }
 
@@ -253,6 +260,7 @@ func TestAnnounceExepectedStatusCodesWebhook(t *testing.T) {
 			},
 		},
 	})
+	require.NoError(t, Pipe{}.Default(ctx))
 	require.NoError(t, Pipe{}.Announce(ctx))
 }
 
@@ -270,5 +278,35 @@ func TestSkip(t *testing.T) {
 			},
 		})
 		require.False(t, Pipe{}.Skip(ctx))
+	})
+}
+
+func TestDefault(t *testing.T) {
+	t.Run("empty", func(t *testing.T) {
+		ctx := testctx.NewWithCfg(config.Project{
+			Announce: config.Announce{
+				Webhook: config.Webhook{},
+			},
+		})
+		require.NoError(t, Pipe{}.Default(ctx))
+		actual := ctx.Config.Announce.Webhook
+		require.NotEmpty(t, actual.MessageTemplate)
+		require.NotEmpty(t, actual.ContentType)
+		require.NotEmpty(t, actual.ExpectedStatusCodes)
+	})
+	t.Run("not empty", func(t *testing.T) {
+		expected := config.Webhook{
+			MessageTemplate:     "foo",
+			ContentType:         "text",
+			ExpectedStatusCodes: []int{200},
+		}
+		ctx := testctx.NewWithCfg(config.Project{
+			Announce: config.Announce{
+				Webhook: expected,
+			},
+		})
+		require.NoError(t, Pipe{}.Default(ctx))
+		actual := ctx.Config.Announce.Webhook
+		require.Equal(t, expected, actual)
 	})
 }
