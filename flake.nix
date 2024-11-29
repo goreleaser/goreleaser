@@ -58,18 +58,22 @@
         devShells.docs = pkgs.mkShellNoCC {
           packages =
             with pkgs;
-            with pkgs.python311Packages;
             [
               go-task
               htmltest
+            ]
+            ++ (with cpkgs; [
+              mkdocs-git-revision-date-localized-plugin
+              mkdocs-include-markdown-plugin # https://github.com/NixOS/nixpkgs/pull/277351
+            ])
+            ++ (with pkgs.python312Packages; [
+              regex
               mkdocs-material
               mkdocs-redirects
               mkdocs-minify
               mkdocs-rss-plugin
               filelock
-              cpkgs.mkdocs-include-markdown-plugin # https://github.com/NixOS/nixpkgs/pull/277351
-            ]
-            ++ mkdocs-material.passthru.optional-dependencies.git;
+            ]);
         };
       }
     );
