@@ -145,6 +145,13 @@ func (*Builder) WithDefaults(build config.Build) (config.Build, error) {
 		}
 		build.Targets = slices.Collect(maps.Keys(targets))
 	}
+
+	for _, o := range build.BuildDetailsOverrides {
+		if o.Goos == "" || o.Goarch == "" {
+			log.Warn("overrides must set, at least, both 'goos' and 'goarch'")
+			break
+		}
+	}
 	return build, nil
 }
 
@@ -324,12 +331,12 @@ func withOverrides(ctx *context.Context, build config.Build, target Target) (con
 
 		if optsTarget == overrideTarget {
 			dets := config.BuildDetails{
-				Buildmode: build.BuildDetails.Buildmode,
-				Ldflags:   build.BuildDetails.Ldflags,
-				Tags:      build.BuildDetails.Tags,
-				Flags:     build.BuildDetails.Flags,
-				Asmflags:  build.BuildDetails.Asmflags,
-				Gcflags:   build.BuildDetails.Gcflags,
+				Buildmode: build.Buildmode,
+				Ldflags:   build.Ldflags,
+				Tags:      build.Tags,
+				Flags:     build.Flags,
+				Asmflags:  build.Asmflags,
+				Gcflags:   build.Gcflags,
 			}
 			if err := mergo.Merge(&dets, o.BuildDetails, mergo.WithOverride); err != nil {
 				return build.BuildDetails, err
@@ -338,6 +345,8 @@ func withOverrides(ctx *context.Context, build config.Build, target Target) (con
 			dets.Env = context.ToEnv(append(build.Env, o.BuildDetails.Env...)).Strings()
 			log.WithField("details", dets).Infof("overridden build details for %s", optsTarget)
 			return dets, nil
+		} else {
+			log.Debugf("targets don't match: %s != %s", optsTarget, overrideTarget)
 		}
 	}
 

@@ -526,8 +526,8 @@ type Build struct {
 }
 
 type BuildDetailsOverride struct {
-	Goos         string `yaml:"goos,omitempty" json:"goos,omitempty"`
-	Goarch       string `yaml:"goarch,omitempty" json:"goarch,omitempty"`
+	Goos         string `yaml:"goos" json:"goos"`
+	Goarch       string `yaml:"goarch" json:"goarch"`
 	Goamd64      string `yaml:"goamd64,omitempty" json:"goamd64,omitempty"`
 	Go386        string `yaml:"go386,omitempty" json:"go386,omitempty"`
 	Goarm64      string `yaml:"goarm64,omitempty" json:"goarm64,omitempty"`
