@@ -17,8 +17,7 @@ and now UPX has its own configuration section:
 
     Namely, _macOS Ventura_ is not supported at the moment.
 
-```yaml
-# .goreleaser.yaml
+```yaml title=".goreleaser.yaml"
 upx:
   - # Whether to enable it or not.
     #

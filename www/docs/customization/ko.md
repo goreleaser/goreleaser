@@ -17,8 +17,7 @@ cached.
     For Ko to work you still need to login, either with `docker login` or
     something else.
 
-```yaml
-# .goreleaser.yaml
+```yaml title=".goreleaser.yaml"
 kos:
   - # ID of this image.
     id: foo
@@ -137,8 +136,7 @@ Refer to [ko's project page][ko] for more information.
 
 Here's a minimal example:
 
-```yaml
-# .goreleaser.yml
+```yaml title=".goreleaser.yaml"
 before:
   hooks:
     - go mod tidy
@@ -173,8 +171,7 @@ and `darwin/arm64`, as well as the Docker images and manifest for Linux.
 KO will add the built manifest to the artifact list, so you can sign them with
 `docker_signs`:
 
-```yaml
-# .goreleaser.yml
+```yaml title=".goreleaser.yaml"
 docker_signs:
   - artifacts: manifests
 ```

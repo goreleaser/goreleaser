@@ -6,8 +6,7 @@ executables in a single file.
 
 Here's how to use it:
 
-```yaml
-# .goreleaser.yaml
+```yaml title=".goreleaser.yaml"
 universal_binaries:
   - # ID of the resulting universal binary.
     #
@@ -59,8 +58,7 @@ For more info about hooks, see the [build section](./builds.md#build-hooks).
 
 The minimal configuration for most setups would look like this:
 
-```yaml
-# .goreleaser.yml
+```yaml title=".goreleaser.yaml"
 universal_binaries:
   - replace: true
 ```

@@ -11,8 +11,7 @@ Also you need to know your channel's chat ID to talk with.
 Then, you can add something like the following to your `.goreleaser.yaml`
 config:
 
-```yaml
-# .goreleaser.yaml
+```yaml title=".goreleaser.yaml"
 announce:
   telegram:
     # Whether its enabled or not.

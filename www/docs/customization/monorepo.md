@@ -58,8 +58,7 @@ The rest of the release process should work as usual.
 You'll need to create a `.goreleaser.yaml` for your Go code in the root of the
 project:
 
-```yaml
-# .goreleaser.yaml
+```yaml title=".goreleaser.yaml"
 monorepo:
   tag_prefix: v
 ```

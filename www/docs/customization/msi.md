@@ -6,8 +6,7 @@ GoReleaser can create MSI installers for windows binaries using [msitools][].
 
 The `msi` section specifies how the **installers** should be created:
 
-```yaml
-# .goreleaser.yaml
+```yaml title=".goreleaser.yaml"
 msi:
   - # ID of the resulting installer.
     #

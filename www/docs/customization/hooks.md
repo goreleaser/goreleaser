@@ -12,8 +12,7 @@ GoReleaser allows this with the global hooks feature.
     The configuration is straightforward, here is an example will all possible
     options:
 
-    ```yaml
-    # .goreleaser.yaml
+    ```yaml title=".goreleaser.yaml"
     before:
       # Templates for the commands to be ran.
       hooks:
@@ -34,8 +33,7 @@ GoReleaser allows this with the global hooks feature.
     The configuration is straightforward, here is an example will all possible
     options:
 
-    ```yaml
-    # .goreleaser.yaml
+    ```yaml title=".goreleaser.yaml"
     # global before hooks
     before:
       # Commands to be ran.

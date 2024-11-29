@@ -10,8 +10,7 @@ This token should be added to the environment variables as `GITLAB_TOKEN`.
 Alternatively, you can provide the GitLab token in a file.
 GoReleaser will check `~/.config/goreleaser/gitlab_token` by default, but you can change that in the `.goreleaser.yaml` file:
 
-```yaml
-# .goreleaser.yaml
+```yaml title=".goreleaser.yaml"
 env_files:
   gitlab_token: ~/.path/to/my/gitlab_token
 ```
@@ -34,8 +33,7 @@ env_files:
 You can use GoReleaser with GitLab Enterprise by providing its URLs in the
 `.goreleaser.yml` configuration file. This takes a normal string, or a template value.
 
-```yaml
-# .goreleaser.yml
+```yaml title=".goreleaser.yaml"
 gitlab_urls:
   api: https://gitlab.mycompany.com/api/v4/
   download: https://gitlab.company.com
@@ -69,8 +67,7 @@ Notably, hosted GitLab instances have a 10MB attachment limit, which cannot be c
 Uploading to the Generic Package Registry does not have this restriction.
 To use it instead, set `use_package_registry` to `true`.
 
-```yaml
-# .goreleaser.yml
+```yaml title=".goreleaser.yaml"
 gitlab_urls:
   use_package_registry: true
 ```

@@ -120,8 +120,7 @@ Alternatively, you can provide the gitlab token in a file. GoReleaser will check
 `~/.config/goreleaser/gitlab_token` by default, but you can change that in the
 `.goreleaser.yaml` file:
 
-```yaml
-# .goreleaser.yaml
+```yaml title=".goreleaser.yaml"
 env_files:
   gitlab_token: ~/.path/to/my/gitlab_token
 ```

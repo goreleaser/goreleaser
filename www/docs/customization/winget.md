@@ -6,8 +6,7 @@ if instructed to.
 
 The `winget` section specifies how the **manifests** should be created:
 
-```yaml
-# .goreleaser.yaml
+```yaml title=".goreleaser.yaml"
 winget:
   - # Name of the recipe
     #

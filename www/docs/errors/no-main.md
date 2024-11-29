@@ -16,8 +16,7 @@ Learn more at https://goreleaser.com/errors/no-main
 
 Add something like this to your config:
 
-```yaml
-# .goreleaser.yaml
+```yaml title=".goreleaser.yaml"
 builds:
   - skip: true
 ```
@@ -26,8 +25,7 @@ builds:
 
 Add something like this to your config:
 
-```yaml
-# .goreleaser.yaml
+```yaml title=".goreleaser.yaml"
 builds:
   - main: ./path/to/your/main/pkg/
 ```
@@ -42,8 +40,7 @@ Run goreleaser in the root of the project.
 
 You can set `no_main_check` to `true`:
 
-```yaml
-# .goreleaser.yaml
+```yaml title=".goreleaser.yaml"
 builds:
   - main: ./path/...
     buildmode: plugin

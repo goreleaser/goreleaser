@@ -3,8 +3,7 @@
 You may add the current tag source archive to the release as well. This is
 particularly useful if you want to sign it, for example.
 
-```yaml
-# .goreleaser.yaml
+```yaml title=".goreleaser.yaml"
 source:
   # Whether this pipe is enabled or not.
   enabled: true

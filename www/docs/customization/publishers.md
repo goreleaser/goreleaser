@@ -93,8 +93,7 @@ Supported variables:
 
 Of course, you can customize a lot of things:
 
-```yaml
-# .goreleaser.yaml
+```yaml title=".goreleaser.yaml"
 publishers:
   - #
     # Unique name of your publisher. Used for identification

@@ -17,8 +17,7 @@ output, as well as on `dist/artifacts.json`:
 
 Here's the available configuration options:
 
-```yaml
-# .goreleaser.yaml
+```yaml title=".goreleaser.yaml"
 # Whether to enable the size reporting or not.
 report_sizes: true
 ```

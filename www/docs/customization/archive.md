@@ -6,8 +6,7 @@ additional files, and format.
 
 Here is a commented `archives` section with all fields specified:
 
-```yaml
-# .goreleaser.yaml
+```yaml title=".goreleaser.yaml"
 archives:
   - #
     # ID of this archive.
@@ -30,7 +29,7 @@ archives:
     # - `tar.xz`
     # - `txz`
     # - `tar.zst`
-    # - `tzst` (since v2.1)
+    # - `tzst` # <!-- md:inline_version v2.1 -->.
     # - `tar`
     # - `gz`
     # - `zip`
@@ -251,8 +250,7 @@ on the archive section.
 
 A working hack is to use something like this:
 
-```yaml
-# .goreleaser.yaml
+```yaml title=".goreleaser.yaml"
 archives:
   - files:
       - none*
@@ -272,8 +270,7 @@ file inside.
 Presumably, you'll want that file to be the binary, so, your archive section
 will probably look like this:
 
-```yaml
-# .goreleaser.yaml
+```yaml title=".goreleaser.yaml"
 archives:
   - format: gz
     files:
@@ -292,8 +289,7 @@ extracted with something like `gzip -d file.gz`.
 
 You can do that by setting `format` to `binary`:
 
-```yaml
-# .goreleaser.yaml
+```yaml title=".goreleaser.yaml"
 archives:
   - format: binary
 ```

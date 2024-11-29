@@ -7,8 +7,7 @@ the name of the binary, flags, environment variables, hooks and more.
 
 Here is a commented `builds` section with all fields specified:
 
-```yaml
-# .goreleaser.yaml
+```yaml title=".goreleaser.yaml"
 builds:
   # You can have multiple builds defined as a yaml list
   - #
@@ -80,7 +79,7 @@ builds:
     # Templates: allowed.
     env:
       - CGO_ENABLED=0
-      # complex, templated envs (v1.14+):
+      # complex, templated envs:
       - >-
         {{- if eq .Os "darwin" }}
           {{- if eq .Arch "amd64"}}CC=o64-clang{{- end }}
@@ -127,6 +126,7 @@ builds:
     # For more info refer to: https://go.dev/doc/install/source#environment
     #
     # Default: [ 'v8.0' ].
+    # <!-- md:inline_version v2.4 -->.
     goarm64:
       - v9.0
 
@@ -134,6 +134,7 @@ builds:
     # For more info refer to: https://go.dev/doc/install/source#environment
     #
     # Default: [ 'hardfloat' ].
+    # <!-- md:inline_version v2.4 -->.
     gomips:
       - hardfloat
       - softfloat
@@ -142,6 +143,7 @@ builds:
     # For more info refer to: https://go.dev/doc/install/source#environment
     #
     # Default: [ 'sse2' ].
+    # <!-- md:inline_version v2.4 -->.
     go386:
       - sse2
       - softfloat
@@ -150,6 +152,7 @@ builds:
     # For more info refer to: https://go.dev/doc/install/source#environment
     #
     # Default: [ 'power8' ].
+    # <!-- md:inline_version v2.4 -->.
     goppc64:
       - power8
       - power9
@@ -158,6 +161,7 @@ builds:
     # For more info refer to: https://go.dev/doc/install/source#environment
     #
     # Default: [ 'rva20u64' ].
+    # <!-- md:inline_version v2.4 -->.
     goriscv64:
       - rva22u64
 
@@ -226,7 +230,7 @@ builds:
     # If true, skip the build.
     # Useful for library projects.
     #
-    # Templates: allowed (since v2.3).
+    # Templates: allowed (<!-- md:inline_version v2.3 -->).
     skip: false
 
     # By default, GoReleaser will create your binaries inside
@@ -239,7 +243,7 @@ builds:
     # If you do, you are responsible for keeping different builds from
     # overriding each other.
     #
-    # Templates: allowed (since v2.3).
+    # Templates: allowed (<!-- md:inline_version v2.3 -->).
     no_unique_dist_dir: true
 
     # By default, GoReleaser will check if the main filepath has a main
@@ -302,8 +306,7 @@ builds:
 
 Here is an example with multiple binaries:
 
-```yaml
-# .goreleaser.yaml
+```yaml title=".goreleaser.yaml"
 builds:
   - main: ./cmd/cli
     id: "cli"
@@ -348,8 +351,7 @@ following build details are exposed:
 You can do that by using `{{ .Env.VARIABLE_NAME }}` in the template, for
 example:
 
-```yaml
-# .goreleaser.yaml
+```yaml title=".goreleaser.yaml"
 builds:
   - ldflags:
    - -s -w -X "main.goversion={{.Env.GOVERSION}}"
@@ -371,8 +373,7 @@ In addition to simple declarations as shown above _multiple_ hooks can be
 declared to help retaining reusability of config between different build
 environments.
 
-```yaml
-# .goreleaser.yaml
+```yaml title=".goreleaser.yaml"
 builds:
   - id: "with-hooks"
     targets:
@@ -389,8 +390,7 @@ builds:
 
 Each hook can also have its own work directory and environment variables:
 
-```yaml
-# .goreleaser.yaml
+```yaml title=".goreleaser.yaml"
 builds:
   - id: "with-hooks"
     targets:
@@ -438,8 +438,7 @@ likely to fail.
 You can solve this by running `go mod tidy` before calling `goreleaser` or
 by adding a [hook][] doing that on your `.goreleaser.yaml` file:
 
-```yaml
-# .goreleaser.yaml
+```yaml title=".goreleaser.yaml"
 before:
   hooks:
     - go mod tidy
@@ -473,7 +472,7 @@ GoReleaser:
 
 ## Build Zig binaries
 
-<!-- md:version v2.5 -->
+<!-- md:version v2.5-unreleased -->
 
 <!-- md:alpha -->
 
@@ -481,8 +480,7 @@ You can now build Zig binaries using `zig build` and GoReleaser!
 
 Simply set the `builder` to `zig`, for instance:
 
-```yml
-# .goreleaser.yaml
+```yaml title=".goreleaser.yaml"
 builds:
   - # Use zig
     builder: zig
@@ -519,8 +517,7 @@ Reasons you might want to do that include:
 
 In any case, its pretty easy to do that now:
 
-```yaml
-# .goreleaser.yaml
+```yaml title=".goreleaser.yaml"
 builds:
   - # Set the builder to prebuilt
     builder: prebuilt
@@ -638,8 +635,7 @@ GoReleaser will:
 
 Example usage:
 
-```yaml
-# .goreleaser.yaml
+```yaml title=".goreleaser.yaml"
 builds:
   - id: "my-library"
 
@@ -663,8 +659,7 @@ Here are two different examples:
 This example creates once `CC_` and `CXX_` variable for each platform, and then
 set `CC` and `CXX` to the right one:
 
-```yaml
-# .goreleaser.yml
+```yaml title=".goreleaser.yaml"
 builds:
   - id: mybin
     binary: mybin
@@ -692,8 +687,7 @@ builds:
 
 This example uses `if` statements to set `CC` and `CXX`:
 
-```yaml
-# .goreleaser.yml
+```yaml title=".goreleaser.yaml"
 builds:
   - id: mybin
     binary: mybin

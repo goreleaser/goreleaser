@@ -6,8 +6,7 @@ GoReleaser can create DMG images for macOS using `mkisofs` or `hdiutil`.
 
 The `dmg` section specifies how the images should be created:
 
-```yaml
-# .goreleaser.yaml
+```yaml title=".goreleaser.yaml"
 dmg:
   - # ID of the resulting image.
     #
@@ -33,14 +32,16 @@ dmg:
     # - 'appbundle': app bundles
     #
     # Default: 'binary'
-    # Since: v2.4 (pro).
+    # <!-- md:inline_pro -->.
+    # <!-- md:inline_version v2.4 -->.
     use: appbundle
 
     # Allows to further filter the artifacts.
     #
     # Artifacts that do not match this expression will be ignored.
     #
-    # Since: v2.4 (pro).
+    # <!-- md:inline_pro -->.
+    # <!-- md:inline_version v2.4 -->.
     # Templates: allowed.
     if: '{{ eq .Os "linux" }}'
 
@@ -65,7 +66,8 @@ dmg:
     # and its results will be added to the image as it would with the
     # extra_files field above.
     #
-    # Since: v2.4 (pro).
+    # <!-- md:inline_pro -->.
+    # <!-- md:inline_version v2.4 -->.
     # Templates: allowed.
     templated_extra_files:
       - src: LICENSE.tpl
