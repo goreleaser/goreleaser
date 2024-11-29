@@ -20,6 +20,7 @@ import (
 	"sync"
 
 	"github.com/caarlos0/log"
+	"github.com/goreleaser/goreleaser/v2/internal/experimental"
 	"golang.org/x/crypto/blake2b"
 	"golang.org/x/crypto/blake2s"
 	"golang.org/x/crypto/sha3"
@@ -470,7 +471,7 @@ func ByGoarm(s string) Filter {
 	return func(a *Artifact) bool {
 		switch ExtraOr(*a, ExtraBuilder, "") {
 		case "zig":
-			return true
+			return s == experimental.DefaultGOARM()
 		default:
 			return a.Goarm == s
 		}
@@ -482,7 +483,7 @@ func ByGoamd64(s string) Filter {
 	return func(a *Artifact) bool {
 		switch ExtraOr(*a, ExtraBuilder, "") {
 		case "zig":
-			return true
+			return s == "v1"
 		default:
 			return a.Goamd64 == s
 		}
