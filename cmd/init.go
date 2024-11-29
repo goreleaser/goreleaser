@@ -28,7 +28,7 @@ func newInitCmd() *initCmd {
 		SilenceErrors:     true,
 		Args:              cobra.NoArgs,
 		ValidArgsFunction: cobra.NoFileCompletions,
-		PreRun: func(cmd *cobra.Command, args []string) {
+		PreRun: func(cmd *cobra.Command, _ []string) {
 			if cmd.Flags().Lookup("language").Changed {
 				return
 			}
@@ -85,9 +85,13 @@ func newInitCmd() *initCmd {
 	cmd.Flags().StringVarP(&root.config, "config", "f", ".goreleaser.yaml", "Load configuration from file")
 	_ = cmd.MarkFlagFilename("config", "yaml", "yml")
 
-	_ = cmd.RegisterFlagCompletionFunc("language", func(_ *cobra.Command, _ []string, toComplete string) ([]string, cobra.ShellCompDirective) {
-		return []string{"go", "zig"}, cobra.ShellCompDirectiveDefault
-	})
+	_ = cmd.RegisterFlagCompletionFunc(
+		"language",
+		cobra.FixedCompletions(
+			[]string{"go", "zig"},
+			cobra.ShellCompDirectiveDefault,
+		),
+	)
 
 	root.cmd = cmd
 	return root
