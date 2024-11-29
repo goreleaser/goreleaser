@@ -525,7 +525,13 @@
 						"$ref": "#/$defs/BuildHookConfig"
 					},
 					"builder": {
-						"type": "string"
+						"type": "string",
+						"enum": [
+							"",
+							"go",
+							"zig",
+							"prebuilt"
+						]
 					},
 					"mod_timestamp": {
 						"type": "string"

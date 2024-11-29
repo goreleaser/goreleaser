@@ -9,8 +9,9 @@ goreleaser init [flags]
 ## Options
 
 ```
-  -f, --config string   Load configuration from file (default ".goreleaser.yaml")
-  -h, --help            help for init
+  -f, --config string     Load configuration from file (default ".goreleaser.yaml")
+  -h, --help              help for init
+  -l, --language string   Which language will be used (default "go")
 ```
 
 ## Options inherited from parent commands
