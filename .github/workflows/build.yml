@@ -30,7 +30,7 @@ jobs:
       args: "-disable largeloopcopy"
   test:
     strategy:
-      fail-fast: false
+      fail-fast: true
       matrix:
         os: [ubuntu-latest, windows-latest]
     runs-on: ${{ matrix.os }}
