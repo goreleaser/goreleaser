@@ -7,10 +7,14 @@ on:
     paths:
       - "www/**/*"
       - ".github/workflows/docs.yml"
+      - flake.nix
+      - flake.lock
   pull_request:
     paths:
       - "www/**/*"
       - ".github/workflows/docs.yml"
+      - flake.nix
+      - flake.lock
 
 permissions:
   contents: read
