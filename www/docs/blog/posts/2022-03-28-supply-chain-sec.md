@@ -98,7 +98,7 @@ To install cosign, you need to add the following line to our GitHub Action workf
 ```
 
 > To install cosign into your environment, please follow the installation link
-> from [official website](https://docs.sigstore.dev/cosign/installation/).
+> from [official website](https://docs.sigstore.dev/cosign/system_config/installation/).
 > But if you are Mac user, you can start installing cosign via HomeBrew 👇
 >
 > ```bash

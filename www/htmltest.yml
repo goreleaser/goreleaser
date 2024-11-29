@@ -13,6 +13,8 @@ IgnoreURLs:
   - github.com
   - twitter.com
   - x.com
+  - banzaicloud.com
+  - curio.sh
   - medium.com
   - gofi.sh
   - visualstudio.com
