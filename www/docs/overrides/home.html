@@ -37,6 +37,14 @@
 			);
 	}
 
+	.gradient-text {
+		background: linear-gradient(to right, var(--md-primary-bg-color), var(--md-accent-fg-color));
+		-webkit-background-clip: text;
+		-webkit-text-fill-color: transparent;
+		background-clip: text;
+		color: transparent;
+	}
+
 	.tx-container {
 		padding-top: 1rem;
 		background:
@@ -186,11 +194,12 @@
 				<img src="static/logo.png" alt="" draggable="false" />
 			</div>
 			<div class="tx-hero__content">
-				<h1>Release Go projects as fast and easily as possible!</h1>
+				<h1 style="font-size: 3rem;" class="gradient-text">
+					Releases the way they should be.
+				</h1>
 				<p>
-					GoReleaser is an open-source tool that simplifies the
-					process of releasing your Go projects to multiple platforms,
-					ensuring a consistent and reliable deployment experience.
+					Automate your project releases with a powerful, flexible, and easy-to-use tool.
+					From binaries to Docker images, we've got you covered.
 				</p>
 				<a
 					href="{{ page.next_page.url | url }}"
@@ -212,20 +221,18 @@
 </section>
 <section class="tx-container-2">
 	<div class="md-grid md-typeset">
+		<img
+			src="/static/goreleaser.svg"
+			alt="GoReleaser releasing an example project."
+			/>
+	</div>
+	<div class="md-grid md-typeset" style="max-width: 40rem; padding-top: 3rem">
 		<div class="tx-intro">
 			<h1>Everything you need to release with confidence</h1>
 			<p class="subtext">
-			GoReleaser handles everything you need to create a professional release process for Go projects.
+				GoReleaser handles everything you need to create a professional release process for Go, Rust, and Zig projects.
 			</p>
 		</div>
-	<img
-		src="/static/goreleaser.svg"
-		alt="GoReleaser releasing an example project."
-		/>
-	</div>
-</section>
-<section class="tx-container-2">
-	<div class="md-grid md-typeset" style="max-width: 40rem">
 		<div class="mx-auto grid items-center">
 			<div class="flex flex-col justify-center">
 				<ul class="grid">
@@ -338,14 +345,13 @@
 	</div>
 </section>
 <section class="tx-container-2" style="padding-bottom: 2rem">
-	<div class="md-grid md-typeset" style="max-width: 40rem">
+	<div class="md-grid md-typeset" style="max-width: 40rem; padding-top: 3rem">
 		<div class="tx-intro">
 			<h1>Releases for everyone</h1>
 			<p class="text-bold">
-			GoReleaser is used by
-			<a href="/users/">
-				industry-leading companies and open source organizations
-			</a>, including:
+			<strong>GoReleaser</strong> is trusted and used by
+			<a href="/users/">industry-leading companies and open source organizations</a>,
+			including:
 			</p>
 			<div class="grid cards">
 				<p class="card">
