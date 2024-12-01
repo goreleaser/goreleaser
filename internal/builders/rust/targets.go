@@ -10,12 +10,13 @@ import (
 	"github.com/goreleaser/goreleaser/v2/internal/tmpl"
 )
 
+// tier 1 and tier 2
+// https://doc.rust-lang.org/rustc/platform-support.html
 var (
 	//go:embed all_targets.txt
 	allTargetsBts []byte
-
-	allTargets  []string
-	targetsOnce sync.Once
+	allTargets    []string
+	targetsOnce   sync.Once
 )
 
 const (
