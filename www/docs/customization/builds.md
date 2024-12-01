@@ -262,7 +262,7 @@ builds:
     dir: go
 
     # Builder allows you to use a different build implementation.
-    # Valid options are: `go`, `zig`, and `prebuilt` (pro-only).
+    # Valid options are: `go`, `rust`, `zig`, and `prebuilt` (pro-only).
     #
     # Default: 'go'.
     builder: prebuilt
@@ -476,6 +476,33 @@ GoReleaser:
   `-trimpath` to `flags`.
 - Remove uses of the `time` template function. This function returns a new value
   on every call and is not deterministic.
+
+## Build Rust binaries
+
+<!-- md:version v2.5-unreleased -->
+
+<!-- md:alpha -->
+
+You can now build Zig binaries using `rust zigbuild` and GoReleaser!
+
+Simply set the `builder` to `rust`, for instance:
+
+```yaml title=".goreleaser.yaml"
+builds:
+  - # Use Rust zigbuild
+    builder: rust
+    targets:
+      - x86_64-apple-darwin
+      - x86_64-pc-windows-gnu
+```
+
+Some options are not supported yet[^fail], but it should be usable at least for
+simple projects already!
+
+GoReleaser will run `rustup target add` for each defined target.
+You can use before hooks to install `cargo-zigbuild`.
+If you want to use `cargo-cross` instead, you can set the `command` and `args`
+accordingly.
 
 ## Build Zig binaries
 
