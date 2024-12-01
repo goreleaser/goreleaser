@@ -23,9 +23,9 @@ const (
 	keyEnvironment = "Environment"
 )
 
-// Target is a Zig build target.
+// Target is a Rust build target.
 type Target struct {
-	// The zig formatted target (arch-os-abi).
+	// The Rust formatted target (arch-vendor-os-env).
 	Target      string
 	Os          string
 	Arch        string
