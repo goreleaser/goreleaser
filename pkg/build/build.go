@@ -52,3 +52,9 @@ type Builder interface {
 	Build(ctx *context.Context, build config.Build, options Options) error
 	Parse(target string) (Target, error)
 }
+
+// PreparedBuilder can be implemented to run something before all the actual
+// builds happen.
+type PreparedBuilder interface {
+	Prepare(ctx *context.Context, build config.Build) error
+}

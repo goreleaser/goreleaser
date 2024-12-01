@@ -511,7 +511,7 @@ type Build struct {
 	Main            string          `yaml:"main,omitempty" json:"main,omitempty"`
 	Binary          string          `yaml:"binary,omitempty" json:"binary,omitempty"`
 	Hooks           BuildHookConfig `yaml:"hooks,omitempty" json:"hooks,omitempty"`
-	Builder         string          `yaml:"builder,omitempty" json:"builder,omitempty" jsonschema:"enum=,enum=go,enum=zig"`
+	Builder         string          `yaml:"builder,omitempty" json:"builder,omitempty" jsonschema:"enum=,enum=go,enum=rust,enum=zig"`
 	ModTimestamp    string          `yaml:"mod_timestamp,omitempty" json:"mod_timestamp,omitempty"`
 	Skip            string          `yaml:"skip,omitempty" json:"skip,omitempty" jsonschema:"oneof_type=string;boolean"`
 	GoBinary        string          `yaml:"gobinary,omitempty" json:"gobinary,omitempty"`

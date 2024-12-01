@@ -21,6 +21,7 @@ import (
 
 	// langs to init.
 	_ "github.com/goreleaser/goreleaser/v2/internal/builders/golang"
+	_ "github.com/goreleaser/goreleaser/v2/internal/builders/rust"
 	_ "github.com/goreleaser/goreleaser/v2/internal/builders/zig"
 )
 
@@ -44,9 +45,21 @@ func (Pipe) Run(ctx *context.Context) error {
 			continue
 		}
 		log.WithField("build", build).Debug("building")
+		if err := prepare(ctx, build); err != nil {
+			return err
+		}
 		runPipeOnBuild(ctx, g, build)
 	}
 	return g.Wait()
+}
+
+func prepare(ctx *context.Context, build config.Build) error {
+	prep, ok := builders.For(build.Builder).(builders.PreparedBuilder)
+	if !ok {
+		// nothing to do
+		return nil
+	}
+	return prep.Prepare(ctx, build)
 }
 
 // Default sets the pipe defaults.
