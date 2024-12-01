@@ -90,7 +90,6 @@ extra:
       link: /discord
 
 nav:
-  - Home: index.md
   - Getting Started:
       - intro.md
       - install.md
