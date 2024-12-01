@@ -501,8 +501,19 @@ simple projects already!
 
 GoReleaser will run `rustup target add` for each defined target.
 You can use before hooks to install `cargo-zigbuild`.
-If you want to use `cargo-cross` instead, you can set the `command` and `args`
-accordingly.
+If you want to use `cargo-cross` instead, you can make sure it is installed and
+then make few changes:
+
+```yaml title=".goreleaser.yaml"
+builds:
+  - # Use Rust zigbuild
+    builder: rust
+    gobinary: cross # TODO: rename gobinary to something more generic, like 'builder_binary' maybe?
+    command: build
+    targets:
+      - x86_64-apple-darwin
+      - x86_64-pc-windows-gnu
+```
 
 ## Build Zig binaries
 
