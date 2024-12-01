@@ -113,7 +113,7 @@ func runPipeOnBuild(ctx *context.Context, g semerrgroup.Group, build config.Buil
 				}
 			}
 			if err := doBuild(ctx, build, *opts); err != nil {
-				return err
+				return fmt.Errorf("build failed for '%s': %w", target, err)
 			}
 			if !skips.Any(ctx, skips.PostBuildHooks) {
 				if err := runHook(ctx, *opts, build.Env, build.Hooks.Post); err != nil {
