@@ -483,7 +483,7 @@ GoReleaser:
 
 <!-- md:alpha -->
 
-You can now build Zig binaries using `rust zigbuild` and GoReleaser!
+You can now build Rust binaries using `cargo zigbuild` and GoReleaser!
 
 Simply set the `builder` to `rust`, for instance:
 
