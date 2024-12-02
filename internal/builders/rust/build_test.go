@@ -157,7 +157,7 @@ func TestBuild(t *testing.T) {
 	bin := bins[0]
 	require.Equal(t, artifact.Artifact{
 		Name:   "proj",
-		Path:   options.Path,
+		Path:   filepath.ToSlash(options.Path),
 		Goos:   "darwin",
 		Goarch: "arm64",
 		Target: "aarch64-apple-darwin",
