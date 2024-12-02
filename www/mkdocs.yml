@@ -112,6 +112,8 @@ nav:
           - Split & Merge: customization/partial.md
       - Build:
           - customization/builds.md
+          - customization/zig-builds.md
+          - customization/prebuilt.md
           - customization/verifiable_builds.md
           - customization/monorepo.md
           - customization/universalbinaries.md
