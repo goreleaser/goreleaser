@@ -245,7 +245,7 @@ func TestProxyDescription(t *testing.T) {
 	require.NotEmpty(t, ProxyPipe{}.String())
 }
 
-func TestSkip(t *testing.T) {
+func TestSkipProxy(t *testing.T) {
 	t.Run("skip false gomod.proxy", func(t *testing.T) {
 		ctx := testctx.New()
 		require.True(t, ProxyPipe{}.Skip(ctx))
