@@ -1,12 +1,12 @@
-# Builds (Zig)
+# Builds (Rust)
 
 <!-- md:version v2.5-unreleased -->
 
 <!-- md:alpha -->
 
-You can now build Zig binaries using `zig build` and GoReleaser!
+You can now build Rust binaries using `cargo zigbuild` and GoReleaser!
 
-Simply set the `builder` to `zig`, for instance:
+Simply set the `builder` to `rust`, for instance:
 
 ```yaml title=".goreleaser.yaml"
 builds:
@@ -17,8 +17,8 @@ builds:
     # Default: Project directory name.
     id: "my-build"
 
-    # Use zig.
-    builder: zig
+    # Use rust.
+    builder: rust
 
     # Binary name.
     # Can be a path (e.g. `bin/app`) to wrap the binary in a directory.
@@ -26,10 +26,10 @@ builds:
     # Default: Project directory name.
     binary: program
 
-    # List of targets to be built, in Zig's format.
+    # List of targets to be built, in Rust's format.
     targets:
-      - aarch64-macos
-      - x86_64-linux-gnu
+      - x86_64-apple-darwin
+      - x86_64-pc-windows-gnu
 
     # Path to project's (sub)directory containing the code.
     # This is the working directory for the Zig build command(s).
@@ -40,17 +40,17 @@ builds:
     # Set a specific zig binary to use when building.
     # It is safe to ignore this option in most cases.
     #
-    # Default: "zig".
+    # Default: "cargo".
     # Templates: allowed.
-    gobinary: "zig-nightly"
+    gobinary: "cross"
 
     # Sets the command to run to build.
     # Can be useful if you want to build tests, for example,
     # in which case you can set this to "test".
     # It is safe to ignore this option in most cases.
     #
-    # Default: build.
-    command: not-build
+    # Default: zigbuild.
+    command: build
 
     # Custom flags.
     #
@@ -62,14 +62,28 @@ builds:
 Some options are not supported yet[^fail], but it should be usable at least for
 simple projects already!
 
-You can see more details about builds [here](./builds.md).
+GoReleaser will run `rustup target add` for each defined target.
+You can use before hooks to install `cargo-zigbuild`.
+If you want to use `cargo-cross` instead, you can make sure it is installed and
+then make few changes:
+
+```yaml title=".goreleaser.yaml"
+builds:
+  - # Use Rust zigbuild
+    builder: rust
+    gobinary: cross # TODO: rename gobinary to something more generic, like 'builder_binary' maybe?
+    command: build
+    targets:
+      - x86_64-apple-darwin
+      - x86_64-pc-windows-gnu
+```
 
 ## Caveats
 
-GoReleaser will translate Zig's Os/Arch pair into a GOOS/GOARCH pair, so
+GoReleaser will translate Rust's Os/Arch triple into a GOOS/GOARCH pair, so
 templates should work the same as before.
-The original target name is available in templates as `.Target`, and so is the
-ABI as `.Abi`.
+The original target name is available in templates as `.Target`, and so are
+`.Vendor` and `.Environment`.
 
 [^fail]:
     GoReleaser will error if you try to use them. Give it a try with

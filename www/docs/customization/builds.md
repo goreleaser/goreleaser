@@ -1,4 +1,4 @@
-# Builds
+# Builds (Go)
 
 Builds can be customized in multiple ways.
 You can specify for which `GOOS`, `GOARCH` and `GOARM` binaries are built
@@ -262,7 +262,7 @@ builds:
     dir: go
 
     # Builder allows you to use a different build implementation.
-    # Valid options are: `go`, `zig`, and `prebuilt` (pro-only).
+    # Valid options are: `go`, `rust`, `zig`, and `prebuilt` (pro-only).
     #
     # Default: 'go'.
     builder: prebuilt
