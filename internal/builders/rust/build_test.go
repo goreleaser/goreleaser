@@ -3,7 +3,9 @@ package rust
 import (
 	"fmt"
 	"os"
+	"os/exec"
 	"path/filepath"
+	"strings"
 	"testing"
 	"time"
 
@@ -97,6 +99,16 @@ func TestWithDefaults(t *testing.T) {
 func TestBuild(t *testing.T) {
 	testlib.CheckPath(t, "rustup")
 	testlib.CheckPath(t, "cargo")
+
+	for _, s := range []string{
+		"rustup default stable",
+		"cargo install --locked cargo-zigbuild",
+	} {
+		args := strings.Fields(s)
+		_, err := exec.Command(args[0], args[1:]...).CombinedOutput()
+		require.NoError(t, err)
+	}
+
 	modTime := time.Now().AddDate(-1, 0, 0).Round(1 * time.Second).UTC()
 	dist := t.TempDir()
 	ctx := testctx.NewWithCfg(config.Project{
