@@ -37,15 +37,6 @@ func (Pipe) Default(ctx *context.Context) error {
 	return nil
 }
 
-func (Pipe) Skip(ctx *context.Context) bool {
-	for _, b := range ctx.Config.Builds {
-		if b.Builder == "go" {
-			return true
-		}
-	}
-	return false
-}
-
 // Run the pipe.
 func (Pipe) Run(ctx *context.Context) error {
 	flags := []string{"list", "-m"}
