@@ -137,6 +137,7 @@ func TestBuild(t *testing.T) {
 	})
 	build, err := Default.WithDefaults(ctx.Config.Builds[0])
 	require.NoError(t, err)
+	require.NoError(t, Default.Prepare(ctx, build))
 
 	options := api.Options{
 		Name:   "proj",
