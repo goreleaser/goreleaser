@@ -31,7 +31,6 @@ type Target struct {
 	Target      string
 	Os          string
 	Arch        string
-	Arm         string
 	Vendor      string
 	Environment string
 }

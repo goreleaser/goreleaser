@@ -17,6 +17,10 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
+func TestAllowConcurrentBuilds(t *testing.T) {
+	require.False(t, Default.AllowConcurrentBuilds())
+}
+
 func TestWithDefaults(t *testing.T) {
 	t.Run("valid", func(t *testing.T) {
 		build, err := Default.WithDefaults(config.Build{})
@@ -124,6 +128,7 @@ func TestBuild(t *testing.T) {
 				Dir:          "./testdata/proj/",
 				ModTimestamp: fmt.Sprintf("%d", modTime.Unix()),
 				BuildDetails: config.BuildDetails{
+					Flags: []string{"--locked"},
 					Env: []string{
 						`TEST_T={{- if eq .Os "windows" -}}
 							w
@@ -174,4 +179,34 @@ func TestBuild(t *testing.T) {
 	fi, err := os.Stat(bin.Path)
 	require.NoError(t, err)
 	require.True(t, modTime.Equal(fi.ModTime()), "inconsistent mod times found when specifying ModTimestamp")
+}
+
+func TestParse(t *testing.T) {
+	t.Run("invalid", func(t *testing.T) {
+		_, err := Default.Parse("a-b")
+		require.Error(t, err)
+	})
+
+	t.Run("triplet", func(t *testing.T) {
+		target, err := Default.Parse("aarch64-apple-darwin")
+		require.NoError(t, err)
+		require.Equal(t, Target{
+			Target: "aarch64-apple-darwin",
+			Os:     "darwin",
+			Arch:   "arm64",
+			Vendor: "apple",
+		}, target)
+	})
+
+	t.Run("quadruplet", func(t *testing.T) {
+		target, err := Default.Parse("aarch64-pc-windows-gnullvm")
+		require.NoError(t, err)
+		require.Equal(t, Target{
+			Target:      "aarch64-pc-windows-gnullvm",
+			Os:          "windows",
+			Arch:        "arm64",
+			Vendor:      "pc",
+			Environment: "gnullvm",
+		}, target)
+	})
 }
