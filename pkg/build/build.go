@@ -59,7 +59,7 @@ type PreparedBuilder interface {
 	Prepare(ctx *context.Context, build config.Build) error
 }
 
-// ConcurrentBuilder can be implimented to indicate whether or not this builder
+// ConcurrentBuilder can be implemented to indicate whether or not this builder
 // support concurrent builds.
 type ConcurrentBuilder interface {
 	AllowConcurrentBuilds() bool
