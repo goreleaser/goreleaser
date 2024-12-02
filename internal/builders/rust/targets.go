@@ -11,6 +11,7 @@ import (
 )
 
 // tier 1 and tier 2
+// aarch64-pc-windows-gnullvm is the only tier 3 target added
 // https://doc.rust-lang.org/rustc/platform-support.html
 var (
 	//go:embed all_targets.txt
