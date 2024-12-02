@@ -181,7 +181,7 @@ func TestBuild(t *testing.T) {
 	bin := bins[0]
 	require.Equal(t, artifact.Artifact{
 		Name:   "proj",
-		Path:   filepath.Join(dist, "proj-aarch64-macos", "proj"),
+		Path:   filepath.ToSlash(options.Path),
 		Goos:   "darwin",
 		Goarch: "arm64",
 		Target: "aarch64-macos",
