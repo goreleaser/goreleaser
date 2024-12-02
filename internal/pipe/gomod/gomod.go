@@ -20,6 +20,15 @@ type Pipe struct{}
 
 func (Pipe) String() string { return "loading go mod information" }
 
+func (Pipe) Skip(ctx *context.Context) bool {
+	for _, build := range ctx.Config.Builds {
+		if build.Builder == "go" {
+			return false
+		}
+	}
+	return true
+}
+
 // Default sets the pipe defaults.
 func (Pipe) Default(ctx *context.Context) error {
 	if ctx.Config.GoMod.GoBinary == "" {
