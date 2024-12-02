@@ -48,9 +48,26 @@ func (Pipe) Run(ctx *context.Context) error {
 		if err := prepare(ctx, build); err != nil {
 			return err
 		}
-		runPipeOnBuild(ctx, g, build)
+		if allowParallelism(build) {
+			runPipeOnBuild(ctx, g, build)
+			continue
+		}
+		g.Go(func() error {
+			gg := semerrgroup.New(1)
+			runPipeOnBuild(ctx, gg, build)
+			return gg.Wait()
+		})
 	}
 	return g.Wait()
+}
+
+func allowParallelism(build config.Build) bool {
+	conc, ok := builders.For(build.Builder).(builders.ConcurrentBuilder)
+	if !ok {
+		// assume concurrent
+		return true
+	}
+	return conc.AllowConcurrentBuilds()
 }
 
 func prepare(ctx *context.Context, build config.Build) error {
@@ -102,27 +119,31 @@ func buildWithDefaults(ctx *context.Context, build config.Build) (config.Build, 
 func runPipeOnBuild(ctx *context.Context, g semerrgroup.Group, build config.Build) {
 	for _, target := range filter(ctx, build.Targets) {
 		g.Go(func() error {
-			opts, err := buildOptionsForTarget(ctx, build, target)
-			if err != nil {
-				return err
-			}
-
-			if !skips.Any(ctx, skips.PreBuildHooks) {
-				if err := runHook(ctx, *opts, build.Env, build.Hooks.Pre); err != nil {
-					return fmt.Errorf("pre hook failed: %w", err)
-				}
-			}
-			if err := doBuild(ctx, build, *opts); err != nil {
-				return fmt.Errorf("build failed: %w\ntarget: %s", err, target)
-			}
-			if !skips.Any(ctx, skips.PostBuildHooks) {
-				if err := runHook(ctx, *opts, build.Env, build.Hooks.Post); err != nil {
-					return fmt.Errorf("post hook failed: %w", err)
-				}
-			}
-			return nil
+			return buildTarget(ctx, build, target)
 		})
 	}
+}
+
+func buildTarget(ctx *context.Context, build config.Build, target string) error {
+	opts, err := buildOptionsForTarget(ctx, build, target)
+	if err != nil {
+		return err
+	}
+
+	if !skips.Any(ctx, skips.PreBuildHooks) {
+		if err := runHook(ctx, *opts, build.Env, build.Hooks.Pre); err != nil {
+			return fmt.Errorf("pre hook failed: %w", err)
+		}
+	}
+	if err := doBuild(ctx, build, *opts); err != nil {
+		return fmt.Errorf("build failed: %w\ntarget: %s", err, target)
+	}
+	if !skips.Any(ctx, skips.PostBuildHooks) {
+		if err := runHook(ctx, *opts, build.Env, build.Hooks.Post); err != nil {
+			return fmt.Errorf("post hook failed: %w", err)
+		}
+	}
+	return nil
 }
 
 func runHook(ctx *context.Context, opts builders.Options, buildEnv []string, hooks config.Hooks) error {

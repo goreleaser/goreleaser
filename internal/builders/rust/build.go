@@ -22,7 +22,12 @@ import (
 //nolint:gochecknoglobals
 var Default = &Builder{}
 
-var _ api.PreparedBuilder = &Builder{}
+// type constraints
+var (
+	_ api.Builder           = &Builder{}
+	_ api.PreparedBuilder   = &Builder{}
+	_ api.ConcurrentBuilder = &Builder{}
+)
 
 //nolint:gochecknoinits
 func init() {
@@ -31,6 +36,9 @@ func init() {
 
 // Builder is golang builder.
 type Builder struct{}
+
+// AllowConcurrentBuilds implements build.ConcurrentBuilder.
+func (b *Builder) AllowConcurrentBuilds() bool { return false }
 
 // Prepare implements build.PreparedBuilder.
 func (b *Builder) Prepare(ctx *context.Context, build config.Build) error {
@@ -137,8 +145,6 @@ func (b *Builder) WithDefaults(build config.Build) (config.Build, error) {
 
 // Build implements build.Builder.
 func (b *Builder) Build(ctx *context.Context, build config.Build, options api.Options) error {
-	dir := filepath.Dir(options.Path)
-
 	t := options.Target.(Target)
 	a := &artifact.Artifact{
 		Type:   artifact.Binary,
@@ -172,9 +178,7 @@ func (b *Builder) Build(ctx *context.Context, build config.Build, options api.Op
 		cargo,
 		build.Command,
 		"--target=" + t.Target,
-		"--out-dir=" + dir,
-		"-Z=unstable-options",
-		"-r",
+		"--release",
 	}
 
 	for _, e := range build.Env {
@@ -207,6 +211,11 @@ func (b *Builder) Build(ctx *context.Context, build config.Build, options api.Op
 	}
 	if s := string(out); s != "" {
 		log.WithField("cmd", command).Info(s)
+	}
+
+	realPath := filepath.Join("target", t.Target, "release", options.Name)
+	if err := gio.Copy(realPath, options.Path); err != nil {
+		return err
 	}
 
 	// TODO: move this to outside builder for both go, rust, and zig
