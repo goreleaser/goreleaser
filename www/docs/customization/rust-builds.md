@@ -10,12 +10,6 @@ Simply set the `builder` to `rust`, for instance:
 
 ```yaml title=".goreleaser.yaml"
 builds:
-  - # Use Rust zigbuild
-    builder: rust
-    targets:
-      - x86_64-apple-darwin
-      - x86_64-pc-windows-gnu
-
   # You can have multiple builds defined as a yaml list
   - #
     # ID of the build.
