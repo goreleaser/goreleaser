@@ -7,6 +7,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/goreleaser/goreleaser/v2/internal/artifact"
 	"github.com/goreleaser/goreleaser/v2/internal/testctx"
 	"github.com/goreleaser/goreleaser/v2/internal/testlib"
 	api "github.com/goreleaser/goreleaser/v2/pkg/build"
@@ -149,6 +150,7 @@ func TestBuild(t *testing.T) {
 		},
 		Builds: []config.Build{
 			{
+				ID:           "default",
 				Dir:          "./testdata/proj/",
 				ModTimestamp: fmt.Sprintf("%d", modTime.Unix()),
 				BuildDetails: config.BuildDetails{
@@ -177,7 +179,20 @@ func TestBuild(t *testing.T) {
 	require.Len(t, bins, 1)
 
 	bin := bins[0]
-	require.Equal(t, filepath.Join(dist, "proj-aarch64-macos", "bin", "proj"), filepath.FromSlash(bin.Path))
+	require.Equal(t, artifact.Artifact{
+		Name:   "proj",
+		Path:   filepath.ToSlash(options.Path),
+		Goos:   "darwin",
+		Goarch: "arm64",
+		Target: "aarch64-macos",
+		Type:   artifact.Binary,
+		Extra: artifact.Extras{
+			artifact.ExtraBinary:  "proj",
+			artifact.ExtraBuilder: "zig",
+			artifact.ExtraExt:     "",
+			artifact.ExtraID:      "default",
+		},
+	}, *bin)
 
 	require.FileExists(t, bin.Path)
 	fi, err := os.Stat(bin.Path)
