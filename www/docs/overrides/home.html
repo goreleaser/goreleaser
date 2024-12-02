@@ -20,6 +20,10 @@
 		display: none;
 	}
 
+	sup {
+		font-size: 0.7em;
+	}
+
 	[data-md-color-scheme="slate"] .tx-container {
 		padding-top: 1rem;
 		background:
@@ -33,6 +37,14 @@
 			);
 	}
 
+	.gradient-text {
+		background: linear-gradient(to right, var(--md-primary-bg-color), var(--md-accent-fg-color));
+		-webkit-background-clip: text;
+		-webkit-text-fill-color: transparent;
+		background-clip: text;
+		color: transparent;
+	}
+
 	.tx-container {
 		padding-top: 1rem;
 		background:
@@ -44,6 +56,15 @@
 				var(--goreleaser-primary-color) 99%,
 				#fff 99%
 			);
+	}
+
+	.tx-container-2 ul {
+		list-style-type: none;
+		display: grid;
+		grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+		gap: 1rem;
+		padding: 0;
+		margin: 0;
 	}
 
 	[data-md-color-scheme="slate"] .tx-container-2 {
@@ -72,6 +93,29 @@
 		font-weight: 600;
 		margin: 0;
 	}
+
+	.feature-grid {
+		gap: 2rem;
+	}
+
+	.feature-grid .twemoji {
+		padding-right: 0.2rem;
+	}
+
+	.feature-grid > div {
+		margin: 0px 10px;
+	}
+
+	.feature-grid > div > p {
+		margin-left: 1.5rem;
+	}
+
+	.feature-grid h3 {
+		padding: 0;
+		margin: 0;
+		padding-top: 0.5rem;
+	}
+
 
 	[data-md-color-scheme="slate"] .tx-intro h1 {
 		color: var(--md-primary-bg-color);
@@ -123,6 +167,10 @@
 		.tx-hero__image img {
 			max-width: 10rem;
 		}
+
+		.hide-small {
+			display: none;
+		}
 	}
 
 	@media screen and (min-width: 70em) {
@@ -144,7 +192,7 @@
 		.tx-hero__image {
 			order: 1;
 			margin-left: auto;
-			margin-top: 3.5rem;
+			margin-top: 2rem;
 		}
 
 		.tx-hero__image img {
@@ -173,11 +221,12 @@
 				<img src="static/logo.png" alt="" draggable="false" />
 			</div>
 			<div class="tx-hero__content">
-				<h1>Release Go projects as fast and easily as possible!</h1>
+				<h1 style="font-size: 3rem;" class="gradient-text">
+					Release engineering, simplified.
+				</h1>
 				<p>
-					GoReleaser is an open-source tool that simplifies the
-					process of releasing your Go projects to multiple platforms,
-					ensuring a consistent and reliable deployment experience.
+					We handle the complexities of of releasing so you can focus
+					in building what really matters: your software.
 				</p>
 				<a
 					href="{{ page.next_page.url | url }}"
@@ -191,78 +240,202 @@
 					title="{{ lang.t('source.link.title') }}"
 					class="md-button"
 				>
-					Get Pro
+					Pro
 				</a>
 			</div>
 		</div>
 	</div>
 </section>
 <section class="tx-container-2">
-	<div class="md-grid md-typeset">
+	<div class="md-grid md-typeset hide-small">
+		<img
+			src="/static/goreleaser.svg"
+			alt="GoReleaser releasing an example project."/>
+	</div>
+	<div class="md-grid md-typeset" style="max-width: 40rem; padding-top: 3rem; margin-bottom: 3rem;">
 		<div class="tx-intro">
-			<h1>Streamline your releases</h1>
-			<p class="subtext">
-				GoReleaser takes the hassle out of releasing your Go projects,
-				allowing you to focus on building great software.
-			</p>
+			<h1>Everything you need to release with confidence</h1>
+			<p class="subtext">GoReleaser does everything you need to create a professional release process for Go, Rust, and Zig projects.</p>
 		</div>
-
-		<div class="mx-auto grid items-center">
-			<img
-				src="/static/goreleaser.svg"
-				alt="GoReleaser running against an example project."
-				style="margin-top: 1.5rem"
-			/>
-			<div class="flex flex-col justify-center">
-				<ul class="grid gap-6">
-					<li>
-						<div class="grid gap-1">
-							<h3>Cross-platform</h3>
-							<p>
-								Build and release your Go projects for and from
-								multiple platforms, including Windows, macOS,
-								and Linux.
-							</p>
-						</div>
-					</li>
-					<li>
-						<div class="grid gap-1">
-							<h3>Distribution & Security</h3>
-							<p>
-								Make your software easy to install and run with
-								Homebrew, Nix, Linux packages, DMGs, MSIs,
-								Docker images, Archives, Snaps, and more. Create
-								SBOMs, sign, and notarize your software.
-							</p>
-						</div>
-					</li>
-					<li>
-						<div class="grid gap-1">
-							<h3>Releases & Announcements</h3>
-							<p>
-								Release to GitHub, Gitlab, or Gitea, with
-								automatically generated changelogs. Announce to
-								X, Slack, Discord, and others.
-							</p>
-						</div>
-					</li>
-				</ul>
+		<div class="items-center feature-grid grid">
+			<div>
+				<h3>
+					<span class="twemoji">
+						{% include ".icons/material/lightning-bolt.svg" %}
+					</span>
+					Fast & Automated
+				</h3>
+				<p>
+				From commit to a release in seconds - automate your entire workflow with a single command.
+				</p>
+			</div>
+			<div>
+				<h3>
+					<span class="twemoji">
+						{% include ".icons/material/code-tags.svg" %}
+					</span>
+					Multiple Languages
+					<sup>
+						<span class="twemoji">
+							{% include ".icons/material/new-box.svg" %}
+						</span>
+					</sup>
+				</h3>
+				<p>
+					First-class support for Go projects, with Rust and Zig coming soon.
+				</p>
+			</div>
+			<div>
+				<h3>
+					<span class="twemoji">
+						{% include ".icons/material/shipping-pallet.svg" %}
+					</span>
+					Cross-Platform
+				</h3>
+				<p>
+				Build and release for multiple platforms and architectures.
+				</p>
+			</div>
+			<div>
+				<h3>
+					<span class="twemoji">
+						{% include ".icons/octicons/package-24.svg" %}
+					</span>
+					Multiple Formats
+				</h3>
+				<p>
+				Package your software exactly how your users want it - from binaries to Docker images and system packages.
+				</p>
+			</div>
+			<div>
+				<h3>
+					<span class="twemoji">
+						{% include ".icons/material/security.svg" %}
+					</span>
+					Security Made Easy
+				</h3>
+				<p>
+				Release with confidence using built-in SBOM generation, code signing, and notarization.
+				</p>
+			</div>
+			<div>
+				<h3>
+					<span class="twemoji">
+						{% include ".icons/simple/rocket.svg" %}
+					</span>
+					GitHub Actions and beyond
+				</h3>
+				<p>
+				Works seamlessly with GitHub Actions, GitLab CI, and other popular CI/CD platforms.
+				</p>
+			</div>
+			<div>
+				<h3>
+					<span class="twemoji">
+						{% include ".icons/material/text.svg" %}
+					</span>
+					What's changed?
+				</h3>
+				<p>
+				Keep users informed with auto-generated, customizable changelogs for every release.
+				</p>
+			</div>
+			<div>
+				<h3>
+					<span class="twemoji">
+						{% include ".icons/octicons/megaphone-24.svg" %}
+					</span>
+					Let your users know
+				</h3>
+				<p>
+				Announce releases to 𝕏, Slack, Discord, and more.
+				</p>
 			</div>
 		</div>
 	</div>
 </section>
-<section class="tx-container-2" style="padding-top: 5rem; padding-bottom: 2rem">
-	<div class="md-grid md-typeset" style="max-width: 40rem">
+<section class="tx-container-2" style="padding-bottom: 2rem">
+	<div class="md-grid md-typeset" style="max-width: 40rem; padding-top: 3rem">
 		<div class="tx-intro">
-			<h1>Releases for everyone</h1>
-			<p class="text-bold">
-				GoReleaser is used by
-				<a href="/users/">
-					industry-leading companies and open source organizations
-				</a>
-				including Google, GitHub, Amazon, Grafana, Microsoft, Hashicorp,
-				Charm, Shopify, Sigstore, Datadog, NATS, NGinx, Uber, and more.
+			<h1>Trusted by Industry Leaders</h1>
+			<p class="subtext">
+				Join <a href="/users/">thousands of developers and companies</a>
+				who rely on GoReleaser for their mission-critical releases.
 			</p>
+			<div class="grid cards">
+				<p class="card">
+				<span class="twemoji">
+					{% include ".icons/fontawesome/brands/google.svg" %}
+				</span>
+				Google
+				</p>
+				<p class="card">
+				<span class="twemoji">
+					{% include ".icons/material/microsoft.svg" %}
+				</span>
+				Microsoft
+				</p>
+				<p class="card">
+				<span class="twemoji">
+					{% include ".icons/fontawesome/brands/aws.svg" %}
+				</span>
+				AWS
+				</p>
+				<p class="card">
+				<span class="twemoji">
+					{% include ".icons/fontawesome/brands/shopify.svg" %}
+				</span>
+				Shopify
+				</p>
+				<p class="card">
+				<span class="twemoji">
+					{% include ".icons/simple/uber.svg" %}
+				</span>
+				Uber
+				</p>
+				<p class="card">
+				<span class="twemoji">
+					{% include ".icons/simple/splunk.svg" %}
+				</span>
+				Splunk
+				</p>
+				<p class="card">
+				<span class="twemoji">
+					{% include ".icons/simple/datadog.svg" %}
+				</span>
+				Datadog
+				</p>
+				<p class="card">
+				<span class="twemoji">
+					{% include ".icons/simple/hashicorp.svg" %}
+				</span>
+				Hashicorp
+				</p>
+				<p class="card">
+				<span class="twemoji">
+					{% include ".icons/fontawesome/brands/github.svg" %}
+				</span>
+				GitHub
+				</p>
+				<p class="card">
+				<span class="twemoji">
+					{% include ".icons/simple/grafana.svg" %}
+				</span>
+				Grafana
+				</p>
+				<p class="card">
+				<span class="twemoji">
+					{% include ".icons/simple/kubernetes.svg" %}
+				</span>
+				Kubernetes
+				</p>
+				<p class="card">
+				<span class="twemoji">
+					{% include ".icons/simple/nginx.svg" %}
+				</span>
+				NGinx
+				</p>
+			</div>
 		</div>
 	</div>
 </section>
