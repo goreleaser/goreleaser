@@ -3,6 +3,7 @@ package zig
 import (
 	"errors"
 	"fmt"
+	"os"
 	"os/exec"
 	"path/filepath"
 	"slices"
@@ -128,9 +129,6 @@ func (b *Builder) WithDefaults(build config.Build) (config.Build, error) {
 
 // Build implements build.Builder.
 func (b *Builder) Build(ctx *context.Context, build config.Build, options api.Options) error {
-	prefix := filepath.Dir(options.Path)
-	options.Path = filepath.Join(prefix, "bin", options.Name)
-
 	t := options.Target.(Target)
 	a := &artifact.Artifact{
 		Type:   artifact.Binary,
@@ -160,6 +158,7 @@ func (b *Builder) Build(ctx *context.Context, build config.Build, options api.Op
 		return err
 	}
 
+	prefix := filepath.Join("zig-out", t.Target)
 	command := []string{
 		zigbin,
 		build.Command,
@@ -197,6 +196,14 @@ func (b *Builder) Build(ctx *context.Context, build config.Build, options api.Op
 	}
 	if s := string(out); s != "" {
 		log.WithField("cmd", command).Info(s)
+	}
+
+	if err := os.MkdirAll(filepath.Dir(options.Path), 0o755); err != nil {
+		return err
+	}
+	realPath := filepath.Join(build.Dir, prefix, "bin", options.Name)
+	if err := gio.Copy(realPath, options.Path); err != nil {
+		return err
 	}
 
 	// TODO: move this to outside builder for both go and zig
