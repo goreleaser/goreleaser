@@ -1,4 +1,5 @@
 aarch64-apple-darwin
+aarch64-pc-windows-gnullvm
 aarch64-pc-windows-msvc
 aarch64-unknown-linux-gnu
 aarch64-unknown-linux-musl
