@@ -213,7 +213,7 @@ func TestRunFullPipeFail(t *testing.T) {
 		},
 	}
 	ctx := testctx.NewWithCfg(config, testctx.WithCurrentTag("2.4.5"))
-	require.EqualError(t, Pipe{}.Run(ctx), errFailedBuild.Error())
+	require.ErrorIs(t, Pipe{}.Run(ctx), errFailedBuild)
 	require.Empty(t, ctx.Artifacts.List())
 	require.FileExists(t, pre)
 }
