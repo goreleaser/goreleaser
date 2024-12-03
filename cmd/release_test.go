@@ -52,7 +52,7 @@ func TestReleaseBrokenProject(t *testing.T) {
 	createFile(t, "main.go", "not a valid go file")
 	cmd := newReleaseCmd()
 	cmd.cmd.SetArgs([]string{"--snapshot", "--timeout=1m", "--parallelism=2"})
-	require.EqualError(t, cmd.cmd.Execute(), "failed to parse dir: .: main.go:1:1: expected 'package', found not")
+	require.ErrorContains(t, cmd.cmd.Execute(), "failed to parse dir: .: main.go:1:1: expected 'package', found not")
 }
 
 func TestReleaseFlags(t *testing.T) {

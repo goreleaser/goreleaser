@@ -1,9 +1,11 @@
-package zig
+package rust
 
 import (
 	"fmt"
 	"os"
+	"os/exec"
 	"path/filepath"
+	"strings"
 	"testing"
 	"time"
 
@@ -15,51 +17,12 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func TestDependencies(t *testing.T) {
-	require.NotEmpty(t, Default.Dependencies())
+func TestAllowConcurrentBuilds(t *testing.T) {
+	require.False(t, Default.AllowConcurrentBuilds())
 }
 
-func TestParse(t *testing.T) {
-	for target, dst := range map[string]Target{
-		"x86_64-linux": {
-			Target: "x86_64-linux",
-			Os:     "linux",
-			Arch:   "amd64",
-		},
-		"x86_64-linux-gnu": {
-			Target: "x86_64-linux-gnu",
-			Os:     "linux",
-			Arch:   "amd64",
-			Abi:    "gnu",
-		},
-		"aarch64-linux-gnu": {
-			Target: "aarch64-linux-gnu",
-			Os:     "linux",
-			Arch:   "arm64",
-			Abi:    "gnu",
-		},
-		"aarch64-linux": {
-			Target: "aarch64-linux",
-			Os:     "linux",
-			Arch:   "arm64",
-		},
-		"aarch64-macos": {
-			Target: "aarch64-macos",
-			Os:     "darwin",
-			Arch:   "arm64",
-		},
-	} {
-		t.Run(target, func(t *testing.T) {
-			got, err := Default.Parse(target)
-			require.NoError(t, err)
-			require.IsType(t, Target{}, got)
-			require.Equal(t, dst, got.(Target))
-		})
-	}
-	t.Run("invalid", func(t *testing.T) {
-		_, err := Default.Parse("linux")
-		require.Error(t, err)
-	})
+func TestDependencies(t *testing.T) {
+	require.NotEmpty(t, Default.Dependencies())
 }
 
 func TestWithDefaults(t *testing.T) {
@@ -67,12 +30,12 @@ func TestWithDefaults(t *testing.T) {
 		build, err := Default.WithDefaults(config.Build{})
 		require.NoError(t, err)
 		require.Equal(t, config.Build{
-			Tool:    "zig",
-			Command: "build",
+			Tool:    "cargo",
+			Command: "zigbuild",
 			Dir:     ".",
 			Targets: defaultTargets(),
 			BuildDetails: config.BuildDetails{
-				Flags: []string{"-Doptimize=ReleaseSafe"},
+				Flags: []string{"--release"},
 			},
 		}, build)
 	})
@@ -146,14 +109,25 @@ func TestWithDefaults(t *testing.T) {
 }
 
 func TestBuild(t *testing.T) {
-	testlib.CheckPath(t, "zig")
+	testlib.CheckPath(t, "rustup")
+	testlib.CheckPath(t, "cargo")
+
+	for _, s := range []string{
+		"rustup default stable",
+		"cargo install --locked cargo-zigbuild",
+	} {
+		args := strings.Fields(s)
+		_, err := exec.Command(args[0], args[1:]...).CombinedOutput()
+		require.NoError(t, err)
+	}
+
 	modTime := time.Now().AddDate(-1, 0, 0).Round(1 * time.Second).UTC()
 	dist := t.TempDir()
 	ctx := testctx.NewWithCfg(config.Project{
 		Dist:        dist,
 		ProjectName: "proj",
 		Env: []string{
-			"OPTIMIZE_FOR=ReleaseSmall",
+			`TEST_E=1`,
 		},
 		Builds: []config.Build{
 			{
@@ -161,9 +135,15 @@ func TestBuild(t *testing.T) {
 				Dir:          "./testdata/proj/",
 				ModTimestamp: fmt.Sprintf("%d", modTime.Unix()),
 				BuildDetails: config.BuildDetails{
-					Flags: []string{"-Doptimize={{.Env.OPTIM}}"},
+					Flags: []string{"--locked", "--release"},
 					Env: []string{
-						"OPTIM={{.Env.OPTIMIZE_FOR}}",
+						`TEST_T={{- if eq .Os "windows" -}}
+							w
+						{{- else if eq .Os "darwin" -}}
+							d
+						{{- else if eq .Os "linux" -}}
+							l
+						{{- end -}}`,
 					},
 				},
 			},
@@ -171,13 +151,14 @@ func TestBuild(t *testing.T) {
 	})
 	build, err := Default.WithDefaults(ctx.Config.Builds[0])
 	require.NoError(t, err)
+	require.NoError(t, Default.Prepare(ctx, build))
 
 	options := api.Options{
 		Name:   "proj",
-		Path:   filepath.Join(dist, "proj-aarch64-macos", "proj"),
+		Path:   filepath.Join(dist, "proj-aarch64-apple-darwin", "proj"),
 		Target: nil,
 	}
-	options.Target, err = Default.Parse("aarch64-macos")
+	options.Target, err = Default.Parse("aarch64-apple-darwin")
 	require.NoError(t, err)
 
 	require.NoError(t, Default.Build(ctx, build, options))
@@ -191,11 +172,11 @@ func TestBuild(t *testing.T) {
 		Path:   filepath.ToSlash(options.Path),
 		Goos:   "darwin",
 		Goarch: "arm64",
-		Target: "aarch64-macos",
+		Target: "aarch64-apple-darwin",
 		Type:   artifact.Binary,
 		Extra: artifact.Extras{
 			artifact.ExtraBinary:  "proj",
-			artifact.ExtraBuilder: "zig",
+			artifact.ExtraBuilder: "rust",
 			artifact.ExtraExt:     "",
 			artifact.ExtraID:      "default",
 		},
@@ -205,4 +186,34 @@ func TestBuild(t *testing.T) {
 	fi, err := os.Stat(bin.Path)
 	require.NoError(t, err)
 	require.True(t, modTime.Equal(fi.ModTime()), "inconsistent mod times found when specifying ModTimestamp")
+}
+
+func TestParse(t *testing.T) {
+	t.Run("invalid", func(t *testing.T) {
+		_, err := Default.Parse("a-b")
+		require.Error(t, err)
+	})
+
+	t.Run("triplet", func(t *testing.T) {
+		target, err := Default.Parse("aarch64-apple-darwin")
+		require.NoError(t, err)
+		require.Equal(t, Target{
+			Target: "aarch64-apple-darwin",
+			Os:     "darwin",
+			Arch:   "arm64",
+			Vendor: "apple",
+		}, target)
+	})
+
+	t.Run("quadruplet", func(t *testing.T) {
+		target, err := Default.Parse("aarch64-pc-windows-gnullvm")
+		require.NoError(t, err)
+		require.Equal(t, Target{
+			Target:      "aarch64-pc-windows-gnullvm",
+			Os:          "windows",
+			Arch:        "arm64",
+			Vendor:      "pc",
+			Environment: "gnullvm",
+		}, target)
+	})
 }

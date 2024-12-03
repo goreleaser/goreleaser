@@ -226,6 +226,10 @@ brews:
     dependencies:
       - name: go
         type: optional
+      - name: rustup
+        type: optional
+      - name: zig
+        type: optional
       - name: git
     conflicts:
       - goreleaser-pro
@@ -345,6 +349,8 @@ nfpms:
       - git
     recommends:
       - golang
+      - rustup
+      - zig
     deb:
       lintian_overrides:
         - statically-linked-binary

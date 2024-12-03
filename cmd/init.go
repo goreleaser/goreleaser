@@ -39,6 +39,11 @@ func newInitCmd() *initCmd {
 				log.Info("project contains a 'build.zig', using default zig configuration")
 				return
 			}
+			if _, err := os.Stat("Cargo.toml"); err == nil {
+				root.lang = "rust"
+				log.Info("project contains a 'Cargo.toml', using default rust configuration")
+				return
+			}
 		},
 		RunE: func(_ *cobra.Command, _ []string) error {
 			if _, err := os.Stat(root.config); err == nil {
@@ -56,6 +61,8 @@ func newInitCmd() *initCmd {
 			switch root.lang {
 			case "zig":
 				example = static.ZigExampleConfig
+			case "rust":
+				example = static.RustExampleConfig
 			case "go":
 				example = static.GoExampleConfig
 			default:
@@ -88,7 +95,7 @@ func newInitCmd() *initCmd {
 	_ = cmd.RegisterFlagCompletionFunc(
 		"language",
 		cobra.FixedCompletions(
-			[]string{"go", "zig"},
+			[]string{"go", "rust", "zig"},
 			cobra.ShellCompDirectiveDefault,
 		),
 	)

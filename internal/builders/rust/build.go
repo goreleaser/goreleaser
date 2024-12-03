@@ -1,4 +1,4 @@
-package zig
+package rust
 
 import (
 	"errors"
@@ -25,13 +25,15 @@ var Default = &Builder{}
 
 // type constraints
 var (
-	_ api.Builder          = &Builder{}
-	_ api.DependingBuilder = &Builder{}
+	_ api.Builder           = &Builder{}
+	_ api.PreparedBuilder   = &Builder{}
+	_ api.ConcurrentBuilder = &Builder{}
+	_ api.DependingBuilder  = &Builder{}
 )
 
 //nolint:gochecknoinits
 func init() {
-	api.Register("zig", Default)
+	api.Register("rust", Default)
 }
 
 // Builder is golang builder.
@@ -39,24 +41,39 @@ type Builder struct{}
 
 // Dependencies implements build.DependingBuilder.
 func (b *Builder) Dependencies() []string {
-	return []string{"zig"}
+	return []string{"cargo", "rustup", "cargo-zigbuild", "zig"}
+}
+
+// AllowConcurrentBuilds implements build.ConcurrentBuilder.
+func (b *Builder) AllowConcurrentBuilds() bool { return false }
+
+// Prepare implements build.PreparedBuilder.
+func (b *Builder) Prepare(ctx *context.Context, build config.Build) error {
+	for _, target := range build.Targets {
+		out, err := exec.CommandContext(ctx, "rustup", "target", "add", target).CombinedOutput()
+		if err != nil {
+			return fmt.Errorf("could not add target %s: %w: %s", target, err, string(out))
+		}
+	}
+	return nil
 }
 
 // Parse implements build.Builder.
 func (b *Builder) Parse(target string) (api.Target, error) {
 	parts := strings.Split(target, "-")
-	if len(parts) < 2 {
+	if len(parts) < 3 {
 		return nil, fmt.Errorf("%s is not a valid build target", target)
 	}
 
 	t := Target{
 		Target: target,
-		Os:     convertToGoos(parts[1]),
+		Os:     parts[2],
+		Vendor: parts[1],
 		Arch:   convertToGoarch(parts[0]),
 	}
 
-	if len(parts) > 2 {
-		t.Abi = parts[2]
+	if len(parts) > 3 {
+		t.Environment = parts[3]
 	}
 
 	return t, nil
@@ -64,34 +81,34 @@ func (b *Builder) Parse(target string) (api.Target, error) {
 
 // WithDefaults implements build.Builder.
 func (b *Builder) WithDefaults(build config.Build) (config.Build, error) {
-	log.Warn("you are using the experimental Zig builder")
+	log.Warn("you are using the experimental Rust builder")
 
 	if len(build.Targets) == 0 {
 		build.Targets = defaultTargets()
 	}
 
 	if build.Tool == "" {
-		build.Tool = "zig"
+		build.Tool = "cargo"
 	}
 
 	if build.Command == "" {
-		build.Command = "build"
+		build.Command = "zigbuild"
+	}
+
+	if len(build.Flags) == 0 {
+		build.Flags = []string{"--release"}
 	}
 
 	if build.Dir == "" {
 		build.Dir = "."
 	}
 
-	if len(build.Flags) == 0 {
-		build.Flags = []string{"-Doptimize=ReleaseSafe"}
-	}
-
 	if build.Main != "" {
-		return build, errors.New("main is not used for zig")
+		return build, errors.New("main is not used for rust")
 	}
 
 	if len(build.Ldflags) > 0 {
-		return build, errors.New("ldflags is not used for zig")
+		return build, errors.New("ldflags is not used for rust")
 	}
 
 	if len(slices.Concat(
@@ -105,36 +122,31 @@ func (b *Builder) WithDefaults(build config.Build) (config.Build, error) {
 		build.Goppc64,
 		build.Goriscv64,
 	)) > 0 {
-		return build, errors.New("all go* fields are not used for zig, set targets instead")
+		return build, errors.New("all go* fields are not used for rust, set targets instead")
 	}
 
 	if len(build.Ignore) > 0 {
-		return build, errors.New("ignore is not used for zig, set targets instead")
+		return build, errors.New("ignore is not used for rust, set targets instead")
 	}
 
 	if build.Buildmode != "" {
-		return build, errors.New("buildmode is not used for zig")
+		return build, errors.New("buildmode is not used for rust")
 	}
 
 	if len(build.Tags) > 0 {
-		return build, errors.New("tags is not used for zig")
+		return build, errors.New("tags is not used for rust")
 	}
 
 	if len(build.Asmflags) > 0 {
-		return build, errors.New("asmflags is not used for zig")
+		return build, errors.New("asmflags is not used for rust")
 	}
 
 	if len(build.BuildDetailsOverrides) > 0 {
-		return build, errors.New("overrides is not used for zig")
+		return build, errors.New("overrides is not used for rust")
 	}
 
 	for _, t := range build.Targets {
-		switch checkTarget(t) {
-		case targetValid:
-			// lfg
-		case targetBroken:
-			log.Warnf("target might not be supported: %s", t)
-		case targetInvalid:
+		if !isValid(t) {
 			return build, fmt.Errorf("invalid target: %s", t)
 		}
 	}
@@ -144,19 +156,30 @@ func (b *Builder) WithDefaults(build config.Build) (config.Build, error) {
 
 // Build implements build.Builder.
 func (b *Builder) Build(ctx *context.Context, build config.Build, options api.Options) error {
+	cargot, err := parseCargo(filepath.Join(build.Dir, "Cargo.toml"))
+	if err != nil {
+		return err
+	}
+	// TODO: we should probably parse Cargo.toml and handle this better.
+	// Go also has the possibility to build multiple binaries with a single
+	// command, and we currently don't support that either.
+	// We should build something generic enough for both cases, I think.
+	if len(cargot.Workspace.Members) > 0 {
+		return fmt.Errorf("goreleaser does not support cargo workspaces, please set the build 'dir' to one of the workspaces you want to build, e.g. 'dir: %q'", cargot.Workspace.Members[0])
+	}
 	t := options.Target.(Target)
 	a := &artifact.Artifact{
 		Type:   artifact.Binary,
 		Path:   options.Path,
 		Name:   options.Name,
-		Goos:   convertToGoos(t.Os),
+		Goos:   t.Os,
 		Goarch: convertToGoarch(t.Arch),
 		Target: t.Target,
 		Extra: map[string]interface{}{
 			artifact.ExtraBinary:  strings.TrimSuffix(filepath.Base(options.Path), options.Ext),
 			artifact.ExtraExt:     options.Ext,
 			artifact.ExtraID:      build.ID,
-			artifact.ExtraBuilder: "zig",
+			artifact.ExtraBuilder: "rust",
 		},
 	}
 
@@ -168,17 +191,15 @@ func (b *Builder) Build(ctx *context.Context, build config.Build, options api.Op
 		WithEnvS(env).
 		WithArtifact(a)
 
-	zigbin, err := tpl.Apply(build.Tool)
+	cargo, err := tpl.Apply(build.Tool)
 	if err != nil {
 		return err
 	}
 
-	prefix := filepath.Join("zig-out", t.Target)
 	command := []string{
-		zigbin,
+		cargo,
 		build.Command,
-		"-Dtarget=" + t.Target,
-		"-p", prefix,
+		"--target=" + t.Target,
 	}
 
 	for _, e := range build.Env {
@@ -216,12 +237,12 @@ func (b *Builder) Build(ctx *context.Context, build config.Build, options api.Op
 	if err := os.MkdirAll(filepath.Dir(options.Path), 0o755); err != nil {
 		return err
 	}
-	realPath := filepath.Join(build.Dir, prefix, "bin", options.Name)
+	realPath := filepath.Join(build.Dir, "target", t.Target, "release", options.Name)
 	if err := gio.Copy(realPath, options.Path); err != nil {
 		return err
 	}
 
-	// TODO: move this to outside builder for both go and zig
+	// TODO: move this to outside builder for both go, rust, and zig
 	modTimestamp, err := tpl.Apply(build.ModTimestamp)
 	if err != nil {
 		return err

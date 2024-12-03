@@ -30,6 +30,12 @@ import (
 //nolint:gochecknoglobals
 var Default = &Builder{}
 
+// type constraints
+var (
+	_ api.Builder          = &Builder{}
+	_ api.DependingBuilder = &Builder{}
+)
+
 //nolint:gochecknoinits
 func init() {
 	api.Register("go", Default)
@@ -37,6 +43,11 @@ func init() {
 
 // Builder is golang builder.
 type Builder struct{}
+
+// Dependencies implements build.DependingBuilder.
+func (b *Builder) Dependencies() []string {
+	return []string{"go"}
+}
 
 // Parse implements build.Builder.
 func (b *Builder) Parse(target string) (api.Target, error) {
@@ -80,8 +91,8 @@ func (b *Builder) Parse(target string) (api.Target, error) {
 
 // WithDefaults sets the defaults for a golang build and returns it.
 func (*Builder) WithDefaults(build config.Build) (config.Build, error) {
-	if build.GoBinary == "" {
-		build.GoBinary = "go"
+	if build.Tool == "" {
+		build.Tool = "go"
 	}
 	if build.Command == "" {
 		build.Command = "build"
@@ -360,7 +371,7 @@ func buildGoBuildLine(
 	artifact *artifact.Artifact,
 	env []string,
 ) ([]string, error) {
-	gobin, err := tmpl.New(ctx).WithBuildOptions(options).Apply(build.GoBinary)
+	gobin, err := tmpl.New(ctx).WithBuildOptions(options).Apply(build.Tool)
 	if err != nil {
 		return nil, err
 	}

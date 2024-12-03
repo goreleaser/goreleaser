@@ -10,7 +10,7 @@ import (
 
 func TestAllBuildTargets(t *testing.T) {
 	build := config.Build{
-		GoBinary: "go",
+		Tool: "go",
 		Goos: []string{
 			"linux",
 			"darwin",
@@ -267,10 +267,10 @@ func TestGoosGoarchCombos(t *testing.T) {
 func TestList(t *testing.T) {
 	t.Run("success", func(t *testing.T) {
 		targets, err := List(config.Build{
-			Goos:     []string{"linux"},
-			Goarch:   []string{"amd64"},
-			Goamd64:  []string{"v2"},
-			GoBinary: "go",
+			Goos:    []string{"linux"},
+			Goarch:  []string{"amd64"},
+			Goamd64: []string{"v2"},
+			Tool:    "go",
 		})
 		require.NoError(t, err)
 		require.Equal(t, []string{"linux_amd64_v2"}, targets)
@@ -278,11 +278,11 @@ func TestList(t *testing.T) {
 
 	t.Run("success with dir", func(t *testing.T) {
 		targets, err := List(config.Build{
-			Goos:     []string{"linux"},
-			Goarch:   []string{"amd64"},
-			Goamd64:  []string{"v2"},
-			GoBinary: "go",
-			Dir:      "./testdata",
+			Goos:    []string{"linux"},
+			Goarch:  []string{"amd64"},
+			Goamd64: []string{"v2"},
+			Tool:    "go",
+			Dir:     "./testdata",
 		})
 		require.NoError(t, err)
 		require.Equal(t, []string{"linux_amd64_v2"}, targets)
