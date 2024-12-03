@@ -37,9 +37,9 @@ func TestBuildDependencies(t *testing.T) {
 		"cargo-zigbuild",
 		"zig",
 		"zig", // dedup happens later on
-	}, build{}.Dependencies(ctx))
+	}, builds{}.Dependencies(ctx))
 }
 
 func TestBuildStringer(t *testing.T) {
-	require.NotEmpty(t, build{}.String())
+	require.NotEmpty(t, builds{}.String())
 }
