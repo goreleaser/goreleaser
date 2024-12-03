@@ -35,7 +35,7 @@ additional features:
       [`goreleaser changelog`](cmd/goreleaser_changelog.md);
 - [x] Continuously release [nightly builds](customization/nightlies.md);
 - [x] Import pre-built binaries with the
-      [`prebuilt` builder](customization/builds.md#import-pre-built-binaries);
+      [`prebuilt` builder](customization/prebuilt.md);
 - [x] Rootless build [Docker images](customization/docker.md#using-podman) and
       [manifests](customization/docker_manifest.md#using-podman) with
       [Podman](https://podman.io);
