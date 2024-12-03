@@ -106,7 +106,7 @@ func (b *Builder) WithDefaults(build config.Build) (config.Build, error) {
 	}
 
 	if len(build.Asmflags) > 0 {
-		return build, errors.New("asmtags is not used for zig")
+		return build, errors.New("asmflags is not used for zig")
 	}
 
 	if len(build.BuildDetailsOverrides) > 0 {
