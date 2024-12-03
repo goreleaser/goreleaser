@@ -112,9 +112,9 @@ func TestParse(t *testing.T) {
 
 func TestWithDefaults(t *testing.T) {
 	for name, testcase := range map[string]struct {
-		build    config.Build
-		targets  []string
-		goBinary string
+		build   config.Build
+		targets []string
+		tool    string
 	}{
 		"full": {
 			build: config.Build{
@@ -140,7 +140,7 @@ func TestWithDefaults(t *testing.T) {
 					"v2",
 					"v3",
 				},
-				GoBinary: "go1.2.3",
+				Tool: "go1.2.3",
 			},
 			targets: []string{
 				"linux_amd64_v2",
@@ -153,7 +153,7 @@ func TestWithDefaults(t *testing.T) {
 				"windows_arm_6",
 				"linux_arm_6",
 			},
-			goBinary: "go1.2.3",
+			tool: "go1.2.3",
 		},
 		"empty": {
 			build: config.Build{
@@ -170,7 +170,7 @@ func TestWithDefaults(t *testing.T) {
 				"windows_arm64_v8.0",
 				"windows_386_sse2",
 			},
-			goBinary: "go",
+			tool: "go",
 		},
 		"custom targets": {
 			build: config.Build{
@@ -185,7 +185,7 @@ func TestWithDefaults(t *testing.T) {
 				"linux_386_sse2",
 				"darwin_amd64_v2",
 			},
-			goBinary: "go",
+			tool: "go",
 		},
 		"custom targets no amd64": {
 			build: config.Build{
@@ -200,7 +200,7 @@ func TestWithDefaults(t *testing.T) {
 				"linux_386_sse2",
 				"darwin_amd64_v1",
 			},
-			goBinary: "go",
+			tool: "go",
 		},
 		"custom targets no arm": {
 			build: config.Build{
@@ -208,8 +208,8 @@ func TestWithDefaults(t *testing.T) {
 				Binary:  "foo",
 				Targets: []string{"linux_arm"},
 			},
-			targets:  []string{"linux_arm_6"},
-			goBinary: "go",
+			targets: []string{"linux_arm_6"},
+			tool:    "go",
 		},
 		"custom targets no arm64": {
 			build: config.Build{
@@ -217,8 +217,8 @@ func TestWithDefaults(t *testing.T) {
 				Binary:  "foo",
 				Targets: []string{"linux_arm64"},
 			},
-			targets:  []string{"linux_arm64_v8.0"},
-			goBinary: "go",
+			targets: []string{"linux_arm64_v8.0"},
+			tool:    "go",
 		},
 		"custom targets no ppc64": {
 			build: config.Build{
@@ -226,8 +226,8 @@ func TestWithDefaults(t *testing.T) {
 				Binary:  "foo",
 				Targets: []string{"linux_ppc64le", "linux_ppc64"},
 			},
-			targets:  []string{"linux_ppc64le_power8", "linux_ppc64_power8"},
-			goBinary: "go",
+			targets: []string{"linux_ppc64le_power8", "linux_ppc64_power8"},
+			tool:    "go",
 		},
 		"custom targets no riscv64": {
 			build: config.Build{
@@ -235,8 +235,8 @@ func TestWithDefaults(t *testing.T) {
 				Binary:  "foo",
 				Targets: []string{"linux_riscv64"},
 			},
-			targets:  []string{"linux_riscv64_rva20u64"},
-			goBinary: "go",
+			targets: []string{"linux_riscv64_rva20u64"},
+			tool:    "go",
 		},
 		"custom targets no mips": {
 			build: config.Build{
@@ -244,8 +244,8 @@ func TestWithDefaults(t *testing.T) {
 				Binary:  "foo",
 				Targets: []string{"linux_mips"},
 			},
-			targets:  []string{"linux_mips_hardfloat"},
-			goBinary: "go",
+			targets: []string{"linux_mips_hardfloat"},
+			tool:    "go",
 		},
 		"custom targets no mipsle": {
 			build: config.Build{
@@ -253,8 +253,8 @@ func TestWithDefaults(t *testing.T) {
 				Binary:  "foo",
 				Targets: []string{"linux_mipsle"},
 			},
-			targets:  []string{"linux_mipsle_hardfloat"},
-			goBinary: "go",
+			targets: []string{"linux_mipsle_hardfloat"},
+			tool:    "go",
 		},
 		"custom targets no mips64": {
 			build: config.Build{
@@ -262,8 +262,8 @@ func TestWithDefaults(t *testing.T) {
 				Binary:  "foo",
 				Targets: []string{"linux_mips64"},
 			},
-			targets:  []string{"linux_mips64_hardfloat"},
-			goBinary: "go",
+			targets: []string{"linux_mips64_hardfloat"},
+			tool:    "go",
 		},
 		"custom targets no mips64le": {
 			build: config.Build{
@@ -271,8 +271,8 @@ func TestWithDefaults(t *testing.T) {
 				Binary:  "foo",
 				Targets: []string{"linux_mips64le"},
 			},
-			targets:  []string{"linux_mips64le_hardfloat"},
-			goBinary: "go",
+			targets: []string{"linux_mips64le_hardfloat"},
+			tool:    "go",
 		},
 		"empty with custom dir": {
 			build: config.Build{
@@ -290,7 +290,7 @@ func TestWithDefaults(t *testing.T) {
 				"windows_arm64_v8.0",
 				"windows_386_sse2",
 			},
-			goBinary: "go",
+			tool: "go",
 		},
 		"empty with custom dir that doesn't exist": {
 			build: config.Build{
@@ -308,7 +308,7 @@ func TestWithDefaults(t *testing.T) {
 				"windows_arm64_v8.0",
 				"windows_386_sse2",
 			},
-			goBinary: "go",
+			tool: "go",
 		},
 		"go first class targets": {
 			build: config.Build{
@@ -316,8 +316,8 @@ func TestWithDefaults(t *testing.T) {
 				Binary:  "foo",
 				Targets: []string{goStableFirstClassTargetsName},
 			},
-			targets:  go118FirstClassAdjustedTargets,
-			goBinary: "go",
+			targets: go118FirstClassAdjustedTargets,
+			tool:    "go",
 		},
 		"go 1.18 first class targets": {
 			build: config.Build{
@@ -325,8 +325,8 @@ func TestWithDefaults(t *testing.T) {
 				Binary:  "foo",
 				Targets: []string{go118FirstClassTargetsName},
 			},
-			targets:  go118FirstClassAdjustedTargets,
-			goBinary: "go",
+			targets: go118FirstClassAdjustedTargets,
+			tool:    "go",
 		},
 		"go 1.18 first class targets plus custom": {
 			build: config.Build{
@@ -334,8 +334,8 @@ func TestWithDefaults(t *testing.T) {
 				Binary:  "foo",
 				Targets: []string{"linux_amd64_v1", go118FirstClassTargetsName, "darwin_amd64_v2"},
 			},
-			targets:  append(go118FirstClassAdjustedTargets, "darwin_amd64_v2"),
-			goBinary: "go",
+			targets: append(go118FirstClassAdjustedTargets, "darwin_amd64_v2"),
+			tool:    "go",
 		},
 		"repeating targets": {
 			build: config.Build{
@@ -343,13 +343,13 @@ func TestWithDefaults(t *testing.T) {
 				Binary:  "foo",
 				Targets: []string{go118FirstClassTargetsName, go118FirstClassTargetsName, goStableFirstClassTargetsName},
 			},
-			targets:  go118FirstClassAdjustedTargets,
-			goBinary: "go",
+			targets: go118FirstClassAdjustedTargets,
+			tool:    "go",
 		},
 	} {
 		t.Run(name, func(t *testing.T) {
-			if testcase.build.GoBinary != "" && testcase.build.GoBinary != "go" {
-				createFakeGoBinaryWithVersion(t, testcase.build.GoBinary, "go1.18")
+			if testcase.build.Tool != "" && testcase.build.Tool != "go" {
+				createFakeGoBinaryWithVersion(t, testcase.build.Tool, "go1.18")
 			}
 			ctx := testctx.NewWithCfg(config.Project{
 				Builds: []config.Build{
@@ -359,7 +359,7 @@ func TestWithDefaults(t *testing.T) {
 			build, err := Default.WithDefaults(ctx.Config.Builds[0])
 			require.NoError(t, err)
 			require.ElementsMatch(t, build.Targets, testcase.targets)
-			require.EqualValues(t, testcase.goBinary, build.GoBinary)
+			require.EqualValues(t, testcase.tool, build.Tool)
 		})
 	}
 }
@@ -471,8 +471,8 @@ func TestBuild(t *testing.T) {
 					"linux_mips_softfloat",
 					"linux_mips64le_softfloat",
 				},
-				GoBinary: "{{ .Env.GOBIN }}",
-				Command:  "build",
+				Tool:    "{{ .Env.GOBIN }}",
+				Command: "build",
 				BuildDetails: config.BuildDetails{
 					Env: []string{
 						"GO111MODULE=off",
@@ -671,7 +671,7 @@ func TestBuildInvalidEnv(t *testing.T) {
 				Targets: []string{
 					runtimeTarget,
 				},
-				GoBinary: "go",
+				Tool: "go",
 				BuildDetails: config.BuildDetails{
 					Env: []string{"GO111MODULE={{ .Nope }}"},
 				},
@@ -703,8 +703,8 @@ func TestBuildCodeInSubdir(t *testing.T) {
 				Targets: []string{
 					runtimeTarget,
 				},
-				GoBinary: "go",
-				Command:  "build",
+				Tool:    "go",
+				Command: "build",
 				BuildDetails: config.BuildDetails{
 					Env: []string{"GO111MODULE=off"},
 				},
@@ -728,11 +728,11 @@ func TestBuildWithDotGoDir(t *testing.T) {
 	ctx := testctx.NewWithCfg(config.Project{
 		Builds: []config.Build{
 			{
-				ID:       "foo",
-				Binary:   "foo",
-				Targets:  []string{runtimeTarget},
-				GoBinary: "go",
-				Command:  "build",
+				ID:      "foo",
+				Binary:  "foo",
+				Targets: []string{runtimeTarget},
+				Tool:    "go",
+				Command: "build",
 				BuildDetails: config.BuildDetails{
 					Env: []string{"GO111MODULE=off"},
 				},
@@ -761,8 +761,8 @@ func TestBuildFailed(t *testing.T) {
 				Targets: []string{
 					runtimeTarget,
 				},
-				GoBinary: "go",
-				Command:  "build",
+				Tool:    "go",
+				Command: "build",
 			},
 		},
 	}, testctx.WithCurrentTag("5.6.7"))
@@ -973,8 +973,8 @@ import _ "github.com/goreleaser/goreleaser"
 				Targets: []string{
 					runtimeTarget,
 				},
-				GoBinary: "go",
-				Command:  "build",
+				Tool:    "go",
+				Command: "build",
 			},
 		},
 	})
@@ -1002,8 +1002,8 @@ func TestRunPipeWithMainFuncNotInMainGoFile(t *testing.T) {
 				BuildDetails: config.BuildDetails{
 					Env: []string{"GO111MODULE=off"},
 				},
-				GoBinary: "go",
-				Command:  "build",
+				Tool:    "go",
+				Command: "build",
 			},
 		},
 	}, testctx.WithCurrentTag("5.6.7"))
@@ -1158,7 +1158,7 @@ func TestBuildModTimestamp(t *testing.T) {
 					Flags:    []string{"{{.Env.GO_FLAGS}}"},
 				},
 				ModTimestamp: fmt.Sprintf("%d", modTime.Unix()),
-				GoBinary:     "go",
+				Tool:         "go",
 				Command:      "build",
 			}},
 		},
@@ -1240,9 +1240,9 @@ func TestBuildGoBuildLine(t *testing.T) {
 				Tags:     []string{"tag1", "tag2"},
 				Ldflags:  []string{"ldflag1", "ldflag2"},
 			},
-			Binary:   "foo",
-			GoBinary: "{{ .Env.GOBIN }}",
-			Command:  "build",
+			Binary:  "foo",
+			Tool:    "{{ .Env.GOBIN }}",
+			Command: "build",
 		}, []string{
 			"go", "build",
 			"-flag1", "-flag2",
@@ -1277,9 +1277,9 @@ func TestBuildGoBuildLine(t *testing.T) {
 					},
 				},
 			},
-			GoBinary: "go",
-			Binary:   "foo",
-			Command:  "build",
+			Tool:    "go",
+			Binary:  "foo",
+			Command: "build",
 		}, []string{
 			"go", "build",
 			"-flag3",
@@ -1293,19 +1293,19 @@ func TestBuildGoBuildLine(t *testing.T) {
 
 	t.Run("simple", func(t *testing.T) {
 		requireEqualCmd(t, config.Build{
-			Main:     ".",
-			GoBinary: "go",
-			Command:  "build",
-			Binary:   "foo",
+			Main:    ".",
+			Tool:    "go",
+			Command: "build",
+			Binary:  "foo",
 		}, strings.Fields("go build -o foo ."))
 	})
 
 	t.Run("test", func(t *testing.T) {
 		requireEqualCmd(t, config.Build{
-			Main:     ".",
-			GoBinary: "go",
-			Command:  "test",
-			Binary:   "foo.test",
+			Main:    ".",
+			Tool:    "go",
+			Command: "test",
+			Binary:  "foo.test",
 			BuildDetails: config.BuildDetails{
 				Flags: []string{"-c"},
 			},
@@ -1314,10 +1314,10 @@ func TestBuildGoBuildLine(t *testing.T) {
 
 	t.Run("build test always as c flags", func(t *testing.T) {
 		requireEqualCmd(t, config.Build{
-			Main:     ".",
-			GoBinary: "go",
-			Command:  "test",
-			Binary:   "foo.test",
+			Main:    ".",
+			Tool:    "go",
+			Command: "test",
+			Binary:  "foo.test",
 		}, strings.Fields("go test -c -o foo.test ."))
 	})
 
@@ -1327,9 +1327,9 @@ func TestBuildGoBuildLine(t *testing.T) {
 			BuildDetails: config.BuildDetails{
 				Ldflags: []string{"-s -w -X main.version={{.Version}} -X main.commit={{.Commit}} -X main.builtBy=goreleaser"},
 			},
-			GoBinary: "go",
-			Command:  "build",
-			Binary:   "foo",
+			Tool:    "go",
+			Command: "build",
+			Binary:  "foo",
 		}, []string{
 			"go", "build",
 			"-ldflags=-s -w -X main.version=1.2.3 -X main.commit=aaa -X main.builtBy=goreleaser",
@@ -1343,9 +1343,9 @@ func TestBuildGoBuildLine(t *testing.T) {
 			BuildDetails: config.BuildDetails{
 				Ldflags: []string{"-s -w", "-X main.version={{.Version}}"},
 			},
-			GoBinary: "go",
-			Binary:   "foo",
-			Command:  "build",
+			Tool:    "go",
+			Binary:  "foo",
+			Command: "build",
 		}, []string{"go", "build", "-ldflags=-s -w -X main.version=1.2.3", "-o", "foo", "."})
 	})
 }
@@ -1753,9 +1753,9 @@ func TestInvalidGoBinaryTpl(t *testing.T) {
 	ctx := testctx.NewWithCfg(config.Project{
 		Builds: []config.Build{
 			{
-				Targets:  []string{runtimeTarget},
-				GoBinary: "{{.Foo}}",
-				Command:  "build",
+				Targets: []string{runtimeTarget},
+				Tool:    "{{.Foo}}",
+				Command: "build",
 			},
 		},
 	})

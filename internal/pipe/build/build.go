@@ -10,6 +10,7 @@ import (
 
 	"github.com/caarlos0/go-shellwords"
 	"github.com/caarlos0/log"
+	"github.com/goreleaser/goreleaser/v2/internal/deprecate"
 	"github.com/goreleaser/goreleaser/v2/internal/ids"
 	"github.com/goreleaser/goreleaser/v2/internal/semerrgroup"
 	"github.com/goreleaser/goreleaser/v2/internal/shell"
@@ -83,6 +84,10 @@ func prepare(ctx *context.Context, build config.Build) error {
 func (Pipe) Default(ctx *context.Context) error {
 	ids := ids.New("builds")
 	for i, build := range ctx.Config.Builds {
+		if build.GoBinary != "" {
+			build.Tool = build.GoBinary
+			deprecate.Notice(ctx, "builds.gobinary")
+		}
 		build, err := buildWithDefaults(ctx, build)
 		if err != nil {
 			return err

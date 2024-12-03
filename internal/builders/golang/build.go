@@ -91,8 +91,8 @@ func (b *Builder) Parse(target string) (api.Target, error) {
 
 // WithDefaults sets the defaults for a golang build and returns it.
 func (*Builder) WithDefaults(build config.Build) (config.Build, error) {
-	if build.GoBinary == "" {
-		build.GoBinary = "go"
+	if build.Tool == "" {
+		build.Tool = "go"
 	}
 	if build.Command == "" {
 		build.Command = "build"
@@ -371,7 +371,7 @@ func buildGoBuildLine(
 	artifact *artifact.Artifact,
 	env []string,
 ) ([]string, error) {
-	gobin, err := tmpl.New(ctx).WithBuildOptions(options).Apply(build.GoBinary)
+	gobin, err := tmpl.New(ctx).WithBuildOptions(options).Apply(build.Tool)
 	if err != nil {
 		return nil, err
 	}

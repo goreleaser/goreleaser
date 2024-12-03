@@ -67,10 +67,10 @@ func TestWithDefaults(t *testing.T) {
 		build, err := Default.WithDefaults(config.Build{})
 		require.NoError(t, err)
 		require.Equal(t, config.Build{
-			GoBinary: "zig",
-			Command:  "build",
-			Dir:      ".",
-			Targets:  defaultTargets(),
+			Tool:    "zig",
+			Command: "build",
+			Dir:     ".",
+			Targets: defaultTargets(),
 			BuildDetails: config.BuildDetails{
 				Flags: []string{"-Doptimize=ReleaseSafe"},
 			},

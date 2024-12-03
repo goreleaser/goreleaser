@@ -42,7 +42,7 @@ builds:
     #
     # Default: "cargo".
     # Templates: allowed.
-    gobinary: "cross"
+    tool: "cross"
 
     # Sets the command to run to build.
     # Can be useful if you want to build tests, for example,
@@ -79,7 +79,7 @@ then make few changes:
 builds:
   - # Use Rust zigbuild
     builder: rust
-    gobinary: cross # TODO: rename gobinary to something more generic, like 'builder_binary' maybe?
+    tool: cross
     command: build
     targets:
       - x86_64-apple-darwin

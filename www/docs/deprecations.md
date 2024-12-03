@@ -39,6 +39,26 @@ Description.
 
 -->
 
+### builds.gobinary
+
+> since v2.5
+
+The property was renamed to `tool`, as to better accommodate multiple languages.
+
+=== "Before"
+
+    ```yaml
+    builds:
+      - gobinary: 'go1.2.3'
+    ```
+
+=== "After"
+
+    ```yaml
+    builds:
+      - tool: 'go1.2.3'
+    ```
+
 ### kos.sbom
 
 > since v2.2
