@@ -82,6 +82,10 @@ func (b *Builder) WithDefaults(build config.Build) (config.Build, error) {
 		build.Dir = "."
 	}
 
+	if len(build.Flags) == 0 {
+		build.Flags = []string{"-Doptimize=ReleaseSafe"}
+	}
+
 	if build.Main != "" {
 		return build, errors.New("main is not used for zig")
 	}

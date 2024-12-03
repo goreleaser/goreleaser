@@ -71,6 +71,9 @@ func TestWithDefaults(t *testing.T) {
 			Command:  "build",
 			Dir:      ".",
 			Targets:  defaultTargets(),
+			BuildDetails: config.BuildDetails{
+				Flags: []string{"-Doptimize=ReleaseSafe"},
+			},
 		}, build)
 	})
 
@@ -150,7 +153,7 @@ func TestBuild(t *testing.T) {
 		Dist:        dist,
 		ProjectName: "proj",
 		Env: []string{
-			"OPTIMIZE_FOR=ReleaseSafe",
+			"OPTIMIZE_FOR=ReleaseSmall",
 		},
 		Builds: []config.Build{
 			{

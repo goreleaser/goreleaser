@@ -18,6 +18,8 @@ before:
 
 builds:
   - builder: rust
+    flags:
+      - --release
     targets:
       - x86_64-unknown-linux-gnu
       - x86_64-apple-darwin

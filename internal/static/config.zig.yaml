@@ -10,6 +10,8 @@ version: 2
 
 builds:
   - builder: zig
+    flags:
+      - -Doptimize=ReleaseSafe
     targets:
       - x86_64-linux
       - x86_64-windows
