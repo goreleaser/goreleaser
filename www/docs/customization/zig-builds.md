@@ -57,6 +57,14 @@ builds:
     # Templates: allowed.
     flags:
       - --release
+
+    # Custom environment variables to be set during the builds.
+    # Invalid environment variables will be ignored.
+    #
+    # Default: os.Environ() ++ env config section.
+    # Templates: allowed.
+    env:
+      - FOO=bar
 ```
 
 Some options are not supported yet[^fail], but it should be usable at least for
