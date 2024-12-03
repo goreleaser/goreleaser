@@ -28,6 +28,7 @@ var (
 	_ api.Builder           = &Builder{}
 	_ api.PreparedBuilder   = &Builder{}
 	_ api.ConcurrentBuilder = &Builder{}
+	_ api.DependingBuilder  = &Builder{}
 )
 
 //nolint:gochecknoinits
@@ -37,6 +38,11 @@ func init() {
 
 // Builder is golang builder.
 type Builder struct{}
+
+// Dependencies implements build.DependingBuilder.
+func (b *Builder) Dependencies() []string {
+	return []string{"cargo", "rustup", "cargo-zigbuild", "zig"}
+}
 
 // AllowConcurrentBuilds implements build.ConcurrentBuilder.
 func (b *Builder) AllowConcurrentBuilds() bool { return false }
