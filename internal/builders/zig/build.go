@@ -23,6 +23,12 @@ import (
 //nolint:gochecknoglobals
 var Default = &Builder{}
 
+// type constraints
+var (
+	_ api.Builder          = &Builder{}
+	_ api.DependingBuilder = &Builder{}
+)
+
 //nolint:gochecknoinits
 func init() {
 	api.Register("zig", Default)
@@ -30,6 +36,11 @@ func init() {
 
 // Builder is golang builder.
 type Builder struct{}
+
+// Dependencies implements build.DependingBuilder.
+func (b *Builder) Dependencies() []string {
+	return []string{"zig"}
+}
 
 // Parse implements build.Builder.
 func (b *Builder) Parse(target string) (api.Target, error) {

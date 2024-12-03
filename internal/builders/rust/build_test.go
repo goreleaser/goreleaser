@@ -21,6 +21,10 @@ func TestAllowConcurrentBuilds(t *testing.T) {
 	require.False(t, Default.AllowConcurrentBuilds())
 }
 
+func TestDependencies(t *testing.T) {
+	require.NotEmpty(t, Default.Dependencies())
+}
+
 func TestWithDefaults(t *testing.T) {
 	t.Run("valid", func(t *testing.T) {
 		build, err := Default.WithDefaults(config.Build{})

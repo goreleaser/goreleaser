@@ -15,6 +15,10 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
+func TestDependencies(t *testing.T) {
+	require.NotEmpty(t, Default.Dependencies())
+}
+
 func TestParse(t *testing.T) {
 	for target, dst := range map[string]Target{
 		"x86_64-linux": {
