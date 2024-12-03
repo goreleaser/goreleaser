@@ -15,6 +15,10 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
+func TestDependencies(t *testing.T) {
+	require.NotEmpty(t, Default.Dependencies())
+}
+
 func TestParse(t *testing.T) {
 	for target, dst := range map[string]Target{
 		"x86_64-linux": {
@@ -67,6 +71,9 @@ func TestWithDefaults(t *testing.T) {
 			Command: "build",
 			Dir:     ".",
 			Targets: defaultTargets(),
+			BuildDetails: config.BuildDetails{
+				Flags: []string{"-Doptimize=ReleaseSafe"},
+			},
 		}, build)
 	})
 
@@ -146,7 +153,7 @@ func TestBuild(t *testing.T) {
 		Dist:        dist,
 		ProjectName: "proj",
 		Env: []string{
-			"OPTIMIZE_FOR=ReleaseSafe",
+			"OPTIMIZE_FOR=ReleaseSmall",
 		},
 		Builds: []config.Build{
 			{

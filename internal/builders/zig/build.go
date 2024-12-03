@@ -23,6 +23,12 @@ import (
 //nolint:gochecknoglobals
 var Default = &Builder{}
 
+// type constraints
+var (
+	_ api.Builder          = &Builder{}
+	_ api.DependingBuilder = &Builder{}
+)
+
 //nolint:gochecknoinits
 func init() {
 	api.Register("zig", Default)
@@ -30,6 +36,11 @@ func init() {
 
 // Builder is golang builder.
 type Builder struct{}
+
+// Dependencies implements build.DependingBuilder.
+func (b *Builder) Dependencies() []string {
+	return []string{"zig"}
+}
 
 // Parse implements build.Builder.
 func (b *Builder) Parse(target string) (api.Target, error) {
@@ -71,6 +82,10 @@ func (b *Builder) WithDefaults(build config.Build) (config.Build, error) {
 		build.Dir = "."
 	}
 
+	if len(build.Flags) == 0 {
+		build.Flags = []string{"-Doptimize=ReleaseSafe"}
+	}
+
 	if build.Main != "" {
 		return build, errors.New("main is not used for zig")
 	}
@@ -106,7 +121,7 @@ func (b *Builder) WithDefaults(build config.Build) (config.Build, error) {
 	}
 
 	if len(build.Asmflags) > 0 {
-		return build, errors.New("asmtags is not used for zig")
+		return build, errors.New("asmflags is not used for zig")
 	}
 
 	if len(build.BuildDetailsOverrides) > 0 {

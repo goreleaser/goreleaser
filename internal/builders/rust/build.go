@@ -28,6 +28,7 @@ var (
 	_ api.Builder           = &Builder{}
 	_ api.PreparedBuilder   = &Builder{}
 	_ api.ConcurrentBuilder = &Builder{}
+	_ api.DependingBuilder  = &Builder{}
 )
 
 //nolint:gochecknoinits
@@ -37,6 +38,11 @@ func init() {
 
 // Builder is golang builder.
 type Builder struct{}
+
+// Dependencies implements build.DependingBuilder.
+func (b *Builder) Dependencies() []string {
+	return []string{"cargo", "rustup", "cargo-zigbuild", "zig"}
+}
 
 // AllowConcurrentBuilds implements build.ConcurrentBuilder.
 func (b *Builder) AllowConcurrentBuilds() bool { return false }
@@ -89,6 +95,10 @@ func (b *Builder) WithDefaults(build config.Build) (config.Build, error) {
 		build.Command = "zigbuild"
 	}
 
+	if len(build.Flags) == 0 {
+		build.Flags = []string{"--release"}
+	}
+
 	if build.Dir == "" {
 		build.Dir = "."
 	}
@@ -128,7 +138,7 @@ func (b *Builder) WithDefaults(build config.Build) (config.Build, error) {
 	}
 
 	if len(build.Asmflags) > 0 {
-		return build, errors.New("asmtags is not used for rust")
+		return build, errors.New("asmflags is not used for rust")
 	}
 
 	if len(build.BuildDetailsOverrides) > 0 {
@@ -190,7 +200,6 @@ func (b *Builder) Build(ctx *context.Context, build config.Build, options api.Op
 		cargo,
 		build.Command,
 		"--target=" + t.Target,
-		"--release",
 	}
 
 	for _, e := range build.Env {

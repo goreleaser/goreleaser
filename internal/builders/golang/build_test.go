@@ -34,6 +34,10 @@ var go118FirstClassAdjustedTargets = []string{
 	"windows_amd64_v1",
 }
 
+func TestDependencies(t *testing.T) {
+	require.NotEmpty(t, Default.Dependencies())
+}
+
 func TestParse(t *testing.T) {
 	for target, dst := range map[string]Target{
 		"linux_amd64": {

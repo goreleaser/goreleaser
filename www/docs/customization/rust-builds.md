@@ -57,6 +57,14 @@ builds:
     # Templates: allowed.
     flags:
       - --release
+
+    # Custom environment variables to be set during the builds.
+    # Invalid environment variables will be ignored.
+    #
+    # Default: os.Environ() ++ env config section.
+    # Templates: allowed.
+    env:
+      - FOO=bar
 ```
 
 Some options are not supported yet[^fail], but it should be usable at least for
@@ -80,10 +88,39 @@ builds:
 
 ## Caveats
 
+### Targets
+
 GoReleaser will translate Rust's Os/Arch triple into a GOOS/GOARCH pair, so
 templates should work the same as before.
 The original target name is available in templates as `.Target`, and so are
 `.Vendor` and `.Environment`.
+
+### Environment setup
+
+GoReleaser will not install Cargo, Rustup, Zig, or cargo-zigbuild for you.
+Make sure to install them before running GoReleaser.
+
+Remember that you may also need to run `rustup default stable`.
+
+GoReleaser **will**, however, run `rustup target add` for each target you
+declare.
+
+You can also add them to your [global before hooks](./hooks.md), e.g.:
+
+```yaml title=".goreleaser.yaml"
+before:
+  hooks:
+    - rustup default stable
+    - cargo install --locked cargo-zigbuild
+```
+
+### Cargo Workspaces
+
+Projects that use Cargo workspaces might not work depending on usage.
+If you want to try it, set the build `dir` option to the folder of the children
+workspace.
+You might need to add all workspaces to your `.goreleaser.yaml`.
+We might improve this in the future.
 
 [^fail]:
     GoReleaser will error if you try to use them. Give it a try with
