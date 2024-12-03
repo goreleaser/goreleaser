@@ -89,6 +89,10 @@ func (b *Builder) WithDefaults(build config.Build) (config.Build, error) {
 		build.Command = "zigbuild"
 	}
 
+	if len(build.Flags) == 0 {
+		build.Flags = []string{"--release"}
+	}
+
 	if build.Dir == "" {
 		build.Dir = "."
 	}
@@ -190,7 +194,6 @@ func (b *Builder) Build(ctx *context.Context, build config.Build, options api.Op
 		cargo,
 		build.Command,
 		"--target=" + t.Target,
-		"--release",
 	}
 
 	for _, e := range build.Env {

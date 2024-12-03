@@ -30,6 +30,9 @@ func TestWithDefaults(t *testing.T) {
 			Command:  "zigbuild",
 			Dir:      ".",
 			Targets:  defaultTargets(),
+			BuildDetails: config.BuildDetails{
+				Flags: []string{"--release"},
+			},
 		}, build)
 	})
 
@@ -128,7 +131,7 @@ func TestBuild(t *testing.T) {
 				Dir:          "./testdata/proj/",
 				ModTimestamp: fmt.Sprintf("%d", modTime.Unix()),
 				BuildDetails: config.BuildDetails{
-					Flags: []string{"--locked"},
+					Flags: []string{"--locked", "--release"},
 					Env: []string{
 						`TEST_T={{- if eq .Os "windows" -}}
 							w
