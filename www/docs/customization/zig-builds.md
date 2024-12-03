@@ -27,6 +27,7 @@ builds:
     binary: program
 
     # List of targets to be built, in Zig's format.
+    # Default: [ "x86_64-linux", "x86_64-macos", "x86_64-windows", "aarch64-linux", "aarch64-macos" ]
     targets:
       - aarch64-macos
       - x86_64-linux-gnu
@@ -55,6 +56,7 @@ builds:
     # Custom flags.
     #
     # Templates: allowed.
+    # Default: "-Doptimize=ReleaseSafe".
     flags:
       - --release
 
