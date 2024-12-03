@@ -81,8 +81,8 @@ func (b *Builder) WithDefaults(build config.Build) (config.Build, error) {
 		build.Targets = defaultTargets()
 	}
 
-	if build.GoBinary == "" {
-		build.GoBinary = "cargo"
+	if build.Tool == "" {
+		build.Tool = "cargo"
 	}
 
 	if build.Command == "" {
@@ -181,7 +181,7 @@ func (b *Builder) Build(ctx *context.Context, build config.Build, options api.Op
 		WithEnvS(env).
 		WithArtifact(a)
 
-	cargo, err := tpl.Apply(build.GoBinary)
+	cargo, err := tpl.Apply(build.Tool)
 	if err != nil {
 		return err
 	}

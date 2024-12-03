@@ -42,7 +42,7 @@ builds:
     #
     # Default: "zig".
     # Templates: allowed.
-    gobinary: "zig-nightly"
+    tool: "zig-nightly"
 
     # Sets the command to run to build.
     # Can be useful if you want to build tests, for example,

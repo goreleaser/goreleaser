@@ -26,10 +26,10 @@ func TestWithDefaults(t *testing.T) {
 		build, err := Default.WithDefaults(config.Build{})
 		require.NoError(t, err)
 		require.Equal(t, config.Build{
-			GoBinary: "cargo",
-			Command:  "zigbuild",
-			Dir:      ".",
-			Targets:  defaultTargets(),
+			Tool:    "cargo",
+			Command: "zigbuild",
+			Dir:     ".",
+			Targets: defaultTargets(),
 		}, build)
 	})
 

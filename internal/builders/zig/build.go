@@ -59,8 +59,8 @@ func (b *Builder) WithDefaults(build config.Build) (config.Build, error) {
 		build.Targets = defaultTargets()
 	}
 
-	if build.GoBinary == "" {
-		build.GoBinary = "zig"
+	if build.Tool == "" {
+		build.Tool = "zig"
 	}
 
 	if build.Command == "" {
@@ -153,7 +153,7 @@ func (b *Builder) Build(ctx *context.Context, build config.Build, options api.Op
 		WithEnvS(env).
 		WithArtifact(a)
 
-	zigbin, err := tpl.Apply(build.GoBinary)
+	zigbin, err := tpl.Apply(build.Tool)
 	if err != nil {
 		return err
 	}

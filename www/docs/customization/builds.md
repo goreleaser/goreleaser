@@ -202,7 +202,8 @@ builds:
     #
     # Default: "go".
     # Templates: allowed.
-    gobinary: "go1.13.4"
+    # <!-- md:inline_version v2.5 -->.
+    tool: "go1.13.4"
 
     # Sets the command to run to build.
     # Can be useful if you want to build tests, for example,
@@ -292,6 +293,14 @@ builds:
           - foobaz
         env:
           - CGO_ENABLED=1
+
+    # Set a specific go binary to use when building.
+    # It is safe to ignore this option in most cases.
+    #
+    # Default: "go".
+    # Templates: allowed.
+    # Deprecated: use `tool` instead.
+    gobinary: "go1.13.4"
 ```
 
 !!! warning "GOAMD64, GORISCV64, GOPPC64, GO386, GOARM, GOARM64"
