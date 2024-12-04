@@ -18,6 +18,7 @@ import (
 	"github.com/goreleaser/goreleaser/v2/internal/testctx"
 	"github.com/goreleaser/goreleaser/v2/internal/testlib"
 	"github.com/goreleaser/goreleaser/v2/pkg/config"
+	"github.com/goreleaser/goreleaser/v2/pkg/context"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
@@ -993,7 +994,248 @@ func TestGitHubCheckRateLimit(t *testing.T) {
 	require.True(t, time.Now().UTC().After(reset))
 }
 
-// TODO: test create release
+func TestGitHubCreateRelease(t *testing.T) {
+	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		defer r.Body.Close()
+
+		if r.URL.Path == "/repos/goreleaser/test/releases/tags/v1.0.0" {
+			w.WriteHeader(http.StatusNotFound)
+			return
+		}
+
+		if r.URL.Path == "/repos/goreleaser/test/releases" && r.Method == http.MethodPost {
+			got, err := io.ReadAll(r.Body)
+			assert.NoError(t, err)
+			assert.JSONEq(t, `{"name": "v1.0.0", "tag_name": "v1.0.0", "target_commitish": "test", "body": "test release", "draft": true, "prerelease": false}`, string(got))
+
+			w.WriteHeader(http.StatusCreated)
+			fmt.Fprint(w, `{"id": 1, "html_url": "https://github.com/goreleaser/test/releases/v1.0.0"}`)
+			return
+		}
+
+		if r.URL.Path == "/rate_limit" {
+			w.WriteHeader(http.StatusOK)
+			fmt.Fprint(w, `{"resources":{"core":{"remaining":120}}}`)
+			return
+		}
+
+		t.Error("unhandled request: " + r.Method + " " + r.URL.Path)
+	}))
+	defer srv.Close()
+
+	ctx := testctx.NewWithCfg(
+		config.Project{
+			GitHubURLs: config.GitHubURLs{
+				API: srv.URL + "/",
+			},
+			Release: config.Release{
+				NameTemplate: "v1.0.0",
+				GitHub: config.Repo{
+					Owner: "goreleaser",
+					Name:  "test",
+				},
+				TargetCommitish: "test",
+			},
+		},
+		testctx.WithGitInfo(context.GitInfo{
+			CurrentTag: "v1.0.0",
+		}),
+	)
+
+	client, err := newGitHub(ctx, "test-token")
+	require.NoError(t, err)
+
+	release, err := client.CreateRelease(ctx, "test release")
+	require.NoError(t, err)
+	require.Equal(t, "1", release)
+}
+
+func TestGitHubCreateReleaseDeleteExistingDraft(t *testing.T) {
+	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		defer r.Body.Close()
+
+		if r.URL.Path == "/repos/goreleaser/test/releases" && r.Method == http.MethodGet {
+			w.WriteHeader(http.StatusOK)
+			r, err := os.Open("testdata/github/releases.json")
+			if assert.NoError(t, err) {
+				defer r.Close()
+				_, err = io.Copy(w, r)
+				assert.NoError(t, err)
+			}
+			return
+		}
+
+		if r.URL.Path == "/repos/goreleaser/test/releases/1" && r.Method == http.MethodDelete {
+			w.WriteHeader(http.StatusNoContent)
+			return
+		}
+
+		if r.URL.Path == "/repos/goreleaser/test/releases/tags/v1.0.0" {
+			w.WriteHeader(http.StatusNotFound)
+			return
+		}
+
+		if r.URL.Path == "/repos/goreleaser/test/releases" && r.Method == http.MethodPost {
+			w.WriteHeader(http.StatusCreated)
+			fmt.Fprint(w, `{"id": 2, "html_url": "https://github.com/goreleaser/test/releases/v1.0.0"}`)
+			return
+		}
+
+		if r.URL.Path == "/rate_limit" {
+			w.WriteHeader(http.StatusOK)
+			fmt.Fprint(w, `{"resources":{"core":{"remaining":120}}}`)
+			return
+		}
+
+		t.Error("unhandled request: " + r.Method + " " + r.URL.Path)
+	}))
+	defer srv.Close()
+
+	ctx := testctx.NewWithCfg(
+		config.Project{
+			GitHubURLs: config.GitHubURLs{
+				API: srv.URL + "/",
+			},
+			Release: config.Release{
+				NameTemplate: "v1.0.0",
+				GitHub: config.Repo{
+					Owner: "goreleaser",
+					Name:  "test",
+				},
+				Draft:                true,
+				ReplaceExistingDraft: true,
+			},
+		},
+		testctx.WithGitInfo(context.GitInfo{
+			CurrentTag: "v1.0.0",
+		}),
+	)
+
+	client, err := newGitHub(ctx, "test-token")
+	require.NoError(t, err)
+
+	release, err := client.CreateRelease(ctx, "test draft release")
+	require.NoError(t, err)
+	require.Equal(t, "2", release)
+}
+
+func TestGitHubCreateReleaseUpdateExisting(t *testing.T) {
+	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		defer r.Body.Close()
+
+		if r.URL.Path == "/repos/goreleaser/test/releases/tags/v1.0.0" {
+			w.WriteHeader(http.StatusOK)
+			fmt.Fprint(w, `{"id": 3, "name": "v1.0.0", "body": "This is an existing release"}`)
+			return
+		}
+
+		if r.URL.Path == "/repos/goreleaser/test/releases/3" && r.Method == http.MethodPatch {
+			got, err := io.ReadAll(r.Body)
+			assert.NoError(t, err)
+			assert.JSONEq(t, `{"name": "v1.0.0", "tag_name": "v1.0.0", "body": "This is an existing release", "prerelease": false}`, string(got))
+
+			w.WriteHeader(http.StatusOK)
+			fmt.Fprint(w, `{"id": 3, "name": "v1.0.0", "body": "This is an existing release"}`)
+			return
+		}
+
+		if r.URL.Path == "/rate_limit" {
+			w.WriteHeader(http.StatusOK)
+			fmt.Fprint(w, `{"resources":{"core":{"remaining":120}}}`)
+			return
+		}
+
+		t.Error("unhandled request: " + r.Method + " " + r.URL.Path)
+	}))
+	defer srv.Close()
+
+	ctx := testctx.NewWithCfg(
+		config.Project{
+			GitHubURLs: config.GitHubURLs{
+				API: srv.URL + "/",
+			},
+			Release: config.Release{
+				NameTemplate: "v1.0.0",
+				GitHub: config.Repo{
+					Owner: "goreleaser",
+					Name:  "test",
+				},
+			},
+		},
+		testctx.WithGitInfo(context.GitInfo{
+			CurrentTag: "v1.0.0",
+		}),
+	)
+
+	client, err := newGitHub(ctx, "test-token")
+	require.NoError(t, err)
+
+	release, err := client.CreateRelease(ctx, "test update release")
+	require.NoError(t, err)
+	require.Equal(t, "3", release)
+}
+
+func TestGitHubCreateReleaseUseExistingDraft(t *testing.T) {
+	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		defer r.Body.Close()
+
+		if r.URL.Path == "/repos/goreleaser/test/releases" && r.Method == http.MethodGet {
+			w.WriteHeader(http.StatusOK)
+			r, err := os.Open("testdata/github/releases.json")
+			if assert.NoError(t, err) {
+				defer r.Close()
+				_, err = io.Copy(w, r)
+				assert.NoError(t, err)
+			}
+			return
+		}
+
+		if r.URL.Path == "/repos/goreleaser/test/releases/1" && r.Method == http.MethodPatch {
+			got, err := io.ReadAll(r.Body)
+			assert.NoError(t, err)
+			assert.JSONEq(t, `{"name": "v1.0.0", "tag_name": "v1.0.0", "body": "Existing draft release", "draft": true, "prerelease": false}`, string(got))
+
+			w.WriteHeader(http.StatusOK)
+			fmt.Fprint(w, `{"id": 1, "name": "v1.0.0"}`)
+			return
+		}
+
+		if r.URL.Path == "/rate_limit" {
+			w.WriteHeader(http.StatusOK)
+			fmt.Fprint(w, `{"resources":{"core":{"remaining":120}}}`)
+			return
+		}
+
+		t.Error("unhandled request: " + r.Method + " " + r.URL.Path)
+	}))
+	defer srv.Close()
+
+	ctx := testctx.NewWithCfg(
+		config.Project{
+			GitHubURLs: config.GitHubURLs{
+				API: srv.URL + "/",
+			},
+			Release: config.Release{
+				NameTemplate: "v1.0.0",
+				GitHub: config.Repo{
+					Owner: "goreleaser",
+					Name:  "test",
+				},
+				UseExistingDraft: true,
+			},
+		},
+		testctx.WithGitInfo(context.GitInfo{
+			CurrentTag: "v1.0.0",
+		}),
+	)
+
+	client, err := newGitHub(ctx, "test-token")
+	require.NoError(t, err)
+
+	release, err := client.CreateRelease(ctx, "test update draft release")
+	require.NoError(t, err)
+	require.Equal(t, "1", release)
+}
+
 // TODO: test create upload file to release
-// TODO: test delete draft release
 // TODO: test create PR
