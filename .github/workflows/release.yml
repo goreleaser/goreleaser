@@ -40,6 +40,12 @@ jobs:
           ref: master
           workflow: goreleaser-bump
           inputs: '{ "tag" : "${{ env.RELEASE_TAG }}" }'
+      - name: notify goreleaser-rust-cross with new release
+        if: startsWith(github.ref, 'refs/tags/v')
+        run: gh workflow run 131251597 -r main -F release-tag=${{ env.RELEASE_TAG }} -R $REPO
+        env:
+          REPO: vedantmgoyal9/goreleaser-rust-cross
+          GH_TOKEN: ${{ secrets.VEDANT_GH_PAT }}
   goreleaser-check-pkgs:
     runs-on: ubuntu-latest
     env:
