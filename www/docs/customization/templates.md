@@ -93,7 +93,7 @@ You should be able to use all its fields on each item:
 - `.Gomips64` (since v2.4)
 - `.Goppc64` (since v2.4)
 - `.Goriscv64` (since v2.4)
-- `.Go386` (since v2.4)
+- `.I386` (since v2.4)
 - `.Target` (Since v2.5)
 - `.Type`
 - `.Extra`
