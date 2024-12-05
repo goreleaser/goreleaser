@@ -25,6 +25,14 @@ nix develop .#docs
 
 To drop into a shell with all the needed dependencies.
 
+### With Docker
+
+```bash
+cd ./www
+docker build -t material-mkdocs
+docker run --rm -it -p 8000:8000 -v .:/docs material
+```
+
 ## Edit the docs
 
 After installing mkdocs and extensions, build and run the documentation locally:
