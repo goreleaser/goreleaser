@@ -40,6 +40,15 @@ jobs:
           ref: master
           workflow: goreleaser-bump
           inputs: '{ "tag" : "${{ env.RELEASE_TAG }}" }'
+      - name: notify goreleaser-rust-cross with new release
+        if: startsWith(github.ref, 'refs/tags/v')
+        uses: benc-uk/workflow-dispatch@v1.2.4
+        with:
+          token: ${{ secrets.GH_PAT }}
+          repo: vedantmgoyal9/goreleaser-rust-cross
+          ref: main
+          workflow: CI
+          inputs: '{ "release-tag" : "${{ env.RELEASE_TAG }}" }'
   goreleaser-check-pkgs:
     runs-on: ubuntu-latest
     env:
