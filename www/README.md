@@ -5,22 +5,17 @@ authoring than markdown.
 
 To iterate with documentation, therefore, it is recommended to run the mkdocs server and view your pages in a browser.
 
-## Prerequisites
+## Setup dev environment
 
-- [Get Task](https://taskfile.dev/installation/)
-- [Get MkDocs](https://www.mkdocs.org/user-guide/installation/)
-  - [Get MkDocs Material](https://squidfunk.github.io/mkdocs-material/getting-started/#installation)
-  - [Get MkDocs Redirect](https://github.com/mkdocs/mkdocs-redirects#installing)
-  - [Get MkDocs Minify](https://github.com/byrnereese/mkdocs-minify-plugin#setup)
-  - [Get MkDocs Include Markdown](https://github.com/mondeja/mkdocs-include-markdown-plugin#installation)
-  - [Get MkDocs RSS](https://github.com/guts/mkdocs-rss-plugin#installation)
+The basic pre-requisite is [Task](https://taskfile.dev/installation/).
+For material-mkdocs itself, you can either do nix or Docker, as below.
 
 ### With nix
 
-If you have nix installed, you can:
+If you have nix, you can run:
 
 ```bash
-nix develop .#docs
+nix develop .#docs -c task docs:serve
 ```
 
 To drop into a shell with all the needed dependencies.
@@ -33,13 +28,7 @@ docker build -t material-mkdocs
 docker run --rm -it -p 8000:8000 -v .:/docs material
 ```
 
-## Edit the docs
+---
 
-After installing mkdocs and extensions, build and run the documentation locally:
-
-```sh
-task docs:serve
-```
-
-The site will soon be available at http://localhost:8000 and
-auto-update after changes.
+In both cases, the site should soon be available at http://localhost:8000 and
+auto-update after most changes.
