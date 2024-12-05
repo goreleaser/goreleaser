@@ -1067,68 +1067,6 @@ func TestInvalidTemplate(t *testing.T) {
 	}
 }
 
-func TestProcessFlags(t *testing.T) {
-	ctx := testctx.New(
-		testctx.WithVersion("1.2.3"),
-		testctx.WithCurrentTag("5.6.7"),
-	)
-
-	artifact := &artifact.Artifact{
-		Name:   "name",
-		Goos:   "darwin",
-		Goarch: "amd64",
-		Goarm:  "7",
-		Extra: map[string]interface{}{
-			artifact.ExtraBinary: "binary",
-		},
-	}
-
-	source := []string{
-		"flag",
-		"{{.Version}}",
-		"{{.Os}}",
-		"{{.Arch}}",
-		"{{.Arm}}",
-		"{{.Binary}}",
-		"{{.ArtifactName}}",
-	}
-
-	expected := []string{
-		"-testflag=flag",
-		"-testflag=1.2.3",
-		"-testflag=darwin",
-		"-testflag=amd64",
-		"-testflag=7",
-		"-testflag=binary",
-		"-testflag=name",
-	}
-
-	flags, err := processFlags(ctx, artifact, []string{}, source, "-testflag=")
-	require.NoError(t, err)
-	require.Len(t, flags, 7)
-	require.Equal(t, expected, flags)
-}
-
-func TestProcessFlagsInvalid(t *testing.T) {
-	ctx := testctx.New()
-	source := []string{
-		"{{.Version}",
-	}
-	flags, err := processFlags(ctx, &artifact.Artifact{}, []string{}, source, "-testflag=")
-	testlib.RequireTemplateError(t, err)
-	require.Nil(t, flags)
-}
-
-func TestProcessFlagsIgnoreEmptyFlags(t *testing.T) {
-	ctx := testctx.New()
-	source := []string{
-		"{{if eq 1 2}}-ignore-me{{end}}",
-	}
-	flags, err := processFlags(ctx, &artifact.Artifact{}, []string{}, source, "")
-	require.NoError(t, err)
-	require.Empty(t, flags)
-}
-
 func TestBuildModTimestamp(t *testing.T) {
 	// round to seconds since this will be a unix timestamp
 	modTime := time.Now().AddDate(-1, 0, 0).Round(1 * time.Second).UTC()

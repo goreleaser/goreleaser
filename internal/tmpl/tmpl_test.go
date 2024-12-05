@@ -498,6 +498,68 @@ func TestReuseTpl(t *testing.T) {
 	require.Equal(t, "bar", s3)
 }
 
+func TestSlice(t *testing.T) {
+	ctx := testctx.New(
+		testctx.WithVersion("1.2.3"),
+		testctx.WithCurrentTag("5.6.7"),
+	)
+
+	artifact := &artifact.Artifact{
+		Name:   "name",
+		Goos:   "darwin",
+		Goarch: "amd64",
+		Goarm:  "7",
+		Extra: map[string]interface{}{
+			artifact.ExtraBinary: "binary",
+		},
+	}
+
+	source := []string{
+		"flag",
+		"{{.Version}}",
+		"{{.Os}}",
+		"{{.Arch}}",
+		"{{.Arm}}",
+		"{{.Binary}}",
+		"{{.ArtifactName}}",
+	}
+
+	expected := []string{
+		"-testflag=flag",
+		"-testflag=1.2.3",
+		"-testflag=darwin",
+		"-testflag=amd64",
+		"-testflag=7",
+		"-testflag=binary",
+		"-testflag=name",
+	}
+
+	flags, err := New(ctx).WithArtifact(artifact).Slice(source, WithPrefix("-testflag="))
+	require.NoError(t, err)
+	require.Len(t, flags, 7)
+	require.Equal(t, expected, flags)
+}
+
+func TestSliceInvalid(t *testing.T) {
+	ctx := testctx.New()
+	source := []string{
+		"{{.Version}",
+	}
+	flags, err := New(ctx).Slice(source)
+	require.ErrorAs(t, err, &Error{})
+	require.Nil(t, flags)
+}
+
+func TestSliceIgnoreEmptyFlags(t *testing.T) {
+	ctx := testctx.New()
+	source := []string{
+		"{{if eq 1 2}}-ignore-me{{end}}",
+	}
+	flags, err := New(ctx).Slice(source, NonEmpty())
+	require.NoError(t, err)
+	require.Empty(t, flags)
+}
+
 type testTarget struct {
 	Target  string
 	Goos    string

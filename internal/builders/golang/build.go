@@ -380,7 +380,8 @@ func buildGoBuildLine(
 	// tags, ldflags, and buildmode, should only appear once, warning only to avoid a breaking change
 	validateUniqueFlags(details)
 
-	flags, err := processFlags(ctx, artifact, env, details.Flags, "")
+	tpl := tmpl.New(ctx).WithEnvS(env).WithArtifact(artifact)
+	flags, err := tpl.Slice(details.Flags, tmpl.NonEmpty())
 	if err != nil {
 		return cmd, err
 	}
@@ -389,13 +390,13 @@ func buildGoBuildLine(
 		cmd = append(cmd, "-c")
 	}
 
-	asmflags, err := processFlags(ctx, artifact, env, details.Asmflags, "-asmflags=")
+	asmflags, err := tpl.Slice(details.Asmflags, tmpl.NonEmpty(), tmpl.WithPrefix("-asmflags="))
 	if err != nil {
 		return cmd, err
 	}
 	cmd = append(cmd, asmflags...)
 
-	gcflags, err := processFlags(ctx, artifact, env, details.Gcflags, "-gcflags=")
+	gcflags, err := tpl.Slice(details.Gcflags, tmpl.NonEmpty(), tmpl.WithPrefix("-gcflags="))
 	if err != nil {
 		return cmd, err
 	}
@@ -403,7 +404,7 @@ func buildGoBuildLine(
 
 	// tags is not a repeatable flag
 	if len(details.Tags) > 0 {
-		tags, err := processFlags(ctx, artifact, env, details.Tags, "")
+		tags, err := tpl.Slice(details.Tags, tmpl.NonEmpty())
 		if err != nil {
 			return cmd, err
 		}
@@ -413,7 +414,7 @@ func buildGoBuildLine(
 	// ldflags is not a repeatable flag
 	if len(details.Ldflags) > 0 {
 		// flag prefix is skipped because ldflags need to output a single string
-		ldflags, err := processFlags(ctx, artifact, env, details.Ldflags, "")
+		ldflags, err := tpl.Slice(details.Ldflags, tmpl.NonEmpty())
 		if err != nil {
 			return cmd, err
 		}
@@ -441,27 +442,6 @@ func validateUniqueFlags(details config.BuildDetails) {
 			log.WithField("flag", flag).WithField("buildmode", details.Buildmode).Warn("buildmode is defined twice")
 		}
 	}
-}
-
-func processFlags(ctx *context.Context, a *artifact.Artifact, env, flags []string, flagPrefix string) ([]string, error) {
-	processed := make([]string, 0, len(flags))
-	for _, rawFlag := range flags {
-		flag, err := processFlag(ctx, a, env, rawFlag)
-		if err != nil {
-			return nil, err
-		}
-
-		if flag == "" {
-			continue
-		}
-
-		processed = append(processed, flagPrefix+flag)
-	}
-	return processed, nil
-}
-
-func processFlag(ctx *context.Context, a *artifact.Artifact, env []string, rawFlag string) (string, error) {
-	return tmpl.New(ctx).WithEnvS(env).WithArtifact(a).Apply(rawFlag)
 }
 
 func run(ctx *context.Context, command, env []string, dir string) error {
