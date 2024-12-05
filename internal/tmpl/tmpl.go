@@ -238,6 +238,51 @@ func (t *Template) Bool(s string) (bool, error) {
 	return strings.TrimSpace(strings.ToLower(r)) == "true", err
 }
 
+// SliceOpt is a [Slice] option.
+type SliceOpt func(*sliceOptions)
+
+// NonEmpty filters out empty items.
+func NonEmpty() SliceOpt {
+	return func(o *sliceOptions) {
+		o.filtering = func(s string) bool { return s != "" }
+	}
+}
+
+// WithPrefix pretend a prefix to every item.
+func WithPrefix(prefix string) SliceOpt {
+	return func(o *sliceOptions) {
+		o.mapping = func(s string) string { return prefix + s }
+	}
+}
+
+type sliceOptions struct {
+	filtering func(string) bool
+	mapping   func(string) string
+}
+
+// Slice applies to all items in the given input.
+func (t *Template) Slice(in []string, opts ...SliceOpt) ([]string, error) {
+	var opt sliceOptions
+	for _, option := range opts {
+		option(&opt)
+	}
+	var out []string
+	for _, s := range in {
+		applied, err := t.Apply(s)
+		if err != nil {
+			return nil, err
+		}
+		if opt.filtering != nil && !opt.filtering(applied) {
+			continue
+		}
+		if opt.mapping != nil {
+			applied = opt.mapping(applied)
+		}
+		out = append(out, applied)
+	}
+	return out, nil
+}
+
 // Apply applies the given string against the Fields stored in the template.
 func (t *Template) Apply(s string) (string, error) {
 	var out bytes.Buffer

@@ -194,7 +194,7 @@ func (b *Builder) Build(ctx *context.Context, build config.Build, options api.Op
 
 	tpl = tpl.WithEnvS(env)
 
-	flags, err := processFlags(tpl, build.Flags)
+	flags, err := tpl.Slice(build.Flags, tmpl.NonEmpty())
 	if err != nil {
 		return err
 	}
@@ -232,19 +232,4 @@ func (b *Builder) Build(ctx *context.Context, build config.Build, options api.Op
 
 	ctx.Artifacts.Add(a)
 	return nil
-}
-
-func processFlags(tpl *tmpl.Template, flags []string) ([]string, error) {
-	var processed []string
-	for _, rawFlag := range flags {
-		flag, err := tpl.Apply(rawFlag)
-		if err != nil {
-			return nil, err
-		}
-		if flag == "" {
-			continue
-		}
-		processed = append(processed, flag)
-	}
-	return processed, nil
 }
