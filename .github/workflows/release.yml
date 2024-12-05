@@ -45,7 +45,7 @@ jobs:
         run: gh workflow run 131251597 -r main -F release-tag=${{ env.RELEASE_TAG }} -R $REPO
         env:
           REPO: vedantmgoyal9/goreleaser-rust-cross
-          GH_TOKEN: ${{ secrets.VEDANT_GH_PAT }}
+          GH_TOKEN: ${{ secrets.GH_PAT }}
   goreleaser-check-pkgs:
     runs-on: ubuntu-latest
     env:
