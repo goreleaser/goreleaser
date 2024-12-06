@@ -183,8 +183,24 @@ func (e Extras) MarshalJSON() ([]byte, error) {
 
 // Artifact represents an artifact and its relevant info.
 type Artifact struct {
-	Name      string `json:"name,omitempty"`
-	Path      string `json:"path,omitempty"`
+	Name   string `json:"name,omitempty"`
+	Path   string `json:"path,omitempty"`
+	Target string `json:"target,omitempty"`
+	Type   Type   `json:"internal_type,omitempty"`
+	TypeS  string `json:"type,omitempty"`
+	Extra  Extras `json:"extra,omitempty"`
+
+	Os      string `json:"os,omitempty"`
+	Arch    string `json:"arch,omitempty"`
+	Amd64   string `json:"amd64,omitempty"`
+	I386    string `json:"i386,omitempty"`
+	Arm     string `json:"arm,omitempty"`
+	Arm64   string `json:"arm64,omitempty"`
+	Mips    string `json:"mips,omitempty"`
+	Ppc64   string `json:"ppc64,omitempty"`
+	Riscv64 string `json:"riscv64,omitempty"`
+
+	// XXX: remove this in the next major.
 	Goos      string `json:"goos,omitempty"`
 	Goarch    string `json:"goarch,omitempty"`
 	Goamd64   string `json:"goamd64,omitempty"`
@@ -194,10 +210,6 @@ type Artifact struct {
 	Gomips    string `json:"gomips,omitempty"`
 	Goppc64   string `json:"goppc64,omitempty"`
 	Goriscv64 string `json:"goriscv64,omitempty"`
-	Target    string `json:"target,omitempty"`
-	Type      Type   `json:"internal_type,omitempty"`
-	TypeS     string `json:"type,omitempty"`
-	Extra     Extras `json:"extra,omitempty"`
 }
 
 func (a Artifact) String() string {
@@ -371,7 +383,7 @@ func (artifacts *Artifacts) GroupByID() map[string][]*Artifact {
 func (artifacts *Artifacts) GroupByPlatform() map[string][]*Artifact {
 	result := map[string][]*Artifact{}
 	for _, a := range artifacts.List() {
-		plat := a.Goos + a.Goarch + a.Goarm + a.Gomips + a.Goamd64
+		plat := a.Os + a.Arch + a.Arm + a.Mips + a.Amd64
 		result[plat] = append(result[plat], a)
 	}
 	return result
@@ -408,7 +420,20 @@ func (artifacts *Artifacts) Add(a *Artifact) {
 			a.Path = rel
 		}
 	}
+
 	a.Path = filepath.ToSlash(a.Path)
+
+	// map the new non-go specific fields.
+	a.Os = a.Goos
+	a.Arch = a.Goarch
+	a.Amd64 = a.Goamd64
+	a.I386 = a.Go386
+	a.Arm = a.Goarm
+	a.Arm64 = a.Goarm64
+	a.Mips = a.Gomips
+	a.Ppc64 = a.Goppc64
+	a.Riscv64 = a.Goriscv64
+
 	log.WithField("name", a.Name).
 		WithField("type", a.Type).
 		WithField("path", a.Path).
@@ -455,14 +480,14 @@ func OnlyReplacingUnibins(a *Artifact) bool {
 // ByGoos is a predefined filter that filters by the given goos.
 func ByGoos(s string) Filter {
 	return func(a *Artifact) bool {
-		return a.Goos == s
+		return a.Os == s
 	}
 }
 
 // ByGoarch is a predefined filter that filters by the given goarch.
 func ByGoarch(s string) Filter {
 	return func(a *Artifact) bool {
-		return a.Goarch == s
+		return a.Arch == s
 	}
 }
 
@@ -473,7 +498,7 @@ func ByGoarm(s string) Filter {
 		case "zig":
 			return s == experimental.DefaultGOARM()
 		default:
-			return a.Goarm == s
+			return a.Arm == s
 		}
 	}
 }
@@ -485,7 +510,7 @@ func ByGoamd64(s string) Filter {
 		case "zig":
 			return s == "v1"
 		default:
-			return a.Goamd64 == s
+			return a.Amd64 == s
 		}
 	}
 }
