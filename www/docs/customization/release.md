@@ -36,6 +36,12 @@ release:
   # Available only for GitHub.
   replace_existing_draft: true
 
+  # Whether to use an existing draft release as the target release.
+  #
+  # Available only for GitHub.
+  # Since: v2.5.
+  use_existing_draft: true
+
   # Whether to remove an artifact that already exists.
   #
   # Available only for GitHub.

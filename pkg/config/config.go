@@ -742,6 +742,7 @@ type Release struct {
 	Gitea                  Repo        `yaml:"gitea,omitempty" json:"gitea,omitempty"`
 	Draft                  bool        `yaml:"draft,omitempty" json:"draft,omitempty"`
 	ReplaceExistingDraft   bool        `yaml:"replace_existing_draft,omitempty" json:"replace_existing_draft,omitempty"`
+	UseExistingDraft       bool        `yaml:"use_existing_draft,omitempty" json:"use_existing_draft,omitempty"`
 	TargetCommitish        string      `yaml:"target_commitish,omitempty" json:"target_commitish,omitempty"`
 	Disable                string      `yaml:"disable,omitempty" json:"disable,omitempty" jsonschema:"oneof_type=string;boolean"`
 	SkipUpload             string      `yaml:"skip_upload,omitempty" json:"skip_upload,omitempty" jsonschema:"oneof_type=string;boolean"`
