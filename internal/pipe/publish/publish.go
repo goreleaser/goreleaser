@@ -9,6 +9,7 @@ import (
 	"github.com/goreleaser/goreleaser/v2/internal/middleware/skip"
 	"github.com/goreleaser/goreleaser/v2/internal/pipe/artifactory"
 	"github.com/goreleaser/goreleaser/v2/internal/pipe/aur"
+	"github.com/goreleaser/goreleaser/v2/internal/pipe/aursources"
 	"github.com/goreleaser/goreleaser/v2/internal/pipe/blob"
 	"github.com/goreleaser/goreleaser/v2/internal/pipe/brew"
 	"github.com/goreleaser/goreleaser/v2/internal/pipe/chocolatey"
@@ -56,6 +57,7 @@ func New() Pipe {
 			winget.Pipe{},
 			brew.Pipe{},
 			aur.Pipe{},
+			aursources.Pipe{},
 			krew.Pipe{},
 			scoop.Pipe{},
 			chocolatey.Pipe{},

@@ -1,0 +1,16 @@
+pkgbase = double-quote-inside-description
+	pkgdesc = This is a "test"
+	pkgver = 1.0.1
+	pkgrel = 1
+	arch = aarch64
+	arch = x86_64
+	license = MIT
+	makedepends = go
+	makedepends = git
+	conflicts = double-quote-inside-description
+	provides = double-quote-inside-description
+	
+	source = https://dummyhost/download/v1.0.1-foo/sources.tar.gz
+	sha256sums = e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
+	
+pkgname = double-quote-inside-description

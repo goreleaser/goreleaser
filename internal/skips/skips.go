@@ -29,6 +29,7 @@ const (
 	Homebrew       Key = "homebrew"
 	Nix            Key = "nix"
 	AUR            Key = "aur"
+	AURSource      Key = "aur-source"
 	NFPM           Key = "nfpm"
 	Chocolatey     Key = "chocolatey"
 	Notarize       Key = "notarize"
@@ -116,6 +117,7 @@ var Release = Keys{
 	Homebrew,
 	Nix,
 	AUR,
+	AURSource,
 	NFPM,
 	Before,
 	Notarize,
