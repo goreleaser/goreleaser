@@ -24,8 +24,8 @@ To drop into a shell with all the needed dependencies.
 
 ```bash
 cd ./www
-docker build -t material-mkdocs
-docker run --rm -it -p 8000:8000 -v .:/docs material
+docker build -t material-mkdocs .
+docker run --rm -it -p 8000:8000 -v .:/docs material-mkdocs
 ```
 
 ---
