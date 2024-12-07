@@ -1,11 +1,11 @@
 {{- define "linux_packages" }}
 {{- range $element := .LinuxPackages }}
   {{- if eq $element.Arch "amd64" }}
-  on_intel do
+  if Hardware::CPU.intel?
     if Hardware::CPU.is_64_bit?
   {{- end }}
   {{- if or (eq $element.Arch "arm") (eq $element.Arch "arm64") }}
-  on_arm do
+  if Hardware::CPU.arm?
   {{- if eq $element.Arch "arm64" }}
     if Hardware::CPU.is_64_bit?
   {{- else }}
