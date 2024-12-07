@@ -3,6 +3,7 @@ package docker
 import (
 	"errors"
 	"fmt"
+	"io"
 	"io/fs"
 	"net/http"
 	"os"
@@ -367,6 +368,9 @@ func doPush(ctx *context.Context, img imager, name string, flags []string) (stri
 }
 
 func isRetryable(err error) bool {
+	if errors.Is(err, io.EOF) {
+		return true
+	}
 	for _, code := range []int{
 		http.StatusInternalServerError,
 		// http.StatusNotImplemented,
