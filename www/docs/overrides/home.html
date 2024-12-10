@@ -5,7 +5,7 @@
 
 <style>
 	:root {
-		--goreleaser-primary-color: #3b5672;
+		--goreleaser-primary-color: #163959;
 	}
 
 	.md-header {
@@ -38,7 +38,7 @@
 	}
 
 	.gradient-text {
-		background: linear-gradient(to right, var(--md-primary-bg-color), var(--md-accent-fg-color));
+		background: linear-gradient(to right, var(--md-primary-bg-color), var(--goreleaser-primary-color));
 		-webkit-background-clip: text;
 		-webkit-text-fill-color: transparent;
 		background-clip: text;
@@ -150,9 +150,9 @@
 
 	.tx-hero .md-button:focus,
 	.tx-hero .md-button:hover {
-		background-color: var(--md-accent-fg-color);
+		background-color: var(--goreleaser-primary-color);
 		color: var(--md-default-bg-color);
-		border-color: var(--md-accent-fg-color);
+		border-color: var(--goreleaser-primary-color);
 	}
 
 	@media screen and (max-width: 70em) {
@@ -210,7 +210,7 @@
 		}
 
 		.tx-hero__image img {
-			max-width: 20rem;
+			max-width: 30rem;
 		}
 	}
 </style>
@@ -218,7 +218,7 @@
 	<div class="md-grid md-typeset">
 		<div class="tx-hero">
 			<div class="tx-hero__image">
-				<img src="static/logo.png" alt="" draggable="false" />
+				<img src="static/goreleaser_hero.png" width="100%" alt="GoReleaser hero image" draggable="false" />
 			</div>
 			<div class="tx-hero__content">
 				<h1 style="font-size: 3rem;" class="gradient-text">
