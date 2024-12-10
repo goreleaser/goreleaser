@@ -18,6 +18,7 @@ import (
 	"github.com/chrismellard/docker-credential-acr-env/pkg/credhelper"
 	"github.com/google/go-containerregistry/pkg/authn"
 	"github.com/google/go-containerregistry/pkg/authn/github"
+	"github.com/google/go-containerregistry/pkg/crane"
 	"github.com/google/go-containerregistry/pkg/name"
 	v1 "github.com/google/go-containerregistry/pkg/v1"
 	"github.com/google/go-containerregistry/pkg/v1/google"
@@ -125,11 +126,16 @@ func (Pipe) Default(ctx *context.Context) error {
 			ko.SBOM = "spdx"
 		}
 
-		if repo := ctx.Env["KO_DOCKER_REPO"]; repo != "" {
-			ko.Repository = repo
+		if ko.Repository != "" {
+			ko.Repositories = append(ko.Repositories, ko.Repository)
+			deprecate.Notice(ctx, "kos.repository")
 		}
 
-		if ko.Repository == "" {
+		if repo := ctx.Env["KO_DOCKER_REPO"]; repo != "" {
+			ko.Repositories = []string{repo}
+		}
+
+		if len(ko.Repository) == 0 {
 			return errNoRepository
 		}
 
@@ -161,7 +167,7 @@ type buildOptions struct {
 	main                string
 	flags               []string
 	env                 []string
-	imageRepo           string
+	imageRepos          []string
 	workingDir          string
 	platforms           []string
 	baseImage           string
@@ -267,7 +273,7 @@ func doBuild(ctx *context.Context, ko config.Ko) func() error {
 		}
 
 		po := &options.PublishOptions{
-			DockerRepo:          opts.imageRepo,
+			DockerRepo:          opts.imageRepos[0],
 			Bare:                opts.bare,
 			PreserveImportPaths: opts.preserveImportPaths,
 			BaseImportPaths:     opts.baseImportPaths,
@@ -284,7 +290,7 @@ func doBuild(ctx *context.Context, ko config.Ko) func() error {
 			)
 		} else {
 			p, err = publish.NewDefault(
-				opts.imageRepo,
+				opts.imageRepos[0],
 				publish.WithTags(opts.tags),
 				publish.WithNamer(options.MakeNamer(po)),
 				publish.WithAuthFromKeychain(keychain),
@@ -302,21 +308,45 @@ func doBuild(ctx *context.Context, ko config.Ko) func() error {
 			return fmt.Errorf("close: %w", err)
 		}
 
-		art := &artifact.Artifact{
-			Type:  artifact.DockerManifest,
-			Name:  ref.Name(),
-			Path:  ref.Name(),
-			Extra: map[string]interface{}{},
+		ctx.Artifacts.Add(makeArtifact(
+			ko.ID,
+			ref.Name(),
+			ref.Context().Digest(ref.Identifier()).DigestStr(),
+		))
+
+		src := ref.Name()
+		for i := 1; i < len(opts.imageRepos); i++ {
+			for _, tag := range opts.tags {
+				dst := opts.imageRepos[i] + ":" + tag
+				if err := crane.Copy(src, dst, crane.WithAuthFromKeychain(keychain)); err != nil {
+					return fmt.Errorf("ko: could not copy %q to %q: %w", src, dst, err)
+				}
+				digest, err := crane.Digest(dst, crane.WithAuthFromKeychain(keychain))
+				if err != nil {
+					return fmt.Errorf("ko: could get digest of %q: %w", dst, err)
+				}
+				ctx.Artifacts.Add(makeArtifact(ko.ID, dst, digest))
+			}
 		}
-		if ko.ID != "" {
-			art.Extra[artifact.ExtraID] = ko.ID
-		}
-		if digest := ref.Context().Digest(ref.Identifier()).DigestStr(); digest != "" {
-			art.Extra[artifact.ExtraDigest] = digest
-		}
-		ctx.Artifacts.Add(art)
+
 		return nil
 	}
+}
+
+func makeArtifact(id, name, digest string) *artifact.Artifact {
+	art := &artifact.Artifact{
+		Type:  artifact.DockerManifest,
+		Name:  name,
+		Path:  name,
+		Extra: map[string]interface{}{},
+	}
+	if id != "" {
+		art.Extra[artifact.ExtraID] = id
+	}
+	if digest != "" {
+		art.Extra[artifact.ExtraDigest] = digest
+	}
+	return art
 }
 
 func findBuild(ctx *context.Context, ko config.Ko) (config.Build, error) {
@@ -363,7 +393,7 @@ func buildBuildOptions(ctx *context.Context, cfg config.Ko) (*buildOptions, erro
 		baseImage:           cfg.BaseImage,
 		platforms:           cfg.Platforms,
 		sbom:                cfg.SBOM,
-		imageRepo:           cfg.Repository,
+		imageRepos:          cfg.Repositories,
 		user:                cfg.User,
 	}
 
