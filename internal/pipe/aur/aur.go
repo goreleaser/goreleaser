@@ -3,13 +3,14 @@ package aur
 import (
 	"bufio"
 	"bytes"
+	"cmp"
 	"crypto/sha256"
 	"errors"
 	"fmt"
 	"os"
 	"path"
 	"path/filepath"
-	"sort"
+	"slices"
 	"strings"
 	"text/template"
 
@@ -340,9 +341,9 @@ func dataFor(ctx *context.Context, cfg config.AUR, cl client.ReleaseURLTemplater
 		result.Arches = append(result.Arches, releasePackage.Arch)
 	}
 
-	sort.Strings(result.Arches)
-	sort.Slice(result.ReleasePackages, func(i, j int) bool {
-		return result.ReleasePackages[i].Arch < result.ReleasePackages[j].Arch
+	slices.Sort(result.Arches)
+	slices.SortFunc(result.ReleasePackages, func(a, b releasePackage) int {
+		return cmp.Compare(a.Arch, b.Arch)
 	})
 	return result, nil
 }

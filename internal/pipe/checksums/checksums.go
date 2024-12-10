@@ -3,11 +3,12 @@
 package checksums
 
 import (
+	"cmp"
 	"errors"
 	"fmt"
 	"os"
 	"path/filepath"
-	"sort"
+	"slices"
 	"strings"
 	"sync"
 
@@ -167,7 +168,10 @@ func refreshAll(ctx *context.Context, filepath string) error {
 	defer file.Close()
 
 	// sort to ensure the signature is deterministic downstream
-	sort.Sort(ByFilename(sumLines))
+	slices.SortFunc(sumLines, func(a, b string) int {
+		// sort by the filename of a checksum line ("{checksum}  {filename}\n")
+		return cmp.Compare(strings.Split(a, "  ")[1], strings.Split(b, "  ")[1])
+	})
 	_, err = file.WriteString(strings.Join(sumLines, ""))
 	return err
 }
@@ -218,14 +222,4 @@ func checksums(algorithm string, a *artifact.Artifact) (string, error) {
 	a.Extra[artifactChecksumExtra] = fmt.Sprintf("%s:%s", algorithm, sha)
 
 	return fmt.Sprintf("%v  %v\n", sha, a.Name), nil
-}
-
-// ByFilename implements sort.Interface for []string based on
-// the filename of a checksum line ("{checksum}  {filename}\n")
-type ByFilename []string
-
-func (s ByFilename) Len() int      { return len(s) }
-func (s ByFilename) Swap(i, j int) { s[i], s[j] = s[j], s[i] }
-func (s ByFilename) Less(i, j int) bool {
-	return strings.Split(s[i], "  ")[1] < strings.Split(s[j], "  ")[1]
 }
