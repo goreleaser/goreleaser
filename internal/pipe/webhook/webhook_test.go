@@ -230,7 +230,7 @@ func TestAnnounceAdditionalHeadersWebhook(t *testing.T) {
 	require.NoError(t, Pipe{}.Announce(ctx))
 }
 
-func TestAnnounceExepectedStatusCodesWebhook(t *testing.T) {
+func TestAnnounceExpectedStatusCodesWebhook(t *testing.T) {
 	responseServer := WebHookServerMockMessage{
 		Response: "Thanks for the announcement!",
 		UUID:     uuid.New(),
