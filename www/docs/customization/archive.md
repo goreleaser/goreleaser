@@ -258,7 +258,7 @@ archives:
 
 This would add all files matching the glob `none*`, provide that you don't
 have any files matching that glob, only the binary will be added to the
-archive.
+archive. Any glob that doesn't match any file should work.
 
 For more information, check [#602](https://github.com/goreleaser/goreleaser/issues/602)
 
@@ -285,17 +285,15 @@ extracted with something like `gzip -d file.gz`.
     You won't be able to package multiple builds in a single archive either.
     The alternative is to declare multiple archives filtering by build ID.
 
-## Disable archiving
+## Do not archive
 
-You can do that by setting `format` to `binary`:
+If you want to publish the binaries directly, without any archiving, you can do
+so by setting `format` to `binary`:
 
 ```yaml title=".goreleaser.yaml"
 archives:
   - format: binary
 ```
 
-Make sure to check the rest of the documentation above, as doing this has some
-implications.
-
-If you have customization that might rely on archives, for instance,
-`brews.install`, make sure to fix them too.
+You can then set a custom `name_template`, which will be the name used when
+uploading the binary to the release, for example.
