@@ -135,7 +135,7 @@ func (Pipe) Default(ctx *context.Context) error {
 			ko.Repositories = []string{repo}
 		}
 
-		if len(ko.Repository) == 0 {
+		if len(ko.Repositories) == 0 {
 			return errNoRepository
 		}
 
@@ -313,6 +313,12 @@ func doBuild(ctx *context.Context, ko config.Ko) func() error {
 			ref.Name(),
 			ref.Context().Digest(ref.Identifier()).DigestStr(),
 		))
+
+		if ctx.Snapshot {
+			// do not copy images when snapshoting, as these images will be
+			// local only anyway.
+			return nil
+		}
 
 		src := ref.Name()
 		for i := 1; i < len(opts.imageRepos); i++ {
