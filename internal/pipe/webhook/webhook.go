@@ -25,7 +25,7 @@ const (
 	DefaultContentType     = "application/json; charset=utf-8"
 )
 
-var defaultExepctedStatusCodes = []int{
+var defaultExpectedStatusCodes = []int{
 	http.StatusOK, http.StatusCreated, http.StatusAccepted, http.StatusNoContent,
 }
 
@@ -47,7 +47,7 @@ func (p Pipe) Default(ctx *context.Context) error {
 		ctx.Config.Announce.Webhook.ContentType = DefaultContentType
 	}
 	if len(ctx.Config.Announce.Webhook.ExpectedStatusCodes) == 0 {
-		ctx.Config.Announce.Webhook.ExpectedStatusCodes = defaultExepctedStatusCodes
+		ctx.Config.Announce.Webhook.ExpectedStatusCodes = defaultExpectedStatusCodes
 	}
 	return nil
 }

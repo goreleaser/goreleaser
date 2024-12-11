@@ -1420,7 +1420,7 @@ func TestOverrides(t *testing.T) {
 		}, dets)
 	})
 
-	t.Run("with goarm64 unespecified", func(t *testing.T) {
+	t.Run("with goarm64 unspecified", func(t *testing.T) {
 		dets, err := withOverrides(
 			testctx.New(),
 			config.Build{
@@ -1471,7 +1471,7 @@ func TestOverrides(t *testing.T) {
 		}, dets)
 	})
 
-	t.Run("with goarm unespecified", func(t *testing.T) {
+	t.Run("with goarm unspecified", func(t *testing.T) {
 		dets, err := withOverrides(
 			testctx.New(),
 			config.Build{
@@ -1522,7 +1522,7 @@ func TestOverrides(t *testing.T) {
 		}, dets)
 	})
 
-	t.Run("with gomips unespecified", func(t *testing.T) {
+	t.Run("with gomips unspecified", func(t *testing.T) {
 		dets, err := withOverrides(
 			testctx.New(),
 			config.Build{
@@ -1573,7 +1573,7 @@ func TestOverrides(t *testing.T) {
 		}, dets)
 	})
 
-	t.Run("with goriscv64 unespecified", func(t *testing.T) {
+	t.Run("with goriscv64 unspecified", func(t *testing.T) {
 		dets, err := withOverrides(
 			testctx.New(),
 			config.Build{
@@ -1625,7 +1625,7 @@ func TestOverrides(t *testing.T) {
 		}, dets)
 	})
 
-	t.Run("with go386 unespecified", func(t *testing.T) {
+	t.Run("with go386 unspecified", func(t *testing.T) {
 		dets, err := withOverrides(
 			testctx.New(),
 			config.Build{

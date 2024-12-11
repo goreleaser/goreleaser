@@ -481,7 +481,7 @@ func split(s string) []string {
 // that more resembles a valid Ruby class name
 // e.g. foo_bar@v6.0.0-rc is turned into FooBarATv6_0_0RC
 //
-// This function must match the behavior of Homewbrews's Formulary.class_s function:
+// This function must match the behavior of Homebrew's Formulary.class_s function:
 //
 //	<https://github.com/Homebrew/brew/blob/587949bd8417c486795be04194f9e9baeaa9f5a7/Library/Homebrew/formulary.rb#L522-L528>
 func formulaNameFor(name string) string {

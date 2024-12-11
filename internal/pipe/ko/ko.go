@@ -487,7 +487,7 @@ func validateMainPath(path string) error {
 	if matched, _ := regexp.MatchString(`^\.?(\.\/[^\/]?.*)?$`, path); !matched {
 		return errInvalidMainPath
 	}
-	// paths sure can have dots in them, but if the path ends in .go, it's propably a file that one misundertood as a valid value
+	// paths sure can have dots in them, but if the path ends in .go, it's probably a file that one misundertood as a valid value
 	if strings.HasSuffix(path, ".go") {
 		return errInvalidMainGoPath
 	}
