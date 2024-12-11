@@ -2091,6 +2091,12 @@
 					"repository": {
 						"type": "string"
 					},
+					"repositories": {
+						"items": {
+							"type": "string"
+						},
+						"type": "array"
+					},
 					"platforms": {
 						"items": {
 							"type": "string"
