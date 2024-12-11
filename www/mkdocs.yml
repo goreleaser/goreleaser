@@ -1,7 +1,13 @@
 site_name: GoReleaser
 site_url: https://goreleaser.com
 site_description: Deliver Go binaries as fast and easily as possible
-copyright: Made with 🩶 by GoReleaser contributors.
+copyright: >
+  Made with 🩶 by the
+  <a href="https://github.com/goreleaser/goreleaser/graphs/contributors"
+    target="_blank"
+    rel="noopener">
+    GoReleaser contributors
+  </a>
 repo_name: goreleaser/goreleaser
 repo_url: https://github.com/goreleaser/goreleaser
 edit_uri: edit/main/www/docs/
@@ -75,7 +81,7 @@ plugins:
         as_creation: date
 
 extra:
-  extra:
+  generator: false
   analytics:
     provider: google
     property: "G-3MZGQS8EPS"
