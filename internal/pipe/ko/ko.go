@@ -315,7 +315,7 @@ func doBuild(ctx *context.Context, ko config.Ko) func() error {
 			ref.Context().Digest(ref.Identifier()).DigestStr(),
 		))
 
-		if ctx.Snapshot {
+		if ctx.Snapshot || len(opts.imageRepos) == 1 {
 			// do not copy images when snapshoting, as these images will be
 			// local only anyway.
 			return nil
@@ -325,15 +325,9 @@ func doBuild(ctx *context.Context, ko config.Ko) func() error {
 		for i := 1; i < len(opts.imageRepos); i++ {
 			for _, tag := range opts.tags {
 				dst := opts.imageRepos[i] + ":" + tag
-				log.WithField("src", src).
-					WithField("dst", dst).
-					Info("copying manifest")
-				if err := crane.Copy(src, dst, crane.WithAuthFromKeychain(keychain)); err != nil {
-					return fmt.Errorf("ko: could not copy %q to %q: %w", src, dst, err)
-				}
-				digest, err := crane.Digest(dst, crane.WithAuthFromKeychain(keychain))
+				digest, err := copyImage(src, dst)
 				if err != nil {
-					return fmt.Errorf("ko: could get digest of %q: %w", dst, err)
+					return err
 				}
 				ctx.Artifacts.Add(makeArtifact(ko.ID, dst, digest))
 			}
@@ -341,22 +335,6 @@ func doBuild(ctx *context.Context, ko config.Ko) func() error {
 
 		return nil
 	}
-}
-
-func makeArtifact(id, name, digest string) *artifact.Artifact {
-	art := &artifact.Artifact{
-		Type:  artifact.DockerManifest,
-		Name:  name,
-		Path:  name,
-		Extra: map[string]interface{}{},
-	}
-	if id != "" {
-		art.Extra[artifact.ExtraID] = id
-	}
-	if digest != "" {
-		art.Extra[artifact.ExtraDigest] = digest
-	}
-	return art
 }
 
 func findBuild(ctx *context.Context, ko config.Ko) (config.Build, error) {
@@ -532,4 +510,34 @@ func validateMainPath(path string) error {
 		return errInvalidMainGoPath
 	}
 	return nil
+}
+
+func copyImage(src, dst string) (string, error) {
+	log.WithField("src", src).
+		WithField("dst", dst).
+		Info("copying manifest")
+	if err := crane.Copy(src, dst, crane.WithAuthFromKeychain(keychain)); err != nil {
+		return "", fmt.Errorf("ko: could not copy %q to %q: %w", src, dst, err)
+	}
+	digest, err := crane.Digest(dst, crane.WithAuthFromKeychain(keychain))
+	if err != nil {
+		return "", fmt.Errorf("ko: could get digest of %q: %w", dst, err)
+	}
+	return digest, nil
+}
+
+func makeArtifact(id, name, digest string) *artifact.Artifact {
+	art := &artifact.Artifact{
+		Type:  artifact.DockerManifest,
+		Name:  name,
+		Path:  name,
+		Extra: map[string]interface{}{},
+	}
+	if id != "" {
+		art.Extra[artifact.ExtraID] = id
+	}
+	if digest != "" {
+		art.Extra[artifact.ExtraDigest] = digest
+	}
+	return art
 }
