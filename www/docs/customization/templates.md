@@ -84,16 +84,26 @@ You should be able to use all its fields on each item:
 
 - `.Name`
 - `.Path`
-- `.Goos`
-- `.Goarch`
-- `.Goarm`
-- `.Gomips`
-- `.Goamd64`
-- `.Goarm64` (since v2.4)
-- `.Gomips64` (since v2.4)
-- `.Goppc64` (since v2.4)
-- `.Goriscv64` (since v2.4)
-- `.Go386` (since v2.4)
+- `.Goos` (deprecated in v2.5).
+- `.Goarch` (deprecated in v2.5).
+- `.Goarm` (deprecated in v2.5).
+- `.Gomips` (deprecated in v2.5).
+- `.Goamd64` (deprecated in v2.5).
+- `.Goarm64` (since v2.4, deprecated in v2.5).
+- `.Gomips64` (since v2.4, deprecated in v2.5).
+- `.Goppc64` (since v2.4, deprecated in v2.5).
+- `.Goriscv64` (since v2.4, deprecated in v2.5).
+- `.Go386` (since v2.4, deprecated in v2.5).
+- `Os` (Since v2.5)
+- `Arch` (Since v2.5)
+- `Arm` (Since v2.5)
+- `Arm64` (Since v2.5)
+- `Amd64` (Since v2.5)
+- `Mips` (Since v2.5)
+- `Mips64` (Since v2.5)
+- `Ppc64` (Since v2.5)
+- `Riscv64` (Since v2.5)
+- `I386` (Since v2.5)
 - `.Target` (Since v2.5)
 - `.Type`
 - `.Extra`
