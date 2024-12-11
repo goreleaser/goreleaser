@@ -1359,7 +1359,7 @@ type Webhook struct {
 	EndpointURL         string            `yaml:"endpoint_url,omitempty" json:"endpoint_url,omitempty"`
 	Headers             map[string]string `yaml:"headers,omitempty" json:"headers,omitempty"`
 	ContentType         string            `yaml:"content_type,omitempty" json:"content_type,omitempty"`
-	ExpectedStatusCodes []int             `yaml:"exected_status_codes,omitempty" json:"expected_status_codes,omitempty"`
+	ExpectedStatusCodes []int             `yaml:"expected_status_codes,omitempty" json:"expected_status_codes,omitempty"`
 }
 
 type Twitter struct {
