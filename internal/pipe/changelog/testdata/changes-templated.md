@@ -1,1 +1,1 @@
-c0ff33 coffeee {{ .Tag }}
+c0ff33 coffee {{ .Tag }}
