@@ -113,7 +113,7 @@ func TestDefaultNoImage(t *testing.T) {
 			{},
 		},
 	})
-	require.ErrorIs(t, Pipe{}.Default(ctx), errNoRepository)
+	require.ErrorIs(t, Pipe{}.Default(ctx), errNoRepositories)
 }
 
 func TestDescription(t *testing.T) {

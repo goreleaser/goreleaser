@@ -52,7 +52,7 @@ var (
 		azureKeychain,
 	)
 
-	errNoRepository      = errors.New("ko: missing repository: please set either the repository field or a $KO_DOCKER_REPO environment variable")
+	errNoRepositories    = errors.New("ko: missing repositories: please set either the repository field or a $KO_DOCKER_REPO environment variable")
 	errInvalidMainPath   = errors.New("ko: invalid Main path: ko.main (or build.main if ko.main is not set) should be a relative path")
 	errInvalidMainGoPath = errors.New("ko: invalid Main path: your path should point to a directory instead of a .go file")
 )
@@ -137,7 +137,7 @@ func (Pipe) Default(ctx *context.Context) error {
 		}
 
 		if len(ko.Repositories) == 0 {
-			return errNoRepository
+			return errNoRepositories
 		}
 
 		ids.Inc(ko.ID)
