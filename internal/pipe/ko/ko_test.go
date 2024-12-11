@@ -22,15 +22,17 @@ import (
 )
 
 const (
-	registryPort = "5052"
-	registry     = "localhost:5052/"
+	registry1Port = "5052"
+	registry1     = "localhost:5052/"
+	registry2Port = "5053"
+	registry2     = "localhost:5053/"
 )
 
 func TestDefault(t *testing.T) {
 	ctx := testctx.NewWithCfg(config.Project{
 		Env: []string{
-			"KO_DOCKER_REPO=" + registry,
-			"COSIGN_REPOSITORY=" + registry,
+			"KO_DOCKER_REPO=" + registry1,
+			"COSIGN_REPOSITORY=" + registry1,
 			"LDFLAGS=foobar",
 			"FLAGS=barfoo",
 			"LE_ENV=test",
@@ -53,24 +55,24 @@ func TestDefault(t *testing.T) {
 	})
 	require.NoError(t, Pipe{}.Default(ctx))
 	require.Equal(t, config.Ko{
-		ID:         "test",
-		Build:      "test",
-		BaseImage:  chainguardStatic,
-		Repository: registry,
-		Platforms:  []string{"linux/amd64"},
-		SBOM:       "spdx",
-		Tags:       []string{"latest"},
-		WorkingDir: ".",
-		Ldflags:    []string{"{{.Env.LDFLAGS}}"},
-		Flags:      []string{"{{.Env.FLAGS}}"},
-		Env:        []string{"SOME_ENV={{.Env.LE_ENV}}"},
+		ID:           "test",
+		Build:        "test",
+		BaseImage:    chainguardStatic,
+		Repositories: []string{registry1},
+		Platforms:    []string{"linux/amd64"},
+		SBOM:         "spdx",
+		Tags:         []string{"latest"},
+		WorkingDir:   ".",
+		Ldflags:      []string{"{{.Env.LDFLAGS}}"},
+		Flags:        []string{"{{.Env.FLAGS}}"},
+		Env:          []string{"SOME_ENV={{.Env.LE_ENV}}"},
 	}, ctx.Config.Kos[0])
 }
 
 func TestDefaultCycloneDX(t *testing.T) {
 	ctx := testctx.NewWithCfg(config.Project{
 		ProjectName: "test",
-		Env:         []string{"KO_DOCKER_REPO=" + registry},
+		Env:         []string{"KO_DOCKER_REPO=" + registry1},
 		Kos: []config.Ko{
 			{SBOM: "cyclonedx"},
 		},
@@ -86,7 +88,7 @@ func TestDefaultCycloneDX(t *testing.T) {
 func TestDefaultGoVersionM(t *testing.T) {
 	ctx := testctx.NewWithCfg(config.Project{
 		ProjectName: "test",
-		Env:         []string{"KO_DOCKER_REPO=" + registry},
+		Env:         []string{"KO_DOCKER_REPO=" + registry1},
 		Kos: []config.Ko{
 			{SBOM: "go.version-m"},
 		},
@@ -111,7 +113,7 @@ func TestDefaultNoImage(t *testing.T) {
 			{},
 		},
 	})
-	require.ErrorIs(t, Pipe{}.Default(ctx), errNoRepository)
+	require.ErrorIs(t, Pipe{}.Default(ctx), errNoRepositories)
 }
 
 func TestDescription(t *testing.T) {
@@ -158,7 +160,8 @@ func TestPublishPipeNoMatchingBuild(t *testing.T) {
 func TestPublishPipeSuccess(t *testing.T) {
 	testlib.SkipIfWindows(t, "ko doesn't work in windows")
 	testlib.CheckPath(t, "docker")
-	testlib.StartRegistry(t, "ko_registry", registryPort)
+	testlib.StartRegistry(t, "ko_registry1", registry1Port)
+	testlib.StartRegistry(t, "ko_registry2", registry2Port)
 
 	chainguardStaticLabels := map[string]string{
 		"dev.chainguard.package.main":      "",
@@ -242,7 +245,10 @@ func TestPublishPipeSuccess(t *testing.T) {
 		},
 	}
 
-	repository := fmt.Sprintf("%sgoreleasertest/testapp", registry)
+	repositories := []string{
+		fmt.Sprintf("%sgoreleasertest/testapp", registry1),
+		fmt.Sprintf("%sgoreleasertest/testapp", registry2),
+	}
 
 	for _, table := range table {
 		t.Run(table.Name, func(t *testing.T) {
@@ -267,7 +273,7 @@ func TestPublishPipeSuccess(t *testing.T) {
 						Build:              "foo",
 						WorkingDir:         "./testdata/app/",
 						BaseImage:          table.BaseImage,
-						Repository:         repository,
+						Repositories:       repositories,
 						Labels:             table.Labels,
 						Annotations:        table.Annotations,
 						User:               table.User,
@@ -293,7 +299,7 @@ func TestPublishPipeSuccess(t *testing.T) {
 			require.NoError(t, Pipe{}.Publish(ctx))
 
 			manifests := ctx.Artifacts.Filter(artifact.ByType(artifact.DockerManifest)).List()
-			require.Len(t, manifests, 1)
+			require.Len(t, manifests, 2) // both registries
 			require.NotEmpty(t, manifests[0].Name)
 			require.Equal(t, manifests[0].Name, manifests[0].Path)
 			require.NotEmpty(t, manifests[0].Extra[artifact.ExtraDigest])
@@ -304,6 +310,7 @@ func TestPublishPipeSuccess(t *testing.T) {
 			tags = removeEmpty(tags)
 			require.Len(t, tags, 1)
 
+			repository := repositories[0]
 			ref, err := name.ParseReference(
 				fmt.Sprintf("%s:latest", repository),
 				name.Insecure,
@@ -314,6 +321,13 @@ func TestPublishPipeSuccess(t *testing.T) {
 
 			ref, err = name.ParseReference(
 				fmt.Sprintf("%s:%s", repository, tags[0]),
+				name.Insecure,
+			)
+			require.NoError(t, err)
+
+			repository2 := repositories[1]
+			_, err = name.ParseReference(
+				fmt.Sprintf("%s:%s", repository2, tags[0]),
 				name.Insecure,
 			)
 			require.NoError(t, err)

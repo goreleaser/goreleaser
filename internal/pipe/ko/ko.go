@@ -15,9 +15,11 @@ import (
 	"time"
 
 	"github.com/awslabs/amazon-ecr-credential-helper/ecr-login"
+	"github.com/caarlos0/log"
 	"github.com/chrismellard/docker-credential-acr-env/pkg/credhelper"
 	"github.com/google/go-containerregistry/pkg/authn"
 	"github.com/google/go-containerregistry/pkg/authn/github"
+	"github.com/google/go-containerregistry/pkg/crane"
 	"github.com/google/go-containerregistry/pkg/name"
 	v1 "github.com/google/go-containerregistry/pkg/v1"
 	"github.com/google/go-containerregistry/pkg/v1/google"
@@ -50,7 +52,7 @@ var (
 		azureKeychain,
 	)
 
-	errNoRepository      = errors.New("ko: missing repository: please set either the repository field or a $KO_DOCKER_REPO environment variable")
+	errNoRepositories    = errors.New("ko: missing repositories: please set either the repository field or a $KO_DOCKER_REPO environment variable")
 	errInvalidMainPath   = errors.New("ko: invalid Main path: ko.main (or build.main if ko.main is not set) should be a relative path")
 	errInvalidMainGoPath = errors.New("ko: invalid Main path: your path should point to a directory instead of a .go file")
 )
@@ -125,12 +127,17 @@ func (Pipe) Default(ctx *context.Context) error {
 			ko.SBOM = "spdx"
 		}
 
-		if repo := ctx.Env["KO_DOCKER_REPO"]; repo != "" {
-			ko.Repository = repo
+		if ko.Repository != "" {
+			ko.Repositories = append(ko.Repositories, ko.Repository)
+			deprecate.Notice(ctx, "kos.repository")
 		}
 
-		if ko.Repository == "" {
-			return errNoRepository
+		if repo := ctx.Env["KO_DOCKER_REPO"]; repo != "" {
+			ko.Repositories = []string{repo}
+		}
+
+		if len(ko.Repositories) == 0 {
+			return errNoRepositories
 		}
 
 		ids.Inc(ko.ID)
@@ -161,7 +168,7 @@ type buildOptions struct {
 	main                string
 	flags               []string
 	env                 []string
-	imageRepo           string
+	imageRepos          []string
 	workingDir          string
 	platforms           []string
 	baseImage           string
@@ -267,7 +274,7 @@ func doBuild(ctx *context.Context, ko config.Ko) func() error {
 		}
 
 		po := &options.PublishOptions{
-			DockerRepo:          opts.imageRepo,
+			DockerRepo:          opts.imageRepos[0],
 			Bare:                opts.bare,
 			PreserveImportPaths: opts.preserveImportPaths,
 			BaseImportPaths:     opts.baseImportPaths,
@@ -284,7 +291,7 @@ func doBuild(ctx *context.Context, ko config.Ko) func() error {
 			)
 		} else {
 			p, err = publish.NewDefault(
-				opts.imageRepo,
+				opts.imageRepos[0],
 				publish.WithTags(opts.tags),
 				publish.WithNamer(options.MakeNamer(po)),
 				publish.WithAuthFromKeychain(keychain),
@@ -302,19 +309,30 @@ func doBuild(ctx *context.Context, ko config.Ko) func() error {
 			return fmt.Errorf("close: %w", err)
 		}
 
-		art := &artifact.Artifact{
-			Type:  artifact.DockerManifest,
-			Name:  ref.Name(),
-			Path:  ref.Name(),
-			Extra: map[string]interface{}{},
+		ctx.Artifacts.Add(makeArtifact(
+			ko.ID,
+			ref.Name(),
+			ref.Context().Digest(ref.Identifier()).DigestStr(),
+		))
+
+		if ctx.Snapshot || len(opts.imageRepos) == 1 {
+			// do not copy images when snapshoting, as these images will be
+			// local only anyway.
+			return nil
 		}
-		if ko.ID != "" {
-			art.Extra[artifact.ExtraID] = ko.ID
+
+		src := ref.Name()
+		for i := 1; i < len(opts.imageRepos); i++ {
+			for _, tag := range opts.tags {
+				dst := opts.imageRepos[i] + ":" + tag
+				digest, err := copyImage(src, dst)
+				if err != nil {
+					return err
+				}
+				ctx.Artifacts.Add(makeArtifact(ko.ID, dst, digest))
+			}
 		}
-		if digest := ref.Context().Digest(ref.Identifier()).DigestStr(); digest != "" {
-			art.Extra[artifact.ExtraDigest] = digest
-		}
-		ctx.Artifacts.Add(art)
+
 		return nil
 	}
 }
@@ -363,7 +381,7 @@ func buildBuildOptions(ctx *context.Context, cfg config.Ko) (*buildOptions, erro
 		baseImage:           cfg.BaseImage,
 		platforms:           cfg.Platforms,
 		sbom:                cfg.SBOM,
-		imageRepo:           cfg.Repository,
+		imageRepos:          cfg.Repositories,
 		user:                cfg.User,
 	}
 
@@ -492,4 +510,34 @@ func validateMainPath(path string) error {
 		return errInvalidMainGoPath
 	}
 	return nil
+}
+
+func copyImage(src, dst string) (string, error) {
+	log.WithField("src", src).
+		WithField("dst", dst).
+		Info("copying manifest")
+	if err := crane.Copy(src, dst, crane.WithAuthFromKeychain(keychain)); err != nil {
+		return "", fmt.Errorf("ko: could not copy %q to %q: %w", src, dst, err)
+	}
+	digest, err := crane.Digest(dst, crane.WithAuthFromKeychain(keychain))
+	if err != nil {
+		return "", fmt.Errorf("ko: could not get digest of %q: %w", dst, err)
+	}
+	return digest, nil
+}
+
+func makeArtifact(id, name, digest string) *artifact.Artifact {
+	art := &artifact.Artifact{
+		Type:  artifact.DockerManifest,
+		Name:  name,
+		Path:  name,
+		Extra: map[string]interface{}{},
+	}
+	if id != "" {
+		art.Extra[artifact.ExtraID] = id
+	}
+	if digest != "" {
+		art.Extra[artifact.ExtraDigest] = digest
+	}
+	return art
 }
