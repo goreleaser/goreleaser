@@ -5,12 +5,13 @@
 package krew
 
 import (
+	"cmp"
 	"errors"
 	"fmt"
 	"os"
 	"path"
 	"path/filepath"
-	"sort"
+	"slices"
 	"strings"
 
 	"github.com/caarlos0/log"
@@ -251,8 +252,8 @@ func manifestFor(
 		}
 	}
 
-	sort.Slice(result.Spec.Platforms, func(i, j int) bool {
-		return result.Spec.Platforms[i].URI > result.Spec.Platforms[j].URI
+	slices.SortFunc(result.Spec.Platforms, func(a, b Platform) int {
+		return -cmp.Compare(a.URI, b.URI)
 	})
 
 	return result, nil

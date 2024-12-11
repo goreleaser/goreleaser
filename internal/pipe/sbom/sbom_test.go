@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
-	"sort"
 	"strings"
 	"testing"
 
@@ -561,7 +560,6 @@ func testSBOMCataloging(
 	)
 
 	wantFiles := append(artifacts, sbomPaths...)
-	sort.Strings(wantFiles)
 	require.ElementsMatch(tb, wantFiles, gotFiles, "SBOM paths differ")
 
 	var sbomArtifacts []string
