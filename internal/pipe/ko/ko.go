@@ -521,7 +521,7 @@ func copyImage(src, dst string) (string, error) {
 	}
 	digest, err := crane.Digest(dst, crane.WithAuthFromKeychain(keychain))
 	if err != nil {
-		return "", fmt.Errorf("ko: could get digest of %q: %w", dst, err)
+		return "", fmt.Errorf("ko: could not get digest of %q: %w", dst, err)
 	}
 	return digest, nil
 }

@@ -58,7 +58,7 @@ kos:
     # first one using crane.
     #
     # Default: [ '$KO_DOCKER_REPO' ].
-    repository:
+    repositories:
       - ghcr.io/foo/bar
       - foo/bar
 
