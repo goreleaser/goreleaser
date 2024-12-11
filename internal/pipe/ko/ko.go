@@ -15,6 +15,7 @@ import (
 	"time"
 
 	"github.com/awslabs/amazon-ecr-credential-helper/ecr-login"
+	"github.com/caarlos0/log"
 	"github.com/chrismellard/docker-credential-acr-env/pkg/credhelper"
 	"github.com/google/go-containerregistry/pkg/authn"
 	"github.com/google/go-containerregistry/pkg/authn/github"
@@ -324,6 +325,9 @@ func doBuild(ctx *context.Context, ko config.Ko) func() error {
 		for i := 1; i < len(opts.imageRepos); i++ {
 			for _, tag := range opts.tags {
 				dst := opts.imageRepos[i] + ":" + tag
+				log.WithField("src", src).
+					WithField("dst", dst).
+					Info("copying manifest")
 				if err := crane.Copy(src, dst, crane.WithAuthFromKeychain(keychain)); err != nil {
 					return fmt.Errorf("ko: could not copy %q to %q: %w", src, dst, err)
 				}
