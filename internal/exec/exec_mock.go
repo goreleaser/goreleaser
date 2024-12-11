@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"os"
 	"reflect"
-	"sort"
+	"slices"
 	"strings"
 )
 
@@ -82,10 +82,10 @@ func ExecuteMockData(jsonData string) int {
 			item.ExpectedEnv = []string{}
 		}
 
-		sort.Strings(givenEnv)
-		sort.Strings(item.ExpectedEnv)
-		sort.Strings(givenArgs)
-		sort.Strings(item.ExpectedArgs)
+		slices.Sort(givenEnv)
+		slices.Sort(item.ExpectedEnv)
+		slices.Sort(givenArgs)
+		slices.Sort(item.ExpectedArgs)
 
 		if reflect.DeepEqual(item.ExpectedArgs, givenArgs) &&
 			reflect.DeepEqual(item.ExpectedEnv, givenEnv) {

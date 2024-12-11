@@ -3,6 +3,7 @@ package brew
 import (
 	"bufio"
 	"bytes"
+	"cmp"
 	"errors"
 	"fmt"
 	"maps"
@@ -10,7 +11,6 @@ import (
 	"path"
 	"path/filepath"
 	"slices"
-	"sort"
 	"strings"
 	"text/template"
 
@@ -386,8 +386,8 @@ func installs(ctx *context.Context, cfg config.Homebrew, art *artifact.Artifact)
 }
 
 func dataFor(ctx *context.Context, cfg config.Homebrew, cl client.ReleaseURLTemplater, artifacts []*artifact.Artifact) (templateData, error) {
-	sort.Slice(cfg.Dependencies, func(i, j int) bool {
-		return cfg.Dependencies[i].Name < cfg.Dependencies[j].Name
+	slices.SortFunc(cfg.Dependencies, func(a, b config.HomebrewDependency) int {
+		return cmp.Compare(a.Name, b.Name)
 	})
 	result := templateData{
 		Name:          formulaNameFor(cfg.Name),
@@ -460,13 +460,13 @@ func dataFor(ctx *context.Context, cfg config.Homebrew, cl client.ReleaseURLTemp
 		result.HasOnlyAmd64MacOsPkg = true
 	}
 
-	sort.Slice(result.LinuxPackages, lessFnFor(result.LinuxPackages))
-	sort.Slice(result.MacOSPackages, lessFnFor(result.MacOSPackages))
+	slices.SortStableFunc(result.LinuxPackages, compareByArch)
+	slices.SortStableFunc(result.MacOSPackages, compareByArch)
 	return result, nil
 }
 
-func lessFnFor(list []releasePackage) func(i, j int) bool {
-	return func(i, j int) bool { return list[i].Arch < list[j].Arch }
+func compareByArch(a, b releasePackage) int {
+	return cmp.Compare(a.Arch, b.Arch)
 }
 
 func split(s string) []string {

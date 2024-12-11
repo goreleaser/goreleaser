@@ -2,12 +2,13 @@
 package archivefiles
 
 import (
+	"cmp"
 	"errors"
 	"fmt"
 	"io/fs"
 	"os"
 	"path/filepath"
-	"sort"
+	"slices"
 	"time"
 
 	"github.com/caarlos0/log"
@@ -62,8 +63,8 @@ func Eval(template *tmpl.Template, files []config.File) ([]config.File, error) {
 		}
 	}
 
-	sort.Slice(result, func(i, j int) bool {
-		return result[i].Destination < result[j].Destination
+	slices.SortFunc(result, func(a, b config.File) int {
+		return cmp.Compare(a.Destination, b.Destination)
 	})
 
 	return unique(result), nil
