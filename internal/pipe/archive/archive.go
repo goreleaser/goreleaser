@@ -172,8 +172,8 @@ func create(ctx *context.Context, arch config.Archive, binaries []*artifact.Arti
 	lock.Unlock()
 	defer archiveFile.Close()
 
-	log := log.WithField("archive", archivePath)
-	log.Info("creating")
+	log := log.WithField("name", archivePath)
+	log.Info("archiving")
 
 	wrap, err := template.Apply(wrapFolder(arch))
 	if err != nil {
@@ -262,7 +262,7 @@ func skip(ctx *context.Context, archive config.Archive, binaries []*artifact.Art
 		finalName := name + artifact.ExtraOr(*binary, artifact.ExtraExt, "")
 		log.WithField("binary", binary.Name).
 			WithField("name", finalName).
-			Info("skip archiving")
+			Info("archiving")
 		ctx.Artifacts.Add(&artifact.Artifact{
 			Type:      artifact.UploadableBinary,
 			Name:      finalName,
