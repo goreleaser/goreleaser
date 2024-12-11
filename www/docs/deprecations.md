@@ -39,6 +39,28 @@ Description.
 
 -->
 
+### kos.repository
+
+> since v2.5
+
+Use `repositories` instead. It allows to create multiple images with Ko, without
+having to rebuild each of them.
+
+=== "Before"
+
+    ```yaml
+    kos:
+      - repository: foo/bar
+    ```
+
+=== "After"
+
+    ```yaml
+    kos:
+      - repositories:
+          - foo/bar
+    ```
+
 ### builds.gobinary
 
 > since v2.5

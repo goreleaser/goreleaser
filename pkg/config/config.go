@@ -401,7 +401,8 @@ type Ko struct {
 	Labels              map[string]string `yaml:"labels,omitempty" json:"labels,omitempty"`
 	Annotations         map[string]string `yaml:"annotations,omitempty" json:"annotations,omitempty"`
 	User                string            `yaml:"user,omitempty" json:"user,omitempty"`
-	Repository          string            `yaml:"repository,omitempty" json:"repository,omitempty"`
+	Repository          string            `yaml:"repository,omitempty" json:"repository,omitempty" jsonschema:"deprecated=true"` // Deprecated: use [Repositories].
+	Repositories        []string          `yaml:"repositories,omitempty" json:"repositories,omitempty"`
 	Platforms           []string          `yaml:"platforms,omitempty" json:"platforms,omitempty"`
 	Tags                []string          `yaml:"tags,omitempty" json:"tags,omitempty"`
 	CreationTime        string            `yaml:"creation_time,omitempty" json:"creation_time,omitempty"`
