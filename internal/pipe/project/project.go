@@ -10,7 +10,7 @@ import (
 	"github.com/goreleaser/goreleaser/v2/pkg/context"
 )
 
-// Pipe implemens defaulter to set the project name.
+// Pipe implements defaulter to set the project name.
 type Pipe struct{}
 
 func (Pipe) String() string {

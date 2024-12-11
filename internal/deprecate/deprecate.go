@@ -21,14 +21,12 @@ func Notice(ctx *context.Context, property string) {
 
 var urlPropertyReplacer = strings.NewReplacer(
 	".", "",
-	"_", "",
 	":", "",
 	" ", "-",
 )
 
 // NoticeCustom warns the user about the deprecation of the given property.
 func NoticeCustom(ctx *context.Context, property, tmpl string) {
-	// replaces . and _ with -
 	url := baseURL + urlPropertyReplacer.Replace(property)
 	var out bytes.Buffer
 	if err := template.

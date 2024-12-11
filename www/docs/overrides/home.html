@@ -5,7 +5,7 @@
 
 <style>
 	:root {
-		--goreleaser-primary-color: #3b5672;
+		--goreleaser-primary-color: #163959;
 	}
 
 	.md-header {
@@ -26,10 +26,7 @@
 
 	[data-md-color-scheme="slate"] .tx-container {
 		padding-top: 1rem;
-		background:
-			url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1123 258'><path d='M1124,2c0,0 0,256 0,256l-1125,0l0,-48c0,0 16,5 55,5c116,0 197,-92 325,-92c121,0 114,46 254,46c140,0 214,-167 572,-166Z' style='fill: hsla(232, 15%, 21%, 1)'/></svg>")
-				no-repeat bottom,
-			linear-gradient(
+		background: linear-gradient(
 				to bottom,
 				var(--md-primary-fg-color),
 				var(--goreleaser-primary-color) 99%,
@@ -38,7 +35,7 @@
 	}
 
 	.gradient-text {
-		background: linear-gradient(to right, var(--md-primary-bg-color), var(--md-accent-fg-color));
+		background: linear-gradient(to right, var(--md-primary-bg-color), var(--goreleaser-primary-color));
 		-webkit-background-clip: text;
 		-webkit-text-fill-color: transparent;
 		background-clip: text;
@@ -69,7 +66,7 @@
 
 	[data-md-color-scheme="slate"] .tx-container-2 {
 		margin-top: -50px;
-		background-color: hsla(232, 15%, 21%, 1);
+		background-color: #163754;
 	}
 
 	.tx-container-2 {
@@ -150,9 +147,9 @@
 
 	.tx-hero .md-button:focus,
 	.tx-hero .md-button:hover {
-		background-color: var(--md-accent-fg-color);
+		background-color: var(--goreleaser-primary-color);
 		color: var(--md-default-bg-color);
-		border-color: var(--md-accent-fg-color);
+		border-color: var(--goreleaser-primary-color);
 	}
 
 	@media screen and (max-width: 70em) {
@@ -210,7 +207,7 @@
 		}
 
 		.tx-hero__image img {
-			max-width: 20rem;
+			max-width: 30rem;
 		}
 	}
 </style>
@@ -218,7 +215,7 @@
 	<div class="md-grid md-typeset">
 		<div class="tx-hero">
 			<div class="tx-hero__image">
-				<img src="static/logo.png" alt="" draggable="false" />
+				<img src="static/goreleaser_hero.png" width="100%" alt="GoReleaser hero image" draggable="false" />
 			</div>
 			<div class="tx-hero__content">
 				<h1 style="font-size: 3rem;" class="gradient-text">
@@ -226,7 +223,7 @@
 				</h1>
 				<p>
 					We handle the complexities of releasing so you can focus
-					in building what really matters: your software.
+					in building what really matters: <strong>your software</strong>.
 				</p>
 				<a
 					href="{{ page.next_page.url | url }}"
@@ -249,7 +246,7 @@
 <section class="tx-container-2">
 	<div class="md-grid md-typeset hide-small">
 		<img
-			src="/static/goreleaser.svg"
+			src="/static/goreleaser.png"
 			alt="GoReleaser releasing an example project."/>
 	</div>
 	<div class="md-grid md-typeset" style="max-width: 40rem; padding-top: 3rem; margin-bottom: 3rem;">

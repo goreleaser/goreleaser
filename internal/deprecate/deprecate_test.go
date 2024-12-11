@@ -20,7 +20,7 @@ func TestNotice(t *testing.T) {
 
 	log.Info("first")
 	ctx := testctx.New()
-	Notice(ctx, "foo.bar.whatever: foobar")
+	Notice(ctx, "foo.bar_whatever: foobar")
 	log.Info("last")
 	require.True(t, ctx.Deprecated)
 

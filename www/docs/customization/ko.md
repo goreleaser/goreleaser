@@ -52,9 +52,20 @@ kos:
     # The default user the image should be run as.
     user: "1234:1234"
 
+    # Repositories to push to.
+    #
+    # First one will be used on Ko build, the other ones will be copied from the
+    # first one using crane.
+    #
+    # Default: [ '$KO_DOCKER_REPO' ].
+    repositories:
+      - ghcr.io/foo/bar
+      - foo/bar
+
     # Repository to push to.
     #
     # Default: '$KO_DOCKER_REPO'.
+    # Deprecated: use 'repositories' instead.
     repository: ghcr.io/foo/bar
 
     # Platforms to build and publish.

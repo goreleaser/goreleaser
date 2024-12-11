@@ -401,7 +401,8 @@ type Ko struct {
 	Labels              map[string]string `yaml:"labels,omitempty" json:"labels,omitempty"`
 	Annotations         map[string]string `yaml:"annotations,omitempty" json:"annotations,omitempty"`
 	User                string            `yaml:"user,omitempty" json:"user,omitempty"`
-	Repository          string            `yaml:"repository,omitempty" json:"repository,omitempty"`
+	Repository          string            `yaml:"repository,omitempty" json:"repository,omitempty" jsonschema:"deprecated=true"` // Deprecated: use [Repositories].
+	Repositories        []string          `yaml:"repositories,omitempty" json:"repositories,omitempty"`
 	Platforms           []string          `yaml:"platforms,omitempty" json:"platforms,omitempty"`
 	Tags                []string          `yaml:"tags,omitempty" json:"tags,omitempty"`
 	CreationTime        string            `yaml:"creation_time,omitempty" json:"creation_time,omitempty"`
@@ -1358,7 +1359,7 @@ type Webhook struct {
 	EndpointURL         string            `yaml:"endpoint_url,omitempty" json:"endpoint_url,omitempty"`
 	Headers             map[string]string `yaml:"headers,omitempty" json:"headers,omitempty"`
 	ContentType         string            `yaml:"content_type,omitempty" json:"content_type,omitempty"`
-	ExpectedStatusCodes []int             `yaml:"exected_status_codes,omitempty" json:"expected_status_codes,omitempty"`
+	ExpectedStatusCodes []int             `yaml:"expected_status_codes,omitempty" json:"expected_status_codes,omitempty"`
 }
 
 type Twitter struct {

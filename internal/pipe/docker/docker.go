@@ -5,10 +5,11 @@ import (
 	"fmt"
 	"io"
 	"io/fs"
+	"maps"
 	"net/http"
 	"os"
 	"path/filepath"
-	"sort"
+	"slices"
 	"strings"
 	"time"
 
@@ -88,17 +89,13 @@ func (Pipe) Default(ctx *context.Context) error {
 }
 
 func validateImager(use string) error {
-	valid := make([]string, 0, len(imagers))
-	for k := range imagers {
-		valid = append(valid, k)
-	}
-	for _, s := range valid {
+	valid := maps.Keys(imagers)
+	for s := range valid {
 		if s == use {
 			return nil
 		}
 	}
-	sort.Strings(valid)
-	return fmt.Errorf("docker: invalid use: %s, valid options are %v", use, valid)
+	return fmt.Errorf("docker: invalid use: %s, valid options are %v", use, slices.Sorted(valid))
 }
 
 // Publish the docker images.

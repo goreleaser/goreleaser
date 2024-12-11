@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"maps"
 	"slices"
-	"sort"
 	"strings"
 
 	"github.com/goreleaser/goreleaser/v2/pkg/context"
@@ -98,7 +97,7 @@ func (keys Keys) Complete(prefix string) []string {
 			result = append(result, string(k))
 		}
 	}
-	sort.Strings(result)
+	slices.Sort(result)
 	return result
 }
 

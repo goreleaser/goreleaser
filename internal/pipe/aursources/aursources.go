@@ -9,7 +9,7 @@ import (
 	"os"
 	"path"
 	"path/filepath"
-	"sort"
+	"slices"
 	"strings"
 	"text/template"
 
@@ -304,7 +304,7 @@ func dataFor(ctx *context.Context, cfg config.AURSource, cl client.ReleaseURLTem
 		}
 	}
 
-	sort.Strings(result.Arches)
+	slices.Sort(result.Arches)
 
 	return result, nil
 }
