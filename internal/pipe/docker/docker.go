@@ -89,13 +89,10 @@ func (Pipe) Default(ctx *context.Context) error {
 }
 
 func validateImager(use string) error {
-	valid := maps.Keys(imagers)
-	for s := range valid {
-		if s == use {
-			return nil
-		}
+	if _, ok := imagers[use]; ok {
+		return nil
 	}
-	return fmt.Errorf("docker: invalid use: %s, valid options are %v", use, slices.Sorted(valid))
+	return fmt.Errorf("docker: invalid use: %s, valid options are %v", use, slices.Sorted(maps.Keys(imagers)))
 }
 
 // Publish the docker images.
