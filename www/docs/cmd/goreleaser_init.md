@@ -22,5 +22,5 @@ goreleaser init [flags]
 
 ## See also
 
-* [goreleaser](goreleaser.md)	 - Deliver Go binaries as fast and easily as possible
+* [goreleaser](goreleaser.md)	 - Release engineering, simplified
 
