@@ -1,3 +1,4 @@
+// Package cargo provides Rust's Cargo.toml parsing.
 package cargo
 
 import (
@@ -6,6 +7,7 @@ import (
 	"github.com/BurntSushi/toml"
 )
 
+// Cargo a parsed Cargo.toml.
 type Cargo struct {
 	Package struct {
 		Name string
@@ -15,9 +17,10 @@ type Cargo struct {
 	}
 }
 
-func Open(path string) (Cargo, error) {
+// Open and parse the given file name.
+func Open(name string) (Cargo, error) {
 	var cargo Cargo
-	bts, err := os.ReadFile(path)
+	bts, err := os.ReadFile(name)
 	if err != nil {
 		return cargo, err
 	}
