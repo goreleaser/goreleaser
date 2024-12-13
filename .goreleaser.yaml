@@ -118,7 +118,7 @@ dockers:
       - "--label=io.artifacthub.package.logo-url=https://goreleaser.com/static/avatar.png"
       - '--label=io.artifacthub.package.maintainers=[{"name":"Carlos Alexandro Becker","email":"carlos@carlosbecker.dev"}]'
       - "--label=io.artifacthub.package.license=MIT"
-      - "--label=org.opencontainers.image.description=Deliver Go binaries as fast and easily as possible"
+      - "--label=org.opencontainers.image.description=Release engineering, simplified"
       - "--label=org.opencontainers.image.created={{.Date}}"
       - "--label=org.opencontainers.image.name={{.ProjectName}}"
       - "--label=org.opencontainers.image.revision={{.FullCommit}}"
@@ -138,7 +138,7 @@ dockers:
       - "--label=io.artifacthub.package.logo-url=https://goreleaser.com/static/avatar.png"
       - '--label=io.artifacthub.package.maintainers=[{"name":"Carlos Alexandro Becker","email":"carlos@carlosbecker.dev"}]'
       - "--label=io.artifacthub.package.license=MIT"
-      - "--label=org.opencontainers.image.description=Deliver Go binaries as fast and easily as possible"
+      - "--label=org.opencontainers.image.description=Release engineering, simplified"
       - "--label=org.opencontainers.image.created={{.Date}}"
       - "--label=org.opencontainers.image.name={{.ProjectName}}"
       - "--label=org.opencontainers.image.revision={{.FullCommit}}"
@@ -219,7 +219,7 @@ brews:
     directory: Formula
     goarm: "7"
     homepage: https://goreleaser.com
-    description: Deliver Go binaries as fast and easily as possible
+    description: Release engineering, simplified
     license: MIT
     test: |
       system "#{bin}/goreleaser -v"
@@ -245,7 +245,7 @@ nix:
       owner: goreleaser
       name: nur
     homepage: https://goreleaser.com
-    description: Deliver Go binaries as fast and easily as possible
+    description: Release engineering, simplified
     path: pkgs/goreleaser/default.nix
     license: mit
     extra_install: |-
@@ -257,7 +257,7 @@ winget:
     publisher: goreleaser
     license: MIT
     homepage: https://goreleaser.com
-    short_description: Deliver Go binaries as fast and easily as possible
+    short_description: Release engineering, simplified
     repository:
       owner: goreleaser
       name: winget-pkgs
@@ -272,7 +272,7 @@ winget:
 
 aurs:
   - homepage: https://goreleaser.com
-    description: Deliver Go binaries as fast and easily as possible
+    description: Release engineering, simplified
     maintainers:
       - "Fernandez Ludovic <lfernandez dot dev at gmail dot com>"
       - "Carlos Alexandro Becker <carlos at becker dot software>"
@@ -303,7 +303,7 @@ scoops:
       name: scoop-bucket
     directory: bucket
     homepage: https://goreleaser.com
-    description: Deliver Go binaries as fast and easily as possible
+    description: Release engineering, simplified
     license: MIT
 
 nfpms:
@@ -311,9 +311,9 @@ nfpms:
     id: packages
     homepage: https://goreleaser.com
     description: |-
-      Deliver Go binaries as fast and easily as possible.
-      GoReleaser allows you to release easily build, package, publish and
-      announce to several places at one go.
+      Release engineering, simplified.
+      GoReleaser allows you to release easily build, package, publish, and
+      announce to several places.
     maintainer: Carlos Alexandro Becker <carlos@becker.software>
     license: MIT
     vendor: GoReleaser
@@ -358,11 +358,10 @@ nfpms:
 
 snapcrafts:
   - name_template: "{{ .ProjectName }}_{{ .Arch }}{{ if .Arm }}v{{ .Arm }}{{ end }}"
-    summary: Deliver Go binaries as fast and easily as possible
+    summary: Release engineering, simplified
     description: |
-      GoReleaser builds Go binaries for several platforms, creates a GitHub
-      release and then pushes a Homebrew formula to a repository. All that
-      wrapped in your favorite CI.
+      GoReleaser allows you to release easily build, package, publish, and
+      announce to several places.
     grade: stable
     confinement: classic
     publish: true

@@ -1,6 +1,6 @@
 site_name: GoReleaser
 site_url: https://goreleaser.com
-site_description: Deliver Go binaries as fast and easily as possible
+site_description: Release engineering, simplified.
 copyright: >
   Made with 🩶 by the
   <a href="https://github.com/goreleaser/goreleaser/graphs/contributors"
