@@ -1,4 +1,4 @@
-package rust
+package cargo
 
 import (
 	"os"
@@ -7,12 +7,15 @@ import (
 )
 
 type Cargo struct {
+	Package struct {
+		Name string
+	}
 	Workspace struct {
 		Members []string
 	}
 }
 
-func parseCargo(path string) (Cargo, error) {
+func Open(path string) (Cargo, error) {
 	var cargo Cargo
 	bts, err := os.ReadFile(path)
 	if err != nil {

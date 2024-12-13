@@ -1,6 +1,7 @@
 package project
 
 import (
+	"os"
 	"os/exec"
 	"testing"
 
@@ -72,6 +73,14 @@ func TestEmptyProjectName_DefaultsToGoModPath(t *testing.T) {
 	_ = testlib.Mktmp(t)
 	ctx := testctx.New()
 	require.NoError(t, exec.Command("go", "mod", "init", "github.com/foo/bar").Run())
+	require.NoError(t, Pipe{}.Default(ctx))
+	require.Equal(t, "bar", ctx.Config.ProjectName)
+}
+
+func TestEmptyProjectName_DefaultsToCargo(t *testing.T) {
+	_ = testlib.Mktmp(t)
+	ctx := testctx.New()
+	require.NoError(t, os.WriteFile("Cargo.toml", []byte("[package]\nname = \"bar\""), 0o644))
 	require.NoError(t, Pipe{}.Default(ctx))
 	require.Equal(t, "bar", ctx.Config.ProjectName)
 }
