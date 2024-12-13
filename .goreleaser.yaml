@@ -312,8 +312,8 @@ nfpms:
     homepage: https://goreleaser.com
     description: |-
       Release engineering, simplified.
-      GoReleaser allows you to release easily build, package, publish and
-      announce to several places at one go.
+      GoReleaser allows you to release easily build, package, publish, and
+      announce to several places.
     maintainer: Carlos Alexandro Becker <carlos@becker.software>
     license: MIT
     vendor: GoReleaser
@@ -360,9 +360,8 @@ snapcrafts:
   - name_template: "{{ .ProjectName }}_{{ .Arch }}{{ if .Arm }}v{{ .Arm }}{{ end }}"
     summary: Release engineering, simplified
     description: |
-      GoReleaser builds binaries for several platforms, creates a GitHub
-      release and then pushes a Homebrew formula to a repository. All that
-      wrapped in your favorite CI.
+      GoReleaser allows you to release easily build, package, publish, and
+      announce to several places.
     grade: stable
     confinement: classic
     publish: true
