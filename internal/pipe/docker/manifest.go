@@ -114,13 +114,10 @@ func (ManifestPipe) Publish(ctx *context.Context) error {
 }
 
 func validateManifester(use string) error {
-	valid := maps.Keys(manifesters)
-	for s := range valid {
-		if s == use {
-			return nil
-		}
+	if _, ok := manifesters[use]; ok {
+		return nil
 	}
-	return fmt.Errorf("docker manifest: invalid use: %s, valid options are %v", use, slices.Sorted(valid))
+	return fmt.Errorf("docker manifest: invalid use: %s, valid options are %v", use, slices.Sorted(maps.Keys(manifesters)))
 }
 
 func manifestName(ctx *context.Context, manifest config.DockerManifest) (string, error) {

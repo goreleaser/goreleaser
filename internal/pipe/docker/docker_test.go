@@ -1442,3 +1442,25 @@ func TestIsFileNotFoundError(t *testing.T) {
 		require.True(t, isFileNotFoundError(`./foo: not found: not found`))
 	})
 }
+
+func TestValidateImager(t *testing.T) {
+	tests := []struct {
+		use       string
+		wantError string
+	}{
+		{use: "docker"},
+		{use: "buildx"},
+		{use: "notFound", wantError: "docker: invalid use: notFound, valid options are [buildx docker]"},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.use, func(t *testing.T) {
+			err := validateImager(tt.use)
+			if tt.wantError != "" {
+				require.EqualError(t, err, tt.wantError)
+				return
+			}
+			require.NoError(t, err)
+		})
+	}
+}
