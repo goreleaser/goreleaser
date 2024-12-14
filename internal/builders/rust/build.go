@@ -11,6 +11,7 @@ import (
 
 	"github.com/caarlos0/log"
 	"github.com/goreleaser/goreleaser/v2/internal/artifact"
+	"github.com/goreleaser/goreleaser/v2/internal/cargo"
 	"github.com/goreleaser/goreleaser/v2/internal/gio"
 	"github.com/goreleaser/goreleaser/v2/internal/tmpl"
 	api "github.com/goreleaser/goreleaser/v2/pkg/build"
@@ -156,7 +157,7 @@ func (b *Builder) WithDefaults(build config.Build) (config.Build, error) {
 
 // Build implements build.Builder.
 func (b *Builder) Build(ctx *context.Context, build config.Build, options api.Options) error {
-	cargot, err := parseCargo(filepath.Join(build.Dir, "Cargo.toml"))
+	cargot, err := cargo.Open(filepath.Join(build.Dir, "Cargo.toml"))
 	if err != nil {
 		return err
 	}

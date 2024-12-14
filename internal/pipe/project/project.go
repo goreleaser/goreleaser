@@ -6,6 +6,7 @@ import (
 	"os/exec"
 	"strings"
 
+	"github.com/goreleaser/goreleaser/v2/internal/cargo"
 	"github.com/goreleaser/goreleaser/v2/internal/git"
 	"github.com/goreleaser/goreleaser/v2/pkg/context"
 )
@@ -24,6 +25,7 @@ func (Pipe) Default(ctx *context.Context) error {
 	}
 
 	for _, candidate := range []string{
+		cargoName(),
 		ctx.Config.Release.GitHub.Name,
 		ctx.Config.Release.GitLab.Name,
 		ctx.Config.Release.Gitea.Name,
@@ -38,6 +40,17 @@ func (Pipe) Default(ctx *context.Context) error {
 	}
 
 	return errors.New("couldn't guess project_name, please add it to your config")
+}
+
+func cargoName() string {
+	cargo, err := cargo.Open("Cargo.toml")
+	if err != nil {
+		return ""
+	}
+	if n := cargo.Package.Name; n != "" {
+		return n
+	}
+	return ""
 }
 
 func moduleName() string {

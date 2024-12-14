@@ -49,7 +49,7 @@ var asciiArt string
 
 func buildVersion(version, commit, date, builtBy, treeState string) goversion.Info {
 	return goversion.GetVersionInfo(
-		goversion.WithAppDetails("goreleaser", "Deliver Go Binaries as fast and easily as possible", website),
+		goversion.WithAppDetails("goreleaser", "Release engineering, simplified.", website),
 		goversion.WithASCIIName(asciiArt),
 		func(i *goversion.Info) {
 			if commit != "" {

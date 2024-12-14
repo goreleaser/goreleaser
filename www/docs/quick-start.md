@@ -106,6 +106,11 @@ Check your GitHub project's releases page!
   </figure>
 </a>
 
+## Other languages
+
+Aside from the Go specifics, the process should be the same for the other
+languages we support.
+
 ## Dry run
 
 If you want to test everything before doing a release "for real", you can

@@ -1,10 +1,10 @@
 # goreleaser
 
-Deliver Go binaries as fast and easily as possible
+Release engineering, simplified
 
 ## Synopsis
 
-GoReleaser is a release automation tool for Go projects.
+GoReleaser is a release automation tool.
 Its goal is to simplify the build, release and publish steps while providing variant customization options for all steps.
 
 GoReleaser is built for CI tools, you only need to download and execute it in your build script. Of course, you can also install it locally if you wish.
