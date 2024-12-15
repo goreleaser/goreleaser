@@ -311,13 +311,13 @@ func TestGroupByPlatform(t *testing.T) {
 			Name:   "foobar",
 			Goos:   "linux",
 			Goarch: "mips",
-			Goarm:  "softfloat",
+			Gomips: "softfloat",
 		},
 		{
 			Name:   "foobar",
 			Goos:   "linux",
 			Goarch: "mips",
-			Goarm:  "hardfloat",
+			Gomips: "hardfloat",
 		},
 		{
 			Name: "check",
@@ -335,6 +335,53 @@ func TestGroupByPlatform(t *testing.T) {
 	require.Len(t, groups["linuxarm6"], 1)
 	require.Len(t, groups["linuxmipssoftfloat"], 1)
 	require.Len(t, groups["linuxmipshardfloat"], 1)
+}
+
+func TestGroupByPlatform_mixingBuilders(t *testing.T) {
+	data := []*Artifact{
+		{
+			Name:   "foo",
+			Goos:   "linux",
+			Goarch: "amd64",
+		},
+		{
+			Name:    "bar",
+			Goos:    "linux",
+			Goarch:  "amd64",
+			Goamd64: "v1",
+		},
+		{
+			Name:   "foo",
+			Goos:   "linux",
+			Goarch: "mips",
+		},
+		{
+			Name:   "bar",
+			Goos:   "linux",
+			Goarch: "mips",
+			Gomips: "hardfloat",
+		},
+		{
+			Name:   "foo",
+			Goos:   "linux",
+			Goarch: "arm",
+			Goarm:  "6",
+		},
+		{
+			Name:   "bar",
+			Goos:   "linux",
+			Goarch: "arm",
+		},
+	}
+	artifacts := New()
+	for _, a := range data {
+		artifacts.Add(a)
+	}
+	groups := artifacts.GroupByPlatform()
+	require.Len(t, groups, 3)
+	require.Len(t, groups["linuxamd64"], 2)
+	require.Len(t, groups["linuxmips"], 2)
+	require.Len(t, groups["linuxarm"], 2)
 }
 
 func TestChecksum(t *testing.T) {

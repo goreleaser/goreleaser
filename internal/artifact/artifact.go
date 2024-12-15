@@ -14,8 +14,10 @@ import (
 	"hash"
 	"hash/crc32"
 	"io"
+	"maps"
 	"os"
 	"path/filepath"
+	"slices"
 	"strings"
 	"sync"
 
@@ -369,12 +371,40 @@ func (artifacts *Artifacts) GroupByID() map[string][]*Artifact {
 
 // GroupByPlatform groups the artifacts by their platform.
 func (artifacts *Artifacts) GroupByPlatform() map[string][]*Artifact {
-	result := map[string][]*Artifact{}
+	// we'll try to keep the most basic platform as group (goos+goarch).
+	// we'll though group it further if we have multiple goarm, goamd64, or
+	// gomips, to keep compatibility with previous versions of goreleaser.
+	simpleResult := map[string][]*Artifact{}
+	specificResult := map[string][]*Artifact{}
+	goamd64s := map[string]struct{}{}
+	gomipses := map[string]struct{}{}
+	goarms := map[string]struct{}{}
 	for _, a := range artifacts.List() {
-		plat := a.Goos + a.Goarch + a.Goarm + a.Gomips + a.Goamd64
-		result[plat] = append(result[plat], a)
+		plat := a.Goos + a.Goarch
+		fullplat := plat + a.Goarm + a.Gomips + a.Goamd64
+		goamd64s[a.Goamd64] = struct{}{}
+		gomipses[a.Gomips] = struct{}{}
+		goarms[a.Goarm] = struct{}{}
+		simpleResult[plat] = append(simpleResult[plat], a)
+		specificResult[fullplat] = append(specificResult[fullplat], a)
 	}
-	return result
+
+	if len(nonEmpty(goamd64s)) > 1 ||
+		len(nonEmpty(gomipses)) > 1 ||
+		len(nonEmpty(goarms)) > 1 {
+		return specificResult
+	}
+
+	return simpleResult
+}
+
+func nonEmpty(m map[string]struct{}) []string {
+	return slices.DeleteFunc(
+		slices.Collect(maps.Keys(m)),
+		func(s string) bool {
+			return s == ""
+		},
+	)
 }
 
 func relPath(a *Artifact) (string, error) {
