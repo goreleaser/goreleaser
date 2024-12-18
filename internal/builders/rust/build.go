@@ -166,7 +166,17 @@ func (b *Builder) Build(ctx *context.Context, build config.Build, options api.Op
 	// command, and we currently don't support that either.
 	// We should build something generic enough for both cases, I think.
 	if len(cargot.Workspace.Members) > 0 {
-		return fmt.Errorf("goreleaser does not support cargo workspaces, please set the build 'dir' to one of the workspaces you want to build, e.g. 'dir: %q'", cargot.Workspace.Members[0])
+		var hasflag bool
+		for _, flag := range build.Flags {
+			if strings.HasPrefix(flag, "-p") ||
+				strings.HasPrefix(flag, "--package") {
+				hasflag = true
+				break
+			}
+		}
+		if !hasflag {
+			return fmt.Errorf("you need to specify which workspace to build, please add '-p=%s' (for example) to your build flags", cargot.Workspace.Members[0])
+		}
 	}
 	t := options.Target.(Target)
 	a := &artifact.Artifact{
