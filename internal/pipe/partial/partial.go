@@ -23,7 +23,7 @@ func (Pipe) Run(ctx *context.Context) error {
 
 	for _, b := range ctx.Config.Builds {
 		if b.Builder == "go" {
-			ctx.PartialTarget = getFilter()
+			ctx.PartialTarget = getGoEnvFilter()
 		}
 	}
 
@@ -46,9 +46,7 @@ var archExtraEnvs = map[string][]string{
 	"riscv64":  {"GGORISCV64", "GORISCV64"},
 }
 
-func getFilter() string {
-	// all this below only applies to go builds though.
-	// TODO: probably check if at least we have any Go builds?
+func getGoEnvFilter() string {
 	goos := cmp.Or(os.Getenv("GGOOS"), os.Getenv("GOOS"), runtime.GOOS)
 	goarch := cmp.Or(os.Getenv("GGOARCH"), os.Getenv("GOARCH"), runtime.GOARCH)
 
