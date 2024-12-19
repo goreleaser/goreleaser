@@ -54,6 +54,7 @@ Please refer to our [contributing guidelines](CONTRIBUTING.md) for further infor
 [![Sponsors on Open Collective](https://opencollective.com/goreleaser/sponsors/badge.svg?style=for-the-badge)](https://opencollective.com/goreleaser/sponsors/)
 [![Conventional Commits](https://img.shields.io/badge/Conventional%20Commits-1.0.0-yellow.svg?style=for-the-badge)](https://conventionalcommits.org)
 [![CII Best Practices](https://img.shields.io/cii/summary/5420?label=openssf%20best%20practices&style=for-the-badge)](https://bestpractices.coreinfrastructure.org/projects/5420)
+[![Gurubase](https://img.shields.io/badge/Gurubase-Ask%20GoReleaser%20Guru-006BFF?style=for-the-badge)](https://gurubase.io/g/goreleaser)
 
 ## GitHub Sponsors
 
