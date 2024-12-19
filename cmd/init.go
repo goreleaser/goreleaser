@@ -37,12 +37,12 @@ func newInitCmd() *initCmd {
 			// try to figure out which kind of project is this...
 			if _, err := os.Stat("build.zig"); err == nil {
 				root.lang = "zig"
-				log.Info("Project contains a " + codeStyle.Render("build.zig") + " file, using default zig configuration")
+				log.Info("project contains a " + codeStyle.Render("build.zig") + " file, using default zig configuration")
 				return
 			}
 			if _, err := os.Stat("Cargo.toml"); err == nil {
 				root.lang = "rust"
-				log.Info("Project contains a " + codeStyle.Render("Cargo.toml") + " file, using default rust configuration")
+				log.Info("project contains a " + codeStyle.Render("Cargo.toml") + " file, using default rust configuration")
 				return
 			}
 		},
@@ -56,7 +56,7 @@ func newInitCmd() *initCmd {
 			}
 			defer conf.Close()
 
-			log.Infof(boldStyle.Render("Generating ") + codeStyle.Render(root.config))
+			log.Infof(boldStyle.Render("generating ") + codeStyle.Render(root.config))
 
 			gitignoreLines := []string{"dist/"}
 			var example []byte
@@ -79,15 +79,15 @@ func newInitCmd() *initCmd {
 
 			gitignoreModified, err := setupGitignore(gitignorePath, gitignoreLines)
 			if gitignoreModified {
-				log.Infof(boldStyle.Render("Setting up " + gitignorePath))
+				log.Infof(boldStyle.Render("setting up " + codeStyle.Render(gitignorePath)))
 			}
 			if err != nil {
 				return err
 			}
 
 			done := []string{
-				boldStyle.Render("Done!"),
-				"Please edit", codeStyle.Render(root.config),
+				boldStyle.Render("done!"),
+				"please edit", codeStyle.Render(root.config),
 			}
 			if gitignoreModified {
 				done = append(done, "and", codeStyle.Render(gitignorePath))

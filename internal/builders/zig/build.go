@@ -68,7 +68,7 @@ var once sync.Once
 // WithDefaults implements build.Builder.
 func (b *Builder) WithDefaults(build config.Build) (config.Build, error) {
 	once.Do(func() {
-		log.Warn("You are using the experimental Zig builder")
+		log.Warn("you are using the experimental Zig builder")
 	})
 
 	if len(build.Targets) == 0 {
