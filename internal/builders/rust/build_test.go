@@ -217,3 +217,19 @@ func TestParse(t *testing.T) {
 		}, target)
 	})
 }
+
+func TestIsSettingPackage(t *testing.T) {
+	for name, tt := range map[string]struct {
+		flags  []string
+		expect bool
+	}{
+		"not set":   {[]string{"--release", "--something-else", "--in-the-p=middle", "--something"}, false},
+		"-p":        {[]string{"--release", "-p=foo", "--something"}, true},
+		"--package": {[]string{"--release", "--package=foo", "--something"}, true},
+	} {
+		t.Run(name, func(t *testing.T) {
+			got := isSettingPackage(tt.flags)
+			require.Equal(t, tt.expect, got)
+		})
+	}
+}
