@@ -34,6 +34,7 @@ var Default = &Builder{}
 var (
 	_ api.Builder          = &Builder{}
 	_ api.DependingBuilder = &Builder{}
+	_ api.TargetFixer      = &Builder{}
 )
 
 //nolint:gochecknoinits
@@ -164,6 +165,11 @@ func (*Builder) WithDefaults(build config.Build) (config.Build, error) {
 		}
 	}
 	return build, nil
+}
+
+// FixTarget implements build.TargetFixer.
+func (b *Builder) FixTarget(target string) string {
+	return fixTarget(target)
 }
 
 func fixTarget(target string) string {
