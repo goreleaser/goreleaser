@@ -1,9 +1,10 @@
 package cmd
 
 import (
+	"errors"
 	"fmt"
 	"os"
-	"regexp"
+	"strings"
 
 	"github.com/caarlos0/log"
 	"github.com/goreleaser/goreleaser/v2/internal/static"
@@ -36,18 +37,18 @@ func newInitCmd() *initCmd {
 			// try to figure out which kind of project is this...
 			if _, err := os.Stat("build.zig"); err == nil {
 				root.lang = "zig"
-				log.Info("project contains a 'build.zig', using default zig configuration")
+				log.Info("Project contains a " + codeStyle.Render("build.zig") + " file, using default zig configuration")
 				return
 			}
 			if _, err := os.Stat("Cargo.toml"); err == nil {
 				root.lang = "rust"
-				log.Info("project contains a 'Cargo.toml', using default rust configuration")
+				log.Info("Project contains a " + codeStyle.Render("Cargo.toml") + " file, using default rust configuration")
 				return
 			}
 		},
 		RunE: func(_ *cobra.Command, _ []string) error {
 			if _, err := os.Stat(root.config); err == nil {
-				return fmt.Errorf("%s already exists, delete it and run the command again", root.config)
+				return errors.New(root.config + " already exists, delete it and run the command again")
 			}
 			conf, err := os.OpenFile(root.config, os.O_WRONLY|os.O_CREATE|os.O_TRUNC|os.O_EXCL, 0o644)
 			if err != nil {
@@ -55,14 +56,17 @@ func newInitCmd() *initCmd {
 			}
 			defer conf.Close()
 
-			log.Infof(boldStyle.Render(fmt.Sprintf("Generating %s file", root.config)))
+			log.Infof(boldStyle.Render("Generating ") + codeStyle.Render(root.config))
 
+			gitignoreLines := []string{"dist/"}
 			var example []byte
 			switch root.lang {
 			case "zig":
 				example = static.ZigExampleConfig
+				gitignoreLines = append(gitignoreLines, ".intentionally-empty-file.o", "zig-out/", ".zig-cache/")
 			case "rust":
 				example = static.RustExampleConfig
+				gitignoreLines = append(gitignoreLines, ".intentionally-empty-file.o", "target/")
 			case "go":
 				example = static.GoExampleConfig
 			default:
@@ -73,17 +77,23 @@ func newInitCmd() *initCmd {
 				return err
 			}
 
-			if !hasDistIgnored(gitignorePath) {
-				gitignore, err := os.OpenFile(gitignorePath, os.O_WRONLY|os.O_CREATE|os.O_APPEND, 0o644)
-				if err != nil {
-					return err
-				}
-				defer gitignore.Close()
-				if _, err := gitignore.WriteString("\ndist/\n"); err != nil {
-					return err
-				}
+			gitignoreModified, err := setupGitignore(gitignorePath, gitignoreLines)
+			if gitignoreModified {
+				log.Infof(boldStyle.Render("Setting up " + gitignorePath))
 			}
-			log.WithField("file", root.config).Info("config created; please edit accordingly to your needs")
+			if err != nil {
+				return err
+			}
+
+			done := []string{
+				boldStyle.Render("Done!"),
+				"Please edit", codeStyle.Render(root.config),
+			}
+			if gitignoreModified {
+				done = append(done, "and", codeStyle.Render(gitignorePath))
+			}
+			done = append(done, "accordingly.")
+			log.Info(strings.Join(done, " "))
 			return nil
 		},
 	}
@@ -104,11 +114,24 @@ func newInitCmd() *initCmd {
 	return root
 }
 
-func hasDistIgnored(path string) bool {
-	bts, err := os.ReadFile(path)
+func setupGitignore(path string, lines []string) (bool, error) {
+	ignored, _ := os.ReadFile(path)
+	f, err := os.OpenFile(path, os.O_WRONLY|os.O_CREATE|os.O_APPEND, 0o644)
 	if err != nil {
-		return false
+		return false, err
 	}
-	exp := regexp.MustCompile("(?m)^dist/$")
-	return exp.Match(bts)
+	defer f.Close()
+	var modified bool
+	for _, line := range lines {
+		if !strings.Contains(string(ignored), line+"\n") {
+			if !modified {
+				line = "# Added by goreleaser init:\n" + line
+				modified = true
+			}
+			if _, err := f.WriteString(line + "\n"); err != nil {
+				return true, err
+			}
+		}
+	}
+	return modified, nil
 }

@@ -81,7 +81,7 @@ Check out our website for more information, examples and documentation: https://
 			}
 		},
 		PersistentPostRun: func(*cobra.Command, []string) {
-			log.Info("thanks for using goreleaser!")
+			log.Info("Thanks for using GoReleaser!")
 		},
 	}
 	cmd.SetVersionTemplate("{{.Version}}")
