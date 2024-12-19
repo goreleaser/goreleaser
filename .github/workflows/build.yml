@@ -50,9 +50,7 @@ jobs:
         if: matrix.os == 'ubuntu-latest'
       - name: setup-snapcraft
         if: matrix.os == 'ubuntu-latest'
-        run: |
-          sudo apt-get update
-          sudo apt-get -yq --no-install-suggests --no-install-recommends install snapcraft
+        run: sudo snap install snapcraft --classic
       - uses: crazy-max/ghaction-upx@v3
         with:
           install-only: true
