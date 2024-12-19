@@ -59,6 +59,7 @@ builds:
     # Default: "--release".
     flags:
       - --release
+      - -p=subproject # when using cargo-workspaces
 
     # Custom environment variables to be set during the builds.
     # Invalid environment variables will be ignored.
@@ -119,9 +120,7 @@ before:
 ### Cargo Workspaces
 
 Projects that use Cargo workspaces might not work depending on usage.
-If you want to try it, set the build `dir` option to the folder of the children
-workspace.
-You might need to add all workspaces to your `.goreleaser.yaml`.
+If you want to try it, add `-p=[name]` to the `flags` property.
 We might improve this in the future.
 
 [^fail]:
