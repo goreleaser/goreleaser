@@ -165,8 +165,11 @@ func (b *Builder) Build(ctx *context.Context, build config.Build, options api.Op
 	// Go also has the possibility to build multiple binaries with a single
 	// command, and we currently don't support that either.
 	// We should build something generic enough for both cases, I think.
-	if len(cargot.Workspace.Members) > 0 {
-		return fmt.Errorf("goreleaser does not support cargo workspaces, please set the build 'dir' to one of the workspaces you want to build, e.g. 'dir: %q'", cargot.Workspace.Members[0])
+	if len(cargot.Workspace.Members) > 0 && !isSettingPackage(build.Flags) {
+		return fmt.Errorf(
+			"you need to specify which workspace to build, please add '--package=[name]' to your build flags, setting name to one of the available workspaces: %v",
+			cargot.Workspace.Members[0],
+		)
 	}
 	t := options.Target.(Target)
 	a := &artifact.Artifact{
@@ -254,4 +257,14 @@ func (b *Builder) Build(ctx *context.Context, build config.Build, options api.Op
 
 	ctx.Artifacts.Add(a)
 	return nil
+}
+
+func isSettingPackage(flags []string) bool {
+	for _, flag := range flags {
+		if strings.HasPrefix(flag, "-p=") ||
+			strings.HasPrefix(flag, "--package=") {
+			return true
+		}
+	}
+	return false
 }
