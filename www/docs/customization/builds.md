@@ -90,7 +90,7 @@ builds:
         {{- end }}
 
     # GOOS list to build for.
-    # For more info refer to: https://go.dev/doc/install/source#environment
+    # For more info refer to: https://pkg.go.dev/cmd/go#hdr-Environment_variables
     #
     # Default: [ 'darwin', 'linux', 'windows' ].
     goos:
@@ -98,7 +98,7 @@ builds:
       - windows
 
     # GOARCH to build for.
-    # For more info refer to: https://go.dev/doc/install/source#environment
+    # For more info refer to: https://pkg.go.dev/cmd/go#hdr-Environment_variables
     #
     # Default: [ '386', 'amd64', 'arm64' ].
     goarch:
@@ -107,7 +107,7 @@ builds:
       - arm64
 
     # GOARM to build for when GOARCH is arm.
-    # For more info refer to: https://go.dev/doc/install/source#environment
+    # For more info refer to: https://pkg.go.dev/cmd/go#hdr-Environment_variables
     #
     # Default: [ 6 ].
     goarm:
@@ -115,7 +115,7 @@ builds:
       - 7
 
     # GOAMD64 to build when GOARCH is amd64.
-    # For more info refer to: https://go.dev/doc/install/source#environment
+    # For more info refer to: https://pkg.go.dev/cmd/go#hdr-Environment_variables
     #
     # Default: [ 'v1' ].
     goamd64:
@@ -123,7 +123,7 @@ builds:
       - v3
 
     # GOARM64 to build when GOARCH is arm64.
-    # For more info refer to: https://go.dev/doc/install/source#environment
+    # For more info refer to: https://pkg.go.dev/cmd/go#hdr-Environment_variables
     #
     # Default: [ 'v8.0' ].
     # <!-- md:inline_version v2.4 -->.
@@ -131,7 +131,7 @@ builds:
       - v9.0
 
     # GOMIPS and GOMIPS64 to build when GOARCH is mips, mips64, mipsle or mips64le.
-    # For more info refer to: https://go.dev/doc/install/source#environment
+    # For more info refer to: https://pkg.go.dev/cmd/go#hdr-Environment_variables
     #
     # Default: [ 'hardfloat' ].
     # <!-- md:inline_version v2.4 -->.
@@ -140,7 +140,7 @@ builds:
       - softfloat
 
     # GO386 to build when GOARCH is 386.
-    # For more info refer to: https://go.dev/doc/install/source#environment
+    # For more info refer to: https://pkg.go.dev/cmd/go#hdr-Environment_variables
     #
     # Default: [ 'sse2' ].
     # <!-- md:inline_version v2.4 -->.
@@ -149,7 +149,7 @@ builds:
       - softfloat
 
     # GOPPC64 to build when GOARCH is PPC64.
-    # For more info refer to: https://go.dev/doc/install/source#environment
+    # For more info refer to: https://pkg.go.dev/cmd/go#hdr-Environment_variables
     #
     # Default: [ 'power8' ].
     # <!-- md:inline_version v2.4 -->.
@@ -158,7 +158,7 @@ builds:
       - power9
 
     # GORISCV64 to build when GOARCH is RISCV64.
-    # For more info refer to: https://go.dev/doc/install/source#environment
+    # For more info refer to: https://pkg.go.dev/cmd/go#hdr-Environment_variables
     #
     # Default: [ 'rva20u64' ].
     # <!-- md:inline_version v2.4 -->.
