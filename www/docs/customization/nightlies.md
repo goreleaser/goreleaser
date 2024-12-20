@@ -2,7 +2,7 @@
 
 <!-- md:pro -->
 
-Whether if you need beta builds or a rolling-release system, the nightly builds
+Whether you need beta builds or a rolling-release system, the nightly builds
 feature will do it for you.
 
 To enable it, you must use the `--nightly` flag in the
