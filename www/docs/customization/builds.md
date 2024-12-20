@@ -36,6 +36,8 @@ builds:
       - -v
 
     # Custom asmflags.
+    # For more info refer to: https://pkg.go.dev/cmd/go#hdr-Compile_packages_and_dependencies
+    # and https://pkg.go.dev/cmd/asm
     #
     # Templates: allowed.
     asmflags:
@@ -43,6 +45,8 @@ builds:
       - all=-trimpath={{.Env.GOPATH}}
 
     # Custom gcflags.
+    # For more info refer to: https://pkg.go.dev/cmd/go#hdr-Compile_packages_and_dependencies
+    # and https://pkg.go.dev/cmd/compile
     #
     # Templates: allowed.
     gcflags:
@@ -50,6 +54,8 @@ builds:
       - ./dontoptimizeme=-N
 
     # Custom ldflags.
+    # For more info refer to: https://pkg.go.dev/cmd/go#hdr-Compile_packages_and_dependencies
+    # and https://pkg.go.dev/cmd/link 
     #
     # Default: '-s -w -X main.version={{.Version}} -X main.commit={{.Commit}} -X main.date={{.Date}} -X main.builtBy=goreleaser'.
     # Templates: allowed.
@@ -58,6 +64,7 @@ builds:
       - ./usemsan=-msan
 
     # Custom Go build mode.
+    # For more info refer to: https://pkg.go.dev/cmd/go#hdr-Build_modes
     #
     # Valid options:
     # - `c-shared`
@@ -66,6 +73,7 @@ builds:
     buildmode: c-shared
 
     # Custom build tags templates.
+    # For more info refer to: https://pkg.go.dev/cmd/go#hdr-Build_constraints
     tags:
       - osusergo
       - netgo
@@ -74,6 +82,7 @@ builds:
 
     # Custom environment variables to be set during the builds.
     # Invalid environment variables will be ignored.
+    # For more info refer to: https://pkg.go.dev/cmd/go#hdr-Environment_variables
     #
     # Default: os.Environ() ++ env config section.
     # Templates: allowed.
