@@ -117,6 +117,7 @@ builds:
 
     # GOARM to build for when GOARCH is arm.
     # For more info refer to: https://pkg.go.dev/cmd/go#hdr-Environment_variables
+    # and https://go.dev/wiki/MinimumRequirements#microarchitecture-support
     #
     # Default: [ 6 ].
     goarm:
@@ -125,6 +126,7 @@ builds:
 
     # GOAMD64 to build when GOARCH is amd64.
     # For more info refer to: https://pkg.go.dev/cmd/go#hdr-Environment_variables
+    # and https://go.dev/wiki/MinimumRequirements#microarchitecture-support
     #
     # Default: [ 'v1' ].
     goamd64:
@@ -133,6 +135,7 @@ builds:
 
     # GOARM64 to build when GOARCH is arm64.
     # For more info refer to: https://pkg.go.dev/cmd/go#hdr-Environment_variables
+    # and https://go.dev/wiki/MinimumRequirements#microarchitecture-support
     #
     # Default: [ 'v8.0' ].
     # <!-- md:inline_version v2.4 -->.
@@ -141,6 +144,7 @@ builds:
 
     # GOMIPS and GOMIPS64 to build when GOARCH is mips, mips64, mipsle or mips64le.
     # For more info refer to: https://pkg.go.dev/cmd/go#hdr-Environment_variables
+    # and https://go.dev/wiki/MinimumRequirements#microarchitecture-support
     #
     # Default: [ 'hardfloat' ].
     # <!-- md:inline_version v2.4 -->.
@@ -150,6 +154,7 @@ builds:
 
     # GO386 to build when GOARCH is 386.
     # For more info refer to: https://pkg.go.dev/cmd/go#hdr-Environment_variables
+    # and https://go.dev/wiki/MinimumRequirements#microarchitecture-support
     #
     # Default: [ 'sse2' ].
     # <!-- md:inline_version v2.4 -->.
@@ -159,6 +164,7 @@ builds:
 
     # GOPPC64 to build when GOARCH is PPC64.
     # For more info refer to: https://pkg.go.dev/cmd/go#hdr-Environment_variables
+    # and https://go.dev/wiki/MinimumRequirements#microarchitecture-support
     #
     # Default: [ 'power8' ].
     # <!-- md:inline_version v2.4 -->.
@@ -168,6 +174,7 @@ builds:
 
     # GORISCV64 to build when GOARCH is RISCV64.
     # For more info refer to: https://pkg.go.dev/cmd/go#hdr-Environment_variables
+    # and https://go.dev/wiki/MinimumRequirements#microarchitecture-support
     #
     # Default: [ 'rva20u64' ].
     # <!-- md:inline_version v2.4 -->.
