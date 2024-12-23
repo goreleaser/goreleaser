@@ -5,6 +5,9 @@ import (
 	"strings"
 	"time"
 
+	"github.com/anchore/quill/quill"
+	"github.com/anchore/quill/quill/notary"
+	"github.com/anchore/quill/quill/pki/load"
 	"github.com/caarlos0/log"
 	"github.com/goreleaser/goreleaser/v2/internal/artifact"
 	"github.com/goreleaser/goreleaser/v2/internal/pipe"
@@ -13,9 +16,6 @@ import (
 	"github.com/goreleaser/goreleaser/v2/internal/tmpl"
 	"github.com/goreleaser/goreleaser/v2/pkg/config"
 	"github.com/goreleaser/goreleaser/v2/pkg/context"
-	"github.com/goreleaser/quill/quill"
-	"github.com/goreleaser/quill/quill/notary"
-	"github.com/goreleaser/quill/quill/pki/load"
 )
 
 type MacOS struct{}
