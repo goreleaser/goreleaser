@@ -7,6 +7,7 @@ import (
 	"os"
 	"path/filepath"
 	"strings"
+	"time"
 
 	"dario.cat/mergo"
 	"github.com/caarlos0/log"
@@ -265,12 +266,21 @@ func create(ctx *context.Context, fpm config.NFPM, format string, artifacts []*a
 		&fpm.Homepage,
 		&fpm.Description,
 		&fpm.Maintainer,
+		&fpm.MTime,
 		&overridden.Scripts.PostInstall,
 		&overridden.Scripts.PreInstall,
 		&overridden.Scripts.PostRemove,
 		&overridden.Scripts.PreRemove,
 	); err != nil {
 		return err
+	}
+
+	if fpm.MTime != "" {
+		var err error
+		fpm.ParsedMTime, err = time.Parse(time.RFC3339Nano, fpm.MTime)
+		if err != nil {
+			return fmt.Errorf("failed to parse %s: %w", fpm.MTime, err)
+		}
 	}
 
 	// We cannot use t.ApplyAll on the following fields as they are shared
@@ -317,20 +327,33 @@ func create(ctx *context.Context, fpm config.NFPM, format string, artifacts []*a
 
 	contents := files.Contents{}
 	for _, content := range overridden.Contents {
-		src, err := t.Apply(content.Source)
-		if err != nil {
+		if err := t.ApplyAll(
+			&content.Source,
+			&content.Destination,
+			&content.FileInfo.Owner,
+			&content.FileInfo.Group,
+			&content.FileInfo.MTime,
+		); err != nil {
 			return err
 		}
-		dst, err := t.Apply(content.Destination)
-		if err != nil {
-			return err
+		if content.FileInfo.MTime != "" {
+			var err error
+			content.FileInfo.ParsedMTime, err = time.Parse(time.RFC3339Nano, content.FileInfo.MTime)
+			if err != nil {
+				return fmt.Errorf("failed to parse %s: %w", fpm.MTime, err)
+			}
 		}
 		contents = append(contents, &files.Content{
-			Source:      filepath.ToSlash(src),
-			Destination: filepath.ToSlash(dst),
+			Source:      filepath.ToSlash(content.Source),
+			Destination: filepath.ToSlash(content.Destination),
 			Type:        content.Type,
 			Packager:    content.Packager,
-			FileInfo:    content.FileInfo,
+			FileInfo: &files.ContentFileInfo{
+				Owner: content.FileInfo.Owner,
+				Group: content.FileInfo.Group,
+				Mode:  content.FileInfo.Mode,
+				MTime: content.FileInfo.ParsedMTime,
+			},
 		})
 	}
 
@@ -358,7 +381,7 @@ func create(ctx *context.Context, fpm config.NFPM, format string, artifacts []*a
 				Destination: filepath.ToSlash(dst),
 				FileInfo: &files.ContentFileInfo{
 					Mode:  0o755,
-					MTime: fpm.MTime,
+					MTime: fpm.ParsedMTime,
 				},
 			})
 		}
@@ -383,7 +406,7 @@ func create(ctx *context.Context, fpm config.NFPM, format string, artifacts []*a
 		Homepage:        fpm.Homepage,
 		License:         fpm.License,
 		Changelog:       fpm.Changelog,
-		MTime:           fpm.MTime,
+		MTime:           fpm.ParsedMTime,
 		Overridables: nfpm.Overridables{
 			Umask:      overridden.Umask,
 			Conflicts:  overridden.Conflicts,
@@ -521,8 +544,8 @@ func create(ctx *context.Context, fpm config.NFPM, format string, artifacts []*a
 	if err := w.Close(); err != nil {
 		return fmt.Errorf("could not close package file: %w", err)
 	}
-	if !fpm.MTime.IsZero() {
-		if err := os.Chtimes(path, fpm.MTime, fpm.MTime); err != nil {
+	if !fpm.ParsedMTime.IsZero() {
+		if err := os.Chtimes(path, fpm.ParsedMTime, fpm.ParsedMTime); err != nil {
 			return fmt.Errorf("could not set package mtime: %w", err)
 		}
 	}

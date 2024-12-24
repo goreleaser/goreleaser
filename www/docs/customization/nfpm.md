@@ -312,7 +312,10 @@ nfpms:
 
     # Date to be used as mtime for the package itself, and its internal files.
     # You may also want to set the mtime on its contents.
-    mtime: "2009-11-10T23:00:00Z"
+    #
+    # Since: v2.6.
+    # Templates: allowed.
+    mtime: "{{ .CommitDate }}"
 
     # All fields above marked as `overridable` can be overridden for a given
     # package format in this section.
