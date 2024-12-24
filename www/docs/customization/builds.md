@@ -36,6 +36,8 @@ builds:
       - -v
 
     # Custom asmflags.
+    # For more info refer to: https://pkg.go.dev/cmd/go#hdr-Compile_packages_and_dependencies
+    # and https://pkg.go.dev/cmd/asm
     #
     # Templates: allowed.
     asmflags:
@@ -43,6 +45,8 @@ builds:
       - all=-trimpath={{.Env.GOPATH}}
 
     # Custom gcflags.
+    # For more info refer to: https://pkg.go.dev/cmd/go#hdr-Compile_packages_and_dependencies
+    # and https://pkg.go.dev/cmd/compile
     #
     # Templates: allowed.
     gcflags:
@@ -50,6 +54,8 @@ builds:
       - ./dontoptimizeme=-N
 
     # Custom ldflags.
+    # For more info refer to: https://pkg.go.dev/cmd/go#hdr-Compile_packages_and_dependencies
+    # and https://pkg.go.dev/cmd/link 
     #
     # Default: '-s -w -X main.version={{.Version}} -X main.commit={{.Commit}} -X main.date={{.Date}} -X main.builtBy=goreleaser'.
     # Templates: allowed.
@@ -58,6 +64,7 @@ builds:
       - ./usemsan=-msan
 
     # Custom Go build mode.
+    # For more info refer to: https://pkg.go.dev/cmd/go#hdr-Build_modes
     #
     # Valid options:
     # - `c-shared`
@@ -66,6 +73,7 @@ builds:
     buildmode: c-shared
 
     # Custom build tags templates.
+    # For more info refer to: https://pkg.go.dev/cmd/go#hdr-Build_constraints
     tags:
       - osusergo
       - netgo
@@ -74,6 +82,7 @@ builds:
 
     # Custom environment variables to be set during the builds.
     # Invalid environment variables will be ignored.
+    # For more info refer to: https://pkg.go.dev/cmd/go#hdr-Environment_variables
     #
     # Default: os.Environ() ++ env config section.
     # Templates: allowed.
@@ -90,7 +99,7 @@ builds:
         {{- end }}
 
     # GOOS list to build for.
-    # For more info refer to: https://go.dev/doc/install/source#environment
+    # For more info refer to: https://pkg.go.dev/cmd/go#hdr-Environment_variables
     #
     # Default: [ 'darwin', 'linux', 'windows' ].
     goos:
@@ -98,7 +107,7 @@ builds:
       - windows
 
     # GOARCH to build for.
-    # For more info refer to: https://go.dev/doc/install/source#environment
+    # For more info refer to: https://pkg.go.dev/cmd/go#hdr-Environment_variables
     #
     # Default: [ '386', 'amd64', 'arm64' ].
     goarch:
@@ -107,7 +116,8 @@ builds:
       - arm64
 
     # GOARM to build for when GOARCH is arm.
-    # For more info refer to: https://go.dev/doc/install/source#environment
+    # For more info refer to: https://pkg.go.dev/cmd/go#hdr-Environment_variables
+    # and https://go.dev/wiki/MinimumRequirements#microarchitecture-support
     #
     # Default: [ 6 ].
     goarm:
@@ -115,7 +125,8 @@ builds:
       - 7
 
     # GOAMD64 to build when GOARCH is amd64.
-    # For more info refer to: https://go.dev/doc/install/source#environment
+    # For more info refer to: https://pkg.go.dev/cmd/go#hdr-Environment_variables
+    # and https://go.dev/wiki/MinimumRequirements#microarchitecture-support
     #
     # Default: [ 'v1' ].
     goamd64:
@@ -123,7 +134,8 @@ builds:
       - v3
 
     # GOARM64 to build when GOARCH is arm64.
-    # For more info refer to: https://go.dev/doc/install/source#environment
+    # For more info refer to: https://pkg.go.dev/cmd/go#hdr-Environment_variables
+    # and https://go.dev/wiki/MinimumRequirements#microarchitecture-support
     #
     # Default: [ 'v8.0' ].
     # <!-- md:inline_version v2.4 -->.
@@ -131,7 +143,8 @@ builds:
       - v9.0
 
     # GOMIPS and GOMIPS64 to build when GOARCH is mips, mips64, mipsle or mips64le.
-    # For more info refer to: https://go.dev/doc/install/source#environment
+    # For more info refer to: https://pkg.go.dev/cmd/go#hdr-Environment_variables
+    # and https://go.dev/wiki/MinimumRequirements#microarchitecture-support
     #
     # Default: [ 'hardfloat' ].
     # <!-- md:inline_version v2.4 -->.
@@ -140,7 +153,8 @@ builds:
       - softfloat
 
     # GO386 to build when GOARCH is 386.
-    # For more info refer to: https://go.dev/doc/install/source#environment
+    # For more info refer to: https://pkg.go.dev/cmd/go#hdr-Environment_variables
+    # and https://go.dev/wiki/MinimumRequirements#microarchitecture-support
     #
     # Default: [ 'sse2' ].
     # <!-- md:inline_version v2.4 -->.
@@ -149,7 +163,8 @@ builds:
       - softfloat
 
     # GOPPC64 to build when GOARCH is PPC64.
-    # For more info refer to: https://go.dev/doc/install/source#environment
+    # For more info refer to: https://pkg.go.dev/cmd/go#hdr-Environment_variables
+    # and https://go.dev/wiki/MinimumRequirements#microarchitecture-support
     #
     # Default: [ 'power8' ].
     # <!-- md:inline_version v2.4 -->.
@@ -158,7 +173,8 @@ builds:
       - power9
 
     # GORISCV64 to build when GOARCH is RISCV64.
-    # For more info refer to: https://go.dev/doc/install/source#environment
+    # For more info refer to: https://pkg.go.dev/cmd/go#hdr-Environment_variables
+    # and https://go.dev/wiki/MinimumRequirements#microarchitecture-support
     #
     # Default: [ 'rva20u64' ].
     # <!-- md:inline_version v2.4 -->.
