@@ -189,6 +189,23 @@ nfpms:
       - src: some/directory/
         dst: /etc
         type: tree
+        file_info:
+          # File mode.
+          mode: 0644
+          # Modification time.
+          #
+          # Templates: allowed (since v2.6).
+          mtime: "{{.CommitDate}}"
+
+          # Owner name.
+          #
+          # Templates: allowed (since v2.6).
+          owner: notRoot
+
+          # Group name.
+          #
+          # Templates: allowed (since v2.6).
+          group: notRoot
 
       # Simple config file
       - src: path/to/foo.conf
@@ -260,9 +277,21 @@ nfpms:
       - src: path/to/foo
         dst: /usr/local/foo
         file_info:
+          # File mode.
           mode: 0644
-          mtime: 2008-01-02T15:04:05Z
+          # Modification time.
+          #
+          # Templates: allowed (since v2.6).
+          mtime: "{{.CommitDate}}"
+
+          # Owner name.
+          #
+          # Templates: allowed (since v2.6).
           owner: notRoot
+
+          # Group name.
+          #
+          # Templates: allowed (since v2.6).
           group: notRoot
 
       # If `dst` ends with a `/`, it'll create the given path and copy the given
@@ -309,6 +338,13 @@ nfpms:
       postinstall: "scripts/postinstall.sh"
       preremove: "scripts/preremove.sh"
       postremove: "scripts/postremove.sh"
+
+    # Date to be used as mtime for the package itself, and its internal files.
+    # You may also want to set the mtime on its contents.
+    #
+    # Since: v2.6.
+    # Templates: allowed.
+    mtime: "{{ .CommitDate }}"
 
     # All fields above marked as `overridable` can be overridden for a given
     # package format in this section.

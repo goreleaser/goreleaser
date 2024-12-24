@@ -11,7 +11,6 @@ import (
 	"time"
 
 	"github.com/goreleaser/nfpm/v2"
-	"github.com/goreleaser/nfpm/v2/files"
 	"github.com/invopop/jsonschema"
 )
 
@@ -810,20 +809,22 @@ type NFPM struct {
 	NFPMOverridables `yaml:",inline" json:",inline"`
 	Overrides        map[string]NFPMOverridables `yaml:"overrides,omitempty" json:"overrides,omitempty"`
 
-	ID          string   `yaml:"id,omitempty" json:"id,omitempty"`
-	Builds      []string `yaml:"builds,omitempty" json:"builds,omitempty"`
-	Formats     []string `yaml:"formats,omitempty" json:"formats,omitempty" jsonschema:"enum=apk,enum=deb,enum=rpm,enum=termux.deb,enum=archlinux,enum=ipk"`
-	Section     string   `yaml:"section,omitempty" json:"section,omitempty"`
-	Priority    string   `yaml:"priority,omitempty" json:"priority,omitempty"`
-	Vendor      string   `yaml:"vendor,omitempty" json:"vendor,omitempty"`
-	Homepage    string   `yaml:"homepage,omitempty" json:"homepage,omitempty"`
-	Maintainer  string   `yaml:"maintainer,omitempty" json:"maintainer,omitempty"`
-	Description string   `yaml:"description,omitempty" json:"description,omitempty"`
-	License     string   `yaml:"license,omitempty" json:"license,omitempty"`
-	Bindir      string   `yaml:"bindir,omitempty" json:"bindir,omitempty"`
-	Libdirs     Libdirs  `yaml:"libdirs,omitempty" json:"libdirs,omitempty"`
-	Changelog   string   `yaml:"changelog,omitempty" json:"changelog,omitempty"`
-	Meta        bool     `yaml:"meta,omitempty" json:"meta,omitempty"` // make package without binaries - only deps
+	ID          string    `yaml:"id,omitempty" json:"id,omitempty"`
+	Builds      []string  `yaml:"builds,omitempty" json:"builds,omitempty"`
+	Formats     []string  `yaml:"formats,omitempty" json:"formats,omitempty" jsonschema:"enum=apk,enum=deb,enum=rpm,enum=termux.deb,enum=archlinux,enum=ipk"`
+	Section     string    `yaml:"section,omitempty" json:"section,omitempty"`
+	Priority    string    `yaml:"priority,omitempty" json:"priority,omitempty"`
+	Vendor      string    `yaml:"vendor,omitempty" json:"vendor,omitempty"`
+	Homepage    string    `yaml:"homepage,omitempty" json:"homepage,omitempty"`
+	Maintainer  string    `yaml:"maintainer,omitempty" json:"maintainer,omitempty"`
+	Description string    `yaml:"description,omitempty" json:"description,omitempty"`
+	License     string    `yaml:"license,omitempty" json:"license,omitempty"`
+	Bindir      string    `yaml:"bindir,omitempty" json:"bindir,omitempty"`
+	Libdirs     Libdirs   `yaml:"libdirs,omitempty" json:"libdirs,omitempty"`
+	Changelog   string    `yaml:"changelog,omitempty" json:"changelog,omitempty"`
+	MTime       string    `yaml:"mtime,omitempty" json:"mtime,omitempty" `
+	ParsedMTime time.Time `yaml:"-" json:"-"`
+	Meta        bool      `yaml:"meta,omitempty" json:"meta,omitempty"` // make package without binaries - only deps
 }
 
 type Libdirs struct {
@@ -968,26 +969,35 @@ func (ipk NFPMIPK) ToNFPAlts() []nfpm.IPKAlternative {
 
 // NFPMOverridables is used to specify per package format settings.
 type NFPMOverridables struct {
-	FileNameTemplate string         `yaml:"file_name_template,omitempty" json:"file_name_template,omitempty"`
-	PackageName      string         `yaml:"package_name,omitempty" json:"package_name,omitempty"`
-	Epoch            string         `yaml:"epoch,omitempty" json:"epoch,omitempty"`
-	Release          string         `yaml:"release,omitempty" json:"release,omitempty"`
-	Prerelease       string         `yaml:"prerelease,omitempty" json:"prerelease,omitempty"`
-	VersionMetadata  string         `yaml:"version_metadata,omitempty" json:"version_metadata,omitempty"`
-	Dependencies     []string       `yaml:"dependencies,omitempty" json:"dependencies,omitempty"`
-	Recommends       []string       `yaml:"recommends,omitempty" json:"recommends,omitempty"`
-	Suggests         []string       `yaml:"suggests,omitempty" json:"suggests,omitempty"`
-	Conflicts        []string       `yaml:"conflicts,omitempty" json:"conflicts,omitempty"`
-	Umask            fs.FileMode    `yaml:"umask,omitempty" json:"umask,omitempty" jsonschema:"oneof_type=string;integer"`
-	Replaces         []string       `yaml:"replaces,omitempty" json:"replaces,omitempty"`
-	Provides         []string       `yaml:"provides,omitempty" json:"provides,omitempty"`
-	Contents         files.Contents `yaml:"contents,omitempty" json:"contents,omitempty"`
-	Scripts          NFPMScripts    `yaml:"scripts,omitempty" json:"scripts,omitempty"`
-	RPM              NFPMRPM        `yaml:"rpm,omitempty" json:"rpm,omitempty"`
-	Deb              NFPMDeb        `yaml:"deb,omitempty" json:"deb,omitempty"`
-	APK              NFPMAPK        `yaml:"apk,omitempty" json:"apk,omitempty"`
-	ArchLinux        NFPMArchLinux  `yaml:"archlinux,omitempty" json:"archlinux,omitempty"`
-	IPK              NFPMIPK        `yaml:"ipk,omitempty" json:"ipk,omitempty"`
+	FileNameTemplate string        `yaml:"file_name_template,omitempty" json:"file_name_template,omitempty"`
+	PackageName      string        `yaml:"package_name,omitempty" json:"package_name,omitempty"`
+	Epoch            string        `yaml:"epoch,omitempty" json:"epoch,omitempty"`
+	Release          string        `yaml:"release,omitempty" json:"release,omitempty"`
+	Prerelease       string        `yaml:"prerelease,omitempty" json:"prerelease,omitempty"`
+	VersionMetadata  string        `yaml:"version_metadata,omitempty" json:"version_metadata,omitempty"`
+	Dependencies     []string      `yaml:"dependencies,omitempty" json:"dependencies,omitempty"`
+	Recommends       []string      `yaml:"recommends,omitempty" json:"recommends,omitempty"`
+	Suggests         []string      `yaml:"suggests,omitempty" json:"suggests,omitempty"`
+	Conflicts        []string      `yaml:"conflicts,omitempty" json:"conflicts,omitempty"`
+	Umask            fs.FileMode   `yaml:"umask,omitempty" json:"umask,omitempty" jsonschema:"oneof_type=string;integer"`
+	Replaces         []string      `yaml:"replaces,omitempty" json:"replaces,omitempty"`
+	Provides         []string      `yaml:"provides,omitempty" json:"provides,omitempty"`
+	Contents         []NFPMContent `yaml:"contents,omitempty" json:"contents,omitempty"`
+	Scripts          NFPMScripts   `yaml:"scripts,omitempty" json:"scripts,omitempty"`
+	RPM              NFPMRPM       `yaml:"rpm,omitempty" json:"rpm,omitempty"`
+	Deb              NFPMDeb       `yaml:"deb,omitempty" json:"deb,omitempty"`
+	APK              NFPMAPK       `yaml:"apk,omitempty" json:"apk,omitempty"`
+	ArchLinux        NFPMArchLinux `yaml:"archlinux,omitempty" json:"archlinux,omitempty"`
+	IPK              NFPMIPK       `yaml:"ipk,omitempty" json:"ipk,omitempty"`
+}
+
+type NFPMContent struct {
+	Source      string   `yaml:"src,omitempty" json:"src,omitempty"`
+	Destination string   `yaml:"dst" json:"dst"`
+	Type        string   `yaml:"type,omitempty" json:"type,omitempty" jsonschema:"enum=symlink,enum=ghost,enum=config,enum=config|noreplace,enum=dir,enum=tree,enum=,default="`
+	Packager    string   `yaml:"packager,omitempty" json:"packager,omitempty"`
+	FileInfo    FileInfo `yaml:"file_info,omitempty" json:"file_info,omitempty"`
+	Expand      bool     `yaml:"expand,omitempty" json:"expand,omitempty"`
 }
 
 // SBOM config.
