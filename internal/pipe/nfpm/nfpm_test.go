@@ -4,6 +4,7 @@ import (
 	"os"
 	"path/filepath"
 	"testing"
+	"time"
 
 	"github.com/goreleaser/goreleaser/v2/internal/artifact"
 	"github.com/goreleaser/goreleaser/v2/internal/skips"
@@ -109,6 +110,10 @@ func TestRunPipe(t *testing.T) {
 	libPrefix := `/usr/lib
       {{- if eq .Arch "amd64" }}{{if eq .Format "rpm"}}_rpm{{end}}64{{- end -}}
 	`
+	now := time.Now().Truncate(time.Second)
+	fileInfo := &files.ContentFileInfo{
+		MTime: now,
+	}
 	ctx := testctx.NewWithCfg(config.Project{
 		ProjectName: "mybin",
 		Dist:        dist,
@@ -131,6 +136,7 @@ func TestRunPipe(t *testing.T) {
 				Vendor:      "asdf",
 				Homepage:    "https://goreleaser.com/{{ .Env.PRO }}",
 				Changelog:   "./testdata/changelog.yaml",
+				MTime:       now,
 				Libdirs: config.Libdirs{
 					Header:   libPrefix + "/headers",
 					CArchive: libPrefix + "/c-archives",
@@ -157,38 +163,46 @@ func TestRunPipe(t *testing.T) {
 						{
 							Destination: "/var/log/foobar",
 							Type:        "dir",
+							FileInfo:    fileInfo,
 						},
 						{
 							Source:      "./testdata/testfile.txt",
 							Destination: "/usr/share/testfile.txt",
+							FileInfo:    fileInfo,
 						},
 						{
 							Source:      "./testdata/testfile.txt",
 							Destination: "/etc/nope.conf",
 							Type:        "config",
+							FileInfo:    fileInfo,
 						},
 						{
 							Destination: "/etc/mydir",
 							Type:        "dir",
+							FileInfo:    fileInfo,
 						},
 						{
 							Source:      "./testdata/testfile.txt",
 							Destination: "/etc/nope-rpm.conf",
+							FileInfo:    fileInfo,
 							Type:        "config",
 							Packager:    "rpm",
 						},
 						{
 							Source:      "/etc/nope.conf",
 							Destination: "/etc/nope2.conf",
+							FileInfo:    fileInfo,
 							Type:        "symlink",
 						},
 						{
 							Source:      "./testdata/testfile-{{ .Arch }}{{.Amd64}}{{.Arm}}{{.Mips}}.txt",
 							Destination: "/etc/nope3_{{ .ProjectName }}.conf",
+							FileInfo:    fileInfo,
 						},
 						{
 							Source:      "./testdata/folder",
 							Destination: "/etc/folder",
+							FileInfo:    fileInfo,
 						},
 					},
 				},
@@ -429,6 +443,17 @@ func TestRunPipe(t *testing.T) {
 			require.Equal(t, "foo_1.0.0_ios_arm64-10-20"+ext, pkg.Name)
 		}
 		require.Equal(t, "someid", pkg.ID())
+
+		stat, err := os.Stat(pkg.Path)
+		require.NoError(t, err)
+		require.Equal(t, now, stat.ModTime())
+
+		contents := artifact.ExtraOr(*pkg, extraFiles, files.Contents{})
+		for _, src := range contents {
+			require.NotNil(t, src.FileInfo, src.Destination)
+			require.Equal(t, now, src.FileInfo.MTime, src.Destination)
+		}
+
 		require.ElementsMatch(t, []string{
 			"./testdata/testfile.txt",
 			"./testdata/testfile.txt",
@@ -440,7 +465,7 @@ func TestRunPipe(t *testing.T) {
 			foohPath,
 			fooaPath,
 			foosoPath,
-		}, sources(artifact.ExtraOr(*pkg, extraFiles, files.Contents{})))
+		}, sources(contents))
 
 		bin := "/usr/bin/subdir/"
 		header := "/usr/lib/headers"

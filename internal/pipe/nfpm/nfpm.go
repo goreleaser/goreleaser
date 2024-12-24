@@ -357,7 +357,8 @@ func create(ctx *context.Context, fpm config.NFPM, format string, artifacts []*a
 				Source:      filepath.ToSlash(src),
 				Destination: filepath.ToSlash(dst),
 				FileInfo: &files.ContentFileInfo{
-					Mode: 0o755,
+					Mode:  0o755,
+					MTime: fpm.MTime,
 				},
 			})
 		}
@@ -382,6 +383,7 @@ func create(ctx *context.Context, fpm config.NFPM, format string, artifacts []*a
 		Homepage:        fpm.Homepage,
 		License:         fpm.License,
 		Changelog:       fpm.Changelog,
+		MTime:           fpm.MTime,
 		Overridables: nfpm.Overridables{
 			Umask:      overridden.Umask,
 			Conflicts:  overridden.Conflicts,
@@ -518,6 +520,11 @@ func create(ctx *context.Context, fpm config.NFPM, format string, artifacts []*a
 	}
 	if err := w.Close(); err != nil {
 		return fmt.Errorf("could not close package file: %w", err)
+	}
+	if !fpm.MTime.IsZero() {
+		if err := os.Chtimes(path, fpm.MTime, fpm.MTime); err != nil {
+			return fmt.Errorf("could not set package mtime: %w", err)
+		}
 	}
 	ctx.Artifacts.Add(&artifact.Artifact{
 		Type:    artifact.LinuxPackage,

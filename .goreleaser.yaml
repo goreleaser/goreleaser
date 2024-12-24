@@ -319,27 +319,33 @@ nfpms:
     vendor: GoReleaser
     bindir: /usr/bin
     section: utils
+    mtime: "{{ .CommitDate }}"
     contents:
       - src: ./completions/goreleaser.bash
         dst: /usr/share/bash-completion/completions/goreleaser
         file_info:
           mode: 0644
+          mtime: "{{ .CommitDate }}"
       - src: ./completions/goreleaser.fish
         dst: /usr/share/fish/vendor_completions.d/goreleaser.fish
         file_info:
           mode: 0644
+          mtime: "{{ .CommitDate }}"
       - src: ./completions/goreleaser.zsh
         dst: /usr/share/zsh/vendor-completions/_goreleaser
         file_info:
           mode: 0644
+          mtime: "{{ .CommitDate }}"
       - src: ./manpages/goreleaser.1.gz
         dst: /usr/share/man/man1/goreleaser.1.gz
         file_info:
           mode: 0644
+          mtime: "{{ .CommitDate }}"
       - src: ./LICENSE.md
         dst: /usr/share/doc/goreleaser/copyright
         file_info:
           mode: 0644
+          mtime: "{{ .CommitDate }}"
     formats:
       - apk
       - deb

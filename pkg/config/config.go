@@ -810,20 +810,21 @@ type NFPM struct {
 	NFPMOverridables `yaml:",inline" json:",inline"`
 	Overrides        map[string]NFPMOverridables `yaml:"overrides,omitempty" json:"overrides,omitempty"`
 
-	ID          string   `yaml:"id,omitempty" json:"id,omitempty"`
-	Builds      []string `yaml:"builds,omitempty" json:"builds,omitempty"`
-	Formats     []string `yaml:"formats,omitempty" json:"formats,omitempty" jsonschema:"enum=apk,enum=deb,enum=rpm,enum=termux.deb,enum=archlinux,enum=ipk"`
-	Section     string   `yaml:"section,omitempty" json:"section,omitempty"`
-	Priority    string   `yaml:"priority,omitempty" json:"priority,omitempty"`
-	Vendor      string   `yaml:"vendor,omitempty" json:"vendor,omitempty"`
-	Homepage    string   `yaml:"homepage,omitempty" json:"homepage,omitempty"`
-	Maintainer  string   `yaml:"maintainer,omitempty" json:"maintainer,omitempty"`
-	Description string   `yaml:"description,omitempty" json:"description,omitempty"`
-	License     string   `yaml:"license,omitempty" json:"license,omitempty"`
-	Bindir      string   `yaml:"bindir,omitempty" json:"bindir,omitempty"`
-	Libdirs     Libdirs  `yaml:"libdirs,omitempty" json:"libdirs,omitempty"`
-	Changelog   string   `yaml:"changelog,omitempty" json:"changelog,omitempty"`
-	Meta        bool     `yaml:"meta,omitempty" json:"meta,omitempty"` // make package without binaries - only deps
+	ID          string    `yaml:"id,omitempty" json:"id,omitempty"`
+	Builds      []string  `yaml:"builds,omitempty" json:"builds,omitempty"`
+	Formats     []string  `yaml:"formats,omitempty" json:"formats,omitempty" jsonschema:"enum=apk,enum=deb,enum=rpm,enum=termux.deb,enum=archlinux,enum=ipk"`
+	Section     string    `yaml:"section,omitempty" json:"section,omitempty"`
+	Priority    string    `yaml:"priority,omitempty" json:"priority,omitempty"`
+	Vendor      string    `yaml:"vendor,omitempty" json:"vendor,omitempty"`
+	Homepage    string    `yaml:"homepage,omitempty" json:"homepage,omitempty"`
+	Maintainer  string    `yaml:"maintainer,omitempty" json:"maintainer,omitempty"`
+	Description string    `yaml:"description,omitempty" json:"description,omitempty"`
+	License     string    `yaml:"license,omitempty" json:"license,omitempty"`
+	Bindir      string    `yaml:"bindir,omitempty" json:"bindir,omitempty"`
+	Libdirs     Libdirs   `yaml:"libdirs,omitempty" json:"libdirs,omitempty"`
+	Changelog   string    `yaml:"changelog,omitempty" json:"changelog,omitempty"`
+	MTime       time.Time `yaml:"mtime,omitempty" json:"mtime,omitempty" `
+	Meta        bool      `yaml:"meta,omitempty" json:"meta,omitempty"` // make package without binaries - only deps
 }
 
 type Libdirs struct {

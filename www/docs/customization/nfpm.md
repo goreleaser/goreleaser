@@ -310,6 +310,10 @@ nfpms:
       preremove: "scripts/preremove.sh"
       postremove: "scripts/postremove.sh"
 
+    # Date to be used as mtime for the package itself, and its internal files.
+    # You may also want to set the mtime on its contents.
+    mtime: "2009-11-10T23:00:00Z"
+
     # All fields above marked as `overridable` can be overridden for a given
     # package format in this section.
     overrides:
