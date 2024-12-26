@@ -89,6 +89,16 @@ builds:
       - x86_64-pc-windows-gnu
 ```
 
+## Publishing with Cargo
+
+You can use [custom publishers](./publishers.md) to do it:
+
+```yaml title=".goreleaser.yaml"
+publishers:
+  - name: cargo
+    cmd: "cargo publish {{ if .IsSnapshot }}--dry-run{{ end }} --quiet --no-verify"
+```
+
 ## Caveats
 
 ### Targets
