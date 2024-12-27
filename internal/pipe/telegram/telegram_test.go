@@ -85,18 +85,22 @@ func TestAnnounceMissingEnv(t *testing.T) {
 
 func TestSkip(t *testing.T) {
 	t.Run("skip", func(t *testing.T) {
-		require.True(t, Pipe{}.Skip(testctx.New()))
+		skip, err := Pipe{}.Skip(testctx.New())
+		require.NoError(t, err)
+		require.True(t, skip)
 	})
 
 	t.Run("dont skip", func(t *testing.T) {
 		ctx := testctx.NewWithCfg(config.Project{
 			Announce: config.Announce{
 				Telegram: config.Telegram{
-					Enabled: true,
+					Enabled: "true",
 				},
 			},
 		})
-		require.False(t, Pipe{}.Skip(ctx))
+		skip, err := Pipe{}.Skip(ctx)
+		require.NoError(t, err)
+		require.False(t, skip)
 	})
 }
 
