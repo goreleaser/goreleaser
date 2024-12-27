@@ -1353,7 +1353,7 @@ type Announce struct {
 }
 
 type Webhook struct {
-	Enabled             bool              `yaml:"enabled,omitempty" json:"enabled,omitempty"`
+	Enabled             string            `yaml:"enabled,omitempty" json:"enabled,omitempty" jsonschema:"oneof_type=string;boolean"`
 	SkipTLSVerify       bool              `yaml:"skip_tls_verify,omitempty" json:"skip_tls_verify,omitempty"`
 	MessageTemplate     string            `yaml:"message_template,omitempty" json:"message_template,omitempty"`
 	EndpointURL         string            `yaml:"endpoint_url,omitempty" json:"endpoint_url,omitempty"`
