@@ -15,8 +15,11 @@ const defaultMessageTemplate = `{{ .ProjectName }} {{ .Tag }} is out! Check it o
 
 type Pipe struct{}
 
-func (Pipe) String() string                 { return "twitter" }
-func (Pipe) Skip(ctx *context.Context) bool { return !ctx.Config.Announce.Twitter.Enabled }
+func (Pipe) String() string { return "twitter" }
+func (Pipe) Skip(ctx *context.Context) (bool, error) {
+	enable, err := tmpl.New(ctx).Bool(ctx.Config.Announce.Twitter.Enabled)
+	return !enable, err
+}
 
 type Config struct {
 	ConsumerKey    string `env:"TWITTER_CONSUMER_KEY,notEmpty"`
