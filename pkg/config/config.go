@@ -1445,7 +1445,7 @@ type Telegram struct {
 }
 
 type OpenCollective struct {
-	Enabled         bool   `yaml:"enabled,omitempty" json:"enabled,omitempty"`
+	Enabled         string `yaml:"enabled,omitempty" json:"enabled,omitempty" jsonschema:"oneof_type=string;boolean"`
 	Slug            string `yaml:"slug,omitempty" json:"slug,omitempty"`
 	TitleTemplate   string `yaml:"title_template,omitempty" json:"title_template,omitempty"`
 	MessageTemplate string `yaml:"message_template,omitempty" json:"message_template,omitempty"`
