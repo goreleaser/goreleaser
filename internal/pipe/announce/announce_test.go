@@ -18,10 +18,10 @@ func TestAnnounce(t *testing.T) {
 	ctx := testctx.NewWithCfg(config.Project{
 		Announce: config.Announce{
 			Twitter: config.Twitter{
-				Enabled: true,
+				Enabled: "true",
 			},
 			Mastodon: config.Mastodon{
-				Enabled: true,
+				Enabled: "true",
 				Server:  "https://localhost:1234/",
 			},
 		},
