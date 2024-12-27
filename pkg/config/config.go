@@ -1453,7 +1453,7 @@ type OpenCollective struct {
 
 // Bluesky represents the data required to announce to the Bluesky social network
 type Bluesky struct {
-	Enabled         bool   `yaml:"enabled,omitempty" json:"enabled,omitempty"`
+	Enabled         string `yaml:"enabled,omitempty" json:"enabled,omitempty" jsonschema:"oneof_type=string;boolean"`
 	Username        string `yaml:"username,omitempty" json:"username,omitempty"`
 	MessageTemplate string `yaml:"message_template,omitempty" json:"message_template,omitempty"`
 }

@@ -12,6 +12,8 @@ configuration:
 announce:
   bluesky:
     # Whether it's enabled or not.
+    #
+    # Templates: allowed (since v2.6).
     enabled: true
 
     # Message template to use while publishing.
