@@ -1402,7 +1402,7 @@ type Discord struct {
 }
 
 type Teams struct {
-	Enabled         bool   `yaml:"enabled,omitempty" json:"enabled,omitempty"`
+	Enabled         string `yaml:"enabled,omitempty" json:"enabled,omitempty" jsonschema:"oneof_type=string;boolean"`
 	TitleTemplate   string `yaml:"title_template,omitempty" json:"title_template,omitempty"`
 	MessageTemplate string `yaml:"message_template,omitempty" json:"message_template,omitempty"`
 	Color           string `yaml:"color,omitempty" json:"color,omitempty"`
