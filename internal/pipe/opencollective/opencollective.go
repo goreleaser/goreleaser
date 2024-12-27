@@ -22,8 +22,9 @@ type Pipe struct{}
 
 func (Pipe) String() string { return "opencollective" }
 
-func (Pipe) Skip(ctx *context.Context) bool {
-	return !ctx.Config.Announce.OpenCollective.Enabled || ctx.Config.Announce.OpenCollective.Slug == ""
+func (Pipe) Skip(ctx *context.Context) (bool, error) {
+	enable, err := tmpl.New(ctx).Bool(ctx.Config.Announce.OpenCollective.Enabled)
+	return !enable || ctx.Config.Announce.OpenCollective.Slug == "", err
 }
 
 type Config struct {

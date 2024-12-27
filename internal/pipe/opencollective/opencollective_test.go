@@ -43,28 +43,34 @@ func TestAnnounceMissingEnv(t *testing.T) {
 
 func TestSkip(t *testing.T) {
 	t.Run("skip", func(t *testing.T) {
-		require.True(t, Pipe{}.Skip(testctx.New()))
+		skip, err := Pipe{}.Skip(testctx.New())
+		require.NoError(t, err)
+		require.True(t, skip)
 	})
 
 	t.Run("skip empty slug", func(t *testing.T) {
-		require.True(t, Pipe{}.Skip(testctx.NewWithCfg(config.Project{
+		skip, err := Pipe{}.Skip(testctx.NewWithCfg(config.Project{
 			Announce: config.Announce{
 				OpenCollective: config.OpenCollective{
-					Enabled: true,
+					Enabled: "true",
 					Slug:    "", // empty
 				},
 			},
-		})))
+		}))
+		require.NoError(t, err)
+		require.True(t, skip)
 	})
 
 	t.Run("dont skip", func(t *testing.T) {
-		require.False(t, Pipe{}.Skip(testctx.NewWithCfg(config.Project{
+		skip, err := Pipe{}.Skip(testctx.NewWithCfg(config.Project{
 			Announce: config.Announce{
 				OpenCollective: config.OpenCollective{
-					Enabled: true,
+					Enabled: "true",
 					Slug:    "goreleaser",
 				},
 			},
-		})))
+		}))
+		require.NoError(t, err)
+		require.False(t, skip)
 	})
 }
