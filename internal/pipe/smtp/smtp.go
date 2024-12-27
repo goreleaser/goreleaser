@@ -20,8 +20,11 @@ const (
 
 type Pipe struct{}
 
-func (Pipe) String() string                 { return "smtp" }
-func (Pipe) Skip(ctx *context.Context) bool { return !ctx.Config.Announce.SMTP.Enabled }
+func (Pipe) String() string { return "smtp" }
+func (Pipe) Skip(ctx *context.Context) (bool, error) {
+	enable, err := tmpl.New(ctx).Bool(ctx.Config.Announce.SMTP.Enabled)
+	return !enable, err
+}
 
 type Config struct {
 	Host     string `env:"SMTP_HOST"`

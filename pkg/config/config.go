@@ -1421,7 +1421,7 @@ type Mattermost struct {
 }
 
 type SMTP struct {
-	Enabled            bool     `yaml:"enabled,omitempty" json:"enabled,omitempty"`
+	Enabled            string   `yaml:"enabled,omitempty" json:"enabled,omitempty" jsonschema:"oneof_type=string;boolean"`
 	Host               string   `yaml:"host,omitempty" json:"host,omitempty"`
 	Port               int      `yaml:"port,omitempty" json:"port,omitempty"`
 	Username           string   `yaml:"username,omitempty" json:"username,omitempty"`
