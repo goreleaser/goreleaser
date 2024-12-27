@@ -42,28 +42,34 @@ func TestAnnounceMissingEnv(t *testing.T) {
 
 func TestSkip(t *testing.T) {
 	t.Run("skip", func(t *testing.T) {
-		require.True(t, Pipe{}.Skip(testctx.New()))
+		skip, err := Pipe{}.Skip(testctx.New())
+		require.NoError(t, err)
+		require.True(t, skip)
 	})
 
 	t.Run("skip empty server", func(t *testing.T) {
-		require.True(t, Pipe{}.Skip(testctx.NewWithCfg(config.Project{
+		skip, err := Pipe{}.Skip(testctx.NewWithCfg(config.Project{
 			Announce: config.Announce{
 				Mastodon: config.Mastodon{
-					Enabled: true,
+					Enabled: "true",
 					Server:  "", // empty
 				},
 			},
-		})))
+		}))
+		require.NoError(t, err)
+		require.True(t, skip)
 	})
 
 	t.Run("dont skip", func(t *testing.T) {
-		require.False(t, Pipe{}.Skip(testctx.NewWithCfg(config.Project{
+		skip, err := Pipe{}.Skip(testctx.NewWithCfg(config.Project{
 			Announce: config.Announce{
 				Mastodon: config.Mastodon{
-					Enabled: true,
+					Enabled: "true",
 					Server:  "https://mastodon.social",
 				},
 			},
-		})))
+		}))
+		require.NoError(t, err)
+		require.False(t, skip)
 	})
 }
