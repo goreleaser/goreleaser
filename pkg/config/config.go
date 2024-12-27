@@ -1374,7 +1374,7 @@ type Mastodon struct {
 }
 
 type Reddit struct {
-	Enabled       bool   `yaml:"enabled,omitempty" json:"enabled,omitempty"`
+	Enabled       string `yaml:"enabled,omitempty" json:"enabled,omitempty" jsonschema:"oneof_type=string;boolean"`
 	ApplicationID string `yaml:"application_id,omitempty" json:"application_id,omitempty"`
 	Username      string `yaml:"username,omitempty" json:"username,omitempty"`
 	TitleTemplate string `yaml:"title_template,omitempty" json:"title_template,omitempty"`

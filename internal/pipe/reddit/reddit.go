@@ -17,8 +17,11 @@ const (
 
 type Pipe struct{}
 
-func (Pipe) String() string                 { return "reddit" }
-func (Pipe) Skip(ctx *context.Context) bool { return !ctx.Config.Announce.Reddit.Enabled }
+func (Pipe) String() string { return "reddit" }
+func (Pipe) Skip(ctx *context.Context) (bool, error) {
+	enable, err := tmpl.New(ctx).Bool(ctx.Config.Announce.Reddit.Enabled)
+	return !enable, err
+}
 
 type Config struct {
 	Secret   string `env:"REDDIT_SECRET,notEmpty"`
