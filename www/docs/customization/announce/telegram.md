@@ -15,6 +15,8 @@ config:
 announce:
   telegram:
     # Whether its enabled or not.
+    #
+    # Templates: allowed (since v2.6).
     enabled: true
 
     # Integer representation of your channel

@@ -19,8 +19,11 @@ const (
 
 type Pipe struct{}
 
-func (Pipe) String() string                 { return "telegram" }
-func (Pipe) Skip(ctx *context.Context) bool { return !ctx.Config.Announce.Telegram.Enabled }
+func (Pipe) String() string { return "telegram" }
+func (Pipe) Skip(ctx *context.Context) (bool, error) {
+	enable, err := tmpl.New(ctx).Bool(ctx.Config.Announce.Telegram.Enabled)
+	return !enable, err
+}
 
 type Config struct {
 	ConsumerToken string `env:"TELEGRAM_TOKEN,notEmpty"`
