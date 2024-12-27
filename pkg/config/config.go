@@ -1394,7 +1394,7 @@ type Slack struct {
 }
 
 type Discord struct {
-	Enabled         bool   `yaml:"enabled,omitempty" json:"enabled,omitempty"`
+	Enabled         string `yaml:"enabled,omitempty" json:"enabled,omitempty" jsonschema:"oneof_type=string;boolean"`
 	MessageTemplate string `yaml:"message_template,omitempty" json:"message_template,omitempty"`
 	Author          string `yaml:"author,omitempty" json:"author,omitempty"`
 	Color           string `yaml:"color,omitempty" json:"color,omitempty"`
