@@ -109,6 +109,130 @@
 				"additionalProperties": false,
 				"type": "object"
 			},
+			"AURSource": {
+				"properties": {
+					"name": {
+						"type": "string"
+					},
+					"ids": {
+						"items": {
+							"type": "string"
+						},
+						"type": "array"
+					},
+					"commit_author": {
+						"$ref": "#/$defs/CommitAuthor"
+					},
+					"commit_msg_template": {
+						"type": "string"
+					},
+					"description": {
+						"type": "string"
+					},
+					"homepage": {
+						"type": "string"
+					},
+					"license": {
+						"type": "string"
+					},
+					"skip_upload": {
+						"oneOf": [
+							{
+								"type": "string"
+							},
+							{
+								"type": "boolean"
+							}
+						]
+					},
+					"url_template": {
+						"type": "string"
+					},
+					"maintainers": {
+						"items": {
+							"type": "string"
+						},
+						"type": "array"
+					},
+					"contributors": {
+						"items": {
+							"type": "string"
+						},
+						"type": "array"
+					},
+					"arches": {
+						"items": {
+							"type": "string"
+						},
+						"type": "array"
+					},
+					"provides": {
+						"items": {
+							"type": "string"
+						},
+						"type": "array"
+					},
+					"conflicts": {
+						"items": {
+							"type": "string"
+						},
+						"type": "array"
+					},
+					"depends": {
+						"items": {
+							"type": "string"
+						},
+						"type": "array"
+					},
+					"optdepends": {
+						"items": {
+							"type": "string"
+						},
+						"type": "array"
+					},
+					"makedepends": {
+						"items": {
+							"type": "string"
+						},
+						"type": "array"
+					},
+					"backup": {
+						"items": {
+							"type": "string"
+						},
+						"type": "array"
+					},
+					"rel": {
+						"type": "string"
+					},
+					"prepare": {
+						"type": "string"
+					},
+					"build": {
+						"type": "string"
+					},
+					"package": {
+						"type": "string"
+					},
+					"git_url": {
+						"type": "string"
+					},
+					"git_ssh_command": {
+						"type": "string"
+					},
+					"private_key": {
+						"type": "string"
+					},
+					"goamd64": {
+						"type": "string"
+					},
+					"directory": {
+						"type": "string"
+					}
+				},
+				"additionalProperties": false,
+				"type": "object"
+			},
 			"After": {
 				"properties": {
 					"hooks": {
@@ -525,7 +649,14 @@
 						"$ref": "#/$defs/BuildHookConfig"
 					},
 					"builder": {
-						"type": "string"
+						"type": "string",
+						"enum": [
+							"",
+							"go",
+							"rust",
+							"zig",
+							"prebuilt"
+						]
 					},
 					"mod_timestamp": {
 						"type": "string"
@@ -541,6 +672,9 @@
 						]
 					},
 					"gobinary": {
+						"type": "string"
+					},
+					"tool": {
 						"type": "string"
 					},
 					"command": {
@@ -672,7 +806,11 @@
 					}
 				},
 				"additionalProperties": false,
-				"type": "object"
+				"type": "object",
+				"required": [
+					"goos",
+					"goarch"
+				]
 			},
 			"BuildHookConfig": {
 				"properties": {
@@ -1953,6 +2091,12 @@
 					"repository": {
 						"type": "string"
 					},
+					"repositories": {
+						"items": {
+							"type": "string"
+						},
+						"type": "array"
+					},
 					"platforms": {
 						"items": {
 							"type": "string"
@@ -3095,6 +3239,12 @@
 						},
 						"type": "array"
 					},
+					"aur_sources": {
+						"items": {
+							"$ref": "#/$defs/AURSource"
+						},
+						"type": "array"
+					},
 					"krews": {
 						"items": {
 							"$ref": "#/$defs/Krew"
@@ -3408,6 +3558,9 @@
 							"$ref": "#/$defs/TemplatedExtraFile"
 						},
 						"type": "array"
+					},
+					"if": {
+						"type": "string"
 					}
 				},
 				"additionalProperties": false,
@@ -3494,6 +3647,9 @@
 						"type": "boolean"
 					},
 					"replace_existing_draft": {
+						"type": "boolean"
+					},
+					"use_existing_draft": {
 						"type": "boolean"
 					},
 					"target_commitish": {
@@ -4592,6 +4748,12 @@
 					},
 					"content_type": {
 						"type": "string"
+					},
+					"expected_status_codes": {
+						"items": {
+							"type": "integer"
+						},
+						"type": "array"
 					}
 				},
 				"additionalProperties": false,

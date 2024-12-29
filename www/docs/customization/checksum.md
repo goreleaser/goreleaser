@@ -5,8 +5,7 @@ release, so your users can validate if the downloaded files are correct.
 
 The `checksum` section allows customizations of the filename:
 
-```yaml
-# .goreleaser.yaml
+```yaml title=".goreleaser.yaml"
 checksum:
   # You can change the name of the checksums file.
   #

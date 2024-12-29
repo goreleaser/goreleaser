@@ -2,8 +2,7 @@
 
 You can customize how the changelog is generated using the `changelog` section in the config file:
 
-```yaml
-# .goreleaser.yml
+```yaml title=".goreleaser.yaml"
 changelog:
   # Set this to true if you don't want any changelog at all.
   #

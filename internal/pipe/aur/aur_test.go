@@ -249,6 +249,21 @@ func TestFullPipe(t *testing.T) {
 			},
 			expectedPublishErrorCheck: testlib.RequireTemplateError,
 		},
+		"simple-quote-inside-description": {
+			prepare: func(ctx *context.Context) {
+				ctx.Config.AURs[0].Description = "Let's go"
+			},
+		},
+		"double-quote-inside-description": {
+			prepare: func(ctx *context.Context) {
+				ctx.Config.AURs[0].Description = `This is a "test"`
+			},
+		},
+		"mixed-quote-inside-description": {
+			prepare: func(ctx *context.Context) {
+				ctx.Config.AURs[0].Description = `Let's go, this is a "test"`
+			},
+		},
 	} {
 		t.Run(name, func(t *testing.T) {
 			url := testlib.GitMakeBareRepository(t)

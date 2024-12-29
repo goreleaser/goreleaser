@@ -11,8 +11,7 @@ having [cosign](https://github.com/sigstore/cosign) in mind.
 
 To customize the signing pipeline you can use the following options:
 
-```yaml
-# .goreleaser.yml
+```yaml title=".goreleaser.yaml"
 docker_signs:
   - # ID of the sign config, must be unique.
     # Only relevant if you want to produce some sort of signature file.
@@ -55,7 +54,8 @@ docker_signs:
     #
     # Artifacts that do not match this expression will be ignored.
     #
-    # Since: v2.2 (pro).
+    # <!-- md:inline_pro -->.
+    # <!-- md:inline_version v2.2 -->.
     # Templates: allowed.
     if: '{{ eq .Os "linux" }}'
 
@@ -105,8 +105,7 @@ Assuming you have a `cosign.key` in the repository root and a `COSIGN_PWD`
 environment variable, the simplest configuration to sign both Docker images
 and manifests would look like this:
 
-```yaml
-# .goreleaser.yml
+```yaml title=".goreleaser.yaml"
 docker_signs:
   - artifacts: all
     stdin: "{{ .Env.COSIGN_PWD }}"

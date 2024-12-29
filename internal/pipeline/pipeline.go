@@ -7,6 +7,7 @@ import (
 	"github.com/goreleaser/goreleaser/v2/internal/pipe/announce"
 	"github.com/goreleaser/goreleaser/v2/internal/pipe/archive"
 	"github.com/goreleaser/goreleaser/v2/internal/pipe/aur"
+	"github.com/goreleaser/goreleaser/v2/internal/pipe/aursources"
 	"github.com/goreleaser/goreleaser/v2/internal/pipe/before"
 	"github.com/goreleaser/goreleaser/v2/internal/pipe/brew"
 	"github.com/goreleaser/goreleaser/v2/internal/pipe/build"
@@ -131,6 +132,8 @@ var Pipeline = append(
 	sign.Pipe{},
 	// create arch linux aur pkgbuild
 	aur.Pipe{},
+	// create arch linux aur pkgbuild (sources)
+	aursources.Pipe{},
 	// create nixpkgs
 	nix.NewBuild(),
 	// winget installers

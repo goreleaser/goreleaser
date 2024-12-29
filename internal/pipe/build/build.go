@@ -10,6 +10,7 @@ import (
 
 	"github.com/caarlos0/go-shellwords"
 	"github.com/caarlos0/log"
+	"github.com/goreleaser/goreleaser/v2/internal/deprecate"
 	"github.com/goreleaser/goreleaser/v2/internal/ids"
 	"github.com/goreleaser/goreleaser/v2/internal/semerrgroup"
 	"github.com/goreleaser/goreleaser/v2/internal/shell"
@@ -21,6 +22,8 @@ import (
 
 	// langs to init.
 	_ "github.com/goreleaser/goreleaser/v2/internal/builders/golang"
+	_ "github.com/goreleaser/goreleaser/v2/internal/builders/rust"
+	_ "github.com/goreleaser/goreleaser/v2/internal/builders/zig"
 )
 
 // Pipe for build.
@@ -43,15 +46,48 @@ func (Pipe) Run(ctx *context.Context) error {
 			continue
 		}
 		log.WithField("build", build).Debug("building")
-		runPipeOnBuild(ctx, g, build)
+		if err := prepare(ctx, build); err != nil {
+			return err
+		}
+		if allowParallelism(build) {
+			runPipeOnBuild(ctx, g, build)
+			continue
+		}
+		g.Go(func() error {
+			gg := semerrgroup.New(1)
+			runPipeOnBuild(ctx, gg, build)
+			return gg.Wait()
+		})
 	}
 	return g.Wait()
+}
+
+func allowParallelism(build config.Build) bool {
+	conc, ok := builders.For(build.Builder).(builders.ConcurrentBuilder)
+	if !ok {
+		// assume concurrent
+		return true
+	}
+	return conc.AllowConcurrentBuilds()
+}
+
+func prepare(ctx *context.Context, build config.Build) error {
+	prep, ok := builders.For(build.Builder).(builders.PreparedBuilder)
+	if !ok {
+		// nothing to do
+		return nil
+	}
+	return prep.Prepare(ctx, build)
 }
 
 // Default sets the pipe defaults.
 func (Pipe) Default(ctx *context.Context) error {
 	ids := ids.New("builds")
 	for i, build := range ctx.Config.Builds {
+		if build.GoBinary != "" {
+			build.Tool = build.GoBinary
+			deprecate.Notice(ctx, "builds.gobinary")
+		}
 		build, err := buildWithDefaults(ctx, build)
 		if err != nil {
 			return err
@@ -86,29 +122,33 @@ func buildWithDefaults(ctx *context.Context, build config.Build) (config.Build, 
 }
 
 func runPipeOnBuild(ctx *context.Context, g semerrgroup.Group, build config.Build) {
-	for _, target := range filter(ctx, build.Targets) {
+	for _, target := range filter(ctx, build) {
 		g.Go(func() error {
-			opts, err := buildOptionsForTarget(ctx, build, target)
-			if err != nil {
-				return err
-			}
-
-			if !skips.Any(ctx, skips.PreBuildHooks) {
-				if err := runHook(ctx, *opts, build.Env, build.Hooks.Pre); err != nil {
-					return fmt.Errorf("pre hook failed: %w", err)
-				}
-			}
-			if err := doBuild(ctx, build, *opts); err != nil {
-				return err
-			}
-			if !skips.Any(ctx, skips.PostBuildHooks) {
-				if err := runHook(ctx, *opts, build.Env, build.Hooks.Post); err != nil {
-					return fmt.Errorf("post hook failed: %w", err)
-				}
-			}
-			return nil
+			return buildTarget(ctx, build, target)
 		})
 	}
+}
+
+func buildTarget(ctx *context.Context, build config.Build, target string) error {
+	opts, err := buildOptionsForTarget(ctx, build, target)
+	if err != nil {
+		return err
+	}
+
+	if !skips.Any(ctx, skips.PreBuildHooks) {
+		if err := runHook(ctx, *opts, build.Env, build.Hooks.Pre); err != nil {
+			return fmt.Errorf("pre hook failed: %w", err)
+		}
+	}
+	if err := doBuild(ctx, build, *opts); err != nil {
+		return fmt.Errorf("build failed: %w\ntarget: %s", err, target)
+	}
+	if !skips.Any(ctx, skips.PostBuildHooks) {
+		if err := runHook(ctx, *opts, build.Env, build.Hooks.Post); err != nil {
+			return fmt.Errorf("post hook failed: %w", err)
+		}
+	}
+	return nil
 }
 
 func runHook(ctx *context.Context, opts builders.Options, buildEnv []string, hooks config.Hooks) error {
@@ -160,39 +200,15 @@ func doBuild(ctx *context.Context, build config.Build, opts builders.Options) er
 
 func buildOptionsForTarget(ctx *context.Context, build config.Build, target string) (*builders.Options, error) {
 	ext := extFor(target, build.BuildDetails)
-	parts := strings.Split(target, "_")
-	if len(parts) < 2 {
-		return nil, fmt.Errorf("%s is not a valid build target", target)
-	}
-
-	goos := parts[0]
-	goarch := parts[1]
-
 	buildOpts := builders.Options{
-		Target: target,
-		Ext:    ext,
-		Goos:   goos,
-		Goarch: goarch,
+		Ext: ext,
 	}
 
-	if len(parts) > 2 {
-		//nolint:gocritic
-		if strings.HasPrefix(goarch, "amd64") {
-			buildOpts.Goamd64 = parts[2]
-		} else if goarch == "386" {
-			buildOpts.Go386 = parts[2]
-		} else if strings.HasPrefix(goarch, "arm64") {
-			buildOpts.Goarm64 = parts[2]
-		} else if strings.HasPrefix(goarch, "arm") {
-			buildOpts.Goarm = parts[2]
-		} else if strings.HasPrefix(goarch, "mips") {
-			buildOpts.Gomips = parts[2]
-		} else if strings.HasPrefix(goarch, "ppc64") {
-			buildOpts.Goppc64 = parts[2]
-		} else if goarch == "riscv64" {
-			buildOpts.Goriscv64 = parts[2]
-		}
+	t, err := builders.For(build.Builder).Parse(target)
+	if err != nil {
+		return nil, err
 	}
+	buildOpts.Target = t
 
 	bin, err := tmpl.New(ctx).WithBuildOptions(buildOpts).Apply(build.Binary)
 	if err != nil {
@@ -200,7 +216,7 @@ func buildOptionsForTarget(ctx *context.Context, build config.Build, target stri
 	}
 
 	name := bin + ext
-	dir := fmt.Sprintf("%s_%s", build.ID, target)
+	dir := fmt.Sprintf("%s_%s", build.ID, t)
 	noUnique, err := tmpl.New(ctx).Bool(build.NoUniqueDistDir)
 	if err != nil {
 		return nil, err

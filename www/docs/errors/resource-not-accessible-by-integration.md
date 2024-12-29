@@ -55,8 +55,7 @@ We would need to change the workflow file:
 
 And also the `.goreleaser.yaml` file:
 
-```yaml
-# .goreleaser.yaml
+```yaml title=".goreleaser.yaml"
 # ...
 brews:
   - name: myproject

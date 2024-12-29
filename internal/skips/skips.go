@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"maps"
 	"slices"
-	"sort"
 	"strings"
 
 	"github.com/goreleaser/goreleaser/v2/pkg/context"
@@ -29,6 +28,7 @@ const (
 	Homebrew       Key = "homebrew"
 	Nix            Key = "nix"
 	AUR            Key = "aur"
+	AURSource      Key = "aur-source"
 	NFPM           Key = "nfpm"
 	Chocolatey     Key = "chocolatey"
 	Notarize       Key = "notarize"
@@ -97,7 +97,7 @@ func (keys Keys) Complete(prefix string) []string {
 			result = append(result, string(k))
 		}
 	}
-	sort.Strings(result)
+	slices.Sort(result)
 	return result
 }
 
@@ -116,6 +116,7 @@ var Release = Keys{
 	Homebrew,
 	Nix,
 	AUR,
+	AURSource,
 	NFPM,
 	Before,
 	Notarize,

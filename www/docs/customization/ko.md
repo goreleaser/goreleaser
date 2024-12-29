@@ -17,8 +17,7 @@ cached.
     For Ko to work you still need to login, either with `docker login` or
     something else.
 
-```yaml
-# .goreleaser.yaml
+```yaml title=".goreleaser.yaml"
 kos:
   - # ID of this image.
     id: foo
@@ -53,9 +52,20 @@ kos:
     # The default user the image should be run as.
     user: "1234:1234"
 
+    # Repositories to push to.
+    #
+    # First one will be used on Ko build, the other ones will be copied from the
+    # first one using crane.
+    #
+    # Default: [ '$KO_DOCKER_REPO' ].
+    repositories:
+      - ghcr.io/foo/bar
+      - foo/bar
+
     # Repository to push to.
     #
     # Default: '$KO_DOCKER_REPO'.
+    # Deprecated: use 'repositories' instead.
     repository: ghcr.io/foo/bar
 
     # Platforms to build and publish.
@@ -137,8 +147,7 @@ Refer to [ko's project page][ko] for more information.
 
 Here's a minimal example:
 
-```yaml
-# .goreleaser.yml
+```yaml title=".goreleaser.yaml"
 before:
   hooks:
     - go mod tidy
@@ -173,8 +182,7 @@ and `darwin/arm64`, as well as the Docker images and manifest for Linux.
 KO will add the built manifest to the artifact list, so you can sign them with
 `docker_signs`:
 
-```yaml
-# .goreleaser.yml
+```yaml title=".goreleaser.yaml"
 docker_signs:
   - artifacts: manifests
 ```

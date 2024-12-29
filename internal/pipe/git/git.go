@@ -1,6 +1,7 @@
 package git
 
 import (
+	"cmp"
 	"fmt"
 	"net/url"
 	"os"
@@ -10,7 +11,6 @@ import (
 	"time"
 
 	"github.com/caarlos0/log"
-	"github.com/charmbracelet/x/exp/ordered"
 	"github.com/goreleaser/goreleaser/v2/internal/git"
 	"github.com/goreleaser/goreleaser/v2/internal/pipe"
 	"github.com/goreleaser/goreleaser/v2/internal/skips"
@@ -47,7 +47,7 @@ func (Pipe) Run(ctx *context.Context) error {
 	log.WithField("commit", info.Commit).
 		WithField("branch", info.Branch).
 		WithField("current_tag", info.CurrentTag).
-		WithField("previous_tag", ordered.First(info.PreviousTag, "<unknown>")).
+		WithField("previous_tag", cmp.Or(info.PreviousTag, "<unknown>")).
 		WithField("dirty", info.Dirty).
 		Info("git state")
 	ctx.Version = strings.TrimPrefix(ctx.Git.CurrentTag, "v")

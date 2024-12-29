@@ -37,8 +37,18 @@ jobs:
         with:
           token: ${{ secrets.GH_PAT }}
           repo: goreleaser/goreleaser-cross
+          ref: master
           workflow: goreleaser-bump
           inputs: '{ "tag" : "${{ env.RELEASE_TAG }}" }'
+      - name: notify goreleaser-rust-cross with new release
+        if: startsWith(github.ref, 'refs/tags/v')
+        uses: benc-uk/workflow-dispatch@v1.2.4
+        with:
+          token: ${{ secrets.GH_PAT }}
+          repo: vedantmgoyal9/goreleaser-rust-cross
+          ref: main
+          workflow: CI
+          inputs: '{ "release-tag" : "${{ env.RELEASE_TAG }}" }'
   goreleaser-check-pkgs:
     runs-on: ubuntu-latest
     env:
@@ -57,7 +67,7 @@ jobs:
           version: 3.x
           repo-token: ${{ secrets.GITHUB_TOKEN }}
       - uses: docker/setup-qemu-action@49b3bc8e6bdd4a60e6116a5414239cba5943d3cf # v2
-      - uses: actions/cache@6849a6489940f00c2f30c0fb92c6274307ccb58a # v4
+      - uses: actions/cache@1bd1e32a3bdc45362d1e726936510720a7c30a57 # v4
         with:
           path: |
             ./dist/*.deb
@@ -86,15 +96,13 @@ jobs:
           version: 3.x
           repo-token: ${{ secrets.GITHUB_TOKEN }}
       - uses: docker/setup-qemu-action@49b3bc8e6bdd4a60e6116a5414239cba5943d3cf # v2
-      - uses: docker/setup-buildx-action@c47758b77c9736f4b2ef4073d4d51994fabfe349 # v3
+      - uses: docker/setup-buildx-action@6524bf65af31da8d45b59e8c27de4bd072b392f5 # v3
       - name: setup-snapcraft
-        run: |
-          sudo apt-get update
-          sudo apt-get -yq --no-install-suggests --no-install-recommends install snapcraft
-      - uses: actions/setup-go@41dfa10bad2bb2ae585af6ee5bb4d7d973ad74ed # v4
+        run: sudo snap install snapcraft --classic
+      - uses: actions/setup-go@3041bf56c941b39c61721a86cd11f3bb1338122a # v4
         with:
           go-version: stable
-      - uses: actions/cache@6849a6489940f00c2f30c0fb92c6274307ccb58a # v4
+      - uses: actions/cache@1bd1e32a3bdc45362d1e726936510720a7c30a57 # v4
         with:
           path: |
             ./dist/*.deb
@@ -102,7 +110,7 @@ jobs:
             ./dist/*.apk
           key: ${{ github.ref }}
       - uses: sigstore/cosign-installer@v3.7.0
-      - uses: anchore/sbom-action/download-syft@v0.17.7
+      - uses: anchore/sbom-action/download-syft@v0.17.9
       - uses: crazy-max/ghaction-upx@v3
         with:
           install-only: true

@@ -31,7 +31,7 @@
     {{- end }}
   end
 
-  on_arm do
+  if Hardware::CPU.arm?
     def caveats
       <<~EOS
         The darwin_arm64 architecture is not supported for the {{ $.Name }}
@@ -42,10 +42,10 @@
   end
   {{- else }}
   {{- if eq $element.Arch "amd64" }}
-  on_intel do
+  if Hardware::CPU.intel?
   {{- end }}
   {{- if eq $element.Arch "arm64" }}
-  on_arm do
+  if Hardware::CPU.arm?
   {{- end}}
     url "{{ $element.DownloadURL }}"
     {{- if .DownloadStrategy }}, using: {{ .DownloadStrategy }}{{- end }}

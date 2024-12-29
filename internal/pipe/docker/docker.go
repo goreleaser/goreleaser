@@ -1,12 +1,15 @@
 package docker
 
 import (
+	"errors"
 	"fmt"
+	"io"
 	"io/fs"
+	"maps"
 	"net/http"
 	"os"
 	"path/filepath"
-	"sort"
+	"slices"
 	"strings"
 	"time"
 
@@ -86,17 +89,10 @@ func (Pipe) Default(ctx *context.Context) error {
 }
 
 func validateImager(use string) error {
-	valid := make([]string, 0, len(imagers))
-	for k := range imagers {
-		valid = append(valid, k)
+	if _, ok := imagers[use]; ok {
+		return nil
 	}
-	for _, s := range valid {
-		if s == use {
-			return nil
-		}
-	}
-	sort.Strings(valid)
-	return fmt.Errorf("docker: invalid use: %s, valid options are %v", use, valid)
+	return fmt.Errorf("docker: invalid use: %s, valid options are %v", use, slices.Sorted(maps.Keys(imagers)))
 }
 
 // Publish the docker images.
@@ -238,7 +234,7 @@ Previous error:
 %w`, tmp, strings.Join(files, "\n "), err)
 		}
 		if isBuildxContextError(err.Error()) {
-			return fmt.Errorf("docker buildx is not set to default context - please switch with 'docker context use default'")
+			return errors.New("docker buildx is not set to default context - please switch with 'docker context use default'")
 		}
 		return err
 	}
@@ -360,12 +356,15 @@ func doPush(ctx *context.Context, img imager, name string, flags []string) (stri
 			try++
 			continue
 		}
-		return "", fmt.Errorf("failed to push %s after %d tries: %w", name, try, err)
+		return "", fmt.Errorf("failed to push %s after %d tries: %w", name, try+1, err)
 	}
 	return "", nil // will never happen
 }
 
 func isRetryable(err error) bool {
+	if errors.Is(err, io.EOF) {
+		return true
+	}
 	for _, code := range []int{
 		http.StatusInternalServerError,
 		// http.StatusNotImplemented,

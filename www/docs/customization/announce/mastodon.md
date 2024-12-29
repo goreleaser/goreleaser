@@ -11,8 +11,7 @@ permissions, and set the following environment variables in your pipeline:
 Then, you can add something like the following to your `.goreleaser.yaml`
 configuration file:
 
-```yaml
-# .goreleaser.yaml
+```yaml title=".goreleaser.yaml"
 announce:
   mastodon:
     # Whether its enabled or not.

@@ -10,6 +10,15 @@ www/docs/static/schema.json linguist-generated=true
 www/docs/static/schema-pro.json linguist-generated=true
 www/docs/static/releases.json linguist-generated=true
 www/docs/static/releases-pro.json linguist-generated=true
+
+internal/builders/zig/testdata/proj/**/* linguist-generated=true
+internal/builders/zig/all_targets.txt linguist-generated=true
+internal/builders/zig/error_targets.txt linguist-generated=true
+internal/builders/zig/testdata/version.txt linguist-generated=true
+
+internal/builders/rust/all_targets.txt linguist-generated=true
+internal/builders/rust/testdata/proj/**/* linguist-generated=true
+
 *.nix.golden linguist-language=Nix
 *.rb.golden linguist-language=Ruby
 *.json.golden linguist-language=JSON

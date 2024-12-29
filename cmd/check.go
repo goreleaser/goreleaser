@@ -1,6 +1,7 @@
 package cmd
 
 import (
+	"errors"
 	"fmt"
 	"io"
 	"os"
@@ -62,7 +63,7 @@ func newCheckCmd() *checkCmd {
 
 				if ctx.Deprecated {
 					errs = append(errs, wrapErrorWithCode(
-						fmt.Errorf("configuration is valid, but uses deprecated properties"),
+						errors.New("configuration is valid, but uses deprecated properties"),
 						2,
 						path,
 					))

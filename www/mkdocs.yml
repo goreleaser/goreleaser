@@ -1,7 +1,13 @@
 site_name: GoReleaser
 site_url: https://goreleaser.com
-site_description: Deliver Go binaries as fast and easily as possible
-copyright: Made with ❤️ by GoReleaser contributors.
+site_description: Release engineering, simplified.
+copyright: >
+  Made with 🩶 by the
+  <a href="https://github.com/goreleaser/goreleaser/graphs/contributors"
+    target="_blank"
+    rel="noopener">
+    GoReleaser contributors
+  </a>
 repo_name: goreleaser/goreleaser
 repo_url: https://github.com/goreleaser/goreleaser
 edit_uri: edit/main/www/docs/
@@ -22,12 +28,14 @@ theme:
   palette:
     - media: "(prefers-color-scheme: light)" # Light mode
       scheme: default
+      primary: black
+      accent: indigo
       toggle:
         icon: material/lightbulb-outline
         name: Switch to dark mode
     - media: "(prefers-color-scheme: dark)" # Dark mode
       scheme: slate
-      primary: light blue
+      primary: black
       accent: indigo
       toggle:
         icon: material/lightbulb
@@ -73,7 +81,7 @@ plugins:
         as_creation: date
 
 extra:
-  extra:
+  generator: false
   analytics:
     provider: google
     property: "G-3MZGQS8EPS"
@@ -88,7 +96,6 @@ extra:
       link: /discord
 
 nav:
-  - Home: index.md
   - Getting Started:
       - intro.md
       - install.md
@@ -97,7 +104,7 @@ nav:
       - Limitations:
           - limitations/cgo.md
           - limitations/semver.md
-  - Customization:
+  - Documentation:
       - customization/index.md
       - General:
           - customization/includes.md
@@ -111,6 +118,9 @@ nav:
           - Split & Merge: customization/partial.md
       - Build:
           - customization/builds.md
+          - customization/rust-builds.md
+          - customization/zig-builds.md
+          - customization/prebuilt.md
           - customization/verifiable_builds.md
           - customization/monorepo.md
           - customization/universalbinaries.md
@@ -149,6 +159,7 @@ nav:
           - customization/winget.md
           - NUR: customization/nix.md
           - AUR: customization/aur.md
+          - AURSources: customization/aursources.md
           - Krew: customization/krew.md
           - Scoop: customization/scoop.md
           - customization/changelog.md
@@ -224,7 +235,6 @@ nav:
           - cookbooks/set-a-custom-git-tag.md
           - cookbooks/using-main.version.md
           - cookbooks/override-image-name.md
-          - cookbooks/goreleaser-xx.md
       - Command Line Usage:
           - cmd/goreleaser.md
           - cmd/goreleaser_init.md
@@ -244,12 +254,13 @@ nav:
           - cmd/goreleaser_jsonschema.md
       - contributing.md
       - links.md
-  - Get Pro: pro.md
-  - Blog:
+  - Pro: pro.md
+  - News:
       - blog/index.md
 
 markdown_extensions:
   - admonition
+  - pymdownx.details
   - codehilite
   - meta
   - toc:

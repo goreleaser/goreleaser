@@ -10,8 +10,7 @@ a `PKGBUILD` to an _Arch User Repository_.
 
 This page describes the available options.
 
-```yaml
-# .goreleaser.yaml
+```yaml title=".goreleaser.yaml"
 aurs:
   - # The package name.
     #

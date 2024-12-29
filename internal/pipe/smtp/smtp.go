@@ -2,6 +2,7 @@ package smtp
 
 import (
 	"crypto/tls"
+	"errors"
 	"fmt"
 
 	"github.com/caarlos0/env/v11"
@@ -90,9 +91,9 @@ func (Pipe) Announce(ctx *context.Context) error {
 }
 
 var (
-	errNoPort     = fmt.Errorf("SMTP: missing smtp.port or $SMTP_PORT")
-	errNoUsername = fmt.Errorf("SMTP: missing smtp.username or $SMTP_USERNAME")
-	errNoHost     = fmt.Errorf("SMTP: missing smtp.host or $SMTP_HOST")
+	errNoPort     = errors.New("SMTP: missing smtp.port or $SMTP_PORT")
+	errNoUsername = errors.New("SMTP: missing smtp.username or $SMTP_USERNAME")
+	errNoHost     = errors.New("SMTP: missing smtp.host or $SMTP_HOST")
 )
 
 func getConfig(smtp config.SMTP) (Config, error) {

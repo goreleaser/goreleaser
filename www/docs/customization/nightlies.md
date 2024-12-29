@@ -2,7 +2,7 @@
 
 <!-- md:pro -->
 
-Whether if you need beta builds or a rolling-release system, the nightly builds
+Whether you need beta builds or a rolling-release system, the nightly builds
 feature will do it for you.
 
 To enable it, you must use the `--nightly` flag in the
@@ -10,8 +10,7 @@ To enable it, you must use the `--nightly` flag in the
 
 You also have some customization options available:
 
-```yaml
-# .goreleaser.yml
+```yaml title=".goreleaser.yaml"
 nightly:
   # Allows you to change the version of the generated nightly release.
   #

@@ -11,8 +11,7 @@ If your endpoints are not secure, you can use following environment variables to
 
 Add following to your `.goreleaser.yaml` configuration to enable the WebHook functionality:
 
-```yaml
-# .goreleaser.yaml
+```yaml title=".goreleaser.yaml"
 announce:
   webhook:
     # Whether its enabled or not.
@@ -40,6 +39,11 @@ announce:
     #   Authorization: "Bearer <token>"
     headers:
       User-Agent: "goreleaser"
+
+    # HTTP status codes to be considered as a successful response.
+    #
+    # Default: 200, 201, 202, 204
+    expected_status_codes: [418, 200, 201]
 ```
 
 <!-- md:templates -->

@@ -16,3 +16,4 @@ manpages
 output.json
 .direnv
 *.pyc
+.intentionally-empty-file.o

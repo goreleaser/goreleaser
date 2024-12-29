@@ -406,7 +406,7 @@ func doPublish(ctx *context.Context, prefetcher shaPrefetcher, cl client.Client,
 	log.Info("nix.pull_request enabled, creating a PR")
 	pcl, ok := cl.(client.PullRequestOpener)
 	if !ok {
-		return fmt.Errorf("client does not support pull requests")
+		return errors.New("client does not support pull requests")
 	}
 
 	return pcl.OpenPullRequest(ctx, base, repo, msg, nix.Repository.PullRequest.Draft)

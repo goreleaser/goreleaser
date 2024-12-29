@@ -30,6 +30,13 @@ import (
 //nolint:gochecknoglobals
 var Default = &Builder{}
 
+// type constraints
+var (
+	_ api.Builder          = &Builder{}
+	_ api.DependingBuilder = &Builder{}
+	_ api.TargetFixer      = &Builder{}
+)
+
 //nolint:gochecknoinits
 func init() {
 	api.Register("go", Default)
@@ -38,10 +45,55 @@ func init() {
 // Builder is golang builder.
 type Builder struct{}
 
+// Dependencies implements build.DependingBuilder.
+func (b *Builder) Dependencies() []string {
+	return []string{"go"}
+}
+
+// Parse implements build.Builder.
+func (b *Builder) Parse(target string) (api.Target, error) {
+	target = fixTarget(target)
+	parts := strings.Split(target, "_")
+	if len(parts) < 2 {
+		return nil, fmt.Errorf("%s is not a valid build target", target)
+	}
+
+	goos := parts[0]
+	goarch := parts[1]
+
+	t := Target{
+		Target: target,
+		Goos:   goos,
+		Goarch: goarch,
+	}
+
+	if len(parts) > 2 {
+		extra := parts[2]
+		switch goarch {
+		case "amd64":
+			t.Goamd64 = extra
+		case "arm64":
+			t.Goarm64 = extra
+		case "386":
+			t.Go386 = extra
+		case "arm":
+			t.Goarm = extra
+		case "mips", "mipsle", "mips64", "mips64le":
+			t.Gomips = extra
+		case "ppc64":
+			t.Goppc64 = extra
+		case "riscv":
+			t.Goriscv64 = extra
+		}
+	}
+
+	return t, nil
+}
+
 // WithDefaults sets the defaults for a golang build and returns it.
 func (*Builder) WithDefaults(build config.Build) (config.Build, error) {
-	if build.GoBinary == "" {
-		build.GoBinary = "go"
+	if build.Tool == "" {
+		build.Tool = "go"
 	}
 	if build.Command == "" {
 		build.Command = "build"
@@ -105,7 +157,19 @@ func (*Builder) WithDefaults(build config.Build) (config.Build, error) {
 		}
 		build.Targets = slices.Collect(maps.Keys(targets))
 	}
+
+	for _, o := range build.BuildDetailsOverrides {
+		if o.Goos == "" || o.Goarch == "" {
+			log.Warn("overrides must set, at least, both 'goos' and 'goarch'")
+			break
+		}
+	}
 	return build, nil
+}
+
+// FixTarget implements build.TargetFixer.
+func (b *Builder) FixTarget(target string) string {
+	return fixTarget(target)
 }
 
 func fixTarget(target string) string {
@@ -187,23 +251,27 @@ func (*Builder) Build(ctx *context.Context, build config.Build, options api.Opti
 		return err
 	}
 
+	t := options.Target.(Target)
+
 	a := &artifact.Artifact{
 		Type:      artifact.Binary,
 		Path:      options.Path,
 		Name:      options.Name,
-		Goos:      options.Goos,
-		Goarch:    options.Goarch,
-		Goamd64:   options.Goamd64,
-		Go386:     options.Go386,
-		Goarm:     options.Goarm,
-		Goarm64:   options.Goarm64,
-		Gomips:    options.Gomips,
-		Goppc64:   options.Goppc64,
-		Goriscv64: options.Goriscv64,
+		Goos:      t.Goos,
+		Goarch:    t.Goarch,
+		Goamd64:   t.Goamd64,
+		Go386:     t.Go386,
+		Goarm:     t.Goarm,
+		Goarm64:   t.Goarm64,
+		Gomips:    t.Gomips,
+		Goppc64:   t.Goppc64,
+		Goriscv64: t.Goriscv64,
+		Target:    t.Target,
 		Extra: map[string]interface{}{
-			artifact.ExtraBinary: strings.TrimSuffix(filepath.Base(options.Path), options.Ext),
-			artifact.ExtraExt:    options.Ext,
-			artifact.ExtraID:     build.ID,
+			artifact.ExtraBinary:  strings.TrimSuffix(filepath.Base(options.Path), options.Ext),
+			artifact.ExtraExt:     options.Ext,
+			artifact.ExtraID:      build.ID,
+			artifact.ExtraBuilder: "go",
 		},
 	}
 
@@ -211,12 +279,12 @@ func (*Builder) Build(ctx *context.Context, build config.Build, options api.Opti
 		a.Type = artifact.CArchive
 		ctx.Artifacts.Add(getHeaderArtifactForLibrary(build, options))
 	}
-	if build.Buildmode == "c-shared" && !strings.Contains(options.Target, "wasm") {
+	if build.Buildmode == "c-shared" && !strings.Contains(t.Target, "wasm") {
 		a.Type = artifact.CShared
 		ctx.Artifacts.Add(getHeaderArtifactForLibrary(build, options))
 	}
 
-	details, err := withOverrides(ctx, build, options)
+	details, err := withOverrides(ctx, build, t)
 	if err != nil {
 		return err
 	}
@@ -238,20 +306,8 @@ func (*Builder) Build(ctx *context.Context, build config.Build, options api.Opti
 			}
 		}
 	}
-	env = append(
-		env,
-		"GOOS="+options.Goos,
-		"GOARCH="+options.Goarch,
-		"GOAMD64="+options.Goamd64,
-		"GO386="+options.Go386,
-		"GOARM="+options.Goarm,
-		"GOARM64="+options.Goarm64,
-		"GOMIPS="+options.Gomips,
-		"GOMIPS64="+options.Gomips,
-		"GOPPC64="+options.Goppc64,
-		"GORISCV64="+options.Goriscv64,
-	)
 
+	env = append(env, t.env()...)
 	if v := os.Getenv("GOCACHEPROG"); v != "" {
 		env = append(env, "GOCACHEPROG="+v)
 	}
@@ -281,22 +337,23 @@ func (*Builder) Build(ctx *context.Context, build config.Build, options api.Opti
 	return nil
 }
 
-func withOverrides(ctx *context.Context, build config.Build, options api.Options) (config.BuildDetails, error) {
-	optsTarget := options.Goos + options.Goarch + options.Goamd64 + options.Go386 + options.Goarm + options.Goarm64 + options.Gomips + options.Goppc64 + options.Goriscv64
+func withOverrides(ctx *context.Context, build config.Build, target Target) (config.BuildDetails, error) {
+	optsTarget := target.Target
 	for _, o := range build.BuildDetailsOverrides {
-		overrideTarget, err := tmpl.New(ctx).Apply(o.Goos + o.Goarch + o.Goamd64 + o.Go386 + o.Goarm + o.Goarm64 + o.Gomips + o.Goppc64 + o.Goriscv64)
+		overrideTarget, err := tmpl.New(ctx).Apply(formatTarget(o))
 		if err != nil {
 			return build.BuildDetails, err
 		}
+		overrideTarget = fixTarget(overrideTarget)
 
 		if optsTarget == overrideTarget {
 			dets := config.BuildDetails{
-				Buildmode: build.BuildDetails.Buildmode,
-				Ldflags:   build.BuildDetails.Ldflags,
-				Tags:      build.BuildDetails.Tags,
-				Flags:     build.BuildDetails.Flags,
-				Asmflags:  build.BuildDetails.Asmflags,
-				Gcflags:   build.BuildDetails.Gcflags,
+				Buildmode: build.Buildmode,
+				Ldflags:   build.Ldflags,
+				Tags:      build.Tags,
+				Flags:     build.Flags,
+				Asmflags:  build.Asmflags,
+				Gcflags:   build.Gcflags,
 			}
 			if err := mergo.Merge(&dets, o.BuildDetails, mergo.WithOverride); err != nil {
 				return build.BuildDetails, err
@@ -306,6 +363,7 @@ func withOverrides(ctx *context.Context, build config.Build, options api.Options
 			log.WithField("details", dets).Infof("overridden build details for %s", optsTarget)
 			return dets, nil
 		}
+		log.Debugf("targets don't match: %s != %s", optsTarget, overrideTarget)
 	}
 
 	return build.BuildDetails, nil
@@ -319,7 +377,7 @@ func buildGoBuildLine(
 	artifact *artifact.Artifact,
 	env []string,
 ) ([]string, error) {
-	gobin, err := tmpl.New(ctx).WithBuildOptions(options).Apply(build.GoBinary)
+	gobin, err := tmpl.New(ctx).WithBuildOptions(options).Apply(build.Tool)
 	if err != nil {
 		return nil, err
 	}
@@ -328,7 +386,8 @@ func buildGoBuildLine(
 	// tags, ldflags, and buildmode, should only appear once, warning only to avoid a breaking change
 	validateUniqueFlags(details)
 
-	flags, err := processFlags(ctx, artifact, env, details.Flags, "")
+	tpl := tmpl.New(ctx).WithEnvS(env).WithArtifact(artifact)
+	flags, err := tpl.Slice(details.Flags, tmpl.NonEmpty())
 	if err != nil {
 		return cmd, err
 	}
@@ -337,13 +396,13 @@ func buildGoBuildLine(
 		cmd = append(cmd, "-c")
 	}
 
-	asmflags, err := processFlags(ctx, artifact, env, details.Asmflags, "-asmflags=")
+	asmflags, err := tpl.Slice(details.Asmflags, tmpl.NonEmpty(), tmpl.WithPrefix("-asmflags="))
 	if err != nil {
 		return cmd, err
 	}
 	cmd = append(cmd, asmflags...)
 
-	gcflags, err := processFlags(ctx, artifact, env, details.Gcflags, "-gcflags=")
+	gcflags, err := tpl.Slice(details.Gcflags, tmpl.NonEmpty(), tmpl.WithPrefix("-gcflags="))
 	if err != nil {
 		return cmd, err
 	}
@@ -351,7 +410,7 @@ func buildGoBuildLine(
 
 	// tags is not a repeatable flag
 	if len(details.Tags) > 0 {
-		tags, err := processFlags(ctx, artifact, env, details.Tags, "")
+		tags, err := tpl.Slice(details.Tags, tmpl.NonEmpty())
 		if err != nil {
 			return cmd, err
 		}
@@ -361,7 +420,7 @@ func buildGoBuildLine(
 	// ldflags is not a repeatable flag
 	if len(details.Ldflags) > 0 {
 		// flag prefix is skipped because ldflags need to output a single string
-		ldflags, err := processFlags(ctx, artifact, env, details.Ldflags, "")
+		ldflags, err := tpl.Slice(details.Ldflags, tmpl.NonEmpty())
 		if err != nil {
 			return cmd, err
 		}
@@ -389,27 +448,6 @@ func validateUniqueFlags(details config.BuildDetails) {
 			log.WithField("flag", flag).WithField("buildmode", details.Buildmode).Warn("buildmode is defined twice")
 		}
 	}
-}
-
-func processFlags(ctx *context.Context, a *artifact.Artifact, env, flags []string, flagPrefix string) ([]string, error) {
-	processed := make([]string, 0, len(flags))
-	for _, rawFlag := range flags {
-		flag, err := processFlag(ctx, a, env, rawFlag)
-		if err != nil {
-			return nil, err
-		}
-
-		if flag == "" {
-			continue
-		}
-
-		processed = append(processed, flagPrefix+flag)
-	}
-	return processed, nil
-}
-
-func processFlag(ctx *context.Context, a *artifact.Artifact, env []string, rawFlag string) (string, error) {
-	return tmpl.New(ctx).WithEnvS(env).WithArtifact(a).Apply(rawFlag)
 }
 
 func run(ctx *context.Context, command, env []string, dir string) error {
@@ -512,20 +550,22 @@ func getHeaderArtifactForLibrary(build config.Build, options api.Options) *artif
 	basePath := filepath.Base(fullPathWithoutExt)
 	fullPath := fullPathWithoutExt + ".h"
 	headerName := basePath + ".h"
+	t := options.Target.(Target)
 
 	return &artifact.Artifact{
 		Type:      artifact.Header,
 		Path:      fullPath,
 		Name:      headerName,
-		Goos:      options.Goos,
-		Goarch:    options.Goarch,
-		Goamd64:   options.Goamd64,
-		Go386:     options.Go386,
-		Goarm:     options.Goarm,
-		Goarm64:   options.Goarm64,
-		Gomips:    options.Gomips,
-		Goppc64:   options.Goppc64,
-		Goriscv64: options.Goriscv64,
+		Goos:      t.Goos,
+		Goarch:    t.Goarch,
+		Goamd64:   t.Goamd64,
+		Go386:     t.Go386,
+		Goarm:     t.Goarm,
+		Goarm64:   t.Goarm64,
+		Gomips:    t.Gomips,
+		Goppc64:   t.Goppc64,
+		Goriscv64: t.Goriscv64,
+		Target:    t.Target,
 		Extra: map[string]interface{}{
 			artifact.ExtraBinary: headerName,
 			artifact.ExtraExt:    ".h",

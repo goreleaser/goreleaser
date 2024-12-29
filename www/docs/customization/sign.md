@@ -16,16 +16,14 @@ with [GnuPG](https://www.gnupg.org/), and your default key.
 
 To enable signing just add this to your configuration:
 
-```yaml
-# .goreleaser.yaml
+```yaml title=".goreleaser.yaml"
 signs:
   - artifacts: checksum
 ```
 
 To customize the signing pipeline you can use the following options:
 
-```yaml
-# .goreleaser.yaml
+```yaml title=".goreleaser.yaml"
 signs:
   - #
     # ID of the sign config, must be unique.
@@ -81,7 +79,8 @@ signs:
     #
     # Artifacts that do not match this expression will be ignored.
     #
-    # Since: v2.2 (pro).
+    # <!-- md:inline_pro -->.
+    # <!-- md:inline_version v2.2 -->.
     # Templates: allowed.
     if: '{{ eq .Os "linux" }}'
 
@@ -134,8 +133,7 @@ You can sign your artifacts with [cosign][] as well.
 Assuming you have a `cosign.key` in the repository root and a `COSIGN_PWD`
 environment variable set, a simple usage example would look like this:
 
-```yaml
-# .goreleaser.yaml
+```yaml title=".goreleaser.yaml"
 signs:
   - cmd: cosign
     stdin: "{{ .Env.COSIGN_PWD }}"
@@ -169,8 +167,7 @@ Executables can be signed after build using post hooks.
 
 For example, you can use [gon][gon-fork] to create notarized macOS apps:
 
-```yaml
-# .goreleaser.yaml
+```yaml title=".goreleaser.yaml"
 builds:
   - binary: foo
     id: foo
@@ -229,8 +226,7 @@ details.
 You can also use [cosign][] to sign the binaries directly, but you'll need to
 manually add the `.sig` files to the release and/or archive:
 
-```yaml
-# .goreleaser.yaml
+```yaml title=".goreleaser.yaml"
 builds:
   - hooks:
       post:
@@ -261,8 +257,7 @@ being signed.
 If you want to sign with something that writes to `STDOUT` instead of a file,
 you can wrap the command inside a `sh -c` execution, for instance:
 
-```yaml
-# .goreleaser.yaml
+```yaml title=".goreleaser.yaml"
 signs:
   - cmd: sh
     args:

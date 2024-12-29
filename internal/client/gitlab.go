@@ -1,7 +1,9 @@
 package client
 
 import (
+	"cmp"
 	"crypto/tls"
+	"errors"
 	"fmt"
 	"net/http"
 	"os"
@@ -9,7 +11,6 @@ import (
 	"strings"
 
 	"github.com/caarlos0/log"
-	"github.com/charmbracelet/x/exp/ordered"
 	"github.com/goreleaser/goreleaser/v2/internal/artifact"
 	"github.com/goreleaser/goreleaser/v2/internal/tmpl"
 	"github.com/goreleaser/goreleaser/v2/pkg/config"
@@ -75,7 +76,7 @@ func (c *gitlabClient) checkIsPrivateToken() error {
 	if c.authType == gitlab.PrivateToken {
 		return nil
 	}
-	return fmt.Errorf("the necessary APIs are not available when using CI_JOB_TOKEN")
+	return errors.New("the necessary APIs are not available when using CI_JOB_TOKEN")
 }
 
 func (c *gitlabClient) Changelog(_ *context.Context, repo Repo, prev, current string) ([]ChangelogItem, error) {
@@ -647,8 +648,8 @@ func (c *gitlabClient) OpenPullRequest(
 		targetProjectID = p.ID
 	}
 
-	base.Owner = ordered.First(base.Owner, head.Owner)
-	base.Name = ordered.First(base.Name, head.Name)
+	base.Owner = cmp.Or(base.Owner, head.Owner)
+	base.Name = cmp.Or(base.Name, head.Name)
 
 	if base.Branch == "" {
 		def, err := c.getDefaultBranch(ctx, base)

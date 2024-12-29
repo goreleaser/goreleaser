@@ -36,7 +36,7 @@ func (g *Goreleaser) Base() *dagger.Container {
 	// Base image with Go
 	return dag.Container().
 		From(wolfiBase).
-		WithExec([]string{"apk", "add", "go"}).
+		WithExec([]string{"apk", "add", "go", "zig"}).
 		// Mount the Go cache
 		WithMountedCache(
 			"/go",

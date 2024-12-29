@@ -3,13 +3,14 @@ package aur
 import (
 	"bufio"
 	"bytes"
+	"cmp"
 	"crypto/sha256"
 	"errors"
 	"fmt"
 	"os"
 	"path"
 	"path/filepath"
-	"sort"
+	"slices"
 	"strings"
 	"text/template"
 
@@ -218,12 +219,27 @@ func fixLines(s string) string {
 	return strings.Join(result, "\n")
 }
 
+func quoteField(v string) string {
+	simpleQuote := strings.Contains(v, `'`)
+	doubleQuote := strings.Contains(v, `"`)
+
+	switch {
+	case simpleQuote && doubleQuote:
+		return `"` + strings.ReplaceAll(v, `"`, `'`) + `"`
+	case simpleQuote:
+		return `"` + v + `"`
+	default:
+		return `'` + v + `'`
+	}
+}
+
 func applyTemplate(ctx *context.Context, tpl string, data templateData) (string, error) {
 	t := template.Must(
 		template.New(data.Name).
 			Funcs(template.FuncMap{
-				"fixLines": fixLines,
-				"pkgArray": toPkgBuildArray,
+				"fixLines":   fixLines,
+				"pkgArray":   toPkgBuildArray,
+				"quoteField": quoteField,
 			}).
 			Parse(tpl),
 	)
@@ -325,9 +341,9 @@ func dataFor(ctx *context.Context, cfg config.AUR, cl client.ReleaseURLTemplater
 		result.Arches = append(result.Arches, releasePackage.Arch)
 	}
 
-	sort.Strings(result.Arches)
-	sort.Slice(result.ReleasePackages, func(i, j int) bool {
-		return result.ReleasePackages[i].Arch < result.ReleasePackages[j].Arch
+	slices.Sort(result.Arches)
+	slices.SortFunc(result.ReleasePackages, func(a, b releasePackage) int {
+		return cmp.Compare(a.Arch, b.Arch)
 	})
 	return result, nil
 }

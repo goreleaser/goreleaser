@@ -12,8 +12,7 @@ Alternatively, you can provide the GitHub token in a file. GoReleaser will check
 `~/.config/goreleaser/github_token` by default, but you can change that in the
 `.goreleaser.yaml` file:
 
-```yaml
-# .goreleaser.yaml
+```yaml title=".goreleaser.yaml"
 env_files:
   github_token: ~/.path/to/my/github_token
 ```
@@ -27,8 +26,7 @@ You can use GoReleaser with GitHub Enterprise by providing its URLs in the
 `.goreleaser.yaml` configuration file. This takes a normal string, or a template
 value.
 
-```yaml
-# .goreleaser.yaml
+```yaml title=".goreleaser.yaml"
 github_urls:
   api: https://git.company.com/api/v3/
   upload: https://git.company.com/api/uploads/

@@ -2,6 +2,7 @@ package sbom
 
 import (
 	"bytes"
+	"errors"
 	"fmt"
 	"io"
 	"os"
@@ -242,7 +243,7 @@ func catalogArtifact(ctx *context.Context, cfg config.SBOM, a *artifact.Artifact
 	}
 
 	if len(artifacts) == 0 {
-		return nil, fmt.Errorf("cataloging artifacts: command did not write any files, check your configuration")
+		return nil, errors.New("cataloging artifacts: command did not write any files, check your configuration")
 	}
 
 	return artifacts, nil

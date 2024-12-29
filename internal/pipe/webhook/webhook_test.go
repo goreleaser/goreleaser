@@ -27,6 +27,7 @@ func TestNoEndpoint(t *testing.T) {
 			Webhook: config.Webhook{},
 		},
 	})
+	require.NoError(t, Pipe{}.Default(ctx))
 	require.EqualError(t, Pipe{}.Announce(ctx), `webhook: no endpoint url`)
 }
 
@@ -50,6 +51,7 @@ func TestAnnounceInvalidMessageTemplate(t *testing.T) {
 			},
 		},
 	})
+	require.NoError(t, Pipe{}.Default(ctx))
 	testlib.RequireTemplateError(t, Pipe{}.Announce(ctx))
 }
 
@@ -87,6 +89,7 @@ func TestAnnounceWebhook(t *testing.T) {
 			},
 		},
 	})
+	require.NoError(t, Pipe{}.Default(ctx))
 	require.NoError(t, Pipe{}.Announce(ctx))
 }
 
@@ -118,6 +121,7 @@ func TestAnnounceTLSWebhook(t *testing.T) {
 			},
 		},
 	})
+	require.NoError(t, Pipe{}.Default(ctx))
 	require.NoError(t, Pipe{}.Announce(ctx))
 }
 
@@ -145,6 +149,7 @@ func TestAnnounceTLSCheckCertWebhook(t *testing.T) {
 			},
 		},
 	})
+	require.NoError(t, Pipe{}.Default(ctx))
 	require.Error(t, Pipe{}.Announce(ctx))
 }
 
@@ -182,6 +187,7 @@ func TestAnnounceBasicAuthWebhook(t *testing.T) {
 		},
 	})
 	t.Setenv("BASIC_AUTH_HEADER_VALUE", fmt.Sprintf("Basic %s", base64.StdEncoding.EncodeToString([]byte("user:pass"))))
+	require.NoError(t, Pipe{}.Default(ctx))
 	require.NoError(t, Pipe{}.Announce(ctx))
 }
 
@@ -220,6 +226,41 @@ func TestAnnounceAdditionalHeadersWebhook(t *testing.T) {
 			},
 		},
 	})
+	require.NoError(t, Pipe{}.Default(ctx))
+	require.NoError(t, Pipe{}.Announce(ctx))
+}
+
+func TestAnnounceExpectedStatusCodesWebhook(t *testing.T) {
+	responseServer := WebHookServerMockMessage{
+		Response: "Thanks for the announcement!",
+		UUID:     uuid.New(),
+	}
+
+	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		defer r.Body.Close()
+
+		body, err := io.ReadAll(r.Body)
+		assert.NoError(t, err)
+		assert.Equal(t, "webhook-test", string(body))
+
+		w.WriteHeader(418)
+		w.Header().Set("Content-Type", "application/json")
+		err = json.NewEncoder(w).Encode(responseServer)
+		assert.NoError(t, err)
+	}))
+	defer srv.Close()
+
+	ctx := testctx.NewWithCfg(config.Project{
+		ProjectName: "webhook-test",
+		Announce: config.Announce{
+			Webhook: config.Webhook{
+				EndpointURL:         srv.URL,
+				MessageTemplate:     "{{ .ProjectName }}",
+				ExpectedStatusCodes: []int{418},
+			},
+		},
+	})
+	require.NoError(t, Pipe{}.Default(ctx))
 	require.NoError(t, Pipe{}.Announce(ctx))
 }
 
@@ -237,5 +278,35 @@ func TestSkip(t *testing.T) {
 			},
 		})
 		require.False(t, Pipe{}.Skip(ctx))
+	})
+}
+
+func TestDefault(t *testing.T) {
+	t.Run("empty", func(t *testing.T) {
+		ctx := testctx.NewWithCfg(config.Project{
+			Announce: config.Announce{
+				Webhook: config.Webhook{},
+			},
+		})
+		require.NoError(t, Pipe{}.Default(ctx))
+		actual := ctx.Config.Announce.Webhook
+		require.NotEmpty(t, actual.MessageTemplate)
+		require.NotEmpty(t, actual.ContentType)
+		require.NotEmpty(t, actual.ExpectedStatusCodes)
+	})
+	t.Run("not empty", func(t *testing.T) {
+		expected := config.Webhook{
+			MessageTemplate:     "foo",
+			ContentType:         "text",
+			ExpectedStatusCodes: []int{200},
+		}
+		ctx := testctx.NewWithCfg(config.Project{
+			Announce: config.Announce{
+				Webhook: expected,
+			},
+		})
+		require.NoError(t, Pipe{}.Default(ctx))
+		actual := ctx.Config.Announce.Webhook
+		require.Equal(t, expected, actual)
 	})
 }

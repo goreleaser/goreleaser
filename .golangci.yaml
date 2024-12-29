@@ -20,6 +20,7 @@ linters:
     - gocritic
     - nolintlint
     - noctx
+    - perfsprint
 linters-settings:
   gocritic:
     disabled-checks:
@@ -43,6 +44,12 @@ linters-settings:
         deny:
           - pkg: "github.com/pkg/errors"
             desc: "use stdlib instead"
+  perfsprint:
+    int-conversion: false
+    err-error: false
+    errorf: true
+    sprintf1: false
+    strconcat: false
   revive:
     enable-all-rules: false
     rules:
@@ -80,3 +87,4 @@ issues:
     - path: _test\.go
       linters:
         - noctx
+        - perfsprint

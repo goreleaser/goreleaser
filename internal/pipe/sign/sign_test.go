@@ -7,7 +7,6 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
-	"sort"
 	"strings"
 	"testing"
 	"time"
@@ -708,7 +707,6 @@ func testSign(
 	)
 
 	wantFiles := append(artifacts, signaturePaths...)
-	sort.Strings(wantFiles)
 	require.ElementsMatch(tb, wantFiles, gotFiles)
 
 	// verify the signatures

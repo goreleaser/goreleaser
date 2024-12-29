@@ -61,9 +61,9 @@ blocks:
           - "export PATH=/home/semaphore/go/bin:$PATH"
           - checkout
       jobs:
-      - name: goreleaser
-        commands:
-          - curl -sfL https://goreleaser.com/static/run | bash
+        - name: goreleaser
+          commands:
+            - curl -sfL https://goreleaser.com/static/run | bash
 ```
 
 The following YAML file, `createSecret.yml` creates a new secret item that is
@@ -80,5 +80,5 @@ data:
       value: "your token here"
 ```
 
-Check [Managing Secrets](https://docs.semaphoreci.com/article/51-secrets-yaml-reference)
+Check [Managing Secrets](https://docs.semaphoreci.com/using-semaphore/secrets)
 for more detailed documentation.

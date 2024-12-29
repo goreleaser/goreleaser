@@ -11,6 +11,7 @@ import (
 	"github.com/goreleaser/goreleaser/v2/internal/pipe/sbom"
 	"github.com/goreleaser/goreleaser/v2/internal/pipe/sign"
 	"github.com/goreleaser/goreleaser/v2/internal/pipe/snapcraft"
+	"github.com/goreleaser/goreleaser/v2/pkg/build"
 	"github.com/goreleaser/goreleaser/v2/pkg/context"
 )
 
@@ -27,6 +28,7 @@ type Healthchecker interface {
 //nolint:gochecknoglobals
 var Healthcheckers = []Healthchecker{
 	system{},
+	builds{},
 	snapcraft.Pipe{},
 	sign.Pipe{},
 	sign.BinaryPipe{},
@@ -40,5 +42,10 @@ var Healthcheckers = []Healthchecker{
 
 type system struct{}
 
-func (system) String() string                           { return "system" }
-func (system) Dependencies(_ *context.Context) []string { return []string{"git", "go"} }
+func (system) String() string                         { return "system" }
+func (system) Dependencies(*context.Context) []string { return []string{"git"} }
+
+type builds struct{}
+
+func (builds) String() string                             { return "build" }
+func (builds) Dependencies(ctx *context.Context) []string { return build.Dependencies(ctx) }

@@ -130,10 +130,10 @@ func (Pipe) Default(ctx *context.Context) error {
 			snap.Confinement = "strict"
 		}
 		if snap.Description == "" {
-			return fmt.Errorf("description is required")
+			return errors.New("description is required")
 		}
 		if snap.Summary == "" {
-			return fmt.Errorf("summary is required")
+			return errors.New("summary is required")
 		}
 		if len(snap.ChannelTemplates) == 0 {
 			switch snap.Grade {
@@ -435,6 +435,7 @@ func create(ctx *context.Context, snap config.Snapcraft, arch string, binaries [
 		Gomips:    binaries[0].Gomips,
 		Goppc64:   binaries[0].Goppc64,
 		Goriscv64: binaries[0].Goriscv64,
+		Target:    binaries[0].Target,
 		Extra: map[string]interface{}{
 			releasesExtra: channels,
 		},

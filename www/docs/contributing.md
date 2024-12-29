@@ -94,6 +94,10 @@ You can do so by running:
 task docker:setup
 ```
 
+### A note about Windows
+
+Make sure to enable "Developer Mode" in Settings.
+
 ## Creating a commit
 
 Commit messages should be well formatted, and to make that "standardized", we

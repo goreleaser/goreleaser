@@ -7,8 +7,7 @@ a URL or a file path.
 
 Files are included recursively in the order they are declared.
 
-```yaml
-# .goreleaser.yaml
+```yaml title=".goreleaser.yaml"
 includes:
   - from_file:
       path: ./config/goreleaser.yaml

@@ -2,6 +2,7 @@
 package client
 
 import (
+	"errors"
 	"fmt"
 	"os"
 
@@ -20,11 +21,11 @@ const (
 )
 
 // ErrNotImplemented is returned when a client does not implement certain feature.
-var ErrNotImplemented = fmt.Errorf("not implemented")
+var ErrNotImplemented = errors.New("not implemented")
 
 // ErrReleaseDisabled happens when a configuration tries to use the default
 // url_template even though the release is disabled.
-var ErrReleaseDisabled = fmt.Errorf("release is disabled, cannot use default url_template")
+var ErrReleaseDisabled = errors.New("release is disabled, cannot use default url_template")
 
 // Info of the repository.
 type Info struct {

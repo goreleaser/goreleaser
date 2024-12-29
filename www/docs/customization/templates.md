@@ -76,6 +76,8 @@ In fields that support templates, these fields are always available:
 
 ## Artifacts
 
+<!-- md:featpro -->
+
 If you use the `.Artifacts` field, it evaluates to an
 [`artifact.Artifact` list](https://pkg.go.dev/github.com/goreleaser/goreleaser@main/internal/artifact#Artifact).
 You should be able to use all its fields on each item:
@@ -92,10 +94,9 @@ You should be able to use all its fields on each item:
 - `.Goppc64` (since v2.4)
 - `.Goriscv64` (since v2.4)
 - `.Go386` (since v2.4)
+- `.Target` (Since v2.5)
 - `.Type`
 - `.Extra`
-
-<!-- md:pro -->
 
 ## Single-artifact extra fields
 
@@ -114,6 +115,7 @@ may have some extra fields:
 | `.Ppc64`        | `GOPPC64` (since v2.4)                        |
 | `.Riscv64`      | `GORISCV64` (since v2.4)                      |
 | `.I386`         | `GO386` (since v2.4)                          |
+| `.Target`       | the whole target (since v2.5)                 |
 | `.Binary`       | artifact name                                 |
 | `.ArtifactID`   | artifact id (since v2.3[^pro])                |
 | `.ArtifactName` | artifact name                                 |
@@ -208,7 +210,7 @@ GOVERSION=$(go version | awk '{print $3;}') goreleaser
 
 ## Custom variables
 
-<!-- md:pro -->
+<!-- md:featpro -->
 
 You can also declare custom variables. This feature is specially useful with
 [includes](includes.md), so you can have more generic configuration
@@ -216,8 +218,7 @@ files.
 
 Usage is as simple as you would expect:
 
-```yaml
-# .goreleaser.yaml
+```yaml title=".goreleaser.yaml"
 variables:
   description: my project description
   somethingElse: yada yada yada

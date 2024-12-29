@@ -37,11 +37,11 @@ type postShareRequest struct {
 
 func createLinkedInClient(cfg oauthClientConfig) (client, error) {
 	if cfg.Context == nil {
-		return client{}, fmt.Errorf("context is nil")
+		return client{}, errors.New("context is nil")
 	}
 
 	if cfg.AccessToken == "" {
-		return client{}, fmt.Errorf("empty access token")
+		return client{}, errors.New("empty access token")
 	}
 
 	config := oauth2.Config{}
@@ -51,7 +51,7 @@ func createLinkedInClient(cfg oauthClientConfig) (client, error) {
 	})
 
 	if c == nil {
-		return client{}, fmt.Errorf("client is nil")
+		return client{}, errors.New("client is nil")
 	}
 
 	return client{

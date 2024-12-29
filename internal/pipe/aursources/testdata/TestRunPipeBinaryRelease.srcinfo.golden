@@ -1,0 +1,15 @@
+pkgbase = foo
+	pkgdesc =
+	pkgver = 1.2.1
+	pkgrel = 1
+	arch = aarch64
+	arch = x86_64
+	makedepends = go
+	makedepends = git
+	conflicts = foo
+	provides = foo
+	
+	source = https://dummyhost/download/v1.2.1/sources
+	sha256sums = e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
+	
+pkgname = foo

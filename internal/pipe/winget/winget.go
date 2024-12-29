@@ -1,6 +1,7 @@
 package winget
 
 import (
+	"errors"
 	"fmt"
 	"os"
 	"path"
@@ -351,7 +352,7 @@ func doPublish(ctx *context.Context, cl client.Client, wingets []*artifact.Artif
 	log.Info("winget.pull_request enabled, creating a PR")
 	pcl, ok := cl.(client.PullRequestOpener)
 	if !ok {
-		return fmt.Errorf("client does not support pull requests")
+		return errors.New("client does not support pull requests")
 	}
 
 	return pcl.OpenPullRequest(ctx, base, repo, msg, winget.Repository.PullRequest.Draft)

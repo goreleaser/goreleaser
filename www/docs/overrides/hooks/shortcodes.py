@@ -16,9 +16,12 @@ def on_page_markdown(markdown: str, *, page: Page, config: MkDocsConfig, files: 
         type, args = match.groups()
         args = args.strip()
         if type == "version":     return _version_block(args)
-        elif type == "pro":       return _pro_ad(page, files)
-        elif type == "featpro":       return _pro_feat_ad(page, files)
+        if type == "inline_version":     return _inline_version_block(args)
+        elif type == "pro":       return _pro_ad()
+        elif type == "inline_pro":       return _inline_pro_ad()
+        elif type == "featpro":       return _pro_feat_ad()
         elif type == "templates": return _templates_ad()
+        elif type == "alpha": return _alpha_block()
 
         # Otherwise, raise an error
         raise RuntimeError(f"Unknown shortcode: {type}")
@@ -29,7 +32,7 @@ def on_page_markdown(markdown: str, *, page: Page, config: MkDocsConfig, files: 
         replace, markdown, flags = re.I | re.M
     )
 
-def _pro_feat_ad(page: Page, files: Files):
+def _pro_feat_ad():
     return "".join([
         f"<div class=\"admonition example\">",
         f"<p class=\"admonition-title\">GoReleaser Pro</p>",
@@ -37,7 +40,7 @@ def _pro_feat_ad(page: Page, files: Files):
         f"</div>"
     ])
 
-def _pro_ad(page: Page, files: Files):
+def _pro_ad():
     return "".join([
         f"<div class=\"admonition example\">",
         f"<p class=\"admonition-title\">GoReleaser Pro</p>",
@@ -45,8 +48,23 @@ def _pro_ad(page: Page, files: Files):
         f"</div>"
     ])
 
+def _inline_pro_ad():
+    return f"This feature is only available in GoReleaser Pro."
+
 def _version_block(text: str):
-    return f"> Since :material-tag-outline: <a href=\"/blog/goreleaser-{text}\">{text}</a>."
+    if "unreleased" in text:
+        tag = text.removesuffix("-unreleased")
+        return f"> :material-tag-outline: This will be available in the next release ({tag}). Stay tuned!"
+    return f"> :material-tag-outline: Since <a href=\"/blog/goreleaser-{text}\">{text}</a>."
+
+def _inline_version_block(text: str):
+    if "unreleased" in text:
+        tag = text.removesuffix("-unreleased")
+        return f"Since: {tag} (unreleased)"
+    return f"Since: {text}"
+
+def _alpha_block():
+    return f"> :material-flask-outline: This feature is currently in alpha. Feedback is greatly appreciated!"
 
 def _templates_ad():
     return "".join([

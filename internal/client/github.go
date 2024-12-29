@@ -1,6 +1,7 @@
 package client
 
 import (
+	"cmp"
 	"crypto/tls"
 	"errors"
 	"fmt"
@@ -13,8 +14,7 @@ import (
 	"time"
 
 	"github.com/caarlos0/log"
-	"github.com/charmbracelet/x/exp/ordered"
-	"github.com/google/go-github/v66/github"
+	"github.com/google/go-github/v68/github"
 	"github.com/goreleaser/goreleaser/v2/internal/artifact"
 	"github.com/goreleaser/goreleaser/v2/internal/tmpl"
 	"github.com/goreleaser/goreleaser/v2/pkg/config"
@@ -174,9 +174,9 @@ func (c *githubClient) CloseMilestone(ctx *context.Context, repo Repo, title str
 
 func headString(base, head Repo) string {
 	return strings.Join([]string{
-		ordered.First(head.Owner, base.Owner),
-		ordered.First(head.Name, base.Name),
-		ordered.First(head.Branch, base.Branch),
+		cmp.Or(head.Owner, base.Owner),
+		cmp.Or(head.Name, base.Name),
+		cmp.Or(head.Branch, base.Branch),
 	}, ":")
 }
 
@@ -201,8 +201,8 @@ func (c *githubClient) OpenPullRequest(
 	draft bool,
 ) error {
 	c.checkRateLimit(ctx)
-	base.Owner = ordered.First(base.Owner, head.Owner)
-	base.Name = ordered.First(base.Name, head.Name)
+	base.Owner = cmp.Or(base.Owner, head.Owner)
+	base.Name = cmp.Or(base.Name, head.Name)
 	if base.Branch == "" {
 		def, err := c.getDefaultBranch(ctx, base)
 		if err != nil {
@@ -436,13 +436,8 @@ func (c *githubClient) PublishRelease(ctx *context.Context, releaseID string) er
 
 func (c *githubClient) createOrUpdateRelease(ctx *context.Context, data *github.RepositoryRelease, body string) (*github.RepositoryRelease, error) {
 	c.checkRateLimit(ctx)
-	release, _, err := c.client.Repositories.GetReleaseByTag(
-		ctx,
-		ctx.Config.Release.GitHub.Owner,
-		ctx.Config.Release.GitHub.Name,
-		data.GetTagName(),
-	)
-	if err != nil {
+	release, err := c.findRelease(ctx, data.GetTagName())
+	if err != nil || release == nil {
 		release, resp, err := c.client.Repositories.CreateRelease(
 			ctx,
 			ctx.Config.Release.GitHub.Owner,
@@ -472,6 +467,19 @@ func (c *githubClient) createOrUpdateRelease(ctx *context.Context, data *github.
 	data.Draft = release.Draft
 	data.Body = github.String(getReleaseNotes(release.GetBody(), body, ctx.Config.Release.ReleaseNotesMode))
 	return c.updateRelease(ctx, release.GetID(), data)
+}
+
+func (c *githubClient) findRelease(ctx *context.Context, name string) (*github.RepositoryRelease, error) {
+	if !ctx.Config.Release.UseExistingDraft {
+		release, _, err := c.client.Repositories.GetReleaseByTag(
+			ctx,
+			ctx.Config.Release.GitHub.Owner,
+			ctx.Config.Release.GitHub.Name,
+			name,
+		)
+		return release, err
+	}
+	return c.findDraftRelease(ctx, name)
 }
 
 func (c *githubClient) updateRelease(ctx *context.Context, id int64, data *github.RepositoryRelease) (*github.RepositoryRelease, error) {
@@ -659,6 +667,30 @@ func overrideGitHubClientAPI(ctx *context.Context, client *github.Client) error 
 
 func (c *githubClient) deleteExistingDraftRelease(ctx *context.Context, name string) error {
 	c.checkRateLimit(ctx)
+	release, err := c.findDraftRelease(ctx, name)
+	if err != nil {
+		return fmt.Errorf("could not delete existing drafts: %w", err)
+	}
+	if release != nil {
+		if _, err := c.client.Repositories.DeleteRelease(
+			ctx,
+			ctx.Config.Release.GitHub.Owner,
+			ctx.Config.Release.GitHub.Name,
+			release.GetID(),
+		); err != nil {
+			return fmt.Errorf("could not delete previous draft release: %w", err)
+		}
+
+		log.WithField("commit", release.GetTargetCommitish()).
+			WithField("tag", release.GetTagName()).
+			WithField("name", release.GetName()).
+			Info("deleted previous draft release")
+	}
+	return nil
+}
+
+func (c *githubClient) findDraftRelease(ctx *context.Context, name string) (*github.RepositoryRelease, error) {
+	c.checkRateLimit(ctx)
 	opt := github.ListOptions{PerPage: 50}
 	for {
 		releases, resp, err := c.client.Repositories.ListReleases(
@@ -668,30 +700,15 @@ func (c *githubClient) deleteExistingDraftRelease(ctx *context.Context, name str
 			&opt,
 		)
 		if err != nil {
-			return fmt.Errorf("could not delete existing drafts: %w", err)
+			return nil, fmt.Errorf("could not list existing drafts: %w", err)
 		}
 		for _, r := range releases {
 			if r.GetDraft() && r.GetName() == name {
-				if _, err := c.client.Repositories.DeleteRelease(
-					ctx,
-					ctx.Config.Release.GitHub.Owner,
-					ctx.Config.Release.GitHub.Name,
-					r.GetID(),
-				); err != nil {
-					return fmt.Errorf("could not delete previous draft release: %w", err)
-				}
-
-				log.WithField("commit", r.GetTargetCommitish()).
-					WithField("tag", r.GetTagName()).
-					WithField("name", r.GetName()).
-					Info("deleted previous draft release")
-
-				// in theory, there should be only 1 release matching, so we can just return
-				return nil
+				return r, nil
 			}
 		}
 		if resp.NextPage == 0 {
-			return nil
+			return nil, nil
 		}
 		opt.Page = resp.NextPage
 	}

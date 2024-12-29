@@ -13,6 +13,32 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
+func TestSkip(t *testing.T) {
+	t.Run("skip", func(t *testing.T) {
+		ctx := testctx.NewWithCfg(config.Project{
+			Builds: []config.Build{
+				{
+					Builder: "zig",
+				},
+			},
+		})
+		require.True(t, Pipe{}.Skip(ctx))
+	})
+	t.Run("dont skip", func(t *testing.T) {
+		ctx := testctx.NewWithCfg(config.Project{
+			Builds: []config.Build{
+				{
+					Builder: "go",
+				},
+				{
+					Builder: "zig",
+				},
+			},
+		})
+		require.False(t, Pipe{}.Skip(ctx))
+	})
+}
+
 func TestRun(t *testing.T) {
 	ctx := testctx.New()
 	require.NoError(t, Pipe{}.Default(ctx))

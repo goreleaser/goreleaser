@@ -7,8 +7,7 @@ environment variables on your pipeline:
 
 Then, you can add something like the following to your `.goreleaser.yaml` config:
 
-```yaml
-# .goreleaser.yaml
+```yaml title=".goreleaser.yaml"
 announce:
   mattermost:
     # Whether its enabled or not.

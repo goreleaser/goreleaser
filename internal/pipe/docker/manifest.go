@@ -2,7 +2,8 @@ package docker
 
 import (
 	"fmt"
-	"sort"
+	"maps"
+	"slices"
 	"strings"
 
 	"github.com/caarlos0/log"
@@ -113,17 +114,10 @@ func (ManifestPipe) Publish(ctx *context.Context) error {
 }
 
 func validateManifester(use string) error {
-	valid := make([]string, 0, len(manifesters))
-	for k := range manifesters {
-		valid = append(valid, k)
+	if _, ok := manifesters[use]; ok {
+		return nil
 	}
-	for _, s := range valid {
-		if s == use {
-			return nil
-		}
-	}
-	sort.Strings(valid)
-	return fmt.Errorf("docker manifest: invalid use: %s, valid options are %v", use, valid)
+	return fmt.Errorf("docker manifest: invalid use: %s, valid options are %v", use, slices.Sorted(maps.Keys(manifesters)))
 }
 
 func manifestName(ctx *context.Context, manifest config.DockerManifest) (string, error) {

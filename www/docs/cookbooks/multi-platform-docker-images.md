@@ -17,8 +17,7 @@ First, you need to define one `dockers` item for each platform you want to
 build. Usually, you would tag it like `myorg/myimage:version-platform`.
 It is also important to use `buildx`. Here's an example:
 
-```yaml
-# .goreleaser.yaml
+```yaml title=".goreleaser.yaml"
 dockers:
   - image_templates:
       - "myorg/myuser:{{ .Tag }}-amd64"
@@ -42,8 +41,7 @@ Now, if we want to make them both available as a single image
 (`myorg/myuser:v1.2.3`), we'll need to add a manifest configuration that will
 publish them behind that single name. Here's how it would look like:
 
-```yaml
-# .goreleaser.yaml
+```yaml title=".goreleaser.yaml"
 docker_manifests:
   - name_template: "myorg/myuser:{{ .Tag }}"
     image_templates:

@@ -172,8 +172,8 @@ func create(ctx *context.Context, arch config.Archive, binaries []*artifact.Arti
 	lock.Unlock()
 	defer archiveFile.Close()
 
-	log := log.WithField("archive", archivePath)
-	log.Info("creating")
+	log := log.WithField("name", archivePath)
+	log.Info("archiving")
 
 	wrap, err := template.Apply(wrapFolder(arch))
 	if err != nil {
@@ -191,7 +191,7 @@ func create(ctx *context.Context, arch config.Archive, binaries []*artifact.Arti
 		return fmt.Errorf("failed to find files to archive: %w", err)
 	}
 	if arch.Meta && len(files) == 0 {
-		return fmt.Errorf("no files found")
+		return errors.New("no files found")
 	}
 	for _, f := range files {
 		if err = a.Add(f); err != nil {
@@ -234,6 +234,7 @@ func create(ctx *context.Context, arch config.Archive, binaries []*artifact.Arti
 		art.Gomips = binaries[0].Gomips
 		art.Goppc64 = binaries[0].Goppc64
 		art.Goriscv64 = binaries[0].Goriscv64
+		art.Target = binaries[0].Target
 		art.Extra[artifact.ExtraReplaces] = binaries[0].Extra[artifact.ExtraReplaces]
 	}
 
@@ -261,7 +262,7 @@ func skip(ctx *context.Context, archive config.Archive, binaries []*artifact.Art
 		finalName := name + artifact.ExtraOr(*binary, artifact.ExtraExt, "")
 		log.WithField("binary", binary.Name).
 			WithField("name", finalName).
-			Info("skip archiving")
+			Info("archiving")
 		ctx.Artifacts.Add(&artifact.Artifact{
 			Type:      artifact.UploadableBinary,
 			Name:      finalName,
@@ -275,6 +276,7 @@ func skip(ctx *context.Context, archive config.Archive, binaries []*artifact.Art
 			Gomips:    binary.Gomips,
 			Goppc64:   binary.Goppc64,
 			Goriscv64: binary.Goriscv64,
+			Target:    binary.Target,
 			Extra: map[string]interface{}{
 				artifact.ExtraID:       archive.ID,
 				artifact.ExtraFormat:   archive.Format,

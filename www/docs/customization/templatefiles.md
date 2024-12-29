@@ -8,8 +8,7 @@ script.
 
 All the templated files are uploaded to the release by default.
 
-```yaml
-# .goreleaser.yaml
+```yaml title=".goreleaser.yaml"
 template_files:
   - # ID of this particular file.
     #

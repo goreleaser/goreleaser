@@ -1,6 +1,8 @@
 # Introduction
 
-Putting it simply, GoReleaser is a release automation tool for Go projects.
+Putting it simply, GoReleaser is a release automation tool.
+
+It currently supports Go, Rust, and Zig.
 
 ## Why we made it?
 

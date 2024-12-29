@@ -7,6 +7,7 @@ import (
 	"io"
 	"net/http"
 	"net/url"
+	"slices"
 	"strings"
 
 	"github.com/caarlos0/env/v11"
@@ -24,6 +25,10 @@ const (
 	DefaultContentType     = "application/json; charset=utf-8"
 )
 
+var defaultExpectedStatusCodes = []int{
+	http.StatusOK, http.StatusCreated, http.StatusAccepted, http.StatusNoContent,
+}
+
 type Pipe struct{}
 
 func (Pipe) String() string                 { return "webhook" }
@@ -40,6 +45,9 @@ func (p Pipe) Default(ctx *context.Context) error {
 	}
 	if ctx.Config.Announce.Webhook.ContentType == "" {
 		ctx.Config.Announce.Webhook.ContentType = DefaultContentType
+	}
+	if len(ctx.Config.Announce.Webhook.ExpectedStatusCodes) == 0 {
+		ctx.Config.Announce.Webhook.ExpectedStatusCodes = defaultExpectedStatusCodes
 	}
 	return nil
 }
@@ -107,13 +115,13 @@ func (p Pipe) Announce(ctx *context.Context) error {
 	}
 	defer resp.Body.Close()
 
-	switch resp.StatusCode {
-	case http.StatusOK, http.StatusCreated, http.StatusAccepted, http.StatusNoContent:
-		log.Infof("Post OK: '%v'", resp.StatusCode)
-		body, _ := io.ReadAll(resp.Body)
-		log.Infof("Response : %v\n", string(body))
-		return nil
-	default:
+	if !slices.Contains(ctx.Config.Announce.Webhook.ExpectedStatusCodes, resp.StatusCode) {
+		_, _ = io.Copy(io.Discard, resp.Body)
 		return fmt.Errorf("request failed with status %v", resp.Status)
 	}
+
+	body, _ := io.ReadAll(resp.Body)
+	log.Infof("Post OK: '%v'", resp.StatusCode)
+	log.Infof("Response : %v\n", string(body))
+	return nil
 }

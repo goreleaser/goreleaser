@@ -93,8 +93,7 @@ Supported variables:
 
 Of course, you can customize a lot of things:
 
-```yaml
-# .goreleaser.yaml
+```yaml title=".goreleaser.yaml"
 publishers:
   - #
     # Unique name of your publisher. Used for identification
@@ -104,6 +103,15 @@ publishers:
     ids:
       - foo
       - bar
+
+    # Allows to further filter the artifacts.
+    #
+    # Artifacts that do not match this expression will be ignored.
+    #
+    # <!-- md:inline_pro -->.
+    # <!-- md:inline_version v2.5 -->.
+    # Templates: allowed.
+    if: '{{ eq .Os "linux" }}'
 
     # Publish checksums.
     checksum: true

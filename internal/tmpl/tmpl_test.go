@@ -63,6 +63,7 @@ func TestWithArtifact(t *testing.T) {
 		"power8":                              "{{.Ppc64}}",
 		"rva22u64":                            "{{.Riscv64}}",
 		"v8.0":                                "{{.Arm64}}",
+		"a_fake_target":                       "{{.Target}}",
 		"1.2.3":                               "{{.Version}}",
 		"v1.2.3":                              "{{.Tag}}",
 		"1-2-3":                               "{{.Major}}-{{.Minor}}-{{.Patch}}",
@@ -128,6 +129,7 @@ func TestWithArtifact(t *testing.T) {
 					Go386:     "sse2",
 					Goppc64:   "power8",
 					Goriscv64: "rva22u64",
+					Target:    "a_fake_target",
 					Extra: map[string]interface{}{
 						artifact.ExtraBinary: "binary",
 						artifact.ExtraExt:    ".exe",
@@ -460,17 +462,21 @@ func TestInvalidMap(t *testing.T) {
 }
 
 func TestWithBuildOptions(t *testing.T) {
+	// testtarget doesn ot set riscv64, it still should not fail to compile the template
+	ts := "{{.Name}}_{{.Path}}_{{.Ext}}_{{.Target}}_{{.Os}}_{{.Arch}}_{{.Amd64}}_{{.Arm}}_{{.Mips}}{{with .Riscv64}}{{.}}{{end}}"
 	out, err := New(testctx.New()).WithBuildOptions(build.Options{
-		Name:    "name",
-		Path:    "./path",
-		Ext:     ".ext",
-		Target:  "target",
-		Goos:    "os",
-		Goarch:  "arch",
-		Goamd64: "amd64",
-		Goarm:   "arm",
-		Gomips:  "mips",
-	}).Apply("{{.Name}}_{{.Path}}_{{.Ext}}_{{.Target}}_{{.Os}}_{{.Arch}}_{{.Amd64}}_{{.Arm}}_{{.Mips}}")
+		Name: "name",
+		Path: "./path",
+		Ext:  ".ext",
+		Target: testTarget{
+			Target:  "target",
+			Goos:    "os",
+			Goarch:  "arch",
+			Goamd64: "amd64",
+			Goarm:   "arm",
+			Gomips:  "mips",
+		},
+	}).Apply(ts)
 	require.NoError(t, err)
 	require.Equal(t, "name_./path_.ext_target_os_arch_amd64_arm_mips", out)
 }
@@ -490,4 +496,88 @@ func TestReuseTpl(t *testing.T) {
 	s3, err := tp.Apply("{{.foo}}")
 	require.NoError(t, err)
 	require.Equal(t, "bar", s3)
+}
+
+func TestSlice(t *testing.T) {
+	ctx := testctx.New(
+		testctx.WithVersion("1.2.3"),
+		testctx.WithCurrentTag("5.6.7"),
+	)
+
+	artifact := &artifact.Artifact{
+		Name:   "name",
+		Goos:   "darwin",
+		Goarch: "amd64",
+		Goarm:  "7",
+		Extra: map[string]interface{}{
+			artifact.ExtraBinary: "binary",
+		},
+	}
+
+	source := []string{
+		"flag",
+		"{{.Version}}",
+		"{{.Os}}",
+		"{{.Arch}}",
+		"{{.Arm}}",
+		"{{.Binary}}",
+		"{{.ArtifactName}}",
+	}
+
+	expected := []string{
+		"-testflag=flag",
+		"-testflag=1.2.3",
+		"-testflag=darwin",
+		"-testflag=amd64",
+		"-testflag=7",
+		"-testflag=binary",
+		"-testflag=name",
+	}
+
+	flags, err := New(ctx).WithArtifact(artifact).Slice(source, WithPrefix("-testflag="))
+	require.NoError(t, err)
+	require.Len(t, flags, 7)
+	require.Equal(t, expected, flags)
+}
+
+func TestSliceInvalid(t *testing.T) {
+	ctx := testctx.New()
+	source := []string{
+		"{{.Version}",
+	}
+	flags, err := New(ctx).Slice(source)
+	require.ErrorAs(t, err, &Error{})
+	require.Nil(t, flags)
+}
+
+func TestSliceIgnoreEmptyFlags(t *testing.T) {
+	ctx := testctx.New()
+	source := []string{
+		"{{if eq 1 2}}-ignore-me{{end}}",
+	}
+	flags, err := New(ctx).Slice(source, NonEmpty())
+	require.NoError(t, err)
+	require.Empty(t, flags)
+}
+
+type testTarget struct {
+	Target  string
+	Goos    string
+	Goarch  string
+	Goamd64 string
+	Goarm   string
+	Gomips  string
+}
+
+func (t testTarget) String() string { return t.Target }
+
+func (t testTarget) Fields() map[string]string {
+	return map[string]string{
+		target:   t.Target,
+		KeyOS:    t.Goos,
+		KeyArch:  t.Goarch,
+		KeyAmd64: t.Goamd64,
+		KeyArm:   t.Goarm,
+		KeyMips:  t.Gomips,
+	}
 }

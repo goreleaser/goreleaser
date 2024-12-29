@@ -5,12 +5,13 @@
 package krew
 
 import (
+	"cmp"
 	"errors"
 	"fmt"
 	"os"
 	"path"
 	"path/filepath"
-	"sort"
+	"slices"
 	"strings"
 
 	"github.com/caarlos0/log"
@@ -83,10 +84,10 @@ func doRun(ctx *context.Context, krew config.Krew, cl client.ReleaseURLTemplater
 		return pipe.Skip("krew: manifest name is not set")
 	}
 	if krew.Description == "" {
-		return fmt.Errorf("krew: manifest description is not set")
+		return errors.New("krew: manifest description is not set")
 	}
 	if krew.ShortDescription == "" {
-		return fmt.Errorf("krew: manifest short description is not set")
+		return errors.New("krew: manifest short description is not set")
 	}
 
 	filters := []artifact.Filter{
@@ -251,8 +252,8 @@ func manifestFor(
 		}
 	}
 
-	sort.Slice(result.Spec.Platforms, func(i, j int) bool {
-		return result.Spec.Platforms[i].URI > result.Spec.Platforms[j].URI
+	slices.SortFunc(result.Spec.Platforms, func(a, b Platform) int {
+		return -cmp.Compare(a.URI, b.URI)
 	})
 
 	return result, nil
@@ -355,7 +356,7 @@ func doPublish(ctx *context.Context, manifest *artifact.Artifact, cl client.Clie
 	log.Info("krews.pull_request enabled, creating a PR")
 	pcl, ok := cl.(client.PullRequestOpener)
 	if !ok {
-		return fmt.Errorf("client does not support pull requests")
+		return errors.New("client does not support pull requests")
 	}
 
 	return pcl.OpenPullRequest(ctx, base, repo, msg, cfg.Repository.PullRequest.Draft)

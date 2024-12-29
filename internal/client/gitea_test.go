@@ -512,7 +512,7 @@ func TestGiteaReleaseURLTemplate(t *testing.T) {
 					"GORELEASER_TEST_GITEA_URLS_DOWNLOAD=https://gitea.mycompany.com",
 				},
 				GiteaURLs: config.GiteaURLs{
-					API:      "https://gitea.com/api/v1",
+					API:      fakeGitea(t).URL,
 					Download: tt.downloadURL,
 				},
 				Release: config.Release{

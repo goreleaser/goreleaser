@@ -28,8 +28,21 @@ type Template struct {
 // Fields that will be available to the template engine.
 type Fields map[string]interface{}
 
+// Template fields names used in build targets and more.
 const (
-	// general keys.
+	KeyOS      = "Os"
+	KeyArch    = "Arch"
+	KeyAmd64   = "Amd64"
+	Key386     = "I386"
+	KeyArm     = "Arm"
+	KeyArm64   = "Arm64"
+	KeyMips    = "Mips"
+	KeyPpc64   = "Ppc64"
+	KeyRiscv64 = "Riscv64"
+)
+
+// general keys.
+const (
 	projectName     = "ProjectName"
 	version         = "Version"
 	rawVersion      = "RawVersion"
@@ -65,23 +78,18 @@ const (
 	modulePath      = "ModulePath"
 	releaseNotes    = "ReleaseNotes"
 	runtimeK        = "Runtime"
+)
 
-	// artifact-only keys.
-	osKey        = "Os"
-	arch         = "Arch"
-	amd64        = "Amd64"
-	go386        = "I386"
-	arm          = "Arm"
-	arm64        = "Arm64"
-	mips         = "Mips"
-	ppc64        = "Ppc64"
-	riscv64      = "Riscv64"
+// artifact-only keys.
+const (
 	binary       = "Binary"
 	artifactName = "ArtifactName"
 	artifactExt  = "ArtifactExt"
 	artifactPath = "ArtifactPath"
+)
 
-	// build keys.
+// build keys.
+const (
 	name   = "Name"
 	ext    = "Ext"
 	path   = "Path"
@@ -177,15 +185,16 @@ func (t *Template) WithEnv(e map[string]string) *Template {
 // WithArtifact populates Fields from the artifact.
 func (t *Template) WithArtifact(a *artifact.Artifact) *Template {
 	return t.WithExtraFields(Fields{
-		osKey:        a.Goos,
-		arch:         a.Goarch,
-		amd64:        a.Goamd64,
-		go386:        a.Go386,
-		arm:          a.Goarm,
-		arm64:        a.Goarm64,
-		mips:         a.Gomips,
-		ppc64:        a.Goppc64,
-		riscv64:      a.Goriscv64,
+		KeyOS:        a.Goos,
+		KeyArch:      a.Goarch,
+		KeyAmd64:     a.Goamd64,
+		Key386:       a.Go386,
+		KeyArm:       a.Goarm,
+		KeyArm64:     a.Goarm64,
+		KeyMips:      a.Gomips,
+		KeyPpc64:     a.Goppc64,
+		KeyRiscv64:   a.Goriscv64,
+		target:       a.Target,
 		binary:       artifact.ExtraOr(*a, binary, t.fields[projectName].(string)),
 		artifactName: a.Name,
 		artifactExt:  artifact.ExtraOr(*a, artifact.ExtraExt, ""),
@@ -198,27 +207,80 @@ func (t *Template) WithBuildOptions(opts build.Options) *Template {
 }
 
 func buildOptsToFields(opts build.Options) Fields {
-	return Fields{
-		target:  opts.Target,
-		ext:     opts.Ext,
-		name:    opts.Name,
-		path:    opts.Path,
-		osKey:   opts.Goos,
-		arch:    opts.Goarch,
-		amd64:   opts.Goamd64,
-		go386:   opts.Go386,
-		arm:     opts.Goarm,
-		arm64:   opts.Goarm64,
-		mips:    opts.Gomips,
-		ppc64:   opts.Goppc64,
-		riscv64: opts.Goriscv64,
+	f := Fields{
+		target: opts.Target.String(),
+		ext:    opts.Ext,
+		name:   opts.Name,
+		path:   opts.Path,
+
+		// set them all to empty, which should prevent breaking templates.
+		// the .Fields() call will override whichever values are actually
+		// available.
+		KeyOS:      "",
+		KeyArch:    "",
+		KeyAmd64:   "",
+		Key386:     "",
+		KeyArm:     "",
+		KeyArm64:   "",
+		KeyMips:    "",
+		KeyPpc64:   "",
+		KeyRiscv64: "",
 	}
+	for k, v := range opts.Target.Fields() {
+		f[k] = v
+	}
+	return f
 }
 
 // Bool Apply the given string, and converts it to a bool.
 func (t *Template) Bool(s string) (bool, error) {
 	r, err := t.Apply(s)
 	return strings.TrimSpace(strings.ToLower(r)) == "true", err
+}
+
+// SliceOpt is a [Slice] option.
+type SliceOpt func(*sliceOptions)
+
+// NonEmpty filters out empty items.
+func NonEmpty() SliceOpt {
+	return func(o *sliceOptions) {
+		o.filtering = func(s string) bool { return s != "" }
+	}
+}
+
+// WithPrefix pretend a prefix to every item.
+func WithPrefix(prefix string) SliceOpt {
+	return func(o *sliceOptions) {
+		o.mapping = func(s string) string { return prefix + s }
+	}
+}
+
+type sliceOptions struct {
+	filtering func(string) bool
+	mapping   func(string) string
+}
+
+// Slice applies to all items in the given input.
+func (t *Template) Slice(in []string, opts ...SliceOpt) ([]string, error) {
+	var opt sliceOptions
+	for _, option := range opts {
+		option(&opt)
+	}
+	var out []string
+	for _, s := range in {
+		applied, err := t.Apply(s)
+		if err != nil {
+			return nil, err
+		}
+		if opt.filtering != nil && !opt.filtering(applied) {
+			continue
+		}
+		if opt.mapping != nil {
+			applied = opt.mapping(applied)
+		}
+		out = append(out, applied)
+	}
+	return out, nil
 }
 
 // Apply applies the given string against the Fields stored in the template.

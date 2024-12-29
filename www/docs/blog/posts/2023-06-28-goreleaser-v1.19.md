@@ -37,8 +37,7 @@ It even works cross-repository!
 
 Here's an example:
 
-```yaml
-# .goreleaser.yml
+```yaml title=".goreleaser.yaml"
 brews: # can be brews, krew, scoops, etc...
   - # ...
     repository:
@@ -72,8 +71,7 @@ install from there.
 
 Example:
 
-```yaml
-# .goreleaser.yml
+```yaml title=".goreleaser.yaml"
 nix:
   - name: goreleaser-pro
     repository:
@@ -99,8 +97,7 @@ generate the needed manifests, and you can then PR them to
 
 Example:
 
-```yaml
-# .goreleaser.yml
+```yaml title=".goreleaser.yaml"
 winget:
   - name: goreleaser-pro
     publisher: goreleaser
@@ -206,8 +203,7 @@ include **only** the commits that match one of them.
 
 Example:
 
-```yaml
-# .goreleaser.yml
+```yaml title=".goreleaser.yaml"
 changelog:
   filters:
     include:

@@ -5,8 +5,7 @@ Google GCS.
 
 ## Customization
 
-```yaml
-# .goreleaser.yaml
+```yaml title=".goreleaser.yaml"
 blobs:
   # You can have multiple blob configs
   - # Cloud provider name:
@@ -49,7 +48,8 @@ blobs:
     #
     # Artifacts that do not match this expression will be ignored.
     #
-    # Since: v2.3 (pro).
+    # <!-- md:inline_pro -->.
+    # <!-- md:inline_version v2.3 -->.
     # Templates: allowed.
     if: '{{ eq .Os "linux" }}'
 

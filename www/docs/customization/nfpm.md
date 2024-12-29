@@ -5,8 +5,7 @@ generate and publish `.deb`, `.rpm`, `.apk`, `.ipk`, and Archlinux packages.
 
 Available options:
 
-```yaml
-# .goreleaser.yaml
+```yaml title=".goreleaser.yaml"
 nfpms:
   # note that this is an array of nfpm configs
   - #
@@ -37,7 +36,8 @@ nfpms:
     #
     # Artifacts that do not match this expression will be ignored.
     #
-    # Since: v2.4 (pro).
+    # <!-- md:inline_pro -->.
+    # <!-- md:inline_version v2.4 -->.
     # Templates: allowed.
     if: '{{ eq .Os "linux" }}'
 
@@ -473,7 +473,7 @@ nfpms:
 
     # Custom configuration applied only to the IPK packager.
     #
-    # Since: v2.1.
+    # <!-- md:inline_version v2.1 -->.
     ipk:
       # The ABI version to specify.
       #
@@ -566,8 +566,7 @@ get duplicated file names.
 
 You can go around that with something like this:
 
-```yaml
-# .goreleaser.yaml
+```yaml title=".goreleaser.yaml"
 nfpms:
   - # ...
     file_name_template: >-

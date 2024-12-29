@@ -146,8 +146,7 @@ uploads:
 
 Of course, you can customize a lot of things:
 
-```yaml
-# .goreleaser.yaml
+```yaml title=".goreleaser.yaml"
 uploads:
   # You can have multiple upload instances.
   - # Unique name of your upload instance. Used to identify the instance.
@@ -238,7 +237,7 @@ uploads:
     # If another file with the same name exists, the last one found will be used.
     # These globs can also include templates.
     #
-    # Since: v2.1.
+    # <!-- md:inline_version v2.1 -->.
     extra_files:
       - glob: ./path/to/file.txt
       - glob: ./docs/*.md
@@ -253,8 +252,8 @@ uploads:
     # Those files will have their contents pass through the template engine,
     # and its results will be uploaded.
     #
-    # This feature is only available in GoReleaser Pro.
-    # Since: v2.1 (pro).
+    # <!-- md:inline_pro -->.
+    # <!-- md:inline_version v2.1 -->.
     # Templates: allowed.
     templated_extra_files:
       - src: LICENSE.tpl
@@ -262,7 +261,7 @@ uploads:
 
     # Upload only the files defined in extra_files.
     #
-    # Since: v2.1.
+    # <!-- md:inline_version v2.1 -->.
     extra_files_only: true
 ```
 

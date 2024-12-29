@@ -6,8 +6,7 @@ additional files, and format.
 
 Here is a commented `archives` section with all fields specified:
 
-```yaml
-# .goreleaser.yaml
+```yaml title=".goreleaser.yaml"
 archives:
   - #
     # ID of this archive.
@@ -30,7 +29,7 @@ archives:
     # - `tar.xz`
     # - `txz`
     # - `tar.zst`
-    # - `tzst` (since v2.1)
+    # - `tzst` # <!-- md:inline_version v2.1 -->.
     # - `tar`
     # - `gz`
     # - `zip`
@@ -251,8 +250,7 @@ on the archive section.
 
 A working hack is to use something like this:
 
-```yaml
-# .goreleaser.yaml
+```yaml title=".goreleaser.yaml"
 archives:
   - files:
       - none*
@@ -260,7 +258,7 @@ archives:
 
 This would add all files matching the glob `none*`, provide that you don't
 have any files matching that glob, only the binary will be added to the
-archive.
+archive. Any glob that doesn't match any file should work.
 
 For more information, check [#602](https://github.com/goreleaser/goreleaser/issues/602)
 
@@ -272,8 +270,7 @@ file inside.
 Presumably, you'll want that file to be the binary, so, your archive section
 will probably look like this:
 
-```yaml
-# .goreleaser.yaml
+```yaml title=".goreleaser.yaml"
 archives:
   - format: gz
     files:
@@ -288,18 +285,15 @@ extracted with something like `gzip -d file.gz`.
     You won't be able to package multiple builds in a single archive either.
     The alternative is to declare multiple archives filtering by build ID.
 
-## Disable archiving
+## Do not archive
 
-You can do that by setting `format` to `binary`:
+If you want to publish the binaries directly, without any archiving, you can do
+so by setting `format` to `binary`:
 
-```yaml
-# .goreleaser.yaml
+```yaml title=".goreleaser.yaml"
 archives:
   - format: binary
 ```
 
-Make sure to check the rest of the documentation above, as doing this has some
-implications.
-
-If you have customization that might rely on archives, for instance,
-`brews.install`, make sure to fix them too.
+You can then set a custom `name_template`, which will be the name used when
+uploading the binary to the release, for example.

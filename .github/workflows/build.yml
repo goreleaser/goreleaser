@@ -30,7 +30,7 @@ jobs:
       args: "-disable largeloopcopy"
   test:
     strategy:
-      fail-fast: false
+      fail-fast: true
       matrix:
         os: [ubuntu-latest, windows-latest]
     runs-on: ${{ matrix.os }}
@@ -46,13 +46,11 @@ jobs:
           repo-token: ${{ secrets.GITHUB_TOKEN }}
       - uses: docker/setup-qemu-action@49b3bc8e6bdd4a60e6116a5414239cba5943d3cf # v2
         if: matrix.os == 'ubuntu-latest'
-      - uses: docker/setup-buildx-action@c47758b77c9736f4b2ef4073d4d51994fabfe349 # v3
+      - uses: docker/setup-buildx-action@6524bf65af31da8d45b59e8c27de4bd072b392f5 # v3
         if: matrix.os == 'ubuntu-latest'
       - name: setup-snapcraft
         if: matrix.os == 'ubuntu-latest'
-        run: |
-          sudo apt-get update
-          sudo apt-get -yq --no-install-suggests --no-install-recommends install snapcraft
+        run: sudo snap install snapcraft --classic
       - uses: crazy-max/ghaction-upx@v3
         with:
           install-only: true
@@ -60,11 +58,12 @@ jobs:
         if: matrix.os == 'ubuntu-latest'
         with:
           github_access_token: ${{ secrets.GITHUB_TOKEN }}
-      - uses: actions/setup-go@41dfa10bad2bb2ae585af6ee5bb4d7d973ad74ed # v4
+      - uses: actions/setup-go@3041bf56c941b39c61721a86cd11f3bb1338122a # v4
         with:
           go-version: stable
+      - uses: mlugg/setup-zig@v1
       - uses: sigstore/cosign-installer@v3.7.0
-      - uses: anchore/sbom-action/download-syft@v0.17.7
+      - uses: anchore/sbom-action/download-syft@v0.17.9
       - name: setup-validate-krew-manifest
         run: go install sigs.k8s.io/krew/cmd/validate-krew-manifest@latest
       - name: setup
@@ -73,7 +72,7 @@ jobs:
           task build
       - name: test
         run: task test
-      - uses: codecov/codecov-action@968872560f81e7bdde9272853e65f2507c0eca7c # v4
+      - uses: codecov/codecov-action@1e68e06f1dbfde0e4cefc87efeba9e4643565303 # v4
         with:
           file: ./coverage.txt
       - run: git diff

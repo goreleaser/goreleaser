@@ -2,12 +2,13 @@
 package archivefiles
 
 import (
+	"cmp"
 	"errors"
 	"fmt"
 	"io/fs"
 	"os"
 	"path/filepath"
-	"sort"
+	"slices"
 	"time"
 
 	"github.com/caarlos0/log"
@@ -62,8 +63,8 @@ func Eval(template *tmpl.Template, files []config.File) ([]config.File, error) {
 		}
 	}
 
-	sort.Slice(result, func(i, j int) bool {
-		return result[i].Destination < result[j].Destination
+	slices.SortFunc(result, func(a, b config.File) int {
+		return cmp.Compare(a.Destination, b.Destination)
 	})
 
 	return unique(result), nil
@@ -140,19 +141,17 @@ func longestCommonPrefix(strs []string) string {
 }
 
 // copied from nfpm
-//
-//nolint:revive // redefines-builtin-id
 func strlcp(a, b string) string {
-	var min int
+	var minlen int
 	if len(a) > len(b) {
-		min = len(b)
+		minlen = len(b)
 	} else {
-		min = len(a)
+		minlen = len(a)
 	}
-	for i := 0; i < min; i++ {
+	for i := 0; i < minlen; i++ {
 		if a[i] != b[i] {
 			return a[0:i]
 		}
 	}
-	return a[0:min]
+	return a[0:minlen]
 }

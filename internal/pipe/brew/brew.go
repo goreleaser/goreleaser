@@ -3,6 +3,7 @@ package brew
 import (
 	"bufio"
 	"bytes"
+	"cmp"
 	"errors"
 	"fmt"
 	"maps"
@@ -10,7 +11,6 @@ import (
 	"path"
 	"path/filepath"
 	"slices"
-	"sort"
 	"strings"
 	"text/template"
 
@@ -189,7 +189,7 @@ func doPublish(ctx *context.Context, formula *artifact.Artifact, cl client.Clien
 	log.Info("brews.pull_request enabled, creating a PR")
 	pcl, ok := cl.(client.PullRequestOpener)
 	if !ok {
-		return fmt.Errorf("client does not support pull requests")
+		return errors.New("client does not support pull requests")
 	}
 
 	return pcl.OpenPullRequest(ctx, base, repo, msg, brew.Repository.PullRequest.Draft)
@@ -386,8 +386,8 @@ func installs(ctx *context.Context, cfg config.Homebrew, art *artifact.Artifact)
 }
 
 func dataFor(ctx *context.Context, cfg config.Homebrew, cl client.ReleaseURLTemplater, artifacts []*artifact.Artifact) (templateData, error) {
-	sort.Slice(cfg.Dependencies, func(i, j int) bool {
-		return cfg.Dependencies[i].Name < cfg.Dependencies[j].Name
+	slices.SortFunc(cfg.Dependencies, func(a, b config.HomebrewDependency) int {
+		return cmp.Compare(a.Name, b.Name)
 	})
 	result := templateData{
 		Name:          formulaNameFor(cfg.Name),
@@ -460,13 +460,13 @@ func dataFor(ctx *context.Context, cfg config.Homebrew, cl client.ReleaseURLTemp
 		result.HasOnlyAmd64MacOsPkg = true
 	}
 
-	sort.Slice(result.LinuxPackages, lessFnFor(result.LinuxPackages))
-	sort.Slice(result.MacOSPackages, lessFnFor(result.MacOSPackages))
+	slices.SortStableFunc(result.LinuxPackages, compareByArch)
+	slices.SortStableFunc(result.MacOSPackages, compareByArch)
 	return result, nil
 }
 
-func lessFnFor(list []releasePackage) func(i, j int) bool {
-	return func(i, j int) bool { return list[i].Arch < list[j].Arch }
+func compareByArch(a, b releasePackage) int {
+	return cmp.Compare(a.Arch, b.Arch)
 }
 
 func split(s string) []string {
@@ -481,7 +481,7 @@ func split(s string) []string {
 // that more resembles a valid Ruby class name
 // e.g. foo_bar@v6.0.0-rc is turned into FooBarATv6_0_0RC
 //
-// This function must match the behavior of Homewbrews's Formulary.class_s function:
+// This function must match the behavior of Homebrew's Formulary.class_s function:
 //
 //	<https://github.com/Homebrew/brew/blob/587949bd8417c486795be04194f9e9baeaa9f5a7/Library/Homebrew/formulary.rb#L522-L528>
 func formulaNameFor(name string) string {

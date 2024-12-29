@@ -14,12 +14,15 @@ import (
 	"hash"
 	"hash/crc32"
 	"io"
+	"maps"
 	"os"
 	"path/filepath"
+	"slices"
 	"strings"
 	"sync"
 
 	"github.com/caarlos0/log"
+	"github.com/goreleaser/goreleaser/v2/internal/experimental"
 	"golang.org/x/crypto/blake2b"
 	"golang.org/x/crypto/blake2s"
 	"golang.org/x/crypto/sha3"
@@ -162,6 +165,7 @@ const (
 	ExtraSize       = "Size"
 	ExtraChecksum   = "Checksum"
 	ExtraChecksumOf = "ChecksumOf"
+	ExtraBuilder    = "Builder"
 )
 
 // Extras represents the extra fields in an artifact.
@@ -192,6 +196,7 @@ type Artifact struct {
 	Gomips    string `json:"gomips,omitempty"`
 	Goppc64   string `json:"goppc64,omitempty"`
 	Goriscv64 string `json:"goriscv64,omitempty"`
+	Target    string `json:"target,omitempty"`
 	Type      Type   `json:"internal_type,omitempty"`
 	TypeS     string `json:"type,omitempty"`
 	Extra     Extras `json:"extra,omitempty"`
@@ -366,12 +371,40 @@ func (artifacts *Artifacts) GroupByID() map[string][]*Artifact {
 
 // GroupByPlatform groups the artifacts by their platform.
 func (artifacts *Artifacts) GroupByPlatform() map[string][]*Artifact {
-	result := map[string][]*Artifact{}
+	// we'll try to keep the most basic platform as group (goos+goarch).
+	// we'll though group it further if we have multiple goarm, goamd64, or
+	// gomips, to keep compatibility with previous versions of goreleaser.
+	simpleResult := map[string][]*Artifact{}
+	specificResult := map[string][]*Artifact{}
+	goamd64s := map[string]struct{}{}
+	gomipses := map[string]struct{}{}
+	goarms := map[string]struct{}{}
 	for _, a := range artifacts.List() {
-		plat := a.Goos + a.Goarch + a.Goarm + a.Gomips + a.Goamd64
-		result[plat] = append(result[plat], a)
+		plat := a.Goos + a.Goarch
+		fullplat := plat + a.Goarm + a.Gomips + a.Goamd64
+		goamd64s[a.Goamd64] = struct{}{}
+		gomipses[a.Gomips] = struct{}{}
+		goarms[a.Goarm] = struct{}{}
+		simpleResult[plat] = append(simpleResult[plat], a)
+		specificResult[fullplat] = append(specificResult[fullplat], a)
 	}
-	return result
+
+	if len(nonEmpty(goamd64s)) > 1 ||
+		len(nonEmpty(gomipses)) > 1 ||
+		len(nonEmpty(goarms)) > 1 {
+		return specificResult
+	}
+
+	return simpleResult
+}
+
+func nonEmpty(m map[string]struct{}) []string {
+	return slices.DeleteFunc(
+		slices.Collect(maps.Keys(m)),
+		func(s string) bool {
+			return s == ""
+		},
+	)
 }
 
 func relPath(a *Artifact) (string, error) {
@@ -466,14 +499,24 @@ func ByGoarch(s string) Filter {
 // ByGoarm is a predefined filter that filters by the given goarm.
 func ByGoarm(s string) Filter {
 	return func(a *Artifact) bool {
-		return a.Goarm == s
+		switch ExtraOr(*a, ExtraBuilder, "") {
+		case "zig", "rust":
+			return s == experimental.DefaultGOARM()
+		default:
+			return a.Goarm == s
+		}
 	}
 }
 
 // ByGoamd64 is a predefined filter that filters by the given goamd64.
 func ByGoamd64(s string) Filter {
 	return func(a *Artifact) bool {
-		return a.Goamd64 == s
+		switch ExtraOr(*a, ExtraBuilder, "") {
+		case "zig", "rust":
+			return s == "v1"
+		default:
+			return a.Goamd64 == s
+		}
 	}
 }
 
