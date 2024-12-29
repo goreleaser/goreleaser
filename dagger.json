@@ -1,12 +1,13 @@
 {
   "name": "goreleaser",
+  "engineVersion": "v0.15.1",
   "sdk": "go",
   "dependencies": [
     {
       "name": "docker",
-      "source": "github.com/shykes/daggerverse/docker@c9a80c9eac0675a53a7e052da3594207f4235988"
+      "source": "github.com/shykes/daggerverse/docker@c9a80c9eac0675a53a7e052da3594207f4235988",
+      "pin": "c9a80c9eac0675a53a7e052da3594207f4235988"
     }
   ],
-  "source": "dagger",
-  "engineVersion": "v0.13.0"
+  "source": "dagger"
 }
