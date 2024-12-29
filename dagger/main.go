@@ -2,7 +2,7 @@
 
 package main
 
-import "github.com/goreleaser/goreleaser/dagger/internal/dagger"
+import "github.com/goreleaser/goreleaser/v2/dagger/internal/dagger"
 
 type Goreleaser struct {
 	// +private
