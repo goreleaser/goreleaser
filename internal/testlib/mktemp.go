@@ -8,8 +8,8 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-// Mktmp creates a new tempdir, cd into it and provides a back function that
-// cd into the previous directory.
+// Mktmp creates a new tempdir, cd into it and automatically cd back when the
+// test finishes.
 func Mktmp(tb testing.TB) string {
 	tb.Helper()
 	folder := tb.TempDir()

@@ -3,6 +3,7 @@ package bun
 import (
 	"fmt"
 	"os"
+	"os/exec"
 	"path/filepath"
 	"testing"
 	"time"
@@ -77,6 +78,10 @@ func TestWithDefaults(t *testing.T) {
 
 func TestBuild(t *testing.T) {
 	testlib.CheckPath(t, "bun")
+	testlib.Mktmp(t)
+	_, err := exec.Command("bun", "init", "--yes").CombinedOutput()
+	require.NoError(t, err)
+
 	modTime := time.Now().AddDate(-1, 0, 0).Round(time.Second).UTC()
 	dist := t.TempDir()
 	ctx := testctx.NewWithCfg(config.Project{
@@ -85,7 +90,7 @@ func TestBuild(t *testing.T) {
 		Builds: []config.Build{
 			{
 				ID:           "default",
-				Dir:          "./testdata/proj/",
+				Dir:          ".",
 				ModTimestamp: fmt.Sprintf("%d", modTime.Unix()),
 			},
 		},
