@@ -196,9 +196,11 @@ func TestBuild(t *testing.T) {
 	require.Len(t, bins, 1)
 
 	bin := bins[0]
+	binpath, err := filepath.Abs(filepath.ToSlash(options.Path))
+	require.NoError(t, err)
 	require.Equal(t, artifact.Artifact{
 		Name:   "proj",
-		Path:   filepath.ToSlash(options.Path),
+		Path:   binpath,
 		Goos:   "darwin",
 		Goarch: "arm64",
 		Target: "aarch64-macos",
