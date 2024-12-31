@@ -184,12 +184,12 @@ func TestBuild(t *testing.T) {
 			artifact.ExtraExt:     "",
 			artifact.ExtraID:      "default",
 		},
-	}, *bin)
+	}, *bin, "optionspath: %s", options.Path)
 
 	require.FileExists(t, bin.Path)
 	fi, err := os.Stat(bin.Path)
 	require.NoError(t, err)
-	require.True(t, modTime.Equal(fi.ModTime()), "inconsistent mod times found when specifying ModTimestamp")
+	require.True(t, modTime.Equal(fi.ModTime()))
 }
 
 func TestParse(t *testing.T) {

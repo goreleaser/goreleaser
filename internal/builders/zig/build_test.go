@@ -196,11 +196,9 @@ func TestBuild(t *testing.T) {
 	require.Len(t, bins, 1)
 
 	bin := bins[0]
-	binpath, err := filepath.Abs(filepath.ToSlash(options.Path))
-	require.NoError(t, err)
 	require.Equal(t, artifact.Artifact{
 		Name:   "proj",
-		Path:   binpath,
+		Path:   filepath.ToSlash(options.Path),
 		Goos:   "darwin",
 		Goarch: "arm64",
 		Target: "aarch64-macos",
@@ -211,7 +209,7 @@ func TestBuild(t *testing.T) {
 			artifact.ExtraExt:     "",
 			artifact.ExtraID:      "default",
 		},
-	}, *bin)
+	}, *bin, "optionspath: %s", options.Path)
 
 	require.FileExists(t, bin.Path)
 	fi, err := os.Stat(bin.Path)
