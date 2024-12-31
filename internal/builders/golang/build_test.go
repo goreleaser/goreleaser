@@ -1069,7 +1069,7 @@ func TestInvalidTemplate(t *testing.T) {
 
 func TestBuildModTimestamp(t *testing.T) {
 	// round to seconds since this will be a unix timestamp
-	modTime := time.Now().AddDate(-1, 0, 0).Round(1 * time.Second).UTC()
+	modTime := time.Now().AddDate(-1, 0, 0).Round(time.Second).UTC()
 
 	folder := testlib.Mktmp(t)
 	writeGoodMain(t, folder)
