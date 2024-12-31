@@ -12,7 +12,7 @@ import (
 )
 
 func TestChtimes(t *testing.T) {
-	modTime := time.Now().AddDate(-1, 0, 0).Round(1 * time.Second).UTC()
+	modTime := time.Now().AddDate(-1, 0, 0).Round(time.Second).UTC()
 	path := filepath.Join(t.TempDir(), "file")
 	require.NoError(t, os.WriteFile(path, nil, 0o644))
 
@@ -24,7 +24,7 @@ func TestChtimes(t *testing.T) {
 }
 
 func TestChtimesFileDoesNotExist(t *testing.T) {
-	modTime := time.Now().AddDate(-1, 0, 0).Round(1 * time.Second).UTC()
+	modTime := time.Now().AddDate(-1, 0, 0).Round(time.Second).UTC()
 	path := filepath.Join(t.TempDir(), "file")
 
 	require.ErrorIs(t, Chtimes(path, fmt.Sprintf("%d", modTime.Unix())), os.ErrNotExist)
@@ -38,7 +38,7 @@ func TestChtimesInvalidTS(t *testing.T) {
 }
 
 func TestChtimesEmpty(t *testing.T) {
-	modTime := time.Now().AddDate(-1, 0, 0).Round(1 * time.Second).UTC()
+	modTime := time.Now().AddDate(-1, 0, 0).Round(time.Second).UTC()
 	path := filepath.Join(t.TempDir(), "file")
 	require.NoError(t, os.WriteFile(path, nil, 0o644))
 

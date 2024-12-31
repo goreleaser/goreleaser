@@ -390,20 +390,20 @@ func (t *Template) ApplySingleEnvOnly(s string) (string, error) {
 		return "", nil
 	}
 
+	var out bytes.Buffer
+	tmpl, err := template.New("tmpl").
+		Option("missingkey=error").
+		Parse(s)
+	if err != nil {
+		return "", newTmplError(s, err)
+	}
+
 	// text/template/parse (lexer) could be used here too,
 	// but regexp reduces the complexity and should be sufficient,
 	// given the context is mostly discouraging users from bad practice
 	// of hard-coded credentials, rather than catch all possible cases
 	if !envOnlyRe.MatchString(s) {
 		return "", ExpectedSingleEnvErr{}
-	}
-
-	var out bytes.Buffer
-	tmpl, err := template.New("tmpl").
-		Option("missingkey=error").
-		Parse(s)
-	if err != nil {
-		return "", err
 	}
 
 	err = tmpl.Execute(&out, t.fields)

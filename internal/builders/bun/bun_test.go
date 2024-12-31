@@ -1,11 +1,9 @@
-package rust
+package bun
 
 import (
 	"fmt"
 	"os"
-	"os/exec"
 	"path/filepath"
-	"strings"
 	"testing"
 	"time"
 
@@ -17,12 +15,40 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func TestAllowConcurrentBuilds(t *testing.T) {
-	require.False(t, Default.AllowConcurrentBuilds())
-}
-
 func TestDependencies(t *testing.T) {
 	require.NotEmpty(t, Default.Dependencies())
+}
+
+func TestParse(t *testing.T) {
+	for target, dst := range map[string]Target{
+		"linux-x64-modern": {
+			Target: "bun-linux-x64-modern",
+			Os:     "linux",
+			Arch:   "x64",
+			Type:   "modern",
+		},
+		"darwin-arm64": {
+			Target: "bun-darwin-arm64",
+			Os:     "darwin",
+			Arch:   "arm64",
+		},
+		"bun-linux-arm64": {
+			Target: "bun-linux-arm64",
+			Os:     "linux",
+			Arch:   "arm64",
+		},
+	} {
+		t.Run(target, func(t *testing.T) {
+			got, err := Default.Parse(target)
+			require.NoError(t, err)
+			require.IsType(t, Target{}, got)
+			require.Equal(t, dst, got.(Target))
+		})
+	}
+	t.Run("invalid", func(t *testing.T) {
+		_, err := Default.Parse("linux")
+		require.Error(t, err)
+	})
 }
 
 func TestWithDefaults(t *testing.T) {
@@ -30,12 +56,12 @@ func TestWithDefaults(t *testing.T) {
 		build, err := Default.WithDefaults(config.Build{})
 		require.NoError(t, err)
 		require.Equal(t, config.Build{
-			Tool:    "cargo",
-			Command: "zigbuild",
+			Tool:    "bun",
+			Command: "build",
 			Dir:     ".",
 			Targets: defaultTargets(),
 			BuildDetails: config.BuildDetails{
-				Flags: []string{"--release"},
+				Flags: []string{"--compile"},
 			},
 		}, build)
 	})
@@ -56,18 +82,7 @@ func TestWithDefaults(t *testing.T) {
 }
 
 func TestBuild(t *testing.T) {
-	testlib.CheckPath(t, "rustup")
-	testlib.CheckPath(t, "cargo")
-
-	for _, s := range []string{
-		"rustup default stable",
-		"cargo install --locked cargo-zigbuild",
-	} {
-		args := strings.Fields(s)
-		_, err := exec.Command(args[0], args[1:]...).CombinedOutput()
-		require.NoError(t, err)
-	}
-
+	testlib.CheckPath(t, "bun")
 	modTime := time.Now().AddDate(-1, 0, 0).Round(time.Second).UTC()
 	dist := t.TempDir()
 	ctx := testctx.NewWithCfg(config.Project{
@@ -78,22 +93,18 @@ func TestBuild(t *testing.T) {
 				ID:           "default",
 				Dir:          "./testdata/proj/",
 				ModTimestamp: fmt.Sprintf("%d", modTime.Unix()),
-				BuildDetails: config.BuildDetails{
-					Flags: []string{"--locked", "--release"},
-				},
 			},
 		},
 	})
 	build, err := Default.WithDefaults(ctx.Config.Builds[0])
 	require.NoError(t, err)
-	require.NoError(t, Default.Prepare(ctx, build))
 
 	options := api.Options{
 		Name:   "proj",
-		Path:   filepath.Join(dist, "proj-aarch64-apple-darwin", "proj"),
+		Path:   filepath.Join(dist, "proj-darwin-arm64", "proj"),
 		Target: nil,
 	}
-	options.Target, err = Default.Parse("aarch64-apple-darwin")
+	options.Target, err = Default.Parse("darwin-arm64")
 	require.NoError(t, err)
 
 	require.NoError(t, Default.Build(ctx, build, options))
@@ -107,11 +118,11 @@ func TestBuild(t *testing.T) {
 		Path:   filepath.ToSlash(options.Path),
 		Goos:   "darwin",
 		Goarch: "arm64",
-		Target: "aarch64-apple-darwin",
+		Target: "bun-darwin-arm64",
 		Type:   artifact.Binary,
 		Extra: artifact.Extras{
 			artifact.ExtraBinary:  "proj",
-			artifact.ExtraBuilder: "rust",
+			artifact.ExtraBuilder: "bun",
 			artifact.ExtraExt:     "",
 			artifact.ExtraID:      "default",
 		},
@@ -120,51 +131,30 @@ func TestBuild(t *testing.T) {
 	require.FileExists(t, bin.Path)
 	fi, err := os.Stat(bin.Path)
 	require.NoError(t, err)
-	require.True(t, modTime.Equal(fi.ModTime()), "inconsistent mod times found when specifying ModTimestamp")
+	require.True(t, modTime.Equal(fi.ModTime()))
 }
 
-func TestParse(t *testing.T) {
-	t.Run("invalid", func(t *testing.T) {
-		_, err := Default.Parse("a-b")
-		require.Error(t, err)
-	})
-
-	t.Run("triplet", func(t *testing.T) {
-		target, err := Default.Parse("aarch64-apple-darwin")
-		require.NoError(t, err)
-		require.Equal(t, Target{
-			Target: "aarch64-apple-darwin",
-			Os:     "darwin",
-			Arch:   "arm64",
-			Vendor: "apple",
-		}, target)
-	})
-
-	t.Run("quadruplet", func(t *testing.T) {
-		target, err := Default.Parse("aarch64-pc-windows-gnullvm")
-		require.NoError(t, err)
-		require.Equal(t, Target{
-			Target:      "aarch64-pc-windows-gnullvm",
-			Os:          "windows",
-			Arch:        "arm64",
-			Vendor:      "pc",
-			Environment: "gnullvm",
-		}, target)
-	})
-}
-
-func TestIsSettingPackage(t *testing.T) {
-	for name, tt := range map[string]struct {
-		flags  []string
-		expect bool
-	}{
-		"not set":   {[]string{"--release", "--something-else", "--in-the-p=middle", "--something"}, false},
-		"-p":        {[]string{"--release", "-p=foo", "--something"}, true},
-		"--package": {[]string{"--release", "--package=foo", "--something"}, true},
+func TestIsValid(t *testing.T) {
+	for _, target := range []string{
+		"darwin-arm64",
+		"darwin-x64",
+		"linux-arm64",
+		"linux-x64",
+		"linux-x64-baseline",
+		"linux-x64-modern",
+		"windows-x64",
+		"windows-x64-baseline",
+		"windows-x64-modern",
 	} {
-		t.Run(name, func(t *testing.T) {
-			got := isSettingPackage(tt.flags)
-			require.Equal(t, tt.expect, got)
+		t.Run(target, func(t *testing.T) {
+			require.True(t, isValid(target))
+		})
+		t.Run(target, func(t *testing.T) {
+			require.True(t, isValid("bun-"+target))
 		})
 	}
+
+	t.Run("invalid", func(t *testing.T) {
+		require.False(t, isValid("bun-foo-bar"))
+	})
 }

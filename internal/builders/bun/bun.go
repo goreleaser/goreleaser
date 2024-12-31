@@ -43,49 +43,6 @@ func (b *Builder) Dependencies() []string {
 	return []string{"bun"}
 }
 
-// Target represents a build target.
-type Target struct {
-	Target string
-	Os     string
-	Arch   string
-	Type   string
-}
-
-// Fields implements build.Target.
-func (t Target) Fields() map[string]string {
-	return map[string]string{
-		tmpl.KeyOS:   t.Os,
-		tmpl.KeyArch: t.Arch,
-		"Type":       t.Type,
-	}
-}
-
-// String implements fmt.Stringer.
-func (t Target) String() string {
-	return t.Target
-}
-
-// Parse implements build.Builder.
-func (b *Builder) Parse(target string) (api.Target, error) {
-	target = strings.TrimPrefix(target, "bun-")
-	parts := strings.Split(target, "-")
-	if len(parts) < 2 {
-		return nil, fmt.Errorf("%s is not a valid build target", target)
-	}
-
-	t := Target{
-		Target: "bun-" + target,
-		Os:     parts[0],
-		Arch:   parts[1],
-	}
-
-	if len(parts) > 2 {
-		t.Type = parts[2]
-	}
-
-	return t, nil
-}
-
 var once sync.Once
 
 // WithDefaults implements build.Builder.
@@ -95,13 +52,7 @@ func (b *Builder) WithDefaults(build config.Build) (config.Build, error) {
 	})
 
 	if len(build.Targets) == 0 {
-		build.Targets = []string{
-			"linux-x64-modern",
-			"linux-arm64",
-			"darwin-x64",
-			"darwin-arm64",
-			"windows-x64-modern",
-		}
+		build.Targets = defaultTargets()
 	}
 
 	if build.Tool == "" {
@@ -116,6 +67,10 @@ func (b *Builder) WithDefaults(build config.Build) (config.Build, error) {
 		build.Dir = "."
 	}
 
+	if len(build.Flags) == 0 {
+		build.Flags = []string{"--compile"}
+	}
+
 	if build.Main != "" {
 		return build, errors.New("main is not used for bun")
 	}
@@ -124,16 +79,13 @@ func (b *Builder) WithDefaults(build config.Build) (config.Build, error) {
 		return build, err
 	}
 
-	return build, nil
-}
-
-func toGoarch(s string) string {
-	switch s {
-	case "x64":
-		return "amd64"
-	default:
-		return s
+	for _, t := range build.Targets {
+		if !isValid(t) {
+			return build, fmt.Errorf("invalid target: %s", t)
+		}
 	}
+
+	return build, nil
 }
 
 // Build implements build.Builder.
@@ -144,7 +96,7 @@ func (b *Builder) Build(ctx *context.Context, build config.Build, options api.Op
 		Path:   options.Path,
 		Name:   options.Name,
 		Goos:   t.Os,
-		Goarch: toGoarch(t.Arch),
+		Goarch: convertToGoarch(t.Arch),
 		Target: t.Target,
 		Extra: map[string]interface{}{
 			artifact.ExtraBinary:  strings.TrimSuffix(filepath.Base(options.Path), options.Ext),
@@ -167,16 +119,14 @@ func (b *Builder) Build(ctx *context.Context, build config.Build, options api.Op
 		return err
 	}
 
-	command := []string{
-		bun,
-		build.Command,
-		"--compile",
-		"--target",
-		t.Target,
-		"--outfile",
-		options.Path,
-		build.Dir,
-	}
+	command := []string{bun, build.Command}
+	command = append(command, build.Flags...)
+	command = append(
+		command,
+		"--target", t.Target,
+		"--outfile", options.Path,
+		".",
+	)
 
 	tenv, err := common.TemplateEnv(build, tpl)
 	if err != nil {

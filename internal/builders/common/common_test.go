@@ -79,7 +79,7 @@ func TestValidateNonGoConfig(t *testing.T) {
 
 func TestChTimes(t *testing.T) {
 	t.Run("valid", func(t *testing.T) {
-		modTime := time.Now().AddDate(-1, 0, 0).Round(1 * time.Second).UTC()
+		modTime := time.Now().AddDate(-1, 0, 0).Round(time.Second).UTC()
 		name := filepath.Join(t.TempDir(), "file")
 		require.NoError(t, os.WriteFile(name, []byte("foo"), 0o644))
 		build := config.Build{
@@ -130,16 +130,26 @@ func TestTemplateEnv(t *testing.T) {
 			Env: []string{
 				"FOO={{.Env.FU}}",
 				"BAR={{.Env.FOO}}_{{.Env.FU}}",
+				`OS={{- if eq .Os "windows" -}}
+					w
+				{{- else if eq .Os "darwin" -}}
+					d
+				{{- else if eq .Os "linux" -}}
+					l
+				{{- end -}}`,
 			},
 		},
 	}
-	tpl := tmpl.New(testctx.New()).SetEnv("FU=foobar")
+	tpl := tmpl.New(testctx.New()).SetEnv("FU=foobar").WithArtifact(&artifact.Artifact{
+		Goos: "linux",
+	})
 
 	got, err := TemplateEnv(build, tpl)
 	require.NoError(t, err)
 	require.Equal(t, []string{
 		"FOO=foobar",
 		"BAR=foobar_foobar",
+		"OS=l",
 	}, got)
 }
 

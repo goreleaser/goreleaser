@@ -48,6 +48,9 @@
               cosign
               gnupg
               nix-prefetch
+              rustup
+              zig
+              bun
             ]
             ++ (lib.optionals pkgs.stdenv.isLinux [
               snapcraft

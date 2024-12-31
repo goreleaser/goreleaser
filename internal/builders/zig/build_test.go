@@ -77,77 +77,24 @@ func TestWithDefaults(t *testing.T) {
 		}, build)
 	})
 
-	t.Run("invalid", func(t *testing.T) {
-		cases := map[string]config.Build{
-			"main": {
-				Main: "a",
-			},
-			"ldflags": {
-				BuildDetails: config.BuildDetails{
-					Ldflags: []string{"-a"},
-				},
-			},
-			"goos": {
-				Goos: []string{"a"},
-			},
-			"goarch": {
-				Goarch: []string{"a"},
-			},
-			"goamd64": {
-				Goamd64: []string{"a"},
-			},
-			"go386": {
-				Go386: []string{"a"},
-			},
-			"goarm": {
-				Goarm: []string{"a"},
-			},
-			"goarm64": {
-				Goarm64: []string{"a"},
-			},
-			"gomips": {
-				Gomips: []string{"a"},
-			},
-			"goppc64": {
-				Goppc64: []string{"a"},
-			},
-			"goriscv64": {
-				Goriscv64: []string{"a"},
-			},
-			"ignore": {
-				Ignore: []config.IgnoredBuild{{}},
-			},
-			"overrides": {
-				BuildDetailsOverrides: []config.BuildDetailsOverride{{}},
-			},
-			"buildmode": {
-				BuildDetails: config.BuildDetails{
-					Buildmode: "a",
-				},
-			},
-			"tags": {
-				BuildDetails: config.BuildDetails{
-					Tags: []string{"a"},
-				},
-			},
-			"asmflags": {
-				BuildDetails: config.BuildDetails{
-					Asmflags: []string{"a"},
-				},
-			},
-		}
-		for k, v := range cases {
-			t.Run(k, func(t *testing.T) {
-				_, err := Default.WithDefaults(v)
-				require.Error(t, err)
-			})
-		}
+	t.Run("invalid target", func(t *testing.T) {
+		_, err := Default.WithDefaults(config.Build{
+			Targets: []string{"a-b"},
+		})
+		require.Error(t, err)
+	})
+
+	t.Run("invalid config option", func(t *testing.T) {
+		_, err := Default.WithDefaults(config.Build{
+			Main: "something",
+		})
+		require.Error(t, err)
 	})
 }
 
 func TestBuild(t *testing.T) {
 	testlib.CheckPath(t, "zig")
-	modTime := time.Now().AddDate(-1, 0, 0).Round(1 * time.Second).UTC()
+	modTime := time.Now().AddDate(-1, 0, 0).Round(time.Second).UTC()
 	dist := t.TempDir()
 	ctx := testctx.NewWithCfg(config.Project{
 		Dist:        dist,
