@@ -1,6 +1,7 @@
 package rust
 
 import (
+	"errors"
 	"fmt"
 	"os"
 	"os/exec"
@@ -106,6 +107,10 @@ func (b *Builder) WithDefaults(build config.Build) (config.Build, error) {
 
 	if build.Dir == "" {
 		build.Dir = "."
+	}
+
+	if build.Main != "" {
+		return build, errors.New("main is not used for rust")
 	}
 
 	if err := common.ValidateNonGoConfig(build); err != nil {

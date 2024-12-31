@@ -1,7 +1,6 @@
 package bun
 
 import (
-	"errors"
 	"fmt"
 	"path/filepath"
 	"strings"
@@ -10,6 +9,7 @@ import (
 	"github.com/caarlos0/log"
 	"github.com/goreleaser/goreleaser/v2/internal/artifact"
 	"github.com/goreleaser/goreleaser/v2/internal/builders/common"
+	"github.com/goreleaser/goreleaser/v2/internal/packagejson"
 	"github.com/goreleaser/goreleaser/v2/internal/tmpl"
 	api "github.com/goreleaser/goreleaser/v2/pkg/build"
 	"github.com/goreleaser/goreleaser/v2/pkg/config"
@@ -71,8 +71,13 @@ func (b *Builder) WithDefaults(build config.Build) (config.Build, error) {
 		build.Flags = []string{"--compile"}
 	}
 
-	if build.Main != "" {
-		return build, errors.New("main is not used for bun")
+	if build.Main == "" {
+		build.Main = "."
+		if pkg, err := packagejson.Open(
+			filepath.Join(build.Dir, "package.json"),
+		); err == nil && pkg.Module != "" {
+			build.Main = pkg.Module
+		}
 	}
 
 	if err := common.ValidateNonGoConfig(build); err != nil {
@@ -125,7 +130,7 @@ func (b *Builder) Build(ctx *context.Context, build config.Build, options api.Op
 		command,
 		"--target", t.Target,
 		"--outfile", options.Path,
-		".",
+		build.Main,
 	)
 
 	tenv, err := common.TemplateEnv(build, tpl)

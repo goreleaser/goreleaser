@@ -41,6 +41,11 @@ builds:
     # Default: '.'.
     dir: my-app
 
+    # Main entry point.
+    #
+    # Default: extracted from package.json or `.`.
+    main: "file.ts"
+
     # Set a specific bun binary to use when building.
     # It is safe to ignore this option in most cases.
     #
@@ -56,7 +61,7 @@ builds:
     # Custom flags.
     #
     # Templates: allowed.
-    # Default: "".
+    # Default: ["--compile"].
     flags:
       - --minify
 

@@ -59,6 +59,7 @@ func TestWithDefaults(t *testing.T) {
 			Tool:    "bun",
 			Command: "build",
 			Dir:     ".",
+			Main:    ".",
 			Targets: defaultTargets(),
 			BuildDetails: config.BuildDetails{
 				Flags: []string{"--compile"},
@@ -69,13 +70,6 @@ func TestWithDefaults(t *testing.T) {
 	t.Run("invalid target", func(t *testing.T) {
 		_, err := Default.WithDefaults(config.Build{
 			Targets: []string{"a-b"},
-		})
-		require.Error(t, err)
-	})
-
-	t.Run("invalid config option", func(t *testing.T) {
-		_, err := Default.WithDefaults(config.Build{
-			Main: "something",
 		})
 		require.Error(t, err)
 	})

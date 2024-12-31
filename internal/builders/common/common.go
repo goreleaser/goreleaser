@@ -54,10 +54,6 @@ func ValidateNonGoConfig(build config.Build) error {
 		return errors.New("overrides is not used for " + build.Builder)
 	}
 
-	if build.Main != "" {
-		return errors.New("main is not used for " + build.Builder)
-	}
-
 	return nil
 }
 
