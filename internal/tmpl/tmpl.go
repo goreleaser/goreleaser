@@ -151,6 +151,16 @@ func New(ctx *context.Context) *Template {
 	}
 }
 
+func (t *Template) SetEnv(single string) *Template {
+	k, v, ok := strings.Cut(env, "=")
+	if !ok || k == "" {
+		return t
+	}
+	tt := t.copying()
+	tt.fields[k] = v
+	return tt
+}
+
 // WithExtraFields allows to add new more custom fields to the template.
 // It will override fields with the same name.
 func (t *Template) WithExtraFields(f Fields) *Template {

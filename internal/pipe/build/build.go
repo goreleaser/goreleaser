@@ -21,6 +21,7 @@ import (
 	"github.com/goreleaser/goreleaser/v2/pkg/context"
 
 	// langs to init.
+	_ "github.com/goreleaser/goreleaser/v2/internal/builders/bun"
 	_ "github.com/goreleaser/goreleaser/v2/internal/builders/golang"
 	_ "github.com/goreleaser/goreleaser/v2/internal/builders/rust"
 	_ "github.com/goreleaser/goreleaser/v2/internal/builders/zig"
