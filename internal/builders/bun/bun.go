@@ -44,6 +44,7 @@ type Target struct {
 	Target string
 	Os     string
 	Arch   string
+	Type   string
 }
 
 // Fields implements build.Target.
@@ -51,6 +52,7 @@ func (t Target) Fields() map[string]string {
 	return map[string]string{
 		tmpl.KeyOS:   t.Os,
 		tmpl.KeyArch: t.Arch,
+		"Type":       t.Type,
 	}
 }
 
@@ -67,12 +69,17 @@ func (b *Builder) Parse(target string) (api.Target, error) {
 		return nil, fmt.Errorf("%s is not a valid build target", target)
 	}
 
-	// TODO: handle -modern and -baseline
-	return Target{
+	t := Target{
 		Target: "bun-" + target,
 		Os:     parts[0],
 		Arch:   parts[1],
-	}, nil
+	}
+
+	if len(parts) > 2 {
+		t.Type = parts[2]
+	}
+
+	return t, nil
 }
 
 var once sync.Once
@@ -85,11 +92,11 @@ func (b *Builder) WithDefaults(build config.Build) (config.Build, error) {
 
 	if len(build.Targets) == 0 {
 		build.Targets = []string{
-			"linux-x64",
+			"linux-x64-modern",
 			"linux-arm64",
 			"darwin-x64",
 			"darwin-arm64",
-			"windows-x86",
+			"windows-x64-modern",
 		}
 	}
 
@@ -105,7 +112,7 @@ func (b *Builder) WithDefaults(build config.Build) (config.Build, error) {
 		build.Dir = "."
 	}
 
-	if build.Main == "" {
+	if build.Main != "" {
 		return build, errors.New("main is not used for bun")
 	}
 
