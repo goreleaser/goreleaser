@@ -151,13 +151,18 @@ func New(ctx *context.Context) *Template {
 	}
 }
 
+// SetEnv adds a single environment variable into the template env.
 func (t *Template) SetEnv(single string) *Template {
-	k, v, ok := strings.Cut(env, "=")
+	k, v, ok := strings.Cut(single, "=")
 	if !ok || k == "" {
 		return t
 	}
+	// TODO: handle delete?
 	tt := t.copying()
-	tt.fields[k] = v
+	envs := tt.fields[env].(context.Env)
+	envs[k] = v
+	tt.fields[env] = envs
+	fmt.Println("AQUI", tt.fields[env])
 	return tt
 }
 
