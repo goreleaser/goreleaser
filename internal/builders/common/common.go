@@ -57,6 +57,8 @@ func ValidateNonGoConfig(build config.Build) error {
 	return nil
 }
 
+// ChTimes sets the mod time for the artifact path, if a mod timestamp is set
+// in the build.
 func ChTimes(build config.Build, tpl *tmpl.Template, a *artifact.Artifact) error {
 	modTimestamp, err := tpl.Apply(build.ModTimestamp)
 	if err != nil {
@@ -71,6 +73,7 @@ func ChTimes(build config.Build, tpl *tmpl.Template, a *artifact.Artifact) error
 	return nil
 }
 
+// TemplateEnv templates the build.Env and returns it.
 func TemplateEnv(build config.Build, tpl *tmpl.Template) ([]string, error) {
 	var env []string
 	for _, e := range build.Env {
@@ -87,6 +90,8 @@ func TemplateEnv(build config.Build, tpl *tmpl.Template) ([]string, error) {
 	return env, nil
 }
 
+// Exec executes the given command with the given env in the given dir,
+// handling output and errors.
 func Exec(ctx context.Context, command []string, env []string, dir string) error {
 	/* #nosec */
 	cmd := exec.CommandContext(ctx, command[0], command[1:]...)
