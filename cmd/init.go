@@ -45,9 +45,9 @@ func newInitCmd() *initCmd {
 				log.Info("project contains a " + codeStyle.Render("Cargo.toml") + " file, using default rust configuration")
 				return
 			}
-			if _, err := os.Stat("bun.lockdb"); err == nil {
+			if _, err := os.Stat("bun.lockb"); err == nil {
 				root.lang = "bun"
-				log.Info("project contains a " + codeStyle.Render("bun.lockdb") + " file, using default bun configuration")
+				log.Info("project contains a " + codeStyle.Render("bun.lockb") + " file, using default bun configuration")
 				return
 			}
 		},

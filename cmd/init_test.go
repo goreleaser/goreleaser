@@ -40,7 +40,7 @@ func TestInitSpecifyLanguage(t *testing.T) {
 
 func TestInitBunInferred(t *testing.T) {
 	folder := setupInitTest(t)
-	require.NoError(t, os.WriteFile(filepath.Join(folder, "bun.lockdb"), []byte("\n"), 0o644))
+	require.NoError(t, os.WriteFile(filepath.Join(folder, "bun.lockb"), []byte("\n"), 0o644))
 
 	cmd := newInitCmd().cmd
 	config := "bunreleaser.yaml"
