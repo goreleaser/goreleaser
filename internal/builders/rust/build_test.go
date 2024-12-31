@@ -111,9 +111,13 @@ func TestWithDefaults(t *testing.T) {
 func TestBuild(t *testing.T) {
 	testlib.CheckPath(t, "rustup")
 	testlib.CheckPath(t, "cargo")
+	proj := testlib.Mktmp(t)
+	_, err := exec.Command("cargo", "init", "--bin", "--name=proj").CombinedOutput()
+	require.NoError(t, err)
 
 	for _, s := range []string{
 		"rustup default stable",
+		"cargo update",
 		"cargo install --locked cargo-zigbuild",
 	} {
 		args := strings.Fields(s)
@@ -122,7 +126,7 @@ func TestBuild(t *testing.T) {
 	}
 
 	modTime := time.Now().AddDate(-1, 0, 0).Round(1 * time.Second).UTC()
-	dist := t.TempDir()
+	dist := filepath.Join(proj, "dist")
 	ctx := testctx.NewWithCfg(config.Project{
 		Dist:        dist,
 		ProjectName: "proj",
@@ -132,7 +136,7 @@ func TestBuild(t *testing.T) {
 		Builds: []config.Build{
 			{
 				ID:           "default",
-				Dir:          "./testdata/proj/",
+				Dir:          ".",
 				ModTimestamp: fmt.Sprintf("%d", modTime.Unix()),
 				BuildDetails: config.BuildDetails{
 					Flags: []string{"--locked", "--release"},

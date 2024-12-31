@@ -3,6 +3,7 @@ package zig
 import (
 	"fmt"
 	"os"
+	"os/exec"
 	"path/filepath"
 	"testing"
 	"time"
@@ -147,8 +148,17 @@ func TestWithDefaults(t *testing.T) {
 
 func TestBuild(t *testing.T) {
 	testlib.CheckPath(t, "zig")
+
+	proj := testlib.Mktmp(t)
+	proj = filepath.Join(proj, "proj")
+	require.NoError(t, os.MkdirAll(proj, 0o755))
+	cmd := exec.Command("zig", "init")
+	cmd.Dir = proj
+	_, err := cmd.CombinedOutput()
+	require.NoError(t, err)
+
 	modTime := time.Now().AddDate(-1, 0, 0).Round(1 * time.Second).UTC()
-	dist := t.TempDir()
+	dist := filepath.Join(proj, "dist")
 	ctx := testctx.NewWithCfg(config.Project{
 		Dist:        dist,
 		ProjectName: "proj",
@@ -158,7 +168,7 @@ func TestBuild(t *testing.T) {
 		Builds: []config.Build{
 			{
 				ID:           "default",
-				Dir:          "./testdata/proj/",
+				Dir:          "./proj/",
 				ModTimestamp: fmt.Sprintf("%d", modTime.Unix()),
 				BuildDetails: config.BuildDetails{
 					Flags: []string{"-Doptimize={{.Env.OPTIM}}"},
@@ -204,5 +214,5 @@ func TestBuild(t *testing.T) {
 	require.FileExists(t, bin.Path)
 	fi, err := os.Stat(bin.Path)
 	require.NoError(t, err)
-	require.True(t, modTime.Equal(fi.ModTime()), "inconsistent mod times found when specifying ModTimestamp")
+	require.True(t, modTime.Equal(fi.ModTime()))
 }
