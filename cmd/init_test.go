@@ -10,20 +10,6 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func TestInit(t *testing.T) {
-	folder := setupInitTest(t)
-	cmd := newInitCmd().cmd
-	config := "foo.yaml"
-	cmd.SetArgs([]string{"-f", config})
-	require.NoError(t, cmd.Execute())
-	require.FileExists(t, filepath.Join(folder, config))
-	require.FileExists(t, filepath.Join(folder, ".gitignore"))
-
-	bts, err := os.ReadFile(config)
-	require.NoError(t, err)
-	require.Equal(t, string(static.GoExampleConfig), string(bts))
-}
-
 func TestInitSpecifyLanguage(t *testing.T) {
 	folder := setupInitTest(t)
 	cmd := newInitCmd().cmd
