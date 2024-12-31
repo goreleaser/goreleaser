@@ -27,7 +27,7 @@ func TestRunWithError(t *testing.T) {
 }
 
 func TestRun(t *testing.T) {
-	modTime := time.Now().AddDate(-1, 0, 0).Round(1 * time.Second).UTC()
+	modTime := time.Now().AddDate(-1, 0, 0).Round(time.Second).UTC()
 
 	getCtx := func(tmp string) *context.Context {
 		ctx := testctx.NewWithCfg(
