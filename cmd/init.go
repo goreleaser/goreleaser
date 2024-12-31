@@ -45,6 +45,11 @@ func newInitCmd() *initCmd {
 				log.Info("project contains a " + codeStyle.Render("Cargo.toml") + " file, using default rust configuration")
 				return
 			}
+			if _, err := os.Stat("bun.lockdb"); err == nil {
+				root.lang = "bun"
+				log.Info("project contains a " + codeStyle.Render("bun.lockdb") + " file, using default bun configuration")
+				return
+			}
 		},
 		RunE: func(_ *cobra.Command, _ []string) error {
 			if _, err := os.Stat(root.config); err == nil {
@@ -69,6 +74,8 @@ func newInitCmd() *initCmd {
 				gitignoreLines = append(gitignoreLines, ".intentionally-empty-file.o", "target/")
 			case "go":
 				example = static.GoExampleConfig
+			case "bun":
+				example = static.BunExampleConfig
 			default:
 				return fmt.Errorf("invalid language: %s", root.lang)
 			}
@@ -105,7 +112,7 @@ func newInitCmd() *initCmd {
 	_ = cmd.RegisterFlagCompletionFunc(
 		"language",
 		cobra.FixedCompletions(
-			[]string{"go", "rust", "zig"},
+			[]string{"go", "bun", "rust", "zig"},
 			cobra.ShellCompDirectiveDefault,
 		),
 	)

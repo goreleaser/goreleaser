@@ -1,6 +1,6 @@
 # Builds (Rust)
 
-<!-- md:version v2.5-unreleased -->
+<!-- md:version v2.5 -->
 
 <!-- md:alpha -->
 

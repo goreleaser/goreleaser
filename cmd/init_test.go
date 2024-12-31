@@ -2,7 +2,6 @@ package cmd
 
 import (
 	"os"
-	"os/exec"
 	"path/filepath"
 	"testing"
 
@@ -39,12 +38,41 @@ func TestInitSpecifyLanguage(t *testing.T) {
 	require.Equal(t, string(static.ZigExampleConfig), string(bts))
 }
 
-func TestInitZigInferred(t *testing.T) {
-	testlib.CheckPath(t, "zig")
+func TestInitBunInferred(t *testing.T) {
 	folder := setupInitTest(t)
+	require.NoError(t, os.WriteFile(filepath.Join(folder, "bun.lockdb"), []byte("\n"), 0o644))
 
-	_, err := exec.Command("zig", "init").CombinedOutput()
+	cmd := newInitCmd().cmd
+	config := "bunreleaser.yaml"
+	cmd.SetArgs([]string{"-f", config})
+	require.NoError(t, cmd.Execute())
+	require.FileExists(t, filepath.Join(folder, config))
+	require.FileExists(t, filepath.Join(folder, ".gitignore"))
+
+	bts, err := os.ReadFile(config)
 	require.NoError(t, err)
+	require.Equal(t, string(static.BunExampleConfig), string(bts))
+}
+
+func TestInitRustInferred(t *testing.T) {
+	folder := setupInitTest(t)
+	require.NoError(t, os.WriteFile(filepath.Join(folder, "Cargo.toml"), []byte("\n"), 0o644))
+
+	cmd := newInitCmd().cmd
+	config := "rustreleaser.yaml"
+	cmd.SetArgs([]string{"-f", config})
+	require.NoError(t, cmd.Execute())
+	require.FileExists(t, filepath.Join(folder, config))
+	require.FileExists(t, filepath.Join(folder, ".gitignore"))
+
+	bts, err := os.ReadFile(config)
+	require.NoError(t, err)
+	require.Equal(t, string(static.RustExampleConfig), string(bts))
+}
+
+func TestInitZigInferred(t *testing.T) {
+	folder := setupInitTest(t)
+	require.NoError(t, os.WriteFile(filepath.Join(folder, "build.zig"), []byte("\n"), 0o644))
 
 	cmd := newInitCmd().cmd
 	config := "zigreleaser.yaml"

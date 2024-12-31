@@ -1,6 +1,6 @@
 # Arch User Repositories (Sources)
 
-<!-- md:version v2.5-unreleased -->
+<!-- md:version v2.5 -->
 
 After releasing to GitHub, GitLab, or Gitea, GoReleaser can generate and publish
 a `PKGBUILD` to an _Arch User Repository_ based on sources.

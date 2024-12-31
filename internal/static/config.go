@@ -13,6 +13,11 @@ var GoExampleConfig []byte
 //go:embed config.zig.yaml
 var ZigExampleConfig []byte
 
+// BunExampleConfig is the config used within goreleaser init --lang bun.
+//
+//go:embed config.bun.yaml
+var BunExampleConfig []byte
+
 // RustExampleConfig is the config used within goreleaser init --lang rust.
 //
 //go:embed config.rust.yaml

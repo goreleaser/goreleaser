@@ -162,7 +162,6 @@ func (t *Template) SetEnv(single string) *Template {
 	envs := tt.fields[env].(context.Env)
 	envs[k] = v
 	tt.fields[env] = envs
-	fmt.Println("AQUI", tt.fields[env])
 	return tt
 }
 

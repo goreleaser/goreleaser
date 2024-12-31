@@ -127,6 +127,15 @@ func (b *Builder) WithDefaults(build config.Build) (config.Build, error) {
 	return build, nil
 }
 
+func toGoarch(s string) string {
+	switch s {
+	case "x64":
+		return "amd64"
+	default:
+		return s
+	}
+}
+
 // Build implements build.Builder.
 func (b *Builder) Build(ctx *context.Context, build config.Build, options api.Options) error {
 	t := options.Target.(Target)
@@ -135,7 +144,7 @@ func (b *Builder) Build(ctx *context.Context, build config.Build, options api.Op
 		Path:   options.Path,
 		Name:   options.Name,
 		Goos:   t.Os,
-		Goarch: t.Arch,
+		Goarch: toGoarch(t.Arch),
 		Target: t.Target,
 		Extra: map[string]interface{}{
 			artifact.ExtraBinary:  strings.TrimSuffix(filepath.Base(options.Path), options.Ext),
