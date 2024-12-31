@@ -7,6 +7,7 @@ import (
 	"strings"
 
 	"github.com/caarlos0/log"
+	"github.com/goreleaser/goreleaser/v2/internal/packagejson"
 	"github.com/goreleaser/goreleaser/v2/internal/static"
 	"github.com/spf13/cobra"
 )
@@ -33,23 +34,7 @@ func newInitCmd() *initCmd {
 			if cmd.Flags().Lookup("language").Changed {
 				return
 			}
-
-			// try to figure out which kind of project is this...
-			if _, err := os.Stat("build.zig"); err == nil {
-				root.lang = "zig"
-				log.Info("project contains a " + codeStyle.Render("build.zig") + " file, using default zig configuration")
-				return
-			}
-			if _, err := os.Stat("Cargo.toml"); err == nil {
-				root.lang = "rust"
-				log.Info("project contains a " + codeStyle.Render("Cargo.toml") + " file, using default rust configuration")
-				return
-			}
-			if _, err := os.Stat("bun.lockb"); err == nil {
-				root.lang = "bun"
-				log.Info("project contains a " + codeStyle.Render("bun.lockb") + " file, using default bun configuration")
-				return
-			}
+			root.lang = langDetect()
 		},
 		RunE: func(_ *cobra.Command, _ []string) error {
 			if _, err := os.Stat(root.config); err == nil {
@@ -141,4 +126,28 @@ func setupGitignore(path string, lines []string) (bool, error) {
 		}
 	}
 	return modified, nil
+}
+
+func langDetect() string {
+	code := func(s string) string {
+		return codeStyle.Render(s)
+	}
+	for lang, file := range map[string]string{
+		"zig":  "build.zig",
+		"rust": "Cargo.toml",
+		"bun":  "bun.lockb",
+	} {
+		if _, err := os.Stat(file); err == nil {
+			log.Info("project contains a " + code(file) + " file, using default " + code(lang) + " configuration")
+			return lang
+		}
+	}
+
+	file := "package.json"
+	if pkg, err := packagejson.Open(file); err == nil && pkg.IsBun() {
+		log.Info("project contains a " + code(file) + " with " + code("@types/bun") + " in its " + code("devDependencies") + ", using default " + code("bun") + " configuration")
+		return "bun"
+	}
+
+	return "go"
 }
