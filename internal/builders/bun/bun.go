@@ -22,8 +22,9 @@ import (
 var Default = &Builder{}
 
 var (
-	_ api.Builder          = &Builder{}
-	_ api.DependingBuilder = &Builder{}
+	_ api.Builder           = &Builder{}
+	_ api.DependingBuilder  = &Builder{}
+	_ api.ConcurrentBuilder = &Builder{}
 )
 
 //nolint:gochecknoinits
@@ -33,6 +34,9 @@ func init() {
 
 // Builder is bun builder.
 type Builder struct{}
+
+// AllowConcurrentBuilds implements build.ConcurrentBuilder.
+func (b *Builder) AllowConcurrentBuilds() bool { return false }
 
 // Dependencies implements build.DependingBuilder.
 func (b *Builder) Dependencies() []string {
