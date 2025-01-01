@@ -217,7 +217,7 @@ func TestBuild(t *testing.T) {
 			artifact.ExtraExt:     "",
 			artifact.ExtraID:      "default",
 		},
-	}, *bin, "optionspath: %s", options.Path)
+	}, *bin)
 
 	require.FileExists(t, bin.Path)
 	fi, err := os.Stat(bin.Path)
