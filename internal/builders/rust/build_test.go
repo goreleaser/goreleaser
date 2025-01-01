@@ -111,7 +111,7 @@ func TestWithDefaults(t *testing.T) {
 func TestBuild(t *testing.T) {
 	testlib.CheckPath(t, "rustup")
 	testlib.CheckPath(t, "cargo")
-	proj := testlib.Mktmp(t)
+	folder := testlib.Mktmp(t)
 	_, err := exec.Command("cargo", "init", "--bin", "--name=proj").CombinedOutput()
 	require.NoError(t, err)
 
@@ -126,9 +126,8 @@ func TestBuild(t *testing.T) {
 	}
 
 	modTime := time.Now().AddDate(-1, 0, 0).Round(1 * time.Second).UTC()
-	dist := filepath.Join(proj, "dist")
 	ctx := testctx.NewWithCfg(config.Project{
-		Dist:        dist,
+		Dist:        "dist",
 		ProjectName: "proj",
 		Env: []string{
 			`TEST_E=1`,
@@ -159,7 +158,7 @@ func TestBuild(t *testing.T) {
 
 	options := api.Options{
 		Name:   "proj",
-		Path:   filepath.Join(dist, "proj-aarch64-apple-darwin", "proj"),
+		Path:   filepath.Join("dist", "proj-aarch64-apple-darwin", "proj"),
 		Target: nil,
 	}
 	options.Target, err = Default.Parse("aarch64-apple-darwin")
@@ -167,7 +166,16 @@ func TestBuild(t *testing.T) {
 
 	require.NoError(t, Default.Build(ctx, build, options))
 
-	bins := ctx.Artifacts.List()
+	list := ctx.Artifacts
+	require.NoError(t, list.Visit(func(a *artifact.Artifact) error {
+		s, err := filepath.Rel(folder, a.Path)
+		if err == nil {
+			a.Path = s
+		}
+		return nil
+	}))
+
+	bins := list.List()
 	require.Len(t, bins, 1)
 
 	bin := bins[0]

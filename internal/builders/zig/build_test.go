@@ -149,18 +149,17 @@ func TestWithDefaults(t *testing.T) {
 func TestBuild(t *testing.T) {
 	testlib.CheckPath(t, "zig")
 
-	proj := testlib.Mktmp(t)
-	proj = filepath.Join(proj, "proj")
-	require.NoError(t, os.MkdirAll(proj, 0o755))
+	folder := testlib.Mktmp(t)
+	folder = filepath.Join(folder, "proj")
+	require.NoError(t, os.MkdirAll(folder, 0o755))
 	cmd := exec.Command("zig", "init")
-	cmd.Dir = proj
+	cmd.Dir = folder
 	_, err := cmd.CombinedOutput()
 	require.NoError(t, err)
 
 	modTime := time.Now().AddDate(-1, 0, 0).Round(1 * time.Second).UTC()
-	dist := filepath.Join(proj, "dist")
 	ctx := testctx.NewWithCfg(config.Project{
-		Dist:        dist,
+		Dist:        "dist",
 		ProjectName: "proj",
 		Env: []string{
 			"OPTIMIZE_FOR=ReleaseSmall",
@@ -184,7 +183,7 @@ func TestBuild(t *testing.T) {
 
 	options := api.Options{
 		Name:   "proj",
-		Path:   filepath.Join(dist, "proj-aarch64-macos", "proj"),
+		Path:   filepath.Join("dist", "proj-aarch64-macos", "proj"),
 		Target: nil,
 	}
 	options.Target, err = Default.Parse("aarch64-macos")
@@ -192,7 +191,16 @@ func TestBuild(t *testing.T) {
 
 	require.NoError(t, Default.Build(ctx, build, options))
 
-	bins := ctx.Artifacts.List()
+	list := ctx.Artifacts
+	require.NoError(t, list.Visit(func(a *artifact.Artifact) error {
+		s, err := filepath.Rel(folder, a.Path)
+		if err == nil {
+			a.Path = s
+		}
+		return nil
+	}))
+
+	bins := list.List()
 	require.Len(t, bins, 1)
 
 	bin := bins[0]
