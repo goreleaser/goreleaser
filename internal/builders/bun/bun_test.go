@@ -78,14 +78,13 @@ func TestWithDefaults(t *testing.T) {
 
 func TestBuild(t *testing.T) {
 	testlib.CheckPath(t, "bun")
-	testlib.Mktmp(t)
+	folder := testlib.Mktmp(t)
 	_, err := exec.Command("bun", "init", "--yes").CombinedOutput()
 	require.NoError(t, err)
 
 	modTime := time.Now().AddDate(-1, 0, 0).Round(time.Second).UTC()
-	dist := t.TempDir()
 	ctx := testctx.NewWithCfg(config.Project{
-		Dist:        dist,
+		Dist:        "dist",
 		ProjectName: "proj",
 		Builds: []config.Build{
 			{
@@ -100,7 +99,7 @@ func TestBuild(t *testing.T) {
 
 	options := api.Options{
 		Name:   "proj",
-		Path:   filepath.Join(dist, "proj-darwin-arm64", "proj"),
+		Path:   filepath.Join("dist", "proj-darwin-arm64", "proj"),
 		Target: nil,
 	}
 	options.Target, err = Default.Parse("darwin-arm64")
@@ -108,7 +107,16 @@ func TestBuild(t *testing.T) {
 
 	require.NoError(t, Default.Build(ctx, build, options))
 
-	bins := ctx.Artifacts.List()
+	list := ctx.Artifacts
+	require.NoError(t, list.Visit(func(a *artifact.Artifact) error {
+		s, err := filepath.Rel(folder, a.Path)
+		if err == nil {
+			a.Path = s
+		}
+		return nil
+	}))
+
+	bins := list.List()
 	require.Len(t, bins, 1)
 
 	bin := bins[0]
