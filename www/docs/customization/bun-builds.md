@@ -1,4 +1,4 @@
-# Builds (Zig)
+# Builds (Bun)
 
 <!-- md:version v2.6-unreleased -->
 
