@@ -176,6 +176,7 @@ tasks:
     vars:
       NEXT:
         sh: svu n
+    prompt: "This will release {{.NEXT}}. Continue?"
     cmds:
       - git tag -d nightly
       - git tag {{.NEXT}}
