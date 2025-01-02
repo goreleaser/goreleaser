@@ -425,10 +425,6 @@ release:
     {{ end }}
 
 announce:
-  twitter:
-    enabled: false
-    message_template: "GoReleaser {{ .Tag }} is out! Check it out: https://github.com/goreleaser/goreleaser/releases/tag/{{ .Tag }}"
-
   mastodon:
     enabled: true
     message_template: "#GoReleaser {{ .Tag }} is out! Check it out: https://github.com/goreleaser/goreleaser/releases/tag/{{ .Tag }}"
