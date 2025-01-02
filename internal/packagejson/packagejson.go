@@ -11,7 +11,7 @@ type Package struct {
 	Module string `json:"module"`
 	Type   string `json:"type"`
 
-	DevDependencies map[string]string `json:"devDependencies"`
+	DevDependencies map[string]string `json:"devDependencies"` //nolint:tagliatelle
 }
 
 func (p Package) IsBun() bool {
