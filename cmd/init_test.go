@@ -30,6 +30,7 @@ func TestDetectLanguage(t *testing.T) {
 		Expect []byte
 	}{
 		"zig":  {"build.zig", static.ZigExampleConfig},
+		"bun":  {"bun.lockb", static.BunExampleConfig},
 		"rust": {"Cargo.toml", static.RustExampleConfig},
 		"go":   {"go.mod", static.GoExampleConfig}, // the file isn't actually used though, go is the default
 	} {
@@ -49,6 +50,26 @@ func TestDetectLanguage(t *testing.T) {
 			require.Equal(t, string(expect.Expect), string(bts))
 		})
 	}
+}
+
+func TestDetectLanguagePackageJSON(t *testing.T) {
+	folder := setupInitTest(t)
+	require.NoError(t, os.WriteFile(
+		filepath.Join(folder, "package.json"),
+		[]byte(`{"devDependencies": {"@types/bun": "1.0.0"}}`),
+		0o644,
+	))
+
+	cmd := newInitCmd().cmd
+	config := "bunreleaser.yaml"
+	cmd.SetArgs([]string{"-f", config})
+	require.NoError(t, cmd.Execute())
+	require.FileExists(t, filepath.Join(folder, config))
+	require.FileExists(t, filepath.Join(folder, ".gitignore"))
+
+	bts, err := os.ReadFile(config)
+	require.NoError(t, err)
+	require.Equal(t, string(static.BunExampleConfig), string(bts))
 }
 
 func TestInitConfigAlreadyExist(t *testing.T) {

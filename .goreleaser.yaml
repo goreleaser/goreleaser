@@ -230,6 +230,8 @@ brews:
         type: optional
       - name: zig
         type: optional
+      - name: bun
+        type: optional
       - name: git
     conflicts:
       - goreleaser-pro
@@ -351,6 +353,7 @@ nfpms:
       - golang
       - rustup
       - zig
+      - bun
     deb:
       lintian_overrides:
         - statically-linked-binary

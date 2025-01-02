@@ -1,9 +1,7 @@
-package zig
+package bun
 
 import (
-	"errors"
 	"fmt"
-	"os"
 	"path/filepath"
 	"strings"
 	"sync"
@@ -11,7 +9,7 @@ import (
 	"github.com/caarlos0/log"
 	"github.com/goreleaser/goreleaser/v2/internal/artifact"
 	"github.com/goreleaser/goreleaser/v2/internal/builders/common"
-	"github.com/goreleaser/goreleaser/v2/internal/gio"
+	"github.com/goreleaser/goreleaser/v2/internal/packagejson"
 	"github.com/goreleaser/goreleaser/v2/internal/tmpl"
 	api "github.com/goreleaser/goreleaser/v2/pkg/build"
 	"github.com/goreleaser/goreleaser/v2/pkg/config"
@@ -23,43 +21,26 @@ import (
 //nolint:gochecknoglobals
 var Default = &Builder{}
 
-// type constraints
 var (
-	_ api.Builder          = &Builder{}
-	_ api.DependingBuilder = &Builder{}
+	_ api.Builder           = &Builder{}
+	_ api.DependingBuilder  = &Builder{}
+	_ api.ConcurrentBuilder = &Builder{}
 )
 
 //nolint:gochecknoinits
 func init() {
-	api.Register("zig", Default)
+	api.Register("bun", Default)
 }
 
-// Builder is golang builder.
+// Builder is bun builder.
 type Builder struct{}
+
+// AllowConcurrentBuilds implements build.ConcurrentBuilder.
+func (b *Builder) AllowConcurrentBuilds() bool { return false }
 
 // Dependencies implements build.DependingBuilder.
 func (b *Builder) Dependencies() []string {
-	return []string{"zig"}
-}
-
-// Parse implements build.Builder.
-func (b *Builder) Parse(target string) (api.Target, error) {
-	parts := strings.Split(target, "-")
-	if len(parts) < 2 {
-		return nil, fmt.Errorf("%s is not a valid build target", target)
-	}
-
-	t := Target{
-		Target: target,
-		Os:     convertToGoos(parts[1]),
-		Arch:   convertToGoarch(parts[0]),
-	}
-
-	if len(parts) > 2 {
-		t.Abi = parts[2]
-	}
-
-	return t, nil
+	return []string{"bun"}
 }
 
 var once sync.Once
@@ -67,7 +48,7 @@ var once sync.Once
 // WithDefaults implements build.Builder.
 func (b *Builder) WithDefaults(build config.Build) (config.Build, error) {
 	once.Do(func() {
-		log.Warn("you are using the experimental Zig builder")
+		log.Warn("you are using the experimental Bun builder")
 	})
 
 	if len(build.Targets) == 0 {
@@ -75,7 +56,7 @@ func (b *Builder) WithDefaults(build config.Build) (config.Build, error) {
 	}
 
 	if build.Tool == "" {
-		build.Tool = "zig"
+		build.Tool = "bun"
 	}
 
 	if build.Command == "" {
@@ -87,11 +68,16 @@ func (b *Builder) WithDefaults(build config.Build) (config.Build, error) {
 	}
 
 	if len(build.Flags) == 0 {
-		build.Flags = []string{"-Doptimize=ReleaseSafe"}
+		build.Flags = []string{"--compile"}
 	}
 
-	if build.Main != "" {
-		return build, errors.New("main is not used for zig")
+	if build.Main == "" {
+		build.Main = "."
+		if pkg, err := packagejson.Open(
+			filepath.Join(build.Dir, "package.json"),
+		); err == nil && pkg.Module != "" {
+			build.Main = pkg.Module
+		}
 	}
 
 	if err := common.ValidateNonGoConfig(build); err != nil {
@@ -99,12 +85,7 @@ func (b *Builder) WithDefaults(build config.Build) (config.Build, error) {
 	}
 
 	for _, t := range build.Targets {
-		switch checkTarget(t) {
-		case targetValid:
-			// lfg
-		case targetBroken:
-			log.Warnf("target might not be supported: %s", t)
-		case targetInvalid:
+		if !isValid(t) {
 			return build, fmt.Errorf("invalid target: %s", t)
 		}
 	}
@@ -119,14 +100,14 @@ func (b *Builder) Build(ctx *context.Context, build config.Build, options api.Op
 		Type:   artifact.Binary,
 		Path:   options.Path,
 		Name:   options.Name,
-		Goos:   convertToGoos(t.Os),
+		Goos:   t.Os,
 		Goarch: convertToGoarch(t.Arch),
 		Target: t.Target,
 		Extra: map[string]interface{}{
 			artifact.ExtraBinary:  strings.TrimSuffix(filepath.Base(options.Path), options.Ext),
 			artifact.ExtraExt:     options.Ext,
 			artifact.ExtraID:      build.ID,
-			artifact.ExtraBuilder: "zig",
+			artifact.ExtraBuilder: "bun",
 		},
 	}
 
@@ -138,18 +119,19 @@ func (b *Builder) Build(ctx *context.Context, build config.Build, options api.Op
 		WithEnvS(env).
 		WithArtifact(a)
 
-	zigbin, err := tpl.Apply(build.Tool)
+	bun, err := tpl.Apply(build.Tool)
 	if err != nil {
 		return err
 	}
 
-	prefix := filepath.Join("zig-out", t.Target)
-	command := []string{
-		zigbin,
-		build.Command,
-		"-Dtarget=" + t.Target,
-		"-p", prefix,
-	}
+	command := []string{bun, build.Command}
+	command = append(command, build.Flags...)
+	command = append(
+		command,
+		"--target", t.Target,
+		"--outfile", options.Path,
+		build.Main,
+	)
 
 	tenv, err := common.TemplateEnv(build, tpl)
 	if err != nil {
@@ -164,14 +146,6 @@ func (b *Builder) Build(ctx *context.Context, build config.Build, options api.Op
 	command = append(command, flags...)
 
 	if err := common.Exec(ctx, command, env, build.Dir); err != nil {
-		return err
-	}
-
-	if err := os.MkdirAll(filepath.Dir(options.Path), 0o755); err != nil {
-		return err
-	}
-	realPath := filepath.Join(build.Dir, prefix, "bin", options.Name)
-	if err := gio.Copy(realPath, options.Path); err != nil {
 		return err
 	}
 

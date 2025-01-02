@@ -7,6 +7,7 @@ import (
 	"strings"
 
 	"github.com/caarlos0/log"
+	"github.com/goreleaser/goreleaser/v2/internal/packagejson"
 	"github.com/goreleaser/goreleaser/v2/internal/static"
 	"github.com/spf13/cobra"
 )
@@ -58,6 +59,8 @@ func newInitCmd() *initCmd {
 				gitignoreLines = append(gitignoreLines, ".intentionally-empty-file.o", "target/")
 			case "go":
 				example = static.GoExampleConfig
+			case "bun":
+				example = static.BunExampleConfig
 			default:
 				return fmt.Errorf("invalid language: %s", root.lang)
 			}
@@ -94,7 +97,7 @@ func newInitCmd() *initCmd {
 	_ = cmd.RegisterFlagCompletionFunc(
 		"language",
 		cobra.FixedCompletions(
-			[]string{"go", "rust", "zig"},
+			[]string{"go", "bun", "rust", "zig"},
 			cobra.ShellCompDirectiveDefault,
 		),
 	)
@@ -132,11 +135,18 @@ func langDetect() string {
 	for lang, file := range map[string]string{
 		"zig":  "build.zig",
 		"rust": "Cargo.toml",
+		"bun":  "bun.lockb",
 	} {
 		if _, err := os.Stat(file); err == nil {
 			log.Info("project contains a " + code(file) + " file, using default " + code(lang) + " configuration")
 			return lang
 		}
+	}
+
+	file := "package.json"
+	if pkg, err := packagejson.Open(file); err == nil && pkg.IsBun() {
+		log.Info("project contains a " + code(file) + " with " + code("@types/bun") + " in its " + code("devDependencies") + ", using default " + code("bun") + " configuration")
+		return "bun"
 	}
 
 	return "go"

@@ -1,4 +1,4 @@
-package zig
+package bun
 
 import (
 	"fmt"
@@ -22,31 +22,20 @@ func TestDependencies(t *testing.T) {
 
 func TestParse(t *testing.T) {
 	for target, dst := range map[string]Target{
-		"x86_64-linux": {
-			Target: "x86_64-linux",
+		"linux-x64-modern": {
+			Target: "bun-linux-x64-modern",
 			Os:     "linux",
-			Arch:   "amd64",
+			Arch:   "x64",
+			Type:   "modern",
 		},
-		"x86_64-linux-gnu": {
-			Target: "x86_64-linux-gnu",
-			Os:     "linux",
-			Arch:   "amd64",
-			Abi:    "gnu",
-		},
-		"aarch64-linux-gnu": {
-			Target: "aarch64-linux-gnu",
-			Os:     "linux",
-			Arch:   "arm64",
-			Abi:    "gnu",
-		},
-		"aarch64-linux": {
-			Target: "aarch64-linux",
-			Os:     "linux",
-			Arch:   "arm64",
-		},
-		"aarch64-macos": {
-			Target: "aarch64-macos",
+		"darwin-arm64": {
+			Target: "bun-darwin-arm64",
 			Os:     "darwin",
+			Arch:   "arm64",
+		},
+		"bun-linux-arm64": {
+			Target: "bun-linux-arm64",
+			Os:     "linux",
 			Arch:   "arm64",
 		},
 	} {
@@ -68,12 +57,13 @@ func TestWithDefaults(t *testing.T) {
 		build, err := Default.WithDefaults(config.Build{})
 		require.NoError(t, err)
 		require.Equal(t, config.Build{
-			Tool:    "zig",
+			Tool:    "bun",
 			Command: "build",
 			Dir:     ".",
+			Main:    ".",
 			Targets: defaultTargets(),
 			BuildDetails: config.BuildDetails{
-				Flags: []string{"-Doptimize=ReleaseSafe"},
+				Flags: []string{"--compile"},
 			},
 		}, build)
 	})
@@ -84,44 +74,23 @@ func TestWithDefaults(t *testing.T) {
 		})
 		require.Error(t, err)
 	})
-
-	t.Run("invalid config option", func(t *testing.T) {
-		_, err := Default.WithDefaults(config.Build{
-			Main: "something",
-		})
-		require.Error(t, err)
-	})
 }
 
 func TestBuild(t *testing.T) {
-	testlib.CheckPath(t, "zig")
-
+	testlib.CheckPath(t, "bun")
 	folder := testlib.Mktmp(t)
-	folder = filepath.Join(folder, "proj")
-	require.NoError(t, os.MkdirAll(folder, 0o755))
-	cmd := exec.Command("zig", "init")
-	cmd.Dir = folder
-	_, err := cmd.CombinedOutput()
+	_, err := exec.Command("bun", "init", "--yes").CombinedOutput()
 	require.NoError(t, err)
 
 	modTime := time.Now().AddDate(-1, 0, 0).Round(time.Second).UTC()
 	ctx := testctx.NewWithCfg(config.Project{
 		Dist:        "dist",
 		ProjectName: "proj",
-		Env: []string{
-			"OPTIMIZE_FOR=ReleaseSmall",
-		},
 		Builds: []config.Build{
 			{
 				ID:           "default",
-				Dir:          "./proj/",
+				Dir:          ".",
 				ModTimestamp: fmt.Sprintf("%d", modTime.Unix()),
-				BuildDetails: config.BuildDetails{
-					Flags: []string{"-Doptimize={{.Env.OPTIM}}"},
-					Env: []string{
-						"OPTIM={{.Env.OPTIMIZE_FOR}}",
-					},
-				},
 			},
 		},
 	})
@@ -130,10 +99,10 @@ func TestBuild(t *testing.T) {
 
 	options := api.Options{
 		Name:   "proj",
-		Path:   filepath.Join("dist", "proj-aarch64-macos", "proj"),
+		Path:   filepath.Join("dist", "proj-darwin-arm64", "proj"),
 		Target: nil,
 	}
-	options.Target, err = Default.Parse("aarch64-macos")
+	options.Target, err = Default.Parse("darwin-arm64")
 	require.NoError(t, err)
 
 	require.NoError(t, Default.Build(ctx, build, options))
@@ -156,11 +125,11 @@ func TestBuild(t *testing.T) {
 		Path:   filepath.ToSlash(options.Path),
 		Goos:   "darwin",
 		Goarch: "arm64",
-		Target: "aarch64-macos",
+		Target: "bun-darwin-arm64",
 		Type:   artifact.Binary,
 		Extra: artifact.Extras{
 			artifact.ExtraBinary:  "proj",
-			artifact.ExtraBuilder: "zig",
+			artifact.ExtraBuilder: "bun",
 			artifact.ExtraExt:     "",
 			artifact.ExtraID:      "default",
 		},
@@ -170,4 +139,29 @@ func TestBuild(t *testing.T) {
 	fi, err := os.Stat(bin.Path)
 	require.NoError(t, err)
 	require.True(t, modTime.Equal(fi.ModTime()))
+}
+
+func TestIsValid(t *testing.T) {
+	for _, target := range []string{
+		"darwin-arm64",
+		"darwin-x64",
+		"linux-arm64",
+		"linux-x64",
+		"linux-x64-baseline",
+		"linux-x64-modern",
+		"windows-x64",
+		"windows-x64-baseline",
+		"windows-x64-modern",
+	} {
+		t.Run(target, func(t *testing.T) {
+			require.True(t, isValid(target))
+		})
+		t.Run(target, func(t *testing.T) {
+			require.True(t, isValid("bun-"+target))
+		})
+	}
+
+	t.Run("invalid", func(t *testing.T) {
+		require.False(t, isValid("bun-foo-bar"))
+	})
 }
