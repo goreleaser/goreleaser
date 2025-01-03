@@ -43,18 +43,22 @@ func TestAnnounceMissingEnv(t *testing.T) {
 
 func TestSkip(t *testing.T) {
 	t.Run("skip", func(t *testing.T) {
-		require.True(t, bluesky.Pipe{}.Skip(testctx.New()))
+		skip, err := bluesky.Pipe{}.Skip(testctx.New())
+		require.NoError(t, err)
+		require.True(t, skip)
 	})
 
 	t.Run("dont skip", func(t *testing.T) {
 		ctx := testctx.NewWithCfg(config.Project{
 			Announce: config.Announce{
 				Bluesky: config.Bluesky{
-					Enabled: true,
+					Enabled: "true",
 				},
 			},
 		})
-		require.False(t, bluesky.Pipe{}.Skip(ctx))
+		skip, err := bluesky.Pipe{}.Skip(ctx)
+		require.NoError(t, err)
+		require.False(t, skip)
 	})
 }
 
@@ -66,7 +70,7 @@ func TestLive(t *testing.T) {
 		Announce: config.Announce{
 			Bluesky: config.Bluesky{
 				MessageTemplate: "This is a sample announcement from the forthcoming {{ .ProjectName }} Bluesky support. View the details at {{ .ReleaseURL }}",
-				Enabled:         true,
+				Enabled:         "true",
 				Username:        "caarlos0.dev",
 			},
 		},

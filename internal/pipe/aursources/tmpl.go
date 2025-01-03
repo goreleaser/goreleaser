@@ -66,7 +66,7 @@ backup=({{ pkgArray . }})
 {{- with .Sources }}
 source=("${pkgname}_${pkgver}.{{ .Format }}::{{ .DownloadURL }}")
 sha256sums=('{{ .SHA256 }}')
-{{- end }}
+{{ end }}
 
 {{-  with .Prepare -}}
 prepare() {

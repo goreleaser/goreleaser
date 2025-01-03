@@ -541,7 +541,7 @@ type Build struct {
 	Main            string          `yaml:"main,omitempty" json:"main,omitempty"`
 	Binary          string          `yaml:"binary,omitempty" json:"binary,omitempty"`
 	Hooks           BuildHookConfig `yaml:"hooks,omitempty" json:"hooks,omitempty"`
-	Builder         string          `yaml:"builder,omitempty" json:"builder,omitempty" jsonschema:"enum=,enum=go,enum=rust,enum=zig"`
+	Builder         string          `yaml:"builder,omitempty" json:"builder,omitempty" jsonschema:"enum=,enum=go,enum=rust,enum=zig,enum=bun"`
 	ModTimestamp    string          `yaml:"mod_timestamp,omitempty" json:"mod_timestamp,omitempty"`
 	Skip            string          `yaml:"skip,omitempty" json:"skip,omitempty" jsonschema:"oneof_type=string;boolean"`
 	GoBinary        string          `yaml:"gobinary,omitempty" json:"gobinary,omitempty"` // Deprecated: use [ToolBinary].
@@ -1363,7 +1363,7 @@ type Announce struct {
 }
 
 type Webhook struct {
-	Enabled             bool              `yaml:"enabled,omitempty" json:"enabled,omitempty"`
+	Enabled             string            `yaml:"enabled,omitempty" json:"enabled,omitempty" jsonschema:"oneof_type=string;boolean"`
 	SkipTLSVerify       bool              `yaml:"skip_tls_verify,omitempty" json:"skip_tls_verify,omitempty"`
 	MessageTemplate     string            `yaml:"message_template,omitempty" json:"message_template,omitempty"`
 	EndpointURL         string            `yaml:"endpoint_url,omitempty" json:"endpoint_url,omitempty"`
@@ -1373,18 +1373,18 @@ type Webhook struct {
 }
 
 type Twitter struct {
-	Enabled         bool   `yaml:"enabled,omitempty" json:"enabled,omitempty"`
+	Enabled         string `yaml:"enabled,omitempty" json:"enabled,omitempty" jsonschema:"oneof_type=string;boolean"`
 	MessageTemplate string `yaml:"message_template,omitempty" json:"message_template,omitempty"`
 }
 
 type Mastodon struct {
-	Enabled         bool   `yaml:"enabled,omitempty" json:"enabled,omitempty"`
+	Enabled         string `yaml:"enabled,omitempty" json:"enabled,omitempty" jsonschema:"oneof_type=string;boolean"`
 	MessageTemplate string `yaml:"message_template,omitempty" json:"message_template,omitempty"`
 	Server          string `yaml:"server" json:"server"`
 }
 
 type Reddit struct {
-	Enabled       bool   `yaml:"enabled,omitempty" json:"enabled,omitempty"`
+	Enabled       string `yaml:"enabled,omitempty" json:"enabled,omitempty" jsonschema:"oneof_type=string;boolean"`
 	ApplicationID string `yaml:"application_id,omitempty" json:"application_id,omitempty"`
 	Username      string `yaml:"username,omitempty" json:"username,omitempty"`
 	TitleTemplate string `yaml:"title_template,omitempty" json:"title_template,omitempty"`
@@ -1393,7 +1393,7 @@ type Reddit struct {
 }
 
 type Slack struct {
-	Enabled         bool              `yaml:"enabled,omitempty" json:"enabled,omitempty"`
+	Enabled         string            `yaml:"enabled,omitempty" json:"enabled,omitempty" jsonschema:"oneof_type=string;boolean"`
 	MessageTemplate string            `yaml:"message_template,omitempty" json:"message_template,omitempty"`
 	Channel         string            `yaml:"channel,omitempty" json:"channel,omitempty"`
 	Username        string            `yaml:"username,omitempty" json:"username,omitempty"`
@@ -1404,7 +1404,7 @@ type Slack struct {
 }
 
 type Discord struct {
-	Enabled         bool   `yaml:"enabled,omitempty" json:"enabled,omitempty"`
+	Enabled         string `yaml:"enabled,omitempty" json:"enabled,omitempty" jsonschema:"oneof_type=string;boolean"`
 	MessageTemplate string `yaml:"message_template,omitempty" json:"message_template,omitempty"`
 	Author          string `yaml:"author,omitempty" json:"author,omitempty"`
 	Color           string `yaml:"color,omitempty" json:"color,omitempty"`
@@ -1412,7 +1412,7 @@ type Discord struct {
 }
 
 type Teams struct {
-	Enabled         bool   `yaml:"enabled,omitempty" json:"enabled,omitempty"`
+	Enabled         string `yaml:"enabled,omitempty" json:"enabled,omitempty" jsonschema:"oneof_type=string;boolean"`
 	TitleTemplate   string `yaml:"title_template,omitempty" json:"title_template,omitempty"`
 	MessageTemplate string `yaml:"message_template,omitempty" json:"message_template,omitempty"`
 	Color           string `yaml:"color,omitempty" json:"color,omitempty"`
@@ -1420,7 +1420,7 @@ type Teams struct {
 }
 
 type Mattermost struct {
-	Enabled         bool   `yaml:"enabled,omitempty" json:"enabled,omitempty"`
+	Enabled         string `yaml:"enabled,omitempty" json:"enabled,omitempty" jsonschema:"oneof_type=string;boolean"`
 	MessageTemplate string `yaml:"message_template,omitempty" json:"message_template,omitempty"`
 	TitleTemplate   string `yaml:"title_template,omitempty" json:"title_template,omitempty"`
 	Color           string `yaml:"color,omitempty" json:"color,omitempty"`
@@ -1431,7 +1431,7 @@ type Mattermost struct {
 }
 
 type SMTP struct {
-	Enabled            bool     `yaml:"enabled,omitempty" json:"enabled,omitempty"`
+	Enabled            string   `yaml:"enabled,omitempty" json:"enabled,omitempty" jsonschema:"oneof_type=string;boolean"`
 	Host               string   `yaml:"host,omitempty" json:"host,omitempty"`
 	Port               int      `yaml:"port,omitempty" json:"port,omitempty"`
 	Username           string   `yaml:"username,omitempty" json:"username,omitempty"`
@@ -1443,19 +1443,19 @@ type SMTP struct {
 }
 
 type LinkedIn struct {
-	Enabled         bool   `yaml:"enabled,omitempty" json:"enabled,omitempty"`
+	Enabled         string `yaml:"enabled,omitempty" json:"enabled,omitempty" jsonschema:"oneof_type=string;boolean"`
 	MessageTemplate string `yaml:"message_template,omitempty" json:"message_template,omitempty"`
 }
 
 type Telegram struct {
-	Enabled         bool   `yaml:"enabled,omitempty" json:"enabled,omitempty"`
+	Enabled         string `yaml:"enabled,omitempty" json:"enabled,omitempty" jsonschema:"oneof_type=string;boolean"`
 	MessageTemplate string `yaml:"message_template,omitempty" json:"message_template,omitempty"`
 	ChatID          string `yaml:"chat_id,omitempty" json:"chat_id,omitempty" jsonschema:"oneof_type=string;integer"`
 	ParseMode       string `yaml:"parse_mode,omitempty" json:"parse_mode,omitempty" jsonschema:"enum=MarkdownV2,enum=HTML,default=MarkdownV2"`
 }
 
 type OpenCollective struct {
-	Enabled         bool   `yaml:"enabled,omitempty" json:"enabled,omitempty"`
+	Enabled         string `yaml:"enabled,omitempty" json:"enabled,omitempty" jsonschema:"oneof_type=string;boolean"`
 	Slug            string `yaml:"slug,omitempty" json:"slug,omitempty"`
 	TitleTemplate   string `yaml:"title_template,omitempty" json:"title_template,omitempty"`
 	MessageTemplate string `yaml:"message_template,omitempty" json:"message_template,omitempty"`
@@ -1463,7 +1463,7 @@ type OpenCollective struct {
 
 // Bluesky represents the data required to announce to the Bluesky social network
 type Bluesky struct {
-	Enabled         bool   `yaml:"enabled,omitempty" json:"enabled,omitempty"`
+	Enabled         string `yaml:"enabled,omitempty" json:"enabled,omitempty" jsonschema:"oneof_type=string;boolean"`
 	Username        string `yaml:"username,omitempty" json:"username,omitempty"`
 	MessageTemplate string `yaml:"message_template,omitempty" json:"message_template,omitempty"`
 }

@@ -23,8 +23,11 @@ const (
 
 type Pipe struct{}
 
-func (Pipe) String() string                 { return "discord" }
-func (Pipe) Skip(ctx *context.Context) bool { return !ctx.Config.Announce.Discord.Enabled }
+func (Pipe) String() string { return "discord" }
+func (Pipe) Skip(ctx *context.Context) (bool, error) {
+	enable, err := tmpl.New(ctx).Bool(ctx.Config.Announce.Discord.Enabled)
+	return !enable, err
+}
 
 type Config struct {
 	API          string `env:"DISCORD_API" envDefault:"https://discord.com/api"`

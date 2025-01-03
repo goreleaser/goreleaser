@@ -18,7 +18,8 @@ makedepends=('git')
 optdepends=('nfpm')
 backup=('/etc/mypkg.conf' '/var/share/mypkg')
 source=("${pkgname}_${pkgver}.tar.gz::https://github.com/caarlos0/test/releases/download/v0.1.3/test_Linux_x86_64.tar.gz")
-sha256sums=('1633f61598ab0791e213135923624eb342196b3494909c91899bcd0560f84c67')prepare() {
+sha256sums=('1633f61598ab0791e213135923624eb342196b3494909c91899bcd0560f84c67')
+prepare() {
   cd "${pkgname}_${pkgver}"
   # download dependencies
   go mod download

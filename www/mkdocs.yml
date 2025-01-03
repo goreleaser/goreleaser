@@ -118,6 +118,7 @@ nav:
           - Split & Merge: customization/partial.md
       - Build:
           - customization/builds.md
+          - customization/bun-builds.md
           - customization/rust-builds.md
           - customization/zig-builds.md
           - customization/prebuilt.md

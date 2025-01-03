@@ -15,6 +15,8 @@ configuration file:
 announce:
   mastodon:
     # Whether its enabled or not.
+    #
+    # Templates: allowed (since v2.6).
     enabled: true
 
     # Message to use while publishing.

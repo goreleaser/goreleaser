@@ -1,0 +1,13 @@
+bun-linux-x64
+bun-linux-x64-modern
+bun-linux-x64-baseline
+bun-linux-arm64
+bun-linux-arm64-modern
+bun-windows-x64
+bun-windows-x64-modern
+bun-windows-x64-baseline
+bun-darwin-x64
+bun-darwin-x64-modern
+bun-darwin-x64-baseline
+bun-darwin-arm64
+bun-darwin-arm64-modern

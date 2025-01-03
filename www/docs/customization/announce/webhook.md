@@ -15,6 +15,8 @@ Add following to your `.goreleaser.yaml` configuration to enable the WebHook fun
 announce:
   webhook:
     # Whether its enabled or not.
+    #
+    # Templates: allowed (since v2.6).
     enabled: true
 
     # Check the certificate of the webhook.

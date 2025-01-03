@@ -4,14 +4,13 @@ import (
 	"errors"
 	"fmt"
 	"os"
-	"os/exec"
 	"path/filepath"
-	"slices"
 	"strings"
 	"sync"
 
 	"github.com/caarlos0/log"
 	"github.com/goreleaser/goreleaser/v2/internal/artifact"
+	"github.com/goreleaser/goreleaser/v2/internal/builders/common"
 	"github.com/goreleaser/goreleaser/v2/internal/gio"
 	"github.com/goreleaser/goreleaser/v2/internal/tmpl"
 	api "github.com/goreleaser/goreleaser/v2/pkg/build"
@@ -95,42 +94,8 @@ func (b *Builder) WithDefaults(build config.Build) (config.Build, error) {
 		return build, errors.New("main is not used for zig")
 	}
 
-	if len(build.Ldflags) > 0 {
-		return build, errors.New("ldflags is not used for zig")
-	}
-
-	if len(slices.Concat(
-		build.Goos,
-		build.Goarch,
-		build.Goamd64,
-		build.Go386,
-		build.Goarm,
-		build.Goarm64,
-		build.Gomips,
-		build.Goppc64,
-		build.Goriscv64,
-	)) > 0 {
-		return build, errors.New("all go* fields are not used for zig, set targets instead")
-	}
-
-	if len(build.Ignore) > 0 {
-		return build, errors.New("ignore is not used for zig, set targets instead")
-	}
-
-	if build.Buildmode != "" {
-		return build, errors.New("buildmode is not used for zig")
-	}
-
-	if len(build.Tags) > 0 {
-		return build, errors.New("tags is not used for zig")
-	}
-
-	if len(build.Asmflags) > 0 {
-		return build, errors.New("asmflags is not used for zig")
-	}
-
-	if len(build.BuildDetailsOverrides) > 0 {
-		return build, errors.New("overrides is not used for zig")
+	if err := common.ValidateNonGoConfig(build); err != nil {
+		return build, err
 	}
 
 	for _, t := range build.Targets {
@@ -186,18 +151,11 @@ func (b *Builder) Build(ctx *context.Context, build config.Build, options api.Op
 		"-p", prefix,
 	}
 
-	for _, e := range build.Env {
-		ee, err := tpl.Apply(e)
-		if err != nil {
-			return err
-		}
-		log.Debugf("env %q evaluated to %q", e, ee)
-		if ee != "" {
-			env = append(env, ee)
-		}
+	tenv, err := common.TemplateEnv(build, tpl)
+	if err != nil {
+		return err
 	}
-
-	tpl = tpl.WithEnvS(env)
+	env = append(env, tenv...)
 
 	flags, err := tpl.Slice(build.Flags, tmpl.NonEmpty())
 	if err != nil {
@@ -205,17 +163,8 @@ func (b *Builder) Build(ctx *context.Context, build config.Build, options api.Op
 	}
 	command = append(command, flags...)
 
-	/* #nosec */
-	cmd := exec.CommandContext(ctx, command[0], command[1:]...)
-	cmd.Env = env
-	cmd.Dir = build.Dir
-	log.Debug("running")
-	out, err := cmd.CombinedOutput()
-	if err != nil {
-		return fmt.Errorf("%w: %s", err, string(out))
-	}
-	if s := string(out); s != "" {
-		log.WithField("cmd", command).Info(s)
+	if err := common.Exec(ctx, command, env, build.Dir); err != nil {
+		return err
 	}
 
 	if err := os.MkdirAll(filepath.Dir(options.Path), 0o755); err != nil {
@@ -226,12 +175,7 @@ func (b *Builder) Build(ctx *context.Context, build config.Build, options api.Op
 		return err
 	}
 
-	// TODO: move this to outside builder for both go and zig
-	modTimestamp, err := tpl.Apply(build.ModTimestamp)
-	if err != nil {
-		return err
-	}
-	if err := gio.Chtimes(a.Path, modTimestamp); err != nil {
+	if err := common.ChTimes(build, tpl, a); err != nil {
 		return err
 	}
 

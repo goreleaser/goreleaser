@@ -197,7 +197,7 @@ func TestRun(t *testing.T) {
 		},
 	})
 
-	modTime := time.Now().AddDate(-1, 0, 0).Round(1 * time.Second).UTC()
+	modTime := time.Now().AddDate(-1, 0, 0).Round(time.Second).UTC()
 	ctx7 := testctx.NewWithCfg(config.Project{
 		Dist: dist,
 		UniversalBinaries: []config.UniversalBinary{

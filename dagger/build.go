@@ -3,7 +3,7 @@ package main
 import (
 	"runtime"
 
-	"github.com/goreleaser/goreleaser/dagger/internal/dagger"
+	"github.com/goreleaser/goreleaser/v2/dagger/internal/dagger"
 )
 
 const (
@@ -36,7 +36,7 @@ func (g *Goreleaser) Base() *dagger.Container {
 	// Base image with Go
 	return dag.Container().
 		From(wolfiBase).
-		WithExec([]string{"apk", "add", "go", "zig"}).
+		WithExec([]string{"apk", "add", "go", "zig", "bun"}).
 		// Mount the Go cache
 		WithMountedCache(
 			"/go",

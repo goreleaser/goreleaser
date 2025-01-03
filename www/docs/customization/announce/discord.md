@@ -13,6 +13,8 @@ After this, you can add following section to your `.goreleaser.yaml` config:
 announce:
   discord:
     # Whether its enabled or not.
+    #
+    # Templates: allowed (since v2.6).
     enabled: true
 
     # Message template to use while publishing.

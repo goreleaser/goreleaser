@@ -2,7 +2,6 @@ package cmd
 
 import (
 	"os"
-	"os/exec"
 	"path/filepath"
 	"testing"
 
@@ -10,20 +9,6 @@ import (
 	"github.com/goreleaser/goreleaser/v2/internal/testlib"
 	"github.com/stretchr/testify/require"
 )
-
-func TestInit(t *testing.T) {
-	folder := setupInitTest(t)
-	cmd := newInitCmd().cmd
-	config := "foo.yaml"
-	cmd.SetArgs([]string{"-f", config})
-	require.NoError(t, cmd.Execute())
-	require.FileExists(t, filepath.Join(folder, config))
-	require.FileExists(t, filepath.Join(folder, ".gitignore"))
-
-	bts, err := os.ReadFile(config)
-	require.NoError(t, err)
-	require.Equal(t, string(static.GoExampleConfig), string(bts))
-}
 
 func TestInitSpecifyLanguage(t *testing.T) {
 	folder := setupInitTest(t)
@@ -39,15 +24,44 @@ func TestInitSpecifyLanguage(t *testing.T) {
 	require.Equal(t, string(static.ZigExampleConfig), string(bts))
 }
 
-func TestInitZigInferred(t *testing.T) {
-	testlib.CheckPath(t, "zig")
-	folder := setupInitTest(t)
+func TestDetectLanguage(t *testing.T) {
+	for lang, expect := range map[string]struct {
+		File   string
+		Expect []byte
+	}{
+		"zig":  {"build.zig", static.ZigExampleConfig},
+		"bun":  {"bun.lockb", static.BunExampleConfig},
+		"rust": {"Cargo.toml", static.RustExampleConfig},
+		"go":   {"go.mod", static.GoExampleConfig}, // the file isn't actually used though, go is the default
+	} {
+		t.Run(expect.File, func(t *testing.T) {
+			folder := setupInitTest(t)
+			require.NoError(t, os.WriteFile(filepath.Join(folder, expect.File), []byte(""), 0o644))
 
-	_, err := exec.Command("zig", "init").CombinedOutput()
-	require.NoError(t, err)
+			cmd := newInitCmd().cmd
+			config := lang + "releaser.yaml"
+			cmd.SetArgs([]string{"-f", config})
+			require.NoError(t, cmd.Execute())
+			require.FileExists(t, filepath.Join(folder, config))
+			require.FileExists(t, filepath.Join(folder, ".gitignore"))
+
+			bts, err := os.ReadFile(config)
+			require.NoError(t, err)
+			require.Equal(t, string(expect.Expect), string(bts))
+		})
+	}
+}
+
+func TestDetectLanguagePackageJSON(t *testing.T) {
+	folder := setupInitTest(t)
+	require.NoError(t, os.WriteFile(
+		filepath.Join(folder, "package.json"),
+		[]byte(`{"devDependencies": {"@types/bun": "1.0.0"}}`),
+		0o644,
+	))
 
 	cmd := newInitCmd().cmd
-	config := "zigreleaser.yaml"
+	config := "bunreleaser.yaml"
 	cmd.SetArgs([]string{"-f", config})
 	require.NoError(t, cmd.Execute())
 	require.FileExists(t, filepath.Join(folder, config))
@@ -55,7 +69,7 @@ func TestInitZigInferred(t *testing.T) {
 
 	bts, err := os.ReadFile(config)
 	require.NoError(t, err)
-	require.Equal(t, string(static.ZigExampleConfig), string(bts))
+	require.Equal(t, string(static.BunExampleConfig), string(bts))
 }
 
 func TestInitConfigAlreadyExist(t *testing.T) {

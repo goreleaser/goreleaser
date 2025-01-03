@@ -12,6 +12,8 @@ After this, you can add following section to your `.goreleaser.yaml` config:
 announce:
   teams:
     # Whether its enabled or not.
+    #
+    # Templates: allowed (since v2.6).
     enabled: true
 
     # Title template to use while publishing.

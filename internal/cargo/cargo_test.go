@@ -13,7 +13,7 @@ func TestParseCargo_name(t *testing.T) {
 }
 
 func TestParseCargo_workspaces(t *testing.T) {
-	cargo, err := Open("./testdata/workplaces.Cargo.toml")
+	cargo, err := Open("./testdata/workspaces.Cargo.toml")
 	require.NoError(t, err)
 	require.Len(t, cargo.Workspace.Members, 2)
 }

@@ -223,6 +223,23 @@ func TestWithEnvS(t *testing.T) {
 	require.Equal(t, "false", out)
 }
 
+func TestSetEnv(t *testing.T) {
+	ctx := testctx.New()
+	tpl := New(ctx).
+		WithEnvS([]string{
+			"FOO=foo",
+		}).
+		SetEnv("BAR=bar").
+		SetEnv("NOVAL=").
+		SetEnv("=NOKEY").
+		SetEnv("=").
+		SetEnv("NOTHING")
+
+	out, err := tpl.Apply("{{ .Env.FOO }}-{{ .Env.BAR }}")
+	require.NoError(t, err)
+	require.Equal(t, "foo-bar", out)
+}
+
 func TestFuncMap(t *testing.T) {
 	ctx := testctx.NewWithCfg(config.Project{
 		ProjectName: "proj",
@@ -324,6 +341,24 @@ func TestFuncMap(t *testing.T) {
 	}
 }
 
+func TestApplyAll(t *testing.T) {
+	tpl := New(testctx.New()).WithEnvS([]string{
+		"FOO=bar",
+	})
+	t.Run("success", func(t *testing.T) {
+		foo := "{{.Env.FOO}}"
+		require.NoError(t, tpl.ApplyAll(&foo))
+		require.Equal(t, "bar", foo)
+	})
+	t.Run("failure", func(t *testing.T) {
+		foo := "{{.Env.FOO}}"
+		bar := "{{.Env.NOPE}}"
+		require.Error(t, tpl.ApplyAll(&foo, &bar))
+		require.Equal(t, "bar", foo)
+		require.Equal(t, "{{.Env.NOPE}}", bar)
+	})
+}
+
 func TestApplySingleEnvOnly(t *testing.T) {
 	ctx := testctx.NewWithCfg(config.Project{
 		Env: []string{
@@ -377,12 +412,22 @@ func TestApplySingleEnvOnly(t *testing.T) {
 			"{{ .ProjectName }}",
 			ExpectedSingleEnvErr{},
 		},
+		{
+			"bad template",
+			"{{ .Env.NOPE }",
+			Error{},
+		},
 	}
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
 			_, err := New(ctx).ApplySingleEnvOnly(tc.tpl)
 			if tc.expectedErr != nil {
 				require.Error(t, err)
+				require.NotEmpty(t, err.Error())
+				eerr, ok := err.(Error)
+				if ok {
+					require.Error(t, eerr.Unwrap())
+				}
 			} else {
 				require.NoError(t, err)
 			}

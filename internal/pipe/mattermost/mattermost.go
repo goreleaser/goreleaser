@@ -23,8 +23,11 @@ const (
 
 type Pipe struct{}
 
-func (Pipe) String() string                 { return "mattermost" }
-func (Pipe) Skip(ctx *context.Context) bool { return !ctx.Config.Announce.Mattermost.Enabled }
+func (Pipe) String() string { return "mattermost" }
+func (Pipe) Skip(ctx *context.Context) (bool, error) {
+	enable, err := tmpl.New(ctx).Bool(ctx.Config.Announce.Mattermost.Enabled)
+	return !enable, err
+}
 
 type Config struct {
 	Webhook string `env:"MATTERMOST_WEBHOOK,notEmpty"`

@@ -230,6 +230,8 @@ brews:
         type: optional
       - name: zig
         type: optional
+      - name: bun
+        type: optional
       - name: git
     conflicts:
       - goreleaser-pro
@@ -357,6 +359,7 @@ nfpms:
       - golang
       - rustup
       - zig
+      - bun
     deb:
       lintian_overrides:
         - statically-linked-binary
@@ -431,10 +434,6 @@ release:
     {{ end }}
 
 announce:
-  twitter:
-    enabled: false
-    message_template: "GoReleaser {{ .Tag }} is out! Check it out: https://github.com/goreleaser/goreleaser/releases/tag/{{ .Tag }}"
-
   mastodon:
     enabled: true
     message_template: "#GoReleaser {{ .Tag }} is out! Check it out: https://github.com/goreleaser/goreleaser/releases/tag/{{ .Tag }}"
