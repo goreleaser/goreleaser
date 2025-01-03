@@ -109,12 +109,12 @@ func (b *Builder) Build(ctx *context.Context, build config.Build, options api.Op
 		WithEnvS(env).
 		WithArtifact(a)
 
-	bun, err := tpl.Apply(build.Tool)
+	deno, err := tpl.Apply(build.Tool)
 	if err != nil {
 		return err
 	}
 
-	command := []string{bun, build.Command}
+	command := []string{deno, build.Command}
 	command = append(command, build.Flags...)
 	command = append(
 		command,
