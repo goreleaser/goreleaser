@@ -4,6 +4,7 @@ import (
 	"os"
 	"path/filepath"
 	"testing"
+	"time"
 
 	"github.com/goreleaser/goreleaser/v2/internal/artifact"
 	"github.com/goreleaser/goreleaser/v2/internal/skips"
@@ -109,6 +110,10 @@ func TestRunPipe(t *testing.T) {
 	libPrefix := `/usr/lib
       {{- if eq .Arch "amd64" }}{{if eq .Format "rpm"}}_rpm{{end}}64{{- end -}}
 	`
+	now := time.Now().Truncate(time.Second).UTC()
+	fileInfo := config.FileInfo{
+		MTime: "{{.CommitDate}}",
+	}
 	ctx := testctx.NewWithCfg(config.Project{
 		ProjectName: "mybin",
 		Dist:        dist,
@@ -131,6 +136,7 @@ func TestRunPipe(t *testing.T) {
 				Vendor:      "asdf",
 				Homepage:    "https://goreleaser.com/{{ .Env.PRO }}",
 				Changelog:   "./testdata/changelog.yaml",
+				MTime:       "{{.CommitDate}}",
 				Libdirs: config.Libdirs{
 					Header:   libPrefix + "/headers",
 					CArchive: libPrefix + "/c-archives",
@@ -153,48 +159,58 @@ func TestRunPipe(t *testing.T) {
 						PreRemove:   "./testdata/pre_remove{{.Env.EXT}}",
 						PostRemove:  "./testdata/post_remove{{.Env.EXT}}",
 					},
-					Contents: []*files.Content{
+					Contents: []config.NFPMContent{
 						{
 							Destination: "/var/log/foobar",
 							Type:        "dir",
+							FileInfo:    fileInfo,
 						},
 						{
 							Source:      "./testdata/testfile.txt",
 							Destination: "/usr/share/testfile.txt",
+							FileInfo:    fileInfo,
 						},
 						{
 							Source:      "./testdata/testfile.txt",
 							Destination: "/etc/nope.conf",
 							Type:        "config",
+							FileInfo:    fileInfo,
 						},
 						{
 							Destination: "/etc/mydir",
 							Type:        "dir",
+							FileInfo:    fileInfo,
 						},
 						{
 							Source:      "./testdata/testfile.txt",
 							Destination: "/etc/nope-rpm.conf",
+							FileInfo:    fileInfo,
 							Type:        "config",
 							Packager:    "rpm",
 						},
 						{
 							Source:      "/etc/nope.conf",
 							Destination: "/etc/nope2.conf",
+							FileInfo:    fileInfo,
 							Type:        "symlink",
 						},
 						{
 							Source:      "./testdata/testfile-{{ .Arch }}{{.Amd64}}{{.Arm}}{{.Mips}}.txt",
 							Destination: "/etc/nope3_{{ .ProjectName }}.conf",
+							FileInfo:    fileInfo,
 						},
 						{
 							Source:      "./testdata/folder",
 							Destination: "/etc/folder",
+							FileInfo:    fileInfo,
 						},
 					},
 				},
 			},
 		},
-	}, testctx.WithVersion("1.0.0"), testctx.WithCurrentTag("v1.0.0"))
+	}, testctx.WithVersion("1.0.0"), testctx.WithCurrentTag("v1.0.0"), func(ctx *context.Context) {
+		ctx.Git.CommitDate = now
+	})
 	for _, goos := range []string{"linux", "darwin", "ios", "android", "aix"} {
 		for _, goarch := range []string{"amd64", "386", "arm64", "arm", "mips", "ppc64"} {
 			if goos == "ios" && goarch != "arm64" {
@@ -429,6 +445,17 @@ func TestRunPipe(t *testing.T) {
 			require.Equal(t, "foo_1.0.0_ios_arm64-10-20"+ext, pkg.Name)
 		}
 		require.Equal(t, "someid", pkg.ID())
+
+		stat, err := os.Stat(pkg.Path)
+		require.NoError(t, err)
+		require.Equal(t, now.UTC(), stat.ModTime().UTC())
+
+		contents := artifact.ExtraOr(*pkg, extraFiles, files.Contents{})
+		for _, src := range contents {
+			require.NotNil(t, src.FileInfo, src.Destination)
+			require.Equal(t, now.UTC(), src.FileInfo.MTime.UTC(), src.Destination)
+		}
+
 		require.ElementsMatch(t, []string{
 			"./testdata/testfile.txt",
 			"./testdata/testfile.txt",
@@ -440,7 +467,7 @@ func TestRunPipe(t *testing.T) {
 			foohPath,
 			fooaPath,
 			foosoPath,
-		}, sources(artifact.ExtraOr(*pkg, extraFiles, files.Contents{})))
+		}, sources(contents))
 
 		bin := "/usr/bin/subdir/"
 		header := "/usr/lib/headers"
@@ -758,7 +785,7 @@ func TestInvalidTemplate(t *testing.T) {
 	t.Run("source", func(t *testing.T) {
 		ctx := makeCtx()
 		ctx.Config.NFPMs[0].NFPMOverridables = config.NFPMOverridables{
-			Contents: files.Contents{
+			Contents: []config.NFPMContent{
 				{
 					Source:      "{{ .NOPE_SOURCE }}",
 					Destination: "/foo",
@@ -771,7 +798,7 @@ func TestInvalidTemplate(t *testing.T) {
 	t.Run("target", func(t *testing.T) {
 		ctx := makeCtx()
 		ctx.Config.NFPMs[0].NFPMOverridables = config.NFPMOverridables{
-			Contents: files.Contents{
+			Contents: []config.NFPMContent{
 				{
 					Source:      "./testdata/testfile.txt",
 					Destination: "{{ .NOPE_TARGET }}",
@@ -836,7 +863,7 @@ func TestRunPipeInvalidContentsSourceTemplate(t *testing.T) {
 			{
 				NFPMOverridables: config.NFPMOverridables{
 					PackageName: "foo",
-					Contents: []*files.Content{
+					Contents: []config.NFPMContent{
 						{
 							Source:      "{{.asdsd}",
 							Destination: "testfile",
@@ -895,7 +922,7 @@ func TestCreateFileDoesntExist(t *testing.T) {
 				Builds:  []string{"default"},
 				NFPMOverridables: config.NFPMOverridables{
 					PackageName: "foo",
-					Contents: []*files.Content{
+					Contents: []config.NFPMContent{
 						{
 							Source:      "testdata/testfile.txt",
 							Destination: "/var/lib/test/testfile.txt",
@@ -1025,7 +1052,7 @@ func TestDebSpecificConfig(t *testing.T) {
 					Maintainer: "foo",
 					NFPMOverridables: config.NFPMOverridables{
 						PackageName: "foo",
-						Contents: []*files.Content{
+						Contents: []config.NFPMContent{
 							{
 								Source:      "testdata/testfile.txt",
 								Destination: "/usr/share/testfile.txt",
@@ -1157,7 +1184,7 @@ func TestRPMSpecificConfig(t *testing.T) {
 				Formats: []string{"rpm"},
 				NFPMOverridables: config.NFPMOverridables{
 					PackageName: "foo",
-					Contents: []*files.Content{
+					Contents: []config.NFPMContent{
 						{
 							Source:      "testdata/testfile.txt",
 							Destination: "/usr/share/testfile.txt",
@@ -1291,7 +1318,7 @@ func TestAPKSpecificConfig(t *testing.T) {
 				Formats:    []string{"apk"},
 				NFPMOverridables: config.NFPMOverridables{
 					PackageName: "foo",
-					Contents: []*files.Content{
+					Contents: []config.NFPMContent{
 						{
 							Source:      "testdata/testfile.txt",
 							Destination: "/usr/share/testfile.txt",
@@ -1368,7 +1395,7 @@ func TestAPKSpecificScriptsConfig(t *testing.T) {
 				Formats:    []string{"apk"},
 				NFPMOverridables: config.NFPMOverridables{
 					PackageName: "foo",
-					Contents: []*files.Content{
+					Contents: []config.NFPMContent{
 						{
 							Source:      "testdata/testfile.txt",
 							Destination: "/usr/share/testfile.txt",
@@ -1437,7 +1464,7 @@ func TestIPKSpecificConfig(t *testing.T) {
 				Formats:    []string{"ipk"},
 				NFPMOverridables: config.NFPMOverridables{
 					PackageName: "foo",
-					Contents: []*files.Content{
+					Contents: []config.NFPMContent{
 						{
 							Source:      "testdata/testfile.txt",
 							Destination: "/usr/share/testfile.txt",
@@ -1538,7 +1565,7 @@ func TestMeta(t *testing.T) {
 					Conflicts:        []string{"git"},
 					Release:          "10",
 					Epoch:            "20",
-					Contents: []*files.Content{
+					Contents: []config.NFPMContent{
 						{
 							Source:      "testdata/testfile.txt",
 							Destination: "/usr/share/testfile.txt",
@@ -1615,7 +1642,7 @@ func TestSkipSign(t *testing.T) {
 				NFPMOverridables: config.NFPMOverridables{
 					PackageName:      "foo",
 					FileNameTemplate: defaultNameTemplate,
-					Contents: []*files.Content{
+					Contents: []config.NFPMContent{
 						{
 							Source:      "testdata/testfile.txt",
 							Destination: "/usr/share/testfile.txt",
