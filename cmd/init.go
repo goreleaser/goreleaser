@@ -61,6 +61,8 @@ func newInitCmd() *initCmd {
 				example = static.GoExampleConfig
 			case "bun":
 				example = static.BunExampleConfig
+			case "deno":
+				example = static.DenoExampleConfig
 			default:
 				return fmt.Errorf("invalid language: %s", root.lang)
 			}
@@ -97,7 +99,7 @@ func newInitCmd() *initCmd {
 	_ = cmd.RegisterFlagCompletionFunc(
 		"language",
 		cobra.FixedCompletions(
-			[]string{"go", "bun", "rust", "zig"},
+			[]string{"go", "bun", "deno", "rust", "zig"},
 			cobra.ShellCompDirectiveDefault,
 		),
 	)
@@ -136,6 +138,7 @@ func langDetect() string {
 		"zig":  "build.zig",
 		"rust": "Cargo.toml",
 		"bun":  "bun.lockb",
+		"deno": "deno.json",
 	} {
 		if _, err := os.Stat(file); err == nil {
 			log.Info("project contains a " + code(file) + " file, using default " + code(lang) + " configuration")
