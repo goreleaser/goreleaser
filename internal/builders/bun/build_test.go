@@ -20,6 +20,10 @@ func TestDependencies(t *testing.T) {
 	require.NotEmpty(t, Default.Dependencies())
 }
 
+func TestAllowConcurrentBuilds(t *testing.T) {
+	require.False(t, Default.AllowConcurrentBuilds())
+}
+
 func TestParse(t *testing.T) {
 	for target, dst := range map[string]Target{
 		"linux-x64-modern": {
