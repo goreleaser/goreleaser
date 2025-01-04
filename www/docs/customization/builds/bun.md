@@ -1,4 +1,4 @@
-# Builds (Bun)
+# Bun
 
 <!-- md:version v2.6-unreleased -->
 
@@ -89,3 +89,5 @@ Modern/Baseline bit as `.Type`.
 [^fail]:
     GoReleaser will error if you try to use them. Give it a try with
     `goreleaser r --snapshot --clean`.
+
+<!-- md:templates -->
