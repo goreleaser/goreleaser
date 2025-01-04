@@ -8,16 +8,20 @@ systems:
 
 <div class="grid cards" markdown>
 
-- [:simple-go: Golang](./builds/go.md)
-- [:simple-rust: Rust](./builds/rust.md)
-- [:simple-zig: Zig](./builds/zig.md)
-- [:simple-bun: Bun](./builds/bun.md)[^soon]
-- [:simple-deno: Deno](./builds/deno.md)[^soon]
-- [:simple-uv: UV](./builds/uv.md)[^soon]
-- [:simple-python: Python](./builds/python.md)[^soon]
-- [:simple-poetry: Poetry](./builds/poetry.md)[^soon]
-- [:material-asterisk: Import from other build systems](./prebuilt.md)
+- :simple-go: [Golang](./go.md)
+- :simple-rust: [Rust](./rust.md)[^v2.5]
+- :simple-zig: [Zig](./zig.md)[^v2.5]
+- :simple-bun: [Bun](./bun.md)[^v2.6]
+- :simple-deno: [Deno](./deno.md)[^v2.6]
+- :simple-python: [Python/Pip](./python.md)[^soon]
+- :simple-uv: [UV](./uv.md)[^soon]
+- :simple-poetry: [Poetry](./poetry.md)[^soon]
+- :material-asterisk: [Import from other build systems](../prebuilt.md)
 
 </div>
 
-[^soon]: Coming soon.
+[^v2.5]: Added in v2.5.
+
+[^v2.6]: Coming in v2.6.
+
+[^soon]: Coming in a future version.
