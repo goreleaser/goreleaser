@@ -1,4 +1,4 @@
-# Builds (Zig)
+# Zig
 
 <!-- md:version v2.5 -->
 
@@ -84,3 +84,5 @@ ABI as `.Abi`.
 [^fail]:
     GoReleaser will error if you try to use them. Give it a try with
     `goreleaser r --snapshot --clean`.
+
+<!-- md:templates -->

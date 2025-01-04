@@ -232,6 +232,8 @@ brews:
         type: optional
       - name: bun
         type: optional
+      - name: deno
+        type: optional
       - name: git
     conflicts:
       - goreleaser-pro
@@ -359,6 +361,7 @@ nfpms:
       - golang
       - rustup
       - zig
+      - deno
       - bun
     deb:
       lintian_overrides:

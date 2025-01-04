@@ -51,6 +51,7 @@
               rustup
               zig
               bun
+              deno
             ]
             ++ (lib.optionals pkgs.stdenv.isLinux [
               snapcraft

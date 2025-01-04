@@ -1,4 +1,4 @@
-# Builds (Rust)
+# Rust
 
 <!-- md:version v2.5 -->
 
@@ -136,3 +136,5 @@ We might improve this in the future.
 [^fail]:
     GoReleaser will error if you try to use them. Give it a try with
     `goreleaser r --snapshot --clean`.
+
+<!-- md:templates -->

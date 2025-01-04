@@ -67,7 +67,10 @@ plugins:
         l.md: https://www.linkedin.com/company/goreleaser/
         m.md: https://fosstodon.org/@goreleaser
         t.md: https://twitter.com/goreleaser
-        "customization/build.md": customization/builds.md
+        "customization/build.md": customization/builds/index.md
+        "customization/rust-builds.md": customization/builds/rust.md
+        "customization/zig-builds.md": customization/builds/zig.md
+        "customization/deno-builds.md": customization/builds/deno.md
   - minify:
       minify_html: true
   - include-markdown
@@ -117,15 +120,21 @@ nav:
           - customization/git.md
           - Split & Merge: customization/partial.md
       - Build:
-          - customization/builds.md
-          - customization/bun-builds.md
-          - customization/rust-builds.md
-          - customization/zig-builds.md
-          - customization/prebuilt.md
+          - Builders:
+              - customization/builds/index.md
+              - customization/builds/go.md
+              - customization/builds/bun.md
+              - customization/builds/rust.md
+              - customization/builds/zig.md
+              - customization/builds/deno.md
+              - customization/builds/python.md
+              - customization/builds/uv.md
+              - customization/builds/poetry.md
+              - customization/prebuilt.md
           - customization/verifiable_builds.md
-          - customization/monorepo.md
           - customization/universalbinaries.md
           - customization/upx.md
+      - customization/monorepo.md
       - Package & Archive:
           - customization/archive.md
           - customization/source.md
@@ -225,6 +234,7 @@ nav:
           - Blog Posts: cookbooks/blog-posts.md
           - Add a new cookbook: cookbooks/contributing.md
           - cookbooks/private-monorepo-public-release.md
+          - cookbooks/builds-complex-envs.md
           - cookbooks/multi-platform-docker-images.md
           - cookbooks/build-go-modules.md
           - cookbooks/cgo-and-crosscompiling.md
@@ -261,6 +271,8 @@ nav:
 
 markdown_extensions:
   - admonition
+  - attr_list
+  - md_in_html
   - pymdownx.details
   - codehilite
   - meta

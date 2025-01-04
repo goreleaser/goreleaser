@@ -63,6 +63,7 @@ jobs:
           go-version: stable
       - uses: mlugg/setup-zig@v1
       - uses: oven-sh/setup-bun@v2
+      - uses: denoland/setup-deno@v2
       - uses: sigstore/cosign-installer@v3.7.0
       - uses: anchore/sbom-action/download-syft@v0.17.9
       - name: setup-validate-krew-manifest

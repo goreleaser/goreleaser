@@ -18,6 +18,11 @@ var ZigExampleConfig []byte
 //go:embed config.bun.yaml
 var BunExampleConfig []byte
 
+// DenoExampleConfig is the config used within goreleaser init --lang deno.
+//
+//go:embed config.deno.yaml
+var DenoExampleConfig []byte
+
 // RustExampleConfig is the config used within goreleaser init --lang rust.
 //
 //go:embed config.rust.yaml
