@@ -113,7 +113,7 @@ func TestGoModProxy(t *testing.T) {
 					Dir:    ".",
 				},
 			},
-		}, testctx.WithCurrentTag("v0.161.1"), withGoReleaserModulePath)
+		}, testctx.WithCurrentTag("v2.5.1"), withGoReleaserModulePath)
 
 		fakeGoModAndSum(t, ctx.ModulePath)
 		require.NoError(t, ProxyPipe{}.Run(ctx))
@@ -197,7 +197,7 @@ func TestGoModProxy(t *testing.T) {
 							Goarch: []string{runtime.GOARCH},
 						},
 					},
-				}, withGoReleaserModulePath, testctx.WithCurrentTag("v0.161.1"))
+				}, withGoReleaserModulePath, testctx.WithCurrentTag("v2.5.1"))
 
 				fakeGoModAndSum(t, ctx.ModulePath)
 				require.NoError(t, ProxyPipe{}.Run(ctx)) // should succeed at first
@@ -231,7 +231,7 @@ func TestGoModProxy(t *testing.T) {
 					Main:   "main.go",
 				},
 			},
-		}, withGoReleaserModulePath, testctx.WithCurrentTag("v0.161.1"))
+		}, withGoReleaserModulePath, testctx.WithCurrentTag("v2.5.1"))
 
 		fakeGoModAndSum(t, ctx.ModulePath)
 		require.NoError(t, ProxyPipe{}.Run(ctx))
@@ -306,7 +306,7 @@ func fakeGoMod(tb testing.TB, module string) {
 }
 
 func withGoReleaserModulePath(ctx *context.Context) {
-	ctx.ModulePath = "github.com/goreleaser/goreleaser"
+	ctx.ModulePath = "github.com/goreleaser/goreleaser/v2"
 }
 
 func withNfpmModulePath(ctx *context.Context) {
