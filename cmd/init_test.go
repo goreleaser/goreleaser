@@ -32,6 +32,7 @@ func TestDetectLanguage(t *testing.T) {
 		"zig":  {"build.zig", static.ZigExampleConfig},
 		"bun":  {"bun.lockb", static.BunExampleConfig},
 		"rust": {"Cargo.toml", static.RustExampleConfig},
+		"deno": {"deno.json", static.DenoExampleConfig},
 		"go":   {"go.mod", static.GoExampleConfig}, // the file isn't actually used though, go is the default
 	} {
 		t.Run(expect.File, func(t *testing.T) {
