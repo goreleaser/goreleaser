@@ -79,6 +79,11 @@ most projects already!
 
 You can see more details about builds [here](./builds.md).
 
+### Environment setup
+
+GoReleaser will not install Bun or any other dependencies on which your
+workflow depends. Make sure to install them before running GoReleaser.
+
 ## Caveats
 
 GoReleaser will translate Bun's Os/Arch pair into a GOOS/GOARCH pair, so
