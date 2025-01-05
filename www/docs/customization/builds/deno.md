@@ -31,8 +31,11 @@ builds:
     # See: https://docs.deno.com/runtime/reference/cli/compile/#supported-targets
     # Default: [ "x86_64-pc-windows-msvc", "x86_64-apple-darwin", "aarch64-apple-darwin", "x86_64-unknown-linux-gnu", "aarch64-unknown-linux-gnu" ]
     targets:
-      - linux-x64-modern
-      - darwin-arm64
+      - x86_64-unknown-linux-gnu
+      - aarch64-unknown-linux-gnu
+      - x86_64-pc-windows-msvc
+      - x86_64-apple-darwin
+      - aarch64-apple-darwin
 
     # Path to project's (sub)directory containing the code.
     # This is the working directory for the `deno compile` command(s).
@@ -50,7 +53,7 @@ builds:
     #
     # Default: 'deno'.
     # Templates: allowed.
-    tool: "deno-wrapper"
+    tool: "deno-canary"
 
     # Sets the command to run to build.
     #
@@ -62,7 +65,8 @@ builds:
     # Templates: allowed.
     # Default: [].
     flags:
-      - --allow-all
+      - --allow-read
+      - --allow-net
 
     # Custom environment variables to be set during the builds.
     # Invalid environment variables will be ignored.
@@ -77,6 +81,12 @@ Some options are not supported yet[^fail], but it should be usable for
 most projects already!
 
 You can see more details about builds [here](./builds.md).
+
+### Environment setup
+
+GoReleaser will not install Deno or any other dependencies on which your
+workflow depends for you.
+Make sure to install them before running GoReleaser.
 
 ## Caveats
 
