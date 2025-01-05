@@ -8,7 +8,9 @@ import (
 )
 
 func TestFailBuilder(t *testing.T) {
-	b := newFail("a")
+	f := For("a")
+	b, ok := f.(failBuilder)
+	require.True(t, ok)
 	_, err := b.WithDefaults(config.Build{})
 	require.EqualError(t, err, b.err.Error())
 	require.EqualError(t, b.Build(nil, config.Build{}, Options{}), b.err.Error())
