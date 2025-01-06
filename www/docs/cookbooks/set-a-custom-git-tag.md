@@ -1,8 +1,8 @@
 # Setting a custom git tag
 
-You can force the current and previous tags by
-[setting some environment variables](../customization/release.md#define-tags).
-This can be useful in cases where one git commit is referenced by multiple git tags.
+You can override the current and previous tags by setting some environment
+variables. This can be useful in cases where one git commit is referenced by
+multiple git tags, for example.
 
 Example usage:
 
