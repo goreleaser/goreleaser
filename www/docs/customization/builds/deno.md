@@ -80,8 +80,6 @@ builds:
 Some options are not supported yet[^fail], but it should be usable for
 most projects already!
 
-You can see more details about builds [here](./builds.md).
-
 ### Environment setup
 
 GoReleaser will not install Deno or any other dependencies on which your

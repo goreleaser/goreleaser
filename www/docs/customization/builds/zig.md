@@ -72,8 +72,6 @@ builds:
 Some options are not supported yet[^fail], but it should be usable at least for
 simple projects already!
 
-You can see more details about builds [here](./builds.md).
-
 ### Environment setup
 
 GoReleaser will not install Zig or any other dependencies on which your

@@ -366,7 +366,7 @@ builds:
       - windows
 ```
 
-The binary name field supports [templating](templates.md). The
+The binary name field supports [templating](../templates.md). The
 following build details are exposed:
 
 <!-- to format the tables, use: https://tabletomarkdown.com/format-markdown-table/ -->
@@ -442,7 +442,7 @@ builds:
 ```
 
 All properties of a hook (`cmd`, `dir` and `env`) support
-[templating](templates.md) with `post` hooks having binary artifact
+[templating](../templates.md) with `post` hooks having binary artifact
 available (as these run _after_ the build).
 Additionally the following build details are exposed to both `pre` and `post`
 hooks:
@@ -478,13 +478,7 @@ before:
 # rest of the file...
 ```
 
-[hook]: hooks.md
-
-## Define Build Tag
-
-GoReleaser uses `git describe` to get the build tag. You can set
-a different build tag using the environment variable `GORELEASER_CURRENT_TAG`.
-This is useful in scenarios where two tags point to the same commit.
+[hook]: ../hooks.md
 
 ## Reproducible Builds
 

@@ -348,16 +348,6 @@ ALLOWED_TYPES = application/gzip|application/x-gzip|application/x-gtar|applicati
 
     `draft` and `prerelease` are only supported by GitHub and Gitea.
 
-### Define Previous Tag
-
-GoReleaser uses `git describe` to get the previous tag used for generating the
-Changelog. You can set a different build tag using the environment variable
-`GORELEASER_PREVIOUS_TAG`. This is useful in scenarios where two tags point to
-the same commit.
-
-The [Nightly](nightlies.md) is automatically ignored, even if set
-via the environment variables above.
-
 ## Custom release notes
 
 You can specify a file containing your custom release notes, and pass it with

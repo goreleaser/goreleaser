@@ -91,7 +91,7 @@ builds:
 
 ## Publishing with Cargo
 
-You can use [custom publishers](./publishers.md) to do it:
+You can use [custom publishers](../publishers.md) to do it:
 
 ```yaml title=".goreleaser.yaml"
 publishers:
@@ -118,7 +118,7 @@ Remember that you may also need to run `rustup default stable`.
 GoReleaser **will**, however, run `rustup target add` for each target you
 declare.
 
-You can also add them to your [global before hooks](./hooks.md), e.g.:
+You can also add them to your [global before hooks](../hooks.md), e.g.:
 
 ```yaml title=".goreleaser.yaml"
 before:

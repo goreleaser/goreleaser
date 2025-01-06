@@ -520,7 +520,7 @@ This option was still being supported, even though undocumented, for a couple
 of years now. It's finally time to sunset it.
 
 Simply use the pluralized form, `builds`, according to the
-[documentation](customization/builds.md).
+[documentation](./customization/builds/index.md).
 
 === "Before"
 

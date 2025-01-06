@@ -54,7 +54,7 @@ universal_binaries:
 
 <!-- md:templates -->
 
-For more info about hooks, see the [build section](./builds.md#build-hooks).
+For more info about hooks, see the [build section](./builds/go.md#build-hooks).
 
 The minimal configuration for most setups would look like this:
 

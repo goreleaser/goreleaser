@@ -188,4 +188,4 @@ docker_signs:
 ```
 
 [ko]: https://ko.build
-[build]: builds.md
+[build]: builds/go.md
