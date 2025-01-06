@@ -137,7 +137,7 @@ func buildTarget(ctx *context.Context, build config.Build, target string) error 
 		return err
 	}
 
-	if err := os.MkdirAll(filepath.Dir(opts.Path), 0o755); err != nil { // nolint: gosec
+	if err := os.MkdirAll(filepath.Dir(opts.Path), 0o755); err != nil {
 		return fmt.Errorf("create target directory: %w", err)
 	}
 
