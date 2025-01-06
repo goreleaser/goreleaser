@@ -137,19 +137,26 @@ func buildTarget(ctx *context.Context, build config.Build, target string) error 
 		return err
 	}
 
+	if err := os.MkdirAll(filepath.Dir(opts.Path), 0o755); err != nil {
+		return fmt.Errorf("create target directory: %w", err)
+	}
+
 	if !skips.Any(ctx, skips.PreBuildHooks) {
 		if err := runHook(ctx, *opts, build.Env, build.Hooks.Pre); err != nil {
 			return fmt.Errorf("pre hook failed: %w", err)
 		}
 	}
+
 	if err := doBuild(ctx, build, *opts); err != nil {
 		return fmt.Errorf("build failed: %w\ntarget: %s", err, target)
 	}
+
 	if !skips.Any(ctx, skips.PostBuildHooks) {
 		if err := runHook(ctx, *opts, build.Env, build.Hooks.Post); err != nil {
 			return fmt.Errorf("post hook failed: %w", err)
 		}
 	}
+
 	return nil
 }
 

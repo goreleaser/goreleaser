@@ -3,7 +3,6 @@ package zig
 import (
 	"errors"
 	"fmt"
-	"os"
 	"path/filepath"
 	"strings"
 	"sync"
@@ -167,9 +166,6 @@ func (b *Builder) Build(ctx *context.Context, build config.Build, options api.Op
 		return err
 	}
 
-	if err := os.MkdirAll(filepath.Dir(options.Path), 0o755); err != nil {
-		return err
-	}
 	realPath := filepath.Join(build.Dir, prefix, "bin", options.Name)
 	if err := gio.Copy(realPath, options.Path); err != nil {
 		return err

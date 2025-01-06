@@ -98,6 +98,7 @@ func TestBuild(t *testing.T) {
 	}
 	options.Target, err = Default.Parse("aarch64-apple-darwin")
 	require.NoError(t, err)
+	require.NoError(t, os.MkdirAll(filepath.Dir(options.Path), 0o755)) // this happens on internal/pipe/build/ when in prod
 
 	require.NoError(t, Default.Build(ctx, build, options))
 
