@@ -64,9 +64,6 @@ func (f *fakeBuilder) Build(ctx *context.Context, _ config.Build, options api.Op
 	if f.fail {
 		return errFailedBuild
 	}
-	if err := os.MkdirAll(filepath.Dir(options.Path), 0o755); err != nil {
-		return err
-	}
 	if err := os.WriteFile(options.Path, []byte("foo"), 0o755); err != nil {
 		return err
 	}
@@ -114,9 +111,7 @@ func TestBuild(t *testing.T) {
 			Commit:     "123",
 		}),
 	)
-	opts, err := buildOptionsForTarget(ctx, ctx.Config.Builds[0], "darwin_amd64")
-	require.NoError(t, err)
-	require.NoError(t, doBuild(ctx, ctx.Config.Builds[0], *opts))
+	require.NoError(t, buildTarget(ctx, ctx.Config.Builds[0], "darwin_amd64"))
 }
 
 func TestRunPipe(t *testing.T) {
