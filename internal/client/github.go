@@ -420,7 +420,11 @@ func (c *githubClient) PublishRelease(ctx *context.Context, releaseID string) er
 	data := &github.RepositoryRelease{
 		Draft: github.Bool(draft),
 	}
-	if latest := strings.TrimSpace(ctx.Config.Release.MakeLatest); latest != "" {
+	latest, err := tmpl.New(ctx).Apply(ctx.Config.Release.MakeLatest)
+	if err != nil {
+		return fmt.Errorf("templating GitHub make_latest: %w", err)
+	}
+	if latest != "" {
 		data.MakeLatest = github.String(latest)
 	}
 	if ctx.Config.Release.DiscussionCategoryName != "" {
