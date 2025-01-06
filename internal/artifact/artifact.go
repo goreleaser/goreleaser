@@ -500,10 +500,10 @@ func ByGoarch(s string) Filter {
 func ByGoarm(s string) Filter {
 	return func(a *Artifact) bool {
 		switch ExtraOr(*a, ExtraBuilder, "") {
-		case "zig", "rust", "bun", "deno":
-			return s == experimental.DefaultGOARM()
+		case "go", "": // empty is usually tests
+			return s == a.Goarm
 		default:
-			return a.Goarm == s
+			return s == experimental.DefaultGOARM()
 		}
 	}
 }
@@ -512,10 +512,10 @@ func ByGoarm(s string) Filter {
 func ByGoamd64(s string) Filter {
 	return func(a *Artifact) bool {
 		switch ExtraOr(*a, ExtraBuilder, "") {
-		case "zig", "rust", "bun", "deno":
-			return s == "v1"
+		case "go", "": // empty is usually tests
+			return s == a.Goamd64
 		default:
-			return a.Goamd64 == s
+			return s == "v1"
 		}
 	}
 }
