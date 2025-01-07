@@ -24,10 +24,10 @@ announce:
 
 - :simple-bluesky: [Bluesky](./bluesky.md)
 - :simple-discord: [Discord](./discord.md)
-- :simple-linkedin: [Linkedin](./linkedin.md)
+- :simple-linkedin: [LinkedIn](./linkedin.md)
 - :simple-mastodon: [Mastodon](./mastodon.md)
 - :simple-mattermost: [Mattermost](./mattermost.md)
-- :simple-opencollective: [Opencollective](./opencollective.md)
+- :simple-opencollective: [OpenCollective](./opencollective.md)
 - :simple-reddit: [Reddit](./reddit.md)
 - :simple-slack: [Slack](./slack.md)
 - :material-email: [Email/SMTP](./smtp.md)
