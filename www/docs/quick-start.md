@@ -4,7 +4,7 @@ In this example we will build, archive and release a sample project.
 
 Create a GitHub repository, clone and `cd` into it, and let's get started!
 
-=== "Go"
+=== ":simple-go: Go"
 
     Initialize your module with:
 
@@ -22,7 +22,7 @@ Create a GitHub repository, clone and `cd` into it, and let's get started!
     }
     ```
 
-=== "Rust"
+=== ":simple-rust: Rust"
 
     Initialize your project with:
 
@@ -30,7 +30,7 @@ Create a GitHub repository, clone and `cd` into it, and let's get started!
     cargo init --bin
     ```
 
-=== "Zig"
+=== ":simple-zig: Zig"
 
     Initialize your project with:
 
@@ -38,7 +38,7 @@ Create a GitHub repository, clone and `cd` into it, and let's get started!
     zig init
     ```
 
-=== "Bun"
+=== ":simple-bun: Bun"
 
     Initialize your project with:
 
@@ -46,7 +46,7 @@ Create a GitHub repository, clone and `cd` into it, and let's get started!
     bun init
     ```
 
-=== "Deno"
+=== ":simple-deno: Deno"
 
     Initialize your project with:
 
@@ -77,7 +77,7 @@ goreleaser check
 
 You can also use GoReleaser to [build](cmd/goreleaser_build.md) the binary only for a given target, which is useful for local development:
 
-=== "Go"
+=== ":simple-go: Go"
 
     ```sh
     GOOS="linux" \
@@ -87,28 +87,28 @@ You can also use GoReleaser to [build](cmd/goreleaser_build.md) the binary only 
 
     It will default to your current `GOOS`/`GOARCH`.
 
-=== "Rust"
+=== ":simple-rust: Rust"
 
     ```sh
     TARGET="aarch64-unknown-linux-gnu" \
       goreleaser build --single-target
     ```
 
-=== "Zig"
+=== ":simple-zig: Zig"
 
     ```sh
     TARGET="aarch64-linux" \
       goreleaser build --single-target
     ```
 
-=== "Bun"
+=== ":simple-bun: Bun"
 
     ```sh
     TARGET="bun-linux-arm64" \
       goreleaser build --single-target
     ```
 
-=== "Deno"
+=== ":simple-deno: Deno"
 
     ```sh
     TARGET="aarch64-unknown-linux-gnu" \
@@ -176,6 +176,13 @@ Check your GitHub project's releases page!
     <figcaption>Example release on GitHub.</figcaption>
   </figure>
 </a>
+
+## Live examples
+
+We have a ton of example repositories!
+You can use them to learn more and see how GoReleaser works.
+
+[Browse example repositories](https://github.com/orgs/goreleaser/repositories?q=example){ .md-button .md-button--primary }
 
 ## Dry run
 
