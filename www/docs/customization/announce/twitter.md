@@ -1,4 +1,4 @@
-# T𝕏/Twitter
+# 𝕏/Twitter
 
 !!! warning
 
