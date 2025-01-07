@@ -5,15 +5,21 @@ running it as part of the CI pipeline in mind.
 
 Let's see how we can get it working on popular CI software:
 
-- [GitHub Actions](actions.md)
-- [Azure Pipelines](azurepipelines.md)
-- [Circle CI](circle.md)
-- [Cirrus CI](cirrus.md)
-- [Google CloudBuild](cloudbuild.md)
-- [Codefresh](codefresh.md)
-- [Drone](drone.md)
-- [GitLab CI](gitlab.md)
-- [Jenkins](jenkins.md)
-- [Semaphore](semaphore.md)
-- [Travis CI](travis.md)
-- [Woodpecker](woodpecker.md)
+<div class="grid cards" markdown>
+
+- :simple-githubactions: [GitHub Actions](actions.md)
+- :material-microsoft-azure: [Azure Pipelines](azurepipelines.md)
+- :simple-circleci: [Circle CI](circle.md)
+- :simple-cirrusci:[Cirrus CI](cirrus.md)
+- :simple-googlecloud: [Google CloudBuild](cloudbuild.md)
+- :simple-codefresh: [Codefresh](codefresh.md)
+- :simple-drone: [Drone](drone.md)
+- :simple-gitlab: [GitLab CI](gitlab.md)
+- :simple-jenkins: [Jenkins](jenkins.md)
+- :simple-semaphoreci: [Semaphore](semaphore.md)
+- :simple-travisci: [Travis CI](travis.md)
+- :material-bird: [Woodpecker](woodpecker.md)
+
+</div>
+
+<!-- TODO: woodpecker ci doesn't have an icon anywhere... -->
