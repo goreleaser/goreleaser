@@ -1,23 +1,58 @@
 # Quick Start
 
-In this example we will build, archive and release a sample Go project.
+In this example we will build, archive and release a sample project.
 
-Create a GitHub repository and add a single main package:
+Create a GitHub repository, clone and `cd` into it, and let's get started!
 
-```go
-// main.go
-package main
+=== ":simple-go: Go"
 
-func main() {
-  println("Ba dum, tss!")
-}
-```
+    Initialize your module with:
 
-Initialize modules with
+    ```sh
+    go mod init github.com/you/your-repo
+    ```
 
-```sh
-go mod init main
-```
+    Then create a `main.go` file:
+
+    ```go title="main.go"
+    package main
+
+    func main() {
+      println("Ba dum, tss!")
+    }
+    ```
+
+=== ":simple-rust: Rust"
+
+    Initialize your project with:
+
+    ```sh
+    cargo init --bin
+    ```
+
+=== ":simple-zig: Zig"
+
+    Initialize your project with:
+
+    ```sh
+    zig init
+    ```
+
+=== ":simple-bun: Bun"
+
+    Initialize your project with:
+
+    ```sh
+    bun init
+    ```
+
+=== ":simple-deno: Deno"
+
+    Initialize your project with:
+
+    ```sh
+    deno init
+    ```
 
 Run the [init](cmd/goreleaser_init.md) command to create an example `.goreleaser.yaml` file:
 
@@ -40,11 +75,45 @@ You can verify your `.goreleaser.yaml` is valid by running the [check](cmd/gorel
 goreleaser check
 ```
 
-You can also use GoReleaser to [build](cmd/goreleaser_build.md) the binary only for a given GOOS/GOARCH, which is useful for local development:
+You can also use GoReleaser to [build](cmd/goreleaser_build.md) the binary only for a given target, which is useful for local development:
 
-```sh
-goreleaser build --single-target
-```
+=== ":simple-go: Go"
+
+    ```sh
+    GOOS="linux" \
+    GOARCH="arm64" \
+      goreleaser build --single-target
+    ```
+
+    It will default to your current `GOOS`/`GOARCH`.
+
+=== ":simple-rust: Rust"
+
+    ```sh
+    TARGET="aarch64-unknown-linux-gnu" \
+      goreleaser build --single-target
+    ```
+
+=== ":simple-zig: Zig"
+
+    ```sh
+    TARGET="aarch64-linux" \
+      goreleaser build --single-target
+    ```
+
+=== ":simple-bun: Bun"
+
+    ```sh
+    TARGET="bun-linux-arm64" \
+      goreleaser build --single-target
+    ```
+
+=== ":simple-deno: Deno"
+
+    ```sh
+    TARGET="aarch64-unknown-linux-gnu" \
+      goreleaser build --single-target
+    ```
 
 To release to GitHub, you'll need to export a `GITHUB_TOKEN` environment variable, which should contain a valid GitHub token with the `repo` scope.
 It will be used to deploy releases to your GitHub repository.
@@ -88,11 +157,13 @@ goreleaser release
 
 That's all it takes!
 
-GoReleaser will build the binaries for your app for Windows, Linux and macOS, both amd64 and i386 architectures.
-You can customize that by changing the `builds` section. Check the [documentation](customization/builds/index.md) for more information.
+GoReleaser will build the binaries for your app for the default targets for the
+build mechanism being used.
+You can customize that by changing the `builds` section.
+Check the [documentation](customization/builds/index.md) for more information.
 
-After building the binaries, GoReleaser will create an archive for each OS/Arch pair into a separate file.
-You can customize several things by changing the `archive` section, including releasing only the binaries and not creating archives at all.
+After building the binaries, GoReleaser will create an archive for each target into a separate file.
+You can customize several things by changing the `archives` section, including releasing only the binaries and not creating archives at all.
 Check the [documentation](customization/archive.md) for more information.
 
 Finally, it will create a release on GitHub with all the artifacts.
@@ -106,19 +177,29 @@ Check your GitHub project's releases page!
   </figure>
 </a>
 
-## Other languages
+## Live examples
 
-Aside from the Go specifics, the process should be the same for the other
-languages we support.
+We have a ton of example repositories!
+You can use them to learn more and see how GoReleaser works.
+
+[Browse example repositories](https://github.com/orgs/goreleaser/repositories?q=example){ .md-button .md-button--primary }
 
 ## Dry run
 
 If you want to test everything before doing a release "for real", you can
 use the following techniques.
 
+### Verify dependencies
+
+You can check if you have every tool needed for the current configuration:
+
+```sh
+goreleaser healthcheck
+```
+
 ### Build-only Mode
 
-Build command will build the project
+Build command will build the project:
 
 ```sh
 goreleaser build
@@ -126,12 +207,6 @@ goreleaser build
 
 This can be useful as part of CI pipelines to verify the project builds
 without errors for all build targets.
-
-You can check the other options by running:
-
-```sh
-goreleaser build --help
-```
 
 ### Release Flags
 
@@ -141,14 +216,10 @@ Use the `--skip=publish` flag to skip publishing:
 goreleaser release --skip=publish
 ```
 
-You can check the other options by running:
+### More options
+
+You can check the command line usage help [here](./cmd/goreleaser.md) or with:
 
 ```sh
 goreleaser --help
-```
-
-and
-
-```sh
-goreleaser release --help
 ```

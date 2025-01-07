@@ -1,10 +1,14 @@
 # Introduction
 
-Historically, GoReleaser was designed specifically for the Go programming
-language.
+GoReleaser supports multiple programming languages and build
+systems through its _builder_ interfaces.
 
-GoReleaser has evolved to support multiple programming languages and build
-systems:
+A _builder_ gets a build configuration and emits binaries/libraries into the
+`dist` directory.
+
+Multiple builders are supported, with more coming soon.
+
+Here's the list:
 
 <div class="grid cards" markdown>
 

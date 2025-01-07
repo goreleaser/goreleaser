@@ -72,10 +72,26 @@ builds:
     # Templates: allowed.
     env:
       - FOO=bar
+
+    # Hooks can be used to customize the final binary,
+    # for example, to run generators.
+    #
+    # Templates: allowed.
+    hooks:
+      pre: ./foo.sh
+      post: ./script.sh {{ .Path }}
+
+    # If true, skip the build.
+    # Useful for library projects.
+    skip: false
 ```
 
 Some options are not supported yet[^fail], but it should be usable for
 most projects already!
+
+!!! tip
+
+    Learn more about [build hooks](./hooks.md).
 
 ### Environment setup
 

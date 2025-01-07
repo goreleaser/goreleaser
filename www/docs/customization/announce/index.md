@@ -17,3 +17,23 @@ announce:
   # Templates: allowed.
   skip: "{{gt .Patch 0}}"
 ```
+
+## Supported announcers:
+
+<div class="grid cards" markdown>
+
+- :simple-bluesky: [Bluesky](./bluesky.md)
+- :simple-discord: [Discord](./discord.md)
+- :simple-linkedin: [Linkedin](./linkedin.md)
+- :simple-mastodon: [Mastodon](./mastodon.md)
+- :simple-mattermost: [Mattermost](./mattermost.md)
+- :simple-opencollective: [Opencollective](./opencollective.md)
+- :simple-reddit: [Reddit](./reddit.md)
+- :simple-slack: [Slack](./slack.md)
+- :material-email: [Smtp](./smtp.md)
+- :material-microsoft-teams: [Teams](./teams.md)
+- :simple-telegram: [Telegram](./telegram.md)
+- :fontawesome-brands-x-twitter: [𝕏/Twitter](./twitter.md)
+- :material-webhook: [Webhook](./webhook.md)
+
+</div>

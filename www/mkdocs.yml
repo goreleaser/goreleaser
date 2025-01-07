@@ -120,8 +120,8 @@ nav:
           - customization/git.md
           - Split & Merge: customization/partial.md
       - Build:
+          - customization/builds/index.md
           - Builders:
-              - customization/builds/index.md
               - customization/builds/go.md
               - customization/builds/bun.md
               - customization/builds/rust.md
@@ -131,6 +131,7 @@ nav:
               - customization/builds/uv.md
               - customization/builds/poetry.md
               - customization/prebuilt.md
+          - customization/builds/hooks.md
           - customization/verifiable_builds.md
           - customization/universalbinaries.md
           - customization/upx.md
@@ -182,7 +183,7 @@ nav:
               - scm/gitea.md
           - customization/milestone.md
       - Announce:
-          - About: customization/announce/index.md
+          - Introduction: customization/announce/index.md
           - customization/announce/bluesky.md
           - customization/announce/discord.md
           - customization/announce/linkedin.md
@@ -198,7 +199,7 @@ nav:
           - customization/announce/webhook.md
 
       - Continuous Integration:
-          - About: ci/index.md
+          - Introduction: ci/index.md
           - ci/actions.md
           - ci/azurepipelines.md
           - ci/circle.md
@@ -230,7 +231,7 @@ nav:
           - errors/multiple-binaries-archive.md
           - errors/scoop-archive.md
       - Cookbooks:
-          - About: cookbooks/index.md
+          - Introduction: cookbooks/index.md
           - Blog Posts: cookbooks/blog-posts.md
           - Add a new cookbook: cookbooks/contributing.md
           - cookbooks/private-monorepo-public-release.md
