@@ -30,7 +30,7 @@ announce:
 - :simple-opencollective: [Opencollective](./opencollective.md)
 - :simple-reddit: [Reddit](./reddit.md)
 - :simple-slack: [Slack](./slack.md)
-- :material-email: [Smtp](./smtp.md)
+- :material-email: [Email/SMTP](./smtp.md)
 - :material-microsoft-teams: [Teams](./teams.md)
 - :simple-telegram: [Telegram](./telegram.md)
 - :fontawesome-brands-x-twitter: [𝕏/Twitter](./twitter.md)
