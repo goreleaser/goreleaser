@@ -34,6 +34,6 @@ announce:
 - :material-microsoft-teams: [Teams](./teams.md)
 - :simple-telegram: [Telegram](./telegram.md)
 - :fontawesome-brands-x-twitter: [𝕏/Twitter](./twitter.md)
-- :material-webhook: [Webhook](./webhook.md)
+- :material-webhook: [Webhooks](./webhook.md)
 
 </div>
