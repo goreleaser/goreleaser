@@ -82,7 +82,7 @@ jobs:
         with:
           github-token: ${{ secrets.github_token }}
           title: "nightly"
-          description: "goreleaser build finished with status {{STATUS}}"
+          description: "goreleaser build finished with status {{STATUS}}: https://github.com/goreleaser/goreleaser/releases/nightly"
           discord-webhook: ${{ secrets.NIGHTLY_DISCORD_WEBHOOK }}
           username: GoReleaser
           avatar-url: https://avatars.githubusercontent.com/u/24697112?v=4
