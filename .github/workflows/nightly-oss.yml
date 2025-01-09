@@ -59,7 +59,7 @@ jobs:
       - uses: goreleaser/goreleaser-action@v6
         with:
           distribution: goreleaser-pro
-          version: "~> v2"
+          version: "nightly"
           args: release --clean --nightly -f .goreleaser-nightly.yaml --timeout 60m
         env:
           GITHUB_TOKEN: ${{ secrets.GH_PAT }}
