@@ -46,3 +46,11 @@ func TestDenoExampleConfig(t *testing.T) {
 	require.Equal(t, 2, cfg.Version)
 	require.Equal(t, "deno", cfg.Builds[0].Builder)
 }
+
+func TestNodeExampleConfig(t *testing.T) {
+	cfg, err := config.LoadReader(bytes.NewReader(NodeExampleConfig))
+	require.NoError(t, err)
+	require.NotEmpty(t, NodeExampleConfig)
+	require.Equal(t, 2, cfg.Version)
+	require.Equal(t, "node", cfg.Builds[0].Builder)
+}
