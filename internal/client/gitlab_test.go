@@ -18,7 +18,7 @@ import (
 	"github.com/goreleaser/goreleaser/v2/pkg/config"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
-	"github.com/xanzy/go-gitlab"
+	gitlab "gitlab.com/gitlab-org/api/client-go"
 )
 
 func TestGitLabReleaseURLTemplate(t *testing.T) {
@@ -429,7 +429,7 @@ func TestGitLabGetDefaultBranch(t *testing.T) {
 		w.WriteHeader(http.StatusOK)
 		fmt.Fprint(w, "{}")
 	}))
-	defer srv.Close()
+	t.Cleanup(srv.Close)
 
 	ctx := testctx.NewWithCfg(config.Project{
 		GitLabURLs: config.GitLabURLs{
@@ -453,7 +453,7 @@ func TestGitLabGetDefaultBranchEnv(t *testing.T) {
 	srv := httptest.NewServer(http.HandlerFunc(func(http.ResponseWriter, *http.Request) {
 		t.Error("shouldn't have made any calls to the API")
 	}))
-	defer srv.Close()
+	t.Cleanup(srv.Close)
 
 	ctx := testctx.NewWithCfg(config.Project{
 		GitLabURLs: config.GitLabURLs{

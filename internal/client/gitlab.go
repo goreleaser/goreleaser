@@ -15,7 +15,7 @@ import (
 	"github.com/goreleaser/goreleaser/v2/internal/tmpl"
 	"github.com/goreleaser/goreleaser/v2/pkg/config"
 	"github.com/goreleaser/goreleaser/v2/pkg/context"
-	"github.com/xanzy/go-gitlab"
+	gitlab "gitlab.com/gitlab-org/api/client-go"
 )
 
 const DefaultGitLabDownloadURL = "https://gitlab.com"
