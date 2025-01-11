@@ -55,6 +55,12 @@ changelog:
     - foo/
     - bar/
 
+  # Compose your release notes with AI.
+  # See below for more details.
+  ai:
+    use: anthropic
+    prompt: "The prompt..."
+
   # Group commits messages by given regex and title.
   # Order value defines the order of the groups.
   # Providing no regex means all commits will be grouped under the default group.
@@ -132,3 +138,54 @@ changelog:
     * The `github` changelog will only work if both tags exist in GitHub.
 
 [nightly]: ./nightlies.md
+
+## Enhance with AI
+
+<!-- md:pro -->
+
+<!-- md:version v2.6-unreleased -->
+
+<!-- md:alpha -->
+
+You can also use AI to enhance your release notes:
+
+```yaml title=".goreleaser.yaml"
+changelog:
+  ai:
+    # Which provider to use.
+    # Will disable the feature if empty.
+    # Enabling AI disables changelog grouping.
+    #
+    # Valid options: 'anthropic', `openai', 'ollama`.
+    use: anthropic
+
+    # Which model to use.
+    #
+    # Defaults to the provider's default model.
+    model: claude-xyz
+
+    # The prompt to use..
+    #
+    # It can be a string directly, or you can use `from_url` or `from_file` to
+    # source it from somewhere else.
+    #
+    # Templates: allowed.
+    # Extra template fields available:
+    # - `.Commits`: will contain all the commits for this release, one per line.
+    prompt:
+      # Loads from an URL.
+      from_url:
+        # Templates: allowed.
+        url: https://foo.bar/README.md
+        headers:
+          x-api-token: "${MYCOMPANY_TOKEN}"
+
+      # Loads from a local file.
+      # Overrides `from_url`.
+      from_file:
+        # Templates: allowed.
+        path: ./README.md
+```
+
+You can test this feature by using the
+[`goreleaser changelog` command](../cmd/goreleaser_changelog.md).
