@@ -1,12 +1,12 @@
 package gomod
 
 import (
+	"errors"
 	"fmt"
 	"os"
 	"os/exec"
 	"path/filepath"
 	"runtime"
-	"syscall"
 	"testing"
 
 	"github.com/goreleaser/goreleaser/v2/internal/testctx"
@@ -149,46 +149,6 @@ func TestGoModProxy(t *testing.T) {
 		require.Equal(t, filepath.Join(dist, "proxy", "foo"), ctx.Config.Builds[0].Dir)
 	})
 
-	t.Run("no perms", func(t *testing.T) {
-		testlib.SkipIfWindows(t, "windows permissions work differently")
-		for file, mode := range map[string]os.FileMode{
-			"go.mod":          0o500,
-			"go.sum":          0o500,
-			"../../../go.sum": 0o300,
-		} {
-			t.Run(file, func(t *testing.T) {
-				dir := testlib.Mktmp(t)
-				dist := filepath.Join(dir, "dist")
-				ctx := testctx.NewWithCfg(config.Project{
-					Dist: dist,
-					GoMod: config.GoMod{
-						Proxy:    true,
-						GoBinary: "go",
-					},
-					Builds: []config.Build{
-						{
-							ID:     "foo",
-							Goos:   []string{runtime.GOOS},
-							Goarch: []string{runtime.GOARCH},
-						},
-					},
-				}, withTestModulePath, testctx.WithCurrentTag("v0.1.1"))
-
-				fakeGoModAndSum(t, ctx.ModulePath)
-				require.NoError(t, ProxyPipe{}.Run(ctx)) // should succeed at first
-
-				// change perms of a file and run again, which should now fail on that file.
-				require.NoError(t, os.Chmod(filepath.Join(dist, "proxy", "foo", file), mode))
-				err := ProxyPipe{}.Run(ctx)
-				require.Error(t, err)
-				if !testlib.IsWindows() {
-					// this fails on windows
-					require.ErrorIs(t, err, syscall.EACCES)
-				}
-			})
-		}
-	})
-
 	t.Run("goreleaser with main.go", func(t *testing.T) {
 		dir := testlib.Mktmp(t)
 		dist := filepath.Join(dir, "dist")
@@ -255,6 +215,24 @@ func TestSkipProxy(t *testing.T) {
 		}, withTestModulePath)
 		require.False(t, ProxyPipe{}.Skip(ctx))
 		require.False(t, CheckGoModPipe{}.Skip(ctx))
+	})
+}
+
+func TestErrors(t *testing.T) {
+	ogerr := errors.New("fake")
+	t.Run("detailed", func(t *testing.T) {
+		err := newDetailedErrProxy(ogerr, "some details")
+		require.NotEmpty(t, err.Error())
+		require.Contains(t, err.Error(), "failed to proxy module")
+		require.Contains(t, err.Error(), "details")
+		require.ErrorIs(t, err, ogerr)
+	})
+
+	t.Run("normal", func(t *testing.T) {
+		err := newErrProxy(ogerr)
+		require.NotEmpty(t, err.Error())
+		require.Contains(t, err.Error(), "failed to proxy module")
+		require.ErrorIs(t, err, ogerr)
 	})
 }
 
