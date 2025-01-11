@@ -97,7 +97,7 @@ GoReleaser is maintained by:
 
     ---
 
-    ![nicks' picture](https://avatars.githubusercontent.com/u/217179?s=96&v=4){ align=left }
+    ![Nicks' picture](https://avatars.githubusercontent.com/u/217179?s=96&v=4){ align=left }
     Nick contributed to GoReleaser back in 2017.
 
 </div>
@@ -110,6 +110,11 @@ These people helped along the way, but have now moved on into other things.
 
 <div class="grid cards" markdown>
 
+-   Barnaby Keene aka [@Southclaws](https://github.com/Southclaws)
 
+    ---
+
+    ![Barnaby' picture](https://avatars.githubusercontent.com/u/1636971?s=96&v=4){ align=left }
+    Barnaby worked on the Scoop integration back in 2018.
 
 </div>
