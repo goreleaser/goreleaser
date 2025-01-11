@@ -283,7 +283,3 @@ func fakeGoMod(tb testing.TB, module string) {
 func withTestModulePath(ctx *context.Context) {
 	ctx.ModulePath = "github.com/goreleaser/test-mod"
 }
-
-func withExampleModulePath(ctx *context.Context) {
-	ctx.ModulePath = "github.com/goreleaser/example-mod-proxy"
-}
