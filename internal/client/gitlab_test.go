@@ -489,7 +489,7 @@ func TestGitLabGetDefaultBranchErr(t *testing.T) {
 			API: srv.URL,
 		},
 	})
-	client, err := newGitLab(ctx, "test-token")
+	client, err := newGitLab(ctx, "test-token", gitlab.WithoutRetries())
 	require.NoError(t, err)
 	repo := Repo{
 		Owner:  "someone",

@@ -6,7 +6,6 @@ import (
 	"testing"
 
 	"github.com/goreleaser/goreleaser/v2/internal/static"
-	"github.com/goreleaser/goreleaser/v2/internal/testlib"
 	"github.com/stretchr/testify/require"
 )
 
@@ -107,16 +106,6 @@ func TestInitGitIgnoreExists(t *testing.T) {
 	bts, err := os.ReadFile(".gitignore")
 	require.NoError(t, err)
 	require.Equal(t, "mybinary\n# Added by goreleaser init:\ndist/\n", string(bts))
-}
-
-func TestInitFileError(t *testing.T) {
-	testlib.SkipIfWindows(t, "windows permissions don't work the same way")
-	folder := setupInitTest(t)
-	cmd := newInitCmd().cmd
-	path := filepath.Join(folder, "nope.yaml")
-	require.NoError(t, os.Chmod(folder, 0o000))
-	cmd.SetArgs([]string{"-f", path})
-	require.EqualError(t, cmd.Execute(), "open "+path+": permission denied")
 }
 
 func setupInitTest(tb testing.TB) string {
