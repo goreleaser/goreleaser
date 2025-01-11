@@ -98,7 +98,8 @@ GoReleaser is maintained by:
     ---
 
     ![Nicks' picture](https://avatars.githubusercontent.com/u/217179?s=96&v=4){ align=left }
-    Nick created GoDownloader and contributed to GoReleaser back in 2017.
+    Nick created GoDownloader and contributed to GoReleaser back in 2017 and
+    2018.
 
 </div>
 
