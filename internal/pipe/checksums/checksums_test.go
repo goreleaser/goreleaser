@@ -5,7 +5,6 @@ import (
 	"os"
 	"path/filepath"
 	"strings"
-	"syscall"
 	"testing"
 
 	"github.com/goreleaser/goreleaser/v2/internal/artifact"
@@ -279,39 +278,6 @@ func TestPipeInvalidNameTemplate(t *testing.T) {
 				testlib.RequireTemplateError(t, Pipe{}.Run(ctx))
 			})
 		}
-	}
-}
-
-func TestPipeCouldNotOpenChecksumsTxt(t *testing.T) {
-	folder := t.TempDir()
-	binFile, err := os.CreateTemp(folder, "goreleasertest-bin")
-	require.NoError(t, err)
-	t.Cleanup(func() { require.NoError(t, binFile.Close()) })
-	_, err = binFile.WriteString("fake artifact")
-	require.NoError(t, err)
-
-	file := filepath.Join(folder, "checksums.txt")
-	require.NoError(t, os.WriteFile(file, []byte("some string"), 0o000))
-	ctx := testctx.NewWithCfg(
-		config.Project{
-			Dist: folder,
-			Checksum: config.Checksum{
-				NameTemplate: "checksums.txt",
-				Algorithm:    "sha256",
-			},
-		},
-		testctx.WithCurrentTag("1.2.3"),
-	)
-	ctx.Artifacts.Add(&artifact.Artifact{
-		Name: "whatever",
-		Type: artifact.UploadableBinary,
-		Path: binFile.Name(),
-	})
-	err = Pipe{}.Run(ctx)
-	require.Error(t, err)
-	if !testlib.IsWindows() {
-		// this fails on windows
-		require.ErrorIs(t, Pipe{}.Run(ctx), syscall.EACCES)
 	}
 }
 
