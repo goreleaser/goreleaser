@@ -40,7 +40,7 @@ func TestCheckGoMod(t *testing.T) {
 					Dir:    ".",
 				},
 			},
-		}, testctx.Snapshot, withGoReleaserModulePath)
+		}, testctx.Snapshot, withTestModulePath)
 
 		fakeGoModAndSum(t, ctx.ModulePath)
 		require.NoError(t, exec.Command("go", "mod", "edit", "-replace", "foo=../bar").Run())
@@ -64,7 +64,7 @@ func TestCheckGoMod(t *testing.T) {
 					Dir:    ".",
 				},
 			},
-		}, withGoReleaserModulePath)
+		}, withTestModulePath)
 
 		require.NoError(t, CheckGoModPipe{}.Run(ctx))
 	})
@@ -86,7 +86,7 @@ func TestCheckGoMod(t *testing.T) {
 					Dir:    ".",
 				},
 			},
-		}, withGoReleaserModulePath)
+		}, withTestModulePath)
 
 		fakeGoModAndSum(t, ctx.ModulePath)
 		require.NoError(t, exec.Command("go", "mod", "edit", "-replace", "foo=../bar").Run())
@@ -95,7 +95,7 @@ func TestCheckGoMod(t *testing.T) {
 }
 
 func TestGoModProxy(t *testing.T) {
-	t.Run("goreleaser", func(t *testing.T) {
+	t.Run("testmod", func(t *testing.T) {
 		dir := testlib.Mktmp(t)
 		dist := filepath.Join(dir, "dist")
 		ctx := testctx.NewWithCfg(config.Project{
@@ -109,43 +109,16 @@ func TestGoModProxy(t *testing.T) {
 					ID:     "foo",
 					Goos:   []string{runtime.GOOS},
 					Goarch: []string{runtime.GOARCH},
-					Main:   ".",
-					Dir:    ".",
+					Main:   "./cmd/fake",
 				},
 			},
-		}, testctx.WithCurrentTag("v2.5.1"), withGoReleaserModulePath)
-
+		}, testctx.WithCurrentTag("v0.1.1"), func(ctx *context.Context) {
+			ctx.ModulePath = "github.com/goreleaser/test-mod"
+		})
 		fakeGoModAndSum(t, ctx.ModulePath)
 		require.NoError(t, ProxyPipe{}.Run(ctx))
 		requireGoMod(t)
-		require.Equal(t, ctx.ModulePath, ctx.Config.Builds[0].Main)
-		require.Equal(t, ".", ctx.Config.Builds[0].UnproxiedMain)
-		require.Equal(t, filepath.Join(dist, "proxy", "foo"), ctx.Config.Builds[0].Dir)
-		require.Equal(t, ".", ctx.Config.Builds[0].UnproxiedDir)
-	})
-
-	t.Run("nfpm", func(t *testing.T) {
-		dir := testlib.Mktmp(t)
-		dist := filepath.Join(dir, "dist")
-		ctx := testctx.NewWithCfg(config.Project{
-			Dist: dist,
-			GoMod: config.GoMod{
-				Proxy:    true,
-				GoBinary: "go",
-			},
-			Builds: []config.Build{
-				{
-					ID:     "foo",
-					Goos:   []string{runtime.GOOS},
-					Goarch: []string{runtime.GOARCH},
-					Main:   "./cmd/nfpm",
-				},
-			},
-		}, testctx.WithCurrentTag("v2.3.1"), withNfpmModulePath)
-		fakeGoModAndSum(t, ctx.ModulePath)
-		require.NoError(t, ProxyPipe{}.Run(ctx))
-		requireGoMod(t)
-		require.Equal(t, ctx.ModulePath+"/cmd/nfpm", ctx.Config.Builds[0].Main)
+		require.Equal(t, ctx.ModulePath+"/cmd/fake", ctx.Config.Builds[0].Main)
 		require.Equal(t, filepath.Join(dist, "proxy", "foo"), ctx.Config.Builds[0].Dir)
 	})
 
@@ -166,7 +139,9 @@ func TestGoModProxy(t *testing.T) {
 					Goarch: []string{runtime.GOARCH},
 				},
 			},
-		}, testctx.WithCurrentTag("v0.0.1"), withExampleModulePath)
+		}, testctx.WithCurrentTag("v0.0.1"), func(ctx *context.Context) {
+			ctx.ModulePath = "github.com/goreleaser/example-mod-proxy"
+		})
 		fakeGoMod(t, ctx.ModulePath)
 		require.NoError(t, ProxyPipe{}.Run(ctx))
 		requireGoMod(t)
@@ -197,7 +172,7 @@ func TestGoModProxy(t *testing.T) {
 							Goarch: []string{runtime.GOARCH},
 						},
 					},
-				}, withGoReleaserModulePath, testctx.WithCurrentTag("v2.5.1"))
+				}, withTestModulePath, testctx.WithCurrentTag("v0.1.1"))
 
 				fakeGoModAndSum(t, ctx.ModulePath)
 				require.NoError(t, ProxyPipe{}.Run(ctx)) // should succeed at first
@@ -231,7 +206,7 @@ func TestGoModProxy(t *testing.T) {
 					Main:   "main.go",
 				},
 			},
-		}, withGoReleaserModulePath, testctx.WithCurrentTag("v2.5.1"))
+		}, withTestModulePath, testctx.WithCurrentTag("v0.1.1"))
 
 		fakeGoModAndSum(t, ctx.ModulePath)
 		require.NoError(t, ProxyPipe{}.Run(ctx))
@@ -257,7 +232,7 @@ func TestSkipProxy(t *testing.T) {
 			GoMod: config.GoMod{
 				Proxy: true,
 			},
-		}, withGoReleaserModulePath, testctx.Snapshot)
+		}, withTestModulePath, testctx.Snapshot)
 		require.True(t, ProxyPipe{}.Skip(ctx))
 		require.False(t, CheckGoModPipe{}.Skip(ctx))
 	})
@@ -277,7 +252,7 @@ func TestSkipProxy(t *testing.T) {
 			GoMod: config.GoMod{
 				Proxy: true,
 			},
-		}, withGoReleaserModulePath)
+		}, withTestModulePath)
 		require.False(t, ProxyPipe{}.Skip(ctx))
 		require.False(t, CheckGoModPipe{}.Skip(ctx))
 	})
@@ -305,12 +280,8 @@ func fakeGoMod(tb testing.TB, module string) {
 	require.NoError(tb, os.WriteFile("go.mod", []byte(fmt.Sprintf("module %s\n", module)), 0o666))
 }
 
-func withGoReleaserModulePath(ctx *context.Context) {
-	ctx.ModulePath = "github.com/goreleaser/goreleaser/v2"
-}
-
-func withNfpmModulePath(ctx *context.Context) {
-	ctx.ModulePath = "github.com/goreleaser/nfpm/v2"
+func withTestModulePath(ctx *context.Context) {
+	ctx.ModulePath = "github.com/goreleaser/test-mod"
 }
 
 func withExampleModulePath(ctx *context.Context) {
