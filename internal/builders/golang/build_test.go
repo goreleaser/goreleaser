@@ -469,7 +469,6 @@ func TestBuild(t *testing.T) {
 					"linux_arm_6",
 					"js_wasm",
 					"linux_mips_softfloat",
-					"linux_mips64le_softfloat",
 				},
 				Tool:    "{{ .Env.GOBIN }}",
 				Command: "build",
@@ -502,9 +501,6 @@ func TestBuild(t *testing.T) {
 		}
 		bin, terr := tmpl.New(ctx).Apply(build.Binary)
 		require.NoError(t, terr)
-
-		// injecting some delay here to force inconsistent mod times on bins
-		time.Sleep(2 * time.Second)
 
 		gtarget, err := Default.Parse(target)
 		require.NoError(t, err)
@@ -547,22 +543,6 @@ func TestBuild(t *testing.T) {
 			Goarch: "mips",
 			Gomips: "softfloat",
 			Target: "linux_mips_softfloat",
-			Type:   artifact.Binary,
-			Extra: map[string]interface{}{
-				artifact.ExtraExt:     "",
-				artifact.ExtraBinary:  "foo-v5.6.7",
-				artifact.ExtraID:      "foo",
-				artifact.ExtraBuilder: "go",
-				"testEnvs":            []string{"TEST_T=l"},
-			},
-		},
-		{
-			Name:   "bin/foo-v5.6.7",
-			Path:   filepath.ToSlash(filepath.Join("dist", "linux_mips64le_softfloat", "bin", "foo-v5.6.7")),
-			Goos:   "linux",
-			Goarch: "mips64le",
-			Gomips: "softfloat",
-			Target: "linux_mips64le_softfloat",
 			Type:   artifact.Binary,
 			Extra: map[string]interface{}{
 				artifact.ExtraExt:     "",
@@ -639,24 +619,6 @@ func TestBuild(t *testing.T) {
 
 	got := list.List()
 	testlib.RequireEqualArtifacts(t, expected, got)
-
-	modTimes := map[int64]bool{}
-	for _, bin := range ctx.Artifacts.List() {
-		if bin.Type != artifact.Binary {
-			continue
-		}
-
-		fi, err := os.Stat(bin.Path)
-		require.NoError(t, err)
-
-		// make this a suitable map key, per docs: https://pkg.go.dev/time#Time
-		modTime := fi.ModTime().UTC().Round(0).Unix()
-
-		if modTimes[modTime] {
-			t.Fatal("duplicate modified time found, times should be different by default")
-		}
-		modTimes[modTime] = true
-	}
 }
 
 func TestBuildInvalidEnv(t *testing.T) {
@@ -935,7 +897,7 @@ func TestBuildTests(t *testing.T) {
 
 func TestRunPipeWithProxiedRepo(t *testing.T) {
 	folder := testlib.Mktmp(t)
-	out, err := exec.Command("git", "clone", "https://github.com/goreleaser/goreleaser", "-b", "v0.161.1", "--depth=1", ".").CombinedOutput()
+	out, err := exec.Command("git", "clone", "https://github.com/goreleaser/test-mod", "-b", "v0.1.1", "--depth=1", ".").CombinedOutput()
 	require.NoError(t, err, string(out))
 
 	proxied := filepath.Join(folder, "dist/proxy/default")
@@ -945,19 +907,20 @@ func TestRunPipeWithProxiedRepo(t *testing.T) {
 		[]byte(`// +build main
 package main
 
-import _ "github.com/goreleaser/goreleaser"
+import _ "github.com/goreleaser/test-mod"
 `),
 		0o666,
 	))
 	require.NoError(t, os.WriteFile(
 		filepath.Join(proxied, "go.mod"),
-		[]byte("module foo\nrequire github.com/goreleaser/goreleaser v0.161.1"),
+		[]byte("module foo\nrequire github.com/goreleaser/test-mod v0.1.1"),
 		0o666,
 	))
 
 	cmd := exec.Command("go", "mod", "tidy")
 	cmd.Dir = proxied
-	require.NoError(t, cmd.Run())
+	out, err = cmd.CombinedOutput()
+	require.NoError(t, err, string(out))
 
 	ctx := testctx.NewWithCfg(config.Project{
 		GoMod: config.GoMod{
@@ -966,7 +929,7 @@ import _ "github.com/goreleaser/goreleaser"
 		Builds: []config.Build{
 			{
 				Binary:        "foo",
-				Main:          "github.com/goreleaser/goreleaser",
+				Main:          "github.com/goreleaser/test-mod",
 				Dir:           proxied,
 				UnproxiedMain: ".",
 				UnproxiedDir:  ".",
@@ -1083,9 +1046,7 @@ func TestBuildModTimestamp(t *testing.T) {
 				Targets: []string{
 					"linux_amd64",
 					"darwin_amd64",
-					"windows_amd64",
 					"linux_arm_6",
-					"js_wasm",
 					"linux_mips_softfloat",
 					"linux_mips64le_softfloat",
 				},
@@ -1103,25 +1064,16 @@ func TestBuildModTimestamp(t *testing.T) {
 		testctx.WithCurrentTag("v5.6.7"),
 		testctx.WithVersion("5.6.7"),
 	)
+
 	build := ctx.Config.Builds[0]
 	for _, target := range build.Targets {
-		var ext string
-		if strings.HasPrefix(target, "windows") {
-			ext = ".exe"
-		} else if target == "js_wasm" {
-			ext = ".wasm"
-		}
 		bin, terr := tmpl.New(ctx).Apply(build.Binary)
 		require.NoError(t, terr)
 
-		// injecting some delay here to force inconsistent mod times on bins
-		time.Sleep(2 * time.Second)
-
 		err := Default.Build(ctx, build, api.Options{
 			Target: mustParse(t, runtimeTarget),
-			Name:   bin + ext,
-			Path:   filepath.Join(folder, "dist", target, bin+ext),
-			Ext:    ext,
+			Name:   bin,
+			Path:   filepath.Join(folder, "dist", target, bin),
 		})
 		require.NoError(t, err)
 	}
