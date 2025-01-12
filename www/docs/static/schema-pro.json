@@ -2254,6 +2254,12 @@
 					},
 					"mod_timestamp": {
 						"type": "string"
+					},
+					"extensions": {
+						"items": {
+							"type": "string"
+						},
+						"type": "array"
 					}
 				},
 				"additionalProperties": false,

@@ -17,8 +17,7 @@ On the other hand, the GoReleaser configuration file will not be parsed again,
 which means you might need to specify the dist directory path if it is different
 than the default.
 
-!!! success "GoReleaser Pro"
-    This subcommand is a [GoReleaser Pro feature](https://goreleaser.com/pro/).
+This command is only available in GoReleaser Pro.
 
 
 ```
