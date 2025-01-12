@@ -8,10 +8,6 @@
 
 version: 2
 
-before:
-  hooks:
-    - cargo install nodejs-sea-creator
-
 builds:
   - builder: node
     targets:
