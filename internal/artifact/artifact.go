@@ -500,7 +500,7 @@ func ByGoarch(s string) Filter {
 func ByGoarm(s string) Filter {
 	return func(a *Artifact) bool {
 		return s == a.Goarm ||
-			(a.Goarm == "" && s == experimental.DefaultGOARM())
+			(a.Goarch == "arm" && a.Goarm == "" && s == experimental.DefaultGOARM())
 	}
 }
 
@@ -508,7 +508,7 @@ func ByGoarm(s string) Filter {
 func ByGoamd64(s string) Filter {
 	return func(a *Artifact) bool {
 		return s == a.Goamd64 ||
-			(a.Goamd64 == "" && s == "v1")
+			(a.Goarch == "amd64" && a.Goamd64 == "" && s == "v1")
 	}
 }
 
