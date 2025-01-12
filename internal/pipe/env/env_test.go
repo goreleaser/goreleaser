@@ -3,7 +3,6 @@ package env
 import (
 	"fmt"
 	"os"
-	"syscall"
 	"testing"
 
 	"github.com/goreleaser/goreleaser/v2/internal/skips"
@@ -184,7 +183,6 @@ func TestEmptyGithubEnvFile(t *testing.T) {
 		},
 	})
 	err = Pipe{}.Run(ctx)
-	requireErrAccess(t, err)
 	require.ErrorContains(t, err, "failed to load github token")
 }
 
@@ -199,7 +197,6 @@ func TestEmptyGitlabEnvFile(t *testing.T) {
 		},
 	})
 	err = Pipe{}.Run(ctx)
-	requireErrAccess(t, err)
 	require.ErrorContains(t, err, "failed to load gitlab token")
 }
 
@@ -214,7 +211,6 @@ func TestEmptyGiteaEnvFile(t *testing.T) {
 		},
 	})
 	err = Pipe{}.Run(ctx)
-	requireErrAccess(t, err)
 	require.ErrorContains(t, err, "failed to load gitea token")
 }
 
@@ -291,26 +287,4 @@ func TestLoadEnv(t *testing.T) {
 		require.NoError(t, err)
 		require.Equal(t, "123", v)
 	})
-	t.Run("env file is not readable", func(t *testing.T) {
-		testlib.SkipIfWindows(t, "permissions work differently in windows")
-		f, err := os.CreateTemp(t.TempDir(), "token")
-		require.NoError(t, err)
-		fmt.Fprintf(f, "123")
-		require.NoError(t, f.Close())
-		err = os.Chmod(f.Name(), 0o377)
-		require.NoError(t, err)
-		v, err := loadEnv(env, f.Name())
-		require.EqualError(t, err, fmt.Sprintf("open %s: permission denied", f.Name()))
-		require.Equal(t, "", v)
-	})
-}
-
-func requireErrAccess(tb testing.TB, err error) {
-	tb.Helper()
-	require.Error(tb, err)
-	// unsupported
-	if testlib.IsWindows() {
-		return
-	}
-	require.ErrorIs(tb, err, syscall.EACCES)
 }

@@ -98,9 +98,7 @@ type ErrProxy struct {
 }
 
 func newErrProxy(err error) error {
-	return ErrProxy{
-		err: err,
-	}
+	return newDetailedErrProxy(err, "")
 }
 
 func newDetailedErrProxy(err error, details string) error {

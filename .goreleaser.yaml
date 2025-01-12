@@ -359,7 +359,7 @@ nfpms:
       - archlinux
     dependencies:
       - git
-    recommends:
+    suggests:
       - golang
       - rustup
       - zig

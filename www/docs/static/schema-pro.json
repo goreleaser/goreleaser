@@ -887,6 +887,30 @@
 							"type": "string"
 						},
 						"type": "array"
+					},
+					"ai": {
+						"$ref": "#/$defs/ChangelogAI"
+					}
+				},
+				"additionalProperties": false,
+				"type": "object"
+			},
+			"ChangelogAI": {
+				"properties": {
+					"use": {
+						"type": "string",
+						"enum": [
+							"anthropic",
+							"openai",
+							"ollama"
+						],
+						"default": ""
+					},
+					"prompt": {
+						"$ref": "#/$defs/IncludedMarkdown"
+					},
+					"model": {
+						"type": "string"
 					}
 				},
 				"additionalProperties": false,
@@ -2230,6 +2254,12 @@
 					},
 					"mod_timestamp": {
 						"type": "string"
+					},
+					"extensions": {
+						"items": {
+							"type": "string"
+						},
+						"type": "array"
 					}
 				},
 				"additionalProperties": false,
