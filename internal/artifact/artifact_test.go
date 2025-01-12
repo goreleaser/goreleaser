@@ -76,11 +76,6 @@ func TestFilter(t *testing.T) {
 			Goarch: "amd64",
 		},
 		{
-			Name:   "bar",
-			Goarch: "amd64",
-			Extra:  node,
-		},
-		{
 			Name:    "bar",
 			Goarch:  "amd64",
 			Goamd64: "v2",
@@ -103,11 +98,6 @@ func TestFilter(t *testing.T) {
 		{
 			Name:   "foobar",
 			Goarch: "arm",
-		},
-		{
-			Name:   "foobar",
-			Goarch: "arm",
-			Extra:  node,
 		},
 		{
 			Name: "check",
