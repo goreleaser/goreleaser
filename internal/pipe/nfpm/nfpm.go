@@ -559,10 +559,11 @@ func create(ctx *context.Context, fpm config.NFPM, format string, artifacts []*a
 		Gomips:  artifacts[0].Gomips,
 		Goamd64: artifacts[0].Goamd64,
 		Extra: map[string]interface{}{
-			artifact.ExtraID:     fpm.ID,
-			artifact.ExtraFormat: format,
-			artifact.ExtraExt:    "." + format,
-			extraFiles:           contents,
+			artifact.ExtraID:      fpm.ID,
+			artifact.ExtraFormat:  format,
+			artifact.ExtraExt:     "." + format,
+			artifact.ExtraBuilder: artifacts[0].Extra[artifact.ExtraBuilder],
+			extraFiles:            contents,
 		},
 	})
 	return nil

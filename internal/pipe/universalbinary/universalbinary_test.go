@@ -238,8 +238,9 @@ func TestRun(t *testing.T) {
 			Goarch: arch,
 			Type:   artifact.Binary,
 			Extra: map[string]interface{}{
-				artifact.ExtraBinary: "fake",
-				artifact.ExtraID:     "foo",
+				artifact.ExtraBinary:  "fake",
+				artifact.ExtraID:      "foo",
+				artifact.ExtraBuilder: "go",
 			},
 		}
 		ctx1.Artifacts.Add(&art)
@@ -254,8 +255,9 @@ func TestRun(t *testing.T) {
 			Goarch: arch,
 			Type:   artifact.Binary,
 			Extra: map[string]interface{}{
-				artifact.ExtraBinary: "fake",
-				artifact.ExtraID:     "foo",
+				artifact.ExtraBinary:  "fake",
+				artifact.ExtraID:      "foo",
+				artifact.ExtraBuilder: "rust",
 			},
 		})
 	}
@@ -266,6 +268,7 @@ func TestRun(t *testing.T) {
 		require.Len(t, unis, 1)
 		checkUniversalBinary(t, unis[0])
 		require.Equal(t, "foobar", unis[0].ID())
+		require.NotEmpty(t, artifact.ExtraOr(*unis[0], artifact.ExtraBuilder, ""))
 	})
 
 	t.Run("replacing", func(t *testing.T) {
@@ -275,6 +278,7 @@ func TestRun(t *testing.T) {
 		require.Len(t, unis, 1)
 		checkUniversalBinary(t, unis[0])
 		require.True(t, artifact.ExtraOr(*unis[0], artifact.ExtraReplaces, false))
+		require.NotEmpty(t, artifact.ExtraOr(*unis[0], artifact.ExtraBuilder, ""))
 	})
 
 	t.Run("keeping", func(t *testing.T) {
@@ -284,6 +288,7 @@ func TestRun(t *testing.T) {
 		require.Len(t, unis, 1)
 		checkUniversalBinary(t, unis[0])
 		require.False(t, artifact.ExtraOr(*unis[0], artifact.ExtraReplaces, true))
+		require.NotEmpty(t, artifact.ExtraOr(*unis[0], artifact.ExtraBuilder, ""))
 	})
 
 	t.Run("bad template", func(t *testing.T) {

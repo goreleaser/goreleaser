@@ -1388,6 +1388,7 @@ func TestRunPipeUniversalBinary(t *testing.T) {
 			artifact.ExtraFormat:   "tar.gz",
 			artifact.ExtraBinaries: []string{"unibin"},
 			artifact.ExtraReplaces: true,
+			artifact.ExtraBuilder:  "rust",
 		},
 	})
 
@@ -1435,16 +1436,16 @@ func TestRunPipeUniversalBinaryNotReplacing(t *testing.T) {
 	)
 	path := filepath.Join(folder, "bin.tar.gz")
 	ctx.Artifacts.Add(&artifact.Artifact{
-		Name:    "bin_amd64.tar.gz",
-		Path:    path,
-		Goos:    "darwin",
-		Goarch:  "amd64",
-		Goamd64: "v1",
-		Type:    artifact.UploadableArchive,
+		Name:   "bin_amd64.tar.gz",
+		Path:   path,
+		Goos:   "darwin",
+		Goarch: "amd64",
+		Type:   artifact.UploadableArchive,
 		Extra: map[string]interface{}{
 			artifact.ExtraID:       "unibin",
 			artifact.ExtraFormat:   "tar.gz",
 			artifact.ExtraBinaries: []string{"unibin"},
+			artifact.ExtraBuilder:  "rust",
 		},
 	})
 	ctx.Artifacts.Add(&artifact.Artifact{
@@ -1471,6 +1472,7 @@ func TestRunPipeUniversalBinaryNotReplacing(t *testing.T) {
 			artifact.ExtraFormat:   "tar.gz",
 			artifact.ExtraBinaries: []string{"unibin"},
 			artifact.ExtraReplaces: false,
+			artifact.ExtraBuilder:  "zig",
 		},
 	})
 

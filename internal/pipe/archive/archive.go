@@ -236,6 +236,7 @@ func create(ctx *context.Context, arch config.Archive, binaries []*artifact.Arti
 		art.Goriscv64 = binaries[0].Goriscv64
 		art.Target = binaries[0].Target
 		art.Extra[artifact.ExtraReplaces] = binaries[0].Extra[artifact.ExtraReplaces]
+		art.Extra[artifact.ExtraBuilder] = binaries[0].Extra[artifact.ExtraBuilder]
 	}
 
 	ctx.Artifacts.Add(art)
@@ -282,6 +283,7 @@ func skip(ctx *context.Context, archive config.Archive, binaries []*artifact.Art
 				artifact.ExtraFormat:   archive.Format,
 				artifact.ExtraBinary:   binary.Name,
 				artifact.ExtraReplaces: binaries[0].Extra[artifact.ExtraReplaces],
+				artifact.ExtraBuilder:  binaries[0].Extra[artifact.ExtraBuilder],
 			},
 		})
 	}
