@@ -499,24 +499,16 @@ func ByGoarch(s string) Filter {
 // ByGoarm is a predefined filter that filters by the given goarm.
 func ByGoarm(s string) Filter {
 	return func(a *Artifact) bool {
-		switch ExtraOr(*a, ExtraBuilder, "") {
-		case "go", "": // empty is usually tests
-			return s == a.Goarm
-		default:
-			return s == experimental.DefaultGOARM()
-		}
+		return s == a.Goarm ||
+			(a.Goarch == "arm" && a.Goarm == "" && s == experimental.DefaultGOARM())
 	}
 }
 
 // ByGoamd64 is a predefined filter that filters by the given goamd64.
 func ByGoamd64(s string) Filter {
 	return func(a *Artifact) bool {
-		switch ExtraOr(*a, ExtraBuilder, "") {
-		case "go", "": // empty is usually tests
-			return s == a.Goamd64
-		default:
-			return s == "v1"
-		}
+		return s == a.Goamd64 ||
+			(a.Goarch == "amd64" && a.Goamd64 == "" && s == "v1")
 	}
 }
 
