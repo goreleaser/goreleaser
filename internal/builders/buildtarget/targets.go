@@ -2,6 +2,9 @@
 // goos, goarch, goarm, goamd64, gomips and go version.
 package buildtarget
 
+// TODO: move this to internal/builders/golang, as it actually is related to
+// and used in the go builder only.
+
 import (
 	"fmt"
 	"regexp"
@@ -237,6 +240,8 @@ var (
 		"plan9amd64",
 		"plan9arm",
 		"solarisamd64",
+		"solarissparc",
+		"solarissparc64",
 		"windowsarm",
 		"windowsarm64",
 		"windows386",
@@ -276,6 +281,8 @@ var (
 		"wasm",
 		"riscv64",
 		"loong64",
+		"sparc",
+		"sparc64",
 	}
 
 	validGoamd64   = []string{"v1", "v2", "v3", "v4"}
