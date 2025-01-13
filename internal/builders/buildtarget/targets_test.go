@@ -247,6 +247,8 @@ func TestGoosGoarchCombos(t *testing.T) {
 		{"plan9", "amd64", true},
 		{"plan9", "arm", true},
 		{"solaris", "amd64", true},
+		{"solaris", "sparc", true},
+		{"solaris", "sparc64", true},
 		{"windows", "386", true},
 		{"windows", "amd64", true},
 		{"windows", "arm", true},
