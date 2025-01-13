@@ -19,7 +19,7 @@ GoReleaser is maintained by:
     ![Carine's picture](https://avatars.githubusercontent.com/u/22084223?s=96&v=4){ align=left }
     Carine designed all the art used in GoReleaser's brand and website.
 
--   [@CrazyMax](https://github.com/CrazyMax)
+-   [@crazy-max](https://github.com/crazy-max)
 
     ---
 
