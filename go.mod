@@ -3,7 +3,7 @@ module github.com/goreleaser/goreleaser/v2
 go 1.23.0
 
 require (
-	code.gitea.io/sdk/gitea v0.19.0
+	code.gitea.io/sdk/gitea v0.20.0
 	dario.cat/mergo v1.0.1
 	github.com/Masterminds/semver/v3 v3.3.1
 	github.com/anchore/quill v0.5.0
@@ -57,6 +57,7 @@ require (
 require (
 	cel.dev/expr v0.16.1 // indirect
 	cloud.google.com/go/monitoring v1.21.0 // indirect
+	github.com/42wim/httpsig v1.2.1 // indirect
 	github.com/GoogleCloudPlatform/opentelemetry-operations-go/detectors/gcp v1.24.1 // indirect
 	github.com/GoogleCloudPlatform/opentelemetry-operations-go/exporter/metric v0.48.1 // indirect
 	github.com/GoogleCloudPlatform/opentelemetry-operations-go/internal/resourcemapping v0.48.1 // indirect
