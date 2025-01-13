@@ -90,7 +90,7 @@ GoReleaser is maintained by:
     ---
 
     ![Grachev' picture](https://avatars.githubusercontent.com/u/700998?s=96&v=4){ align=left }
-    Grachev contributed in several areas from 2018 to 2020.
+    Mikhail contributed in several areas from 2018 to 2020.
 
 
 -   Nick Galbreath aka [@client9](https://github.com/client9)
