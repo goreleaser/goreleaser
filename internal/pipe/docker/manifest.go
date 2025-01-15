@@ -3,9 +3,11 @@ package docker
 import (
 	"fmt"
 	"maps"
+	"math"
 	"slices"
 	"strings"
 
+	"github.com/agnivade/levenshtein"
 	"github.com/caarlos0/log"
 	"github.com/goreleaser/goreleaser/v2/internal/artifact"
 	"github.com/goreleaser/goreleaser/v2/internal/ids"
@@ -156,6 +158,16 @@ func withDigest(use, name string, images []*artifact.Artifact) string {
 			break
 		}
 	}
-	log.Warnf("did not find the digest for %s using %s, defaulting to insecure mode", name, use)
+
+	suggestion := ""
+	suggestionDistance := math.MaxInt
+	for _, img := range images {
+		if d := levenshtein.ComputeDistance(name, img.Name); d < suggestionDistance {
+			suggestion = name
+			suggestionDistance = d
+		}
+	}
+
+	log.Warnf("did not find the digest for %q using %s, did you mean %q?", name, use, suggestion)
 	return name
 }
