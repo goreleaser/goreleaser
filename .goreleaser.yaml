@@ -185,7 +185,7 @@ archives:
       {{- if .Arm }}v{{ .Arm }}{{ end -}}
     format_overrides:
       - goos: windows
-        format: zip
+        formats: zip
     builds_info:
       group: root
       owner: root
