@@ -70,12 +70,12 @@ GoReleaser is maintained by:
     ![Furkan's picture](https://avatars.githubusercontent.com/u/16493751?s=96&v=4){ align=left }
     Furkan contributed code, and blog posts from 2021 to 2023.
 
--   Radek Simko aka [@dradeksimko](https://github.com/radeksimko)
+-   Radek Simko aka [@radeksimko](https://github.com/radeksimko)
 
     ---
 
     ![Radek's picture](https://avatars.githubusercontent.com/u/287584?s=96&v=4){ align=left }
-    Raked contributed to many areas between 2020 and 2021.
+    Radek contributed to many areas between 2020 and 2021.
 
 -   Dj Gilcrease aka [@djgilcrease](https://github.com/djgilcrease)
 
