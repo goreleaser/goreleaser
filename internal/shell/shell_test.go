@@ -1,6 +1,7 @@
 package shell_test
 
 import (
+	"os/exec"
 	"path/filepath"
 	"strings"
 	"testing"
@@ -50,10 +51,12 @@ func TestRunCommand(t *testing.T) {
 	t.Run("with env and dir", func(t *testing.T) {
 		testlib.SkipIfWindows(t, "what would be a similar behavior in windows?")
 		dir := t.TempDir()
-		err := shell.Run(
+		touch, err := exec.LookPath("touch")
+		require.NoError(t, err)
+		err = shell.Run(
 			testctx.New(),
 			dir,
-			[]string{"sh", "-c", `/usr/bin/touch $FOO`},
+			[]string{"sh", "-c", touch + " $FOO"},
 			[]string{"FOO=bar"},
 			false,
 		)
