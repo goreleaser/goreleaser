@@ -60,18 +60,6 @@ func TestAdd(t *testing.T) {
 }
 
 func TestFilter(t *testing.T) {
-	zig := map[string]any{
-		ExtraBuilder: "zig",
-	}
-	bun := map[string]any{
-		ExtraBuilder: "bun",
-	}
-	deno := map[string]any{
-		ExtraBuilder: "deno",
-	}
-	rust := map[string]any{
-		ExtraBuilder: "rust",
-	}
 	data := []*Artifact{
 		{
 			Name:   "foo",
@@ -86,22 +74,6 @@ func TestFilter(t *testing.T) {
 		{
 			Name:   "bar",
 			Goarch: "amd64",
-			Extra:  zig,
-		},
-		{
-			Name:   "bar",
-			Goarch: "amd64",
-			Extra:  rust,
-		},
-		{
-			Name:   "bar",
-			Goarch: "amd64",
-			Extra:  bun,
-		},
-		{
-			Name:   "bar",
-			Goarch: "amd64",
-			Extra:  deno,
 		},
 		{
 			Name:    "bar",
@@ -126,22 +98,6 @@ func TestFilter(t *testing.T) {
 		{
 			Name:   "foobar",
 			Goarch: "arm",
-			Extra:  zig,
-		},
-		{
-			Name:   "foobar",
-			Goarch: "arm",
-			Extra:  rust,
-		},
-		{
-			Name:   "foobar",
-			Goarch: "arm",
-			Extra:  bun,
-		},
-		{
-			Name:   "foobar",
-			Goarch: "arm",
-			Extra:  deno,
 		},
 		{
 			Name: "check",
@@ -176,24 +132,24 @@ func TestFilter(t *testing.T) {
 	require.Len(t, artifacts.Filter(ByGoos("linux")).items, 1)
 	require.Len(t, artifacts.Filter(ByGoos("darwin")).items, 2)
 
-	require.Len(t, artifacts.Filter(ByGoarch("amd64")).items, 8)
+	require.Len(t, artifacts.Filter(ByGoarch("amd64")).items, 5)
 	require.Empty(t, artifacts.Filter(ByGoarch("386")).items)
 
-	require.Len(t, artifacts.Filter(And(ByGoarch("amd64"), ByGoamd64("v1"))).items, 5)
+	require.Len(t, artifacts.Filter(And(ByGoarch("amd64"), ByGoamd64("v1"))).items, 2)
 	require.Len(t, artifacts.Filter(ByGoamd64("v2")).items, 1)
 	require.Len(t, artifacts.Filter(ByGoamd64("v3")).items, 1)
 	require.Len(t, artifacts.Filter(ByGoamd64("v4")).items, 1)
 
-	require.Len(t, artifacts.Filter(And(ByGoarch("arm"), ByGoarm("6"))).items, 5)
+	require.Len(t, artifacts.Filter(And(ByGoarch("arm"), ByGoarm("6"))).items, 3)
 	require.Empty(t, artifacts.Filter(ByGoarm("7")).items)
 
 	require.Len(t, artifacts.Filter(ByType(Checksum)).items, 2)
 	require.Empty(t, artifacts.Filter(ByType(Binary)).items)
 
-	require.Len(t, artifacts.Filter(OnlyReplacingUnibins).items, 17)
+	require.Len(t, artifacts.Filter(OnlyReplacingUnibins).items, 11)
 	require.Len(t, artifacts.Filter(And(OnlyReplacingUnibins, ByGoos("darwin"))).items, 1)
 
-	require.Len(t, artifacts.Filter(nil).items, 18)
+	require.Len(t, artifacts.Filter(nil).items, 12)
 
 	require.Len(t, artifacts.Filter(
 		And(

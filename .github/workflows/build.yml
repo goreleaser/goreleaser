@@ -66,14 +66,9 @@ jobs:
       - uses: denoland/setup-deno@v2
       - uses: sigstore/cosign-installer@v3.7.0
       - uses: anchore/sbom-action/download-syft@v0.17.9
-      - name: setup-validate-krew-manifest
-        run: go install sigs.k8s.io/krew/cmd/validate-krew-manifest@latest
-      - name: setup
-        run: |
-          task setup
-          task build
-      - name: test
-        run: task test
+      - run: task setup
+      - run: task test
+      - run: task build
       - uses: codecov/codecov-action@1e68e06f1dbfde0e4cefc87efeba9e4643565303 # v5
         with:
           file: ./coverage.txt

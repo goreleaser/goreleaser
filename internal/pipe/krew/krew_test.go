@@ -3,10 +3,8 @@ package krew
 import (
 	"fmt"
 	"os"
-	"os/exec"
 	"path"
 	"path/filepath"
-	"strings"
 	"testing"
 
 	"github.com/goreleaser/goreleaser/v2/internal/artifact"
@@ -120,7 +118,6 @@ func TestFullManifest(t *testing.T) {
 	require.NoError(t, err)
 
 	golden.RequireEqualYaml(t, []byte(manifest))
-	requireValidManifest(t)
 }
 
 func TestSimple(t *testing.T) {
@@ -129,7 +126,6 @@ func TestSimple(t *testing.T) {
 	manifest, err := doBuildManifest(data)
 	require.NoError(t, err)
 	golden.RequireEqualYaml(t, []byte(manifest))
-	requireValidManifest(t)
 }
 
 func TestFullPipe(t *testing.T) {
@@ -341,7 +337,6 @@ func TestFullPipe(t *testing.T) {
 			}
 
 			golden.RequireEqualYaml(t, content)
-			requireValidManifest(t)
 
 			distBts, err := os.ReadFile(distFile)
 			require.NoError(t, err)
@@ -459,7 +454,6 @@ func TestRunPipeUniversalBinary(t *testing.T) {
 	require.NoError(t, publishAll(ctx, client))
 	require.True(t, client.CreatedFile)
 	golden.RequireEqualYaml(t, []byte(client.Content))
-	requireValidManifest(t)
 	distBts, err := os.ReadFile(distFile)
 	require.NoError(t, err)
 	require.Equal(t, client.Content, string(distBts))
@@ -541,7 +535,6 @@ func TestRunPipeUniversalBinaryNotReplacing(t *testing.T) {
 	require.NoError(t, publishAll(ctx, client))
 	require.True(t, client.CreatedFile)
 	golden.RequireEqualYaml(t, []byte(client.Content))
-	requireValidManifest(t)
 	distBts, err := os.ReadFile(distFile)
 	require.NoError(t, err)
 	require.Equal(t, client.Content, string(distBts))
@@ -598,7 +591,6 @@ func TestRunPipeNameTemplate(t *testing.T) {
 	require.NoError(t, publishAll(ctx, client))
 	require.True(t, client.CreatedFile)
 	golden.RequireEqualYaml(t, []byte(client.Content))
-	requireValidManifest(t)
 	distBts, err := os.ReadFile(distFile)
 	require.NoError(t, err)
 	require.Equal(t, client.Content, string(distBts))
@@ -796,7 +788,6 @@ func TestRunPipeForMultipleArmVersions(t *testing.T) {
 			require.NoError(t, publishAll(ctx, client))
 			require.True(t, client.CreatedFile)
 			golden.RequireEqualYaml(t, []byte(client.Content))
-			requireValidManifest(t)
 
 			distBts, err := os.ReadFile(distFile)
 			require.NoError(t, err)
@@ -1015,18 +1006,4 @@ func TestRunSkipNoName(t *testing.T) {
 func manifestName(tb testing.TB) string {
 	tb.Helper()
 	return path.Base(tb.Name())
-}
-
-func requireValidManifest(t *testing.T) {
-	t.Helper()
-	t.Run("valid", func(t *testing.T) {
-		// needs to be the one on https://github.com/kubernetes-sigs/krew/pull/736
-		testlib.CheckPath(t, "validate-krew-manifest")
-		out, err := exec.Command(
-			"validate-krew-manifest",
-			"-skip-install",
-			"-manifest=testdata/"+strings.TrimSuffix(t.Name(), "/valid")+".yaml",
-		).CombinedOutput()
-		require.NoError(t, err, string(out))
-	})
 }

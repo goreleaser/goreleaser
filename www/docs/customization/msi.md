@@ -44,6 +44,15 @@ msi:
     extra_files:
       - logo.ico
 
+    # Sets extensions to msitools/wix.
+    # See: https://wixtoolset.org/docs/v3/howtos/general/extension_usage_introduction/
+    #
+    # Templates: allowed.
+    # Since: v2.6.
+    extensions:
+      - '{{ if eq .Runtime.Goos "windows" }}WixUIExtension{{ end }}'
+      - "WixUtilExtension"
+
     # Whether to remove the archives from the artifact list.
     # If left as false, your end release will have both the zip and the msi
     # files.
@@ -78,7 +87,6 @@ Here's an example `wsx` file that you can build upon:
 			Id='*'
 			Keywords='Installer'
 			Description="{{.ProjectName}} installer"
-			Comments=''
 			Manufacturer='My Company'
 			InstallerVersion='200'
 			Languages='1033'

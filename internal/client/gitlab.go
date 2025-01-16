@@ -15,7 +15,7 @@ import (
 	"github.com/goreleaser/goreleaser/v2/internal/tmpl"
 	"github.com/goreleaser/goreleaser/v2/pkg/config"
 	"github.com/goreleaser/goreleaser/v2/pkg/context"
-	"github.com/xanzy/go-gitlab"
+	gitlab "gitlab.com/gitlab-org/api/client-go"
 )
 
 const DefaultGitLabDownloadURL = "https://gitlab.com"
@@ -31,7 +31,7 @@ type gitlabClient struct {
 }
 
 // newGitLab returns a gitlab client implementation.
-func newGitLab(ctx *context.Context, token string) (*gitlabClient, error) {
+func newGitLab(ctx *context.Context, token string, opts ...gitlab.ClientOptionFunc) (*gitlabClient, error) {
 	transport := &http.Transport{
 		Proxy: http.ProxyFromEnvironment,
 		TLSClientConfig: &tls.Config{
@@ -39,11 +39,11 @@ func newGitLab(ctx *context.Context, token string) (*gitlabClient, error) {
 			InsecureSkipVerify: ctx.Config.GitLabURLs.SkipTLSVerify,
 		},
 	}
-	options := []gitlab.ClientOptionFunc{
+	options := append([]gitlab.ClientOptionFunc{
 		gitlab.WithHTTPClient(&http.Client{
 			Transport: transport,
 		}),
-	}
+	}, opts...)
 	if ctx.Config.GitLabURLs.API != "" {
 		apiURL, err := tmpl.New(ctx).Apply(ctx.Config.GitLabURLs.API)
 		if err != nil {

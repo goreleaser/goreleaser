@@ -18,6 +18,7 @@ import (
 	"github.com/goreleaser/goreleaser/v2/internal/artifact"
 	"github.com/goreleaser/goreleaser/v2/internal/client"
 	"github.com/goreleaser/goreleaser/v2/internal/commitauthor"
+	"github.com/goreleaser/goreleaser/v2/internal/experimental"
 	"github.com/goreleaser/goreleaser/v2/internal/pipe"
 	"github.com/goreleaser/goreleaser/v2/internal/skips"
 	"github.com/goreleaser/goreleaser/v2/internal/tmpl"
@@ -308,6 +309,9 @@ func preparePkg(
 			data.SourceRoots[key] = folder
 			data.Archives[key] = archive
 			plat := goosToPlatform[art.Goos+goarch+art.Goarm]
+			if plat == "" {
+				return "", errors.New("invalid platform: " + art.Goos + goarch + art.Goarm)
+			}
 			platforms[plat] = true
 		}
 	}
@@ -330,6 +334,7 @@ func expandGoarch(goarch string) []string {
 var goosToPlatform = map[string]string{
 	"linuxamd64":  "x86_64-linux",
 	"linuxarm64":  "aarch64-linux",
+	"linuxarm":    "armv" + experimental.DefaultGOARM() + "l-linux",
 	"linuxarm6":   "armv6l-linux",
 	"linuxarm7":   "armv7l-linux",
 	"linux386":    "i686-linux",
