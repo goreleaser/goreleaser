@@ -34,20 +34,30 @@ func TestRunCommand(t *testing.T) {
 
 	t.Run("cmd with output", func(t *testing.T) {
 		testlib.SkipIfWindows(t, "what would be a similar behavior in windows?")
-		testlib.CheckPath(t, "sh")
+		err := shell.Run(
+			testctx.New(),
+			".",
+			[]string{"sh", "-c", `echo something; exit 1`},
+			[]string{},
+			true,
+		)
 		require.EqualError(
-			t,
-			shell.Run(testctx.New(), "", []string{"sh", "-c", `echo something; exit 1`}, []string{}, true),
+			t, err,
 			`shell: 'sh -c echo something; exit 1': exit status 1: something`,
 		)
 	})
 
 	t.Run("with env and dir", func(t *testing.T) {
 		testlib.SkipIfWindows(t, "what would be a similar behavior in windows?")
-		testlib.CheckPath(t, "sh")
-		testlib.CheckPath(t, "touch")
 		dir := t.TempDir()
-		require.NoError(t, shell.Run(testctx.New(), dir, []string{"sh", "-c", "touch $FOO"}, []string{"FOO=bar"}, false))
+		err := shell.Run(
+			testctx.New(),
+			dir,
+			[]string{"sh", "-c", `/usr/bin/touch $FOO`},
+			[]string{"FOO=bar"},
+			false,
+		)
+		require.NoError(t, err)
 		require.FileExists(t, filepath.Join(dir, "bar"))
 	})
 }
