@@ -97,13 +97,13 @@ func Exec(ctx context.Context, command []string, env []string, dir string) error
 	cmd := exec.CommandContext(ctx, command[0], command[1:]...)
 	cmd.Env = env
 	cmd.Dir = dir
-	log.Debug("running")
+	log.WithField("cmd", command[0]).Debug("executing")
 	out, err := cmd.CombinedOutput()
 	if err != nil {
 		return fmt.Errorf("%w: %s", err, string(out))
 	}
 	if s := string(out); s != "" {
-		log.WithField("cmd", command).Info(s)
+		log.WithField("output", s).Info(command[0] + " " + command[1])
 	}
 	return nil
 }
