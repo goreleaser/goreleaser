@@ -70,18 +70,11 @@ GoReleaser is maintained by:
     ![Furkan's picture](https://avatars.githubusercontent.com/u/16493751?s=96&v=4){ align=left }
     Furkan contributed code, and blog posts from 2021 to 2023.
 
--   Radek Simko aka [@radeksimko](https://github.com/radeksimko)
-
-    ---
-
-    ![Radek's picture](https://avatars.githubusercontent.com/u/287584?s=96&v=4){ align=left }
-    Radek contributed to many areas between 2020 and 2021.
-
 -   Dj Gilcrease aka [@djgilcrease](https://github.com/djgilcrease)
 
     ---
 
-    ![Dj' picture](https://avatars.githubusercontent.com/u/1778574?s=96&v=4){ align=left }
+    ![Dj's picture](https://avatars.githubusercontent.com/u/1778574?s=96&v=4){ align=left }
     Dj contributed to the overall RPM format in nFPM and chglog back in 2019 and
     2020.
 
@@ -89,17 +82,8 @@ GoReleaser is maintained by:
 
     ---
 
-    ![Grachev' picture](https://avatars.githubusercontent.com/u/700998?s=96&v=4){ align=left }
+    ![Grachev's picture](https://avatars.githubusercontent.com/u/700998?s=96&v=4){ align=left }
     Mikhail contributed in several areas from 2018 to 2020.
-
-
--   Nick Galbreath aka [@client9](https://github.com/client9)
-
-    ---
-
-    ![Nicks' picture](https://avatars.githubusercontent.com/u/217179?s=96&v=4){ align=left }
-    Nick created GoDownloader and contributed to GoReleaser back in 2017 and
-    2018.
 
 </div>
 
@@ -111,11 +95,27 @@ These people helped along the way, but have now moved on into other things.
 
 <div class="grid cards" markdown>
 
+-   Radek Simko aka [@radeksimko](https://github.com/radeksimko)
+
+    ---
+
+    ![Radek's picture](https://avatars.githubusercontent.com/u/287584?s=96&v=4){ align=left }
+    Radek contributed to many areas between 2020 and 2021.
+
+
 -   Barnaby Keene aka [@Southclaws](https://github.com/Southclaws)
 
     ---
 
-    ![Barnaby' picture](https://avatars.githubusercontent.com/u/1636971?s=96&v=4){ align=left }
+    ![Barnaby's picture](https://avatars.githubusercontent.com/u/1636971?s=96&v=4){ align=left }
     Barnaby worked on the Scoop integration back in 2018.
+
+-   Nick Galbreath aka [@client9](https://github.com/client9)
+
+    ---
+
+    ![Nicks' picture](https://avatars.githubusercontent.com/u/217179?s=96&v=4){ align=left }
+    Nick created GoDownloader and contributed to GoReleaser back in 2017 and
+    2018.
 
 </div>
