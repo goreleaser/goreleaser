@@ -92,7 +92,7 @@ func (Pipe) Default(ctx *context.Context) error {
 				if len(archive.Formats) == 1 {
 					archive.NameTemplate = defaultBinaryNameTemplate
 				} else {
-					return fmt.Errorf("cannot mix 'binary' with other archive formats")
+					return errors.New("cannot mix 'binary' with other archive formats")
 				}
 			}
 		}
