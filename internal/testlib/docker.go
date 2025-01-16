@@ -1,6 +1,8 @@
 package testlib
 
 import (
+	"os"
+	"os/exec"
 	"sync"
 	"testing"
 
@@ -14,15 +16,21 @@ var (
 	dockerPool     *dockertest.Pool
 )
 
-type skipper func(args ...any)
-
-func (s skipper) Fatal(...any) {
-	s("docker is not available")
-}
-
+// CheckDocker skips the test if docker is not running.
 func CheckDocker(tb testing.TB) {
 	tb.Helper()
-	MustDockerPool(skipper(tb.Skip))
+	CheckPath(tb, "docker")
+	if !IsDockerRunning() {
+		tb.Skip("could not run 'docker ps'")
+	}
+}
+
+// IsDockerRunning executes a `docker ps` and returns true if it succeeds.
+func IsDockerRunning() bool {
+	if os.Getenv("CI") == "true" {
+		return true
+	}
+	return exec.Command("docker", "ps", "-q").Run() == nil
 }
 
 // MustDockerPool gets a single dockertet.Pool.

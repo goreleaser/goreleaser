@@ -34,7 +34,7 @@ func start(tb testing.TB) {
 
 // TODO: this test is too big... split in smaller tests? Mainly the manifest ones...
 func TestRunPipe(t *testing.T) {
-	testlib.CheckPath(t, "docker")
+	testlib.CheckDocker(t)
 	testlib.SkipIfWindows(t, "images only available for windows")
 	type errChecker func(*testing.T, error)
 	shouldErr := func(msg string) errChecker {
