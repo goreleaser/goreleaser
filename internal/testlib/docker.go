@@ -16,12 +16,6 @@ var (
 	dockerPool     *dockertest.Pool
 )
 
-type skipper func(args ...any)
-
-func (s skipper) Fatal(...any) {
-	s("docker is not available")
-}
-
 // CheckDocker skips the test if docker is not running.
 func CheckDocker(tb testing.TB) {
 	tb.Helper()
