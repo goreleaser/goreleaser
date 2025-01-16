@@ -6,6 +6,7 @@ require (
 	code.gitea.io/sdk/gitea v0.20.0
 	dario.cat/mergo v1.0.1
 	github.com/Masterminds/semver/v3 v3.3.1
+	github.com/agnivade/levenshtein v1.1.1
 	github.com/anchore/quill v0.5.0
 	github.com/atc0005/go-teams-notify/v2 v2.13.0
 	github.com/awslabs/amazon-ecr-credential-helper/ecr-login v0.0.0-20240514230400-03fa26f5508f
@@ -15,7 +16,7 @@ require (
 	github.com/caarlos0/go-reddit/v3 v3.0.1
 	github.com/caarlos0/go-shellwords v1.0.12
 	github.com/caarlos0/go-version v0.2.0
-	github.com/caarlos0/log v0.4.6
+	github.com/caarlos0/log v0.4.8
 	github.com/charmbracelet/keygen v0.5.1
 	github.com/charmbracelet/lipgloss v1.0.0
 	github.com/chrismellard/docker-credential-acr-env v0.0.0-20230304212654-82a0ddb27589
@@ -176,7 +177,7 @@ require (
 	github.com/docker/go-metrics v0.0.1 // indirect
 	github.com/docker/go-units v0.5.0
 	github.com/dustin/go-humanize v1.0.1 // indirect
-	github.com/elliotchance/orderedmap/v2 v2.2.0 // indirect
+	github.com/elliotchance/orderedmap/v2 v2.7.0 // indirect
 	github.com/emirpasic/gods v1.18.1 // indirect
 	github.com/evanphx/json-patch/v5 v5.6.0 // indirect
 	github.com/felixge/httpsnoop v1.0.4 // indirect

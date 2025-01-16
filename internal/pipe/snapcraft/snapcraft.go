@@ -456,7 +456,9 @@ func push(ctx *context.Context, snap *artifact.Artifact) error {
 	cmd := exec.CommandContext(ctx, "snapcraft", "upload", "--release="+strings.Join(releases, ","), snap.Path)
 	log.WithField("args", cmd.Args).Info("pushing snap")
 	if out, err := cmd.CombinedOutput(); err != nil {
-		if strings.Contains(string(out), reviewWaitMsg) || strings.Contains(string(out), humanReviewMsg) || strings.Contains(string(out), needsReviewMsg) {
+		if strings.Contains(string(out), reviewWaitMsg) ||
+			strings.Contains(string(out), humanReviewMsg) ||
+			strings.Contains(string(out), needsReviewMsg) {
 			log.Warn(reviewWaitMsg)
 		} else {
 			return fmt.Errorf("failed to push %s package: %w: %s", snap.Path, err, string(out))
