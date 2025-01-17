@@ -33,11 +33,6 @@ app_bundles:
     # Templates: allowed.
     if: '{{ eq .Os "linux" }}'
 
-    # More files that will be available in the context in which the image
-    # will be built.
-    extra_files:
-      - README.md
-
     # Icon file to use in the app.
     # Must be a `icns` file.
     #
