@@ -1049,6 +1049,9 @@ type MacOSNotarize struct {
 type MacOSSign struct {
 	Certificate string `yaml:"certificate" json:"certificate"`
 	Password    string `yaml:"password" json:"password"`
+
+	// v2.6+
+	Entitlements string `yaml:"entitlements,omitempty" json:"entitlements,omitempty"`
 }
 
 // SnapcraftAppMetadata for the binaries that will be in the snap package.
