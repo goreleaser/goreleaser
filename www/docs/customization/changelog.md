@@ -157,12 +157,12 @@ changelog:
     # Enabling AI disables changelog grouping.
     #
     # Valid options: 'anthropic', `openai', 'ollama`.
-    use: anthropic
+    use: openai
 
     # Which model to use.
     #
     # Defaults to the provider's default model.
-    model: claude-xyz
+    model: o1-mini
 
     # The prompt to use..
     #
@@ -171,7 +171,8 @@ changelog:
     #
     # Templates: allowed.
     # Extra template fields available:
-    # - `.Commits`: will contain all the commits for this release, one per line.
+    # - `.ReleaseNotes`: will contain the release notes, with groups and
+    #     everything else you have set up so far.
     prompt:
       # Loads from an URL.
       from_url:
@@ -187,5 +188,13 @@ changelog:
         path: ./README.md
 ```
 
-You can test this feature by using the
+The default prompt will ask it to write a short intro with outlining the most
+exciting features, merge dependency bumps of the same dependency together, and
+to not use emojis.
+
+You can of course set anything you wish makes sense in the `prompt` field.
+Don't forget to give it the current release notes as well, available as
+`{{ .ReleaseNotes }}`.
+
+You can test this by using the
 [`goreleaser changelog` command](../cmd/goreleaser_changelog.md).
