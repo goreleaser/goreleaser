@@ -18,7 +18,7 @@ archives:
     builds:
       - default
 
-    # Archive formats.
+    # Archive format(s).
     #
     # If format is `binary`, no archives are created and the binaries are instead
     # uploaded directly.
@@ -36,29 +36,8 @@ archives:
     # - `binary`
     #
     # Default: ['tar.gz'].
-    # Since: v2.6-unreleased.
-    formats: ["zip", "tar.xz"]
-
-    # Archive format.
-    #
-    # If format is `binary`, no archives are created and the binaries are instead
-    # uploaded directly.
-    #
-    # Valid options are:
-    # - `tar.gz`
-    # - `tgz`
-    # - `tar.xz`
-    # - `txz`
-    # - `tar.zst`
-    # - `tzst` # <!-- md:inline_version v2.1 -->.
-    # - `tar`
-    # - `gz`
-    # - `zip`
-    # - `binary`
-    #
-    # Default: 'tar.gz'.
-    # Deprecated: use 'formats' instead.
-    format: zip
+    # Accepts multiple formats on v2.6-unreleased+.
+    format: ["zip", "tar.xz"]
 
     # This will create an archive without any binaries, only the files are there.
     # The name template must not contain any references to `Os`, `Arch` and etc, since the archive will be meta.
@@ -111,7 +90,7 @@ archives:
       - # Which GOOS to override the format for.
         goos: windows
 
-        # The formats to use for the given GOOS.
+        # The format(s) to use for the given GOOS.
         #
         # Valid options are:
         # - `tar.gz`
@@ -126,14 +105,8 @@ archives:
         # - `binary` # be extra-cautious with the file name template in this case!
         # - `none`   # skips this archive
         #
-        # Since: v2.6-unreleased
-        format: [ 'zip', 'tar.gz' ]
-
-        # The format to use for the given GOOS.
-        #
-        # Valid options are `tar.gz`, `tgz`, `tar.xz`, `txz`, tar`, `gz`, `zip`, `binary`, and `none`.
-        # Deprecated: use 'formats' instead.
-        format: zip
+        # Accepts multiple formats on v2.6-unreleased+.
+        format: ["zip", "tar.gz"]
 
     # Additional files/globs you want to add to the archive.
     #

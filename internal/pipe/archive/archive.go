@@ -16,7 +16,6 @@ import (
 	"github.com/caarlos0/log"
 	"github.com/goreleaser/goreleaser/v2/internal/archivefiles"
 	"github.com/goreleaser/goreleaser/v2/internal/artifact"
-	"github.com/goreleaser/goreleaser/v2/internal/deprecate"
 	"github.com/goreleaser/goreleaser/v2/internal/ids"
 	"github.com/goreleaser/goreleaser/v2/internal/semerrgroup"
 	"github.com/goreleaser/goreleaser/v2/internal/skips"
@@ -59,19 +58,8 @@ func (Pipe) Default(ctx *context.Context) error {
 	}
 	for i := range ctx.Config.Archives {
 		archive := &ctx.Config.Archives[i]
-		if len(archive.Format) > 0 {
-			deprecate.Notice(ctx, "archives.format")
-			archive.Formats = append(archive.Formats, archive.Format...)
-		}
-		for i := range archive.FormatOverrides {
-			over := &archive.FormatOverrides[i]
-			if len(over.Format) > 0 {
-				deprecate.Notice(ctx, "archives.format_overrides.format")
-				over.Formats = append(over.Formats, over.Format...)
-			}
-		}
-		if len(archive.Formats) == 0 {
-			archive.Formats = []string{"tar.gz"}
+		if len(archive.Format) == 0 {
+			archive.Format = []string{"tar.gz"}
 		}
 		if archive.ID == "" {
 			archive.ID = "default"
@@ -88,8 +76,8 @@ func (Pipe) Default(ctx *context.Context) error {
 		}
 		if archive.NameTemplate == "" {
 			archive.NameTemplate = defaultNameTemplate
-			if slices.Contains(archive.Formats, "binary") {
-				if len(archive.Formats) == 1 {
+			if slices.Contains(archive.Format, "binary") {
+				if len(archive.Format) == 1 {
 					archive.NameTemplate = defaultBinaryNameTemplate
 				} else {
 					return errors.New("cannot mix 'binary' with other archive formats")
@@ -106,7 +94,7 @@ func (Pipe) Run(ctx *context.Context) error {
 	g := semerrgroup.New(ctx.Parallelism)
 	for i, archive := range ctx.Config.Archives {
 		if archive.Meta {
-			for _, format := range archive.Formats {
+			for _, format := range archive.Format {
 				g.Go(func() error {
 					return createMeta(ctx, archive, format)
 				})
@@ -125,7 +113,7 @@ func (Pipe) Run(ctx *context.Context) error {
 			filter = append(filter, artifact.ByIDs(archive.Builds...))
 		}
 
-		isBinary := slices.Contains(archive.Formats, "binary")
+		isBinary := slices.Contains(archive.Format, "binary")
 		artifacts := ctx.Artifacts.Filter(artifact.And(filter...)).GroupByPlatform()
 		if err := checkArtifacts(artifacts); err != nil && !isBinary && !archive.AllowDifferentBinaryCount {
 			return fmt.Errorf("invalid archive: %d: %w", i, ErrArchiveDifferentBinaryCount)
@@ -314,10 +302,10 @@ func skip(ctx *context.Context, archive config.Archive, binaries []*artifact.Art
 func packageFormats(archive config.Archive, platform string) []string {
 	for _, override := range archive.FormatOverrides {
 		if strings.HasPrefix(platform, override.Goos) {
-			return override.Formats
+			return override.Format
 		}
 	}
-	return archive.Formats
+	return archive.Format
 }
 
 // NewEnhancedArchive enhances a pre-existing archive.Archive instance
