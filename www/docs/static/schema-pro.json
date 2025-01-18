@@ -322,6 +322,18 @@
 					},
 					"bundle": {
 						"type": "string"
+					},
+					"extra_files": {
+						"items": {
+							"$ref": "#/$defs/File"
+						},
+						"type": "array"
+					},
+					"templated_extra_files": {
+						"items": {
+							"$ref": "#/$defs/TemplatedFile"
+						},
+						"type": "array"
 					}
 				},
 				"additionalProperties": false,
@@ -2301,6 +2313,9 @@
 						"type": "string"
 					},
 					"password": {
+						"type": "string"
+					},
+					"entitlements": {
 						"type": "string"
 					}
 				},

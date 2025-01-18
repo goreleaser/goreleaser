@@ -92,12 +92,12 @@ var BuildPipeline = []Piper{
 	build.Pipe{},
 	// universal binary handling
 	universalbinary.Pipe{},
+	// upx
+	upx.Pipe{},
 	// sign binaries
 	sign.BinaryPipe{},
 	// notarize macos apps
 	notary.MacOS{},
-	// upx
-	upx.Pipe{},
 }
 
 // BuildCmdPipeline is the pipeline run by goreleaser build.

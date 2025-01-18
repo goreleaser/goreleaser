@@ -61,6 +61,7 @@ func signAndNotarize(ctx *context.Context, cfg config.MacOSSignNotarize) error {
 	if err := tmpl.New(ctx).ApplyAll(
 		&cfg.Sign.Certificate,
 		&cfg.Sign.Password,
+		&cfg.Sign.Entitlements,
 		&cfg.Notarize.Key,
 		&cfg.Notarize.KeyID,
 		&cfg.Notarize.IssuerID,
@@ -93,7 +94,8 @@ func signAndNotarize(ctx *context.Context, cfg config.MacOSSignNotarize) error {
 		if err != nil {
 			return fmt.Errorf("notarize: macos: %s: %w", bin.Path, err)
 		}
-		signCfg = signCfg.WithTimestampServer("http://timestamp.apple.com/ts01")
+		signCfg = signCfg.WithTimestampServer("http://timestamp.apple.com/ts01").
+			WithEntitlements(cfg.Sign.Entitlements)
 
 		log.WithField("binary", bin.Path).Info("signing")
 		if err := quill.Sign(*signCfg); err != nil {
