@@ -350,7 +350,7 @@ nfpms:
         file_info:
           mode: 0644
           mtime: "{{ .CommitDate }}"
-    format:
+    formats:
       - apk
       - deb
       - rpm
