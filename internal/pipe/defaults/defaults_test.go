@@ -28,7 +28,7 @@ func TestFillBasicData(t *testing.T) {
 	require.Contains(t, ctx.Config.Builds[0].Goos, "linux")
 	require.Contains(t, ctx.Config.Builds[0].Goarch, "386")
 	require.Contains(t, ctx.Config.Builds[0].Goarch, "amd64")
-	require.NotEmpty(t, ctx.Config.Archives[0].Formats)
+	require.NotEmpty(t, ctx.Config.Archives[0].Format)
 	require.Empty(t, ctx.Config.Dockers)
 	require.Equal(t, "https://github.com", ctx.Config.GitHubURLs.Download)
 	require.NotEmpty(t, ctx.Config.Archives[0].NameTemplate)
