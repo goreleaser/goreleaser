@@ -50,11 +50,58 @@ app_bundles:
     #
     # Templates: allowed.
     mod_timestamp: "{{ .CommitTimestamp }}"
+
+    # Additional files/globs you want to add to the bundle.
+    # You can use this to override the default generated 'Contents/Info.plist'
+    # and/or to add more files.
+    #
+    # Since: v2.6-unreleased.
+    # Templates: allowed.
+    extra_files:
+      - src: ./release/Info.plist
+        dst: Contents/Info.plist
+      - src: ./release/icon.png
+        dst: Contents/Resources/icon.png
+        # File info.
+        # Not all fields are supported by all formats available formats.
+        #
+        # Default: copied from the source file.
+        info:
+          # Must be in time.RFC3339Nano format.
+          #
+          # Templates: allowed.
+          mtime: "{{ .CommitDate }}"
+
+    # Additional templated files to add to the app bundle.
+    # Those files will have their contents pass through the template engine,
+    # and its results will be added to the archive.
+    # and/or to add more files.
+    #
+    # Since: v2.6-unreleased.
+    # Templates: allowed.
+    # Extra template fields: `AppName`, `BinaryName`, and `Bundle`.
+    templated_extra_files:
+      # src can also be a glob, as long as dst is a directory.
+      - src: "LICENSE.md.tpl"
+        dst: LICENSE.md
+
+        # File info.
+        # Not all fields are supported by all formats available formats.
+        #
+        # Default: copied from the source file.
+        info:
+          # Must be in time.RFC3339Nano format.
+          #
+          # Templates: allowed.
+          mtime: "{{ .CommitDate }}"
 ```
 
 ## Limitations
 
 1. As of v2.4, App Bundles can only be used together with [DMGs](dmg.md). This
    might change in the future.
+1. As of v2.6, even though the configuration allows `mode`, `owner`, and `group`
+   in `extra_files` and `templated_extra_files`, those are not used. You should
+   get a warning if you do so.
 
 <!-- md:templates -->
