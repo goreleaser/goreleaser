@@ -185,7 +185,7 @@ archives:
       {{- if .Arm }}v{{ .Arm }}{{ end -}}
     format_overrides:
       - goos: windows
-        formats: zip
+        format: zip
     builds_info:
       group: root
       owner: root
@@ -350,7 +350,7 @@ nfpms:
         file_info:
           mode: 0644
           mtime: "{{ .CommitDate }}"
-    formats:
+    format:
       - apk
       - deb
       - rpm
