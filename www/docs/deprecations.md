@@ -42,7 +42,8 @@ Description.
 ### archives.format
 
 > since v2.6
-> Format was renamed to `formats`, and now accepts a list of formats.
+
+Format was renamed to `formats`, and now accepts a list of formats.
 
 === "Before"
 
@@ -66,11 +67,13 @@ Description.
 ### archives.format_overrides.format
 
 > since v2.6
-> Format was renamed to `formats`, and now accepts a list of formats.
+
+Format was renamed to `formats`, and now accepts a list of formats.
 
 !!! tip
 
     It will still accept a single string, e.g.: `formats: zip`.
+    In most cases you can simply rename the property to formats.
 
 === "Before"
 
