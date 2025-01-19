@@ -34,7 +34,7 @@ const (
 // ErrArchiveDifferentBinaryCount happens when an archive uses several builds which have different goos/goarch/etc sets,
 // causing the archives for some platforms to have more binaries than others.
 // GoReleaser breaks in these cases as it will only cause confusion to other users.
-var ErrArchiveDifferentBinaryCount = errors.New("archive has different count of binaries for each platform, which may cause your users confusion.\nLearn more at https://goreleaser.com/errors/multiple-binaries-archive\n") //nolint:revive
+var ErrArchiveDifferentBinaryCount = errors.New("archive has different count of binaries for each platform, which may cause your users confusion.\nLearn more at https://goreleaser.com/errors/multiple-binaries-archive") //nolint:revive
 
 //nolint:gochecknoglobals
 var lock sync.Mutex
@@ -77,11 +77,7 @@ func (Pipe) Default(ctx *context.Context) error {
 		if archive.NameTemplate == "" {
 			archive.NameTemplate = defaultNameTemplate
 			if slices.Contains(archive.Format, "binary") {
-				if len(archive.Format) == 1 {
-					archive.NameTemplate = defaultBinaryNameTemplate
-				} else {
-					return errors.New("cannot mix 'binary' with other archive formats")
-				}
+				archive.NameTemplate = defaultBinaryNameTemplate
 			}
 		}
 		ids.Inc(archive.ID)

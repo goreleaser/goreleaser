@@ -808,7 +808,8 @@ func TestDefaultMixFormats(t *testing.T) {
 			},
 		},
 	})
-	require.Error(t, Pipe{}.Default(ctx))
+	require.NoError(t, Pipe{}.Default(ctx))
+	require.Equal(t, defaultBinaryNameTemplate, ctx.Config.Archives[0].NameTemplate)
 }
 
 func TestDefaultNoFiles(t *testing.T) {
