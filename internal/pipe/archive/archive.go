@@ -298,7 +298,7 @@ func skip(ctx *context.Context, archive config.Archive, binaries []*artifact.Art
 			Target:    binary.Target,
 			Extra: map[string]interface{}{
 				artifact.ExtraID:       archive.ID,
-				artifact.ExtraFormat:   archive.Format,
+				artifact.ExtraFormat:   "binary",
 				artifact.ExtraBinary:   binary.Name,
 				artifact.ExtraReplaces: binaries[0].Extra[artifact.ExtraReplaces],
 			},
