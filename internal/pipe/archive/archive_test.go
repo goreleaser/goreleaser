@@ -81,6 +81,7 @@ func TestRunPipe(t *testing.T) {
 								Owner: "root",
 								Group: "root",
 							},
+							Formats:              formats,
 							NameTemplate:         defaultNameTemplate,
 							StripBinaryDirectory: dets.Strip,
 							Files: []config.File{
@@ -89,12 +90,12 @@ func TestRunPipe(t *testing.T) {
 							},
 							FormatOverrides: []config.FormatOverride{
 								{
-									Goos:   "windows",
-									Format: []string{"zip"},
+									Goos:    "windows",
+									Formats: []string{"zip"},
 								},
 								{
-									Goos:   "freebsd",
-									Format: []string{"none"},
+									Goos:    "freebsd",
+									Formats: []string{"none"},
 								},
 							},
 						},
@@ -207,7 +208,6 @@ func TestRunPipe(t *testing.T) {
 			ctx.Artifacts.Add(freebsdAmd64Build)
 			ctx.Version = "0.0.1"
 			ctx.Git.CurrentTag = "v0.0.1"
-			ctx.Config.Archives[0].Format = append(ctx.Config.Archives[0].Format, formats...)
 			require.NoError(t, Pipe{}.Run(ctx))
 
 			require.Empty(t, ctx.Artifacts.Filter(
@@ -288,7 +288,7 @@ func TestRunPipeDifferentBinaryCount(t *testing.T) {
 		Archives: []config.Archive{
 			{
 				ID:           "myid",
-				Format:       []string{"tar.gz"},
+				Formats:      []string{"tar.gz"},
 				Builds:       []string{"default", "foobar"},
 				NameTemplate: defaultNameTemplate,
 			},
@@ -414,7 +414,7 @@ func TestRunPipeBinary(t *testing.T) {
 			Dist: dist,
 			Archives: []config.Archive{
 				{
-					Format:       []string{"binary"},
+					Formats:      []string{"binary"},
 					NameTemplate: defaultBinaryNameTemplate,
 					Builds:       []string{"default", "default2"},
 				},
@@ -502,7 +502,7 @@ func TestRunPipeDistRemoved(t *testing.T) {
 			Archives: []config.Archive{
 				{
 					NameTemplate: "nope",
-					Format:       []string{"zip"},
+					Formats:      []string{"zip"},
 					Builds:       []string{"default"},
 				},
 			},
@@ -540,7 +540,7 @@ func TestRunPipeInvalidGlob(t *testing.T) {
 				{
 					Builds:       []string{"default"},
 					NameTemplate: "foo",
-					Format:       []string{"zip"},
+					Formats:      []string{"zip"},
 					Files: []config.File{
 						{Source: "[x-]"},
 					},
@@ -579,12 +579,12 @@ func TestRunPipeNameTemplateWithSpace(t *testing.T) {
 				{
 					Builds:       []string{"default"},
 					NameTemplate: " foo_{{.Os}}_{{.Arch}} ",
-					Format:       []string{"zip"},
+					Formats:      []string{"zip"},
 				},
 				{
 					Builds:       []string{"default"},
 					NameTemplate: " foo_{{.Os}}_{{.Arch}} ",
-					Format:       []string{"binary"},
+					Formats:      []string{"binary"},
 				},
 			},
 		},
@@ -625,7 +625,7 @@ func TestRunPipeInvalidNameTemplate(t *testing.T) {
 				{
 					Builds:       []string{"default"},
 					NameTemplate: "foo{{ .fff }",
-					Format:       []string{"zip"},
+					Formats:      []string{"zip"},
 				},
 			},
 		},
@@ -660,7 +660,7 @@ func TestRunPipeInvalidFilesNameTemplate(t *testing.T) {
 				{
 					Builds:       []string{"default"},
 					NameTemplate: "foo",
-					Format:       []string{"zip"},
+					Formats:      []string{"zip"},
 					Files: []config.File{
 						{Source: "{{.asdsd}"},
 					},
@@ -699,7 +699,7 @@ func TestRunPipeInvalidWrapInDirectoryTemplate(t *testing.T) {
 					Builds:          []string{"default"},
 					NameTemplate:    "foo",
 					WrapInDirectory: "foo{{ .fff }",
-					Format:          []string{"zip"},
+					Formats:         []string{"zip"},
 				},
 			},
 		},
@@ -738,7 +738,7 @@ func TestRunPipeWrap(t *testing.T) {
 					Builds:          []string{"default"},
 					NameTemplate:    "foo",
 					WrapInDirectory: "foo_{{ .Os }}",
-					Format:          []string{"tar.gz"},
+					Formats:         []string{"tar.gz"},
 					Files: []config.File{
 						{Source: "README.*"},
 					},
@@ -777,7 +777,7 @@ func TestDefault(t *testing.T) {
 	})
 	require.NoError(t, Pipe{}.Default(ctx))
 	require.NotEmpty(t, ctx.Config.Archives[0].NameTemplate)
-	require.Equal(t, "tar.gz", ctx.Config.Archives[0].Format[0])
+	require.Equal(t, "tar.gz", ctx.Config.Archives[0].Formats[0])
 	require.NotEmpty(t, ctx.Config.Archives[0].Files)
 }
 
@@ -787,7 +787,7 @@ func TestDefaultSet(t *testing.T) {
 			{
 				Builds:       []string{"default"},
 				NameTemplate: "foo",
-				Format:       []string{"zip"},
+				Formats:      []string{"zip"},
 				Files: []config.File{
 					{Source: "foo"},
 				},
@@ -796,7 +796,7 @@ func TestDefaultSet(t *testing.T) {
 	})
 	require.NoError(t, Pipe{}.Default(ctx))
 	require.Equal(t, "foo", ctx.Config.Archives[0].NameTemplate)
-	require.Equal(t, "zip", ctx.Config.Archives[0].Format[0])
+	require.Equal(t, "zip", ctx.Config.Archives[0].Formats[0])
 	require.Equal(t, config.File{Source: "foo"}, ctx.Config.Archives[0].Files[0])
 }
 
@@ -804,7 +804,7 @@ func TestDefaultMixFormats(t *testing.T) {
 	ctx := testctx.NewWithCfg(config.Project{
 		Archives: []config.Archive{
 			{
-				Format: []string{"tar.gz", "binary"},
+				Formats: []string{"tar.gz", "binary"},
 			},
 		},
 	})
@@ -816,7 +816,7 @@ func TestDefaultNoFiles(t *testing.T) {
 	ctx := testctx.NewWithCfg(config.Project{
 		Archives: []config.Archive{
 			{
-				Format: []string{"tar.gz"},
+				Formats: []string{"tar.gz"},
 			},
 		},
 	})
@@ -828,7 +828,7 @@ func TestDefaultFormatBinary(t *testing.T) {
 	ctx := testctx.NewWithCfg(config.Project{
 		Archives: []config.Archive{
 			{
-				Format: []string{"binary"},
+				Formats: []string{"binary"},
 			},
 		},
 	})
@@ -840,16 +840,16 @@ func TestFormatFor(t *testing.T) {
 	ctx := testctx.NewWithCfg(config.Project{
 		Archives: []config.Archive{
 			{
-				Builds: []string{"default"},
-				Format: []string{"tar.gz", "tar.xz"},
+				Builds:  []string{"default"},
+				Formats: []string{"tar.gz", "tar.xz"},
 				FormatOverrides: []config.FormatOverride{
 					{
-						Goos:   "windows",
-						Format: []string{"zip", "7z"},
+						Goos:    "windows",
+						Formats: []string{"zip", "7z"},
 					},
 					{
-						Goos:   "darwin",
-						Format: []string{"none"},
+						Goos:    "darwin",
+						Formats: []string{"none"},
 					},
 				},
 			},
@@ -886,11 +886,11 @@ func TestBinaryOverride(t *testing.T) {
 					Files: []config.File{
 						{Source: "README.*"},
 					},
-					Format: []string{"tar.gz", "zip"},
+					Formats: []string{"tar.gz", "zip"},
 					FormatOverrides: []config.FormatOverride{
 						{
-							Goos:   "windows",
-							Format: []string{"binary"},
+							Goos:    "windows",
+							Formats: []string{"binary"},
 						},
 					},
 				},
@@ -966,7 +966,7 @@ func TestRunPipeSameArchiveFilename(t *testing.T) {
 						{Source: "README.*"},
 						{Source: "./foo/**/*"},
 					},
-					Format: []string{"tar.gz"},
+					Formats: []string{"tar.gz"},
 				},
 			},
 		},
@@ -1072,7 +1072,7 @@ func TestArchive_globbing(t *testing.T) {
 			Archives: []config.Archive{
 				{
 					Builds:       []string{"default"},
-					Format:       []string{"tar.gz"},
+					Formats:      []string{"tar.gz"},
 					NameTemplate: "foo",
 					Files:        files,
 				},
@@ -1152,7 +1152,7 @@ func TestInvalidFormat(t *testing.T) {
 				ID:           "foo",
 				NameTemplate: "foo",
 				Meta:         true,
-				Format:       []string{"7z"},
+				Formats:      []string{"7z"},
 			},
 		},
 	})
@@ -1167,7 +1167,7 @@ func TestIssue3803(t *testing.T) {
 				ID:           "foo",
 				NameTemplate: "foo",
 				Meta:         true,
-				Format:       []string{"zip"},
+				Formats:      []string{"zip"},
 				Files: []config.File{
 					{Source: "./testdata/a/a.txt"},
 				},
@@ -1176,7 +1176,7 @@ func TestIssue3803(t *testing.T) {
 				ID:           "foobar",
 				NameTemplate: "foobar",
 				Meta:         true,
-				Format:       []string{"zip"},
+				Formats:      []string{"zip"},
 				Files: []config.File{
 					{Source: "./testdata/a/b/a.txt"},
 				},
@@ -1195,10 +1195,10 @@ func TestExtraFormatWhenOverride(t *testing.T) {
 			{
 				ID:           "foo",
 				NameTemplate: "foo",
-				Format:       []string{"tar.gz"},
+				Formats:      []string{"tar.gz"},
 				FormatOverrides: []config.FormatOverride{{
-					Goos:   "windows",
-					Format: []string{"zip"},
+					Goos:    "windows",
+					Formats: []string{"zip"},
 				}},
 				Files: []config.File{
 					{Source: "./testdata/a/a.txt"},
@@ -1237,4 +1237,23 @@ func TestSkip(t *testing.T) {
 	t.Run("dont skip", func(t *testing.T) {
 		require.False(t, Pipe{}.Skip(testctx.New()))
 	})
+}
+
+func TestDefaultDeprecatd(t *testing.T) {
+	ctx := testctx.NewWithCfg(config.Project{
+		Archives: []config.Archive{
+			{
+				Format: "tar.gz",
+				FormatOverrides: []config.FormatOverride{
+					{
+						Format: "zip",
+					},
+				},
+			},
+		},
+	})
+	require.NoError(t, Pipe{}.Default(ctx))
+	require.True(t, ctx.Deprecated)
+	require.Equal(t, "tar.gz", ctx.Config.Archives[0].Formats[0])
+	require.Equal(t, "zip", ctx.Config.Archives[0].FormatOverrides[0].Formats[0])
 }
