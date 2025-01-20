@@ -614,6 +614,14 @@ func TestGiteaChangelog(t *testing.T) {
 				Commits: []*gitea.Commit{
 					{
 						CommitMeta: &gitea.CommitMeta{
+							SHA: "2efbc15d0904f5f966355967a4eedd61a8006660",
+						},
+						RepoCommit: &gitea.RepoCommit{
+							Message: "chore: commit without author",
+						},
+					},
+					{
+						CommitMeta: &gitea.CommitMeta{
 							SHA: "c8488dc825debca26ade35aefca234b142a515c9",
 						},
 						Author: &gitea.User{
@@ -650,6 +658,10 @@ func TestGiteaChangelog(t *testing.T) {
 	result, err := client.Changelog(ctx, repo, "v1.0.0", "v1.1.0")
 	require.NoError(t, err)
 	require.Equal(t, []ChangelogItem{
+		{
+			SHA:     "2efbc15d0904f5f966355967a4eedd61a8006660",
+			Message: "chore: commit without author",
+		},
 		{
 			SHA:            "c8488dc825debca26ade35aefca234b142a515c9",
 			Message:        "feat: impl something",
