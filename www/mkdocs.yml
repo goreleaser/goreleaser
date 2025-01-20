@@ -214,6 +214,7 @@ nav:
           - ci/woodpecker.md
 
   - More resources:
+      - maintainers.md
       - sponsors.md
       - users.md
       - deprecations.md
