@@ -177,6 +177,8 @@ archives:
 
     # Before and after hooks for each archive.
     # Skipped if archive format is binary.
+    # If multiple formats are set, hooks will be executed for each format.
+    # Extra template fields available: `.Format`.
     # This feature is only available in GoReleaser Pro.
     hooks:
       before:

@@ -31,9 +31,7 @@ This will automatically upload all your `apk`, `deb`, and `rpm` files.
 
 You can also have plenty of customization options:
 
-```yaml
-# goreleaser.yaml
-
+```yaml title=".goreleaser.yaml"
 cloudsmiths:
   - # Cloudsmith organization.
     # Config is skipped if empty

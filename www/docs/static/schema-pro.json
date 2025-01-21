@@ -360,19 +360,8 @@
 					"name_template": {
 						"type": "string"
 					},
-					"format": {
-						"type": "string",
-						"enum": [
-							"tar",
-							"tgz",
-							"tar.gz",
-							"zip",
-							"gz",
-							"tar.xz",
-							"txz",
-							"binary"
-						],
-						"default": "tar.gz"
+					"formats": {
+						"$ref": "#/$defs/StringArray"
 					},
 					"format_overrides": {
 						"items": {
@@ -413,6 +402,20 @@
 							"$ref": "#/$defs/TemplatedFile"
 						},
 						"type": "array"
+					},
+					"format": {
+						"type": "string",
+						"enum": [
+							"tar",
+							"tgz",
+							"tar.gz",
+							"zip",
+							"gz",
+							"tar.xz",
+							"txz",
+							"binary"
+						],
+						"default": "tar.gz"
 					}
 				},
 				"additionalProperties": false,
@@ -1549,6 +1552,9 @@
 				"properties": {
 					"goos": {
 						"type": "string"
+					},
+					"formats": {
+						"$ref": "#/$defs/StringArray"
 					},
 					"format": {
 						"type": "string",

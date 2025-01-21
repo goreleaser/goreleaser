@@ -9,9 +9,7 @@ include module information in the resulting binary, which can be printed using
 
 Configuration options available are described below.
 
-```yaml
-# goreleaser.yaml
-
+```yaml title=".goreleaser.yaml"
 gomod:
   # Proxy a module from proxy.golang.org, making the builds verifiable.
   # This will only be effective if running against a tag. Snapshots will ignore

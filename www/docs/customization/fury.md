@@ -22,9 +22,7 @@ This will automatically upload all your `deb` and `rpm` files.
 
 You can also have plenty of customization options:
 
-```yaml
-# goreleaser.yaml
-
+```yaml title=".goreleaser.yaml"
 furies:
   - # Fury account.
     # Config is skipped if empty
