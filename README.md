@@ -122,9 +122,9 @@ Love our work and community? [Become a backer](https://opencollective.com/gorele
 
 ### Contributors
 
-This project exists thanks to all the people who contribute. [[Contribute](CONTRIBUTING.md)].
-<a href="https://github.com/goreleaser/goreleaser/graphs/contributors"><img src="https://opencollective.com/goreleaser/contributors.svg?width=890" /></a>
+This project exists thanks to all the people who contribute.
+[Contribution guide](CONTRIBUTING.md).
 
-## Stargazers over time
+## Stars
 
 [![Stargazers over time](https://starchart.cc/goreleaser/goreleaser.svg?variant=adaptive)](https://starchart.cc/goreleaser/goreleaser)
