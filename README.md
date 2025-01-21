@@ -6,10 +6,10 @@
 
 ---
 
-GoReleaser builds Go binaries for several platforms, creates a GitHub release and then
-pushes a Homebrew formula to a tap repository. All that wrapped in your favorite CI.
+We handle the complexities of releasing so you can focus in building what really
+matters: **your software**.
 
-![](https://raw.githubusercontent.com/goreleaser/example-simple/main/goreleaser.gif)
+![](https://goreleaser.com/static/goreleaser.png)
 
 ---
 
