@@ -85,7 +85,7 @@ GoReleaser is maintained by:
     ![Grachev's picture](https://avatars.githubusercontent.com/u/700998?s=96&v=4){ align=left }
     Mikhail contributed in several areas from 2018 to 2020.
 
--   Vedant Goyal aka [@vedantmgoyal9](https://github.com/vedantmgoyal9)
+-   Vedant Mohan Goyal aka [@vedantmgoyal9](https://github.com/vedantmgoyal9)
 
     ---
 
