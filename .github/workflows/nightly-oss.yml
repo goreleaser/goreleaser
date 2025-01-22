@@ -20,6 +20,8 @@ jobs:
         with:
           fetch-depth: 1
       - id: check
+        env:
+          GITHUB_TOKEN: "${{ secrets.GITHUB_TOKEN }}"
         run: |
           if gh run list --workflow nightly-oss.yml -c $(git rev-parse --short HEAD) -s success | grep 'completed'; then
             echo "should_run=false" >> $GITHUB_OUTPUT
