@@ -90,7 +90,7 @@ GoReleaser is maintained by:
     ---
 
     ![Vedant's picture](https://avatars.githubusercontent.com/u/83997633?s=96&v=4){ align=left }
-    Vedant made several contributions to the winget integration, as well as the
+    Vedant made several contributions to the winget integration, as well as
     several of the builders.
 
 </div>
