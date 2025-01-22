@@ -85,6 +85,14 @@ GoReleaser is maintained by:
     ![Grachev's picture](https://avatars.githubusercontent.com/u/700998?s=96&v=4){ align=left }
     Mikhail contributed in several areas from 2018 to 2020.
 
+-   Vedant Mohan Goyal aka [@vedantmgoyal9](https://github.com/vedantmgoyal9)
+
+    ---
+
+    ![Vedant's picture](https://avatars.githubusercontent.com/u/83997633?s=96&v=4){ align=left }
+    Vedant made several contributions to the winget integration, as well as
+    several of the builders.
+
 </div>
 
 
