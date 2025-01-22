@@ -94,7 +94,7 @@ You can see the instructions for each of them below.
     baseurl=https://repo.goreleaser.com/yum/
     enabled=1
     gpgcheck=0' | sudo tee /etc/yum.repos.d/goreleaser.repo
-    sudo yum install goreleaser
+    sudo yum --exclude=goreleaser-pro install goreleaser
     ```
 
 === "Pro"
@@ -105,7 +105,7 @@ You can see the instructions for each of them below.
     baseurl=https://repo.goreleaser.com/yum/
     enabled=1
     gpgcheck=0' | sudo tee /etc/yum.repos.d/goreleaser.repo
-    sudo yum install goreleaser-pro
+    sudo yum --exclude=goreleaser install goreleaser-pro
     ```
 
 ## AUR
