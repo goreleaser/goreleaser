@@ -11,10 +11,26 @@ permissions:
   packages: write
 
 jobs:
+  check:
+    runs-on: ubuntu-latest
+    outputs:
+      should_run: ${{ steps.check.outputs.should_run }}
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          fetch-depth: 1
+      - id: check
+        run: |
+          if gh run list --workflow nightly-oss.yml -c $(git rev-parse --short HEAD) -s success | grep 'completed'; then
+            echo "should_run=false" >> $GITHUB_OUTPUT
+          else
+            echo "should_run=true" >> $GITHUB_OUTPUT
+          fi
+
   goreleaser:
     runs-on: ubuntu-latest
-    env:
-      DOCKER_CLI_EXPERIMENTAL: "enabled"
+    needs: check
+    if: needs.check.outputs.should_run == 'true'
     steps:
       - run: df -h
       - name: "node-cleanup"
