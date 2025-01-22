@@ -355,12 +355,14 @@ nfpms:
       - archlinux
     dependencies:
       - git
-    suggests:
-      - golang
-      - rustup
-      - zig
-      - deno
-      - bun
+    overrides:
+      deb:
+        suggests:
+          - golang
+          - rustup
+          - zig
+          - deno
+          - bun
     deb:
       lintian_overrides:
         - statically-linked-binary
