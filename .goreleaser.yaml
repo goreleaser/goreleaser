@@ -230,8 +230,6 @@ brews:
         type: optional
       - name: zig
         type: optional
-      - name: bun
-        type: optional
       - name: deno
         type: optional
       - name: git
