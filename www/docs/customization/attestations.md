@@ -3,7 +3,7 @@
 If you're using GitHub Actions and want to attest your build artifacts, you can
 do add the following to your release workflow:
 
-```yaml title=".github/workflows/release.yml
+```yaml title=".github/workflows/release.yml"
 # ...
 permissions:
   # ...
@@ -27,5 +27,8 @@ jobs:
 Users can then verify it with:
 
 ```bash
-gh attestation verify --owner <user-or-org> <filename-or-url>
+gh attestation verify --owner <user-or-org> <filename>
 ```
+
+Refer to [this repository](https://github.com/goreleaser/example-supply-chain)
+for an example, as well as signing, SBOMs, and more.
