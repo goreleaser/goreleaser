@@ -9,6 +9,7 @@ permissions:
   contents: write
   id-token: write
   packages: write
+  attestations: write
 
 jobs:
   check:
@@ -87,6 +88,9 @@ jobs:
           MACOS_NOTARY_ISSUER_ID: ${{ secrets.MACOS_NOTARY_ISSUER_ID }}
           MACOS_NOTARY_KEY_ID: ${{ secrets.MACOS_NOTARY_KEY_ID }}
           MACOS_NOTARY_KEY: ${{ secrets.MACOS_NOTARY_KEY }}
+      - uses: actions/attest-build-provenance@v2
+        with:
+          subject-checksums: ./dist/checksums.txt
       - run: df -h
         if: ${{ always() }}
   notify:
