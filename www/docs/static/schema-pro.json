@@ -1898,6 +1898,9 @@
 										"cmd": {
 											"type": "string"
 										},
+										"if": {
+											"type": "string"
+										},
 										"env": {
 											"items": {
 												"type": "string"
