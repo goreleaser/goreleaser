@@ -53,7 +53,7 @@ notarize:
         # Allows to set the signature entitlements XML file.
         #
         # Templates: allowed.
-        # Since: v2.6-unreleased.
+        # Since: v2.6.
         entitlements: ./path/to/entitlements.xml
 
       # Then, we notarize the binaries.

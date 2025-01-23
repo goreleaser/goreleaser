@@ -1,6 +1,6 @@
 # Bun
 
-<!-- md:version v2.6-unreleased -->
+<!-- md:version v2.6 -->
 
 <!-- md:alpha -->
 
