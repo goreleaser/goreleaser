@@ -121,9 +121,9 @@ func TestBuild(t *testing.T) {
 	require.Equal(t, artifact.Artifact{
 		Name:   "proj",
 		Path:   filepath.ToSlash(options.Path),
-		Goos:   "darwin",
-		Goarch: "arm64",
-		Target: "aarch64-apple-darwin",
+		Goos:   runtime.GOOS,
+		Goarch: runtime.GOARCH,
+		Target: target,
 		Type:   artifact.Binary,
 		Extra: artifact.Extras{
 			artifact.ExtraBinary:  "proj",
