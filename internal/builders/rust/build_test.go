@@ -82,6 +82,11 @@ func TestBuild(t *testing.T) {
 	require.NoError(t, err)
 	require.NoError(t, Default.Prepare(ctx, build))
 
+	target := runtimeTarget()
+	if target == "" {
+		t.Skip("runtime not supported")
+	}
+
 	options := api.Options{
 		Name: "proj" + maybeExe(target),
 		Path: filepath.Join("dist", "proj-"+target, "proj") + maybeExe(target),
