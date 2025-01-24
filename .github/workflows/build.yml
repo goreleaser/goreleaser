@@ -64,12 +64,17 @@ jobs:
       - uses: mlugg/setup-zig@v1
       - uses: oven-sh/setup-bun@v2
       - uses: denoland/setup-deno@v2
+      - uses: cargo-bins/cargo-binstall@main
+      - name: setup-cargo
+        run: |
+          rustup default stable
+          cargo bininstall cargo-zigbuild
       - uses: sigstore/cosign-installer@v3.7.0
-      - uses: anchore/sbom-action/download-syft@v0.17.9
+      - uses: anchore/sbom-action/download-syft@v0.18.0
       - run: task setup
       - run: task build
       - run: task test
-      - uses: codecov/codecov-action@5a605bd92782ce0810fa3b8acc235c921b497052 # v5
+      - uses: codecov/codecov-action@0da7aa657d958d32c117fc47e1f977e7524753c7 # v5
         if: matrix.os == 'ubuntu-latest'
         with:
           file: ./coverage.txt

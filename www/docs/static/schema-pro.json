@@ -1138,6 +1138,9 @@
 							"type": "string"
 						},
 						"type": "object"
+					},
+					"component": {
+						"type": "string"
 					}
 				},
 				"additionalProperties": false,
@@ -2370,8 +2373,7 @@
 				"additionalProperties": false,
 				"type": "object",
 				"required": [
-					"sign",
-					"notarize"
+					"sign"
 				]
 			},
 			"Mastodon": {
