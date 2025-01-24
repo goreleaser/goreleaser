@@ -97,7 +97,7 @@ func TestBuild(t *testing.T) {
 
 	options := api.Options{
 		Name:   "proj",
-		Path:   filepath.Join("dist", "proj-"+target, "proj"),
+		Path:   filepath.Join("dist", "proj-"+target, "proj") + maybeExe(target),
 		Target: nil,
 		Ext:    maybeExe(target),
 	}
