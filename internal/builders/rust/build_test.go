@@ -86,7 +86,7 @@ func TestBuild(t *testing.T) {
 				Dir:          ".",
 				ModTimestamp: fmt.Sprintf("%d", modTime.Unix()),
 				BuildDetails: config.BuildDetails{
-					Flags: []string{"--locked"},
+					Flags: []string{"--locked", "--release"},
 				},
 			},
 		},
@@ -96,10 +96,9 @@ func TestBuild(t *testing.T) {
 	require.NoError(t, Default.Prepare(ctx, build))
 
 	options := api.Options{
-		Name:   "proj" + maybeExe(target),
-		Path:   filepath.Join("dist", "proj-"+target, "proj") + maybeExe(target),
-		Target: nil,
-		Ext:    maybeExe(target),
+		Name: "proj" + maybeExe(target),
+		Path: filepath.Join("dist", "proj-"+target, "proj") + maybeExe(target),
+		Ext:  maybeExe(target),
 	}
 	options.Target, err = Default.Parse(target)
 	require.NoError(t, err)
