@@ -63,8 +63,11 @@ func TestBuild(t *testing.T) {
 	_, err := exec.Command("cargo", "init", "--bin", "--name=proj").CombinedOutput()
 	require.NoError(t, err)
 
+	target := runtimeTarget()
+
 	for _, s := range []string{
 		"rustup default stable",
+		"rustup target add " + target,
 		"cargo update",
 		"cargo install --locked cargo-zigbuild",
 	} {
@@ -91,8 +94,6 @@ func TestBuild(t *testing.T) {
 	build, err := Default.WithDefaults(ctx.Config.Builds[0])
 	require.NoError(t, err)
 	require.NoError(t, Default.Prepare(ctx, build))
-
-	target := runtimeTarget()
 
 	options := api.Options{
 		Name:   "proj",
