@@ -86,7 +86,7 @@ func TestBuild(t *testing.T) {
 				Dir:          ".",
 				ModTimestamp: fmt.Sprintf("%d", modTime.Unix()),
 				BuildDetails: config.BuildDetails{
-					Flags: []string{"--locked", "--release"},
+					Flags: []string{"--locked"},
 				},
 			},
 		},
@@ -96,7 +96,7 @@ func TestBuild(t *testing.T) {
 	require.NoError(t, Default.Prepare(ctx, build))
 
 	options := api.Options{
-		Name:   "proj",
+		Name:   "proj" + maybeExe(target),
 		Path:   filepath.Join("dist", "proj-"+target, "proj") + maybeExe(target),
 		Target: nil,
 		Ext:    maybeExe(target),
@@ -121,7 +121,7 @@ func TestBuild(t *testing.T) {
 
 	bin := bins[0]
 	require.Equal(t, artifact.Artifact{
-		Name:   "proj",
+		Name:   "proj" + maybeExe(target),
 		Path:   filepath.ToSlash(options.Path),
 		Goos:   runtime.GOOS,
 		Goarch: runtime.GOARCH,
@@ -130,7 +130,7 @@ func TestBuild(t *testing.T) {
 		Extra: artifact.Extras{
 			artifact.ExtraBinary:  "proj",
 			artifact.ExtraBuilder: "rust",
-			artifact.ExtraExt:     "",
+			artifact.ExtraExt:     maybeExe(target),
 			artifact.ExtraID:      "default",
 		},
 	}, *bin)
