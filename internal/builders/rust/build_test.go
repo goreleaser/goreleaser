@@ -99,6 +99,7 @@ func TestBuild(t *testing.T) {
 		Name:   "proj",
 		Path:   filepath.Join("dist", "proj-"+target, "proj"),
 		Target: nil,
+		Ext:    maybeExe(target),
 	}
 	options.Target, err = Default.Parse(target)
 	require.NoError(t, err)
@@ -196,4 +197,11 @@ func runtimeTarget() string {
 		"darwin-arm64":  "aarch64-apple-darwin",
 	}
 	return targets[runtime.GOOS+"-"+runtime.GOARCH]
+}
+
+func maybeExe(s string) string {
+	if strings.Contains(s, "windows") {
+		return ".exe"
+	}
+	return ""
 }
