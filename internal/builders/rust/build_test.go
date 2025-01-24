@@ -5,6 +5,7 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
+	"runtime"
 	"strings"
 	"testing"
 	"time"
@@ -91,12 +92,14 @@ func TestBuild(t *testing.T) {
 	require.NoError(t, err)
 	require.NoError(t, Default.Prepare(ctx, build))
 
+	target := runtimeTarget()
+
 	options := api.Options{
 		Name:   "proj",
-		Path:   filepath.Join("dist", "proj-aarch64-apple-darwin", "proj"),
+		Path:   filepath.Join("dist", "proj-"+target, "proj"),
 		Target: nil,
 	}
-	options.Target, err = Default.Parse("aarch64-apple-darwin")
+	options.Target, err = Default.Parse(target)
 	require.NoError(t, err)
 	require.NoError(t, os.MkdirAll(filepath.Dir(options.Path), 0o755)) // this happens on internal/pipe/build/ when in prod
 
@@ -180,4 +183,16 @@ func TestIsSettingPackage(t *testing.T) {
 			require.Equal(t, tt.expect, got)
 		})
 	}
+}
+
+func runtimeTarget() string {
+	targets := map[string]string{
+		"windows-amd64": "x86_64-pc-windows-gnu",
+		"windows-arm64": "aarch64-pc-windows-gnullvm",
+		"linux-amd64":   "x86_64-unknown-linux-gnu",
+		"linux-arm64":   "aarch64-unknown-linux-gnu",
+		"darwin-amd64":  "x86_64-apple-darwin",
+		"darwin-arm64":  "aarch64-apple-darwin",
+	}
+	return targets[runtime.GOOS+"-"+runtime.GOARCH]
 }
