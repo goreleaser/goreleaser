@@ -57,10 +57,6 @@ func TestWithDefaults(t *testing.T) {
 }
 
 func TestBuild(t *testing.T) {
-	// TODO: unskip
-	if testlib.IsCI() && testlib.IsWindows() {
-		t.Skip("recent runner updates broke cargo zigbuild on windows")
-	}
 	testlib.CheckPath(t, "cargo")
 	testlib.CheckPath(t, "cargo-zigbuild")
 	folder := testlib.Mktmp(t)
