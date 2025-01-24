@@ -65,7 +65,7 @@ jobs:
       - uses: oven-sh/setup-bun@v2
       - uses: denoland/setup-deno@v2
       - uses: sigstore/cosign-installer@v3.7.0
-      - uses: anchore/sbom-action/download-syft@v0.17.9
+      - uses: anchore/sbom-action/download-syft@v0.18.0
       - run: task setup
       - run: task build
       - run: task test
