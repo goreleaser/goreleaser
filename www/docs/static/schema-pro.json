@@ -1195,7 +1195,7 @@
 					"use": {
 						"type": "string",
 						"enum": [
-							"enum=binary",
+							"binary",
 							"appbundle"
 						]
 					},
@@ -2281,6 +2281,13 @@
 							"type": "string"
 						},
 						"type": "array"
+					},
+					"version": {
+						"type": "string",
+						"enum": [
+							"v3",
+							"v4"
+						]
 					}
 				},
 				"additionalProperties": false,

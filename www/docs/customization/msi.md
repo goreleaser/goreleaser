@@ -64,81 +64,150 @@ msi:
     #
     # Templates: allowed.
     mod_timestamp: "{{ .CommitTimestamp }}"
+
+    # Schema version to use.
+    # msitools only supports v3.
+    # wixtoolset v3 supports v3.
+    # wix v4/v5 supports v4.
+    #
+    # Valid options: 'v3', 'v4'.
+    # Default: inferred from the .wxs file.
+    # <!-- md:inline_version v2.7-unreleased -->
+    version: v4
 ```
 
 On Windows, it'll try to use the `candle` and `light` binaries from the
-[Wix Toolkit][wix] instead.
+[Wix Toolkit][wix] instead if schema is v3. It'll use `wix` otherwise..
+
+If you use any extensions, make sure to install them first. You can do so with
+`wix extension add -g <extension name>`.
 
 Here's an example `wsx` file that you can build upon:
 
-```xml
-<?xml version='1.0' encoding='windows-1252'?>
-<Wix xmlns='http://schemas.microsoft.com/wix/2006/wi'>
-	<Product
-		Name='{{.ProjectName}} {{.Version}}'
-		Id='ABCDDCBA-86C7-4D14-AEC0-86413A69ABDE'
-		UpgradeCode='ABCDDCBA-7349-453F-94F6-BCB5110BA8FD'
-		Language='1033'
-		Codepage='1252'
-		Version='{{.Version}}'
-		Manufacturer='My Company'>
+=== "v3"
 
-		<Package
-			Id='*'
-			Keywords='Installer'
-			Description="{{.ProjectName}} installer"
-			Manufacturer='My Company'
-			InstallerVersion='200'
-			Languages='1033'
-			Compressed='yes'
-			SummaryCodepage='1252'
-		/>
+    ```xml
+    <?xml version='1.0' encoding='windows-1252'?>
+    <Wix xmlns='http://schemas.microsoft.com/wix/2006/wi'>
+      <Product
+        Name='{{.ProjectName}} {{.Version}}'
+        Id='ABCDDCBA-86C7-4D14-AEC0-86413A69ABDE'
+        UpgradeCode='ABCDDCBA-7349-453F-94F6-BCB5110BA8FD'
+        Language='1033'
+        Codepage='1252'
+        Version='{{.Version}}'
+        Manufacturer='My Company'>
 
-		<Media
-			Id='1'
-			Cabinet='Sample.cab'
-			EmbedCab='yes'
-			DiskPrompt="CD-ROM #1"
-		/>
+        <Package
+          Id='*'
+          Keywords='Installer'
+          Description="{{.ProjectName}} installer"
+          Manufacturer='My Company'
+          InstallerVersion='200'
+          Languages='1033'
+          Compressed='yes'
+          SummaryCodepage='1252'
+        />
 
-		<Property
-			Id='DiskPrompt'
-			Value="{{.ProjectName}} {{.Version}} Installation [1]"
-		/>
+        <Media
+          Id='1'
+          Cabinet='Sample.cab'
+          EmbedCab='yes'
+          DiskPrompt="CD-ROM #1"
+        />
 
-		<Directory Id='TARGETDIR' Name='SourceDir'>
-			<Directory Id='ProgramFiles{{ if eq .Arch "amd64" }}64{{ end }}Folder' Name='PFiles'>
-				<Directory Id='{{.ProjectName}}' Name='{{.ProjectName}}'>
-					<Component
-						Id='MainExecutable'
-						Guid='ABCDDCBA-83F1-4F22-985B-FDB3C8ABD474'
-					>
-						<File
-							Id='{{.Binary}}.exe'
-							Name='{{.Binary}}.exe'
-							DiskId='1'
-							Source='{{.Binary}}.exe'
-							KeyPath='yes'
-						/>
-					</Component>
-				</Directory>
-			</Directory>
-		</Directory>
+        <Property
+          Id='DiskPrompt'
+          Value="{{.ProjectName}} {{.Version}} Installation [1]"
+        />
 
-		<Feature Id='Complete' Level='1'>
-			<ComponentRef Id='MainExecutable' />
-		</Feature>
-	</Product>
-</Wix>
-```
+        <Directory Id='TARGETDIR' Name='SourceDir'>
+          <Directory Id='ProgramFiles{{ if eq .Arch "amd64" }}64{{ end }}Folder' Name='PFiles'>
+            <Directory Id='{{.ProjectName}}' Name='{{.ProjectName}}'>
+              <Component
+                Id='MainExecutable'
+                Guid='ABCDDCBA-83F1-4F22-985B-FDB3C8ABD474'
+              >
+                <File
+                  Id='{{.Binary}}.exe'
+                  Name='{{.Binary}}.exe'
+                  DiskId='1'
+                  Source='{{.Binary}}.exe'
+                  KeyPath='yes'
+                />
+              </Component>
+            </Directory>
+          </Directory>
+        </Directory>
+
+        <Feature Id='Complete' Level='1'>
+          <ComponentRef Id='MainExecutable' />
+        </Feature>
+      </Product>
+    </Wix>
+    ```
+
+=== "v4"
+
+    ```xml
+    <Wix xmlns="http://wixtoolset.org/schemas/v4/wxs">
+      <Package
+        Name="{{.ProjectName}} {{.Version}}"
+        UpgradeCode="ABCDDCBA-7349-453F-94F6-BCB5110BA4FD"
+        Language="1033"
+        Codepage="1252"
+        Version="{{.Version}}"
+        Manufacturer="My Company"
+        InstallerVersion="200"
+        ProductCode="ABCDDCBA-86C7-4D14-AEC0-86416A69ABDE">
+        <SummaryInformation
+          Keywords="Installer"
+          Description="{{.ProjectName}} installer"
+          Manufacturer="My Company" />
+        <Media
+          Id="1"
+          Cabinet="Sample.cab"
+          EmbedCab="yes"
+          DiskPrompt="CD-ROM #1" />
+        <Property
+          Id="DiskPrompt"
+          Value="{{.ProjectName}} {{.Version}} Installation [1]" />
+        <Feature
+          Id="Complete"
+          Level="1">
+          <ComponentRef Id="MainExecutable" />
+        </Feature>
+        <StandardDirectory Id='ProgramFiles{{ if eq .Arch "amd64" }}64{{ end }}Folder'>
+          <Directory
+            Id="{{.ProjectName}}"
+            Name="{{.ProjectName}}">
+            <Component
+              Id="MainExecutable"
+              Guid="ABCDDCBA-83F1-4F22-985B-FDB3C8ABD471">
+              <File
+                Id="{{.Binary}}exe"
+                Name="{{.Binary}}.exe"
+                DiskId="1"
+                Source="{{.Binary}}.exe"
+                KeyPath="yes" />
+            </Component>
+          </Directory>
+        </StandardDirectory>
+      </Package>
+    </Wix>
+    ```
 
 ## Limitations
 
 1. Some options available in the [Wix Toolset][wix] won't work with
    [msitools][], run a snapshot build and verify the generated installers.
 1. Only `amd64` and `386` are supported.
+1. Be mindful of schema versions. Also worth noting that extension names might
+   be different in v4[^exts].
 
 <!-- md:templates -->
 
 [msitools]: https://wiki.gnome.org/msitools
 [wix]: https://wixtoolset.org
+
+[^exts]: See [documentation](https://wixtoolset.org/docs/fourthree/faqs/#wixext34) for reference.
