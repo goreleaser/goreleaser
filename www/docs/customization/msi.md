@@ -84,70 +84,7 @@ If you use any extensions, make sure to install them first. You can do so with
 
 Here's an example `wsx` file that you can build upon:
 
-=== "v3"
-
-    ```xml
-    <?xml version='1.0' encoding='windows-1252'?>
-    <Wix xmlns='http://schemas.microsoft.com/wix/2006/wi'>
-      <Product
-        Name='{{.ProjectName}} {{.Version}}'
-        Id='ABCDDCBA-86C7-4D14-AEC0-86413A69ABDE'
-        UpgradeCode='ABCDDCBA-7349-453F-94F6-BCB5110BA8FD'
-        Language='1033'
-        Codepage='1252'
-        Version='{{.Version}}'
-        Manufacturer='My Company'>
-
-        <Package
-          Id='*'
-          Keywords='Installer'
-          Description="{{.ProjectName}} installer"
-          Manufacturer='My Company'
-          InstallerVersion='200'
-          Languages='1033'
-          Compressed='yes'
-          SummaryCodepage='1252'
-        />
-
-        <Media
-          Id='1'
-          Cabinet='Sample.cab'
-          EmbedCab='yes'
-          DiskPrompt="CD-ROM #1"
-        />
-
-        <Property
-          Id='DiskPrompt'
-          Value="{{.ProjectName}} {{.Version}} Installation [1]"
-        />
-
-        <Directory Id='TARGETDIR' Name='SourceDir'>
-          <Directory Id='ProgramFiles{{ if eq .Arch "amd64" }}64{{ end }}Folder' Name='PFiles'>
-            <Directory Id='{{.ProjectName}}' Name='{{.ProjectName}}'>
-              <Component
-                Id='MainExecutable'
-                Guid='ABCDDCBA-83F1-4F22-985B-FDB3C8ABD474'
-              >
-                <File
-                  Id='{{.Binary}}.exe'
-                  Name='{{.Binary}}.exe'
-                  DiskId='1'
-                  Source='{{.Binary}}.exe'
-                  KeyPath='yes'
-                />
-              </Component>
-            </Directory>
-          </Directory>
-        </Directory>
-
-        <Feature Id='Complete' Level='1'>
-          <ComponentRef Id='MainExecutable' />
-        </Feature>
-      </Product>
-    </Wix>
-    ```
-
-=== "v4"
+=== "Schema v4"
 
     ```xml
     <Wix xmlns="http://wixtoolset.org/schemas/v4/wxs">
@@ -194,6 +131,78 @@ Here's an example `wsx` file that you can build upon:
           </Directory>
         </StandardDirectory>
       </Package>
+    </Wix>
+    ```
+
+=== "Schema v3"
+
+    ```xml
+    <?xml version='1.0' encoding='windows-1252'?>
+    <Wix xmlns='http://schemas.microsoft.com/wix/2006/wi'>
+      {{ if eq .MsiArch "x64" }}
+      <?define ArchString = "(64 bit)" ?>
+      <?define Win64 = "yes" ?>
+      <?define ProgramFilesFolder = "ProgramFiles64Folder" ?>
+      {{ else }}
+      <?define ArchString = "" ?>
+      <?define Win64 = "no" ?>
+      <?define ProgramFilesFolder = "ProgramFilesFolder" ?>
+      {{ end }}
+      <Product
+        Name='{{.ProjectName}} {{.Version}}'
+        Id='ABCDDCBA-86C7-4D14-AEC0-86413A69ABDE'
+        UpgradeCode='ABCDDCBA-7349-453F-94F6-BCB5110BA8FD'
+        Language='1033'
+        Codepage='1252'
+        Version='{{.Version}}'
+        Manufacturer='My Company'>
+
+        <Package
+          Id='*'
+          Keywords='Installer'
+          Description="{{.ProjectName}} installer"
+          Manufacturer='My Company'
+          InstallerVersion='200'
+          Languages='1033'
+          Compressed='yes'
+          SummaryCodepage='1252'
+        />
+
+        <Media
+          Id='1'
+          Cabinet='Sample.cab'
+          EmbedCab='yes'
+          DiskPrompt="CD-ROM #1"
+        />
+
+        <Property
+          Id='DiskPrompt'
+          Value="{{.ProjectName}} {{.Version}} Installation [1]"
+        />
+
+        <Directory Id='TARGETDIR' Name='SourceDir'>
+          <Directory Id='ProgramFilesFolder' Name='PFiles'>
+            <Directory Id='{{.ProjectName}}' Name='{{.ProjectName}}'>
+              <Component
+                Id='MainExecutable'
+                Guid='ABCDDCBA-83F1-4F22-985B-FDB3C8ABD474'
+              >
+                <File
+                  Id='{{.Binary}}.exe'
+                  Name='{{.Binary}}.exe'
+                  DiskId='1'
+                  Source='{{.Binary}}.exe'
+                  KeyPath='yes'
+                />
+              </Component>
+            </Directory>
+          </Directory>
+        </Directory>
+
+        <Feature Id='Complete' Level='1'>
+          <ComponentRef Id='MainExecutable' />
+        </Feature>
+      </Product>
     </Wix>
     ```
 
