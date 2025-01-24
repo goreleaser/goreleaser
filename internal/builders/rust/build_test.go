@@ -188,8 +188,8 @@ func TestIsSettingPackage(t *testing.T) {
 
 func runtimeTarget() string {
 	targets := map[string]string{
-		"windows-amd64": "x86_64-pc-windows-gnu",
-		"windows-arm64": "aarch64-pc-windows-gnullvm",
+		"windows-amd64": "x86_64-pc-windows-msvc",
+		"windows-arm64": "aarch64-pc-windows-msvc",
 		"linux-amd64":   "x86_64-unknown-linux-gnu",
 		"linux-arm64":   "aarch64-unknown-linux-gnu",
 		"darwin-amd64":  "x86_64-apple-darwin",
