@@ -57,6 +57,10 @@ func TestWithDefaults(t *testing.T) {
 }
 
 func TestBuild(t *testing.T) {
+	// TODO: unskip
+	if testlib.IsCI() && testlib.IsWindows() {
+		t.Skip("recent runner updates broke cargo zigbuild on windows")
+	}
 	testlib.CheckPath(t, "cargo")
 	testlib.CheckPath(t, "cargo-zigbuild")
 	folder := testlib.Mktmp(t)
@@ -180,7 +184,7 @@ func TestIsSettingPackage(t *testing.T) {
 
 func runtimeTarget() string {
 	targets := map[string]string{
-		"windows-arm64": "aarch64-pc-windows-gnu",
+		"windows-arm64": "aarch64-pc-windows-msvc",
 		"linux-amd64":   "x86_64-unknown-linux-gnu",
 		"linux-arm64":   "aarch64-unknown-linux-gnu",
 		"darwin-amd64":  "x86_64-apple-darwin",
