@@ -68,7 +68,7 @@ jobs:
       - name: setup-cargo
         run: |
           rustup default stable
-          cargo bininstall cargo-zigbuild
+          cargo binstall cargo-zigbuild
       - uses: sigstore/cosign-installer@v3.7.0
       - uses: anchore/sbom-action/download-syft@v0.18.0
       - run: task setup
