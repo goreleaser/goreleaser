@@ -544,7 +544,7 @@ type Build struct {
 	Builder         string          `yaml:"builder,omitempty" json:"builder,omitempty" jsonschema:"enum=,enum=go,enum=rust,enum=zig,enum=bun,enum=deno"`
 	ModTimestamp    string          `yaml:"mod_timestamp,omitempty" json:"mod_timestamp,omitempty"`
 	Skip            string          `yaml:"skip,omitempty" json:"skip,omitempty" jsonschema:"oneof_type=string;boolean"`
-	GoBinary        string          `yaml:"gobinary,omitempty" json:"gobinary,omitempty"` // Deprecated: use [ToolBinary].
+	GoBinary        string          `yaml:"gobinary,omitempty" json:"gobinary,omitempty"` // Deprecated: use [Build.Tool] instead.
 	Tool            string          `yaml:"tool,omitempty" json:"tool,omitempty"`
 	Command         string          `yaml:"command,omitempty" json:"command,omitempty"`
 	NoUniqueDistDir string          `yaml:"no_unique_dist_dir,omitempty" json:"no_unique_dist_dir,omitempty" jsonschema:"oneof_type=string;boolean"`
