@@ -185,7 +185,7 @@ archives:
       {{- if .Arm }}v{{ .Arm }}{{ end -}}
     format_overrides:
       - goos: windows
-        format: zip
+        formats: [zip]
     builds_info:
       group: root
       owner: root
@@ -231,8 +231,6 @@ brews:
       - name: rustup
         type: optional
       - name: zig
-        type: optional
-      - name: bun
         type: optional
       - name: deno
         type: optional
@@ -359,12 +357,14 @@ nfpms:
       - archlinux
     dependencies:
       - git
-    suggests:
-      - golang
-      - rustup
-      - zig
-      - deno
-      - bun
+    overrides:
+      deb:
+        suggests:
+          - golang
+          - rustup
+          - zig
+          - deno
+          - bun
     deb:
       lintian_overrides:
         - statically-linked-binary

@@ -322,6 +322,18 @@
 					},
 					"bundle": {
 						"type": "string"
+					},
+					"extra_files": {
+						"items": {
+							"$ref": "#/$defs/File"
+						},
+						"type": "array"
+					},
+					"templated_extra_files": {
+						"items": {
+							"$ref": "#/$defs/TemplatedFile"
+						},
+						"type": "array"
 					}
 				},
 				"additionalProperties": false,
@@ -348,19 +360,8 @@
 					"name_template": {
 						"type": "string"
 					},
-					"format": {
-						"type": "string",
-						"enum": [
-							"tar",
-							"tgz",
-							"tar.gz",
-							"zip",
-							"gz",
-							"tar.xz",
-							"txz",
-							"binary"
-						],
-						"default": "tar.gz"
+					"formats": {
+						"$ref": "#/$defs/StringArray"
 					},
 					"format_overrides": {
 						"items": {
@@ -401,6 +402,20 @@
 							"$ref": "#/$defs/TemplatedFile"
 						},
 						"type": "array"
+					},
+					"format": {
+						"type": "string",
+						"enum": [
+							"tar",
+							"tgz",
+							"tar.gz",
+							"zip",
+							"gz",
+							"tar.xz",
+							"txz",
+							"binary"
+						],
+						"default": "tar.gz"
 					}
 				},
 				"additionalProperties": false,
@@ -1123,6 +1138,9 @@
 							"type": "string"
 						},
 						"type": "object"
+					},
+					"component": {
+						"type": "string"
 					}
 				},
 				"additionalProperties": false,
@@ -1180,7 +1198,7 @@
 					"use": {
 						"type": "string",
 						"enum": [
-							"enum=binary",
+							"binary",
 							"appbundle"
 						]
 					},
@@ -1538,6 +1556,9 @@
 					"goos": {
 						"type": "string"
 					},
+					"formats": {
+						"$ref": "#/$defs/StringArray"
+					},
 					"format": {
 						"type": "string",
 						"enum": [
@@ -1878,6 +1899,9 @@
 											"type": "string"
 										},
 										"cmd": {
+											"type": "string"
+										},
+										"if": {
 											"type": "string"
 										},
 										"env": {
@@ -2260,6 +2284,13 @@
 							"type": "string"
 						},
 						"type": "array"
+					},
+					"version": {
+						"type": "string",
+						"enum": [
+							"v3",
+							"v4"
+						]
 					}
 				},
 				"additionalProperties": false,
@@ -2302,6 +2333,9 @@
 					},
 					"password": {
 						"type": "string"
+					},
+					"entitlements": {
+						"type": "string"
 					}
 				},
 				"additionalProperties": false,
@@ -2339,8 +2373,7 @@
 				"additionalProperties": false,
 				"type": "object",
 				"required": [
-					"sign",
-					"notarize"
+					"sign"
 				]
 			},
 			"Mastodon": {

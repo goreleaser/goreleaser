@@ -31,9 +31,7 @@ This will automatically upload all your `apk`, `deb`, and `rpm` files.
 
 You can also have plenty of customization options:
 
-```yaml
-# goreleaser.yaml
-
+```yaml title=".goreleaser.yaml"
 cloudsmiths:
   - # Cloudsmith organization.
     # Config is skipped if empty
@@ -78,6 +76,10 @@ cloudsmiths:
       deb: "ubuntu/xenial"
       rpm: "el/7"
       alpine: "alpine/v3.8"
+
+    # The component (channel) for the package (e.g. 'main', 'unstable', etc).
+    # <!-- md:inline_version v2.7-unreleased -->
+    component: main
 ```
 
 [cloudsmith]: https://cloudsmith.io/

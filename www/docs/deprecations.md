@@ -39,6 +39,63 @@ Description.
 
 -->
 
+### archives.format
+
+> since v2.6
+
+Format was renamed to `formats`, and now accepts a list of formats.
+
+=== "Before"
+
+    ```yaml
+    archives:
+      - format: zip
+    ```
+
+=== "After"
+
+    ```yaml
+    archives:
+      - formats: [ 'zip' ]
+    ```
+
+!!! tip
+
+    It will still accept a single string, e.g.: `formats: zip`.
+    In most cases you can simply rename the property to formats.
+
+### archives.format_overrides.format
+
+> since v2.6
+
+Format was renamed to `formats`, and now accepts a list of formats.
+
+!!! tip
+
+    It will still accept a single string, e.g.: `formats: zip`.
+    In most cases you can simply rename the property to formats.
+
+=== "Before"
+
+    ```yaml
+    archives:
+      - format_overrides:
+        - format: zip
+    ```
+
+=== "After"
+
+    ```yaml
+    archives:
+      - format_overrides:
+        - formats: [ 'zip' ]
+    ```
+
+!!! tip
+
+    It will still accept a single string, e.g.: `formats: zip`.
+    In most cases you can simply rename the property to formats.
+
 ### kos.repository
 
 > since v2.5

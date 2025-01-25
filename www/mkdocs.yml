@@ -181,6 +181,7 @@ nav:
               - scm/github.md
               - scm/gitlab.md
               - scm/gitea.md
+          - customization/attestations.md
           - customization/milestone.md
       - Announce:
           - Introduction: customization/announce/index.md
@@ -214,6 +215,7 @@ nav:
           - ci/woodpecker.md
 
   - More resources:
+      - maintainers.md
       - sponsors.md
       - users.md
       - deprecations.md

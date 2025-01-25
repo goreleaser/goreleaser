@@ -108,6 +108,14 @@ func TestMacOSRun(t *testing.T) {
 					},
 				})
 			},
+			"entitlements": func(ctx *context.Context) {
+				ctx.Config.Notarize.MacOS = append(ctx.Config.Notarize.MacOS, config.MacOSSignNotarize{
+					Enabled: "true",
+					Sign: config.MacOSSign{
+						Entitlements: "{{.Nope}}",
+					},
+				})
+			},
 			"key": func(ctx *context.Context) {
 				ctx.Config.Notarize.MacOS = append(ctx.Config.Notarize.MacOS, config.MacOSSignNotarize{
 					Enabled: "true",

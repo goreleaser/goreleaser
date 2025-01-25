@@ -24,7 +24,7 @@ announce:
 
 - :simple-bluesky: [Bluesky](./bluesky.md)
 - :simple-discord: [Discord](./discord.md)
-- :simple-linkedin: [LinkedIn](./linkedin.md)
+- :material-linkedin: [LinkedIn](./linkedin.md)
 - :simple-mastodon: [Mastodon](./mastodon.md)
 - :simple-mattermost: [Mattermost](./mattermost.md)
 - :simple-opencollective: [OpenCollective](./opencollective.md)

@@ -29,7 +29,7 @@ const (
 var listen string
 
 func TestMain(m *testing.M) {
-	if !testlib.InPath("docker") || testlib.IsWindows() {
+	if !testlib.InPath("docker") || testlib.IsWindows() || !testlib.IsDockerRunning() {
 		// there's no minio windows image
 		m.Run()
 		return
@@ -75,7 +75,7 @@ func TestMain(m *testing.M) {
 }
 
 func TestMinioUpload(t *testing.T) {
-	testlib.CheckPath(t, "docker")
+	testlib.CheckDocker(t)
 	testlib.SkipIfWindows(t, "minio image not available for windows")
 	name := "basic"
 	directory := t.TempDir()
@@ -182,7 +182,7 @@ func TestMinioUpload(t *testing.T) {
 }
 
 func TestMinioUploadCustomBucketID(t *testing.T) {
-	testlib.CheckPath(t, "docker")
+	testlib.CheckDocker(t)
 	testlib.SkipIfWindows(t, "minio image not available for windows")
 	name := "fromenv"
 	directory := t.TempDir()
@@ -220,7 +220,7 @@ func TestMinioUploadCustomBucketID(t *testing.T) {
 }
 
 func TestMinioUploadExtraFilesOnly(t *testing.T) {
-	testlib.CheckPath(t, "docker")
+	testlib.CheckDocker(t)
 	testlib.SkipIfWindows(t, "minio image not available for windows")
 	name := "only-extra-files"
 	directory := t.TempDir()
@@ -267,7 +267,7 @@ func TestMinioUploadExtraFilesOnly(t *testing.T) {
 }
 
 func TestMinioUploadRootDirectory(t *testing.T) {
-	testlib.CheckPath(t, "docker")
+	testlib.CheckDocker(t)
 	testlib.SkipIfWindows(t, "minio image not available for windows")
 	name := "rootdir"
 	directory := t.TempDir()
@@ -304,7 +304,7 @@ func TestMinioUploadRootDirectory(t *testing.T) {
 }
 
 func TestMinioUploadInvalidCustomBucketID(t *testing.T) {
-	testlib.CheckPath(t, "docker")
+	testlib.CheckDocker(t)
 	testlib.SkipIfWindows(t, "minio image not available for windows")
 	directory := t.TempDir()
 	tgzpath := filepath.Join(directory, "bin.tar.gz")
@@ -338,7 +338,7 @@ func TestMinioUploadInvalidCustomBucketID(t *testing.T) {
 }
 
 func TestMinioUploadSkip(t *testing.T) {
-	testlib.CheckPath(t, "docker")
+	testlib.CheckDocker(t)
 	testlib.SkipIfWindows(t, "minio image not available for windows")
 	name := "basic"
 	directory := t.TempDir()

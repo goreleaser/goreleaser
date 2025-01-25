@@ -5,6 +5,7 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
+	"runtime"
 	"strings"
 	"testing"
 	"time"
@@ -56,21 +57,11 @@ func TestWithDefaults(t *testing.T) {
 }
 
 func TestBuild(t *testing.T) {
-	testlib.CheckPath(t, "rustup")
 	testlib.CheckPath(t, "cargo")
+	testlib.CheckPath(t, "cargo-zigbuild")
 	folder := testlib.Mktmp(t)
 	_, err := exec.Command("cargo", "init", "--bin", "--name=proj").CombinedOutput()
 	require.NoError(t, err)
-
-	for _, s := range []string{
-		"rustup default stable",
-		"cargo update",
-		"cargo install --locked cargo-zigbuild",
-	} {
-		args := strings.Fields(s)
-		_, err := exec.Command(args[0], args[1:]...).CombinedOutput()
-		require.NoError(t, err)
-	}
 
 	modTime := time.Now().AddDate(-1, 0, 0).Round(time.Second).UTC()
 	ctx := testctx.NewWithCfg(config.Project{
@@ -82,7 +73,7 @@ func TestBuild(t *testing.T) {
 				Dir:          ".",
 				ModTimestamp: fmt.Sprintf("%d", modTime.Unix()),
 				BuildDetails: config.BuildDetails{
-					Flags: []string{"--locked", "--release"},
+					Flags: []string{"--release"},
 				},
 			},
 		},
@@ -91,12 +82,17 @@ func TestBuild(t *testing.T) {
 	require.NoError(t, err)
 	require.NoError(t, Default.Prepare(ctx, build))
 
-	options := api.Options{
-		Name:   "proj",
-		Path:   filepath.Join("dist", "proj-aarch64-apple-darwin", "proj"),
-		Target: nil,
+	target := runtimeTarget()
+	if target == "" {
+		t.Skip("runtime not supported")
 	}
-	options.Target, err = Default.Parse("aarch64-apple-darwin")
+
+	options := api.Options{
+		Name: "proj" + maybeExe(target),
+		Path: filepath.Join("dist", "proj-"+target, "proj") + maybeExe(target),
+		Ext:  maybeExe(target),
+	}
+	options.Target, err = Default.Parse(target)
 	require.NoError(t, err)
 	require.NoError(t, os.MkdirAll(filepath.Dir(options.Path), 0o755)) // this happens on internal/pipe/build/ when in prod
 
@@ -116,16 +112,16 @@ func TestBuild(t *testing.T) {
 
 	bin := bins[0]
 	require.Equal(t, artifact.Artifact{
-		Name:   "proj",
+		Name:   "proj" + maybeExe(target),
 		Path:   filepath.ToSlash(options.Path),
-		Goos:   "darwin",
-		Goarch: "arm64",
-		Target: "aarch64-apple-darwin",
+		Goos:   runtime.GOOS,
+		Goarch: runtime.GOARCH,
+		Target: target,
 		Type:   artifact.Binary,
 		Extra: artifact.Extras{
 			artifact.ExtraBinary:  "proj",
 			artifact.ExtraBuilder: "rust",
-			artifact.ExtraExt:     "",
+			artifact.ExtraExt:     maybeExe(target),
 			artifact.ExtraID:      "default",
 		},
 	}, *bin)
@@ -180,4 +176,22 @@ func TestIsSettingPackage(t *testing.T) {
 			require.Equal(t, tt.expect, got)
 		})
 	}
+}
+
+func runtimeTarget() string {
+	targets := map[string]string{
+		"windows-arm64": "aarch64-pc-windows-msvc",
+		"linux-amd64":   "x86_64-unknown-linux-gnu",
+		"linux-arm64":   "aarch64-unknown-linux-gnu",
+		"darwin-amd64":  "x86_64-apple-darwin",
+		"darwin-arm64":  "aarch64-apple-darwin",
+	}
+	return targets[runtime.GOOS+"-"+runtime.GOARCH]
+}
+
+func maybeExe(s string) string {
+	if strings.Contains(s, "windows") {
+		return ".exe"
+	}
+	return ""
 }

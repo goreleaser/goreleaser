@@ -12,8 +12,7 @@ a `PKGBUILD` to an _Arch User Repository_ based on sources.
 
 This page describes the available options.
 
-```yaml
-# .goreleaser.yaml
+```yaml title=".goreleaser.yaml"
 aur_sources:
   - # The package name.
     #

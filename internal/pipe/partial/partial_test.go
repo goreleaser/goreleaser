@@ -184,4 +184,41 @@ func TestRun(t *testing.T) {
 		target := fmt.Sprintf("%s_%s", runtime.GOOS, runtime.GOARCH)
 		require.Equal(t, target, ctx.PartialTarget)
 	})
+
+	t.Run("using runtime with other languages", func(t *testing.T) {
+		t.Setenv("GGOOS", "darwin")
+		t.Setenv("GGOARCH", "amd64")
+		ctx := testctx.NewWithCfg(config.Project{
+			Dist: "dist",
+			Builds: []config.Build{{
+				Builder: "rust",
+				Targets: []string{
+					"x86_64-unknown-linux-gnu",
+					"x86_64-apple-darwin",
+					"x86_64-pc-windows-gnu",
+					"aarch64-unknown-linux-gnu",
+					"aarch64-apple-darwin",
+				},
+			}},
+		}, testctx.Partial)
+		require.NoError(t, pipe.Run(ctx))
+		require.Equal(t, "x86_64-apple-darwin", ctx.PartialTarget)
+	})
+
+	t.Run("using runtime with other languages no match", func(t *testing.T) {
+		t.Setenv("GGOOS", "darwin")
+		t.Setenv("GGOARCH", "amd64")
+		ctx := testctx.NewWithCfg(config.Project{
+			Dist: "dist",
+			Builds: []config.Build{{
+				Builder: "rust",
+				Targets: []string{
+					"x86_64-unknown-linux-gnu",
+					"aarch64-unknown-linux-gnu",
+				},
+			}},
+		}, testctx.Partial)
+		require.Error(t, pipe.Run(ctx))
+		require.Empty(t, ctx.PartialTarget)
+	})
 }

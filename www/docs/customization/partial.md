@@ -76,8 +76,7 @@ goreleaser announce --merge
 
 You can choose by what you want your pipeline to be split by:
 
-```yaml
-# goreleaser.yaml
+```yaml title=".goreleaser.yaml"
 partial:
   # By what you want to build the partial things.
   #
@@ -92,5 +91,9 @@ partial:
 ## Integration with GitHub Actions
 
 You can find an example project
-[here](https://github.com/caarlos0/goreleaser-pro-split-merge-example).
-Feel free to dive into the workflow and the GoReleaser config.
+[here](https://github.com/goreleaser/example-split-merge-real).
+Feel free to dive into the workflow and the GoReleaser configuration.
+
+The main thing to keep an eye on is the use of the cache action. Make sure to
+use a specific key for the release to prevent mixing, for example, a snapshot or
+nightly build with a production one.

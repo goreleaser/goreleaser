@@ -34,7 +34,7 @@ func start(tb testing.TB) {
 
 // TODO: this test is too big... split in smaller tests? Mainly the manifest ones...
 func TestRunPipe(t *testing.T) {
-	testlib.CheckPath(t, "docker")
+	testlib.CheckDocker(t)
 	testlib.SkipIfWindows(t, "images only available for windows")
 	type errChecker func(*testing.T, error)
 	shouldErr := func(msg string) errChecker {
@@ -1401,15 +1401,15 @@ func TestWithDigest(t *testing.T) {
 	for _, use := range []string{useDocker, useBuildx} {
 		t.Run(use, func(t *testing.T) {
 			t.Run("good", func(t *testing.T) {
-				require.Equal(t, "localhost:5050/owner/img:t1@sha256:d1", withDigest(use, "localhost:5050/owner/img:t1", artifacts.List()))
+				require.Equal(t, "localhost:5050/owner/img:t1@sha256:d1", withDigest("localhost:5050/owner/img:t1", artifacts.List()))
 			})
 
 			t.Run("no digest", func(t *testing.T) {
-				require.Equal(t, "localhost:5050/owner/img:t3", withDigest(use, "localhost:5050/owner/img:t3", artifacts.List()))
+				require.Equal(t, "localhost:5050/owner/img:t3", withDigest("localhost:5050/owner/img:t3", artifacts.List()))
 			})
 
 			t.Run("no match", func(t *testing.T) {
-				require.Equal(t, "localhost:5050/owner/img:t4", withDigest(use, "localhost:5050/owner/img:t4", artifacts.List()))
+				require.Equal(t, "localhost:5050/owner/img:t4", withDigest("localhost:5050/owner/img:t4", artifacts.List()))
 			})
 		})
 	}

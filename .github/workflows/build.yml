@@ -58,18 +58,24 @@ jobs:
         if: matrix.os == 'ubuntu-latest'
         with:
           github_access_token: ${{ secrets.GITHUB_TOKEN }}
-      - uses: actions/setup-go@3041bf56c941b39c61721a86cd11f3bb1338122a # v5
+      - uses: actions/setup-go@f111f3307d8850f501ac008e886eec1fd1932a34 # v5
         with:
           go-version: stable
       - uses: mlugg/setup-zig@v1
       - uses: oven-sh/setup-bun@v2
       - uses: denoland/setup-deno@v2
+      - uses: cargo-bins/cargo-binstall@main
+      - name: setup-cargo
+        run: |
+          rustup default stable
+          cargo binstall cargo-zigbuild
       - uses: sigstore/cosign-installer@v3.7.0
-      - uses: anchore/sbom-action/download-syft@v0.17.9
+      - uses: anchore/sbom-action/download-syft@v0.18.0
       - run: task setup
-      - run: task test
       - run: task build
-      - uses: codecov/codecov-action@1e68e06f1dbfde0e4cefc87efeba9e4643565303 # v5
+      - run: task test
+      - uses: codecov/codecov-action@0da7aa657d958d32c117fc47e1f977e7524753c7 # v5
+        if: matrix.os == 'ubuntu-latest'
         with:
           file: ./coverage.txt
         env:

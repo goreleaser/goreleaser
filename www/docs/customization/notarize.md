@@ -41,23 +41,39 @@ notarize:
       # This blocks defines the configuration for doing so.
       sign:
         # The .p12 certificate file path or its base64'd contents.
+        #
+        # Templates: allowed.
         certificate: "{{.Env.MACOS_SIGN_P12}}"
 
         # The password to be used to open the certificate.
+        #
+        # Templates: allowed.
         password: "{{.Env.MACOS_SIGN_PASSWORD}}"
+
+        # Allows to set the signature entitlements XML file.
+        #
+        # Templates: allowed.
+        # Since: v2.6.
+        entitlements: ./path/to/entitlements.xml
 
       # Then, we notarize the binaries.
       notarize:
         # The issuer ID.
         # Its the UUID you see when creating the App Store Connect key.
+        #
+        # Templates: allowed.
         issuer_id: "{{.Env.MACOS_NOTARY_ISSUER_ID}}"
 
         # Key ID.
         # You can see it in the list of App Store Connect Keys.
         # It will also be in the ApiKey filename.
+        #
+        # Templates: allowed.
         key_id: "{{.Env.MACOS_NOTARY_KEY_ID}}"
 
         # The .p8 key file path or its base64'd contents.
+        #
+        # Templates: allowed.
         key: "{{.Env.MACOS_NOTARY_KEY}}"
 
         # Whether to wait for the notarization to finish.

@@ -17,7 +17,7 @@ goreleaser release [flags]
   -h, --help                         help for release
       --id stringArray               Builds only the specified build ids (implies --skip=publish) (Pro only)
   -k, --key string                   GoReleaser Pro license key [$GORELEASER_KEY] (Pro only)
-      --nightly                      Generate a nightly build, publishing artifacts that support it (implies --skip=announce,validate; overrides --nightly) (Pro only)
+      --nightly                      Generate a nightly build, publishing artifacts that support it (implies --skip=announce,validate) (Pro only)
   -p, --parallelism int              Amount tasks to run concurrently (default: number of CPUs)
       --prepare                      Will run the release in such way that it can be published and announced later with goreleaser publish and goreleaser announce (implies --skip=publish,announce,after) (Pro only)
       --release-footer string        Load custom release notes footer from a markdown file

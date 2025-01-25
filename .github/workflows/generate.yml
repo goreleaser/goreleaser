@@ -15,7 +15,7 @@ jobs:
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4
         with:
           token: ${{ secrets.GH_PAT }}
-      - uses: actions/setup-go@3041bf56c941b39c61721a86cd11f3bb1338122a # v4
+      - uses: actions/setup-go@f111f3307d8850f501ac008e886eec1fd1932a34 # v4
         with:
           go-version: stable
           cache: true
@@ -38,7 +38,7 @@ jobs:
       - run: task nix:flake:update-vendor
       - run: task schema:validate
       - run: "git pull"
-      - uses: stefanzweifel/git-auto-commit-action@8621497c8c39c72f3e2a999a26b4ca1b5058a842 # v5
+      - uses: stefanzweifel/git-auto-commit-action@e348103e9026cc0eee72ae06630dbe30c8bf7a79 # v5
         with:
           commit_message: "chore: auto-update generated files"
           branch: main

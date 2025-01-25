@@ -6,10 +6,10 @@
 
 ---
 
-GoReleaser builds Go binaries for several platforms, creates a GitHub release and then
-pushes a Homebrew formula to a tap repository. All that wrapped in your favorite CI.
+We handle the complexities of releasing so you can focus in building what really
+matters: **your software**.
 
-![](https://raw.githubusercontent.com/goreleaser/example-simple/main/goreleaser.gif)
+![](https://goreleaser.com/static/goreleaser.png)
 
 ---
 
@@ -122,9 +122,9 @@ Love our work and community? [Become a backer](https://opencollective.com/gorele
 
 ### Contributors
 
-This project exists thanks to all the people who contribute. [[Contribute](CONTRIBUTING.md)].
-<a href="https://github.com/goreleaser/goreleaser/graphs/contributors"><img src="https://opencollective.com/goreleaser/contributors.svg?width=890" /></a>
+This project exists thanks to all the people who contribute.
+[Contribution guide](CONTRIBUTING.md).
 
-## Stargazers over time
+## Stars
 
 [![Stargazers over time](https://starchart.cc/goreleaser/goreleaser.svg?variant=adaptive)](https://starchart.cc/goreleaser/goreleaser)
