@@ -210,7 +210,9 @@ Here's an example `wsx` file that you can build upon:
 
 1. Some options available in the [Wix Toolset][wix] won't work with
    [msitools][], run a snapshot build and verify the generated installers.
+   Also note that [msitools][] only supports some parts of the v3 schema.
 1. Only `amd64` and `386` are supported.
+   `arm64` support was added in GoReleaser v2.7.
 1. Be mindful of schema versions. Also worth noting that extension names might
    be different in v4[^exts].
 

@@ -48,11 +48,12 @@ furies:
       - packages
 
     # Formats to upload.
-    # Available options are `deb` and `rpm`.
+    # Available options are `apk`, `deb`, and `rpm`.
     #
-    # Default: ['deb', 'rpm'].
+    # Default: ['apk', deb', 'rpm'].
     formats:
       - deb
+      - apk # <!-- md:inline_version v2.7-unreleased -->.
 ```
 
 [fury]: https://gemfury.com
