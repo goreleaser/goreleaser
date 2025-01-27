@@ -150,7 +150,7 @@ func (b *Builder) Build(ctx *context.Context, build config.Build, options api.Op
 		"-p", prefix,
 	}
 
-	tenv, err := common.TemplateEnv(build, tpl)
+	tenv, err := common.TemplateEnv(build.Env, tpl)
 	if err != nil {
 		return err
 	}

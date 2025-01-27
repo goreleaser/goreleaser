@@ -298,16 +298,16 @@ func (*Builder) Build(ctx *context.Context, build config.Build, options api.Opti
 		WithEnvS(env).
 		WithArtifact(a)
 
-	tenv, err := common.TemplateEnv(build, tpl)
+	tenv, err := common.TemplateEnv(details.Env, tpl)
 	if err != nil {
 		return err
 	}
-	env = append(env, tenv...)
 	for _, e := range tenv {
 		if strings.HasPrefix(e, "TEST_") {
 			testEnvs = append(testEnvs, e)
 		}
 	}
+	env = append(env, tenv...)
 	env = append(env, t.env()...)
 	if v := os.Getenv("GOCACHEPROG"); v != "" {
 		env = append(env, "GOCACHEPROG="+v)
