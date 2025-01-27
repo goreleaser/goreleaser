@@ -875,6 +875,7 @@ type NFPMRPM struct {
 type NFPMDebScripts struct {
 	Rules     string `yaml:"rules,omitempty" json:"rules,omitempty"`
 	Templates string `yaml:"templates,omitempty" json:"templates,omitempty"`
+	Config    string `yaml:"config,omitempty" json:"config,omitempty"`
 }
 
 // NFPMDebTriggers contains triggers only available for deb packages.

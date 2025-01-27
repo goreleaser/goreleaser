@@ -429,6 +429,7 @@ func create(ctx *context.Context, fpm config.NFPM, format string, artifacts []*a
 				Scripts: nfpm.DebScripts{
 					Rules:     overridden.Deb.Scripts.Rules,
 					Templates: overridden.Deb.Scripts.Templates,
+					Config:    overridden.Deb.Scripts.Config,
 				},
 				Triggers: nfpm.DebTriggers{
 					Interest:        overridden.Deb.Triggers.Interest,
