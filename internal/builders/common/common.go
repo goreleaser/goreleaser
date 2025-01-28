@@ -74,20 +74,20 @@ func ChTimes(build config.Build, tpl *tmpl.Template, a *artifact.Artifact) error
 }
 
 // TemplateEnv templates the build.Env and returns it.
-func TemplateEnv(build config.Build, tpl *tmpl.Template) ([]string, error) {
-	var env []string
-	for _, e := range build.Env {
+func TemplateEnv(input []string, tpl *tmpl.Template) ([]string, error) {
+	var output []string
+	for _, e := range input {
 		ee, err := tpl.Apply(e)
 		if err != nil {
 			return nil, err
 		}
 		log.Debugf("env %q evaluated to %q", e, ee)
 		if ee != "" {
-			env = append(env, ee)
+			output = append(output, ee)
 			tpl = tpl.SetEnv(ee)
 		}
 	}
-	return env, nil
+	return output, nil
 }
 
 // Exec executes the given command with the given env in the given dir,

@@ -472,6 +472,15 @@ func TestBuild(t *testing.T) {
 				},
 				Tool:    "{{ .Env.GOBIN }}",
 				Command: "build",
+				BuildDetailsOverrides: []config.BuildDetailsOverride{
+					{
+						Goos:   "linux",
+						Goarch: "amd64",
+						BuildDetails: config.BuildDetails{
+							Env: []string{"TEST_O=1"},
+						},
+					},
+				},
 				BuildDetails: config.BuildDetails{
 					Env: []string{
 						"GO111MODULE=off",
@@ -533,7 +542,7 @@ func TestBuild(t *testing.T) {
 				artifact.ExtraBinary:  "foo-v5.6.7",
 				artifact.ExtraID:      "foo",
 				artifact.ExtraBuilder: "go",
-				"testEnvs":            []string{"TEST_T=l"},
+				"testEnvs":            []string{"TEST_T=l", "TEST_O=1"},
 			},
 		},
 		{

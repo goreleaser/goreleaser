@@ -144,7 +144,7 @@ func TestTemplateEnv(t *testing.T) {
 		Goos: "linux",
 	})
 
-	got, err := TemplateEnv(build, tpl)
+	got, err := TemplateEnv(build.Env, tpl)
 	require.NoError(t, err)
 	require.Equal(t, []string{
 		"FOO=foobar",
