@@ -223,6 +223,12 @@ uploads:
     # Upload signatures.
     signature: true
 
+    # Skip this upload configuration.
+    #
+    # Templates: allowed.
+    # <!-- md:inline_version v2.7-unreleased -->.
+    skip: "{{gt .Patch 0}}"
+
     # Certificate chain used to validate server certificates
     trusted_certificates: |
       -----BEGIN CERTIFICATE-----
