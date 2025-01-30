@@ -47,3 +47,8 @@ pro: true
 
 Then, whenever `--snapshot` is set, GoReleaser will happily proceed without
 rejecting the configuration (it will warn about it, though).
+
+!!! warning
+
+    When doing this, other YAML parsing errors might be ignored, such as fields
+    that don't actually exist.
