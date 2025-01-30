@@ -38,7 +38,7 @@ func newHealthcheckCmd() *healthcheckCmd {
 				log.Log = log.New(io.Discard)
 			}
 
-			cfg, err := loadConfig(root.config)
+			cfg, err := loadConfig(true, root.config)
 			if err != nil {
 				return err
 			}

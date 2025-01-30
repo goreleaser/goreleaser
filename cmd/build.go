@@ -85,7 +85,7 @@ When using ` + "`--single-target`" + `, you use the ` + "`TARGET`, or GOOS`, `GO
 	cmd.Flags().StringArrayVar(&root.opts.ids, "id", nil, "Builds only the specified build ids")
 	_ = cmd.RegisterFlagCompletionFunc("id", func(_ *cobra.Command, _ []string, _ string) ([]string, cobra.ShellCompDirective) {
 		// TODO: improve this
-		cfg, err := loadConfig(root.opts.config)
+		cfg, err := loadConfig(!root.opts.snapshot, root.opts.config)
 		if err != nil {
 			return nil, cobra.ShellCompDirectiveNoFileComp
 		}
@@ -115,7 +115,7 @@ When using ` + "`--single-target`" + `, you use the ` + "`TARGET`, or GOOS`, `GO
 }
 
 func buildProject(options buildOpts) (*context.Context, error) {
-	cfg, err := loadConfig(options.config)
+	cfg, err := loadConfig(!options.snapshot, options.config)
 	if err != nil {
 		return nil, err
 	}

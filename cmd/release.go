@@ -103,7 +103,7 @@ func newReleaseCmd() *releaseCmd {
 }
 
 func releaseProject(options releaseOpts) (*context.Context, error) {
-	cfg, err := loadConfig(options.config)
+	cfg, err := loadConfig(options.snapshot, options.config)
 	if err != nil {
 		return nil, err
 	}
