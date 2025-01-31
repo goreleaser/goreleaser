@@ -121,3 +121,8 @@ func TestVersion(t *testing.T) {
 		require.NoError(t, err)
 	})
 }
+
+func TestPro(t *testing.T) {
+	_, err := LoadReader(strings.NewReader("version: 2\npro: true\nnope: true\n"))
+	require.ErrorIs(t, err, ErrProConfig)
+}
