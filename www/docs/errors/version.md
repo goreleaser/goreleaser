@@ -5,7 +5,7 @@
 This can show as an error or as an warning:
 
 ```
-only configurations files on version: 2 are supported, yours is version: 0, please update your configuration
+only version: 2 configuration files are supported, yours is version: 0, please update your configuration
 ```
 
 It has to do with the v2 update.
