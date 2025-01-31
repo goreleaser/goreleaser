@@ -707,7 +707,7 @@ func cert(srv *httptest.Server) string {
 
 func TestManyUploads(t *testing.T) {
 	var uploaded atomic.Bool
-	srv := httptest.NewServer(http.HandlerFunc(func(w h.ResponseWriter, r *h.Request) {
+	srv := httptest.NewServer(http.HandlerFunc(func(w h.ResponseWriter, _ *h.Request) {
 		w.WriteHeader(h.StatusCreated)
 		uploaded.Store(true)
 	}))
