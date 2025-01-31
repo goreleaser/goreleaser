@@ -44,6 +44,8 @@ linters-settings:
         deny:
           - pkg: "github.com/pkg/errors"
             desc: "use stdlib instead"
+          - pkg: "math/rand$"
+            desc: "use math/rand/v2 instead"
   perfsprint:
     int-conversion: false
     err-error: false

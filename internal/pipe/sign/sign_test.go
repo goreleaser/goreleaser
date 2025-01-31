@@ -3,13 +3,12 @@ package sign
 import (
 	"bytes"
 	"fmt"
-	"math/rand"
+	"math/rand/v2"
 	"os"
 	"os/exec"
 	"path/filepath"
 	"strings"
 	"testing"
-	"time"
 
 	"github.com/stretchr/testify/assert"
 
@@ -38,7 +37,6 @@ const (
 )
 
 func TestMain(m *testing.M) {
-	rand := rand.New(rand.NewSource(time.Now().UnixNano()))
 	keyring = filepath.Join(os.TempDir(), fmt.Sprintf("gorel_gpg_test.%d", rand.Int()))
 	fmt.Println("copying", originKeyring, "to", keyring)
 	if err := gio.Copy(originKeyring, keyring); err != nil {
