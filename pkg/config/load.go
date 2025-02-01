@@ -23,7 +23,7 @@ var ErrProConfig = errors.New("you are using a GoReleaser Pro configuration file
 
 func (e VersionError) Error() string {
 	return fmt.Sprintf(
-		"only configurations files on %s are supported, yours is %s, please update your configuration",
+		"only %s configuration files are supported, yours is %s, please update your configuration",
 		logext.Keyword("version: 2"),
 		logext.Keyword(fmt.Sprintf("version: %d", e.current)),
 	)
