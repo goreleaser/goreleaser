@@ -26,7 +26,7 @@ docker_signs:
 
     # Command line arguments for the command.
     #
-    # Default: ["sign", "--key=cosign.key", "${artifact}", "--yes"].
+    # Default: ["sign", "--key=cosign.key", "${artifact}@${digest}", "--yes"].
     # Templates: allowed.
     args:
       - "sign"
