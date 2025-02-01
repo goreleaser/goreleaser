@@ -97,7 +97,7 @@ When using ` + "`--single-target`" + `, you use the ` + "`TARGET`, or GOOS`, `GO
 	})
 	cmd.Flags().BoolVar(&root.opts.deprecated, "deprecated", false, "Force print the deprecation message - tests only")
 	cmd.Flags().StringVarP(&root.opts.output, "output", "o", "", "Copy the binary to the path after the build. Only taken into account when using --single-target and a single id (either with --id or if configuration only has one build)")
-	_ = cmd.MarkFlagFilename("output", "")
+	// _ = cmd.MarkFlagFilename("output") // no extensions to filter
 	_ = cmd.Flags().MarkHidden("deprecated")
 
 	cmd.Flags().StringSliceVar(
