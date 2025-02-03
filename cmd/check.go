@@ -30,6 +30,9 @@ func newCheckCmd() *checkCmd {
 		SilenceUsage:  true,
 		SilenceErrors: true,
 		Args:          cobra.ArbitraryArgs,
+		ValidArgsFunction: func(_ *cobra.Command, _ []string, _ string) ([]string, cobra.ShellCompDirective) {
+			return []string{"yaml", "yml"}, cobra.ShellCompDirectiveFilterFileExt
+		},
 		RunE: func(_ *cobra.Command, args []string) error {
 			if root.quiet {
 				log.Log = log.New(io.Discard)
