@@ -118,7 +118,7 @@ func allBuildTargets(build config.Build) (targets []target) {
 						mips: gomips,
 					})
 				}
-			case "ppc64":
+			case "ppc64", "ppc64le":
 				for _, goppc64 := range build.Goppc64 {
 					targets = append(targets, target{
 						os:    goos,

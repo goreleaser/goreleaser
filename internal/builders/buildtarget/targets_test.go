@@ -33,6 +33,8 @@ func TestAllBuildTargets(t *testing.T) {
 			"mips64le",
 			"riscv64",
 			"loong64",
+			"ppc64",
+			"ppc64le",
 		},
 		Goamd64: []string{
 			"v1",
@@ -100,7 +102,7 @@ func TestAllBuildTargets(t *testing.T) {
 				Goppc64: "power8",
 			}, {
 				Goarch:  "ppc64le",
-				Goppc64: "power8",
+				Goppc64: "power9",
 			}, {
 				Goarch:    "riscv64",
 				Goriscv64: "rva20u64",
@@ -125,6 +127,10 @@ func TestAllBuildTargets(t *testing.T) {
 			"linux_mips64le_softfloat",
 			"linux_riscv64_rva22u64",
 			"linux_loong64",
+			"linux_ppc64_power9",
+			"linux_ppc64_power10",
+			"linux_ppc64le_power8",
+			"linux_ppc64le_power10",
 			"darwin_amd64_v2",
 			"darwin_amd64_v3",
 			"darwin_amd64_v4",
