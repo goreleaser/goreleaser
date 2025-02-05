@@ -49,7 +49,7 @@ require (
 	golang.org/x/crypto v0.32.0
 	golang.org/x/oauth2 v0.25.0
 	golang.org/x/sync v0.11.0
-	golang.org/x/text v0.21.0
+	golang.org/x/text v0.22.0
 	golang.org/x/tools v0.29.0
 	gopkg.in/mail.v2 v2.3.1
 	gopkg.in/yaml.v3 v3.0.1
