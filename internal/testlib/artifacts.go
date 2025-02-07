@@ -2,6 +2,7 @@ package testlib
 
 import (
 	"maps"
+	"reflect"
 	"slices"
 	"strings"
 	"testing"
@@ -24,7 +25,16 @@ func RequireEqualArtifacts(tb testing.TB, expected, got []*artifact.Artifact) {
 			slices.Collect(maps.Keys(b.Extra)),
 			"extra keys don't match",
 		)
-		for k := range a.Extra {
+		for k, v := range a.Extra {
+			if reflect.TypeOf(v).Kind() == reflect.Slice {
+				require.ElementsMatch(
+					tb,
+					v,
+					b.Extra[k],
+					"extra values don't match",
+				)
+				continue
+			}
 			require.EqualValues(
 				tb,
 				a.Extra[k],
