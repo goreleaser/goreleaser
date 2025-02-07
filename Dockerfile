@@ -1,4 +1,4 @@
-FROM golang:1.24rc2-alpine@sha256:c4485cfa9691370f4510df9fdf0d9c0c3f0da36467acb7e0f41299f295ff3394
+FROM golang:1.24rc3-alpine@sha256:edce310e0bd85e9cc522eb8e5bcd8c46bc8a51a8b0cf68f9f0ec0126c13b980f
 
 RUN apk add --no-cache bash \
 	build-base \
