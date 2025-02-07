@@ -17,7 +17,7 @@ jobs:
 
     steps:
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4
-      - uses: dagger/dagger-for-github@v7.0.4
+      - uses: dagger/dagger-for-github@v7.0.5
         with:
           verb: develop
           args: "-q"
