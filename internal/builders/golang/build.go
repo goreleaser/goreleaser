@@ -323,7 +323,7 @@ func (*Builder) Build(ctx *context.Context, build config.Build, options api.Opti
 	}
 
 	if err := common.Exec(ctx, cmd, env, build.Dir); err != nil {
-		return fmt.Errorf("failed to build for %s: %w", options.Target, err)
+		return err
 	}
 
 	if err := common.ChTimes(build, tpl, a); err != nil {
