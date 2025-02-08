@@ -17,7 +17,6 @@ func RequireEqualArtifacts(tb testing.TB, expected, got []*artifact.Artifact) {
 	slices.SortFunc(got, artifactSort)
 	require.Equal(tb, filenames(expected), filenames(got))
 	for i := range expected {
-		require.Equal(tb, *expected[i], *got[i], "item %d", i)
 		a, b := *expected[i], *got[i]
 		require.ElementsMatch(
 			tb,
