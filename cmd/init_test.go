@@ -1,11 +1,15 @@
 package cmd
 
 import (
+	"bytes"
 	"os"
 	"path/filepath"
 	"testing"
 
+	"github.com/goreleaser/goreleaser/v2/internal/pipe/defaults"
 	"github.com/goreleaser/goreleaser/v2/internal/static"
+	"github.com/goreleaser/goreleaser/v2/pkg/config"
+	"github.com/goreleaser/goreleaser/v2/pkg/context"
 	"github.com/stretchr/testify/require"
 )
 
@@ -152,4 +156,22 @@ func TestHasDistIgnored(t *testing.T) {
 		require.NoError(t, err)
 		require.Contains(t, string(content), "# Added by goreleaser init:\ndist/\ntarget/\n")
 	})
+}
+
+func checkExample(t *testing.T, exampleConfig []byte) {
+	t.Helper()
+	cfg, err := config.LoadReader(bytes.NewReader(exampleConfig))
+	require.NoError(t, err)
+	ctx := context.New(cfg)
+	err = defaults.Pipe{}.Run(ctx)
+	require.NoError(t, err)
+	require.False(t, ctx.Deprecated)
+}
+
+func TestInitExampleConfigsAreNotDeprecated(t *testing.T) {
+	checkExample(t, static.GoExampleConfig)
+	checkExample(t, static.ZigExampleConfig)
+	checkExample(t, static.BunExampleConfig)
+	checkExample(t, static.DenoExampleConfig)
+	checkExample(t, static.RustExampleConfig)
 }
