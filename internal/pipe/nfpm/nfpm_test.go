@@ -530,7 +530,6 @@ func TestSkipOne(t *testing.T) {
 			},
 			{
 				ID:          "someid",
-				Builds:      []string{"default"},
 				Formats:     []string{"deb", "rpm"},
 				Description: "Some description ",
 				License:     "MIT",
@@ -542,33 +541,13 @@ func TestSkipOne(t *testing.T) {
 	}, testctx.WithVersion("1.0.0"), testctx.WithCurrentTag("v1.0.0"))
 	for _, goos := range []string{"linux", "darwin"} {
 		for _, goarch := range []string{"amd64", "arm64"} {
-			switch goarch {
-			case "arm64":
-				ctx.Artifacts.Add(&artifact.Artifact{
-					Name:    "subdir/mybin",
-					Path:    binPath,
-					Goarch:  goarch,
-					Goos:    goos,
-					Goarm64: "v8.0",
-					Type:    artifact.Binary,
-					Extra: map[string]interface{}{
-						artifact.ExtraID: "default",
-					},
-				})
-			case "amd64":
-				ctx.Artifacts.Add(&artifact.Artifact{
-					Name:    "subdir/mybin",
-					Path:    binPath,
-					Goarch:  goarch,
-					Goos:    goos,
-					Goamd64: "v1",
-					Type:    artifact.Binary,
-					Extra: map[string]interface{}{
-						artifact.ExtraID: "default",
-					},
-				})
-
-			}
+			ctx.Artifacts.Add(&artifact.Artifact{
+				Name:   "subdir/mybin",
+				Path:   binPath,
+				Goarch: goarch,
+				Goos:   goos,
+				Type:   artifact.Binary,
+			})
 		}
 	}
 	require.NoError(t, Pipe{}.Default(ctx))
