@@ -78,7 +78,7 @@ cloudsmiths:
       alpine: "alpine/v3.8"
 
     # The component (channel) for the package (e.g. 'main', 'unstable', etc).
-    # <!-- md:inline_version v2.7-unreleased -->
+    # <!-- md:inline_version v2.7 -->
     component: main
 ```
 

@@ -72,7 +72,7 @@ msi:
     #
     # Valid options: 'v3', 'v4'.
     # Default: inferred from the .wxs file.
-    # <!-- md:inline_version v2.7-unreleased -->
+    # <!-- md:inline_version v2.7 -->
     version: v4
 ```
 

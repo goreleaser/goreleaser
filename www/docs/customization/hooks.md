@@ -53,7 +53,7 @@ GoReleaser allows this with the global hooks feature.
         - 'FILE_TO_TOUCH=something-{{ .ProjectName }}' # specify hook level environment variables
       - cmd: 'dotnet tool install --global wix'
         # Make the hook optional:
-        # <!-- md:inline_version v2.7-unreleased -->.
+        # <!-- md:inline_version v2.7 -->.
         if: '{{ eq .Runtime.Goos "windows" }}'
 
     # global after hooks

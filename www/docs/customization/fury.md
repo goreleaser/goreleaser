@@ -53,7 +53,7 @@ furies:
     # Default: ['apk', deb', 'rpm'].
     formats:
       - deb
-      - apk # <!-- md:inline_version v2.7-unreleased -->.
+      - apk # <!-- md:inline_version v2.7 -->.
 ```
 
 [fury]: https://gemfury.com
