@@ -2,8 +2,7 @@ name: "grype"
 
 on:
   push:
-    branches: ['main']
-    tags: ['v*']
+    branches: ["main"]
   pull_request:
 
 jobs:
@@ -17,8 +16,8 @@ jobs:
       contents: read
 
     steps:
-    - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4
-    - uses: anchore/scan-action@v6
-      with:
-        path: "."
-        fail-build: true
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4
+      - uses: anchore/scan-action@v6
+        with:
+          path: "."
+          fail-build: true
