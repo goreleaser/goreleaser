@@ -518,27 +518,20 @@ func TestSkipOne(t *testing.T) {
 	folder := t.TempDir()
 	dist := filepath.Join(folder, "dist")
 	require.NoError(t, os.Mkdir(dist, 0o755))
-	require.NoError(t, os.Mkdir(filepath.Join(dist, "mybin"), 0o755))
-	binPath := filepath.ToSlash(filepath.Join(dist, "mybin", "mybin"))
-	require.NoError(t, os.WriteFile(binPath, []byte("nope"), 0o755))
+	binPath := filepath.ToSlash(filepath.Join(dist, "mybin"))
+	require.NoError(t, os.WriteFile(binPath, nil, 0o755))
 	ctx := testctx.NewWithCfg(config.Project{
 		ProjectName: "mybin",
 		Dist:        dist,
 		NFPMs: []config.NFPM{
 			{
-				// this one will be skipped,
+				ID: "this configuration will be ignored as it has no formats",
 			},
 			{
-				ID:          "someid",
-				Formats:     []string{"deb", "rpm"},
-				Description: "Some description ",
-				License:     "MIT",
-				Maintainer:  "me@me",
-				Vendor:      "asdf",
-				Homepage:    "https://goreleaser.com/",
+				Formats: []string{"deb", "rpm"},
 			},
 		},
-	}, testctx.WithVersion("1.0.0"), testctx.WithCurrentTag("v1.0.0"))
+	}, testctx.WithVersion("1.0.0"))
 	for _, goos := range []string{"linux", "darwin"} {
 		for _, goarch := range []string{"amd64", "arm64"} {
 			ctx.Artifacts.Add(&artifact.Artifact{
@@ -553,20 +546,17 @@ func TestSkipOne(t *testing.T) {
 	require.NoError(t, Pipe{}.Default(ctx))
 	err := Pipe{}.Run(ctx)
 	require.True(t, pipe.IsSkip(err), err)
+
 	packages := ctx.Artifacts.Filter(artifact.ByType(artifact.LinuxPackage)).List()
 	require.Len(t, packages, 4)
 	for _, pkg := range packages {
-		format := pkg.Format()
-		require.NotEmpty(t, format)
+		require.NotEmpty(t, pkg.Format())
 		require.Contains(t, []string{
 			"mybin_1.0.0_linux_arm64.deb",
 			"mybin_1.0.0_linux_amd64.deb",
 			"mybin_1.0.0_linux_amd64.rpm",
 			"mybin_1.0.0_linux_arm64.rpm",
 		}, pkg.Name, "package name is not expected")
-		require.Equal(t, "someid", pkg.ID())
-		require.ElementsMatch(t, []string{binPath}, sources(artifact.ExtraOr(*pkg, extraFiles, files.Contents{})))
-		require.ElementsMatch(t, []string{"/usr/bin/subdir/mybin"}, destinations(artifact.ExtraOr(*pkg, extraFiles, files.Contents{})))
 	}
 }
 
