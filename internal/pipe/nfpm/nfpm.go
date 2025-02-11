@@ -82,16 +82,22 @@ func (Pipe) Default(ctx *context.Context) error {
 
 // Run the pipe.
 func (Pipe) Run(ctx *context.Context) error {
+	skips := pipe.SkipMemento{}
 	for _, nfpm := range ctx.Config.NFPMs {
 		if len(nfpm.Formats) == 0 {
-			// FIXME: this assumes other nfpm configs will fail too...
-			return pipe.Skip("no output formats configured")
+			skips.Remember(pipe.Skip("no output formats configured"))
+			continue
 		}
-		if err := doRun(ctx, nfpm); err != nil {
+		err := doRun(ctx, nfpm)
+		if pipe.IsSkip(err) {
+			skips.Remember(err)
+			continue
+		}
+		if err != nil {
 			return err
 		}
 	}
-	return nil
+	return skips.Evaluate()
 }
 
 func doRun(ctx *context.Context, fpm config.NFPM) error {

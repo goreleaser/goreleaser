@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"github.com/goreleaser/goreleaser/v2/internal/artifact"
+	"github.com/goreleaser/goreleaser/v2/internal/pipe"
 	"github.com/goreleaser/goreleaser/v2/internal/skips"
 	"github.com/goreleaser/goreleaser/v2/internal/testctx"
 	"github.com/goreleaser/goreleaser/v2/internal/testlib"
@@ -510,6 +511,84 @@ func TestRunPipe(t *testing.T) {
 		}, destinations(artifact.ExtraOr(*pkg, extraFiles, files.Contents{})))
 	}
 	require.Len(t, ctx.Config.NFPMs[0].Contents, 8, "should not modify the config file list")
+}
+
+func TestSkipOne(t *testing.T) {
+	t.Helper()
+	folder := t.TempDir()
+	dist := filepath.Join(folder, "dist")
+	require.NoError(t, os.Mkdir(dist, 0o755))
+	require.NoError(t, os.Mkdir(filepath.Join(dist, "mybin"), 0o755))
+	binPath := filepath.ToSlash(filepath.Join(dist, "mybin", "mybin"))
+	require.NoError(t, os.WriteFile(binPath, []byte("nope"), 0o755))
+	ctx := testctx.NewWithCfg(config.Project{
+		ProjectName: "mybin",
+		Dist:        dist,
+		NFPMs: []config.NFPM{
+			{
+				// this one will be skipped,
+			},
+			{
+				ID:          "someid",
+				Builds:      []string{"default"},
+				Formats:     []string{"deb", "rpm"},
+				Description: "Some description ",
+				License:     "MIT",
+				Maintainer:  "me@me",
+				Vendor:      "asdf",
+				Homepage:    "https://goreleaser.com/",
+			},
+		},
+	}, testctx.WithVersion("1.0.0"), testctx.WithCurrentTag("v1.0.0"))
+	for _, goos := range []string{"linux", "darwin"} {
+		for _, goarch := range []string{"amd64", "arm64"} {
+			switch goarch {
+			case "arm64":
+				ctx.Artifacts.Add(&artifact.Artifact{
+					Name:    "subdir/mybin",
+					Path:    binPath,
+					Goarch:  goarch,
+					Goos:    goos,
+					Goarm64: "v8.0",
+					Type:    artifact.Binary,
+					Extra: map[string]interface{}{
+						artifact.ExtraID: "default",
+					},
+				})
+			case "amd64":
+				ctx.Artifacts.Add(&artifact.Artifact{
+					Name:    "subdir/mybin",
+					Path:    binPath,
+					Goarch:  goarch,
+					Goos:    goos,
+					Goamd64: "v1",
+					Type:    artifact.Binary,
+					Extra: map[string]interface{}{
+						artifact.ExtraID: "default",
+					},
+				})
+
+			}
+		}
+	}
+	require.NoError(t, Pipe{}.Default(ctx))
+	err := Pipe{}.Run(ctx)
+	require.True(t, pipe.IsSkip(err), err)
+	packages := ctx.Artifacts.Filter(artifact.ByType(artifact.LinuxPackage)).List()
+	require.Len(t, packages, 4)
+	for _, pkg := range packages {
+		format := pkg.Format()
+		require.NotEmpty(t, format)
+		require.Contains(t, []string{
+			"mybin_1.0.0_linux_arm64.deb",
+			"mybin_1.0.0_linux_amd64.deb",
+			"mybin_1.0.0_linux_amd64.rpm",
+			"mybin_1.0.0_linux_arm64.rpm",
+		}, pkg.Name, "package name is not expected")
+		require.Equal(t, "someid", pkg.ID())
+		require.ElementsMatch(t, []string{binPath}, sources(artifact.ExtraOr(*pkg, extraFiles, files.Contents{})))
+		require.ElementsMatch(t, []string{"/usr/bin/subdir/mybin"}, destinations(artifact.ExtraOr(*pkg, extraFiles, files.Contents{})))
+	}
 }
 
 func TestRunPipeConventionalNameTemplate(t *testing.T) {
