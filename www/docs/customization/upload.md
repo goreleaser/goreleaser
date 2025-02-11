@@ -226,7 +226,7 @@ uploads:
     # Skip this upload configuration.
     #
     # Templates: allowed.
-    # <!-- md:inline_version v2.7-unreleased -->.
+    # <!-- md:inline_version v2.7 -->.
     skip: "{{gt .Patch 0}}"
 
     # Certificate chain used to validate server certificates
