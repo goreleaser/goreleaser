@@ -2224,6 +2224,9 @@
 					},
 					"templates": {
 						"type": "string"
+					},
+					"config": {
+						"type": "string"
 					}
 				},
 				"additionalProperties": false,
@@ -2643,6 +2646,9 @@
 							2
 						],
 						"default": 2
+					},
+					"pro": {
+						"type": "boolean"
 					},
 					"project_name": {
 						"type": "string"
@@ -4013,6 +4019,16 @@
 					},
 					"extra_files_only": {
 						"type": "boolean"
+					},
+					"skip": {
+						"oneOf": [
+							{
+								"type": "string"
+							},
+							{
+								"type": "boolean"
+							}
+						]
 					}
 				},
 				"additionalProperties": false,
