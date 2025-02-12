@@ -107,12 +107,12 @@ builds:
 
 ## Publishing with Cargo
 
-You can use [custom publishers](../publishers.md) to do it:
+You can use [global after hooks](../hooks.md) to do it:
 
 ```yaml title=".goreleaser.yaml"
-publishers:
-  - name: cargo
-    cmd: "cargo publish {{ if .IsSnapshot }}--dry-run{{ end }} --quiet --no-verify"
+# global after hooks
+after:
+  - cmd: "cargo publish {{ if .IsSnapshot }}--dry-run{{ end }} --quiet --no-verify"
 ```
 
 ## Caveats
