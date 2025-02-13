@@ -5030,8 +5030,7 @@
 				"type": "object",
 				"required": [
 					"publisher",
-					"repository",
-					"short_description"
+					"repository"
 				]
 			},
 			"WingetDependency": {
