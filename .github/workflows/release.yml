@@ -148,6 +148,7 @@ jobs:
           MACOS_NOTARY_KEY_ID: ${{ secrets.MACOS_NOTARY_KEY_ID }}
           MACOS_NOTARY_KEY: ${{ secrets.MACOS_NOTARY_KEY }}
           SNAPCRAFT_STORE_CREDENTIALS: ${{ secrets.SNAPCRAFT_LOGIN }}
+          GORELEASER_PREVIOUS_TAG: v2.7.0 # TODO: remove this after next release
       - uses: actions/attest-build-provenance@v2
         with:
           subject-checksums: ./dist/checksums.txt
