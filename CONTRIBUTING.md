@@ -15,7 +15,7 @@ Dagger.
 Prerequisites:
 
 - [Task](https://taskfile.dev/installation)
-- [Go 1.23+](https://go.dev/doc/install)
+- [Go 1.24+](https://go.dev/doc/install)
 
 Other things you might need to run some of the tests (they should get
 automatically skipped if a needed tool isn't present):
@@ -34,7 +34,7 @@ Prerequisites:
 
 - [Task](https://taskfile.dev/installation)
 - [Dagger](https://docs.dagger.io/install)
-- [Go 1.23+](https://go.dev/doc/install)
+- [Go 1.24+](https://go.dev/doc/install)
 - [Docker](https://www.docker.com/)
 
 ## Building
