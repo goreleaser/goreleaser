@@ -163,7 +163,7 @@ builds:
       - arm64
 
 kos:
-  - repository: ghcr.io/caarlos0/test-ko
+  - repositories: [ghcr.io/caarlos0/test-ko]
     tags:
       - "{{.Version}}"
       - latest
