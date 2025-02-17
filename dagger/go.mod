@@ -1,6 +1,6 @@
 module github.com/goreleaser/goreleaser/v2/dagger
 
-go 1.24
+go 1.23
 
 require (
 	github.com/99designs/gqlgen v0.17.57
