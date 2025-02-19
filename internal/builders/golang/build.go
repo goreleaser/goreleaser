@@ -14,7 +14,6 @@ import (
 	"dario.cat/mergo"
 	"github.com/caarlos0/log"
 	"github.com/goreleaser/goreleaser/v2/internal/artifact"
-	"github.com/goreleaser/goreleaser/v2/internal/builders/buildtarget"
 	"github.com/goreleaser/goreleaser/v2/internal/builders/common"
 	"github.com/goreleaser/goreleaser/v2/internal/experimental"
 	"github.com/goreleaser/goreleaser/v2/internal/logext"
@@ -137,7 +136,7 @@ func (*Builder) WithDefaults(build config.Build) (config.Build, error) {
 			build.Goriscv64 = []string{"rva20u64"}
 		}
 
-		targets, err := buildtarget.List(build)
+		targets, err := listTargets(build)
 		if err != nil {
 			return build, err
 		}
