@@ -197,6 +197,7 @@ func fixTarget(target string) string {
 	if strings.HasSuffix(target, "_riscv64") {
 		return target + "_rva20u64"
 	}
+
 	return target
 }
 
