@@ -9,9 +9,23 @@ import (
 	"github.com/goreleaser/goreleaser/v2/pkg/config"
 )
 
-func formatTarget(o config.BuildDetailsOverride) string {
-	target := o.Goos + "_" + o.Goarch
-	if extra := o.Goamd64 + o.Go386 + o.Goarm + o.Goarm64 + o.Gomips + o.Goppc64 + o.Goriscv64; extra != "" {
+func formatBuildTarget(o config.BuildDetailsOverride) string {
+	return formatTarget(Target{
+		Goos:      o.Goos,
+		Goarch:    o.Goarch,
+		Goamd64:   o.Goamd64,
+		Go386:     o.Go386,
+		Goarm:     o.Goarm,
+		Goarm64:   o.Goarm64,
+		Gomips:    o.Gomips,
+		Goppc64:   o.Goppc64,
+		Goriscv64: o.Goriscv64,
+	})
+}
+
+func formatTarget(t Target) string {
+	target := t.Goos + "_" + t.Goarch
+	if extra := t.Goamd64 + t.Go386 + t.Goarm + t.Goarm64 + t.Gomips + t.Goppc64 + t.Goriscv64; extra != "" {
 		target += "_" + extra
 	}
 	return target
@@ -126,78 +140,47 @@ func allBuildTargets(build config.Build) (targets []Target) {
 			case "386":
 				for _, go386 := range build.Go386 {
 					target.Go386 = go386
-					target.Target = formatTarget(config.BuildDetailsOverride{
-						Goos:   goos,
-						Goarch: goarch,
-						Go386:  go386,
-					})
+					target.Target = formatTarget(target)
 					targets = append(targets, target)
 				}
 			case "amd64":
 				for _, goamd64 := range build.Goamd64 {
 					target.Goamd64 = goamd64
-					target.Target = formatTarget(config.BuildDetailsOverride{
-						Goos:    goos,
-						Goarch:  goarch,
-						Goamd64: goamd64,
-					})
+					target.Target = formatTarget(target)
 					targets = append(targets, target)
 				}
 			case "arm64":
 				for _, goarm64 := range build.Goarm64 {
 					target.Goarm64 = goarm64
-					target.Target = formatTarget(config.BuildDetailsOverride{
-						Goos:    goos,
-						Goarch:  goarch,
-						Goarm64: goarm64,
-					})
+					target.Target = formatTarget(target)
 					targets = append(targets, target)
 				}
 			case "arm":
 				for _, goarm := range build.Goarm {
 					target.Goarm = goarm
-					target.Target = formatTarget(config.BuildDetailsOverride{
-						Goos:   goos,
-						Goarch: goarch,
-						Goarm:  goarm,
-					})
+					target.Target = formatTarget(target)
 					targets = append(targets, target)
 				}
 			case "mips", "mipsle", "mips64", "mips64le":
 				for _, gomips := range build.Gomips {
 					target.Gomips = gomips
-					target.Target = formatTarget(config.BuildDetailsOverride{
-						Goos:   goos,
-						Goarch: goarch,
-						Gomips: gomips,
-					})
+					target.Target = formatTarget(target)
 					targets = append(targets, target)
 				}
 			case "ppc64", "ppc64le":
 				for _, goppc64 := range build.Goppc64 {
 					target.Goppc64 = goppc64
-					target.Target = formatTarget(config.BuildDetailsOverride{
-						Goos:    goos,
-						Goarch:  goarch,
-						Goppc64: goppc64,
-					})
+					target.Target = formatTarget(target)
 					targets = append(targets, target)
 				}
 			case "riscv64":
 				for _, goriscv64 := range build.Goriscv64 {
 					target.Goriscv64 = goriscv64
-					target.Target = formatTarget(config.BuildDetailsOverride{
-						Goos:      goos,
-						Goarch:    goarch,
-						Goriscv64: goriscv64,
-					})
+					target.Target = formatTarget(target)
 					targets = append(targets, target)
 				}
 			default:
-				target.Target = formatTarget(config.BuildDetailsOverride{
-					Goos:   goos,
-					Goarch: goarch,
-				})
+				target.Target = formatTarget(target)
 				targets = append(targets, target)
 			}
 		}

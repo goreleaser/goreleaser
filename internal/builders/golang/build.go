@@ -336,7 +336,7 @@ func (*Builder) Build(ctx *context.Context, build config.Build, options api.Opti
 func withOverrides(ctx *context.Context, build config.Build, target Target) (config.BuildDetails, error) {
 	optsTarget := target.Target
 	for _, o := range build.BuildDetailsOverrides {
-		overrideTarget, err := tmpl.New(ctx).Apply(formatTarget(o))
+		overrideTarget, err := tmpl.New(ctx).Apply(formatBuildTarget(o))
 		if err != nil {
 			return build.BuildDetails, err
 		}
