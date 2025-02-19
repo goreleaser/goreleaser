@@ -129,63 +129,79 @@ func listTargets(build config.Build) ([]string, error) {
 	return result, nil
 }
 
-func allBuildTargets(build config.Build) (targets []Target) {
+func allBuildTargets(build config.Build) []Target {
+	var targets []Target
 	for _, goos := range build.Goos {
 		for _, goarch := range build.Goarch {
-			var target Target
-			target.Goos = goos
-			target.Goarch = goarch
-
 			switch goarch {
 			case "386":
 				for _, go386 := range build.Go386 {
-					target.Go386 = go386
-					target.Target = formatTarget(target)
-					targets = append(targets, target)
+					targets = append(targets, Target{
+						Goos:   goos,
+						Goarch: goarch,
+						Go386:  go386,
+					})
 				}
 			case "amd64":
 				for _, goamd64 := range build.Goamd64 {
-					target.Goamd64 = goamd64
-					target.Target = formatTarget(target)
-					targets = append(targets, target)
+					targets = append(targets, Target{
+						Goos:    goos,
+						Goarch:  goarch,
+						Goamd64: goamd64,
+					})
 				}
 			case "arm64":
 				for _, goarm64 := range build.Goarm64 {
-					target.Goarm64 = goarm64
-					target.Target = formatTarget(target)
-					targets = append(targets, target)
+					targets = append(targets, Target{
+						Goos:    goos,
+						Goarch:  goarch,
+						Goarm64: goarm64,
+					})
 				}
 			case "arm":
 				for _, goarm := range build.Goarm {
-					target.Goarm = goarm
-					target.Target = formatTarget(target)
-					targets = append(targets, target)
+					targets = append(targets, Target{
+						Goos:   goos,
+						Goarch: goarch,
+						Goarm:  goarm,
+					})
 				}
 			case "mips", "mipsle", "mips64", "mips64le":
 				for _, gomips := range build.Gomips {
-					target.Gomips = gomips
-					target.Target = formatTarget(target)
-					targets = append(targets, target)
+					targets = append(targets, Target{
+						Goos:   goos,
+						Goarch: goarch,
+						Gomips: gomips,
+					})
 				}
 			case "ppc64", "ppc64le":
 				for _, goppc64 := range build.Goppc64 {
-					target.Goppc64 = goppc64
-					target.Target = formatTarget(target)
-					targets = append(targets, target)
+					targets = append(targets, Target{
+						Goos:    goos,
+						Goarch:  goarch,
+						Goppc64: goppc64,
+					})
 				}
 			case "riscv64":
 				for _, goriscv64 := range build.Goriscv64 {
-					target.Goriscv64 = goriscv64
-					target.Target = formatTarget(target)
-					targets = append(targets, target)
+					targets = append(targets, Target{
+						Goos:      goos,
+						Goarch:    goarch,
+						Goriscv64: goriscv64,
+					})
 				}
 			default:
-				target.Target = formatTarget(target)
-				targets = append(targets, target)
+				targets = append(targets, Target{
+					Goos:   goos,
+					Goarch: goarch,
+				})
 			}
 		}
 	}
-	return
+	for i := range targets {
+		targets[i].Target = formatTarget(targets[i])
+	}
+	return targets
 }
 
 func ignored(build config.Build, target Target) bool {
