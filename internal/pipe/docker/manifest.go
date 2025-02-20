@@ -169,6 +169,6 @@ func withDigest(name string, images []*artifact.Artifact) string {
 		}
 	}
 
-	log.Warnf("culd not find %q, did you mean %q?", name, suggestion)
+	log.Warnf("could not find %q, did you mean %q?", name, suggestion)
 	return name
 }
