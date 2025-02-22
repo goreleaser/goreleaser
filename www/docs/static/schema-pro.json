@@ -2336,6 +2336,21 @@
 					"key_id"
 				]
 			},
+			"MacOSNotarizeNative": {
+				"properties": {
+					"profile_name": {
+						"type": "string"
+					},
+					"wait": {
+						"type": "boolean"
+					}
+				},
+				"additionalProperties": false,
+				"type": "object",
+				"required": [
+					"profile_name"
+				]
+			},
 			"MacOSSign": {
 				"properties": {
 					"certificate": {
@@ -2353,6 +2368,30 @@
 				"required": [
 					"certificate",
 					"password"
+				]
+			},
+			"MacOSSignNative": {
+				"properties": {
+					"identity": {
+						"type": "string"
+					},
+					"keychain": {
+						"type": "string"
+					},
+					"options": {
+						"items": {
+							"type": "string"
+						},
+						"type": "array"
+					},
+					"entitlements": {
+						"type": "string"
+					}
+				},
+				"additionalProperties": false,
+				"type": "object",
+				"required": [
+					"identity"
 				]
 			},
 			"MacOSSignNotarize": {
@@ -2384,6 +2423,38 @@
 				"type": "object",
 				"required": [
 					"sign"
+				]
+			},
+			"MacOSSignNotarizeNative": {
+				"properties": {
+					"ids": {
+						"items": {
+							"type": "string"
+						},
+						"type": "array"
+					},
+					"enabled": {
+						"oneOf": [
+							{
+								"type": "string"
+							},
+							{
+								"type": "boolean"
+							}
+						]
+					},
+					"sign": {
+						"$ref": "#/$defs/MacOSSignNative"
+					},
+					"notarize": {
+						"$ref": "#/$defs/MacOSNotarizeNative"
+					}
+				},
+				"additionalProperties": false,
+				"type": "object",
+				"required": [
+					"sign",
+					"notarize"
 				]
 			},
 			"Mastodon": {
@@ -3224,13 +3295,16 @@
 							"$ref": "#/$defs/MacOSSignNotarize"
 						},
 						"type": "array"
+					},
+					"macos_native": {
+						"items": {
+							"$ref": "#/$defs/MacOSSignNotarizeNative"
+						},
+						"type": "array"
 					}
 				},
 				"additionalProperties": false,
-				"type": "object",
-				"required": [
-					"macos"
-				]
+				"type": "object"
 			},
 			"OpenCollective": {
 				"properties": {
