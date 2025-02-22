@@ -1135,7 +1135,7 @@
 					},
 					"distributions": {
 						"additionalProperties": {
-							"type": "string"
+							"$ref": "#/$defs/StringArray"
 						},
 						"type": "object"
 					},
@@ -2146,6 +2146,16 @@
 					},
 					"base_import_paths": {
 						"type": "boolean"
+					},
+					"disable": {
+						"oneOf": [
+							{
+								"type": "string"
+							},
+							{
+								"type": "boolean"
+							}
+						]
 					}
 				},
 				"additionalProperties": false,
