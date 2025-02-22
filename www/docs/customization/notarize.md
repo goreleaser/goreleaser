@@ -1,8 +1,8 @@
 # Notarize macOS applications
 
 GoReleaser can sign & notarize macOS binaries
-(and [Universal Binaries][unibin]) using [anchore/quill][quill], and DMGs on
-native macOS.
+(and [Universal Binaries][unibin]) using [anchore/quill][quill], and
+[App Bundles][appbundles] inside [DMGs][DMG] on native macOS.
 
 To use these features, you'll need:
 
