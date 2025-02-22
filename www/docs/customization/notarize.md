@@ -171,6 +171,7 @@ notarize:
         identity: "Developer ID Application: Carlos Becker"
 
         # Options to pass to 'codesign'.
+        # You will generally want to add 'runtime' here.
         options: [runtime]
 
         # Allows to set the signature entitlements XML file.
