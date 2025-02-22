@@ -170,7 +170,7 @@ nav:
           - customization/winget.md
           - NUR: customization/nix.md
           - AUR: customization/aur.md
-          - AURSources: customization/aursources.md
+          - AUR (Sources): customization/aursources.md
           - Krew: customization/krew.md
           - Scoop: customization/scoop.md
           - customization/changelog.md
