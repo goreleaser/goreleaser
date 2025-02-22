@@ -1,4 +1,4 @@
-# Notarize macOS binaries and DMGs
+# Notarize macOS applications
 
 GoReleaser can sign & notarize macOS binaries
 (and [Universal Binaries][unibin]) using [anchore/quill][quill], and DMGs on
@@ -21,7 +21,7 @@ So you should end up with:
 1. a `Certificates.p12` file and the password to open it
 1. a `ApiKey_AAABBBCCC.p8` file
 
-## Binaries only
+## Binaries
 
 If you only want to sign and notarize your binaries, this is probably the best
 alternative.
@@ -117,7 +117,7 @@ notarize:
     base64 -w0 < ./ApiKey_AAABBBCCC.p8
     ```
 
-## App Bundles and DMGs
+## Application Bundles and DMGs
 
 <!-- md:version v2.8-unreleased -->
 <!-- md:pro -->
