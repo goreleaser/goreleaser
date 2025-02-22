@@ -21,7 +21,7 @@ So you should end up with:
 1. a `Certificates.p12` file and the password to open it
 1. a `ApiKey_AAABBBCCC.p8` file
 
-## "Binaries only"
+## Binaries only
 
 If you only want to sign and notarize your binaries, this is probably the best
 alternative.
@@ -73,6 +73,8 @@ notarize:
         entitlements: ./path/to/entitlements.xml
 
       # Then, we notarize the binaries.
+      #
+      # Leave this section empty if you only want to sign the binaries. (<!-- md:version-inline v2.1 -->).
       notarize:
         # The issuer ID.
         # Its the UUID you see when creating the App Store Connect key.
@@ -115,17 +117,10 @@ notarize:
     base64 -w0 < ./ApiKey_AAABBBCCC.p8
     ```
 
-### Signing only
+## App Bundles and DMGs
 
-<!-- md:version v2.1 -->
-
-If you want to only sign the binaries, but not notarize them, you can simply
-leave the `notarize` section of your configuration empty.
-
-## Signing and notarizing App Bundles (and DMGs)
-
-<!-- md:pro -->
 <!-- md:version v2.8-unreleased -->
+<!-- md:pro -->
 
 This method can sign and notarize [App Bundles][appbundles], but it depends on
 `xcrun` and `codesign`.
@@ -212,6 +207,9 @@ graph TD
     Set up in GitHub Actions
   </summary>
 
+Make sure to read the [official GitHub Guide][gh-guide] as well, but this is how
+we are doing it, in case you want to save some time:
+
 ```yaml
 name: goreleaser
 # ...
@@ -258,10 +256,6 @@ jobs:
 
       # TODO: need to export KEYCHAIN_PATH to the pipeline
 ```
-
-!!! important
-
-    Make sure to read the [official GitHub Guide][gh-guide] as well.
 
 </details>
 
