@@ -157,8 +157,7 @@ func (p Pipe) Run(ctx *context.Context) error {
 
 // Publish executes the Pipe.
 func (Pipe) Publish(ctx *context.Context) error {
-	g := semerrgroup.New(ctx.Parallelism)
-	skips := pipe.SkipMemento{}
+	g := semerrgroup.NewSkipAware(semerrgroup.New(ctx.Parallelism))
 	for _, ko := range ctx.Config.Kos {
 		g.Go(func() error {
 			disable, err := tmpl.New(ctx).Bool(ko.Disable)
@@ -166,16 +165,12 @@ func (Pipe) Publish(ctx *context.Context) error {
 				return err
 			}
 			if disable {
-				skips.Remember(pipe.Skip("configuration is disabled"))
-				return nil
+				return pipe.Skip("configuration is disabled")
 			}
 			return doBuild(ctx, ko)
 		})
 	}
-	if err := g.Wait(); err != nil {
-		return err
-	}
-	return skips.Evaluate()
+	return g.Wait()
 }
 
 type buildOptions struct {

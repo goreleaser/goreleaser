@@ -40,8 +40,7 @@ func (Pipe) Default(ctx *context.Context) error {
 
 // Publish to specified blob bucket url.
 func (Pipe) Publish(ctx *context.Context) error {
-	g := semerrgroup.New(ctx.Parallelism)
-	skips := pipe.SkipMemento{}
+	g := semerrgroup.NewSkipAware(semerrgroup.New(ctx.Parallelism))
 	for _, conf := range ctx.Config.Blobs {
 		g.Go(func() error {
 			b, err := tmpl.New(ctx).Bool(conf.Disable)
@@ -49,14 +48,10 @@ func (Pipe) Publish(ctx *context.Context) error {
 				return err
 			}
 			if b {
-				skips.Remember(pipe.Skip("configuration is disabled"))
-				return nil
+				return pipe.Skip("configuration is disabled")
 			}
 			return doUpload(ctx, conf)
 		})
 	}
-	if err := g.Wait(); err != nil {
-		return err
-	}
-	return skips.Evaluate()
+	return g.Wait()
 }
