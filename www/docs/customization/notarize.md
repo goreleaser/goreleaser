@@ -132,7 +132,7 @@ To use this, you'll need all the steps from before, plus a profile.
 You can create the profile with:
 
 ```bash
-xcrun notarytool store-credentials $MACOS_NOTARY_PROFILE \
+xcrun notarytool store-credentials $MACOS_NOTARY_PROFILE_NAME \
   --key $KEY_PATH \
   --key-id $MACOS_NOTARY_KEY_ID \
   --issuer $MACOS_NOTARY_ISSUER_ID \
@@ -183,7 +183,7 @@ notarize:
         # Profile name.
         #
         # Templates: allowed.
-        profile_name: "{{ .Env.MACOS_NOTARY_PROFILE }}"
+        profile_name: "{{ .Env.MACOS_NOTARY_PROFILE_NAME }}"
 
         # Whether to wait for the notarization to finish.
         # Not recommended, as it could take a really long time.
@@ -203,9 +203,9 @@ graph TD
 ```
 
 <details>
-  <summary>
-    Set up in GitHub Actions
-  </summary>
+  <summary>Set up in GitHub Actions</summary>
+
+**This is only needed for native notarization.**
 
 Make sure to read the [official GitHub Guide][gh-guide] as well, but this is how
 we are doing it, in case you want to save some time:
@@ -217,16 +217,34 @@ name: goreleaser
 jobs:
   goreleaser:
     runs-on: macos-latest # only on macos
+    env:
+      # The base64 of the contents of your '.p12' key.
+      MACOS_SIGN_P12: ${{ secrets.MACOS_SIGN_P12 }}
+
+      # The password to open the '.p12' key.
+      MACOS_SIGN_PASSWORD: ${{ secrets.MACOS_SIGN_PASSWORD }}
+
+      # A password for our temporary keychain
+      KEYCHAIN_PASSWORD: ${{ secrets.KEYCHAIN_PASSWORD }}
+
+      # The profile name to create and use for notarization.
+      # Single worded lowercase strings seems to work better.
+      MACOS_NOTARY_PROFILE_NAME: ${{ secrets.MACOS_NOTARY_PROFILE_NAME }}
+
+      # The base64 of the contents of your '.p8' key.
+      MACOS_NOTARY_KEY: ${{ secrets.MACOS_NOTARY_KEY }}
+
+      # The ID of the '.p8' key.
+      # You can find it in the filename, as well as the Apple Developer Portal
+      # website.
+      MACOS_NOTARY_KEY_ID: ${{ secrets.MACOS_NOTARY_KEY_ID }}
+
+      # The issuer UUID.
+      # You can find it in the Apple Developer Portal website.
+      MACOS_NOTARY_ISSUER_ID: ${{ secrets.MACOS_NOTARY_ISSUER_ID }}
     steps:
       # ...
-      - env:
-          MACOS_SIGN_P12: ${{ secrets.MACOS_SIGN_P12 }} # base64 .p12 key
-          MACOS_SIGN_PASSWORD: ${{ secrets.MACOS_SIGN_PASSWORD }} # password to open the .p12 file
-          KEYCHAIN_PASSWORD: ${{ secrets.KEYCHAIN_PASSWORD }} # a password for our temporary keychain
-          MACOS_NOTARY_PROFILE: ${{ secrets.MACOS_NOTARY_PROFILE }} # the profile name to create and use for notarization
-          MACOS_NOTARY_KEY: ${{ secrets.MACOS_NOTARY_KEY }} # base64 .p8 key
-          MACOS_NOTARY_KEY_ID: ${{ secrets.MACOS_NOTARY_KEY_ID }} # the .p8 key ID
-          MACOS_NOTARY_ISSUER_ID: ${{ secrets.MACOS_NOTARY_ISSUER_ID }} # the issuer UUID
+      - name: "setup-keychain"
         run: |
           # create variables
           CERTIFICATE_PATH=$RUNNER_TEMP/goreleaser.p12
@@ -248,13 +266,22 @@ jobs:
           security list-keychain -d user -s $KEYCHAIN_PATH
 
           # create notary profile
-          xcrun notarytool store-credentials $MACOS_NOTARY_PROFILE \
+          xcrun notarytool store-credentials $MACOS_NOTARY_PROFILE_NAME \
             --key $KEY_PATH \
             --key-id $MACOS_NOTARY_KEY_ID \
             --issuer $MACOS_NOTARY_ISSUER_ID \
             --keychain $KEYCHAIN_PATH
 
-      # TODO: need to export KEYCHAIN_PATH to the pipeline
+          # export the keychain path
+          echo "KEYCHAIN_PATH=$KEYCHAIN_PATH" >>$GITHUB_ENV
+
+      # ...
+
+      - uses: goreleaser/goreleaser-action@v6
+        with:
+          distribution: goreleaser-pro
+          version: "~> v2"
+          args: release --clean
 ```
 
 </details>
