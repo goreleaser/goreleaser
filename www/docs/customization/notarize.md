@@ -55,8 +55,8 @@ It has no external dependencies, and works on any operating system.
     Do not use this method if you create [App Bundles][appbundles].
     App Bundles in which only the binary is signed/notarized are deemed damaged
     by macOS.
-    In that case, use the [native signing](#application-bundles-and-dmgs) and
-    notarizing documented below.
+    In that case, use the [native signing](#native) and notarizing documented
+    below.
 
 Read the commented configuration excerpt below to learn how to use do it.
 
