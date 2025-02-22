@@ -208,7 +208,10 @@ graph TD
 **This is only needed for native notarization.**
 
 Make sure to read the [official GitHub Guide][gh-guide] as well, but this is how
-we are doing it, in case you want to save some time:
+we are doing it, in case you want to save some time.
+
+You can also take a look at this
+[live example](https://github.com/goreleaser/example-notarized-apps).
 
 ```yaml
 name: goreleaser
@@ -228,7 +231,6 @@ jobs:
       KEYCHAIN_PASSWORD: ${{ secrets.KEYCHAIN_PASSWORD }}
 
       # The profile name to create and use for notarization.
-      # Single worded lowercase strings seems to work better.
       MACOS_NOTARY_PROFILE_NAME: ${{ secrets.MACOS_NOTARY_PROFILE_NAME }}
 
       # The base64 of the contents of your '.p8' key.
@@ -266,10 +268,10 @@ jobs:
           security list-keychain -d user -s $KEYCHAIN_PATH
 
           # create notary profile
-          xcrun notarytool store-credentials $MACOS_NOTARY_PROFILE_NAME \
-            --key $KEY_PATH \
-            --key-id $MACOS_NOTARY_KEY_ID \
-            --issuer $MACOS_NOTARY_ISSUER_ID \
+          xcrun notarytool store-credentials "$MACOS_NOTARY_PROFILE_NAME" \
+            --key "$KEY_PATH" \
+            --key-id "$MACOS_NOTARY_KEY_ID" \
+            --issuer "$MACOS_NOTARY_ISSUER_ID" \
             --keychain $KEYCHAIN_PATH
 
           # export the keychain path
