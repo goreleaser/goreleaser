@@ -414,6 +414,9 @@ type Ko struct {
 	Bare                bool              `yaml:"bare,omitempty" json:"bare,omitempty"`
 	PreserveImportPaths bool              `yaml:"preserve_import_paths,omitempty" json:"preserve_import_paths,omitempty"`
 	BaseImportPaths     bool              `yaml:"base_import_paths,omitempty" json:"base_import_paths,omitempty"`
+
+	// v2.7+
+	Disable string `yaml:"disable,omitempty" json:"disable,omitempty" jsonschema:"oneof_type=string;boolean"`
 }
 
 // Scoop contains the scoop.sh section.

@@ -30,6 +30,7 @@ import (
 	"github.com/goreleaser/goreleaser/v2/internal/artifact"
 	"github.com/goreleaser/goreleaser/v2/internal/deprecate"
 	"github.com/goreleaser/goreleaser/v2/internal/ids"
+	"github.com/goreleaser/goreleaser/v2/internal/pipe"
 	"github.com/goreleaser/goreleaser/v2/internal/semerrgroup"
 	"github.com/goreleaser/goreleaser/v2/internal/skips"
 	"github.com/goreleaser/goreleaser/v2/internal/tmpl"
@@ -157,12 +158,24 @@ func (p Pipe) Run(ctx *context.Context) error {
 // Publish executes the Pipe.
 func (Pipe) Publish(ctx *context.Context) error {
 	g := semerrgroup.New(ctx.Parallelism)
+	skips := pipe.SkipMemento{}
 	for _, ko := range ctx.Config.Kos {
 		g.Go(func() error {
+			disable, err := tmpl.New(ctx).Bool(ko.Disable)
+			if err != nil {
+				return err
+			}
+			if disable {
+				skips.Remember(pipe.Skip("configuration is disabled"))
+				return nil
+			}
 			return doBuild(ctx, ko)
 		})
 	}
-	return g.Wait()
+	if err := g.Wait(); err != nil {
+		return err
+	}
+	return skips.Evaluate()
 }
 
 type buildOptions struct {
