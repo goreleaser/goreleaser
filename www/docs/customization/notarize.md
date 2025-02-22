@@ -203,8 +203,7 @@ graph TD
   E --> F[Notarize DMGs]
 ```
 
-<details>
-  <summary>Set up in GitHub Actions</summary>
+### GitHub Actions
 
 **This is only needed for native notarization.**
 
@@ -214,7 +213,10 @@ we are doing it, in case you want to save some time.
 You can also take a look at this
 [live example](https://github.com/goreleaser/example-notarized-apps).
 
-```yaml
+<details>
+  <summary>Workflow code</summary>
+
+```yaml title=".github/workflows/release.yml"
 name: goreleaser
 # ...
 
