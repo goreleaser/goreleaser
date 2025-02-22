@@ -68,8 +68,8 @@ def _alpha_block():
 
 def _templates_ad():
     return "".join([
-        f"<div class=\"admonition tip\">",
-        f"<p class=\"admonition-title\">Tip</p>",
+        f"<details class=\"tip\">",
+        f"<summary>Template Language</summary>",
         f"<p>Discover more about the <a href=\"/customization/templates/\">name template engine</a>.</p>",
-        f"</div>"
+        f"</details>"
     ])
