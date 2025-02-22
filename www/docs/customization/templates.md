@@ -37,6 +37,7 @@ In fields that support templates, these fields are always available:
 | `.IsDraft`             | `true` if `release.draft` is set in the configuration, `false` otherwise                                   |
 | `.IsSnapshot`          | `true` if `--snapshot` is set, `false` otherwise                                                           |
 | `.IsNightly`           | `true` if `--nightly` is set, `false` otherwise                                                            |
+| `.IsRelease`           | `true` if regular release (not a nightly nor a snapshot) (since v2.8)[^pro]                                |
 | `.IsSingleTarget`      | `true` if `--single-target` is set, `false` otherwise (since v2.3)                                         |
 | `.Env`                 | a map with system's environment variables                                                                  |
 | `.Date`                | current UTC date in RFC 3339 format                                                                        |
