@@ -38,7 +38,7 @@ require (
 	github.com/mitchellh/go-homedir v1.1.0
 	github.com/muesli/mango-cobra v1.2.0
 	github.com/muesli/roff v0.1.0
-	github.com/muesli/termenv v0.15.2
+	github.com/muesli/termenv v0.16.0
 	github.com/ory/dockertest/v3 v3.11.0
 	github.com/slack-go/slack v0.16.0
 	github.com/spf13/cobra v1.9.1
