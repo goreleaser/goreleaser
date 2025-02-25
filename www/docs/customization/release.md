@@ -68,6 +68,9 @@ release:
   # publish a binary from a monorepo into a public repository somewhere, without
   # the tag prefix.
   #
+  # Note: if you change this, you might want to change 'url_template' in the
+  # subsequent publishers and announcers.
+  #
   # This feature is only available in GoReleaser Pro.
   # Default: '{{ .PrefixedCurrentTag }}'.
   # Templates: allowed.
