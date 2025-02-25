@@ -46,7 +46,7 @@ require (
 	github.com/ulikunitz/xz v0.5.12
 	gitlab.com/gitlab-org/api/client-go v0.123.0
 	gocloud.dev v0.40.0
-	golang.org/x/crypto v0.33.0
+	golang.org/x/crypto v0.35.0
 	golang.org/x/oauth2 v0.27.0
 	golang.org/x/sync v0.11.0
 	golang.org/x/text v0.22.0
