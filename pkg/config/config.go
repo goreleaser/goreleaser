@@ -823,7 +823,7 @@ type NFPM struct {
 	Overrides        map[string]NFPMOverridables `yaml:"overrides,omitempty" json:"overrides,omitempty"`
 
 	ID          string   `yaml:"id,omitempty" json:"id,omitempty"`
-	Builds      []string `yaml:"builds,omitempty" json:"builds,omitempty"`
+	IDs         []string `yaml:"ids,omitempty" json:"ids,omitempty"`
 	Formats     []string `yaml:"formats,omitempty" json:"formats,omitempty" jsonschema:"enum=apk,enum=deb,enum=rpm,enum=termux.deb,enum=archlinux,enum=ipk"`
 	Section     string   `yaml:"section,omitempty" json:"section,omitempty"`
 	Priority    string   `yaml:"priority,omitempty" json:"priority,omitempty"`
@@ -839,6 +839,9 @@ type NFPM struct {
 	Meta        bool     `yaml:"meta,omitempty" json:"meta,omitempty"` // make package without binaries - only deps
 
 	ParsedMTime time.Time `yaml:"-" json:"-"`
+
+	// Deprecated: use [IDs] instead.
+	Builds []string `yaml:"builds,omitempty" json:"builds,omitempty"`
 }
 
 type Libdirs struct {
