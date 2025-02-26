@@ -14,8 +14,11 @@ archives:
     # Default: 'default'.
     id: my-archive
 
-    # Builds reference which build instances should be archived in this archive.
-    builds:
+    # IDs of the builds which should be archived in this archive.
+    #
+    # <!-- md:inline_version v2.8-unreleased --> (use 'builds' in previous versions).
+    # Default: empty (include all).
+    ids:
       - default
 
     # Archive formats.
