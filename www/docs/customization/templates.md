@@ -159,7 +159,7 @@ On all fields, you have these available functions:
 | `replace "v1.2" "v" ""`           | replaces all matches. See [ReplaceAll](https://pkg.go.dev/strings#ReplaceAll).                                             |
 | `split "1.2" "."`                 | split string at separator. See [Split](https://pkg.go.dev/strings#Split)                                                   |
 | `time "01/02/2006"`               | current UTC time in the specified format (this is not deterministic, a new time for every call).                           |
-| `contains "foobar" "foo"`         | checks whether the first string contains the second. See [ToLower](https://pkg.go.dev/strings#Contains)                    |
+| `contains "foobar" "foo"`         | checks whether the first string contains the second. See [Contains](https://pkg.go.dev/strings#Contains)                    |
 | `tolower "V1.2"`                  | makes input string lowercase. See [ToLower](https://pkg.go.dev/strings#ToLower).                                           |
 | `toupper "v1.2"`                  | makes input string uppercase. See [ToUpper](https://pkg.go.dev/strings#ToUpper).                                           |
 | `trim " v1.2  "`                  | removes all leading and trailing white space. See [TrimSpace](https://pkg.go.dev/strings#TrimSpace).                       |
