@@ -76,6 +76,10 @@ func (Pipe) Default(ctx *context.Context) error {
 		if archive.ID == "" {
 			archive.ID = "default"
 		}
+		if len(archive.Builds) > 0 {
+			deprecate.Notice(ctx, "archives.builds")
+			archive.IDs = append(archive.IDs, archive.Builds...)
+		}
 		if len(archive.Files) == 0 {
 			archive.Files = []config.File{
 				{Source: "license*", Default: true},
@@ -117,8 +121,8 @@ func (Pipe) Run(ctx *context.Context) error {
 			artifact.ByType(artifact.CArchive),
 			artifact.ByType(artifact.CShared),
 		)}
-		if len(archive.Builds) > 0 {
-			filter = append(filter, artifact.ByIDs(archive.Builds...))
+		if len(archive.IDs) > 0 {
+			filter = append(filter, artifact.ByIDs(archive.IDs...))
 		}
 
 		isBinary := slices.Contains(archive.Formats, "binary")

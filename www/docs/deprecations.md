@@ -39,6 +39,27 @@ Description.
 
 -->
 
+### archives.builds
+
+> since v2.8
+
+The `builds` field has been replaced with the `ids`, which is the nomenclature
+used everywhere else.
+
+=== "Before"
+
+    ```yaml
+    archives:
+      builds: [a, b]
+    ```
+
+=== "After"
+
+    ```yaml
+    archives:
+      ids: [a, b]
+    ```
+
 ### archives.format
 
 > since v2.6

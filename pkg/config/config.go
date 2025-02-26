@@ -751,7 +751,7 @@ type UPX struct {
 // Archive config used for the archive.
 type Archive struct {
 	ID                        string           `yaml:"id,omitempty" json:"id,omitempty"`
-	Builds                    []string         `yaml:"builds,omitempty" json:"builds,omitempty"`
+	IDs                       []string         `yaml:"ids,omitempty" json:"ids,omitempty"`
 	BuildsInfo                FileInfo         `yaml:"builds_info,omitempty" json:"builds_info,omitempty"`
 	NameTemplate              string           `yaml:"name_template,omitempty" json:"name_template,omitempty"`
 	Formats                   StringArray      `yaml:"formats,omitempty" json:"formats,omitempty" jsonschema:"enum=tar,enum=tgz,enum=tar.gz,enum=zip,enum=gz,enum=tar.xz,enum=txz,enum=binary,default=tar.gz"`
@@ -764,6 +764,9 @@ type Archive struct {
 
 	// Deprecated: use [Formats] instead.
 	Format string `yaml:"format,omitempty" json:"format,omitempty" jsonschema:"enum=tar,enum=tgz,enum=tar.gz,enum=zip,enum=gz,enum=tar.xz,enum=txz,enum=binary,default=tar.gz"`
+
+	// Deprecated: use [IDs] instead.
+	Builds []string `yaml:"builds,omitempty" json:"builds,omitempty"`
 }
 
 type ReleaseNotesMode string
