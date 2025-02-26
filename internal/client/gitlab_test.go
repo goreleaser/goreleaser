@@ -195,78 +195,91 @@ func TestGitLabURLsDownloadTemplate(t *testing.T) {
 	}
 
 	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			first := true
-			srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-				defer r.Body.Close()
+		for _, version := range []string{"16.3.4", "17.1.2"} {
+			t.Run(tt.name+"_"+version, func(t *testing.T) {
+				first := true
+				srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+					defer r.Body.Close()
 
-				if !strings.Contains(r.URL.Path, "assets/links") {
-					_, _ = io.Copy(io.Discard, r.Body)
-					w.WriteHeader(http.StatusOK)
-					fmt.Fprint(w, "{}")
-					return
-				}
+					if strings.Contains(r.URL.Path, "version") {
+						fmt.Fprintf(w, `{"version":%q}`, version)
+						w.WriteHeader(http.StatusOK)
+						return
+					}
 
-				if first {
-					http.Error(w, `{"message":{"name":["has already been taken"]}}`, http.StatusBadRequest)
-					first = false
-					return
-				}
+					if !strings.Contains(r.URL.Path, "assets/links") {
+						_, _ = io.Copy(io.Discard, r.Body)
+						w.WriteHeader(http.StatusOK)
+						fmt.Fprint(w, "{}")
+						return
+					}
 
-				defer w.WriteHeader(http.StatusOK)
-				defer fmt.Fprint(w, "{}")
-				b, err := io.ReadAll(r.Body)
-				assert.NoError(t, err)
+					if first {
+						http.Error(w, `{"message":{"name":["has already been taken"]}}`, http.StatusBadRequest)
+						first = false
+						return
+					}
 
-				reqBody := map[string]interface{}{}
-				err = json.Unmarshal(b, &reqBody)
-				assert.NoError(t, err)
+					defer w.WriteHeader(http.StatusOK)
+					defer fmt.Fprint(w, "{}")
+					b, err := io.ReadAll(r.Body)
+					assert.NoError(t, err)
 
-				url := reqBody["url"].(string)
-				assert.Truef(t, strings.HasSuffix(url, tt.wantURL), "expected %q to end with %q", url, tt.wantURL)
-			}))
-			defer srv.Close()
+					reqBody := map[string]string{}
+					assert.NoError(t, json.Unmarshal(b, &reqBody))
 
-			ctx := testctx.NewWithCfg(config.Project{
-				ProjectName: "projectname",
-				Env: []string{
-					"GORELEASER_TEST_GITLAB_URLS_DOWNLOAD=https://gitlab.mycompany.com",
-				},
-				Release: config.Release{
-					GitLab: config.Repo{
-						Owner: "test",
-						Name:  "test",
+					if version[:2] == "17" {
+						assert.NotEmpty(t, reqBody["direct_asset_path"])
+					} else {
+						assert.NotEmpty(t, reqBody["filepath"])
+					}
+
+					url := reqBody["url"]
+					assert.Truef(t, strings.HasSuffix(url, tt.wantURL), "expected %q to end with %q", url, tt.wantURL)
+				}))
+				defer srv.Close()
+
+				ctx := testctx.NewWithCfg(config.Project{
+					ProjectName: "projectname",
+					Env: []string{
+						"GORELEASER_TEST_GITLAB_URLS_DOWNLOAD=https://gitlab.mycompany.com",
 					},
-					ReplaceExistingArtifacts: true,
-				},
-				GitLabURLs: config.GitLabURLs{
-					API:                srv.URL,
-					Download:           tt.downloadURL,
-					UsePackageRegistry: tt.usePackageRegistry,
-				},
-			}, testctx.WithVersion("1.0.0"))
+					Release: config.Release{
+						GitLab: config.Repo{
+							Owner: "test",
+							Name:  "test",
+						},
+						ReplaceExistingArtifacts: true,
+					},
+					GitLabURLs: config.GitLabURLs{
+						API:                srv.URL,
+						Download:           tt.downloadURL,
+						UsePackageRegistry: tt.usePackageRegistry,
+					},
+				}, testctx.WithVersion("1.0.0"))
 
-			tmpFile, err := os.CreateTemp(t.TempDir(), "")
-			require.NoError(t, err)
-			t.Cleanup(func() {
-				_ = tmpFile.Close()
-			})
+				tmpFile, err := os.CreateTemp(t.TempDir(), "")
+				require.NoError(t, err)
+				t.Cleanup(func() {
+					_ = tmpFile.Close()
+				})
 
-			client, err := newGitLab(ctx, ctx.Token)
-			require.NoError(t, err)
+				client, err := newGitLab(ctx, ctx.Token)
+				require.NoError(t, err)
 
-			err = client.Upload(ctx, "1234", &artifact.Artifact{Name: "test", Path: "some-path"}, tmpFile)
-			if errors.As(err, &RetriableError{}) {
 				err = client.Upload(ctx, "1234", &artifact.Artifact{Name: "test", Path: "some-path"}, tmpFile)
-			}
-			if tt.wantErr {
-				require.Error(t, err)
-				retriable := errors.As(err, &RetriableError{})
-				require.False(t, retriable, "should be a final error")
-				return
-			}
-			require.NoError(t, err)
-		})
+				if errors.As(err, &RetriableError{}) {
+					err = client.Upload(ctx, "1234", &artifact.Artifact{Name: "test", Path: "some-path"}, tmpFile)
+				}
+				if tt.wantErr {
+					require.Error(t, err)
+					retriable := errors.As(err, &RetriableError{})
+					require.False(t, retriable, "should be a final error")
+					return
+				}
+				require.NoError(t, err)
+			})
+		}
 	}
 }
 
@@ -336,7 +349,7 @@ func TestGitLabCreateReleaseReleaseNotExists(t *testing.T) {
 			_, err = client.CreateRelease(ctx, "body")
 			require.NoError(t, err)
 			require.True(t, createdRelease)
-			require.Equal(t, 2, totalRequests)
+			require.Equal(t, 3, totalRequests)
 		})
 	}
 }
@@ -392,7 +405,7 @@ func TestGitLabCreateReleaseReleaseExists(t *testing.T) {
 	_, err = client.CreateRelease(ctx, "body")
 	require.NoError(t, err)
 	require.True(t, createdRelease)
-	require.Equal(t, 2, totalRequests)
+	require.Equal(t, 3, totalRequests)
 }
 
 func TestGitLabCreateReleaseUnknownHTTPError(t *testing.T) {
@@ -416,7 +429,7 @@ func TestGitLabCreateReleaseUnknownHTTPError(t *testing.T) {
 
 	_, err = client.CreateRelease(ctx, "body")
 	require.Error(t, err)
-	require.Equal(t, 1, totalRequests)
+	require.Equal(t, 2, totalRequests)
 }
 
 func TestGitLabGetDefaultBranch(t *testing.T) {
@@ -446,11 +459,14 @@ func TestGitLabGetDefaultBranch(t *testing.T) {
 
 	_, err = client.getDefaultBranch(ctx, repo)
 	require.NoError(t, err)
-	require.Equal(t, 1, totalRequests)
+	require.Equal(t, 2, totalRequests)
 }
 
 func TestGitLabGetDefaultBranchEnv(t *testing.T) {
-	srv := httptest.NewServer(http.HandlerFunc(func(http.ResponseWriter, *http.Request) {
+	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if strings.HasSuffix(r.URL.Path, "/version") {
+			return
+		}
 		t.Error("shouldn't have made any calls to the API")
 	}))
 	t.Cleanup(srv.Close)
@@ -773,6 +789,12 @@ func TestGitLabOpenPullRequestCrossRepo(t *testing.T) {
 	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		defer r.Body.Close()
 
+		if r.URL.Path == "/api/v4/version" {
+			_, err := io.Copy(w, strings.NewReader(`{ "version": "17.1.2" }`))
+			assert.NoError(t, err)
+			return
+		}
+
 		if r.URL.Path == "/api/v4/projects/someone/something" {
 			_, err := io.Copy(w, strings.NewReader(`{ "id": 32156 }`))
 			assert.NoError(t, err)
@@ -824,6 +846,12 @@ func TestGitLabOpenPullRequestBaseEmpty(t *testing.T) {
 	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		defer r.Body.Close()
 
+		if r.URL.Path == "/api/v4/version" {
+			_, err := io.Copy(w, strings.NewReader(`{ "version": "17.1.2" }`))
+			assert.NoError(t, err)
+			return
+		}
+
 		if r.URL.Path == "/api/v4/projects/someone/something" {
 			_, err := io.Copy(w, strings.NewReader(`{ "default_branch": "main" }`))
 			assert.NoError(t, err)
@@ -871,6 +899,12 @@ func TestGitLabOpenPullRequestDraft(t *testing.T) {
 	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		defer r.Body.Close()
 
+		if r.URL.Path == "/api/v4/version" {
+			_, err := io.Copy(w, strings.NewReader(`{ "version": "17.1.2" }`))
+			assert.NoError(t, err)
+			return
+		}
+
 		if r.URL.Path == "/api/v4/projects/someone/something" {
 			_, err := io.Copy(w, strings.NewReader(`{ "default_branch": "main" }`))
 			assert.NoError(t, err)
@@ -917,6 +951,12 @@ func TestGitLabOpenPullRequestDraft(t *testing.T) {
 func TestGitLabOpenPullBaseBranchGiven(t *testing.T) {
 	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		defer r.Body.Close()
+
+		if r.URL.Path == "/api/v4/version" {
+			_, err := io.Copy(w, strings.NewReader(`{ "version": "17.1.2" }`))
+			assert.NoError(t, err)
+			return
+		}
 
 		if r.URL.Path == "/api/v4/projects/someone/something/merge_requests" {
 			got, err := io.ReadAll(r.Body)
