@@ -220,6 +220,9 @@ type AUR struct {
 	PrivateKey            string       `yaml:"private_key,omitempty" json:"private_key,omitempty"`
 	Goamd64               string       `yaml:"goamd64,omitempty" json:"goamd64,omitempty"`
 	Directory             string       `yaml:"directory,omitempty" json:"directory,omitempty"`
+
+	// v2.8+
+	Disable string `yaml:"disable,omitempty" json:"disable,omitempty" jsonschema:"oneof_type=string;boolean"`
 }
 
 type AURSource struct {
@@ -250,6 +253,9 @@ type AURSource struct {
 	PrivateKey            string       `yaml:"private_key,omitempty" json:"private_key,omitempty"`
 	Goamd64               string       `yaml:"goamd64,omitempty" json:"goamd64,omitempty"`
 	Directory             string       `yaml:"directory,omitempty" json:"directory,omitempty"`
+
+	// v2.8+
+	Disable string `yaml:"disable,omitempty" json:"disable,omitempty" jsonschema:"oneof_type=string;boolean"`
 }
 
 // Homebrew contains the brew section.

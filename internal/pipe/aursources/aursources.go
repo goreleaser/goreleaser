@@ -93,13 +93,21 @@ func (Pipe) Run(ctx *context.Context) error {
 }
 
 func runAll(ctx *context.Context, cli client.ReleaseURLTemplater) error {
+	skips := pipe.SkipMemento{}
 	for _, aur := range ctx.Config.AURSources {
-		err := doRun(ctx, aur, cli)
+		disable, err := tmpl.New(ctx).Bool(aur.Disable)
 		if err != nil {
 			return err
 		}
+		if disable {
+			skips.Remember(pipe.Skip("configuration is disabled"))
+			continue
+		}
+		if err := doRun(ctx, aur, cli); err != nil {
+			return err
+		}
 	}
-	return nil
+	return skips.Evaluate()
 }
 
 func doRun(ctx *context.Context, aur config.AURSource, cl client.ReleaseURLTemplater) error {

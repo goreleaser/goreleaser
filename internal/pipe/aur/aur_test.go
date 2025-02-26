@@ -10,6 +10,7 @@ import (
 	"github.com/goreleaser/goreleaser/v2/internal/client"
 	"github.com/goreleaser/goreleaser/v2/internal/git"
 	"github.com/goreleaser/goreleaser/v2/internal/golden"
+	"github.com/goreleaser/goreleaser/v2/internal/pipe"
 	"github.com/goreleaser/goreleaser/v2/internal/skips"
 	"github.com/goreleaser/goreleaser/v2/internal/testctx"
 	"github.com/goreleaser/goreleaser/v2/internal/testlib"
@@ -508,6 +509,9 @@ func TestRunPipeMultipleConfigurations(t *testing.T) {
 			ProjectName: "foo",
 			AURs: []config.AUR{
 				{
+					Disable: "true",
+				},
+				{
 					Name:        "foo",
 					IDs:         []string{"foo"},
 					PrivateKey:  key,
@@ -566,7 +570,7 @@ func TestRunPipeMultipleConfigurations(t *testing.T) {
 	client := client.NewMock()
 
 	require.NoError(t, Pipe{}.Default(ctx))
-	require.NoError(t, runAll(ctx, client))
+	require.True(t, pipe.IsSkip(runAll(ctx, client)), "should partial skip")
 	require.NoError(t, Pipe{}.Publish(ctx))
 
 	dir := t.TempDir()

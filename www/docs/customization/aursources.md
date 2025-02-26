@@ -166,6 +166,12 @@ aur_sources:
     # Default: '.'.
     # Templates: allowed.
     directory: "."
+
+    # Whether to disable this particular AUR configuration.
+    #
+    # Templates: allowed.
+    # <!-- md:inline_version v2.8-unreleased -->.
+    disable: "{{ .IsSnapshot }}"
 ```
 
 <!-- md:templates -->
