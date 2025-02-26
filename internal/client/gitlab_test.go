@@ -463,7 +463,7 @@ func TestGitLabGetDefaultBranch(t *testing.T) {
 }
 
 func TestGitLabGetDefaultBranchEnv(t *testing.T) {
-	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+	srv := httptest.NewServer(http.HandlerFunc(func(_ http.ResponseWriter, r *http.Request) {
 		if strings.HasSuffix(r.URL.Path, "/version") {
 			return
 		}
