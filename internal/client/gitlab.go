@@ -537,9 +537,9 @@ func (c *gitlabClient) Upload(
 		projectID,
 		releaseID,
 		&gitlab.CreateReleaseLinkOptions{
-			Name:     &name,
-			URL:      &linkURL,
-			FilePath: &filename,
+			Name:            &name,
+			URL:             &linkURL,
+			DirectAssetPath: &filename,
 		})
 	if err != nil {
 		// this status means the asset already exists
