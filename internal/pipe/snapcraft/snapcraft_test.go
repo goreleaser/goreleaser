@@ -62,7 +62,7 @@ func TestRunPipe(t *testing.T) {
 				Summary:          "test summary {{.ProjectName}}",
 				Description:      "test description {{.ProjectName}}",
 				Publish:          true,
-				Builds:           []string{"foo"},
+				IDs:              []string{"foo"},
 				ChannelTemplates: []string{"stable"},
 			},
 			{
@@ -70,7 +70,7 @@ func TestRunPipe(t *testing.T) {
 				Summary:          "test summary",
 				Description:      "test description",
 				Publish:          true,
-				Builds:           []string{"foo", "bar"},
+				IDs:              []string{"foo", "bar"},
 				ChannelTemplates: []string{"stable"},
 			},
 			{
@@ -78,7 +78,7 @@ func TestRunPipe(t *testing.T) {
 				Summary:          "test summary",
 				Description:      "test description",
 				Publish:          true,
-				Builds:           []string{"bar"},
+				IDs:              []string{"bar"},
 				ChannelTemplates: []string{"stable"},
 			},
 			{
@@ -86,7 +86,7 @@ func TestRunPipe(t *testing.T) {
 				Summary:          "test summary",
 				Description:      "test description",
 				Publish:          true,
-				Builds:           []string{"bar"},
+				IDs:              []string{"bar"},
 				ChannelTemplates: []string{"stable"},
 				Disable:          "{{.Env.SKIP}}",
 			},

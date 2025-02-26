@@ -60,6 +60,27 @@ used everywhere else.
       ids: [a, b]
     ```
 
+### snaps.builds
+
+> since v2.8
+
+The `builds` field has been replaced with the `ids`, which is the nomenclature
+used everywhere else.
+
+=== "Before"
+
+    ```yaml
+    snaps:
+      builds: [a, b]
+    ```
+
+=== "After"
+
+    ```yaml
+    snaps:
+      ids: [a, b]
+    ```
+
 ### nfpms.builds
 
 > since v2.8

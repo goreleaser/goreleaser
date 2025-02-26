@@ -1119,7 +1119,7 @@ type Snapcraft struct {
 	NameTemplate     string                             `yaml:"name_template,omitempty" json:"name_template,omitempty"`
 	Publish          bool                               `yaml:"publish,omitempty" json:"publish,omitempty"`
 	ID               string                             `yaml:"id,omitempty" json:"id,omitempty"`
-	Builds           []string                           `yaml:"builds,omitempty" json:"builds,omitempty"`
+	IDs              []string                           `yaml:"ids,omitempty" json:"ids,omitempty"`
 	Name             string                             `yaml:"name,omitempty" json:"name,omitempty"`
 	Title            string                             `yaml:"title,omitempty" json:"title,omitempty"`
 	Summary          string                             `yaml:"summary" json:"summary"`
@@ -1138,6 +1138,9 @@ type Snapcraft struct {
 	Disable          string                             `yaml:"disable,omitempty" json:"disable,omitempty" jsonschema:"oneof_type=string;boolean"`
 
 	Files []SnapcraftExtraFiles `yaml:"extra_files,omitempty" json:"extra_files,omitempty"`
+
+	// Deprecated: use IDs.
+	Builds []string `yaml:"builds,omitempty" json:"builds,omitempty"`
 }
 
 // SnapcraftExtraFiles config.
