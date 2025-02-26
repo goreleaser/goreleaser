@@ -104,6 +104,16 @@
 					},
 					"directory": {
 						"type": "string"
+					},
+					"disable": {
+						"oneOf": [
+							{
+								"type": "string"
+							},
+							{
+								"type": "boolean"
+							}
+						]
 					}
 				},
 				"additionalProperties": false,
@@ -228,6 +238,16 @@
 					},
 					"directory": {
 						"type": "string"
+					},
+					"disable": {
+						"oneOf": [
+							{
+								"type": "string"
+							},
+							{
+								"type": "boolean"
+							}
+						]
 					}
 				},
 				"additionalProperties": false,
@@ -348,7 +368,7 @@
 					"id": {
 						"type": "string"
 					},
-					"builds": {
+					"ids": {
 						"items": {
 							"type": "string"
 						},
@@ -416,6 +436,12 @@
 							"binary"
 						],
 						"default": "tar.gz"
+					},
+					"builds": {
+						"items": {
+							"type": "string"
+						},
+						"type": "array"
 					}
 				},
 				"additionalProperties": false,
@@ -2666,14 +2692,11 @@
 					"id": {
 						"type": "string"
 					},
-					"builds": {
+					"ids": {
 						"items": {
 							"type": "string"
 						},
 						"type": "array"
-					},
-					"if": {
-						"type": "string"
 					},
 					"formats": {
 						"items": {
@@ -2724,6 +2747,15 @@
 					},
 					"meta": {
 						"type": "boolean"
+					},
+					"if": {
+						"type": "string"
+					},
+					"builds": {
+						"items": {
+							"type": "string"
+						},
+						"type": "array"
 					}
 				},
 				"additionalProperties": false,
@@ -4302,7 +4334,7 @@
 					"id": {
 						"type": "string"
 					},
-					"builds": {
+					"ids": {
 						"items": {
 							"type": "string"
 						},
@@ -4395,6 +4427,12 @@
 					"templated_extra_files": {
 						"items": {
 							"$ref": "#/$defs/SnapcraftExtraFiles"
+						},
+						"type": "array"
+					},
+					"builds": {
+						"items": {
+							"type": "string"
 						},
 						"type": "array"
 					}
