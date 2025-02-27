@@ -322,6 +322,9 @@ func dockerPush(ctx *context.Context, image *artifact.Artifact) error {
 		return err
 	}
 
+	log.WithField("image", image.Name).
+		WithField("digest", digest).
+		Info("pushed")
 	art := &artifact.Artifact{
 		Type:   artifact.DockerImage,
 		Name:   image.Name,
@@ -329,12 +332,13 @@ func dockerPush(ctx *context.Context, image *artifact.Artifact) error {
 		Goarch: image.Goarch,
 		Goos:   image.Goos,
 		Goarm:  image.Goarm,
-		Extra:  map[string]interface{}{},
+		Extra: map[string]interface{}{
+			artifact.ExtraDigest: digest,
+		},
 	}
 	if docker.ID != "" {
 		art.Extra[artifact.ExtraID] = docker.ID
 	}
-	art.Extra[artifact.ExtraDigest] = digest
 
 	ctx.Artifacts.Add(art)
 	return nil
