@@ -57,7 +57,8 @@ func runCommand(ctx *context.Context, dir, binary string, args ...string) error 
 	log.
 		WithField("cmd", append([]string{binary}, args[0])).
 		WithField("cwd", dir).
-		WithField("args", args[1:]).Debug("running")
+		WithField("args", args[1:]).
+		Debug("running")
 	if err := cmd.Run(); err != nil {
 		return fmt.Errorf("%w: %s", err, b.String())
 	}
