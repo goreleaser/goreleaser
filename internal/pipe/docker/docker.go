@@ -333,6 +333,7 @@ func dockerPush(ctx *context.Context, image *artifact.Artifact) error {
 		Goos:   image.Goos,
 		Goarm:  image.Goarm,
 		Extra: map[string]interface{}{
+			dockerConfigExtra:    docker,
 			artifact.ExtraDigest: digest,
 		},
 	}
