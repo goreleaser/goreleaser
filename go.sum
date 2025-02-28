@@ -102,8 +102,8 @@ github.com/Microsoft/go-winio v0.6.2 h1:F2VQgta7ecxGYO8k3ZZz3RS8fVIXVxONVUPlNERo
 github.com/Microsoft/go-winio v0.6.2/go.mod h1:yd8OoFMLzJbo9gZq8j5qaps8bJ9aShtEA8Ipt1oGCvU=
 github.com/Nvveen/Gotty v0.0.0-20120604004816-cd527374f1e5 h1:TngWCqHvy9oXAN6lEVMRuU21PR1EtLVZJmdB18Gu3Rw=
 github.com/Nvveen/Gotty v0.0.0-20120604004816-cd527374f1e5/go.mod h1:lmUJ/7eu/Q8D7ML55dXQrVaamCz2vxCfdQBasLZfHKk=
-github.com/ProtonMail/go-crypto v1.1.4 h1:G5U5asvD5N/6/36oIw3k2bOfBn5XVcZrb7PBjzzKKoE=
-github.com/ProtonMail/go-crypto v1.1.4/go.mod h1:rA3QumHc/FZ8pAHreoekgiAbzpNsfQAosU5td4SnOrE=
+github.com/ProtonMail/go-crypto v1.1.6 h1:ZcV+Ropw6Qn0AX9brlQLAUXfqLBc7Bl+f/DmNxpLfdw=
+github.com/ProtonMail/go-crypto v1.1.6/go.mod h1:rA3QumHc/FZ8pAHreoekgiAbzpNsfQAosU5td4SnOrE=
 github.com/ProtonMail/go-mime v0.0.0-20230322103455-7d82a3887f2f h1:tCbYj7/299ekTTXpdwKYF8eBlsYsDVoggDAuAjoK66k=
 github.com/ProtonMail/go-mime v0.0.0-20230322103455-7d82a3887f2f/go.mod h1:gcr0kNtGBqin9zDW9GOHcVntrwnjrK+qdJ06mWYBybw=
 github.com/ProtonMail/gopenpgp/v2 v2.7.1 h1:Awsg7MPc2gD3I7IFac2qE3Gdls0lZW8SzrFZ3k1oz0s=
@@ -473,8 +473,8 @@ github.com/goreleaser/chglog v0.6.2 h1:qroqdMHzwoAPTHHzJtbCfYbwg/yWJrNQApZ6IQAq8
 github.com/goreleaser/chglog v0.6.2/go.mod h1:BP0xQQc6B8aM+4dhvSLlVTv0rvhuOF0JacDO1+h7L3U=
 github.com/goreleaser/fileglob v1.3.0 h1:/X6J7U8lbDpQtBvGcwwPS6OpzkNVlVEsFUVRx9+k+7I=
 github.com/goreleaser/fileglob v1.3.0/go.mod h1:Jx6BoXv3mbYkEzwm9THo7xbr5egkAraxkGorbJb4RxU=
-github.com/goreleaser/nfpm/v2 v2.41.2 h1:yOjpPlft5zpMPusbIWICphycIjE5orpY/IyMbkBbIJU=
-github.com/goreleaser/nfpm/v2 v2.41.2/go.mod h1:zvk0z+wsPKe7Qdsp7z0ZJ9asnbwwhJUEsdOsPkgVC1E=
+github.com/goreleaser/nfpm/v2 v2.41.3 h1:IRRsqv5NgiCKUy57HjQgfVBFb44VH8+r1mWeEF8OuA4=
+github.com/goreleaser/nfpm/v2 v2.41.3/go.mod h1:0t54RfPX6/iKANsVLbB3XgtfQXzG1nS4HmSavN92qVY=
 github.com/gorilla/mux v1.8.1 h1:TuBL49tXwgrFYWhqrNgrUNEY92u81SPhu7sTdzQEiWY=
 github.com/gorilla/mux v1.8.1/go.mod h1:AKf9I4AEqPTmMytcMc0KkNouC66V3BtZ4qD5fmWSiMQ=
 github.com/gorilla/websocket v1.4.2/go.mod h1:YR8l580nyteQvAITg2hZ9XVh4b55+EU/adAjf1fMHhE=
