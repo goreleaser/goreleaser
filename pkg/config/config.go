@@ -1312,7 +1312,8 @@ type Project struct {
 	Env             []string         `yaml:"env,omitempty" json:"env,omitempty"`
 	Release         Release          `yaml:"release,omitempty" json:"release,omitempty"`
 	Milestones      []Milestone      `yaml:"milestones,omitempty" json:"milestones,omitempty"`
-	Brews           []Homebrew       `yaml:"brews,omitempty" json:"brews,omitempty"`
+	Brews           []Homebrew       `yaml:"brews,omitempty" json:"brews,omitempty"` // Deprecated: use [Casks] instead.
+	Casks           []Homebrew       `yaml:"casks,omitempty" json:"casks,omitempty"`
 	Nix             []Nix            `yaml:"nix,omitempty" json:"nix,omitempty"`
 	Winget          []Winget         `yaml:"winget,omitempty" json:"winget,omitempty"`
 	AURs            []AUR            `yaml:"aurs,omitempty" json:"aurs,omitempty"`
