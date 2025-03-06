@@ -2348,7 +2348,7 @@
 						"type": "string"
 					},
 					"timeout": {
-						"type": "integer"
+						"type": "string"
 					},
 					"wait": {
 						"type": "boolean"
