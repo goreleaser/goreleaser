@@ -32,7 +32,7 @@ func TestSingleCommit(t *testing.T) {
 	ctx := testctx.New()
 	require.NoError(t, Pipe{}.Run(ctx))
 	require.Equal(t, "v0.0.1", ctx.Git.CurrentTag)
-	require.Equal(t, "v0.0.1", ctx.Git.Summary)
+	require.Regexp(t, "v0.0.1-0-[0-9a-g]{8}", ctx.Git.Summary)
 	require.Equal(t, "commit1", ctx.Git.TagSubject)
 	require.Equal(t, "commit1", ctx.Git.TagContents)
 	require.NotEmpty(t, ctx.Git.FirstCommit)
@@ -50,7 +50,7 @@ func TestAnnotatedTags(t *testing.T) {
 	require.Equal(t, "first version", ctx.Git.TagSubject)
 	require.Equal(t, "first version\n\nlalalla\nlalal\nlah", ctx.Git.TagContents)
 	require.Equal(t, "lalalla\nlalal\nlah", ctx.Git.TagBody)
-	require.Equal(t, "v0.0.1", ctx.Git.Summary)
+	require.Regexp(t, "v0.0.1-0-[0-9a-g]{8}", ctx.Git.Summary)
 }
 
 func TestBranch(t *testing.T) {
@@ -63,7 +63,7 @@ func TestBranch(t *testing.T) {
 	ctx := testctx.New()
 	require.NoError(t, Pipe{}.Run(ctx))
 	require.Equal(t, "test-branch", ctx.Git.Branch)
-	require.Equal(t, "test-branch-tag", ctx.Git.Summary)
+	require.Regexp(t, `test-branch-tag-0-[0-9a-g]{8}`, ctx.Git.Summary)
 }
 
 func TestNoRemote(t *testing.T) {
@@ -218,7 +218,7 @@ func TestTagIsNotLastCommit(t *testing.T) {
 	ctx := testctx.New()
 	err := Pipe{}.Run(ctx)
 	require.ErrorContains(t, err, "git tag v0.0.1 was not made against commit")
-	require.Contains(t, ctx.Git.Summary, "v0.0.1-1-g") // commit not represented because it changes every test
+	require.Regexp(t, "v0.0.1-1-[0-9a-g]{8}", ctx.Git.Summary)
 }
 
 func TestValidState(t *testing.T) {
@@ -278,7 +278,7 @@ func TestSnapshotDirty(t *testing.T) {
 	require.NoError(t, os.WriteFile(filepath.Join(folder, "foo"), []byte("foobar"), 0o644))
 	ctx := testctx.New(testctx.Snapshot)
 	testlib.AssertSkipped(t, Pipe{}.Run(ctx))
-	require.Equal(t, "v0.0.1", ctx.Git.Summary)
+	require.Regexp(t, "v0.0.1-0-[0-9a-g]{8}", ctx.Git.Summary)
 }
 
 func TestGitNotInPath(t *testing.T) {

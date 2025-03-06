@@ -251,7 +251,7 @@ func getFirstCommit(ctx *context.Context) (string, error) {
 }
 
 func getSummary(ctx *context.Context) (string, error) {
-	return git.Clean(git.Run(ctx, "describe", "--always", "--dirty", "--tags"))
+	return git.Clean(git.Run(ctx, "describe", "--always", "--dirty", "--tags", "--long"))
 }
 
 func getTagWithFormat(ctx *context.Context, tag, format string) (string, error) {
