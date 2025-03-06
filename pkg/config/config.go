@@ -1065,7 +1065,7 @@ type MacOSNotarize struct {
 	IssuerID string        `yaml:"issuer_id" json:"issuer_id"`
 	Key      string        `yaml:"key" json:"key"`
 	KeyID    string        `yaml:"key_id" json:"key_id"`
-	Timeout  time.Duration `yaml:"timeout,omitempty" json:"timeout,omitempty"`
+	Timeout  time.Duration `yaml:"timeout,omitempty" json:"timeout,omitempty" jsonschema:"type=string"`
 	Wait     bool          `yaml:"wait,omitempty" json:"wait,omitempty"`
 }
 
