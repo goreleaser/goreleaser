@@ -130,6 +130,7 @@ aur_sources:
       install -Dsm755 ./myapp "${pkgdir}/usr/bin/myapp"
 
     # Git author used to commit to the repository.
+    # Templates: allowed.
     commit_author:
       name: goreleaserbot
       email: bot@goreleaser.com
