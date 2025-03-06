@@ -223,6 +223,7 @@ type AUR struct {
 
 	// v2.8+
 	Disable string `yaml:"disable,omitempty" json:"disable,omitempty" jsonschema:"oneof_type=string;boolean"`
+	Install string `yaml:"install,omitempty" json:"install,omitempty"`
 }
 
 type AURSource struct {

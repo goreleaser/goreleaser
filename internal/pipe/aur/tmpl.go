@@ -2,6 +2,7 @@ package aur
 
 type templateData struct {
 	Name            string
+	CleanName       string
 	Desc            string
 	Homepage        string
 	Version         string
@@ -17,6 +18,7 @@ type templateData struct {
 	Arches          []string
 	Rel             string
 	Package         string
+	Install         string
 }
 
 type releasePackage struct {
@@ -56,6 +58,9 @@ optdepends=({{ pkgArray . }})
 {{- end }}
 {{- with .Backup }}
 backup=({{ pkgArray . }})
+{{- end }}
+{{- if .Install }}
+install={{ .CleanName }}.install
 {{- end }}
 
 {{ range .ReleasePackages -}}

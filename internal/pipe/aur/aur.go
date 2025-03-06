@@ -306,6 +306,7 @@ func toPkgBuildArch(arch string) string {
 func dataFor(ctx *context.Context, cfg config.AUR, cl client.ReleaseURLTemplater, artifacts []*artifact.Artifact) (templateData, error) {
 	result := templateData{
 		Name:         cfg.Name,
+		CleanName:    clean(cfg.Name),
 		Desc:         cfg.Description,
 		Homepage:     cfg.Homepage,
 		Version:      fmt.Sprintf("%d.%d.%d", ctx.Semver.Major, ctx.Semver.Minor, ctx.Semver.Patch),
@@ -319,6 +320,7 @@ func dataFor(ctx *context.Context, cfg config.AUR, cl client.ReleaseURLTemplater
 		Depends:      cfg.Depends,
 		OptDepends:   cfg.OptDepends,
 		Package:      cfg.Package,
+		Install:      cfg.Install,
 	}
 
 	for _, art := range artifacts {
@@ -411,7 +413,7 @@ func doPublish(ctx *context.Context, pkgs []*artifact.Artifact) error {
 		Name: fmt.Sprintf("%x", sha256.Sum256([]byte(cfg.GitURL))),
 	})
 
-	files := make([]client.RepoFile, 0, len(pkgs))
+	var files []client.RepoFile
 	for _, pkg := range pkgs {
 		content, err := os.ReadFile(pkg.Path)
 		if err != nil {
@@ -422,5 +424,19 @@ func doPublish(ctx *context.Context, pkgs []*artifact.Artifact) error {
 			Content: content,
 		})
 	}
+	if cfg.Install != "" {
+		content, err := os.ReadFile(cfg.Install)
+		if err != nil {
+			return err
+		}
+		files = append(files, client.RepoFile{
+			Path:    path.Join(cfg.Directory, clean(cfg.Name)+".install"),
+			Content: content,
+		})
+	}
 	return cli.CreateFiles(ctx, author, repo, msg, files)
+}
+
+func clean(name string) string {
+	return strings.TrimSuffix(name, "-bin")
 }
