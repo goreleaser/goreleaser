@@ -24,6 +24,7 @@ func TestDefault(t *testing.T) {
 		ctx := testctx.New()
 		require.NoError(t, Pipe{}.Default(ctx))
 		require.NotEmpty(t, ctx.Config.Changelog.Format)
+		require.NotContains(t, ctx.Config.Changelog.Format, "Author")
 	})
 	t.Run("github", func(t *testing.T) {
 		ctx := testctx.NewWithCfg(config.Project{
@@ -33,6 +34,7 @@ func TestDefault(t *testing.T) {
 		})
 		require.NoError(t, Pipe{}.Default(ctx))
 		require.NotEmpty(t, ctx.Config.Changelog.Format)
+		require.Contains(t, ctx.Config.Changelog.Format, "Author")
 	})
 }
 
