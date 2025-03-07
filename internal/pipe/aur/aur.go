@@ -413,7 +413,14 @@ func doPublish(ctx *context.Context, pkgs []*artifact.Artifact) error {
 		Name: fmt.Sprintf("%x", sha256.Sum256([]byte(cfg.GitURL))),
 	})
 
-	var files []client.RepoFile
+	if cfg.Install != "" {
+		pkgs = append(pkgs, &artifact.Artifact{
+			Name: clean(cfg.Name) + ".install",
+			Path: cfg.Install,
+		})
+	}
+
+	files := make([]client.RepoFile, 0, len(pkgs))
 	for _, pkg := range pkgs {
 		content, err := os.ReadFile(pkg.Path)
 		if err != nil {
@@ -421,16 +428,6 @@ func doPublish(ctx *context.Context, pkgs []*artifact.Artifact) error {
 		}
 		files = append(files, client.RepoFile{
 			Path:    path.Join(cfg.Directory, pkg.Name),
-			Content: content,
-		})
-	}
-	if cfg.Install != "" {
-		content, err := os.ReadFile(cfg.Install)
-		if err != nil {
-			return err
-		}
-		files = append(files, client.RepoFile{
-			Path:    path.Join(cfg.Directory, clean(cfg.Name)+".install"),
 			Content: content,
 		})
 	}
