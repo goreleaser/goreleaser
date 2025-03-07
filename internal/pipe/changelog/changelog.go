@@ -129,7 +129,7 @@ func applyFormatTo(ctx *context.Context, entries ...client.ChangelogItem) ([]str
 	var lines []string
 	for _, item := range entries {
 		line, err := tmpl.New(ctx).WithExtraFields(tmpl.Fields{
-			"SHA":            abbrev(ctx.Config.Changelog.Abbrev, item.SHA),
+			"SHA":            abbrevEntry(item.SHA, ctx.Config.Changelog.Abbrev),
 			"Message":        item.Message,
 			"AuthorUsername": item.AuthorUsername,
 			"AuthorName":     item.AuthorName,
@@ -167,17 +167,17 @@ func newLineFor(ctx *context.Context) string {
 	return "\n"
 }
 
-func abbrev(l int, sha string) string {
-	switch l {
+func abbrevEntry(sha string, abbr int) string {
+	switch abbr {
 	case 0:
 		return sha
 	case -1:
 		return ""
 	default:
-		if l > len(sha) {
+		if abbr > len(sha) {
 			return sha
 		}
-		return sha[:l]
+		return sha[:abbr]
 	}
 }
 
