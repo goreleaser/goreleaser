@@ -248,6 +248,7 @@ func applyTemplate(ctx *context.Context, tpl string, data templateData) (string,
 				"fixLines":   fixLines,
 				"pkgArray":   toPkgBuildArray,
 				"quoteField": quoteField,
+				"trimsuffix": strings.TrimSuffix,
 			}).
 			Parse(tpl),
 	)
@@ -319,6 +320,7 @@ func dataFor(ctx *context.Context, cfg config.AUR, cl client.ReleaseURLTemplater
 		Depends:      cfg.Depends,
 		OptDepends:   cfg.OptDepends,
 		Package:      cfg.Package,
+		Install:      cfg.Install,
 	}
 
 	for _, art := range artifacts {
@@ -410,6 +412,13 @@ func doPublish(ctx *context.Context, pkgs []*artifact.Artifact) error {
 		},
 		Name: fmt.Sprintf("%x", sha256.Sum256([]byte(cfg.GitURL))),
 	})
+
+	if cfg.Install != "" {
+		pkgs = append(pkgs, &artifact.Artifact{
+			Name: strings.TrimSuffix(cfg.Name, "-bin") + ".install",
+			Path: cfg.Install,
+		})
+	}
 
 	files := make([]client.RepoFile, 0, len(pkgs))
 	for _, pkg := range pkgs {

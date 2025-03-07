@@ -9,6 +9,7 @@ arch=('aarch64' 'armv7h' 'i686' 'x86_64')
 license=('MIT')
 provides=('foo')
 conflicts=('foo')
+install=foo.install
 
 source_aarch64=("${pkgname}_${pkgver}_aarch64.tar.gz::https://dummyhost/download/v1.0.1/arm64.tar.gz")
 sha256sums_aarch64=('e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855')

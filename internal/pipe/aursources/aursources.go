@@ -285,6 +285,7 @@ func dataFor(ctx *context.Context, cfg config.AURSource, cl client.ReleaseURLTem
 		Build:        cfg.Build,
 		Package:      cfg.Package,
 		Arches:       cfg.Arches,
+		Install:      cfg.Install,
 	}
 
 	for _, art := range artifacts {
@@ -371,6 +372,13 @@ func doPublish(ctx *context.Context, pkgs []*artifact.Artifact) error {
 		},
 		Name: fmt.Sprintf("%x", sha256.Sum256([]byte(cfg.GitURL))),
 	})
+
+	if cfg.Install != "" {
+		pkgs = append(pkgs, &artifact.Artifact{
+			Name: cfg.Name + ".install",
+			Path: cfg.Install,
+		})
+	}
 
 	files := make([]client.RepoFile, 0, len(pkgs))
 	for _, pkg := range pkgs {
