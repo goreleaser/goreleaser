@@ -19,6 +19,9 @@ import (
 	"github.com/goreleaser/goreleaser/v2/pkg/context"
 )
 
+// Item is a type alias of [client.Changelog].
+type Item = client.ChangelogItem
+
 // ErrInvalidSortDirection happens when the sort order is invalid.
 var ErrInvalidSortDirection = errors.New("invalid sort direction")
 
@@ -153,7 +156,7 @@ func abbrevEntry(sha string, abbr int) string {
 	}
 }
 
-func formatChangelog(ctx *context.Context, entries []client.ChangelogItem) (string, error) {
+func formatChangelog(ctx *context.Context, entries []Item) (string, error) {
 	result := []string{title("Changelog", 2)}
 	if len(ctx.Config.Changelog.Groups) == 0 {
 		log.Debug("not grouping entries")
@@ -251,7 +254,7 @@ func buildChangelog(ctx *context.Context) (string, error) {
 	return cl.Log(ctx)
 }
 
-func formatEntry(ctx *context.Context, entry client.ChangelogItem) (string, error) {
+func formatEntry(ctx *context.Context, entry Item) (string, error) {
 	line, err := tmpl.New(ctx).WithExtraFields(tmpl.Fields{
 		"SHA":            abbrevEntry(entry.SHA, ctx.Config.Changelog.Abbrev),
 		"Message":        entry.Message,
@@ -262,7 +265,7 @@ func formatEntry(ctx *context.Context, entry client.ChangelogItem) (string, erro
 	return prefixItem(line), err
 }
 
-func formatEntries(ctx *context.Context, entries []client.ChangelogItem) ([]string, error) {
+func formatEntries(ctx *context.Context, entries []Item) ([]string, error) {
 	var lines []string
 	for _, entry := range entries {
 		line, err := formatEntry(ctx, entry)
@@ -274,10 +277,10 @@ func formatEntries(ctx *context.Context, entries []client.ChangelogItem) ([]stri
 	return lines, nil
 }
 
-func filterEntries(ctx *context.Context, entries []client.ChangelogItem) ([]client.ChangelogItem, error) {
+func filterEntries(ctx *context.Context, entries []Item) ([]Item, error) {
 	filters := ctx.Config.Changelog.Filters
 	if len(filters.Include) > 0 {
-		var newEntries []client.ChangelogItem
+		var newEntries []Item
 		for _, filter := range filters.Include {
 			r, err := regexp.Compile(filter)
 			if err != nil {
@@ -297,12 +300,12 @@ func filterEntries(ctx *context.Context, entries []client.ChangelogItem) ([]clie
 	return entries, nil
 }
 
-func sortEntries(ctx *context.Context, entries []client.ChangelogItem) []client.ChangelogItem {
+func sortEntries(ctx *context.Context, entries []Item) []Item {
 	direction := ctx.Config.Changelog.Sort
 	if direction == "" {
 		return entries
 	}
-	slices.SortFunc(entries, func(i, j client.ChangelogItem) int {
+	slices.SortFunc(entries, func(i, j Item) int {
 		compareRes := strings.Compare(i.Message, j.Message)
 		if direction == "asc" {
 			return compareRes
@@ -312,7 +315,7 @@ func sortEntries(ctx *context.Context, entries []client.ChangelogItem) []client.
 	return entries
 }
 
-func keep(filter *regexp.Regexp, entries []client.ChangelogItem) (result []client.ChangelogItem) {
+func keep(filter *regexp.Regexp, entries []Item) (result []Item) {
 	for _, entry := range entries {
 		if filter.MatchString(entry.Message) {
 			result = append(result, entry)
@@ -321,7 +324,7 @@ func keep(filter *regexp.Regexp, entries []client.ChangelogItem) (result []clien
 	return result
 }
 
-func remove(filter *regexp.Regexp, entries []client.ChangelogItem) (result []client.ChangelogItem) {
+func remove(filter *regexp.Regexp, entries []Item) (result []Item) {
 	for _, entry := range entries {
 		if !filter.MatchString(entry.Message) {
 			result = append(result, entry)
@@ -424,7 +427,7 @@ func newSCMChangeloger(ctx *context.Context) (changeloger, error) {
 }
 
 type changeloger interface {
-	Log(ctx *context.Context) ([]client.ChangelogItem, error)
+	Log(ctx *context.Context) ([]Item, error)
 }
 
 type staticChangeloger interface {
@@ -433,7 +436,7 @@ type staticChangeloger interface {
 
 type gitChangeloger struct{}
 
-func (g gitChangeloger) Log(ctx *context.Context) ([]client.ChangelogItem, error) {
+func (g gitChangeloger) Log(ctx *context.Context) ([]Item, error) {
 	args := []string{
 		"log",
 		"--no-decorate",
@@ -452,12 +455,12 @@ func (g gitChangeloger) Log(ctx *context.Context) ([]client.ChangelogItem, error
 	if err != nil {
 		return nil, err
 	}
-	var entries []client.ChangelogItem
+	var entries []Item
 	for _, s := range strings.Split(out, "\n") {
 		if strings.TrimSpace(s) == "" {
 			continue
 		}
-		var entry client.ChangelogItem
+		var entry Item
 		if err := json.Unmarshal([]byte(s), &entry); err != nil {
 			return nil, fmt.Errorf("changelog: invalid json: %s: %s", s, err)
 		}
@@ -472,7 +475,7 @@ type scmChangeloger struct {
 	abbrev int
 }
 
-func (c *scmChangeloger) Log(ctx *context.Context) ([]client.ChangelogItem, error) {
+func (c *scmChangeloger) Log(ctx *context.Context) ([]Item, error) {
 	prev, current := ctx.Git.PreviousTag, ctx.Git.CurrentTag
 	return c.client.Changelog(ctx, c.repo, prev, current)
 }

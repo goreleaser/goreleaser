@@ -353,7 +353,7 @@ func TestChangelogSort(t *testing.T) {
 
 func Benchmark_sortEntries(b *testing.B) {
 	ctx := testctx.New()
-	entries := []client.ChangelogItem{
+	entries := []Item{
 		{SHA: "cafebabe", Message: "added feature 1"},
 		{SHA: "cafebabe", Message: "fixed bug 2"},
 		{SHA: "cafebabe", Message: "ignored: whatever"},
@@ -946,7 +946,7 @@ func TestChangelogFormat(t *testing.T) {
 			t.Run(use, func(t *testing.T) {
 				out, err := formatChangelog(
 					testctx.NewWithCfg(makeConf(use)),
-					[]client.ChangelogItem{
+					[]Item{
 						{SHA: "aea123", Message: "foo"},
 						{SHA: "aef653", Message: "bar"},
 					},
@@ -976,7 +976,7 @@ func TestChangelogFormat(t *testing.T) {
 			t.Run(use, func(t *testing.T) {
 				out, err := formatChangelog(
 					testctx.NewWithCfg(makeConf(use)),
-					[]client.ChangelogItem{
+					[]Item{
 						{SHA: "aea123", Message: "foo"},
 						{SHA: "aef653", Message: "bar"},
 					},
@@ -1122,7 +1122,7 @@ func TestIssue5595(t *testing.T) {
 					kind = "docs"
 				}
 				msg := fmt.Sprintf("%s: commit #%d", kind, i)
-				mock.Changes = append(mock.Changes, client.ChangelogItem{
+				mock.Changes = append(mock.Changes, Item{
 					SHA:            "cafebabe",
 					Message:        msg,
 					AuthorName:     "Carlos",
