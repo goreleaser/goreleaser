@@ -1,4 +1,4 @@
-// Package cargo provides NodeJS/Bun package.json parsing.
+// Package packagejson provides NodeJS/Bun package.json parsing.
 package packagejson
 
 import (

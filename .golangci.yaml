@@ -85,6 +85,8 @@ linters-settings:
     disable:
       - error-is-as # false positive
 issues:
+  include:
+    - EXC0013 # Enable revive.package-comments
   exclude-rules:
     - path: _test\.go
       linters:
