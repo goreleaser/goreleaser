@@ -21,7 +21,11 @@ import (
 
 func TestDefault(t *testing.T) {
 	t.Run("empty", func(t *testing.T) {
-		ctx := testctx.New()
+		ctx := testctx.NewWithCfg(config.Project{
+			Changelog: config.Changelog{
+				Sort: "desc",
+			},
+		})
 		require.NoError(t, Pipe{}.Default(ctx))
 		require.NotEmpty(t, ctx.Config.Changelog.Format)
 		require.NotContains(t, ctx.Config.Changelog.Format, "Author")
@@ -29,12 +33,31 @@ func TestDefault(t *testing.T) {
 	t.Run("github", func(t *testing.T) {
 		ctx := testctx.NewWithCfg(config.Project{
 			Changelog: config.Changelog{
-				Use: useGitHub,
+				Use:  useGitHub,
+				Sort: "asc",
 			},
 		})
 		require.NoError(t, Pipe{}.Default(ctx))
 		require.NotEmpty(t, ctx.Config.Changelog.Format)
 		require.Contains(t, ctx.Config.Changelog.Format, "Author")
+	})
+	t.Run("invalid order", func(t *testing.T) {
+		ctx := testctx.NewWithCfg(config.Project{
+			Changelog: config.Changelog{
+				Sort: "nope",
+			},
+		})
+		require.ErrorIs(t, Pipe{}.Default(ctx), ErrInvalidSortDirection)
+	})
+	t.Run("invalid groups", func(t *testing.T) {
+		ctx := testctx.NewWithCfg(config.Project{
+			Changelog: config.Changelog{
+				Groups: []config.ChangelogGroup{
+					{Title: "   "},
+				},
+			},
+		})
+		require.ErrorIs(t, Pipe{}.Default(ctx), ErrEmptyGroupTitle)
 	})
 }
 
@@ -353,16 +376,6 @@ func Benchmark_sortEntries(b *testing.B) {
 			sortEntries(ctx, entries)
 		}
 	})
-}
-
-func TestChangelogInvalidSort(t *testing.T) {
-	ctx := testctx.NewWithCfg(config.Project{
-		Changelog: config.Changelog{
-			Sort: "dope",
-		},
-	})
-	require.NoError(t, Pipe{}.Default(ctx))
-	require.EqualError(t, Pipe{}.Run(ctx), ErrInvalidSortDirection.Error())
 }
 
 func TestChangelogOfFirstRelease(t *testing.T) {
