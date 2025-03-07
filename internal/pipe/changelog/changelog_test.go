@@ -1099,20 +1099,18 @@ func TestIssue5595(t *testing.T) {
 				})
 			}
 
-			l := scmChangeloger{
-				client: mock,
-				abbrev: 3,
-				repo: client.Repo{
-					Owner: "test",
-					Name:  "test",
+			cl := wrappingChangeloger{
+				changeloger: &scmChangeloger{
+					client: mock,
+					abbrev: 3,
+					repo: client.Repo{
+						Owner: "test",
+						Name:  "test",
+					},
 				},
 			}
-			entries, err := l.Log(ctx)
-			require.NoError(t, err)
-			entries, err = filterEntries(ctx, entries)
-			require.NoError(t, err)
-			entries = sortEntries(ctx, entries)
-			log, err := formatChangelog(ctx, entries)
+
+			log, err := cl.Log(ctx)
 			require.NoError(t, err)
 			golden.RequireEqualExt(t, []byte(log), ".md")
 		})
