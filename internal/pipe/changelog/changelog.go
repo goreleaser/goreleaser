@@ -81,7 +81,11 @@ func (Pipe) Run(ctx *context.Context) error {
 		return err
 	}
 
-	out, err := getChangelog(ctx)
+	if err := checkSortDirection(ctx.Config.Changelog.Sort); err != nil {
+		return err
+	}
+
+	out, err := buildChangelog(ctx)
 	if err != nil {
 		return err
 	}
@@ -104,25 +108,19 @@ func (Pipe) Run(ctx *context.Context) error {
 	return os.WriteFile(path, []byte(ctx.ReleaseNotes), 0o644) //nolint:gosec
 }
 
-func getChangelog(ctx *context.Context) (string, error) {
-	if ctx.Config.Changelog.Use == "github-native" {
-		l, err := newGithubChangeloger(ctx)
-		if err != nil {
-			return "", err
-		}
-		return l.Log(ctx)
+func buildChangelog(ctx *context.Context) (string, error) {
+	var cl staticChangeloger
+	var err error
+	switch ctx.Config.Changelog.Use {
+	case "github-native":
+		cl, err = newGithubChangeloger(ctx)
+	default:
+		cl, err = newCustomizedChangelog(ctx)
 	}
-
-	if err := checkSortDirection(ctx.Config.Changelog.Sort); err != nil {
-		return "", err
-	}
-
-	entries, err := buildChangelog(ctx)
 	if err != nil {
 		return "", err
 	}
-
-	return formatChangelog(ctx, entries)
+	return cl.Log(ctx)
 }
 
 func formatEntry(ctx *context.Context, entry client.ChangelogItem) (string, error) {
@@ -281,22 +279,6 @@ func checkSortDirection(mode string) error {
 	}
 }
 
-func buildChangelog(ctx *context.Context) ([]client.ChangelogItem, error) {
-	l, err := getFormatableChangeloger(ctx)
-	if err != nil {
-		return nil, err
-	}
-	entries, err := l.Log(ctx)
-	if err != nil {
-		return nil, err
-	}
-	entries, err = filterEntries(ctx, entries)
-	if err != nil {
-		return entries, err
-	}
-	return sortEntries(ctx, entries), nil
-}
-
 func filterEntries(ctx *context.Context, entries []client.ChangelogItem) ([]client.ChangelogItem, error) {
 	filters := ctx.Config.Changelog.Filters
 	if len(filters.Include) > 0 {
@@ -353,63 +335,6 @@ func remove(filter *regexp.Regexp, entries []client.ChangelogItem) (result []cli
 	return result
 }
 
-func getFormatableChangeloger(ctx *context.Context) (formatableChangeloger, error) {
-	switch ctx.Config.Changelog.Use {
-	case useGit, "":
-		return gitChangeloger{}, nil
-	case useGitLab, useGitea, useGitHub:
-		if ctx.Git.PreviousTag == "" {
-			log.Warnf("there's no previous tag, using 'git' instead of '%s'", ctx.Config.Changelog.Use)
-			return gitChangeloger{}, nil
-		}
-		return newSCMChangeloger(ctx)
-	default:
-		return nil, fmt.Errorf("invalid changelog.use: %q", ctx.Config.Changelog.Use)
-	}
-}
-
-func newGithubChangeloger(ctx *context.Context) (changeloger, error) {
-	cli, err := client.NewGitHubReleaseNotesGenerator(ctx, ctx.Token)
-	if err != nil {
-		return nil, err
-	}
-	repo, err := git.ExtractRepoFromConfig(ctx)
-	if err != nil {
-		return nil, err
-	}
-	if err := repo.CheckSCM(); err != nil {
-		return nil, err
-	}
-	return &githubNativeChangeloger{
-		client: cli,
-		repo: client.Repo{
-			Owner: repo.Owner,
-			Name:  repo.Name,
-		},
-	}, nil
-}
-
-func newSCMChangeloger(ctx *context.Context) (formatableChangeloger, error) {
-	cli, err := client.New(ctx)
-	if err != nil {
-		return nil, err
-	}
-	repo, err := git.ExtractRepoFromConfig(ctx)
-	if err != nil {
-		return nil, err
-	}
-	if err := repo.CheckSCM(); err != nil {
-		return nil, err
-	}
-	return &scmChangeloger{
-		client: cli,
-		repo: client.Repo{
-			Owner: repo.Owner,
-			Name:  repo.Name,
-		},
-	}, nil
-}
-
 func loadContent(ctx *context.Context, fileName, tmplName string) (string, error) {
 	if tmplName != "" {
 		log.Debugf("loading template %q", tmplName)
@@ -436,11 +361,78 @@ func loadContent(ctx *context.Context, fileName, tmplName string) (string, error
 	return "", nil
 }
 
-type formatableChangeloger interface {
-	Log(ctx *context.Context) ([]client.ChangelogItem, error)
+func getChangeloger(ctx *context.Context) (changeloger, error) {
+	switch ctx.Config.Changelog.Use {
+	case useGit, "":
+		return gitChangeloger{}, nil
+	case useGitLab, useGitea, useGitHub:
+		if ctx.Git.PreviousTag == "" {
+			log.Warnf("there's no previous tag, using 'git' instead of '%s'", ctx.Config.Changelog.Use)
+			return gitChangeloger{}, nil
+		}
+		return newSCMChangeloger(ctx)
+	default:
+		return nil, fmt.Errorf("invalid changelog.use: %q", ctx.Config.Changelog.Use)
+	}
+}
+
+func newCustomizedChangelog(ctx *context.Context) (staticChangeloger, error) {
+	changeloger, err := getChangeloger(ctx)
+	if err != nil {
+		return nil, err
+	}
+	return wrappingChangeloger{
+		changeloger: changeloger,
+	}, nil
+}
+
+func newGithubChangeloger(ctx *context.Context) (staticChangeloger, error) {
+	cli, err := client.NewGitHubReleaseNotesGenerator(ctx, ctx.Token)
+	if err != nil {
+		return nil, err
+	}
+	repo, err := git.ExtractRepoFromConfig(ctx)
+	if err != nil {
+		return nil, err
+	}
+	if err := repo.CheckSCM(); err != nil {
+		return nil, err
+	}
+	return &githubNativeChangeloger{
+		client: cli,
+		repo: client.Repo{
+			Owner: repo.Owner,
+			Name:  repo.Name,
+		},
+	}, nil
+}
+
+func newSCMChangeloger(ctx *context.Context) (changeloger, error) {
+	cli, err := client.New(ctx)
+	if err != nil {
+		return nil, err
+	}
+	repo, err := git.ExtractRepoFromConfig(ctx)
+	if err != nil {
+		return nil, err
+	}
+	if err := repo.CheckSCM(); err != nil {
+		return nil, err
+	}
+	return &scmChangeloger{
+		client: cli,
+		repo: client.Repo{
+			Owner: repo.Owner,
+			Name:  repo.Name,
+		},
+	}, nil
 }
 
 type changeloger interface {
+	Log(ctx *context.Context) ([]client.ChangelogItem, error)
+}
+
+type staticChangeloger interface {
 	Log(ctx *context.Context) (string, error)
 }
 
@@ -497,4 +489,20 @@ type githubNativeChangeloger struct {
 
 func (c *githubNativeChangeloger) Log(ctx *context.Context) (string, error) {
 	return c.client.GenerateReleaseNotes(ctx, c.repo, ctx.Git.PreviousTag, ctx.Git.CurrentTag)
+}
+
+type wrappingChangeloger struct {
+	changeloger changeloger
+}
+
+func (w wrappingChangeloger) Log(ctx *context.Context) (string, error) {
+	entries, err := w.changeloger.Log(ctx)
+	if err != nil {
+		return "", err
+	}
+	entries, err = filterEntries(ctx, entries)
+	if err != nil {
+		return "", err
+	}
+	return formatChangelog(ctx, sortEntries(ctx, entries))
 }

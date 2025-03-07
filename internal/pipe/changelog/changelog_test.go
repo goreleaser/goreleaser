@@ -252,8 +252,12 @@ func TestChangelogSort(t *testing.T) {
 	testlib.GitCommit(t, "a: commit")
 	testlib.GitCommit(t, "b: commit")
 	testlib.GitTag(t, "v1.0.0")
-	ctx := testctx.New(
-
+	ctx := testctx.NewWithCfg(
+		config.Project{
+			Changelog: config.Changelog{
+				Format: "{{.Message}}",
+			},
+		},
 		testctx.WithCurrentTag("v1.0.0"),
 		testctx.WithPreviousTag("v0.9.9"),
 	)
@@ -289,13 +293,17 @@ func TestChangelogSort(t *testing.T) {
 	} {
 		t.Run("changelog sort='"+cfg.Sort+"'", func(t *testing.T) {
 			ctx.Config.Changelog.Sort = cfg.Sort
-			entries, err := buildChangelog(ctx)
+			log, err := buildChangelog(ctx)
 			require.NoError(t, err)
-			require.Len(t, entries, len(cfg.Entries))
+			entries := strings.Split(strings.TrimSpace(log), "\n")
 			var changes []string
 			for _, line := range entries {
-				changes = append(changes, line.Message)
+				if line == "" || line[0] == '#' {
+					continue
+				}
+				changes = append(changes, strings.TrimPrefix(line, li))
 			}
+			require.Len(t, changes, len(cfg.Entries))
 			require.EqualValues(t, cfg.Entries, changes)
 		})
 	}
@@ -624,13 +632,13 @@ func TestGetChangelogGitHubNativeFirstRelease(t *testing.T) {
 
 func TestGetChangeloger(t *testing.T) {
 	t.Run("default", func(t *testing.T) {
-		c, err := getFormatableChangeloger(testctx.New())
+		c, err := getChangeloger(testctx.New())
 		require.NoError(t, err)
 		require.IsType(t, gitChangeloger{}, c)
 	})
 
 	t.Run(useGit, func(t *testing.T) {
-		c, err := getFormatableChangeloger(testctx.NewWithCfg(config.Project{
+		c, err := getChangeloger(testctx.NewWithCfg(config.Project{
 			Changelog: config.Changelog{
 				Use: useGit,
 			},
@@ -645,7 +653,7 @@ func TestGetChangeloger(t *testing.T) {
 				Use: useGitHub,
 			},
 		}, testctx.GitHubTokenType, testctx.WithPreviousTag("v1.2.3"))
-		c, err := getFormatableChangeloger(ctx)
+		c, err := getChangeloger(ctx)
 		require.NoError(t, err)
 		require.IsType(t, &scmChangeloger{}, c)
 	})
@@ -656,7 +664,7 @@ func TestGetChangeloger(t *testing.T) {
 				Use: useGitHub,
 			},
 		}, testctx.GitHubTokenType)
-		c, err := getFormatableChangeloger(ctx)
+		c, err := getChangeloger(ctx)
 		require.NoError(t, err)
 		require.IsType(t, gitChangeloger{}, c)
 	})
@@ -692,7 +700,7 @@ func TestGetChangeloger(t *testing.T) {
 				Use: useGitLab,
 			},
 		}, testctx.GitLabTokenType, testctx.WithPreviousTag("v1.2.3"))
-		c, err := getFormatableChangeloger(ctx)
+		c, err := getChangeloger(ctx)
 		require.NoError(t, err)
 		require.IsType(t, &scmChangeloger{}, c)
 	})
@@ -706,7 +714,7 @@ func TestGetChangeloger(t *testing.T) {
 				Use: useGitHub,
 			},
 		}, testctx.GitHubTokenType, testctx.WithPreviousTag("v1.2.3"))
-		c, err := getFormatableChangeloger(ctx)
+		c, err := getChangeloger(ctx)
 		require.EqualError(t, err, "unsupported repository URL: https://gist.github.com/")
 		require.Nil(t, c)
 	})
@@ -728,13 +736,13 @@ func TestGetChangeloger(t *testing.T) {
 				API: srv.URL,
 			},
 		}, testctx.GiteaTokenType, testctx.WithPreviousTag("v1.2.3"))
-		c, err := getFormatableChangeloger(ctx)
+		c, err := getChangeloger(ctx)
 		require.NoError(t, err)
 		require.IsType(t, &scmChangeloger{}, c)
 	})
 
 	t.Run("invalid", func(t *testing.T) {
-		c, err := getFormatableChangeloger(testctx.NewWithCfg(config.Project{
+		c, err := getChangeloger(testctx.NewWithCfg(config.Project{
 			Changelog: config.Changelog{
 				Use: "nope",
 			},
