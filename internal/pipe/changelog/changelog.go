@@ -108,44 +108,6 @@ func (Pipe) Run(ctx *context.Context) error {
 	return os.WriteFile(path, []byte(ctx.ReleaseNotes), 0o644) //nolint:gosec
 }
 
-func buildChangelog(ctx *context.Context) (string, error) {
-	var cl staticChangeloger
-	var err error
-	switch ctx.Config.Changelog.Use {
-	case "github-native":
-		cl, err = newGithubChangeloger(ctx)
-	default:
-		cl, err = newCustomizedChangelog(ctx)
-	}
-	if err != nil {
-		return "", err
-	}
-	return cl.Log(ctx)
-}
-
-func formatEntry(ctx *context.Context, entry client.ChangelogItem) (string, error) {
-	line, err := tmpl.New(ctx).WithExtraFields(tmpl.Fields{
-		"SHA":            abbrevEntry(entry.SHA, ctx.Config.Changelog.Abbrev),
-		"Message":        entry.Message,
-		"AuthorUsername": entry.AuthorUsername,
-		"AuthorName":     entry.AuthorName,
-		"AuthorEmail":    entry.AuthorEmail,
-	}).Apply(ctx.Config.Changelog.Format)
-	return prefixItem(line), err
-}
-
-func formatEntries(ctx *context.Context, entries []client.ChangelogItem) ([]string, error) {
-	var lines []string
-	for _, entry := range entries {
-		line, err := formatEntry(ctx, entry)
-		if err != nil {
-			return nil, err
-		}
-		lines = append(lines, line)
-	}
-	return lines, nil
-}
-
 type changelogGroup struct {
 	title   string
 	entries []string
@@ -277,6 +239,44 @@ func checkSortDirection(mode string) error {
 	default:
 		return ErrInvalidSortDirection
 	}
+}
+
+func buildChangelog(ctx *context.Context) (string, error) {
+	var cl staticChangeloger
+	var err error
+	switch ctx.Config.Changelog.Use {
+	case "github-native":
+		cl, err = newGithubChangeloger(ctx)
+	default:
+		cl, err = newCustomizedChangelog(ctx)
+	}
+	if err != nil {
+		return "", err
+	}
+	return cl.Log(ctx)
+}
+
+func formatEntry(ctx *context.Context, entry client.ChangelogItem) (string, error) {
+	line, err := tmpl.New(ctx).WithExtraFields(tmpl.Fields{
+		"SHA":            abbrevEntry(entry.SHA, ctx.Config.Changelog.Abbrev),
+		"Message":        entry.Message,
+		"AuthorUsername": entry.AuthorUsername,
+		"AuthorName":     entry.AuthorName,
+		"AuthorEmail":    entry.AuthorEmail,
+	}).Apply(ctx.Config.Changelog.Format)
+	return prefixItem(line), err
+}
+
+func formatEntries(ctx *context.Context, entries []client.ChangelogItem) ([]string, error) {
+	var lines []string
+	for _, entry := range entries {
+		line, err := formatEntry(ctx, entry)
+		if err != nil {
+			return nil, err
+		}
+		lines = append(lines, line)
+	}
+	return lines, nil
 }
 
 func filterEntries(ctx *context.Context, entries []client.ChangelogItem) ([]client.ChangelogItem, error) {
