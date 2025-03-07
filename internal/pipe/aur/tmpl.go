@@ -2,7 +2,6 @@ package aur
 
 type templateData struct {
 	Name            string
-	CleanName       string
 	Desc            string
 	Homepage        string
 	Version         string
@@ -60,7 +59,7 @@ optdepends=({{ pkgArray . }})
 backup=({{ pkgArray . }})
 {{- end }}
 {{- if .Install }}
-install={{ .CleanName }}.install
+install={{ trimsuffix .Name "-bin" }}.install
 {{- end }}
 
 {{ range .ReleasePackages -}}

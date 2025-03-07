@@ -248,6 +248,7 @@ func applyTemplate(ctx *context.Context, tpl string, data templateData) (string,
 				"fixLines":   fixLines,
 				"pkgArray":   toPkgBuildArray,
 				"quoteField": quoteField,
+				"trimsuffix": strings.TrimSuffix,
 			}).
 			Parse(tpl),
 	)
@@ -306,7 +307,6 @@ func toPkgBuildArch(arch string) string {
 func dataFor(ctx *context.Context, cfg config.AUR, cl client.ReleaseURLTemplater, artifacts []*artifact.Artifact) (templateData, error) {
 	result := templateData{
 		Name:         cfg.Name,
-		CleanName:    clean(cfg.Name),
 		Desc:         cfg.Description,
 		Homepage:     cfg.Homepage,
 		Version:      fmt.Sprintf("%d.%d.%d", ctx.Semver.Major, ctx.Semver.Minor, ctx.Semver.Patch),
@@ -415,7 +415,7 @@ func doPublish(ctx *context.Context, pkgs []*artifact.Artifact) error {
 
 	if cfg.Install != "" {
 		pkgs = append(pkgs, &artifact.Artifact{
-			Name: clean(cfg.Name) + ".install",
+			Name: strings.TrimSuffix(cfg.Name, "-bin") + ".install",
 			Path: cfg.Install,
 		})
 	}
@@ -432,8 +432,4 @@ func doPublish(ctx *context.Context, pkgs []*artifact.Artifact) error {
 		})
 	}
 	return cli.CreateFiles(ctx, author, repo, msg, files)
-}
-
-func clean(name string) string {
-	return strings.TrimSuffix(name, "-bin")
 }
