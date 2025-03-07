@@ -30,7 +30,6 @@ func TestDescription(t *testing.T) {
 func createTemplateData() templateData {
 	return templateData{
 		Name:       "test-bin",
-		CleanName:  "test",
 		Desc:       "Some desc",
 		Homepage:   "https://example.com",
 		Conflicts:  []string{"nope"},

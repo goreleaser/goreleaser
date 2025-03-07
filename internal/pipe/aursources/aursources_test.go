@@ -416,7 +416,11 @@ func TestRunPipe(t *testing.T) {
 	require.NoError(t, runAll(ctx, client))
 	require.NoError(t, Pipe{}.Publish(ctx))
 
-	requireEqualRepoFiles(t, folder, ".", "foo", url)
+	requireEqualRepoFilesMap(t, ".", url, map[string]string{
+		"PKGBUILD":    filepath.Join(folder, "aur", "foo.pkgbuild"),
+		".SRCINFO":    filepath.Join(folder, "aur", "foo.srcinfo"),
+		"foo.install": "./testdata/install.sh",
+	})
 }
 
 func TestRunPipeMultipleConfigurations(t *testing.T) {
