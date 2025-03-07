@@ -125,20 +125,25 @@ func getChangelog(ctx *context.Context) (string, error) {
 	return formatChangelog(ctx, entries)
 }
 
-func applyFormatTo(ctx *context.Context, entries ...client.ChangelogItem) ([]string, error) {
+func formatEntry(ctx *context.Context, entry client.ChangelogItem) (string, error) {
+	line, err := tmpl.New(ctx).WithExtraFields(tmpl.Fields{
+		"SHA":            abbrevEntry(entry.SHA, ctx.Config.Changelog.Abbrev),
+		"Message":        entry.Message,
+		"AuthorUsername": entry.AuthorUsername,
+		"AuthorName":     entry.AuthorName,
+		"AuthorEmail":    entry.AuthorEmail,
+	}).Apply(ctx.Config.Changelog.Format)
+	return prefixItem(line), err
+}
+
+func formatEntries(ctx *context.Context, entries []client.ChangelogItem) ([]string, error) {
 	var lines []string
-	for _, item := range entries {
-		line, err := tmpl.New(ctx).WithExtraFields(tmpl.Fields{
-			"SHA":            abbrevEntry(item.SHA, ctx.Config.Changelog.Abbrev),
-			"Message":        item.Message,
-			"AuthorUsername": item.AuthorUsername,
-			"AuthorName":     item.AuthorName,
-			"AuthorEmail":    item.AuthorEmail,
-		}).Apply(ctx.Config.Changelog.Format)
+	for _, entry := range entries {
+		line, err := formatEntry(ctx, entry)
 		if err != nil {
 			return nil, err
 		}
-		lines = append(lines, prefixItem(line))
+		lines = append(lines, line)
 	}
 	return lines, nil
 }
@@ -185,7 +190,7 @@ func formatChangelog(ctx *context.Context, entries []client.ChangelogItem) (stri
 	result := []string{title("Changelog", 2)}
 	if len(ctx.Config.Changelog.Groups) == 0 {
 		log.Debug("not grouping entries")
-		lines, err := applyFormatTo(ctx, entries...)
+		lines, err := formatEntries(ctx, entries)
 		return strings.Join(append(result, lines...), newLineFor(ctx)), err
 	}
 
@@ -198,7 +203,7 @@ func formatChangelog(ctx *context.Context, entries []client.ChangelogItem) (stri
 		}
 		if group.Regexp == "" {
 			// If no regexp is provided, we purge all strikethrough entries and add remaining entries to the list
-			lines, err := applyFormatTo(ctx, entries...)
+			lines, err := formatEntries(ctx, entries)
 			if err != nil {
 				return "", err
 			}
@@ -217,11 +222,11 @@ func formatChangelog(ctx *context.Context, entries []client.ChangelogItem) (stri
 				match := re.MatchString(entry.Message)
 				log.Debugf("entry: %s match: %b\n", entry, match)
 				if match {
-					line, err := applyFormatTo(ctx, entry)
+					line, err := formatEntry(ctx, entry)
 					if err != nil {
 						return "", err
 					}
-					item.entries = append(item.entries, line...)
+					item.entries = append(item.entries, line)
 				} else {
 					// Keep unmatched entry.
 					entries[i] = entry
