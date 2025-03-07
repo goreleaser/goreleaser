@@ -894,16 +894,21 @@ func TestGroupBadRegex(t *testing.T) {
 func TestChangelogFormat(t *testing.T) {
 	t.Run("without groups", func(t *testing.T) {
 		makeConf := func(u string) config.Project {
-			return config.Project{Changelog: config.Changelog{Use: u}}
+			return config.Project{
+				Changelog: config.Changelog{
+					Use:    u,
+					Format: "{{.SHA}} {{.Message}}",
+				},
+			}
 		}
 
 		for _, use := range []string{useGit, useGitHub, useGitLab, useGitea} {
 			t.Run(use, func(t *testing.T) {
 				out, err := formatChangelog(
 					testctx.NewWithCfg(makeConf(use)),
-					[]string{
-						"aea123 foo",
-						"aef653 bar",
+					[]client.ChangelogItem{
+						{SHA: "aea123", Message: "foo"},
+						{SHA: "aef653", Message: "bar"},
 					},
 				)
 				require.NoError(t, err)
@@ -918,7 +923,8 @@ func TestChangelogFormat(t *testing.T) {
 		makeConf := func(u string) config.Project {
 			return config.Project{
 				Changelog: config.Changelog{
-					Use: u,
+					Use:    u,
+					Format: "{{.SHA}} {{.Message}}",
 					Groups: []config.ChangelogGroup{
 						{Title: "catch-all"},
 					},
@@ -930,9 +936,9 @@ func TestChangelogFormat(t *testing.T) {
 			t.Run(use, func(t *testing.T) {
 				out, err := formatChangelog(
 					testctx.NewWithCfg(makeConf(use)),
-					[]string{
-						"aea123 foo",
-						"aef653 bar",
+					[]client.ChangelogItem{
+						{SHA: "aea123", Message: "foo"},
+						{SHA: "aef653", Message: "bar"},
 					},
 				)
 				require.NoError(t, err)
@@ -1098,10 +1104,7 @@ func TestIssue5595(t *testing.T) {
 			entries, err = filterEntries(ctx, entries)
 			require.NoError(t, err)
 			entries = sortEntries(ctx, entries)
-			lines, err := toLines(ctx, entries)
-			require.NoError(t, err)
-
-			log, err := formatChangelog(ctx, lines)
+			log, err := formatChangelog(ctx, entries)
 			require.NoError(t, err)
 			golden.RequireEqualExt(t, []byte(log), ".md")
 		})

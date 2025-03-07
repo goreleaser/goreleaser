@@ -122,15 +122,10 @@ func getChangelog(ctx *context.Context) (string, error) {
 		return "", err
 	}
 
-	lines, err := toLines(ctx, entries)
-	if err != nil {
-		return "", err
-	}
-
-	return formatChangelog(ctx, lines)
+	return formatChangelog(ctx, entries)
 }
 
-func toLines(ctx *context.Context, entries []client.ChangelogItem) ([]string, error) {
+func applyFormatTo(ctx *context.Context, entries ...client.ChangelogItem) ([]string, error) {
 	var lines []string
 	for _, item := range entries {
 		line, err := tmpl.New(ctx).WithExtraFields(tmpl.Fields{
@@ -143,7 +138,7 @@ func toLines(ctx *context.Context, entries []client.ChangelogItem) ([]string, er
 		if err != nil {
 			return nil, err
 		}
-		lines = append(lines, line)
+		lines = append(lines, prefixItem(line))
 	}
 	return lines, nil
 }
@@ -186,11 +181,12 @@ func abbrev(l int, sha string) string {
 	}
 }
 
-func formatChangelog(ctx *context.Context, entries []string) (string, error) {
+func formatChangelog(ctx *context.Context, entries []client.ChangelogItem) (string, error) {
 	result := []string{title("Changelog", 2)}
 	if len(ctx.Config.Changelog.Groups) == 0 {
 		log.Debug("not grouping entries")
-		return strings.Join(append(result, prefixItems(entries)...), newLineFor(ctx)), nil
+		lines, err := applyFormatTo(ctx, entries...)
+		return strings.Join(append(result, lines...), newLineFor(ctx)), err
 	}
 
 	log.Debug("grouping entries")
@@ -202,7 +198,11 @@ func formatChangelog(ctx *context.Context, entries []string) (string, error) {
 		}
 		if group.Regexp == "" {
 			// If no regexp is provided, we purge all strikethrough entries and add remaining entries to the list
-			item.entries = prefixItems(entries)
+			lines, err := applyFormatTo(ctx, entries...)
+			if err != nil {
+				return "", err
+			}
+			item.entries = lines
 			// clear array
 			entries = nil
 		} else {
@@ -214,10 +214,14 @@ func formatChangelog(ctx *context.Context, entries []string) (string, error) {
 			log.Debugf("group: %#v", group)
 			i := 0
 			for _, entry := range entries {
-				match := re.MatchString(entry)
+				match := re.MatchString(entry.Message)
 				log.Debugf("entry: %s match: %b\n", entry, match)
 				if match {
-					item.entries = append(item.entries, li+entry)
+					line, err := applyFormatTo(ctx, entry)
+					if err != nil {
+						return "", err
+					}
+					item.entries = append(item.entries, line...)
 				} else {
 					// Keep unmatched entry.
 					entries[i] = entry
@@ -247,14 +251,11 @@ func groupSort(i, j changelogGroup) int {
 	return cmp.Compare(i.order, j.order)
 }
 
-func prefixItems(ss []string) []string {
-	var r []string
-	for _, s := range ss {
-		if s != "" {
-			r = append(r, li+s)
-		}
+func prefixItem(s string) string {
+	if s == "" {
+		return s
 	}
-	return r
+	return li + s
 }
 
 func loadFromFile(file string) (string, error) {
