@@ -19,6 +19,23 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
+func TestDefault(t *testing.T) {
+	t.Run("empty", func(t *testing.T) {
+		ctx := testctx.New()
+		require.NoError(t, Pipe{}.Default(ctx))
+		require.NotEmpty(t, ctx.Config.Changelog.Format)
+	})
+	t.Run("github", func(t *testing.T) {
+		ctx := testctx.NewWithCfg(config.Project{
+			Changelog: config.Changelog{
+				Use: useGitHub,
+			},
+		})
+		require.NoError(t, Pipe{}.Default(ctx))
+		require.NotEmpty(t, ctx.Config.Changelog.Format)
+	})
+}
+
 func TestDescription(t *testing.T) {
 	require.NotEmpty(t, Pipe{}.String())
 }
