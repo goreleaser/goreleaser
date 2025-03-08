@@ -60,19 +60,6 @@ func (Pipe) Default(ctx *context.Context) error {
 			ctx.Config.Changelog.Format = "{{ .SHA }}: {{ .Message }} ({{ with .AuthorUsername }}@{{ . }}{{ else }}{{ .AuthorName }} <{{ .AuthorEmail }}>{{ end }})"
 		}
 	}
-
-	switch ctx.Config.Changelog.Sort {
-	case "", "asc", "desc":
-		// noop
-	default:
-		return ErrInvalidSortDirection
-	}
-
-	for _, g := range ctx.Config.Changelog.Groups {
-		if strings.TrimSpace(g.Title) == "" {
-			return ErrEmptyGroupTitle
-		}
-	}
 	return nil
 }
 
@@ -95,6 +82,10 @@ func (Pipe) Run(ctx *context.Context) error {
 
 	header, err := loadContent(ctx, ctx.ReleaseHeaderFile, ctx.ReleaseHeaderTmpl)
 	if err != nil {
+		return err
+	}
+
+	if err := checkSortDirection(ctx.Config.Changelog.Sort); err != nil {
 		return err
 	}
 
@@ -128,6 +119,9 @@ type changelogGroup struct {
 }
 
 func title(s string, level int) string {
+	if s == "" {
+		return ""
+	}
 	return fmt.Sprintf("%s %s", strings.Repeat("#", level), s)
 }
 
@@ -237,6 +231,15 @@ func loadFromFile(file string) (string, error) {
 	}
 	log.WithField("file", file).Debugf("read %d bytes", len(bts))
 	return string(bts), nil
+}
+
+func checkSortDirection(mode string) error {
+	switch mode {
+	case "", "asc", "desc":
+		return nil
+	default:
+		return ErrInvalidSortDirection
+	}
 }
 
 func buildChangelog(ctx *context.Context) (string, error) {
