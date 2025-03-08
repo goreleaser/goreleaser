@@ -25,12 +25,8 @@ type Item = client.ChangelogItem
 // ErrInvalidSortDirection happens when the sort order is invalid.
 var ErrInvalidSortDirection = errors.New("invalid sort direction")
 
-// ErrInvalidSortDirection happens when a group has no title.
-var ErrEmptyGroupTitle = errors.New("group title cannot be empty")
-
-const li = "* "
-
 const (
+	li              = "* "
 	useGit          = "git"
 	useGitHub       = "github"
 	useGitea        = "gitea"
@@ -475,7 +471,6 @@ func (g gitChangeloger) Log(ctx *context.Context) ([]Item, error) {
 type scmChangeloger struct {
 	client client.Client
 	repo   client.Repo
-	abbrev int
 }
 
 func (c *scmChangeloger) Log(ctx *context.Context) ([]Item, error) {

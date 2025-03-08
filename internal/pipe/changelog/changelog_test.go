@@ -1068,6 +1068,7 @@ func TestIssue5595(t *testing.T) {
 				Changelog: config.Changelog{
 					Use:    useGitHub,
 					Format: format,
+					Abbrev: 3,
 					Groups: []config.ChangelogGroup{
 						{
 							Title:  "Features",
@@ -1125,7 +1126,6 @@ func TestIssue5595(t *testing.T) {
 			cl := wrappingChangeloger{
 				changeloger: &scmChangeloger{
 					client: mock,
-					abbrev: 3,
 					repo: client.Repo{
 						Owner: "test",
 						Name:  "test",
