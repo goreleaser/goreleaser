@@ -2,6 +2,7 @@ package archive
 
 import (
 	"archive/tar"
+	"archive/zip"
 	"compress/gzip"
 	"fmt"
 	"io"
@@ -208,6 +209,7 @@ func TestRunPipe(t *testing.T) {
 			ctx.Artifacts.Add(freebsdAmd64Build)
 			ctx.Version = "0.0.1"
 			ctx.Git.CurrentTag = "v0.0.1"
+			require.NoError(t, Pipe{}.Default(ctx))
 			require.NoError(t, Pipe{}.Run(ctx))
 
 			require.Empty(t, ctx.Artifacts.Filter(
@@ -260,7 +262,10 @@ func TestRunPipe(t *testing.T) {
 				header := tarInfo(t, filepath.Join(dist, name), expectBin)
 				require.Equal(t, "root", header.Uname)
 				require.Equal(t, "root", header.Gname)
+				require.EqualValues(t, 0o755, header.Mode)
 			}
+
+			name := "foobar_0.0.1_windows_amd64.zip"
 			require.Equal(
 				t,
 				[]string{
@@ -268,8 +273,10 @@ func TestRunPipe(t *testing.T) {
 					"foo/bar/foobar/blah.txt",
 					expectBin + ".exe",
 				},
-				testlib.LsArchive(t, filepath.Join(dist, "foobar_0.0.1_windows_amd64.zip"), "zip"),
+				testlib.LsArchive(t, filepath.Join(dist, name), "zip"),
 			)
+			info := zipInfo(t, filepath.Join(dist, name), expectBin+".exe")
+			require.Equal(t, fs.FileMode(0o755), info.Mode())
 		})
 	}
 }
@@ -370,6 +377,24 @@ func TestRunPipeNoBinaries(t *testing.T) {
 	require.NoError(t, Pipe{}.Run(ctx))
 }
 
+func zipInfo(t *testing.T, path, name string) fs.FileInfo {
+	t.Helper()
+	f, err := os.Open(path)
+	require.NoError(t, err)
+	defer f.Close()
+	info, err := f.Stat()
+	require.NoError(t, err)
+	r, err := zip.NewReader(f, info.Size())
+	require.NoError(t, err)
+	for _, next := range r.File {
+		if next.Name == name {
+			return next.FileInfo()
+		}
+	}
+	t.Fatalf("could not find %q in %q", name, path)
+	return nil
+}
+
 func tarInfo(t *testing.T, path, name string) *tar.Header {
 	t.Helper()
 	f, err := os.Open(path)
@@ -388,6 +413,7 @@ func tarInfo(t *testing.T, path, name string) *tar.Header {
 			return next
 		}
 	}
+	t.Fatalf("could not find %q in %q", name, path)
 	return nil
 }
 
@@ -779,6 +805,7 @@ func TestDefault(t *testing.T) {
 	require.NotEmpty(t, ctx.Config.Archives[0].NameTemplate)
 	require.Equal(t, "tar.gz", ctx.Config.Archives[0].Formats[0])
 	require.NotEmpty(t, ctx.Config.Archives[0].Files)
+	require.Equal(t, fs.FileMode(0o755), ctx.Config.Archives[0].BuildsInfo.Mode)
 }
 
 func TestDefaultSet(t *testing.T) {
