@@ -114,6 +114,9 @@
 								"type": "boolean"
 							}
 						]
+					},
+					"install": {
+						"type": "string"
 					}
 				},
 				"additionalProperties": false,
@@ -248,6 +251,9 @@
 								"type": "boolean"
 							}
 						]
+					},
+					"install": {
+						"type": "string"
 					}
 				},
 				"additionalProperties": false,
