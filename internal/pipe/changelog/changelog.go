@@ -89,11 +89,11 @@ func (Pipe) Run(ctx *context.Context) error {
 		return err
 	}
 
-	out, err := buildChangelog(ctx)
+	changes, err := buildChangelog(ctx)
 	if err != nil {
 		return err
 	}
-	changelogElements := []string{out}
+	changelogElements := []string{changes}
 
 	if header != "" {
 		changelogElements = append([]string{header}, changelogElements...)
