@@ -1222,7 +1222,7 @@ type Changelog struct {
 
 // ChangelogGroup holds the grouping criteria for the changelog.
 type ChangelogGroup struct {
-	Title  string `yaml:"title,omitempty" json:"title,omitempty"`
+	Title  string `yaml:"title" json:"title"`
 	Regexp string `yaml:"regexp,omitempty" json:"regexp,omitempty"`
 	Order  int    `yaml:"order,omitempty" json:"order,omitempty"`
 }

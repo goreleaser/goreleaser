@@ -64,11 +64,11 @@ type Client interface {
 
 // ChangelogItem represents a changelog item, basically, a commit and its author.
 type ChangelogItem struct {
-	SHA            string
-	Message        string
-	AuthorName     string
-	AuthorEmail    string
-	AuthorUsername string
+	SHA            string `json:"sha"`
+	Message        string `json:"message"`
+	AuthorName     string `json:"name"`
+	AuthorEmail    string `json:"email"`
+	AuthorUsername string `json:"-"`
 }
 
 // ReleaseURLTemplater provides the release URL as a template, containing the
