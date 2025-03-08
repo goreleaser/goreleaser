@@ -333,32 +333,6 @@ func remove(filter *regexp.Regexp, entries []Item) (result []Item) {
 	return result
 }
 
-func loadContent(ctx *context.Context, fileName, tmplName string) (string, error) {
-	if tmplName != "" {
-		log.Debugf("loading template %q", tmplName)
-		content, err := loadFromFile(tmplName)
-		if err != nil {
-			return "", err
-		}
-		content, err = tmpl.New(ctx).Apply(content)
-		if strings.TrimSpace(content) == "" && err == nil {
-			log.Warnf("loaded %q, but it evaluates to an empty string", tmplName)
-		}
-		return content, err
-	}
-
-	if fileName != "" {
-		log.Debugf("loading file %q", fileName)
-		content, err := loadFromFile(fileName)
-		if strings.TrimSpace(content) == "" && err == nil {
-			log.Warnf("loaded %q, but it is empty", fileName)
-		}
-		return content, err
-	}
-
-	return "", nil
-}
-
 func getChangeloger(ctx *context.Context) (changeloger, error) {
 	switch ctx.Config.Changelog.Use {
 	case useGit, "":
@@ -424,6 +398,32 @@ func newSCMChangeloger(ctx *context.Context) (changeloger, error) {
 			Name:  repo.Name,
 		},
 	}, nil
+}
+
+func loadContent(ctx *context.Context, fileName, tmplName string) (string, error) {
+	if tmplName != "" {
+		log.Debugf("loading template %q", tmplName)
+		content, err := loadFromFile(tmplName)
+		if err != nil {
+			return "", err
+		}
+		content, err = tmpl.New(ctx).Apply(content)
+		if strings.TrimSpace(content) == "" && err == nil {
+			log.Warnf("loaded %q, but it evaluates to an empty string", tmplName)
+		}
+		return content, err
+	}
+
+	if fileName != "" {
+		log.Debugf("loading file %q", fileName)
+		content, err := loadFromFile(fileName)
+		if strings.TrimSpace(content) == "" && err == nil {
+			log.Warnf("loaded %q, but it is empty", fileName)
+		}
+		return content, err
+	}
+
+	return "", nil
 }
 
 type changeloger interface {
