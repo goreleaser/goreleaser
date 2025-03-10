@@ -130,6 +130,9 @@ func TestChangelog(t *testing.T) {
 	testlib.GitCommit(t, "feat: added that thing")
 	testlib.GitCommit(t, "Merge pull request #999 from goreleaser/some-branch")
 	testlib.GitCommit(t, "this is not a Merge pull request")
+	testlib.GitCommit(t, `a commit message "with quotes inside it'`)
+	testlib.GitCommit(t, `a " quote ' fiest`)
+	testlib.GitCommit(t, `an unclosed <tag`)
 	testlib.GitTag(t, "v0.0.2")
 	ctx := testctx.NewWithCfg(config.Project{
 		Dist: folder,
@@ -151,6 +154,8 @@ func TestChangelog(t *testing.T) {
 	require.NotContains(t, ctx.ReleaseNotes, "first")
 	require.Contains(t, ctx.ReleaseNotes, "added feature 1")
 	require.Contains(t, ctx.ReleaseNotes, "fixed bug 2")
+	require.Contains(t, ctx.ReleaseNotes, `a commit message "with quotes inside it'`)
+	require.Contains(t, ctx.ReleaseNotes, `a " quote ' fiest`)
 	require.NotContains(t, ctx.ReleaseNotes, "docs")
 	require.NotContains(t, ctx.ReleaseNotes, "ignored")
 	require.NotContains(t, ctx.ReleaseNotes, "cArs")
