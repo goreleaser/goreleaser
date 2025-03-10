@@ -96,6 +96,7 @@ func (Pipe) Default(ctx *context.Context) error {
 				archive.NameTemplate = defaultBinaryNameTemplate
 			}
 		}
+		archive.BuildsInfo.Mode = 0o755
 		ids.Inc(archive.ID)
 	}
 	return ids.Validate()
