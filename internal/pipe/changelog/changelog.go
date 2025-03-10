@@ -3,7 +3,6 @@ package changelog
 
 import (
 	"cmp"
-	"encoding/json"
 	"errors"
 	"fmt"
 	"os"
@@ -440,7 +439,7 @@ func (g gitChangeloger) Log(ctx *context.Context) ([]Item, error) {
 		"log",
 		"--no-decorate",
 		"--no-color",
-		`--pretty=format:{"sha":"%H","message":"%s","author":"%an","email":"%aE"}`,
+		"--pretty=format:" + gitLogFormat,
 	}
 	// if prev is empty, it means we don't have a previous tag, so we don't
 	// pass any more args, which should everything.
@@ -455,15 +454,11 @@ func (g gitChangeloger) Log(ctx *context.Context) ([]Item, error) {
 		return nil, err
 	}
 	var entries []Item
-	for _, s := range strings.Split(out, "\n") {
-		if strings.TrimSpace(s) == "" {
+	for _, line := range strings.Split(out, "\n") {
+		if strings.TrimSpace(line) == "" {
 			continue
 		}
-		var entry Item
-		if err := json.Unmarshal([]byte(s), &entry); err != nil {
-			return nil, fmt.Errorf("changelog: invalid json: %s: %s", s, err)
-		}
-		entries = append(entries, entry)
+		entries = append(entries, decode(line))
 	}
 	return entries, nil
 }
@@ -501,4 +496,40 @@ func (w wrappingChangeloger) Log(ctx *context.Context) (string, error) {
 		return "", err
 	}
 	return formatChangelog(ctx, sortEntries(ctx, entries))
+}
+
+const (
+	shaOpen      = "<goreleaser_sha>"
+	shaClose     = "</goreleaser_sha>"
+	messageOpen  = "<goreleaser_message>"
+	messageClose = "</goreleaser_message>"
+	authorOpen   = "<goreleaser_author>"
+	authorClose  = "</goreleaser_author>"
+	emailOpen    = "<goreleaser_email>"
+	emailClose   = "</goreleaser_email>"
+
+	gitLogFormat = shaOpen + "%H" + shaClose +
+		messageOpen + "%s" + messageClose +
+		authorOpen + "%an" + authorClose +
+		emailOpen + "%aE" + emailClose
+)
+
+func decode(line string) Item {
+	var (
+		shaOpenIdx      = strings.Index(line, shaOpen) + len(shaOpen)
+		shaCloseIdx     = strings.Index(line, shaClose)
+		messageOpenIdx  = strings.Index(line, messageOpen) + len(messageOpen)
+		messageCloseIdx = strings.Index(line, messageClose)
+		authorOpenIdx   = strings.Index(line, authorOpen) + len(authorOpen)
+		authorCloseIdx  = strings.Index(line, authorClose)
+		emailOpenIdx    = strings.Index(line, emailOpen) + len(emailOpen)
+		emailCloseIdx   = strings.Index(line, emailClose)
+	)
+
+	return Item{
+		SHA:         line[shaOpenIdx:shaCloseIdx],
+		Message:     line[messageOpenIdx:messageCloseIdx],
+		AuthorName:  line[authorOpenIdx:authorCloseIdx],
+		AuthorEmail: line[emailOpenIdx:emailCloseIdx],
+	}
 }
