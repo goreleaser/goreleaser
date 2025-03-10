@@ -59,6 +59,14 @@ additional features:
 
 <a class="gumroad-button" href="https://gumroad.com/l/CadfZ" target="_blank">Get GoReleaser Pro</a>
 
+## Using GoReleaser Pro
+
+GoReleaser Pro is a different binary, see the [install options](./install.md#pro).
+Once you have it, you can use the serial key with either `--key` or by setting
+`GORELEASER_KEY`.
+
+See [this page](./post-checkout.md) for more information.
+
 ## Road map
 
 We don't have a properly organized public road map (_yet_), but these are some
