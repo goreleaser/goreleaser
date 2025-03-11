@@ -129,7 +129,15 @@ aur_sources:
       cd "${pkgname}_${pkgver}"
       install -Dsm755 ./myapp "${pkgdir}/usr/bin/myapp"
 
+    # This will be added into the package as 'name.install'.
+    # In this file, you may define functions like `pre_install`, `post_install`,
+    # and so on.
+    #
+    # <!-- md:inline_version v2.8-unreleased -->.
+    install: ./scripts/install.sh
+
     # Git author used to commit to the repository.
+    # Templates: allowed.
     commit_author:
       name: goreleaserbot
       email: bot@goreleaser.com
@@ -166,6 +174,12 @@ aur_sources:
     # Default: '.'.
     # Templates: allowed.
     directory: "."
+
+    # Whether to disable this particular AUR configuration.
+    #
+    # Templates: allowed.
+    # <!-- md:inline_version v2.8-unreleased -->.
+    disable: "{{ .IsSnapshot }}"
 ```
 
 <!-- md:templates -->

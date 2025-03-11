@@ -93,13 +93,21 @@ func (Pipe) Run(ctx *context.Context) error {
 }
 
 func runAll(ctx *context.Context, cli client.ReleaseURLTemplater) error {
+	skips := pipe.SkipMemento{}
 	for _, aur := range ctx.Config.AURSources {
-		err := doRun(ctx, aur, cli)
+		disable, err := tmpl.New(ctx).Bool(aur.Disable)
 		if err != nil {
 			return err
 		}
+		if disable {
+			skips.Remember(pipe.Skip("configuration is disabled"))
+			continue
+		}
+		if err := doRun(ctx, aur, cli); err != nil {
+			return err
+		}
 	}
-	return nil
+	return skips.Evaluate()
 }
 
 func doRun(ctx *context.Context, aur config.AURSource, cl client.ReleaseURLTemplater) error {
@@ -277,6 +285,7 @@ func dataFor(ctx *context.Context, cfg config.AURSource, cl client.ReleaseURLTem
 		Build:        cfg.Build,
 		Package:      cfg.Package,
 		Arches:       cfg.Arches,
+		Install:      cfg.Install,
 	}
 
 	for _, art := range artifacts {
@@ -363,6 +372,13 @@ func doPublish(ctx *context.Context, pkgs []*artifact.Artifact) error {
 		},
 		Name: fmt.Sprintf("%x", sha256.Sum256([]byte(cfg.GitURL))),
 	})
+
+	if cfg.Install != "" {
+		pkgs = append(pkgs, &artifact.Artifact{
+			Name: cfg.Name + ".install",
+			Path: cfg.Install,
+		})
+	}
 
 	files := make([]client.RepoFile, 0, len(pkgs))
 	for _, pkg := range pkgs {

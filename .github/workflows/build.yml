@@ -44,9 +44,9 @@ jobs:
         with:
           version: 3.x
           repo-token: ${{ secrets.GITHUB_TOKEN }}
-      - uses: docker/setup-qemu-action@4574d27a4764455b42196d70a065bc6853246a25 # v3
+      - uses: docker/setup-qemu-action@29109295f81e9208d7d86ff1c6c12d2833863392 # v3
         if: matrix.os == 'ubuntu-latest'
-      - uses: docker/setup-buildx-action@f7ce87c1d6bead3e36075b2ce75da1f6cc28aaca # v3
+      - uses: docker/setup-buildx-action@b5ca514318bd6ebac0fb2aedd5d36ec1b5c232a2 # v3
         if: matrix.os == 'ubuntu-latest'
       - name: setup-snapcraft
         if: matrix.os == 'ubuntu-latest'
@@ -69,12 +69,12 @@ jobs:
         run: |
           rustup default stable
           cargo binstall cargo-zigbuild
-      - uses: sigstore/cosign-installer@v3.8.0
+      - uses: sigstore/cosign-installer@v3.8.1
       - uses: anchore/sbom-action/download-syft@v0.18.0
       - run: task setup
       - run: task build
       - run: task test
-      - uses: codecov/codecov-action@13ce06bfc6bbe3ecf90edbbf1bc32fe5978ca1d3 # v5
+      - uses: codecov/codecov-action@0565863a31f2c772f9f0395002a31e3f06189574 # v5.4.0
         if: matrix.os == 'ubuntu-latest'
         with:
           file: ./coverage.txt

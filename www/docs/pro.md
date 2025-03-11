@@ -3,15 +3,19 @@
 GoReleaser Pro is a paid, closed-source GoReleaser distribution with some
 additional features:
 
+- [x] Native macOS App Bundles signing and DMG
+      [notarization](customization/notarize.md#native);
+- [x] Use [AI](customization/changelog.md#enhance-with-ai) to improve/format
+      your release notes;
 - [x] Further filter artifacts with `if` statements;
-- [x] Create macOS [App Bundles](customization/app_bundles.md);
+- [x] Create macOS [App Bundles][appbundles];
 - [x] Easily create `alpine`, `apt`, and `yum` repositories with the
       [CloudSmith integration](customization/cloudsmith.md);
 - [x] Have [global defaults for homepage, description, etc](customization/metadata.md);
 - [x] Run [hooks before publishing](customization/beforepublish.md) artifacts;
 - [x] Cross publish (e.g. releases to GitLab, pushes Homebrew Tap to GitHub);
 - [x] Keep [DockerHub image descriptions up to date](customization/dockerhub.md);
-- [x] Create [macOS disk images (DMGs)](customization/dmg.md);
+- [x] Create [macOS disk images (DMGs)][DMG];
 - [x] Create [Windows installers](customization/msi.md);
 - [x] Use `goreleaser release --single-target` to build the whole pipeline for a
       single architecture locally;
@@ -55,6 +59,14 @@ additional features:
 
 <a class="gumroad-button" href="https://gumroad.com/l/CadfZ" target="_blank">Get GoReleaser Pro</a>
 
+## Using GoReleaser Pro
+
+GoReleaser Pro is a different binary, see the [install options](./install.md#pro).
+Once you have it, you can use the serial key with either `--key` or by setting
+`GORELEASER_KEY`.
+
+See [this page](./post-checkout.md) for more information.
+
 ## Road map
 
 We don't have a properly organized public road map (_yet_), but these are some
@@ -97,3 +109,6 @@ Please, make sure you read and agree with our [EULA](eula.md).
 ---
 
 **✨✨ Thanks for your support! ✨✨**
+
+[appbundles]: customization/app_bundles.md
+[DMG]: customization/dmg.md

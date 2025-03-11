@@ -940,7 +940,7 @@ func TestNoBuildsFound(t *testing.T) {
 		NFPMs: []config.NFPM{
 			{
 				Formats: []string{"deb"},
-				Builds:  []string{"nope"},
+				IDs:     []string{"nope"},
 			},
 		},
 	})

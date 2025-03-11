@@ -143,11 +143,6 @@ func (Pipe) Default(ctx *context.Context) error {
 				snap.ChannelTemplates = []string{"edge", "beta", "candidate", "stable"}
 			}
 		}
-		if len(snap.Builds) == 0 {
-			for _, b := range ctx.Config.Builds {
-				snap.Builds = append(snap.Builds, b.ID)
-			}
-		}
 		ids.Inc(snap.ID)
 	}
 	return ids.Validate()
@@ -190,12 +185,15 @@ func doRun(ctx *context.Context, snap config.Snapcraft) error {
 	}
 
 	g := semerrgroup.NewBlockingFirst(semerrgroup.New(ctx.Parallelism))
+	filters := []artifact.Filter{
+		artifact.ByGoos("linux"),
+		artifact.ByType(artifact.Binary),
+	}
+	if len(snap.IDs) > 0 {
+		filters = append(filters, artifact.ByIDs(snap.IDs...))
+	}
 	for platform, binaries := range ctx.Artifacts.Filter(
-		artifact.And(
-			artifact.ByGoos("linux"),
-			artifact.ByType(artifact.Binary),
-			artifact.ByIDs(snap.Builds...),
-		),
+		artifact.And(filters...),
 	).GroupByPlatform() {
 		arch := linuxArch(platform)
 		if !isValidArch(arch) {

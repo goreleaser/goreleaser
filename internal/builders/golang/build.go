@@ -14,7 +14,6 @@ import (
 	"dario.cat/mergo"
 	"github.com/caarlos0/log"
 	"github.com/goreleaser/goreleaser/v2/internal/artifact"
-	"github.com/goreleaser/goreleaser/v2/internal/builders/buildtarget"
 	"github.com/goreleaser/goreleaser/v2/internal/builders/common"
 	"github.com/goreleaser/goreleaser/v2/internal/experimental"
 	"github.com/goreleaser/goreleaser/v2/internal/logext"
@@ -22,6 +21,15 @@ import (
 	api "github.com/goreleaser/goreleaser/v2/pkg/build"
 	"github.com/goreleaser/goreleaser/v2/pkg/config"
 	"github.com/goreleaser/goreleaser/v2/pkg/context"
+)
+
+const (
+	defaultGoamd64   = "v1"
+	defaultGo386     = "sse2"
+	defaultGoarm64   = "v8.0"
+	defaultGomips    = "hardfloat"
+	defaultGoppc64   = "power8"
+	defaultGoriscv64 = "rva20u64"
 )
 
 // Default builder instance.
@@ -116,28 +124,28 @@ func (*Builder) WithDefaults(build config.Build) (config.Build, error) {
 			build.Goarch = []string{"amd64", "arm64", "386"}
 		}
 		if len(build.Goamd64) == 0 {
-			build.Goamd64 = []string{"v1"}
+			build.Goamd64 = []string{defaultGoamd64}
 		}
 		if len(build.Go386) == 0 {
-			build.Go386 = []string{"sse2"}
+			build.Go386 = []string{defaultGo386}
 		}
 		if len(build.Goarm) == 0 {
 			build.Goarm = []string{experimental.DefaultGOARM()}
 		}
 		if len(build.Goarm64) == 0 {
-			build.Goarm64 = []string{"v8.0"}
+			build.Goarm64 = []string{defaultGoarm64}
 		}
 		if len(build.Gomips) == 0 {
-			build.Gomips = []string{"hardfloat"}
+			build.Gomips = []string{defaultGomips}
 		}
 		if len(build.Goppc64) == 0 {
-			build.Goppc64 = []string{"power8"}
+			build.Goppc64 = []string{defaultGoppc64}
 		}
 		if len(build.Goriscv64) == 0 {
-			build.Goriscv64 = []string{"rva20u64"}
+			build.Goriscv64 = []string{defaultGoriscv64}
 		}
 
-		targets, err := buildtarget.List(build)
+		targets, err := listTargets(build)
 		if err != nil {
 			return build, err
 		}
@@ -173,29 +181,29 @@ func (b *Builder) FixTarget(target string) string {
 
 func fixTarget(target string) string {
 	if strings.HasSuffix(target, "_amd64") {
-		return target + "_v1"
+		return target + "_" + defaultGoamd64
 	}
 	if strings.HasSuffix(target, "_386") {
-		return target + "_sse2"
+		return target + "_" + defaultGo386
 	}
 	if strings.HasSuffix(target, "_arm") {
 		return target + "_" + experimental.DefaultGOARM()
 	}
 	if strings.HasSuffix(target, "_arm64") {
-		return target + "_v8.0"
+		return target + "_" + defaultGoarm64
 	}
 	if strings.HasSuffix(target, "_mips") ||
 		strings.HasSuffix(target, "_mips64") ||
 		strings.HasSuffix(target, "_mipsle") ||
 		strings.HasSuffix(target, "_mips64le") {
-		return target + "_hardfloat"
+		return target + "_" + defaultGomips
 	}
 	if strings.HasSuffix(target, "_ppc64") ||
 		strings.HasSuffix(target, "_ppc64le") {
-		return target + "_power8"
+		return target + "_" + defaultGoppc64
 	}
 	if strings.HasSuffix(target, "_riscv64") {
-		return target + "_rva20u64"
+		return target + "_" + defaultGoriscv64
 	}
 	return target
 }
@@ -337,7 +345,7 @@ func (*Builder) Build(ctx *context.Context, build config.Build, options api.Opti
 func withOverrides(ctx *context.Context, build config.Build, target Target) (config.BuildDetails, error) {
 	optsTarget := target.Target
 	for _, o := range build.BuildDetailsOverrides {
-		overrideTarget, err := tmpl.New(ctx).Apply(formatTarget(o))
+		overrideTarget, err := tmpl.New(ctx).Apply(formatBuildTarget(o))
 		if err != nil {
 			return build.BuildDetails, err
 		}

@@ -93,7 +93,7 @@ func TestNoTagsNoSnapshot(t *testing.T) {
 	testlib.GitCommit(t, "first")
 	ctx := testctx.New()
 	ctx.Snapshot = false
-	require.EqualError(t, Pipe{}.Run(ctx), `git doesn't contain any tags. Either add a tag or use --snapshot`)
+	require.ErrorIs(t, Pipe{}.Run(ctx), ErrNoTag)
 }
 
 func TestDirty(t *testing.T) {

@@ -62,7 +62,7 @@ func TestRunPipe(t *testing.T) {
 				Summary:          "test summary {{.ProjectName}}",
 				Description:      "test description {{.ProjectName}}",
 				Publish:          true,
-				Builds:           []string{"foo"},
+				IDs:              []string{"foo"},
 				ChannelTemplates: []string{"stable"},
 			},
 			{
@@ -70,7 +70,7 @@ func TestRunPipe(t *testing.T) {
 				Summary:          "test summary",
 				Description:      "test description",
 				Publish:          true,
-				Builds:           []string{"foo", "bar"},
+				IDs:              []string{"foo", "bar"},
 				ChannelTemplates: []string{"stable"},
 			},
 			{
@@ -78,7 +78,7 @@ func TestRunPipe(t *testing.T) {
 				Summary:          "test summary",
 				Description:      "test description",
 				Publish:          true,
-				Builds:           []string{"bar"},
+				IDs:              []string{"bar"},
 				ChannelTemplates: []string{"stable"},
 			},
 			{
@@ -86,7 +86,7 @@ func TestRunPipe(t *testing.T) {
 				Summary:          "test summary",
 				Description:      "test description",
 				Publish:          true,
-				Builds:           []string{"bar"},
+				IDs:              []string{"bar"},
 				ChannelTemplates: []string{"stable"},
 				Disable:          "{{.Env.SKIP}}",
 			},
@@ -495,7 +495,6 @@ func TestExtraFile(t *testing.T) {
 
 func TestDefault(t *testing.T) {
 	ctx := testctx.NewWithCfg(config.Project{
-		Builds: []config.Build{{ID: "foo"}},
 		Snapcrafts: []config.Snapcraft{{
 			Description: "hi",
 			Summary:     "hi",
@@ -503,7 +502,6 @@ func TestDefault(t *testing.T) {
 	})
 	require.NoError(t, Pipe{}.Default(ctx))
 	require.Equal(t, defaultNameTemplate, ctx.Config.Snapcrafts[0].NameTemplate)
-	require.Equal(t, []string{"foo"}, ctx.Config.Snapcrafts[0].Builds)
 	require.Equal(t, []string{"edge", "beta", "candidate", "stable"}, ctx.Config.Snapcrafts[0].ChannelTemplates)
 	require.Equal(t, "stable", ctx.Config.Snapcrafts[0].Grade)
 	require.Equal(t, "strict", ctx.Config.Snapcrafts[0].Confinement)
@@ -531,8 +529,7 @@ func TestDefaultNoSummary(t *testing.T) {
 
 func TestDefaultGradeTmpl(t *testing.T) {
 	ctx := testctx.NewWithCfg(config.Project{
-		Env:    []string{"Grade=devel"},
-		Builds: []config.Build{{ID: "foo"}},
+		Env: []string{"Grade=devel"},
 		Snapcrafts: []config.Snapcraft{
 			{
 				Grade:       "{{.Env.Grade}}",
@@ -543,7 +540,6 @@ func TestDefaultGradeTmpl(t *testing.T) {
 	})
 	require.NoError(t, Pipe{}.Default(ctx))
 	require.Equal(t, defaultNameTemplate, ctx.Config.Snapcrafts[0].NameTemplate)
-	require.Equal(t, []string{"foo"}, ctx.Config.Snapcrafts[0].Builds)
 	require.Equal(t, []string{"edge", "beta"}, ctx.Config.Snapcrafts[0].ChannelTemplates)
 	require.Equal(t, "devel", ctx.Config.Snapcrafts[0].Grade)
 }

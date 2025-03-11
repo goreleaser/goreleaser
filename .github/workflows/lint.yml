@@ -21,9 +21,8 @@ jobs:
       - uses: actions/setup-go@f111f3307d8850f501ac008e886eec1fd1932a34 # v4
         with:
           go-version: stable
-          cache: false
       - name: golangci-lint
-        uses: golangci/golangci-lint-action@051d91933864810ecd5e2ea2cfd98f6a5bca5347 # v6.3.2
+        uses: golangci/golangci-lint-action@2226d7cb06a077cd73e56eedd38eecad18e5d837 # v6.5.0
         with:
           args: --timeout=5m
-          version: v1.62
+          version: v1.64

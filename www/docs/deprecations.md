@@ -39,6 +39,69 @@ Description.
 
 -->
 
+### archives.builds
+
+> since v2.8
+
+The `builds` field has been replaced with the `ids`, which is the nomenclature
+used everywhere else.
+
+=== "Before"
+
+    ```yaml
+    archives:
+      builds: [a, b]
+    ```
+
+=== "After"
+
+    ```yaml
+    archives:
+      ids: [a, b]
+    ```
+
+### snaps.builds
+
+> since v2.8
+
+The `builds` field has been replaced with the `ids`, which is the nomenclature
+used everywhere else.
+
+=== "Before"
+
+    ```yaml
+    snaps:
+      builds: [a, b]
+    ```
+
+=== "After"
+
+    ```yaml
+    snaps:
+      ids: [a, b]
+    ```
+
+### nfpms.builds
+
+> since v2.8
+
+The `builds` field has been replaced with the `ids`, which is the nomenclature
+used everywhere else.
+
+=== "Before"
+
+    ```yaml
+    nfpms:
+      builds: [a, b]
+    ```
+
+=== "After"
+
+    ```yaml
+    nfpms:
+      ids: [a, b]
+    ```
+
 ### archives.format
 
 > since v2.6

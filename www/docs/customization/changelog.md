@@ -21,22 +21,34 @@ changelog:
   # - `github`: uses the compare GitHub API, appending the author username to the changelog.
   # - `gitlab`: uses the compare GitLab API, appending the author name and email to the changelog (requires a personal access token).
   # - `gitea`: uses the compare Gitea API, appending the author username to the changelog.
-  # - `github-native`: uses the GitHub release notes generation API, disables the groups feature.
+  # - `github-native`: uses the GitHub release notes generation API, disables groups, sort, and any further formatting features.
   #
   # Default: 'git'.
   use: github
 
   # Format to use for commit formatting.
-  # Only available when use is one of `github`, `gitea`, or `gitlab`.
   #
-  # Default: '{{ .SHA }}: {{ .Message }} ({{ with .AuthorUsername }}@{{ . }}{{ else }}{{ .AuthorName }} <{{ .AuthorEmail }}>{{ end }})'.
-  # Extra template fields: `SHA`, `Message`, `AuthorName`, `AuthorEmail`, and
-  # `AuthorUsername`.
+  # Templates: allowed.
+  #
+  # Default:
+  #    if 'git': '{{ .SHA }} {{ .Message }}'
+  #   otherwise: '{{ .SHA }}: {{ .Message }} ({{ with .AuthorUsername }}@{{ . }}{{ else }}{{ .AuthorName }} <{{ .AuthorEmail }}>{{ end }})'.
+  #
+  # Extra template fields:
+  # - `SHA`: the commit SHA1
+  # - `Message`: the first line of the commit message, otherwise known as commit subject
+  # - `AuthorName`: the author full name (considers mailmap if 'git')
+  # - `AuthorEmail`: the author email (considers mailmap if 'git')
+  # - `AuthorUsername`: github/gitlab/gitea username - not available if 'git'
+  #
+  # Usage with 'git': <!-- md:inline_version v2.8-unreleased -->.
   format: "{{.SHA}}: {{.Message}} (@{{.AuthorUsername}})"
 
   # Sorts the changelog by the commit's messages.
   # Could either be asc, desc or empty
   # Empty means 'no sorting', it'll use the output of `git log` as is.
+  #
+  # Disabled when using 'github-native'.
   sort: asc
 
   # Max commit hash length to use in the changelog.
@@ -44,6 +56,8 @@ changelog:
   # 0: use whatever the changelog implementation gives you
   # -1: remove the commit hash from the changelog
   # any other number: max length.
+  #
+  # Disabled when using 'github-native'.
   abbrev: -1
 
   # Paths to filter the commits for.
@@ -51,6 +65,8 @@ changelog:
   #
   # This feature is only available in GoReleaser Pro.
   # Default: monorepo.dir value, or empty if no monorepo.
+  #
+  # Disabled when using 'github-native'.
   paths:
     - foo/
     - bar/
@@ -68,8 +84,9 @@ changelog:
   # Matches are performed against the first line of the commit message only,
   # prefixed with the commit SHA1, usually in the form of
   # `<abbrev-commit>[:] <title-commit>`.
-  # Groups are disabled when using github-native, as it already groups things by itself.
   # Regex use RE2 syntax as defined here: https://github.com/google/re2/wiki/Syntax.
+  #
+  # Disabled when using 'github-native'.
   groups:
     - title: Features
       regexp: '^.*?feat(\([[:word:]]+\))??!?:.+$'
@@ -105,13 +122,14 @@ changelog:
   # This feature is only available in GoReleaser Pro.
   divider: "---"
 
+  # Further filter changelog entries.
+  #
+  # Disabled when using 'github-native'.
   filters:
     # Commit messages matching the regexp listed here will be removed from
     # the changelog
     #
-    # Matches are performed against the first line of the commit message only,
-    # prefixed with the commit SHA1, usually in the form of
-    # `<abbrev-commit>[:] <title-commit>`.
+    # Matches are performed against the first line of the commit message only.
     exclude:
       - "^docs:"
       - typo
@@ -122,9 +140,7 @@ changelog:
     #
     # If include is not-empty, exclude will be ignored.
     #
-    # Matches are performed against the first line of the commit message only,
-    # prefixed with the commit SHA1, usually in the form of
-    # `<abbrev-commit>[:] <title-commit>`.
+    # Matches are performed against the first line of the commit message only.
     include:
       - "^feat:"
 ```
@@ -133,7 +149,7 @@ changelog:
 
     Some things to keep an eye on:
 
-    * The `github-native` changelog does not support `sort` and `filter`.
+    * The `github-native` changelog does not support `groups`, `sort`, and `filter`.
     * When releasing a [nightly][], `use` will fallback to `git`.
     * The `github` changelog will only work if both tags exist in GitHub.
 

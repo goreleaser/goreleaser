@@ -73,6 +73,10 @@ func (Pipe) Default(ctx *context.Context) error {
 		if fpm.Maintainer == "" {
 			deprecate.NoticeCustom(ctx, "nfpms.maintainer", "`{{ .Property }}` should always be set, check {{ .URL }} for more info")
 		}
+		if len(fpm.Builds) > 0 {
+			deprecate.Notice(ctx, "nfpms.builds")
+			fpm.IDs = append(fpm.IDs, fpm.Builds...)
+		}
 		ids.Inc(fpm.ID)
 	}
 
@@ -115,14 +119,14 @@ func doRun(ctx *context.Context, fpm config.NFPM) error {
 			artifact.ByGoos("aix"),
 		),
 	}
-	if len(fpm.Builds) > 0 {
-		filters = append(filters, artifact.ByIDs(fpm.Builds...))
+	if len(fpm.IDs) > 0 {
+		filters = append(filters, artifact.ByIDs(fpm.IDs...))
 	}
 	linuxBinaries := ctx.Artifacts.
 		Filter(artifact.And(filters...)).
 		GroupByPlatform()
 	if len(linuxBinaries) == 0 {
-		return fmt.Errorf("no linux/unix binaries found for builds %v", fpm.Builds)
+		return fmt.Errorf("no linux/unix binaries found for builds %v", fpm.IDs)
 	}
 	g := semerrgroup.New(ctx.Parallelism)
 	for _, format := range fpm.Formats {
