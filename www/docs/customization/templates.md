@@ -10,57 +10,57 @@ support templating.
 
 In fields that support templates, these fields are always available:
 
-| Key                    | Description                                                                                                |
-| ---------------------- | ---------------------------------------------------------------------------------------------------------- |
-| `.ProjectName`         | the project name                                                                                           |
-| `.Version`             | the version being released[^version-prefix]                                                                |
-| `.Branch`              | the current git branch                                                                                     |
-| `.PrefixedTag`         | the current git tag prefixed with the monorepo config tag prefix (if any)                                  |
-| `.Tag`                 | the current git tag                                                                                        |
-| `.PrefixedPreviousTag` | the previous git tag prefixed with the monorepo config tag prefix (if any)                                 |
-| `.PreviousTag`         | the previous git tag, or empty if no previous tags                                                         |
-| `.ShortCommit`         | the git commit short hash                                                                                  |
-| `.FullCommit`          | the git commit full hash                                                                                   |
-| `.Commit`              | the git commit hash (deprecated)                                                                           |
-| `.CommitDate`          | the UTC commit date in RFC 3339 format                                                                     |
-| `.CommitTimestamp`     | the UTC commit date in Unix format                                                                         |
-| `.GitURL`              | the git remote url                                                                                         |
-| `.GitTreeState`        | either 'clean' or 'dirty'                                                                                  |
-| `.IsGitClean`          | whether or not current git state is clean                                                                  |
-| `.IsGitDirty`          | whether or not current git state is dirty                                                                  |
-| `.Major`               | the major part of the version[^tag-is-semver]                                                              |
-| `.Minor`               | the minor part of the version[^tag-is-semver]                                                              |
-| `.Patch`               | the patch part of the version[^tag-is-semver]                                                              |
-| `.Prerelease`          | the prerelease part of the version, e.g. `beta`[^tag-is-semver]                                            |
-| `.RawVersion`          | composed of `{Major}.{Minor}.{Patch}` [^tag-is-semver]                                                     |
-| `.ReleaseNotes`        | the generated release notes, available after the changelog step has been executed                          |
-| `.IsDraft`             | `true` if `release.draft` is set in the configuration, `false` otherwise                                   |
-| `.IsSnapshot`          | `true` if `--snapshot` is set, `false` otherwise                                                           |
-| `.IsNightly`           | `true` if `--nightly` is set, `false` otherwise                                                            |
-| `.IsSingleTarget`      | `true` if `--single-target` is set, `false` otherwise (since v2.3)                                         |
-| `.Env`                 | a map with system's environment variables                                                                  |
-| `.Date`                | current UTC date in RFC 3339 format                                                                        |
-| `.Now`                 | current UTC date as `time.Time` struct, allows all `time.Time` functions (e.g. `{{ .Now.Format "2006" }}`) |
-| `.Timestamp`           | current UTC time in Unix format                                                                            |
-| `.ModulePath`          | the go module path, as reported by `go list -m`                                                            |
-| `.ReleaseURL`          | the current release download url[^scm-release-url]                                                         |
-| `.Summary`             | the git summary, e.g. `v1.0.0-10-g34f56g3`[^git-summary]                                                   |
-| `.PrefixedSummary`     | the git summary prefixed with the monorepo config tag prefix (if any)                                      |
-| `.TagSubject`          | the annotated tag message subject, or the message subject of the commit it points out[^git-tag-subject]    |
-| `.TagContents`         | the annotated tag message, or the message of the commit it points out[^git-tag-body]                       |
-| `.TagBody`             | the annotated tag message's body, or the message's body of the commit it points out[^git-tag-body]         |
-| `.Runtime.Goos`        | equivalent to `runtime.GOOS`                                                                               |
-| `.Runtime.Goarch`      | equivalent to `runtime.GOARCH`                                                                             |
+| Key                | Description                                                                                                |
+| ------------------ | ---------------------------------------------------------------------------------------------------------- |
+| `.ProjectName`     | the project name                                                                                           |
+| `.Version`         | the version being released[^version-prefix]                                                                |
+| `.Branch`          | the current git branch                                                                                     |
+| `.Tag`             | the current git tag                                                                                        |
+| `.PreviousTag`     | the previous git tag, or empty if no previous tags                                                         |
+| `.ShortCommit`     | the git commit short hash                                                                                  |
+| `.FullCommit`      | the git commit full hash                                                                                   |
+| `.Commit`          | the git commit hash (deprecated)                                                                           |
+| `.CommitDate`      | the UTC commit date in RFC 3339 format                                                                     |
+| `.CommitTimestamp` | the UTC commit date in Unix format                                                                         |
+| `.GitURL`          | the git remote url                                                                                         |
+| `.GitTreeState`    | either 'clean' or 'dirty'                                                                                  |
+| `.IsGitClean`      | whether or not current git state is clean                                                                  |
+| `.IsGitDirty`      | whether or not current git state is dirty                                                                  |
+| `.Major`           | the major part of the version[^tag-is-semver]                                                              |
+| `.Minor`           | the minor part of the version[^tag-is-semver]                                                              |
+| `.Patch`           | the patch part of the version[^tag-is-semver]                                                              |
+| `.Prerelease`      | the prerelease part of the version, e.g. `beta`[^tag-is-semver]                                            |
+| `.RawVersion`      | composed of `{Major}.{Minor}.{Patch}` [^tag-is-semver]                                                     |
+| `.ReleaseNotes`    | the generated release notes, available after the changelog step has been executed                          |
+| `.IsDraft`         | `true` if `release.draft` is set in the configuration, `false` otherwise                                   |
+| `.IsSnapshot`      | `true` if `--snapshot` is set, `false` otherwise                                                           |
+| `.IsNightly`       | `true` if `--nightly` is set, `false` otherwise                                                            |
+| `.IsSingleTarget`  | `true` if `--single-target` is set, `false` otherwise (since v2.3)                                         |
+| `.Env`             | a map with system's environment variables                                                                  |
+| `.Date`            | current UTC date in RFC 3339 format                                                                        |
+| `.Now`             | current UTC date as `time.Time` struct, allows all `time.Time` functions (e.g. `{{ .Now.Format "2006" }}`) |
+| `.Timestamp`       | current UTC time in Unix format                                                                            |
+| `.ModulePath`      | the go module path, as reported by `go list -m`                                                            |
+| `.ReleaseURL`      | the current release download url[^scm-release-url]                                                         |
+| `.Summary`         | the git summary, e.g. `v1.0.0-10-g34f56g3`[^git-summary]                                                   |
+| `.TagSubject`      | the annotated tag message subject, or the message subject of the commit it points out[^git-tag-subject]    |
+| `.TagContents`     | the annotated tag message, or the message of the commit it points out[^git-tag-body]                       |
+| `.TagBody`         | the annotated tag message's body, or the message's body of the commit it points out[^git-tag-body]         |
+| `.Runtime.Goos`    | equivalent to `runtime.GOOS`                                                                               |
+| `.Runtime.Goarch`  | equivalent to `runtime.GOARCH`                                                                             |
 
 ## Common Fields (Pro)
 
 <!-- md:tmpl_pro -->
 
-| Key          | Description                                                           |
-| ------------ | --------------------------------------------------------------------- |
-| `.IsRelease` | `true` if regular release (not a nightly nor a snapshot) (since v2.8) |
-| `.IsMerging` | `true` if you are running with `--merge` (since v2.8)                 |
-| `.Artifacts` | [the current artifacts list](#artifacts)                              |
+| Key                    | Description                                                                |
+| ---------------------- | -------------------------------------------------------------------------- |
+| `.PrefixedTag`         | the current git tag prefixed with the monorepo config tag prefix (if any)  |
+| `.PrefixedPreviousTag` | the previous git tag prefixed with the monorepo config tag prefix (if any) |
+| `.PrefixedSummary`     | the git summary prefixed with the monorepo config tag prefix (if any)      |
+| `.IsRelease`           | `true` if regular release (not a nightly nor a snapshot) (since v2.8)      |
+| `.IsMerging`           | `true` if you are running with `--merge` (since v2.8)                      |
+| `.Artifacts`           | [the current artifacts list](#artifacts)                                   |
 
 ## Artifacts
 
