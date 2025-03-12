@@ -39,7 +39,7 @@ release:
   # Whether to use an existing draft release as the target release.
   #
   # Available only for GitHub.
-  # Since: v2.5.
+  # <!-- md:inline_version v2.5 -->.
   use_existing_draft: true
 
   # Whether to remove an artifact that already exists.

@@ -48,7 +48,7 @@ msi:
     # See: https://wixtoolset.org/docs/v3/howtos/general/extension_usage_introduction/
     #
     # Templates: allowed.
-    # Since: v2.6.
+    # <!-- md:inline_version v2.6 -->.
     extensions:
       - '{{ if eq .Runtime.Goos "windows" }}WixUIExtension{{ end }}'
       - "WixUtilExtension"

@@ -344,7 +344,7 @@ nfpms:
     # Date to be used as mtime for the package itself, and its internal files.
     # You may also want to set the mtime on its contents.
     #
-    # Since: v2.6.
+    # <!-- md:inline_version v2.6 -->.
     # Templates: allowed.
     mtime: "{{ .CommitDate }}"
 

@@ -3213,6 +3213,91 @@
 				"additionalProperties": false,
 				"type": "object"
 			},
+			"NPM": {
+				"properties": {
+					"id": {
+						"type": "string"
+					},
+					"ids": {
+						"items": {
+							"type": "string"
+						},
+						"type": "array"
+					},
+					"name": {
+						"type": "string"
+					},
+					"description": {
+						"type": "string"
+					},
+					"homepage": {
+						"type": "string"
+					},
+					"keywords": {
+						"items": {
+							"type": "string"
+						},
+						"type": "array"
+					},
+					"license": {
+						"type": "string"
+					},
+					"author": {
+						"type": "string"
+					},
+					"repository": {
+						"type": "string"
+					},
+					"bugs": {
+						"type": "string"
+					},
+					"files": {
+						"items": {
+							"$ref": "#/$defs/ExtraFile"
+						},
+						"type": "array"
+					},
+					"templated_files": {
+						"items": {
+							"$ref": "#/$defs/TemplatedExtraFile"
+						},
+						"type": "array"
+					},
+					"access": {
+						"type": "string",
+						"enum": [
+							"",
+							"public",
+							"restricted"
+						]
+					},
+					"format": {
+						"type": "string",
+						"enum": [
+							"tar",
+							"tgz",
+							"tar.gz",
+							"zip",
+							"binary"
+						]
+					},
+					"if": {
+						"type": "string"
+					},
+					"disable": {
+						"oneOf": [
+							{
+								"type": "string"
+							},
+							{
+								"type": "boolean"
+							}
+						]
+					}
+				},
+				"additionalProperties": false,
+				"type": "object"
+			},
 			"Nightly": {
 				"properties": {
 					"version_template": {
@@ -3428,6 +3513,12 @@
 					"brews": {
 						"items": {
 							"$ref": "#/$defs/Homebrew"
+						},
+						"type": "array"
+					},
+					"npms": {
+						"items": {
+							"$ref": "#/$defs/NPM"
 						},
 						"type": "array"
 					},
