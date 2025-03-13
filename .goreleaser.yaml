@@ -409,15 +409,6 @@ docker_signs:
       - "${artifact}@${digest}"
       - --yes
 
-publishers:
-  - name: fury.io
-    ids:
-      - packages
-    env:
-      - "FURY_TOKEN={{ .Env.FURY_TOKEN }}"
-    cmd: ./scripts/fury-upload.sh {{ .ArtifactName }}
-    disable: "{{ if .IsNightly }}true{{ end }}"
-
 milestones:
   - close: true
 

@@ -79,7 +79,7 @@ jobs:
         with:
           distribution: goreleaser-pro
           version: "nightly"
-          args: release --clean --nightly -f .goreleaser-nightly.yaml --timeout 60m
+          args: release --clean --nightly -f .goreleaser-pro.yaml --timeout 60m
         env:
           GITHUB_TOKEN: ${{ secrets.GH_PAT }}
           GORELEASER_KEY: ${{ secrets.GORELEASER_KEY }}
@@ -88,7 +88,6 @@ jobs:
           MACOS_NOTARY_ISSUER_ID: ${{ secrets.MACOS_NOTARY_ISSUER_ID }}
           MACOS_NOTARY_KEY_ID: ${{ secrets.MACOS_NOTARY_KEY_ID }}
           MACOS_NOTARY_KEY: ${{ secrets.MACOS_NOTARY_KEY }}
-          GORELEASER_CURRENT_TAG: v2.7.0 # TODO: remove this after next release
       - uses: actions/attest-build-provenance@v2
         with:
           subject-checksums: ./dist/checksums.txt

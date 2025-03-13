@@ -131,8 +131,15 @@ jobs:
           registry: ghcr.io
           username: ${{ github.repository_owner }}
           password: ${{ secrets.GITHUB_TOKEN }}
-      - name: goreleaser-release
-        run: task goreleaser
+      - name: npm-login
+        run: |
+          npm config set '//registry.npmjs.org/:_authToken'=${{ secrets.NPM_TOKEN }}
+      - uses: goreleaser/goreleaser-action@v6
+        if: ${{ startsWith(github.ref, 'refs/tags/v') }} # only on tags
+        with:
+          distribution: pro
+          version: "~> 2"
+          args: release --clean --timeout 60m -f .goreleaser-pro.yaml
         env:
           GITHUB_TOKEN: ${{ secrets.GH_PAT }}
           MASTODON_CLIENT_ID: ${{ secrets.MASTODON_CLIENT_ID }}
@@ -148,7 +155,11 @@ jobs:
           MACOS_NOTARY_KEY_ID: ${{ secrets.MACOS_NOTARY_KEY_ID }}
           MACOS_NOTARY_KEY: ${{ secrets.MACOS_NOTARY_KEY }}
           SNAPCRAFT_STORE_CREDENTIALS: ${{ secrets.SNAPCRAFT_LOGIN }}
-          GORELEASER_PREVIOUS_TAG: v2.7.0 # TODO: remove this after next release
+      - name: goreleaser-snapshot
+        if: ${{ !startsWith(github.ref, 'refs/tags/v') }} # on main
+        run: ./goreleaser release --clean --timeout 60m --snapshot
+        env:
+          GITHUB_TOKEN: ${{ secrets.GH_PAT }}
       - uses: actions/attest-build-provenance@v2
         with:
           subject-checksums: ./dist/checksums.txt
