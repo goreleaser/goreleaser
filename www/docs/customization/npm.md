@@ -1,6 +1,6 @@
 # NPM
 
-<!-- md:version v2.8-unreleased -->
+<!-- md:version v2.8 -->
 
 <!-- md:alpha -->
 

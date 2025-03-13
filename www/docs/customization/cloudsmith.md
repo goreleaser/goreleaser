@@ -77,7 +77,7 @@ cloudsmiths:
       alpine: "alpine/v3.8"
       # You can also set multiple distributions for a format.
       #
-      # <!-- md:inline_version v2.8-unreleased -->
+      # <!-- md:inline_version v2.8 -->
       deb:
       - "ubuntu/xenial"
       - "ubuntu/focal"

@@ -178,7 +178,7 @@ jobs:
 
 ## Native
 
-<!-- md:version v2.8-unreleased -->
+<!-- md:version v2.8 -->
 <!-- md:pro -->
 
 This method can sign and notarize [App Bundles][appbundles], but it depends on
