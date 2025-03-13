@@ -11,6 +11,7 @@ on:
       - "Taskfile.yml"
       - "Dockerfile"
       - ".github/workflows/*.yml"
+      - "dagger/*"
 
 permissions:
   contents: read
