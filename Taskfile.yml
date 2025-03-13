@@ -278,9 +278,16 @@ tasks:
     cmds:
       - ./goreleaser release --clean --timeout 60m {{.SNAPSHOT}}
 
+  nightly:watch:
+    vars:
+      RUN_ID:
+        sh: "gh run list --workflow=nightly-oss.yml --limit 1 --json databaseId | jq -r '.[] | .databaseId'"
+    cmds:
+      - gh run watch {{.RUN_ID}}
+
   nightly:
     cmds:
       - gh run list --workflow=nightly-oss.yml
       - gh workflow run nightly-oss.yml
-      - sleep 30
-      - gh run watch
+      - sleep 5
+      - task: nightly:watch
