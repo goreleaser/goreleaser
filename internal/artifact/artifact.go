@@ -237,6 +237,8 @@ func Extra[T any](a Artifact, key string) (T, error) {
 
 // ExtraOr returns the Extra field with the given key or the or value specified
 // if it is nil.
+//
+// Deprecated: this is not guaranteed to work, prefer using [Extra].
 func ExtraOr[T any](a Artifact, key string, or T) T {
 	if a.Extra[key] == nil {
 		return or
