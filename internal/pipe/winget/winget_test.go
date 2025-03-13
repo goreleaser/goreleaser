@@ -848,7 +848,8 @@ func TestFormatBinary(t *testing.T) {
 			Goamd64: goamd64,
 			Type:    artifact.UploadableBinary,
 			Extra: map[string]interface{}{
-				artifact.ExtraID: id,
+				artifact.ExtraID:     id,
+				artifact.ExtraBinary: "somebin",
 			},
 		}
 		ctx.Artifacts.Add(&art)

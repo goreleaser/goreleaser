@@ -466,7 +466,11 @@ func makeInstaller(ctx *context.Context, winget config.Winget, archives []*artif
 		} else {
 			binaryCount++
 			installer.InstallerType = "portable"
-			installer.Commands = []string{winget.Name}
+			cmd, err := artifact.Extra[string](*archive, artifact.ExtraBinary)
+			if err != nil {
+				cmd = winget.Name
+			}
+			installer.Commands = []string{cmd}
 		}
 		installer.Installers = append(installer.Installers, item)
 		switch archive.Goarch {
