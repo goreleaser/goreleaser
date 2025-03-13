@@ -328,7 +328,7 @@ func create(ctx *context.Context, snap config.Snapcraft, arch string, binaries [
 			WithField("dst", destBinaryPath).
 			Debug("copying")
 
-		if err = gio.CopyWithMode(binary.Path, destBinaryPath, 0o555); err != nil {
+		if err = gio.CopyWithMode(binary.Path, destBinaryPath, 0o777); err != nil {
 			return fmt.Errorf("failed to copy binary: %w", err)
 		}
 	}
