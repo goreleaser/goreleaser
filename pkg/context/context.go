@@ -11,6 +11,7 @@ import (
 	"os"
 	"runtime"
 	"strings"
+	"sync"
 	"time"
 
 	"github.com/goreleaser/goreleaser/v2/internal/artifact"
@@ -111,6 +112,8 @@ type Context struct {
 	Semver            Semver
 	Runtime           Runtime
 	Skips             map[string]bool
+
+	NotifiedDeprecations sync.Map
 }
 
 type Runtime struct {

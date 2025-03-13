@@ -27,6 +27,10 @@ var urlPropertyReplacer = strings.NewReplacer(
 
 // NoticeCustom warns the user about the deprecation of the given property.
 func NoticeCustom(ctx *context.Context, property, tmpl string) {
+	if _, ok := ctx.NotifiedDeprecations.LoadOrStore(property, struct{}{}); ok {
+		// already notified this one
+		return
+	}
 	url := baseURL + urlPropertyReplacer.Replace(property)
 	var out bytes.Buffer
 	if err := template.
