@@ -5,6 +5,7 @@ package deprecate
 import (
 	"bytes"
 	"strings"
+	"sync"
 	"text/template"
 
 	"github.com/caarlos0/log"
@@ -13,6 +14,8 @@ import (
 )
 
 const baseURL = "https://goreleaser.com/deprecations#"
+
+var notified sync.Map
 
 // Notice warns the user about the deprecation of the given property.
 func Notice(ctx *context.Context, property string) {
@@ -27,7 +30,7 @@ var urlPropertyReplacer = strings.NewReplacer(
 
 // NoticeCustom warns the user about the deprecation of the given property.
 func NoticeCustom(ctx *context.Context, property, tmpl string) {
-	if _, ok := ctx.NotifiedDeprecations.LoadOrStore(property, struct{}{}); ok {
+	if _, ok := notified.LoadOrStore(property, struct{}{}); ok {
 		// already notified this one
 		return
 	}
