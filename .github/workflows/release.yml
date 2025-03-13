@@ -157,7 +157,9 @@ jobs:
           SNAPCRAFT_STORE_CREDENTIALS: ${{ secrets.SNAPCRAFT_LOGIN }}
       - name: goreleaser-snapshot
         if: ${{ !startsWith(github.ref, 'refs/tags/v') }} # on main
-        run: ./goreleaser release --clean --timeout 60m --snapshot
+        run: |
+          go build .
+          ./goreleaser release --clean --timeout 60m --snapshot
         env:
           GITHUB_TOKEN: ${{ secrets.GH_PAT }}
       - uses: actions/attest-build-provenance@v2

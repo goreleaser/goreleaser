@@ -28,6 +28,7 @@ npms:
 
 furies:
   - account: goreleaser
+    disable: "{{ .IsNightly }}"
 
 includes:
   - from_file:
