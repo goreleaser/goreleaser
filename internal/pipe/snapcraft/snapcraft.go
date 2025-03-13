@@ -13,6 +13,7 @@ import (
 
 	"github.com/caarlos0/log"
 	"github.com/goreleaser/goreleaser/v2/internal/artifact"
+	"github.com/goreleaser/goreleaser/v2/internal/deprecate"
 	"github.com/goreleaser/goreleaser/v2/internal/gio"
 	"github.com/goreleaser/goreleaser/v2/internal/ids"
 	"github.com/goreleaser/goreleaser/v2/internal/pipe"
@@ -117,6 +118,10 @@ func (Pipe) Default(ctx *context.Context) error {
 		snap := &ctx.Config.Snapcrafts[i]
 		if snap.NameTemplate == "" {
 			snap.NameTemplate = defaultNameTemplate
+		}
+		if len(snap.Builds) > 0 {
+			deprecate.Notice(ctx, "snaps.builds")
+			snap.IDs = append(snap.IDs, snap.Builds...)
 		}
 		grade, err := tmpl.New(ctx).Apply(snap.Grade)
 		if err != nil {

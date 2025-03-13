@@ -498,6 +498,7 @@ func TestDefault(t *testing.T) {
 		Snapcrafts: []config.Snapcraft{{
 			Description: "hi",
 			Summary:     "hi",
+			Builds:      []string{"a"},
 		}},
 	})
 	require.NoError(t, Pipe{}.Default(ctx))
@@ -505,6 +506,8 @@ func TestDefault(t *testing.T) {
 	require.Equal(t, []string{"edge", "beta", "candidate", "stable"}, ctx.Config.Snapcrafts[0].ChannelTemplates)
 	require.Equal(t, "stable", ctx.Config.Snapcrafts[0].Grade)
 	require.Equal(t, "strict", ctx.Config.Snapcrafts[0].Confinement)
+	require.Equal(t, []string{"a"}, ctx.Config.Snapcrafts[0].IDs)
+	require.True(t, ctx.Deprecated)
 }
 
 func TestDefaultNoDescription(t *testing.T) {
