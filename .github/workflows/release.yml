@@ -137,7 +137,7 @@ jobs:
       - uses: goreleaser/goreleaser-action@v6
         if: ${{ startsWith(github.ref, 'refs/tags/v') }} # only on tags
         with:
-          distribution: pro
+          distribution: goreleaser-pro
           version: "~> 2"
           args: release --clean --timeout 60m -f .goreleaser-pro.yaml
         env:
