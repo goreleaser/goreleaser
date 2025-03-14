@@ -18,7 +18,7 @@ require (
 	github.com/caarlos0/go-version v0.2.0
 	github.com/caarlos0/log v0.4.8
 	github.com/charmbracelet/keygen v0.5.3
-	github.com/charmbracelet/lipgloss v1.0.0
+	github.com/charmbracelet/lipgloss v1.1.0
 	github.com/chrismellard/docker-credential-acr-env v0.0.0-20230304212654-82a0ddb27589
 	github.com/dghubble/go-twitter v0.0.0-20211115160449-93a8679adecb
 	github.com/dghubble/oauth1 v0.7.3
@@ -65,6 +65,8 @@ require (
 	github.com/anchore/bubbly v0.0.0-20241107060245-f2a5536f366a // indirect
 	github.com/census-instrumentation/opencensus-proto v0.4.1 // indirect
 	github.com/charmbracelet/bubbletea v1.3.0 // indirect
+	github.com/charmbracelet/colorprofile v0.2.3-0.20250311203215-f60798e515dc // indirect
+	github.com/charmbracelet/x/cellbuf v0.0.13-0.20250311204145-2c3ea96c31dd // indirect
 	github.com/charmbracelet/x/term v0.2.1 // indirect
 	github.com/cncf/xds/go v0.0.0-20240905190251-b4127c9b8d78 // indirect
 	github.com/envoyproxy/go-control-plane v0.13.0 // indirect
@@ -74,6 +76,7 @@ require (
 	github.com/muesli/ansi v0.0.0-20230316100256-276c6243b2f6 // indirect
 	github.com/muesli/cancelreader v0.2.2 // indirect
 	github.com/planetscale/vtprotobuf v0.6.1-0.20240319094008-0393e58bdf10 // indirect
+	github.com/xo/terminfo v0.0.0-20220910002029-abceb7e1c41e // indirect
 	go.opentelemetry.io/auto/sdk v1.1.0 // indirect
 	go.opentelemetry.io/contrib/bridges/prometheus v0.57.0 // indirect
 	go.opentelemetry.io/contrib/detectors/gcp v1.29.0 // indirect
