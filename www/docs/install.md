@@ -38,6 +38,24 @@ You can see the instructions for each of them below.
 
 [formula in homebrew-core]: https://github.com/Homebrew/homebrew-core/blob/master/Formula/g/goreleaser.rb
 
+## Pixi
+
+=== "OSS"
+
+    ```bash
+    pixi global install goreleaser
+    ```
+
+    !!! warning
+
+        The [recipe in conda-forge] might be slightly outdated.
+
+=== "Pro"
+
+    Not available.
+
+[recipe in conda-forge]: https://github.com/conda-forge/goreleaser-feedstock/blob/main/recipe/meta.yaml
+
 ## Snapcraft
 
 === "OSS"
