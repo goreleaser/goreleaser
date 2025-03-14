@@ -38,6 +38,20 @@ You can see the instructions for each of them below.
 
 [formula in homebrew-core]: https://github.com/Homebrew/homebrew-core/blob/master/Formula/g/goreleaser.rb
 
+## NPM
+
+=== "OSS"
+
+    ```bash
+    npm i -g @goreleaser/goreleaser
+    ```
+
+=== "Pro"
+
+    ```bash
+    npm i -g @goreleaser/goreleaser-pro
+    ```
+
 ## Snapcraft
 
 === "OSS"
