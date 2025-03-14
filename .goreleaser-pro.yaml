@@ -10,12 +10,13 @@ nightly:
 
 npms:
   - name: "@goreleaser/goreleaser"
-    repository: https://github.com/goreleaser/goreleaser
+    repository: "git+https://github.com/goreleaser/goreleaser.git"
     bugs: https://github.com/goreleaser/goreleaser/issues
     description: Release engineering, simplified
     homepage: https://goreleaser.com
     license: MIT
     author: "Carlos Alexandro Becker <carlos@becker.software>"
+    access: public
     keywords:
       - release
       - golang
