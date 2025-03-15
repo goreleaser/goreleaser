@@ -3,13 +3,16 @@
   <h3 align="center">GoReleaser</h3>
   <p align="center">Release engineering, simplified.</p>
   <p align="center">
-    <img alt="Golang" src="./www/docs/static/go.svg" height="60" />
+    <img alt="Go" src="./www/docs/static/go-light.svg#gh-light-mode-only" height="60" />
+    <img alt="Go" src="./www/docs/static/go-dark.svg#gh-dark-mode-only" height="60" />
     <img alt="Rust" src="./www/docs/static/rust-light.svg#gh-light-mode-only" height="60" />
     <img alt="Rust" src="./www/docs/static/rust-dark.svg#gh-dark-mode-only" height="60" />
-    <img alt="Zig" src="./www/docs/static/zig.svg" height="60" />
+    <img alt="Zig" src="./www/docs/static/zig-light.svg#gh-light-mode-only" height="60" />
+    <img alt="Zig" src="./www/docs/static/zig-dark.svg#gh-dark-mode-only" height="60" />
     <img alt="Bun" src="./www/docs/static/bun-light.svg#gh-light-mode-only" height="60" />
     <img alt="Bun" src="./www/docs/static/bun-dark.svg#gh-dark-mode-only" height="60" />
-    <img alt="Deno" src="./www/docs/static/deno.svg" height="60" />
+    <img alt="Deno" src="./www/docs/static/deno-light.svg#gh-light-mode-only" height="60" />
+    <img alt="Deno" src="./www/docs/static/deno-dark.svg#gh-dark-mode-only" height="60" />
   </p>
 </p>
 
