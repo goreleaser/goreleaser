@@ -6,6 +6,8 @@
     <img alt="Golang" src="./www/docs/static/go.svg" height="60" />
     <img alt="Rust" src="./www/docs/static/rust.svg" height="60" />
     <img alt="Zig" src="./www/docs/static/zig.svg" height="60" />
+    <img alt="Bun" src="./www/docs/static/bun-light.svg#gh-light-mode-only" height="60" />
+    <img alt="Bun" src="./www/docs/static/bun-dark.svg#gh-dark-mode-only" height="60" />
   </p>
 </p>
 
