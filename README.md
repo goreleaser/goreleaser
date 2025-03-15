@@ -2,8 +2,6 @@
   <img alt="GoReleaser Logo" src="https://avatars2.githubusercontent.com/u/24697112?v=3&s=200" height="200" />
   <h3 align="center">GoReleaser</h3>
   <p align="center">Release engineering, simplified.</p>
-  <hr />
-  <p align="center">Supported languages:</p>
   <p align="center">
     <img alt="Go" src="./www/docs/static/go-light.svg#gh-light-mode-only" height="60" />
     <img alt="Go" src="./www/docs/static/go-dark.svg#gh-dark-mode-only" height="60" />
