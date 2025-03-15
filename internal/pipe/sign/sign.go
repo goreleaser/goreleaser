@@ -8,6 +8,7 @@ import (
 	"os/exec"
 	"path/filepath"
 	"strings"
+	"sync"
 
 	"github.com/caarlos0/log"
 	"github.com/goreleaser/goreleaser/v2/internal/artifact"
@@ -44,17 +45,21 @@ const defaultGpg = "gpg"
 
 // Default sets the Pipes defaults.
 func (Pipe) Default(ctx *context.Context) error {
-	gpgPath, _ := git.Clean(git.Run(ctx, "config", "gpg.program"))
-	if gpgPath == "" {
-		gpgPath = defaultGpg
-	}
+	gpgPath := sync.OnceValue(func() string {
+		if gpg, _ := git.Clean(
+			git.Run(ctx, "config", "gpg.program"),
+		); gpg != "" {
+			return gpg
+		}
+		return defaultGpg
+	})
 
 	ids := ids.New("signs")
 	for i := range ctx.Config.Signs {
 		cfg := &ctx.Config.Signs[i]
 		if cfg.Cmd == "" {
 			// gpgPath is either "gpg" (default) or the user's git config gpg.program value
-			cfg.Cmd = gpgPath
+			cfg.Cmd = gpgPath()
 		}
 		if cfg.Signature == "" {
 			cfg.Signature = "${artifact}.sig"
