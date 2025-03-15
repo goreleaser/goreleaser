@@ -124,6 +124,10 @@ func (Pipe) Run(ctx *context.Context) error {
 				artifact.Or(
 					artifact.ByType(artifact.Binary),
 					artifact.ByType(artifact.LinuxPackage),
+					artifact.ByType(artifact.CArchive),
+					artifact.ByType(artifact.CShared),
+					artifact.ByType(artifact.PyWheel),
+					artifact.ByType(artifact.PySdist),
 				),
 			}
 			// TODO: properly test this

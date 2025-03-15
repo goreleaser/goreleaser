@@ -26,6 +26,7 @@ import (
 	_ "github.com/goreleaser/goreleaser/v2/internal/builders/deno"
 	_ "github.com/goreleaser/goreleaser/v2/internal/builders/golang"
 	_ "github.com/goreleaser/goreleaser/v2/internal/builders/rust"
+	_ "github.com/goreleaser/goreleaser/v2/internal/builders/uv"
 	_ "github.com/goreleaser/goreleaser/v2/internal/builders/zig"
 )
 
@@ -253,6 +254,10 @@ func extFor(target string, build config.BuildDetails) string {
 	// Configure the extensions for shared and static libraries - by default .so and .a respectively -
 	// with overrides for Windows (.dll for shared and .lib for static) and .dylib for macOS.
 	switch build.Buildmode {
+	case "wheel":
+		return ".whl"
+	case "sdist":
+		return ".tar.gz"
 	case "c-shared":
 		if strings.Contains(target, "darwin") {
 			return ".dylib"
