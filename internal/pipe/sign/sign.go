@@ -45,12 +45,13 @@ const defaultGpg = "gpg"
 
 // Default sets the Pipes defaults.
 func (Pipe) Default(ctx *context.Context) error {
-	gpgPath := sync.OnceValue[string](func() string {
-		gpg, _ := git.Clean(git.Run(ctx, "config", "gpg.program"))
-		if gpg == "" {
-			gpg = defaultGpg
+	gpgPath := sync.OnceValue(func() string {
+		if gpg, _ := git.Clean(
+			git.Run(ctx, "config", "gpg.program"),
+		); gpg != "" {
+			return gpg
 		}
-		return gpg
+		return defaultGpg
 	})
 
 	ids := ids.New("signs")
