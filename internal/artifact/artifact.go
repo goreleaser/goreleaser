@@ -91,6 +91,10 @@ const (
 	CArchive
 	// CShared is a C shared library, generated via a CGo build with buildmode=c-shared.
 	CShared
+	// PyWheel is a Python wheel package.
+	PyWheel
+	// PySdist is a Python source distribution package.
+	PySdist
 	// Metadata is an internal goreleaser metadata JSON file.
 	Metadata
 )
@@ -147,6 +151,10 @@ func (t Type) String() string {
 		return "Nixpkg"
 	case Metadata:
 		return "Metadata"
+	case PyWheel:
+		return "Wheel"
+	case PySdist:
+		return "Source Dist"
 	default:
 		return "unknown"
 	}

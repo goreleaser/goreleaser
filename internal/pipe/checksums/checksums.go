@@ -183,6 +183,8 @@ func buildArtifactList(ctx *context.Context) ([]*artifact.Artifact, error) {
 		artifact.ByType(artifact.UploadableSourceArchive),
 		artifact.ByType(artifact.LinuxPackage),
 		artifact.ByType(artifact.SBOM),
+		artifact.ByType(artifact.PyWheel),
+		artifact.ByType(artifact.PySdist),
 	)
 	if len(ctx.Config.Checksum.IDs) > 0 {
 		filter = artifact.And(filter, artifact.ByIDs(ctx.Config.Checksum.IDs...))

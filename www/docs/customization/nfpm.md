@@ -130,6 +130,12 @@ nfpms:
       # Default: '/usr/lib'.
       carchive: /usr/lib/foobar
 
+      # Default: '/usr/lib'.
+      wheel: /usr/lib/foobar
+
+      # Default: '/usr/lib'.
+      sdist: /usr/lib/foobar
+
     # Version Epoch.
     #
     # Default: extracted from `version` if it is semver compatible.
