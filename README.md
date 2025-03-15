@@ -2,6 +2,11 @@
   <img alt="GoReleaser Logo" src="https://avatars2.githubusercontent.com/u/24697112?v=3&s=200" height="140" />
   <h3 align="center">GoReleaser</h3>
   <p align="center">Release engineering, simplified.</p>
+  <p align="center">
+    <img alt="Golang" src="./www/docs/static/go.svg" height="20" />
+    <img alt="Rust" src="./www/docs/static/rust.svg" height="20" />
+    <img alt="Zig" src="./www/docs/static/zig.svg" height="20" />
+  </p>
 </p>
 
 ---
