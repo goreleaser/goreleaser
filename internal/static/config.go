@@ -27,3 +27,9 @@ var DenoExampleConfig []byte
 //
 //go:embed config.rust.yaml
 var RustExampleConfig []byte
+
+// NodeExampleConfig is the config used within goreleaser init --lang node.
+//
+//go:embed config.node.yaml
+var NodeExampleConfig []byte
+
