@@ -37,6 +37,9 @@ func TestWithDefaults(t *testing.T) {
 	t.Run("valid", func(t *testing.T) {
 		build, err := Default.WithDefaults(config.Build{
 			Dir: "./testdata",
+			InternalDefaults: config.BuildInternalDefaults{
+				Binary: true,
+			},
 		})
 		require.NoError(t, err)
 		require.Equal(t, config.Build{
@@ -48,18 +51,31 @@ func TestWithDefaults(t *testing.T) {
 			BuildDetails: config.BuildDetails{
 				Buildmode: "wheel",
 			},
+			InternalDefaults: config.BuildInternalDefaults{
+				Binary: true,
+			},
 		}, build)
+	})
+
+	t.Run("user set binary", func(t *testing.T) {
+		_, err := Default.WithDefaults(config.Build{
+			Dir:    "./testdata",
+			Binary: "a",
+		})
+		require.ErrorIs(t, err, errSetBinary)
 	})
 
 	t.Run("invalid target", func(t *testing.T) {
 		_, err := Default.WithDefaults(config.Build{
+			Dir:     "./testdata",
 			Targets: []string{"a-b"},
 		})
-		require.Error(t, err)
+		require.NoError(t, err) // will always use none-any.
 	})
 
 	t.Run("invalid config option", func(t *testing.T) {
 		_, err := Default.WithDefaults(config.Build{
+			Dir:  "./testdata",
 			Main: "something",
 		})
 		require.Error(t, err)

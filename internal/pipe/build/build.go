@@ -115,6 +115,7 @@ func buildWithDefaults(ctx *context.Context, build config.Build) (config.Build, 
 	}
 	if build.Binary == "" {
 		build.Binary = ctx.Config.ProjectName
+		build.InternalDefaults.Binary = true
 	}
 	if build.ID == "" {
 		build.ID = ctx.Config.ProjectName

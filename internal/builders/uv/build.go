@@ -26,6 +26,8 @@ var Default = &Builder{}
 var (
 	_ api.Builder          = &Builder{}
 	_ api.DependingBuilder = &Builder{}
+
+	errSetBinary = errors.New("uv: binary name is set by uv itself")
 )
 
 const defaultTarget = "none-any"
@@ -102,6 +104,10 @@ func (b *Builder) WithDefaults(build config.Build) (config.Build, error) {
 
 	if build.Buildmode == "" {
 		build.Buildmode = "wheel"
+	}
+
+	if !build.InternalDefaults.Binary && build.Binary != "" {
+		return build, errSetBinary
 	}
 
 	name := strings.ReplaceAll(proj.Project.Name, "-", "_")
