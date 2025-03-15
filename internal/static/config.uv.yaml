@@ -12,9 +12,9 @@ builds:
   - id: wheel
     builder: uv
     buildmode: wheel
-  - id: dist
+  - id: sdist
     builder: uv
-    buildmode: dist
+    buildmode: sdist
 
 changelog:
   sort: asc

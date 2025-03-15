@@ -64,6 +64,12 @@ func (Pipe) Default(ctx *context.Context) error {
 		if fpm.Libdirs.CArchive == "" {
 			fpm.Libdirs.CArchive = "/usr/lib"
 		}
+		if fpm.Libdirs.Wheel == "" {
+			fpm.Libdirs.Wheel = "/usr/lib"
+		}
+		if fpm.Libdirs.Sdist == "" {
+			fpm.Libdirs.Sdist = "/usr/lib"
+		}
 		if fpm.PackageName == "" {
 			fpm.PackageName = ctx.Config.ProjectName
 		}
@@ -111,6 +117,8 @@ func doRun(ctx *context.Context, fpm config.NFPM) error {
 			artifact.ByType(artifact.Header),
 			artifact.ByType(artifact.CArchive),
 			artifact.ByType(artifact.CShared),
+			artifact.ByType(artifact.PyWheel),
+			artifact.ByType(artifact.PySdist),
 		),
 		artifact.Or(
 			artifact.ByGoos("linux"),
@@ -246,6 +254,8 @@ func create(ctx *context.Context, fpm config.NFPM, format string, artifacts []*a
 		fpm.Libdirs.Header = termuxPrefixedDir(fpm.Libdirs.Header)
 		fpm.Libdirs.CArchive = termuxPrefixedDir(fpm.Libdirs.CArchive)
 		fpm.Libdirs.CShared = termuxPrefixedDir(fpm.Libdirs.CShared)
+		fpm.Libdirs.Wheel = termuxPrefixedDir(fpm.Libdirs.Wheel)
+		fpm.Libdirs.Sdist = termuxPrefixedDir(fpm.Libdirs.Sdist)
 	}
 
 	if artifacts[0].Goos == "android" && format != termuxFormat {
@@ -643,6 +653,10 @@ func artifactPackageDir(bindir string, libdirs config.Libdirs, art *artifact.Art
 		return libdirs.CShared
 	case artifact.CArchive:
 		return libdirs.CArchive
+	case artifact.PySdist:
+		return libdirs.Sdist
+	case artifact.PyWheel:
+		return libdirs.Wheel
 	default:
 		// should never happen
 		return ""
