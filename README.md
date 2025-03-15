@@ -5,7 +5,7 @@
   <p align="center">
     <img alt="Golang" src="./www/docs/static/go.svg" height="60" />
     <img alt="Rust" src="./www/docs/static/rust.svg" height="60" />
-    <img alt="Zig" src="./www/docs/static/zig.svg" height="60" />
+    <img alt="Zig" src="./www/docs/static/zig.svg" height="60" style="color: #F7A41D" />
   </p>
 </p>
 
