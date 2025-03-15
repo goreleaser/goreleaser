@@ -80,6 +80,37 @@ func TestRunPipe(t *testing.T) {
 			},
 		},
 		{
+			name:       "package id",
+			expectPath: "manifests/b/beckersoft/foo/1.2.1",
+			winget: config.Winget{
+				Name:                "foo",
+				Publisher:           "Beckersoft LTDA",
+				PackageIdentifier:   "beckersoft.foo",
+				PublisherURL:        "https://carlosbecker.com",
+				PublisherSupportURL: "https://carlosbecker.com/support",
+				Copyright:           "bla bla bla",
+				CopyrightURL:        "https://goreleaser.com/copyright",
+				Author:              "Carlos Becker",
+				Repository:          config.RepoRef{Owner: "foo", Name: "bar"},
+				CommitAuthor:        config.CommitAuthor{},
+				IDs:                 []string{"foo"},
+				Goamd64:             "v1",
+				SkipUpload:          "false",
+				ShortDescription:    "foo",
+				Description: `long foo bar
+
+				yadaa yada yada loooaaasssss
+
+				sss`,
+				Homepage:        "https://goreleaser.com",
+				License:         "MIT",
+				LicenseURL:      "https://goreleaser.com/eula/",
+				ReleaseNotesURL: "https://github.com/goreleaser/goreleaser/tags/{{.Tag}}",
+				ReleaseNotes:    "{{.Changelog}}",
+				Tags:            []string{"foo", "bar"},
+			},
+		},
+		{
 			name:       "full",
 			expectPath: "manifests/b/Beckersoft LTDA/foo/1.2.1",
 			winget: config.Winget{
@@ -817,7 +848,8 @@ func TestFormatBinary(t *testing.T) {
 			Goamd64: goamd64,
 			Type:    artifact.UploadableBinary,
 			Extra: map[string]interface{}{
-				artifact.ExtraID: id,
+				artifact.ExtraID:     id,
+				artifact.ExtraBinary: "somebin",
 			},
 		}
 		ctx.Artifacts.Add(&art)
