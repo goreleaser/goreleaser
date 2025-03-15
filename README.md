@@ -9,6 +9,7 @@
     <img alt="Zig" src="./www/docs/static/zig.svg" height="60" />
     <img alt="Bun" src="./www/docs/static/bun-light.svg#gh-light-mode-only" height="60" />
     <img alt="Bun" src="./www/docs/static/bun-dark.svg#gh-dark-mode-only" height="60" />
+    <img alt="Deno" src="./www/docs/static/deno.svg" height="60" />
   </p>
 </p>
 
