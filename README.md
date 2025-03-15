@@ -5,16 +5,26 @@
   <hr />
   <p align="center">Supported languages:</p>
   <p align="center">
-    <img alt="Go" src="./www/docs/static/go-light.svg#gh-light-mode-only" height="60" />
-    <img alt="Go" src="./www/docs/static/go-dark.svg#gh-dark-mode-only" height="60" />
-    <img alt="Rust" src="./www/docs/static/rust-light.svg#gh-light-mode-only" height="60" />
-    <img alt="Rust" src="./www/docs/static/rust-dark.svg#gh-dark-mode-only" height="60" />
-    <img alt="Zig" src="./www/docs/static/zig-light.svg#gh-light-mode-only" height="60" />
-    <img alt="Zig" src="./www/docs/static/zig-dark.svg#gh-dark-mode-only" height="60" />
-    <img alt="Bun" src="./www/docs/static/bun-light.svg#gh-light-mode-only" height="60" />
-    <img alt="Bun" src="./www/docs/static/bun-dark.svg#gh-dark-mode-only" height="60" />
-    <img alt="Deno" src="./www/docs/static/deno-light.svg#gh-light-mode-only" height="60" />
-    <img alt="Deno" src="./www/docs/static/deno-dark.svg#gh-dark-mode-only" height="60" />
+    <a href="https://goreleaser.com/customization/builds/go/">
+      <img alt="Go" src="./www/docs/static/go-light.svg#gh-light-mode-only" height="60" />
+      <img alt="Go" src="./www/docs/static/go-dark.svg#gh-dark-mode-only" height="60" />
+    </a>
+    <a href="https://goreleaser.com/customization/builds/rust/">
+      <img alt="Rust" src="./www/docs/static/rust-light.svg#gh-light-mode-only" height="60" />
+      <img alt="Rust" src="./www/docs/static/rust-dark.svg#gh-dark-mode-only" height="60" />
+    </a>
+    <a href="https://goreleaser.com/customization/builds/zig/">
+      <img alt="Zig" src="./www/docs/static/zig-light.svg#gh-light-mode-only" height="60" />
+      <img alt="Zig" src="./www/docs/static/zig-dark.svg#gh-dark-mode-only" height="60" />
+    </a>
+    <a href="https://goreleaser.com/customization/builds/bun/">
+      <img alt="Bun" src="./www/docs/static/bun-light.svg#gh-light-mode-only" height="60" />
+      <img alt="Bun" src="./www/docs/static/bun-dark.svg#gh-dark-mode-only" height="60" />
+    </a>
+    <a href="https://goreleaser.com/customization/builds/deno/">
+      <img alt="Deno" src="./www/docs/static/deno-light.svg#gh-light-mode-only" height="60" />
+      <img alt="Deno" src="./www/docs/static/deno-dark.svg#gh-dark-mode-only" height="60" />
+    </a>
   </p>
 </p>
 
