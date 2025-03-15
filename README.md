@@ -1,8 +1,9 @@
 <p align="center">
   <img alt="GoReleaser Logo" src="https://avatars2.githubusercontent.com/u/24697112?v=3&s=200" height="200" />
-  <h3 align="center">GoReleaser</h3>
-  <p align="center">Release engineering, simplified.</p>
+  <h2 align="center">GoReleaser</h3>
+  <h4 align="center">Release engineering, simplified.</h4>
   <p align="center">
+    Support build systems:
     <img alt="Go" src="./www/docs/static/go-light.svg#gh-light-mode-only" height="60" />
     <img alt="Go" src="./www/docs/static/go-dark.svg#gh-dark-mode-only" height="60" />
     <img alt="Rust" src="./www/docs/static/rust-light.svg#gh-light-mode-only" height="60" />
