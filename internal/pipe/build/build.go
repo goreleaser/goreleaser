@@ -251,14 +251,11 @@ func buildOptionsForTarget(ctx *context.Context, build config.Build, target stri
 	return &buildOpts, nil
 }
 
+// TODO: this should probably be the responsibility of each builder.
 func extFor(target string, build config.BuildDetails) string {
 	// Configure the extensions for shared and static libraries - by default .so and .a respectively -
 	// with overrides for Windows (.dll for shared and .lib for static) and .dylib for macOS.
 	switch build.Buildmode {
-	case "wheel":
-		return ".whl"
-	case "sdist":
-		return ".tar.gz"
 	case "c-shared":
 		if strings.Contains(target, "darwin") {
 			return ".dylib"

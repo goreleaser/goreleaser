@@ -46,11 +46,7 @@ func TestWithDefaults(t *testing.T) {
 			Tool:    "uv",
 			Command: "build",
 			Dir:     "./testdata",
-			Binary:  "testdata-0.1.0-py3-none-any",
 			Targets: []string{defaultTarget},
-			BuildDetails: config.BuildDetails{
-				Buildmode: "wheel",
-			},
 			InternalDefaults: config.BuildInternalDefaults{
 				Binary: true,
 			},
@@ -97,6 +93,85 @@ func TestBuild(t *testing.T) {
 		ProjectName: "proj",
 		Builds: []config.Build{
 			{
+				ID:           "proj",
+				ModTimestamp: fmt.Sprintf("%d", modTime.Unix()),
+			},
+		},
+	})
+
+	build, err := Default.WithDefaults(ctx.Config.Builds[0])
+	require.NoError(t, err)
+	opts := api.Options{
+		Path:   filepath.Join("dist", "proj-all-all", "proj"),
+		Target: Target{},
+	}
+	require.NoError(t, os.MkdirAll(filepath.Dir(opts.Path), 0o755)) // this happens on internal/pipe/build/ when in prod
+	require.NoError(t, Default.Build(ctx, build, opts))
+
+	list := ctx.Artifacts
+	require.NoError(t, list.Visit(func(a *artifact.Artifact) error {
+		s, err := filepath.Rel(folder, a.Path)
+		if err == nil {
+			a.Path = s
+		}
+		return nil
+	}))
+
+	builds := list.List()
+	require.Len(t, builds, 2)
+
+	testlib.RequireEqualArtifacts(t, []*artifact.Artifact{
+		{
+			Name:   "proj-0.1.0-py3-none-any.whl",
+			Path:   "dist/proj-all-all/proj-0.1.0-py3-none-any.whl",
+			Goos:   "all",
+			Goarch: "all",
+			Target: "none-any",
+			Type:   artifact.PyWheel,
+			Extra: artifact.Extras{
+				artifact.ExtraBuilder: "uv",
+				artifact.ExtraExt:     ".whl",
+				artifact.ExtraID:      "proj",
+			},
+		},
+		{
+			Name:   "proj-0.1.0.tar.gz",
+			Path:   "dist/proj-all-all/proj-0.1.0.tar.gz",
+			Goos:   "all",
+			Goarch: "all",
+			Target: "none-any",
+			Type:   artifact.PySdist,
+			Extra: artifact.Extras{
+				artifact.ExtraBuilder: "uv",
+				artifact.ExtraExt:     ".tar.gz",
+				artifact.ExtraID:      "proj",
+			},
+		},
+	}, builds)
+
+	for _, art := range builds {
+		require.FileExists(t, art.Path)
+		fi, err := os.Stat(art.Path)
+		require.NoError(t, err)
+		require.True(t, modTime.Equal(fi.ModTime()))
+	}
+}
+
+func TestBuildSpecificModes(t *testing.T) {
+	testlib.CheckPath(t, "uv")
+
+	folder := testlib.Mktmp(t)
+	cmd := exec.Command("uv", "init", "--name", "proj")
+	cmd.Dir = folder
+	_, err := cmd.CombinedOutput()
+	require.NoError(t, err)
+
+	modTime := time.Now().AddDate(-1, 0, 0).Round(time.Second).UTC()
+	ctx := testctx.NewWithCfg(config.Project{
+		Dist:        filepath.Join(folder, "dist"),
+		ProjectName: "proj",
+		Builds: []config.Build{
+			{
 				ID:           "wheel",
 				ModTimestamp: fmt.Sprintf("%d", modTime.Unix()),
 				BuildDetails: config.BuildDetails{
@@ -113,26 +188,23 @@ func TestBuild(t *testing.T) {
 		},
 	})
 
+	dir := filepath.Join("dist", "proj-all-all")
+	require.NoError(t, os.MkdirAll(dir, 0o755)) // this happens on internal/pipe/build/ when in prod
+
 	wheelBuild, err := Default.WithDefaults(ctx.Config.Builds[0])
 	require.NoError(t, err)
 	wheelOptions := api.Options{
-		Name:   wheelBuild.Binary + ".whl",
-		Path:   filepath.Join("dist", "proj-all-all", wheelBuild.Binary+".whl"),
-		Ext:    ".whl",
+		Path:   filepath.Join(dir, "proj"),
 		Target: Target{},
 	}
-	require.NoError(t, os.MkdirAll(filepath.Dir(wheelOptions.Path), 0o755)) // this happens on internal/pipe/build/ when in prod
 	require.NoError(t, Default.Build(ctx, wheelBuild, wheelOptions))
 
 	sdistBuild, err := Default.WithDefaults(ctx.Config.Builds[1])
 	require.NoError(t, err)
 	sdistOptions := api.Options{
-		Name:   sdistBuild.Binary + ".tar.gz",
-		Path:   filepath.Join("dist", "proj-all-all", sdistBuild.Binary+".tar.gz"),
-		Ext:    ".tar.gz",
+		Path:   filepath.Join(dir, "proj"),
 		Target: Target{},
 	}
-	require.NoError(t, os.MkdirAll(filepath.Dir(sdistOptions.Path), 0o755)) // this happens on internal/pipe/build/ when in prod
 	require.NoError(t, Default.Build(ctx, sdistBuild, sdistOptions))
 
 	list := ctx.Artifacts
@@ -150,7 +222,7 @@ func TestBuild(t *testing.T) {
 	testlib.RequireEqualArtifacts(t, []*artifact.Artifact{
 		{
 			Name:   "proj-0.1.0-py3-none-any.whl",
-			Path:   filepath.ToSlash(wheelOptions.Path),
+			Path:   "dist/proj-all-all/proj-0.1.0-py3-none-any.whl",
 			Goos:   "all",
 			Goarch: "all",
 			Target: "none-any",
@@ -163,7 +235,7 @@ func TestBuild(t *testing.T) {
 		},
 		{
 			Name:   "proj-0.1.0.tar.gz",
-			Path:   filepath.ToSlash(sdistOptions.Path),
+			Path:   "dist/proj-all-all/proj-0.1.0.tar.gz",
 			Goos:   "all",
 			Goarch: "all",
 			Target: "none-any",

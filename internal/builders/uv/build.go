@@ -97,25 +97,8 @@ func (b *Builder) WithDefaults(build config.Build) (config.Build, error) {
 		return build, errors.New("main is not used for uv")
 	}
 
-	proj, err := pyproject.Open(filepath.Join(build.Dir, "pyproject.toml"))
-	if err != nil {
-		return build, fmt.Errorf("uv: could not open pyproject.toml: %w", err)
-	}
-
-	if build.Buildmode == "" {
-		build.Buildmode = "wheel"
-	}
-
 	if !build.InternalDefaults.Binary && build.Binary != "" {
 		return build, errSetBinary
-	}
-
-	name := strings.ReplaceAll(proj.Project.Name, "-", "_")
-	switch build.Buildmode {
-	case "wheel":
-		build.Binary = fmt.Sprintf("%s-%s-py3-none-any", name, proj.Project.Version)
-	case "sdist":
-		build.Binary = fmt.Sprintf("%s-%s", name, proj.Project.Version)
 	}
 
 	if err := common.ValidateNonGoConfig(build, common.WithBuildMode); err != nil {
@@ -127,36 +110,38 @@ func (b *Builder) WithDefaults(build config.Build) (config.Build, error) {
 
 // Build implements build.Builder.
 func (b *Builder) Build(ctx *context.Context, build config.Build, options api.Options) error {
-	var (
-		atype      = artifact.PyWheel
-		buildFlags = []string{"--wheel"}
-	)
-	if build.Buildmode == "sdist" {
-		atype = artifact.PySdist
-		buildFlags = []string{"--sdist"}
+	proj, err := pyproject.Open(filepath.Join(build.Dir, "pyproject.toml"))
+	if err != nil {
+		return fmt.Errorf("uv: could not open pyproject.toml: %w", err)
 	}
 
-	a := &artifact.Artifact{
-		Type:   atype,
-		Path:   options.Path,
-		Name:   options.Name,
-		Goos:   "all",
-		Goarch: "all",
-		Target: options.Target.String(),
-		Extra: map[string]interface{}{
-			artifact.ExtraExt:     options.Ext,
-			artifact.ExtraID:      build.ID,
-			artifact.ExtraBuilder: "uv",
-		},
+	// options.Path will be dist/projectname-all-all/projectname.
+
+	var artifacts []*artifact.Artifact
+	var buildFlags []string
+	switch build.Buildmode {
+	case "wheel":
+		buildFlags = []string{"--wheel"}
+		artifacts = append(artifacts, wheel(proj, build, options))
+	case "sdist":
+		buildFlags = []string{"--sdist"}
+		artifacts = append(artifacts, sdist(proj, build, options))
+	case "", "all":
+		artifacts = append(
+			artifacts,
+			wheel(proj, build, options),
+			sdist(proj, build, options),
+		)
+	default:
+		return fmt.Errorf("uv: invalid buildmode %q", build.Buildmode)
+
 	}
 
 	env := []string{}
 	env = append(env, ctx.Env.Strings()...)
 
 	tpl := tmpl.New(ctx).
-		WithBuildOptions(options).
-		WithEnvS(env).
-		WithArtifact(a)
+		WithEnvS(env)
 
 	uvbin, err := tpl.Apply(build.Tool)
 	if err != nil {
@@ -186,10 +171,48 @@ func (b *Builder) Build(ctx *context.Context, build config.Build, options api.Op
 		return err
 	}
 
-	if err := common.ChTimes(build, tpl, a); err != nil {
-		return err
-	}
+	for _, a := range artifacts {
+		if err := common.ChTimes(build, tpl, a); err != nil {
+			return err
+		}
 
-	ctx.Artifacts.Add(a)
+		ctx.Artifacts.Add(a)
+	}
 	return nil
+}
+
+func wheel(proj pyproject.PyProject, build config.Build, options api.Options) *artifact.Artifact {
+	pname := strings.ReplaceAll(proj.Project.Name, "-", "_")
+	name := fmt.Sprintf("%s-%s-py3-none-any.whl", pname, proj.Project.Version)
+	return &artifact.Artifact{
+		Type:   artifact.PyWheel,
+		Name:   name,
+		Path:   filepath.Join(filepath.Dir(options.Path), name),
+		Goos:   "all",
+		Goarch: "all",
+		Target: options.Target.String(),
+		Extra: map[string]interface{}{
+			artifact.ExtraExt:     ".whl",
+			artifact.ExtraID:      build.ID,
+			artifact.ExtraBuilder: "uv",
+		},
+	}
+}
+
+func sdist(proj pyproject.PyProject, build config.Build, options api.Options) *artifact.Artifact {
+	pname := strings.ReplaceAll(proj.Project.Name, "-", "_")
+	name := fmt.Sprintf("%s-%s.tar.gz", pname, proj.Project.Version)
+	return &artifact.Artifact{
+		Type:   artifact.PySdist,
+		Name:   name,
+		Path:   filepath.Join(filepath.Dir(options.Path), name),
+		Goos:   "all",
+		Goarch: "all",
+		Target: options.Target.String(),
+		Extra: map[string]interface{}{
+			artifact.ExtraExt:     ".tar.gz",
+			artifact.ExtraID:      build.ID,
+			artifact.ExtraBuilder: "uv",
+		},
+	}
 }
