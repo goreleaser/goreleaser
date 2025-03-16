@@ -11,12 +11,7 @@ Simply set the `builder` to `uv` and set the `buildmode` you want:
 
 ```yaml title=".goreleaser.yaml"
 builds:
-  - id: wheel
-    buildmode: wheel
-    builder: uv
-  - id: sdist
-    buildmode: sdist
-    builder: uv
+  - builder: uv
 ```
 
 The `.whl` and `.tar.gz` files can then be signed, checksummed, used inside
@@ -39,11 +34,13 @@ builds:
     # Path to project's (sub)directory containing the code.
     # This is the working directory for the uv build command(s).
     #
-    # Default: '.'.
+    # Default: ".".
     dir: my-app
 
     # The build mode.
-    # Valid options: 'wheel', 'sdist'.
+    #
+    # Valid options: "wheel", "sdist", "all".
+    # Default: "all".
     buildmode: wheel
 
     # Set a specific uv binary to use when building.
