@@ -130,10 +130,10 @@ nfpms:
       # Default: '/usr/lib'.
       carchive: /usr/lib/foobar
 
-      # Default: '/usr/lib'.
+      # Default: '/usr/share/python-wheels'.
       wheel: /usr/lib/foobar
 
-      # Default: '/usr/lib'.
+      # Default: '/usr/share/python-sdist'.
       sdist: /usr/lib/foobar
 
     # Version Epoch.

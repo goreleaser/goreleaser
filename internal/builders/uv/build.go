@@ -134,7 +134,6 @@ func (b *Builder) Build(ctx *context.Context, build config.Build, options api.Op
 		)
 	default:
 		return fmt.Errorf("uv: invalid buildmode %q", build.Buildmode)
-
 	}
 
 	env := []string{}

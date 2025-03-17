@@ -65,10 +65,7 @@ func (Pipe) Default(ctx *context.Context) error {
 			fpm.Libdirs.CArchive = "/usr/lib"
 		}
 		if fpm.Libdirs.Wheel == "" {
-			fpm.Libdirs.Wheel = "/usr/lib"
-		}
-		if fpm.Libdirs.Sdist == "" {
-			fpm.Libdirs.Sdist = "/usr/lib"
+			fpm.Libdirs.Wheel = "/usr/share/python-wheels"
 		}
 		if fpm.PackageName == "" {
 			fpm.PackageName = ctx.Config.ProjectName
