@@ -214,8 +214,8 @@ func (a Artifact) String() string {
 //
 // If that fails as well, it'll error.
 func Extra[T any](a Artifact, key string) (T, error) {
-	ex := a.Extra[key]
-	if ex == nil {
+	ex, ok := a.Extra[key]
+	if ex == nil || !ok {
 		return *(new(T)), nil
 	}
 
@@ -238,12 +238,19 @@ func Extra[T any](a Artifact, key string) (T, error) {
 // ExtraOr returns the Extra field with the given key or the or value specified
 // if it is nil.
 //
-// Deprecated: this is not guaranteed to work, prefer using [Extra].
+// This should only be used when the extra field is not mandatory for the type
+// of artifact.
+//
+// Prefer using [Extra] and handling errors.
 func ExtraOr[T any](a Artifact, key string, or T) T {
 	if a.Extra[key] == nil {
 		return or
 	}
-	return a.Extra[key].(T)
+	t, err := Extra[T](a, key)
+	if err != nil {
+		return or
+	}
+	return t
 }
 
 // Checksum calculates the checksum of the artifact.

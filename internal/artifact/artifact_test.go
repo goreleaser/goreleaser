@@ -446,6 +446,8 @@ func TestExtra(t *testing.T) {
 			},
 			"unsupported": func() {},
 			"binaries":    []string{"foo", "bar"},
+			"json":        []interface{}{"foo", "bar"},
+			"invalidjson": map[string]interface{}{"foo": "bar"},
 		},
 	}
 
@@ -474,6 +476,19 @@ func TestExtra(t *testing.T) {
 		require.NoError(t, err)
 		require.Equal(t, []string{"foo", "bar"}, binaries)
 		require.Equal(t, []string{"foo", "bar"}, ExtraOr(a, "binaries", []string{}))
+	})
+
+	t.Run("json", func(t *testing.T) {
+		binaries, err := Extra[[]string](a, "json")
+		require.NoError(t, err)
+		require.Equal(t, []string{"foo", "bar"}, binaries)
+		require.Equal(t, []string{"foo", "bar"}, ExtraOr(a, "json", []string{}))
+	})
+
+	t.Run("invalid json", func(t *testing.T) {
+		_, err := Extra[[]string](a, "invalidjson")
+		require.Error(t, err)
+		require.Equal(t, "baz", ExtraOr(a, "invalidjson", "baz"))
 	})
 
 	t.Run("unmarshal error", func(t *testing.T) {
