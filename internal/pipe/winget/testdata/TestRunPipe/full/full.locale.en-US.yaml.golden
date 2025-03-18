@@ -17,9 +17,9 @@ ShortDescription: foo
 Description: |-
   long foo bar
 
-  				yadaa yada yada loooaaasssss
+          yadaa yada yada loooaaasssss
 
-  				sss
+          sss
 Moniker: foo
 Tags:
   - foo

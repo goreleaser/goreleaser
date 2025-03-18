@@ -242,7 +242,7 @@ func (p Pipe) doRun(ctx *context.Context, winget config.Winget, cl client.Releas
 		Copyright:           winget.Copyright,
 		CopyrightURL:        winget.CopyrightURL,
 		ShortDescription:    winget.ShortDescription,
-		Description:         winget.Description,
+		Description:         strings.ReplaceAll(winget.Description, "\t", "  "),
 		Moniker:             winget.Name,
 		Tags:                winget.Tags,
 		ReleaseNotes:        winget.ReleaseNotes,
