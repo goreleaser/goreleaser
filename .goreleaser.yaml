@@ -232,6 +232,8 @@ brews:
     dependencies:
       - name: go
         type: optional
+      - name: node
+        type: optional
       - name: rustup
         type: optional
       - name: zig

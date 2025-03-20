@@ -63,6 +63,8 @@ func newInitCmd() *initCmd {
 				example = static.BunExampleConfig
 			case "deno":
 				example = static.DenoExampleConfig
+			case "node":
+				example = static.NodeExampleConfig
 			default:
 				return fmt.Errorf("invalid language: %s", root.lang)
 			}
@@ -99,7 +101,7 @@ func newInitCmd() *initCmd {
 	_ = cmd.RegisterFlagCompletionFunc(
 		"language",
 		cobra.FixedCompletions(
-			[]string{"go", "bun", "deno", "rust", "zig"},
+			[]string{"go", "bun", "deno", "rust", "zig", "node"},
 			cobra.ShellCompDirectiveDefault,
 		),
 	)
@@ -134,15 +136,19 @@ func langDetect() string {
 	code := func(s string) string {
 		return codeStyle.Render(s)
 	}
-	for lang, file := range map[string]string{
-		"zig":  "build.zig",
-		"rust": "Cargo.toml",
-		"bun":  "bun.lockb",
-		"deno": "deno.json",
+
+	for lang, files := range map[string][]string{
+		"zig":  {"build.zig"},
+		"rust": {"Cargo.toml"},
+		"bun":  {"bun.lockb"},
+		"deno": {"deno.json"},
+		"node": {"package-lock.json", "yarn.lock", "pnpm-lock.yaml"},
 	} {
-		if _, err := os.Stat(file); err == nil {
-			log.Info("project contains a " + code(file) + " file, using default " + code(lang) + " configuration")
-			return lang
+		for _, file := range files {
+			if _, err := os.Stat(file); err == nil {
+				log.Info("project contains a " + code(file) + " file, using default " + code(lang) + " configuration")
+				return lang
+			}
 		}
 	}
 
