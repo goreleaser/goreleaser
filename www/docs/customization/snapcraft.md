@@ -23,8 +23,11 @@ snapcrafts:
     # Default: 'default'.
     id: foo
 
-    # Build IDs for the builds you want to create snapcraft packages for.
-    builds:
+    # IDs of the builds which should be archived in this package.
+    #
+    # <!-- md:inline_version v2.8 --> (use 'builds' in previous versions).
+    # Default: empty (include all).
+    ids:
       - foo
       - bar
 

@@ -10,6 +10,7 @@ import (
 	"path/filepath"
 	"strings"
 
+	"github.com/Masterminds/semver/v3"
 	"github.com/caarlos0/log"
 	"github.com/goreleaser/goreleaser/v2/internal/artifact"
 	"github.com/goreleaser/goreleaser/v2/internal/tmpl"
@@ -28,6 +29,8 @@ var (
 type gitlabClient struct {
 	client   *gitlab.Client
 	authType gitlab.AuthType
+
+	isV17OrLater bool
 }
 
 // newGitLab returns a gitlab client implementation.
@@ -66,10 +69,26 @@ func newGitLab(ctx *context.Context, token string, opts ...gitlab.ClientOptionFu
 	if err != nil {
 		return &gitlabClient{}, err
 	}
+
 	return &gitlabClient{
-		client:   client,
-		authType: authType,
+		client:       client,
+		authType:     authType,
+		isV17OrLater: isV17(client),
 	}, nil
+}
+
+func isV17(client *gitlab.Client) bool {
+	v, _, err := client.Version.GetVersion(nil)
+	if err != nil {
+		log.WithError(err).Warn("could not get gitlab version")
+		return false
+	}
+	vv, err := semver.NewVersion(v.Version)
+	if err != nil {
+		log.WithError(err).Warn("could not parse gitlab version")
+		return false
+	}
+	return vv.GreaterThanEqual(semver.New(17, 0, 0, "", ""))
 }
 
 func (c *gitlabClient) checkIsPrivateToken() error {
@@ -533,14 +552,21 @@ func (c *gitlabClient) Upload(
 
 	name := artifact.Name
 	filename := "/" + name
+	opt := &gitlab.CreateReleaseLinkOptions{
+		Name: &name,
+		URL:  &linkURL,
+	}
+	if c.isV17OrLater {
+		opt.DirectAssetPath = &filename
+	} else {
+		opt.FilePath = &filename
+	}
+
 	releaseLink, resp, err := c.client.ReleaseLinks.CreateReleaseLink(
 		projectID,
 		releaseID,
-		&gitlab.CreateReleaseLinkOptions{
-			Name:     &name,
-			URL:      &linkURL,
-			FilePath: &filename,
-		})
+		opt,
+	)
 	if err != nil {
 		// this status means the asset already exists
 		if resp != nil && resp.StatusCode == http.StatusBadRequest && releaseLink != nil {

@@ -26,6 +26,6 @@ Here's the list:
 
 [^v2.5]: Added in v2.5.
 
-[^v2.6]: Coming in v2.6.
+[^v2.6]: Added in v2.6.
 
 [^soon]: Coming in a future version.

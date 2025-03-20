@@ -33,6 +33,7 @@ nix:
     url_template: "https://github.mycompany.com/foo/bar/releases/download/{{ .Tag }}/{{ .ArtifactName }}"
 
     # Git author used to commit to the repository.
+    # Templates: allowed.
     commit_author:
       name: goreleaserbot
       email: bot@goreleaser.com

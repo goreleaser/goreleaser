@@ -28,12 +28,10 @@ furies:
     # Config is skipped if empty
     account: "{{ .Env.FURY_ACCOUNT }}"
 
-    # Skip the announcing feature in some conditions, for instance, when
-    # publishing patch releases.
-    # Any value different of 'true' will be considered 'false'.
+    # Skip this configuration in some conditions.
     #
     # Templates: allowed.
-    skip: "{{gt .Patch 0}}"
+    disable: "{{ .IsNightly }}"
 
     # Environment variable name to get the push token from.
     # You might want to change it if you have multiple Fury configurations for
@@ -48,11 +46,12 @@ furies:
       - packages
 
     # Formats to upload.
-    # Available options are `deb` and `rpm`.
+    # Available options are `apk`, `deb`, and `rpm`.
     #
-    # Default: ['deb', 'rpm'].
+    # Default: ['apk', deb', 'rpm'].
     formats:
       - deb
+      - apk # <!-- md:inline_version v2.7 -->.
 ```
 
 [fury]: https://gemfury.com

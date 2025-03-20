@@ -221,6 +221,7 @@ var validLicenses = []string{
 	"stk",
 	"sudo",
 	"sustainableUse",
+	"teamspeak",
 	"tsl",
 	"tcltk",
 	"tost",

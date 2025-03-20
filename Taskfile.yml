@@ -177,6 +177,11 @@ tasks:
       NEXT:
         sh: svu n
     prompt: "This will release {{.NEXT}}. Continue?"
+    preconditions:
+      - sh: '[ $(git symbolic-ref --short HEAD) = "main" ]'
+        msg: Not on main branch
+      - sh: "[ $(git status --porcelain=2 | wc -l) = 0 ]"
+        msg: "Git is dirty"
     cmds:
       - git tag -d nightly
       - git tag {{.NEXT}}
@@ -273,9 +278,16 @@ tasks:
     cmds:
       - ./goreleaser release --clean --timeout 60m {{.SNAPSHOT}}
 
+  nightly:watch:
+    vars:
+      RUN_ID:
+        sh: "gh run list --workflow=nightly-oss.yml --limit 1 --json databaseId | jq -r '.[] | .databaseId'"
+    cmds:
+      - gh run watch {{.RUN_ID}}
+
   nightly:
     cmds:
       - gh run list --workflow=nightly-oss.yml
       - gh workflow run nightly-oss.yml
-      - sleep 30
-      - gh run watch
+      - sleep 5
+      - task: nightly:watch

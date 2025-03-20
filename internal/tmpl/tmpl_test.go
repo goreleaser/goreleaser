@@ -40,7 +40,7 @@ func TestWithArtifact(t *testing.T) {
 		}),
 		testctx.WithEnv(map[string]string{
 			"FOO":          "bar",
-			"MULTILINE":    "something with\nmultiple lines\nremove this\nto test things",
+			"MULTILINE":    "something with\nmultiple lines\nremove this\n to test things",
 			"WITH_SLASHES": "foo/bar",
 		}),
 		testctx.WithSemver(1, 2, 3, ""),
@@ -109,7 +109,7 @@ func TestWithArtifact(t *testing.T) {
 		"artifact dir: " + filepath.FromSlash("/tmp"): "artifact dir: {{ dir .ArtifactPath }}",
 
 		"remove this": "{{ filter .Env.MULTILINE \".*remove.*\" }}",
-		"something with\nmultiple lines\nto test things": "{{ reverseFilter .Env.MULTILINE \".*remove.*\" }}",
+		"something with\nmultiple lines\n to test things": "{{ reverseFilter .Env.MULTILINE \".*remove.*\" }}",
 
 		// maps
 		"123": `{{ $m := map "a" "1" "b" "2" }}{{ index $m "a" }}{{ indexOrDefault $m "b" "10" }}{{ indexOrDefault $m "c" "3" }}{{ index $m "z" }}`,

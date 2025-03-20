@@ -11,6 +11,7 @@ on:
       - "Taskfile.yml"
       - "Dockerfile"
       - ".github/workflows/*.yml"
+      - "dagger/*"
 
 permissions:
   contents: read
@@ -22,10 +23,10 @@ jobs:
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4
         with:
           fetch-depth: 0
-      - uses: dagger/dagger-for-github@v7.0.4
+      - uses: dagger/dagger-for-github@8.0.0
         with:
           args: build -o ./goreleaser
           engine-stop: false
-      - uses: dagger/dagger-for-github@v7.0.4
+      - uses: dagger/dagger-for-github@8.0.0
         with:
           args: test coverage-report -o ./coverage.txt

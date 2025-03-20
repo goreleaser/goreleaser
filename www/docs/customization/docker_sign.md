@@ -26,7 +26,7 @@ docker_signs:
 
     # Command line arguments for the command.
     #
-    # Default: ["sign", "--key=cosign.key", "${artifact}", "--yes"].
+    # Default: ["sign", "--key=cosign.key", "${artifact}@${digest}", "--yes"].
     # Templates: allowed.
     args:
       - "sign"
@@ -83,8 +83,7 @@ docker_signs:
 
 These environment variables might be available in the fields that are templateable:
 
-- `${artifact}`[^1]: the path to the artifact that will be signed (including the
-  digest[^2])
+- `${artifact}`[^1]: the path to the artifact that will be signed
 - `${digest}`[^2]: the digest of the image/manifest that will be signed
 - `${artifactID}`: the ID of the artifact that will be signed
 - `${certificate}`: the certificate file name, if provided

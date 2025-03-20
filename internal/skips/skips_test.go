@@ -12,9 +12,9 @@ import (
 
 func TestString(t *testing.T) {
 	for expect, keys := range map[string][]skips.Key{
-		"":                    nil,
-		"ko and sbom":         {skips.SBOM, skips.Ko},
-		"before, ko and sbom": {skips.SBOM, skips.Ko, skips.Before},
+		"":                     nil,
+		"ko and sbom":          {skips.SBOM, skips.Ko},
+		"before, ko, and sbom": {skips.SBOM, skips.Ko, skips.Before},
 	} {
 		t.Run(expect, func(t *testing.T) {
 			ctx := testctx.New(testctx.Skip(keys...))

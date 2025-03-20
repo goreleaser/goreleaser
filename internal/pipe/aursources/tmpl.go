@@ -20,6 +20,7 @@ type templateData struct {
 	Prepare      string
 	Build        string
 	Package      string
+	Install      string
 }
 
 type sources struct {
@@ -61,6 +62,9 @@ optdepends=({{ pkgArray . }})
 {{- end }}
 {{- with .Backup }}
 backup=({{ pkgArray . }})
+{{- end }}
+{{- if .Install }}
+install={{ .Name }}.install
 {{- end }}
 
 {{- with .Sources }}

@@ -10,10 +10,26 @@ import (
 	"github.com/goreleaser/goreleaser/v2/pkg/config"
 )
 
-func loadConfig(path string) (config.Project, error) {
+var proExplain = `Your configuration is for GoReleaser Pro.
+You are currently using GoReleaser OSS, so all the Pro-only features will be ignored.
+Use GoReleaser Pro to enable all the features.`
+
+func loadConfig(strict bool, path string) (config.Project, error) {
 	p, path, err := loadConfigCheck(path)
 	if err == nil {
 		log.WithField("path", path).Debug("using configuration")
+	}
+	if errors.Is(err, config.ErrProConfig) {
+		if strict {
+			return p, err
+		}
+		log.WithField("explanation", proExplain).
+			Warnf(
+				"%s %s",
+				logext.Warning("your configuration specifies"),
+				logext.Keyword("pro: true"),
+			)
+		return p, nil
 	}
 	return p, err
 }

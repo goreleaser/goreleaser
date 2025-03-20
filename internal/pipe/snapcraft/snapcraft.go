@@ -13,6 +13,7 @@ import (
 
 	"github.com/caarlos0/log"
 	"github.com/goreleaser/goreleaser/v2/internal/artifact"
+	"github.com/goreleaser/goreleaser/v2/internal/deprecate"
 	"github.com/goreleaser/goreleaser/v2/internal/gio"
 	"github.com/goreleaser/goreleaser/v2/internal/ids"
 	"github.com/goreleaser/goreleaser/v2/internal/pipe"
@@ -118,6 +119,10 @@ func (Pipe) Default(ctx *context.Context) error {
 		if snap.NameTemplate == "" {
 			snap.NameTemplate = defaultNameTemplate
 		}
+		if len(snap.Builds) > 0 {
+			deprecate.Notice(ctx, "snaps.builds")
+			snap.IDs = append(snap.IDs, snap.Builds...)
+		}
 		grade, err := tmpl.New(ctx).Apply(snap.Grade)
 		if err != nil {
 			return err
@@ -141,11 +146,6 @@ func (Pipe) Default(ctx *context.Context) error {
 				snap.ChannelTemplates = []string{"edge", "beta"}
 			default:
 				snap.ChannelTemplates = []string{"edge", "beta", "candidate", "stable"}
-			}
-		}
-		if len(snap.Builds) == 0 {
-			for _, b := range ctx.Config.Builds {
-				snap.Builds = append(snap.Builds, b.ID)
 			}
 		}
 		ids.Inc(snap.ID)
@@ -190,12 +190,15 @@ func doRun(ctx *context.Context, snap config.Snapcraft) error {
 	}
 
 	g := semerrgroup.NewBlockingFirst(semerrgroup.New(ctx.Parallelism))
+	filters := []artifact.Filter{
+		artifact.ByGoos("linux"),
+		artifact.ByType(artifact.Binary),
+	}
+	if len(snap.IDs) > 0 {
+		filters = append(filters, artifact.ByIDs(snap.IDs...))
+	}
 	for platform, binaries := range ctx.Artifacts.Filter(
-		artifact.And(
-			artifact.ByGoos("linux"),
-			artifact.ByType(artifact.Binary),
-			artifact.ByIDs(snap.Builds...),
-		),
+		artifact.And(filters...),
 	).GroupByPlatform() {
 		arch := linuxArch(platform)
 		if !isValidArch(arch) {

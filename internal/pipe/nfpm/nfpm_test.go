@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"github.com/goreleaser/goreleaser/v2/internal/artifact"
+	"github.com/goreleaser/goreleaser/v2/internal/pipe"
 	"github.com/goreleaser/goreleaser/v2/internal/skips"
 	"github.com/goreleaser/goreleaser/v2/internal/testctx"
 	"github.com/goreleaser/goreleaser/v2/internal/testlib"
@@ -512,6 +513,53 @@ func TestRunPipe(t *testing.T) {
 	require.Len(t, ctx.Config.NFPMs[0].Contents, 8, "should not modify the config file list")
 }
 
+func TestSkipOne(t *testing.T) {
+	t.Helper()
+	folder := t.TempDir()
+	dist := filepath.Join(folder, "dist")
+	require.NoError(t, os.Mkdir(dist, 0o755))
+	binPath := filepath.ToSlash(filepath.Join(dist, "mybin"))
+	require.NoError(t, os.WriteFile(binPath, nil, 0o755))
+	ctx := testctx.NewWithCfg(config.Project{
+		ProjectName: "mybin",
+		Dist:        dist,
+		NFPMs: []config.NFPM{
+			{
+				ID: "this configuration will be ignored as it has no formats",
+			},
+			{
+				Formats: []string{"deb", "rpm"},
+			},
+		},
+	}, testctx.WithVersion("1.0.0"))
+	for _, goos := range []string{"linux", "darwin"} {
+		for _, goarch := range []string{"amd64", "arm64"} {
+			ctx.Artifacts.Add(&artifact.Artifact{
+				Name:   "subdir/mybin",
+				Path:   binPath,
+				Goarch: goarch,
+				Goos:   goos,
+				Type:   artifact.Binary,
+			})
+		}
+	}
+	require.NoError(t, Pipe{}.Default(ctx))
+	err := Pipe{}.Run(ctx)
+	require.True(t, pipe.IsSkip(err), err)
+
+	packages := ctx.Artifacts.Filter(artifact.ByType(artifact.LinuxPackage)).List()
+	require.Len(t, packages, 4)
+	for _, pkg := range packages {
+		require.NotEmpty(t, pkg.Format())
+		require.Contains(t, []string{
+			"mybin_1.0.0_linux_arm64.deb",
+			"mybin_1.0.0_linux_amd64.deb",
+			"mybin_1.0.0_linux_amd64.rpm",
+			"mybin_1.0.0_linux_arm64.rpm",
+		}, pkg.Name, "package name is not expected")
+	}
+}
+
 func TestRunPipeConventionalNameTemplate(t *testing.T) {
 	t.Run("regular", func(t *testing.T) { doTestRunPipeConventionalNameTemplate(t, false) })
 	t.Run("snapshot", func(t *testing.T) { doTestRunPipeConventionalNameTemplate(t, true) })
@@ -892,7 +940,7 @@ func TestNoBuildsFound(t *testing.T) {
 		NFPMs: []config.NFPM{
 			{
 				Formats: []string{"deb"},
-				Builds:  []string{"nope"},
+				IDs:     []string{"nope"},
 			},
 		},
 	})

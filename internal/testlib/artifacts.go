@@ -1,6 +1,8 @@
 package testlib
 
 import (
+	"maps"
+	"reflect"
 	"slices"
 	"strings"
 	"testing"
@@ -14,7 +16,37 @@ func RequireEqualArtifacts(tb testing.TB, expected, got []*artifact.Artifact) {
 	slices.SortFunc(expected, artifactSort)
 	slices.SortFunc(got, artifactSort)
 	require.Equal(tb, filenames(expected), filenames(got))
-	require.Equal(tb, expected, got)
+	for i := range expected {
+		a, b := *expected[i], *got[i]
+		require.ElementsMatch(
+			tb,
+			slices.Collect(maps.Keys(a.Extra)),
+			slices.Collect(maps.Keys(b.Extra)),
+			"extra keys don't match",
+		)
+		for k, v := range a.Extra {
+			if reflect.TypeOf(v).Kind() == reflect.Slice {
+				require.ElementsMatch(
+					tb,
+					v,
+					b.Extra[k],
+					"extra values don't match",
+				)
+				continue
+			}
+			require.EqualValues(
+				tb,
+				a.Extra[k],
+				b.Extra[k],
+				"extra values don't match",
+			)
+		}
+
+		// Delete the extra map to avoid running into order errors.
+		a.Extra = nil
+		b.Extra = nil
+		require.Equal(tb, a, b, "elements don't match")
+	}
 }
 
 func artifactSort(a, b *artifact.Artifact) int {

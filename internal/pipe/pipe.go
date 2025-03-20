@@ -73,3 +73,37 @@ func (e *SkipMemento) Evaluate() error {
 	}
 	return Skip(strings.Join(e.skips, ", "))
 }
+
+// DetailsOf gets the details of an error, if available.
+func DetailsOf(err error) map[string]any {
+	if de, ok := err.(errDetailed); ok {
+		return de.details
+	}
+	return map[string]any{}
+}
+
+// NewDetailedError makes an error with details, mainly used for logging.
+func NewDetailedError(err error, pairs ...any) error {
+	details := map[string]any{}
+	if len(pairs)%2 != 0 {
+		pairs = append(pairs, "missing value")
+	}
+	for i := 0; i < len(pairs); i += 2 {
+		details[fmt.Sprintf("%v", pairs[i])] = pairs[i+1]
+	}
+	return errDetailed{
+		err:     err,
+		details: details,
+	}
+}
+
+type errDetailed struct {
+	err     error
+	details map[string]any
+}
+
+// Error implements error.
+func (e errDetailed) Error() string { return e.err.Error() }
+
+// Unwrap implements unwrap.
+func (e errDetailed) Unwrap() error { return e.err }

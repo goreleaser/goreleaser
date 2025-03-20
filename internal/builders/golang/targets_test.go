@@ -1,4 +1,4 @@
-package buildtarget
+package golang
 
 import (
 	"fmt"
@@ -33,6 +33,8 @@ func TestAllBuildTargets(t *testing.T) {
 			"mips64le",
 			"riscv64",
 			"loong64",
+			"ppc64",
+			"ppc64le",
 		},
 		Goamd64: []string{
 			"v1",
@@ -100,7 +102,7 @@ func TestAllBuildTargets(t *testing.T) {
 				Goppc64: "power8",
 			}, {
 				Goarch:  "ppc64le",
-				Goppc64: "power8",
+				Goppc64: "power9",
 			}, {
 				Goarch:    "riscv64",
 				Goriscv64: "rva20u64",
@@ -109,7 +111,7 @@ func TestAllBuildTargets(t *testing.T) {
 	}
 
 	t.Run("go 1.18", func(t *testing.T) {
-		result, err := List(build)
+		result, err := listTargets(build)
 		require.NoError(t, err)
 		require.Equal(t, []string{
 			"linux_386_softfloat",
@@ -125,6 +127,10 @@ func TestAllBuildTargets(t *testing.T) {
 			"linux_mips64le_softfloat",
 			"linux_riscv64_rva22u64",
 			"linux_loong64",
+			"linux_ppc64_power9",
+			"linux_ppc64_power10",
+			"linux_ppc64le_power8",
+			"linux_ppc64le_power10",
 			"darwin_amd64_v2",
 			"darwin_amd64_v3",
 			"darwin_amd64_v4",
@@ -157,7 +163,7 @@ func TestAllBuildTargets(t *testing.T) {
 	})
 
 	t.Run("invalid goos", func(t *testing.T) {
-		_, err := List(config.Build{
+		_, err := listTargets(config.Build{
 			Goos:    []string{"invalid"},
 			Goarch:  []string{"amd64"},
 			Goamd64: []string{"v2"},
@@ -166,7 +172,7 @@ func TestAllBuildTargets(t *testing.T) {
 	})
 
 	t.Run("invalid goarch", func(t *testing.T) {
-		_, err := List(config.Build{
+		_, err := listTargets(config.Build{
 			Goos:   []string{"linux"},
 			Goarch: []string{"invalid"},
 		})
@@ -174,7 +180,7 @@ func TestAllBuildTargets(t *testing.T) {
 	})
 
 	t.Run("invalid goarm", func(t *testing.T) {
-		_, err := List(config.Build{
+		_, err := listTargets(config.Build{
 			Goos:   []string{"linux"},
 			Goarch: []string{"arm"},
 			Goarm:  []string{"invalid"},
@@ -183,7 +189,7 @@ func TestAllBuildTargets(t *testing.T) {
 	})
 
 	t.Run("invalid gomips", func(t *testing.T) {
-		_, err := List(config.Build{
+		_, err := listTargets(config.Build{
 			Goos:   []string{"linux"},
 			Goarch: []string{"mips"},
 			Gomips: []string{"invalid"},
@@ -192,7 +198,7 @@ func TestAllBuildTargets(t *testing.T) {
 	})
 
 	t.Run("invalid goamd64", func(t *testing.T) {
-		_, err := List(config.Build{
+		_, err := listTargets(config.Build{
 			Goos:    []string{"linux"},
 			Goarch:  []string{"amd64"},
 			Goamd64: []string{"invalid"},
@@ -261,14 +267,14 @@ func TestGoosGoarchCombos(t *testing.T) {
 	}
 	for _, p := range platforms {
 		t.Run(fmt.Sprintf("%v %v valid=%v", p.os, p.arch, p.valid), func(t *testing.T) {
-			require.Equal(t, p.valid, valid(target{os: p.os, arch: p.arch}))
+			require.Equal(t, p.valid, valid(Target{Goos: p.os, Goarch: p.arch}))
 		})
 	}
 }
 
-func TestList(t *testing.T) {
+func TestListTargets(t *testing.T) {
 	t.Run("success", func(t *testing.T) {
-		targets, err := List(config.Build{
+		targets, err := listTargets(config.Build{
 			Goos:    []string{"linux"},
 			Goarch:  []string{"amd64"},
 			Goamd64: []string{"v2"},
@@ -279,7 +285,7 @@ func TestList(t *testing.T) {
 	})
 
 	t.Run("success with dir", func(t *testing.T) {
-		targets, err := List(config.Build{
+		targets, err := listTargets(config.Build{
 			Goos:    []string{"linux"},
 			Goarch:  []string{"amd64"},
 			Goamd64: []string{"v2"},

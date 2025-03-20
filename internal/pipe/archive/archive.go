@@ -76,6 +76,10 @@ func (Pipe) Default(ctx *context.Context) error {
 		if archive.ID == "" {
 			archive.ID = "default"
 		}
+		if len(archive.Builds) > 0 {
+			deprecate.Notice(ctx, "archives.builds")
+			archive.IDs = append(archive.IDs, archive.Builds...)
+		}
 		if len(archive.Files) == 0 {
 			archive.Files = []config.File{
 				{Source: "license*", Default: true},
@@ -92,6 +96,7 @@ func (Pipe) Default(ctx *context.Context) error {
 				archive.NameTemplate = defaultBinaryNameTemplate
 			}
 		}
+		archive.BuildsInfo.Mode = 0o755
 		ids.Inc(archive.ID)
 	}
 	return ids.Validate()
@@ -117,8 +122,8 @@ func (Pipe) Run(ctx *context.Context) error {
 			artifact.ByType(artifact.CArchive),
 			artifact.ByType(artifact.CShared),
 		)}
-		if len(archive.Builds) > 0 {
-			filter = append(filter, artifact.ByIDs(archive.Builds...))
+		if len(archive.IDs) > 0 {
+			filter = append(filter, artifact.ByIDs(archive.IDs...))
 		}
 
 		isBinary := slices.Contains(archive.Formats, "binary")
@@ -298,7 +303,7 @@ func skip(ctx *context.Context, archive config.Archive, binaries []*artifact.Art
 			Target:    binary.Target,
 			Extra: map[string]interface{}{
 				artifact.ExtraID:       archive.ID,
-				artifact.ExtraFormat:   archive.Format,
+				artifact.ExtraFormat:   "binary",
 				artifact.ExtraBinary:   binary.Name,
 				artifact.ExtraReplaces: binaries[0].Extra[artifact.ExtraReplaces],
 			},

@@ -122,7 +122,7 @@ Here, it'll work anyway.
 
 ## Signing with cosign
 
-You can sign your artifacts with [cosign][] as well.
+You can sign your artifacts with [cosign][cosign] as well.
 
 Assuming you have a `cosign.key` in the repository root and a `COSIGN_PWD`
 environment variable set, a simple usage example would look like this:
@@ -144,3 +144,5 @@ Your users can then verify the signature with:
 ```sh
 cosign verify-blob -key cosign.pub -signature binary.sig binary
 ```
+
+[cosign]: https://github.com/sigstore/cosign

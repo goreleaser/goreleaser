@@ -26,9 +26,11 @@ nfpms:
     # Templates: allowed.
     file_name_template: "{{ .ConventionalFileName }}"
 
-    # Build IDs for the builds you want to create NFPM packages for.
-    # Default: '' (no filtering).
-    builds:
+    # IDs of the builds which should be archived in this package.
+    #
+    # <!-- md:inline_version v2.8 --> (use 'builds' in previous versions).
+    # Default: empty (include all).
+    ids:
       - foo
       - bar
 
@@ -342,7 +344,7 @@ nfpms:
     # Date to be used as mtime for the package itself, and its internal files.
     # You may also want to set the mtime on its contents.
     #
-    # Since: v2.6.
+    # <!-- md:inline_version v2.6 -->.
     # Templates: allowed.
     mtime: "{{ .CommitDate }}"
 

@@ -73,12 +73,17 @@ cloudsmiths:
     # Map of which distribution to use for each format.
     # Publish will be skipped if this is empty/not found.
     distributions:
-      deb: "ubuntu/xenial"
       rpm: "el/7"
       alpine: "alpine/v3.8"
+      # You can also set multiple distributions for a format.
+      #
+      # <!-- md:inline_version v2.8 -->
+      deb:
+      - "ubuntu/xenial"
+      - "ubuntu/focal"
 
     # The component (channel) for the package (e.g. 'main', 'unstable', etc).
-    # <!-- md:inline_version v2.7-unreleased -->
+    # <!-- md:inline_version v2.7 -->
     component: main
 ```
 

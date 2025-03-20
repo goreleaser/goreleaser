@@ -2,6 +2,8 @@
 
 A few notes on how to get started:
 
+- [x] GoReleaser Pro is distributed as a different binary than the free version.
+      Make sure you have it installed by checking `goreleaser -v`.
 - [x] if you use GitHub Actions, make sure to set the `distribution` option to
       `pro`. Don't forget to add the `GORELEASER_KEY` environment variable as
       well.[^actions]
@@ -26,4 +28,4 @@ Thank you!
 
 [^schema]: More about our JSONSchemas [here](customization/index.md).
 
-[^links]: All our contact, forums and media links are available [here](links.md).
+[^links]: All our contact, forums, and media links are available [here](links.md).

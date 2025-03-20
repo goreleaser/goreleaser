@@ -1,5 +1,5 @@
 run:
-  go: "1.23"
+  go: "1.24"
   timeout: 5m
 linters:
   enable:
@@ -44,6 +44,8 @@ linters-settings:
         deny:
           - pkg: "github.com/pkg/errors"
             desc: "use stdlib instead"
+          - pkg: "math/rand$"
+            desc: "use math/rand/v2 instead"
   perfsprint:
     int-conversion: false
     err-error: false
@@ -83,6 +85,8 @@ linters-settings:
     disable:
       - error-is-as # false positive
 issues:
+  include:
+    - EXC0013 # Enable revive.package-comments
   exclude-rules:
     - path: _test\.go
       linters:

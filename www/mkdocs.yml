@@ -170,7 +170,8 @@ nav:
           - customization/winget.md
           - NUR: customization/nix.md
           - AUR: customization/aur.md
-          - AURSources: customization/aursources.md
+          - customization/npm.md
+          - AUR (Sources): customization/aursources.md
           - Krew: customization/krew.md
           - Scoop: customization/scoop.md
           - customization/changelog.md
@@ -216,7 +217,6 @@ nav:
 
   - More resources:
       - maintainers.md
-      - sponsors.md
       - users.md
       - deprecations.md
       - experiments.md
@@ -271,6 +271,7 @@ nav:
   - Pro: pro.md
   - News:
       - blog/index.md
+  - Sponsors: sponsors.md
 
 markdown_extensions:
   - admonition
@@ -286,7 +287,11 @@ markdown_extensions:
       slugify: !!python/object/apply:pymdownx.slugs.slugify
         kwds:
           case: lower
-  - pymdownx.superfences
+  - pymdownx.superfences:
+      custom_fences:
+        - name: mermaid
+          class: mermaid
+          format: !!python/name:pymdownx.superfences.fence_code_format
   - pymdownx.tasklist:
       custom_checkbox: true
   - footnotes

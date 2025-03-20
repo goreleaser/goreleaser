@@ -48,6 +48,7 @@ krews:
     url_template: "http://github.mycompany.com/foo/bar/releases/{{ .Tag }}/{{ .ArtifactName }}"
 
     # Git author used to commit to the repository.
+    # Templates: allowed.
     commit_author:
       name: goreleaserbot
       email: bot@goreleaser.com

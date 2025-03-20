@@ -176,7 +176,7 @@ func (b *Builder) Build(ctx *context.Context, build config.Build, options api.Op
 		"--target=" + t.Target,
 	}
 
-	tenv, err := common.TemplateEnv(build, tpl)
+	tenv, err := common.TemplateEnv(build.Env, tpl)
 	if err != nil {
 		return err
 	}

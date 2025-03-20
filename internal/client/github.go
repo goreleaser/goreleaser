@@ -14,7 +14,7 @@ import (
 	"time"
 
 	"github.com/caarlos0/log"
-	"github.com/google/go-github/v68/github"
+	"github.com/google/go-github/v69/github"
 	"github.com/goreleaser/goreleaser/v2/internal/artifact"
 	"github.com/goreleaser/goreleaser/v2/internal/tmpl"
 	"github.com/goreleaser/goreleaser/v2/pkg/config"
@@ -93,7 +93,7 @@ func (c *githubClient) GenerateReleaseNotes(ctx *context.Context, repo Repo, pre
 	c.checkRateLimit(ctx)
 	notes, _, err := c.client.Repositories.GenerateReleaseNotes(ctx, repo.Owner, repo.Name, &github.GenerateNotesOptions{
 		TagName:         current,
-		PreviousTagName: github.String(prev),
+		PreviousTagName: github.Ptr(prev),
 	})
 	if err != nil {
 		return "", err
@@ -228,11 +228,11 @@ func (c *githubClient) OpenPullRequest(
 		base.Owner,
 		base.Name,
 		&github.NewPullRequest{
-			Title: github.String(title),
-			Base:  github.String(base.Branch),
-			Head:  github.String(headString(base, head)),
-			Body:  github.String(strings.Join([]string{tpl, prFooter}, "\n")),
-			Draft: github.Bool(draft),
+			Title: github.Ptr(title),
+			Base:  github.Ptr(base.Branch),
+			Head:  github.Ptr(headString(base, head)),
+			Body:  github.Ptr(strings.Join([]string{tpl, prFooter}, "\n")),
+			Draft: github.Ptr(draft),
 		},
 	)
 	if err != nil {
@@ -260,7 +260,7 @@ func (c *githubClient) SyncFork(ctx *context.Context, head, base Repo) error {
 		head.Owner,
 		head.Name,
 		&github.RepoMergeUpstreamRequest{
-			Branch: github.String(branch),
+			Branch: github.Ptr(branch),
 		},
 	)
 	if res != nil {
@@ -292,11 +292,11 @@ func (c *githubClient) CreateFile(
 
 	options := &github.RepositoryContentFileOptions{
 		Committer: &github.CommitAuthor{
-			Name:  github.String(commitAuthor.Name),
-			Email: github.String(commitAuthor.Email),
+			Name:  github.Ptr(commitAuthor.Name),
+			Email: github.Ptr(commitAuthor.Email),
 		},
 		Content: content,
-		Message: github.String(message),
+		Message: github.Ptr(message),
 	}
 
 	// Set the branch if we got it above...otherwise, just default to
@@ -324,7 +324,7 @@ func (c *githubClient) CreateFile(
 			}
 
 			if _, _, err := c.client.Git.CreateRef(ctx, repo.Owner, repo.Name, &github.Reference{
-				Ref: github.String("refs/heads/" + branch),
+				Ref: github.Ptr("refs/heads/" + branch),
 				Object: &github.GitObject{
 					SHA: defRef.Object.SHA,
 				},
@@ -350,7 +350,7 @@ func (c *githubClient) CreateFile(
 		return fmt.Errorf("could not get %q: %w", path, err)
 	}
 
-	options.SHA = github.String(file.GetSHA())
+	options.SHA = github.Ptr(file.GetSHA())
 	if _, _, err := c.client.Repositories.UpdateFile(
 		ctx,
 		repo.Owner,
@@ -380,13 +380,13 @@ func (c *githubClient) CreateRelease(ctx *context.Context, body string) (string,
 	body = truncateReleaseBody(body)
 
 	data := &github.RepositoryRelease{
-		Name:    github.String(title),
-		TagName: github.String(ctx.Git.CurrentTag),
-		Body:    github.String(body),
+		Name:    github.Ptr(title),
+		TagName: github.Ptr(ctx.Git.CurrentTag),
+		Body:    github.Ptr(body),
 		// Always start with a draft release while uploading artifacts.
 		// PublishRelease will undraft it.
-		Draft:      github.Bool(true),
-		Prerelease: github.Bool(ctx.PreRelease),
+		Draft:      github.Ptr(true),
+		Prerelease: github.Ptr(ctx.PreRelease),
 	}
 
 	if target := ctx.Config.Release.TargetCommitish; target != "" {
@@ -395,7 +395,7 @@ func (c *githubClient) CreateRelease(ctx *context.Context, body string) (string,
 			return "", err
 		}
 		if target != "" {
-			data.TargetCommitish = github.String(target)
+			data.TargetCommitish = github.Ptr(target)
 		}
 	}
 
@@ -418,17 +418,17 @@ func (c *githubClient) PublishRelease(ctx *context.Context, releaseID string) er
 		return fmt.Errorf("non-numeric release ID %q: %w", releaseID, err)
 	}
 	data := &github.RepositoryRelease{
-		Draft: github.Bool(draft),
+		Draft: github.Ptr(draft),
 	}
 	latest, err := tmpl.New(ctx).Apply(ctx.Config.Release.MakeLatest)
 	if err != nil {
 		return fmt.Errorf("templating GitHub make_latest: %w", err)
 	}
 	if latest != "" {
-		data.MakeLatest = github.String(latest)
+		data.MakeLatest = github.Ptr(latest)
 	}
 	if ctx.Config.Release.DiscussionCategoryName != "" {
-		data.DiscussionCategoryName = github.String(ctx.Config.Release.DiscussionCategoryName)
+		data.DiscussionCategoryName = github.Ptr(ctx.Config.Release.DiscussionCategoryName)
 	}
 	release, err := c.updateRelease(ctx, releaseIDInt, data)
 	if err != nil {
@@ -469,7 +469,7 @@ func (c *githubClient) createOrUpdateRelease(ctx *context.Context, data *github.
 	}
 
 	data.Draft = release.Draft
-	data.Body = github.String(getReleaseNotes(release.GetBody(), body, ctx.Config.Release.ReleaseNotesMode))
+	data.Body = github.Ptr(getReleaseNotes(release.GetBody(), body, ctx.Config.Release.ReleaseNotesMode))
 	return c.updateRelease(ctx, release.GetID(), data)
 }
 

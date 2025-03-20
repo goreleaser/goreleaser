@@ -39,7 +39,11 @@ func String(ctx *context.Context) string {
 	keys := slices.Sorted(maps.Keys(ctx.Skips))
 	str := strings.Join(keys, ", ")
 	if idx := strings.LastIndex(str, ","); idx > -1 {
-		str = str[:idx] + " and" + str[idx+1:]
+		comma := ""
+		if len(keys) > 2 {
+			comma = ","
+		}
+		str = str[:idx] + comma + " and" + str[idx+1:]
 	}
 	return str
 }

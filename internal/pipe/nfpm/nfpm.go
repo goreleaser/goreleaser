@@ -73,6 +73,10 @@ func (Pipe) Default(ctx *context.Context) error {
 		if fpm.Maintainer == "" {
 			deprecate.NoticeCustom(ctx, "nfpms.maintainer", "`{{ .Property }}` should always be set, check {{ .URL }} for more info")
 		}
+		if len(fpm.Builds) > 0 {
+			deprecate.Notice(ctx, "nfpms.builds")
+			fpm.IDs = append(fpm.IDs, fpm.Builds...)
+		}
 		ids.Inc(fpm.ID)
 	}
 
@@ -82,16 +86,22 @@ func (Pipe) Default(ctx *context.Context) error {
 
 // Run the pipe.
 func (Pipe) Run(ctx *context.Context) error {
+	skips := pipe.SkipMemento{}
 	for _, nfpm := range ctx.Config.NFPMs {
 		if len(nfpm.Formats) == 0 {
-			// FIXME: this assumes other nfpm configs will fail too...
-			return pipe.Skip("no output formats configured")
+			skips.Remember(pipe.Skip("no output formats configured"))
+			continue
 		}
-		if err := doRun(ctx, nfpm); err != nil {
+		err := doRun(ctx, nfpm)
+		if pipe.IsSkip(err) {
+			skips.Remember(err)
+			continue
+		}
+		if err != nil {
 			return err
 		}
 	}
-	return nil
+	return skips.Evaluate()
 }
 
 func doRun(ctx *context.Context, fpm config.NFPM) error {
@@ -109,14 +119,14 @@ func doRun(ctx *context.Context, fpm config.NFPM) error {
 			artifact.ByGoos("aix"),
 		),
 	}
-	if len(fpm.Builds) > 0 {
-		filters = append(filters, artifact.ByIDs(fpm.Builds...))
+	if len(fpm.IDs) > 0 {
+		filters = append(filters, artifact.ByIDs(fpm.IDs...))
 	}
 	linuxBinaries := ctx.Artifacts.
 		Filter(artifact.And(filters...)).
 		GroupByPlatform()
 	if len(linuxBinaries) == 0 {
-		return fmt.Errorf("no linux/unix binaries found for builds %v", fpm.Builds)
+		return fmt.Errorf("no linux/unix binaries found for builds %v", fpm.IDs)
 	}
 	g := semerrgroup.New(ctx.Parallelism)
 	for _, format := range fpm.Formats {
@@ -429,6 +439,7 @@ func create(ctx *context.Context, fpm config.NFPM, format string, artifacts []*a
 				Scripts: nfpm.DebScripts{
 					Rules:     overridden.Deb.Scripts.Rules,
 					Templates: overridden.Deb.Scripts.Templates,
+					Config:    overridden.Deb.Scripts.Config,
 				},
 				Triggers: nfpm.DebTriggers{
 					Interest:        overridden.Deb.Triggers.Interest,
