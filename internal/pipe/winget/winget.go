@@ -494,7 +494,7 @@ func makeInstaller(ctx *context.Context, winget config.Winget, archives []*artif
 
 func fixTags(in []string) []string {
 	for i := range in {
-		in[i] = strings.ReplaceAll(in[i], " ", "-")
+		in[i] = strings.ReplaceAll(strings.ToLower(in[i]), " ", "-")
 	}
 	return in
 }
