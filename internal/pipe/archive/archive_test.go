@@ -229,8 +229,8 @@ func TestRunPipe(t *testing.T) {
 					expectBin += ".exe"
 				}
 				require.Equal(t, "myid", arch.ID(), "all archives must have the archive ID set")
-				require.Equal(t, []string{expectBin}, artifact.ExtraOr(*arch, artifact.ExtraBinaries, []string{}))
-				require.Equal(t, "", artifact.ExtraOr(*arch, artifact.ExtraBinary, ""))
+				require.Equal(t, []string{expectBin}, arch.Binaries())
+				require.Equal(t, "", arch.Binary())
 			}
 			require.Len(t, archives, 13)
 			// TODO: should verify the artifact fields here too
@@ -508,17 +508,19 @@ func TestRunPipeBinary(t *testing.T) {
 		artifact.ByGoos("darwin"),
 		artifact.ByGoarch("all"),
 	)).List()[0]
-	require.True(t, artifact.ExtraOr(*darwinUniversal, artifact.ExtraReplaces, false))
+	replaces, err := artifact.Extra[bool](*darwinUniversal, artifact.ExtraReplaces)
+	require.NoError(t, err)
+	require.True(t, replaces)
 	windows := binaries.Filter(artifact.ByGoos("windows")).List()[0]
 	windows2 := binaries.Filter(artifact.ByGoos("windows")).List()[1]
 	require.Equal(t, "mybin_0.0.1_darwin_amd64", darwinThin.Name)
-	require.Equal(t, "mybin", artifact.ExtraOr(*darwinThin, artifact.ExtraBinary, ""))
+	require.Equal(t, "mybin", darwinThin.Binary())
 	require.Equal(t, "myunibin_0.0.1_darwin_all", darwinUniversal.Name)
-	require.Equal(t, "myunibin", artifact.ExtraOr(*darwinUniversal, artifact.ExtraBinary, ""))
+	require.Equal(t, "myunibin", darwinUniversal.Binary())
 	require.Equal(t, "mybin_0.0.1_windows_amd64.exe", windows.Name)
-	require.Equal(t, "mybin.exe", artifact.ExtraOr(*windows, artifact.ExtraBinary, ""))
+	require.Equal(t, "mybin.exe", windows.Binary())
 	require.Equal(t, "myotherbin_0.0.1_windows_amd64.exe", windows2.Name)
-	require.Equal(t, "myotherbin.exe", artifact.ExtraOr(*windows2, artifact.ExtraBinary, ""))
+	require.Equal(t, "myotherbin.exe", windows2.Binary())
 }
 
 func TestRunPipeDistRemoved(t *testing.T) {
@@ -788,7 +790,7 @@ func TestRunPipeWrap(t *testing.T) {
 
 	archives := ctx.Artifacts.Filter(artifact.ByType(artifact.UploadableArchive)).List()
 	require.Len(t, archives, 1)
-	require.Equal(t, "foo_darwin", artifact.ExtraOr(*archives[0], artifact.ExtraWrappedIn, ""))
+	require.Equal(t, "foo_darwin", archives[0].WrappedIn())
 
 	require.ElementsMatch(
 		t,
@@ -959,14 +961,14 @@ func TestBinaryOverride(t *testing.T) {
 		format := darwin.Format()
 		require.Contains(t, []string{"tar.gz", "zip"}, format)
 		require.Equal(t, "foobar_0.0.1_darwin_amd64."+format, darwin.Name)
-		require.Empty(t, artifact.ExtraOr(*darwin, artifact.ExtraWrappedIn, ""))
+		require.Equal(t, ".", darwin.WrappedIn())
 	}
 
 	archives = ctx.Artifacts.Filter(artifact.ByType(artifact.UploadableBinary))
 	windows := archives.Filter(artifact.ByGoos("windows")).List()[0]
 	require.Equal(t, "foobar_0.0.1_windows_amd64.exe", windows.Name)
-	require.Empty(t, artifact.ExtraOr(*windows, artifact.ExtraWrappedIn, ""))
-	require.Equal(t, "mybin.exe", artifact.ExtraOr(*windows, artifact.ExtraBinary, ""))
+	require.Equal(t, ".", windows.WrappedIn())
+	require.Equal(t, "mybin.exe", windows.Binary())
 }
 
 func TestRunPipeSameArchiveFilename(t *testing.T) {

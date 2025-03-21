@@ -274,7 +274,9 @@ func TestRun(t *testing.T) {
 		unis := ctx1.Artifacts.Filter(artifact.ByType(artifact.UniversalBinary)).List()
 		require.Len(t, unis, 1)
 		checkUniversalBinary(t, unis[0])
-		require.True(t, artifact.ExtraOr(*unis[0], artifact.ExtraReplaces, false))
+		replaces, err := artifact.Extra[bool](*unis[0], artifact.ExtraReplaces)
+		require.NoError(t, err)
+		require.True(t, replaces)
 	})
 
 	t.Run("keeping", func(t *testing.T) {
@@ -283,7 +285,9 @@ func TestRun(t *testing.T) {
 		unis := ctx2.Artifacts.Filter(artifact.ByType(artifact.UniversalBinary)).List()
 		require.Len(t, unis, 1)
 		checkUniversalBinary(t, unis[0])
-		require.False(t, artifact.ExtraOr(*unis[0], artifact.ExtraReplaces, true))
+		replaces, err := artifact.Extra[bool](*unis[0], artifact.ExtraReplaces)
+		require.NoError(t, err)
+		require.False(t, replaces)
 	})
 
 	t.Run("bad template", func(t *testing.T) {

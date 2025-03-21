@@ -234,7 +234,7 @@ func manifestFor(
 		}
 
 		for _, arch := range goarch {
-			bins := artifact.ExtraOr(*art, artifact.ExtraBinaries, []string{})
+			bins := art.Binaries()
 			if len(bins) != 1 {
 				return result, fmt.Errorf("krew: only one binary per archive allowed, got %d on %q", len(bins), art.Name)
 			}

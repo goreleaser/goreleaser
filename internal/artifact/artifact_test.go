@@ -455,14 +455,12 @@ func TestExtra(t *testing.T) {
 		foo, err := Extra[string](a, "Foo")
 		require.NoError(t, err)
 		require.Equal(t, "foo", foo)
-		require.Equal(t, "foo", ExtraOr(a, "Foo", "bar"))
 	})
 
 	t.Run("missing field", func(t *testing.T) {
 		bar, err := Extra[string](a, "Foobar")
 		require.NoError(t, err)
 		require.Equal(t, "", bar)
-		require.Equal(t, "bar", ExtraOr(a, "Foobar", "bar"))
 	})
 
 	t.Run("complex", func(t *testing.T) {
@@ -475,20 +473,17 @@ func TestExtra(t *testing.T) {
 		binaries, err := Extra[[]string](a, "binaries")
 		require.NoError(t, err)
 		require.Equal(t, []string{"foo", "bar"}, binaries)
-		require.Equal(t, []string{"foo", "bar"}, ExtraOr(a, "binaries", []string{}))
 	})
 
 	t.Run("json", func(t *testing.T) {
 		binaries, err := Extra[[]string](a, "json")
 		require.NoError(t, err)
 		require.Equal(t, []string{"foo", "bar"}, binaries)
-		require.Equal(t, []string{"foo", "bar"}, ExtraOr(a, "json", []string{}))
 	})
 
 	t.Run("invalid json", func(t *testing.T) {
 		_, err := Extra[[]string](a, "invalidjson")
 		require.Error(t, err)
-		require.Equal(t, "baz", ExtraOr(a, "invalidjson", "baz"))
 	})
 
 	t.Run("unmarshal error", func(t *testing.T) {

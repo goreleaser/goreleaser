@@ -413,7 +413,7 @@ func TestRunPipe(t *testing.T) {
 	for _, pkg := range packages {
 		format := pkg.Format()
 		require.NotEmpty(t, format)
-		require.Equal(t, "."+pkg.Format(), artifact.ExtraOr(*pkg, artifact.ExtraExt, ""))
+		require.Equal(t, "."+pkg.Format(), pkg.Ext())
 		arch := pkg.Goarch
 		if pkg.Goarm != "" {
 			arch += "v" + pkg.Goarm
@@ -451,7 +451,8 @@ func TestRunPipe(t *testing.T) {
 		require.NoError(t, err)
 		require.Equal(t, now.UTC(), stat.ModTime().UTC())
 
-		contents := artifact.ExtraOr(*pkg, extraFiles, files.Contents{})
+		contents, err := artifact.Extra[[]*files.Content](*pkg, extraFiles)
+		require.NoError(t, err)
 		for _, src := range contents {
 			require.NotNil(t, src.FileInfo, src.Destination)
 			require.Equal(t, now.UTC(), src.FileInfo.MTime.UTC(), src.Destination)
@@ -508,7 +509,7 @@ func TestRunPipe(t *testing.T) {
 			header,
 			carchive,
 			cshared,
-		}, destinations(artifact.ExtraOr(*pkg, extraFiles, files.Contents{})))
+		}, destinations(contents))
 	}
 	require.Len(t, ctx.Config.NFPMs[0].Contents, 8, "should not modify the config file list")
 }
@@ -789,8 +790,10 @@ func doTestRunPipeConventionalNameTemplate(t *testing.T, snapshot bool) {
 			prefix + "_1.0.0_riscv64.deb",
 		}, pkg.Name, "package name is not expected")
 		require.Equal(t, "someid", pkg.ID())
-		require.ElementsMatch(t, []string{binPath}, sources(artifact.ExtraOr(*pkg, extraFiles, files.Contents{})))
-		require.ElementsMatch(t, []string{"/usr/bin/subdir/mybin"}, destinations(artifact.ExtraOr(*pkg, extraFiles, files.Contents{})))
+		contents, err := artifact.Extra[[]*files.Content](*pkg, extraFiles)
+		require.NoError(t, err)
+		require.ElementsMatch(t, []string{binPath}, sources(contents))
+		require.ElementsMatch(t, []string{"/usr/bin/subdir/mybin"}, destinations(contents))
 	}
 }
 
@@ -1660,12 +1663,14 @@ func TestMeta(t *testing.T) {
 		require.NotEmpty(t, format)
 		require.Equal(t, pkg.Name, "foo_1.0.0_linux_"+pkg.Goarch+"-10-20."+format)
 		require.Equal(t, "someid", pkg.ID())
+		contents, err := artifact.Extra[[]*files.Content](*pkg, extraFiles)
+		require.NoError(t, err)
 		require.ElementsMatch(t, []string{
 			"/var/log/foobar",
 			"/usr/share/testfile.txt",
 			"/etc/nope.conf",
 			"/etc/nope-rpm.conf",
-		}, destinations(artifact.ExtraOr(*pkg, extraFiles, files.Contents{})))
+		}, destinations(contents))
 	}
 
 	require.Len(t, ctx.Config.NFPMs[0].Contents, 4, "should not modify the config file list")
@@ -1799,10 +1804,12 @@ func TestBinDirTemplating(t *testing.T) {
 	for _, pkg := range packages {
 		format := pkg.Format()
 		require.NotEmpty(t, format)
+		contents, err := artifact.Extra[[]*files.Content](*pkg, extraFiles)
+		require.NoError(t, err)
 		// the final binary should contain the evaluated bindir (after template eval)
 		require.ElementsMatch(t, []string{
 			"/usr/lib/pro/nagios/plugins/subdir/mybin",
-		}, destinations(artifact.ExtraOr(*pkg, extraFiles, files.Contents{})))
+		}, destinations(contents))
 	}
 }
 

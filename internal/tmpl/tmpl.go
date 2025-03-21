@@ -3,6 +3,7 @@ package tmpl
 
 import (
 	"bytes"
+	"cmp"
 	"fmt"
 	"maps"
 	"net/url"
@@ -209,9 +210,9 @@ func (t *Template) WithArtifact(a *artifact.Artifact) *Template {
 		KeyPpc64:     a.Goppc64,
 		KeyRiscv64:   a.Goriscv64,
 		target:       a.Target,
-		binary:       artifact.ExtraOr(*a, binary, t.fields[projectName].(string)),
+		binary:       cmp.Or(a.Binary(), t.fields[projectName].(string)),
 		artifactName: a.Name,
-		artifactExt:  artifact.ExtraOr(*a, artifact.ExtraExt, ""),
+		artifactExt:  a.Ext(),
 		artifactPath: a.Path,
 	})
 }

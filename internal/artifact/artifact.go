@@ -242,16 +242,16 @@ func Extra[T any](a Artifact, key string) (T, error) {
 // of artifact.
 //
 // Prefer using [Extra] and handling errors.
-func ExtraOr[T any](a Artifact, key string, or T) T {
-	if a.Extra[key] == nil {
-		return or
-	}
-	t, err := Extra[T](a, key)
-	if err != nil {
-		return or
-	}
-	return t
-}
+// func ExtraOr[T any](a Artifact, key string, or T) T {
+// 	if a.Extra[key] == nil {
+// 		return or
+// 	}
+// 	t, err := Extra[T](a, key)
+// 	if err != nil {
+// 		return or
+// 	}
+// 	return t
+// }
 
 // Checksum calculates the checksum of the artifact.
 //
@@ -321,7 +321,14 @@ func (a Artifact) Refresh() error {
 	if a.Type != Checksum {
 		return nil
 	}
-	if err := ExtraOr(a, ExtraRefresh, noRefresh)(); err != nil {
+	fn, err := Extra[func() error](a, ExtraRefresh)
+	if err != nil {
+		return fmt.Errorf("failed to refresh %q: %w", a.Name, err)
+	}
+	if fn == nil {
+		fn = noRefresh
+	}
+	if err := fn(); err != nil {
 		return fmt.Errorf("failed to refresh %q: %w", a.Name, err)
 	}
 	return nil
@@ -329,12 +336,41 @@ func (a Artifact) Refresh() error {
 
 // ID returns the artifact ID if it exists, empty otherwise.
 func (a Artifact) ID() string {
-	return ExtraOr(a, ExtraID, "")
+	id, _ := Extra[string](a, ExtraID)
+	return id
 }
 
 // Format returns the artifact Format if it exists, empty otherwise.
 func (a Artifact) Format() string {
-	return ExtraOr(a, ExtraFormat, "")
+	format, _ := Extra[string](a, ExtraFormat)
+	return format
+}
+
+// WrappedIn returns the artifact WrappedIn if it exists, "." otherwise.
+func (a Artifact) WrappedIn() string {
+	wrappedin, _ := Extra[string](a, ExtraWrappedIn)
+	if wrappedin == "" {
+		return "."
+	}
+	return wrappedin
+}
+
+// Binaries returns the artifact Binaries if it exists, empty otherwise.
+func (a Artifact) Binaries() []string {
+	binaries, _ := Extra[[]string](a, ExtraBinaries)
+	return binaries
+}
+
+// Binary returns the artifact Binary if it exists, empty otherwise.
+func (a Artifact) Binary() string {
+	binary, _ := Extra[string](a, ExtraBinary)
+	return binary
+}
+
+// Ext returns the artifact Ext if it exists, empty otherwise.
+func (a Artifact) Ext() string {
+	ext, _ := Extra[string](a, ExtraExt)
+	return ext
 }
 
 // Artifacts is a list of artifacts.
@@ -488,7 +524,15 @@ type Filter func(a *Artifact) bool
 //
 // This is useful specially on homebrew et al, where you'll want to use only either the single-arch or the universal binaries.
 func OnlyReplacingUnibins(a *Artifact) bool {
-	return ExtraOr(*a, ExtraReplaces, true)
+	s, ok := a.Extra[ExtraReplaces]
+	if !ok {
+		return true
+	}
+	b, ok := s.(bool)
+	if !ok {
+		return true
+	}
+	return b
 }
 
 // ByGoos is a predefined filter that filters by the given goos.
@@ -563,7 +607,7 @@ func ByExt(exts ...string) Filter {
 	filters := make([]Filter, 0, len(exts))
 	for _, ext := range exts {
 		filters = append(filters, func(a *Artifact) bool {
-			actual := ExtraOr(*a, ExtraExt, "")
+			actual, _ := Extra[string](*a, ExtraExt)
 			return strings.TrimPrefix(actual, ".") == strings.TrimPrefix(ext, ".")
 		})
 	}

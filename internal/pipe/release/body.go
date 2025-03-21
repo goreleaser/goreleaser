@@ -38,7 +38,11 @@ func describeBody(ctx *context.Context) (bytes.Buffer, error) {
 			if err != nil {
 				return out, err
 			}
-			checkMap[artifact.ExtraOr(*check, artifact.ExtraChecksumOf, "")] = string(bts)
+			sum, _ := artifact.Extra[string](*check, artifact.ExtraChecksumOf)
+			if sum == "" {
+				continue
+			}
+			checkMap[sum] = string(bts)
 		}
 		fields["Checksums"] = checkMap
 	}
