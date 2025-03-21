@@ -139,6 +139,23 @@ func (p Pipe) doRun(ctx *context.Context, winget config.Winget, cl client.Releas
 		return errNoLicense
 	}
 
+	if winget.PackageIdentifier == "" {
+		winget.PackageIdentifier = strings.ReplaceAll(winget.Publisher, " ", "") + "." + winget.Name
+	}
+
+	if !packageIdentifierValid.MatchString(winget.PackageIdentifier) {
+		return fmt.Errorf("%w: %s", errInvalidPackageIdentifier, winget.PackageIdentifier)
+	}
+
+	if winget.Path == "" {
+		winget.Path = path.Join(
+			"manifests",
+			strings.ToLower(string(winget.PackageIdentifier[0])),
+			strings.ReplaceAll(winget.PackageIdentifier, ".", "/"),
+			ctx.Version,
+		)
+	}
+
 	winget.Repository, err = client.TemplateRef(tp.Apply, winget.Repository)
 	if err != nil {
 		return err
@@ -160,10 +177,6 @@ func (p Pipe) doRun(ctx *context.Context, winget config.Winget, cl client.Releas
 		if err != nil {
 			return err
 		}
-	}
-
-	if winget.Path == "" {
-		winget.Path = path.Join("manifests", strings.ToLower(string(winget.Publisher[0])), winget.Publisher, winget.Name, ctx.Version)
 	}
 
 	filters := []artifact.Filter{
@@ -193,14 +206,6 @@ func (p Pipe) doRun(ctx *context.Context, winget config.Winget, cl client.Releas
 			goamd64: winget.Goamd64,
 			ids:     winget.IDs,
 		}
-	}
-
-	if winget.PackageIdentifier == "" {
-		winget.PackageIdentifier = winget.Publisher + "." + winget.Name
-	}
-
-	if !packageIdentifierValid.MatchString(winget.PackageIdentifier) {
-		return fmt.Errorf("%w: %s", errInvalidPackageIdentifier, winget.PackageIdentifier)
 	}
 
 	if err := createYAML(ctx, winget, Version{
@@ -237,7 +242,7 @@ func (p Pipe) doRun(ctx *context.Context, winget config.Winget, cl client.Releas
 		Copyright:           winget.Copyright,
 		CopyrightURL:        winget.CopyrightURL,
 		ShortDescription:    winget.ShortDescription,
-		Description:         winget.Description,
+		Description:         strings.ReplaceAll(winget.Description, "\t", "  "),
 		Moniker:             winget.Name,
 		Tags:                winget.Tags,
 		ReleaseNotes:        winget.ReleaseNotes,
@@ -461,7 +466,11 @@ func makeInstaller(ctx *context.Context, winget config.Winget, archives []*artif
 		} else {
 			binaryCount++
 			installer.InstallerType = "portable"
-			installer.Commands = []string{winget.Name}
+			cmd, err := artifact.Extra[string](*archive, artifact.ExtraBinary)
+			if err != nil {
+				cmd = winget.Name
+			}
+			installer.Commands = []string{cmd}
 		}
 		installer.Installers = append(installer.Installers, item)
 		switch archive.Goarch {
