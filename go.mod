@@ -44,7 +44,7 @@ require (
 	github.com/spf13/cobra v1.9.1
 	github.com/stretchr/testify v1.10.0
 	github.com/ulikunitz/xz v0.5.12
-	gitlab.com/gitlab-org/api/client-go v0.125.0
+	gitlab.com/gitlab-org/api/client-go v0.126.0
 	gocloud.dev v0.40.0
 	golang.org/x/crypto v0.36.0
 	golang.org/x/oauth2 v0.28.0
@@ -116,7 +116,7 @@ require (
 	github.com/Azure/go-autorest/logger v0.2.1 // indirect
 	github.com/Azure/go-autorest/tracing v0.6.0 // indirect
 	github.com/AzureAD/microsoft-authentication-library-for-go v1.2.2 // indirect
-	github.com/BurntSushi/toml v1.4.0
+	github.com/BurntSushi/toml v1.5.0
 	github.com/Masterminds/goutils v1.1.1 // indirect
 	github.com/Masterminds/sprig/v3 v3.3.0 // indirect
 	github.com/Microsoft/go-winio v0.6.2 // indirect

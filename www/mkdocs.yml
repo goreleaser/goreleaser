@@ -217,7 +217,6 @@ nav:
 
   - More resources:
       - maintainers.md
-      - sponsors.md
       - users.md
       - deprecations.md
       - experiments.md
@@ -272,6 +271,7 @@ nav:
   - Pro: pro.md
   - News:
       - blog/index.md
+  - Sponsors: sponsors.md
 
 markdown_extensions:
   - admonition
