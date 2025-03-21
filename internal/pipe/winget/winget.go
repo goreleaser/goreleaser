@@ -244,7 +244,7 @@ func (p Pipe) doRun(ctx *context.Context, winget config.Winget, cl client.Releas
 		ShortDescription:    winget.ShortDescription,
 		Description:         strings.ReplaceAll(winget.Description, "\t", "  "),
 		Moniker:             winget.Name,
-		Tags:                winget.Tags,
+		Tags:                fixTags(winget.Tags),
 		ReleaseNotes:        winget.ReleaseNotes,
 		ReleaseNotesURL:     winget.ReleaseNotesURL,
 		ManifestType:        "defaultLocale",
@@ -490,4 +490,11 @@ func makeInstaller(ctx *context.Context, winget config.Winget, archives []*artif
 	}
 
 	return installer, nil
+}
+
+func fixTags(in []string) []string {
+	for i := range in {
+		in[i] = strings.ReplaceAll(in[i], " ", "-")
+	}
+	return in
 }
