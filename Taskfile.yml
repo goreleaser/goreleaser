@@ -165,7 +165,7 @@ tasks:
     desc: Test docs with htmltest
     cmds:
       - task: docs:build
-      - "htmltest www/site -c www/htmltest.yml"
+      - "docker run -v ./www:/test --rm wjdp/htmltest /test/site -c /test/htmtest.yml"
 
   release:
     desc: Create a new tag
