@@ -154,7 +154,7 @@ func manifestImages(ctx *context.Context, manifest config.DockerManifest) ([]str
 func withDigest(name string, images []*artifact.Artifact) string {
 	for _, art := range images {
 		if art.Name == name {
-			if digest := artifact.ExtraOr(*art, artifact.ExtraDigest, ""); digest != "" {
+			if digest, _ := artifact.Extra[string](*art, artifact.ExtraDigest); digest != "" {
 				return name + "@" + digest
 			}
 			log.Warnf("unknown digest for %q, using insecure mode", name)

@@ -371,10 +371,10 @@ func installs(ctx *context.Context, cfg config.Homebrew, art *artifact.Artifact)
 	switch art.Type {
 	case artifact.UploadableBinary:
 		name := art.Name
-		bin := artifact.ExtraOr(*art, artifact.ExtraBinary, art.Name)
+		bin := art.Binary()
 		installMap[fmt.Sprintf("bin.install %q => %q", name, bin)] = true
 	case artifact.UploadableArchive:
-		for _, bin := range artifact.ExtraOr(*art, artifact.ExtraBinaries, []string{}) {
+		for _, bin := range art.Binaries() {
 			installMap[fmt.Sprintf("bin.install %q", bin)] = true
 		}
 	}

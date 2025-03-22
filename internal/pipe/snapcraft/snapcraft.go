@@ -454,7 +454,7 @@ const (
 
 func push(ctx *context.Context, snap *artifact.Artifact) error {
 	log := log.WithField("snap", snap.Name)
-	releases := artifact.ExtraOr(*snap, releasesExtra, []string{})
+	releases, _ := artifact.Extra[[]string](*snap, releasesExtra)
 	/* #nosec */
 	cmd := exec.CommandContext(ctx, "snapcraft", "upload", "--release="+strings.Join(releases, ","), snap.Path)
 	log.WithField("args", cmd.Args).Info("pushing snap")

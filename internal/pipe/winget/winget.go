@@ -404,8 +404,8 @@ func repoFileID(tp artifact.Type) string {
 
 func installerItemFilesFor(archive artifact.Artifact) []InstallerItemFile {
 	var files []InstallerItemFile
-	folder := artifact.ExtraOr(archive, artifact.ExtraWrappedIn, ".")
-	for _, bin := range artifact.ExtraOr(archive, artifact.ExtraBinaries, []string{}) {
+	folder := archive.WrappedIn()
+	for _, bin := range archive.Binaries() {
 		files = append(files, InstallerItemFile{
 			RelativeFilePath:     strings.ReplaceAll(filepath.Join(folder, bin), "/", "\\"),
 			PortableCommandAlias: strings.TrimSuffix(filepath.Base(bin), ".exe"),
@@ -466,11 +466,7 @@ func makeInstaller(ctx *context.Context, winget config.Winget, archives []*artif
 		} else {
 			binaryCount++
 			installer.InstallerType = "portable"
-			cmd, err := artifact.Extra[string](*archive, artifact.ExtraBinary)
-			if err != nil {
-				cmd = winget.Name
-			}
-			installer.Commands = []string{cmd}
+			installer.Commands = []string{archive.Binary()}
 		}
 		installer.Installers = append(installer.Installers, item)
 		switch archive.Goarch {
