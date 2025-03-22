@@ -63,6 +63,8 @@ func newInitCmd() *initCmd {
 				example = static.BunExampleConfig
 			case "deno":
 				example = static.DenoExampleConfig
+			case "uv":
+				example = static.UVExampleConfig
 			default:
 				return fmt.Errorf("invalid language: %s", root.lang)
 			}
@@ -139,6 +141,7 @@ func langDetect() string {
 		"rust": "Cargo.toml",
 		"bun":  "bun.lockb",
 		"deno": "deno.json",
+		"uv":   "pyproject.toml",
 	} {
 		if _, err := os.Stat(file); err == nil {
 			log.Info("project contains a " + code(file) + " file, using default " + code(lang) + " configuration")

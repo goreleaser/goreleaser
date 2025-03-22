@@ -14,8 +14,21 @@ import (
 	"github.com/goreleaser/goreleaser/v2/pkg/config"
 )
 
+type options struct {
+	allowBuildMode bool
+}
+
+type ValidateOption func(o *options)
+
+func WithBuildMode(o *options) { o.allowBuildMode = true }
+
 // ValidateNonGoConfig makes sure that Go-specific configurations are not set.
-func ValidateNonGoConfig(build config.Build) error {
+func ValidateNonGoConfig(build config.Build, opts ...ValidateOption) error {
+	var o options
+	for _, v := range opts {
+		v(&o)
+	}
+
 	if len(build.Ldflags) > 0 {
 		return errors.New("ldflags is not used for " + build.Builder)
 	}
@@ -38,7 +51,7 @@ func ValidateNonGoConfig(build config.Build) error {
 		return fmt.Errorf("ignore is not used for %s, set targets instead", build.Builder)
 	}
 
-	if build.Buildmode != "" {
+	if build.Buildmode != "" && !o.allowBuildMode {
 		return errors.New("buildmode is not used for " + build.Builder)
 	}
 
