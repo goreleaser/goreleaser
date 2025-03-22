@@ -144,6 +144,9 @@ tasks:
 
   docs:container:build:
     desc: "Build our mkdocs Docker image"
+    sources:
+      - ./www/Dockerfile
+      - ./www/requirements.txt
     cmds:
       - "docker build -t material-mkdocs ./www"
 
@@ -156,6 +159,13 @@ tasks:
 
   docs:build:
     desc: Build docs
+    sources:
+      - ./www/docs/
+      - ./www/Dockerfile
+      - ./www/mkdocs.yml
+      - ./www/requirements.txt
+    generates:
+      - ./www/site
     cmds:
       - task: docs:container:build
       - task: docs:generate
@@ -165,7 +175,7 @@ tasks:
     desc: Test docs with htmltest
     cmds:
       - task: docs:build
-      - "docker run -v ./www:/test --rm wjdp/htmltest /test/site -c /test/htmtest.yml"
+      - "docker run -v ./www:/test --rm wjdp/htmltest /test/site -c /test/htmltest.yml"
 
   release:
     desc: Create a new tag
