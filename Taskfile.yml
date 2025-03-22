@@ -142,23 +142,40 @@ tasks:
       - convert www/docs/static/avatar.png -define icon:auto-resize=64,48,32,16 www/docs/static/favicon.ico
       - convert www/docs/static/avatar.png -resize x120 www/docs/static/apple-touch-icon.png
 
+  docs:container:build:
+    desc: "Build our mkdocs Docker image"
+    sources:
+      - ./www/Dockerfile
+      - ./www/requirements.txt
+    cmds:
+      - "docker build -t material-mkdocs ./www"
+
   docs:serve:
     desc: Start documentation server
     cmds:
+      - task: docs:container:build
       - task: docs:generate
-      - "mkdocs serve -f www/mkdocs.yml -a 0.0.0.0:8000"
+      - "docker run --rm -p 8000:8000 -v ./www:/docs material-mkdocs"
 
   docs:build:
     desc: Build docs
+    sources:
+      - ./www/docs/
+      - ./www/Dockerfile
+      - ./www/mkdocs.yml
+      - ./www/requirements.txt
+    generates:
+      - ./www/site
     cmds:
+      - task: docs:container:build
       - task: docs:generate
-      - "mkdocs build -f www/mkdocs.yml"
+      - "docker run --rm -v ./www:/docs material-mkdocs build"
 
   docs:test:
     desc: Test docs with htmltest
     cmds:
       - task: docs:build
-      - "htmltest www/site -c www/htmltest.yml"
+      - "docker run -v ./www:/test --rm wjdp/htmltest /test/site -c /test/htmltest.yml"
 
   release:
     desc: Create a new tag
