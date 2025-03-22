@@ -121,9 +121,9 @@ nix:
 
 ## Dependencies
 
-### `nix-prefetch-url`
+### `nix-hash`
 
-The `nix-prefetch-url` binary must be available in the `$PATH` for the
+The `nix-hash` binary must be available in the `$PATH` for the
 publishing to work.
 
 [iss4034]: https://github.com/goreleaser/goreleaser/issues/4034

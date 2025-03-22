@@ -18,20 +18,6 @@
         cpkgs = carlos.packages.${system};
       in
       {
-        packages.default = pkgs.buildGoModule {
-          pname = "goreleaser";
-          version = "unversioned";
-          src = ./.;
-          ldflags = [
-            "-s"
-            "-w"
-            "-X main.version=dev"
-            "-X main.builtBy=flake"
-          ];
-          doCheck = false;
-          vendorHash = "";
-        };
-
         devShells.default = pkgs.mkShellNoCC {
           shellHook = "go mod tidy";
         };
@@ -47,7 +33,6 @@
               upx
               cosign
               gnupg
-              nix-prefetch
               rustup
               zig
               bun

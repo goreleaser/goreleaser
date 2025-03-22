@@ -36,13 +36,13 @@ func TestSkip(t *testing.T) {
 		}, testctx.Skip(skips.Nix))))
 	})
 	t.Run("nix-all-good", func(t *testing.T) {
-		testlib.CheckPath(t, "nix-prefetch-url")
+		testlib.CheckPath(t, "nix-hash")
 		testlib.SkipIfWindows(t, "nix doesn't work on windows")
 		require.False(t, NewPublish().Skip(testctx.NewWithCfg(config.Project{
 			Nix: []config.Nix{{}},
 		})))
 	})
-	t.Run("prefetcher-not-in-path", func(t *testing.T) {
+	t.Run("nix-hash-not-in-path", func(t *testing.T) {
 		t.Setenv("PATH", "nope")
 		require.True(t, NewPublish().Skip(testctx.NewWithCfg(config.Project{
 			Nix: []config.Nix{{}},
@@ -52,20 +52,20 @@ func TestSkip(t *testing.T) {
 
 const fakeNixHashBin = "fake-nix-hash"
 
-func TestPrefetcher(t *testing.T) {
-	t.Run("prefetch", func(t *testing.T) {
+func TestHasher(t *testing.T) {
+	t.Run("zero hash", func(t *testing.T) {
 		t.Run("build", func(t *testing.T) {
 			sha, err := alwaysZeroHasher{}.Hash("any")
 			require.NoError(t, err)
 			require.Equal(t, zeroHash, sha)
 		})
 		t.Run("publish", func(t *testing.T) {
-			t.Run("no-nix-prefetch-url", func(t *testing.T) {
+			t.Run("nix-hash", func(t *testing.T) {
 				_, err := nixHasher{fakeNixHashBin}.Hash("any")
 				require.ErrorIs(t, err, exec.ErrNotFound)
 			})
 			t.Run("valid", func(t *testing.T) {
-				testlib.CheckPath(t, "nix-prefetch-url")
+				testlib.CheckPath(t, "nix-hash")
 				testlib.SkipIfWindows(t, "nix doesn't work on windows")
 				sha, err := realHasher.Hash("./testdata/file.bin")
 				require.NoError(t, err)
