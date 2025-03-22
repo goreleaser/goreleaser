@@ -455,9 +455,10 @@ func TestRunPipe(t *testing.T) {
 				if goarch != "amd64" {
 					goamd64 = ""
 				}
-				path := filepath.Join(folder, "dist/foo_"+goos+"_"+goarch+goamd64+goarm+"."+format)
+				name := "foo_" + goos + "_" + goarch + goamd64 + goarm + "." + format
+				path := filepath.Join(folder, "dist", name)
 				art := artifact.Artifact{
-					Name:    "foo_" + goos + "_" + goarch + goamd64 + goarm + "." + format,
+					Name:    name,
 					Path:    path,
 					Goos:    goos,
 					Goarch:  goarch,
