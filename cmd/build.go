@@ -22,6 +22,7 @@ import (
 	"github.com/goreleaser/goreleaser/v2/pkg/config"
 	"github.com/goreleaser/goreleaser/v2/pkg/context"
 	"github.com/spf13/cobra"
+	"slices"
 )
 
 type buildCmd struct {
@@ -202,11 +203,8 @@ func setupBuildID(ctx *context.Context, ids []string) error {
 
 	var keep []config.Build
 	for _, build := range ctx.Config.Builds {
-		for _, id := range ids {
-			if build.ID == id {
-				keep = append(keep, build)
-				break
-			}
+		if slices.Contains(ids, build.ID) {
+			keep = append(keep, build)
 		}
 	}
 

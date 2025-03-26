@@ -22,6 +22,7 @@ import (
 	"github.com/goreleaser/goreleaser/v2/internal/tmpl"
 	"github.com/goreleaser/goreleaser/v2/pkg/config"
 	"github.com/goreleaser/goreleaser/v2/pkg/context"
+	"maps"
 )
 
 // Pipe that signs common artifacts.
@@ -187,9 +188,7 @@ func signone(ctx *context.Context, cfg config.Sign, art *artifact.Artifact) ([]*
 		return nil, fmt.Errorf("sign failed: %s: %w", art.Name, err)
 	}
 
-	for k, v := range context.ToEnv(tmplEnv) {
-		env[k] = v
-	}
+	maps.Copy(env, context.ToEnv(tmplEnv))
 
 	name, err := tmplPath(ctx, env, art, cfg.Signature)
 	if err != nil {

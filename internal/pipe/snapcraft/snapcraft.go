@@ -23,6 +23,7 @@ import (
 	"github.com/goreleaser/goreleaser/v2/internal/yaml"
 	"github.com/goreleaser/goreleaser/v2/pkg/config"
 	"github.com/goreleaser/goreleaser/v2/pkg/context"
+	"slices"
 )
 
 const releasesExtra = "releases"
@@ -214,12 +215,7 @@ func doRun(ctx *context.Context, snap config.Snapcraft) error {
 
 func isValidArch(arch string) bool {
 	// https://snapcraft.io/docs/architectures
-	for _, a := range []string{"s390x", "ppc64el", "arm64", "armhf", "i386", "amd64"} {
-		if arch == a {
-			return true
-		}
-	}
-	return false
+	return slices.Contains([]string{"s390x", "ppc64el", "arm64", "armhf", "i386", "amd64"}, arch)
 }
 
 // Publish packages.

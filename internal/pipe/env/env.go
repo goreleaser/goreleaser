@@ -16,6 +16,7 @@ import (
 	"github.com/goreleaser/goreleaser/v2/internal/tmpl"
 	"github.com/goreleaser/goreleaser/v2/pkg/context"
 	homedir "github.com/mitchellh/go-homedir"
+	"maps"
 )
 
 // ErrMissingToken indicates an error when GITHUB_TOKEN, GITLAB_TOKEN and GITEA_TOKEN are all missing in the environment.
@@ -62,9 +63,7 @@ func (Pipe) Run(ctx *context.Context) error {
 		}
 		tEnv = append(tEnv, env)
 	}
-	for k, v := range context.ToEnv(tEnv) {
-		ctx.Env[k] = v
-	}
+	maps.Copy(ctx.Env, context.ToEnv(tEnv))
 
 	setDefaultTokenFiles(ctx)
 	githubToken, githubTokenErr := loadEnv("GITHUB_TOKEN", ctx.Config.EnvFiles.GitHubToken)

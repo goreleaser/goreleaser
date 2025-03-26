@@ -22,6 +22,7 @@ import (
 	"github.com/goreleaser/goreleaser/v2/pkg/build"
 	"github.com/goreleaser/goreleaser/v2/pkg/config"
 	"github.com/goreleaser/goreleaser/v2/pkg/context"
+	"maps"
 )
 
 // Pipe for macos universal binaries.
@@ -233,9 +234,7 @@ func makeUniversalBinary(ctx *context.Context, opts *build.Options, unibin confi
 	}
 
 	extra := map[string]any{}
-	for k, v := range binaries[0].Extra {
-		extra[k] = v
-	}
+	maps.Copy(extra, binaries[0].Extra)
 	extra[artifact.ExtraReplaces] = unibin.Replace
 	extra[artifact.ExtraID] = unibin.ID
 

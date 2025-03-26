@@ -255,7 +255,7 @@ func fakeGoModAndSum(tb testing.TB, module string) {
 
 func fakeGoMod(tb testing.TB, module string) {
 	tb.Helper()
-	require.NoError(tb, os.WriteFile("go.mod", []byte(fmt.Sprintf("module %s\n", module)), 0o666))
+	require.NoError(tb, os.WriteFile("go.mod", fmt.Appendf(nil, "module %s\n", module), 0o666))
 }
 
 func withTestModulePath(ctx *context.Context) {

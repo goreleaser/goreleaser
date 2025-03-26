@@ -457,7 +457,7 @@ func validateUniqueFlags(details config.BuildDetails) {
 
 func buildOutput(out []byte) string {
 	var lines []string
-	for _, line := range strings.Split(strings.TrimSpace(string(out)), "\n") {
+	for line := range strings.SplitSeq(strings.TrimSpace(string(out)), "\n") {
 		if strings.HasPrefix(line, "go: downloading") {
 			continue
 		}

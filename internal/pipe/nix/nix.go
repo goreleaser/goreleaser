@@ -526,7 +526,7 @@ func binInstallFormats(nix config.Nix) []string {
 
 func split(s string) []string {
 	var result []string
-	for _, line := range strings.Split(strings.TrimSpace(s), "\n") {
+	for line := range strings.SplitSeq(strings.TrimSpace(s), "\n") {
 		line := strings.TrimSpace(line)
 		if line == "" {
 			continue

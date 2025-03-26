@@ -61,7 +61,7 @@ func TestRunPipe(t *testing.T) {
 				output, err := cmd.CombinedOutput()
 				require.NoError(t, err, string(output))
 				uniqueIDs := map[string]string{}
-				for _, id := range strings.Split(strings.TrimSpace(string(output)), "\n") {
+				for id := range strings.SplitSeq(strings.TrimSpace(string(output)), "\n") {
 					uniqueIDs[id] = id
 				}
 				require.Len(t, uniqueIDs, 1)

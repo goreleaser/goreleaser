@@ -16,6 +16,7 @@ import (
 	"github.com/goreleaser/goreleaser/v2/internal/testlib"
 	"github.com/goreleaser/goreleaser/v2/pkg/config"
 	"github.com/stretchr/testify/require"
+	"maps"
 )
 
 func TestContinueOnError(t *testing.T) {
@@ -472,9 +473,7 @@ func TestRunPipe(t *testing.T) {
 						artifact.ExtraWrappedIn: "",
 					},
 				}
-				for k, v := range extra {
-					art.Extra[k] = v
-				}
+				maps.Copy(art.Extra, extra)
 				ctx.Artifacts.Add(&art)
 
 				require.NoError(t, os.MkdirAll(filepath.Dir(path), 0o755))

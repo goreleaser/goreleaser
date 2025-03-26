@@ -11,6 +11,7 @@ import (
 	"github.com/goreleaser/goreleaser/v2/internal/pipe"
 	"github.com/goreleaser/goreleaser/v2/pkg/context"
 	"github.com/spf13/cobra"
+	"slices"
 )
 
 var (
@@ -137,15 +138,7 @@ func shouldPrependRelease(cmd *cobra.Command, args []string) bool {
 
 	// given that its 1, check if its one of the valid standalone flags
 	// for the root cmd
-	for _, s := range []string{"-h", "--help", "-v", "--version"} {
-		if s == args[0] {
-			// if it is, we should run the root cmd
-			return false
-		}
-	}
-
-	// otherwise, we should probably prepend release
-	return true
+	return !slices.Contains([]string{"-h", "--help", "-v", "--version"}, args[0])
 }
 
 func deprecateWarn(ctx *context.Context) {

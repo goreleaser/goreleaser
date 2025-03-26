@@ -106,7 +106,7 @@ func New(ctx *context.Context) *Template {
 	}
 
 	fields := map[string]any{}
-	for k, v := range map[string]any{
+	maps.Copy(fields, map[string]any{
 		projectName:     ctx.Config.ProjectName,
 		modulePath:      ctx.ModulePath,
 		version:         ctx.Version,
@@ -142,9 +142,7 @@ func New(ctx *context.Context) *Template {
 		tagContents:     ctx.Git.TagContents,
 		tagBody:         ctx.Git.TagBody,
 		runtimeK:        ctx.Runtime,
-	} {
-		fields[k] = v
-	}
+	})
 
 	return &Template{
 		fields: fields,
@@ -169,9 +167,7 @@ func (t *Template) SetEnv(single string) *Template {
 // It will override fields with the same name.
 func (t *Template) WithExtraFields(f Fields) *Template {
 	tt := t.copying()
-	for k, v := range f {
-		tt.fields[k] = v
-	}
+	maps.Copy(tt.fields, f)
 	return tt
 }
 
@@ -433,7 +429,7 @@ func filter(reverse bool) func(content, exp string) string {
 	return func(content, exp string) string {
 		re := regexp.MustCompilePOSIX(exp)
 		var lines []string
-		for _, line := range strings.Split(content, "\n") {
+		for line := range strings.SplitSeq(content, "\n") {
 			if reverse && re.MatchString(line) {
 				continue
 			}
