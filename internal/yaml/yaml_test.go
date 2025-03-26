@@ -42,7 +42,7 @@ func TestYAML(t *testing.T) {
 			Object yamlObject `yaml:"object"`
 		}
 
-		anyOrObject struct {
+		interfaceOrObject struct {
 			obj   yamlReceiver
 			iface any
 		}
@@ -51,15 +51,15 @@ func TestYAML(t *testing.T) {
 	for _, toPin := range []struct {
 		Title        string
 		InputYAML    []byte
-		ExpectedYAML []byte      // optional: when marshaled YAML is expected to differ from raw input (e.g. on bool flags)
-		Expected     anyOrObject // maybe either untyped any or yamlObject struct with struct tags
+		ExpectedYAML []byte            // optional: when marshaled YAML is expected to differ from raw input (e.g. on bool flags)
+		Expected     interfaceOrObject // maybe either untyped interface{} or yamlObject struct with struct tags
 		ExpectError  bool
 		WantsStrict  bool // apply Strict mode
 	}{
 		{
 			Title:     "happy path, untyped",
 			InputYAML: testYAMLObject(),
-			Expected: anyOrObject{
+			Expected: interfaceOrObject{
 				iface: map[string]any{
 					"object": map[string]any{
 						"key": map[string]any{
@@ -76,7 +76,7 @@ func TestYAML(t *testing.T) {
 			Title:       "happy path strict, untyped",
 			InputYAML:   testYAMLObject(),
 			WantsStrict: true,
-			Expected: anyOrObject{
+			Expected: interfaceOrObject{
 				iface: map[string]any{
 					"object": map[string]any{
 						"key": map[string]any{
@@ -94,7 +94,7 @@ func TestYAML(t *testing.T) {
 			InputYAML:    testYAMLObject(),
 			ExpectedYAML: testYAMLObjectBool(),
 			WantsStrict:  true,
-			Expected: anyOrObject{
+			Expected: interfaceOrObject{
 				iface: nil,
 				obj: yamlReceiver{
 					Object: yamlObject{
@@ -113,7 +113,7 @@ func TestYAML(t *testing.T) {
 			InputYAML:    testYAMLObjectNonStrict(),
 			ExpectedYAML: testYAMLObjectBool(),
 			WantsStrict:  false,
-			Expected: anyOrObject{
+			Expected: interfaceOrObject{
 				iface: nil,
 				obj: yamlReceiver{
 					Object: yamlObject{
@@ -133,7 +133,7 @@ func TestYAML(t *testing.T) {
 			ExpectedYAML: testYAMLObjectBool(),
 			WantsStrict:  true,
 			ExpectError:  true,
-			Expected: anyOrObject{
+			Expected: interfaceOrObject{
 				iface: nil,
 				obj: yamlReceiver{
 					Object: yamlObject{

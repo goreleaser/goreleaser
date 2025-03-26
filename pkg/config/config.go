@@ -1507,8 +1507,7 @@ type SlackBlock struct {
 	Internal any
 }
 
-// UnmarshalYAML is a custom unmarshaler that unmarshals a YAML slack block as
-// untyped any.
+// UnmarshalYAML is a custom unmarshaler that unmarshals a YAML slack block as untyped interface{}.
 func (a *SlackBlock) UnmarshalYAML(unmarshal func(any) error) error {
 	var yamlv2 any
 	if err := unmarshal(&yamlv2); err != nil {
@@ -1530,8 +1529,7 @@ type SlackAttachment struct {
 	Internal any
 }
 
-// UnmarshalYAML is a custom unmarshaler that unmarshals a YAML slack
-// attachment as untyped any.
+// UnmarshalYAML is a custom unmarshaler that unmarshals a YAML slack attachment as untyped interface{}.
 func (a *SlackAttachment) UnmarshalYAML(unmarshal func(any) error) error {
 	var yamlv2 any
 	if err := unmarshal(&yamlv2); err != nil {
