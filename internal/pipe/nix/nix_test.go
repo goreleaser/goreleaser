@@ -2,6 +2,7 @@ package nix
 
 import (
 	"html/template"
+	"maps"
 	"os"
 	"os/exec"
 	"path/filepath"
@@ -16,7 +17,6 @@ import (
 	"github.com/goreleaser/goreleaser/v2/internal/testlib"
 	"github.com/goreleaser/goreleaser/v2/pkg/config"
 	"github.com/stretchr/testify/require"
-	"maps"
 )
 
 func TestContinueOnError(t *testing.T) {
