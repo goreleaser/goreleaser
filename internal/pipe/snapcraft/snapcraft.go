@@ -9,6 +9,7 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
+	"slices"
 	"strings"
 
 	"github.com/caarlos0/log"
@@ -23,7 +24,6 @@ import (
 	"github.com/goreleaser/goreleaser/v2/internal/yaml"
 	"github.com/goreleaser/goreleaser/v2/pkg/config"
 	"github.com/goreleaser/goreleaser/v2/pkg/context"
-	"slices"
 )
 
 const releasesExtra = "releases"

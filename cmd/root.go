@@ -3,6 +3,7 @@ package cmd
 import (
 	"errors"
 	"fmt"
+	"slices"
 	"time"
 
 	goversion "github.com/caarlos0/go-version"
@@ -11,7 +12,6 @@ import (
 	"github.com/goreleaser/goreleaser/v2/internal/pipe"
 	"github.com/goreleaser/goreleaser/v2/pkg/context"
 	"github.com/spf13/cobra"
-	"slices"
 )
 
 var (

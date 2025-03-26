@@ -3,11 +3,11 @@ package golang
 import (
 	"fmt"
 	"regexp"
+	"slices"
 
 	"github.com/caarlos0/log"
 	"github.com/goreleaser/goreleaser/v2/internal/tmpl"
 	"github.com/goreleaser/goreleaser/v2/pkg/config"
-	"slices"
 )
 
 func formatBuildTarget(o config.BuildDetailsOverride) string {

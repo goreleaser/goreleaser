@@ -8,6 +8,7 @@ package context
 
 import (
 	stdctx "context"
+	"maps"
 	"os"
 	"runtime"
 	"strings"
@@ -15,7 +16,6 @@ import (
 
 	"github.com/goreleaser/goreleaser/v2/internal/artifact"
 	"github.com/goreleaser/goreleaser/v2/pkg/config"
-	"maps"
 )
 
 // GitInfo includes tags and diffs used in some point.
