@@ -117,7 +117,7 @@ func TestFullManifest(t *testing.T) {
 	manifest, err := doBuildManifest(data)
 	require.NoError(t, err)
 
-	requireEqualYaml(t, []byte(manifest))
+	golden.RequireEqualYaml(t, []byte(manifest))
 }
 
 func TestSimple(t *testing.T) {
@@ -125,7 +125,7 @@ func TestSimple(t *testing.T) {
 	data.Metadata.Name = manifestName(t)
 	manifest, err := doBuildManifest(data)
 	require.NoError(t, err)
-	requireEqualYaml(t, []byte(manifest))
+	golden.RequireEqualYaml(t, []byte(manifest))
 }
 
 func TestFullPipe(t *testing.T) {
@@ -336,7 +336,7 @@ func TestFullPipe(t *testing.T) {
 				)
 			}
 
-			requireEqualYaml(t, content)
+			golden.RequireEqualYaml(t, content)
 
 			distBts, err := os.ReadFile(distFile)
 			require.NoError(t, err)
@@ -400,7 +400,7 @@ func TestRunPipePullRequest(t *testing.T) {
 	require.True(t, client.CreatedFile)
 	require.True(t, client.OpenedPullRequest)
 	require.True(t, client.SyncedFork)
-	requireEqualYaml(t, []byte(client.Content))
+	golden.RequireEqualYaml(t, []byte(client.Content))
 }
 
 func TestRunPipeUniversalBinary(t *testing.T) {
@@ -453,7 +453,7 @@ func TestRunPipeUniversalBinary(t *testing.T) {
 	require.NoError(t, runAll(ctx, client))
 	require.NoError(t, publishAll(ctx, client))
 	require.True(t, client.CreatedFile)
-	requireEqualYaml(t, []byte(client.Content))
+	golden.RequireEqualYaml(t, []byte(client.Content))
 	distBts, err := os.ReadFile(distFile)
 	require.NoError(t, err)
 	require.Equal(t, client.Content, string(distBts))
@@ -534,7 +534,7 @@ func TestRunPipeUniversalBinaryNotReplacing(t *testing.T) {
 	require.NoError(t, runAll(ctx, client))
 	require.NoError(t, publishAll(ctx, client))
 	require.True(t, client.CreatedFile)
-	requireEqualYaml(t, []byte(client.Content))
+	golden.RequireEqualYaml(t, []byte(client.Content))
 	distBts, err := os.ReadFile(distFile)
 	require.NoError(t, err)
 	require.Equal(t, client.Content, string(distBts))
@@ -590,7 +590,7 @@ func TestRunPipeNameTemplate(t *testing.T) {
 	require.NoError(t, runAll(ctx, client))
 	require.NoError(t, publishAll(ctx, client))
 	require.True(t, client.CreatedFile)
-	requireEqualYaml(t, []byte(client.Content))
+	golden.RequireEqualYaml(t, []byte(client.Content))
 	distBts, err := os.ReadFile(distFile)
 	require.NoError(t, err)
 	require.Equal(t, client.Content, string(distBts))
@@ -787,7 +787,7 @@ func TestRunPipeForMultipleArmVersions(t *testing.T) {
 			require.NoError(t, runAll(ctx, client))
 			require.NoError(t, publishAll(ctx, client))
 			require.True(t, client.CreatedFile)
-			requireEqualYaml(t, []byte(client.Content))
+			golden.RequireEqualYaml(t, []byte(client.Content))
 
 			distBts, err := os.ReadFile(distFile)
 			require.NoError(t, err)
@@ -1007,9 +1007,4 @@ func TestRunSkipNoName(t *testing.T) {
 func manifestName(tb testing.TB) string {
 	tb.Helper()
 	return path.Base(tb.Name())
-}
-
-func requireEqualYaml(tb testing.TB, out []byte) {
-	tb.Helper()
-	golden.RequireEqualExt(tb, out, ".yaml")
 }
