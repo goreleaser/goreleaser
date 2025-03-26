@@ -725,7 +725,7 @@ func TestMarshalJSON(t *testing.T) {
 	})
 	bts, err := json.Marshal(artifacts.List())
 	require.NoError(t, err)
-	golden.RequireEqualExt(t, bts, ".json")
+	golden.RequireEqualJSON(t, bts)
 }
 
 func Test_ByBinaryLikeArtifacts(t *testing.T) {
