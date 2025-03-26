@@ -44,7 +44,7 @@ func TestVersion(t *testing.T) {
 			out, err := v.JSONString()
 			require.NoError(t, err)
 
-			golden.RequireEqualExt(t, []byte(out), ".json")
+			golden.RequireEqualJSON(t, []byte(out))
 		})
 	}
 }
