@@ -16,6 +16,8 @@ type CleanPipe struct{}
 // Skip implements Skipper.
 func (CleanPipe) Skip(ctx *context.Context) bool { return !ctx.Clean }
 func (CleanPipe) String() string                 { return "cleaning distribution directory" }
+
+// Run runs the pipe.
 func (CleanPipe) Run(ctx *context.Context) error {
 	// here we are setting a default outside a Default method...
 	// this is needed because when this run, the defaults are not set yet

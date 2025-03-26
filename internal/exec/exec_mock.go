@@ -15,11 +15,11 @@ var (
 	mockCmd    = os.Args[0]
 )
 
-type MockData struct {
-	AnyOf []MockCall `json:"any_of,omitempty"`
+type mockData struct {
+	AnyOf []mockCall `json:"any_of,omitempty"`
 }
 
-type MockCall struct {
+type mockCall struct {
 	Stdout       string   `json:"stdout,omitempty"`
 	Stderr       string   `json:"stderr,omitempty"`
 	ExpectedArgs []string `json:"args"`
@@ -27,24 +27,26 @@ type MockCall struct {
 	ExitCode     int      `json:"exit_code"`
 }
 
-func (m MockData) MarshalJSON() ([]byte, error) {
-	type t MockData
+// MarshalJSON implements json.Marshaler.
+func (m mockData) MarshalJSON() ([]byte, error) {
+	type t mockData
 	return json.Marshal((t)(m))
 }
 
-func (m *MockData) UnmarshalJSON(b []byte) error {
-	type t MockData
+// UnmarshalJSON implements json.Unmarshaler.
+func (m *mockData) UnmarshalJSON(b []byte) error {
+	type t mockData
 	return json.Unmarshal(b, (*t)(m))
 }
 
 // MarshalMockEnv mocks marshal.
 //
 //nolint:interfacer
-func MarshalMockEnv(data *MockData) string {
+func MarshalMockEnv(data *mockData) string {
 	b, err := data.MarshalJSON()
 	if err != nil {
-		errData := &MockData{
-			AnyOf: []MockCall{
+		errData := &mockData{
+			AnyOf: []mockCall{
 				{
 					Stderr:   fmt.Sprintf("unable to marshal mock data: %s", err),
 					ExitCode: 1,
@@ -57,8 +59,9 @@ func MarshalMockEnv(data *MockData) string {
 	return mockEnvVar + "=" + string(b)
 }
 
+// ExecuteMockData executes the mock data.
 func ExecuteMockData(jsonData string) int {
-	md := &MockData{}
+	md := &mockData{}
 	err := md.UnmarshalJSON([]byte(jsonData))
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "unable to unmarshal mock data: %s", err)

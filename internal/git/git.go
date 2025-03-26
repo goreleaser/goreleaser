@@ -17,6 +17,7 @@ func IsRepo(ctx context.Context) bool {
 	return err == nil && strings.TrimSpace(out) == "true"
 }
 
+// RunWithEnv runs the git command with the given environment variables.
 func RunWithEnv(ctx context.Context, env []string, args ...string) (string, error) {
 	extraArgs := []string{
 		"-c", "log.showSignature=false",

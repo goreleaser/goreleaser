@@ -1,3 +1,4 @@
+// Package teams announces releases to Microsoft Teams.
 package teams
 
 import (
@@ -18,6 +19,7 @@ const (
 	defaultMessageTitle    = `{{ .ProjectName }} {{ .Tag }} is out!`
 )
 
+// Pipe implementation.
 type Pipe struct{}
 
 func (Pipe) String() string { return "teams" }
@@ -28,10 +30,11 @@ func (Pipe) Skip(ctx *context.Context) (bool, error) {
 	return !enable, err
 }
 
-type Config struct {
+type envConfig struct {
 	Webhook string `env:"TEAMS_WEBHOOK,notEmpty"`
 }
 
+// Default sets the pipe defaults.
 func (p Pipe) Default(ctx *context.Context) error {
 	if ctx.Config.Announce.Teams.MessageTemplate == "" {
 		ctx.Config.Announce.Teams.MessageTemplate = defaultMessageTemplate
@@ -48,6 +51,7 @@ func (p Pipe) Default(ctx *context.Context) error {
 	return nil
 }
 
+// Announce implements Announcer.
 func (p Pipe) Announce(ctx *context.Context) error {
 	title, err := tmpl.New(ctx).Apply(ctx.Config.Announce.Teams.TitleTemplate)
 	if err != nil {
@@ -59,7 +63,7 @@ func (p Pipe) Announce(ctx *context.Context) error {
 		return fmt.Errorf("teams: %w", err)
 	}
 
-	cfg, err := env.ParseAs[Config]()
+	cfg, err := env.ParseAs[envConfig]()
 	if err != nil {
 		return fmt.Errorf("teams: %w", err)
 	}

@@ -1,3 +1,4 @@
+// Package webhook announces releases via HTTP POST requests.
 package webhook
 
 import (
@@ -18,17 +19,18 @@ import (
 
 const (
 	defaultMessageTemplate = `{ "message": "{{ .ProjectName }} {{ .Tag }} is out! Check it out at {{ .ReleaseURL }}"}`
-	ContentTypeHeaderKey   = "Content-Type"
-	UserAgentHeaderKey     = "User-Agent"
-	UserAgentHeaderValue   = "goreleaser"
-	AuthorizationHeaderKey = "Authorization"
-	DefaultContentType     = "application/json; charset=utf-8"
+	contentTypeHeaderKey   = "Content-Type"
+	userAgentHeaderKey     = "User-Agent"
+	userAgentHeaderValue   = "goreleaser"
+	authorizationHeaderKey = "Authorization"
+	defaultContentType     = "application/json; charset=utf-8"
 )
 
 var defaultExpectedStatusCodes = []int{
 	http.StatusOK, http.StatusCreated, http.StatusAccepted, http.StatusNoContent,
 }
 
+// Pipe implementation.
 type Pipe struct{}
 
 func (Pipe) String() string { return "webhook" }
@@ -39,17 +41,18 @@ func (Pipe) Skip(ctx *context.Context) (bool, error) {
 	return !enable, err
 }
 
-type Config struct {
+type envConfig struct {
 	BasicAuthHeader   string `env:"BASIC_AUTH_HEADER_VALUE"`
 	BearerTokenHeader string `env:"BEARER_TOKEN_HEADER_VALUE"`
 }
 
+// Default sets the pipe defaults.
 func (p Pipe) Default(ctx *context.Context) error {
 	if ctx.Config.Announce.Webhook.MessageTemplate == "" {
 		ctx.Config.Announce.Webhook.MessageTemplate = defaultMessageTemplate
 	}
 	if ctx.Config.Announce.Webhook.ContentType == "" {
-		ctx.Config.Announce.Webhook.ContentType = DefaultContentType
+		ctx.Config.Announce.Webhook.ContentType = defaultContentType
 	}
 	if len(ctx.Config.Announce.Webhook.ExpectedStatusCodes) == 0 {
 		ctx.Config.Announce.Webhook.ExpectedStatusCodes = defaultExpectedStatusCodes
@@ -57,8 +60,9 @@ func (p Pipe) Default(ctx *context.Context) error {
 	return nil
 }
 
+// Announce implements Announcer.
 func (p Pipe) Announce(ctx *context.Context) error {
-	cfg, err := env.ParseAs[Config]()
+	cfg, err := env.ParseAs[envConfig]()
 	if err != nil {
 		return fmt.Errorf("webhook: %w", err)
 	}
@@ -99,15 +103,15 @@ func (p Pipe) Announce(ctx *context.Context) error {
 	if err != nil {
 		return fmt.Errorf("webhook: %w", err)
 	}
-	req.Header.Add(ContentTypeHeaderKey, ctx.Config.Announce.Webhook.ContentType)
-	req.Header.Add(UserAgentHeaderKey, UserAgentHeaderValue)
+	req.Header.Add(contentTypeHeaderKey, ctx.Config.Announce.Webhook.ContentType)
+	req.Header.Add(userAgentHeaderKey, userAgentHeaderValue)
 
 	if cfg.BasicAuthHeader != "" {
 		log.Debugf("set basic auth header")
-		req.Header.Add(AuthorizationHeaderKey, cfg.BasicAuthHeader)
+		req.Header.Add(authorizationHeaderKey, cfg.BasicAuthHeader)
 	} else if cfg.BearerTokenHeader != "" {
 		log.Debugf("set bearer token header")
-		req.Header.Add(AuthorizationHeaderKey, cfg.BearerTokenHeader)
+		req.Header.Add(authorizationHeaderKey, cfg.BearerTokenHeader)
 	}
 
 	for key, value := range ctx.Config.Announce.Webhook.Headers {

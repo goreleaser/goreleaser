@@ -5,7 +5,7 @@ import _ "embed"
 //go:embed tmpl.nix
 var pkgTmpl []byte
 
-type Archive struct {
+type archive struct {
 	URL, Sha string
 }
 
@@ -16,7 +16,7 @@ type templateData struct {
 	PostInstall  []string
 	SourceRoot   string
 	SourceRoots  map[string]string
-	Archives     map[string]Archive
+	Archives     map[string]archive
 	Description  string
 	Homepage     string
 	License      string

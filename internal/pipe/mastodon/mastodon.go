@@ -1,3 +1,4 @@
+// Package mastodon announces releases on Mastodon.
 package mastodon
 
 import (
@@ -12,6 +13,7 @@ import (
 
 const defaultMessageTemplate = `{{ .ProjectName }} {{ .Tag }} is out! Check it out at {{ .ReleaseURL }}`
 
+// Pipe announcer.
 type Pipe struct{}
 
 func (Pipe) String() string { return "mastodon" }
@@ -22,7 +24,7 @@ func (Pipe) Skip(ctx *context.Context) (bool, error) {
 	return !enable || ctx.Config.Announce.Mastodon.Server == "", err
 }
 
-type Config struct {
+type envConfig struct {
 	ClientID     string `env:"MASTODON_CLIENT_ID,notEmpty"`
 	ClientSecret string `env:"MASTODON_CLIENT_SECRET,notEmpty"`
 	AccessToken  string `env:"MASTODON_ACCESS_TOKEN,notEmpty"`
@@ -43,7 +45,7 @@ func (Pipe) Announce(ctx *context.Context) error {
 		return fmt.Errorf("mastodon: %w", err)
 	}
 
-	cfg, err := env.ParseAs[Config]()
+	cfg, err := env.ParseAs[envConfig]()
 	if err != nil {
 		return fmt.Errorf("mastodon: %w", err)
 	}

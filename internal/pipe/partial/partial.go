@@ -1,3 +1,4 @@
+// Package partial handles partial builds.
 package partial
 
 import (
@@ -12,6 +13,7 @@ import (
 	"github.com/goreleaser/goreleaser/v2/pkg/context"
 )
 
+// Pipe pipe implementation.
 type Pipe struct{}
 
 func (Pipe) String() string { return "partial" }

@@ -1,3 +1,4 @@
+// Package opencollective announces the release on Open Collective.
 package opencollective
 
 import (
@@ -18,6 +19,7 @@ const (
 	endpoint               = "https://api.opencollective.com/graphql/v2"
 )
 
+// Pipe announcer.
 type Pipe struct{}
 
 func (Pipe) String() string { return "opencollective" }
@@ -28,7 +30,7 @@ func (Pipe) Skip(ctx *context.Context) (bool, error) {
 	return !enable || ctx.Config.Announce.OpenCollective.Slug == "", err
 }
 
-type Config struct {
+type envConfig struct {
 	Token string `env:"OPENCOLLECTIVE_TOKEN,notEmpty"`
 }
 
@@ -54,7 +56,7 @@ func (Pipe) Announce(ctx *context.Context) error {
 		return fmt.Errorf("opencollective: %w", err)
 	}
 
-	cfg, err := env.ParseAs[Config]()
+	cfg, err := env.ParseAs[envConfig]()
 	if err != nil {
 		return fmt.Errorf("opencollective: %w", err)
 	}

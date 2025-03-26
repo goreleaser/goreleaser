@@ -101,7 +101,7 @@ func TestRun(t *testing.T) {
 
 func requireEqualJSONFile(tb testing.TB, path string, modTime time.Time) {
 	tb.Helper()
-	golden.RequireEqualJSON(tb, golden.RequireReadFile(tb, path))
+	golden.RequireEqualExt(tb, golden.RequireReadFile(tb, path), ".json")
 	stat, err := os.Stat(path)
 	require.NoError(tb, err)
 	require.Equal(tb, modTime.Unix(), stat.ModTime().Unix())

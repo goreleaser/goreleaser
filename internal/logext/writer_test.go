@@ -38,6 +38,6 @@ func TestWriter(t *testing.T) {
 		l, err := io.WriteString(NewWriter(), "foo\nbar\n")
 		require.NoError(t, err)
 		require.Equal(t, 8, l)
-		golden.RequireEqualTxt(t, b.Bytes())
+		golden.RequireEqualExt(t, b.Bytes(), ".txt")
 	})
 }

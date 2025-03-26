@@ -1,3 +1,4 @@
+// Package reportsizes reports the sizes of artifacts.
 package reportsizes
 
 import (
@@ -9,6 +10,7 @@ import (
 	"github.com/goreleaser/goreleaser/v2/pkg/context"
 )
 
+// Pipe implementation.
 type Pipe struct{}
 
 // Skip implements Skipper.

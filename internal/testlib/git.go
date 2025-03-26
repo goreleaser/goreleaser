@@ -98,6 +98,7 @@ func GitCheckoutBranch(tb testing.TB, name string) {
 	require.Empty(tb, out)
 }
 
+// GitMakeBareRepository makes a new bare repository.
 func GitMakeBareRepository(tb testing.TB) string {
 	tb.Helper()
 	dir := tb.TempDir()
@@ -113,11 +114,13 @@ func GitMakeBareRepository(tb testing.TB) string {
 	return filepath.ToSlash(dir)
 }
 
+// MakeNewSSHKey creates a new ssh key.
 func MakeNewSSHKey(tb testing.TB, pass string) string {
 	tb.Helper()
 	return MakeNewSSHKeyType(tb, pass, keygen.Ed25519)
 }
 
+// MakeNewSSHKeyType creates a new ssh key of a specific type.
 func MakeNewSSHKeyType(tb testing.TB, pass string, algo keygen.KeyType) string {
 	tb.Helper()
 	dir := tb.TempDir()
@@ -132,11 +135,14 @@ func MakeNewSSHKeyType(tb testing.TB, pass string, algo keygen.KeyType) string {
 	return filepath
 }
 
+// CatFileFromBareRepository cat a file from a bare repository.
 func CatFileFromBareRepository(tb testing.TB, url, name string) []byte {
 	tb.Helper()
 	return CatFileFromBareRepositoryOnBranch(tb, url, "master", name)
 }
 
+// CatFileFromBareRepositoryOnBranch cat a file from a bare repository on a
+// specific branch.
 func CatFileFromBareRepositoryOnBranch(tb testing.TB, url, branch, name string) []byte {
 	tb.Helper()
 

@@ -1,3 +1,4 @@
+// Package rust implements the rust builder.
 package rust
 
 import (

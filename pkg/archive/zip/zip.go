@@ -32,6 +32,7 @@ func New(target io.Writer) Archive {
 	}
 }
 
+// Copy opens a zip archive from source and copies it to target.
 func Copy(source *os.File, target io.Writer) (Archive, error) {
 	info, err := source.Stat()
 	if err != nil {

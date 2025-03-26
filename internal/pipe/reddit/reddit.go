@@ -1,3 +1,4 @@
+// Package reddit announces the release on Reddit.
 package reddit
 
 import (
@@ -15,6 +16,7 @@ const (
 	defaultURLTemplate   = `{{ .ReleaseURL }}`
 )
 
+// Pipe implementation.
 type Pipe struct{}
 
 func (Pipe) String() string { return "reddit" }
@@ -25,7 +27,7 @@ func (Pipe) Skip(ctx *context.Context) (bool, error) {
 	return !enable, err
 }
 
-type Config struct {
+type envConfig struct {
 	Secret   string `env:"REDDIT_SECRET,notEmpty"`
 	Password string `env:"REDDIT_PASSWORD,notEmpty"`
 }
@@ -61,7 +63,7 @@ func (Pipe) Announce(ctx *context.Context) error {
 		URL:       url,
 	}
 
-	cfg, err := env.ParseAs[Config]()
+	cfg, err := env.ParseAs[envConfig]()
 	if err != nil {
 		return fmt.Errorf("reddit: %w", err)
 	}

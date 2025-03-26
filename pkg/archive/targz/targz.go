@@ -27,6 +27,7 @@ func New(target io.Writer) Archive {
 	}
 }
 
+// Copy Open a tar.gz archive and copy the content of the source into it.
 func Copy(source io.Reader, target io.Writer) (Archive, error) {
 	// the error will be nil since the compression level is valid
 	gw, _ := gzip.NewWriterLevel(target, gzip.BestCompression)

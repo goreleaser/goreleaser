@@ -1,3 +1,4 @@
+// Package upx compresses binaries using upx.
 package upx
 
 import (
@@ -16,6 +17,7 @@ import (
 	"github.com/goreleaser/goreleaser/v2/pkg/context"
 )
 
+// Pipe implementation.
 type Pipe struct{}
 
 func (Pipe) String() string { return "upx" }

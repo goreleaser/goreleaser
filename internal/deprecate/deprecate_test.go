@@ -26,7 +26,7 @@ func TestNotice(t *testing.T) {
 	log.Info("last")
 	require.True(t, ctx.Deprecated)
 
-	golden.RequireEqualTxt(t, w.Bytes())
+	requireEqualTxt(t, w.Bytes())
 }
 
 func TestNoticeCustom(t *testing.T) {
@@ -43,5 +43,10 @@ func TestNoticeCustom(t *testing.T) {
 	log.Info("last")
 	require.True(t, ctx.Deprecated)
 
-	golden.RequireEqualTxt(t, w.Bytes())
+	requireEqualTxt(t, w.Bytes())
+}
+
+func requireEqualTxt(tb testing.TB, out []byte) {
+	tb.Helper()
+	golden.RequireEqualExt(tb, out, ".txt")
 }

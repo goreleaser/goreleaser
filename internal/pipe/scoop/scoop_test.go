@@ -164,7 +164,7 @@ func Test_doRun(t *testing.T) {
 			func(tb testing.TB, a args) {
 				tb.Helper()
 				require.Equal(tb, "scoops/multi-bins.json", a.client.Path)
-				golden.RequireEqualJSON(tb, []byte(a.client.Content))
+				requireEqualJSON(tb, []byte(a.client.Content))
 			},
 		},
 		{
@@ -201,7 +201,7 @@ func Test_doRun(t *testing.T) {
 			func(tb testing.TB, a args) {
 				tb.Helper()
 				require.Equal(tb, "scoops/run-pipe.json", a.client.Path)
-				golden.RequireEqualJSON(tb, []byte(a.client.Content))
+				requireEqualJSON(tb, []byte(a.client.Content))
 			},
 		},
 		{
@@ -247,7 +247,7 @@ func Test_doRun(t *testing.T) {
 					a.ctx.Config.Scoops[0].Repository.Branch,
 					"scoops/git-run-pipe.json",
 				)
-				golden.RequireEqualJSON(tb, content)
+				requireEqualJSON(tb, content)
 			},
 		},
 		{
@@ -788,7 +788,7 @@ func TestRunPipePullRequest(t *testing.T) {
 	require.True(t, client.CreatedFile)
 	require.True(t, client.OpenedPullRequest)
 	require.True(t, client.SyncedFork)
-	golden.RequireEqualJSON(t, []byte(client.Content))
+	requireEqualJSON(t, []byte(client.Content))
 }
 
 func Test_buildManifest(t *testing.T) {
@@ -986,7 +986,7 @@ func Test_buildManifest(t *testing.T) {
 			out, err := doBuildManifest(mf)
 			require.NoError(t, err)
 
-			golden.RequireEqualJSON(t, out.Bytes())
+			requireEqualJSON(t, out.Bytes())
 		})
 	}
 }
@@ -1112,7 +1112,7 @@ func TestWrapInDirectory(t *testing.T) {
 
 	out, err := doBuildManifest(mf)
 	require.NoError(t, err)
-	golden.RequireEqualJSON(t, out.Bytes())
+	requireEqualJSON(t, out.Bytes())
 }
 
 func TestSkip(t *testing.T) {
@@ -1143,4 +1143,9 @@ func TestSkip(t *testing.T) {
 		})
 		require.False(t, Pipe{}.Skip(ctx))
 	})
+}
+
+func requireEqualJSON(tb testing.TB, out []byte) {
+	tb.Helper()
+	golden.RequireEqualExt(tb, out, ".json")
 }

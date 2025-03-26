@@ -93,6 +93,7 @@ type AppMetadata struct {
 	WatchdogTimeout  string         `yaml:"watchdog-timeout,omitempty"`
 }
 
+// LayoutMetadata for snap.
 type LayoutMetadata struct {
 	Symlink  string `yaml:",omitempty"`
 	Bind     string `yaml:",omitempty"`

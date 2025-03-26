@@ -26,23 +26,23 @@ func TestDescription(t *testing.T) {
 	require.NotEmpty(t, Pipe{}.String())
 }
 
-func createTemplateData() Manifest {
-	return Manifest{
+func createTemplateData() manifest {
+	return manifest{
 		APIVersion: apiVersion,
 		Kind:       kind,
-		Metadata: Metadata{
+		Metadata: metadata{
 			Name: "Test",
 		},
-		Spec: Spec{
+		Spec: spec{
 			Description:      "Some desc",
 			Homepage:         "https://google.com",
 			Version:          "v0.1.3",
 			ShortDescription: "Short desc",
 			Caveats:          "some caveat",
-			Platforms: []Platform{
+			Platforms: []platform{
 				{
-					Selector: Selector{
-						MatchLabels: MatchLabels{
+					Selector: selector{
+						MatchLabels: matchLabels{
 							Arch: "amd64",
 							Os:   "darwin",
 						},
@@ -52,8 +52,8 @@ func createTemplateData() Manifest {
 					Bin:    "test",
 				},
 				{
-					Selector: Selector{
-						MatchLabels: MatchLabels{
+					Selector: selector{
+						MatchLabels: matchLabels{
 							Arch: "arm64",
 							Os:   "darwin",
 						},
@@ -63,8 +63,8 @@ func createTemplateData() Manifest {
 					Bin:    "test",
 				},
 				{
-					Selector: Selector{
-						MatchLabels: MatchLabels{
+					Selector: selector{
+						MatchLabels: matchLabels{
 							Arch: "amd64",
 							Os:   "linux",
 						},
@@ -74,8 +74,8 @@ func createTemplateData() Manifest {
 					Bin:    "test",
 				},
 				{
-					Selector: Selector{
-						MatchLabels: MatchLabels{
+					Selector: selector{
+						MatchLabels: matchLabels{
 							Arch: "arm",
 							Os:   "linux",
 						},
@@ -85,8 +85,8 @@ func createTemplateData() Manifest {
 					Bin:    "test",
 				},
 				{
-					Selector: Selector{
-						MatchLabels: MatchLabels{
+					Selector: selector{
+						MatchLabels: matchLabels{
 							Arch: "arm64",
 							Os:   "linux",
 						},
@@ -96,8 +96,8 @@ func createTemplateData() Manifest {
 					Bin:    "test",
 				},
 				{
-					Selector: Selector{
-						MatchLabels: MatchLabels{
+					Selector: selector{
+						MatchLabels: matchLabels{
 							Arch: "amd64",
 							Os:   "windows",
 						},
@@ -117,7 +117,7 @@ func TestFullManifest(t *testing.T) {
 	manifest, err := doBuildManifest(data)
 	require.NoError(t, err)
 
-	golden.RequireEqualYaml(t, []byte(manifest))
+	requireEqualYaml(t, []byte(manifest))
 }
 
 func TestSimple(t *testing.T) {
@@ -125,7 +125,7 @@ func TestSimple(t *testing.T) {
 	data.Metadata.Name = manifestName(t)
 	manifest, err := doBuildManifest(data)
 	require.NoError(t, err)
-	golden.RequireEqualYaml(t, []byte(manifest))
+	requireEqualYaml(t, []byte(manifest))
 }
 
 func TestFullPipe(t *testing.T) {
@@ -336,7 +336,7 @@ func TestFullPipe(t *testing.T) {
 				)
 			}
 
-			golden.RequireEqualYaml(t, content)
+			requireEqualYaml(t, content)
 
 			distBts, err := os.ReadFile(distFile)
 			require.NoError(t, err)
@@ -400,7 +400,7 @@ func TestRunPipePullRequest(t *testing.T) {
 	require.True(t, client.CreatedFile)
 	require.True(t, client.OpenedPullRequest)
 	require.True(t, client.SyncedFork)
-	golden.RequireEqualYaml(t, []byte(client.Content))
+	requireEqualYaml(t, []byte(client.Content))
 }
 
 func TestRunPipeUniversalBinary(t *testing.T) {
@@ -453,7 +453,7 @@ func TestRunPipeUniversalBinary(t *testing.T) {
 	require.NoError(t, runAll(ctx, client))
 	require.NoError(t, publishAll(ctx, client))
 	require.True(t, client.CreatedFile)
-	golden.RequireEqualYaml(t, []byte(client.Content))
+	requireEqualYaml(t, []byte(client.Content))
 	distBts, err := os.ReadFile(distFile)
 	require.NoError(t, err)
 	require.Equal(t, client.Content, string(distBts))
@@ -534,7 +534,7 @@ func TestRunPipeUniversalBinaryNotReplacing(t *testing.T) {
 	require.NoError(t, runAll(ctx, client))
 	require.NoError(t, publishAll(ctx, client))
 	require.True(t, client.CreatedFile)
-	golden.RequireEqualYaml(t, []byte(client.Content))
+	requireEqualYaml(t, []byte(client.Content))
 	distBts, err := os.ReadFile(distFile)
 	require.NoError(t, err)
 	require.Equal(t, client.Content, string(distBts))
@@ -590,7 +590,7 @@ func TestRunPipeNameTemplate(t *testing.T) {
 	require.NoError(t, runAll(ctx, client))
 	require.NoError(t, publishAll(ctx, client))
 	require.True(t, client.CreatedFile)
-	golden.RequireEqualYaml(t, []byte(client.Content))
+	requireEqualYaml(t, []byte(client.Content))
 	distBts, err := os.ReadFile(distFile)
 	require.NoError(t, err)
 	require.Equal(t, client.Content, string(distBts))
@@ -787,7 +787,7 @@ func TestRunPipeForMultipleArmVersions(t *testing.T) {
 			require.NoError(t, runAll(ctx, client))
 			require.NoError(t, publishAll(ctx, client))
 			require.True(t, client.CreatedFile)
-			golden.RequireEqualYaml(t, []byte(client.Content))
+			requireEqualYaml(t, []byte(client.Content))
 
 			distBts, err := os.ReadFile(distFile)
 			require.NoError(t, err)
@@ -811,7 +811,7 @@ func TestRunPipeNoBuilds(t *testing.T) {
 		},
 	}, testctx.GitHubTokenType)
 	client := client.NewMock()
-	require.Equal(t, ErrNoArchivesFound, runAll(ctx, client))
+	require.Equal(t, errNoArchivesFound, runAll(ctx, client))
 	require.False(t, client.CreatedFile)
 }
 
@@ -1007,4 +1007,9 @@ func TestRunSkipNoName(t *testing.T) {
 func manifestName(tb testing.TB) string {
 	tb.Helper()
 	return path.Base(tb.Name())
+}
+
+func requireEqualYaml(tb testing.TB, out []byte) {
+	tb.Helper()
+	golden.RequireEqualExt(tb, out, ".yaml")
 }

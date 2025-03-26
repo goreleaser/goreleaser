@@ -1,3 +1,4 @@
+// Package zig implements the zig builder.
 package zig
 
 import (

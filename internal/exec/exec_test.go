@@ -104,8 +104,8 @@ func TestExecute(t *testing.T) {
 					IDs:  []string{"archive"},
 					Cmd:  mockCmd + " {{ .ArtifactName }}",
 					Env: []string{
-						MarshalMockEnv(&MockData{
-							AnyOf: []MockCall{
+						MarshalMockEnv(&mockData{
+							AnyOf: []mockCall{
 								{ExpectedArgs: []string{"a.tar"}, ExitCode: 0, ExpectedEnv: osEnv()},
 							},
 						}),
@@ -123,8 +123,8 @@ func TestExecute(t *testing.T) {
 					Cmd:     mockCmd + " {{ .ArtifactName }}",
 					Disable: "false",
 					Env: []string{
-						MarshalMockEnv(&MockData{
-							AnyOf: []MockCall{
+						MarshalMockEnv(&mockData{
+							AnyOf: []mockCall{
 								{ExpectedArgs: []string{"a.deb"}, ExitCode: 0, ExpectedEnv: osEnv()},
 								{ExpectedArgs: []string{"a.ubi"}, ExitCode: 0, ExpectedEnv: osEnv()},
 								{ExpectedArgs: []string{"a.tar"}, ExitCode: 0, ExpectedEnv: osEnv()},
@@ -172,8 +172,8 @@ func TestExecute(t *testing.T) {
 					Checksum: true,
 					Cmd:      mockCmd + " {{ .ArtifactName }}",
 					Env: []string{
-						MarshalMockEnv(&MockData{
-							AnyOf: []MockCall{
+						MarshalMockEnv(&mockData{
+							AnyOf: []mockCall{
 								{ExpectedArgs: []string{"a.deb"}, ExitCode: 0, ExpectedEnv: osEnv()},
 								{ExpectedArgs: []string{"a.ubi"}, ExitCode: 0, ExpectedEnv: osEnv()},
 								{ExpectedArgs: []string{"a.tar"}, ExitCode: 0, ExpectedEnv: osEnv()},
@@ -196,8 +196,8 @@ func TestExecute(t *testing.T) {
 					Meta: true,
 					Cmd:  mockCmd + " {{ .ArtifactName }}",
 					Env: []string{
-						MarshalMockEnv(&MockData{
-							AnyOf: []MockCall{
+						MarshalMockEnv(&mockData{
+							AnyOf: []mockCall{
 								{ExpectedArgs: []string{"a.deb"}, ExitCode: 0, ExpectedEnv: osEnv()},
 								{ExpectedArgs: []string{"a.ubi"}, ExitCode: 0, ExpectedEnv: osEnv()},
 								{ExpectedArgs: []string{"a.tar"}, ExitCode: 0, ExpectedEnv: osEnv()},
@@ -220,8 +220,8 @@ func TestExecute(t *testing.T) {
 					Signature: true,
 					Cmd:       mockCmd + " {{ .ArtifactName }}",
 					Env: []string{
-						MarshalMockEnv(&MockData{
-							AnyOf: []MockCall{
+						MarshalMockEnv(&mockData{
+							AnyOf: []mockCall{
 								{ExpectedArgs: []string{"a.deb"}, ExitCode: 0, ExpectedEnv: osEnv()},
 								{ExpectedArgs: []string{"a.ubi"}, ExitCode: 0, ExpectedEnv: osEnv()},
 								{ExpectedArgs: []string{"a.tar"}, ExitCode: 0, ExpectedEnv: osEnv()},
@@ -245,8 +245,8 @@ func TestExecute(t *testing.T) {
 					IDs:  []string{"img", "mnf"},
 					Cmd:  mockCmd + " {{ .ArtifactName }}",
 					Env: []string{
-						MarshalMockEnv(&MockData{
-							AnyOf: []MockCall{
+						MarshalMockEnv(&mockData{
+							AnyOf: []mockCall{
 								{ExpectedArgs: []string{"foo/bar"}, ExitCode: 0, ExpectedEnv: osEnv()},
 								{ExpectedArgs: []string{"foo/bar:amd64"}, ExitCode: 0, ExpectedEnv: osEnv()},
 							},
@@ -264,8 +264,8 @@ func TestExecute(t *testing.T) {
 					Name: "test",
 					Cmd:  mockCmd + " {{ .ArtifactName }}",
 					Env: []string{
-						MarshalMockEnv(&MockData{
-							AnyOf: []MockCall{
+						MarshalMockEnv(&mockData{
+							AnyOf: []mockCall{
 								{ExpectedArgs: []string{"a.deb"}, ExitCode: 0, ExpectedEnv: osEnv()},
 								{ExpectedArgs: []string{"a.ubi"}, ExitCode: 0, ExpectedEnv: osEnv()},
 								{ExpectedArgs: []string{"a.tar"}, ExitCode: 0, ExpectedEnv: osEnv()},
@@ -290,8 +290,8 @@ func TestExecute(t *testing.T) {
 					Name: "test",
 					Cmd:  mockCmd + " {{ .ArtifactName }}",
 					Env: []string{
-						MarshalMockEnv(&MockData{
-							AnyOf: []MockCall{
+						MarshalMockEnv(&mockData{
+							AnyOf: []mockCall{
 								{ExpectedArgs: []string{"a.deb"}, ExitCode: 0, ExpectedEnv: osEnv()},
 								{ExpectedArgs: []string{"a.ubi"}, ExitCode: 0, ExpectedEnv: osEnv()},
 								{ExpectedArgs: []string{"a.tar"}, ExitCode: 0, ExpectedEnv: osEnv()},
@@ -322,8 +322,8 @@ func TestExecute(t *testing.T) {
 					Dir:       "{{ dir .ArtifactPath }}",
 					Cmd:       mockCmd + " {{ .ArtifactName }}",
 					Env: []string{
-						MarshalMockEnv(&MockData{
-							AnyOf: []MockCall{
+						MarshalMockEnv(&mockData{
+							AnyOf: []mockCall{
 								{ExpectedArgs: []string{"a.deb"}, ExitCode: 0, ExpectedEnv: osEnv()},
 							},
 						}),
@@ -344,8 +344,8 @@ func TestExecute(t *testing.T) {
 						"PROJECT={{.ProjectName}}",
 						"ARTIFACT={{.ArtifactName}}",
 						"SECRET={{.Env.TEST_A_SECRET}}",
-						MarshalMockEnv(&MockData{
-							AnyOf: []MockCall{
+						MarshalMockEnv(&mockData{
+							AnyOf: []mockCall{
 								{
 									ExpectedEnv: append(
 										[]string{"PROJECT=blah", "ARTIFACT=a.deb", "SECRET=x"},
@@ -370,8 +370,8 @@ func TestExecute(t *testing.T) {
 					Cmd:  mockCmd,
 					Env: []string{
 						"PATH=/something-else",
-						MarshalMockEnv(&MockData{
-							AnyOf: []MockCall{
+						MarshalMockEnv(&mockData{
+							AnyOf: []mockCall{
 								{
 									ExpectedEnv: append(
 										[]string{"PATH=/something-else"},
@@ -398,8 +398,8 @@ func TestExecute(t *testing.T) {
 					IDs:  []string{"debpkg"},
 					Cmd:  mockCmd + " {{.ArtifactName}}",
 					Env: []string{
-						MarshalMockEnv(&MockData{
-							AnyOf: []MockCall{
+						MarshalMockEnv(&mockData{
+							AnyOf: []mockCall{
 								{
 									ExpectedArgs: []string{"a.deb"},
 									ExpectedEnv:  osEnv(),

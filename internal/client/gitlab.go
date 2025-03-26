@@ -19,6 +19,7 @@ import (
 	gitlab "gitlab.com/gitlab-org/api/client-go"
 )
 
+// DefaultGitLabDownloadURL is the default GitLab download URL.
 const DefaultGitLabDownloadURL = "https://gitlab.com"
 
 var (

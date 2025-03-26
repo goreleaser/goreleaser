@@ -459,7 +459,7 @@ func TestExtra(t *testing.T) {
 	t.Run("missing field", func(t *testing.T) {
 		bar, err := Extra[string](a, "Foobar")
 		require.NoError(t, err)
-		require.Equal(t, "", bar)
+		require.Empty(t, bar)
 		require.Equal(t, "bar", ExtraOr(a, "Foobar", "bar"))
 	})
 
@@ -725,7 +725,7 @@ func TestMarshalJSON(t *testing.T) {
 	})
 	bts, err := json.Marshal(artifacts.List())
 	require.NoError(t, err)
-	golden.RequireEqualJSON(t, bts)
+	golden.RequireEqualExt(t, bts, ".json")
 }
 
 func Test_ByBinaryLikeArtifacts(t *testing.T) {

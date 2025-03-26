@@ -1,3 +1,4 @@
+// Package nix creates nix packages.
 package nix
 
 import (
@@ -58,6 +59,7 @@ func NewPublish() Pipe {
 	return Pipe{realHasher}
 }
 
+// Pipe nix pipe.
 type Pipe struct {
 	hasher fileHasher
 }
@@ -99,6 +101,7 @@ func (Pipe) Default(ctx *context.Context) error {
 	return nil
 }
 
+// Run runs the pipe.
 func (p Pipe) Run(ctx *context.Context) error {
 	cli, err := client.NewReleaseClient(ctx)
 	if err != nil {
@@ -278,7 +281,7 @@ func preparePkg(
 		Version:      ctx.Version,
 		Install:      installs,
 		PostInstall:  postInstall,
-		Archives:     map[string]Archive{},
+		Archives:     map[string]archive{},
 		SourceRoots:  map[string]string{},
 		Description:  nix.Description,
 		Homepage:     nix.Homepage,
@@ -297,7 +300,7 @@ func preparePkg(
 		if err != nil {
 			return "", err
 		}
-		archive := Archive{
+		archive := archive{
 			URL: url,
 			Sha: sha,
 		}

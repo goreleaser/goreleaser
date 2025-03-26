@@ -1,3 +1,4 @@
+// Package common contains common functions for builders.
 package common
 
 import (

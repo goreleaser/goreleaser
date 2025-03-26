@@ -1,3 +1,4 @@
+// Package discord announces releases to Discord.
 package discord
 
 import (
@@ -21,6 +22,7 @@ const (
 	defaultMessageTemplate = `{{ .ProjectName }} {{ .Tag }} is out! Check it out at {{ .ReleaseURL }}`
 )
 
+// Pipe announcer.
 type Pipe struct{}
 
 func (Pipe) String() string { return "discord" }
@@ -31,12 +33,13 @@ func (Pipe) Skip(ctx *context.Context) (bool, error) {
 	return !enable, err
 }
 
-type Config struct {
+type envConfig struct {
 	API          string `env:"DISCORD_API" envDefault:"https://discord.com/api"`
 	WebhookID    string `env:"DISCORD_WEBHOOK_ID,notEmpty"`
 	WebhookToken string `env:"DISCORD_WEBHOOK_TOKEN,notEmpty"`
 }
 
+// Default implements Defaulter.
 func (p Pipe) Default(ctx *context.Context) error {
 	if ctx.Config.Announce.Discord.MessageTemplate == "" {
 		ctx.Config.Announce.Discord.MessageTemplate = defaultMessageTemplate
@@ -53,13 +56,14 @@ func (p Pipe) Default(ctx *context.Context) error {
 	return nil
 }
 
+// Announce implements Announcer.
 func (p Pipe) Announce(ctx *context.Context) error {
 	msg, err := tmpl.New(ctx).Apply(ctx.Config.Announce.Discord.MessageTemplate)
 	if err != nil {
 		return fmt.Errorf("discord: %w", err)
 	}
 
-	cfg, err := env.ParseAs[Config]()
+	cfg, err := env.ParseAs[envConfig]()
 	if err != nil {
 		return fmt.Errorf("discord: %w", err)
 	}

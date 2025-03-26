@@ -121,7 +121,7 @@ func TestFullFormulae(t *testing.T) {
 	}), data)
 	require.NoError(t, err)
 
-	golden.RequireEqualRb(t, []byte(formulae))
+	requireEqualRb(t, []byte(formulae))
 }
 
 func TestFullFormulaeLinuxOnly(t *testing.T) {
@@ -132,7 +132,7 @@ func TestFullFormulaeLinuxOnly(t *testing.T) {
 	}), data)
 	require.NoError(t, err)
 
-	golden.RequireEqualRb(t, []byte(formulae))
+	requireEqualRb(t, []byte(formulae))
 }
 
 func TestFullFormulaeMacOSOnly(t *testing.T) {
@@ -143,7 +143,7 @@ func TestFullFormulaeMacOSOnly(t *testing.T) {
 	}), data)
 	require.NoError(t, err)
 
-	golden.RequireEqualRb(t, []byte(formulae))
+	requireEqualRb(t, []byte(formulae))
 }
 
 func TestFormulaeSimple(t *testing.T) {
@@ -443,7 +443,7 @@ func TestFullPipe(t *testing.T) {
 				)
 			}
 
-			golden.RequireEqualRb(t, content)
+			requireEqualRb(t, content)
 
 			distBts, err := os.ReadFile(distFile)
 			require.NoError(t, err)
@@ -502,7 +502,7 @@ func TestRunPipeNameTemplate(t *testing.T) {
 	require.NoError(t, runAll(ctx, client))
 	require.NoError(t, publishAll(ctx, client))
 	require.True(t, client.CreatedFile)
-	golden.RequireEqualRb(t, []byte(client.Content))
+	requireEqualRb(t, []byte(client.Content))
 	distBts, err := os.ReadFile(distFile)
 	require.NoError(t, err)
 	require.Equal(t, client.Content, string(distBts))
@@ -716,7 +716,7 @@ func TestRunPipeForMultipleAmd64Versions(t *testing.T) {
 			require.NoError(t, runAll(ctx, client))
 			require.NoError(t, publishAll(ctx, client))
 			require.True(t, client.CreatedFile)
-			golden.RequireEqualRb(t, []byte(client.Content))
+			requireEqualRb(t, []byte(client.Content))
 
 			distBts, err := os.ReadFile(distFile)
 			require.NoError(t, err)
@@ -837,7 +837,7 @@ func TestRunPipeForMultipleArmVersions(t *testing.T) {
 			require.NoError(t, runAll(ctx, client))
 			require.NoError(t, publishAll(ctx, client))
 			require.True(t, client.CreatedFile)
-			golden.RequireEqualRb(t, []byte(client.Content))
+			requireEqualRb(t, []byte(client.Content))
 
 			distBts, err := os.ReadFile(distFile)
 			require.NoError(t, err)
@@ -1057,7 +1057,7 @@ func TestRunPipeBinaryRelease(t *testing.T) {
 	require.NoError(t, runAll(ctx, client))
 	require.NoError(t, publishAll(ctx, client))
 	require.True(t, client.CreatedFile)
-	golden.RequireEqualRb(t, []byte(client.Content))
+	requireEqualRb(t, []byte(client.Content))
 }
 
 func TestRunPipePullRequest(t *testing.T) {
@@ -1111,7 +1111,7 @@ func TestRunPipePullRequest(t *testing.T) {
 	require.True(t, client.CreatedFile)
 	require.True(t, client.OpenedPullRequest)
 	require.True(t, client.SyncedFork)
-	golden.RequireEqualRb(t, []byte(client.Content))
+	requireEqualRb(t, []byte(client.Content))
 }
 
 func TestRunPipeNoUpload(t *testing.T) {
@@ -1400,7 +1400,7 @@ func TestRunPipeUniversalBinary(t *testing.T) {
 	require.NoError(t, runAll(ctx, client))
 	require.NoError(t, publishAll(ctx, client))
 	require.True(t, client.CreatedFile)
-	golden.RequireEqualRb(t, []byte(client.Content))
+	requireEqualRb(t, []byte(client.Content))
 	distBts, err := os.ReadFile(distFile)
 	require.NoError(t, err)
 	require.Equal(t, client.Content, string(distBts))
@@ -1483,8 +1483,13 @@ func TestRunPipeUniversalBinaryNotReplacing(t *testing.T) {
 	require.NoError(t, runAll(ctx, client))
 	require.NoError(t, publishAll(ctx, client))
 	require.True(t, client.CreatedFile)
-	golden.RequireEqualRb(t, []byte(client.Content))
+	requireEqualRb(t, []byte(client.Content))
 	distBts, err := os.ReadFile(distFile)
 	require.NoError(t, err)
 	require.Equal(t, client.Content, string(distBts))
+}
+
+func requireEqualRb(tb testing.TB, out []byte) {
+	tb.Helper()
+	golden.RequireEqualExt(tb, out, ".rb")
 }

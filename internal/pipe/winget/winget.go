@@ -1,3 +1,4 @@
+// Package winget creates a winget manifest for each artifact.
 package winget
 
 import (
@@ -47,6 +48,7 @@ func (e errNoArchivesFound) Error() string {
 
 const wingetConfigExtra = "WingetConfig"
 
+// Pipe implementation.
 type Pipe struct{}
 
 func (Pipe) String() string { return "winget" }
@@ -80,6 +82,7 @@ func (Pipe) Default(ctx *context.Context) error {
 	return nil
 }
 
+// Run runs the pipe.
 func (p Pipe) Run(ctx *context.Context) error {
 	cli, err := client.NewReleaseClient(ctx)
 	if err != nil {

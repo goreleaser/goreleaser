@@ -1,3 +1,4 @@
+// Package sign signs common artifacts.
 package sign
 
 import (

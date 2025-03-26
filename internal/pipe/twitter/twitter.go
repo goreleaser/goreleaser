@@ -1,3 +1,4 @@
+// Package twitter announces releases on Twitter.
 package twitter
 
 import (
@@ -13,6 +14,7 @@ import (
 
 const defaultMessageTemplate = `{{ .ProjectName }} {{ .Tag }} is out! Check it out at {{ .ReleaseURL }}`
 
+// Pipe implementation.
 type Pipe struct{}
 
 func (Pipe) String() string { return "twitter" }
@@ -23,7 +25,7 @@ func (Pipe) Skip(ctx *context.Context) (bool, error) {
 	return !enable, err
 }
 
-type Config struct {
+type envConfig struct {
 	ConsumerKey    string `env:"TWITTER_CONSUMER_KEY,notEmpty"`
 	ConsumerSecret string `env:"TWITTER_CONSUMER_SECRET,notEmpty"`
 	AccessToken    string `env:"TWITTER_ACCESS_TOKEN,notEmpty"`
@@ -45,7 +47,7 @@ func (Pipe) Announce(ctx *context.Context) error {
 		return fmt.Errorf("twitter: %w", err)
 	}
 
-	cfg, err := env.ParseAs[Config]()
+	cfg, err := env.ParseAs[envConfig]()
 	if err != nil {
 		return fmt.Errorf("twitter: %w", err)
 	}

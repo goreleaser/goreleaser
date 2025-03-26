@@ -1,3 +1,4 @@
+// Package mattermost announces releases to mattermost.
 package mattermost
 
 import (
@@ -21,6 +22,7 @@ const (
 	defaultMessageTitle    = `{{ .ProjectName }} {{ .Tag }} is out!`
 )
 
+// Pipe announcer.
 type Pipe struct{}
 
 func (Pipe) String() string { return "mattermost" }
@@ -31,7 +33,7 @@ func (Pipe) Skip(ctx *context.Context) (bool, error) {
 	return !enable, err
 }
 
-type Config struct {
+type envConfig struct {
 	Webhook string `env:"MATTERMOST_WEBHOOK,notEmpty"`
 }
 
@@ -66,7 +68,7 @@ func (Pipe) Announce(ctx *context.Context) error {
 		return fmt.Errorf("teams: %w", err)
 	}
 
-	cfg, err := env.ParseAs[Config]()
+	cfg, err := env.ParseAs[envConfig]()
 	if err != nil {
 		return fmt.Errorf("mattermost: %w", err)
 	}

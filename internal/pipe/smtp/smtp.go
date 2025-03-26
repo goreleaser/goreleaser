@@ -1,3 +1,4 @@
+// Package smtp announces releases via SMTP.
 package smtp
 
 import (
@@ -18,6 +19,7 @@ const (
 	defaultBodyTemplate    = `You can view details from: {{ .ReleaseURL }}`
 )
 
+// Pipe implementation.
 type Pipe struct{}
 
 func (Pipe) String() string { return "smtp" }
@@ -28,7 +30,7 @@ func (Pipe) Skip(ctx *context.Context) (bool, error) {
 	return !enable, err
 }
 
-type Config struct {
+type envConfig struct {
 	Host     string `env:"SMTP_HOST"`
 	Port     int    `env:"SMTP_PORT"`
 	Username string `env:"SMTP_USERNAME"`
@@ -103,8 +105,8 @@ var (
 	errNoHost     = errors.New("SMTP: missing smtp.host or $SMTP_HOST")
 )
 
-func getConfig(smtp config.SMTP) (Config, error) {
-	cfg := Config{
+func getConfig(smtp config.SMTP) (envConfig, error) {
+	cfg := envConfig{
 		Host:     smtp.Host,
 		Port:     smtp.Port,
 		Username: smtp.Username,

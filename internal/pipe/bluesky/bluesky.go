@@ -1,3 +1,4 @@
+// Package bluesky announces releases to Bluesky.
 package bluesky
 
 import (
@@ -20,6 +21,7 @@ const (
 	defaultMessageTemplate = `{{ .ProjectName }} {{ .Tag }} is out! Check it out at {{ .ReleaseURL }}`
 )
 
+// Pipe announcer.
 type Pipe struct{}
 
 func (Pipe) String() string { return "bluesky" }
@@ -30,7 +32,7 @@ func (Pipe) Skip(ctx *context.Context) (bool, error) {
 	return !enable, err
 }
 
-type Config struct {
+type envConfig struct {
 	Password string `env:"BLUESKY_APP_PASSWORD,notEmpty"`
 }
 
@@ -43,13 +45,14 @@ func (Pipe) Default(ctx *context.Context) error {
 	return nil
 }
 
+// Announce implements Announcer.
 func (p Pipe) Announce(ctx *context.Context) error {
 	msg, err := tmpl.New(ctx).Apply(ctx.Config.Announce.Bluesky.MessageTemplate)
 	if err != nil {
 		return fmt.Errorf("bluesky: %w", err)
 	}
 
-	var cfg Config
+	var cfg envConfig
 	if err = env.Parse(&cfg); err != nil {
 		return fmt.Errorf("bluesky: %w", err)
 	}

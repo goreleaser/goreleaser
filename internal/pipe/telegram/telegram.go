@@ -1,3 +1,4 @@
+// Package telegram announces releases via telegram.
 package telegram
 
 import (
@@ -17,6 +18,7 @@ const (
 	parseModeMarkdown      = "MarkdownV2"
 )
 
+// Pipe implementation.
 type Pipe struct{}
 
 func (Pipe) String() string { return "telegram" }
@@ -27,7 +29,7 @@ func (Pipe) Skip(ctx *context.Context) (bool, error) {
 	return !enable, err
 }
 
-type Config struct {
+type envConfig struct {
 	ConsumerToken string `env:"TELEGRAM_TOKEN,notEmpty"`
 }
 
@@ -52,7 +54,7 @@ func (Pipe) Announce(ctx *context.Context) error {
 		return err
 	}
 
-	cfg, err := env.ParseAs[Config]()
+	cfg, err := env.ParseAs[envConfig]()
 	if err != nil {
 		return fmt.Errorf("telegram: %w", err)
 	}

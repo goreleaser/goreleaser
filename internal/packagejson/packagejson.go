@@ -6,6 +6,7 @@ import (
 	"os"
 )
 
+// Package represents a package.json file.
 type Package struct {
 	Name   string `json:"name"`
 	Module string `json:"module"`
@@ -14,6 +15,7 @@ type Package struct {
 	DevDependencies map[string]string `json:"devDependencies"` //nolint:tagliatelle
 }
 
+// IsBun returns true if the package.json has bun in devDependencies.
 func (p Package) IsBun() bool {
 	_, ok := p.DevDependencies["@types/bun"]
 	return ok
