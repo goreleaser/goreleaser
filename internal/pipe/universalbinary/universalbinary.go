@@ -23,7 +23,6 @@ import (
 	"github.com/goreleaser/goreleaser/v2/pkg/build"
 	"github.com/goreleaser/goreleaser/v2/pkg/config"
 	"github.com/goreleaser/goreleaser/v2/pkg/context"
-	"maps"
 )
 
 // Pipe for macos universal binaries.
