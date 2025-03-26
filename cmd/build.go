@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"path/filepath"
 	"runtime"
+	"slices"
 	"strings"
 	"time"
 
@@ -202,11 +203,8 @@ func setupBuildID(ctx *context.Context, ids []string) error {
 
 	var keep []config.Build
 	for _, build := range ctx.Config.Builds {
-		for _, id := range ids {
-			if build.ID == id {
-				keep = append(keep, build)
-				break
-			}
+		if slices.Contains(ids, build.ID) {
+			keep = append(keep, build)
 		}
 	}
 

@@ -21,6 +21,8 @@ const (
 type Pipe struct{}
 
 func (Pipe) String() string { return "smtp" }
+
+// Skip implements Skipper.
 func (Pipe) Skip(ctx *context.Context) (bool, error) {
 	enable, err := tmpl.New(ctx).Bool(ctx.Config.Announce.SMTP.Enabled)
 	return !enable, err
@@ -33,6 +35,7 @@ type Config struct {
 	Password string `env:"SMTP_PASSWORD,notEmpty"`
 }
 
+// Default sets the pipe defaults.
 func (Pipe) Default(ctx *context.Context) error {
 	if ctx.Config.Announce.SMTP.BodyTemplate == "" {
 		ctx.Config.Announce.SMTP.BodyTemplate = defaultBodyTemplate
@@ -45,6 +48,7 @@ func (Pipe) Default(ctx *context.Context) error {
 	return nil
 }
 
+// Announce does the announcement.
 func (Pipe) Announce(ctx *context.Context) error {
 	subject, err := tmpl.New(ctx).Apply(ctx.Config.Announce.SMTP.SubjectTemplate)
 	if err != nil {

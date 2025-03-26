@@ -237,7 +237,7 @@ func TestRun(t *testing.T) {
 			Goos:   "darwin",
 			Goarch: arch,
 			Type:   artifact.Binary,
-			Extra: map[string]interface{}{
+			Extra: map[string]any{
 				artifact.ExtraBinary: "fake",
 				artifact.ExtraID:     "foo",
 			},
@@ -253,7 +253,7 @@ func TestRun(t *testing.T) {
 			Goos:   "darwin",
 			Goarch: arch,
 			Type:   artifact.Binary,
-			Extra: map[string]interface{}{
+			Extra: map[string]any{
 				artifact.ExtraBinary: "fake",
 				artifact.ExtraID:     "foo",
 			},

@@ -16,6 +16,8 @@ const defaultMessageTemplate = `{{ .ProjectName }} {{ .Tag }} is out! Check it o
 type Pipe struct{}
 
 func (Pipe) String() string { return "twitter" }
+
+// Skip implements Skipper.
 func (Pipe) Skip(ctx *context.Context) (bool, error) {
 	enable, err := tmpl.New(ctx).Bool(ctx.Config.Announce.Twitter.Enabled)
 	return !enable, err
@@ -28,6 +30,7 @@ type Config struct {
 	AccessSecret   string `env:"TWITTER_ACCESS_TOKEN_SECRET,notEmpty"`
 }
 
+// Default sets the pipe defaults.
 func (Pipe) Default(ctx *context.Context) error {
 	if ctx.Config.Announce.Twitter.MessageTemplate == "" {
 		ctx.Config.Announce.Twitter.MessageTemplate = defaultMessageTemplate
@@ -35,6 +38,7 @@ func (Pipe) Default(ctx *context.Context) error {
 	return nil
 }
 
+// Announce does the announcement.
 func (Pipe) Announce(ctx *context.Context) error {
 	msg, err := tmpl.New(ctx).Apply(ctx.Config.Announce.Twitter.MessageTemplate)
 	if err != nil {

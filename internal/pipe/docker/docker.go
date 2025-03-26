@@ -38,10 +38,12 @@ type Pipe struct{}
 
 func (Pipe) String() string { return "docker images" }
 
+// Skip implements Skipper.
 func (Pipe) Skip(ctx *context.Context) bool {
 	return len(ctx.Config.Dockers) == 0 || skips.Any(ctx, skips.Docker)
 }
 
+// Dependencies implements Healthchecker.
 func (Pipe) Dependencies(ctx *context.Context) []string {
 	var cmds []string
 	for _, s := range ctx.Config.Dockers {
@@ -247,7 +249,7 @@ Previous error:
 			Goarch: docker.Goarch,
 			Goos:   docker.Goos,
 			Goarm:  docker.Goarm,
-			Extra: map[string]interface{}{
+			Extra: map[string]any{
 				dockerConfigExtra: docker,
 			},
 		})
@@ -332,7 +334,7 @@ func dockerPush(ctx *context.Context, image *artifact.Artifact) error {
 		Goarch: image.Goarch,
 		Goos:   image.Goos,
 		Goarm:  image.Goarm,
-		Extra: map[string]interface{}{
+		Extra: map[string]any{
 			dockerConfigExtra:    docker,
 			artifact.ExtraDigest: digest,
 		},

@@ -37,10 +37,15 @@ var ErrNoArchivesFound = errors.New("no archives found")
 // Pipe for krew manifest deployment.
 type Pipe struct{}
 
-func (Pipe) String() string                 { return "krew plugin manifest" }
-func (Pipe) ContinueOnError() bool          { return true }
+func (Pipe) String() string { return "krew plugin manifest" }
+
+// ContinueOnError implements Continuable.
+func (Pipe) ContinueOnError() bool { return true }
+
+// Skip implements Skipper.
 func (Pipe) Skip(ctx *context.Context) bool { return len(ctx.Config.Krews) == 0 }
 
+// Default sets the pipe defaults.
 func (Pipe) Default(ctx *context.Context) error {
 	for i := range ctx.Config.Krews {
 		krew := &ctx.Config.Krews[i]
@@ -60,6 +65,7 @@ func (Pipe) Default(ctx *context.Context) error {
 	return nil
 }
 
+// Run the pipe.
 func (Pipe) Run(ctx *context.Context) error {
 	cli, err := client.NewReleaseClient(ctx)
 	if err != nil {
@@ -144,7 +150,7 @@ func doRun(ctx *context.Context, krew config.Krew, cl client.ReleaseURLTemplater
 		Name: filename,
 		Path: yamlPath,
 		Type: artifact.KrewPluginManifest,
-		Extra: map[string]interface{}{
+		Extra: map[string]any{
 			krewConfigExtra: krew,
 		},
 	})

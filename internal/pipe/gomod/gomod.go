@@ -20,6 +20,7 @@ type Pipe struct{}
 
 func (Pipe) String() string { return "loading go mod information" }
 
+// Skip implements Skipper.
 func (Pipe) Skip(ctx *context.Context) bool {
 	for _, build := range ctx.Config.Builds {
 		if build.Builder == "go" {

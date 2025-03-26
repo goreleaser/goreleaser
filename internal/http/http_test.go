@@ -261,7 +261,7 @@ func TestUpload(t *testing.T) {
 			Goarch: "amd64",
 			Path:   file,
 			Type:   a.typ,
-			Extra: map[string]interface{}{
+			Extra: map[string]any{
 				artifact.ExtraID:  "foo",
 				artifact.ExtraExt: a.ext,
 			},

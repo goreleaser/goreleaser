@@ -2,6 +2,7 @@ package nix
 
 import (
 	"html/template"
+	"maps"
 	"os"
 	"os/exec"
 	"path/filepath"
@@ -465,16 +466,14 @@ func TestRunPipe(t *testing.T) {
 					Goarm:   goarm,
 					Goamd64: goamd64,
 					Type:    artifact.UploadableArchive,
-					Extra: map[string]interface{}{
+					Extra: map[string]any{
 						artifact.ExtraID:        id,
 						artifact.ExtraFormat:    format,
 						artifact.ExtraBinaries:  []string{"foo"},
 						artifact.ExtraWrappedIn: "",
 					},
 				}
-				for k, v := range extra {
-					art.Extra[k] = v
-				}
+				maps.Copy(art.Extra, extra)
 				ctx.Artifacts.Add(&art)
 
 				require.NoError(t, os.MkdirAll(filepath.Dir(path), 0o755))

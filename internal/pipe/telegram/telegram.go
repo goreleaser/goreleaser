@@ -20,6 +20,8 @@ const (
 type Pipe struct{}
 
 func (Pipe) String() string { return "telegram" }
+
+// Skip implements Skipper.
 func (Pipe) Skip(ctx *context.Context) (bool, error) {
 	enable, err := tmpl.New(ctx).Bool(ctx.Config.Announce.Telegram.Enabled)
 	return !enable, err
@@ -29,6 +31,7 @@ type Config struct {
 	ConsumerToken string `env:"TELEGRAM_TOKEN,notEmpty"`
 }
 
+// Default sets the pipe defaults.
 func (Pipe) Default(ctx *context.Context) error {
 	if ctx.Config.Announce.Telegram.MessageTemplate == "" {
 		ctx.Config.Announce.Telegram.MessageTemplate = defaultMessageTemplate
@@ -42,6 +45,7 @@ func (Pipe) Default(ctx *context.Context) error {
 	return nil
 }
 
+// Announce does the announcement.
 func (Pipe) Announce(ctx *context.Context) error {
 	msg, chatID, err := getMessageDetails(ctx)
 	if err != nil {

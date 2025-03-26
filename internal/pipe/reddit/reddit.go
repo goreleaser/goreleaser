@@ -18,6 +18,8 @@ const (
 type Pipe struct{}
 
 func (Pipe) String() string { return "reddit" }
+
+// Skip implements Skipper.
 func (Pipe) Skip(ctx *context.Context) (bool, error) {
 	enable, err := tmpl.New(ctx).Bool(ctx.Config.Announce.Reddit.Enabled)
 	return !enable, err
@@ -28,6 +30,7 @@ type Config struct {
 	Password string `env:"REDDIT_PASSWORD,notEmpty"`
 }
 
+// Default sets the pipe defaults.
 func (Pipe) Default(ctx *context.Context) error {
 	if ctx.Config.Announce.Reddit.TitleTemplate == "" {
 		ctx.Config.Announce.Reddit.TitleTemplate = defaultTitleTemplate
@@ -40,6 +43,7 @@ func (Pipe) Default(ctx *context.Context) error {
 	return nil
 }
 
+// Announce does the announcement.
 func (Pipe) Announce(ctx *context.Context) error {
 	title, err := tmpl.New(ctx).Apply(ctx.Config.Announce.Reddit.TitleTemplate)
 	if err != nil {

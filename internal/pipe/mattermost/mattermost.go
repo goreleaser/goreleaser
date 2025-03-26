@@ -24,6 +24,8 @@ const (
 type Pipe struct{}
 
 func (Pipe) String() string { return "mattermost" }
+
+// Skip implements Skipper.
 func (Pipe) Skip(ctx *context.Context) (bool, error) {
 	enable, err := tmpl.New(ctx).Bool(ctx.Config.Announce.Mattermost.Enabled)
 	return !enable, err
@@ -33,6 +35,7 @@ type Config struct {
 	Webhook string `env:"MATTERMOST_WEBHOOK,notEmpty"`
 }
 
+// Default sets the pipe defaults.
 func (Pipe) Default(ctx *context.Context) error {
 	if ctx.Config.Announce.Mattermost.MessageTemplate == "" {
 		ctx.Config.Announce.Mattermost.MessageTemplate = defaultMessageTemplate
@@ -51,6 +54,7 @@ func (Pipe) Default(ctx *context.Context) error {
 	return nil
 }
 
+// Announce does the announcement.
 func (Pipe) Announce(ctx *context.Context) error {
 	msg, err := tmpl.New(ctx).Apply(ctx.Config.Announce.Mattermost.MessageTemplate)
 	if err != nil {
@@ -144,7 +148,7 @@ type mattermostAttachment struct {
 }
 
 type mattermostAttachmentField struct {
-	Title string      `json:"title"`
-	Value interface{} `json:"value"`
-	Short bool        `json:"short"`
+	Title string `json:"title"`
+	Value any    `json:"value"`
+	Short bool   `json:"short"`
 }

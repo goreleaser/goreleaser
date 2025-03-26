@@ -103,7 +103,7 @@ func (b *Builder) Build(ctx *context.Context, build config.Build, options api.Op
 		Goos:   t.Os,
 		Goarch: convertToGoarch(t.Arch),
 		Target: t.Target,
-		Extra: map[string]interface{}{
+		Extra: map[string]any{
 			artifact.ExtraBinary:  strings.TrimSuffix(filepath.Base(options.Path), options.Ext),
 			artifact.ExtraExt:     options.Ext,
 			artifact.ExtraID:      build.ID,

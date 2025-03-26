@@ -71,7 +71,9 @@ type Pipe struct {
 	pipeline []Publisher
 }
 
-func (Pipe) String() string                 { return "publishing" }
+func (Pipe) String() string { return "publishing" }
+
+// Skip implements Skipper.
 func (Pipe) Skip(ctx *context.Context) bool { return skips.Any(ctx, skips.Publish) }
 
 func (p Pipe) Run(ctx *context.Context) error {

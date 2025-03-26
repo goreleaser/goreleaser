@@ -11,8 +11,8 @@ import (
 
 //nolint:gochecknoglobals
 var (
-	MockEnvVar = "GORELEASER_MOCK_DATA"
-	MockCmd    = os.Args[0]
+	mockEnvVar = "GORELEASER_MOCK_DATA"
+	mockCmd    = os.Args[0]
 )
 
 type MockData struct {
@@ -54,7 +54,7 @@ func MarshalMockEnv(data *MockData) string {
 		b, _ = errData.MarshalJSON()
 	}
 
-	return MockEnvVar + "=" + string(b)
+	return mockEnvVar + "=" + string(b)
 }
 
 func ExecuteMockData(jsonData string) int {
@@ -103,7 +103,7 @@ func ExecuteMockData(jsonData string) int {
 
 func filterEnv(vars []string) []string {
 	for i, env := range vars {
-		if strings.HasPrefix(env, MockEnvVar+"=") {
+		if strings.HasPrefix(env, mockEnvVar+"=") {
 			return append(vars[:i], vars[i+1:]...)
 		}
 	}

@@ -25,6 +25,7 @@ type ManifestPipe struct{}
 
 func (ManifestPipe) String() string { return "docker manifests" }
 
+// Skip implements Skipper.
 func (ManifestPipe) Skip(ctx *context.Context) bool {
 	return len(ctx.Config.DockerManifests) == 0 || skips.Any(ctx, skips.Docker)
 }
@@ -98,7 +99,7 @@ func (ManifestPipe) Publish(ctx *context.Context) error {
 				Type:  artifact.DockerManifest,
 				Name:  name,
 				Path:  name,
-				Extra: map[string]interface{}{},
+				Extra: map[string]any{},
 			}
 			if manifest.ID != "" {
 				art.Extra[artifact.ExtraID] = manifest.ID

@@ -2,6 +2,7 @@ package winget
 
 import (
 	"html/template"
+	"maps"
 	"os"
 	"path/filepath"
 	"strings"
@@ -678,16 +679,14 @@ func TestRunPipe(t *testing.T) {
 					Goarm:   goarm,
 					Goamd64: goamd64,
 					Type:    artifact.UploadableArchive,
-					Extra: map[string]interface{}{
+					Extra: map[string]any{
 						artifact.ExtraID:        id,
 						artifact.ExtraFormat:    "zip",
 						artifact.ExtraBinaries:  []string{"foo.exe"},
 						artifact.ExtraWrappedIn: "",
 					},
 				}
-				for k, v := range extra {
-					art.Extra[k] = v
-				}
+				maps.Copy(art.Extra, extra)
 				ctx.Artifacts.Add(&art)
 
 				require.NoError(t, os.MkdirAll(filepath.Dir(path), 0o755))
@@ -714,7 +713,7 @@ func TestRunPipe(t *testing.T) {
 				Goos:   goos,
 				Goarch: goarch,
 				Type:   artifact.UploadableBinary,
-				Extra: map[string]interface{}{
+				Extra: map[string]any{
 					artifact.ExtraID: "bar",
 				},
 			})
@@ -847,7 +846,7 @@ func TestFormatBinary(t *testing.T) {
 			Goarch:  goarch,
 			Goamd64: goamd64,
 			Type:    artifact.UploadableBinary,
-			Extra: map[string]interface{}{
+			Extra: map[string]any{
 				artifact.ExtraID:     id,
 				artifact.ExtraBinary: "somebin",
 			},

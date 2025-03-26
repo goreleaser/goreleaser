@@ -14,7 +14,9 @@ import (
 type Pipe struct{}
 
 // String returns the description of the pipe.
-func (Pipe) String() string                 { return "blobs" }
+func (Pipe) String() string { return "blobs" }
+
+// Skip implements Skipper.
 func (Pipe) Skip(ctx *context.Context) bool { return len(ctx.Config.Blobs) == 0 }
 
 // Default sets the pipe defaults.

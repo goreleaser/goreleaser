@@ -32,6 +32,8 @@ var defaultExpectedStatusCodes = []int{
 type Pipe struct{}
 
 func (Pipe) String() string { return "webhook" }
+
+// Skip implements Skipper.
 func (Pipe) Skip(ctx *context.Context) (bool, error) {
 	enable, err := tmpl.New(ctx).Bool(ctx.Config.Announce.Webhook.Enabled)
 	return !enable, err

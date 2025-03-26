@@ -40,6 +40,8 @@ const (
 type Pipe struct{}
 
 func (Pipe) String() string { return "linux packages" }
+
+// Skip implements Skipper.
 func (Pipe) Skip(ctx *context.Context) bool {
 	return skips.Any(ctx, skips.NFPM) || len(ctx.Config.NFPMs) == 0
 }
@@ -569,7 +571,7 @@ func create(ctx *context.Context, fpm config.NFPM, format string, artifacts []*a
 		Goarm:   artifacts[0].Goarm,
 		Gomips:  artifacts[0].Gomips,
 		Goamd64: artifacts[0].Goamd64,
-		Extra: map[string]interface{}{
+		Extra: map[string]any{
 			artifact.ExtraID:     fpm.ID,
 			artifact.ExtraFormat: format,
 			artifact.ExtraExt:    "." + format,

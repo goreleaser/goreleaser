@@ -62,6 +62,8 @@ var (
 type Pipe struct{}
 
 func (Pipe) String() string { return "ko" }
+
+// Skip implements Skipper.
 func (Pipe) Skip(ctx *context.Context) bool {
 	return skips.Any(ctx, skips.Ko) || len(ctx.Config.Kos) == 0
 }
@@ -539,7 +541,7 @@ func makeArtifact(id, name, digest string) *artifact.Artifact {
 		Type:  artifact.DockerManifest,
 		Name:  name,
 		Path:  name,
-		Extra: map[string]interface{}{},
+		Extra: map[string]any{},
 	}
 	if id != "" {
 		art.Extra[artifact.ExtraID] = id

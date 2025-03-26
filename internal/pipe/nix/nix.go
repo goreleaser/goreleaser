@@ -62,13 +62,20 @@ type Pipe struct {
 	hasher fileHasher
 }
 
-func (Pipe) String() string                           { return "nixpkgs" }
-func (Pipe) ContinueOnError() bool                    { return true }
+func (Pipe) String() string { return "nixpkgs" }
+
+// ContinueOnError implements Continuable.
+func (Pipe) ContinueOnError() bool { return true }
+
+// Dependencies implements Healthchecker.
 func (Pipe) Dependencies(_ *context.Context) []string { return []string{"nix-hash"} }
+
+// Skip implements Skipper.
 func (p Pipe) Skip(ctx *context.Context) bool {
 	return skips.Any(ctx, skips.Nix) || len(ctx.Config.Nix) == 0 || !p.hasher.Available()
 }
 
+// Default sets the pipe defaults.
 func (Pipe) Default(ctx *context.Context) error {
 	for i := range ctx.Config.Nix {
 		nix := &ctx.Config.Nix[i]
@@ -181,7 +188,7 @@ func (p Pipe) doRun(ctx *context.Context, nix config.Nix, cl client.ReleaseURLTe
 		Name: filepath.Base(path),
 		Path: path,
 		Type: artifact.Nixpkg,
-		Extra: map[string]interface{}{
+		Extra: map[string]any{
 			nixConfigExtra: nix,
 		},
 	})
@@ -526,7 +533,7 @@ func binInstallFormats(nix config.Nix) []string {
 
 func split(s string) []string {
 	var result []string
-	for _, line := range strings.Split(strings.TrimSpace(s), "\n") {
+	for line := range strings.SplitSeq(strings.TrimSpace(s), "\n") {
 		line := strings.TrimSpace(line)
 		if line == "" {
 			continue

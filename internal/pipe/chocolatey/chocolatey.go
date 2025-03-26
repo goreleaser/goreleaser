@@ -32,11 +32,17 @@ var cmd cmder = stdCmd{}
 // Pipe for chocolatey packaging.
 type Pipe struct{}
 
-func (Pipe) String() string        { return "chocolatey packages" }
+func (Pipe) String() string { return "chocolatey packages" }
+
+// ContinueOnError implements Continuable.
 func (Pipe) ContinueOnError() bool { return true }
+
+// Skip implements Skipper.
 func (Pipe) Skip(ctx *context.Context) bool {
 	return skips.Any(ctx, skips.Chocolatey) || len(ctx.Config.Chocolateys) == 0
 }
+
+// Dependencies implements Healthchecker.
 func (Pipe) Dependencies(_ *context.Context) []string { return []string{"choco"} }
 
 // Default sets the pipe defaults.
@@ -170,7 +176,7 @@ func doRun(ctx *context.Context, cl client.ReleaseURLTemplater, choco config.Cho
 		Type: artifact.PublishableChocolatey,
 		Path: filepath.Join(ctx.Config.Dist, pkgFile),
 		Name: pkgFile,
-		Extra: map[string]interface{}{
+		Extra: map[string]any{
 			artifact.ExtraFormat: nupkgFormat,
 			chocoConfigExtra:     choco,
 		},

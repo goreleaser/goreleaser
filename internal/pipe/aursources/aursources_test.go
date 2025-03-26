@@ -278,7 +278,7 @@ func TestFullPipe(t *testing.T) {
 				Goarch:  "amd64",
 				Goamd64: "v3",
 				Type:    artifact.UploadableArchive,
-				Extra: map[string]interface{}{
+				Extra: map[string]any{
 					artifact.ExtraID:       "bar",
 					artifact.ExtraFormat:   "tar.gz",
 					artifact.ExtraBinaries: []string{"bar"},
@@ -291,7 +291,7 @@ func TestFullPipe(t *testing.T) {
 				Goarch:  "amd64",
 				Goamd64: "v1",
 				Type:    artifact.UploadableArchive,
-				Extra: map[string]interface{}{
+				Extra: map[string]any{
 					artifact.ExtraID:       "bar",
 					artifact.ExtraFormat:   "tar.gz",
 					artifact.ExtraBinaries: []string{"bar"},
@@ -303,7 +303,7 @@ func TestFullPipe(t *testing.T) {
 				Name: "sources.tar.gz",
 				Path: path,
 				Type: artifact.UploadableSourceArchive,
-				Extra: map[string]interface{}{
+				Extra: map[string]any{
 					artifact.ExtraID:       "foo",
 					artifact.ExtraFormat:   "tar.gz",
 					artifact.ExtraBinaries: []string{"name"},
@@ -399,7 +399,7 @@ func TestRunPipe(t *testing.T) {
 			Path:    path,
 			Goamd64: "v1",
 			Type:    artifact.UploadableSourceArchive,
-			Extra: map[string]interface{}{
+			Extra: map[string]any{
 				artifact.ExtraID:       "foo",
 				artifact.ExtraFormat:   "tar.gz",
 				artifact.ExtraBinaries: []string{"foo"},
@@ -467,7 +467,7 @@ func TestRunPipeMultipleConfigurations(t *testing.T) {
 		Path:    path,
 		Goamd64: "v1",
 		Type:    artifact.UploadableSourceArchive,
-		Extra: map[string]interface{}{
+		Extra: map[string]any{
 			artifact.ExtraID:       "bar",
 			artifact.ExtraFormat:   "tar.gz",
 			artifact.ExtraBinaries: []string{"bar"},
@@ -480,7 +480,7 @@ func TestRunPipeMultipleConfigurations(t *testing.T) {
 		Goarch:  "amd64",
 		Goamd64: "v1",
 		Type:    artifact.UploadableSourceArchive,
-		Extra: map[string]interface{}{
+		Extra: map[string]any{
 			artifact.ExtraID:       "foo",
 			artifact.ExtraFormat:   "tar.gz",
 			artifact.ExtraBinaries: []string{"name"},
@@ -513,7 +513,7 @@ func TestRunPipeNoBuilds(t *testing.T) {
 	}, testctx.GitHubTokenType)
 	client := client.NewMock()
 	require.NoError(t, Pipe{}.Default(ctx))
-	require.Equal(t, ErrNoArchivesFound, runAll(ctx, client))
+	require.Equal(t, errNoArchivesFound, runAll(ctx, client))
 	require.False(t, client.CreatedFile)
 }
 
@@ -541,7 +541,7 @@ func TestRunPipeWrappedInDirectory(t *testing.T) {
 		Path:    path,
 		Goamd64: "v1",
 		Type:    artifact.UploadableSourceArchive,
-		Extra: map[string]interface{}{
+		Extra: map[string]any{
 			artifact.ExtraID:        "foo",
 			artifact.ExtraFormat:    "tar.gz",
 			artifact.ExtraBinaries:  []string{"foo"},
@@ -586,7 +586,7 @@ func TestRunPipeBinaryRelease(t *testing.T) {
 		Path:    path,
 		Goamd64: "v1",
 		Type:    artifact.UploadableSourceArchive,
-		Extra: map[string]interface{}{
+		Extra: map[string]any{
 			artifact.ExtraID:     "foo",
 			artifact.ExtraFormat: "binary",
 			artifact.ExtraBinary: "foo",
@@ -631,7 +631,7 @@ func TestRunPipeNoUpload(t *testing.T) {
 			Path:    path,
 			Goamd64: "v1",
 			Type:    artifact.UploadableSourceArchive,
-			Extra: map[string]interface{}{
+			Extra: map[string]any{
 				artifact.ExtraID:       "foo",
 				artifact.ExtraFormat:   "tar.gz",
 				artifact.ExtraBinaries: []string{"foo"},
@@ -686,7 +686,7 @@ func TestRunEmptyTokenType(t *testing.T) {
 		Goos:   "linux",
 		Goarch: "amd64",
 		Type:   artifact.UploadableSourceArchive,
-		Extra: map[string]interface{}{
+		Extra: map[string]any{
 			artifact.ExtraID:       "foo",
 			artifact.ExtraFormat:   "tar.gz",
 			artifact.ExtraBinaries: []string{"foo"},

@@ -32,7 +32,9 @@ var (
 // Pipe for checksums.
 type Pipe struct{}
 
-func (Pipe) String() string                 { return "calculating checksums" }
+func (Pipe) String() string { return "calculating checksums" }
+
+// Skip implements Skipper.
 func (Pipe) Skip(ctx *context.Context) bool { return ctx.Config.Checksum.Disable }
 
 // Default sets the pipe defaults.
@@ -84,7 +86,7 @@ func splitChecksum(ctx *context.Context) error {
 			Type: artifact.Checksum,
 			Path: filepath,
 			Name: filename,
-			Extra: map[string]interface{}{
+			Extra: map[string]any{
 				artifact.ExtraChecksumOf: art.Path,
 				artifact.ExtraRefresh: func() error {
 					log.WithField("file", filename).Debug("refreshing checksums")
@@ -112,7 +114,7 @@ func singleChecksum(ctx *context.Context) error {
 		Type: artifact.Checksum,
 		Path: filepath,
 		Name: filename,
-		Extra: map[string]interface{}{
+		Extra: map[string]any{
 			artifact.ExtraRefresh: func() error {
 				log.WithField("file", filename).Debug("refreshing checksums")
 				return refreshAll(ctx, filepath)

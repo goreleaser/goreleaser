@@ -109,7 +109,7 @@ func TestRunPipe(t *testing.T) {
 				Name:   "bin/mybin",
 				Path:   filepath.Join(dist, "darwinall", "bin", "mybin"),
 				Type:   artifact.UniversalBinary,
-				Extra: map[string]interface{}{
+				Extra: map[string]any{
 					artifact.ExtraBinary:   "bin/mybin",
 					artifact.ExtraID:       "default",
 					artifact.ExtraReplaces: true,
@@ -122,7 +122,7 @@ func TestRunPipe(t *testing.T) {
 				Name:    "bin/mybin",
 				Path:    filepath.Join(dist, "darwinamd64v1", "bin", "mybin"),
 				Type:    artifact.Binary,
-				Extra: map[string]interface{}{
+				Extra: map[string]any{
 					artifact.ExtraBinary: "bin/mybin",
 					artifact.ExtraID:     "default",
 				},
@@ -133,7 +133,7 @@ func TestRunPipe(t *testing.T) {
 				Name:   "bin/mybin",
 				Path:   filepath.Join(dist, "linux386", "bin", "mybin"),
 				Type:   artifact.Binary,
-				Extra: map[string]interface{}{
+				Extra: map[string]any{
 					artifact.ExtraBinary: "bin/mybin",
 					artifact.ExtraID:     "default",
 				},
@@ -145,7 +145,7 @@ func TestRunPipe(t *testing.T) {
 				Name:   "bin/mybin",
 				Path:   filepath.Join(dist, "linuxarm7", "bin", "mybin"),
 				Type:   artifact.Binary,
-				Extra: map[string]interface{}{
+				Extra: map[string]any{
 					artifact.ExtraBinary: "bin/mybin",
 					artifact.ExtraID:     "default",
 				},
@@ -157,7 +157,7 @@ func TestRunPipe(t *testing.T) {
 				Name:   "bin/mybin",
 				Path:   filepath.Join(dist, "linuxmipssoftfloat", "bin", "mybin"),
 				Type:   artifact.Binary,
-				Extra: map[string]interface{}{
+				Extra: map[string]any{
 					artifact.ExtraBinary: "mybin",
 					artifact.ExtraID:     "default",
 				},
@@ -169,7 +169,7 @@ func TestRunPipe(t *testing.T) {
 				Name:    "bin/mybin.exe",
 				Path:    filepath.Join(dist, "windowsamd64", "bin", "mybin.exe"),
 				Type:    artifact.Binary,
-				Extra: map[string]interface{}{
+				Extra: map[string]any{
 					artifact.ExtraBinary: "mybin",
 					artifact.ExtraExt:    ".exe",
 					artifact.ExtraID:     "default",
@@ -182,7 +182,7 @@ func TestRunPipe(t *testing.T) {
 				Name:    "bin/mybin",
 				Path:    filepath.Join(dist, "linuxamd64v3", "bin", "mybin"),
 				Type:    artifact.Binary,
-				Extra: map[string]interface{}{
+				Extra: map[string]any{
 					artifact.ExtraBinary: "mybin",
 					artifact.ExtraID:     "default",
 				},
@@ -194,7 +194,7 @@ func TestRunPipe(t *testing.T) {
 				Name:    "bin/mybin",
 				Path:    "will be ignored",
 				Type:    artifact.Binary,
-				Extra: map[string]interface{}{
+				Extra: map[string]any{
 					artifact.ExtraBinary: "mybin",
 					artifact.ExtraID:     "default",
 				},
@@ -307,7 +307,7 @@ func TestRunPipeDifferentBinaryCount(t *testing.T) {
 		Name:   "bin/mybin",
 		Path:   filepath.Join(dist, "darwinamd64", "bin", "mybin"),
 		Type:   artifact.Binary,
-		Extra: map[string]interface{}{
+		Extra: map[string]any{
 			artifact.ExtraBinary: "bin/mybin",
 			artifact.ExtraID:     "default",
 		},
@@ -318,7 +318,7 @@ func TestRunPipeDifferentBinaryCount(t *testing.T) {
 		Name:   "bin/foobar",
 		Path:   filepath.Join(dist, "darwinamd64", "bin", "foobar"),
 		Type:   artifact.Binary,
-		Extra: map[string]interface{}{
+		Extra: map[string]any{
 			artifact.ExtraBinary: "bin/foobar",
 			artifact.ExtraID:     "foobar",
 		},
@@ -329,7 +329,7 @@ func TestRunPipeDifferentBinaryCount(t *testing.T) {
 		Name:   "bin/mybin",
 		Path:   filepath.Join(dist, "linuxamd64", "bin", "mybin"),
 		Type:   artifact.Binary,
-		Extra: map[string]interface{}{
+		Extra: map[string]any{
 			artifact.ExtraBinary: "bin/mybin",
 			artifact.ExtraID:     "default",
 		},
@@ -369,7 +369,7 @@ func TestRunPipeNoBinaries(t *testing.T) {
 		Name:   "bin/mybin",
 		Path:   filepath.Join(dist, "linuxamd64", "bin", "mybin"),
 		Type:   artifact.Binary,
-		Extra: map[string]interface{}{
+		Extra: map[string]any{
 			artifact.ExtraBinary: "bin/mybin",
 			artifact.ExtraID:     "default",
 		},
@@ -455,7 +455,7 @@ func TestRunPipeBinary(t *testing.T) {
 		Name:   "mybin",
 		Path:   filepath.Join(dist, "darwinamd64", "mybin"),
 		Type:   artifact.Binary,
-		Extra: map[string]interface{}{
+		Extra: map[string]any{
 			artifact.ExtraBinary: "mybin",
 			artifact.ExtraID:     "default",
 		},
@@ -466,7 +466,7 @@ func TestRunPipeBinary(t *testing.T) {
 		Name:   "myunibin",
 		Path:   filepath.Join(dist, "darwinamd64", "mybin"),
 		Type:   artifact.UniversalBinary,
-		Extra: map[string]interface{}{
+		Extra: map[string]any{
 			artifact.ExtraBinary:   "myunibin",
 			artifact.ExtraID:       "default",
 			artifact.ExtraReplaces: true,
@@ -478,7 +478,7 @@ func TestRunPipeBinary(t *testing.T) {
 		Name:   "mybin.exe",
 		Path:   filepath.Join(dist, "windowsamd64", "mybin.exe"),
 		Type:   artifact.Binary,
-		Extra: map[string]interface{}{
+		Extra: map[string]any{
 			artifact.ExtraBinary: "mybin",
 			artifact.ExtraExt:    ".exe",
 			artifact.ExtraID:     "default",
@@ -490,7 +490,7 @@ func TestRunPipeBinary(t *testing.T) {
 		Name:   "myotherbin.exe",
 		Path:   filepath.Join(dist, "windowsamd64", "myotherbin.exe"),
 		Type:   artifact.Binary,
-		Extra: map[string]interface{}{
+		Extra: map[string]any{
 			artifact.ExtraBinary: "myotherbin",
 			artifact.ExtraExt:    ".exe",
 			artifact.ExtraID:     "default2",
@@ -541,7 +541,7 @@ func TestRunPipeDistRemoved(t *testing.T) {
 		Name:   "mybin.exe",
 		Path:   filepath.Join("/tmp/path/to/nope", "windowsamd64", "mybin.exe"),
 		Type:   artifact.Binary,
-		Extra: map[string]interface{}{
+		Extra: map[string]any{
 			artifact.ExtraBinary: "mybin",
 			artifact.ExtraExt:    ".exe",
 			artifact.ExtraID:     "default",
@@ -582,7 +582,7 @@ func TestRunPipeInvalidGlob(t *testing.T) {
 		Name:   "mybin",
 		Path:   filepath.Join("dist", "darwinamd64", "mybin"),
 		Type:   artifact.Binary,
-		Extra: map[string]interface{}{
+		Extra: map[string]any{
 			artifact.ExtraBinary: "mybin",
 			artifact.ExtraID:     "default",
 		},
@@ -622,7 +622,7 @@ func TestRunPipeNameTemplateWithSpace(t *testing.T) {
 		Name:   "mybin",
 		Path:   filepath.Join("dist", "darwinamd64", "mybin"),
 		Type:   artifact.Binary,
-		Extra: map[string]interface{}{
+		Extra: map[string]any{
 			artifact.ExtraBinary: "mybin",
 			artifact.ExtraID:     "default",
 		},
@@ -663,7 +663,7 @@ func TestRunPipeInvalidNameTemplate(t *testing.T) {
 		Name:   "mybin",
 		Path:   filepath.Join("dist", "darwinamd64", "mybin"),
 		Type:   artifact.Binary,
-		Extra: map[string]interface{}{
+		Extra: map[string]any{
 			artifact.ExtraBinary: "mybin",
 			artifact.ExtraID:     "default",
 		},
@@ -701,7 +701,7 @@ func TestRunPipeInvalidFilesNameTemplate(t *testing.T) {
 		Name:   "mybin",
 		Path:   filepath.Join("dist", "darwinamd64", "mybin"),
 		Type:   artifact.Binary,
-		Extra: map[string]interface{}{
+		Extra: map[string]any{
 			artifact.ExtraBinary: "mybin",
 			artifact.ExtraID:     "default",
 		},
@@ -737,7 +737,7 @@ func TestRunPipeInvalidWrapInDirectoryTemplate(t *testing.T) {
 		Name:   "mybin",
 		Path:   filepath.Join("dist", "darwinamd64", "mybin"),
 		Type:   artifact.Binary,
-		Extra: map[string]interface{}{
+		Extra: map[string]any{
 			artifact.ExtraBinary: "mybin",
 			artifact.ExtraID:     "default",
 		},
@@ -779,7 +779,7 @@ func TestRunPipeWrap(t *testing.T) {
 		Name:   "mybin",
 		Path:   filepath.Join("dist", "darwinamd64", "mybin"),
 		Type:   artifact.Binary,
-		Extra: map[string]interface{}{
+		Extra: map[string]any{
 			artifact.ExtraBinary: "mybin",
 			artifact.ExtraID:     "default",
 		},
@@ -931,7 +931,7 @@ func TestBinaryOverride(t *testing.T) {
 		Name:   "mybin",
 		Path:   filepath.Join(dist, "darwinamd64", "mybin"),
 		Type:   artifact.Binary,
-		Extra: map[string]interface{}{
+		Extra: map[string]any{
 			artifact.ExtraBinary: "mybin",
 			artifact.ExtraID:     "default",
 		},
@@ -942,7 +942,7 @@ func TestBinaryOverride(t *testing.T) {
 		Name:   "mybin.exe",
 		Path:   filepath.Join(dist, "windowsamd64", "mybin.exe"),
 		Type:   artifact.Binary,
-		Extra: map[string]interface{}{
+		Extra: map[string]any{
 			artifact.ExtraBinary: "mybin",
 			artifact.ExtraExt:    ".exe",
 			artifact.ExtraID:     "default",
@@ -1004,7 +1004,7 @@ func TestRunPipeSameArchiveFilename(t *testing.T) {
 		Name:   "mybin",
 		Path:   filepath.Join(dist, "darwinamd64", "mybin"),
 		Type:   artifact.Binary,
-		Extra: map[string]interface{}{
+		Extra: map[string]any{
 			artifact.ExtraBinary: "mybin",
 			artifact.ExtraID:     "default",
 		},
@@ -1015,7 +1015,7 @@ func TestRunPipeSameArchiveFilename(t *testing.T) {
 		Name:   "mybin.exe",
 		Path:   filepath.Join(dist, "windowsamd64", "mybin.exe"),
 		Type:   artifact.Binary,
-		Extra: map[string]interface{}{
+		Extra: map[string]any{
 			artifact.ExtraBinary: "mybin",
 			artifact.ExtraExt:    ".exe",
 			artifact.ExtraID:     "default",
@@ -1112,7 +1112,7 @@ func TestArchive_globbing(t *testing.T) {
 			Name:   "foobin",
 			Path:   bin.Name(),
 			Type:   artifact.Binary,
-			Extra: map[string]interface{}{
+			Extra: map[string]any{
 				artifact.ExtraID: "default",
 			},
 		})
@@ -1240,7 +1240,7 @@ func TestExtraFormatWhenOverride(t *testing.T) {
 		Name:    "bin/mybin.exe",
 		Path:    filepath.Join(ctx.Config.Dist, "windowsamd64", "bin", "mybin.exe"),
 		Type:    artifact.Binary,
-		Extra: map[string]interface{}{
+		Extra: map[string]any{
 			artifact.ExtraBinary: "mybin",
 			artifact.ExtraExt:    ".exe",
 			artifact.ExtraID:     "default",

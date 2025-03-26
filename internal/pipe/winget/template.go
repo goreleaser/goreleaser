@@ -39,7 +39,7 @@ func createYAML(ctx *context.Context, winget config.Winget, in any, tp artifact.
 		Name: filename,
 		Path: path,
 		Type: tp,
-		Extra: map[string]interface{}{
+		Extra: map[string]any{
 			wingetConfigExtra: winget,
 			artifact.ExtraID:  winget.Name,
 		},

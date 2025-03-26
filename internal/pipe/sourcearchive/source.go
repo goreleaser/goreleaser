@@ -24,6 +24,7 @@ func (Pipe) String() string {
 	return "creating source archive"
 }
 
+// Skip implements Skipper.
 func (Pipe) Skip(ctx *context.Context) bool {
 	return !ctx.Config.Source.Enabled
 }
@@ -71,7 +72,7 @@ func (Pipe) Run(ctx *context.Context) error {
 		Type: artifact.UploadableSourceArchive,
 		Name: filename,
 		Path: path,
-		Extra: map[string]interface{}{
+		Extra: map[string]any{
 			artifact.ExtraFormat: format,
 		},
 	})

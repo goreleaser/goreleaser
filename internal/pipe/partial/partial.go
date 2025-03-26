@@ -14,9 +14,12 @@ import (
 
 type Pipe struct{}
 
-func (Pipe) String() string                 { return "partial" }
+func (Pipe) String() string { return "partial" }
+
+// Skip implements Skipper.
 func (Pipe) Skip(ctx *context.Context) bool { return !ctx.Partial }
 
+// Run the pipe.
 func (Pipe) Run(ctx *context.Context) error {
 	if t := os.Getenv("TARGET"); t != "" {
 		ctx.PartialTarget = t

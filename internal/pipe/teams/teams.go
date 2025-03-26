@@ -21,6 +21,8 @@ const (
 type Pipe struct{}
 
 func (Pipe) String() string { return "teams" }
+
+// Skip implements Skipper.
 func (Pipe) Skip(ctx *context.Context) (bool, error) {
 	enable, err := tmpl.New(ctx).Bool(ctx.Config.Announce.Teams.Enabled)
 	return !enable, err

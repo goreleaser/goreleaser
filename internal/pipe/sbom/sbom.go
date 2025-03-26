@@ -29,10 +29,13 @@ var passthroughEnvVars = []string{"HOME", "USER", "USERPROFILE", "TMPDIR", "TMP"
 type Pipe struct{}
 
 func (Pipe) String() string { return "cataloging artifacts" }
+
+// Skip implements Skipper.
 func (Pipe) Skip(ctx *context.Context) bool {
 	return skips.Any(ctx, skips.SBOM) || len(ctx.Config.SBOMs) == 0
 }
 
+// Dependencies implements Healthchecker.
 func (Pipe) Dependencies(ctx *context.Context) []string {
 	var cmds []string
 	for _, s := range ctx.Config.SBOMs {
@@ -235,7 +238,7 @@ func catalogArtifact(ctx *context.Context, cfg config.SBOM, a *artifact.Artifact
 				Type: artifact.SBOM,
 				Name: filepath.Base(path),
 				Path: match,
-				Extra: map[string]interface{}{
+				Extra: map[string]any{
 					artifact.ExtraID: cfg.ID,
 				},
 			})

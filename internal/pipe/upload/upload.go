@@ -14,7 +14,9 @@ import (
 type Pipe struct{}
 
 // String returns the description of the pipe.
-func (Pipe) String() string                 { return "http upload" }
+func (Pipe) String() string { return "http upload" }
+
+// Skip implements Skipper.
 func (Pipe) Skip(ctx *context.Context) bool { return len(ctx.Config.Uploads) == 0 }
 
 // Default sets the pipe defaults.

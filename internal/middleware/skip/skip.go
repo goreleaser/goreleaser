@@ -16,7 +16,7 @@ type Skipper interface {
 	fmt.Stringer
 }
 
-// Skipper defines a method to skip an entire Piper.
+// ErrSkipper defines a method to skip an entire Piper.
 type ErrSkipper interface {
 	// Skip returns true if the Piper should be skipped.
 	Skip(ctx *context.Context) (bool, error)
@@ -25,7 +25,7 @@ type ErrSkipper interface {
 
 // Maybe returns an action that skips immediately if the given p is a Skipper
 // and its Skip method returns true.
-func Maybe(skipper interface{}, next middleware.Action) middleware.Action {
+func Maybe(skipper any, next middleware.Action) middleware.Action {
 	if skipper, ok := skipper.(Skipper); ok {
 		return Maybe(wrapper{skipper}, next)
 	}
@@ -51,12 +51,12 @@ type wrapper struct {
 	skipper Skipper
 }
 
-// String implements SkipperErr
+// String implements ErrSkipper.
 func (w wrapper) String() string {
 	return w.skipper.String()
 }
 
-// Skip implements SkipperErr
+// Skip implements ErrSkipper.
 func (w wrapper) Skip(ctx *context.Context) (bool, error) {
 	return w.skipper.Skip(ctx), nil
 }

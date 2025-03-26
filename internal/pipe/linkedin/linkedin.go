@@ -14,6 +14,8 @@ const defaultMessageTemplate = `{{ .ProjectName }} {{ .Tag }} is out! Check it o
 type Pipe struct{}
 
 func (Pipe) String() string { return "linkedin" }
+
+// Skip implements Skipper.
 func (Pipe) Skip(ctx *context.Context) (bool, error) {
 	enable, err := tmpl.New(ctx).Bool(ctx.Config.Announce.LinkedIn.Enabled)
 	return !enable, err
@@ -23,6 +25,7 @@ type Config struct {
 	AccessToken string `env:"LINKEDIN_ACCESS_TOKEN,notEmpty"`
 }
 
+// Default sets the pipe defaults.
 func (Pipe) Default(ctx *context.Context) error {
 	if ctx.Config.Announce.LinkedIn.MessageTemplate == "" {
 		ctx.Config.Announce.LinkedIn.MessageTemplate = defaultMessageTemplate
@@ -31,6 +34,7 @@ func (Pipe) Default(ctx *context.Context) error {
 	return nil
 }
 
+// Announce does the announcement.
 func (Pipe) Announce(ctx *context.Context) error {
 	message, err := tmpl.New(ctx).Apply(ctx.Config.Announce.LinkedIn.MessageTemplate)
 	if err != nil {

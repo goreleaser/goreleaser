@@ -11,9 +11,11 @@ import (
 
 type Pipe struct{}
 
+// Skip implements Skipper.
 func (Pipe) Skip(ctx *context.Context) bool { return !ctx.Config.ReportSizes }
 func (Pipe) String() string                 { return "size reports" }
 
+// Run the pipe.
 func (Pipe) Run(ctx *context.Context) error {
 	return ctx.Artifacts.Filter(artifact.Or(
 		artifact.ByType(artifact.Binary),

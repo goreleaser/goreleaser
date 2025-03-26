@@ -49,7 +49,7 @@ func TestExecute(t *testing.T) {
 			Goarch: "amd64",
 			Path:   file,
 			Type:   a.typ,
-			Extra: map[string]interface{}{
+			Extra: map[string]any{
 				artifact.ExtraID: a.id,
 			},
 		})
@@ -61,7 +61,7 @@ func TestExecute(t *testing.T) {
 		Goarch: "amd64",
 		Path:   "foo/bar:amd64",
 		Type:   artifact.DockerImage,
-		Extra: map[string]interface{}{
+		Extra: map[string]any{
 			artifact.ExtraID: "img",
 		},
 	})
@@ -69,7 +69,7 @@ func TestExecute(t *testing.T) {
 		Name: "foo/bar",
 		Path: "foo/bar",
 		Type: artifact.DockerManifest,
-		Extra: map[string]interface{}{
+		Extra: map[string]any{
 			artifact.ExtraID: "mnf",
 		},
 	})
@@ -102,7 +102,7 @@ func TestExecute(t *testing.T) {
 				{
 					Name: "test",
 					IDs:  []string{"archive"},
-					Cmd:  MockCmd + " {{ .ArtifactName }}",
+					Cmd:  mockCmd + " {{ .ArtifactName }}",
 					Env: []string{
 						MarshalMockEnv(&MockData{
 							AnyOf: []MockCall{
@@ -120,7 +120,7 @@ func TestExecute(t *testing.T) {
 			[]config.Publisher{
 				{
 					Name:    "test",
-					Cmd:     MockCmd + " {{ .ArtifactName }}",
+					Cmd:     mockCmd + " {{ .ArtifactName }}",
 					Disable: "false",
 					Env: []string{
 						MarshalMockEnv(&MockData{
@@ -143,7 +143,7 @@ func TestExecute(t *testing.T) {
 			[]config.Publisher{
 				{
 					Name:    "test",
-					Cmd:     MockCmd + " {{ .ArtifactName }}",
+					Cmd:     mockCmd + " {{ .ArtifactName }}",
 					Disable: "true",
 					Env:     []string{},
 				},
@@ -156,7 +156,7 @@ func TestExecute(t *testing.T) {
 			[]config.Publisher{
 				{
 					Name:    "test",
-					Cmd:     MockCmd + " {{ .ArtifactName }}",
+					Cmd:     mockCmd + " {{ .ArtifactName }}",
 					Disable: "{{ .NOPE }}",
 					Env:     []string{},
 				},
@@ -170,7 +170,7 @@ func TestExecute(t *testing.T) {
 				{
 					Name:     "test",
 					Checksum: true,
-					Cmd:      MockCmd + " {{ .ArtifactName }}",
+					Cmd:      mockCmd + " {{ .ArtifactName }}",
 					Env: []string{
 						MarshalMockEnv(&MockData{
 							AnyOf: []MockCall{
@@ -194,7 +194,7 @@ func TestExecute(t *testing.T) {
 				{
 					Name: "test",
 					Meta: true,
-					Cmd:  MockCmd + " {{ .ArtifactName }}",
+					Cmd:  mockCmd + " {{ .ArtifactName }}",
 					Env: []string{
 						MarshalMockEnv(&MockData{
 							AnyOf: []MockCall{
@@ -218,7 +218,7 @@ func TestExecute(t *testing.T) {
 				{
 					Name:      "test",
 					Signature: true,
-					Cmd:       MockCmd + " {{ .ArtifactName }}",
+					Cmd:       mockCmd + " {{ .ArtifactName }}",
 					Env: []string{
 						MarshalMockEnv(&MockData{
 							AnyOf: []MockCall{
@@ -243,7 +243,7 @@ func TestExecute(t *testing.T) {
 				{
 					Name: "test",
 					IDs:  []string{"img", "mnf"},
-					Cmd:  MockCmd + " {{ .ArtifactName }}",
+					Cmd:  mockCmd + " {{ .ArtifactName }}",
 					Env: []string{
 						MarshalMockEnv(&MockData{
 							AnyOf: []MockCall{
@@ -262,7 +262,7 @@ func TestExecute(t *testing.T) {
 			[]config.Publisher{
 				{
 					Name: "test",
-					Cmd:  MockCmd + " {{ .ArtifactName }}",
+					Cmd:  mockCmd + " {{ .ArtifactName }}",
 					Env: []string{
 						MarshalMockEnv(&MockData{
 							AnyOf: []MockCall{
@@ -288,7 +288,7 @@ func TestExecute(t *testing.T) {
 			[]config.Publisher{
 				{
 					Name: "test",
-					Cmd:  MockCmd + " {{ .ArtifactName }}",
+					Cmd:  mockCmd + " {{ .ArtifactName }}",
 					Env: []string{
 						MarshalMockEnv(&MockData{
 							AnyOf: []MockCall{
@@ -320,7 +320,7 @@ func TestExecute(t *testing.T) {
 					Signature: true,
 					IDs:       []string{"debpkg"},
 					Dir:       "{{ dir .ArtifactPath }}",
-					Cmd:       MockCmd + " {{ .ArtifactName }}",
+					Cmd:       mockCmd + " {{ .ArtifactName }}",
 					Env: []string{
 						MarshalMockEnv(&MockData{
 							AnyOf: []MockCall{
@@ -339,7 +339,7 @@ func TestExecute(t *testing.T) {
 				{
 					Name: "test",
 					IDs:  []string{"debpkg"},
-					Cmd:  MockCmd,
+					Cmd:  mockCmd,
 					Env: []string{
 						"PROJECT={{.ProjectName}}",
 						"ARTIFACT={{.ArtifactName}}",
@@ -367,7 +367,7 @@ func TestExecute(t *testing.T) {
 				{
 					Name: "test",
 					IDs:  []string{"debpkg"},
-					Cmd:  MockCmd,
+					Cmd:  mockCmd,
 					Env: []string{
 						"PATH=/something-else",
 						MarshalMockEnv(&MockData{
@@ -396,7 +396,7 @@ func TestExecute(t *testing.T) {
 				{
 					Name: "test",
 					IDs:  []string{"debpkg"},
-					Cmd:  MockCmd + " {{.ArtifactName}}",
+					Cmd:  mockCmd + " {{.ArtifactName}}",
 					Env: []string{
 						MarshalMockEnv(&MockData{
 							AnyOf: []MockCall{
@@ -412,7 +412,7 @@ func TestExecute(t *testing.T) {
 				},
 			},
 			// stderr is sent to output via logger
-			fmt.Errorf(`publishing: %s failed: exit status 1: test error`, MockCmd),
+			fmt.Errorf(`publishing: %s failed: exit status 1: test error`, mockCmd),
 			nil,
 		},
 	}

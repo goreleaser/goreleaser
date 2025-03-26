@@ -38,6 +38,7 @@ type Pipe struct{}
 
 func (Pipe) String() string { return "generating changelog" }
 
+// Skip implements Skipper.
 func (Pipe) Skip(ctx *context.Context) (bool, error) {
 	if ctx.Snapshot {
 		return true, nil
@@ -46,6 +47,7 @@ func (Pipe) Skip(ctx *context.Context) (bool, error) {
 	return tmpl.New(ctx).Bool(ctx.Config.Changelog.Disable)
 }
 
+// Default implements Defaulter.
 func (Pipe) Default(ctx *context.Context) error {
 	if ctx.Config.Changelog.Format == "" {
 		switch ctx.Config.Changelog.Use {
@@ -454,7 +456,7 @@ func (g gitChangeloger) Log(ctx *context.Context) ([]Item, error) {
 		return nil, err
 	}
 	var entries []Item
-	for _, line := range strings.Split(out, "\n") {
+	for line := range strings.SplitSeq(out, "\n") {
 		if strings.TrimSpace(line) == "" {
 			continue
 		}

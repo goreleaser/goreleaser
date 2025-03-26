@@ -280,7 +280,7 @@ func Test_doRun(t *testing.T) {
 					Goarch:  "amd64",
 					Goamd64: "v1",
 					Path:    file,
-					Extra: map[string]interface{}{
+					Extra: map[string]any{
 						"Wrap": "foo_1.0.1_windows_amd64",
 					},
 				},
@@ -289,7 +289,7 @@ func Test_doRun(t *testing.T) {
 					Goos:   "windows",
 					Goarch: "386",
 					Path:   file,
-					Extra: map[string]interface{}{
+					Extra: map[string]any{
 						"Wrap": "foo_1.0.1_windows_386",
 					},
 				},
@@ -770,7 +770,7 @@ func TestRunPipePullRequest(t *testing.T) {
 		Goos:   "windows",
 		Goarch: "amd64",
 		Type:   artifact.UploadableArchive,
-		Extra: map[string]interface{}{
+		Extra: map[string]any{
 			artifact.ExtraID:     "foo",
 			artifact.ExtraFormat: "tar.gz",
 			artifact.ExtraBinary: "foo",
@@ -937,7 +937,7 @@ func Test_buildManifest(t *testing.T) {
 					Goarch:  "amd64",
 					Goamd64: "v1",
 					Path:    file,
-					Extra: map[string]interface{}{
+					Extra: map[string]any{
 						artifact.ExtraBinaries: []string{
 							"foo.exe",
 							"bar.exe",
@@ -949,7 +949,7 @@ func Test_buildManifest(t *testing.T) {
 					Goos:   "windows",
 					Goarch: "arm",
 					Path:   file,
-					Extra: map[string]interface{}{
+					Extra: map[string]any{
 						artifact.ExtraBinaries: []string{
 							"foo.exe",
 							"bar.exe",
@@ -961,7 +961,7 @@ func Test_buildManifest(t *testing.T) {
 					Goos:   "windows",
 					Goarch: "arm64",
 					Path:   file,
-					Extra: map[string]interface{}{
+					Extra: map[string]any{
 						artifact.ExtraBinaries: []string{
 							"foo.exe",
 							"bar.exe",
@@ -973,7 +973,7 @@ func Test_buildManifest(t *testing.T) {
 					Goos:   "windows",
 					Goarch: "386",
 					Path:   file,
-					Extra: map[string]interface{}{
+					Extra: map[string]any{
 						artifact.ExtraBinaries: []string{
 							"foo.exe",
 							"bar.exe",
@@ -1021,7 +1021,7 @@ func getScoopPipeSkipCtx(directory string) (*context.Context, string) {
 		Goarch:  "amd64",
 		Goamd64: "v1",
 		Type:    artifact.UploadableArchive,
-		Extra: map[string]interface{}{
+		Extra: map[string]any{
 			artifact.ExtraID:     "foo",
 			artifact.ExtraFormat: "tar.gz",
 		},
@@ -1033,7 +1033,7 @@ func getScoopPipeSkipCtx(directory string) (*context.Context, string) {
 		Goarch:  "amd64",
 		Goamd64: "v3",
 		Type:    artifact.UploadableArchive,
-		Extra: map[string]interface{}{
+		Extra: map[string]any{
 			artifact.ExtraID:     "foo",
 			artifact.ExtraFormat: "tar.gz",
 		},
@@ -1099,7 +1099,7 @@ func TestWrapInDirectory(t *testing.T) {
 			Goarch:  "amd64",
 			Goamd64: "v1",
 			Path:    file,
-			Extra: map[string]interface{}{
+			Extra: map[string]any{
 				artifact.ExtraWrappedIn: "foo_1.0.1_windows_amd64",
 				artifact.ExtraBinaries: []string{
 					"foo.exe",

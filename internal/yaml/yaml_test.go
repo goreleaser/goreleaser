@@ -42,32 +42,32 @@ func TestYAML(t *testing.T) {
 			Object yamlObject `yaml:"object"`
 		}
 
-		interfaceOrObject struct {
+		anyOrObject struct {
 			obj   yamlReceiver
-			iface interface{}
+			iface any
 		}
 	)
 
 	for _, toPin := range []struct {
 		Title        string
 		InputYAML    []byte
-		ExpectedYAML []byte            // optional: when marshaled YAML is expected to differ from raw input (e.g. on bool flags)
-		Expected     interfaceOrObject // maybe either untyped interface{} or yamlObject struct with struct tags
+		ExpectedYAML []byte      // optional: when marshaled YAML is expected to differ from raw input (e.g. on bool flags)
+		Expected     anyOrObject // maybe either untyped any or yamlObject struct with struct tags
 		ExpectError  bool
 		WantsStrict  bool // apply Strict mode
 	}{
 		{
 			Title:     "happy path, untyped",
 			InputYAML: testYAMLObject(),
-			Expected: interfaceOrObject{
-				iface: map[string]interface{}{
-					"object": map[string]interface{}{
-						"key": map[string]interface{}{
+			Expected: anyOrObject{
+				iface: map[string]any{
+					"object": map[string]any{
+						"key": map[string]any{
 							"string_value": "This is a doc.\nOn multiple lines.\n",
 							"bool_value":   "y",
 							"number_value": 10.23,
 						},
-						"array": []interface{}{"x", "y"},
+						"array": []any{"x", "y"},
 					},
 				},
 			},
@@ -76,15 +76,15 @@ func TestYAML(t *testing.T) {
 			Title:       "happy path strict, untyped",
 			InputYAML:   testYAMLObject(),
 			WantsStrict: true,
-			Expected: interfaceOrObject{
-				iface: map[string]interface{}{
-					"object": map[string]interface{}{
-						"key": map[string]interface{}{
+			Expected: anyOrObject{
+				iface: map[string]any{
+					"object": map[string]any{
+						"key": map[string]any{
 							"string_value": "This is a doc.\nOn multiple lines.\n",
 							"bool_value":   "y",
 							"number_value": 10.23,
 						},
-						"array": []interface{}{"x", "y"},
+						"array": []any{"x", "y"},
 					},
 				},
 			},
@@ -94,7 +94,7 @@ func TestYAML(t *testing.T) {
 			InputYAML:    testYAMLObject(),
 			ExpectedYAML: testYAMLObjectBool(),
 			WantsStrict:  true,
-			Expected: interfaceOrObject{
+			Expected: anyOrObject{
 				iface: nil,
 				obj: yamlReceiver{
 					Object: yamlObject{
@@ -113,7 +113,7 @@ func TestYAML(t *testing.T) {
 			InputYAML:    testYAMLObjectNonStrict(),
 			ExpectedYAML: testYAMLObjectBool(),
 			WantsStrict:  false,
-			Expected: interfaceOrObject{
+			Expected: anyOrObject{
 				iface: nil,
 				obj: yamlReceiver{
 					Object: yamlObject{
@@ -133,7 +133,7 @@ func TestYAML(t *testing.T) {
 			ExpectedYAML: testYAMLObjectBool(),
 			WantsStrict:  true,
 			ExpectError:  true,
-			Expected: interfaceOrObject{
+			Expected: anyOrObject{
 				iface: nil,
 				obj: yamlReceiver{
 					Object: yamlObject{

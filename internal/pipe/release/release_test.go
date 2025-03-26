@@ -54,7 +54,7 @@ func TestRunPipeWithoutIDsThenDoesNotFilter(t *testing.T) {
 		Type: artifact.UploadableArchive,
 		Name: "bin.tar.gz",
 		Path: tarfile,
-		Extra: map[string]interface{}{
+		Extra: map[string]any{
 			artifact.ExtraID: "foo",
 		},
 	})
@@ -62,7 +62,7 @@ func TestRunPipeWithoutIDsThenDoesNotFilter(t *testing.T) {
 		Type: artifact.LinuxPackage,
 		Name: "bin.deb",
 		Path: debfile,
-		Extra: map[string]interface{}{
+		Extra: map[string]any{
 			artifact.ExtraID: "foo",
 		},
 	})
@@ -70,7 +70,7 @@ func TestRunPipeWithoutIDsThenDoesNotFilter(t *testing.T) {
 		Type: artifact.UploadableArchive,
 		Name: "filtered.tar.gz",
 		Path: filteredtarfile,
-		Extra: map[string]interface{}{
+		Extra: map[string]any{
 			artifact.ExtraID: "bar",
 		},
 	})
@@ -78,7 +78,7 @@ func TestRunPipeWithoutIDsThenDoesNotFilter(t *testing.T) {
 		Type: artifact.LinuxPackage,
 		Name: "filtered.deb",
 		Path: filtereddebfile,
-		Extra: map[string]interface{}{
+		Extra: map[string]any{
 			artifact.ExtraID: "bar",
 		},
 	})
@@ -86,7 +86,7 @@ func TestRunPipeWithoutIDsThenDoesNotFilter(t *testing.T) {
 		Type: artifact.UploadableSourceArchive,
 		Name: "source.tar.gz",
 		Path: srcfile,
-		Extra: map[string]interface{}{
+		Extra: map[string]any{
 			artifact.ExtraFormat: "tar.gz",
 		},
 	})
@@ -95,7 +95,7 @@ func TestRunPipeWithoutIDsThenDoesNotFilter(t *testing.T) {
 		Type: artifact.Checksum,
 		Name: "checksum",
 		Path: checksumfile,
-		Extra: map[string]interface{}{
+		Extra: map[string]any{
 			artifact.ExtraID: "doesnt-matter",
 		},
 	})
@@ -104,7 +104,7 @@ func TestRunPipeWithoutIDsThenDoesNotFilter(t *testing.T) {
 		Type: artifact.Metadata,
 		Name: "metadata.json",
 		Path: metafile,
-		Extra: map[string]interface{}{
+		Extra: map[string]any{
 			artifact.ExtraID: "doesnt-matter",
 		},
 	})
@@ -112,7 +112,7 @@ func TestRunPipeWithoutIDsThenDoesNotFilter(t *testing.T) {
 		Type: artifact.Signature,
 		Name: "checksum.sig",
 		Path: checksumsigfile,
-		Extra: map[string]interface{}{
+		Extra: map[string]any{
 			artifact.ExtraID: "bar",
 		},
 	})
@@ -120,7 +120,7 @@ func TestRunPipeWithoutIDsThenDoesNotFilter(t *testing.T) {
 		Type: artifact.Certificate,
 		Name: "checksum.pem",
 		Path: checksumpemfile,
-		Extra: map[string]interface{}{
+		Extra: map[string]any{
 			artifact.ExtraID: "bar",
 		},
 	})
@@ -173,7 +173,7 @@ func TestRunPipeWithIDsThenFilters(t *testing.T) {
 		Type: artifact.UploadableArchive,
 		Name: "bin.tar.gz",
 		Path: tarfile.Name(),
-		Extra: map[string]interface{}{
+		Extra: map[string]any{
 			artifact.ExtraID: "foo",
 		},
 	})
@@ -181,7 +181,7 @@ func TestRunPipeWithIDsThenFilters(t *testing.T) {
 		Type: artifact.LinuxPackage,
 		Name: "bin.deb",
 		Path: debfile.Name(),
-		Extra: map[string]interface{}{
+		Extra: map[string]any{
 			artifact.ExtraID: "foo",
 		},
 	})
@@ -189,7 +189,7 @@ func TestRunPipeWithIDsThenFilters(t *testing.T) {
 		Type: artifact.UploadableArchive,
 		Name: "filtered.tar.gz",
 		Path: filteredtarfile.Name(),
-		Extra: map[string]interface{}{
+		Extra: map[string]any{
 			artifact.ExtraID: "bar",
 		},
 	})
@@ -197,7 +197,7 @@ func TestRunPipeWithIDsThenFilters(t *testing.T) {
 		Type: artifact.LinuxPackage,
 		Name: "filtered.deb",
 		Path: filtereddebfile.Name(),
-		Extra: map[string]interface{}{
+		Extra: map[string]any{
 			artifact.ExtraID: "bar",
 		},
 	})

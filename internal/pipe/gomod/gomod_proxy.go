@@ -30,6 +30,8 @@ var ErrReplaceWithProxy = errors.New("cannot use the go.mod replace directive wi
 type CheckGoModPipe struct{}
 
 func (CheckGoModPipe) String() string { return "checking go.mod" }
+
+// Skip implements Skipper.
 func (CheckGoModPipe) Skip(ctx *context.Context) bool {
 	return ctx.ModulePath == "" || !ctx.Config.GoMod.Proxy
 }
@@ -46,7 +48,7 @@ func (CheckGoModPipe) Run(ctx *context.Context) error {
 			log.Errorf("could not check %q", path)
 			return nil
 		}
-		for _, line := range strings.Split(string(mod), "\n") {
+		for line := range strings.SplitSeq(string(mod), "\n") {
 			if !replaceRe.MatchString(line) {
 				continue
 			}
@@ -73,6 +75,7 @@ type ProxyPipe struct{}
 
 func (ProxyPipe) String() string { return "proxying go module" }
 
+// Skip implements Skipper.
 func (ProxyPipe) Skip(ctx *context.Context) bool {
 	return ctx.ModulePath == "" || !ctx.Config.GoMod.Proxy || ctx.Snapshot
 }

@@ -109,7 +109,7 @@ type PullRequestBase struct {
 type pullRequestBase PullRequestBase
 
 // UnmarshalYAML is a custom unmarshaler that accept brew deps in both the old and new format.
-func (a *PullRequestBase) UnmarshalYAML(unmarshal func(interface{}) error) error {
+func (a *PullRequestBase) UnmarshalYAML(unmarshal func(any) error) error {
 	var str string
 	if err := unmarshal(&str); err == nil {
 		a.Branch = str
@@ -161,7 +161,7 @@ type HomebrewDependency struct {
 type homebrewDependency HomebrewDependency
 
 // UnmarshalYAML is a custom unmarshaler that accept brew deps in both the old and new format.
-func (a *HomebrewDependency) UnmarshalYAML(unmarshal func(interface{}) error) error {
+func (a *HomebrewDependency) UnmarshalYAML(unmarshal func(any) error) error {
 	var str string
 	if err := unmarshal(&str); err == nil {
 		a.Name = str
@@ -330,7 +330,7 @@ func (a NixDependency) JSONSchema() *jsonschema.Schema {
 	}
 }
 
-func (a *NixDependency) UnmarshalYAML(unmarshal func(interface{}) error) error {
+func (a *NixDependency) UnmarshalYAML(unmarshal func(any) error) error {
 	var str string
 	if err := unmarshal(&str); err == nil {
 		a.Name = str
@@ -477,7 +477,7 @@ type IgnoredBuild struct {
 type StringArray []string
 
 // UnmarshalYAML is a custom unmarshaler that wraps strings in arrays.
-func (a *StringArray) UnmarshalYAML(unmarshal func(interface{}) error) error {
+func (a *StringArray) UnmarshalYAML(unmarshal func(any) error) error {
 	var strings []string
 	if err := unmarshal(&strings); err != nil {
 		var str string
@@ -508,7 +508,7 @@ func (a StringArray) JSONSchema() *jsonschema.Schema {
 type FlagArray []string
 
 // UnmarshalYAML is a custom unmarshaler that wraps strings in arrays.
-func (a *FlagArray) UnmarshalYAML(unmarshal func(interface{}) error) error {
+func (a *FlagArray) UnmarshalYAML(unmarshal func(any) error) error {
 	var flags []string
 	if err := unmarshal(&flags); err != nil {
 		var flagstr string
@@ -599,7 +599,7 @@ type BuildHookConfig struct {
 type Hooks []Hook
 
 // UnmarshalYAML is a custom unmarshaler that allows simplified declaration of single command.
-func (bhc *Hooks) UnmarshalYAML(unmarshal func(interface{}) error) error {
+func (bhc *Hooks) UnmarshalYAML(unmarshal func(any) error) error {
 	var singleCmd string
 	err := unmarshal(&singleCmd)
 	if err == nil {
@@ -640,7 +640,7 @@ type Hook struct {
 }
 
 // UnmarshalYAML is a custom unmarshaler that allows simplified declarations of commands as strings.
-func (bh *Hook) UnmarshalYAML(unmarshal func(interface{}) error) error {
+func (bh *Hook) UnmarshalYAML(unmarshal func(any) error) error {
 	var cmd string
 	if err := unmarshal(&cmd); err != nil {
 		type t Hook
@@ -700,7 +700,7 @@ type FileInfo struct {
 }
 
 // UnmarshalYAML is a custom unmarshaler that wraps strings in arrays.
-func (f *File) UnmarshalYAML(unmarshal func(interface{}) error) error {
+func (f *File) UnmarshalYAML(unmarshal func(any) error) error {
 	type t File
 	var str string
 	if err := unmarshal(&str); err == nil {
@@ -1084,35 +1084,35 @@ type SnapcraftAppMetadata struct {
 	Command string `yaml:"command" json:"command"`
 	Args    string `yaml:"args,omitempty" json:"args,omitempty"`
 
-	Adapter          string                 `yaml:"adapter,omitempty" json:"adapter,omitempty"`
-	After            []string               `yaml:"after,omitempty" json:"after,omitempty"`
-	Aliases          []string               `yaml:"aliases,omitempty" json:"aliases,omitempty"`
-	Autostart        string                 `yaml:"autostart,omitempty" json:"autostart,omitempty"`
-	Before           []string               `yaml:"before,omitempty" json:"before,omitempty"`
-	BusName          string                 `yaml:"bus_name,omitempty" json:"bus_name,omitempty"`
-	CommandChain     []string               `yaml:"command_chain,omitempty" json:"command_chain,omitempty"`
-	CommonID         string                 `yaml:"common_id,omitempty" json:"common_id,omitempty"`
-	Completer        string                 `yaml:"completer,omitempty" json:"completer,omitempty"`
-	Daemon           string                 `yaml:"daemon,omitempty" json:"daemon,omitempty"`
-	Desktop          string                 `yaml:"desktop,omitempty" json:"desktop,omitempty"`
-	Environment      map[string]interface{} `yaml:"environment,omitempty" json:"environment,omitempty"`
-	Extensions       []string               `yaml:"extensions,omitempty" json:"extensions,omitempty"`
-	InstallMode      string                 `yaml:"install_mode,omitempty" json:"install_mode,omitempty"`
-	Passthrough      map[string]interface{} `yaml:"passthrough,omitempty" json:"passthrough,omitempty"`
-	Plugs            []string               `yaml:"plugs,omitempty" json:"plugs,omitempty"`
-	PostStopCommand  string                 `yaml:"post_stop_command,omitempty" json:"post_stop_command,omitempty"`
-	RefreshMode      string                 `yaml:"refresh_mode,omitempty" json:"refresh_mode,omitempty"`
-	ReloadCommand    string                 `yaml:"reload_command,omitempty" json:"reload_command,omitempty"`
-	RestartCondition string                 `yaml:"restart_condition,omitempty" json:"restart_condition,omitempty"`
-	RestartDelay     string                 `yaml:"restart_delay,omitempty" json:"restart_delay,omitempty"`
-	Slots            []string               `yaml:"slots,omitempty" json:"slots,omitempty"`
-	Sockets          map[string]interface{} `yaml:"sockets,omitempty" json:"sockets,omitempty"`
-	StartTimeout     string                 `yaml:"start_timeout,omitempty" json:"start_timeout,omitempty"`
-	StopCommand      string                 `yaml:"stop_command,omitempty" json:"stop_command,omitempty"`
-	StopMode         string                 `yaml:"stop_mode,omitempty" json:"stop_mode,omitempty"`
-	StopTimeout      string                 `yaml:"stop_timeout,omitempty" json:"stop_timeout,omitempty"`
-	Timer            string                 `yaml:"timer,omitempty" json:"timer,omitempty"`
-	WatchdogTimeout  string                 `yaml:"watchdog_timeout,omitempty" json:"watchdog_timeout,omitempty"`
+	Adapter          string         `yaml:"adapter,omitempty" json:"adapter,omitempty"`
+	After            []string       `yaml:"after,omitempty" json:"after,omitempty"`
+	Aliases          []string       `yaml:"aliases,omitempty" json:"aliases,omitempty"`
+	Autostart        string         `yaml:"autostart,omitempty" json:"autostart,omitempty"`
+	Before           []string       `yaml:"before,omitempty" json:"before,omitempty"`
+	BusName          string         `yaml:"bus_name,omitempty" json:"bus_name,omitempty"`
+	CommandChain     []string       `yaml:"command_chain,omitempty" json:"command_chain,omitempty"`
+	CommonID         string         `yaml:"common_id,omitempty" json:"common_id,omitempty"`
+	Completer        string         `yaml:"completer,omitempty" json:"completer,omitempty"`
+	Daemon           string         `yaml:"daemon,omitempty" json:"daemon,omitempty"`
+	Desktop          string         `yaml:"desktop,omitempty" json:"desktop,omitempty"`
+	Environment      map[string]any `yaml:"environment,omitempty" json:"environment,omitempty"`
+	Extensions       []string       `yaml:"extensions,omitempty" json:"extensions,omitempty"`
+	InstallMode      string         `yaml:"install_mode,omitempty" json:"install_mode,omitempty"`
+	Passthrough      map[string]any `yaml:"passthrough,omitempty" json:"passthrough,omitempty"`
+	Plugs            []string       `yaml:"plugs,omitempty" json:"plugs,omitempty"`
+	PostStopCommand  string         `yaml:"post_stop_command,omitempty" json:"post_stop_command,omitempty"`
+	RefreshMode      string         `yaml:"refresh_mode,omitempty" json:"refresh_mode,omitempty"`
+	ReloadCommand    string         `yaml:"reload_command,omitempty" json:"reload_command,omitempty"`
+	RestartCondition string         `yaml:"restart_condition,omitempty" json:"restart_condition,omitempty"`
+	RestartDelay     string         `yaml:"restart_delay,omitempty" json:"restart_delay,omitempty"`
+	Slots            []string       `yaml:"slots,omitempty" json:"slots,omitempty"`
+	Sockets          map[string]any `yaml:"sockets,omitempty" json:"sockets,omitempty"`
+	StartTimeout     string         `yaml:"start_timeout,omitempty" json:"start_timeout,omitempty"`
+	StopCommand      string         `yaml:"stop_command,omitempty" json:"stop_command,omitempty"`
+	StopMode         string         `yaml:"stop_mode,omitempty" json:"stop_mode,omitempty"`
+	StopTimeout      string         `yaml:"stop_timeout,omitempty" json:"stop_timeout,omitempty"`
+	Timer            string         `yaml:"timer,omitempty" json:"timer,omitempty"`
+	WatchdogTimeout  string         `yaml:"watchdog_timeout,omitempty" json:"watchdog_timeout,omitempty"`
 }
 
 type SnapcraftLayoutMetadata struct {
@@ -1141,8 +1141,8 @@ type Snapcraft struct {
 	Assumes          []string                           `yaml:"assumes,omitempty" json:"assumes,omitempty"`
 	Layout           map[string]SnapcraftLayoutMetadata `yaml:"layout,omitempty" json:"layout,omitempty"`
 	Apps             map[string]SnapcraftAppMetadata    `yaml:"apps,omitempty" json:"apps,omitempty"`
-	Hooks            map[string]interface{}             `yaml:"hooks,omitempty" json:"hooks,omitempty"`
-	Plugs            map[string]interface{}             `yaml:"plugs,omitempty" json:"plugs,omitempty"`
+	Hooks            map[string]any                     `yaml:"hooks,omitempty" json:"hooks,omitempty"`
+	Plugs            map[string]any                     `yaml:"plugs,omitempty" json:"plugs,omitempty"`
 	Disable          string                             `yaml:"disable,omitempty" json:"disable,omitempty" jsonschema:"oneof_type=string;boolean"`
 
 	Files []SnapcraftExtraFiles `yaml:"extra_files,omitempty" json:"extra_files,omitempty"`
@@ -1504,12 +1504,13 @@ type Bluesky struct {
 
 // SlackBlock represents the untyped structure of a rich slack message layout.
 type SlackBlock struct {
-	Internal interface{}
+	Internal any
 }
 
-// UnmarshalYAML is a custom unmarshaler that unmarshals a YAML slack block as untyped interface{}.
-func (a *SlackBlock) UnmarshalYAML(unmarshal func(interface{}) error) error {
-	var yamlv2 interface{}
+// UnmarshalYAML is a custom unmarshaler that unmarshals a YAML slack block as
+// untyped any.
+func (a *SlackBlock) UnmarshalYAML(unmarshal func(any) error) error {
+	var yamlv2 any
 	if err := unmarshal(&yamlv2); err != nil {
 		return err
 	}
@@ -1526,12 +1527,13 @@ func (a SlackBlock) MarshalJSON() ([]byte, error) {
 
 // SlackAttachment represents the untyped structure of a slack message attachment.
 type SlackAttachment struct {
-	Internal interface{}
+	Internal any
 }
 
-// UnmarshalYAML is a custom unmarshaler that unmarshals a YAML slack attachment as untyped interface{}.
-func (a *SlackAttachment) UnmarshalYAML(unmarshal func(interface{}) error) error {
-	var yamlv2 interface{}
+// UnmarshalYAML is a custom unmarshaler that unmarshals a YAML slack
+// attachment as untyped any.
+func (a *SlackAttachment) UnmarshalYAML(unmarshal func(any) error) error {
+	var yamlv2 any
 	if err := unmarshal(&yamlv2); err != nil {
 		return err
 	}

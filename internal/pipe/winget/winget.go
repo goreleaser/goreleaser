@@ -49,12 +49,17 @@ const wingetConfigExtra = "WingetConfig"
 
 type Pipe struct{}
 
-func (Pipe) String() string        { return "winget" }
+func (Pipe) String() string { return "winget" }
+
+// ContinueOnError implements Continuable.
 func (Pipe) ContinueOnError() bool { return true }
+
+// Skip implements Skipper.
 func (p Pipe) Skip(ctx *context.Context) bool {
 	return skips.Any(ctx, skips.Winget) || len(ctx.Config.Winget) == 0
 }
 
+// Default sets the pipe defaults.
 func (Pipe) Default(ctx *context.Context) error {
 	for i := range ctx.Config.Winget {
 		winget := &ctx.Config.Winget[i]

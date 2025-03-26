@@ -24,6 +24,8 @@ const (
 type Pipe struct{}
 
 func (Pipe) String() string { return "discord" }
+
+// Skip implements Skipper.
 func (Pipe) Skip(ctx *context.Context) (bool, error) {
 	enable, err := tmpl.New(ctx).Bool(ctx.Config.Announce.Discord.Enabled)
 	return !enable, err
@@ -75,10 +77,10 @@ func (p Pipe) Announce(ctx *context.Context) error {
 	}
 	u = u.JoinPath("webhooks", cfg.WebhookID, cfg.WebhookToken)
 
-	bts, err := json.Marshal(WebhookMessageCreate{
-		Embeds: []Embed{
+	bts, err := json.Marshal(webhookMessageCreate{
+		Embeds: []embed{
 			{
-				Author: &EmbedAuthor{
+				Author: &embedAuthor{
 					Name:    ctx.Config.Announce.Discord.Author,
 					IconURL: ctx.Config.Announce.Discord.IconURL,
 				},
@@ -110,17 +112,17 @@ func (p Pipe) Announce(ctx *context.Context) error {
 	return nil
 }
 
-type WebhookMessageCreate struct {
-	Embeds []Embed `json:"embeds,omitempty"`
+type webhookMessageCreate struct {
+	Embeds []embed `json:"embeds,omitempty"`
 }
 
-type Embed struct {
+type embed struct {
 	Description string       `json:"description,omitempty"`
 	Color       int          `json:"color,omitempty"`
-	Author      *EmbedAuthor `json:"author,omitempty"`
+	Author      *embedAuthor `json:"author,omitempty"`
 }
 
-type EmbedAuthor struct {
+type embedAuthor struct {
 	Name    string `json:"name,omitempty"`
 	IconURL string `json:"icon_url,omitempty"`
 }

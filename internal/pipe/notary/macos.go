@@ -22,6 +22,7 @@ type MacOS struct{}
 
 func (MacOS) String() string { return "sign & notarize macOS binaries" }
 
+// Skip implements Skipper.
 func (MacOS) Skip(ctx *context.Context) bool {
 	return skips.Any(ctx, skips.Notarize) || len(ctx.Config.Notarize.MacOS) == 0
 }

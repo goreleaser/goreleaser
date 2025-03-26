@@ -19,6 +19,7 @@ type BinaryPipe struct{}
 
 func (BinaryPipe) String() string { return "signing binaries" }
 
+// Skip implements Skipper.
 func (BinaryPipe) Skip(ctx *context.Context) bool {
 	return skips.Any(ctx, skips.Sign) || len(ctx.Config.BinarySigns) == 0
 }

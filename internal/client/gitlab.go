@@ -593,7 +593,7 @@ func (c *gitlabClient) Upload(
 
 	// for checksums.txt the field is nil, so we initialize it
 	if artifact.Extra == nil {
-		artifact.Extra = make(map[string]interface{})
+		artifact.Extra = make(map[string]any)
 	}
 
 	return nil

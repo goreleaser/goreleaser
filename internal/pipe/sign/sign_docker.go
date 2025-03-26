@@ -16,6 +16,7 @@ type DockerPipe struct{}
 
 func (DockerPipe) String() string { return "signing docker images" }
 
+// Skip implements Skipper.
 func (DockerPipe) Skip(ctx *context.Context) bool {
 	return skips.Any(ctx, skips.Sign) || len(ctx.Config.DockerSigns) == 0
 }
