@@ -16,5 +16,5 @@ docker run --rm -it -p 8000:8000 -v ./www:/docs material-mkdocs
 The site should soon be available at [http://localhost:8000] and
 auto-update after most changes.
 
-> ![TIP]
+> [!TIP]
 > If you use `task`, you can also run `task docs:serve` instead.
