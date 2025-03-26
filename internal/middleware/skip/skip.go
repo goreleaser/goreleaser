@@ -25,7 +25,7 @@ type ErrSkipper interface {
 
 // Maybe returns an action that skips immediately if the given p is a Skipper
 // and its Skip method returns true.
-func Maybe(skipper interface{}, next middleware.Action) middleware.Action {
+func Maybe(skipper any, next middleware.Action) middleware.Action {
 	if skipper, ok := skipper.(Skipper); ok {
 		return Maybe(wrapper{skipper}, next)
 	}

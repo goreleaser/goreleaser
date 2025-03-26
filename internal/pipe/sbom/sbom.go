@@ -235,7 +235,7 @@ func catalogArtifact(ctx *context.Context, cfg config.SBOM, a *artifact.Artifact
 				Type: artifact.SBOM,
 				Name: filepath.Base(path),
 				Path: match,
-				Extra: map[string]interface{}{
+				Extra: map[string]any{
 					artifact.ExtraID: cfg.ID,
 				},
 			})

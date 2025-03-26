@@ -274,7 +274,7 @@ func (*Builder) Build(ctx *context.Context, build config.Build, options api.Opti
 		Goppc64:   t.Goppc64,
 		Goriscv64: t.Goriscv64,
 		Target:    t.Target,
-		Extra: map[string]interface{}{
+		Extra: map[string]any{
 			artifact.ExtraBinary:  strings.TrimSuffix(filepath.Base(options.Path), options.Ext),
 			artifact.ExtraExt:     options.Ext,
 			artifact.ExtraID:      build.ID,
@@ -555,7 +555,7 @@ func getHeaderArtifactForLibrary(build config.Build, options api.Options) *artif
 		Goppc64:   t.Goppc64,
 		Goriscv64: t.Goriscv64,
 		Target:    t.Target,
-		Extra: map[string]interface{}{
+		Extra: map[string]any{
 			artifact.ExtraBinary: headerName,
 			artifact.ExtraExt:    ".h",
 			artifact.ExtraID:     build.ID,

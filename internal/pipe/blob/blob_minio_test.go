@@ -128,7 +128,7 @@ func TestMinioUpload(t *testing.T) {
 		Type: artifact.Signature,
 		Name: "checksum.txt.sig",
 		Path: sigpath,
-		Extra: map[string]interface{}{
+		Extra: map[string]any{
 			artifact.ExtraID: "foo",
 		},
 	})
@@ -136,7 +136,7 @@ func TestMinioUpload(t *testing.T) {
 		Type: artifact.Certificate,
 		Name: "checksum.pem",
 		Path: certpath,
-		Extra: map[string]interface{}{
+		Extra: map[string]any{
 			artifact.ExtraID: "foo",
 		},
 	})
@@ -144,7 +144,7 @@ func TestMinioUpload(t *testing.T) {
 		Type: artifact.UploadableSourceArchive,
 		Name: "source.tar.gz",
 		Path: srcpath,
-		Extra: map[string]interface{}{
+		Extra: map[string]any{
 			artifact.ExtraFormat: "tar.gz",
 		},
 	})
@@ -152,7 +152,7 @@ func TestMinioUpload(t *testing.T) {
 		Type: artifact.UploadableArchive,
 		Name: "bin.tar.gz",
 		Path: tgzpath,
-		Extra: map[string]interface{}{
+		Extra: map[string]any{
 			artifact.ExtraID: "foo",
 		},
 	})
@@ -160,7 +160,7 @@ func TestMinioUpload(t *testing.T) {
 		Type: artifact.LinuxPackage,
 		Name: "bin.deb",
 		Path: debpath,
-		Extra: map[string]interface{}{
+		Extra: map[string]any{
 			artifact.ExtraID: "bar",
 		},
 	})
@@ -380,7 +380,7 @@ func TestMinioUploadSkip(t *testing.T) {
 			Type: artifact.UploadableArchive,
 			Name: "bin.tar.gz",
 			Path: tgzpath,
-			Extra: map[string]interface{}{
+			Extra: map[string]any{
 				artifact.ExtraID: "foo",
 			},
 		})
@@ -388,7 +388,7 @@ func TestMinioUploadSkip(t *testing.T) {
 			Type: artifact.LinuxPackage,
 			Name: "bin.deb",
 			Path: debpath,
-			Extra: map[string]interface{}{
+			Extra: map[string]any{
 				artifact.ExtraID: "bar",
 			},
 		})

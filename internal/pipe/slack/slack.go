@@ -100,7 +100,7 @@ func parseAdvancedFormatting(ctx *context.Context) (*slack.Blocks, []slack.Attac
 	return blocks, attachments, nil
 }
 
-func unmarshal(ctx *context.Context, in interface{}, target interface{}) error {
+func unmarshal(ctx *context.Context, in any, target any) error {
 	jazon, err := json.Marshal(in)
 	if err != nil {
 		return fmt.Errorf("failed to marshal input as JSON: %w", err)

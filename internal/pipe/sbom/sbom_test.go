@@ -470,7 +470,7 @@ func testSBOMCataloging(
 		Name: "artifact1",
 		Path: filepath.Join(tmpdir, "artifact1"),
 		Type: artifact.UploadableArchive,
-		Extra: map[string]interface{}{
+		Extra: map[string]any{
 			artifact.ExtraID: "foo",
 		},
 	})
@@ -478,7 +478,7 @@ func testSBOMCataloging(
 		Name: "artifact2",
 		Path: filepath.Join(tmpdir, "artifact2"),
 		Type: artifact.UploadableArchive,
-		Extra: map[string]interface{}{
+		Extra: map[string]any{
 			artifact.ExtraID: "foo3",
 		},
 	})
@@ -488,7 +488,7 @@ func testSBOMCataloging(
 		Goos:   "linux",
 		Goarch: "amd64",
 		Type:   artifact.UploadableBinary,
-		Extra: map[string]interface{}{
+		Extra: map[string]any{
 			artifact.ExtraID:     "foo",
 			artifact.ExtraBinary: "artifact3-name",
 		},
@@ -499,7 +499,7 @@ func testSBOMCataloging(
 		Goos:   "linux",
 		Goarch: "amd64",
 		Type:   artifact.Binary,
-		Extra: map[string]interface{}{
+		Extra: map[string]any{
 			artifact.ExtraID:     "foo3",
 			artifact.ExtraBinary: "artifact4-name",
 		},
@@ -513,7 +513,7 @@ func testSBOMCataloging(
 		Name: "package1.deb",
 		Path: filepath.Join(tmpdir, "package1.deb"),
 		Type: artifact.LinuxPackage,
-		Extra: map[string]interface{}{
+		Extra: map[string]any{
 			artifact.ExtraID: "foo",
 		},
 	})
@@ -621,7 +621,7 @@ func Test_templateNames(t *testing.T) {
 		Goos:   "darwin",
 		Goarch: "amd64",
 		Type:   artifact.Binary,
-		Extra: map[string]interface{}{
+		Extra: map[string]any{
 			artifact.ExtraID: "id-it",
 			"Binary":         "binary-name",
 		},

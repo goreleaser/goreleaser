@@ -144,7 +144,7 @@ type mattermostAttachment struct {
 }
 
 type mattermostAttachmentField struct {
-	Title string      `json:"title"`
-	Value interface{} `json:"value"`
-	Short bool        `json:"short"`
+	Title string `json:"title"`
+	Value any    `json:"value"`
+	Short bool   `json:"short"`
 }

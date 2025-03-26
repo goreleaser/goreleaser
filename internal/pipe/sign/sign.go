@@ -274,7 +274,7 @@ func signone(ctx *context.Context, cfg config.Sign, art *artifact.Artifact) ([]*
 			Type: artifact.Signature,
 			Name: name,
 			Path: env["signature"],
-			Extra: map[string]interface{}{
+			Extra: map[string]any{
 				artifact.ExtraID: cfg.ID,
 			},
 		})
@@ -285,7 +285,7 @@ func signone(ctx *context.Context, cfg config.Sign, art *artifact.Artifact) ([]*
 			Type: artifact.Certificate,
 			Name: cert,
 			Path: env["certificate"],
-			Extra: map[string]interface{}{
+			Extra: map[string]any{
 				artifact.ExtraID: cfg.ID,
 			},
 		})

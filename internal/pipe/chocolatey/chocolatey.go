@@ -170,7 +170,7 @@ func doRun(ctx *context.Context, cl client.ReleaseURLTemplater, choco config.Cho
 		Type: artifact.PublishableChocolatey,
 		Path: filepath.Join(ctx.Config.Dist, pkgFile),
 		Name: pkgFile,
-		Extra: map[string]interface{}{
+		Extra: map[string]any{
 			artifact.ExtraFormat: nupkgFormat,
 			chocoConfigExtra:     choco,
 		},

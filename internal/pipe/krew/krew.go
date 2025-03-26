@@ -144,7 +144,7 @@ func doRun(ctx *context.Context, krew config.Krew, cl client.ReleaseURLTemplater
 		Name: filename,
 		Path: yamlPath,
 		Type: artifact.KrewPluginManifest,
-		Extra: map[string]interface{}{
+		Extra: map[string]any{
 			krewConfigExtra: krew,
 		},
 	})

@@ -232,7 +232,7 @@ func makeUniversalBinary(ctx *context.Context, opts *build.Options, unibin confi
 		return err
 	}
 
-	extra := map[string]interface{}{}
+	extra := map[string]any{}
 	for k, v := range binaries[0].Extra {
 		extra[k] = v
 	}

@@ -537,7 +537,7 @@ func TestBuild(t *testing.T) {
 			Goamd64: "v1",
 			Target:  "linux_amd64_v1",
 			Type:    artifact.Binary,
-			Extra: map[string]interface{}{
+			Extra: map[string]any{
 				artifact.ExtraExt:     "",
 				artifact.ExtraBinary:  "foo-v5.6.7",
 				artifact.ExtraID:      "foo",
@@ -553,7 +553,7 @@ func TestBuild(t *testing.T) {
 			Gomips: "softfloat",
 			Target: "linux_mips_softfloat",
 			Type:   artifact.Binary,
-			Extra: map[string]interface{}{
+			Extra: map[string]any{
 				artifact.ExtraExt:     "",
 				artifact.ExtraBinary:  "foo-v5.6.7",
 				artifact.ExtraID:      "foo",
@@ -569,7 +569,7 @@ func TestBuild(t *testing.T) {
 			Goamd64: "v1",
 			Target:  "darwin_amd64_v1",
 			Type:    artifact.Binary,
-			Extra: map[string]interface{}{
+			Extra: map[string]any{
 				artifact.ExtraExt:     "",
 				artifact.ExtraBinary:  "foo-v5.6.7",
 				artifact.ExtraID:      "foo",
@@ -585,7 +585,7 @@ func TestBuild(t *testing.T) {
 			Goarm:  "6",
 			Target: "linux_arm_6",
 			Type:   artifact.Binary,
-			Extra: map[string]interface{}{
+			Extra: map[string]any{
 				artifact.ExtraExt:     "",
 				artifact.ExtraBinary:  "foo-v5.6.7",
 				artifact.ExtraID:      "foo",
@@ -601,7 +601,7 @@ func TestBuild(t *testing.T) {
 			Goamd64: "v1",
 			Target:  "windows_amd64_v1",
 			Type:    artifact.Binary,
-			Extra: map[string]interface{}{
+			Extra: map[string]any{
 				artifact.ExtraExt:     ".exe",
 				artifact.ExtraBinary:  "foo-v5.6.7",
 				artifact.ExtraID:      "foo",
@@ -616,7 +616,7 @@ func TestBuild(t *testing.T) {
 			Goarch: "wasm",
 			Target: "js_wasm",
 			Type:   artifact.Binary,
-			Extra: map[string]interface{}{
+			Extra: map[string]any{
 				artifact.ExtraExt:     ".wasm",
 				artifact.ExtraBinary:  "foo-v5.6.7",
 				artifact.ExtraID:      "foo",

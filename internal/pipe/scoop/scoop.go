@@ -182,7 +182,7 @@ func doRun(ctx *context.Context, scoop config.Scoop, cl client.ReleaseURLTemplat
 		Name: filename,
 		Path: path,
 		Type: artifact.ScoopManifest,
-		Extra: map[string]interface{}{
+		Extra: map[string]any{
 			scoopConfigExtra: scoop,
 		},
 	})

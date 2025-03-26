@@ -52,8 +52,8 @@ type Metadata struct {
 	Assumes       []string                  `yaml:",omitempty"`
 	Layout        map[string]LayoutMetadata `yaml:",omitempty"`
 	Apps          map[string]AppMetadata
-	Hooks         map[string]interface{} `yaml:",omitempty"`
-	Plugs         map[string]interface{} `yaml:",omitempty"`
+	Hooks         map[string]any `yaml:",omitempty"`
+	Plugs         map[string]any `yaml:",omitempty"`
 }
 
 // AppMetadata for the binaries that will be in the snap package.
@@ -61,35 +61,35 @@ type Metadata struct {
 type AppMetadata struct {
 	Command string
 
-	Adapter          string                 `yaml:",omitempty"`
-	After            []string               `yaml:",omitempty"`
-	Aliases          []string               `yaml:",omitempty"`
-	Autostart        string                 `yaml:",omitempty"`
-	Before           []string               `yaml:",omitempty"`
-	BusName          string                 `yaml:"bus-name,omitempty"`
-	CommandChain     []string               `yaml:"command-chain,omitempty"`
-	CommonID         string                 `yaml:"common-id,omitempty"`
-	Completer        string                 `yaml:",omitempty"`
-	Daemon           string                 `yaml:",omitempty"`
-	Desktop          string                 `yaml:",omitempty"`
-	Environment      map[string]interface{} `yaml:",omitempty"`
-	Extensions       []string               `yaml:",omitempty"`
-	InstallMode      string                 `yaml:"install-mode,omitempty"`
-	Passthrough      map[string]interface{} `yaml:",omitempty"`
-	Plugs            []string               `yaml:",omitempty"`
-	PostStopCommand  string                 `yaml:"post-stop-command,omitempty"`
-	RefreshMode      string                 `yaml:"refresh-mode,omitempty"`
-	ReloadCommand    string                 `yaml:"reload-command,omitempty"`
-	RestartCondition string                 `yaml:"restart-condition,omitempty"`
-	RestartDelay     string                 `yaml:"restart-delay,omitempty"`
-	Slots            []string               `yaml:",omitempty"`
-	Sockets          map[string]interface{} `yaml:",omitempty"`
-	StartTimeout     string                 `yaml:"start-timeout,omitempty"`
-	StopCommand      string                 `yaml:"stop-command,omitempty"`
-	StopMode         string                 `yaml:"stop-mode,omitempty"`
-	StopTimeout      string                 `yaml:"stop-timeout,omitempty"`
-	Timer            string                 `yaml:",omitempty"`
-	WatchdogTimeout  string                 `yaml:"watchdog-timeout,omitempty"`
+	Adapter          string         `yaml:",omitempty"`
+	After            []string       `yaml:",omitempty"`
+	Aliases          []string       `yaml:",omitempty"`
+	Autostart        string         `yaml:",omitempty"`
+	Before           []string       `yaml:",omitempty"`
+	BusName          string         `yaml:"bus-name,omitempty"`
+	CommandChain     []string       `yaml:"command-chain,omitempty"`
+	CommonID         string         `yaml:"common-id,omitempty"`
+	Completer        string         `yaml:",omitempty"`
+	Daemon           string         `yaml:",omitempty"`
+	Desktop          string         `yaml:",omitempty"`
+	Environment      map[string]any `yaml:",omitempty"`
+	Extensions       []string       `yaml:",omitempty"`
+	InstallMode      string         `yaml:"install-mode,omitempty"`
+	Passthrough      map[string]any `yaml:",omitempty"`
+	Plugs            []string       `yaml:",omitempty"`
+	PostStopCommand  string         `yaml:"post-stop-command,omitempty"`
+	RefreshMode      string         `yaml:"refresh-mode,omitempty"`
+	ReloadCommand    string         `yaml:"reload-command,omitempty"`
+	RestartCondition string         `yaml:"restart-condition,omitempty"`
+	RestartDelay     string         `yaml:"restart-delay,omitempty"`
+	Slots            []string       `yaml:",omitempty"`
+	Sockets          map[string]any `yaml:",omitempty"`
+	StartTimeout     string         `yaml:"start-timeout,omitempty"`
+	StopCommand      string         `yaml:"stop-command,omitempty"`
+	StopMode         string         `yaml:"stop-mode,omitempty"`
+	StopTimeout      string         `yaml:"stop-timeout,omitempty"`
+	Timer            string         `yaml:",omitempty"`
+	WatchdogTimeout  string         `yaml:"watchdog-timeout,omitempty"`
 }
 
 type LayoutMetadata struct {
@@ -439,7 +439,7 @@ func create(ctx *context.Context, snap config.Snapcraft, arch string, binaries [
 		Goppc64:   binaries[0].Goppc64,
 		Goriscv64: binaries[0].Goriscv64,
 		Target:    binaries[0].Target,
-		Extra: map[string]interface{}{
+		Extra: map[string]any{
 			releasesExtra: channels,
 		},
 	})

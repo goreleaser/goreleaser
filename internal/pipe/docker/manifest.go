@@ -98,7 +98,7 @@ func (ManifestPipe) Publish(ctx *context.Context) error {
 				Type:  artifact.DockerManifest,
 				Name:  name,
 				Path:  name,
-				Extra: map[string]interface{}{},
+				Extra: map[string]any{},
 			}
 			if manifest.ID != "" {
 				art.Extra[artifact.ExtraID] = manifest.ID

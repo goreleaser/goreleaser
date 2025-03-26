@@ -69,7 +69,7 @@ func TestPipe(t *testing.T) {
 				Name: binary,
 				Path: file,
 				Type: artifact.UploadableBinary,
-				Extra: map[string]interface{}{
+				Extra: map[string]any{
 					artifact.ExtraID: "id-1",
 				},
 			})
@@ -77,7 +77,7 @@ func TestPipe(t *testing.T) {
 				Name: archive,
 				Path: file,
 				Type: artifact.UploadableArchive,
-				Extra: map[string]interface{}{
+				Extra: map[string]any{
 					artifact.ExtraID: "id-2",
 				},
 			})
@@ -85,7 +85,7 @@ func TestPipe(t *testing.T) {
 				Name: linuxPackage,
 				Path: file,
 				Type: artifact.LinuxPackage,
-				Extra: map[string]interface{}{
+				Extra: map[string]any{
 					artifact.ExtraID: "id-3",
 				},
 			})
@@ -125,7 +125,7 @@ func TestPipeSplit(t *testing.T) {
 		Name: binary,
 		Path: file,
 		Type: artifact.UploadableBinary,
-		Extra: map[string]interface{}{
+		Extra: map[string]any{
 			artifact.ExtraID: "id-1",
 		},
 	})
@@ -133,7 +133,7 @@ func TestPipeSplit(t *testing.T) {
 		Name: archive,
 		Path: file,
 		Type: artifact.UploadableArchive,
-		Extra: map[string]interface{}{
+		Extra: map[string]any{
 			artifact.ExtraID: "id-2",
 		},
 	})
@@ -141,7 +141,7 @@ func TestPipeSplit(t *testing.T) {
 		Name: linuxPackage,
 		Path: file,
 		Type: artifact.LinuxPackage,
-		Extra: map[string]interface{}{
+		Extra: map[string]any{
 			artifact.ExtraID: "id-3",
 		},
 	})
@@ -444,7 +444,7 @@ func TestPipeCheckSumsWithExtraFiles(t *testing.T) {
 				Name: binary,
 				Path: file,
 				Type: artifact.UploadableBinary,
-				Extra: map[string]interface{}{
+				Extra: map[string]any{
 					artifact.ExtraID: "id-1",
 				},
 			})

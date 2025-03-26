@@ -465,7 +465,7 @@ func TestRunPipe(t *testing.T) {
 					Goarm:   goarm,
 					Goamd64: goamd64,
 					Type:    artifact.UploadableArchive,
-					Extra: map[string]interface{}{
+					Extra: map[string]any{
 						artifact.ExtraID:        id,
 						artifact.ExtraFormat:    format,
 						artifact.ExtraBinaries:  []string{"foo"},

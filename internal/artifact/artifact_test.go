@@ -111,7 +111,7 @@ func TestFilter(t *testing.T) {
 			Name:   "unibin-replaces",
 			Goos:   "darwin",
 			Goarch: "all",
-			Extra: map[string]interface{}{
+			Extra: map[string]any{
 				ExtraReplaces: true,
 			},
 		},
@@ -119,7 +119,7 @@ func TestFilter(t *testing.T) {
 			Name:   "unibin-noreplace",
 			Goos:   "darwin",
 			Goarch: "all",
-			Extra: map[string]interface{}{
+			Extra: map[string]any{
 				ExtraReplaces: false,
 			},
 		},
@@ -228,34 +228,34 @@ func TestGroupByID(t *testing.T) {
 	data := []*Artifact{
 		{
 			Name: "foo",
-			Extra: map[string]interface{}{
+			Extra: map[string]any{
 				ExtraID: "foo",
 			},
 		},
 		{
 			Name: "bar",
-			Extra: map[string]interface{}{
+			Extra: map[string]any{
 				ExtraID: "foo",
 			},
 		},
 		{
 			Name: "foobar",
 			Goos: "linux",
-			Extra: map[string]interface{}{
+			Extra: map[string]any{
 				ExtraID: "foovar",
 			},
 		},
 		{
 			Name: "foobar",
 			Goos: "linux",
-			Extra: map[string]interface{}{
+			Extra: map[string]any{
 				ExtraID: "foovar",
 			},
 		},
 		{
 			Name: "foobar",
 			Goos: "linux",
-			Extra: map[string]interface{}{
+			Extra: map[string]any{
 				ExtraID: "foobar",
 			},
 		},
@@ -435,7 +435,7 @@ func TestInvalidAlgorithm(t *testing.T) {
 
 func TestExtra(t *testing.T) {
 	a := Artifact{
-		Extra: map[string]interface{}{
+		Extra: map[string]any{
 			"Foo": "foo",
 			"docker": config.Docker{
 				ID:  "id",
@@ -491,25 +491,25 @@ func TestByIDs(t *testing.T) {
 	data := []*Artifact{
 		{
 			Name: "foo",
-			Extra: map[string]interface{}{
+			Extra: map[string]any{
 				ExtraID: "foo",
 			},
 		},
 		{
 			Name: "bar",
-			Extra: map[string]interface{}{
+			Extra: map[string]any{
 				ExtraID: "bar",
 			},
 		},
 		{
 			Name: "foobar",
-			Extra: map[string]interface{}{
+			Extra: map[string]any{
 				ExtraID: "foo",
 			},
 		},
 		{
 			Name: "check",
-			Extra: map[string]interface{}{
+			Extra: map[string]any{
 				ExtraID: "check",
 			},
 		},
@@ -532,25 +532,25 @@ func TestByExts(t *testing.T) {
 	data := []*Artifact{
 		{
 			Name: "foo",
-			Extra: map[string]interface{}{
+			Extra: map[string]any{
 				ExtraExt: ".deb",
 			},
 		},
 		{
 			Name: "bar",
-			Extra: map[string]interface{}{
+			Extra: map[string]any{
 				ExtraExt: "deb",
 			},
 		},
 		{
 			Name: "foobar",
-			Extra: map[string]interface{}{
+			Extra: map[string]any{
 				ExtraExt: "rpm",
 			},
 		},
 		{
 			Name:  "check",
-			Extra: map[string]interface{}{},
+			Extra: map[string]any{},
 		},
 	}
 	artifacts := New()
@@ -568,25 +568,25 @@ func TestByFormats(t *testing.T) {
 	data := []*Artifact{
 		{
 			Name: "foo",
-			Extra: map[string]interface{}{
+			Extra: map[string]any{
 				ExtraFormat: "zip",
 			},
 		},
 		{
 			Name: "bar",
-			Extra: map[string]interface{}{
+			Extra: map[string]any{
 				ExtraFormat: "tar.gz",
 			},
 		},
 		{
 			Name: "foobar",
-			Extra: map[string]interface{}{
+			Extra: map[string]any{
 				ExtraFormat: "zip",
 			},
 		},
 		{
 			Name: "bin",
-			Extra: map[string]interface{}{
+			Extra: map[string]any{
 				ExtraFormat: "binary",
 			},
 		},
@@ -620,7 +620,7 @@ func TestRefresher(t *testing.T) {
 			Name: "f",
 			Path: path,
 			Type: Checksum,
-			Extra: map[string]interface{}{
+			Extra: map[string]any{
 				"Refresh": func() error {
 					return os.WriteFile(path, []byte("hello"), 0o765)
 				},
@@ -643,7 +643,7 @@ func TestRefresher(t *testing.T) {
 		artifacts.Add(&Artifact{
 			Name: "fail",
 			Type: Checksum,
-			Extra: map[string]interface{}{
+			Extra: map[string]any{
 				"ID": "nok",
 				"Refresh": func() error {
 					return fmt.Errorf("fake err")
@@ -661,7 +661,7 @@ func TestRefresher(t *testing.T) {
 		artifacts.Add(&Artifact{
 			Name: "will be ignored",
 			Type: Binary,
-			Extra: map[string]interface{}{
+			Extra: map[string]any{
 				"ID": "ignored",
 				"Refresh": func() error {
 					return fmt.Errorf("err that should not happen")
@@ -705,21 +705,21 @@ func TestMarshalJSON(t *testing.T) {
 	artifacts.Add(&Artifact{
 		Name: "foo",
 		Type: Binary,
-		Extra: map[string]interface{}{
+		Extra: map[string]any{
 			ExtraID: "adsad",
 		},
 	})
 	artifacts.Add(&Artifact{
 		Name: "foo",
 		Type: UploadableArchive,
-		Extra: map[string]interface{}{
+		Extra: map[string]any{
 			ExtraID: "adsad",
 		},
 	})
 	artifacts.Add(&Artifact{
 		Name: "foo",
 		Type: Checksum,
-		Extra: map[string]interface{}{
+		Extra: map[string]any{
 			ExtraRefresh: func() error { return nil },
 		},
 	})

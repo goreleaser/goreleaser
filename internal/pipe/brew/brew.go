@@ -277,7 +277,7 @@ func doRun(ctx *context.Context, brew config.Homebrew, cl client.ReleaseURLTempl
 		Name: filename,
 		Path: path,
 		Type: artifact.BrewTap,
-		Extra: map[string]interface{}{
+		Extra: map[string]any{
 			brewConfigExtra: brew,
 		},
 	})
@@ -301,7 +301,7 @@ func doBuildFormula(ctx *context.Context, data templateData) (string, error) {
 	t := template.New("cask.rb")
 	var err error
 	t, err = t.Funcs(map[string]any{
-		"include": func(name string, data interface{}) (string, error) {
+		"include": func(name string, data any) (string, error) {
 			buf := bytes.NewBuffer(nil)
 			if err := t.ExecuteTemplate(buf, name, data); err != nil {
 				return "", err

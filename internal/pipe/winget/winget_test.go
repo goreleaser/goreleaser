@@ -678,7 +678,7 @@ func TestRunPipe(t *testing.T) {
 					Goarm:   goarm,
 					Goamd64: goamd64,
 					Type:    artifact.UploadableArchive,
-					Extra: map[string]interface{}{
+					Extra: map[string]any{
 						artifact.ExtraID:        id,
 						artifact.ExtraFormat:    "zip",
 						artifact.ExtraBinaries:  []string{"foo.exe"},
@@ -714,7 +714,7 @@ func TestRunPipe(t *testing.T) {
 				Goos:   goos,
 				Goarch: goarch,
 				Type:   artifact.UploadableBinary,
-				Extra: map[string]interface{}{
+				Extra: map[string]any{
 					artifact.ExtraID: "bar",
 				},
 			})
@@ -847,7 +847,7 @@ func TestFormatBinary(t *testing.T) {
 			Goarch:  goarch,
 			Goamd64: goamd64,
 			Type:    artifact.UploadableBinary,
-			Extra: map[string]interface{}{
+			Extra: map[string]any{
 				artifact.ExtraID:     id,
 				artifact.ExtraBinary: "somebin",
 			},

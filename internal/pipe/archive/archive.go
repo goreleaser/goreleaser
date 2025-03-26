@@ -241,7 +241,7 @@ func create(ctx *context.Context, arch config.Archive, binaries []*artifact.Arti
 		Type: artifact.UploadableArchive,
 		Name: folder + "." + format,
 		Path: archivePath,
-		Extra: map[string]interface{}{
+		Extra: map[string]any{
 			artifact.ExtraID:        arch.ID,
 			artifact.ExtraFormat:    format,
 			artifact.ExtraWrappedIn: wrap,
@@ -301,7 +301,7 @@ func skip(ctx *context.Context, archive config.Archive, binaries []*artifact.Art
 			Goppc64:   binary.Goppc64,
 			Goriscv64: binary.Goriscv64,
 			Target:    binary.Target,
-			Extra: map[string]interface{}{
+			Extra: map[string]any{
 				artifact.ExtraID:       archive.ID,
 				artifact.ExtraFormat:   "binary",
 				artifact.ExtraBinary:   binary.Name,

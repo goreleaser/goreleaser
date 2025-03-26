@@ -181,7 +181,7 @@ func (p Pipe) doRun(ctx *context.Context, nix config.Nix, cl client.ReleaseURLTe
 		Name: filepath.Base(path),
 		Path: path,
 		Type: artifact.Nixpkg,
-		Extra: map[string]interface{}{
+		Extra: map[string]any{
 			nixConfigExtra: nix,
 		},
 	})

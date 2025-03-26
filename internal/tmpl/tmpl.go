@@ -26,7 +26,7 @@ type Template struct {
 }
 
 // Fields that will be available to the template engine.
-type Fields map[string]interface{}
+type Fields map[string]any
 
 // Template fields names used in build targets and more.
 const (
@@ -105,8 +105,8 @@ func New(ctx *context.Context) *Template {
 		treeState = "dirty"
 	}
 
-	fields := map[string]interface{}{}
-	for k, v := range map[string]interface{}{
+	fields := map[string]any{}
+	for k, v := range map[string]any{
 		projectName:     ctx.Config.ProjectName,
 		modulePath:      ctx.ModulePath,
 		version:         ctx.Version,

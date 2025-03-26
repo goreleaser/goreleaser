@@ -195,7 +195,7 @@ func doRun(ctx *context.Context, aur config.AUR, cl client.ReleaseURLTemplater) 
 			Name: info.name,
 			Path: path,
 			Type: info.kind,
-			Extra: map[string]interface{}{
+			Extra: map[string]any{
 				aurExtra:         aur,
 				artifact.ExtraID: aur.Name,
 			},

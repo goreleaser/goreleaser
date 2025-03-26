@@ -135,7 +135,7 @@ func doVerifyTestArchive(tb testing.TB, ctx *context.Context, tmp, format string
 		Type: artifact.UploadableSourceArchive,
 		Name: "foo-1.0.0." + format,
 		Path: "dist/foo-1.0.0." + format,
-		Extra: map[string]interface{}{
+		Extra: map[string]any{
 			artifact.ExtraFormat: format,
 		},
 	}, *artifacts[0])
