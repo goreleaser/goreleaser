@@ -391,7 +391,7 @@ func createFakeGoBinaryWithVersion(tb testing.TB, name, version string) {
 
 	require.NoError(tb, os.WriteFile(
 		filepath.Join(d, name),
-		[]byte(fmt.Sprintf("#!/bin/sh\necho %s", version)),
+		fmt.Appendf(nil, "#!/bin/sh\necho %s", version),
 		0o755,
 	))
 

@@ -54,7 +54,7 @@ func TestArchiveFiles_complex(t *testing.T) {
 
 	// 2021-07-17T15:14:10.264931-03:00
 
-	err := yaml.UnmarshalStrict([]byte(fmt.Sprintf(`
+	err := yaml.UnmarshalStrict(fmt.Appendf(nil, `
 files:
 - src: ./foo
   dst: ./bar
@@ -68,7 +68,7 @@ files:
     group: users
     mode: 0644
     mtime: "%s"
-`, now.Format(time.RFC3339Nano))), &actual)
+`, now.Format(time.RFC3339Nano)), &actual)
 	require.NoError(t, err)
 
 	require.Equal(t, []File{

@@ -15,6 +15,7 @@ import (
 
 	"github.com/goreleaser/goreleaser/v2/internal/artifact"
 	"github.com/goreleaser/goreleaser/v2/pkg/config"
+	"maps"
 )
 
 // GitInfo includes tags and diffs used in some point.
@@ -41,9 +42,7 @@ type Env map[string]string
 // Copy returns a copy of the environment.
 func (e Env) Copy() Env {
 	out := Env{}
-	for k, v := range e {
-		out[k] = v
-	}
+	maps.Copy(out, e)
 	return out
 }
 

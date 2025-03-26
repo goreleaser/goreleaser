@@ -16,6 +16,7 @@ import (
 	"github.com/goreleaser/goreleaser/v2/internal/testctx"
 	"github.com/goreleaser/goreleaser/v2/pkg/config"
 	"github.com/stretchr/testify/require"
+	"maps"
 )
 
 func TestContinueOnError(t *testing.T) {
