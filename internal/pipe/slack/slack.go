@@ -1,3 +1,4 @@
+// Package slack announces releases on Slack.
 package slack
 
 import (
@@ -17,18 +18,22 @@ const (
 	defaultMessageTemplate = `{{ .ProjectName }} {{ .Tag }} is out! Check it out at {{ .ReleaseURL }}`
 )
 
+// Pipe implementation.
 type Pipe struct{}
 
 func (Pipe) String() string { return "slack" }
+
+// Skip implements Skipper.
 func (Pipe) Skip(ctx *context.Context) (bool, error) {
 	enable, err := tmpl.New(ctx).Bool(ctx.Config.Announce.Slack.Enabled)
 	return !enable, err
 }
 
-type Config struct {
+type envConfig struct {
 	Webhook string `env:"SLACK_WEBHOOK,notEmpty"`
 }
 
+// Default sets the pipe defaults.
 func (Pipe) Default(ctx *context.Context) error {
 	if ctx.Config.Announce.Slack.MessageTemplate == "" {
 		ctx.Config.Announce.Slack.MessageTemplate = defaultMessageTemplate
@@ -39,13 +44,14 @@ func (Pipe) Default(ctx *context.Context) error {
 	return nil
 }
 
+// Announce does the announcement.
 func (Pipe) Announce(ctx *context.Context) error {
 	msg, err := tmpl.New(ctx).Apply(ctx.Config.Announce.Slack.MessageTemplate)
 	if err != nil {
 		return fmt.Errorf("slack: %w", err)
 	}
 
-	cfg, err := env.ParseAs[Config]()
+	cfg, err := env.ParseAs[envConfig]()
 	if err != nil {
 		return fmt.Errorf("slack: %w", err)
 	}

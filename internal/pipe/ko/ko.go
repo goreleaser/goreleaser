@@ -62,6 +62,8 @@ var (
 type Pipe struct{}
 
 func (Pipe) String() string { return "ko" }
+
+// Skip implements Skipper.
 func (Pipe) Skip(ctx *context.Context) bool {
 	return skips.Any(ctx, skips.Ko) || len(ctx.Config.Kos) == 0
 }
@@ -146,6 +148,7 @@ func (Pipe) Default(ctx *context.Context) error {
 	return ids.Validate()
 }
 
+// Run runs the pipe.
 func (p Pipe) Run(ctx *context.Context) error {
 	if ctx.Snapshot {
 		// publish actually handles pushing to the local docker daemon when

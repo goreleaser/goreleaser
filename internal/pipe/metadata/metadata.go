@@ -24,14 +24,20 @@ type (
 )
 
 func (Pipe) String() string { return "setting up metadata" }
+
+// Run the pipe.
 func (Pipe) Run(ctx *context.Context) error {
 	return tmpl.New(ctx).ApplyAll(&ctx.Config.Metadata.ModTimestamp)
 }
 
-func (MetaPipe) String() string                 { return "writing release metadata" }
+func (MetaPipe) String() string { return "writing release metadata" }
+
+// Run runs the pipe.
 func (MetaPipe) Run(ctx *context.Context) error { return writeMetadata(ctx) }
 
-func (ArtifactsPipe) String() string                 { return "writing artifacts metadata" }
+func (ArtifactsPipe) String() string { return "writing artifacts metadata" }
+
+// Run runs the pipe.
 func (ArtifactsPipe) Run(ctx *context.Context) error { return writeArtifacts(ctx) }
 
 func writeMetadata(ctx *context.Context) error {

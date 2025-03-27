@@ -1,3 +1,4 @@
+// Package errhandler handles errors.
 package errhandler
 
 import (
@@ -48,6 +49,7 @@ func (m *Memo) Wrap(action middleware.Action) middleware.Action {
 	}
 }
 
+// Memorize memorizes the given error.
 func (m *Memo) Memorize(err error) {
 	if pipe.IsSkip(err) {
 		log.WithField("reason", err.Error()).Warn("pipe skipped")

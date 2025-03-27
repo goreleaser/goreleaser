@@ -11,6 +11,7 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
+// RequireEqualArtifacts makes sure the two lists of artifacts are equal.
 func RequireEqualArtifacts(tb testing.TB, expected, got []*artifact.Artifact) {
 	tb.Helper()
 	slices.SortFunc(expected, artifactSort)
@@ -34,7 +35,7 @@ func RequireEqualArtifacts(tb testing.TB, expected, got []*artifact.Artifact) {
 				)
 				continue
 			}
-			require.EqualValues(
+			require.Equal(
 				tb,
 				a.Extra[k],
 				b.Extra[k],

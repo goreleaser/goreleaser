@@ -54,6 +54,7 @@ type Pipe struct{}
 
 func (Pipe) String() string { return "announcing" }
 
+// Skip implements Skipper.
 func (Pipe) Skip(ctx *context.Context) (bool, error) {
 	if skips.Any(ctx, skips.Announce) {
 		return true, nil

@@ -359,7 +359,7 @@ func TestWithDefaults(t *testing.T) {
 			build, err := Default.WithDefaults(ctx.Config.Builds[0])
 			require.NoError(t, err)
 			require.ElementsMatch(t, build.Targets, testcase.targets)
-			require.EqualValues(t, testcase.tool, build.Tool)
+			require.Equal(t, testcase.tool, build.Tool)
 		})
 	}
 }

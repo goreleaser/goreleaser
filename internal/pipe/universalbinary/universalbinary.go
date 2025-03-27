@@ -28,7 +28,9 @@ import (
 // Pipe for macos universal binaries.
 type Pipe struct{}
 
-func (Pipe) String() string                 { return "universal binaries" }
+func (Pipe) String() string { return "universal binaries" }
+
+// Skip implements Skipper.
 func (Pipe) Skip(ctx *context.Context) bool { return len(ctx.Config.UniversalBinaries) == 0 }
 
 // Default sets the pipe defaults.

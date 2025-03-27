@@ -14,7 +14,7 @@ import (
 	"golang.org/x/oauth2"
 )
 
-var ErrLinkedinForbidden = errors.New("forbidden. please check your permissions")
+var errLinkedinForbidden = errors.New("forbidden. please check your permissions")
 
 type oauthClientConfig struct {
 	Context     *context.Context
@@ -76,7 +76,7 @@ func (c client) getProfileIDLegacy(ctx stdctx.Context) (string, error) {
 	}
 
 	if resp.StatusCode == http.StatusForbidden {
-		return "", ErrLinkedinForbidden
+		return "", errLinkedinForbidden
 	}
 
 	value, err := io.ReadAll(resp.Body)
@@ -113,7 +113,7 @@ func (c client) getProfileSub(ctx stdctx.Context) (string, error) {
 	}
 
 	if resp.StatusCode == http.StatusForbidden {
-		return "", ErrLinkedinForbidden
+		return "", errLinkedinForbidden
 	}
 
 	value, err := io.ReadAll(resp.Body)
@@ -142,7 +142,7 @@ func (c client) getProfileURN(ctx stdctx.Context) (string, error) {
 	// To build the URN, we need to get the profile sub (formally id)
 	profileSub, err := c.getProfileSub(ctx)
 	if err != nil {
-		if !errors.Is(err, ErrLinkedinForbidden) {
+		if !errors.Is(err, errLinkedinForbidden) {
 			return "", fmt.Errorf("could not get profile sub: %w", err)
 		}
 

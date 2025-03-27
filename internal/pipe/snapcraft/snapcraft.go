@@ -93,6 +93,7 @@ type AppMetadata struct {
 	WatchdogTimeout  string         `yaml:"watchdog-timeout,omitempty"`
 }
 
+// LayoutMetadata for snap.
 type LayoutMetadata struct {
 	Symlink  string `yaml:",omitempty"`
 	Bind     string `yaml:",omitempty"`
@@ -105,9 +106,15 @@ const defaultNameTemplate = `{{ .ProjectName }}_{{ .Version }}_{{ .Os }}_{{ .Arc
 // Pipe for snapcraft packaging.
 type Pipe struct{}
 
-func (Pipe) String() string                           { return "snapcraft packages" }
-func (Pipe) ContinueOnError() bool                    { return true }
+func (Pipe) String() string { return "snapcraft packages" }
+
+// ContinueOnError implements Continuable.
+func (Pipe) ContinueOnError() bool { return true }
+
+// Dependencies implements Healthchecker.
 func (Pipe) Dependencies(_ *context.Context) []string { return []string{"snapcraft"} }
+
+// Skip implements Skipper.
 func (Pipe) Skip(ctx *context.Context) bool {
 	return skips.Any(ctx, skips.Snapcraft) || len(ctx.Config.Snapcrafts) == 0
 }

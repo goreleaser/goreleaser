@@ -46,12 +46,17 @@ func (e ErrNoArchivesFound) Error() string {
 // Pipe for brew deployment.
 type Pipe struct{}
 
-func (Pipe) String() string        { return "homebrew tap formula" }
+func (Pipe) String() string { return "homebrew tap formula" }
+
+// ContinueOnError implements Continuable.
 func (Pipe) ContinueOnError() bool { return true }
+
+// Skip implements Skipper.
 func (Pipe) Skip(ctx *context.Context) bool {
 	return skips.Any(ctx, skips.Homebrew) || len(ctx.Config.Brews) == 0
 }
 
+// Default sets the pipe defaults.
 func (Pipe) Default(ctx *context.Context) error {
 	for i := range ctx.Config.Brews {
 		brew := &ctx.Config.Brews[i]
@@ -75,6 +80,7 @@ func (Pipe) Default(ctx *context.Context) error {
 	return nil
 }
 
+// Run the pipe.
 func (Pipe) Run(ctx *context.Context) error {
 	cli, err := client.NewReleaseClient(ctx)
 	if err != nil {

@@ -152,6 +152,7 @@ func (t Type) String() string {
 	}
 }
 
+// Constants for common extra fields.
 const (
 	ExtraID         = "ID"
 	ExtraBinary     = "Binary"
@@ -171,6 +172,7 @@ const (
 // Extras represents the extra fields in an artifact.
 type Extras map[string]any
 
+// MarshalJSON implements json.Marshaler.
 func (e Extras) MarshalJSON() ([]byte, error) {
 	m := map[string]any{}
 	for k, v := range e {

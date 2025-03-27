@@ -24,6 +24,7 @@ func (Pipe) String() string {
 	return "creating source archive"
 }
 
+// Skip implements Skipper.
 func (Pipe) Skip(ctx *context.Context) bool {
 	return !ctx.Config.Source.Enabled
 }

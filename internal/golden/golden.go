@@ -15,41 +15,50 @@ var update = flag.Bool("update", false, "update .golden files")
 
 const golden = ".golden"
 
+// RequireEqual requires the output to be equal to the golden file.
 func RequireEqual(tb testing.TB, out []byte) {
 	tb.Helper()
 	RequireEqualExt(tb, out, "")
 }
 
+// RequireEqualExt requires the output to be equal to the golden file with the
+// given extension.
 func RequireEqualExt(tb testing.TB, out []byte, ext string) {
 	tb.Helper()
 	doRequireEqual(tb, out, ext, golden, false)
 }
 
+// RequireEqualExtSubfolder requires the output to be equal to the golden file.
 func RequireEqualExtSubfolder(tb testing.TB, out []byte, ext string) {
 	tb.Helper()
 	doRequireEqual(tb, out, ext, golden, true)
 }
 
+// RequireEqualTxt requires the output to be equal to the golden file.
 func RequireEqualTxt(tb testing.TB, out []byte) {
 	tb.Helper()
 	doRequireEqual(tb, out, ".txt", golden, false)
 }
 
+// RequireEqualJSON requires the output to be equal to the golden file.
 func RequireEqualJSON(tb testing.TB, out []byte) {
 	tb.Helper()
 	doRequireEqual(tb, out, ".json", golden, false)
 }
 
+// RequireEqualRb requires the output to be equal to the golden file.
 func RequireEqualRb(tb testing.TB, out []byte) {
 	tb.Helper()
 	doRequireEqual(tb, out, ".rb", golden, false)
 }
 
+// RequireEqualYaml requires the output to be equal to the golden file.
 func RequireEqualYaml(tb testing.TB, out []byte) {
 	tb.Helper()
 	doRequireEqual(tb, out, ".yaml", "", false)
 }
 
+// RequireReadFile requires the file to be read and returned.
 func RequireReadFile(tb testing.TB, path string) []byte {
 	tb.Helper()
 	bts, err := os.ReadFile(path)

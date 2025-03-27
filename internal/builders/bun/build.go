@@ -1,3 +1,4 @@
+// Package bun implements the bun builder.
 package bun
 
 import (

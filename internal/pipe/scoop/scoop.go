@@ -59,8 +59,12 @@ const scoopConfigExtra = "ScoopConfig"
 // Pipe that builds and publishes scoop manifests.
 type Pipe struct{}
 
-func (Pipe) String() string        { return "scoop manifests" }
+func (Pipe) String() string { return "scoop manifests" }
+
+// ContinueOnError implements Continuable.
 func (Pipe) ContinueOnError() bool { return true }
+
+// Skip implements Skipper.
 func (Pipe) Skip(ctx *context.Context) bool {
 	return skips.Any(ctx, skips.Scoop) || len(ctx.Config.Scoops) == 0
 }

@@ -112,7 +112,7 @@ func TestUnmarshalSlackAttachments(t *testing.T) {
 }
 
 func TestUnmarshalYAMLSlackBlocks(t *testing.T) {
-	// func (a *SlackAttachment) UnmarshalYAML(unmarshal func(interface{}) error) error {
+	// func (a *SlackAttachment) UnmarshalYAML(unmarshal func(any) error) error {
 	t.Parallel()
 
 	const testError = "testError"

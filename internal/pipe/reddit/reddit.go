@@ -1,3 +1,4 @@
+// Package reddit announces the release on Reddit.
 package reddit
 
 import (
@@ -15,19 +16,23 @@ const (
 	defaultURLTemplate   = `{{ .ReleaseURL }}`
 )
 
+// Pipe implementation.
 type Pipe struct{}
 
 func (Pipe) String() string { return "reddit" }
+
+// Skip implements Skipper.
 func (Pipe) Skip(ctx *context.Context) (bool, error) {
 	enable, err := tmpl.New(ctx).Bool(ctx.Config.Announce.Reddit.Enabled)
 	return !enable, err
 }
 
-type Config struct {
+type envConfig struct {
 	Secret   string `env:"REDDIT_SECRET,notEmpty"`
 	Password string `env:"REDDIT_PASSWORD,notEmpty"`
 }
 
+// Default sets the pipe defaults.
 func (Pipe) Default(ctx *context.Context) error {
 	if ctx.Config.Announce.Reddit.TitleTemplate == "" {
 		ctx.Config.Announce.Reddit.TitleTemplate = defaultTitleTemplate
@@ -40,6 +45,7 @@ func (Pipe) Default(ctx *context.Context) error {
 	return nil
 }
 
+// Announce does the announcement.
 func (Pipe) Announce(ctx *context.Context) error {
 	title, err := tmpl.New(ctx).Apply(ctx.Config.Announce.Reddit.TitleTemplate)
 	if err != nil {
@@ -57,7 +63,7 @@ func (Pipe) Announce(ctx *context.Context) error {
 		URL:       url,
 	}
 
-	cfg, err := env.ParseAs[Config]()
+	cfg, err := env.ParseAs[envConfig]()
 	if err != nil {
 		return fmt.Errorf("reddit: %w", err)
 	}

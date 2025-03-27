@@ -17,6 +17,7 @@ type Pipe struct{}
 
 func (Pipe) String() string { return "running before hooks" }
 
+// Skip implements Skipper.
 func (Pipe) Skip(ctx *context.Context) bool {
 	return len(ctx.Config.Before.Hooks) == 0 || skips.Any(ctx, skips.Before)
 }

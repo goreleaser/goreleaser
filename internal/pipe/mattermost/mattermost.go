@@ -1,3 +1,4 @@
+// Package mattermost announces releases to mattermost.
 package mattermost
 
 import (
@@ -21,18 +22,22 @@ const (
 	defaultMessageTitle    = `{{ .ProjectName }} {{ .Tag }} is out!`
 )
 
+// Pipe announcer.
 type Pipe struct{}
 
 func (Pipe) String() string { return "mattermost" }
+
+// Skip implements Skipper.
 func (Pipe) Skip(ctx *context.Context) (bool, error) {
 	enable, err := tmpl.New(ctx).Bool(ctx.Config.Announce.Mattermost.Enabled)
 	return !enable, err
 }
 
-type Config struct {
+type envConfig struct {
 	Webhook string `env:"MATTERMOST_WEBHOOK,notEmpty"`
 }
 
+// Default sets the pipe defaults.
 func (Pipe) Default(ctx *context.Context) error {
 	if ctx.Config.Announce.Mattermost.MessageTemplate == "" {
 		ctx.Config.Announce.Mattermost.MessageTemplate = defaultMessageTemplate
@@ -51,6 +56,7 @@ func (Pipe) Default(ctx *context.Context) error {
 	return nil
 }
 
+// Announce does the announcement.
 func (Pipe) Announce(ctx *context.Context) error {
 	msg, err := tmpl.New(ctx).Apply(ctx.Config.Announce.Mattermost.MessageTemplate)
 	if err != nil {
@@ -62,7 +68,7 @@ func (Pipe) Announce(ctx *context.Context) error {
 		return fmt.Errorf("teams: %w", err)
 	}
 
-	cfg, err := env.ParseAs[Config]()
+	cfg, err := env.ParseAs[envConfig]()
 	if err != nil {
 		return fmt.Errorf("mattermost: %w", err)
 	}

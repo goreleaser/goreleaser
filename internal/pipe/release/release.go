@@ -28,6 +28,7 @@ type Pipe struct{}
 
 func (Pipe) String() string { return "scm releases" }
 
+// Skip implements Skipper.
 func (Pipe) Skip(ctx *context.Context) (bool, error) {
 	return tmpl.New(ctx).Bool(ctx.Config.Release.Disable)
 }

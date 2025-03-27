@@ -22,6 +22,7 @@ import (
 	"golang.org/x/oauth2"
 )
 
+// DefaultGitHubDownloadURL is the default GitHub download URL.
 const DefaultGitHubDownloadURL = "https://github.com"
 
 var (

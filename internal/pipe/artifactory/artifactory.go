@@ -15,7 +15,9 @@ import (
 // Pipe for Artifactory.
 type Pipe struct{}
 
-func (Pipe) String() string                 { return "artifactory" }
+func (Pipe) String() string { return "artifactory" }
+
+// Skip implements Skipper.
 func (Pipe) Skip(ctx *context.Context) bool { return len(ctx.Config.Artifactories) == 0 }
 
 // Default sets the pipe defaults.

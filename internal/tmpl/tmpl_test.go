@@ -385,7 +385,7 @@ func TestApplySingleEnvOnly(t *testing.T) {
 		{
 			"plain-text only",
 			"raw-token",
-			ExpectedSingleEnvErr{},
+			errExpectSingleEnvVar{},
 		},
 		{
 			"variable with spaces",
@@ -410,7 +410,7 @@ func TestApplySingleEnvOnly(t *testing.T) {
 		{
 			"other interpolation",
 			"{{ .ProjectName }}",
-			ExpectedSingleEnvErr{},
+			errExpectSingleEnvVar{},
 		},
 		{
 			"bad template",

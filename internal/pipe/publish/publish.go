@@ -71,9 +71,12 @@ type Pipe struct {
 	pipeline []Publisher
 }
 
-func (Pipe) String() string                 { return "publishing" }
+func (Pipe) String() string { return "publishing" }
+
+// Skip implements Skipper.
 func (Pipe) Skip(ctx *context.Context) bool { return skips.Any(ctx, skips.Publish) }
 
+// Run runs the pipe.
 func (p Pipe) Run(ctx *context.Context) error {
 	memo := errhandler.Memo{}
 	for _, publisher := range p.pipeline {
@@ -94,6 +97,7 @@ func (p Pipe) Run(ctx *context.Context) error {
 	return memo.Error()
 }
 
+// Continuable can be implemented by publishers that should continue on error.
 type Continuable interface {
 	ContinueOnError() bool
 }

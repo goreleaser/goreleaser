@@ -13,8 +13,11 @@ import (
 // CleanPipe cleans the distribution directory.
 type CleanPipe struct{}
 
+// Skip implements Skipper.
 func (CleanPipe) Skip(ctx *context.Context) bool { return !ctx.Clean }
 func (CleanPipe) String() string                 { return "cleaning distribution directory" }
+
+// Run runs the pipe.
 func (CleanPipe) Run(ctx *context.Context) error {
 	// here we are setting a default outside a Default method...
 	// this is needed because when this run, the defaults are not set yet
@@ -27,6 +30,8 @@ func (CleanPipe) Run(ctx *context.Context) error {
 type Pipe struct{}
 
 func (Pipe) String() string { return "ensuring distribution directory" }
+
+// Default sets the pipe defaults.
 func (Pipe) Default(ctx *context.Context) error {
 	if ctx.Config.Dist == "" {
 		ctx.Config.Dist = "dist"

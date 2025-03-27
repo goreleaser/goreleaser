@@ -30,17 +30,22 @@ const (
 	defaultCommitMsg = "Update to {{ .Tag }}"
 )
 
-var ErrNoArchivesFound = errors.New("no linux archives found")
+var errNoArchivesFound = errors.New("no linux archives found")
 
 // Pipe for arch linux's AUR pkgbuild.
 type Pipe struct{}
 
-func (Pipe) String() string        { return "arch user repositories" }
+func (Pipe) String() string { return "arch user repositories" }
+
+// ContinueOnError implements Continuable.
 func (Pipe) ContinueOnError() bool { return true }
+
+// Skip implements Skipper.
 func (Pipe) Skip(ctx *context.Context) bool {
 	return skips.Any(ctx, skips.AUR) || len(ctx.Config.AURs) == 0
 }
 
+// Default sets the pipe defaults.
 func (Pipe) Default(ctx *context.Context) error {
 	for i := range ctx.Config.AURs {
 		pkg := &ctx.Config.AURs[i]
@@ -72,6 +77,7 @@ func (Pipe) Default(ctx *context.Context) error {
 	return nil
 }
 
+// Run the pipe.
 func (Pipe) Run(ctx *context.Context) error {
 	cli, err := client.NewReleaseClient(ctx)
 	if err != nil {
@@ -134,7 +140,7 @@ func doRun(ctx *context.Context, aur config.AUR, cl client.ReleaseURLTemplater) 
 
 	archives := ctx.Artifacts.Filter(artifact.And(filters...)).List()
 	if len(archives) == 0 {
-		return ErrNoArchivesFound
+		return errNoArchivesFound
 	}
 
 	pkg, err := tmpl.New(ctx).Apply(aur.Package)
