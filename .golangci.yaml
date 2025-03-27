@@ -19,6 +19,7 @@ linters:
     - tparallel
     - unconvert
     - unparam
+    - usetesting
     - wastedassign
   settings:
     depguard:
@@ -86,6 +87,14 @@ linters:
       enable-all: true
       disable:
         - error-is-as
+    usetesting:
+      context-background: true
+      context-todo: true
+      os-chdir: true
+      os-mkdir-temp: true
+      os-setenv: true
+      os-create-temp: true
+      os-temp-dir: true
   exclusions:
     generated: lax
     presets:

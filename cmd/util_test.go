@@ -23,14 +23,8 @@ func setup(tb testing.TB) string {
 	_ = os.Unsetenv("GITLAB_TOKEN")
 	_ = os.Unsetenv("GITEA_TOKEN")
 
-	previous, err := os.Getwd()
-	require.NoError(tb, err)
-
 	folder := tb.TempDir()
-	require.NoError(tb, os.Chdir(folder))
-	tb.Cleanup(func() {
-		require.NoError(tb, os.Chdir(previous))
-	})
+	tb.Chdir(folder)
 
 	createGoReleaserYaml(tb)
 	createMainGo(tb)
