@@ -1,7 +1,6 @@
 package git_test
 
 import (
-	"context"
 	"testing"
 
 	"github.com/goreleaser/goreleaser/v2/internal/git"
@@ -11,19 +10,19 @@ import (
 
 func TestNotARepo(t *testing.T) {
 	testlib.Mktmp(t)
-	_, err := git.ExtractRepoFromConfig(context.Background())
+	_, err := git.ExtractRepoFromConfig(t.Context())
 	require.EqualError(t, err, `current folder is not a git repository`)
 }
 
 func TestNoRemote(t *testing.T) {
 	testlib.Mktmp(t)
 	testlib.GitInit(t)
-	_, err := git.ExtractRepoFromConfig(context.Background())
+	_, err := git.ExtractRepoFromConfig(t.Context())
 	require.EqualError(t, err, `no remote configured to list refs from`)
 }
 
 func TestRelativeRemote(t *testing.T) {
-	ctx := context.Background()
+	ctx := t.Context()
 	testlib.Mktmp(t)
 	testlib.GitInit(t)
 	testlib.GitRemoteAddWithName(t, "upstream", "https://github.com/goreleaser/goreleaser.git")
@@ -45,13 +44,13 @@ func TestRepoName(t *testing.T) {
 	testlib.Mktmp(t)
 	testlib.GitInit(t)
 	testlib.GitRemoteAdd(t, "git@github.com:goreleaser/goreleaser.git")
-	repo, err := git.ExtractRepoFromConfig(context.Background())
+	repo, err := git.ExtractRepoFromConfig(t.Context())
 	require.NoError(t, err)
 	require.Equal(t, "goreleaser/goreleaser", repo.String())
 }
 
 func TestRepoNameWithDifferentRemote(t *testing.T) {
-	ctx := context.Background()
+	ctx := t.Context()
 	testlib.Mktmp(t)
 	testlib.GitInit(t)
 	testlib.GitRemoteAddWithName(t, "upstream", "https://github.com/goreleaser/goreleaser.git")

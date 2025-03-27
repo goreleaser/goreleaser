@@ -1,8 +1,6 @@
 package git_test
 
 import (
-	"context"
-	"os"
 	"testing"
 
 	"github.com/goreleaser/goreleaser/v2/internal/git"
@@ -11,7 +9,7 @@ import (
 )
 
 func TestGit(t *testing.T) {
-	ctx := context.Background()
+	ctx := t.Context()
 	out, err := git.Run(ctx, "status")
 	require.NoError(t, err)
 	require.NotEmpty(t, out)
@@ -22,7 +20,7 @@ func TestGit(t *testing.T) {
 }
 
 func TestGitWarning(t *testing.T) {
-	ctx := context.Background()
+	ctx := t.Context()
 	testlib.Mktmp(t)
 	testlib.GitInit(t)
 	testlib.GitCommit(t, "foo")
@@ -43,15 +41,16 @@ func TestGitWarning(t *testing.T) {
 }
 
 func TestRepo(t *testing.T) {
-	ctx := context.Background()
+	ctx := t.Context()
 	require.True(t, git.IsRepo(ctx), "goreleaser folder should be a git repo")
 
-	require.NoError(t, os.Chdir(os.TempDir()))
-	require.False(t, git.IsRepo(ctx), os.TempDir()+" folder should be a git repo")
+	tmpDir := t.TempDir()
+	t.Chdir(tmpDir)
+	require.False(t, git.IsRepo(ctx), tmpDir+" folder should be a git repo")
 }
 
 func TestClean(t *testing.T) {
-	ctx := context.Background()
+	ctx := t.Context()
 
 	t.Run("success", func(t *testing.T) {
 		out, err := git.Clean("asdasd 'ssadas'\nadasd", nil)

@@ -51,7 +51,7 @@ func TestAssetOpenDefault(t *testing.T) {
 		t.Fatalf("should fail on missing file")
 	}
 	_, err = assetOpenDefault("blah", &artifact.Artifact{
-		Path: os.TempDir(),
+		Path: t.TempDir(),
 	})
 	if err == nil {
 		t.Fatalf("should fail on existing dir")
