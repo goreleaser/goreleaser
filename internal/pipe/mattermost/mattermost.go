@@ -1,3 +1,4 @@
+// Package mattermost announces releases to Mattermost.
 package mattermost
 
 import (

@@ -68,7 +68,7 @@ func TestChangelogProvidedViaFlagIsReallyEmpty(t *testing.T) {
 	ctx.ReleaseNotesFile = "testdata/changes-really-empty.md"
 	require.NoError(t, Pipe{}.Default(ctx))
 	require.NoError(t, Pipe{}.Run(ctx))
-	require.Equal(t, "", ctx.ReleaseNotes)
+	require.Empty(t, ctx.ReleaseNotes)
 }
 
 func TestChangelogTmplProvidedViaFlagIsReallyEmpty(t *testing.T) {
@@ -76,7 +76,7 @@ func TestChangelogTmplProvidedViaFlagIsReallyEmpty(t *testing.T) {
 	ctx.ReleaseNotesTmpl = "testdata/changes-really-empty.md"
 	require.NoError(t, Pipe{}.Default(ctx))
 	require.NoError(t, Pipe{}.Run(ctx))
-	require.Equal(t, "", ctx.ReleaseNotes)
+	require.Empty(t, ctx.ReleaseNotes)
 }
 
 func TestTemplatedChangelogProvidedViaFlag(t *testing.T) {
@@ -334,7 +334,7 @@ func TestChangelogSort(t *testing.T) {
 				changes = append(changes, strings.TrimPrefix(line, li))
 			}
 			require.Len(t, changes, len(cfg.Entries))
-			require.EqualValues(t, cfg.Entries, changes)
+			require.Equal(t, cfg.Entries, changes)
 		})
 	}
 }

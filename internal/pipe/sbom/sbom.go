@@ -1,3 +1,4 @@
+// Package sbom creates a Software Bill of Materials (SBOM) for each artifact.
 package sbom
 
 import (

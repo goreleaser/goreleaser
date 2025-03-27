@@ -1,3 +1,4 @@
+// Package deno builds binaries using the Deno tool.
 package deno
 
 import (

@@ -1,3 +1,4 @@
+// Package skips handles the skip logic.
 package skips
 
 import (

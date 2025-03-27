@@ -16,7 +16,7 @@ type Skipper interface {
 	fmt.Stringer
 }
 
-// Skipper defines a method to skip an entire Piper.
+// ErrSkipper defines a method to skip an entire Piper.
 type ErrSkipper interface {
 	// Skip returns true if the Piper should be skipped.
 	Skip(ctx *context.Context) (bool, error)

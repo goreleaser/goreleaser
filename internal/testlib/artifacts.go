@@ -34,7 +34,7 @@ func RequireEqualArtifacts(tb testing.TB, expected, got []*artifact.Artifact) {
 				)
 				continue
 			}
-			require.EqualValues(
+			require.Equal(
 				tb,
 				a.Extra[k],
 				b.Extra[k],

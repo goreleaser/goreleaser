@@ -1,3 +1,4 @@
+// Package rust builds rust binaries.
 package rust
 
 import (

@@ -181,7 +181,7 @@ func TestNewWithToken(t *testing.T) {
 
 func TestClientBlanks(t *testing.T) {
 	repo := Repo{}
-	require.Equal(t, "", repo.String())
+	require.Empty(t, repo.String())
 }
 
 func fakeGitea(tb testing.TB) *httptest.Server {

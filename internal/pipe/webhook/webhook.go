@@ -1,3 +1,4 @@
+// Package webhook announces the new release by sending a webhook.
 package webhook
 
 import (

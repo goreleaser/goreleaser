@@ -1,3 +1,4 @@
+// Package nix creates nix packages.
 package nix
 
 import (

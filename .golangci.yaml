@@ -29,6 +29,8 @@ linters:
               desc: use stdlib instead
             - pkg: math/rand$
               desc: use math/rand/v2 instead
+            - pkg: github.com/apex/log
+              desc: use caarlos0/log instead
     forbidigo:
       forbid:
         - pattern: ioutil\.*
@@ -55,10 +57,8 @@ linters:
         - name: error-return
         - name: error-strings
         - name: errorf
-        - name: exported
         - name: increment-decrement
         - name: indent-error-flow
-        - name: package-comments
         - name: range
         - name: receiver-naming
         - name: redefines-builtin-id
@@ -69,10 +69,13 @@ linters:
         - name: unused-parameter
         - name: var-declaration
         - name: var-naming
+        # we are not providing an API anyway... maybe someday...
+        # - name: exported
+        # - name: package-comments
     staticcheck:
       checks:
-        - -SA1019
         - all
+        - -SA1019
     tagliatelle:
       case:
         rules:

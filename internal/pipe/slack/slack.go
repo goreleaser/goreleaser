@@ -1,3 +1,4 @@
+// Package slack announces releases to Slack.
 package slack
 
 import (

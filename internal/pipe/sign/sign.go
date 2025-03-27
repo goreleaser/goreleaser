@@ -1,3 +1,4 @@
+// Package sign handles signing artifacts.
 package sign
 
 import (

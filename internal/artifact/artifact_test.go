@@ -459,7 +459,7 @@ func TestExtra(t *testing.T) {
 	t.Run("missing field", func(t *testing.T) {
 		bar, err := Extra[string](a, "Foobar")
 		require.NoError(t, err)
-		require.Equal(t, "", bar)
+		require.Empty(t, bar)
 		require.Equal(t, "bar", ExtraOr(a, "Foobar", "bar"))
 	})
 

@@ -1,3 +1,4 @@
+// Package zig builds zig binaries.
 package zig
 
 import (
