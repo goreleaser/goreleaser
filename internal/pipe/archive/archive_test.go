@@ -230,7 +230,7 @@ func TestRunPipe(t *testing.T) {
 				}
 				require.Equal(t, "myid", arch.ID(), "all archives must have the archive ID set")
 				require.Equal(t, []string{expectBin}, artifact.ExtraOr(*arch, artifact.ExtraBinaries, []string{}))
-				require.Empty(t, artifact.ExtraOr(*arch, artifact.ExtraBinary, ""))
+				require.Equal(t, "", artifact.ExtraOr(*arch, artifact.ExtraBinary, ""))
 			}
 			require.Len(t, archives, 13)
 			// TODO: should verify the artifact fields here too
@@ -1056,7 +1056,7 @@ func TestDuplicateFilesInsideArchive(t *testing.T) {
 
 func TestWrapInDirectory(t *testing.T) {
 	t.Run("false", func(t *testing.T) {
-		require.Empty(t, wrapFolder(config.Archive{
+		require.Equal(t, "", wrapFolder(config.Archive{
 			WrapInDirectory: "false",
 		}))
 	})

@@ -32,9 +32,7 @@ var (
 // Pipe for checksums.
 type Pipe struct{}
 
-func (Pipe) String() string { return "calculating checksums" }
-
-// Skip implements Skipper.
+func (Pipe) String() string                 { return "calculating checksums" }
 func (Pipe) Skip(ctx *context.Context) bool { return ctx.Config.Checksum.Disable }
 
 // Default sets the pipe defaults.

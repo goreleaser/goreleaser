@@ -19,12 +19,10 @@ var (
 	_ ForkSyncer            = &Mock{}
 )
 
-// NewMock creates a new mock client.
 func NewMock() *Mock {
 	return &Mock{}
 }
 
-// Mock is a mock client.
 type Mock struct {
 	CreatedFile          bool
 	Content              string
@@ -48,19 +46,16 @@ type Mock struct {
 	SyncedFork           bool
 }
 
-// SyncFork implements Client.
 func (c *Mock) SyncFork(_ *context.Context, _ Repo, _ Repo) error {
 	c.SyncedFork = true
 	return nil
 }
 
-// OpenPullRequest implements PullRequestOpener.
 func (c *Mock) OpenPullRequest(_ *context.Context, _, _ Repo, _ string, _ bool) error {
 	c.OpenedPullRequest = true
 	return nil
 }
 
-// Changelog implements Client.
 func (c *Mock) Changelog(_ *context.Context, _ Repo, _, _ string) ([]ChangelogItem, error) {
 	if len(c.Changes) > 0 {
 		return c.Changes, nil
@@ -68,7 +63,6 @@ func (c *Mock) Changelog(_ *context.Context, _ Repo, _, _ string) ([]ChangelogIt
 	return nil, ErrNotImplemented
 }
 
-// GenerateReleaseNotes implements ReleaseNotesGenerator.
 func (c *Mock) GenerateReleaseNotes(_ *context.Context, _ Repo, prev, current string) (string, error) {
 	if c.ReleaseNotes != "" {
 		c.ReleaseNotesParams = []string{prev, current}
@@ -77,7 +71,6 @@ func (c *Mock) GenerateReleaseNotes(_ *context.Context, _ Repo, prev, current st
 	return "", ErrNotImplemented
 }
 
-// CloseMilestone implements Client.
 func (c *Mock) CloseMilestone(_ *context.Context, _ Repo, title string) error {
 	if c.FailToCloseMilestone {
 		return errors.New("milestone failed")
@@ -88,7 +81,6 @@ func (c *Mock) CloseMilestone(_ *context.Context, _ Repo, title string) error {
 	return nil
 }
 
-// CreateRelease implements Client.
 func (c *Mock) CreateRelease(_ *context.Context, _ string) (string, error) {
 	if c.FailToCreateRelease {
 		return "", errors.New("release failed")
@@ -97,18 +89,15 @@ func (c *Mock) CreateRelease(_ *context.Context, _ string) (string, error) {
 	return "", nil
 }
 
-// PublishRelease implements Client.
 func (c *Mock) PublishRelease(_ *context.Context, _ string /* releaseID */) (err error) {
 	c.ReleasePublished = true
 	return nil
 }
 
-// ReleaseURLTemplate implements Client.
 func (c *Mock) ReleaseURLTemplate(_ *context.Context) (string, error) {
 	return "https://dummyhost/download/{{ urlPathEscape .Tag }}/{{ .ArtifactName }}", nil
 }
 
-// CreateFile implements Client.
 func (c *Mock) CreateFile(_ *context.Context, _ config.CommitAuthor, _ Repo, content []byte, path, msg string) error {
 	c.CreatedFile = true
 	c.Content = string(content)
@@ -117,7 +106,6 @@ func (c *Mock) CreateFile(_ *context.Context, _ config.CommitAuthor, _ Repo, con
 	return nil
 }
 
-// Upload implements Client.
 func (c *Mock) Upload(_ *context.Context, _ string, artifact *artifact.Artifact, file *os.File) error {
 	c.Lock.Lock()
 	defer c.Lock.Unlock()

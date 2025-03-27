@@ -1,4 +1,3 @@
-// Package telegram announces releases via telegram.
 package telegram
 
 import (
@@ -18,22 +17,18 @@ const (
 	parseModeMarkdown      = "MarkdownV2"
 )
 
-// Pipe implementation.
 type Pipe struct{}
 
 func (Pipe) String() string { return "telegram" }
-
-// Skip implements Skipper.
 func (Pipe) Skip(ctx *context.Context) (bool, error) {
 	enable, err := tmpl.New(ctx).Bool(ctx.Config.Announce.Telegram.Enabled)
 	return !enable, err
 }
 
-type envConfig struct {
+type Config struct {
 	ConsumerToken string `env:"TELEGRAM_TOKEN,notEmpty"`
 }
 
-// Default sets the pipe defaults.
 func (Pipe) Default(ctx *context.Context) error {
 	if ctx.Config.Announce.Telegram.MessageTemplate == "" {
 		ctx.Config.Announce.Telegram.MessageTemplate = defaultMessageTemplate
@@ -47,14 +42,13 @@ func (Pipe) Default(ctx *context.Context) error {
 	return nil
 }
 
-// Announce does the announcement.
 func (Pipe) Announce(ctx *context.Context) error {
 	msg, chatID, err := getMessageDetails(ctx)
 	if err != nil {
 		return err
 	}
 
-	cfg, err := env.ParseAs[envConfig]()
+	cfg, err := env.ParseAs[Config]()
 	if err != nil {
 		return fmt.Errorf("telegram: %w", err)
 	}

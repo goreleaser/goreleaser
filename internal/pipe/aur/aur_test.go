@@ -597,7 +597,7 @@ func TestRunPipeNoBuilds(t *testing.T) {
 	}, testctx.GitHubTokenType)
 	client := client.NewMock()
 	require.NoError(t, Pipe{}.Default(ctx))
-	require.Equal(t, errNoArchivesFound, runAll(ctx, client))
+	require.Equal(t, ErrNoArchivesFound, runAll(ctx, client))
 	require.False(t, client.CreatedFile)
 }
 

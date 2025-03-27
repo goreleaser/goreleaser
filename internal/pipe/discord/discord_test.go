@@ -57,7 +57,7 @@ func TestAnnounce(t *testing.T) {
 			return
 		}
 
-		wm := &webhookMessageCreate{}
+		wm := &WebhookMessageCreate{}
 
 		body, _ := io.ReadAll(r.Body)
 		err := json.Unmarshal(body, wm)

@@ -82,5 +82,5 @@ func TestGzFileCustomMtime(t *testing.T) {
 	defer gzf.Close()
 
 	require.Equal(t, "sub1/sub2/subfoo.txt", gzf.Name)
-	require.Equal(t, now, gzf.ModTime)
+	require.Equal(t, now, gzf.Header.ModTime)
 }

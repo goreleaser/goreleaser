@@ -1,4 +1,3 @@
-// Package upx compresses binaries using upx.
 package upx
 
 import (
@@ -17,12 +16,9 @@ import (
 	"github.com/goreleaser/goreleaser/v2/pkg/context"
 )
 
-// Pipe implementation.
 type Pipe struct{}
 
 func (Pipe) String() string { return "upx" }
-
-// Default sets the pipe defaults.
 func (Pipe) Default(ctx *context.Context) error {
 	for i := range ctx.Config.UPXs {
 		upx := &ctx.Config.UPXs[i]
@@ -32,11 +28,7 @@ func (Pipe) Default(ctx *context.Context) error {
 	}
 	return nil
 }
-
-// Skip implements Skipper.
 func (Pipe) Skip(ctx *context.Context) bool { return len(ctx.Config.UPXs) == 0 }
-
-// Run the pipe.
 func (Pipe) Run(ctx *context.Context) error {
 	g := semerrgroup.NewSkipAware(semerrgroup.New(ctx.Parallelism))
 	for _, upx := range ctx.Config.UPXs {

@@ -142,7 +142,8 @@ func longestCommonPrefix(strs []string) string {
 
 // copied from nfpm
 func strlcp(a, b string) string {
-	minlen := min(len(a), len(b))
+	var minlen int
+	minlen = min(len(a), len(b))
 	for i := range minlen {
 		if a[i] != b[i] {
 			return a[0:i]

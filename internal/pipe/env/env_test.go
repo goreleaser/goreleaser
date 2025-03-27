@@ -67,7 +67,7 @@ func TestSetDefaultTokenFiles(t *testing.T) {
 		require.NoError(t, Pipe{}.Run(ctx))
 		require.Equal(t, "FOO_lebar", ctx.Env["FOO"])
 		require.Equal(t, "foobar", ctx.Env["FOOBAR"])
-		require.Empty(t, ctx.Env["EMPTY_VAL"])
+		require.Equal(t, "", ctx.Env["EMPTY_VAL"])
 	})
 
 	t.Run("template error", func(t *testing.T) {

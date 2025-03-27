@@ -246,7 +246,7 @@ func TestKeyPath(t *testing.T) {
 	t.Run("with invalid path", func(t *testing.T) {
 		result, err := keyPath("testdata/nope")
 		require.ErrorIs(t, err, os.ErrNotExist)
-		require.Empty(t, result)
+		require.Equal(t, "", result)
 	})
 
 	t.Run("with password protected key path", func(t *testing.T) {
@@ -278,7 +278,7 @@ func TestKeyPath(t *testing.T) {
 	t.Run("empty", func(t *testing.T) {
 		result, err := keyPath("")
 		require.EqualError(t, err, `private_key is empty`)
-		require.Empty(t, result)
+		require.Equal(t, "", result)
 	})
 	t.Run("with invalid EOF", func(t *testing.T) {
 		path := testlib.MakeNewSSHKey(t, "")

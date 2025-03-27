@@ -1,4 +1,3 @@
-// Package deno implements the deno builder.
 package deno
 
 import (

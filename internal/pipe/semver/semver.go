@@ -1,4 +1,3 @@
-// Package semver verifies the tag is a valid semver and parses it.
 package semver
 
 import (

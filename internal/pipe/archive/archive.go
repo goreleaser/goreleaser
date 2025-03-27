@@ -47,7 +47,6 @@ func (Pipe) String() string {
 	return "archives"
 }
 
-// Skip implements Skipper.
 func (Pipe) Skip(ctx *context.Context) bool {
 	return skips.Any(ctx, skips.Archive)
 }

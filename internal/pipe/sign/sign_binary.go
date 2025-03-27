@@ -14,17 +14,15 @@ import (
 
 const defaultSignatureName = `${artifact}_{{ .Os }}_{{ .Arch }}{{ with .Arm }}v{{ . }}{{ end }}{{ with .Mips }}_{{ . }}{{ end }}{{ if not (eq .Amd64 "v1") }}{{ .Amd64 }}{{ end }}`
 
-// BinaryPipe that signs binary images and manifests.
+// Pipe that signs binary images and manifests.
 type BinaryPipe struct{}
 
 func (BinaryPipe) String() string { return "signing binaries" }
 
-// Skip implements Skipper.
 func (BinaryPipe) Skip(ctx *context.Context) bool {
 	return skips.Any(ctx, skips.Sign) || len(ctx.Config.BinarySigns) == 0
 }
 
-// Dependencies implements Healthchecker.
 func (BinaryPipe) Dependencies(ctx *context.Context) []string {
 	var cmds []string
 	for _, s := range ctx.Config.BinarySigns {
@@ -64,7 +62,7 @@ func (BinaryPipe) Default(ctx *context.Context) error {
 	return ids.Validate()
 }
 
-// Run signs the binaries.
+// Publish signs and pushes the binary images signatures.
 func (BinaryPipe) Run(ctx *context.Context) error {
 	g := semerrgroup.New(ctx.Parallelism)
 	for i := range ctx.Config.BinarySigns {

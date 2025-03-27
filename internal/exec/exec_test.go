@@ -102,10 +102,10 @@ func TestExecute(t *testing.T) {
 				{
 					Name: "test",
 					IDs:  []string{"archive"},
-					Cmd:  mockCmd + " {{ .ArtifactName }}",
+					Cmd:  MockCmd + " {{ .ArtifactName }}",
 					Env: []string{
-						MarshalMockEnv(&mockData{
-							AnyOf: []mockCall{
+						MarshalMockEnv(&MockData{
+							AnyOf: []MockCall{
 								{ExpectedArgs: []string{"a.tar"}, ExitCode: 0, ExpectedEnv: osEnv()},
 							},
 						}),
@@ -120,11 +120,11 @@ func TestExecute(t *testing.T) {
 			[]config.Publisher{
 				{
 					Name:    "test",
-					Cmd:     mockCmd + " {{ .ArtifactName }}",
+					Cmd:     MockCmd + " {{ .ArtifactName }}",
 					Disable: "false",
 					Env: []string{
-						MarshalMockEnv(&mockData{
-							AnyOf: []mockCall{
+						MarshalMockEnv(&MockData{
+							AnyOf: []MockCall{
 								{ExpectedArgs: []string{"a.deb"}, ExitCode: 0, ExpectedEnv: osEnv()},
 								{ExpectedArgs: []string{"a.ubi"}, ExitCode: 0, ExpectedEnv: osEnv()},
 								{ExpectedArgs: []string{"a.tar"}, ExitCode: 0, ExpectedEnv: osEnv()},
@@ -143,7 +143,7 @@ func TestExecute(t *testing.T) {
 			[]config.Publisher{
 				{
 					Name:    "test",
-					Cmd:     mockCmd + " {{ .ArtifactName }}",
+					Cmd:     MockCmd + " {{ .ArtifactName }}",
 					Disable: "true",
 					Env:     []string{},
 				},
@@ -156,7 +156,7 @@ func TestExecute(t *testing.T) {
 			[]config.Publisher{
 				{
 					Name:    "test",
-					Cmd:     mockCmd + " {{ .ArtifactName }}",
+					Cmd:     MockCmd + " {{ .ArtifactName }}",
 					Disable: "{{ .NOPE }}",
 					Env:     []string{},
 				},
@@ -170,10 +170,10 @@ func TestExecute(t *testing.T) {
 				{
 					Name:     "test",
 					Checksum: true,
-					Cmd:      mockCmd + " {{ .ArtifactName }}",
+					Cmd:      MockCmd + " {{ .ArtifactName }}",
 					Env: []string{
-						MarshalMockEnv(&mockData{
-							AnyOf: []mockCall{
+						MarshalMockEnv(&MockData{
+							AnyOf: []MockCall{
 								{ExpectedArgs: []string{"a.deb"}, ExitCode: 0, ExpectedEnv: osEnv()},
 								{ExpectedArgs: []string{"a.ubi"}, ExitCode: 0, ExpectedEnv: osEnv()},
 								{ExpectedArgs: []string{"a.tar"}, ExitCode: 0, ExpectedEnv: osEnv()},
@@ -194,10 +194,10 @@ func TestExecute(t *testing.T) {
 				{
 					Name: "test",
 					Meta: true,
-					Cmd:  mockCmd + " {{ .ArtifactName }}",
+					Cmd:  MockCmd + " {{ .ArtifactName }}",
 					Env: []string{
-						MarshalMockEnv(&mockData{
-							AnyOf: []mockCall{
+						MarshalMockEnv(&MockData{
+							AnyOf: []MockCall{
 								{ExpectedArgs: []string{"a.deb"}, ExitCode: 0, ExpectedEnv: osEnv()},
 								{ExpectedArgs: []string{"a.ubi"}, ExitCode: 0, ExpectedEnv: osEnv()},
 								{ExpectedArgs: []string{"a.tar"}, ExitCode: 0, ExpectedEnv: osEnv()},
@@ -218,10 +218,10 @@ func TestExecute(t *testing.T) {
 				{
 					Name:      "test",
 					Signature: true,
-					Cmd:       mockCmd + " {{ .ArtifactName }}",
+					Cmd:       MockCmd + " {{ .ArtifactName }}",
 					Env: []string{
-						MarshalMockEnv(&mockData{
-							AnyOf: []mockCall{
+						MarshalMockEnv(&MockData{
+							AnyOf: []MockCall{
 								{ExpectedArgs: []string{"a.deb"}, ExitCode: 0, ExpectedEnv: osEnv()},
 								{ExpectedArgs: []string{"a.ubi"}, ExitCode: 0, ExpectedEnv: osEnv()},
 								{ExpectedArgs: []string{"a.tar"}, ExitCode: 0, ExpectedEnv: osEnv()},
@@ -243,10 +243,10 @@ func TestExecute(t *testing.T) {
 				{
 					Name: "test",
 					IDs:  []string{"img", "mnf"},
-					Cmd:  mockCmd + " {{ .ArtifactName }}",
+					Cmd:  MockCmd + " {{ .ArtifactName }}",
 					Env: []string{
-						MarshalMockEnv(&mockData{
-							AnyOf: []mockCall{
+						MarshalMockEnv(&MockData{
+							AnyOf: []MockCall{
 								{ExpectedArgs: []string{"foo/bar"}, ExitCode: 0, ExpectedEnv: osEnv()},
 								{ExpectedArgs: []string{"foo/bar:amd64"}, ExitCode: 0, ExpectedEnv: osEnv()},
 							},
@@ -262,10 +262,10 @@ func TestExecute(t *testing.T) {
 			[]config.Publisher{
 				{
 					Name: "test",
-					Cmd:  mockCmd + " {{ .ArtifactName }}",
+					Cmd:  MockCmd + " {{ .ArtifactName }}",
 					Env: []string{
-						MarshalMockEnv(&mockData{
-							AnyOf: []mockCall{
+						MarshalMockEnv(&MockData{
+							AnyOf: []MockCall{
 								{ExpectedArgs: []string{"a.deb"}, ExitCode: 0, ExpectedEnv: osEnv()},
 								{ExpectedArgs: []string{"a.ubi"}, ExitCode: 0, ExpectedEnv: osEnv()},
 								{ExpectedArgs: []string{"a.tar"}, ExitCode: 0, ExpectedEnv: osEnv()},
@@ -288,10 +288,10 @@ func TestExecute(t *testing.T) {
 			[]config.Publisher{
 				{
 					Name: "test",
-					Cmd:  mockCmd + " {{ .ArtifactName }}",
+					Cmd:  MockCmd + " {{ .ArtifactName }}",
 					Env: []string{
-						MarshalMockEnv(&mockData{
-							AnyOf: []mockCall{
+						MarshalMockEnv(&MockData{
+							AnyOf: []MockCall{
 								{ExpectedArgs: []string{"a.deb"}, ExitCode: 0, ExpectedEnv: osEnv()},
 								{ExpectedArgs: []string{"a.ubi"}, ExitCode: 0, ExpectedEnv: osEnv()},
 								{ExpectedArgs: []string{"a.tar"}, ExitCode: 0, ExpectedEnv: osEnv()},
@@ -320,10 +320,10 @@ func TestExecute(t *testing.T) {
 					Signature: true,
 					IDs:       []string{"debpkg"},
 					Dir:       "{{ dir .ArtifactPath }}",
-					Cmd:       mockCmd + " {{ .ArtifactName }}",
+					Cmd:       MockCmd + " {{ .ArtifactName }}",
 					Env: []string{
-						MarshalMockEnv(&mockData{
-							AnyOf: []mockCall{
+						MarshalMockEnv(&MockData{
+							AnyOf: []MockCall{
 								{ExpectedArgs: []string{"a.deb"}, ExitCode: 0, ExpectedEnv: osEnv()},
 							},
 						}),
@@ -339,13 +339,13 @@ func TestExecute(t *testing.T) {
 				{
 					Name: "test",
 					IDs:  []string{"debpkg"},
-					Cmd:  mockCmd,
+					Cmd:  MockCmd,
 					Env: []string{
 						"PROJECT={{.ProjectName}}",
 						"ARTIFACT={{.ArtifactName}}",
 						"SECRET={{.Env.TEST_A_SECRET}}",
-						MarshalMockEnv(&mockData{
-							AnyOf: []mockCall{
+						MarshalMockEnv(&MockData{
+							AnyOf: []MockCall{
 								{
 									ExpectedEnv: append(
 										[]string{"PROJECT=blah", "ARTIFACT=a.deb", "SECRET=x"},
@@ -367,11 +367,11 @@ func TestExecute(t *testing.T) {
 				{
 					Name: "test",
 					IDs:  []string{"debpkg"},
-					Cmd:  mockCmd,
+					Cmd:  MockCmd,
 					Env: []string{
 						"PATH=/something-else",
-						MarshalMockEnv(&mockData{
-							AnyOf: []mockCall{
+						MarshalMockEnv(&MockData{
+							AnyOf: []MockCall{
 								{
 									ExpectedEnv: append(
 										[]string{"PATH=/something-else"},
@@ -396,10 +396,10 @@ func TestExecute(t *testing.T) {
 				{
 					Name: "test",
 					IDs:  []string{"debpkg"},
-					Cmd:  mockCmd + " {{.ArtifactName}}",
+					Cmd:  MockCmd + " {{.ArtifactName}}",
 					Env: []string{
-						MarshalMockEnv(&mockData{
-							AnyOf: []mockCall{
+						MarshalMockEnv(&MockData{
+							AnyOf: []MockCall{
 								{
 									ExpectedArgs: []string{"a.deb"},
 									ExpectedEnv:  osEnv(),
@@ -412,7 +412,7 @@ func TestExecute(t *testing.T) {
 				},
 			},
 			// stderr is sent to output via logger
-			fmt.Errorf(`publishing: %s failed: exit status 1: test error`, mockCmd),
+			fmt.Errorf(`publishing: %s failed: exit status 1: test error`, MockCmd),
 			nil,
 		},
 	}

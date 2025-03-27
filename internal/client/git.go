@@ -29,7 +29,7 @@ type gitClient struct {
 	branch string
 }
 
-// NewGitUploadClient creates a new git client.
+// NewGitUploadClient
 func NewGitUploadClient(branch string) FilesCreator {
 	return &gitClient{
 		branch: branch,

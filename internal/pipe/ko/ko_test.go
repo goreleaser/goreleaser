@@ -412,9 +412,9 @@ func TestPublishPipeSuccess(t *testing.T) {
 				require.NoError(t, err)
 				creationTime = time.Unix(ct, 0).UTC()
 
-				require.Equal(t, creationTime, configFile.Created.UTC())
+				require.Equal(t, creationTime, configFile.Created.Time.UTC())
 			}
-			require.Equal(t, creationTime, configFile.History[len(configFile.History)-1].Created.UTC())
+			require.Equal(t, creationTime, configFile.History[len(configFile.History)-1].Created.Time.UTC())
 
 			var koDataCreationTime time.Time
 			if table.KoDataCreationTime != "" {
@@ -422,7 +422,7 @@ func TestPublishPipeSuccess(t *testing.T) {
 				require.NoError(t, err)
 				koDataCreationTime = time.Unix(kdct, 0).UTC()
 			}
-			require.Equal(t, koDataCreationTime, configFile.History[len(configFile.History)-2].Created.UTC())
+			require.Equal(t, koDataCreationTime, configFile.History[len(configFile.History)-2].Created.Time.UTC())
 		})
 	}
 }

@@ -185,12 +185,12 @@ func TestYAML(t *testing.T) {
 			require.NoError(t, err)
 
 			if iface != nil {
-				require.Equal(t, testCase.Expected.iface, iface)
+				require.EqualValues(t, testCase.Expected.iface, iface)
 
 				b, err = Marshal(iface)
 				require.NoError(t, err)
 			} else {
-				require.Equal(t, testCase.Expected.obj, obj)
+				require.EqualValues(t, testCase.Expected.obj, obj)
 
 				b, err = Marshal(obj)
 				require.NoError(t, err)
@@ -202,7 +202,7 @@ func TestYAML(t *testing.T) {
 				expectedOutput = toPlainYaml(testCase.ExpectedYAML)
 			}
 
-			require.Equal(t, expectedOutput, b)
+			require.EqualValues(t, expectedOutput, b)
 		})
 	}
 }

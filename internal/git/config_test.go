@@ -120,7 +120,7 @@ func TestExtractRepoFromURL(t *testing.T) {
 		t.Run(url, func(t *testing.T) {
 			repo, err := git.ExtractRepoFromURL(url)
 			require.EqualError(t, err, "unsupported repository URL: "+url)
-			require.Empty(t, repo.String())
+			require.Equal(t, "", repo.String())
 			require.Error(t, repo.CheckSCM())
 			require.Equal(t, url, repo.RawURL)
 		})

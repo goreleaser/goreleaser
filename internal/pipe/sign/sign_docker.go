@@ -11,17 +11,15 @@ import (
 	"github.com/goreleaser/goreleaser/v2/pkg/context"
 )
 
-// DockerPipe that signs docker images and manifests.
+// Pipe that signs docker images and manifests.
 type DockerPipe struct{}
 
 func (DockerPipe) String() string { return "signing docker images" }
 
-// Skip implements Skipper.
 func (DockerPipe) Skip(ctx *context.Context) bool {
 	return skips.Any(ctx, skips.Sign) || len(ctx.Config.DockerSigns) == 0
 }
 
-// Dependencies implements Healthchecker.
 func (DockerPipe) Dependencies(ctx *context.Context) []string {
 	var cmds []string
 	for _, s := range ctx.Config.DockerSigns {

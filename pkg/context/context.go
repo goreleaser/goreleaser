@@ -68,10 +68,8 @@ const (
 	TokenTypeGitea TokenType = "gitea"
 )
 
-// Action being performed.
 type Action uint8
 
-// Supported actions.
 const (
 	ActionNone Action = iota
 	ActionBuild
@@ -116,7 +114,6 @@ type Context struct {
 	NotifiedDeprecations map[string]struct{}
 }
 
-// Runtime goos and goarch.
 type Runtime struct {
 	Goos   string
 	Goarch string

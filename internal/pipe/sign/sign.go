@@ -1,4 +1,3 @@
-// Package sign signs common artifacts.
 package sign
 
 import (
@@ -31,12 +30,10 @@ type Pipe struct{}
 
 func (Pipe) String() string { return "signing artifacts" }
 
-// Skip implements Skipper.
 func (Pipe) Skip(ctx *context.Context) bool {
 	return skips.Any(ctx, skips.Sign) || len(ctx.Config.Signs) == 0
 }
 
-// Dependencies implements Healthchecker.
 func (Pipe) Dependencies(ctx *context.Context) []string {
 	var cmds []string
 	for _, s := range ctx.Config.Signs {

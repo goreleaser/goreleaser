@@ -29,8 +29,6 @@ linters:
               desc: use stdlib instead
             - pkg: math/rand$
               desc: use math/rand/v2 instead
-            - pkg: github.com/apex/log
-              desc: use caarlos0/log instead
     forbidigo:
       forbid:
         - pattern: ioutil\.*
@@ -73,8 +71,8 @@ linters:
         - name: var-naming
     staticcheck:
       checks:
-        - all
         - -SA1019
+        - all
     tagliatelle:
       case:
         rules:

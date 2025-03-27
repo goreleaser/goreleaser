@@ -14,7 +14,6 @@ import (
 	"github.com/invopop/jsonschema"
 )
 
-// Versioned is a struct that contains the version of the config file.
 type Versioned struct {
 	Version int
 	Pro     bool
@@ -94,14 +93,12 @@ type RepoRef struct {
 	PullRequest PullRequest `yaml:"pull_request,omitempty" json:"pull_request"`
 }
 
-// GitRepoRef is a reference to a git repository.
 type GitRepoRef struct {
 	URL        string `yaml:"url,omitempty" json:"url,omitempty"`
 	SSHCommand string `yaml:"ssh_command,omitempty" json:"ssh_command,omitempty"`
 	PrivateKey string `yaml:"private_key,omitempty" json:"private_key,omitempty"`
 }
 
-// PullRequestBase is a pull request base.
 type PullRequestBase struct {
 	Owner  string `yaml:"owner,omitempty" json:"owner,omitempty"`
 	Name   string `yaml:"name,omitempty" json:"name,omitempty"`
@@ -131,7 +128,6 @@ func (a *PullRequestBase) UnmarshalYAML(unmarshal func(any) error) error {
 	return nil
 }
 
-// JSONSchema implements the jsonschema interface.
 func (a PullRequestBase) JSONSchema() *jsonschema.Schema {
 	reflector := jsonschema.Reflector{
 		ExpandedStruct: true,
@@ -147,7 +143,6 @@ func (a PullRequestBase) JSONSchema() *jsonschema.Schema {
 	}
 }
 
-// PullRequest is a pull request configuration.
 type PullRequest struct {
 	Enabled bool            `yaml:"enabled,omitempty" json:"enabled,omitempty"`
 	Base    PullRequestBase `yaml:"base,omitempty" json:"base"`
@@ -186,7 +181,6 @@ func (a *HomebrewDependency) UnmarshalYAML(unmarshal func(any) error) error {
 	return nil
 }
 
-// JSONSchema implements the jsonschema interface.
 func (a HomebrewDependency) JSONSchema() *jsonschema.Schema {
 	reflector := jsonschema.Reflector{
 		ExpandedStruct: true,
@@ -202,7 +196,6 @@ func (a HomebrewDependency) JSONSchema() *jsonschema.Schema {
 	}
 }
 
-// AUR is the Arch User Repository section.
 type AUR struct {
 	Name                  string       `yaml:"name,omitempty" json:"name,omitempty"`
 	IDs                   []string     `yaml:"ids,omitempty" json:"ids,omitempty"`
@@ -233,7 +226,6 @@ type AUR struct {
 	Install string `yaml:"install,omitempty" json:"install,omitempty"`
 }
 
-// AURSource Arch User Repository source section.
 type AURSource struct {
 	Name                  string       `yaml:"name,omitempty" json:"name,omitempty"`
 	IDs                   []string     `yaml:"ids,omitempty" json:"ids,omitempty"`
@@ -297,7 +289,6 @@ type Homebrew struct {
 	Service               string               `yaml:"service,omitempty" json:"service,omitempty"`
 }
 
-// Nix is the nix section.
 type Nix struct {
 	Name                  string       `yaml:"name,omitempty" json:"name,omitempty"`
 	Path                  string       `yaml:"path,omitempty" json:"path,omitempty"`
@@ -318,13 +309,11 @@ type Nix struct {
 	Dependencies []NixDependency `yaml:"dependencies,omitempty" json:"dependencies,omitempty"`
 }
 
-// NixDependency is a nix dependency.
 type NixDependency struct {
 	Name string `yaml:"name" json:"name"`
 	OS   string `yaml:"os,omitempty" json:"os,omitempty" jsonschema:"enum=linux,enum=darwin"`
 }
 
-// JSONSchema implements the jsonschema interface.
 func (a NixDependency) JSONSchema() *jsonschema.Schema {
 	reflector := jsonschema.Reflector{
 		ExpandedStruct: true,
@@ -341,7 +330,6 @@ func (a NixDependency) JSONSchema() *jsonschema.Schema {
 	}
 }
 
-// UnmarshalYAML implements the yaml.Unmarshaler.
 func (a *NixDependency) UnmarshalYAML(unmarshal func(any) error) error {
 	var str string
 	if err := unmarshal(&str); err == nil {
@@ -361,7 +349,6 @@ func (a *NixDependency) UnmarshalYAML(unmarshal func(any) error) error {
 	return nil
 }
 
-// Winget is the winget section.
 type Winget struct {
 	Name                  string             `yaml:"name,omitempty" json:"name,omitempty"`
 	PackageIdentifier     string             `yaml:"package_identifier,omitempty" json:"package_identifier,omitempty"`
@@ -390,7 +377,6 @@ type Winget struct {
 	Dependencies          []WingetDependency `yaml:"dependencies,omitempty" json:"dependencies,omitempty"`
 }
 
-// WingetDependency is a winget dependency.
 type WingetDependency struct {
 	PackageIdentifier string `yaml:"package_identifier" json:"package_identifier"`
 	MinimumVersion    string `yaml:"minimum_version,omitempty" json:"minimum_version,omitempty"`
@@ -505,7 +491,6 @@ func (a *StringArray) UnmarshalYAML(unmarshal func(any) error) error {
 	return nil
 }
 
-// JSONSchema implements the jsonschema interface.
 func (a StringArray) JSONSchema() *jsonschema.Schema {
 	return &jsonschema.Schema{
 		OneOf: []*jsonschema.Schema{{
@@ -537,7 +522,6 @@ func (a *FlagArray) UnmarshalYAML(unmarshal func(any) error) error {
 	return nil
 }
 
-// JSONSchema implements the jsonschema interface.
 func (a FlagArray) JSONSchema() *jsonschema.Schema {
 	return &jsonschema.Schema{
 		OneOf: []*jsonschema.Schema{{
@@ -584,7 +568,6 @@ type Build struct {
 	BuildDetailsOverrides []BuildDetailsOverride `yaml:"overrides,omitempty" json:"overrides,omitempty"`
 }
 
-// BuildDetailsOverride overrides the build details for a specific GOOS.
 type BuildDetailsOverride struct {
 	Goos         string `yaml:"goos" json:"goos"`
 	Goarch       string `yaml:"goarch" json:"goarch"`
@@ -598,7 +581,6 @@ type BuildDetailsOverride struct {
 	BuildDetails `yaml:",inline" json:",inline"`
 }
 
-// BuildDetails contains the build details.
 type BuildDetails struct {
 	Buildmode string      `yaml:"buildmode,omitempty" json:"buildmode,omitempty" jsonschema:"enum=c-archive,enum=c-shared,enum=pie,enum=,default="`
 	Ldflags   StringArray `yaml:"ldflags,omitempty" json:"ldflags,omitempty"`
@@ -609,13 +591,11 @@ type BuildDetails struct {
 	Env       []string    `yaml:"env,omitempty" json:"env,omitempty"`
 }
 
-// BuildHookConfig holds the pre and post build hooks.
 type BuildHookConfig struct {
 	Pre  Hooks `yaml:"pre,omitempty" json:"pre,omitempty"`
 	Post Hooks `yaml:"post,omitempty" json:"post,omitempty"`
 }
 
-// Hooks definitions.
 type Hooks []Hook
 
 // UnmarshalYAML is a custom unmarshaler that allows simplified declaration of single command.
@@ -636,7 +616,6 @@ func (bhc *Hooks) UnmarshalYAML(unmarshal func(any) error) error {
 	return nil
 }
 
-// JSONSchema implements the jsonschema interface.
 func (bhc Hooks) JSONSchema() *jsonschema.Schema {
 	reflector := jsonschema.Reflector{
 		ExpandedStruct: true,
@@ -653,7 +632,6 @@ func (bhc Hooks) JSONSchema() *jsonschema.Schema {
 	}
 }
 
-// Hook is a hook.
 type Hook struct {
 	Dir    string   `yaml:"dir,omitempty" json:"dir,omitempty"`
 	Cmd    string   `yaml:"cmd,omitempty" json:"cmd,omitempty"`
@@ -678,7 +656,6 @@ func (bh *Hook) UnmarshalYAML(unmarshal func(any) error) error {
 	return nil
 }
 
-// JSONSchema implements the jsonschema interface.
 func (bh Hook) JSONSchema() *jsonschema.Schema {
 	type hookAlias Hook
 	reflector := jsonschema.Reflector{
@@ -739,7 +716,6 @@ func (f *File) UnmarshalYAML(unmarshal func(any) error) error {
 	return nil
 }
 
-// JSONSchema implements the jsonschema interface.
 func (f File) JSONSchema() *jsonschema.Schema {
 	type fileAlias File
 	reflector := jsonschema.Reflector{
@@ -801,10 +777,8 @@ type Archive struct {
 	Builds []string `yaml:"builds,omitempty" json:"builds,omitempty"`
 }
 
-// ReleaseNotesMode is the release notes mode.
 type ReleaseNotesMode string
 
-// Available release notes modes.
 const (
 	ReleaseNotesModeKeepExisting ReleaseNotesMode = "keep-existing"
 	ReleaseNotesModeAppend       ReleaseNotesMode = "append"
@@ -878,7 +852,6 @@ type NFPM struct {
 	Builds []string `yaml:"builds,omitempty" json:"builds,omitempty"`
 }
 
-// Libdirs is the library directories.
 type Libdirs struct {
 	Header   string `yaml:"header,omitempty" json:"header,omitempty"`
 	CArchive string `yaml:"carchive,omitempty" json:"carchive,omitempty"`
@@ -893,7 +866,6 @@ type NFPMScripts struct {
 	PostRemove  string `yaml:"postremove,omitempty" json:"postremove,omitempty"`
 }
 
-// NFPMRPMSignature is the signature config for RPM packages.
 type NFPMRPMSignature struct {
 	// PGP secret key, can be ASCII-armored
 	KeyFile       string `yaml:"key_file,omitempty" json:"key_file,omitempty"`
@@ -957,7 +929,6 @@ type NFPMDeb struct {
 	Predepends  []string          `yaml:"predepends,omitempty" json:"predepends,omitempty"`
 }
 
-// NFPMAPKScripts is scripts only available on apk packages.
 type NFPMAPKScripts struct {
 	PreUpgrade  string `yaml:"preupgrade,omitempty" json:"preupgrade,omitempty"`
 	PostUpgrade string `yaml:"postupgrade,omitempty" json:"postupgrade,omitempty"`
@@ -978,27 +949,24 @@ type NFPMAPK struct {
 	Signature NFPMAPKSignature `yaml:"signature,omitempty" json:"signature"`
 }
 
-// NFPMArchLinuxScripts is scripts only available on archlinux packages.
 type NFPMArchLinuxScripts struct {
 	PreUpgrade  string `yaml:"preupgrade,omitempty" json:"preupgrade,omitempty"`
 	PostUpgrade string `yaml:"postupgrade,omitempty" json:"postupgrade,omitempty"`
 }
 
-// NFPMArchLinux is the custom config only available on archlinux packages.
 type NFPMArchLinux struct {
 	Pkgbase  string               `yaml:"pkgbase,omitempty" json:"pkgbase,omitempty"`
 	Packager string               `yaml:"packager,omitempty" json:"packager,omitempty"`
 	Scripts  NFPMArchLinuxScripts `yaml:"scripts,omitempty" json:"scripts"`
 }
 
-// NFPMIPKAlternative is the alternative config for ipk packages.
+// NFPMIPK is custom config only available on ipk packages.
 type NFPMIPKAlternative struct {
 	Priority int    `yaml:"priority,omitempty" json:"priority,omitempty"`
 	Target   string `yaml:"target,omitempty" json:"target,omitempty"`
 	LinkName string `yaml:"link_name,omitempty" json:"link_name,omitempty"`
 }
 
-// ToNFP converts NFPMIPKAlternative to nfpm.IPKAlternative.
 func (alt NFPMIPKAlternative) ToNFP() nfpm.IPKAlternative {
 	return nfpm.IPKAlternative{
 		Priority: alt.Priority,
@@ -1007,7 +975,6 @@ func (alt NFPMIPKAlternative) ToNFP() nfpm.IPKAlternative {
 	}
 }
 
-// NFPMIPK is the custom config only available on ipk packages.
 type NFPMIPK struct {
 	ABIVersion    string               `yaml:"abi_version,omitempty" json:"abi_version,omitempty"`
 	Alternatives  []NFPMIPKAlternative `yaml:"alternatives,omitempty" json:"alternatives,omitempty"`
@@ -1018,7 +985,6 @@ type NFPMIPK struct {
 	Fields        map[string]string    `yaml:"fields,omitempty" json:"fields,omitempty"`
 }
 
-// ToNFPAlts converts NFPMIPK to nfpm.IPKAlternative.
 func (ipk NFPMIPK) ToNFPAlts() []nfpm.IPKAlternative {
 	alts := make([]nfpm.IPKAlternative, len(ipk.Alternatives))
 	for i, alt := range ipk.Alternatives {
@@ -1051,7 +1017,6 @@ type NFPMOverridables struct {
 	IPK              NFPMIPK       `yaml:"ipk,omitempty" json:"ipk"`
 }
 
-// NFPMContent is a nfpm content.
 type NFPMContent struct {
 	Source      string   `yaml:"src,omitempty" json:"src,omitempty"`
 	Destination string   `yaml:"dst" json:"dst"`
@@ -1087,12 +1052,10 @@ type Sign struct {
 	Output      bool     `yaml:"output,omitempty" json:"output,omitempty"`
 }
 
-// Notarize config.
 type Notarize struct {
 	MacOS []MacOSSignNotarize `yaml:"macos" json:"macos"`
 }
 
-// MacOSSignNotarize signs and notarizes macOS binaries.
 type MacOSSignNotarize struct {
 	IDs      []string      `yaml:"ids,omitempty" json:"ids,omitempty"`
 	Enabled  string        `yaml:"enabled,omitempty" json:"enabled,omitempty" jsonschema:"oneof_type=string;boolean"`
@@ -1100,7 +1063,6 @@ type MacOSSignNotarize struct {
 	Notarize MacOSNotarize `yaml:"notarize" json:"notarize"`
 }
 
-// MacOSNotarize notarizes macOS binaries.
 type MacOSNotarize struct {
 	IssuerID string        `yaml:"issuer_id" json:"issuer_id"`
 	Key      string        `yaml:"key" json:"key"`
@@ -1109,7 +1071,6 @@ type MacOSNotarize struct {
 	Wait     bool          `yaml:"wait,omitempty" json:"wait,omitempty"`
 }
 
-// MacOSSign signs macOS binaries.
 type MacOSSign struct {
 	Certificate string `yaml:"certificate" json:"certificate"`
 	Password    string `yaml:"password" json:"password"`
@@ -1154,7 +1115,6 @@ type SnapcraftAppMetadata struct {
 	WatchdogTimeout  string         `yaml:"watchdog_timeout,omitempty" json:"watchdog_timeout,omitempty"`
 }
 
-// SnapcraftLayoutMetadata .
 type SnapcraftLayoutMetadata struct {
 	Symlink  string `yaml:"symlink,omitempty" json:"symlink,omitempty"`
 	Bind     string `yaml:"bind,omitempty" json:"bind,omitempty"`
@@ -1407,12 +1367,10 @@ type Project struct {
 	GiteaURLs GiteaURLs `yaml:"gitea_urls,omitempty" json:"gitea_urls"`
 }
 
-// ProjectMetadata .
 type ProjectMetadata struct {
 	ModTimestamp string `yaml:"mod_timestamp,omitempty" json:"mod_timestamp,omitempty"`
 }
 
-// GoMod section.
 type GoMod struct {
 	Proxy    bool     `yaml:"proxy,omitempty" json:"proxy,omitempty"`
 	Env      []string `yaml:"env,omitempty" json:"env,omitempty"`
@@ -1421,7 +1379,6 @@ type GoMod struct {
 	Dir      string   `yaml:"dir,omitempty" json:"dir,omitempty"`
 }
 
-// Announce announcement config.
 type Announce struct {
 	Skip           string         `yaml:"skip,omitempty" json:"skip,omitempty" jsonschema:"oneof_type=string;boolean"`
 	Twitter        Twitter        `yaml:"twitter,omitempty" json:"twitter"`
@@ -1439,7 +1396,6 @@ type Announce struct {
 	Bluesky        Bluesky        `yaml:"bluesky,omitempty" json:"bluesky"`
 }
 
-// Webhook webhook config.
 type Webhook struct {
 	Enabled             string            `yaml:"enabled,omitempty" json:"enabled,omitempty" jsonschema:"oneof_type=string;boolean"`
 	SkipTLSVerify       bool              `yaml:"skip_tls_verify,omitempty" json:"skip_tls_verify,omitempty"`
@@ -1450,20 +1406,17 @@ type Webhook struct {
 	ExpectedStatusCodes []int             `yaml:"expected_status_codes,omitempty" json:"expected_status_codes,omitempty"`
 }
 
-// Twitter config.
 type Twitter struct {
 	Enabled         string `yaml:"enabled,omitempty" json:"enabled,omitempty" jsonschema:"oneof_type=string;boolean"`
 	MessageTemplate string `yaml:"message_template,omitempty" json:"message_template,omitempty"`
 }
 
-// Mastodon config.
 type Mastodon struct {
 	Enabled         string `yaml:"enabled,omitempty" json:"enabled,omitempty" jsonschema:"oneof_type=string;boolean"`
 	MessageTemplate string `yaml:"message_template,omitempty" json:"message_template,omitempty"`
 	Server          string `yaml:"server" json:"server"`
 }
 
-// Reddit config.
 type Reddit struct {
 	Enabled       string `yaml:"enabled,omitempty" json:"enabled,omitempty" jsonschema:"oneof_type=string;boolean"`
 	ApplicationID string `yaml:"application_id,omitempty" json:"application_id,omitempty"`
@@ -1473,7 +1426,6 @@ type Reddit struct {
 	Sub           string `yaml:"sub,omitempty" json:"sub,omitempty"`
 }
 
-// Slack config.
 type Slack struct {
 	Enabled         string            `yaml:"enabled,omitempty" json:"enabled,omitempty" jsonschema:"oneof_type=string;boolean"`
 	MessageTemplate string            `yaml:"message_template,omitempty" json:"message_template,omitempty"`
@@ -1485,7 +1437,6 @@ type Slack struct {
 	Attachments     []SlackAttachment `yaml:"attachments,omitempty" json:"attachments,omitempty"`
 }
 
-// Discord config.
 type Discord struct {
 	Enabled         string `yaml:"enabled,omitempty" json:"enabled,omitempty" jsonschema:"oneof_type=string;boolean"`
 	MessageTemplate string `yaml:"message_template,omitempty" json:"message_template,omitempty"`
@@ -1494,7 +1445,6 @@ type Discord struct {
 	IconURL         string `yaml:"icon_url,omitempty" json:"icon_url,omitempty"`
 }
 
-// Teams config.
 type Teams struct {
 	Enabled         string `yaml:"enabled,omitempty" json:"enabled,omitempty" jsonschema:"oneof_type=string;boolean"`
 	TitleTemplate   string `yaml:"title_template,omitempty" json:"title_template,omitempty"`
@@ -1503,7 +1453,6 @@ type Teams struct {
 	IconURL         string `yaml:"icon_url,omitempty" json:"icon_url,omitempty"`
 }
 
-// Mattermost config.
 type Mattermost struct {
 	Enabled         string `yaml:"enabled,omitempty" json:"enabled,omitempty" jsonschema:"oneof_type=string;boolean"`
 	MessageTemplate string `yaml:"message_template,omitempty" json:"message_template,omitempty"`
@@ -1515,7 +1464,6 @@ type Mattermost struct {
 	IconURL         string `yaml:"icon_url,omitempty" json:"icon_url,omitempty"`
 }
 
-// SMTP config.
 type SMTP struct {
 	Enabled            string   `yaml:"enabled,omitempty" json:"enabled,omitempty" jsonschema:"oneof_type=string;boolean"`
 	Host               string   `yaml:"host,omitempty" json:"host,omitempty"`
@@ -1528,13 +1476,11 @@ type SMTP struct {
 	InsecureSkipVerify bool     `yaml:"insecure_skip_verify,omitempty" json:"insecure_skip_verify,omitempty"`
 }
 
-// LinkedIn config.
 type LinkedIn struct {
 	Enabled         string `yaml:"enabled,omitempty" json:"enabled,omitempty" jsonschema:"oneof_type=string;boolean"`
 	MessageTemplate string `yaml:"message_template,omitempty" json:"message_template,omitempty"`
 }
 
-// Telegram config.
 type Telegram struct {
 	Enabled         string `yaml:"enabled,omitempty" json:"enabled,omitempty" jsonschema:"oneof_type=string;boolean"`
 	MessageTemplate string `yaml:"message_template,omitempty" json:"message_template,omitempty"`
@@ -1542,7 +1488,6 @@ type Telegram struct {
 	ParseMode       string `yaml:"parse_mode,omitempty" json:"parse_mode,omitempty" jsonschema:"enum=MarkdownV2,enum=HTML,default=MarkdownV2"`
 }
 
-// OpenCollective config.
 type OpenCollective struct {
 	Enabled         string `yaml:"enabled,omitempty" json:"enabled,omitempty" jsonschema:"oneof_type=string;boolean"`
 	Slug            string `yaml:"slug,omitempty" json:"slug,omitempty"`

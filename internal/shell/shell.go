@@ -1,4 +1,3 @@
-// Package shell runs shell commands.
 package shell
 
 import (

@@ -40,8 +40,6 @@ const (
 type Pipe struct{}
 
 func (Pipe) String() string { return "linux packages" }
-
-// Skip implements Skipper.
 func (Pipe) Skip(ctx *context.Context) bool {
 	return skips.Any(ctx, skips.NFPM) || len(ctx.Config.NFPMs) == 0
 }

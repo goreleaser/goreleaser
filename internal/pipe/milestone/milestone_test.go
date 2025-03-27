@@ -120,7 +120,7 @@ func TestPublishCloseDisabled(t *testing.T) {
 	})
 	client := client.NewMock()
 	testlib.AssertSkipped(t, doPublish(ctx, client))
-	require.Empty(t, client.ClosedMilestone)
+	require.Equal(t, "", client.ClosedMilestone)
 }
 
 func TestPublishCloseEnabled(t *testing.T) {
@@ -159,7 +159,7 @@ func TestPublishCloseError(t *testing.T) {
 		FailToCloseMilestone: true,
 	}
 	require.NoError(t, doPublish(ctx, client))
-	require.Empty(t, client.ClosedMilestone)
+	require.Equal(t, "", client.ClosedMilestone)
 }
 
 func TestPublishCloseFailOnError(t *testing.T) {
@@ -181,7 +181,7 @@ func TestPublishCloseFailOnError(t *testing.T) {
 		FailToCloseMilestone: true,
 	}
 	require.Error(t, doPublish(ctx, client))
-	require.Empty(t, client.ClosedMilestone)
+	require.Equal(t, "", client.ClosedMilestone)
 }
 
 func TestSkip(t *testing.T) {

@@ -1,4 +1,3 @@
-// Package mastodon announces releases on Mastodon.
 package mastodon
 
 import (
@@ -13,24 +12,21 @@ import (
 
 const defaultMessageTemplate = `{{ .ProjectName }} {{ .Tag }} is out! Check it out at {{ .ReleaseURL }}`
 
-// Pipe announcer.
 type Pipe struct{}
 
 func (Pipe) String() string { return "mastodon" }
 
-// Skip implements Skipper.
 func (Pipe) Skip(ctx *context.Context) (bool, error) {
 	enable, err := tmpl.New(ctx).Bool(ctx.Config.Announce.Mastodon.Enabled)
 	return !enable || ctx.Config.Announce.Mastodon.Server == "", err
 }
 
-type envConfig struct {
+type Config struct {
 	ClientID     string `env:"MASTODON_CLIENT_ID,notEmpty"`
 	ClientSecret string `env:"MASTODON_CLIENT_SECRET,notEmpty"`
 	AccessToken  string `env:"MASTODON_ACCESS_TOKEN,notEmpty"`
 }
 
-// Default sets the pipe defaults.
 func (Pipe) Default(ctx *context.Context) error {
 	if ctx.Config.Announce.Mastodon.MessageTemplate == "" {
 		ctx.Config.Announce.Mastodon.MessageTemplate = defaultMessageTemplate
@@ -38,14 +34,13 @@ func (Pipe) Default(ctx *context.Context) error {
 	return nil
 }
 
-// Announce does the announcement.
 func (Pipe) Announce(ctx *context.Context) error {
 	msg, err := tmpl.New(ctx).Apply(ctx.Config.Announce.Mastodon.MessageTemplate)
 	if err != nil {
 		return fmt.Errorf("mastodon: %w", err)
 	}
 
-	cfg, err := env.ParseAs[envConfig]()
+	cfg, err := env.ParseAs[Config]()
 	if err != nil {
 		return fmt.Errorf("mastodon: %w", err)
 	}

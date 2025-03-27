@@ -26,23 +26,23 @@ func TestDescription(t *testing.T) {
 	require.NotEmpty(t, Pipe{}.String())
 }
 
-func createTemplateData() manifest {
-	return manifest{
+func createTemplateData() Manifest {
+	return Manifest{
 		APIVersion: apiVersion,
 		Kind:       kind,
-		Metadata: metadata{
+		Metadata: Metadata{
 			Name: "Test",
 		},
-		Spec: spec{
+		Spec: Spec{
 			Description:      "Some desc",
 			Homepage:         "https://google.com",
 			Version:          "v0.1.3",
 			ShortDescription: "Short desc",
 			Caveats:          "some caveat",
-			Platforms: []platform{
+			Platforms: []Platform{
 				{
-					Selector: selector{
-						MatchLabels: matchLabels{
+					Selector: Selector{
+						MatchLabels: MatchLabels{
 							Arch: "amd64",
 							Os:   "darwin",
 						},
@@ -52,8 +52,8 @@ func createTemplateData() manifest {
 					Bin:    "test",
 				},
 				{
-					Selector: selector{
-						MatchLabels: matchLabels{
+					Selector: Selector{
+						MatchLabels: MatchLabels{
 							Arch: "arm64",
 							Os:   "darwin",
 						},
@@ -63,8 +63,8 @@ func createTemplateData() manifest {
 					Bin:    "test",
 				},
 				{
-					Selector: selector{
-						MatchLabels: matchLabels{
+					Selector: Selector{
+						MatchLabels: MatchLabels{
 							Arch: "amd64",
 							Os:   "linux",
 						},
@@ -74,8 +74,8 @@ func createTemplateData() manifest {
 					Bin:    "test",
 				},
 				{
-					Selector: selector{
-						MatchLabels: matchLabels{
+					Selector: Selector{
+						MatchLabels: MatchLabels{
 							Arch: "arm",
 							Os:   "linux",
 						},
@@ -85,8 +85,8 @@ func createTemplateData() manifest {
 					Bin:    "test",
 				},
 				{
-					Selector: selector{
-						MatchLabels: matchLabels{
+					Selector: Selector{
+						MatchLabels: MatchLabels{
 							Arch: "arm64",
 							Os:   "linux",
 						},
@@ -96,8 +96,8 @@ func createTemplateData() manifest {
 					Bin:    "test",
 				},
 				{
-					Selector: selector{
-						MatchLabels: matchLabels{
+					Selector: Selector{
+						MatchLabels: MatchLabels{
 							Arch: "amd64",
 							Os:   "windows",
 						},
@@ -811,7 +811,7 @@ func TestRunPipeNoBuilds(t *testing.T) {
 		},
 	}, testctx.GitHubTokenType)
 	client := client.NewMock()
-	require.Equal(t, errNoArchivesFound, runAll(ctx, client))
+	require.Equal(t, ErrNoArchivesFound, runAll(ctx, client))
 	require.False(t, client.CreatedFile)
 }
 
@@ -979,7 +979,6 @@ func TestGHFolder(t *testing.T) {
 	require.Equal(t, "fooo/bar.yaml", buildManifestPath("fooo", "bar.yaml"))
 }
 
-// Skip implements Skipper.
 func TestSkip(t *testing.T) {
 	t.Run("skip", func(t *testing.T) {
 		require.True(t, Pipe{}.Skip(testctx.New()))

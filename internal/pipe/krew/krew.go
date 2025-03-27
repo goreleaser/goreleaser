@@ -32,20 +32,15 @@ const (
 	apiVersion      = "krew.googlecontainertools.github.com/v1alpha2"
 )
 
-var errNoArchivesFound = errors.New("no archives found")
+var ErrNoArchivesFound = errors.New("no archives found")
 
 // Pipe for krew manifest deployment.
 type Pipe struct{}
 
-func (Pipe) String() string { return "krew plugin manifest" }
-
-// ContinueOnError implements Continuable.
-func (Pipe) ContinueOnError() bool { return true }
-
-// Skip implements Skipper.
+func (Pipe) String() string                 { return "krew plugin manifest" }
+func (Pipe) ContinueOnError() bool          { return true }
 func (Pipe) Skip(ctx *context.Context) bool { return len(ctx.Config.Krews) == 0 }
 
-// Default sets the pipe defaults.
 func (Pipe) Default(ctx *context.Context) error {
 	for i := range ctx.Config.Krews {
 		krew := &ctx.Config.Krews[i]
@@ -65,7 +60,6 @@ func (Pipe) Default(ctx *context.Context) error {
 	return nil
 }
 
-// Run the pipe.
 func (Pipe) Run(ctx *context.Context) error {
 	cli, err := client.NewReleaseClient(ctx)
 	if err != nil {
@@ -123,7 +117,7 @@ func doRun(ctx *context.Context, krew config.Krew, cl client.ReleaseURLTemplater
 
 	archives := ctx.Artifacts.Filter(artifact.And(filters...)).List()
 	if len(archives) == 0 {
-		return errNoArchivesFound
+		return ErrNoArchivesFound
 	}
 
 	krew, err := templateFields(ctx, krew)
@@ -187,7 +181,7 @@ func buildmanifest(
 	return doBuildManifest(data)
 }
 
-func doBuildManifest(data manifest) (string, error) {
+func doBuildManifest(data Manifest) (string, error) {
 	out, err := yaml.Marshal(data)
 	if err != nil {
 		return "", fmt.Errorf("krew: failed to marshal yaml: %w", err)
@@ -200,14 +194,14 @@ func manifestFor(
 	cfg config.Krew,
 	cl client.ReleaseURLTemplater,
 	artifacts []*artifact.Artifact,
-) (manifest, error) {
-	result := manifest{
+) (Manifest, error) {
+	result := Manifest{
 		APIVersion: apiVersion,
 		Kind:       kind,
-		Metadata: metadata{
+		Metadata: Metadata{
 			Name: cfg.Name,
 		},
-		Spec: spec{
+		Spec: Spec{
 			Homepage:         cfg.Homepage,
 			Version:          "v" + ctx.Version,
 			ShortDescription: cfg.ShortDescription,
@@ -244,12 +238,12 @@ func manifestFor(
 			if len(bins) != 1 {
 				return result, fmt.Errorf("krew: only one binary per archive allowed, got %d on %q", len(bins), art.Name)
 			}
-			result.Spec.Platforms = append(result.Spec.Platforms, platform{
+			result.Spec.Platforms = append(result.Spec.Platforms, Platform{
 				Bin:    bins[0],
 				URI:    url,
 				Sha256: sum,
-				Selector: selector{
-					MatchLabels: matchLabels{
+				Selector: Selector{
+					MatchLabels: MatchLabels{
 						Os:   art.Goos,
 						Arch: arch,
 					},
@@ -258,7 +252,7 @@ func manifestFor(
 		}
 	}
 
-	slices.SortFunc(result.Spec.Platforms, func(a, b platform) int {
+	slices.SortFunc(result.Spec.Platforms, func(a, b Platform) int {
 		return -cmp.Compare(a.URI, b.URI)
 	})
 
@@ -372,36 +366,36 @@ func buildManifestPath(folder, filename string) string {
 	return path.Join(folder, filename)
 }
 
-type manifest struct {
+type Manifest struct {
 	APIVersion string   `yaml:"apiVersion,omitempty"`
 	Kind       string   `yaml:"kind,omitempty"`
-	Metadata   metadata `yaml:"metadata,omitempty"`
-	Spec       spec     `yaml:"spec,omitempty"`
+	Metadata   Metadata `yaml:"metadata,omitempty"`
+	Spec       Spec     `yaml:"spec,omitempty"`
 }
 
-type metadata struct {
+type Metadata struct {
 	Name string `yaml:"name,omitempty"`
 }
 
-type matchLabels struct {
+type MatchLabels struct {
 	Os   string `yaml:"os,omitempty"`
 	Arch string `yaml:"arch,omitempty"`
 }
 
-type selector struct {
-	MatchLabels matchLabels `yaml:"matchLabels,omitempty"`
+type Selector struct {
+	MatchLabels MatchLabels `yaml:"matchLabels,omitempty"`
 }
 
-type platform struct {
+type Platform struct {
 	Bin      string   `yaml:"bin,omitempty"`
 	URI      string   `yaml:"uri,omitempty"`
 	Sha256   string   `yaml:"sha256,omitempty"`
-	Selector selector `yaml:"selector,omitempty"`
+	Selector Selector `yaml:"selector,omitempty"`
 }
 
-type spec struct {
+type Spec struct {
 	Version          string     `yaml:"version,omitempty"`
-	Platforms        []platform `yaml:"platforms,omitempty"`
+	Platforms        []Platform `yaml:"platforms,omitempty"`
 	ShortDescription string     `yaml:"shortDescription,omitempty"`
 	Homepage         string     `yaml:"homepage,omitempty"`
 	Caveats          string     `yaml:"caveats,omitempty"`

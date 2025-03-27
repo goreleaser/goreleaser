@@ -14,9 +14,7 @@ import (
 // Pipe for setting up the snapshot feature..
 type Pipe struct{}
 
-func (Pipe) String() string { return "snapshotting" }
-
-// Skip implements Skipper.
+func (Pipe) String() string                 { return "snapshotting" }
 func (Pipe) Skip(ctx *context.Context) bool { return !ctx.Snapshot }
 
 // Default sets the pipe defaults.
@@ -31,7 +29,6 @@ func (Pipe) Default(ctx *context.Context) error {
 	return nil
 }
 
-// Run the pipe.
 func (Pipe) Run(ctx *context.Context) error {
 	name, err := tmpl.New(ctx).Apply(ctx.Config.Snapshot.VersionTemplate)
 	if err != nil {

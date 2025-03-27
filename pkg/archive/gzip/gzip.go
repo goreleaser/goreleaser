@@ -32,7 +32,7 @@ func (a Archive) Close() error {
 
 // Add file to the archive.
 func (a Archive) Add(f config.File) error {
-	if a.gw.Name != "" {
+	if a.gw.Header.Name != "" {
 		return fmt.Errorf("gzip: failed to add %s, only one file can be archived in gz format", f.Destination)
 	}
 	file, err := os.Open(f.Source) // #nosec
@@ -47,11 +47,11 @@ func (a Archive) Add(f config.File) error {
 	if info.IsDir() {
 		return nil
 	}
-	a.gw.Name = f.Destination
+	a.gw.Header.Name = f.Destination
 	if f.Info.ParsedMTime.IsZero() {
-		a.gw.ModTime = info.ModTime()
+		a.gw.Header.ModTime = info.ModTime()
 	} else {
-		a.gw.ModTime = f.Info.ParsedMTime
+		a.gw.Header.ModTime = f.Info.ParsedMTime
 	}
 	_, err = io.Copy(a.gw, file)
 	return err
