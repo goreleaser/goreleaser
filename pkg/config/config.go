@@ -695,7 +695,7 @@ type NFPMArchLinux struct {
 	Scripts  NFPMArchLinuxScripts `yaml:"scripts,omitempty" json:"scripts,omitempty"`
 }
 
-// NFPMIPK is custom config only available on ipk packages.
+// NFPMIPKAlternative is used to specify alternatives for ipk packages.
 type NFPMIPKAlternative struct {
 	Priority int    `yaml:"priority,omitempty" json:"priority,omitempty"`
 	Target   string `yaml:"target,omitempty" json:"target,omitempty"`
