@@ -3,15 +3,12 @@
 package config
 
 import (
-	"encoding/json"
 	"fmt"
 	"io/fs"
 	"os"
-	"strings"
 	"time"
 
 	"github.com/goreleaser/nfpm/v2"
-	"github.com/invopop/jsonschema"
 )
 
 type Versioned struct {
@@ -108,41 +105,6 @@ type PullRequestBase struct {
 // type alias to prevent stack overflowing in the custom unmarshaler.
 type pullRequestBase PullRequestBase
 
-// UnmarshalYAML is a custom unmarshaler that accept brew deps in both the old and new format.
-func (a *PullRequestBase) UnmarshalYAML(unmarshal func(any) error) error {
-	var str string
-	if err := unmarshal(&str); err == nil {
-		a.Branch = str
-		return nil
-	}
-
-	var base pullRequestBase
-	if err := unmarshal(&base); err != nil {
-		return err
-	}
-
-	a.Branch = base.Branch
-	a.Owner = base.Owner
-	a.Name = base.Name
-
-	return nil
-}
-
-func (a PullRequestBase) JSONSchema() *jsonschema.Schema {
-	reflector := jsonschema.Reflector{
-		ExpandedStruct: true,
-	}
-	schema := reflector.Reflect(&pullRequestBase{})
-	return &jsonschema.Schema{
-		OneOf: []*jsonschema.Schema{
-			{
-				Type: "string",
-			},
-			schema,
-		},
-	}
-}
-
 type PullRequest struct {
 	Enabled bool            `yaml:"enabled,omitempty" json:"enabled,omitempty"`
 	Base    PullRequestBase `yaml:"base,omitempty" json:"base"`
@@ -159,42 +121,6 @@ type HomebrewDependency struct {
 
 // type alias to prevent stack overflowing in the custom unmarshaler.
 type homebrewDependency HomebrewDependency
-
-// UnmarshalYAML is a custom unmarshaler that accept brew deps in both the old and new format.
-func (a *HomebrewDependency) UnmarshalYAML(unmarshal func(any) error) error {
-	var str string
-	if err := unmarshal(&str); err == nil {
-		a.Name = str
-		return nil
-	}
-
-	var dep homebrewDependency
-	if err := unmarshal(&dep); err != nil {
-		return err
-	}
-
-	a.Name = dep.Name
-	a.Type = dep.Type
-	a.Version = dep.Version
-	a.OS = dep.OS
-
-	return nil
-}
-
-func (a HomebrewDependency) JSONSchema() *jsonschema.Schema {
-	reflector := jsonschema.Reflector{
-		ExpandedStruct: true,
-	}
-	schema := reflector.Reflect(&homebrewDependency{})
-	return &jsonschema.Schema{
-		OneOf: []*jsonschema.Schema{
-			{
-				Type: "string",
-			},
-			schema,
-		},
-	}
-}
 
 type AUR struct {
 	Name                  string       `yaml:"name,omitempty" json:"name,omitempty"`
@@ -312,41 +238,6 @@ type Nix struct {
 type NixDependency struct {
 	Name string `yaml:"name" json:"name"`
 	OS   string `yaml:"os,omitempty" json:"os,omitempty" jsonschema:"enum=linux,enum=darwin"`
-}
-
-func (a NixDependency) JSONSchema() *jsonschema.Schema {
-	reflector := jsonschema.Reflector{
-		ExpandedStruct: true,
-	}
-	type nixDependencyAlias NixDependency
-	schema := reflector.Reflect(&nixDependencyAlias{})
-	return &jsonschema.Schema{
-		OneOf: []*jsonschema.Schema{
-			{
-				Type: "string",
-			},
-			schema,
-		},
-	}
-}
-
-func (a *NixDependency) UnmarshalYAML(unmarshal func(any) error) error {
-	var str string
-	if err := unmarshal(&str); err == nil {
-		a.Name = str
-		return nil
-	}
-
-	type t NixDependency
-	var dep t
-	if err := unmarshal(&dep); err != nil {
-		return err
-	}
-
-	a.Name = dep.Name
-	a.OS = dep.OS
-
-	return nil
 }
 
 type Winget struct {
@@ -476,64 +367,8 @@ type IgnoredBuild struct {
 // StringArray is a wrapper for an array of strings.
 type StringArray []string
 
-// UnmarshalYAML is a custom unmarshaler that wraps strings in arrays.
-func (a *StringArray) UnmarshalYAML(unmarshal func(any) error) error {
-	var strings []string
-	if err := unmarshal(&strings); err != nil {
-		var str string
-		if err := unmarshal(&str); err != nil {
-			return err
-		}
-		*a = []string{str}
-	} else {
-		*a = strings
-	}
-	return nil
-}
-
-func (a StringArray) JSONSchema() *jsonschema.Schema {
-	return &jsonschema.Schema{
-		OneOf: []*jsonschema.Schema{{
-			Type: "string",
-		}, {
-			Type: "array",
-			Items: &jsonschema.Schema{
-				Type: "string",
-			},
-		}},
-	}
-}
-
 // FlagArray is a wrapper for an array of strings.
 type FlagArray []string
-
-// UnmarshalYAML is a custom unmarshaler that wraps strings in arrays.
-func (a *FlagArray) UnmarshalYAML(unmarshal func(any) error) error {
-	var flags []string
-	if err := unmarshal(&flags); err != nil {
-		var flagstr string
-		if err := unmarshal(&flagstr); err != nil {
-			return err
-		}
-		*a = strings.Fields(flagstr)
-	} else {
-		*a = flags
-	}
-	return nil
-}
-
-func (a FlagArray) JSONSchema() *jsonschema.Schema {
-	return &jsonschema.Schema{
-		OneOf: []*jsonschema.Schema{{
-			Type: "string",
-		}, {
-			Type: "array",
-			Items: &jsonschema.Schema{
-				Type: "string",
-			},
-		}},
-	}
-}
 
 // Build contains the build configuration section.
 type Build struct {
@@ -598,78 +433,11 @@ type BuildHookConfig struct {
 
 type Hooks []Hook
 
-// UnmarshalYAML is a custom unmarshaler that allows simplified declaration of single command.
-func (bhc *Hooks) UnmarshalYAML(unmarshal func(any) error) error {
-	var singleCmd string
-	err := unmarshal(&singleCmd)
-	if err == nil {
-		*bhc = []Hook{{Cmd: singleCmd}}
-		return nil
-	}
-
-	type t Hooks
-	var hooks t
-	if err := unmarshal(&hooks); err != nil {
-		return err
-	}
-	*bhc = (Hooks)(hooks)
-	return nil
-}
-
-func (bhc Hooks) JSONSchema() *jsonschema.Schema {
-	reflector := jsonschema.Reflector{
-		ExpandedStruct: true,
-	}
-	var t Hook
-	schema := reflector.Reflect(&t)
-	return &jsonschema.Schema{
-		OneOf: []*jsonschema.Schema{{
-			Type: "string",
-		}, {
-			Type:  "array",
-			Items: schema,
-		}},
-	}
-}
-
 type Hook struct {
 	Dir    string   `yaml:"dir,omitempty" json:"dir,omitempty"`
 	Cmd    string   `yaml:"cmd,omitempty" json:"cmd,omitempty"`
 	Env    []string `yaml:"env,omitempty" json:"env,omitempty"`
 	Output bool     `yaml:"output,omitempty" json:"output,omitempty"`
-}
-
-// UnmarshalYAML is a custom unmarshaler that allows simplified declarations of commands as strings.
-func (bh *Hook) UnmarshalYAML(unmarshal func(any) error) error {
-	var cmd string
-	if err := unmarshal(&cmd); err != nil {
-		type t Hook
-		var hook t
-		if err := unmarshal(&hook); err != nil {
-			return err
-		}
-		*bh = (Hook)(hook)
-		return nil
-	}
-
-	bh.Cmd = cmd
-	return nil
-}
-
-func (bh Hook) JSONSchema() *jsonschema.Schema {
-	type hookAlias Hook
-	reflector := jsonschema.Reflector{
-		ExpandedStruct: true,
-	}
-	schema := reflector.Reflect(&hookAlias{})
-	return &jsonschema.Schema{
-		OneOf: []*jsonschema.Schema{
-			{
-				Type: "string",
-			},
-			schema,
-		},
-	}
 }
 
 // FormatOverride is used to specify a custom format for a specific GOOS.
@@ -697,39 +465,6 @@ type FileInfo struct {
 	Mode        os.FileMode `yaml:"mode,omitempty" json:"mode,omitempty"`
 	MTime       string      `yaml:"mtime,omitempty" json:"mtime,omitempty"`
 	ParsedMTime time.Time   `yaml:"-" json:"-"`
-}
-
-// UnmarshalYAML is a custom unmarshaler that wraps strings in arrays.
-func (f *File) UnmarshalYAML(unmarshal func(any) error) error {
-	type t File
-	var str string
-	if err := unmarshal(&str); err == nil {
-		*f = File{Source: str}
-		return nil
-	}
-
-	var file t
-	if err := unmarshal(&file); err != nil {
-		return err
-	}
-	*f = File(file)
-	return nil
-}
-
-func (f File) JSONSchema() *jsonschema.Schema {
-	type fileAlias File
-	reflector := jsonschema.Reflector{
-		ExpandedStruct: true,
-	}
-	schema := reflector.Reflect(&fileAlias{})
-	return &jsonschema.Schema{
-		OneOf: []*jsonschema.Schema{
-			{
-				Type: "string",
-			},
-			schema,
-		},
-	}
 }
 
 // UniversalBinary setups macos universal binaries.
@@ -1507,43 +1242,9 @@ type SlackBlock struct {
 	Internal any
 }
 
-// UnmarshalYAML is a custom unmarshaler that unmarshals a YAML slack block as untyped interface{}.
-func (a *SlackBlock) UnmarshalYAML(unmarshal func(any) error) error {
-	var yamlv2 any
-	if err := unmarshal(&yamlv2); err != nil {
-		return err
-	}
-
-	a.Internal = yamlv2
-
-	return nil
-}
-
-// MarshalJSON marshals a slack block as JSON.
-func (a SlackBlock) MarshalJSON() ([]byte, error) {
-	return json.Marshal(a.Internal)
-}
-
 // SlackAttachment represents the untyped structure of a slack message attachment.
 type SlackAttachment struct {
 	Internal any
-}
-
-// UnmarshalYAML is a custom unmarshaler that unmarshals a YAML slack attachment as untyped interface{}.
-func (a *SlackAttachment) UnmarshalYAML(unmarshal func(any) error) error {
-	var yamlv2 any
-	if err := unmarshal(&yamlv2); err != nil {
-		return err
-	}
-
-	a.Internal = yamlv2
-
-	return nil
-}
-
-// MarshalJSON marshals a slack attachment as JSON.
-func (a SlackAttachment) MarshalJSON() ([]byte, error) {
-	return json.Marshal(a.Internal)
 }
 
 // Chocolatey contains the chocolatey section.
