@@ -11,15 +11,15 @@ import (
 
 //nolint:gochecknoglobals
 var (
-	mockEnvVar = "GORELEASER_MOCK_DATA"
-	mockCmd    = os.Args[0]
+	MockEnvVar = "GORELEASER_MOCK_DATA"
+	MockCmd    = os.Args[0]
 )
 
-type mockData struct {
-	AnyOf []mockCall `json:"any_of,omitempty"`
+type MockData struct {
+	AnyOf []MockCall `json:"any_of,omitempty"`
 }
 
-type mockCall struct {
+type MockCall struct {
 	Stdout       string   `json:"stdout,omitempty"`
 	Stderr       string   `json:"stderr,omitempty"`
 	ExpectedArgs []string `json:"args"`
@@ -27,26 +27,24 @@ type mockCall struct {
 	ExitCode     int      `json:"exit_code"`
 }
 
-// MarshalJSON implements json.Marshaler.
-func (m mockData) MarshalJSON() ([]byte, error) {
-	type t mockData
+func (m MockData) MarshalJSON() ([]byte, error) {
+	type t MockData
 	return json.Marshal((t)(m))
 }
 
-// UnmarshalJSON implements json.Unmarshaler.
-func (m *mockData) UnmarshalJSON(b []byte) error {
-	type t mockData
+func (m *MockData) UnmarshalJSON(b []byte) error {
+	type t MockData
 	return json.Unmarshal(b, (*t)(m))
 }
 
 // MarshalMockEnv mocks marshal.
 //
 //nolint:interfacer
-func MarshalMockEnv(data *mockData) string {
+func MarshalMockEnv(data *MockData) string {
 	b, err := data.MarshalJSON()
 	if err != nil {
-		errData := &mockData{
-			AnyOf: []mockCall{
+		errData := &MockData{
+			AnyOf: []MockCall{
 				{
 					Stderr:   fmt.Sprintf("unable to marshal mock data: %s", err),
 					ExitCode: 1,
@@ -56,12 +54,11 @@ func MarshalMockEnv(data *mockData) string {
 		b, _ = errData.MarshalJSON()
 	}
 
-	return mockEnvVar + "=" + string(b)
+	return MockEnvVar + "=" + string(b)
 }
 
-// ExecuteMockData executes the mock data.
 func ExecuteMockData(jsonData string) int {
-	md := &mockData{}
+	md := &MockData{}
 	err := md.UnmarshalJSON([]byte(jsonData))
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "unable to unmarshal mock data: %s", err)
@@ -106,7 +103,7 @@ func ExecuteMockData(jsonData string) int {
 
 func filterEnv(vars []string) []string {
 	for i, env := range vars {
-		if strings.HasPrefix(env, mockEnvVar+"=") {
+		if strings.HasPrefix(env, MockEnvVar+"=") {
 			return slices.Delete(vars, i, i+1)
 		}
 	}

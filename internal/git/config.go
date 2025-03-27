@@ -45,7 +45,6 @@ func extractRelativeRepoFromConfig(ctx context.Context) (result config.Repo, err
 	return ExtractRepoFromURL(out)
 }
 
-// ExtractRepoFromURL returns a repository from a git URL.
 func ExtractRepoFromURL(rawurl string) (config.Repo, error) {
 	// removes the .git suffix and any new lines
 	s := strings.TrimSuffix(strings.TrimSpace(rawurl), ".git")

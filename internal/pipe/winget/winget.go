@@ -1,4 +1,4 @@
-// Package winget creates a winget manifest for each artifact.
+// Package winget creates winget manifests.
 package winget
 
 import (
@@ -48,20 +48,14 @@ func (e errNoArchivesFound) Error() string {
 
 const wingetConfigExtra = "WingetConfig"
 
-// Pipe implementation.
 type Pipe struct{}
 
-func (Pipe) String() string { return "winget" }
-
-// ContinueOnError implements Continuable.
+func (Pipe) String() string        { return "winget" }
 func (Pipe) ContinueOnError() bool { return true }
-
-// Skip implements Skipper.
 func (p Pipe) Skip(ctx *context.Context) bool {
 	return skips.Any(ctx, skips.Winget) || len(ctx.Config.Winget) == 0
 }
 
-// Default sets the pipe defaults.
 func (Pipe) Default(ctx *context.Context) error {
 	for i := range ctx.Config.Winget {
 		winget := &ctx.Config.Winget[i]
@@ -82,7 +76,6 @@ func (Pipe) Default(ctx *context.Context) error {
 	return nil
 }
 
-// Run runs the pipe.
 func (p Pipe) Run(ctx *context.Context) error {
 	cli, err := client.NewReleaseClient(ctx)
 	if err != nil {

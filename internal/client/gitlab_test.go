@@ -334,7 +334,7 @@ func TestGitLabCreateReleaseReleaseNotExists(t *testing.T) {
 					return
 				}
 
-				t.Error("should not reach here")
+				t.Fatal("should not reach here")
 			}))
 			defer srv.Close()
 
@@ -387,7 +387,7 @@ func TestGitLabCreateReleaseReleaseExists(t *testing.T) {
 			return
 		}
 
-		t.Error("should not reach here")
+		t.Fatal("should not reach here")
 	}))
 	defer srv.Close()
 

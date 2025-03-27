@@ -25,12 +25,10 @@ type ManifestPipe struct{}
 
 func (ManifestPipe) String() string { return "docker manifests" }
 
-// Skip implements Skipper.
 func (ManifestPipe) Skip(ctx *context.Context) bool {
 	return len(ctx.Config.DockerManifests) == 0 || skips.Any(ctx, skips.Docker)
 }
 
-// Dependencies implements Healthchecker.
 func (ManifestPipe) Dependencies(ctx *context.Context) []string {
 	var cmds []string
 	for _, s := range ctx.Config.DockerManifests {

@@ -1,3 +1,4 @@
+// Package chocolatey creates chocolatey packages.
 package chocolatey
 
 import (

@@ -38,12 +38,10 @@ type Pipe struct{}
 
 func (Pipe) String() string { return "docker images" }
 
-// Skip implements Skipper.
 func (Pipe) Skip(ctx *context.Context) bool {
 	return len(ctx.Config.Dockers) == 0 || skips.Any(ctx, skips.Docker)
 }
 
-// Dependencies implements Healthchecker.
 func (Pipe) Dependencies(ctx *context.Context) []string {
 	var cmds []string
 	for _, s := range ctx.Config.Dockers {

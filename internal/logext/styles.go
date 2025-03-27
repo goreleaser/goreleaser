@@ -1,4 +1,3 @@
-// Package logext provides styles for log messages.
 package logext
 
 import "github.com/charmbracelet/lipgloss"

@@ -6,7 +6,7 @@ import (
 )
 
 func TestMain(m *testing.M) {
-	if v := os.Getenv(mockEnvVar); v != "" {
+	if v := os.Getenv(MockEnvVar); v != "" {
 		os.Exit(ExecuteMockData(v))
 		return
 	}

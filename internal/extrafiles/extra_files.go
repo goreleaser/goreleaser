@@ -1,4 +1,4 @@
-// Package extrafiles handles extra files globs et al.
+// Package extrafiles handles extra files.
 package extrafiles
 
 import (

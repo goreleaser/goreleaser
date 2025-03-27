@@ -1,4 +1,4 @@
-// Package semver verifies the tag is a valid semver and parses it.
+// Package semver handles semver parsing.
 package semver
 
 import (

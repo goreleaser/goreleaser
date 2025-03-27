@@ -1,4 +1,4 @@
-// Package partial handles partial builds.
+// Package partial handles the partial builds.
 package partial
 
 import (
@@ -13,15 +13,11 @@ import (
 	"github.com/goreleaser/goreleaser/v2/pkg/context"
 )
 
-// Pipe pipe implementation.
 type Pipe struct{}
 
-func (Pipe) String() string { return "partial" }
-
-// Skip implements Skipper.
+func (Pipe) String() string                 { return "partial" }
 func (Pipe) Skip(ctx *context.Context) bool { return !ctx.Partial }
 
-// Run the pipe.
 func (Pipe) Run(ctx *context.Context) error {
 	if t := os.Getenv("TARGET"); t != "" {
 		ctx.PartialTarget = t

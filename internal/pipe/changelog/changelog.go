@@ -38,7 +38,6 @@ type Pipe struct{}
 
 func (Pipe) String() string { return "generating changelog" }
 
-// Skip implements Skipper.
 func (Pipe) Skip(ctx *context.Context) (bool, error) {
 	if ctx.Snapshot {
 		return true, nil
@@ -47,7 +46,6 @@ func (Pipe) Skip(ctx *context.Context) (bool, error) {
 	return tmpl.New(ctx).Bool(ctx.Config.Changelog.Disable)
 }
 
-// Default implements Defaulter.
 func (Pipe) Default(ctx *context.Context) error {
 	if ctx.Config.Changelog.Format == "" {
 		switch ctx.Config.Changelog.Use {

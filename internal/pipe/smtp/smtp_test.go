@@ -49,7 +49,7 @@ func TestDefault(t *testing.T) {
 
 func TestGetConfig(t *testing.T) {
 	t.Run("from env", func(t *testing.T) {
-		expect := envConfig{
+		expect := Config{
 			Host:     "hostname",
 			Port:     123,
 			Username: "user",
@@ -65,7 +65,7 @@ func TestGetConfig(t *testing.T) {
 	})
 
 	t.Run("mixed", func(t *testing.T) {
-		expect := envConfig{
+		expect := Config{
 			Host:     "hostname",
 			Port:     123,
 			Username: "user",
@@ -82,7 +82,7 @@ func TestGetConfig(t *testing.T) {
 	})
 
 	t.Run("from conf", func(t *testing.T) {
-		expect := envConfig{
+		expect := Config{
 			Host:     "hostname",
 			Port:     123,
 			Username: "user",

@@ -19,25 +19,21 @@ const (
 	defaultBodyTemplate    = `You can view details from: {{ .ReleaseURL }}`
 )
 
-// Pipe implementation.
 type Pipe struct{}
 
 func (Pipe) String() string { return "smtp" }
-
-// Skip implements Skipper.
 func (Pipe) Skip(ctx *context.Context) (bool, error) {
 	enable, err := tmpl.New(ctx).Bool(ctx.Config.Announce.SMTP.Enabled)
 	return !enable, err
 }
 
-type envConfig struct {
+type Config struct {
 	Host     string `env:"SMTP_HOST"`
 	Port     int    `env:"SMTP_PORT"`
 	Username string `env:"SMTP_USERNAME"`
 	Password string `env:"SMTP_PASSWORD,notEmpty"`
 }
 
-// Default sets the pipe defaults.
 func (Pipe) Default(ctx *context.Context) error {
 	if ctx.Config.Announce.SMTP.BodyTemplate == "" {
 		ctx.Config.Announce.SMTP.BodyTemplate = defaultBodyTemplate
@@ -50,7 +46,6 @@ func (Pipe) Default(ctx *context.Context) error {
 	return nil
 }
 
-// Announce does the announcement.
 func (Pipe) Announce(ctx *context.Context) error {
 	subject, err := tmpl.New(ctx).Apply(ctx.Config.Announce.SMTP.SubjectTemplate)
 	if err != nil {
@@ -105,8 +100,8 @@ var (
 	errNoHost     = errors.New("SMTP: missing smtp.host or $SMTP_HOST")
 )
 
-func getConfig(smtp config.SMTP) (envConfig, error) {
-	cfg := envConfig{
+func getConfig(smtp config.SMTP) (Config, error) {
+	cfg := Config{
 		Host:     smtp.Host,
 		Port:     smtp.Port,
 		Username: smtp.Username,

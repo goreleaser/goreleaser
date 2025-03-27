@@ -1,4 +1,4 @@
-// Package sbom creates Software Bill of Materials (SBOM) for artifacts.
+// Package sbom creates a Software Bill of Materials (SBOM) for each artifact.
 package sbom
 
 import (
@@ -30,13 +30,10 @@ var passthroughEnvVars = []string{"HOME", "USER", "USERPROFILE", "TMPDIR", "TMP"
 type Pipe struct{}
 
 func (Pipe) String() string { return "cataloging artifacts" }
-
-// Skip implements Skipper.
 func (Pipe) Skip(ctx *context.Context) bool {
 	return skips.Any(ctx, skips.SBOM) || len(ctx.Config.SBOMs) == 0
 }
 
-// Dependencies implements Healthchecker.
 func (Pipe) Dependencies(ctx *context.Context) []string {
 	var cmds []string
 	for _, s := range ctx.Config.SBOMs {

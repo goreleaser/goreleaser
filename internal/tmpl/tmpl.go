@@ -212,7 +212,6 @@ func (t *Template) WithArtifact(a *artifact.Artifact) *Template {
 	})
 }
 
-// WithBuildOptions sets the build options.
 func (t *Template) WithBuildOptions(opts build.Options) *Template {
 	return t.WithExtraFields(buildOptsToFields(opts))
 }
@@ -371,9 +370,9 @@ func (t *Template) copying() *Template {
 	return tpl
 }
 
-type errExpectSingleEnvVar struct{}
+type ExpectedSingleEnvErr struct{}
 
-func (e errExpectSingleEnvVar) Error() string {
+func (e ExpectedSingleEnvErr) Error() string {
 	return "expected {{ .Env.VAR_NAME }} only (no plain-text or other interpolation)"
 }
 
@@ -400,7 +399,7 @@ func (t *Template) ApplySingleEnvOnly(s string) (string, error) {
 	// given the context is mostly discouraging users from bad practice
 	// of hard-coded credentials, rather than catch all possible cases
 	if !envOnlyRe.MatchString(s) {
-		return "", errExpectSingleEnvVar{}
+		return "", ExpectedSingleEnvErr{}
 	}
 
 	err = tmpl.Execute(&out, t.fields)

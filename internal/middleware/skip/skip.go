@@ -51,12 +51,12 @@ type wrapper struct {
 	skipper Skipper
 }
 
-// String implements ErrSkipper.
+// String implements SkipperErr
 func (w wrapper) String() string {
 	return w.skipper.String()
 }
 
-// Skip implements ErrSkipper.
+// Skip implements SkipperErr
 func (w wrapper) Skip(ctx *context.Context) (bool, error) {
 	return w.skipper.Skip(ctx), nil
 }

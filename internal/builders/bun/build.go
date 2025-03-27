@@ -1,4 +1,4 @@
-// Package bun implements the bun builder.
+// Package bun builds binaries using the Bun tool.
 package bun
 
 import (

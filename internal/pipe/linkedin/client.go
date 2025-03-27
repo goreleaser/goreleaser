@@ -1,3 +1,4 @@
+// Package linkedin announces releases on LinkedIn.
 package linkedin
 
 import (
@@ -14,7 +15,7 @@ import (
 	"golang.org/x/oauth2"
 )
 
-var errLinkedinForbidden = errors.New("forbidden. please check your permissions")
+var ErrLinkedinForbidden = errors.New("forbidden. please check your permissions")
 
 type oauthClientConfig struct {
 	Context     *context.Context
@@ -76,7 +77,7 @@ func (c client) getProfileIDLegacy(ctx stdctx.Context) (string, error) {
 	}
 
 	if resp.StatusCode == http.StatusForbidden {
-		return "", errLinkedinForbidden
+		return "", ErrLinkedinForbidden
 	}
 
 	value, err := io.ReadAll(resp.Body)
@@ -113,7 +114,7 @@ func (c client) getProfileSub(ctx stdctx.Context) (string, error) {
 	}
 
 	if resp.StatusCode == http.StatusForbidden {
-		return "", errLinkedinForbidden
+		return "", ErrLinkedinForbidden
 	}
 
 	value, err := io.ReadAll(resp.Body)
@@ -142,7 +143,7 @@ func (c client) getProfileURN(ctx stdctx.Context) (string, error) {
 	// To build the URN, we need to get the profile sub (formally id)
 	profileSub, err := c.getProfileSub(ctx)
 	if err != nil {
-		if !errors.Is(err, errLinkedinForbidden) {
+		if !errors.Is(err, ErrLinkedinForbidden) {
 			return "", fmt.Errorf("could not get profile sub: %w", err)
 		}
 

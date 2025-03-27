@@ -1,4 +1,3 @@
-// Package main the main goreleaser command.
 package main
 
 import (

@@ -27,12 +27,9 @@ import (
 // and are made for development only.
 var ErrReplaceWithProxy = errors.New("cannot use the go.mod replace directive with go mod proxy enabled")
 
-// CheckGoModPipe pipe.
 type CheckGoModPipe struct{}
 
 func (CheckGoModPipe) String() string { return "checking go.mod" }
-
-// Skip implements Skipper.
 func (CheckGoModPipe) Skip(ctx *context.Context) bool {
 	return ctx.ModulePath == "" || !ctx.Config.GoMod.Proxy
 }
@@ -76,7 +73,6 @@ type ProxyPipe struct{}
 
 func (ProxyPipe) String() string { return "proxying go module" }
 
-// Skip implements Skipper.
 func (ProxyPipe) Skip(ctx *context.Context) bool {
 	return ctx.ModulePath == "" || !ctx.Config.GoMod.Proxy || ctx.Snapshot
 }

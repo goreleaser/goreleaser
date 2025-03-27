@@ -1,4 +1,4 @@
-// Package zig implements the zig builder.
+// Package zig builds zig binaries.
 package zig
 
 import (

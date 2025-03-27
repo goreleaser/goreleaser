@@ -56,7 +56,6 @@ type skipper struct {
 
 func (s skipper) String() string { return "blah" }
 
-// Skip implements Skipper.
 func (s skipper) Skip(_ *context.Context) bool {
 	return s.skip
 }
@@ -68,7 +67,6 @@ type errSkipper struct {
 
 func (s errSkipper) String() string { return "blah" }
 
-// Skip implements ErrSkipper.
 func (s errSkipper) Skip(_ *context.Context) (bool, error) {
 	return s.skip, s.err
 }

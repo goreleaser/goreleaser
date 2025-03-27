@@ -59,25 +59,17 @@ func NewPublish() Pipe {
 	return Pipe{realHasher}
 }
 
-// Pipe nix pipe.
 type Pipe struct {
 	hasher fileHasher
 }
 
-func (Pipe) String() string { return "nixpkgs" }
-
-// ContinueOnError implements Continuable.
-func (Pipe) ContinueOnError() bool { return true }
-
-// Dependencies implements Healthchecker.
+func (Pipe) String() string                           { return "nixpkgs" }
+func (Pipe) ContinueOnError() bool                    { return true }
 func (Pipe) Dependencies(_ *context.Context) []string { return []string{"nix-hash"} }
-
-// Skip implements Skipper.
 func (p Pipe) Skip(ctx *context.Context) bool {
 	return skips.Any(ctx, skips.Nix) || len(ctx.Config.Nix) == 0 || !p.hasher.Available()
 }
 
-// Default sets the pipe defaults.
 func (Pipe) Default(ctx *context.Context) error {
 	for i := range ctx.Config.Nix {
 		nix := &ctx.Config.Nix[i]
@@ -101,7 +93,6 @@ func (Pipe) Default(ctx *context.Context) error {
 	return nil
 }
 
-// Run runs the pipe.
 func (p Pipe) Run(ctx *context.Context) error {
 	cli, err := client.NewReleaseClient(ctx)
 	if err != nil {
@@ -281,7 +272,7 @@ func preparePkg(
 		Version:      ctx.Version,
 		Install:      installs,
 		PostInstall:  postInstall,
-		Archives:     map[string]archive{},
+		Archives:     map[string]Archive{},
 		SourceRoots:  map[string]string{},
 		Description:  nix.Description,
 		Homepage:     nix.Homepage,
@@ -300,7 +291,7 @@ func preparePkg(
 		if err != nil {
 			return "", err
 		}
-		archive := archive{
+		archive := Archive{
 			URL: url,
 			Sha: sha,
 		}

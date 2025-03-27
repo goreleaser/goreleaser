@@ -1,4 +1,4 @@
-// Package logging provides a middleware that logs the action and its title.
+// Package logging contains logging middleware.
 package logging
 
 import (

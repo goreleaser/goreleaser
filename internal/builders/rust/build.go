@@ -1,4 +1,4 @@
-// Package rust implements the rust builder.
+// Package rust builds rust binaries.
 package rust
 
 import (

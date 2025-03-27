@@ -22,24 +22,20 @@ const (
 	defaultMessageTemplate = `{{ .ProjectName }} {{ .Tag }} is out! Check it out at {{ .ReleaseURL }}`
 )
 
-// Pipe announcer.
 type Pipe struct{}
 
 func (Pipe) String() string { return "discord" }
-
-// Skip implements Skipper.
 func (Pipe) Skip(ctx *context.Context) (bool, error) {
 	enable, err := tmpl.New(ctx).Bool(ctx.Config.Announce.Discord.Enabled)
 	return !enable, err
 }
 
-type envConfig struct {
+type Config struct {
 	API          string `env:"DISCORD_API" envDefault:"https://discord.com/api"`
 	WebhookID    string `env:"DISCORD_WEBHOOK_ID,notEmpty"`
 	WebhookToken string `env:"DISCORD_WEBHOOK_TOKEN,notEmpty"`
 }
 
-// Default implements Defaulter.
 func (p Pipe) Default(ctx *context.Context) error {
 	if ctx.Config.Announce.Discord.MessageTemplate == "" {
 		ctx.Config.Announce.Discord.MessageTemplate = defaultMessageTemplate
@@ -56,14 +52,13 @@ func (p Pipe) Default(ctx *context.Context) error {
 	return nil
 }
 
-// Announce implements Announcer.
 func (p Pipe) Announce(ctx *context.Context) error {
 	msg, err := tmpl.New(ctx).Apply(ctx.Config.Announce.Discord.MessageTemplate)
 	if err != nil {
 		return fmt.Errorf("discord: %w", err)
 	}
 
-	cfg, err := env.ParseAs[envConfig]()
+	cfg, err := env.ParseAs[Config]()
 	if err != nil {
 		return fmt.Errorf("discord: %w", err)
 	}
@@ -81,10 +76,10 @@ func (p Pipe) Announce(ctx *context.Context) error {
 	}
 	u = u.JoinPath("webhooks", cfg.WebhookID, cfg.WebhookToken)
 
-	bts, err := json.Marshal(webhookMessageCreate{
-		Embeds: []embed{
+	bts, err := json.Marshal(WebhookMessageCreate{
+		Embeds: []Embed{
 			{
-				Author: &embedAuthor{
+				Author: &EmbedAuthor{
 					Name:    ctx.Config.Announce.Discord.Author,
 					IconURL: ctx.Config.Announce.Discord.IconURL,
 				},
@@ -116,17 +111,17 @@ func (p Pipe) Announce(ctx *context.Context) error {
 	return nil
 }
 
-type webhookMessageCreate struct {
-	Embeds []embed `json:"embeds,omitempty"`
+type WebhookMessageCreate struct {
+	Embeds []Embed `json:"embeds,omitempty"`
 }
 
-type embed struct {
+type Embed struct {
 	Description string       `json:"description,omitempty"`
 	Color       int          `json:"color,omitempty"`
-	Author      *embedAuthor `json:"author,omitempty"`
+	Author      *EmbedAuthor `json:"author,omitempty"`
 }
 
-type embedAuthor struct {
+type EmbedAuthor struct {
 	Name    string `json:"name,omitempty"`
 	IconURL string `json:"icon_url,omitempty"`
 }

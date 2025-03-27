@@ -1,4 +1,3 @@
-// Package cmd is the goreleaser command line.
 package cmd
 
 import (
@@ -20,7 +19,6 @@ var (
 	codeStyle = lipgloss.NewStyle().Italic(true)
 )
 
-// Execute runs goreleaser.
 func Execute(version goversion.Info, exit func(int), args []string) {
 	newRootCmd(version, exit).Execute(args)
 }

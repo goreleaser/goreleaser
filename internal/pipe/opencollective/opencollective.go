@@ -1,4 +1,4 @@
-// Package opencollective announces the release on Open Collective.
+// Package opencollective announces the release to Open Collective.
 package opencollective
 
 import (
@@ -19,22 +19,19 @@ const (
 	endpoint               = "https://api.opencollective.com/graphql/v2"
 )
 
-// Pipe announcer.
 type Pipe struct{}
 
 func (Pipe) String() string { return "opencollective" }
 
-// Skip implements Skipper.
 func (Pipe) Skip(ctx *context.Context) (bool, error) {
 	enable, err := tmpl.New(ctx).Bool(ctx.Config.Announce.OpenCollective.Enabled)
 	return !enable || ctx.Config.Announce.OpenCollective.Slug == "", err
 }
 
-type envConfig struct {
+type Config struct {
 	Token string `env:"OPENCOLLECTIVE_TOKEN,notEmpty"`
 }
 
-// Default sets the pipe defaults.
 func (Pipe) Default(ctx *context.Context) error {
 	if ctx.Config.Announce.OpenCollective.TitleTemplate == "" {
 		ctx.Config.Announce.OpenCollective.TitleTemplate = defaultTitleTemplate
@@ -45,7 +42,6 @@ func (Pipe) Default(ctx *context.Context) error {
 	return nil
 }
 
-// Announce does the announcement.
 func (Pipe) Announce(ctx *context.Context) error {
 	title, err := tmpl.New(ctx).Apply(ctx.Config.Announce.OpenCollective.TitleTemplate)
 	if err != nil {
@@ -56,7 +52,7 @@ func (Pipe) Announce(ctx *context.Context) error {
 		return fmt.Errorf("opencollective: %w", err)
 	}
 
-	cfg, err := env.ParseAs[envConfig]()
+	cfg, err := env.ParseAs[Config]()
 	if err != nil {
 		return fmt.Errorf("opencollective: %w", err)
 	}

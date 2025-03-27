@@ -57,10 +57,8 @@ linters:
         - name: error-return
         - name: error-strings
         - name: errorf
-        - name: exported
         - name: increment-decrement
         - name: indent-error-flow
-        - name: package-comments
         - name: range
         - name: receiver-naming
         - name: redefines-builtin-id
@@ -71,6 +69,9 @@ linters:
         - name: unused-parameter
         - name: var-declaration
         - name: var-naming
+        # we are not providing an API anyway... maybe someday...
+        # - name: exported
+        # - name: package-comments
     staticcheck:
       checks:
         - all

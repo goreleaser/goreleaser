@@ -34,7 +34,6 @@ type Info struct {
 	URL         string
 }
 
-// Repo is a repository.
 type Repo struct {
 	Owner         string
 	Name          string
@@ -151,7 +150,6 @@ func newWithToken(ctx *context.Context, token string) (Client, error) {
 	}
 }
 
-// NewIfToken creates a new client if the given token is not empty.
 func NewIfToken(ctx *context.Context, cli Client, token string) (Client, error) {
 	if token == "" {
 		return cli, nil

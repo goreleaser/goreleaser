@@ -18,17 +18,14 @@ import (
 	"github.com/goreleaser/goreleaser/v2/pkg/context"
 )
 
-// MacOS notarizes macOS binaries/packages.
 type MacOS struct{}
 
 func (MacOS) String() string { return "sign & notarize macOS binaries" }
 
-// Skip implements Skipper.
 func (MacOS) Skip(ctx *context.Context) bool {
 	return skips.Any(ctx, skips.Notarize) || len(ctx.Config.Notarize.MacOS) == 0
 }
 
-// Default implements Defaulter.
 func (MacOS) Default(ctx *context.Context) error {
 	for i := range ctx.Config.Notarize.MacOS {
 		n := &ctx.Config.Notarize.MacOS[i]
@@ -42,7 +39,6 @@ func (MacOS) Default(ctx *context.Context) error {
 	return nil
 }
 
-// Run runs the pipe.
 func (MacOS) Run(ctx *context.Context) error {
 	g := semerrgroup.NewSkipAware(semerrgroup.New(ctx.Parallelism))
 	for _, cfg := range ctx.Config.Notarize.MacOS {
