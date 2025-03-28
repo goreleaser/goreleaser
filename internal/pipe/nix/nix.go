@@ -4,6 +4,7 @@ package nix
 import (
 	"bufio"
 	"bytes"
+	"cmp"
 	"errors"
 	"fmt"
 	"maps"
@@ -301,10 +302,7 @@ func preparePkg(
 			if _, ok := data.Archives[key]; ok {
 				return "", ErrMultipleArchivesSamePlatform
 			}
-			folder := artifact.ExtraOr(*art, artifact.ExtraWrappedIn, ".")
-			if folder == "" {
-				folder = "."
-			}
+			folder := cmp.Or(artifact.ExtraOr(*art, artifact.ExtraWrappedIn, ""), ".")
 			data.SourceRoots[key] = folder
 			data.Archives[key] = archive
 			plat := goosToPlatform[art.Goos+goarch+art.Goarm]
@@ -477,7 +475,7 @@ func installs(ctx *context.Context, nix config.Nix, art *artifact.Artifact) ([]s
 
 	result := []string{"mkdir -p $out/bin"}
 	binInstallFormat := binInstallFormats(nix)
-	for _, bin := range artifact.ExtraOr(*art, artifact.ExtraBinaries, []string{}) {
+	for _, bin := range artifact.MustExtra[[]string](*art, artifact.ExtraBinaries) {
 		for _, format := range binInstallFormat {
 			result = append(result, fmt.Sprintf(format, bin))
 		}

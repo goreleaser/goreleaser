@@ -473,7 +473,7 @@ func TestExtra(t *testing.T) {
 		binaries, err := Extra[[]string](a, "binaries")
 		require.NoError(t, err)
 		require.Equal(t, []string{"foo", "bar"}, binaries)
-		require.Equal(t, []string{"foo", "bar"}, ExtraOr(a, "binaries", []string{}))
+		require.Equal(t, []string{"foo", "bar"}, MustExtra[[]string](a, "binaries"))
 	})
 
 	t.Run("unmarshal error", func(t *testing.T) {

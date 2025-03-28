@@ -309,7 +309,7 @@ func dataFor(ctx *context.Context, cfg config.AURSource, cl client.ReleaseURLTem
 		result.Sources = sources{
 			DownloadURL: url,
 			SHA256:      sum,
-			Format:      artifact.ExtraOr(*art, artifact.ExtraFormat, ""),
+			Format:      art.Format(),
 		}
 	}
 

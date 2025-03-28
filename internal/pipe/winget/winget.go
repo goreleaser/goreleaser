@@ -406,7 +406,7 @@ func repoFileID(tp artifact.Type) string {
 func installerItemFilesFor(archive artifact.Artifact) []InstallerItemFile {
 	var files []InstallerItemFile
 	folder := artifact.ExtraOr(archive, artifact.ExtraWrappedIn, ".")
-	for _, bin := range artifact.ExtraOr(archive, artifact.ExtraBinaries, []string{}) {
+	for _, bin := range artifact.MustExtra[[]string](archive, artifact.ExtraBinaries) {
 		files = append(files, InstallerItemFile{
 			RelativeFilePath:     strings.ReplaceAll(filepath.Join(folder, bin), "/", "\\"),
 			PortableCommandAlias: strings.TrimSuffix(filepath.Base(bin), ".exe"),

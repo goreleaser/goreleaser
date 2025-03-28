@@ -214,8 +214,8 @@ func (a Artifact) String() string {
 //
 // If that fails as well, it'll error.
 func Extra[T any](a Artifact, key string) (T, error) {
-	ex := a.Extra[key]
-	if ex == nil {
+	ex, ok := a.Extra[key]
+	if ex == nil || !ok {
 		return *(new(T)), nil
 	}
 
@@ -226,7 +226,7 @@ func Extra[T any](a Artifact, key string) (T, error) {
 
 	bts, err := json.Marshal(ex)
 	if err != nil {
-		return t, err
+		return t, err // this should never happen in theory
 	}
 
 	decoder := json.NewDecoder(bytes.NewReader(bts))
@@ -235,12 +235,29 @@ func Extra[T any](a Artifact, key string) (T, error) {
 	return t, err
 }
 
+// MustExtra tries to get the extra field with the given name, returning either
+// its value or the default value for its type.
+//
+// If the extra value cannot be cast into the given type, it'll try to convert
+// it to JSON and unmarshal it back into the correct type after.
+//
+// If that fails as well, it'll panic.
+func MustExtra[T any](a Artifact, key string) T {
+	_, ok := a.Extra[key]
+	if !ok {
+		panic(key + " not present")
+	}
+	t, err := Extra[T](a, key)
+	if err != nil {
+		panic(err)
+	}
+	return t
+}
+
 // ExtraOr returns the Extra field with the given key or the or value specified
 // if it is nil.
-//
-// Deprecated: this is not guaranteed to work, prefer using [Extra].
 func ExtraOr[T any](a Artifact, key string, or T) T {
-	if a.Extra[key] == nil {
+	if _, ok := a.Extra[key]; !ok {
 		return or
 	}
 	return a.Extra[key].(T)
@@ -328,6 +345,11 @@ func (a Artifact) ID() string {
 // Format returns the artifact Format if it exists, empty otherwise.
 func (a Artifact) Format() string {
 	return ExtraOr(a, ExtraFormat, "")
+}
+
+// Ext returns the artifact Ext if it exists, empty otherwise.
+func (a Artifact) Ext() string {
+	return ExtraOr(a, ExtraExt, "")
 }
 
 // Artifacts is a list of artifacts.
@@ -556,8 +578,7 @@ func ByExt(exts ...string) Filter {
 	filters := make([]Filter, 0, len(exts))
 	for _, ext := range exts {
 		filters = append(filters, func(a *Artifact) bool {
-			actual := ExtraOr(*a, ExtraExt, "")
-			return strings.TrimPrefix(actual, ".") == strings.TrimPrefix(ext, ".")
+			return strings.TrimPrefix(a.Ext(), ".") == strings.TrimPrefix(ext, ".")
 		})
 	}
 	return Or(filters...)

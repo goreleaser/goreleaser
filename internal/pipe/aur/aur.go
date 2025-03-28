@@ -146,11 +146,11 @@ func doRun(ctx *context.Context, aur config.AUR, cl client.ReleaseURLTemplater) 
 		switch art.Type {
 		case artifact.UploadableBinary:
 			name := art.Name
-			bin := artifact.ExtraOr(*art, artifact.ExtraBinary, art.Name)
+			bin := artifact.MustExtra[string](*art, artifact.ExtraBinary)
 			pkg = fmt.Sprintf(`install -Dm755 "./%s "${pkgdir}/usr/bin/%s"`, name, bin)
 		case artifact.UploadableArchive:
 			folder := artifact.ExtraOr(*art, artifact.ExtraWrappedIn, ".")
-			for _, bin := range artifact.ExtraOr(*art, artifact.ExtraBinaries, []string{}) {
+			for _, bin := range artifact.MustExtra[[]string](*art, artifact.ExtraBinaries) {
 				path := filepath.ToSlash(filepath.Clean(filepath.Join(folder, bin)))
 				pkg = fmt.Sprintf(`install -Dm755 "./%s" "${pkgdir}/usr/bin/%s"`, path, bin)
 				break
@@ -345,7 +345,7 @@ func dataFor(ctx *context.Context, cfg config.AUR, cl client.ReleaseURLTemplater
 			DownloadURL: url,
 			SHA256:      sum,
 			Arch:        toPkgBuildArch(art.Goarch + art.Goarm),
-			Format:      artifact.ExtraOr(*art, artifact.ExtraFormat, ""),
+			Format:      art.Format(),
 		}
 		result.ReleasePackages = append(result.ReleasePackages, releasePackage)
 		result.Arches = append(result.Arches, releasePackage.Arch)
