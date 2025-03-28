@@ -273,11 +273,7 @@ func (p Pipe) publishAll(ctx *context.Context, cli client.Client) error {
 }
 
 func doPublish(ctx *context.Context, cl client.Client, wingets []*artifact.Artifact) error {
-	winget, err := artifact.Extra[config.Winget](*wingets[0], wingetConfigExtra)
-	if err != nil {
-		return err
-	}
-
+	winget := artifact.MustExtra[config.Winget](*wingets[0], wingetConfigExtra)
 	if strings.TrimSpace(winget.SkipUpload) == "true" {
 		return errSkipUpload
 	}
@@ -406,7 +402,7 @@ func repoFileID(tp artifact.Type) string {
 func installerItemFilesFor(archive artifact.Artifact) []InstallerItemFile {
 	var files []InstallerItemFile
 	folder := artifact.ExtraOr(archive, artifact.ExtraWrappedIn, ".")
-	for _, bin := range artifact.ExtraOr(archive, artifact.ExtraBinaries, []string{}) {
+	for _, bin := range artifact.MustExtra[[]string](archive, artifact.ExtraBinaries) {
 		files = append(files, InstallerItemFile{
 			RelativeFilePath:     strings.ReplaceAll(filepath.Join(folder, bin), "/", "\\"),
 			PortableCommandAlias: strings.TrimSuffix(filepath.Base(bin), ".exe"),
@@ -459,18 +455,19 @@ func makeInstaller(ctx *context.Context, winget config.Winget, archives []*artif
 			InstallerSha256: sha256,
 			UpgradeBehavior: "uninstallPrevious",
 		}
-		if archive.Format() == "zip" {
+		switch archive.Type {
+		case artifact.UploadableArchive:
+			if archive.Format() != "zip" {
+				continue
+			}
 			zipCount++
 			installer.InstallerType = "zip"
 			item.NestedInstallerType = "portable"
 			item.NestedInstallerFiles = installerItemFilesFor(*archive)
-		} else {
+		case artifact.UploadableBinary:
 			binaryCount++
 			installer.InstallerType = "portable"
-			cmd, err := artifact.Extra[string](*archive, artifact.ExtraBinary)
-			if err != nil {
-				cmd = winget.Name
-			}
+			cmd := artifact.MustExtra[string](*archive, artifact.ExtraBinary)
 			installer.Commands = []string{cmd}
 		}
 		installer.Installers = append(installer.Installers, item)

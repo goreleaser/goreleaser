@@ -4,6 +4,7 @@ package nix
 import (
 	"bufio"
 	"bytes"
+	"cmp"
 	"errors"
 	"fmt"
 	"maps"
@@ -301,10 +302,7 @@ func preparePkg(
 			if _, ok := data.Archives[key]; ok {
 				return "", ErrMultipleArchivesSamePlatform
 			}
-			folder := artifact.ExtraOr(*art, artifact.ExtraWrappedIn, ".")
-			if folder == "" {
-				folder = "."
-			}
+			folder := cmp.Or(artifact.ExtraOr(*art, artifact.ExtraWrappedIn, ""), ".")
 			data.SourceRoots[key] = folder
 			data.Archives[key] = archive
 			plat := goosToPlatform[art.Goos+goarch+art.Goarm]
@@ -342,11 +340,7 @@ var goosToPlatform = map[string]string{
 }
 
 func doPublish(ctx *context.Context, hasher fileHasher, cl client.Client, pkg *artifact.Artifact) error {
-	nix, err := artifact.Extra[config.Nix](*pkg, nixConfigExtra)
-	if err != nil {
-		return err
-	}
-
+	nix := artifact.MustExtra[config.Nix](*pkg, nixConfigExtra)
 	if strings.TrimSpace(nix.SkipUpload) == "true" {
 		return errSkipUpload
 	}
@@ -477,7 +471,7 @@ func installs(ctx *context.Context, nix config.Nix, art *artifact.Artifact) ([]s
 
 	result := []string{"mkdir -p $out/bin"}
 	binInstallFormat := binInstallFormats(nix)
-	for _, bin := range artifact.ExtraOr(*art, artifact.ExtraBinaries, []string{}) {
+	for _, bin := range artifact.MustExtra[[]string](*art, artifact.ExtraBinaries) {
 		for _, format := range binInstallFormat {
 			result = append(result, fmt.Sprintf(format, bin))
 		}

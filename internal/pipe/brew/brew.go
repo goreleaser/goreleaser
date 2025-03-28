@@ -121,11 +121,7 @@ func publishAll(ctx *context.Context, cli client.Client) error {
 }
 
 func doPublish(ctx *context.Context, formula *artifact.Artifact, cl client.Client) error {
-	brew, err := artifact.Extra[config.Homebrew](*formula, brewConfigExtra)
-	if err != nil {
-		return err
-	}
-
+	brew := artifact.MustExtra[config.Homebrew](*formula, brewConfigExtra)
 	if strings.TrimSpace(brew.SkipUpload) == "true" {
 		return pipe.Skip("brew.skip_upload is set")
 	}
@@ -371,10 +367,10 @@ func installs(ctx *context.Context, cfg config.Homebrew, art *artifact.Artifact)
 	switch art.Type {
 	case artifact.UploadableBinary:
 		name := art.Name
-		bin := artifact.ExtraOr(*art, artifact.ExtraBinary, art.Name)
+		bin := artifact.MustExtra[string](*art, artifact.ExtraBinary)
 		installMap[fmt.Sprintf("bin.install %q => %q", name, bin)] = true
 	case artifact.UploadableArchive:
-		for _, bin := range artifact.ExtraOr(*art, artifact.ExtraBinaries, []string{}) {
+		for _, bin := range artifact.MustExtra[[]string](*art, artifact.ExtraBinaries) {
 			installMap[fmt.Sprintf("bin.install %q", bin)] = true
 		}
 	}

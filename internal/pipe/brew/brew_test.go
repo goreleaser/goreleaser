@@ -361,8 +361,9 @@ func TestFullPipe(t *testing.T) {
 				Goamd64: "v1",
 				Type:    artifact.UploadableArchive,
 				Extra: map[string]any{
-					artifact.ExtraID:     "bar",
-					artifact.ExtraFormat: "tar.gz",
+					artifact.ExtraID:       "bar",
+					artifact.ExtraFormat:   "tar.gz",
+					artifact.ExtraBinaries: []string{"bar"},
 				},
 			})
 			path := filepath.Join(folder, "bin.tar.gz")
@@ -374,8 +375,9 @@ func TestFullPipe(t *testing.T) {
 				Goamd64: "v1",
 				Type:    artifact.UploadableArchive,
 				Extra: map[string]any{
-					artifact.ExtraID:     "foo",
-					artifact.ExtraFormat: "tar.gz",
+					artifact.ExtraID:       "foo",
+					artifact.ExtraFormat:   "tar.gz",
+					artifact.ExtraBinaries: []string{"foo"},
 				},
 			})
 			ctx.Artifacts.Add(&artifact.Artifact{
@@ -385,8 +387,9 @@ func TestFullPipe(t *testing.T) {
 				Goarch: "arm64",
 				Type:   artifact.UploadableArchive,
 				Extra: map[string]any{
-					artifact.ExtraID:     "foo",
-					artifact.ExtraFormat: "tar.gz",
+					artifact.ExtraID:       "foo",
+					artifact.ExtraFormat:   "tar.gz",
+					artifact.ExtraBinaries: []string{"foo"},
 				},
 			})
 			ctx.Artifacts.Add(&artifact.Artifact{
@@ -397,8 +400,9 @@ func TestFullPipe(t *testing.T) {
 				Goamd64: "v1",
 				Type:    artifact.UploadableArchive,
 				Extra: map[string]any{
-					artifact.ExtraID:     "foo",
-					artifact.ExtraFormat: "tar.gz",
+					artifact.ExtraID:       "foo",
+					artifact.ExtraFormat:   "tar.gz",
+					artifact.ExtraBinaries: []string{"foo"},
 				},
 			})
 
@@ -488,8 +492,9 @@ func TestRunPipeNameTemplate(t *testing.T) {
 		Goamd64: "v1",
 		Type:    artifact.UploadableArchive,
 		Extra: map[string]any{
-			artifact.ExtraID:     "foo",
-			artifact.ExtraFormat: "tar.gz",
+			artifact.ExtraID:       "foo",
+			artifact.ExtraFormat:   "tar.gz",
+			artifact.ExtraBinaries: []string{"foo"},
 		},
 	})
 
@@ -580,8 +585,9 @@ func TestRunPipeMultipleBrewsWithSkip(t *testing.T) {
 		Goamd64: "v1",
 		Type:    artifact.UploadableArchive,
 		Extra: map[string]any{
-			artifact.ExtraID:     "foo",
-			artifact.ExtraFormat: "tar.gz",
+			artifact.ExtraID:       "foo",
+			artifact.ExtraFormat:   "tar.gz",
+			artifact.ExtraBinaries: []string{"foo"},
 		},
 	})
 
@@ -701,8 +707,9 @@ func TestRunPipeForMultipleAmd64Versions(t *testing.T) {
 					Goamd64: a.goamd64,
 					Type:    artifact.UploadableArchive,
 					Extra: map[string]any{
-						artifact.ExtraID:     a.name,
-						artifact.ExtraFormat: "tar.gz",
+						artifact.ExtraID:       a.name,
+						artifact.ExtraFormat:   "tar.gz",
+						artifact.ExtraBinaries: []string{a.name},
 					},
 				})
 				f, err := os.Create(path)
@@ -822,8 +829,9 @@ func TestRunPipeForMultipleArmVersions(t *testing.T) {
 					Goarm:  a.goarm,
 					Type:   artifact.UploadableArchive,
 					Extra: map[string]any{
-						artifact.ExtraID:     a.name,
-						artifact.ExtraFormat: "tar.gz",
+						artifact.ExtraID:       a.name,
+						artifact.ExtraFormat:   "tar.gz",
+						artifact.ExtraBinaries: []string{a.name},
 					},
 				})
 				f, err := os.Create(path)
@@ -999,8 +1007,9 @@ func TestRunPipeMultipleArchivesSameOsBuild(t *testing.T) {
 				Goarch: ttt.goarch,
 				Type:   artifact.UploadableArchive,
 				Extra: map[string]any{
-					artifact.ExtraID:     fmt.Sprintf("foo%d", idx),
-					artifact.ExtraFormat: "tar.gz",
+					artifact.ExtraID:       fmt.Sprintf("foo%d", idx),
+					artifact.ExtraFormat:   "tar.gz",
+					artifact.ExtraBinaries: []string{"foo"},
 				},
 			})
 		}
@@ -1143,8 +1152,9 @@ func TestRunPipeNoUpload(t *testing.T) {
 		Goamd64: "v1",
 		Type:    artifact.UploadableArchive,
 		Extra: map[string]any{
-			artifact.ExtraID:     "foo",
-			artifact.ExtraFormat: "tar.gz",
+			artifact.ExtraID:       "foo",
+			artifact.ExtraFormat:   "tar.gz",
+			artifact.ExtraBinaries: []string{"foo"},
 		},
 	})
 	client := client.NewMock()
@@ -1200,8 +1210,9 @@ func TestRunEmptyTokenType(t *testing.T) {
 		Goamd64: "v1",
 		Type:    artifact.UploadableArchive,
 		Extra: map[string]any{
-			artifact.ExtraID:     "foo",
-			artifact.ExtraFormat: "tar.gz",
+			artifact.ExtraID:       "foo",
+			artifact.ExtraFormat:   "tar.gz",
+			artifact.ExtraBinaries: []string{"foo"},
 		},
 	})
 	client := client.NewMock()

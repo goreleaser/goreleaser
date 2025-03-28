@@ -150,14 +150,28 @@ func Test_doRun(t *testing.T) {
 				client.NewMock(),
 			},
 			[]artifact.Artifact{
-				{Name: "foo_1.0.1_windows_amd64.tar.gz", Goos: "windows", Goarch: "amd64", Goamd64: "v1", Path: file, Extra: map[string]any{
-					artifact.ExtraID:       "id1",
-					artifact.ExtraBinaries: []string{"bin1", "bin2"},
-				}},
-				{Name: "foos_1.0.1_windows_amd64.tar.gz", Goos: "windows", Goarch: "amd64", Goamd64: "v1", Path: file, Extra: map[string]any{
-					artifact.ExtraID:       "id2",
-					artifact.ExtraBinaries: []string{"bin4", "bin3"},
-				}},
+				{
+					Name:    "foo_1.0.1_windows_amd64.tar.gz",
+					Goos:    "windows",
+					Goarch:  "amd64",
+					Goamd64: "v1",
+					Path:    file,
+					Extra: map[string]any{
+						artifact.ExtraID:       "id1",
+						artifact.ExtraBinaries: []string{"bin1", "bin2"},
+					},
+				},
+				{
+					Name:    "foos_1.0.1_windows_amd64.tar.gz",
+					Goos:    "windows",
+					Goarch:  "amd64",
+					Goamd64: "v1",
+					Path:    file,
+					Extra: map[string]any{
+						artifact.ExtraID:       "id2",
+						artifact.ExtraBinaries: []string{"bin4", "bin3"},
+					},
+				},
 			},
 			shouldNotErr,
 			shouldNotErr,
@@ -193,8 +207,25 @@ func Test_doRun(t *testing.T) {
 				client.NewMock(),
 			},
 			[]artifact.Artifact{
-				{Name: "foo_1.0.1_windows_amd64.tar.gz", Goos: "windows", Goarch: "amd64", Goamd64: "v1", Path: file},
-				{Name: "foo_1.0.1_windows_386.tar.gz", Goos: "windows", Goarch: "386", Path: file},
+				{
+					Name:    "foo_1.0.1_windows_amd64.tar.gz",
+					Goos:    "windows",
+					Goarch:  "amd64",
+					Goamd64: "v1",
+					Path:    file,
+					Extra: map[string]any{
+						artifact.ExtraBinaries: []string{"foo"},
+					},
+				},
+				{
+					Name:   "foo_1.0.1_windows_386.tar.gz",
+					Goos:   "windows",
+					Goarch: "386",
+					Path:   file,
+					Extra: map[string]any{
+						artifact.ExtraBinaries: []string{"foo"},
+					},
+				},
 			},
 			shouldNotErr,
 			shouldNotErr,
@@ -234,8 +265,25 @@ func Test_doRun(t *testing.T) {
 				client.NewMock(),
 			},
 			[]artifact.Artifact{
-				{Name: "foo_1.0.1_windows_amd64.tar.gz", Goos: "windows", Goarch: "amd64", Goamd64: "v1", Path: file},
-				{Name: "foo_1.0.1_windows_386.tar.gz", Goos: "windows", Goarch: "386", Path: file},
+				{
+					Name:    "foo_1.0.1_windows_amd64.tar.gz",
+					Goos:    "windows",
+					Goarch:  "amd64",
+					Goamd64: "v1",
+					Path:    file,
+					Extra: map[string]any{
+						artifact.ExtraBinaries: []string{"foo"},
+					},
+				},
+				{
+					Name:   "foo_1.0.1_windows_386.tar.gz",
+					Goos:   "windows",
+					Goarch: "386",
+					Path:   file,
+					Extra: map[string]any{
+						artifact.ExtraBinaries: []string{"foo"},
+					},
+				},
 			},
 			shouldNotErr,
 			shouldNotErr,
@@ -281,7 +329,8 @@ func Test_doRun(t *testing.T) {
 					Goamd64: "v1",
 					Path:    file,
 					Extra: map[string]any{
-						"Wrap": "foo_1.0.1_windows_amd64",
+						artifact.ExtraWrappedIn: "foo_1.0.1_windows_amd64",
+						artifact.ExtraBinaries:  []string{"foo"},
 					},
 				},
 				{
@@ -290,7 +339,8 @@ func Test_doRun(t *testing.T) {
 					Goarch: "386",
 					Path:   file,
 					Extra: map[string]any{
-						"Wrap": "foo_1.0.1_windows_386",
+						artifact.ExtraWrappedIn: "foo_1.0.1_windows_386",
+						artifact.ExtraBinaries:  []string{"foo"},
 					},
 				},
 			},
@@ -323,8 +373,25 @@ func Test_doRun(t *testing.T) {
 				client.NewMock(),
 			},
 			[]artifact.Artifact{
-				{Name: "foo_1.0.1_windows_amd64.tar.gz", Goos: "windows", Goarch: "amd64", Goamd64: "v1", Path: file},
-				{Name: "foo_1.0.1_windows_386.tar.gz", Goos: "windows", Goarch: "386", Path: file},
+				{
+					Name:    "foo_1.0.1_windows_amd64.tar.gz",
+					Goos:    "windows",
+					Goarch:  "amd64",
+					Goamd64: "v1",
+					Path:    file,
+					Extra: map[string]any{
+						artifact.ExtraBinaries: []string{"foo"},
+					},
+				},
+				{
+					Name:   "foo_1.0.1_windows_386.tar.gz",
+					Goos:   "windows",
+					Goarch: "386",
+					Path:   file,
+					Extra: map[string]any{
+						artifact.ExtraBinaries: []string{"foo"},
+					},
+				},
 			},
 			shouldNotErr,
 			shouldNotErr,
@@ -363,12 +430,18 @@ func Test_doRun(t *testing.T) {
 					Goarch:  "amd64",
 					Goamd64: "v1",
 					Path:    file,
+					Extra: map[string]any{
+						artifact.ExtraBinaries: []string{"foo"},
+					},
 				},
 				{
 					Name:   "foo_1.0.1_windows_386.tar.gz",
 					Goos:   "windows",
 					Goarch: "386",
 					Path:   file,
+					Extra: map[string]any{
+						artifact.ExtraBinaries: []string{"foo"},
+					},
 				},
 			},
 			shouldNotErr,
@@ -406,12 +479,18 @@ func Test_doRun(t *testing.T) {
 					Goarch:  "amd64",
 					Goamd64: "v1",
 					Path:    file,
+					Extra: map[string]any{
+						artifact.ExtraBinaries: []string{"foo"},
+					},
 				},
 				{
 					Name:   "foo_1.0.1_windows_386.tar.gz",
 					Goos:   "windows",
 					Goarch: "386",
 					Path:   file,
+					Extra: map[string]any{
+						artifact.ExtraBinaries: []string{"foo"},
+					},
 				},
 			},
 			shouldNotErr,
@@ -472,8 +551,25 @@ func Test_doRun(t *testing.T) {
 				client.NewMock(),
 			},
 			[]artifact.Artifact{
-				{Name: "foo_1.0.1-pre.1_windows_amd64.tar.gz", Goos: "windows", Goarch: "amd64", Goamd64: "v1", Path: file},
-				{Name: "foo_1.0.1-pre.1_windows_386.tar.gz", Goos: "windows", Goarch: "386", Path: file},
+				{
+					Name:    "foo_1.0.1-pre.1_windows_amd64.tar.gz",
+					Goos:    "windows",
+					Goarch:  "amd64",
+					Goamd64: "v1",
+					Path:    file,
+					Extra: map[string]any{
+						artifact.ExtraBinaries: []string{"foo"},
+					},
+				},
+				{
+					Name:   "foo_1.0.1-pre.1_windows_386.tar.gz",
+					Goos:   "windows",
+					Goarch: "386",
+					Path:   file,
+					Extra: map[string]any{
+						artifact.ExtraBinaries: []string{"foo"},
+					},
+				},
 			},
 			shouldNotErr,
 			shouldErr("release is prerelease"),
@@ -504,8 +600,25 @@ func Test_doRun(t *testing.T) {
 				client.NewMock(),
 			},
 			[]artifact.Artifact{
-				{Name: "foo_1.0.1-pre.1_windows_amd64.tar.gz", Goos: "windows", Goarch: "amd64", Goamd64: "v1", Path: file},
-				{Name: "foo_1.0.1-pre.1_windows_386.tar.gz", Goos: "windows", Goarch: "386", Path: file},
+				{
+					Name:    "foo_1.0.1-pre.1_windows_amd64.tar.gz",
+					Goos:    "windows",
+					Goarch:  "amd64",
+					Goamd64: "v1",
+					Path:    file,
+					Extra: map[string]any{
+						artifact.ExtraBinaries: []string{"foo"},
+					},
+				},
+				{
+					Name:   "foo_1.0.1-pre.1_windows_386.tar.gz",
+					Goos:   "windows",
+					Goarch: "386",
+					Path:   file,
+					Extra: map[string]any{
+						artifact.ExtraBinaries: []string{"foo"},
+					},
+				},
 			},
 			shouldNotErr,
 			shouldErr("scoop.skip_upload is true"),
@@ -680,7 +793,16 @@ func Test_doRun(t *testing.T) {
 				client.NewMock(),
 			},
 			[]artifact.Artifact{
-				{Name: "foo_1.0.1-pre.1_windows_amd64.tar.gz", Goos: "windows", Goarch: "amd64", Goamd64: "v1", Path: file},
+				{
+					Name:    "foo_1.0.1-pre.1_windows_amd64.tar.gz",
+					Goos:    "windows",
+					Goarch:  "amd64",
+					Goamd64: "v1",
+					Path:    file,
+					Extra: map[string]any{
+						artifact.ExtraBinaries: []string{"foo"},
+					},
+				},
 			},
 			testlib.RequireTemplateError,
 			shouldNotErr,
@@ -711,7 +833,16 @@ func Test_doRun(t *testing.T) {
 				client.NewMock(),
 			},
 			[]artifact.Artifact{
-				{Name: "foo_1.0.1_windows_amd64.tar.gz", Goos: "windows", Goarch: "amd64", Goamd64: "v1", Path: file},
+				{
+					Name:    "foo_1.0.1_windows_amd64.tar.gz",
+					Goos:    "windows",
+					Goarch:  "amd64",
+					Goamd64: "v1",
+					Path:    file,
+					Extra: map[string]any{
+						artifact.ExtraBinaries: []string{"foo"},
+					},
+				},
 			},
 			shouldNotErr,
 			shouldNotErr,
@@ -771,9 +902,9 @@ func TestRunPipePullRequest(t *testing.T) {
 		Goarch: "amd64",
 		Type:   artifact.UploadableArchive,
 		Extra: map[string]any{
-			artifact.ExtraID:     "foo",
-			artifact.ExtraFormat: "tar.gz",
-			artifact.ExtraBinary: "foo",
+			artifact.ExtraID:       "foo",
+			artifact.ExtraFormat:   "tar.gz",
+			artifact.ExtraBinaries: []string{"foo"},
 		},
 	})
 
@@ -1022,8 +1153,9 @@ func getScoopPipeSkipCtx(directory string) (*context.Context, string) {
 		Goamd64: "v1",
 		Type:    artifact.UploadableArchive,
 		Extra: map[string]any{
-			artifact.ExtraID:     "foo",
-			artifact.ExtraFormat: "tar.gz",
+			artifact.ExtraID:       "foo",
+			artifact.ExtraFormat:   "tar.gz",
+			artifact.ExtraBinaries: []string{"foo"},
 		},
 	})
 	ctx.Artifacts.Add(&artifact.Artifact{
@@ -1034,8 +1166,9 @@ func getScoopPipeSkipCtx(directory string) (*context.Context, string) {
 		Goamd64: "v3",
 		Type:    artifact.UploadableArchive,
 		Extra: map[string]any{
-			artifact.ExtraID:     "foo",
-			artifact.ExtraFormat: "tar.gz",
+			artifact.ExtraID:       "foo",
+			artifact.ExtraFormat:   "tar.gz",
+			artifact.ExtraBinaries: []string{"foo"},
 		},
 	})
 

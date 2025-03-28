@@ -60,6 +60,6 @@ func TestRun(t *testing.T) {
 	require.NoError(t, Pipe{}.Run(ctx))
 
 	for _, art := range ctx.Artifacts.List() {
-		require.NotZero(t, artifact.ExtraOr[int64](*art, artifact.ExtraSize, 0))
+		require.NotZero(t, artifact.MustExtra[int64](*art, artifact.ExtraSize))
 	}
 }
