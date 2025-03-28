@@ -444,46 +444,57 @@ func TestExtra(t *testing.T) {
 			"fail-plz": config.Homebrew{
 				Service: "aaaa",
 			},
-			"unsupported": func() {},
-			"binaries":    []string{"foo", "bar"},
+			"unsupported":      func() {},
+			"binaries":         []string{"foo", "bar"},
+			"docker_unmarshal": map[string]any{"id": "foo"}, // this is what it would look like loading from json
 		},
 	}
 
 	t.Run("string", func(t *testing.T) {
-		foo, err := Extra[string](a, "Foo")
-		require.NoError(t, err)
+		foo := MustExtra[string](a, "Foo")
 		require.Equal(t, "foo", foo)
 		require.Equal(t, "foo", ExtraOr(a, "Foo", "bar"))
 	})
 
 	t.Run("missing field", func(t *testing.T) {
-		bar, err := Extra[string](a, "Foobar")
-		require.NoError(t, err)
-		require.Empty(t, bar)
 		require.Equal(t, "bar", ExtraOr(a, "Foobar", "bar"))
+		require.PanicsWithValue(t, "Foobar not present", func() {
+			MustExtra[string](a, "Foobar")
+		})
 	})
 
 	t.Run("complex", func(t *testing.T) {
-		docker, err := Extra[config.Docker](a, "docker")
-		require.NoError(t, err)
+		docker := MustExtra[config.Docker](a, "docker")
 		require.Equal(t, "id", docker.ID)
 	})
 
 	t.Run("array", func(t *testing.T) {
-		binaries, err := Extra[[]string](a, "binaries")
-		require.NoError(t, err)
-		require.Equal(t, []string{"foo", "bar"}, binaries)
+		require.Equal(t, []string{"foo", "bar"}, ExtraOr(a, "binaries", []string{}))
 		require.Equal(t, []string{"foo", "bar"}, MustExtra[[]string](a, "binaries"))
 	})
 
+	t.Run("unmarshal complex", func(t *testing.T) {
+		expected := config.Docker{ID: "foo"}
+		require.Equal(t, expected, ExtraOr(a, "docker_unmarshal", config.Docker{}))
+		require.Equal(t, expected, MustExtra[config.Docker](a, "docker_unmarshal"))
+	})
+
 	t.Run("unmarshal error", func(t *testing.T) {
-		_, err := Extra[config.Docker](a, "fail-plz")
-		require.EqualError(t, err, "json: unknown field \"repository\"")
+		require.PanicsWithError(t, "json: unknown field \"repository\"", func() {
+			MustExtra[config.Docker](a, "fail-plz")
+		})
+		require.PanicsWithError(t, "json: unknown field \"repository\"", func() {
+			ExtraOr(a, "fail-plz", config.Docker{})
+		})
 	})
 
 	t.Run("marshal error", func(t *testing.T) {
-		_, err := Extra[config.Docker](a, "unsupported")
-		require.EqualError(t, err, "json: unsupported type: func()")
+		require.PanicsWithError(t, "json: unsupported type: func()", func() {
+			MustExtra[string](a, "unsupported")
+		})
+		require.PanicsWithError(t, "json: unsupported type: func()", func() {
+			ExtraOr(a, "unsupported", "")
+		})
 	})
 }
 

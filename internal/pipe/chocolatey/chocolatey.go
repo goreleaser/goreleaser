@@ -181,11 +181,7 @@ func doRun(ctx *context.Context, cl client.ReleaseURLTemplater, choco config.Cho
 }
 
 func doPush(ctx *context.Context, art *artifact.Artifact) error {
-	choco, err := artifact.Extra[config.Chocolatey](*art, chocoConfigExtra)
-	if err != nil {
-		return err
-	}
-
+	choco := artifact.MustExtra[config.Chocolatey](*art, chocoConfigExtra)
 	key, err := tmpl.New(ctx).Apply(choco.APIKey)
 	if err != nil {
 		return err

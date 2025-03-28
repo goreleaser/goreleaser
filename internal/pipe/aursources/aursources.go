@@ -340,11 +340,7 @@ func (Pipe) Publish(ctx *context.Context) error {
 }
 
 func doPublish(ctx *context.Context, pkgs []*artifact.Artifact) error {
-	cfg, err := artifact.Extra[config.AURSource](*pkgs[0], aurExtra)
-	if err != nil {
-		return err
-	}
-
+	cfg := artifact.MustExtra[config.AURSource](*pkgs[0], aurExtra)
 	if strings.TrimSpace(cfg.SkipUpload) == "true" {
 		return pipe.Skip("aur.skip_upload is set")
 	}

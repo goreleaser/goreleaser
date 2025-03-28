@@ -284,11 +284,7 @@ func publishAll(ctx *context.Context, cli client.Client) error {
 }
 
 func doPublish(ctx *context.Context, manifest *artifact.Artifact, cl client.Client) error {
-	cfg, err := artifact.Extra[config.Krew](*manifest, krewConfigExtra)
-	if err != nil {
-		return err
-	}
-
+	cfg := artifact.MustExtra[config.Krew](*manifest, krewConfigExtra)
 	if strings.TrimSpace(cfg.SkipUpload) == "true" {
 		return pipe.Skip("krews.skip_upload is set")
 	}

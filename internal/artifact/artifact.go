@@ -206,61 +206,56 @@ func (a Artifact) String() string {
 	return a.Name
 }
 
-// Extra tries to get the extra field with the given name, returning either
-// its value, the default value for its type, or an error.
+// mustCastExtra tries to cast the given type into T.
 //
 // If the extra value cannot be cast into the given type, it'll try to convert
 // it to JSON and unmarshal it into the correct type after.
 //
 // If that fails as well, it'll error.
-func Extra[T any](a Artifact, key string) (T, error) {
-	ex, ok := a.Extra[key]
-	if ex == nil || !ok {
-		return *(new(T)), nil
-	}
-
+func mustCastExtra[T any](ex any) T {
 	t, ok := ex.(T)
 	if ok {
-		return t, nil
+		return t
 	}
 
 	bts, err := json.Marshal(ex)
 	if err != nil {
-		return t, err // this should never happen in theory
+		panic(err) // this should never happen in theory
 	}
 
 	decoder := json.NewDecoder(bytes.NewReader(bts))
 	decoder.DisallowUnknownFields()
-	err = decoder.Decode(&t)
-	return t, err
-}
-
-// MustExtra tries to get the extra field with the given name, returning either
-// its value or the default value for its type.
-//
-// If the extra value cannot be cast into the given type, it'll try to convert
-// it to JSON and unmarshal it back into the correct type after.
-//
-// If that fails as well, it'll panic.
-func MustExtra[T any](a Artifact, key string) T {
-	_, ok := a.Extra[key]
-	if !ok {
-		panic(key + " not present")
-	}
-	t, err := Extra[T](a, key)
-	if err != nil {
+	if err := decoder.Decode(&t); err != nil {
 		panic(err)
 	}
 	return t
 }
 
+// MustExtra tries to get the extra field with the given name, returning its
+// value or panicking.
+//
+// If the value cannot be cast into the given type, it'll panic.
+func MustExtra[T any](a Artifact, key string) T {
+	got, ok := a.Extra[key]
+	if !ok {
+		panic(key + " not present")
+	}
+	return mustCastExtra[T](got)
+}
+
 // ExtraOr returns the Extra field with the given key or the or value specified
 // if it is nil.
+//
+// This should only be used in places where the key might or might not be
+// present.
+//
+// If the value cannot be cast into the given type, it'll panic.
 func ExtraOr[T any](a Artifact, key string, or T) T {
-	if _, ok := a.Extra[key]; !ok {
+	got, ok := a.Extra[key]
+	if !ok {
 		return or
 	}
-	return a.Extra[key].(T)
+	return mustCastExtra[T](got)
 }
 
 // Checksum calculates the checksum of the artifact.

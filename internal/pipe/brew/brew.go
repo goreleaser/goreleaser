@@ -121,11 +121,7 @@ func publishAll(ctx *context.Context, cli client.Client) error {
 }
 
 func doPublish(ctx *context.Context, formula *artifact.Artifact, cl client.Client) error {
-	brew, err := artifact.Extra[config.Homebrew](*formula, brewConfigExtra)
-	if err != nil {
-		return err
-	}
-
+	brew := artifact.MustExtra[config.Homebrew](*formula, brewConfigExtra)
 	if strings.TrimSpace(brew.SkipUpload) == "true" {
 		return pipe.Skip("brew.skip_upload is set")
 	}

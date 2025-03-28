@@ -1076,8 +1076,7 @@ func TestRunPipe(t *testing.T) {
 						artifact.ByType(artifact.DockerManifest),
 					),
 				).Visit(func(a *artifact.Artifact) error {
-					digest, err := artifact.Extra[string](*a, artifact.ExtraDigest)
-					require.NoError(t, err)
+					digest := artifact.MustExtra[string](*a, artifact.ExtraDigest)
 					require.NotEmpty(t, digest, "missing digest for "+a.Name)
 					return nil
 				})

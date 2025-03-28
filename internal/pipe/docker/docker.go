@@ -301,11 +301,7 @@ func processBuildFlagTemplates(ctx *context.Context, docker config.Docker) ([]st
 func dockerPush(ctx *context.Context, image *artifact.Artifact) error {
 	log.WithField("image", image.Name).Info("pushing")
 
-	docker, err := artifact.Extra[config.Docker](*image, dockerConfigExtra)
-	if err != nil {
-		return err
-	}
-
+	docker := artifact.MustExtra[config.Docker](*image, dockerConfigExtra)
 	skip, err := tmpl.New(ctx).Apply(docker.SkipPush)
 	if err != nil {
 		return err

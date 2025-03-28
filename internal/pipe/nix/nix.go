@@ -340,11 +340,7 @@ var goosToPlatform = map[string]string{
 }
 
 func doPublish(ctx *context.Context, hasher fileHasher, cl client.Client, pkg *artifact.Artifact) error {
-	nix, err := artifact.Extra[config.Nix](*pkg, nixConfigExtra)
-	if err != nil {
-		return err
-	}
-
+	nix := artifact.MustExtra[config.Nix](*pkg, nixConfigExtra)
 	if strings.TrimSpace(nix.SkipUpload) == "true" {
 		return errSkipUpload
 	}
