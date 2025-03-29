@@ -27,3 +27,8 @@ var DenoExampleConfig []byte
 //
 //go:embed config.rust.yaml
 var RustExampleConfig []byte
+
+// UVExampleConfig is the config used within goreleaser init --lang uv.
+//
+//go:embed config.uv.yaml
+var UVExampleConfig []byte

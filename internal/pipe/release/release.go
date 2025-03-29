@@ -166,6 +166,8 @@ func doPublish(ctx *context.Context, client client.Client) error {
 		artifact.ByType(artifact.Certificate),
 		artifact.ByType(artifact.LinuxPackage),
 		artifact.ByType(artifact.SBOM),
+		artifact.ByType(artifact.PyWheel),
+		artifact.ByType(artifact.PySdist),
 	}
 	if ctx.Config.Release.IncludeMeta {
 		typeFilters = append(typeFilters, artifact.ByType(artifact.Metadata))
