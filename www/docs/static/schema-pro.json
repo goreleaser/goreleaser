@@ -3681,6 +3681,9 @@
 					"before": {
 						"$ref": "#/$defs/Before"
 					},
+					"after": {
+						"$ref": "#/$defs/After"
+					},
 					"source": {
 						"$ref": "#/$defs/Source"
 					},
@@ -3789,9 +3792,6 @@
 							"$ref": "#/$defs/BeforePublishHook"
 						},
 						"type": "array"
-					},
-					"after": {
-						"$ref": "#/$defs/After"
 					}
 				},
 				"additionalProperties": false,

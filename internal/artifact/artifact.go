@@ -206,29 +206,31 @@ func (a Artifact) String() string {
 	return a.Name
 }
 
-// mustCastExtra tries to cast the given type into T.
+// tryCastExtra tries to cast the given type into T.
 //
 // If the extra value cannot be cast into the given type, it'll try to convert
 // it to JSON and unmarshal it into the correct type after.
 //
 // If that fails as well, it'll error.
-func mustCastExtra[T any](ex any) T {
+func tryCastExtra[T any](ex any) (T, error) {
 	t, ok := ex.(T)
 	if ok {
-		return t
+		return t, nil
 	}
 
 	bts, err := json.Marshal(ex)
 	if err != nil {
-		panic(err) // this should never happen in theory
+		// this should never happen in theory
+		return t, err
 	}
 
 	decoder := json.NewDecoder(bytes.NewReader(bts))
 	decoder.DisallowUnknownFields()
 	if err := decoder.Decode(&t); err != nil {
-		panic(err)
+		// this should never happen in theory
+		return t, err
 	}
-	return t
+	return t, nil
 }
 
 // MustExtra tries to get the extra field with the given name, returning its
@@ -238,9 +240,13 @@ func mustCastExtra[T any](ex any) T {
 func MustExtra[T any](a Artifact, key string) T {
 	got, ok := a.Extra[key]
 	if !ok {
-		panic(key + " not present")
+		panic(fmt.Errorf("extra: %s: key not present", key))
 	}
-	return mustCastExtra[T](got)
+	t, err := tryCastExtra[T](got)
+	if err != nil {
+		panic(fmt.Errorf("extra: %s: %w", key, err))
+	}
+	return t
 }
 
 // ExtraOr returns the Extra field with the given key or the or value specified
@@ -255,7 +261,11 @@ func ExtraOr[T any](a Artifact, key string, or T) T {
 	if !ok {
 		return or
 	}
-	return mustCastExtra[T](got)
+	t, err := tryCastExtra[T](got)
+	if err != nil {
+		panic(fmt.Errorf("extra: %s: %w", key, err))
+	}
+	return t
 }
 
 // Checksum calculates the checksum of the artifact.

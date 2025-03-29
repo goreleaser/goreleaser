@@ -458,7 +458,7 @@ func TestExtra(t *testing.T) {
 
 	t.Run("missing field", func(t *testing.T) {
 		require.Equal(t, "bar", ExtraOr(a, "Foobar", "bar"))
-		require.PanicsWithValue(t, "Foobar not present", func() {
+		require.PanicsWithError(t, "extra: Foobar: key not present", func() {
 			MustExtra[string](a, "Foobar")
 		})
 	})
@@ -480,19 +480,21 @@ func TestExtra(t *testing.T) {
 	})
 
 	t.Run("unmarshal error", func(t *testing.T) {
-		require.PanicsWithError(t, "json: unknown field \"repository\"", func() {
+		errString := "extra: fail-plz: json: unknown field \"repository\""
+		require.PanicsWithError(t, errString, func() {
 			MustExtra[config.Docker](a, "fail-plz")
 		})
-		require.PanicsWithError(t, "json: unknown field \"repository\"", func() {
+		require.PanicsWithError(t, errString, func() {
 			ExtraOr(a, "fail-plz", config.Docker{})
 		})
 	})
 
 	t.Run("marshal error", func(t *testing.T) {
-		require.PanicsWithError(t, "json: unsupported type: func()", func() {
+		errString := "extra: unsupported: json: unsupported type: func()"
+		require.PanicsWithError(t, errString, func() {
 			MustExtra[string](a, "unsupported")
 		})
-		require.PanicsWithError(t, "json: unsupported type: func()", func() {
+		require.PanicsWithError(t, errString, func() {
 			ExtraOr(a, "unsupported", "")
 		})
 	})
