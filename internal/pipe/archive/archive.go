@@ -259,7 +259,9 @@ func create(ctx *context.Context, arch config.Archive, binaries []*artifact.Arti
 		art.Goppc64 = binaries[0].Goppc64
 		art.Goriscv64 = binaries[0].Goriscv64
 		art.Target = binaries[0].Target
-		art.Extra[artifact.ExtraReplaces] = binaries[0].Extra[artifact.ExtraReplaces]
+		if rep, ok := binaries[0].Extra[artifact.ExtraReplaces]; ok {
+			art.Extra[artifact.ExtraReplaces] = rep
+		}
 	}
 
 	ctx.Artifacts.Add(art)
@@ -287,7 +289,8 @@ func skip(ctx *context.Context, archive config.Archive, binaries []*artifact.Art
 		log.WithField("binary", binary.Name).
 			WithField("name", finalName).
 			Info("archiving")
-		ctx.Artifacts.Add(&artifact.Artifact{
+
+		art := &artifact.Artifact{
 			Type:      artifact.UploadableBinary,
 			Name:      finalName,
 			Path:      binary.Path,
@@ -302,12 +305,15 @@ func skip(ctx *context.Context, archive config.Archive, binaries []*artifact.Art
 			Goriscv64: binary.Goriscv64,
 			Target:    binary.Target,
 			Extra: map[string]any{
-				artifact.ExtraID:       archive.ID,
-				artifact.ExtraFormat:   "binary",
-				artifact.ExtraBinary:   binary.Name,
-				artifact.ExtraReplaces: binaries[0].Extra[artifact.ExtraReplaces],
+				artifact.ExtraID:     archive.ID,
+				artifact.ExtraFormat: "binary",
+				artifact.ExtraBinary: binary.Name,
 			},
-		})
+		}
+		if rep, ok := binaries[0].Extra[artifact.ExtraReplaces]; ok {
+			art.Extra[artifact.ExtraReplaces] = rep
+		}
+		ctx.Artifacts.Add(art)
 	}
 	return nil
 }

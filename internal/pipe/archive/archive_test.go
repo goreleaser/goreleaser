@@ -513,12 +513,15 @@ func TestRunPipeBinary(t *testing.T) {
 	windows2 := binaries.Filter(artifact.ByGoos("windows")).List()[1]
 	require.Equal(t, "mybin_0.0.1_darwin_amd64", darwinThin.Name)
 	require.Equal(t, "mybin", artifact.MustExtra[string](*darwinThin, artifact.ExtraBinary))
+	testlib.RequireNoExtraField(t, darwinThin, artifact.ExtraReplaces)
 	require.Equal(t, "myunibin_0.0.1_darwin_all", darwinUniversal.Name)
 	require.Equal(t, "myunibin", artifact.MustExtra[string](*darwinUniversal, artifact.ExtraBinary))
 	require.Equal(t, "mybin_0.0.1_windows_amd64.exe", windows.Name)
+	testlib.RequireNoExtraField(t, windows, artifact.ExtraReplaces)
 	require.Equal(t, "mybin.exe", artifact.MustExtra[string](*windows, artifact.ExtraBinary))
 	require.Equal(t, "myotherbin_0.0.1_windows_amd64.exe", windows2.Name)
 	require.Equal(t, "myotherbin.exe", artifact.MustExtra[string](*windows2, artifact.ExtraBinary))
+	testlib.RequireNoExtraField(t, windows2, artifact.ExtraReplaces)
 }
 
 func TestRunPipeDistRemoved(t *testing.T) {
