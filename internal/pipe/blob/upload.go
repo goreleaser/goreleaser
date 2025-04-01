@@ -161,6 +161,8 @@ func artifactList(ctx *context.Context, conf config.Blob) []*artifact.Artifact {
 		artifact.ByType(artifact.Certificate),
 		artifact.ByType(artifact.LinuxPackage),
 		artifact.ByType(artifact.SBOM),
+		artifact.ByType(artifact.PySdist),
+		artifact.ByType(artifact.PyWheel),
 	}
 	if conf.IncludeMeta {
 		byTypes = append(byTypes, artifact.ByType(artifact.Metadata))
