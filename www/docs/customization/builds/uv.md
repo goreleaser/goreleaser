@@ -39,9 +39,9 @@ builds:
 
     # The build mode.
     #
-    # Valid options: "wheel", "sdist", "all".
-    # Default: "all".
-    buildmode: wheel
+    # Valid options: "wheel", "sdist".
+    # Default: "wheel".
+    buildmode: sdist
 
     # Set a specific uv binary to use when building.
     # It is safe to ignore this option in most cases.
@@ -79,6 +79,24 @@ builds:
     hooks:
       pre: ./foo.sh
       post: ./script.sh {{ .Path }}
+```
+
+!!! warning
+
+    At this time only the target `py3-none-any` is supported.
+
+## Building both wheel and sdist
+
+You need to declare 2 builds, one for each mode:
+
+```yaml title=".goreleaser.yaml"
+builds:
+  - id: wheel
+    builder: uv
+    buildmode: wheel
+  - id: sdist
+    builder: uv
+    buildmode: sdist
 ```
 
 ## Publishing to PyPi

@@ -28,6 +28,7 @@ var (
 	_ api.DependingBuilder = &Builder{}
 
 	errSetBinary = errors.New("uv: binary name is set by uv itself")
+	errTargets   = errors.New("uv: only target supported is 'none-any'")
 )
 
 const defaultTarget = "none-any"
@@ -101,6 +102,10 @@ func (b *Builder) WithDefaults(build config.Build) (config.Build, error) {
 		return build, errSetBinary
 	}
 
+	if len(build.Targets) > 1 || build.Targets[0] != defaultTarget {
+		return build, errTargets
+	}
+
 	if err := common.ValidateNonGoConfig(build, common.WithBuildMode); err != nil {
 		return build, err
 	}
@@ -117,15 +122,15 @@ func (b *Builder) Build(ctx *context.Context, build config.Build, options api.Op
 
 	// options.Path will be dist/projectname-all-all/projectname.
 
-	var artifacts []*artifact.Artifact
 	var buildFlags []string
+	var art *artifact.Artifact
 	switch build.Buildmode {
 	case "wheel", "":
 		buildFlags = []string{"--wheel"}
-		artifacts = append(artifacts, wheel(proj, build, options))
+		art = wheel(proj, build, options)
 	case "sdist":
 		buildFlags = []string{"--sdist"}
-		artifacts = append(artifacts, sdist(proj, build, options))
+		art = sdist(proj, build, options)
 	default:
 		return fmt.Errorf("uv: invalid buildmode %q", build.Buildmode)
 	}
@@ -141,10 +146,12 @@ func (b *Builder) Build(ctx *context.Context, build config.Build, options api.Op
 		return err
 	}
 
+	root := filepath.Dir(options.Path)
+
 	command := []string{
 		uvbin,
 		build.Command,
-		"--out-dir", filepath.Dir(options.Path),
+		"--out-dir", root,
 	}
 	command = append(command, buildFlags...)
 
@@ -164,13 +171,11 @@ func (b *Builder) Build(ctx *context.Context, build config.Build, options api.Op
 		return err
 	}
 
-	for _, a := range artifacts {
-		if err := common.ChTimes(build, tpl, a); err != nil {
-			return err
-		}
-
-		ctx.Artifacts.Add(a)
+	if err := common.ChTimes(build, tpl, art); err != nil {
+		return err
 	}
+
+	ctx.Artifacts.Add(art)
 	return nil
 }
 
@@ -184,7 +189,7 @@ func wheel(proj pyproject.PyProject, build config.Build, options api.Options) *a
 		Goos:   "all",
 		Goarch: "all",
 		Target: options.Target.String(),
-		Extra: map[string]interface{}{
+		Extra: map[string]any{
 			artifact.ExtraExt:     ".whl",
 			artifact.ExtraID:      build.ID,
 			artifact.ExtraBuilder: "uv",
@@ -202,7 +207,7 @@ func sdist(proj pyproject.PyProject, build config.Build, options api.Options) *a
 		Goos:   "all",
 		Goarch: "all",
 		Target: options.Target.String(),
-		Extra: map[string]interface{}{
+		Extra: map[string]any{
 			artifact.ExtraExt:     ".tar.gz",
 			artifact.ExtraID:      build.ID,
 			artifact.ExtraBuilder: "uv",
