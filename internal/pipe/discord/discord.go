@@ -1,3 +1,4 @@
+// Package discord announces releases to Discord.
 package discord
 
 import (

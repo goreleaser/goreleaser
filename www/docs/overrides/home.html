@@ -35,7 +35,15 @@
 	}
 
 	.gradient-text {
-		background: linear-gradient(to right, var(--md-primary-bg-color), var(--goreleaser-primary-color));
+		background: linear-gradient(to right, #e6f7ff, #40a9ff, #e6f7ff, #91d5ff );
+		-webkit-background-clip: text;
+		-webkit-text-fill-color: transparent;
+		background-clip: text;
+		color: transparent;
+	}
+
+	.gradient-text-2 {
+		background: linear-gradient(to right, #40a9ff, #e6f7ff, #91d5ff );
 		-webkit-background-clip: text;
 		-webkit-text-fill-color: transparent;
 		background-clip: text;
@@ -223,7 +231,25 @@
 				</h1>
 				<p>
 					We handle the complexities of releasing so you can focus
-					in building what really matters: <strong>your software</strong>.
+					in building what really matters: <strong class="gradient-text-2">your software</strong> -
+					and it doesn't need to be written in Go!
+				</p>
+				<p>
+					<span class="twemoji">
+						{% include ".icons/simple/go.svg" %}
+					</span>
+					<span class="twemoji">
+						{% include ".icons/simple/rust.svg" %}
+					</span>
+					<span class="twemoji">
+						{% include ".icons/simple/typescript.svg" %}
+					</span>
+					<span class="twemoji">
+						{% include ".icons/simple/zig.svg" %}
+					</span>
+					<span class="twemoji">
+						{% include ".icons/simple/python.svg" %}
+					</span>
 				</p>
 				<a
 					href="/intro/"
@@ -252,7 +278,7 @@
 	<div class="md-grid md-typeset" style="max-width: 40rem; padding-top: 3rem; margin-bottom: 3rem;">
 		<div class="tx-intro">
 			<h1>Everything you need to release with confidence</h1>
-			<p class="subtext">GoReleaser does everything you need to create a professional release process for Go, Rust, and Zig projects.</p>
+			<p class="subtext">GoReleaser does everything you need to create a professional release process for Go, Rust, TypeScript, and Zig projects.</p>
 		</div>
 		<div class="items-center feature-grid grid">
 			<div>
@@ -279,7 +305,7 @@
 					</sup>
 				</h3>
 				<p>
-					First-class support for Go, Rust, and Zig projects, with TypeScript and Python coming soon.
+					First-class support for Go, Rust, TypeScript, and Zig projects, with Python coming soon.
 				</p>
 			</div>
 			<div>

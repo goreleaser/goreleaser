@@ -61,7 +61,7 @@ func TestRunPipe(t *testing.T) {
 				output, err := cmd.CombinedOutput()
 				require.NoError(t, err, string(output))
 				uniqueIDs := map[string]string{}
-				for _, id := range strings.Split(strings.TrimSpace(string(output)), "\n") {
+				for id := range strings.SplitSeq(strings.TrimSpace(string(output)), "\n") {
 					uniqueIDs[id] = id
 				}
 				require.Len(t, uniqueIDs, 1)
@@ -897,7 +897,7 @@ func TestRunPipe(t *testing.T) {
 					Goarch: "amd64",
 					Goos:   "linux",
 					Type:   artifact.Binary,
-					Extra: map[string]interface{}{
+					Extra: map[string]any{
 						artifact.ExtraID: "nope",
 					},
 				})
@@ -1007,7 +1007,7 @@ func TestRunPipe(t *testing.T) {
 								Goarch: arch,
 								Goos:   os,
 								Type:   artifact.Binary,
-								Extra: map[string]interface{}{
+								Extra: map[string]any{
 									artifact.ExtraID: bin,
 								},
 							})
@@ -1022,7 +1022,7 @@ func TestRunPipe(t *testing.T) {
 						Goarch: arch,
 						Goos:   "linux",
 						Type:   artifact.LinuxPackage,
-						Extra: map[string]interface{}{
+						Extra: map[string]any{
 							artifact.ExtraID: "mybin",
 						},
 					})
@@ -1076,8 +1076,7 @@ func TestRunPipe(t *testing.T) {
 						artifact.ByType(artifact.DockerManifest),
 					),
 				).Visit(func(a *artifact.Artifact) error {
-					digest, err := artifact.Extra[string](*a, artifact.ExtraDigest)
-					require.NoError(t, err)
+					digest := artifact.MustExtra[string](*a, artifact.ExtraDigest)
 					require.NotEmpty(t, digest, "missing digest for "+a.Name)
 					return nil
 				})

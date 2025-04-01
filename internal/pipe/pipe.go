@@ -4,6 +4,7 @@ package pipe
 import (
 	"errors"
 	"fmt"
+	"slices"
 	"strings"
 )
 
@@ -58,10 +59,8 @@ type SkipMemento struct {
 
 // Remember a skip.
 func (e *SkipMemento) Remember(err error) {
-	for _, skip := range e.skips {
-		if skip == err.Error() {
-			return
-		}
+	if slices.Contains(e.skips, err.Error()) {
+		return
 	}
 	e.skips = append(e.skips, err.Error())
 }

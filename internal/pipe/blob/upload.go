@@ -108,7 +108,7 @@ func doUpload(ctx *context.Context, conf config.Blob) error {
 		contentDisposition: conf.ContentDisposition,
 	}
 	if conf.Provider == "s3" && conf.ACL != "" {
-		up.beforeWrite = func(asFunc func(interface{}) bool) error {
+		up.beforeWrite = func(asFunc func(any) bool) error {
 			req := &s3manager.UploadInput{}
 			if !asFunc(&req) {
 				return errors.New("could not apply before write")
@@ -246,7 +246,7 @@ type uploader interface {
 // productionUploader actually do upload to.
 type productionUploader struct {
 	bucket             *blob.Bucket
-	beforeWrite        func(asFunc func(interface{}) bool) error
+	beforeWrite        func(asFunc func(any) bool) error
 	cacheControl       []string
 	contentDisposition string
 }

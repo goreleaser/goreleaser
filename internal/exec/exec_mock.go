@@ -104,7 +104,7 @@ func ExecuteMockData(jsonData string) int {
 func filterEnv(vars []string) []string {
 	for i, env := range vars {
 		if strings.HasPrefix(env, MockEnvVar+"=") {
-			return append(vars[:i], vars[i+1:]...)
+			return slices.Delete(vars, i, i+1)
 		}
 	}
 

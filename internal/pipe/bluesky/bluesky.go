@@ -1,3 +1,4 @@
+// Package bluesky announces to bluesky.social.
 package bluesky
 
 import (

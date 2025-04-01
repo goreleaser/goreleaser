@@ -241,7 +241,7 @@ func create(ctx *context.Context, arch config.Archive, binaries []*artifact.Arti
 		Type: artifact.UploadableArchive,
 		Name: folder + "." + format,
 		Path: archivePath,
-		Extra: map[string]interface{}{
+		Extra: map[string]any{
 			artifact.ExtraID:        arch.ID,
 			artifact.ExtraFormat:    format,
 			artifact.ExtraWrappedIn: wrap,
@@ -259,7 +259,9 @@ func create(ctx *context.Context, arch config.Archive, binaries []*artifact.Arti
 		art.Goppc64 = binaries[0].Goppc64
 		art.Goriscv64 = binaries[0].Goriscv64
 		art.Target = binaries[0].Target
-		art.Extra[artifact.ExtraReplaces] = binaries[0].Extra[artifact.ExtraReplaces]
+		if rep, ok := binaries[0].Extra[artifact.ExtraReplaces]; ok {
+			art.Extra[artifact.ExtraReplaces] = rep
+		}
 	}
 
 	ctx.Artifacts.Add(art)
@@ -283,11 +285,12 @@ func skip(ctx *context.Context, archive config.Archive, binaries []*artifact.Art
 		if err != nil {
 			return err
 		}
-		finalName := name + artifact.ExtraOr(*binary, artifact.ExtraExt, "")
+		finalName := name + binary.Ext()
 		log.WithField("binary", binary.Name).
 			WithField("name", finalName).
 			Info("archiving")
-		ctx.Artifacts.Add(&artifact.Artifact{
+
+		art := &artifact.Artifact{
 			Type:      artifact.UploadableBinary,
 			Name:      finalName,
 			Path:      binary.Path,
@@ -301,13 +304,16 @@ func skip(ctx *context.Context, archive config.Archive, binaries []*artifact.Art
 			Goppc64:   binary.Goppc64,
 			Goriscv64: binary.Goriscv64,
 			Target:    binary.Target,
-			Extra: map[string]interface{}{
-				artifact.ExtraID:       archive.ID,
-				artifact.ExtraFormat:   "binary",
-				artifact.ExtraBinary:   binary.Name,
-				artifact.ExtraReplaces: binaries[0].Extra[artifact.ExtraReplaces],
+			Extra: map[string]any{
+				artifact.ExtraID:     archive.ID,
+				artifact.ExtraFormat: "binary",
+				artifact.ExtraBinary: binary.Name,
 			},
-		})
+		}
+		if rep, ok := binaries[0].Extra[artifact.ExtraReplaces]; ok {
+			art.Extra[artifact.ExtraReplaces] = rep
+		}
+		ctx.Artifacts.Add(art)
 	}
 	return nil
 }

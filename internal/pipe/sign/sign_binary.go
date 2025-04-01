@@ -14,7 +14,7 @@ import (
 
 const defaultSignatureName = `${artifact}_{{ .Os }}_{{ .Arch }}{{ with .Arm }}v{{ . }}{{ end }}{{ with .Mips }}_{{ . }}{{ end }}{{ if not (eq .Amd64 "v1") }}{{ .Amd64 }}{{ end }}`
 
-// Pipe that signs binary images and manifests.
+// BinaryPipe that signs binary images and manifests.
 type BinaryPipe struct{}
 
 func (BinaryPipe) String() string { return "signing binaries" }
@@ -62,7 +62,7 @@ func (BinaryPipe) Default(ctx *context.Context) error {
 	return ids.Validate()
 }
 
-// Publish signs and pushes the binary images signatures.
+// Run signs and pushes the binary images signatures.
 func (BinaryPipe) Run(ctx *context.Context) error {
 	g := semerrgroup.New(ctx.Parallelism)
 	for i := range ctx.Config.BinarySigns {

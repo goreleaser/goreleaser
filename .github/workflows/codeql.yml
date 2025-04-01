@@ -22,9 +22,9 @@ jobs:
           verb: develop
           args: "-q"
       # - run: dagger develop
-      - uses: actions/setup-go@f111f3307d8850f501ac008e886eec1fd1932a34 # v4
+      - uses: actions/setup-go@0aaccfd150d50ccaeb58ebd88d36e91967a5f35b # v4
         with:
           go-version: stable
-      - uses: github/codeql-action/init@6bb031afdd8eb862ea3fc1848194185e076637e5 # v3
-      - uses: github/codeql-action/autobuild@6bb031afdd8eb862ea3fc1848194185e076637e5 # v3
-      - uses: github/codeql-action/analyze@6bb031afdd8eb862ea3fc1848194185e076637e5 # v3
+      - uses: github/codeql-action/init@1b549b9259bda1cb5ddde3b41741a82a2d15a841 # v3
+      - uses: github/codeql-action/autobuild@1b549b9259bda1cb5ddde3b41741a82a2d15a841 # v3
+      - uses: github/codeql-action/analyze@1b549b9259bda1cb5ddde3b41741a82a2d15a841 # v3

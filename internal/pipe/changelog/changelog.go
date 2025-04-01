@@ -454,7 +454,7 @@ func (g gitChangeloger) Log(ctx *context.Context) ([]Item, error) {
 		return nil, err
 	}
 	var entries []Item
-	for _, line := range strings.Split(out, "\n") {
+	for line := range strings.SplitSeq(out, "\n") {
 		if strings.TrimSpace(line) == "" {
 			continue
 		}

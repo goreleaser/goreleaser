@@ -15,7 +15,7 @@ jobs:
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4
         with:
           token: ${{ secrets.GH_PAT }}
-      - uses: actions/setup-go@f111f3307d8850f501ac008e886eec1fd1932a34 # v4
+      - uses: actions/setup-go@0aaccfd150d50ccaeb58ebd88d36e91967a5f35b # v4
         with:
           go-version: stable
           cache: true
@@ -35,7 +35,6 @@ jobs:
       - run: task schema:generate
       - run: task nix:licenses:generate
       - run: task nix:flake:update
-      - run: task nix:flake:update-vendor
       - run: task schema:validate
       - run: "git pull"
       - uses: stefanzweifel/git-auto-commit-action@e348103e9026cc0eee72ae06630dbe30c8bf7a79 # v5
@@ -45,3 +44,19 @@ jobs:
           commit_user_name: actions-user
           commit_user_email: actions@github.com
           commit_author: actions-user <actions@github.com>
+  notify:
+    runs-on: ubuntu-latest
+    needs:
+      - docs
+    if: ${{ failure() }}
+    steps:
+      - name: Notify
+        uses: nobrayner/discord-webhook@v1
+        with:
+          github-token: ${{ secrets.github_token }}
+          title: "generate job failed"
+          description: "this may cause goreleaser-action to fail, please check: https://github.com/goreleaser/goreleaser/actions/workflows/generate.yml"
+          discord-webhook: ${{ secrets.NIGHTLY_DISCORD_WEBHOOK }}
+          username: GoReleaser
+          avatar-url: https://avatars.githubusercontent.com/u/24697112?v=4
+          include-details: false

@@ -22,6 +22,8 @@ IgnoreURLs:
   - hub.docker.com
   - wixtoolset.org
   - docs.gitlab.com
+  - blog.kubesimplify.com
+  - blog.ediri.io/
 IgnoreDirs:
   - overrides
 IgnoreDirectoryMissingTrailingSlash: true

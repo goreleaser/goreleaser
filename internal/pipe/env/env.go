@@ -7,6 +7,7 @@ import (
 	"errors"
 	"fmt"
 	"io/fs"
+	"maps"
 	"os"
 	"strings"
 
@@ -62,9 +63,7 @@ func (Pipe) Run(ctx *context.Context) error {
 		}
 		tEnv = append(tEnv, env)
 	}
-	for k, v := range context.ToEnv(tEnv) {
-		ctx.Env[k] = v
-	}
+	maps.Copy(ctx.Env, context.ToEnv(tEnv))
 
 	setDefaultTokenFiles(ctx)
 	githubToken, githubTokenErr := loadEnv("GITHUB_TOKEN", ctx.Config.EnvFiles.GitHubToken)

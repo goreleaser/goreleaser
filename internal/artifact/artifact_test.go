@@ -111,7 +111,7 @@ func TestFilter(t *testing.T) {
 			Name:   "unibin-replaces",
 			Goos:   "darwin",
 			Goarch: "all",
-			Extra: map[string]interface{}{
+			Extra: map[string]any{
 				ExtraReplaces: true,
 			},
 		},
@@ -119,7 +119,7 @@ func TestFilter(t *testing.T) {
 			Name:   "unibin-noreplace",
 			Goos:   "darwin",
 			Goarch: "all",
-			Extra: map[string]interface{}{
+			Extra: map[string]any{
 				ExtraReplaces: false,
 			},
 		},
@@ -228,34 +228,34 @@ func TestGroupByID(t *testing.T) {
 	data := []*Artifact{
 		{
 			Name: "foo",
-			Extra: map[string]interface{}{
+			Extra: map[string]any{
 				ExtraID: "foo",
 			},
 		},
 		{
 			Name: "bar",
-			Extra: map[string]interface{}{
+			Extra: map[string]any{
 				ExtraID: "foo",
 			},
 		},
 		{
 			Name: "foobar",
 			Goos: "linux",
-			Extra: map[string]interface{}{
+			Extra: map[string]any{
 				ExtraID: "foovar",
 			},
 		},
 		{
 			Name: "foobar",
 			Goos: "linux",
-			Extra: map[string]interface{}{
+			Extra: map[string]any{
 				ExtraID: "foovar",
 			},
 		},
 		{
 			Name: "foobar",
 			Goos: "linux",
-			Extra: map[string]interface{}{
+			Extra: map[string]any{
 				ExtraID: "foobar",
 			},
 		},
@@ -435,7 +435,7 @@ func TestInvalidAlgorithm(t *testing.T) {
 
 func TestExtra(t *testing.T) {
 	a := Artifact{
-		Extra: map[string]interface{}{
+		Extra: map[string]any{
 			"Foo": "foo",
 			"docker": config.Docker{
 				ID:  "id",
@@ -444,46 +444,59 @@ func TestExtra(t *testing.T) {
 			"fail-plz": config.Homebrew{
 				Service: "aaaa",
 			},
-			"unsupported": func() {},
-			"binaries":    []string{"foo", "bar"},
+			"unsupported":      func() {},
+			"binaries":         []string{"foo", "bar"},
+			"docker_unmarshal": map[string]any{"id": "foo"}, // this is what it would look like loading from json
 		},
 	}
 
 	t.Run("string", func(t *testing.T) {
-		foo, err := Extra[string](a, "Foo")
-		require.NoError(t, err)
+		foo := MustExtra[string](a, "Foo")
 		require.Equal(t, "foo", foo)
 		require.Equal(t, "foo", ExtraOr(a, "Foo", "bar"))
 	})
 
 	t.Run("missing field", func(t *testing.T) {
-		bar, err := Extra[string](a, "Foobar")
-		require.NoError(t, err)
-		require.Equal(t, "", bar)
 		require.Equal(t, "bar", ExtraOr(a, "Foobar", "bar"))
+		require.PanicsWithError(t, "extra: Foobar: key not present", func() {
+			MustExtra[string](a, "Foobar")
+		})
 	})
 
 	t.Run("complex", func(t *testing.T) {
-		docker, err := Extra[config.Docker](a, "docker")
-		require.NoError(t, err)
+		docker := MustExtra[config.Docker](a, "docker")
 		require.Equal(t, "id", docker.ID)
 	})
 
 	t.Run("array", func(t *testing.T) {
-		binaries, err := Extra[[]string](a, "binaries")
-		require.NoError(t, err)
-		require.Equal(t, []string{"foo", "bar"}, binaries)
 		require.Equal(t, []string{"foo", "bar"}, ExtraOr(a, "binaries", []string{}))
+		require.Equal(t, []string{"foo", "bar"}, MustExtra[[]string](a, "binaries"))
+	})
+
+	t.Run("unmarshal complex", func(t *testing.T) {
+		expected := config.Docker{ID: "foo"}
+		require.Equal(t, expected, ExtraOr(a, "docker_unmarshal", config.Docker{}))
+		require.Equal(t, expected, MustExtra[config.Docker](a, "docker_unmarshal"))
 	})
 
 	t.Run("unmarshal error", func(t *testing.T) {
-		_, err := Extra[config.Docker](a, "fail-plz")
-		require.EqualError(t, err, "json: unknown field \"repository\"")
+		errString := "extra: fail-plz: json: unknown field \"repository\""
+		require.PanicsWithError(t, errString, func() {
+			MustExtra[config.Docker](a, "fail-plz")
+		})
+		require.PanicsWithError(t, errString, func() {
+			ExtraOr(a, "fail-plz", config.Docker{})
+		})
 	})
 
 	t.Run("marshal error", func(t *testing.T) {
-		_, err := Extra[config.Docker](a, "unsupported")
-		require.EqualError(t, err, "json: unsupported type: func()")
+		errString := "extra: unsupported: json: unsupported type: func()"
+		require.PanicsWithError(t, errString, func() {
+			MustExtra[string](a, "unsupported")
+		})
+		require.PanicsWithError(t, errString, func() {
+			ExtraOr(a, "unsupported", "")
+		})
 	})
 }
 
@@ -491,25 +504,25 @@ func TestByIDs(t *testing.T) {
 	data := []*Artifact{
 		{
 			Name: "foo",
-			Extra: map[string]interface{}{
+			Extra: map[string]any{
 				ExtraID: "foo",
 			},
 		},
 		{
 			Name: "bar",
-			Extra: map[string]interface{}{
+			Extra: map[string]any{
 				ExtraID: "bar",
 			},
 		},
 		{
 			Name: "foobar",
-			Extra: map[string]interface{}{
+			Extra: map[string]any{
 				ExtraID: "foo",
 			},
 		},
 		{
 			Name: "check",
-			Extra: map[string]interface{}{
+			Extra: map[string]any{
 				ExtraID: "check",
 			},
 		},
@@ -532,25 +545,25 @@ func TestByExts(t *testing.T) {
 	data := []*Artifact{
 		{
 			Name: "foo",
-			Extra: map[string]interface{}{
+			Extra: map[string]any{
 				ExtraExt: ".deb",
 			},
 		},
 		{
 			Name: "bar",
-			Extra: map[string]interface{}{
+			Extra: map[string]any{
 				ExtraExt: "deb",
 			},
 		},
 		{
 			Name: "foobar",
-			Extra: map[string]interface{}{
+			Extra: map[string]any{
 				ExtraExt: "rpm",
 			},
 		},
 		{
 			Name:  "check",
-			Extra: map[string]interface{}{},
+			Extra: map[string]any{},
 		},
 	}
 	artifacts := New()
@@ -568,25 +581,25 @@ func TestByFormats(t *testing.T) {
 	data := []*Artifact{
 		{
 			Name: "foo",
-			Extra: map[string]interface{}{
+			Extra: map[string]any{
 				ExtraFormat: "zip",
 			},
 		},
 		{
 			Name: "bar",
-			Extra: map[string]interface{}{
+			Extra: map[string]any{
 				ExtraFormat: "tar.gz",
 			},
 		},
 		{
 			Name: "foobar",
-			Extra: map[string]interface{}{
+			Extra: map[string]any{
 				ExtraFormat: "zip",
 			},
 		},
 		{
 			Name: "bin",
-			Extra: map[string]interface{}{
+			Extra: map[string]any{
 				ExtraFormat: "binary",
 			},
 		},
@@ -620,7 +633,7 @@ func TestRefresher(t *testing.T) {
 			Name: "f",
 			Path: path,
 			Type: Checksum,
-			Extra: map[string]interface{}{
+			Extra: map[string]any{
 				"Refresh": func() error {
 					return os.WriteFile(path, []byte("hello"), 0o765)
 				},
@@ -643,7 +656,7 @@ func TestRefresher(t *testing.T) {
 		artifacts.Add(&Artifact{
 			Name: "fail",
 			Type: Checksum,
-			Extra: map[string]interface{}{
+			Extra: map[string]any{
 				"ID": "nok",
 				"Refresh": func() error {
 					return fmt.Errorf("fake err")
@@ -661,7 +674,7 @@ func TestRefresher(t *testing.T) {
 		artifacts.Add(&Artifact{
 			Name: "will be ignored",
 			Type: Binary,
-			Extra: map[string]interface{}{
+			Extra: map[string]any{
 				"ID": "ignored",
 				"Refresh": func() error {
 					return fmt.Errorf("err that should not happen")
@@ -705,21 +718,21 @@ func TestMarshalJSON(t *testing.T) {
 	artifacts.Add(&Artifact{
 		Name: "foo",
 		Type: Binary,
-		Extra: map[string]interface{}{
+		Extra: map[string]any{
 			ExtraID: "adsad",
 		},
 	})
 	artifacts.Add(&Artifact{
 		Name: "foo",
 		Type: UploadableArchive,
-		Extra: map[string]interface{}{
+		Extra: map[string]any{
 			ExtraID: "adsad",
 		},
 	})
 	artifacts.Add(&Artifact{
 		Name: "foo",
 		Type: Checksum,
-		Extra: map[string]interface{}{
+		Extra: map[string]any{
 			ExtraRefresh: func() error { return nil },
 		},
 	})

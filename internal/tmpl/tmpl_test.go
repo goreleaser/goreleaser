@@ -130,7 +130,7 @@ func TestWithArtifact(t *testing.T) {
 					Goppc64:   "power8",
 					Goriscv64: "rva22u64",
 					Target:    "a_fake_target",
-					Extra: map[string]interface{}{
+					Extra: map[string]any{
 						artifact.ExtraBinary: "binary",
 						artifact.ExtraExt:    ".exe",
 					},
@@ -554,7 +554,7 @@ func TestSlice(t *testing.T) {
 		Goos:   "darwin",
 		Goarch: "amd64",
 		Goarm:  "7",
-		Extra: map[string]interface{}{
+		Extra: map[string]any{
 			artifact.ExtraBinary: "binary",
 		},
 	}

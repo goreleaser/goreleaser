@@ -61,7 +61,7 @@ func TestDescribeBodyMultipleChecksums(t *testing.T) {
 			Name: name + ".sha256",
 			Path: checksumPath,
 			Type: artifact.Checksum,
-			Extra: map[string]interface{}{
+			Extra: map[string]any{
 				artifact.ExtraChecksumOf: name,
 				artifact.ExtraRefresh: func() error {
 					return os.WriteFile(checksumPath, []byte(check), 0o644)
@@ -111,7 +111,7 @@ Get GoReleaser Pro at https://goreleaser.com/pro
 		Name: "checksums.txt",
 		Path: checksumPath,
 		Type: artifact.Checksum,
-		Extra: map[string]interface{}{
+		Extra: map[string]any{
 			artifact.ExtraRefresh: func() error {
 				return os.WriteFile(checksumPath, []byte(checksumContent), 0o644)
 			},
