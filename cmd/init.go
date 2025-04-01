@@ -66,6 +66,7 @@ func newInitCmd() *initCmd {
 				example = static.DenoExampleConfig
 			case "uv":
 				example = static.UVExampleConfig
+				gitignoreLines = append(gitignoreLines, "build/")
 			default:
 				return fmt.Errorf("invalid language: %s", root.lang)
 			}

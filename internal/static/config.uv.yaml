@@ -9,7 +9,12 @@
 version: 2
 
 builds:
-  - builder: uv
+  - id: wheel
+    builder: uv
+    buildmode: wheel
+  - id: sdist
+    builder: uv
+    buildmode: sdist
 
 changelog:
   sort: asc

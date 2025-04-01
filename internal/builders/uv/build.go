@@ -120,18 +120,12 @@ func (b *Builder) Build(ctx *context.Context, build config.Build, options api.Op
 	var artifacts []*artifact.Artifact
 	var buildFlags []string
 	switch build.Buildmode {
-	case "wheel":
+	case "wheel", "":
 		buildFlags = []string{"--wheel"}
 		artifacts = append(artifacts, wheel(proj, build, options))
 	case "sdist":
 		buildFlags = []string{"--sdist"}
 		artifacts = append(artifacts, sdist(proj, build, options))
-	case "", "all":
-		artifacts = append(
-			artifacts,
-			wheel(proj, build, options),
-			sdist(proj, build, options),
-		)
 	default:
 		return fmt.Errorf("uv: invalid buildmode %q", build.Buildmode)
 	}
