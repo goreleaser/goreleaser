@@ -194,6 +194,13 @@ tasks:
       - echo {{.NEXT}}
       - git push origin --tags
 
+  release:watch:
+    vars:
+      RUN_ID:
+        sh: "gh run list --workflow=release.yml --limit 1 --json databaseId | jq -r '.[] | .databaseId'"
+    cmds:
+      - gh run watch {{.RUN_ID}}
+
   goreleaser:test:pkg:
     desc: Test a package
     cmds:
