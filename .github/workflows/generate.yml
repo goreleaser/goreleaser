@@ -44,3 +44,19 @@ jobs:
           commit_user_name: actions-user
           commit_user_email: actions@github.com
           commit_author: actions-user <actions@github.com>
+  notify:
+    runs-on: ubuntu-latest
+    needs:
+      - docs
+    if: ${{ failure() }}
+    steps:
+      - name: Notify
+        uses: nobrayner/discord-webhook@v1
+        with:
+          github-token: ${{ secrets.github_token }}
+          title: "generate job failed"
+          description: "this may cause goreleaser-action to fail, please check: https://github.com/goreleaser/goreleaser/actions/workflows/generate.yml"
+          discord-webhook: ${{ secrets.NIGHTLY_DISCORD_WEBHOOK }}
+          username: GoReleaser
+          avatar-url: https://avatars.githubusercontent.com/u/24697112?v=4
+          include-details: false
