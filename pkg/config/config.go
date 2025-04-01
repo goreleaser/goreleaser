@@ -600,8 +600,6 @@ type Libdirs struct {
 	Header   string `yaml:"header,omitempty" json:"header,omitempty"`
 	CArchive string `yaml:"carchive,omitempty" json:"carchive,omitempty"`
 	CShared  string `yaml:"cshared,omitempty" json:"cshared,omitempty"`
-	Wheel    string `yaml:"wheel,omitempty" json:"wheel,omitempty"`
-	Sdist    string `yaml:"sdist,omitempty" json:"sdist,omitempty"`
 }
 
 // NFPMScripts is used to specify maintainer scripts.

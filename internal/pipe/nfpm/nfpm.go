@@ -64,9 +64,6 @@ func (Pipe) Default(ctx *context.Context) error {
 		if fpm.Libdirs.CArchive == "" {
 			fpm.Libdirs.CArchive = "/usr/lib"
 		}
-		if fpm.Libdirs.Wheel == "" {
-			fpm.Libdirs.Wheel = "/usr/share/python-wheels"
-		}
 		if fpm.PackageName == "" {
 			fpm.PackageName = ctx.Config.ProjectName
 		}
@@ -114,8 +111,6 @@ func doRun(ctx *context.Context, fpm config.NFPM) error {
 			artifact.ByType(artifact.Header),
 			artifact.ByType(artifact.CArchive),
 			artifact.ByType(artifact.CShared),
-			artifact.ByType(artifact.PyWheel),
-			artifact.ByType(artifact.PySdist),
 		),
 		artifact.Or(
 			artifact.ByGoos("linux"),

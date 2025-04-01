@@ -143,7 +143,6 @@ func (Pipe) Run(ctx *context.Context) error {
 				artifact.Or(
 					artifact.And(filters...),
 					artifact.ByType(artifact.PyWheel),
-					artifact.ByType(artifact.PySdist),
 				))
 			if d := len(docker.IDs); d > 0 && len(artifacts.GroupByID()) != d {
 				return pipe.Skipf("expected to find %d artifacts for ids %v, found %d\nLearn more at https://goreleaser.com/errors/docker-build\n", d, docker.IDs, len(artifacts.List()))
