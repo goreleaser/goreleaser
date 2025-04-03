@@ -320,6 +320,7 @@ func (*Builder) Build(ctx *context.Context, build config.Build, options api.Opti
 	if v := os.Getenv("GOCACHEPROG"); v != "" {
 		env = append(env, "GOCACHEPROG="+v)
 	}
+	env = append(env, "GOMAXPROCS=1")
 
 	if len(testEnvs) > 0 {
 		a.Extra["testEnvs"] = testEnvs
