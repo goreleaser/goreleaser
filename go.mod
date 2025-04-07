@@ -48,7 +48,7 @@ require (
 	gocloud.dev v0.40.0
 	golang.org/x/crypto v0.36.0
 	golang.org/x/oauth2 v0.29.0
-	golang.org/x/sync v0.12.0
+	golang.org/x/sync v0.13.0
 	golang.org/x/text v0.23.0
 	golang.org/x/tools v0.31.0
 	gopkg.in/mail.v2 v2.3.1
