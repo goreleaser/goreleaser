@@ -373,8 +373,6 @@ builds:
 The binary name field supports [templating](../templates.md). The
 following build details are exposed:
 
-<!-- to format the tables, use: https://tabletomarkdown.com/format-markdown-table/ -->
-
 | Key     | Description                       |
 | ------- | --------------------------------- |
 | .Os     | `GOOS`                            |
@@ -382,6 +380,21 @@ following build details are exposed:
 | .Arm    | `GOARM`                           |
 | .Ext    | Extension, e.g. `.exe`            |
 | .Target | Build target, e.g. `darwin_amd64` |
+
+## Setting GOMAXPROCS
+
+GoReleaser will set it on itself automatically to the number of CPUs available.
+When `go build` is called, Go set's it automatically as well.
+Finally, GoReleaser has the `--parallelism` flag, which also sets `GOMAXPROCS`.
+This parallelism is also used internally by GoReleaser, e.g. how many build
+tasks to run in parallel.
+
+For example, if you want 10 internal GoReleaser tasks, but only `GOMAXPROCS=2`
+for the build tasks, you can do this:
+
+```sh
+GOMAXPROCS=2 goreleaser release --parallelism=10
+```
 
 ## Passing environment variables to ldflags
 
