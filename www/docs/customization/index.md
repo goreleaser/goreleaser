@@ -1,6 +1,6 @@
 # Introduction
 
-GoReleaser can be customized by tweaking a `.goreleaser.yaml` file.
+GoReleaser can be customized by tweaking a `.goreleaser.yaml`[^goreleaser-yaml] file.
 
 You can generate an example config by running
 [`goreleaser init`](../cmd/goreleaser_init.md) or start from scratch.
@@ -57,6 +57,17 @@ for `__VERSION__` (latest):
     ```sh
     https://raw.githubusercontent.com/goreleaser/goreleaser/__VERSION__/www/docs/static/schema-pro.json
     ```
+
+[^goreleaser-yaml]:
+    While most of the documentation refers to the `.goreleaser.yaml` filename
+    for simplicity, a few different variants of it are actually accepted.
+    In order of precedence:
+    * `.config/goreleaser.yml`
+    * `.config/goreleaser.yaml`
+    * `.goreleaser.yml`
+    * `.goreleaser.yaml`
+    * `goreleaser.yml`
+    * `goreleaser.yaml`
 
 [jsonschema]: http://json-schema.org/draft/2020-12/json-schema-validation.html
 [schema]: ../cmd/goreleaser_jsonschema.md
