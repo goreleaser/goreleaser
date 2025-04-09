@@ -62,12 +62,13 @@ for `__VERSION__` (latest):
     While most of the documentation refers to the `.goreleaser.yaml` filename
     for simplicity, a few different variants of it are actually accepted.
     In order of precedence:
-    * `.config/goreleaser.yml`
-    * `.config/goreleaser.yaml`
-    * `.goreleaser.yml`
-    * `.goreleaser.yaml`
-    * `goreleaser.yml`
-    * `goreleaser.yaml`
+
+    - `.config/goreleaser.yml`
+    - `.config/goreleaser.yaml`
+    - `.goreleaser.yml`
+    - `.goreleaser.yaml`
+    - `goreleaser.yml`
+    - `goreleaser.yaml`
 
 [jsonschema]: http://json-schema.org/draft/2020-12/json-schema-validation.html
 [schema]: ../cmd/goreleaser_jsonschema.md
