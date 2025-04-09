@@ -381,20 +381,44 @@ following build details are exposed:
 | .Ext    | Extension, e.g. `.exe`            |
 | .Target | Build target, e.g. `darwin_amd64` |
 
-## Setting GOMAXPROCS
+## Understanding `GOMAXPROCS` in GoReleaser
 
-GoReleaser will set it on itself automatically to the number of CPUs available.
-When `go build` is called, Go set's it automatically as well.
-Finally, GoReleaser has the `--parallelism` flag, which also sets `GOMAXPROCS`.
-This parallelism is also used internally by GoReleaser, e.g. how many build
-tasks to run in parallel.
+### `GOMAXPROCS` for GoReleaser
 
-For example, if you want 10 internal GoReleaser tasks, but only `GOMAXPROCS=2`
-for the build tasks, you can do this:
+GoReleaser uses
+[`automaxprocs`](https://pkg.go.dev/go.uber.org/automaxprocs/maxprocs) to
+automatically set `GOMAXPROCS` based on available CPUs, including honoring
+container CPU limits.
+This determines the number of threads GoReleaser itself uses internally.
+
+GoReleaser also provides a `--parallelism` flag to control how many internal
+tasks (e.g., builds, archives, uploads) run concurrently.
+If `--parallelism` is not set, GoReleaser defaults to the current value of
+`GOMAXPROCS`.
+
+### `GOMAXPROCS` for `go build` commands
+
+Each `go build` command launched by GoReleaser inherits the environment,
+including `GOMAXPROCS`.
+If `GOMAXPROCS` is not explicitly set, Go will default to the number of **host**
+CPUs.
+
+If you're running inside a container and want to respect CPU limits during
+builds, you must set `GOMAXPROCS` manually.
+
+### Example
+
+If you want GoReleaser to run up to 10 tasks in parallel, but restrict `go
+build` to use only 2 threads:
 
 ```sh
 GOMAXPROCS=2 goreleaser release --parallelism=10
 ```
+
+This configures:
+
+- GoReleaser to run up to 10 internal tasks concurrently
+- `go build` subprocesses to use only 2 OS threads
 
 ## Passing environment variables to ldflags
 
