@@ -99,6 +99,15 @@ const (
 	Metadata
 )
 
+func (t Type) isUploadable() bool {
+	switch t {
+	case Binary, Metadata, SrcInfo, UniversalBinary:
+		return false
+	default:
+		return true
+	}
+}
+
 func (t Type) String() string {
 	switch t {
 	case UploadableArchive:
@@ -476,11 +485,20 @@ func (artifacts *Artifacts) Add(a *Artifact) {
 		}
 	}
 	a.Path = filepath.ToSlash(a.Path)
+	if a.Type.isUploadable() &&
+		slices.ContainsFunc(artifacts.items, func(b *Artifact) bool {
+			return a.Name == b.Name
+		}) {
+		log.WithField("name", a.Name).
+			WithField("details", `this might cause errors when publishing
+please make sure your configuration is correct`).
+			Warn("artifact already present in the list")
+	}
+	artifacts.items = append(artifacts.items, a)
 	log.WithField("name", a.Name).
 		WithField("type", a.Type).
 		WithField("path", a.Path).
 		Debug("added new artifact")
-	artifacts.items = append(artifacts.items, a)
 }
 
 // Remove removes artifacts that match the given filter from the original artifact list.
