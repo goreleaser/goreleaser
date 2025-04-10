@@ -116,6 +116,7 @@ type Locale struct {
 	Publisher           string   `yaml:"Publisher,omitempty"`
 	PublisherURL        string   `yaml:"PublisherUrl,omitempty"`
 	PublisherSupportURL string   `yaml:"PublisherSupportUrl,omitempty"`
+	PrivacyURL          string   `yaml:"PrivacyUrl,omitempty"`
 	Author              string   `yaml:"Author,omitempty"`
 	PackageName         string   `yaml:"PackageName,omitempty"`
 	PackageURL          string   `yaml:"PackageUrl,omitempty"`
@@ -129,6 +130,7 @@ type Locale struct {
 	Tags                []string `yaml:"Tags,omitempty"`
 	ReleaseNotes        string   `yaml:"ReleaseNotes,omitempty"`
 	ReleaseNotesURL     string   `yaml:"ReleaseNotesUrl,omitempty"`
+	InstallationNotes   string   `yaml:"InstallationNotes,omitempty"`
 	ManifestType        string   `yaml:"ManifestType,omitempty"`
 	ManifestVersion     string   `yaml:"ManifestVersion,omitempty"`
 }

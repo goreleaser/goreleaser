@@ -235,6 +235,7 @@ func (p Pipe) doRun(ctx *context.Context, winget config.Winget, cl client.Releas
 		Publisher:           winget.Publisher,
 		PublisherURL:        winget.PublisherURL,
 		PublisherSupportURL: winget.PublisherSupportURL,
+		PrivacyURL:          winget.PrivacyURL,
 		Author:              winget.Author,
 		PackageName:         winget.Name,
 		PackageURL:          winget.Homepage,
@@ -248,6 +249,7 @@ func (p Pipe) doRun(ctx *context.Context, winget config.Winget, cl client.Releas
 		Tags:                fixTags(winget.Tags),
 		ReleaseNotes:        winget.ReleaseNotes,
 		ReleaseNotesURL:     winget.ReleaseNotesURL,
+		InstallationNotes:   winget.InstallationNotes,
 		ManifestType:        "defaultLocale",
 		ManifestVersion:     manifestVersion,
 	}, artifact.WingetDefaultLocale)
