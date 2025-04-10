@@ -105,8 +105,8 @@ kos:
 
     # Path to file where the SBOM will be written
     #
-    # Default: unset - no SBOM written
-    sbom_dir: "out/sbom"
+    # Default: unset - no SBOM written to filesystem (but still uploaded to oci repository).
+    sbom_directory: "out/sbom"
 
     # Ldflags to use on build.
     #

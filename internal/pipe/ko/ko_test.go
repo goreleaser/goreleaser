@@ -180,7 +180,7 @@ func TestPublishPipeSuccess(t *testing.T) {
 	table := []struct {
 		Name                string
 		SBOM                string
-		SBOMDir             string
+		SBOMDirectory       string
 		BaseImage           string
 		Labels              map[string]string
 		ExpectedLabels      map[string]string
@@ -194,18 +194,18 @@ func TestPublishPipeSuccess(t *testing.T) {
 	}{
 		{
 			// Must be first as others add an SBOM for the same image
-			Name:    "sbom-none",
-			SBOM:    "none",
-			SBOMDir: "",
+			Name:          "sbom-none",
+			SBOM:          "none",
+			SBOMDirectory: "",
 		},
 		{
 			Name: "sbom-spdx",
 			SBOM: "spdx",
 		},
 		{
-			Name:    "sbom-spdx-with-dir",
-			SBOM:    "spdx",
-			SBOMDir: "testdata/app/",
+			Name:          "sbom-spdx-with-dir",
+			SBOM:          "spdx",
+			SBOMDirectory: "testdata/app/",
 		},
 		{
 			Name:      "base-image-is-not-index",
@@ -290,7 +290,7 @@ func TestPublishPipeSuccess(t *testing.T) {
 						CreationTime:       table.CreationTime,
 						KoDataCreationTime: table.KoDataCreationTime,
 						SBOM:               table.SBOM,
-						SBOMDir:            table.SBOMDir,
+						SBOMDirectory:      table.SBOMDirectory,
 						Bare:               true,
 					},
 				},

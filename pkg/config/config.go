@@ -416,7 +416,7 @@ type Ko struct {
 	CreationTime        string            `yaml:"creation_time,omitempty" json:"creation_time,omitempty"`
 	KoDataCreationTime  string            `yaml:"ko_data_creation_time,omitempty" json:"ko_data_creation_time,omitempty"`
 	SBOM                string            `yaml:"sbom,omitempty" json:"sbom,omitempty"`
-	SBOMDir             string            `yaml:"sbom_dir,omitempty" json:"sbom_dir,omitempty"`
+	SBOMDirectory       string            `yaml:"sbom_directory,omitempty" json:"sbom_directory,omitempty"`
 	Ldflags             []string          `yaml:"ldflags,omitempty" json:"ldflags,omitempty"`
 	Flags               []string          `yaml:"flags,omitempty" json:"flags,omitempty"`
 	Env                 []string          `yaml:"env,omitempty" json:"env,omitempty"`
