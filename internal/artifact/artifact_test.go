@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"slices"
 	"testing"
 
 	"github.com/goreleaser/goreleaser/v2/internal/golden"
@@ -1017,4 +1018,23 @@ func TestArtifactTypeStringer(t *testing.T) {
 	t.Run("unknown", func(t *testing.T) {
 		require.Equal(t, "unknown", Type(99999).String())
 	})
+}
+
+func TestArtifactTypeIsUploadable(t *testing.T) {
+	nonUploadable := []int{
+		int(Binary),
+		int(Metadata),
+		int(SrcInfo),
+		int(UniversalBinary),
+	}
+	for i := 1; i <= 30; i++ {
+		up := Type(i).isUploadable()
+		t.Run(fmt.Sprintf("%s-%v", Type(i).String(), up), func(t *testing.T) {
+			if slices.Contains(nonUploadable, i) {
+				require.False(t, up)
+				return
+			}
+			require.True(t, up)
+		})
+	}
 }
