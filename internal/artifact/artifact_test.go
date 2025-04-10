@@ -1036,6 +1036,5 @@ func TestArtifactTypeIsUploadable(t *testing.T) {
 			}
 			require.True(t, up)
 		})
-
 	}
 }
