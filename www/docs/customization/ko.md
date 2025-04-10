@@ -106,6 +106,7 @@ kos:
     # Path to file where the SBOM will be written
     #
     # Default: unset - no SBOM written
+		# <!-- md:inline_version v2.9-unreleased -->.
     sbom_dir: "out/sbom"
 
     # Ldflags to use on build.
