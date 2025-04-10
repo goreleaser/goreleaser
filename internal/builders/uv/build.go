@@ -103,7 +103,7 @@ func (b *Builder) WithDefaults(build config.Build) (config.Build, error) {
 	}
 
 	if len(build.Targets) > 1 || build.Targets[0] != defaultTarget {
-		return build, errTargets
+		return build, fmt.Errorf("%w: %s", errTargets, strings.Join(build.Targets, ","))
 	}
 
 	if err := common.ValidateNonGoConfig(build, common.WithBuildMode); err != nil {

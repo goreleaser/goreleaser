@@ -66,7 +66,7 @@ func TestWithDefaults(t *testing.T) {
 			Dir:     "./testdata",
 			Targets: []string{"a-b"},
 		})
-		require.NoError(t, err) // will always use none-any.
+		require.ErrorIs(t, err, errTargets)
 	})
 
 	t.Run("invalid config option", func(t *testing.T) {
@@ -93,20 +93,33 @@ func TestBuild(t *testing.T) {
 		ProjectName: "proj",
 		Builds: []config.Build{
 			{
-				ID:           "proj",
+				ID:           "proj-wheel",
 				ModTimestamp: fmt.Sprintf("%d", modTime.Unix()),
+				BuildDetails: config.BuildDetails{
+					Buildmode: "wheel",
+				},
+			},
+			{
+				ID:           "proj-sdist",
+				ModTimestamp: fmt.Sprintf("%d", modTime.Unix()),
+				BuildDetails: config.BuildDetails{
+					Buildmode: "sdist",
+				},
 			},
 		},
 	})
 
-	build, err := Default.WithDefaults(ctx.Config.Builds[0])
-	require.NoError(t, err)
-	opts := api.Options{
-		Path:   filepath.Join("dist", "proj-all-all", "proj"),
-		Target: Target{},
+	dir := filepath.Join("dist", "proj-all-all", "proj")
+	require.NoError(t, os.MkdirAll(filepath.Dir(dir), 0o755)) // this happens on internal/pipe/build/ when in prod
+	for _, build := range ctx.Config.Builds {
+		build, err := Default.WithDefaults(build)
+		require.NoError(t, err)
+		opts := api.Options{
+			Path:   dir,
+			Target: Target{},
+		}
+		require.NoError(t, Default.Build(ctx, build, opts))
 	}
-	require.NoError(t, os.MkdirAll(filepath.Dir(opts.Path), 0o755)) // this happens on internal/pipe/build/ when in prod
-	require.NoError(t, Default.Build(ctx, build, opts))
 
 	list := ctx.Artifacts
 	require.NoError(t, list.Visit(func(a *artifact.Artifact) error {
@@ -131,7 +144,7 @@ func TestBuild(t *testing.T) {
 			Extra: artifact.Extras{
 				artifact.ExtraBuilder: "uv",
 				artifact.ExtraExt:     ".whl",
-				artifact.ExtraID:      "proj",
+				artifact.ExtraID:      "proj-wheel",
 			},
 		},
 		{
@@ -144,7 +157,7 @@ func TestBuild(t *testing.T) {
 			Extra: artifact.Extras{
 				artifact.ExtraBuilder: "uv",
 				artifact.ExtraExt:     ".tar.gz",
-				artifact.ExtraID:      "proj",
+				artifact.ExtraID:      "proj-sdist",
 			},
 		},
 	}, builds)
