@@ -15,7 +15,7 @@ func TestBlockingFirst(t *testing.T) {
 	g := NewBlockingFirst(New(5))
 	var lock sync.Mutex
 	var counter int
-	for i := 0; i < 10; i++ {
+	for range 10 {
 		g.Go(func() error {
 			time.Sleep(10 * time.Millisecond)
 			lock.Lock()
@@ -32,7 +32,7 @@ func TestBlockingFirstError(t *testing.T) {
 	g := NewBlockingFirst(New(5))
 	var lock sync.Mutex
 	var counter int
-	for i := 0; i < 10; i++ {
+	for range 10 {
 		g.Go(func() error {
 			time.Sleep(10 * time.Millisecond)
 			lock.Lock()
@@ -54,7 +54,7 @@ func TestSemaphore(t *testing.T) {
 			g := New(i)
 			var lock sync.Mutex
 			var counter int
-			for i := 0; i < 10; i++ {
+			for range 10 {
 				g.Go(func() error {
 					time.Sleep(10 * time.Millisecond)
 					lock.Lock()
@@ -73,7 +73,7 @@ func TestSemaphoreOrder(t *testing.T) {
 	num := 10
 	g := New(1)
 	output := []int{}
-	for i := 0; i < num; i++ {
+	for i := range num {
 		g.Go(func() error {
 			output = append(output, i)
 			return nil
@@ -89,7 +89,7 @@ func TestSemaphoreError(t *testing.T) {
 			g := New(i)
 			var lock sync.Mutex
 			output := []int{}
-			for i := 0; i < 10; i++ {
+			for i := range 10 {
 				g.Go(func() error {
 					lock.Lock()
 					defer lock.Unlock()
@@ -107,7 +107,7 @@ func TestSemaphoreSkipAware(t *testing.T) {
 	for _, i := range []int{1, 4} {
 		t.Run(fmt.Sprintf("limit-%d", i), func(t *testing.T) {
 			g := NewSkipAware(New(i))
-			for i := 0; i < 10; i++ {
+			for range 10 {
 				g.Go(func() error {
 					time.Sleep(10 * time.Millisecond)
 					return pipe.Skip("fake skip")
@@ -124,7 +124,7 @@ func TestSemaphoreSkipAwareSingleError(t *testing.T) {
 	for _, i := range []int{1, 4} {
 		t.Run(fmt.Sprintf("limit-%d", i), func(t *testing.T) {
 			g := NewSkipAware(New(i))
-			for i := 0; i < 10; i++ {
+			for i := range 10 {
 				g.Go(func() error {
 					time.Sleep(10 * time.Millisecond)
 					if i == 5 {
@@ -142,7 +142,7 @@ func TestSemaphoreSkipAwareNoSkips(t *testing.T) {
 	for _, i := range []int{1, 4} {
 		t.Run(fmt.Sprintf("limit-%d", i), func(t *testing.T) {
 			g := NewSkipAware(New(i))
-			for i := 0; i < 10; i++ {
+			for range 10 {
 				g.Go(func() error {
 					time.Sleep(10 * time.Millisecond)
 					return nil
@@ -155,7 +155,7 @@ func TestSemaphoreSkipAwareNoSkips(t *testing.T) {
 
 func TestSemaphoreSkipAndRealError(t *testing.T) {
 	g := NewSkipAware(New(10))
-	for i := 0; i < 100; i++ {
+	for range 100 {
 		g.Go(func() error {
 			time.Sleep(10 * time.Millisecond)
 			return pipe.Skip("fake skip")

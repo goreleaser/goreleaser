@@ -1,3 +1,4 @@
+// Package linkedin announces releases on LinkedIn.
 package linkedin
 
 import (
@@ -85,7 +86,7 @@ func (c client) getProfileIDLegacy(ctx stdctx.Context) (string, error) {
 	}
 	defer resp.Body.Close()
 
-	var result map[string]interface{}
+	var result map[string]any
 	err = json.Unmarshal(value, &result)
 	if err != nil {
 		return "", fmt.Errorf("could not unmarshal: %w", err)
@@ -122,7 +123,7 @@ func (c client) getProfileSub(ctx stdctx.Context) (string, error) {
 	}
 	defer resp.Body.Close()
 
-	var result map[string]interface{}
+	var result map[string]any
 	if err := json.Unmarshal(value, &result); err != nil {
 		return "", fmt.Errorf("could not unmarshal: %w", err)
 	}
@@ -195,7 +196,7 @@ func (c client) Share(ctx stdctx.Context, message string) (string, error) {
 	}
 	defer resp.Body.Close()
 
-	var result map[string]interface{}
+	var result map[string]any
 	err = json.Unmarshal(body, &result)
 	if err != nil {
 		return "", fmt.Errorf("could not unmarshal: %w", err)

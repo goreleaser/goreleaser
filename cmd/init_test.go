@@ -116,12 +116,7 @@ func setupInitTest(tb testing.TB) string {
 	tb.Helper()
 
 	folder := tb.TempDir()
-	wd, err := os.Getwd()
-	require.NoError(tb, err)
-	tb.Cleanup(func() {
-		require.NoError(tb, os.Chdir(wd))
-	})
-	require.NoError(tb, os.Chdir(folder))
+	tb.Chdir(folder)
 	return folder
 }
 

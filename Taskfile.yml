@@ -82,17 +82,6 @@ tasks:
     generates:
       - flake.lock
 
-  nix:flake:update-vendor:
-    desc: update default flake package vendor hash
-    cmds:
-      - bash ./scripts/nix-update-flake.sh
-    generates:
-      - flake.nix
-    sources:
-      - flake.lock
-      - go.mod
-      - go.sum
-
   nix:licenses:generate:
     desc: Generate nix/licenses.go
     cmds:
@@ -153,23 +142,40 @@ tasks:
       - convert www/docs/static/avatar.png -define icon:auto-resize=64,48,32,16 www/docs/static/favicon.ico
       - convert www/docs/static/avatar.png -resize x120 www/docs/static/apple-touch-icon.png
 
+  docs:container:build:
+    desc: "Build our mkdocs Docker image"
+    sources:
+      - ./www/Dockerfile
+      - ./www/requirements.txt
+    cmds:
+      - "docker build -t material-mkdocs ./www"
+
   docs:serve:
     desc: Start documentation server
     cmds:
+      - task: docs:container:build
       - task: docs:generate
-      - "mkdocs serve -f www/mkdocs.yml -a 0.0.0.0:8000"
+      - "docker run --rm -p 8000:8000 -v ./www:/docs material-mkdocs"
 
   docs:build:
     desc: Build docs
+    sources:
+      - ./www/docs/
+      - ./www/Dockerfile
+      - ./www/mkdocs.yml
+      - ./www/requirements.txt
+    generates:
+      - ./www/site
     cmds:
+      - task: docs:container:build
       - task: docs:generate
-      - "mkdocs build -f www/mkdocs.yml"
+      - "docker run --rm -v ./www:/docs material-mkdocs build"
 
   docs:test:
     desc: Test docs with htmltest
     cmds:
       - task: docs:build
-      - "htmltest www/site -c www/htmltest.yml"
+      - "docker run -v ./www:/test --rm wjdp/htmltest /test/site -c /test/htmltest.yml"
 
   release:
     desc: Create a new tag
@@ -177,11 +183,23 @@ tasks:
       NEXT:
         sh: svu n
     prompt: "This will release {{.NEXT}}. Continue?"
+    preconditions:
+      - sh: '[ $(git symbolic-ref --short HEAD) = "main" ]'
+        msg: Not on main branch
+      - sh: "[ $(git status --porcelain=2 | wc -l) = 0 ]"
+        msg: "Git is dirty"
     cmds:
       - git tag -d nightly
       - git tag {{.NEXT}}
       - echo {{.NEXT}}
       - git push origin --tags
+
+  release:watch:
+    vars:
+      RUN_ID:
+        sh: "gh run list --workflow=release.yml --limit 1 --json databaseId | jq -r '.[] | .databaseId'"
+    cmds:
+      - gh run watch {{.RUN_ID}}
 
   goreleaser:test:pkg:
     desc: Test a package
@@ -273,9 +291,16 @@ tasks:
     cmds:
       - ./goreleaser release --clean --timeout 60m {{.SNAPSHOT}}
 
+  nightly:watch:
+    vars:
+      RUN_ID:
+        sh: "gh run list --workflow=nightly-oss.yml --limit 1 --json databaseId | jq -r '.[] | .databaseId'"
+    cmds:
+      - gh run watch {{.RUN_ID}}
+
   nightly:
     cmds:
       - gh run list --workflow=nightly-oss.yml
       - gh workflow run nightly-oss.yml
-      - sleep 30
-      - gh run watch
+      - sleep 5
+      - task: nightly:watch

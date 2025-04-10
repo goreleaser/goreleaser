@@ -133,7 +133,7 @@ aur_sources:
     # In this file, you may define functions like `pre_install`, `post_install`,
     # and so on.
     #
-    # <!-- md:inline_version v2.8-unreleased -->.
+    # <!-- md:inline_version v2.8 -->.
     install: ./scripts/install.sh
 
     # Git author used to commit to the repository.
@@ -178,7 +178,7 @@ aur_sources:
     # Whether to disable this particular AUR configuration.
     #
     # Templates: allowed.
-    # <!-- md:inline_version v2.8-unreleased -->.
+    # <!-- md:inline_version v2.8 -->.
     disable: "{{ .IsSnapshot }}"
 ```
 

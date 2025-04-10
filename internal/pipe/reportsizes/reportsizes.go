@@ -1,3 +1,4 @@
+// Package reportsizes reports the sizes of the artifacts.
 package reportsizes
 
 import (

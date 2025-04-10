@@ -104,6 +104,19 @@
 					},
 					"directory": {
 						"type": "string"
+					},
+					"disable": {
+						"oneOf": [
+							{
+								"type": "string"
+							},
+							{
+								"type": "boolean"
+							}
+						]
+					},
+					"install": {
+						"type": "string"
 					}
 				},
 				"additionalProperties": false,
@@ -228,6 +241,19 @@
 					},
 					"directory": {
 						"type": "string"
+					},
+					"disable": {
+						"oneOf": [
+							{
+								"type": "string"
+							},
+							{
+								"type": "boolean"
+							}
+						]
+					},
+					"install": {
+						"type": "string"
 					}
 				},
 				"additionalProperties": false,
@@ -293,7 +319,7 @@
 					"id": {
 						"type": "string"
 					},
-					"builds": {
+					"ids": {
 						"items": {
 							"type": "string"
 						},
@@ -352,6 +378,12 @@
 							"binary"
 						],
 						"default": "tar.gz"
+					},
+					"builds": {
+						"items": {
+							"type": "string"
+						},
+						"type": "array"
 					}
 				},
 				"additionalProperties": false,
@@ -781,7 +813,10 @@
 					}
 				},
 				"additionalProperties": false,
-				"type": "object"
+				"type": "object",
+				"required": [
+					"title"
+				]
 			},
 			"Checksum": {
 				"properties": {
@@ -1652,6 +1687,16 @@
 					},
 					"base_import_paths": {
 						"type": "boolean"
+					},
+					"disable": {
+						"oneOf": [
+							{
+								"type": "string"
+							},
+							{
+								"type": "boolean"
+							}
+						]
 					}
 				},
 				"additionalProperties": false,
@@ -1765,7 +1810,7 @@
 						"type": "string"
 					},
 					"timeout": {
-						"type": "integer"
+						"type": "string"
 					},
 					"wait": {
 						"type": "boolean"
@@ -2009,7 +2054,7 @@
 					"id": {
 						"type": "string"
 					},
-					"builds": {
+					"ids": {
 						"items": {
 							"type": "string"
 						},
@@ -2064,6 +2109,12 @@
 					},
 					"meta": {
 						"type": "boolean"
+					},
+					"builds": {
+						"items": {
+							"type": "string"
+						},
+						"type": "array"
 					}
 				},
 				"additionalProperties": false,
@@ -3456,7 +3507,7 @@
 					"id": {
 						"type": "string"
 					},
-					"builds": {
+					"ids": {
 						"items": {
 							"type": "string"
 						},
@@ -3543,6 +3594,12 @@
 					"extra_files": {
 						"items": {
 							"$ref": "#/$defs/SnapcraftExtraFiles"
+						},
+						"type": "array"
+					},
+					"builds": {
+						"items": {
+							"type": "string"
 						},
 						"type": "array"
 					}

@@ -3,6 +3,7 @@ package golang
 import (
 	"fmt"
 	"regexp"
+	"slices"
 
 	"github.com/caarlos0/log"
 	"github.com/goreleaser/goreleaser/v2/internal/tmpl"
@@ -243,12 +244,7 @@ func valid(target Target) bool {
 }
 
 func contains(s string, ss []string) bool {
-	for _, z := range ss {
-		if z == s {
-			return true
-		}
-	}
-	return false
+	return slices.Contains(ss, s)
 }
 
 // lists from https://go.dev/doc/install/source#environment

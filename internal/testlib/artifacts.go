@@ -11,6 +11,12 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
+func RequireNoExtraField(tb testing.TB, a *artifact.Artifact, key string) {
+	tb.Helper()
+	_, ok := a.Extra[key]
+	require.False(tb, ok)
+}
+
 func RequireEqualArtifacts(tb testing.TB, expected, got []*artifact.Artifact) {
 	tb.Helper()
 	slices.SortFunc(expected, artifactSort)
@@ -34,7 +40,7 @@ func RequireEqualArtifacts(tb testing.TB, expected, got []*artifact.Artifact) {
 				)
 				continue
 			}
-			require.EqualValues(
+			require.Equal(
 				tb,
 				a.Extra[k],
 				b.Extra[k],

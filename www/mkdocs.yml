@@ -170,6 +170,7 @@ nav:
           - customization/winget.md
           - NUR: customization/nix.md
           - AUR: customization/aur.md
+          - customization/npm.md
           - AUR (Sources): customization/aursources.md
           - Krew: customization/krew.md
           - Scoop: customization/scoop.md
@@ -216,7 +217,6 @@ nav:
 
   - More resources:
       - maintainers.md
-      - sponsors.md
       - users.md
       - deprecations.md
       - experiments.md
@@ -271,6 +271,7 @@ nav:
   - Pro: pro.md
   - News:
       - blog/index.md
+  - Sponsors: sponsors.md
 
 markdown_extensions:
   - admonition

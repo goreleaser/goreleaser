@@ -16,7 +16,7 @@ archives:
 
     # IDs of the builds which should be archived in this archive.
     #
-    # <!-- md:inline_version v2.8-unreleased --> (use 'builds' in previous versions).
+    # <!-- md:inline_version v2.8 --> (use 'builds' in previous versions).
     # Default: empty (include all).
     ids:
       - default

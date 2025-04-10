@@ -247,7 +247,7 @@ Previous error:
 			Goarch: docker.Goarch,
 			Goos:   docker.Goos,
 			Goarm:  docker.Goarm,
-			Extra: map[string]interface{}{
+			Extra: map[string]any{
 				dockerConfigExtra: docker,
 			},
 		})
@@ -301,11 +301,7 @@ func processBuildFlagTemplates(ctx *context.Context, docker config.Docker) ([]st
 func dockerPush(ctx *context.Context, image *artifact.Artifact) error {
 	log.WithField("image", image.Name).Info("pushing")
 
-	docker, err := artifact.Extra[config.Docker](*image, dockerConfigExtra)
-	if err != nil {
-		return err
-	}
-
+	docker := artifact.MustExtra[config.Docker](*image, dockerConfigExtra)
 	skip, err := tmpl.New(ctx).Apply(docker.SkipPush)
 	if err != nil {
 		return err
@@ -332,7 +328,7 @@ func dockerPush(ctx *context.Context, image *artifact.Artifact) error {
 		Goarch: image.Goarch,
 		Goos:   image.Goos,
 		Goarm:  image.Goarm,
-		Extra: map[string]interface{}{
+		Extra: map[string]any{
 			dockerConfigExtra:    docker,
 			artifact.ExtraDigest: digest,
 		},

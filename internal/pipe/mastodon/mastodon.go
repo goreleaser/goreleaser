@@ -1,3 +1,4 @@
+// Package mastodon announces releases on Mastodon.
 package mastodon
 
 import (

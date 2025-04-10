@@ -92,7 +92,7 @@ notarize:
         # Allows to set the signature entitlements XML file.
         #
         # Templates: allowed.
-        # Since: v2.6.
+        # <!-- md:inline_version v2.6 -->.
         entitlements: ./path/to/entitlements.xml
 
       # Then, we notarize the binaries.
@@ -178,7 +178,7 @@ jobs:
 
 ## Native
 
-<!-- md:version v2.8-unreleased -->
+<!-- md:version v2.8 -->
 <!-- md:pro -->
 
 This method can sign and notarize [App Bundles][appbundles], but it depends on

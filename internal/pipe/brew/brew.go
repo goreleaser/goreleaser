@@ -121,11 +121,7 @@ func publishAll(ctx *context.Context, cli client.Client) error {
 }
 
 func doPublish(ctx *context.Context, formula *artifact.Artifact, cl client.Client) error {
-	brew, err := artifact.Extra[config.Homebrew](*formula, brewConfigExtra)
-	if err != nil {
-		return err
-	}
-
+	brew := artifact.MustExtra[config.Homebrew](*formula, brewConfigExtra)
 	if strings.TrimSpace(brew.SkipUpload) == "true" {
 		return pipe.Skip("brew.skip_upload is set")
 	}
@@ -277,7 +273,7 @@ func doRun(ctx *context.Context, brew config.Homebrew, cl client.ReleaseURLTempl
 		Name: filename,
 		Path: path,
 		Type: artifact.BrewTap,
-		Extra: map[string]interface{}{
+		Extra: map[string]any{
 			brewConfigExtra: brew,
 		},
 	})
@@ -301,7 +297,7 @@ func doBuildFormula(ctx *context.Context, data templateData) (string, error) {
 	t := template.New("cask.rb")
 	var err error
 	t, err = t.Funcs(map[string]any{
-		"include": func(name string, data interface{}) (string, error) {
+		"include": func(name string, data any) (string, error) {
 			buf := bytes.NewBuffer(nil)
 			if err := t.ExecuteTemplate(buf, name, data); err != nil {
 				return "", err
@@ -371,10 +367,10 @@ func installs(ctx *context.Context, cfg config.Homebrew, art *artifact.Artifact)
 	switch art.Type {
 	case artifact.UploadableBinary:
 		name := art.Name
-		bin := artifact.ExtraOr(*art, artifact.ExtraBinary, art.Name)
+		bin := artifact.MustExtra[string](*art, artifact.ExtraBinary)
 		installMap[fmt.Sprintf("bin.install %q => %q", name, bin)] = true
 	case artifact.UploadableArchive:
-		for _, bin := range artifact.ExtraOr(*art, artifact.ExtraBinaries, []string{}) {
+		for _, bin := range artifact.MustExtra[[]string](*art, artifact.ExtraBinaries) {
 			installMap[fmt.Sprintf("bin.install %q", bin)] = true
 		}
 	}

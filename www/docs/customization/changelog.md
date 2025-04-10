@@ -41,7 +41,7 @@ changelog:
   # - `AuthorEmail`: the author email (considers mailmap if 'git')
   # - `AuthorUsername`: github/gitlab/gitea username - not available if 'git'
   #
-  # Usage with 'git': <!-- md:inline_version v2.8-unreleased -->.
+  # Usage with 'git': <!-- md:inline_version v2.8 -->.
   format: "{{.SHA}}: {{.Message}} (@{{.AuthorUsername}})"
 
   # Sorts the changelog by the commit's messages.

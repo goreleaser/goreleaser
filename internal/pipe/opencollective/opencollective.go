@@ -1,3 +1,4 @@
+// Package opencollective announces the release to Open Collective.
 package opencollective
 
 import (

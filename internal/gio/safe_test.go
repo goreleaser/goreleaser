@@ -18,7 +18,7 @@ func TestSafe(t *testing.T) {
 
 	var wg sync.WaitGroup
 	wg.Add(chars)
-	for i := 0; i < chars; i++ {
+	for range chars {
 		go func() {
 			s, err := io.WriteString(w, "a")
 			assert.Equal(t, 1, s)

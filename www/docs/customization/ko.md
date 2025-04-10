@@ -127,7 +127,7 @@ kos:
     # Whether to disable this particular Ko configuration.
     #
     # Templates: allowed.
-    # <!-- md:inline_version v2.8-unreleased -->.
+    # <!-- md:inline_version v2.8 -->.
     disable: "{{ .IsSnapshot }}"
 
     # Bare uses a tag on the $KO_DOCKER_REPO without anything additional.

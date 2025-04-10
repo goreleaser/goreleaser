@@ -2,6 +2,7 @@ package winget
 
 import (
 	"html/template"
+	"maps"
 	"os"
 	"path/filepath"
 	"strings"
@@ -80,6 +81,37 @@ func TestRunPipe(t *testing.T) {
 			},
 		},
 		{
+			name:       "package id",
+			expectPath: "manifests/b/beckersoft/foo/1.2.1",
+			winget: config.Winget{
+				Name:                "foo",
+				Publisher:           "Beckersoft LTDA",
+				PackageIdentifier:   "beckersoft.foo",
+				PublisherURL:        "https://carlosbecker.com",
+				PublisherSupportURL: "https://carlosbecker.com/support",
+				Copyright:           "bla bla bla",
+				CopyrightURL:        "https://goreleaser.com/copyright",
+				Author:              "Carlos Becker",
+				Repository:          config.RepoRef{Owner: "foo", Name: "bar"},
+				CommitAuthor:        config.CommitAuthor{},
+				IDs:                 []string{"foo"},
+				Goamd64:             "v1",
+				SkipUpload:          "false",
+				ShortDescription:    "foo",
+				Description: `long foo bar
+
+				yadaa yada yada loooaaasssss
+
+				sss`,
+				Homepage:        "https://goreleaser.com",
+				License:         "MIT",
+				LicenseURL:      "https://goreleaser.com/eula/",
+				ReleaseNotesURL: "https://github.com/goreleaser/goreleaser/tags/{{.Tag}}",
+				ReleaseNotes:    "{{.Changelog}}",
+				Tags:            []string{"foo", "bar", "foo bar baz"},
+			},
+		},
+		{
 			name:       "full",
 			expectPath: "manifests/b/Beckersoft LTDA/foo/1.2.1",
 			winget: config.Winget{
@@ -107,7 +139,7 @@ func TestRunPipe(t *testing.T) {
 				LicenseURL:      "https://goreleaser.com/eula/",
 				ReleaseNotesURL: "https://github.com/goreleaser/goreleaser/tags/{{.Tag}}",
 				ReleaseNotes:    "{{.Changelog}}",
-				Tags:            []string{"foo", "bar"},
+				Tags:            []string{"Foo", "bar", "FoO BaSiMdrR LAmd"},
 			},
 		},
 		{
@@ -647,16 +679,14 @@ func TestRunPipe(t *testing.T) {
 					Goarm:   goarm,
 					Goamd64: goamd64,
 					Type:    artifact.UploadableArchive,
-					Extra: map[string]interface{}{
+					Extra: map[string]any{
 						artifact.ExtraID:        id,
 						artifact.ExtraFormat:    "zip",
 						artifact.ExtraBinaries:  []string{"foo.exe"},
 						artifact.ExtraWrappedIn: "",
 					},
 				}
-				for k, v := range extra {
-					art.Extra[k] = v
-				}
+				maps.Copy(art.Extra, extra)
 				ctx.Artifacts.Add(&art)
 
 				require.NoError(t, os.MkdirAll(filepath.Dir(path), 0o755))
@@ -683,7 +713,7 @@ func TestRunPipe(t *testing.T) {
 				Goos:   goos,
 				Goarch: goarch,
 				Type:   artifact.UploadableBinary,
-				Extra: map[string]interface{}{
+				Extra: map[string]any{
 					artifact.ExtraID: "bar",
 				},
 			})
@@ -816,8 +846,9 @@ func TestFormatBinary(t *testing.T) {
 			Goarch:  goarch,
 			Goamd64: goamd64,
 			Type:    artifact.UploadableBinary,
-			Extra: map[string]interface{}{
-				artifact.ExtraID: id,
+			Extra: map[string]any{
+				artifact.ExtraID:     id,
+				artifact.ExtraBinary: "somebin",
 			},
 		}
 		ctx.Artifacts.Add(&art)

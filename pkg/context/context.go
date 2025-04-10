@@ -8,6 +8,7 @@ package context
 
 import (
 	stdctx "context"
+	"maps"
 	"os"
 	"runtime"
 	"strings"
@@ -41,9 +42,7 @@ type Env map[string]string
 // Copy returns a copy of the environment.
 func (e Env) Copy() Env {
 	out := Env{}
-	for k, v := range e {
-		out[k] = v
-	}
+	maps.Copy(out, e)
 	return out
 }
 
@@ -111,6 +110,8 @@ type Context struct {
 	Semver            Semver
 	Runtime           Runtime
 	Skips             map[string]bool
+
+	NotifiedDeprecations map[string]struct{}
 }
 
 type Runtime struct {
@@ -140,13 +141,14 @@ func NewWithTimeout(config config.Project, timeout time.Duration) (*Context, std
 // Wrap wraps an existing context.
 func Wrap(ctx stdctx.Context, config config.Project) *Context {
 	return &Context{
-		Context:     ctx,
-		Config:      config,
-		Env:         ToEnv(append(os.Environ(), config.Env...)),
-		Parallelism: 4,
-		Artifacts:   artifact.New(),
-		Date:        time.Now(),
-		Skips:       map[string]bool{},
+		Context:              ctx,
+		Config:               config,
+		Env:                  ToEnv(append(os.Environ(), config.Env...)),
+		Parallelism:          4,
+		Artifacts:            artifact.New(),
+		Date:                 time.Now(),
+		Skips:                map[string]bool{},
+		NotifiedDeprecations: map[string]struct{}{},
 		Runtime: Runtime{
 			Goos:   runtime.GOOS,
 			Goarch: runtime.GOARCH,

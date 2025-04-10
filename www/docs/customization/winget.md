@@ -153,6 +153,9 @@ winget:
     release_notes_url: "https://foo.bar/changelog/{{.Version}}"
 
     # Tags.
+    #
+    # GoReleaser converts all tags to lowercase and replace 
+    # spaces with hyphens (-) as per winget's best practices.
     tags:
       - golang
       - cli

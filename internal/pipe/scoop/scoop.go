@@ -182,7 +182,7 @@ func doRun(ctx *context.Context, scoop config.Scoop, cl client.ReleaseURLTemplat
 		Name: filename,
 		Path: path,
 		Type: artifact.ScoopManifest,
-		Extra: map[string]interface{}{
+		Extra: map[string]any{
 			scoopConfigExtra: scoop,
 		},
 	})
@@ -208,11 +208,7 @@ func publishAll(ctx *context.Context, cli client.Client) error {
 }
 
 func doPublish(ctx *context.Context, manifest *artifact.Artifact, cl client.Client) error {
-	scoop, err := artifact.Extra[config.Scoop](*manifest, scoopConfigExtra)
-	if err != nil {
-		return err
-	}
-
+	scoop := artifact.MustExtra[config.Scoop](*manifest, scoopConfigExtra)
 	if strings.TrimSpace(scoop.SkipUpload) == "true" {
 		return pipe.Skip("scoop.skip_upload is true")
 	}
@@ -368,14 +364,9 @@ func dataFor(ctx *context.Context, scoop config.Scoop, cl client.ReleaseURLTempl
 			WithField("sum", sum).
 			Debug("scoop url templating")
 
-		binaries, err := binaries(*artifact)
-		if err != nil {
-			return manifest, err
-		}
-
 		manifest.Architecture[arch] = Resource{
 			URL:  url,
-			Bin:  binaries,
+			Bin:  binaries(*artifact),
 			Hash: sum,
 		}
 	}
@@ -383,16 +374,13 @@ func dataFor(ctx *context.Context, scoop config.Scoop, cl client.ReleaseURLTempl
 	return manifest, nil
 }
 
-func binaries(a artifact.Artifact) ([]string, error) {
+func binaries(a artifact.Artifact) []string {
 	//nolint:prealloc
 	var result []string
 	wrap := artifact.ExtraOr(a, artifact.ExtraWrappedIn, "")
-	bins, err := artifact.Extra[[]string](a, artifact.ExtraBinaries)
-	if err != nil {
-		return nil, err
-	}
+	bins := artifact.MustExtra[[]string](a, artifact.ExtraBinaries)
 	for _, b := range bins {
 		result = append(result, filepath.ToSlash(filepath.Join(wrap, b)))
 	}
-	return result, nil
+	return result
 }

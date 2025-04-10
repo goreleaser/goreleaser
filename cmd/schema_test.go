@@ -22,7 +22,7 @@ func TestGenerateSchema(t *testing.T) {
 		require.NoError(t, outFile.Close())
 	})
 
-	schema := map[string]interface{}{}
+	schema := map[string]any{}
 	require.NoError(t, json.NewDecoder(outFile).Decode(&schema))
 	require.Equal(t, "https://json-schema.org/draft/2020-12/schema", schema["$schema"].(string))
 }

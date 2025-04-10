@@ -3,6 +3,7 @@
 GoReleaser Pro is a paid, closed-source GoReleaser distribution with some
 additional features:
 
+- [x] Publish to [NPM registries](customization/npm.md);
 - [x] Native macOS App Bundles signing and DMG
       [notarization](customization/notarize.md#native);
 - [x] Use [AI](customization/changelog.md#enhance-with-ai) to improve/format

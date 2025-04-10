@@ -27,7 +27,7 @@ goreleaser release [flags]
       --release-notes string         Load custom release notes from a markdown file (will skip GoReleaser changelog generation)
       --release-notes-tmpl string    Load custom release notes from a templated markdown file (overrides --release-notes)
       --single-target                Builds only for current GOOS and GOARCH, regardless of what's set in the configuration file (implies --skip=publish) (Pro only)
-      --skip strings                 Skip the given options (valid options are: after, announce, archive, aur, aur-source, before, before-publish, chocolatey, cloudsmith, dmg, docker, dockerhub, fury, homebrew, ko, msi, nfpm, nix, notarize, publish, report-sizes, sbom, scoop, sign, snapcraft, validate, winget)
+      --skip strings                 Skip the given options (valid options are: after, announce, archive, aur, aur-source, before, before-publish, chocolatey, cloudsmith, dmg, docker, dockerhub, fury, homebrew, ko, msi, nfpm, nix, notarize, npm, publish, report-sizes, sbom, scoop, sign, snapcraft, validate, winget)
       --snapshot                     Generate an unversioned snapshot release, skipping all validations and without publishing any artifacts (implies --skip=announce,publish,validate)
       --split                        Split the build so it can be merged and published later (implies --prepare) (Pro only)
       --timeout duration             Timeout to the entire release process (default 30m0s)
