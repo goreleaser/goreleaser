@@ -93,6 +93,10 @@ const (
 	CShared
 	// Metadata is an internal goreleaser metadata JSON file.
 	Metadata
+	// SourceRPM is a source RPM.
+	SourceRPM
+	// RPMSpec is an RPM .spec file.
+	RPMSpec
 )
 
 func (t Type) isUploadable() bool {
@@ -156,6 +160,10 @@ func (t Type) String() string {
 		return "Nixpkg"
 	case Metadata:
 		return "Metadata"
+	case SourceRPM:
+		return "Source RPM"
+	case RPMSpec:
+		return "RPM Spec"
 	default:
 		return "unknown"
 	}
