@@ -6,6 +6,7 @@ PackageLocale: en-US
 Publisher: Beckersoft LTDA
 PublisherUrl: https://carlosbecker.com
 PublisherSupportUrl: https://carlosbecker.com/support
+PrivacyURL: https://carlosbecker.com/privacy
 Author: Carlos Becker
 PackageName: foo
 PackageUrl: https://goreleaser.com

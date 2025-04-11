@@ -27,5 +27,6 @@ Tags:
   - foo-basimdrr-lamd
 ReleaseNotes: the changelog for this release...
 ReleaseNotesUrl: https://github.com/goreleaser/goreleaser/tags/v1.2.1
+InstallationNotes: https://goreleaser.com/install/
 ManifestType: defaultLocale
 ManifestVersion: 1.10.0
