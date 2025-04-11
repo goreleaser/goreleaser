@@ -13,6 +13,8 @@
     <img alt="Bun" src="./www/docs/static/bun-dark.svg#gh-dark-mode-only" height="60" />
     <img alt="Deno" src="./www/docs/static/deno-light.svg#gh-light-mode-only" height="60" />
     <img alt="Deno" src="./www/docs/static/deno-dark.svg#gh-dark-mode-only" height="60" />
+    <img alt="Python" src="./www/docs/static/python-light.svg#gh-light-mode-only" height="60" />
+    <img alt="Python" src="./www/docs/static/python-dark.svg#gh-dark-mode-only" height="60" />
   </p>
 </p>
 
