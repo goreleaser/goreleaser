@@ -1,3 +1,4 @@
+// Package twitter announces releases on Twitter.
 package twitter
 
 import (

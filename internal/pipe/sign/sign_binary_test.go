@@ -98,7 +98,7 @@ func TestBinarySign(t *testing.T) {
 			Path:   filepath.Join(tmpdir, "bin1"),
 			Type:   artifact.Binary,
 			Goarch: "amd64",
-			Extra: map[string]interface{}{
+			Extra: map[string]any{
 				artifact.ExtraID: "foo",
 			},
 		})
@@ -107,7 +107,7 @@ func TestBinarySign(t *testing.T) {
 			Path:   filepath.Join(tmpdir, "bin2"),
 			Type:   artifact.Binary,
 			Goarch: "arm64",
-			Extra: map[string]interface{}{
+			Extra: map[string]any{
 				artifact.ExtraID: "bar",
 			},
 		})

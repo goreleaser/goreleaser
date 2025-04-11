@@ -3,6 +3,7 @@ package experimental
 
 import (
 	"os"
+	"slices"
 	"strings"
 )
 
@@ -22,10 +23,5 @@ func DefaultGOARM() string {
 
 func has(e string) bool {
 	experiments := strings.Split(os.Getenv(envKey), ",")
-	for _, exp := range experiments {
-		if exp == e {
-			return true
-		}
-	}
-	return false
+	return slices.Contains(experiments, e)
 }

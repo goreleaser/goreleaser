@@ -46,7 +46,7 @@ func (CheckGoModPipe) Run(ctx *context.Context) error {
 			log.Errorf("could not check %q", path)
 			return nil
 		}
-		for _, line := range strings.Split(string(mod), "\n") {
+		for line := range strings.SplitSeq(string(mod), "\n") {
 			if !replaceRe.MatchString(line) {
 				continue
 			}

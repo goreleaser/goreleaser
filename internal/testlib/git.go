@@ -102,7 +102,7 @@ func GitMakeBareRepository(tb testing.TB) string {
 	tb.Helper()
 	dir := tb.TempDir()
 	_, err := git.Run(
-		context.Background(),
+		tb.Context(),
 		"-C", dir,
 		"-c", "init.defaultBranch=master",
 		"init",

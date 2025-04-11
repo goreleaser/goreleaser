@@ -1,3 +1,4 @@
+// Package upx compresses binaries using upx.
 package upx
 
 import (

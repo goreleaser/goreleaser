@@ -54,7 +54,7 @@ func TestRunPipeError(t *testing.T) {
 		Goarch: "amd64",
 		Goos:   "linux",
 		Type:   artifact.Binary,
-		Extra: map[string]interface{}{
+		Extra: map[string]any{
 			artifact.ExtraID: "foo",
 		},
 	})
@@ -85,7 +85,7 @@ func TestRunPipeInvalidFormat(t *testing.T) {
 				Goarch: goarch,
 				Goos:   goos,
 				Type:   artifact.Binary,
-				Extra: map[string]interface{}{
+				Extra: map[string]any{
 					artifact.ExtraID: "foo",
 				},
 			})
@@ -230,7 +230,7 @@ func TestRunPipe(t *testing.T) {
 						Goos:   goos,
 						Goarm:  goarm,
 						Type:   artifact.Binary,
-						Extra: map[string]interface{}{
+						Extra: map[string]any{
 							artifact.ExtraID: "default",
 						},
 					})
@@ -241,7 +241,7 @@ func TestRunPipe(t *testing.T) {
 						Goos:   goos,
 						Goarm:  goarm,
 						Type:   artifact.Header,
-						Extra: map[string]interface{}{
+						Extra: map[string]any{
 							artifact.ExtraID: "lib1",
 						},
 					})
@@ -252,7 +252,7 @@ func TestRunPipe(t *testing.T) {
 						Goos:   goos,
 						Goarm:  goarm,
 						Type:   artifact.CShared,
-						Extra: map[string]interface{}{
+						Extra: map[string]any{
 							artifact.ExtraID: "lib2",
 						},
 					})
@@ -263,7 +263,7 @@ func TestRunPipe(t *testing.T) {
 						Goos:   goos,
 						Goarm:  goarm,
 						Type:   artifact.CArchive,
-						Extra: map[string]interface{}{
+						Extra: map[string]any{
 							artifact.ExtraID: "lib3",
 						},
 					})
@@ -277,7 +277,7 @@ func TestRunPipe(t *testing.T) {
 						Goos:    goos,
 						Goamd64: goamd64,
 						Type:    artifact.Binary,
-						Extra: map[string]interface{}{
+						Extra: map[string]any{
 							artifact.ExtraID: "default",
 						},
 					})
@@ -288,7 +288,7 @@ func TestRunPipe(t *testing.T) {
 						Goos:    goos,
 						Goamd64: goamd64,
 						Type:    artifact.Header,
-						Extra: map[string]interface{}{
+						Extra: map[string]any{
 							artifact.ExtraID: "lib1",
 						},
 					})
@@ -299,7 +299,7 @@ func TestRunPipe(t *testing.T) {
 						Goos:    goos,
 						Goamd64: goamd64,
 						Type:    artifact.CShared,
-						Extra: map[string]interface{}{
+						Extra: map[string]any{
 							artifact.ExtraID: "lib2",
 						},
 					})
@@ -310,7 +310,7 @@ func TestRunPipe(t *testing.T) {
 						Goos:    goos,
 						Goamd64: goamd64,
 						Type:    artifact.CArchive,
-						Extra: map[string]interface{}{
+						Extra: map[string]any{
 							artifact.ExtraID: "lib3",
 						},
 					})
@@ -324,7 +324,7 @@ func TestRunPipe(t *testing.T) {
 						Goos:   goos,
 						Gomips: gomips,
 						Type:   artifact.Binary,
-						Extra: map[string]interface{}{
+						Extra: map[string]any{
 							artifact.ExtraID: "default",
 						},
 					})
@@ -335,7 +335,7 @@ func TestRunPipe(t *testing.T) {
 						Goos:   goos,
 						Gomips: gomips,
 						Type:   artifact.Header,
-						Extra: map[string]interface{}{
+						Extra: map[string]any{
 							artifact.ExtraID: "lib1",
 						},
 					})
@@ -346,7 +346,7 @@ func TestRunPipe(t *testing.T) {
 						Goos:   goos,
 						Gomips: gomips,
 						Type:   artifact.CShared,
-						Extra: map[string]interface{}{
+						Extra: map[string]any{
 							artifact.ExtraID: "lib2",
 						},
 					})
@@ -357,7 +357,7 @@ func TestRunPipe(t *testing.T) {
 						Goos:   goos,
 						Gomips: gomips,
 						Type:   artifact.CArchive,
-						Extra: map[string]interface{}{
+						Extra: map[string]any{
 							artifact.ExtraID: "lib3",
 						},
 					})
@@ -369,7 +369,7 @@ func TestRunPipe(t *testing.T) {
 					Goarch: goarch,
 					Goos:   goos,
 					Type:   artifact.Binary,
-					Extra: map[string]interface{}{
+					Extra: map[string]any{
 						artifact.ExtraID: "default",
 					},
 				})
@@ -379,7 +379,7 @@ func TestRunPipe(t *testing.T) {
 					Goarch: goarch,
 					Goos:   goos,
 					Type:   artifact.Header,
-					Extra: map[string]interface{}{
+					Extra: map[string]any{
 						artifact.ExtraID: "lib1",
 					},
 				})
@@ -389,7 +389,7 @@ func TestRunPipe(t *testing.T) {
 					Goarch: goarch,
 					Goos:   goos,
 					Type:   artifact.CShared,
-					Extra: map[string]interface{}{
+					Extra: map[string]any{
 						artifact.ExtraID: "lib2",
 					},
 				})
@@ -399,7 +399,7 @@ func TestRunPipe(t *testing.T) {
 					Goarch: goarch,
 					Goos:   goos,
 					Type:   artifact.CArchive,
-					Extra: map[string]interface{}{
+					Extra: map[string]any{
 						artifact.ExtraID: "lib3",
 					},
 				})
@@ -413,7 +413,7 @@ func TestRunPipe(t *testing.T) {
 	for _, pkg := range packages {
 		format := pkg.Format()
 		require.NotEmpty(t, format)
-		require.Equal(t, "."+pkg.Format(), artifact.ExtraOr(*pkg, artifact.ExtraExt, ""))
+		require.Equal(t, "."+pkg.Format(), pkg.Ext())
 		arch := pkg.Goarch
 		if pkg.Goarm != "" {
 			arch += "v" + pkg.Goarm
@@ -451,7 +451,7 @@ func TestRunPipe(t *testing.T) {
 		require.NoError(t, err)
 		require.Equal(t, now.UTC(), stat.ModTime().UTC())
 
-		contents := artifact.ExtraOr(*pkg, extraFiles, files.Contents{})
+		contents := artifact.MustExtra[files.Contents](*pkg, extraFiles)
 		for _, src := range contents {
 			require.NotNil(t, src.FileInfo, src.Destination)
 			require.Equal(t, now.UTC(), src.FileInfo.MTime.UTC(), src.Destination)
@@ -508,7 +508,7 @@ func TestRunPipe(t *testing.T) {
 			header,
 			carchive,
 			cshared,
-		}, destinations(artifact.ExtraOr(*pkg, extraFiles, files.Contents{})))
+		}, destinations(artifact.MustExtra[files.Contents](*pkg, extraFiles)))
 	}
 	require.Len(t, ctx.Config.NFPMs[0].Contents, 8, "should not modify the config file list")
 }
@@ -619,7 +619,7 @@ func doTestRunPipeConventionalNameTemplate(t *testing.T, snapshot bool) {
 					Goos:    goos,
 					Goarm64: "v8.0",
 					Type:    artifact.Binary,
-					Extra: map[string]interface{}{
+					Extra: map[string]any{
 						artifact.ExtraID: "default",
 					},
 				})
@@ -632,7 +632,7 @@ func doTestRunPipeConventionalNameTemplate(t *testing.T, snapshot bool) {
 						Goos:   goos,
 						Goarm:  goarm,
 						Type:   artifact.Binary,
-						Extra: map[string]interface{}{
+						Extra: map[string]any{
 							artifact.ExtraID: "default",
 						},
 					})
@@ -646,7 +646,7 @@ func doTestRunPipeConventionalNameTemplate(t *testing.T, snapshot bool) {
 						Goos:    goos,
 						Goamd64: goamd64,
 						Type:    artifact.Binary,
-						Extra: map[string]interface{}{
+						Extra: map[string]any{
 							artifact.ExtraID: "default",
 						},
 					})
@@ -660,7 +660,7 @@ func doTestRunPipeConventionalNameTemplate(t *testing.T, snapshot bool) {
 						Goos:   goos,
 						Gomips: gomips,
 						Type:   artifact.Binary,
-						Extra: map[string]interface{}{
+						Extra: map[string]any{
 							artifact.ExtraID: "default",
 						},
 					})
@@ -673,7 +673,7 @@ func doTestRunPipeConventionalNameTemplate(t *testing.T, snapshot bool) {
 					Goos:   goos,
 					Go386:  "sse2",
 					Type:   artifact.Binary,
-					Extra: map[string]interface{}{
+					Extra: map[string]any{
 						artifact.ExtraID: "default",
 					},
 				})
@@ -685,7 +685,7 @@ func doTestRunPipeConventionalNameTemplate(t *testing.T, snapshot bool) {
 					Goos:      goos,
 					Goriscv64: "rva22u64",
 					Type:      artifact.Binary,
-					Extra: map[string]interface{}{
+					Extra: map[string]any{
 						artifact.ExtraID: "default",
 					},
 				})
@@ -697,7 +697,7 @@ func doTestRunPipeConventionalNameTemplate(t *testing.T, snapshot bool) {
 					Goos:    goos,
 					Goppc64: "power9",
 					Type:    artifact.Binary,
-					Extra: map[string]interface{}{
+					Extra: map[string]any{
 						artifact.ExtraID: "default",
 					},
 				})
@@ -708,7 +708,7 @@ func doTestRunPipeConventionalNameTemplate(t *testing.T, snapshot bool) {
 					Goarch: goarch,
 					Goos:   goos,
 					Type:   artifact.Binary,
-					Extra: map[string]interface{}{
+					Extra: map[string]any{
 						artifact.ExtraID: "default",
 					},
 				})
@@ -789,8 +789,8 @@ func doTestRunPipeConventionalNameTemplate(t *testing.T, snapshot bool) {
 			prefix + "_1.0.0_riscv64.deb",
 		}, pkg.Name, "package name is not expected")
 		require.Equal(t, "someid", pkg.ID())
-		require.ElementsMatch(t, []string{binPath}, sources(artifact.ExtraOr(*pkg, extraFiles, files.Contents{})))
-		require.ElementsMatch(t, []string{"/usr/bin/subdir/mybin"}, destinations(artifact.ExtraOr(*pkg, extraFiles, files.Contents{})))
+		require.ElementsMatch(t, []string{binPath}, sources(artifact.MustExtra[files.Contents](*pkg, extraFiles)))
+		require.ElementsMatch(t, []string{"/usr/bin/subdir/mybin"}, destinations(artifact.MustExtra[files.Contents](*pkg, extraFiles)))
 	}
 }
 
@@ -813,7 +813,7 @@ func TestInvalidTemplate(t *testing.T) {
 			Goos:   "linux",
 			Goarch: "amd64",
 			Type:   artifact.Binary,
-			Extra: map[string]interface{}{
+			Extra: map[string]any{
 				artifact.ExtraID: "default",
 			},
 		})
@@ -928,7 +928,7 @@ func TestRunPipeInvalidContentsSourceTemplate(t *testing.T) {
 		Goos:   "linux",
 		Goarch: "amd64",
 		Type:   artifact.Binary,
-		Extra: map[string]interface{}{
+		Extra: map[string]any{
 			artifact.ExtraID: "default",
 		},
 	})
@@ -949,7 +949,7 @@ func TestNoBuildsFound(t *testing.T) {
 		Goos:   "linux",
 		Goarch: "amd64",
 		Type:   artifact.Binary,
-		Extra: map[string]interface{}{
+		Extra: map[string]any{
 			artifact.ExtraID: "default",
 		},
 	})
@@ -986,7 +986,7 @@ func TestCreateFileDoesntExist(t *testing.T) {
 		Goos:   "linux",
 		Goarch: "amd64",
 		Type:   artifact.Binary,
-		Extra: map[string]interface{}{
+		Extra: map[string]any{
 			artifact.ExtraID: "default",
 		},
 	})
@@ -1013,7 +1013,7 @@ func TestInvalidConfig(t *testing.T) {
 		Goos:   "linux",
 		Goarch: "amd64",
 		Type:   artifact.Binary,
-		Extra: map[string]interface{}{
+		Extra: map[string]any{
 			artifact.ExtraID: "default",
 		},
 	})
@@ -1123,7 +1123,7 @@ func TestDebSpecificConfig(t *testing.T) {
 					Goarch: goarch,
 					Goos:   goos,
 					Type:   artifact.Binary,
-					Extra: map[string]interface{}{
+					Extra: map[string]any{
 						artifact.ExtraID: "default",
 					},
 				})
@@ -1255,7 +1255,7 @@ func TestRPMSpecificConfig(t *testing.T) {
 				Goarch: goarch,
 				Goos:   goos,
 				Type:   artifact.Binary,
-				Extra: map[string]interface{}{
+				Extra: map[string]any{
 					artifact.ExtraID: "default",
 				},
 			})
@@ -1322,7 +1322,7 @@ func TestRPMSpecificScriptsConfig(t *testing.T) {
 				Goarch: goarch,
 				Goos:   goos,
 				Type:   artifact.Binary,
-				Extra: map[string]interface{}{
+				Extra: map[string]any{
 					artifact.ExtraID: "default",
 				},
 			})
@@ -1389,7 +1389,7 @@ func TestAPKSpecificConfig(t *testing.T) {
 				Goarch: goarch,
 				Goos:   goos,
 				Type:   artifact.Binary,
-				Extra: map[string]interface{}{
+				Extra: map[string]any{
 					artifact.ExtraID: "default",
 				},
 			})
@@ -1464,7 +1464,7 @@ func TestAPKSpecificScriptsConfig(t *testing.T) {
 				Goarch: goarch,
 				Goos:   goos,
 				Type:   artifact.Binary,
-				Extra: map[string]interface{}{
+				Extra: map[string]any{
 					artifact.ExtraID: "default",
 				},
 			})
@@ -1547,7 +1547,7 @@ func TestIPKSpecificConfig(t *testing.T) {
 				Goarch: goarch,
 				Goos:   goos,
 				Type:   artifact.Binary,
-				Extra: map[string]interface{}{
+				Extra: map[string]any{
 					artifact.ExtraID: "default",
 				},
 			})
@@ -1646,7 +1646,7 @@ func TestMeta(t *testing.T) {
 				Goarch: goarch,
 				Goos:   goos,
 				Type:   artifact.Binary,
-				Extra: map[string]interface{}{
+				Extra: map[string]any{
 					artifact.ExtraID: "default",
 				},
 			})
@@ -1665,7 +1665,7 @@ func TestMeta(t *testing.T) {
 			"/usr/share/testfile.txt",
 			"/etc/nope.conf",
 			"/etc/nope-rpm.conf",
-		}, destinations(artifact.ExtraOr(*pkg, extraFiles, files.Contents{})))
+		}, destinations(artifact.MustExtra[files.Contents](*pkg, extraFiles)))
 	}
 
 	require.Len(t, ctx.Config.NFPMs[0].Contents, 4, "should not modify the config file list")
@@ -1723,7 +1723,7 @@ func TestSkipSign(t *testing.T) {
 				Goarch: goarch,
 				Goos:   goos,
 				Type:   artifact.Binary,
-				Extra: map[string]interface{}{
+				Extra: map[string]any{
 					artifact.ExtraID: "default",
 				},
 			})
@@ -1787,7 +1787,7 @@ func TestBinDirTemplating(t *testing.T) {
 				Goarch: goarch,
 				Goos:   goos,
 				Type:   artifact.Binary,
-				Extra: map[string]interface{}{
+				Extra: map[string]any{
 					artifact.ExtraID: "default",
 				},
 			})
@@ -1802,7 +1802,7 @@ func TestBinDirTemplating(t *testing.T) {
 		// the final binary should contain the evaluated bindir (after template eval)
 		require.ElementsMatch(t, []string{
 			"/usr/lib/pro/nagios/plugins/subdir/mybin",
-		}, destinations(artifact.ExtraOr(*pkg, extraFiles, files.Contents{})))
+		}, destinations(artifact.MustExtra[files.Contents](*pkg, extraFiles)))
 	}
 }
 
@@ -1850,7 +1850,7 @@ func TestTemplateExt(t *testing.T) {
 		Goos:   "android",
 		Goarch: "amd64",
 		Type:   artifact.Binary,
-		Extra: map[string]interface{}{
+		Extra: map[string]any{
 			artifact.ExtraID: "default",
 		},
 	})
@@ -1859,7 +1859,7 @@ func TestTemplateExt(t *testing.T) {
 		Goos:   "linux",
 		Goarch: "amd64",
 		Type:   artifact.Binary,
-		Extra: map[string]interface{}{
+		Extra: map[string]any{
 			artifact.ExtraID: "default",
 		},
 	})

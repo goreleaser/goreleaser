@@ -1,3 +1,4 @@
+// Package errhandler handles errors.
 package errhandler
 
 import (

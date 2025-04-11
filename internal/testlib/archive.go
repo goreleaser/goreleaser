@@ -50,7 +50,7 @@ func LsArchive(tb testing.TB, path, format string) []string {
 	case "zip":
 		return lsZip(tb, f)
 	case "gz":
-		return []string{openGzip(tb, f).Header.Name}
+		return []string{openGzip(tb, f).Name}
 	default:
 		tb.Errorf("invalid format: %s", format)
 		return nil

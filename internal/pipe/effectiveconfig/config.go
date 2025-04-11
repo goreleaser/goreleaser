@@ -1,3 +1,4 @@
+// Package effectiveconfig writes the effective config file to dist.
 package effectiveconfig
 
 import (

@@ -41,7 +41,7 @@ func TestSkipMementoNoErrors(t *testing.T) {
 func TestDetails(t *testing.T) {
 	og := errors.New("fake")
 	err := NewDetailedError(og, "foo", "bar", "hi", 10)
-	require.EqualValues(t, map[string]any{
+	require.Equal(t, map[string]any{
 		"foo": "bar",
 		"hi":  10,
 	}, DetailsOf(err))
@@ -53,7 +53,7 @@ func TestDetails(t *testing.T) {
 func TestDetailsOdd(t *testing.T) {
 	og := errors.New("fake")
 	err := NewDetailedError(og, "foo", "bar", "hi")
-	require.EqualValues(t, map[string]any{
+	require.Equal(t, map[string]any{
 		"foo": "bar",
 		"hi":  "missing value",
 	}, DetailsOf(err))

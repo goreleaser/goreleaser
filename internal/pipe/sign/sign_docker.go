@@ -11,7 +11,7 @@ import (
 	"github.com/goreleaser/goreleaser/v2/pkg/context"
 )
 
-// Pipe that signs docker images and manifests.
+// DockerPipe that signs docker images and manifests.
 type DockerPipe struct{}
 
 func (DockerPipe) String() string { return "signing docker images" }

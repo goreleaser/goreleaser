@@ -2,6 +2,7 @@ package nix
 
 import (
 	"html/template"
+	"maps"
 	"os"
 	"os/exec"
 	"path/filepath"
@@ -36,13 +37,13 @@ func TestSkip(t *testing.T) {
 		}, testctx.Skip(skips.Nix))))
 	})
 	t.Run("nix-all-good", func(t *testing.T) {
-		testlib.CheckPath(t, "nix-prefetch-url")
+		testlib.CheckPath(t, "nix-hash")
 		testlib.SkipIfWindows(t, "nix doesn't work on windows")
 		require.False(t, NewPublish().Skip(testctx.NewWithCfg(config.Project{
 			Nix: []config.Nix{{}},
 		})))
 	})
-	t.Run("prefetcher-not-in-path", func(t *testing.T) {
+	t.Run("nix-hash-not-in-path", func(t *testing.T) {
 		t.Setenv("PATH", "nope")
 		require.True(t, NewPublish().Skip(testctx.NewWithCfg(config.Project{
 			Nix: []config.Nix{{}},
@@ -50,41 +51,41 @@ func TestSkip(t *testing.T) {
 	})
 }
 
-const fakeNixPrefetchURLBin = "fake-nix-prefetch-url"
+const fakeNixHashBin = "fake-nix-hash"
 
-func TestPrefetcher(t *testing.T) {
-	t.Run("prefetch", func(t *testing.T) {
+func TestHasher(t *testing.T) {
+	t.Run("zero hash", func(t *testing.T) {
 		t.Run("build", func(t *testing.T) {
-			sha, err := buildShaPrefetcher{}.Prefetch("any")
+			sha, err := alwaysZeroHasher{}.Hash("any")
 			require.NoError(t, err)
 			require.Equal(t, zeroHash, sha)
 		})
 		t.Run("publish", func(t *testing.T) {
-			t.Run("no-nix-prefetch-url", func(t *testing.T) {
-				_, err := publishShaPrefetcher{fakeNixPrefetchURLBin}.Prefetch("any")
+			t.Run("nix-hash", func(t *testing.T) {
+				_, err := nixHasher{fakeNixHashBin}.Hash("any")
 				require.ErrorIs(t, err, exec.ErrNotFound)
 			})
 			t.Run("valid", func(t *testing.T) {
-				testlib.CheckPath(t, "nix-prefetch-url")
+				testlib.CheckPath(t, "nix-hash")
 				testlib.SkipIfWindows(t, "nix doesn't work on windows")
-				sha, err := publishShaPrefetcher{nixPrefetchURLBin}.Prefetch("https://github.com/goreleaser/goreleaser/releases/download/v1.18.2/goreleaser_Darwin_arm64.tar.gz")
+				sha, err := realHasher.Hash("./testdata/file.bin")
 				require.NoError(t, err)
-				require.Equal(t, "0girjxp07srylyq36xk1ska8p68m2fhp05xgyv4wkcl61d6rzv3y", sha)
+				require.Equal(t, "1n7yy95h81rziah4ppi64kr6fphwxjiq8cl70fpfrqvr0ml1xbcl", sha)
 			})
 		})
 	})
 	t.Run("available", func(t *testing.T) {
 		t.Run("build", func(t *testing.T) {
-			require.True(t, buildShaPrefetcher{}.Available())
+			require.True(t, alwaysZeroHasher{}.Available())
 		})
 		t.Run("publish", func(t *testing.T) {
-			t.Run("no-nix-prefetch-url", func(t *testing.T) {
-				require.False(t, publishShaPrefetcher{fakeNixPrefetchURLBin}.Available())
+			t.Run("no-nix-hash", func(t *testing.T) {
+				require.False(t, nixHasher{fakeNixHashBin}.Available())
 			})
 			t.Run("valid", func(t *testing.T) {
-				testlib.CheckPath(t, "nix-prefetch-url")
+				testlib.CheckPath(t, "nix-hash")
 				testlib.SkipIfWindows(t, "nix doesn't work on windows")
-				require.True(t, publishShaPrefetcher{nixPrefetchURLBin}.Available())
+				require.True(t, realHasher.Available())
 			})
 		})
 	})
@@ -455,25 +456,24 @@ func TestRunPipe(t *testing.T) {
 				if goarch != "amd64" {
 					goamd64 = ""
 				}
-				path := filepath.Join(folder, "dist/foo_"+goos+goarch+goamd64+goarm+"."+format)
+				name := "foo_" + goos + "_" + goarch + goamd64 + goarm + "." + format
+				path := filepath.Join(folder, "dist", name)
 				art := artifact.Artifact{
-					Name:    "foo_" + goos + "_" + goarch + goamd64 + goarm + "." + format,
+					Name:    name,
 					Path:    path,
 					Goos:    goos,
 					Goarch:  goarch,
 					Goarm:   goarm,
 					Goamd64: goamd64,
 					Type:    artifact.UploadableArchive,
-					Extra: map[string]interface{}{
+					Extra: map[string]any{
 						artifact.ExtraID:        id,
 						artifact.ExtraFormat:    format,
 						artifact.ExtraBinaries:  []string{"foo"},
 						artifact.ExtraWrappedIn: "",
 					},
 				}
-				for k, v := range extra {
-					art.Extra[k] = v
-				}
+				maps.Copy(art.Extra, extra)
 				ctx.Artifacts.Add(&art)
 
 				require.NoError(t, os.MkdirAll(filepath.Dir(path), 0o755))
@@ -528,23 +528,23 @@ func TestRunPipe(t *testing.T) {
 			client := client.NewMock()
 			bpipe := NewBuild()
 			ppipe := Pipe{
-				fakeNixShaPrefetcher{
-					"https://dummyhost/download/v1.2.1/foo_linux_amd64v1.tar.gz":  "sha1",
-					"https://dummyhost/download/v1.2.1/foo_linux_arm64.tar.gz":    "sha2",
-					"https://dummyhost/download/v1.2.1/foo_darwin_amd64v1.tar.gz": "sha3",
-					"https://dummyhost/download/v1.2.1/foo_darwin_arm64.tar.gz":   "sha4",
-					"https://dummyhost/download/v1.2.1/foo_darwin_all.tar.gz":     "sha5",
-					"https://dummyhost/download/v1.2.1/foo_linux_arm6.tar.gz":     "sha6",
-					"https://dummyhost/download/v1.2.1/foo_linux_arm7.tar.gz":     "sha7",
-					"https://dummyhost/download/v1.2.1/foo_linux_amd64v1.zip":     "sha8",
-					"https://dummyhost/download/v1.2.1/foo_linux_arm64.zip":       "sha9",
-					"https://dummyhost/download/v1.2.1/foo_darwin_amd64v1.zip":    "sha10",
-					"https://dummyhost/download/v1.2.1/foo_darwin_arm64.zip":      "sha11",
-					"https://dummyhost/download/v1.2.1/foo_darwin_all.zip":        "sha12",
-					"https://dummyhost/download/v1.2.1/foo_linux_arm6.zip":        "sha13",
-					"https://dummyhost/download/v1.2.1/foo_linux_arm7.zip":        "sha14",
-					"https://dummyhost/download/v1.2.1/foo_linux_386.zip":         "sha15",
-					"https://dummyhost/download/v1.2.1/foo_linux_386.tar.gz":      "sha16",
+				fakeHasher{
+					"foo_linux_amd64v1.tar.gz":  "sha1",
+					"foo_linux_arm64.tar.gz":    "sha2",
+					"foo_darwin_amd64v1.tar.gz": "sha3",
+					"foo_darwin_arm64.tar.gz":   "sha4",
+					"foo_darwin_all.tar.gz":     "sha5",
+					"foo_linux_arm6.tar.gz":     "sha6",
+					"foo_linux_arm7.tar.gz":     "sha7",
+					"foo_linux_amd64v1.zip":     "sha8",
+					"foo_linux_arm64.zip":       "sha9",
+					"foo_darwin_amd64v1.zip":    "sha10",
+					"foo_darwin_arm64.zip":      "sha11",
+					"foo_darwin_all.zip":        "sha12",
+					"foo_linux_arm6.zip":        "sha13",
+					"foo_linux_arm7.zip":        "sha14",
+					"foo_linux_386.zip":         "sha15",
+					"foo_linux_386.tar.gz":      "sha16",
 				},
 			}
 
@@ -602,7 +602,7 @@ func TestErrNoArchivesFound(t *testing.T) {
 }
 
 func TestDependencies(t *testing.T) {
-	require.Equal(t, []string{"nix-prefetch-url"}, Pipe{}.Dependencies(nil))
+	require.Equal(t, []string{"nix-hash"}, Pipe{}.Dependencies(nil))
 }
 
 func TestBinInstallFormats(t *testing.T) {
@@ -674,9 +674,9 @@ func linuxDep(s string) config.NixDependency {
 	}
 }
 
-type fakeNixShaPrefetcher map[string]string
+type fakeHasher map[string]string
 
-func (m fakeNixShaPrefetcher) Prefetch(url string) (string, error) {
-	return m[url], nil
+func (m fakeHasher) Hash(path string) (string, error) {
+	return m[filepath.Base(path)], nil
 }
-func (m fakeNixShaPrefetcher) Available() bool { return true }
+func (m fakeHasher) Available() bool { return true }

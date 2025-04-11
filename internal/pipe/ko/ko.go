@@ -544,7 +544,7 @@ func makeArtifact(id, name, digest string) *artifact.Artifact {
 		Type:  artifact.DockerManifest,
 		Name:  name,
 		Path:  name,
-		Extra: map[string]interface{}{},
+		Extra: map[string]any{},
 	}
 	if id != "" {
 		art.Extra[artifact.ExtraID] = id

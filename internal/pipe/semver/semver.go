@@ -1,3 +1,4 @@
+// Package semver handles semver parsing.
 package semver
 
 import (

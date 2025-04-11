@@ -8,6 +8,7 @@ package context
 
 import (
 	stdctx "context"
+	"maps"
 	"os"
 	"runtime"
 	"strings"
@@ -41,9 +42,7 @@ type Env map[string]string
 // Copy returns a copy of the environment.
 func (e Env) Copy() Env {
 	out := Env{}
-	for k, v := range e {
-		out[k] = v
-	}
+	maps.Copy(out, e)
 	return out
 }
 

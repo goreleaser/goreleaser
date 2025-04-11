@@ -1,3 +1,4 @@
+// Package logext contains log extensions.
 package logext
 
 import (

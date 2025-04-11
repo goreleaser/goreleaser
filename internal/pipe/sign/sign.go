@@ -1,9 +1,11 @@
+// Package sign handles signing artifacts.
 package sign
 
 import (
 	"bytes"
 	"fmt"
 	"io"
+	"maps"
 	"os"
 	"os/exec"
 	"path/filepath"
@@ -187,9 +189,7 @@ func signone(ctx *context.Context, cfg config.Sign, art *artifact.Artifact) ([]*
 		return nil, fmt.Errorf("sign failed: %s: %w", art.Name, err)
 	}
 
-	for k, v := range context.ToEnv(tmplEnv) {
-		env[k] = v
-	}
+	maps.Copy(env, context.ToEnv(tmplEnv))
 
 	name, err := tmplPath(ctx, env, art, cfg.Signature)
 	if err != nil {
@@ -274,7 +274,7 @@ func signone(ctx *context.Context, cfg config.Sign, art *artifact.Artifact) ([]*
 			Type: artifact.Signature,
 			Name: name,
 			Path: env["signature"],
-			Extra: map[string]interface{}{
+			Extra: map[string]any{
 				artifact.ExtraID: cfg.ID,
 			},
 		})
@@ -285,7 +285,7 @@ func signone(ctx *context.Context, cfg config.Sign, art *artifact.Artifact) ([]*
 			Type: artifact.Certificate,
 			Name: cert,
 			Path: env["certificate"],
-			Extra: map[string]interface{}{
+			Extra: map[string]any{
 				artifact.ExtraID: cfg.ID,
 			},
 		})

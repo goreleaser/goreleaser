@@ -95,6 +95,15 @@ const (
 	Metadata
 )
 
+func (t Type) isUploadable() bool {
+	switch t {
+	case Binary, Metadata, SrcInfo, UniversalBinary:
+		return false
+	default:
+		return true
+	}
+}
+
 func (t Type) String() string {
 	switch t {
 	case UploadableArchive:
@@ -206,19 +215,13 @@ func (a Artifact) String() string {
 	return a.Name
 }
 
-// Extra tries to get the extra field with the given name, returning either
-// its value, the default value for its type, or an error.
+// tryCastExtra tries to cast the given type into T.
 //
 // If the extra value cannot be cast into the given type, it'll try to convert
 // it to JSON and unmarshal it into the correct type after.
 //
 // If that fails as well, it'll error.
-func Extra[T any](a Artifact, key string) (T, error) {
-	ex := a.Extra[key]
-	if ex == nil {
-		return *(new(T)), nil
-	}
-
+func tryCastExtra[T any](ex any) (T, error) {
 	t, ok := ex.(T)
 	if ok {
 		return t, nil
@@ -226,24 +229,52 @@ func Extra[T any](a Artifact, key string) (T, error) {
 
 	bts, err := json.Marshal(ex)
 	if err != nil {
+		// this should never happen in theory
 		return t, err
 	}
 
 	decoder := json.NewDecoder(bytes.NewReader(bts))
 	decoder.DisallowUnknownFields()
-	err = decoder.Decode(&t)
-	return t, err
+	if err := decoder.Decode(&t); err != nil {
+		// this should never happen in theory
+		return t, err
+	}
+	return t, nil
+}
+
+// MustExtra tries to get the extra field with the given name, returning its
+// value or panicking.
+//
+// If the value cannot be cast into the given type, it'll panic.
+func MustExtra[T any](a Artifact, key string) T {
+	got, ok := a.Extra[key]
+	if !ok {
+		panic(fmt.Errorf("extra: %s: key not present", key))
+	}
+	t, err := tryCastExtra[T](got)
+	if err != nil {
+		panic(fmt.Errorf("extra: %s: %w", key, err))
+	}
+	return t
 }
 
 // ExtraOr returns the Extra field with the given key or the or value specified
 // if it is nil.
 //
-// Deprecated: this is not guaranteed to work, prefer using [Extra].
+// This should only be used in places where the key might or might not be
+// present.
+//
+// If the value cannot be cast into the given type, it'll panic.
 func ExtraOr[T any](a Artifact, key string, or T) T {
-	if a.Extra[key] == nil {
+	got, ok := a.Extra[key]
+	if !ok {
 		return or
 	}
-	return a.Extra[key].(T)
+	t, err := tryCastExtra[T](got)
+	if err != nil {
+		panic(fmt.Errorf("extra: %s: %w", key, err))
+	}
+	return t
 }
 
 // Checksum calculates the checksum of the artifact.
@@ -328,6 +359,11 @@ func (a Artifact) ID() string {
 // Format returns the artifact Format if it exists, empty otherwise.
 func (a Artifact) Format() string {
 	return ExtraOr(a, ExtraFormat, "")
+}
+
+// Ext returns the artifact Ext if it exists, empty otherwise.
+func (a Artifact) Ext() string {
+	return ExtraOr(a, ExtraExt, "")
 }
 
 // Artifacts is a list of artifacts.
@@ -441,11 +477,20 @@ func (artifacts *Artifacts) Add(a *Artifact) {
 		}
 	}
 	a.Path = filepath.ToSlash(a.Path)
+	if a.Type.isUploadable() &&
+		slices.ContainsFunc(artifacts.items, func(b *Artifact) bool {
+			return a.Name == b.Name
+		}) {
+		log.WithField("name", a.Name).
+			WithField("details", `this might cause errors when publishing
+please make sure your configuration is correct`).
+			Warn("artifact already present in the list")
+	}
+	artifacts.items = append(artifacts.items, a)
 	log.WithField("name", a.Name).
 		WithField("type", a.Type).
 		WithField("path", a.Path).
 		Debug("added new artifact")
-	artifacts.items = append(artifacts.items, a)
 }
 
 // Remove removes artifacts that match the given filter from the original artifact list.
@@ -556,8 +601,7 @@ func ByExt(exts ...string) Filter {
 	filters := make([]Filter, 0, len(exts))
 	for _, ext := range exts {
 		filters = append(filters, func(a *Artifact) bool {
-			actual := ExtraOr(*a, ExtraExt, "")
-			return strings.TrimPrefix(actual, ".") == strings.TrimPrefix(ext, ".")
+			return strings.TrimPrefix(a.Ext(), ".") == strings.TrimPrefix(ext, ".")
 		})
 	}
 	return Or(filters...)
