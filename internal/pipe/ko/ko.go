@@ -256,7 +256,7 @@ func (o *buildOptions) makeBuilder(ctx *context.Context) (*build.Caching, error)
 	case "spdx":
 		buildOptions = append(buildOptions, build.WithSPDX("devel"))
 		if o.SBOMDirectory != "" {
-			buildOptions = append(buildOptions, build.WithSBOMDirectory(o.SBOMDirectory))
+			buildOptions = append(buildOptions, build.WithSBOMDir(o.SBOMDirectory))
 		}
 	case "none":
 		buildOptions = append(buildOptions, build.WithDisabledSBOM())
