@@ -77,6 +77,10 @@ const (
 	PkgBuild
 	// SrcInfo is an Arch Linux AUR .SRCINFO file.
 	SrcInfo
+	// SourcePkgBuild is an Arch Linux AUR PKGBUILD file for a source build.
+	SourcePkgBuild
+	// SourceSrcInfo is an Arch Linux AUR .SRCINFO file for a source build.
+	SourceSrcInfo
 	// KrewPluginManifest is a krew plugin manifest file.
 	KrewPluginManifest
 	// ScoopManifest is an uploadable scoop manifest file.
@@ -97,7 +101,10 @@ const (
 
 func (t Type) isUploadable() bool {
 	switch t {
-	case Binary, Metadata, SrcInfo, UniversalBinary:
+	case UniversalBinary, Binary, // See: [UploadableBinary].
+		Metadata,               // Local only.
+		SrcInfo, SourceSrcInfo, // It's always named `.SRCINFO`
+		PkgBuild, SourcePkgBuild: // It's always named `.PKGBUILD`
 		return false
 	default:
 		return true
@@ -138,9 +145,9 @@ func (t Type) String() string {
 		return "Scoop Manifest"
 	case SBOM:
 		return "SBOM"
-	case PkgBuild:
+	case PkgBuild, SourcePkgBuild:
 		return "PKGBUILD"
-	case SrcInfo:
+	case SrcInfo, SourceSrcInfo:
 		return "SRCINFO"
 	case PublishableChocolatey:
 		return "Chocolatey"
