@@ -402,6 +402,15 @@ type Build struct {
 
 	BuildDetails          `yaml:",inline" json:",inline"`
 	BuildDetailsOverrides []BuildDetailsOverride `yaml:"overrides,omitempty" json:"overrides,omitempty"`
+
+	// This is used internally only.
+	InternalDefaults BuildInternalDefaults `yaml:"-" json:"-"`
+}
+
+type BuildInternalDefaults struct {
+	// whether the pipe set the current binary.
+	// this is true when the user didn't set a binary name.
+	Binary bool
 }
 
 type BuildDetailsOverride struct {
@@ -418,7 +427,7 @@ type BuildDetailsOverride struct {
 }
 
 type BuildDetails struct {
-	Buildmode string      `yaml:"buildmode,omitempty" json:"buildmode,omitempty" jsonschema:"enum=c-archive,enum=c-shared,enum=pie,enum=,default="`
+	Buildmode string      `yaml:"buildmode,omitempty" json:"buildmode,omitempty" jsonschema:"enum=c-archive,enum=c-shared,enum=pie,enum=wheel,enum=sdist,enum=,default="`
 	Ldflags   StringArray `yaml:"ldflags,omitempty" json:"ldflags,omitempty"`
 	Tags      FlagArray   `yaml:"tags,omitempty" json:"tags,omitempty"`
 	Flags     FlagArray   `yaml:"flags,omitempty" json:"flags,omitempty"`

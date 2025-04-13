@@ -124,6 +124,8 @@ func (Pipe) Run(ctx *context.Context) error {
 				artifact.Or(
 					artifact.ByType(artifact.Binary),
 					artifact.ByType(artifact.LinuxPackage),
+					artifact.ByType(artifact.CArchive),
+					artifact.ByType(artifact.CShared),
 				),
 			}
 			// TODO: properly test this
@@ -136,7 +138,12 @@ func (Pipe) Run(ctx *context.Context) error {
 			if len(docker.IDs) > 0 {
 				filters = append(filters, artifact.ByIDs(docker.IDs...))
 			}
-			artifacts := ctx.Artifacts.Filter(artifact.And(filters...))
+
+			artifacts := ctx.Artifacts.Filter(
+				artifact.Or(
+					artifact.And(filters...),
+					artifact.ByType(artifact.PyWheel),
+				))
 			if d := len(docker.IDs); d > 0 && len(artifacts.GroupByID()) != d {
 				return pipe.Skipf("expected to find %d artifacts for ids %v, found %d\nLearn more at https://goreleaser.com/errors/docker-build\n", d, docker.IDs, len(artifacts.List()))
 			}
