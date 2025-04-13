@@ -101,6 +101,9 @@ const (
 	PySdist
 	// Metadata is an internal goreleaser metadata JSON file.
 	Metadata
+	// lastMarker is used in tests to denote the last valid type.
+	// always add new types before this one.
+	lastMarker
 )
 
 func (t Type) isUploadable() bool {

@@ -1009,7 +1009,7 @@ func TestArtifactStringer(t *testing.T) {
 }
 
 func TestArtifactTypeStringer(t *testing.T) {
-	for i := 1; i <= 32; i++ {
+	for i := 1; i < int(lastMarker); i++ {
 		t.Run(fmt.Sprintf("type-%d-%s", i, Type(i).String()), func(t *testing.T) {
 			require.NotEqual(t, "unknown", Type(i).String())
 		})
@@ -1021,16 +1021,16 @@ func TestArtifactTypeStringer(t *testing.T) {
 }
 
 func TestArtifactTypeIsUploadable(t *testing.T) {
-	nonUploadable := []int{
-		int(Binary),
-		int(Metadata),
-		int(SrcInfo),
-		int(SourceSrcInfo),
-		int(PkgBuild),
-		int(SourcePkgBuild),
-		int(UniversalBinary),
+	nonUploadable := []Type{
+		Binary,
+		Metadata,
+		SrcInfo,
+		SourceSrcInfo,
+		PkgBuild,
+		SourcePkgBuild,
+		UniversalBinary,
 	}
-	for i := 1; i <= 32; i++ {
+	for i := range lastMarker - 1 {
 		up := Type(i).isUploadable()
 		t.Run(fmt.Sprintf("%s-%v", Type(i).String(), up), func(t *testing.T) {
 			if slices.Contains(nonUploadable, i) {
