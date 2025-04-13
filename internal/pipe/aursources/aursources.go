@@ -145,13 +145,13 @@ func doRun(ctx *context.Context, aur config.AURSource, cl client.ReleaseURLTempl
 			name: "PKGBUILD",
 			tpl:  aurTemplateData,
 			ext:  ".pkgbuild",
-			kind: artifact.PkgBuild,
+			kind: artifact.SourcePkgBuild,
 		},
 		{
 			name: ".SRCINFO",
 			tpl:  srcInfoTemplate,
 			ext:  ".srcinfo",
-			kind: artifact.SrcInfo,
+			kind: artifact.SourceSrcInfo,
 		},
 	} {
 		pkgContent, err := buildPkgFile(ctx, aur, cl, archives, info.tpl)
@@ -323,8 +323,8 @@ func (Pipe) Publish(ctx *context.Context) error {
 	skips := pipe.SkipMemento{}
 	for _, pkgs := range ctx.Artifacts.Filter(
 		artifact.Or(
-			artifact.ByType(artifact.PkgBuild),
-			artifact.ByType(artifact.SrcInfo),
+			artifact.ByType(artifact.SourcePkgBuild),
+			artifact.ByType(artifact.SourceSrcInfo),
 		),
 	).GroupByID() {
 		err := doPublish(ctx, pkgs)
