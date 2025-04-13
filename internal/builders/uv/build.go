@@ -1,3 +1,4 @@
+// Package uv provides Python builds using uv.
 package uv
 
 import (

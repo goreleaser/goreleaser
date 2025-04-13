@@ -2153,6 +2153,14 @@
 						"type": "string"
 					},
 					"sbom": {
+						"type": "string",
+						"enum": [
+							"spdx",
+							"none"
+						],
+						"default": "spdx"
+					},
+					"sbom_directory": {
 						"type": "string"
 					},
 					"ldflags": {
