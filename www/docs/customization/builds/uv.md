@@ -12,6 +12,7 @@ Simply set the `builder` to `uv` and set the `buildmode` you want:
 ```yaml title=".goreleaser.yaml"
 builds:
   - builder: uv
+    buildmode: wheel
 ```
 
 The `.whl` and `.tar.gz` files can then be signed, checksummed, used inside
