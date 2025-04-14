@@ -48,7 +48,11 @@ func TestSkip(t *testing.T) {
 }
 
 func TestRun(t *testing.T) {
-	fakeupx, err := filepath.Abs("./testdata/fakeupx")
+	bin := "./testdata/fakeupx"
+	if testlib.IsWindows() {
+		bin += "+.bat"
+	}
+	fakeupx, err := filepath.Abs(bin)
 	require.NoError(t, err)
 
 	ctx := testctx.NewWithCfg(config.Project{
