@@ -34,28 +34,31 @@ func (Pipe) Default(ctx *context.Context) error {
 }
 
 func (Pipe) Run(ctx *context.Context) error {
-	g := semerrgroup.NewSkipAware(semerrgroup.New(ctx.Parallelism))
+	g := semerrgroup.New(ctx.Parallelism)
+	skips := pipe.SkipMemento{}
 	for _, upx := range ctx.Config.UPXs {
-		g.Go(func() error {
-			enabled, err := tmpl.New(ctx).Bool(upx.Enabled)
-			if err != nil {
-				return err
-			}
-			if !enabled {
-				return pipe.Skip("upx is not enabled")
-			}
-			if _, err := exec.LookPath(upx.Binary); err != nil {
-				return pipe.Skipf("%s not found in PATH", upx.Binary)
-			}
-			for _, bin := range findBinaries(ctx, upx) {
-				if err := compressOne(ctx, upx, bin); err != nil {
-					return err
-				}
-			}
-			return nil
-		})
+		enabled, err := tmpl.New(ctx).Bool(upx.Enabled)
+		if err != nil {
+			return err
+		}
+		if !enabled {
+			skips.Remember(pipe.Skip("upx is not enabled"))
+			continue
+		}
+		if _, err := exec.LookPath(upx.Binary); err != nil {
+			skips.Remember(pipe.Skipf("%s not found in PATH", upx.Binary))
+			continue
+		}
+		for _, bin := range findBinaries(ctx, upx) {
+			g.Go(func() error {
+				return compressOne(ctx, upx, bin)
+			})
+		}
 	}
-	return g.Wait()
+	if err := g.Wait(); err != nil {
+		return err
+	}
+	return skips.Evaluate()
 }
 
 func compressOne(ctx *context.Context, upx config.UPX, bin *artifact.Artifact) error {
