@@ -51,8 +51,6 @@ func TestRun(t *testing.T) {
 	fakeupx, err := filepath.Abs("./testdata/fakeupx")
 	require.NoError(t, err)
 
-	t.Log(fakeupx)
-
 	ctx := testctx.NewWithCfg(config.Project{
 		UPXs: []config.UPX{
 			{
