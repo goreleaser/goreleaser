@@ -755,6 +755,8 @@
 							"c-archive",
 							"c-shared",
 							"pie",
+							"wheel",
+							"sdist",
 							""
 						],
 						"default": ""
@@ -835,6 +837,8 @@
 							"c-archive",
 							"c-shared",
 							"pie",
+							"wheel",
+							"sdist",
 							""
 						],
 						"default": ""

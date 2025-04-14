@@ -109,7 +109,6 @@ func TestRun(t *testing.T) {
 				continue
 			}
 			for i := 1; i <= 5; i++ {
-				sid := strconv.Itoa(i)
 				path := filepath.Join(tmp, fmt.Sprintf("bin_%d_%s_%s%s", i, goos, goarch, ext))
 				require.NoError(t, os.WriteFile(path, []byte("fake bin"), 0o755))
 				expect = append(expect, path)
@@ -120,7 +119,7 @@ func TestRun(t *testing.T) {
 					Goarch: goarch,
 					Type:   artifact.Binary,
 					Extra: map[string]any{
-						artifact.ExtraID: sid,
+						artifact.ExtraID: strconv.Itoa(i),
 					},
 				})
 			}
