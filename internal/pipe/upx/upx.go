@@ -66,7 +66,7 @@ func (Pipe) Run(ctx *context.Context) error {
 					args = append(args, "--brute")
 				}
 				args = append(args, bin.Path)
-				out, err := exec.CommandContext(ctx, "upx", args...).CombinedOutput()
+				out, err := exec.CommandContext(ctx, upx.Binary, args...).CombinedOutput()
 				if err != nil {
 					for _, ke := range knownExceptions {
 						if strings.Contains(string(out), ke) {
