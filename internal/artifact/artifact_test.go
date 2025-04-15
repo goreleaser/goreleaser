@@ -1031,8 +1031,8 @@ func TestArtifactTypeIsUploadable(t *testing.T) {
 		UniversalBinary,
 	}
 	for i := range lastMarker - 1 {
-		up := Type(i).isUploadable()
-		t.Run(fmt.Sprintf("%s-%v", Type(i).String(), up), func(t *testing.T) {
+		up := i.isUploadable()
+		t.Run(fmt.Sprintf("%s-%v", i.String(), up), func(t *testing.T) {
 			if slices.Contains(nonUploadable, i) {
 				require.False(t, up)
 				return
