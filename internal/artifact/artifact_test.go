@@ -380,6 +380,35 @@ func TestGroupByPlatform_mixingBuilders(t *testing.T) {
 	require.Len(t, groups["linuxarm"], 2)
 }
 
+func TestGroupByPlatform_abi(t *testing.T) {
+	data := []*Artifact{
+		{
+			Name:   "foo",
+			Goos:   "linux",
+			Goarch: "amd64",
+			Extra: map[string]any{
+				"Abi": "musl",
+			},
+		},
+		{
+			Name:   "foo",
+			Goos:   "linux",
+			Goarch: "amd64",
+			Extra: map[string]any{
+				"Abi": "gnu",
+			},
+		},
+	}
+	artifacts := New()
+	for _, a := range data {
+		artifacts.Add(a)
+	}
+	groups := artifacts.GroupByPlatform()
+	require.Len(t, groups, 2)
+	require.Len(t, groups["linuxamd64musl"], 1)
+	require.Len(t, groups["linuxamd64gnu"], 1)
+}
+
 func TestChecksum(t *testing.T) {
 	folder := t.TempDir()
 	file := filepath.Join(folder, "subject")

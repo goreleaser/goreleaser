@@ -435,19 +435,23 @@ func (artifacts *Artifacts) GroupByPlatform() map[string][]*Artifact {
 	goamd64s := map[string]struct{}{}
 	gomipses := map[string]struct{}{}
 	goarms := map[string]struct{}{}
+	abis := map[string]struct{}{}
 	for _, a := range artifacts.List() {
 		plat := a.Goos + a.Goarch
-		fullplat := plat + a.Goarm + a.Gomips + a.Goamd64
+		abi := ExtraOr(*a, "Abi", "")
+		fullplat := plat + abi + a.Goarm + a.Gomips + a.Goamd64
 		goamd64s[a.Goamd64] = struct{}{}
 		gomipses[a.Gomips] = struct{}{}
 		goarms[a.Goarm] = struct{}{}
+		abis[abi] = struct{}{}
 		simpleResult[plat] = append(simpleResult[plat], a)
 		specificResult[fullplat] = append(specificResult[fullplat], a)
 	}
 
 	if len(nonEmpty(goamd64s)) > 1 ||
 		len(nonEmpty(gomipses)) > 1 ||
-		len(nonEmpty(goarms)) > 1 {
+		len(nonEmpty(goarms)) > 1 ||
+		len(nonEmpty(abis)) > 1 {
 		return specificResult
 	}
 

@@ -126,6 +126,7 @@ func TestBuild(t *testing.T) {
 			artifact.ExtraBuilder: "deno",
 			artifact.ExtraExt:     "",
 			artifact.ExtraID:      "default",
+			keyAbi:                "",
 		},
 	}, *bin)
 
