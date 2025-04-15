@@ -50,7 +50,7 @@ func TestSkip(t *testing.T) {
 func TestRun(t *testing.T) {
 	bin := "./testdata/fakeupx"
 	if testlib.IsWindows() {
-		bin += "+.bat"
+		bin += ".bat"
 	}
 	fakeupx, err := filepath.Abs(bin)
 	require.NoError(t, err)
