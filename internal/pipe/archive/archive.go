@@ -132,7 +132,7 @@ func (Pipe) Run(ctx *context.Context) error {
 			return fmt.Errorf("invalid archive: %d: %w", i, ErrArchiveDifferentBinaryCount)
 		}
 		for group, artifacts := range artifacts {
-			log.Debugf("group %s has %d binaries", group, len(artifacts))
+			log.Infof("group %s has %d binaries", group, len(artifacts))
 			formats := packageFormats(archive, artifacts[0].Goos)
 			for _, format := range formats {
 				switch format {
