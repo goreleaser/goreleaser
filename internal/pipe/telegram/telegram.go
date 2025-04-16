@@ -1,3 +1,4 @@
+// Package telegram announces releases to Telegram.
 package telegram
 
 import (

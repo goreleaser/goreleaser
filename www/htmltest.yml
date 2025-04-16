@@ -19,6 +19,11 @@ IgnoreURLs:
   - gofi.sh
   - visualstudio.com
   - iron.security
+  - hub.docker.com
+  - wixtoolset.org
+  - docs.gitlab.com
+  - blog.kubesimplify.com
+  - blog.ediri.io/
 IgnoreDirs:
   - overrides
 IgnoreDirectoryMissingTrailingSlash: true

@@ -88,7 +88,9 @@ func (ManifestPipe) Publish(ctx *context.Context) error {
 
 			manifester := manifesters[manifest.Use]
 
-			log.WithField("manifest", name).WithField("images", images).Info("creating")
+			log.WithField("manifest", name).
+				WithField("images", images).
+				Info("creating")
 			if err := manifester.Create(ctx, name, images, manifest.CreateFlags); err != nil {
 				return err
 			}
@@ -96,13 +98,13 @@ func (ManifestPipe) Publish(ctx *context.Context) error {
 				Type:  artifact.DockerManifest,
 				Name:  name,
 				Path:  name,
-				Extra: map[string]interface{}{},
+				Extra: map[string]any{},
 			}
 			if manifest.ID != "" {
 				art.Extra[artifact.ExtraID] = manifest.ID
 			}
 
-			log.WithField("manifest", name).Info("pushing")
+			log.WithField("manifest", name).Info("created, pushing")
 			digest, err := manifester.Push(ctx, name, manifest.PushFlags)
 			if err != nil {
 				return err
@@ -169,6 +171,6 @@ func withDigest(name string, images []*artifact.Artifact) string {
 		}
 	}
 
-	log.Warnf("culd not find %q, did you mean %q?", name, suggestion)
+	log.Warnf("could not find %q, did you mean %q?", name, suggestion)
 	return name
 }

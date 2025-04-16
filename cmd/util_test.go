@@ -23,14 +23,8 @@ func setup(tb testing.TB) string {
 	_ = os.Unsetenv("GITLAB_TOKEN")
 	_ = os.Unsetenv("GITEA_TOKEN")
 
-	previous, err := os.Getwd()
-	require.NoError(tb, err)
-
 	folder := tb.TempDir()
-	require.NoError(tb, os.Chdir(folder))
-	tb.Cleanup(func() {
-		require.NoError(tb, os.Chdir(previous))
-	})
+	tb.Chdir(folder)
 
 	createGoReleaserYaml(tb)
 	createMainGo(tb)
@@ -62,7 +56,7 @@ func goModInit(tb testing.TB) {
 	tb.Helper()
 	createFile(tb, "go.mod", `module foo
 
-go 1.23
+go 1.24
 `)
 }
 

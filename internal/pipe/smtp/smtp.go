@@ -1,3 +1,4 @@
+// Package smtp announces releases via SMTP.
 package smtp
 
 import (

@@ -1,3 +1,4 @@
+// Package deno builds binaries using the Deno tool.
 package deno
 
 import (
@@ -89,11 +90,12 @@ func (b *Builder) Build(ctx *context.Context, build config.Build, options api.Op
 		Goos:   t.Os,
 		Goarch: convertToGoarch(t.Arch),
 		Target: t.Target,
-		Extra: map[string]interface{}{
+		Extra: map[string]any{
 			artifact.ExtraBinary:  strings.TrimSuffix(filepath.Base(options.Path), options.Ext),
 			artifact.ExtraExt:     options.Ext,
 			artifact.ExtraID:      build.ID,
 			artifact.ExtraBuilder: "deno",
+			keyAbi:                t.Abi,
 		},
 	}
 
@@ -119,7 +121,7 @@ func (b *Builder) Build(ctx *context.Context, build config.Build, options api.Op
 		build.Main,
 	)
 
-	tenv, err := common.TemplateEnv(build, tpl)
+	tenv, err := common.TemplateEnv(build.Env, tpl)
 	if err != nil {
 		return err
 	}

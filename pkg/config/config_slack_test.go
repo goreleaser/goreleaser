@@ -21,17 +21,17 @@ func TestUnmarshalSlackBlocks(t *testing.T) {
 
 		expectedBlocks := []SlackBlock{
 			{
-				Internal: map[string]interface{}{
+				Internal: map[string]any{
 					"type": "header",
-					"text": map[string]interface{}{
+					"text": map[string]any{
 						"type": "plain_text",
 						"text": "{{ .Version }}",
 					},
 				},
 			},
 			{
-				Internal: map[string]interface{}{
-					"text": map[string]interface{}{
+				Internal: map[string]any{
+					"text": map[string]any{
 						"type": "mrkdwn",
 						"text": "Heading\n=======\n\n**Bold**\n",
 					},
@@ -71,17 +71,17 @@ func TestUnmarshalSlackAttachments(t *testing.T) {
 
 		expectedAttachments := []SlackAttachment{
 			{
-				Internal: map[string]interface{}{
+				Internal: map[string]any{
 					"color": "#46a64f",
-					"fields": []interface{}{
-						map[string]interface{}{
+					"fields": []any{
+						map[string]any{
 							"short": false,
 							"title": "field 1",
 							"value": "value 1",
 						},
 					},
 					"footer": "a footer",
-					"mrkdwn_in": []interface{}{
+					"mrkdwn_in": []any{
 						"text",
 					},
 					"pretext": "optional",
@@ -116,7 +116,7 @@ func TestUnmarshalYAMLSlackBlocks(t *testing.T) {
 	t.Parallel()
 
 	const testError = "testError"
-	erf := func(_ interface{}) error {
+	erf := func(_ any) error {
 		return errors.New(testError)
 	}
 

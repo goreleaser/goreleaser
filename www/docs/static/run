@@ -1,14 +1,6 @@
 #!/usr/bin/env sh
 set -e
 
-is_pro="false"
-case "$VERSION" in
-*-pro)
-	DISTRIBUTION="pro"
-	is_pro="true"
-	;;
-esac
-
 if test "$DISTRIBUTION" = "pro"; then
 	echo "Using Pro distribution..."
 	RELEASES_URL="https://github.com/goreleaser/goreleaser-pro/releases"
@@ -27,10 +19,6 @@ test -z "$VERSION" && {
 	echo "Unable to get goreleaser version." >&2
 	exit 1
 }
-
-if test "$DISTRIBUTION" = "pro" && ! test "$is_pro"; then
-	VERSION="$VERSION-pro"
-fi
 
 TMP_DIR="$(mktemp -d)"
 # shellcheck disable=SC2064 # intentionally expands here

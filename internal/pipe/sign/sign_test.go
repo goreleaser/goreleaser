@@ -3,13 +3,12 @@ package sign
 import (
 	"bytes"
 	"fmt"
-	"math/rand"
+	"math/rand/v2"
 	"os"
 	"os/exec"
 	"path/filepath"
 	"strings"
 	"testing"
-	"time"
 
 	"github.com/stretchr/testify/assert"
 
@@ -38,7 +37,6 @@ const (
 )
 
 func TestMain(m *testing.M) {
-	rand := rand.New(rand.NewSource(time.Now().UnixNano()))
 	keyring = filepath.Join(os.TempDir(), fmt.Sprintf("gorel_gpg_test.%d", rand.Int()))
 	fmt.Println("copying", originKeyring, "to", keyring)
 	if err := gio.Copy(originKeyring, keyring); err != nil {
@@ -574,7 +572,7 @@ func testSign(
 		Name: "artifact1",
 		Path: filepath.Join(tmpdir, "artifact1"),
 		Type: artifact.UploadableArchive,
-		Extra: map[string]interface{}{
+		Extra: map[string]any{
 			artifact.ExtraID: "foo",
 		},
 	})
@@ -582,7 +580,7 @@ func testSign(
 		Name: "artifact2",
 		Path: filepath.Join(tmpdir, "artifact2"),
 		Type: artifact.UploadableArchive,
-		Extra: map[string]interface{}{
+		Extra: map[string]any{
 			artifact.ExtraID: "foo3",
 		},
 	})
@@ -590,7 +588,7 @@ func testSign(
 		Name: "artifact3_1.0.0_linux_amd64",
 		Path: filepath.Join(tmpdir, "artifact3"),
 		Type: artifact.UploadableBinary,
-		Extra: map[string]interface{}{
+		Extra: map[string]any{
 			artifact.ExtraID: "foo",
 		},
 	})
@@ -603,7 +601,7 @@ func testSign(
 		Name: "checksum2",
 		Path: filepath.Join(tmpdir, "checksum2"),
 		Type: artifact.Checksum,
-		Extra: map[string]interface{}{
+		Extra: map[string]any{
 			"Refresh": func() error {
 				file := filepath.Join(tmpdir, "checksum2")
 				return os.WriteFile(file, []byte("foo"), 0o644)
@@ -614,7 +612,7 @@ func testSign(
 		Name: "artifact4_1.0.0_linux_amd64",
 		Path: filepath.Join(tmpdir, "linux_amd64", "artifact4"),
 		Type: artifact.UploadableBinary,
-		Extra: map[string]interface{}{
+		Extra: map[string]any{
 			artifact.ExtraID: "foo3",
 		},
 	})
@@ -632,7 +630,7 @@ func testSign(
 		Name: "package1.deb",
 		Path: filepath.Join(tmpdir, "package1.deb"),
 		Type: artifact.LinuxPackage,
-		Extra: map[string]interface{}{
+		Extra: map[string]any{
 			artifact.ExtraID: "foo",
 		},
 	})

@@ -13,6 +13,7 @@ import (
 	"github.com/google/go-containerregistry/pkg/name"
 	"github.com/google/go-containerregistry/pkg/v1/remote"
 	"github.com/goreleaser/goreleaser/v2/internal/artifact"
+	"github.com/goreleaser/goreleaser/v2/internal/pipe"
 	"github.com/goreleaser/goreleaser/v2/internal/skips"
 	"github.com/goreleaser/goreleaser/v2/internal/testctx"
 	"github.com/goreleaser/goreleaser/v2/internal/testlib"
@@ -179,6 +180,7 @@ func TestPublishPipeSuccess(t *testing.T) {
 	table := []struct {
 		Name                string
 		SBOM                string
+		SBOMDirectory       string
 		BaseImage           string
 		Labels              map[string]string
 		ExpectedLabels      map[string]string
@@ -192,12 +194,18 @@ func TestPublishPipeSuccess(t *testing.T) {
 	}{
 		{
 			// Must be first as others add an SBOM for the same image
-			Name: "sbom-none",
-			SBOM: "none",
+			Name:          "sbom-none",
+			SBOM:          "none",
+			SBOMDirectory: "",
 		},
 		{
 			Name: "sbom-spdx",
 			SBOM: "spdx",
+		},
+		{
+			Name:          "sbom-spdx-with-dir",
+			SBOM:          "spdx",
+			SBOMDirectory: "testdata/app/",
 		},
 		{
 			Name:      "base-image-is-not-index",
@@ -282,6 +290,7 @@ func TestPublishPipeSuccess(t *testing.T) {
 						CreationTime:       table.CreationTime,
 						KoDataCreationTime: table.KoDataCreationTime,
 						SBOM:               table.SBOM,
+						SBOMDirectory:      table.SBOMDirectory,
 						Bare:               true,
 					},
 				},
@@ -411,9 +420,9 @@ func TestPublishPipeSuccess(t *testing.T) {
 				require.NoError(t, err)
 				creationTime = time.Unix(ct, 0).UTC()
 
-				require.Equal(t, creationTime, configFile.Created.Time.UTC())
+				require.Equal(t, creationTime, configFile.Created.UTC())
 			}
-			require.Equal(t, creationTime, configFile.History[len(configFile.History)-1].Created.Time.UTC())
+			require.Equal(t, creationTime, configFile.History[len(configFile.History)-1].Created.UTC())
 
 			var koDataCreationTime time.Time
 			if table.KoDataCreationTime != "" {
@@ -421,7 +430,7 @@ func TestPublishPipeSuccess(t *testing.T) {
 				require.NoError(t, err)
 				koDataCreationTime = time.Unix(kdct, 0).UTC()
 			}
-			require.Equal(t, koDataCreationTime, configFile.History[len(configFile.History)-2].Created.Time.UTC())
+			require.Equal(t, koDataCreationTime, configFile.History[len(configFile.History)-2].Created.UTC())
 		})
 	}
 }
@@ -461,6 +470,71 @@ func TestSnapshot(t *testing.T) {
 	require.Equal(t, manifests[0].Name, manifests[0].Path)
 	require.NotEmpty(t, manifests[0].Extra[artifact.ExtraDigest])
 	require.Equal(t, "default", manifests[0].Extra[artifact.ExtraID])
+}
+
+func TestDisable(t *testing.T) {
+	testlib.SkipIfWindows(t, "ko doesn't work in windows")
+	testlib.CheckDocker(t)
+	ctx := testctx.NewWithCfg(config.Project{
+		ProjectName: "test",
+		Builds: []config.Build{
+			{
+				ID: "foo",
+				BuildDetails: config.BuildDetails{
+					Ldflags: []string{"-s", "-w"},
+					Flags:   []string{"-tags", "netgo"},
+					Env:     []string{"GOCACHE=" + t.TempDir()},
+				},
+			},
+		},
+		Kos: []config.Ko{
+			{
+				ID:         "disabled",
+				Build:      "foo",
+				Disable:    "{{ not (isEnvSet \"FOO\")}}",
+				Repository: "NOPE",
+			},
+			{
+				ID:         "default",
+				Build:      "foo",
+				Repository: "testimage",
+				WorkingDir: "./testdata/app/",
+				Tags:       []string{"latest"},
+			},
+		},
+	}, testctx.WithVersion("1.2.0"), testctx.Snapshot)
+
+	require.NoError(t, Pipe{}.Default(ctx))
+	err := Pipe{}.Run(ctx)
+	require.Error(t, err)
+	require.True(t, pipe.IsSkip(err))
+
+	manifests := ctx.Artifacts.Filter(artifact.ByType(artifact.DockerManifest)).List()
+	require.Len(t, manifests, 1)
+	require.NotEmpty(t, manifests[0].Name)
+	require.Equal(t, manifests[0].Name, manifests[0].Path)
+	require.NotEmpty(t, manifests[0].Extra[artifact.ExtraDigest])
+	require.Equal(t, "default", manifests[0].Extra[artifact.ExtraID])
+}
+
+func TestDisableInvalidTemplate(t *testing.T) {
+	testlib.SkipIfWindows(t, "ko doesn't work in windows")
+	testlib.CheckDocker(t)
+	ctx := testctx.NewWithCfg(config.Project{
+		ProjectName: "test",
+		Builds:      []config.Build{{ID: "foo"}},
+		Kos: []config.Ko{
+			{
+				ID:         "disabled",
+				Build:      "foo",
+				Disable:    "{{ .nope }}",
+				Repository: "NOPE",
+			},
+		},
+	})
+
+	require.NoError(t, Pipe{}.Default(ctx))
+	testlib.RequireTemplateError(t, Pipe{}.Publish(ctx))
 }
 
 func TestKoValidateMainPathIssue4382(t *testing.T) {

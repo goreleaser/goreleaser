@@ -1,13 +1,16 @@
+// Package sign handles signing artifacts.
 package sign
 
 import (
 	"bytes"
 	"fmt"
 	"io"
+	"maps"
 	"os"
 	"os/exec"
 	"path/filepath"
 	"strings"
+	"sync"
 
 	"github.com/caarlos0/log"
 	"github.com/goreleaser/goreleaser/v2/internal/artifact"
@@ -44,17 +47,21 @@ const defaultGpg = "gpg"
 
 // Default sets the Pipes defaults.
 func (Pipe) Default(ctx *context.Context) error {
-	gpgPath, _ := git.Clean(git.Run(ctx, "config", "gpg.program"))
-	if gpgPath == "" {
-		gpgPath = defaultGpg
-	}
+	gpgPath := sync.OnceValue(func() string {
+		if gpg, _ := git.Clean(
+			git.Run(ctx, "config", "gpg.program"),
+		); gpg != "" {
+			return gpg
+		}
+		return defaultGpg
+	})
 
 	ids := ids.New("signs")
 	for i := range ctx.Config.Signs {
 		cfg := &ctx.Config.Signs[i]
 		if cfg.Cmd == "" {
 			// gpgPath is either "gpg" (default) or the user's git config gpg.program value
-			cfg.Cmd = gpgPath
+			cfg.Cmd = gpgPath()
 		}
 		if cfg.Signature == "" {
 			cfg.Signature = "${artifact}.sig"
@@ -99,6 +106,8 @@ func (Pipe) Run(ctx *context.Context) error {
 					artifact.ByType(artifact.Checksum),
 					artifact.ByType(artifact.LinuxPackage),
 					artifact.ByType(artifact.SBOM),
+					artifact.ByType(artifact.PySdist),
+					artifact.ByType(artifact.PyWheel),
 				))
 			case "archive":
 				filters = append(filters, artifact.ByType(artifact.UploadableArchive))
@@ -182,9 +191,7 @@ func signone(ctx *context.Context, cfg config.Sign, art *artifact.Artifact) ([]*
 		return nil, fmt.Errorf("sign failed: %s: %w", art.Name, err)
 	}
 
-	for k, v := range context.ToEnv(tmplEnv) {
-		env[k] = v
-	}
+	maps.Copy(env, context.ToEnv(tmplEnv))
 
 	name, err := tmplPath(ctx, env, art, cfg.Signature)
 	if err != nil {
@@ -269,7 +276,7 @@ func signone(ctx *context.Context, cfg config.Sign, art *artifact.Artifact) ([]*
 			Type: artifact.Signature,
 			Name: name,
 			Path: env["signature"],
-			Extra: map[string]interface{}{
+			Extra: map[string]any{
 				artifact.ExtraID: cfg.ID,
 			},
 		})
@@ -280,7 +287,7 @@ func signone(ctx *context.Context, cfg config.Sign, art *artifact.Artifact) ([]*
 			Type: artifact.Certificate,
 			Name: cert,
 			Path: env["certificate"],
-			Extra: map[string]interface{}{
+			Extra: map[string]any{
 				artifact.ExtraID: cfg.ID,
 			},
 		})

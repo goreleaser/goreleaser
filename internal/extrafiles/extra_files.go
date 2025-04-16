@@ -1,3 +1,4 @@
+// Package extrafiles handles extra files.
 package extrafiles
 
 import (

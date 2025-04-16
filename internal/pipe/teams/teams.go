@@ -1,3 +1,4 @@
+// Package teams announces new releases to Microsoft Teams.
 package teams
 
 import (

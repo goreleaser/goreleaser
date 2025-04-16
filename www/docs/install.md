@@ -38,6 +38,20 @@ You can see the instructions for each of them below.
 
 [formula in homebrew-core]: https://github.com/Homebrew/homebrew-core/blob/master/Formula/g/goreleaser.rb
 
+## NPM
+
+=== "OSS"
+
+    ```bash
+    npm i -g @goreleaser/goreleaser
+    ```
+
+=== "Pro"
+
+    ```bash
+    npm i -g @goreleaser/goreleaser-pro
+    ```
+
 ## Snapcraft
 
 === "OSS"
@@ -258,7 +272,7 @@ apk add --allow-untrusted goreleaser*.apk
     go install github.com/goreleaser/goreleaser/v2@latest
     ```
 
-    Requires Go 1.23.
+    Requires Go 1.24.
 
 === "Pro"
 
@@ -301,6 +315,8 @@ Its purpose is to be used within scripts and CIs.
 
 ### Binaries
 
+#### Signatures
+
 All artifacts are checksummed, and the checksum file is signed with [cosign][].
 
 === "OSS"
@@ -327,21 +343,38 @@ All artifacts are checksummed, and the checksum file is signed with [cosign][].
 
     1. Download the files you want, and the `checksums.txt`, `checksum.txt.pem` and `checksums.txt.sig` files from the [releases][pro-releases] page:
       ```bash
-      wget 'https://github.com/goreleaser/goreleaser-pro/releases/download/__VERSION__-pro/checksums.txt'
+      wget 'https://github.com/goreleaser/goreleaser-pro/releases/download/__VERSION__/checksums.txt'
       ```
     1. Verify the signature:
       ```bash
       cosign verify-blob \
-        --certificate-identity 'https://github.com/goreleaser/goreleaser-pro-internal/.github/workflows/release-pro.yml@refs/tags/__VERSION__-pro' \
+        --certificate-identity 'https://github.com/goreleaser/goreleaser-pro-internal/.github/workflows/release-pro.yml@refs/tags/__VERSION__' \
         --certificate-oidc-issuer 'https://token.actions.githubusercontent.com' \
-        --cert 'https://github.com/goreleaser/goreleaser-pro/releases/download/__VERSION__-pro/checksums.txt.pem' \
-        --signature 'https://github.com/goreleaser/goreleaser-pro/releases/download/__VERSION__-pro/checksums.txt.sig' \
+        --cert 'https://github.com/goreleaser/goreleaser-pro/releases/download/__VERSION__/checksums.txt.pem' \
+        --signature 'https://github.com/goreleaser/goreleaser-pro/releases/download/__VERSION__/checksums.txt.sig' \
         ./checksums.txt
       ```
     1. If the signature is valid, you can then verify the SHA256 sums match with the downloaded binary:
       ```bash
       sha256sum --ignore-missing -c checksums.txt
       ```
+
+#### Attestations
+
+You can also verify the attestations:
+
+=== "OSS"
+
+    ```bash
+    gh attestation verify --owner goreleaser *.tar.gz
+    # PS: can be any file from the release
+    ```
+
+=== "Pro"
+
+    GitHub does not yet allow cross-repository attestations (e.g. building a
+    private repo and publishing the attestations in a public one), so this isn't
+    available yet, unfortunately.
 
 ### Docker images
 
@@ -362,7 +395,7 @@ Verify the signatures:
 
     ```bash
     cosign verify \
-      --certificate-identity 'https://github.com/goreleaser/goreleaser-pro-internal/.github/workflows/release-pro.yml@refs/tags/__VERSION__-pro' \
+      --certificate-identity 'https://github.com/goreleaser/goreleaser-pro-internal/.github/workflows/release-pro.yml@refs/tags/__VERSION__' \
       --certificate-oidc-issuer 'https://token.actions.githubusercontent.com' \
       goreleaser/goreleaser-pro
     ```
@@ -397,3 +430,7 @@ environment variable to `nightly`.
 [nightly-pro-releases]: https://github.com/goreleaser/goreleaser-pro/releases/nightly
 [nightly-releases]: https://github.com/goreleaser/goreleaser/releases/nightly
 [cosign]: https://github.com/sigstore/cosign
+
+```
+
+```

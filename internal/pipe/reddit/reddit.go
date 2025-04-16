@@ -1,3 +1,4 @@
+// Package reddit announces the release on Reddit.
 package reddit
 
 import (

@@ -359,7 +359,7 @@ func TestWithDefaults(t *testing.T) {
 			build, err := Default.WithDefaults(ctx.Config.Builds[0])
 			require.NoError(t, err)
 			require.ElementsMatch(t, build.Targets, testcase.targets)
-			require.EqualValues(t, testcase.tool, build.Tool)
+			require.Equal(t, testcase.tool, build.Tool)
 		})
 	}
 }
@@ -391,7 +391,7 @@ func createFakeGoBinaryWithVersion(tb testing.TB, name, version string) {
 
 	require.NoError(tb, os.WriteFile(
 		filepath.Join(d, name),
-		[]byte(fmt.Sprintf("#!/bin/sh\necho %s", version)),
+		fmt.Appendf(nil, "#!/bin/sh\necho %s", version),
 		0o755,
 	))
 
@@ -472,6 +472,15 @@ func TestBuild(t *testing.T) {
 				},
 				Tool:    "{{ .Env.GOBIN }}",
 				Command: "build",
+				BuildDetailsOverrides: []config.BuildDetailsOverride{
+					{
+						Goos:   "linux",
+						Goarch: "amd64",
+						BuildDetails: config.BuildDetails{
+							Env: []string{"TEST_O=1"},
+						},
+					},
+				},
 				BuildDetails: config.BuildDetails{
 					Env: []string{
 						"GO111MODULE=off",
@@ -528,12 +537,12 @@ func TestBuild(t *testing.T) {
 			Goamd64: "v1",
 			Target:  "linux_amd64_v1",
 			Type:    artifact.Binary,
-			Extra: map[string]interface{}{
+			Extra: map[string]any{
 				artifact.ExtraExt:     "",
 				artifact.ExtraBinary:  "foo-v5.6.7",
 				artifact.ExtraID:      "foo",
 				artifact.ExtraBuilder: "go",
-				"testEnvs":            []string{"TEST_T=l"},
+				"testEnvs":            []string{"TEST_T=l", "TEST_O=1"},
 			},
 		},
 		{
@@ -544,7 +553,7 @@ func TestBuild(t *testing.T) {
 			Gomips: "softfloat",
 			Target: "linux_mips_softfloat",
 			Type:   artifact.Binary,
-			Extra: map[string]interface{}{
+			Extra: map[string]any{
 				artifact.ExtraExt:     "",
 				artifact.ExtraBinary:  "foo-v5.6.7",
 				artifact.ExtraID:      "foo",
@@ -560,7 +569,7 @@ func TestBuild(t *testing.T) {
 			Goamd64: "v1",
 			Target:  "darwin_amd64_v1",
 			Type:    artifact.Binary,
-			Extra: map[string]interface{}{
+			Extra: map[string]any{
 				artifact.ExtraExt:     "",
 				artifact.ExtraBinary:  "foo-v5.6.7",
 				artifact.ExtraID:      "foo",
@@ -576,7 +585,7 @@ func TestBuild(t *testing.T) {
 			Goarm:  "6",
 			Target: "linux_arm_6",
 			Type:   artifact.Binary,
-			Extra: map[string]interface{}{
+			Extra: map[string]any{
 				artifact.ExtraExt:     "",
 				artifact.ExtraBinary:  "foo-v5.6.7",
 				artifact.ExtraID:      "foo",
@@ -592,7 +601,7 @@ func TestBuild(t *testing.T) {
 			Goamd64: "v1",
 			Target:  "windows_amd64_v1",
 			Type:    artifact.Binary,
-			Extra: map[string]interface{}{
+			Extra: map[string]any{
 				artifact.ExtraExt:     ".exe",
 				artifact.ExtraBinary:  "foo-v5.6.7",
 				artifact.ExtraID:      "foo",
@@ -607,7 +616,7 @@ func TestBuild(t *testing.T) {
 			Goarch: "wasm",
 			Target: "js_wasm",
 			Type:   artifact.Binary,
-			Extra: map[string]interface{}{
+			Extra: map[string]any{
 				artifact.ExtraExt:     ".wasm",
 				artifact.ExtraBinary:  "foo-v5.6.7",
 				artifact.ExtraID:      "foo",

@@ -41,6 +41,7 @@ dockerhub:
     # The short description of the image.
     #
     # Templates: allowed.
+    # Default: inferred from global metadata.
     description: A short description
 
     # The full description of the image.

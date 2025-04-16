@@ -67,8 +67,8 @@ jobs:
         with:
           version: 3.x
           repo-token: ${{ secrets.GITHUB_TOKEN }}
-      - uses: docker/setup-qemu-action@53851d14592bedcffcf25ea515637cff71ef929a # v2
-      - uses: actions/cache@1bd1e32a3bdc45362d1e726936510720a7c30a57 # v4
+      - uses: docker/setup-qemu-action@29109295f81e9208d7d86ff1c6c12d2833863392 # v2
+      - uses: actions/cache@5a3ec84eff668545956fd18022155c47e93e2684 # v4.2.3
         with:
           path: |
             ./dist/*.deb
@@ -96,43 +96,50 @@ jobs:
         with:
           version: 3.x
           repo-token: ${{ secrets.GITHUB_TOKEN }}
-      - uses: docker/setup-qemu-action@53851d14592bedcffcf25ea515637cff71ef929a # v2
-      - uses: docker/setup-buildx-action@6524bf65af31da8d45b59e8c27de4bd072b392f5 # v3
+      - uses: docker/setup-qemu-action@29109295f81e9208d7d86ff1c6c12d2833863392 # v2
+      - uses: docker/setup-buildx-action@b5ca514318bd6ebac0fb2aedd5d36ec1b5c232a2 # v3
       - name: setup-snapcraft
         run: sudo snap install snapcraft --classic
-      - uses: actions/setup-go@f111f3307d8850f501ac008e886eec1fd1932a34 # v4
+      - uses: actions/setup-go@0aaccfd150d50ccaeb58ebd88d36e91967a5f35b # v4
         with:
           go-version: stable
-      - uses: actions/cache@1bd1e32a3bdc45362d1e726936510720a7c30a57 # v4
+      - uses: actions/cache@5a3ec84eff668545956fd18022155c47e93e2684 # v4
         with:
           path: |
             ./dist/*.deb
             ./dist/*.rpm
             ./dist/*.apk
           key: ${{ github.ref }}
-      - uses: sigstore/cosign-installer@v3.7.0
-      - uses: anchore/sbom-action/download-syft@v0.17.9
+      - uses: sigstore/cosign-installer@v3.8.1
+      - uses: anchore/sbom-action/download-syft@v0.18.0
       - uses: crazy-max/ghaction-upx@v3
         with:
           install-only: true
-      - uses: cachix/install-nix-action@v30
+      - uses: cachix/install-nix-action@v31
         with:
           github_access_token: ${{ secrets.GITHUB_TOKEN }}
       - name: dockerhub-login
         if: startsWith(github.ref, 'refs/tags/v')
-        uses: docker/login-action@9780b0c442fbb1117ed29e0efdff1e18412f7567 # v3
+        uses: docker/login-action@74a5d142397b4f367a81961eba4e8cd7edddf772 # v3
         with:
           username: ${{ secrets.DOCKER_USERNAME }}
           password: ${{ secrets.DOCKER_PASSWORD }}
       - name: ghcr-login
         if: startsWith(github.ref, 'refs/tags/v')
-        uses: docker/login-action@9780b0c442fbb1117ed29e0efdff1e18412f7567 # v3
+        uses: docker/login-action@74a5d142397b4f367a81961eba4e8cd7edddf772 # v3
         with:
           registry: ghcr.io
           username: ${{ github.repository_owner }}
           password: ${{ secrets.GITHUB_TOKEN }}
-      - name: goreleaser-release
-        run: task goreleaser
+      - name: npm-login
+        run: |
+          npm config set '//registry.npmjs.org/:_authToken'=${{ secrets.NPM_TOKEN }}
+      - uses: goreleaser/goreleaser-action@v6
+        if: ${{ startsWith(github.ref, 'refs/tags/v') }} # only on tags
+        with:
+          distribution: goreleaser-pro
+          version: "~> 2"
+          args: release --clean --timeout 60m -f .goreleaser-pro.yaml
         env:
           GITHUB_TOKEN: ${{ secrets.GH_PAT }}
           MASTODON_CLIENT_ID: ${{ secrets.MASTODON_CLIENT_ID }}
@@ -148,6 +155,14 @@ jobs:
           MACOS_NOTARY_KEY_ID: ${{ secrets.MACOS_NOTARY_KEY_ID }}
           MACOS_NOTARY_KEY: ${{ secrets.MACOS_NOTARY_KEY }}
           SNAPCRAFT_STORE_CREDENTIALS: ${{ secrets.SNAPCRAFT_LOGIN }}
+          GORELEASER_KEY: ${{ secrets.GORELEASER_KEY }}
+      - name: goreleaser-snapshot
+        if: ${{ !startsWith(github.ref, 'refs/tags/v') }} # on main
+        run: |
+          go build .
+          ./goreleaser release --clean --timeout 60m --snapshot
+        env:
+          GITHUB_TOKEN: ${{ secrets.GH_PAT }}
       - uses: actions/attest-build-provenance@v2
         with:
           subject-checksums: ./dist/checksums.txt

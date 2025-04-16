@@ -21,6 +21,8 @@ func TestNotice(t *testing.T) {
 	log.Info("first")
 	ctx := testctx.New()
 	Notice(ctx, "foo.bar_whatever: foobar")
+	Notice(ctx, "foo.bar_whatever: foobar")
+	Notice(ctx, "foo.bar_whatever: foobar")
 	log.Info("last")
 	require.True(t, ctx.Deprecated)
 
@@ -36,6 +38,8 @@ func TestNoticeCustom(t *testing.T) {
 	log.Info("first")
 	ctx := testctx.New()
 	NoticeCustom(ctx, "something-else", "some custom template with a url {{ .URL }}")
+	NoticeCustom(ctx, "something-else", "ignored")
+	NoticeCustom(ctx, "something-else", "ignored")
 	log.Info("last")
 	require.True(t, ctx.Deprecated)
 

@@ -1,3 +1,4 @@
+// Package errhandler handles errors.
 package errhandler
 
 import (
@@ -17,7 +18,7 @@ func Handle(action middleware.Action) middleware.Action {
 			return nil
 		}
 		if pipe.IsSkip(err) {
-			log.WithField("reason", err.Error()).Warn("pipe skipped")
+			log.WithField("reason", err.Error()).Warn("pipe skipped or partially skipped")
 			return nil
 		}
 		return err

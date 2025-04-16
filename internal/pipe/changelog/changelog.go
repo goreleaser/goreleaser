@@ -18,18 +18,14 @@ import (
 	"github.com/goreleaser/goreleaser/v2/pkg/context"
 )
 
+// Item is a type alias of [client.Changelog].
+type Item = client.ChangelogItem
+
 // ErrInvalidSortDirection happens when the sort order is invalid.
 var ErrInvalidSortDirection = errors.New("invalid sort direction")
 
-const li = "* "
-
-type useChangelog string
-
-func (u useChangelog) formatable() bool {
-	return u != "github-native"
-}
-
 const (
+	li              = "* "
 	useGit          = "git"
 	useGitHub       = "github"
 	useGitea        = "gitea"
@@ -52,7 +48,12 @@ func (Pipe) Skip(ctx *context.Context) (bool, error) {
 
 func (Pipe) Default(ctx *context.Context) error {
 	if ctx.Config.Changelog.Format == "" {
-		ctx.Config.Changelog.Format = "{{ .SHA }}: {{ .Message }} ({{ with .AuthorUsername }}@{{ . }}{{ else }}{{ .AuthorName }} <{{ .AuthorEmail }}>{{ end }})"
+		switch ctx.Config.Changelog.Use {
+		case "", "git":
+			ctx.Config.Changelog.Format = "{{ .SHA }} {{ .Message }}"
+		default:
+			ctx.Config.Changelog.Format = "{{ .SHA }}: {{ .Message }} ({{ with .AuthorUsername }}@{{ . }}{{ else }}{{ .AuthorName }} <{{ .AuthorEmail }}>{{ end }})"
+		}
 	}
 	return nil
 }
@@ -83,12 +84,7 @@ func (Pipe) Run(ctx *context.Context) error {
 		return err
 	}
 
-	entries, err := buildChangelog(ctx)
-	if err != nil {
-		return err
-	}
-
-	changes, err := formatChangelog(ctx, entries)
+	changes, err := buildChangelog(ctx)
 	if err != nil {
 		return err
 	}
@@ -135,41 +131,26 @@ func newLineFor(ctx *context.Context) string {
 	return "\n"
 }
 
-func abbrevEntry(s string, abbr int) string {
+func abbrevEntry(sha string, abbr int) string {
 	switch abbr {
 	case 0:
-		return s
+		return sha
 	case -1:
-		_, rest, _ := strings.Cut(s, " ")
-		return rest
+		return ""
 	default:
-		commit, rest, _ := strings.Cut(s, " ")
-		if abbr > len(commit) {
-			return s
+		if abbr > len(sha) {
+			return sha
 		}
-		return fmt.Sprintf("%s %s", commit[:abbr], rest)
+		return sha[:abbr]
 	}
 }
 
-func abbrev(entries []string, abbr int) []string {
-	result := make([]string, 0, len(entries))
-	for _, entry := range entries {
-		result = append(result, abbrevEntry(entry, abbr))
-	}
-	return result
-}
-
-func formatChangelog(ctx *context.Context, entries []string) (string, error) {
-	if !useChangelog(ctx.Config.Changelog.Use).formatable() {
-		return strings.Join(entries, newLineFor(ctx)), nil
-	}
-
-	entries = abbrev(entries, ctx.Config.Changelog.Abbrev)
-
+func formatChangelog(ctx *context.Context, entries []Item) (string, error) {
 	result := []string{title("Changelog", 2)}
 	if len(ctx.Config.Changelog.Groups) == 0 {
 		log.Debug("not grouping entries")
-		return strings.Join(append(result, filterAndPrefixItems(entries)...), newLineFor(ctx)), nil
+		lines, err := formatEntries(ctx, entries)
+		return strings.Join(append(result, lines...), newLineFor(ctx)), err
 	}
 
 	log.Debug("grouping entries")
@@ -181,7 +162,11 @@ func formatChangelog(ctx *context.Context, entries []string) (string, error) {
 		}
 		if group.Regexp == "" {
 			// If no regexp is provided, we purge all strikethrough entries and add remaining entries to the list
-			item.entries = filterAndPrefixItems(entries)
+			lines, err := formatEntries(ctx, entries)
+			if err != nil {
+				return "", err
+			}
+			item.entries = lines
 			// clear array
 			entries = nil
 		} else {
@@ -193,10 +178,14 @@ func formatChangelog(ctx *context.Context, entries []string) (string, error) {
 			log.Debugf("group: %#v", group)
 			i := 0
 			for _, entry := range entries {
-				match := re.MatchString(entry)
+				match := re.MatchString(entry.Message)
 				log.Debugf("entry: %s match: %b\n", entry, match)
 				if match {
-					item.entries = append(item.entries, li+entry)
+					line, err := formatEntry(ctx, entry)
+					if err != nil {
+						return "", err
+					}
+					item.entries = append(item.entries, line)
 				} else {
 					// Keep unmatched entry.
 					entries[i] = entry
@@ -226,14 +215,8 @@ func groupSort(i, j changelogGroup) int {
 	return cmp.Compare(i.order, j.order)
 }
 
-func filterAndPrefixItems(ss []string) []string {
-	var r []string
-	for _, s := range ss {
-		if s != "" {
-			r = append(r, li+s)
-		}
-	}
-	return r
+func prefixItem(s string) string {
+	return li + s
 }
 
 func loadFromFile(file string) (string, error) {
@@ -254,33 +237,48 @@ func checkSortDirection(mode string) error {
 	}
 }
 
-func buildChangelog(ctx *context.Context) ([]string, error) {
-	l, err := getChangeloger(ctx)
+func buildChangelog(ctx *context.Context) (string, error) {
+	var cl staticChangeloger
+	var err error
+	switch ctx.Config.Changelog.Use {
+	case "github-native":
+		cl, err = newGithubChangeloger(ctx)
+	default:
+		cl, err = newCustomizedChangelog(ctx)
+	}
 	if err != nil {
-		return nil, err
+		return "", err
 	}
-	log, err := l.Log(ctx)
-	if err != nil {
-		return nil, err
-	}
-	entries := strings.Split(log, "\n")
-	if lastLine := entries[len(entries)-1]; strings.TrimSpace(lastLine) == "" {
-		entries = entries[0 : len(entries)-1]
-	}
-	if !useChangelog(ctx.Config.Changelog.Use).formatable() {
-		return entries, nil
-	}
-	entries, err = filterEntries(ctx, entries)
-	if err != nil {
-		return entries, err
-	}
-	return sortEntries(ctx, entries), nil
+	return cl.Log(ctx)
 }
 
-func filterEntries(ctx *context.Context, entries []string) ([]string, error) {
+func formatEntry(ctx *context.Context, entry Item) (string, error) {
+	line, err := tmpl.New(ctx).WithExtraFields(tmpl.Fields{
+		"SHA":            abbrevEntry(entry.SHA, ctx.Config.Changelog.Abbrev),
+		"Message":        entry.Message,
+		"AuthorUsername": entry.AuthorUsername,
+		"AuthorName":     entry.AuthorName,
+		"AuthorEmail":    entry.AuthorEmail,
+	}).Apply(ctx.Config.Changelog.Format)
+	return prefixItem(line), err
+}
+
+func formatEntries(ctx *context.Context, entries []Item) ([]string, error) {
+	var lines []string
+	for _, entry := range entries {
+		line, err := formatEntry(ctx, entry)
+		if err != nil {
+			return nil, err
+		}
+		lines = append(lines, line)
+	}
+	return lines, nil
+}
+
+func filterEntries(ctx *context.Context, entries []Item) ([]Item, error) {
 	filters := ctx.Config.Changelog.Filters
 	if len(filters.Include) > 0 {
-		var newEntries []string
+		var newEntries []Item
 		for _, filter := range filters.Include {
 			r, err := regexp.Compile(filter)
 			if err != nil {
@@ -300,15 +298,13 @@ func filterEntries(ctx *context.Context, entries []string) ([]string, error) {
 	return entries, nil
 }
 
-func sortEntries(ctx *context.Context, entries []string) []string {
+func sortEntries(ctx *context.Context, entries []Item) []Item {
 	direction := ctx.Config.Changelog.Sort
 	if direction == "" {
 		return entries
 	}
-	slices.SortFunc(entries, func(i, j string) int {
-		imsg := extractCommitInfo(i)
-		jmsg := extractCommitInfo(j)
-		compareRes := strings.Compare(imsg, jmsg)
+	slices.SortFunc(entries, func(i, j Item) int {
+		compareRes := strings.Compare(i.Message, j.Message)
 		if direction == "asc" {
 			return compareRes
 		}
@@ -317,26 +313,22 @@ func sortEntries(ctx *context.Context, entries []string) []string {
 	return entries
 }
 
-func keep(filter *regexp.Regexp, entries []string) (result []string) {
+func keep(filter *regexp.Regexp, entries []Item) (result []Item) {
 	for _, entry := range entries {
-		if filter.MatchString(extractCommitInfo(entry)) {
+		if filter.MatchString(entry.Message) {
 			result = append(result, entry)
 		}
 	}
 	return result
 }
 
-func remove(filter *regexp.Regexp, entries []string) (result []string) {
+func remove(filter *regexp.Regexp, entries []Item) (result []Item) {
 	for _, entry := range entries {
-		if !filter.MatchString(extractCommitInfo(entry)) {
+		if !filter.MatchString(entry.Message) {
 			result = append(result, entry)
 		}
 	}
 	return result
-}
-
-func extractCommitInfo(line string) string {
-	return strings.Join(strings.Split(line, " ")[1:], " ")
 }
 
 func getChangeloger(ctx *context.Context) (changeloger, error) {
@@ -349,14 +341,22 @@ func getChangeloger(ctx *context.Context) (changeloger, error) {
 			return gitChangeloger{}, nil
 		}
 		return newSCMChangeloger(ctx)
-	case useGitHubNative:
-		return newGithubChangeloger(ctx)
 	default:
 		return nil, fmt.Errorf("invalid changelog.use: %q", ctx.Config.Changelog.Use)
 	}
 }
 
-func newGithubChangeloger(ctx *context.Context) (changeloger, error) {
+func newCustomizedChangelog(ctx *context.Context) (staticChangeloger, error) {
+	changeloger, err := getChangeloger(ctx)
+	if err != nil {
+		return nil, err
+	}
+	return wrappingChangeloger{
+		changeloger: changeloger,
+	}, nil
+}
+
+func newGithubChangeloger(ctx *context.Context) (staticChangeloger, error) {
 	cli, err := client.NewGitHubReleaseNotesGenerator(ctx, ctx.Token)
 	if err != nil {
 		return nil, err
@@ -425,13 +425,22 @@ func loadContent(ctx *context.Context, fileName, tmplName string) (string, error
 }
 
 type changeloger interface {
+	Log(ctx *context.Context) ([]Item, error)
+}
+
+type staticChangeloger interface {
 	Log(ctx *context.Context) (string, error)
 }
 
 type gitChangeloger struct{}
 
-func (g gitChangeloger) Log(ctx *context.Context) (string, error) {
-	args := []string{"log", "--pretty=oneline", "--no-decorate", "--no-color"}
+func (g gitChangeloger) Log(ctx *context.Context) ([]Item, error) {
+	args := []string{
+		"log",
+		"--no-decorate",
+		"--no-color",
+		"--pretty=format:" + gitLogFormat,
+	}
 	// if prev is empty, it means we don't have a previous tag, so we don't
 	// pass any more args, which should everything.
 	// if current is empty, it shouldn't matter, as it will then log
@@ -440,7 +449,18 @@ func (g gitChangeloger) Log(ctx *context.Context) (string, error) {
 	if prev != "" {
 		args = append(args, fmt.Sprintf("%s..%s", prev, current))
 	}
-	return git.Run(ctx, args...)
+	out, err := git.Run(ctx, args...)
+	if err != nil {
+		return nil, err
+	}
+	var entries []Item
+	for line := range strings.SplitSeq(out, "\n") {
+		if strings.TrimSpace(line) == "" {
+			continue
+		}
+		entries = append(entries, decode(line))
+	}
+	return entries, nil
 }
 
 type scmChangeloger struct {
@@ -448,27 +468,9 @@ type scmChangeloger struct {
 	repo   client.Repo
 }
 
-func (c *scmChangeloger) Log(ctx *context.Context) (string, error) {
+func (c *scmChangeloger) Log(ctx *context.Context) ([]Item, error) {
 	prev, current := ctx.Git.PreviousTag, ctx.Git.CurrentTag
-	items, err := c.client.Changelog(ctx, c.repo, prev, current)
-	if err != nil {
-		return "", err
-	}
-	var lines []string
-	for _, item := range items {
-		line, err := tmpl.New(ctx).WithExtraFields(tmpl.Fields{
-			"SHA":            item.SHA,
-			"Message":        item.Message,
-			"AuthorUsername": item.AuthorUsername,
-			"AuthorName":     item.AuthorName,
-			"AuthorEmail":    item.AuthorEmail,
-		}).Apply(ctx.Config.Changelog.Format)
-		if err != nil {
-			return "", err
-		}
-		lines = append(lines, line)
-	}
-	return strings.Join(lines, "\n"), nil
+	return c.client.Changelog(ctx, c.repo, prev, current)
 }
 
 type githubNativeChangeloger struct {
@@ -478,4 +480,56 @@ type githubNativeChangeloger struct {
 
 func (c *githubNativeChangeloger) Log(ctx *context.Context) (string, error) {
 	return c.client.GenerateReleaseNotes(ctx, c.repo, ctx.Git.PreviousTag, ctx.Git.CurrentTag)
+}
+
+type wrappingChangeloger struct {
+	changeloger changeloger
+}
+
+func (w wrappingChangeloger) Log(ctx *context.Context) (string, error) {
+	entries, err := w.changeloger.Log(ctx)
+	if err != nil {
+		return "", err
+	}
+	entries, err = filterEntries(ctx, entries)
+	if err != nil {
+		return "", err
+	}
+	return formatChangelog(ctx, sortEntries(ctx, entries))
+}
+
+const (
+	shaOpen      = "<goreleaser_sha>"
+	shaClose     = "</goreleaser_sha>"
+	messageOpen  = "<goreleaser_message>"
+	messageClose = "</goreleaser_message>"
+	authorOpen   = "<goreleaser_author>"
+	authorClose  = "</goreleaser_author>"
+	emailOpen    = "<goreleaser_email>"
+	emailClose   = "</goreleaser_email>"
+
+	gitLogFormat = shaOpen + "%H" + shaClose +
+		messageOpen + "%s" + messageClose +
+		authorOpen + "%an" + authorClose +
+		emailOpen + "%aE" + emailClose
+)
+
+func decode(line string) Item {
+	var (
+		shaOpenIdx      = strings.Index(line, shaOpen) + len(shaOpen)
+		shaCloseIdx     = strings.Index(line, shaClose)
+		messageOpenIdx  = strings.Index(line, messageOpen) + len(messageOpen)
+		messageCloseIdx = strings.Index(line, messageClose)
+		authorOpenIdx   = strings.Index(line, authorOpen) + len(authorOpen)
+		authorCloseIdx  = strings.Index(line, authorClose)
+		emailOpenIdx    = strings.Index(line, emailOpen) + len(emailOpen)
+		emailCloseIdx   = strings.Index(line, emailClose)
+	)
+
+	return Item{
+		SHA:         line[shaOpenIdx:shaCloseIdx],
+		Message:     line[messageOpenIdx:messageCloseIdx],
+		AuthorName:  line[authorOpenIdx:authorCloseIdx],
+		AuthorEmail: line[emailOpenIdx:emailCloseIdx],
+	}
 }

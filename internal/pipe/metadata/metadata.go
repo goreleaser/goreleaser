@@ -66,7 +66,7 @@ func writeArtifacts(ctx *context.Context) error {
 	return err
 }
 
-func writeJSON(ctx *context.Context, j interface{}, name string) (string, error) {
+func writeJSON(ctx *context.Context, j any, name string) (string, error) {
 	bts, err := json.Marshal(j)
 	if err != nil {
 		return "", err

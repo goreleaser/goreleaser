@@ -1,3 +1,4 @@
+// Package cmd provides the command line interface for goreleaser.
 package cmd
 
 import (
@@ -5,6 +6,7 @@ import (
 	"fmt"
 	"path/filepath"
 	"runtime"
+	"slices"
 	"strings"
 	"time"
 
@@ -85,7 +87,7 @@ When using ` + "`--single-target`" + `, you use the ` + "`TARGET`, or GOOS`, `GO
 	cmd.Flags().StringArrayVar(&root.opts.ids, "id", nil, "Builds only the specified build ids")
 	_ = cmd.RegisterFlagCompletionFunc("id", func(_ *cobra.Command, _ []string, _ string) ([]string, cobra.ShellCompDirective) {
 		// TODO: improve this
-		cfg, err := loadConfig(root.opts.config)
+		cfg, err := loadConfig(!root.opts.snapshot, root.opts.config)
 		if err != nil {
 			return nil, cobra.ShellCompDirectiveNoFileComp
 		}
@@ -97,7 +99,7 @@ When using ` + "`--single-target`" + `, you use the ` + "`TARGET`, or GOOS`, `GO
 	})
 	cmd.Flags().BoolVar(&root.opts.deprecated, "deprecated", false, "Force print the deprecation message - tests only")
 	cmd.Flags().StringVarP(&root.opts.output, "output", "o", "", "Copy the binary to the path after the build. Only taken into account when using --single-target and a single id (either with --id or if configuration only has one build)")
-	_ = cmd.MarkFlagFilename("output", "")
+	// _ = cmd.MarkFlagFilename("output") // no extensions to filter
 	_ = cmd.Flags().MarkHidden("deprecated")
 
 	cmd.Flags().StringSliceVar(
@@ -115,7 +117,7 @@ When using ` + "`--single-target`" + `, you use the ` + "`TARGET`, or GOOS`, `GO
 }
 
 func buildProject(options buildOpts) (*context.Context, error) {
-	cfg, err := loadConfig(options.config)
+	cfg, err := loadConfig(!options.snapshot, options.config)
 	if err != nil {
 		return nil, err
 	}
@@ -202,11 +204,8 @@ func setupBuildID(ctx *context.Context, ids []string) error {
 
 	var keep []config.Build
 	for _, build := range ctx.Config.Builds {
-		for _, id := range ids {
-			if build.ID == id {
-				keep = append(keep, build)
-				break
-			}
+		if slices.Contains(ids, build.ID) {
+			keep = append(keep, build)
 		}
 	}
 

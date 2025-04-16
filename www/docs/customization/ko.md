@@ -103,6 +103,11 @@ kos:
     # Valid options are: spdx and none.
     sbom: none
 
+    # Path to file where the SBOM will be written
+    #
+    # Default: unset - no SBOM written to filesystem (but still uploaded to oci repository).
+    sbom_directory: "out/sbom"
+
     # Ldflags to use on build.
     #
     # Default: build.ldflags.
@@ -123,6 +128,12 @@ kos:
     env:
       - FOO=bar
       - SOMETHING=value
+
+    # Whether to disable this particular Ko configuration.
+    #
+    # Templates: allowed.
+    # <!-- md:inline_version v2.8 -->.
+    disable: "{{ .IsSnapshot }}"
 
     # Bare uses a tag on the $KO_DOCKER_REPO without anything additional.
     bare: true
@@ -163,7 +174,7 @@ builds:
       - arm64
 
 kos:
-  - repository: ghcr.io/caarlos0/test-ko
+  - repositories: [ghcr.io/caarlos0/test-ko]
     tags:
       - "{{.Version}}"
       - latest

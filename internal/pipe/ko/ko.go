@@ -30,6 +30,7 @@ import (
 	"github.com/goreleaser/goreleaser/v2/internal/artifact"
 	"github.com/goreleaser/goreleaser/v2/internal/deprecate"
 	"github.com/goreleaser/goreleaser/v2/internal/ids"
+	"github.com/goreleaser/goreleaser/v2/internal/pipe"
 	"github.com/goreleaser/goreleaser/v2/internal/semerrgroup"
 	"github.com/goreleaser/goreleaser/v2/internal/skips"
 	"github.com/goreleaser/goreleaser/v2/internal/tmpl"
@@ -156,9 +157,18 @@ func (p Pipe) Run(ctx *context.Context) error {
 
 // Publish executes the Pipe.
 func (Pipe) Publish(ctx *context.Context) error {
-	g := semerrgroup.New(ctx.Parallelism)
+	g := semerrgroup.NewSkipAware(semerrgroup.New(ctx.Parallelism))
 	for _, ko := range ctx.Config.Kos {
-		g.Go(doBuild(ctx, ko))
+		g.Go(func() error {
+			disable, err := tmpl.New(ctx).Bool(ko.Disable)
+			if err != nil {
+				return err
+			}
+			if disable {
+				return pipe.Skip("configuration is disabled")
+			}
+			return doBuild(ctx, ko)
+		})
 	}
 	return g.Wait()
 }
@@ -179,6 +189,7 @@ type buildOptions struct {
 	creationTime        *v1.Time
 	koDataCreationTime  *v1.Time
 	sbom                string
+	SBOMDirectory       string
 	ldflags             []string
 	bare                bool
 	preserveImportPaths bool
@@ -244,6 +255,9 @@ func (o *buildOptions) makeBuilder(ctx *context.Context) (*build.Caching, error)
 	switch o.sbom {
 	case "spdx":
 		buildOptions = append(buildOptions, build.WithSPDX("devel"))
+		if o.SBOMDirectory != "" {
+			buildOptions = append(buildOptions, build.WithSBOMDir(o.SBOMDirectory))
+		}
 	case "none":
 		buildOptions = append(buildOptions, build.WithDisabledSBOM())
 	default:
@@ -257,84 +271,82 @@ func (o *buildOptions) makeBuilder(ctx *context.Context) (*build.Caching, error)
 	return build.NewCaching(b)
 }
 
-func doBuild(ctx *context.Context, ko config.Ko) func() error {
-	return func() error {
-		opts, err := buildBuildOptions(ctx, ko)
-		if err != nil {
-			return err
-		}
+func doBuild(ctx *context.Context, ko config.Ko) error {
+	opts, err := buildBuildOptions(ctx, ko)
+	if err != nil {
+		return err
+	}
 
-		b, err := opts.makeBuilder(ctx)
-		if err != nil {
-			return fmt.Errorf("makeBuilder: %w", err)
-		}
-		r, err := b.Build(ctx, opts.importPath)
-		if err != nil {
-			return fmt.Errorf("build: %w", err)
-		}
+	b, err := opts.makeBuilder(ctx)
+	if err != nil {
+		return fmt.Errorf("makeBuilder: %w", err)
+	}
+	r, err := b.Build(ctx, opts.importPath)
+	if err != nil {
+		return fmt.Errorf("build: %w", err)
+	}
 
-		po := &options.PublishOptions{
-			DockerRepo:          opts.imageRepos[0],
-			Bare:                opts.bare,
-			PreserveImportPaths: opts.preserveImportPaths,
-			BaseImportPaths:     opts.baseImportPaths,
-			Tags:                opts.tags,
-			Local:               ctx.Snapshot,
-			LocalDomain:         "goreleaser.ko.local",
-		}
-		var p publish.Interface
-		if ctx.Snapshot {
-			p, err = publish.NewDaemon(
-				options.MakeNamer(po),
-				opts.tags,
-				publish.WithLocalDomain(po.LocalDomain),
-			)
-		} else {
-			p, err = publish.NewDefault(
-				opts.imageRepos[0],
-				publish.WithTags(opts.tags),
-				publish.WithNamer(options.MakeNamer(po)),
-				publish.WithAuthFromKeychain(keychain),
-			)
-		}
-		if err != nil {
-			return fmt.Errorf("newPublisher: %w", err)
-		}
-		defer func() { _ = p.Close() }()
-		ref, err := p.Publish(ctx, r, opts.importPath)
-		if err != nil {
-			return fmt.Errorf("publish: %w", err)
-		}
-		if err := p.Close(); err != nil {
-			return fmt.Errorf("close: %w", err)
-		}
+	po := &options.PublishOptions{
+		DockerRepo:          opts.imageRepos[0],
+		Bare:                opts.bare,
+		PreserveImportPaths: opts.preserveImportPaths,
+		BaseImportPaths:     opts.baseImportPaths,
+		Tags:                opts.tags,
+		Local:               ctx.Snapshot,
+		LocalDomain:         "goreleaser.ko.local",
+	}
+	var p publish.Interface
+	if ctx.Snapshot {
+		p, err = publish.NewDaemon(
+			options.MakeNamer(po),
+			opts.tags,
+			publish.WithLocalDomain(po.LocalDomain),
+		)
+	} else {
+		p, err = publish.NewDefault(
+			opts.imageRepos[0],
+			publish.WithTags(opts.tags),
+			publish.WithNamer(options.MakeNamer(po)),
+			publish.WithAuthFromKeychain(keychain),
+		)
+	}
+	if err != nil {
+		return fmt.Errorf("newPublisher: %w", err)
+	}
+	defer func() { _ = p.Close() }()
+	ref, err := p.Publish(ctx, r, opts.importPath)
+	if err != nil {
+		return fmt.Errorf("publish: %w", err)
+	}
+	if err := p.Close(); err != nil {
+		return fmt.Errorf("close: %w", err)
+	}
 
-		ctx.Artifacts.Add(makeArtifact(
-			ko.ID,
-			ref.Name(),
-			ref.Context().Digest(ref.Identifier()).DigestStr(),
-		))
+	ctx.Artifacts.Add(makeArtifact(
+		ko.ID,
+		ref.Name(),
+		ref.Context().Digest(ref.Identifier()).DigestStr(),
+	))
 
-		if ctx.Snapshot || len(opts.imageRepos) == 1 {
-			// do not copy images when snapshoting, as these images will be
-			// local only anyway.
-			return nil
-		}
-
-		src := ref.Name()
-		for i := 1; i < len(opts.imageRepos); i++ {
-			for _, tag := range opts.tags {
-				dst := opts.imageRepos[i] + ":" + tag
-				digest, err := copyImage(src, dst)
-				if err != nil {
-					return err
-				}
-				ctx.Artifacts.Add(makeArtifact(ko.ID, dst, digest))
-			}
-		}
-
+	if ctx.Snapshot || len(opts.imageRepos) == 1 {
+		// do not copy images when snapshoting, as these images will be
+		// local only anyway.
 		return nil
 	}
+
+	src := ref.Name()
+	for i := 1; i < len(opts.imageRepos); i++ {
+		for _, tag := range opts.tags {
+			dst := opts.imageRepos[i] + ":" + tag
+			digest, err := copyImage(src, dst)
+			if err != nil {
+				return err
+			}
+			ctx.Artifacts.Add(makeArtifact(ko.ID, dst, digest))
+		}
+	}
+
+	return nil
 }
 
 func findBuild(ctx *context.Context, ko config.Ko) (config.Build, error) {
@@ -383,6 +395,7 @@ func buildBuildOptions(ctx *context.Context, cfg config.Ko) (*buildOptions, erro
 		sbom:                cfg.SBOM,
 		imageRepos:          cfg.Repositories,
 		user:                cfg.User,
+		SBOMDirectory:       cfg.SBOMDirectory,
 	}
 
 	tags, err := applyTemplate(ctx, cfg.Tags)
@@ -531,7 +544,7 @@ func makeArtifact(id, name, digest string) *artifact.Artifact {
 		Type:  artifact.DockerManifest,
 		Name:  name,
 		Path:  name,
-		Extra: map[string]interface{}{},
+		Extra: map[string]any{},
 	}
 	if id != "" {
 		art.Extra[artifact.ExtraID] = id

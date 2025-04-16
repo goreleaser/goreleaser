@@ -33,12 +33,12 @@ builds:
       - x86_64-pc-windows-gnu
 
     # Path to project's (sub)directory containing the code.
-    # This is the working directory for the Zig build command(s).
+    # This is the working directory for the cargo build command(s).
     #
     # Default: '.'.
     dir: my-app
 
-    # Set a specific zig binary to use when building.
+    # Set a specific cargo binary to use when building.
     # It is safe to ignore this option in most cases.
     #
     # Default: "cargo".
@@ -96,7 +96,7 @@ then make few changes:
 
 ```yaml title=".goreleaser.yaml"
 builds:
-  - # Use Rust zigbuild
+  - # Use cargo cross:
     builder: rust
     tool: cross
     command: build
@@ -107,12 +107,12 @@ builds:
 
 ## Publishing with Cargo
 
-You can use [custom publishers](../publishers.md) to do it:
+You can use [global after hooks](../hooks.md) to do it:
 
 ```yaml title=".goreleaser.yaml"
-publishers:
-  - name: cargo
-    cmd: "cargo publish {{ if .IsSnapshot }}--dry-run{{ end }} --quiet --no-verify"
+# global after hooks
+after:
+  - cmd: "cargo publish {{ if .IsSnapshot }}--dry-run{{ end }} --quiet --no-verify"
 ```
 
 ## Caveats

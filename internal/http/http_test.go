@@ -7,15 +7,17 @@ import (
 	"errors"
 	"fmt"
 	"io"
-	h "net/http"
+	"net/http"
 	"net/http/httptest"
 	"os"
 	"path/filepath"
 	"strings"
 	"sync"
+	"sync/atomic"
 	"testing"
 
 	"github.com/goreleaser/goreleaser/v2/internal/artifact"
+	"github.com/goreleaser/goreleaser/v2/internal/pipe"
 	"github.com/goreleaser/goreleaser/v2/internal/testctx"
 	"github.com/goreleaser/goreleaser/v2/pkg/config"
 	"github.com/goreleaser/goreleaser/v2/pkg/context"
@@ -49,7 +51,7 @@ func TestAssetOpenDefault(t *testing.T) {
 		t.Fatalf("should fail on missing file")
 	}
 	_, err = assetOpenDefault("blah", &artifact.Artifact{
-		Path: os.TempDir(),
+		Path: t.TempDir(),
 	})
 	if err == nil {
 		t.Fatalf("should fail on existing dir")
@@ -141,8 +143,8 @@ type check struct {
 	headers map[string]string
 }
 
-func checks(checks ...check) func(rs []*h.Request) error {
-	return func(rs []*h.Request) error {
+func checks(checks ...check) func(rs []*http.Request) error {
+	return func(rs []*http.Request) error {
 		for _, r := range rs {
 			found := false
 			for _, c := range checks {
@@ -166,7 +168,7 @@ func checks(checks ...check) func(rs []*h.Request) error {
 	}
 }
 
-func doCheck(c check, r *h.Request) error {
+func doCheck(c check, r *http.Request) error {
 	contentLength := int64(len(c.content))
 	if r.ContentLength != contentLength {
 		return fmt.Errorf("request content-length header value %v unexpected, wanted %v", r.ContentLength, contentLength)
@@ -197,13 +199,13 @@ func doCheck(c check, r *h.Request) error {
 
 func TestUpload(t *testing.T) {
 	content := []byte("blah!")
-	requests := []*h.Request{}
+	requests := []*http.Request{}
 	var m sync.Mutex
-	mux := h.NewServeMux()
-	mux.Handle("/", h.HandlerFunc(func(w h.ResponseWriter, r *h.Request) {
+	mux := http.NewServeMux()
+	mux.Handle("/", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		bs, err := io.ReadAll(r.Body)
 		if err != nil {
-			w.WriteHeader(h.StatusInternalServerError)
+			w.WriteHeader(http.StatusInternalServerError)
 			fmt.Fprintf(w, "reading request body: %v", err)
 			return
 		}
@@ -211,7 +213,7 @@ func TestUpload(t *testing.T) {
 		m.Lock()
 		requests = append(requests, r)
 		m.Unlock()
-		w.WriteHeader(h.StatusCreated)
+		w.WriteHeader(http.StatusCreated)
 		w.Header().Set("Location", r.URL.RequestURI())
 	}))
 	assetOpen = func(_ string, _ *artifact.Artifact) (*asset, error) {
@@ -221,7 +223,7 @@ func TestUpload(t *testing.T) {
 		}, nil
 	}
 	defer assetOpenReset()
-	var is2xx ResponseChecker = func(r *h.Response) error {
+	var is2xx ResponseChecker = func(r *http.Response) error {
 		if r.StatusCode/100 == 2 {
 			return nil
 		}
@@ -258,7 +260,7 @@ func TestUpload(t *testing.T) {
 			Goarch: "amd64",
 			Path:   file,
 			Type:   a.typ,
-			Extra: map[string]interface{}{
+			Extra: map[string]any{
 				artifact.ExtraID:  "foo",
 				artifact.ExtraExt: a.ext,
 			},
@@ -272,7 +274,7 @@ func TestUpload(t *testing.T) {
 		wantErrPlain bool
 		wantErrTLS   bool
 		setup        func(*httptest.Server) (*context.Context, config.Upload)
-		check        func(r []*h.Request) error
+		check        func(r []*http.Request) error
 	}{
 		{
 			"wrong-mode", true, true, true, true,
@@ -307,7 +309,7 @@ func TestUpload(t *testing.T) {
 			"post", true, true, false, false,
 			func(s *httptest.Server) (*context.Context, config.Upload) {
 				return ctx, config.Upload{
-					Method:       h.MethodPost,
+					Method:       http.MethodPost,
 					Mode:         ModeArchive,
 					Name:         "a",
 					Target:       s.URL + "/{{.ProjectName}}/{{.Version}}/",
@@ -654,7 +656,7 @@ func TestUpload(t *testing.T) {
 		},
 	}
 
-	uploadAndCheck := func(t *testing.T, setup func(*httptest.Server) (*context.Context, config.Upload), wantErrPlain, wantErrTLS bool, check func(r []*h.Request) error, srv *httptest.Server) {
+	uploadAndCheck := func(t *testing.T, setup func(*httptest.Server) (*context.Context, config.Upload), wantErrPlain, wantErrTLS bool, check func(r []*http.Request) error, srv *httptest.Server) {
 		t.Helper()
 		requests = nil
 		ctx, upload := setup(srv)
@@ -700,4 +702,49 @@ func cert(srv *httptest.Server) string {
 		Bytes: srv.Certificate().Raw,
 	}
 	return string(pem.EncodeToMemory(block))
+}
+
+func TestManyUploads(t *testing.T) {
+	var uploaded atomic.Bool
+	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
+		w.WriteHeader(http.StatusCreated)
+		uploaded.Store(true)
+	}))
+	t.Cleanup(srv.Close)
+	assetOpen = func(string, *artifact.Artifact) (*asset, error) {
+		return &asset{
+			ReadCloser: io.NopCloser(strings.NewReader("a")),
+			Size:       1,
+		}, nil
+	}
+	defer assetOpenReset()
+	ctx := testctx.NewWithCfg(config.Project{
+		ProjectName: "blah",
+		Env:         []string{"FOO=1"},
+		Uploads: []config.Upload{
+			{
+				Name: "skip1",
+				Skip: "true",
+			},
+			{
+				Name:     "real",
+				Mode:     "archive",
+				Checksum: true,
+				Target:   srv.URL,
+			},
+			{
+				Name: "skip1",
+				Skip: `{{ eq .Env.FOO "1" }}`,
+			},
+		},
+	}, testctx.WithVersion("2.1.0"))
+	ctx.Artifacts.Add(&artifact.Artifact{
+		Name: "checksums.txt",
+		Path: "doesnt-matter",
+		Type: artifact.Checksum,
+	})
+	err := Upload(ctx, ctx.Config.Uploads, "test", func(*http.Response) error { return nil })
+	require.Error(t, err)
+	require.True(t, pipe.IsSkip(err), err)
+	require.True(t, uploaded.Load(), "should have uploaded")
 }

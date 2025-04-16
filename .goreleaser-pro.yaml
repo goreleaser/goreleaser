@@ -1,0 +1,36 @@
+# yaml-language-server: $schema=https://goreleaser.com/static/schema-pro.json
+# vim: set ts=2 sw=2 tw=0 fo=jcroql
+version: 2
+pro: true
+
+nightly:
+  publish_release: true
+  keep_single_release: true
+  version_template: "{{ incminor .Version }}-nightly"
+
+npms:
+  - name: "@goreleaser/goreleaser"
+    repository: "git+https://github.com/goreleaser/goreleaser.git"
+    bugs: https://github.com/goreleaser/goreleaser/issues
+    description: Release engineering, simplified
+    homepage: https://goreleaser.com
+    license: MIT
+    author: "Carlos Alexandro Becker <carlos@becker.software>"
+    access: public
+    keywords:
+      - release
+      - golang
+      - go
+      - rust
+      - zig
+      - bun
+      - deno
+      - docker
+
+furies:
+  - account: goreleaser
+    disable: "{{ .IsNightly }}"
+
+includes:
+  - from_file:
+      path: ./.goreleaser.yaml

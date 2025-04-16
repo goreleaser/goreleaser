@@ -262,7 +262,7 @@ func TestFullPipe(t *testing.T) {
 				Goarch:  "amd64",
 				Goamd64: "v1",
 				Type:    artifact.UploadableArchive,
-				Extra: map[string]interface{}{
+				Extra: map[string]any{
 					artifact.ExtraID:     "bar",
 					artifact.ExtraFormat: "tar.gz",
 				},
@@ -275,7 +275,7 @@ func TestFullPipe(t *testing.T) {
 				Goarch:  "amd64",
 				Goamd64: "v1",
 				Type:    artifact.UploadableArchive,
-				Extra: map[string]interface{}{
+				Extra: map[string]any{
 					artifact.ExtraID:       "foo",
 					artifact.ExtraFormat:   "tar.gz",
 					artifact.ExtraBinaries: []string{"name"},
@@ -288,7 +288,7 @@ func TestFullPipe(t *testing.T) {
 				Goarch:  "amd64",
 				Goamd64: "v3",
 				Type:    artifact.UploadableArchive,
-				Extra: map[string]interface{}{
+				Extra: map[string]any{
 					artifact.ExtraID:       "foo",
 					artifact.ExtraFormat:   "tar.gz",
 					artifact.ExtraBinaries: []string{"name"},
@@ -382,7 +382,7 @@ func TestRunPipePullRequest(t *testing.T) {
 		Goos:   "darwin",
 		Goarch: "all",
 		Type:   artifact.UploadableArchive,
-		Extra: map[string]interface{}{
+		Extra: map[string]any{
 			artifact.ExtraID:       "foo",
 			artifact.ExtraFormat:   "tar.gz",
 			artifact.ExtraBinaries: []string{"foo"},
@@ -436,7 +436,7 @@ func TestRunPipeUniversalBinary(t *testing.T) {
 		Goos:   "darwin",
 		Goarch: "all",
 		Type:   artifact.UploadableArchive,
-		Extra: map[string]interface{}{
+		Extra: map[string]any{
 			artifact.ExtraID:       "unibin",
 			artifact.ExtraFormat:   "tar.gz",
 			artifact.ExtraBinaries: []string{"unibin"},
@@ -491,7 +491,7 @@ func TestRunPipeUniversalBinaryNotReplacing(t *testing.T) {
 		Goarch:  "amd64",
 		Goamd64: "v1",
 		Type:    artifact.UploadableArchive,
-		Extra: map[string]interface{}{
+		Extra: map[string]any{
 			artifact.ExtraID:       "unibin",
 			artifact.ExtraFormat:   "tar.gz",
 			artifact.ExtraBinaries: []string{"unibin"},
@@ -504,7 +504,7 @@ func TestRunPipeUniversalBinaryNotReplacing(t *testing.T) {
 		Goarch:  "arm64",
 		Goamd64: "v1",
 		Type:    artifact.UploadableArchive,
-		Extra: map[string]interface{}{
+		Extra: map[string]any{
 			artifact.ExtraID:       "unibin",
 			artifact.ExtraFormat:   "tar.gz",
 			artifact.ExtraBinaries: []string{"unibin"},
@@ -516,7 +516,7 @@ func TestRunPipeUniversalBinaryNotReplacing(t *testing.T) {
 		Goos:   "darwin",
 		Goarch: "all",
 		Type:   artifact.UploadableArchive,
-		Extra: map[string]interface{}{
+		Extra: map[string]any{
 			artifact.ExtraID:       "unibin",
 			artifact.ExtraFormat:   "tar.gz",
 			artifact.ExtraBinaries: []string{"unibin"},
@@ -573,7 +573,7 @@ func TestRunPipeNameTemplate(t *testing.T) {
 		Goarch:  "amd64",
 		Goamd64: "v1",
 		Type:    artifact.UploadableArchive,
-		Extra: map[string]interface{}{
+		Extra: map[string]any{
 			artifact.ExtraID:       "foo",
 			artifact.ExtraFormat:   "tar.gz",
 			artifact.ExtraBinaries: []string{"foo"},
@@ -655,7 +655,7 @@ func TestRunPipeMultipleKrewWithSkip(t *testing.T) {
 		Goarch:  "amd64",
 		Goamd64: "v1",
 		Type:    artifact.UploadableArchive,
-		Extra: map[string]interface{}{
+		Extra: map[string]any{
 			artifact.ExtraID:       "foo",
 			artifact.ExtraFormat:   "tar.gz",
 			artifact.ExtraBinaries: []string{"foo"},
@@ -769,7 +769,7 @@ func TestRunPipeForMultipleArmVersions(t *testing.T) {
 					Goarm:   a.goarm,
 					Goamd64: "v1",
 					Type:    artifact.UploadableArchive,
-					Extra: map[string]interface{}{
+					Extra: map[string]any{
 						artifact.ExtraID:       a.name,
 						artifact.ExtraFormat:   "tar.gz",
 						artifact.ExtraBinaries: []string{"foo"},
@@ -844,7 +844,7 @@ func TestRunPipeNoUpload(t *testing.T) {
 		Goarch:  "amd64",
 		Goamd64: "v1",
 		Type:    artifact.UploadableArchive,
-		Extra: map[string]interface{}{
+		Extra: map[string]any{
 			artifact.ExtraID:       "foo",
 			artifact.ExtraFormat:   "tar.gz",
 			artifact.ExtraBinaries: []string{"foo"},
@@ -900,7 +900,7 @@ func TestRunEmptyTokenType(t *testing.T) {
 		Goarch:  "amd64",
 		Goamd64: "v1",
 		Type:    artifact.UploadableArchive,
-		Extra: map[string]interface{}{
+		Extra: map[string]any{
 			artifact.ExtraID:       "foo",
 			artifact.ExtraFormat:   "tar.gz",
 			artifact.ExtraBinaries: []string{"bin"},
@@ -940,7 +940,7 @@ func TestRunMultipleBinaries(t *testing.T) {
 		Goarch:  "amd64",
 		Goamd64: "v1",
 		Type:    artifact.UploadableArchive,
-		Extra: map[string]interface{}{
+		Extra: map[string]any{
 			artifact.ExtraID:       "foo",
 			artifact.ExtraFormat:   "tar.gz",
 			artifact.ExtraBinaries: []string{"bin1", "bin2"},

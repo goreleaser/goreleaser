@@ -41,14 +41,20 @@ GoReleaser allows this with the global hooks feature.
       # Templates: allowed.
       hooks:
       - make clean # simple string
-      - cmd: go generate ./... # specify cmd
-      - cmd: go mod tidy
+      - cmd: 'go generate ./...' # specify cmd
+      - cmd: 'go mod tidy'
         # Always prints command output.
         output: true
+        # Specify directory.
         dir: ./submodule # specify command working directory
-      - cmd: touch {{ .Env.FILE_TO_TOUCH }}
+      - cmd: 'touch {{ .Env.FILE_TO_TOUCH }}'
+        # Specify extra environment variables.
         env:
         - 'FILE_TO_TOUCH=something-{{ .ProjectName }}' # specify hook level environment variables
+      - cmd: 'dotnet tool install --global wix'
+        # Make the hook optional:
+        # <!-- md:inline_version v2.7 -->.
+        if: '{{ eq .Runtime.Goos "windows" }}'
 
     # global after hooks
     after:
@@ -62,6 +68,8 @@ GoReleaser allows this with the global hooks feature.
       - cmd: touch {{ .Env.RELEASE_DONE }}
         env:
         - 'RELEASE_DONE=something-{{ .ProjectName }}' # specify hook level environment variables
+      - cmd: 'rm -rf ./something'
+        if: '{{ eq .Runtime.Goos "linux" }}'
     ```
 
 Note that if any of the hooks fails the release process is aborted.

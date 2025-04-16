@@ -39,7 +39,7 @@ release:
   # Whether to use an existing draft release as the target release.
   #
   # Available only for GitHub.
-  # Since: v2.5.
+  # <!-- md:inline_version v2.5 -->.
   use_existing_draft: true
 
   # Whether to remove an artifact that already exists.
@@ -67,6 +67,9 @@ release:
   # Usually you'll use this together with `target_commitish`, or if you want to
   # publish a binary from a monorepo into a public repository somewhere, without
   # the tag prefix.
+  #
+  # Note: if you change this, you might want to change 'url_template' in the
+  # subsequent publishers and announcers.
   #
   # This feature is only available in GoReleaser Pro.
   # Default: '{{ .PrefixedCurrentTag }}'.

@@ -75,19 +75,28 @@ checksum:
 changelog:
   sort: asc
   use: github
+  format: "{{ .SHA }}: {{ .Message }}{{ with .AuthorUsername }} (@{{ . }}){{ end }}"
   filters:
     exclude:
       - "^test:"
       - "^test\\("
+      - "^chore: update$"
+      - "^chore: docs$"
+      - "^docs: update$"
+      - "^chore: schema$"
+      - "^chore: typo$"
+      - "^chore: auto-update generated files$"
+      - "^chore: update schema$"
+      - "^chore: schema update$"
+      - "^chore\\(deps\\): "
+      - "^(build|ci): "
+      - "merge conflict"
       - "merge conflict"
       - Merge pull request
       - Merge remote-tracking branch
       - Merge branch
       - go mod tidy
   groups:
-    - title: Dependency updates
-      regexp: '^.*?(.+)\(deps\)!?:.+$'
-      order: 300
     - title: "New Features"
       regexp: '^.*?feat(\(.+\))??!?:.+$'
       order: 100
@@ -99,9 +108,6 @@ changelog:
       order: 200
     - title: "Documentation updates"
       regexp: ^.*?docs?(\(.+\))??!?:.+$
-      order: 400
-    - title: "Build process updates"
-      regexp: ^.*?(build|ci)(\(.+\))??!?:.+$
       order: 400
     - title: Other work
       order: 9999
@@ -402,15 +408,6 @@ docker_signs:
       - "sign"
       - "${artifact}@${digest}"
       - --yes
-
-publishers:
-  - name: fury.io
-    ids:
-      - packages
-    env:
-      - "FURY_TOKEN={{ .Env.FURY_TOKEN }}"
-    cmd: ./scripts/fury-upload.sh {{ .ArtifactName }}
-    disable: "{{ if .IsNightly }}true{{ end }}"
 
 milestones:
   - close: true

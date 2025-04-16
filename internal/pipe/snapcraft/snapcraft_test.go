@@ -62,7 +62,7 @@ func TestRunPipe(t *testing.T) {
 				Summary:          "test summary {{.ProjectName}}",
 				Description:      "test description {{.ProjectName}}",
 				Publish:          true,
-				Builds:           []string{"foo"},
+				IDs:              []string{"foo"},
 				ChannelTemplates: []string{"stable"},
 			},
 			{
@@ -70,7 +70,7 @@ func TestRunPipe(t *testing.T) {
 				Summary:          "test summary",
 				Description:      "test description",
 				Publish:          true,
-				Builds:           []string{"foo", "bar"},
+				IDs:              []string{"foo", "bar"},
 				ChannelTemplates: []string{"stable"},
 			},
 			{
@@ -78,7 +78,7 @@ func TestRunPipe(t *testing.T) {
 				Summary:          "test summary",
 				Description:      "test description",
 				Publish:          true,
-				Builds:           []string{"bar"},
+				IDs:              []string{"bar"},
 				ChannelTemplates: []string{"stable"},
 			},
 			{
@@ -86,7 +86,7 @@ func TestRunPipe(t *testing.T) {
 				Summary:          "test summary",
 				Description:      "test description",
 				Publish:          true,
-				Builds:           []string{"bar"},
+				IDs:              []string{"bar"},
 				ChannelTemplates: []string{"stable"},
 				Disable:          "{{.Env.SKIP}}",
 			},
@@ -230,12 +230,12 @@ func TestRunPipeMetadata(t *testing.T) {
 						Completer:    "", // Separately tested in TestCompleter
 						Daemon:       "simple",
 						Desktop:      "foo_desktop",
-						Environment: map[string]interface{}{
+						Environment: map[string]any{
 							"foo": "bar",
 						},
 						Extensions:  []string{"foo_extension"},
 						InstallMode: "disable",
-						Passthrough: map[string]interface{}{
+						Passthrough: map[string]any{
 							"planet": "saturn",
 						},
 						Plugs:            []string{"home", "network", "network-bind", "personal-files"},
@@ -245,8 +245,8 @@ func TestRunPipeMetadata(t *testing.T) {
 						RestartCondition: "always",
 						RestartDelay:     "42ms",
 						Slots:            []string{"foo_slot"},
-						Sockets: map[string]interface{}{
-							"sock": map[string]interface{}{
+						Sockets: map[string]any{
+							"sock": map[string]any{
 								"listen-stream": "$SNAP_COMMON/socket",
 								"socket-group":  "socket-group",
 								"socket-mode":   0o640,
@@ -260,8 +260,8 @@ func TestRunPipeMetadata(t *testing.T) {
 						WatchdogTimeout: "45ms",
 					},
 				},
-				Plugs: map[string]interface{}{
-					"personal-files": map[string]interface{}{
+				Plugs: map[string]any{
+					"personal-files": map[string]any{
 						"read": []string{"$HOME/test"},
 					},
 				},
@@ -299,12 +299,12 @@ func TestRunPipeMetadata(t *testing.T) {
 			Completer:    "",
 			Daemon:       "simple",
 			Desktop:      "foo_desktop",
-			Environment: map[string]interface{}{
+			Environment: map[string]any{
 				"foo": "bar",
 			},
 			Extensions:  []string{"foo_extension"},
 			InstallMode: "disable",
-			Passthrough: map[string]interface{}{
+			Passthrough: map[string]any{
 				"planet": "saturn",
 			},
 			Plugs:            []string{"home", "network", "network-bind", "personal-files"},
@@ -314,8 +314,8 @@ func TestRunPipeMetadata(t *testing.T) {
 			RestartCondition: "always",
 			RestartDelay:     "42ms",
 			Slots:            []string{"foo_slot"},
-			Sockets: map[string]interface{}{
-				"sock": map[string]interface{}{
+			Sockets: map[string]any{
+				"sock": map[string]any{
 					"listen-stream": "$SNAP_COMMON/socket",
 					"socket-group":  "socket-group",
 					"socket-mode":   0o640,
@@ -329,7 +329,7 @@ func TestRunPipeMetadata(t *testing.T) {
 			WatchdogTimeout: "45ms",
 		},
 	}, metadata.Apps)
-	require.Equal(t, map[string]interface{}{"read": []interface{}{"$HOME/test"}}, metadata.Plugs["personal-files"])
+	require.Equal(t, map[string]any{"read": []any{"$HOME/test"}}, metadata.Plugs["personal-files"])
 	require.Equal(t, "$SNAP_DATA/etc", metadata.Layout["/etc/testprojectname"].Bind)
 }
 
@@ -495,18 +495,19 @@ func TestExtraFile(t *testing.T) {
 
 func TestDefault(t *testing.T) {
 	ctx := testctx.NewWithCfg(config.Project{
-		Builds: []config.Build{{ID: "foo"}},
 		Snapcrafts: []config.Snapcraft{{
 			Description: "hi",
 			Summary:     "hi",
+			Builds:      []string{"a"},
 		}},
 	})
 	require.NoError(t, Pipe{}.Default(ctx))
 	require.Equal(t, defaultNameTemplate, ctx.Config.Snapcrafts[0].NameTemplate)
-	require.Equal(t, []string{"foo"}, ctx.Config.Snapcrafts[0].Builds)
 	require.Equal(t, []string{"edge", "beta", "candidate", "stable"}, ctx.Config.Snapcrafts[0].ChannelTemplates)
 	require.Equal(t, "stable", ctx.Config.Snapcrafts[0].Grade)
 	require.Equal(t, "strict", ctx.Config.Snapcrafts[0].Confinement)
+	require.Equal(t, []string{"a"}, ctx.Config.Snapcrafts[0].IDs)
+	require.True(t, ctx.Deprecated)
 }
 
 func TestDefaultNoDescription(t *testing.T) {
@@ -531,8 +532,7 @@ func TestDefaultNoSummary(t *testing.T) {
 
 func TestDefaultGradeTmpl(t *testing.T) {
 	ctx := testctx.NewWithCfg(config.Project{
-		Env:    []string{"Grade=devel"},
-		Builds: []config.Build{{ID: "foo"}},
+		Env: []string{"Grade=devel"},
 		Snapcrafts: []config.Snapcraft{
 			{
 				Grade:       "{{.Env.Grade}}",
@@ -543,7 +543,6 @@ func TestDefaultGradeTmpl(t *testing.T) {
 	})
 	require.NoError(t, Pipe{}.Default(ctx))
 	require.Equal(t, defaultNameTemplate, ctx.Config.Snapcrafts[0].NameTemplate)
-	require.Equal(t, []string{"foo"}, ctx.Config.Snapcrafts[0].Builds)
 	require.Equal(t, []string{"edge", "beta"}, ctx.Config.Snapcrafts[0].ChannelTemplates)
 	require.Equal(t, "devel", ctx.Config.Snapcrafts[0].Grade)
 }
@@ -564,7 +563,7 @@ func TestPublish(t *testing.T) {
 		Goarch: "amd64",
 		Goos:   "linux",
 		Type:   artifact.PublishableSnapcraft,
-		Extra: map[string]interface{}{
+		Extra: map[string]any{
 			releasesExtra: []string{"stable", "candidate"},
 		},
 	})
@@ -654,7 +653,7 @@ func addBinaries(t *testing.T, ctx *context.Context, name, dist string) {
 					Goos:   goos,
 					Goarm:  "6",
 					Type:   artifact.Binary,
-					Extra: map[string]interface{}{
+					Extra: map[string]any{
 						artifact.ExtraID: name,
 					},
 				})
@@ -667,7 +666,7 @@ func addBinaries(t *testing.T, ctx *context.Context, name, dist string) {
 					Goos:    goos,
 					Goamd64: "v1",
 					Type:    artifact.Binary,
-					Extra: map[string]interface{}{
+					Extra: map[string]any{
 						artifact.ExtraID: name,
 					},
 				})
@@ -678,7 +677,7 @@ func addBinaries(t *testing.T, ctx *context.Context, name, dist string) {
 					Goarch: goarch,
 					Goos:   goos,
 					Type:   artifact.Binary,
-					Extra: map[string]interface{}{
+					Extra: map[string]any{
 						artifact.ExtraID: name,
 					},
 				})

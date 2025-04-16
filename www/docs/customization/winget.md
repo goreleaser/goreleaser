@@ -88,6 +88,7 @@ winget:
     url_template: "https://github.mycompany.com/foo/bar/releases/download/{{ .Tag }}/{{ .ArtifactName }}"
 
     # Git author used to commit to the repository.
+    # Templates: allowed.
     commit_author:
       name: goreleaserbot
       email: bot@goreleaser.com
@@ -152,6 +153,9 @@ winget:
     release_notes_url: "https://foo.bar/changelog/{{.Version}}"
 
     # Tags.
+    #
+    # GoReleaser converts all tags to lowercase and replace 
+    # spaces with hyphens (-) as per winget's best practices.
     tags:
       - golang
       - cli

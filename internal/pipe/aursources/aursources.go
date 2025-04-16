@@ -93,13 +93,21 @@ func (Pipe) Run(ctx *context.Context) error {
 }
 
 func runAll(ctx *context.Context, cli client.ReleaseURLTemplater) error {
+	skips := pipe.SkipMemento{}
 	for _, aur := range ctx.Config.AURSources {
-		err := doRun(ctx, aur, cli)
+		disable, err := tmpl.New(ctx).Bool(aur.Disable)
 		if err != nil {
 			return err
 		}
+		if disable {
+			skips.Remember(pipe.Skip("configuration is disabled"))
+			continue
+		}
+		if err := doRun(ctx, aur, cli); err != nil {
+			return err
+		}
 	}
-	return nil
+	return skips.Evaluate()
 }
 
 func doRun(ctx *context.Context, aur config.AURSource, cl client.ReleaseURLTemplater) error {
@@ -137,13 +145,13 @@ func doRun(ctx *context.Context, aur config.AURSource, cl client.ReleaseURLTempl
 			name: "PKGBUILD",
 			tpl:  aurTemplateData,
 			ext:  ".pkgbuild",
-			kind: artifact.PkgBuild,
+			kind: artifact.SourcePkgBuild,
 		},
 		{
 			name: ".SRCINFO",
 			tpl:  srcInfoTemplate,
 			ext:  ".srcinfo",
-			kind: artifact.SrcInfo,
+			kind: artifact.SourceSrcInfo,
 		},
 	} {
 		pkgContent, err := buildPkgFile(ctx, aur, cl, archives, info.tpl)
@@ -164,7 +172,7 @@ func doRun(ctx *context.Context, aur config.AURSource, cl client.ReleaseURLTempl
 			Name: info.name,
 			Path: path,
 			Type: info.kind,
-			Extra: map[string]interface{}{
+			Extra: map[string]any{
 				aurExtra:         aur,
 				artifact.ExtraID: aur.Name,
 			},
@@ -277,6 +285,7 @@ func dataFor(ctx *context.Context, cfg config.AURSource, cl client.ReleaseURLTem
 		Build:        cfg.Build,
 		Package:      cfg.Package,
 		Arches:       cfg.Arches,
+		Install:      cfg.Install,
 	}
 
 	for _, art := range artifacts {
@@ -300,7 +309,7 @@ func dataFor(ctx *context.Context, cfg config.AURSource, cl client.ReleaseURLTem
 		result.Sources = sources{
 			DownloadURL: url,
 			SHA256:      sum,
-			Format:      artifact.ExtraOr(*art, artifact.ExtraFormat, ""),
+			Format:      art.Format(),
 		}
 	}
 
@@ -314,8 +323,8 @@ func (Pipe) Publish(ctx *context.Context) error {
 	skips := pipe.SkipMemento{}
 	for _, pkgs := range ctx.Artifacts.Filter(
 		artifact.Or(
-			artifact.ByType(artifact.PkgBuild),
-			artifact.ByType(artifact.SrcInfo),
+			artifact.ByType(artifact.SourcePkgBuild),
+			artifact.ByType(artifact.SourceSrcInfo),
 		),
 	).GroupByID() {
 		err := doPublish(ctx, pkgs)
@@ -331,11 +340,7 @@ func (Pipe) Publish(ctx *context.Context) error {
 }
 
 func doPublish(ctx *context.Context, pkgs []*artifact.Artifact) error {
-	cfg, err := artifact.Extra[config.AURSource](*pkgs[0], aurExtra)
-	if err != nil {
-		return err
-	}
-
+	cfg := artifact.MustExtra[config.AURSource](*pkgs[0], aurExtra)
 	if strings.TrimSpace(cfg.SkipUpload) == "true" {
 		return pipe.Skip("aur.skip_upload is set")
 	}
@@ -363,6 +368,13 @@ func doPublish(ctx *context.Context, pkgs []*artifact.Artifact) error {
 		},
 		Name: fmt.Sprintf("%x", sha256.Sum256([]byte(cfg.GitURL))),
 	})
+
+	if cfg.Install != "" {
+		pkgs = append(pkgs, &artifact.Artifact{
+			Name: cfg.Name + ".install",
+			Path: cfg.Install,
+		})
+	}
 
 	files := make([]client.RepoFile, 0, len(pkgs))
 	for _, pkg := range pkgs {

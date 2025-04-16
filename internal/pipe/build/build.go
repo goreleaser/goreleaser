@@ -12,6 +12,7 @@ import (
 	"github.com/caarlos0/log"
 	"github.com/goreleaser/goreleaser/v2/internal/deprecate"
 	"github.com/goreleaser/goreleaser/v2/internal/ids"
+	"github.com/goreleaser/goreleaser/v2/internal/pipe"
 	"github.com/goreleaser/goreleaser/v2/internal/semerrgroup"
 	"github.com/goreleaser/goreleaser/v2/internal/shell"
 	"github.com/goreleaser/goreleaser/v2/internal/skips"
@@ -25,6 +26,7 @@ import (
 	_ "github.com/goreleaser/goreleaser/v2/internal/builders/deno"
 	_ "github.com/goreleaser/goreleaser/v2/internal/builders/golang"
 	_ "github.com/goreleaser/goreleaser/v2/internal/builders/rust"
+	_ "github.com/goreleaser/goreleaser/v2/internal/builders/uv"
 	_ "github.com/goreleaser/goreleaser/v2/internal/builders/zig"
 )
 
@@ -113,6 +115,7 @@ func buildWithDefaults(ctx *context.Context, build config.Build) (config.Build, 
 	}
 	if build.Binary == "" {
 		build.Binary = ctx.Config.ProjectName
+		build.InternalDefaults.Binary = true
 	}
 	if build.ID == "" {
 		build.ID = ctx.Config.ProjectName
@@ -126,7 +129,10 @@ func buildWithDefaults(ctx *context.Context, build config.Build) (config.Build, 
 func runPipeOnBuild(ctx *context.Context, g semerrgroup.Group, build config.Build) {
 	for _, target := range filter(ctx, build) {
 		g.Go(func() error {
-			return buildTarget(ctx, build, target)
+			if err := buildTarget(ctx, build, target); err != nil {
+				return pipe.NewDetailedError(err, "target", target)
+			}
+			return nil
 		})
 	}
 }
@@ -148,7 +154,7 @@ func buildTarget(ctx *context.Context, build config.Build, target string) error 
 	}
 
 	if err := doBuild(ctx, build, *opts); err != nil {
-		return fmt.Errorf("build failed: %w\ntarget: %s", err, target)
+		return fmt.Errorf("build failed: %w", err)
 	}
 
 	if !skips.Any(ctx, skips.PostBuildHooks) {
@@ -245,6 +251,7 @@ func buildOptionsForTarget(ctx *context.Context, build config.Build, target stri
 	return &buildOpts, nil
 }
 
+// TODO: this should probably be the responsibility of each builder.
 func extFor(target string, build config.BuildDetails) string {
 	// Configure the extensions for shared and static libraries - by default .so and .a respectively -
 	// with overrides for Windows (.dll for shared and .lib for static) and .dylib for macOS.

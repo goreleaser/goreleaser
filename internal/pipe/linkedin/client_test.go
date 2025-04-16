@@ -1,7 +1,6 @@
 package linkedin
 
 import (
-	"context"
 	"fmt"
 	"io"
 	"net/http"
@@ -76,7 +75,7 @@ func TestClient_Share(t *testing.T) {
 
 	c.baseURL = server.URL
 
-	link, err := c.Share(context.Background(), "test")
+	link, err := c.Share(t.Context(), "test")
 	if err != nil {
 		t.Fatalf("could not share: %v", err)
 	}
@@ -111,7 +110,7 @@ func TestClientLegacyProfile_Share(t *testing.T) {
 
 	c.baseURL = server.URL
 
-	link, err := c.Share(context.Background(), "test")
+	link, err := c.Share(t.Context(), "test")
 	if err != nil {
 		t.Fatalf("could not share: %v", err)
 	}

@@ -49,7 +49,7 @@ func TestExecute(t *testing.T) {
 			Goarch: "amd64",
 			Path:   file,
 			Type:   a.typ,
-			Extra: map[string]interface{}{
+			Extra: map[string]any{
 				artifact.ExtraID: a.id,
 			},
 		})
@@ -61,7 +61,7 @@ func TestExecute(t *testing.T) {
 		Goarch: "amd64",
 		Path:   "foo/bar:amd64",
 		Type:   artifact.DockerImage,
-		Extra: map[string]interface{}{
+		Extra: map[string]any{
 			artifact.ExtraID: "img",
 		},
 	})
@@ -69,7 +69,7 @@ func TestExecute(t *testing.T) {
 		Name: "foo/bar",
 		Path: "foo/bar",
 		Type: artifact.DockerManifest,
-		Extra: map[string]interface{}{
+		Extra: map[string]any{
 			artifact.ExtraID: "mnf",
 		},
 	})

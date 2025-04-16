@@ -26,7 +26,7 @@ func TestDockerSignDefault(t *testing.T) {
 	err := DockerPipe{}.Default(ctx)
 	require.NoError(t, err)
 	require.Equal(t, "cosign", ctx.Config.DockerSigns[0].Cmd)
-	require.Equal(t, "", ctx.Config.DockerSigns[0].Signature)
+	require.Empty(t, ctx.Config.DockerSigns[0].Signature)
 	require.Equal(t, []string{"sign", "--key=cosign.key", "${artifact}@${digest}", "--yes"}, ctx.Config.DockerSigns[0].Args)
 	require.Equal(t, "none", ctx.Config.DockerSigns[0].Artifacts)
 }
@@ -169,7 +169,7 @@ func TestDockerSignArtifacts(t *testing.T) {
 				Name: img1,
 				Path: img1,
 				Type: artifact.DockerImage,
-				Extra: map[string]interface{}{
+				Extra: map[string]any{
 					artifact.ExtraID:     "img1",
 					artifact.ExtraDigest: img1Digest,
 				},
@@ -178,7 +178,7 @@ func TestDockerSignArtifacts(t *testing.T) {
 				Name: img2,
 				Path: img2,
 				Type: artifact.DockerImage,
-				Extra: map[string]interface{}{
+				Extra: map[string]any{
 					artifact.ExtraID:     "img2",
 					artifact.ExtraDigest: img2Digest,
 				},
@@ -187,7 +187,7 @@ func TestDockerSignArtifacts(t *testing.T) {
 				Name: man1,
 				Path: man1,
 				Type: artifact.DockerManifest,
-				Extra: map[string]interface{}{
+				Extra: map[string]any{
 					artifact.ExtraID:     "man1",
 					artifact.ExtraDigest: man1Digest,
 				},

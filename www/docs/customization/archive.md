@@ -14,8 +14,11 @@ archives:
     # Default: 'default'.
     id: my-archive
 
-    # Builds reference which build instances should be archived in this archive.
-    builds:
+    # IDs of the builds which should be archived in this archive.
+    #
+    # <!-- md:inline_version v2.8 --> (use 'builds' in previous versions).
+    # Default: empty (include all).
+    ids:
       - default
 
     # Archive formats.
@@ -37,7 +40,7 @@ archives:
     #
     # Default: ['tar.gz'].
     format: "zip" # Singular form, single format, deprecated.
-    formats: ["zip", "tar.gz"] # Plural form, multiple formats. <!-- md:inline_version v2.6-unreleased -->
+    formats: ["zip", "tar.gz"] # Plural form, multiple formats. <!-- md:inline_version v2.6 -->
 
     # This will create an archive without any binaries, only the files are there.
     # The name template must not contain any references to `Os`, `Arch` and etc, since the archive will be meta.
@@ -106,7 +109,7 @@ archives:
         # - `none`   # skips this archive
         #
         format: "zip" # Singular form, single format, deprecated.
-        formats: ["zip", "tar.gz"] # Plural form, multiple formats. <!-- md:inline_version v2.6-unreleased -->
+        formats: ["zip", "tar.gz"] # Plural form, multiple formats. <!-- md:inline_version v2.6 -->
 
     # Additional files/globs you want to add to the archive.
     #

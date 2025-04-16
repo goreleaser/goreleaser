@@ -10,6 +10,7 @@ import (
 	"github.com/goreleaser/goreleaser/v2/internal/client"
 	"github.com/goreleaser/goreleaser/v2/internal/git"
 	"github.com/goreleaser/goreleaser/v2/internal/golden"
+	"github.com/goreleaser/goreleaser/v2/internal/pipe"
 	"github.com/goreleaser/goreleaser/v2/internal/skips"
 	"github.com/goreleaser/goreleaser/v2/internal/testctx"
 	"github.com/goreleaser/goreleaser/v2/internal/testlib"
@@ -158,6 +159,7 @@ func TestFullPipe(t *testing.T) {
 				ctx.Config.AURSources[0].OptDepends = []string{"wget: stuff", "foo: bar"}
 				ctx.Config.AURSources[0].Provides = []string{"git", "svn"}
 				ctx.Config.AURSources[0].Conflicts = []string{"libcurl", "cvs", "blah"}
+				ctx.Config.AURSources[0].Install = "./testdata/install.sh"
 			},
 		},
 		"default-gitlab": {
@@ -276,7 +278,7 @@ func TestFullPipe(t *testing.T) {
 				Goarch:  "amd64",
 				Goamd64: "v3",
 				Type:    artifact.UploadableArchive,
-				Extra: map[string]interface{}{
+				Extra: map[string]any{
 					artifact.ExtraID:       "bar",
 					artifact.ExtraFormat:   "tar.gz",
 					artifact.ExtraBinaries: []string{"bar"},
@@ -289,7 +291,7 @@ func TestFullPipe(t *testing.T) {
 				Goarch:  "amd64",
 				Goamd64: "v1",
 				Type:    artifact.UploadableArchive,
-				Extra: map[string]interface{}{
+				Extra: map[string]any{
 					artifact.ExtraID:       "bar",
 					artifact.ExtraFormat:   "tar.gz",
 					artifact.ExtraBinaries: []string{"bar"},
@@ -301,7 +303,7 @@ func TestFullPipe(t *testing.T) {
 				Name: "sources.tar.gz",
 				Path: path,
 				Type: artifact.UploadableSourceArchive,
-				Extra: map[string]interface{}{
+				Extra: map[string]any{
 					artifact.ExtraID:       "foo",
 					artifact.ExtraFormat:   "tar.gz",
 					artifact.ExtraBinaries: []string{"name"},
@@ -364,6 +366,7 @@ func TestRunPipe(t *testing.T) {
 					IDs:         []string{"foo"},
 					GitURL:      url,
 					PrivateKey:  key,
+					Install:     "./testdata/install.sh",
 				},
 			},
 			GitHubURLs: config.GitHubURLs{
@@ -396,7 +399,7 @@ func TestRunPipe(t *testing.T) {
 			Path:    path,
 			Goamd64: "v1",
 			Type:    artifact.UploadableSourceArchive,
-			Extra: map[string]interface{}{
+			Extra: map[string]any{
 				artifact.ExtraID:       "foo",
 				artifact.ExtraFormat:   "tar.gz",
 				artifact.ExtraBinaries: []string{"foo"},
@@ -413,7 +416,11 @@ func TestRunPipe(t *testing.T) {
 	require.NoError(t, runAll(ctx, client))
 	require.NoError(t, Pipe{}.Publish(ctx))
 
-	requireEqualRepoFiles(t, folder, ".", "foo", url)
+	requireEqualRepoFilesMap(t, ".", url, map[string]string{
+		"PKGBUILD":    filepath.Join(folder, "aur", "foo.pkgbuild"),
+		".SRCINFO":    filepath.Join(folder, "aur", "foo.srcinfo"),
+		"foo.install": "./testdata/install.sh",
+	})
 }
 
 func TestRunPipeMultipleConfigurations(t *testing.T) {
@@ -426,6 +433,9 @@ func TestRunPipeMultipleConfigurations(t *testing.T) {
 			Dist:        folder,
 			ProjectName: "foo",
 			AURSources: []config.AURSource{
+				{
+					Disable: `{{printf "true"}}`,
+				},
 				{
 					Name:        "foo",
 					IDs:         []string{"foo"},
@@ -457,7 +467,7 @@ func TestRunPipeMultipleConfigurations(t *testing.T) {
 		Path:    path,
 		Goamd64: "v1",
 		Type:    artifact.UploadableSourceArchive,
-		Extra: map[string]interface{}{
+		Extra: map[string]any{
 			artifact.ExtraID:       "bar",
 			artifact.ExtraFormat:   "tar.gz",
 			artifact.ExtraBinaries: []string{"bar"},
@@ -470,7 +480,7 @@ func TestRunPipeMultipleConfigurations(t *testing.T) {
 		Goarch:  "amd64",
 		Goamd64: "v1",
 		Type:    artifact.UploadableSourceArchive,
-		Extra: map[string]interface{}{
+		Extra: map[string]any{
 			artifact.ExtraID:       "foo",
 			artifact.ExtraFormat:   "tar.gz",
 			artifact.ExtraBinaries: []string{"name"},
@@ -483,7 +493,7 @@ func TestRunPipeMultipleConfigurations(t *testing.T) {
 	client := client.NewMock()
 
 	require.NoError(t, Pipe{}.Default(ctx))
-	require.NoError(t, runAll(ctx, client))
+	require.True(t, pipe.IsSkip(runAll(ctx, client)), "should partially skip")
 	require.NoError(t, Pipe{}.Publish(ctx))
 
 	dir := t.TempDir()
@@ -531,7 +541,7 @@ func TestRunPipeWrappedInDirectory(t *testing.T) {
 		Path:    path,
 		Goamd64: "v1",
 		Type:    artifact.UploadableSourceArchive,
-		Extra: map[string]interface{}{
+		Extra: map[string]any{
 			artifact.ExtraID:        "foo",
 			artifact.ExtraFormat:    "tar.gz",
 			artifact.ExtraBinaries:  []string{"foo"},
@@ -576,7 +586,7 @@ func TestRunPipeBinaryRelease(t *testing.T) {
 		Path:    path,
 		Goamd64: "v1",
 		Type:    artifact.UploadableSourceArchive,
-		Extra: map[string]interface{}{
+		Extra: map[string]any{
 			artifact.ExtraID:     "foo",
 			artifact.ExtraFormat: "binary",
 			artifact.ExtraBinary: "foo",
@@ -621,7 +631,7 @@ func TestRunPipeNoUpload(t *testing.T) {
 			Path:    path,
 			Goamd64: "v1",
 			Type:    artifact.UploadableSourceArchive,
-			Extra: map[string]interface{}{
+			Extra: map[string]any{
 				artifact.ExtraID:       "foo",
 				artifact.ExtraFormat:   "tar.gz",
 				artifact.ExtraBinaries: []string{"foo"},
@@ -676,7 +686,7 @@ func TestRunEmptyTokenType(t *testing.T) {
 		Goos:   "linux",
 		Goarch: "amd64",
 		Type:   artifact.UploadableSourceArchive,
-		Extra: map[string]interface{}{
+		Extra: map[string]any{
 			artifact.ExtraID:       "foo",
 			artifact.ExtraFormat:   "tar.gz",
 			artifact.ExtraBinaries: []string{"foo"},
@@ -785,23 +795,28 @@ func TestSkip(t *testing.T) {
 	})
 }
 
-func requireEqualRepoFiles(tb testing.TB, distDir, repoDir, name, url string) {
+func requireEqualRepoFilesMap(tb testing.TB, repoDir, url string, files map[string]string) {
 	tb.Helper()
 	dir := tb.TempDir()
 	_, err := git.Run(testctx.New(), "-C", dir, "clone", url, "repo")
 	require.NoError(tb, err)
 
-	for reponame, ext := range map[string]string{
-		"PKGBUILD": ".pkgbuild",
-		".SRCINFO": ".srcinfo",
-	} {
-		path := filepath.Join(distDir, "aur", name+ext)
-		bts, err := os.ReadFile(path)
+	for reponame, distpath := range files {
+		bts, err := os.ReadFile(distpath)
 		require.NoError(tb, err)
+		ext := filepath.Ext(distpath)
 		golden.RequireEqualExt(tb, bts, ext)
 
 		bts, err = os.ReadFile(filepath.Join(dir, "repo", repoDir, reponame))
 		require.NoError(tb, err)
 		golden.RequireEqualExt(tb, bts, ext)
 	}
+}
+
+func requireEqualRepoFiles(tb testing.TB, distDir, repoDir, name, url string) {
+	tb.Helper()
+	requireEqualRepoFilesMap(tb, repoDir, url, map[string]string{
+		"PKGBUILD": filepath.Join(distDir, "aur", name+".pkgbuild"),
+		".SRCINFO": filepath.Join(distDir, "aur", name+".srcinfo"),
+	})
 }

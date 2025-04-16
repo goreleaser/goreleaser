@@ -11,6 +11,8 @@ import (
 	api "github.com/goreleaser/goreleaser/v2/pkg/build"
 )
 
+const keyAbi = "Abi"
+
 // https://docs.deno.com/runtime/reference/cli/compile/#supported-targets
 var (
 	//go:embed targets.txt
@@ -34,7 +36,7 @@ func (t Target) Fields() map[string]string {
 		tmpl.KeyOS:   t.Os,
 		tmpl.KeyArch: t.Arch,
 		"Vendor":     t.Vendor,
-		"Abi":        t.Abi,
+		keyAbi:       t.Abi,
 	}
 }
 

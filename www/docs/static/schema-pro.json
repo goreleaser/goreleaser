@@ -104,6 +104,19 @@
 					},
 					"directory": {
 						"type": "string"
+					},
+					"disable": {
+						"oneOf": [
+							{
+								"type": "string"
+							},
+							{
+								"type": "boolean"
+							}
+						]
+					},
+					"install": {
+						"type": "string"
 					}
 				},
 				"additionalProperties": false,
@@ -228,6 +241,19 @@
 					},
 					"directory": {
 						"type": "string"
+					},
+					"disable": {
+						"oneOf": [
+							{
+								"type": "string"
+							},
+							{
+								"type": "boolean"
+							}
+						]
+					},
+					"install": {
+						"type": "string"
 					}
 				},
 				"additionalProperties": false,
@@ -348,7 +374,7 @@
 					"id": {
 						"type": "string"
 					},
-					"builds": {
+					"ids": {
 						"items": {
 							"type": "string"
 						},
@@ -416,6 +442,12 @@
 							"binary"
 						],
 						"default": "tar.gz"
+					},
+					"builds": {
+						"items": {
+							"type": "string"
+						},
+						"type": "array"
 					}
 				},
 				"additionalProperties": false,
@@ -723,6 +755,8 @@
 							"c-archive",
 							"c-shared",
 							"pie",
+							"wheel",
+							"sdist",
 							""
 						],
 						"default": ""
@@ -803,6 +837,8 @@
 							"c-archive",
 							"c-shared",
 							"pie",
+							"wheel",
+							"sdist",
 							""
 						],
 						"default": ""
@@ -950,7 +986,10 @@
 					}
 				},
 				"additionalProperties": false,
-				"type": "object"
+				"type": "object",
+				"required": [
+					"title"
+				]
 			},
 			"ChangelogSubgroup": {
 				"properties": {
@@ -1135,9 +1174,12 @@
 					},
 					"distributions": {
 						"additionalProperties": {
-							"type": "string"
+							"$ref": "#/$defs/StringArray"
 						},
 						"type": "object"
+					},
+					"component": {
+						"type": "string"
 					}
 				},
 				"additionalProperties": false,
@@ -1195,7 +1237,7 @@
 					"use": {
 						"type": "string",
 						"enum": [
-							"enum=binary",
+							"binary",
 							"appbundle"
 						]
 					},
@@ -1898,6 +1940,9 @@
 										"cmd": {
 											"type": "string"
 										},
+										"if": {
+											"type": "string"
+										},
 										"env": {
 											"items": {
 												"type": "string"
@@ -2112,6 +2157,14 @@
 						"type": "string"
 					},
 					"sbom": {
+						"type": "string",
+						"enum": [
+							"spdx",
+							"none"
+						],
+						"default": "spdx"
+					},
+					"sbom_directory": {
 						"type": "string"
 					},
 					"ldflags": {
@@ -2140,6 +2193,16 @@
 					},
 					"base_import_paths": {
 						"type": "boolean"
+					},
+					"disable": {
+						"oneOf": [
+							{
+								"type": "string"
+							},
+							{
+								"type": "boolean"
+							}
+						]
 					}
 				},
 				"additionalProperties": false,
@@ -2278,6 +2341,13 @@
 							"type": "string"
 						},
 						"type": "array"
+					},
+					"version": {
+						"type": "string",
+						"enum": [
+							"v3",
+							"v4"
+						]
 					}
 				},
 				"additionalProperties": false,
@@ -2299,7 +2369,7 @@
 						"type": "string"
 					},
 					"timeout": {
-						"type": "integer"
+						"type": "string"
 					},
 					"wait": {
 						"type": "boolean"
@@ -2311,6 +2381,21 @@
 					"issuer_id",
 					"key",
 					"key_id"
+				]
+			},
+			"MacOSNotarizeNative": {
+				"properties": {
+					"profile_name": {
+						"type": "string"
+					},
+					"wait": {
+						"type": "boolean"
+					}
+				},
+				"additionalProperties": false,
+				"type": "object",
+				"required": [
+					"profile_name"
 				]
 			},
 			"MacOSSign": {
@@ -2330,6 +2415,30 @@
 				"required": [
 					"certificate",
 					"password"
+				]
+			},
+			"MacOSSignNative": {
+				"properties": {
+					"identity": {
+						"type": "string"
+					},
+					"keychain": {
+						"type": "string"
+					},
+					"options": {
+						"items": {
+							"type": "string"
+						},
+						"type": "array"
+					},
+					"entitlements": {
+						"type": "string"
+					}
+				},
+				"additionalProperties": false,
+				"type": "object",
+				"required": [
+					"identity"
 				]
 			},
 			"MacOSSignNotarize": {
@@ -2355,6 +2464,37 @@
 					},
 					"notarize": {
 						"$ref": "#/$defs/MacOSNotarize"
+					}
+				},
+				"additionalProperties": false,
+				"type": "object",
+				"required": [
+					"sign"
+				]
+			},
+			"MacOSSignNotarizeNative": {
+				"properties": {
+					"ids": {
+						"items": {
+							"type": "string"
+						},
+						"type": "array"
+					},
+					"enabled": {
+						"oneOf": [
+							{
+								"type": "string"
+							},
+							{
+								"type": "boolean"
+							}
+						]
+					},
+					"sign": {
+						"$ref": "#/$defs/MacOSSignNative"
+					},
+					"notarize": {
+						"$ref": "#/$defs/MacOSNotarizeNative"
 					}
 				},
 				"additionalProperties": false,
@@ -2573,14 +2713,11 @@
 					"id": {
 						"type": "string"
 					},
-					"builds": {
+					"ids": {
 						"items": {
 							"type": "string"
 						},
 						"type": "array"
-					},
-					"if": {
-						"type": "string"
 					},
 					"formats": {
 						"items": {
@@ -2631,6 +2768,15 @@
 					},
 					"meta": {
 						"type": "boolean"
+					},
+					"if": {
+						"type": "string"
+					},
+					"builds": {
+						"items": {
+							"type": "string"
+						},
+						"type": "array"
 					}
 				},
 				"additionalProperties": false,
@@ -2790,6 +2936,9 @@
 						"type": "string"
 					},
 					"templates": {
+						"type": "string"
+					},
+					"config": {
 						"type": "string"
 					}
 				},
@@ -3076,6 +3225,91 @@
 				"additionalProperties": false,
 				"type": "object"
 			},
+			"NPM": {
+				"properties": {
+					"id": {
+						"type": "string"
+					},
+					"ids": {
+						"items": {
+							"type": "string"
+						},
+						"type": "array"
+					},
+					"name": {
+						"type": "string"
+					},
+					"description": {
+						"type": "string"
+					},
+					"homepage": {
+						"type": "string"
+					},
+					"keywords": {
+						"items": {
+							"type": "string"
+						},
+						"type": "array"
+					},
+					"license": {
+						"type": "string"
+					},
+					"author": {
+						"type": "string"
+					},
+					"repository": {
+						"type": "string"
+					},
+					"bugs": {
+						"type": "string"
+					},
+					"files": {
+						"items": {
+							"$ref": "#/$defs/ExtraFile"
+						},
+						"type": "array"
+					},
+					"templated_files": {
+						"items": {
+							"$ref": "#/$defs/TemplatedExtraFile"
+						},
+						"type": "array"
+					},
+					"access": {
+						"type": "string",
+						"enum": [
+							"",
+							"public",
+							"restricted"
+						]
+					},
+					"format": {
+						"type": "string",
+						"enum": [
+							"tar",
+							"tgz",
+							"tar.gz",
+							"zip",
+							"binary"
+						]
+					},
+					"if": {
+						"type": "string"
+					},
+					"disable": {
+						"oneOf": [
+							{
+								"type": "string"
+							},
+							{
+								"type": "boolean"
+							}
+						]
+					}
+				},
+				"additionalProperties": false,
+				"type": "object"
+			},
 			"Nightly": {
 				"properties": {
 					"version_template": {
@@ -3199,13 +3433,16 @@
 							"$ref": "#/$defs/MacOSSignNotarize"
 						},
 						"type": "array"
+					},
+					"macos_native": {
+						"items": {
+							"$ref": "#/$defs/MacOSSignNotarizeNative"
+						},
+						"type": "array"
 					}
 				},
 				"additionalProperties": false,
-				"type": "object",
-				"required": [
-					"macos"
-				]
+				"type": "object"
 			},
 			"OpenCollective": {
 				"properties": {
@@ -3264,6 +3501,9 @@
 						],
 						"default": 2
 					},
+					"pro": {
+						"type": "boolean"
+					},
 					"project_name": {
 						"type": "string"
 					},
@@ -3285,6 +3525,12 @@
 					"brews": {
 						"items": {
 							"$ref": "#/$defs/Homebrew"
+						},
+						"type": "array"
+					},
+					"npms": {
+						"items": {
+							"$ref": "#/$defs/NPM"
 						},
 						"type": "array"
 					},
@@ -4200,7 +4446,7 @@
 					"id": {
 						"type": "string"
 					},
-					"builds": {
+					"ids": {
 						"items": {
 							"type": "string"
 						},
@@ -4293,6 +4539,12 @@
 					"templated_extra_files": {
 						"items": {
 							"$ref": "#/$defs/SnapcraftExtraFiles"
+						},
+						"type": "array"
+					},
+					"builds": {
+						"items": {
+							"type": "string"
 						},
 						"type": "array"
 					}
@@ -4840,6 +5092,16 @@
 					"extra_files_only": {
 						"type": "boolean"
 					},
+					"skip": {
+						"oneOf": [
+							{
+								"type": "string"
+							},
+							{
+								"type": "boolean"
+							}
+						]
+					},
 					"matrix": {
 						"$ref": "#/$defs/Matrix"
 					},
@@ -5002,8 +5264,7 @@
 				"type": "object",
 				"required": [
 					"publisher",
-					"repository",
-					"short_description"
+					"repository"
 				]
 			},
 			"WingetDependency": {

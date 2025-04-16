@@ -17,14 +17,14 @@ jobs:
 
     steps:
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4
-      - uses: dagger/dagger-for-github@v7.0.4
+      - uses: dagger/dagger-for-github@8.0.0
         with:
           verb: develop
           args: "-q"
       # - run: dagger develop
-      - uses: actions/setup-go@f111f3307d8850f501ac008e886eec1fd1932a34 # v4
+      - uses: actions/setup-go@0aaccfd150d50ccaeb58ebd88d36e91967a5f35b # v4
         with:
           go-version: stable
-      - uses: github/codeql-action/init@d68b2d4edb4189fd2a5366ac14e72027bd4b37dd # v3
-      - uses: github/codeql-action/autobuild@d68b2d4edb4189fd2a5366ac14e72027bd4b37dd # v3
-      - uses: github/codeql-action/analyze@d68b2d4edb4189fd2a5366ac14e72027bd4b37dd # v3
+      - uses: github/codeql-action/init@45775bd8235c68ba998cffa5171334d58593da47 # v3
+      - uses: github/codeql-action/autobuild@45775bd8235c68ba998cffa5171334d58593da47 # v3
+      - uses: github/codeql-action/analyze@45775bd8235c68ba998cffa5171334d58593da47 # v3

@@ -77,6 +77,10 @@ const (
 	PkgBuild
 	// SrcInfo is an Arch Linux AUR .SRCINFO file.
 	SrcInfo
+	// SourcePkgBuild is an Arch Linux AUR PKGBUILD file for a source build.
+	SourcePkgBuild
+	// SourceSrcInfo is an Arch Linux AUR .SRCINFO file for a source build.
+	SourceSrcInfo
 	// KrewPluginManifest is a krew plugin manifest file.
 	KrewPluginManifest
 	// ScoopManifest is an uploadable scoop manifest file.
@@ -91,9 +95,28 @@ const (
 	CArchive
 	// CShared is a C shared library, generated via a CGo build with buildmode=c-shared.
 	CShared
+	// PyWheel is a Python wheel package.
+	PyWheel
+	// PySdist is a Python source distribution package.
+	PySdist
 	// Metadata is an internal goreleaser metadata JSON file.
 	Metadata
+	// lastMarker is used in tests to denote the last valid type.
+	// always add new types before this one.
+	lastMarker
 )
+
+func (t Type) isUploadable() bool {
+	switch t {
+	case UniversalBinary, Binary, // See: [UploadableBinary].
+		Metadata,               // Local only.
+		SrcInfo, SourceSrcInfo, // It's always named `.SRCINFO`
+		PkgBuild, SourcePkgBuild: // It's always named `.PKGBUILD`
+		return false
+	default:
+		return true
+	}
+}
 
 func (t Type) String() string {
 	switch t {
@@ -129,9 +152,9 @@ func (t Type) String() string {
 		return "Scoop Manifest"
 	case SBOM:
 		return "SBOM"
-	case PkgBuild:
+	case PkgBuild, SourcePkgBuild:
 		return "PKGBUILD"
-	case SrcInfo:
+	case SrcInfo, SourceSrcInfo:
 		return "SRCINFO"
 	case PublishableChocolatey:
 		return "Chocolatey"
@@ -147,6 +170,10 @@ func (t Type) String() string {
 		return "Nixpkg"
 	case Metadata:
 		return "Metadata"
+	case PyWheel:
+		return "Wheel"
+	case PySdist:
+		return "Source Dist"
 	default:
 		return "unknown"
 	}
@@ -206,19 +233,13 @@ func (a Artifact) String() string {
 	return a.Name
 }
 
-// Extra tries to get the extra field with the given name, returning either
-// its value, the default value for its type, or an error.
+// tryCastExtra tries to cast the given type into T.
 //
 // If the extra value cannot be cast into the given type, it'll try to convert
 // it to JSON and unmarshal it into the correct type after.
 //
 // If that fails as well, it'll error.
-func Extra[T any](a Artifact, key string) (T, error) {
-	ex := a.Extra[key]
-	if ex == nil {
-		return *(new(T)), nil
-	}
-
+func tryCastExtra[T any](ex any) (T, error) {
 	t, ok := ex.(T)
 	if ok {
 		return t, nil
@@ -226,22 +247,52 @@ func Extra[T any](a Artifact, key string) (T, error) {
 
 	bts, err := json.Marshal(ex)
 	if err != nil {
+		// this should never happen in theory
 		return t, err
 	}
 
 	decoder := json.NewDecoder(bytes.NewReader(bts))
 	decoder.DisallowUnknownFields()
-	err = decoder.Decode(&t)
-	return t, err
+	if err := decoder.Decode(&t); err != nil {
+		// this should never happen in theory
+		return t, err
+	}
+	return t, nil
+}
+
+// MustExtra tries to get the extra field with the given name, returning its
+// value or panicking.
+//
+// If the value cannot be cast into the given type, it'll panic.
+func MustExtra[T any](a Artifact, key string) T {
+	got, ok := a.Extra[key]
+	if !ok {
+		panic(fmt.Errorf("extra: %s: key not present", key))
+	}
+	t, err := tryCastExtra[T](got)
+	if err != nil {
+		panic(fmt.Errorf("extra: %s: %w", key, err))
+	}
+	return t
 }
 
 // ExtraOr returns the Extra field with the given key or the or value specified
 // if it is nil.
+//
+// This should only be used in places where the key might or might not be
+// present.
+//
+// If the value cannot be cast into the given type, it'll panic.
 func ExtraOr[T any](a Artifact, key string, or T) T {
-	if a.Extra[key] == nil {
+	got, ok := a.Extra[key]
+	if !ok {
 		return or
 	}
-	return a.Extra[key].(T)
+	t, err := tryCastExtra[T](got)
+	if err != nil {
+		panic(fmt.Errorf("extra: %s: %w", key, err))
+	}
+	return t
 }
 
 // Checksum calculates the checksum of the artifact.
@@ -328,6 +379,11 @@ func (a Artifact) Format() string {
 	return ExtraOr(a, ExtraFormat, "")
 }
 
+// Ext returns the artifact Ext if it exists, empty otherwise.
+func (a Artifact) Ext() string {
+	return ExtraOr(a, ExtraExt, "")
+}
+
 // Artifacts is a list of artifacts.
 type Artifacts struct {
 	items []*Artifact
@@ -379,19 +435,23 @@ func (artifacts *Artifacts) GroupByPlatform() map[string][]*Artifact {
 	goamd64s := map[string]struct{}{}
 	gomipses := map[string]struct{}{}
 	goarms := map[string]struct{}{}
+	abis := map[string]struct{}{}
 	for _, a := range artifacts.List() {
 		plat := a.Goos + a.Goarch
-		fullplat := plat + a.Goarm + a.Gomips + a.Goamd64
+		abi := ExtraOr(*a, "Abi", "")
+		fullplat := plat + abi + a.Goarm + a.Gomips + a.Goamd64
 		goamd64s[a.Goamd64] = struct{}{}
 		gomipses[a.Gomips] = struct{}{}
 		goarms[a.Goarm] = struct{}{}
+		abis[abi] = struct{}{}
 		simpleResult[plat] = append(simpleResult[plat], a)
 		specificResult[fullplat] = append(specificResult[fullplat], a)
 	}
 
 	if len(nonEmpty(goamd64s)) > 1 ||
 		len(nonEmpty(gomipses)) > 1 ||
-		len(nonEmpty(goarms)) > 1 {
+		len(nonEmpty(goarms)) > 1 ||
+		len(nonEmpty(abis)) > 1 {
 		return specificResult
 	}
 
@@ -439,11 +499,20 @@ func (artifacts *Artifacts) Add(a *Artifact) {
 		}
 	}
 	a.Path = filepath.ToSlash(a.Path)
+	if a.Type.isUploadable() &&
+		slices.ContainsFunc(artifacts.items, func(b *Artifact) bool {
+			return a.Name == b.Name
+		}) {
+		log.WithField("name", a.Name).
+			WithField("details", `this might cause errors when publishing
+please make sure your configuration is correct`).
+			Warn("artifact already present in the list")
+	}
+	artifacts.items = append(artifacts.items, a)
 	log.WithField("name", a.Name).
 		WithField("type", a.Type).
 		WithField("path", a.Path).
 		Debug("added new artifact")
-	artifacts.items = append(artifacts.items, a)
 }
 
 // Remove removes artifacts that match the given filter from the original artifact list.
@@ -554,8 +623,7 @@ func ByExt(exts ...string) Filter {
 	filters := make([]Filter, 0, len(exts))
 	for _, ext := range exts {
 		filters = append(filters, func(a *Artifact) bool {
-			actual := ExtraOr(*a, ExtraExt, "")
-			return strings.TrimPrefix(actual, ".") == strings.TrimPrefix(ext, ".")
+			return strings.TrimPrefix(a.Ext(), ".") == strings.TrimPrefix(ext, ".")
 		})
 	}
 	return Or(filters...)

@@ -1,3 +1,4 @@
+// Package partial handles the partial builds.
 package partial
 
 import (

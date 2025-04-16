@@ -145,7 +145,7 @@ func Test_doRun(t *testing.T) {
 				Goarch:  "amd64",
 				Goamd64: "v1",
 				Type:    artifact.UploadableArchive,
-				Extra: map[string]interface{}{
+				Extra: map[string]any{
 					artifact.ExtraID:     "app",
 					artifact.ExtraFormat: "zip",
 				},
@@ -253,7 +253,7 @@ func TestPublish(t *testing.T) {
 				{
 					Type: artifact.PublishableChocolatey,
 					Name: "app.1.0.1.nupkg",
-					Extra: map[string]interface{}{
+					Extra: map[string]any{
 						artifact.ExtraFormat: nupkgFormat,
 						chocoConfigExtra:     config.Chocolatey{},
 					},
@@ -266,7 +266,7 @@ func TestPublish(t *testing.T) {
 				{
 					Type: artifact.PublishableChocolatey,
 					Name: "app.1.0.1.nupkg",
-					Extra: map[string]interface{}{
+					Extra: map[string]any{
 						artifact.ExtraFormat: nupkgFormat,
 						chocoConfigExtra: config.Chocolatey{
 							APIKey: "abcd",
@@ -286,7 +286,7 @@ func TestPublish(t *testing.T) {
 					Type: artifact.PublishableChocolatey,
 					Name: "app.1.0.1.nupkg",
 					Path: fakenu,
-					Extra: map[string]interface{}{
+					Extra: map[string]any{
 						artifact.ExtraFormat: nupkgFormat,
 						chocoConfigExtra: config.Chocolatey{
 							APIKey:     "abcd",

@@ -2,7 +2,7 @@ package client
 
 import (
 	"fmt"
-	"math/rand"
+	"math/rand/v2"
 	"net/http"
 	"net/http/httptest"
 	"testing"
@@ -96,7 +96,7 @@ func TestCheckBodyMaxLength(t *testing.T) {
 	letters := []rune("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ")
 	b := make([]rune, maxReleaseBodyLength)
 	for i := range b {
-		b[i] = letters[rand.Intn(len(letters))]
+		b[i] = letters[rand.N(len(letters))]
 	}
 	out := truncateReleaseBody(string(b))
 	require.Len(t, out, maxReleaseBodyLength)
@@ -181,7 +181,7 @@ func TestNewWithToken(t *testing.T) {
 
 func TestClientBlanks(t *testing.T) {
 	repo := Repo{}
-	require.Equal(t, "", repo.String())
+	require.Empty(t, repo.String())
 }
 
 func fakeGitea(tb testing.TB) *httptest.Server {

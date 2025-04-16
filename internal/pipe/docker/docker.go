@@ -124,6 +124,8 @@ func (Pipe) Run(ctx *context.Context) error {
 				artifact.Or(
 					artifact.ByType(artifact.Binary),
 					artifact.ByType(artifact.LinuxPackage),
+					artifact.ByType(artifact.CArchive),
+					artifact.ByType(artifact.CShared),
 				),
 			}
 			// TODO: properly test this
@@ -136,7 +138,12 @@ func (Pipe) Run(ctx *context.Context) error {
 			if len(docker.IDs) > 0 {
 				filters = append(filters, artifact.ByIDs(docker.IDs...))
 			}
-			artifacts := ctx.Artifacts.Filter(artifact.And(filters...))
+
+			artifacts := ctx.Artifacts.Filter(
+				artifact.Or(
+					artifact.And(filters...),
+					artifact.ByType(artifact.PyWheel),
+				))
 			if d := len(docker.IDs); d > 0 && len(artifacts.GroupByID()) != d {
 				return pipe.Skipf("expected to find %d artifacts for ids %v, found %d\nLearn more at https://goreleaser.com/errors/docker-build\n", d, docker.IDs, len(artifacts.List()))
 			}
@@ -247,7 +254,7 @@ Previous error:
 			Goarch: docker.Goarch,
 			Goos:   docker.Goos,
 			Goarm:  docker.Goarm,
-			Extra: map[string]interface{}{
+			Extra: map[string]any{
 				dockerConfigExtra: docker,
 			},
 		})
@@ -301,11 +308,7 @@ func processBuildFlagTemplates(ctx *context.Context, docker config.Docker) ([]st
 func dockerPush(ctx *context.Context, image *artifact.Artifact) error {
 	log.WithField("image", image.Name).Info("pushing")
 
-	docker, err := artifact.Extra[config.Docker](*image, dockerConfigExtra)
-	if err != nil {
-		return err
-	}
-
+	docker := artifact.MustExtra[config.Docker](*image, dockerConfigExtra)
 	skip, err := tmpl.New(ctx).Apply(docker.SkipPush)
 	if err != nil {
 		return err
@@ -322,6 +325,9 @@ func dockerPush(ctx *context.Context, image *artifact.Artifact) error {
 		return err
 	}
 
+	log.WithField("image", image.Name).
+		WithField("digest", digest).
+		Info("pushed")
 	art := &artifact.Artifact{
 		Type:   artifact.DockerImage,
 		Name:   image.Name,
@@ -329,12 +335,14 @@ func dockerPush(ctx *context.Context, image *artifact.Artifact) error {
 		Goarch: image.Goarch,
 		Goos:   image.Goos,
 		Goarm:  image.Goarm,
-		Extra:  map[string]interface{}{},
+		Extra: map[string]any{
+			dockerConfigExtra:    docker,
+			artifact.ExtraDigest: digest,
+		},
 	}
 	if docker.ID != "" {
 		art.Extra[artifact.ExtraID] = docker.ID
 	}
-	art.Extra[artifact.ExtraDigest] = digest
 
 	ctx.Artifacts.Add(art)
 	return nil

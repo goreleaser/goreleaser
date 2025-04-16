@@ -16,9 +16,14 @@ func CheckPath(tb testing.TB, cmd string) {
 	}
 }
 
+// IsCI returns true if we have the "CI" environment variable set to true.
+func IsCI() bool {
+	return os.Getenv("CI") == "true"
+}
+
 // InPath returns true if the given cmd is in the PATH, or if CI is true.
 func InPath(cmd string) bool {
-	if os.Getenv("CI") == "true" {
+	if IsCI() {
 		return true
 	}
 	_, err := exec.LookPath(cmd)

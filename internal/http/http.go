@@ -160,46 +160,69 @@ type ResponseChecker func(*h.Response) error
 
 // Upload does the actual uploading work.
 func Upload(ctx *context.Context, uploads []config.Upload, kind string, check ResponseChecker) error {
+	skips := &pipe.SkipMemento{}
 	// Handle every configured upload
 	for _, upload := range uploads {
-		filters := []artifact.Filter{}
-		if upload.Checksum {
-			filters = append(filters, artifact.ByType(artifact.Checksum))
+		err := uploadOne(ctx, upload, kind, check)
+		if pipe.IsSkip(err) {
+			skips.Remember(err)
+			continue
 		}
-		if upload.Meta {
-			filters = append(filters, artifact.ByType(artifact.Metadata))
-		}
-		if upload.Signature {
-			filters = append(filters, artifact.ByType(artifact.Signature), artifact.ByType(artifact.Certificate))
-		}
-		// We support two different modes
-		//	- "archive": Upload all artifacts
-		//	- "binary": Upload only the raw binaries
-		switch v := strings.ToLower(upload.Mode); v {
-		case ModeArchive:
-			filters = append(filters,
-				artifact.ByType(artifact.UploadableArchive),
-				artifact.ByType(artifact.UploadableSourceArchive),
-				artifact.ByType(artifact.LinuxPackage),
-			)
-		case ModeBinary:
-			filters = append(filters, artifact.ByType(artifact.UploadableBinary))
-		default:
-			return fmt.Errorf("%s: %s: mode \"%s\" not supported", upload.Name, kind, v)
-		}
-
-		filter := artifact.Or(filters...)
-		if len(upload.IDs) > 0 {
-			filter = artifact.And(filter, artifact.ByIDs(upload.IDs...))
-		}
-		if len(upload.Exts) > 0 {
-			filter = artifact.And(filter, artifact.ByExt(upload.Exts...))
-		}
-		if err := uploadWithFilter(ctx, &upload, filter, kind, check); err != nil {
+		if err != nil {
 			return err
 		}
 	}
 
+	return skips.Evaluate()
+}
+
+func uploadOne(ctx *context.Context, upload config.Upload, kind string, check ResponseChecker) error {
+	skip, err := tmpl.New(ctx).Bool(upload.Skip)
+	if err != nil {
+		return err
+	}
+	if skip {
+		return pipe.Skip("skip evaluates to true")
+	}
+
+	filters := []artifact.Filter{}
+	if upload.Checksum {
+		filters = append(filters, artifact.ByType(artifact.Checksum))
+	}
+	if upload.Meta {
+		filters = append(filters, artifact.ByType(artifact.Metadata))
+	}
+	if upload.Signature {
+		filters = append(filters, artifact.ByType(artifact.Signature), artifact.ByType(artifact.Certificate))
+	}
+	// We support two different modes
+	//	- "archive": Upload all artifacts
+	//	- "binary": Upload only the raw binaries
+	switch v := strings.ToLower(upload.Mode); v {
+	case ModeArchive:
+		filters = append(filters,
+			artifact.ByType(artifact.UploadableArchive),
+			artifact.ByType(artifact.UploadableSourceArchive),
+			artifact.ByType(artifact.LinuxPackage),
+			artifact.ByType(artifact.PySdist),
+			artifact.ByType(artifact.PyWheel),
+		)
+	case ModeBinary:
+		filters = append(filters, artifact.ByType(artifact.UploadableBinary))
+	default:
+		return fmt.Errorf("%s: %s: mode \"%s\" not supported", upload.Name, kind, v)
+	}
+
+	filter := artifact.Or(filters...)
+	if len(upload.IDs) > 0 {
+		filter = artifact.And(filter, artifact.ByIDs(upload.IDs...))
+	}
+	if len(upload.Exts) > 0 {
+		filter = artifact.And(filter, artifact.ByExt(upload.Exts...))
+	}
+	if err := uploadWithFilter(ctx, &upload, filter, kind, check); err != nil {
+		return err
+	}
 	return nil
 }
 

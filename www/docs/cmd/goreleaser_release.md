@@ -17,7 +17,7 @@ goreleaser release [flags]
   -h, --help                         help for release
       --id stringArray               Builds only the specified build ids (implies --skip=publish) (Pro only)
   -k, --key string                   GoReleaser Pro license key [$GORELEASER_KEY] (Pro only)
-      --nightly                      Generate a nightly build, publishing artifacts that support it (implies --skip=announce,validate; overrides --nightly) (Pro only)
+      --nightly                      Generate a nightly build, publishing artifacts that support it (implies --skip=announce,validate) (Pro only)
   -p, --parallelism int              Amount tasks to run concurrently (default: number of CPUs)
       --prepare                      Will run the release in such way that it can be published and announced later with goreleaser publish and goreleaser announce (implies --skip=publish,announce,after) (Pro only)
       --release-footer string        Load custom release notes footer from a markdown file
@@ -27,7 +27,7 @@ goreleaser release [flags]
       --release-notes string         Load custom release notes from a markdown file (will skip GoReleaser changelog generation)
       --release-notes-tmpl string    Load custom release notes from a templated markdown file (overrides --release-notes)
       --single-target                Builds only for current GOOS and GOARCH, regardless of what's set in the configuration file (implies --skip=publish) (Pro only)
-      --skip strings                 Skip the given options (valid options are: after, announce, archive, aur, aur-source, before, before-publish, chocolatey, cloudsmith, dmg, docker, dockerhub, fury, homebrew, ko, msi, nfpm, nix, notarize, publish, report-sizes, sbom, scoop, sign, snapcraft, validate, winget)
+      --skip strings                 Skip the given options (valid options are: after, announce, archive, aur, aur-source, before, before-publish, chocolatey, cloudsmith, dmg, docker, dockerhub, fury, homebrew, ko, msi, nfpm, nix, notarize, npm, publish, report-sizes, sbom, scoop, sign, snapcraft, validate, winget)
       --snapshot                     Generate an unversioned snapshot release, skipping all validations and without publishing any artifacts (implies --skip=announce,publish,validate)
       --split                        Split the build so it can be merged and published later (implies --prepare) (Pro only)
       --timeout duration             Timeout to the entire release process (default 30m0s)

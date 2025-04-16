@@ -3,11 +3,13 @@ package cmd
 import (
 	"errors"
 	"fmt"
+	"slices"
 	"time"
 
 	goversion "github.com/caarlos0/go-version"
 	"github.com/caarlos0/log"
 	"github.com/charmbracelet/lipgloss"
+	"github.com/goreleaser/goreleaser/v2/internal/pipe"
 	"github.com/goreleaser/goreleaser/v2/pkg/context"
 	"github.com/spf13/cobra"
 )
@@ -35,14 +37,18 @@ func (cmd *rootCmd) Execute(args []string) {
 	if err := cmd.cmd.Execute(); err != nil {
 		code := 1
 		msg := "command failed"
+		log := log.WithError(err)
 		eerr := &exitError{}
 		if errors.As(err, &eerr) {
 			code = eerr.code
 			if eerr.details != "" {
 				msg = eerr.details
 			}
+			for k, v := range pipe.DetailsOf(eerr.err) {
+				log = log.WithField(k, v)
+			}
 		}
-		log.WithError(err).Error(msg)
+		log.Error(msg)
 		cmd.exit(code)
 	}
 }
@@ -132,15 +138,7 @@ func shouldPrependRelease(cmd *cobra.Command, args []string) bool {
 
 	// given that its 1, check if its one of the valid standalone flags
 	// for the root cmd
-	for _, s := range []string{"-h", "--help", "-v", "--version"} {
-		if s == args[0] {
-			// if it is, we should run the root cmd
-			return false
-		}
-	}
-
-	// otherwise, we should probably prepend release
-	return true
+	return !slices.Contains([]string{"-h", "--help", "-v", "--version"}, args[0])
 }
 
 func deprecateWarn(ctx *context.Context) {

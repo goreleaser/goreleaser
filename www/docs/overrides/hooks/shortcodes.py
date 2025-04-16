@@ -18,6 +18,7 @@ def on_page_markdown(markdown: str, *, page: Page, config: MkDocsConfig, files: 
         if type == "version":     return _version_block(args)
         if type == "inline_version":     return _inline_version_block(args)
         elif type == "pro":       return _pro_ad()
+        elif type == "tmpl_pro":       return _tmpl_pro_ad()
         elif type == "inline_pro":       return _inline_pro_ad()
         elif type == "featpro":       return _pro_feat_ad()
         elif type == "templates": return _templates_ad()
@@ -31,6 +32,14 @@ def on_page_markdown(markdown: str, *, page: Page, config: MkDocsConfig, files: 
         r"<!-- md:(\w+)(.*?) -->",
         replace, markdown, flags = re.I | re.M
     )
+
+def _tmpl_pro_ad():
+    return "".join([
+        f"<details class=\"admonition example\">",
+        f"<summary>GoReleaser Pro</summary>",
+        f"<p>These template properties are exclusively available with <a href=\"/pro/\">GoReleaser Pro</a>.</p>",
+        f"</details>"
+    ])
 
 def _pro_feat_ad():
     return "".join([
@@ -68,8 +77,8 @@ def _alpha_block():
 
 def _templates_ad():
     return "".join([
-        f"<div class=\"admonition tip\">",
-        f"<p class=\"admonition-title\">Tip</p>",
+        f"<details class=\"tip\">",
+        f"<summary>Template Language</summary>",
         f"<p>Discover more about the <a href=\"/customization/templates/\">name template engine</a>.</p>",
-        f"</div>"
+        f"</details>"
     ])

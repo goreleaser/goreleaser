@@ -1,3 +1,4 @@
+// Package zig builds zig binaries.
 package zig
 
 import (
@@ -121,11 +122,12 @@ func (b *Builder) Build(ctx *context.Context, build config.Build, options api.Op
 		Goos:   convertToGoos(t.Os),
 		Goarch: convertToGoarch(t.Arch),
 		Target: t.Target,
-		Extra: map[string]interface{}{
+		Extra: map[string]any{
 			artifact.ExtraBinary:  strings.TrimSuffix(filepath.Base(options.Path), options.Ext),
 			artifact.ExtraExt:     options.Ext,
 			artifact.ExtraID:      build.ID,
 			artifact.ExtraBuilder: "zig",
+			keyAbi:                t.Abi,
 		},
 	}
 
@@ -150,7 +152,7 @@ func (b *Builder) Build(ctx *context.Context, build config.Build, options api.Op
 		"-p", prefix,
 	}
 
-	tenv, err := common.TemplateEnv(build, tpl)
+	tenv, err := common.TemplateEnv(build.Env, tpl)
 	if err != nil {
 		return err
 	}

@@ -1,90 +1,121 @@
+version: "2"
 run:
-  go: "1.23"
-  timeout: 5m
+  go: "1.24"
 linters:
   enable:
-    - copyloopvar
-    - thelper
-    - gofumpt
     - bodyclose
+    - copyloopvar
+    - depguard
+    - forbidigo
+    - gocritic
+    - misspell
+    - noctx
+    - nolintlint
+    - perfsprint
+    - revive
+    - tagliatelle
+    - testifylint
+    - thelper
     - tparallel
     - unconvert
     - unparam
+    - usetesting
     - wastedassign
-    - revive
-    - forbidigo
-    - tagliatelle
-    - misspell
-    - depguard
-    - testifylint
-    - gocritic
-    - nolintlint
-    - noctx
-    - perfsprint
-linters-settings:
-  gocritic:
-    disabled-checks:
-      - appendAssign
-  staticcheck:
-    checks:
-      - all
-      - "-SA1019"
-  forbidigo:
-    forbid:
-      - 'ioutil\.*'
-  tagliatelle:
-    case:
-      use-field-name: false
+  settings:
+    depguard:
       rules:
-        yaml: snake
-        json: snake
-  depguard:
+        main:
+          deny:
+            - pkg: github.com/pkg/errors
+              desc: use stdlib instead
+            - pkg: math/rand$
+              desc: use math/rand/v2 instead
+            - pkg: github.com/apex/log
+              desc: use caarlos0/log instead
+    forbidigo:
+      forbid:
+        - pattern: ioutil\.*
+    gocritic:
+      disabled-checks:
+        - appendAssign
+    perfsprint:
+      int-conversion: false
+      err-error: false
+      errorf: true
+      sprintf1: false
+      strconcat: false
+    revive:
+      enable-all-rules: false
+      rules:
+        - name: blank-imports
+        - name: context-as-argument
+        - name: context-keys-type
+        - name: comment-spacings
+        - name: dot-imports
+        - name: empty-block
+        - name: empty-lines
+        - name: error-naming
+        - name: error-return
+        - name: error-strings
+        - name: errorf
+        - name: increment-decrement
+        - name: indent-error-flow
+        - name: range
+        - name: receiver-naming
+        - name: redefines-builtin-id
+        - name: superfluous-else
+        - name: time-naming
+        - name: unexported-return
+        - name: unreachable-code
+        - name: unused-parameter
+        - name: var-declaration
+        - name: var-naming
+        # we are not providing an API anyway... maybe someday...
+        # - name: exported
+        # - name: package-comments
+    staticcheck:
+      checks:
+        - all
+        - -SA1019
+    tagliatelle:
+      case:
+        rules:
+          json: snake
+          yaml: snake
+        use-field-name: false
+    testifylint:
+      enable-all: true
+      disable:
+        - error-is-as
+    usetesting:
+      context-background: true
+      context-todo: true
+      os-chdir: true
+      os-mkdir-temp: true
+      os-setenv: true
+      os-create-temp: true
+      os-temp-dir: true
+  exclusions:
+    generated: lax
+    presets:
+      - common-false-positives
+      - legacy
+      - std-error-handling
     rules:
-      main:
-        deny:
-          - pkg: "github.com/pkg/errors"
-            desc: "use stdlib instead"
-  perfsprint:
-    int-conversion: false
-    err-error: false
-    errorf: true
-    sprintf1: false
-    strconcat: false
-  revive:
-    enable-all-rules: false
-    rules:
-      - name: blank-imports
-      - name: context-as-argument
-      - name: context-keys-type
-      - name: comment-spacings
-      - name: dot-imports
-      - name: empty-block
-      - name: empty-lines
-      - name: error-naming
-      - name: error-return
-      - name: error-strings
-      - name: errorf
-      - name: exported
-      - name: increment-decrement
-      - name: indent-error-flow
-      - name: package-comments
-      - name: range
-      - name: receiver-naming
-      - name: redefines-builtin-id
-      - name: superfluous-else
-      - name: time-naming
-      - name: unexported-return
-      - name: unreachable-code
-      - name: unused-parameter
-      - name: var-declaration
-      - name: var-naming
-  testifylint:
-    enable-all: true
-    disable:
-      - error-is-as # false positive
-issues:
-  exclude-rules:
-    - path: _test\.go
-      linters:
-        - noctx
-        - perfsprint
+      - linters:
+          - noctx
+          - perfsprint
+        path: _test\.go
+    paths:
+      - third_party$
+      - builtin$
+      - examples$
+formatters:
+  enable:
+    - gofumpt
+  exclusions:
+    generated: lax
+    paths:
+      - third_party$
+      - builtin$
+      - examples$

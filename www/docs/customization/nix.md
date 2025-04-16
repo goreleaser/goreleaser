@@ -33,6 +33,7 @@ nix:
     url_template: "https://github.mycompany.com/foo/bar/releases/download/{{ .Tag }}/{{ .ArtifactName }}"
 
     # Git author used to commit to the repository.
+    # Templates: allowed.
     commit_author:
       name: goreleaserbot
       email: bot@goreleaser.com
@@ -120,9 +121,9 @@ nix:
 
 ## Dependencies
 
-### `nix-prefetch-url`
+### `nix-hash`
 
-The `nix-prefetch-url` binary must be available in the `$PATH` for the
+The `nix-hash` binary must be available in the `$PATH` for the
 publishing to work.
 
 [iss4034]: https://github.com/goreleaser/goreleaser/issues/4034

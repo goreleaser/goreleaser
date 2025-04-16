@@ -1,3 +1,4 @@
+// Package chocolatey publishes chocolatey packages.
 package chocolatey
 
 import (
@@ -170,7 +171,7 @@ func doRun(ctx *context.Context, cl client.ReleaseURLTemplater, choco config.Cho
 		Type: artifact.PublishableChocolatey,
 		Path: filepath.Join(ctx.Config.Dist, pkgFile),
 		Name: pkgFile,
-		Extra: map[string]interface{}{
+		Extra: map[string]any{
 			artifact.ExtraFormat: nupkgFormat,
 			chocoConfigExtra:     choco,
 		},
@@ -180,11 +181,7 @@ func doRun(ctx *context.Context, cl client.ReleaseURLTemplater, choco config.Cho
 }
 
 func doPush(ctx *context.Context, art *artifact.Artifact) error {
-	choco, err := artifact.Extra[config.Chocolatey](*art, chocoConfigExtra)
-	if err != nil {
-		return err
-	}
-
+	choco := artifact.MustExtra[config.Chocolatey](*art, chocoConfigExtra)
 	key, err := tmpl.New(ctx).Apply(choco.APIKey)
 	if err != nil {
 		return err

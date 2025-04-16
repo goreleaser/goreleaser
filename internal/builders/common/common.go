@@ -1,3 +1,4 @@
+// Package common contains common functions for all builders.
 package common
 
 import (
@@ -14,8 +15,21 @@ import (
 	"github.com/goreleaser/goreleaser/v2/pkg/config"
 )
 
+type options struct {
+	allowBuildMode bool
+}
+
+type ValidateOption func(o *options)
+
+func WithBuildMode(o *options) { o.allowBuildMode = true }
+
 // ValidateNonGoConfig makes sure that Go-specific configurations are not set.
-func ValidateNonGoConfig(build config.Build) error {
+func ValidateNonGoConfig(build config.Build, opts ...ValidateOption) error {
+	var o options
+	for _, v := range opts {
+		v(&o)
+	}
+
 	if len(build.Ldflags) > 0 {
 		return errors.New("ldflags is not used for " + build.Builder)
 	}
@@ -38,7 +52,7 @@ func ValidateNonGoConfig(build config.Build) error {
 		return fmt.Errorf("ignore is not used for %s, set targets instead", build.Builder)
 	}
 
-	if build.Buildmode != "" {
+	if build.Buildmode != "" && !o.allowBuildMode {
 		return errors.New("buildmode is not used for " + build.Builder)
 	}
 
@@ -74,20 +88,20 @@ func ChTimes(build config.Build, tpl *tmpl.Template, a *artifact.Artifact) error
 }
 
 // TemplateEnv templates the build.Env and returns it.
-func TemplateEnv(build config.Build, tpl *tmpl.Template) ([]string, error) {
-	var env []string
-	for _, e := range build.Env {
+func TemplateEnv(input []string, tpl *tmpl.Template) ([]string, error) {
+	var output []string
+	for _, e := range input {
 		ee, err := tpl.Apply(e)
 		if err != nil {
 			return nil, err
 		}
 		log.Debugf("env %q evaluated to %q", e, ee)
 		if ee != "" {
-			env = append(env, ee)
+			output = append(output, ee)
 			tpl = tpl.SetEnv(ee)
 		}
 	}
-	return env, nil
+	return output, nil
 }
 
 // Exec executes the given command with the given env in the given dir,
