@@ -84,7 +84,7 @@ func newReleaseCmd() *releaseCmd {
 	cmd.Flags().BoolVar(&root.opts.clean, "clean", false, "Removes the 'dist' directory")
 	cmd.Flags().IntVarP(&root.opts.parallelism, "parallelism", "p", 0, "Amount tasks to run concurrently (default: number of CPUs)")
 	_ = cmd.RegisterFlagCompletionFunc("parallelism", cobra.NoFileCompletions)
-	cmd.Flags().DurationVar(&root.opts.timeout, "timeout", 30*time.Minute, "Timeout to the entire release process")
+	cmd.Flags().DurationVar(&root.opts.timeout, "timeout", time.Hour, "Timeout to the entire release process")
 	_ = cmd.RegisterFlagCompletionFunc("timeout", cobra.NoFileCompletions)
 	cmd.Flags().BoolVar(&root.opts.deprecated, "deprecated", false, "Force print the deprecation message - tests only")
 	_ = cmd.Flags().MarkHidden("deprecated")
