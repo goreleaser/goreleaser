@@ -44,6 +44,11 @@ winget:
     # Templates: allowed.
     publisher_support_url: "https://github.com/user/repo/issues/new"
 
+    # Privacy URL.
+    #
+    # Templates: allowed.
+    privacy_url: "https://carlosbecker.com/privacy"
+
     # Package identifier.
     #
     # Default: Publisher.ProjectName.
@@ -152,9 +157,14 @@ winget:
     # Templates: allowed.
     release_notes_url: "https://foo.bar/changelog/{{.Version}}"
 
+    # Installation notes.
+    #
+    # Templates: allowed.
+    installation_notes: "Information on how to install. Can also be a URL"
+
     # Tags.
     #
-    # GoReleaser converts all tags to lowercase and replace 
+    # GoReleaser converts all tags to lowercase and replace
     # spaces with hyphens (-) as per winget's best practices.
     tags:
       - golang
