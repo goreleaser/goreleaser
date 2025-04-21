@@ -10,7 +10,7 @@ To run the docs locally, do:
 
 ```bash
 docker build -t material-mkdocs ./www
-docker run --rm -it -p 8000:8000 -v ./www:/docs material-mkdocs
+docker run --rm -p 8000:8000 -v ./www:/docs material-mkdocs
 ```
 
 The site should soon be available at [http://localhost:8000] and

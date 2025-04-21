@@ -127,6 +127,10 @@ func filterArtifacts(artifacts *artifact.Artifacts, publisher config.Publisher) 
 		artifact.ByType(artifact.UploadableBinary),
 		artifact.ByType(artifact.DockerImage),
 		artifact.ByType(artifact.DockerManifest),
+		artifact.ByType(artifact.UploadableSourceArchive),
+		artifact.ByType(artifact.SBOM),
+		artifact.ByType(artifact.PySdist),
+		artifact.ByType(artifact.PyWheel),
 	}
 
 	if publisher.Checksum {

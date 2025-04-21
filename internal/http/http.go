@@ -204,6 +204,8 @@ func uploadOne(ctx *context.Context, upload config.Upload, kind string, check Re
 			artifact.ByType(artifact.UploadableArchive),
 			artifact.ByType(artifact.UploadableSourceArchive),
 			artifact.ByType(artifact.LinuxPackage),
+			artifact.ByType(artifact.PySdist),
+			artifact.ByType(artifact.PyWheel),
 		)
 	case ModeBinary:
 		filters = append(filters, artifact.ByType(artifact.UploadableBinary))

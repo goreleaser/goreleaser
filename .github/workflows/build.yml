@@ -69,12 +69,13 @@ jobs:
         run: |
           rustup default stable
           cargo binstall cargo-zigbuild
+      - uses: astral-sh/setup-uv@v5
       - uses: sigstore/cosign-installer@v3.8.1
       - uses: anchore/sbom-action/download-syft@v0.18.0
       - run: task setup
       - run: task build
       - run: task test
-      - uses: codecov/codecov-action@0565863a31f2c772f9f0395002a31e3f06189574 # v5.4.0
+      - uses: codecov/codecov-action@ad3126e916f78f00edff4ed0317cf185271ccc2d # v5.4.2
         if: matrix.os == 'ubuntu-latest'
         with:
           file: ./coverage.txt

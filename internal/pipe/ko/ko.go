@@ -189,6 +189,7 @@ type buildOptions struct {
 	creationTime        *v1.Time
 	koDataCreationTime  *v1.Time
 	sbom                string
+	SBOMDirectory       string
 	ldflags             []string
 	bare                bool
 	preserveImportPaths bool
@@ -254,6 +255,9 @@ func (o *buildOptions) makeBuilder(ctx *context.Context) (*build.Caching, error)
 	switch o.sbom {
 	case "spdx":
 		buildOptions = append(buildOptions, build.WithSPDX("devel"))
+		if o.SBOMDirectory != "" {
+			buildOptions = append(buildOptions, build.WithSBOMDir(o.SBOMDirectory))
+		}
 	case "none":
 		buildOptions = append(buildOptions, build.WithDisabledSBOM())
 	default:
@@ -391,6 +395,7 @@ func buildBuildOptions(ctx *context.Context, cfg config.Ko) (*buildOptions, erro
 		sbom:                cfg.SBOM,
 		imageRepos:          cfg.Repositories,
 		user:                cfg.User,
+		SBOMDirectory:       cfg.SBOMDirectory,
 	}
 
 	tags, err := applyTemplate(ctx, cfg.Tags)

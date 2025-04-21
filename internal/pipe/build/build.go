@@ -26,6 +26,7 @@ import (
 	_ "github.com/goreleaser/goreleaser/v2/internal/builders/deno"
 	_ "github.com/goreleaser/goreleaser/v2/internal/builders/golang"
 	_ "github.com/goreleaser/goreleaser/v2/internal/builders/rust"
+	_ "github.com/goreleaser/goreleaser/v2/internal/builders/uv"
 	_ "github.com/goreleaser/goreleaser/v2/internal/builders/zig"
 )
 
@@ -114,6 +115,7 @@ func buildWithDefaults(ctx *context.Context, build config.Build) (config.Build, 
 	}
 	if build.Binary == "" {
 		build.Binary = ctx.Config.ProjectName
+		build.InternalDefaults.Binary = true
 	}
 	if build.ID == "" {
 		build.ID = ctx.Config.ProjectName
@@ -249,6 +251,7 @@ func buildOptionsForTarget(ctx *context.Context, build config.Build, target stri
 	return &buildOpts, nil
 }
 
+// TODO: this should probably be the responsibility of each builder.
 func extFor(target string, build config.BuildDetails) string {
 	// Configure the extensions for shared and static libraries - by default .so and .a respectively -
 	// with overrides for Windows (.dll for shared and .lib for static) and .dylib for macOS.

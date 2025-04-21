@@ -164,6 +164,7 @@ func TestBuild(t *testing.T) {
 			artifact.ExtraBuilder: "zig",
 			artifact.ExtraExt:     "",
 			artifact.ExtraID:      "default",
+			keyAbi:                "",
 		},
 	}, *bin)
 

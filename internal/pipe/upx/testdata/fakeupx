@@ -1,0 +1,4 @@
+#!/bin/bash
+set -euo pipefail
+touch "${*: -1}.ran"
+echo "Fake compressed: ${*: -1}"

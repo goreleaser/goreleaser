@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"slices"
 	"testing"
 
 	"github.com/goreleaser/goreleaser/v2/internal/golden"
@@ -377,6 +378,35 @@ func TestGroupByPlatform_mixingBuilders(t *testing.T) {
 	require.Len(t, groups["linuxamd64"], 2)
 	require.Len(t, groups["linuxmips"], 2)
 	require.Len(t, groups["linuxarm"], 2)
+}
+
+func TestGroupByPlatform_abi(t *testing.T) {
+	data := []*Artifact{
+		{
+			Name:   "foo",
+			Goos:   "linux",
+			Goarch: "amd64",
+			Extra: map[string]any{
+				"Abi": "musl",
+			},
+		},
+		{
+			Name:   "foo",
+			Goos:   "linux",
+			Goarch: "amd64",
+			Extra: map[string]any{
+				"Abi": "gnu",
+			},
+		},
+	}
+	artifacts := New()
+	for _, a := range data {
+		artifacts.Add(a)
+	}
+	groups := artifacts.GroupByPlatform()
+	require.Len(t, groups, 2)
+	require.Len(t, groups["linuxamd64musl"], 1)
+	require.Len(t, groups["linuxamd64gnu"], 1)
 }
 
 func TestChecksum(t *testing.T) {
@@ -1008,7 +1038,7 @@ func TestArtifactStringer(t *testing.T) {
 }
 
 func TestArtifactTypeStringer(t *testing.T) {
-	for i := 1; i <= 30; i++ {
+	for i := 1; i < int(lastMarker); i++ {
 		t.Run(fmt.Sprintf("type-%d-%s", i, Type(i).String()), func(t *testing.T) {
 			require.NotEqual(t, "unknown", Type(i).String())
 		})
@@ -1017,4 +1047,26 @@ func TestArtifactTypeStringer(t *testing.T) {
 	t.Run("unknown", func(t *testing.T) {
 		require.Equal(t, "unknown", Type(99999).String())
 	})
+}
+
+func TestArtifactTypeIsUploadable(t *testing.T) {
+	nonUploadable := []Type{
+		Binary,
+		Metadata,
+		SrcInfo,
+		SourceSrcInfo,
+		PkgBuild,
+		SourcePkgBuild,
+		UniversalBinary,
+	}
+	for i := range lastMarker - 1 {
+		up := i.isUploadable()
+		t.Run(fmt.Sprintf("%s-%v", i.String(), up), func(t *testing.T) {
+			if slices.Contains(nonUploadable, i) {
+				require.False(t, up)
+				return
+			}
+			require.True(t, up)
+		})
+	}
 }

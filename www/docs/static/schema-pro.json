@@ -755,6 +755,8 @@
 							"c-archive",
 							"c-shared",
 							"pie",
+							"wheel",
+							"sdist",
 							""
 						],
 						"default": ""
@@ -835,6 +837,8 @@
 							"c-archive",
 							"c-shared",
 							"pie",
+							"wheel",
+							"sdist",
 							""
 						],
 						"default": ""
@@ -2153,6 +2157,14 @@
 						"type": "string"
 					},
 					"sbom": {
+						"type": "string",
+						"enum": [
+							"spdx",
+							"none"
+						],
+						"default": "spdx"
+					},
+					"sbom_directory": {
 						"type": "string"
 					},
 					"ldflags": {
@@ -5160,6 +5172,9 @@
 					"publisher_support_url": {
 						"type": "string"
 					},
+					"privacy_url": {
+						"type": "string"
+					},
 					"copyright": {
 						"type": "string"
 					},
@@ -5222,6 +5237,9 @@
 						"type": "string"
 					},
 					"release_notes_url": {
+						"type": "string"
+					},
+					"installation_notes": {
 						"type": "string"
 					},
 					"tags": {

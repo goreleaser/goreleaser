@@ -103,6 +103,11 @@ kos:
     # Valid options are: spdx and none.
     sbom: none
 
+    # Path to file where the SBOM will be written
+    #
+    # Default: unset - no SBOM written to filesystem (but still uploaded to oci repository).
+    sbom_directory: "out/sbom"
+
     # Ldflags to use on build.
     #
     # Default: build.ldflags.

@@ -5,6 +5,7 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
+	"strconv"
 	"testing"
 
 	"github.com/goreleaser/goreleaser/v2/internal/artifact"
@@ -47,40 +48,57 @@ func TestSkip(t *testing.T) {
 }
 
 func TestRun(t *testing.T) {
-	testlib.CheckPath(t, "upx")
+	bin := "./testdata/fakeupx"
+	if testlib.IsWindows() {
+		bin += ".bat"
+	}
+	fakeupx, err := filepath.Abs(bin)
+	require.NoError(t, err)
+
 	ctx := testctx.NewWithCfg(config.Project{
 		UPXs: []config.UPX{
 			{
 				Enabled: "true",
 				IDs:     []string{"1"},
+				Binary:  fakeupx,
+			},
+			{
+				Enabled: "false",
 			},
 			{
 				Enabled:  "true",
 				IDs:      []string{"2"},
 				Compress: "best",
+				Binary:   fakeupx,
 			},
 			{
 				Enabled:  "true",
 				IDs:      []string{"3"},
 				Compress: "9",
+				Binary:   fakeupx,
 			},
 			{
 				Enabled:  "true",
 				IDs:      []string{"4"},
 				Compress: "8",
 				LZMA:     true,
+				Binary:   fakeupx,
+			},
+			{
+				Enabled: "false",
 			},
 			{
 				Enabled: `{{ eq .Env.UPX "1" }}`,
 				IDs:     []string{"5"},
 				Brute:   true,
+				Binary:  fakeupx,
 			},
 		},
 	}, testctx.WithEnv(map[string]string{"UPX": "1"}))
 
 	tmp := t.TempDir()
-	main := filepath.Join(tmp, "main.go")
-	require.NoError(t, os.WriteFile(main, []byte("package main\nfunc main(){ println(1) }"), 0o644))
+
+	var expect []string
 
 	for _, goos := range []string{"linux", "windows", "darwin"} {
 		for _, goarch := range []string{"386", "amd64", "arm64"} {
@@ -88,19 +106,16 @@ func TestRun(t *testing.T) {
 			if goos == "windows" {
 				ext = ".exe"
 			}
-			path := filepath.Join(tmp, fmt.Sprintf("bin_%s_%s%s", goos, goarch, ext))
-			cmd := exec.Command("go", "build", "-o", path, main)
-			cmd.Env = append([]string{
-				"CGO_ENABLED=0",
-				"GOOS=" + goos,
-				"GOARCH=" + goarch,
-			}, cmd.Environ()...)
-			if cmd.Run() != nil {
-				// ignore unsupported arches
+			if goos == "darwin" && goarch == "386" {
 				continue
 			}
-
+			if goos == "windows" && goarch == "arm64" {
+				continue
+			}
 			for i := 1; i <= 5; i++ {
+				path := filepath.Join(tmp, fmt.Sprintf("bin_%d_%s_%s%s", i, goos, goarch, ext))
+				require.NoError(t, os.WriteFile(path, []byte("fake bin"), 0o755))
+				expect = append(expect, path)
 				ctx.Artifacts.Add(&artifact.Artifact{
 					Name:   "bin",
 					Path:   path,
@@ -108,7 +123,7 @@ func TestRun(t *testing.T) {
 					Goarch: goarch,
 					Type:   artifact.Binary,
 					Extra: map[string]any{
-						artifact.ExtraID: fmt.Sprintf("%d", i),
+						artifact.ExtraID: strconv.Itoa(i),
 					},
 				})
 			}
@@ -116,7 +131,11 @@ func TestRun(t *testing.T) {
 	}
 
 	require.NoError(t, Pipe{}.Default(ctx))
-	require.NoError(t, Pipe{}.Run(ctx))
+	testlib.AssertSkipped(t, Pipe{}.Run(ctx))
+
+	for _, path := range expect {
+		require.FileExists(t, path+".ran")
+	}
 }
 
 func TestEnabled(t *testing.T) {

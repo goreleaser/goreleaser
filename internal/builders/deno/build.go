@@ -95,6 +95,7 @@ func (b *Builder) Build(ctx *context.Context, build config.Build, options api.Op
 			artifact.ExtraExt:     options.Ext,
 			artifact.ExtraID:      build.ID,
 			artifact.ExtraBuilder: "deno",
+			keyAbi:                t.Abi,
 		},
 	}
 

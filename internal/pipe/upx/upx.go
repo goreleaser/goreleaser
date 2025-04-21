@@ -19,7 +19,10 @@ import (
 
 type Pipe struct{}
 
-func (Pipe) String() string { return "upx" }
+func (Pipe) String() string                         { return "upx" }
+func (Pipe) Skip(ctx *context.Context) bool         { return len(ctx.Config.UPXs) == 0 }
+func (Pipe) Dependencies(*context.Context) []string { return []string{"upx"} }
+
 func (Pipe) Default(ctx *context.Context) error {
 	for i := range ctx.Config.UPXs {
 		upx := &ctx.Config.UPXs[i]
@@ -29,67 +32,77 @@ func (Pipe) Default(ctx *context.Context) error {
 	}
 	return nil
 }
-func (Pipe) Skip(ctx *context.Context) bool { return len(ctx.Config.UPXs) == 0 }
+
 func (Pipe) Run(ctx *context.Context) error {
-	g := semerrgroup.NewSkipAware(semerrgroup.New(ctx.Parallelism))
+	g := semerrgroup.New(ctx.Parallelism)
+	skips := pipe.SkipMemento{}
 	for _, upx := range ctx.Config.UPXs {
 		enabled, err := tmpl.New(ctx).Bool(upx.Enabled)
 		if err != nil {
 			return err
 		}
 		if !enabled {
-			return pipe.Skip("upx is not enabled")
+			skips.Remember(pipe.Skip("upx is not enabled"))
+			continue
 		}
 		if _, err := exec.LookPath(upx.Binary); err != nil {
-			return pipe.Skipf("%s not found in PATH", upx.Binary)
+			skips.Remember(pipe.Skipf("%s not found in PATH", upx.Binary))
+			continue
 		}
 		for _, bin := range findBinaries(ctx, upx) {
 			g.Go(func() error {
-				sizeBefore := sizeOf(bin.Path)
-				args := []string{
-					"--quiet",
-				}
-				switch upx.Compress {
-				case "best":
-					args = append(args, "--best")
-				case "":
-				default:
-					args = append(args, "-"+upx.Compress)
-				}
-				if upx.LZMA {
-					args = append(args, "--lzma")
-				}
-				if upx.Brute {
-					args = append(args, "--brute")
-				}
-				args = append(args, bin.Path)
-				out, err := exec.CommandContext(ctx, "upx", args...).CombinedOutput()
-				if err != nil {
-					for _, ke := range knownExceptions {
-						if strings.Contains(string(out), ke) {
-							log.WithField("binary", bin.Path).
-								WithField("exception", ke).
-								Warn("could not pack")
-							return nil
-						}
-					}
-					return fmt.Errorf("could not pack %s: %w: %s", bin.Path, err, string(out))
-				}
-
-				sizeAfter := sizeOf(bin.Path)
-
-				log.
-					WithField("before", units.HumanSize(float64(sizeBefore))).
-					WithField("after", units.HumanSize(float64(sizeAfter))).
-					WithField("ratio", fmt.Sprintf("%d%%", (sizeAfter*100)/sizeBefore)).
-					WithField("binary", bin.Path).
-					Info("packed")
-
-				return nil
+				return compressOne(ctx, upx, bin)
 			})
 		}
 	}
-	return g.Wait()
+	if err := g.Wait(); err != nil {
+		return err
+	}
+	return skips.Evaluate()
+}
+
+func compressOne(ctx *context.Context, upx config.UPX, bin *artifact.Artifact) error {
+	sizeBefore := sizeOf(bin.Path)
+	args := []string{
+		"--quiet",
+	}
+	switch upx.Compress {
+	case "best":
+		args = append(args, "--best")
+	case "":
+	default:
+		args = append(args, "-"+upx.Compress)
+	}
+	if upx.LZMA {
+		args = append(args, "--lzma")
+	}
+	if upx.Brute {
+		args = append(args, "--brute")
+	}
+	args = append(args, bin.Path)
+	out, err := exec.CommandContext(ctx, upx.Binary, args...).CombinedOutput()
+	if err != nil {
+		for _, ke := range knownExceptions {
+			if strings.Contains(string(out), ke) {
+				log.WithField("binary", bin.Path).
+					WithField("exception", ke).
+					Warn("could not pack")
+				return nil
+			}
+		}
+		return fmt.Errorf("could not pack %s: %w: %s", bin.Path, err, string(out))
+	}
+
+	sizeAfter := sizeOf(bin.Path)
+
+	log.
+		WithField("before", units.HumanSize(float64(sizeBefore))).
+		WithField("after", units.HumanSize(float64(sizeAfter))).
+		WithField("ratio", fmt.Sprintf("%d%%", (sizeAfter*100)/sizeBefore)).
+		WithField("binary", bin.Path).
+		Info("packed")
+
+	return nil
 }
 
 var knownExceptions = []string{

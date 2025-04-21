@@ -246,6 +246,7 @@ type Winget struct {
 	Publisher             string             `yaml:"publisher" json:"publisher"`
 	PublisherURL          string             `yaml:"publisher_url,omitempty" json:"publisher_url,omitempty"`
 	PublisherSupportURL   string             `yaml:"publisher_support_url,omitempty" json:"publisher_support_url,omitempty"`
+	PrivacyURL            string             `yaml:"privacy_url,omitempty" json:"privacy_url,omitempty"`
 	Copyright             string             `yaml:"copyright,omitempty" json:"copyright,omitempty"`
 	CopyrightURL          string             `yaml:"copyright_url,omitempty" json:"copyright_url,omitempty"`
 	Author                string             `yaml:"author,omitempty" json:"author,omitempty"`
@@ -264,6 +265,7 @@ type Winget struct {
 	LicenseURL            string             `yaml:"license_url,omitempty" json:"license_url,omitempty"`
 	ReleaseNotes          string             `yaml:"release_notes,omitempty" json:"release_notes,omitempty"`
 	ReleaseNotesURL       string             `yaml:"release_notes_url,omitempty" json:"release_notes_url,omitempty"`
+	InstallationNotes     string             `yaml:"installation_notes,omitempty" json:"installation_notes,omitempty"`
 	Tags                  []string           `yaml:"tags,omitempty" json:"tags,omitempty"`
 	Dependencies          []WingetDependency `yaml:"dependencies,omitempty" json:"dependencies,omitempty"`
 }
@@ -306,7 +308,8 @@ type Ko struct {
 	Tags                []string          `yaml:"tags,omitempty" json:"tags,omitempty"`
 	CreationTime        string            `yaml:"creation_time,omitempty" json:"creation_time,omitempty"`
 	KoDataCreationTime  string            `yaml:"ko_data_creation_time,omitempty" json:"ko_data_creation_time,omitempty"`
-	SBOM                string            `yaml:"sbom,omitempty" json:"sbom,omitempty"`
+	SBOM                string            `yaml:"sbom,omitempty" json:"sbom,omitempty" jsonschema:"enum=spdx,enum=none,default=spdx"`
+	SBOMDirectory       string            `yaml:"sbom_directory,omitempty" json:"sbom_directory,omitempty"`
 	Ldflags             []string          `yaml:"ldflags,omitempty" json:"ldflags,omitempty"`
 	Flags               []string          `yaml:"flags,omitempty" json:"flags,omitempty"`
 	Env                 []string          `yaml:"env,omitempty" json:"env,omitempty"`
@@ -401,6 +404,15 @@ type Build struct {
 
 	BuildDetails          `yaml:",inline" json:",inline"`
 	BuildDetailsOverrides []BuildDetailsOverride `yaml:"overrides,omitempty" json:"overrides,omitempty"`
+
+	// This is used internally only.
+	InternalDefaults BuildInternalDefaults `yaml:"-" json:"-"`
+}
+
+type BuildInternalDefaults struct {
+	// whether the pipe set the current binary.
+	// this is true when the user didn't set a binary name.
+	Binary bool
 }
 
 type BuildDetailsOverride struct {
@@ -417,7 +429,7 @@ type BuildDetailsOverride struct {
 }
 
 type BuildDetails struct {
-	Buildmode string      `yaml:"buildmode,omitempty" json:"buildmode,omitempty" jsonschema:"enum=c-archive,enum=c-shared,enum=pie,enum=,default="`
+	Buildmode string      `yaml:"buildmode,omitempty" json:"buildmode,omitempty" jsonschema:"enum=c-archive,enum=c-shared,enum=pie,enum=wheel,enum=sdist,enum=,default="`
 	Ldflags   StringArray `yaml:"ldflags,omitempty" json:"ldflags,omitempty"`
 	Tags      FlagArray   `yaml:"tags,omitempty" json:"tags,omitempty"`
 	Flags     FlagArray   `yaml:"flags,omitempty" json:"flags,omitempty"`
