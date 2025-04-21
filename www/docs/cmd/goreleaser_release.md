@@ -30,7 +30,7 @@ goreleaser release [flags]
       --skip strings                 Skip the given options (valid options are: after, announce, archive, aur, aur-source, before, before-publish, chocolatey, cloudsmith, dmg, docker, dockerhub, fury, homebrew, ko, msi, nfpm, nix, notarize, npm, publish, report-sizes, sbom, scoop, sign, snapcraft, validate, winget)
       --snapshot                     Generate an unversioned snapshot release, skipping all validations and without publishing any artifacts (implies --skip=announce,publish,validate)
       --split                        Split the build so it can be merged and published later (implies --prepare) (Pro only)
-      --timeout duration             Timeout to the entire release process (default 30m0s)
+      --timeout duration             Timeout to the entire release process (default 1h0m0s)
 ```
 
 ## Options inherited from parent commands
