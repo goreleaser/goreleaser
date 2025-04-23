@@ -110,7 +110,7 @@ jobs:
             ./dist/*.rpm
             ./dist/*.apk
           key: ${{ github.ref }}
-      - uses: sigstore/cosign-installer@v3.8.1
+      - uses: sigstore/cosign-installer@v3.8.2
       - uses: anchore/sbom-action/download-syft@v0.18.0
       - uses: crazy-max/ghaction-upx@v3
         with:
