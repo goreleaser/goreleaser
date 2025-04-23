@@ -6,7 +6,7 @@
 
 <!-- md:pro -->
 
-The `npm` section configures how GoReleaser publishes your packages to NPM
+The `npms` section configures how GoReleaser publishes your packages to NPM
 registries.
 
 ## How it works
@@ -28,7 +28,7 @@ For each NPM configuration, GoReleaser will:
 
 ```yaml
 # .goreleaser.yaml
-npm:
+npms:
   - # ID of the resulting image.
     #
     # Default: the project name.
