@@ -181,8 +181,7 @@ func (b *Builder) Build(ctx *context.Context, build config.Build, options api.Op
 }
 
 func wheel(proj pyproject.PyProject, build config.Build, options api.Options) *artifact.Artifact {
-	pname := strings.ReplaceAll(proj.Project.Name, "-", "_")
-	name := fmt.Sprintf("%s-%s-py3-none-any.whl", pname, proj.Project.Version)
+	name := fmt.Sprintf("%s-%s-py3-none-any.whl", proj.Name(), proj.Project.Version)
 	return &artifact.Artifact{
 		Type:   artifact.PyWheel,
 		Name:   name,
@@ -199,8 +198,7 @@ func wheel(proj pyproject.PyProject, build config.Build, options api.Options) *a
 }
 
 func sdist(proj pyproject.PyProject, build config.Build, options api.Options) *artifact.Artifact {
-	pname := strings.ReplaceAll(proj.Project.Name, "-", "_")
-	name := fmt.Sprintf("%s-%s.tar.gz", pname, proj.Project.Version)
+	name := fmt.Sprintf("%s-%s.tar.gz", proj.Name(), proj.Project.Version)
 	return &artifact.Artifact{
 		Type:   artifact.PySdist,
 		Name:   name,
