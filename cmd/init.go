@@ -165,10 +165,9 @@ func langDetect() string {
 		if pyproj.IsPoetry() {
 			log.Info("project contains a " + code(file) + " with " + code("[tool.poetry]") + " in it, using default " + code("poetry") + " configuration")
 			return "poetry"
-		} else {
-			log.Info("project contains a " + code(file) + " file, using default " + code("uv") + " configuration")
-			return "uv"
 		}
+		log.Info("project contains a " + code(file) + " file, using default " + code("uv") + " configuration")
+		return "uv"
 	}
 
 	return "go"
