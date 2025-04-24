@@ -9,6 +9,7 @@ import (
 
 	"github.com/caarlos0/log"
 	"github.com/goreleaser/goreleaser/v2/internal/packagejson"
+	"github.com/goreleaser/goreleaser/v2/internal/pyproject"
 	"github.com/goreleaser/goreleaser/v2/internal/static"
 	"github.com/spf13/cobra"
 )
@@ -67,6 +68,8 @@ func newInitCmd() *initCmd {
 			case "uv":
 				example = static.UVExampleConfig
 				gitignoreLines = append(gitignoreLines, "build/")
+			case "poetry":
+				example = static.PoetryExampleConfig
 			default:
 				return fmt.Errorf("invalid language: %s", root.lang)
 			}
@@ -143,7 +146,6 @@ func langDetect() string {
 		"rust": "Cargo.toml",
 		"bun":  "bun.lockb",
 		"deno": "deno.json",
-		"uv":   "pyproject.toml",
 	} {
 		if _, err := os.Stat(file); err == nil {
 			log.Info("project contains a " + code(file) + " file, using default " + code(lang) + " configuration")
@@ -155,6 +157,18 @@ func langDetect() string {
 	if pkg, err := packagejson.Open(file); err == nil && pkg.IsBun() {
 		log.Info("project contains a " + code(file) + " with " + code("@types/bun") + " in its " + code("devDependencies") + ", using default " + code("bun") + " configuration")
 		return "bun"
+	}
+
+	file = "pyproject.toml"
+	pyproj, err := pyproject.Open(file)
+	if err == nil {
+		if pyproj.IsPoetry() {
+			log.Info("project contains a " + code(file) + " with " + code("[tool.poetry]") + " in it, using default " + code("poetry") + " configuration")
+			return "poetry"
+		} else {
+			log.Info("project contains a " + code(file) + " file, using default " + code("uv") + " configuration")
+			return "uv"
+		}
 	}
 
 	return "go"

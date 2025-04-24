@@ -36,6 +36,7 @@ func TestDetectLanguage(t *testing.T) {
 		"bun":  {"bun.lockb", static.BunExampleConfig},
 		"rust": {"Cargo.toml", static.RustExampleConfig},
 		"deno": {"deno.json", static.DenoExampleConfig},
+		"uv":   {"pyproject.toml", static.UVExampleConfig},
 		"go":   {"go.mod", static.GoExampleConfig}, // the file isn't actually used though, go is the default
 	} {
 		t.Run(expect.File, func(t *testing.T) {
@@ -74,6 +75,29 @@ func TestDetectLanguagePackageJSON(t *testing.T) {
 	bts, err := os.ReadFile(config)
 	require.NoError(t, err)
 	require.Equal(t, string(static.BunExampleConfig), string(bts))
+}
+
+func TestDetectLanguagePyprojectTOML(t *testing.T) {
+	folder := setupInitTest(t)
+	require.NoError(t, os.WriteFile(
+		filepath.Join(folder, "pyproject.toml"),
+		[]byte(`
+[tool.poetry]
+packages = [{include = "proj", from = "src"}]
+`),
+		0o644,
+	))
+
+	cmd := newInitCmd().cmd
+	config := "poetryreleaser.yaml"
+	cmd.SetArgs([]string{"-f", config})
+	require.NoError(t, cmd.Execute())
+	require.FileExists(t, filepath.Join(folder, config))
+	require.FileExists(t, filepath.Join(folder, ".gitignore"))
+
+	bts, err := os.ReadFile(config)
+	require.NoError(t, err)
+	require.Equal(t, string(static.PoetryExampleConfig), string(bts))
 }
 
 func TestInitConfigAlreadyExist(t *testing.T) {

@@ -16,7 +16,7 @@ builds:
 ```
 
 The `.whl` and `.tar.gz` files can then be signed, checksummed, used inside
-Docker images, checksummed, and more.
+Docker images, and more.
 
 ## Options
 
