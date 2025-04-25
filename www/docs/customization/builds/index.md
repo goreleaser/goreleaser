@@ -18,7 +18,7 @@ Here's the list:
 - :simple-bun: [Bun](./bun.md)[^v2.6]
 - :simple-deno: [Deno](./deno.md)[^v2.6]
 - :simple-uv: [UV](./uv.md)[^v2.9]
-- :simple-poetry: [Poetry](./poetry.md)[^2.9]
+- :simple-poetry: [Poetry](./poetry.md)[^v2.9]
 - :simple-python: [Python/Pip](./python.md)[^soon]
 - :material-asterisk: [Import from other build systems](../prebuilt.md)
 
