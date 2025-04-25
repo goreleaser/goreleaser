@@ -69,7 +69,7 @@ jobs:
         run: |
           rustup default stable
           cargo binstall cargo-zigbuild
-      - uses: astral-sh/setup-uv@v5
+      - uses: astral-sh/setup-uv@v6
       - uses: sigstore/cosign-installer@v3.8.2
       - uses: anchore/sbom-action/download-syft@v0.19.0
       - run: task setup
