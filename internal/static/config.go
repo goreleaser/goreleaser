@@ -32,3 +32,8 @@ var RustExampleConfig []byte
 //
 //go:embed config.uv.yaml
 var UVExampleConfig []byte
+
+// PoetryExampleConfig is the config used within goreleaser init --lang poetry.
+//
+//go:embed config.poetry.yaml
+var PoetryExampleConfig []byte

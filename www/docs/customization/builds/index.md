@@ -17,9 +17,9 @@ Here's the list:
 - :simple-zig: [Zig](./zig.md)[^v2.5]
 - :simple-bun: [Bun](./bun.md)[^v2.6]
 - :simple-deno: [Deno](./deno.md)[^v2.6]
+- :simple-uv: [UV](./uv.md)[^v2.9]
+- :simple-poetry: [Poetry](./poetry.md)[^2.9]
 - :simple-python: [Python/Pip](./python.md)[^soon]
-- :simple-uv: [UV](./uv.md)[^soon]
-- :simple-poetry: [Poetry](./poetry.md)[^soon]
 - :material-asterisk: [Import from other build systems](../prebuilt.md)
 
 </div>
@@ -27,5 +27,7 @@ Here's the list:
 [^v2.5]: Added in v2.5.
 
 [^v2.6]: Added in v2.6.
+
+[^v2.9]: Added in v2.9 (unreleased).
 
 [^soon]: Coming in a future version.

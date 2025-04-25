@@ -1,0 +1,2 @@
+ [tool.poetry]
+packages = [{include = "proj", from = "src"}]

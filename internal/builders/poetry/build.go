@@ -1,5 +1,5 @@
-// Package uv provides Python builds using uv.
-package uv
+// Package poetry provides Python builds using Poetry.
+package poetry
 
 import (
 	"errors"
@@ -28,15 +28,15 @@ var (
 	_ api.Builder          = &Builder{}
 	_ api.DependingBuilder = &Builder{}
 
-	errSetBinary = errors.New("uv: binary name is set by uv itself")
-	errTargets   = errors.New("uv: only target supported is 'none-any'")
+	errSetBinary = errors.New("poetry: binary name is set by poetry itself")
+	errTargets   = errors.New("poetry: only target supported is 'none-any'")
 )
 
 const defaultTarget = "none-any"
 
 //nolint:gochecknoinits
 func init() {
-	api.Register("uv", Default)
+	api.Register("poetry", Default)
 }
 
 // Builder is golang builder.
@@ -44,18 +44,18 @@ type Builder struct{}
 
 // Dependencies implements build.DependingBuilder.
 func (b *Builder) Dependencies() []string {
-	return []string{"uv"}
+	return []string{"poetry"}
 }
 
 // Parse implements build.Builder.
 func (b *Builder) Parse(target string) (api.Target, error) {
 	if target != defaultTarget {
-		log.Warn("uv only accepts the target 'none-any'")
+		log.Warn("poetry only accepts the target 'none-any'")
 	}
 	return Target{}, nil
 }
 
-// Target is the UV build target.
+// Target is the POETRY build target.
 type Target struct{}
 
 // Fields implements build.Target.
@@ -76,7 +76,7 @@ var once sync.Once
 // WithDefaults implements build.Builder.
 func (b *Builder) WithDefaults(build config.Build) (config.Build, error) {
 	once.Do(func() {
-		log.Warn("you are using the experimental UV builder")
+		log.Warn("you are using the experimental POETRY builder")
 	})
 
 	if len(build.Targets) == 0 {
@@ -84,7 +84,7 @@ func (b *Builder) WithDefaults(build config.Build) (config.Build, error) {
 	}
 
 	if build.Tool == "" {
-		build.Tool = "uv"
+		build.Tool = "poetry"
 	}
 
 	if build.Command == "" {
@@ -96,7 +96,7 @@ func (b *Builder) WithDefaults(build config.Build) (config.Build, error) {
 	}
 
 	if build.Main != "" {
-		return build, errors.New("main is not used for uv")
+		return build, errors.New("main is not used for poetry")
 	}
 
 	if !build.InternalDefaults.Binary && build.Binary != "" {
@@ -118,7 +118,7 @@ func (b *Builder) WithDefaults(build config.Build) (config.Build, error) {
 func (b *Builder) Build(ctx *context.Context, build config.Build, options api.Options) error {
 	proj, err := pyproject.Open(filepath.Join(build.Dir, "pyproject.toml"))
 	if err != nil {
-		return fmt.Errorf("uv: could not open pyproject.toml: %w", err)
+		return fmt.Errorf("poetry: could not open pyproject.toml: %w", err)
 	}
 
 	// options.Path will be dist/projectname-all-all/projectname.
@@ -127,13 +127,13 @@ func (b *Builder) Build(ctx *context.Context, build config.Build, options api.Op
 	var art *artifact.Artifact
 	switch build.Buildmode {
 	case "wheel", "":
-		buildFlags = []string{"--wheel"}
+		buildFlags = []string{"--format", "wheel"}
 		art = wheel(proj, build, options)
 	case "sdist":
-		buildFlags = []string{"--sdist"}
+		buildFlags = []string{"--format", "sdist"}
 		art = sdist(proj, build, options)
 	default:
-		return fmt.Errorf("uv: invalid buildmode %q", build.Buildmode)
+		return fmt.Errorf("poetry: invalid buildmode %q", build.Buildmode)
 	}
 
 	env := []string{}
@@ -142,7 +142,7 @@ func (b *Builder) Build(ctx *context.Context, build config.Build, options api.Op
 	tpl := tmpl.New(ctx).
 		WithEnvS(env)
 
-	uvbin, err := tpl.Apply(build.Tool)
+	poetrybin, err := tpl.Apply(build.Tool)
 	if err != nil {
 		return err
 	}
@@ -150,9 +150,10 @@ func (b *Builder) Build(ctx *context.Context, build config.Build, options api.Op
 	root := filepath.Dir(options.Path)
 
 	command := []string{
-		uvbin,
+		poetrybin,
 		build.Command,
-		"--out-dir", root,
+		"--output", root,
+		"--no-ansi",
 	}
 	command = append(command, buildFlags...)
 
@@ -192,7 +193,7 @@ func wheel(proj pyproject.PyProject, build config.Build, options api.Options) *a
 		Extra: map[string]any{
 			artifact.ExtraExt:     ".whl",
 			artifact.ExtraID:      build.ID,
-			artifact.ExtraBuilder: "uv",
+			artifact.ExtraBuilder: "poetry",
 		},
 	}
 }
@@ -209,7 +210,7 @@ func sdist(proj pyproject.PyProject, build config.Build, options api.Options) *a
 		Extra: map[string]any{
 			artifact.ExtraExt:     ".tar.gz",
 			artifact.ExtraID:      build.ID,
-			artifact.ExtraBuilder: "uv",
+			artifact.ExtraBuilder: "poetry",
 		},
 	}
 }
