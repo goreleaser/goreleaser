@@ -65,7 +65,7 @@ func (g *Goreleaser) TestEnv() *dagger.Container {
 		"docker",
 		"syft",
 		"uv",
-		"poetry",
+		// "poetry", version too old
 		// "cargo", not available
 		"zig",
 		"deno",
