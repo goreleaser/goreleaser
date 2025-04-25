@@ -71,6 +71,8 @@ jobs:
           cargo binstall cargo-zigbuild
       - uses: astral-sh/setup-uv@v5
       - uses: snok/install-poetry@v1
+      - if: matrix.os == 'windows-latest'
+        run: 'echo "C:\Users\runneradmin\.local\bin" | Out-File -FilePath $env:GITHUB_PATH -Encoding utf8 -Append'
       - uses: sigstore/cosign-installer@v3.8.2
       - uses: anchore/sbom-action/download-syft@v0.18.0
       - run: task setup
