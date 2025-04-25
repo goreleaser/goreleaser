@@ -71,7 +71,7 @@ jobs:
           cargo binstall cargo-zigbuild
       - uses: astral-sh/setup-uv@v5
       - uses: sigstore/cosign-installer@v3.8.2
-      - uses: anchore/sbom-action/download-syft@v0.18.0
+      - uses: anchore/sbom-action/download-syft@v0.19.0
       - run: task setup
       - run: task build
       - run: task test
