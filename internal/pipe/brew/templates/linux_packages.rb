@@ -4,15 +4,15 @@
   if Hardware::CPU.intel? and Hardware::CPU.is_64_bit?
   {{- else if eq $element.Arch "arm64" }}
   if Hardware::CPU.arm? and Hardware::CPU.is_64_bit?
-  {{- else }}
+  {{- else if eq $element.Arch "arm" }}
   if Hardware::CPU.arm? and !Hardware::CPU.is_64_bit?
   {{- end }}
     url "{{ $element.DownloadURL }}"
     {{- if .DownloadStrategy }}, using: {{ .DownloadStrategy }}{{- end }}
     {{- if .Headers }},
-    headers: [{{ printf "\n" }}
-      {{- join .Headers | indent 6 }}
-    ]
+      headers: [{{ printf "\n" }}
+        {{- join .Headers | indent 8 }}
+      ]
     {{- end }}
     sha256 "{{ $element.SHA256 }}"
     def install
