@@ -325,6 +325,19 @@ func (t *Template) Apply(s string) (string, error) {
 			"map":            makemap,
 			"indexOrDefault": indexOrDefault,
 			"urlPathEscape":  url.PathEscape,
+			"blake2b":        checksum("blake2b"),
+			"blake2s":        checksum("blake2s"),
+			"crc32":          checksum("crc32"),
+			"md5":            checksum("md5"),
+			"sha224":         checksum("sha224"),
+			"sha384":         checksum("sha384"),
+			"sha256":         checksum("sha256"),
+			"sha1":           checksum("sha1"),
+			"sha512":         checksum("sha512"),
+			"sha3_224":       checksum("sha3-224"),
+			"sha3_384":       checksum("sha3-384"),
+			"sha3_256":       checksum("sha3-256"),
+			"sha3_512":       checksum("sha3-512"),
 		}).
 		Parse(s)
 	if err != nil {
@@ -485,4 +498,14 @@ func indexOrDefault(m map[string]string, name, value string) string {
 		return s
 	}
 	return value
+}
+
+func checksum(algorithm string) func(string) (string, error) {
+	return func(file string) (string, error) {
+		artifact := artifact.Artifact{
+			Path: file,
+		}
+
+		return artifact.Checksum(algorithm)
+	}
 }

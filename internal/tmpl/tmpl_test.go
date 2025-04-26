@@ -341,6 +341,92 @@ func TestFuncMap(t *testing.T) {
 	}
 }
 
+func TestChecksum(t *testing.T) {
+	folder := t.TempDir()
+	file := filepath.Join(folder, "subject")
+	require.NoError(t, os.WriteFile(file, []byte("lorem ipsum"), 0o644))
+
+	artifact := artifact.Artifact{
+		Path: file,
+	}
+
+	for _, tc := range []struct {
+		Template string
+		Name     string
+		Expected string
+	}{
+		{
+			Template: `{{ blake2b .ArtifactPath }}`,
+			Name:     "blake2b",
+			Expected: "ca0dbbe27fca7e5d97b612a76b66d9d42fd67ece4265a50c09ccaefcdc03d9d5a87fa1fddc926ae10c6667342c69df5c33117cf636fca82ac1377c2b4e23e2bc",
+		},
+		{
+			Template: `{{ blake2s .ArtifactPath }}`,
+			Name:     "blake2s",
+			Expected: "7cd93f6d174040f3618982922701c54ec5b02dd28902b5160628b1d5516a62c9",
+		},
+		{
+			Template: `{{ crc32 .ArtifactPath }}`,
+			Name:     "crc32",
+			Expected: "72d7748e",
+		},
+		{
+			Template: `{{ md5 .ArtifactPath }}`,
+			Name:     "md5",
+			Expected: "80a751fde577028640c419000e33eba6",
+		},
+		{
+			Template: `{{ sha1 .ArtifactPath }}`,
+			Name:     "sha1",
+			Expected: "bfb7759a67daeb65410490b4d98bb9da7d1ea2ce",
+		},
+		{
+			Template: `{{ sha224 .ArtifactPath }}`,
+			Name:     "sha224",
+			Expected: "e191edf06005712583518ced92cc2ac2fac8d6e4623b021a50736a91",
+		},
+		{
+			Template: `{{ sha256 .ArtifactPath }}`,
+			Name:     "sha256",
+			Expected: "5e2bf57d3f40c4b6df69daf1936cb766f832374b4fc0259a7cbff06e2f70f269",
+		},
+		{
+			Template: `{{ sha3_224 .ArtifactPath }}`,
+			Name:     "sha3-224",
+			Expected: "6ef5918377a5309c4b8b41a4a1d9c680cc3259e7a7619f47ca345714",
+		},
+		{
+			Template: `{{ sha3_256 .ArtifactPath }}`,
+			Name:     "sha3-256",
+			Expected: "784335e2ae23886cb5fa1261fc3dfbaee12623241791c5e4d78b0da619a78051",
+		},
+		{
+			Template: `{{ sha3_384 .ArtifactPath }}`,
+			Name:     "sha3-384",
+			Expected: "ba6ea7b48af10d7025c4b0c6a105f410278705020d921377c729fe41e88cd9fc2b851002b4cc5a42ba5c34ca8a07b36d",
+		},
+		{
+			Template: `{{ sha3_512 .ArtifactPath }}`,
+			Name:     "sha3-512",
+			Expected: "bce76c1eacfaf74912144f26e0fdadba5f7b6893fb046e21d280ffeb3f1f1bf14213862e292e3be64be8c6e5c8216b839c658f3893eae700e4a92f5625ec25c9",
+		},
+		{
+			Template: `{{ sha384 .ArtifactPath }}`,
+			Name:     "sha384",
+			Expected: "597493a6cf1289757524e54dfd6f68b332c7214a716a3358911ef5c09907adc8a654a18c1d721e183b0025f996f6e246",
+		},
+		{
+			Template: `{{ sha512 .ArtifactPath }}`,
+			Name:     "sha512",
+			Expected: "f80eebd9aabb1a15fb869ed568d858a5c0dca3d5da07a410e1bd988763918d973e344814625f7c844695b2de36ffd27af290d0e34362c51dee5947d58d40527a",
+		},
+	} {
+		out, err := New(testctx.New()).WithArtifact(&artifact).Apply(tc.Template)
+		require.NoError(t, err)
+		require.Equal(t, tc.Expected, out)
+	}
+}
+
 func TestApplyAll(t *testing.T) {
 	tpl := New(testctx.New()).WithEnvS([]string{
 		"FOO=bar",
