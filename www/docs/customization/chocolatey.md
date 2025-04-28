@@ -12,7 +12,8 @@ Available options:
 ```yaml title=".goreleaser.yaml"
 chocolateys:
   - # Your app's package name.
-    # The value may not contain spaces or character that are not valid for a URL.
+    # The value may not contain spaces or character that are not valid for a
+    # URL.
     # If you want a good separator for words, use '-', not  '.'.
     #
     # Default: the project name.
@@ -25,8 +26,9 @@ chocolateys:
       - foo
       - bar
 
-    # Your chocolatey package's source URL.
-    # It point at the location of where someone can find the packaging files for the package.
+    # Your Chocolatey package's source URL.
+    # It points at the location of where someone can find the packaging files
+    # for the package.
     package_source_url: https://github.com/foo/chocolatey-package
 
     # Your app's owner.
@@ -61,10 +63,10 @@ chocolateys:
     #
     # Default: depends on the git remote.
     # Templates: allowed.
-    url_template: "https://github.com/foo/bar/releases/download/{{ .Tag }}/{{ .ArtifactName }}"
+    url_template: "https://example.org/{{ .Tag }}/{{ .ArtifactName }}"
 
     # App's icon.
-    icon_url: "https://rawcdn.githack.com/foo/bar/efbdc760-395b-43f1-bf69-ba25c374d473/icon.png"
+    icon_url: "https://example.org/icon.png"
 
     # Your app's copyright details.
     #
@@ -94,7 +96,7 @@ chocolateys:
     # Your app's summary:
     summary: Software to create fast and easy drum rolls.
 
-    # This the description of your chocolatey package.
+    # This the description of your Chocolatey package.
     # Supports markdown.
     description: |
       {{ .ProjectName }} installer package.
@@ -113,7 +115,7 @@ chocolateys:
       - id: nfpm
         version: 2.20.0
 
-    # The api key that should be used to push to the chocolatey repository.
+    # The API key that should be used to push to the Chocolatey repository.
     #
     # WARNING: do not expose your api key in the configuration file!
     api_key: "{{ .Env.CHOCOLATEY_API_KEY }}"
@@ -121,10 +123,10 @@ chocolateys:
     # The source repository that will push the package to.
     source_repo: "https://push.chocolatey.org/"
 
-    # Setting this will prevent goreleaser to actually try to push the package
-    # to chocolatey repository, leaving the responsibility of publishing it to
+    # Setting this will prevent GoReleaser to actually try to push the package
+    # to Chocolatey repository, leaving the responsibility of publishing it to
     # the user.
-    skip_publish: false
+    skip_publish: true
 
     # GOAMD64 to specify which amd64 version to use if there are multiple
     # versions from the build section.
@@ -132,6 +134,11 @@ chocolateys:
     # Default: 'v1'.
     goamd64: v1
 ```
+
+!!! warning "Beware when testing this"
+
+    Chocolatey packages are manually reviewed, so please, be mindful to not
+    publish "testing" packages that you do not intent on having published.
 
 <!-- md:templates -->
 
