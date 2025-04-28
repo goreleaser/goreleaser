@@ -12,6 +12,7 @@ on:
     paths:
       - "go.*"
       - "**/*.go"
+      - "**/*.golden"
       - "Taskfile.yml"
       - "Dockerfile"
       - ".github/workflows/*.yml"
