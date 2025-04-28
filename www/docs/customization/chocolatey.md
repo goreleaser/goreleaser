@@ -138,7 +138,7 @@ chocolateys:
 !!! warning "Beware when testing this"
 
     Chocolatey packages are manually reviewed, so please, be mindful to not
-    publish "testing" packages that you do not intent on having published.
+    publish "testing" packages that you do not intend on having published.
 
 <!-- md:templates -->
 

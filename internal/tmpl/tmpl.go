@@ -325,6 +325,10 @@ func (t *Template) Apply(s string) (string, error) {
 			"map":            makemap,
 			"indexOrDefault": indexOrDefault,
 			"urlPathEscape":  url.PathEscape,
+			"md5":            checksum("md5"),
+			"sha1":           checksum("sha1"),
+			"sha256":         checksum("sha256"),
+			"sha512":         checksum("sha512"),
 		}).
 		Parse(s)
 	if err != nil {
@@ -333,6 +337,15 @@ func (t *Template) Apply(s string) (string, error) {
 
 	err = tmpl.Execute(&out, t.fields)
 	return out.String(), newTmplError(s, err)
+}
+
+func checksum(algo string) func(path string) (string, error) {
+	return func(path string) (string, error) {
+		file := artifact.Artifact{
+			Path: path,
+		}
+		return file.Checksum(algo)
+	}
 }
 
 // ApplyAll applies all the given strings against the Fields stored in the
