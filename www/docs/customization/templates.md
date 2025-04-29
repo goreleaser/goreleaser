@@ -161,6 +161,19 @@ On all fields, you have these available functions:
 | `incminor "v1.2.4"`               | increments the minor of the given version[^panic-if-not-semver]                                                           |
 | `incmajor "v1.2.4"`               | increments the major of the given version[^panic-if-not-semver]                                                           |
 | `urlPathEscape "foo/bar"`         | escapes URL paths. See [PathEscape](https://pkg.go.dev/net/url#PathEscape) (since v2.5)                                   |
+| `blake2b .ArtifactPath`           | `blake2b` checksum of the artifact. See [Blake2b](https://pkg.go.dev/golang.org/x/crypto/blake2b)                         |
+| `blake2s .ArtifactPath`           | `blake2s` checksum of the artifact. See [Blake2s](https://pkg.go.dev/golang.org/x/crypto/blake2s)                         |
+| `crc32 .ArtifactPath`             | `crc32` checksum of the artifact. See [CRC32](https://pkg.go.dev/hash/crc32)                                              |
+| `md5 .ArtifactPath`               | `md5` checksum of the artifact. See [MD5](https://pkg.go.dev/crypto/md5)                                                  |
+| `sha224 .ArtifactPath`            | `sha224` checksum of the artifact. See [SHA224](https://pkg.go.dev/crypto/sha256)                                         |
+| `sha384 .ArtifactPath`            | `sha384` checksum of the artifact. See [SHA384](https://pkg.go.dev/golang.org/x/crypto/sha3)                              |
+| `sha256 .ArtifactPath`            | `sha256` checksum of the artifact. See [SHA256](https://pkg.go.dev/crypto/sha256)                                         |
+| `sha1 .ArtifactPath`              | `sha1` checksum of the artifact. See [SHA1](https://pkg.go.dev/crypto/sha1)                                               |
+| `sha512 .ArtifactPath`            | `sha512` checksum of the artifact. See [SHA512](https://pkg.go.dev/crypto/sha512)                                         |
+| `sha3_224 .ArtifactPath`          | `sha3_224` checksum of the artifact. See [SHA3-224](https://pkg.go.dev/golang.org/x/crypto/sha3)                          |
+| `sha3_384 .ArtifactPath`          | `sha3_384` checksum of the artifact. See [SHA3-384](https://pkg.go.dev/golang.org/x/crypto/sha3)                          |
+| `sha3_256 .ArtifactPath`          | `sha3_256` checksum of the artifact. See [SHA3-256](https://pkg.go.dev/golang.org/x/crypto/sha3)                          |
+| `sha3_512 .ArtifactPath`          | `sha3_512` checksum of the artifact. See [SHA3-512](https://pkg.go.dev/golang.org/x/crypto/sha3)                          |
 
 ## Functions (Pro)
 
