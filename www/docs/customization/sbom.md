@@ -42,7 +42,7 @@ sboms:
     #   Otherwise:       ["{{ .ArtifactName }}.sbom.json"]
     # Templates: allowed.
     documents:
-      - "${artifact}.spdx.sbom.json"
+      - "${artifact}.spdx.json"
 
     # Path to the SBOM generator command
     #
