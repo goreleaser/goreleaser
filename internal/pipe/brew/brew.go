@@ -28,6 +28,16 @@ import (
 
 const brewConfigExtra = "BrewConfig"
 
+var formats = []string{
+	"zip",
+	"tar.gz",
+	"tar.xz",
+	"tar.zst",
+	"tgz",
+	"txz",
+	"tzst",
+}
+
 // ErrMultipleArchivesSameOS happens when the config yields multiple archives
 // for linux or windows.
 var ErrMultipleArchivesSameOS = errors.New("one tap can handle only one archive of an OS/Arch combination. Consider using ids in the brew section")
@@ -40,7 +50,7 @@ type ErrNoArchivesFound struct {
 }
 
 func (e ErrNoArchivesFound) Error() string {
-	return fmt.Sprintf("no linux/macos archives found matching goos=[darwin linux] goarch=[amd64 arm64 arm] goamd64=%s goarm=%s ids=%v", e.goamd64, e.goarm, e.ids)
+	return fmt.Sprintf("no linux/macos archives found matching goos=[darwin linux] goarch=[amd64 arm64 arm] goamd64=%s goarm=%s ids=%v formats=%v", e.goamd64, e.goarm, e.ids, formats)
 }
 
 // Pipe for brew deployment.
@@ -215,7 +225,7 @@ func doRun(ctx *context.Context, brew config.Homebrew, cl client.ReleaseURLTempl
 		),
 		artifact.Or(
 			artifact.And(
-				artifact.ByFormats("zip", "tar.gz", "tar.xz"),
+				artifact.ByFormats(formats...),
 				artifact.ByType(artifact.UploadableArchive),
 			),
 			artifact.ByType(artifact.UploadableBinary),

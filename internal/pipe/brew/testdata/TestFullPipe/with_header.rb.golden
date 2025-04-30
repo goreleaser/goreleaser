@@ -15,7 +15,7 @@ class WithHeader < Formula
 
   on_macos do
     if Hardware::CPU.intel?
-      url "https://dummyhost/download/v1.0.1/bin.tar.gz",
+      url "https://dummyhost/download/v1.0.1/bin.tgz",
         headers: [
           "Authorization: bearer #{ENV["HOMEBREW_GITHUB_API_TOKEN"]}"
         ]
@@ -26,7 +26,7 @@ class WithHeader < Formula
       end
     end
     if Hardware::CPU.arm?
-      url "https://dummyhost/download/v1.0.1/bin.tar.gz",
+      url "https://dummyhost/download/v1.0.1/bin.txz",
         headers: [
           "Authorization: bearer #{ENV["HOMEBREW_GITHUB_API_TOKEN"]}"
         ]
@@ -40,7 +40,7 @@ class WithHeader < Formula
 
   on_linux do
     if Hardware::CPU.intel? and Hardware::CPU.is_64_bit?
-      url "https://dummyhost/download/v1.0.1/bin.tar.gz",
+      url "https://dummyhost/download/v1.0.1/bin.tar.zst",
         headers: [
           "Authorization: bearer #{ENV["HOMEBREW_GITHUB_API_TOKEN"]}"
         ]

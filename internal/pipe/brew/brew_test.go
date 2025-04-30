@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"strings"
 	"testing"
 
 	"github.com/goreleaser/goreleaser/v2/internal/artifact"
@@ -354,7 +355,7 @@ func TestFullPipe(t *testing.T) {
 			)
 			tt.prepare(ctx)
 			ctx.Artifacts.Add(&artifact.Artifact{
-				Name:    "bar_bin.tar.gz",
+				Name:    "bar_bin.tzst",
 				Path:    "doesnt matter",
 				Goos:    "darwin",
 				Goarch:  "amd64",
@@ -362,59 +363,64 @@ func TestFullPipe(t *testing.T) {
 				Type:    artifact.UploadableArchive,
 				Extra: map[string]any{
 					artifact.ExtraID:       "bar",
-					artifact.ExtraFormat:   "tar.gz",
+					artifact.ExtraFormat:   "tzst",
 					artifact.ExtraBinaries: []string{"bar"},
 				},
 			})
-			path := filepath.Join(folder, "bin.tar.gz")
 			ctx.Artifacts.Add(&artifact.Artifact{
-				Name:    "bin.tar.gz",
-				Path:    path,
+				Name:    "bin.tgz",
+				Path:    filepath.Join(folder, "bin.tgz"),
 				Goos:    "darwin",
 				Goarch:  "amd64",
 				Goamd64: "v1",
 				Type:    artifact.UploadableArchive,
 				Extra: map[string]any{
 					artifact.ExtraID:       "foo",
-					artifact.ExtraFormat:   "tar.gz",
+					artifact.ExtraFormat:   "tgz",
 					artifact.ExtraBinaries: []string{"foo"},
 				},
 			})
 			ctx.Artifacts.Add(&artifact.Artifact{
-				Name:   "bin.tar.gz",
-				Path:   path,
+				Name:   "bin.txz",
+				Path:   filepath.Join(folder, "bin.txz"),
 				Goos:   "darwin",
 				Goarch: "arm64",
 				Type:   artifact.UploadableArchive,
 				Extra: map[string]any{
 					artifact.ExtraID:       "foo",
-					artifact.ExtraFormat:   "tar.gz",
+					artifact.ExtraFormat:   "txz",
 					artifact.ExtraBinaries: []string{"foo"},
 				},
 			})
 			ctx.Artifacts.Add(&artifact.Artifact{
-				Name:    "bin.tar.gz",
-				Path:    path,
+				Name:    "bin.tar.zst",
+				Path:    filepath.Join(folder, "bin.tar.zst"),
 				Goos:    "linux",
 				Goarch:  "amd64",
 				Goamd64: "v1",
 				Type:    artifact.UploadableArchive,
 				Extra: map[string]any{
 					artifact.ExtraID:       "foo",
-					artifact.ExtraFormat:   "tar.gz",
+					artifact.ExtraFormat:   "tar.zst",
 					artifact.ExtraBinaries: []string{"foo"},
 				},
 			})
 
-			f, err := os.Create(path)
-			require.NoError(t, err)
-			require.NoError(t, f.Close())
+			for _, a := range ctx.Artifacts.List() {
+				if !strings.HasPrefix(a.Path, folder) {
+					continue
+				}
+				f, err := os.Create(a.Path)
+				require.NoError(t, err)
+				require.NoError(t, f.Close())
+			}
+
 			client := client.NewMock()
 			distFile := filepath.Join(folder, "homebrew", name+".rb")
 
 			require.NoError(t, Pipe{}.Default(ctx))
 
-			err = runAll(ctx, client)
+			err := runAll(ctx, client)
 			if tt.expectedRunError != "" {
 				require.EqualError(t, err, tt.expectedRunError)
 				return
