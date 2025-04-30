@@ -628,6 +628,8 @@
 							"c-archive",
 							"c-shared",
 							"pie",
+							"wheel",
+							"sdist",
 							""
 						],
 						"default": ""
@@ -705,6 +707,8 @@
 							"c-archive",
 							"c-shared",
 							"pie",
+							"wheel",
+							"sdist",
 							""
 						],
 						"default": ""
@@ -4156,6 +4160,9 @@
 					"publisher_support_url": {
 						"type": "string"
 					},
+					"privacy_url": {
+						"type": "string"
+					},
 					"copyright": {
 						"type": "string"
 					},
@@ -4218,6 +4225,9 @@
 						"type": "string"
 					},
 					"release_notes_url": {
+						"type": "string"
+					},
+					"installation_notes": {
 						"type": "string"
 					},
 					"tags": {

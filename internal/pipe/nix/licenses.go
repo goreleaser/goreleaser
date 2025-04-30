@@ -214,6 +214,7 @@ var validLicenses = []string{
 	"radiance",
 	"ruby",
 	"sendmail",
+	"sfl",
 	"sgi-b-20",
 	"sgmlug",
 	"sleepycat",
