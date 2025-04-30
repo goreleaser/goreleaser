@@ -92,6 +92,7 @@ Here's a running list of some organizations using GoReleaser[^1]:
 1. [Shopify](https://shopify.engineering)
 1. [Sigstore](https://sigstore.dev)
 1. [Snyk](https://snyk.io)
+1. [Sourcegraph](https://sourcegraph.com/)
 1. [Splunk](http://dev.splunk.com)
 1. [StackExchange](https://stackexchange.com)
 1. [Sysdig](https://sysdig.com)
