@@ -80,6 +80,28 @@ You can see the instructions for each of them below.
     scoop install goreleaser-pro
     ```
 
+## Chocolatey
+
+=== "OSS"
+
+    ```bash
+    choco install goreleaser
+    ```
+
+## Winget
+
+=== "OSS"
+
+    ```bash
+    winget install goreleaser
+    ```
+
+=== "Pro"
+
+    ```bash
+    winget install goreleaser-pro
+    ```
+
 ## Apt Repository
 
 === "OSS"

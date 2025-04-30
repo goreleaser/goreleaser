@@ -46,7 +46,7 @@ winget:
 
     # Privacy URL.
     #
-    # <!-- md:inline_version v2.9-unreleased -->.
+    # <!-- md:inline_version v2.9 -->.
     # Templates: allowed.
     privacy_url: "https://carlosbecker.com/privacy"
 
@@ -160,7 +160,7 @@ winget:
 
     # Installation notes.
     #
-    # <!-- md:inline_version v2.9-unreleased -->.
+    # <!-- md:inline_version v2.9 -->.
     # Templates: allowed.
     installation_notes: "Information on how to install. Can also be a URL"
 

@@ -1,6 +1,6 @@
 # UV
 
-<!-- md:version v2.9-unreleased -->
+<!-- md:version v2.9 -->
 
 <!-- md:alpha -->
 
