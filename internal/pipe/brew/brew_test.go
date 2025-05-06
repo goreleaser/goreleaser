@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
-	"strings"
 	"testing"
 
 	"github.com/goreleaser/goreleaser/v2/internal/artifact"
@@ -355,19 +354,6 @@ func TestFullPipe(t *testing.T) {
 			)
 			tt.prepare(ctx)
 			ctx.Artifacts.Add(&artifact.Artifact{
-				Name:    "bar_bin.tzst",
-				Path:    "doesnt matter",
-				Goos:    "darwin",
-				Goarch:  "amd64",
-				Goamd64: "v1",
-				Type:    artifact.UploadableArchive,
-				Extra: map[string]any{
-					artifact.ExtraID:       "bar",
-					artifact.ExtraFormat:   "tzst",
-					artifact.ExtraBinaries: []string{"bar"},
-				},
-			})
-			ctx.Artifacts.Add(&artifact.Artifact{
 				Name:    "bin.tgz",
 				Path:    filepath.Join(folder, "bin.tgz"),
 				Goos:    "darwin",
@@ -405,15 +391,24 @@ func TestFullPipe(t *testing.T) {
 					artifact.ExtraBinaries: []string{"foo"},
 				},
 			})
-
 			for _, a := range ctx.Artifacts.List() {
-				if !strings.HasPrefix(a.Path, folder) {
-					continue
-				}
 				f, err := os.Create(a.Path)
 				require.NoError(t, err)
 				require.NoError(t, f.Close())
 			}
+			ctx.Artifacts.Add(&artifact.Artifact{
+				Name:    "bar_bin.tzst",
+				Path:    "doesnt matter",
+				Goos:    "darwin",
+				Goarch:  "amd64",
+				Goamd64: "v1",
+				Type:    artifact.UploadableArchive,
+				Extra: map[string]any{
+					artifact.ExtraID:       "bar",
+					artifact.ExtraFormat:   "tzst",
+					artifact.ExtraBinaries: []string{"bar"},
+				},
+			})
 
 			client := client.NewMock()
 			distFile := filepath.Join(folder, "homebrew", name+".rb")
