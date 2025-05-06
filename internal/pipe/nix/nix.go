@@ -219,7 +219,7 @@ func preparePkg(
 			artifact.ByGoarch("all"),
 		),
 		artifact.And(
-			artifact.ByFormats("zip", "tar.gz"),
+			artifact.Not(artifact.ByFormats("gz")),
 			artifact.ByType(artifact.UploadableArchive),
 		),
 		artifact.OnlyReplacingUnibins,
