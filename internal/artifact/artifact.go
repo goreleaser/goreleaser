@@ -599,6 +599,13 @@ func ByFormats(formats ...string) Filter {
 	return Or(filters...)
 }
 
+// Not negates the given filter.
+func Not(filter Filter) Filter {
+	return func(a *Artifact) bool {
+		return !filter(a)
+	}
+}
+
 // ByIDs filter artifacts by an `ID` extra field.
 func ByIDs(ids ...string) Filter {
 	filters := make([]Filter, 0, len(ids))

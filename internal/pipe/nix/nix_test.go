@@ -483,20 +483,20 @@ func TestRunPipe(t *testing.T) {
 			}
 
 			createFakeArtifact("unibin-replaces", "darwin", "all", "", "", "tar.gz", map[string]any{artifact.ExtraReplaces: true})
-			createFakeArtifact("unibin", "darwin", "all", "", "", "tar.gz", nil)
+			createFakeArtifact("unibin", "darwin", "all", "", "", "tgz", nil)
 			for _, goos := range []string{"linux", "darwin", "windows"} {
 				for _, goarch := range []string{"amd64", "arm64", "386", "arm"} {
 					if goos+goarch == "darwin386" {
 						continue
 					}
 					if goarch == "amd64" {
-						createFakeArtifact("partial", goos, goarch, "v1", "", "tar.gz", nil)
-						createFakeArtifact("foo", goos, goarch, "v1", "", "tar.gz", nil)
-						createFakeArtifact("unibin", goos, goarch, "v1", "", "tar.gz", nil)
+						createFakeArtifact("partial", goos, goarch, "v1", "", "tar.xz", nil)
+						createFakeArtifact("foo", goos, goarch, "v1", "", "txz", nil)
+						createFakeArtifact("unibin", goos, goarch, "v1", "", "tar.zst", nil)
 						if goos != "darwin" {
-							createFakeArtifact("unibin-replaces", goos, goarch, "v1", "", "tar.gz", nil)
+							createFakeArtifact("unibin-replaces", goos, goarch, "v1", "", "tzst", nil)
 						}
-						createFakeArtifact("wrapped-in-dir", goos, goarch, "v1", "", "tar.gz", map[string]any{artifact.ExtraWrappedIn: "./foo_" + goarch})
+						createFakeArtifact("wrapped-in-dir", goos, goarch, "v1", "", "tar", map[string]any{artifact.ExtraWrappedIn: "./foo_" + goarch})
 						createFakeArtifact("foo-zip", goos, goarch, "v1", "", "zip", nil)
 						continue
 					}
@@ -529,10 +529,17 @@ func TestRunPipe(t *testing.T) {
 			bpipe := NewBuild()
 			ppipe := Pipe{
 				fakeHasher{
+					"foo_linux_amd64v1.txz":     "sha1",
+					"foo_linux_amd64v1.tzst":    "sha1",
+					"foo_linux_amd64v1.tar.xz":  "sha1",
+					"foo_linux_amd64v1.tar":     "sha1",
 					"foo_linux_amd64v1.tar.gz":  "sha1",
 					"foo_linux_arm64.tar.gz":    "sha2",
-					"foo_darwin_amd64v1.tar.gz": "sha3",
+					"foo_darwin_amd64v1.txz":    "sha3",
+					"foo_darwin_amd64v1.tar":    "sha3",
+					"foo_darwin_amd64v1.tar.xz": "sha3",
 					"foo_darwin_arm64.tar.gz":   "sha4",
+					"foo_darwin_all.tgz":        "sha5",
 					"foo_darwin_all.tar.gz":     "sha5",
 					"foo_linux_arm6.tar.gz":     "sha6",
 					"foo_linux_arm7.tar.gz":     "sha7",
