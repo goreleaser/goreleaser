@@ -18,7 +18,7 @@ let
 
   urlMap = {
     i686-linux = "https://dummyhost/download/v1.2.1/foo_linux_386.tar.gz";
-    x86_64-linux = "https://dummyhost/download/v1.2.1/foo_linux_amd64v1.tar.gz";
+    x86_64-linux = "https://dummyhost/download/v1.2.1/foo_linux_amd64v1.tzst";
     aarch64-linux = "https://dummyhost/download/v1.2.1/foo_linux_arm64.tar.gz";
     x86_64-darwin = "https://dummyhost/download/v1.2.1/foo_darwin_all.tar.gz";
     aarch64-darwin = "https://dummyhost/download/v1.2.1/foo_darwin_all.tar.gz";
