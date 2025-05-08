@@ -4,7 +4,7 @@ go 1.24
 
 require (
 	code.gitea.io/sdk/gitea v0.21.0
-	dario.cat/mergo v1.0.1
+	dario.cat/mergo v1.0.2
 	github.com/Masterminds/semver/v3 v3.3.1
 	github.com/agnivade/levenshtein v1.2.1
 	github.com/anchore/quill v0.5.1
