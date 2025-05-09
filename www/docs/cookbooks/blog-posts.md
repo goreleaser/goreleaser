@@ -19,6 +19,7 @@ Tutorials made by the community.
 - [Publishing dep/rpm packages with GoReleaser and Fury.io](https://netdevops.me/2021/building-and-publishing-debrpm-packages-with-goreleaser-and-gemfury/)
 - [Shipping Rust Binaries with GoReleaser](https://medium.com/@jondot/shipping-rust-binaries-with-goreleaser-d5aa42a46be0)
 - [Using GoReleaser includes feature](https://carlosbecker.com/posts/goreleaser-includes/)
-
+- [Packaging and Publishing Go Binaries on NPM Registry](https://thetnaingtun.dev/posts/go/packaging-and-publising-go-binaries-on-npm-registry/)
+  
 !!! tip
     Click on the "Edit" button to add your page here.
