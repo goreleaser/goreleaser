@@ -7,6 +7,8 @@ git:
   # What should be used to sort tags when gathering the current and previous
   # tags if there are more than one tag in the same commit.
   #
+  # See: https://git-scm.com/docs/git-tag#Documentation/git-tag.txt---sortltkeygt
+  #
   # Default: '-version:refname'.
   tag_sort: -version:creatordate
 
