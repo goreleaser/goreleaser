@@ -113,14 +113,6 @@ func (b *Builder) Build(ctx *context.Context, build config.Build, options api.Op
 	}
 
 	command := []string{deno, build.Command}
-	command = append(command, build.Flags...)
-	command = append(
-		command,
-		"--target", t.Target,
-		"--output", options.Path,
-		build.Main,
-	)
-
 	tenv, err := common.TemplateEnv(build.Env, tpl)
 	if err != nil {
 		return err
@@ -132,6 +124,12 @@ func (b *Builder) Build(ctx *context.Context, build config.Build, options api.Op
 		return err
 	}
 	command = append(command, flags...)
+	command = append(
+		command,
+		"--target", t.Target,
+		"--output", options.Path,
+		build.Main,
+	)
 
 	if err := common.Exec(ctx, command, env, build.Dir); err != nil {
 		return err
