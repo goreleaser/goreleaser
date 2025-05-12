@@ -634,6 +634,7 @@ type NFPMRPM struct {
 	Scripts     NFPMRPMScripts   `yaml:"scripts,omitempty" json:"scripts,omitempty"`
 	Prefixes    []string         `yaml:"prefixes,omitempty" json:"prefixes,omitempty"`
 	Packager    string           `yaml:"packager,omitempty" json:"packager,omitempty"`
+	BuildHost   string           `yaml:"buildhost,omitempty" json:"buildhost,omitempty"`
 }
 
 // NFPMDebScripts is scripts only available on deb packages.

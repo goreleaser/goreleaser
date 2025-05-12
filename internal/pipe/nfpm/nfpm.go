@@ -465,6 +465,7 @@ func create(ctx *context.Context, fpm config.NFPM, format string, artifacts []*a
 				Compression: overridden.RPM.Compression,
 				Prefixes:    overridden.RPM.Prefixes,
 				Packager:    overridden.RPM.Packager,
+				BuildHost:   overridden.RPM.BuildHost,
 				Signature: nfpm.RPMSignature{
 					PackageSignature: nfpm.PackageSignature{
 						KeyFile:       rpmKeyFile,

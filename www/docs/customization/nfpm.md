@@ -392,6 +392,12 @@ nfpms:
       # This will expand any env var you set in the field, eg packager: ${PACKAGER}
       packager: GoReleaser <staff@goreleaser.com>
 
+      # The hostname of the machine the rpm was built with.
+      #
+      # Default: os.Hostname()
+      # <!-- md:inline_version v2.10-unreleased -->.
+      buildhost: foo.bar
+
       # Compression algorithm (gzip (default), lzma or xz).
       compression: lzma
 
