@@ -194,3 +194,49 @@ func TestInitExampleConfigsAreNotDeprecated(t *testing.T) {
 	checkExample(t, static.DenoExampleConfig)
 	checkExample(t, static.RustExampleConfig)
 }
+
+func TestSetupGitignore(t *testing.T) {
+	tests := []struct {
+		name           string
+		existing       string
+		lines          []string
+		expectModified bool
+		expectContent  string
+	}{
+		{
+			name:           "empty file",
+			existing:       "",
+			lines:          []string{"dist/"},
+			expectContent:  "# Added by goreleaser init:\ndist/\n",
+		},
+		{
+			name:           "no newline at end",
+			existing:       "foo",
+			lines:          []string{"dist/"},
+			expectContent:  "foo\n# Added by goreleaser init:\ndist/\n",
+		},
+		{
+			name:           "no newline at end with CRLF",
+			existing:       "foo\r\nbar",
+			lines:          []string{"dist/"},
+			expectContent:  "foo\r\nbar\n# Added by goreleaser init:\ndist/\n",
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			path := filepath.Join(t.TempDir(), "gitignore")
+			if tt.existing != "" {
+				require.NoError(t, os.WriteFile(path, []byte(tt.existing), 0o644))
+			}
+
+			modified, err := setupGitignore(path, tt.lines)
+			require.NoError(t, err)
+			require.True(t, modified)
+
+			content, err := os.ReadFile(path)
+			require.NoError(t, err)
+			require.Equal(t, tt.expectContent, string(content))
+		})
+	}
+}
