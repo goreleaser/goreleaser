@@ -115,7 +115,6 @@ func newInitCmd() *initCmd {
 	return root
 }
 
-
 func setupGitignore(path string, lines []string) (bool, error) {
 	ignored, _ := os.ReadFile(path)
 	content := strings.ReplaceAll(string(ignored), "\r\n", "\n")

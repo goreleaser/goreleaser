@@ -200,7 +200,6 @@ func TestSetupGitignore(t *testing.T) {
 		name           string
 		existing       string
 		lines          []string
-		expectModified bool
 		expectContent  string
 	}{
 		{
