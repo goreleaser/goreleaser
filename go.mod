@@ -380,3 +380,5 @@ require (
 	sigs.k8s.io/yaml v1.4.0 // indirect
 	software.sslmate.com/src/go-pkcs12 v0.5.0 // indirect
 )
+
+replace github.com/goreleaser/nfpm/v2 => github.com/twpayne/nfpm/v2 v2.0.0-20250415174236-651418c619f2
