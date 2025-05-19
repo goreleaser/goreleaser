@@ -194,3 +194,105 @@ func TestInitExampleConfigsAreNotDeprecated(t *testing.T) {
 	checkExample(t, static.DenoExampleConfig)
 	checkExample(t, static.RustExampleConfig)
 }
+
+func TestSetupGitignore(t *testing.T) {
+	tests := []struct {
+		name           string
+		existing       string
+		lines          []string
+		expectContent  string
+		expectModified bool
+	}{
+		{
+			name:           "empty file",
+			existing:       "",
+			lines:          []string{"dist/"},
+			expectContent:  "# Added by goreleaser init:\ndist/\n",
+			expectModified: true,
+		},
+		{
+			name:           "no newline at end",
+			existing:       "foo",
+			lines:          []string{"dist/"},
+			expectContent:  "foo\n# Added by goreleaser init:\ndist/\n",
+			expectModified: true,
+		},
+		{
+			name:           "no newline at end with CRLF",
+			existing:       "foo\r\nbar",
+			lines:          []string{"dist/"},
+			expectContent:  "foo\r\nbar\n# Added by goreleaser init:\ndist/\n",
+			expectModified: true,
+		},
+		{
+			name:           "file already contains line",
+			existing:       "dist/\n",
+			lines:          []string{"dist/"},
+			expectContent:  "dist/\n",
+			expectModified: false,
+		},
+		{
+			name:           "multiple lines",
+			existing:       "",
+			lines:          []string{"dist/", "target/", "build/"},
+			expectContent:  "# Added by goreleaser init:\ndist/\ntarget/\nbuild/\n",
+			expectModified: true,
+		},
+		{
+			name:           "partial existing lines",
+			existing:       "dist/\n",
+			lines:          []string{"dist/", "target/", "build/"},
+			expectContent:  "dist/\n# Added by goreleaser init:\ntarget/\nbuild/\n",
+			expectModified: true,
+		},
+		{
+			name:           "no newline at end with multiple lines",
+			existing:       "foo",
+			lines:          []string{"dist/", "target/", "build/"},
+			expectContent:  "foo\n# Added by goreleaser init:\ndist/\ntarget/\nbuild/\n",
+			expectModified: true,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			path := filepath.Join(t.TempDir(), "gitignore")
+			if tt.existing != "" {
+				require.NoError(t, os.WriteFile(path, []byte(tt.existing), 0o644))
+			}
+
+			modified, err := setupGitignore(path, tt.lines)
+			require.NoError(t, err)
+			require.Equal(t, tt.expectModified, modified)
+
+			content, err := os.ReadFile(path)
+			require.NoError(t, err)
+			require.Equal(t, tt.expectContent, string(content))
+		})
+	}
+
+	t.Run("write error", func(t *testing.T) {
+		path := filepath.Join(t.TempDir(), "gitignore")
+		require.NoError(t, os.WriteFile(path, []byte(""), 0o444))
+
+		_, err := setupGitignore(path, []string{"dist/"})
+		require.Error(t, err)
+	})
+
+	t.Run("read error", func(t *testing.T) {
+		path := filepath.Join(t.TempDir(), "gitignore")
+		require.NoError(t, os.WriteFile(path, []byte(""), 0o444))
+		require.NoError(t, os.Chmod(path, 0o000))
+
+		_, err := setupGitignore(path, []string{"dist/"})
+		require.Error(t, err)
+	})
+
+	t.Run("write newline error", func(t *testing.T) {
+		path := filepath.Join(t.TempDir(), "gitignore")
+		require.NoError(t, os.WriteFile(path, []byte("foo"), 0o444))
+
+		_, err := setupGitignore(path, []string{"dist/"})
+		require.Error(t, err)
+	})
+}
