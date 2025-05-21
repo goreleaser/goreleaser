@@ -34,15 +34,13 @@ cask "custom_download_strategy" do
   conflicts_with "gtk+"
   conflicts_with "qt"
 
-  def post_install
+  postflight do
     system "echo"
     touch "/tmp/hi"
   end
 
-  def caveats
-    <<~EOS
-      don't do this custom_download_strategy
-    EOS
+  caveats do
+    don't do this custom_download_strategy
   end
 
   service "foo.plist"

@@ -49,14 +49,12 @@ cask "test" do
     sha256 "1633f61598ab0791e213135923624eb342196b3494909c91899bcd0560f84c68"
   end
 
-  def post_install
+  postflight do
     touch "/tmp/foo"
     system "echo", "done"
   end
 
-  def caveats
-    <<~EOS
-      Here are some caveats
-    EOS
+  caveats do
+    Here are some caveats
   end
 end

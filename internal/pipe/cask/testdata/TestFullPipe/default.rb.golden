@@ -34,15 +34,13 @@ cask "default" do
   conflicts_with "gtk+"
   conflicts_with "qt"
 
-  def post_install
+  postflight do
     system "echo"
     touch "/tmp/hi"
   end
 
-  def caveats
-    <<~EOS
-      don't do this default
-    EOS
+  caveats do
+    don't do this default
   end
 
   service "foo.plist"

@@ -225,7 +225,6 @@ type HomebrewCask struct {
 	CommitMessageTemplate string               `yaml:"commit_msg_template,omitempty" json:"commit_msg_template,omitempty"`
 	Directory             string               `yaml:"directory,omitempty" json:"directory,omitempty"`
 	Caveats               string               `yaml:"caveats,omitempty" json:"caveats,omitempty"`
-	PostInstall           string               `yaml:"post_install,omitempty" json:"post_install,omitempty"`
 	Dependencies          []HomebrewDependency `yaml:"dependencies,omitempty" json:"dependencies,omitempty"`
 	Conflicts             []string             `yaml:"conflicts,omitempty" json:"conflicts,omitempty"`
 	Description           string               `yaml:"description,omitempty" json:"description,omitempty"`
@@ -247,6 +246,7 @@ type HomebrewCask struct {
 	Zap         []string                `yaml:"zap,omitempty" json:"zap,omitempty"`
 	Manpage     string                  `yaml:"manpage,omitempty" json:"manpage,omitempty"`
 	Completions HomebrewCaskCompletions `yaml:"completions,omitempty" json:"completions,omitempty"`
+	PostFlight  string                  `yaml:"post_flight,omitempty" json:"post_flight,omitempty"`
 }
 
 type HomebrewCaskCompletions struct {

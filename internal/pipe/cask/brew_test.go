@@ -114,7 +114,7 @@ func TestFullCask(t *testing.T) {
 	data.Caveats = []string{"Here are some caveats"}
 	data.Dependencies = []config.HomebrewDependency{{Name: "gtk+"}}
 	data.Conflicts = []string{"svn"}
-	data.PostInstall = []string{`touch "/tmp/foo"`, `system "echo", "done"`}
+	data.PostFlight = []string{`touch "/tmp/foo"`, `system "echo", "done"`}
 	data.CustomBlock = []string{"devel do", `  url "https://github.com/caarlos0/test/releases/download/v0.1.3/test_Darwin_x86_64.tar.gz"`, `  sha256 "1633f61598ab0791e213135923624eb342196b3494909c91899bcd0560f84c68"`, "end"}
 	cask, err := doBuildCask(testctx.NewWithCfg(config.Project{
 		ProjectName: "foo",
@@ -331,11 +331,11 @@ func TestFullPipe(t *testing.T) {
 								{Name: "powershell", Type: "optional", OS: "mac"},
 								{Name: "ash", Version: "1.0.0", OS: "linux"},
 							},
-							Conflicts:   []string{"gtk+", "qt"},
-							Service:     "foo.plist",
-							PostInstall: "system \"echo\"\ntouch \"/tmp/hi\"",
-							Binary:      "{{.ProjectName}}",
-							Goamd64:     "v1",
+							Conflicts:  []string{"gtk+", "qt"},
+							Service:    "foo.plist",
+							PostFlight: "system \"echo\"\ntouch \"/tmp/hi\"",
+							Binary:     "{{.ProjectName}}",
+							Goamd64:    "v1",
 						},
 					},
 					Env: []string{"FOO=foo_is_bar"},

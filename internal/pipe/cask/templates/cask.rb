@@ -69,9 +69,9 @@ cask "{{ .Name }}" do
   {{- end }}
   {{- end }}
 
-  {{- with .PostInstall }}
+  {{- with .PostFlight }}
 
-  def post_install
+  postflight do
     {{- range . }}
     {{ . }}
     {{- end }}
@@ -80,12 +80,10 @@ cask "{{ .Name }}" do
 
   {{- with .Caveats }}
 
-  def caveats
-    <<~EOS
+  caveats do
     {{- range $index, $element := . }}
-      {{ . -}}
+    {{ . -}}
     {{- end }}
-    EOS
   end
   {{- end -}}
 

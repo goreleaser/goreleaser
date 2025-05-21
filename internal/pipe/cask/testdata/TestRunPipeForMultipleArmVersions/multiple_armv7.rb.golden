@@ -39,9 +39,7 @@ cask "multiple_armv7" do
   conflicts_with "gtk+"
   conflicts_with "qt"
 
-  def caveats
-    <<~EOS
-      don't do this multiple_armv7
-    EOS
+  caveats do
+    don't do this multiple_armv7
   end
 end

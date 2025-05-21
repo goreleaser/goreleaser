@@ -34,15 +34,13 @@ cask "open_pr" do
   conflicts_with "gtk+"
   conflicts_with "qt"
 
-  def post_install
+  postflight do
     system "echo"
     touch "/tmp/hi"
   end
 
-  def caveats
-    <<~EOS
-      don't do this open_pr
-    EOS
+  caveats do
+    don't do this open_pr
   end
 
   service "foo.plist"

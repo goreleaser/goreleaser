@@ -37,15 +37,13 @@ cask "custom_block" do
 
   head "https://github.com/caarlos0/test.git"
 
-  def post_install
+  postflight do
     system "echo"
     touch "/tmp/hi"
   end
 
-  def caveats
-    <<~EOS
-      don't do this custom_block
-    EOS
+  caveats do
+    don't do this custom_block
   end
 
   service "foo.plist"

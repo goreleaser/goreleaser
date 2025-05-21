@@ -366,7 +366,7 @@ func dataFor(ctx *context.Context, cfg config.HomebrewCask, cl client.ReleaseURL
 		Dependencies:  cfg.Dependencies,
 		Conflicts:     cfg.Conflicts,
 		Service:       cfg.Service,
-		PostInstall:   split(cfg.PostInstall),
+		PostFlight:    split(cfg.PostFlight),
 		CustomRequire: cfg.CustomRequire,
 		CustomBlock:   split(cfg.CustomBlock),
 	}
