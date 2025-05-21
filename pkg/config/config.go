@@ -1063,6 +1063,7 @@ type Project struct {
 	Release         Release          `yaml:"release,omitempty" json:"release,omitempty"`
 	Milestones      []Milestone      `yaml:"milestones,omitempty" json:"milestones,omitempty"`
 	Brews           []Homebrew       `yaml:"brews,omitempty" json:"brews,omitempty"`
+	Casks           []Homebrew       `yaml:"homebrew_casks,omitempty" json:"homebrew_casks,omitempty"`
 	Nix             []Nix            `yaml:"nix,omitempty" json:"nix,omitempty"`
 	Winget          []Winget         `yaml:"winget,omitempty" json:"winget,omitempty"`
 	AURs            []AUR            `yaml:"aurs,omitempty" json:"aurs,omitempty"`

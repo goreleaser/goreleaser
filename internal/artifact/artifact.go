@@ -65,6 +65,8 @@ const (
 	UploadableSourceArchive
 	// BrewFormula is an uploadable homebrew tap formula file.
 	BrewFormula
+	// BrewCask is an uploadable homebrew tap cask file.
+	BrewCask
 	// Nixpkg is an uploadable nix package.
 	Nixpkg
 	// WingetInstaller winget installer file.
@@ -145,7 +147,9 @@ func (t Type) String() string {
 	case UploadableSourceArchive:
 		return "Source"
 	case BrewFormula:
-		return "Brew Tap Formula"
+		return "Homebrew Tap Formula"
+	case BrewCask:
+		return "Homebrew Tap Cask"
 	case KrewPluginManifest:
 		return "Krew Plugin Manifest"
 	case ScoopManifest:
