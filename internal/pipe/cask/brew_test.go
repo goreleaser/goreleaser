@@ -52,29 +52,35 @@ func TestSimpleName(t *testing.T) {
 }
 
 var defaultTemplateData = templateData{
-	Desc:     "Some desc",
-	Homepage: "https://google.com",
+	Desc:                 "Some desc",
+	Homepage:             "https://google.com",
+	Binary:               "mybin",
+	FishCompletions:      "mybin.fish",
+	BashCompletions:      "mybin.bash",
+	ZshCompletions:       "mybin.zsh",
+	Manpage:              "mybin.1.gz",
+	Zap:                  []string{"~/.mybin"},
+	Name:                 "test",
+	Version:              "0.1.3",
+	HasOnlyAmd64MacOsPkg: false,
 	LinuxPackages: []releasePackage{
 		{
 			DownloadURL: "https://github.com/caarlos0/test/releases/download/v0.1.3/test_Linux_x86_64.tar.gz",
 			SHA256:      "1633f61598ab0791e213135923624eb342196b3494909c91899bcd0560f84c67",
 			OS:          "linux",
 			Arch:        "amd64",
-			Install:     []string{`bin.install "test"`},
 		},
 		{
 			DownloadURL: "https://github.com/caarlos0/test/releases/download/v0.1.3/test_Arm6.tar.gz",
 			SHA256:      "1633f61598ab0791e213135923624eb342196b3494909c91899bcd0560f84c67",
 			OS:          "linux",
 			Arch:        "arm",
-			Install:     []string{`bin.install "test"`},
 		},
 		{
 			DownloadURL: "https://github.com/caarlos0/test/releases/download/v0.1.3/test_Arm64.tar.gz",
 			SHA256:      "1633f61598ab0791e213135923624eb342196b3494909c91899bcd0560f84c67",
 			OS:          "linux",
 			Arch:        "arm64",
-			Install:     []string{`bin.install "test"`},
 		},
 	},
 	MacOSPackages: []releasePackage{
@@ -83,20 +89,14 @@ var defaultTemplateData = templateData{
 			SHA256:      "1633f61598ab0791e213135923624eb342196b3494909c91899bcd0560f84c68",
 			OS:          "darwin",
 			Arch:        "amd64",
-			Install:     []string{`bin.install "test"`},
 		},
 		{
 			DownloadURL: "https://github.com/caarlos0/test/releases/download/v0.1.3/test_Darwin_arm64.tar.gz",
 			SHA256:      "1df5fdc2bad4ed4c28fbdc77b6c542988c0dc0e2ae34e0dc912bbb1c66646c58",
 			OS:          "darwin",
 			Arch:        "arm64",
-			Install:     []string{`bin.install "test"`},
 		},
 	},
-	Name:                 "test",
-	Version:              "0.1.3",
-	Caveats:              []string{},
-	HasOnlyAmd64MacOsPkg: false,
 }
 
 func assertDefaultTemplateData(t *testing.T, cask string) {
@@ -116,7 +116,6 @@ func TestFullCask(t *testing.T) {
 	data.Conflicts = []string{"svn"}
 	data.PostInstall = []string{`touch "/tmp/foo"`, `system "echo", "done"`}
 	data.CustomBlock = []string{"devel do", `  url "https://github.com/caarlos0/test/releases/download/v0.1.3/test_Darwin_x86_64.tar.gz"`, `  sha256 "1633f61598ab0791e213135923624eb342196b3494909c91899bcd0560f84c68"`, "end"}
-	data.Tests = []string{`system "#{bin}/{{.ProjectName}}", "-version"`}
 	cask, err := doBuildCask(testctx.NewWithCfg(config.Project{
 		ProjectName: "foo",
 	}), data)
@@ -310,14 +309,6 @@ func TestFullPipe(t *testing.T) {
 			},
 			expectedRunErrorAs: &tmpl.Error{},
 		},
-		"invalid_install_template": {
-			prepare: func(ctx *context.Context) {
-				ctx.Config.Casks[0].Repository.Owner = "test"
-				ctx.Config.Casks[0].Repository.Name = "test"
-				ctx.Config.Casks[0].Install = "{{ .aaaa }"
-			},
-			expectedRunErrorAs: &tmpl.Error{},
-		},
 	} {
 		t.Run(name, func(t *testing.T) {
 			folder := t.TempDir()
@@ -325,7 +316,7 @@ func TestFullPipe(t *testing.T) {
 				config.Project{
 					Dist:        folder,
 					ProjectName: name,
-					Casks: []config.Homebrew{
+					Casks: []config.HomebrewCask{
 						{
 							Name: name,
 							IDs: []string{
@@ -333,7 +324,6 @@ func TestFullPipe(t *testing.T) {
 							},
 							Description: "Run pipe test formula and FOO={{ .Env.FOO }}",
 							Caveats:     "don't do this {{ .ProjectName }}",
-							Test:        "system \"true\"\nsystem \"#{bin}/foo\", \"-h\"",
 							Dependencies: []config.HomebrewDependency{
 								{Name: "zsh", Type: "optional"},
 								{Name: "bash", Version: "3.2.57"},
@@ -344,7 +334,7 @@ func TestFullPipe(t *testing.T) {
 							Conflicts:   []string{"gtk+", "qt"},
 							Service:     "run foo/bar\nkeep_alive true",
 							PostInstall: "system \"echo\"\ntouch \"/tmp/hi\"",
-							Install:     `bin.install "{{ .ProjectName }}_{{.Os}}_{{.Arch}} => {{.ProjectName}}"`,
+							Binary:      "{{.ProjectName}}",
 							Goamd64:     "v1",
 						},
 					},
@@ -464,13 +454,13 @@ func TestRunPipeNameTemplate(t *testing.T) {
 		config.Project{
 			Dist:        folder,
 			ProjectName: "foo",
-			Casks: []config.Homebrew{
+			Casks: []config.HomebrewCask{
 				{
 					Name:        "foo_{{ .Env.FOO_BAR }}",
 					Description: "Foo bar",
 					Homepage:    "https://goreleaser.com",
 					Goamd64:     "v1",
-					Install:     `bin.install "foo"`,
+					Binary:      "foo",
 					Repository: config.RepoRef{
 						Owner: "foo",
 						Name:  "bar",
@@ -521,7 +511,7 @@ func TestRunPipeMultipleBrewsWithSkip(t *testing.T) {
 		config.Project{
 			Dist:        folder,
 			ProjectName: "foo",
-			Casks: []config.Homebrew{
+			Casks: []config.HomebrewCask{
 				{
 					Name:    "foo",
 					Goamd64: "v1",
@@ -630,7 +620,7 @@ func TestRunPipeForMultipleAmd64Versions(t *testing.T) {
 				config.Project{
 					Dist:        folder,
 					ProjectName: name,
-					Casks: []config.Homebrew{
+					Casks: []config.HomebrewCask{
 						{
 							Name:        name,
 							Description: "Run pipe test cask",
@@ -638,9 +628,9 @@ func TestRunPipeForMultipleAmd64Versions(t *testing.T) {
 								Owner: "test",
 								Name:  "test",
 							},
-							Homepage:     "https://github.com/goreleaser",
-							Install:      `bin.install "foo"`,
-							ExtraInstall: `man1.install "./man/foo.1.gz"`,
+							Homepage: "https://github.com/goreleaser",
+							Binary:   "foo",
+							Manpage:  "./man/foo.1.gz",
 						},
 					},
 					GitHubURLs: config.GitHubURLs{
@@ -752,18 +742,17 @@ func TestRunPipeForMultipleArmVersions(t *testing.T) {
 				config.Project{
 					Dist:        folder,
 					ProjectName: name,
-					Casks: []config.Homebrew{
+					Casks: []config.HomebrewCask{
 						{
 							Name:        name,
 							Description: "Run pipe test cask and FOO={{ .Env.FOO }}",
 							Caveats:     "don't do this {{ .ProjectName }}",
-							Test:        "system \"true\"\nsystem \"#{bin}/foo\", \"-h\"",
 							Dependencies: []config.HomebrewDependency{
 								{Name: "zsh"},
 								{Name: "bash", Type: "recommended"},
 							},
 							Conflicts: []string{"gtk+", "qt"},
-							Install:   `bin.install "{{ .ProjectName }}"`,
+							Binary:    "foo",
 							Repository: config.RepoRef{
 								Owner: "test",
 								Name:  "test",
@@ -858,7 +847,7 @@ func TestRunPipeForMultipleArmVersions(t *testing.T) {
 
 func TestRunPipeNoBuilds(t *testing.T) {
 	ctx := testctx.NewWithCfg(config.Project{
-		Casks: []config.Homebrew{
+		Casks: []config.HomebrewCask{
 			{
 				Repository: config.RepoRef{
 					Owner: "test",
@@ -880,7 +869,7 @@ func TestRunPipeNoBuilds(t *testing.T) {
 
 func TestRunPipeMultipleArchivesSameOsBuild(t *testing.T) {
 	ctx := testctx.NewWithCfg(config.Project{
-		Casks: []config.Homebrew{
+		Casks: []config.HomebrewCask{
 			{
 				Repository: config.RepoRef{
 					Owner: "test",
@@ -1029,7 +1018,7 @@ func TestRunPipeBinaryRelease(t *testing.T) {
 		config.Project{
 			Dist:        folder,
 			ProjectName: "foo",
-			Casks: []config.Homebrew{
+			Casks: []config.HomebrewCask{
 				{
 					Name:        "foo",
 					Homepage:    "https://goreleaser.com",
@@ -1038,7 +1027,8 @@ func TestRunPipeBinaryRelease(t *testing.T) {
 						Owner: "foo",
 						Name:  "bar",
 					},
-					ExtraInstall: `man1.install "./man/foo.1.gz"`,
+					Binary:  "foo",
+					Manpage: "./man/foo.1.gz",
 				},
 			},
 		},
@@ -1077,12 +1067,12 @@ func TestRunPipePullRequest(t *testing.T) {
 		config.Project{
 			Dist:        folder,
 			ProjectName: "foo",
-			Casks: []config.Homebrew{
+			Casks: []config.HomebrewCask{
 				{
-					Name:         "foo",
-					Homepage:     "https://goreleaser.com",
-					Description:  "Fake desc",
-					ExtraInstall: `man1.install "./man/foo.1.gz"`,
+					Name:        "foo",
+					Homepage:    "https://goreleaser.com",
+					Description: "Fake desc",
+					Manpage:     "./man/foo.1.gz",
 					Repository: config.RepoRef{
 						Owner:  "foo",
 						Name:   "bar",
@@ -1131,7 +1121,7 @@ func TestRunPipeNoUpload(t *testing.T) {
 		Dist:        folder,
 		ProjectName: "foo",
 		Release:     config.Release{},
-		Casks: []config.Homebrew{
+		Casks: []config.HomebrewCask{
 			{
 				Repository: config.RepoRef{
 					Owner: "test",
@@ -1190,7 +1180,7 @@ func TestRunEmptyTokenType(t *testing.T) {
 		Dist:        folder,
 		ProjectName: "foo",
 		Release:     config.Release{},
-		Casks: []config.Homebrew{
+		Casks: []config.HomebrewCask{
 			{
 				Repository: config.RepoRef{
 					Owner: "test",
@@ -1245,7 +1235,7 @@ func TestDefault(t *testing.T) {
 	}
 	ctx := testctx.NewWithCfg(config.Project{
 		ProjectName: "myproject",
-		Casks: []config.Homebrew{
+		Casks: []config.HomebrewCask{
 			{
 				Repository: repo,
 			},
@@ -1253,6 +1243,7 @@ func TestDefault(t *testing.T) {
 	}, testctx.GitHubTokenType)
 	require.NoError(t, Pipe{}.Default(ctx))
 	require.Equal(t, ctx.Config.ProjectName, ctx.Config.Casks[0].Name)
+	require.Equal(t, ctx.Config.ProjectName, ctx.Config.Casks[0].Binary)
 	require.NotEmpty(t, ctx.Config.Casks[0].CommitAuthor.Name)
 	require.NotEmpty(t, ctx.Config.Casks[0].CommitAuthor.Email)
 	require.NotEmpty(t, ctx.Config.Casks[0].CommitMessageTemplate)
@@ -1270,7 +1261,7 @@ func TestSkip(t *testing.T) {
 	})
 	t.Run("skip flag", func(t *testing.T) {
 		ctx := testctx.NewWithCfg(config.Project{
-			Casks: []config.Homebrew{
+			Casks: []config.HomebrewCask{
 				{},
 			},
 		}, testctx.Skip(skips.Homebrew))
@@ -1278,7 +1269,7 @@ func TestSkip(t *testing.T) {
 	})
 	t.Run("dont skip", func(t *testing.T) {
 		ctx := testctx.NewWithCfg(config.Project{
-			Casks: []config.Homebrew{
+			Casks: []config.HomebrewCask{
 				{},
 			},
 		})
@@ -1288,80 +1279,11 @@ func TestSkip(t *testing.T) {
 
 func TestRunSkipNoName(t *testing.T) {
 	ctx := testctx.NewWithCfg(config.Project{
-		Casks: []config.Homebrew{{}},
+		Casks: []config.HomebrewCask{{}},
 	})
 
 	client := client.NewMock()
 	testlib.AssertSkipped(t, runAll(ctx, client))
-}
-
-func TestInstalls(t *testing.T) {
-	t.Run("provided", func(t *testing.T) {
-		install, err := installs(
-			testctx.New(),
-			config.Homebrew{Install: "bin.install \"foo\"\nbin.install \"bar\""},
-			&artifact.Artifact{},
-		)
-		require.NoError(t, err)
-		require.Equal(t, []string{
-			`bin.install "foo"`,
-			`bin.install "bar"`,
-		}, install)
-	})
-
-	t.Run("from archives", func(t *testing.T) {
-		install, err := installs(
-			testctx.New(),
-			config.Homebrew{},
-			&artifact.Artifact{
-				Type: artifact.UploadableArchive,
-				Extra: map[string]any{
-					artifact.ExtraBinaries: []string{"foo", "bar"},
-				},
-			},
-		)
-		require.NoError(t, err)
-		require.Equal(t, []string{
-			`bin.install "bar"`,
-			`bin.install "foo"`,
-		}, install)
-	})
-
-	t.Run("from binary", func(t *testing.T) {
-		install, err := installs(
-			testctx.New(),
-			config.Homebrew{},
-			&artifact.Artifact{
-				Name: "foo_macos",
-				Type: artifact.UploadableBinary,
-				Extra: map[string]any{
-					artifact.ExtraBinary: "foo",
-				},
-			},
-		)
-		require.NoError(t, err)
-		require.Equal(t, []string{
-			`bin.install "foo_macos" => "foo"`,
-		}, install)
-	})
-
-	t.Run("from template", func(t *testing.T) {
-		install, err := installs(
-			testctx.New(),
-			config.Homebrew{
-				Install: `bin.install "foo_{{.Os}}" => "foo"`,
-			},
-			&artifact.Artifact{
-				Name: "foo_darwin",
-				Goos: "darwin",
-				Type: artifact.UploadableBinary,
-			},
-		)
-		require.NoError(t, err)
-		require.Equal(t, []string{
-			`bin.install "foo_darwin" => "foo"`,
-		}, install)
-	})
 }
 
 func TestRunPipeUniversalBinary(t *testing.T) {
@@ -1370,7 +1292,7 @@ func TestRunPipeUniversalBinary(t *testing.T) {
 		config.Project{
 			Dist:        folder,
 			ProjectName: "unibin",
-			Casks: []config.Homebrew{
+			Casks: []config.HomebrewCask{
 				{
 					Name:        "unibin",
 					Homepage:    "https://goreleaser.com",
@@ -1382,7 +1304,7 @@ func TestRunPipeUniversalBinary(t *testing.T) {
 					IDs: []string{
 						"unibin",
 					},
-					Install: `bin.install "unibin"`,
+					Binary: "unibin",
 				},
 			},
 		},
@@ -1425,7 +1347,7 @@ func TestRunPipeUniversalBinaryNotReplacing(t *testing.T) {
 		config.Project{
 			Dist:        folder,
 			ProjectName: "unibin",
-			Casks: []config.Homebrew{
+			Casks: []config.HomebrewCask{
 				{
 					Name:        "unibin",
 					Homepage:    "https://goreleaser.com",
@@ -1437,8 +1359,8 @@ func TestRunPipeUniversalBinaryNotReplacing(t *testing.T) {
 					IDs: []string{
 						"unibin",
 					},
-					Install: `bin.install "unibin"`,
 					Goamd64: "v1",
+					Binary:  "unibin",
 				},
 			},
 		},

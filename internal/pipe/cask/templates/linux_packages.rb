@@ -15,11 +15,6 @@
       ]
     {{- end }}
     sha256 "{{ $element.SHA256 }}"
-    def install
-    {{- range $index, $element := .Install }}
-      {{ . -}}
-    {{- end }}
-    end
   end
 {{- end }}
 {{- end }}

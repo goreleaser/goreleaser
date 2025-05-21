@@ -6,7 +6,6 @@ import (
 	"cmp"
 	"errors"
 	"fmt"
-	"maps"
 	"os"
 	"path"
 	"path/filepath"
@@ -73,6 +72,9 @@ func (Pipe) Default(ctx *context.Context) error {
 		if brew.Directory == "" {
 			brew.Directory = "Casks"
 		}
+		if brew.Binary == "" {
+			brew.Binary = brew.Name
+		}
 	}
 
 	return nil
@@ -124,7 +126,7 @@ func publishAll(ctx *context.Context, cli client.Client) error {
 }
 
 func doPublish(ctx *context.Context, cask *artifact.Artifact, cl client.Client) error {
-	brew := artifact.MustExtra[config.Homebrew](*cask, brewConfigExtra)
+	brew := artifact.MustExtra[config.HomebrewCask](*cask, brewConfigExtra)
 	if strings.TrimSpace(brew.SkipUpload) == "true" {
 		return pipe.Skip("brew.skip_upload is set")
 	}
@@ -194,7 +196,7 @@ func doPublish(ctx *context.Context, cask *artifact.Artifact, cl client.Client) 
 	return pcl.OpenPullRequest(ctx, base, repo, msg, brew.Repository.PullRequest.Draft)
 }
 
-func doRun(ctx *context.Context, brew config.Homebrew, cl client.ReleaseURLTemplater) error {
+func doRun(ctx *context.Context, brew config.HomebrewCask, cl client.ReleaseURLTemplater) error {
 	if brew.Repository.Name == "" {
 		return pipe.Skip("homebrew_casks.repository.name is not set")
 	}
@@ -288,7 +290,7 @@ func buildCaskPath(folder, filename string) string {
 	return path.Join(folder, filename)
 }
 
-func buildCask(ctx *context.Context, brew config.Homebrew, client client.ReleaseURLTemplater, artifacts []*artifact.Artifact) (string, error) {
+func buildCask(ctx *context.Context, brew config.HomebrewCask, client client.ReleaseURLTemplater, artifacts []*artifact.Artifact) (string, error) {
 	data, err := dataFor(ctx, brew, client, artifacts)
 	if err != nil {
 		return "", err
@@ -350,41 +352,7 @@ func doBuildCask(ctx *context.Context, data templateData) (string, error) {
 	return out.String(), nil
 }
 
-func installs(ctx *context.Context, cfg config.Homebrew, art *artifact.Artifact) ([]string, error) {
-	tpl := tmpl.New(ctx).WithArtifact(art)
-
-	extraInstall, err := tpl.Apply(cfg.ExtraInstall)
-	if err != nil {
-		return nil, err
-	}
-
-	install, err := tpl.Apply(cfg.Install)
-	if err != nil {
-		return nil, err
-	}
-	if install != "" {
-		return append(split(install), split(extraInstall)...), nil
-	}
-
-	installMap := map[string]bool{}
-	switch art.Type {
-	case artifact.UploadableBinary:
-		name := art.Name
-		bin := artifact.MustExtra[string](*art, artifact.ExtraBinary)
-		installMap[fmt.Sprintf("bin.install %q => %q", name, bin)] = true
-	case artifact.UploadableArchive:
-		for _, bin := range artifact.MustExtra[[]string](*art, artifact.ExtraBinaries) {
-			installMap[fmt.Sprintf("bin.install %q", bin)] = true
-		}
-	}
-
-	result := slices.Sorted(maps.Keys(installMap))
-	log.WithField("install", result).Info("guessing install")
-
-	return append(result, split(extraInstall)...), nil
-}
-
-func dataFor(ctx *context.Context, cfg config.Homebrew, cl client.ReleaseURLTemplater, artifacts []*artifact.Artifact) (templateData, error) {
+func dataFor(ctx *context.Context, cfg config.HomebrewCask, cl client.ReleaseURLTemplater, artifacts []*artifact.Artifact) (templateData, error) {
 	slices.SortFunc(cfg.Dependencies, func(a, b config.HomebrewDependency) int {
 		return cmp.Compare(a.Name, b.Name)
 	})
@@ -399,7 +367,6 @@ func dataFor(ctx *context.Context, cfg config.Homebrew, cl client.ReleaseURLTemp
 		Conflicts:     cfg.Conflicts,
 		Service:       split(cfg.Service),
 		PostInstall:   split(cfg.PostInstall),
-		Tests:         split(cfg.Test),
 		CustomRequire: cfg.CustomRequire,
 		CustomBlock:   split(cfg.CustomBlock),
 	}
@@ -424,11 +391,6 @@ func dataFor(ctx *context.Context, cfg config.Homebrew, cl client.ReleaseURLTemp
 			return result, err
 		}
 
-		install, err := installs(ctx, cfg, art)
-		if err != nil {
-			return result, err
-		}
-
 		pkg := releasePackage{
 			DownloadURL:      url,
 			SHA256:           sum,
@@ -436,7 +398,6 @@ func dataFor(ctx *context.Context, cfg config.Homebrew, cl client.ReleaseURLTemp
 			Arch:             art.Goarch,
 			DownloadStrategy: cfg.DownloadStrategy,
 			Headers:          cfg.URLHeaders,
-			Install:          install,
 		}
 
 		counts[pkg.OS+pkg.Arch]++

@@ -16,13 +16,18 @@ type templateData struct {
 	PostInstall          []string
 	Dependencies         []config.HomebrewDependency
 	Conflicts            []string
-	Tests                []string
 	CustomRequire        string
 	CustomBlock          []string
 	LinuxPackages        []releasePackage
 	MacOSPackages        []releasePackage
 	Service              []string
 	HasOnlyAmd64MacOsPkg bool
+	Binary               string
+	Zap                  []string
+	Manpage              string
+	BashCompletions      string
+	ZshCompletions       string
+	FishCompletions      string
 }
 
 type releasePackage struct {
@@ -31,7 +36,6 @@ type releasePackage struct {
 	OS               string
 	Arch             string
 	DownloadStrategy string
-	Install          []string
 	Headers          []string
 }
 

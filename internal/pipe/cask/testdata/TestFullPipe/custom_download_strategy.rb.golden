@@ -12,23 +12,14 @@ cask "custom_download_strategy" do
   depends_on "fish" => :optional
   depends_on "powershell" => :optional if OS.mac?
   depends_on "zsh" => :optional
-
   on_macos do
     if Hardware::CPU.intel?
       url "https://dummyhost/download/v1.0.1/bin.tgz", using: GitHubPrivateRepositoryReleaseDownloadStrategy
       sha256 "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
-
-      def install
-        bin.install "custom_download_strategy_darwin_amd64 => custom_download_strategy"
-      end
     end
     if Hardware::CPU.arm?
       url "https://dummyhost/download/v1.0.1/bin.txz", using: GitHubPrivateRepositoryReleaseDownloadStrategy
       sha256 "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
-
-      def install
-        bin.install "custom_download_strategy_darwin_arm64 => custom_download_strategy"
-      end
     end
   end
 
@@ -36,11 +27,9 @@ cask "custom_download_strategy" do
     if Hardware::CPU.intel? and Hardware::CPU.is_64_bit?
       url "https://dummyhost/download/v1.0.1/bin.tar.zst", using: GitHubPrivateRepositoryReleaseDownloadStrategy
       sha256 "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
-      def install
-        bin.install "custom_download_strategy_linux_amd64 => custom_download_strategy"
-      end
     end
   end
+
 
   conflicts_with "gtk+"
   conflicts_with "qt"
@@ -59,10 +48,5 @@ cask "custom_download_strategy" do
   service do
     run foo/bar
     keep_alive true
-  end
-
-  test do
-    system "true"
-    system "#{bin}/foo", "-h"
   end
 end

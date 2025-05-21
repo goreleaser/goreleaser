@@ -10,11 +10,6 @@
   {{- end }}
   sha256 "{{ $element.SHA256 }}"
 
-  def install
-    {{- range $index, $element := .Install }}
-    {{ . -}}
-    {{- end }}
-  end
   {{- else if $.HasOnlyAmd64MacOsPkg }}
   url "{{ $element.DownloadURL }}"
   {{- if .DownloadStrategy }}, using: {{ .DownloadStrategy }}{{- end }}
@@ -24,12 +19,6 @@
     ]
   {{- end }}
   sha256 "{{ $element.SHA256 }}"
-
-  def install
-    {{- range $index, $element := .Install }}
-    {{ . -}}
-    {{- end }}
-  end
 
   if Hardware::CPU.arm?
     def caveats
@@ -46,7 +35,7 @@
   {{- end }}
   {{- if eq $element.Arch "arm64" }}
   if Hardware::CPU.arm?
-  {{- end}}
+  {{- end }}
     url "{{ $element.DownloadURL }}"
     {{- if .DownloadStrategy }}, using: {{ .DownloadStrategy }}{{- end }}
     {{- if .Headers }},
@@ -55,12 +44,6 @@
       ]
     {{- end }}
     sha256 "{{ $element.SHA256 }}"
-
-    def install
-      {{- range $index, $element := .Install }}
-      {{ . -}}
-      {{- end }}
-    end
   end
   {{- end }}
 {{- end }}

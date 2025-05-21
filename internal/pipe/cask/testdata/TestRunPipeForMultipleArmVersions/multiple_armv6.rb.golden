@@ -9,14 +9,9 @@ cask "multiple_armv6" do
 
   depends_on "bash" => :recommended
   depends_on "zsh"
-
   on_macos do
     url "https://dummyhost/download/v1.0.1/bin.tar.gz"
     sha256 "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
-
-    def install
-      bin.install "multiple_armv6"
-    end
 
     if Hardware::CPU.arm?
       def caveats
@@ -33,18 +28,13 @@ cask "multiple_armv6" do
     if Hardware::CPU.arm? and !Hardware::CPU.is_64_bit?
       url "https://dummyhost/download/v1.0.1/armv6.tar.gz"
       sha256 "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
-      def install
-        bin.install "multiple_armv6"
-      end
     end
     if Hardware::CPU.arm? and Hardware::CPU.is_64_bit?
       url "https://dummyhost/download/v1.0.1/arm64.tar.gz"
       sha256 "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
-      def install
-        bin.install "multiple_armv6"
-      end
     end
   end
+
 
   conflicts_with "gtk+"
   conflicts_with "qt"
@@ -53,10 +43,5 @@ cask "multiple_armv6" do
     <<~EOS
       don't do this multiple_armv6
     EOS
-  end
-
-  test do
-    system "true"
-    system "#{bin}/foo", "-h"
   end
 end
