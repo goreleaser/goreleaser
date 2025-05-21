@@ -20,7 +20,7 @@ type templateData struct {
 	CustomBlock          []string
 	LinuxPackages        []releasePackage
 	MacOSPackages        []releasePackage
-	Service              []string
+	Service              string
 	HasOnlyAmd64MacOsPkg bool
 	Binary               string
 	Zap                  []string

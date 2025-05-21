@@ -54,8 +54,5 @@ cask "with_header" do
     EOS
   end
 
-  service do
-    run foo/bar
-    keep_alive true
-  end
+  service "foo.plist"
 end

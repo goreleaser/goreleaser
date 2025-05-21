@@ -45,8 +45,5 @@ cask "default_gitlab" do
     EOS
   end
 
-  service do
-    run foo/bar
-    keep_alive true
-  end
+  service "foo.plist"
 end

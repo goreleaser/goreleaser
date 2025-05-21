@@ -45,8 +45,5 @@ cask "valid_repository_templates" do
     EOS
   end
 
-  service do
-    run foo/bar
-    keep_alive true
-  end
+  service "foo.plist"
 end

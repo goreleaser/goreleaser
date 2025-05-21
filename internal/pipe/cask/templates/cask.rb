@@ -91,10 +91,6 @@ cask "{{ .Name }}" do
 
   {{- with .Service }}
 
-  service do
-    {{- range . }}
-    {{ . }}
-    {{- end }}
-  end
+  service "{{ . }}"
   {{- end }}
 end

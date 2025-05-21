@@ -332,7 +332,7 @@ func TestFullPipe(t *testing.T) {
 								{Name: "ash", Version: "1.0.0", OS: "linux"},
 							},
 							Conflicts:   []string{"gtk+", "qt"},
-							Service:     "run foo/bar\nkeep_alive true",
+							Service:     "foo.plist",
 							PostInstall: "system \"echo\"\ntouch \"/tmp/hi\"",
 							Binary:      "{{.ProjectName}}",
 							Goamd64:     "v1",
