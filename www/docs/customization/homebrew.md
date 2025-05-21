@@ -1,5 +1,8 @@
 # Homebrew Taps
 
+> Deprecated in v2.10-unreleased.
+> Use [Homebrew Casks](TODO.md) instead.
+
 After releasing to GitHub, GitLab, or Gitea, GoReleaser can generate and publish
 a _homebrew-tap_ recipe into a repository that you have access to.
 

@@ -187,6 +187,8 @@ type AURSource struct {
 }
 
 // Homebrew contains the brew section.
+//
+// Deprecated: in favor of [HomebrewCask].
 type Homebrew struct {
 	Name                  string               `yaml:"name,omitempty" json:"name,omitempty"`
 	Repository            RepoRef              `yaml:"repository,omitempty" json:"repository,omitempty"`
@@ -240,6 +242,7 @@ type HomebrewCask struct {
 	Goamd64               string               `yaml:"goamd64,omitempty" json:"goamd64,omitempty"`
 	Service               string               `yaml:"service,omitempty" json:"service,omitempty"`
 
+	// Cask only:
 	Binary      string                  `yaml:"binary,omitempty" json:"binary,omitempty"`
 	Zap         []string                `yaml:"zap,omitempty" json:"zap,omitempty"`
 	Manpage     string                  `yaml:"manpage,omitempty" json:"manpage,omitempty"`
