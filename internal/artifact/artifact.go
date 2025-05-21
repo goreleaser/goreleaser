@@ -63,8 +63,8 @@ const (
 	Certificate
 	// UploadableSourceArchive is the archive with the current commit source code.
 	UploadableSourceArchive
-	// BrewTap is an uploadable homebrew tap recipe file.
-	BrewTap
+	// BrewFormula is an uploadable homebrew tap formula file.
+	BrewFormula
 	// Nixpkg is an uploadable nix package.
 	Nixpkg
 	// WingetInstaller winget installer file.
@@ -144,8 +144,8 @@ func (t Type) String() string {
 		return "Certificate"
 	case UploadableSourceArchive:
 		return "Source"
-	case BrewTap:
-		return "Brew Tap"
+	case BrewFormula:
+		return "Brew Tap Formula"
 	case KrewPluginManifest:
 		return "Krew Plugin Manifest"
 	case ScoopManifest:
