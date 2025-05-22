@@ -6,7 +6,7 @@
 require_relative "{{ .CustomRequire }}"
 {{ end -}}
 cask "{{ .Name }}" do
-  desc "{{ .Desc }}"
+  desc "{{ .Description }}"
   homepage "{{ .Homepage }}"
   version "{{ .Version }}"
   {{- with .License }}
@@ -19,18 +19,18 @@ cask "{{ .Name }}" do
   {{- with .Manpage }}
   manpage "{{ .}}"
   {{- end }}
-  {{- if .BashCompletions }}
-  bash_completions "{{ .BashCompletions }}"
+  {{- with .Completions.Bash }}
+  bash_completions "{{ . }}"
   {{- end }}
-  {{- if .ZshCompletions }}
-  zsh_completions "{{ .ZshCompletions }}"
+  {{- with .Completions.Zsh }}
+  zsh_completions "{{ . }}"
   {{- end }}
-  {{- if .FishCompletions }}
-  fish_completions "{{ .FishCompletions }}"
+  {{- with .Completions.Fish }}
+  fish_completions "{{ . }}"
   {{- end }}
 
   {{- with .Dependencies }}
-  {{ range $index, $element := . }}
+  {{ range  . }}
   {{- with .Cask }}
   depends_on cask: "{{ . }}"
   {{- end }}
@@ -60,7 +60,7 @@ cask "{{ .Name }}" do
 
   {{- with .Conflicts }}
 
-  {{ range $index, $element := . }}
+  {{ range . }}
   {{- with .Cask }}
   conflicts_with cask: "{{ . }}"
   {{- end }}
@@ -70,16 +70,13 @@ cask "{{ .Name }}" do
   {{- end }}
   {{- end }}
 
-  {{- with .CustomBlock }}
-
-  {{ range $index, $element := . }}
+  {{ with .CustomBlock -}}
+  {{ range (split .) }}
   {{ . }}
   {{- end }}
   {{- end }}
 
-
-  {{- with .Hooks.Pre.Install }}
-
+  {{ with .Hooks.Pre.Install -}}
   preflight do
     {{- range (split .) }}
     {{ . }}
@@ -87,8 +84,7 @@ cask "{{ .Name }}" do
   end
   {{- end -}}
 
-  {{- with .Hooks.Post.Install }}
-
+  {{ with .Hooks.Post.Install -}}
   postflight do
     {{- range (split .) }}
     {{ . }}
@@ -96,8 +92,7 @@ cask "{{ .Name }}" do
   end
   {{- end -}}
 
-  {{- with .Hooks.Pre.Uninstall }}
-
+  {{ with .Hooks.Pre.Uninstall -}}
   uninstall_preflight do
     {{- range (split .) }}
     {{ . }}
@@ -105,8 +100,7 @@ cask "{{ .Name }}" do
   end
   {{- end -}}
 
-  {{- with .Hooks.Post.Uninstall }}
-
+  {{ with .Hooks.Post.Uninstall -}}
   uninstall_postflight do
     {{- range (split .) }}
     {{ . }}
@@ -114,17 +108,15 @@ cask "{{ .Name }}" do
   end
   {{- end -}}
 
-  {{- with .Caveats }}
-
+  {{ with .Caveats -}}
   caveats do
-    {{- range $index, $element := . }}
+  {{- range (split .) }}
     {{ . -}}
     {{- end }}
   end
   {{- end -}}
 
-  {{- with .Service }}
-
+  {{ with .Service -}}
   service "{{ . }}"
   {{- end }}
 end

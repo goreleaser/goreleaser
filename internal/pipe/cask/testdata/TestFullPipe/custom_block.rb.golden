@@ -6,6 +6,7 @@ cask "custom_block" do
   desc "Run pipe test formula and FOO=foo_is_bar"
   homepage "https://github.com/goreleaser"
   version "1.0.1"
+  binary "custom_block"
 
   depends_on formula: "ash"
   depends_on formula: "bash"
@@ -30,21 +31,15 @@ cask "custom_block" do
     end
   end
 
-
   conflicts_with formula: "bash"
   conflicts_with cask: "fish"
-
 
   head "https://github.com/caarlos0/test.git"
 
   postflight do
     system "echo"
     touch "/tmp/hi"
-  end
-
-  caveats do
+  endcaveats do
     don't do this custom_block
-  end
-
-  service "foo.plist"
+  endservice "foo.plist"
 end

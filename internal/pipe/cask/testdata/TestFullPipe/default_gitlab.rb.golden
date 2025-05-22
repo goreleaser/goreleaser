@@ -6,6 +6,7 @@ cask "default_gitlab" do
   desc "Run pipe test formula and FOO=foo_is_bar"
   homepage "https://gitlab.com/goreleaser"
   version "1.0.1"
+  binary "default_gitlab"
 
   depends_on formula: "ash"
   depends_on formula: "bash"
@@ -30,18 +31,13 @@ cask "default_gitlab" do
     end
   end
 
-
   conflicts_with formula: "bash"
   conflicts_with cask: "fish"
 
   postflight do
     system "echo"
     touch "/tmp/hi"
-  end
-
-  caveats do
+  endcaveats do
     don't do this default_gitlab
-  end
-
-  service "foo.plist"
+  endservice "foo.plist"
 end

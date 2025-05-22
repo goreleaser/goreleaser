@@ -7,27 +7,12 @@ import (
 )
 
 type templateData struct {
+	config.HomebrewCask
 	Name                 string
-	Desc                 string
-	Homepage             string
 	Version              string
-	License              string
-	Caveats              []string
-	Hooks                config.HomebrewCaskHooks
-	Dependencies         []config.HomebrewCaskDependency
-	Conflicts            []config.HomebrewCaskConflict
-	CustomRequire        string
-	CustomBlock          []string
 	LinuxPackages        []releasePackage
 	MacOSPackages        []releasePackage
-	Service              string
 	HasOnlyAmd64MacOsPkg bool
-	Binary               string
-	Zap                  []string
-	Manpage              string
-	BashCompletions      string
-	ZshCompletions       string
-	FishCompletions      string
 }
 
 type releasePackage struct {

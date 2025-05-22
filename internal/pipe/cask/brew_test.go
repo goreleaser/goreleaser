@@ -52,14 +52,18 @@ func TestSimpleName(t *testing.T) {
 }
 
 var defaultTemplateData = templateData{
-	Desc:                 "Some desc",
-	Homepage:             "https://google.com",
-	Binary:               "mybin",
-	FishCompletions:      "mybin.fish",
-	BashCompletions:      "mybin.bash",
-	ZshCompletions:       "mybin.zsh",
-	Manpage:              "mybin.1.gz",
-	Zap:                  []string{"~/.mybin"},
+	HomebrewCask: config.HomebrewCask{
+		Description: "Some desc",
+		Homepage:    "https://google.com",
+		Binary:      "mybin",
+		Completions: config.HomebrewCaskCompletions{
+			Fish: "mybin.fish",
+			Bash: "mybin.bash",
+			Zsh:  "mybin.zsh",
+		},
+		Manpage: "mybin.1.gz",
+		Zap:     []string{"~/.mybin"},
+	},
 	Name:                 "test",
 	Version:              "0.1.3",
 	HasOnlyAmd64MacOsPkg: false,
@@ -111,7 +115,7 @@ func assertDefaultTemplateData(t *testing.T, cask string) {
 func TestFullCask(t *testing.T) {
 	data := defaultTemplateData
 	data.License = "MIT"
-	data.Caveats = []string{"Here are some caveats"}
+	data.Caveats = "Here are some caveats"
 	data.Dependencies = []config.HomebrewCaskDependency{
 		{Formula: "goreleaser"},
 		{Cask: "goreleaser"},
@@ -130,7 +134,10 @@ func TestFullCask(t *testing.T) {
 			Uninstall: "post-uninstall",
 		},
 	}
-	data.CustomBlock = []string{"devel do", `  url "https://github.com/caarlos0/test/releases/download/v0.1.3/test_Darwin_x86_64.tar.gz"`, `  sha256 "1633f61598ab0791e213135923624eb342196b3494909c91899bcd0560f84c68"`, "end"}
+	data.CustomBlock = `devel do
+  url "https://github.com/caarlos0/test/releases/download/v0.1.3/test_Darwin_x86_64.tar.gz"
+  sha256 "1633f61598ab0791e213135923624eb342196b3494909c91899bcd0560f84c68"
+end`
 	cask, err := doBuildCask(testctx.NewWithCfg(config.Project{
 		ProjectName: "foo",
 	}), data)

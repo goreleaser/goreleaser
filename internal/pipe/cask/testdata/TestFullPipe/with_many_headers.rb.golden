@@ -6,6 +6,7 @@ cask "with_many_headers" do
   desc "Run pipe test formula and FOO=foo_is_bar"
   homepage "https://github.com/goreleaser"
   version "1.0.1"
+  binary "with_many_headers"
 
   depends_on formula: "ash"
   depends_on formula: "bash"
@@ -42,18 +43,13 @@ cask "with_many_headers" do
     end
   end
 
-
   conflicts_with formula: "bash"
   conflicts_with cask: "fish"
 
   postflight do
     system "echo"
     touch "/tmp/hi"
-  end
-
-  caveats do
+  endcaveats do
     don't do this with_many_headers
-  end
-
-  service "foo.plist"
+  endservice "foo.plist"
 end

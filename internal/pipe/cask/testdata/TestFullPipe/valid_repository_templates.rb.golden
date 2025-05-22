@@ -6,6 +6,7 @@ cask "valid_repository_templates" do
   desc "Run pipe test formula and FOO=templated"
   homepage ""
   version "1.0.1"
+  binary "valid_repository_templates"
 
   depends_on formula: "ash"
   depends_on formula: "bash"
@@ -30,18 +31,13 @@ cask "valid_repository_templates" do
     end
   end
 
-
   conflicts_with formula: "bash"
   conflicts_with cask: "fish"
 
   postflight do
     system "echo"
     touch "/tmp/hi"
-  end
-
-  caveats do
+  endcaveats do
     don't do this valid_repository_templates
-  end
-
-  service "foo.plist"
+  endservice "foo.plist"
 end

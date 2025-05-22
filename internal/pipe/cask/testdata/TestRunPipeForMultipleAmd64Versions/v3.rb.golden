@@ -6,6 +6,8 @@ cask "v3" do
   desc "Run pipe test cask"
   homepage "https://github.com/goreleaser"
   version "1.0.1"
+  binary "foo"
+  manpage "./man/foo.1.gz"
   on_macos do
     if Hardware::CPU.arm?
       url "https://dummyhost/download/v1.0.1/bin.tar.gz"
@@ -23,4 +25,5 @@ cask "v3" do
       sha256 "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
     end
   end
+
 end

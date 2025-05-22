@@ -338,13 +338,22 @@ func doBuildCask(ctx *context.Context, data templateData) (string, error) {
 
 	// Sanitize the template output and get rid of trailing whitespace.
 	var (
-		r = strings.NewReader(content)
-		s = bufio.NewScanner(r)
+		r  = strings.NewReader(content)
+		s  = bufio.NewScanner(r)
+		el = false
 	)
 	for s.Scan() {
 		l := strings.TrimRight(s.Text(), " ")
-		_, _ = out.WriteString(l)
-		_ = out.WriteByte('\n')
+		if strings.TrimSpace(l) == "" {
+			if !el {
+				_ = out.WriteByte('\n')
+				el = true
+			}
+		} else {
+			_, _ = out.WriteString(l)
+			_ = out.WriteByte('\n')
+			el = false
+		}
 	}
 	if err := s.Err(); err != nil {
 		return "", err
@@ -358,18 +367,9 @@ func dataFor(ctx *context.Context, cfg config.HomebrewCask, cl client.ReleaseURL
 		return cmp.Compare(cmp.Or(a.Cask, a.Formula), cmp.Or(b.Cask, b.Formula))
 	})
 	result := templateData{
-		Name:          caskNameFor(cfg.Name),
-		Desc:          cfg.Description,
-		Homepage:      cfg.Homepage,
-		Version:       ctx.Version,
-		License:       cfg.License,
-		Caveats:       split(cfg.Caveats),
-		Dependencies:  cfg.Dependencies,
-		Conflicts:     cfg.Conflicts,
-		Service:       cfg.Service,
-		Hooks:         cfg.Hooks,
-		CustomRequire: cfg.CustomRequire,
-		CustomBlock:   split(cfg.CustomBlock),
+		HomebrewCask: cfg,
+		Name:         caskNameFor(cfg.Name),
+		Version:      ctx.Version,
 	}
 
 	counts := map[string]int{}

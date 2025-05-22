@@ -6,9 +6,11 @@ cask "foo_is_bar" do
   desc "Foo bar"
   homepage "https://goreleaser.com"
   version "1.0.1"
-  url "https://dummyhost/download/v1.0.1/bin.tar.gz"
-  sha256 "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
-
+  binary "foo"
+  if Hardware::CPU.intel?
+    url "https://dummyhost/download/v1.0.1/bin.tar.gz"
+    sha256 "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  end
   if Hardware::CPU.arm?
     def caveats
       <<~EOS
@@ -18,4 +20,5 @@ cask "foo_is_bar" do
       EOS
     end
   end
+
 end

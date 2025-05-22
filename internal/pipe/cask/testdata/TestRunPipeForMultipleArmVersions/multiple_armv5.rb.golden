@@ -6,13 +6,15 @@ cask "multiple_armv5" do
   desc "Run pipe test cask and FOO=foo_is_bar"
   homepage "https://github.com/goreleaser"
   version "1.0.1"
+  binary "foo"
 
   depends_on cask: "bash"
   depends_on formula: "zsh"
   on_macos do
-    url "https://dummyhost/download/v1.0.1/bin.tar.gz"
-    sha256 "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
-
+    if Hardware::CPU.intel?
+      url "https://dummyhost/download/v1.0.1/bin.tar.gz"
+      sha256 "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    end
     if Hardware::CPU.arm?
       def caveats
         <<~EOS
@@ -34,7 +36,6 @@ cask "multiple_armv5" do
       sha256 "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
     end
   end
-
 
   conflicts_with formula: "zsh"
   conflicts_with cask: "bash"
