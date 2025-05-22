@@ -2,12 +2,6 @@
 {{- range $element := .MacOSPackages }}
   {{- if eq $element.Arch "all" }}
   url "{{ $element.DownloadURL }}"
-  {{- if .DownloadStrategy }}, using: {{ .DownloadStrategy }}{{- end }}
-  {{- if .Headers }},
-    headers: [{{ printf "\n" }}
-      {{- join .Headers | indent 8 }}
-    ]
-  {{- end }}
   sha256 "{{ $element.SHA256 }}"
 
   {{- else }}
@@ -18,16 +12,9 @@
   if Hardware::CPU.arm?
   {{- end }}
     url "{{ $element.DownloadURL }}"
-    {{- if .DownloadStrategy }}, using: {{ .DownloadStrategy }}{{- end }}
-    {{- if .Headers }},
-      headers: [{{ printf "\n" }}
-        {{- join .Headers | indent 8 }}
-      ]
-    {{- end }}
     sha256 "{{ $element.SHA256 }}"
   end
   {{- end }}
-
 
   {{- if $.HasOnlyAmd64MacOsPkg }}
   if Hardware::CPU.arm?

@@ -6,9 +6,15 @@ cask "foo" do
   desc "Fake desc"
   homepage "https://goreleaser.com"
   version "1.2.1"
+
+  livecheck do
+    skip "Auto-generated on release."
+  end
   binary "foo"
   manpage "./man/foo.1.gz"
+
   url "https://dummyhost/download/v1.2.1/foo_macos"
   sha256 "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
 
+  # No zap stanza required
 end

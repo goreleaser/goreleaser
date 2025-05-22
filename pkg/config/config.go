@@ -226,10 +226,7 @@ type HomebrewCask struct {
 	Homepage              string       `yaml:"homepage,omitempty" json:"homepage,omitempty"`
 	License               string       `yaml:"license,omitempty" json:"license,omitempty"`
 	SkipUpload            string       `yaml:"skip_upload,omitempty" json:"skip_upload,omitempty" jsonschema:"oneof_type=string;boolean"`
-	DownloadStrategy      string       `yaml:"download_strategy,omitempty" json:"download_strategy,omitempty"`
 	URLTemplate           string       `yaml:"url_template,omitempty" json:"url_template,omitempty"`
-	URLHeaders            []string     `yaml:"url_headers,omitempty" json:"url_headers,omitempty"`
-	CustomRequire         string       `yaml:"custom_require,omitempty" json:"custom_require,omitempty"`
 	CustomBlock           string       `yaml:"custom_block,omitempty" json:"custom_block,omitempty"`
 	IDs                   []string     `yaml:"ids,omitempty" json:"ids,omitempty"`
 	Goarm                 string       `yaml:"goarm,omitempty" json:"goarm,omitempty" jsonschema:"oneof_type=string;integer"`
@@ -238,12 +235,29 @@ type HomebrewCask struct {
 
 	// Cask only:
 	Binary       string                   `yaml:"binary,omitempty" json:"binary,omitempty"`
-	Zap          []string                 `yaml:"zap,omitempty" json:"zap,omitempty"`
 	Manpage      string                   `yaml:"manpage,omitempty" json:"manpage,omitempty"`
 	Completions  HomebrewCaskCompletions  `yaml:"completions,omitempty" json:"completions,omitempty"`
 	Dependencies []HomebrewCaskDependency `yaml:"dependencies,omitempty" json:"dependencies,omitempty"`
 	Conflicts    []HomebrewCaskConflict   `yaml:"conflicts,omitempty" json:"conflicts,omitempty"`
 	Hooks        HomebrewCaskHooks        `yaml:"hooks,omitempty" json:"hooks,omitempty"`
+	Uninstall    HomebrewCaskUninstall    `yaml:"uninstall,omitempty" json:"uninstall,omitempty"`
+	Zap          HomebrewCaskUninstall    `yaml:"zap,omitempty" json:"zap,omitempty"`
+}
+
+type HomebrewCaskUninstall struct {
+	Launchctl []string `yaml:"launchctl,omitempty" json:"launchctl,omitempty"`
+	Quit      []string `yaml:"quit,omitempty" json:"quit,omitempty"`
+	LoginItem []string `yaml:"login_item,omitempty" json:"login_item,omitempty"`
+	Delete    []string `yaml:"delete,omitempty" json:"delete,omitempty"`
+	Trash     []string `yaml:"trash,omitempty" json:"trash,omitempty"`
+}
+
+func (u HomebrewCaskUninstall) HasAny() bool {
+	return len(u.Launchctl) > 0 ||
+		len(u.Quit) > 0 ||
+		len(u.LoginItem) > 0 ||
+		len(u.Delete) > 0 ||
+		len(u.Trash) > 0
 }
 
 type HomebrewCaskHooks struct {

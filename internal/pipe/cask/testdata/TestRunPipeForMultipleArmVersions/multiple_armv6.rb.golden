@@ -6,10 +6,15 @@ cask "multiple_armv6" do
   desc "Run pipe test cask and FOO=foo_is_bar"
   homepage "https://github.com/goreleaser"
   version "1.0.1"
+
+  livecheck do
+    skip "Auto-generated on release."
+  end
   binary "foo"
 
   depends_on cask: "bash"
   depends_on formula: "zsh"
+
   on_macos do
     if Hardware::CPU.intel?
       url "https://dummyhost/download/v1.0.1/bin.tar.gz"
@@ -43,4 +48,6 @@ cask "multiple_armv6" do
   caveats do
     don't do this multiple_armv6
   end
+
+  # No zap stanza required
 end

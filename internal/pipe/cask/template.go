@@ -16,12 +16,10 @@ type templateData struct {
 }
 
 type releasePackage struct {
-	DownloadURL      string
-	SHA256           string
-	OS               string
-	Arch             string
-	DownloadStrategy string
-	Headers          []string
+	DownloadURL string
+	SHA256      string
+	OS          string
+	Arch        string
 }
 
 //go:embed templates

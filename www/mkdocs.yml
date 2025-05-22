@@ -166,6 +166,7 @@ nav:
           - Cloudsmith: customization/cloudsmith.md
           - Fury: customization/fury.md
           - customization/dockerhub.md
+          - customization/homebrew_casks.md
           - customization/homebrew.md
           - customization/winget.md
           - NUR: customization/nix.md

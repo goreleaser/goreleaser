@@ -6,6 +6,10 @@ cask "open_pr" do
   desc "Run pipe test formula and FOO=foo_is_bar"
   homepage "https://github.com/goreleaser"
   version "1.0.1"
+
+  livecheck do
+    skip "Auto-generated on release."
+  end
   binary "open_pr"
 
   depends_on formula: "ash"
@@ -13,6 +17,7 @@ cask "open_pr" do
   depends_on cask: "fish"
   depends_on cask: "powershell"
   depends_on formula: "zsh"
+
   on_macos do
     if Hardware::CPU.intel?
       url "https://dummyhost/download/v1.0.1/bin.tgz"
@@ -37,7 +42,13 @@ cask "open_pr" do
   postflight do
     system "echo"
     touch "/tmp/hi"
-  endcaveats do
+  end
+
+  caveats do
     don't do this open_pr
-  endservice "foo.plist"
+  end
+
+  service "foo.plist"
+
+  # No zap stanza required
 end

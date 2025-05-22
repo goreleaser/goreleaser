@@ -6,6 +6,10 @@ cask "default_gitlab" do
   desc "Run pipe test formula and FOO=foo_is_bar"
   homepage "https://gitlab.com/goreleaser"
   version "1.0.1"
+
+  livecheck do
+    skip "Auto-generated on release."
+  end
   binary "default_gitlab"
 
   depends_on formula: "ash"
@@ -13,6 +17,7 @@ cask "default_gitlab" do
   depends_on cask: "fish"
   depends_on cask: "powershell"
   depends_on formula: "zsh"
+
   on_macos do
     if Hardware::CPU.intel?
       url "https://dummyhost/download/v1.0.1/bin.tgz"
@@ -37,7 +42,13 @@ cask "default_gitlab" do
   postflight do
     system "echo"
     touch "/tmp/hi"
-  endcaveats do
+  end
+
+  caveats do
     don't do this default_gitlab
-  endservice "foo.plist"
+  end
+
+  service "foo.plist"
+
+  # No zap stanza required
 end

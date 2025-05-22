@@ -8,12 +8,6 @@
   if Hardware::CPU.arm? and !Hardware::CPU.is_64_bit?
   {{- end }}
     url "{{ $element.DownloadURL }}"
-    {{- if .DownloadStrategy }}, using: {{ .DownloadStrategy }}{{- end }}
-    {{- if .Headers }},
-      headers: [{{ printf "\n" }}
-        {{- join .Headers | indent 8 }}
-      ]
-    {{- end }}
     sha256 "{{ $element.SHA256 }}"
   end
 {{- end }}

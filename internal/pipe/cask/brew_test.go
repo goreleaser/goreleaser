@@ -62,7 +62,6 @@ var defaultTemplateData = templateData{
 			Zsh:  "mybin.zsh",
 		},
 		Manpage: "mybin.1.gz",
-		Zap:     []string{"~/.mybin"},
 	},
 	Name:                 "test",
 	Version:              "0.1.3",
@@ -201,29 +200,6 @@ func TestFullPipe(t *testing.T) {
 				ctx.Config.Casks[0].Homepage = "https://github.com/goreleaser"
 			},
 		},
-		"with_header": {
-			prepare: func(ctx *context.Context) {
-				ctx.TokenType = context.TokenTypeGitHub
-				ctx.Config.Casks[0].Repository.Owner = "test"
-				ctx.Config.Casks[0].Repository.Name = "test"
-				ctx.Config.Casks[0].Homepage = "https://github.com/goreleaser"
-				ctx.Config.Casks[0].URLHeaders = []string{
-					`Authorization: bearer #{ENV["HOMEBREW_GITHUB_API_TOKEN"]}`,
-				}
-			},
-		},
-		"with_many_headers": {
-			prepare: func(ctx *context.Context) {
-				ctx.TokenType = context.TokenTypeGitHub
-				ctx.Config.Casks[0].Repository.Owner = "test"
-				ctx.Config.Casks[0].Repository.Name = "test"
-				ctx.Config.Casks[0].Homepage = "https://github.com/goreleaser"
-				ctx.Config.Casks[0].URLHeaders = []string{
-					"Accept: application/octet-stream",
-					`Authorization: bearer #{ENV["HOMEBREW_GITHUB_API_TOKEN"]}`,
-				}
-			},
-		},
 		"git_remote": {
 			prepare: func(ctx *context.Context) {
 				ctx.TokenType = context.TokenTypeGitHub
@@ -250,27 +226,6 @@ func TestFullPipe(t *testing.T) {
 						Enabled: true,
 					},
 				}
-			},
-		},
-		"custom_download_strategy": {
-			prepare: func(ctx *context.Context) {
-				ctx.TokenType = context.TokenTypeGitHub
-				ctx.Config.Casks[0].Repository.Owner = "test"
-				ctx.Config.Casks[0].Repository.Name = "test"
-				ctx.Config.Casks[0].Homepage = "https://github.com/goreleaser"
-
-				ctx.Config.Casks[0].DownloadStrategy = "GitHubPrivateRepositoryReleaseDownloadStrategy"
-			},
-		},
-		"custom_require": {
-			prepare: func(ctx *context.Context) {
-				ctx.TokenType = context.TokenTypeGitHub
-				ctx.Config.Casks[0].Repository.Owner = "test"
-				ctx.Config.Casks[0].Repository.Name = "test"
-				ctx.Config.Casks[0].Homepage = "https://github.com/goreleaser"
-
-				ctx.Config.Casks[0].DownloadStrategy = "CustomDownloadStrategy"
-				ctx.Config.Casks[0].CustomRequire = "custom_download_strategy"
 			},
 		},
 		"custom_block": {
@@ -330,6 +285,32 @@ func TestFullPipe(t *testing.T) {
 				ctx.Config.Casks[0].Repository.Name = "test"
 			},
 			expectedRunErrorAs: &tmpl.Error{},
+		},
+		"uninstall": {
+			prepare: func(ctx *context.Context) {
+				ctx.Config.Casks[0].Repository.Owner = "test"
+				ctx.Config.Casks[0].Repository.Name = "test"
+				ctx.Config.Casks[0].Uninstall = config.HomebrewCaskUninstall{
+					Launchctl: []string{"launchctl1", "launchctl2", "launchctl3"},
+					Quit:      []string{"quit1", "quit2", "quit3"},
+					LoginItem: []string{"loginitem1", "loginitem2", "loginitem3"},
+					Trash:     []string{"trash1", "trash2", "trash3"},
+					Delete:    []string{"delete1", "delete2", "delete3"},
+				}
+			},
+		},
+		"zap": {
+			prepare: func(ctx *context.Context) {
+				ctx.Config.Casks[0].Repository.Owner = "test"
+				ctx.Config.Casks[0].Repository.Name = "test"
+				ctx.Config.Casks[0].Zap = config.HomebrewCaskUninstall{
+					Launchctl: []string{"launchctl1", "launchctl2", "launchctl3"},
+					Quit:      []string{"quit1", "quit2", "quit3"},
+					LoginItem: []string{"loginitem1", "loginitem2", "loginitem3"},
+					Trash:     []string{"trash1", "trash2", "trash3"},
+					Delete:    []string{"delete1", "delete2", "delete3"},
+				}
+			},
 		},
 	} {
 		t.Run(name, func(t *testing.T) {

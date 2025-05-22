@@ -240,11 +240,17 @@ func doRun(ctx *context.Context, brew config.HomebrewCask, cl client.ReleaseURLT
 		}
 	}
 
-	name, err := tmpl.New(ctx).Apply(brew.Name)
-	if err != nil {
+	if err := tmpl.New(ctx).ApplyAll(
+		&brew.Name,
+		&brew.SkipUpload,
+		&brew.Binary,
+		&brew.Manpage,
+		&brew.Completions.Bash,
+		&brew.Completions.Zsh,
+		&brew.Completions.Fish,
+	); err != nil {
 		return err
 	}
-	brew.Name = name
 
 	ref, err := client.TemplateRef(tmpl.New(ctx).Apply, brew.Repository)
 	if err != nil {
@@ -393,12 +399,10 @@ func dataFor(ctx *context.Context, cfg config.HomebrewCask, cl client.ReleaseURL
 		}
 
 		pkg := releasePackage{
-			DownloadURL:      url,
-			SHA256:           sum,
-			OS:               art.Goos,
-			Arch:             art.Goarch,
-			DownloadStrategy: cfg.DownloadStrategy,
-			Headers:          cfg.URLHeaders,
+			DownloadURL: url,
+			SHA256:      sum,
+			OS:          art.Goos,
+			Arch:        art.Goarch,
 		}
 
 		counts[pkg.OS+pkg.Arch]++
