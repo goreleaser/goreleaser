@@ -302,13 +302,6 @@ func doBuildCask(ctx *context.Context, data templateData) (string, error) {
 			pad := strings.Repeat(" ", spaces)
 			return pad + strings.ReplaceAll(v, "\n", "\n"+pad)
 		},
-		"join": func(in []string) string {
-			items := make([]string, 0, len(in))
-			for _, i := range in {
-				items = append(items, fmt.Sprintf(`"%s"`, i))
-			}
-			return strings.Join(items, ",\n")
-		},
 	}).ParseFS(templates, "templates/*.rb")
 	if err != nil {
 		return "", err
