@@ -45,7 +45,7 @@ cask "zap" do
   end
 
   caveats do
-    don't do this zap
+    "don't do this zap"
   end
 
   service "foo.plist"

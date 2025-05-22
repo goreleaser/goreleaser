@@ -45,7 +45,7 @@ cask "open_pr" do
   end
 
   caveats do
-    don't do this open_pr
+    "don't do this open_pr"
   end
 
   service "foo.plist"

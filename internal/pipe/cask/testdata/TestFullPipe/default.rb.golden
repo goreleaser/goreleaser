@@ -45,7 +45,7 @@ cask "default" do
   end
 
   caveats do
-    don't do this default
+    "don't do this default"
   end
 
   service "foo.plist"

@@ -45,7 +45,7 @@ cask "default_gitlab" do
   end
 
   caveats do
-    don't do this default_gitlab
+    "don't do this default_gitlab"
   end
 
   service "foo.plist"

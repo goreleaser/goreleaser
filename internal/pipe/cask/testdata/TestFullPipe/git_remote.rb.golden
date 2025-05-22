@@ -45,7 +45,7 @@ cask "git_remote" do
   end
 
   caveats do
-    don't do this git_remote
+    "don't do this git_remote"
   end
 
   service "foo.plist"

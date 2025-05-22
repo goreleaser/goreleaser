@@ -45,7 +45,7 @@ cask "uninstall" do
   end
 
   caveats do
-    don't do this uninstall
+    "don't do this uninstall"
   end
 
   service "foo.plist"

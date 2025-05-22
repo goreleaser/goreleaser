@@ -45,7 +45,7 @@ cask "valid_repository_templates" do
   end
 
   caveats do
-    don't do this valid_repository_templates
+    "don't do this valid_repository_templates"
   end
 
   service "foo.plist"

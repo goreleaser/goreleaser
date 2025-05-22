@@ -71,7 +71,7 @@ cask "test" do
   end
 
   caveats do
-    Here are some caveats
+    "Here are some caveats"
   end
 
   # No zap stanza required

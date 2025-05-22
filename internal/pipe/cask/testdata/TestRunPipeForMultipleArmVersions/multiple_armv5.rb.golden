@@ -46,7 +46,7 @@ cask "multiple_armv5" do
   conflicts_with cask: "bash"
 
   caveats do
-    don't do this multiple_armv5
+    "don't do this multiple_armv5"
   end
 
   # No zap stanza required

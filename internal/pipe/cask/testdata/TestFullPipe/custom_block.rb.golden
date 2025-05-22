@@ -47,7 +47,7 @@ cask "custom_block" do
   end
 
   caveats do
-    don't do this custom_block
+    "don't do this custom_block"
   end
 
   service "foo.plist"
