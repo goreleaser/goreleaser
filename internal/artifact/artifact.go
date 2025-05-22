@@ -63,9 +63,9 @@ const (
 	Certificate
 	// UploadableSourceArchive is the archive with the current commit source code.
 	UploadableSourceArchive
-	// BrewFormula is an uploadable homebrew tap formula file.
+	// BrewFormula is an uploadable homebrew formula file.
 	BrewFormula
-	// BrewCask is an uploadable homebrew tap cask file.
+	// BrewCask is an uploadable homebrew cask file.
 	BrewCask
 	// Nixpkg is an uploadable nix package.
 	Nixpkg
