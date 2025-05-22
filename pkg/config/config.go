@@ -237,17 +237,13 @@ type HomebrewCask struct {
 	Service               string       `yaml:"service,omitempty" json:"service,omitempty"`
 
 	// Cask only:
-	Binary              string                   `yaml:"binary,omitempty" json:"binary,omitempty"`
-	Zap                 []string                 `yaml:"zap,omitempty" json:"zap,omitempty"`
-	Manpage             string                   `yaml:"manpage,omitempty" json:"manpage,omitempty"`
-	Completions         HomebrewCaskCompletions  `yaml:"completions,omitempty" json:"completions,omitempty"`
-	PreFlight           string                   `yaml:"pre_flight,omitempty" json:"pre_flight,omitempty"`
-	PostFlight          string                   `yaml:"post_flight,omitempty" json:"post_flight,omitempty"`
-	UninstallPreFlight  string                   `yaml:"uninstall_pre_flight,omitempty" json:"uninstall_pre_flight,omitempty"`
-	UninstallPostFlight string                   `yaml:"uninstall_post_flight,omitempty" json:"uninstall_post_flight,omitempty"`
-	Dependencies        []HomebrewCaskDependency `yaml:"dependencies,omitempty" json:"dependencies,omitempty"`
-	Conflicts           []HomebrewCaskConflict   `yaml:"conflicts,omitempty" json:"conflicts,omitempty"`
-	Hooks               HomebrewCaskHooks        `yaml:"hooks,omitempty" json:"hooks,omitempty"`
+	Binary       string                   `yaml:"binary,omitempty" json:"binary,omitempty"`
+	Zap          []string                 `yaml:"zap,omitempty" json:"zap,omitempty"`
+	Manpage      string                   `yaml:"manpage,omitempty" json:"manpage,omitempty"`
+	Completions  HomebrewCaskCompletions  `yaml:"completions,omitempty" json:"completions,omitempty"`
+	Dependencies []HomebrewCaskDependency `yaml:"dependencies,omitempty" json:"dependencies,omitempty"`
+	Conflicts    []HomebrewCaskConflict   `yaml:"conflicts,omitempty" json:"conflicts,omitempty"`
+	Hooks        HomebrewCaskHooks        `yaml:"hooks,omitempty" json:"hooks,omitempty"`
 }
 
 type HomebrewCaskHooks struct {

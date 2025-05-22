@@ -51,9 +51,20 @@ cask "test" do
     sha256 "1633f61598ab0791e213135923624eb342196b3494909c91899bcd0560f84c68"
   end
 
+  preflight do
+    pre-install
+  end
+
   postflight do
-    touch "/tmp/foo"
-    system "echo", "done"
+    post-install
+  end
+
+  uninstall_preflight do
+    pre-uninstall
+  end
+
+  uninstall_postflight do
+    post-uninstall
   end
 
   caveats do

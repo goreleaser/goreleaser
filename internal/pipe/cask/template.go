@@ -13,7 +13,7 @@ type templateData struct {
 	Version              string
 	License              string
 	Caveats              []string
-	PostFlight           []string
+	Hooks                config.HomebrewCaskHooks
 	Dependencies         []config.HomebrewCaskDependency
 	Conflicts            []config.HomebrewCaskConflict
 	CustomRequire        string

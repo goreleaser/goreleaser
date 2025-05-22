@@ -302,6 +302,7 @@ func doBuildCask(ctx *context.Context, data templateData) (string, error) {
 	t := template.New("cask.rb")
 	var err error
 	t, err = t.Funcs(map[string]any{
+		"split": split,
 		"include": func(name string, data any) (string, error) {
 			buf := bytes.NewBuffer(nil)
 			if err := t.ExecuteTemplate(buf, name, data); err != nil {
@@ -366,7 +367,7 @@ func dataFor(ctx *context.Context, cfg config.HomebrewCask, cl client.ReleaseURL
 		Dependencies:  cfg.Dependencies,
 		Conflicts:     cfg.Conflicts,
 		Service:       cfg.Service,
-		PostFlight:    split(cfg.PostFlight),
+		Hooks:         cfg.Hooks,
 		CustomRequire: cfg.CustomRequire,
 		CustomBlock:   split(cfg.CustomBlock),
 	}

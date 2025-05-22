@@ -77,10 +77,38 @@ cask "{{ .Name }}" do
   {{- end }}
   {{- end }}
 
-  {{- with .PostFlight }}
+
+  {{- with .Hooks.Pre.Install }}
+
+  preflight do
+    {{- range (split .) }}
+    {{ . }}
+    {{- end }}
+  end
+  {{- end -}}
+
+  {{- with .Hooks.Post.Install }}
 
   postflight do
-    {{- range . }}
+    {{- range (split .) }}
+    {{ . }}
+    {{- end }}
+  end
+  {{- end -}}
+
+  {{- with .Hooks.Pre.Uninstall }}
+
+  uninstall_preflight do
+    {{- range (split .) }}
+    {{ . }}
+    {{- end }}
+  end
+  {{- end -}}
+
+  {{- with .Hooks.Post.Uninstall }}
+
+  uninstall_postflight do
+    {{- range (split .) }}
     {{ . }}
     {{- end }}
   end
