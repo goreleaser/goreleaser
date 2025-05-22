@@ -110,8 +110,8 @@ cask "{{ .Name }}" do
 
   {{ with .Caveats -}}
   caveats do
-  {{- range (split .) }}
-    {{ . -}}
+    {{- range (split .) }}
+    "{{ . -}}"
     {{- end }}
   end
   {{- end }}
@@ -125,41 +125,41 @@ cask "{{ .Name }}" do
 
   {{ with .Uninstall.Launchctl -}}
   uninstall launchctl: [
-  {{- range . }}
+    {{- range . }}
     "{{ . }}",
-  {{- end }}
+    {{- end }}
   ]
   {{- end }}
 
   {{ with .Uninstall.Quit -}}
   uninstall quit: [
-  {{- range . }}
+    {{- range . }}
     "{{ . }}",
-  {{- end }}
+    {{- end }}
   ]
   {{- end }}
 
   {{ with .Uninstall.LoginItem -}}
   uninstall login_item: [
-  {{- range . }}
+    {{- range . }}
     "{{ . }}",
-  {{- end }}
+    {{- end }}
   ]
   {{- end }}
 
   {{ with .Uninstall.Trash -}}
   uninstall trash: [
-  {{- range . }}
+    {{- range . }}
     "{{ . }}",
-  {{- end }}
+    {{- end }}
   ]
   {{- end }}
 
   {{ with .Uninstall.Delete -}}
   uninstall delete: [
-  {{- range . }}
+    {{- range . }}
     "{{ . }}",
-  {{- end }}
+    {{- end }}
   ]
   {{- end }}
   {{- end }}
@@ -168,41 +168,41 @@ cask "{{ .Name }}" do
 
   {{ with .Zap.Launchctl -}}
   zap launchctl: [
-  {{- range . }}
+    {{- range . }}
     "{{ . }}",
-  {{- end }}
+    {{- end }}
   ]
   {{- end }}
 
   {{ with .Zap.Quit -}}
   zap quit: [
-  {{- range . }}
+    {{- range . }}
     "{{ . }}",
-  {{- end }}
+    {{- end }}
   ]
   {{- end }}
 
   {{ with .Zap.LoginItem -}}
   zap login_item: [
-  {{- range . }}
+    {{- range . }}
     "{{ . }}",
-  {{- end }}
+    {{- end }}
   ]
   {{- end }}
 
   {{ with .Zap.Trash -}}
   zap trash: [
-  {{- range . }}
+    {{- range . }}
     "{{ . }}",
-  {{- end }}
+    {{- end }}
   ]
   {{- end }}
 
   {{ with .Zap.Delete -}}
   zap delete: [
-  {{- range . }}
+    {{- range . }}
     "{{ . }}",
-  {{- end }}
+    {{- end }}
   ]
   {{- end }}
 
