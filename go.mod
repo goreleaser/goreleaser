@@ -24,7 +24,7 @@ require (
 	github.com/dghubble/oauth1 v0.7.3
 	github.com/distribution/distribution/v3 v3.0.0
 	github.com/go-telegram-bot-api/telegram-bot-api/v5 v5.5.1
-	github.com/google/go-containerregistry v0.20.4-0.20250225234217-098045d5e61f
+	github.com/google/go-containerregistry v0.20.4
 	github.com/google/go-github/v72 v72.0.0
 	github.com/google/ko v0.18.0
 	github.com/google/uuid v1.6.0
@@ -179,7 +179,7 @@ require (
 	github.com/cloudflare/circl v1.6.0 // indirect
 	github.com/containerd/continuity v0.4.5 // indirect
 	github.com/containerd/stargz-snapshotter/estargz v0.16.3 // indirect
-	github.com/cpuguy83/go-md2man/v2 v2.0.6 // indirect
+	github.com/cpuguy83/go-md2man/v2 v2.0.7 // indirect
 	github.com/cyberphone/json-canonicalization v0.0.0-20241213102144-19d51d7fe467 // indirect
 	github.com/cyphar/filepath-securejoin v0.4.1 // indirect
 	github.com/davecgh/go-spew v1.1.2-0.20180830191138-d8f796af33cc // indirect
@@ -187,7 +187,7 @@ require (
 	github.com/dghubble/sling v1.4.0 // indirect
 	github.com/dimchansky/utfbom v1.1.1 // indirect
 	github.com/distribution/reference v0.6.0 // indirect
-	github.com/docker/cli v28.0.4+incompatible // indirect
+	github.com/docker/cli v28.1.1+incompatible // indirect
 	github.com/docker/distribution v2.8.3+incompatible // indirect
 	github.com/docker/docker v28.1.1+incompatible // indirect
 	github.com/docker/docker-credential-helpers v0.9.3 // indirect

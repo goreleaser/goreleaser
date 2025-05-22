@@ -12,6 +12,7 @@ import (
 	"github.com/goreleaser/goreleaser/v2/internal/testctx"
 	"github.com/goreleaser/goreleaser/v2/internal/testlib"
 	"github.com/goreleaser/goreleaser/v2/internal/tmpl"
+	"github.com/goreleaser/goreleaser/v2/pkg/archive"
 	"github.com/goreleaser/goreleaser/v2/pkg/config"
 	"github.com/goreleaser/goreleaser/v2/pkg/context"
 	"github.com/stretchr/testify/assert"
@@ -462,9 +463,21 @@ func testSBOMCataloging(
 		file := filepath.Join(tmpdir, f)
 		require.NoError(tb, os.WriteFile(file, []byte("foo"), 0o644))
 	}
+
 	require.NoError(tb, os.WriteFile(filepath.Join(tmpdir, "linux_amd64", "artifact4"), []byte("foo"), 0o644))
 	artifacts = append(artifacts, "linux_amd64/artifact4")
-	require.NoError(tb, os.WriteFile(filepath.Join(tmpdir, "artifact5.tar.gz"), []byte("foo"), 0o644))
+
+	tgz, err := os.OpenFile(filepath.Join(tmpdir, "artifact5.tar.gz"), os.O_CREATE|os.O_TRUNC|os.O_RDWR, 0o644)
+	require.NoError(tb, err)
+	tb.Cleanup(func() { _ = tgz.Close() })
+	a, err := archive.New(tgz, "tar.gz")
+	require.NoError(tb, err)
+	require.NoError(tb, a.Add(config.File{
+		Source:      filepath.Join(tmpdir, "linux_amd64", "artifact4"),
+		Destination: "artifact",
+	}))
+	require.NoError(tb, a.Close())
+
 	artifacts = append(artifacts, "artifact5.tar.gz")
 	ctx.Artifacts.Add(&artifact.Artifact{
 		Name: "artifact1",
