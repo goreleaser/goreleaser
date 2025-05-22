@@ -6,10 +6,10 @@
 
   {{- else }}
   {{- if eq $element.Arch "amd64" }}
-  if Hardware::CPU.intel?
+  on_intel do
   {{- end }}
   {{- if eq $element.Arch "arm64" }}
-  if Hardware::CPU.arm?
+  on_arm do
   {{- end }}
     url "{{ $element.DownloadURL }}"
     sha256 "{{ $element.SHA256 }}"
@@ -17,7 +17,7 @@
   {{- end }}
 
   {{- if $.HasOnlyAmd64MacOsPkg }}
-  if Hardware::CPU.arm?
+  on_arm do
     def caveats
       <<~EOS
         The darwin_arm64 architecture is not supported for the {{ $.Name }}
