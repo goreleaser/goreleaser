@@ -229,8 +229,6 @@ type HomebrewCask struct {
 	URLTemplate           string       `yaml:"url_template,omitempty" json:"url_template,omitempty"`
 	CustomBlock           string       `yaml:"custom_block,omitempty" json:"custom_block,omitempty"`
 	IDs                   []string     `yaml:"ids,omitempty" json:"ids,omitempty"`
-	Goarm                 string       `yaml:"goarm,omitempty" json:"goarm,omitempty" jsonschema:"oneof_type=string;integer"`
-	Goamd64               string       `yaml:"goamd64,omitempty" json:"goamd64,omitempty"`
 	Service               string       `yaml:"service,omitempty" json:"service,omitempty"`
 
 	// Cask only:

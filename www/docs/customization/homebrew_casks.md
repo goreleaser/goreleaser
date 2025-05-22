@@ -55,18 +55,6 @@ homebrew_casks:
       zsh: completions/myapp.zsh
       fish: completions/myapp.fish
 
-    # GOARM to specify which 32-bit arm version to use if there are multiple
-    # versions from the build section. Brew casks support only one 32-bit
-    # version.
-    #
-    # Default: 6.
-    goarm: 7
-
-    # GOAMD64 to specify which amd64 version to use if there are multiple
-    # versions from the build section.
-    #
-    # Default: v1.
-    goamd64: v2
 
     # NOTE: make sure the url_template, the token and given repo (github or
     # gitlab) owner and name are from the same kind.
@@ -186,7 +174,6 @@ homebrew_casks:
       delete:
         - "~/.foo/bar"
         - "~/otherfile"
-
 
 {% include-markdown "../includes/repository.md" comments=false start='---\n\n' %}
 ```

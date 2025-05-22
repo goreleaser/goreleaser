@@ -147,9 +147,9 @@ func (t Type) String() string {
 	case UploadableSourceArchive:
 		return "Source"
 	case BrewFormula:
-		return "Homebrew Tap Formula"
+		return "Homebrew Formula"
 	case BrewCask:
-		return "Homebrew Tap Cask"
+		return "Homebrew Cask"
 	case KrewPluginManifest:
 		return "Krew Plugin Manifest"
 	case ScoopManifest:

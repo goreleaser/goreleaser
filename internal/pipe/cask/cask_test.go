@@ -74,12 +74,6 @@ var defaultTemplateData = templateData{
 			Arch:        "amd64",
 		},
 		{
-			DownloadURL: "https://github.com/caarlos0/test/releases/download/v0.1.3/test_Arm6.tar.gz",
-			SHA256:      "1633f61598ab0791e213135923624eb342196b3494909c91899bcd0560f84c67",
-			OS:          "linux",
-			Arch:        "arm",
-		},
-		{
 			DownloadURL: "https://github.com/caarlos0/test/releases/download/v0.1.3/test_Arm64.tar.gz",
 			SHA256:      "1633f61598ab0791e213135923624eb342196b3494909c91899bcd0560f84c67",
 			OS:          "linux",
@@ -133,10 +127,8 @@ func TestFullCask(t *testing.T) {
 			Uninstall: "post-uninstall",
 		},
 	}
-	data.CustomBlock = `devel do
-  url "https://github.com/caarlos0/test/releases/download/v0.1.3/test_Darwin_x86_64.tar.gz"
-  sha256 "1633f61598ab0791e213135923624eb342196b3494909c91899bcd0560f84c68"
-end`
+	data.CustomBlock = `# A custom block
+# This particular case is just a comment.`
 	cask, err := doBuildCask(testctx.NewWithCfg(config.Project{
 		ProjectName: "foo",
 	}), data)
@@ -344,8 +336,7 @@ func TestFullPipe(t *testing.T) {
 									Install: "system \"echo\"\ntouch \"/tmp/hi\"",
 								},
 							},
-							Binary:  "{{.ProjectName}}",
-							Goamd64: "v1",
+							Binary: "{{.ProjectName}}",
 						},
 					},
 					Env: []string{"FOO=foo_is_bar"},
@@ -469,7 +460,6 @@ func TestRunPipeNameTemplate(t *testing.T) {
 					Name:        "foo_{{ .Env.FOO_BAR }}",
 					Description: "Foo bar",
 					Homepage:    "https://goreleaser.com",
-					Goamd64:     "v1",
 					Binary:      "foo",
 					Repository: config.RepoRef{
 						Owner: "foo",
@@ -523,8 +513,7 @@ func TestRunPipeMultipleBrewsWithSkip(t *testing.T) {
 			ProjectName: "foo",
 			Casks: []config.HomebrewCask{
 				{
-					Name:    "foo",
-					Goamd64: "v1",
+					Name: "foo",
 					Repository: config.RepoRef{
 						Owner: "foo",
 						Name:  "bar",
@@ -535,8 +524,7 @@ func TestRunPipeMultipleBrewsWithSkip(t *testing.T) {
 					SkipUpload: "true",
 				},
 				{
-					Name:    "bar",
-					Goamd64: "v1",
+					Name: "bar",
 					Repository: config.RepoRef{
 						Owner: "foo",
 						Name:  "bar",
@@ -546,8 +534,7 @@ func TestRunPipeMultipleBrewsWithSkip(t *testing.T) {
 					},
 				},
 				{
-					Name:    "foobar",
-					Goamd64: "v1",
+					Name: "foobar",
 					Repository: config.RepoRef{
 						Owner: "foo",
 						Name:  "bar",
@@ -558,8 +545,7 @@ func TestRunPipeMultipleBrewsWithSkip(t *testing.T) {
 					SkipUpload: "true",
 				},
 				{
-					Name:    "baz",
-					Goamd64: "v1",
+					Name: "baz",
 					Repository: config.RepoRef{
 						Owner: "foo",
 						Name:  "bar",
@@ -609,255 +595,6 @@ func TestRunPipeMultipleBrewsWithSkip(t *testing.T) {
 	}
 }
 
-func TestRunPipeForMultipleAmd64Versions(t *testing.T) {
-	for name, fn := range map[string]func(ctx *context.Context){
-		"v1": func(ctx *context.Context) {
-			ctx.Config.Casks[0].Goamd64 = "v1"
-		},
-		"v2": func(ctx *context.Context) {
-			ctx.Config.Casks[0].Goamd64 = "v2"
-		},
-		"v3": func(ctx *context.Context) {
-			ctx.Config.Casks[0].Goamd64 = "v3"
-		},
-		"v4": func(ctx *context.Context) {
-			ctx.Config.Casks[0].Goamd64 = "v4"
-		},
-	} {
-		t.Run(name, func(t *testing.T) {
-			folder := t.TempDir()
-			ctx := testctx.NewWithCfg(
-				config.Project{
-					Dist:        folder,
-					ProjectName: name,
-					Casks: []config.HomebrewCask{
-						{
-							Name:        name,
-							Description: "Run pipe test cask",
-							Repository: config.RepoRef{
-								Owner: "test",
-								Name:  "test",
-							},
-							Homepage: "https://github.com/goreleaser",
-							Binary:   "foo",
-							Manpage:  "./man/foo.1.gz",
-						},
-					},
-					GitHubURLs: config.GitHubURLs{
-						Download: "https://github.com",
-					},
-					Release: config.Release{
-						GitHub: config.Repo{
-							Owner: "test",
-							Name:  "test",
-						},
-					},
-					Env: []string{"FOO=foo_is_bar"},
-				},
-				testctx.GitHubTokenType,
-				testctx.WithVersion("1.0.1"),
-				testctx.WithCurrentTag("v1.0.1"),
-			)
-			fn(ctx)
-			for _, a := range []struct {
-				name    string
-				goos    string
-				goarch  string
-				goamd64 string
-			}{
-				{
-					name:   "bin",
-					goos:   "darwin",
-					goarch: "arm64",
-				},
-				{
-					name:   "arm64",
-					goos:   "linux",
-					goarch: "arm64",
-				},
-				{
-					name:    "amd64v2",
-					goos:    "linux",
-					goarch:  "amd64",
-					goamd64: "v1",
-				},
-				{
-					name:    "amd64v2",
-					goos:    "linux",
-					goarch:  "amd64",
-					goamd64: "v2",
-				},
-				{
-					name:    "amd64v3",
-					goos:    "linux",
-					goarch:  "amd64",
-					goamd64: "v3",
-				},
-				{
-					name:    "amd64v3",
-					goos:    "linux",
-					goarch:  "amd64",
-					goamd64: "v4",
-				},
-			} {
-				path := filepath.Join(folder, fmt.Sprintf("%s.tar.gz", a.name))
-				ctx.Artifacts.Add(&artifact.Artifact{
-					Name:    fmt.Sprintf("%s.tar.gz", a.name),
-					Path:    path,
-					Goos:    a.goos,
-					Goarch:  a.goarch,
-					Goamd64: a.goamd64,
-					Type:    artifact.UploadableArchive,
-					Extra: map[string]any{
-						artifact.ExtraID:       a.name,
-						artifact.ExtraFormat:   "tar.gz",
-						artifact.ExtraBinaries: []string{a.name},
-					},
-				})
-				f, err := os.Create(path)
-				require.NoError(t, err)
-				require.NoError(t, f.Close())
-			}
-
-			client := client.NewMock()
-			distFile := filepath.Join(folder, "homebrew", name+".rb")
-
-			require.NoError(t, runAll(ctx, client))
-			require.NoError(t, publishAll(ctx, client))
-			require.True(t, client.CreatedFile)
-			golden.RequireEqualRb(t, []byte(client.Content))
-
-			distBts, err := os.ReadFile(distFile)
-			require.NoError(t, err)
-			require.Equal(t, client.Content, string(distBts))
-		})
-	}
-}
-
-func TestRunPipeForMultipleArmVersions(t *testing.T) {
-	for name, fn := range map[string]func(ctx *context.Context){
-		"multiple_armv5": func(ctx *context.Context) {
-			ctx.Config.Casks[0].Goarm = "5"
-		},
-		"multiple_armv6": func(ctx *context.Context) {
-			ctx.Config.Casks[0].Goarm = "6"
-		},
-		"multiple_armv7": func(ctx *context.Context) {
-			ctx.Config.Casks[0].Goarm = "7"
-		},
-	} {
-		t.Run(name, func(t *testing.T) {
-			folder := t.TempDir()
-			ctx := testctx.NewWithCfg(
-				config.Project{
-					Dist:        folder,
-					ProjectName: name,
-					Casks: []config.HomebrewCask{
-						{
-							Name:        name,
-							Description: "Run pipe test cask and FOO={{ .Env.FOO }}",
-							Caveats:     "don't do this {{ .ProjectName }}",
-							Dependencies: []config.HomebrewCaskDependency{
-								{Formula: "zsh"},
-								{Cask: "bash"},
-							},
-							Conflicts: []config.HomebrewCaskConflict{
-								{Formula: "zsh"},
-								{Cask: "bash"},
-							},
-							Binary: "foo",
-							Repository: config.RepoRef{
-								Owner: "test",
-								Name:  "test",
-							},
-							Homepage: "https://github.com/goreleaser",
-						},
-					},
-					GitHubURLs: config.GitHubURLs{
-						Download: "https://github.com",
-					},
-					Release: config.Release{
-						GitHub: config.Repo{
-							Owner: "test",
-							Name:  "test",
-						},
-					},
-					Env: []string{"FOO=foo_is_bar"},
-				},
-				testctx.GitHubTokenType,
-				testctx.WithVersion("1.0.1"),
-				testctx.WithCurrentTag("v1.0.1"),
-			)
-			fn(ctx)
-			for _, a := range []struct {
-				name   string
-				goos   string
-				goarch string
-				goarm  string
-			}{
-				{
-					name:   "bin",
-					goos:   "darwin",
-					goarch: "amd64",
-				},
-				{
-					name:   "arm64",
-					goos:   "linux",
-					goarch: "arm64",
-				},
-				{
-					name:   "armv5",
-					goos:   "linux",
-					goarch: "arm",
-					goarm:  "5",
-				},
-				{
-					name:   "armv6",
-					goos:   "linux",
-					goarch: "arm",
-					goarm:  "6",
-				},
-				{
-					name:   "armv7",
-					goos:   "linux",
-					goarch: "arm",
-					goarm:  "7",
-				},
-			} {
-				path := filepath.Join(folder, fmt.Sprintf("%s.tar.gz", a.name))
-				ctx.Artifacts.Add(&artifact.Artifact{
-					Name:   fmt.Sprintf("%s.tar.gz", a.name),
-					Path:   path,
-					Goos:   a.goos,
-					Goarch: a.goarch,
-					Goarm:  a.goarm,
-					Type:   artifact.UploadableArchive,
-					Extra: map[string]any{
-						artifact.ExtraID:       a.name,
-						artifact.ExtraFormat:   "tar.gz",
-						artifact.ExtraBinaries: []string{a.name},
-					},
-				})
-				f, err := os.Create(path)
-				require.NoError(t, err)
-				require.NoError(t, f.Close())
-			}
-
-			client := client.NewMock()
-			distFile := filepath.Join(folder, "homebrew", name+".rb")
-
-			require.NoError(t, runAll(ctx, client))
-			require.NoError(t, publishAll(ctx, client))
-			require.True(t, client.CreatedFile)
-			golden.RequireEqualRb(t, []byte(client.Content))
-
-			distBts, err := os.ReadFile(distFile)
-			require.NoError(t, err)
-			require.Equal(t, client.Content, string(distBts))
-		})
-	}
-}
-
 func TestRunPipeNoBuilds(t *testing.T) {
 	ctx := testctx.NewWithCfg(config.Project{
 		Casks: []config.HomebrewCask{
@@ -873,9 +610,7 @@ func TestRunPipeNoBuilds(t *testing.T) {
 	client := client.NewMock()
 	require.NoError(t, Pipe{}.Default(ctx))
 	require.EqualError(t, runAll(ctx, client), ErrNoArchivesFound{
-		ids:     []string{"foo"},
-		goarm:   "6",
-		goamd64: "v1",
+		ids: []string{"foo"},
 	}.Error())
 	require.False(t, client.CreatedFile)
 }
@@ -903,7 +638,6 @@ func TestRunPipeMultipleArchivesSameOsBuild(t *testing.T) {
 		osarchs       []struct {
 			goos   string
 			goarch string
-			goarm  string
 		}
 	}{
 		{
@@ -911,7 +645,6 @@ func TestRunPipeMultipleArchivesSameOsBuild(t *testing.T) {
 			osarchs: []struct {
 				goos   string
 				goarch string
-				goarm  string
 			}{
 				{
 					goos:   "darwin",
@@ -928,7 +661,6 @@ func TestRunPipeMultipleArchivesSameOsBuild(t *testing.T) {
 			osarchs: []struct {
 				goos   string
 				goarch string
-				goarm  string
 			}{
 				{
 					goos:   "linux",
@@ -945,7 +677,6 @@ func TestRunPipeMultipleArchivesSameOsBuild(t *testing.T) {
 			osarchs: []struct {
 				goos   string
 				goarch string
-				goarm  string
 			}{
 				{
 					goos:   "linux",
@@ -954,49 +685,6 @@ func TestRunPipeMultipleArchivesSameOsBuild(t *testing.T) {
 				{
 					goos:   "linux",
 					goarch: "arm64",
-				},
-			},
-		},
-		{
-			expectedError: ErrMultipleArchivesSameOS,
-			osarchs: []struct {
-				goos   string
-				goarch string
-				goarm  string
-			}{
-				{
-					goos:   "linux",
-					goarch: "arm",
-					goarm:  "6",
-				},
-				{
-					goos:   "linux",
-					goarch: "arm",
-					goarm:  "6",
-				},
-			},
-		},
-		{
-			expectedError: ErrMultipleArchivesSameOS,
-			osarchs: []struct {
-				goos   string
-				goarch string
-				goarm  string
-			}{
-				{
-					goos:   "linux",
-					goarch: "arm",
-					goarm:  "5",
-				},
-				{
-					goos:   "linux",
-					goarch: "arm",
-					goarm:  "6",
-				},
-				{
-					goos:   "linux",
-					goarch: "arm",
-					goarm:  "7",
 				},
 			},
 		},
@@ -1140,7 +828,6 @@ func TestRunPipeNoUpload(t *testing.T) {
 					Owner: "test",
 					Name:  "test",
 				},
-				Goamd64: "v1",
 			},
 		},
 		Env: []string{"SKIP_UPLOAD=true"},
@@ -1199,7 +886,6 @@ func TestRunEmptyTokenType(t *testing.T) {
 					Owner: "test",
 					Name:  "test",
 				},
-				Goamd64: "v1",
 			},
 		},
 	}, testctx.WithCurrentTag("v1.0.0"))
@@ -1372,12 +1058,10 @@ func TestRunPipeUniversalBinaryNotReplacing(t *testing.T) {
 					IDs: []string{
 						"unibin",
 					},
-					Goamd64: "v1",
-					Binary:  "unibin",
+					Binary: "unibin",
 				},
 			},
 		},
-
 		testctx.WithCurrentTag("v1.0.1"),
 		testctx.WithVersion("1.0.1"),
 	)

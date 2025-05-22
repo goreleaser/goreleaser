@@ -17,7 +17,6 @@ import (
 	"github.com/goreleaser/goreleaser/v2/internal/artifact"
 	"github.com/goreleaser/goreleaser/v2/internal/client"
 	"github.com/goreleaser/goreleaser/v2/internal/commitauthor"
-	"github.com/goreleaser/goreleaser/v2/internal/experimental"
 	"github.com/goreleaser/goreleaser/v2/internal/pipe"
 	"github.com/goreleaser/goreleaser/v2/internal/skips"
 	"github.com/goreleaser/goreleaser/v2/internal/tmpl"
@@ -33,13 +32,11 @@ var ErrMultipleArchivesSameOS = errors.New("one tap can handle only one archive 
 
 // ErrNoArchivesFound happens when 0 archives are found.
 type ErrNoArchivesFound struct {
-	goarm   string
-	goamd64 string
-	ids     []string
+	ids []string
 }
 
 func (e ErrNoArchivesFound) Error() string {
-	return fmt.Sprintf("no linux/macos archives found matching goos=[darwin linux] goarch=[amd64 arm64 arm] goamd64=%s goarm=%s ids=%v", e.goamd64, e.goarm, e.ids)
+	return fmt.Sprintf("no linux/macos archives found matching goos=[darwin linux] goarch=[amd64 arm64] ids=%v", e.ids)
 }
 
 // Pipe for brew deployment.
@@ -62,12 +59,6 @@ func (Pipe) Default(ctx *context.Context) error {
 		}
 		if brew.Name == "" {
 			brew.Name = ctx.Config.ProjectName
-		}
-		if brew.Goarm == "" {
-			brew.Goarm = experimental.DefaultGOARM()
-		}
-		if brew.Goamd64 == "" {
-			brew.Goamd64 = "v1"
 		}
 		if brew.Directory == "" {
 			brew.Directory = "Casks"
@@ -207,16 +198,9 @@ func doRun(ctx *context.Context, brew config.HomebrewCask, cl client.ReleaseURLT
 			artifact.ByGoos("linux"),
 		),
 		artifact.Or(
-			artifact.And(
-				artifact.ByGoarch("amd64"),
-				artifact.ByGoamd64(brew.Goamd64),
-			),
+			artifact.ByGoarch("amd64"),
 			artifact.ByGoarch("arm64"),
 			artifact.ByGoarch("all"),
-			artifact.And(
-				artifact.ByGoarch("arm"),
-				artifact.ByGoarm(brew.Goarm),
-			),
 		),
 		artifact.Or(
 			artifact.And(
@@ -234,9 +218,7 @@ func doRun(ctx *context.Context, brew config.HomebrewCask, cl client.ReleaseURLT
 	archives := ctx.Artifacts.Filter(artifact.And(filters...)).List()
 	if len(archives) == 0 {
 		return ErrNoArchivesFound{
-			goamd64: brew.Goamd64,
-			goarm:   brew.Goarm,
-			ids:     brew.IDs,
+			ids: brew.IDs,
 		}
 	}
 
