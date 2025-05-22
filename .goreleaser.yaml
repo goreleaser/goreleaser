@@ -222,7 +222,6 @@ homebrew_casks:
   - repository:
       owner: goreleaser
       name: homebrew-tap
-    goarm: "7"
     homepage: https://goreleaser.com
     description: Release engineering, simplified
     license: MIT
