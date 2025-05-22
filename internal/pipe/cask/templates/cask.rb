@@ -38,22 +38,16 @@ cask "{{ .Name }}" do
   {{- end }}
   {{- end }}
 
-  {{ if and .MacOSPackages .LinuxPackages }}
+  {{ if .MacOSPackages }}
   on_macos do
   {{- include "macos_packages" . | indent 2 }}
   end
+  {{ end }}
 
+  {{ if .LinuxPackages }}
   on_linux do
   {{- include "linux_packages" . | indent 2 }}
   end
-  {{ end }}
-
-  {{ if and (.MacOSPackages) (not .LinuxPackages) }}
-  {{- template "macos_packages" . }}
-  {{ end }}
-
-  {{ if and (not .MacOSPackages) (.LinuxPackages) }}
-  {{- template "linux_packages" . }}
   {{ end }}
 
   {{- with .Conflicts }}
