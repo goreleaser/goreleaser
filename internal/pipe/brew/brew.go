@@ -57,6 +57,7 @@ func (Pipe) Skip(ctx *context.Context) bool {
 
 func (Pipe) Default(ctx *context.Context) error {
 	for i := range ctx.Config.Brews {
+		deprecate.Notice(ctx, "brews")
 		brew := &ctx.Config.Brews[i]
 
 		brew.CommitAuthor = commitauthor.Default(brew.CommitAuthor)
@@ -79,7 +80,6 @@ func (Pipe) Default(ctx *context.Context) error {
 }
 
 func (Pipe) Run(ctx *context.Context) error {
-	deprecate.Notice(ctx, "brews")
 	cli, err := client.NewReleaseClient(ctx)
 	if err != nil {
 		return err
