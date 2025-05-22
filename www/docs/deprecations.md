@@ -57,19 +57,23 @@ details.
 
 Once you do the first release this way, you might also want to delete the old
 _Formulas_ from your _Tap_.
+You may also want to make the _Cask_ conflict with the previous _Formula_.
 
 === "Before"
 
     ```yaml
     brews:
-    - # ...
+    - name: foo
     ```
 
 === "After"
 
     ```yaml
     homebrew_casks:
-    - # ...
+    - name: foo
+      # Optionally:
+      conflicts:
+        formula: foo
     ```
 
 ### archives.builds
