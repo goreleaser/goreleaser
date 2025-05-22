@@ -11,6 +11,7 @@ import (
 	"github.com/goreleaser/goreleaser/v2/internal/pipe/before"
 	"github.com/goreleaser/goreleaser/v2/internal/pipe/brew"
 	"github.com/goreleaser/goreleaser/v2/internal/pipe/build"
+	"github.com/goreleaser/goreleaser/v2/internal/pipe/cask"
 	"github.com/goreleaser/goreleaser/v2/internal/pipe/changelog"
 	"github.com/goreleaser/goreleaser/v2/internal/pipe/checksums"
 	"github.com/goreleaser/goreleaser/v2/internal/pipe/chocolatey"
@@ -140,6 +141,7 @@ var Pipeline = append(
 	winget.Pipe{},
 	// create brew tap
 	brew.Pipe{},
+	cask.Pipe{},
 	// krew plugins
 	krew.Pipe{},
 	// create scoop buckets

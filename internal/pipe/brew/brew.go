@@ -45,6 +45,8 @@ func (e ErrNoArchivesFound) Error() string {
 }
 
 // Pipe for brew deployment.
+//
+// Deprecated: in favor of [cask.Pipe].
 type Pipe struct{}
 
 func (Pipe) String() string        { return "homebrew tap formula" }
