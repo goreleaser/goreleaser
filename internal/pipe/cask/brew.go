@@ -353,8 +353,8 @@ func doBuildCask(ctx *context.Context, data templateData) (string, error) {
 }
 
 func dataFor(ctx *context.Context, cfg config.HomebrewCask, cl client.ReleaseURLTemplater, artifacts []*artifact.Artifact) (templateData, error) {
-	slices.SortFunc(cfg.Dependencies, func(a, b config.HomebrewDependency) int {
-		return cmp.Compare(a.Name, b.Name)
+	slices.SortFunc(cfg.Dependencies, func(a, b config.HomebrewCaskDependency) int {
+		return cmp.Compare(cmp.Or(a.Cask, a.Formula), cmp.Or(b.Cask, b.Formula))
 	})
 	result := templateData{
 		Name:          caskNameFor(cfg.Name),

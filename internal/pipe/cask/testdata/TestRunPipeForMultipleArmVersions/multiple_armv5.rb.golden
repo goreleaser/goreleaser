@@ -7,8 +7,8 @@ cask "multiple_armv5" do
   homepage "https://github.com/goreleaser"
   version "1.0.1"
 
-  depends_on "bash" => :recommended
-  depends_on "zsh"
+  depends_on cask: "bash"
+  depends_on formula: "zsh"
   on_macos do
     url "https://dummyhost/download/v1.0.1/bin.tar.gz"
     sha256 "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
@@ -36,8 +36,8 @@ cask "multiple_armv5" do
   end
 
 
-  conflicts_with "gtk+"
-  conflicts_with "qt"
+  conflicts_with formula: "zsh"
+  conflicts_with cask: "bash"
 
   caveats do
     don't do this multiple_armv5

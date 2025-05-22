@@ -112,8 +112,14 @@ func TestFullCask(t *testing.T) {
 	data := defaultTemplateData
 	data.License = "MIT"
 	data.Caveats = []string{"Here are some caveats"}
-	data.Dependencies = []config.HomebrewDependency{{Name: "gtk+"}}
-	data.Conflicts = []string{"svn"}
+	data.Dependencies = []config.HomebrewCaskDependency{
+		{Formula: "goreleaser"},
+		{Cask: "goreleaser"},
+	}
+	data.Conflicts = []config.HomebrewCaskConflict{
+		{Formula: "goreleaser"},
+		{Cask: "goreleaser"},
+	}
 	data.PostFlight = []string{`touch "/tmp/foo"`, `system "echo", "done"`}
 	data.CustomBlock = []string{"devel do", `  url "https://github.com/caarlos0/test/releases/download/v0.1.3/test_Darwin_x86_64.tar.gz"`, `  sha256 "1633f61598ab0791e213135923624eb342196b3494909c91899bcd0560f84c68"`, "end"}
 	cask, err := doBuildCask(testctx.NewWithCfg(config.Project{
@@ -324,14 +330,17 @@ func TestFullPipe(t *testing.T) {
 							},
 							Description: "Run pipe test formula and FOO={{ .Env.FOO }}",
 							Caveats:     "don't do this {{ .ProjectName }}",
-							Dependencies: []config.HomebrewDependency{
-								{Name: "zsh", Type: "optional"},
-								{Name: "bash", Version: "3.2.57"},
-								{Name: "fish", Type: "optional", Version: "v1.2.3"},
-								{Name: "powershell", Type: "optional", OS: "mac"},
-								{Name: "ash", Version: "1.0.0", OS: "linux"},
+							Dependencies: []config.HomebrewCaskDependency{
+								{Formula: "zsh"},
+								{Formula: "bash"},
+								{Cask: "fish"},
+								{Cask: "powershell"},
+								{Formula: "ash"},
 							},
-							Conflicts:  []string{"gtk+", "qt"},
+							Conflicts: []config.HomebrewCaskConflict{
+								{Formula: "bash"},
+								{Cask: "fish"},
+							},
 							Service:    "foo.plist",
 							PostFlight: "system \"echo\"\ntouch \"/tmp/hi\"",
 							Binary:     "{{.ProjectName}}",
@@ -747,12 +756,15 @@ func TestRunPipeForMultipleArmVersions(t *testing.T) {
 							Name:        name,
 							Description: "Run pipe test cask and FOO={{ .Env.FOO }}",
 							Caveats:     "don't do this {{ .ProjectName }}",
-							Dependencies: []config.HomebrewDependency{
-								{Name: "zsh"},
-								{Name: "bash", Type: "recommended"},
+							Dependencies: []config.HomebrewCaskDependency{
+								{Formula: "zsh"},
+								{Cask: "bash"},
 							},
-							Conflicts: []string{"gtk+", "qt"},
-							Binary:    "foo",
+							Conflicts: []config.HomebrewCaskConflict{
+								{Formula: "zsh"},
+								{Cask: "bash"},
+							},
+							Binary: "foo",
 							Repository: config.RepoRef{
 								Owner: "test",
 								Name:  "test",

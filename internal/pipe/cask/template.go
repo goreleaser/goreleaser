@@ -14,8 +14,8 @@ type templateData struct {
 	License              string
 	Caveats              []string
 	PostFlight           []string
-	Dependencies         []config.HomebrewDependency
-	Conflicts            []string
+	Dependencies         []config.HomebrewCaskDependency
+	Conflicts            []config.HomebrewCaskConflict
 	CustomRequire        string
 	CustomBlock          []string
 	LinuxPackages        []releasePackage

@@ -31,10 +31,13 @@ cask "{{ .Name }}" do
 
   {{- with .Dependencies }}
   {{ range $index, $element := . }}
-  depends_on "{{ .Name }}"
-  {{- if .Type }} => :{{ .Type }}{{- else if .Version }} => "{{ .Version }}"{{- end }}
-  {{- with .OS }} if OS.{{ . }}?{{- end }}
+  {{- with .Cask }}
+  depends_on cask: "{{ . }}"
   {{- end }}
+  {{- with .Formula }}
+  depends_on formula: "{{ . }}"
+  {{- end }}
+  {{- end -}}
   {{- end -}}
 
   {{- if and .MacOSPackages .LinuxPackages }}
@@ -58,7 +61,12 @@ cask "{{ .Name }}" do
   {{- with .Conflicts }}
 
   {{ range $index, $element := . }}
-  conflicts_with "{{ . }}"
+  {{- with .Cask }}
+  conflicts_with cask: "{{ . }}"
+  {{- end }}
+  {{- with .Formula }}
+  conflicts_with formula: "{{ . }}"
+  {{- end }}
   {{- end }}
   {{- end }}
 

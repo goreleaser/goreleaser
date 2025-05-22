@@ -7,11 +7,11 @@ cask "default_gitlab" do
   homepage "https://gitlab.com/goreleaser"
   version "1.0.1"
 
-  depends_on "ash" => "1.0.0" if OS.linux?
-  depends_on "bash" => "3.2.57"
-  depends_on "fish" => :optional
-  depends_on "powershell" => :optional if OS.mac?
-  depends_on "zsh" => :optional
+  depends_on formula: "ash"
+  depends_on formula: "bash"
+  depends_on cask: "fish"
+  depends_on cask: "powershell"
+  depends_on formula: "zsh"
   on_macos do
     if Hardware::CPU.intel?
       url "https://dummyhost/download/v1.0.1/bin.tgz"
@@ -31,8 +31,8 @@ cask "default_gitlab" do
   end
 
 
-  conflicts_with "gtk+"
-  conflicts_with "qt"
+  conflicts_with formula: "bash"
+  conflicts_with cask: "fish"
 
   postflight do
     system "echo"

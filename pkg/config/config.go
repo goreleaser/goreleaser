@@ -119,9 +119,6 @@ type HomebrewDependency struct {
 	OS      string `yaml:"os,omitempty" json:"os,omitempty" jsonschema:"enum=mac,enum=linux"`
 }
 
-// type alias to prevent stack overflowing in the custom unmarshaler.
-type homebrewDependency HomebrewDependency
-
 type AUR struct {
 	Name                  string       `yaml:"name,omitempty" json:"name,omitempty"`
 	IDs                   []string     `yaml:"ids,omitempty" json:"ids,omitempty"`
@@ -219,34 +216,60 @@ type Homebrew struct {
 
 // HomebrewCask contains the homebrew_casks section.
 type HomebrewCask struct {
-	Name                  string               `yaml:"name,omitempty" json:"name,omitempty"`
-	Repository            RepoRef              `yaml:"repository,omitempty" json:"repository,omitempty"`
-	CommitAuthor          CommitAuthor         `yaml:"commit_author,omitempty" json:"commit_author,omitempty"`
-	CommitMessageTemplate string               `yaml:"commit_msg_template,omitempty" json:"commit_msg_template,omitempty"`
-	Directory             string               `yaml:"directory,omitempty" json:"directory,omitempty"`
-	Caveats               string               `yaml:"caveats,omitempty" json:"caveats,omitempty"`
-	Dependencies          []HomebrewDependency `yaml:"dependencies,omitempty" json:"dependencies,omitempty"`
-	Conflicts             []string             `yaml:"conflicts,omitempty" json:"conflicts,omitempty"`
-	Description           string               `yaml:"description,omitempty" json:"description,omitempty"`
-	Homepage              string               `yaml:"homepage,omitempty" json:"homepage,omitempty"`
-	License               string               `yaml:"license,omitempty" json:"license,omitempty"`
-	SkipUpload            string               `yaml:"skip_upload,omitempty" json:"skip_upload,omitempty" jsonschema:"oneof_type=string;boolean"`
-	DownloadStrategy      string               `yaml:"download_strategy,omitempty" json:"download_strategy,omitempty"`
-	URLTemplate           string               `yaml:"url_template,omitempty" json:"url_template,omitempty"`
-	URLHeaders            []string             `yaml:"url_headers,omitempty" json:"url_headers,omitempty"`
-	CustomRequire         string               `yaml:"custom_require,omitempty" json:"custom_require,omitempty"`
-	CustomBlock           string               `yaml:"custom_block,omitempty" json:"custom_block,omitempty"`
-	IDs                   []string             `yaml:"ids,omitempty" json:"ids,omitempty"`
-	Goarm                 string               `yaml:"goarm,omitempty" json:"goarm,omitempty" jsonschema:"oneof_type=string;integer"`
-	Goamd64               string               `yaml:"goamd64,omitempty" json:"goamd64,omitempty"`
-	Service               string               `yaml:"service,omitempty" json:"service,omitempty"`
+	Name                  string       `yaml:"name,omitempty" json:"name,omitempty"`
+	Repository            RepoRef      `yaml:"repository,omitempty" json:"repository,omitempty"`
+	CommitAuthor          CommitAuthor `yaml:"commit_author,omitempty" json:"commit_author,omitempty"`
+	CommitMessageTemplate string       `yaml:"commit_msg_template,omitempty" json:"commit_msg_template,omitempty"`
+	Directory             string       `yaml:"directory,omitempty" json:"directory,omitempty"`
+	Caveats               string       `yaml:"caveats,omitempty" json:"caveats,omitempty"`
+	Description           string       `yaml:"description,omitempty" json:"description,omitempty"`
+	Homepage              string       `yaml:"homepage,omitempty" json:"homepage,omitempty"`
+	License               string       `yaml:"license,omitempty" json:"license,omitempty"`
+	SkipUpload            string       `yaml:"skip_upload,omitempty" json:"skip_upload,omitempty" jsonschema:"oneof_type=string;boolean"`
+	DownloadStrategy      string       `yaml:"download_strategy,omitempty" json:"download_strategy,omitempty"`
+	URLTemplate           string       `yaml:"url_template,omitempty" json:"url_template,omitempty"`
+	URLHeaders            []string     `yaml:"url_headers,omitempty" json:"url_headers,omitempty"`
+	CustomRequire         string       `yaml:"custom_require,omitempty" json:"custom_require,omitempty"`
+	CustomBlock           string       `yaml:"custom_block,omitempty" json:"custom_block,omitempty"`
+	IDs                   []string     `yaml:"ids,omitempty" json:"ids,omitempty"`
+	Goarm                 string       `yaml:"goarm,omitempty" json:"goarm,omitempty" jsonschema:"oneof_type=string;integer"`
+	Goamd64               string       `yaml:"goamd64,omitempty" json:"goamd64,omitempty"`
+	Service               string       `yaml:"service,omitempty" json:"service,omitempty"`
 
 	// Cask only:
-	Binary      string                  `yaml:"binary,omitempty" json:"binary,omitempty"`
-	Zap         []string                `yaml:"zap,omitempty" json:"zap,omitempty"`
-	Manpage     string                  `yaml:"manpage,omitempty" json:"manpage,omitempty"`
-	Completions HomebrewCaskCompletions `yaml:"completions,omitempty" json:"completions,omitempty"`
-	PostFlight  string                  `yaml:"post_flight,omitempty" json:"post_flight,omitempty"`
+	Binary              string                   `yaml:"binary,omitempty" json:"binary,omitempty"`
+	Zap                 []string                 `yaml:"zap,omitempty" json:"zap,omitempty"`
+	Manpage             string                   `yaml:"manpage,omitempty" json:"manpage,omitempty"`
+	Completions         HomebrewCaskCompletions  `yaml:"completions,omitempty" json:"completions,omitempty"`
+	PreFlight           string                   `yaml:"pre_flight,omitempty" json:"pre_flight,omitempty"`
+	PostFlight          string                   `yaml:"post_flight,omitempty" json:"post_flight,omitempty"`
+	UninstallPreFlight  string                   `yaml:"uninstall_pre_flight,omitempty" json:"uninstall_pre_flight,omitempty"`
+	UninstallPostFlight string                   `yaml:"uninstall_post_flight,omitempty" json:"uninstall_post_flight,omitempty"`
+	Dependencies        []HomebrewCaskDependency `yaml:"dependencies,omitempty" json:"dependencies,omitempty"`
+	Conflicts           []HomebrewCaskConflict   `yaml:"conflicts,omitempty" json:"conflicts,omitempty"`
+	Hooks               HomebrewCaskHooks        `yaml:"hooks,omitempty" json:"hooks,omitempty"`
+}
+
+type HomebrewCaskHooks struct {
+	Pre  HomebrewCaskHook `yaml:"pre,omitempty" json:"pre,omitempty"`
+	Post HomebrewCaskHook `yaml:"post,omitempty" json:"post,omitempty"`
+}
+
+type HomebrewCaskHook struct {
+	Install   string `yaml:"install,omitempty" json:"install,omitempty"`
+	Uninstall string `yaml:"uninstall,omitempty" json:"uninstall,omitempty"`
+}
+
+type HomebrewCaskConflict struct {
+	Cask    string `yaml:"cask,omitempty" json:"cask,omitempty"`
+	Formula string `yaml:"formula,omitempty" json:"formula,omitempty"`
+}
+
+type HomebrewCaskDependency struct {
+	Cask    string `yaml:"cask,omitempty" json:"cask,omitempty"`
+	Formula string `yaml:"formula,omitempty" json:"formula,omitempty"`
+	// TODO: support macos, arch
+	// https://github.com/Homebrew/brew/blob/master/docs/Cask-Cookbook.md#stanza-depends_on
 }
 
 type HomebrewCaskCompletions struct {

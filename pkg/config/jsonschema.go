@@ -107,6 +107,9 @@ func (a PullRequestBase) JSONSchema() *jsonschema.Schema {
 	}
 }
 
+// type alias to prevent stack overflowing in the custom unmarshaler.
+type homebrewDependency HomebrewDependency
+
 func (a HomebrewDependency) JSONSchema() *jsonschema.Schema {
 	reflector := jsonschema.Reflector{
 		ExpandedStruct: true,
