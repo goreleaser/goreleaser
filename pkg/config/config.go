@@ -79,7 +79,7 @@ func (r Repo) isSCM() bool {
 // RepoRef represents any kind of repo which may differ
 // from the one we are building from and may therefore
 // also require separate authentication
-// e.g. Homebrew Tap, Scoop bucket.
+// e.g. Homebrew, Scoop bucket.
 type RepoRef struct {
 	Owner  string `yaml:"owner,omitempty" json:"owner,omitempty"`
 	Name   string `yaml:"name,omitempty" json:"name,omitempty"`

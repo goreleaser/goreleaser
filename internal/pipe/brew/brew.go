@@ -49,7 +49,7 @@ func (e ErrNoArchivesFound) Error() string {
 // Deprecated: in favor of [cask.Pipe].
 type Pipe struct{}
 
-func (Pipe) String() string        { return "homebrew tap formula" }
+func (Pipe) String() string        { return "homebrew formula" }
 func (Pipe) ContinueOnError() bool { return true }
 func (Pipe) Skip(ctx *context.Context) bool {
 	return skips.Any(ctx, skips.Homebrew) || len(ctx.Config.Brews) == 0

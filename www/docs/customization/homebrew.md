@@ -1,7 +1,7 @@
-# Homebrew Taps
+# Homebrew Formula
 
-> Deprecated in v2.10-unreleased.
-> Use [Homebrew Casks](./homebrew_casks.md) instead.
+> [Deprecated](./../deprecations.md#brews) in v2.10-unreleased.
+> [Homebrew Casks](./homebrew_casks.md) should be used instead.
 
 After releasing to GitHub, GitLab, or Gitea, GoReleaser can generate and publish
 a _homebrew-tap_ recipe into a repository that you have access to.

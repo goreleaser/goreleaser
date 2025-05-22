@@ -230,8 +230,6 @@ homebrew_casks:
       - formula: goreleaser-pro
       - formula: goreleaser
       - cask: goreleaser-pro
-    dependencies:
-      - formula: git # maybe not needed?
     manpage: "manpages/goreleaser.1.gz"
     completions:
       bash: "completions/goreleaser.bash"

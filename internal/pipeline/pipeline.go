@@ -139,8 +139,9 @@ var Pipeline = append(
 	nix.NewBuild(),
 	// winget installers
 	winget.Pipe{},
-	// create brew tap
+	// homebrew formula
 	brew.Pipe{},
+	// homebrew cask
 	cask.Pipe{},
 	// krew plugins
 	krew.Pipe{},

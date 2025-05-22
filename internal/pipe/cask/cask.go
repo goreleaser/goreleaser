@@ -42,7 +42,7 @@ func (e ErrNoArchivesFound) Error() string {
 // Pipe for brew deployment.
 type Pipe struct{}
 
-func (Pipe) String() string        { return "homebrew tap cask" }
+func (Pipe) String() string        { return "homebrew cask" }
 func (Pipe) ContinueOnError() bool { return true }
 func (Pipe) Skip(ctx *context.Context) bool {
 	return skips.Any(ctx, skips.Homebrew) || len(ctx.Config.Casks) == 0
