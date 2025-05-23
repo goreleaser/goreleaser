@@ -250,14 +250,6 @@ type HomebrewCaskUninstall struct {
 	Trash     []string `yaml:"trash,omitempty" json:"trash,omitempty"`
 }
 
-func (u HomebrewCaskUninstall) HasAny() bool {
-	return len(u.Launchctl) > 0 ||
-		len(u.Quit) > 0 ||
-		len(u.LoginItem) > 0 ||
-		len(u.Delete) > 0 ||
-		len(u.Trash) > 0
-}
-
 type HomebrewCaskHooks struct {
 	Pre  HomebrewCaskHook `yaml:"pre,omitempty" json:"pre,omitempty"`
 	Post HomebrewCaskHook `yaml:"post,omitempty" json:"post,omitempty"`
