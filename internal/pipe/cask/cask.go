@@ -302,6 +302,8 @@ func doBuildCask(ctx *context.Context, data templateData) (string, error) {
 			pad := strings.Repeat(" ", spaces)
 			return pad + strings.ReplaceAll(v, "\n", "\n"+pad)
 		},
+		"uninstall": uninstallString,
+		"zap":       zapString,
 	}).ParseFS(templates, "templates/*.rb")
 	if err != nil {
 		return "", err
@@ -407,14 +409,6 @@ func dataFor(ctx *context.Context, cfg config.HomebrewCask, cl client.ReleaseURL
 
 func compareByArch(a, b releasePackage) int {
 	return cmp.Compare(a.Arch, b.Arch)
-}
-
-func split(s string) []string {
-	strings := strings.Split(strings.TrimSpace(s), "\n")
-	if len(strings) == 1 && strings[0] == "" {
-		return []string{}
-	}
-	return strings
 }
 
 func caskNameFor(name string) string {
