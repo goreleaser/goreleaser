@@ -86,9 +86,6 @@ func setConfigDefaults(cfg *config.SBOM) error {
 	if cfg.ID == "" {
 		cfg.ID = "default"
 	}
-	if cfg.Enabled == "" {
-		cfg.Enabled = "true"
-	}
 	if cfg.Artifacts != "any" && len(cfg.Documents) > 1 {
 		return fmt.Errorf("multiple SBOM outputs when artifacts=%q is unsupported", cfg.Artifacts)
 	}
@@ -105,11 +102,11 @@ func (Pipe) Run(ctx *context.Context) error {
 }
 
 func catalogTask(ctx *context.Context, cfg config.SBOM) error {
-	enabled, err := tmpl.New(ctx).Bool(cfg.Enabled)
+	disabled, err := tmpl.New(ctx).Bool(cfg.Disable)
 	if err != nil {
 		return err
 	}
-	if !enabled {
+	if disabled {
 		return pipe.Skip("configuration is disabled")
 	}
 	var filters []artifact.Filter

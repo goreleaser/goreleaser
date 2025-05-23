@@ -217,20 +217,20 @@ func TestSkipCataloging(t *testing.T) {
 	})
 }
 
-func TestEnabled(t *testing.T) {
-	t.Run("enabled true", func(t *testing.T) {
+func TestDisable(t *testing.T) {
+	t.Run("enabled", func(t *testing.T) {
 		ctx := testctx.NewWithCfg(config.Project{
 			SBOMs: []config.SBOM{
-				{Enabled: "true"},
+				{Disable: "false"},
 			},
 		})
 		require.NoError(t, Pipe{}.Run(ctx))
 	})
 
-	t.Run("enabled false", func(t *testing.T) {
+	t.Run("disabled", func(t *testing.T) {
 		ctx := testctx.NewWithCfg(config.Project{
 			SBOMs: []config.SBOM{
-				{Enabled: "false"},
+				{Disable: "true"},
 			},
 		})
 		testlib.AssertSkipped(t, Pipe{}.Run(ctx))
@@ -239,25 +239,25 @@ func TestEnabled(t *testing.T) {
 	t.Run("enabled template", func(t *testing.T) {
 		ctx := testctx.NewWithCfg(config.Project{
 			SBOMs: []config.SBOM{
-				{Enabled: `{{ eq .Env.SBOM_ENABLED "1" }}`},
+				{Disable: `{{ eq .Env.SBOM_DISABLED "1" }}`},
 			},
-		}, testctx.WithEnv(map[string]string{"SBOM_ENABLED": "1"}))
+		}, testctx.WithEnv(map[string]string{"SBOM_DISABLED": "0"}))
 		require.NoError(t, Pipe{}.Run(ctx))
 	})
 
-	t.Run("enabled template false", func(t *testing.T) {
+	t.Run("disabled template", func(t *testing.T) {
 		ctx := testctx.NewWithCfg(config.Project{
 			SBOMs: []config.SBOM{
-				{Enabled: `{{ eq .Env.SBOM_ENABLED "1" }}`},
+				{Disable: `{{ eq .Env.SBOM_DISABLED "1" }}`},
 			},
-		}, testctx.WithEnv(map[string]string{"SBOM_ENABLED": "0"}))
+		}, testctx.WithEnv(map[string]string{"SBOM_DISABLED": "1"}))
 		testlib.AssertSkipped(t, Pipe{}.Run(ctx))
 	})
 
 	t.Run("enabled invalid template", func(t *testing.T) {
 		ctx := testctx.NewWithCfg(config.Project{
 			SBOMs: []config.SBOM{
-				{Enabled: "{{ .Invalid }}"},
+				{Disable: "{{ .Invalid }}"},
 			},
 		})
 		testlib.RequireTemplateError(t, Pipe{}.Run(ctx))
