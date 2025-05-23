@@ -41,9 +41,9 @@ Description.
 
 ### brews
 
-> since v2.10
+> since v2.10-unreleased
 
-Historically, GoReleaser would generate _hacky-ish_ formulas that would install
+Historically, GoReleaser would generate _hackyish_ formulas that would install
 the pre-compiled binaries.
 This was the only way to do it for Linuxbrew at the time, but this is no longer
 true, and _Casks_ should be used instead.
