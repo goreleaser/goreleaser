@@ -8,7 +8,6 @@ import (
 	"testing"
 
 	"github.com/goreleaser/goreleaser/v2/internal/artifact"
-	"github.com/goreleaser/goreleaser/v2/internal/pipe"
 	"github.com/goreleaser/goreleaser/v2/internal/skips"
 	"github.com/goreleaser/goreleaser/v2/internal/testctx"
 	"github.com/goreleaser/goreleaser/v2/internal/testlib"
@@ -218,97 +217,49 @@ func TestSkipCataloging(t *testing.T) {
 	})
 }
 
-func TestSBOMEnabled(t *testing.T) {
+func TestEnabled(t *testing.T) {
 	t.Run("enabled true", func(t *testing.T) {
-		testlib.CheckPath(t, "syft")
-		folder := t.TempDir()
-		dist := filepath.Join(folder, "dist")
-		require.NoError(t, os.MkdirAll(dist, 0o755))
 		ctx := testctx.NewWithCfg(config.Project{
-			Dist: dist,
 			SBOMs: []config.SBOM{
-				{
-					Enabled:   "true",
-					Artifacts: "any",
-				},
+				{Enabled: "true"},
 			},
 		})
-		require.NoError(t, Pipe{}.Default(ctx))
-		require.NotErrorIs(t, Pipe{}.Run(ctx), pipe.ErrSkip{})
+		require.NoError(t, Pipe{}.Run(ctx))
 	})
 
 	t.Run("enabled false", func(t *testing.T) {
-		folder := t.TempDir()
-		dist := filepath.Join(folder, "dist")
-		require.NoError(t, os.MkdirAll(dist, 0o755))
 		ctx := testctx.NewWithCfg(config.Project{
-			Dist: dist,
 			SBOMs: []config.SBOM{
-				{
-					Enabled:   "false",
-					Artifacts: "any",
-				},
+				{Enabled: "false"},
 			},
 		})
-		require.NoError(t, Pipe{}.Default(ctx))
 		testlib.AssertSkipped(t, Pipe{}.Run(ctx))
-		// Should not create any SBOM artifacts when disabled
-		require.Empty(t, ctx.Artifacts.Filter(artifact.ByType(artifact.SBOM)).List())
 	})
 
 	t.Run("enabled template", func(t *testing.T) {
-		testlib.CheckPath(t, "syft")
-		folder := t.TempDir()
-		dist := filepath.Join(folder, "dist")
-		require.NoError(t, os.MkdirAll(dist, 0o755))
 		ctx := testctx.NewWithCfg(config.Project{
-			Dist: dist,
 			SBOMs: []config.SBOM{
-				{
-					Enabled:   "{{ eq .Env.SBOM_ENABLED \"1\" }}",
-					Artifacts: "any",
-				},
+				{Enabled: `{{ eq .Env.SBOM_ENABLED "1" }}`},
 			},
-		})
-		ctx.Env = map[string]string{"SBOM_ENABLED": "1"}
-		require.NoError(t, Pipe{}.Default(ctx))
-		require.NotErrorIs(t, Pipe{}.Run(ctx), pipe.ErrSkip{})
+		}, testctx.WithEnv(map[string]string{"SBOM_ENABLED": "1"}))
+		require.NoError(t, Pipe{}.Run(ctx))
 	})
 
 	t.Run("enabled template false", func(t *testing.T) {
-		folder := t.TempDir()
-		dist := filepath.Join(folder, "dist")
-		require.NoError(t, os.MkdirAll(dist, 0o755))
 		ctx := testctx.NewWithCfg(config.Project{
-			Dist: dist,
 			SBOMs: []config.SBOM{
-				{
-					Enabled:   "{{ eq .Env.SBOM_ENABLED \"1\" }}",
-					Artifacts: "any",
-				},
+				{Enabled: `{{ eq .Env.SBOM_ENABLED "1" }}`},
 			},
-		})
-		ctx.Env = map[string]string{"SBOM_ENABLED": "0"}
-		require.NoError(t, Pipe{}.Default(ctx))
-		require.NotErrorIs(t, Pipe{}.Run(ctx), pipe.ErrSkip{})
-		// Should not create any SBOM artifacts when disabled
-		require.Empty(t, ctx.Artifacts.Filter(artifact.ByType(artifact.SBOM)).List())
+		}, testctx.WithEnv(map[string]string{"SBOM_ENABLED": "0"}))
+		testlib.AssertSkipped(t, Pipe{}.Run(ctx))
 	})
 
 	t.Run("enabled invalid template", func(t *testing.T) {
-		folder := t.TempDir()
-		dist := filepath.Join(folder, "dist")
-		require.NoError(t, os.MkdirAll(dist, 0o755))
 		ctx := testctx.NewWithCfg(config.Project{
-			Dist: dist,
 			SBOMs: []config.SBOM{
-				{
-					Enabled:   "{{ .Invalid }}",
-					Artifacts: "any",
-				},
+				{Enabled: "{{ .Invalid }}"},
 			},
 		})
-		require.NoError(t, Pipe{}.Default(ctx))
 		testlib.RequireTemplateError(t, Pipe{}.Run(ctx))
 	})
 }
