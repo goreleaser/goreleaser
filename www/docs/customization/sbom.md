@@ -23,6 +23,13 @@ sboms:
     # Default: 'default'.
     id: foo
 
+    # Whether this SBOM configuration is enabled.
+    #
+    # Default: 'true'.
+    # Templates: allowed.
+    # <!-- md:inline_version v2.10-unreleased -->
+    enabled: true
+
     # List of names of the SBOM documents created at this step
     # (relative to the dist dir).
     #
