@@ -1,4 +1,4 @@
-# Homebrew Formula
+# Homebrew Formulas (deprecated)
 
 > [Deprecated](./../deprecations.md#brews) in v2.10-unreleased.
 > [Homebrew Casks](./homebrew_casks.md) should be used instead.

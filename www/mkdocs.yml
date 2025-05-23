@@ -57,7 +57,7 @@ plugins:
   - search
   - redirects:
       redirect_maps:
-        discord.md: https://discord.gg/rYWM4AZvy7
+        discord.md: https://discord.gg/RGEBtg8vQ6
         github.md: https://github.com/goreleaser
         linkedin.md: https://www.linkedin.com/company/goreleaser/
         mastodon.md: https://fosstodon.org/@goreleaser
@@ -67,10 +67,12 @@ plugins:
         l.md: https://www.linkedin.com/company/goreleaser/
         m.md: https://fosstodon.org/@goreleaser
         t.md: https://twitter.com/goreleaser
+        x.md: https://twitter.com/goreleaser
         "customization/build.md": customization/builds/index.md
         "customization/rust-builds.md": customization/builds/rust.md
         "customization/zig-builds.md": customization/builds/zig.md
         "customization/deno-builds.md": customization/builds/deno.md
+        "customization/homebrew.md": customization/homebrew_casks.md
   - minify:
       minify_html: true
   - include-markdown
@@ -167,7 +169,7 @@ nav:
           - Fury: customization/fury.md
           - customization/dockerhub.md
           - customization/homebrew_casks.md
-          - customization/homebrew.md
+          - customization/homebrew_formulas.md
           - customization/winget.md
           - NUR: customization/nix.md
           - AUR: customization/aur.md
