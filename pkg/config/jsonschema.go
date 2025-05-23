@@ -77,10 +77,10 @@ func (a StringArray) JSONSchema() *jsonschema.Schema {
 }
 
 func (a NixDependency) JSONSchema() *jsonschema.Schema {
+	type nixDependencyAlias NixDependency
 	reflector := jsonschema.Reflector{
 		ExpandedStruct: true,
 	}
-	type nixDependencyAlias NixDependency
 	schema := reflector.Reflect(&nixDependencyAlias{})
 	return &jsonschema.Schema{
 		OneOf: []*jsonschema.Schema{
@@ -108,10 +108,11 @@ func (a PullRequestBase) JSONSchema() *jsonschema.Schema {
 }
 
 func (a HomebrewDependency) JSONSchema() *jsonschema.Schema {
+	type homebrewDependencyAlias HomebrewDependency
 	reflector := jsonschema.Reflector{
 		ExpandedStruct: true,
 	}
-	schema := reflector.Reflect(&homebrewDependency{})
+	schema := reflector.Reflect(&homebrewDependencyAlias{})
 	return &jsonschema.Schema{
 		OneOf: []*jsonschema.Schema{
 			{

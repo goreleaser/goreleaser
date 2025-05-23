@@ -13,6 +13,7 @@ import (
 	"github.com/goreleaser/goreleaser/v2/internal/pipe/bluesky"
 	"github.com/goreleaser/goreleaser/v2/internal/pipe/brew"
 	"github.com/goreleaser/goreleaser/v2/internal/pipe/build"
+	"github.com/goreleaser/goreleaser/v2/internal/pipe/cask"
 	"github.com/goreleaser/goreleaser/v2/internal/pipe/changelog"
 	"github.com/goreleaser/goreleaser/v2/internal/pipe/checksums"
 	"github.com/goreleaser/goreleaser/v2/internal/pipe/chocolatey"
@@ -94,6 +95,7 @@ var Defaulters = []Defaulter{
 	nix.Pipe{},
 	winget.Pipe{},
 	brew.Pipe{},
+	cask.Pipe{},
 	krew.Pipe{},
 	ko.Pipe{},
 	scoop.Pipe{},

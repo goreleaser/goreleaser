@@ -168,7 +168,8 @@ func (a *HomebrewDependency) UnmarshalYAML(unmarshal func(any) error) error {
 		return nil
 	}
 
-	var dep homebrewDependency
+	type t HomebrewDependency
+	var dep t
 	if err := unmarshal(&dep); err != nil {
 		return err
 	}
