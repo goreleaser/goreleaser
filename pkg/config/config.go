@@ -781,7 +781,7 @@ type SBOM struct {
 	Env       []string `yaml:"env,omitempty" json:"env,omitempty"`
 	Args      []string `yaml:"args,omitempty" json:"args,omitempty"`
 	Documents []string `yaml:"documents,omitempty" json:"documents,omitempty"`
-	Artifacts string   `yaml:"artifacts,omitempty" json:"artifacts,omitempty" jsonschema:"enum=source,enum=package,enum=archive,enum=binary,enum=any,enum=any,default=archive"`
+	Artifacts string   `yaml:"artifacts,omitempty" json:"artifacts,omitempty" jsonschema:"enum=source,enum=package,enum=archive,enum=binary,enum=any,default=archive"`
 	IDs       []string `yaml:"ids,omitempty" json:"ids,omitempty"`
 
 	// v2.10+
