@@ -63,6 +63,8 @@ jobs:
         with:
           go-version: stable
       - uses: mlugg/setup-zig@v2
+        with:
+          version: 0.14.0 # https://github.com/ziglang/zig/issues/23977
       - uses: oven-sh/setup-bun@v2
       - uses: denoland/setup-deno@v2
       - uses: cargo-bins/cargo-binstall@main
