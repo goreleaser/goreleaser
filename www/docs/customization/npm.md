@@ -124,6 +124,13 @@ npms:
     #
     # Templates: allowed.
     disable: "{{ gt .Patch 0 }}"
+
+    # URL which is determined by the given Token (github, gitlab or gitea).
+    #
+    # Default depends on the client.
+    # Templates: allowed.
+    # <!-- md:inline_version v2.10-unreleased -->.
+    url_template: "https://github.mycompany.com/foo/bar/releases/download/{{ .Tag }}/{{ .ArtifactName }}"
 ```
 
 !!! warning "Caveat"

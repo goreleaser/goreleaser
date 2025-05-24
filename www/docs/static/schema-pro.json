@@ -1886,6 +1886,202 @@
 				"additionalProperties": false,
 				"type": "object"
 			},
+			"HomebrewCask": {
+				"properties": {
+					"name": {
+						"type": "string"
+					},
+					"repository": {
+						"$ref": "#/$defs/RepoRef"
+					},
+					"commit_author": {
+						"$ref": "#/$defs/CommitAuthor"
+					},
+					"commit_msg_template": {
+						"type": "string"
+					},
+					"directory": {
+						"type": "string"
+					},
+					"caveats": {
+						"type": "string"
+					},
+					"description": {
+						"type": "string"
+					},
+					"homepage": {
+						"type": "string"
+					},
+					"license": {
+						"type": "string"
+					},
+					"skip_upload": {
+						"oneOf": [
+							{
+								"type": "string"
+							},
+							{
+								"type": "boolean"
+							}
+						]
+					},
+					"url_template": {
+						"type": "string"
+					},
+					"custom_block": {
+						"type": "string"
+					},
+					"ids": {
+						"items": {
+							"type": "string"
+						},
+						"type": "array"
+					},
+					"service": {
+						"type": "string"
+					},
+					"binary": {
+						"type": "string"
+					},
+					"manpage": {
+						"type": "string"
+					},
+					"completions": {
+						"$ref": "#/$defs/HomebrewCaskCompletions"
+					},
+					"dependencies": {
+						"items": {
+							"$ref": "#/$defs/HomebrewCaskDependency"
+						},
+						"type": "array"
+					},
+					"conflicts": {
+						"items": {
+							"$ref": "#/$defs/HomebrewCaskConflict"
+						},
+						"type": "array"
+					},
+					"hooks": {
+						"$ref": "#/$defs/HomebrewCaskHooks"
+					},
+					"uninstall": {
+						"$ref": "#/$defs/HomebrewCaskUninstall"
+					},
+					"zap": {
+						"$ref": "#/$defs/HomebrewCaskUninstall"
+					},
+					"alternative_names": {
+						"items": {
+							"type": "string"
+						},
+						"type": "array"
+					},
+					"app": {
+						"type": "string"
+					}
+				},
+				"additionalProperties": false,
+				"type": "object"
+			},
+			"HomebrewCaskCompletions": {
+				"properties": {
+					"bash": {
+						"type": "string"
+					},
+					"zsh": {
+						"type": "string"
+					},
+					"fish": {
+						"type": "string"
+					}
+				},
+				"additionalProperties": false,
+				"type": "object"
+			},
+			"HomebrewCaskConflict": {
+				"properties": {
+					"cask": {
+						"type": "string"
+					},
+					"formula": {
+						"type": "string"
+					}
+				},
+				"additionalProperties": false,
+				"type": "object"
+			},
+			"HomebrewCaskDependency": {
+				"properties": {
+					"cask": {
+						"type": "string"
+					},
+					"formula": {
+						"type": "string"
+					}
+				},
+				"additionalProperties": false,
+				"type": "object"
+			},
+			"HomebrewCaskHook": {
+				"properties": {
+					"install": {
+						"type": "string"
+					},
+					"uninstall": {
+						"type": "string"
+					}
+				},
+				"additionalProperties": false,
+				"type": "object"
+			},
+			"HomebrewCaskHooks": {
+				"properties": {
+					"pre": {
+						"$ref": "#/$defs/HomebrewCaskHook"
+					},
+					"post": {
+						"$ref": "#/$defs/HomebrewCaskHook"
+					}
+				},
+				"additionalProperties": false,
+				"type": "object"
+			},
+			"HomebrewCaskUninstall": {
+				"properties": {
+					"launchctl": {
+						"items": {
+							"type": "string"
+						},
+						"type": "array"
+					},
+					"quit": {
+						"items": {
+							"type": "string"
+						},
+						"type": "array"
+					},
+					"login_item": {
+						"items": {
+							"type": "string"
+						},
+						"type": "array"
+					},
+					"delete": {
+						"items": {
+							"type": "string"
+						},
+						"type": "array"
+					},
+					"trash": {
+						"items": {
+							"type": "string"
+						},
+						"type": "array"
+					}
+				},
+				"additionalProperties": false,
+				"type": "object"
+			},
 			"HomebrewDependency": {
 				"oneOf": [
 					{
@@ -1893,7 +2089,7 @@
 					},
 					{
 						"$schema": "https://json-schema.org/draft/2020-12/schema",
-						"$id": "https://github.com/goreleaser/goreleaser/v2/pkg/config/homebrew-dependency",
+						"$id": "https://github.com/goreleaser/goreleaser/v2/pkg/config/homebrew-dependency-alias",
 						"properties": {
 							"name": {
 								"type": "string"
@@ -3181,6 +3377,9 @@
 					},
 					"packager": {
 						"type": "string"
+					},
+					"buildhost": {
+						"type": "string"
 					}
 				},
 				"additionalProperties": false,
@@ -3305,6 +3504,9 @@
 								"type": "boolean"
 							}
 						]
+					},
+					"url_template": {
+						"type": "string"
 					}
 				},
 				"additionalProperties": false,
@@ -3522,15 +3724,15 @@
 						},
 						"type": "array"
 					},
-					"brews": {
-						"items": {
-							"$ref": "#/$defs/Homebrew"
-						},
-						"type": "array"
-					},
 					"npms": {
 						"items": {
 							"$ref": "#/$defs/NPM"
+						},
+						"type": "array"
+					},
+					"homebrew_casks": {
+						"items": {
+							"$ref": "#/$defs/HomebrewCask"
 						},
 						"type": "array"
 					},
@@ -3802,6 +4004,12 @@
 					"before_publish": {
 						"items": {
 							"$ref": "#/$defs/BeforePublishHook"
+						},
+						"type": "array"
+					},
+					"brews": {
+						"items": {
+							"$ref": "#/$defs/Homebrew"
 						},
 						"type": "array"
 					}
