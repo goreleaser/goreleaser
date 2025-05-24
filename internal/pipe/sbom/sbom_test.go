@@ -224,6 +224,7 @@ func TestDisable(t *testing.T) {
 				{Disable: "false"},
 			},
 		})
+		require.NoError(t, Pipe{}.Default(ctx))
 		require.NoError(t, Pipe{}.Run(ctx))
 	})
 
@@ -242,6 +243,7 @@ func TestDisable(t *testing.T) {
 				{Disable: `{{ eq .Env.SBOM_DISABLED "1" }}`},
 			},
 		}, testctx.WithEnv(map[string]string{"SBOM_DISABLED": "0"}))
+		require.NoError(t, Pipe{}.Default(ctx))
 		require.NoError(t, Pipe{}.Run(ctx))
 	})
 
