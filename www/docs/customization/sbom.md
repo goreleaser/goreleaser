@@ -86,6 +86,13 @@ sboms:
     ids:
       - foo
       - bar
+
+    # Whether this SBOM configuration is disabled.
+    #
+    # Default: 'true'.
+    # Templates: allowed.
+    # <!-- md:inline_version v2.10-unreleased -->
+    disable: true
 ```
 
 ### Available variable names
