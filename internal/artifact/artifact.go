@@ -64,6 +64,8 @@ const (
 	// UploadableSourceArchive is the archive with the current commit source code.
 	UploadableSourceArchive
 	// BrewFormula is an uploadable homebrew formula file.
+	//
+	// Deprecated: use [BrewCask] instead.
 	BrewFormula
 	// BrewCask is an uploadable homebrew cask file.
 	BrewCask
