@@ -1,4 +1,4 @@
-package brew
+package cask
 
 import (
 	"bufio"
@@ -6,7 +6,6 @@ import (
 	"cmp"
 	"errors"
 	"fmt"
-	"maps"
 	"os"
 	"path"
 	"path/filepath"
@@ -18,8 +17,6 @@ import (
 	"github.com/goreleaser/goreleaser/v2/internal/artifact"
 	"github.com/goreleaser/goreleaser/v2/internal/client"
 	"github.com/goreleaser/goreleaser/v2/internal/commitauthor"
-	"github.com/goreleaser/goreleaser/v2/internal/deprecate"
-	"github.com/goreleaser/goreleaser/v2/internal/experimental"
 	"github.com/goreleaser/goreleaser/v2/internal/pipe"
 	"github.com/goreleaser/goreleaser/v2/internal/skips"
 	"github.com/goreleaser/goreleaser/v2/internal/tmpl"
@@ -27,52 +24,47 @@ import (
 	"github.com/goreleaser/goreleaser/v2/pkg/context"
 )
 
-const brewConfigExtra = "BrewConfig"
+const brewConfigExtra = "BrewCaskConfig"
 
 // ErrMultipleArchivesSameOS happens when the config yields multiple archives
 // for linux or windows.
-var ErrMultipleArchivesSameOS = errors.New("one tap can handle only one archive of an OS/Arch combination. Consider using ids in the brew section")
+var ErrMultipleArchivesSameOS = errors.New("one tap can handle only one archive of an OS/Arch combination. Consider using ids in the homebrew_casks section")
 
 // ErrNoArchivesFound happens when 0 archives are found.
 type ErrNoArchivesFound struct {
-	goarm   string
-	goamd64 string
-	ids     []string
+	ids []string
 }
 
 func (e ErrNoArchivesFound) Error() string {
-	return fmt.Sprintf("no linux/macos archives found matching goos=[darwin linux] goarch=[amd64 arm64 arm] goamd64=%s goarm=%s ids=%v", e.goamd64, e.goarm, e.ids)
+	return fmt.Sprintf("no linux/macos archives found matching goos=[darwin linux] goarch=[amd64 arm64] ids=%v", e.ids)
 }
 
 // Pipe for brew deployment.
-//
-// Deprecated: in favor of [cask.Pipe].
 type Pipe struct{}
 
-func (Pipe) String() string        { return "homebrew formula" }
+func (Pipe) String() string        { return "homebrew cask" }
 func (Pipe) ContinueOnError() bool { return true }
 func (Pipe) Skip(ctx *context.Context) bool {
-	return skips.Any(ctx, skips.Homebrew) || len(ctx.Config.Brews) == 0
+	return skips.Any(ctx, skips.Homebrew) || len(ctx.Config.Casks) == 0
 }
 
 func (Pipe) Default(ctx *context.Context) error {
-	for i := range ctx.Config.Brews {
-		deprecate.Notice(ctx, "brews")
-		brew := &ctx.Config.Brews[i]
+	for i := range ctx.Config.Casks {
+		brew := &ctx.Config.Casks[i]
 
 		brew.CommitAuthor = commitauthor.Default(brew.CommitAuthor)
 
 		if brew.CommitMessageTemplate == "" {
-			brew.CommitMessageTemplate = "Brew formula update for {{ .ProjectName }} version {{ .Tag }}"
+			brew.CommitMessageTemplate = "Brew cask update for {{ .ProjectName }} version {{ .Tag }}"
 		}
 		if brew.Name == "" {
 			brew.Name = ctx.Config.ProjectName
 		}
-		if brew.Goarm == "" {
-			brew.Goarm = experimental.DefaultGOARM()
+		if brew.Directory == "" {
+			brew.Directory = "Casks"
 		}
-		if brew.Goamd64 == "" {
-			brew.Goamd64 = "v1"
+		if brew.Binary == "" {
+			brew.Binary = brew.Name
 		}
 	}
 
@@ -88,7 +80,7 @@ func (Pipe) Run(ctx *context.Context) error {
 	return runAll(ctx, cli)
 }
 
-// Publish brew formula.
+// Publish brew cask.
 func (Pipe) Publish(ctx *context.Context) error {
 	cli, err := client.New(ctx)
 	if err != nil {
@@ -98,7 +90,7 @@ func (Pipe) Publish(ctx *context.Context) error {
 }
 
 func runAll(ctx *context.Context, cli client.ReleaseURLTemplater) error {
-	for _, brew := range ctx.Config.Brews {
+	for _, brew := range ctx.Config.Casks {
 		err := doRun(ctx, brew, cli)
 		if err != nil {
 			return err
@@ -111,8 +103,8 @@ func publishAll(ctx *context.Context, cli client.Client) error {
 	// even if one of them skips, we run them all, and then show return the skips all at once.
 	// this is needed so we actually create the `dist/foo.rb` file, which is useful for debugging.
 	skips := pipe.SkipMemento{}
-	for _, formula := range ctx.Artifacts.Filter(artifact.ByType(artifact.BrewFormula)).List() {
-		err := doPublish(ctx, formula, cli)
+	for _, cask := range ctx.Artifacts.Filter(artifact.ByType(artifact.BrewCask)).List() {
+		err := doPublish(ctx, cask, cli)
 		if err != nil && pipe.IsSkip(err) {
 			skips.Remember(err)
 			continue
@@ -124,8 +116,8 @@ func publishAll(ctx *context.Context, cli client.Client) error {
 	return skips.Evaluate()
 }
 
-func doPublish(ctx *context.Context, formula *artifact.Artifact, cl client.Client) error {
-	brew := artifact.MustExtra[config.Homebrew](*formula, brewConfigExtra)
+func doPublish(ctx *context.Context, cask *artifact.Artifact, cl client.Client) error {
+	brew := artifact.MustExtra[config.HomebrewCask](*cask, brewConfigExtra)
 	if strings.TrimSpace(brew.SkipUpload) == "true" {
 		return pipe.Skip("brew.skip_upload is set")
 	}
@@ -136,7 +128,7 @@ func doPublish(ctx *context.Context, formula *artifact.Artifact, cl client.Clien
 
 	repo := client.RepoFromRef(brew.Repository)
 
-	gpath := buildFormulaPath(brew.Directory, formula.Name)
+	gpath := buildCaskPath(brew.Directory, cask.Name)
 
 	msg, err := tmpl.New(ctx).Apply(brew.CommitMessageTemplate)
 	if err != nil {
@@ -148,7 +140,7 @@ func doPublish(ctx *context.Context, formula *artifact.Artifact, cl client.Clien
 		return err
 	}
 
-	content, err := os.ReadFile(formula.Path)
+	content, err := os.ReadFile(cask.Path)
 	if err != nil {
 		return err
 	}
@@ -182,11 +174,11 @@ func doPublish(ctx *context.Context, formula *artifact.Artifact, cl client.Clien
 	}
 
 	if !brew.Repository.PullRequest.Enabled {
-		log.Debug("brews.pull_request disabled")
+		log.Debug("homebrew_casks.pull_request disabled")
 		return nil
 	}
 
-	log.Info("brews.pull_request enabled, creating a PR")
+	log.Info("homebrew_casks.pull_request enabled, creating a PR")
 	pcl, ok := cl.(client.PullRequestOpener)
 	if !ok {
 		return errors.New("client does not support pull requests")
@@ -195,9 +187,9 @@ func doPublish(ctx *context.Context, formula *artifact.Artifact, cl client.Clien
 	return pcl.OpenPullRequest(ctx, base, repo, msg, brew.Repository.PullRequest.Draft)
 }
 
-func doRun(ctx *context.Context, brew config.Homebrew, cl client.ReleaseURLTemplater) error {
+func doRun(ctx *context.Context, brew config.HomebrewCask, cl client.ReleaseURLTemplater) error {
 	if brew.Repository.Name == "" {
-		return pipe.Skip("brew.repository.name is not set")
+		return pipe.Skip("homebrew_casks.repository.name is not set")
 	}
 
 	filters := []artifact.Filter{
@@ -206,16 +198,9 @@ func doRun(ctx *context.Context, brew config.Homebrew, cl client.ReleaseURLTempl
 			artifact.ByGoos("linux"),
 		),
 		artifact.Or(
-			artifact.And(
-				artifact.ByGoarch("amd64"),
-				artifact.ByGoamd64(brew.Goamd64),
-			),
+			artifact.ByGoarch("amd64"),
 			artifact.ByGoarch("arm64"),
 			artifact.ByGoarch("all"),
-			artifact.And(
-				artifact.ByGoarch("arm"),
-				artifact.ByGoarm(brew.Goarm),
-			),
 		),
 		artifact.Or(
 			artifact.And(
@@ -233,17 +218,21 @@ func doRun(ctx *context.Context, brew config.Homebrew, cl client.ReleaseURLTempl
 	archives := ctx.Artifacts.Filter(artifact.And(filters...)).List()
 	if len(archives) == 0 {
 		return ErrNoArchivesFound{
-			goamd64: brew.Goamd64,
-			goarm:   brew.Goarm,
-			ids:     brew.IDs,
+			ids: brew.IDs,
 		}
 	}
 
-	name, err := tmpl.New(ctx).Apply(brew.Name)
-	if err != nil {
+	if err := tmpl.New(ctx).ApplyAll(
+		&brew.Name,
+		&brew.SkipUpload,
+		&brew.Binary,
+		&brew.Manpage,
+		&brew.Completions.Bash,
+		&brew.Completions.Zsh,
+		&brew.Completions.Fish,
+	); err != nil {
 		return err
 	}
-	brew.Name = name
 
 	ref, err := client.TemplateRef(tmpl.New(ctx).Apply, brew.Repository)
 	if err != nil {
@@ -257,7 +246,7 @@ func doRun(ctx *context.Context, brew config.Homebrew, cl client.ReleaseURLTempl
 	}
 	brew.SkipUpload = skipUpload
 
-	content, err := buildFormula(ctx, brew, cl, archives)
+	content, err := buildCask(ctx, brew, cl, archives)
 	if err != nil {
 		return err
 	}
@@ -268,15 +257,15 @@ func doRun(ctx *context.Context, brew config.Homebrew, cl client.ReleaseURLTempl
 		return err
 	}
 
-	log.WithField("formula", path).Info("writing")
+	log.WithField("cask", path).Info("writing")
 	if err := os.WriteFile(path, []byte(content), 0o644); err != nil { //nolint:gosec
-		return fmt.Errorf("failed to write brew formula: %w", err)
+		return fmt.Errorf("failed to write homebrew cask: %w", err)
 	}
 
 	ctx.Artifacts.Add(&artifact.Artifact{
 		Name: filename,
 		Path: path,
-		Type: artifact.BrewFormula,
+		Type: artifact.BrewCask,
 		Extra: map[string]any{
 			brewConfigExtra: brew,
 		},
@@ -285,22 +274,23 @@ func doRun(ctx *context.Context, brew config.Homebrew, cl client.ReleaseURLTempl
 	return nil
 }
 
-func buildFormulaPath(folder, filename string) string {
+func buildCaskPath(folder, filename string) string {
 	return path.Join(folder, filename)
 }
 
-func buildFormula(ctx *context.Context, brew config.Homebrew, client client.ReleaseURLTemplater, artifacts []*artifact.Artifact) (string, error) {
+func buildCask(ctx *context.Context, brew config.HomebrewCask, client client.ReleaseURLTemplater, artifacts []*artifact.Artifact) (string, error) {
 	data, err := dataFor(ctx, brew, client, artifacts)
 	if err != nil {
 		return "", err
 	}
-	return doBuildFormula(ctx, data)
+	return doBuildCask(ctx, data)
 }
 
-func doBuildFormula(ctx *context.Context, data templateData) (string, error) {
-	t := template.New("formula.rb")
+func doBuildCask(ctx *context.Context, data templateData) (string, error) {
+	t := template.New("cask.rb")
 	var err error
 	t, err = t.Funcs(map[string]any{
+		"split": split,
 		"include": func(name string, data any) (string, error) {
 			buf := bytes.NewBuffer(nil)
 			if err := t.ExecuteTemplate(buf, name, data); err != nil {
@@ -312,14 +302,9 @@ func doBuildFormula(ctx *context.Context, data templateData) (string, error) {
 			pad := strings.Repeat(" ", spaces)
 			return pad + strings.ReplaceAll(v, "\n", "\n"+pad)
 		},
-		"join": func(in []string) string {
-			items := make([]string, 0, len(in))
-			for _, i := range in {
-				items = append(items, fmt.Sprintf(`"%s"`, i))
-			}
-			return strings.Join(items, ",\n")
-		},
-	}).ParseFS(formulaTemplate, "templates/*.rb")
+		"uninstall": uninstallString,
+		"zap":       zapString,
+	}).ParseFS(templates, "templates/*.rb")
 	if err != nil {
 		return "", err
 	}
@@ -336,13 +321,22 @@ func doBuildFormula(ctx *context.Context, data templateData) (string, error) {
 
 	// Sanitize the template output and get rid of trailing whitespace.
 	var (
-		r = strings.NewReader(content)
-		s = bufio.NewScanner(r)
+		r  = strings.NewReader(content)
+		s  = bufio.NewScanner(r)
+		el = false
 	)
 	for s.Scan() {
 		l := strings.TrimRight(s.Text(), " ")
-		_, _ = out.WriteString(l)
-		_ = out.WriteByte('\n')
+		if strings.TrimSpace(l) == "" {
+			if !el {
+				_ = out.WriteByte('\n')
+				el = true
+			}
+		} else {
+			_, _ = out.WriteString(l)
+			_ = out.WriteByte('\n')
+			el = false
+		}
 	}
 	if err := s.Err(); err != nil {
 		return "", err
@@ -351,58 +345,14 @@ func doBuildFormula(ctx *context.Context, data templateData) (string, error) {
 	return out.String(), nil
 }
 
-func installs(ctx *context.Context, cfg config.Homebrew, art *artifact.Artifact) ([]string, error) {
-	tpl := tmpl.New(ctx).WithArtifact(art)
-
-	extraInstall, err := tpl.Apply(cfg.ExtraInstall)
-	if err != nil {
-		return nil, err
-	}
-
-	install, err := tpl.Apply(cfg.Install)
-	if err != nil {
-		return nil, err
-	}
-	if install != "" {
-		return append(split(install), split(extraInstall)...), nil
-	}
-
-	installMap := map[string]bool{}
-	switch art.Type {
-	case artifact.UploadableBinary:
-		name := art.Name
-		bin := artifact.MustExtra[string](*art, artifact.ExtraBinary)
-		installMap[fmt.Sprintf("bin.install %q => %q", name, bin)] = true
-	case artifact.UploadableArchive:
-		for _, bin := range artifact.MustExtra[[]string](*art, artifact.ExtraBinaries) {
-			installMap[fmt.Sprintf("bin.install %q", bin)] = true
-		}
-	}
-
-	result := slices.Sorted(maps.Keys(installMap))
-	log.WithField("install", result).Info("guessing install")
-
-	return append(result, split(extraInstall)...), nil
-}
-
-func dataFor(ctx *context.Context, cfg config.Homebrew, cl client.ReleaseURLTemplater, artifacts []*artifact.Artifact) (templateData, error) {
-	slices.SortFunc(cfg.Dependencies, func(a, b config.HomebrewDependency) int {
-		return cmp.Compare(a.Name, b.Name)
+func dataFor(ctx *context.Context, cfg config.HomebrewCask, cl client.ReleaseURLTemplater, artifacts []*artifact.Artifact) (templateData, error) {
+	slices.SortFunc(cfg.Dependencies, func(a, b config.HomebrewCaskDependency) int {
+		return cmp.Compare(cmp.Or(a.Cask, a.Formula), cmp.Or(b.Cask, b.Formula))
 	})
 	result := templateData{
-		Name:          formulaNameFor(cfg.Name),
-		Desc:          cfg.Description,
-		Homepage:      cfg.Homepage,
-		Version:       ctx.Version,
-		License:       cfg.License,
-		Caveats:       split(cfg.Caveats),
-		Dependencies:  cfg.Dependencies,
-		Conflicts:     cfg.Conflicts,
-		Service:       split(cfg.Service),
-		PostInstall:   split(cfg.PostInstall),
-		Tests:         split(cfg.Test),
-		CustomRequire: cfg.CustomRequire,
-		CustomBlock:   split(cfg.CustomBlock),
+		HomebrewCask: cfg,
+		Name:         caskNameFor(cfg.Name),
+		Version:      ctx.Version,
 	}
 
 	counts := map[string]int{}
@@ -425,19 +375,11 @@ func dataFor(ctx *context.Context, cfg config.Homebrew, cl client.ReleaseURLTemp
 			return result, err
 		}
 
-		install, err := installs(ctx, cfg, art)
-		if err != nil {
-			return result, err
-		}
-
 		pkg := releasePackage{
-			DownloadURL:      url,
-			SHA256:           sum,
-			OS:               art.Goos,
-			Arch:             art.Goarch,
-			DownloadStrategy: cfg.DownloadStrategy,
-			Headers:          cfg.URLHeaders,
-			Install:          install,
+			DownloadURL: url,
+			SHA256:      sum,
+			OS:          art.Goos,
+			Arch:        art.Goarch,
 		}
 
 		counts[pkg.OS+pkg.Arch]++
@@ -469,63 +411,6 @@ func compareByArch(a, b releasePackage) int {
 	return cmp.Compare(a.Arch, b.Arch)
 }
 
-func split(s string) []string {
-	strings := strings.Split(strings.TrimSpace(s), "\n")
-	if len(strings) == 1 && strings[0] == "" {
-		return []string{}
-	}
-	return strings
-}
-
-// formulaNameFor transforms the formula name into a form
-// that more resembles a valid Ruby class name
-// e.g. foo_bar@v6.0.0-rc is turned into FooBarATv6_0_0RC
-//
-// This function must match the behavior of Homebrew's Formulary.class_s function:
-//
-//	<https://github.com/Homebrew/brew/blob/587949bd8417c486795be04194f9e9baeaa9f5a7/Library/Homebrew/formulary.rb#L522-L528>
-func formulaNameFor(name string) string {
-	if len(name) == 0 {
-		return name
-	}
-
-	var output strings.Builder
-	name = strings.ToLower(name)
-
-	// Capitalize the first character
-	output.WriteByte(strings.ToUpper(name[:1])[0])
-
-	// Traverse the rest of the string
-	for i := 1; i < len(name); i++ {
-		c := name[i]
-
-		switch c {
-		case '-', '_', '.', ' ':
-			// Capitalize the next character after a symbol
-			if i+1 < len(name) {
-				output.WriteByte(strings.ToUpper(name[i+1 : i+2])[0])
-				i++ // Skip the next character as it's already processed
-			}
-		case '+':
-			// Replace '+' with 'x'
-			output.WriteByte('x')
-		case '@':
-			// Replace occurrences of (.)@(\d) with \1AT\2
-			if i+1 < len(name) && isDigit(name[i+1]) {
-				output.WriteString("AT")
-				output.WriteByte(name[i+1])
-				i++ // Skip the next character as it's already processed
-			} else {
-				output.WriteByte(c)
-			}
-		default:
-			output.WriteByte(c)
-		}
-	}
-
-	return output.String()
-}
-
-func isDigit(b byte) bool {
-	return b >= '0' && b <= '9'
+func caskNameFor(name string) string {
+	return strings.ToLower(strings.ReplaceAll(name, " ", "-"))
 }

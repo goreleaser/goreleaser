@@ -39,6 +39,43 @@ Description.
 
 -->
 
+### brews
+
+> since v2.10-unreleased
+
+Historically, GoReleaser would generate _hackyish_ formulas that would install
+the pre-compiled binaries.
+This was the only way to do it for Linuxbrew at the time, but this is no longer
+true, and _Casks_ should be used instead.
+
+That said, we now have a `homebrew_casks` section!
+
+For simple cases, simply replacing one with the other will be good enough.
+More complex settings might require further change.
+Check the [new documentation](./customization/homebrew_casks.md) for more
+details.
+
+Once you do the first release this way, you might also want to delete the old
+_Formulas_ from your _Tap_.
+You may also want to make the _Cask_ conflict with the previous _Formula_.
+
+=== "Before"
+
+    ```yaml
+    brews:
+    - name: foo
+    ```
+
+=== "After"
+
+    ```yaml
+    homebrew_casks:
+    - name: foo
+      # Optionally:
+      conflicts:
+        formula: foo
+    ```
+
 ### archives.builds
 
 > since v2.8

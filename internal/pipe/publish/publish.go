@@ -12,6 +12,7 @@ import (
 	"github.com/goreleaser/goreleaser/v2/internal/pipe/aursources"
 	"github.com/goreleaser/goreleaser/v2/internal/pipe/blob"
 	"github.com/goreleaser/goreleaser/v2/internal/pipe/brew"
+	"github.com/goreleaser/goreleaser/v2/internal/pipe/cask"
 	"github.com/goreleaser/goreleaser/v2/internal/pipe/chocolatey"
 	"github.com/goreleaser/goreleaser/v2/internal/pipe/custompublishers"
 	"github.com/goreleaser/goreleaser/v2/internal/pipe/docker"
@@ -56,6 +57,7 @@ func New() Pipe {
 			nix.NewPublish(),
 			winget.Pipe{},
 			brew.Pipe{},
+			cask.Pipe{},
 			aur.Pipe{},
 			aursources.Pipe{},
 			krew.Pipe{},

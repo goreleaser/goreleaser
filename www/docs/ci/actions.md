@@ -165,7 +165,7 @@ are required by GoReleaser:
 
 - `contents: write` if you wish to
   - [upload archives as GitHub Releases](../customization/release.md), or
-  - publish to [Homebrew](../customization/homebrew.md), or
+  - publish to [Homebrew](../customization/homebrew_casks.md), or
     [Scoop](../customization/scoop.md) (assuming it's part of the same repository)
 - or just `contents: read` if you don't need any of the above
 - `packages: write` if you [push Docker images](../customization/docker.md) to
