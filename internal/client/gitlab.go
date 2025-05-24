@@ -78,12 +78,16 @@ func newGitLab(ctx *context.Context, token string, opts ...gitlab.ClientOptionFu
 }
 
 func isV17(client *gitlab.Client) bool {
-	v, _, err := client.Version.GetVersion(nil)
-	if err != nil {
-		log.WithError(err).Warn("could not get gitlab version")
-		return false
+	v := os.Getenv("CI_SERVER_VERSION")
+	if v == "" {
+		gitlabVersion, _, err := client.Version.GetVersion(nil)
+		if err != nil {
+			log.WithError(err).Warn("could not get gitlab version")
+			return false
+		}
+		v = gitlabVersion.Version
 	}
-	vv, err := semver.NewVersion(v.Version)
+	vv, err := semver.NewVersion(v)
 	if err != nil {
 		log.WithError(err).Warn("could not parse gitlab version")
 		return false
