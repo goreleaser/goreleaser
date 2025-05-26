@@ -1006,6 +1006,20 @@ type Docker struct {
 	Use                string   `yaml:"use,omitempty" json:"use,omitempty" jsonschema:"enum=docker,enum=buildx,default=docker"`
 }
 
+type DockerV2 struct {
+	ID         string            `yaml:"id,omitempty" json:"id,omitempty"`
+	IDs        []string          `yaml:"ids,omitempty" json:"ids,omitempty"`
+	Dockerfile string            `yaml:"dockerfile,omitempty" json:"dockerfile,omitempty"`
+	Images     []string          `yaml:"images,omitempty" json:"images,omitempty"`
+	Tags       []string          `yaml:"tags,omitempty" json:"tags,omitempty"`
+	Labels     map[string]string `yaml:"labels,omitempty" json:"labels,omitempty"`
+	Files      []string          `yaml:"extra_files,omitempty" json:"extra_files,omitempty"`
+	Platforms  []string          `yaml:"platforms,omitempty" json:"platforms,omitempty"`
+	// Use        string            `yaml:"use,omitempty" json:"use,omitempty" jsonschema:"enum=docker,enum=buildx,default=docker"`
+	// BuildFlags []string          `yaml:"build_flags,omitempty" json:"build_flags,omitempty"`
+	// PushFlags  []string          `yaml:"push_flags,omitempty" json:"push_flags,omitempty"`
+}
+
 // DockerManifest config.
 type DockerManifest struct {
 	ID             string   `yaml:"id,omitempty" json:"id,omitempty"`
@@ -1143,6 +1157,7 @@ type Project struct {
 	Snapshot        Snapshot         `yaml:"snapshot,omitempty" json:"snapshot,omitempty"`
 	Checksum        Checksum         `yaml:"checksum,omitempty" json:"checksum,omitempty"`
 	Dockers         []Docker         `yaml:"dockers,omitempty" json:"dockers,omitempty"`
+	DockersV2       []DockerV2       `yaml:"dockers_v2,omitempty" json:"dockers_v2,omitempty"`
 	DockerManifests []DockerManifest `yaml:"docker_manifests,omitempty" json:"docker_manifests,omitempty"`
 	Artifactories   []Upload         `yaml:"artifactories,omitempty" json:"artifactories,omitempty"`
 	Uploads         []Upload         `yaml:"uploads,omitempty" json:"uploads,omitempty"`

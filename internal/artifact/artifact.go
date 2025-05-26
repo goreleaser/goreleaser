@@ -105,6 +105,8 @@ const (
 	PySdist
 	// Metadata is an internal goreleaser metadata JSON file.
 	Metadata
+	// PublishableOCIImage is a container image in OCI format.
+	PublishableOCIImage
 	// lastMarker is used in tests to denote the last valid type.
 	// always add new types before this one.
 	lastMarker
