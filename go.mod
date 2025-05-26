@@ -40,7 +40,7 @@ require (
 	github.com/muesli/roff v0.1.0
 	github.com/muesli/termenv v0.16.0
 	github.com/ory/dockertest/v3 v3.12.0
-	github.com/slack-go/slack v0.16.0
+	github.com/slack-go/slack v0.17.0
 	github.com/spf13/cobra v1.9.1
 	github.com/stretchr/testify v1.10.0
 	github.com/ulikunitz/xz v0.5.12
@@ -237,7 +237,7 @@ require (
 	github.com/googleapis/gax-go/v2 v2.14.1 // indirect
 	github.com/goreleaser/chglog v0.7.0 // indirect
 	github.com/gorilla/mux v1.8.1 // indirect
-	github.com/gorilla/websocket v1.5.1 // indirect
+	github.com/gorilla/websocket v1.5.3 // indirect
 	github.com/grpc-ecosystem/grpc-gateway/v2 v2.24.0 // indirect
 	github.com/hashicorp/errwrap v1.1.0 // indirect
 	github.com/hashicorp/go-cleanhttp v0.5.2 // indirect
