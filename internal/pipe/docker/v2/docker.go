@@ -2,12 +2,14 @@ package docker
 
 import (
 	"bytes"
+	"errors"
 	"fmt"
 	"io"
 	"maps"
 	"os"
 	"os/exec"
 	"path/filepath"
+	"regexp"
 	"slices"
 	"strings"
 
@@ -23,7 +25,10 @@ import (
 	"github.com/goreleaser/goreleaser/v2/pkg/context"
 )
 
-const extraImageNames = "ImageNames"
+const (
+	extraImageNames = "ImageNames"
+	extraImageName  = "ImageName"
+)
 
 type Pipe struct{}
 
@@ -47,6 +52,9 @@ func (Pipe) Default(ctx *context.Context) error {
 		if len(docker.Tags) == 0 {
 			docker.Tags = []string{"latest"}
 		}
+		if len(docker.Platforms) == 0 {
+			docker.Platforms = []string{"linux/amd64"}
+		}
 		ids.Inc(docker.ID)
 	}
 	return ids.Validate()
@@ -63,8 +71,121 @@ func (p Pipe) Run(ctx *context.Context) error {
 	return g.Wait()
 }
 
+var dockerDigestPattern = regexp.MustCompile("sha256:[a-z0-9]{64}")
+
 // Publish implements publish.Publisher.
-func (Pipe) Publish(ctx *context.Context) error { panic("unimplemented") }
+func (Pipe) Publish(ctx *context.Context) error {
+	for id, arts := range ctx.Artifacts.
+		Filter(artifact.ByType(artifact.PublishableDockerImageV2)).
+		GroupByID() {
+		var imgs []string
+		for _, art := range arts {
+			log.WithField("path", art.Path).Info("loading image")
+			in, err := os.Open(art.Path)
+			if err != nil {
+				return fmt.Errorf("docker: could not load %s: %w", art.Path, err)
+			}
+			defer in.Close()
+			cmd := exec.CommandContext(ctx, "docker", "load")
+			cmd.Env = append(ctx.Env.Strings(), cmd.Environ()...)
+			var b bytes.Buffer
+			w := gio.Safe(&b)
+			cmd.Stderr = io.MultiWriter(logext.NewWriter(), w)
+			cmd.Stdout = io.MultiWriter(logext.NewWriter(), w)
+			cmd.Stdin = in
+			if err := cmd.Run(); err != nil {
+				return pipe.NewDetailedError(
+					err,
+					"args", strings.Join(cmd.Args, " "),
+					"output", b.String(),
+				)
+			}
+			imgs = append(imgs, artifact.MustExtra[string](*art, extraImageName))
+		}
+
+		for _, img := range imgs {
+			log.WithField("image", img).Info("pushing image")
+			cmd := exec.CommandContext(ctx, "docker", "push", img)
+			cmd.Env = append(ctx.Env.Strings(), cmd.Environ()...)
+			var b bytes.Buffer
+			w := gio.Safe(&b)
+			cmd.Stderr = io.MultiWriter(logext.NewWriter(), w)
+			cmd.Stdout = io.MultiWriter(logext.NewWriter(), w)
+			if err := cmd.Run(); err != nil {
+				return pipe.NewDetailedError(
+					err,
+					"args", strings.Join(cmd.Args, " "),
+					"image", img,
+					"output", b.String(),
+				)
+			}
+			digest := dockerDigestPattern.FindString(b.String())
+			if digest == "" {
+				return pipe.NewDetailedError(
+					errors.New("failed to find docker digest in docker push output"),
+					"output", b.String(),
+				)
+			}
+			art := &artifact.Artifact{
+				Type: artifact.DockerImage,
+				Name: img,
+				Path: img,
+				Extra: map[string]any{
+					artifact.ExtraDigest: digest,
+				},
+			}
+			if id != "" {
+				art.Extra[artifact.ExtraID] = id
+			}
+			ctx.Artifacts.Add(art)
+		}
+
+		manifests := artifact.MustExtra[[]string](*arts[0], extraImageNames)
+		for _, manifest := range manifests {
+			log.WithField("images", imgs).
+				WithField("manifest", manifest).
+				Info("creating manifest")
+			arg := []string{"buildx", "imagetools", "create", "-t", manifest}
+			arg = append(arg, imgs...)
+			cmd := exec.CommandContext(ctx, "docker", arg...)
+			cmd.Env = append(ctx.Env.Strings(), cmd.Environ()...)
+			var b bytes.Buffer
+			w := gio.Safe(&b)
+			cmd.Stderr = io.MultiWriter(logext.NewWriter(), w)
+			cmd.Stdout = io.MultiWriter(logext.NewWriter(), w)
+			if err := cmd.Run(); err != nil {
+				return pipe.NewDetailedError(
+					err,
+					"args", strings.Join(cmd.Args, " "),
+					"manifest", manifest,
+					"output", b.String(),
+				)
+			}
+			digest := dockerDigestPattern.FindString(b.String())
+			if digest == "" {
+				return pipe.NewDetailedError(
+					errors.New("failed to find docker digest in docker push output"),
+					"output", b.String(),
+				)
+			}
+			art := &artifact.Artifact{
+				Type: artifact.DockerManifest,
+				Name: manifest,
+				Path: manifest,
+				Extra: map[string]any{
+					artifact.ExtraDigest: digest,
+				},
+			}
+			if id != "" {
+				art.Extra[artifact.ExtraID] = id
+			}
+
+			ctx.Artifacts.Add(art)
+		}
+	}
+
+	return nil
+}
 
 func buildOne(ctx *context.Context, d config.DockerV2) error {
 	if len(d.Platforms) == 0 {
@@ -109,8 +230,10 @@ func buildOne(ctx *context.Context, d config.DockerV2) error {
 	defer os.RemoveAll(wd)
 
 	for _, plat := range d.Platforms {
-		name := d.ID + strings.ReplaceAll(plat, "/", "_") + ".tar"
+		plats := strings.ReplaceAll(plat, "/", "_")
+		name := d.ID + plats + ".tar"
 		path := filepath.Join(ctx.Config.Dist, "dockerv2", name)
+		imgTag := images[0] + ":" + tags[0] + "-" + plats
 		if err := os.MkdirAll(filepath.Dir(path), 0o755); err != nil {
 			return fmt.Errorf("docker: %w", err)
 		}
@@ -118,12 +241,17 @@ func buildOne(ctx *context.Context, d config.DockerV2) error {
 		if err != nil {
 			return fmt.Errorf("docker: %w", err)
 		}
-		arg := []string{"buildx", "build"}
+		arg := []string{
+			"buildx",
+			"build",
+			"--platform", plat,
+			"-t", imgTag,
+		}
 		arg = append(arg, labelFlags...)
 		arg = append(
 			arg,
 			"-f", d.Dockerfile,
-			"--output", "type=oci,dest="+apath,
+			"--output", "type=docker,dest="+apath,
 			".",
 		)
 		cmd := exec.CommandContext(ctx, "docker", arg...)
@@ -137,7 +265,7 @@ func buildOne(ctx *context.Context, d config.DockerV2) error {
 			return pipe.NewDetailedError(
 				err,
 				"args", strings.Join(cmd.Args, " "),
-				"image", allImages[0],
+				"image", imgTag,
 				"output", b.String(),
 				"path", path,
 				"platform", plat,
@@ -156,9 +284,10 @@ func buildOne(ctx *context.Context, d config.DockerV2) error {
 			Goos:   p.os,
 			Goarch: p.arch,
 			Goarm:  p.arm,
-			Type:   artifact.PublishableOCIImage,
+			Type:   artifact.PublishableDockerImageV2,
 			Extra: map[string]any{
 				artifact.ExtraID: d.ID,
+				extraImageName:   imgTag,
 				extraImageNames:  allImages,
 			},
 		})

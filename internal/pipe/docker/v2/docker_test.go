@@ -61,7 +61,7 @@ func TestPlatFor(t *testing.T) {
 		},
 	} {
 		t.Run(expected, func(t *testing.T) {
-			plat, err := platFor(&art)
+			plat, err := toPlatform(&art)
 			require.NoError(t, err)
 			require.Equal(t, expected, plat)
 		})
