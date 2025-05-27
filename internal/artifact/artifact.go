@@ -134,7 +134,7 @@ func (t Type) String() string {
 		return "Binary"
 	case LinuxPackage:
 		return "Linux Package"
-	case PublishableDockerImage:
+	case PublishableDockerImage, PublishableDockerImageV2:
 		return "Docker Image"
 	case DockerImage:
 		return "Published Docker Image"
@@ -488,7 +488,7 @@ func relPath(a *Artifact) (string, error) {
 
 func shouldRelPath(a *Artifact) bool {
 	switch a.Type {
-	case DockerImage, DockerManifest, PublishableDockerImage:
+	case DockerImage, DockerManifest, PublishableDockerImage, PublishableDockerImageV2:
 		return false
 	default:
 		return filepath.IsAbs(a.Path)
