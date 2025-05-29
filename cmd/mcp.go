@@ -1,8 +1,6 @@
 package cmd
 
 import (
-	"strings"
-
 	stdctx "context"
 
 	goversion "github.com/caarlos0/go-version"
@@ -36,7 +34,8 @@ and configuration management.`,
 				mcp.WithDescription("Checks a GoReleaser configuration for errors"),
 				mcp.WithString("configuration",
 					mcp.Required(),
-					mcp.Description("The contents of the .goreleaser.yml file"),
+					mcp.Title("GoReleaser config file"),
+					mcp.Description("Path the the goreleaser YAML configuration file"),
 				),
 			)
 			s.AddTool(tool, mcpCheck)
@@ -54,7 +53,7 @@ func mcpCheck(ctx stdctx.Context, request mcp.CallToolRequest) (*mcp.CallToolRes
 		return mcp.NewToolResultError(err.Error()), nil
 	}
 
-	if _, err := config.LoadReader(strings.NewReader(input)); err != nil {
+	if _, err := config.Load(input); err != nil {
 		return mcp.NewToolResultError(err.Error()), nil
 	}
 
