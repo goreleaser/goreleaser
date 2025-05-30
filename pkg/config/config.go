@@ -240,6 +240,7 @@ type HomebrewCask struct {
 	Hooks        HomebrewCaskHooks        `yaml:"hooks,omitempty" json:"hooks,omitempty"`
 	Uninstall    HomebrewCaskUninstall    `yaml:"uninstall,omitempty" json:"uninstall,omitempty"`
 	Zap          HomebrewCaskUninstall    `yaml:"zap,omitempty" json:"zap,omitempty"`
+	URLAdditional HomebrewCaskUrlAdditionalParameters `yaml:"url_additional,omitempty" json:"url_additional,omitempty"`
 }
 
 type HomebrewCaskUninstall struct {
@@ -276,6 +277,17 @@ type HomebrewCaskCompletions struct {
 	Bash string `yaml:"bash,omitempty" json:"bash,omitempty"`
 	Zsh  string `yaml:"zsh,omitempty" json:"zsh,omitempty"`
 	Fish string `yaml:"fish,omitempty" json:"fish,omitempty"`
+}
+
+// Additional url parameters (https://docs.brew.sh/Cask-Cookbook#additional-url-parameters)
+type HomebrewCaskUrlAdditionalParameters struct {
+	Verified  string            `yaml:"verified,omitempty" json:"verified,omitempty"`
+	Using     string            `yaml:"using,omitempty" json:"using,omitempty"`
+	Cookies   map[string]string `yaml:"cookies,omitempty" json:"cookies,omitempty"`
+	Referer   string            `yaml:"referer,omitempty" json:"referer,omitempty"`
+	Headers   map[string]string `yaml:"headers,omitempty" json:"headers,omitempty"`
+	UserAgent string            `yaml:"user_agent,omitempty" json:"user_agent,omitempty"`
+	Data      map[string]string `yaml:"data,omitempty" json:"data,omitempty"`
 }
 
 type Nix struct {
