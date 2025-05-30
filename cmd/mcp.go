@@ -48,6 +48,7 @@ and configuration management.`,
 						mcp.Title("GoReleaser config file"),
 						mcp.Description("Path to the goreleaser YAML configuration file"),
 					),
+					mcp.WithReadOnlyHintAnnotation(true),
 				),
 				root.check,
 			)
@@ -56,6 +57,7 @@ and configuration management.`,
 				mcp.NewTool(
 					"build",
 					mcp.WithDescription("Builds the current project for the current platform"),
+					mcp.WithDestructiveHintAnnotation(true),
 				),
 				root.build,
 			)
