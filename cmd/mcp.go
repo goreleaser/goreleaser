@@ -70,7 +70,7 @@ and configuration management.`,
 	return root
 }
 
-func (c *mcpCmd) build(ctx stdctx.Context, request mcp.CallToolRequest) (*mcp.CallToolResult, error) {
+func (c *mcpCmd) build(ctx stdctx.Context, _ mcp.CallToolRequest) (*mcp.CallToolResult, error) {
 	out, err := exec.CommandContext(ctx, c.bin, "build", "--snapshot", "--clean", "--single-target", "-o", ".").CombinedOutput()
 	if err != nil {
 		return mcp.NewToolResultError(err.Error()), nil
@@ -78,7 +78,7 @@ func (c *mcpCmd) build(ctx stdctx.Context, request mcp.CallToolRequest) (*mcp.Ca
 	return mcp.NewToolResultText(string(out)), nil
 }
 
-func (*mcpCmd) check(ctx stdctx.Context, request mcp.CallToolRequest) (*mcp.CallToolResult, error) {
+func (*mcpCmd) check(_ stdctx.Context, request mcp.CallToolRequest) (*mcp.CallToolResult, error) {
 	input, err := request.RequireString("configuration")
 	if err != nil {
 		return mcp.NewToolResultError(err.Error()), nil
