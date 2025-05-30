@@ -2,6 +2,8 @@ package cmd
 
 import (
 	stdctx "context"
+	"os"
+	"os/exec"
 
 	goversion "github.com/caarlos0/go-version"
 	"github.com/goreleaser/goreleaser/v2/pkg/config"
@@ -12,6 +14,7 @@ import (
 
 type mcpCmd struct {
 	cmd *cobra.Command
+	bin string
 }
 
 func newMcpCmd(version goversion.Info) *mcpCmd {
@@ -29,16 +32,34 @@ and configuration management.`,
 		Args:              cobra.NoArgs,
 		ValidArgsFunction: cobra.NoFileCompletions,
 		RunE: func(_ *cobra.Command, _ []string) error {
+			bin, err := os.Executable()
+			if err != nil {
+				return err
+			}
+			root.bin = bin
 			s := server.NewMCPServer("goreleaser", version.GitVersion)
-			tool := mcp.NewTool("check_config",
-				mcp.WithDescription("Checks a GoReleaser configuration for errors"),
-				mcp.WithString("configuration",
-					mcp.Required(),
-					mcp.Title("GoReleaser config file"),
-					mcp.Description("Path the the goreleaser YAML configuration file"),
+
+			s.AddTool(
+				mcp.NewTool(
+					"check_config",
+					mcp.WithDescription("Checks a GoReleaser configuration for errors"),
+					mcp.WithString("configuration",
+						mcp.Required(),
+						mcp.Title("GoReleaser config file"),
+						mcp.Description("Path to the goreleaser YAML configuration file"),
+					),
 				),
+				root.check,
 			)
-			s.AddTool(tool, mcpCheck)
+
+			s.AddTool(
+				mcp.NewTool(
+					"build",
+					mcp.WithDescription("Builds the current project for the current platform"),
+				),
+				root.build,
+			)
+
 			return server.ServeStdio(s)
 		},
 	}
@@ -47,7 +68,15 @@ and configuration management.`,
 	return root
 }
 
-func mcpCheck(ctx stdctx.Context, request mcp.CallToolRequest) (*mcp.CallToolResult, error) {
+func (c *mcpCmd) build(ctx stdctx.Context, request mcp.CallToolRequest) (*mcp.CallToolResult, error) {
+	out, err := exec.CommandContext(ctx, c.bin, "build", "--snapshot", "--clean", "--single-target", "-o", ".").CombinedOutput()
+	if err != nil {
+		return mcp.NewToolResultError(err.Error()), nil
+	}
+	return mcp.NewToolResultText(string(out)), nil
+}
+
+func (*mcpCmd) check(ctx stdctx.Context, request mcp.CallToolRequest) (*mcp.CallToolResult, error) {
 	input, err := request.RequireString("configuration")
 	if err != nil {
 		return mcp.NewToolResultError(err.Error()), nil
