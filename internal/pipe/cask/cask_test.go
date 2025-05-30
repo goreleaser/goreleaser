@@ -311,7 +311,7 @@ func TestFullPipe(t *testing.T) {
 				ctx.Config.Casks[0].URLAdditional.Using = ":homebrew_curl"
 				ctx.Config.Casks[0].URLAdditional.Cookies = map[string]string{"license": "accept"}
 				ctx.Config.Casks[0].URLAdditional.Referer = "https://example-url-parameters.com/"
-				ctx.Config.Casks[0].URLAdditional.Headers = map[string]string{"Accept": "application/octet-stream"}
+				ctx.Config.Casks[0].URLAdditional.Headers = []string{"Accept: application/octet-stream"}
 				ctx.Config.Casks[0].URLAdditional.UserAgent = "GoReleaser"
 			},
 		},
@@ -322,7 +322,7 @@ func TestFullPipe(t *testing.T) {
 				ctx.Config.Casks[0].Homepage = "https://dummyhost-url-parameters.com/"
 				ctx.Config.Casks[0].URLAdditional.Using = ":post"
 				ctx.Config.Casks[0].URLAdditional.Verified = "https://dummyhost/download/"
-				ctx.Config.Casks[0].URLAdditional.Headers = map[string]string{"Accept": "application/octet-stream"}
+				ctx.Config.Casks[0].URLAdditional.Headers = []string{"Accept: application/octet-stream"}
 				ctx.Config.Casks[0].URLAdditional.Data = map[string]string{"payload": "hello_world"}
 			},
 		},

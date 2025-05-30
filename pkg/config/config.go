@@ -285,7 +285,7 @@ type HomebrewCaskUrlAdditionalParameters struct {
 	Using     string            `yaml:"using,omitempty" json:"using,omitempty"`
 	Cookies   map[string]string `yaml:"cookies,omitempty" json:"cookies,omitempty"`
 	Referer   string            `yaml:"referer,omitempty" json:"referer,omitempty"`
-	Headers   map[string]string `yaml:"headers,omitempty" json:"headers,omitempty"`
+	Headers   []string          `yaml:"headers,omitempty" json:"headers,omitempty"`
 	UserAgent string            `yaml:"user_agent,omitempty" json:"user_agent,omitempty"`
 	Data      map[string]string `yaml:"data,omitempty" json:"data,omitempty"`
 }

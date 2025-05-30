@@ -380,7 +380,7 @@ func dataFor(ctx *context.Context, cfg config.HomebrewCask, cl client.ReleaseURL
 			SHA256:      sum,
 			OS:          art.Goos,
 			Arch:        art.Goarch,
-			Header:      buildURLHeaderArray(cfg.URLAdditional.Headers),
+			Header:      cfg.URLAdditional.Headers,
 			UserAgent:   cfg.URLAdditional.UserAgent,
 			Cookies:     cfg.URLAdditional.Cookies,
 			Referer:     cfg.URLAdditional.Referer,
@@ -420,12 +420,4 @@ func compareByArch(a, b releasePackage) int {
 
 func caskNameFor(name string) string {
 	return strings.ToLower(strings.ReplaceAll(name, " ", "-"))
-}
-
-func buildURLHeaderArray(headers map[string]string) []string {
-	slice := make([]string, 0, len(headers))
-	for key, value := range headers {
-		slice = append(slice, fmt.Sprintf("%s: %s", key, value))
-	}
-	return slice
 }
