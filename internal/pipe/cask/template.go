@@ -22,6 +22,15 @@ type releasePackage struct {
 	SHA256      string
 	OS          string
 	Arch        string
+
+	// Additional url parameters
+	Verified  string
+	Using     string
+	Cookies   map[string]string
+	Referer   string
+	Header    []string
+	UserAgent string
+	Data      map[string]string
 }
 
 //go:embed templates
