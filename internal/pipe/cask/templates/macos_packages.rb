@@ -1,40 +1,7 @@
 {{- define "macos_packages" }}
 {{- range $element := .MacOSPackages }}
   {{- if eq $element.Arch "all" }}
-  url "{{ $element.DownloadURL }}"
-  {{- if $element.Verified }},
-    verified: "{{ $element.Verified }}"
-  {{- end }}
-  {{- if $element.Using }},
-    using: {{ $element.Using }}
-  {{- end }}
-  {{- if $element.Cookies }},
-    cookies: {
-      {{- range $key, $value := $element.Cookies }}
-      "{{ $key }}" => "{{ $value }}",
-      {{- end }}
-    }
-  {{- end }}
-  {{- if $element.Referer }},
-    referer: "{{ $element.Referer }}"
-  {{- end }}
-  {{- if $element.Header }},
-    header: [
-      {{- range $element.Header }}
-      "{{ . }}",
-      {{- end }}
-    ]
-  {{- end }}
-  {{- if $element.UserAgent }},
-    user_agent: "{{ $element.UserAgent }}"
-  {{- end }}
-  {{- if $element.Data }},
-    data: {
-      {{- range $key, $value := $element.Data }}
-      "{{ $key }}" => "{{ $value }}",
-      {{- end }}
-    }
-  {{- end }}
+  url "{{ $element.DownloadURL }}"{{- include "additional_url_params" $element }}
   sha256 "{{ $element.SHA256 }}"
 
   {{- else }}
@@ -44,40 +11,7 @@
   {{- if eq $element.Arch "arm64" }}
   on_arm do
   {{- end }}
-    url "{{ $element.DownloadURL }}"
-    {{- if $element.Verified }},
-      verified: "{{ $element.Verified }}"
-    {{- end }}
-    {{- if $element.Using }},
-      using: {{ $element.Using }}
-    {{- end }}
-    {{- if $element.Cookies }},
-      cookies: {
-        {{- range $key, $value := $element.Cookies }}
-        "{{ $key }}" => "{{ $value }}",
-        {{- end }}
-      }
-    {{- end }}
-    {{- if $element.Referer }},
-      referer: "{{ $element.Referer }}"
-    {{- end }}
-    {{- if $element.Header }},
-      header: [
-        {{- range $element.Header }}
-        "{{ . }}",
-        {{- end }}
-      ]
-    {{- end }}
-    {{- if $element.UserAgent }},
-      user_agent: "{{ $element.UserAgent }}"
-    {{- end }}
-    {{- if $element.Data }},
-      data: {
-        {{- range $key, $value := $element.Data }}
-        "{{ $key }}" => "{{ $value }}",
-        {{- end }}
-      }
-    {{- end }}
+    url "{{ $element.DownloadURL }}"{{- include "additional_url_params" $element }}
     sha256 "{{ $element.SHA256 }}"
   end
   {{- end }}
