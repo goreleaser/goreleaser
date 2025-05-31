@@ -81,7 +81,7 @@ func (*mcpCmd) check(_ stdctx.Context, request mcp.CallToolRequest) (*mcp.CallTo
 	input := request.GetString("configuration", "")
 	_, path, err := loadConfigCheck(input)
 	if err != nil {
-		return mcp.NewToolResultError(err.Error()), nil
+		return mcp.NewToolResultErrorFromErr("Configuration is invalid", err), nil
 	}
 
 	return mcp.NewToolResultText(fmt.Sprintf(
