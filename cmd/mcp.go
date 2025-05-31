@@ -2,11 +2,11 @@ package cmd
 
 import (
 	stdctx "context"
+	"fmt"
 	"os"
 	"os/exec"
 
 	goversion "github.com/caarlos0/go-version"
-	"github.com/goreleaser/goreleaser/v2/pkg/config"
 	"github.com/mark3labs/mcp-go/mcp"
 	"github.com/mark3labs/mcp-go/server"
 	"github.com/spf13/cobra"
@@ -44,9 +44,8 @@ and configuration management.`,
 					"check_config",
 					mcp.WithDescription("Checks a GoReleaser configuration for errors"),
 					mcp.WithString("configuration",
-						mcp.Required(),
 						mcp.Title("GoReleaser config file"),
-						mcp.Description("Path to the goreleaser YAML configuration file"),
+						mcp.Description("Path to the goreleaser YAML configuration file. If empty will use the default."),
 					),
 					mcp.WithReadOnlyHintAnnotation(true),
 				),
@@ -79,14 +78,14 @@ func (c *mcpCmd) build(ctx stdctx.Context, _ mcp.CallToolRequest) (*mcp.CallTool
 }
 
 func (*mcpCmd) check(_ stdctx.Context, request mcp.CallToolRequest) (*mcp.CallToolResult, error) {
-	input, err := request.RequireString("configuration")
+	input := request.GetString("configuration", "")
+	_, path, err := loadConfigCheck(input)
 	if err != nil {
 		return mcp.NewToolResultError(err.Error()), nil
 	}
 
-	if _, err := config.Load(input); err != nil {
-		return mcp.NewToolResultError(err.Error()), nil
-	}
-
-	return mcp.NewToolResultText("Configuration is valid!"), nil
+	return mcp.NewToolResultText(fmt.Sprintf(
+		"Configuration at %q is valid!",
+		path,
+	)), nil
 }
