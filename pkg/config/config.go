@@ -281,10 +281,11 @@ type HomebrewCaskCompletions struct {
 
 // Additional url parameters (https://docs.brew.sh/Cask-Cookbook#additional-url-parameters)
 type HomebrewCaskUrlAdditionalParameters struct {
-	Verified  string            `yaml:"verified,omitempty" json:"verified,omitempty"`
-	Using     string            `yaml:"using,omitempty" json:"using,omitempty"`
-	Cookies   map[string]string `yaml:"cookies,omitempty" json:"cookies,omitempty"`
-	Referer   string            `yaml:"referer,omitempty" json:"referer,omitempty"`
+	Verified string            `yaml:"verified,omitempty" json:"verified,omitempty"`
+	Using    string            `yaml:"using,omitempty" json:"using,omitempty"`
+	Cookies  map[string]string `yaml:"cookies,omitempty" json:"cookies,omitempty"`
+	Referer  string            `yaml:"referer,omitempty" json:"referer,omitempty"`
+	// Homebrew Cask DSL actually requires `header` key, but we use `headers` for consistency with Homebrew Formula config.
 	Headers   []string          `yaml:"headers,omitempty" json:"headers,omitempty"`
 	UserAgent string            `yaml:"user_agent,omitempty" json:"user_agent,omitempty"`
 	Data      map[string]string `yaml:"data,omitempty" json:"data,omitempty"`
