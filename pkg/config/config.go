@@ -232,14 +232,14 @@ type HomebrewCask struct {
 	Service               string       `yaml:"service,omitempty" json:"service,omitempty"`
 
 	// Cask only:
-	Binary       string                   `yaml:"binary,omitempty" json:"binary,omitempty"`
-	Manpage      string                   `yaml:"manpage,omitempty" json:"manpage,omitempty"`
-	Completions  HomebrewCaskCompletions  `yaml:"completions,omitempty" json:"completions,omitempty"`
-	Dependencies []HomebrewCaskDependency `yaml:"dependencies,omitempty" json:"dependencies,omitempty"`
-	Conflicts    []HomebrewCaskConflict   `yaml:"conflicts,omitempty" json:"conflicts,omitempty"`
-	Hooks        HomebrewCaskHooks        `yaml:"hooks,omitempty" json:"hooks,omitempty"`
-	Uninstall    HomebrewCaskUninstall    `yaml:"uninstall,omitempty" json:"uninstall,omitempty"`
-	Zap          HomebrewCaskUninstall    `yaml:"zap,omitempty" json:"zap,omitempty"`
+	Binary        string                              `yaml:"binary,omitempty" json:"binary,omitempty"`
+	Manpage       string                              `yaml:"manpage,omitempty" json:"manpage,omitempty"`
+	Completions   HomebrewCaskCompletions             `yaml:"completions,omitempty" json:"completions,omitempty"`
+	Dependencies  []HomebrewCaskDependency            `yaml:"dependencies,omitempty" json:"dependencies,omitempty"`
+	Conflicts     []HomebrewCaskConflict              `yaml:"conflicts,omitempty" json:"conflicts,omitempty"`
+	Hooks         HomebrewCaskHooks                   `yaml:"hooks,omitempty" json:"hooks,omitempty"`
+	Uninstall     HomebrewCaskUninstall               `yaml:"uninstall,omitempty" json:"uninstall,omitempty"`
+	Zap           HomebrewCaskUninstall               `yaml:"zap,omitempty" json:"zap,omitempty"`
 	URLAdditional HomebrewCaskUrlAdditionalParameters `yaml:"url_additional,omitempty" json:"url_additional,omitempty"`
 }
 
