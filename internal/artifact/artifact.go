@@ -113,6 +113,8 @@ const (
 func (t Type) isUploadable() bool {
 	switch t {
 	case UniversalBinary, Binary, // See: [UploadableBinary].
+		DockerImage,            // See: [PublishableDockerImage].
+		Snapcraft,              // See [PublishableSnapcraft].
 		Metadata,               // Local only.
 		SrcInfo, SourceSrcInfo, // It's always named `.SRCINFO`
 		PkgBuild, SourcePkgBuild: // It's always named `.PKGBUILD`

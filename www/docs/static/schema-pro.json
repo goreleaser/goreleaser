@@ -4375,6 +4375,16 @@
 							"type": "string"
 						},
 						"type": "array"
+					},
+					"disable": {
+						"oneOf": [
+							{
+								"type": "string"
+							},
+							{
+								"type": "boolean"
+							}
+						]
 					}
 				},
 				"additionalProperties": false,

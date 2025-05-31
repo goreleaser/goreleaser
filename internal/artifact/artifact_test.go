@@ -1064,6 +1064,8 @@ func TestArtifactTypeIsUploadable(t *testing.T) {
 		PkgBuild,
 		SourcePkgBuild,
 		UniversalBinary,
+		DockerImage,
+		Snapcraft,
 	}
 	for i := range lastMarker - 1 {
 		up := i.isUploadable()
