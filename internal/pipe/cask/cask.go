@@ -376,17 +376,11 @@ func dataFor(ctx *context.Context, cfg config.HomebrewCask, cl client.ReleaseURL
 		}
 
 		pkg := releasePackage{
-			DownloadURL: url,
-			SHA256:      sum,
-			OS:          art.Goos,
-			Arch:        art.Goarch,
-			Header:      cfg.URLAdditional.Headers,
-			UserAgent:   cfg.URLAdditional.UserAgent,
-			Cookies:     cfg.URLAdditional.Cookies,
-			Referer:     cfg.URLAdditional.Referer,
-			Using:       cfg.URLAdditional.Using,
-			Data:        cfg.URLAdditional.Data,
-			Verified:    cfg.URLAdditional.Verified,
+			DownloadURL:   url,
+			SHA256:        sum,
+			OS:            art.Goos,
+			Arch:          art.Goarch,
+			URLAdditional: cfg.URLAdditional,
 		}
 
 		counts[pkg.OS+pkg.Arch]++
