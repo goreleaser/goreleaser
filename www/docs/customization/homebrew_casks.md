@@ -85,15 +85,14 @@ homebrew_casks:
 
       # HTTP cookies to send with the download request
       cookies:
-        auth_token: "{{ .Env.AUTH_TOKEN }}"
+        license: "accept-backup"
 
       # HTTP referer header
       referer: "https://example.com/download-page"
 
       # Additional HTTP headers
       headers:
-        - "Authorization: Bearer {{ .Env.API_TOKEN }}"
-        - "X-Custom-Header: value"
+        - "X-Version: {{ .Version }}"
 
       # Custom User-Agent header
       user_agent: "MyApp/1.0 (macOS)"
