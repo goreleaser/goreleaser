@@ -22,7 +22,7 @@ type releasePackage struct {
 	SHA256        string
 	OS            string
 	Arch          string
-	URLAdditional config.HomebrewCaskUrlAdditionalParameters
+	URLAdditional config.HomebrewCaskURLAdditionalParameters
 }
 
 //go:embed templates
