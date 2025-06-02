@@ -362,25 +362,34 @@ func dataFor(ctx *context.Context, cfg config.HomebrewCask, cl client.ReleaseURL
 			return result, err
 		}
 
-		if cfg.URLTemplate == "" {
+		if cfg.URL.Template == "" {
 			url, err := cl.ReleaseURLTemplate(ctx)
 			if err != nil {
 				return result, err
 			}
-			cfg.URLTemplate = url
+			cfg.URL.Template = url
 		}
 
-		url, err := tmpl.New(ctx).WithArtifact(art).Apply(cfg.URLTemplate)
+		url := downloadURL{
+			Verified:  cfg.URL.Verified,
+			Using:     cfg.URL.Using,
+			Cookies:   cfg.URL.Cookies,
+			Referer:   cfg.URL.Referer,
+			Headers:   cfg.URL.Headers,
+			UserAgent: cfg.URL.UserAgent,
+			Data:      cfg.URL.Data,
+		}
+
+		url.Download, err = tmpl.New(ctx).WithArtifact(art).Apply(cfg.URL.Template)
 		if err != nil {
 			return result, err
 		}
 
 		pkg := releasePackage{
-			DownloadURL:   url,
-			SHA256:        sum,
-			OS:            art.Goos,
-			Arch:          art.Goarch,
-			URLAdditional: cfg.URLAdditional,
+			URL:    url,
+			SHA256: sum,
+			OS:     art.Goos,
+			Arch:   art.Goarch,
 		}
 
 		counts[pkg.OS+pkg.Arch]++

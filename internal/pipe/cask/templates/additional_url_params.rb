@@ -1,33 +1,33 @@
 {{- define "additional_url_params" }}
-{{- if .URLAdditional.Verified }},
-      verified: "{{ .URLAdditional.Verified }}"
+{{- if .Verified }},
+      verified: "{{ .Verified }}"
 {{- end }}
-{{- if .URLAdditional.Using }},
-      using: {{ .URLAdditional.Using }}
+{{- if .Using }},
+      using: {{ .Using }}
 {{- end }}
-{{- if .URLAdditional.Cookies }},
+{{- if .Cookies }},
       cookies: {
-        {{- range $key, $value := .URLAdditional.Cookies }}
+        {{- range $key, $value := .Cookies }}
         "{{ $key }}" => "{{ $value }}",
         {{- end }}
       }
 {{- end }}
-{{- if .URLAdditional.Referer }},
-      referer: "{{ .URLAdditional.Referer }}"
+{{- if .Referer }},
+      referer: "{{ .Referer }}"
 {{- end }}
-{{- if .URLAdditional.Headers }},
+{{- if .Headers }},
       header: [
-        {{- range .URLAdditional.Headers }}
+        {{- range .Headers }}
         "{{ . }}",
         {{- end }}
       ]
 {{- end }}
-{{- if .URLAdditional.UserAgent }},
-      user_agent: "{{ .URLAdditional.UserAgent }}"
+{{- if .UserAgent }},
+      user_agent: "{{ .UserAgent }}"
 {{- end }}
-{{- if .URLAdditional.Data }},
+{{- if .Data }},
       data: {
-        {{- range $key, $value := .URLAdditional.Data }}
+        {{- range $key, $value := .Data }}
         "{{ $key }}" => "{{ $value }}",
         {{- end }}
       }
