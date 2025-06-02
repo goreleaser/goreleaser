@@ -67,6 +67,41 @@ homebrew_casks:
     # Templates: allowed.
     url_template: "https://github.mycompany.com/foo/bar/releases/download/{{ .Tag }}/{{ .ArtifactName }}"
 
+    # Additional URL parameters for Homebrew Cask downloads.
+    # These parameters can be used to provide extra headers, cookies, or other
+    # download requirements for your application.
+    # See https://docs.brew.sh/Cask-Cookbook#additional-url-parameters for more details.
+    #
+    # All parameters are optional and will only be included in the generated cask
+    # if explicitly configured. No default values are set.
+    # Templates: allowed.
+    url_additional:
+      # Used when the domains of `url` and `homepage` differ.
+      verified: "github.com/owner/repo/"
+
+      # Download strategy or format specification
+      # See official Cask Cookbook for allowed values.
+      using: ":homebrew_curl"
+
+      # HTTP cookies to send with the download request
+      cookies:
+        license: "accept-backup"
+
+      # HTTP referer header
+      referer: "https://example.com/download-page"
+
+      # Additional HTTP headers
+      headers:
+        - "X-Version: {{ .Version }}"
+
+      # Custom User-Agent header
+      user_agent: "MyApp/1.0 (macOS)"
+
+      # Custom body when using POST request
+      data:
+        format: "dmg"
+        platform: "mac"
+
     # Git author used to commit to the repository.
     # Templates: allowed.
     commit_author:

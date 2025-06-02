@@ -18,10 +18,11 @@ type templateData struct {
 }
 
 type releasePackage struct {
-	DownloadURL string
-	SHA256      string
-	OS          string
-	Arch        string
+	DownloadURL   string
+	SHA256        string
+	OS            string
+	Arch          string
+	URLAdditional config.HomebrewCaskURLAdditionalParameters
 }
 
 //go:embed templates
