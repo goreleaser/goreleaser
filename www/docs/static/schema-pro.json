@@ -1925,9 +1925,6 @@
 							}
 						]
 					},
-					"url_template": {
-						"type": "string"
-					},
 					"custom_block": {
 						"type": "string"
 					},
@@ -1945,6 +1942,9 @@
 					},
 					"manpage": {
 						"type": "string"
+					},
+					"url": {
+						"$ref": "#/$defs/HomebrewCaskURL"
 					},
 					"completions": {
 						"$ref": "#/$defs/HomebrewCaskCompletions"
@@ -2041,6 +2041,45 @@
 					},
 					"post": {
 						"$ref": "#/$defs/HomebrewCaskHook"
+					}
+				},
+				"additionalProperties": false,
+				"type": "object"
+			},
+			"HomebrewCaskURL": {
+				"properties": {
+					"template": {
+						"type": "string"
+					},
+					"verified": {
+						"type": "string"
+					},
+					"using": {
+						"type": "string"
+					},
+					"cookies": {
+						"additionalProperties": {
+							"type": "string"
+						},
+						"type": "object"
+					},
+					"referer": {
+						"type": "string"
+					},
+					"headers": {
+						"items": {
+							"type": "string"
+						},
+						"type": "array"
+					},
+					"user_agent": {
+						"type": "string"
+					},
+					"data": {
+						"additionalProperties": {
+							"type": "string"
+						},
+						"type": "object"
 					}
 				},
 				"additionalProperties": false,

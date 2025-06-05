@@ -55,17 +55,53 @@ homebrew_casks:
       zsh: completions/myapp.zsh
       fish: completions/myapp.fish
 
-
-    # NOTE: make sure the url_template, the token and given repo (github or
-    # gitlab) owner and name are from the same kind.
-    # We will probably unify this in the next major version like it is
-    # done with scoop.
-
-    # URL which is determined by the given Token (github, gitlab or gitea).
+    # This information will be used to build the URL section of your Cask.
     #
-    # Default depends on the client.
-    # Templates: allowed.
-    url_template: "https://github.mycompany.com/foo/bar/releases/download/{{ .Tag }}/{{ .ArtifactName }}"
+    # You can set the template, as well as additional parameters.
+    # These parameters can be used to provide extra headers, cookies, or other
+    # download requirements for your application.
+    # See https://docs.brew.sh/Cask-Cookbook#additional-url-parameters for more details.
+    #
+    # All fields are optional.
+    url:
+      # URL which is determined by the given Token (github, gitlab or gitea).
+      #
+      # Default depends on the client.
+      # Templates: allowed.
+      template: "https://github.mycompany.com/foo/bar/releases/download/{{ .Tag }}/{{ .ArtifactName }}"
+
+      # Used when the domains of `url` and `homepage` differ.
+      # Templates: allowed.
+      verified: "github.com/owner/repo/"
+
+      # Download strategy or format specification
+      # See official Cask Cookbook for allowed values.
+      # Templates: allowed.
+      using: ":homebrew_curl"
+
+      # HTTP cookies to send with the download request
+      # Templates: allowed.
+      cookies:
+        license: "accept-backup"
+
+      # HTTP referer header
+      # Templates: allowed.
+      referer: "https://example.com/download-page"
+
+      # Additional HTTP headers
+      # Templates: allowed.
+      headers:
+        - "X-Version: {{ .Version }}"
+
+      # Custom User-Agent header
+      # Templates: allowed.
+      user_agent: "MyApp/1.0 (macOS)"
+
+      # Custom body when using POST request
+      # Templates: allowed.
+      data:
+        format: "dmg"
+        platform: "mac"
 
     # Git author used to commit to the repository.
     # Templates: allowed.
@@ -179,6 +215,26 @@ homebrew_casks:
 ```
 
 <!-- md:templates -->
+
+## Signing and notarizing
+
+Casks are supposed to be signed, even if they are coming from a tap.
+
+GoReleaser can [sign and notarize both binaries and apps](./notarize.md), but,
+Apple charges a yearly fee for that.
+
+If you don't want to do it, you still have the option to tell macOS to
+remove the binary from the quarantine on a post install hook:
+
+```yaml title=".goreleaser.yaml"
+homebrew_casks:
+  - name: foo
+    hooks:
+      post:
+        # replace foo with the actual binary name
+        install: |
+          system_command "/usr/bin/xattr", args: ["-dr", "com.apple.quarantine", "#{staged_path}/foo"]
+```
 
 ## Versioned Casks
 

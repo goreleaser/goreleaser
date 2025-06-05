@@ -68,30 +68,38 @@ var defaultTemplateData = templateData{
 	HasOnlyAmd64MacOsPkg: false,
 	LinuxPackages: []releasePackage{
 		{
-			DownloadURL: "https://github.com/caarlos0/test/releases/download/v0.1.3/test_Linux_x86_64.tar.gz",
-			SHA256:      "1633f61598ab0791e213135923624eb342196b3494909c91899bcd0560f84c67",
-			OS:          "linux",
-			Arch:        "amd64",
+			URL: downloadURL{
+				Download: "https://github.com/caarlos0/test/releases/download/v0.1.3/test_Linux_x86_64.tar.gz",
+			},
+			SHA256: "1633f61598ab0791e213135923624eb342196b3494909c91899bcd0560f84c67",
+			OS:     "linux",
+			Arch:   "amd64",
 		},
 		{
-			DownloadURL: "https://github.com/caarlos0/test/releases/download/v0.1.3/test_Arm64.tar.gz",
-			SHA256:      "1633f61598ab0791e213135923624eb342196b3494909c91899bcd0560f84c67",
-			OS:          "linux",
-			Arch:        "arm64",
+			URL: downloadURL{
+				Download: "https://github.com/caarlos0/test/releases/download/v0.1.3/test_Arm64.tar.gz",
+			},
+			SHA256: "1633f61598ab0791e213135923624eb342196b3494909c91899bcd0560f84c67",
+			OS:     "linux",
+			Arch:   "arm64",
 		},
 	},
 	MacOSPackages: []releasePackage{
 		{
-			DownloadURL: "https://github.com/caarlos0/test/releases/download/v0.1.3/test_Darwin_x86_64.tar.gz",
-			SHA256:      "1633f61598ab0791e213135923624eb342196b3494909c91899bcd0560f84c68",
-			OS:          "darwin",
-			Arch:        "amd64",
+			URL: downloadURL{
+				Download: "https://github.com/caarlos0/test/releases/download/v0.1.3/test_Darwin_x86_64.tar.gz",
+			},
+			SHA256: "1633f61598ab0791e213135923624eb342196b3494909c91899bcd0560f84c68",
+			OS:     "darwin",
+			Arch:   "amd64",
 		},
 		{
-			DownloadURL: "https://github.com/caarlos0/test/releases/download/v0.1.3/test_Darwin_arm64.tar.gz",
-			SHA256:      "1df5fdc2bad4ed4c28fbdc77b6c542988c0dc0e2ae34e0dc912bbb1c66646c58",
-			OS:          "darwin",
-			Arch:        "arm64",
+			URL: downloadURL{
+				Download: "https://github.com/caarlos0/test/releases/download/v0.1.3/test_Darwin_arm64.tar.gz",
+			},
+			SHA256: "1df5fdc2bad4ed4c28fbdc77b6c542988c0dc0e2ae34e0dc912bbb1c66646c58",
+			OS:     "darwin",
+			Arch:   "arm64",
 		},
 	},
 }
@@ -302,6 +310,28 @@ func TestFullPipe(t *testing.T) {
 					Trash:     []string{"trash1", "trash2", "trash3"},
 					Delete:    []string{"delete1", "delete2", "delete3"},
 				}
+			},
+		},
+		"url_parameters_curl": {
+			prepare: func(ctx *context.Context) {
+				ctx.Config.Casks[0].Repository.Owner = "test"
+				ctx.Config.Casks[0].Repository.Name = "test"
+				ctx.Config.Casks[0].URL.Using = ":homebrew_curl"
+				ctx.Config.Casks[0].URL.Cookies = map[string]string{"license": "accept"}
+				ctx.Config.Casks[0].URL.Referer = "https://example-url-parameters.com/"
+				ctx.Config.Casks[0].URL.Headers = []string{"Accept: application/octet-stream"}
+				ctx.Config.Casks[0].URL.UserAgent = "GoReleaser"
+			},
+		},
+		"url_parameters_post": {
+			prepare: func(ctx *context.Context) {
+				ctx.Config.Casks[0].Repository.Owner = "test"
+				ctx.Config.Casks[0].Repository.Name = "test"
+				ctx.Config.Casks[0].Homepage = "https://dummyhost-url-parameters.com/"
+				ctx.Config.Casks[0].URL.Using = ":post"
+				ctx.Config.Casks[0].URL.Verified = "https://dummyhost/download/"
+				ctx.Config.Casks[0].URL.Headers = []string{"Accept: application/octet-stream"}
+				ctx.Config.Casks[0].URL.Data = map[string]string{"payload": "hello_world"}
 			},
 		},
 	} {
