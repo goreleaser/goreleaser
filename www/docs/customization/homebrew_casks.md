@@ -244,9 +244,7 @@ homebrew_casks:
     cannot be opened_" alert.
 
     If you don't want to do any of the steps above, you may want to instruct
-    your users to use <kbd>ctrl+click</kbd> the binary/app
-    and select "Open" from the context menu, or alternatively, to run the
-    appropriate `xattr` command manually.
+    your users to run the appropriate `xattr` command manually.
 
     You may do so in using the `caveats` property, for example.
 
