@@ -64,12 +64,26 @@ func newMcpCmd(version goversion.Info) *mcpCmd {
 				root.build,
 			)
 
+			s.AddTool(
+				mcp.NewTool(
+					"init",
+					mcp.WithDescription("Initializes GoReleaser in the current directory"),
+					mcp.WithDestructiveHintAnnotation(true),
+				),
+				root.init,
+			)
+
 			return server.ServeStdio(s)
 		},
 	}
 
 	root.cmd = cmd
 	return root
+}
+
+func (c *mcpCmd) init(ctx stdctx.Context, _ mcp.CallToolRequest) (*mcp.CallToolResult, error) {
+	out, _ := exec.CommandContext(ctx, c.bin, "init").CombinedOutput()
+	return mcp.NewToolResultText(string(out)), nil
 }
 
 func (c *mcpCmd) healthcheck(ctx stdctx.Context, _ mcp.CallToolRequest) (*mcp.CallToolResult, error) {
