@@ -64,6 +64,7 @@ You may also want to make the _Cask_ conflict with the previous _Formula_.
     ```yaml
     brews:
     - name: foo
+      directory: Formulas
     ```
 
 === "After"
@@ -71,9 +72,16 @@ You may also want to make the _Cask_ conflict with the previous _Formula_.
     ```yaml
     homebrew_casks:
     - name: foo
-      # Optionally:
+      directory: Casks # or remove this option
+      # make the old formula conflict with the cask:
       conflicts:
         formula: foo
+      # if your app/binary isn't signed and notarized, you'll need this:
+      hooks:
+        post:
+          install: |
+            # replace foo with the actual binary name
+            system_command "/usr/bin/xattr", args: ["-dr", "com.apple.quarantine", "#{staged_path}/foo"]
     ```
 
 ### archives.builds

@@ -216,6 +216,26 @@ homebrew_casks:
 
 <!-- md:templates -->
 
+## Signing and notarizing
+
+Casks are supposed to be signed, even if they are coming from a tap.
+
+GoReleaser can [sign and notarize both binaries and apps](./notarize.md), but,
+Apple charges a yearly fee for that.
+
+If you don't want to do it, you still have the option to tell macOS to
+remove the binary from the quarantine on a post install hook:
+
+```yaml title=".goreleaser.yaml"
+homebrew_casks:
+  - name: foo
+    hooks:
+      post:
+        # replace foo with the actual binary name
+        install: |
+          system_command "/usr/bin/xattr", args: ["-dr", "com.apple.quarantine", "#{staged_path}/foo"]
+```
+
 ## Versioned Casks
 
 <!-- md:pro -->
