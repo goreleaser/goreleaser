@@ -191,7 +191,7 @@ func TestPublishPipeSuccess(t *testing.T) {
 		Tags                []string
 		CreationTime        string
 		KoDataCreationTime  string
-		Local               string
+		LocalDomain         string
 	}{
 		{
 			// Must be first as others add an SBOM for the same image
