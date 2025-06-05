@@ -20,13 +20,8 @@ type mcpCmd struct {
 func newMcpCmd(version goversion.Info) *mcpCmd {
 	root := &mcpCmd{}
 	cmd := &cobra.Command{
-		Use:   "mcp",
-		Short: "Start an MCP (Model Context Protocol) server",
-		Long: `Start an MCP server that provides access to GoReleaser functionality.
-
-The MCP server allows AI models and other clients to interact with GoReleaser
-through the Model Context Protocol, enabling automated release workflows
-and configuration management.`,
+		Use:               "mcp",
+		Short:             "Start a MCP server that provides GoReleaser tools",
 		SilenceUsage:      true,
 		SilenceErrors:     true,
 		Args:              cobra.NoArgs,
@@ -41,7 +36,7 @@ and configuration management.`,
 
 			s.AddTool(
 				mcp.NewTool(
-					"check_config",
+					"check",
 					mcp.WithDescription("Checks a GoReleaser configuration for errors"),
 					mcp.WithString("configuration",
 						mcp.Title("GoReleaser config file"),
@@ -50,6 +45,14 @@ and configuration management.`,
 					mcp.WithReadOnlyHintAnnotation(true),
 				),
 				root.check,
+			)
+
+			s.AddTool(
+				mcp.NewTool(
+					"healthcheck",
+					mcp.WithDescription("Checks if GoReleaser has all the dependencies installed"),
+				),
+				root.healthcheck,
 			)
 
 			s.AddTool(
@@ -69,11 +72,13 @@ and configuration management.`,
 	return root
 }
 
+func (c *mcpCmd) healthcheck(ctx stdctx.Context, _ mcp.CallToolRequest) (*mcp.CallToolResult, error) {
+	out, _ := exec.CommandContext(ctx, c.bin, "healthcheck").CombinedOutput()
+	return mcp.NewToolResultText(string(out)), nil
+}
+
 func (c *mcpCmd) build(ctx stdctx.Context, _ mcp.CallToolRequest) (*mcp.CallToolResult, error) {
-	out, err := exec.CommandContext(ctx, c.bin, "build", "--snapshot", "--clean", "--single-target", "-o", ".").CombinedOutput()
-	if err != nil {
-		return mcp.NewToolResultError(err.Error()), nil
-	}
+	out, _ := exec.CommandContext(ctx, c.bin, "build", "--snapshot", "--clean", "--single-target", "-o", ".").CombinedOutput()
 	return mcp.NewToolResultText(string(out)), nil
 }
 
