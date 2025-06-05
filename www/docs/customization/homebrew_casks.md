@@ -216,15 +216,15 @@ homebrew_casks:
 
 <!-- md:templates -->
 
-## Signing and notarizing
+## Signing and Notarizing
 
 Casks are supposed to be signed, even if they are coming from a tap.
 
 GoReleaser can [sign and notarize both binaries and apps](./notarize.md), but,
 Apple charges a yearly fee for that.
 
-If you don't want to do it, you still have the option to tell macOS to
-remove the binary from the quarantine on a post install hook:
+If you don't want to do it, you still have the option to tell macOS to remove
+the quarantine bit from the binary on a post install hook:
 
 ```yaml title=".goreleaser.yaml"
 homebrew_casks:
@@ -235,6 +235,20 @@ homebrew_casks:
         install: |
           system_command "/usr/bin/xattr", args: ["-dr", "com.apple.quarantine", "#{staged_path}/foo"]
 ```
+
+!!! danger "What happens if I don't follow the steps above?"
+
+    **Not following this might lead to your app/binary to not run.**
+
+    In these cases, users will see the infamous "_App Name is damaged and
+    cannot be opened_" alert.
+
+    If you don't want to do any of the steps above, you may want to instruct
+    your users to use <kbd>ctrl+click</kbd> the binary/app
+    and select "Open" from the context menu, or alternatively, to run the
+    appropriate `xattr` command manually.
+
+    You may do so in using the `caveats` property, for example.
 
 ## Versioned Casks
 
