@@ -994,3 +994,18 @@ func TestGitLabOpenPullBaseBranchGiven(t *testing.T) {
 
 	require.NoError(t, client.OpenPullRequest(ctx, Repo{Branch: "main"}, repo, "some title", false))
 }
+
+func TestGitLabVersionEnv(t *testing.T) {
+	t.Run("18", func(t *testing.T) {
+		t.Setenv("CI_SERVER_VERSION", "18.0.0")
+		require.True(t, isV17(nil))
+	})
+	t.Run("17", func(t *testing.T) {
+		t.Setenv("CI_SERVER_VERSION", "17.0.0")
+		require.True(t, isV17(nil))
+	})
+	t.Run("16", func(t *testing.T) {
+		t.Setenv("CI_SERVER_VERSION", "16.0.0")
+		require.False(t, isV17(nil))
+	})
+}
