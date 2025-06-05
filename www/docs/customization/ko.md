@@ -112,7 +112,8 @@ kos:
     # when Goreleaser is executed with the --snapshot flag. 
     # Use the local_domain attribute to configure the local registry (e.g. kind.local). 
     # 
-    # Default "goreleaser.ko.local" - local docker registry is used
+    # Default "goreleaser.ko.local" - local docker registry is used.
+    # <!-- md:inline_version v2.10-unreleased -->.
     local_domain: "goreleaser.ko.local"
 
     # Ldflags to use on build.
