@@ -722,6 +722,19 @@ func TestApplyTemplate(t *testing.T) {
 		require.Error(t, err)
 	})
 }
+func TestGetLocalDomain(t *testing.T) {
+	t.Run("default local domain", func(t *testing.T) {
+		ko := config.Ko{}
+		got := getLocalDomain(ko)
+		require.Equal(t, "goreleaser.ko.local", got)
+	})
+
+	t.Run("custom local domain", func(t *testing.T) {
+		ko := config.Ko{LocalDomain: "custom.domain"}
+		got := getLocalDomain(ko)
+		require.Equal(t, "custom.domain", got)
+	})
+}
 
 func mergeMaps(ms ...map[string]string) map[string]string {
 	result := map[string]string{}
