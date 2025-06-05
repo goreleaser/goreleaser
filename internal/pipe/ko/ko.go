@@ -286,6 +286,11 @@ func doBuild(ctx *context.Context, ko config.Ko) error {
 		return fmt.Errorf("build: %w", err)
 	}
 
+	localDomain := "goreleaser.ko.local"
+	if ko.LocalDomain != "" {
+		localDomain = ko.LocalDomain
+	}
+
 	po := &options.PublishOptions{
 		DockerRepo:          opts.imageRepos[0],
 		Bare:                opts.bare,
@@ -293,7 +298,7 @@ func doBuild(ctx *context.Context, ko config.Ko) error {
 		BaseImportPaths:     opts.baseImportPaths,
 		Tags:                opts.tags,
 		Local:               ctx.Snapshot,
-		LocalDomain:         "goreleaser.ko.local",
+		LocalDomain:         localDomain,
 	}
 	var p publish.Interface
 	if ctx.Snapshot {
