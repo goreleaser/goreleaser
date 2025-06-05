@@ -6,11 +6,11 @@ on:
       - "main"
   pull_request:
     paths:
-      - "go.*"
-      - "**/*.go"
-      - "Taskfile.yml"
-      - "Dockerfile"
-      - ".github/workflows/*.yml"
+      # - "go.*"
+      # - "**/*.go"
+      # - "Taskfile.yml"
+      # - "Dockerfile"
+      # - ".github/workflows/*.yml"
       - "dagger/*"
 
 permissions:
