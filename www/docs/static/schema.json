@@ -1529,9 +1529,6 @@
 							}
 						]
 					},
-					"url_template": {
-						"type": "string"
-					},
 					"custom_block": {
 						"type": "string"
 					},
@@ -1549,6 +1546,9 @@
 					},
 					"manpage": {
 						"type": "string"
+					},
+					"url": {
+						"$ref": "#/$defs/HomebrewCaskURL"
 					},
 					"completions": {
 						"$ref": "#/$defs/HomebrewCaskCompletions"
@@ -1636,6 +1636,45 @@
 					},
 					"post": {
 						"$ref": "#/$defs/HomebrewCaskHook"
+					}
+				},
+				"additionalProperties": false,
+				"type": "object"
+			},
+			"HomebrewCaskURL": {
+				"properties": {
+					"template": {
+						"type": "string"
+					},
+					"verified": {
+						"type": "string"
+					},
+					"using": {
+						"type": "string"
+					},
+					"cookies": {
+						"additionalProperties": {
+							"type": "string"
+						},
+						"type": "object"
+					},
+					"referer": {
+						"type": "string"
+					},
+					"headers": {
+						"items": {
+							"type": "string"
+						},
+						"type": "array"
+					},
+					"user_agent": {
+						"type": "string"
+					},
+					"data": {
+						"additionalProperties": {
+							"type": "string"
+						},
+						"type": "object"
 					}
 				},
 				"additionalProperties": false,
@@ -1860,9 +1899,6 @@
 					"sbom_directory": {
 						"type": "string"
 					},
-					"local_domain": {
-						"type": "string"
-					},
 					"ldflags": {
 						"items": {
 							"type": "string"
@@ -1889,6 +1925,9 @@
 					},
 					"base_import_paths": {
 						"type": "boolean"
+					},
+					"local_domain": {
+						"type": "string"
 					},
 					"disable": {
 						"oneOf": [
@@ -3443,7 +3482,7 @@
 							"archive",
 							"binary",
 							"any",
-							"any"
+							"none"
 						],
 						"default": "archive"
 					},
@@ -3452,6 +3491,16 @@
 							"type": "string"
 						},
 						"type": "array"
+					},
+					"disable": {
+						"oneOf": [
+							{
+								"type": "string"
+							},
+							{
+								"type": "boolean"
+							}
+						]
 					}
 				},
 				"additionalProperties": false,

@@ -32,6 +32,7 @@ Check out our website for more information, examples and documentation: https://
 * [goreleaser healthcheck](goreleaser_healthcheck.md)	 - Checks if needed tools are installed
 * [goreleaser init](goreleaser_init.md)	 - Generates a .goreleaser.yaml file
 * [goreleaser jsonschema](goreleaser_jsonschema.md)	 - Outputs goreleaser's JSON schema
+* [goreleaser mcp](goreleaser_mcp.md)	 - Start a MCP server that provides GoReleaser tools
 * [goreleaser publish](goreleaser_publish.md)	 - Publishes a previously prepared release
 * [goreleaser release](goreleaser_release.md)	 - Releases the current project
 * [goreleaser subscribe](goreleaser_subscribe.md)	 - Subscribe to GoReleaser Pro, or manage your subscription

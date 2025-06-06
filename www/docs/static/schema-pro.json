@@ -2402,9 +2402,6 @@
 					"sbom_directory": {
 						"type": "string"
 					},
-					"local_domain": {
-						"type": "string"
-					},
 					"ldflags": {
 						"items": {
 							"type": "string"
@@ -2431,6 +2428,9 @@
 					},
 					"base_import_paths": {
 						"type": "boolean"
+					},
+					"local_domain": {
+						"type": "string"
 					},
 					"disable": {
 						"oneOf": [
