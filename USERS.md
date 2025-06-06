@@ -46,6 +46,7 @@ Here's a running list of some organizations using GoReleaser[^1]:
 1. [Goldenhand Software](https://www.goldenhandsoftware.co.uk)
 1. [Google](https://google.com)
 1. [Grafana](https://grafana.com)
+1. [Grlx](https://grlx.dev)
 1. [Hashicorp](https://hashicorp.com)
 1. [Helm](https://helm.sh)
 1. [Hugo](https://gohugo.io)
