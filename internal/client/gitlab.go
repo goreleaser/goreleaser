@@ -531,7 +531,7 @@ func (c *gitlabClient) Upload(
 		linkURL = c.client.BaseURL().String() + baseLinkURL
 	} else {
 		log.WithField("file", file.Name()).Debug("uploading file as attachment")
-		projectFile, _, err := c.client.Projects.UploadFile(
+		projectFile, _, err := c.client.ProjectMarkdownUploads.UploadProjectMarkdown(
 			projectID,
 			file,
 			filepath.Base(file.Name()),
