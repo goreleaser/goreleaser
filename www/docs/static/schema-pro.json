@@ -2402,6 +2402,9 @@
 					"sbom_directory": {
 						"type": "string"
 					},
+					"local_domain": {
+						"type": "string"
+					},
 					"ldflags": {
 						"items": {
 							"type": "string"

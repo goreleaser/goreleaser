@@ -191,6 +191,7 @@ func TestPublishPipeSuccess(t *testing.T) {
 		Tags                []string
 		CreationTime        string
 		KoDataCreationTime  string
+		LocalDomain         string
 	}{
 		{
 			// Must be first as others add an SBOM for the same image
@@ -719,6 +720,20 @@ func TestApplyTemplate(t *testing.T) {
 	t.Run("error", func(t *testing.T) {
 		_, err := applyTemplate(testctx.New(), []string{"{{ .Nope}}"})
 		require.Error(t, err)
+	})
+}
+
+func TestGetLocalDomain(t *testing.T) {
+	t.Run("default local domain", func(t *testing.T) {
+		ko := config.Ko{}
+		got := getLocalDomain(ko)
+		require.Equal(t, "goreleaser.ko.local", got)
+	})
+
+	t.Run("custom local domain", func(t *testing.T) {
+		ko := config.Ko{LocalDomain: "custom.domain"}
+		got := getLocalDomain(ko)
+		require.Equal(t, "custom.domain", got)
 	})
 }
 
