@@ -722,6 +722,7 @@ func TestApplyTemplate(t *testing.T) {
 		require.Error(t, err)
 	})
 }
+
 func TestGetLocalDomain(t *testing.T) {
 	t.Run("default local domain", func(t *testing.T) {
 		ko := config.Ko{}
