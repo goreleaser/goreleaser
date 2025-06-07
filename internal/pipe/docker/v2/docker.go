@@ -62,6 +62,26 @@ func (Pipe) Default(ctx *context.Context) error {
 
 // Run implements pipeline.Piper.
 func (p Pipe) Run(ctx *context.Context) error {
+	if !ctx.Snapshot {
+		return pipe.Skip("refuse to run against localhost in a production build")
+	}
+	if err := exec.CommandContext(
+		ctx,
+		"docker",
+		"run",
+		"-d",
+		"--name",
+		"goreleaser-registry",
+		"-p 5000:5000",
+		"registry:2",
+	).Run(); err != nil {
+		return fmt.Errorf("docker: %w", err)
+	}
+	defer func() {
+		_ = exec.CommandContext(ctx, "docker", "stop", "goreleaser-registry").Run()
+		_ = exec.CommandContext(ctx, "docker", "kill", "goreleaser-registry").Run()
+		_ = exec.CommandContext(ctx, "docker", "rm", "goreleaser-registry").Run()
+	}()
 	g := semerrgroup.NewSkipAware(semerrgroup.New(ctx.Parallelism))
 	for _, d := range ctx.Config.DockersV2 {
 		g.Go(func() error {
@@ -229,69 +249,48 @@ func buildOne(ctx *context.Context, d config.DockerV2) error {
 	}
 	defer os.RemoveAll(wd)
 
-	for _, plat := range d.Platforms {
-		plats := strings.ReplaceAll(plat, "/", "_")
-		name := d.ID + plats + ".tar"
-		path := filepath.Join(ctx.Config.Dist, "dockerv2", name)
-		imgTag := images[0] + ":" + tags[0] + "-" + plats
-		if err := os.MkdirAll(filepath.Dir(path), 0o755); err != nil {
-			return fmt.Errorf("docker: %w", err)
-		}
-		apath, err := filepath.Abs(path)
-		if err != nil {
-			return fmt.Errorf("docker: %w", err)
-		}
-		arg := []string{
-			"buildx",
-			"build",
-			"--platform", plat,
-			"-t", imgTag,
-		}
-		arg = append(arg, labelFlags...)
-		arg = append(
-			arg,
-			"-f", d.Dockerfile,
-			"--output", "type=docker,dest="+apath,
-			".",
-		)
-		cmd := exec.CommandContext(ctx, "docker", arg...)
-		cmd.Dir = wd
-		cmd.Env = append(ctx.Env.Strings(), cmd.Environ()...)
-		var b bytes.Buffer
-		w := gio.Safe(&b)
-		cmd.Stderr = io.MultiWriter(logext.NewWriter(), w)
-		cmd.Stdout = io.MultiWriter(logext.NewWriter(), w)
-		if err := cmd.Run(); err != nil {
-			return pipe.NewDetailedError(
-				err,
-				"args", strings.Join(cmd.Args, " "),
-				"image", imgTag,
-				"output", b.String(),
-				"path", path,
-				"platform", plat,
-				"wd", wd,
-			)
-		}
-
-		p := parsePlatform(plat)
-		log.WithField("image", allImages[0]).
-			WithField("path", path).
-			WithField("id", d.ID).
-			Info("created docker image")
-		ctx.Artifacts.Add(&artifact.Artifact{
-			Name:   name,
-			Path:   path,
-			Goos:   p.os,
-			Goarch: p.arch,
-			Goarm:  p.arm,
-			Type:   artifact.PublishableDockerImageV2,
-			Extra: map[string]any{
-				artifact.ExtraID: d.ID,
-				extraImageName:   imgTag,
-				extraImageNames:  allImages,
-			},
-		})
+	arg := []string{
+		"buildx",
+		"build",
+		"--platform", strings.Join(d.Platforms, ","),
+		"-t", images[0],
 	}
+	arg = append(arg, labelFlags...)
+	arg = append(
+		arg,
+		"-f", d.Dockerfile,
+		".",
+	)
+	cmd := exec.CommandContext(ctx, "docker", arg...)
+	cmd.Dir = wd
+	cmd.Env = append(ctx.Env.Strings(), cmd.Environ()...)
+	var b bytes.Buffer
+	w := gio.Safe(&b)
+	cmd.Stderr = io.MultiWriter(logext.NewWriter(), w)
+	cmd.Stdout = io.MultiWriter(logext.NewWriter(), w)
+	if err := cmd.Run(); err != nil {
+		return pipe.NewDetailedError(
+			err,
+			"args", strings.Join(cmd.Args, " "),
+			"image", allImages[0],
+			"output", b.String(),
+			"wd", wd,
+		)
+	}
+
+	log.WithField("image", allImages[0]).
+		WithField("id", d.ID).
+		Info("created docker image")
+	ctx.Artifacts.Add(&artifact.Artifact{
+		Name: allImages[0],
+		Path: allImages[0],
+		Type: artifact.PublishableDockerImageV2,
+		Extra: map[string]any{
+			artifact.ExtraID: d.ID,
+			extraImageName:   allImages[0],
+			extraImageNames:  allImages,
+		},
+	})
 
 	return nil
 }
