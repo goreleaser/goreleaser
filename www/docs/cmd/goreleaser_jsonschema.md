@@ -1,6 +1,6 @@
 # goreleaser jsonschema
 
-outputs goreleaser's JSON schema
+Outputs goreleaser's JSON schema
 
 ```
 goreleaser jsonschema [flags]

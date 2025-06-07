@@ -226,7 +226,6 @@ type HomebrewCask struct {
 	Homepage              string       `yaml:"homepage,omitempty" json:"homepage,omitempty"`
 	License               string       `yaml:"license,omitempty" json:"license,omitempty"`
 	SkipUpload            string       `yaml:"skip_upload,omitempty" json:"skip_upload,omitempty" jsonschema:"oneof_type=string;boolean"`
-	URLTemplate           string       `yaml:"url_template,omitempty" json:"url_template,omitempty"`
 	CustomBlock           string       `yaml:"custom_block,omitempty" json:"custom_block,omitempty"`
 	IDs                   []string     `yaml:"ids,omitempty" json:"ids,omitempty"`
 	Service               string       `yaml:"service,omitempty" json:"service,omitempty"`
@@ -234,12 +233,26 @@ type HomebrewCask struct {
 	// Cask only:
 	Binary       string                   `yaml:"binary,omitempty" json:"binary,omitempty"`
 	Manpage      string                   `yaml:"manpage,omitempty" json:"manpage,omitempty"`
+	URL          HomebrewCaskURL          `yaml:"url,omitempty" json:"url,omitempty"`
 	Completions  HomebrewCaskCompletions  `yaml:"completions,omitempty" json:"completions,omitempty"`
 	Dependencies []HomebrewCaskDependency `yaml:"dependencies,omitempty" json:"dependencies,omitempty"`
 	Conflicts    []HomebrewCaskConflict   `yaml:"conflicts,omitempty" json:"conflicts,omitempty"`
 	Hooks        HomebrewCaskHooks        `yaml:"hooks,omitempty" json:"hooks,omitempty"`
 	Uninstall    HomebrewCaskUninstall    `yaml:"uninstall,omitempty" json:"uninstall,omitempty"`
 	Zap          HomebrewCaskUninstall    `yaml:"zap,omitempty" json:"zap,omitempty"`
+}
+
+type HomebrewCaskURL struct {
+	Template string `yaml:"template,omitempty" json:"template,omitempty"`
+
+	// additional url parameters (https://docs.brew.sh/Cask-Cookbook#additional-url-parameters):
+	Verified  string            `yaml:"verified,omitempty" json:"verified,omitempty"`
+	Using     string            `yaml:"using,omitempty" json:"using,omitempty"`
+	Cookies   map[string]string `yaml:"cookies,omitempty" json:"cookies,omitempty"`
+	Referer   string            `yaml:"referer,omitempty" json:"referer,omitempty"`
+	Headers   []string          `yaml:"headers,omitempty" json:"headers,omitempty"` // Homebrew Cask DSL actually requires `header` key, but we use `headers` for consistency with Homebrew Formula config.
+	UserAgent string            `yaml:"user_agent,omitempty" json:"user_agent,omitempty"`
+	Data      map[string]string `yaml:"data,omitempty" json:"data,omitempty"`
 }
 
 type HomebrewCaskUninstall struct {
@@ -379,6 +392,7 @@ type Ko struct {
 	Bare                bool              `yaml:"bare,omitempty" json:"bare,omitempty"`
 	PreserveImportPaths bool              `yaml:"preserve_import_paths,omitempty" json:"preserve_import_paths,omitempty"`
 	BaseImportPaths     bool              `yaml:"base_import_paths,omitempty" json:"base_import_paths,omitempty"`
+	LocalDomain         string            `yaml:"local_domain,omitempty" json:"local_domain,omitempty"`
 
 	// v2.7+
 	Disable string `yaml:"disable,omitempty" json:"disable,omitempty" jsonschema:"oneof_type=string;boolean"`
