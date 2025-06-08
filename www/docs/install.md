@@ -10,13 +10,13 @@ You can see the instructions for each of them below.
 === "OSS"
 
     ```bash
-    brew install goreleaser/tap/goreleaser
+    brew install --cask goreleaser/tap/goreleaser
     ```
 
 === "Pro"
 
     ```bash
-    brew install goreleaser/tap/goreleaser-pro
+    brew install --cask goreleaser/tap/goreleaser-pro
     ```
 
 ## Homebrew
