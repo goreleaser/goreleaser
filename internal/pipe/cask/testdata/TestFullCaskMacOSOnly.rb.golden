@@ -10,9 +10,9 @@ cask "test" do
 
   binary "mybin"
   manpage "mybin.1.gz"
-  bash_completions "mybin.bash"
-  zsh_completions "mybin.zsh"
-  fish_completions "mybin.fish"
+  bash_completion "mybin.bash"
+  zsh_completion "mybin.zsh"
+  fish_completion "mybin.fish"
 
   on_macos do
     on_intel do

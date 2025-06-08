@@ -3,6 +3,7 @@ package cask
 import (
 	"cmp"
 	"embed"
+	"sort"
 	"strings"
 
 	"github.com/goreleaser/goreleaser/v2/pkg/config"
@@ -44,6 +45,108 @@ func split(s string) []string {
 		return []string{}
 	}
 	return strings
+}
+
+func dependsString(dependencies []config.HomebrewCaskDependency) string {
+	var casks []string
+	var formulas []string
+	for _, dependency := range dependencies {
+		if dependency.Cask != "" {
+			casks = append(casks, dependency.Cask)
+		}
+		if dependency.Formula != "" {
+			formulas = append(formulas, dependency.Formula)
+		}
+	}
+	sort.Strings(casks)
+	sort.Strings(formulas)
+	indent := strings.Repeat(" ", 2+len("depends_on: "))
+	var sb strings.Builder
+	sb.WriteString("depends_on: ")
+	for i, cask := range casks {
+		if i == 0 {
+			sb.WriteString("cask: [\n")
+		}
+		sb.WriteString(indent + "  " + cask)
+		if len(casks)-1 > i {
+			sb.WriteByte(',')
+			sb.WriteByte('\n')
+		}
+	}
+
+	if len(casks) > 0 {
+		sb.WriteString("\n" + indent + "]")
+	}
+	if len(casks) > 0 && len(formulas) > 0 {
+		sb.WriteByte(',')
+		sb.WriteByte('\n')
+		sb.WriteString(indent)
+	}
+	for i, form := range formulas {
+		if i == 0 {
+			sb.WriteString("formula: [\n")
+		}
+		sb.WriteString(indent + "  " + form)
+		if len(formulas)-1 > i {
+			sb.WriteByte(',')
+			sb.WriteByte('\n')
+		}
+	}
+	if len(formulas) > 0 {
+		sb.WriteString("\n" + indent + "]")
+	}
+	return sb.String()
+}
+
+func conflictsString(conflicts []config.HomebrewCaskConflict) string {
+	var casks []string
+	var formulas []string
+	for _, conflict := range conflicts {
+		if conflict.Cask != "" {
+			casks = append(casks, conflict.Cask)
+		}
+		if conflict.Formula != "" {
+			formulas = append(formulas, conflict.Formula)
+		}
+	}
+	sort.Strings(casks)
+	sort.Strings(formulas)
+	indent := strings.Repeat(" ", 2+len("conflicts_with: "))
+	var sb strings.Builder
+	sb.WriteString("conflicts_with: ")
+	for i, cask := range casks {
+		if i == 0 {
+			sb.WriteString("cask: [\n")
+		}
+		sb.WriteString(indent + "  " + cask)
+		if len(casks)-1 > i {
+			sb.WriteByte(',')
+			sb.WriteByte('\n')
+		}
+	}
+
+	if len(casks) > 0 {
+		sb.WriteString("\n" + indent + "]")
+	}
+	if len(casks) > 0 && len(formulas) > 0 {
+		sb.WriteByte(',')
+		sb.WriteByte('\n')
+		sb.WriteString(indent)
+	}
+	for i, form := range formulas {
+		if i == 0 {
+			sb.WriteString("formula: [\n")
+		}
+		sb.WriteString(indent + "  " + form)
+		if len(casks)-1 > i {
+			sb.WriteByte(',')
+			sb.WriteByte('\n')
+		}
+	}
+	if len(formulas) > 0 {
+		sb.WriteString("\n" + indent + "]")
+	}
+	return sb.String()
 }
 
 func zapString(u config.HomebrewCaskUninstall) string {

@@ -139,11 +139,6 @@ homebrew_casks:
     # Default: inferred from global metadata.
     description: "Software to create fast and easy drum rolls."
 
-    # SPDX identifier of your app's license.
-    #
-    # Default: inferred from global metadata.
-    license: "MIT"
-
     # Setting this will prevent goreleaser to actually try to commit the updated
     # cask - instead, the cask file will be stored on the dist directory
     # only, leaving the responsibility of publishing it to the user.

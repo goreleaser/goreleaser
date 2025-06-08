@@ -3,7 +3,6 @@ cask "test" do
   desc "Some desc"
   homepage "https://google.com"
   version "0.1.3"
-  license "MIT"
 
   livecheck do
     skip "Auto-generated on release."
@@ -11,12 +10,15 @@ cask "test" do
 
   binary "mybin"
   manpage "mybin.1.gz"
-  bash_completions "mybin.bash"
-  zsh_completions "mybin.zsh"
-  fish_completions "mybin.fish"
-
-  depends_on formula: "goreleaser"
-  depends_on cask: "goreleaser"
+  bash_completion "mybin.bash"
+  zsh_completion "mybin.zsh"
+  fish_completion "mybin.fish"
+  depends_on: cask: [
+                goreleaser
+              ],
+              formula: [
+                goreleaser
+              ]
 
   on_macos do
     on_intel do
@@ -40,8 +42,12 @@ cask "test" do
     end
   end
 
-  conflicts_with formula: "goreleaser"
-  conflicts_with cask: "goreleaser"
+  conflicts_with: cask: [
+                    goreleaser
+                  ],
+                  formula: [
+                    goreleaser
+                  ]
 
   # A custom block
   # This particular case is just a comment.

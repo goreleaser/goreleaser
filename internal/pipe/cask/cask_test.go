@@ -115,7 +115,6 @@ func assertDefaultTemplateData(t *testing.T, cask string) {
 
 func TestFullCask(t *testing.T) {
 	data := defaultTemplateData
-	data.License = "MIT"
 	data.Caveats = "Here are some caveats"
 	data.Dependencies = []config.HomebrewCaskDependency{
 		{Formula: "goreleaser"},
@@ -332,6 +331,34 @@ func TestFullPipe(t *testing.T) {
 				ctx.Config.Casks[0].URL.Verified = "https://dummyhost/download/"
 				ctx.Config.Casks[0].URL.Headers = []string{"Accept: application/octet-stream"}
 				ctx.Config.Casks[0].URL.Data = map[string]string{"payload": "hello_world"}
+			},
+		},
+		"many-dependencies-and-conflicts": {
+			prepare: func(ctx *context.Context) {
+				ctx.Config.Casks[0].Repository.Owner = "test"
+				ctx.Config.Casks[0].Repository.Name = "test"
+				ctx.Config.Casks[0].Dependencies = append(
+					ctx.Config.Casks[0].Dependencies,
+					config.HomebrewCaskDependency{Formula: "f1"},
+					config.HomebrewCaskDependency{Formula: "f2"},
+					config.HomebrewCaskDependency{Formula: "f3"},
+					config.HomebrewCaskDependency{Formula: "f4"},
+					config.HomebrewCaskDependency{Cask: "c1"},
+					config.HomebrewCaskDependency{Cask: "c2"},
+					config.HomebrewCaskDependency{Cask: "c3"},
+					config.HomebrewCaskDependency{Cask: "c4"},
+				)
+				ctx.Config.Casks[0].Conflicts = append(
+					ctx.Config.Casks[0].Conflicts,
+					config.HomebrewCaskConflict{Formula: "f1"},
+					config.HomebrewCaskConflict{Formula: "f2"},
+					config.HomebrewCaskConflict{Formula: "f3"},
+					config.HomebrewCaskConflict{Formula: "f4"},
+					config.HomebrewCaskConflict{Cask: "c1"},
+					config.HomebrewCaskConflict{Cask: "c2"},
+					config.HomebrewCaskConflict{Cask: "c3"},
+					config.HomebrewCaskConflict{Cask: "c4"},
+				)
 			},
 		},
 	} {

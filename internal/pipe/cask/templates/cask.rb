@@ -3,9 +3,6 @@ cask "{{ .Name }}" do
   desc "{{ .Description }}"
   homepage "{{ .Homepage }}"
   version "{{ .Version }}"
-  {{- with .License }}
-  license "{{ .}}"
-  {{- end }}
 
   livecheck do
     skip "Auto-generated on release."
@@ -18,24 +15,17 @@ cask "{{ .Name }}" do
   manpage "{{ .}}"
   {{- end }}
   {{- with .Completions.Bash }}
-  bash_completions "{{ . }}"
+  bash_completion "{{ . }}"
   {{- end }}
   {{- with .Completions.Zsh }}
-  zsh_completions "{{ . }}"
+  zsh_completion "{{ . }}"
   {{- end }}
   {{- with .Completions.Fish }}
-  fish_completions "{{ . }}"
+  fish_completion "{{ . }}"
   {{- end }}
 
   {{- with .Dependencies }}
-  {{ range  . }}
-  {{- with .Cask }}
-  depends_on cask: "{{ . }}"
-  {{- end }}
-  {{- with .Formula }}
-  depends_on formula: "{{ . }}"
-  {{- end }}
-  {{- end }}
+  {{ depends  . }}
   {{- end }}
 
   {{ if .MacOSPackages }}
@@ -51,14 +41,7 @@ cask "{{ .Name }}" do
   {{ end }}
 
   {{- with .Conflicts }}
-  {{ range . }}
-  {{- with .Cask }}
-  conflicts_with cask: "{{ . }}"
-  {{- end }}
-  {{- with .Formula }}
-  conflicts_with formula: "{{ . }}"
-  {{- end }}
-  {{- end }}
+  {{ conflicts . }}
   {{- end }}
 
   {{ with .CustomBlock -}}

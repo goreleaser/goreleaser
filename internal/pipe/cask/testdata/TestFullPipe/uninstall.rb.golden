@@ -9,12 +9,15 @@ cask "uninstall" do
   end
 
   binary "uninstall"
-
-  depends_on formula: "ash"
-  depends_on formula: "bash"
-  depends_on cask: "fish"
-  depends_on cask: "powershell"
-  depends_on formula: "zsh"
+  depends_on: cask: [
+                fish,
+                powershell
+              ],
+              formula: [
+                ash,
+                bash,
+                zsh
+              ]
 
   on_macos do
     on_intel do
@@ -34,8 +37,12 @@ cask "uninstall" do
     end
   end
 
-  conflicts_with formula: "bash"
-  conflicts_with cask: "fish"
+  conflicts_with: cask: [
+                    fish
+                  ],
+                  formula: [
+                    bash
+                  ]
 
   postflight do
     system "echo"

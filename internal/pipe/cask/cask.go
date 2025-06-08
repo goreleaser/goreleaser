@@ -304,6 +304,8 @@ func doBuildCask(ctx *context.Context, data templateData) (string, error) {
 		},
 		"uninstall": uninstallString,
 		"zap":       zapString,
+		"conflicts": conflictsString,
+		"depends":   dependsString,
 	}).ParseFS(templates, "templates/*.rb")
 	if err != nil {
 		return "", err
