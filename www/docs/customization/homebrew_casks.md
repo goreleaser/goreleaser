@@ -42,6 +42,13 @@ homebrew_casks:
     # Templates: allowed.
     binary: myapp
 
+    # App to use instead of the binary.
+    # This will then make GoReleaser use only the DMG files instead of archives.
+    #
+    # Pro only.
+    # Templates: allowed.
+    app: Foo.app
+
     # Path to the manpage file
     #
     # Templates: allowed.
