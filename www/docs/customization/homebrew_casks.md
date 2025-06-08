@@ -1,6 +1,6 @@
 # Homebrew Casks
 
-<!-- md:version v2.10-unreleased -->
+<!-- md:version v2.10 -->
 
 After releasing to GitHub, GitLab, or Gitea, GoReleaser can generate and publish
 a _Homebrew Cask_ into a repository (_Tap_) that you have access to.

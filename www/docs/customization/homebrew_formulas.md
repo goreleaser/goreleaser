@@ -1,6 +1,6 @@
 # Homebrew Formulas (deprecated)
 
-> [Deprecated](./../deprecations.md#brews) in v2.10-unreleased.
+> [Deprecated](./../deprecations.md#brews) in v2.10.
 > [Homebrew Casks](./homebrew_casks.md) should be used instead.
 
 After releasing to GitHub, GitLab, or Gitea, GoReleaser can generate and publish

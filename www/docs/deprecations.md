@@ -41,7 +41,7 @@ Description.
 
 ### brews
 
-> since v2.10-unreleased
+> since v2.10
 
 Historically, GoReleaser would generate _hackyish_ formulas that would install
 the pre-compiled binaries.

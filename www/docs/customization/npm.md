@@ -129,7 +129,7 @@ npms:
     #
     # Default depends on the client.
     # Templates: allowed.
-    # <!-- md:inline_version v2.10-unreleased -->.
+    # <!-- md:inline_version v2.10 -->.
     url_template: "https://github.mycompany.com/foo/bar/releases/download/{{ .Tag }}/{{ .ArtifactName }}"
 ```
 
