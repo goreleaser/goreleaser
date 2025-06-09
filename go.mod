@@ -41,7 +41,7 @@ require (
 	github.com/muesli/roff v0.1.0
 	github.com/muesli/termenv v0.16.0
 	github.com/ory/dockertest/v3 v3.12.0
-	github.com/slack-go/slack v0.17.0
+	github.com/slack-go/slack v0.17.1
 	github.com/spf13/cobra v1.9.1
 	github.com/stretchr/testify v1.10.0
 	github.com/ulikunitz/xz v0.5.12
