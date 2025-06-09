@@ -13,12 +13,12 @@ cask "test" do
   bash_completion "mybin.bash"
   zsh_completion "mybin.zsh"
   fish_completion "mybin.fish"
-  depends_on: cask: [
-                goreleaser
-              ],
-              formula: [
-                goreleaser
-              ]
+  depends_on cask: [
+      "goreleaser",
+    ],
+    formula: [
+      "goreleaser",
+    ]
 
   on_macos do
     on_intel do
@@ -42,12 +42,12 @@ cask "test" do
     end
   end
 
-  conflicts_with: cask: [
-                    goreleaser
-                  ],
-                  formula: [
-                    goreleaser
-                  ]
+  conflicts_with cask: [
+      "goreleaser",
+    ],
+    formula: [
+      "goreleaser",
+    ]
 
   # A custom block
   # This particular case is just a comment.

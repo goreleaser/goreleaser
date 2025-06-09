@@ -9,15 +9,15 @@ cask "url_parameters_curl" do
   end
 
   binary "url_parameters_curl"
-  depends_on: cask: [
-                fish,
-                powershell
-              ],
-              formula: [
-                ash,
-                bash,
-                zsh
-              ]
+  depends_on cask: [
+      "fish",
+      "powershell",
+    ],
+    formula: [
+      "ash",
+      "bash",
+      "zsh",
+    ]
 
   on_macos do
     on_intel do
@@ -64,12 +64,12 @@ cask "url_parameters_curl" do
     end
   end
 
-  conflicts_with: cask: [
-                    fish
-                  ],
-                  formula: [
-                    bash
-                  ]
+  conflicts_with cask: [
+      "fish",
+    ],
+    formula: [
+      "bash",
+    ]
 
   postflight do
     system "echo"

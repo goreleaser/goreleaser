@@ -9,15 +9,15 @@ cask "default_gitlab" do
   end
 
   binary "default_gitlab"
-  depends_on: cask: [
-                fish,
-                powershell
-              ],
-              formula: [
-                ash,
-                bash,
-                zsh
-              ]
+  depends_on cask: [
+      "fish",
+      "powershell",
+    ],
+    formula: [
+      "ash",
+      "bash",
+      "zsh",
+    ]
 
   on_macos do
     on_intel do
@@ -37,12 +37,12 @@ cask "default_gitlab" do
     end
   end
 
-  conflicts_with: cask: [
-                    fish
-                  ],
-                  formula: [
-                    bash
-                  ]
+  conflicts_with cask: [
+      "fish",
+    ],
+    formula: [
+      "bash",
+    ]
 
   postflight do
     system "echo"

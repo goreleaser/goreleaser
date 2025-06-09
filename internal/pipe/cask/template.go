@@ -3,6 +3,7 @@ package cask
 import (
 	"cmp"
 	"embed"
+	"fmt"
 	"sort"
 	"strings"
 
@@ -52,50 +53,23 @@ func dependsString(dependencies []config.HomebrewCaskDependency) string {
 	var formulas []string
 	for _, dependency := range dependencies {
 		if dependency.Cask != "" {
-			casks = append(casks, dependency.Cask)
+			casks = append(casks, quote(dependency.Cask))
 		}
 		if dependency.Formula != "" {
-			formulas = append(formulas, dependency.Formula)
+			formulas = append(formulas, quote(dependency.Formula))
 		}
 	}
 	sort.Strings(casks)
 	sort.Strings(formulas)
-	indent := strings.Repeat(" ", 2+len("depends_on: "))
-	var sb strings.Builder
-	sb.WriteString("depends_on: ")
-	for i, cask := range casks {
-		if i == 0 {
-			sb.WriteString("cask: [\n")
-		}
-		sb.WriteString(indent + "  " + cask)
-		if len(casks)-1 > i {
-			sb.WriteByte(',')
-			sb.WriteByte('\n')
-		}
-	}
 
+	var groups []string
 	if len(casks) > 0 {
-		sb.WriteString("\n" + indent + "]")
-	}
-	if len(casks) > 0 && len(formulas) > 0 {
-		sb.WriteByte(',')
-		sb.WriteByte('\n')
-		sb.WriteString(indent)
-	}
-	for i, form := range formulas {
-		if i == 0 {
-			sb.WriteString("formula: [\n")
-		}
-		sb.WriteString(indent + "  " + form)
-		if len(formulas)-1 > i {
-			sb.WriteByte(',')
-			sb.WriteByte('\n')
-		}
+		groups = append(groups, groupToS("cask", casks))
 	}
 	if len(formulas) > 0 {
-		sb.WriteString("\n" + indent + "]")
+		groups = append(groups, groupToS("formula", formulas))
 	}
-	return sb.String()
+	return joinGroups("depends_on", groups)
 }
 
 func conflictsString(conflicts []config.HomebrewCaskConflict) string {
@@ -103,50 +77,23 @@ func conflictsString(conflicts []config.HomebrewCaskConflict) string {
 	var formulas []string
 	for _, conflict := range conflicts {
 		if conflict.Cask != "" {
-			casks = append(casks, conflict.Cask)
+			casks = append(casks, quote(conflict.Cask))
 		}
 		if conflict.Formula != "" {
-			formulas = append(formulas, conflict.Formula)
+			formulas = append(formulas, quote(conflict.Formula))
 		}
 	}
 	sort.Strings(casks)
 	sort.Strings(formulas)
-	indent := strings.Repeat(" ", 2+len("conflicts_with: "))
-	var sb strings.Builder
-	sb.WriteString("conflicts_with: ")
-	for i, cask := range casks {
-		if i == 0 {
-			sb.WriteString("cask: [\n")
-		}
-		sb.WriteString(indent + "  " + cask)
-		if len(casks)-1 > i {
-			sb.WriteByte(',')
-			sb.WriteByte('\n')
-		}
-	}
 
+	var groups []string
 	if len(casks) > 0 {
-		sb.WriteString("\n" + indent + "]")
-	}
-	if len(casks) > 0 && len(formulas) > 0 {
-		sb.WriteByte(',')
-		sb.WriteByte('\n')
-		sb.WriteString(indent)
-	}
-	for i, form := range formulas {
-		if i == 0 {
-			sb.WriteString("formula: [\n")
-		}
-		sb.WriteString(indent + "  " + form)
-		if len(casks)-1 > i {
-			sb.WriteByte(',')
-			sb.WriteByte('\n')
-		}
+		groups = append(groups, groupToS("cask", casks))
 	}
 	if len(formulas) > 0 {
-		sb.WriteString("\n" + indent + "]")
+		groups = append(groups, groupToS("formula", formulas))
 	}
-	return sb.String()
+	return joinGroups("conflicts_with", groups)
 }
 
 func zapString(u config.HomebrewCaskUninstall) string {
@@ -174,6 +121,10 @@ func makeUninstallLikeBlock(stanza string, u config.HomebrewCaskUninstall) strin
 	if len(u.Trash) > 0 {
 		groups = append(groups, groupToS("trash", u.Trash))
 	}
+	return joinGroups(stanza, groups)
+}
+
+func joinGroups(stanza string, groups []string) string {
 	if len(groups) == 0 {
 		return ""
 	}
@@ -201,3 +152,5 @@ func groupToS(name string, lines []string) string {
 	sb.WriteString("    ]")
 	return sb.String()
 }
+
+func quote(s string) string { return fmt.Sprintf("%q", s) }
