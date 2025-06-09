@@ -25,6 +25,7 @@ theme:
   icon:
     admonition:
       example: material/professional-hexagon
+    annotation: material/star-four-points-circle
   palette:
     - media: "(prefers-color-scheme: light)" # Light mode
       scheme: default

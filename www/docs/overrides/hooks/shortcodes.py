@@ -23,6 +23,7 @@ def on_page_markdown(markdown: str, *, page: Page, config: MkDocsConfig, files: 
         elif type == "featpro":       return _pro_feat_ad()
         elif type == "templates": return _templates_ad()
         elif type == "alpha": return _alpha_block()
+        elif type == "community": return _community_badge()
 
         # Otherwise, raise an error
         raise RuntimeError(f"Unknown shortcode: {type}")
@@ -82,3 +83,19 @@ def _templates_ad():
         f"<p>Discover more about the <a href=\"/customization/templates/\">name template engine</a>.</p>",
         f"</details>"
     ])
+
+def _badge(icon: str, text: str = "", type: str = ""):
+    classes = f"mdx-badge mdx-badge--{type}" if type else "mdx-badge"
+    return "".join([
+        f"<span class=\"{classes}\">",
+        *([f"<span class=\"mdx-badge__icon\">{icon}</span>"] if icon else []),
+        *([f"<span class=\"mdx-badge__text\">{text}</span>"] if text else []),
+        f"</span>",
+    ])
+
+def _community_badge():
+    return _badge(
+        icon = f"[:octicons-people-16:](#community 'Community Owned')",
+        text = "",
+        type = "right"
+    )

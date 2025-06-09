@@ -19,7 +19,7 @@ You can see the instructions for each of them below.
     brew install --cask goreleaser/tap/goreleaser-pro
     ```
 
-## Homebrew
+## Homebrew <!-- md:community -->
 
 === "OSS"
 
@@ -80,7 +80,7 @@ You can see the instructions for each of them below.
     scoop install goreleaser-pro
     ```
 
-## Chocolatey
+## Chocolatey <!-- md:community -->
 
 === "OSS"
 
@@ -158,7 +158,7 @@ You can see the instructions for each of them below.
     yay -S goreleaser-pro-bin
     ```
 
-## Nixpkgs
+## Nixpkgs <!-- md:community -->
 
 === "OSS"
 
@@ -453,6 +453,7 @@ environment variable to `nightly`.
 [nightly-releases]: https://github.com/goreleaser/goreleaser/releases/nightly
 [cosign]: https://github.com/sigstore/cosign
 
-```
+## Community
 
-```
+Install options with the <!-- md:community --> mark are maintained by the
+community and might not always be up to date.
