@@ -22,7 +22,26 @@ func Get(ctx *context.Context, og config.CommitAuthor) (config.CommitAuthor, err
 		return author, err
 	}
 	author.Email, err = tmpl.New(ctx).Apply(og.Email)
-	return author, err
+	if err != nil {
+		return author, err
+	}
+
+	// Apply templates to signing configuration
+	author.Signing.Enabled = og.Signing.Enabled
+	author.Signing.Key, err = tmpl.New(ctx).Apply(og.Signing.Key)
+	if err != nil {
+		return author, err
+	}
+	author.Signing.Program, err = tmpl.New(ctx).Apply(og.Signing.Program)
+	if err != nil {
+		return author, err
+	}
+	author.Signing.Format, err = tmpl.New(ctx).Apply(og.Signing.Format)
+	if err != nil {
+		return author, err
+	}
+
+	return author, nil
 }
 
 // Default sets the default commit author name and email.
@@ -33,5 +52,11 @@ func Default(og config.CommitAuthor) config.CommitAuthor {
 	if og.Email == "" {
 		og.Email = defaultEmail
 	}
+
+	// set default signing format if enabled but format not specified
+	if og.Signing.Enabled && og.Signing.Format == "" {
+		og.Signing.Format = "openpgp"
+	}
+
 	return og
 }

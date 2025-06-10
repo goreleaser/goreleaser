@@ -90,12 +90,32 @@ func (g *gitClient) CreateFiles(
 			return err
 		}
 
-		if err := runGitCmds(ctx, cwd, env, [][]string{
+		gitCmds := [][]string{
 			{"config", "--local", "user.name", commitAuthor.Name},
 			{"config", "--local", "user.email", commitAuthor.Email},
-			{"config", "--local", "commit.gpgSign", "false"},
 			{"config", "--local", "init.defaultBranch", cmp.Or(g.branch, "master")},
-		}); err != nil {
+		}
+
+		// append git flags for signing to overall comand if configured
+		if commitAuthor.Signing.Enabled {
+			gitCmds = append(gitCmds, []string{"config", "--local", "commit.gpgSign", "true"})
+			
+			if commitAuthor.Signing.Key != "" {
+				gitCmds = append(gitCmds, []string{"config", "--local", "user.signingKey", commitAuthor.Signing.Key})
+			}
+
+			if commitAuthor.Signing.Program != "" {
+				gitCmds = append(gitCmds, []string{"config", "--local", "gpg.program", commitAuthor.Signing.Program})
+			}
+
+			if commitAuthor.Signing.Format != "" && commitAuthor.Signing.Format != "openpgp" {
+				gitCmds = append(gitCmds, []string{"config", "--local", "gpg.format", commitAuthor.Signing.Format})
+			}
+		} else {
+			gitCmds = append(gitCmds, []string{"config", "--local", "commit.gpgSign", "false"})
+		}
+
+		if err := runGitCmds(ctx, cwd, env, gitCmds); err != nil {
 			return fmt.Errorf("git: failed to setup local repository: %w", err)
 		}
 		if g.branch != "" {

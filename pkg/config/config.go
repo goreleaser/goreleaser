@@ -421,8 +421,16 @@ type Scoop struct {
 
 // CommitAuthor is the author of a Git commit.
 type CommitAuthor struct {
-	Name  string `yaml:"name,omitempty" json:"name,omitempty"`
-	Email string `yaml:"email,omitempty" json:"email,omitempty"`
+	Name    string `yaml:"name,omitempty" json:"name,omitempty"`
+	Email   string `yaml:"email,omitempty" json:"email,omitempty"`
+	Signing CommitSigning `yaml:"signing,omitempty" json:"signing,omitempty"`
+}
+
+type CommitSigning struct {
+	Enabled   bool   `yaml:"enabled,omitempty" json:"enabled,omitempty"`
+	Key       string `yaml:"key,omitempty" json:"key,omitempty"`
+	Program   string `yaml:"program,omitempty" json:"program,omitempty"`
+	Format    string `yaml:"format,omitempty" json:"format,omitempty" jsonschema:"enum=openpgp,enum=x509,enum=ssh,default=openpgp"`
 }
 
 // BuildHooks define actions to run before and/or after something.
