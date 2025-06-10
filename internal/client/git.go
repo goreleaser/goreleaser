@@ -99,7 +99,7 @@ func (g *gitClient) CreateFiles(
 		// append git flags for signing to overall comand if configured
 		if commitAuthor.Signing.Enabled {
 			gitCmds = append(gitCmds, []string{"config", "--local", "commit.gpgSign", "true"})
-			
+
 			if commitAuthor.Signing.Key != "" {
 				gitCmds = append(gitCmds, []string{"config", "--local", "user.signingKey", commitAuthor.Signing.Key})
 			}
