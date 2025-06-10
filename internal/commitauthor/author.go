@@ -36,12 +36,8 @@ func Get(ctx *context.Context, og config.CommitAuthor) (config.CommitAuthor, err
 	if err != nil {
 		return author, err
 	}
-	author.Signing.Format, err = tmpl.New(ctx).Apply(og.Signing.Format)
-	if err != nil {
-		return author, err
-	}
-
-	return author, nil
+	
+	return author.Signing.Format, err = tmpl.New(ctx).Apply(og.Signing.Format)
 }
 
 // Default sets the default commit author name and email.
