@@ -135,7 +135,14 @@ func TestFullCask(t *testing.T) {
 		},
 	}
 	data.CustomBlock = `# A custom block
-# This particular case is just a comment.`
+# This particular case is a comment and a module.
+# https://docs.brew.sh/Cask-Cookbook#arbitrary-ruby-methods
+module Utils
+  def self.arbitrary_method
+    "arbitrary_method"
+  end
+end
+`
 	cask, err := doBuildCask(testctx.NewWithCfg(config.Project{
 		ProjectName: "foo",
 	}), data)
