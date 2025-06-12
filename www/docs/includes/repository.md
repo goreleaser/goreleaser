@@ -94,3 +94,31 @@ search:
         # Default: 'ssh -i {{ .KeyPath }} -o StrictHostKeyChecking=accept-new -F /dev/null'.
         # Templates: allowed.
         ssh_command: 'ssh -i {{ .Env.KEY }} -o SomeOption=yes'
+
+      # Git commit author used to commit to the repository.
+      # Templates: allowed.
+      commit_author:
+        name: goreleaserbot
+        email: bot@goreleaser.com
+
+        # Git commit signing configuration.
+        signing:
+          # Enable commit signing.
+          enabled: true
+
+          # The signing key to use.
+          # Can be a key ID, fingerprint, email address, or path to a key file.
+          #
+          # Templates: allowed.
+          key: '{{ .Env.GPG_SIGNING_KEY }}'
+
+          # The GPG program to use for signing.
+          # 
+          # Templates: allowed.
+          program: gpg2
+
+          # The signature format to use.
+          #
+          # Valid options: openpgp, x509, ssh.
+          # Default: openpgp.
+          format: openpgp
