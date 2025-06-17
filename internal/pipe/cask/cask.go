@@ -360,7 +360,8 @@ func dataFor(ctx *context.Context, cfg config.HomebrewCask, cl client.ReleaseURL
 		Version:      ctx.Version,
 	}
 
-	counts := map[string]int{}
+	platformCounts := map[string]int{}
+	formatCounts := map[artifact.Type]int{}
 	for _, art := range artifacts {
 		sum, err := art.Checksum("sha256")
 		if err != nil {
@@ -397,7 +398,13 @@ func dataFor(ctx *context.Context, cfg config.HomebrewCask, cl client.ReleaseURL
 			Arch:   art.Goarch,
 		}
 
-		counts[pkg.OS+pkg.Arch]++
+		if art.Type == artifact.UploadableBinary {
+			pkg.Binary = artifact.MustExtra[string](*art, artifact.ExtraBinary)
+			pkg.Name = art.Name
+		}
+
+		formatCounts[art.Type]++
+		platformCounts[pkg.OS+pkg.Arch]++
 
 		switch pkg.OS {
 		case "darwin":
@@ -407,15 +414,14 @@ func dataFor(ctx *context.Context, cfg config.HomebrewCask, cl client.ReleaseURL
 		}
 	}
 
-	for _, v := range counts {
+	for _, v := range platformCounts {
 		if v > 1 {
 			return result, ErrMultipleArchivesSameOS
 		}
 	}
 
-	if len(result.MacOSPackages) == 1 && result.MacOSPackages[0].Arch == "amd64" {
-		result.HasOnlyAmd64MacOsPkg = true
-	}
+	result.HasOnlyAmd64MacOsPkg = len(result.MacOSPackages) == 1 && result.MacOSPackages[0].Arch == "amd64"
+	result.HasOnlyBinaryPkgs = len(formatCounts) == 1 && formatCounts[artifact.UploadableBinary] > 0
 
 	slices.SortStableFunc(result.LinuxPackages, compareByArch)
 	slices.SortStableFunc(result.MacOSPackages, compareByArch)

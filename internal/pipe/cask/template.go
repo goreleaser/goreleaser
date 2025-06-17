@@ -17,6 +17,7 @@ type templateData struct {
 	LinuxPackages        []releasePackage
 	MacOSPackages        []releasePackage
 	HasOnlyAmd64MacOsPkg bool
+	HasOnlyBinaryPkgs    bool
 }
 
 type releasePackage struct {
@@ -24,6 +25,8 @@ type releasePackage struct {
 	OS     string
 	Arch   string
 	URL    downloadURL
+	Name   string
+	Binary string
 }
 
 type downloadURL struct {

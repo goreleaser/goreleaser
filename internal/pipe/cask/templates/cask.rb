@@ -8,7 +8,7 @@ cask "{{ .Name }}" do
     skip "Auto-generated on release."
   end
 
-  {{ with .Binary }}
+  {{ with and (not .HasOnlyBinaryPkgs) .Binary }}
   binary "{{ .}}"
   {{- end }}
   {{- with .Manpage }}
