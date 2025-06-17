@@ -80,9 +80,39 @@ You may also want to make the _Cask_ conflict with the previous _Formula_.
       hooks:
         post:
           install: |
-            # replace foo with the actual binary name
-            system_command "/usr/bin/xattr", args: ["-dr", "com.apple.quarantine", "#{staged_path}/foo"]
+            if system_command("/usr/bin/xattr", args: ["-h"]).exit_status == 0
+              # replace 'foo' with the actual binary name
+              system_command "/usr/bin/xattr", args: ["-dr", "com.apple.quarantine", "#{staged_path}/foo"]
+            end
     ```
+
+!!! warning
+
+    Don't forget to remove the `directory: Formula` from your configuration.
+    Casks **need** to be in the `Casks` directory - which is the default.
+
+I would also recommend manually editing your Formula to disable it, e.g.:
+
+```ruby
+class Foo < Formula
+  # ...
+  # make sure to bump the version:
+  version "1.2.3"
+  # ...
+  disable! date: "2025-06-10", because: "the cask should be used now instead", replacement_cask: "foo"
+  # ...
+end
+```
+
+With this, when the user tries to upgrade, they should see and error like so:
+
+```
+==> Upgrading 1 outdated package:
+goreleaser/tap/goreleaser 2.9.0 -> 2.9.1
+Error: goreleaser/tap/goreleaser has been disabled because it the cask should be used now instead! It will be disabled on 2025-06-14.
+Replacement:
+  brew install --cask goreleaser
+```
 
 ### archives.builds
 

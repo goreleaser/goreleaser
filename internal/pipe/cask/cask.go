@@ -63,6 +63,9 @@ func (Pipe) Default(ctx *context.Context) error {
 		if brew.Directory == "" {
 			brew.Directory = "Casks"
 		}
+		if brew.Directory != "Casks" {
+			log.Warnf("%q might not work properly for your end users, for reference, the default is \"Casks\"", brew.Directory)
+		}
 		if brew.Binary == "" {
 			brew.Binary = brew.Name
 		}
