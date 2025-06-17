@@ -17,6 +17,7 @@ import (
 	"github.com/goreleaser/goreleaser/v2/internal/artifact"
 	"github.com/goreleaser/goreleaser/v2/internal/client"
 	"github.com/goreleaser/goreleaser/v2/internal/commitauthor"
+	"github.com/goreleaser/goreleaser/v2/internal/deprecate"
 	"github.com/goreleaser/goreleaser/v2/internal/pipe"
 	"github.com/goreleaser/goreleaser/v2/internal/skips"
 	"github.com/goreleaser/goreleaser/v2/internal/tmpl"
@@ -68,6 +69,10 @@ func (Pipe) Default(ctx *context.Context) error {
 		}
 		if brew.Binary == "" {
 			brew.Binary = brew.Name
+		}
+		if brew.Manpage != "" {
+			deprecate.Notice(ctx, "homebrew_casks.manpage")
+			brew.Manpages = append(brew.Manpages, brew.Manpage)
 		}
 	}
 
@@ -229,11 +234,15 @@ func doRun(ctx *context.Context, brew config.HomebrewCask, cl client.ReleaseURLT
 		&brew.Name,
 		&brew.SkipUpload,
 		&brew.Binary,
-		&brew.Manpage,
 		&brew.Completions.Bash,
 		&brew.Completions.Zsh,
 		&brew.Completions.Fish,
+		&brew.SkipUpload,
 	); err != nil {
+		return err
+	}
+
+	if err := tmpl.New(ctx).ApplySlice(&brew.Manpages); err != nil {
 		return err
 	}
 
@@ -242,12 +251,6 @@ func doRun(ctx *context.Context, brew config.HomebrewCask, cl client.ReleaseURLT
 		return err
 	}
 	brew.Repository = ref
-
-	skipUpload, err := tmpl.New(ctx).Apply(brew.SkipUpload)
-	if err != nil {
-		return err
-	}
-	brew.SkipUpload = skipUpload
 
 	content, err := buildCask(ctx, brew, cl, archives)
 	if err != nil {

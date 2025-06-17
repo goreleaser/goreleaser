@@ -445,6 +445,22 @@ func TestApplyAll(t *testing.T) {
 	})
 }
 
+func TestApplySlice(t *testing.T) {
+	tpl := New(testctx.New()).WithEnvS([]string{
+		"FOO=bar",
+	})
+	t.Run("success", func(t *testing.T) {
+		foo := []string{"{{.Env.FOO}}"}
+		require.NoError(t, tpl.ApplySlice(&foo))
+		require.Equal(t, "bar", foo[0])
+	})
+	t.Run("failure", func(t *testing.T) {
+		foo := []string{"{{.Env.BAR}}"}
+		require.Error(t, tpl.ApplySlice(&foo))
+		require.Equal(t, "{{.Env.BAR}}", foo[0])
+	})
+}
+
 func TestApplySingleEnvOnly(t *testing.T) {
 	ctx := testctx.NewWithCfg(config.Project{
 		Env: []string{

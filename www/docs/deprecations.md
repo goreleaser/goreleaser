@@ -39,6 +39,28 @@ Description.
 
 -->
 
+### homebrew_casks.manpage
+
+> since v2.11
+
+You may now define multiple man pages, which was not possible in v2.10.
+
+=== "Before"
+
+    ```yaml
+    homebrew_casks:
+      manpage: foo.1.gz
+    ```
+
+=== "After"
+
+    ```yaml
+    homebrew_casks:
+      manpages:
+        - foo.1.gz
+    ```
+
+
 ### brews
 
 > since v2.10

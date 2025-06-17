@@ -232,7 +232,7 @@ type HomebrewCask struct {
 
 	// Cask only:
 	Binary       string                   `yaml:"binary,omitempty" json:"binary,omitempty"`
-	Manpage      string                   `yaml:"manpage,omitempty" json:"manpage,omitempty"`
+	Manpages     []string                 `yaml:"manpages,omitempty" json:"manpages,omitempty"`
 	URL          HomebrewCaskURL          `yaml:"url,omitempty" json:"url,omitempty"`
 	Completions  HomebrewCaskCompletions  `yaml:"completions,omitempty" json:"completions,omitempty"`
 	Dependencies []HomebrewCaskDependency `yaml:"dependencies,omitempty" json:"dependencies,omitempty"`
@@ -240,6 +240,9 @@ type HomebrewCask struct {
 	Hooks        HomebrewCaskHooks        `yaml:"hooks,omitempty" json:"hooks,omitempty"`
 	Uninstall    HomebrewCaskUninstall    `yaml:"uninstall,omitempty" json:"uninstall,omitempty"`
 	Zap          HomebrewCaskUninstall    `yaml:"zap,omitempty" json:"zap,omitempty"`
+
+	// Deprecated: use [HomebrewCask.Manpages] instead.
+	Manpage string `yaml:"manpage,omitempty" json:"manpage,omitempty"`
 }
 
 type HomebrewCaskURL struct {

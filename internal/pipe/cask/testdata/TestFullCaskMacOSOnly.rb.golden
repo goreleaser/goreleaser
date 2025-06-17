@@ -10,6 +10,7 @@ cask "test" do
 
   binary "mybin"
   manpage "mybin.1.gz"
+  manpage "mybin2.1.gz"
   bash_completion "mybin.bash"
   zsh_completion "mybin.zsh"
   fish_completion "mybin.fish"
