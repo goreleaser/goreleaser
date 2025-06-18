@@ -1,6 +1,7 @@
 package cmd
 
 import (
+	stdctx "context"
 	"errors"
 	"fmt"
 	"slices"
@@ -8,6 +9,7 @@ import (
 
 	goversion "github.com/caarlos0/go-version"
 	"github.com/caarlos0/log"
+	"github.com/charmbracelet/fang"
 	"github.com/charmbracelet/lipgloss"
 	"github.com/goreleaser/goreleaser/v2/internal/pipe"
 	"github.com/goreleaser/goreleaser/v2/pkg/context"
@@ -34,7 +36,11 @@ func (cmd *rootCmd) Execute(args []string) {
 		log.SetLevel(log.FatalLevel)
 	}
 
-	if err := cmd.cmd.Execute(); err != nil {
+	if err := fang.Execute(
+		stdctx.Background(),
+		cmd.cmd,
+		fang.WithVersion(cmd.cmd.Version),
+	); err != nil {
 		code := 1
 		msg := "command failed"
 		log := log.WithError(err)
