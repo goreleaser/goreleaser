@@ -4,6 +4,7 @@ import (
 	stdctx "context"
 	"errors"
 	"fmt"
+	"io"
 	"slices"
 	"time"
 
@@ -40,23 +41,33 @@ func (cmd *rootCmd) Execute(args []string) {
 		stdctx.Background(),
 		cmd.cmd,
 		fang.WithVersion(cmd.cmd.Version),
+		fang.WithErrorHandler(errorHandler),
 	); err != nil {
-		code := 1
-		msg := "command failed"
-		log := log.WithError(err)
-		eerr := &exitError{}
-		if errors.As(err, &eerr) {
-			code = eerr.code
-			if eerr.details != "" {
-				msg = eerr.details
-			}
-			for k, v := range pipe.DetailsOf(eerr.err) {
-				log = log.WithField(k, v)
-			}
-		}
-		log.Error(msg)
-		cmd.exit(code)
+		cmd.exit(exitCode(err))
 	}
+}
+
+func exitCode(err error) int {
+	eerr := &exitError{}
+	if errors.As(err, &eerr) {
+		return eerr.code
+	}
+	return 1
+}
+
+func errorHandler(w io.Writer, styles fang.Styles, err error) {
+	msg := "command failed"
+	log := log.WithError(err)
+	eerr := &exitError{}
+	if errors.As(err, &eerr) {
+		if eerr.details != "" {
+			msg = eerr.details
+		}
+	}
+	for k, v := range pipe.DetailsOf(eerr.err) {
+		log = log.WithField(k, v)
+	}
+	log.Error(msg)
 }
 
 type rootCmd struct {

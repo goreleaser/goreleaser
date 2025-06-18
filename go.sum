@@ -250,8 +250,8 @@ github.com/charmbracelet/bubbletea v1.3.0 h1:fPMyirm0u3Fou+flch7hlJN9krlnVURrkUV
 github.com/charmbracelet/bubbletea v1.3.0/go.mod h1:eTaHfqbIwvBhFQM/nlT1NsGc4kp8jhF8LfUK67XiTDM=
 github.com/charmbracelet/colorprofile v0.3.0 h1:KtLh9uuu1RCt+Hml4s6Hz+kB1PfV3wi++1h5ia65yKQ=
 github.com/charmbracelet/colorprofile v0.3.0/go.mod h1:oHJ340RS2nmG1zRGPmhJKJ/jf4FPNNk0P39/wBPA1G0=
-github.com/charmbracelet/fang v0.1.0 h1:SlZS2crf3/zQh7Mr4+W+7QR1k+L08rrPX5rm5z3d7Wg=
-github.com/charmbracelet/fang v0.1.0/go.mod h1:Zl/zeUQ8EtQuGyiV0ZKZlZPDowKRTzu8s/367EpN/fc=
+github.com/charmbracelet/fang v0.1.1-0.20250618193842-c14108db3dc6 h1:3eyq4APe8uSGSQu9a0gFthykKoI7Ewvd5F1IrEfbFv4=
+github.com/charmbracelet/fang v0.1.1-0.20250618193842-c14108db3dc6/go.mod h1:wmN9iNuozeO4qUkaCDFenIgMaClMaz5bxbRLN8TuMBo=
 github.com/charmbracelet/keygen v0.5.3 h1:2MSDC62OUbDy6VmjIE2jM24LuXUvKywLCmaJDmr/Z/4=
 github.com/charmbracelet/keygen v0.5.3/go.mod h1:TcpNoMAO5GSmhx3SgcEMqCrtn8BahKhB8AlwnLjRUpk=
 github.com/charmbracelet/lipgloss v1.1.0 h1:vYXsiLHVkK7fp74RkV7b2kq9+zDLoEU4MZoFqR/noCY=
