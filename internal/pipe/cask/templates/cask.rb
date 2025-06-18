@@ -11,7 +11,7 @@ cask "{{ .Name }}" do
   {{ with and (not .HasOnlyBinaryPkgs) .Binary }}
   binary "{{ .}}"
   {{- end }}
-  {{- with .Manpage }}
+  {{- range .Manpages }}
   manpage "{{ .}}"
   {{- end }}
   {{- with .Completions.Bash }}

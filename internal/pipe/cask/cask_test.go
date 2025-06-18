@@ -61,7 +61,10 @@ var defaultTemplateData = templateData{
 			Bash: "mybin.bash",
 			Zsh:  "mybin.zsh",
 		},
-		Manpage: "mybin.1.gz",
+		Manpages: []string{
+			"mybin.1.gz",
+			"mybin2.1.gz",
+		},
 	},
 	Name:                 "test",
 	Version:              "0.1.3",
@@ -244,6 +247,14 @@ func TestFullPipe(t *testing.T) {
 				ctx.Config.Casks[0].Repository.Name = "test"
 				ctx.Config.Casks[0].Homepage = "https://gitlab.com/goreleaser"
 			},
+		},
+		"invalid_manpageskj_template": {
+			prepare: func(ctx *context.Context) {
+				ctx.Config.Casks[0].Repository.Owner = "test"
+				ctx.Config.Casks[0].Repository.Name = "test"
+				ctx.Config.Casks[0].Manpages = []string{"{{ .Asdsa }"}
+			},
+			expectedRunErrorAs: &tmpl.Error{},
 		},
 		"invalid_commit_template": {
 			prepare: func(ctx *context.Context) {
@@ -785,8 +796,8 @@ func TestRunPipeBinaryRelease(t *testing.T) {
 						Owner: "foo",
 						Name:  "bar",
 					},
-					Binary:  "foo",
-					Manpage: "./man/foo.1.gz",
+					Binary:   "foo",
+					Manpages: []string{"./man/foo.1.gz"},
 				},
 			},
 		},
@@ -830,7 +841,7 @@ func TestRunPipePullRequest(t *testing.T) {
 					Name:        "foo",
 					Homepage:    "https://goreleaser.com",
 					Description: "Fake desc",
-					Manpage:     "./man/foo.1.gz",
+					Manpages:    []string{"./man/foo.1.gz"},
 					Repository: config.RepoRef{
 						Owner:  "foo",
 						Name:   "bar",
@@ -993,17 +1004,20 @@ func TestDefault(t *testing.T) {
 		ProjectName: "myproject",
 		Casks: []config.HomebrewCask{
 			{
+				Manpage:    "a",
 				Repository: repo,
 			},
 		},
 	}, testctx.GitHubTokenType)
 	require.NoError(t, Pipe{}.Default(ctx))
+	require.True(t, ctx.Deprecated)
 	require.Equal(t, ctx.Config.ProjectName, ctx.Config.Casks[0].Name)
 	require.Equal(t, ctx.Config.ProjectName, ctx.Config.Casks[0].Binary)
 	require.NotEmpty(t, ctx.Config.Casks[0].CommitAuthor.Name)
 	require.NotEmpty(t, ctx.Config.Casks[0].CommitAuthor.Email)
 	require.NotEmpty(t, ctx.Config.Casks[0].CommitMessageTemplate)
 	require.Equal(t, repo, ctx.Config.Casks[0].Repository)
+	require.Equal(t, []string{"a"}, ctx.Config.Casks[0].Manpages)
 }
 
 func TestGHFolder(t *testing.T) {

@@ -362,6 +362,18 @@ func (t *Template) ApplyAll(sps ...*string) error {
 	return nil
 }
 
+// ApplySlice applies the template to all items in a slice.
+func (t *Template) ApplySlice(in *[]string) error {
+	for i, s := range *in {
+		ss, err := t.Apply(s)
+		if err != nil {
+			return newTmplError(s, err)
+		}
+		(*in)[i] = ss
+	}
+	return nil
+}
+
 func (t *Template) isEnvSet(name string) bool {
 	s, ok := t.fields[env].(context.Env)[name]
 	return ok && s != ""
