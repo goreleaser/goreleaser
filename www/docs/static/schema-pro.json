@@ -1940,8 +1940,11 @@
 					"binary": {
 						"type": "string"
 					},
-					"manpage": {
-						"type": "string"
+					"manpages": {
+						"items": {
+							"type": "string"
+						},
+						"type": "array"
 					},
 					"url": {
 						"$ref": "#/$defs/HomebrewCaskURL"
@@ -1977,6 +1980,9 @@
 						"type": "array"
 					},
 					"app": {
+						"type": "string"
+					},
+					"manpage": {
 						"type": "string"
 					}
 				},
