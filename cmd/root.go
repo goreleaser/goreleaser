@@ -83,20 +83,35 @@ func newRootCmd(version goversion.Info, exit func(int)) *rootCmd {
 	cmd := &cobra.Command{
 		Use:   "goreleaser",
 		Short: "Release engineering, simplified",
-		Long: `GoReleaser is a release automation tool.
-Its goal is to simplify the build, release and publish steps while providing variant customization options for all steps.
+		Long: `Release engineering, simplified.
 
-GoReleaser is built for CI tools, you only need to download and execute it in your build script. Of course, you can also install it locally if you wish.
+GoReleaser is a release automation tool, built with love and care by caarlos0 and many contributors.
 
-You can customize your entire release process through a single .goreleaser.yaml file.
-
-Check out our website for more information, examples and documentation: https://goreleaser.com
-`,
+Complete documentation is available at https://goreleaser.com`,
 		Version:           version.String(),
 		SilenceUsage:      true,
 		SilenceErrors:     true,
 		Args:              cobra.NoArgs,
 		ValidArgsFunction: cobra.NoFileCompletions,
+		Example: `
+# Initialize your project:
+goreleaser init
+
+# Verify your configuration:
+goreleaser check
+
+# Verify dependencies:
+goreleaser healthcheck
+
+# Build the binaries only:
+goreleaser build
+
+# Run a snapshot release:
+goreleaser release --snapshot
+
+# Run a complete release:
+goreleaser release
+		`,
 		PersistentPreRun: func(*cobra.Command, []string) {
 			if root.verbose {
 				log.SetLevel(log.DebugLevel)
