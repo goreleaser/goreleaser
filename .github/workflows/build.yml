@@ -47,7 +47,7 @@ jobs:
           repo-token: ${{ secrets.GITHUB_TOKEN }}
       - uses: docker/setup-qemu-action@29109295f81e9208d7d86ff1c6c12d2833863392 # v3
         if: matrix.os == 'ubuntu-latest'
-      - uses: docker/setup-buildx-action@18ce135bb5112fa8ce4ed6c17ab05699d7f3a5e0 # v3
+      - uses: docker/setup-buildx-action@e468171a9de216ec08956ac3ada2f0791b6bd435 # v3
         if: matrix.os == 'ubuntu-latest'
       - name: setup-snapcraft
         if: matrix.os == 'ubuntu-latest'
