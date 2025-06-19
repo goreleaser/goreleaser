@@ -150,6 +150,11 @@ homebrew_casks:
 
     # Custom block for brew.
     # Can be used to specify alternate downloads for devel or head releases.
+    #
+    # This block is placed at the top of the cask definition.
+    # It allows you to define custom modules and helper methods
+    # for advanced tasks, such as dynamic URL construction.
+    # For more information, see: https://docs.brew.sh/Cask-Cookbook#arbitrary-ruby-methods
     custom_block: |
       head "https://github.com/some/package.git"
       ...
