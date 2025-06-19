@@ -23,6 +23,32 @@ func TestGet(t *testing.T) {
 		}, author)
 	})
 
+	t.Run("valid with signing", func(t *testing.T) {
+		author, err := Get(testctx.NewWithCfg(config.Project{
+			Env: []string{"NAME=foo", "MAIL=foo@bar", "SIGNING_KEY=ABC123", "GPG_PROGRAM=/usr/bin/gpg"},
+		}), config.CommitAuthor{
+			Name:  "{{.Env.NAME}}",
+			Email: "{{.Env.MAIL}}",
+			Signing: config.CommitSigning{
+				Enabled: true,
+				Key:     "{{.Env.SIGNING_KEY}}",
+				Program: "{{.Env.GPG_PROGRAM}}",
+				Format:  "openpgp",
+			},
+		})
+		require.NoError(t, err)
+		require.Equal(t, config.CommitAuthor{
+			Name:  "foo",
+			Email: "foo@bar",
+			Signing: config.CommitSigning{
+				Enabled: true,
+				Key:     "ABC123",
+				Program: "/usr/bin/gpg",
+				Format:  "openpgp",
+			},
+		}, author)
+	})
+
 	t.Run("invalid name tmpl", func(t *testing.T) {
 		_, err := Get(
 			testctx.New(),
@@ -39,6 +65,34 @@ func TestGet(t *testing.T) {
 			config.CommitAuthor{
 				Name:  "a",
 				Email: "{{.Env.NOPE}}",
+			})
+		require.Error(t, err)
+	})
+
+	t.Run("invalid signing key tmpl", func(t *testing.T) {
+		_, err := Get(
+			testctx.New(),
+			config.CommitAuthor{
+				Name:  "a",
+				Email: "b",
+				Signing: config.CommitSigning{
+					Enabled: true,
+					Key:     "{{.Env.NOPE}}",
+				},
+			})
+		require.Error(t, err)
+	})
+
+	t.Run("invalid signing program tmpl", func(t *testing.T) {
+		_, err := Get(
+			testctx.New(),
+			config.CommitAuthor{
+				Name:  "a",
+				Email: "b",
+				Signing: config.CommitSigning{
+					Enabled: true,
+					Program: "{{.Env.NOPE}}",
+				},
 			})
 		require.Error(t, err)
 	})
@@ -67,6 +121,57 @@ func TestDefault(t *testing.T) {
 			Email: defaultEmail,
 		}, Default(config.CommitAuthor{
 			Name: "a",
+		}))
+	})
+
+	t.Run("signing enabled without format", func(t *testing.T) {
+		require.Equal(t, config.CommitAuthor{
+			Name:  defaultName,
+			Email: defaultEmail,
+			Signing: config.CommitSigning{
+				Enabled: true,
+				Key:     "ABC123",
+				Format:  "openpgp",
+			},
+		}, Default(config.CommitAuthor{
+			Signing: config.CommitSigning{
+				Enabled: true,
+				Key:     "ABC123",
+			},
+		}))
+	})
+
+	t.Run("signing disabled", func(t *testing.T) {
+		require.Equal(t, config.CommitAuthor{
+			Name:  defaultName,
+			Email: defaultEmail,
+			Signing: config.CommitSigning{
+				Enabled: false,
+				Key:     "ABC123",
+			},
+		}, Default(config.CommitAuthor{
+			Signing: config.CommitSigning{
+				Enabled: false,
+				Key:     "ABC123",
+			},
+		}))
+	})
+
+	t.Run("signing with custom format", func(t *testing.T) {
+		require.Equal(t, config.CommitAuthor{
+			Name:  defaultName,
+			Email: defaultEmail,
+			Signing: config.CommitSigning{
+				Enabled: true,
+				Key:     "ABC123",
+				Format:  "ssh",
+			},
+		}, Default(config.CommitAuthor{
+			Signing: config.CommitSigning{
+				Enabled: true,
+				Key:     "ABC123",
+				Format:  "ssh",
+			},
 		}))
 	})
 }
