@@ -285,12 +285,46 @@ Your users can then `brew install foo@1.2` to keep using the previous version.
 
 ## GitHub Actions
 
-To publish a cask from one repository to another using GitHub Actions, you cannot use the default action token.
-You must use a separate token with content write privileges for the tap repository.
-You can check the [resource not accessible by integration](https://goreleaser.com/errors/resource-not-accessible-by-integration/) for more information.
+To publish a cask from one repository to another using GitHub Actions, you
+cannot use the default action token. You must use a separate token with content
+write privileges for the tap repository. You can check the
+[resource not accessible by integration](https://goreleaser.com/errors/resource-not-accessible-by-integration/)
+for more information.
 
-## Limitations
+## Private GitHub Repositories
 
-- Only one `GOARM` build is allowed;
+The best way to support private repositories is to add by using a custom block,
+a custom template URL, and custom headers.
+
+Here's an example:
+
+```yaml title=".goreleaser.yaml"
+homebrew_casks:
+  - name: foo
+    custom_block: |
+      module GitHubHelper
+        def self.get_asset_api_url(tag, name)
+          require "utils/github"
+          release = GitHub.get_release("USER_OR_ORG", "PROJECT_NAME", tag)
+          release["assets"].find { |asset| asset["name"] == name }["url"]
+        end
+        def self.token
+          require "utils/github"
+          @github_token = ENV["HOMEBREW_GITHUB_API_TOKEN"]
+          unless @github_token
+            @github_token = GitHub::API.credentials
+            raise CurlDownloadStrategyError, "Failed to retrieve token" if @github_token.nil? || @github_token.empty?
+          end
+          @github_token
+        end
+      end
+
+    url:
+      template: '#{GitHubHelper.get_asset_api_url("{{.Tag}}", "{{.ArtifactName}}")}'
+      headers:
+        - "Accept: application/octet-stream"
+        - "Authorization: Bearer #{GitHubHelper.token}"
+        - "X-GitHub-Api-Version: 2022-11-28"
+```
 
 {% include-markdown "../includes/prs.md" comments=false start='---\n\n' %}
