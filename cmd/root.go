@@ -85,7 +85,7 @@ func newRootCmd(version goversion.Info, exit func(int)) *rootCmd {
 		Short: "Release engineering, simplified",
 		Long: `Release engineering, simplified.
 
-GoReleaser is a release automation tool, built with love and care by caarlos0 and many contributors.
+GoReleaser is a release automation tool, built with love and care by @caarlos0 and many contributors.
 
 Complete documentation is available at https://goreleaser.com`,
 		Version:           version.String(),
