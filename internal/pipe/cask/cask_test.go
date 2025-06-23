@@ -1,6 +1,7 @@
 package cask
 
 import (
+	_ "embed"
 	"fmt"
 	"os"
 	"path/filepath"
@@ -17,6 +18,9 @@ import (
 	"github.com/goreleaser/goreleaser/v2/pkg/context"
 	"github.com/stretchr/testify/require"
 )
+
+//go:embed testdata/github.rb
+var githubrb []byte
 
 func TestContinueOnError(t *testing.T) {
 	require.True(t, Pipe{}.ContinueOnError())
@@ -245,6 +249,23 @@ func TestFullPipe(t *testing.T) {
 				ctx.Config.Casks[0].Homepage = "https://github.com/goreleaser"
 
 				ctx.Config.Casks[0].CustomBlock = `head "https://github.com/caarlos0/test.git"`
+			},
+		},
+
+		"custom_block_url": {
+			prepare: func(ctx *context.Context) {
+				ctx.TokenType = context.TokenTypeGitHub
+				ctx.Config.Casks[0].Repository.Owner = "test"
+				ctx.Config.Casks[0].Repository.Name = "test"
+				ctx.Config.Casks[0].Homepage = "https://github.com/goreleaser"
+
+				ctx.Config.Casks[0].CustomBlock = string(githubrb)
+				ctx.Config.Casks[0].URL.Template = `#{GitHubHelper.get_asset_api_url("{{.Tag}}", "{{.ArtifactName}}")}`
+				ctx.Config.Casks[0].URL.Headers = []string{
+					"Accept: application/octet-stream",
+					"Authorization: Bearer #{GitHubHelper.token}",
+					"X-GitHub-Api-Version: 2022-11-28",
+				}
 			},
 		},
 		"default_gitlab": {
