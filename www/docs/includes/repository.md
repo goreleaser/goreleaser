@@ -96,7 +96,8 @@ search:
         ssh_command: 'ssh -i {{ .Env.KEY }} -o SomeOption=yes'
 
       # Git commit author used to commit to the repository.
-      # Templates: allowed.
+      #
+      # <!-- md:inline_version v2.11 -->
       commit_author:
         name: goreleaserbot
         email: bot@goreleaser.com
