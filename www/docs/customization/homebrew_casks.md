@@ -298,6 +298,12 @@ a custom template URL, and custom headers.
 
 Here's an example:
 
+!!! warning
+
+    Please note that this example uses an internal Homebrew API to retrieve the GitHub API token.
+
+    Replace with your implementation as needed.
+
 ```yaml title=".goreleaser.yaml"
 homebrew_casks:
   - name: foo
