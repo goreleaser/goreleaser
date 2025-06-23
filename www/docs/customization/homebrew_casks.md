@@ -319,7 +319,7 @@ homebrew_casks:
           @github_token = ENV["HOMEBREW_GITHUB_API_TOKEN"]
           unless @github_token
             @github_token = GitHub::API.credentials
-            raise CurlDownloadStrategyError, "Failed to retrieve token" if @github_token.nil? || @github_token.empty?
+            raise "Failed to retrieve token" if @github_token.nil? || @github_token.empty?
           end
           @github_token
         end
