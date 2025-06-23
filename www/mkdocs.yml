@@ -121,6 +121,7 @@ nav:
           - customization/dist.md
           - customization/project.md
           - customization/git.md
+          - customization/semver.md
           - Split & Merge: customization/partial.md
       - Build:
           - customization/builds/index.md

@@ -23,6 +23,11 @@ type Git struct {
 	IgnoreTags       []string `yaml:"ignore_tags,omitempty" json:"ignore_tags,omitempty"`
 }
 
+// Semver configs.
+type Semver struct {
+	Version string `yaml:"version_template,omitempty" json:"version_template,omitempty"`
+}
+
 // GitHubURLs holds the URLs to be used when using github enterprise.
 type GitHubURLs struct {
 	API           string `yaml:"api,omitempty" json:"api,omitempty"`
@@ -1179,6 +1184,7 @@ type Project struct {
 	SBOMs           []SBOM           `yaml:"sboms,omitempty" json:"sboms,omitempty"`
 	Chocolateys     []Chocolatey     `yaml:"chocolateys,omitempty" json:"chocolateys,omitempty"`
 	Git             Git              `yaml:"git,omitempty" json:"git,omitempty"`
+	Semver          Semver           `yaml:"semver,omitempty" json:"semver,omitempty"`
 	ReportSizes     bool             `yaml:"report_sizes,omitempty" json:"report_sizes,omitempty"`
 	Metadata        ProjectMetadata  `yaml:"metadata,omitempty" json:"metadata,omitempty"`
 

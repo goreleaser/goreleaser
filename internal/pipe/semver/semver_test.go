@@ -4,6 +4,7 @@ import (
 	"testing"
 
 	"github.com/goreleaser/goreleaser/v2/internal/testctx"
+	"github.com/goreleaser/goreleaser/v2/pkg/config"
 	"github.com/goreleaser/goreleaser/v2/pkg/context"
 	"github.com/stretchr/testify/require"
 )
@@ -14,6 +15,21 @@ func TestDescription(t *testing.T) {
 
 func TestValidSemver(t *testing.T) {
 	ctx := testctx.New(testctx.WithCurrentTag("v1.5.2-rc1"))
+	require.NoError(t, Pipe{}.Run(ctx))
+	require.Equal(t, context.Semver{
+		Major:      1,
+		Minor:      5,
+		Patch:      2,
+		Prerelease: "rc1",
+	}, ctx.Semver)
+}
+
+func TestInvalidSemverProcess(t *testing.T) {
+	ctx := testctx.NewWithCfg(config.Project{
+		Semver: config.Semver{
+			Version: `{{ trimprefix .Tag "aaaa" }}`,
+		},
+	}, testctx.WithCurrentTag("aaaav1.5.2-rc1"))
 	require.NoError(t, Pipe{}.Run(ctx))
 	require.Equal(t, context.Semver{
 		Major:      1,
