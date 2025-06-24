@@ -447,6 +447,21 @@ func TestChecksum(t *testing.T) {
 	}
 }
 
+func TestChecksumSetArtifactExtra(t *testing.T) {
+	folder := t.TempDir()
+	file := filepath.Join(folder, "subject")
+	require.NoError(t, os.WriteFile(file, []byte("lorem ipsum"), 0o644))
+	artifact := Artifact{
+		Path:  file,
+		Extra: nil,
+	}
+
+	sum, err := artifact.Checksum("crc32")
+	require.NoError(t, err)
+	require.Equal(t, "72d7748e", sum)
+	require.Equal(t, Extras{ExtraChecksum: "crc32:72d7748e"}, artifact.Extra)
+}
+
 func TestChecksumFileDoesntExist(t *testing.T) {
 	file := filepath.Join(t.TempDir(), "nope")
 	artifact := Artifact{

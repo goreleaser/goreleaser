@@ -60,6 +60,7 @@ linters:
         - name: errorf
         - name: increment-decrement
         - name: indent-error-flow
+        - name: modifies-value-receiver
         - name: range
         - name: receiver-naming
         - name: redefines-builtin-id
