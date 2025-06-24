@@ -97,7 +97,7 @@ search:
 
       # Git commit author used to commit to the repository.
       #
-      # <!-- md:inline_version v2.11 -->
+      # <!-- md:inline_version v2.11-unreleased -->
       commit_author:
         name: goreleaserbot
         email: bot@goreleaser.com
@@ -114,7 +114,7 @@ search:
           key: '{{ .Env.GPG_SIGNING_KEY }}'
 
           # The GPG program to use for signing.
-          # 
+          #
           # Templates: allowed.
           program: gpg2
 

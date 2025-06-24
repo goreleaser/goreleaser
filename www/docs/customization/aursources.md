@@ -144,7 +144,7 @@ aur_sources:
 
       # Git commit signing configuration.
       #
-      # <!-- md:inline_version v2.11 -->
+      # <!-- md:inline_version v2.11-unreleased -->
       signing:
         # Enable commit signing.
         enabled: true
@@ -153,10 +153,10 @@ aur_sources:
         # Can be a key ID, fingerprint, email address, or path to a key file.
         #
         # Templates: allowed.
-        key: '{{ .Env.GPG_SIGNING_KEY }}'
+        key: "{{ .Env.GPG_SIGNING_KEY }}"
 
         # The GPG program to use for signing.
-        # 
+        #
         # Templates: allowed.
         program: gpg2
 
