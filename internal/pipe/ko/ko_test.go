@@ -704,8 +704,7 @@ func TestPublishPipeError(t *testing.T) {
 		ctx := makeCtx()
 		require.NoError(t, Pipe{}.Default(ctx))
 		err := Pipe{}.Publish(ctx)
-		require.Error(t, err)
-		require.Contains(t, err.Error(), `Get "https://fakerepo:8080/v2/": dial tcp:`)
+		require.ErrorContains(t, err, `Get "https://fakerepo:8080/v2/": dial tcp:`)
 	})
 }
 

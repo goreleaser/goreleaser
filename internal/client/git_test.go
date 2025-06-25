@@ -329,9 +329,7 @@ func TestGitClientWithSigning(t *testing.T) {
 		)
 		// We expect this to fail in CI environments without GPG setup
 		// The important part is that it tries to sign (not just config error)
-		if err != nil {
-			require.Contains(t, err.Error(), "gpg")
-		}
+		require.ErrorContains(t, err, "gpg")
 	})
 
 	t.Run("commit signing disabled", func(t *testing.T) {
@@ -397,9 +395,7 @@ func TestGitClientWithSigning(t *testing.T) {
 		)
 		// We expect this to fail in CI environments without proper SSH key setup
 		// The important part is that it tries to sign with SSH format
-		if err != nil {
-			require.Contains(t, err.Error(), "public key")
-		}
+		require.ErrorContains(t, err, "public key")
 	})
 }
 
