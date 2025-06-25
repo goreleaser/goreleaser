@@ -222,16 +222,14 @@ func TestErrors(t *testing.T) {
 	ogerr := errors.New("fake")
 	t.Run("detailed", func(t *testing.T) {
 		err := newDetailedErrProxy(ogerr, "some details")
-		require.NotEmpty(t, err.Error())
-		require.Contains(t, err.Error(), "failed to proxy module")
-		require.Contains(t, err.Error(), "details")
+		require.ErrorContains(t, err, "failed to proxy module")
+		require.ErrorContains(t, err, "details")
 		require.ErrorIs(t, err, ogerr)
 	})
 
 	t.Run("normal", func(t *testing.T) {
 		err := newErrProxy(ogerr)
-		require.NotEmpty(t, err.Error())
-		require.Contains(t, err.Error(), "failed to proxy module")
+		require.ErrorContains(t, err, "failed to proxy module")
 		require.ErrorIs(t, err, ogerr)
 	})
 }
