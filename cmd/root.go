@@ -55,7 +55,7 @@ func exitCode(err error) int {
 	return 1
 }
 
-func errorHandler(w io.Writer, styles fang.Styles, err error) {
+func errorHandler(_ io.Writer, _ fang.Styles, err error) {
 	msg := "command failed"
 	log := log.WithError(err)
 	eerr := &exitError{}
