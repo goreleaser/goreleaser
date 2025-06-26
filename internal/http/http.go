@@ -314,7 +314,8 @@ func uploadAsset(ctx *context.Context, upload *config.Upload, artifact *artifact
 
 	log.WithField("instance", upload.Name).
 		WithField("mode", upload.Mode).
-		Info("uploaded successful")
+		WithField("file", artifact.Name).
+		Info("upload successful")
 
 	return nil
 }

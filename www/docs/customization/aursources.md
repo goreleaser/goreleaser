@@ -142,6 +142,30 @@ aur_sources:
       name: goreleaserbot
       email: bot@goreleaser.com
 
+      # Git commit signing configuration.
+      #
+      # <!-- md:inline_version v2.11-unreleased -->
+      signing:
+        # Enable commit signing.
+        enabled: true
+
+        # The signing key to use.
+        # Can be a key ID, fingerprint, email address, or path to a key file.
+        #
+        # Templates: allowed.
+        key: "{{ .Env.GPG_SIGNING_KEY }}"
+
+        # The GPG program to use for signing.
+        #
+        # Templates: allowed.
+        program: gpg2
+
+        # The signature format to use.
+        #
+        # Valid options: openpgp, x509, ssh.
+        # Default: openpgp.
+        format: openpgp
+
     # Commit message.
     #
     # Default: 'Update to {{ .Tag }}'.

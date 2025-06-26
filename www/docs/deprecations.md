@@ -41,7 +41,7 @@ Description.
 
 ### homebrew_casks.manpage
 
-> since v2.11
+> since v2.11-unreleased
 
 You may now define multiple man pages, which was not possible in v2.10.
 
@@ -59,7 +59,6 @@ You may now define multiple man pages, which was not possible in v2.10.
       manpages:
         - foo.1.gz
     ```
-
 
 ### brews
 

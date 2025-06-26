@@ -150,6 +150,11 @@ homebrew_casks:
 
     # Custom block for brew.
     # Can be used to specify alternate downloads for devel or head releases.
+    #
+    # This block is placed at the top of the cask definition.
+    # It allows you to define custom modules and helper methods
+    # for advanced tasks, such as dynamic URL construction.
+    # For more information, see: https://docs.brew.sh/Cask-Cookbook#arbitrary-ruby-methods
     custom_block: |
       head "https://github.com/some/package.git"
       ...
@@ -280,12 +285,52 @@ Your users can then `brew install foo@1.2` to keep using the previous version.
 
 ## GitHub Actions
 
-To publish a cask from one repository to another using GitHub Actions, you cannot use the default action token.
-You must use a separate token with content write privileges for the tap repository.
-You can check the [resource not accessible by integration](https://goreleaser.com/errors/resource-not-accessible-by-integration/) for more information.
+To publish a cask from one repository to another using GitHub Actions, you
+cannot use the default action token. You must use a separate token with content
+write privileges for the tap repository. You can check the
+[resource not accessible by integration](https://goreleaser.com/errors/resource-not-accessible-by-integration/)
+for more information.
 
-## Limitations
+## Private GitHub Repositories
 
-- Only one `GOARM` build is allowed;
+The best way to support private repositories is to add by using a custom block,
+a custom template URL, and custom headers.
+
+Here's an example:
+
+!!! warning
+
+    Please note that this example uses an internal Homebrew API to retrieve the GitHub API token.
+
+    Replace with your implementation as needed.
+
+```yaml title=".goreleaser.yaml"
+homebrew_casks:
+  - name: foo
+    custom_block: |
+      module GitHubHelper
+        def self.get_asset_api_url(tag, name)
+          require "utils/github"
+          release = GitHub.get_release("USER_OR_ORG", "PROJECT_NAME", tag)
+          release["assets"].find { |asset| asset["name"] == name }["url"]
+        end
+        def self.token
+          require "utils/github"
+          github_token = ENV["HOMEBREW_GITHUB_API_TOKEN"]
+          unless github_token
+            github_token = GitHub::API.credentials
+            raise "Failed to retrieve token" if github_token.nil? || github_token.empty?
+          end
+          github_token
+        end
+      end
+
+    url:
+      template: '#{GitHubHelper.get_asset_api_url("{{.Tag}}", "{{.ArtifactName}}")}'
+      headers:
+        - "Accept: application/octet-stream"
+        - "Authorization: Bearer #{GitHubHelper.token}"
+        - "X-GitHub-Api-Version: 2022-11-28"
+```
 
 {% include-markdown "../includes/prs.md" comments=false start='---\n\n' %}
