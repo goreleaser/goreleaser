@@ -229,8 +229,6 @@ github.com/caarlos0/go-reddit/v3 v3.0.1 h1:w8ugvsrHhaE/m4ez0BO/sTBOBWI9WZTjG7VTe
 github.com/caarlos0/go-reddit/v3 v3.0.1/go.mod h1:QlwgmG5SAqxMeQvg/A2dD1x9cIZCO56BMnMdjXLoisI=
 github.com/caarlos0/go-shellwords v1.0.12 h1:HWrUnu6lGbWfrDcFiHcZiwOLzHWjjrPVehULaTFgPp8=
 github.com/caarlos0/go-shellwords v1.0.12/go.mod h1:bYeeX1GrTLPl5cAMYEzdm272qdsQAZiaHgeF0KTk1Gw=
-github.com/caarlos0/go-version v0.2.0 h1:TTD5dF3PBAtRHbfCKRE173SrVVpbE0yX95EDQ4BwTGs=
-github.com/caarlos0/go-version v0.2.0/go.mod h1:X+rI5VAtJDpcjCjeEIXpxGa5+rTcgur1FK66wS0/944=
 github.com/caarlos0/go-version v0.2.1 h1:bJY5WRvs2RXErLKBELd1WR0U72whX8ELbKg0WtQ9/7A=
 github.com/caarlos0/go-version v0.2.1/go.mod h1:X+rI5VAtJDpcjCjeEIXpxGa5+rTcgur1FK66wS0/944=
 github.com/caarlos0/log v0.4.8 h1:k2URuG28jxzVUSltOjY1qy0zmCNVhMeNr8cP5P/2jB4=
@@ -252,10 +250,8 @@ github.com/charmbracelet/bubbletea v1.3.0 h1:fPMyirm0u3Fou+flch7hlJN9krlnVURrkUV
 github.com/charmbracelet/bubbletea v1.3.0/go.mod h1:eTaHfqbIwvBhFQM/nlT1NsGc4kp8jhF8LfUK67XiTDM=
 github.com/charmbracelet/colorprofile v0.3.0 h1:KtLh9uuu1RCt+Hml4s6Hz+kB1PfV3wi++1h5ia65yKQ=
 github.com/charmbracelet/colorprofile v0.3.0/go.mod h1:oHJ340RS2nmG1zRGPmhJKJ/jf4FPNNk0P39/wBPA1G0=
-github.com/charmbracelet/fang v0.1.1-0.20250618193842-c14108db3dc6 h1:3eyq4APe8uSGSQu9a0gFthykKoI7Ewvd5F1IrEfbFv4=
-github.com/charmbracelet/fang v0.1.1-0.20250618193842-c14108db3dc6/go.mod h1:wmN9iNuozeO4qUkaCDFenIgMaClMaz5bxbRLN8TuMBo=
-github.com/charmbracelet/fang v0.2.0 h1:F2sK2Zjy9kRYz/xUSF1o89DNj2BHKpxVKT7TA21KZi0=
-github.com/charmbracelet/fang v0.2.0/go.mod h1:TPpME1GkB6/4uR4wXmPnugTCkqRLgZkWSH+aMds6454=
+github.com/charmbracelet/fang v0.2.1-0.20250626194103-4f20a4a27407 h1:9lEZhfYZ3T0Wvm+K2QoCil8n7eRYjcfp7r1Zvix7ymw=
+github.com/charmbracelet/fang v0.2.1-0.20250626194103-4f20a4a27407/go.mod h1:tQ9djCXCy71NdYpMCvA9zggxFoI1RnMRZLJ82MbOK6E=
 github.com/charmbracelet/keygen v0.5.3 h1:2MSDC62OUbDy6VmjIE2jM24LuXUvKywLCmaJDmr/Z/4=
 github.com/charmbracelet/keygen v0.5.3/go.mod h1:TcpNoMAO5GSmhx3SgcEMqCrtn8BahKhB8AlwnLjRUpk=
 github.com/charmbracelet/lipgloss v1.1.0 h1:vYXsiLHVkK7fp74RkV7b2kq9+zDLoEU4MZoFqR/noCY=
