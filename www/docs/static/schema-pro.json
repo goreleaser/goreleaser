@@ -1197,6 +1197,33 @@
 					},
 					"email": {
 						"type": "string"
+					},
+					"signing": {
+						"$ref": "#/$defs/CommitSigning"
+					}
+				},
+				"additionalProperties": false,
+				"type": "object"
+			},
+			"CommitSigning": {
+				"properties": {
+					"enabled": {
+						"type": "boolean"
+					},
+					"key": {
+						"type": "string"
+					},
+					"program": {
+						"type": "string"
+					},
+					"format": {
+						"type": "string",
+						"enum": [
+							"openpgp",
+							"x509",
+							"ssh"
+						],
+						"default": "openpgp"
 					}
 				},
 				"additionalProperties": false,
@@ -5314,7 +5341,12 @@
 						"type": "string"
 					},
 					"mode": {
-						"type": "string"
+						"type": "string",
+						"enum": [
+							"binary",
+							"archive"
+						],
+						"default": "archive"
 					},
 					"method": {
 						"type": "string"
