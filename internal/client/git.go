@@ -78,7 +78,7 @@ func (g *gitClient) CreateFiles(
 	parent := filepath.Join(ctx.Config.Dist, "git")
 	name := repo.Name + "-" + g.branch
 	cwd := filepath.Join(parent, name)
-	env := []string{fmt.Sprintf("GIT_SSH_COMMAND=%s", sshcmd)}
+	var env []string
 
 	if _, err := os.Stat(cwd); errors.Is(err, os.ErrNotExist) {
 		log.Infof("cloning %s %s", name, cwd)
@@ -91,6 +91,7 @@ func (g *gitClient) CreateFiles(
 		}
 
 		gitCmds := [][]string{
+			{"config", "--local", "core.sshCommand", sshcmd},
 			{"config", "--local", "user.name", commitAuthor.Name},
 			{"config", "--local", "user.email", commitAuthor.Email},
 			{"config", "--local", "init.defaultBranch", cmp.Or(g.branch, "master")},
