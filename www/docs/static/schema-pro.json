@@ -1180,6 +1180,16 @@
 					},
 					"component": {
 						"type": "string"
+					},
+					"republish": {
+						"oneOf": [
+							{
+								"type": "string"
+							},
+							{
+								"type": "boolean"
+							}
+						]
 					}
 				},
 				"additionalProperties": false,
