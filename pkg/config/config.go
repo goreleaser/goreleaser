@@ -1106,7 +1106,7 @@ type Upload struct {
 	Exts               []string          `yaml:"exts,omitempty" json:"exts,omitempty"`
 	Target             string            `yaml:"target,omitempty" json:"target,omitempty"`
 	Username           string            `yaml:"username,omitempty" json:"username,omitempty"`
-	Mode               string            `yaml:"mode,omitempty" json:"mode,omitempty"`
+	Mode               string            `yaml:"mode,omitempty" json:"mode,omitempty" jsonschema:"enum=binary,enum=archive,default=archive"`
 	Method             string            `yaml:"method,omitempty" json:"method,omitempty"`
 	ChecksumHeader     string            `yaml:"checksum_header,omitempty" json:"checksum_header,omitempty"`
 	ClientX509Cert     string            `yaml:"client_x509_cert,omitempty" json:"client_x509_cert,omitempty"`
