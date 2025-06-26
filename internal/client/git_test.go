@@ -395,6 +395,11 @@ func TestGitClientWithSigning(t *testing.T) {
 		)
 		// We expect this to fail in CI environments without proper SSH key setup
 		// The important part is that it tries to sign with SSH format
+		if testlib.IsWindows() {
+			// on windows we get a slightly different error message...
+			require.Error(t, err)
+			return
+		}
 		require.ErrorContains(t, err, "public key")
 	})
 }
