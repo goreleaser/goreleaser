@@ -45,7 +45,6 @@ func New() Pipe {
 			blob.Pipe{},
 			upload.Pipe{},
 			artifactory.Pipe{},
-			custompublishers.Pipe{},
 			docker.Pipe{},
 			docker.ManifestPipe{},
 			ko.Pipe{},
@@ -64,6 +63,7 @@ func New() Pipe {
 			scoop.Pipe{},
 			chocolatey.Pipe{},
 			milestone.Pipe{},
+			custompublishers.Pipe{},
 		},
 	}
 }
