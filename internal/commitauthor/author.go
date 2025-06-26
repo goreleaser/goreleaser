@@ -12,36 +12,27 @@ const (
 	defaultEmail = "bot@goreleaser.com"
 )
 
-// Get templates the commit author and returns the filled fields.
+// Get templates the commit author and returns a new [config.CommitAuthor].
 func Get(ctx *context.Context, og config.CommitAuthor) (config.CommitAuthor, error) {
-	var author config.CommitAuthor
-	var err error
-
-	author.Name, err = tmpl.New(ctx).Apply(og.Name)
-	if err != nil {
-		return author, err
+	author := config.CommitAuthor{
+		Name:  og.Name,
+		Email: og.Email,
+		Signing: config.CommitSigning{
+			Enabled: og.Signing.Enabled,
+			Key:     og.Signing.Key,
+			Program: og.Signing.Program,
+			Format:  og.Signing.Format,
+		},
 	}
-	author.Email, err = tmpl.New(ctx).Apply(og.Email)
-	if err != nil {
-		return author, err
+	if err := tmpl.New(ctx).ApplyAll(
+		&author.Name,
+		&author.Email,
+		&author.Signing.Key,
+		&author.Signing.Program,
+		&author.Signing.Format,
+	); err != nil {
+		return config.CommitAuthor{}, err
 	}
-
-	// Apply templates to signing configuration
-	author.Signing.Enabled = og.Signing.Enabled
-	author.Signing.Key, err = tmpl.New(ctx).Apply(og.Signing.Key)
-	if err != nil {
-		return author, err
-	}
-	author.Signing.Program, err = tmpl.New(ctx).Apply(og.Signing.Program)
-	if err != nil {
-		return author, err
-	}
-
-	author.Signing.Format, err = tmpl.New(ctx).Apply(og.Signing.Format)
-	if err != nil {
-		return author, err
-	}
-
 	return author, nil
 }
 
