@@ -5,7 +5,6 @@ import (
 	"runtime"
 	"time"
 
-	"github.com/caarlos0/ctrlc"
 	"github.com/caarlos0/log"
 	"github.com/goreleaser/goreleaser/v2/internal/logext"
 	"github.com/goreleaser/goreleaser/v2/internal/middleware/errhandler"
@@ -112,20 +111,18 @@ func releaseProject(options releaseOpts) (*context.Context, error) {
 	if err := setupReleaseContext(ctx, options); err != nil {
 		return nil, err
 	}
-	return ctx, ctrlc.Default.Run(ctx, func() error {
-		for _, pipe := range pipeline.Pipeline {
-			if err := skip.Maybe(
-				pipe,
-				logging.Log(
-					pipe.String(),
-					errhandler.Handle(pipe.Run),
-				),
-			)(ctx); err != nil {
-				return err
-			}
+	for _, pipe := range pipeline.Pipeline {
+		if err := skip.Maybe(
+			pipe,
+			logging.Log(
+				pipe.String(),
+				errhandler.Handle(pipe.Run),
+			),
+		)(ctx); err != nil {
+			return ctx, err
 		}
-		return nil
-	})
+	}
+	return ctx, nil
 }
 
 func setupReleaseContext(ctx *context.Context, options releaseOpts) error {
