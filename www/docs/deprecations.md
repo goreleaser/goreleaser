@@ -93,11 +93,14 @@ You may also want to make the _Cask_ conflict with the previous _Formula_.
     ```yaml
     homebrew_casks:
     - name: foo
-      directory: Casks # or remove this option
-      # make the old formula conflict with the cask:
+      # Optional: either set it to Casks, or remove it:
+      directory: Casks
+
+      # Optional: make the old formula conflict with the cask:
       conflicts:
-        formula: foo
-      # if your app/binary isn't signed and notarized, you'll need this:
+        - formula: foo
+
+      # Optional: if your app/binary isn't signed and notarized, you'll need this:
       hooks:
         post:
           install: |

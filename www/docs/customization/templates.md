@@ -48,6 +48,7 @@ In fields that support templates, these fields are always available:
 | `.TagBody`         | the annotated tag message's body, or the message's body of the commit it points out[^git-tag-body]         |
 | `.Runtime.Goos`    | equivalent to `runtime.GOOS`                                                                               |
 | `.Runtime.Goarch`  | equivalent to `runtime.GOARCH`                                                                             |
+| `.Outputs`         | custom outputs (since v2.11)                                                                               |
 
 ## Common Fields (Pro)
 
