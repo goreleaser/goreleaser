@@ -26,7 +26,7 @@ func newSchemaCmd() *schemaCmd {
 		SilenceErrors:     true,
 		Args:              cobra.NoArgs,
 		ValidArgsFunction: cobra.NoFileCompletions,
-		RunE: func(_ *cobra.Command, _ []string) error {
+		RunE: func(*cobra.Command, []string) error {
 			schema := jsonschema.Reflect(&config.Project{})
 			schema.Definitions["FileInfo"] = jsonschema.Reflect(&config.FileInfo{})
 			schema.Description = "goreleaser configuration definition file"

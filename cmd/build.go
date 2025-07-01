@@ -86,7 +86,7 @@ When using ` + "`--single-target`" + `, you use the ` + "`TARGET`, or GOOS`, `GO
 	_ = cmd.RegisterFlagCompletionFunc("timeout", cobra.NoFileCompletions)
 	cmd.Flags().BoolVar(&root.opts.singleTarget, "single-target", false, "Builds only for current GOOS and GOARCH, regardless of what's set in the configuration file")
 	cmd.Flags().StringArrayVar(&root.opts.ids, "id", nil, "Builds only the specified build ids")
-	_ = cmd.RegisterFlagCompletionFunc("id", func(_ *cobra.Command, _ []string, _ string) ([]string, cobra.ShellCompDirective) {
+	_ = cmd.RegisterFlagCompletionFunc("id", func(_ *cobra.Command, _ []string, toComplete string) ([]string, cobra.ShellCompDirective) {
 		// TODO: improve this
 		cfg, err := loadConfig(!root.opts.snapshot, root.opts.config)
 		if err != nil {
@@ -94,6 +94,9 @@ When using ` + "`--single-target`" + `, you use the ` + "`TARGET`, or GOOS`, `GO
 		}
 		ids := make([]string, 0, len(cfg.Builds))
 		for _, build := range cfg.Builds {
+			if !strings.HasPrefix(build.ID, toComplete) {
+				continue
+			}
 			ids = append(ids, build.ID)
 		}
 		return ids, cobra.ShellCompDirectiveNoFileComp

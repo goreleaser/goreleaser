@@ -26,7 +26,7 @@ func newMcpCmd(version goversion.Info) *mcpCmd {
 		SilenceErrors:     true,
 		Args:              cobra.NoArgs,
 		ValidArgsFunction: cobra.NoFileCompletions,
-		RunE: func(_ *cobra.Command, _ []string) error {
+		RunE: func(*cobra.Command, []string) error {
 			bin, err := os.Executable()
 			if err != nil {
 				return err
