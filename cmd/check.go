@@ -6,6 +6,7 @@ import (
 	"io"
 	"os"
 
+	"github.com/caarlos0/ctrlc"
 	"github.com/caarlos0/log"
 	"github.com/goreleaser/goreleaser/v2/internal/pipe/defaults"
 	"github.com/goreleaser/goreleaser/v2/pkg/context"
@@ -46,13 +47,15 @@ func newCheckCmd() *checkCmd {
 				if err != nil {
 					return err
 				}
-				ctx, cancel := context.New(cfg)
-				defer cancel()
+				ctx := context.New(cfg)
 				ctx.Deprecated = root.deprecated
 
-				log.WithField("path", path).
-					Info(boldStyle.Render("checking"))
-				if err := (defaults.Pipe{}).Run(ctx); err != nil {
+				if err := ctrlc.Default.Run(ctx, func() error {
+					log.WithField("path", path).
+						Info(boldStyle.Render("checking"))
+
+					return defaults.Pipe{}.Run(ctx)
+				}); err != nil {
 					log.WithError(err).Error(boldStyle.Render("configuration is invalid"))
 					errs = append(errs, wrapErrorWithCode(
 						fmt.Errorf("configuration is invalid: %w", err),

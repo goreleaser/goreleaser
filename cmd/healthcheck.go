@@ -6,6 +6,7 @@ import (
 	"os/exec"
 	"sync"
 
+	"github.com/caarlos0/ctrlc"
 	"github.com/caarlos0/log"
 	"github.com/charmbracelet/lipgloss"
 	"github.com/goreleaser/goreleaser/v2/internal/middleware/skip"
@@ -41,36 +42,42 @@ func newHealthcheckCmd() *healthcheckCmd {
 			if err != nil {
 				return err
 			}
-			ctx, cancel := context.New(cfg)
-			defer cancel()
+			ctx := context.New(cfg)
 
-			log.Info(boldStyle.Render("checking tools..."))
+			if err := ctrlc.Default.Run(ctx, func() error {
+				log.Info(boldStyle.Render("checking tools..."))
 
-			if err := (defaults.Pipe{}).Run(ctx); err != nil {
+				err := defaults.Pipe{}.Run(ctx)
+				if err != nil {
+					return err
+				}
+
+				log.IncreasePadding()
+				defer log.ResetPadding()
+
+				var errs []error
+				for _, hc := range healthcheck.Healthcheckers {
+					_ = skip.Maybe(hc, func(ctx *context.Context) error {
+						for _, tool := range hc.Dependencies(ctx) {
+							if err := checkPath(tool); err != nil {
+								errs = append(errs, err)
+							}
+						}
+						return nil
+					})(ctx)
+				}
+
+				if len(errs) == 0 {
+					return nil
+				}
+
+				return errors.New("one or more needed tools are not present")
+			}); err != nil {
 				return err
 			}
 
-			log.IncreasePadding()
-			defer log.ResetPadding()
-
-			var errs []error
-			for _, hc := range healthcheck.Healthcheckers {
-				_ = skip.Maybe(hc, func(ctx *context.Context) error {
-					for _, tool := range hc.Dependencies(ctx) {
-						if err := checkPath(tool); err != nil {
-							errs = append(errs, err)
-						}
-					}
-					return nil
-				})(ctx)
-			}
-
-			if len(errs) == 0 {
-				log.Infof(boldStyle.Render("done!"))
-				return nil
-			}
-
-			return errors.New("one or more needed tools are not present")
+			log.Infof(boldStyle.Render("done!"))
+			return nil
 		},
 	}
 

@@ -10,6 +10,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/caarlos0/ctrlc"
 	"github.com/caarlos0/log"
 	"github.com/goreleaser/goreleaser/v2/internal/artifact"
 	"github.com/goreleaser/goreleaser/v2/internal/gio"
@@ -125,18 +126,20 @@ func buildProject(options buildOpts) (*context.Context, error) {
 	if err := setupBuildContext(ctx, options); err != nil {
 		return nil, err
 	}
-	for _, pipe := range setupPipeline(ctx, options) {
-		if err := skip.Maybe(
-			pipe,
-			logging.Log(
-				pipe.String(),
-				errhandler.Handle(pipe.Run),
-			),
-		)(ctx); err != nil {
-			return ctx, err
+	return ctx, ctrlc.Default.Run(ctx, func() error {
+		for _, pipe := range setupPipeline(ctx, options) {
+			if err := skip.Maybe(
+				pipe,
+				logging.Log(
+					pipe.String(),
+					errhandler.Handle(pipe.Run),
+				),
+			)(ctx); err != nil {
+				return err
+			}
 		}
-	}
-	return ctx, err
+		return nil
+	})
 }
 
 func setupPipeline(ctx *context.Context, options buildOpts) []pipeline.Piper {

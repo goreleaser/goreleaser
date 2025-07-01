@@ -10,7 +10,6 @@ import (
 	stdctx "context"
 	"maps"
 	"os"
-	"os/signal"
 	"runtime"
 	"strings"
 	"time"
@@ -129,23 +128,14 @@ type Semver struct {
 }
 
 // New context.
-func New(config config.Project) (*Context, stdctx.CancelFunc) {
-	ctx, stop := newWithSignals()
-	return Wrap(ctx, config), stop
+func New(config config.Project) *Context {
+	return Wrap(stdctx.Background(), config)
 }
 
 // NewWithTimeout new context with the given timeout.
 func NewWithTimeout(config config.Project, timeout time.Duration) (*Context, stdctx.CancelFunc) {
-	ctx, stop := newWithSignals()
 	ctx, cancel := stdctx.WithTimeout(stdctx.Background(), timeout) // nosem
-	return Wrap(ctx, config), func() {
-		cancel()
-		stop()
-	}
-}
-
-func newWithSignals() (stdctx.Context, stdctx.CancelFunc) {
-	return signal.NotifyContext(stdctx.Background(), os.Interrupt, os.Kill)
+	return Wrap(ctx, config), cancel
 }
 
 // Wrap wraps an existing context.
