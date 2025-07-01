@@ -6,7 +6,6 @@ import (
 	"io"
 	"os"
 
-	"github.com/caarlos0/ctrlc"
 	"github.com/caarlos0/log"
 	"github.com/goreleaser/goreleaser/v2/internal/pipe/defaults"
 	"github.com/goreleaser/goreleaser/v2/pkg/context"
@@ -30,10 +29,10 @@ func newCheckCmd() *checkCmd {
 		SilenceUsage:  true,
 		SilenceErrors: true,
 		Args:          cobra.ArbitraryArgs,
-		ValidArgsFunction: func(_ *cobra.Command, _ []string, _ string) ([]string, cobra.ShellCompDirective) {
+		ValidArgsFunction: func(*cobra.Command, []string, string) ([]string, cobra.ShellCompDirective) {
 			return []string{"yaml", "yml"}, cobra.ShellCompDirectiveFilterFileExt
 		},
-		RunE: func(_ *cobra.Command, args []string) error {
+		RunE: func(cmd *cobra.Command, args []string) error {
 			if root.quiet {
 				log.Log = log.New(io.Discard)
 			}
@@ -47,15 +46,13 @@ func newCheckCmd() *checkCmd {
 				if err != nil {
 					return err
 				}
-				ctx := context.New(cfg)
+				ctx := context.Wrap(cmd.Context(), cfg)
 				ctx.Deprecated = root.deprecated
 
-				if err := ctrlc.Default.Run(ctx, func() error {
-					log.WithField("path", path).
-						Info(boldStyle.Render("checking"))
+				log.WithField("path", path).
+					Info(boldStyle.Render("checking"))
 
-					return defaults.Pipe{}.Run(ctx)
-				}); err != nil {
+				if err := (defaults.Pipe{}).Run(ctx); err != nil {
 					log.WithError(err).Error(boldStyle.Render("configuration is invalid"))
 					errs = append(errs, wrapErrorWithCode(
 						fmt.Errorf("configuration is invalid: %w", err),

@@ -4,6 +4,8 @@ package testctx
 import (
 	"time"
 
+	stdctx "context"
+
 	"github.com/goreleaser/goreleaser/v2/internal/skips"
 	"github.com/goreleaser/goreleaser/v2/pkg/config"
 	"github.com/goreleaser/goreleaser/v2/pkg/context"
@@ -120,14 +122,28 @@ func Partial(ctx *context.Context) {
 	ctx.Partial = true
 }
 
-func NewWithCfg(c config.Project, opts ...Opt) *context.Context {
-	ctx := context.New(c)
+// WrapWithCfg wrap a context with a given configuration.
+func WrapWithCfg(parent stdctx.Context, c config.Project, opts ...Opt) *context.Context {
+	ctx := context.Wrap(stdctx.Background(), c)
 	for _, opt := range opts {
 		opt(ctx)
 	}
 	return ctx
 }
 
+// Wrap wrap a context.
+func Wrap(parent stdctx.Context, opts ...Opt) *context.Context {
+	return WrapWithCfg(stdctx.Background(), config.Project{}, opts...)
+}
+
+// NewWithCfg creates a new context.
+// Deprecated: use [WrapWithCfg] instead.
+func NewWithCfg(c config.Project, opts ...Opt) *context.Context {
+	return WrapWithCfg(stdctx.Background(), c, opts...)
+}
+
+// New creates a new context with default configuration.
+// Deprecated: use [Wrap] instead.
 func New(opts ...Opt) *context.Context {
 	return NewWithCfg(config.Project{}, opts...)
 }
