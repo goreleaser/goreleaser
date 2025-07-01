@@ -90,8 +90,6 @@ GoReleaser is a release automation tool, built with love and care by @caarlos0 a
 
 Complete documentation is available at https://goreleaser.com`,
 		Version:           version.String(),
-		SilenceUsage:      true,
-		SilenceErrors:     true,
 		Args:              cobra.NoArgs,
 		ValidArgsFunction: cobra.NoFileCompletions,
 		Example: `
