@@ -75,7 +75,7 @@ func (b *Builder) Parse(target string) (api.Target, error) {
 	}
 
 	if len(parts) > 3 {
-		t.Environment = parts[3]
+		t.Abi = parts[3]
 	}
 
 	return t, nil
@@ -155,6 +155,7 @@ func (b *Builder) Build(ctx *context.Context, build config.Build, options api.Op
 			artifact.ExtraExt:     options.Ext,
 			artifact.ExtraID:      build.ID,
 			artifact.ExtraBuilder: "rust",
+			keyAbi:                t.Abi,
 		},
 	}
 
