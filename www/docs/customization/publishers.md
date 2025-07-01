@@ -159,6 +159,16 @@ publishers:
     templated_extra_files:
       - src: LICENSE.tpl
         dst: LICENSE.txt
+
+    # This allows you to use the output of your custom publisher in templates
+    # later, for instance, in the release notes.
+    #
+    # The example bellow can be used with '{{ index .Outputs "foo.deb" }}'
+    # (assuming artifact name is 'foo.deb').
+    #
+    # Templates: allowed.
+    # <!-- md:inline_version v2.11-unreleased -->.
+    output: "check-{{ .ArtifactName }}"
 ```
 
 !!! tip
