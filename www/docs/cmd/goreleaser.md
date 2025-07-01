@@ -4,15 +4,35 @@ Release engineering, simplified
 
 ## Synopsis
 
-GoReleaser is a release automation tool.
-Its goal is to simplify the build, release and publish steps while providing variant customization options for all steps.
+Release engineering, simplified.
 
-GoReleaser is built for CI tools, you only need to download and execute it in your build script. Of course, you can also install it locally if you wish.
+GoReleaser is a release automation tool, built with love and care by @caarlos0 and many contributors.
 
-You can customize your entire release process through a single .goreleaser.yaml file.
+Complete documentation is available at https://goreleaser.com
 
-Check out our website for more information, examples and documentation: https://goreleaser.com
+## Examples
 
+```
+
+# Initialize your project:
+goreleaser init
+
+# Verify your configuration:
+goreleaser check
+
+# Verify dependencies:
+goreleaser healthcheck
+
+# Build the binaries only:
+goreleaser build
+
+# Run a snapshot release:
+goreleaser release --snapshot
+
+# Run a complete release:
+goreleaser release
+		
+```
 
 ## Options
 
