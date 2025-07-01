@@ -42,6 +42,7 @@ func (cmd *rootCmd) Execute(args []string) {
 		cmd.cmd,
 		fang.WithVersion(cmd.cmd.Version),
 		fang.WithErrorHandler(errorHandler),
+		fang.WithColorSchemeFunc(fang.AnsiColorScheme),
 	); err != nil {
 		cmd.exit(exitCode(err))
 	}
