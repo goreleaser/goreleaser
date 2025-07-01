@@ -1,13 +1,16 @@
 package cmd
 
 import (
+	stdctx "context"
 	"errors"
 	"fmt"
+	"io"
 	"slices"
 	"time"
 
 	goversion "github.com/caarlos0/go-version"
 	"github.com/caarlos0/log"
+	"github.com/charmbracelet/fang"
 	"github.com/charmbracelet/lipgloss"
 	"github.com/goreleaser/goreleaser/v2/internal/pipe"
 	"github.com/goreleaser/goreleaser/v2/pkg/context"
@@ -34,23 +37,38 @@ func (cmd *rootCmd) Execute(args []string) {
 		log.SetLevel(log.FatalLevel)
 	}
 
-	if err := cmd.cmd.Execute(); err != nil {
-		code := 1
-		msg := "command failed"
-		log := log.WithError(err)
-		eerr := &exitError{}
-		if errors.As(err, &eerr) {
-			code = eerr.code
-			if eerr.details != "" {
-				msg = eerr.details
-			}
-			for k, v := range pipe.DetailsOf(eerr.err) {
-				log = log.WithField(k, v)
-			}
-		}
-		log.Error(msg)
-		cmd.exit(code)
+	if err := fang.Execute(
+		stdctx.Background(),
+		cmd.cmd,
+		fang.WithVersion(cmd.cmd.Version),
+		fang.WithErrorHandler(errorHandler),
+		fang.WithColorSchemeFunc(fang.AnsiColorScheme),
+	); err != nil {
+		cmd.exit(exitCode(err))
 	}
+}
+
+func exitCode(err error) int {
+	eerr := &exitError{}
+	if errors.As(err, &eerr) {
+		return eerr.code
+	}
+	return 1
+}
+
+func errorHandler(_ io.Writer, _ fang.Styles, err error) {
+	msg := "command failed"
+	log := log.WithError(err)
+	eerr := &exitError{}
+	if errors.As(err, &eerr) {
+		if eerr.details != "" {
+			msg = eerr.details
+		}
+	}
+	for k, v := range pipe.DetailsOf(eerr.err) {
+		log = log.WithField(k, v)
+	}
+	log.Error(msg)
 }
 
 type rootCmd struct {
@@ -66,20 +84,33 @@ func newRootCmd(version goversion.Info, exit func(int)) *rootCmd {
 	cmd := &cobra.Command{
 		Use:   "goreleaser",
 		Short: "Release engineering, simplified",
-		Long: `GoReleaser is a release automation tool.
-Its goal is to simplify the build, release and publish steps while providing variant customization options for all steps.
+		Long: `Release engineering, simplified.
 
-GoReleaser is built for CI tools, you only need to download and execute it in your build script. Of course, you can also install it locally if you wish.
+GoReleaser is a release automation tool, built with love and care by @caarlos0 and many contributors.
 
-You can customize your entire release process through a single .goreleaser.yaml file.
-
-Check out our website for more information, examples and documentation: https://goreleaser.com
-`,
+Complete documentation is available at https://goreleaser.com`,
 		Version:           version.String(),
-		SilenceUsage:      true,
-		SilenceErrors:     true,
 		Args:              cobra.NoArgs,
 		ValidArgsFunction: cobra.NoFileCompletions,
+		Example: `
+# Initialize your project:
+goreleaser init
+
+# Verify your configuration:
+goreleaser check
+
+# Verify dependencies:
+goreleaser healthcheck
+
+# Build the binaries only:
+goreleaser build
+
+# Run a snapshot release:
+goreleaser release --snapshot
+
+# Run a complete release:
+goreleaser release
+		`,
 		PersistentPreRun: func(*cobra.Command, []string) {
 			if root.verbose {
 				log.SetLevel(log.DebugLevel)
