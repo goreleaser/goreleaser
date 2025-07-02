@@ -8,6 +8,7 @@ import (
 	"io"
 	"os/exec"
 	"strings"
+	"time"
 
 	"github.com/caarlos0/log"
 	"github.com/goreleaser/goreleaser/v2/internal/gio"
@@ -17,10 +18,6 @@ import (
 
 // Run a shell command with given arguments and envs
 func Run(ctx *context.Context, dir string, command, env []string, output bool) error {
-	log := log.
-		WithField("cmd", command).
-		WithField("dir", dir)
-
 	/* #nosec */
 	cmd := exec.CommandContext(ctx, command[0], command[1:]...)
 	cmd.Env = env
@@ -35,7 +32,13 @@ func Run(ctx *context.Context, dir string, command, env []string, output bool) e
 		cmd.Dir = dir
 	}
 
-	log.Debug("running")
+	log.WithField("cmd", command).
+		WithField("dir", dir).
+		Debug("running")
+
+	start := time.Now()
+	defer logext.Duration(start, time.Second*5)
+
 	if err := cmd.Run(); err != nil {
 		return fmt.Errorf(
 			"shell: '%s': %w: %s",
