@@ -124,7 +124,7 @@ func Partial(ctx *context.Context) {
 
 // WrapWithCfg wrap a context with a given configuration.
 func WrapWithCfg(parent stdctx.Context, c config.Project, opts ...Opt) *context.Context {
-	ctx := context.Wrap(stdctx.Background(), c)
+	ctx := context.Wrap(parent, c)
 	for _, opt := range opts {
 		opt(ctx)
 	}
