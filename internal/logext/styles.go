@@ -1,18 +1,44 @@
 package logext
 
-import "github.com/charmbracelet/lipgloss"
+import (
+	"fmt"
+	"time"
 
-// Keyword should be used to highlight code.
-var Keyword = lipgloss.NewStyle().
-	Padding(0, 1).
-	Foreground(lipgloss.AdaptiveColor{Light: "#FF4672", Dark: "#ED567A"}).
-	Background(lipgloss.AdaptiveColor{Light: "#DDDADA", Dark: "#242424"}).
-	Render
+	"github.com/caarlos0/log"
+	"github.com/charmbracelet/lipgloss"
+)
 
 var (
 	// URL is used to style URLs.
-	URL = lipgloss.NewStyle().Foreground(lipgloss.Color("3")).Render
+	URL = lipgloss.NewStyle().
+		Foreground(lipgloss.Color("3")).
+		Render
 
 	// Warning is used to style warnings for the user.
-	Warning = lipgloss.NewStyle().Foreground(lipgloss.Color("11")).Bold(true).Render
+	Warning = lipgloss.NewStyle().
+		Foreground(lipgloss.Color("11")).
+		Bold(true).
+		Render
+
+	// Keyword should be used to highlight code.
+	Keyword = lipgloss.NewStyle().
+		Padding(0, 1).
+		Foreground(lipgloss.AdaptiveColor{Light: "#FF4672", Dark: "#ED567A"}).
+		Background(lipgloss.AdaptiveColor{Light: "#DDDADA", Dark: "#242424"}).
+		Render
+
+	// Faint is fainted, italic, text.
+	Faint = lipgloss.NewStyle().
+		Italic(true).
+		Faint(true).
+		Render
 )
+
+// Duration logs the given duration if it exceeds the given threshold.
+func Duration(start time.Time, threshold time.Duration) {
+	if took := time.Since(start).Round(time.Second); took > threshold {
+		log.IncreasePadding()
+		log.Info(Faint(fmt.Sprintf("took: %s", took)))
+		log.DecreasePadding()
+	}
+}
