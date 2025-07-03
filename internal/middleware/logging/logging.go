@@ -5,7 +5,7 @@ import (
 	"time"
 
 	"github.com/caarlos0/log"
-	"github.com/charmbracelet/lipgloss"
+	"github.com/charmbracelet/lipgloss/v2"
 	"github.com/goreleaser/goreleaser/v2/internal/logext"
 	"github.com/goreleaser/goreleaser/v2/internal/middleware"
 	"github.com/goreleaser/goreleaser/v2/pkg/context"
