@@ -6,8 +6,8 @@ import (
 	"testing"
 
 	"github.com/goreleaser/goreleaser/v2/internal/artifact"
+	"github.com/goreleaser/goreleaser/v2/internal/testctx"
 	"github.com/goreleaser/goreleaser/v2/pkg/config"
-	"github.com/goreleaser/goreleaser/v2/pkg/context"
 	"github.com/stretchr/testify/require"
 )
 
@@ -124,7 +124,7 @@ func Test_manifestImages(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			ctx := context.New(config.Project{})
+			ctx := testctx.WrapWithCfg(t.Context(), config.Project{})
 			for _, art := range tt.artifacts {
 				ctx.Artifacts.Add(art)
 			}

@@ -10,7 +10,8 @@ import (
 	"strings"
 	"time"
 
-	"github.com/caarlos0/ctrlc"
+	stdctx "context"
+
 	"github.com/caarlos0/log"
 	"github.com/goreleaser/goreleaser/v2/internal/artifact"
 	"github.com/goreleaser/goreleaser/v2/internal/gio"
@@ -64,8 +65,8 @@ When using ` + "`--single-target`" + `, you use the ` + "`TARGET`, or GOOS`, `GO
 		SilenceErrors:     true,
 		Args:              cobra.NoArgs,
 		ValidArgsFunction: cobra.NoFileCompletions,
-		RunE: timedRunE("build", func(_ *cobra.Command, _ []string) error {
-			ctx, err := buildProject(root.opts)
+		RunE: timedRunE("build", func(cmd *cobra.Command, _ []string) error {
+			ctx, err := buildProject(cmd.Context(), root.opts)
 			if err != nil {
 				return err
 			}
@@ -85,7 +86,7 @@ When using ` + "`--single-target`" + `, you use the ` + "`TARGET`, or GOOS`, `GO
 	_ = cmd.RegisterFlagCompletionFunc("timeout", cobra.NoFileCompletions)
 	cmd.Flags().BoolVar(&root.opts.singleTarget, "single-target", false, "Builds only for current GOOS and GOARCH, regardless of what's set in the configuration file")
 	cmd.Flags().StringArrayVar(&root.opts.ids, "id", nil, "Builds only the specified build ids")
-	_ = cmd.RegisterFlagCompletionFunc("id", func(_ *cobra.Command, _ []string, _ string) ([]string, cobra.ShellCompDirective) {
+	_ = cmd.RegisterFlagCompletionFunc("id", func(_ *cobra.Command, _ []string, toComplete string) ([]string, cobra.ShellCompDirective) {
 		// TODO: improve this
 		cfg, err := loadConfig(!root.opts.snapshot, root.opts.config)
 		if err != nil {
@@ -93,6 +94,9 @@ When using ` + "`--single-target`" + `, you use the ` + "`TARGET`, or GOOS`, `GO
 		}
 		ids := make([]string, 0, len(cfg.Builds))
 		for _, build := range cfg.Builds {
+			if !strings.HasPrefix(build.ID, toComplete) {
+				continue
+			}
 			ids = append(ids, build.ID)
 		}
 		return ids, cobra.ShellCompDirectiveNoFileComp
@@ -116,30 +120,28 @@ When using ` + "`--single-target`" + `, you use the ` + "`TARGET`, or GOOS`, `GO
 	return root
 }
 
-func buildProject(options buildOpts) (*context.Context, error) {
+func buildProject(parent stdctx.Context, options buildOpts) (*context.Context, error) {
 	cfg, err := loadConfig(!options.snapshot, options.config)
 	if err != nil {
 		return nil, err
 	}
-	ctx, cancel := context.NewWithTimeout(cfg, options.timeout)
+	ctx, cancel := context.WrapWithTimeout(parent, cfg, options.timeout)
 	defer cancel()
 	if err := setupBuildContext(ctx, options); err != nil {
 		return nil, err
 	}
-	return ctx, ctrlc.Default.Run(ctx, func() error {
-		for _, pipe := range setupPipeline(ctx, options) {
-			if err := skip.Maybe(
-				pipe,
-				logging.Log(
-					pipe.String(),
-					errhandler.Handle(pipe.Run),
-				),
-			)(ctx); err != nil {
-				return err
-			}
+	for _, pipe := range setupPipeline(ctx, options) {
+		if err := skip.Maybe(
+			pipe,
+			logging.Log(
+				pipe.String(),
+				errhandler.Handle(pipe.Run),
+			),
+		)(ctx); err != nil {
+			return ctx, err
 		}
-		return nil
-	})
+	}
+	return ctx, nil
 }
 
 func setupPipeline(ctx *context.Context, options buildOpts) []pipeline.Piper {

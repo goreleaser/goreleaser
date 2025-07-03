@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"io"
+	"os"
 	"slices"
 	"time"
 
@@ -43,6 +44,7 @@ func (cmd *rootCmd) Execute(args []string) {
 		fang.WithVersion(cmd.cmd.Version),
 		fang.WithErrorHandler(errorHandler),
 		fang.WithColorSchemeFunc(fang.AnsiColorScheme),
+		fang.WithNotifySignal(os.Interrupt, os.Kill),
 	); err != nil {
 		cmd.exit(exitCode(err))
 	}
