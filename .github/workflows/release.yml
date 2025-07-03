@@ -111,7 +111,7 @@ jobs:
             ./dist/*.apk
           key: ${{ github.ref }}
       - uses: sigstore/cosign-installer@v3.9.1
-      - uses: anchore/sbom-action/download-syft@v0.20.1
+      - uses: anchore/sbom-action/download-syft@v0.20.2
       - uses: crazy-max/ghaction-upx@v3
         with:
           install-only: true
