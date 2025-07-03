@@ -133,7 +133,7 @@ func WrapWithCfg(parent stdctx.Context, c config.Project, opts ...Opt) *context.
 
 // Wrap wrap a context.
 func Wrap(parent stdctx.Context, opts ...Opt) *context.Context {
-	return WrapWithCfg(stdctx.Background(), config.Project{}, opts...)
+	return WrapWithCfg(parent, config.Project{}, opts...)
 }
 
 // NewWithCfg creates a new context.
