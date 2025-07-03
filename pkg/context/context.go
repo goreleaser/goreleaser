@@ -129,7 +129,7 @@ type Semver struct {
 
 // WrapWithTimeout new context with the given timeout.
 func WrapWithTimeout(parent stdctx.Context, config config.Project, timeout time.Duration) (*Context, stdctx.CancelFunc) {
-	ctx, cancel := stdctx.WithTimeout(parent, timeout)
+	ctx, cancel := stdctx.WithTimeout(parent, timeout) // nosem
 	return Wrap(ctx, config), cancel
 }
 
