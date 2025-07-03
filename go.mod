@@ -15,7 +15,7 @@ require (
 	github.com/caarlos0/go-reddit/v3 v3.0.1
 	github.com/caarlos0/go-shellwords v1.0.12
 	github.com/caarlos0/go-version v0.2.1
-	github.com/caarlos0/log v0.4.8
+	github.com/caarlos0/log v0.5.0
 	github.com/charmbracelet/fang v0.2.1-0.20250630160126-3fe7faad10fc
 	github.com/charmbracelet/keygen v0.5.3
 	github.com/charmbracelet/lipgloss v1.1.0
@@ -203,7 +203,6 @@ require (
 	github.com/docker/go-metrics v0.0.1 // indirect
 	github.com/docker/go-units v0.5.0
 	github.com/dustin/go-humanize v1.0.1 // indirect
-	github.com/elliotchance/orderedmap/v2 v2.7.0 // indirect
 	github.com/emirpasic/gods v1.18.1 // indirect
 	github.com/evanphx/json-patch/v5 v5.9.11 // indirect
 	github.com/felixge/httpsnoop v1.0.4 // indirect
