@@ -24,8 +24,8 @@ func TestDetails(t *testing.T) {
 
 func TestDetailsStacking(t *testing.T) {
 	og := errors.New("fake")
-	err := Wrap(og, "foo", "bar", "hi", 10)
-	err = WrapExit(err, "message", 2, "stacked", true)
+	err := Wrap(og, "message1", "foo", "bar", "hi", 10)
+	err = WrapExit(err, "message2", 2, "stacked", true)
 	require.Equal(t, map[string]any{
 		"foo":     "bar",
 		"hi":      10,
@@ -34,14 +34,14 @@ func TestDetailsStacking(t *testing.T) {
 	require.Empty(t, DetailsOf(og))
 	require.Equal(t, 2, ExitOf(err))
 	require.Equal(t, 1, ExitOf(og))
-	require.Equal(t, "message", MessageOf(err))
+	require.Equal(t, "message2", MessageOf(err))
 	require.ErrorIs(t, err, og)
 	require.Equal(t, "fake", err.Error())
 }
 
 func TestDetailsOdd(t *testing.T) {
 	og := errors.New("fake")
-	err := Wrap(og, "foo", "bar", "hi")
+	err := Wrap(og, "message", "foo", "bar", "hi")
 	require.Equal(t, map[string]any{
 		"foo": "bar",
 		"hi":  "missing value",

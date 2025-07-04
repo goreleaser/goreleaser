@@ -65,7 +65,7 @@ When using ` + "`--single-target`" + `, you use the ` + "`TARGET`, or GOOS`, `GO
 		SilenceErrors:     true,
 		Args:              cobra.NoArgs,
 		ValidArgsFunction: cobra.NoFileCompletions,
-		RunE: func(cmd *cobra.Command, args []string) error {
+		RunE: func(cmd *cobra.Command, _ []string) error {
 			return buildProject(cmd.Context(), root.opts)
 		},
 	}

@@ -53,7 +53,7 @@ func newReleaseCmd() *releaseCmd {
 		SilenceErrors:     true,
 		Args:              cobra.NoArgs,
 		ValidArgsFunction: cobra.NoFileCompletions,
-		RunE: func(cmd *cobra.Command, args []string) error {
+		RunE: func(cmd *cobra.Command, _ []string) error {
 			return releaseProject(cmd.Context(), root.opts)
 		},
 	}

@@ -1,3 +1,4 @@
+// Package gerrors provides error handling for GoReleaser.
 package gerrors
 
 import (
