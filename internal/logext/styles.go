@@ -22,7 +22,6 @@ var (
 
 	// Keyword should be used to highlight code.
 	Keyword = lipgloss.NewStyle().
-		Padding(0, 1).
 		Foreground(lipgloss.Color("#ED567A")).
 		Background(lipgloss.Color("#242424")).
 		Render
