@@ -9,9 +9,9 @@ import (
 )
 
 const (
-	// nixos/nix:2.18.3
-	nixBase       = "nixos/nix@sha256:3f8fec6acf10ae6f1c8843ccc607490d4635d620a75afc0b523eedba7617c16e"
-	buildxVersion = "v0.15.1"
+	// update: 04-07-2025
+	nixBase       = "nixos/nix:2.26.4@sha256:27b4075f631016061ca0f17992618b384e6d2285961953a0c233fef053e18221"
+	buildxVersion = "v0.25.0"
 )
 
 // Test Goreleaser
@@ -73,12 +73,11 @@ func (g *Goreleaser) TestEnv() *dagger.Container {
 		"openssh",
 	}
 	return g.Base().
-		WithEnvVariable("CGO_ENABLED", "1").
+		WithEnvVariable("CGO_ENABLED", "0").
 		WithExec(append([]string{"apk", "add"}, testDeps...)).
 		With(installNix).
 		With(installBuildx).
 		WithUser("nonroot").
-		WithExec([]string{"go", "install", "github.com/google/ko@latest"}).
 		// This is bound at localhost for the hardcoded docker and ko registry tests
 		WithServiceBinding("localhost", dag.Docker().Engine()).
 		WithEnvVariable("DOCKER_HOST", "tcp://localhost:2375").
