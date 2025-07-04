@@ -7,7 +7,7 @@ import (
 	"sync"
 
 	"github.com/caarlos0/log"
-	"github.com/charmbracelet/lipgloss"
+	"github.com/charmbracelet/lipgloss/v2"
 	"github.com/goreleaser/goreleaser/v2/internal/middleware/skip"
 	"github.com/goreleaser/goreleaser/v2/internal/pipe/defaults"
 	"github.com/goreleaser/goreleaser/v2/pkg/context"

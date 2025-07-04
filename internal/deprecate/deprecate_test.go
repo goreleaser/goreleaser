@@ -5,16 +5,12 @@ import (
 	"testing"
 
 	"github.com/caarlos0/log"
-	"github.com/charmbracelet/lipgloss"
 	"github.com/goreleaser/goreleaser/v2/internal/golden"
 	"github.com/goreleaser/goreleaser/v2/internal/testctx"
-	"github.com/muesli/termenv"
 	"github.com/stretchr/testify/require"
 )
 
 func TestNotice(t *testing.T) {
-	lipgloss.SetColorProfile(termenv.Ascii)
-
 	var w bytes.Buffer
 	log.Log = log.New(&w)
 
@@ -30,8 +26,6 @@ func TestNotice(t *testing.T) {
 }
 
 func TestNoticeCustom(t *testing.T) {
-	lipgloss.SetColorProfile(termenv.Ascii)
-
 	var w bytes.Buffer
 	log.Log = log.New(&w)
 

@@ -7,9 +7,7 @@ import (
 
 	goversion "github.com/caarlos0/go-version"
 	"github.com/caarlos0/log"
-	"github.com/charmbracelet/lipgloss"
 	"github.com/goreleaser/goreleaser/v2/cmd"
-	"github.com/muesli/termenv"
 	"go.uber.org/automaxprocs/maxprocs"
 )
 
@@ -23,10 +21,6 @@ var (
 )
 
 func init() {
-	// enable colored output on github actions et al
-	if os.Getenv("CI") != "" {
-		lipgloss.SetColorProfile(termenv.TrueColor)
-	}
 	// automatically set GOMAXPROCS to match available CPUs.
 	// GOMAXPROCS will be used as the default value for the --parallelism flag.
 	if _, err := maxprocs.Set(); err != nil {

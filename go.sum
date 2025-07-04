@@ -229,8 +229,8 @@ github.com/caarlos0/go-shellwords v1.0.12 h1:HWrUnu6lGbWfrDcFiHcZiwOLzHWjjrPVehU
 github.com/caarlos0/go-shellwords v1.0.12/go.mod h1:bYeeX1GrTLPl5cAMYEzdm272qdsQAZiaHgeF0KTk1Gw=
 github.com/caarlos0/go-version v0.2.1 h1:bJY5WRvs2RXErLKBELd1WR0U72whX8ELbKg0WtQ9/7A=
 github.com/caarlos0/go-version v0.2.1/go.mod h1:X+rI5VAtJDpcjCjeEIXpxGa5+rTcgur1FK66wS0/944=
-github.com/caarlos0/log v0.5.0 h1:PbbRoTBgbLHxjuyYNr5hSJee+zl65sIIKuJefnbraB0=
-github.com/caarlos0/log v0.5.0/go.mod h1:37k7VCogxsMsgpIQaca5g9eXFFrLJ5LGgA4Ng/xN85o=
+github.com/caarlos0/log v0.5.1 h1:uB1jhC/+HimtyyL7pxidkUWO4raKmidVuXifC4uqMf8=
+github.com/caarlos0/log v0.5.1/go.mod h1:37k7VCogxsMsgpIQaca5g9eXFFrLJ5LGgA4Ng/xN85o=
 github.com/caarlos0/testfs v0.4.4 h1:3PHvzHi5Lt+g332CiShwS8ogTgS3HjrmzZxCm6JCDr8=
 github.com/caarlos0/testfs v0.4.4/go.mod h1:bRN55zgG4XCUVVHZCeU+/Tz1Q6AxEJOEJTliBy+1DMk=
 github.com/carlmjohnson/versioninfo v0.22.5 h1:O00sjOLUAFxYQjlN/bzYTuZiS0y6fWDQjMRvwtKgwwc=
