@@ -11,6 +11,7 @@ import (
 )
 
 func TestNotice(t *testing.T) {
+	t.Setenv("CI", "")
 	var w bytes.Buffer
 	log.Log = log.New(&w)
 
@@ -26,6 +27,7 @@ func TestNotice(t *testing.T) {
 }
 
 func TestNoticeCustom(t *testing.T) {
+	t.Setenv("CI", "")
 	var w bytes.Buffer
 	log.Log = log.New(&w)
 
