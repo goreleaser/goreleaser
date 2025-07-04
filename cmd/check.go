@@ -4,9 +4,10 @@ import (
 	"errors"
 	"fmt"
 	"io"
-	"os"
+	"slices"
 
 	"github.com/caarlos0/log"
+	"github.com/goreleaser/goreleaser/v2/internal/gerrors"
 	"github.com/goreleaser/goreleaser/v2/internal/pipe/defaults"
 	"github.com/goreleaser/goreleaser/v2/pkg/context"
 	"github.com/spf13/cobra"
@@ -37,10 +38,11 @@ func newCheckCmd() *checkCmd {
 				log.Log = log.New(io.Discard)
 			}
 
-			var errs []*exitError
 			if root.config != "" || len(args) == 0 {
 				args = append(args, root.config)
 			}
+
+			exits := []int{}
 			for _, config := range args {
 				cfg, path, err := loadConfigCheck(config)
 				if err != nil {
@@ -53,39 +55,30 @@ func newCheckCmd() *checkCmd {
 					Info(boldStyle.Render("checking"))
 
 				if err := (defaults.Pipe{}).Run(ctx); err != nil {
-					log.WithError(err).Error(boldStyle.Render("configuration is invalid"))
-					errs = append(errs, wrapErrorWithCode(
-						fmt.Errorf("configuration is invalid: %w", err),
-						1,
-						path,
-					))
+					exits = append(exits, 1)
+					log.WithError(fmt.Errorf("configuration is invalid: %w", err)).Error(path)
 				}
 
 				if ctx.Deprecated {
-					errs = append(errs, wrapErrorWithCode(
-						errors.New("configuration is valid, but uses deprecated properties"),
-						2,
-						path,
-					))
+					exits = append(exits, 2)
+					log.WithError(errors.New("configuration is valid, but uses deprecated properties")).Warn(path)
 				}
 			}
 
 			root.checked = len(args)
-			exit := 0
-			for _, err := range errs {
-				if err.code < exit || exit == 0 {
-					exit = err.code
-				}
-				log.Log = log.New(os.Stderr)
-				if err.code == 1 {
-					log.WithError(err.err).Error(err.details)
-				} else {
-					log.WithError(err.err).Warn(err.details)
-				}
-			}
 
-			if exit > 0 {
-				return wrapErrorWithCode(fmt.Errorf("%d out of %d configuration file(s) have issues", len(errs), len(args)), exit, "")
+			// so we get the exits in the right order, and can exit exits[0]
+			slices.Sort(exits)
+
+			if len(exits) > 0 {
+				return gerrors.WrapExit(
+					fmt.Errorf(
+						"%d out of %d configuration file(s) have issues",
+						len(exits), len(args),
+					),
+					"check failed",
+					exits[0],
+				)
 			}
 
 			log.Info(boldStyle.Render(fmt.Sprintf("%d configuration file(s) validated", len(args))))

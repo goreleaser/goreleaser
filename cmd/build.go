@@ -65,14 +65,9 @@ When using ` + "`--single-target`" + `, you use the ` + "`TARGET`, or GOOS`, `GO
 		SilenceErrors:     true,
 		Args:              cobra.NoArgs,
 		ValidArgsFunction: cobra.NoFileCompletions,
-		RunE: timedRunE("build", func(cmd *cobra.Command, _ []string) error {
-			ctx, err := buildProject(cmd.Context(), root.opts)
-			if err != nil {
-				return err
-			}
-			deprecateWarn(ctx)
-			return nil
-		}),
+		RunE: func(cmd *cobra.Command, _ []string) error {
+			return buildProject(cmd.Context(), root.opts)
+		},
 	}
 
 	cmd.Flags().StringVarP(&root.opts.config, "config", "f", "", "Load configuration from file")
@@ -120,15 +115,18 @@ When using ` + "`--single-target`" + `, you use the ` + "`TARGET`, or GOOS`, `GO
 	return root
 }
 
-func buildProject(parent stdctx.Context, options buildOpts) (*context.Context, error) {
+func buildProject(parent stdctx.Context, options buildOpts) error {
+	start := time.Now()
 	cfg, err := loadConfig(!options.snapshot, options.config)
 	if err != nil {
-		return nil, err
+		return decorateWithCtxErr(parent, err, "build", after(start))
 	}
+
 	ctx, cancel := context.WrapWithTimeout(parent, cfg, options.timeout)
 	defer cancel()
+
 	if err := setupBuildContext(ctx, options); err != nil {
-		return nil, err
+		return decorateWithCtxErr(ctx, err, "build", after(start))
 	}
 	for _, pipe := range setupPipeline(ctx, options) {
 		if err := skip.Maybe(
@@ -138,10 +136,13 @@ func buildProject(parent stdctx.Context, options buildOpts) (*context.Context, e
 				errhandler.Handle(pipe.Run),
 			),
 		)(ctx); err != nil {
-			return ctx, err
+			return decorateWithCtxErr(ctx, err, "build", after(start))
 		}
 	}
-	return ctx, nil
+
+	deprecateWarn(ctx)
+	log.Infof(boldStyle.Render(fmt.Sprintf("build succeeded after %s", after(start).String())))
+	return nil
 }
 
 func setupPipeline(ctx *context.Context, options buildOpts) []pipeline.Piper {
