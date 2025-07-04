@@ -5,7 +5,7 @@ import (
 	"time"
 
 	"github.com/caarlos0/log"
-	"github.com/charmbracelet/lipgloss"
+	"github.com/charmbracelet/lipgloss/v2"
 )
 
 var (
@@ -23,8 +23,8 @@ var (
 	// Keyword should be used to highlight code.
 	Keyword = lipgloss.NewStyle().
 		Padding(0, 1).
-		Foreground(lipgloss.AdaptiveColor{Light: "#FF4672", Dark: "#ED567A"}).
-		Background(lipgloss.AdaptiveColor{Light: "#DDDADA", Dark: "#242424"}).
+		Foreground(lipgloss.Color("#ED567A")).
+		Background(lipgloss.Color("#242424")).
 		Render
 
 	// Faint is fainted, italic, text.
