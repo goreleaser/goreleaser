@@ -16,7 +16,7 @@ require (
 	github.com/caarlos0/go-shellwords v1.0.12
 	github.com/caarlos0/go-version v0.2.1
 	github.com/caarlos0/log v0.5.1
-	github.com/charmbracelet/fang v0.2.1-0.20250630160126-3fe7faad10fc
+	github.com/charmbracelet/fang v0.3.0
 	github.com/charmbracelet/keygen v0.5.3
 	github.com/charmbracelet/lipgloss/v2 v2.0.0-beta1
 	github.com/chrismellard/docker-credential-acr-env v0.0.0-20230304212654-82a0ddb27589
