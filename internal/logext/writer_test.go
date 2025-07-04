@@ -12,6 +12,8 @@ import (
 )
 
 func TestWriter(t *testing.T) {
+	t.Setenv("CI", "")
+
 	t.Run("info", func(t *testing.T) {
 		t.Cleanup(func() {
 			log.Log = log.New(os.Stderr)

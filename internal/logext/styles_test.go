@@ -11,6 +11,7 @@ import (
 )
 
 func TestDuration(t *testing.T) {
+	t.Setenv("CI", "")
 	t.Cleanup(func() {
 		log.Log = log.New(os.Stderr)
 	})
