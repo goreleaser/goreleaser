@@ -21,6 +21,10 @@ var (
 )
 
 func init() {
+	// enable colored output on github actions et al
+	if os.Getenv("CI") != "" {
+		os.Setenv("CLICOLOR_FORCE", "1")
+	}
 	// automatically set GOMAXPROCS to match available CPUs.
 	// GOMAXPROCS will be used as the default value for the --parallelism flag.
 	if _, err := maxprocs.Set(); err != nil {
