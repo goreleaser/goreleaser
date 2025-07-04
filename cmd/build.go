@@ -141,7 +141,7 @@ func buildProject(parent stdctx.Context, options buildOpts) error {
 	}
 
 	deprecateWarn(ctx)
-	log.Infof(boldStyle.Render("build succeeded after", after(start).String()))
+	log.Infof(boldStyle.Render(fmt.Sprintf("build succeeded after %s", after(start).String())))
 	return nil
 }
 
