@@ -1269,7 +1269,7 @@ func TestSkip(t *testing.T) {
 	})
 }
 
-func TestFormatOverrideWithNoFormat(t *testing.T) {
+func TestFormatOverrideWithNoFormatOrNoGoos(t *testing.T) {
 	folder := testlib.Mktmp(t)
 	dist := filepath.Join(folder, "dist")
 	require.NoError(t, os.Mkdir(dist, 0o755))
@@ -1285,6 +1285,7 @@ func TestFormatOverrideWithNoFormat(t *testing.T) {
 					NameTemplate: defaultNameTemplate,
 					FormatOverrides: []config.FormatOverride{
 						{Goos: "windows"},
+						{Formats: []string{"tgz"}},
 					},
 				},
 			},
