@@ -1,6 +1,7 @@
 package cmd
 
 import (
+	"cmp"
 	stdctx "context"
 	"errors"
 	"fmt"
@@ -13,7 +14,7 @@ import (
 	"github.com/caarlos0/log"
 	"github.com/charmbracelet/fang"
 	"github.com/charmbracelet/lipgloss"
-	"github.com/goreleaser/goreleaser/v2/internal/pipe"
+	"github.com/goreleaser/goreleaser/v2/internal/gerrors"
 	"github.com/goreleaser/goreleaser/v2/pkg/context"
 	"github.com/spf13/cobra"
 )
@@ -46,31 +47,19 @@ func (cmd *rootCmd) Execute(args []string) {
 		fang.WithColorSchemeFunc(fang.AnsiColorScheme),
 		fang.WithNotifySignal(os.Interrupt, os.Kill),
 	); err != nil {
-		cmd.exit(exitCode(err))
+		cmd.exit(gerrors.ExitOf(err))
 	}
-}
-
-func exitCode(err error) int {
-	eerr := &exitError{}
-	if errors.As(err, &eerr) {
-		return eerr.code
-	}
-	return 1
 }
 
 func errorHandler(_ io.Writer, _ fang.Styles, err error) {
-	msg := "command failed"
 	log := log.WithError(err)
-	eerr := &exitError{}
-	if errors.As(err, &eerr) {
-		if eerr.details != "" {
-			msg = eerr.details
-		}
-	}
-	for k, v := range pipe.DetailsOf(eerr.err) {
+	for k, v := range gerrors.DetailsOf(err) {
 		log = log.WithField(k, v)
 	}
-	log.Error(msg)
+	log.Error(cmp.Or(
+		gerrors.MessageOf(err),
+		"command failed",
+	))
 }
 
 type rootCmd struct {
@@ -181,15 +170,16 @@ func deprecateWarn(ctx *context.Context) {
 	}
 }
 
-func timedRunE(verb string, runE func(cmd *cobra.Command, args []string) error) func(cmd *cobra.Command, args []string) error {
-	return func(cmd *cobra.Command, args []string) error {
-		start := time.Now()
+func after(start time.Time) time.Duration {
+	return time.Since(start).Truncate(time.Second)
+}
 
-		if err := runE(cmd, args); err != nil {
-			return wrapError(err, boldStyle.Render(fmt.Sprintf("%s failed after %s", verb, time.Since(start).Truncate(time.Second))))
-		}
-
-		log.Infof(boldStyle.Render(fmt.Sprintf("%s succeeded after %s", verb, time.Since(start).Truncate(time.Second))))
-		return nil
+func decorateWithCtxErr(ctx stdctx.Context, err error, verb string, after time.Duration) error {
+	if errors.Is(ctx.Err(), stdctx.Canceled) {
+		return gerrors.Wrap(ctx.Err(), fmt.Sprintf("%s interrupted after %s", verb, after))
 	}
+	if errors.Is(ctx.Err(), stdctx.DeadlineExceeded) {
+		return gerrors.Wrap(ctx.Err(), fmt.Sprintf("%s timed out after %s", verb, after))
+	}
+	return gerrors.Wrap(err, fmt.Sprintf("%s failed after %s", verb, after))
 }

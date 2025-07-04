@@ -7,6 +7,7 @@ import (
 	"os"
 
 	"github.com/caarlos0/log"
+	"github.com/goreleaser/goreleaser/v2/internal/gerrors"
 	"github.com/goreleaser/goreleaser/v2/internal/pipe/defaults"
 	"github.com/goreleaser/goreleaser/v2/pkg/context"
 	"github.com/spf13/cobra"
@@ -18,6 +19,12 @@ type checkCmd struct {
 	quiet      bool
 	deprecated bool
 	checked    int
+}
+
+type checkErr struct {
+	path       string
+	err        error
+	deprecated bool
 }
 
 func newCheckCmd() *checkCmd {
@@ -37,7 +44,7 @@ func newCheckCmd() *checkCmd {
 				log.Log = log.New(io.Discard)
 			}
 
-			var errs []*exitError
+			var errs []checkErr
 			if root.config != "" || len(args) == 0 {
 				args = append(args, root.config)
 			}
@@ -53,39 +60,49 @@ func newCheckCmd() *checkCmd {
 					Info(boldStyle.Render("checking"))
 
 				if err := (defaults.Pipe{}).Run(ctx); err != nil {
-					log.WithError(err).Error(boldStyle.Render("configuration is invalid"))
-					errs = append(errs, wrapErrorWithCode(
-						fmt.Errorf("configuration is invalid: %w", err),
-						1,
-						path,
-					))
+					errs = append(errs, checkErr{
+						err:  fmt.Errorf("configuration is invalid: %w", err),
+						path: path,
+					})
+					continue
 				}
 
 				if ctx.Deprecated {
-					errs = append(errs, wrapErrorWithCode(
-						errors.New("configuration is valid, but uses deprecated properties"),
-						2,
-						path,
-					))
+					errs = append(errs, checkErr{
+						err:        errors.New("configuration is valid, but uses deprecated properties"),
+						deprecated: true,
+						path:       path,
+					})
 				}
 			}
 
 			root.checked = len(args)
 			exit := 0
 			for _, err := range errs {
-				if err.code < exit || exit == 0 {
-					exit = err.code
+				if exit == 0 {
+					exit = 1
 				}
 				log.Log = log.New(os.Stderr)
-				if err.code == 1 {
-					log.WithError(err.err).Error(err.details)
-				} else {
-					log.WithError(err.err).Warn(err.details)
+				if err.deprecated {
+					if exit == 0 {
+						exit = 2
+					}
+					log.WithError(err.err).Warn(err.path)
+					continue
 				}
+				log.WithError(err.err).Error(err.path)
 			}
 
 			if exit > 0 {
-				return wrapErrorWithCode(fmt.Errorf("%d out of %d configuration file(s) have issues", len(errs), len(args)), exit, "")
+				return gerrors.WrapExit(
+					fmt.Errorf(
+						"%d out of %d configuration file(s) have issues",
+						len(errs),
+						len(args),
+					),
+					"check failed",
+					exit,
+				)
 			}
 
 			log.Info(boldStyle.Render(fmt.Sprintf("%d configuration file(s) validated", len(args))))

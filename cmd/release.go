@@ -53,14 +53,9 @@ func newReleaseCmd() *releaseCmd {
 		SilenceErrors:     true,
 		Args:              cobra.NoArgs,
 		ValidArgsFunction: cobra.NoFileCompletions,
-		RunE: timedRunE("release", func(cmd *cobra.Command, _ []string) error {
-			ctx, err := releaseProject(cmd.Context(), root.opts)
-			if err != nil {
-				return err
-			}
-			deprecateWarn(ctx)
-			return nil
-		}),
+		RunE: func(cmd *cobra.Command, args []string) error {
+			return releaseProject(cmd.Context(), root.opts)
+		},
 	}
 
 	cmd.Flags().StringVarP(&root.opts.config, "config", "f", "", "Load configuration from file")
@@ -102,15 +97,18 @@ func newReleaseCmd() *releaseCmd {
 	return root
 }
 
-func releaseProject(parent stdctx.Context, options releaseOpts) (*context.Context, error) {
+func releaseProject(parent stdctx.Context, options releaseOpts) error {
+	start := time.Now()
 	cfg, err := loadConfig(!options.snapshot, options.config)
 	if err != nil {
-		return nil, err
+		return decorateWithCtxErr(parent, err, "release", after(start))
 	}
+
 	ctx, cancel := context.WrapWithTimeout(parent, cfg, options.timeout)
 	defer cancel()
+
 	if err := setupReleaseContext(ctx, options); err != nil {
-		return nil, err
+		return decorateWithCtxErr(ctx, err, "release", after(start))
 	}
 	for _, pipe := range pipeline.Pipeline {
 		if err := skip.Maybe(
@@ -120,10 +118,13 @@ func releaseProject(parent stdctx.Context, options releaseOpts) (*context.Contex
 				errhandler.Handle(pipe.Run),
 			),
 		)(ctx); err != nil {
-			return ctx, err
+			return decorateWithCtxErr(ctx, err, "release", after(start))
 		}
 	}
-	return ctx, nil
+
+	deprecateWarn(ctx)
+	log.Infof(boldStyle.Render(fmt.Sprintf("release succeeded after %s", after(start))))
+	return nil
 }
 
 func setupReleaseContext(ctx *context.Context, options releaseOpts) error {
