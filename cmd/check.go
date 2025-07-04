@@ -4,7 +4,7 @@ import (
 	"errors"
 	"fmt"
 	"io"
-	"os"
+	"slices"
 
 	"github.com/caarlos0/log"
 	"github.com/goreleaser/goreleaser/v2/internal/gerrors"
@@ -19,12 +19,6 @@ type checkCmd struct {
 	quiet      bool
 	deprecated bool
 	checked    int
-}
-
-type checkErr struct {
-	path       string
-	err        error
-	deprecated bool
 }
 
 func newCheckCmd() *checkCmd {
@@ -44,10 +38,11 @@ func newCheckCmd() *checkCmd {
 				log.Log = log.New(io.Discard)
 			}
 
-			var errs []checkErr
 			if root.config != "" || len(args) == 0 {
 				args = append(args, root.config)
 			}
+
+			exits := []int{}
 			for _, config := range args {
 				cfg, path, err := loadConfigCheck(config)
 				if err != nil {
@@ -60,48 +55,29 @@ func newCheckCmd() *checkCmd {
 					Info(boldStyle.Render("checking"))
 
 				if err := (defaults.Pipe{}).Run(ctx); err != nil {
-					errs = append(errs, checkErr{
-						err:  fmt.Errorf("configuration is invalid: %w", err),
-						path: path,
-					})
-					continue
+					exits = append(exits, 1)
+					log.WithError(fmt.Errorf("configuration is invalid: %w", err)).Error(path)
 				}
 
 				if ctx.Deprecated {
-					errs = append(errs, checkErr{
-						err:        errors.New("configuration is valid, but uses deprecated properties"),
-						deprecated: true,
-						path:       path,
-					})
+					exits = append(exits, 2)
+					log.WithError(errors.New("configuration is valid, but uses deprecated properties")).Warn(path)
 				}
 			}
 
 			root.checked = len(args)
-			exit := 0
-			for _, err := range errs {
-				if exit == 0 {
-					exit = 1
-				}
-				log.Log = log.New(os.Stderr)
-				if err.deprecated {
-					if exit == 0 {
-						exit = 2
-					}
-					log.WithError(err.err).Warn(err.path)
-					continue
-				}
-				log.WithError(err.err).Error(err.path)
-			}
 
-			if exit > 0 {
+			// so we get the exits in the right order, and can exit exits[0]
+			slices.Sort(exits)
+
+			if len(exits) > 0 {
 				return gerrors.WrapExit(
 					fmt.Errorf(
 						"%d out of %d configuration file(s) have issues",
-						len(errs),
-						len(args),
+						len(exits), len(args),
 					),
 					"check failed",
-					exit,
+					exits[0],
 				)
 			}
 
