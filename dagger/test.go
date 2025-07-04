@@ -65,11 +65,12 @@ func (g *Goreleaser) TestEnv() *dagger.Container {
 		"docker",
 		"syft",
 		"uv",
-		// "poetry", version too old
-		// "cargo", not available
-		// "zig", XXX: failing for some reason
+		"rust",
+		"poetry",
+		"zig",
 		"deno",
-		// "bun", not available
+		"bun",
+		"openssh",
 	}
 	return g.Base().
 		WithEnvVariable("CGO_ENABLED", "1").
