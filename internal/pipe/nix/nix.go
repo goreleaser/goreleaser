@@ -66,9 +66,10 @@ type Pipe struct {
 
 func (Pipe) String() string                           { return "nixpkgs" }
 func (Pipe) ContinueOnError() bool                    { return true }
-func (Pipe) Dependencies(_ *context.Context) []string { return []string{"nix-hash"} }
+func (Pipe) Dependencies(_ *context.Context) []string { return []string{nixHashBin} }
+
 func (p Pipe) Skip(ctx *context.Context) bool {
-	return skips.Any(ctx, skips.Nix) || len(ctx.Config.Nix) == 0 || !p.hasher.Available()
+	return skips.Any(ctx, skips.Nix) || len(ctx.Config.Nix) == 0
 }
 
 func (Pipe) Default(ctx *context.Context) error {
@@ -95,6 +96,9 @@ func (Pipe) Default(ctx *context.Context) error {
 }
 
 func (p Pipe) Run(ctx *context.Context) error {
+	if !p.hasher.Available() {
+		return pipe.Skipf("%s is not available", nixHashBin)
+	}
 	cli, err := client.NewReleaseClient(ctx)
 	if err != nil {
 		return err
@@ -563,9 +567,6 @@ type nixHasher struct{ bin string }
 
 func (p nixHasher) Available() bool {
 	_, err := exec.LookPath(p.bin)
-	if err != nil {
-		log.Warnf("%s is not available", p.bin)
-	}
 	return err == nil
 }
 
