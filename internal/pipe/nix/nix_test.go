@@ -1,6 +1,7 @@
 package nix
 
 import (
+	"errors"
 	"html/template"
 	"maps"
 	"os"
@@ -40,12 +41,6 @@ func TestSkip(t *testing.T) {
 		testlib.CheckPath(t, "nix-hash")
 		testlib.SkipIfWindows(t, "nix doesn't work on windows")
 		require.False(t, NewPublish().Skip(testctx.NewWithCfg(config.Project{
-			Nix: []config.Nix{{}},
-		})))
-	})
-	t.Run("nix-hash-not-in-path", func(t *testing.T) {
-		t.Setenv("PATH", "nope")
-		require.True(t, NewPublish().Skip(testctx.NewWithCfg(config.Project{
 			Nix: []config.Nix{{}},
 		})))
 	})
@@ -601,6 +596,18 @@ func TestRunPipe(t *testing.T) {
 	}
 }
 
+func TestRunSkipNoNix(t *testing.T) {
+	ctx := testctx.WrapWithCfg(t.Context(), config.Project{
+		Nix: []config.Nix{
+			{},
+		},
+	})
+	p := Pipe{}
+	p.hasher = unavailableHasher{}
+	require.NoError(t, p.Default(ctx))
+	testlib.AssertSkipped(t, p.Run(ctx))
+}
+
 func TestErrNoArchivesFound(t *testing.T) {
 	require.EqualError(t, errNoArchivesFound{
 		goamd64: "v1",
@@ -680,6 +687,13 @@ func linuxDep(s string) config.NixDependency {
 		OS:   "linux",
 	}
 }
+
+type unavailableHasher struct{}
+
+func (m unavailableHasher) Hash(path string) (string, error) {
+	return "", errors.New("unavailable hasher")
+}
+func (m unavailableHasher) Available() bool { return false }
 
 type fakeHasher map[string]string
 
