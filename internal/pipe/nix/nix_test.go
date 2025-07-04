@@ -690,7 +690,7 @@ func linuxDep(s string) config.NixDependency {
 
 type unavailableHasher struct{}
 
-func (m unavailableHasher) Hash(path string) (string, error) {
+func (m unavailableHasher) Hash(string) (string, error) {
 	return "", errors.New("unavailable hasher")
 }
 func (m unavailableHasher) Available() bool { return false }
