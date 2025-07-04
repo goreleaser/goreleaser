@@ -10,7 +10,7 @@ import (
 
 const (
 	// update: 04-07-2025
-	nixBase       = "nixos/nix:2.26.4@sha256:27b4075f631016061ca0f17992618b384e6d2285961953a0c233fef053e18221"
+	nixBase       = "nixos/nix:2.26.4@sha256:174ea8562d7b9d13b8963098c6c7853c3d388f226bc84d3676ab37776dd91759"
 	buildxVersion = "v0.25.0"
 )
 
