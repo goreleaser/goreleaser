@@ -7,8 +7,8 @@ import (
 )
 
 const (
-	// cgr.dev/chainguard/wolfi-base:latest 6/26/2024
-	wolfiBase = "cgr.dev/chainguard/wolfi-base@sha256:7a5b796ae54f72b78b7fc33c8fffee9a363af2c6796dac7c4ef65de8d67d348d"
+	// cgr.dev/chainguard/wolfi-base:latest 04-06-2025
+	wolfiBase = "cgr.dev/chainguard/wolfi-base@sha256:1c6a85817d3a8787e094aae474e978d4ecdf634fd65e77ab28ffae513e35cca1"
 )
 
 // Build Goreleaser
