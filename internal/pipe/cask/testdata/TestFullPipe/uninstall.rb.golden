@@ -56,29 +56,29 @@ cask "uninstall" do
   service "foo.plist"
 
   uninstall launchctl: [
-      launchctl1,
-      launchctl2,
-      launchctl3,
+      "launchctl1",
+      "launchctl2",
+      "launchctl3",
     ],
     quit: [
-      quit1,
-      quit2,
-      quit3,
+      "quit1",
+      "quit2",
+      "quit3",
     ],
     login_item: [
-      loginitem1,
-      loginitem2,
-      loginitem3,
+      "loginitem1",
+      "loginitem2",
+      "loginitem3",
     ],
     delete: [
-      delete1,
-      delete2,
-      delete3,
+      "delete1",
+      "delete2",
+      "delete3",
     ],
     trash: [
-      trash1,
-      trash2,
-      trash3,
+      "trash1",
+      "trash2",
+      "trash3",
     ]
 
   # No zap stanza required
