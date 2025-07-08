@@ -34,7 +34,7 @@ require (
 	github.com/invopop/jsonschema v0.13.0
 	github.com/jarcoal/httpmock v1.4.0
 	github.com/klauspost/pgzip v1.2.6
-	github.com/mark3labs/mcp-go v0.32.0
+	github.com/mark3labs/mcp-go v0.33.0
 	github.com/mattn/go-mastodon v0.0.9
 	github.com/mitchellh/go-homedir v1.1.0
 	github.com/muesli/mango-cobra v1.2.0
