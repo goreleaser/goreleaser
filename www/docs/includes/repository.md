@@ -97,7 +97,7 @@ search:
 
       # Git commit author used to commit to the repository.
       #
-      # <!-- md:inline_version v2.11-unreleased -->
+      # <!-- md:inline_version v2.11 -->
       commit_author:
         name: goreleaserbot
         email: bot@goreleaser.com

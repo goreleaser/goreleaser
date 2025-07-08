@@ -144,7 +144,7 @@ aur_sources:
 
       # Git commit signing configuration.
       #
-      # <!-- md:inline_version v2.11-unreleased -->
+      # <!-- md:inline_version v2.11 -->
       signing:
         # Enable commit signing.
         enabled: true

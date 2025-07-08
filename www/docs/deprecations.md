@@ -41,7 +41,7 @@ Description.
 
 ### homebrew_casks.manpage
 
-> since v2.11-unreleased
+> since v2.11
 
 You may now define multiple man pages, which was not possible in v2.10.
 
