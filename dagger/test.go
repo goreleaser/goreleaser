@@ -73,7 +73,7 @@ func (g *Goreleaser) TestEnv() *dagger.Container {
 		"openssh",
 	}
 	return g.Base().
-		WithEnvVariable("CGO_ENABLED", "0").
+		WithEnvVariable("CGO_ENABLED", "1").
 		WithExec(append([]string{"apk", "add"}, testDeps...)).
 		With(installNix).
 		With(installBuildx).
