@@ -42,6 +42,11 @@ tasks:
     cmds:
       - go test {{.TEST_OPTIONS}} -failfast -race -coverpkg=./... -covermode=atomic -coverprofile=coverage.txt {{.SOURCE_FILES}} -run {{.TEST_PATTERN}} -timeout=15m
 
+  test:golden:update:
+    desc: Run all tests that write goldne files, updating the files.
+    cmds:
+      - ./scripts/test-golden.sh
+
   cover:
     desc: Open the cover tool
     cmds:
