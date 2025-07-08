@@ -56,10 +56,10 @@ func dependsString(dependencies []config.HomebrewCaskDependency) string {
 	var formulas []string
 	for _, dependency := range dependencies {
 		if dependency.Cask != "" {
-			casks = append(casks, quote(dependency.Cask))
+			casks = append(casks, dependency.Cask)
 		}
 		if dependency.Formula != "" {
-			formulas = append(formulas, quote(dependency.Formula))
+			formulas = append(formulas, dependency.Formula)
 		}
 	}
 	sort.Strings(casks)
@@ -80,10 +80,10 @@ func conflictsString(conflicts []config.HomebrewCaskConflict) string {
 	var formulas []string
 	for _, conflict := range conflicts {
 		if conflict.Cask != "" {
-			casks = append(casks, quote(conflict.Cask))
+			casks = append(casks, conflict.Cask)
 		}
 		if conflict.Formula != "" {
-			formulas = append(formulas, quote(conflict.Formula))
+			formulas = append(formulas, conflict.Formula)
 		}
 	}
 	sort.Strings(casks)
@@ -150,10 +150,8 @@ func groupToS(name string, lines []string) string {
 	var sb strings.Builder
 	sb.WriteString(name + ": [\n")
 	for _, l := range lines {
-		sb.WriteString("      " + l + ",\n")
+		sb.WriteString("      " + fmt.Sprintf("%q", l) + ",\n")
 	}
 	sb.WriteString("    ]")
 	return sb.String()
 }
-
-func quote(s string) string { return fmt.Sprintf("%q", s) }
