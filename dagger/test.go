@@ -58,6 +58,7 @@ func (g *Goreleaser) TestEnv() *dagger.Container {
 		"bash",
 		"curl",
 		"git",
+		"gcc",
 		"gpg",
 		"gpg-agent",
 		"upx",
