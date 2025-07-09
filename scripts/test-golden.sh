@@ -14,4 +14,4 @@ pkgs() {
 }
 
 # shellcheck disable=SC2046
-echo go test --failfast $(pkgs) -update
+go test --failfast $(pkgs) -update
