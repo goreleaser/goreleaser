@@ -44,6 +44,9 @@ tasks:
 
   test:golden:update:
     desc: Run all tests that write goldne files, updating the files.
+    sources:
+      - ./pkg/config/*.go
+      - ./pkg/context/*.go
     cmds:
       - ./scripts/test-golden.sh
 
