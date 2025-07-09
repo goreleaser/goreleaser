@@ -1,10 +1,17 @@
 #!/bin/bash
 set -euo pipefail
-grep -Rl 'internal/golden"' . |
-	grep '_test.go' |
-	grep -v 'main' |
-	sort |
-	uniq |
-	while read -r file; do
-		go test --failfast "$(dirname "$file")/..." -update
-	done
+
+pkgs() {
+	grep -Rl 'internal/golden"' . |
+		grep '_test.go' |
+		grep -v 'main' |
+		while read -r file; do
+			echo "$(dirname "$file")/..."
+		done |
+		sort |
+		uniq |
+		tr '\n' ' '
+}
+
+# shellcheck disable=SC2046
+echo go test --failfast $(pkgs) -update
