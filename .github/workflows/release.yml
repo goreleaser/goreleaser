@@ -132,6 +132,7 @@ jobs:
           username: ${{ github.repository_owner }}
           password: ${{ secrets.GITHUB_TOKEN }}
       - name: npm-login
+        if: startsWith(github.ref, 'refs/tags/v')
         run: |
           npm config set '//registry.npmjs.org/:_authToken'=${{ secrets.NPM_TOKEN }}
       - uses: goreleaser/goreleaser-action@v6
