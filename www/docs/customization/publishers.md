@@ -167,7 +167,7 @@ publishers:
     # (assuming artifact name is 'foo.deb').
     #
     # Templates: allowed.
-    # <!-- md:inline_version v2.11-unreleased -->.
+    # <!-- md:inline_version v2.11 -->.
     output: "check-{{ .ArtifactName }}"
 ```
 

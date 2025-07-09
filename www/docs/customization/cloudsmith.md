@@ -90,7 +90,7 @@ cloudsmiths:
     # attributes (e.g. same version); otherwise, it will be flagged as a
     # duplicate.
     #
-    # <!-- md:inline_version v2.11-unreleased -->
+    # <!-- md:inline_version v2.11 -->
     # Templates: allowed.
     republish: true
 ```
