@@ -49,10 +49,12 @@ homebrew_casks:
     # Templates: allowed.
     app: Foo.app
 
-    # Path to the manpage file
+    # Path to the manpage files.
     #
     # Templates: allowed.
-    manpage: man/myapp.1
+    manpages:
+      - man/myapp.1
+      - man/myapp-subcmd.1
 
     # Completions for different shells
     #
