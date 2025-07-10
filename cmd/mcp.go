@@ -92,6 +92,16 @@ func (c *mcpCmd) init(ctx stdctx.Context, _ mcp.CallToolRequest) (*mcp.CallToolR
 	return mcp.NewToolResultText(string(out)), nil
 }
 
+func (c *mcpCmd) healthcheck(ctx stdctx.Context, _ mcp.CallToolRequest) (*mcp.CallToolResult, error) {
+	out, _ := exec.CommandContext(ctx, c.bin, "healthcheck").CombinedOutput()
+	return mcp.NewToolResultText(string(out)), nil
+}
+
+func (c *mcpCmd) build(ctx stdctx.Context, _ mcp.CallToolRequest) (*mcp.CallToolResult, error) {
+	out, _ := exec.CommandContext(ctx, c.bin, "build", "--snapshot", "--clean", "--single-target", "-o", ".").CombinedOutput()
+	return mcp.NewToolResultText(string(out)), nil
+}
+
 //go:embed mcp/brews.md
 var brewsInstructions []byte
 
@@ -108,16 +118,6 @@ var instructions = map[string]string{
 	"nightly.name_template":            "rename `name_template` to `version_template`",
 	"snaps.builds":                     "rename `builds` to `ids`",
 	"snapshot.name_template":           "rename `name_template` to `version_template`",
-}
-
-func (c *mcpCmd) healthcheck(ctx stdctx.Context, _ mcp.CallToolRequest) (*mcp.CallToolResult, error) {
-	out, _ := exec.CommandContext(ctx, c.bin, "healthcheck").CombinedOutput()
-	return mcp.NewToolResultText(string(out)), nil
-}
-
-func (c *mcpCmd) build(ctx stdctx.Context, _ mcp.CallToolRequest) (*mcp.CallToolResult, error) {
-	out, _ := exec.CommandContext(ctx, c.bin, "build", "--snapshot", "--clean", "--single-target", "-o", ".").CombinedOutput()
-	return mcp.NewToolResultText(string(out)), nil
 }
 
 func (*mcpCmd) check(ctx stdctx.Context, request mcp.CallToolRequest) (*mcp.CallToolResult, error) {

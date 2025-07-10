@@ -36,7 +36,7 @@ dependencies:
   - formula: some-formula
 ```
 
-Assume all previously listed dependencies are of type 'formula'.
+Assume all previously listed conflicts are of type 'formula'.
 
 - change the `conflicts` field, it should now follow this format:
 
@@ -63,4 +63,4 @@ hooks:
 
 ---
 
-See https://goreleaser.com/customization/homebrew_casks/ for more the complete reference.
+See https://goreleaser.com/customization/homebrew_casks/ for the complete reference.
