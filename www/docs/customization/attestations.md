@@ -8,6 +8,7 @@ do add the following to your release workflow:
 permissions:
   # ...
   # Give the workflow permission to write attestations.
+  id-token: write
   attestations: write
 
 jobs:
@@ -23,6 +24,18 @@ jobs:
         with:
           subject-checksums: ./dist/checksums.txt
 ```
+
+You will also want to adjust your Goreleaser configuration to produce the
+checksum file at a predictable filename matching the release workflow.
+```yaml title=".goreleaser.yaml"
+# ...
+
+# config the checksum filename
+# https://goreleaser.com/customization/checksum
+checksum:
+  name_template: "checksums.txt"
+```
+
 
 Users can then verify it with:
 
