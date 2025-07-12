@@ -33,14 +33,14 @@ func TestSkip(t *testing.T) {
 		require.True(t, Pipe{}.Skip(testctx.New()))
 	})
 	t.Run("skip flag", func(t *testing.T) {
-		require.True(t, NewPublish().Skip(testctx.NewWithCfg(config.Project{
+		require.True(t, New().Skip(testctx.NewWithCfg(config.Project{
 			Nix: []config.Nix{{}},
 		}, testctx.Skip(skips.Nix))))
 	})
 	t.Run("nix-all-good", func(t *testing.T) {
 		testlib.CheckPath(t, "nix-hash")
 		testlib.SkipIfWindows(t, "nix doesn't work on windows")
-		require.False(t, NewPublish().Skip(testctx.NewWithCfg(config.Project{
+		require.False(t, New().Skip(testctx.NewWithCfg(config.Project{
 			Nix: []config.Nix{{}},
 		})))
 	})
@@ -49,39 +49,27 @@ func TestSkip(t *testing.T) {
 const fakeNixHashBin = "fake-nix-hash"
 
 func TestHasher(t *testing.T) {
-	t.Run("zero hash", func(t *testing.T) {
-		t.Run("build", func(t *testing.T) {
-			sha, err := alwaysZeroHasher{}.Hash("any")
-			require.NoError(t, err)
-			require.Equal(t, zeroHash, sha)
+	t.Run("hash", func(t *testing.T) {
+		t.Run("fake-nix-hash", func(t *testing.T) {
+			_, err := nixHasher{fakeNixHashBin}.Hash("any")
+			require.ErrorIs(t, err, exec.ErrNotFound)
 		})
-		t.Run("publish", func(t *testing.T) {
-			t.Run("nix-hash", func(t *testing.T) {
-				_, err := nixHasher{fakeNixHashBin}.Hash("any")
-				require.ErrorIs(t, err, exec.ErrNotFound)
-			})
-			t.Run("valid", func(t *testing.T) {
-				testlib.CheckPath(t, "nix-hash")
-				testlib.SkipIfWindows(t, "nix doesn't work on windows")
-				sha, err := realHasher.Hash("./testdata/file.bin")
-				require.NoError(t, err)
-				require.Equal(t, "1n7yy95h81rziah4ppi64kr6fphwxjiq8cl70fpfrqvr0ml1xbcl", sha)
-			})
+		t.Run("valid", func(t *testing.T) {
+			testlib.CheckPath(t, "nix-hash")
+			testlib.SkipIfWindows(t, "nix doesn't work on windows")
+			sha, err := realHasher.Hash("./testdata/file.bin")
+			require.NoError(t, err)
+			require.Equal(t, "1n7yy95h81rziah4ppi64kr6fphwxjiq8cl70fpfrqvr0ml1xbcl", sha)
 		})
 	})
 	t.Run("available", func(t *testing.T) {
-		t.Run("build", func(t *testing.T) {
-			require.True(t, alwaysZeroHasher{}.Available())
+		t.Run("no-nix-hash", func(t *testing.T) {
+			require.False(t, nixHasher{fakeNixHashBin}.Available())
 		})
-		t.Run("publish", func(t *testing.T) {
-			t.Run("no-nix-hash", func(t *testing.T) {
-				require.False(t, nixHasher{fakeNixHashBin}.Available())
-			})
-			t.Run("valid", func(t *testing.T) {
-				testlib.CheckPath(t, "nix-hash")
-				testlib.SkipIfWindows(t, "nix doesn't work on windows")
-				require.True(t, realHasher.Available())
-			})
+		t.Run("valid", func(t *testing.T) {
+			testlib.CheckPath(t, "nix-hash")
+			testlib.SkipIfWindows(t, "nix doesn't work on windows")
+			require.True(t, realHasher.Available())
 		})
 	})
 }
@@ -521,7 +509,9 @@ func TestRunPipe(t *testing.T) {
 			}
 
 			client := client.NewMock()
-			bpipe := NewBuild()
+			bpipe := Pipe{
+				alwaysZeroHasher{},
+			}
 			ppipe := Pipe{
 				fakeHasher{
 					"foo_linux_amd64v1.txz":     "sha1",
@@ -690,14 +680,17 @@ func linuxDep(s string) config.NixDependency {
 
 type unavailableHasher struct{}
 
-func (m unavailableHasher) Hash(string) (string, error) {
-	return "", errors.New("unavailable hasher")
-}
-func (m unavailableHasher) Available() bool { return false }
+func (m unavailableHasher) Hash(string) (string, error) { return "", errors.New("unavailable hasher") }
+func (m unavailableHasher) Available() bool             { return false }
 
 type fakeHasher map[string]string
 
-func (m fakeHasher) Hash(path string) (string, error) {
-	return m[filepath.Base(path)], nil
-}
-func (m fakeHasher) Available() bool { return true }
+func (m fakeHasher) Hash(path string) (string, error) { return m[filepath.Base(path)], nil }
+func (m fakeHasher) Available() bool                  { return true }
+
+const zeroHash = "0000000000000000000000000000000000000000000000000000"
+
+type alwaysZeroHasher struct{}
+
+func (alwaysZeroHasher) Hash(string) (string, error) { return zeroHash, nil }
+func (alwaysZeroHasher) Available() bool             { return true }
