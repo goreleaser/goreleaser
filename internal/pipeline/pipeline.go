@@ -136,7 +136,7 @@ var Pipeline = append(
 	// create arch linux aur pkgbuild (sources)
 	aursources.Pipe{},
 	// create nixpkgs
-	nix.NewBuild(),
+	nix.New(),
 	// winget installers
 	winget.Pipe{},
 	// homebrew formula

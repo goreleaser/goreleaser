@@ -37,7 +37,7 @@ var Healthcheckers = []Healthchecker{
 	docker.Pipe{},
 	docker.ManifestPipe{},
 	chocolatey.Pipe{},
-	nix.NewPublish(),
+	nix.New(),
 }
 
 type system struct{}

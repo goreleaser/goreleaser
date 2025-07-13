@@ -50,13 +50,8 @@ var (
 	errInvalidLicense = errors.New("nix.license is invalid")
 )
 
-// NewBuild returns a pipe to be used in the build phase.
-func NewBuild() Pipe {
-	return Pipe{zeroHasher}
-}
-
-// NewPublish returns a pipe to be used in the publish phase.
-func NewPublish() Pipe {
+// New returns a pipe to be used in the publish phase.
+func New() Pipe {
 	return Pipe{realHasher}
 }
 
@@ -548,20 +543,9 @@ type fileHasher interface {
 	Available() bool
 }
 
-const (
-	zeroHash   = "0000000000000000000000000000000000000000000000000000"
-	nixHashBin = "nix-hash"
-)
+const nixHashBin = "nix-hash"
 
-var (
-	zeroHasher fileHasher = alwaysZeroHasher{}
-	realHasher fileHasher = nixHasher{bin: nixHashBin}
-)
-
-type alwaysZeroHasher struct{}
-
-func (alwaysZeroHasher) Hash(string) (string, error) { return zeroHash, nil }
-func (alwaysZeroHasher) Available() bool             { return true }
+var realHasher fileHasher = nixHasher{bin: nixHashBin}
 
 type nixHasher struct{ bin string }
 

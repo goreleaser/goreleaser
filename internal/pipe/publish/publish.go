@@ -53,7 +53,7 @@ func New() Pipe {
 			// This should be one of the last steps
 			release.Pipe{},
 			// brew et al use the release URL, so, they should be last
-			nix.NewPublish(),
+			nix.New(),
 			winget.Pipe{},
 			brew.Pipe{},
 			cask.Pipe{},
