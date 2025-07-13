@@ -218,7 +218,10 @@ func uploadOne(ctx *context.Context, upload config.Upload, kind string, check Re
 		filter = artifact.And(filter, artifact.ByIDs(upload.IDs...))
 	}
 	if len(upload.Exts) > 0 {
-		filter = artifact.And(filter, artifact.ByExt(upload.Exts...))
+		filter = artifact.And(filter, artifact.Or(
+			artifact.ByExt(upload.Exts...),
+			artifact.ByFormats(upload.Exts...),
+		))
 	}
 	if err := uploadWithFilter(ctx, &upload, filter, kind, check); err != nil {
 		return err
@@ -304,6 +307,11 @@ func uploadAsset(ctx *context.Context, upload *config.Upload, artifact *artifact
 		headers[upload.ChecksumHeader] = sum
 	}
 
+	log.WithField("instance", upload.Name).
+		WithField("mode", upload.Mode).
+		WithField("file", artifact.Name).
+		Info("uploading")
+
 	res, err := uploadAssetToServer(ctx, upload, targetURL, username, secret, headers, asset, check)
 	if err != nil {
 		return fmt.Errorf("%s: %s: upload failed: %w", upload.Name, kind, err)
@@ -311,11 +319,6 @@ func uploadAsset(ctx *context.Context, upload *config.Upload, artifact *artifact
 	if err := res.Body.Close(); err != nil {
 		log.WithError(err).Warn("failed to close response body")
 	}
-
-	log.WithField("instance", upload.Name).
-		WithField("mode", upload.Mode).
-		WithField("file", artifact.Name).
-		Info("upload successful")
 
 	return nil
 }

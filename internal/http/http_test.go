@@ -238,32 +238,37 @@ func TestUpload(t *testing.T) {
 	}, testctx.WithVersion("2.1.0"))
 	folder := t.TempDir()
 	for _, a := range []struct {
-		ext string
-		typ artifact.Type
+		ext, format string
+		typ         artifact.Type
 	}{
-		{"", artifact.DockerImage},
-		{".deb", artifact.LinuxPackage},
-		{".bin", artifact.Binary},
-		{".tar", artifact.UploadableArchive},
-		{".tar.gz", artifact.UploadableSourceArchive},
-		{".ubi", artifact.UploadableBinary},
-		{".sum", artifact.Checksum},
-		{".meta", artifact.Metadata},
-		{".sig", artifact.Signature},
-		{".pem", artifact.Certificate},
+		{"", "", artifact.DockerImage},
+		{".deb", "", artifact.LinuxPackage},
+		{".bin", "", artifact.Binary},
+		{".tar", "tar", artifact.UploadableArchive},
+		{".tar.gz", "tar.gz", artifact.UploadableSourceArchive},
+		{".ubi", "", artifact.UploadableBinary},
+		{".sum", "", artifact.Checksum},
+		{".meta", "", artifact.Metadata},
+		{".sig", "", artifact.Signature},
+		{".pem", "", artifact.Certificate},
 	} {
 		file := filepath.Join(folder, "a"+a.ext)
 		require.NoError(t, os.WriteFile(file, []byte("lorem ipsum"), 0o644))
+		extra := map[string]any{
+			artifact.ExtraID: "foo",
+		}
+		if a.format != "" {
+			extra[artifact.ExtraFormat] = a.format
+		} else if a.ext != "" {
+			extra[artifact.ExtraExt] = a.ext
+		}
 		ctx.Artifacts.Add(&artifact.Artifact{
 			Name:   "a" + a.ext,
 			Goos:   "linux",
 			Goarch: "amd64",
 			Path:   file,
 			Type:   a.typ,
-			Extra: map[string]any{
-				artifact.ExtraID:  "foo",
-				artifact.ExtraExt: a.ext,
-			},
+			Extra:  extra,
 		})
 	}
 
@@ -606,11 +611,12 @@ func TestUpload(t *testing.T) {
 					Target:       s.URL + "/{{.ProjectName}}/{{.Version}}/",
 					Username:     "u3",
 					TrustedCerts: cert(s),
-					Exts:         []string{"deb", "rpm"},
+					Exts:         []string{"deb", "rpm", "tar.gz"},
 				}
 			},
 			checks(
 				check{"/blah/2.1.0/a.deb", "u3", "x", content, map[string]string{}},
+				check{"/blah/2.1.0/a.tar.gz", "u3", "x", content, map[string]string{}},
 			),
 		},
 		{
