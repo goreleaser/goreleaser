@@ -10,8 +10,8 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/aws/aws-sdk-go/aws"
-	"github.com/aws/aws-sdk-go/service/s3/s3manager"
+	"github.com/aws/aws-sdk-go-v2/service/s3"
+	"github.com/aws/aws-sdk-go-v2/service/s3/types"
 	"github.com/caarlos0/log"
 	"github.com/goreleaser/goreleaser/v2/internal/artifact"
 	"github.com/goreleaser/goreleaser/v2/internal/extrafiles"
@@ -50,11 +50,6 @@ func urlFor(ctx *context.Context, conf config.Blob) (string, error) {
 	}
 
 	query := url.Values{}
-
-	// FIXME: this needs to be removed eventually.
-	// See: https://github.com/google/go-cloud/issues/3472
-	// See: https://github.com/google/go-cloud/releases/tag/v0.39.0
-	query.Add("awssdk", "v1")
 
 	endpoint, err := tmpl.New(ctx).Apply(conf.Endpoint)
 	if err != nil {
@@ -109,12 +104,24 @@ func doUpload(ctx *context.Context, conf config.Blob) error {
 	}
 	if conf.Provider == "s3" && conf.ACL != "" {
 		up.beforeWrite = func(asFunc func(any) bool) error {
-			req := &s3manager.UploadInput{}
+			req := &s3.PutObjectInput{}
 			if !asFunc(&req) {
 				return errors.New("could not apply before write")
 			}
-			req.ACL = aws.String(conf.ACL)
-			return nil
+			acl := types.ObjectCannedACL(conf.ACL)
+			switch acl {
+			case types.ObjectCannedACLPrivate,
+				types.ObjectCannedACLPublicRead,
+				types.ObjectCannedACLPublicReadWrite,
+				types.ObjectCannedACLAuthenticatedRead,
+				types.ObjectCannedACLAwsExecRead,
+				types.ObjectCannedACLBucketOwnerRead,
+				types.ObjectCannedACLBucketOwnerFullControl:
+				req.ACL = acl
+				return nil
+			default:
+				return fmt.Errorf("invalid ACL %q", conf.ACL)
+			}
 		}
 	}
 
