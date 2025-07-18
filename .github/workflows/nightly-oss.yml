@@ -56,7 +56,7 @@ jobs:
       - uses: actions/setup-go@d35c59abb061a4a6fb18e82ac0862c26744d6ab5 # v4
         with:
           go-version: stable
-      - uses: sigstore/cosign-installer@v3.9.1
+      - uses: sigstore/cosign-installer@v3.9.2
       - uses: anchore/sbom-action/download-syft@v0.20.2
       - uses: crazy-max/ghaction-upx@v3
         with:
