@@ -1,6 +1,7 @@
 package nix
 
 import (
+	stdctx "context"
 	"errors"
 	"html/template"
 	"maps"
@@ -51,13 +52,13 @@ const fakeNixHashBin = "fake-nix-hash"
 func TestHasher(t *testing.T) {
 	t.Run("hash", func(t *testing.T) {
 		t.Run("fake-nix-hash", func(t *testing.T) {
-			_, err := nixHasher{fakeNixHashBin}.Hash("any")
+			_, err := nixHasher{fakeNixHashBin}.Hash(t.Context(), "any")
 			require.ErrorIs(t, err, exec.ErrNotFound)
 		})
 		t.Run("valid", func(t *testing.T) {
 			testlib.CheckPath(t, "nix-hash")
 			testlib.SkipIfWindows(t, "nix doesn't work on windows")
-			sha, err := realHasher.Hash("./testdata/file.bin")
+			sha, err := realHasher.Hash(t.Context(), "./testdata/file.bin")
 			require.NoError(t, err)
 			require.Equal(t, "1n7yy95h81rziah4ppi64kr6fphwxjiq8cl70fpfrqvr0ml1xbcl", sha)
 		})
@@ -680,17 +681,21 @@ func linuxDep(s string) config.NixDependency {
 
 type unavailableHasher struct{}
 
-func (m unavailableHasher) Hash(string) (string, error) { return "", errors.New("unavailable hasher") }
-func (m unavailableHasher) Available() bool             { return false }
+func (m unavailableHasher) Hash(stdctx.Context, string) (string, error) {
+	return "", errors.New("unavailable hasher")
+}
+func (m unavailableHasher) Available() bool { return false }
 
 type fakeHasher map[string]string
 
-func (m fakeHasher) Hash(path string) (string, error) { return m[filepath.Base(path)], nil }
-func (m fakeHasher) Available() bool                  { return true }
+func (m fakeHasher) Hash(_ stdctx.Context, path string) (string, error) {
+	return m[filepath.Base(path)], nil
+}
+func (m fakeHasher) Available() bool { return true }
 
 const zeroHash = "0000000000000000000000000000000000000000000000000000"
 
 type alwaysZeroHasher struct{}
 
-func (alwaysZeroHasher) Hash(string) (string, error) { return zeroHash, nil }
-func (alwaysZeroHasher) Available() bool             { return true }
+func (alwaysZeroHasher) Hash(stdctx.Context, string) (string, error) { return zeroHash, nil }
+func (alwaysZeroHasher) Available() bool                             { return true }

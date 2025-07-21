@@ -56,7 +56,7 @@ func TestRunPipe(t *testing.T) {
 		return func(t *testing.T, _ string) {
 			t.Helper()
 			for _, filter := range filters {
-				cmd := exec.Command("docker", "images", "-q", "--filter", "reference=*/"+image, "--filter", filter)
+				cmd := exec.CommandContext(t.Context(), "docker", "images", "-q", "--filter", "reference=*/"+image, "--filter", filter)
 				// t.Log("running", cmd)
 				output, err := cmd.CombinedOutput()
 				require.NoError(t, err, string(output))
@@ -1033,7 +1033,7 @@ func TestRunPipe(t *testing.T) {
 				}
 
 				rmi := func(img string) error {
-					return exec.Command("docker", "rmi", "--force", img).Run()
+					return exec.CommandContext(t.Context(), "docker", "rmi", "--force", img).Run()
 				}
 
 				// this might fail as the image doesnt exist yet, so lets ignore the error

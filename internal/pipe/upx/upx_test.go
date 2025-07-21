@@ -218,7 +218,7 @@ func TestFindBinaries(t *testing.T) {
 				}
 			}
 			path := filepath.Join(tmp, fmt.Sprintf("bin_%s_%s%s", goos, goarch, ext))
-			cmd := exec.Command("go", "build", "-o", path, main)
+			cmd := exec.CommandContext(t.Context(), "go", "build", "-o", path, main)
 			cmd.Env = append([]string{
 				"CGO_ENABLED=0",
 				"GOOS=" + goos,

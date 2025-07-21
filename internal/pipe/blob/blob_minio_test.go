@@ -9,6 +9,8 @@ import (
 	"path/filepath"
 	"testing"
 
+	stdctx "context"
+
 	"github.com/goreleaser/goreleaser/v2/internal/artifact"
 	"github.com/goreleaser/goreleaser/v2/internal/testctx"
 	"github.com/goreleaser/goreleaser/v2/internal/testlib"
@@ -29,7 +31,7 @@ const (
 var listen string
 
 func TestMain(m *testing.M) {
-	if !testlib.InPath("docker") || testlib.IsWindows() || !testlib.IsDockerRunning() {
+	if !testlib.InPath("docker") || testlib.IsWindows() || !testlib.IsDockerRunning(stdctx.Background()) {
 		// there's no minio windows image
 		m.Run()
 		return
