@@ -252,7 +252,7 @@ artifactories:
     # Those files will have their contents pass through the template engine,
     # and its results will be uploaded.
     #
-    # <!-- md:inline_pro -->
+    # <!-- md:inline_pro -->.
     # <!-- md:inline_version v2.1 -->.
     # Templates: allowed.
     templated_extra_files:

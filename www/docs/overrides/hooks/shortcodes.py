@@ -59,7 +59,7 @@ def _pro_ad():
     ])
 
 def _inline_pro_ad():
-    return f"This feature is only available in GoReleaser Pro."
+    return f"This feature is only available in GoReleaser Pro"
 
 def _version_block(text: str):
     if "unreleased" in text:
