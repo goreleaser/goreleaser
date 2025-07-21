@@ -16,6 +16,8 @@ import (
 	"strings"
 	"text/template"
 
+	stdctx "context"
+
 	"github.com/caarlos0/log"
 	"github.com/goreleaser/goreleaser/v2/internal/artifact"
 	"github.com/goreleaser/goreleaser/v2/internal/client"
@@ -283,7 +285,7 @@ func preparePkg(
 
 	platforms := map[string]bool{}
 	for _, art := range archives {
-		sha, err := hasher.Hash(art.Path)
+		sha, err := hasher.Hash(ctx, art.Path)
 		if err != nil {
 			return "", err
 		}
@@ -539,7 +541,7 @@ func depNames(deps []config.NixDependency) []string {
 }
 
 type fileHasher interface {
-	Hash(name string) (string, error)
+	Hash(ctx stdctx.Context, name string) (string, error)
 	Available() bool
 }
 
@@ -554,9 +556,10 @@ func (p nixHasher) Available() bool {
 	return err == nil
 }
 
-func (p nixHasher) Hash(name string) (string, error) {
+func (p nixHasher) Hash(ctx stdctx.Context, name string) (string, error) {
 	// $ nix-hash --type sha256 --flat --base32 <(echo test)
-	out, err := exec.Command(
+	out, err := exec.CommandContext(
+		ctx,
 		p.bin,
 		"--type", "sha256",
 		"--flat",

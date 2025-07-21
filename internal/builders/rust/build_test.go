@@ -59,7 +59,7 @@ func TestBuild(t *testing.T) {
 	testlib.CheckPath(t, "cargo-zigbuild")
 
 	folder := testlib.Mktmp(t)
-	_, err := exec.Command("cargo", "init", "--bin", "--name=proj").CombinedOutput()
+	_, err := exec.CommandContext(t.Context(), "cargo", "init", "--bin", "--name=proj").CombinedOutput()
 	require.NoError(t, err)
 
 	modTime := time.Now().AddDate(-1, 0, 0).Round(time.Second).UTC()

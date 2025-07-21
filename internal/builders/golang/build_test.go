@@ -906,7 +906,7 @@ func TestBuildTests(t *testing.T) {
 
 func TestRunPipeWithProxiedRepo(t *testing.T) {
 	folder := testlib.Mktmp(t)
-	out, err := exec.Command("git", "clone", "https://github.com/goreleaser/test-mod", "-b", "v0.1.1", "--depth=1", ".").CombinedOutput()
+	out, err := exec.CommandContext(t.Context(), "git", "clone", "https://github.com/goreleaser/test-mod", "-b", "v0.1.1", "--depth=1", ".").CombinedOutput()
 	require.NoError(t, err, string(out))
 
 	proxied := filepath.Join(folder, "dist/proxy/default")
@@ -926,7 +926,7 @@ import _ "github.com/goreleaser/test-mod"
 		0o666,
 	))
 
-	cmd := exec.Command("go", "mod", "tidy")
+	cmd := exec.CommandContext(t.Context(), "go", "mod", "tidy")
 	cmd.Dir = proxied
 	out, err = cmd.CombinedOutput()
 	require.NoError(t, err, string(out))

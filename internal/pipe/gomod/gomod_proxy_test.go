@@ -43,7 +43,7 @@ func TestCheckGoMod(t *testing.T) {
 		}, testctx.Snapshot, withTestModulePath)
 
 		fakeGoModAndSum(t, ctx.ModulePath)
-		require.NoError(t, exec.Command("go", "mod", "edit", "-replace", "foo=../bar").Run())
+		require.NoError(t, exec.CommandContext(t.Context(), "go", "mod", "edit", "-replace", "foo=../bar").Run())
 		require.NoError(t, CheckGoModPipe{}.Run(ctx))
 	})
 	t.Run("no go mod", func(t *testing.T) {
@@ -89,7 +89,7 @@ func TestCheckGoMod(t *testing.T) {
 		}, withTestModulePath)
 
 		fakeGoModAndSum(t, ctx.ModulePath)
-		require.NoError(t, exec.Command("go", "mod", "edit", "-replace", "foo=../bar").Run())
+		require.NoError(t, exec.CommandContext(t.Context(), "go", "mod", "edit", "-replace", "foo=../bar").Run())
 		require.ErrorIs(t, CheckGoModPipe{}.Run(ctx), ErrReplaceWithProxy)
 	})
 }

@@ -64,7 +64,7 @@ func TestRunGoWork(t *testing.T) {
 		[]byte("use (\n\t.\n\tb\n)"),
 		0o666,
 	))
-	out, err := exec.Command("go", "list", "-m").CombinedOutput()
+	out, err := exec.CommandContext(t.Context(), "go", "list", "-m").CombinedOutput()
 	require.NoError(t, err)
 	require.Equal(t, "a\na/b", strings.TrimSpace(string(out)))
 	ctx := testctx.New()

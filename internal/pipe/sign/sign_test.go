@@ -726,7 +726,7 @@ func verifySignature(tb testing.TB, ctx *context.Context, sig string, user strin
 	artifact = strings.TrimSuffix(artifact, "."+fakeGPGKeyID)
 
 	// verify signature was made with key for user 'nopass'
-	cmd := exec.Command("gpg", "--homedir", keyring, "--verify", filepath.Join(ctx.Config.Dist, sig), filepath.Join(ctx.Config.Dist, artifact))
+	cmd := exec.CommandContext(tb.Context(), "gpg", "--homedir", keyring, "--verify", filepath.Join(ctx.Config.Dist, sig), filepath.Join(ctx.Config.Dist, artifact))
 	out, err := cmd.CombinedOutput()
 	require.NoError(tb, err, string(out))
 

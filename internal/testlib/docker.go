@@ -1,6 +1,7 @@
 package testlib
 
 import (
+	"context"
 	"os"
 	"os/exec"
 	"sync"
@@ -20,17 +21,17 @@ var (
 func CheckDocker(tb testing.TB) {
 	tb.Helper()
 	CheckPath(tb, "docker")
-	if !IsDockerRunning() {
+	if !IsDockerRunning(tb.Context()) {
 		tb.Skip("could not run 'docker ps'")
 	}
 }
 
 // IsDockerRunning executes a `docker ps` and returns true if it succeeds.
-func IsDockerRunning() bool {
+func IsDockerRunning(ctx context.Context) bool {
 	if os.Getenv("CI") == "true" {
 		return true
 	}
-	return exec.Command("docker", "ps", "-q").Run() == nil
+	return exec.CommandContext(ctx, "docker", "ps", "-q").Run() == nil
 }
 
 // MustDockerPool gets a single dockertet.Pool.
