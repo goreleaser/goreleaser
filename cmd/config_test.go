@@ -17,6 +17,8 @@ func TestConfigFlagNotSetButExists(t *testing.T) {
 		".goreleaser.yaml",
 		"goreleaser.yml",
 		"goreleaser.yaml",
+		".github/goreleaser.yml",
+		".github/goreleaser.yaml",
 	} {
 		t.Run(name, func(t *testing.T) {
 			folder := setup(t)
