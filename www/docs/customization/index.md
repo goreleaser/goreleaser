@@ -69,6 +69,8 @@ for `__VERSION__` (latest):
     - `.goreleaser.yaml`
     - `goreleaser.yml`
     - `goreleaser.yaml`
+    - `.github/goreleaser.yml`
+    - `.github/goreleaser.yaml`
 
 [jsonschema]: http://json-schema.org/draft/2020-12/json-schema-validation.html
 [schema]: ../cmd/goreleaser_jsonschema.md
