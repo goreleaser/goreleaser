@@ -18,6 +18,11 @@ import (
 
 // Run a shell command with given arguments and envs
 func Run(ctx *context.Context, dir string, command, env []string, output bool) error {
+	if len(command) == 0 {
+		log.Warn("skipping empty command")
+		return nil
+	}
+
 	/* #nosec */
 	cmd := exec.CommandContext(ctx, command[0], command[1:]...)
 	cmd.Env = env
