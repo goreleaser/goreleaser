@@ -25,7 +25,7 @@ require (
 	github.com/distribution/distribution/v3 v3.0.0
 	github.com/go-telegram-bot-api/telegram-bot-api/v5 v5.5.1
 	github.com/google/go-containerregistry v0.20.6
-	github.com/google/go-github/v73 v73.0.0
+	github.com/google/go-github/v74 v74.0.0
 	github.com/google/ko v0.18.0
 	github.com/google/uuid v1.6.0
 	github.com/goreleaser/fileglob v1.3.0
