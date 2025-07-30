@@ -88,9 +88,6 @@ plugins:
 
 extra:
   generator: false
-  analytics:
-    provider: google
-    property: "G-3MZGQS8EPS"
   social:
     - icon: fontawesome/brands/x-twitter
       link: https://x.com/goreleaser
