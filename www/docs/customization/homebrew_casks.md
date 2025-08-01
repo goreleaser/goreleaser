@@ -242,7 +242,7 @@ homebrew_casks:
       post:
         # replace foo with the actual binary name
         install: |
-          if system_command("/usr/bin/xattr", args: ["-h"]).exit_status == 0
+          if OS.mac?
             # replace 'foo' with the actual binary name
             system_command "/usr/bin/xattr", args: ["-dr", "com.apple.quarantine", "#{staged_path}/foo"]
           end
