@@ -11,7 +11,7 @@ cask "custom_block_url" do
       token
     end
 
-    def self.get_asset_api_url(tag, name)
+    def self.release_asset_url(tag, name)
       require "json"
       require "net/http"
       require "uri"
@@ -51,7 +51,7 @@ cask "custom_block_url" do
 
   on_macos do
     on_intel do
-      url "#{GitHubHelper.get_asset_api_url("v1.0.1", "bin.tgz")}",
+      url "#{GitHubHelper.release_asset_url("v1.0.1", "bin.tgz")}",
         header: [
           "Accept: application/octet-stream",
           "Authorization: Bearer #{GitHubHelper.github_token}",
@@ -60,7 +60,7 @@ cask "custom_block_url" do
       sha256 "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
     end
     on_arm do
-      url "#{GitHubHelper.get_asset_api_url("v1.0.1", "bin.txz")}",
+      url "#{GitHubHelper.release_asset_url("v1.0.1", "bin.txz")}",
         header: [
           "Accept: application/octet-stream",
           "Authorization: Bearer #{GitHubHelper.github_token}",
@@ -72,7 +72,7 @@ cask "custom_block_url" do
 
   on_linux do
     on_intel do
-      url "#{GitHubHelper.get_asset_api_url("v1.0.1", "bin.tar.zst")}",
+      url "#{GitHubHelper.release_asset_url("v1.0.1", "bin.tar.zst")}",
         header: [
           "Accept: application/octet-stream",
           "Authorization: Bearer #{GitHubHelper.github_token}",
