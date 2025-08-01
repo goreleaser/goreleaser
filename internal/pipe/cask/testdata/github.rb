@@ -1,5 +1,5 @@
 module GitHubHelper
-  def self.token
+  def self.github_token
     require "utils/github"
     @github_token = ENV["HOMEBREW_GITHUB_API_TOKEN"]
     unless @github_token
@@ -18,7 +18,7 @@ module GitHubHelper
       URI.parse("https://api.github.com/repos/goreleaser/example/releases/tags/#{tag}"),
       {
         "Accept" => "application/vnd.github+json",
-        "Authorization" => "Bearer #{token}",
+        "Authorization" => "Bearer #{github_token}",
         "X-GitHub-Api-Version" => "2022-11-28"
       }
     )
