@@ -9,7 +9,7 @@ module GitHubHelper
     token
   end
 
-  def self.get_asset_api_url(tag, name)
+  def self.release_asset_url(tag, name)
     require "json"
     require "net/http"
     require "uri"
