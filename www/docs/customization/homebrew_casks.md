@@ -326,6 +326,7 @@ homebrew_casks:
           require "uri"
 
           resp = Net::HTTP.get(
+            # Replace with your GitHub repository URL
             URI.parse("https://api.github.com/repos/goreleaser/example/releases/tags/#{tag}"),
             {
               "Accept" => "application/vnd.github+json",
