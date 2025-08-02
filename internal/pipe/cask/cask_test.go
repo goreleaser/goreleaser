@@ -260,10 +260,10 @@ func TestFullPipe(t *testing.T) {
 				ctx.Config.Casks[0].Homepage = "https://github.com/goreleaser"
 
 				ctx.Config.Casks[0].CustomBlock = string(githubrb)
-				ctx.Config.Casks[0].URL.Template = `#{GitHubHelper.get_asset_api_url("{{.Tag}}", "{{.ArtifactName}}")}`
+				ctx.Config.Casks[0].URL.Template = `#{GitHubHelper.release_asset_url("{{.Tag}}", "{{.ArtifactName}}")}`
 				ctx.Config.Casks[0].URL.Headers = []string{
 					"Accept: application/octet-stream",
-					"Authorization: Bearer #{GitHubHelper.token}",
+					"Authorization: Bearer #{GitHubHelper.github_token}",
 					"X-GitHub-Api-Version: 2022-11-28",
 				}
 			},
