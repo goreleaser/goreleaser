@@ -103,9 +103,9 @@ You may also want to make the _Cask_ conflict with the previous _Formula_.
       # Optional: if your app/binary isn't signed and notarized, you'll need this:
       hooks:
         post:
+          # replace foo with the actual binary name
           install: |
             if OS.mac?
-              # replace 'foo' with the actual binary name
               system_command "/usr/bin/xattr", args: ["-dr", "com.apple.quarantine", "#{staged_path}/foo"]
             end
     ```
