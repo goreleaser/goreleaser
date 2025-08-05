@@ -259,6 +259,19 @@ homebrew_casks:
 
     You may do so in using the `caveats` property, for example.
 
+!!! warning "xattr bypasses macOS security - use with caution"
+
+    Using `xattr` to bypass Gatekeeper circumvents macOS security protections
+    designed to verify software authenticity. This removes Apple's verification
+    layer and requires users to trust the software directly.
+
+    Proper code signing and notarization is Apple's recommended method for
+    distributing software. This approach should only be considered when code
+    signing is not feasible.
+
+    Important: Apple may disable this bypass method in future macOS versions
+    without notice, potentially breaking software distribution that relies on it.
+
 ## Versioned Casks
 
 <!-- md:pro -->
