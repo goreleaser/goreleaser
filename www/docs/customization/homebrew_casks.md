@@ -261,7 +261,7 @@ homebrew_casks:
 
 !!! warning "xattr bypasses macOS security - use with caution"
 
-    Using `xattr` to bypass Gatekeeper circumvents macOS security protections
+    Use of `xattr` to bypass Gatekeeper circumvents macOS security protections
     designed to verify software authenticity. This removes Apple's verification
     layer and requires users to trust the software directly.
 
