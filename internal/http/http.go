@@ -119,7 +119,7 @@ func CheckConfig(ctx *context.Context, upload *config.Upload, kind string) error
 	}
 
 	if username != "" && password == "" {
-		return misconfigured(kind, upload, fmt.Sprintf("either 'password' or environment variable '%s' is required when 'username' is set", passwordEnv))
+		return misconfigured(kind, upload, fmt.Sprintf("either 'password' or environment variable '%s' are required when 'username' is set", passwordEnv))
 	}
 
 	if upload.TrustedCerts != "" && !x509.NewCertPool().AppendCertsFromPEM([]byte(upload.TrustedCerts)) {
