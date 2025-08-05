@@ -427,6 +427,46 @@ func TestChecksum(t *testing.T) {
 	}
 }
 
+func TestMustReadFile(t *testing.T) {
+	tpl := New(testctx.New())
+
+	t.Run("file exists", func(t *testing.T) {
+		got, err := tpl.Apply(`{{ mustReadFile "./testdata/file_a.txt" }}`)
+		require.NoError(t, err)
+		require.Equal(t, "this is the content of a file", got)
+	})
+	t.Run("file don't exist", func(t *testing.T) {
+		got, err := tpl.Apply(`{{ mustReadFile "./testdata/nope.txt" }}`)
+		require.ErrorAs(t, err, &Error{})
+		require.Empty(t, got)
+	})
+	t.Run("file at ~", func(t *testing.T) {
+		got, err := tpl.Apply(`{{ mustReadFile "~/.nope" }}`)
+		require.ErrorAs(t, err, &Error{})
+		require.Empty(t, got)
+	})
+}
+
+func TestReadFile(t *testing.T) {
+	tpl := New(testctx.New())
+
+	t.Run("file exists", func(t *testing.T) {
+		got, err := tpl.Apply(`{{ readFile "./testdata/file_a.txt" }}`)
+		require.NoError(t, err)
+		require.Equal(t, "this is the content of a file", got)
+	})
+	t.Run("file don't exist", func(t *testing.T) {
+		got, err := tpl.Apply(`{{ readFile "./testdata/nope.txt" }}`)
+		require.NoError(t, err)
+		require.Empty(t, got)
+	})
+	t.Run("file at ~", func(t *testing.T) {
+		got, err := tpl.Apply(`{{ readFile "~/.nope" }}`)
+		require.NoError(t, err)
+		require.Empty(t, got)
+	})
+}
+
 func TestApplyAll(t *testing.T) {
 	tpl := New(testctx.New()).WithEnvS([]string{
 		"FOO=bar",
