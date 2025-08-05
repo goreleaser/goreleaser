@@ -77,6 +77,14 @@ changelog:
     use: anthropic
     prompt: "The prompt..."
 
+  # Title of the changelog.
+  #
+  # Default: "Changelog".
+  # <!-- md:inline_pro -->.
+  # <!-- md:inline_version v2.12-unreleased -->.
+  # Templates: allowed.
+  title: "Release Notes"
+
   # Group commits messages by given regex and title.
   # Order value defines the order of the groups.
   # Providing no regex means all commits will be grouped under the default group.

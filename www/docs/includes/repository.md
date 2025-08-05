@@ -59,6 +59,14 @@ search:
         # request is being opened on GitHub.
         check_boxes: true
 
+        # Allows to set a body for the pull request.
+        # If the repository has a pull request template, it will be appended to
+        # this.
+        #
+        # <!-- md:inline_version v2.12-unreleased -->
+        body: |
+          cc/ @foobar
+
         # Base can also be another repository, in which case the owner and name
         # above will be used as HEAD, allowing cross-repository pull requests.
         base:

@@ -941,6 +941,9 @@
 					},
 					"ai": {
 						"$ref": "#/$defs/ChangelogAI"
+					},
+					"title": {
+						"type": "string"
 					}
 				},
 				"additionalProperties": false,
@@ -3602,9 +3605,6 @@
 					"version_template": {
 						"type": "string"
 					},
-					"name_template": {
-						"type": "string"
-					},
 					"tag_name": {
 						"type": "string"
 					},
@@ -3613,6 +3613,12 @@
 					},
 					"keep_single_release": {
 						"type": "boolean"
+					},
+					"draft": {
+						"type": "boolean"
+					},
+					"name_template": {
+						"type": "string"
 					}
 				},
 				"additionalProperties": false,
@@ -4206,6 +4212,9 @@
 					},
 					"check_boxes": {
 						"type": "boolean"
+					},
+					"body": {
+						"type": "string"
 					}
 				},
 				"additionalProperties": false,
