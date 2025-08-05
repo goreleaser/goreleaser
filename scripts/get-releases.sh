@@ -21,19 +21,24 @@ generate() {
 		curl \
 			-H "Authorization: Bearer $GITHUB_TOKEN" \
 			-sSf "$url?page=$page" |
-			jq 'map({tag_name: .tag_name}) | [.[] | select(.tag_name != "nightly")]' >"$tmp/$i.json"
+			jq 'map({tag_name: .tag_name}) | [.[] | select(.tag_name != "nightly" and (.tag_name | startswith("v0") | not))]' >"$tmp/$i.json"
 
+		# Check if the page has any valid releases, if not, stop processing
+		if [ "$(jq 'length' "$tmp/$i.json")" -eq 0 ]; then
+			echo "	no more valid releases, done"
+			break
+		fi
 	done
 
 	jq -s 'add' "$tmp"/*.json >"$file"
-	du -hs "$file"
+	wc -c "$file"
 }
 
 latest() {
 	local url="$1"
 	local file="$2"
 	curl -sfL "$url/latest" | jq -r ".tag_name" >"$file"
-	du -hs "$file"
+	wc -c "$file"
 }
 
 latest "https://api.github.com/repos/goreleaser/goreleaser/releases" "www/docs/static/latest"
