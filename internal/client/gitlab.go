@@ -702,6 +702,7 @@ func (c *gitlabClient) OpenPullRequest(
 		SourceBranch: &head.Branch,
 		TargetBranch: &base.Branch,
 		Title:        &title,
+		Description:  gitlab.Ptr(prFooter),
 	}
 
 	if targetProjectID != 0 {
