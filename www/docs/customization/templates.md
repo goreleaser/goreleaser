@@ -175,6 +175,8 @@ On all fields, you have these available functions:
 | `sha3_384 .ArtifactPath`          | `sha3_384` checksum of the artifact. See [SHA3-384](https://pkg.go.dev/golang.org/x/crypto/sha3) (since v2.9)             |
 | `sha3_256 .ArtifactPath`          | `sha3_256` checksum of the artifact. See [SHA3-256](https://pkg.go.dev/golang.org/x/crypto/sha3) (since v2.9)             |
 | `sha3_512 .ArtifactPath`          | `sha3_512` checksum of the artifact. See [SHA3-512](https://pkg.go.dev/golang.org/x/crypto/sha3) (since v2.9)             |
+| `mustReadFile "/foo/bar.txt"`     | reads the file contents or fails if it can't be read (since v2.12-unreleased)                                             |
+| `readFile "/foo/bar.txt"`         | reads the file contents if it it can be read, or return empty string (since v2.12-unreleased)                             |
 
 ## Functions (Pro)
 
