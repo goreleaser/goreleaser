@@ -102,14 +102,10 @@ func (c *mcpCmd) build(ctx stdctx.Context, _ mcp.CallToolRequest) (*mcp.CallTool
 	return mcp.NewToolResultText(string(out)), nil
 }
 
-//go:embed mcp/brews.md
-var brewsInstructions []byte
-
 var instructions = map[string]string{
 	"archives.builds":                  "replace `builds` with `ids`",
 	"archives.format":                  "replace `format` with `formats` and make its value an array",
 	"archives.format_overrides.format": "replace `format` with `formats` and make its value an array",
-	"brews":                            string(brewsInstructions),
 	"builds.gobinary":                  "rename `gobinary` to `tool`",
 	"homebrew_casks.manpage":           "replace `manpage` with `manpages`, and make its value an array",
 	"kos.repository":                   "replace `repository` with `repositories`, and make its value an array",
