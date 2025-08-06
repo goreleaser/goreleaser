@@ -2,7 +2,6 @@ package cmd
 
 import (
 	stdctx "context"
-	_ "embed"
 	"fmt"
 	"maps"
 	"os"
