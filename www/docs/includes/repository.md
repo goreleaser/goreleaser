@@ -103,31 +103,42 @@ search:
         # Templates: allowed.
         ssh_command: 'ssh -i {{ .Env.KEY }} -o SomeOption=yes'
 
-      # Git commit author used to commit to the repository.
+    # Git author used to commit to the repository.
+    #
+    # <!-- md:inline_version v2.11 -->
+    # Default: inferred from global metadata (Since v2.12-unreleased).
+    commit_author:
+      # Git author name.
       #
-      # <!-- md:inline_version v2.11 -->
-      commit_author:
-        name: goreleaserbot
-        email: bot@goreleaser.com
+      # Templates: allowed.
+      name: goreleaserbot
 
-        # Git commit signing configuration.
-        signing:
-          # Enable commit signing.
-          enabled: true
+      # Git author email.
+      #
+      # Templates: allowed.
+      email: bot@goreleaser.com
 
-          # The signing key to use.
-          # Can be a key ID, fingerprint, email address, or path to a key file.
-          #
-          # Templates: allowed.
-          key: '{{ .Env.GPG_SIGNING_KEY }}'
+      # Git commit signing configuration.
+      # Only useful if repository is of type 'git'.
+      #
+      # <!-- md:inline_version v2.11 -->.
+      signing:
+        # Enable commit signing.
+        enabled: true
 
-          # The GPG program to use for signing.
-          #
-          # Templates: allowed.
-          program: gpg2
+        # The signing key to use.
+        # Can be a key ID, fingerprint, email address, or path to a key file.
+        #
+        # Templates: allowed.
+        key: "{{ .Env.GPG_SIGNING_KEY }}"
 
-          # The signature format to use.
-          #
-          # Valid options: openpgp, x509, ssh.
-          # Default: openpgp.
-          format: openpgp
+        # The GPG program to use for signing.
+        #
+        # Templates: allowed.
+        program: gpg2
+
+        # The signature format to use.
+        #
+        # Valid options: openpgp, x509, ssh.
+        # Default: openpgp.
+        format: openpgp

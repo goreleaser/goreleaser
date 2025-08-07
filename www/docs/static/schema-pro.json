@@ -4128,6 +4128,9 @@
 						},
 						"type": "array"
 					},
+					"commit_author": {
+						"$ref": "#/$defs/CommitAuthor"
+					},
 					"full_description": {
 						"$ref": "#/$defs/IncludedMarkdown"
 					}
