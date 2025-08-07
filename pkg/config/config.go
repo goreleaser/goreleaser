@@ -1120,6 +1120,9 @@ type Upload struct {
 	ExtraFiles         []ExtraFile       `yaml:"extra_files,omitempty" json:"extra_files,omitempty"`
 	ExtraFilesOnly     bool              `yaml:"extra_files_only,omitempty" json:"extra_files_only,omitempty"`
 	Skip               string            `yaml:"skip,omitempty" json:"skip,omitempty" jsonschema:"oneof_type=string;boolean"`
+
+	// Since v2.12
+	Password string `yaml:"password,omitempty" json:"password,omitempty"`
 }
 
 // Publisher configuration.

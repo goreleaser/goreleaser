@@ -99,11 +99,14 @@ func TestCheckConfig(t *testing.T) {
 		wantErr bool
 	}{
 		{"ok", args{ctx, &config.Upload{Name: "a", Target: "http://blabla", Username: "pepe", Mode: ModeArchive}, "test"}, false},
+		{"ok password", args{ctx, &config.Upload{Name: "a", Target: "http://blabla", Username: "pepe", Password: "pass", Mode: ModeArchive}, "test"}, false},
 		{"secret missing", args{ctx, &config.Upload{Name: "b", Target: "http://blabla", Username: "pepe", Mode: ModeArchive}, "test"}, true},
 		{"target missing", args{ctx, &config.Upload{Name: "a", Username: "pepe", Mode: ModeArchive}, "test"}, true},
 		{"name missing", args{ctx, &config.Upload{Target: "http://blabla", Username: "pepe", Mode: ModeArchive}, "test"}, true},
 		{"username missing", args{ctx, &config.Upload{Name: "a", Target: "http://blabla", Mode: ModeArchive}, "test"}, true},
 		{"username present", args{ctx, &config.Upload{Name: "a", Target: "http://blabla", Username: "pepe", Mode: ModeArchive}, "test"}, false},
+		{"invalid username template", args{ctx, &config.Upload{Name: "a", Target: "http://blabla", Username: "{{ .pepe }}", Mode: ModeArchive}, "test"}, true},
+		{"invalid password template", args{ctx, &config.Upload{Name: "a", Target: "http://blabla", Password: "{{ .pepe }}", Mode: ModeArchive}, "test"}, true},
 		{"mode missing", args{ctx, &config.Upload{Name: "a", Target: "http://blabla", Username: "pepe"}, "test"}, true},
 		{"mode invalid", args{ctx, &config.Upload{Name: "a", Target: "http://blabla", Username: "pepe", Mode: "blabla"}, "test"}, true},
 		{"cert invalid", args{ctx, &config.Upload{Name: "a", Target: "http://blabla", Username: "pepe", Mode: ModeBinary, TrustedCerts: "bad cert!"}, "test"}, true},

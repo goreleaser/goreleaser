@@ -197,8 +197,16 @@ artifactories:
     # Tells goreleaser not to append the artifact name to the target URL. You must do this manually
     custom_artifact_name: true
 
-    # User that will be used for the deployment
+    # An optional username that will be used for the deployment for basic auth.
+    #
+    # Templates: allowed (since v2.12-unreleased).
     username: deployuser
+
+    # An optional password that will be used for the deployment for basic auth.
+    #
+    # Templates: allowed.
+    # <!-- md:inline_version v2.12-unreleased -->.
+    password: '{{ readFile "~/.config/foo" }}'
 
     # Client certificate and key (when provided, added as client cert to TLS connections)
     client_x509_cert: /path/to/client.cert.pem
