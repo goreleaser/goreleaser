@@ -5425,6 +5425,9 @@
 							}
 						]
 					},
+					"password": {
+						"type": "string"
+					},
 					"matrix": {
 						"$ref": "#/$defs/Matrix"
 					},
