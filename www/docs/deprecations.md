@@ -652,7 +652,7 @@ Replace `tap` with `repository`.
 This option is now default and can't be changed. You can remove it from your
 configuration files.
 
-See [this](#archivesrlcp_1) for more info.
+See [this](./old-deprecations.md#archivesrlcp) for more info.
 
 ### source.rlcp
 
@@ -661,7 +661,7 @@ See [this](#archivesrlcp_1) for more info.
 This option is now default and can't be changed. You can remove it from your
 configuration files.
 
-See [this](#sourcerlcp_1) for more info.
+See [this](./old-deprecations.md#sourcerlcp) for more info.
 
 ### brews.plist
 
