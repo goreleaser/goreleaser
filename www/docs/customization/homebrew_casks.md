@@ -323,14 +323,14 @@ homebrew_casks:
   - name: foo
     custom_block: |
       module GitHubHelper
-        def self.github_token
+        def self.token
           require "utils/github"
 
-          token = ENV["HOMEBREW_GITHUB_API_TOKEN"]
-          token ||= GitHub::API.credentials
-          raise "Failed to retrieve github api token" if token.nil? || token.empty?
+          github_token = ENV["HOMEBREW_GITHUB_API_TOKEN"]
+          github_token ||= GitHub::API.credentials
+          raise "Failed to retrieve github api token" if github_token.nil? || github_token.empty?
 
-          token
+          github_token
         end
 
         def self.release_asset_url(tag, name)
@@ -343,7 +343,7 @@ homebrew_casks:
             URI.parse("https://api.github.com/repos/goreleaser/example/releases/tags/#{tag}"),
             {
               "Accept" => "application/vnd.github+json",
-              "Authorization" => "Bearer #{github_token}",
+              "Authorization" => "Bearer #{token}",
               "X-GitHub-Api-Version" => "2022-11-28"
             }
           )
@@ -357,7 +357,7 @@ homebrew_casks:
       template: '#{GitHubHelper.release_asset_url("{{.Tag}}", "{{.ArtifactName}}")}'
       headers:
         - "Accept: application/octet-stream"
-        - "Authorization: Bearer #{GitHubHelper.github_token}"
+        - "Authorization: Bearer #{GitHubHelper.token}"
         - "X-GitHub-Api-Version: 2022-11-28"
 ```
 
