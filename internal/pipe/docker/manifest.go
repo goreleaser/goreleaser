@@ -105,7 +105,9 @@ func (ManifestPipe) Publish(ctx *context.Context) error {
 			}
 
 			log.WithField("manifest", name).Info("created, pushing")
-			digest, err := manifester.Push(ctx, name, manifest.PushFlags)
+			digest, err := doWithRetry(manifest.Retry, func() (string, error) {
+				return manifester.Push(ctx, name, manifest.PushFlags)
+			}, fmt.Sprintf("push manifest %s", name))
 			if err != nil {
 				return err
 			}

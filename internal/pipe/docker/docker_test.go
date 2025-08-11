@@ -7,6 +7,7 @@ import (
 	"path/filepath"
 	"strings"
 	"testing"
+	"time"
 
 	"github.com/goreleaser/goreleaser/v2/internal/artifact"
 	"github.com/goreleaser/goreleaser/v2/internal/pipe"
@@ -1462,4 +1463,97 @@ func TestValidateImager(t *testing.T) {
 			require.NoError(t, err)
 		})
 	}
+}
+
+func TestDoWithRetry(t *testing.T) {
+	t.Run("success on first try", func(t *testing.T) {
+		retryConfig := config.Retry{
+			Max:             3,
+			InitialInterval: 100 * time.Millisecond,
+			MaxInterval:     1 * time.Second,
+		}
+		
+		var callCount int
+		result, err := doWithRetry(retryConfig, func() (string, error) {
+			callCount++
+			return "success", nil
+		}, "test operation")
+		
+		require.NoError(t, err)
+		require.Equal(t, "success", result)
+		require.Equal(t, 1, callCount)
+	})
+	
+	t.Run("retry on retryable error then success", func(t *testing.T) {
+		retryConfig := config.Retry{
+			Max:             3,
+			InitialInterval: 1 * time.Millisecond, // short for testing
+			MaxInterval:     5 * time.Millisecond,
+		}
+		
+		var callCount int
+		result, err := doWithRetry(retryConfig, func() (string, error) {
+			callCount++
+			if callCount < 3 {
+				return "", fmt.Errorf("received unexpected HTTP status: 500 Internal Server Error")
+			}
+			return "success", nil
+		}, "test operation")
+		
+		require.NoError(t, err)
+		require.Equal(t, "success", result)
+		require.Equal(t, 3, callCount)
+	})
+	
+	t.Run("fail on non-retryable error", func(t *testing.T) {
+		retryConfig := config.Retry{
+			Max:             3,
+			InitialInterval: 1 * time.Millisecond,
+			MaxInterval:     5 * time.Millisecond,
+		}
+		
+		var callCount int
+		result, err := doWithRetry(retryConfig, func() (string, error) {
+			callCount++
+			return "", fmt.Errorf("non-retryable error")
+		}, "test operation")
+		
+		require.Error(t, err)
+		require.Equal(t, "", result)
+		require.Equal(t, 1, callCount)
+		require.Contains(t, err.Error(), "failed to test operation after 1 tries")
+	})
+	
+	t.Run("exhaust retries", func(t *testing.T) {
+		retryConfig := config.Retry{
+			Max:             2,
+			InitialInterval: 1 * time.Millisecond,
+			MaxInterval:     5 * time.Millisecond,
+		}
+		
+		var callCount int
+		result, err := doWithRetry(retryConfig, func() (string, error) {
+			callCount++
+			return "", fmt.Errorf("received unexpected HTTP status: 500 Internal Server Error")
+		}, "test operation")
+		
+		require.Error(t, err)
+		require.Equal(t, "", result)
+		require.Equal(t, 2, callCount)
+		require.Contains(t, err.Error(), "failed to test operation after 2 tries")
+	})
+	
+	t.Run("use defaults when config is empty", func(t *testing.T) {
+		retryConfig := config.Retry{} // empty config
+		
+		var callCount int
+		result, err := doWithRetry(retryConfig, func() (string, error) {
+			callCount++
+			return "success", nil
+		}, "test operation")
+		
+		require.NoError(t, err)
+		require.Equal(t, "success", result)
+		require.Equal(t, 1, callCount)
+	})
 }

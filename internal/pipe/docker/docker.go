@@ -320,7 +320,7 @@ func dockerPush(ctx *context.Context, image *artifact.Artifact) error {
 		return pipe.Skip("prerelease detected with 'auto' push, skipping docker publish: " + image.Name)
 	}
 
-	digest, err := doPush(ctx, imagers[docker.Use], image.Name, docker.PushFlags)
+	digest, err := doPush(ctx, imagers[docker.Use], image.Name, docker.PushFlags, docker.Retry)
 	if err != nil {
 		return err
 	}
@@ -348,25 +348,57 @@ func dockerPush(ctx *context.Context, image *artifact.Artifact) error {
 	return nil
 }
 
-func doPush(ctx *context.Context, img imager, name string, flags []string) (string, error) {
-	var try int
-	for try < 10 {
-		digest, err := img.Push(ctx, name, flags)
-		if err == nil {
-			return digest, nil
-		}
-		if isRetryable(err) {
-			log.WithField("try", try).
-				WithField("image", name).
-				WithError(err).
-				Warnf("failed to push image, will retry")
-			time.Sleep(time.Duration(try*10) * time.Second)
-			try++
-			continue
-		}
-		return "", fmt.Errorf("failed to push %s after %d tries: %w", name, try+1, err)
+// doWithRetry performs an operation with configurable retry logic.
+func doWithRetry[T any](retryConfig config.Retry, operation func() (T, error), operationName string) (T, error) {
+	var zero T
+	
+	// Set defaults if not configured
+	maxRetries := retryConfig.Max
+	if maxRetries == 0 {
+		maxRetries = 10 // backward compatible default
 	}
-	return "", nil // will never happen
+	
+	initialInterval := retryConfig.InitialInterval
+	if initialInterval == 0 {
+		initialInterval = 10 * time.Second // backward compatible default
+	}
+	
+	maxInterval := retryConfig.MaxInterval
+	if maxInterval == 0 {
+		maxInterval = 5 * time.Minute // reasonable default
+	}
+
+	var try int
+	for try < maxRetries {
+		result, err := operation()
+		if err == nil {
+			return result, nil
+		}
+		
+		if !isRetryable(err) {
+			return zero, fmt.Errorf("failed to %s after %d tries: %w", operationName, try+1, err)
+		}
+		
+		log.WithField("try", try).
+			WithError(err).
+			Warnf("failed to %s, will retry", operationName)
+			
+		// Calculate backoff with exponential increase but cap at maxInterval
+		backoff := time.Duration(try+1) * initialInterval
+		if backoff > maxInterval {
+			backoff = maxInterval
+		}
+		time.Sleep(backoff)
+		try++
+	}
+	
+	return zero, fmt.Errorf("failed to %s after %d tries", operationName, maxRetries)
+}
+
+func doPush(ctx *context.Context, img imager, name string, flags []string, retryConfig config.Retry) (string, error) {
+	return doWithRetry(retryConfig, func() (string, error) {
+		return img.Push(ctx, name, flags)
+	}, fmt.Sprintf("push image %s", name))
 }
 
 func isRetryable(err error) bool {
