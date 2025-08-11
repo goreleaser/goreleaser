@@ -326,6 +326,7 @@ homebrew_casks:
         def self.token
           require "utils/github"
 
+          # Prefer environment variable if available
           github_token = ENV["HOMEBREW_GITHUB_API_TOKEN"]
           github_token ||= GitHub::API.credentials
           raise "Failed to retrieve github api token" if github_token.nil? || github_token.empty?
