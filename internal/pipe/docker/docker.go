@@ -19,6 +19,7 @@ import (
 	"github.com/goreleaser/goreleaser/v2/internal/gio"
 	"github.com/goreleaser/goreleaser/v2/internal/ids"
 	"github.com/goreleaser/goreleaser/v2/internal/pipe"
+	"github.com/goreleaser/goreleaser/v2/internal/retry"
 	"github.com/goreleaser/goreleaser/v2/internal/semerrgroup"
 	"github.com/goreleaser/goreleaser/v2/internal/skips"
 	"github.com/goreleaser/goreleaser/v2/internal/tmpl"
@@ -357,10 +358,16 @@ func dockerPush(ctx *context.Context, image *artifact.Artifact) error {
 	return nil
 }
 
-func doPush(ctx *context.Context, img imager, name string, flags []string, retry config.Retry) (string, error) {
-	return doWithRetry(retry, func() (string, error) {
+func doPush(ctx *context.Context, img imager, name string, flags []string, retryc config.Retry) (string, error) {
+	return retry.New[string](
+		fmt.Sprintf("push image %s", name),
+		retryc.Max,
+		retryc.InitialInterval,
+		retryc.MaxInterval,
+		isDockerPushRetryable,
+	).Do(func() (string, error) {
 		return img.Push(ctx, name, flags)
-	}, isDockerPushRetryable, fmt.Sprintf("push image %s", name))
+	})
 }
 
 func isDockerPushRetryable(err error) bool {

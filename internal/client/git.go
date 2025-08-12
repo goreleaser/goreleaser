@@ -14,6 +14,7 @@ import (
 	"github.com/caarlos0/log"
 	"github.com/goreleaser/goreleaser/v2/internal/git"
 	"github.com/goreleaser/goreleaser/v2/internal/pipe"
+	"github.com/goreleaser/goreleaser/v2/internal/retry"
 	"github.com/goreleaser/goreleaser/v2/internal/tmpl"
 	"github.com/goreleaser/goreleaser/v2/pkg/config"
 	"github.com/goreleaser/goreleaser/v2/pkg/context"
@@ -220,28 +221,20 @@ func isPasswordError(err error) bool {
 }
 
 func cloneRepoWithRetries(ctx *context.Context, parent, url, name string, env []string) error {
-	var try int
-	for try < 10 {
-		try++
-		err := runGitCmds(ctx, parent, env, [][]string{{"clone", url, name}})
-		if err == nil {
-			return nil
-		}
-		if isRetriableCloneError(err) {
-			log.WithField("try", try).
-				WithField("image", name).
-				WithError(err).
-				Warnf("failed to push image, will retry")
-			time.Sleep(time.Duration(try*10) * time.Second)
-			continue
-		}
+	if _, err := retry.New[any](
+		"clone",
+		10,
+		time.Second,
+		15*time.Second,
+		func(err error) bool {
+			return err != nil && strings.Contains(err.Error(), "Connection reset")
+		},
+	).Do(func() (any, error) {
+		return nil, runGitCmds(ctx, parent, env, [][]string{{"clone", url, name}})
+	}); err != nil {
 		return fmt.Errorf("failed to clone local repository: %w", err)
 	}
-	return fmt.Errorf("failed to push %s after %d tries", name, try)
-}
-
-func isRetriableCloneError(err error) bool {
-	return strings.Contains(err.Error(), "Connection reset")
+	return nil
 }
 
 func runGitCmds(ctx *context.Context, cwd string, env []string, cmds [][]string) error {

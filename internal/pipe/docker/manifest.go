@@ -13,6 +13,7 @@ import (
 	"github.com/goreleaser/goreleaser/v2/internal/artifact"
 	"github.com/goreleaser/goreleaser/v2/internal/ids"
 	"github.com/goreleaser/goreleaser/v2/internal/pipe"
+	"github.com/goreleaser/goreleaser/v2/internal/retry"
 	"github.com/goreleaser/goreleaser/v2/internal/semerrgroup"
 	"github.com/goreleaser/goreleaser/v2/internal/skips"
 	"github.com/goreleaser/goreleaser/v2/internal/tmpl"
@@ -101,10 +102,15 @@ func (ManifestPipe) Publish(ctx *context.Context) error {
 			log.WithField("manifest", name).
 				WithField("images", images).
 				Info("creating")
-			op := fmt.Sprintf("create manifest %s from images %v", name, images)
-			if _, err := doWithRetry(manifest.Retry, func() (any, error) {
+			if _, err := retry.New[any](
+				fmt.Sprintf("create manifest %s from images %v", name, images),
+				manifest.Retry.Max,
+				manifest.Retry.InitialInterval,
+				manifest.Retry.MaxInterval,
+				isDockerManifestRetryable,
+			).Do(func() (any, error) {
 				return nil, manifester.Create(ctx, name, images, manifest.CreateFlags)
-			}, isDockerManifestRetryable, op); err != nil {
+			}); err != nil {
 				return err
 			}
 			art := &artifact.Artifact{
@@ -118,12 +124,19 @@ func (ManifestPipe) Publish(ctx *context.Context) error {
 			}
 
 			log.WithField("manifest", name).Info("created, pushing")
-			digest, err := doWithRetry(manifest.Retry, func() (string, error) {
+			digest, err := retry.New[string](
+				fmt.Sprintf("push manifest %s", name),
+				manifest.Retry.Max,
+				manifest.Retry.InitialInterval,
+				manifest.Retry.MaxInterval,
+				isDockerPushRetryable,
+			).Do(func() (string, error) {
 				return manifester.Push(ctx, name, manifest.PushFlags)
-			}, isDockerPushRetryable, fmt.Sprintf("push manifest %s", name))
+			})
 			if err != nil {
 				return err
 			}
+
 			art.Extra[artifact.ExtraDigest] = digest
 			ctx.Artifacts.Add(art)
 			return nil

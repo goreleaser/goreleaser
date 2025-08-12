@@ -1053,6 +1053,7 @@ func TestRunPipe(t *testing.T) {
 					manifest.PushFlags = []string{"--insecure"}
 					manifest.CreateFlags = []string{"--insecure"}
 				}
+				require.NoError(t, Pipe{}.Default(ctx))
 				err = Pipe{}.Run(ctx)
 				docker.assertError(t, err)
 				if err == nil {
@@ -1167,11 +1168,20 @@ func TestDefault(t *testing.T) {
 	require.Equal(t, useDocker, docker.Use)
 	docker = ctx.Config.Dockers[1]
 	require.Equal(t, useBuildx, docker.Use)
+	require.Equal(t, 10, docker.Retry.Max)
+	require.Equal(t, 10*time.Second, docker.Retry.InitialInterval)
+	require.Equal(t, 5*time.Minute, docker.Retry.MaxInterval)
 
 	require.NoError(t, ManifestPipe{}.Default(ctx))
 	require.Len(t, ctx.Config.DockerManifests, 2)
 	require.Equal(t, useDocker, ctx.Config.DockerManifests[0].Use)
 	require.Equal(t, useDocker, ctx.Config.DockerManifests[1].Use)
+
+	for _, manifest := range ctx.Config.DockerManifests {
+		require.Equal(t, 10, manifest.Retry.Max)
+		require.Equal(t, 10*time.Second, manifest.Retry.InitialInterval)
+		require.Equal(t, 5*time.Minute, manifest.Retry.MaxInterval)
+	}
 }
 
 func TestDefaultDuplicateID(t *testing.T) {
@@ -1463,84 +1473,4 @@ func TestValidateImager(t *testing.T) {
 			require.NoError(t, err)
 		})
 	}
-}
-
-func TestDoWithRetry(t *testing.T) {
-	// TODO: synctest
-	t.Run("success on first try", func(t *testing.T) {
-		retry := config.Retry{
-			Max:             3,
-			InitialInterval: 100 * time.Millisecond,
-			MaxInterval:     1 * time.Second,
-		}
-
-		var callCount int
-		result, err := doWithRetry(retry, func() (string, error) {
-			callCount++
-			return "success", nil
-		}, isDockerPushRetryable, "test operation")
-
-		require.NoError(t, err)
-		require.Equal(t, "success", result)
-		require.Equal(t, 1, callCount)
-	})
-
-	t.Run("retry on retryable error then success", func(t *testing.T) {
-		retry := config.Retry{
-			Max:             3,
-			InitialInterval: 1 * time.Millisecond, // short for testing
-			MaxInterval:     5 * time.Millisecond,
-		}
-
-		var callCount int
-		result, err := doWithRetry(retry, func() (string, error) {
-			callCount++
-			if callCount < 3 {
-				return "", fmt.Errorf("received unexpected HTTP status: 500 Internal Server Error")
-			}
-			return "success", nil
-		}, isDockerPushRetryable, "test operation")
-
-		require.NoError(t, err)
-		require.Equal(t, "success", result)
-		require.Equal(t, 3, callCount)
-	})
-
-	t.Run("fail on non-retryable error", func(t *testing.T) {
-		retry := config.Retry{
-			Max:             3,
-			InitialInterval: 1 * time.Millisecond,
-			MaxInterval:     5 * time.Millisecond,
-		}
-
-		var callCount int
-		result, err := doWithRetry(retry, func() (string, error) {
-			callCount++
-			return "", fmt.Errorf("non-retryable error")
-		}, isDockerPushRetryable, "test operation")
-
-		require.Error(t, err)
-		require.Empty(t, result)
-		require.Equal(t, 1, callCount)
-		require.Contains(t, err.Error(), "failed to test operation after 1 tries")
-	})
-
-	t.Run("exhaust retries", func(t *testing.T) {
-		retry := config.Retry{
-			Max:             2,
-			InitialInterval: 1 * time.Millisecond,
-			MaxInterval:     5 * time.Millisecond,
-		}
-
-		var callCount int
-		result, err := doWithRetry(retry, func() (string, error) {
-			callCount++
-			return "", fmt.Errorf("manifest verification failed for digest")
-		}, isDockerManifestRetryable, "test operation")
-
-		require.Error(t, err)
-		require.Empty(t, result)
-		require.Equal(t, 2, callCount)
-		require.Contains(t, err.Error(), "failed to test operation after 2 tries")
-	})
 }

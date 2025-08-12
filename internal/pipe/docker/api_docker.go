@@ -20,10 +20,6 @@ func init() {
 type dockerManifester struct{}
 
 func (m dockerManifester) Create(ctx *context.Context, manifest string, images, flags []string) error {
-	return m.tryCreate(ctx, manifest, images, flags, 0)
-}
-
-func (m dockerManifester) tryCreate(ctx *context.Context, manifest string, images, flags []string, try int) error {
 	_ = runCommand(ctx, ".", "docker", "manifest", "rm", manifest)
 
 	args := []string{"manifest", "create", manifest}
