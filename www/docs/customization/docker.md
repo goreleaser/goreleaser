@@ -165,6 +165,20 @@ dockers:
     push_flags:
       - --tls-verify=false
 
+    # Retry configuration for push operations.
+    retry:
+      # Maximum number of retry attempts for pushes.
+      # Default: 10.
+      max: 5
+      
+      # Initial delay between retry attempts.
+      # Default: 10s.
+      initial_interval: 5s
+      
+      # Maximum delay between retry attempts (caps exponential backoff).
+      # Default: 5m.
+      max_interval: 2m
+
     # If your Dockerfile copies files other than binaries and packages,
     # you should list them here as well.
     # Note that GoReleaser will create the same structure inside a temporary

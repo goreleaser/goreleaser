@@ -81,6 +81,18 @@ func (Pipe) Default(ctx *context.Context) error {
 		if docker.Use == "" {
 			docker.Use = useDocker
 		}
+		
+		// Set retry defaults
+		if docker.Retry.Max == 0 {
+			docker.Retry.Max = 10 // backward compatible default
+		}
+		if docker.Retry.InitialInterval == 0 {
+			docker.Retry.InitialInterval = 10 * time.Second // backward compatible default
+		}
+		if docker.Retry.MaxInterval == 0 {
+			docker.Retry.MaxInterval = 5 * time.Minute // reasonable default
+		}
+		
 		if err := validateImager(docker.Use); err != nil {
 			return err
 		}
@@ -352,20 +364,20 @@ func dockerPush(ctx *context.Context, image *artifact.Artifact) error {
 func doWithRetry[T any](retryConfig config.Retry, operation func() (T, error), operationName string) (T, error) {
 	var zero T
 	
-	// Set defaults if not configured
+	// Use provided values, falling back to defaults if zero
 	maxRetries := retryConfig.Max
 	if maxRetries == 0 {
-		maxRetries = 10 // backward compatible default
+		maxRetries = 10 // fallback default
 	}
 	
 	initialInterval := retryConfig.InitialInterval
 	if initialInterval == 0 {
-		initialInterval = 10 * time.Second // backward compatible default
+		initialInterval = 10 * time.Second // fallback default
 	}
 	
 	maxInterval := retryConfig.MaxInterval
 	if maxInterval == 0 {
-		maxInterval = 5 * time.Minute // reasonable default
+		maxInterval = 5 * time.Minute // fallback default
 	}
 
 	var try int
