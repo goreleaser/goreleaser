@@ -53,18 +53,15 @@ func (ManifestPipe) Default(ctx *context.Context) error {
 		if manifest.Use == "" {
 			manifest.Use = useDocker
 		}
-		
-		// Set retry defaults
 		if manifest.Retry.Max == 0 {
-			manifest.Retry.Max = 10 // backward compatible default
+			manifest.Retry.Max = 10
 		}
 		if manifest.Retry.InitialInterval == 0 {
-			manifest.Retry.InitialInterval = 10 * time.Second // backward compatible default
+			manifest.Retry.InitialInterval = 10 * time.Second
 		}
 		if manifest.Retry.MaxInterval == 0 {
-			manifest.Retry.MaxInterval = 5 * time.Minute // reasonable default
+			manifest.Retry.MaxInterval = 5 * time.Minute
 		}
-		
 		if err := validateManifester(manifest.Use); err != nil {
 			return err
 		}

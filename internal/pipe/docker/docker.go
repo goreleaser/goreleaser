@@ -81,18 +81,15 @@ func (Pipe) Default(ctx *context.Context) error {
 		if docker.Use == "" {
 			docker.Use = useDocker
 		}
-		
-		// Set retry defaults
 		if docker.Retry.Max == 0 {
-			docker.Retry.Max = 10 // backward compatible default
+			docker.Retry.Max = 10
 		}
 		if docker.Retry.InitialInterval == 0 {
-			docker.Retry.InitialInterval = 10 * time.Second // backward compatible default
+			docker.Retry.InitialInterval = 10 * time.Second
 		}
 		if docker.Retry.MaxInterval == 0 {
-			docker.Retry.MaxInterval = 5 * time.Minute // reasonable default
+			docker.Retry.MaxInterval = 5 * time.Minute
 		}
-		
 		if err := validateImager(docker.Use); err != nil {
 			return err
 		}
@@ -360,57 +357,31 @@ func dockerPush(ctx *context.Context, image *artifact.Artifact) error {
 	return nil
 }
 
-// doWithRetry performs an operation with configurable retry logic.
-func doWithRetry[T any](retryConfig config.Retry, operation func() (T, error), operationName string) (T, error) {
-	var zero T
-	
-	// Use provided values, falling back to defaults if zero
-	maxRetries := retryConfig.Max
-	if maxRetries == 0 {
-		maxRetries = 10 // fallback default
-	}
-	
-	initialInterval := retryConfig.InitialInterval
-	if initialInterval == 0 {
-		initialInterval = 10 * time.Second // fallback default
-	}
-	
-	maxInterval := retryConfig.MaxInterval
-	if maxInterval == 0 {
-		maxInterval = 5 * time.Minute // fallback default
-	}
-
-	var try int
-	for try < maxRetries {
-		result, err := operation()
-		if err == nil {
-			return result, nil
-		}
-		
-		if !isRetryable(err) {
-			return zero, fmt.Errorf("failed to %s after %d tries: %w", operationName, try+1, err)
-		}
-		
-		log.WithField("try", try).
-			WithError(err).
-			Warnf("failed to %s, will retry", operationName)
-			
-		// Calculate backoff with exponential increase but cap at maxInterval
-		backoff := time.Duration(try+1) * initialInterval
-		if backoff > maxInterval {
-			backoff = maxInterval
-		}
-		time.Sleep(backoff)
-		try++
-	}
-	
-	return zero, fmt.Errorf("failed to %s after %d tries", operationName, maxRetries)
-}
-
 func doPush(ctx *context.Context, img imager, name string, flags []string, retryConfig config.Retry) (string, error) {
 	return doWithRetry(retryConfig, func() (string, error) {
 		return img.Push(ctx, name, flags)
 	}, fmt.Sprintf("push image %s", name))
+}
+
+// doWithRetry performs an operation with configurable retry logic.
+func doWithRetry[T any](retry config.Retry, fn func() (T, error), name string) (T, error) {
+	var zero T
+	var try int
+	for try < maxRetries {
+		result, err := fn()
+		if err == nil {
+			return result, nil
+		}
+		if !isRetryable(err) {
+			return zero, fmt.Errorf("failed to %s after %d tries: %w", name, try+1, err)
+		}
+		log.WithField("try", try).
+			WithError(err).
+			Warnf("failed to %s, will retry", name)
+		time.Sleep(min(time.Duration(try+1)*retry.InitialInterval, retry.MaxInterval))
+		try++
+	}
+	return zero, fmt.Errorf("failed to %s after %d tries", name, maxRetries)
 }
 
 func isRetryable(err error) bool {

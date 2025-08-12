@@ -52,15 +52,17 @@ docker_manifests:
       - --insecure
 
     # Retry configuration for manifest operations.
+    #
+    # <!-- md:inline_version v2.12-unreleased -->.
     retry:
       # Maximum number of retry attempts for manifest pushes.
       # Default: 10.
       max: 3
-      
+
       # Initial delay between retry attempts.
       # Default: 10s.
       initial_interval: 5s
-      
+
       # Maximum delay between retry attempts (caps exponential backoff).
       # Default: 5m.
       max_interval: 2m

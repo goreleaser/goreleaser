@@ -1015,6 +1015,7 @@ type Checksum struct {
 }
 
 // Retry config for operations that support retries.
+// Added in v2.12.
 type Retry struct {
 	Max             int           `yaml:"max,omitempty" json:"max,omitempty"`
 	InitialInterval time.Duration `yaml:"initial_interval,omitempty" json:"initial_interval,omitempty"`
