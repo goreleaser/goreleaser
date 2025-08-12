@@ -5,7 +5,6 @@ import (
 	"regexp"
 	"strings"
 
-	"github.com/caarlos0/log"
 	"github.com/goreleaser/goreleaser/v2/pkg/context"
 )
 
@@ -17,8 +16,6 @@ func init() {
 		buildx: true,
 	})
 }
-
-const maxRetries = 10
 
 type dockerManifester struct{}
 
@@ -34,18 +31,6 @@ func (m dockerManifester) tryCreate(ctx *context.Context, manifest string, image
 	args = append(args, flags...)
 
 	if err := runCommand(ctx, ".", "docker", args...); err != nil {
-		if strings.Contains(err.Error(), "manifest verification failed for digest") && try < maxRetries {
-			// this error happens every so often for some reason... retry
-			log.WithField("try", try+1).
-				WithField("maxRetries", maxRetries).
-				WithField("manifest", manifest).
-				WithField("images", images).
-				WithField("flags", flags).
-				WithError(err).
-				Warn("got an error while creating the manifest, will retry")
-			return m.tryCreate(ctx, manifest, images, flags, try+1)
-		}
-
 		return fmt.Errorf("failed to create %s: %w", manifest, err)
 	}
 	return nil
@@ -100,4 +85,8 @@ func (i dockerImager) buildCommand(images, flags []string) []string {
 	}
 	base = append(base, flags...)
 	return base
+}
+
+func isDockerManifestRetryable(err error) bool {
+	return err != nil && strings.Contains(err.Error(), "manifest verification failed for digest")
 }

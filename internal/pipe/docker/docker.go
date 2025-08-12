@@ -360,31 +360,10 @@ func dockerPush(ctx *context.Context, image *artifact.Artifact) error {
 func doPush(ctx *context.Context, img imager, name string, flags []string, retryConfig config.Retry) (string, error) {
 	return doWithRetry(retryConfig, func() (string, error) {
 		return img.Push(ctx, name, flags)
-	}, fmt.Sprintf("push image %s", name))
+	}, isDockerPushRetryable, fmt.Sprintf("push image %s", name))
 }
 
-// doWithRetry performs an operation with configurable retry logic.
-func doWithRetry[T any](retry config.Retry, fn func() (T, error), name string) (T, error) {
-	var zero T
-	var try int
-	for try < maxRetries {
-		result, err := fn()
-		if err == nil {
-			return result, nil
-		}
-		if !isRetryable(err) {
-			return zero, fmt.Errorf("failed to %s after %d tries: %w", name, try+1, err)
-		}
-		log.WithField("try", try).
-			WithError(err).
-			Warnf("failed to %s, will retry", name)
-		time.Sleep(min(time.Duration(try+1)*retry.InitialInterval, retry.MaxInterval))
-		try++
-	}
-	return zero, fmt.Errorf("failed to %s after %d tries", name, maxRetries)
-}
-
-func isRetryable(err error) bool {
+func isDockerPushRetryable(err error) bool {
 	if errors.Is(err, io.EOF) {
 		return true
 	}

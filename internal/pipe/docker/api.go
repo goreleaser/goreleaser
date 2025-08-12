@@ -6,10 +6,12 @@ import (
 	"io"
 	"os/exec"
 	"sync"
+	"time"
 
 	"github.com/caarlos0/log"
 	"github.com/goreleaser/goreleaser/v2/internal/gio"
 	"github.com/goreleaser/goreleaser/v2/internal/logext"
+	"github.com/goreleaser/goreleaser/v2/pkg/config"
 	"github.com/goreleaser/goreleaser/v2/pkg/context"
 )
 
@@ -90,4 +92,25 @@ func runCommandWithOutput(ctx *context.Context, dir, binary string, args ...stri
 	}
 
 	return out, nil
+}
+
+// doWithRetry performs an operation with configurable retry logic.
+func doWithRetry[T any](retry config.Retry, fn func() (T, error), isRetryable func(error) bool, name string) (T, error) {
+	var zero T
+	var try int
+	for try < retry.Max {
+		result, err := fn()
+		if err == nil {
+			return result, nil
+		}
+		if !isRetryable(err) {
+			return zero, fmt.Errorf("failed to %s after %d tries: %w", name, try+1, err)
+		}
+		log.WithField("try", try).
+			WithError(err).
+			Warnf("failed to %s, will retry", name)
+		time.Sleep(min(time.Duration(try+1)*retry.InitialInterval, retry.MaxInterval))
+		try++
+	}
+	return zero, fmt.Errorf("failed to %s after %d tries", name, retry.Max)
 }

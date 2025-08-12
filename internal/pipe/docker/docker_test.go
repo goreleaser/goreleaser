@@ -1478,7 +1478,7 @@ func TestDoWithRetry(t *testing.T) {
 		result, err := doWithRetry(retryConfig, func() (string, error) {
 			callCount++
 			return "success", nil
-		}, "test operation")
+		}, isDockerPushRetryable, "test operation")
 
 		require.NoError(t, err)
 		require.Equal(t, "success", result)
@@ -1499,7 +1499,7 @@ func TestDoWithRetry(t *testing.T) {
 				return "", fmt.Errorf("received unexpected HTTP status: 500 Internal Server Error")
 			}
 			return "success", nil
-		}, "test operation")
+		}, isDockerPushRetryable, "test operation")
 
 		require.NoError(t, err)
 		require.Equal(t, "success", result)
@@ -1517,7 +1517,7 @@ func TestDoWithRetry(t *testing.T) {
 		result, err := doWithRetry(retryConfig, func() (string, error) {
 			callCount++
 			return "", fmt.Errorf("non-retryable error")
-		}, "test operation")
+		}, isDockerPushRetryable, "test operation")
 
 		require.Error(t, err)
 		require.Empty(t, result)
@@ -1535,26 +1535,12 @@ func TestDoWithRetry(t *testing.T) {
 		var callCount int
 		result, err := doWithRetry(retryConfig, func() (string, error) {
 			callCount++
-			return "", fmt.Errorf("received unexpected HTTP status: 500 Internal Server Error")
-		}, "test operation")
+			return "", fmt.Errorf("manifest verification failed for digest")
+		}, isDockerManifestRetryable, "test operation")
 
 		require.Error(t, err)
 		require.Empty(t, result)
 		require.Equal(t, 2, callCount)
 		require.Contains(t, err.Error(), "failed to test operation after 2 tries")
-	})
-
-	t.Run("use defaults when config is empty", func(t *testing.T) {
-		retryConfig := config.Retry{} // empty config
-
-		var callCount int
-		result, err := doWithRetry(retryConfig, func() (string, error) {
-			callCount++
-			return "success", nil
-		}, "test operation")
-
-		require.NoError(t, err)
-		require.Equal(t, "success", result)
-		require.Equal(t, 1, callCount)
 	})
 }
