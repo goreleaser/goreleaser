@@ -13,13 +13,13 @@ import (
 	"strings"
 	"time"
 
+	"github.com/avast/retry-go/v4"
 	"github.com/caarlos0/log"
 	"github.com/goreleaser/goreleaser/v2/internal/artifact"
 	"github.com/goreleaser/goreleaser/v2/internal/experimental"
 	"github.com/goreleaser/goreleaser/v2/internal/gio"
 	"github.com/goreleaser/goreleaser/v2/internal/ids"
 	"github.com/goreleaser/goreleaser/v2/internal/pipe"
-	"github.com/goreleaser/goreleaser/v2/internal/retry"
 	"github.com/goreleaser/goreleaser/v2/internal/semerrgroup"
 	"github.com/goreleaser/goreleaser/v2/internal/skips"
 	"github.com/goreleaser/goreleaser/v2/internal/tmpl"
@@ -330,14 +330,26 @@ func dockerPush(ctx *context.Context, image *artifact.Artifact) error {
 		return pipe.Skip("prerelease detected with 'auto' push, skipping docker publish: " + image.Name)
 	}
 
-	digest, err := doPush(ctx, imagers[docker.Use], image.Name, docker.PushFlags, docker.Retry)
+	digest, err := retry.DoWithData(
+		func() (string, error) {
+			log.WithField("image", image.Name).
+				Info("pushing image")
+			img := imagers[docker.Use]
+			return img.Push(ctx, image.Name, docker.PushFlags)
+		},
+		retry.RetryIf(isRetriablePush),
+		retry.Attempts(uint(docker.Retry.Max)),
+		retry.Delay(docker.Retry.InitialInterval),
+		retry.MaxDelay(docker.Retry.MaxInterval),
+		retry.LastErrorOnly(true),
+	)
 	if err != nil {
 		return err
 	}
 
 	log.WithField("image", image.Name).
 		WithField("digest", digest).
-		Info("pushed")
+		Info("image pushed")
 	art := &artifact.Artifact{
 		Type:   artifact.DockerImage,
 		Name:   image.Name,
@@ -358,19 +370,7 @@ func dockerPush(ctx *context.Context, image *artifact.Artifact) error {
 	return nil
 }
 
-func doPush(ctx *context.Context, img imager, name string, flags []string, retryc config.Retry) (string, error) {
-	return retry.New[string](
-		fmt.Sprintf("push image %s", name),
-		retryc.Max,
-		retryc.InitialInterval,
-		retryc.MaxInterval,
-		isDockerPushRetryable,
-	).Do(func() (string, error) {
-		return img.Push(ctx, name, flags)
-	})
-}
-
-func isDockerPushRetryable(err error) bool {
+func isRetriablePush(err error) bool {
 	if errors.Is(err, io.EOF) {
 		return true
 	}

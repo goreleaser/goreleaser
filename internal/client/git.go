@@ -11,10 +11,10 @@ import (
 	"sync"
 	"time"
 
+	"github.com/avast/retry-go/v4"
 	"github.com/caarlos0/log"
 	"github.com/goreleaser/goreleaser/v2/internal/git"
 	"github.com/goreleaser/goreleaser/v2/internal/pipe"
-	"github.com/goreleaser/goreleaser/v2/internal/retry"
 	"github.com/goreleaser/goreleaser/v2/internal/tmpl"
 	"github.com/goreleaser/goreleaser/v2/pkg/config"
 	"github.com/goreleaser/goreleaser/v2/pkg/context"
@@ -87,7 +87,7 @@ func (g *gitClient) CreateFiles(
 			return fmt.Errorf("git: failed to create parent: %w", err)
 		}
 
-		if err := cloneRepoWithRetries(ctx, parent, url, name, env); err != nil {
+		if err := cloneRepo(ctx, parent, url, name, env); err != nil {
 			return err
 		}
 
@@ -220,18 +220,19 @@ func isPasswordError(err error) bool {
 	return errors.As(err, &kerr)
 }
 
-func cloneRepoWithRetries(ctx *context.Context, parent, url, name string, env []string) error {
-	if _, err := retry.New[any](
-		"clone",
-		10,
-		time.Second,
-		15*time.Second,
-		func(err error) bool {
-			return err != nil && strings.Contains(err.Error(), "Connection reset")
+func cloneRepo(ctx *context.Context, parent, url, name string, env []string) error {
+	if err := retry.Do(
+		func() error {
+			log.WithField("url", url).Infof("cloning %s", name)
+			return runGitCmds(ctx, parent, env, [][]string{{"clone", url, name}})
 		},
-	).Do(func() (any, error) {
-		return nil, runGitCmds(ctx, parent, env, [][]string{{"clone", url, name}})
-	}); err != nil {
+		retry.RetryIf(func(err error) bool {
+			return strings.Contains(err.Error(), "Connection reset")
+		}),
+		retry.Attempts(10),
+		retry.Delay(time.Second),
+		retry.LastErrorOnly(true),
+	); err != nil {
 		return fmt.Errorf("failed to clone local repository: %w", err)
 	}
 	return nil

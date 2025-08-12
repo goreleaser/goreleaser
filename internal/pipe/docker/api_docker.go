@@ -83,6 +83,6 @@ func (i dockerImager) buildCommand(images, flags []string) []string {
 	return base
 }
 
-func isDockerManifestRetryable(err error) bool {
+func isRetriableManifestCreate(err error) bool {
 	return err != nil && strings.Contains(err.Error(), "manifest verification failed for digest")
 }

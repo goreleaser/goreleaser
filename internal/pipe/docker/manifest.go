@@ -9,11 +9,11 @@ import (
 	"time"
 
 	"github.com/agnivade/levenshtein"
+	"github.com/avast/retry-go/v4"
 	"github.com/caarlos0/log"
 	"github.com/goreleaser/goreleaser/v2/internal/artifact"
 	"github.com/goreleaser/goreleaser/v2/internal/ids"
 	"github.com/goreleaser/goreleaser/v2/internal/pipe"
-	"github.com/goreleaser/goreleaser/v2/internal/retry"
 	"github.com/goreleaser/goreleaser/v2/internal/semerrgroup"
 	"github.com/goreleaser/goreleaser/v2/internal/skips"
 	"github.com/goreleaser/goreleaser/v2/internal/tmpl"
@@ -98,19 +98,19 @@ func (ManifestPipe) Publish(ctx *context.Context) error {
 			}
 
 			manifester := manifesters[manifest.Use]
-
-			log.WithField("manifest", name).
-				WithField("images", images).
-				Info("creating")
-			if _, err := retry.New[any](
-				fmt.Sprintf("create manifest %s from images %v", name, images),
-				manifest.Retry.Max,
-				manifest.Retry.InitialInterval,
-				manifest.Retry.MaxInterval,
-				isDockerManifestRetryable,
-			).Do(func() (any, error) {
-				return nil, manifester.Create(ctx, name, images, manifest.CreateFlags)
-			}); err != nil {
+			if err := retry.Do(
+				func() error {
+					log.WithField("manifest", name).
+						WithField("images", images).
+						Info("creating manifest")
+					return manifester.Create(ctx, name, images, manifest.CreateFlags)
+				},
+				retry.RetryIf(isRetriableManifestCreate),
+				retry.Attempts(uint(manifest.Retry.Max)),
+				retry.Delay(manifest.Retry.InitialInterval),
+				retry.MaxDelay(manifest.Retry.MaxInterval),
+				retry.LastErrorOnly(true),
+			); err != nil {
 				return err
 			}
 			art := &artifact.Artifact{
@@ -123,19 +123,24 @@ func (ManifestPipe) Publish(ctx *context.Context) error {
 				art.Extra[artifact.ExtraID] = manifest.ID
 			}
 
-			log.WithField("manifest", name).Info("created, pushing")
-			digest, err := retry.New[string](
-				fmt.Sprintf("push manifest %s", name),
-				manifest.Retry.Max,
-				manifest.Retry.InitialInterval,
-				manifest.Retry.MaxInterval,
-				isDockerPushRetryable,
-			).Do(func() (string, error) {
-				return manifester.Push(ctx, name, manifest.PushFlags)
-			})
+			digest, err := retry.DoWithData(
+				func() (string, error) {
+					log.WithField("manifest", name).Info("pushing manifest")
+					return manifester.Push(ctx, name, manifest.PushFlags)
+				},
+				retry.RetryIf(isRetriableManifestCreate),
+				retry.Attempts(uint(manifest.Retry.Max)),
+				retry.Delay(manifest.Retry.InitialInterval),
+				retry.MaxDelay(manifest.Retry.MaxInterval),
+				retry.LastErrorOnly(true),
+			)
 			if err != nil {
 				return err
 			}
+
+			log.WithField("image", name).
+				WithField("digest", digest).
+				Info("artifact pushed")
 
 			art.Extra[artifact.ExtraDigest] = digest
 			ctx.Artifacts.Add(art)
