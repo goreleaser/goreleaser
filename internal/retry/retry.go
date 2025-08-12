@@ -1,9 +1,11 @@
+// Package retry provides a simple retry mechanism with exponential backoff and
+// jitter.
 package retry
 
 import (
 	"fmt"
 	"math"
-	"math/rand"
+	"math/rand/v2"
 	"time"
 
 	"github.com/caarlos0/log"
@@ -19,14 +21,14 @@ type Retriable[T any] interface {
 // New returns a new Retriable instance.
 func New[T any](
 	op string,
-	max int,
+	maxTries int,
 	initialInterval time.Duration,
 	maxInterval time.Duration,
 	isRetryable func(error) bool,
 ) Retriable[T] {
 	return retry[T]{
 		op:              op,
-		max:             max,
+		maxTries:        maxTries,
 		initialInterval: initialInterval,
 		maxInterval:     maxInterval,
 		isRetryable:     isRetryable,
@@ -35,7 +37,7 @@ func New[T any](
 
 type retry[T any] struct {
 	op              string
-	max             int
+	maxTries        int
 	initialInterval time.Duration
 	maxInterval     time.Duration
 	isRetryable     func(error) bool
@@ -44,7 +46,7 @@ type retry[T any] struct {
 func (r retry[T]) Do(fn func() (T, error)) (T, error) {
 	var result T
 	var err error
-	for try := 0; try < r.max; try++ {
+	for try := 0; try < r.maxTries; try++ {
 		result, err = fn()
 		if err == nil {
 			return result, nil
@@ -53,7 +55,7 @@ func (r retry[T]) Do(fn func() (T, error)) (T, error) {
 			return result, fmt.Errorf("failed to %s after %d tries: %w", r.op, try+1, err)
 		}
 
-		if try < r.max-1 {
+		if try < r.maxTries-1 {
 			exponential := float64(r.initialInterval) * math.Pow(2, float64(try))
 			jitter := time.Duration(rand.Float64() * min(exponential, float64(r.maxInterval)))
 			log.WithField("try", try+1).
@@ -62,5 +64,5 @@ func (r retry[T]) Do(fn func() (T, error)) (T, error) {
 			time.Sleep(jitter)
 		}
 	}
-	return result, fmt.Errorf("failed to %s after %d tries: %w", r.op, r.max, err)
+	return result, fmt.Errorf("failed to %s after %d tries: %w", r.op, r.maxTries, err)
 }
