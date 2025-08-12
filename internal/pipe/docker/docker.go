@@ -357,8 +357,8 @@ func dockerPush(ctx *context.Context, image *artifact.Artifact) error {
 	return nil
 }
 
-func doPush(ctx *context.Context, img imager, name string, flags []string, retryConfig config.Retry) (string, error) {
-	return doWithRetry(retryConfig, func() (string, error) {
+func doPush(ctx *context.Context, img imager, name string, flags []string, retry config.Retry) (string, error) {
+	return doWithRetry(retry, func() (string, error) {
 		return img.Push(ctx, name, flags)
 	}, isDockerPushRetryable, fmt.Sprintf("push image %s", name))
 }

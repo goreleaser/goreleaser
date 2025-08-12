@@ -1468,14 +1468,14 @@ func TestValidateImager(t *testing.T) {
 func TestDoWithRetry(t *testing.T) {
 	// TODO: synctest
 	t.Run("success on first try", func(t *testing.T) {
-		retryConfig := config.Retry{
+		retry := config.Retry{
 			Max:             3,
 			InitialInterval: 100 * time.Millisecond,
 			MaxInterval:     1 * time.Second,
 		}
 
 		var callCount int
-		result, err := doWithRetry(retryConfig, func() (string, error) {
+		result, err := doWithRetry(retry, func() (string, error) {
 			callCount++
 			return "success", nil
 		}, isDockerPushRetryable, "test operation")
@@ -1486,14 +1486,14 @@ func TestDoWithRetry(t *testing.T) {
 	})
 
 	t.Run("retry on retryable error then success", func(t *testing.T) {
-		retryConfig := config.Retry{
+		retry := config.Retry{
 			Max:             3,
 			InitialInterval: 1 * time.Millisecond, // short for testing
 			MaxInterval:     5 * time.Millisecond,
 		}
 
 		var callCount int
-		result, err := doWithRetry(retryConfig, func() (string, error) {
+		result, err := doWithRetry(retry, func() (string, error) {
 			callCount++
 			if callCount < 3 {
 				return "", fmt.Errorf("received unexpected HTTP status: 500 Internal Server Error")
@@ -1507,14 +1507,14 @@ func TestDoWithRetry(t *testing.T) {
 	})
 
 	t.Run("fail on non-retryable error", func(t *testing.T) {
-		retryConfig := config.Retry{
+		retry := config.Retry{
 			Max:             3,
 			InitialInterval: 1 * time.Millisecond,
 			MaxInterval:     5 * time.Millisecond,
 		}
 
 		var callCount int
-		result, err := doWithRetry(retryConfig, func() (string, error) {
+		result, err := doWithRetry(retry, func() (string, error) {
 			callCount++
 			return "", fmt.Errorf("non-retryable error")
 		}, isDockerPushRetryable, "test operation")
@@ -1526,14 +1526,14 @@ func TestDoWithRetry(t *testing.T) {
 	})
 
 	t.Run("exhaust retries", func(t *testing.T) {
-		retryConfig := config.Retry{
+		retry := config.Retry{
 			Max:             2,
 			InitialInterval: 1 * time.Millisecond,
 			MaxInterval:     5 * time.Millisecond,
 		}
 
 		var callCount int
-		result, err := doWithRetry(retryConfig, func() (string, error) {
+		result, err := doWithRetry(retry, func() (string, error) {
 			callCount++
 			return "", fmt.Errorf("manifest verification failed for digest")
 		}, isDockerManifestRetryable, "test operation")

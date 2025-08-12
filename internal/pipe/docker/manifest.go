@@ -101,9 +101,10 @@ func (ManifestPipe) Publish(ctx *context.Context) error {
 			log.WithField("manifest", name).
 				WithField("images", images).
 				Info("creating")
+			op := fmt.Sprintf("create manifest %s from images %v", name, images)
 			if _, err := doWithRetry(manifest.Retry, func() (any, error) {
 				return nil, manifester.Create(ctx, name, images, manifest.CreateFlags)
-			}, isDockerManifestRetryable, "create manifest"); err != nil {
+			}, isDockerManifestRetryable, op); err != nil {
 				return err
 			}
 			art := &artifact.Artifact{
