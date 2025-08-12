@@ -1520,7 +1520,7 @@ func TestDoWithRetry(t *testing.T) {
 		}, "test operation")
 
 		require.Error(t, err)
-		require.Equal(t, "", result)
+		require.Empty(t, result)
 		require.Equal(t, 1, callCount)
 		require.Contains(t, err.Error(), "failed to test operation after 1 tries")
 	})
@@ -1539,7 +1539,7 @@ func TestDoWithRetry(t *testing.T) {
 		}, "test operation")
 
 		require.Error(t, err)
-		require.Equal(t, "", result)
+		require.Empty(t, result)
 		require.Equal(t, 2, callCount)
 		require.Contains(t, err.Error(), "failed to test operation after 2 tries")
 	})
