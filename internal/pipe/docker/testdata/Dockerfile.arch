@@ -1,3 +1,3 @@
-ARG ARCH=amd64
+ARG ARCH
 FROM docker.io/${ARCH}/alpine
 ADD mybin /
