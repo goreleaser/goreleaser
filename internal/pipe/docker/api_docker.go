@@ -3,7 +3,6 @@ package docker
 import (
 	"fmt"
 	"regexp"
-	"strings"
 
 	"github.com/goreleaser/goreleaser/v2/pkg/context"
 )
@@ -81,8 +80,4 @@ func (i dockerImager) buildCommand(images, flags []string) []string {
 	}
 	base = append(base, flags...)
 	return base
-}
-
-func isRetriableManifestCreate(err error) bool {
-	return err != nil && strings.Contains(err.Error(), "manifest verification failed for digest")
 }

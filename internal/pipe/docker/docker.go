@@ -277,7 +277,7 @@ func isFileNotFoundError(out string) bool {
 		return false
 	}
 	return strings.Contains(out, "file not found") ||
-		strings.Contains(out, ": not found")
+		(strings.Contains(out, ": not found") && !strings.Contains(out, "in manifest: not found"))
 }
 
 func isBuildxContextError(out string) bool {
@@ -334,11 +334,10 @@ func dockerPush(ctx *context.Context, image *artifact.Artifact) error {
 		func() (string, error) {
 			log.WithField("image", image.Name).
 				Info("pushing image")
-			img := imagers[docker.Use]
-			return img.Push(ctx, image.Name, docker.PushFlags)
+			return imagers[docker.Use].Push(ctx, image.Name, docker.PushFlags)
 		},
 		retry.RetryIf(isRetriablePush),
-		retry.Attempts(uint(docker.Retry.Max)),
+		retry.Attempts(docker.Retry.Max),
 		retry.Delay(docker.Retry.InitialInterval),
 		retry.MaxDelay(docker.Retry.MaxInterval),
 		retry.LastErrorOnly(true),

@@ -106,7 +106,7 @@ func (ManifestPipe) Publish(ctx *context.Context) error {
 					return manifester.Create(ctx, name, images, manifest.CreateFlags)
 				},
 				retry.RetryIf(isRetriableManifestCreate),
-				retry.Attempts(uint(manifest.Retry.Max)),
+				retry.Attempts(manifest.Retry.Max),
 				retry.Delay(manifest.Retry.InitialInterval),
 				retry.MaxDelay(manifest.Retry.MaxInterval),
 				retry.LastErrorOnly(true),
@@ -129,7 +129,7 @@ func (ManifestPipe) Publish(ctx *context.Context) error {
 					return manifester.Push(ctx, name, manifest.PushFlags)
 				},
 				retry.RetryIf(isRetriableManifestCreate),
-				retry.Attempts(uint(manifest.Retry.Max)),
+				retry.Attempts(manifest.Retry.Max),
 				retry.Delay(manifest.Retry.InitialInterval),
 				retry.MaxDelay(manifest.Retry.MaxInterval),
 				retry.LastErrorOnly(true),
@@ -209,4 +209,8 @@ func withDigest(name string, images []*artifact.Artifact) string {
 
 	log.Warnf("could not find %q, did you mean %q?", name, suggestion)
 	return name
+}
+
+func isRetriableManifestCreate(err error) bool {
+	return strings.Contains(err.Error(), "manifest verification failed for digest")
 }
