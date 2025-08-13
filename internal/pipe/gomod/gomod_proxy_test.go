@@ -241,7 +241,7 @@ func requireGoMod(tb testing.TB) {
 	require.NoError(tb, err)
 	require.Contains(tb, string(mod), `module foo
 
-go 1.24`)
+go 1.25`)
 }
 
 func fakeGoModAndSum(tb testing.TB, module string) {
