@@ -277,6 +277,7 @@ func isBuildxContextError(out string) bool {
 func processImageTemplates(ctx *context.Context, docker config.Docker) ([]string, error) {
 	//nolint:prealloc
 	var images []string
+
 	for _, imageTemplate := range docker.ImageTemplates {
 		image, err := tmpl.New(ctx).Apply(imageTemplate)
 		if err != nil {
