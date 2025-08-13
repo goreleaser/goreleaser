@@ -9,7 +9,6 @@ import (
 	"testing"
 	"time"
 
-	"github.com/caarlos0/log"
 	"github.com/goreleaser/goreleaser/v2/internal/artifact"
 	"github.com/goreleaser/goreleaser/v2/internal/pipe"
 	"github.com/goreleaser/goreleaser/v2/internal/skips"
@@ -32,7 +31,6 @@ func start(tb testing.TB) {
 	tb.Log("starting registries")
 	testlib.StartRegistry(tb, "registry", registryPort)
 	testlib.StartRegistry(tb, "alt_registry", altRegistryPort)
-	log.SetLevel(log.DebugLevel)
 }
 
 // TODO: this test is too big... split in smaller tests? Mainly the manifest ones...
@@ -1055,7 +1053,6 @@ func TestRunPipe(t *testing.T) {
 					manifest.PushFlags = []string{"--insecure"}
 					manifest.CreateFlags = []string{"--insecure"}
 				}
-				require.NoError(t, Pipe{}.Default(ctx))
 				err = Pipe{}.Run(ctx)
 				docker.assertError(t, err)
 				if err == nil {

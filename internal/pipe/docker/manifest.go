@@ -97,6 +97,20 @@ func (ManifestPipe) Publish(ctx *context.Context) error {
 				return err
 			}
 
+			// Use defaults if Retry config wasn't initialized by Default()
+			maxAttempts := manifest.Retry.Max
+			if maxAttempts == 0 {
+				maxAttempts = 10
+			}
+			initialDelay := manifest.Retry.InitialInterval
+			if initialDelay == 0 {
+				initialDelay = 10 * time.Second
+			}
+			maxDelay := manifest.Retry.MaxInterval
+			if maxDelay == 0 {
+				maxDelay = 5 * time.Minute
+			}
+
 			manifester := manifesters[manifest.Use]
 			if err := retry.Do(
 				func() error {
@@ -106,9 +120,9 @@ func (ManifestPipe) Publish(ctx *context.Context) error {
 					return manifester.Create(ctx, name, images, manifest.CreateFlags)
 				},
 				retry.RetryIf(isRetriableManifestCreate),
-				retry.Attempts(manifest.Retry.Max),
-				retry.Delay(manifest.Retry.InitialInterval),
-				retry.MaxDelay(manifest.Retry.MaxInterval),
+				retry.Attempts(maxAttempts),
+				retry.Delay(initialDelay),
+				retry.MaxDelay(maxDelay),
 				retry.LastErrorOnly(true),
 			); err != nil {
 				return err
@@ -129,9 +143,9 @@ func (ManifestPipe) Publish(ctx *context.Context) error {
 					return manifester.Push(ctx, name, manifest.PushFlags)
 				},
 				retry.RetryIf(isRetriableManifestCreate),
-				retry.Attempts(manifest.Retry.Max),
-				retry.Delay(manifest.Retry.InitialInterval),
-				retry.MaxDelay(manifest.Retry.MaxInterval),
+				retry.Attempts(maxAttempts),
+				retry.Delay(initialDelay),
+				retry.MaxDelay(maxDelay),
 				retry.LastErrorOnly(true),
 			)
 			if err != nil {
