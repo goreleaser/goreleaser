@@ -17,7 +17,7 @@ jobs:
     outputs:
       should_run: ${{ steps.check.outputs.should_run }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
         with:
           fetch-depth: 1
       - id: check
@@ -43,7 +43,7 @@ jobs:
           sudo docker image prune --all --force
           sudo docker builder prune -a
       - run: df -h
-      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4
+      - uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v4
         with:
           fetch-depth: 0
           fetch-tags: true
@@ -55,7 +55,7 @@ jobs:
       - uses: docker/setup-buildx-action@e468171a9de216ec08956ac3ada2f0791b6bd435 # v3
       - uses: actions/setup-go@d35c59abb061a4a6fb18e82ac0862c26744d6ab5 # v4
         with:
-          go-version: stable
+          go-version-file: go.mod
       - uses: sigstore/cosign-installer@v3.9.2
       - uses: anchore/sbom-action/download-syft@v0.20.4
       - uses: crazy-max/ghaction-upx@v3

@@ -60,7 +60,7 @@ jobs:
       matrix:
         format: [deb, rpm, apk]
     steps:
-      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4
+      - uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v4
         with:
           fetch-depth: 0
       - uses: arduino/setup-task@b91d5d2c96a56797b48ac1e0e89220bf64044611 # v1
@@ -89,7 +89,7 @@ jobs:
           sudo docker image prune --all --force
           sudo docker builder prune -a
       - run: df -h
-      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4
+      - uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v4
         with:
           fetch-depth: 0
       - uses: arduino/setup-task@b91d5d2c96a56797b48ac1e0e89220bf64044611 # v1
@@ -102,7 +102,7 @@ jobs:
         run: sudo snap install snapcraft --classic
       - uses: actions/setup-go@d35c59abb061a4a6fb18e82ac0862c26744d6ab5 # v4
         with:
-          go-version: stable
+          go-version-file: go.mod
       - uses: actions/cache@0400d5f644dc74513175e3cd8d07132dd4860809 # v4
         with:
           path: |
