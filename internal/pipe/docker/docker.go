@@ -277,7 +277,7 @@ func isFileNotFoundError(out string) bool {
 		return false
 	}
 	return strings.Contains(out, "file not found") ||
-		(strings.Contains(out, ": not found") && !strings.Contains(out, "in manifest: not found"))
+		strings.Contains(out, ": not found")
 }
 
 func isBuildxContextError(out string) bool {
