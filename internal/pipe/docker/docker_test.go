@@ -1170,7 +1170,7 @@ func TestDefault(t *testing.T) {
 	require.Equal(t, useDocker, docker.Use)
 	docker = ctx.Config.Dockers[1]
 	require.Equal(t, useBuildx, docker.Use)
-	require.Equal(t, 10, docker.Retry.Max)
+	require.Equal(t, uint(10), docker.Retry.Max)
 	require.Equal(t, 10*time.Second, docker.Retry.InitialInterval)
 	require.Equal(t, 5*time.Minute, docker.Retry.MaxInterval)
 
@@ -1180,7 +1180,7 @@ func TestDefault(t *testing.T) {
 	require.Equal(t, useDocker, ctx.Config.DockerManifests[1].Use)
 
 	for _, manifest := range ctx.Config.DockerManifests {
-		require.Equal(t, 10, manifest.Retry.Max)
+		require.Equal(t, uint(10), manifest.Retry.Max)
 		require.Equal(t, 10*time.Second, manifest.Retry.InitialInterval)
 		require.Equal(t, 5*time.Minute, manifest.Retry.MaxInterval)
 	}
