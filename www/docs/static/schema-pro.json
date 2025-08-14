@@ -1408,6 +1408,9 @@
 						],
 						"default": "docker"
 					},
+					"retry": {
+						"$ref": "#/$defs/Retry"
+					},
 					"templated_files": {
 						"items": {
 							"$ref": "#/$defs/TemplatedExtraFileWithMode"
@@ -1486,6 +1489,9 @@
 					},
 					"use": {
 						"type": "string"
+					},
+					"retry": {
+						"$ref": "#/$defs/Retry"
 					}
 				},
 				"additionalProperties": false,
@@ -4426,6 +4432,21 @@
 					},
 					"pull_request": {
 						"$ref": "#/$defs/PullRequest"
+					}
+				},
+				"additionalProperties": false,
+				"type": "object"
+			},
+			"Retry": {
+				"properties": {
+					"attempts": {
+						"type": "integer"
+					},
+					"delay": {
+						"type": "integer"
+					},
+					"max_delay": {
+						"type": "integer"
 					}
 				},
 				"additionalProperties": false,
