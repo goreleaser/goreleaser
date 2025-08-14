@@ -1053,6 +1053,8 @@ func TestRunPipe(t *testing.T) {
 					manifest.PushFlags = []string{"--insecure"}
 					manifest.CreateFlags = []string{"--insecure"}
 				}
+				require.NoError(t, Pipe{}.Default(ctx))
+				require.NoError(t, ManifestPipe{}.Default(ctx))
 				err = Pipe{}.Run(ctx)
 				docker.assertError(t, err)
 				if err == nil {

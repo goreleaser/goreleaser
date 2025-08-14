@@ -275,7 +275,7 @@ func TestRunPipeUploadFailure(t *testing.T) {
 	client := &client.Mock{
 		FailToUpload: true,
 	}
-	require.EqualError(t, doPublish(ctx, client), "failed to upload bin.tar.gz after 1 tries: upload failed")
+	require.EqualError(t, doPublish(ctx, client), "failed to upload bin.tar.gz: upload failed")
 	require.True(t, client.CreatedRelease)
 	require.False(t, client.UploadedFile)
 	require.False(t, client.ReleasePublished)

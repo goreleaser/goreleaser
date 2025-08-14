@@ -1,6 +1,7 @@
 package docker
 
 import (
+	"cmp"
 	"errors"
 	"fmt"
 	"io"
@@ -82,15 +83,9 @@ func (Pipe) Default(ctx *context.Context) error {
 		if docker.Use == "" {
 			docker.Use = useDocker
 		}
-		if docker.Retry.Max == 0 {
-			docker.Retry.Max = 10
-		}
-		if docker.Retry.InitialInterval == 0 {
-			docker.Retry.InitialInterval = 10 * time.Second
-		}
-		if docker.Retry.MaxInterval == 0 {
-			docker.Retry.MaxInterval = 5 * time.Minute
-		}
+		docker.Retry.Max = cmp.Or(docker.Retry.Max, 10)
+		docker.Retry.InitialInterval = cmp.Or(docker.Retry.InitialInterval, 10*time.Second)
+		docker.Retry.MaxInterval = cmp.Or(docker.Retry.MaxInterval, 5*time.Minute)
 		if err := validateImager(docker.Use); err != nil {
 			return err
 		}
