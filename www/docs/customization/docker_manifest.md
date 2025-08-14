@@ -51,6 +51,25 @@ docker_manifests:
     push_flags:
       - --insecure
 
+    # Retry configuration for manifest operations.
+    #
+    # <!-- md:inline_version v2.12-unreleased -->.
+    retry:
+      # Attempts of retry.
+      #
+      # Default: 10.
+      attempts: 5
+
+      # Delay between retry attempts.
+      #
+      # Default: 10s.
+      delay: 5s
+
+      # Maximum delay between retry attempts.
+      #
+      # Default: 5m.
+      max_interval: 2m
+
     # Skips the Docker manifest.
     # If you set this to `false` or `auto` on your source Docker configuration,
     #  you'll probably want to do the same here.
