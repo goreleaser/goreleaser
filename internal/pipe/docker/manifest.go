@@ -123,7 +123,7 @@ func (ManifestPipe) Publish(ctx *context.Context) error {
 					log.WithField("manifest", name).Info("pushing manifest")
 					return manifester.Push(ctx, name, manifest.PushFlags)
 				},
-				retry.RetryIf(isRetriableManifestCreate),
+				retry.RetryIf(isRetriablePush),
 				retry.Attempts(manifest.Retry.Attempts),
 				retry.Delay(manifest.Retry.Delay),
 				retry.MaxDelay(manifest.Retry.MaxDelay),
