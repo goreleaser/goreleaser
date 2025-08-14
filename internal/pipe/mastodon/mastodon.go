@@ -38,12 +38,12 @@ func (Pipe) Default(ctx *context.Context) error {
 func (Pipe) Announce(ctx *context.Context) error {
 	msg, err := tmpl.New(ctx).Apply(ctx.Config.Announce.Mastodon.MessageTemplate)
 	if err != nil {
-		return fmt.Errorf("mastodon: %w", err)
+		return fmt.Errorf("message: %w", err)
 	}
 
 	cfg, err := env.ParseAs[Config]()
 	if err != nil {
-		return fmt.Errorf("mastodon: %w", err)
+		return err
 	}
 
 	client := mastodon.NewClient(&mastodon.Config{
@@ -57,7 +57,7 @@ func (Pipe) Announce(ctx *context.Context) error {
 	if _, err := client.PostStatus(ctx, &mastodon.Toot{
 		Status: msg,
 	}); err != nil {
-		return fmt.Errorf("mastodon: %w", err)
+		return fmt.Errorf("failed to post status: %w", err)
 	}
 	return nil
 }

@@ -43,12 +43,12 @@ func (Pipe) Default(ctx *context.Context) error {
 func (Pipe) Announce(ctx *context.Context) error {
 	msg, err := tmpl.New(ctx).Apply(ctx.Config.Announce.Slack.MessageTemplate)
 	if err != nil {
-		return fmt.Errorf("slack: %w", err)
+		return err
 	}
 
 	cfg, err := env.ParseAs[Config]()
 	if err != nil {
-		return fmt.Errorf("slack: %w", err)
+		return err
 	}
 
 	log.Infof("posting: '%s'", msg)
@@ -73,7 +73,7 @@ func (Pipe) Announce(ctx *context.Context) error {
 
 	err = slack.PostWebhook(cfg.Webhook, wm)
 	if err != nil {
-		return fmt.Errorf("slack: %w", err)
+		return fmt.Errorf("post: %w", err)
 	}
 
 	return nil

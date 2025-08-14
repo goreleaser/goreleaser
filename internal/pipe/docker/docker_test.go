@@ -1207,11 +1207,11 @@ func TestDefaultInvalidUse(t *testing.T) {
 	})
 	err := Pipe{}.Default(ctx)
 	require.Error(t, err)
-	require.True(t, strings.HasPrefix(err.Error(), `docker: invalid use: something, valid options are`))
+	require.True(t, strings.HasPrefix(err.Error(), `invalid use: something, valid options are`))
 
 	err = ManifestPipe{}.Default(ctx)
 	require.Error(t, err)
-	require.True(t, strings.HasPrefix(err.Error(), `docker manifest: invalid use: something, valid options are`))
+	require.True(t, strings.HasPrefix(err.Error(), `manifest: invalid use: something, valid options are`))
 }
 
 func TestDefaultDockerfile(t *testing.T) {
@@ -1449,7 +1449,7 @@ func TestValidateImager(t *testing.T) {
 	}{
 		{use: "docker"},
 		{use: "buildx"},
-		{use: "notFound", wantError: "docker: invalid use: notFound, valid options are [buildx docker]"},
+		{use: "notFound", wantError: "invalid use: notFound, valid options are [buildx docker]"},
 	}
 
 	for _, tt := range tests {

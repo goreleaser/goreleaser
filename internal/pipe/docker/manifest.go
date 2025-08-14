@@ -121,7 +121,7 @@ func validateManifester(use string) error {
 	if _, ok := manifesters[use]; ok {
 		return nil
 	}
-	return fmt.Errorf("docker manifest: invalid use: %s, valid options are %v", use, slices.Sorted(maps.Keys(manifesters)))
+	return fmt.Errorf("invalid use: %s, valid options are %v", use, slices.Sorted(maps.Keys(manifesters)))
 }
 
 func manifestName(ctx *context.Context, manifest config.DockerManifest) (string, error) {

@@ -92,7 +92,7 @@ func validateImager(use string) error {
 	if _, ok := imagers[use]; ok {
 		return nil
 	}
-	return fmt.Errorf("docker: invalid use: %s, valid options are %v", use, slices.Sorted(maps.Keys(imagers)))
+	return fmt.Errorf("invalid use: %s, valid options are %v", use, slices.Sorted(maps.Keys(imagers)))
 }
 
 // Publish the docker images.

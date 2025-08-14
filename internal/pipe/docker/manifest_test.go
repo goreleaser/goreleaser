@@ -17,7 +17,7 @@ func TestValidateManifester(t *testing.T) {
 		wantError string
 	}{
 		{use: "docker"},
-		{use: "buildx", wantError: "docker manifest: invalid use: buildx, valid options are [docker]"},
+		{use: "buildx", wantError: "invalid use: buildx, valid options are [docker]"},
 	}
 
 	for _, tt := range tests {

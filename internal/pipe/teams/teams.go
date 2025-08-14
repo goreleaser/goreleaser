@@ -50,17 +50,17 @@ func (p Pipe) Default(ctx *context.Context) error {
 func (p Pipe) Announce(ctx *context.Context) error {
 	title, err := tmpl.New(ctx).Apply(ctx.Config.Announce.Teams.TitleTemplate)
 	if err != nil {
-		return fmt.Errorf("teams: %w", err)
+		return err
 	}
 
 	msg, err := tmpl.New(ctx).Apply(ctx.Config.Announce.Teams.MessageTemplate)
 	if err != nil {
-		return fmt.Errorf("teams: %w", err)
+		return err
 	}
 
 	cfg, err := env.ParseAs[Config]()
 	if err != nil {
-		return fmt.Errorf("teams: %w", err)
+		return err
 	}
 
 	log.Infof("posting: '%s'", msg)
@@ -77,11 +77,11 @@ func (p Pipe) Announce(ctx *context.Context) error {
 	messageCardSection.ActivityImage = ctx.Config.Announce.Teams.IconURL
 	err = msgCard.AddSection(messageCardSection)
 	if err != nil {
-		return fmt.Errorf("teams: %w", err)
+		return fmt.Errorf("post: %w", err)
 	}
 	err = client.Send(cfg.Webhook, msgCard)
 	if err != nil {
-		return fmt.Errorf("teams: %w", err)
+		return fmt.Errorf("post: %w", err)
 	}
 	return nil
 }

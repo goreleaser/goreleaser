@@ -255,7 +255,7 @@ func signone(ctx *context.Context, cfg config.Sign, art *artifact.Artifact) ([]*
 	cmd.Env = env.Strings()
 	log.Info("signing")
 	if err := cmd.Run(); err != nil {
-		return nil, fmt.Errorf("sign: %s failed: %w: %s", cfg.Cmd, err, b.String())
+		return nil, fmt.Errorf("%s failed: %w: %s", cfg.Cmd, err, b.String())
 	}
 
 	var result []*artifact.Artifact

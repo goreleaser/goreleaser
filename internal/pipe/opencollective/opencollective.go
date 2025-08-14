@@ -45,30 +45,26 @@ func (Pipe) Default(ctx *context.Context) error {
 func (Pipe) Announce(ctx *context.Context) error {
 	title, err := tmpl.New(ctx).Apply(ctx.Config.Announce.OpenCollective.TitleTemplate)
 	if err != nil {
-		return fmt.Errorf("opencollective: %w", err)
+		return err
 	}
 	html, err := tmpl.New(ctx).Apply(ctx.Config.Announce.OpenCollective.MessageTemplate)
 	if err != nil {
-		return fmt.Errorf("opencollective: %w", err)
+		return err
 	}
 
 	cfg, err := env.ParseAs[Config]()
 	if err != nil {
-		return fmt.Errorf("opencollective: %w", err)
+		return err
 	}
 
 	log.Infof("posting: %q | %q", title, html)
 
 	id, err := createUpdate(ctx, title, html, ctx.Config.Announce.OpenCollective.Slug, cfg.Token)
 	if err != nil {
-		return fmt.Errorf("opencollective: %w", err)
+		return err
 	}
 
-	if err := publishUpdate(ctx, id, cfg.Token); err != nil {
-		return fmt.Errorf("opencollective: %w", err)
-	}
-
-	return nil
+	return publishUpdate(ctx, id, cfg.Token)
 }
 
 type payload struct {
