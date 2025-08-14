@@ -14,6 +14,7 @@ import (
 
 func TestBlockingFirst(t *testing.T) {
 	synctest.Test(t, func(t *testing.T) {
+		t.Helper()
 		g := NewBlockingFirst(New(5))
 		var lock sync.Mutex
 		var counter int
@@ -33,6 +34,7 @@ func TestBlockingFirst(t *testing.T) {
 
 func TestBlockingFirstError(t *testing.T) {
 	synctest.Test(t, func(t *testing.T) {
+		t.Helper()
 		g := NewBlockingFirst(New(5))
 		var lock sync.Mutex
 		var counter int
@@ -57,6 +59,7 @@ func TestSemaphore(t *testing.T) {
 	for _, i := range []int{1, 4} {
 		t.Run(fmt.Sprintf("limit-%d", i), func(t *testing.T) {
 			synctest.Test(t, func(t *testing.T) {
+				t.Helper()
 				g := New(i)
 				var lock sync.Mutex
 				var counter int
@@ -114,6 +117,7 @@ func TestSemaphoreSkipAware(t *testing.T) {
 	for _, i := range []int{1, 4} {
 		t.Run(fmt.Sprintf("limit-%d", i), func(t *testing.T) {
 			synctest.Test(t, func(t *testing.T) {
+				t.Helper()
 				g := NewSkipAware(New(i))
 				for range 10 {
 					g.Go(func() error {
@@ -133,6 +137,7 @@ func TestSemaphoreSkipAwareSingleError(t *testing.T) {
 	for _, i := range []int{1, 4} {
 		t.Run(fmt.Sprintf("limit-%d", i), func(t *testing.T) {
 			synctest.Test(t, func(t *testing.T) {
+				t.Helper()
 				g := NewSkipAware(New(i))
 				for i := range 10 {
 					g.Go(func() error {
@@ -153,6 +158,7 @@ func TestSemaphoreSkipAwareNoSkips(t *testing.T) {
 	for _, i := range []int{1, 4} {
 		t.Run(fmt.Sprintf("limit-%d", i), func(t *testing.T) {
 			synctest.Test(t, func(t *testing.T) {
+				t.Helper()
 				g := NewSkipAware(New(i))
 				for range 10 {
 					g.Go(func() error {
@@ -168,6 +174,7 @@ func TestSemaphoreSkipAwareNoSkips(t *testing.T) {
 
 func TestSemaphoreSkipAndRealError(t *testing.T) {
 	synctest.Test(t, func(t *testing.T) {
+		t.Helper()
 		g := NewSkipAware(New(10))
 		for range 100 {
 			g.Go(func() error {
