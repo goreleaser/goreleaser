@@ -1014,6 +1014,14 @@ type Checksum struct {
 	ExtraFiles   []ExtraFile `yaml:"extra_files,omitempty" json:"extra_files,omitempty"`
 }
 
+// Retry config for operations that support retries.
+// Added in v2.12.
+type Retry struct {
+	Attempts uint          `yaml:"attempts,omitempty" json:"attempts,omitempty"`
+	Delay    time.Duration `yaml:"delay,omitempty" json:"delay,omitempty"`
+	MaxDelay time.Duration `yaml:"max_delay,omitempty" json:"max_delay,omitempty"`
+}
+
 // Docker image config.
 type Docker struct {
 	ID                 string   `yaml:"id,omitempty" json:"id,omitempty"`
@@ -1029,6 +1037,7 @@ type Docker struct {
 	BuildFlagTemplates []string `yaml:"build_flag_templates,omitempty" json:"build_flag_templates,omitempty"`
 	PushFlags          []string `yaml:"push_flags,omitempty" json:"push_flags,omitempty"`
 	Use                string   `yaml:"use,omitempty" json:"use,omitempty" jsonschema:"enum=docker,enum=buildx,default=docker"`
+	Retry              Retry    `yaml:"retry,omitempty" json:"retry,omitempty"`
 }
 
 // DockerManifest config.
@@ -1040,6 +1049,7 @@ type DockerManifest struct {
 	CreateFlags    []string `yaml:"create_flags,omitempty" json:"create_flags,omitempty"`
 	PushFlags      []string `yaml:"push_flags,omitempty" json:"push_flags,omitempty"`
 	Use            string   `yaml:"use,omitempty" json:"use,omitempty"`
+	Retry          Retry    `yaml:"retry,omitempty" json:"retry,omitempty"`
 }
 
 // Filters config.

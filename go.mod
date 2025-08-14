@@ -9,6 +9,7 @@ require (
 	github.com/agnivade/levenshtein v1.2.1
 	github.com/anchore/quill v0.5.1
 	github.com/atc0005/go-teams-notify/v2 v2.13.0
+	github.com/avast/retry-go/v4 v4.6.1
 	github.com/awslabs/amazon-ecr-credential-helper/ecr-login v0.10.1
 	github.com/bluesky-social/indigo v0.0.0-20240813042137-4006c0eca043
 	github.com/caarlos0/env/v11 v11.3.1
