@@ -68,7 +68,7 @@ docker_manifests:
       # Maximum delay between retry attempts.
       #
       # Default: 5m.
-      max_interval: 2m
+      max_delay: 2m
 
     # Skips the Docker manifest.
     # If you set this to `false` or `auto` on your source Docker configuration,

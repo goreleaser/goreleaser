@@ -182,7 +182,7 @@ dockers:
       # Maximum delay between retry attempts.
       #
       # Default: 5m.
-      max_interval: 2m
+      max_delay: 2m
 
     # If your Dockerfile copies files other than binaries and packages,
     # you should list them here as well.
