@@ -169,15 +169,18 @@ dockers:
     #
     # <!-- md:inline_version v2.12-unreleased -->.
     retry:
-      # Maximum number of retry attempts for pushes.
+      # Attempts of retry.
+      #
       # Default: 10.
-      max: 5
+      attempts: 5
 
-      # Initial delay between retry attempts.
+      # Delay between retry attempts.
+      #
       # Default: 10s.
-      initial_interval: 5s
+      delay: 5s
 
-      # Maximum delay between retry attempts (caps exponential backoff).
+      # Maximum delay between retry attempts.
+      #
       # Default: 5m.
       max_interval: 2m
 

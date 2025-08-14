@@ -1,6 +1,7 @@
 package docker
 
 import (
+	"cmp"
 	"fmt"
 	"maps"
 	"math"
@@ -54,15 +55,9 @@ func (ManifestPipe) Default(ctx *context.Context) error {
 		if manifest.Use == "" {
 			manifest.Use = useDocker
 		}
-		if manifest.Retry.Max == 0 {
-			manifest.Retry.Max = 10
-		}
-		if manifest.Retry.InitialInterval == 0 {
-			manifest.Retry.InitialInterval = 10 * time.Second
-		}
-		if manifest.Retry.MaxInterval == 0 {
-			manifest.Retry.MaxInterval = 5 * time.Minute
-		}
+		manifest.Retry.Attempts = cmp.Or(manifest.Retry.Attempts, 10)
+		manifest.Retry.Delay = cmp.Or(manifest.Retry.Delay, 10*time.Second)
+		manifest.Retry.MaxDelay = cmp.Or(manifest.Retry.MaxDelay, 5*time.Minute)
 		if err := validateManifester(manifest.Use); err != nil {
 			return err
 		}
@@ -97,20 +92,6 @@ func (ManifestPipe) Publish(ctx *context.Context) error {
 				return err
 			}
 
-			// Use defaults if Retry config wasn't initialized by Default()
-			maxAttempts := manifest.Retry.Max
-			if maxAttempts == 0 {
-				maxAttempts = 10
-			}
-			initialDelay := manifest.Retry.InitialInterval
-			if initialDelay == 0 {
-				initialDelay = 10 * time.Second
-			}
-			maxDelay := manifest.Retry.MaxInterval
-			if maxDelay == 0 {
-				maxDelay = 5 * time.Minute
-			}
-
 			manifester := manifesters[manifest.Use]
 			if err := retry.Do(
 				func() error {
@@ -120,9 +101,9 @@ func (ManifestPipe) Publish(ctx *context.Context) error {
 					return manifester.Create(ctx, name, images, manifest.CreateFlags)
 				},
 				retry.RetryIf(isRetriableManifestCreate),
-				retry.Attempts(maxAttempts),
-				retry.Delay(initialDelay),
-				retry.MaxDelay(maxDelay),
+				retry.Attempts(manifest.Retry.Attempts),
+				retry.Delay(manifest.Retry.Delay),
+				retry.MaxDelay(manifest.Retry.MaxDelay),
 				retry.LastErrorOnly(true),
 			); err != nil {
 				return err
@@ -143,9 +124,9 @@ func (ManifestPipe) Publish(ctx *context.Context) error {
 					return manifester.Push(ctx, name, manifest.PushFlags)
 				},
 				retry.RetryIf(isRetriableManifestCreate),
-				retry.Attempts(maxAttempts),
-				retry.Delay(initialDelay),
-				retry.MaxDelay(maxDelay),
+				retry.Attempts(manifest.Retry.Attempts),
+				retry.Delay(manifest.Retry.Delay),
+				retry.MaxDelay(manifest.Retry.MaxDelay),
 				retry.LastErrorOnly(true),
 			)
 			if err != nil {

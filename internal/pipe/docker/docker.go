@@ -83,9 +83,9 @@ func (Pipe) Default(ctx *context.Context) error {
 		if docker.Use == "" {
 			docker.Use = useDocker
 		}
-		docker.Retry.Max = cmp.Or(docker.Retry.Max, 10)
-		docker.Retry.InitialInterval = cmp.Or(docker.Retry.InitialInterval, 10*time.Second)
-		docker.Retry.MaxInterval = cmp.Or(docker.Retry.MaxInterval, 5*time.Minute)
+		docker.Retry.Attempts = cmp.Or(docker.Retry.Attempts, 10)
+		docker.Retry.Delay = cmp.Or(docker.Retry.Delay, 10*time.Second)
+		docker.Retry.MaxDelay = cmp.Or(docker.Retry.MaxDelay, 5*time.Minute)
 		if err := validateImager(docker.Use); err != nil {
 			return err
 		}
@@ -325,20 +325,6 @@ func dockerPush(ctx *context.Context, image *artifact.Artifact) error {
 		return pipe.Skip("prerelease detected with 'auto' push, skipping docker publish: " + image.Name)
 	}
 
-	// Use defaults if Retry config wasn't initialized by Default()
-	maxAttempts := docker.Retry.Max
-	if maxAttempts == 0 {
-		maxAttempts = 10
-	}
-	initialDelay := docker.Retry.InitialInterval
-	if initialDelay == 0 {
-		initialDelay = 10 * time.Second
-	}
-	maxDelay := docker.Retry.MaxInterval
-	if maxDelay == 0 {
-		maxDelay = 5 * time.Minute
-	}
-
 	digest, err := retry.DoWithData(
 		func() (string, error) {
 			log.WithField("image", image.Name).
@@ -346,9 +332,9 @@ func dockerPush(ctx *context.Context, image *artifact.Artifact) error {
 			return imagers[docker.Use].Push(ctx, image.Name, docker.PushFlags)
 		},
 		retry.RetryIf(isRetriablePush),
-		retry.Attempts(maxAttempts),
-		retry.Delay(initialDelay),
-		retry.MaxDelay(maxDelay),
+		retry.Attempts(docker.Retry.Attempts),
+		retry.Delay(docker.Retry.Delay),
+		retry.MaxDelay(docker.Retry.MaxDelay),
 		retry.LastErrorOnly(true),
 	)
 	if err != nil {
