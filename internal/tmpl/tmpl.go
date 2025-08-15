@@ -6,6 +6,8 @@ import (
 	"fmt"
 	"maps"
 	"net/url"
+	"os"
+	"os/user"
 	"path/filepath"
 	"regexp"
 	"strings"
@@ -338,6 +340,8 @@ func (t *Template) Apply(s string) (string, error) {
 			"sha3_384":       checksum("sha3-384"),
 			"sha3_256":       checksum("sha3-256"),
 			"sha3_512":       checksum("sha3-512"),
+			"readFile":       readFile,
+			"mustReadFile":   mustReadFile,
 		}).
 		Parse(s)
 	if err != nil {
@@ -520,4 +524,24 @@ func checksum(algorithm string) func(string) (string, error) {
 
 		return artifact.Checksum(algorithm)
 	}
+}
+
+func mustReadFile(path string) (string, error) {
+	if strings.HasPrefix(path, "~/") {
+		user, err := user.Current()
+		if err != nil {
+			return "", err
+		}
+		path = user.HomeDir + path[1:]
+	}
+	bts, err := os.ReadFile(path)
+	if err != nil {
+		return "", err
+	}
+	return strings.TrimSpace(string(bts)), nil
+}
+
+func readFile(path string) string {
+	out, _ := mustReadFile(path)
+	return out
 }

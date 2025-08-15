@@ -239,9 +239,10 @@ func requireGoMod(tb testing.TB) {
 
 	mod, err := os.ReadFile("dist/proxy/foo/go.mod")
 	require.NoError(tb, err)
-	require.Contains(tb, string(mod), `module foo
+	require.Contains(tb, string(mod), fmt.Sprintf(`module foo
 
-go 1.24`)
+go %s
+`, testlib.GoVersion))
 }
 
 func fakeGoModAndSum(tb testing.TB, module string) {

@@ -1,6 +1,7 @@
 package cmd
 
 import (
+	"fmt"
 	"os"
 	"testing"
 
@@ -54,10 +55,10 @@ func createMainGo(tb testing.TB) {
 
 func goModInit(tb testing.TB) {
 	tb.Helper()
-	createFile(tb, "go.mod", `module foo
+	createFile(tb, "go.mod", fmt.Sprintf(`module foo
 
-go 1.24
-`)
+go %s
+`, testlib.GoVersion))
 }
 
 func createGoReleaserYaml(tb testing.TB) {

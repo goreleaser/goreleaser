@@ -810,6 +810,7 @@ func TestGitLabOpenPullRequestCrossRepo(t *testing.T) {
 			assert.Equal(t, "foo", pr.SourceBranch)
 			assert.Equal(t, "some title", pr.Title)
 			assert.Equal(t, 32156, pr.TargetProjectID)
+			assert.Equal(t, prFooter, pr.Description)
 
 			_, err = io.Copy(w, strings.NewReader(`{"web_url": "https://gitlab.com/someoneelse/something/merge_requests/1"}`))
 			assert.NoError(t, err)
@@ -867,6 +868,7 @@ func TestGitLabOpenPullRequestBaseEmpty(t *testing.T) {
 			assert.Equal(t, "foo", pr.SourceBranch)
 			assert.Equal(t, "some title", pr.Title)
 			assert.Equal(t, 0, pr.TargetProjectID)
+			assert.Equal(t, prFooter, pr.Description)
 
 			_, err = io.Copy(w, strings.NewReader(`{"web_url": "https://gitlab.com/someoneelse/something/merge_requests/1"}`))
 			assert.NoError(t, err)
@@ -920,6 +922,7 @@ func TestGitLabOpenPullRequestDraft(t *testing.T) {
 			assert.Equal(t, "main", pr.SourceBranch)
 			assert.Equal(t, "Draft: some title", pr.Title)
 			assert.Equal(t, 0, pr.TargetProjectID)
+			assert.Equal(t, prFooter, pr.Description)
 
 			_, err = io.Copy(w, strings.NewReader(`{"web_url": "https://gitlab.com/someoneelse/something/merge_requests/1"}`))
 			assert.NoError(t, err)
@@ -948,7 +951,7 @@ func TestGitLabOpenPullRequestDraft(t *testing.T) {
 	require.NoError(t, client.OpenPullRequest(ctx, Repo{}, repo, "some title", true))
 }
 
-func TestGitLabOpenPullBaseBranchGiven(t *testing.T) {
+func TestGitLabOpenPullRequestBaseBranchGiven(t *testing.T) {
 	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		defer r.Body.Close()
 
@@ -967,6 +970,7 @@ func TestGitLabOpenPullBaseBranchGiven(t *testing.T) {
 			assert.Equal(t, "foo", pr.SourceBranch)
 			assert.Equal(t, "some title", pr.Title)
 			assert.Equal(t, 0, pr.TargetProjectID)
+			assert.Equal(t, prFooter, pr.Description)
 
 			_, err = io.Copy(w, strings.NewReader(`{"web_url": "https://gitlab.com/someoneelse/something/merge_requests/1"}`))
 			assert.NoError(t, err)

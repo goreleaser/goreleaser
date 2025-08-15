@@ -1,6 +1,7 @@
 package docker
 
 import (
+	"cmp"
 	"errors"
 	"fmt"
 	"io"
@@ -13,6 +14,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/avast/retry-go/v4"
 	"github.com/caarlos0/log"
 	"github.com/goreleaser/goreleaser/v2/internal/artifact"
 	"github.com/goreleaser/goreleaser/v2/internal/experimental"
@@ -81,6 +83,9 @@ func (Pipe) Default(ctx *context.Context) error {
 		if docker.Use == "" {
 			docker.Use = useDocker
 		}
+		docker.Retry.Attempts = cmp.Or(docker.Retry.Attempts, 10)
+		docker.Retry.Delay = cmp.Or(docker.Retry.Delay, 10*time.Second)
+		docker.Retry.MaxDelay = cmp.Or(docker.Retry.MaxDelay, 5*time.Minute)
 		if err := validateImager(docker.Use); err != nil {
 			return err
 		}
@@ -320,14 +325,25 @@ func dockerPush(ctx *context.Context, image *artifact.Artifact) error {
 		return pipe.Skip("prerelease detected with 'auto' push, skipping docker publish: " + image.Name)
 	}
 
-	digest, err := doPush(ctx, imagers[docker.Use], image.Name, docker.PushFlags)
+	digest, err := retry.DoWithData(
+		func() (string, error) {
+			log.WithField("image", image.Name).
+				Info("pushing image")
+			return imagers[docker.Use].Push(ctx, image.Name, docker.PushFlags)
+		},
+		retry.RetryIf(isRetriablePush),
+		retry.Attempts(docker.Retry.Attempts),
+		retry.Delay(docker.Retry.Delay),
+		retry.MaxDelay(docker.Retry.MaxDelay),
+		retry.LastErrorOnly(true),
+	)
 	if err != nil {
 		return err
 	}
 
 	log.WithField("image", image.Name).
 		WithField("digest", digest).
-		Info("pushed")
+		Info("image pushed")
 	art := &artifact.Artifact{
 		Type:   artifact.DockerImage,
 		Name:   image.Name,
@@ -348,28 +364,7 @@ func dockerPush(ctx *context.Context, image *artifact.Artifact) error {
 	return nil
 }
 
-func doPush(ctx *context.Context, img imager, name string, flags []string) (string, error) {
-	var try int
-	for try < 10 {
-		digest, err := img.Push(ctx, name, flags)
-		if err == nil {
-			return digest, nil
-		}
-		if isRetryable(err) {
-			log.WithField("try", try).
-				WithField("image", name).
-				WithError(err).
-				Warnf("failed to push image, will retry")
-			time.Sleep(time.Duration(try*10) * time.Second)
-			try++
-			continue
-		}
-		return "", fmt.Errorf("failed to push %s after %d tries: %w", name, try+1, err)
-	}
-	return "", nil // will never happen
-}
-
-func isRetryable(err error) bool {
+func isRetriablePush(err error) bool {
 	if errors.Is(err, io.EOF) {
 		return true
 	}

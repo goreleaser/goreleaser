@@ -7,6 +7,7 @@ import (
 	"path/filepath"
 	"strings"
 	"testing"
+	"time"
 
 	"github.com/goreleaser/goreleaser/v2/internal/artifact"
 	"github.com/goreleaser/goreleaser/v2/internal/pipe"
@@ -1052,6 +1053,8 @@ func TestRunPipe(t *testing.T) {
 					manifest.PushFlags = []string{"--insecure"}
 					manifest.CreateFlags = []string{"--insecure"}
 				}
+				require.NoError(t, Pipe{}.Default(ctx))
+				require.NoError(t, ManifestPipe{}.Default(ctx))
 				err = Pipe{}.Run(ctx)
 				docker.assertError(t, err)
 				if err == nil {
@@ -1166,11 +1169,20 @@ func TestDefault(t *testing.T) {
 	require.Equal(t, useDocker, docker.Use)
 	docker = ctx.Config.Dockers[1]
 	require.Equal(t, useBuildx, docker.Use)
+	require.Equal(t, uint(10), docker.Retry.Attempts)
+	require.Equal(t, 10*time.Second, docker.Retry.Delay)
+	require.Equal(t, 5*time.Minute, docker.Retry.MaxDelay)
 
 	require.NoError(t, ManifestPipe{}.Default(ctx))
 	require.Len(t, ctx.Config.DockerManifests, 2)
 	require.Equal(t, useDocker, ctx.Config.DockerManifests[0].Use)
 	require.Equal(t, useDocker, ctx.Config.DockerManifests[1].Use)
+
+	for _, manifest := range ctx.Config.DockerManifests {
+		require.Equal(t, uint(10), manifest.Retry.Attempts)
+		require.Equal(t, 10*time.Second, manifest.Retry.Delay)
+		require.Equal(t, 5*time.Minute, manifest.Retry.MaxDelay)
+	}
 }
 
 func TestDefaultDuplicateID(t *testing.T) {

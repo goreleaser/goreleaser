@@ -32,12 +32,6 @@ nix:
     # Templates: allowed.
     url_template: "https://github.mycompany.com/foo/bar/releases/download/{{ .Tag }}/{{ .ArtifactName }}"
 
-    # Git author used to commit to the repository.
-    # Templates: allowed.
-    commit_author:
-      name: goreleaserbot
-      email: bot@goreleaser.com
-
     # The project name and current git tag are used in the format string.
     #
     # Templates: allowed.

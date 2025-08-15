@@ -941,6 +941,9 @@
 					},
 					"ai": {
 						"$ref": "#/$defs/ChangelogAI"
+					},
+					"title": {
+						"type": "string"
 					}
 				},
 				"additionalProperties": false,
@@ -1405,6 +1408,9 @@
 						],
 						"default": "docker"
 					},
+					"retry": {
+						"$ref": "#/$defs/Retry"
+					},
 					"templated_files": {
 						"items": {
 							"$ref": "#/$defs/TemplatedExtraFileWithMode"
@@ -1483,6 +1489,9 @@
 					},
 					"use": {
 						"type": "string"
+					},
+					"retry": {
+						"$ref": "#/$defs/Retry"
 					}
 				},
 				"additionalProperties": false,
@@ -3602,9 +3611,6 @@
 					"version_template": {
 						"type": "string"
 					},
-					"name_template": {
-						"type": "string"
-					},
 					"tag_name": {
 						"type": "string"
 					},
@@ -3613,6 +3619,12 @@
 					},
 					"keep_single_release": {
 						"type": "boolean"
+					},
+					"draft": {
+						"type": "boolean"
+					},
+					"name_template": {
+						"type": "string"
 					}
 				},
 				"additionalProperties": false,
@@ -4122,6 +4134,9 @@
 						},
 						"type": "array"
 					},
+					"commit_author": {
+						"$ref": "#/$defs/CommitAuthor"
+					},
 					"full_description": {
 						"$ref": "#/$defs/IncludedMarkdown"
 					}
@@ -4206,6 +4221,9 @@
 					},
 					"check_boxes": {
 						"type": "boolean"
+					},
+					"body": {
+						"type": "string"
 					}
 				},
 				"additionalProperties": false,
@@ -4414,6 +4432,21 @@
 					},
 					"pull_request": {
 						"$ref": "#/$defs/PullRequest"
+					}
+				},
+				"additionalProperties": false,
+				"type": "object"
+			},
+			"Retry": {
+				"properties": {
+					"attempts": {
+						"type": "integer"
+					},
+					"delay": {
+						"type": "integer"
+					},
+					"max_delay": {
+						"type": "integer"
 					}
 				},
 				"additionalProperties": false,
@@ -5412,6 +5445,9 @@
 								"type": "boolean"
 							}
 						]
+					},
+					"password": {
+						"type": "string"
 					},
 					"matrix": {
 						"$ref": "#/$defs/Matrix"
