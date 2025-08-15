@@ -263,7 +263,7 @@ func TestFullPipe(t *testing.T) {
 				ctx.Config.Casks[0].URL.Template = `#{GitHubHelper.release_asset_url("{{.Tag}}", "{{.ArtifactName}}")}`
 				ctx.Config.Casks[0].URL.Headers = []string{
 					"Accept: application/octet-stream",
-					"Authorization: Bearer #{GitHubHelper.github_token}",
+					"Authorization: Bearer #{GitHubHelper.token}",
 					"X-GitHub-Api-Version: 2022-11-28",
 				}
 			},
