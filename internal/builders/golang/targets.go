@@ -122,6 +122,7 @@ func listTargets(build config.Build) ([]string, error) {
 			log.WithField("target", target).Debug("skipped ignored build")
 			continue
 		}
+		warnUnstable(target)
 		targets = append(targets, target)
 	}
 	for _, target := range targets {
@@ -241,21 +242,19 @@ func ignored(build config.Build, target Target) bool {
 
 func valid(target Target) bool {
 	t := target.Goos + target.Goarch
-	if slices.Contains(validTargets, t) {
-		return true
-	}
+	return slices.Contains(validTargets, t) ||
+		slices.Contains(experimentalTargets, t) ||
+		slices.Contains(brokenTargets, t)
+}
 
+func warnUnstable(target Target) {
+	t := target.Goos + target.Goarch
 	if slices.Contains(experimentalTargets, t) {
 		log.WithField("target", target).Warn("experimental target, use at your own risk")
-		return true
 	}
-
 	if slices.Contains(brokenTargets, t) {
 		log.WithField("target", target).Error("broken target, use at your own risk")
-		return true
 	}
-
-	return false
 }
 
 // lists from https://go.dev/doc/install/source#environment
