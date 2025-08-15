@@ -66,7 +66,7 @@ cask "custom_block_url" do
       url "#{GitHubHelper.release_asset_url("v#{version}", "bin.txz")}",
         header: [
           "Accept: application/octet-stream",
-          "Authorization: Bearer #{GitHubHelper.github_token}",
+          "Authorization: Bearer #{GitHubHelper.token}",
           "X-GitHub-Api-Version: 2022-11-28",
         ]
       sha256 "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
@@ -78,7 +78,7 @@ cask "custom_block_url" do
       url "#{GitHubHelper.release_asset_url("v#{version}", "bin.tar.zst")}",
         header: [
           "Accept: application/octet-stream",
-          "Authorization: Bearer #{GitHubHelper.github_token}",
+          "Authorization: Bearer #{GitHubHelper.token}",
           "X-GitHub-Api-Version: 2022-11-28",
         ]
       sha256 "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
