@@ -387,7 +387,6 @@ func dataFor(ctx *context.Context, cfg config.HomebrewCask, cl client.ReleaseURL
 			Headers:   cfg.URL.Headers,
 			UserAgent: cfg.URL.UserAgent,
 			Data:      cfg.URL.Data,
-			Download:  cfg.URL.Template,
 		}
 
 		url.Download, err = tmpl.New(ctx).WithArtifact(art).Apply(cfg.URL.Template)
