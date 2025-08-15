@@ -87,10 +87,12 @@ func (p Pipe) Run(ctx *context.Context) error {
 			),
 		)(ctx); err != nil {
 			if ig, ok := publisher.(Continuable); ok && ig.ContinueOnError() && !ctx.FailFast {
+				// these need the publisher.String() because they will all be listed together later.
 				memo.Memorize(fmt.Errorf("%s: %w", publisher.String(), err))
 				continue
 			}
-			return fmt.Errorf("%s: failed to publish artifacts: %w", publisher.String(), err)
+			// regular errors show right below and indented after the thing that caused them.
+			return err
 		}
 	}
 	return memo.Error()

@@ -81,13 +81,13 @@ func runAll(ctx *context.Context, cli client.ReleaseURLTemplater) error {
 
 func doRun(ctx *context.Context, krew config.Krew, cl client.ReleaseURLTemplater) error {
 	if krew.Name == "" {
-		return pipe.Skip("krew: manifest name is not set")
+		return pipe.Skip("manifest name is not set")
 	}
 	if krew.Description == "" {
-		return errors.New("krew: manifest description is not set")
+		return errors.New("manifest description is not set")
 	}
 	if krew.ShortDescription == "" {
-		return errors.New("krew: manifest short description is not set")
+		return errors.New("manifest short description is not set")
 	}
 
 	filters := []artifact.Filter{
@@ -184,7 +184,7 @@ func buildmanifest(
 func doBuildManifest(data Manifest) (string, error) {
 	out, err := yaml.Marshal(data)
 	if err != nil {
-		return "", fmt.Errorf("krew: failed to marshal yaml: %w", err)
+		return "", fmt.Errorf("failed to marshal yaml: %w", err)
 	}
 	return string(out), nil
 }
@@ -236,7 +236,7 @@ func manifestFor(
 		for _, arch := range goarch {
 			bins := artifact.MustExtra[[]string](*art, artifact.ExtraBinaries)
 			if len(bins) != 1 {
-				return result, fmt.Errorf("krew: only one binary per archive allowed, got %d on %q", len(bins), art.Name)
+				return result, fmt.Errorf("only one binary per archive allowed, got %d on %q", len(bins), art.Name)
 			}
 			result.Spec.Platforms = append(result.Spec.Platforms, Platform{
 				Bin:    bins[0],

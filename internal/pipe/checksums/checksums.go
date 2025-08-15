@@ -74,11 +74,11 @@ func splitChecksum(ctx *context.Context) error {
 			}).
 			Apply(ctx.Config.Checksum.NameTemplate)
 		if err != nil {
-			return fmt.Errorf("checksum: name template: %w", err)
+			return fmt.Errorf("name: %w", err)
 		}
 		filepath := filepath.Join(ctx.Config.Dist, filename)
 		if err := refreshOne(ctx, *art, filepath); err != nil {
-			return fmt.Errorf("checksum: %s: %w", art.Path, err)
+			return fmt.Errorf("%s: %w", art.Path, err)
 		}
 		ctx.Artifacts.Add(&artifact.Artifact{
 			Type: artifact.Checksum,

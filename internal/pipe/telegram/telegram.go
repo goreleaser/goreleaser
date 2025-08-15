@@ -51,20 +51,20 @@ func (Pipe) Announce(ctx *context.Context) error {
 
 	cfg, err := env.ParseAs[Config]()
 	if err != nil {
-		return fmt.Errorf("telegram: %w", err)
+		return err
 	}
 
 	log.Infof("posting: '%s'", msg)
 	bot, err := api.NewBotAPI(cfg.ConsumerToken)
 	if err != nil {
-		return fmt.Errorf("telegram: %w", err)
+		return fmt.Errorf("create client: %w", err)
 	}
 
 	tm := api.NewMessage(chatID, msg)
 	tm.ParseMode = "MarkdownV2"
 	_, err = bot.Send(tm)
 	if err != nil {
-		return fmt.Errorf("telegram: %w", err)
+		return fmt.Errorf("send message: %w", err)
 	}
 	log.Debug("message sent")
 	return nil
@@ -73,15 +73,15 @@ func (Pipe) Announce(ctx *context.Context) error {
 func getMessageDetails(ctx *context.Context) (string, int64, error) {
 	msg, err := tmpl.New(ctx).Apply(ctx.Config.Announce.Telegram.MessageTemplate)
 	if err != nil {
-		return "", 0, fmt.Errorf("telegram: %w", err)
+		return "", 0, err
 	}
 	chatIDStr, err := tmpl.New(ctx).Apply(ctx.Config.Announce.Telegram.ChatID)
 	if err != nil {
-		return "", 0, fmt.Errorf("telegram: %w", err)
+		return "", 0, err
 	}
 	chatID, err := strconv.ParseInt(chatIDStr, 10, 64)
 	if err != nil {
-		return "", 0, fmt.Errorf("telegram: %w", err)
+		return "", 0, fmt.Errorf("chat id: %w", err)
 	}
 
 	return msg, chatID, nil
