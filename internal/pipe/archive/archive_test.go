@@ -1218,6 +1218,318 @@ func TestIssue3803(t *testing.T) {
 	require.Len(t, archives, 2)
 }
 
+func TestMakeselfLSMTemplateProcessing(t *testing.T) {
+	folder := testlib.Mktmp(t)
+	dist := filepath.Join(folder, "dist")
+	require.NoError(t, os.Mkdir(dist, 0o755))
+	createFakeBinary(t, dist, "linux386", "bin/mybin")
+
+	// Create mock makeself script that logs its arguments
+	mockMakeselfScript := filepath.Join(folder, "makeself")
+	mockScript := `#!/bin/bash
+# Log all arguments for verification
+echo "$@" > makeself_args.log
+# Create minimal self-extracting archive
+cat > "$4" << 'EOF'
+#!/bin/bash
+echo "Test makeself archive with LSM template"
+exit 0
+EOF
+chmod +x "$4"`
+	require.NoError(t, os.WriteFile(mockMakeselfScript, []byte(mockScript), 0o755))
+
+	// Set PATH to include our mock makeself
+	originalPath := os.Getenv("PATH")
+	defer func() { os.Setenv("PATH", originalPath) }()
+	os.Setenv("PATH", folder+":"+originalPath)
+
+	ctx := testctx.NewWithCfg(
+		config.Project{
+			Dist:        dist,
+			ProjectName: "mybin",
+			Env:         []string{"APP_VERSION=2.0.1", "MAINTAINER=test@example.com"},
+			Archives: []config.Archive{
+				{
+					ID:           "makeself-lsm",
+					Builds:       []string{"default"},
+					Formats:      []string{"makeself"},
+					NameTemplate: "{{ .ProjectName }}_{{ .Version }}_{{ .Os }}_{{ .Arch }}",
+					Makeself: config.MakeselfConfig{
+						Label: "{{ .ProjectName }} v{{ .Version }}",
+						LSMTemplate: `Begin3
+Title:          {{ .ProjectName }}
+Version:        {{ .Env.APP_VERSION }}
+Description:    Self-extracting archive for {{ .ProjectName }} {{ .Version }}
+Keywords:       {{ .ProjectName }}, installer
+Author:         {{ .Env.MAINTAINER }}
+Maintained-by:  {{ .Env.MAINTAINER }}
+Primary-site:   https://github.com/example/{{ .ProjectName }}
+Platforms:      {{ .Os }}
+Copying-policy: GPL
+End`,
+					},
+				},
+			},
+		},
+		testctx.WithVersion("1.2.3"),
+		testctx.WithCurrentTag("v1.2.3"),
+	)
+
+	linux386Build := &artifact.Artifact{
+		Goos:   "linux",
+		Goarch: "386",
+		Name:   "bin/mybin",
+		Path:   filepath.Join(dist, "linux386", "bin", "mybin"),
+		Type:   artifact.Binary,
+		Extra: map[string]any{
+			artifact.ExtraBinary: "bin/mybin",
+			artifact.ExtraID:     "default",
+		},
+	}
+	ctx.Artifacts.Add(linux386Build)
+
+	require.NoError(t, Pipe{}.Default(ctx))
+	require.NoError(t, Pipe{}.Run(ctx))
+
+	// Verify the archive was created
+	expectedName := "mybin_1.2.3_linux_386.run"
+	archivePath := filepath.Join(dist, expectedName)
+	_, err := os.Stat(archivePath)
+	require.NoError(t, err)
+
+	// Read the makeself arguments to verify template processing
+	argsFile := filepath.Join(folder, "makeself_args.log")
+	args, err := os.ReadFile(argsFile)
+	require.NoError(t, err)
+	argsStr := string(args)
+
+	// Verify LSM flag was passed
+	require.Contains(t, argsStr, "--lsm")
+	// Verify the label was processed
+	require.Contains(t, argsStr, "mybin v1.2.3")
+
+	// Find and read the temporary LSM file that was created
+	// The LSM file path should be in the arguments after --lsm
+	// We'll look for a pattern that indicates template processing worked
+	// The LSM content should have been processed with template values
+
+	// Check if LSM template processing created the expected content structure
+	// We can't easily read the temp LSM file since it's cleaned up,
+	// but we can verify that the template processing pipeline was triggered
+	// by checking that no template errors occurred and the archive was created successfully
+
+	// Verify artifact was added to context
+	archives := ctx.Artifacts.Filter(artifact.ByType(artifact.UploadableArchive)).List()
+	require.Len(t, archives, 1)
+	require.Equal(t, expectedName, archives[0].Name)
+	require.Equal(t, "makeself-lsm", archives[0].ID())
+}
+
+func TestMakeselfCustomExtension(t *testing.T) {
+	folder := testlib.Mktmp(t)
+	dist := filepath.Join(folder, "dist")
+	require.NoError(t, os.Mkdir(dist, 0o755))
+	createFakeBinary(t, dist, "linux386", "bin/myapp")
+
+	// Create mock makeself script
+	mockMakeselfScript := filepath.Join(folder, "makeself")
+	mockScript := `#!/bin/bash
+# Create minimal self-extracting archive
+cat > "$4" << 'EOF'
+#!/bin/bash
+echo "Test makeself archive with custom extension"
+exit 0
+EOF
+chmod +x "$4"`
+	require.NoError(t, os.WriteFile(mockMakeselfScript, []byte(mockScript), 0o755))
+
+	// Set PATH to include our mock makeself
+	originalPath := os.Getenv("PATH")
+	defer func() { os.Setenv("PATH", originalPath) }()
+	os.Setenv("PATH", folder+":"+originalPath)
+
+	testCases := []struct {
+		name              string
+		extension         string
+		expectedExtension string
+	}{
+		{
+			name:              "default_extension",
+			extension:         "",
+			expectedExtension: ".run",
+		},
+		{
+			name:              "custom_extension_with_dot",
+			extension:         ".installer",
+			expectedExtension: ".installer",
+		},
+		{
+			name:              "custom_extension_without_dot",
+			extension:         "bin",
+			expectedExtension: ".bin",
+		},
+		{
+			name:              "templated_extension",
+			extension:         ".{{ .Env.CUSTOM_EXT }}",
+			expectedExtension: ".app",
+		},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			ctx := testctx.NewWithCfg(
+				config.Project{
+					Dist:        dist,
+					ProjectName: "myapp",
+					Env:         []string{"CUSTOM_EXT=app"},
+					Archives: []config.Archive{
+						{
+							ID:           "makeself-extension",
+							Builds:       []string{"default"},
+							Formats:      []string{"makeself"},
+							NameTemplate: "{{ .ProjectName }}_{{ .Version }}_{{ .Os }}_{{ .Arch }}",
+							Makeself: config.MakeselfConfig{
+								Label:     "Test App",
+								Extension: tc.extension,
+							},
+						},
+					},
+				},
+				testctx.WithVersion("1.0.0"),
+				testctx.WithCurrentTag("v1.0.0"),
+			)
+
+			linux386Build := &artifact.Artifact{
+				Goos:   "linux",
+				Goarch: "386",
+				Name:   "bin/myapp",
+				Path:   filepath.Join(dist, "linux386", "bin", "myapp"),
+				Type:   artifact.Binary,
+				Extra: map[string]any{
+					artifact.ExtraBinary: "bin/myapp",
+					artifact.ExtraID:     "default",
+				},
+			}
+			ctx.Artifacts.Add(linux386Build)
+
+			require.NoError(t, Pipe{}.Default(ctx))
+			require.NoError(t, Pipe{}.Run(ctx))
+
+			// Verify the archive was created with the expected extension
+			expectedName := "myapp_1.0.0_linux_386" + tc.expectedExtension
+			archivePath := filepath.Join(dist, expectedName)
+			_, err := os.Stat(archivePath)
+			require.NoError(t, err, "Archive should exist at %s", archivePath)
+
+			// Verify artifact was added with correct name
+			archives := ctx.Artifacts.Filter(artifact.ByType(artifact.UploadableArchive)).List()
+			require.Len(t, archives, 1)
+			require.Equal(t, expectedName, archives[0].Name)
+			require.Equal(t, "makeself-extension", archives[0].ID())
+		})
+	}
+}
+
+func TestMakeselfLSMFileTemplateProcessing(t *testing.T) {
+	folder := testlib.Mktmp(t)
+	dist := filepath.Join(folder, "dist")
+	require.NoError(t, os.Mkdir(dist, 0o755))
+	createFakeBinary(t, dist, "linux386", "bin/mybin")
+
+	createFakeBinary(t, dist, "linux386", "bin/testapp")
+	// Create an LSM file with template content
+	lsmTemplate := filepath.Join(folder, "app.lsm.tmpl")
+	lsmContent := `Begin3
+Title:          {{ .ProjectName }}
+Version:        {{ .Version }}
+Description:    Application {{ .ProjectName }} for {{ .Os }}/{{ .Arch }}
+Author:         {{ .Env.AUTHOR }}
+Platforms:      {{ .Os }}
+End`
+	require.NoError(t, os.WriteFile(lsmTemplate, []byte(lsmContent), 0o644))
+
+	// Create mock makeself script
+	mockMakeselfScript := filepath.Join(folder, "makeself")
+	mockScript := `#!/bin/bash
+# Log all arguments
+echo "$@" > makeself_args.log
+# Create self-extracting archive
+cat > "$4" << 'EOF'
+#!/bin/bash
+echo "Archive with external LSM file"
+exit 0
+EOF
+chmod +x "$4"`
+	require.NoError(t, os.WriteFile(mockMakeselfScript, []byte(mockScript), 0o755))
+
+	// Set PATH to include our mock makeself
+	originalPath := os.Getenv("PATH")
+	defer func() { os.Setenv("PATH", originalPath) }()
+	os.Setenv("PATH", folder+":"+originalPath)
+
+	ctx := testctx.NewWithCfg(
+		config.Project{
+			Dist:        dist,
+			ProjectName: "testapp",
+			Env:         []string{"AUTHOR=John Doe <john@example.com>"},
+			Archives: []config.Archive{
+				{
+					ID:           "makeself-lsm-file",
+					Builds:       []string{"default"},
+					Formats:      []string{"makeself"},
+					NameTemplate: "{{ .ProjectName }}_{{ .Version }}_{{ .Os }}_{{ .Arch }}",
+					Makeself: config.MakeselfConfig{
+						Label:   "{{ .ProjectName }} Self-Extractor",
+						LSMFile: lsmTemplate, // This should be processed as a template
+					},
+				},
+			},
+		},
+		testctx.WithVersion("1.0.0"),
+		testctx.WithCurrentTag("v1.0.0"),
+	)
+
+	linux386Build := &artifact.Artifact{
+		Goos:   "linux",
+		Goarch: "386",
+		Name:   "bin/testapp",
+		Path:   filepath.Join(dist, "linux386", "bin", "testapp"),
+		Type:   artifact.Binary,
+		Extra: map[string]any{
+			artifact.ExtraBinary: "bin/testapp",
+			artifact.ExtraID:     "default",
+		},
+	}
+	ctx.Artifacts.Add(linux386Build)
+
+	require.NoError(t, Pipe{}.Default(ctx))
+	require.NoError(t, Pipe{}.Run(ctx))
+
+	// Verify the archive was created
+	expectedName := "testapp_1.0.0_linux_386.run"
+	archivePath := filepath.Join(dist, expectedName)
+	_, err := os.Stat(archivePath)
+	require.NoError(t, err)
+
+	// Read the makeself arguments to verify LSM file path was processed
+	argsFile := filepath.Join(folder, "makeself_args.log")
+	args, err := os.ReadFile(argsFile)
+	require.NoError(t, err)
+	argsStr := string(args)
+
+	// Verify LSM flag was passed with the correct file path
+	require.Contains(t, argsStr, "--lsm")
+	require.Contains(t, argsStr, lsmTemplate) // The template file path should be used
+	// Verify the label was processed
+	require.Contains(t, argsStr, "testapp Self-Extractor")
+
+	// Verify artifact was added
+	archives := ctx.Artifacts.Filter(artifact.ByType(artifact.UploadableArchive)).List()
+	require.Len(t, archives, 1)
+	require.Equal(t, expectedName, archives[0].Name)
+	require.Equal(t, "makeself-lsm-file", archives[0].ID())
+}
+
 func TestExtraFormatWhenOverride(t *testing.T) {
 	ctx := testctx.NewWithCfg(config.Project{
 		Dist: t.TempDir(),

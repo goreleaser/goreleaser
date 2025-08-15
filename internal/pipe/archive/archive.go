@@ -178,7 +178,26 @@ func create(ctx *context.Context, arch config.Archive, binaries []*artifact.Arti
 	if err != nil {
 		return err
 	}
-	archivePath := filepath.Join(ctx.Config.Dist, folder+"."+format)
+	var archivePath string
+	if format == "makeself" {
+		// For makeself archives, use custom extension or default to .run
+		extension := arch.Makeself.Extension
+		if extension == "" {
+			extension = ".run"
+		}
+		// Ensure extension starts with a dot
+		if !strings.HasPrefix(extension, ".") {
+			extension = "." + extension
+		}
+		// Apply template to extension
+		extension, err = template.Apply(extension)
+		if err != nil {
+			return fmt.Errorf("failed to apply template to makeself extension: %w", err)
+		}
+		archivePath = filepath.Join(ctx.Config.Dist, folder+extension)
+	} else {
+		archivePath = filepath.Join(ctx.Config.Dist, folder+"."+format)
+	}
 	lock.Lock()
 	if err := os.MkdirAll(filepath.Dir(archivePath), 0o755|os.ModeDir); err != nil {
 		lock.Unlock()
@@ -203,9 +222,71 @@ func create(ctx *context.Context, arch config.Archive, binaries []*artifact.Arti
 	if err != nil {
 		return err
 	}
-	a, err := archive.New(archiveFile, format)
-	if err != nil {
-		return err
+	var a archive.Archive
+	if format == "makeself" {
+		// Create makeself archive with configuration
+		makeselfConfig := arch.Makeself
+		// Apply templates to configuration fields
+		if makeselfConfig.Label != "" {
+			makeselfConfig.Label, err = template.Apply(makeselfConfig.Label)
+			if err != nil {
+				return fmt.Errorf("failed to apply template to makeself label: %w", err)
+			}
+		}
+		if makeselfConfig.InstallScript != "" {
+			makeselfConfig.InstallScript, err = template.Apply(makeselfConfig.InstallScript)
+			if err != nil {
+				return fmt.Errorf("failed to apply template to makeself install_script: %w", err)
+			}
+		}
+		if makeselfConfig.InstallScriptFile != "" {
+			makeselfConfig.InstallScriptFile, err = template.Apply(makeselfConfig.InstallScriptFile)
+			if err != nil {
+				return fmt.Errorf("failed to apply template to makeself install_script_file: %w", err)
+			}
+		}
+		if makeselfConfig.Compression != "" {
+			makeselfConfig.Compression, err = template.Apply(makeselfConfig.Compression)
+			if err != nil {
+				return fmt.Errorf("failed to apply template to makeself compression: %w", err)
+			}
+		}
+		// Apply templates to LSM configuration
+		if makeselfConfig.LSMTemplate != "" {
+			makeselfConfig.LSMTemplate, err = template.Apply(makeselfConfig.LSMTemplate)
+			if err != nil {
+				return fmt.Errorf("failed to apply template to makeself lsm_template: %w", err)
+			}
+		}
+		if makeselfConfig.LSMFile != "" {
+			makeselfConfig.LSMFile, err = template.Apply(makeselfConfig.LSMFile)
+			if err != nil {
+				return fmt.Errorf("failed to apply template to makeself lsm_file: %w", err)
+			}
+		}
+		// Apply templates to extension
+		if makeselfConfig.Extension != "" {
+			makeselfConfig.Extension, err = template.Apply(makeselfConfig.Extension)
+			if err != nil {
+				return fmt.Errorf("failed to apply template to makeself extension: %w", err)
+			}
+		}
+		// Apply templates to extra args
+		for i, arg := range makeselfConfig.ExtraArgs {
+			makeselfConfig.ExtraArgs[i], err = template.Apply(arg)
+			if err != nil {
+				return fmt.Errorf("failed to apply template to makeself extra_args[%d]: %w", i, err)
+			}
+		}
+		a, err = archive.NewWithMakeselfConfig(archiveFile, archivePath, makeselfConfig)
+		if err != nil {
+			return err
+		}
+	} else {
+		a, err = archive.New(archiveFile, format)
+		if err != nil {
+			return err
+		}
 	}
 	a = NewEnhancedArchive(a, wrap)
 	defer a.Close()
@@ -237,9 +318,31 @@ func create(ctx *context.Context, arch config.Archive, binaries []*artifact.Arti
 		}
 		bins = append(bins, binary.Name)
 	}
+	// Determine artifact name based on format and extension
+	var artifactName string
+	if format == "makeself" {
+		// For makeself archives, use custom extension or default to .run
+		extension := arch.Makeself.Extension
+		if extension == "" {
+			extension = ".run"
+		}
+		// Ensure extension starts with a dot
+		if !strings.HasPrefix(extension, ".") {
+			extension = "." + extension
+		}
+		// Apply template to extension
+		extension, err = template.Apply(extension)
+		if err != nil {
+			return fmt.Errorf("failed to apply template to makeself extension for artifact name: %w", err)
+		}
+		artifactName = folder + extension
+	} else {
+		artifactName = folder + "." + format
+	}
+
 	art := &artifact.Artifact{
 		Type: artifact.UploadableArchive,
-		Name: folder + "." + format,
+		Name: artifactName,
 		Path: archivePath,
 		Extra: map[string]any{
 			artifact.ExtraID:        arch.ID,

@@ -543,10 +543,10 @@ type Hook struct {
 // FormatOverride is used to specify a custom format for a specific GOOS.
 type FormatOverride struct {
 	Goos    string      `yaml:"goos,omitempty" json:"goos,omitempty"`
-	Formats StringArray `yaml:"formats,omitempty" json:"formats,omitempty" jsonschema:"enum=tar,enum=tgz,enum=tar.gz,enum=zip,enum=gz,enum=tar.xz,enum=txz,enum=binary,enum=none,default=tar.gz"`
+	Formats StringArray `yaml:"formats,omitempty" json:"formats,omitempty" jsonschema:"enum=tar,enum=tgz,enum=tar.gz,enum=zip,enum=gz,enum=tar.xz,enum=txz,enum=binary,enum=makeself,enum=none,default=tar.gz"`
 
 	// Deprecated: use [Formats] instead.
-	Format string `yaml:"format,omitempty" json:"format,omitempty" jsonschema:"enum=tar,enum=tgz,enum=tar.gz,enum=zip,enum=gz,enum=tar.xz,enum=txz,enum=binary,enum=none,default=tar.gz"`
+	Format string `yaml:"format,omitempty" json:"format,omitempty" jsonschema:"enum=tar,enum=tgz,enum=tar.gz,enum=zip,enum=gz,enum=tar.xz,enum=txz,enum=binary,enum=makeself,enum=none,default=tar.gz"`
 }
 
 // File is a file inside an archive.
@@ -591,13 +591,25 @@ type UPX struct {
 	Brute    bool     `yaml:"brute,omitempty" json:"brute,omitempty"`
 }
 
+// makeself-specific configuration options.
+type MakeselfConfig struct {
+	Label             string   `yaml:"label,omitempty" json:"label,omitempty"`
+	InstallScript     string   `yaml:"install_script,omitempty" json:"install_script,omitempty"`
+	InstallScriptFile string   `yaml:"install_script_file,omitempty" json:"install_script_file,omitempty"`
+	Compression       string   `yaml:"compression,omitempty" json:"compression,omitempty"`
+	ExtraArgs         []string `yaml:"extra_args,omitempty" json:"extra_args,omitempty"`
+	LSMTemplate       string   `yaml:"lsm_template,omitempty" json:"lsm_template,omitempty"`
+	LSMFile           string   `yaml:"lsm_file,omitempty" json:"lsm_file,omitempty"`
+	Extension         string   `yaml:"extension,omitempty" json:"extension,omitempty"`
+}
+
 // Archive config used for the archive.
 type Archive struct {
 	ID                        string           `yaml:"id,omitempty" json:"id,omitempty"`
 	IDs                       []string         `yaml:"ids,omitempty" json:"ids,omitempty"`
 	BuildsInfo                FileInfo         `yaml:"builds_info,omitempty" json:"builds_info,omitempty"`
 	NameTemplate              string           `yaml:"name_template,omitempty" json:"name_template,omitempty"`
-	Formats                   StringArray      `yaml:"formats,omitempty" json:"formats,omitempty" jsonschema:"enum=tar,enum=tgz,enum=tar.gz,enum=zip,enum=gz,enum=tar.xz,enum=txz,enum=binary,default=tar.gz"`
+	Formats                   StringArray      `yaml:"formats,omitempty" json:"formats,omitempty" jsonschema:"enum=tar,enum=tgz,enum=tar.gz,enum=zip,enum=gz,enum=tar.xz,enum=txz,enum=binary,enum=makeself,default=tar.gz"`
 	FormatOverrides           []FormatOverride `yaml:"format_overrides,omitempty" json:"format_overrides,omitempty"`
 	WrapInDirectory           string           `yaml:"wrap_in_directory,omitempty" json:"wrap_in_directory,omitempty" jsonschema:"oneof_type=string;boolean"`
 	StripBinaryDirectory      bool             `yaml:"strip_binary_directory,omitempty" json:"strip_binary_directory,omitempty"`
@@ -605,8 +617,11 @@ type Archive struct {
 	Meta                      bool             `yaml:"meta,omitempty" json:"meta,omitempty"`
 	AllowDifferentBinaryCount bool             `yaml:"allow_different_binary_count,omitempty" json:"allow_different_binary_count,omitempty"`
 
+	// Only used when format includes 'makeself'.
+	Makeself MakeselfConfig `yaml:"makeself,omitempty" json:"makeself,omitempty"`
+
 	// Deprecated: use [Formats] instead.
-	Format string `yaml:"format,omitempty" json:"format,omitempty" jsonschema:"enum=tar,enum=tgz,enum=tar.gz,enum=zip,enum=gz,enum=tar.xz,enum=txz,enum=binary,default=tar.gz"`
+	Format string `yaml:"format,omitempty" json:"format,omitempty" jsonschema:"enum=tar,enum=tgz,enum=tar.gz,enum=zip,enum=gz,enum=tar.xz,enum=txz,enum=binary,enum=makeself,default=tar.gz"`
 
 	// Deprecated: use [IDs] instead.
 	Builds []string `yaml:"builds,omitempty" json:"builds,omitempty"`

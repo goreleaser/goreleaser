@@ -7,6 +7,7 @@ import (
 	"os"
 
 	"github.com/goreleaser/goreleaser/v2/pkg/archive/gzip"
+	"github.com/goreleaser/goreleaser/v2/pkg/archive/makeself"
 	"github.com/goreleaser/goreleaser/v2/pkg/archive/tar"
 	"github.com/goreleaser/goreleaser/v2/pkg/archive/targz"
 	"github.com/goreleaser/goreleaser/v2/pkg/archive/tarxz"
@@ -36,8 +37,25 @@ func New(w io.Writer, format string) (Archive, error) {
 		return tarzst.New(w), nil
 	case "zip":
 		return zip.New(w), nil
+	case "makeself":
+		return makeself.New(w), nil
 	}
 	return nil, fmt.Errorf("invalid archive format: %s", format)
+}
+
+// NewWithMakeselfConfig creates a makeself archive with custom configuration.
+func NewWithMakeselfConfig(w io.Writer, outputPath string, cfg config.MakeselfConfig) (Archive, error) {
+	makeselfCfg := makeself.MakeselfConfig{
+		OutputPath:        outputPath,
+		InstallScript:     cfg.InstallScript,
+		InstallScriptFile: cfg.InstallScriptFile,
+		Label:             cfg.Label,
+		Compression:       cfg.Compression,
+		ExtraArgs:         cfg.ExtraArgs,
+		LSMTemplate:       cfg.LSMTemplate,
+		LSMFile:           cfg.LSMFile,
+	}
+	return makeself.NewWithConfig(w, outputPath, makeselfCfg), nil
 }
 
 // Copy copies the source archive into a new one, which can be appended at.
