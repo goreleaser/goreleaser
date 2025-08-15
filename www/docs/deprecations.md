@@ -102,6 +102,10 @@ You may also want to make the _Cask_ conflict with the previous _Formula_.
       conflicts:
         - formula: foo
 
+      # Optional: helps pass `homebrew audit` if homepage is different from download domain:
+      url:
+        verified: github.com/myorg/myrepo
+
       # Optional: if your app/binary isn't signed and notarized, you'll need this:
       hooks:
         post:

@@ -6,6 +6,7 @@ cask "{{ .Name }}" do
   {{- end }}
 
   {{ end }}
+  name "{{ .Name }}"
   desc "{{ .Description }}"
   homepage "{{ .Homepage }}"
   version "{{ .Version }}"
