@@ -235,6 +235,8 @@ homebrew_casks:
       bash: "completions/goreleaser.bash"
       zsh: "completions/goreleaser.zsh"
       fish: "completions/goreleaser.fish"
+    url:
+      verified: github.com/goreleaser/goreleaser/releases/download
 
 nix:
   - name: goreleaser
