@@ -236,8 +236,7 @@ homebrew_casks:
       post:
         # replace foo with the actual binary name
         install: |
-          if system_command("/usr/bin/xattr", args: ["-h"]).exit_status == 0
-            # replace 'foo' with the actual binary name
+          if OS.mac?
             system_command "/usr/bin/xattr", args: ["-dr", "com.apple.quarantine", "#{staged_path}/foo"]
           end
 ```
@@ -253,6 +252,19 @@ homebrew_casks:
     your users to run the appropriate `xattr` command manually.
 
     You may do so in using the `caveats` property, for example.
+
+!!! warning "xattr bypasses macOS security - use with caution"
+
+    Use of `xattr` to bypass Gatekeeper circumvents macOS security protections
+    designed to verify software authenticity. This removes Apple's verification
+    layer and requires users to trust the software directly.
+
+    Proper code signing and notarization is Apple's recommended method for
+    distributing software. This approach should only be considered when code
+    signing is not feasible.
+
+    Important: Apple may disable this bypass method in future macOS versions
+    without notice, potentially breaking software distribution that relies on it.
 
 ## Versioned Casks
 
@@ -305,24 +317,39 @@ homebrew_casks:
   - name: foo
     custom_block: |
       module GitHubHelper
-        def self.get_asset_api_url(tag, name)
-          require "utils/github"
-          release = GitHub.get_release("USER_OR_ORG", "PROJECT_NAME", tag)
-          release["assets"].find { |asset| asset["name"] == name }["url"]
-        end
         def self.token
           require "utils/github"
+
+          # Prefer environment variable if available
           github_token = ENV["HOMEBREW_GITHUB_API_TOKEN"]
-          unless github_token
-            github_token = GitHub::API.credentials
-            raise "Failed to retrieve token" if github_token.nil? || github_token.empty?
-          end
+          github_token ||= GitHub::API.credentials
+          raise "Failed to retrieve github api token" if github_token.nil? || github_token.empty?
+
           github_token
+        end
+
+        def self.release_asset_url(tag, name)
+          require "json"
+          require "net/http"
+          require "uri"
+
+          resp = Net::HTTP.get(
+            # Replace with your GitHub repository URL
+            URI.parse("https://api.github.com/repos/goreleaser/example/releases/tags/#{tag}"),
+            {
+              "Accept" => "application/vnd.github+json",
+              "Authorization" => "Bearer #{token}",
+              "X-GitHub-Api-Version" => "2022-11-28"
+            }
+          )
+
+          release = JSON.parse(resp)
+          release["assets"].find { |asset| asset["name"] == name }["url"]
         end
       end
 
     url:
-      template: '#{GitHubHelper.get_asset_api_url("{{.Tag}}", "{{.ArtifactName}}")}'
+      template: '#{GitHubHelper.release_asset_url("{{.Tag}}", "{{.ArtifactName}}")}'
       headers:
         - "Accept: application/octet-stream"
         - "Authorization: Bearer #{GitHubHelper.token}"
