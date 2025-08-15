@@ -173,6 +173,7 @@ func doRun(ctx *context.Context, scoop config.Scoop, cl client.ReleaseURLTemplat
 	if err := os.MkdirAll(filepath.Dir(path), 0o755); err != nil {
 		return err
 	}
+	_ = content.WriteByte('\n')
 	log.WithField("manifest", path).Info("writing")
 	if err := os.WriteFile(path, content.Bytes(), 0o644); err != nil {
 		return fmt.Errorf("failed to write scoop manifest: %w", err)
