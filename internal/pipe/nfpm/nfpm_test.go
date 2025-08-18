@@ -173,7 +173,7 @@ func TestRunPipe(t *testing.T) {
 						},
 						{
 							Source:      "./testdata/testfile.txt",
-							Destination: "/etc/nope.conf",
+							Destination: "{{.Prefix}}/etc/nope.conf",
 							Type:        "config",
 							FileInfo:    fileInfo,
 						},
@@ -485,21 +485,24 @@ func TestRunPipe(t *testing.T) {
 				cshared = "/usr/lib64/c-shareds"
 			}
 		}
+		prefix := ""
 		if format == termuxFormat {
-			bin = filepath.Join("/data/data/com.termux/files", bin)
-			header = filepath.Join("/data/data/com.termux/files", header)
-			cshared = filepath.Join("/data/data/com.termux/files", cshared)
-			carchive = filepath.Join("/data/data/com.termux/files", carchive)
+			prefix = "/data/data/com.termux/files"
+			bin = filepath.Join(prefix, bin)
+			header = filepath.Join(prefix, header)
+			cshared = filepath.Join(prefix, cshared)
+			carchive = filepath.Join(prefix, carchive)
 		}
 		bin = filepath.ToSlash(filepath.Join(bin, "mybin"))
 		header = filepath.ToSlash(filepath.Join(header, "foo.h"))
 		cshared = filepath.ToSlash(filepath.Join(cshared, "foo.so"))
 		carchive = filepath.ToSlash(filepath.Join(carchive, "foo.a"))
+
 		require.ElementsMatch(t, []string{
 			"/var/log/foobar",
 			"/usr/share/testfile.txt",
 			"/etc/mydir",
-			"/etc/nope.conf",
+			prefix + "/etc/nope.conf",
 			"/etc/nope-rpm.conf",
 			"/etc/nope2.conf",
 			"/etc/nope3_mybin.conf",

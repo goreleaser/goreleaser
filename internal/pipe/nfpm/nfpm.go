@@ -154,7 +154,10 @@ func mergeOverrides(fpm config.NFPM, format string) (*config.NFPMOverridables, e
 	return &overridden, nil
 }
 
-const termuxFormat = "termux.deb"
+const (
+	termuxFormat = "termux.deb"
+	termuxData   = "/data/data/com.termux/files"
+)
 
 func isSupportedTermuxArch(goos, goarch string) bool {
 	if goos != "android" {
@@ -296,8 +299,13 @@ func create(ctx *context.Context, fpm config.NFPM, format string, artifacts []*a
 	// We cannot use t.ApplyAll on the following fields as they are shared
 	// across multiple nfpms.
 	//
+	prefix := ""
+	if format == termuxFormat {
+		prefix = termuxData
+	}
 	t = t.WithExtraFields(tmpl.Fields{
 		"Format": format,
+		"Prefix": prefix,
 	})
 
 	debKeyFile, err := t.Apply(overridden.Deb.Signature.KeyFile)
@@ -631,7 +639,7 @@ func termuxPrefixedDir(dir string) string {
 	if dir == "" {
 		return ""
 	}
-	return filepath.Join("/data/data/com.termux/files", dir)
+	return filepath.Join(termuxData, dir)
 }
 
 func artifactPackageDir(bindir string, libdirs config.Libdirs, art *artifact.Artifact) string {
