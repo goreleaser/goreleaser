@@ -3,6 +3,8 @@ package cask
 import (
 	"cmp"
 	"embed"
+	"fmt"
+	"sort"
 	"strings"
 
 	"github.com/goreleaser/goreleaser/v2/pkg/config"
@@ -15,6 +17,7 @@ type templateData struct {
 	LinuxPackages        []releasePackage
 	MacOSPackages        []releasePackage
 	HasOnlyAmd64MacOsPkg bool
+	HasOnlyBinaryPkgs    bool
 }
 
 type releasePackage struct {
@@ -22,6 +25,8 @@ type releasePackage struct {
 	OS     string
 	Arch   string
 	URL    downloadURL
+	Name   string
+	Binary string
 }
 
 type downloadURL struct {
@@ -44,6 +49,54 @@ func split(s string) []string {
 		return []string{}
 	}
 	return strings
+}
+
+func dependsString(dependencies []config.HomebrewCaskDependency) string {
+	var casks []string
+	var formulas []string
+	for _, dependency := range dependencies {
+		if dependency.Cask != "" {
+			casks = append(casks, dependency.Cask)
+		}
+		if dependency.Formula != "" {
+			formulas = append(formulas, dependency.Formula)
+		}
+	}
+	sort.Strings(casks)
+	sort.Strings(formulas)
+
+	var groups []string
+	if len(casks) > 0 {
+		groups = append(groups, groupToS("cask", casks))
+	}
+	if len(formulas) > 0 {
+		groups = append(groups, groupToS("formula", formulas))
+	}
+	return joinGroups("depends_on", groups)
+}
+
+func conflictsString(conflicts []config.HomebrewCaskConflict) string {
+	var casks []string
+	var formulas []string
+	for _, conflict := range conflicts {
+		if conflict.Cask != "" {
+			casks = append(casks, conflict.Cask)
+		}
+		if conflict.Formula != "" {
+			formulas = append(formulas, conflict.Formula)
+		}
+	}
+	sort.Strings(casks)
+	sort.Strings(formulas)
+
+	var groups []string
+	if len(casks) > 0 {
+		groups = append(groups, groupToS("cask", casks))
+	}
+	if len(formulas) > 0 {
+		groups = append(groups, groupToS("formula", formulas))
+	}
+	return joinGroups("conflicts_with", groups)
 }
 
 func zapString(u config.HomebrewCaskUninstall) string {
@@ -71,6 +124,10 @@ func makeUninstallLikeBlock(stanza string, u config.HomebrewCaskUninstall) strin
 	if len(u.Trash) > 0 {
 		groups = append(groups, groupToS("trash", u.Trash))
 	}
+	return joinGroups(stanza, groups)
+}
+
+func joinGroups(stanza string, groups []string) string {
 	if len(groups) == 0 {
 		return ""
 	}
@@ -93,7 +150,7 @@ func groupToS(name string, lines []string) string {
 	var sb strings.Builder
 	sb.WriteString(name + ": [\n")
 	for _, l := range lines {
-		sb.WriteString("      " + l + ",\n")
+		sb.WriteString("      " + fmt.Sprintf("%q", l) + ",\n")
 	}
 	sb.WriteString("    ]")
 	return sb.String()

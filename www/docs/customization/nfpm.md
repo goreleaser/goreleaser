@@ -395,7 +395,7 @@ nfpms:
       # The hostname of the machine the rpm was built with.
       #
       # Default: os.Hostname()
-      # <!-- md:inline_version v2.10-unreleased -->.
+      # <!-- md:inline_version v2.10 -->.
       buildhost: foo.bar
 
       # Compression algorithm (gzip (default), lzma or xz).

@@ -127,14 +127,9 @@ type Semver struct {
 	Prerelease string
 }
 
-// New context.
-func New(config config.Project) *Context {
-	return Wrap(stdctx.Background(), config)
-}
-
-// NewWithTimeout new context with the given timeout.
-func NewWithTimeout(config config.Project, timeout time.Duration) (*Context, stdctx.CancelFunc) {
-	ctx, cancel := stdctx.WithTimeout(stdctx.Background(), timeout) // nosem
+// WrapWithTimeout new context with the given timeout.
+func WrapWithTimeout(parent stdctx.Context, config config.Project, timeout time.Duration) (*Context, stdctx.CancelFunc) {
+	ctx, cancel := stdctx.WithTimeout(parent, timeout) // nosem
 	return Wrap(ctx, config), cancel
 }
 

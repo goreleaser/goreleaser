@@ -320,6 +320,15 @@ func skip(ctx *context.Context, archive config.Archive, binaries []*artifact.Art
 
 func packageFormats(archive config.Archive, platform string) []string {
 	for _, override := range archive.FormatOverrides {
+		if override.Goos == "" {
+			log.Warn("override has no goos, ignoring")
+			continue
+		}
+		if len(override.Formats) == 0 {
+			log.WithField("goos", override.Goos).
+				Warn("override has no formats, ignoring")
+			continue
+		}
 		if strings.HasPrefix(platform, override.Goos) {
 			return override.Formats
 		}

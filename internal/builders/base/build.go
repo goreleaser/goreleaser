@@ -1,5 +1,5 @@
-// Package common contains common functions for all builders.
-package common
+// Package base contains common functions for all builders.
+package base
 
 import (
 	"context"

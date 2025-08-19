@@ -14,7 +14,7 @@ import (
 	"dario.cat/mergo"
 	"github.com/caarlos0/log"
 	"github.com/goreleaser/goreleaser/v2/internal/artifact"
-	"github.com/goreleaser/goreleaser/v2/internal/builders/common"
+	"github.com/goreleaser/goreleaser/v2/internal/builders/base"
 	"github.com/goreleaser/goreleaser/v2/internal/experimental"
 	"github.com/goreleaser/goreleaser/v2/internal/logext"
 	"github.com/goreleaser/goreleaser/v2/internal/tmpl"
@@ -306,7 +306,7 @@ func (*Builder) Build(ctx *context.Context, build config.Build, options api.Opti
 		WithEnvS(env).
 		WithArtifact(a)
 
-	tenv, err := common.TemplateEnv(details.Env, tpl)
+	tenv, err := base.TemplateEnv(details.Env, tpl)
 	if err != nil {
 		return err
 	}
@@ -330,11 +330,11 @@ func (*Builder) Build(ctx *context.Context, build config.Build, options api.Opti
 		return err
 	}
 
-	if err := common.Exec(ctx, cmd, env, build.Dir); err != nil {
+	if err := base.Exec(ctx, cmd, env, build.Dir); err != nil {
 		return err
 	}
 
-	if err := common.ChTimes(build, tpl, a); err != nil {
+	if err := base.ChTimes(build, tpl, a); err != nil {
 		return err
 	}
 

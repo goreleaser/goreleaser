@@ -82,7 +82,7 @@ func TestBuild(t *testing.T) {
 	testlib.CheckPath(t, "poetry")
 
 	folder := testlib.Mktmp(t)
-	cmd := exec.Command("poetry", "new", "proj")
+	cmd := exec.CommandContext(t.Context(), "poetry", "new", "proj")
 	cmd.Dir = folder
 	_, err := cmd.CombinedOutput()
 	require.NoError(t, err)
@@ -176,7 +176,7 @@ func TestBuildSpecificModes(t *testing.T) {
 	testlib.CheckPath(t, "poetry")
 
 	folder := testlib.Mktmp(t)
-	cmd := exec.Command("poetry", "new", "proj")
+	cmd := exec.CommandContext(t.Context(), "poetry", "new", "proj")
 	cmd.Dir = folder
 	_, err := cmd.CombinedOutput()
 	require.NoError(t, err)

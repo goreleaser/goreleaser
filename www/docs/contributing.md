@@ -7,15 +7,10 @@ By participating in this project, you agree to abide our
 
 `goreleaser` is written in [Go](https://go.dev/).
 
-That said, we have two different ways of running the tests, regular, and with
-Dagger.
-
-### Regular
-
 Prerequisites:
 
 - [Task](https://taskfile.dev/installation)
-- [Go 1.24+](https://go.dev/doc/install)
+- [Go 1.25+](https://go.dev/doc/install)
 
 Other things you might need to run some of the tests (they should get
 automatically skipped if a needed tool isn't present):
@@ -27,15 +22,6 @@ automatically skipped if a needed tool isn't present):
 - [Snapcraft](https://snapcraft.io/)
 - [Syft](https://github.com/anchore/syft)
 - [upx](https://upx.github.io/)
-
-### Dagger
-
-Prerequisites:
-
-- [Task](https://taskfile.dev/installation)
-- [Dagger](https://docs.dagger.io/install)
-- [Go 1.24+](https://go.dev/doc/install)
-- [Docker](https://www.docker.com/)
 
 ## Building
 
@@ -76,12 +62,6 @@ Before you commit the changes, we also suggest you run:
 
 ```sh
 task fmt
-```
-
-You can also test it with Dagger:
-
-```bash
-dagger call test
 ```
 
 ### A note about Docker multi-arch builds

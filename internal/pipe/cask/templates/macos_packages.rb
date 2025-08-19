@@ -3,6 +3,9 @@
   {{- if eq $element.Arch "all" }}
   url "{{ $element.URL.Download }}"{{- include "additional_url_params" $element.URL }}
   sha256 "{{ $element.SHA256 }}"
+  {{- if .Binary }}
+  binary "{{ .Name }}", target: "{{ .Binary }}"
+  {{- end }}
 
   {{- else }}
   {{- if eq $element.Arch "amd64" }}
@@ -13,6 +16,9 @@
   {{- end }}
     url "{{ $element.URL.Download }}"{{- include "additional_url_params" $element.URL }}
     sha256 "{{ $element.SHA256 }}"
+    {{- if .Binary }}
+    binary "{{ .Name }}", target: "{{ .Binary }}"
+    {{- end }}
   end
   {{- end }}
 

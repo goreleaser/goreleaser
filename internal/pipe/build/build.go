@@ -11,8 +11,8 @@ import (
 	"github.com/caarlos0/go-shellwords"
 	"github.com/caarlos0/log"
 	"github.com/goreleaser/goreleaser/v2/internal/deprecate"
+	"github.com/goreleaser/goreleaser/v2/internal/gerrors"
 	"github.com/goreleaser/goreleaser/v2/internal/ids"
-	"github.com/goreleaser/goreleaser/v2/internal/pipe"
 	"github.com/goreleaser/goreleaser/v2/internal/semerrgroup"
 	"github.com/goreleaser/goreleaser/v2/internal/shell"
 	"github.com/goreleaser/goreleaser/v2/internal/skips"
@@ -130,7 +130,7 @@ func runPipeOnBuild(ctx *context.Context, g semerrgroup.Group, build config.Buil
 	for _, target := range filter(ctx, build) {
 		g.Go(func() error {
 			if err := buildTarget(ctx, build, target); err != nil {
-				return pipe.NewDetailedError(err, "target", target)
+				return gerrors.Wrap(err, "", "target", target)
 			}
 			return nil
 		})

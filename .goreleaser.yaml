@@ -185,11 +185,14 @@ homebrew_casks:
       - formula: goreleaser-pro
       - formula: goreleaser
       - cask: goreleaser-pro
-    manpage: "manpages/goreleaser.1.gz"
+    manpages:
+      - "manpages/goreleaser.1.gz"
     completions:
       bash: "completions/goreleaser.bash"
       zsh: "completions/goreleaser.zsh"
       fish: "completions/goreleaser.fish"
+    url:
+      verified: github.com/goreleaser/goreleaser/releases/download
 
 nix:
   - name: goreleaser
@@ -216,7 +219,6 @@ winget:
       branch: "goreleaser-{{.Version}}"
       pull_request:
         enabled: true
-        draft: true
         base:
           owner: microsoft
           name: winget-pkgs
@@ -358,6 +360,11 @@ milestones:
 
 release:
   name_template: "v{{ .Version }}"
+  header: |
+    ## Announcement
+
+    Read the official announcement: [Announcing GoReleaser v{{.Major}}.{{.Minor}}](https://goreleaser.com/blog/goreleaser-v{{.Major}}.{{.Minor}}/).
+
   footer: |
     **Full Changelog**: https://github.com/goreleaser/goreleaser/compare/{{ .PreviousTag }}...{{ if .IsNightly }}nightly{{ else }}{{ .Tag }}{{ end }}
 

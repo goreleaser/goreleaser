@@ -46,7 +46,6 @@ func New() Pipe {
 			blob.Pipe{},
 			upload.Pipe{},
 			artifactory.Pipe{},
-			custompublishers.Pipe{},
 			docker.Pipe{},
 			docker.ManifestPipe{},
 			dockerv2.Pipe{},
@@ -56,7 +55,7 @@ func New() Pipe {
 			// This should be one of the last steps
 			release.Pipe{},
 			// brew et al use the release URL, so, they should be last
-			nix.NewPublish(),
+			nix.New(),
 			winget.Pipe{},
 			brew.Pipe{},
 			cask.Pipe{},
@@ -66,6 +65,7 @@ func New() Pipe {
 			scoop.Pipe{},
 			chocolatey.Pipe{},
 			milestone.Pipe{},
+			custompublishers.Pipe{},
 		},
 	}
 }

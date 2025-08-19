@@ -72,7 +72,7 @@ func TestEmptyProjectName_DefaultsToGiteaRelease(t *testing.T) {
 func TestEmptyProjectName_DefaultsToGoModPath(t *testing.T) {
 	_ = testlib.Mktmp(t)
 	ctx := testctx.New()
-	require.NoError(t, exec.Command("go", "mod", "init", "github.com/foo/bar").Run())
+	require.NoError(t, exec.CommandContext(t.Context(), "go", "mod", "init", "github.com/foo/bar").Run())
 	require.NoError(t, Pipe{}.Default(ctx))
 	require.Equal(t, "bar", ctx.Config.ProjectName)
 }

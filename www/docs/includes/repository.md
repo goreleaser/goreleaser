@@ -59,6 +59,14 @@ search:
         # request is being opened on GitHub.
         check_boxes: true
 
+        # Allows to set a body for the pull request.
+        # If the repository has a pull request template, it will be appended to
+        # this.
+        #
+        # <!-- md:inline_version v2.12-unreleased -->
+        body: |
+          cc/ @foobar
+
         # Base can also be another repository, in which case the owner and name
         # above will be used as HEAD, allowing cross-repository pull requests.
         base:
@@ -94,3 +102,43 @@ search:
         # Default: 'ssh -i {{ .KeyPath }} -o StrictHostKeyChecking=accept-new -F /dev/null'.
         # Templates: allowed.
         ssh_command: 'ssh -i {{ .Env.KEY }} -o SomeOption=yes'
+
+    # Git author used to commit to the repository.
+    #
+    # <!-- md:inline_version v2.11 -->
+    # Default: inferred from global metadata (Since v2.12-unreleased).
+    commit_author:
+      # Git author name.
+      #
+      # Templates: allowed.
+      name: goreleaserbot
+
+      # Git author email.
+      #
+      # Templates: allowed.
+      email: bot@goreleaser.com
+
+      # Git commit signing configuration.
+      # Only useful if repository is of type 'git'.
+      #
+      # <!-- md:inline_version v2.11 -->.
+      signing:
+        # Enable commit signing.
+        enabled: true
+
+        # The signing key to use.
+        # Can be a key ID, fingerprint, email address, or path to a key file.
+        #
+        # Templates: allowed.
+        key: "{{ .Env.GPG_SIGNING_KEY }}"
+
+        # The GPG program to use for signing.
+        #
+        # Templates: allowed.
+        program: gpg2
+
+        # The signature format to use.
+        #
+        # Valid options: openpgp, x509, ssh.
+        # Default: openpgp.
+        format: openpgp

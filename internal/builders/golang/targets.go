@@ -87,31 +87,31 @@ func listTargets(build config.Build) ([]string, error) {
 	//nolint:prealloc
 	var result []string
 	for _, target := range allBuildTargets(build) {
-		if !contains(target.Goos, validGoos) {
+		if !slices.Contains(validGoos, target.Goos) {
 			return result, fmt.Errorf("invalid goos: %s", target.Goos)
 		}
-		if !contains(target.Goarch, validGoarch) {
+		if !slices.Contains(validGoarch, target.Goarch) {
 			return result, fmt.Errorf("invalid goarch: %s", target.Goarch)
 		}
-		if target.Goamd64 != "" && !contains(target.Goamd64, validGoamd64) {
+		if target.Goamd64 != "" && !slices.Contains(validGoamd64, target.Goamd64) {
 			return result, fmt.Errorf("invalid goamd64: %s", target.Goamd64)
 		}
-		if target.Go386 != "" && !contains(target.Go386, validGo386) {
+		if target.Go386 != "" && !slices.Contains(validGo386, target.Go386) {
 			return result, fmt.Errorf("invalid go386: %s", target.Go386)
 		}
-		if target.Goarm != "" && !contains(target.Goarm, validGoarm) {
+		if target.Goarm != "" && !slices.Contains(validGoarm, target.Goarm) {
 			return result, fmt.Errorf("invalid goarm: %s", target.Goarm)
 		}
 		if target.Goarm64 != "" && !validGoarm64.MatchString(target.Goarm64) {
 			return result, fmt.Errorf("invalid goarm64: %s", target.Goarm64)
 		}
-		if target.Gomips != "" && !contains(target.Gomips, validGomips) {
+		if target.Gomips != "" && !slices.Contains(validGomips, target.Gomips) {
 			return result, fmt.Errorf("invalid gomips: %s", target.Gomips)
 		}
-		if target.Goppc64 != "" && !contains(target.Goppc64, validGoppc64) {
+		if target.Goppc64 != "" && !slices.Contains(validGoppc64, target.Goppc64) {
 			return result, fmt.Errorf("invalid goppc64: %s", target.Goppc64)
 		}
-		if target.Goriscv64 != "" && !contains(target.Goriscv64, validGoriscv64) {
+		if target.Goriscv64 != "" && !slices.Contains(validGoriscv64, target.Goriscv64) {
 			return result, fmt.Errorf("invalid goriscv64: %s", target.Goriscv64)
 		}
 		if !valid(target) {
@@ -122,6 +122,7 @@ func listTargets(build config.Build) ([]string, error) {
 			log.WithField("target", target).Debug("skipped ignored build")
 			continue
 		}
+		warnUnstable(target)
 		targets = append(targets, target)
 	}
 	for _, target := range targets {
@@ -240,11 +241,20 @@ func ignored(build config.Build, target Target) bool {
 }
 
 func valid(target Target) bool {
-	return contains(target.Goos+target.Goarch, validTargets)
+	t := target.Goos + target.Goarch
+	return slices.Contains(validTargets, t) ||
+		slices.Contains(experimentalTargets, t) ||
+		slices.Contains(brokenTargets, t)
 }
 
-func contains(s string, ss []string) bool {
-	return slices.Contains(ss, s)
+func warnUnstable(target Target) {
+	t := target.Goos + target.Goarch
+	if slices.Contains(experimentalTargets, t) {
+		log.WithField("target", target).Warn("experimental target, use at your own risk")
+	}
+	if slices.Contains(brokenTargets, t) {
+		log.WithField("target", target).Error("broken target, use at your own risk")
+	}
 }
 
 // lists from https://go.dev/doc/install/source#environment
@@ -295,10 +305,17 @@ var (
 		"solarisamd64",
 		"solarissparc",
 		"solarissparc64",
-		"windowsarm",
 		"windowsarm64",
 		"windows386",
 		"windowsamd64",
+	}
+
+	experimentalTargets = []string{
+		"openbsdriscv64", // https://golang.google.cn/doc/go1.23#openbsd
+	}
+
+	brokenTargets = []string{
+		"windowsarm", // broken: https://golang.google.cn/doc/go1.24#windows , https://golang.google.cn/doc/go1.25#windows
 	}
 
 	validGoos = []string{
@@ -344,5 +361,5 @@ var (
 	validGoarm64   = regexp.MustCompile(`(v8\.[0-9]|v9\.[0-5])((,lse|,crypto)?)+`)
 	validGomips    = []string{"hardfloat", "softfloat"}
 	validGoppc64   = []string{"power8", "power9", "power10"}
-	validGoriscv64 = []string{"rva20u64", "rva22u64"}
+	validGoriscv64 = []string{"rva20u64", "rva22u64", "rva23u64"}
 )

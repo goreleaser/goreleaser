@@ -17,6 +17,7 @@ import (
 	"github.com/goreleaser/goreleaser/v2/internal/artifact"
 	"github.com/goreleaser/goreleaser/v2/internal/client"
 	"github.com/goreleaser/goreleaser/v2/internal/commitauthor"
+	"github.com/goreleaser/goreleaser/v2/internal/deprecate"
 	"github.com/goreleaser/goreleaser/v2/internal/pipe"
 	"github.com/goreleaser/goreleaser/v2/internal/skips"
 	"github.com/goreleaser/goreleaser/v2/internal/tmpl"
@@ -63,8 +64,15 @@ func (Pipe) Default(ctx *context.Context) error {
 		if brew.Directory == "" {
 			brew.Directory = "Casks"
 		}
+		if brew.Directory != "Casks" {
+			log.Warnf("%q might not work properly for your end users, for reference, the default is \"Casks\"", brew.Directory)
+		}
 		if brew.Binary == "" {
 			brew.Binary = brew.Name
+		}
+		if brew.Manpage != "" {
+			deprecate.Notice(ctx, "homebrew_casks.manpage")
+			brew.Manpages = append(brew.Manpages, brew.Manpage)
 		}
 	}
 
@@ -226,11 +234,15 @@ func doRun(ctx *context.Context, brew config.HomebrewCask, cl client.ReleaseURLT
 		&brew.Name,
 		&brew.SkipUpload,
 		&brew.Binary,
-		&brew.Manpage,
 		&brew.Completions.Bash,
 		&brew.Completions.Zsh,
 		&brew.Completions.Fish,
+		&brew.SkipUpload,
 	); err != nil {
+		return err
+	}
+
+	if err := tmpl.New(ctx).ApplySlice(&brew.Manpages); err != nil {
 		return err
 	}
 
@@ -239,12 +251,6 @@ func doRun(ctx *context.Context, brew config.HomebrewCask, cl client.ReleaseURLT
 		return err
 	}
 	brew.Repository = ref
-
-	skipUpload, err := tmpl.New(ctx).Apply(brew.SkipUpload)
-	if err != nil {
-		return err
-	}
-	brew.SkipUpload = skipUpload
 
 	content, err := buildCask(ctx, brew, cl, archives)
 	if err != nil {
@@ -304,6 +310,8 @@ func doBuildCask(ctx *context.Context, data templateData) (string, error) {
 		},
 		"uninstall": uninstallString,
 		"zap":       zapString,
+		"conflicts": conflictsString,
+		"depends":   dependsString,
 	}).ParseFS(templates, "templates/*.rb")
 	if err != nil {
 		return "", err
@@ -355,7 +363,8 @@ func dataFor(ctx *context.Context, cfg config.HomebrewCask, cl client.ReleaseURL
 		Version:      ctx.Version,
 	}
 
-	counts := map[string]int{}
+	platformCounts := map[string]int{}
+	formatCounts := map[artifact.Type]int{}
 	for _, art := range artifacts {
 		sum, err := art.Checksum("sha256")
 		if err != nil {
@@ -384,6 +393,7 @@ func dataFor(ctx *context.Context, cfg config.HomebrewCask, cl client.ReleaseURL
 		if err != nil {
 			return result, err
 		}
+		url.Download = strings.ReplaceAll(url.Download, ctx.Version, "#{version}")
 
 		pkg := releasePackage{
 			URL:    url,
@@ -392,7 +402,13 @@ func dataFor(ctx *context.Context, cfg config.HomebrewCask, cl client.ReleaseURL
 			Arch:   art.Goarch,
 		}
 
-		counts[pkg.OS+pkg.Arch]++
+		if art.Type == artifact.UploadableBinary {
+			pkg.Binary = artifact.MustExtra[string](*art, artifact.ExtraBinary)
+			pkg.Name = art.Name
+		}
+
+		formatCounts[art.Type]++
+		platformCounts[pkg.OS+pkg.Arch]++
 
 		switch pkg.OS {
 		case "darwin":
@@ -402,15 +418,14 @@ func dataFor(ctx *context.Context, cfg config.HomebrewCask, cl client.ReleaseURL
 		}
 	}
 
-	for _, v := range counts {
+	for _, v := range platformCounts {
 		if v > 1 {
 			return result, ErrMultipleArchivesSameOS
 		}
 	}
 
-	if len(result.MacOSPackages) == 1 && result.MacOSPackages[0].Arch == "amd64" {
-		result.HasOnlyAmd64MacOsPkg = true
-	}
+	result.HasOnlyAmd64MacOsPkg = len(result.MacOSPackages) == 1 && result.MacOSPackages[0].Arch == "amd64"
+	result.HasOnlyBinaryPkgs = len(formatCounts) == 1 && formatCounts[artifact.UploadableBinary] > 0
 
 	slices.SortStableFunc(result.LinuxPackages, compareByArch)
 	slices.SortStableFunc(result.MacOSPackages, compareByArch)

@@ -23,6 +23,16 @@ func TestRunCommand(t *testing.T) {
 		))
 	})
 
+	t.Run("empty command", func(t *testing.T) {
+		require.NoError(t, shell.Run(
+			testctx.New(),
+			"",
+			[]string{},
+			[]string{},
+			false,
+		))
+	})
+
 	t.Run("cmd failed", func(t *testing.T) {
 		require.Error(t, shell.Run(
 			testctx.New(),

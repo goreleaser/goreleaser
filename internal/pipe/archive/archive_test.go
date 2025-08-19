@@ -1269,6 +1269,61 @@ func TestSkip(t *testing.T) {
 	})
 }
 
+func TestFormatOverrideWithNoFormatOrNoGoos(t *testing.T) {
+	folder := testlib.Mktmp(t)
+	dist := filepath.Join(folder, "dist")
+	require.NoError(t, os.Mkdir(dist, 0o755))
+	createFakeBinary(t, dist, "windowsamd64", "mybin.exe")
+
+	ctx := testctx.NewWithCfg(
+		config.Project{
+			Dist:        dist,
+			ProjectName: "foobar",
+			Archives: []config.Archive{
+				{
+					Formats:      []string{"zip"},
+					NameTemplate: defaultNameTemplate,
+					FormatOverrides: []config.FormatOverride{
+						{Goos: "windows"},
+						{Formats: []string{"tgz"}},
+					},
+				},
+			},
+		},
+		testctx.WithVersion("0.0.1"),
+		testctx.WithCurrentTag("v0.0.1"),
+	)
+
+	windowsBuild := &artifact.Artifact{
+		Goos:    "windows",
+		Goarch:  "amd64",
+		Goamd64: "v1",
+		Name:    "mybin.exe",
+		Path:    filepath.Join(dist, "windowsamd64", "mybin.exe"),
+		Type:    artifact.Binary,
+		Extra: map[string]any{
+			artifact.ExtraBinary: "mybin",
+			artifact.ExtraExt:    ".exe",
+			artifact.ExtraID:     "default",
+		},
+	}
+	ctx.Artifacts.Add(windowsBuild)
+
+	require.NoError(t, Pipe{}.Default(ctx))
+	require.NoError(t, Pipe{}.Run(ctx))
+
+	archives := ctx.Artifacts.Filter(artifact.ByType(artifact.UploadableArchive)).List()
+	require.Len(t, archives, 1)
+
+	windowsArchive := archives[0]
+	require.Equal(t, "windows", windowsArchive.Goos)
+	require.Equal(t, "zip", windowsArchive.Format())
+	require.Equal(t, "foobar_0.0.1_windows_amd64.zip", windowsArchive.Name)
+
+	contents := testlib.LsArchive(t, windowsArchive.Path, "zip")
+	require.Contains(t, contents, "mybin.exe")
+}
+
 func TestDefaultDeprecatd(t *testing.T) {
 	ctx := testctx.NewWithCfg(config.Project{
 		Archives: []config.Archive{

@@ -15,7 +15,6 @@ import (
 	"github.com/goreleaser/goreleaser/v2/internal/testctx"
 	"github.com/goreleaser/goreleaser/v2/internal/testlib"
 	"github.com/goreleaser/goreleaser/v2/pkg/config"
-	"github.com/goreleaser/goreleaser/v2/pkg/context"
 	"github.com/stretchr/testify/require"
 )
 
@@ -450,7 +449,7 @@ func TestRunPipe_BadCredentials(t *testing.T) {
 }
 
 func TestRunPipe_FileNotFound(t *testing.T) {
-	ctx := context.New(config.Project{
+	ctx := testctx.WrapWithCfg(t.Context(), config.Project{
 		ProjectName: "mybin",
 		Dist:        "archivetest/dist",
 		Uploads: []config.Upload{

@@ -10,7 +10,7 @@ import (
 
 	"github.com/caarlos0/log"
 	"github.com/goreleaser/goreleaser/v2/internal/artifact"
-	"github.com/goreleaser/goreleaser/v2/internal/builders/common"
+	"github.com/goreleaser/goreleaser/v2/internal/builders/base"
 	"github.com/goreleaser/goreleaser/v2/internal/pyproject"
 	"github.com/goreleaser/goreleaser/v2/internal/tmpl"
 	api "github.com/goreleaser/goreleaser/v2/pkg/build"
@@ -107,7 +107,7 @@ func (b *Builder) WithDefaults(build config.Build) (config.Build, error) {
 		return build, fmt.Errorf("%w: %s", errTargets, strings.Join(build.Targets, ","))
 	}
 
-	if err := common.ValidateNonGoConfig(build, common.WithBuildMode); err != nil {
+	if err := base.ValidateNonGoConfig(build, base.WithBuildMode); err != nil {
 		return build, err
 	}
 
@@ -156,7 +156,7 @@ func (b *Builder) Build(ctx *context.Context, build config.Build, options api.Op
 	}
 	command = append(command, buildFlags...)
 
-	tenv, err := common.TemplateEnv(build.Env, tpl)
+	tenv, err := base.TemplateEnv(build.Env, tpl)
 	if err != nil {
 		return err
 	}
@@ -168,11 +168,11 @@ func (b *Builder) Build(ctx *context.Context, build config.Build, options api.Op
 	}
 	command = append(command, flags...)
 
-	if err := common.Exec(ctx, command, env, build.Dir); err != nil {
+	if err := base.Exec(ctx, command, env, build.Dir); err != nil {
 		return err
 	}
 
-	if err := common.ChTimes(build, tpl, art); err != nil {
+	if err := base.ChTimes(build, tpl, art); err != nil {
 		return err
 	}
 

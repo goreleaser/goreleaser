@@ -1,6 +1,7 @@
 package cask
 
 import (
+	_ "embed"
 	"fmt"
 	"os"
 	"path/filepath"
@@ -17,6 +18,9 @@ import (
 	"github.com/goreleaser/goreleaser/v2/pkg/context"
 	"github.com/stretchr/testify/require"
 )
+
+//go:embed testdata/github.rb
+var githubrb []byte
 
 func TestContinueOnError(t *testing.T) {
 	require.True(t, Pipe{}.ContinueOnError())
@@ -61,7 +65,10 @@ var defaultTemplateData = templateData{
 			Bash: "mybin.bash",
 			Zsh:  "mybin.zsh",
 		},
-		Manpage: "mybin.1.gz",
+		Manpages: []string{
+			"mybin.1.gz",
+			"mybin2.1.gz",
+		},
 	},
 	Name:                 "test",
 	Version:              "0.1.3",
@@ -115,7 +122,6 @@ func assertDefaultTemplateData(t *testing.T, cask string) {
 
 func TestFullCask(t *testing.T) {
 	data := defaultTemplateData
-	data.License = "MIT"
 	data.Caveats = "Here are some caveats"
 	data.Dependencies = []config.HomebrewCaskDependency{
 		{Formula: "goreleaser"},
@@ -136,7 +142,14 @@ func TestFullCask(t *testing.T) {
 		},
 	}
 	data.CustomBlock = `# A custom block
-# This particular case is just a comment.`
+# This particular case is a comment and a module.
+# https://docs.brew.sh/Cask-Cookbook#arbitrary-ruby-methods
+module Utils
+  def self.arbitrary_method
+    "arbitrary_method"
+  end
+end
+`
 	cask, err := doBuildCask(testctx.NewWithCfg(config.Project{
 		ProjectName: "foo",
 	}), data)
@@ -238,6 +251,23 @@ func TestFullPipe(t *testing.T) {
 				ctx.Config.Casks[0].CustomBlock = `head "https://github.com/caarlos0/test.git"`
 			},
 		},
+
+		"custom_block_url": {
+			prepare: func(ctx *context.Context) {
+				ctx.TokenType = context.TokenTypeGitHub
+				ctx.Config.Casks[0].Repository.Owner = "test"
+				ctx.Config.Casks[0].Repository.Name = "test"
+				ctx.Config.Casks[0].Homepage = "https://github.com/goreleaser"
+
+				ctx.Config.Casks[0].CustomBlock = string(githubrb)
+				ctx.Config.Casks[0].URL.Template = `#{GitHubHelper.release_asset_url("{{.Tag}}", "{{.ArtifactName}}")}`
+				ctx.Config.Casks[0].URL.Headers = []string{
+					"Accept: application/octet-stream",
+					"Authorization: Bearer #{GitHubHelper.token}",
+					"X-GitHub-Api-Version: 2022-11-28",
+				}
+			},
+		},
 		"default_gitlab": {
 			prepare: func(ctx *context.Context) {
 				ctx.TokenType = context.TokenTypeGitLab
@@ -245,6 +275,14 @@ func TestFullPipe(t *testing.T) {
 				ctx.Config.Casks[0].Repository.Name = "test"
 				ctx.Config.Casks[0].Homepage = "https://gitlab.com/goreleaser"
 			},
+		},
+		"invalid_manpageskj_template": {
+			prepare: func(ctx *context.Context) {
+				ctx.Config.Casks[0].Repository.Owner = "test"
+				ctx.Config.Casks[0].Repository.Name = "test"
+				ctx.Config.Casks[0].Manpages = []string{"{{ .Asdsa }"}
+			},
+			expectedRunErrorAs: &tmpl.Error{},
 		},
 		"invalid_commit_template": {
 			prepare: func(ctx *context.Context) {
@@ -332,6 +370,34 @@ func TestFullPipe(t *testing.T) {
 				ctx.Config.Casks[0].URL.Verified = "https://dummyhost/download/"
 				ctx.Config.Casks[0].URL.Headers = []string{"Accept: application/octet-stream"}
 				ctx.Config.Casks[0].URL.Data = map[string]string{"payload": "hello_world"}
+			},
+		},
+		"many-dependencies-and-conflicts": {
+			prepare: func(ctx *context.Context) {
+				ctx.Config.Casks[0].Repository.Owner = "test"
+				ctx.Config.Casks[0].Repository.Name = "test"
+				ctx.Config.Casks[0].Dependencies = append(
+					ctx.Config.Casks[0].Dependencies,
+					config.HomebrewCaskDependency{Formula: "f1"},
+					config.HomebrewCaskDependency{Formula: "f2"},
+					config.HomebrewCaskDependency{Formula: "f3"},
+					config.HomebrewCaskDependency{Formula: "f4"},
+					config.HomebrewCaskDependency{Cask: "c1"},
+					config.HomebrewCaskDependency{Cask: "c2"},
+					config.HomebrewCaskDependency{Cask: "c3"},
+					config.HomebrewCaskDependency{Cask: "c4"},
+				)
+				ctx.Config.Casks[0].Conflicts = append(
+					ctx.Config.Casks[0].Conflicts,
+					config.HomebrewCaskConflict{Formula: "f1"},
+					config.HomebrewCaskConflict{Formula: "f2"},
+					config.HomebrewCaskConflict{Formula: "f3"},
+					config.HomebrewCaskConflict{Formula: "f4"},
+					config.HomebrewCaskConflict{Cask: "c1"},
+					config.HomebrewCaskConflict{Cask: "c2"},
+					config.HomebrewCaskConflict{Cask: "c3"},
+					config.HomebrewCaskConflict{Cask: "c4"},
+				)
 			},
 		},
 	} {
@@ -758,8 +824,8 @@ func TestRunPipeBinaryRelease(t *testing.T) {
 						Owner: "foo",
 						Name:  "bar",
 					},
-					Binary:  "foo",
-					Manpage: "./man/foo.1.gz",
+					Binary:   "foo",
+					Manpages: []string{"./man/foo.1.gz"},
 				},
 			},
 		},
@@ -803,7 +869,7 @@ func TestRunPipePullRequest(t *testing.T) {
 					Name:        "foo",
 					Homepage:    "https://goreleaser.com",
 					Description: "Fake desc",
-					Manpage:     "./man/foo.1.gz",
+					Manpages:    []string{"./man/foo.1.gz"},
 					Repository: config.RepoRef{
 						Owner:  "foo",
 						Name:   "bar",
@@ -966,17 +1032,20 @@ func TestDefault(t *testing.T) {
 		ProjectName: "myproject",
 		Casks: []config.HomebrewCask{
 			{
+				Manpage:    "a",
 				Repository: repo,
 			},
 		},
 	}, testctx.GitHubTokenType)
 	require.NoError(t, Pipe{}.Default(ctx))
+	require.True(t, ctx.Deprecated)
 	require.Equal(t, ctx.Config.ProjectName, ctx.Config.Casks[0].Name)
 	require.Equal(t, ctx.Config.ProjectName, ctx.Config.Casks[0].Binary)
 	require.NotEmpty(t, ctx.Config.Casks[0].CommitAuthor.Name)
 	require.NotEmpty(t, ctx.Config.Casks[0].CommitAuthor.Email)
 	require.NotEmpty(t, ctx.Config.Casks[0].CommitMessageTemplate)
 	require.Equal(t, repo, ctx.Config.Casks[0].Repository)
+	require.Equal(t, []string{"a"}, ctx.Config.Casks[0].Manpages)
 }
 
 func TestGHFolder(t *testing.T) {

@@ -68,7 +68,7 @@ winget:
     # - '':        archives or binaries
     # - 'msi':     msi installers (requires the MSI pipe configured, Pro only)
     # - 'archive': archives (only if format is zip),
-    # - 'binary':  binaries
+    # - 'binary':  binaries (requires an archive configuration with format set to 'binary' as well)
     #
     # This feature is only available in GoReleaser Pro.
     # Default: ''.
@@ -92,12 +92,6 @@ winget:
     # Default depends on the client.
     # Templates: allowed.
     url_template: "https://github.mycompany.com/foo/bar/releases/download/{{ .Tag }}/{{ .ArtifactName }}"
-
-    # Git author used to commit to the repository.
-    # Templates: allowed.
-    commit_author:
-      name: goreleaserbot
-      email: bot@goreleaser.com
 
     # The project name and current git tag are used in the format string.
     #

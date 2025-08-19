@@ -40,7 +40,7 @@ An example configuration for `goreleaser` in upload mode `binary` with the targe
   target: "http://some.server/some/path/example-repo-local/{{ .ProjectName }}/{{ .Version }}/{{ .Os }}/{{ .Arch }}{{ if .Arm }}{{ .Arm }}{{ end }}"
 ```
 
-and will result in an HTTP PUT request sent to
+And will result in an HTTP PUT request sent to
 `http://some.server/some/path/example-repo-local/goreleaser/1.0.0/Darwin/x86_64/goreleaser`.
 
 Supported variables:
@@ -181,8 +181,12 @@ uploads:
       something: [foobar somethingelse anotherthing]
 
     # Upload mode. Valid options are `binary` and `archive`.
-    # If mode is `archive`, variables _Os_, _Arch_ and _Arm_ for target name are not supported.
-    # In that case these variables are empty.
+    #
+    # If mode is `archive`, variables _Os_, _Arch_ and _Arm_ for target name
+    #   are not supported. In that case these variables are empty.
+    #
+    # If mode is `binary`, you'll need to have the archives section setup with
+    #   format "binary" as well.
     #
     # Default: 'archive'.
     mode: archive
@@ -199,8 +203,16 @@ uploads:
     # target: https://some.server/some/path/example-repo-local/{{ .ArtifactName }};deb.distribution=xenial
     custom_artifact_name: true
 
-    # An optional username that will be used for the deployment for basic authn
+    # An optional username that will be used for the deployment for basic auth.
+    #
+    # Templates: allowed (since v2.12-unreleased).
     username: deployuser
+
+    # An optional password that will be used for the deployment for basic auth.
+    #
+    # Templates: allowed.
+    # <!-- md:inline_version v2.12-unreleased -->.
+    password: '{{ readFile "~/.config/foo" }}'
 
     # Client certificate and key (when provided, added as client cert to TLS connections)
     client_x509_cert: /path/to/client.cert.pem

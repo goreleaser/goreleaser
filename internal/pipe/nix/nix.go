@@ -16,6 +16,8 @@ import (
 	"strings"
 	"text/template"
 
+	stdctx "context"
+
 	"github.com/caarlos0/log"
 	"github.com/goreleaser/goreleaser/v2/internal/artifact"
 	"github.com/goreleaser/goreleaser/v2/internal/client"
@@ -50,13 +52,8 @@ var (
 	errInvalidLicense = errors.New("nix.license is invalid")
 )
 
-// NewBuild returns a pipe to be used in the build phase.
-func NewBuild() Pipe {
-	return Pipe{zeroHasher}
-}
-
-// NewPublish returns a pipe to be used in the publish phase.
-func NewPublish() Pipe {
+// New returns a pipe to be used in the publish phase.
+func New() Pipe {
 	return Pipe{realHasher}
 }
 
@@ -66,9 +63,10 @@ type Pipe struct {
 
 func (Pipe) String() string                           { return "nixpkgs" }
 func (Pipe) ContinueOnError() bool                    { return true }
-func (Pipe) Dependencies(_ *context.Context) []string { return []string{"nix-hash"} }
+func (Pipe) Dependencies(_ *context.Context) []string { return []string{nixHashBin} }
+
 func (p Pipe) Skip(ctx *context.Context) bool {
-	return skips.Any(ctx, skips.Nix) || len(ctx.Config.Nix) == 0 || !p.hasher.Available()
+	return skips.Any(ctx, skips.Nix) || len(ctx.Config.Nix) == 0
 }
 
 func (Pipe) Default(ctx *context.Context) error {
@@ -95,6 +93,9 @@ func (Pipe) Default(ctx *context.Context) error {
 }
 
 func (p Pipe) Run(ctx *context.Context) error {
+	if !p.hasher.Available() {
+		return pipe.Skipf("%s is not available", nixHashBin)
+	}
 	cli, err := client.NewReleaseClient(ctx)
 	if err != nil {
 		return err
@@ -284,7 +285,7 @@ func preparePkg(
 
 	platforms := map[string]bool{}
 	for _, art := range archives {
-		sha, err := hasher.Hash(art.Path)
+		sha, err := hasher.Hash(ctx, art.Path)
 		if err != nil {
 			return "", err
 		}
@@ -540,38 +541,25 @@ func depNames(deps []config.NixDependency) []string {
 }
 
 type fileHasher interface {
-	Hash(name string) (string, error)
+	Hash(ctx stdctx.Context, name string) (string, error)
 	Available() bool
 }
 
-const (
-	zeroHash   = "0000000000000000000000000000000000000000000000000000"
-	nixHashBin = "nix-hash"
-)
+const nixHashBin = "nix-hash"
 
-var (
-	zeroHasher fileHasher = alwaysZeroHasher{}
-	realHasher fileHasher = nixHasher{bin: nixHashBin}
-)
-
-type alwaysZeroHasher struct{}
-
-func (alwaysZeroHasher) Hash(string) (string, error) { return zeroHash, nil }
-func (alwaysZeroHasher) Available() bool             { return true }
+var realHasher fileHasher = nixHasher{bin: nixHashBin}
 
 type nixHasher struct{ bin string }
 
 func (p nixHasher) Available() bool {
 	_, err := exec.LookPath(p.bin)
-	if err != nil {
-		log.Warnf("%s is not available", p.bin)
-	}
 	return err == nil
 }
 
-func (p nixHasher) Hash(name string) (string, error) {
+func (p nixHasher) Hash(ctx stdctx.Context, name string) (string, error) {
 	// $ nix-hash --type sha256 --flat --base32 <(echo test)
-	out, err := exec.Command(
+	out, err := exec.CommandContext(
+		ctx,
 		p.bin,
 		"--type", "sha256",
 		"--flat",

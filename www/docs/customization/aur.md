@@ -133,12 +133,6 @@ aurs:
     # <!-- md:inline_version v2.8 -->.
     install: ./scripts/install.sh
 
-    # Git author used to commit to the repository.
-    # Templates: allowed.
-    commit_author:
-      name: goreleaserbot
-      email: bot@goreleaser.com
-
     # Commit message.
     #
     # Default: 'Update to {{ .Tag }}'.
@@ -177,6 +171,8 @@ aurs:
     # Templates: allowed.
     # <!-- md:inline_version v2.8 -->.
     disable: "{{ .IsSnapshot }}"
+
+{% include-markdown "../includes/commit_author.md" comments=false start='---\n\n' %}
 ```
 
 <!-- md:templates -->

@@ -1,6 +1,6 @@
 # Homebrew Formulas (deprecated)
 
-> [Deprecated](./../deprecations.md#brews) in v2.10-unreleased.
+> [Deprecated](./../deprecations.md#brews) in v2.10.
 > [Homebrew Casks](./homebrew_casks.md) should be used instead.
 
 After releasing to GitHub, GitLab, or Gitea, GoReleaser can generate and publish
@@ -83,12 +83,6 @@ brews:
     # Allows you to add a custom require_relative at the top of the formula
     # template.
     custom_require: custom_download_strategy
-
-    # Git author used to commit to the repository.
-    # Templates: allowed.
-    commit_author:
-      name: goreleaserbot
-      email: bot@goreleaser.com
 
     # The project name and current git tag are used in the format string.
     #

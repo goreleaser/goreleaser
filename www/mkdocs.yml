@@ -25,6 +25,7 @@ theme:
   icon:
     admonition:
       example: material/professional-hexagon
+    annotation: material/star-four-points-circle
   palette:
     - media: "(prefers-color-scheme: light)" # Light mode
       scheme: default
@@ -87,9 +88,6 @@ plugins:
 
 extra:
   generator: false
-  analytics:
-    provider: google
-    property: "G-3MZGQS8EPS"
   social:
     - icon: fontawesome/brands/x-twitter
       link: https://x.com/goreleaser
@@ -112,13 +110,14 @@ nav:
   - Documentation:
       - customization/index.md
       - General:
+          - customization/project.md
+          - customization/metadata.md
+          - customization/dist.md
           - customization/includes.md
           - customization/templates.md
           - customization/templatefiles.md
           - customization/env.md
           - customization/hooks.md
-          - customization/dist.md
-          - customization/project.md
           - customization/git.md
           - Split & Merge: customization/partial.md
       - Build:
@@ -153,7 +152,6 @@ nav:
           - Ko: customization/ko.md
       - SBOMs: customization/sbom.md
       - customization/reportsizes.md
-      - customization/metadata.md
       - Sign & Notarize:
           - Binaries: customization/binary_sign.md
           - Archives, installers, packages, and checksums: customization/sign.md
@@ -173,8 +171,8 @@ nav:
           - customization/winget.md
           - NUR: customization/nix.md
           - AUR: customization/aur.md
-          - customization/npm.md
           - AUR (Sources): customization/aursources.md
+          - customization/npm.md
           - Krew: customization/krew.md
           - Scoop: customization/scoop.md
           - customization/changelog.md

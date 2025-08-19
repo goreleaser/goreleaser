@@ -224,7 +224,7 @@ type HomebrewCask struct {
 	Caveats               string       `yaml:"caveats,omitempty" json:"caveats,omitempty"`
 	Description           string       `yaml:"description,omitempty" json:"description,omitempty"`
 	Homepage              string       `yaml:"homepage,omitempty" json:"homepage,omitempty"`
-	License               string       `yaml:"license,omitempty" json:"license,omitempty"`
+	License               string       `yaml:"license,omitempty" json:"license,omitempty"` // XXX: seems like casks don't support it?
 	SkipUpload            string       `yaml:"skip_upload,omitempty" json:"skip_upload,omitempty" jsonschema:"oneof_type=string;boolean"`
 	CustomBlock           string       `yaml:"custom_block,omitempty" json:"custom_block,omitempty"`
 	IDs                   []string     `yaml:"ids,omitempty" json:"ids,omitempty"`
@@ -232,7 +232,7 @@ type HomebrewCask struct {
 
 	// Cask only:
 	Binary       string                   `yaml:"binary,omitempty" json:"binary,omitempty"`
-	Manpage      string                   `yaml:"manpage,omitempty" json:"manpage,omitempty"`
+	Manpages     []string                 `yaml:"manpages,omitempty" json:"manpages,omitempty"`
 	URL          HomebrewCaskURL          `yaml:"url,omitempty" json:"url,omitempty"`
 	Completions  HomebrewCaskCompletions  `yaml:"completions,omitempty" json:"completions,omitempty"`
 	Dependencies []HomebrewCaskDependency `yaml:"dependencies,omitempty" json:"dependencies,omitempty"`
@@ -240,6 +240,9 @@ type HomebrewCask struct {
 	Hooks        HomebrewCaskHooks        `yaml:"hooks,omitempty" json:"hooks,omitempty"`
 	Uninstall    HomebrewCaskUninstall    `yaml:"uninstall,omitempty" json:"uninstall,omitempty"`
 	Zap          HomebrewCaskUninstall    `yaml:"zap,omitempty" json:"zap,omitempty"`
+
+	// Deprecated: use [HomebrewCask.Manpages] instead.
+	Manpage string `yaml:"manpage,omitempty" json:"manpage,omitempty"`
 }
 
 type HomebrewCaskURL struct {
@@ -421,8 +424,16 @@ type Scoop struct {
 
 // CommitAuthor is the author of a Git commit.
 type CommitAuthor struct {
-	Name  string `yaml:"name,omitempty" json:"name,omitempty"`
-	Email string `yaml:"email,omitempty" json:"email,omitempty"`
+	Name    string        `yaml:"name,omitempty" json:"name,omitempty"`
+	Email   string        `yaml:"email,omitempty" json:"email,omitempty"`
+	Signing CommitSigning `yaml:"signing,omitempty" json:"signing,omitempty"`
+}
+
+type CommitSigning struct {
+	Enabled bool   `yaml:"enabled,omitempty" json:"enabled,omitempty"`
+	Key     string `yaml:"key,omitempty" json:"key,omitempty"`
+	Program string `yaml:"program,omitempty" json:"program,omitempty"`
+	Format  string `yaml:"format,omitempty" json:"format,omitempty" jsonschema:"enum=openpgp,enum=x509,enum=ssh,default=openpgp"`
 }
 
 // BuildHooks define actions to run before and/or after something.
@@ -1003,6 +1014,14 @@ type Checksum struct {
 	ExtraFiles   []ExtraFile `yaml:"extra_files,omitempty" json:"extra_files,omitempty"`
 }
 
+// Retry config for operations that support retries.
+// Added in v2.12.
+type Retry struct {
+	Attempts uint          `yaml:"attempts,omitempty" json:"attempts,omitempty"`
+	Delay    time.Duration `yaml:"delay,omitempty" json:"delay,omitempty"`
+	MaxDelay time.Duration `yaml:"max_delay,omitempty" json:"max_delay,omitempty"`
+}
+
 // Docker image config.
 type Docker struct {
 	ID                 string   `yaml:"id,omitempty" json:"id,omitempty"`
@@ -1018,6 +1037,7 @@ type Docker struct {
 	BuildFlagTemplates []string `yaml:"build_flag_templates,omitempty" json:"build_flag_templates,omitempty"`
 	PushFlags          []string `yaml:"push_flags,omitempty" json:"push_flags,omitempty"`
 	Use                string   `yaml:"use,omitempty" json:"use,omitempty" jsonschema:"enum=docker,enum=buildx,default=docker"`
+	Retry              Retry    `yaml:"retry,omitempty" json:"retry,omitempty"`
 }
 
 type DockerV2 struct {
@@ -1043,6 +1063,7 @@ type DockerManifest struct {
 	CreateFlags    []string `yaml:"create_flags,omitempty" json:"create_flags,omitempty"`
 	PushFlags      []string `yaml:"push_flags,omitempty" json:"push_flags,omitempty"`
 	Use            string   `yaml:"use,omitempty" json:"use,omitempty"`
+	Retry          Retry    `yaml:"retry,omitempty" json:"retry,omitempty"`
 }
 
 // Filters config.
@@ -1109,7 +1130,7 @@ type Upload struct {
 	Exts               []string          `yaml:"exts,omitempty" json:"exts,omitempty"`
 	Target             string            `yaml:"target,omitempty" json:"target,omitempty"`
 	Username           string            `yaml:"username,omitempty" json:"username,omitempty"`
-	Mode               string            `yaml:"mode,omitempty" json:"mode,omitempty"`
+	Mode               string            `yaml:"mode,omitempty" json:"mode,omitempty" jsonschema:"enum=binary,enum=archive,default=archive"`
 	Method             string            `yaml:"method,omitempty" json:"method,omitempty"`
 	ChecksumHeader     string            `yaml:"checksum_header,omitempty" json:"checksum_header,omitempty"`
 	ClientX509Cert     string            `yaml:"client_x509_cert,omitempty" json:"client_x509_cert,omitempty"`
@@ -1123,6 +1144,9 @@ type Upload struct {
 	ExtraFiles         []ExtraFile       `yaml:"extra_files,omitempty" json:"extra_files,omitempty"`
 	ExtraFilesOnly     bool              `yaml:"extra_files_only,omitempty" json:"extra_files_only,omitempty"`
 	Skip               string            `yaml:"skip,omitempty" json:"skip,omitempty" jsonschema:"oneof_type=string;boolean"`
+
+	// Since v2.12
+	Password string `yaml:"password,omitempty" json:"password,omitempty"`
 }
 
 // Publisher configuration.

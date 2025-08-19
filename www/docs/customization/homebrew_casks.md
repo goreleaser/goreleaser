@@ -1,6 +1,6 @@
 # Homebrew Casks
 
-<!-- md:version v2.10-unreleased -->
+<!-- md:version v2.10 -->
 
 After releasing to GitHub, GitLab, or Gitea, GoReleaser can generate and publish
 a _Homebrew Cask_ into a repository (_Tap_) that you have access to.
@@ -42,10 +42,19 @@ homebrew_casks:
     # Templates: allowed.
     binary: myapp
 
-    # Path to the manpage file
+    # App to use instead of the binary.
+    # This will then make GoReleaser use only the DMG files instead of archives.
+    #
+    # Pro only.
+    # Templates: allowed.
+    app: Foo.app
+
+    # Path to the manpage files.
     #
     # Templates: allowed.
-    manpage: man/myapp.1
+    manpages:
+      - man/myapp.1
+      - man/myapp-subcmd.1
 
     # Completions for different shells
     #
@@ -103,12 +112,6 @@ homebrew_casks:
         format: "dmg"
         platform: "mac"
 
-    # Git author used to commit to the repository.
-    # Templates: allowed.
-    commit_author:
-      name: goreleaserbot
-      email: bot@goreleaser.com
-
     # The project name and current git tag are used in the format string.
     #
     # Templates: allowed.
@@ -132,11 +135,6 @@ homebrew_casks:
     # Default: inferred from global metadata.
     description: "Software to create fast and easy drum rolls."
 
-    # SPDX identifier of your app's license.
-    #
-    # Default: inferred from global metadata.
-    license: "MIT"
-
     # Setting this will prevent goreleaser to actually try to commit the updated
     # cask - instead, the cask file will be stored on the dist directory
     # only, leaving the responsibility of publishing it to the user.
@@ -148,6 +146,11 @@ homebrew_casks:
 
     # Custom block for brew.
     # Can be used to specify alternate downloads for devel or head releases.
+    #
+    # This block is placed at the top of the cask definition.
+    # It allows you to define custom modules and helper methods
+    # for advanced tasks, such as dynamic URL construction.
+    # For more information, see: https://docs.brew.sh/Cask-Cookbook#arbitrary-ruby-methods
     custom_block: |
       head "https://github.com/some/package.git"
       ...
@@ -233,7 +236,9 @@ homebrew_casks:
       post:
         # replace foo with the actual binary name
         install: |
-          system_command "/usr/bin/xattr", args: ["-dr", "com.apple.quarantine", "#{staged_path}/foo"]
+          if OS.mac?
+            system_command "/usr/bin/xattr", args: ["-dr", "com.apple.quarantine", "#{staged_path}/foo"]
+          end
 ```
 
 !!! danger "What happens if I don't follow the steps above?"
@@ -247,6 +252,19 @@ homebrew_casks:
     your users to run the appropriate `xattr` command manually.
 
     You may do so in using the `caveats` property, for example.
+
+!!! warning "xattr bypasses macOS security - use with caution"
+
+    Use of `xattr` to bypass Gatekeeper circumvents macOS security protections
+    designed to verify software authenticity. This removes Apple's verification
+    layer and requires users to trust the software directly.
+
+    Proper code signing and notarization is Apple's recommended method for
+    distributing software. This approach should only be considered when code
+    signing is not feasible.
+
+    Important: Apple may disable this bypass method in future macOS versions
+    without notice, potentially breaking software distribution that relies on it.
 
 ## Versioned Casks
 
@@ -275,12 +293,67 @@ Your users can then `brew install foo@1.2` to keep using the previous version.
 
 ## GitHub Actions
 
-To publish a cask from one repository to another using GitHub Actions, you cannot use the default action token.
-You must use a separate token with content write privileges for the tap repository.
-You can check the [resource not accessible by integration](https://goreleaser.com/errors/resource-not-accessible-by-integration/) for more information.
+To publish a cask from one repository to another using GitHub Actions, you
+cannot use the default action token. You must use a separate token with content
+write privileges for the tap repository. You can check the
+[resource not accessible by integration](https://goreleaser.com/errors/resource-not-accessible-by-integration/)
+for more information.
 
-## Limitations
+## Private GitHub Repositories
 
-- Only one `GOARM` build is allowed;
+The best way to support private repositories is to add by using a custom block,
+a custom template URL, and custom headers.
+
+Here's an example:
+
+!!! warning
+
+    Please note that this example uses an internal Homebrew API to retrieve the GitHub API token.
+
+    Replace with your implementation as needed.
+
+```yaml title=".goreleaser.yaml"
+homebrew_casks:
+  - name: foo
+    custom_block: |
+      module GitHubHelper
+        def self.token
+          require "utils/github"
+
+          # Prefer environment variable if available
+          github_token = ENV["HOMEBREW_GITHUB_API_TOKEN"]
+          github_token ||= GitHub::API.credentials
+          raise "Failed to retrieve github api token" if github_token.nil? || github_token.empty?
+
+          github_token
+        end
+
+        def self.release_asset_url(tag, name)
+          require "json"
+          require "net/http"
+          require "uri"
+
+          resp = Net::HTTP.get(
+            # Replace with your GitHub repository URL
+            URI.parse("https://api.github.com/repos/goreleaser/example/releases/tags/#{tag}"),
+            {
+              "Accept" => "application/vnd.github+json",
+              "Authorization" => "Bearer #{token}",
+              "X-GitHub-Api-Version" => "2022-11-28"
+            }
+          )
+
+          release = JSON.parse(resp)
+          release["assets"].find { |asset| asset["name"] == name }["url"]
+        end
+      end
+
+    url:
+      template: '#{GitHubHelper.release_asset_url("{{.Tag}}", "{{.ArtifactName}}")}'
+      headers:
+        - "Accept: application/octet-stream"
+        - "Authorization: Bearer #{GitHubHelper.token}"
+        - "X-GitHub-Api-Version: 2022-11-28"
+```
 
 {% include-markdown "../includes/prs.md" comments=false start='---\n\n' %}

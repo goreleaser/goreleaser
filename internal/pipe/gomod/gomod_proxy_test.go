@@ -43,7 +43,7 @@ func TestCheckGoMod(t *testing.T) {
 		}, testctx.Snapshot, withTestModulePath)
 
 		fakeGoModAndSum(t, ctx.ModulePath)
-		require.NoError(t, exec.Command("go", "mod", "edit", "-replace", "foo=../bar").Run())
+		require.NoError(t, exec.CommandContext(t.Context(), "go", "mod", "edit", "-replace", "foo=../bar").Run())
 		require.NoError(t, CheckGoModPipe{}.Run(ctx))
 	})
 	t.Run("no go mod", func(t *testing.T) {
@@ -89,7 +89,7 @@ func TestCheckGoMod(t *testing.T) {
 		}, withTestModulePath)
 
 		fakeGoModAndSum(t, ctx.ModulePath)
-		require.NoError(t, exec.Command("go", "mod", "edit", "-replace", "foo=../bar").Run())
+		require.NoError(t, exec.CommandContext(t.Context(), "go", "mod", "edit", "-replace", "foo=../bar").Run())
 		require.ErrorIs(t, CheckGoModPipe{}.Run(ctx), ErrReplaceWithProxy)
 	})
 }
@@ -222,16 +222,14 @@ func TestErrors(t *testing.T) {
 	ogerr := errors.New("fake")
 	t.Run("detailed", func(t *testing.T) {
 		err := newDetailedErrProxy(ogerr, "some details")
-		require.NotEmpty(t, err.Error())
-		require.Contains(t, err.Error(), "failed to proxy module")
-		require.Contains(t, err.Error(), "details")
+		require.ErrorContains(t, err, "failed to proxy module")
+		require.ErrorContains(t, err, "details")
 		require.ErrorIs(t, err, ogerr)
 	})
 
 	t.Run("normal", func(t *testing.T) {
 		err := newErrProxy(ogerr)
-		require.NotEmpty(t, err.Error())
-		require.Contains(t, err.Error(), "failed to proxy module")
+		require.ErrorContains(t, err, "failed to proxy module")
 		require.ErrorIs(t, err, ogerr)
 	})
 }
@@ -241,9 +239,10 @@ func requireGoMod(tb testing.TB) {
 
 	mod, err := os.ReadFile("dist/proxy/foo/go.mod")
 	require.NoError(tb, err)
-	require.Contains(tb, string(mod), `module foo
+	require.Contains(tb, string(mod), fmt.Sprintf(`module foo
 
-go 1.24`)
+go %s
+`, testlib.GoVersion))
 }
 
 func fakeGoModAndSum(tb testing.TB, module string) {
