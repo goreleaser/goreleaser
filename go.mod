@@ -33,7 +33,7 @@ require (
 	github.com/goreleaser/nfpm/v2 v2.43.0
 	github.com/hashicorp/go-multierror v1.1.1
 	github.com/invopop/jsonschema v0.13.0
-	github.com/jarcoal/httpmock v1.4.0
+	github.com/jarcoal/httpmock v1.4.1
 	github.com/klauspost/pgzip v1.2.6
 	github.com/mark3labs/mcp-go v0.37.0
 	github.com/mattn/go-mastodon v0.0.10
