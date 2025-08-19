@@ -12,6 +12,7 @@ import (
 	"os/exec"
 	"path"
 	"path/filepath"
+	"runtime"
 	"slices"
 	"strconv"
 	"strings"
@@ -73,8 +74,12 @@ func (p Pipe) Run(ctx *context.Context) error {
 		return pipe.Skip("non-snapshot build")
 	}
 
-	warn()
+	warnExperimental()
 	log.Warn("--snapshot is set, using local registry - this only attests the image build process")
+
+	if runtime.GOOS == "windows" {
+		return pipe.Skip("library/registry is not available for windows")
+	}
 
 	return withRegistry(ctx, func(port string) error {
 		g := semerrgroup.NewSkipAware(semerrgroup.New(ctx.Parallelism))
@@ -93,7 +98,7 @@ func (p Pipe) Run(ctx *context.Context) error {
 
 // Publish implements publish.Publisher.
 func (Pipe) Publish(ctx *context.Context) error {
-	warn()
+	warnExperimental()
 	g := semerrgroup.NewSkipAware(semerrgroup.New(ctx.Parallelism))
 	for _, d := range ctx.Config.DockersV2 {
 		g.Go(func() error {
@@ -380,7 +385,7 @@ func tplMapFlags(tpl *tmpl.Template, flag string, m map[string]string) ([]string
 	return result, nil
 }
 
-func warn() {
+func warnExperimental() {
 	log.WithField("details", `Keep an eye on the release notes if you wish to rely on this for production builds.
 Please provide any feedback you might have at http://github.com/goreleaser/goreleaser/discussions/XYZ`).
 		Warn(logext.Warning("dockers_v2 is experimental and subject to change"))
