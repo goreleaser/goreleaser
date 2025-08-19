@@ -24,6 +24,7 @@ import (
 	"github.com/goreleaser/goreleaser/v2/internal/pipe/gomod"
 	"github.com/goreleaser/goreleaser/v2/internal/pipe/ko"
 	"github.com/goreleaser/goreleaser/v2/internal/pipe/krew"
+	"github.com/goreleaser/goreleaser/v2/internal/pipe/makeself"
 	"github.com/goreleaser/goreleaser/v2/internal/pipe/metadata"
 	"github.com/goreleaser/goreleaser/v2/internal/pipe/nfpm"
 	"github.com/goreleaser/goreleaser/v2/internal/pipe/nix"
@@ -123,6 +124,8 @@ var Pipeline = append(
 	sourcearchive.Pipe{},
 	// archive via fpm (deb, rpm) using "native" go impl
 	nfpm.Pipe{},
+	// create makeself self-extracting archives
+	makeself.Pipe{},
 	// archive via snapcraft (snap)
 	snapcraft.Pipe{},
 	// create SBOMs of artifacts

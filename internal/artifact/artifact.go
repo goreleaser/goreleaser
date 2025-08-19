@@ -105,6 +105,8 @@ const (
 	PySdist
 	// Metadata is an internal goreleaser metadata JSON file.
 	Metadata
+	// MakeselfPackage is a makeself self-extracting archive.
+	MakeselfPackage
 	// lastMarker is used in tests to denote the last valid type.
 	// always add new types before this one.
 	lastMarker
@@ -182,6 +184,8 @@ func (t Type) String() string {
 		return "Wheel"
 	case PySdist:
 		return "Source Dist"
+	case MakeselfPackage:
+		return "Makeself Package"
 	default:
 		return "unknown"
 	}
