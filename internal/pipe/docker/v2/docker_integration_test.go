@@ -28,7 +28,7 @@ func TestRun(t *testing.T) {
 				Images:     []string{"image1", "image2"},
 				Tags:       []string{"tag1", "tag2"},
 				Files:      []string{"./testdata/foo.conf"},
-				// IDs:        []string{"id1"},
+				IDs:        []string{"id1"},
 			},
 		},
 	}, testctx.Snapshot)

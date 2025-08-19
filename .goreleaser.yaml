@@ -120,11 +120,8 @@ dockers_v2:
       - "v{{ .Version }}"
       - "{{ if .IsNightly }}nightly{{ end }}"
       - "{{ if not .IsNightly }}latest{{ end }}"
-    extra_files:
+    files:
       - scripts/entrypoint.sh
-    platforms:
-      - linux/amd64
-      - linux/arm64
     labels:
       "io.artifacthub.package.readme-url": "https://raw.githubusercontent.com/goreleaser/goreleaser/main/README.md"
       "io.artifacthub.package.logo-url": "https://goreleaser.com/static/avatar.png"
