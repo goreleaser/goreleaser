@@ -393,6 +393,7 @@ func dataFor(ctx *context.Context, cfg config.HomebrewCask, cl client.ReleaseURL
 		if err != nil {
 			return result, err
 		}
+		url.Download = strings.ReplaceAll(url.Download, ctx.Version, "#{version}")
 
 		pkg := releasePackage{
 			URL:    url,

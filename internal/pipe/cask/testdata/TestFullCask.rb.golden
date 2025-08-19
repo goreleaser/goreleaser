@@ -9,6 +9,7 @@ cask "test" do
     end
   end
 
+  name "test"
   desc "Some desc"
   homepage "https://google.com"
   version "0.1.3"
