@@ -50,8 +50,6 @@ func TestRun(t *testing.T) {
 	require.NoError(t, err, "message: %s, output: %v", gerrors.MessageOf(err), gerrors.DetailsOf(err))
 
 	images := ctx.Artifacts.Filter(artifact.ByType(artifact.DockerImageV2)).List()
-	require.Len(t, images, 2)
-	t.Log(images)
-	require.Regexp(t, `localhost:\d+/dockerv2/myimg:tag1`, images[0])
-	require.Regexp(t, `localhost:\d+/dockerv2/myimg:tag2`, images[1])
+	require.Len(t, images, 1)
+	require.Regexp(t, `localhost:\d+/dockerv2/myimg:latest`, images[0])
 }

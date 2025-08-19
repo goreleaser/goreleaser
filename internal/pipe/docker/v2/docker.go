@@ -64,41 +64,6 @@ func (Pipe) Default(ctx *context.Context) error {
 	return ids.Validate()
 }
 
-// XXX: other setup steps:
-// - docker buildx create --name goreleaser --use
-// - docker run --privileged --rm tonistiigi/binfmt --install all
-func withRegistry(ctx *context.Context, fn func(*context.Context, string) error) error {
-	port, err := randomPort()
-	if err != nil {
-		return err
-	}
-	cleanup := func() {
-		_ = exec.CommandContext(ctx, "docker", "stop", "goreleaser-registry").Run()
-		_ = exec.CommandContext(ctx, "docker", "kill", "goreleaser-registry").Run()
-		_ = exec.CommandContext(ctx, "docker", "rm", "goreleaser-registry").Run()
-	}
-	cleanup()
-	defer cleanup()
-
-	if out, err := exec.CommandContext(
-		ctx,
-		"docker",
-		"run",
-		"-d",
-		"--name",
-		"goreleaser-registry",
-		"-p", port+":5000",
-		"registry:3",
-	).CombinedOutput(); err != nil {
-		return gerrors.Wrap(
-			err,
-			"could not start local registry",
-			"output", string(out),
-		)
-	}
-	return fn(ctx, port)
-}
-
 // Run implements pipeline.Piper.
 func (p Pipe) Run(ctx *context.Context) error {
 	if !ctx.Snapshot {
@@ -113,6 +78,7 @@ func (p Pipe) Run(ctx *context.Context) error {
 		for _, d := range ctx.Config.DockersV2 {
 			g.Go(func() error {
 				d.Images = []string{fmt.Sprintf("localhost:%s/%s/%s", port, ctx.Config.ProjectName, d.ID)}
+				d.Tags = []string{"latest"}
 				// XXX: could potentially use `--output=type=local,dest=./dist/dockers/id/` to output the file tree?
 				// Not sure if useful or not...
 				return buildAndPublish(ctx, d)
@@ -417,4 +383,36 @@ func warn() {
 	log.WithField("details", `Keep an eye on the release notes if you wish to rely on this for production builds.
 Please provide any feedback you might have at http://github.com/goreleaser/goreleaser/discussions/XYZ`).
 		Warn(logext.Warning("dockers_v2 is experimental and subject to change"))
+}
+
+// XXX: other setup steps:
+// - docker buildx create --name goreleaser --use
+// - docker run --privileged --rm tonistiigi/binfmt --install all
+func withRegistry(ctx *context.Context, fn func(*context.Context, string) error) error {
+	port, err := randomPort()
+	if err != nil {
+		return err
+	}
+	cleanupRegistry(ctx)
+	defer cleanupRegistry(ctx)
+	if out, err := exec.CommandContext(
+		ctx,
+		"docker", "run", "-d",
+		"--name", "goreleaser-registry",
+		"-p", port+":5000",
+		"registry:3",
+	).CombinedOutput(); err != nil {
+		return gerrors.Wrap(
+			err,
+			"could not start local registry",
+			"output", string(out),
+		)
+	}
+	return fn(ctx, port)
+}
+
+func cleanupRegistry(ctx *context.Context) {
+	for _, arg := range []string{"stop", "kill", "rm"} {
+		_ = exec.CommandContext(ctx, "docker", arg, "goreleaser-registry").Run()
+	}
 }
