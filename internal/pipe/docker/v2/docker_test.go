@@ -134,7 +134,6 @@ func TestMakeArgs(t *testing.T) {
 				"--label", "date=2025-08-19T00:00:00Z",
 				"--label", "name=dockerv2",
 				"--build-arg", "FOO=bar",
-				"-f", "bar.dockerfile",
 				".",
 			},
 			args,
@@ -211,4 +210,49 @@ func TestPlatform(t *testing.T) {
 			require.Equal(t, expected, plat)
 		})
 	}
+}
+
+func TestParsePlatform(t *testing.T) {
+	for input, output := range map[string]platform{
+		"linux/amd64":  {os: "linux", arch: "amd64"},
+		"linux/arm/v6": {os: "linux", arch: "arm", arm: "6"},
+	} {
+		t.Run(input, func(t *testing.T) {
+			require.Equal(t, output, parsePlatform(input))
+		})
+	}
+}
+
+func TestContextArtifacts(t *testing.T) {
+	ctx := testctx.NewWithCfg(config.Project{
+		ProjectName: "dockerv2",
+	})
+
+	ctx.Artifacts.Add(&artifact.Artifact{
+		Name:   "mybin",
+		Goos:   "linux",
+		Goarch: "arm",
+		Goarm:  "7",
+		Type:   artifact.Binary,
+		Extra: artifact.Extras{
+			artifact.ExtraID: "id1",
+		},
+	})
+	for _, arch := range []string{"amd64", "arm64"} {
+		ctx.Artifacts.Add(&artifact.Artifact{
+			Name:   "mybin",
+			Goos:   "linux",
+			Goarch: arch,
+			Type:   artifact.Binary,
+			Extra: artifact.Extras{
+				artifact.ExtraID: "id1",
+			},
+		})
+	}
+
+	arts := contextArtifacts(ctx, config.DockerV2{
+		Platforms: []string{"linux/arm/v7", "linux/amd64", "linux/arm64"},
+		IDs:       []string{"id1"},
+	})
+	require.Len(t, arts, 3)
 }

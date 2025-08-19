@@ -57,22 +57,29 @@ func (Pipe) Default(ctx *context.Context) error {
 			docker.Tags = []string{"latest"}
 		}
 		if len(docker.Platforms) == 0 {
-			docker.Platforms = []string{"linux/amd64,linux/arm64"}
+			docker.Platforms = []string{"linux/amd64", "linux/arm64"}
 		}
 		ids.Inc(docker.ID)
 	}
 	return ids.Validate()
 }
 
-// Run implements pipeline.Piper.
-func (p Pipe) Run(ctx *context.Context) error {
-	if !ctx.Snapshot {
-		return pipe.Skip("non-snapshot build")
-	}
+// XXX: other setup steps:
+// - docker buildx create --name goreleaser --use
+// - docker run --privileged --rm tonistiigi/binfmt --install all
+func withRegistry(ctx *context.Context, fn func(*context.Context, string) error) error {
 	port, err := randomPort()
 	if err != nil {
 		return err
 	}
+	cleanup := func() {
+		_ = exec.CommandContext(ctx, "docker", "stop", "goreleaser-registry").Run()
+		_ = exec.CommandContext(ctx, "docker", "kill", "goreleaser-registry").Run()
+		_ = exec.CommandContext(ctx, "docker", "rm", "goreleaser-registry").Run()
+	}
+	cleanup()
+	defer cleanup()
+
 	if out, err := exec.CommandContext(
 		ctx,
 		"docker",
@@ -89,29 +96,30 @@ func (p Pipe) Run(ctx *context.Context) error {
 			"output", string(out),
 		)
 	}
-	defer func() {
-		_ = exec.CommandContext(ctx, "docker", "stop", "goreleaser-registry").Run()
-		_ = exec.CommandContext(ctx, "docker", "kill", "goreleaser-registry").Run()
-		_ = exec.CommandContext(ctx, "docker", "rm", "goreleaser-registry").Run()
-	}()
+	return fn(ctx, port)
+}
+
+// Run implements pipeline.Piper.
+func (p Pipe) Run(ctx *context.Context) error {
+	if !ctx.Snapshot {
+		return pipe.Skip("non-snapshot build")
+	}
 
 	warn()
 	log.Warn("--snapshot is set, using local registry - this only attests the image build process")
 
-	// XXX: other setup steps:
-	// - docker buildx create --name goreleaser --use
-	// - docker run --privileged --rm tonistiigi/binfmt --install all
-
-	g := semerrgroup.NewSkipAware(semerrgroup.New(ctx.Parallelism))
-	for _, d := range ctx.Config.DockersV2 {
-		g.Go(func() error {
-			d.Images = []string{fmt.Sprintf("localhost:%s/%s/%s", port, ctx.Config.ProjectName, d.ID)}
-			// XXX: could potentially use `--output=type=local,dest=./dist/dockers/id/` to output the file tree?
-			// Not sure if useful or not...
-			return buildAndPublish(ctx, d)
-		})
-	}
-	return g.Wait()
+	return withRegistry(ctx, func(ctx *context.Context, port string) error {
+		g := semerrgroup.NewSkipAware(semerrgroup.New(ctx.Parallelism))
+		for _, d := range ctx.Config.DockersV2 {
+			g.Go(func() error {
+				d.Images = []string{fmt.Sprintf("localhost:%s/%s/%s", port, ctx.Config.ProjectName, d.ID)}
+				// XXX: could potentially use `--output=type=local,dest=./dist/dockers/id/` to output the file tree?
+				// Not sure if useful or not...
+				return buildAndPublish(ctx, d)
+			})
+		}
+		return g.Wait()
+	})
 }
 
 var dockerDigestPattern = regexp.MustCompile("sha256:[a-z0-9]{64}")
@@ -234,11 +242,7 @@ func makeArgs(ctx *context.Context, d config.DockerV2, extraArgs []string) ([]st
 	arg = append(arg, extraArgs...)
 	arg = append(arg, labelFlags...)
 	arg = append(arg, buildFlags...)
-	arg = append(
-		arg,
-		"-f", d.Dockerfile,
-		".",
-	)
+	arg = append(arg, ".")
 	return arg, allImages, nil
 }
 
@@ -257,18 +261,18 @@ func makeImageList(imgs, tags []string) []string {
 func makeContext(d config.DockerV2, artifacts []*artifact.Artifact) (string, error) {
 	if len(artifacts) == 0 {
 		log.Warn("no binaries or packages found for the given platform - COPY/ADD may not work")
+		panic("OH NO")
 	}
 
 	tmp, err := os.MkdirTemp("", "goreleaserdocker")
 	if err != nil {
 		return "", fmt.Errorf("failed to create temporary dir: %w", err)
 	}
+	// TODO: rm temp dir
 
-	if err := gio.Copy(
-		d.Dockerfile,
-		filepath.Join(tmp, "Dockerfile"),
-	); err != nil {
-		return "", fmt.Errorf("failed to copy dockerfile: %w", err)
+	wd, _ := os.Getwd()
+	if err := gio.Copy(d.Dockerfile, filepath.Join(tmp, "Dockerfile")); err != nil {
+		return "", fmt.Errorf("failed to copy dockerfile: %w: %s: %s", err, wd, d.ID)
 	}
 
 	for _, file := range d.Files {
@@ -372,9 +376,8 @@ func parsePlatform(p string) platform {
 		os:   parts[0],
 		arch: parts[1],
 	}
-
 	if len(parts) == 3 {
-		result.arm = parts[2]
+		result.arm = strings.TrimPrefix(parts[2], "v")
 	}
 	return result
 }
