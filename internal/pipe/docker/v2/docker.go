@@ -2,10 +2,10 @@ package docker
 
 import (
 	"bytes"
-	"errors"
 	"fmt"
 	"io"
 	"maps"
+	"net"
 	"os"
 	"os/exec"
 	"path/filepath"
@@ -15,28 +15,32 @@ import (
 
 	"github.com/caarlos0/log"
 	"github.com/goreleaser/goreleaser/v2/internal/artifact"
+	"github.com/goreleaser/goreleaser/v2/internal/gerrors"
 	"github.com/goreleaser/goreleaser/v2/internal/gio"
 	"github.com/goreleaser/goreleaser/v2/internal/ids"
 	"github.com/goreleaser/goreleaser/v2/internal/logext"
 	"github.com/goreleaser/goreleaser/v2/internal/pipe"
 	"github.com/goreleaser/goreleaser/v2/internal/semerrgroup"
+	"github.com/goreleaser/goreleaser/v2/internal/skips"
 	"github.com/goreleaser/goreleaser/v2/internal/tmpl"
 	"github.com/goreleaser/goreleaser/v2/pkg/config"
 	"github.com/goreleaser/goreleaser/v2/pkg/context"
 )
 
-const (
-	extraImageNames = "ImageNames"
-	extraImageName  = "ImageName"
-)
-
+// Pipe v2 of dockers pipe.
 type Pipe struct{}
 
 // String implements pipeline.Piper.
 func (p Pipe) String() string { return "docker images (v2)" }
 
 // Dependencies implements healthcheck.Healthchecker.
-func (Pipe) Dependencies(ctx *context.Context) []string { return []string{"docker"} }
+func (Pipe) Dependencies(*context.Context) []string { return []string{"docker"} }
+
+// Skip implements Skipper.
+func (Pipe) Skip(ctx *context.Context) bool {
+	return skips.Any(ctx, skips.Docker) ||
+		len(ctx.Config.DockersV2) == 0
+}
 
 // String implements defaults.Defaulter.
 func (Pipe) Default(ctx *context.Context) error {
@@ -53,7 +57,7 @@ func (Pipe) Default(ctx *context.Context) error {
 			docker.Tags = []string{"latest"}
 		}
 		if len(docker.Platforms) == 0 {
-			docker.Platforms = []string{"linux/amd64"}
+			docker.Platforms = []string{"linux/amd64,linux/arm64"}
 		}
 		ids.Inc(docker.ID)
 	}
@@ -63,29 +67,48 @@ func (Pipe) Default(ctx *context.Context) error {
 // Run implements pipeline.Piper.
 func (p Pipe) Run(ctx *context.Context) error {
 	if !ctx.Snapshot {
-		return pipe.Skip("refuse to run against localhost in a production build")
+		return pipe.Skip("non-snapshot build")
 	}
-	if err := exec.CommandContext(
+	port, err := randomPort()
+	if err != nil {
+		return err
+	}
+	if out, err := exec.CommandContext(
 		ctx,
 		"docker",
 		"run",
 		"-d",
 		"--name",
 		"goreleaser-registry",
-		"-p 5000:5000",
-		"registry:2",
-	).Run(); err != nil {
-		return fmt.Errorf("docker: %w", err)
+		"-p", port+":5000",
+		"registry:3",
+	).CombinedOutput(); err != nil {
+		return gerrors.Wrap(
+			err,
+			"could not start local registry",
+			"output", string(out),
+		)
 	}
 	defer func() {
 		_ = exec.CommandContext(ctx, "docker", "stop", "goreleaser-registry").Run()
 		_ = exec.CommandContext(ctx, "docker", "kill", "goreleaser-registry").Run()
 		_ = exec.CommandContext(ctx, "docker", "rm", "goreleaser-registry").Run()
 	}()
+
+	warn()
+	log.Warn("--snapshot is set, using local registry - this only attests the image build process")
+
+	// XXX: other setup steps:
+	// - docker buildx create --name goreleaser --use
+	// - docker run --privileged --rm tonistiigi/binfmt --install all
+
 	g := semerrgroup.NewSkipAware(semerrgroup.New(ctx.Parallelism))
 	for _, d := range ctx.Config.DockersV2 {
 		g.Go(func() error {
-			return buildOne(ctx, d)
+			d.Images = []string{fmt.Sprintf("localhost:%s/%s/%s", port, ctx.Config.ProjectName, d.ID)}
+			// XXX: could potentially use `--output=type=local,dest=./dist/dockers/id/` to output the file tree?
+			// Not sure if useful or not...
+			return buildAndPublish(ctx, d)
 		})
 	}
 	return g.Wait()
@@ -95,172 +118,35 @@ var dockerDigestPattern = regexp.MustCompile("sha256:[a-z0-9]{64}")
 
 // Publish implements publish.Publisher.
 func (Pipe) Publish(ctx *context.Context) error {
-	for id, arts := range ctx.Artifacts.
-		Filter(artifact.ByType(artifact.PublishableDockerImageV2)).
-		GroupByID() {
-		var imgs []string
-		for _, art := range arts {
-			log.WithField("path", art.Path).Info("loading image")
-			in, err := os.Open(art.Path)
-			if err != nil {
-				return fmt.Errorf("docker: could not load %s: %w", art.Path, err)
-			}
-			defer in.Close()
-			cmd := exec.CommandContext(ctx, "docker", "load")
-			cmd.Env = append(ctx.Env.Strings(), cmd.Environ()...)
-			var b bytes.Buffer
-			w := gio.Safe(&b)
-			cmd.Stderr = io.MultiWriter(logext.NewWriter(), w)
-			cmd.Stdout = io.MultiWriter(logext.NewWriter(), w)
-			cmd.Stdin = in
-			if err := cmd.Run(); err != nil {
-				return pipe.NewDetailedError(
-					err,
-					"args", strings.Join(cmd.Args, " "),
-					"output", b.String(),
-				)
-			}
-			imgs = append(imgs, artifact.MustExtra[string](*art, extraImageName))
-		}
-
-		for _, img := range imgs {
-			log.WithField("image", img).Info("pushing image")
-			cmd := exec.CommandContext(ctx, "docker", "push", img)
-			cmd.Env = append(ctx.Env.Strings(), cmd.Environ()...)
-			var b bytes.Buffer
-			w := gio.Safe(&b)
-			cmd.Stderr = io.MultiWriter(logext.NewWriter(), w)
-			cmd.Stdout = io.MultiWriter(logext.NewWriter(), w)
-			if err := cmd.Run(); err != nil {
-				return pipe.NewDetailedError(
-					err,
-					"args", strings.Join(cmd.Args, " "),
-					"image", img,
-					"output", b.String(),
-				)
-			}
-			digest := dockerDigestPattern.FindString(b.String())
-			if digest == "" {
-				return pipe.NewDetailedError(
-					errors.New("failed to find docker digest in docker push output"),
-					"output", b.String(),
-				)
-			}
-			art := &artifact.Artifact{
-				Type: artifact.DockerImage,
-				Name: img,
-				Path: img,
-				Extra: map[string]any{
-					artifact.ExtraDigest: digest,
-				},
-			}
-			if id != "" {
-				art.Extra[artifact.ExtraID] = id
-			}
-			ctx.Artifacts.Add(art)
-		}
-
-		manifests := artifact.MustExtra[[]string](*arts[0], extraImageNames)
-		for _, manifest := range manifests {
-			log.WithField("images", imgs).
-				WithField("manifest", manifest).
-				Info("creating manifest")
-			arg := []string{"buildx", "imagetools", "create", "-t", manifest}
-			arg = append(arg, imgs...)
-			cmd := exec.CommandContext(ctx, "docker", arg...)
-			cmd.Env = append(ctx.Env.Strings(), cmd.Environ()...)
-			var b bytes.Buffer
-			w := gio.Safe(&b)
-			cmd.Stderr = io.MultiWriter(logext.NewWriter(), w)
-			cmd.Stdout = io.MultiWriter(logext.NewWriter(), w)
-			if err := cmd.Run(); err != nil {
-				return pipe.NewDetailedError(
-					err,
-					"args", strings.Join(cmd.Args, " "),
-					"manifest", manifest,
-					"output", b.String(),
-				)
-			}
-			digest := dockerDigestPattern.FindString(b.String())
-			if digest == "" {
-				return pipe.NewDetailedError(
-					errors.New("failed to find docker digest in docker push output"),
-					"output", b.String(),
-				)
-			}
-			art := &artifact.Artifact{
-				Type: artifact.DockerManifest,
-				Name: manifest,
-				Path: manifest,
-				Extra: map[string]any{
-					artifact.ExtraDigest: digest,
-				},
-			}
-			if id != "" {
-				art.Extra[artifact.ExtraID] = id
-			}
-
-			ctx.Artifacts.Add(art)
-		}
+	warn()
+	g := semerrgroup.NewSkipAware(semerrgroup.New(ctx.Parallelism))
+	for _, d := range ctx.Config.DockersV2 {
+		g.Go(func() error {
+			return buildAndPublish(ctx, d, "--push")
+		})
 	}
-
-	return nil
+	return g.Wait()
 }
 
-func buildOne(ctx *context.Context, d config.DockerV2) error {
+func buildAndPublish(ctx *context.Context, d config.DockerV2, extraArgs ...string) error {
 	if len(d.Platforms) == 0 {
 		return pipe.Skip("no platforms to build")
 	}
 
-	tpl := tmpl.New(ctx)
-	if err := tpl.ApplyAll(
-		&d.Dockerfile,
-	); err != nil {
-		return fmt.Errorf("docker: %w", err)
-	}
-
-	images, err := tpl.Slice(d.Images, tmpl.NonEmpty())
+	arg, images, err := makeArgs(ctx, d, extraArgs)
 	if err != nil {
-		return fmt.Errorf("docker: %w", err)
-	}
-	if len(images) == 0 {
-		return pipe.Skip("no images")
-	}
-	tags, err := tpl.Slice(d.Tags, tmpl.NonEmpty())
-	if err != nil {
-		return fmt.Errorf("docker: %w", err)
-	}
-	if len(tags) == 0 {
-		tags = []string{"latest"}
-	}
-	allImages := makeImageList(images, tags)
-
-	var labelFlags []string
-	for k, v := range d.Labels {
-		if err := tpl.ApplyAll(&k, &v); err != nil {
-			return fmt.Errorf("docker: %w", err)
-		}
-		labelFlags = append(labelFlags, "--label", k+"="+v)
+		return err
 	}
 
 	wd, err := makeContext(d, contextArtifacts(ctx, d))
 	if err != nil {
-		return fmt.Errorf("docker: %w", err)
+		return err
 	}
 	defer os.RemoveAll(wd)
 
-	arg := []string{
-		"buildx",
-		"build",
-		"--platform", strings.Join(d.Platforms, ","),
-		"-t", images[0],
-	}
-	arg = append(arg, labelFlags...)
-	arg = append(
-		arg,
-		"-f", d.Dockerfile,
-		".",
-	)
+	log.WithField("id", d.ID).
+		Infof("creating %d images", len(images))
+
 	cmd := exec.CommandContext(ctx, "docker", arg...)
 	cmd.Dir = wd
 	cmd.Env = append(ctx.Env.Strings(), cmd.Environ()...)
@@ -269,30 +155,91 @@ func buildOne(ctx *context.Context, d config.DockerV2) error {
 	cmd.Stderr = io.MultiWriter(logext.NewWriter(), w)
 	cmd.Stdout = io.MultiWriter(logext.NewWriter(), w)
 	if err := cmd.Run(); err != nil {
-		return pipe.NewDetailedError(
+		return gerrors.Wrap(
 			err,
+			"could not build and publish docker image",
 			"args", strings.Join(cmd.Args, " "),
-			"image", allImages[0],
+			"id", d.ID,
+			"image", images[0],
 			"output", b.String(),
 			"wd", wd,
 		)
 	}
 
-	log.WithField("image", allImages[0]).
-		WithField("id", d.ID).
-		Info("created docker image")
-	ctx.Artifacts.Add(&artifact.Artifact{
-		Name: allImages[0],
-		Path: allImages[0],
-		Type: artifact.PublishableDockerImageV2,
-		Extra: map[string]any{
-			artifact.ExtraID: d.ID,
-			extraImageName:   allImages[0],
-			extraImageNames:  allImages,
-		},
-	})
+	for _, img := range images {
+		log.WithField("image", img).
+			WithField("id", d.ID).
+			Info("created image")
+		ctx.Artifacts.Add(&artifact.Artifact{
+			Name: img,
+			Path: img,
+			Type: artifact.DockerImageV2,
+			Extra: map[string]any{
+				artifact.ExtraID: d.ID,
+			},
+		})
+
+		// XXX: should we extract the SBOM and add its artifact as well?
+		// https://docs.docker.com/build/metadata/attestations/sbom/#inspecting-sboms
+	}
 
 	return nil
+}
+
+func makeArgs(ctx *context.Context, d config.DockerV2, extraArgs []string) ([]string, []string, error) {
+	tpl := tmpl.New(ctx)
+	if err := tpl.ApplyAll(
+		&d.Dockerfile,
+	); err != nil {
+		return nil, nil, fmt.Errorf("invalid dockerfile: %w", err)
+	}
+	if strings.TrimSpace(d.Dockerfile) == "" {
+		return nil, nil, pipe.Skip("no dockerfile")
+	}
+	images, err := tpl.Slice(d.Images, tmpl.NonEmpty())
+	if err != nil {
+		return nil, nil, fmt.Errorf("invalid images: %w", err)
+	}
+	if len(images) == 0 {
+		return nil, nil, pipe.Skip("no images")
+	}
+	tags, err := tpl.Slice(d.Tags, tmpl.NonEmpty())
+	if err != nil {
+		return nil, nil, fmt.Errorf("invalid tags: %w", err)
+	}
+	if len(tags) == 0 {
+		tags = []string{"latest"}
+	}
+	allImages := makeImageList(images, tags)
+
+	labelFlags, err := tplMapFlags(tpl, "--label", d.Labels)
+	if err != nil {
+		return nil, nil, fmt.Errorf("invalid labels: %w", err)
+	}
+
+	buildFlags, err := tplMapFlags(tpl, "--build-arg", d.BuildArgs)
+	if err != nil {
+		return nil, nil, fmt.Errorf("invalid build args: %w", err)
+	}
+
+	arg := []string{
+		"buildx",
+		"build",
+		"--platform", strings.Join(d.Platforms, ","),
+		"--attest=type=sbom",
+	}
+	for _, img := range allImages {
+		arg = append(arg, "-t", img)
+	}
+	arg = append(arg, extraArgs...)
+	arg = append(arg, labelFlags...)
+	arg = append(arg, buildFlags...)
+	arg = append(
+		arg,
+		"-f", d.Dockerfile,
+		".",
+	)
+	return arg, allImages, nil
 }
 
 func makeImageList(imgs, tags []string) []string {
@@ -430,4 +377,41 @@ func parsePlatform(p string) platform {
 		result.arm = parts[2]
 	}
 	return result
+}
+
+func randomPort() (string, error) {
+	l, err := net.Listen("tcp", "localhost:0") //nolint:errcheck
+	if err != nil {
+		return "", fmt.Errorf("could not find random port: %w", err)
+	}
+	_ = l.Close()
+	return fmt.Sprintf("%d", l.Addr().(*net.TCPAddr).Port), nil //nolint:errcheck
+}
+
+// tplMapFlags templates all keys and values in the given map, returning a
+// slice of them with the [flag] prefix.
+//
+// It'll also sort keys so the resulting slice is always in the same order.
+// Finally, it will also skip entries with either an empty key or value.
+func tplMapFlags(tpl *tmpl.Template, flag string, m map[string]string) ([]string, error) {
+	var result []string
+	keys := slices.Collect(maps.Keys(m))
+	slices.Sort(keys)
+	for _, k := range keys {
+		v := m[k]
+		if err := tpl.ApplyAll(&k, &v); err != nil {
+			return nil, fmt.Errorf("docker: %w", err)
+		}
+		if strings.TrimSpace(k) == "" || strings.TrimSpace(v) == "" {
+			continue
+		}
+		result = append(result, flag, k+"="+v)
+	}
+	return result, nil
+}
+
+func warn() {
+	log.WithField("details", `Keep an eye on the release notes if you wish to rely on this for production builds.
+Please provide any feedback you might have at http://github.com/goreleaser/goreleaser/discussions/XYZ`).
+		Warn(logext.Warning("dockers_v2 is experimental and subject to change"))
 }

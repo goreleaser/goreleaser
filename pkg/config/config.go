@@ -1023,6 +1023,7 @@ type Retry struct {
 }
 
 // Docker image config.
+// Deprecated: use [DockerV2] instead.
 type Docker struct {
 	ID                 string   `yaml:"id,omitempty" json:"id,omitempty"`
 	IDs                []string `yaml:"ids,omitempty" json:"ids,omitempty"`
@@ -1040,21 +1041,8 @@ type Docker struct {
 	Retry              Retry    `yaml:"retry,omitempty" json:"retry,omitempty"`
 }
 
-type DockerV2 struct {
-	ID         string            `yaml:"id,omitempty" json:"id,omitempty"`
-	IDs        []string          `yaml:"ids,omitempty" json:"ids,omitempty"`
-	Dockerfile string            `yaml:"dockerfile,omitempty" json:"dockerfile,omitempty"`
-	Images     []string          `yaml:"images,omitempty" json:"images,omitempty"`
-	Tags       []string          `yaml:"tags,omitempty" json:"tags,omitempty"`
-	Labels     map[string]string `yaml:"labels,omitempty" json:"labels,omitempty"`
-	Files      []string          `yaml:"extra_files,omitempty" json:"extra_files,omitempty"`
-	Platforms  []string          `yaml:"platforms,omitempty" json:"platforms,omitempty"`
-	// Use        string            `yaml:"use,omitempty" json:"use,omitempty" jsonschema:"enum=docker,enum=buildx,default=docker"`
-	// BuildFlags []string          `yaml:"build_flags,omitempty" json:"build_flags,omitempty"`
-	// PushFlags  []string          `yaml:"push_flags,omitempty" json:"push_flags,omitempty"`
-}
-
 // DockerManifest config.
+// Deprecated: use [DockerV2] instead.
 type DockerManifest struct {
 	ID             string   `yaml:"id,omitempty" json:"id,omitempty"`
 	NameTemplate   string   `yaml:"name_template,omitempty" json:"name_template,omitempty"`
@@ -1064,6 +1052,19 @@ type DockerManifest struct {
 	PushFlags      []string `yaml:"push_flags,omitempty" json:"push_flags,omitempty"`
 	Use            string   `yaml:"use,omitempty" json:"use,omitempty"`
 	Retry          Retry    `yaml:"retry,omitempty" json:"retry,omitempty"`
+}
+
+// DockerV2 is the new Docker build pipe options.
+type DockerV2 struct {
+	ID         string            `yaml:"id,omitempty" json:"id,omitempty"`
+	IDs        []string          `yaml:"ids,omitempty" json:"ids,omitempty"`
+	Dockerfile string            `yaml:"dockerfile,omitempty" json:"dockerfile,omitempty"`
+	Images     []string          `yaml:"images,omitempty" json:"images,omitempty"`
+	Tags       []string          `yaml:"tags,omitempty" json:"tags,omitempty"`
+	Labels     map[string]string `yaml:"labels,omitempty" json:"labels,omitempty"`
+	Files      []string          `yaml:"extra_files,omitempty" json:"extra_files,omitempty"`
+	Platforms  []string          `yaml:"platforms,omitempty" json:"platforms,omitempty"`
+	BuildArgs  map[string]string `yaml:"build_args,omitempty" json:"build_args,omitempty"`
 }
 
 // Filters config.
