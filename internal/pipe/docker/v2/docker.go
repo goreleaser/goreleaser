@@ -1,3 +1,4 @@
+// Package docker provides the v2 of GoReleaser's docker pipe.
 package docker
 
 import (
@@ -11,8 +12,8 @@ import (
 	"os/exec"
 	"path"
 	"path/filepath"
-	"regexp"
 	"slices"
+	"strconv"
 	"strings"
 
 	"github.com/caarlos0/log"
@@ -44,7 +45,7 @@ func (Pipe) Skip(ctx *context.Context) bool {
 		len(ctx.Config.DockersV2) == 0
 }
 
-// String implements defaults.Defaulter.
+// Default implements defaults.Defaulter.
 func (Pipe) Default(ctx *context.Context) error {
 	ids := ids.New("dockersv2")
 	for i := range ctx.Config.DockersV2 {
@@ -89,8 +90,6 @@ func (p Pipe) Run(ctx *context.Context) error {
 		return g.Wait()
 	})
 }
-
-var dockerDigestPattern = regexp.MustCompile("sha256:[a-z0-9]{64}")
 
 // Publish implements publish.Publisher.
 func (Pipe) Publish(ctx *context.Context) error {
@@ -356,7 +355,7 @@ func randomPort(ctx stdctx.Context) (string, error) {
 		return "", fmt.Errorf("could not find random port: %w", err)
 	}
 	_ = l.Close()
-	return fmt.Sprintf("%d", l.Addr().(*net.TCPAddr).Port), nil //nolint:errcheck
+	return strconv.Itoa(l.Addr().(*net.TCPAddr).Port), nil
 }
 
 // tplMapFlags templates all keys and values in the given map, returning a
