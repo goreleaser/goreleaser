@@ -40,9 +40,6 @@ cask "open_pr" do
 
   conflicts_with cask: [
       "fish",
-    ],
-    formula: [
-      "bash",
     ]
 
   postflight do

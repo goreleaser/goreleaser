@@ -163,7 +163,6 @@ homebrew_casks:
     # Packages that conflict with your cask.
     conflicts:
       - cask: some-cask
-      - formula: some-formula
 
     # Hooks for the cask lifecycle.
     hooks:
