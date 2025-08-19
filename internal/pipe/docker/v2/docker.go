@@ -2,12 +2,14 @@ package docker
 
 import (
 	"bytes"
+	stdctx "context"
 	"fmt"
 	"io"
 	"maps"
 	"net"
 	"os"
 	"os/exec"
+	"path"
 	"path/filepath"
 	"regexp"
 	"slices"
@@ -73,7 +75,7 @@ func (p Pipe) Run(ctx *context.Context) error {
 	warn()
 	log.Warn("--snapshot is set, using local registry - this only attests the image build process")
 
-	return withRegistry(ctx, func(ctx *context.Context, port string) error {
+	return withRegistry(ctx, func(port string) error {
 		g := semerrgroup.NewSkipAware(semerrgroup.New(ctx.Parallelism))
 		for _, d := range ctx.Config.DockersV2 {
 			g.Go(func() error {
@@ -328,7 +330,7 @@ func toPlatform(a *artifact.Artifact) (string, error) {
 	default:
 		return "", fmt.Errorf("unsupported arch: %q", a.Goarch)
 	}
-	return strings.Join(parts, "/"), nil
+	return path.Join(parts...), nil
 }
 
 type platform struct {
@@ -348,8 +350,8 @@ func parsePlatform(p string) platform {
 	return result
 }
 
-func randomPort() (string, error) {
-	l, err := net.Listen("tcp", "localhost:0") //nolint:errcheck
+func randomPort(ctx stdctx.Context) (string, error) {
+	l, err := (&net.ListenConfig{}).Listen(ctx, "tcp", "localhost:0")
 	if err != nil {
 		return "", fmt.Errorf("could not find random port: %w", err)
 	}
@@ -388,8 +390,8 @@ Please provide any feedback you might have at http://github.com/goreleaser/gorel
 // XXX: other setup steps:
 // - docker buildx create --name goreleaser --use
 // - docker run --privileged --rm tonistiigi/binfmt --install all
-func withRegistry(ctx *context.Context, fn func(*context.Context, string) error) error {
-	port, err := randomPort()
+func withRegistry(ctx stdctx.Context, fn func(string) error) error {
+	port, err := randomPort(ctx)
 	if err != nil {
 		return err
 	}
@@ -408,10 +410,10 @@ func withRegistry(ctx *context.Context, fn func(*context.Context, string) error)
 			"output", string(out),
 		)
 	}
-	return fn(ctx, port)
+	return fn(port)
 }
 
-func cleanupRegistry(ctx *context.Context) {
+func cleanupRegistry(ctx stdctx.Context) {
 	for _, arg := range []string{"stop", "kill", "rm"} {
 		_ = exec.CommandContext(ctx, "docker", arg, "goreleaser-registry").Run()
 	}
