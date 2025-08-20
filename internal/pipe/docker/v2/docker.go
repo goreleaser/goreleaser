@@ -3,6 +3,7 @@ package docker
 
 import (
 	"bytes"
+	"cmp"
 	stdctx "context"
 	"fmt"
 	"io"
@@ -17,7 +18,9 @@ import (
 	"slices"
 	"strconv"
 	"strings"
+	"time"
 
+	"github.com/avast/retry-go/v4"
 	"github.com/caarlos0/log"
 	"github.com/goreleaser/goreleaser/v2/internal/artifact"
 	"github.com/goreleaser/goreleaser/v2/internal/gerrors"
@@ -66,6 +69,9 @@ func (Pipe) Default(ctx *context.Context) error {
 		if len(docker.Platforms) == 0 {
 			docker.Platforms = []string{"linux/amd64", "linux/arm64"}
 		}
+		docker.Retry.Attempts = cmp.Or(docker.Retry.Attempts, 10)
+		docker.Retry.Delay = cmp.Or(docker.Retry.Delay, 10*time.Second)
+		docker.Retry.MaxDelay = cmp.Or(docker.Retry.MaxDelay, 5*time.Minute)
 		ids.Inc(docker.ID)
 	}
 	return ids.Validate()
@@ -127,37 +133,48 @@ func buildAndPublish(ctx *context.Context, d config.DockerV2, extraArgs ...strin
 	}
 	defer os.RemoveAll(wd)
 
-	log.WithField("id", d.ID).
-		Infof("creating %d images", len(images))
-
-	cmd := exec.CommandContext(ctx, "docker", arg...)
-	cmd.Dir = wd
-	cmd.Env = append(ctx.Env.Strings(), cmd.Environ()...)
-	var b bytes.Buffer
-	w := gio.Safe(&b)
-	cmd.Stderr = io.MultiWriter(logext.NewWriter(), w)
-	cmd.Stdout = io.MultiWriter(logext.NewWriter(), w)
-	if err := cmd.Run(); err != nil {
-		return gerrors.Wrap(
-			err,
-			"could not build and publish docker image",
-			"args", strings.Join(cmd.Args, " "),
-			"id", d.ID,
-			"image", images[0],
-			"output", b.String(),
-			"wd", wd,
-		)
+	out, err := retry.DoWithData(
+		func() (string, error) {
+			log.WithField("id", d.ID).
+				Infof("creating %d images", len(images))
+			cmd := exec.CommandContext(ctx, "docker", arg...)
+			cmd.Dir = wd
+			cmd.Env = append(ctx.Env.Strings(), cmd.Environ()...)
+			var b bytes.Buffer
+			w := gio.Safe(&b)
+			cmd.Stderr = io.MultiWriter(logext.NewWriter(), w)
+			cmd.Stdout = io.MultiWriter(logext.NewWriter(), w)
+			if err := cmd.Run(); err != nil {
+				return "", gerrors.Wrap(
+					err,
+					"could not build and publish docker image",
+					"args", strings.Join(cmd.Args, " "),
+					"id", d.ID,
+					"image", images[0],
+					"output", b.String(),
+					"wd", wd,
+				)
+			}
+			return b.String(), nil
+		},
+		retry.RetryIf(isRetriableManifestCreate),
+		retry.Attempts(d.Retry.Attempts),
+		retry.Delay(d.Retry.Delay),
+		retry.MaxDelay(d.Retry.MaxDelay),
+		retry.LastErrorOnly(true),
+	)
+	if err != nil {
+		return err
 	}
 
-	digest := dockerDigestPattern.FindString(b.String())
+	digest := dockerDigestPattern.FindString(out)
 	if digest == "" {
 		return gerrors.Wrap(
 			err,
 			"could not find digest in output",
-			"args", strings.Join(cmd.Args, " "),
 			"id", d.ID,
 			"image", images[0],
-			"output", b.String(),
+			"output", out,
 			"wd", wd,
 		)
 	}
@@ -401,6 +418,11 @@ func tplMapFlags(tpl *tmpl.Template, flag string, m map[string]string) ([]string
 		result = append(result, flag, k+"="+v)
 	}
 	return result, nil
+}
+
+func isRetriableManifestCreate(err error) bool {
+	out := gerrors.DetailsOf(err)["output"].(string)
+	return strings.Contains(out, "manifest verification failed for digest")
 }
 
 func warnExperimental() {

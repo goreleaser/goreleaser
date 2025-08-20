@@ -1065,6 +1065,7 @@ type DockerV2 struct {
 	Files      []string          `yaml:"files,omitempty" json:"files,omitempty"`
 	Platforms  []string          `yaml:"platforms,omitempty" json:"platforms,omitempty"`
 	BuildArgs  map[string]string `yaml:"build_args,omitempty" json:"build_args,omitempty"`
+	Retry      Retry             `yaml:"retry,omitempty" json:"retry,omitempty"`
 }
 
 // Filters config.
