@@ -147,8 +147,9 @@ nav:
           - customization/checksum.md
           - Snaps: customization/snapcraft.md
           - Chocolatey: customization/chocolatey.md
-          - Docker: customization/docker.md
-          - Docker Manifests: customization/docker_manifest.md
+          - customization/dockers_v2.md
+          - customization/docker.md
+          - customization/docker_manifest.md
           - Ko: customization/ko.md
       - SBOMs: customization/sbom.md
       - customization/reportsizes.md

@@ -1,4 +1,7 @@
-# Docker Manifests
+# Docker Manifests (deprecated)
+
+> [Deprecated](./../deprecations.md#dockers) in v2.12-unreleased.
+> [Docker Images v2](./dockers_v2.md) should be used instead.
 
 GoReleaser can also create and push Docker multi-platform images using the
 `docker manifest` tool.

@@ -17,6 +17,8 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
+const expectedDigest = "sha256:4bcff63911fcb4448bd4fdacec207030997caf25e9bea4045fa6c8c44de311d1"
+
 func TestRun(t *testing.T) {
 	testlib.CheckDocker(t)
 	testlib.SkipIfWindows(t, "registry images only available for windows")
@@ -59,8 +61,17 @@ func TestRun(t *testing.T) {
 	require.NoError(t, err, "message: %s, output: %v", gerrors.MessageOf(err), gerrors.DetailsOf(err))
 
 	images := ctx.Artifacts.Filter(artifact.ByType(artifact.DockerImageV2)).List()
-	require.Len(t, images, 1)
-	require.Regexp(t, `localhost:\d+/dockerv2/myimg:latest`, images[0])
+	require.Len(t, images, 4)
+	require.Equal(t, []string{
+		"image1:tag1",
+		"image1:tag2",
+		"image2:tag1",
+		"image2:tag2",
+	}, names(images))
+
+	for _, img := range images {
+		require.Equal(t, expectedDigest, artifact.ExtraOr(*img, artifact.ExtraDigest, ""))
+	}
 }
 
 func TestPublish(t *testing.T) {
@@ -110,6 +121,7 @@ func TestPublish(t *testing.T) {
 	}
 
 	require.NoError(t, Pipe{}.Default(ctx))
+	testlib.AssertSkipped(t, Pipe{}.Run(ctx)) // should be skipped in non-snapshot builds
 	err := Pipe{}.Publish(ctx)
 	require.NoError(t, err, "message: %s, output: %v", gerrors.MessageOf(err), gerrors.DetailsOf(err))
 
@@ -122,9 +134,8 @@ func TestPublish(t *testing.T) {
 		"localhost:5051/bar:v1.0.0",
 	}, names(images))
 
-	digest := "sha256:4bcff63911fcb4448bd4fdacec207030997caf25e9bea4045fa6c8c44de311d1"
 	for _, img := range images {
-		require.Equal(t, digest, artifact.ExtraOr(*img, artifact.ExtraDigest, ""))
+		require.Equal(t, expectedDigest, artifact.ExtraOr(*img, artifact.ExtraDigest, ""))
 	}
 }
 

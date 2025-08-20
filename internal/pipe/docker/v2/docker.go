@@ -4,11 +4,9 @@ package docker
 import (
 	"bytes"
 	"cmp"
-	stdctx "context"
 	"fmt"
 	"io"
 	"maps"
-	"net"
 	"os"
 	"os/exec"
 	"path"
@@ -16,7 +14,6 @@ import (
 	"regexp"
 	"runtime"
 	"slices"
-	"strconv"
 	"strings"
 	"time"
 
@@ -64,7 +61,7 @@ func (Pipe) Default(ctx *context.Context) error {
 			docker.Dockerfile = "Dockerfile"
 		}
 		if len(docker.Tags) == 0 {
-			docker.Tags = []string{"latest"}
+			docker.Tags = []string{"{{.Tag}}"}
 		}
 		if len(docker.Platforms) == 0 {
 			docker.Platforms = []string{"linux/amd64", "linux/arm64"}
@@ -90,19 +87,15 @@ func (p Pipe) Run(ctx *context.Context) error {
 		return pipe.Skip("library/registry is not available for windows")
 	}
 
-	return withRegistry(ctx, func(port string) error {
-		g := semerrgroup.NewSkipAware(semerrgroup.New(ctx.Parallelism))
-		for _, d := range ctx.Config.DockersV2 {
-			g.Go(func() error {
-				d.Images = []string{fmt.Sprintf("localhost:%s/%s/%s", port, ctx.Config.ProjectName, d.ID)}
-				d.Tags = []string{"latest"}
-				// XXX: could potentially use `--output=type=local,dest=./dist/dockers/id/` to output the file tree?
-				// Not sure if useful or not...
-				return buildAndPublish(ctx, d)
-			})
-		}
-		return g.Wait()
-	})
+	g := semerrgroup.NewSkipAware(semerrgroup.New(ctx.Parallelism))
+	for _, d := range ctx.Config.DockersV2 {
+		g.Go(func() error {
+			// XXX: could potentially use `--output=type=local,dest=./dist/dockers/id/` to output the file tree?
+			// Not sure if useful or not...
+			return buildAndPublish(ctx, d)
+		})
+	}
+	return g.Wait()
 }
 
 // Publish implements publish.Publisher.
@@ -389,15 +382,6 @@ func parsePlatform(p string) platform {
 	return result
 }
 
-func randomPort(ctx stdctx.Context) (string, error) {
-	l, err := (&net.ListenConfig{}).Listen(ctx, "tcp", "localhost:0")
-	if err != nil {
-		return "", fmt.Errorf("could not find random port: %w", err)
-	}
-	_ = l.Close()
-	return strconv.Itoa(l.Addr().(*net.TCPAddr).Port), nil
-}
-
 // tplMapFlags templates all keys and values in the given map, returning a
 // slice of them with the [flag] prefix.
 //
@@ -429,36 +413,4 @@ func warnExperimental() {
 	log.WithField("details", `Keep an eye on the release notes if you wish to rely on this for production builds.
 Please provide any feedback you might have at http://github.com/goreleaser/goreleaser/discussions/XYZ`).
 		Warn(logext.Warning("dockers_v2 is experimental and subject to change"))
-}
-
-// XXX: other setup steps:
-// - docker buildx create --name goreleaser --use
-// - docker run --privileged --rm tonistiigi/binfmt --install all
-func withRegistry(ctx stdctx.Context, fn func(string) error) error {
-	port, err := randomPort(ctx)
-	if err != nil {
-		return err
-	}
-	cleanupRegistry(ctx)
-	defer cleanupRegistry(ctx)
-	if out, err := exec.CommandContext(
-		ctx,
-		"docker", "run", "-d",
-		"--name", "goreleaser-registry",
-		"-p", port+":5000",
-		"registry:3",
-	).CombinedOutput(); err != nil {
-		return gerrors.Wrap(
-			err,
-			"could not start local registry",
-			"output", string(out),
-		)
-	}
-	return fn(port)
-}
-
-func cleanupRegistry(ctx stdctx.Context) {
-	for _, arg := range []string{"stop", "kill", "rm"} {
-		_ = exec.CommandContext(ctx, "docker", arg, "goreleaser-registry").Run()
-	}
 }

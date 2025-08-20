@@ -41,6 +41,134 @@ PS: Don't forget to add it to cmd/mcp.go as well!
 
 -->
 
+### dockers
+
+We're re-implementing the docker feature from the ground up.
+
+The configuration now is way more concise, and the implementation is simpler as
+well.
+
+Before, you would have to setup `dockers` and `docker_manifests`, now, only
+`dockers` (provisionally being called `dockers_v2`).
+
+Then, instead of building the images, pushing them, and then building the
+manifests and pushing them, we will now run a single `docker buildx build` with
+the given platforms, which it'll build and publish the manifest.
+
+=== "Before"
+
+    ```yaml
+    dockers:
+      - image_templates:
+          - "foo/bar:v{{ .Version }}-amd64"
+          - "ghcr.io/foo/bar:v{{ .Version }}-amd64"
+        dockerfile: Dockerfile
+        use: buildx
+        build_flag_templates:
+          - "--pull"
+          - "--label=org.opencontainers.image.description=Foo bar"
+          - "--label=org.opencontainers.image.created={{.Date}}"
+          - "--label=org.opencontainers.image.name={{.ProjectName}}"
+          - "--label=org.opencontainers.image.revision={{.FullCommit}}"
+          - "--label=org.opencontainers.image.version={{.Version}}"
+          - "--label=org.opencontainers.image.source={{.GitURL}}"
+          - "--platform=linux/amd64"
+      - image_templates:
+          - "foo/bar:v{{ .Version }}-arm64"
+          - "ghcr.io/foo/bar:v{{ .Version }}-arm64"
+        dockerfile: Dockerfile
+        use: buildx
+        build_flag_templates:
+          - "--pull"
+          - "--label=org.opencontainers.image.description=Foo bar"
+          - "--label=org.opencontainers.image.created={{.Date}}"
+          - "--label=org.opencontainers.image.name={{.ProjectName}}"
+          - "--label=org.opencontainers.image.revision={{.FullCommit}}"
+          - "--label=org.opencontainers.image.version={{.Version}}"
+          - "--label=org.opencontainers.image.source={{.GitURL}}"
+          - "--platform=linux/arm64"
+        goarch: arm64
+
+    docker_manifests:
+      - name_template: "foo/bar:v{{ .Version }}"
+        image_templates:
+          - "foo/bar:v{{ .Version }}-amd64"
+          - "foo/bar:v{{ .Version }}-arm64"
+      - name_template: "ghcr.io/foo/bar:v{{ .Version }}"
+        image_templates:
+          - "ghcr.io/foo/bar:v{{ .Version }}-amd64"
+          - "ghcr.io/foo/bar:v{{ .Version }}-arm64"
+      - name_template: "{{ if not .IsNightly }}foo/bar:latest{{ end }}"
+        image_templates:
+          - "foo/bar:v{{ .Version }}-amd64"
+          - "foo/bar:v{{ .Version }}-arm64"
+      - name_template: "{{ if not .IsNightly }}ghcr.io/foo/bar:latest{{ end }}"
+        image_templates:
+          - "ghcr.io/foo/bar:v{{ .Version }}-amd64"
+          - "ghcr.io/foo/bar:v{{ .Version }}-arm64"
+      - name_template: "{{ if .IsNightly }}foo/bar:nightly{{ end }}"
+        image_templates:
+          - "foo/bar:v{{ .Version }}-amd64"
+          - "foo/bar:v{{ .Version }}-arm64"
+      - name_template: "{{ if .IsNightly }}ghcr.io/foo/bar:nightly{{ end }}"
+        image_templates:
+          - "ghcr.io/foo/bar:v{{ .Version }}-amd64"
+          - "ghcr.io/foo/bar:v{{ .Version }}-arm64"
+    ```
+
+=== "After"
+
+    ```yaml
+    dockers_v2:
+      - images:
+          - "foo/bar"
+          - "ghcr.io/foo/bar"
+        tags:
+          - "v{{ .Version }}"
+          - "{{ if .IsNightly }}nightly{{ end }}"
+          - "{{ if not .IsNightly }}latest{{ end }}"
+        labels:
+          "org.opencontainers.image.description": "Foo bar"
+          "org.opencontainers.image.created": "{{.Date}}"
+          "org.opencontainers.image.name": "{{.ProjectName}}"
+          "org.opencontainers.image.revision": "{{.FullCommit}}"
+          "org.opencontainers.image.version": "{{.Version}}"
+          "org.opencontainers.image.source": "{{.GitURL}}"
+    ```
+
+As you can see, it's a lot simpler. The resulting images are the same, a
+combination of all the non-empty images with all the non-empty tags.
+
+This will also require a small change in your `Dockerfile` when copying from the
+context:
+
+=== "Before"
+
+    ```dockerfile
+    FROM alpine
+    COPY my-binary /usr/bin
+    ```
+
+=== "After"
+
+    ```dockerfile
+    FROM alpine
+    ARG TARGETPLATFORM
+    COPY $TARGETPLATFORM/my-binary /usr/bin
+    ```
+
+GoReleaser will automatically setup the context in such a way that all the
+artifacts for the given target platform will be located within
+`$TARGETPLATFORM/`.
+
+One side effect of this new feature is that builds with `--snapshot` will
+produce images that cannot be ran, and thus it only tests the `docker build`
+itself.
+This is something we're actively working on.
+
+Feel free to suggest improvements
+[here](http://github.com/goreleaser/goreleaser/discussions/XYZ)
+
 ### homebrew_casks.manpage
 
 > since v2.11
