@@ -41,6 +41,28 @@ PS: Don't forget to add it to cmd/mcp.go as well!
 
 -->
 
+### homebrew_casks.conflicts.formula
+
+> since v2.12-unreleased
+
+It was a no-op before, and is now
+[removed from Homebrew](https://github.com/Homebrew/brew/pull/20499).
+
+=== "Before"
+
+    ```yaml
+    homebrew_casks:
+    - conflicts:
+      - formula: foo
+    ```
+
+=== "After"
+
+    ```yaml
+    homebrew_casks:
+    - {}
+    ```
+
 ### homebrew_casks.manpage
 
 > since v2.11
@@ -51,15 +73,15 @@ You may now define multiple man pages, which was not possible in v2.10.
 
     ```yaml
     homebrew_casks:
-      manpage: foo.1.gz
+    - manpage: foo.1.gz
     ```
 
 === "After"
 
     ```yaml
     homebrew_casks:
-      manpages:
-        - foo.1.gz
+    - manpages:
+      - foo.1.gz
     ```
 
 ### brews
@@ -97,10 +119,6 @@ You may also want to make the _Cask_ conflict with the previous _Formula_.
     - name: foo
       # Optional: either set it to Casks, or remove it:
       directory: Casks
-
-      # Optional: make the old formula conflict with the cask:
-      conflicts:
-        - formula: foo
 
       # Optional: helps pass `homebrew audit` if homepage is different from download domain:
       url:

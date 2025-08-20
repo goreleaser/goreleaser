@@ -55,9 +55,6 @@ cask "test" do
 
   conflicts_with cask: [
       "goreleaser",
-    ],
-    formula: [
-      "goreleaser",
     ]
 
   preflight do

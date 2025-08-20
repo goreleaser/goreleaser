@@ -77,24 +77,15 @@ func dependsString(dependencies []config.HomebrewCaskDependency) string {
 
 func conflictsString(conflicts []config.HomebrewCaskConflict) string {
 	var casks []string
-	var formulas []string
 	for _, conflict := range conflicts {
 		if conflict.Cask != "" {
 			casks = append(casks, conflict.Cask)
 		}
-		if conflict.Formula != "" {
-			formulas = append(formulas, conflict.Formula)
-		}
 	}
 	sort.Strings(casks)
-	sort.Strings(formulas)
-
 	var groups []string
 	if len(casks) > 0 {
 		groups = append(groups, groupToS("cask", casks))
-	}
-	if len(formulas) > 0 {
-		groups = append(groups, groupToS("formula", formulas))
 	}
 	return joinGroups("conflicts_with", groups)
 }
