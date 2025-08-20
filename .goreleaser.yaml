@@ -179,8 +179,6 @@ homebrew_casks:
     description: Release engineering, simplified
     license: MIT
     conflicts:
-      - formula: goreleaser-pro
-      - formula: goreleaser
       - cask: goreleaser-pro
     manpages:
       - "manpages/goreleaser.1.gz"

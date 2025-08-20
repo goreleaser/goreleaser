@@ -74,6 +74,12 @@ func (Pipe) Default(ctx *context.Context) error {
 			deprecate.Notice(ctx, "homebrew_casks.manpage")
 			brew.Manpages = append(brew.Manpages, brew.Manpage)
 		}
+		for _, conflict := range brew.Conflicts {
+			if conflict.Formula != "" {
+				deprecate.Notice(ctx, "homebrew_casks.conflicts.formula")
+				break
+			}
+		}
 	}
 
 	return nil

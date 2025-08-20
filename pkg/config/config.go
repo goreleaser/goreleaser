@@ -277,7 +277,9 @@ type HomebrewCaskHook struct {
 }
 
 type HomebrewCaskConflict struct {
-	Cask    string `yaml:"cask,omitempty" json:"cask,omitempty"`
+	Cask string `yaml:"cask,omitempty" json:"cask,omitempty"`
+
+	// Deprecated: by homebrew.
 	Formula string `yaml:"formula,omitempty" json:"formula,omitempty"`
 }
 
