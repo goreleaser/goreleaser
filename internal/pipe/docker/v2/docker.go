@@ -12,6 +12,7 @@ import (
 	"os/exec"
 	"path"
 	"path/filepath"
+	"regexp"
 	"runtime"
 	"slices"
 	"strconv"
@@ -30,6 +31,8 @@ import (
 	"github.com/goreleaser/goreleaser/v2/pkg/config"
 	"github.com/goreleaser/goreleaser/v2/pkg/context"
 )
+
+var dockerDigestPattern = regexp.MustCompile("sha256:[a-z0-9]{64}")
 
 // Pipe v2 of dockers pipe.
 type Pipe struct{}
@@ -146,16 +149,31 @@ func buildAndPublish(ctx *context.Context, d config.DockerV2, extraArgs ...strin
 		)
 	}
 
+	digest := dockerDigestPattern.FindString(b.String())
+	if digest == "" {
+		return gerrors.Wrap(
+			err,
+			"could not find digest in output",
+			"args", strings.Join(cmd.Args, " "),
+			"id", d.ID,
+			"image", images[0],
+			"output", b.String(),
+			"wd", wd,
+		)
+	}
+
 	for _, img := range images {
 		log.WithField("image", img).
 			WithField("id", d.ID).
+			WithField("digest", digest).
 			Info("created image")
 		ctx.Artifacts.Add(&artifact.Artifact{
 			Name: img,
 			Path: img,
 			Type: artifact.DockerImageV2,
 			Extra: map[string]any{
-				artifact.ExtraID: d.ID,
+				artifact.ExtraID:     d.ID,
+				artifact.ExtraDigest: digest,
 			},
 		})
 

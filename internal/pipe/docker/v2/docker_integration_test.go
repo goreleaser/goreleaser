@@ -2,7 +2,10 @@ package docker
 
 import (
 	"os"
+	"os/exec"
 	"path/filepath"
+	"slices"
+	"strings"
 	"testing"
 
 	"github.com/goreleaser/goreleaser/v2/internal/artifact"
@@ -17,6 +20,8 @@ import (
 func TestRun(t *testing.T) {
 	testlib.CheckDocker(t)
 	testlib.SkipIfWindows(t, "registry images only available for windows")
+
+	setupBuilder(t)
 
 	dist := t.TempDir()
 	binpath := filepath.Join(dist, "mybin")
@@ -56,4 +61,100 @@ func TestRun(t *testing.T) {
 	images := ctx.Artifacts.Filter(artifact.ByType(artifact.DockerImageV2)).List()
 	require.Len(t, images, 1)
 	require.Regexp(t, `localhost:\d+/dockerv2/myimg:latest`, images[0])
+}
+
+func TestPublish(t *testing.T) {
+	testlib.CheckDocker(t)
+	testlib.SkipIfWindows(t, "registry images only available for windows")
+
+	setupBuilder(t)
+
+	testlib.StartRegistry(t, "registry", "5050")
+	testlib.StartRegistry(t, "alt_registry", "5051")
+
+	dist := t.TempDir()
+	binpath := filepath.Join(dist, "mybin")
+	require.NoError(t, os.WriteFile(binpath, []byte("#!/bin/sh\necho hi"), 0o755))
+	require.NoError(t, gio.Copy("./testdata/Dockerfile", filepath.Join(dist, "Dockerfile")))
+	ctx := testctx.NewWithCfg(
+		config.Project{
+			ProjectName: "dockerv2",
+			Dist:        dist,
+			DockersV2: []config.DockerV2{
+				{
+					ID:         "myimg",
+					Dockerfile: "./testdata/Dockerfile",
+					Images:     []string{"localhost:5050/foo", "localhost:5051/bar"},
+					Tags:       []string{"latest", "v{{.Version}}", "{{if .IsNightly}}nightly{{end}}"},
+					Files:      []string{"./testdata/foo.conf"},
+					IDs:        []string{"id1"},
+				},
+			},
+		},
+		testctx.WithVersion("1.0.0"),
+		testctx.WithCurrentTag("v1.0.0"),
+		testctx.WithCommit("a1b2c3d4"),
+		testctx.WithSemver(1, 0, 0, ""),
+	)
+	for _, arch := range []string{"amd64", "arm64"} {
+		ctx.Artifacts.Add(&artifact.Artifact{
+			Name:   "mybin",
+			Path:   binpath,
+			Goos:   "linux",
+			Goarch: arch,
+			Type:   artifact.Binary,
+			Extra: artifact.Extras{
+				artifact.ExtraID: "id1",
+			},
+		})
+	}
+
+	require.NoError(t, Pipe{}.Default(ctx))
+	err := Pipe{}.Publish(ctx)
+	require.NoError(t, err, "message: %s, output: %v", gerrors.MessageOf(err), gerrors.DetailsOf(err))
+
+	images := ctx.Artifacts.Filter(artifact.ByType(artifact.DockerImageV2)).List()
+	require.Len(t, images, 4)
+	require.Equal(t, []string{
+		"localhost:5050/foo:latest",
+		"localhost:5050/foo:v1.0.0",
+		"localhost:5051/bar:latest",
+		"localhost:5051/bar:v1.0.0",
+	}, names(images))
+
+	digest := "sha256:4bcff63911fcb4448bd4fdacec207030997caf25e9bea4045fa6c8c44de311d1"
+	for _, img := range images {
+		require.Equal(t, digest, artifact.ExtraOr(*img, artifact.ExtraDigest, ""))
+	}
+}
+
+func names(in []*artifact.Artifact) []string {
+	out := make([]string, 0, len(in))
+	for _, art := range in {
+		out = append(out, art.Name)
+	}
+	slices.Sort(out)
+	return out
+}
+
+func setupBuilder(tb testing.TB) {
+	tb.Helper()
+	builder, err := exec.CommandContext(
+		tb.Context(),
+		"docker", "buildx", "create",
+		"--driver-opt", "network=host",
+		"--use",
+	).CombinedOutput()
+	require.NoError(tb, err)
+	tb.Cleanup(func() {
+		require.NoError(tb, exec.Command(
+			"docker", "buildx", "rm",
+			strings.TrimSpace(string(builder))).Run())
+	})
+	require.NoError(tb, exec.Command(
+		"docker", "run",
+		"--privileged", "--rm",
+		"tonistiigi/binfmt",
+		"--install", "all",
+	).Run())
 }
