@@ -167,5 +167,8 @@ jobs:
       - uses: actions/attest-build-provenance@v2
         with:
           subject-checksums: ./dist/checksums.txt
+      - uses: actions/attest-build-provenance@v2
+        with:
+          subject-checksums: ./dist/digests.txt
       - run: df -h
         if: ${{ always() }}
