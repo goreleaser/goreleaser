@@ -53,7 +53,7 @@ func TestRun(t *testing.T) {
 	})
 	ctx.Artifacts.Add(&artifact.Artifact{
 		Name:  "img2",
-		Type:  artifact.DockerImage, // V2,
+		Type:  artifact.DockerImage, // TODO: V2
 		Extra: artifact.Extras{artifact.ExtraDigest: "sha512:digest2"},
 	})
 	ctx.Artifacts.Add(&artifact.Artifact{

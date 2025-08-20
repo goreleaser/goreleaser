@@ -1,3 +1,5 @@
+// Package dockerdigest provides a pipe to generate a file with docker image
+// digests.
 package dockerdigest
 
 import (
@@ -15,7 +17,7 @@ import (
 	"github.com/goreleaser/goreleaser/v2/pkg/context"
 )
 
-// Pipe for checksums.
+// Pipe for docker digests.
 type Pipe struct{}
 
 func (Pipe) String() string { return "docker digests" }
@@ -41,7 +43,7 @@ func (Pipe) Default(ctx *context.Context) error {
 func (Pipe) Publish(ctx *context.Context) error {
 	images := ctx.Artifacts.Filter(
 		artifact.Or(
-			// artifact.ByType(artifact.DockerImageV2),
+			// TODO: artifact.ByType(artifact.DockerImageV2),
 			artifact.ByType(artifact.DockerImage),
 			artifact.ByType(artifact.DockerManifest),
 		),
