@@ -7,6 +7,7 @@ import (
 	"github.com/goreleaser/goreleaser/v2/internal/artifact"
 	"github.com/goreleaser/goreleaser/v2/internal/skips"
 	"github.com/goreleaser/goreleaser/v2/internal/testctx"
+	"github.com/goreleaser/goreleaser/v2/internal/testlib"
 	"github.com/stretchr/testify/require"
 )
 
@@ -73,4 +74,10 @@ digest2 img2
 digest3 img3
 `
 	require.Equal(t, expected, string(content))
+}
+
+func TestRunInvalidNameTemplate(t *testing.T) {
+	ctx := testctx.New()
+	ctx.Config.DockerDigest.NameTemplate = "{{.Nope}}"
+	testlib.RequireTemplateError(t, Pipe{}.Publish(ctx))
 }

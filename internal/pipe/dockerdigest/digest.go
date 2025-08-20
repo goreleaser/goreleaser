@@ -1,12 +1,14 @@
 package dockerdigest
 
 import (
+	"bytes"
 	"fmt"
 	"os"
 	"path/filepath"
 	"slices"
 	"strings"
 
+	"github.com/caarlos0/log"
 	"github.com/goreleaser/goreleaser/v2/internal/artifact"
 	"github.com/goreleaser/goreleaser/v2/internal/skips"
 	"github.com/goreleaser/goreleaser/v2/internal/tmpl"
@@ -44,36 +46,28 @@ func (Pipe) Publish(ctx *context.Context) error {
 			artifact.ByType(artifact.DockerManifest),
 		),
 	).List()
-
-	filename, err := tmpl.New(ctx).Apply(ctx.Config.DockerDigest.NameTemplate)
-	if err != nil {
-		return err
-	}
 	slices.SortFunc(images, func(a, b *artifact.Artifact) int {
 		return strings.Compare(a.Name, b.Name)
 	})
 
-	filepath := filepath.Join(ctx.Config.Dist, filename)
-	file, err := os.OpenFile(
-		filepath,
-		os.O_APPEND|os.O_WRONLY|os.O_CREATE|os.O_TRUNC,
-		0o644,
-	)
-	if err != nil {
-		return fmt.Errorf("could not write image digest: %w", err)
-	}
-	defer file.Close()
-
+	var data bytes.Buffer
 	for _, img := range images {
 		digest := artifact.ExtraOr(*img, artifact.ExtraDigest, "")
 		if idx := strings.IndexRune(digest, ':'); idx != -1 {
 			digest = digest[idx+1:]
 		}
-		if _, err := fmt.Fprintf(file, "%s %s\n", digest, img.Name); err != nil {
-			return fmt.Errorf("could not write image digest: %w", err)
-		}
-
+		_, _ = fmt.Fprintf(&data, "%s %s\n", digest, img.Name)
 	}
 
+	filename, err := tmpl.New(ctx).Apply(ctx.Config.DockerDigest.NameTemplate)
+	if err != nil {
+		return err
+	}
+	filename = filepath.Join(ctx.Config.Dist, filename)
+	if err := os.WriteFile(filename, data.Bytes(), 0o644); err != nil {
+		return fmt.Errorf("could not write image digest: %w", err)
+	}
+
+	log.WithField("path", filename).Info("written digest file")
 	return nil
 }
