@@ -169,6 +169,24 @@ This is something we're actively working on.
 Feel free to suggest improvements
 [here](http://github.com/goreleaser/goreleaser/discussions/XYZ)
 
+Regarding signing, you may also remove the `artifacts` option from you
+`docker_signs`:
+
+=== "Before"
+
+    ```yaml
+    docker_signs:
+      - artifacts: images
+        # etc..
+    ```
+
+=== "After"
+
+    ```yaml
+    docker_signs:
+      - # etc..
+    ```
+
 ### homebrew_casks.manpage
 
 > since v2.11
