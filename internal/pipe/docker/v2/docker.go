@@ -261,14 +261,13 @@ func makeImageList(imgs, tags []string) []string {
 func makeContext(d config.DockerV2, artifacts []*artifact.Artifact) (string, error) {
 	if len(artifacts) == 0 {
 		log.Warn("no binaries or packages found for the given platform - COPY/ADD may not work")
-		panic("OH NO")
 	}
 
 	tmp, err := os.MkdirTemp("", "goreleaserdocker")
 	if err != nil {
 		return "", fmt.Errorf("failed to create temporary dir: %w", err)
 	}
-	// TODO: rm temp dir
+	// NOTE: Caller is responsible for removing the temporary directory returned by this function.
 
 	wd, _ := os.Getwd()
 	if err := gio.Copy(d.Dockerfile, filepath.Join(tmp, "Dockerfile")); err != nil {
@@ -411,6 +410,6 @@ func isRetriableManifestCreate(err error) bool {
 
 func warnExperimental() {
 	log.WithField("details", `Keep an eye on the release notes if you wish to rely on this for production builds.
-Please provide any feedback you might have at http://github.com/goreleaser/goreleaser/discussions/XYZ`).
+Please provide any feedback you might have at https://github.com/goreleaser/goreleaser/discussions/XYZ`).
 		Warn(logext.Warning("dockers_v2 is experimental and subject to change"))
 }

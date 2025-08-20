@@ -74,6 +74,8 @@ func TestRun(t *testing.T) {
 	}
 }
 
+// TODO: test with no binaries
+
 func TestPublish(t *testing.T) {
 	testlib.CheckDocker(t)
 	testlib.SkipIfWindows(t, "registry images only available for windows")
