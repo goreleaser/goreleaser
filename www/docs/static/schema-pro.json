@@ -1516,6 +1516,63 @@
 				"additionalProperties": false,
 				"type": "object"
 			},
+			"DockerV2": {
+				"properties": {
+					"id": {
+						"type": "string"
+					},
+					"ids": {
+						"items": {
+							"type": "string"
+						},
+						"type": "array"
+					},
+					"dockerfile": {
+						"type": "string"
+					},
+					"images": {
+						"items": {
+							"type": "string"
+						},
+						"type": "array"
+					},
+					"tags": {
+						"items": {
+							"type": "string"
+						},
+						"type": "array"
+					},
+					"labels": {
+						"additionalProperties": {
+							"type": "string"
+						},
+						"type": "object"
+					},
+					"extra_files": {
+						"items": {
+							"type": "string"
+						},
+						"type": "array"
+					},
+					"platforms": {
+						"items": {
+							"type": "string"
+						},
+						"type": "array"
+					},
+					"build_args": {
+						"additionalProperties": {
+							"type": "string"
+						},
+						"type": "object"
+					},
+					"retry": {
+						"$ref": "#/$defs/Retry"
+					}
+				},
+				"additionalProperties": false,
+				"type": "object"
+			},
 			"EnvFiles": {
 				"properties": {
 					"github_token": {
@@ -3945,6 +4002,12 @@
 					"dockers": {
 						"items": {
 							"$ref": "#/$defs/Docker"
+						},
+						"type": "array"
+					},
+					"dockers_v2": {
+						"items": {
+							"$ref": "#/$defs/DockerV2"
 						},
 						"type": "array"
 					},
