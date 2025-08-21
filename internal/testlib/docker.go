@@ -75,7 +75,7 @@ func StartRegistry(tb testing.TB, name, port string) {
 	resource, err := pool.RunWithOptions(&dockertest.RunOptions{
 		Name:       name,
 		Repository: "registry",
-		Tag:        "2",
+		Tag:        "3",
 		PortBindings: map[docker.Port][]docker.PortBinding{
 			docker.Port("5000/tcp"): {{HostPort: port}},
 		},

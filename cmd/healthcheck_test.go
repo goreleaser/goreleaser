@@ -30,3 +30,10 @@ func TestHealthcheckQuier(t *testing.T) {
 	cmd.cmd.SetArgs([]string{"-f", "testdata/good.yml", "--quiet"})
 	require.NoError(t, cmd.cmd.Execute())
 }
+
+func TestCheckPath(t *testing.T) {
+	require.NoError(t, checkPath(t.Context(), "go"))
+	require.NoError(t, checkPath(t.Context(), "docker buildx"))
+	require.Error(t, checkPath(t.Context(), "docker something-inalid"))
+	require.Error(t, checkPath(t.Context(), "some invalid command"))
+}

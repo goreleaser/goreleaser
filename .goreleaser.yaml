@@ -112,74 +112,27 @@ changelog:
     - title: Other work
       order: 9999
 
-dockers:
-  - image_templates:
-      - "goreleaser/goreleaser:v{{ .Version }}-amd64"
-      - "ghcr.io/goreleaser/goreleaser:v{{ .Version }}-amd64"
-    dockerfile: Dockerfile
-    use: buildx
-    build_flag_templates:
-      - "--pull"
-      - "--label=io.artifacthub.package.readme-url=https://raw.githubusercontent.com/goreleaser/goreleaser/main/README.md"
-      - "--label=io.artifacthub.package.logo-url=https://goreleaser.com/static/avatar.png"
-      - '--label=io.artifacthub.package.maintainers=[{"name":"Carlos Alexandro Becker","email":"carlos@carlosbecker.dev"}]'
-      - "--label=io.artifacthub.package.license=MIT"
-      - "--label=org.opencontainers.image.description=Release engineering, simplified"
-      - "--label=org.opencontainers.image.created={{.Date}}"
-      - "--label=org.opencontainers.image.name={{.ProjectName}}"
-      - "--label=org.opencontainers.image.revision={{.FullCommit}}"
-      - "--label=org.opencontainers.image.version={{.Version}}"
-      - "--label=org.opencontainers.image.source={{.GitURL}}"
-      - "--platform=linux/amd64"
+dockers_v2:
+  - images:
+      - "goreleaser/goreleaser"
+      - "ghcr.io/goreleaser/goreleaser"
+    tags:
+      - "v{{ .Version }}"
+      - "{{ if .IsNightly }}nightly{{ end }}"
+      - "{{ if not .IsNightly }}latest{{ end }}"
     extra_files:
       - scripts/entrypoint.sh
-  - image_templates:
-      - "goreleaser/goreleaser:v{{ .Version }}-arm64"
-      - "ghcr.io/goreleaser/goreleaser:v{{ .Version }}-arm64"
-    dockerfile: Dockerfile
-    use: buildx
-    build_flag_templates:
-      - "--pull"
-      - "--label=io.artifacthub.package.readme-url=https://raw.githubusercontent.com/goreleaser/goreleaser/main/README.md"
-      - "--label=io.artifacthub.package.logo-url=https://goreleaser.com/static/avatar.png"
-      - '--label=io.artifacthub.package.maintainers=[{"name":"Carlos Alexandro Becker","email":"carlos@carlosbecker.dev"}]'
-      - "--label=io.artifacthub.package.license=MIT"
-      - "--label=org.opencontainers.image.description=Release engineering, simplified"
-      - "--label=org.opencontainers.image.created={{.Date}}"
-      - "--label=org.opencontainers.image.name={{.ProjectName}}"
-      - "--label=org.opencontainers.image.revision={{.FullCommit}}"
-      - "--label=org.opencontainers.image.version={{.Version}}"
-      - "--label=org.opencontainers.image.source={{.GitURL}}"
-      - "--platform=linux/arm64"
-    goarch: arm64
-    extra_files:
-      - scripts/entrypoint.sh
-
-docker_manifests:
-  - name_template: "goreleaser/goreleaser:v{{ .Version }}"
-    image_templates:
-      - "goreleaser/goreleaser:v{{ .Version }}-amd64"
-      - "goreleaser/goreleaser:v{{ .Version }}-arm64"
-  - name_template: "ghcr.io/goreleaser/goreleaser:v{{ .Version }}"
-    image_templates:
-      - "ghcr.io/goreleaser/goreleaser:v{{ .Version }}-amd64"
-      - "ghcr.io/goreleaser/goreleaser:v{{ .Version }}-arm64"
-  - name_template: "{{ if not .IsNightly }}goreleaser/goreleaser:latest{{ end }}"
-    image_templates:
-      - "goreleaser/goreleaser:v{{ .Version }}-amd64"
-      - "goreleaser/goreleaser:v{{ .Version }}-arm64"
-  - name_template: "{{ if not .IsNightly }}ghcr.io/goreleaser/goreleaser:latest{{ end }}"
-    image_templates:
-      - "ghcr.io/goreleaser/goreleaser:v{{ .Version }}-amd64"
-      - "ghcr.io/goreleaser/goreleaser:v{{ .Version }}-arm64"
-  - name_template: "{{ if .IsNightly }}goreleaser/goreleaser:nightly{{ end }}"
-    image_templates:
-      - "goreleaser/goreleaser:v{{ .Version }}-amd64"
-      - "goreleaser/goreleaser:v{{ .Version }}-arm64"
-  - name_template: "{{ if .IsNightly }}ghcr.io/goreleaser/goreleaser:nightly{{ end }}"
-    image_templates:
-      - "ghcr.io/goreleaser/goreleaser:v{{ .Version }}-amd64"
-      - "ghcr.io/goreleaser/goreleaser:v{{ .Version }}-arm64"
+    labels:
+      "io.artifacthub.package.readme-url": "https://raw.githubusercontent.com/goreleaser/goreleaser/main/README.md"
+      "io.artifacthub.package.logo-url": "https://goreleaser.com/static/avatar.png"
+      "io.artifacthub.package.maintainers": '[{"name":"Carlos Alexandro Becker","email":"carlos@carlosbecker.dev"}]'
+      "io.artifacthub.package.license": "MIT"
+      "org.opencontainers.image.description": "Release engineering, simplified"
+      "org.opencontainers.image.created": "{{.Date}}"
+      "org.opencontainers.image.name": "{{.ProjectName}}"
+      "org.opencontainers.image.revision": "{{.FullCommit}}"
+      "org.opencontainers.image.version": "{{.Version}}"
+      "org.opencontainers.image.source": "{{.GitURL}}"
 
 archives:
   - name_template: >-

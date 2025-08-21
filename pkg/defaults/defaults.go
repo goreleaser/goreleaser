@@ -20,6 +20,7 @@ import (
 	"github.com/goreleaser/goreleaser/v2/internal/pipe/discord"
 	"github.com/goreleaser/goreleaser/v2/internal/pipe/dist"
 	"github.com/goreleaser/goreleaser/v2/internal/pipe/docker"
+	dockerv2 "github.com/goreleaser/goreleaser/v2/internal/pipe/docker/v2"
 	"github.com/goreleaser/goreleaser/v2/internal/pipe/dockerdigest"
 	"github.com/goreleaser/goreleaser/v2/internal/pipe/gomod"
 	"github.com/goreleaser/goreleaser/v2/internal/pipe/ko"
@@ -87,6 +88,7 @@ var Defaulters = []Defaulter{
 	sign.DockerPipe{},
 	sbom.Pipe{},
 	docker.Pipe{},
+	dockerv2.Pipe{},
 	docker.ManifestPipe{},
 	dockerdigest.Pipe{},
 	artifactory.Pipe{},

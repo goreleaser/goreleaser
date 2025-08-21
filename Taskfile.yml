@@ -20,6 +20,7 @@ tasks:
   docker:setup:
     desc: Setup Docker for multi-arch image builds
     cmds:
+      - "docker buildx create --name=goreleaser --driver-opt network=host --use || true"
       - docker run --privileged --rm tonistiigi/binfmt --install all
 
   build:

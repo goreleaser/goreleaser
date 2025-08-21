@@ -39,9 +39,6 @@ func (DockerPipe) Default(ctx *context.Context) error {
 		if len(cfg.Args) == 0 {
 			cfg.Args = []string{"sign", "--key=cosign.key", "${artifact}@${digest}", "--yes"}
 		}
-		if cfg.Artifacts == "" {
-			cfg.Artifacts = "none"
-		}
 		if cfg.ID == "" {
 			cfg.ID = "default"
 		}
@@ -59,16 +56,25 @@ func (DockerPipe) Publish(ctx *context.Context) error {
 			var filters []artifact.Filter
 			switch cfg.Artifacts {
 			case "images":
-				filters = append(filters, artifact.ByType(artifact.DockerImage))
+				filters = append(filters, artifact.Or(
+					artifact.ByType(artifact.DockerImage),
+					artifact.ByType(artifact.DockerImageV2),
+				))
 			case "manifests":
-				filters = append(filters, artifact.ByType(artifact.DockerManifest))
+				filters = append(filters, artifact.Or(
+					artifact.ByType(artifact.DockerManifest),
+					artifact.ByType(artifact.DockerImageV2),
+				))
 			case "all":
 				filters = append(filters, artifact.Or(
 					artifact.ByType(artifact.DockerImage),
 					artifact.ByType(artifact.DockerManifest),
+					artifact.ByType(artifact.DockerImageV2),
 				))
 			case "none": // TODO(caarlos0): remove this
 				return pipe.ErrSkipSignEnabled
+			case "":
+				filters = append(filters, artifact.ByType(artifact.DockerImageV2))
 			default:
 				return fmt.Errorf("invalid list of artifacts to sign: %s", cfg.Artifacts)
 			}

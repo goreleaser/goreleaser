@@ -43,7 +43,7 @@ func (Pipe) Default(ctx *context.Context) error {
 func (Pipe) Publish(ctx *context.Context) error {
 	images := ctx.Artifacts.Filter(
 		artifact.Or(
-			// TODO: artifact.ByType(artifact.DockerImageV2),
+			artifact.ByType(artifact.DockerImageV2),
 			artifact.ByType(artifact.DockerImage),
 			artifact.ByType(artifact.DockerManifest),
 		),

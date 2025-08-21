@@ -12,6 +12,7 @@ import (
 	"path/filepath"
 	"slices"
 	"strings"
+	"sync"
 	"time"
 
 	"github.com/avast/retry-go/v4"
@@ -20,6 +21,7 @@ import (
 	"github.com/goreleaser/goreleaser/v2/internal/experimental"
 	"github.com/goreleaser/goreleaser/v2/internal/gio"
 	"github.com/goreleaser/goreleaser/v2/internal/ids"
+	"github.com/goreleaser/goreleaser/v2/internal/logext"
 	"github.com/goreleaser/goreleaser/v2/internal/pipe"
 	"github.com/goreleaser/goreleaser/v2/internal/semerrgroup"
 	"github.com/goreleaser/goreleaser/v2/internal/skips"
@@ -58,8 +60,23 @@ func (Pipe) Dependencies(ctx *context.Context) []string {
 
 // Default sets the pipe defaults.
 func (Pipe) Default(ctx *context.Context) error {
+	var warnOnce sync.Once
 	ids := ids.New("dockers")
 	for i := range ctx.Config.Dockers {
+		// TODO: properly deprecate this.
+		warnOnce.Do(func() {
+			log.Warn(
+				logext.Keyword("dockers") +
+					logext.Warning(" and ") +
+					logext.Keyword("docker_manifests") +
+					logext.Warning(" are being phased out and will eventually be replaced by ") +
+					logext.Keyword("dockers_v2") +
+					logext.Warning(", check ") +
+					logext.URL("https://goreleaser.com/deprecations#dockers") +
+					logext.Warning(" for more info"),
+			)
+		})
+
 		docker := &ctx.Config.Dockers[i]
 
 		if docker.ID != "" {

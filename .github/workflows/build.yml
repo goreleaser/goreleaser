@@ -49,6 +49,8 @@ jobs:
         if: matrix.os == 'ubuntu-latest'
       - uses: docker/setup-buildx-action@e468171a9de216ec08956ac3ada2f0791b6bd435 # v3
         if: matrix.os == 'ubuntu-latest'
+        with:
+          driver-opts: network=host
       - name: setup-snapcraft
         if: matrix.os == 'ubuntu-latest'
         run: sudo snap install snapcraft --classic

@@ -1025,6 +1025,7 @@ type Retry struct {
 }
 
 // Docker image config.
+// Deprecated: use [DockerV2] instead.
 type Docker struct {
 	ID                 string   `yaml:"id,omitempty" json:"id,omitempty"`
 	IDs                []string `yaml:"ids,omitempty" json:"ids,omitempty"`
@@ -1043,6 +1044,7 @@ type Docker struct {
 }
 
 // DockerManifest config.
+// Deprecated: use [DockerV2] instead.
 type DockerManifest struct {
 	ID             string   `yaml:"id,omitempty" json:"id,omitempty"`
 	NameTemplate   string   `yaml:"name_template,omitempty" json:"name_template,omitempty"`
@@ -1052,6 +1054,20 @@ type DockerManifest struct {
 	PushFlags      []string `yaml:"push_flags,omitempty" json:"push_flags,omitempty"`
 	Use            string   `yaml:"use,omitempty" json:"use,omitempty"`
 	Retry          Retry    `yaml:"retry,omitempty" json:"retry,omitempty"`
+}
+
+// DockerV2 is the new Docker build pipe options.
+type DockerV2 struct {
+	ID         string            `yaml:"id,omitempty" json:"id,omitempty"`
+	IDs        []string          `yaml:"ids,omitempty" json:"ids,omitempty"`
+	Dockerfile string            `yaml:"dockerfile,omitempty" json:"dockerfile,omitempty"`
+	Images     []string          `yaml:"images,omitempty" json:"images,omitempty"`
+	Tags       []string          `yaml:"tags,omitempty" json:"tags,omitempty"`
+	Labels     map[string]string `yaml:"labels,omitempty" json:"labels,omitempty"`
+	ExtraFiles []string          `yaml:"extra_files,omitempty" json:"extra_files,omitempty"`
+	Platforms  []string          `yaml:"platforms,omitempty" json:"platforms,omitempty"`
+	BuildArgs  map[string]string `yaml:"build_args,omitempty" json:"build_args,omitempty"`
+	Retry      Retry             `yaml:"retry,omitempty" json:"retry,omitempty"`
 }
 
 // DockerDigest config.
@@ -1189,6 +1205,7 @@ type Project struct {
 	Snapshot        Snapshot         `yaml:"snapshot,omitempty" json:"snapshot,omitempty"`
 	Checksum        Checksum         `yaml:"checksum,omitempty" json:"checksum,omitempty"`
 	Dockers         []Docker         `yaml:"dockers,omitempty" json:"dockers,omitempty"`
+	DockersV2       []DockerV2       `yaml:"dockers_v2,omitempty" json:"dockers_v2,omitempty"`
 	DockerDigest    DockerDigest     `yaml:"docker_digest,omitempty" json:"docker_digest,omitempty"`
 	DockerManifests []DockerManifest `yaml:"docker_manifests,omitempty" json:"docker_manifests,omitempty"`
 	Artifactories   []Upload         `yaml:"artifactories,omitempty" json:"artifactories,omitempty"`
