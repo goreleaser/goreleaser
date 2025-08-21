@@ -94,6 +94,15 @@ dockers_v2:
     build_args:
       FOO: bar
 
+    # Arbitrary flags to pass to the build command.
+    #
+    # Note: use this at your own risk.
+    # Note: flags must have the `=` sign between flag name and value.
+    #
+    # Templates: allowed.
+    flags:
+      - "--ulimit=10"
+
     # Retry configuration.
     retry:
       # Attempts of retry.
