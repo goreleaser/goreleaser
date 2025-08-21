@@ -149,6 +149,7 @@ nav:
           - Chocolatey: customization/chocolatey.md
           - Docker: customization/docker.md
           - Docker Manifests: customization/docker_manifest.md
+          - customization/docker_digests.md
           - Ko: customization/ko.md
       - SBOMs: customization/sbom.md
       - customization/reportsizes.md
