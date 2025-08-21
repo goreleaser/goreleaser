@@ -32,8 +32,8 @@ func TestHealthcheckQuier(t *testing.T) {
 }
 
 func TestCheckPath(t *testing.T) {
-	require.NoError(t, checkPath("go"))
-	require.NoError(t, checkPath("docker buildx"))
-	require.Error(t, checkPath("docker something-inalid"))
-	require.Error(t, checkPath("some invalid command"))
+	require.NoError(t, checkPath(t.Context(), "go"))
+	require.NoError(t, checkPath(t.Context(), "docker buildx"))
+	require.Error(t, checkPath(t.Context(), "docker something-inalid"))
+	require.Error(t, checkPath(t.Context(), "some invalid command"))
 }
