@@ -6,9 +6,7 @@ import (
 	_ "embed"
 
 	goversion "github.com/caarlos0/go-version"
-	"github.com/caarlos0/log"
 	"github.com/goreleaser/goreleaser/v2/cmd"
-	"go.uber.org/automaxprocs/maxprocs"
 )
 
 //nolint:gochecknoglobals
@@ -19,14 +17,6 @@ var (
 	date      = ""
 	builtBy   = ""
 )
-
-func init() {
-	// automatically set GOMAXPROCS to match available CPUs.
-	// GOMAXPROCS will be used as the default value for the --parallelism flag.
-	if _, err := maxprocs.Set(); err != nil {
-		log.WithError(err).Warn("failed to set GOMAXPROCS")
-	}
-}
 
 func main() {
 	cmd.Execute(
