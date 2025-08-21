@@ -1424,6 +1424,25 @@
 				"additionalProperties": false,
 				"type": "object"
 			},
+			"DockerDigest": {
+				"properties": {
+					"disable": {
+						"oneOf": [
+							{
+								"type": "string"
+							},
+							{
+								"type": "boolean"
+							}
+						]
+					},
+					"name_template": {
+						"type": "string"
+					}
+				},
+				"additionalProperties": false,
+				"type": "object"
+			},
 			"DockerHub": {
 				"properties": {
 					"username": {
@@ -3928,6 +3947,9 @@
 							"$ref": "#/$defs/Docker"
 						},
 						"type": "array"
+					},
+					"docker_digest": {
+						"$ref": "#/$defs/DockerDigest"
 					},
 					"docker_manifests": {
 						"items": {
