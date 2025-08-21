@@ -194,23 +194,23 @@ func TestDockerSignArtifacts(t *testing.T) {
 		},
 	}
 
-	testWithArtifacts := func(t testing.TB, cfg testcase, arts []artifact.Artifact) {
+	testWithArtifacts := func(tb testing.TB, cfg testcase, arts []artifact.Artifact) {
 		ctx := testctx.NewWithCfg(config.Project{
 			DockerSigns: cfg.Signs,
 		})
 		wd, err := os.Getwd()
-		require.NoError(t, err)
-		tmp := testlib.Mktmp(t)
-		require.NoError(t, gio.Copy(filepath.Join(wd, "testdata/cosign/"), tmp))
+		require.NoError(tb, err)
+		tmp := testlib.Mktmp(tb)
+		require.NoError(tb, gio.Copy(filepath.Join(wd, "testdata/cosign/"), tmp))
 		ctx.Config.Dist = "dist"
-		require.NoError(t, os.Mkdir("dist", 0o755))
+		require.NoError(tb, os.Mkdir("dist", 0o755))
 
 		for _, art := range arts {
 			ctx.Artifacts.Add(&art)
 		}
 
-		require.NoError(t, DockerPipe{}.Default(ctx))
-		require.NoError(t, DockerPipe{}.Publish(ctx))
+		require.NoError(tb, DockerPipe{}.Default(ctx))
+		require.NoError(tb, DockerPipe{}.Publish(ctx))
 		var sigs []string
 		for _, sig := range ctx.Artifacts.Filter(
 			artifact.Or(
@@ -219,9 +219,9 @@ func TestDockerSignArtifacts(t *testing.T) {
 			),
 		).List() {
 			sigs = append(sigs, sig.Name)
-			require.Truef(t, strings.HasPrefix(sig.Path, ctx.Config.Dist), "signature %q is not in dist dir %q", sig.Path, ctx.Config.Dist)
+			require.Truef(tb, strings.HasPrefix(sig.Path, ctx.Config.Dist), "signature %q is not in dist dir %q", sig.Path, ctx.Config.Dist)
 		}
-		require.Equal(t, cfg.Expected, sigs)
+		require.Equal(tb, cfg.Expected, sigs)
 	}
 
 	for name, cfg := range v1Cases {

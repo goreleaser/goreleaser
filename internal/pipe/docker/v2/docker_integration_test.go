@@ -98,8 +98,8 @@ func TestPublish(t *testing.T) {
 	testlib.CheckDocker(t)
 	testlib.SkipIfWindows(t, "registry images only available for windows")
 
-	testlib.StartRegistry(t, "registry-v2", "5050")
-	testlib.StartRegistry(t, "alt_registry-v2", "5051")
+	testlib.StartRegistry(t, "registry-v2", "5060")
+	testlib.StartRegistry(t, "alt_registry-v2", "5061")
 
 	dist := t.TempDir()
 	binpath := filepath.Join(dist, "mybin")
@@ -113,7 +113,7 @@ func TestPublish(t *testing.T) {
 				{
 					ID:         "myimg",
 					Dockerfile: "./testdata/Dockerfile",
-					Images:     []string{"localhost:5050/foo", "localhost:5051/bar"},
+					Images:     []string{"localhost:5060/foo", "localhost:5061/bar"},
 					Tags:       []string{"latest", "v{{.Version}}", "{{if .IsNightly}}nightly{{end}}"},
 					Files:      []string{"./testdata/foo.conf"},
 					IDs:        []string{"id1"},
@@ -146,10 +146,10 @@ func TestPublish(t *testing.T) {
 	images := ctx.Artifacts.Filter(artifact.ByType(artifact.DockerImageV2)).List()
 	require.Len(t, images, 4)
 	require.Equal(t, []string{
-		"localhost:5050/foo:latest",
-		"localhost:5050/foo:v1.0.0",
-		"localhost:5051/bar:latest",
-		"localhost:5051/bar:v1.0.0",
+		"localhost:5060/foo:latest",
+		"localhost:5060/foo:v1.0.0",
+		"localhost:5061/bar:latest",
+		"localhost:5061/bar:v1.0.0",
 	}, names(images))
 
 	for _, img := range images {
