@@ -49,11 +49,12 @@ The configuration now is way more concise, and the implementation is simpler as
 well.
 
 Before, you would have to setup `dockers` and `docker_manifests`, now, only
-`dockers` (provisionally being called `dockers_v2`).
+`dockers` (provisionally being called `dockers_v2`) is needed to achieve the
+same things.
 
 Then, instead of building the images, pushing them, and then building the
 manifests and pushing them, we will now run a single `docker buildx build` with
-the given platforms, which it'll build and publish the manifest.
+the given platforms, which will build and publish the manifest and SBOM.
 
 === "Before"
 
@@ -136,8 +137,9 @@ the given platforms, which it'll build and publish the manifest.
           "org.opencontainers.image.source": "{{.GitURL}}"
     ```
 
-As you can see, it's a lot simpler. The resulting images are the same, a
-combination of all the non-empty images with all the non-empty tags.
+As you can see, it's a lot simpler.
+The resulting images are the same, a combination of all the non-empty images
+with all the non-empty tags.
 
 This will also require a small change in your `Dockerfile` when copying from the
 context:
@@ -162,9 +164,9 @@ artifacts for the given target platform will be located within
 `$TARGETPLATFORM/`.
 
 One side effect of this new feature is that builds with `--snapshot` will
-produce images that cannot be ran, and thus it only tests the `docker build`
-itself.
-This is something we're actively working on.
+produce images that cannot be ran - it only tests that the `docker build`
+succeeds.
+This is something we'll need to improve in future versions.
 
 Feel free to suggest improvements
 [here](https://github.com/goreleaser/goreleaser/discussions/XYZ)
@@ -186,6 +188,9 @@ Regarding signing, you may also remove the `artifacts` option from you
     docker_signs:
       - # etc..
     ```
+
+Since in the future we'll only have the docker image type, the `artifacts`
+property will eventually be deprecated and removed.
 
 ### homebrew_casks.conflicts.formula
 

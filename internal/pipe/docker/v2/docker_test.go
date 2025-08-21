@@ -17,7 +17,7 @@ func TestString(t *testing.T) {
 }
 
 func TestDependencies(t *testing.T) {
-	require.Equal(t, []string{"docker"}, Pipe{}.Dependencies(nil))
+	require.Equal(t, []string{"docker buildx"}, Pipe{}.Dependencies(nil))
 }
 
 func TestSkip(t *testing.T) {

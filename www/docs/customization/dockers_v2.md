@@ -65,7 +65,7 @@ dockers_v2:
     # GoReleaser is being run (usually the repository root directory).
     # This field does not support wildcards, you can add an entire directory here
     # and use wildcards when you `COPY`/`ADD` in your Dockerfile.
-    files:
+    extra_files:
       - config.yml
 
     # Labels to be added to the image.
@@ -179,3 +179,17 @@ temp-context-dir
 
 `myprogram` would actually be your binary name, and the Linux package names
 would follow their respective configuration's names.
+
+## Setting up a builder
+
+For buildx to work, you'll need to have a builder that supports multi-platform
+builds set up.
+
+On Linux, you can do it with:
+
+```sh
+docker buildx create --name=goreleaser --use
+docker run --privileged --rm tonistiigi/binfmt --install all
+```
+
+For what it's worth, this feature was built and tested with buildx v0.24.0.

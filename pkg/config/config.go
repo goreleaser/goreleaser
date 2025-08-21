@@ -1064,7 +1064,7 @@ type DockerV2 struct {
 	Images     []string          `yaml:"images,omitempty" json:"images,omitempty"`
 	Tags       []string          `yaml:"tags,omitempty" json:"tags,omitempty"`
 	Labels     map[string]string `yaml:"labels,omitempty" json:"labels,omitempty"`
-	Files      []string          `yaml:"files,omitempty" json:"files,omitempty"`
+	ExtraFiles []string          `yaml:"extra_files,omitempty" json:"extra_files,omitempty"`
 	Platforms  []string          `yaml:"platforms,omitempty" json:"platforms,omitempty"`
 	BuildArgs  map[string]string `yaml:"build_args,omitempty" json:"build_args,omitempty"`
 	Retry      Retry             `yaml:"retry,omitempty" json:"retry,omitempty"`

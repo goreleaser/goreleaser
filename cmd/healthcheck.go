@@ -4,6 +4,7 @@ import (
 	"errors"
 	"io"
 	"os/exec"
+	"strings"
 	"sync"
 
 	"github.com/caarlos0/log"
@@ -88,10 +89,18 @@ func checkPath(tool string) error {
 	if _, ok := toolsChecked.LoadOrStore(tool, true); ok {
 		return nil
 	}
-	if _, err := exec.LookPath(tool); err != nil {
+	args := strings.Fields(tool)
+	if _, err := exec.LookPath(args[0]); err != nil {
 		st := log.Styles[log.ErrorLevel]
 		log.Warnf("%s %s - %s", st.Render("⚠"), codeStyle.Render(tool), st.Render("not present in path"))
 		return err
+	}
+	if len(args) > 1 {
+		if err := exec.Command(args[0], args[1:]...).Run(); err != nil {
+			st := log.Styles[log.ErrorLevel]
+			log.Warnf("%s %s - %s", st.Render("⚠"), codeStyle.Render(tool), st.Render("command failed"))
+			return err
+		}
 	}
 	st := lipgloss.NewStyle().Foreground(lipgloss.Color("2")).Bold(true)
 	log.Infof("%s %s", st.Render("✓"), codeStyle.Render(tool))
