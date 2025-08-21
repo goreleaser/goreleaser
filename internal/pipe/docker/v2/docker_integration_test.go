@@ -2,10 +2,8 @@ package docker
 
 import (
 	"os"
-	"os/exec"
 	"path/filepath"
 	"slices"
-	"strings"
 	"testing"
 
 	"github.com/goreleaser/goreleaser/v2/internal/artifact"
@@ -23,8 +21,6 @@ func TestRun(t *testing.T) {
 	testlib.CheckDocker(t)
 	testlib.SkipIfWindows(t, "registry images only available for windows")
 
-	setupBuilder(t)
-
 	dist := t.TempDir()
 	binpath := filepath.Join(dist, "mybin")
 	require.NoError(t, os.WriteFile(binpath, []byte("#!/bin/sh\necho hi"), 0o755))
@@ -40,6 +36,14 @@ func TestRun(t *testing.T) {
 				Tags:       []string{"tag1", "tag2"},
 				Files:      []string{"./testdata/foo.conf"},
 				IDs:        []string{"id1"},
+			},
+			{
+				ID:         "clean",
+				Dockerfile: "./testdata/Dockerfile.clean",
+				Images:     []string{"image3", "image4"},
+				Tags:       []string{"tag3"},
+				Files:      []string{"./testdata/foo.conf"},
+				IDs:        []string{"nopenopenope"},
 			},
 		},
 	}, testctx.Snapshot)
@@ -60,7 +64,12 @@ func TestRun(t *testing.T) {
 	err := Pipe{}.Run(ctx)
 	require.NoError(t, err, "message: %s, output: %v", gerrors.MessageOf(err), gerrors.DetailsOf(err))
 
-	images := ctx.Artifacts.Filter(artifact.ByType(artifact.DockerImageV2)).List()
+	images := ctx.Artifacts.Filter(
+		artifact.And(
+			artifact.ByType(artifact.DockerImageV2),
+			artifact.ByIDs("myimg"),
+		),
+	).List()
 	require.Len(t, images, 4)
 	require.Equal(t, []string{
 		"image1:tag1",
@@ -68,19 +77,26 @@ func TestRun(t *testing.T) {
 		"image2:tag1",
 		"image2:tag2",
 	}, names(images))
-
 	for _, img := range images {
 		require.Equal(t, expectedDigest, artifact.ExtraOr(*img, artifact.ExtraDigest, ""))
 	}
-}
 
-// TODO: test with no binaries
+	require.Equal(t, []string{
+		"image3:tag3",
+		"image4:tag3",
+	}, names(
+		ctx.Artifacts.Filter(
+			artifact.And(
+				artifact.ByType(artifact.DockerImageV2),
+				artifact.ByIDs("clean"),
+			),
+		).List(),
+	))
+}
 
 func TestPublish(t *testing.T) {
 	testlib.CheckDocker(t)
 	testlib.SkipIfWindows(t, "registry images only available for windows")
-
-	setupBuilder(t)
 
 	testlib.StartRegistry(t, "registry-v2", "5050")
 	testlib.StartRegistry(t, "alt_registry-v2", "5051")
@@ -148,26 +164,4 @@ func names(in []*artifact.Artifact) []string {
 	}
 	slices.Sort(out)
 	return out
-}
-
-func setupBuilder(tb testing.TB) {
-	tb.Helper()
-	builder, err := exec.CommandContext(
-		tb.Context(),
-		"docker", "buildx", "create",
-		"--driver-opt", "network=host",
-		"--use",
-	).CombinedOutput()
-	require.NoError(tb, err)
-	tb.Cleanup(func() {
-		require.NoError(tb, exec.Command(
-			"docker", "buildx", "rm",
-			strings.TrimSpace(string(builder))).Run())
-	})
-	require.NoError(tb, exec.Command(
-		"docker", "run",
-		"--privileged", "--rm",
-		"tonistiigi/binfmt",
-		"--install", "all",
-	).Run())
 }
