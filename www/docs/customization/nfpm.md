@@ -597,9 +597,21 @@ will be set `$NFPM_DEFAULT_DEB_PASSPHRASE`. GoReleaser will try that, then
 
 Termux is the same format as `deb`, the differences are:
 
-- it uses a different `bindir` (prefixed with `/data/data/com.termux/files/`)
+- it uses a different file structure (`/data/data/com.termux/files/`)
+- `bindir` is automatically adjusted, but other files might require extra
+  configuration (see bellow)
 - it uses slightly different architecture names than Debian
 - it will only package binaries built for Android
+
+**Example prefixing other files:**
+
+```yaml title=".goreleaser.yaml"
+nfpms:
+  - formats: [deb termux.deb rpm]
+    contents:
+      - src: ./foo.conf
+        dst: '{{ if eq .Format "termux.deb" }}/data/data/com.termux/files{{ end }}/usr/share/foo.conf'
+```
 
 ## Conventional file names, Debian, and ARMv6
 
