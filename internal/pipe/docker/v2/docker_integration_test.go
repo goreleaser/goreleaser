@@ -82,8 +82,8 @@ func TestPublish(t *testing.T) {
 
 	setupBuilder(t)
 
-	testlib.StartRegistry(t, "registry", "5050")
-	testlib.StartRegistry(t, "alt_registry", "5051")
+	testlib.StartRegistry(t, "registry-v2", "5050")
+	testlib.StartRegistry(t, "alt_registry-v2", "5051")
 
 	dist := t.TempDir()
 	binpath := filepath.Join(dist, "mybin")
