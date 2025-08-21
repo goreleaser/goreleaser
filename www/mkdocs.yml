@@ -150,6 +150,7 @@ nav:
           - customization/dockers_v2.md
           - customization/docker.md
           - customization/docker_manifest.md
+          - customization/docker_digests.md
           - Ko: customization/ko.md
       - SBOMs: customization/sbom.md
       - customization/reportsizes.md

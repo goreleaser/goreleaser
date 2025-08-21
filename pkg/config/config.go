@@ -1070,6 +1070,12 @@ type DockerV2 struct {
 	Retry      Retry             `yaml:"retry,omitempty" json:"retry,omitempty"`
 }
 
+// DockerDigest config.
+type DockerDigest struct {
+	Disable      string `yaml:"disable,omitempty" json:"disable,omitempty" jsonschema:"oneof_type=string;boolean"`
+	NameTemplate string `yaml:"name_template,omitempty" json:"name_template,omitempty"`
+}
+
 // Filters config.
 type Filters struct {
 	Include []string `yaml:"include,omitempty" json:"include,omitempty"`
@@ -1200,6 +1206,7 @@ type Project struct {
 	Checksum        Checksum         `yaml:"checksum,omitempty" json:"checksum,omitempty"`
 	Dockers         []Docker         `yaml:"dockers,omitempty" json:"dockers,omitempty"`
 	DockersV2       []DockerV2       `yaml:"dockers_v2,omitempty" json:"dockers_v2,omitempty"`
+	DockerDigest    DockerDigest     `yaml:"docker_digest,omitempty" json:"docker_digest,omitempty"`
 	DockerManifests []DockerManifest `yaml:"docker_manifests,omitempty" json:"docker_manifests,omitempty"`
 	Artifactories   []Upload         `yaml:"artifactories,omitempty" json:"artifactories,omitempty"`
 	Uploads         []Upload         `yaml:"uploads,omitempty" json:"uploads,omitempty"`

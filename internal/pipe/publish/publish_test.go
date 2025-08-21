@@ -19,7 +19,8 @@ func TestDescription(t *testing.T) {
 
 func TestPublish(t *testing.T) {
 	ctx := testctx.NewWithCfg(config.Project{
-		Release: config.Release{Disable: "true"},
+		Release:      config.Release{Disable: "true"},
+		DockerDigest: config.DockerDigest{Disable: "true"},
 	}, testctx.GitHubTokenType)
 	require.NoError(t, New().Run(ctx))
 }

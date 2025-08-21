@@ -21,6 +21,7 @@ import (
 	"github.com/goreleaser/goreleaser/v2/internal/pipe/dist"
 	"github.com/goreleaser/goreleaser/v2/internal/pipe/docker"
 	dockerv2 "github.com/goreleaser/goreleaser/v2/internal/pipe/docker/v2"
+	"github.com/goreleaser/goreleaser/v2/internal/pipe/dockerdigest"
 	"github.com/goreleaser/goreleaser/v2/internal/pipe/gomod"
 	"github.com/goreleaser/goreleaser/v2/internal/pipe/ko"
 	"github.com/goreleaser/goreleaser/v2/internal/pipe/krew"
@@ -89,6 +90,7 @@ var Defaulters = []Defaulter{
 	docker.Pipe{},
 	dockerv2.Pipe{},
 	docker.ManifestPipe{},
+	dockerdigest.Pipe{},
 	artifactory.Pipe{},
 	blob.Pipe{},
 	upload.Pipe{},
