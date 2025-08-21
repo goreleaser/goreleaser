@@ -409,6 +409,6 @@ func isRetriableManifestCreate(err error) bool {
 
 func warnExperimental() {
 	log.WithField("details", `Keep an eye on the release notes if you wish to rely on this for production builds.
-Please provide any feedback you might have at https://github.com/goreleaser/goreleaser/discussions/XYZ`).
+Please provide any feedback you might have at https://github.com/orgs/goreleaser/discussions/6005`).
 		Warn(logext.Warning("dockers_v2 is experimental and subject to change"))
 }

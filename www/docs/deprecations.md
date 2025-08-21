@@ -169,7 +169,7 @@ succeeds.
 This is something we'll need to improve in future versions.
 
 Feel free to suggest improvements
-[here](https://github.com/goreleaser/goreleaser/discussions/XYZ)
+[here](https://github.com/orgs/goreleaser/discussions/6005).
 
 Regarding signing, you may also remove the `artifacts` option from you
 `docker_signs`:
