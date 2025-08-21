@@ -195,6 +195,7 @@ func TestDockerSignArtifacts(t *testing.T) {
 	}
 
 	testWithArtifacts := func(tb testing.TB, cfg testcase, arts []artifact.Artifact) {
+		tb.Helper()
 		ctx := testctx.NewWithCfg(config.Project{
 			DockerSigns: cfg.Signs,
 		})

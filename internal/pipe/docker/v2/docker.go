@@ -45,8 +45,7 @@ func (Pipe) Dependencies(*context.Context) []string { return []string{"docker"} 
 
 // Skip implements Skipper.
 func (Pipe) Skip(ctx *context.Context) bool {
-	return skips.Any(ctx, skips.Docker) ||
-		len(ctx.Config.DockersV2) == 0
+	return len(ctx.Config.DockersV2) == 0 || skips.Any(ctx, skips.Docker)
 }
 
 // Default implements defaults.Defaulter.
