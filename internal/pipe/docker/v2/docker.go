@@ -222,6 +222,11 @@ func makeArgs(ctx *context.Context, d config.DockerV2, extraArgs []string) ([]st
 		return nil, nil, fmt.Errorf("invalid labels: %w", err)
 	}
 
+	annotationFlags, err := tplMapFlags(tpl, "--annotation", d.Annotations)
+	if err != nil {
+		return nil, nil, fmt.Errorf("invalid annotations: %w", err)
+	}
+
 	buildFlags, err := tplMapFlags(tpl, "--build-arg", d.BuildArgs)
 	if err != nil {
 		return nil, nil, fmt.Errorf("invalid build args: %w", err)
@@ -238,6 +243,7 @@ func makeArgs(ctx *context.Context, d config.DockerV2, extraArgs []string) ([]st
 	}
 	arg = append(arg, extraArgs...)
 	arg = append(arg, labelFlags...)
+	arg = append(arg, annotationFlags...)
 	arg = append(arg, buildFlags...)
 	arg = append(arg, ".")
 	return arg, allImages, nil

@@ -1058,16 +1058,17 @@ type DockerManifest struct {
 
 // DockerV2 is the new Docker build pipe options.
 type DockerV2 struct {
-	ID         string            `yaml:"id,omitempty" json:"id,omitempty"`
-	IDs        []string          `yaml:"ids,omitempty" json:"ids,omitempty"`
-	Dockerfile string            `yaml:"dockerfile,omitempty" json:"dockerfile,omitempty"`
-	Images     []string          `yaml:"images,omitempty" json:"images,omitempty"`
-	Tags       []string          `yaml:"tags,omitempty" json:"tags,omitempty"`
-	Labels     map[string]string `yaml:"labels,omitempty" json:"labels,omitempty"`
-	ExtraFiles []string          `yaml:"extra_files,omitempty" json:"extra_files,omitempty"`
-	Platforms  []string          `yaml:"platforms,omitempty" json:"platforms,omitempty"`
-	BuildArgs  map[string]string `yaml:"build_args,omitempty" json:"build_args,omitempty"`
-	Retry      Retry             `yaml:"retry,omitempty" json:"retry,omitempty"`
+	ID          string            `yaml:"id,omitempty" json:"id,omitempty"`
+	IDs         []string          `yaml:"ids,omitempty" json:"ids,omitempty"`
+	Dockerfile  string            `yaml:"dockerfile,omitempty" json:"dockerfile,omitempty"`
+	Images      []string          `yaml:"images,omitempty" json:"images,omitempty"`
+	Tags        []string          `yaml:"tags,omitempty" json:"tags,omitempty"`
+	Labels      map[string]string `yaml:"labels,omitempty" json:"labels,omitempty"`
+	Annotations map[string]string `yaml:"annotations,omitempty" json:"annotations,omitempty"`
+	ExtraFiles  []string          `yaml:"extra_files,omitempty" json:"extra_files,omitempty"`
+	Platforms   []string          `yaml:"platforms,omitempty" json:"platforms,omitempty"`
+	BuildArgs   map[string]string `yaml:"build_args,omitempty" json:"build_args,omitempty"`
+	Retry       Retry             `yaml:"retry,omitempty" json:"retry,omitempty"`
 }
 
 // DockerDigest config.

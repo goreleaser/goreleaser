@@ -73,6 +73,10 @@ dockers_v2:
       - config.yml
 
     # Labels to be added to the image.
+    #
+    # Items with empty keys or values will be ignored.
+    #
+    # Templates: allowed.
     labels:
       "org.opencontainers.image.description": "My software"
       "org.opencontainers.image.created": "{{.Date}}"
@@ -80,6 +84,15 @@ dockers_v2:
       "org.opencontainers.image.revision": "{{.FullCommit}}"
       "org.opencontainers.image.version": "{{.Version}}"
       "org.opencontainers.image.source": "{{.GitURL}}"
+
+    # Annotations to be added to the image.
+    #
+    # Items with empty keys or values will be ignored.
+    #
+    # Templates: allowed.
+    annotations:
+      "foo": "bar"
+      "project": "{{.ProjectName}}"
 
     # Platforms to build.
     #

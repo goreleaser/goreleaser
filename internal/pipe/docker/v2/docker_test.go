@@ -55,11 +55,12 @@ func TestDefault(t *testing.T) {
 func TestMakeArgs(t *testing.T) {
 	t.Run("tmpl error", func(t *testing.T) {
 		for name, mod := range map[string]func(d *config.DockerV2){
-			"dockerfile": func(d *config.DockerV2) { d.Dockerfile = "{{.Nope}}" },
-			"images":     func(d *config.DockerV2) { d.Images = []string{"{{.Nope}}"} },
-			"tags":       func(d *config.DockerV2) { d.Tags = []string{"{{.Nope}}"} },
-			"labels":     func(d *config.DockerV2) { d.Labels = map[string]string{"foo": "{{.Nope}}"} },
-			"build args": func(d *config.DockerV2) { d.BuildArgs = map[string]string{"{{.Nope}}": "bar"} },
+			"dockerfile":  func(d *config.DockerV2) { d.Dockerfile = "{{.Nope}}" },
+			"images":      func(d *config.DockerV2) { d.Images = []string{"{{.Nope}}"} },
+			"tags":        func(d *config.DockerV2) { d.Tags = []string{"{{.Nope}}"} },
+			"labels":      func(d *config.DockerV2) { d.Labels = map[string]string{"foo": "{{.Nope}}"} },
+			"annotations": func(d *config.DockerV2) { d.Annotations = map[string]string{"foo": "{{.Nope}}"} },
+			"build args":  func(d *config.DockerV2) { d.BuildArgs = map[string]string{"{{.Nope}}": "bar"} },
 		} {
 			t.Run(name, func(t *testing.T) {
 				ctx := testctx.New()
@@ -112,6 +113,11 @@ func TestMakeArgs(t *testing.T) {
 				"  ":      "also ignored",
 				"name":    "{{.ProjectName}}",
 			},
+			Annotations: map[string]string{
+				"ignored": "  ",
+				"  ":      "also ignored",
+				"foo":     "{{.ProjectName}}",
+			},
 			Platforms: []string{"linux/amd64", "linux/arm64"},
 			BuildArgs: map[string]string{
 				"FOO":     "{{.Env.FOO}}",
@@ -133,6 +139,7 @@ func TestMakeArgs(t *testing.T) {
 				"--push",
 				"--label", "date=2025-08-19T00:00:00Z",
 				"--label", "name=dockerv2",
+				"--annotation", "foo=dockerv2",
 				"--build-arg", "FOO=bar",
 				".",
 			},
