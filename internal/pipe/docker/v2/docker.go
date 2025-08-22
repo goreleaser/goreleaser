@@ -4,6 +4,7 @@ package docker
 import (
 	"bytes"
 	"cmp"
+	"errors"
 	"fmt"
 	"io"
 	"maps"
@@ -217,7 +218,7 @@ func makeArgs(ctx *context.Context, d config.DockerV2, extraArgs []string) ([]st
 		return nil, nil, fmt.Errorf("invalid tags: %w", err)
 	}
 	if len(tags) == 0 {
-		return nil, nil, fmt.Errorf("no tags provided")
+		return nil, nil, errors.New("no tags provided")
 	}
 	// Append the -platform bit to non-empty tags.
 	if len(d.Platforms) == 1 && ctx.Snapshot {
