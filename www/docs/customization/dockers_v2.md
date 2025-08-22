@@ -1,4 +1,4 @@
-# Dockers (v2)
+# Docker (v2)
 
 <!-- md:version v2.12-unreleased -->
 
@@ -107,6 +107,15 @@ dockers_v2:
     build_args:
       FOO: bar
 
+    # Arbitrary flags to pass to the build command.
+    #
+    # Note: use this at your own risk.
+    # Note: flags must have the `=` sign between flag name and value.
+    #
+    # Templates: allowed.
+    flags:
+      - "--ulimit=10"
+
     # Retry configuration.
     retry:
       # Attempts of retry.
@@ -130,9 +139,10 @@ dockers_v2:
     The `dockers_v2` name is provisional.
 
     It will replace `dockers` and `docker_manifests` in GoReleaser v3 (no ETA),
-    and will be called only `dockers`.
+    and will then be simply `dockers`.
 
-    It is been done this way to prevent breaking changes in feature releases.
+    We are doing it this way to prevent breaking changes releases now, so we can
+    test this new version for a while, before launching v3.
 
 <!-- md:templates -->
 
@@ -165,19 +175,22 @@ This configuration will build and push a Docker image named `user/repo:tagname`.
 
 ### The Docker build context
 
-Note that we are not building any go files in the Docker build phase, we are
+Note that we are not building any binaries in the `Dockerfile`, we are instead
 merely copying the binary to a `scratch` image and setting up the `entrypoint`.
 
 The idea is that you reuse the previously built binaries instead of building
 them again when creating the Docker image.
 
-The build context itself is a temporary directory which contains the binaries
-and packages for the target platforms, which you can `COPY` into your image
-(mind the use of `$TARGETPLATFORM` above).
+The build context itself is a temporary directory which contains the
+binaries and packages for the each of the defined target platforms.
+You can then `COPY` them into your image (mind the use of `$TARGETPLATFORM`
+above).
 
-A corollary of that is that **the context does not contain the source files**.
-If you need to add some other file that is in your source directory, you'll need
-to add it to the `files` property, so it'll get copied into the context.
+A corollary of it being a temporary directory is that
+**the context does not contain the source files**.
+If you need to add some other file that is in your source directory, you'll
+need to add it to the `extra_files` property, so it'll get copied into the
+context.
 
 All that being said, your Docker build context will usually look like this:
 

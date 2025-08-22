@@ -1069,6 +1069,7 @@ type DockerV2 struct {
 	Platforms   []string          `yaml:"platforms,omitempty" json:"platforms,omitempty"`
 	BuildArgs   map[string]string `yaml:"build_args,omitempty" json:"build_args,omitempty"`
 	Retry       Retry             `yaml:"retry,omitempty" json:"retry,omitempty"`
+	Flags       []string          `yaml:"flags,omitempty" json:"flags,omitempty"`
 }
 
 // DockerDigest config.

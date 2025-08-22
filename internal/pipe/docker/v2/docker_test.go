@@ -124,6 +124,7 @@ func TestMakeArgs(t *testing.T) {
 				"ignored": "  ",
 				"  ":      "also ignored",
 			},
+			Flags: []string{"--ulimit=1000"},
 		}, []string{"--push"})
 		require.NoError(t, err)
 		require.Equal(
@@ -141,6 +142,7 @@ func TestMakeArgs(t *testing.T) {
 				"--label", "name=dockerv2",
 				"--annotation", "foo=dockerv2",
 				"--build-arg", "FOO=bar",
+				"--ulimit=1000",
 				".",
 			},
 			args,
