@@ -137,6 +137,7 @@ func TestMakeArgs(t *testing.T) {
 				"-t", "ghcr.io/foo/bar:v",
 				"--push",
 				"--attest=type=sbom",
+				"--iidfile=id.txt",
 				"--label", "date=2025-08-19T00:00:00Z",
 				"--label", "name=dockerv2",
 				"--annotation", "foo=dockerv2",

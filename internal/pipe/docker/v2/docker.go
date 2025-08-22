@@ -117,8 +117,6 @@ func buildAndPublish(ctx *context.Context, d config.DockerV2, extraArgs ...strin
 		return pipe.Skip("no platforms to build")
 	}
 
-	extraArgs = append(extraArgs, "--iidfile=id.txt")
-
 	arg, images, err := makeArgs(ctx, d, extraArgs)
 	if err != nil {
 		return err
@@ -260,6 +258,7 @@ func makeArgs(ctx *context.Context, d config.DockerV2, extraArgs []string) ([]st
 		arg = append(arg, "-t", img)
 	}
 	arg = append(arg, extraArgs...)
+	arg = append(arg, "--iidfile=id.txt")
 	arg = append(arg, labelFlags...)
 	arg = append(arg, annotationFlags...)
 	arg = append(arg, buildFlags...)
