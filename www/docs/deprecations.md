@@ -163,10 +163,9 @@ GoReleaser will automatically setup the context in such a way that all the
 artifacts for the given target platform will be located within
 `$TARGETPLATFORM/`.
 
-One side effect of this new feature is that builds with `--snapshot` will
-produce images that cannot be ran - it only tests that the `docker build`
-succeeds.
-This is something we'll need to improve in future versions.
+When running a `--snapshot` build, GoReleaser will append the platform to the
+tags, and will create Docker images instead of manifests, as manifests can't be
+created without pushing.
 
 Feel free to suggest improvements
 [here](https://github.com/orgs/goreleaser/discussions/6005).
