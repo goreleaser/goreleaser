@@ -213,7 +213,7 @@ func makeArgs(ctx *context.Context, d config.DockerV2, extraArgs []string) ([]st
 		return nil, nil, fmt.Errorf("invalid tags: %w", err)
 	}
 	if len(tags) == 0 {
-		tags = []string{"latest"} // XXX: FIX THIS
+		return nil, nil, fmt.Errorf("no tags provided")
 	}
 	allImages := makeImageList(images, tags)
 

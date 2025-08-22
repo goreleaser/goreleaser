@@ -86,12 +86,11 @@ func TestMakeArgs(t *testing.T) {
 		testlib.AssertSkipped(t, err)
 	})
 	t.Run("no tags", func(t *testing.T) {
-		_, images, err := makeArgs(testctx.New(), config.DockerV2{
+		_, _, err := makeArgs(testctx.New(), config.DockerV2{
 			Dockerfile: "a",
 			Images:     []string{"ghcr.io/foo/bar"},
 		}, nil)
-		require.NoError(t, err)
-		require.Equal(t, []string{"ghcr.io/foo/bar:latest"}, images)
+		require.Error(t, err)
 	})
 	t.Run("simple", func(t *testing.T) {
 		ctx := testctx.NewWithCfg(
