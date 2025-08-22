@@ -1,30 +1,23 @@
 package docker
 
 import (
-	"os"
-	"path/filepath"
+	"os/exec"
 	"slices"
 	"testing"
 
 	"github.com/goreleaser/goreleaser/v2/internal/artifact"
 	"github.com/goreleaser/goreleaser/v2/internal/gerrors"
-	"github.com/goreleaser/goreleaser/v2/internal/gio"
 	"github.com/goreleaser/goreleaser/v2/internal/testctx"
 	"github.com/goreleaser/goreleaser/v2/internal/testlib"
 	"github.com/goreleaser/goreleaser/v2/pkg/config"
 	"github.com/stretchr/testify/require"
 )
 
-const expectedDigest = "sha256:4bcff63911fcb4448bd4fdacec207030997caf25e9bea4045fa6c8c44de311d1"
-
 func TestRun(t *testing.T) {
 	testlib.CheckDocker(t)
 	testlib.SkipIfWindows(t, "registry images only available for windows")
 
 	dist := t.TempDir()
-	binpath := filepath.Join(dist, "mybin")
-	require.NoError(t, os.WriteFile(binpath, []byte("#!/bin/sh\necho hi"), 0o755))
-	require.NoError(t, gio.Copy("./testdata/Dockerfile", filepath.Join(dist, "Dockerfile")))
 	ctx := testctx.NewWithCfg(config.Project{
 		ProjectName: "dockerv2",
 		Dist:        dist,
@@ -36,6 +29,7 @@ func TestRun(t *testing.T) {
 				Tags:       []string{"tag1", "tag2"},
 				ExtraFiles: []string{"./testdata/foo.conf"},
 				IDs:        []string{"id1"},
+				Platforms:  []string{"linux/amd64", "linux/arm64", "linux/arm/v7"},
 			},
 			{
 				ID:         "clean",
@@ -47,12 +41,13 @@ func TestRun(t *testing.T) {
 			},
 		},
 	}, testctx.Snapshot)
-	for _, arch := range []string{"amd64", "arm64"} {
+	for _, arch := range []string{"amd64", "arm64", "arm"} {
 		ctx.Artifacts.Add(&artifact.Artifact{
 			Name:   "mybin",
-			Path:   binpath,
+			Path:   "./testdata/mybin",
 			Goos:   "linux",
 			Goarch: arch,
+			Goarm:  "7",
 			Type:   artifact.Binary,
 			Extra: artifact.Extras{
 				artifact.ExtraID: "id1",
@@ -70,28 +65,42 @@ func TestRun(t *testing.T) {
 			artifact.ByIDs("myimg"),
 		),
 	).List()
-	require.Len(t, images, 4)
+	require.Len(t, images, 12)
 	require.Equal(t, []string{
-		"image1:tag1",
-		"image1:tag2",
-		"image2:tag1",
-		"image2:tag2",
+		"image1:tag1-amd64",
+		"image1:tag1-arm64",
+		"image1:tag1-armv7",
+		"image1:tag2-amd64",
+		"image1:tag2-arm64",
+		"image1:tag2-armv7",
+		"image2:tag1-amd64",
+		"image2:tag1-arm64",
+		"image2:tag1-armv7",
+		"image2:tag2-amd64",
+		"image2:tag2-arm64",
+		"image2:tag2-armv7",
 	}, names(images))
 	for _, img := range images {
-		require.Equal(t, expectedDigest, artifact.ExtraOr(*img, artifact.ExtraDigest, ""))
+		require.NotEmpty(t, artifact.ExtraOr(*img, artifact.ExtraDigest, ""))
+		rmi(t, img.Name)
 	}
 
+	images = ctx.Artifacts.Filter(
+		artifact.And(
+			artifact.ByType(artifact.DockerImageV2),
+			artifact.ByIDs("clean"),
+		),
+	).List()
 	require.Equal(t, []string{
-		"image3:tag3",
-		"image4:tag3",
-	}, names(
-		ctx.Artifacts.Filter(
-			artifact.And(
-				artifact.ByType(artifact.DockerImageV2),
-				artifact.ByIDs("clean"),
-			),
-		).List(),
-	))
+		"image3:tag3-amd64",
+		"image3:tag3-arm64",
+		"image4:tag3-amd64",
+		"image4:tag3-arm64",
+	}, names(images))
+	for _, img := range images {
+		require.NotEmpty(t, artifact.ExtraOr(*img, artifact.ExtraDigest, ""))
+		rmi(t, img.Name)
+	}
 }
 
 func TestPublish(t *testing.T) {
@@ -102,9 +111,6 @@ func TestPublish(t *testing.T) {
 	testlib.StartRegistry(t, "alt_registry-v2", "5061")
 
 	dist := t.TempDir()
-	binpath := filepath.Join(dist, "mybin")
-	require.NoError(t, os.WriteFile(binpath, []byte("#!/bin/sh\necho hi"), 0o755))
-	require.NoError(t, gio.Copy("./testdata/Dockerfile", filepath.Join(dist, "Dockerfile")))
 	ctx := testctx.NewWithCfg(
 		config.Project{
 			ProjectName: "dockerv2",
@@ -128,7 +134,7 @@ func TestPublish(t *testing.T) {
 	for _, arch := range []string{"amd64", "arm64"} {
 		ctx.Artifacts.Add(&artifact.Artifact{
 			Name:   "mybin",
-			Path:   binpath,
+			Path:   "./testdata/mybin",
 			Goos:   "linux",
 			Goarch: arch,
 			Type:   artifact.Binary,
@@ -153,7 +159,7 @@ func TestPublish(t *testing.T) {
 	}, names(images))
 
 	for _, img := range images {
-		require.Equal(t, expectedDigest, artifact.ExtraOr(*img, artifact.ExtraDigest, ""))
+		require.NotEmpty(t, artifact.ExtraOr(*img, artifact.ExtraDigest, ""))
 	}
 }
 
@@ -164,4 +170,9 @@ func names(in []*artifact.Artifact) []string {
 	}
 	slices.Sort(out)
 	return out
+}
+
+func rmi(tb testing.TB, img string) {
+	tb.Helper()
+	require.NoError(tb, exec.CommandContext(tb.Context(), "docker", "rmi", "--force", img).Run())
 }

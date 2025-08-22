@@ -146,6 +146,38 @@ dockers_v2:
 
 <!-- md:templates -->
 
+## Testing locally
+
+Docker buildx won't allow us to build a manifest without pushing it.
+To get around this, when we build with `--snapshot`, GoReleaser will not build
+the manifest anymore, and will instead build separated images, adding a platform
+suffix to each tag.
+
+Let's see what this means in practice.
+Assume we have a configuration like this:
+
+```yaml title=".goreleaser.yaml"
+snapshot:
+  version_template: "{{ incpatch .Version }}"
+dockers_v2:
+  - images:
+      - user/repo
+    tags:
+      - "{{.Version}}"
+    platform:
+      - linux/amd64
+      - linux/arm64
+```
+
+If we run `goreleaser release`, i.e., a production build, it'll build and
+publish `user/repo:1.2.3`, for example.
+
+If we run `goreleaser release --snapshot`, it'll build two images instead:
+`user/repo:1.2.4-amd64` and `user/repo:1.2.4-arm64`.
+
+This way you can verify that your Docker build and Docker image work as
+expected.
+
 ## How it works
 
 You can declare multiple Docker images.
@@ -156,7 +188,7 @@ If you have only one item in the `builds` list,
 the configuration can be as easy as adding the
 name and tags of your images to your `.goreleaser.yaml` file:
 
-```yaml
+```yaml title=".goreleaser.yaml"
 dockers_v2:
   - images:
       - user/repo
@@ -164,7 +196,7 @@ dockers_v2:
 
 You also need to create a `Dockerfile` in your project's root directory:
 
-```dockerfile
+```dockerfile title="Dockerfile"
 FROM scratch
 ARG TARGETPLATFORM
 ENTRYPOINT ["/usr/bin/myprogram"]

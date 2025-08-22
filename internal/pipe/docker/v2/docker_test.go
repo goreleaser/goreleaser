@@ -124,19 +124,19 @@ func TestMakeArgs(t *testing.T) {
 				"  ":      "also ignored",
 			},
 			Flags: []string{"--ulimit=1000"},
-		}, []string{"--push"})
+		}, []string{"--push", "--attest=type=sbom"})
 		require.NoError(t, err)
 		require.Equal(
 			t,
 			[]string{
 				"buildx", "build",
 				"--platform", "linux/amd64,linux/arm64",
-				"--attest=type=sbom",
 				"-t", "bar/bar:latest",
 				"-t", "bar/bar:v",
 				"-t", "ghcr.io/foo/bar:latest",
 				"-t", "ghcr.io/foo/bar:v",
 				"--push",
+				"--attest=type=sbom",
 				"--label", "date=2025-08-19T00:00:00Z",
 				"--label", "name=dockerv2",
 				"--annotation", "foo=dockerv2",

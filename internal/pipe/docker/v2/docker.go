@@ -77,19 +77,25 @@ func (p Pipe) Run(ctx *context.Context) error {
 	}
 
 	warnExperimental()
-	log.Warn("snapshot build: will not push or load any images")
+	log.Warn("snapshot build: will not push any images")
 
 	if runtime.GOOS == "windows" {
 		return pipe.Skip("library/registry is not available for windows")
 	}
 
 	g := semerrgroup.NewSkipAware(semerrgroup.New(ctx.Parallelism))
-	for _, d := range ctx.Config.DockersV2 {
-		g.Go(func() error {
-			// XXX: could potentially use `--output=type=local,dest=./dist/dockers/id/` to output the file tree?
-			// Not sure if useful or not...
-			return buildAndPublish(ctx, d)
-		})
+	for i := range ctx.Config.DockersV2 {
+		for _, plat := range ctx.Config.DockersV2[i].Platforms {
+			g.Go(func() error {
+				// buildx won't allow us to `--load` a manifest, so we create
+				// one image per platform, adding it to the tags.
+				d := ctx.Config.DockersV2[i]
+				d.Platforms = []string{plat}
+				// XXX: could potentially use `--output=type=local,dest=./dist/dockers/id/` to output the file tree?
+				// Not sure if useful or not...
+				return buildAndPublish(ctx, d, "--load")
+			})
+		}
 	}
 	return g.Wait()
 }
@@ -100,7 +106,7 @@ func (Pipe) Publish(ctx *context.Context) error {
 	g := semerrgroup.NewSkipAware(semerrgroup.New(ctx.Parallelism))
 	for _, d := range ctx.Config.DockersV2 {
 		g.Go(func() error {
-			return buildAndPublish(ctx, d, "--push")
+			return buildAndPublish(ctx, d, "--push", "--attest=type=sbom")
 		})
 	}
 	return g.Wait()
@@ -215,6 +221,14 @@ func makeArgs(ctx *context.Context, d config.DockerV2, extraArgs []string) ([]st
 	if len(tags) == 0 {
 		return nil, nil, fmt.Errorf("no tags provided")
 	}
+	// Append the -platform bit to non-empty tags.
+	if len(d.Platforms) == 1 && ctx.Snapshot {
+		plat := strings.TrimPrefix(d.Platforms[0], "linux/")
+		plat = strings.ReplaceAll(plat, "/", "")
+		for j := range tags {
+			tags[j] += "-" + plat
+		}
+	}
 	allImages := makeImageList(images, tags)
 
 	labelFlags, err := tplMapFlags(tpl, "--label", d.Labels)
@@ -241,7 +255,6 @@ func makeArgs(ctx *context.Context, d config.DockerV2, extraArgs []string) ([]st
 		"buildx",
 		"build",
 		"--platform", strings.Join(d.Platforms, ","),
-		"--attest=type=sbom",
 	}
 	for _, img := range allImages {
 		arg = append(arg, "-t", img)
