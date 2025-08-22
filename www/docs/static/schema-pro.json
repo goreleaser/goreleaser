@@ -1548,6 +1548,12 @@
 						},
 						"type": "object"
 					},
+					"annotations": {
+						"additionalProperties": {
+							"type": "string"
+						},
+						"type": "object"
+					},
 					"extra_files": {
 						"items": {
 							"type": "string"
@@ -1568,6 +1574,12 @@
 					},
 					"retry": {
 						"$ref": "#/$defs/Retry"
+					},
+					"flags": {
+						"items": {
+							"type": "string"
+						},
+						"type": "array"
 					}
 				},
 				"additionalProperties": false,
@@ -2713,6 +2725,16 @@
 						"enum": [
 							"v3",
 							"v4"
+						]
+					},
+					"disable": {
+						"oneOf": [
+							{
+								"type": "string"
+							},
+							{
+								"type": "boolean"
+							}
 						]
 					}
 				},
