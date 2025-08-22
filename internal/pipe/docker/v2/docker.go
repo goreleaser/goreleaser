@@ -11,7 +11,6 @@ import (
 	"os/exec"
 	"path"
 	"path/filepath"
-	"regexp"
 	"runtime"
 	"slices"
 	"strings"
@@ -31,8 +30,6 @@ import (
 	"github.com/goreleaser/goreleaser/v2/pkg/config"
 	"github.com/goreleaser/goreleaser/v2/pkg/context"
 )
-
-var dockerDigestPattern = regexp.MustCompile("sha256:[a-z0-9]{64}")
 
 // Pipe v2 of dockers pipe.
 type Pipe struct{}
@@ -114,10 +111,16 @@ func buildAndPublish(ctx *context.Context, d config.DockerV2, extraArgs ...strin
 		return pipe.Skip("no platforms to build")
 	}
 
+	extraArgs = append(extraArgs, "--iidfile=id.txt")
+
 	arg, images, err := makeArgs(ctx, d, extraArgs)
 	if err != nil {
 		return err
 	}
+
+	log := log.WithField("images", strings.Join(images, "\n")).
+		WithField("id", d.ID)
+	log.Debug("creating images")
 
 	wd, err := makeContext(d, contextArtifacts(ctx, d))
 	if err != nil {
@@ -127,8 +130,6 @@ func buildAndPublish(ctx *context.Context, d config.DockerV2, extraArgs ...strin
 
 	out, err := retry.DoWithData(
 		func() (string, error) {
-			log.WithField("id", d.ID).
-				Infof("creating %d images", len(images))
 			cmd := exec.CommandContext(ctx, "docker", arg...)
 			cmd.Dir = wd
 			cmd.Env = append(ctx.Env.Strings(), cmd.Environ()...)
@@ -158,29 +159,28 @@ func buildAndPublish(ctx *context.Context, d config.DockerV2, extraArgs ...strin
 		return err
 	}
 
-	digest := dockerDigestPattern.FindString(out)
-	if digest == "" {
+	digest, err := os.ReadFile(filepath.Join(wd, "id.txt"))
+	if err != nil {
 		return gerrors.Wrap(
 			err,
 			"could not find digest in output",
 			"id", d.ID,
 			"image", images[0],
 			"output", out,
+			"err", err,
 		)
 	}
 
+	log.WithField("digest", string(digest)).
+		Info("created images")
 	for _, img := range images {
-		log.WithField("image", img).
-			WithField("id", d.ID).
-			WithField("digest", digest).
-			Info("created image")
 		ctx.Artifacts.Add(&artifact.Artifact{
 			Name: img,
 			Path: img,
 			Type: artifact.DockerImageV2,
 			Extra: map[string]any{
 				artifact.ExtraID:     d.ID,
-				artifact.ExtraDigest: digest,
+				artifact.ExtraDigest: string(digest),
 			},
 		})
 
