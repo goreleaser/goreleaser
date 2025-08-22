@@ -4,6 +4,7 @@ package docker
 import (
 	"bytes"
 	"cmp"
+	"errors"
 	"fmt"
 	"io"
 	"maps"
@@ -11,7 +12,6 @@ import (
 	"os/exec"
 	"path"
 	"path/filepath"
-	"regexp"
 	"runtime"
 	"slices"
 	"strings"
@@ -31,8 +31,6 @@ import (
 	"github.com/goreleaser/goreleaser/v2/pkg/config"
 	"github.com/goreleaser/goreleaser/v2/pkg/context"
 )
-
-var dockerDigestPattern = regexp.MustCompile("sha256:[a-z0-9]{64}")
 
 // Pipe v2 of dockers pipe.
 type Pipe struct{}
@@ -80,19 +78,25 @@ func (p Pipe) Run(ctx *context.Context) error {
 	}
 
 	warnExperimental()
-	log.Warn("snapshot build: will not push or load any images")
+	log.Warn("snapshot build: will not push any images")
 
 	if runtime.GOOS == "windows" {
 		return pipe.Skip("library/registry is not available for windows")
 	}
 
 	g := semerrgroup.NewSkipAware(semerrgroup.New(ctx.Parallelism))
-	for _, d := range ctx.Config.DockersV2 {
-		g.Go(func() error {
-			// XXX: could potentially use `--output=type=local,dest=./dist/dockers/id/` to output the file tree?
-			// Not sure if useful or not...
-			return buildAndPublish(ctx, d)
-		})
+	for i := range ctx.Config.DockersV2 {
+		for _, plat := range ctx.Config.DockersV2[i].Platforms {
+			g.Go(func() error {
+				// buildx won't allow us to `--load` a manifest, so we create
+				// one image per platform, adding it to the tags.
+				d := ctx.Config.DockersV2[i]
+				d.Platforms = []string{plat}
+				// XXX: could potentially use `--output=type=local,dest=./dist/dockers/id/` to output the file tree?
+				// Not sure if useful or not...
+				return buildAndPublish(ctx, d, "--load")
+			})
+		}
 	}
 	return g.Wait()
 }
@@ -103,7 +107,7 @@ func (Pipe) Publish(ctx *context.Context) error {
 	g := semerrgroup.NewSkipAware(semerrgroup.New(ctx.Parallelism))
 	for _, d := range ctx.Config.DockersV2 {
 		g.Go(func() error {
-			return buildAndPublish(ctx, d, "--push")
+			return buildAndPublish(ctx, d, "--push", "--attest=type=sbom")
 		})
 	}
 	return g.Wait()
@@ -119,6 +123,10 @@ func buildAndPublish(ctx *context.Context, d config.DockerV2, extraArgs ...strin
 		return err
 	}
 
+	log := log.WithField("images", strings.Join(images, "\n")).
+		WithField("id", d.ID)
+	log.Debug("creating images")
+
 	wd, err := makeContext(d, contextArtifacts(ctx, d))
 	if err != nil {
 		return err
@@ -127,8 +135,6 @@ func buildAndPublish(ctx *context.Context, d config.DockerV2, extraArgs ...strin
 
 	out, err := retry.DoWithData(
 		func() (string, error) {
-			log.WithField("id", d.ID).
-				Infof("creating %d images", len(images))
 			cmd := exec.CommandContext(ctx, "docker", arg...)
 			cmd.Dir = wd
 			cmd.Env = append(ctx.Env.Strings(), cmd.Environ()...)
@@ -158,29 +164,28 @@ func buildAndPublish(ctx *context.Context, d config.DockerV2, extraArgs ...strin
 		return err
 	}
 
-	digest := dockerDigestPattern.FindString(out)
-	if digest == "" {
+	digest, err := os.ReadFile(filepath.Join(wd, "id.txt"))
+	if err != nil {
 		return gerrors.Wrap(
 			err,
 			"could not find digest in output",
 			"id", d.ID,
 			"image", images[0],
 			"output", out,
+			"err", err,
 		)
 	}
 
+	log.WithField("digest", string(digest)).
+		Info("created images")
 	for _, img := range images {
-		log.WithField("image", img).
-			WithField("id", d.ID).
-			WithField("digest", digest).
-			Info("created image")
 		ctx.Artifacts.Add(&artifact.Artifact{
 			Name: img,
 			Path: img,
 			Type: artifact.DockerImageV2,
 			Extra: map[string]any{
 				artifact.ExtraID:     d.ID,
-				artifact.ExtraDigest: digest,
+				artifact.ExtraDigest: string(digest),
 			},
 		})
 
@@ -213,7 +218,15 @@ func makeArgs(ctx *context.Context, d config.DockerV2, extraArgs []string) ([]st
 		return nil, nil, fmt.Errorf("invalid tags: %w", err)
 	}
 	if len(tags) == 0 {
-		tags = []string{"latest"} // XXX: FIX THIS
+		return nil, nil, errors.New("no tags provided")
+	}
+	// Append the -platform bit to non-empty tags.
+	if len(d.Platforms) == 1 && ctx.Snapshot {
+		plat := strings.TrimPrefix(d.Platforms[0], "linux/")
+		plat = strings.ReplaceAll(plat, "/", "")
+		for j := range tags {
+			tags[j] += "-" + plat
+		}
 	}
 	allImages := makeImageList(images, tags)
 
@@ -241,12 +254,12 @@ func makeArgs(ctx *context.Context, d config.DockerV2, extraArgs []string) ([]st
 		"buildx",
 		"build",
 		"--platform", strings.Join(d.Platforms, ","),
-		"--attest=type=sbom",
 	}
 	for _, img := range allImages {
 		arg = append(arg, "-t", img)
 	}
 	arg = append(arg, extraArgs...)
+	arg = append(arg, "--iidfile=id.txt")
 	arg = append(arg, labelFlags...)
 	arg = append(arg, annotationFlags...)
 	arg = append(arg, buildFlags...)
