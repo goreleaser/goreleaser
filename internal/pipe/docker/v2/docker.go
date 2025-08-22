@@ -213,7 +213,7 @@ func makeArgs(ctx *context.Context, d config.DockerV2, extraArgs []string) ([]st
 		return nil, nil, fmt.Errorf("invalid tags: %w", err)
 	}
 	if len(tags) == 0 {
-		tags = []string{"latest"}
+		tags = []string{"latest"} // XXX: FIX THIS
 	}
 	allImages := makeImageList(images, tags)
 
@@ -225,6 +225,11 @@ func makeArgs(ctx *context.Context, d config.DockerV2, extraArgs []string) ([]st
 	buildFlags, err := tplMapFlags(tpl, "--build-arg", d.BuildArgs)
 	if err != nil {
 		return nil, nil, fmt.Errorf("invalid build args: %w", err)
+	}
+
+	flags, err := tpl.Slice(d.Flags, tmpl.NonEmpty())
+	if err != nil {
+		return nil, nil, fmt.Errorf("invalid flags: %w", err)
 	}
 
 	arg := []string{
@@ -239,6 +244,7 @@ func makeArgs(ctx *context.Context, d config.DockerV2, extraArgs []string) ([]st
 	arg = append(arg, extraArgs...)
 	arg = append(arg, labelFlags...)
 	arg = append(arg, buildFlags...)
+	arg = append(arg, flags...)
 	arg = append(arg, ".")
 	return arg, allImages, nil
 }
