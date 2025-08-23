@@ -1,8 +1,12 @@
 bun-linux-x64
 bun-linux-x64-modern
 bun-linux-x64-baseline
+bun-linux-x64-musl
+bun-linux-x64-musl-modern
+bun-linux-x64-musl-baseline
 bun-linux-arm64
 bun-linux-arm64-modern
+bun-linux-arm64-musl
 bun-windows-x64
 bun-windows-x64-modern
 bun-windows-x64-baseline
