@@ -12,7 +12,6 @@ import (
 	"os/exec"
 	"path"
 	"path/filepath"
-	"runtime"
 	"slices"
 	"strings"
 	"time"
@@ -79,10 +78,6 @@ func (p Pipe) Run(ctx *context.Context) error {
 
 	warnExperimental()
 	log.Warn("snapshot build: will not push any images")
-
-	if runtime.GOOS == "windows" {
-		return pipe.Skip("library/registry is not available for windows")
-	}
 
 	g := semerrgroup.NewSkipAware(semerrgroup.New(ctx.Parallelism))
 	for i := range ctx.Config.DockersV2 {
