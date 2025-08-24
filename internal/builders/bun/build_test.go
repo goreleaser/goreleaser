@@ -42,6 +42,32 @@ func TestParse(t *testing.T) {
 			Os:     "linux",
 			Arch:   "arm64",
 		},
+		"bun-linux-arm64-musl": {
+			Target: "bun-linux-arm64-musl",
+			Os:     "linux",
+			Arch:   "arm64",
+			Abi:    "musl",
+		},
+		"linux-arm64-musl": {
+			Target: "bun-linux-arm64-musl",
+			Os:     "linux",
+			Arch:   "arm64",
+			Abi:    "musl",
+		},
+		"bun-linux-x64-musl-modern": {
+			Target: "bun-linux-x64-musl-modern",
+			Os:     "linux",
+			Arch:   "x64",
+			Abi:    "musl",
+			Type:   "modern",
+		},
+		"linux-x64-musl-modern": {
+			Target: "bun-linux-x64-musl-modern",
+			Os:     "linux",
+			Arch:   "x64",
+			Abi:    "musl",
+			Type:   "modern",
+		},
 	} {
 		t.Run(target, func(t *testing.T) {
 			got, err := Default.Parse(target)
@@ -150,11 +176,11 @@ func TestIsValid(t *testing.T) {
 		"darwin-arm64",
 		"darwin-x64",
 		"linux-arm64",
-		"linux-x64",
-		"linux-x64-baseline",
+		"linux-arm64-musl",
 		"linux-x64-modern",
-		"windows-x64",
-		"windows-x64-baseline",
+		"linux-x64-musl",
+		"linux-x64-musl-baseline",
+		"linux-x64-musl-modern",
 		"windows-x64-modern",
 	} {
 		t.Run(target, func(t *testing.T) {
