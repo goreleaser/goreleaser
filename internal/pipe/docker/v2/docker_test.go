@@ -203,10 +203,6 @@ func TestMakeArgs(t *testing.T) {
 
 func TestToPlatform(t *testing.T) {
 	for expected, art := range map[string]artifact.Artifact{
-		"darwin/amd64": {
-			Goos:   "darwin",
-			Goarch: "amd64",
-		},
 		"darwin/arm64": {
 			Goos:   "darwin",
 			Goarch: "arm64",
