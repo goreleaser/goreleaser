@@ -52,7 +52,7 @@ func (MacOS) Run(ctx *context.Context) error {
 func signAndNotarize(ctx *context.Context, cfg config.MacOSSignNotarize) error {
 	ok, err := tmpl.New(ctx).Bool(cfg.Enabled)
 	if err != nil {
-		return fmt.Errorf("notarize: macos: %w", err)
+		return err
 	}
 	if !ok {
 		return pipe.Skip("disabled")
@@ -66,12 +66,12 @@ func signAndNotarize(ctx *context.Context, cfg config.MacOSSignNotarize) error {
 		&cfg.Notarize.KeyID,
 		&cfg.Notarize.IssuerID,
 	); err != nil {
-		return fmt.Errorf("notarize: macos: %w", err)
+		return err
 	}
 
 	p12, err := load.P12(cfg.Sign.Certificate, cfg.Sign.Password)
 	if err != nil {
-		return fmt.Errorf("notarize: macos: %w", err)
+		return fmt.Errorf("load certificate: %w", err)
 	}
 
 	filters := []artifact.Filter{
@@ -126,16 +126,16 @@ func signAndNotarize(ctx *context.Context, cfg config.MacOSSignNotarize) error {
 		}
 		status, err := quill.Notarize(bin.Path, *notarizeCfg)
 		if err != nil {
-			return fmt.Errorf("notarize: macos: %s: %w", bin.Path, err)
+			return fmt.Errorf("%s: %w", bin.Path, err)
 		}
 
 		switch status {
 		case notary.AcceptedStatus:
 			log.WithField("binary", bin.Path).Info("notarized")
 		case notary.InvalidStatus:
-			return fmt.Errorf("notarize: macos: %s: invalid", bin.Path)
+			return fmt.Errorf("%s: invalid", bin.Path)
 		case notary.RejectedStatus:
-			return fmt.Errorf("notarize: macos: %s: rejected", bin.Path)
+			return fmt.Errorf("%s: rejected", bin.Path)
 		case notary.TimeoutStatus:
 			log.WithField("binary", bin.Path).Info("notarize timeout")
 		default:
@@ -144,7 +144,7 @@ func signAndNotarize(ctx *context.Context, cfg config.MacOSSignNotarize) error {
 	}
 
 	if err := binaries.Refresh(); err != nil {
-		return fmt.Errorf("notarize: macos: refresh artifacts: %w", err)
+		return fmt.Errorf("refresh artifacts: %w", err)
 	}
 	return nil
 }

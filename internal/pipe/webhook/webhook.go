@@ -59,28 +59,28 @@ func (p Pipe) Default(ctx *context.Context) error {
 func (p Pipe) Announce(ctx *context.Context) error {
 	cfg, err := env.ParseAs[Config]()
 	if err != nil {
-		return fmt.Errorf("webhook: %w", err)
+		return err
 	}
 
 	endpointURLConfig, err := tmpl.New(ctx).Apply(ctx.Config.Announce.Webhook.EndpointURL)
 	if err != nil {
-		return fmt.Errorf("webhook: %w", err)
+		return err
 	}
 	if len(endpointURLConfig) == 0 {
-		return errors.New("webhook: no endpoint url")
+		return errors.New("no endpoint url")
 	}
 
 	if _, err := url.ParseRequestURI(endpointURLConfig); err != nil {
-		return fmt.Errorf("webhook: %w", err)
+		return fmt.Errorf("invalid URL: %w", err)
 	}
 	endpointURL, err := url.Parse(endpointURLConfig)
 	if err != nil {
-		return fmt.Errorf("webhook: %w", err)
+		return fmt.Errorf("invalid URL: %w", err)
 	}
 
 	msg, err := tmpl.New(ctx).Apply(ctx.Config.Announce.Webhook.MessageTemplate)
 	if err != nil {
-		return fmt.Errorf("webhook: %w", err)
+		return err
 	}
 
 	log.Infof("posting: '%s'", msg)
@@ -96,7 +96,7 @@ func (p Pipe) Announce(ctx *context.Context) error {
 
 	req, err := http.NewRequestWithContext(ctx, http.MethodPost, endpointURL.String(), strings.NewReader(msg))
 	if err != nil {
-		return fmt.Errorf("webhook: %w", err)
+		return fmt.Errorf("request failed: %w", err)
 	}
 	req.Header.Add(ContentTypeHeaderKey, ctx.Config.Announce.Webhook.ContentType)
 	req.Header.Add(UserAgentHeaderKey, UserAgentHeaderValue)
@@ -115,7 +115,7 @@ func (p Pipe) Announce(ctx *context.Context) error {
 	}
 	resp, err := client.Do(req)
 	if err != nil {
-		return fmt.Errorf("webhook: %w", err)
+		return fmt.Errorf("request failed: %w", err)
 	}
 	defer resp.Body.Close()
 
