@@ -89,7 +89,7 @@ func (p Pipe) Run(ctx *context.Context) error {
 				d.Platforms = []string{plat}
 				// XXX: could potentially use `--output=type=local,dest=./dist/dockers/id/` to output the file tree?
 				// Not sure if useful or not...
-				return buildAndPublish(ctx, d, "--load")
+				return buildImage(ctx, d, "--load")
 			})
 		}
 	}
@@ -102,13 +102,13 @@ func (Pipe) Publish(ctx *context.Context) error {
 	g := semerrgroup.NewSkipAware(semerrgroup.New(ctx.Parallelism))
 	for _, d := range ctx.Config.DockersV2 {
 		g.Go(func() error {
-			return buildAndPublish(ctx, d, "--push", "--attest=type=sbom")
+			return buildImage(ctx, d, "--push", "--attest=type=sbom")
 		})
 	}
 	return g.Wait()
 }
 
-func buildAndPublish(ctx *context.Context, d config.DockerV2, extraArgs ...string) error {
+func buildImage(ctx *context.Context, d config.DockerV2, extraArgs ...string) error {
 	if len(d.Platforms) == 0 {
 		return pipe.Skip("no platforms to build")
 	}
