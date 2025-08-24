@@ -69,9 +69,9 @@ func TestRun(t *testing.T) {
 	content, err := os.ReadFile(name)
 	require.NoError(t, err)
 
-	const expected = `digest1 img1
-digest2 img2
-digest3 img3
+	const expected = `digest1  img1
+digest2  img2
+digest3  img3
 `
 	require.Equal(t, expected, string(content))
 }

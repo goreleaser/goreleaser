@@ -58,7 +58,7 @@ func (Pipe) Publish(ctx *context.Context) error {
 		if idx := strings.IndexRune(digest, ':'); idx != -1 {
 			digest = digest[idx+1:]
 		}
-		_, _ = fmt.Fprintf(&data, "%s %s\n", digest, img.Name)
+		_, _ = fmt.Fprintf(&data, "%s  %s\n", digest, img.Name)
 	}
 
 	filename, err := tmpl.New(ctx).Apply(ctx.Config.DockerDigest.NameTemplate)
