@@ -1,6 +1,8 @@
 package docker
 
 import (
+	"os"
+	"path/filepath"
 	"testing"
 	"time"
 
@@ -52,10 +54,50 @@ func TestDefault(t *testing.T) {
 	require.NotEmpty(t, d.Platforms)
 }
 
+func TestMakeContext(t *testing.T) {
+	t.Run("no dockerfile", func(t *testing.T) {
+		_, err := makeContext(testctx.New(), config.DockerV2{}, nil)
+		testlib.AssertSkipped(t, err)
+	})
+	t.Run("dockerfile tmpl error", func(t *testing.T) {
+		_, err := makeContext(testctx.New(), config.DockerV2{
+			Dockerfile: "{{.Nope}}",
+		}, nil)
+		testlib.RequireTemplateError(t, err)
+	})
+	t.Run("simple", func(t *testing.T) {
+		dir, err := makeContext(testctx.New(), config.DockerV2{
+			Dockerfile: "./testdata/Dockerfile",
+			ExtraFiles: []string{"./testdata/foo.conf"},
+		}, []*artifact.Artifact{
+			{
+				Name:   "mybin",
+				Path:   "./testdata/mybin",
+				Goos:   "linux",
+				Goarch: "arm",
+				Goarm:  "7",
+			},
+			{
+				Name:   "mybin",
+				Path:   "./testdata/mybin",
+				Goos:   "linux",
+				Goarch: "amd64",
+			},
+		})
+		require.NoError(t, err)
+		t.Cleanup(func() {
+			_ = os.RemoveAll(dir)
+		})
+		require.FileExists(t, filepath.Join(dir, "Dockerfile"))
+		require.FileExists(t, filepath.Join(dir, "linux/amd64/mybin"))
+		require.FileExists(t, filepath.Join(dir, "linux/arm/v7/mybin"))
+		require.FileExists(t, filepath.Join(dir, "testdata/foo.conf"))
+	})
+}
+
 func TestMakeArgs(t *testing.T) {
 	t.Run("tmpl error", func(t *testing.T) {
 		for name, mod := range map[string]func(d *config.DockerV2){
-			"dockerfile":  func(d *config.DockerV2) { d.Dockerfile = "{{.Nope}}" },
 			"images":      func(d *config.DockerV2) { d.Images = []string{"{{.Nope}}"} },
 			"tags":        func(d *config.DockerV2) { d.Tags = []string{"{{.Nope}}"} },
 			"labels":      func(d *config.DockerV2) { d.Labels = map[string]string{"foo": "{{.Nope}}"} },
@@ -74,10 +116,6 @@ func TestMakeArgs(t *testing.T) {
 				testlib.RequireTemplateError(t, err)
 			})
 		}
-	})
-	t.Run("no dockerfile", func(t *testing.T) {
-		_, _, err := makeArgs(testctx.New(), config.DockerV2{}, nil)
-		testlib.AssertSkipped(t, err)
 	})
 	t.Run("no images", func(t *testing.T) {
 		_, _, err := makeArgs(testctx.New(), config.DockerV2{

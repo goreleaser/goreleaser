@@ -122,7 +122,7 @@ func buildImage(ctx *context.Context, d config.DockerV2, extraArgs ...string) er
 		WithField("id", d.ID)
 	log.Debug("creating images")
 
-	wd, err := makeContext(d, contextArtifacts(ctx, d))
+	wd, err := makeContext(ctx, d, contextArtifacts(ctx, d))
 	if err != nil {
 		return err
 	}
@@ -197,14 +197,6 @@ func doBuild(ctx *context.Context, d config.DockerV2, wd string, arg []string) (
 
 func makeArgs(ctx *context.Context, d config.DockerV2, extraArgs []string) ([]string, []string, error) {
 	tpl := tmpl.New(ctx)
-	if err := tpl.ApplyAll(
-		&d.Dockerfile,
-	); err != nil {
-		return nil, nil, fmt.Errorf("invalid dockerfile: %w", err)
-	}
-	if strings.TrimSpace(d.Dockerfile) == "" {
-		return nil, nil, pipe.Skip("no dockerfile")
-	}
 	images, err := tpl.Slice(d.Images, tmpl.NonEmpty())
 	if err != nil {
 		return nil, nil, fmt.Errorf("invalid images: %w", err)
@@ -283,9 +275,17 @@ func makeImageList(imgs, tags []string) []string {
 // extra files, returning its path.
 //
 // The caller is responsible for removing the temporary directory.
-func makeContext(d config.DockerV2, artifacts []*artifact.Artifact) (string, error) {
+func makeContext(ctx *context.Context, d config.DockerV2, artifacts []*artifact.Artifact) (string, error) {
 	if len(artifacts) == 0 {
 		log.Warn("no binaries or packages found for the given platform - COPY/ADD may not work")
+	}
+
+	dockerfile, err := tmpl.New(ctx).Apply(d.Dockerfile)
+	if err != nil {
+		return "", fmt.Errorf("invalid dockerfile: %w", err)
+	}
+	if strings.TrimSpace(d.Dockerfile) == "" {
+		return "", pipe.Skip("no dockerfile")
 	}
 
 	tmp, err := os.MkdirTemp("", "goreleaserdocker")
@@ -293,7 +293,7 @@ func makeContext(d config.DockerV2, artifacts []*artifact.Artifact) (string, err
 		return "", fmt.Errorf("failed to create temporary dir: %w", err)
 	}
 
-	if err := gio.Copy(d.Dockerfile, filepath.Join(tmp, "Dockerfile")); err != nil {
+	if err := gio.Copy(dockerfile, filepath.Join(tmp, "Dockerfile")); err != nil {
 		return "", fmt.Errorf("failed to copy dockerfile: %w: %s", err, d.ID)
 	}
 
