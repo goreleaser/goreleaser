@@ -128,47 +128,9 @@ func buildImage(ctx *context.Context, d config.DockerV2, extraArgs ...string) er
 	}
 	defer os.RemoveAll(wd)
 
-	out, err := retry.DoWithData(
-		func() (string, error) {
-			cmd := exec.CommandContext(ctx, "docker", arg...)
-			cmd.Dir = wd
-			cmd.Env = append(ctx.Env.Strings(), cmd.Environ()...)
-			var b bytes.Buffer
-			w := gio.Safe(&b)
-			cmd.Stderr = io.MultiWriter(logext.NewWriter(), w)
-			cmd.Stdout = io.MultiWriter(logext.NewWriter(), w)
-			if err := cmd.Run(); err != nil {
-				return "", gerrors.Wrap(
-					err,
-					"could not build and publish docker image",
-					"args", strings.Join(cmd.Args, " "),
-					"id", d.ID,
-					"image", images[0],
-					"output", b.String(),
-				)
-			}
-			return b.String(), nil
-		},
-		retry.RetryIf(isRetriableManifestCreate),
-		retry.Attempts(d.Retry.Attempts),
-		retry.Delay(d.Retry.Delay),
-		retry.MaxDelay(d.Retry.MaxDelay),
-		retry.LastErrorOnly(true),
-	)
+	digest, err := doBuild(ctx, d, wd, arg)
 	if err != nil {
 		return err
-	}
-
-	digest, err := os.ReadFile(filepath.Join(wd, "id.txt"))
-	if err != nil {
-		return gerrors.Wrap(
-			err,
-			"could not find digest in output",
-			"id", d.ID,
-			"image", images[0],
-			"output", out,
-			"err", err,
-		)
 	}
 
 	log.WithField("digest", string(digest)).
@@ -189,6 +151,48 @@ func buildImage(ctx *context.Context, d config.DockerV2, extraArgs ...string) er
 	}
 
 	return nil
+}
+
+func doBuild(ctx *context.Context, d config.DockerV2, wd string, arg []string) (string, error) {
+	if err := retry.Do(
+		func() error {
+			cmd := exec.CommandContext(ctx, "docker", arg...)
+			cmd.Dir = wd
+			cmd.Env = append(ctx.Env.Strings(), cmd.Environ()...)
+			var b bytes.Buffer
+			w := gio.Safe(&b)
+			cmd.Stderr = io.MultiWriter(logext.NewWriter(), w)
+			cmd.Stdout = io.MultiWriter(logext.NewWriter(), w)
+			if err := cmd.Run(); err != nil {
+				return gerrors.Wrap(
+					err,
+					"could not build and publish docker image",
+					"args", strings.Join(cmd.Args, " "),
+					"id", d.ID,
+					"output", b.String(),
+				)
+			}
+			return nil
+		},
+		retry.RetryIf(isRetriableManifestCreate),
+		retry.Attempts(d.Retry.Attempts),
+		retry.Delay(d.Retry.Delay),
+		retry.MaxDelay(d.Retry.MaxDelay),
+		retry.LastErrorOnly(true),
+	); err != nil {
+		return "", err
+	}
+
+	digest, err := os.ReadFile(filepath.Join(wd, "id.txt"))
+	if err != nil {
+		return "", gerrors.Wrap(
+			err,
+			"could not find digest in output",
+			"id", d.ID,
+			"err", err,
+		)
+	}
+	return string(digest), nil
 }
 
 func makeArgs(ctx *context.Context, d config.DockerV2, extraArgs []string) ([]string, []string, error) {
