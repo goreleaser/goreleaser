@@ -1,12 +1,14 @@
 package docker
 
 import (
+	"errors"
 	"os"
 	"path/filepath"
 	"testing"
 	"time"
 
 	"github.com/goreleaser/goreleaser/v2/internal/artifact"
+	"github.com/goreleaser/goreleaser/v2/internal/gerrors"
 	"github.com/goreleaser/goreleaser/v2/internal/skips"
 	"github.com/goreleaser/goreleaser/v2/internal/testctx"
 	"github.com/goreleaser/goreleaser/v2/internal/testlib"
@@ -103,6 +105,7 @@ func TestMakeArgs(t *testing.T) {
 			"labels":      func(d *config.DockerV2) { d.Labels = map[string]string{"foo": "{{.Nope}}"} },
 			"annotations": func(d *config.DockerV2) { d.Annotations = map[string]string{"foo": "{{.Nope}}"} },
 			"build args":  func(d *config.DockerV2) { d.BuildArgs = map[string]string{"{{.Nope}}": "bar"} },
+			"flags":       func(d *config.DockerV2) { d.Flags = []string{"{{.Nope}}"} },
 		} {
 			t.Run(name, func(t *testing.T) {
 				ctx := testctx.New()
@@ -198,7 +201,7 @@ func TestMakeArgs(t *testing.T) {
 	})
 }
 
-func TestPlatform(t *testing.T) {
+func TestToPlatform(t *testing.T) {
 	for expected, art := range map[string]artifact.Artifact{
 		"darwin/amd64": {
 			Goos:   "darwin",
@@ -257,6 +260,30 @@ func TestPlatform(t *testing.T) {
 			require.Equal(t, expected, plat)
 		})
 	}
+
+	t.Run("unsupported os", func(t *testing.T) {
+		_, err := toPlatform(&artifact.Artifact{
+			Goos: "nope",
+		})
+		require.Error(t, err)
+	})
+
+	t.Run("unsupported arch", func(t *testing.T) {
+		_, err := toPlatform(&artifact.Artifact{
+			Goos:   "linux",
+			Goarch: "nope",
+		})
+		require.Error(t, err)
+	})
+
+	t.Run("unsupported arm", func(t *testing.T) {
+		_, err := toPlatform(&artifact.Artifact{
+			Goos:   "linux",
+			Goarch: "arm",
+			Goarm:  "5",
+		})
+		require.Error(t, err)
+	})
 }
 
 func TestParsePlatform(t *testing.T) {
@@ -302,4 +329,11 @@ func TestContextArtifacts(t *testing.T) {
 		IDs:       []string{"id1"},
 	})
 	require.Len(t, arts, 3)
+}
+
+func TestIsRetriableManifestCreate(t *testing.T) {
+	require.True(t, isRetriableManifestCreate(gerrors.Wrap(nil, "", "output", "manifest verification failed for digest")))
+	require.False(t, isRetriableManifestCreate(gerrors.Wrap(nil, "", "output", "some other error")))
+	require.False(t, isRetriableManifestCreate(errors.New("some other error")))
+	require.False(t, isRetriableManifestCreate(nil))
 }

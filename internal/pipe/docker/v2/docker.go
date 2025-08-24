@@ -427,8 +427,11 @@ func tplMapFlags(tpl *tmpl.Template, flag string, m map[string]string) ([]string
 }
 
 func isRetriableManifestCreate(err error) bool {
-	out := gerrors.DetailsOf(err)["output"].(string)
-	return strings.Contains(out, "manifest verification failed for digest")
+	out, ok := gerrors.DetailsOf(err)["output"]
+	if !ok {
+		return false
+	}
+	return strings.Contains(out.(string), "manifest verification failed for digest")
 }
 
 func warnExperimental() {
