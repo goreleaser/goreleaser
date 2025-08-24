@@ -87,8 +87,6 @@ func (p Pipe) Run(ctx *context.Context) error {
 				// one image per platform, adding it to the tags.
 				d := ctx.Config.DockersV2[i]
 				d.Platforms = []string{plat}
-				// XXX: could potentially use `--output=type=local,dest=./dist/dockers/id/` to output the file tree?
-				// Not sure if useful or not...
 				return buildImage(ctx, d, "--load")
 			})
 		}
@@ -145,9 +143,6 @@ func buildImage(ctx *context.Context, d config.DockerV2, extraArgs ...string) er
 				artifact.ExtraDigest: string(digest),
 			},
 		})
-
-		// XXX: should we extract the SBOM and add its artifact as well?
-		// https://docs.docker.com/build/metadata/attestations/sbom/#inspecting-sboms
 	}
 
 	return nil
@@ -213,10 +208,9 @@ func makeArgs(ctx *context.Context, d config.DockerV2, extraArgs []string) ([]st
 	}
 	// Append the -platform bit to non-empty tags.
 	if len(d.Platforms) == 1 && ctx.Snapshot {
-		plat := strings.TrimPrefix(d.Platforms[0], "linux/")
-		plat = strings.ReplaceAll(plat, "/", "")
+		suffix := tagSuffix(d.Platforms[0])
 		for j := range tags {
-			tags[j] += "-" + plat
+			tags[j] += "-" + suffix
 		}
 	}
 	allImages := makeImageList(images, tags)
@@ -362,10 +356,16 @@ func contextArtifacts(ctx *context.Context, d config.DockerV2) []*artifact.Artif
 	return artifacts.List()
 }
 
+func tagSuffix(plat string) string {
+	plat = plat[strings.Index(plat, "/")+1:]
+	plat = strings.ReplaceAll(plat, "/", "")
+	return plat
+}
+
 func toPlatform(a *artifact.Artifact) (string, error) {
 	var parts []string
 	switch a.Goos {
-	case "linux", "darwin", "windows":
+	case "linux", "windows":
 		parts = append(parts, a.Goos)
 	default:
 		return "", fmt.Errorf("unsupported OS: %q", a.Goos)

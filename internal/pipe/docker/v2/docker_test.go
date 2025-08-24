@@ -337,3 +337,16 @@ func TestIsRetriableManifestCreate(t *testing.T) {
 	require.False(t, isRetriableManifestCreate(errors.New("some other error")))
 	require.False(t, isRetriableManifestCreate(nil))
 }
+
+func TestTagSuffix(t *testing.T) {
+	for plat, suffix := range map[string]string{
+		"linux/amd64":   "amd64",
+		"linux/arm64":   "arm64",
+		"linux/arm/v7":  "armv7",
+		"windows/amd64": "amd64",
+	} {
+		t.Run(plat, func(t *testing.T) {
+			require.Equal(t, suffix, tagSuffix(plat))
+		})
+	}
+}
