@@ -11,6 +11,7 @@ import (
 	"github.com/caarlos0/log"
 	"github.com/goreleaser/goreleaser/v2/internal/archivefiles"
 	"github.com/goreleaser/goreleaser/v2/internal/artifact"
+	"github.com/goreleaser/goreleaser/v2/internal/gio"
 	"github.com/goreleaser/goreleaser/v2/internal/ids"
 	"github.com/goreleaser/goreleaser/v2/internal/pipe"
 	"github.com/goreleaser/goreleaser/v2/internal/semerrgroup"
@@ -37,43 +38,31 @@ func (Pipe) Skip(ctx *context.Context) bool {
 func (Pipe) Default(ctx *context.Context) error {
 	ids := ids.New("makeselfs")
 	for i := range ctx.Config.Makeselfs {
-		makeself := &ctx.Config.Makeselfs[i]
-		if makeself.ID == "" {
-			makeself.ID = "default"
+		cfg := &ctx.Config.Makeselfs[i]
+		if cfg.ID == "" {
+			cfg.ID = "default"
 		}
-		if makeself.NameTemplate == "" {
-			makeself.NameTemplate = defaultNameTemplate
+		if cfg.Name == "" {
+			cfg.Name = defaultNameTemplate
 		}
-		if makeself.Extension == "" {
-			makeself.Extension = ".run"
+		if cfg.Extension == "" {
+			cfg.Extension = ".run"
 		}
-		ids.Inc(makeself.ID)
+		ids.Inc(cfg.ID)
 	}
 	return ids.Validate()
 }
 
 // Run the pipe.
 func (Pipe) Run(ctx *context.Context) error {
-	skips := pipe.SkipMemento{}
-	for _, makeself := range ctx.Config.Makeselfs {
-		err := doRun(ctx, makeself)
-		if pipe.IsSkip(err) {
-			skips.Remember(err)
-			continue
-		}
-		if err != nil {
-			return err
-		}
+	g := semerrgroup.NewSkipAware(semerrgroup.New(ctx.Parallelism))
+	for _, cfg := range ctx.Config.Makeselfs {
+		return doRun(ctx, cfg)
 	}
-	return skips.Evaluate()
+	return g.Wait()
 }
 
-func doRun(ctx *context.Context, makeselfCfg config.MakeselfPackage) error {
-	// Handle meta packages - they don't need binaries
-	if makeselfCfg.Meta {
-		return create(ctx, makeselfCfg, nil)
-	}
-
+func doRun(ctx *context.Context, cfg config.MakeselfPackage) error {
 	filters := []artifact.Filter{
 		artifact.Or(
 			artifact.ByType(artifact.Binary),
@@ -83,148 +72,111 @@ func doRun(ctx *context.Context, makeselfCfg config.MakeselfPackage) error {
 			artifact.ByType(artifact.CShared),
 		),
 	}
-	if len(makeselfCfg.IDs) > 0 {
-		filters = append(filters, artifact.ByIDs(makeselfCfg.IDs...))
+	if len(cfg.IDs) > 0 {
+		filters = append(filters, artifact.ByIDs(cfg.IDs...))
 	}
-
-	// Add platform filtering
-	log.Debugf("makeself config %s: goos=%v, goarch=%v", makeselfCfg.ID, makeselfCfg.Goos, makeselfCfg.Goarch)
-	if len(makeselfCfg.Goos) > 0 {
-		goosFilters := make([]artifact.Filter, len(makeselfCfg.Goos))
-		for i, goos := range makeselfCfg.Goos {
-			goosFilters[i] = artifact.ByGoos(goos)
+	if len(cfg.Goos) > 0 {
+		gf := make([]artifact.Filter, len(cfg.Goos))
+		for i, goos := range cfg.Goos {
+			gf[i] = artifact.ByGoos(goos)
 		}
-		filters = append(filters, artifact.Or(goosFilters...))
-		log.Debugf("makeself config %s: added goos filtering for %v", makeselfCfg.ID, makeselfCfg.Goos)
-	} else {
-		log.Warnf("makeself config %s: NO goos filtering - will process ALL platforms!", makeselfCfg.ID)
+		filters = append(filters, artifact.Or(gf...))
 	}
-	if len(makeselfCfg.Goarch) > 0 {
-		goarchFilters := make([]artifact.Filter, len(makeselfCfg.Goarch))
-		for i, goarch := range makeselfCfg.Goarch {
-			goarchFilters[i] = artifact.ByGoarch(goarch)
+	if len(cfg.Goarch) > 0 {
+		gf := make([]artifact.Filter, len(cfg.Goarch))
+		for i, goarch := range cfg.Goarch {
+			gf[i] = artifact.ByGoarch(goarch)
 		}
-		filters = append(filters, artifact.Or(goarchFilters...))
-		log.Debugf("makeself config %s: added goarch filtering for %v", makeselfCfg.ID, makeselfCfg.Goarch)
+		filters = append(filters, artifact.Or(gf...))
 	}
 
 	binaries := ctx.Artifacts.
 		Filter(artifact.And(filters...)).
 		GroupByPlatform()
 	if len(binaries) == 0 {
-		return fmt.Errorf("no binaries found for builds %v with goos %v goarch %v", makeselfCfg.IDs, makeselfCfg.Goos, makeselfCfg.Goarch)
+		return fmt.Errorf("no binaries found for builds %v with goos %v goarch %v", cfg.IDs, cfg.Goos, cfg.Goarch)
 	}
 
-	g := semerrgroup.New(ctx.Parallelism)
+	g := semerrgroup.NewSkipAware(semerrgroup.New(ctx.Parallelism))
 	for _, artifacts := range binaries {
 		g.Go(func() error {
-			return create(ctx, makeselfCfg, artifacts)
+			return create(ctx, cfg, artifacts)
 		})
 	}
 	return g.Wait()
 }
 
-func create(ctx *context.Context, makeselfCfg config.MakeselfPackage, binaries []*artifact.Artifact) error {
-	template := tmpl.New(ctx)
+// https://ibiblio.org/pub/linux/LSM-TEMPLATE.html
+const lsmTemplate = `Begin4
+Title: {{.Title}}
+Version: {{.Version}}
+Description: {{.Description}}
+Keywords: {{.Keywords}}
+Author: {{.Maintainer}}
+Maintained-by: {{.Maintainer}}
+Primary-site: {{.Homepage}}
+Platforms: {{.Platform}}
+Copying-policy: {{.License}}
+End`
+
+func create(ctx *context.Context, cfg config.MakeselfPackage, binaries []*artifact.Artifact) error {
+	tpl := tmpl.New(ctx)
 	if len(binaries) > 0 {
-		template = template.WithArtifact(binaries[0])
+		tpl = tpl.WithArtifact(binaries[0])
 	}
 
-	// Check if disabled
-	if makeselfCfg.Disable != "" {
-		disable, err := template.Apply(makeselfCfg.Disable)
-		if err != nil {
-			return err
-		}
-		if disable == "true" {
-			return nil // Return nil instead of skip error for disabled packages
-		}
-	}
-
-	var packageName string
-	var err error
-
-	// For meta packages without binaries, use a simpler name template if the default is being used
-	if makeselfCfg.Meta && len(binaries) == 0 && makeselfCfg.NameTemplate == defaultNameTemplate {
-		// Use a meta-package friendly name template
-		metaTemplate := `{{ .ProjectName }}_{{ .Version }}_meta`
-		packageName, err = template.Apply(metaTemplate)
-	} else {
-		packageName, err = template.Apply(makeselfCfg.NameTemplate)
-	}
+	disable, err := tpl.Bool(cfg.Disable)
 	if err != nil {
 		return err
 	}
-
-	// Apply templates to all configuration fields
-	label := makeselfCfg.Label
-	if label != "" {
-		label, err = template.Apply(label)
-		if err != nil {
-			return fmt.Errorf("failed to apply template to label: %w", err)
-		}
+	if disable {
+		return pipe.Skip("disabled")
 	}
 
-	installScript := makeselfCfg.InstallScript
-	if installScript != "" {
-		installScript, err = template.Apply(installScript)
-		if err != nil {
-			return fmt.Errorf("failed to apply template to install_script: %w", err)
-		}
+	title := cfg.Title
+	description := cfg.Description
+	packageName := cfg.Name
+	maintainer := cfg.Maintainer
+	homepage := cfg.Homepage
+	license := cfg.License
+	label := cfg.Label
+	installScript := cfg.InstallScript
+	compression := cfg.Compression
+	extension := cfg.Extension
+	extraArgs := cfg.ExtraArgs
+	keywords := cfg.Keywords
+
+	if err := tpl.ApplyAll(
+		&title,
+		&description,
+		&packageName,
+		&maintainer,
+		&homepage,
+		&license,
+		&label,
+		&installScript,
+		&compression,
+		&extension,
+	); err != nil {
+		return err
+	}
+	if err := tpl.ApplySlice(&extraArgs); err != nil {
+		return err
+	}
+	if err := tpl.ApplySlice(&keywords); err != nil {
+		return err
 	}
 
-	installScriptFile := makeselfCfg.InstallScriptFile
-	if installScriptFile != "" {
-		installScriptFile, err = template.Apply(installScriptFile)
-		if err != nil {
-			return fmt.Errorf("failed to apply template to install_script_file: %w", err)
-		}
-	}
-
-	compression := makeselfCfg.Compression
-	if compression != "" {
-		compression, err = template.Apply(compression)
-		if err != nil {
-			return fmt.Errorf("failed to apply template to compression: %w", err)
-		}
-	}
-
-	lsmTemplate := makeselfCfg.LSMTemplate
-	if lsmTemplate != "" {
-		lsmTemplate, err = template.Apply(lsmTemplate)
-		if err != nil {
-			return fmt.Errorf("failed to apply template to lsm_template: %w", err)
-		}
-	}
-
-	lsmFile := makeselfCfg.LSMFile
-	if lsmFile != "" {
-		lsmFile, err = template.Apply(lsmFile)
-		if err != nil {
-			return fmt.Errorf("failed to apply template to lsm_file: %w", err)
-		}
-	}
-
-	extension := makeselfCfg.Extension
-	if extension != "" {
-		extension, err = template.Apply(extension)
-		if err != nil {
-			return fmt.Errorf("failed to apply template to extension: %w", err)
-		}
-	}
-
-	// Ensure we always have an extension - fallback to .run if empty
-	if extension == "" {
-		extension = ".run"
-	}
-
-	// Apply templates to extra args
-	extraArgs := make([]string, len(makeselfCfg.ExtraArgs))
-	for i, arg := range makeselfCfg.ExtraArgs {
-		extraArgs[i], err = template.Apply(arg)
-		if err != nil {
-			return fmt.Errorf("failed to apply template to extra_args[%d]: %w", i, err)
-		}
+	lsm, err := tpl.WithExtraFields(tmpl.Fields{
+		"Title":       title,
+		"Description": description,
+		"Keywords":    strings.Join(keywords, ", "),
+		"Maintainer":  maintainer,
+		"Homepage":    homepage,
+		"License":     license,
+	}).Apply(lsmTemplate)
+	if err != nil {
+		return err
 	}
 
 	// Ensure extension starts with a dot
@@ -235,28 +187,34 @@ func create(ctx *context.Context, makeselfCfg config.MakeselfPackage, binaries [
 	packageFilename := packageName + extension
 	packagePath := filepath.Join(ctx.Config.Dist, packageFilename)
 
-	log := log.WithField("package", packageName).WithField("path", packagePath).WithField("extension", extension)
+	log := log.WithField("package", packageName).
+		WithField("path", packagePath).
+		WithField("extension", extension)
 	log.Info("creating makeself package")
 
-	// Ensure the filename has the correct extension for debugging
-	log.Debugf("Final package filename: %s (name=%s, ext=%s)", packageFilename, packageName, extension)
-
 	// Create makeself package directly using makeself command
-	err = createMakeselfPackage(ctx, packagePath, binaries, makeselfCfg, template, label, installScript, installScriptFile, compression, lsmTemplate, lsmFile, extraArgs)
-	if err != nil {
+	if err := createMakeselfPackage(
+		ctx,
+		packagePath,
+		binaries,
+		cfg,
+		tpl,
+		label,
+		installScript,
+		compression,
+		lsm,
+		extraArgs,
+	); err != nil {
 		return fmt.Errorf("failed to create makeself package: %w", err)
 	}
 
 	bins := []string{}
-	if !makeselfCfg.Meta {
-		for _, binary := range binaries {
-			bins = append(bins, binary.Name)
-			log.WithField("binary", binary.Name).Debug("added binary to makeself package")
-		}
+	for _, binary := range binaries {
+		bins = append(bins, binary.Name)
 	}
 
 	// Add extra files
-	files, err := archivefiles.Eval(template, makeselfCfg.Files)
+	files, err := archivefiles.Eval(tpl, cfg.Files)
 	if err != nil {
 		return fmt.Errorf("failed to find files to archive: %w", err)
 	}
@@ -267,7 +225,7 @@ func create(ctx *context.Context, makeselfCfg config.MakeselfPackage, binaries [
 		Name: packageFilename,
 		Path: packagePath,
 		Extra: map[string]any{
-			artifact.ExtraID:       makeselfCfg.ID,
+			artifact.ExtraID:       cfg.ID,
 			artifact.ExtraFormat:   "makeself",
 			artifact.ExtraExt:      extension,
 			artifact.ExtraBinaries: bins,
@@ -295,7 +253,15 @@ func create(ctx *context.Context, makeselfCfg config.MakeselfPackage, binaries [
 	return nil
 }
 
-func createMakeselfPackage(ctx *context.Context, packagePath string, binaries []*artifact.Artifact, makeselfCfg config.MakeselfPackage, template *tmpl.Template, label, installScript, installScriptFile, compression, lsmTemplate, lsmFile string, extraArgs []string) error {
+func createMakeselfPackage(
+	ctx *context.Context,
+	packagePath string,
+	binaries []*artifact.Artifact,
+	cfg config.MakeselfPackage,
+	tpl *tmpl.Template,
+	label, installScript, compression, lsm string,
+	extraArgs []string,
+) error {
 	// Create the package directory if it doesn't exist
 	packageDir := filepath.Dir(packagePath)
 	log.Debugf("creating package directory: %s", packageDir)
@@ -309,99 +275,62 @@ func createMakeselfPackage(ctx *context.Context, packagePath string, binaries []
 	}
 	log.Debugf("package directory verified: %s", packageDir)
 
-	// Check if makeself command is available
-	makeselfCmd := findMakeselfCommand()
-	if makeselfCmd == "" {
-		return fmt.Errorf("makeself command not found in PATH (tried 'makeself' and 'makeself.sh')")
-	}
-
 	// Create temporary directory for files to be archived
-	tempDir, err := os.MkdirTemp("", "makeself-*")
+	dir, err := os.MkdirTemp("", "makeself-*")
 	if err != nil {
 		return fmt.Errorf("failed to create temp directory: %w", err)
 	}
-	defer os.RemoveAll(tempDir)
+	defer os.RemoveAll(dir)
 
 	// Add binaries unless it's a meta package
-	if !makeselfCfg.Meta {
-		for _, binary := range binaries {
-			// Preserve binary directory structure by default (matches archive pipeline behavior)
-			var dst string
-			if makeselfCfg.StripBinaryDirectory {
-				dst = filepath.Join(tempDir, filepath.Base(binary.Name))
-			} else {
-				dst = filepath.Join(tempDir, binary.Name)
-				// Ensure parent directory exists for nested binary paths
-				if err := os.MkdirAll(filepath.Dir(dst), 0o755); err != nil {
-					return fmt.Errorf("failed to create directory for %s: %w", binary.Name, err)
-				}
-			}
+	for _, binary := range binaries {
+		// Preserve binary directory structure by default (matches archive pipeline behavior)
+		dst := filepath.Join(dir, filepath.Base(binary.Name))
+		// Ensure parent directory exists for nested binary paths
+		if err := os.MkdirAll(filepath.Dir(dst), 0o755); err != nil {
+			return fmt.Errorf("failed to create directory for %s: %w", binary.Name, err)
+		}
 
-			if err := copyFile(binary.Path, dst); err != nil {
-				return fmt.Errorf("failed to copy binary %s: %w", binary.Name, err)
-			}
-			// Make binary executable
-			if err := os.Chmod(dst, 0o755); err != nil {
-				return fmt.Errorf("failed to make binary executable %s: %w", dst, err)
-			}
+		if err := gio.Copy(binary.Path, dst); err != nil {
+			return fmt.Errorf("failed to copy binary %s: %w", binary.Name, err)
+		}
+		// Make binary executable
+		if err := os.Chmod(dst, 0o755); err != nil {
+			return fmt.Errorf("failed to make binary executable %s: %w", dst, err)
 		}
 	}
 
-	// Add extra files
-	files, err := archivefiles.Eval(template, makeselfCfg.Files)
+	files, err := archivefiles.Eval(tpl, cfg.Files)
 	if err != nil {
 		return fmt.Errorf("failed to find files to archive: %w", err)
 	}
-	if makeselfCfg.Meta && len(files) == 0 {
-		return fmt.Errorf("no files found for meta package")
-	}
 
 	for _, f := range files {
-		dst := filepath.Join(tempDir, f.Destination)
+		dst := filepath.Join(dir, f.Destination)
 		if err := os.MkdirAll(filepath.Dir(dst), 0o755); err != nil {
 			return fmt.Errorf("failed to create directory for %s: %w", f.Destination, err)
 		}
-		if err := copyFile(f.Source, dst); err != nil {
+		if err := gio.Copy(f.Source, dst); err != nil {
 			return fmt.Errorf("failed to copy file %s: %w", f.Source, err)
 		}
 	}
 
-	// Create install script if provided
-	var installScriptPath string
-	if installScript != "" {
-		installScriptPath = filepath.Join(tempDir, "install.sh")
-		if err := os.WriteFile(installScriptPath, []byte(installScript), 0o755); err != nil {
-			return fmt.Errorf("failed to write install script: %w", err)
-		}
-		installScriptFile = "install.sh"
-	} else if installScriptFile != "" {
-		// Use relative path for makeself command, avoid double ./ prefix
-		if strings.HasPrefix(installScriptFile, "./") {
-			installScriptFile = installScriptFile[2:]
-		}
-	} else {
-		// Create default install script
-		installScriptPath = filepath.Join(tempDir, "install.sh")
-		installContent := `#!/bin/bash
-# Default installation script for makeself archive
-# This script is executed after extraction
-echo "Files extracted to: $PWD"
-echo "Installation complete."
-`
-		if err := os.WriteFile(installScriptPath, []byte(installContent), 0o755); err != nil {
-			return fmt.Errorf("failed to write default install script: %w", err)
-		}
-		installScriptFile = "install.sh"
+	bts, err := os.ReadFile(installScript)
+	if err != nil {
+		return err
+	}
+	install, err := tpl.Apply(string(bts))
+	if err != nil {
+		return err
+	}
+	if err := os.WriteFile(filepath.Join(dir, "install.sh"), []byte(install), 0o755); err != nil {
+		return err
 	}
 
 	// Create LSM file if LSM template is provided
-	var lsmFilePath string
-	if lsmTemplate != "" {
-		lsmFilePath = filepath.Join(tempDir, "package.lsm")
-		if err := os.WriteFile(lsmFilePath, []byte(lsmTemplate), 0o644); err != nil {
-			return fmt.Errorf("failed to write LSM file: %w", err)
-		}
-		lsmFile = lsmFilePath
+	lsmFile := filepath.Join(dir, "package.lsm")
+	if err := os.WriteFile(lsmFile, []byte(lsm), 0o644); err != nil {
+		return fmt.Errorf("failed to write LSM file: %w", err)
 	}
 
 	// Build makeself command with configuration
@@ -409,120 +338,27 @@ echo "Installation complete."
 
 	// Add compression argument
 	switch compression {
-	case "gzip":
-		args = append(args, "--gzip")
-	case "bzip2":
-		args = append(args, "--bzip2")
-	case "xz":
-		args = append(args, "--xz")
-	case "lzo":
-		args = append(args, "--lzo")
-	case "compress":
-		args = append(args, "--compress")
+	case "gzip", "bzip2", "xz", "lzo", "compress":
+		args = append(args, "--"+compression)
 	case "none":
 		args = append(args, "--nocomp")
-	case "":
-		// Default: let makeself choose its default (usually gzip)
 	default:
-		// For unknown compression types, log a warning but continue
-		log.Warnf("unknown compression format '%s', using makeself default", compression)
+		// let makeself choose.
 	}
 
-	// Add LSM file if specified
-	if lsmFile != "" {
-		args = append(args, "--lsm", lsmFile)
-	}
-
-	// Add extra arguments
-	for _, arg := range extraArgs {
-		if arg != "" {
-			args = append(args, arg)
-		}
-	}
-
-	// Add required arguments: directory, package, label, startup_script
-	args = append(args, tempDir, packagePath)
-
-	if label == "" {
-		label = "Self-extracting archive"
-	}
+	args = append(args, "--lsm", lsmFile)
+	args = append(args, extraArgs...)
+	args = append(args, dir, packagePath)
 	args = append(args, label)
+	args = append(args, "install.sh")
 
-	if installScriptFile != "" {
-		args = append(args, installScriptFile)
-	}
+	cmd := exec.CommandContext(ctx, "makeself", args...)
 
-	// Create the makeself archive command - execute from original working directory
-	cmd := exec.Command(makeselfCmd, args...)
-
-	// Debug: Log the full command being executed
-	log.Debugf("executing makeself command: %s %v", makeselfCmd, args)
-
+	// TODO: log stdout/err
 	// Capture stderr for error reporting
 	output, err := cmd.CombinedOutput()
 	if err != nil {
 		return fmt.Errorf("makeself failed: %w: %s", err, string(output))
 	}
-
-	// Debug: Log makeself output and check if file was created
-	log.Debugf("makeself output: %s", string(output))
-	_, err = os.Stat(packagePath)
-	if os.IsNotExist(err) {
-		return fmt.Errorf("makeself command completed but output file was not created at %s", packagePath)
-	}
-
-	// Stat failed for some other reason
-	if err != nil {
-		return fmt.Errorf("makeself command completed but stat on file %s failed with: %w", packagePath, err)
-	}
-
-	// Make the archive executable
-	if err := os.Chmod(packagePath, 0o755); err != nil {
-		// Don't fail if we can't set permissions - just log it
-		log.Warnf("failed to make makeself archive executable: %v", err)
-	}
-
 	return nil
-}
-
-// findMakeselfCommand finds the makeself command in PATH, trying both 'makeself' and 'makeself.sh'
-func findMakeselfCommand() string {
-	// Try 'makeself' first (common on some distributions)
-	if _, err := exec.LookPath("makeself"); err == nil {
-		return "makeself"
-	}
-	// Try 'makeself.sh' (traditional name)
-	if _, err := exec.LookPath("makeself.sh"); err == nil {
-		return "makeself.sh"
-	}
-	return ""
-}
-
-// copyFile copies a file from src to dst, preserving permissions
-func copyFile(src, dst string) error {
-	// Get source file info to preserve permissions
-	srcInfo, err := os.Stat(src)
-	if err != nil {
-		return err
-	}
-
-	input, err := os.Open(src)
-	if err != nil {
-		return err
-	}
-	defer input.Close()
-
-	output, err := os.Create(dst)
-	if err != nil {
-		return err
-	}
-	defer output.Close()
-
-	_, err = output.ReadFrom(input)
-	if err != nil {
-		return err
-	}
-
-	// Preserve source file permissions
-	return os.Chmod(dst, srcInfo.Mode())
 }

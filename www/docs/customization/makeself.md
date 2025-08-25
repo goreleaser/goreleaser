@@ -49,47 +49,18 @@ makeselfs:
     # note: none translates to makeslef's --nocomp flag
     compression: "gzip"
 
-    # Inline install script content.
+    # Path to install script file within the archive.
     # This script will be executed after extraction.
     # Templates: allowed.
-    install_script: |
-      #!/bin/bash
-      echo "Installing {{ .ProjectName }}..."
-      chmod +x {{ .Binary }}
-      cp {{ .Binary }} /usr/local/bin/
-      echo "Installation complete!"
-
-    # Path to install script file within the archive.
-    # Alternative to install_script for external script files.
-    # Templates: allowed.
-    install_script_file: "install.sh"
+    install_script: install.sh
 
     # Additional command-line arguments to pass to makeself.
     # Templates: allowed.
     extra_args:
-      - "--notemp"     # Don't use a temporary directory for extraction
-      - "--needroot"   # Requires root privileges to run
-      - "--keep"       # Don't remove extracted files after execution
-      - "--copy"       # Copy files to temporary directory instead of extracting in place
-
-    # Linux Software Map (LSM) template content.
-    # Templates: allowed.
-    lsm_template: |
-      Begin4
-      Title: {{ .ProjectName }}
-      Version: {{ .Version }}
-      Description: {{ .ProjectName }} self-extracting installer
-      Author: Your Name
-      Maintained-by: your-email@example.com
-      Primary-site: https://github.com/youruser/yourproject
-      Platforms: Linux
-      Copying-policy: MIT
-      End
-
-    # Path to external LSM file.
-    # Alternative to lsm_template for external LSM files.
-    # Templates: allowed.
-    lsm_file: "project.lsm"
+      - "--notemp" # Don't use a temporary directory for extraction
+      - "--needroot" # Requires root privileges to run
+      - "--keep" # Don't remove extracted files after execution
+      - "--copy" # Copy files to temporary directory instead of extracting in place
 
     # Additional files/globs you want to add to the makeself package.
     # These files will be available to the install script.
@@ -134,10 +105,6 @@ makeselfs:
     # Disable this makeself package.
     # Templates: allowed.
     disable: "{{ .Env.SKIP_MAKESELF }}"
-
-    # Deprecated: use 'ids' instead.
-    builds:
-      - default
 ```
 
 ## Simple Makeself Example
@@ -151,7 +118,7 @@ makeselfs:
       - default
     label: "{{ .ProjectName }} v{{ .Version }} Installer"
     extra_args:
-      - "--needroot"  # Ensures installer runs as root
+      - "--needroot" # Ensures installer runs as root
     install_script: |
       #!/bin/bash
       echo "Installing {{ .ProjectName }}..."
@@ -199,7 +166,7 @@ makeselfs:
     label: "{{ .ProjectName }} Minimal Installer"
     extension: ".bin"
     files:
-      - none*  # Don't include default files
+      - none* # Don't include default files
     install_script: |
       #!/bin/bash
       echo "Installing {{ .ProjectName }} (Minimal)..."
@@ -215,7 +182,7 @@ Create configuration-only packages without binaries:
 ```yaml title=".goreleaser.yaml"
 makeselfs:
   - id: config
-    meta: true  # No binaries included
+    meta: true # No binaries included
     name_template: "{{ .ProjectName }}_config_{{ .Version }}"
     label: "{{ .ProjectName }} Configuration Package"
     files:
@@ -249,6 +216,7 @@ makeselfs:
 ```
 
 Create `scripts/install.sh`:
+
 ```bash
 #!/bin/bash
 set -e
