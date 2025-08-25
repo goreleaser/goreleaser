@@ -131,7 +131,7 @@ func buildImage(ctx *context.Context, d config.DockerV2, extraArgs ...string) er
 		return err
 	}
 
-	log.WithField("digest", string(digest)).
+	log.WithField("digest", digest).
 		Info("created images")
 	for _, img := range images {
 		ctx.Artifacts.Add(&artifact.Artifact{
@@ -140,7 +140,7 @@ func buildImage(ctx *context.Context, d config.DockerV2, extraArgs ...string) er
 			Type: artifact.DockerImageV2,
 			Extra: map[string]any{
 				artifact.ExtraID:     d.ID,
-				artifact.ExtraDigest: string(digest),
+				artifact.ExtraDigest: digest,
 			},
 		})
 	}
