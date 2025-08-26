@@ -177,7 +177,7 @@ func refreshAll(ctx *context.Context, filepath string) error {
 }
 
 func buildArtifactList(ctx *context.Context) ([]*artifact.Artifact, error) {
-	filter := artifact.Or(
+	filter := artifact.And(
 		artifact.ByTypes(
 			artifact.UploadableArchive,
 			artifact.UploadableBinary,

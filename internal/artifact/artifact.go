@@ -669,7 +669,7 @@ func ByExt(ext string) Filter {
 	}
 }
 
-// ByExt filter artifact by their 'Ext' extra field.
+// ByExts filter artifact by their 'Ext' extra field.
 //
 // The comp is done ignoring the preceding '.', so `ByExt("deb")` and
 // `ByExt(".deb")` have the same result.
@@ -793,7 +793,7 @@ func cleanName(a Artifact) string {
 // given [Filter].
 //
 // If the input is empty, it'll return nil.
-// If the inputs's lenght is 1, it'll return [Filter] with it as input.
+// If the inputs's length is 1, it'll return [Filter] with it as input.
 // Otherwise, it'll return the filter for each item in the input, wrapped in an
 // [Or] filter.
 //
