@@ -170,6 +170,7 @@ func artifactList(ctx *context.Context, conf config.Blob) []*artifact.Artifact {
 		artifact.ByType(artifact.SBOM),
 		artifact.ByType(artifact.PySdist),
 		artifact.ByType(artifact.PyWheel),
+		artifact.ByType(artifact.MakeselfPackage),
 	}
 	if conf.IncludeMeta {
 		byTypes = append(byTypes, artifact.ByType(artifact.Metadata))

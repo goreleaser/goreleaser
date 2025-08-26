@@ -108,6 +108,7 @@ func (Pipe) Run(ctx *context.Context) error {
 					artifact.ByType(artifact.SBOM),
 					artifact.ByType(artifact.PySdist),
 					artifact.ByType(artifact.PyWheel),
+					artifact.ByType(artifact.MakeselfPackage),
 				))
 			case "archive":
 				filters = append(filters, artifact.ByType(artifact.UploadableArchive))

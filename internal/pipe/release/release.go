@@ -169,6 +169,7 @@ func doPublish(ctx *context.Context, client client.Client) error {
 		artifact.ByType(artifact.SBOM),
 		artifact.ByType(artifact.PyWheel),
 		artifact.ByType(artifact.PySdist),
+		artifact.ByType(artifact.MakeselfPackage),
 	}
 	if ctx.Config.Release.IncludeMeta {
 		typeFilters = append(typeFilters, artifact.ByType(artifact.Metadata))

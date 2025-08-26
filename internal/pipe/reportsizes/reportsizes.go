@@ -25,6 +25,7 @@ func (Pipe) Run(ctx *context.Context) error {
 		artifact.ByType(artifact.CArchive),
 		artifact.ByType(artifact.CShared),
 		artifact.ByType(artifact.Header),
+		artifact.ByType(artifact.MakeselfPackage),
 	)).Visit(func(a *artifact.Artifact) error {
 		stat, err := os.Stat(a.Path)
 		if err != nil {

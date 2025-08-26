@@ -131,6 +131,7 @@ func filterArtifacts(artifacts *artifact.Artifacts, publisher config.Publisher) 
 		artifact.ByType(artifact.SBOM),
 		artifact.ByType(artifact.PySdist),
 		artifact.ByType(artifact.PyWheel),
+		artifact.ByType(artifact.MakeselfPackage),
 	}
 
 	if publisher.Checksum {
