@@ -107,6 +107,8 @@ const (
 	Metadata
 	// MakeselfPackage is a makeself self-extracting archive.
 	MakeselfPackage
+	// DockerImageV2 is a container image in OCI format.
+	DockerImageV2
 	// lastMarker is used in tests to denote the last valid type.
 	// always add new types before this one.
 	lastMarker
@@ -136,7 +138,7 @@ func (t Type) String() string {
 		return "Binary"
 	case LinuxPackage:
 		return "Linux Package"
-	case PublishableDockerImage:
+	case PublishableDockerImage, DockerImageV2:
 		return "Docker Image"
 	case DockerImage:
 		return "Published Docker Image"
@@ -492,7 +494,7 @@ func relPath(a *Artifact) (string, error) {
 
 func shouldRelPath(a *Artifact) bool {
 	switch a.Type {
-	case DockerImage, DockerManifest, PublishableDockerImage:
+	case DockerImage, DockerManifest, PublishableDockerImage, DockerImageV2:
 		return false
 	default:
 		return filepath.IsAbs(a.Path)

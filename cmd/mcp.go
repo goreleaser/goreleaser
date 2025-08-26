@@ -107,6 +107,7 @@ var instructions = map[string]string{
 	"archives.format_overrides.format": "replace `format` with `formats` and make its value an array",
 	"builds.gobinary":                  "rename `gobinary` to `tool`",
 	"homebrew_casks.manpage":           "replace `manpage` with `manpages`, and make its value an array",
+	"homebrew_casks.conflicts.formula": "remove the `formula: <name>` from the `conflicts` list",
 	"kos.repository":                   "replace `repository` with `repositories`, and make its value an array",
 	"kos.sbom":                         "the value of `sbom` can only be `spdx` or `none`, set it to `spdx` if there's any other value there",
 	"nfpms.builds":                     "rename `builds` to `ids`",

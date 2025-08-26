@@ -25,7 +25,7 @@ const (
 )
 
 var (
-	errNoArtifacts = errors.New("there are no artifacts to sign")
+	errNoArtifacts = errors.New("there are no artifacts to checksum")
 	lock           sync.Mutex
 )
 

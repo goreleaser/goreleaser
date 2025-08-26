@@ -16,6 +16,8 @@ import (
 	"github.com/goreleaser/goreleaser/v2/internal/pipe/chocolatey"
 	"github.com/goreleaser/goreleaser/v2/internal/pipe/custompublishers"
 	"github.com/goreleaser/goreleaser/v2/internal/pipe/docker"
+	dockerv2 "github.com/goreleaser/goreleaser/v2/internal/pipe/docker/v2"
+	"github.com/goreleaser/goreleaser/v2/internal/pipe/dockerdigest"
 	"github.com/goreleaser/goreleaser/v2/internal/pipe/ko"
 	"github.com/goreleaser/goreleaser/v2/internal/pipe/krew"
 	"github.com/goreleaser/goreleaser/v2/internal/pipe/milestone"
@@ -47,6 +49,8 @@ func New() Pipe {
 			artifactory.Pipe{},
 			docker.Pipe{},
 			docker.ManifestPipe{},
+			dockerv2.Pipe{},
+			dockerdigest.Pipe{},
 			ko.Pipe{},
 			sign.DockerPipe{},
 			snapcraft.Pipe{},

@@ -49,6 +49,8 @@ jobs:
         if: matrix.os == 'ubuntu-latest'
       - uses: docker/setup-buildx-action@e468171a9de216ec08956ac3ada2f0791b6bd435 # v3
         if: matrix.os == 'ubuntu-latest'
+        with:
+          driver-opts: network=host
       - name: setup-snapcraft
         if: matrix.os == 'ubuntu-latest'
         run: sudo snap install snapcraft --classic
@@ -81,7 +83,7 @@ jobs:
       - run: task setup
       - run: task build
       - run: task test
-      - uses: codecov/codecov-action@18283e04ce6e62d37312384ff67231eb8fd56d24 # v5.4.3
+      - uses: codecov/codecov-action@fdcc8476540edceab3de004e990f80d881c6cc00 # v5.5.0
         if: matrix.os == 'ubuntu-latest'
         with:
           file: ./coverage.txt

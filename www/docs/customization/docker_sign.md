@@ -41,8 +41,9 @@ docker_signs:
     #   none:      no signing
     #   images:    only docker images
     #   manifests: only docker manifests
+    #   '':        images built by dockers_v2
     #
-    # Default: 'none'.
+    # Default: ''.
     artifacts: all
 
     # IDs of the artifacts to sign.

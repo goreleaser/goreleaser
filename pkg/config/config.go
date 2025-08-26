@@ -277,7 +277,9 @@ type HomebrewCaskHook struct {
 }
 
 type HomebrewCaskConflict struct {
-	Cask    string `yaml:"cask,omitempty" json:"cask,omitempty"`
+	Cask string `yaml:"cask,omitempty" json:"cask,omitempty"`
+
+	// Deprecated: by homebrew.
 	Formula string `yaml:"formula,omitempty" json:"formula,omitempty"`
 }
 
@@ -1023,6 +1025,7 @@ type Retry struct {
 }
 
 // Docker image config.
+// Deprecated: use [DockerV2] instead.
 type Docker struct {
 	ID                 string   `yaml:"id,omitempty" json:"id,omitempty"`
 	IDs                []string `yaml:"ids,omitempty" json:"ids,omitempty"`
@@ -1041,6 +1044,7 @@ type Docker struct {
 }
 
 // DockerManifest config.
+// Deprecated: use [DockerV2] instead.
 type DockerManifest struct {
 	ID             string   `yaml:"id,omitempty" json:"id,omitempty"`
 	NameTemplate   string   `yaml:"name_template,omitempty" json:"name_template,omitempty"`
@@ -1050,6 +1054,28 @@ type DockerManifest struct {
 	PushFlags      []string `yaml:"push_flags,omitempty" json:"push_flags,omitempty"`
 	Use            string   `yaml:"use,omitempty" json:"use,omitempty"`
 	Retry          Retry    `yaml:"retry,omitempty" json:"retry,omitempty"`
+}
+
+// DockerV2 is the new Docker build pipe options.
+type DockerV2 struct {
+	ID          string            `yaml:"id,omitempty" json:"id,omitempty"`
+	IDs         []string          `yaml:"ids,omitempty" json:"ids,omitempty"`
+	Dockerfile  string            `yaml:"dockerfile,omitempty" json:"dockerfile,omitempty"`
+	Images      []string          `yaml:"images,omitempty" json:"images,omitempty"`
+	Tags        []string          `yaml:"tags,omitempty" json:"tags,omitempty"`
+	Labels      map[string]string `yaml:"labels,omitempty" json:"labels,omitempty"`
+	Annotations map[string]string `yaml:"annotations,omitempty" json:"annotations,omitempty"`
+	ExtraFiles  []string          `yaml:"extra_files,omitempty" json:"extra_files,omitempty"`
+	Platforms   []string          `yaml:"platforms,omitempty" json:"platforms,omitempty"`
+	BuildArgs   map[string]string `yaml:"build_args,omitempty" json:"build_args,omitempty"`
+	Retry       Retry             `yaml:"retry,omitempty" json:"retry,omitempty"`
+	Flags       []string          `yaml:"flags,omitempty" json:"flags,omitempty"`
+}
+
+// DockerDigest config.
+type DockerDigest struct {
+	Disable      string `yaml:"disable,omitempty" json:"disable,omitempty" jsonschema:"oneof_type=string;boolean"`
+	NameTemplate string `yaml:"name_template,omitempty" json:"name_template,omitempty"`
 }
 
 // Filters config.
@@ -1160,50 +1186,52 @@ type Source struct {
 
 // Project includes all project configuration.
 type Project struct {
-	Version         int               `yaml:"version,omitempty" json:"version,omitempty" jsonschema:"enum=2,default=2"`
-	Pro             bool              `yaml:"pro,omitempty" json:"pro,omitempty"`
-	ProjectName     string            `yaml:"project_name,omitempty" json:"project_name,omitempty"`
-	Env             []string          `yaml:"env,omitempty" json:"env,omitempty"`
-	Release         Release           `yaml:"release,omitempty" json:"release,omitempty"`
-	Milestones      []Milestone       `yaml:"milestones,omitempty" json:"milestones,omitempty"`
-	Casks           []HomebrewCask    `yaml:"homebrew_casks,omitempty" json:"homebrew_casks,omitempty"`
-	Nix             []Nix             `yaml:"nix,omitempty" json:"nix,omitempty"`
-	Winget          []Winget          `yaml:"winget,omitempty" json:"winget,omitempty"`
-	AURs            []AUR             `yaml:"aurs,omitempty" json:"aurs,omitempty"`
-	AURSources      []AURSource       `yaml:"aur_sources,omitempty" json:"aur_sources,omitempty"`
-	Krews           []Krew            `yaml:"krews,omitempty" json:"krews,omitempty"`
-	Kos             []Ko              `yaml:"kos,omitempty" json:"kos,omitempty"`
-	Scoops          []Scoop           `yaml:"scoops,omitempty" json:"scoops,omitempty"`
-	Builds          []Build           `yaml:"builds,omitempty" json:"builds,omitempty"`
-	Archives        []Archive         `yaml:"archives,omitempty" json:"archives,omitempty"`
-	NFPMs           []NFPM            `yaml:"nfpms,omitempty" json:"nfpms,omitempty"`
-	Makeselfs       []MakeselfPackage `yaml:"makeselfs,omitempty" json:"makeselfs,omitempty"`
-	Snapcrafts      []Snapcraft       `yaml:"snapcrafts,omitempty" json:"snapcrafts,omitempty"`
-	Snapshot        Snapshot          `yaml:"snapshot,omitempty" json:"snapshot,omitempty"`
-	Checksum        Checksum          `yaml:"checksum,omitempty" json:"checksum,omitempty"`
-	Dockers         []Docker          `yaml:"dockers,omitempty" json:"dockers,omitempty"`
-	DockerManifests []DockerManifest  `yaml:"docker_manifests,omitempty" json:"docker_manifests,omitempty"`
-	Artifactories   []Upload          `yaml:"artifactories,omitempty" json:"artifactories,omitempty"`
-	Uploads         []Upload          `yaml:"uploads,omitempty" json:"uploads,omitempty"`
-	Blobs           []Blob            `yaml:"blobs,omitempty" json:"blobs,omitempty"`
-	Publishers      []Publisher       `yaml:"publishers,omitempty" json:"publishers,omitempty"`
-	Changelog       Changelog         `yaml:"changelog,omitempty" json:"changelog,omitempty"`
-	Dist            string            `yaml:"dist,omitempty" json:"dist,omitempty"`
-	Signs           []Sign            `yaml:"signs,omitempty" json:"signs,omitempty"`
-	Notarize        Notarize          `yaml:"notarize,omitempty" json:"notarize,omitempty"`
-	DockerSigns     []Sign            `yaml:"docker_signs,omitempty" json:"docker_signs,omitempty"`
-	BinarySigns     []Sign            `yaml:"binary_signs,omitempty" json:"binary_signs,omitempty"`
-	EnvFiles        EnvFiles          `yaml:"env_files,omitempty" json:"env_files,omitempty"`
-	Before          Before            `yaml:"before,omitempty" json:"before,omitempty"`
-	Source          Source            `yaml:"source,omitempty" json:"source,omitempty"`
-	GoMod           GoMod             `yaml:"gomod,omitempty" json:"gomod,omitempty"`
-	Announce        Announce          `yaml:"announce,omitempty" json:"announce,omitempty"`
-	SBOMs           []SBOM            `yaml:"sboms,omitempty" json:"sboms,omitempty"`
-	Chocolateys     []Chocolatey      `yaml:"chocolateys,omitempty" json:"chocolateys,omitempty"`
-	Git             Git               `yaml:"git,omitempty" json:"git,omitempty"`
-	ReportSizes     bool              `yaml:"report_sizes,omitempty" json:"report_sizes,omitempty"`
-	Metadata        ProjectMetadata   `yaml:"metadata,omitempty" json:"metadata,omitempty"`
+	Version         int              `yaml:"version,omitempty" json:"version,omitempty" jsonschema:"enum=2,default=2"`
+	Pro             bool             `yaml:"pro,omitempty" json:"pro,omitempty"`
+	ProjectName     string           `yaml:"project_name,omitempty" json:"project_name,omitempty"`
+	Env             []string         `yaml:"env,omitempty" json:"env,omitempty"`
+	Release         Release          `yaml:"release,omitempty" json:"release,omitempty"`
+	Milestones      []Milestone      `yaml:"milestones,omitempty" json:"milestones,omitempty"`
+	Casks           []HomebrewCask   `yaml:"homebrew_casks,omitempty" json:"homebrew_casks,omitempty"`
+	Nix             []Nix            `yaml:"nix,omitempty" json:"nix,omitempty"`
+	Winget          []Winget         `yaml:"winget,omitempty" json:"winget,omitempty"`
+	AURs            []AUR            `yaml:"aurs,omitempty" json:"aurs,omitempty"`
+	AURSources      []AURSource      `yaml:"aur_sources,omitempty" json:"aur_sources,omitempty"`
+	Krews           []Krew           `yaml:"krews,omitempty" json:"krews,omitempty"`
+	Kos             []Ko             `yaml:"kos,omitempty" json:"kos,omitempty"`
+	Scoops          []Scoop          `yaml:"scoops,omitempty" json:"scoops,omitempty"`
+	Builds          []Build          `yaml:"builds,omitempty" json:"builds,omitempty"`
+	Archives        []Archive        `yaml:"archives,omitempty" json:"archives,omitempty"`
+	NFPMs           []NFPM           `yaml:"nfpms,omitempty" json:"nfpms,omitempty"`
+	Snapcrafts      []Snapcraft      `yaml:"snapcrafts,omitempty" json:"snapcrafts,omitempty"`
+	Snapshot        Snapshot         `yaml:"snapshot,omitempty" json:"snapshot,omitempty"`
+	Checksum        Checksum         `yaml:"checksum,omitempty" json:"checksum,omitempty"`
+	Dockers         []Docker         `yaml:"dockers,omitempty" json:"dockers,omitempty"`
+	DockersV2       []DockerV2       `yaml:"dockers_v2,omitempty" json:"dockers_v2,omitempty"`
+	DockerDigest    DockerDigest     `yaml:"docker_digest,omitempty" json:"docker_digest,omitempty"`
+	DockerManifests []DockerManifest `yaml:"docker_manifests,omitempty" json:"docker_manifests,omitempty"`
+	Artifactories   []Upload         `yaml:"artifactories,omitempty" json:"artifactories,omitempty"`
+	Uploads         []Upload         `yaml:"uploads,omitempty" json:"uploads,omitempty"`
+	Blobs           []Blob           `yaml:"blobs,omitempty" json:"blobs,omitempty"`
+	Publishers      []Publisher      `yaml:"publishers,omitempty" json:"publishers,omitempty"`
+	Changelog       Changelog        `yaml:"changelog,omitempty" json:"changelog,omitempty"`
+	Dist            string           `yaml:"dist,omitempty" json:"dist,omitempty"`
+	Signs           []Sign           `yaml:"signs,omitempty" json:"signs,omitempty"`
+	Notarize        Notarize         `yaml:"notarize,omitempty" json:"notarize,omitempty"`
+	DockerSigns     []Sign           `yaml:"docker_signs,omitempty" json:"docker_signs,omitempty"`
+	BinarySigns     []Sign           `yaml:"binary_signs,omitempty" json:"binary_signs,omitempty"`
+	EnvFiles        EnvFiles         `yaml:"env_files,omitempty" json:"env_files,omitempty"`
+	Before          Before           `yaml:"before,omitempty" json:"before,omitempty"`
+	Source          Source           `yaml:"source,omitempty" json:"source,omitempty"`
+	GoMod           GoMod            `yaml:"gomod,omitempty" json:"gomod,omitempty"`
+	Announce        Announce         `yaml:"announce,omitempty" json:"announce,omitempty"`
+	SBOMs           []SBOM           `yaml:"sboms,omitempty" json:"sboms,omitempty"`
+	Chocolateys     []Chocolatey     `yaml:"chocolateys,omitempty" json:"chocolateys,omitempty"`
+	Git             Git              `yaml:"git,omitempty" json:"git,omitempty"`
+	ReportSizes     bool             `yaml:"report_sizes,omitempty" json:"report_sizes,omitempty"`
+	Metadata        ProjectMetadata  `yaml:"metadata,omitempty" json:"metadata,omitempty"`
 
+	Makeselfs         []MakeselfPackage `yaml:"makeselfs,omitempty" json:"makeselfs,omitempty"`
 	UniversalBinaries []UniversalBinary `yaml:"universal_binaries,omitempty" json:"universal_binaries,omitempty"`
 	UPXs              []UPX             `yaml:"upx,omitempty" json:"upx,omitempty"`
 

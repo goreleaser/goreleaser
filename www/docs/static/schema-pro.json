@@ -1424,6 +1424,25 @@
 				"additionalProperties": false,
 				"type": "object"
 			},
+			"DockerDigest": {
+				"properties": {
+					"disable": {
+						"oneOf": [
+							{
+								"type": "string"
+							},
+							{
+								"type": "boolean"
+							}
+						]
+					},
+					"name_template": {
+						"type": "string"
+					}
+				},
+				"additionalProperties": false,
+				"type": "object"
+			},
 			"DockerHub": {
 				"properties": {
 					"username": {
@@ -1492,6 +1511,75 @@
 					},
 					"retry": {
 						"$ref": "#/$defs/Retry"
+					}
+				},
+				"additionalProperties": false,
+				"type": "object"
+			},
+			"DockerV2": {
+				"properties": {
+					"id": {
+						"type": "string"
+					},
+					"ids": {
+						"items": {
+							"type": "string"
+						},
+						"type": "array"
+					},
+					"dockerfile": {
+						"type": "string"
+					},
+					"images": {
+						"items": {
+							"type": "string"
+						},
+						"type": "array"
+					},
+					"tags": {
+						"items": {
+							"type": "string"
+						},
+						"type": "array"
+					},
+					"labels": {
+						"additionalProperties": {
+							"type": "string"
+						},
+						"type": "object"
+					},
+					"annotations": {
+						"additionalProperties": {
+							"type": "string"
+						},
+						"type": "object"
+					},
+					"extra_files": {
+						"items": {
+							"type": "string"
+						},
+						"type": "array"
+					},
+					"platforms": {
+						"items": {
+							"type": "string"
+						},
+						"type": "array"
+					},
+					"build_args": {
+						"additionalProperties": {
+							"type": "string"
+						},
+						"type": "object"
+					},
+					"retry": {
+						"$ref": "#/$defs/Retry"
+					},
+					"flags": {
+						"items": {
+							"type": "string"
+						},
+						"type": "array"
 					}
 				},
 				"additionalProperties": false,
@@ -2637,6 +2725,16 @@
 						"enum": [
 							"v3",
 							"v4"
+						]
+					},
+					"disable": {
+						"oneOf": [
+							{
+								"type": "string"
+							},
+							{
+								"type": "boolean"
+							}
 						]
 					}
 				},
@@ -3928,6 +4026,15 @@
 							"$ref": "#/$defs/Docker"
 						},
 						"type": "array"
+					},
+					"dockers_v2": {
+						"items": {
+							"$ref": "#/$defs/DockerV2"
+						},
+						"type": "array"
+					},
+					"docker_digest": {
+						"$ref": "#/$defs/DockerDigest"
 					},
 					"docker_manifests": {
 						"items": {

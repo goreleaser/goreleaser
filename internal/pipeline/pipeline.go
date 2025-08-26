@@ -18,6 +18,7 @@ import (
 	"github.com/goreleaser/goreleaser/v2/internal/pipe/defaults"
 	"github.com/goreleaser/goreleaser/v2/internal/pipe/dist"
 	"github.com/goreleaser/goreleaser/v2/internal/pipe/docker"
+	dockerv2 "github.com/goreleaser/goreleaser/v2/internal/pipe/docker/v2"
 	"github.com/goreleaser/goreleaser/v2/internal/pipe/effectiveconfig"
 	"github.com/goreleaser/goreleaser/v2/internal/pipe/env"
 	"github.com/goreleaser/goreleaser/v2/internal/pipe/git"
@@ -156,6 +157,7 @@ var Pipeline = append(
 	reportsizes.Pipe{},
 	// create and push docker images
 	docker.Pipe{},
+	dockerv2.Pipe{},
 	// create and push docker images using ko
 	ko.Pipe{},
 	// publishes artifacts

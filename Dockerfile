@@ -1,4 +1,6 @@
-FROM golang:1.25.0-alpine@sha256:77dd832edf2752dafd030693bef196abb24dcba3a2bc3d7a6227a7a1dae73169
+FROM golang:1.25.0-alpine@sha256:f18a072054848d87a8077455f0ac8a25886f2397f88bfdd222d6fafbb5bba440
+
+ARG TARGETPLATFORM
 
 RUN apk add --no-cache bash \
 	build-base \
@@ -21,5 +23,5 @@ CMD [ "-h" ]
 COPY scripts/entrypoint.sh /entrypoint.sh
 RUN chmod +x /entrypoint.sh
 
-COPY goreleaser_*.apk /tmp/
+COPY $TARGETPLATFORM/goreleaser_*.apk /tmp/
 RUN apk add --no-cache --allow-untrusted /tmp/goreleaser_*.apk
