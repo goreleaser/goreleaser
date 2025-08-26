@@ -572,11 +572,21 @@ func ByGoos(s string) Filter {
 	}
 }
 
+// ByGooses is a predefined filter that filters by the given goos.
+func ByGooses(in ...string) Filter {
+	return makeOr(in, ByGoos)
+}
+
 // ByGoarch is a predefined filter that filters by the given goarch.
 func ByGoarch(s string) Filter {
 	return func(a *Artifact) bool {
 		return a.Goarch == s
 	}
+}
+
+// ByGoarches is a predefined filter that filters by the given goarch.
+func ByGoarches(in ...string) Filter {
+	return makeOr(in, ByGoarch)
 }
 
 // ByGoarm is a predefined filter that filters by the given goarm.
@@ -602,15 +612,16 @@ func ByType(t Type) Filter {
 	}
 }
 
+// ByFormat filters artifacts by a `Format` extra field.
+func ByFormat(format string) Filter {
+	return func(a *Artifact) bool {
+		return a.Format() == format
+	}
+}
+
 // ByFormats filters artifacts by a `Format` extra field.
 func ByFormats(formats ...string) Filter {
-	filters := make([]Filter, 0, len(formats))
-	for _, format := range formats {
-		filters = append(filters, func(a *Artifact) bool {
-			return a.Format() == format
-		})
-	}
-	return Or(filters...)
+	return makeOr(formats, ByFormat)
 }
 
 // Not negates the given filter.
@@ -620,20 +631,21 @@ func Not(filter Filter) Filter {
 	}
 }
 
+// ByID filter artifacts by an `ID` extra field.
+func ByID(id string) Filter {
+	return func(a *Artifact) bool {
+		// checksum and source archive are always for all artifacts, so return always true.
+		return a.Type == Checksum ||
+			a.Type == UploadableSourceArchive ||
+			a.Type == UploadableFile ||
+			a.Type == Metadata ||
+			a.ID() == id
+	}
+}
+
 // ByIDs filter artifacts by an `ID` extra field.
 func ByIDs(ids ...string) Filter {
-	filters := make([]Filter, 0, len(ids))
-	for _, id := range ids {
-		filters = append(filters, func(a *Artifact) bool {
-			// checksum and source archive are always for all artifacts, so return always true.
-			return a.Type == Checksum ||
-				a.Type == UploadableSourceArchive ||
-				a.Type == UploadableFile ||
-				a.Type == Metadata ||
-				a.ID() == id
-		})
-	}
-	return Or(filters...)
+	return makeOr(ids, ByID)
 }
 
 // ByExt filter artifact by their 'Ext' extra field.
@@ -693,6 +705,24 @@ func Or(filters ...Filter) Filter {
 			}
 		}
 		return false
+	}
+}
+
+// True is a filter that always returns true.
+func True(*Artifact) bool { return true }
+
+func makeOr(in []string, fn func(string) Filter) Filter {
+	switch len(in) {
+	case 0:
+		return True
+	case 1:
+		return fn(in[0])
+	default:
+		filters := make([]Filter, 0, len(in))
+		for _, s := range in {
+			filters = append(filters, fn(s))
+		}
+		return Or(filters...)
 	}
 }
 

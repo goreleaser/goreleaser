@@ -65,42 +65,21 @@ func (Pipe) Run(ctx *context.Context) error {
 }
 
 func doRun(ctx *context.Context, cfg config.MakeselfPackage) error {
-	filters := []artifact.Filter{
-		artifact.Or(
-			artifact.ByType(artifact.Binary),
-			artifact.ByType(artifact.UniversalBinary),
-			artifact.ByType(artifact.Header),
-			artifact.ByType(artifact.CArchive),
-			artifact.ByType(artifact.CShared),
-		),
+	disable, err := tmpl.New(ctx).Bool(cfg.Disable)
+	if err != nil {
+		return err
 	}
-	if len(cfg.IDs) > 0 {
-		filters = append(filters, artifact.ByIDs(cfg.IDs...))
-	}
-	if len(cfg.Goos) > 0 {
-		gf := make([]artifact.Filter, len(cfg.Goos))
-		for i, goos := range cfg.Goos {
-			gf[i] = artifact.ByGoos(goos)
-		}
-		filters = append(filters, artifact.Or(gf...))
-	}
-	if len(cfg.Goarch) > 0 {
-		gf := make([]artifact.Filter, len(cfg.Goarch))
-		for i, goarch := range cfg.Goarch {
-			gf[i] = artifact.ByGoarch(goarch)
-		}
-		filters = append(filters, artifact.Or(gf...))
+	if disable {
+		return pipe.Skip("disabled")
 	}
 
-	groupedBinaries := ctx.Artifacts.
-		Filter(artifact.And(filters...)).
-		GroupByPlatform()
-	if len(groupedBinaries) == 0 {
+	groups := getArtifacts(ctx, cfg)
+	if len(groups) == 0 {
 		return fmt.Errorf("no binaries found for builds %v with goos %v goarch %v", cfg.IDs, cfg.Goos, cfg.Goarch)
 	}
 
 	g := semerrgroup.NewSkipAware(semerrgroup.New(ctx.Parallelism))
-	for plat, binaries := range groupedBinaries {
+	for plat, binaries := range groups {
 		g.Go(func() error {
 			return create(ctx, cfg, plat, binaries)
 		})
@@ -124,18 +103,9 @@ Platforms: {{ .Platform }}
 End`
 
 func create(ctx *context.Context, cfg config.MakeselfPackage, plat string, binaries []*artifact.Artifact) error {
-	tpl := tmpl.New(ctx)
-	if len(binaries) > 0 {
-		tpl = tpl.WithArtifact(binaries[0])
-	}
-
-	disable, err := tpl.Bool(cfg.Disable)
-	if err != nil {
-		return err
-	}
-	if disable {
-		return pipe.Skip("disabled")
-	}
+	binary := binaries[0]
+	tpl := tmpl.New(ctx).
+		WithArtifact(binary)
 
 	name := cfg.Name
 	filename := cfg.Filename
@@ -180,62 +150,15 @@ func create(ctx *context.Context, cfg config.MakeselfPackage, plat string, binar
 		return err
 	}
 
-	dir := filepath.Join(ctx.Config.Dist, "makeself", cfg.ID, plat)
-	packagePath := filepath.Join(dir, filename)
+	dir, err := setupContext(ctx, cfg, tpl, plat, lsm, script, filename, binaries)
+	if err != nil {
+		return err
+	}
 
 	log := log.WithField("package", filename).WithField("dir", dir)
 	log.Info("creating makeself package")
 
-	if err := os.MkdirAll(dir, 0o755); err != nil {
-		return fmt.Errorf("failed to create directory %s: %w", dir, err)
-	}
-
-	for _, binary := range binaries {
-		dst := filepath.Join(dir, filepath.Base(binary.Name))
-		if err := os.MkdirAll(filepath.Dir(dst), 0o755); err != nil {
-			return fmt.Errorf("failed to create directory for %s: %w", binary.Name, err)
-		}
-		if err := gio.Copy(binary.Path, dst); err != nil {
-			return fmt.Errorf("failed to copy binary %s: %w", binary.Name, err)
-		}
-	}
-
-	files, err := archivefiles.Eval(tpl, cfg.Files)
-	if err != nil {
-		return fmt.Errorf("failed to find files to archive: %w", err)
-	}
-	for _, f := range files {
-		dst := filepath.Join(dir, f.Destination)
-		if err := os.MkdirAll(filepath.Dir(dst), 0o755); err != nil {
-			return fmt.Errorf("failed to create directory for %s: %w", f.Destination, err)
-		}
-		if err := gio.Copy(f.Source, dst); err != nil {
-			return fmt.Errorf("failed to copy file %s: %w", f.Source, err)
-		}
-	}
-	if err := gio.Copy(script, filepath.Join(dir, "setup.sh")); err != nil {
-		return fmt.Errorf("failed to copy binary %s: %w", script, err)
-	}
-	if err := os.WriteFile(filepath.Join(dir, "package.lsm"), []byte(lsm), 0o644); err != nil {
-		return fmt.Errorf("failed to write LSM file: %w", err)
-	}
-
-	arg := []string{"--quiet"} // Always run quietly
-	switch compression {
-	case "gzip", "bzip2", "xz", "lzo", "compress":
-		arg = append(arg, "--"+compression)
-	case "none":
-		arg = append(arg, "--nocomp")
-	default:
-		// let makeself choose.
-	}
-
-	arg = append(arg, "--lsm", "package.lsm")
-	arg = append(arg, extraArgs...)
-	arg = append(arg, ".", filename)
-	arg = append(arg, name)
-	arg = append(arg, "./setup.sh")
-
+	arg := makeArg(name, filename, compression, extraArgs)
 	cmd := exec.CommandContext(ctx, "makeself", arg...)
 	cmd.Dir = dir
 	cmd.Env = append(ctx.Env.Strings(), cmd.Environ()...)
@@ -253,35 +176,114 @@ func create(ctx *context.Context, cfg config.MakeselfPackage, plat string, binar
 		)
 	}
 
+	path := filepath.Join(dir, filename)
+	ctx.Artifacts.Add(makeArtifact(cfg, binary, filename, path))
+	return nil
+}
+
+func setupContext(
+	ctx *context.Context,
+	cfg config.MakeselfPackage,
+	tpl *tmpl.Template,
+	plat, lsm, script, filename string,
+	binaries []*artifact.Artifact,
+) (string, error) {
+	dir := filepath.Join(ctx.Config.Dist, "makeself", cfg.ID, plat)
+	if err := os.MkdirAll(dir, 0o755); err != nil {
+		return "", fmt.Errorf("failed to create directory %s: %w", dir, err)
+	}
+
+	for _, binary := range binaries {
+		dst := filepath.Join(dir, filepath.Base(binary.Name))
+		if err := os.MkdirAll(filepath.Dir(dst), 0o755); err != nil {
+			return "", fmt.Errorf("failed to create directory for %s: %w", binary.Name, err)
+		}
+		if err := gio.Copy(binary.Path, dst); err != nil {
+			return "", fmt.Errorf("failed to copy binary %s: %w", binary.Name, err)
+		}
+	}
+
+	files, err := archivefiles.Eval(tpl, cfg.Files)
+	if err != nil {
+		return "", fmt.Errorf("failed to find files to archive: %w", err)
+	}
+	for _, f := range files {
+		dst := filepath.Join(dir, f.Destination)
+		if err := os.MkdirAll(filepath.Dir(dst), 0o755); err != nil {
+			return "", fmt.Errorf("failed to create directory for %s: %w", f.Destination, err)
+		}
+		if err := gio.Copy(f.Source, dst); err != nil {
+			return "", fmt.Errorf("failed to copy file %s: %w", f.Source, err)
+		}
+	}
+	if err := gio.Copy(script, filepath.Join(dir, "setup.sh")); err != nil {
+		return "", fmt.Errorf("failed to copy binary %s: %w", script, err)
+	}
+	if err := os.WriteFile(filepath.Join(dir, "package.lsm"), []byte(lsm), 0o644); err != nil {
+		return "", fmt.Errorf("failed to write LSM file: %w", err)
+	}
+	return dir, nil
+}
+
+func makeArg(name, filename, compression string, extraArgs []string) []string {
+	arg := []string{"--quiet"} // Always run quietly
+	switch compression {
+	case "gzip", "bzip2", "xz", "lzo", "compress":
+		arg = append(arg, "--"+compression)
+	case "none":
+		arg = append(arg, "--nocomp")
+	default:
+		// let makeself choose.
+	}
+
+	arg = append(arg, "--lsm", "package.lsm")
+	arg = append(arg, extraArgs...)
+	arg = append(arg, ".", filename, name, "./setup.sh")
+	return append(arg, "./setup.sh")
+}
+
+func makeArtifact(cfg config.MakeselfPackage, binary *artifact.Artifact, filename, path string) *artifact.Artifact {
 	// Create artifact
 	art := &artifact.Artifact{
-		Type: artifact.MakeselfPackage,
-		Name: filename,
-		Path: packagePath,
+		Type:      artifact.MakeselfPackage,
+		Name:      filename,
+		Path:      path,
+		Goos:      binary.Goos,
+		Goarch:    binary.Goarch,
+		Goamd64:   binary.Goamd64,
+		Go386:     binary.Go386,
+		Goarm:     binary.Goarm,
+		Goarm64:   binary.Goarm64,
+		Gomips:    binary.Gomips,
+		Goppc64:   binary.Goppc64,
+		Goriscv64: binary.Goriscv64,
+		Target:    binary.Target,
 		Extra: map[string]any{
 			artifact.ExtraID:     cfg.ID,
 			artifact.ExtraFormat: "makeself",
 			artifact.ExtraExt:    filepath.Ext(filename),
 		},
 	}
-
-	if len(binaries) > 0 {
-		binary := binaries[0]
-		art.Goos = binary.Goos
-		art.Goarch = binary.Goarch
-		art.Goamd64 = binary.Goamd64
-		art.Go386 = binary.Go386
-		art.Goarm = binary.Goarm
-		art.Goarm64 = binary.Goarm64
-		art.Gomips = binary.Gomips
-		art.Goppc64 = binary.Goppc64
-		art.Goriscv64 = binary.Goriscv64
-		art.Target = binary.Target
-		if rep, ok := binaries[0].Extra[artifact.ExtraReplaces]; ok {
-			art.Extra[artifact.ExtraReplaces] = rep
-		}
+	if rep, ok := binary.Extra[artifact.ExtraReplaces]; ok {
+		art.Extra[artifact.ExtraReplaces] = rep
 	}
+	return art
+}
 
-	ctx.Artifacts.Add(art)
-	return nil
+func getArtifacts(ctx *context.Context, cfg config.MakeselfPackage) map[string][]*artifact.Artifact {
+	filters := []artifact.Filter{
+		artifact.Or(
+			artifact.ByType(artifact.Binary),
+			artifact.ByType(artifact.UniversalBinary),
+			artifact.ByType(artifact.Header),
+			artifact.ByType(artifact.CArchive),
+			artifact.ByType(artifact.CShared),
+		),
+		artifact.ByIDs(cfg.IDs...),
+		artifact.ByGooses(cfg.Goos...),
+		artifact.ByGoarches(cfg.Goarch...),
+	}
+	return ctx.Artifacts.
+		Filter(artifact.And(filters...)).
+		GroupByPlatform()
 }
