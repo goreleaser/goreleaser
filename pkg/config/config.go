@@ -1404,15 +1404,12 @@ type ChocolateyDependency struct {
 
 // MakeselfPackage config.
 type MakeselfPackage struct {
-	ID   string `yaml:"id,omitempty" json:"id,omitempty"`
-	Name string `yaml:"name,omitempty" json:"name,omitempty"`
+	ID       string `yaml:"id,omitempty" json:"id,omitempty"`
+	Filename string `yaml:"filename,omitempty" json:"filename,omitempty"`
 
-	// remove label?
-	Label         string   `yaml:"label,omitempty" json:"label,omitempty"`
-	InstallScript string   `yaml:"install_script,omitempty" json:"install_script,omitempty"`
-	Compression   string   `yaml:"compression,omitempty" json:"compression,omitempty"`
-	ExtraArgs     []string `yaml:"extra_args,omitempty" json:"extra_args,omitempty"`
-	Extension     string   `yaml:"extension,omitempty" json:"extension,omitempty"`
+	Script      string   `yaml:"script,omitempty" json:"script,omitempty"`
+	Compression string   `yaml:"compression,omitempty" json:"compression,omitempty"`
+	ExtraArgs   []string `yaml:"extra_args,omitempty" json:"extra_args,omitempty"`
 
 	Files   []File   `yaml:"files,omitempty" json:"files,omitempty"`
 	Disable string   `yaml:"disable,omitempty" json:"disable,omitempty" jsonschema:"oneof_type=string;boolean"`
@@ -1420,7 +1417,7 @@ type MakeselfPackage struct {
 	Goos    []string `yaml:"goos,omitempty" json:"goos,omitempty"`
 	Goarch  []string `yaml:"goarch,omitempty" json:"goarch,omitempty"`
 
-	Title       string   `yaml:"title,omitempty" json:"title,omitempty"`
+	Name        string   `yaml:"name,omitempty" json:"name,omitempty"`
 	Description string   `yaml:"description,omitempty" json:"description,omitempty"`
 	Maintainer  string   `yaml:"maintainer,omitempty" json:"maintainer,omitempty"`
 	Keywords    []string `yaml:"keywords,omitempty" json:"keywords,omitempty"`
