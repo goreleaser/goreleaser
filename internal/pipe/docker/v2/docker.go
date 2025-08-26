@@ -335,15 +335,13 @@ func contextArtifacts(ctx *context.Context, d config.DockerV2) []*artifact.Artif
 
 	filters := []artifact.Filter{
 		artifact.Or(platFilters...),
-		artifact.Or(
-			artifact.ByType(artifact.Binary),
-			artifact.ByType(artifact.LinuxPackage),
-			artifact.ByType(artifact.CArchive),
-			artifact.ByType(artifact.CShared),
+		artifact.ByTypes(
+			artifact.Binary,
+			artifact.LinuxPackage,
+			artifact.CArchive,
+			artifact.CShared,
 		),
-	}
-	if len(d.IDs) > 0 {
-		filters = append(filters, artifact.ByIDs(d.IDs...))
+		artifact.ByIDs(d.IDs...),
 	}
 
 	artifacts := ctx.Artifacts.Filter(

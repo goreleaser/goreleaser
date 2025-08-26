@@ -322,9 +322,9 @@ func dataFor(ctx *context.Context, cfg config.AURSource, cl client.ReleaseURLTem
 func (Pipe) Publish(ctx *context.Context) error {
 	skips := pipe.SkipMemento{}
 	for _, pkgs := range ctx.Artifacts.Filter(
-		artifact.Or(
-			artifact.ByType(artifact.SourcePkgBuild),
-			artifact.ByType(artifact.SourceSrcInfo),
+		artifact.ByTypes(
+			artifact.SourcePkgBuild,
+			artifact.SourceSrcInfo,
 		),
 	).GroupByID() {
 		err := doPublish(ctx, pkgs)

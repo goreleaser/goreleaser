@@ -16,15 +16,15 @@ func (Pipe) Skip(ctx *context.Context) bool { return !ctx.Config.ReportSizes }
 func (Pipe) String() string                 { return "size reports" }
 
 func (Pipe) Run(ctx *context.Context) error {
-	return ctx.Artifacts.Filter(artifact.Or(
-		artifact.ByType(artifact.Binary),
-		artifact.ByType(artifact.UniversalBinary),
-		artifact.ByType(artifact.UploadableArchive),
-		artifact.ByType(artifact.PublishableSnapcraft),
-		artifact.ByType(artifact.LinuxPackage),
-		artifact.ByType(artifact.CArchive),
-		artifact.ByType(artifact.CShared),
-		artifact.ByType(artifact.Header),
+	return ctx.Artifacts.Filter(artifact.ByTypes(
+		artifact.Binary,
+		artifact.UniversalBinary,
+		artifact.UploadableArchive,
+		artifact.PublishableSnapcraft,
+		artifact.LinuxPackage,
+		artifact.CArchive,
+		artifact.CShared,
+		artifact.Header,
 	)).Visit(func(a *artifact.Artifact) error {
 		stat, err := os.Stat(a.Path)
 		if err != nil {

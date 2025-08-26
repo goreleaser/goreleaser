@@ -56,20 +56,20 @@ func (DockerPipe) Publish(ctx *context.Context) error {
 			var filters []artifact.Filter
 			switch cfg.Artifacts {
 			case "images":
-				filters = append(filters, artifact.Or(
-					artifact.ByType(artifact.DockerImage),
-					artifact.ByType(artifact.DockerImageV2),
+				filters = append(filters, artifact.ByTypes(
+					artifact.DockerImage,
+					artifact.DockerImageV2,
 				))
 			case "manifests":
-				filters = append(filters, artifact.Or(
-					artifact.ByType(artifact.DockerManifest),
-					artifact.ByType(artifact.DockerImageV2),
+				filters = append(filters, artifact.ByTypes(
+					artifact.DockerManifest,
+					artifact.DockerImageV2,
 				))
 			case "all":
-				filters = append(filters, artifact.Or(
-					artifact.ByType(artifact.DockerImage),
-					artifact.ByType(artifact.DockerManifest),
-					artifact.ByType(artifact.DockerImageV2),
+				filters = append(filters, artifact.ByTypes(
+					artifact.DockerImage,
+					artifact.DockerManifest,
+					artifact.DockerImageV2,
 				))
 			case "none": // TODO(caarlos0): remove this
 				return pipe.ErrSkipSignEnabled
@@ -79,9 +79,7 @@ func (DockerPipe) Publish(ctx *context.Context) error {
 				return fmt.Errorf("invalid list of artifacts to sign: %s", cfg.Artifacts)
 			}
 
-			if len(cfg.IDs) > 0 {
-				filters = append(filters, artifact.ByIDs(cfg.IDs...))
-			}
+			filters = append(filters, artifact.ByIDs(cfg.IDs...))
 			return sign(ctx, cfg, ctx.Artifacts.Filter(artifact.And(filters...)).List())
 		})
 	}

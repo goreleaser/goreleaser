@@ -159,27 +159,25 @@ func artifactList(ctx *context.Context, conf config.Blob) []*artifact.Artifact {
 	if conf.ExtraFilesOnly {
 		return nil
 	}
-	byTypes := []artifact.Filter{
-		artifact.ByType(artifact.UploadableArchive),
-		artifact.ByType(artifact.UploadableBinary),
-		artifact.ByType(artifact.UploadableSourceArchive),
-		artifact.ByType(artifact.Checksum),
-		artifact.ByType(artifact.Signature),
-		artifact.ByType(artifact.Certificate),
-		artifact.ByType(artifact.LinuxPackage),
-		artifact.ByType(artifact.SBOM),
-		artifact.ByType(artifact.PySdist),
-		artifact.ByType(artifact.PyWheel),
+	types := []artifact.Type{
+		artifact.UploadableArchive,
+		artifact.UploadableBinary,
+		artifact.UploadableSourceArchive,
+		artifact.Checksum,
+		artifact.Signature,
+		artifact.Certificate,
+		artifact.LinuxPackage,
+		artifact.SBOM,
+		artifact.PySdist,
+		artifact.PyWheel,
 	}
 	if conf.IncludeMeta {
-		byTypes = append(byTypes, artifact.ByType(artifact.Metadata))
+		types = append(types, artifact.Metadata)
 	}
-
-	filter := artifact.Or(byTypes...)
-	if len(conf.IDs) > 0 {
-		filter = artifact.And(filter, artifact.ByIDs(conf.IDs...))
-	}
-	return ctx.Artifacts.Filter(filter).List()
+	return ctx.Artifacts.Filter(artifact.Or(
+		artifact.ByTypes(types...),
+		artifact.ByIDs(conf.IDs...),
+	)).List()
 }
 
 func uploadData(ctx *context.Context, conf config.Blob, up uploader, dataFile, uploadFile, bucketURL string) error {

@@ -106,21 +106,14 @@ func (Pipe) Run(ctx *context.Context) error {
 
 func doRun(ctx *context.Context, fpm config.NFPM) error {
 	filters := []artifact.Filter{
-		artifact.Or(
-			artifact.ByType(artifact.Binary),
-			artifact.ByType(artifact.Header),
-			artifact.ByType(artifact.CArchive),
-			artifact.ByType(artifact.CShared),
+		artifact.ByTypes(
+			artifact.Binary,
+			artifact.Header,
+			artifact.CArchive,
+			artifact.CShared,
 		),
-		artifact.Or(
-			artifact.ByGoos("linux"),
-			artifact.ByGoos("ios"),
-			artifact.ByGoos("android"),
-			artifact.ByGoos("aix"),
-		),
-	}
-	if len(fpm.IDs) > 0 {
-		filters = append(filters, artifact.ByIDs(fpm.IDs...))
+		artifact.ByGooses("linux", "ios", "android", "aix"),
+		artifact.ByIDs(fpm.IDs...),
 	}
 	linuxBinaries := ctx.Artifacts.
 		Filter(artifact.And(filters...)).
