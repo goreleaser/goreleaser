@@ -3,7 +3,9 @@
 package makeself
 
 import (
+	"bytes"
 	"fmt"
+	"io"
 	"os"
 	"os/exec"
 	"path/filepath"
@@ -12,8 +14,10 @@ import (
 	"github.com/caarlos0/log"
 	"github.com/goreleaser/goreleaser/v2/internal/archivefiles"
 	"github.com/goreleaser/goreleaser/v2/internal/artifact"
+	"github.com/goreleaser/goreleaser/v2/internal/gerrors"
 	"github.com/goreleaser/goreleaser/v2/internal/gio"
 	"github.com/goreleaser/goreleaser/v2/internal/ids"
+	"github.com/goreleaser/goreleaser/v2/internal/logext"
 	"github.com/goreleaser/goreleaser/v2/internal/pipe"
 	"github.com/goreleaser/goreleaser/v2/internal/semerrgroup"
 	"github.com/goreleaser/goreleaser/v2/internal/skips"
@@ -42,6 +46,9 @@ func (Pipe) Default(ctx *context.Context) error {
 		}
 		if cfg.Filename == "" {
 			cfg.Filename = defaultNameTemplate
+		}
+		if cfg.Name == "" {
+			cfg.Name = "{{ .ProjectName }}"
 		}
 		ids.Inc(cfg.ID)
 	}
@@ -103,15 +110,17 @@ func doRun(ctx *context.Context, cfg config.MakeselfPackage) error {
 
 // https://ibiblio.org/pub/linux/LSM-TEMPLATE.html
 const lsmTemplate = `Begin4
-Title: {{.Title}}
-Version: {{.Version}}
-Description: {{.Description}}
-Keywords: {{.Keywords}}
-Author: {{.Maintainer}}
-Maintained-by: {{.Maintainer}}
-Primary-site: {{.Homepage}}
-Platforms: {{.Platform}}
-Copying-policy: {{.License}}
+Title: {{ .Title }}
+Version: {{ .Version }}
+{{ with .Description }}Description: {{ . }}{{ end }}
+{{ with .Keywords }} Keywords: {{ . }}{{ end }}
+{{- with .Maintainer }}
+Author: {{ . }}
+Maintained-by: {{ . }}
+{{- end }}
+{{ with .Homepage }}Primary-site: {{ . }}{{ end }}
+Platforms: {{ .Platform }}
+{{ with .License }}Copying-policy: {{ . }}{{ end }}
 End`
 
 func create(ctx *context.Context, cfg config.MakeselfPackage, plat string, binaries []*artifact.Artifact) error {
@@ -229,12 +238,19 @@ func create(ctx *context.Context, cfg config.MakeselfPackage, plat string, binar
 
 	cmd := exec.CommandContext(ctx, "makeself", arg...)
 	cmd.Dir = dir
-
-	// TODO: log stdout/err
-	// Capture stderr for error reporting
-	output, err := cmd.CombinedOutput()
-	if err != nil {
-		return fmt.Errorf("makeself failed: %w: %s", err, string(output))
+	cmd.Env = append(ctx.Env.Strings(), cmd.Environ()...)
+	var b bytes.Buffer
+	w := gio.Safe(&b)
+	cmd.Stderr = io.MultiWriter(logext.NewWriter(), w)
+	cmd.Stdout = io.MultiWriter(logext.NewWriter(), w)
+	if err := cmd.Run(); err != nil {
+		return gerrors.Wrap(
+			err,
+			"could not create makeself package",
+			"args", strings.Join(cmd.Args, " "),
+			"id", cfg.ID,
+			"output", b.String(),
+		)
 	}
 
 	// Create artifact
@@ -261,8 +277,9 @@ func create(ctx *context.Context, cfg config.MakeselfPackage, plat string, binar
 		art.Goppc64 = binary.Goppc64
 		art.Goriscv64 = binary.Goriscv64
 		art.Target = binary.Target
-		art.Extra[artifact.ExtraReplaces] = artifact.ExtraOr(*binary, artifact.ExtraReplaces, false)
-
+		if rep, ok := binaries[0].Extra[artifact.ExtraReplaces]; ok {
+			art.Extra[artifact.ExtraReplaces] = rep
+		}
 	}
 
 	ctx.Artifacts.Add(art)

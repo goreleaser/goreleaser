@@ -1435,8 +1435,8 @@ type MakeselfPackage struct {
 	ID       string `yaml:"id,omitempty" json:"id,omitempty"`
 	Filename string `yaml:"filename,omitempty" json:"filename,omitempty"`
 
-	Script      string   `yaml:"script,omitempty" json:"script,omitempty"`
-	Compression string   `yaml:"compression,omitempty" json:"compression,omitempty"`
+	Script      string   `yaml:"script" json:"script"`
+	Compression string   `yaml:"compression,omitempty" json:"compression,omitempty" jsonschema:"enum=gzip,enum=bzip2,enum=xz,enum=lzo,enum=compress,enum=none"`
 	ExtraArgs   []string `yaml:"extra_args,omitempty" json:"extra_args,omitempty"`
 
 	Files   []File   `yaml:"files,omitempty" json:"files,omitempty"`
