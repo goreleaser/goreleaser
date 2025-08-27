@@ -38,7 +38,7 @@ checksum:
   name_template: "checksums.txt"
 
 # Change the digests filename:
-docker_digests:
+docker_digest:
   name_template: "digests.txt"
 ```
 
