@@ -727,24 +727,6 @@ func Or(filters ...Filter) Filter {
 	}
 }
 
-// True is a filter that always returns true.
-func True(*Artifact) bool { return true }
-
-func makeOr(in []string, fn func(string) Filter) Filter {
-	switch len(in) {
-	case 0:
-		return True
-	case 1:
-		return fn(in[0])
-	default:
-		filters := make([]Filter, 0, len(in))
-		for _, s := range in {
-			filters = append(filters, fn(s))
-		}
-		return Or(filters...)
-	}
-}
-
 // And performs an AND between all given filters.
 func And(filters ...Filter) Filter {
 	return func(a *Artifact) bool {
