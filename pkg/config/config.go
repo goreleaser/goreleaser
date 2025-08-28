@@ -1432,23 +1432,27 @@ type ChocolateyDependency struct {
 
 // Makeself config.
 type Makeself struct {
-	ID       string `yaml:"id,omitempty" json:"id,omitempty"`
-	Filename string `yaml:"filename,omitempty" json:"filename,omitempty"`
+	ID          string         `yaml:"id,omitempty" json:"id,omitempty"`
+	Filename    string         `yaml:"filename,omitempty" json:"filename,omitempty"`
+	Script      string         `yaml:"script" json:"script"`
+	Compression string         `yaml:"compression,omitempty" json:"compression,omitempty" jsonschema:"enum=gzip,enum=bzip2,enum=xz,enum=lzo,enum=compress,enum=none"`
+	ExtraArgs   []string       `yaml:"extra_args,omitempty" json:"extra_args,omitempty"`
+	Files       []MakeselfFile `yaml:"files,omitempty" json:"files,omitempty"`
+	Disable     string         `yaml:"disable,omitempty" json:"disable,omitempty" jsonschema:"oneof_type=string;boolean"`
+	IDs         []string       `yaml:"ids,omitempty" json:"ids,omitempty"`
+	Goos        []string       `yaml:"goos,omitempty" json:"goos,omitempty"`
+	Goarch      []string       `yaml:"goarch,omitempty" json:"goarch,omitempty"`
+	Name        string         `yaml:"name,omitempty" json:"name,omitempty"`
+	Description string         `yaml:"description,omitempty" json:"description,omitempty"`
+	Maintainer  string         `yaml:"maintainer,omitempty" json:"maintainer,omitempty"`
+	Keywords    []string       `yaml:"keywords,omitempty" json:"keywords,omitempty"`
+	Homepage    string         `yaml:"homepage,omitempty" json:"homepage,omitempty"`
+	License     string         `yaml:"license,omitempty" json:"license,omitempty"`
+}
 
-	Script      string   `yaml:"script" json:"script"`
-	Compression string   `yaml:"compression,omitempty" json:"compression,omitempty" jsonschema:"enum=gzip,enum=bzip2,enum=xz,enum=lzo,enum=compress,enum=none"`
-	ExtraArgs   []string `yaml:"extra_args,omitempty" json:"extra_args,omitempty"`
-
-	Files   []File   `yaml:"files,omitempty" json:"files,omitempty"`
-	Disable string   `yaml:"disable,omitempty" json:"disable,omitempty" jsonschema:"oneof_type=string;boolean"`
-	IDs     []string `yaml:"ids,omitempty" json:"ids,omitempty"`
-	Goos    []string `yaml:"goos,omitempty" json:"goos,omitempty"`
-	Goarch  []string `yaml:"goarch,omitempty" json:"goarch,omitempty"`
-
-	Name        string   `yaml:"name,omitempty" json:"name,omitempty"`
-	Description string   `yaml:"description,omitempty" json:"description,omitempty"`
-	Maintainer  string   `yaml:"maintainer,omitempty" json:"maintainer,omitempty"`
-	Keywords    []string `yaml:"keywords,omitempty" json:"keywords,omitempty"`
-	Homepage    string   `yaml:"homepage,omitempty" json:"homepage,omitempty"`
-	License     string   `yaml:"license,omitempty" json:"license,omitempty"`
+// MakeFile is a file inside a makeself archive.
+type MakeselfFile struct {
+	Source      string `yaml:"src,omitempty" json:"src,omitempty"`
+	Destination string `yaml:"dst,omitempty" json:"dst,omitempty"`
+	StripParent bool   `yaml:"strip_parent,omitempty" json:"strip_parent,omitempty"`
 }

@@ -1,30 +1,34 @@
-# Makeself Self-Extracting Archives
+# Self-Extracting Archives
 
-Makeself creates self-extracting archives that can be executed to automatically
-extract and optionally install their contents.
+GoReleaser can create self-extracting archives using [Makeself][].
+These files are executables that self-extract themselves, and might run the
+underlying binary, install it, or do other operations.
+
 This is particularly useful for distributing software that needs to be easily
 installable without requiring users to manually extract archives.
-Typically this supports Linux, MacOS and any other platform that makeself runs
+Typically this supports Linux, MacOS and any other platform that Makeself runs
 on.
 
 !!! note
 
-    The `makeself` command requires the `makeself` command to be available in
+    This feature requires the `makeself` command to be available in
     your system `$PATH`.
     You can install it from your system package manager or from
-    [the makeself project](https://github.com/megastep/makeself).
+    [the Makeself project][Makeself].
+
+## Configuration
 
 Here is a commented `makeselfs` section with all fields specified:
 
 ```yaml title=".goreleaser.yaml"
 makeselfs:
   - #
-    # ID of this makeself package.
+    # ID of this Makeself package.
     #
     # Default: 'default'.
     id: my-installer
 
-    # IDs of the builds which should be packaged in this makeself archive.
+    # IDs of the builds which should be packaged in this Makeself archive.
     #
     # Default: empty (include all).
     ids:
@@ -64,6 +68,9 @@ makeselfs:
 
     # Archive file name template.
     #
+    # Mind that the filename must contain the desired extension as well,
+    # which typically is `.run`.
+    #
     # Default: '{{ .ProjectName }}_{{ .Version }}_{{ .Os }}_{{ .Arch }}{{ with .Arm }}v{{ . }}{{ end }}{{ with .Mips }}_{{ . }}{{ end }}{{ if not (eq .Amd64 "v1") }}{{ .Amd64 }}{{ end }}.run'
     # Templates: allowed.
     filename: "{{ .ProjectName }}_{{ .Version }}_{{ .Os }}_{{ .Arch }}.run"
@@ -71,18 +78,18 @@ makeselfs:
     # Compression format to use.
     #
     # Valid options: gzip, bzip2, xz, lzo, compress, none
-    # Default: gzip (makeself default)
+    # Default: gzip (Makeself's default)
     # Templates: allowed.
-    # note: none translates to makeslef's --nocomp flag
+    # Note: none translates to makeself's --nocomp flag
     compression: "gzip"
 
     # Path to setup script file.
     # This script will be copied into the archive.
-    # It is executed when the user runs the makeself package.
+    # It is executed when the user runs the Makeself package.
     # Templates: allowed.
     script: install.sh
 
-    # Additional command-line arguments to pass to makeself.
+    # Additional command-line arguments to pass to Makeself.
     #
     # Refer to https://makeself.io for more information.
     #
@@ -93,7 +100,7 @@ makeselfs:
       - "--keep"
       - "--copy"
 
-    # Additional files/globs you want to add to the makeself package.
+    # Additional files/globs you want to add to the Makeself package.
     # These files will be available to the install script.
     #
     # Templates: allowed.
@@ -110,28 +117,12 @@ makeselfs:
         # Strip parent directories when adding files to the archive.
         strip_parent: true
 
-        # File info.
-        info:
-          # Templates: allowed.
-          owner: root
-
-          # Templates: allowed.
-          group: root
-
-          # Must be in time.RFC3339Nano format.
-          # Templates: allowed.
-          mtime: "{{ .CommitDate }}"
-
-          # File mode.
-          mode: 0644
-
-    # Disable this makeself package.
+    # Disable this Makeself package.
     # Templates: allowed.
     disable: "{{ .Env.SKIP_MAKESELF }}"
 ```
 
-Please refer to the [makeself documentation](https://makeself.io/)
-for more information.
+Please refer to the [Makeself documentation][Makeself] for more information.
 
 !!! tip
 
@@ -141,7 +132,7 @@ for more information.
 
 !!! tip "Root Privileges"
 
-    When using `--needroot` in `extra_args`, the makeself installer will
+    When using `--needroot` in `extra_args`, the Makeself installer will
     automatically prompt for root privileges when executed.
     This allows your install script to assume root access without using `sudo`
     commands, making the script simpler and more reliable.
@@ -153,3 +144,5 @@ for more information.
     Make sure your target users can execute them on their systems.
 
 <!-- md:templates -->
+
+[Makeself]: https://makeself.io/

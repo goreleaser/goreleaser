@@ -141,7 +141,7 @@ func TestRunFull(t *testing.T) {
 			Goarch:      []string{"arm64"},
 			Compression: "gzip",
 			ExtraArgs:   []string{"--notemp"},
-			Files: []config.File{
+			Files: []config.MakeselfFile{
 				{
 					Source:      "./testdata/foo.txt",
 					Destination: "docs/foo.txt",

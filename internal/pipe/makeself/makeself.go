@@ -229,7 +229,7 @@ func setupContext(
 		}
 	}
 
-	files, err := archivefiles.Eval(tpl, cfg.Files)
+	files, err := archivefiles.Eval(tpl, toArchiveFiles(cfg.Files))
 	if err != nil {
 		return "", fmt.Errorf("failed to find files to archive: %w", err)
 	}
@@ -311,4 +311,16 @@ func getArtifacts(ctx *context.Context, cfg config.Makeself) map[string][]*artif
 	return ctx.Artifacts.
 		Filter(artifact.And(filters...)).
 		GroupByPlatform()
+}
+
+func toArchiveFiles(in []config.MakeselfFile) []config.File {
+	result := make([]config.File, 0, len(in))
+	for _, f := range in {
+		result = append(result, config.File{
+			Source:      f.Source,
+			Destination: f.Destination,
+			StripParent: f.StripParent,
+		})
+	}
+	return result
 }
