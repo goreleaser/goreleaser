@@ -57,6 +57,9 @@ jobs:
       - uses: crazy-max/ghaction-upx@v3
         with:
           install-only: true
+      - name: setup-makeself
+        if: matrix.os == 'ubuntu-latest'
+        run: apt install -yq makeself
       - uses: cachix/install-nix-action@v31
         if: matrix.os == 'ubuntu-latest'
         with:
@@ -65,8 +68,6 @@ jobs:
         with:
           go-version-file: go.mod
       - uses: mlugg/setup-zig@v2
-        with:
-          version: 0.14.0 # https://github.com/ziglang/zig/issues/23977
       - uses: oven-sh/setup-bun@v2
       - uses: denoland/setup-deno@v2
       - uses: cargo-bins/cargo-binstall@main
