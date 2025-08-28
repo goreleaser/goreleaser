@@ -163,7 +163,7 @@ func artifactList(ctx *context.Context, conf config.Blob) []*artifact.Artifact {
 		artifact.UploadableArchive,
 		artifact.UploadableBinary,
 		artifact.UploadableSourceArchive,
-		artifact.MakeselfPackage,
+		artifact.Makeself,
 		artifact.Checksum,
 		artifact.Signature,
 		artifact.Certificate,

@@ -2,11 +2,15 @@ package makeself
 
 import (
 	"os"
+	"os/exec"
 	"path/filepath"
 	"testing"
 
+	"github.com/goreleaser/goreleaser/v2/internal/artifact"
+	"github.com/goreleaser/goreleaser/v2/internal/golden"
 	"github.com/goreleaser/goreleaser/v2/internal/skips"
 	"github.com/goreleaser/goreleaser/v2/internal/testctx"
+	"github.com/goreleaser/goreleaser/v2/internal/testlib"
 	"github.com/goreleaser/goreleaser/v2/pkg/config"
 	"github.com/stretchr/testify/require"
 )
@@ -60,12 +64,56 @@ func TestDefault(t *testing.T) {
 	require.Equal(t, "custom_{{.Os}}_{{.Arch}}.bin", m2.Filename)
 }
 
-func createFakeBinary(t *testing.T, dist, platform, binary string) string {
-	t.Helper()
-	path := filepath.Join(dist, platform, binary)
-	require.NoError(t, os.MkdirAll(filepath.Dir(path), 0o755))
-	f, err := os.Create(path)
-	require.NoError(t, err)
-	require.NoError(t, f.Close())
-	return path
+func TestRunSimple(t *testing.T) {
+	testlib.CheckPath(t, "makeself")
+	ctx := testctx.NewWithCfg(config.Project{
+		ProjectName: "myproj",
+		Dist:        t.TempDir(),
+		Makeselfs: []config.Makeself{{
+			Script: "./testdata/setup.sh",
+		}},
+	})
+	tmp := t.TempDir()
+	require.NoError(t, os.WriteFile(
+		filepath.Join(tmp, "mybin"),
+		[]byte("#!/bin/sh\necho hi"),
+		0o755,
+	))
+	for _, goos := range []string{"linux", "darwin"} {
+		for _, goarch := range []string{"amd64", "arm64"} {
+			ctx.Artifacts.Add(&artifact.Artifact{
+				Name:   "mybin",
+				Path:   filepath.Join(tmp, "mybin"),
+				Type:   artifact.Binary,
+				Goos:   goos,
+				Goarch: goarch,
+			})
+		}
+	}
+
+	require.NoError(t, Pipe{}.Default(ctx))
+	require.NoError(t, Pipe{}.Run(ctx))
+
+	result := ctx.Artifacts.Filter(artifact.ByType(artifact.Makeself)).List()
+	require.Len(t, result, 4)
+
+	for _, m := range result {
+		require.Equal(t, "default", artifact.ExtraOr(*m, artifact.ExtraID, ""))
+		require.Equal(t, "makeself", artifact.ExtraOr(*m, artifact.ExtraFormat, ""))
+		require.Equal(t, ".run", artifact.ExtraOr(*m, artifact.ExtraExt, ""))
+	}
+
+	{
+		out, err := exec.CommandContext(t.Context(), result[0].Path, "--tar", "tvzf").CombinedOutput()
+		require.NoError(t, err, string(out))
+		require.Contains(t, string(out), "mybin")
+		require.Contains(t, string(out), "package.lsm")
+		require.Contains(t, string(out), "script.sh")
+	}
+
+	{
+		out, err := exec.CommandContext(t.Context(), result[0].Path, "--tar", "xfO", ".package.lsm").CombinedOutput()
+		require.NoError(t, err, string(out))
+		golden.RequireEqualExt(t, out, ".lsm")
+	}
 }

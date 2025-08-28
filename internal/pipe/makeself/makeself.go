@@ -4,6 +4,7 @@ package makeself
 
 import (
 	"bytes"
+	"errors"
 	"fmt"
 	"io"
 	"os"
@@ -150,6 +151,10 @@ func create(ctx *context.Context, cfg config.Makeself, plat string, binaries []*
 		return err
 	}
 
+	if script == "" {
+		return errors.New("script is required")
+	}
+
 	dir, err := setupContext(ctx, cfg, tpl, plat, lsm, script, filename, binaries)
 	if err != nil {
 		return err
@@ -216,7 +221,7 @@ func setupContext(
 			return "", fmt.Errorf("failed to copy file %s: %w", f.Source, err)
 		}
 	}
-	if err := gio.Copy(script, filepath.Join(dir, "setup.sh")); err != nil {
+	if err := gio.Copy(script, filepath.Join(dir, "script.sh")); err != nil {
 		return "", fmt.Errorf("failed to copy binary %s: %w", script, err)
 	}
 	if err := os.WriteFile(filepath.Join(dir, "package.lsm"), []byte(lsm), 0o644); err != nil {
@@ -238,14 +243,13 @@ func makeArg(name, filename, compression string, extraArgs []string) []string {
 
 	arg = append(arg, "--lsm", "package.lsm")
 	arg = append(arg, extraArgs...)
-	arg = append(arg, ".", filename, name, "./setup.sh")
-	return append(arg, "./setup.sh")
+	return append(arg, ".", filename, name, "./script.sh")
 }
 
 func makeArtifact(cfg config.Makeself, binary *artifact.Artifact, filename, path string) *artifact.Artifact {
 	// Create artifact
 	art := &artifact.Artifact{
-		Type:      artifact.MakeselfPackage,
+		Type:      artifact.Makeself,
 		Name:      filename,
 		Path:      path,
 		Goos:      binary.Goos,

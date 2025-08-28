@@ -103,7 +103,7 @@ func (Pipe) Run(ctx *context.Context) error {
 					artifact.UploadableArchive,
 					artifact.UploadableBinary,
 					artifact.UploadableSourceArchive,
-					artifact.MakeselfPackage,
+					artifact.Makeself,
 					artifact.Checksum,
 					artifact.LinuxPackage,
 					artifact.SBOM,

@@ -182,7 +182,7 @@ func buildArtifactList(ctx *context.Context) ([]*artifact.Artifact, error) {
 			artifact.UploadableArchive,
 			artifact.UploadableBinary,
 			artifact.UploadableSourceArchive,
-			artifact.MakeselfPackage,
+			artifact.Makeself,
 			artifact.LinuxPackage,
 			artifact.SBOM,
 			artifact.PyWheel,

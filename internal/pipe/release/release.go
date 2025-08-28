@@ -161,7 +161,7 @@ func doPublish(ctx *context.Context, client client.Client) error {
 		artifact.UploadableArchive,
 		artifact.UploadableBinary,
 		artifact.UploadableSourceArchive,
-		artifact.MakeselfPackage,
+		artifact.Makeself,
 		artifact.UploadableFile,
 		artifact.Checksum,
 		artifact.Signature,

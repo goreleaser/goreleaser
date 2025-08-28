@@ -105,8 +105,8 @@ const (
 	PySdist
 	// Metadata is an internal goreleaser metadata JSON file.
 	Metadata
-	// MakeselfPackage is a makeself self-extracting archive.
-	MakeselfPackage
+	// Makeself is a makeself self-extracting archive.
+	Makeself
 	// DockerImageV2 is a container image in OCI format.
 	DockerImageV2
 	// lastMarker is used in tests to denote the last valid type.
@@ -186,7 +186,7 @@ func (t Type) String() string {
 		return "Wheel"
 	case PySdist:
 		return "Source Dist"
-	case MakeselfPackage:
+	case Makeself:
 		return "Makeself Package"
 	default:
 		return "unknown"
