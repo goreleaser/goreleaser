@@ -115,15 +115,15 @@ func (Pipe) Run(ctx *context.Context) error {
 			continue
 		}
 
-		filter := []artifact.Filter{artifact.Or(
-			artifact.ByType(artifact.Binary),
-			artifact.ByType(artifact.UniversalBinary),
-			artifact.ByType(artifact.Header),
-			artifact.ByType(artifact.CArchive),
-			artifact.ByType(artifact.CShared),
-		)}
-		if len(archive.IDs) > 0 {
-			filter = append(filter, artifact.ByIDs(archive.IDs...))
+		filter := []artifact.Filter{
+			artifact.ByTypes(
+				artifact.Binary,
+				artifact.UniversalBinary,
+				artifact.Header,
+				artifact.CArchive,
+				artifact.CShared,
+			),
+			artifact.ByIDs(archive.IDs...),
 		}
 
 		isBinary := slices.Contains(archive.Formats, "binary")

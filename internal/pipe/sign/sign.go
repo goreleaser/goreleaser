@@ -99,16 +99,16 @@ func (Pipe) Run(ctx *context.Context) error {
 					log.Warn("when artifacts is `source`, `ids` has no effect. ignoring")
 				}
 			case "all":
-				filters = append(filters, artifact.Or(
-					artifact.ByType(artifact.UploadableArchive),
-					artifact.ByType(artifact.UploadableBinary),
-					artifact.ByType(artifact.UploadableSourceArchive),
-					artifact.ByType(artifact.Checksum),
-					artifact.ByType(artifact.LinuxPackage),
-					artifact.ByType(artifact.SBOM),
-					artifact.ByType(artifact.PySdist),
-					artifact.ByType(artifact.PyWheel),
-					artifact.ByType(artifact.MakeselfPackage),
+				filters = append(filters, artifact.ByTypes(
+					artifact.UploadableArchive,
+					artifact.UploadableBinary,
+					artifact.UploadableSourceArchive,
+					artifact.MakeselfPackage,
+					artifact.Checksum,
+					artifact.LinuxPackage,
+					artifact.SBOM,
+					artifact.PySdist,
+					artifact.PyWheel,
 				))
 			case "archive":
 				filters = append(filters, artifact.ByType(artifact.UploadableArchive))
@@ -124,9 +124,7 @@ func (Pipe) Run(ctx *context.Context) error {
 				return fmt.Errorf("invalid list of artifacts to sign: %s", cfg.Artifacts)
 			}
 
-			if len(cfg.IDs) > 0 {
-				filters = append(filters, artifact.ByIDs(cfg.IDs...))
-			}
+			filters = append(filters, artifact.ByIDs(cfg.IDs...))
 			return sign(ctx, cfg, ctx.Artifacts.Filter(artifact.And(filters...)).List())
 		})
 	}

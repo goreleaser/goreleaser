@@ -157,28 +157,27 @@ func doPublish(ctx *context.Context, client client.Client) error {
 		})
 	}
 
-	typeFilters := []artifact.Filter{
-		artifact.ByType(artifact.UploadableArchive),
-		artifact.ByType(artifact.UploadableBinary),
-		artifact.ByType(artifact.UploadableSourceArchive),
-		artifact.ByType(artifact.UploadableFile),
-		artifact.ByType(artifact.Checksum),
-		artifact.ByType(artifact.Signature),
-		artifact.ByType(artifact.Certificate),
-		artifact.ByType(artifact.LinuxPackage),
-		artifact.ByType(artifact.SBOM),
-		artifact.ByType(artifact.PyWheel),
-		artifact.ByType(artifact.PySdist),
-		artifact.ByType(artifact.MakeselfPackage),
+	types := []artifact.Type{
+		artifact.UploadableArchive,
+		artifact.UploadableBinary,
+		artifact.UploadableSourceArchive,
+		artifact.MakeselfPackage,
+		artifact.UploadableFile,
+		artifact.Checksum,
+		artifact.Signature,
+		artifact.Certificate,
+		artifact.LinuxPackage,
+		artifact.SBOM,
+		artifact.PyWheel,
+		artifact.PySdist,
 	}
 	if ctx.Config.Release.IncludeMeta {
-		typeFilters = append(typeFilters, artifact.ByType(artifact.Metadata))
+		types = append(types, artifact.Metadata)
 	}
-	filters := artifact.Or(typeFilters...)
-
-	if len(ctx.Config.Release.IDs) > 0 {
-		filters = artifact.And(filters, artifact.ByIDs(ctx.Config.Release.IDs...))
-	}
+	filters := artifact.And(
+		artifact.ByTypes(types...),
+		artifact.ByIDs(ctx.Config.Release.IDs...),
+	)
 
 	g := semerrgroup.New(ctx.Parallelism)
 	for _, artifact := range ctx.Artifacts.Filter(filters).List() {

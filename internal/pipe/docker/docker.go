@@ -143,11 +143,11 @@ func (Pipe) Run(ctx *context.Context) error {
 			filters := []artifact.Filter{
 				artifact.ByGoos(docker.Goos),
 				artifact.ByGoarch(docker.Goarch),
-				artifact.Or(
-					artifact.ByType(artifact.Binary),
-					artifact.ByType(artifact.LinuxPackage),
-					artifact.ByType(artifact.CArchive),
-					artifact.ByType(artifact.CShared),
+				artifact.ByTypes(
+					artifact.Binary,
+					artifact.LinuxPackage,
+					artifact.CArchive,
+					artifact.CShared,
 				),
 			}
 			// TODO: properly test this

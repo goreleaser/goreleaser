@@ -207,15 +207,8 @@ func doRun(ctx *context.Context, brew config.HomebrewCask, cl client.ReleaseURLT
 	}
 
 	filters := []artifact.Filter{
-		artifact.Or(
-			artifact.ByGoos("darwin"),
-			artifact.ByGoos("linux"),
-		),
-		artifact.Or(
-			artifact.ByGoarch("amd64"),
-			artifact.ByGoarch("arm64"),
-			artifact.ByGoarch("all"),
-		),
+		artifact.ByGooses("darwin", "linux"),
+		artifact.ByGoarches("amd64", "arm64", "all"),
 		artifact.Or(
 			artifact.And(
 				artifact.Not(artifact.ByFormats("gz")),

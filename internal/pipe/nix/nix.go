@@ -199,10 +199,7 @@ func preparePkg(
 	hasher fileHasher,
 ) (string, error) {
 	filters := []artifact.Filter{
-		artifact.Or(
-			artifact.ByGoos("darwin"),
-			artifact.ByGoos("linux"),
-		),
+		artifact.ByGooses("darwin", "linux"),
 		artifact.Or(
 			artifact.And(
 				artifact.ByGoarch("amd64"),
