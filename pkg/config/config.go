@@ -1450,7 +1450,7 @@ type Makeself struct {
 	License     string         `yaml:"license,omitempty" json:"license,omitempty"`
 }
 
-// MakeFile is a file inside a makeself archive.
+// MakeselfFile is a file inside a makeself archive.
 type MakeselfFile struct {
 	Source      string `yaml:"src,omitempty" json:"src,omitempty"`
 	Destination string `yaml:"dst,omitempty" json:"dst,omitempty"`
