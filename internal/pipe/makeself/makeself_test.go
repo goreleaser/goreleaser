@@ -67,6 +67,7 @@ func TestDefault(t *testing.T) {
 }
 
 func TestRunSimple(t *testing.T) {
+	testlib.SkipIfWindows(t, "no makeself on windows")
 	testlib.CheckPath(t, "makeself")
 	ctx := testctx.NewWithCfg(config.Project{
 		ProjectName: "myproj",
@@ -124,6 +125,7 @@ func TestRunSimple(t *testing.T) {
 }
 
 func TestRunFull(t *testing.T) {
+	testlib.SkipIfWindows(t, "no makeself on windows")
 	testlib.CheckPath(t, "makeself")
 	ctx := testctx.NewWithCfg(config.Project{
 		ProjectName: "myproj",
