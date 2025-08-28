@@ -64,7 +64,7 @@ func (Pipe) Run(ctx *context.Context) error {
 	return g.Wait()
 }
 
-func doRun(ctx *context.Context, cfg config.MakeselfPackage) error {
+func doRun(ctx *context.Context, cfg config.Makeself) error {
 	disable, err := tmpl.New(ctx).Bool(cfg.Disable)
 	if err != nil {
 		return err
@@ -102,7 +102,7 @@ Platforms: {{ .Platform }}
 {{ with .License }}Copying-policy: {{ . }}{{ end }}
 End`
 
-func create(ctx *context.Context, cfg config.MakeselfPackage, plat string, binaries []*artifact.Artifact) error {
+func create(ctx *context.Context, cfg config.Makeself, plat string, binaries []*artifact.Artifact) error {
 	binary := binaries[0]
 	tpl := tmpl.New(ctx).
 		WithArtifact(binary)
@@ -183,7 +183,7 @@ func create(ctx *context.Context, cfg config.MakeselfPackage, plat string, binar
 
 func setupContext(
 	ctx *context.Context,
-	cfg config.MakeselfPackage,
+	cfg config.Makeself,
 	tpl *tmpl.Template,
 	plat, lsm, script, filename string,
 	binaries []*artifact.Artifact,
@@ -242,7 +242,7 @@ func makeArg(name, filename, compression string, extraArgs []string) []string {
 	return append(arg, "./setup.sh")
 }
 
-func makeArtifact(cfg config.MakeselfPackage, binary *artifact.Artifact, filename, path string) *artifact.Artifact {
+func makeArtifact(cfg config.Makeself, binary *artifact.Artifact, filename, path string) *artifact.Artifact {
 	// Create artifact
 	art := &artifact.Artifact{
 		Type:      artifact.MakeselfPackage,
@@ -270,7 +270,7 @@ func makeArtifact(cfg config.MakeselfPackage, binary *artifact.Artifact, filenam
 	return art
 }
 
-func getArtifacts(ctx *context.Context, cfg config.MakeselfPackage) map[string][]*artifact.Artifact {
+func getArtifacts(ctx *context.Context, cfg config.Makeself) map[string][]*artifact.Artifact {
 	filters := []artifact.Filter{
 		artifact.Or(
 			artifact.ByType(artifact.Binary),

@@ -1231,7 +1231,7 @@ type Project struct {
 	ReportSizes     bool             `yaml:"report_sizes,omitempty" json:"report_sizes,omitempty"`
 	Metadata        ProjectMetadata  `yaml:"metadata,omitempty" json:"metadata,omitempty"`
 
-	Makeselfs         []MakeselfPackage `yaml:"makeselfs,omitempty" json:"makeselfs,omitempty"`
+	Makeselfs         []Makeself        `yaml:"makeselfs,omitempty" json:"makeselfs,omitempty"`
 	UniversalBinaries []UniversalBinary `yaml:"universal_binaries,omitempty" json:"universal_binaries,omitempty"`
 	UPXs              []UPX             `yaml:"upx,omitempty" json:"upx,omitempty"`
 
@@ -1430,8 +1430,8 @@ type ChocolateyDependency struct {
 	Version string `yaml:"version,omitempty" json:"version,omitempty"`
 }
 
-// MakeselfPackage config.
-type MakeselfPackage struct {
+// Makeself config.
+type Makeself struct {
 	ID       string `yaml:"id,omitempty" json:"id,omitempty"`
 	Filename string `yaml:"filename,omitempty" json:"filename,omitempty"`
 
