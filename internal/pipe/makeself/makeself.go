@@ -176,7 +176,7 @@ func create(ctx *context.Context, cfg config.Makeself, plat string, binaries []*
 		return errors.New("script is required")
 	}
 
-	dir, err := setupContext(ctx, cfg, tpl, plat, lsm, script, filename, binaries)
+	dir, err := setupContext(ctx, cfg, tpl, plat, lsm, script, binaries)
 	if err != nil {
 		return err
 	}
@@ -211,7 +211,7 @@ func setupContext(
 	ctx *context.Context,
 	cfg config.Makeself,
 	tpl *tmpl.Template,
-	plat, lsm, script, filename string,
+	plat, lsm, script string,
 	binaries []*artifact.Artifact,
 ) (string, error) {
 	dir := filepath.Join(ctx.Config.Dist, "makeself", cfg.ID, plat)
