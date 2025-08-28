@@ -89,19 +89,41 @@ func doRun(ctx *context.Context, cfg config.Makeself) error {
 }
 
 // https://ibiblio.org/pub/linux/LSM-TEMPLATE.html
-const lsmTemplate = `Begin4
-Title: {{ .Title }}
-Version: {{ .Version }}
-{{ with .Description }}Description: {{ . }}{{ end }}
-{{ with .Keywords }} Keywords: {{ . }}{{ end }}
-{{- with .Maintainer }}
-Author: {{ . }}
-Maintained-by: {{ . }}
-{{- end }}
-{{ with .Homepage }}Primary-site: {{ . }}{{ end }}
-Platforms: {{ .Platform }}
-{{ with .License }}Copying-policy: {{ . }}{{ end }}
-End`
+type LSM struct {
+	Title         string
+	Version       string
+	Description   string
+	Keywords      []string
+	Author        string
+	MaintainedBy  string
+	PrimarySite   string
+	Platform      string
+	CopyingPolicy string
+}
+
+func (l LSM) String() string {
+	var sb strings.Builder
+	_, _ = sb.WriteString("Begin4\n")
+	w := func(name, value string) {
+		if value == "" {
+			return
+		}
+		_, _ = fmt.Fprintf(&sb, "%s: %s\n", name, value)
+	}
+
+	w("Title", l.Title)
+	w("Version", l.Version)
+	w("Description", l.Description)
+	w("Keywords", strings.Join(l.Keywords, ", "))
+	w("Author", l.Author)
+	w("Maintained-by", l.MaintainedBy)
+	w("Primary-site", l.PrimarySite)
+	w("Platforms", l.Platform)
+	w("Copying-policy", l.CopyingPolicy)
+
+	_, _ = sb.WriteString("End")
+	return sb.String()
+}
 
 func create(ctx *context.Context, cfg config.Makeself, plat string, binaries []*artifact.Artifact) error {
 	binary := binaries[0]
@@ -138,18 +160,17 @@ func create(ctx *context.Context, cfg config.Makeself, plat string, binaries []*
 		return err
 	}
 
-	lsm, err := tpl.WithExtraFields(tmpl.Fields{
-		"Title":       name,
-		"Description": description,
-		"Keywords":    strings.Join(keywords, ", "),
-		"Maintainer":  maintainer,
-		"Homepage":    homepage,
-		"License":     license,
-		"Platform":    plat,
-	}).Apply(lsmTemplate)
-	if err != nil {
-		return err
-	}
+	lsm := LSM{
+		Title:         name,
+		Version:       ctx.Version,
+		Description:   description,
+		Keywords:      keywords,
+		MaintainedBy:  maintainer,
+		Author:        maintainer,
+		PrimarySite:   homepage,
+		CopyingPolicy: license,
+		Platform:      plat,
+	}.String()
 
 	if script == "" {
 		return errors.New("script is required")

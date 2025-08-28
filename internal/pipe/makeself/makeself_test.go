@@ -4,6 +4,8 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
+	"slices"
+	"strings"
 	"testing"
 
 	"github.com/goreleaser/goreleaser/v2/internal/artifact"
@@ -72,7 +74,7 @@ func TestRunSimple(t *testing.T) {
 		Makeselfs: []config.Makeself{{
 			Script: "./testdata/setup.sh",
 		}},
-	})
+	}, testctx.WithVersion("1.2.3"))
 	tmp := t.TempDir()
 	require.NoError(t, os.WriteFile(
 		filepath.Join(tmp, "mybin"),
@@ -103,8 +105,11 @@ func TestRunSimple(t *testing.T) {
 		require.Equal(t, ".run", artifact.ExtraOr(*m, artifact.ExtraExt, ""))
 	}
 
+	slices.SortFunc(result, func(a, b *artifact.Artifact) int {
+		return strings.Compare(a.Path, b.Path)
+	})
 	{
-		out, err := exec.CommandContext(t.Context(), result[0].Path, "--tar", "tvzf").CombinedOutput()
+		out, err := exec.CommandContext(t.Context(), result[0].Path, "--list").CombinedOutput()
 		require.NoError(t, err, string(out))
 		require.Contains(t, string(out), "mybin")
 		require.Contains(t, string(out), "package.lsm")
@@ -112,7 +117,77 @@ func TestRunSimple(t *testing.T) {
 	}
 
 	{
-		out, err := exec.CommandContext(t.Context(), result[0].Path, "--tar", "xfO", ".package.lsm").CombinedOutput()
+		out, err := exec.CommandContext(t.Context(), result[0].Path, "--lsm").CombinedOutput()
+		require.NoError(t, err, string(out))
+		golden.RequireEqualExt(t, out, ".lsm")
+	}
+}
+
+func TestRunFull(t *testing.T) {
+	testlib.CheckPath(t, "makeself")
+	ctx := testctx.NewWithCfg(config.Project{
+		ProjectName: "myproj",
+		Dist:        t.TempDir(),
+		Makeselfs: []config.Makeself{{
+			Script:      "./testdata/setup.sh",
+			Description: "My thing",
+			Keywords:    []string{"one", "two"},
+			Homepage:    "https://goreleaser.com",
+			Maintainer:  "me",
+			License:     "MIT",
+			Goos:        []string{"linux"},
+			Goarch:      []string{"arm64"},
+			Compression: "gzip",
+			ExtraArgs:   []string{"--notemp"},
+			Files: []config.File{
+				{
+					Source:      "./testdata/foo.txt",
+					Destination: "docs/foo.txt",
+				},
+			},
+		}},
+	}, testctx.WithVersion("1.2.3"))
+	tmp := t.TempDir()
+	require.NoError(t, os.WriteFile(
+		filepath.Join(tmp, "mybin"),
+		[]byte("#!/bin/sh\necho hi"),
+		0o755,
+	))
+	for _, goos := range []string{"linux", "darwin"} {
+		for _, goarch := range []string{"amd64", "arm64"} {
+			ctx.Artifacts.Add(&artifact.Artifact{
+				Name:   "mybin",
+				Path:   filepath.Join(tmp, "mybin"),
+				Type:   artifact.Binary,
+				Goos:   goos,
+				Goarch: goarch,
+			})
+		}
+	}
+
+	require.NoError(t, Pipe{}.Default(ctx))
+	require.NoError(t, Pipe{}.Run(ctx))
+
+	result := ctx.Artifacts.Filter(artifact.ByType(artifact.Makeself)).List()
+	require.Len(t, result, 1)
+
+	m := result[0]
+
+	require.Equal(t, "default", artifact.ExtraOr(*m, artifact.ExtraID, ""))
+	require.Equal(t, "makeself", artifact.ExtraOr(*m, artifact.ExtraFormat, ""))
+	require.Equal(t, ".run", artifact.ExtraOr(*m, artifact.ExtraExt, ""))
+
+	{
+		out, err := exec.CommandContext(t.Context(), result[0].Path, "--list").CombinedOutput()
+		require.NoError(t, err, string(out))
+		require.Contains(t, string(out), "mybin")
+		require.Contains(t, string(out), "package.lsm")
+		require.Contains(t, string(out), "script.sh")
+		require.Contains(t, string(out), "docs/foo.txt")
+	}
+
+	{
+		out, err := exec.CommandContext(t.Context(), result[0].Path, "--lsm").CombinedOutput()
 		require.NoError(t, err, string(out))
 		golden.RequireEqualExt(t, out, ".lsm")
 	}

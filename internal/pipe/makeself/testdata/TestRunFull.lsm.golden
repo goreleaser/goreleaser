@@ -1,0 +1,11 @@
+Begin4
+Title: myproj
+Version: 1.2.3
+Description: My thing
+Keywords: one, two
+Author: me
+Maintained-by: me
+Primary-site: https://goreleaser.com
+Platforms: linuxarm64
+Copying-policy: MIT
+End

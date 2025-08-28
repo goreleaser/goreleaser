@@ -1,2 +1,5 @@
-tar: .package.lsm: Not found in archive
-tar: Error exit delayed from previous errors.
+Begin4
+Title: myproj
+Version: 1.2.3
+Platforms: darwinamd64
+End
