@@ -51,7 +51,7 @@ func executePublisher(ctx *context.Context, publisher config.Publisher) error {
 	}
 
 	log.Debugf("filtering %d artifacts", len(ctx.Artifacts.List()))
-	artifacts := filterArtifacts(ctx.Artifacts, publisher)
+	artifacts := filterArtifacts(ctx, publisher)
 
 	extraFiles, err := extrafiles.Find(ctx, publisher.ExtraFiles)
 	if err != nil {
@@ -119,7 +119,7 @@ func executeCommand(c *command, artifact *artifact.Artifact) error {
 	return nil
 }
 
-func filterArtifacts(artifacts *artifact.Artifacts, publisher config.Publisher) []*artifact.Artifact {
+func filterArtifacts(ctx *context.Context, publisher config.Publisher) []*artifact.Artifact {
 	types := []artifact.Type{
 		artifact.UploadableArchive,
 		artifact.UploadableFile,
@@ -145,7 +145,7 @@ func filterArtifacts(artifacts *artifact.Artifacts, publisher config.Publisher) 
 		types = append(types, artifact.Signature, artifact.Certificate)
 	}
 
-	return artifacts.Filter(artifact.And(
+	return ctx.Artifacts.Filter(artifact.And(
 		artifact.ByTypes(types...),
 		artifact.ByIDs(publisher.IDs...),
 	)).List()
