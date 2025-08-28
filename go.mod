@@ -19,7 +19,7 @@ require (
 	github.com/caarlos0/log v0.5.1
 	github.com/charmbracelet/fang v0.3.0
 	github.com/charmbracelet/keygen v0.5.3
-	github.com/charmbracelet/lipgloss/v2 v2.0.0-beta1
+	github.com/charmbracelet/lipgloss/v2 v2.0.0-beta.3
 	github.com/chrismellard/docker-credential-acr-env v0.0.0-20230304212654-82a0ddb27589
 	github.com/dghubble/go-twitter v0.0.0-20211115160449-93a8679adecb
 	github.com/dghubble/oauth1 v0.7.3

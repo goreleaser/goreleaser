@@ -254,8 +254,8 @@ github.com/charmbracelet/keygen v0.5.3 h1:2MSDC62OUbDy6VmjIE2jM24LuXUvKywLCmaJDm
 github.com/charmbracelet/keygen v0.5.3/go.mod h1:TcpNoMAO5GSmhx3SgcEMqCrtn8BahKhB8AlwnLjRUpk=
 github.com/charmbracelet/lipgloss v1.1.0 h1:vYXsiLHVkK7fp74RkV7b2kq9+zDLoEU4MZoFqR/noCY=
 github.com/charmbracelet/lipgloss v1.1.0/go.mod h1:/6Q8FR2o+kj8rz4Dq0zQc3vYf7X+B0binUUBwA0aL30=
-github.com/charmbracelet/lipgloss/v2 v2.0.0-beta1 h1:SOylT6+BQzPHEjn15TIzawBPVD0QmhKXbcb3jY0ZIKU=
-github.com/charmbracelet/lipgloss/v2 v2.0.0-beta1/go.mod h1:tRlx/Hu0lo/j9viunCN2H+Ze6JrmdjQlXUQvvArgaOc=
+github.com/charmbracelet/lipgloss/v2 v2.0.0-beta.3 h1:W6DpZX6zSkZr0iFq6JVh1vItLoxfYtNlaxOJtWp8Kis=
+github.com/charmbracelet/lipgloss/v2 v2.0.0-beta.3/go.mod h1:65HTtKURcv/ict9ZQhr6zT84JqIjMcJbyrZYHHKNfKA=
 github.com/charmbracelet/x/ansi v0.8.0 h1:9GTq3xq9caJW8ZrBTe0LIe2fvfLR/bYXKTx2llXn7xE=
 github.com/charmbracelet/x/ansi v0.8.0/go.mod h1:wdYl/ONOLHLIVmQaxbIYEC/cRKOQyjTkowiI4blgS9Q=
 github.com/charmbracelet/x/cellbuf v0.0.13 h1:/KBBKHuVRbq1lYx5BzEHBAFBP8VcQzJejZ/IA3iR28k=
