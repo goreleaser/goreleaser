@@ -177,19 +177,18 @@ func refreshAll(ctx *context.Context, filepath string) error {
 }
 
 func buildArtifactList(ctx *context.Context) ([]*artifact.Artifact, error) {
-	filter := artifact.Or(
-		artifact.ByType(artifact.UploadableArchive),
-		artifact.ByType(artifact.UploadableBinary),
-		artifact.ByType(artifact.UploadableSourceArchive),
-		artifact.ByType(artifact.LinuxPackage),
-		artifact.ByType(artifact.SBOM),
-		artifact.ByType(artifact.PyWheel),
-		artifact.ByType(artifact.PySdist),
+	filter := artifact.And(
+		artifact.ByTypes(
+			artifact.UploadableArchive,
+			artifact.UploadableBinary,
+			artifact.UploadableSourceArchive,
+			artifact.LinuxPackage,
+			artifact.SBOM,
+			artifact.PyWheel,
+			artifact.PySdist,
+		),
+		artifact.ByIDs(ctx.Config.Checksum.IDs...),
 	)
-	if len(ctx.Config.Checksum.IDs) > 0 {
-		filter = artifact.And(filter, artifact.ByIDs(ctx.Config.Checksum.IDs...))
-	}
-
 	artifactList := ctx.Artifacts.Filter(filter).List()
 
 	extraFiles, err := extrafiles.Find(ctx, ctx.Config.Checksum.ExtraFiles)

@@ -568,11 +568,21 @@ func ByGoos(s string) Filter {
 	}
 }
 
+// ByGooses is a predefined filter that filters by the given goos.
+func ByGooses(in ...string) Filter {
+	return autoOr(in, ByGoos)
+}
+
 // ByGoarch is a predefined filter that filters by the given goarch.
 func ByGoarch(s string) Filter {
 	return func(a *Artifact) bool {
 		return a.Goarch == s
 	}
+}
+
+// ByGoarches is a predefined filter that filters by the given goarch.
+func ByGoarches(in ...string) Filter {
+	return autoOr(in, ByGoarch)
 }
 
 // ByGoarm is a predefined filter that filters by the given goarm.
@@ -583,12 +593,22 @@ func ByGoarm(s string) Filter {
 	}
 }
 
+// ByGoarms is a predefined filter that filters by the given goarm.
+func ByGoarms(s ...string) Filter {
+	return autoOr(s, ByGoarm)
+}
+
 // ByGoamd64 is a predefined filter that filters by the given goamd64.
 func ByGoamd64(s string) Filter {
 	return func(a *Artifact) bool {
 		return s == a.Goamd64 ||
 			(a.Goarch == "amd64" && a.Goamd64 == "" && s == "v1")
 	}
+}
+
+// ByGoamd64s is a predefined filter that filters by the given goamd64.
+func ByGoamd64s(s ...string) Filter {
+	return autoOr(s, ByGoamd64)
 }
 
 // ByType is a predefined filter that filters by the given type.
@@ -598,15 +618,21 @@ func ByType(t Type) Filter {
 	}
 }
 
+// ByTypes is a predefined filter that filters by the given type.
+func ByTypes(types ...Type) Filter {
+	return autoOr(types, ByType)
+}
+
+// ByFormat filters artifacts by a `Format` extra field.
+func ByFormat(format string) Filter {
+	return func(a *Artifact) bool {
+		return a.Format() == format
+	}
+}
+
 // ByFormats filters artifacts by a `Format` extra field.
 func ByFormats(formats ...string) Filter {
-	filters := make([]Filter, 0, len(formats))
-	for _, format := range formats {
-		filters = append(filters, func(a *Artifact) bool {
-			return a.Format() == format
-		})
-	}
-	return Or(filters...)
+	return autoOr(formats, ByFormat)
 }
 
 // Not negates the given filter.
@@ -616,34 +642,39 @@ func Not(filter Filter) Filter {
 	}
 }
 
+// ByID filter artifacts by an `ID` extra field.
+func ByID(id string) Filter {
+	return func(a *Artifact) bool {
+		// checksum and source archive are always for all artifacts, so return always true.
+		return a.Type == Checksum ||
+			a.Type == UploadableSourceArchive ||
+			a.Type == UploadableFile ||
+			a.Type == Metadata ||
+			a.ID() == id
+	}
+}
+
 // ByIDs filter artifacts by an `ID` extra field.
 func ByIDs(ids ...string) Filter {
-	filters := make([]Filter, 0, len(ids))
-	for _, id := range ids {
-		filters = append(filters, func(a *Artifact) bool {
-			// checksum and source archive are always for all artifacts, so return always true.
-			return a.Type == Checksum ||
-				a.Type == UploadableSourceArchive ||
-				a.Type == UploadableFile ||
-				a.Type == Metadata ||
-				a.ID() == id
-		})
-	}
-	return Or(filters...)
+	return autoOr(ids, ByID)
 }
 
 // ByExt filter artifact by their 'Ext' extra field.
 //
 // The comp is done ignoring the preceding '.', so `ByExt("deb")` and
 // `ByExt(".deb")` have the same result.
-func ByExt(exts ...string) Filter {
-	filters := make([]Filter, 0, len(exts))
-	for _, ext := range exts {
-		filters = append(filters, func(a *Artifact) bool {
-			return strings.TrimPrefix(a.Ext(), ".") == strings.TrimPrefix(ext, ".")
-		})
+func ByExt(ext string) Filter {
+	return func(a *Artifact) bool {
+		return strings.TrimPrefix(a.Ext(), ".") == strings.TrimPrefix(ext, ".")
 	}
-	return Or(filters...)
+}
+
+// ByExts filter artifact by their 'Ext' extra field.
+//
+// The comp is done ignoring the preceding '.', so `ByExt("deb")` and
+// `ByExt(".deb")` have the same result.
+func ByExts(exts ...string) Filter {
+	return autoOr(exts, ByExt)
 }
 
 // ByBinaryLikeArtifacts filter artifacts down to artifacts that are Binary, UploadableBinary, or UniversalBinary,
@@ -670,10 +701,10 @@ func ByBinaryLikeArtifacts(arts *Artifacts) Filter {
 
 	return And(
 		// allow all of the binary-like artifacts as possible...
-		Or(
-			ByType(Binary),
-			ByType(UploadableBinary),
-			ByType(UniversalBinary),
+		ByTypes(
+			Binary,
+			UploadableBinary,
+			UniversalBinary,
 		),
 		// ... but remove any duplicates found
 		deduplicateByPath,
@@ -684,7 +715,7 @@ func ByBinaryLikeArtifacts(arts *Artifacts) Filter {
 func Or(filters ...Filter) Filter {
 	return func(a *Artifact) bool {
 		for _, f := range filters {
-			if f(a) {
+			if f == nil || f(a) {
 				return true
 			}
 		}
@@ -696,7 +727,7 @@ func Or(filters ...Filter) Filter {
 func And(filters ...Filter) Filter {
 	return func(a *Artifact) bool {
 		for _, f := range filters {
-			if !f(a) {
+			if f != nil && !f(a) {
 				return false
 			}
 		}
@@ -756,4 +787,34 @@ func cleanName(a Artifact) string {
 			Warn("removed trailing whitespaces from artifact name")
 	}
 	return result
+}
+
+// autoOr automatically creates an [Or] filter with the given input and the
+// given [Filter].
+//
+// If the input is empty, it'll return nil.
+// If the inputs's length is 1, it'll return [Filter] with it as input.
+// Otherwise, it'll return the filter for each item in the input, wrapped in an
+// [Or] filter.
+//
+// Basically, these two statements are the same:
+//
+//	Or(ByGoos("linux"), ByGoos("darwin"))
+//	autoOr([]string{"linux", "darwin"}, ByGoos)
+//	ByGooses("linux", "darwin")
+//
+// This should help reducing the amount of handling around that in the codebase.
+func autoOr[T any](input []T, filter func(T) Filter) Filter {
+	switch len(input) {
+	case 0:
+		return nil
+	case 1:
+		return filter(input[0])
+	default:
+		filters := make([]Filter, 0, len(input))
+		for _, s := range input {
+			filters = append(filters, filter(s))
+		}
+		return Or(filters...)
+	}
 }

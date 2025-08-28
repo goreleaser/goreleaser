@@ -120,38 +120,35 @@ func executeCommand(c *command, artifact *artifact.Artifact) error {
 }
 
 func filterArtifacts(artifacts *artifact.Artifacts, publisher config.Publisher) []*artifact.Artifact {
-	filters := []artifact.Filter{
-		artifact.ByType(artifact.UploadableArchive),
-		artifact.ByType(artifact.UploadableFile),
-		artifact.ByType(artifact.LinuxPackage),
-		artifact.ByType(artifact.UploadableBinary),
-		artifact.ByType(artifact.DockerImage),
-		artifact.ByType(artifact.DockerManifest),
-		artifact.ByType(artifact.UploadableSourceArchive),
-		artifact.ByType(artifact.SBOM),
-		artifact.ByType(artifact.PySdist),
-		artifact.ByType(artifact.PyWheel),
+	types := []artifact.Type{
+		artifact.UploadableArchive,
+		artifact.UploadableFile,
+		artifact.LinuxPackage,
+		artifact.UploadableBinary,
+		artifact.DockerImage,
+		artifact.DockerManifest,
+		artifact.UploadableSourceArchive,
+		artifact.SBOM,
+		artifact.PySdist,
+		artifact.PyWheel,
 	}
 
 	if publisher.Checksum {
-		filters = append(filters, artifact.ByType(artifact.Checksum))
+		types = append(types, artifact.Checksum)
 	}
 
 	if publisher.Meta {
-		filters = append(filters, artifact.ByType(artifact.Metadata))
+		types = append(types, artifact.Metadata)
 	}
 
 	if publisher.Signature {
-		filters = append(filters, artifact.ByType(artifact.Signature), artifact.ByType(artifact.Certificate))
+		types = append(types, artifact.Signature, artifact.Certificate)
 	}
 
-	filter := artifact.Or(filters...)
-
-	if len(publisher.IDs) > 0 {
-		filter = artifact.And(filter, artifact.ByIDs(publisher.IDs...))
-	}
-
-	return artifacts.Filter(filter).List()
+	return artifacts.Filter(artifact.And(
+		artifact.ByTypes(types...),
+		artifact.ByIDs(publisher.IDs...),
+	)).List()
 }
 
 type command struct {

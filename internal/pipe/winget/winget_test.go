@@ -749,10 +749,10 @@ func TestRunPipe(t *testing.T) {
 			}
 
 			require.NoError(t, pipe.runAll(ctx, client))
-			for _, winget := range ctx.Artifacts.Filter(artifact.Or(
-				artifact.ByType(artifact.WingetInstaller),
-				artifact.ByType(artifact.WingetVersion),
-				artifact.ByType(artifact.WingetDefaultLocale),
+			for _, winget := range ctx.Artifacts.Filter(artifact.ByTypes(
+				artifact.WingetInstaller,
+				artifact.WingetVersion,
+				artifact.WingetDefaultLocale,
 			)).List() {
 				bts, err := os.ReadFile(winget.Path)
 				require.NoError(t, err)
@@ -872,10 +872,10 @@ func TestFormatBinary(t *testing.T) {
 
 	require.NoError(t, pipe.Default(ctx))
 	require.NoError(t, pipe.runAll(ctx, client))
-	for _, winget := range ctx.Artifacts.Filter(artifact.Or(
-		artifact.ByType(artifact.WingetInstaller),
-		artifact.ByType(artifact.WingetVersion),
-		artifact.ByType(artifact.WingetDefaultLocale),
+	for _, winget := range ctx.Artifacts.Filter(artifact.ByTypes(
+		artifact.WingetInstaller,
+		artifact.WingetVersion,
+		artifact.WingetDefaultLocale,
 	)).List() {
 		bts, err := os.ReadFile(winget.Path)
 		require.NoError(t, err)

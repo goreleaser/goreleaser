@@ -123,9 +123,9 @@ func doRun(ctx *context.Context, aur config.AUR, cl client.ReleaseURLTemplater) 
 				),
 			),
 		),
-		artifact.Or(
-			artifact.ByType(artifact.UploadableArchive),
-			artifact.ByType(artifact.UploadableBinary),
+		artifact.ByTypes(
+			artifact.UploadableArchive,
+			artifact.UploadableBinary,
 		),
 	}
 	if len(aur.IDs) > 0 {

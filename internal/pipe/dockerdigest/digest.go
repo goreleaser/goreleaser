@@ -42,10 +42,10 @@ func (Pipe) Default(ctx *context.Context) error {
 // it needs to run in the publishing phase, after docker images are pushed.
 func (Pipe) Publish(ctx *context.Context) error {
 	images := ctx.Artifacts.Filter(
-		artifact.Or(
-			artifact.ByType(artifact.DockerImageV2),
-			artifact.ByType(artifact.DockerImage),
-			artifact.ByType(artifact.DockerManifest),
+		artifact.ByTypes(
+			artifact.DockerImageV2,
+			artifact.DockerImage,
+			artifact.DockerManifest,
 		),
 	).List()
 	slices.SortFunc(images, func(a, b *artifact.Artifact) int {
