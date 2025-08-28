@@ -34,6 +34,20 @@ makeselfs:
     ids:
       - my-binary
 
+    # Which OSes to create the packages for.
+    #
+    # Default: [linux darwin].
+    goos:
+      - linux
+      - darwin
+
+    # Which architectures to create the packages for.
+    #
+    # Default: empty (all architectures).
+    goarch:
+      - arm64
+      - amd64
+
     # Name of the package.
     #
     # Default: '{{ .ProjectName }}'.

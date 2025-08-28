@@ -48,6 +48,7 @@ func TestDefault(t *testing.T) {
 				ID:       "custom",
 				Name:     "custom",
 				Filename: "custom_{{.Os}}_{{.Arch}}.bin",
+				Goos:     []string{"freebsd"},
 			},
 		},
 	})
@@ -59,11 +60,13 @@ func TestDefault(t *testing.T) {
 	require.Equal(t, "default", m1.ID)
 	require.NotEmpty(t, m1.Name)
 	require.Equal(t, defaultNameTemplate, m1.Filename)
+	require.Len(t, m1.Goos, 2)
 
 	m2 := ctx.Config.Makeselfs[1]
 	require.Equal(t, "custom", m2.ID)
 	require.Equal(t, "custom", m2.Name)
 	require.Equal(t, "custom_{{.Os}}_{{.Arch}}.bin", m2.Filename)
+	require.Len(t, m2.Goos, 1)
 }
 
 func TestRunSimple(t *testing.T) {

@@ -51,6 +51,9 @@ func (Pipe) Default(ctx *context.Context) error {
 		if cfg.Name == "" {
 			cfg.Name = "{{ .ProjectName }}"
 		}
+		if len(cfg.Goos) == 0 {
+			cfg.Goos = []string{"linux", "darwin"}
+		}
 		ids.Inc(cfg.ID)
 	}
 	return ids.Validate()
