@@ -59,7 +59,7 @@ jobs:
           install-only: true
       - name: setup-makeself
         if: matrix.os == 'ubuntu-latest'
-        run: apt install -yq makeself
+        run: sudo apt install -yq makeself
       - uses: cachix/install-nix-action@v31
         if: matrix.os == 'ubuntu-latest'
         with:
