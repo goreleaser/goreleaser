@@ -91,7 +91,9 @@ func doRun(ctx *context.Context, cfg config.Makeself) error {
 	return g.Wait()
 }
 
-// https://ibiblio.org/pub/linux/LSM-TEMPLATE.html
+// LSM file representation.
+//
+// See: https://ibiblio.org/pub/linux/LSM-TEMPLATE.html
 type LSM struct {
 	Title         string
 	Version       string
@@ -104,6 +106,7 @@ type LSM struct {
 	CopyingPolicy string
 }
 
+// String implements the Stringer interface.
 func (l LSM) String() string {
 	var sb strings.Builder
 	_, _ = sb.WriteString("Begin4\n")
