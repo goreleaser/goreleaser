@@ -168,16 +168,18 @@ func TestRun(t *testing.T) {
 	})
 }
 
-func requireEqualLSM(t testing.TB, path string) {
-	out, err := exec.CommandContext(t.Context(), path, "--lsm").CombinedOutput()
-	require.NoError(t, err, string(out))
-	golden.RequireEqualExt(t, out, ".lsm")
+func requireEqualLSM(tb testing.TB, path string) {
+	tb.Helper()
+	out, err := exec.CommandContext(tb.Context(), path, "--lsm").CombinedOutput()
+	require.NoError(tb, err, string(out))
+	golden.RequireEqualExt(tb, out, ".lsm")
 }
 
-func requireContainsFiles(t testing.TB, path string, files ...string) {
-	out, err := exec.CommandContext(t.Context(), path, "--list").CombinedOutput()
-	require.NoError(t, err, string(out))
+func requireContainsFiles(tb testing.TB, path string, files ...string) {
+	tb.Helper()
+	out, err := exec.CommandContext(tb.Context(), path, "--list").CombinedOutput()
+	require.NoError(tb, err, string(out))
 	for _, f := range files {
-		require.Contains(t, string(out), f)
+		require.Contains(tb, string(out), f)
 	}
 }
