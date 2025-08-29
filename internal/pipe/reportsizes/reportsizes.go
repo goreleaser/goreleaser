@@ -20,6 +20,7 @@ func (Pipe) Run(ctx *context.Context) error {
 		artifact.Binary,
 		artifact.UniversalBinary,
 		artifact.UploadableArchive,
+		artifact.Makeself,
 		artifact.PublishableSnapcraft,
 		artifact.LinuxPackage,
 		artifact.CArchive,
