@@ -63,7 +63,9 @@ func (Pipe) Default(ctx *context.Context) error {
 func (Pipe) Run(ctx *context.Context) error {
 	g := semerrgroup.NewSkipAware(semerrgroup.New(ctx.Parallelism))
 	for _, cfg := range ctx.Config.Makeselfs {
-		return doRun(ctx, cfg)
+		g.Go(func() error {
+			return doRun(ctx, cfg)
+		})
 	}
 	return g.Wait()
 }
