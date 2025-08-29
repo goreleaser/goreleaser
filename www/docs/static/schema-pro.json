@@ -2892,6 +2892,129 @@
 					"notarize"
 				]
 			},
+			"Makeself": {
+				"properties": {
+					"id": {
+						"type": "string"
+					},
+					"filename": {
+						"type": "string"
+					},
+					"script": {
+						"type": "string"
+					},
+					"compression": {
+						"type": "string",
+						"enum": [
+							"gzip",
+							"bzip2",
+							"xz",
+							"lzo",
+							"compress",
+							"none"
+						]
+					},
+					"extra_args": {
+						"items": {
+							"type": "string"
+						},
+						"type": "array"
+					},
+					"files": {
+						"items": {
+							"$ref": "#/$defs/MakeselfFile"
+						},
+						"type": "array"
+					},
+					"disable": {
+						"oneOf": [
+							{
+								"type": "string"
+							},
+							{
+								"type": "boolean"
+							}
+						]
+					},
+					"ids": {
+						"items": {
+							"type": "string"
+						},
+						"type": "array"
+					},
+					"goos": {
+						"items": {
+							"type": "string"
+						},
+						"type": "array"
+					},
+					"goarch": {
+						"items": {
+							"type": "string"
+						},
+						"type": "array"
+					},
+					"name": {
+						"type": "string"
+					},
+					"description": {
+						"type": "string"
+					},
+					"maintainer": {
+						"type": "string"
+					},
+					"keywords": {
+						"items": {
+							"type": "string"
+						},
+						"type": "array"
+					},
+					"homepage": {
+						"type": "string"
+					},
+					"license": {
+						"type": "string"
+					},
+					"templated_files": {
+						"items": {
+							"$ref": "#/$defs/MakeselfTemplatedFile"
+						},
+						"type": "array"
+					}
+				},
+				"additionalProperties": false,
+				"type": "object",
+				"required": [
+					"script"
+				]
+			},
+			"MakeselfFile": {
+				"properties": {
+					"src": {
+						"type": "string"
+					},
+					"dst": {
+						"type": "string"
+					},
+					"strip_parent": {
+						"type": "boolean"
+					}
+				},
+				"additionalProperties": false,
+				"type": "object"
+			},
+			"MakeselfTemplatedFile": {
+				"properties": {
+					"src": {
+						"type": "string"
+					},
+					"dst": {
+						"type": "string"
+					}
+				},
+				"additionalProperties": false,
+				"type": "object"
+			},
 			"Mastodon": {
 				"properties": {
 					"enabled": {
@@ -4132,9 +4255,9 @@
 					"metadata": {
 						"$ref": "#/$defs/ProjectMetadata"
 					},
-					"template_files": {
+					"makeselfs": {
 						"items": {
-							"$ref": "#/$defs/TemplateFile"
+							"$ref": "#/$defs/Makeself"
 						},
 						"type": "array"
 					},
@@ -4208,6 +4331,12 @@
 					"before_publish": {
 						"items": {
 							"$ref": "#/$defs/BeforePublishHook"
+						},
+						"type": "array"
+					},
+					"template_files": {
+						"items": {
+							"$ref": "#/$defs/TemplateFile"
 						},
 						"type": "array"
 					},

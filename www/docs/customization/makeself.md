@@ -131,6 +131,17 @@ makeselfs:
         # Strip parent directories when adding files to the archive.
         strip_parent: true
 
+    # Additional templated files to add to the package.
+    # Those files will have their contents pass through the template engine,
+    # and its results will be added to the source archive.
+    #
+    # This feature is only available in GoReleaser Pro.
+    # Templates: allowed.
+    templated_files:
+      # a more complete example, check the globbing deep dive below
+      - src: "LICENSE.md.tpl"
+        dst: LICENSE.md
+
     # Disable this Makeself package.
     # Templates: allowed.
     disable: "{{ .Env.SKIP_MAKESELF }}"
