@@ -14,6 +14,7 @@ import (
 	"github.com/goreleaser/goreleaser/v2/internal/testctx"
 	"github.com/goreleaser/goreleaser/v2/internal/testlib"
 	"github.com/goreleaser/goreleaser/v2/pkg/config"
+	"github.com/goreleaser/goreleaser/v2/pkg/context"
 	"github.com/stretchr/testify/require"
 )
 
@@ -69,40 +70,14 @@ func TestDefault(t *testing.T) {
 	require.Len(t, m2.Goos, 1)
 }
 
-func TestRunSimple(t *testing.T) {
-	testlib.SkipIfWindows(t, "no makeself on windows")
-	testlib.CheckPath(t, "makeself")
+func makeContext(tb testing.TB) *context.Context {
+	tb.Helper()
 	ctx := testctx.NewWithCfg(config.Project{
 		ProjectName: "myproj",
-		Dist:        t.TempDir(),
-		Makeselfs: []config.Makeself{
-			{
-				ID:     "simple",
-				Script: "./testdata/setup.sh",
-			},
-			{
-				ID:          "complete",
-				Script:      "./testdata/setup.sh",
-				Description: "My thing",
-				Keywords:    []string{"one", "two"},
-				Homepage:    "https://goreleaser.com",
-				Maintainer:  "me",
-				License:     "MIT",
-				Goos:        []string{"linux"},
-				Goarch:      []string{"arm64"},
-				Compression: "gzip",
-				ExtraArgs:   []string{"--notemp"},
-				Files: []config.MakeselfFile{
-					{
-						Source:      "./testdata/foo.txt",
-						Destination: "docs/foo.txt",
-					},
-				},
-			},
-		},
+		Dist:        tb.TempDir(),
 	}, testctx.WithVersion("1.2.3"))
-	tmp := t.TempDir()
-	require.NoError(t, os.WriteFile(
+	tmp := tb.TempDir()
+	require.NoError(tb, os.WriteFile(
 		filepath.Join(tmp, "mybin"),
 		[]byte("#!/bin/sh\necho hi"),
 		0o755,
@@ -118,11 +93,21 @@ func TestRunSimple(t *testing.T) {
 			})
 		}
 	}
+	return ctx
+}
 
-	require.NoError(t, Pipe{}.Default(ctx))
-	require.NoError(t, Pipe{}.Run(ctx))
+func TestRun(t *testing.T) {
+	testlib.SkipIfWindows(t, "no makeself on windows")
+	testlib.CheckPath(t, "makeself")
 
 	t.Run("simple", func(t *testing.T) {
+		ctx := makeContext(t)
+		ctx.Config.Makeselfs = append(ctx.Config.Makeselfs, config.Makeself{
+			ID:     "simple",
+			Script: "./testdata/setup.sh",
+		})
+		require.NoError(t, Pipe{}.Default(ctx))
+		require.NoError(t, Pipe{}.Run(ctx))
 		result := ctx.Artifacts.Filter(
 			artifact.And(
 				artifact.ByType(artifact.Makeself),
@@ -139,20 +124,33 @@ func TestRunSimple(t *testing.T) {
 		slices.SortFunc(result, func(a, b *artifact.Artifact) int {
 			return strings.Compare(a.Path, b.Path)
 		})
-		t.Run("list", func(t *testing.T) {
-			out, err := exec.CommandContext(t.Context(), result[0].Path, "--list").CombinedOutput()
-			require.NoError(t, err, string(out))
-			require.Contains(t, string(out), "mybin")
-			require.Contains(t, string(out), "package.lsm")
-			require.Contains(t, string(out), "script.sh")
-		})
-		t.Run("lsm", func(t *testing.T) {
-			out, err := exec.CommandContext(t.Context(), result[0].Path, "--lsm").CombinedOutput()
-			require.NoError(t, err, string(out))
-			golden.RequireEqualExt(t, out, ".lsm")
-		})
+
+		requireContainsFiles(t, result[0].Path, "mybin", "package.lsm", "script.sh")
+		requireEqualLSM(t, result[0].Path)
 	})
 	t.Run("complete", func(t *testing.T) {
+		ctx := makeContext(t)
+		ctx.Config.Makeselfs = append(ctx.Config.Makeselfs, config.Makeself{
+			ID:          "complete",
+			Script:      "./testdata/setup.sh",
+			Description: "My thing",
+			Keywords:    []string{"one", "two"},
+			Homepage:    "https://goreleaser.com",
+			Maintainer:  "me",
+			License:     "MIT",
+			Goos:        []string{"linux"},
+			Goarch:      []string{"arm64"},
+			Compression: "gzip",
+			ExtraArgs:   []string{"--notemp"},
+			Files: []config.MakeselfFile{
+				{
+					Source:      "./testdata/foo.txt",
+					Destination: "docs/foo.txt",
+				},
+			},
+		})
+		require.NoError(t, Pipe{}.Default(ctx))
+		require.NoError(t, Pipe{}.Run(ctx))
 		result := ctx.Artifacts.Filter(
 			artifact.And(
 				artifact.ByType(artifact.Makeself),
@@ -165,17 +163,21 @@ func TestRunSimple(t *testing.T) {
 		require.Equal(t, "makeself", artifact.ExtraOr(*m, artifact.ExtraFormat, ""))
 		require.Equal(t, ".run", artifact.ExtraOr(*m, artifact.ExtraExt, ""))
 
-		t.Run("list", func(t *testing.T) {
-			out, err := exec.CommandContext(t.Context(), result[0].Path, "--list").CombinedOutput()
-			require.NoError(t, err, string(out))
-			require.Contains(t, string(out), "mybin")
-			require.Contains(t, string(out), "package.lsm")
-			require.Contains(t, string(out), "script.sh")
-		})
-		t.Run("lsm", func(t *testing.T) {
-			out, err := exec.CommandContext(t.Context(), result[0].Path, "--lsm").CombinedOutput()
-			require.NoError(t, err, string(out))
-			golden.RequireEqualExt(t, out, ".lsm")
-		})
+		requireContainsFiles(t, result[0].Path, "mybin", "package.lsm", "script.sh", "docs/foo.txt")
+		requireEqualLSM(t, result[0].Path)
 	})
+}
+
+func requireEqualLSM(t testing.TB, path string) {
+	out, err := exec.CommandContext(t.Context(), path, "--lsm").CombinedOutput()
+	require.NoError(t, err, string(out))
+	golden.RequireEqualExt(t, out, ".lsm")
+}
+
+func requireContainsFiles(t testing.TB, path string, files ...string) {
+	out, err := exec.CommandContext(t.Context(), path, "--list").CombinedOutput()
+	require.NoError(t, err, string(out))
+	for _, f := range files {
+		require.Contains(t, string(out), f)
+	}
 }
