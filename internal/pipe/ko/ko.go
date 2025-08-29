@@ -53,9 +53,9 @@ var (
 		azureKeychain,
 	)
 
-	errNoRepositories    = errors.New("ko: missing repositories: please set either the repository field or a $KO_DOCKER_REPO environment variable")
-	errInvalidMainPath   = errors.New("ko: invalid Main path: ko.main (or build.main if ko.main is not set) should be a relative path")
-	errInvalidMainGoPath = errors.New("ko: invalid Main path: your path should point to a directory instead of a .go file")
+	errNoRepositories    = errors.New("missing repositories: please set either the repository field or a $KO_DOCKER_REPO environment variable")
+	errInvalidMainPath   = errors.New("invalid Main path: ko.main (or build.main if ko.main is not set) should be a relative path")
+	errInvalidMainGoPath = errors.New("invalid Main path: your path should point to a directory instead of a .go file")
 )
 
 // Pipe that build OCI compliant images with ko.
@@ -380,14 +380,14 @@ func buildBuildOptions(ctx *context.Context, cfg config.Ko) (*buildOptions, erro
 	}, localImportPath)
 	if err != nil {
 		return nil, fmt.Errorf(
-			"ko: %s does not contain a valid local import path (%s) for directory (%s): %w",
+			"%s does not contain a valid local import path (%s) for directory (%s): %w",
 			cfg.ID, localImportPath, cfg.WorkingDir, err,
 		)
 	}
 
 	if len(pkgs) != 1 {
 		return nil, fmt.Errorf(
-			"ko: %s results in %d local packages, only 1 is expected",
+			"%s results in %d local packages, only 1 is expected",
 			cfg.ID, len(pkgs),
 		)
 	}
@@ -538,11 +538,11 @@ func copyImage(src, dst string) (string, error) {
 		WithField("dst", dst).
 		Info("copying manifest")
 	if err := crane.Copy(src, dst, crane.WithAuthFromKeychain(keychain)); err != nil {
-		return "", fmt.Errorf("ko: could not copy %q to %q: %w", src, dst, err)
+		return "", fmt.Errorf("could not copy %q to %q: %w", src, dst, err)
 	}
 	digest, err := crane.Digest(dst, crane.WithAuthFromKeychain(keychain))
 	if err != nil {
-		return "", fmt.Errorf("ko: could not get digest of %q: %w", dst, err)
+		return "", fmt.Errorf("could not get digest of %q: %w", dst, err)
 	}
 	return digest, nil
 }
