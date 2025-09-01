@@ -50,3 +50,37 @@ to oldest, so the latest tag is returned.
 
 This has the effect of sorting non-pre-release tags before pre-release ones,
 which is different from what other git sorting options might give you.
+
+## Smart semver sorting
+
+<!-- md:version v2.12-unreleased -->
+
+<!-- md:alpha -->
+
+<!-- md:featpro -->
+
+Like semver sorting, but smarter: if the current version is not a pre-release,
+it'll search for previous tags that are not pre-releases.
+
+Imagine you have a history like this:
+
+```
+v0.1.0
+v0.2.0-beta.1
+v0.2.0-beta.2
+v0.2.0-beta.3
+v0.2.0
+```
+
+And you want to release v0.2.0.
+Usually, GoReleaser would get v0.2.0-beta.3 as previous version, but that's
+likely not what most people would expect.
+Smart semver will ignore pre-release versions in these cases, making the release
+notes more complete.
+
+To use it, add this to your configuration:
+
+```yaml title=".goreleaser.yaml"
+git:
+  tag_sort: smartsemver
+```
