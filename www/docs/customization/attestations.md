@@ -20,11 +20,12 @@ jobs:
         with:
           # ...
       # After GoReleaser runs, attest all the files in ./dist/checksums.txt:
-      - uses: actions/attest-build-provenance@v2
+      - uses: actions/attest-build-provenance@v3
         with:
           subject-checksums: ./dist/checksums.txt
       # After GoReleaser runs, attest all the images in ./dist/digests.txt:
-      - uses: actions/attest-build-provenance@v2
+      - uses: actions/attest-build-provenance@v3
+        if: startsWith(github.ref, 'refs/tags/v') # snapshots won't push docker images
         with:
           subject-checksums: ./dist/digests.txt
 ```

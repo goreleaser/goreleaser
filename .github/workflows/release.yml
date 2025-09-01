@@ -168,6 +168,7 @@ jobs:
         with:
           subject-checksums: ./dist/checksums.txt
       - uses: actions/attest-build-provenance@v3
+        if: startsWith(github.ref, 'refs/tags/v') # snapshots won't push docker images
         with:
           subject-checksums: ./dist/digests.txt
       - run: df -h
