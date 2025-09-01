@@ -72,9 +72,8 @@ Please refer to our [contributing guidelines](CONTRIBUTING.md) for further infor
 
 ## GitHub Sponsors
 
-High-tier sponsors of [@caarlos0](https://github.com/sponsors/caarlos0/) on GitHub:
-
-<a href="https://smallstep.com" target="_blank"><img width="200" src="https://github.com/goreleaser/goreleaser/assets/245435/05ade839-6652-474a-af90-da3ea67dde24"></a>
+Sponsor [@caarlos0 on GitHub](https://github.com/sponsors/caarlos0/) to get
+featured here.
 
 ## OpenCollective
 
