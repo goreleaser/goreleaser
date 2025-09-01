@@ -127,6 +127,7 @@ func filterArtifacts(ctx *context.Context, publisher config.Publisher) []*artifa
 		artifact.UploadableBinary,
 		artifact.DockerImage,
 		artifact.DockerManifest,
+		artifact.DockerImageV2,
 		artifact.UploadableSourceArchive,
 		artifact.SBOM,
 		artifact.PySdist,
