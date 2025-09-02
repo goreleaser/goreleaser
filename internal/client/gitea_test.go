@@ -458,7 +458,7 @@ func (s *GiteaUploadSuite) TestErrorCreatingReleaseAttachment() {
 	httpmock.RegisterResponder("POST", s.releaseAttachmentsURL, httpmock.NewStringResponder(400, ""))
 
 	err := s.client.Upload(s.ctx, fmt.Sprint(s.releaseID), s.artifact, s.file)
-	require.True(t, strings.HasPrefix(err.Error(), "Unknown API Error: 400"))
+	require.ErrorContains(t, err, "unknown API error: 400")
 }
 
 func (s *GiteaUploadSuite) TestSuccess() {
