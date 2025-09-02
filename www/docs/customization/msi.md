@@ -56,7 +56,7 @@ msi:
     # Whether to disable this particular MSI configuration.
     #
     # Templates: allowed.
-    # <!-- md:inline_version v2.12-unreleased -->.
+    # <!-- md:inline_version v2.12 -->.
     disable: "{{ .IsSnapshot }}"
 
     # Whether to remove the archives from the artifact list.

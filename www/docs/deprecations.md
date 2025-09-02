@@ -193,7 +193,7 @@ property will eventually be deprecated and removed.
 
 ### homebrew_casks.conflicts.formula
 
-> since v2.12-unreleased
+> since v2.12
 
 It was a no-op before, and is now
 [removed from Homebrew](https://github.com/Homebrew/brew/pull/20499).

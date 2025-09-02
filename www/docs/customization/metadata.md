@@ -68,7 +68,7 @@ metadata:
   # Default git author used to commit to AUR, Homebrew, Winget, Nix, etc.
   #
   # <!-- md:inline_pro -->.
-  # <!-- md:inline_version v2.12-unreleased -->.
+  # <!-- md:inline_version v2.12 -->.
   commit_author:
     # Git author name.
     #

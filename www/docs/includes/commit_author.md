@@ -5,7 +5,7 @@ search:
 
     # Git author used to commit to the repository.
     #
-    # Default: inferred from global metadata (Since v2.12-unreleased).
+    # Default: inferred from global metadata (Since v2.12).
     commit_author:
       # Git author name.
       #
@@ -41,4 +41,3 @@ search:
         # Valid options: openpgp, x509, ssh.
         # Default: openpgp.
         format: openpgp
-

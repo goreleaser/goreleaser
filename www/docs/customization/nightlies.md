@@ -38,7 +38,7 @@ nightly:
   # end up with no published nightly releases.
   #
   # Default: value of 'release.draft'.
-  # <!-- md:inline_version v2.12-unreleased -->
+  # <!-- md:inline_version v2.12 -->
   draft: true
 ```
 
