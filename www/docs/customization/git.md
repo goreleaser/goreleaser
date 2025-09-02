@@ -72,11 +72,14 @@ v0.2.0-beta.3
 v0.2.0
 ```
 
-And you want to release v0.2.0.
-Usually, GoReleaser would get v0.2.0-beta.3 as previous version, but that's
-likely not what most people would expect.
+And you want to release `v0.2.0`.
+Usually, GoReleaser would get `v0.2.0-beta.3` as previous version, but that's
+likely not what most people would expect (`v0.1.0`).
 Smart semver will ignore pre-release versions in these cases, making the release
 notes more complete.
+
+If you were to release `v0.2.0-beta.3`, though, it would still get
+`v0.2.0-beta.2` as previous version, which I think makes sense.
 
 To use it, add this to your configuration:
 
