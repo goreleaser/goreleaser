@@ -55,8 +55,8 @@ func TestRun(t *testing.T) {
 		})
 	}
 
-	require.NoError(t, Pipe{}.Default(ctx))
-	err := Pipe{}.Run(ctx)
+	require.NoError(t, Base{}.Default(ctx))
+	err := Snapshot{}.Run(ctx)
 	require.NoError(t, err, "message: %s, output: %v", gerrors.MessageOf(err), gerrors.DetailsOf(err))
 
 	images := ctx.Artifacts.Filter(
@@ -144,9 +144,8 @@ func TestPublish(t *testing.T) {
 		})
 	}
 
-	require.NoError(t, Pipe{}.Default(ctx))
-	testlib.AssertSkipped(t, Pipe{}.Run(ctx)) // should be skipped in non-snapshot builds
-	err := Pipe{}.Publish(ctx)
+	require.NoError(t, Base{}.Default(ctx))
+	err := Publish{}.Publish(ctx)
 	require.NoError(t, err, "message: %s, output: %v", gerrors.MessageOf(err), gerrors.DetailsOf(err))
 
 	images := ctx.Artifacts.Filter(artifact.ByType(artifact.DockerImageV2)).List()

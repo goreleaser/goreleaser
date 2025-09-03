@@ -17,11 +17,11 @@ import (
 )
 
 func TestString(t *testing.T) {
-	require.NotEmpty(t, Pipe{}.String())
+	require.NotEmpty(t, Base{}.String())
 }
 
 func TestDependencies(t *testing.T) {
-	require.Equal(t, []string{"docker buildx"}, Pipe{}.Dependencies(nil))
+	require.Equal(t, []string{"docker buildx"}, Base{}.Dependencies(nil))
 }
 
 func TestSkip(t *testing.T) {
@@ -29,17 +29,29 @@ func TestSkip(t *testing.T) {
 		ctx := testctx.NewWithCfg(config.Project{
 			DockersV2: []config.DockerV2{{}},
 		}, testctx.Skip(skips.Docker))
-		require.True(t, Pipe{}.Skip(ctx))
+		require.True(t, Base{}.Skip(ctx))
 	})
 	t.Run("no dockers", func(t *testing.T) {
 		ctx := testctx.NewWithCfg(config.Project{})
-		require.True(t, Pipe{}.Skip(ctx))
+		require.True(t, Base{}.Skip(ctx))
 	})
 	t.Run("don't skip", func(t *testing.T) {
 		ctx := testctx.NewWithCfg(config.Project{
 			DockersV2: []config.DockerV2{{}},
 		})
-		require.False(t, Pipe{}.Skip(ctx))
+		require.False(t, Base{}.Skip(ctx))
+	})
+	t.Run("snapshot don't skip snapshot", func(t *testing.T) {
+		ctx := testctx.NewWithCfg(config.Project{
+			DockersV2: []config.DockerV2{{}},
+		}, testctx.Snapshot)
+		require.False(t, Snapshot{}.Skip(ctx))
+	})
+	t.Run("snapshot skip non snapshot", func(t *testing.T) {
+		ctx := testctx.NewWithCfg(config.Project{
+			DockersV2: []config.DockerV2{{}},
+		})
+		require.True(t, Snapshot{}.Skip(ctx))
 	})
 }
 
@@ -48,7 +60,7 @@ func TestDefault(t *testing.T) {
 		ProjectName: "dockerv2",
 		DockersV2:   []config.DockerV2{{}},
 	})
-	require.NoError(t, Pipe{}.Default(ctx))
+	require.NoError(t, Base{}.Default(ctx))
 	d := ctx.Config.DockersV2[0]
 	require.NotEmpty(t, d.ID)
 	require.NotEmpty(t, d.Dockerfile)
