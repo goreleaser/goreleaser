@@ -122,19 +122,11 @@ blobs:
     # Disable by setting the value to '-'
     content_disposition: "inline"
 
-  - provider: gs
-    bucket: goreleaser-bucket
-    directory: "foo/bar/{{.Version}}"
-  - provider: s3
-    bucket: goreleaser-bucket
-    directory: "foo/bar/{{.Version}}"
+    # Upload metadata.json and artifacts.json to the release as well.
+    include_meta: true
 
-
-  # Upload metadata.json and artifacts.json to the release as well.
-  include_meta: true
-
-  # Upload only the files defined in extra_files.
-  extra_files_only: true
+    # Upload only the files defined in extra_files.
+    extra_files_only: true
 ```
 
 <!-- md:templates -->
