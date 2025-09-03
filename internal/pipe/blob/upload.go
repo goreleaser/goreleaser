@@ -175,7 +175,7 @@ func artifactList(ctx *context.Context, conf config.Blob) []*artifact.Artifact {
 	if conf.IncludeMeta {
 		types = append(types, artifact.Metadata)
 	}
-	return ctx.Artifacts.Filter(artifact.Or(
+	return ctx.Artifacts.Filter(artifact.And(
 		artifact.ByTypes(types...),
 		artifact.ByIDs(conf.IDs...),
 	)).List()
