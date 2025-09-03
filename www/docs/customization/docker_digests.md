@@ -1,6 +1,6 @@
 # Docker Digests
 
-<!-- md:version v2.12-unreleased -->
+<!-- md:version v2.12 -->
 
 Creates a `digests.txt` file with the digests and image names of all images and
 manifests published.

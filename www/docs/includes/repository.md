@@ -63,7 +63,7 @@ search:
         # If the repository has a pull request template, it will be appended to
         # this.
         #
-        # <!-- md:inline_version v2.12-unreleased -->
+        # <!-- md:inline_version v2.12 -->
         body: |
           cc/ @foobar
 
@@ -106,7 +106,7 @@ search:
     # Git author used to commit to the repository.
     #
     # <!-- md:inline_version v2.11 -->
-    # Default: inferred from global metadata (Since v2.12-unreleased).
+    # Default: inferred from global metadata (Since v2.12).
     commit_author:
       # Git author name.
       #

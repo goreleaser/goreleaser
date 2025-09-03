@@ -199,13 +199,13 @@ artifactories:
 
     # An optional username that will be used for the deployment for basic auth.
     #
-    # Templates: allowed (since v2.12-unreleased).
+    # Templates: allowed (since v2.12).
     username: deployuser
 
     # An optional password that will be used for the deployment for basic auth.
     #
     # Templates: allowed.
-    # <!-- md:inline_version v2.12-unreleased -->.
+    # <!-- md:inline_version v2.12 -->.
     password: '{{ readFile "~/.config/foo" }}'
 
     # Client certificate and key (when provided, added as client cert to TLS connections)

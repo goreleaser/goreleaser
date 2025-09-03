@@ -2,7 +2,7 @@
 
 <!-- md:alpha -->
 
-<!-- md:version v2.12-unreleased -->
+<!-- md:version v2.12 -->
 
 !!! warning "alpha "
 

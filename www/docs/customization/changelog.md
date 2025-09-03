@@ -81,7 +81,7 @@ changelog:
   #
   # Default: "Changelog".
   # <!-- md:inline_pro -->.
-  # <!-- md:inline_version v2.12-unreleased -->.
+  # <!-- md:inline_version v2.12 -->.
   # Templates: allowed.
   title: "Release Notes"
 

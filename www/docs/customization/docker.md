@@ -1,7 +1,7 @@
 # Docker Images (deprecated)
 
-> [Deprecated](./../deprecations.md#dockers) in v2.12-unreleased.
-> [Docker Images v2](./dockers_v2.md) should be used instead.
+> [Phasing out](./../deprecations.md#dockers) in v2.12.
+> [Docker Images v2](./dockers_v2.md) is preferred instead.
 
 GoReleaser can build and push Docker images.
 Let's see how it works.
@@ -170,7 +170,7 @@ dockers:
 
     # Retry configuration for push operations.
     #
-    # <!-- md:inline_version v2.12-unreleased -->.
+    # <!-- md:inline_version v2.12 -->.
     retry:
       # Attempts of retry.
       #

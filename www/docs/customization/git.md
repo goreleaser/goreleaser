@@ -53,7 +53,7 @@ which is different from what other git sorting options might give you.
 
 ## Smart semver sorting
 
-<!-- md:version v2.12-unreleased -->
+<!-- md:version v2.12 -->
 
 <!-- md:alpha -->
 
