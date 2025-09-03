@@ -157,7 +157,7 @@ var Pipeline = append(
 	reportsizes.Pipe{},
 	// create and push docker images
 	docker.Pipe{},
-	dockerv2.Pipe{},
+	dockerv2.Snapshot{},
 	// create and push docker images using ko
 	ko.Pipe{},
 	// publishes artifacts

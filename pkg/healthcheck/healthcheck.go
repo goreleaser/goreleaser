@@ -37,7 +37,7 @@ var Healthcheckers = []Healthchecker{
 	sbom.Pipe{},
 	docker.Pipe{},
 	docker.ManifestPipe{},
-	dockerv2.Pipe{},
+	dockerv2.Base{},
 	chocolatey.Pipe{},
 	nix.New(),
 }

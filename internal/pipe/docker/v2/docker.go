@@ -31,22 +31,31 @@ import (
 	"github.com/goreleaser/goreleaser/v2/pkg/context"
 )
 
-// Pipe v2 of dockers pipe.
-type Pipe struct{}
+// Base v2 docker pipe.
+type Base struct{}
+
+// Snapshot is a pipe that only runs on snapshot builds.
+type Snapshot struct{ Base }
+
+// Publish is a pipe that only runs on non-snapshot builds.
+type Publish struct{ Base }
 
 // String implements pipeline.Piper.
-func (p Pipe) String() string { return "docker images (v2)" }
+func (p Base) String() string { return "docker images (v2)" }
 
 // Dependencies implements healthcheck.Healthchecker.
-func (Pipe) Dependencies(*context.Context) []string { return []string{"docker buildx"} }
+func (Base) Dependencies(*context.Context) []string { return []string{"docker buildx"} }
 
 // Skip implements Skipper.
-func (Pipe) Skip(ctx *context.Context) bool {
+func (Base) Skip(ctx *context.Context) bool {
 	return len(ctx.Config.DockersV2) == 0 || skips.Any(ctx, skips.Docker)
 }
 
+// Skip implements Skipper.
+func (p Snapshot) Skip(ctx *context.Context) bool { return p.Base.Skip(ctx) || !ctx.Snapshot }
+
 // Default implements defaults.Defaulter.
-func (Pipe) Default(ctx *context.Context) error {
+func (Base) Default(ctx *context.Context) error {
 	ids := ids.New("dockersv2")
 	for i := range ctx.Config.DockersV2 {
 		docker := &ctx.Config.DockersV2[i]
@@ -71,11 +80,7 @@ func (Pipe) Default(ctx *context.Context) error {
 }
 
 // Run implements pipeline.Piper.
-func (p Pipe) Run(ctx *context.Context) error {
-	if !ctx.Snapshot {
-		return pipe.Skip("non-snapshot build")
-	}
-
+func (p Snapshot) Run(ctx *context.Context) error {
 	warnExperimental()
 	log.Warn("snapshot build: will not push any images")
 
@@ -95,7 +100,7 @@ func (p Pipe) Run(ctx *context.Context) error {
 }
 
 // Publish implements publish.Publisher.
-func (Pipe) Publish(ctx *context.Context) error {
+func (Publish) Publish(ctx *context.Context) error {
 	warnExperimental()
 	g := semerrgroup.NewSkipAware(semerrgroup.New(ctx.Parallelism))
 	for _, d := range ctx.Config.DockersV2 {

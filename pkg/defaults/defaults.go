@@ -90,7 +90,7 @@ var Defaulters = []Defaulter{
 	sign.DockerPipe{},
 	sbom.Pipe{},
 	docker.Pipe{},
-	dockerv2.Pipe{},
+	dockerv2.Base{},
 	docker.ManifestPipe{},
 	dockerdigest.Pipe{},
 	artifactory.Pipe{},

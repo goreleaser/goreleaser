@@ -49,7 +49,7 @@ func New() Pipe {
 			artifactory.Pipe{},
 			docker.Pipe{},
 			docker.ManifestPipe{},
-			dockerv2.Pipe{},
+			dockerv2.Publish{},
 			dockerdigest.Pipe{},
 			ko.Pipe{},
 			sign.DockerPipe{},
