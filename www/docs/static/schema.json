@@ -1089,6 +1089,28 @@
 							"buildx"
 						],
 						"default": "docker"
+					},
+					"retry": {
+						"$ref": "#/$defs/Retry"
+					}
+				},
+				"additionalProperties": false,
+				"type": "object"
+			},
+			"DockerDigest": {
+				"properties": {
+					"disable": {
+						"oneOf": [
+							{
+								"type": "string"
+							},
+							{
+								"type": "boolean"
+							}
+						]
+					},
+					"name_template": {
+						"type": "string"
 					}
 				},
 				"additionalProperties": false,
@@ -1132,6 +1154,78 @@
 					},
 					"use": {
 						"type": "string"
+					},
+					"retry": {
+						"$ref": "#/$defs/Retry"
+					}
+				},
+				"additionalProperties": false,
+				"type": "object"
+			},
+			"DockerV2": {
+				"properties": {
+					"id": {
+						"type": "string"
+					},
+					"ids": {
+						"items": {
+							"type": "string"
+						},
+						"type": "array"
+					},
+					"dockerfile": {
+						"type": "string"
+					},
+					"images": {
+						"items": {
+							"type": "string"
+						},
+						"type": "array"
+					},
+					"tags": {
+						"items": {
+							"type": "string"
+						},
+						"type": "array"
+					},
+					"labels": {
+						"additionalProperties": {
+							"type": "string"
+						},
+						"type": "object"
+					},
+					"annotations": {
+						"additionalProperties": {
+							"type": "string"
+						},
+						"type": "object"
+					},
+					"extra_files": {
+						"items": {
+							"type": "string"
+						},
+						"type": "array"
+					},
+					"platforms": {
+						"items": {
+							"type": "string"
+						},
+						"type": "array"
+					},
+					"build_args": {
+						"additionalProperties": {
+							"type": "string"
+						},
+						"type": "object"
+					},
+					"retry": {
+						"$ref": "#/$defs/Retry"
+					},
+					"flags": {
+						"items": {
+							"type": "string"
+						},
+						"type": "array"
 					}
 				},
 				"additionalProperties": false,
@@ -2149,6 +2243,111 @@
 					"notarize"
 				]
 			},
+			"Makeself": {
+				"properties": {
+					"id": {
+						"type": "string"
+					},
+					"filename": {
+						"type": "string"
+					},
+					"script": {
+						"type": "string"
+					},
+					"compression": {
+						"type": "string",
+						"enum": [
+							"gzip",
+							"bzip2",
+							"xz",
+							"lzo",
+							"compress",
+							"none"
+						]
+					},
+					"extra_args": {
+						"items": {
+							"type": "string"
+						},
+						"type": "array"
+					},
+					"files": {
+						"items": {
+							"$ref": "#/$defs/MakeselfFile"
+						},
+						"type": "array"
+					},
+					"disable": {
+						"oneOf": [
+							{
+								"type": "string"
+							},
+							{
+								"type": "boolean"
+							}
+						]
+					},
+					"ids": {
+						"items": {
+							"type": "string"
+						},
+						"type": "array"
+					},
+					"goos": {
+						"items": {
+							"type": "string"
+						},
+						"type": "array"
+					},
+					"goarch": {
+						"items": {
+							"type": "string"
+						},
+						"type": "array"
+					},
+					"name": {
+						"type": "string"
+					},
+					"description": {
+						"type": "string"
+					},
+					"maintainer": {
+						"type": "string"
+					},
+					"keywords": {
+						"items": {
+							"type": "string"
+						},
+						"type": "array"
+					},
+					"homepage": {
+						"type": "string"
+					},
+					"license": {
+						"type": "string"
+					}
+				},
+				"additionalProperties": false,
+				"type": "object",
+				"required": [
+					"script"
+				]
+			},
+			"MakeselfFile": {
+				"properties": {
+					"src": {
+						"type": "string"
+					},
+					"dst": {
+						"type": "string"
+					},
+					"strip_parent": {
+						"type": "boolean"
+					}
+				},
+				"additionalProperties": false,
+				"type": "object"
+			},
 			"Mastodon": {
 				"properties": {
 					"enabled": {
@@ -3080,6 +3279,15 @@
 						},
 						"type": "array"
 					},
+					"dockers_v2": {
+						"items": {
+							"$ref": "#/$defs/DockerV2"
+						},
+						"type": "array"
+					},
+					"docker_digest": {
+						"$ref": "#/$defs/DockerDigest"
+					},
 					"docker_manifests": {
 						"items": {
 							"$ref": "#/$defs/DockerManifest"
@@ -3172,6 +3380,12 @@
 					},
 					"metadata": {
 						"$ref": "#/$defs/ProjectMetadata"
+					},
+					"makeselfs": {
+						"items": {
+							"$ref": "#/$defs/Makeself"
+						},
+						"type": "array"
 					},
 					"universal_binaries": {
 						"items": {
@@ -3476,6 +3690,21 @@
 					},
 					"pull_request": {
 						"$ref": "#/$defs/PullRequest"
+					}
+				},
+				"additionalProperties": false,
+				"type": "object"
+			},
+			"Retry": {
+				"properties": {
+					"attempts": {
+						"type": "integer"
+					},
+					"delay": {
+						"type": "integer"
+					},
+					"max_delay": {
+						"type": "integer"
 					}
 				},
 				"additionalProperties": false,
@@ -4384,6 +4613,9 @@
 								"type": "boolean"
 							}
 						]
+					},
+					"password": {
+						"type": "string"
 					}
 				},
 				"additionalProperties": false,
