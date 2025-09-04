@@ -17,7 +17,7 @@ jobs:
 
     steps:
       - uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v4
-      - uses: actions/setup-go@d35c59abb061a4a6fb18e82ac0862c26744d6ab5 # v4
+      - uses: actions/setup-go@44694675825211faa026b3c33043df3e48a5fa00 # v4
         with:
           go-version-file: go.mod
       - uses: github/codeql-action/init@2d92b76c45b91eb80fc44c74ce3fce0ee94e8f9d # v3
