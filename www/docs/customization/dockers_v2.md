@@ -48,7 +48,7 @@ dockers_v2:
     # Empty image names are ignored.
     #
     # Templates: allowed.
-    image:
+    images:
       - "myuser/myimage"
       - "gcr.io/myuser/myimage"
 
