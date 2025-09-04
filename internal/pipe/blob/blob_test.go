@@ -140,7 +140,7 @@ func TestURL(t *testing.T) {
 			DisableSSL: true,
 		})
 		require.NoError(t, err)
-		require.Equal(t, "s3://foo?disableSSL=true&endpoint=s3.foobar.com&region=us-west-1&s3ForcePathStyle=true", url)
+		require.Equal(t, "s3://foo?disable_https=true&endpoint=s3.foobar.com&region=us-west-1&s3ForcePathStyle=true", url)
 	})
 
 	t.Run("s3 with some opts", func(t *testing.T) {
@@ -151,7 +151,7 @@ func TestURL(t *testing.T) {
 			DisableSSL: true,
 		})
 		require.NoError(t, err)
-		require.Equal(t, "s3://foo?disableSSL=true&region=us-west-1", url)
+		require.Equal(t, "s3://foo?disable_https=true&region=us-west-1", url)
 	})
 
 	t.Run("gs with opts", func(t *testing.T) {

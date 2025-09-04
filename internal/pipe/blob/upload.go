@@ -73,7 +73,7 @@ func urlFor(ctx *context.Context, conf config.Blob) (string, error) {
 	}
 
 	if conf.DisableSSL {
-		query.Add("disableSSL", "true")
+		query.Add("disable_https", "true")
 	}
 
 	if len(query) > 0 {
