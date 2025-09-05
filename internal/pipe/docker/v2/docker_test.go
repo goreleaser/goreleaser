@@ -166,9 +166,10 @@ func TestMakeArgs(t *testing.T) {
 				"name":    "{{.ProjectName}}",
 			},
 			Annotations: map[string]string{
-				"ignored": "  ",
-				"  ":      "also ignored",
-				"foo":     "{{.ProjectName}}",
+				"ignored":   "  ",
+				"  ":        "also ignored",
+				"foo":       "{{.ProjectName}}",
+				"index:zaz": "zaz",
 			},
 			Platforms: []string{"linux/amd64", "linux/arm64"},
 			BuildArgs: map[string]string{
@@ -193,7 +194,8 @@ func TestMakeArgs(t *testing.T) {
 				"--iidfile=id.txt",
 				"--label", "date=2025-08-19T00:00:00Z",
 				"--label", "name=dockerv2",
-				"--annotation", "foo=dockerv2",
+				"--annotation", "index:foo=dockerv2",
+				"--annotation", "index:zaz=zaz",
 				"--build-arg", "FOO=bar",
 				"--ulimit=1000",
 				".",

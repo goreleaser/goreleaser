@@ -228,6 +228,11 @@ func makeArgs(ctx *context.Context, d config.DockerV2, extraArgs []string) ([]st
 	if err != nil {
 		return nil, nil, fmt.Errorf("invalid annotations: %w", err)
 	}
+	if len(d.Platforms) > 1 {
+		for i := 1; i < len(annotationFlags); i += 2 {
+			annotationFlags[i] = "index:" + strings.TrimPrefix(annotationFlags[i], "index:")
+		}
+	}
 
 	buildFlags, err := tplMapFlags(tpl, "--build-arg", d.BuildArgs)
 	if err != nil {

@@ -133,6 +133,8 @@ dockers_v2:
       "org.opencontainers.image.revision": "{{.FullCommit}}"
       "org.opencontainers.image.version": "{{.Version}}"
       "org.opencontainers.image.source": "{{.GitURL}}"
+    annotations:
+      "org.opencontainers.image.description": "Release engineering, simplified"
 
 archives:
   - name_template: >-
