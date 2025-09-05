@@ -187,9 +187,8 @@ func doBuild(ctx *context.Context, d config.DockerV2, wd string, arg []string) (
 	if err != nil {
 		return "", gerrors.Wrap(
 			err,
-			"could not find digest in output",
+			"could not get image digest",
 			"id", d.ID,
-			"err", err,
 		)
 	}
 	return string(digest), nil
