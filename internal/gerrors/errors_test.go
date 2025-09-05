@@ -2,6 +2,7 @@ package gerrors
 
 import (
 	"errors"
+	"fmt"
 	"testing"
 
 	"github.com/stretchr/testify/require"
@@ -49,4 +50,17 @@ func TestDetailsOdd(t *testing.T) {
 	require.Empty(t, DetailsOf(og))
 	require.ErrorIs(t, err, og)
 	require.Equal(t, "fake", err.Error())
+}
+
+func TestDetailsMultipleWraps(t *testing.T) {
+	og := errors.New("fake")
+	err := Wrap(og, "hello", "foo", "bar", "zaz", "something")
+	err = fmt.Errorf("some more stuff: %w", err)
+	err = Wrap(err, "hello one more time", "foo", "again we wrap")
+	err = Wrap(err, "hello again", "test2", "another msg")
+	require.Equal(t, map[string]any{
+		"foo":   "again we wrap",
+		"test2": "another msg",
+		"zaz":   "something",
+	}, DetailsOf(err))
 }

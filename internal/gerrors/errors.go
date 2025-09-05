@@ -4,7 +4,6 @@ package gerrors
 import (
 	"errors"
 	"fmt"
-	"maps"
 )
 
 // DetailsOf gets the details of an error, if available.
@@ -36,15 +35,12 @@ func MessageOf(err error) string {
 
 // WrapExit makes an error with details and an exit code, mainly used for logging.
 func WrapExit(err error, message string, exit int, pairs ...any) error {
-	details := map[string]any{}
+	details := DetailsOf(err)
 	if len(pairs)%2 != 0 {
 		pairs = append(pairs, "missing value")
 	}
 	for i := 0; i < len(pairs); i += 2 {
 		details[fmt.Sprintf("%v", pairs[i])] = pairs[i+1]
-	}
-	if dets := DetailsOf(err); len(dets) > 0 {
-		maps.Copy(details, dets)
 	}
 	return errDetailed{
 		err:     err,

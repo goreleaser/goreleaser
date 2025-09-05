@@ -166,8 +166,7 @@ func doBuild(ctx *context.Context, d config.DockerV2, wd string, arg []string) (
 			if err := cmd.Run(); err != nil {
 				return gerrors.Wrap(
 					err,
-					"could not build and publish docker image",
-					"args", strings.Join(cmd.Args, " "),
+					"could not build Docker image",
 					"id", d.ID,
 					"output", b.String(),
 				)
