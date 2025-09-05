@@ -1,10 +1,13 @@
 package docker
 
 import (
+	"encoding/json"
 	"os/exec"
 	"slices"
 	"testing"
 
+	api "github.com/docker/docker/api/types/image"
+	v1 "github.com/google/go-containerregistry/pkg/v1"
 	"github.com/goreleaser/goreleaser/v2/internal/artifact"
 	"github.com/goreleaser/goreleaser/v2/internal/gerrors"
 	"github.com/goreleaser/goreleaser/v2/internal/testctx"
@@ -30,6 +33,12 @@ func TestRun(t *testing.T) {
 				ExtraFiles: []string{"./testdata/foo.conf"},
 				IDs:        []string{"id1"},
 				Platforms:  []string{"linux/amd64", "linux/arm64", "linux/arm/v7"},
+				Labels: map[string]string{
+					"org.opencontainers.image.licenses": "MIT",
+				},
+				Annotations: map[string]string{
+					"org.opencontainers.image.description": "My multi-arch image",
+				},
 			},
 			{
 				ID:         "clean",
@@ -38,6 +47,12 @@ func TestRun(t *testing.T) {
 				Tags:       []string{"tag3"},
 				ExtraFiles: []string{"./testdata/foo.conf"},
 				IDs:        []string{"nopenopenope"},
+				Labels: map[string]string{
+					"org.opencontainers.image.licenses": "BSD",
+				},
+				Annotations: map[string]string{
+					"org.opencontainers.image.description": "My multi-arch image",
+				},
 			},
 		},
 	}, testctx.Snapshot)
@@ -66,6 +81,12 @@ func TestRun(t *testing.T) {
 		),
 	).List()
 	require.Len(t, images, 12)
+
+	image := inspectImage(t, images[0].Name)[0]
+	require.Equal(t, map[string]string{
+		"org.opencontainers.image.licenses": "MIT",
+	}, image.Config.Labels)
+
 	require.Equal(t, []string{
 		"image1:tag1-amd64",
 		"image1:tag1-arm64",
@@ -91,6 +112,12 @@ func TestRun(t *testing.T) {
 			artifact.ByIDs("clean"),
 		),
 	).List()
+
+	image = inspectImage(t, images[0].Name)[0]
+	require.Equal(t, map[string]string{
+		"org.opencontainers.image.licenses": "BSD",
+	}, image.Config.Labels)
+
 	require.Equal(t, []string{
 		"image3:tag3-amd64",
 		"image3:tag3-arm64",
@@ -123,12 +150,17 @@ func TestPublish(t *testing.T) {
 					Tags:       []string{"latest", "v{{.Version}}", "{{if .IsNightly}}nightly{{end}}"},
 					ExtraFiles: []string{"./testdata/foo.conf"},
 					IDs:        []string{"id1"},
+					Labels: map[string]string{
+						"org.opencontainers.image.licenses": "MIT",
+					},
+					Annotations: map[string]string{
+						"index:org.opencontainers.image.description": "My multi-arch image",
+					},
 				},
 			},
 		},
 		testctx.WithVersion("1.0.0"),
 		testctx.WithCurrentTag("v1.0.0"),
-		testctx.WithCommit("a1b2c3d4"),
 		testctx.WithSemver(1, 0, 0, ""),
 	)
 	for _, arch := range []string{"amd64", "arm64"} {
@@ -160,6 +192,11 @@ func TestPublish(t *testing.T) {
 	for _, img := range images {
 		require.NotEmpty(t, artifact.ExtraOr(*img, artifact.ExtraDigest, ""))
 	}
+
+	manifest := inspectManifest(t, "localhost:5060/foo:v1.0.0")
+	require.Equal(t, map[string]string{
+		"org.opencontainers.image.description": "My multi-arch image",
+	}, manifest.Annotations)
 }
 
 func names(in []*artifact.Artifact) []string {
@@ -174,4 +211,37 @@ func names(in []*artifact.Artifact) []string {
 func rmi(tb testing.TB, img string) {
 	tb.Helper()
 	require.NoError(tb, exec.CommandContext(tb.Context(), "docker", "rmi", "--force", img).Run())
+}
+
+func inspectImage(tb testing.TB, image string) []api.InspectResponse {
+	tb.Helper()
+	out, err := exec.CommandContext(
+		tb.Context(),
+		"docker",
+		"inspect",
+		image,
+	).CombinedOutput()
+	require.NoError(tb, err, "output: %s", string(out))
+
+	var t []api.InspectResponse
+	require.NoError(tb, json.Unmarshal(out, &t))
+	return t
+}
+
+func inspectManifest(tb testing.TB, image string) v1.Manifest {
+	tb.Helper()
+	out, err := exec.CommandContext(
+		tb.Context(),
+		"docker",
+		"buildx",
+		"imagetools",
+		"inspect",
+		"--raw",
+		image,
+	).CombinedOutput()
+	require.NoError(tb, err, "output: %s", string(out))
+
+	var t v1.Manifest
+	require.NoError(tb, json.Unmarshal(out, &t))
+	return t
 }
