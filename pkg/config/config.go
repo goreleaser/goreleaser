@@ -893,6 +893,21 @@ type Sign struct {
 	Output      bool     `yaml:"output,omitempty" json:"output,omitempty"`
 }
 
+// BinarySign config.
+type BinarySign struct {
+	ID          string   `yaml:"id,omitempty" json:"id,omitempty"`
+	Cmd         string   `yaml:"cmd,omitempty" json:"cmd,omitempty"`
+	Args        []string `yaml:"args,omitempty" json:"args,omitempty"`
+	Signature   string   `yaml:"signature,omitempty" json:"signature,omitempty"`
+	Artifacts   string   `yaml:"artifacts,omitempty" json:"artifacts,omitempty" jsonschema:"enum=binary,enum=none"`
+	IDs         []string `yaml:"ids,omitempty" json:"ids,omitempty"`
+	Stdin       *string  `yaml:"stdin,omitempty" json:"stdin,omitempty"`
+	StdinFile   string   `yaml:"stdin_file,omitempty" json:"stdin_file,omitempty"`
+	Env         []string `yaml:"env,omitempty" json:"env,omitempty"`
+	Certificate string   `yaml:"certificate,omitempty" json:"certificate,omitempty"`
+	Output      bool     `yaml:"output,omitempty" json:"output,omitempty"`
+}
+
 type Notarize struct {
 	MacOS []MacOSSignNotarize `yaml:"macos" json:"macos"`
 }
@@ -1219,7 +1234,7 @@ type Project struct {
 	Signs           []Sign           `yaml:"signs,omitempty" json:"signs,omitempty"`
 	Notarize        Notarize         `yaml:"notarize,omitempty" json:"notarize,omitempty"`
 	DockerSigns     []Sign           `yaml:"docker_signs,omitempty" json:"docker_signs,omitempty"`
-	BinarySigns     []Sign           `yaml:"binary_signs,omitempty" json:"binary_signs,omitempty"`
+	BinarySigns     []BinarySign     `yaml:"binary_signs,omitempty" json:"binary_signs,omitempty"`
 	EnvFiles        EnvFiles         `yaml:"env_files,omitempty" json:"env_files,omitempty"`
 	Before          Before           `yaml:"before,omitempty" json:"before,omitempty"`
 	Source          Source           `yaml:"source,omitempty" json:"source,omitempty"`
