@@ -81,24 +81,8 @@ func (BinaryPipe) Run(ctx *context.Context) error {
 			if len(cfg.IDs) > 0 {
 				filters = append(filters, artifact.ByIDs(cfg.IDs...))
 			}
-			return sign(ctx, toSign(cfg), ctx.Artifacts.Filter(artifact.And(filters...)).List())
+			return sign(ctx, config.Sign(cfg), ctx.Artifacts.Filter(artifact.And(filters...)).List())
 		})
 	}
 	return g.Wait()
-}
-
-func toSign(b config.BinarySign) config.Sign {
-	return config.Sign{
-		ID:          b.ID,
-		Cmd:         b.Cmd,
-		Args:        b.Args,
-		Signature:   b.Signature,
-		Artifacts:   b.Artifacts,
-		IDs:         b.IDs,
-		Stdin:       b.Stdin,
-		StdinFile:   b.StdinFile,
-		Env:         b.Env,
-		Certificate: b.Certificate,
-		Output:      b.Output,
-	}
 }
