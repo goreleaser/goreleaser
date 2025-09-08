@@ -899,7 +899,7 @@ type BinarySign struct {
 	Cmd         string   `yaml:"cmd,omitempty" json:"cmd,omitempty"`
 	Args        []string `yaml:"args,omitempty" json:"args,omitempty"`
 	Signature   string   `yaml:"signature,omitempty" json:"signature,omitempty"`
-	Artifacts   string   `yaml:"artifacts,omitempty" json:"artifacts,omitempty" jsonschema:"enum=binary","enum=none"`
+	Artifacts   string   `yaml:"artifacts,omitempty" json:"artifacts,omitempty" jsonschema:"enum=binary,enum=none"`
 	IDs         []string `yaml:"ids,omitempty" json:"ids,omitempty"`
 	Stdin       *string  `yaml:"stdin,omitempty" json:"stdin,omitempty"`
 	StdinFile   string   `yaml:"stdin_file,omitempty" json:"stdin_file,omitempty"`
