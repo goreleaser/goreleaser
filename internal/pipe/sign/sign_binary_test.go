@@ -19,7 +19,7 @@ func TestBinarySignDescription(t *testing.T) {
 
 func TestBinarySignDefault(t *testing.T) {
 	ctx := testctx.NewWithCfg(config.Project{
-		BinarySigns: []config.Sign{{}},
+		BinarySigns: []config.BinarySign{{}},
 	})
 	err := BinaryPipe{}.Default(ctx)
 	require.NoError(t, err)
@@ -31,7 +31,7 @@ func TestBinarySignDefault(t *testing.T) {
 
 func TestBinarySignDisabled(t *testing.T) {
 	ctx := testctx.NewWithCfg(config.Project{
-		BinarySigns: []config.Sign{
+		BinarySigns: []config.BinarySign{
 			{Artifacts: "none"},
 		},
 	})
@@ -41,7 +41,7 @@ func TestBinarySignDisabled(t *testing.T) {
 
 func TestBinarySignInvalidOption(t *testing.T) {
 	ctx := testctx.NewWithCfg(config.Project{
-		BinarySigns: []config.Sign{
+		BinarySigns: []config.BinarySign{
 			{Artifacts: "archive"},
 		},
 	})
@@ -61,7 +61,7 @@ func TestBinarySkip(t *testing.T) {
 
 	t.Run("dont skip", func(t *testing.T) {
 		ctx := testctx.NewWithCfg(config.Project{
-			BinarySigns: []config.Sign{
+			BinarySigns: []config.BinarySign{
 				{},
 			},
 		})
@@ -71,7 +71,7 @@ func TestBinarySkip(t *testing.T) {
 
 func TestBinaryDependencies(t *testing.T) {
 	ctx := testctx.NewWithCfg(config.Project{
-		BinarySigns: []config.Sign{
+		BinarySigns: []config.BinarySign{
 			{Cmd: "cosign"},
 			{Cmd: "gpg2"},
 		},
@@ -82,12 +82,12 @@ func TestBinaryDependencies(t *testing.T) {
 func TestBinarySign(t *testing.T) {
 	testlib.CheckPath(t, "gpg")
 	testlib.SkipIfWindows(t, "tries to use /usr/bin/gpg-agent")
-	doTest := func(tb testing.TB, sign config.Sign) []*artifact.Artifact {
+	doTest := func(tb testing.TB, sign config.BinarySign) []*artifact.Artifact {
 		tb.Helper()
 		tmpdir := tb.TempDir()
 
 		ctx := testctx.NewWithCfg(config.Project{
-			BinarySigns: []config.Sign{sign},
+			BinarySigns: []config.BinarySign{sign},
 		})
 
 		require.NoError(tb, os.WriteFile(filepath.Join(tmpdir, "bin1"), []byte("foo"), 0o644))
@@ -128,12 +128,12 @@ func TestBinarySign(t *testing.T) {
 	}
 
 	t.Run("default", func(t *testing.T) {
-		sigs := doTest(t, config.Sign{})
+		sigs := doTest(t, config.BinarySign{})
 		require.Len(t, sigs, 2)
 	})
 
 	t.Run("templated-signature", func(t *testing.T) {
-		sigs := doTest(t, config.Sign{
+		sigs := doTest(t, config.BinarySign{
 			Signature: "prefix_{{ .Arch }}_suffix",
 			Cmd:       "/bin/sh",
 			Args: []string{
@@ -153,7 +153,7 @@ func TestBinarySign(t *testing.T) {
 	})
 
 	t.Run("filter", func(t *testing.T) {
-		sigs := doTest(t, config.Sign{
+		sigs := doTest(t, config.BinarySign{
 			ID:  "bar",
 			IDs: []string{"bar"},
 		})
