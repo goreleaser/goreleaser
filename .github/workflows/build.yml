@@ -21,6 +21,22 @@ permissions:
   contents: read
 
 jobs:
+  license-check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-go@v6
+        with:
+          go-version: stable
+      - name: Check licenses
+        run: |
+          go run github.com/google/go-licenses/v2@latest check \
+            --allowed_licenses=MIT,Apache-2.0,BSD-3-Clause,BSD-2-Clause,ISC,MPL-2.0 \
+            --ignore github.com/in-toto \
+            --ignore github.com/multiformats/go-base36 \
+            --ignore github.com/ipfs/bbloom \
+            --ignore github.com/cyberphone/json-canonicalization/go/src/webpki.org/jsoncanonicalizer \
+            ./...
   govulncheck:
     uses: caarlos0/meta/.github/workflows/govulncheck.yml@main
   semgrep:
@@ -99,7 +115,7 @@ jobs:
           fetch-depth: 0
       - run: go run . check
   dependabot:
-    needs: [test]
+    needs: [test, license-check]
     runs-on: ubuntu-latest
     permissions:
       pull-requests: write
