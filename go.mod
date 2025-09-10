@@ -15,7 +15,7 @@ require (
 	github.com/caarlos0/env/v11 v11.3.1
 	github.com/caarlos0/go-reddit/v3 v3.0.1
 	github.com/caarlos0/go-shellwords v1.0.12
-	github.com/caarlos0/go-version v0.2.1
+	github.com/caarlos0/go-version v0.2.2
 	github.com/caarlos0/log v0.5.1
 	github.com/charmbracelet/fang v0.4.0
 	github.com/charmbracelet/keygen v0.5.3
