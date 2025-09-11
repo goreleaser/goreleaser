@@ -38,7 +38,7 @@ require (
 	github.com/mark3labs/mcp-go v0.39.1
 	github.com/mattn/go-mastodon v0.0.10
 	github.com/mitchellh/go-homedir v1.1.0
-	github.com/muesli/mango-cobra v1.2.0
+	github.com/muesli/mango-cobra v1.3.0
 	github.com/muesli/roff v0.1.0
 	github.com/ory/dockertest/v3 v3.12.0
 	github.com/slack-go/slack v0.17.3
@@ -287,7 +287,7 @@ require (
 	github.com/moby/docker-image-spec v1.3.1 // indirect
 	github.com/moby/term v0.5.2 // indirect
 	github.com/mr-tron/base58 v1.2.0 // indirect
-	github.com/muesli/mango v0.1.0 // indirect
+	github.com/muesli/mango v0.2.0 // indirect
 	github.com/muesli/mango-pflag v0.1.0 // indirect
 	github.com/multiformats/go-base32 v0.1.0 // indirect
 	github.com/multiformats/go-base36 v0.2.0 // indirect
