@@ -16,6 +16,8 @@ internal/builders/zig/error_targets.txt linguist-generated=true
 internal/builders/zig/testdata/version.txt linguist-generated=true
 internal/builders/rust/all_targets.txt linguist-generated=true
 
+NOTICE.md linguist-generated=true
+
 *.nix.golden linguist-language=Nix
 *.rb.golden linguist-language=Ruby
 *.json.golden linguist-language=JSON
