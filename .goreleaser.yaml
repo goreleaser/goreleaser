@@ -162,6 +162,11 @@ archives:
           owner: root
           group: root
           mtime: "{{ .CommitDate }}"
+      - src: NOTICE.md
+        info:
+          owner: root
+          group: root
+          mtime: "{{ .CommitDate }}"
       - src: completions/*
         info:
           owner: root
