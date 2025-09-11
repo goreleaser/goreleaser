@@ -32,7 +32,7 @@ jobs:
         with:
           version: 3.x
           repo-token: ${{ secrets.GITHUB_TOKEN }}
-      - run: task license:check
+      - run: task licenses:check
   govulncheck:
     uses: caarlos0/meta/.github/workflows/govulncheck.yml@main
   semgrep:
