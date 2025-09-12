@@ -30,9 +30,6 @@ jobs:
       - run: task docs:releases
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      - uses: cachix/install-nix-action@v31
-        with:
-          github_access_token: ${{ secrets.GITHUB_TOKEN }}
       - run: task docs:generate
       - run: task schema:generate
       - run: task schema:validate
