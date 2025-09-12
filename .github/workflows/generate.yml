@@ -25,7 +25,6 @@ jobs:
         with:
           version: 3.x
           repo-token: ${{ secrets.GITHUB_TOKEN }}
-      - run: "go install mvdan.cc/gofumpt@latest"
       - run: "go install github.com/santhosh-tekuri/jsonschema/cmd/jv@latest"
       - run: task docs:releases
         env:
@@ -35,8 +34,8 @@ jobs:
           github_access_token: ${{ secrets.GITHUB_TOKEN }}
       - run: task docs:generate
       - run: task schema:generate
-      - run: task nix:licenses:generate
       - run: task schema:validate
+      - run: task nix:licenses:generate
       - run: "git pull"
       - uses: stefanzweifel/git-auto-commit-action@778341af668090896ca464160c2def5d1d1a3eb0 # v5
         with:
