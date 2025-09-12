@@ -401,6 +401,58 @@
 				"additionalProperties": false,
 				"type": "object"
 			},
+			"BinarySign": {
+				"properties": {
+					"id": {
+						"type": "string"
+					},
+					"cmd": {
+						"type": "string"
+					},
+					"args": {
+						"items": {
+							"type": "string"
+						},
+						"type": "array"
+					},
+					"signature": {
+						"type": "string"
+					},
+					"artifacts": {
+						"type": "string",
+						"enum": [
+							"binary",
+							"none"
+						]
+					},
+					"ids": {
+						"items": {
+							"type": "string"
+						},
+						"type": "array"
+					},
+					"stdin": {
+						"type": "string"
+					},
+					"stdin_file": {
+						"type": "string"
+					},
+					"env": {
+						"items": {
+							"type": "string"
+						},
+						"type": "array"
+					},
+					"certificate": {
+						"type": "string"
+					},
+					"output": {
+						"type": "boolean"
+					}
+				},
+				"additionalProperties": false,
+				"type": "object"
+			},
 			"Blob": {
 				"properties": {
 					"bucket": {
@@ -3341,7 +3393,7 @@
 					},
 					"binary_signs": {
 						"items": {
-							"$ref": "#/$defs/Sign"
+							"$ref": "#/$defs/BinarySign"
 						},
 						"type": "array"
 					},
