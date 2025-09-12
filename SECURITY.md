@@ -26,5 +26,3 @@ Vulnerabilities can be disclosed in private using
 
 For issues specific to GoReleaser Pro, please refer to
 [this instead](https://github.com/goreleaser/goreleaser-pro/security/policy).
-
-Thanks!
