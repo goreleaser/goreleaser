@@ -313,3 +313,14 @@ tasks:
       - gh workflow run nightly-oss.yml
       - sleep 5
       - task: nightly:watch
+
+  licenses:check:
+    cmds:
+      - |
+        go run github.com/google/go-licenses/v2@latest check \
+          --allowed_licenses=MIT,Apache-2.0,BSD-3-Clause,BSD-2-Clause,ISC,MPL-2.0 \
+          --ignore github.com/in-toto \
+          --ignore github.com/multiformats/go-base36 \
+          --ignore github.com/ipfs/bbloom \
+          --ignore github.com/cyberphone/json-canonicalization/go/src/webpki.org/jsoncanonicalizer \
+          ./...
