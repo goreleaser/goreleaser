@@ -36,7 +36,6 @@ jobs:
       - run: task docs:generate
       - run: task schema:generate
       - run: task nix:licenses:generate
-      - run: task nix:flake:update
       - run: task schema:validate
       - run: "git pull"
       - uses: stefanzweifel/git-auto-commit-action@778341af668090896ca464160c2def5d1d1a3eb0 # v5
