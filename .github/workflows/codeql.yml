@@ -21,5 +21,7 @@ jobs:
         with:
           go-version-file: go.mod
       - uses: github/codeql-action/init@192325c86100d080feab897ff886c34abd4c83a3 # v3
+        with:
+          languages: go
       - uses: github/codeql-action/autobuild@192325c86100d080feab897ff886c34abd4c83a3 # v3
       - uses: github/codeql-action/analyze@192325c86100d080feab897ff886c34abd4c83a3 # v3
