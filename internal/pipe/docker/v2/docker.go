@@ -166,7 +166,7 @@ func doBuild(ctx *context.Context, d config.DockerV2, wd string, arg []string) (
 			if err := cmd.Run(); err != nil {
 				return gerrors.Wrap(
 					err,
-					"could not build and publish docker image",
+					"could not build docker image",
 					"args", strings.Join(cmd.Args, " "),
 					"id", d.ID,
 					"output", b.String(),
@@ -310,22 +310,40 @@ func makeContext(ctx *context.Context, d config.DockerV2, artifacts []*artifact.
 	}
 
 	for _, art := range artifacts {
+		// if it's an "all" goos (e.g. python artifact), we make it available
+		// for all platforms being built.
+		if art.Goos == "all" {
+			for _, plat := range d.Platforms {
+				target := filepath.Join(tmp, plat, art.Name)
+				if err := copyArtifact(art.Path, target); err != nil {
+					return "", err
+				}
+			}
+			continue
+		}
+
 		plat, err := toPlatform(art)
 		if err != nil {
 			return "", fmt.Errorf("failed to make dir for artifact: %w", err)
 		}
-
 		target := filepath.Join(tmp, plat, art.Name)
-		if err := os.MkdirAll(filepath.Dir(target), 0o755); err != nil {
-			return "", fmt.Errorf("failed to make dir for artifact: %w", err)
-		}
-
-		if err := gio.Copy(art.Path, target); err != nil {
-			return "", fmt.Errorf("failed to copy artifact: %w", err)
+		if err := copyArtifact(art.Path, target); err != nil {
+			return "", err
 		}
 	}
 
 	return tmp, nil
+}
+
+func copyArtifact(src, dst string) error {
+	if err := os.MkdirAll(filepath.Dir(dst), 0o755); err != nil {
+		return fmt.Errorf("failed to make dir for artifact: %w", err)
+	}
+
+	if err := gio.Copy(src, dst); err != nil {
+		return fmt.Errorf("failed to copy artifact: %w", err)
+	}
+	return nil
 }
 
 func contextArtifacts(ctx *context.Context, d config.DockerV2) []*artifact.Artifact {
