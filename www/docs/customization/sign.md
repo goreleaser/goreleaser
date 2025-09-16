@@ -63,7 +63,7 @@ signs:
     # - diskimage:  macOS DMG disk images (Pro only)
     # - archive:    archives from archive pipe
     # - sbom:       any SBOMs generated for other artifacts
-    # - binary:     binaries (only when `archives.format` is 'binary', use binaries_sign otherwise)
+    # - binary:     binaries (only when `archives.format` is 'binary', use binary_signs otherwise)
     #
     # Default: 'none'.
     artifacts: all
