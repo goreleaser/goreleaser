@@ -92,7 +92,7 @@ jobs:
         run: 'echo "C:\Users\runneradmin\.local\bin" | Out-File -FilePath $env:GITHUB_PATH -Encoding utf8 -Append'
       - uses: astral-sh/setup-uv@v6
       - uses: sigstore/cosign-installer@v3.10.0
-      - uses: anchore/sbom-action/download-syft@v0.20.5
+      - uses: anchore/sbom-action/download-syft@v0.20.6
       - run: task setup
       - run: task build
       - run: task test
