@@ -330,6 +330,12 @@ snapcrafts:
 
 sboms:
   - artifacts: archive
+    args:
+      - scan
+      - "--enrich=all"
+      - "$artifact"
+      - "--output"
+      - "cyclonedx-json=$document"
 
 signs:
   - cmd: cosign
