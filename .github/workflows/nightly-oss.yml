@@ -1,23 +1,20 @@
 name: nightly-oss
-
 on:
   workflow_dispatch:
   schedule:
     - cron: 0 0 * * *
-
 permissions:
   contents: write
   id-token: write
   packages: write
   attestations: write
-
 jobs:
   check:
     runs-on: ubuntu-latest
     outputs:
       should_run: ${{ steps.check.outputs.should_run }}
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8
         with:
           fetch-depth: 1
       - id: check
@@ -29,7 +26,6 @@ jobs:
           else
             echo "should_run=true" >> $GITHUB_OUTPUT
           fi
-
   goreleaser:
     runs-on: ubuntu-latest
     needs: check
@@ -56,12 +52,12 @@ jobs:
       - uses: actions/setup-go@44694675825211faa026b3c33043df3e48a5fa00 # v4
         with:
           go-version-file: go.mod
-      - uses: sigstore/cosign-installer@v3.10.0
-      - uses: anchore/sbom-action/download-syft@v0.20.6
-      - uses: crazy-max/ghaction-upx@v3
+      - uses: sigstore/cosign-installer@d7543c93d881b35a8faa02e8e3605f69b7a1ce62
+      - uses: anchore/sbom-action/download-syft@f8bdd1d8ac5e901a77a92f111440fdb1b593736b
+      - uses: crazy-max/ghaction-upx@db8cc9515a4a7ea1b312cb82fbeae6d716daf777
         with:
           install-only: true
-      - uses: cachix/install-nix-action@v31
+      - uses: cachix/install-nix-action@7be5dee1421f63d07e71ce6e0a9f8a4b07c2a487
         with:
           github_access_token: ${{ secrets.GITHUB_TOKEN }}
       - name: dockerhub-login
@@ -75,7 +71,7 @@ jobs:
           registry: ghcr.io
           username: ${{ github.repository_owner }}
           password: ${{ secrets.GITHUB_TOKEN }}
-      - uses: goreleaser/goreleaser-action@v6
+      - uses: goreleaser/goreleaser-action@e435ccd777264be153ace6237001ef4d979d3a7a
         with:
           distribution: goreleaser-pro
           version: "nightly"
@@ -88,10 +84,10 @@ jobs:
           MACOS_NOTARY_ISSUER_ID: ${{ secrets.MACOS_NOTARY_ISSUER_ID }}
           MACOS_NOTARY_KEY_ID: ${{ secrets.MACOS_NOTARY_KEY_ID }}
           MACOS_NOTARY_KEY: ${{ secrets.MACOS_NOTARY_KEY }}
-      - uses: actions/attest-build-provenance@v3
+      - uses: actions/attest-build-provenance@977bb373ede98d70efdf65b84cb5f73e068dcc2a
         with:
           subject-checksums: ./dist/checksums.txt
-      - uses: actions/attest-build-provenance@v3
+      - uses: actions/attest-build-provenance@977bb373ede98d70efdf65b84cb5f73e068dcc2a
         with:
           subject-checksums: ./dist/digests.txt
       - run: df -h
@@ -103,7 +99,7 @@ jobs:
     if: ${{ always() }}
     steps:
       - name: Notify
-        uses: nobrayner/discord-webhook@v1
+        uses: nobrayner/discord-webhook@1766a33bf571acdcc0678f00da4fb83aad01ebc7
         with:
           github-token: ${{ secrets.github_token }}
           title: "nightly"

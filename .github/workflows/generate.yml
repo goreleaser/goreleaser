@@ -1,13 +1,10 @@
 name: generate
-
 on:
   workflow_dispatch: {}
   schedule:
     - cron: "0 8 * * *"
-
 permissions:
   contents: read
-
 jobs:
   docs:
     permissions:
@@ -49,7 +46,7 @@ jobs:
     if: ${{ failure() }}
     steps:
       - name: Notify
-        uses: nobrayner/discord-webhook@v1
+        uses: nobrayner/discord-webhook@1766a33bf571acdcc0678f00da4fb83aad01ebc7
         with:
           github-token: ${{ secrets.github_token }}
           title: "generate job failed"
