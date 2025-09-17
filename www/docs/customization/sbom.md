@@ -53,7 +53,7 @@ sboms:
 
     # Command line arguments for the command
     #
-    # Default: ["$artifact", "--output", "spdx-json=$document"].
+    # Default: ["$artifact", "--output", "spdx-json=$document", "--enrich", "all"].
     # Templates: allowed.
     args: ["$artifact", "--output", "cyclonedx-json=$document"]
 
