@@ -78,7 +78,7 @@ jobs:
       - uses: mlugg/setup-zig@8d6198c65fb0feaa111df26e6b467fea8345e46f
       - uses: oven-sh/setup-bun@735343b667d3e6f658f44d0eca948eb6282f2b76
       - uses: denoland/setup-deno@e95548e56dfa95d4e1a28d6f422fafe75c4c26fb
-      - uses: cargo-bins/cargo-binstall@d020f1115f5ef21c966a766b15e98f8aad36a049
+      - uses: cargo-bins/cargo-binstall@cf49c6dbd5eb6865966cf4fae3ab1ecfb82ed87e
       - name: setup-cargo
         run: |
           rustup default stable
