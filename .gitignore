@@ -21,3 +21,4 @@ internal/pipe/ko/testdata/app/testapp-linux-amd64.spdx.json
 .env
 tmp/
 sponsors.json
+vendor

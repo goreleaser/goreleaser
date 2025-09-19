@@ -23,6 +23,7 @@ const (
 	Ko             Key = "ko"
 	Docker         Key = "docker"
 	Before         Key = "before"
+	After          Key = "after"
 	Winget         Key = "winget"
 	Snapcraft      Key = "snapcraft"
 	Scoop          Key = "scoop"
