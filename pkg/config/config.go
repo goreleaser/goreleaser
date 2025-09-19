@@ -1130,6 +1130,10 @@ type Before struct {
 	Hooks []string `yaml:"hooks,omitempty" json:"hooks,omitempty"`
 }
 
+type After struct {
+	Hooks []string `yaml:"hooks,omitempty" json:"hooks,omitempty"`
+}
+
 // Blob contains config for GO CDK blob.
 type Blob struct {
 	Bucket             string      `yaml:"bucket,omitempty" json:"bucket,omitempty"`
@@ -1237,6 +1241,7 @@ type Project struct {
 	BinarySigns     []BinarySign     `yaml:"binary_signs,omitempty" json:"binary_signs,omitempty"`
 	EnvFiles        EnvFiles         `yaml:"env_files,omitempty" json:"env_files,omitempty"`
 	Before          Before           `yaml:"before,omitempty" json:"before,omitempty"`
+	After           After            `yaml:"after,omitempty" json:"after,omitempty"`
 	Source          Source           `yaml:"source,omitempty" json:"source,omitempty"`
 	GoMod           GoMod            `yaml:"gomod,omitempty" json:"gomod,omitempty"`
 	Announce        Announce         `yaml:"announce,omitempty" json:"announce,omitempty"`

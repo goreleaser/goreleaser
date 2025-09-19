@@ -18,3 +18,4 @@ output.json
 *.pyc
 .intentionally-empty-file.o
 internal/pipe/ko/testdata/app/testapp-linux-amd64.spdx.json
+vendor
