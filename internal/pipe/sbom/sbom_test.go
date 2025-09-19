@@ -24,7 +24,7 @@ func TestDescription(t *testing.T) {
 }
 
 func TestSBOMCatalogDefault(t *testing.T) {
-	defaultArgs := []string{"$artifact", "--output", "spdx-json=$document"}
+	defaultArgs := []string{"$artifact", "--output", "spdx-json=$document", "--enrich", "all"}
 	defaultSboms := []string{
 		"{{ .ArtifactName }}.sbom.json",
 	}
