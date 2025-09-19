@@ -215,7 +215,7 @@ nfpms:
         type: config
 
       # Simple symlink.
-      # Corresponds to `ln -s /sbin/foo /usr/local/bin/foo`
+      # Corresponds to `ln -s /sbin/foo /usr/bin/foo`
       - src: /sbin/foo
         dst: /usr/bin/foo
         type: "symlink"
