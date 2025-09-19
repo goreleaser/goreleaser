@@ -110,8 +110,6 @@ var BuildCmdPipeline = append(
 	BuildPipeline,
 	reportsizes.Pipe{},
 	metadata.ArtifactsPipe{},
-	// run global hooks after build
-	after.Pipe{},
 )
 
 // Pipeline contains all pipe implementations in order.
@@ -168,4 +166,6 @@ var Pipeline = append(
 	metadata.ArtifactsPipe{},
 	// announce releases
 	announce.Pipe{},
+	// run global hooks after build
+	after.Pipe{},
 )
