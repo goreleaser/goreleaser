@@ -15,7 +15,7 @@ import (
 // Pipe is a global hook pipe.
 type Pipe struct{}
 
-func (Pipe) String() string { return "running before hooks" }
+func (Pipe) String() string { return "running after hooks" }
 
 func (Pipe) Skip(ctx *context.Context) bool {
 	return len(ctx.Config.After.Hooks) == 0 || skips.Any(ctx, skips.After)

@@ -3,7 +3,7 @@ package pipeline
 
 import (
 	"fmt"
-
+	"github.com/goreleaser/goreleaser/v2/internal/pipe/after"
 	"github.com/goreleaser/goreleaser/v2/internal/pipe/announce"
 	"github.com/goreleaser/goreleaser/v2/internal/pipe/archive"
 	"github.com/goreleaser/goreleaser/v2/internal/pipe/aur"
@@ -75,6 +75,8 @@ var BuildPipeline = []Piper{
 	snapshot.Pipe{},
 	// run global hooks before build
 	before.Pipe{},
+	// run global hooks after build
+	after.Pipe{},
 	// ensure ./dist exists and is empty
 	dist.Pipe{},
 	// setup metadata options
