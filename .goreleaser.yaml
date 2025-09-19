@@ -13,7 +13,7 @@ changelog:
 builds:
   - id: linux
     main: ./
-    binary: categraf
+    binary: goreleaser 
     env:
       - CGO_ENABLED=0
       - GODEBUG=x509negativeserial=1
@@ -27,14 +27,14 @@ builds:
       - -X main.version={{ .Tag }}-{{.Commit}}
 
 archives:
-  - id: categraf
+  - id: goreleaser
     builds:
       - linux
     format: tar.gz
     format_overrides:
       - goos: windows
         format: zip
-    name_template: "{{ .ProjectName }}-v{{ .Version }}-{{ .Os }}-{{ .Arch }}-with-cgo-plugin"
+    name_template: "{{ .ProjectName }}-v{{ .Version }}-{{ .Os }}-{{ .Arch }}"
     wrap_in_directory: true
     #files:
     #  - conf/*

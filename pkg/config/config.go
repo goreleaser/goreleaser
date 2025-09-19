@@ -1188,6 +1188,10 @@ type Before struct {
 	Hooks []string `yaml:"hooks,omitempty" json:"hooks,omitempty"`
 }
 
+type After struct {
+	Hooks []string `yaml:"hooks,omitempty" json:"hooks,omitempty"`
+}
+
 // Blob contains config for GO CDK blob.
 type Blob struct {
 	Bucket             string      `yaml:"bucket,omitempty" json:"bucket,omitempty"`
