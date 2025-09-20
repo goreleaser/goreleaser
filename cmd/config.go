@@ -50,6 +50,8 @@ func loadConfigCheck(path string) (config.Project, string, error) {
 		".goreleaser.yaml",
 		"goreleaser.yml",
 		"goreleaser.yaml",
+		".github/goreleaser.yml",
+		".github/goreleaser.yaml",
 	} {
 		proj, err := config.Load(f)
 		if err != nil && errors.Is(err, fs.ErrNotExist) {
