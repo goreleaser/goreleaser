@@ -222,6 +222,7 @@ var validLicenses = []string{
 	"sfl",
 	"sgi-b-20",
 	"sgmlug",
+	"sissl11",
 	"sleepycat",
 	"smail",
 	"smlnj",
