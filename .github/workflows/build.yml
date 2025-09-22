@@ -68,7 +68,7 @@ jobs:
       - name: setup-makeself
         if: matrix.os == 'ubuntu-latest'
         run: sudo apt install -yq makeself
-      - uses: cachix/install-nix-action@7be5dee1421f63d07e71ce6e0a9f8a4b07c2a487
+      - uses: cachix/install-nix-action@a809471b5c7c913aa67bec8f459a11a0decc3fce
         if: matrix.os == 'ubuntu-latest'
         with:
           github_access_token: ${{ secrets.GITHUB_TOKEN }}
