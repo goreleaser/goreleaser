@@ -34,6 +34,18 @@ updates:
     commit-message:
       prefix: "chore"
       include: "scope"
+
+  # Docs:
+  - package-ecosystem: "docker"
+    directory: "/www"
+    schedule:
+      interval: "daily"
+      time: "08:00"
+    labels:
+      - "dependencies"
+    commit-message:
+      prefix: "chore"
+      include: "scope"
   - package-ecosystem: "pip"
     directory: "/www"
     schedule:
