@@ -8,7 +8,7 @@ jobs:
   dependency-review:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v4
-      - uses: actions/dependency-review-action@v4
+      - uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8
+      - uses: actions/dependency-review-action@595b5aeba73380359d98a5e087f648dbb0edce1b
         with:
           config-file: ./.github/dependency-review.yml
