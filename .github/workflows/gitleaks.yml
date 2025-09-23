@@ -1,14 +1,18 @@
 name: gitleaks
 on:
   push:
-    branches: ['main']
-    tags: ['v*']
+    branches: ["main"]
+    tags: ["v*"]
   pull_request:
 permissions:
   contents: read
 jobs:
   gitleaks:
     runs-on: ubuntu-latest
+    permissions:
+      security-events: write
+      actions: read
+      contents: read
     steps:
       - uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v4
         with:
@@ -17,4 +21,5 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           GITLEAKS_LICENSE: ${{ secrets.GITLEAKS_LICENSE}}
+          GITLEAKS_ENABLE_UPLOAD_ARTIFACT: true
         if: ${{ env.GITLEAKS_LICENSE != '' }}
