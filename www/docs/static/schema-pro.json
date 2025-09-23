@@ -766,6 +766,8 @@
 							"zig",
 							"bun",
 							"deno",
+							"uv",
+							"poetry",
 							"prebuilt"
 						]
 					},
