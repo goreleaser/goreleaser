@@ -7,13 +7,18 @@ import (
 	"github.com/goreleaser/goreleaser/v2/internal/testctx"
 	"github.com/goreleaser/goreleaser/v2/pkg/build"
 	"github.com/goreleaser/goreleaser/v2/pkg/config"
+	"github.com/stretchr/testify/require"
 )
 
 func FuzzTemplateApplier(f *testing.F) {
 	f.Fuzz(func(t *testing.T, data string) {
 		ctx := testctx.NewWithCfg(config.Project{ProjectName: "test"})
 		tpl := New(ctx)
-		_, _ = tpl.Apply(data)
+		_, err := tpl.Apply(data)
+		if err == nil {
+			return
+		}
+		require.ErrorAs(t, err, &Error{})
 	})
 }
 
@@ -28,7 +33,11 @@ func FuzzTemplateWithArtifact(f *testing.F) {
 			Target: "linux_amd64",
 		})
 
-		_, _ = tpl.Apply(data)
+		_, err := tpl.Apply(data)
+		if err == nil {
+			return
+		}
+		require.ErrorAs(t, err, &Error{})
 	})
 }
 
@@ -36,7 +45,11 @@ func FuzzTemplateBool(f *testing.F) {
 	f.Fuzz(func(t *testing.T, data string) {
 		ctx := testctx.New()
 		tpl := New(ctx)
-		_, _ = tpl.Bool(data)
+		_, err := tpl.Apply(data)
+		if err == nil {
+			return
+		}
+		require.ErrorAs(t, err, &Error{})
 	})
 }
 
@@ -44,8 +57,11 @@ func FuzzTemplateSlice(f *testing.F) {
 	f.Fuzz(func(t *testing.T, data string) {
 		ctx := testctx.New()
 		tpl := New(ctx)
-		input := []string{data}
-		_, _ = tpl.Slice(input)
+		_, err := tpl.Slice([]string{data})
+		if err == nil {
+			return
+		}
+		require.ErrorAs(t, err, &Error{})
 	})
 }
 
@@ -63,7 +79,11 @@ func FuzzTemplateWithBuildOptions(f *testing.F) {
 			Target: target,
 		})
 
-		_, _ = tpl.Apply(data)
+		_, err := tpl.Apply(data)
+		if err == nil {
+			return
+		}
+		require.ErrorAs(t, err, &Error{})
 	})
 }
 
