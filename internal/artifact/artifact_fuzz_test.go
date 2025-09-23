@@ -4,7 +4,6 @@ import (
 	"crypto/rand"
 	"os"
 	"path/filepath"
-	"strings"
 	"testing"
 )
 
@@ -36,11 +35,9 @@ func FuzzChecksum(f *testing.F) {
 			"blake2s":    true,
 			"sha224":     true,
 			"sha384":     true,
-			"sha3-256":   true,
-			"sha3-512":   true,
 			"sha3-224":   true,
-			"sha3-384":   true,
 			"sha3-256":   true,
+			"sha3-384":   true,
 			"sha3-512":   true,
 		}
 		
@@ -78,6 +75,28 @@ func FuzzChecksumLargeData(f *testing.F) {
 	f.Fuzz(func(t *testing.T, algorithm string, size int) {
 		// Limit size to prevent excessive memory usage
 		if size <= 0 || size > 1000000 {
+			t.Skip()
+		}
+		
+		// Skip invalid algorithms
+		validAlgorithms := map[string]bool{
+			"sha256":     true,
+			"md5":        true,
+			"sha1":       true,
+			"crc32":      true,
+			"sha512":     true,
+			"blake2b":    true,
+			"blake2s":    true,
+			"sha224":     true,
+			"sha384":     true,
+			"sha3-224":   true,
+			"sha3-256":   true,
+			"sha3-384":   true,
+			"sha3-512":   true,
+		}
+		
+		// Only test with valid algorithms to avoid expected errors
+		if !validAlgorithms[algorithm] {
 			t.Skip()
 		}
 		

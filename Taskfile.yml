@@ -47,10 +47,15 @@ tasks:
     cmds:
       - scripts/fuzz.sh ./internal/tmpl 30s
 
+  fuzz:artifact:
+    cmds:
+      - scripts/fuzz.sh ./internal/artifact 30s
+
   fuzz:
     desc: Run fuzz tests
   cmds:
     - task: fuzz:tmpl
+    - task: fuzz:artifact
 
   test:golden:update:
     desc: Run all tests that write goldne files, updating the files.
