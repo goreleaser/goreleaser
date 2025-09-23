@@ -1,4 +1,4 @@
-# Threat Modeling Document for goreleaser/goreleaser
+# Threat Modeling Document
 
 ## Introduction
 
