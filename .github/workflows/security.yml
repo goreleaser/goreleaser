@@ -1,4 +1,4 @@
-name: "codeql"
+name: "security"
 
 on:
   pull_request:
@@ -7,16 +7,23 @@ on:
   schedule:
     - cron: "0 2 * * *"
 
-permissions:
-  contents: read
-
 concurrency:
   group: codeql-${{ github.event.pull_request.number || github.ref }}
   cancel-in-progress: true
 
 jobs:
-  analyze:
-    name: analyze
+  openssf:
+    runs-on: ubuntu-latest
+    permissions:
+      security-events: write
+      id-token: write
+      contents: read
+      issues: read
+      pull-requests: read
+      checks: read
+    steps:
+      - uses: ossf/scorecard-action@05b42c624433fc40578a4040d5cf5e36ddca8cde
+  codeql:
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
