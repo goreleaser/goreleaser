@@ -43,6 +43,15 @@ tasks:
     cmds:
       - go test {{.TEST_OPTIONS}} -failfast -race -coverpkg=./... -covermode=atomic -coverprofile=coverage.txt {{.SOURCE_FILES}} -run {{.TEST_PATTERN}} -timeout=15m
 
+  fuzz:tmpl:
+    cmds:
+      - scripts/fuzz.sh ./internal/tmpl 30s
+
+  fuzz:
+    desc: Run fuzz tests
+  cmds:
+    - task: fuzz:tmpl
+
   test:golden:update:
     desc: Run all tests that write goldne files, updating the files.
     sources:
