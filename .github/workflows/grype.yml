@@ -1,9 +1,11 @@
 name: "grype"
 on:
   push:
-    branches: ['main']
-    tags: ['v*']
+    branches: ["main"]
+    tags: ["v*"]
   pull_request:
+permissions:
+  contents: read
 jobs:
   scan-source:
     name: scan-source

@@ -8,22 +8,16 @@ on:
     branches:
       - main
 
+permissions:
+  contents: read
+
 jobs:
   milestone:
     runs-on: ubuntu-latest
-
     permissions:
-      actions: none
-      checks: none
       contents: read
-      deployments: none
       issues: write
-      packages: none
       pull-requests: write
-      repository-projects: none
-      security-events: none
-      statuses: none
-
     steps:
       - uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v6
         with:
