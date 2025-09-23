@@ -22,8 +22,8 @@ jobs:
         with:
           version: 3.x
           repo-token: ${{ secrets.GITHUB_TOKEN }}
-      - run: "go install mvdan.cc/gofumpt@latest"
-      - run: "go install github.com/santhosh-tekuri/jsonschema/cmd/jv@latest"
+      - run: "go install mvdan.cc/gofumpt@v0.9.1"
+      - run: "go install github.com/santhosh-tekuri/jsonschema/cmd/jv@v6.0.2"
       - run: task docs:releases
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
