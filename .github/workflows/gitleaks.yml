@@ -21,5 +21,7 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           GITLEAKS_LICENSE: ${{ secrets.GITLEAKS_LICENSE}}
-          GITLEAKS_ENABLE_UPLOAD_ARTIFACT: true
         if: ${{ env.GITLEAKS_LICENSE != '' }}
+      - uses: github/codeql-action/upload-sarif@192325c86100d080feab897ff886c34abd4c83a3 # v3.30.3
+        with:
+          sarif_file: results.sarif
