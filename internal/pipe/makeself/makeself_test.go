@@ -85,7 +85,7 @@ func makeContext(tb testing.TB) *context.Context {
 	for _, goos := range []string{"linux", "darwin"} {
 		for _, goarch := range []string{"amd64", "arm64"} {
 			ctx.Artifacts.Add(&artifact.Artifact{
-				Name:   "mybin",
+				Name:   "dir/mybin",
 				Path:   filepath.Join(tmp, "mybin"),
 				Type:   artifact.Binary,
 				Goos:   goos,
@@ -125,7 +125,7 @@ func TestRun(t *testing.T) {
 			return strings.Compare(a.Path, b.Path)
 		})
 
-		requireContainsFiles(t, result[0].Path, "mybin", "package.lsm", "setup.sh")
+		requireContainsFiles(t, result[0].Path, "dir/mybin", "package.lsm", "setup.sh")
 		requireEqualLSM(t, result[0].Path)
 	})
 	t.Run("complete", func(t *testing.T) {
@@ -163,7 +163,7 @@ func TestRun(t *testing.T) {
 		require.Equal(t, "makeself", artifact.ExtraOr(*m, artifact.ExtraFormat, ""))
 		require.Equal(t, ".run", artifact.ExtraOr(*m, artifact.ExtraExt, ""))
 
-		requireContainsFiles(t, result[0].Path, "mybin", "package.lsm", "setup.sh", "docs/foo.txt")
+		requireContainsFiles(t, result[0].Path, "dir/mybin", "package.lsm", "setup.sh", "docs/foo.txt")
 		requireEqualLSM(t, result[0].Path)
 	})
 }

@@ -228,7 +228,7 @@ func setupContext(
 	}
 
 	for _, binary := range binaries {
-		dst := filepath.Join(dir, filepath.Base(binary.Name))
+		dst := filepath.Join(dir, binary.Name)
 		if err := os.MkdirAll(filepath.Dir(dst), 0o755); err != nil {
 			return "", fmt.Errorf("failed to create directory for %s: %w", binary.Name, err)
 		}
