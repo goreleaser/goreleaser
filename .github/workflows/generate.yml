@@ -22,8 +22,16 @@ jobs:
         with:
           version: 3.x
           repo-token: ${{ secrets.GITHUB_TOKEN }}
-      - run: "go install mvdan.cc/gofumpt@v0.9.1"
-      - run: "go install github.com/santhosh-tekuri/jsonschema/cmd/jv@v6.0.2"
+      - name: "install tools"
+        run: |
+          mkdir -p ~/bin
+          wget -O ~/bin/gofumpt https://github.com/mvdan/gofumpt/releases/download/v0.9.1/gofumpt_v0.9.1_linux_amd64
+          chmod +x ~/bin/gofumpt
+          wget -O jv.tar.gz https://github.com/santhosh-tekuri/jsonschema/releases/download/v6.0.2/jv-v6.0.2-linux-amd64.tar.gz
+          tar xzvf jv.tar.gz -C ~/bin jv
+          chmod +x ~/bin/jv
+          rm jv.tar.gz
+          echo "$HOME/bin" >> $GITHUB_PATH
       - run: task docs:releases
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
