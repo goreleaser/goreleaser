@@ -192,7 +192,7 @@ func create(ctx *context.Context, cfg config.Makeself, plat string, binaries []*
 	log := log.WithField("package", filename).WithField("dir", dir)
 	log.Info("creating makeself package")
 
-	arg := makeArg(name, filename, compression, extraArgs)
+	arg := makeArg(name, filename, compression, filepath.Base(script), extraArgs)
 	cmd := exec.CommandContext(ctx, "makeself", arg...)
 	cmd.Dir = dir
 	cmd.Env = append(ctx.Env.Strings(), cmd.Environ()...)
@@ -250,7 +250,7 @@ func setupContext(
 			return "", fmt.Errorf("failed to copy file %s: %w", f.Source, err)
 		}
 	}
-	if err := gio.Copy(script, filepath.Join(dir, "script.sh")); err != nil {
+	if err := gio.Copy(script, filepath.Join(dir, filepath.Base(script))); err != nil {
 		return "", fmt.Errorf("failed to copy binary %s: %w", script, err)
 	}
 	if err := os.WriteFile(filepath.Join(dir, "package.lsm"), []byte(lsm), 0o644); err != nil {
@@ -259,7 +259,7 @@ func setupContext(
 	return dir, nil
 }
 
-func makeArg(name, filename, compression string, extraArgs []string) []string {
+func makeArg(name, filename, compression, script string, extraArgs []string) []string {
 	arg := []string{"--quiet"} // Always run quietly
 	switch compression {
 	case "gzip", "bzip2", "xz", "lzo", "compress":
@@ -272,7 +272,7 @@ func makeArg(name, filename, compression string, extraArgs []string) []string {
 
 	arg = append(arg, "--lsm", "package.lsm")
 	arg = append(arg, extraArgs...)
-	return append(arg, ".", filename, name, "./script.sh")
+	return append(arg, ".", filename, name, script)
 }
 
 func makeArtifact(cfg config.Makeself, binary *artifact.Artifact, filename, path string) *artifact.Artifact {
