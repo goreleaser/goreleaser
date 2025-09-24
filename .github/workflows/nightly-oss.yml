@@ -4,6 +4,7 @@ on:
   schedule:
     - cron: 0 0 * * *
 permissions:
+  contents: write
   id-token: write
   packages: write
   attestations: write
