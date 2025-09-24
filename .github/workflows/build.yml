@@ -20,21 +20,19 @@ jobs:
   license-check:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8
-      - uses: actions/setup-go@44694675825211faa026b3c33043df3e48a5fa00
+      - uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
+      - uses: actions/setup-go@44694675825211faa026b3c33043df3e48a5fa00 # v6.0.0
         with:
           go-version: stable
-      - uses: arduino/setup-task@b91d5d2c96a56797b48ac1e0e89220bf64044611
+      - uses: go-task/setup-task@0ab1b2a65bc55236a3bc64cde78f80e20e8885c2 # v1.0.0
         with:
           version: 3.x
           repo-token: ${{ secrets.GITHUB_TOKEN }}
       - run: task licenses:check
-  govulncheck:
-    uses: caarlos0/meta/.github/workflows/govulncheck.yml@395f87b2cc4fbb0a99db4decb1b3bbd16bc07cfc
   semgrep:
-    uses: caarlos0/meta/.github/workflows/semgrep.yml@395f87b2cc4fbb0a99db4decb1b3bbd16bc07cfc
+    uses: caarlos0/meta/.github/workflows/semgrep.yml@c7f17af352dac91fa6c785d06ebac8547f1abdd3 # v0.1.0
   ruleguard:
-    uses: caarlos0/meta/.github/workflows/ruleguard.yml@395f87b2cc4fbb0a99db4decb1b3bbd16bc07cfc
+    uses: caarlos0/meta/.github/workflows/ruleguard.yml@c7f17af352dac91fa6c785d06ebac8547f1abdd3 # v0.1.0
     with:
       args: "-disable largeloopcopy"
   test:
@@ -46,53 +44,53 @@ jobs:
     env:
       DOCKER_CLI_EXPERIMENTAL: "enabled"
     steps:
-      - uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8
+      - uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
         with:
           fetch-depth: 0
-      - uses: arduino/setup-task@b91d5d2c96a56797b48ac1e0e89220bf64044611
+      - uses: go-task/setup-task@0ab1b2a65bc55236a3bc64cde78f80e20e8885c2 # v1.0.0
         with:
           version: 3.x
           repo-token: ${{ secrets.GITHUB_TOKEN }}
-      - uses: docker/setup-qemu-action@29109295f81e9208d7d86ff1c6c12d2833863392
+      - uses: docker/setup-qemu-action@29109295f81e9208d7d86ff1c6c12d2833863392 # v3.6.0
         if: matrix.os == 'ubuntu-latest'
-      - uses: docker/setup-buildx-action@e468171a9de216ec08956ac3ada2f0791b6bd435
+      - uses: docker/setup-buildx-action@e468171a9de216ec08956ac3ada2f0791b6bd435 # v3.11.1
         if: matrix.os == 'ubuntu-latest'
         with:
           driver-opts: network=host
       - name: setup-snapcraft
         if: matrix.os == 'ubuntu-latest'
         run: sudo snap install snapcraft --classic
-      - uses: crazy-max/ghaction-upx@db8cc9515a4a7ea1b312cb82fbeae6d716daf777
+      - uses: crazy-max/ghaction-upx@db8cc9515a4a7ea1b312cb82fbeae6d716daf777 # v3.2.0
         with:
           install-only: true
       - name: setup-makeself
         if: matrix.os == 'ubuntu-latest'
         run: sudo apt install -yq makeself
-      - uses: cachix/install-nix-action@a809471b5c7c913aa67bec8f459a11a0decc3fce
+      - uses: cachix/install-nix-action@a809471b5c7c913aa67bec8f459a11a0decc3fce # v31.6.2
         if: matrix.os == 'ubuntu-latest'
         with:
           github_access_token: ${{ secrets.GITHUB_TOKEN }}
-      - uses: actions/setup-go@44694675825211faa026b3c33043df3e48a5fa00
+      - uses: actions/setup-go@44694675825211faa026b3c33043df3e48a5fa00 # v6.0.0
         with:
           go-version-file: go.mod
-      - uses: mlugg/setup-zig@8d6198c65fb0feaa111df26e6b467fea8345e46f
-      - uses: oven-sh/setup-bun@735343b667d3e6f658f44d0eca948eb6282f2b76
-      - uses: denoland/setup-deno@e95548e56dfa95d4e1a28d6f422fafe75c4c26fb
-      - uses: cargo-bins/cargo-binstall@6c16d05d76228d6ebb51c9db4595e86015d8df9d
+      - uses: mlugg/setup-zig@8d6198c65fb0feaa111df26e6b467fea8345e46f # v2.0.5
+      - uses: oven-sh/setup-bun@735343b667d3e6f658f44d0eca948eb6282f2b76 # v2.0.2
+      - uses: denoland/setup-deno@e95548e56dfa95d4e1a28d6f422fafe75c4c26fb # v2.0.3
+      - uses: cargo-bins/cargo-binstall@20aa316bab4942180bbbabe93237858e8d77f1ed # v1.15.5
       - name: setup-cargo
         run: |
           rustup default stable
           cargo binstall cargo-zigbuild
-      - uses: snok/install-poetry@76e04a911780d5b312d89783f7b1cd627778900a
+      - uses: snok/install-poetry@76e04a911780d5b312d89783f7b1cd627778900a # v1.4.1
       - if: matrix.os == 'windows-latest'
         run: 'echo "C:\Users\runneradmin\.local\bin" | Out-File -FilePath $env:GITHUB_PATH -Encoding utf8 -Append'
-      - uses: astral-sh/setup-uv@b75a909f75acd358c2196fb9a5f1299a9a8868a4
-      - uses: sigstore/cosign-installer@d7543c93d881b35a8faa02e8e3605f69b7a1ce62
-      - uses: anchore/sbom-action/download-syft@f8bdd1d8ac5e901a77a92f111440fdb1b593736b
+      - uses: astral-sh/setup-uv@b75a909f75acd358c2196fb9a5f1299a9a8868a4 # v6.7.0
+      - uses: sigstore/cosign-installer@d7543c93d881b35a8faa02e8e3605f69b7a1ce62 # v3.10.0
+      - uses: anchore/sbom-action/download-syft@f8bdd1d8ac5e901a77a92f111440fdb1b593736b # v0.20.6
       - run: task setup
       - run: task build
       - run: task test
-      - uses: codecov/codecov-action@5a1091511ad55cbe89839c7260b706298ca349f7
+      - uses: codecov/codecov-action@af09b5e394c93991b95a5e7646aeb90c1917f78f # v5.5.1
         if: matrix.os == 'ubuntu-latest'
         with:
           file: ./coverage.txt
@@ -102,7 +100,7 @@ jobs:
   check:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8
+      - uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
         with:
           fetch-depth: 0
       - run: go run . check
@@ -115,7 +113,7 @@ jobs:
     if: ${{ github.actor == 'dependabot[bot]' && github.event_name == 'pull_request'}}
     steps:
       - id: metadata
-        uses: dependabot/fetch-metadata@08eff52bf64351f401fb50d4972fa95b9f2c2d1b
+        uses: dependabot/fetch-metadata@08eff52bf64351f401fb50d4972fa95b9f2c2d1b # v2.4.0
         with:
           github-token: "${{ secrets.GITHUB_TOKEN }}"
       - run: |

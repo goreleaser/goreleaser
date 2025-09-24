@@ -1,0 +1,26 @@
+name: govulncheck
+on:
+  pull_request:
+  push:
+    branches: [main]
+  schedule:
+    - cron: "0 2 * * *"
+permissions:
+  contents: read
+concurrency:
+  group: govulncheck-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+jobs:
+  govulncheck:
+    runs-on: ubuntu-latest
+    permissions:
+      security-events: write
+      contents: read
+    steps:
+      - uses: golang/govulncheck-action@b625fbe08f3bccbe446d94fbf87fcc875a4f50ee # v1.0.4
+        with:
+          output-format: sarif
+          output-file: results.sarif
+      - uses: github/codeql-action/upload-sarif@3e6af16ff035267728e2ebc35df5d4c4cf249f81 # v3.30.3
+        with:
+          sarif_file: results.sarif
