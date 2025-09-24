@@ -5,6 +5,7 @@ on:
     - cron: 0 0 * * *
 permissions:
   id-token: write
+  packages: write
   attestations: write
 jobs:
   check:
