@@ -90,7 +90,7 @@ jobs:
       - run: task setup
       - run: task build
       - run: task test
-      - uses: codecov/codecov-action@af09b5e394c93991b95a5e7646aeb90c1917f78f # v5.5.1
+      - uses: codecov/codecov-action@5a1091511ad55cbe89839c7260b706298ca349f7 # v5.5.1
         if: matrix.os == 'ubuntu-latest'
         with:
           file: ./coverage.txt

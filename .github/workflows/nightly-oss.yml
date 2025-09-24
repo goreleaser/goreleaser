@@ -99,7 +99,7 @@ jobs:
     if: ${{ always() }}
     steps:
       - name: Notify
-        uses: nobrayner/discord-webhook@2f38abc8877c7e8d2b0ded0cfd9599632014279f # v1
+        uses: nobrayner/discord-webhook@1766a33bf571acdcc0678f00da4fb83aad01ebc7 # v1
         with:
           github-token: ${{ secrets.github_token }}
           title: "nightly"
