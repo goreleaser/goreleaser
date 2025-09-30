@@ -23,5 +23,6 @@ jobs:
           GITLEAKS_LICENSE: ${{ secrets.GITLEAKS_LICENSE}}
         if: ${{ env.GITLEAKS_LICENSE != '' }}
       - uses: github/codeql-action/upload-sarif@3599b3baa15b485a2e49ef411a7a4bb2452e7f93 # v3.30.5
+        if: ${{ env.GITLEAKS_LICENSE != '' }}
         with:
           sarif_file: results.sarif
