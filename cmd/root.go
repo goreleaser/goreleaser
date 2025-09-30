@@ -43,7 +43,8 @@ func (cmd *rootCmd) Execute(args []string) {
 		stdctx.Background(),
 		cmd.cmd,
 		fang.WithVersion(cmd.cmd.Version),
-		fang.WithErrorHandler(errorHandler),
+		fang.WithTtyErrorHandler(ttyErrHandler),
+		fang.WithNonTtyErrorHandler(nonTtyErrHandler),
 		fang.WithColorSchemeFunc(fang.AnsiColorScheme),
 		fang.WithNotifySignal(os.Interrupt, os.Kill),
 	); err != nil {
@@ -51,7 +52,10 @@ func (cmd *rootCmd) Execute(args []string) {
 	}
 }
 
-func errorHandler(_ io.Writer, _ fang.Styles, err error) {
+func ttyErrHandler(_ io.Writer, _ fang.Styles, err error) { errHandler(err) }
+func nonTtyErrHandler(_ io.Writer, err error)             { errHandler(err) }
+
+func errHandler(err error) {
 	log := log.WithError(err)
 	for k, v := range gerrors.DetailsOf(err) {
 		log = log.WithField(k, v)
