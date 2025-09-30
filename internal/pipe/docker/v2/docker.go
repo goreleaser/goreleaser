@@ -166,9 +166,14 @@ func doBuild(ctx *context.Context, d config.DockerV2, wd string, arg []string) (
 			cmd.Stderr = io.MultiWriter(logext.NewWriter(), w)
 			cmd.Stdout = io.MultiWriter(logext.NewWriter(), w)
 			if err := cmd.Run(); err != nil {
-				// temporary log to debug issue in github actions
-				log.WithField("output", b.String()).
-					Error("build failed")
+				if isFileNotFoundError(b.String()) {
+					return gerrors.Wrap(
+						err,
+						"could not build docker image",
+						"id", d.ID,
+						"details", fileNotFoundDetails(wd),
+					)
+				}
 				return gerrors.Wrap(
 					err,
 					"could not build docker image",
@@ -462,6 +467,12 @@ func isRetriableManifestCreate(err error) bool {
 		return false
 	}
 	return strings.Contains(out.(string), "manifest verification failed for digest")
+}
+
+func isFileNotFoundError(out string) bool {
+	return strings.Contains(out, ": not found") ||
+		strings.Contains(out, ">>> COPY") ||
+		strings.Contains(out, ">>> ADD")
 }
 
 func warnExperimental() {
