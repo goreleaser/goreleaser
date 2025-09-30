@@ -123,7 +123,7 @@ func buildImage(ctx *context.Context, d config.DockerV2, extraArgs ...string) er
 
 	log := log.WithField("images", strings.Join(images, "\n")).
 		WithField("id", d.ID)
-	log.Debug("creating images")
+	log.Info("creating images")
 
 	wd, err := makeContext(ctx, d, contextArtifacts(ctx, d))
 	if err != nil {
@@ -156,6 +156,8 @@ func buildImage(ctx *context.Context, d config.DockerV2, extraArgs ...string) er
 func doBuild(ctx *context.Context, d config.DockerV2, wd string, arg []string) (string, error) {
 	if err := retry.Do(
 		func() error {
+			log.WithField("arg", arg).
+				Debug("running docker build")
 			cmd := exec.CommandContext(ctx, "docker", arg...)
 			cmd.Dir = wd
 			cmd.Env = append(ctx.Env.Strings(), cmd.Environ()...)
@@ -164,6 +166,9 @@ func doBuild(ctx *context.Context, d config.DockerV2, wd string, arg []string) (
 			cmd.Stderr = io.MultiWriter(logext.NewWriter(), w)
 			cmd.Stdout = io.MultiWriter(logext.NewWriter(), w)
 			if err := cmd.Run(); err != nil {
+				// temporary log to debug issue in github actions
+				log.WithField("output", b.String()).
+					Error("build failed")
 				return gerrors.Wrap(
 					err,
 					"could not build docker image",
