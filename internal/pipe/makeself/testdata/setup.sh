@@ -1,3 +1,3 @@
 #!/bin/sh
 echo "Running setup.sh"
-./mybin
+./dir/mybin

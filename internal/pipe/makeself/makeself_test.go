@@ -79,7 +79,7 @@ func makeContext(tb testing.TB) *context.Context {
 	tmp := tb.TempDir()
 	require.NoError(tb, os.WriteFile(
 		filepath.Join(tmp, "mybin"),
-		[]byte("#!/bin/sh\necho hi"),
+		[]byte("#!/bin/sh\necho 'hello world, from the binary'"),
 		0o755,
 	))
 	for _, goos := range []string{"linux", "darwin"} {
@@ -127,6 +127,7 @@ func TestRun(t *testing.T) {
 
 		requireContainsFiles(t, result[0].Path, "dir/mybin", "package.lsm", "setup.sh")
 		requireEqualLSM(t, result[0].Path)
+		requireRunMakeself(t, result[0].Path)
 	})
 	t.Run("complete", func(t *testing.T) {
 		ctx := makeContext(t)
@@ -165,6 +166,7 @@ func TestRun(t *testing.T) {
 
 		requireContainsFiles(t, result[0].Path, "dir/mybin", "package.lsm", "setup.sh", "docs/foo.txt")
 		requireEqualLSM(t, result[0].Path)
+		requireRunMakeself(t, result[0].Path)
 	})
 }
 
@@ -182,4 +184,13 @@ func requireContainsFiles(tb testing.TB, path string, files ...string) {
 	for _, f := range files {
 		require.Contains(tb, string(out), f)
 	}
+}
+
+func requireRunMakeself(tb testing.TB, path string) {
+	tb.Helper()
+	cmd := exec.CommandContext(tb.Context(), path)
+	cmd.Dir = tb.TempDir()
+	out, err := cmd.CombinedOutput()
+	require.NoError(tb, err, string(out))
+	require.Contains(tb, string(out), "hello world, from the binary")
 }

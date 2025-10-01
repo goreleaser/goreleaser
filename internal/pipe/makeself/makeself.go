@@ -192,7 +192,7 @@ func create(ctx *context.Context, cfg config.Makeself, plat string, binaries []*
 	log := log.WithField("package", filename).WithField("dir", dir)
 	log.Info("creating makeself package")
 
-	arg := makeArg(name, filename, compression, filepath.Base(script), extraArgs)
+	arg := makeArg(name, filename, compression, "./"+filepath.Base(script), extraArgs)
 	cmd := exec.CommandContext(ctx, "makeself", arg...)
 	cmd.Dir = dir
 	cmd.Env = append(ctx.Env.Strings(), cmd.Environ()...)
