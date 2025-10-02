@@ -81,12 +81,6 @@ archives:
     # for some reason, but do no want that sub-directory inside the archive.
     strip_binary_directory: true
 
-    # This will make the destination paths be relative to the longest common
-    # path prefix between all the files matched and the source glob.
-    # Enabling this essentially mimic the behavior of nfpm's contents section.
-    # It will be the default by June 2023.
-    rlcp: true
-
     # Can be used to change the archive formats for specific GOOSs.
     # Most common use case is to archive as zip on Windows.
     format_overrides:
