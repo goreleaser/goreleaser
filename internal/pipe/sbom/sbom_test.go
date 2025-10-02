@@ -12,6 +12,7 @@ import (
 	"github.com/goreleaser/goreleaser/v2/internal/testctx"
 	"github.com/goreleaser/goreleaser/v2/internal/testlib"
 	"github.com/goreleaser/goreleaser/v2/internal/tmpl"
+	"github.com/goreleaser/goreleaser/v2/pkg/archive"
 	"github.com/goreleaser/goreleaser/v2/pkg/config"
 	"github.com/goreleaser/goreleaser/v2/pkg/context"
 	"github.com/stretchr/testify/assert"
@@ -23,7 +24,7 @@ func TestDescription(t *testing.T) {
 }
 
 func TestSBOMCatalogDefault(t *testing.T) {
-	defaultArgs := []string{"$artifact", "--output", "spdx-json=$document"}
+	defaultArgs := []string{"$artifact", "--output", "spdx-json=$document", "--enrich", "all"}
 	defaultSboms := []string{
 		"{{ .ArtifactName }}.sbom.json",
 	}
@@ -169,6 +170,7 @@ func TestSBOMCatalogInvalidArtifacts(t *testing.T) {
 	ctx := testctx.NewWithCfg(config.Project{
 		SBOMs: []config.SBOM{{Artifacts: "foo"}},
 	})
+	require.NoError(t, Pipe{}.Default(ctx))
 	err := Pipe{}.Run(ctx)
 	require.EqualError(t, err, "invalid list of artifacts to catalog: foo")
 }
@@ -212,6 +214,55 @@ func TestSkipCataloging(t *testing.T) {
 			},
 		})
 		require.False(t, Pipe{}.Skip(ctx))
+	})
+}
+
+func TestDisable(t *testing.T) {
+	t.Run("enabled", func(t *testing.T) {
+		ctx := testctx.NewWithCfg(config.Project{
+			SBOMs: []config.SBOM{
+				{Disable: "false"},
+			},
+		})
+		require.NoError(t, Pipe{}.Default(ctx))
+		require.NoError(t, Pipe{}.Run(ctx))
+	})
+
+	t.Run("disabled", func(t *testing.T) {
+		ctx := testctx.NewWithCfg(config.Project{
+			SBOMs: []config.SBOM{
+				{Disable: "true"},
+			},
+		})
+		testlib.AssertSkipped(t, Pipe{}.Run(ctx))
+	})
+
+	t.Run("enabled template", func(t *testing.T) {
+		ctx := testctx.NewWithCfg(config.Project{
+			SBOMs: []config.SBOM{
+				{Disable: `{{ eq .Env.SBOM_DISABLED "1" }}`},
+			},
+		}, testctx.WithEnv(map[string]string{"SBOM_DISABLED": "0"}))
+		require.NoError(t, Pipe{}.Default(ctx))
+		require.NoError(t, Pipe{}.Run(ctx))
+	})
+
+	t.Run("disabled template", func(t *testing.T) {
+		ctx := testctx.NewWithCfg(config.Project{
+			SBOMs: []config.SBOM{
+				{Disable: `{{ eq .Env.SBOM_DISABLED "1" }}`},
+			},
+		}, testctx.WithEnv(map[string]string{"SBOM_DISABLED": "1"}))
+		testlib.AssertSkipped(t, Pipe{}.Run(ctx))
+	})
+
+	t.Run("enabled invalid template", func(t *testing.T) {
+		ctx := testctx.NewWithCfg(config.Project{
+			SBOMs: []config.SBOM{
+				{Disable: "{{ .Invalid }}"},
+			},
+		})
+		testlib.RequireTemplateError(t, Pipe{}.Run(ctx))
 	})
 }
 
@@ -462,15 +513,27 @@ func testSBOMCataloging(
 		file := filepath.Join(tmpdir, f)
 		require.NoError(tb, os.WriteFile(file, []byte("foo"), 0o644))
 	}
+
 	require.NoError(tb, os.WriteFile(filepath.Join(tmpdir, "linux_amd64", "artifact4"), []byte("foo"), 0o644))
 	artifacts = append(artifacts, "linux_amd64/artifact4")
-	require.NoError(tb, os.WriteFile(filepath.Join(tmpdir, "artifact5.tar.gz"), []byte("foo"), 0o644))
+
+	tgz, err := os.OpenFile(filepath.Join(tmpdir, "artifact5.tar.gz"), os.O_CREATE|os.O_TRUNC|os.O_RDWR, 0o644)
+	require.NoError(tb, err)
+	tb.Cleanup(func() { _ = tgz.Close() })
+	a, err := archive.New(tgz, "tar.gz")
+	require.NoError(tb, err)
+	require.NoError(tb, a.Add(config.File{
+		Source:      filepath.Join(tmpdir, "linux_amd64", "artifact4"),
+		Destination: "artifact",
+	}))
+	require.NoError(tb, a.Close())
+
 	artifacts = append(artifacts, "artifact5.tar.gz")
 	ctx.Artifacts.Add(&artifact.Artifact{
 		Name: "artifact1",
 		Path: filepath.Join(tmpdir, "artifact1"),
 		Type: artifact.UploadableArchive,
-		Extra: map[string]interface{}{
+		Extra: map[string]any{
 			artifact.ExtraID: "foo",
 		},
 	})
@@ -478,7 +541,7 @@ func testSBOMCataloging(
 		Name: "artifact2",
 		Path: filepath.Join(tmpdir, "artifact2"),
 		Type: artifact.UploadableArchive,
-		Extra: map[string]interface{}{
+		Extra: map[string]any{
 			artifact.ExtraID: "foo3",
 		},
 	})
@@ -488,7 +551,7 @@ func testSBOMCataloging(
 		Goos:   "linux",
 		Goarch: "amd64",
 		Type:   artifact.UploadableBinary,
-		Extra: map[string]interface{}{
+		Extra: map[string]any{
 			artifact.ExtraID:     "foo",
 			artifact.ExtraBinary: "artifact3-name",
 		},
@@ -499,7 +562,7 @@ func testSBOMCataloging(
 		Goos:   "linux",
 		Goarch: "amd64",
 		Type:   artifact.Binary,
-		Extra: map[string]interface{}{
+		Extra: map[string]any{
 			artifact.ExtraID:     "foo3",
 			artifact.ExtraBinary: "artifact4-name",
 		},
@@ -513,7 +576,7 @@ func testSBOMCataloging(
 		Name: "package1.deb",
 		Path: filepath.Join(tmpdir, "package1.deb"),
 		Type: artifact.LinuxPackage,
-		Extra: map[string]interface{}{
+		Extra: map[string]any{
 			artifact.ExtraID: "foo",
 		},
 	})
@@ -621,7 +684,7 @@ func Test_templateNames(t *testing.T) {
 		Goos:   "darwin",
 		Goarch: "amd64",
 		Type:   artifact.Binary,
-		Extra: map[string]interface{}{
+		Extra: map[string]any{
 			artifact.ExtraID: "id-it",
 			"Binary":         "binary-name",
 		},

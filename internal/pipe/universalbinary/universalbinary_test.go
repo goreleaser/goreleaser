@@ -223,7 +223,7 @@ func TestRun(t *testing.T) {
 	})
 
 	for arch, path := range paths {
-		cmd := exec.Command("go", "build", "-o", path, src)
+		cmd := exec.CommandContext(t.Context(), "go", "build", "-o", path, src)
 		cmd.Env = append(os.Environ(), "GOOS=darwin", "GOARCH="+arch)
 		_, err := cmd.CombinedOutput()
 		require.NoError(t, err)
@@ -237,7 +237,7 @@ func TestRun(t *testing.T) {
 			Goos:   "darwin",
 			Goarch: arch,
 			Type:   artifact.Binary,
-			Extra: map[string]interface{}{
+			Extra: map[string]any{
 				artifact.ExtraBinary: "fake",
 				artifact.ExtraID:     "foo",
 			},
@@ -253,7 +253,7 @@ func TestRun(t *testing.T) {
 			Goos:   "darwin",
 			Goarch: arch,
 			Type:   artifact.Binary,
-			Extra: map[string]interface{}{
+			Extra: map[string]any{
 				artifact.ExtraBinary: "fake",
 				artifact.ExtraID:     "foo",
 			},
@@ -274,7 +274,7 @@ func TestRun(t *testing.T) {
 		unis := ctx1.Artifacts.Filter(artifact.ByType(artifact.UniversalBinary)).List()
 		require.Len(t, unis, 1)
 		checkUniversalBinary(t, unis[0])
-		require.True(t, artifact.ExtraOr(*unis[0], artifact.ExtraReplaces, false))
+		require.True(t, artifact.MustExtra[bool](*unis[0], artifact.ExtraReplaces))
 	})
 
 	t.Run("keeping", func(t *testing.T) {
@@ -283,7 +283,7 @@ func TestRun(t *testing.T) {
 		unis := ctx2.Artifacts.Filter(artifact.ByType(artifact.UniversalBinary)).List()
 		require.Len(t, unis, 1)
 		checkUniversalBinary(t, unis[0])
-		require.False(t, artifact.ExtraOr(*unis[0], artifact.ExtraReplaces, true))
+		require.False(t, artifact.MustExtra[bool](*unis[0], artifact.ExtraReplaces))
 	})
 
 	t.Run("bad template", func(t *testing.T) {

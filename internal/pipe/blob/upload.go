@@ -10,8 +10,8 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/aws/aws-sdk-go/aws"
-	"github.com/aws/aws-sdk-go/service/s3/s3manager"
+	"github.com/aws/aws-sdk-go-v2/service/s3"
+	"github.com/aws/aws-sdk-go-v2/service/s3/types"
 	"github.com/caarlos0/log"
 	"github.com/goreleaser/goreleaser/v2/internal/artifact"
 	"github.com/goreleaser/goreleaser/v2/internal/extrafiles"
@@ -51,11 +51,6 @@ func urlFor(ctx *context.Context, conf config.Blob) (string, error) {
 
 	query := url.Values{}
 
-	// FIXME: this needs to be removed eventually.
-	// See: https://github.com/google/go-cloud/issues/3472
-	// See: https://github.com/google/go-cloud/releases/tag/v0.39.0
-	query.Add("awssdk", "v1")
-
 	endpoint, err := tmpl.New(ctx).Apply(conf.Endpoint)
 	if err != nil {
 		return "", err
@@ -78,7 +73,7 @@ func urlFor(ctx *context.Context, conf config.Blob) (string, error) {
 	}
 
 	if conf.DisableSSL {
-		query.Add("disableSSL", "true")
+		query.Add("disable_https", "true")
 	}
 
 	if len(query) > 0 {
@@ -108,13 +103,25 @@ func doUpload(ctx *context.Context, conf config.Blob) error {
 		contentDisposition: conf.ContentDisposition,
 	}
 	if conf.Provider == "s3" && conf.ACL != "" {
-		up.beforeWrite = func(asFunc func(interface{}) bool) error {
-			req := &s3manager.UploadInput{}
+		up.beforeWrite = func(asFunc func(any) bool) error {
+			req := &s3.PutObjectInput{}
 			if !asFunc(&req) {
 				return errors.New("could not apply before write")
 			}
-			req.ACL = aws.String(conf.ACL)
-			return nil
+			acl := types.ObjectCannedACL(conf.ACL)
+			switch acl {
+			case types.ObjectCannedACLPrivate,
+				types.ObjectCannedACLPublicRead,
+				types.ObjectCannedACLPublicReadWrite,
+				types.ObjectCannedACLAuthenticatedRead,
+				types.ObjectCannedACLAwsExecRead,
+				types.ObjectCannedACLBucketOwnerRead,
+				types.ObjectCannedACLBucketOwnerFullControl:
+				req.ACL = acl
+				return nil
+			default:
+				return fmt.Errorf("invalid ACL %q", conf.ACL)
+			}
 		}
 	}
 
@@ -152,25 +159,26 @@ func artifactList(ctx *context.Context, conf config.Blob) []*artifact.Artifact {
 	if conf.ExtraFilesOnly {
 		return nil
 	}
-	byTypes := []artifact.Filter{
-		artifact.ByType(artifact.UploadableArchive),
-		artifact.ByType(artifact.UploadableBinary),
-		artifact.ByType(artifact.UploadableSourceArchive),
-		artifact.ByType(artifact.Checksum),
-		artifact.ByType(artifact.Signature),
-		artifact.ByType(artifact.Certificate),
-		artifact.ByType(artifact.LinuxPackage),
-		artifact.ByType(artifact.SBOM),
+	types := []artifact.Type{
+		artifact.UploadableArchive,
+		artifact.UploadableBinary,
+		artifact.UploadableSourceArchive,
+		artifact.Makeself,
+		artifact.Checksum,
+		artifact.Signature,
+		artifact.Certificate,
+		artifact.LinuxPackage,
+		artifact.SBOM,
+		artifact.PySdist,
+		artifact.PyWheel,
 	}
 	if conf.IncludeMeta {
-		byTypes = append(byTypes, artifact.ByType(artifact.Metadata))
+		types = append(types, artifact.Metadata)
 	}
-
-	filter := artifact.Or(byTypes...)
-	if len(conf.IDs) > 0 {
-		filter = artifact.And(filter, artifact.ByIDs(conf.IDs...))
-	}
-	return ctx.Artifacts.Filter(filter).List()
+	return ctx.Artifacts.Filter(artifact.And(
+		artifact.ByTypes(types...),
+		artifact.ByIDs(conf.IDs...),
+	)).List()
 }
 
 func uploadData(ctx *context.Context, conf config.Blob, up uploader, dataFile, uploadFile, bucketURL string) error {
@@ -246,7 +254,7 @@ type uploader interface {
 // productionUploader actually do upload to.
 type productionUploader struct {
 	bucket             *blob.Bucket
-	beforeWrite        func(asFunc func(interface{}) bool) error
+	beforeWrite        func(asFunc func(any) bool) error
 	cacheControl       []string
 	contentDisposition string
 }

@@ -1,3 +1,4 @@
+// Package rust builds rust binaries.
 package rust
 
 import (
@@ -10,7 +11,7 @@ import (
 
 	"github.com/caarlos0/log"
 	"github.com/goreleaser/goreleaser/v2/internal/artifact"
-	"github.com/goreleaser/goreleaser/v2/internal/builders/common"
+	"github.com/goreleaser/goreleaser/v2/internal/builders/base"
 	"github.com/goreleaser/goreleaser/v2/internal/cargo"
 	"github.com/goreleaser/goreleaser/v2/internal/gio"
 	"github.com/goreleaser/goreleaser/v2/internal/tmpl"
@@ -74,7 +75,7 @@ func (b *Builder) Parse(target string) (api.Target, error) {
 	}
 
 	if len(parts) > 3 {
-		t.Environment = parts[3]
+		t.Abi = parts[3]
 	}
 
 	return t, nil
@@ -112,7 +113,7 @@ func (b *Builder) WithDefaults(build config.Build) (config.Build, error) {
 		return build, errors.New("main is not used for rust")
 	}
 
-	if err := common.ValidateNonGoConfig(build); err != nil {
+	if err := base.ValidateNonGoConfig(build); err != nil {
 		return build, err
 	}
 
@@ -149,11 +150,12 @@ func (b *Builder) Build(ctx *context.Context, build config.Build, options api.Op
 		Goos:   t.Os,
 		Goarch: convertToGoarch(t.Arch),
 		Target: t.Target,
-		Extra: map[string]interface{}{
+		Extra: map[string]any{
 			artifact.ExtraBinary:  strings.TrimSuffix(filepath.Base(options.Path), options.Ext),
 			artifact.ExtraExt:     options.Ext,
 			artifact.ExtraID:      build.ID,
 			artifact.ExtraBuilder: "rust",
+			keyAbi:                t.Abi,
 		},
 	}
 
@@ -176,7 +178,7 @@ func (b *Builder) Build(ctx *context.Context, build config.Build, options api.Op
 		"--target=" + t.Target,
 	}
 
-	tenv, err := common.TemplateEnv(build.Env, tpl)
+	tenv, err := base.TemplateEnv(build.Env, tpl)
 	if err != nil {
 		return err
 	}
@@ -188,7 +190,7 @@ func (b *Builder) Build(ctx *context.Context, build config.Build, options api.Op
 	}
 	command = append(command, flags...)
 
-	if err := common.Exec(ctx, command, env, build.Dir); err != nil {
+	if err := base.Exec(ctx, command, env, build.Dir); err != nil {
 		return err
 	}
 
@@ -197,7 +199,7 @@ func (b *Builder) Build(ctx *context.Context, build config.Build, options api.Op
 		return err
 	}
 
-	if err := common.ChTimes(build, tpl, a); err != nil {
+	if err := base.ChTimes(build, tpl, a); err != nil {
 		return err
 	}
 

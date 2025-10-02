@@ -4,15 +4,35 @@ Release engineering, simplified
 
 ## Synopsis
 
-GoReleaser is a release automation tool.
-Its goal is to simplify the build, release and publish steps while providing variant customization options for all steps.
+Release engineering, simplified.
 
-GoReleaser is built for CI tools, you only need to download and execute it in your build script. Of course, you can also install it locally if you wish.
+GoReleaser is a release automation tool, built with love and care by @caarlos0 and many contributors.
 
-You can customize your entire release process through a single .goreleaser.yaml file.
+Complete documentation is available at https://goreleaser.com
 
-Check out our website for more information, examples and documentation: https://goreleaser.com
+## Examples
 
+```
+
+# Initialize your project:
+goreleaser init
+
+# Verify your configuration:
+goreleaser check
+
+# Verify dependencies:
+goreleaser healthcheck
+
+# Build the binaries only:
+goreleaser build
+
+# Run a snapshot release:
+goreleaser release --snapshot
+
+# Run a complete release:
+goreleaser release
+		
+```
 
 ## Options
 
@@ -31,7 +51,8 @@ Check out our website for more information, examples and documentation: https://
 * [goreleaser continue](goreleaser_continue.md)	 - Continues a previously prepared release
 * [goreleaser healthcheck](goreleaser_healthcheck.md)	 - Checks if needed tools are installed
 * [goreleaser init](goreleaser_init.md)	 - Generates a .goreleaser.yaml file
-* [goreleaser jsonschema](goreleaser_jsonschema.md)	 - outputs goreleaser's JSON schema
+* [goreleaser jsonschema](goreleaser_jsonschema.md)	 - Outputs goreleaser's JSON schema
+* [goreleaser mcp](goreleaser_mcp.md)	 - Start a MCP server that provides GoReleaser tools
 * [goreleaser publish](goreleaser_publish.md)	 - Publishes a previously prepared release
 * [goreleaser release](goreleaser_release.md)	 - Releases the current project
 * [goreleaser subscribe](goreleaser_subscribe.md)	 - Subscribe to GoReleaser Pro, or manage your subscription

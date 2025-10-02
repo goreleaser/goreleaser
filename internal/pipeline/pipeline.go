@@ -11,18 +11,21 @@ import (
 	"github.com/goreleaser/goreleaser/v2/internal/pipe/before"
 	"github.com/goreleaser/goreleaser/v2/internal/pipe/brew"
 	"github.com/goreleaser/goreleaser/v2/internal/pipe/build"
+	"github.com/goreleaser/goreleaser/v2/internal/pipe/cask"
 	"github.com/goreleaser/goreleaser/v2/internal/pipe/changelog"
 	"github.com/goreleaser/goreleaser/v2/internal/pipe/checksums"
 	"github.com/goreleaser/goreleaser/v2/internal/pipe/chocolatey"
 	"github.com/goreleaser/goreleaser/v2/internal/pipe/defaults"
 	"github.com/goreleaser/goreleaser/v2/internal/pipe/dist"
 	"github.com/goreleaser/goreleaser/v2/internal/pipe/docker"
+	dockerv2 "github.com/goreleaser/goreleaser/v2/internal/pipe/docker/v2"
 	"github.com/goreleaser/goreleaser/v2/internal/pipe/effectiveconfig"
 	"github.com/goreleaser/goreleaser/v2/internal/pipe/env"
 	"github.com/goreleaser/goreleaser/v2/internal/pipe/git"
 	"github.com/goreleaser/goreleaser/v2/internal/pipe/gomod"
 	"github.com/goreleaser/goreleaser/v2/internal/pipe/ko"
 	"github.com/goreleaser/goreleaser/v2/internal/pipe/krew"
+	"github.com/goreleaser/goreleaser/v2/internal/pipe/makeself"
 	"github.com/goreleaser/goreleaser/v2/internal/pipe/metadata"
 	"github.com/goreleaser/goreleaser/v2/internal/pipe/nfpm"
 	"github.com/goreleaser/goreleaser/v2/internal/pipe/nix"
@@ -122,6 +125,8 @@ var Pipeline = append(
 	sourcearchive.Pipe{},
 	// archive via fpm (deb, rpm) using "native" go impl
 	nfpm.Pipe{},
+	// create makeself self-extracting archives
+	makeself.Pipe{},
 	// archive via snapcraft (snap)
 	snapcraft.Pipe{},
 	// create SBOMs of artifacts
@@ -135,11 +140,13 @@ var Pipeline = append(
 	// create arch linux aur pkgbuild (sources)
 	aursources.Pipe{},
 	// create nixpkgs
-	nix.NewBuild(),
+	nix.New(),
 	// winget installers
 	winget.Pipe{},
-	// create brew tap
+	// homebrew formula
 	brew.Pipe{},
+	// homebrew cask
+	cask.Pipe{},
 	// krew plugins
 	krew.Pipe{},
 	// create scoop buckets
@@ -150,6 +157,7 @@ var Pipeline = append(
 	reportsizes.Pipe{},
 	// create and push docker images
 	docker.Pipe{},
+	dockerv2.Snapshot{},
 	// create and push docker images using ko
 	ko.Pipe{},
 	// publishes artifacts

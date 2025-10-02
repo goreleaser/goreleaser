@@ -1,6 +1,7 @@
 package cmd
 
 import (
+	"fmt"
 	"os"
 	"testing"
 
@@ -23,14 +24,8 @@ func setup(tb testing.TB) string {
 	_ = os.Unsetenv("GITLAB_TOKEN")
 	_ = os.Unsetenv("GITEA_TOKEN")
 
-	previous, err := os.Getwd()
-	require.NoError(tb, err)
-
 	folder := tb.TempDir()
-	require.NoError(tb, os.Chdir(folder))
-	tb.Cleanup(func() {
-		require.NoError(tb, os.Chdir(previous))
-	})
+	tb.Chdir(folder)
 
 	createGoReleaserYaml(tb)
 	createMainGo(tb)
@@ -60,10 +55,10 @@ func createMainGo(tb testing.TB) {
 
 func goModInit(tb testing.TB) {
 	tb.Helper()
-	createFile(tb, "go.mod", `module foo
+	createFile(tb, "go.mod", fmt.Sprintf(`module foo
 
-go 1.24
-`)
+go %s
+`, testlib.GoVersion))
 }
 
 func createGoReleaserYaml(tb testing.TB) {

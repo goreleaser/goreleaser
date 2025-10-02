@@ -1,9 +1,11 @@
+// Package sign handles signing artifacts.
 package sign
 
 import (
 	"bytes"
 	"fmt"
 	"io"
+	"maps"
 	"os"
 	"os/exec"
 	"path/filepath"
@@ -97,13 +99,16 @@ func (Pipe) Run(ctx *context.Context) error {
 					log.Warn("when artifacts is `source`, `ids` has no effect. ignoring")
 				}
 			case "all":
-				filters = append(filters, artifact.Or(
-					artifact.ByType(artifact.UploadableArchive),
-					artifact.ByType(artifact.UploadableBinary),
-					artifact.ByType(artifact.UploadableSourceArchive),
-					artifact.ByType(artifact.Checksum),
-					artifact.ByType(artifact.LinuxPackage),
-					artifact.ByType(artifact.SBOM),
+				filters = append(filters, artifact.ByTypes(
+					artifact.UploadableArchive,
+					artifact.UploadableBinary,
+					artifact.UploadableSourceArchive,
+					artifact.Makeself,
+					artifact.Checksum,
+					artifact.LinuxPackage,
+					artifact.SBOM,
+					artifact.PySdist,
+					artifact.PyWheel,
 				))
 			case "archive":
 				filters = append(filters, artifact.ByType(artifact.UploadableArchive))
@@ -119,9 +124,7 @@ func (Pipe) Run(ctx *context.Context) error {
 				return fmt.Errorf("invalid list of artifacts to sign: %s", cfg.Artifacts)
 			}
 
-			if len(cfg.IDs) > 0 {
-				filters = append(filters, artifact.ByIDs(cfg.IDs...))
-			}
+			filters = append(filters, artifact.ByIDs(cfg.IDs...))
 			return sign(ctx, cfg, ctx.Artifacts.Filter(artifact.And(filters...)).List())
 		})
 	}
@@ -187,9 +190,7 @@ func signone(ctx *context.Context, cfg config.Sign, art *artifact.Artifact) ([]*
 		return nil, fmt.Errorf("sign failed: %s: %w", art.Name, err)
 	}
 
-	for k, v := range context.ToEnv(tmplEnv) {
-		env[k] = v
-	}
+	maps.Copy(env, context.ToEnv(tmplEnv))
 
 	name, err := tmplPath(ctx, env, art, cfg.Signature)
 	if err != nil {
@@ -274,7 +275,7 @@ func signone(ctx *context.Context, cfg config.Sign, art *artifact.Artifact) ([]*
 			Type: artifact.Signature,
 			Name: name,
 			Path: env["signature"],
-			Extra: map[string]interface{}{
+			Extra: map[string]any{
 				artifact.ExtraID: cfg.ID,
 			},
 		})
@@ -285,7 +286,7 @@ func signone(ctx *context.Context, cfg config.Sign, art *artifact.Artifact) ([]*
 			Type: artifact.Certificate,
 			Name: cert,
 			Path: env["certificate"],
-			Extra: map[string]interface{}{
+			Extra: map[string]any{
 				artifact.ExtraID: cfg.ID,
 			},
 		})

@@ -5,6 +5,7 @@ import (
 	"debug/macho"
 	"encoding/binary"
 	"fmt"
+	"maps"
 	"os"
 	"path/filepath"
 	"strings"
@@ -232,10 +233,8 @@ func makeUniversalBinary(ctx *context.Context, opts *build.Options, unibin confi
 		return err
 	}
 
-	extra := map[string]interface{}{}
-	for k, v := range binaries[0].Extra {
-		extra[k] = v
-	}
+	extra := map[string]any{}
+	maps.Copy(extra, binaries[0].Extra)
 	extra[artifact.ExtraReplaces] = unibin.Replace
 	extra[artifact.ExtraID] = unibin.ID
 

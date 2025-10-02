@@ -149,7 +149,8 @@ func TestShallowClone(t *testing.T) {
 	folder := testlib.Mktmp(t)
 	require.NoError(
 		t,
-		exec.Command(
+		exec.CommandContext(
+			t.Context(),
 			"git", "clone",
 			"--depth", "1",
 			"--branch", "v0.160.0",

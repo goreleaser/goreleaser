@@ -180,6 +180,7 @@ func TestPublishPipeSuccess(t *testing.T) {
 	table := []struct {
 		Name                string
 		SBOM                string
+		SBOMDirectory       string
 		BaseImage           string
 		Labels              map[string]string
 		ExpectedLabels      map[string]string
@@ -190,15 +191,22 @@ func TestPublishPipeSuccess(t *testing.T) {
 		Tags                []string
 		CreationTime        string
 		KoDataCreationTime  string
+		LocalDomain         string
 	}{
 		{
 			// Must be first as others add an SBOM for the same image
-			Name: "sbom-none",
-			SBOM: "none",
+			Name:          "sbom-none",
+			SBOM:          "none",
+			SBOMDirectory: "",
 		},
 		{
 			Name: "sbom-spdx",
 			SBOM: "spdx",
+		},
+		{
+			Name:          "sbom-spdx-with-dir",
+			SBOM:          "spdx",
+			SBOMDirectory: "testdata/app/",
 		},
 		{
 			Name:      "base-image-is-not-index",
@@ -283,6 +291,7 @@ func TestPublishPipeSuccess(t *testing.T) {
 						CreationTime:       table.CreationTime,
 						KoDataCreationTime: table.KoDataCreationTime,
 						SBOM:               table.SBOM,
+						SBOMDirectory:      table.SBOMDirectory,
 						Bare:               true,
 					},
 				},
@@ -412,9 +421,9 @@ func TestPublishPipeSuccess(t *testing.T) {
 				require.NoError(t, err)
 				creationTime = time.Unix(ct, 0).UTC()
 
-				require.Equal(t, creationTime, configFile.Created.Time.UTC())
+				require.Equal(t, creationTime, configFile.Created.UTC())
 			}
-			require.Equal(t, creationTime, configFile.History[len(configFile.History)-1].Created.Time.UTC())
+			require.Equal(t, creationTime, configFile.History[len(configFile.History)-1].Created.UTC())
 
 			var koDataCreationTime time.Time
 			if table.KoDataCreationTime != "" {
@@ -422,7 +431,7 @@ func TestPublishPipeSuccess(t *testing.T) {
 				require.NoError(t, err)
 				koDataCreationTime = time.Unix(kdct, 0).UTC()
 			}
-			require.Equal(t, koDataCreationTime, configFile.History[len(configFile.History)-2].Created.Time.UTC())
+			require.Equal(t, koDataCreationTime, configFile.History[len(configFile.History)-2].Created.UTC())
 		})
 	}
 }
@@ -695,8 +704,7 @@ func TestPublishPipeError(t *testing.T) {
 		ctx := makeCtx()
 		require.NoError(t, Pipe{}.Default(ctx))
 		err := Pipe{}.Publish(ctx)
-		require.Error(t, err)
-		require.Contains(t, err.Error(), `Get "https://fakerepo:8080/v2/": dial tcp:`)
+		require.ErrorContains(t, err, `Get "https://fakerepo:8080/v2/": dial tcp:`)
 	})
 }
 
@@ -711,6 +719,20 @@ func TestApplyTemplate(t *testing.T) {
 	t.Run("error", func(t *testing.T) {
 		_, err := applyTemplate(testctx.New(), []string{"{{ .Nope}}"})
 		require.Error(t, err)
+	})
+}
+
+func TestGetLocalDomain(t *testing.T) {
+	t.Run("default local domain", func(t *testing.T) {
+		ko := config.Ko{}
+		got := getLocalDomain(ko)
+		require.Equal(t, "goreleaser.ko.local", got)
+	})
+
+	t.Run("custom local domain", func(t *testing.T) {
+		ko := config.Ko{LocalDomain: "custom.domain"}
+		got := getLocalDomain(ko)
+		require.Equal(t, "custom.domain", got)
 	})
 }
 

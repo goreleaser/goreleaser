@@ -15,7 +15,7 @@ class GitRemote < Formula
 
   on_macos do
     if Hardware::CPU.intel?
-      url "https://dummyhost/download/v1.0.1/bin.tar.gz"
+      url "https://dummyhost/download/v1.0.1/bin.tgz"
       sha256 "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
 
       def install
@@ -23,7 +23,7 @@ class GitRemote < Formula
       end
     end
     if Hardware::CPU.arm?
-      url "https://dummyhost/download/v1.0.1/bin.tar.gz"
+      url "https://dummyhost/download/v1.0.1/bin.txz"
       sha256 "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
 
       def install
@@ -33,14 +33,11 @@ class GitRemote < Formula
   end
 
   on_linux do
-    if Hardware::CPU.intel?
-      if Hardware::CPU.is_64_bit?
-        url "https://dummyhost/download/v1.0.1/bin.tar.gz"
-        sha256 "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
-
-        def install
-          bin.install "git_remote_linux_amd64 => git_remote"
-        end
+    if Hardware::CPU.intel? && Hardware::CPU.is_64_bit?
+      url "https://dummyhost/download/v1.0.1/bin.tar.zst"
+      sha256 "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      def install
+        bin.install "git_remote_linux_amd64 => git_remote"
       end
     end
   end

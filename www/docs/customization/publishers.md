@@ -13,8 +13,8 @@ and executions are parallelized between all artifacts.
 In other words the publisher is expected to be safe to run
 in multiple instances in parallel.
 
-If you have only one `publishers` instance, the configuration is as easy as adding
-the command to your `.goreleaser.yaml` file:
+If you have only one `publishers` instance, the configuration is as easy as
+adding the command to your `.goreleaser.yaml` file:
 
 ```yaml
 publishers:
@@ -54,7 +54,8 @@ inherited set of variables as well.
 
 ### Variables
 
-Command (`cmd`), workdir (`dir`) and environment variables (`env`) support templating
+Command (`cmd`), workdir (`dir`) and environment variables (`env`) support
+templates:
 
 ```yaml
 publishers:
@@ -158,7 +159,21 @@ publishers:
     templated_extra_files:
       - src: LICENSE.tpl
         dst: LICENSE.txt
+
+    # This allows you to use the output of your custom publisher in templates
+    # later, for instance, in the release notes.
+    #
+    # The example bellow can be used with '{{ index .Outputs "foo.deb" }}'
+    # (assuming artifact name is 'foo.deb').
+    #
+    # Templates: allowed.
+    # <!-- md:inline_version v2.11 -->.
+    output: "check-{{ .ArtifactName }}"
 ```
+
+!!! tip
+
+    This will run as the last step of the publishing phase.
 
 These settings should allow you to push your artifacts to any number of
 endpoints, which may require non-trivial authentication or has otherwise complex

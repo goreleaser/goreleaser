@@ -78,12 +78,16 @@ func newGitLab(ctx *context.Context, token string, opts ...gitlab.ClientOptionFu
 }
 
 func isV17(client *gitlab.Client) bool {
-	v, _, err := client.Version.GetVersion(nil)
-	if err != nil {
-		log.WithError(err).Warn("could not get gitlab version")
-		return false
+	v := os.Getenv("CI_SERVER_VERSION")
+	if v == "" {
+		gitlabVersion, _, err := client.Version.GetVersion(nil)
+		if err != nil {
+			log.WithError(err).Warn("could not get gitlab version")
+			return false
+		}
+		v = gitlabVersion.Version
 	}
-	vv, err := semver.NewVersion(v.Version)
+	vv, err := semver.NewVersion(v)
 	if err != nil {
 		log.WithError(err).Warn("could not parse gitlab version")
 		return false
@@ -527,7 +531,7 @@ func (c *gitlabClient) Upload(
 		linkURL = c.client.BaseURL().String() + baseLinkURL
 	} else {
 		log.WithField("file", file.Name()).Debug("uploading file as attachment")
-		projectFile, _, err := c.client.Projects.UploadFile(
+		projectFile, _, err := c.client.ProjectMarkdownUploads.UploadProjectMarkdown(
 			projectID,
 			file,
 			filepath.Base(file.Name()),
@@ -593,7 +597,7 @@ func (c *gitlabClient) Upload(
 
 	// for checksums.txt the field is nil, so we initialize it
 	if artifact.Extra == nil {
-		artifact.Extra = make(map[string]interface{})
+		artifact.Extra = make(map[string]any)
 	}
 
 	return nil
@@ -698,6 +702,7 @@ func (c *gitlabClient) OpenPullRequest(
 		SourceBranch: &head.Branch,
 		TargetBranch: &base.Branch,
 		Title:        &title,
+		Description:  gitlab.Ptr(prFooter),
 	}
 
 	if targetProjectID != 0 {

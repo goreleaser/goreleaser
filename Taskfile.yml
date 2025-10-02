@@ -20,6 +20,7 @@ tasks:
   docker:setup:
     desc: Setup Docker for multi-arch image builds
     cmds:
+      - "docker buildx create --name=goreleaser --driver-opt network=host --use || true"
       - docker run --privileged --rm tonistiigi/binfmt --install all
 
   build:
@@ -41,6 +42,28 @@ tasks:
       TEST_PATTERN: '{{default "." .TEST_PATTERN}}'
     cmds:
       - go test {{.TEST_OPTIONS}} -failfast -race -coverpkg=./... -covermode=atomic -coverprofile=coverage.txt {{.SOURCE_FILES}} -run {{.TEST_PATTERN}} -timeout=15m
+
+  fuzz:tmpl:
+    cmds:
+      - scripts/fuzz.sh ./internal/tmpl 30s
+
+  fuzz:artifact:
+    cmds:
+      - scripts/fuzz.sh ./internal/artifact 30s
+
+  fuzz:
+    desc: Run fuzz tests
+  cmds:
+    - task: fuzz:tmpl
+    - task: fuzz:artifact
+
+  test:golden:update:
+    desc: Run all tests that write goldne files, updating the files.
+    sources:
+      - ./pkg/config/*.go
+      - ./pkg/context/*.go
+    cmds:
+      - ./scripts/test-golden.sh
 
   cover:
     desc: Open the cover tool
@@ -68,30 +91,6 @@ tasks:
     desc: Runs the default tasks
     cmds:
       - task: ci
-
-  nix:flake:build:
-    desc: build goreleaser using the nix flake
-    cmds:
-      - task: nix:flake:update-vendor
-      - nix build .
-
-  nix:flake:update:
-    desc: update flake.lock
-    cmds:
-      - nix flake update
-    generates:
-      - flake.lock
-
-  nix:flake:update-vendor:
-    desc: update default flake package vendor hash
-    cmds:
-      - bash ./scripts/nix-update-flake.sh
-    generates:
-      - flake.nix
-    sources:
-      - flake.lock
-      - go.mod
-      - go.sum
 
   nix:licenses:generate:
     desc: Generate nix/licenses.go
@@ -153,23 +152,40 @@ tasks:
       - convert www/docs/static/avatar.png -define icon:auto-resize=64,48,32,16 www/docs/static/favicon.ico
       - convert www/docs/static/avatar.png -resize x120 www/docs/static/apple-touch-icon.png
 
+  docs:container:build:
+    desc: "Build our mkdocs Docker image"
+    sources:
+      - ./www/Dockerfile
+      - ./www/requirements.txt
+    cmds:
+      - "docker build -t material-mkdocs ./www"
+
   docs:serve:
     desc: Start documentation server
     cmds:
+      - task: docs:container:build
       - task: docs:generate
-      - "mkdocs serve -f www/mkdocs.yml -a 0.0.0.0:8000"
+      - "docker run --rm -p 8000:8000 -v ./www:/docs material-mkdocs"
 
   docs:build:
     desc: Build docs
+    sources:
+      - ./www/docs/
+      - ./www/Dockerfile
+      - ./www/mkdocs.yml
+      - ./www/requirements.txt
+    generates:
+      - ./www/site
     cmds:
+      - task: docs:container:build
       - task: docs:generate
-      - "mkdocs build -f www/mkdocs.yml"
+      - "docker run --rm -v ./www:/docs material-mkdocs build"
 
   docs:test:
     desc: Test docs with htmltest
     cmds:
       - task: docs:build
-      - "htmltest www/site -c www/htmltest.yml"
+      - "docker run -v ./www:/test --rm wjdp/htmltest /test/site -c /test/htmltest.yml"
 
   release:
     desc: Create a new tag
@@ -187,6 +203,13 @@ tasks:
       - git tag {{.NEXT}}
       - echo {{.NEXT}}
       - git push origin --tags
+
+  release:watch:
+    vars:
+      RUN_ID:
+        sh: "gh run list --workflow=release.yml --limit 1 --json databaseId | jq -r '.[] | .databaseId'"
+    cmds:
+      - gh run watch {{.RUN_ID}}
 
   goreleaser:test:pkg:
     desc: Test a package
@@ -291,3 +314,14 @@ tasks:
       - gh workflow run nightly-oss.yml
       - sleep 5
       - task: nightly:watch
+
+  licenses:check:
+    cmds:
+      - |
+        go run github.com/google/go-licenses/v2@latest check \
+          --allowed_licenses=MIT,Apache-2.0,BSD-3-Clause,BSD-2-Clause,ISC,MPL-2.0 \
+          --ignore github.com/in-toto \
+          --ignore github.com/multiformats/go-base36 \
+          --ignore github.com/ipfs/bbloom \
+          --ignore github.com/cyberphone/json-canonicalization/go/src/webpki.org/jsoncanonicalizer \
+          ./...

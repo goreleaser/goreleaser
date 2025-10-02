@@ -44,6 +44,12 @@ winget:
     # Templates: allowed.
     publisher_support_url: "https://github.com/user/repo/issues/new"
 
+    # Privacy URL.
+    #
+    # <!-- md:inline_version v2.9 -->.
+    # Templates: allowed.
+    privacy_url: "https://carlosbecker.com/privacy"
+
     # Package identifier.
     #
     # Default: Publisher.ProjectName.
@@ -62,7 +68,7 @@ winget:
     # - '':        archives or binaries
     # - 'msi':     msi installers (requires the MSI pipe configured, Pro only)
     # - 'archive': archives (only if format is zip),
-    # - 'binary':  binaries
+    # - 'binary':  binaries (requires an archive configuration with format set to 'binary' as well)
     #
     # This feature is only available in GoReleaser Pro.
     # Default: ''.
@@ -86,12 +92,6 @@ winget:
     # Default depends on the client.
     # Templates: allowed.
     url_template: "https://github.mycompany.com/foo/bar/releases/download/{{ .Tag }}/{{ .ArtifactName }}"
-
-    # Git author used to commit to the repository.
-    # Templates: allowed.
-    commit_author:
-      name: goreleaserbot
-      email: bot@goreleaser.com
 
     # The project name and current git tag are used in the format string.
     #
@@ -152,7 +152,16 @@ winget:
     # Templates: allowed.
     release_notes_url: "https://foo.bar/changelog/{{.Version}}"
 
+    # Installation notes.
+    #
+    # <!-- md:inline_version v2.9 -->.
+    # Templates: allowed.
+    installation_notes: "Information on how to install. Can also be a URL"
+
     # Tags.
+    #
+    # GoReleaser converts all tags to lowercase and replace
+    # spaces with hyphens (-) as per winget's best practices.
     tags:
       - golang
       - cli

@@ -12,9 +12,12 @@ import (
 	"github.com/goreleaser/goreleaser/v2/internal/pipe/aursources"
 	"github.com/goreleaser/goreleaser/v2/internal/pipe/blob"
 	"github.com/goreleaser/goreleaser/v2/internal/pipe/brew"
+	"github.com/goreleaser/goreleaser/v2/internal/pipe/cask"
 	"github.com/goreleaser/goreleaser/v2/internal/pipe/chocolatey"
 	"github.com/goreleaser/goreleaser/v2/internal/pipe/custompublishers"
 	"github.com/goreleaser/goreleaser/v2/internal/pipe/docker"
+	dockerv2 "github.com/goreleaser/goreleaser/v2/internal/pipe/docker/v2"
+	"github.com/goreleaser/goreleaser/v2/internal/pipe/dockerdigest"
 	"github.com/goreleaser/goreleaser/v2/internal/pipe/ko"
 	"github.com/goreleaser/goreleaser/v2/internal/pipe/krew"
 	"github.com/goreleaser/goreleaser/v2/internal/pipe/milestone"
@@ -44,24 +47,27 @@ func New() Pipe {
 			blob.Pipe{},
 			upload.Pipe{},
 			artifactory.Pipe{},
-			custompublishers.Pipe{},
 			docker.Pipe{},
 			docker.ManifestPipe{},
+			dockerv2.Publish{},
+			dockerdigest.Pipe{},
 			ko.Pipe{},
 			sign.DockerPipe{},
 			snapcraft.Pipe{},
 			// This should be one of the last steps
 			release.Pipe{},
 			// brew et al use the release URL, so, they should be last
-			nix.NewPublish(),
+			nix.New(),
 			winget.Pipe{},
 			brew.Pipe{},
+			cask.Pipe{},
 			aur.Pipe{},
 			aursources.Pipe{},
 			krew.Pipe{},
 			scoop.Pipe{},
 			chocolatey.Pipe{},
 			milestone.Pipe{},
+			custompublishers.Pipe{},
 		},
 	}
 }

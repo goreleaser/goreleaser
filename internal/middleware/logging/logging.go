@@ -1,18 +1,19 @@
+// Package logging contains logging middleware.
 package logging
 
 import (
-	"fmt"
 	"time"
 
 	"github.com/caarlos0/log"
-	"github.com/charmbracelet/lipgloss"
+	"github.com/charmbracelet/lipgloss/v2"
+	"github.com/goreleaser/goreleaser/v2/internal/logext"
 	"github.com/goreleaser/goreleaser/v2/internal/middleware"
 	"github.com/goreleaser/goreleaser/v2/pkg/context"
 )
 
 var (
-	bold  = lipgloss.NewStyle().Bold(true)
-	faint = lipgloss.NewStyle().Italic(true).Faint(true)
+	bold      = lipgloss.NewStyle().Bold(true)
+	threshold = time.Second * 10
 )
 
 // Log pretty prints the given action and its title.
@@ -20,7 +21,7 @@ func Log(title string, next middleware.Action) middleware.Action {
 	return func(ctx *context.Context) error {
 		start := time.Now()
 		defer func() {
-			logDuration(start)
+			logext.Duration(start, threshold)
 			log.ResetPadding()
 		}()
 		if title != "" {
@@ -36,7 +37,7 @@ func PadLog(title string, next middleware.Action) middleware.Action {
 	return func(ctx *context.Context) error {
 		start := time.Now()
 		defer func() {
-			logDuration(start)
+			logext.Duration(start, threshold)
 			log.ResetPadding()
 		}()
 		log.ResetPadding()
@@ -44,11 +45,5 @@ func PadLog(title string, next middleware.Action) middleware.Action {
 		log.Infof(bold.Render(title))
 		log.IncreasePadding()
 		return next(ctx)
-	}
-}
-
-func logDuration(start time.Time) {
-	if took := time.Since(start).Round(time.Second); took > 10*time.Second {
-		log.Info(faint.Render(fmt.Sprintf("took: %s", took)))
 	}
 }

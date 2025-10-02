@@ -76,13 +76,11 @@ func signAndNotarize(ctx *context.Context, cfg config.MacOSSignNotarize) error {
 
 	filters := []artifact.Filter{
 		artifact.ByGoos("darwin"),
-		artifact.Or(
-			artifact.ByType(artifact.Binary),
-			artifact.ByType(artifact.UniversalBinary),
+		artifact.ByTypes(
+			artifact.Binary,
+			artifact.UniversalBinary,
 		),
-	}
-	if len(cfg.IDs) > 0 {
-		filters = append(filters, artifact.ByIDs(cfg.IDs...))
+		artifact.ByIDs(cfg.IDs...),
 	}
 	binaries := ctx.Artifacts.Filter(artifact.And(filters...))
 	if len(binaries.List()) == 0 {

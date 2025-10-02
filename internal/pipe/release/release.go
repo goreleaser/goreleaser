@@ -7,6 +7,7 @@ import (
 	"os"
 	"time"
 
+	"github.com/avast/retry-go/v4"
 	"github.com/caarlos0/log"
 	"github.com/goreleaser/goreleaser/v2/internal/artifact"
 	"github.com/goreleaser/goreleaser/v2/internal/client"
@@ -156,30 +157,35 @@ func doPublish(ctx *context.Context, client client.Client) error {
 		})
 	}
 
-	typeFilters := []artifact.Filter{
-		artifact.ByType(artifact.UploadableArchive),
-		artifact.ByType(artifact.UploadableBinary),
-		artifact.ByType(artifact.UploadableSourceArchive),
-		artifact.ByType(artifact.UploadableFile),
-		artifact.ByType(artifact.Checksum),
-		artifact.ByType(artifact.Signature),
-		artifact.ByType(artifact.Certificate),
-		artifact.ByType(artifact.LinuxPackage),
-		artifact.ByType(artifact.SBOM),
+	types := []artifact.Type{
+		artifact.UploadableArchive,
+		artifact.UploadableBinary,
+		artifact.UploadableSourceArchive,
+		artifact.Makeself,
+		artifact.UploadableFile,
+		artifact.Checksum,
+		artifact.Signature,
+		artifact.Certificate,
+		artifact.LinuxPackage,
+		artifact.SBOM,
+		artifact.PyWheel,
+		artifact.PySdist,
 	}
 	if ctx.Config.Release.IncludeMeta {
-		typeFilters = append(typeFilters, artifact.ByType(artifact.Metadata))
+		types = append(types, artifact.Metadata)
 	}
-	filters := artifact.Or(typeFilters...)
-
-	if len(ctx.Config.Release.IDs) > 0 {
-		filters = artifact.And(filters, artifact.ByIDs(ctx.Config.Release.IDs...))
-	}
+	filters := artifact.And(
+		artifact.ByTypes(types...),
+		artifact.ByIDs(ctx.Config.Release.IDs...),
+	)
 
 	g := semerrgroup.New(ctx.Parallelism)
 	for _, artifact := range ctx.Artifacts.Filter(filters).List() {
 		g.Go(func() error {
-			return upload(ctx, client, releaseID, artifact)
+			if err := upload(ctx, client, releaseID, artifact); err != nil {
+				return fmt.Errorf("failed to upload %s: %w", artifact.Name, err)
+			}
+			return nil
 		})
 	}
 	if err := g.Wait(); err != nil {
@@ -190,37 +196,21 @@ func doPublish(ctx *context.Context, client client.Client) error {
 }
 
 func upload(ctx *context.Context, cli client.Client, releaseID string, artifact *artifact.Artifact) error {
-	var try int
-	tryUpload := func() error {
-		try++
-		file, err := os.Open(artifact.Path)
-		if err != nil {
-			return err
-		}
-		defer file.Close()
-		log.WithField("file", file.Name()).WithField("name", artifact.Name).Info("uploading to release")
-		if err := cli.Upload(ctx, releaseID, artifact, file); err != nil {
-			log.WithField("try", try).
-				WithField("artifact", artifact.Name).
-				WithError(err).
-				Warn("failed to upload artifact, will retry")
-			return err
-		}
-		return nil
-	}
-
-	var err error
-	for try < 10 {
-		err = tryUpload()
-		if err == nil {
-			return nil
-		}
-		if errors.As(err, &client.RetriableError{}) {
-			time.Sleep(time.Duration(try*50) * time.Millisecond)
-			continue
-		}
-		break
-	}
-
-	return fmt.Errorf("failed to upload %s after %d tries: %w", artifact.Name, try, err)
+	return retry.Do(
+		func() error {
+			log.WithField("file", artifact.Path).
+				WithField("name", artifact.Name).
+				Info("uploading to release")
+			file, err := os.Open(artifact.Path)
+			if err != nil {
+				return err
+			}
+			defer file.Close()
+			return cli.Upload(ctx, releaseID, artifact, file)
+		},
+		retry.Attempts(10),
+		retry.Delay(50*time.Millisecond),
+		retry.LastErrorOnly(true),
+		retry.RetryIf(func(err error) bool { return errors.As(err, &client.RetriableError{}) }),
+	)
 }

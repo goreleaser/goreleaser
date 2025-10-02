@@ -14,7 +14,7 @@ import (
 	"dario.cat/mergo"
 	"github.com/caarlos0/log"
 	"github.com/goreleaser/goreleaser/v2/internal/artifact"
-	"github.com/goreleaser/goreleaser/v2/internal/builders/common"
+	"github.com/goreleaser/goreleaser/v2/internal/builders/base"
 	"github.com/goreleaser/goreleaser/v2/internal/experimental"
 	"github.com/goreleaser/goreleaser/v2/internal/logext"
 	"github.com/goreleaser/goreleaser/v2/internal/tmpl"
@@ -274,7 +274,7 @@ func (*Builder) Build(ctx *context.Context, build config.Build, options api.Opti
 		Goppc64:   t.Goppc64,
 		Goriscv64: t.Goriscv64,
 		Target:    t.Target,
-		Extra: map[string]interface{}{
+		Extra: map[string]any{
 			artifact.ExtraBinary:  strings.TrimSuffix(filepath.Base(options.Path), options.Ext),
 			artifact.ExtraExt:     options.Ext,
 			artifact.ExtraID:      build.ID,
@@ -306,7 +306,7 @@ func (*Builder) Build(ctx *context.Context, build config.Build, options api.Opti
 		WithEnvS(env).
 		WithArtifact(a)
 
-	tenv, err := common.TemplateEnv(details.Env, tpl)
+	tenv, err := base.TemplateEnv(details.Env, tpl)
 	if err != nil {
 		return err
 	}
@@ -330,11 +330,11 @@ func (*Builder) Build(ctx *context.Context, build config.Build, options api.Opti
 		return err
 	}
 
-	if err := common.Exec(ctx, cmd, env, build.Dir); err != nil {
+	if err := base.Exec(ctx, cmd, env, build.Dir); err != nil {
 		return err
 	}
 
-	if err := common.ChTimes(build, tpl, a); err != nil {
+	if err := base.ChTimes(build, tpl, a); err != nil {
 		return err
 	}
 
@@ -457,7 +457,7 @@ func validateUniqueFlags(details config.BuildDetails) {
 
 func buildOutput(out []byte) string {
 	var lines []string
-	for _, line := range strings.Split(strings.TrimSpace(string(out)), "\n") {
+	for line := range strings.SplitSeq(strings.TrimSpace(string(out)), "\n") {
 		if strings.HasPrefix(line, "go: downloading") {
 			continue
 		}
@@ -555,7 +555,7 @@ func getHeaderArtifactForLibrary(build config.Build, options api.Options) *artif
 		Goppc64:   t.Goppc64,
 		Goriscv64: t.Goriscv64,
 		Target:    t.Target,
-		Extra: map[string]interface{}{
+		Extra: map[string]any{
 			artifact.ExtraBinary: headerName,
 			artifact.ExtraExt:    ".h",
 			artifact.ExtraID:     build.ID,

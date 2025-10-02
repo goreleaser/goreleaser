@@ -1,3 +1,4 @@
+// Package sbom creates a Software Bill of Materials (SBOM) for each artifact.
 package sbom
 
 import (
@@ -15,6 +16,7 @@ import (
 	"github.com/goreleaser/goreleaser/v2/internal/gio"
 	"github.com/goreleaser/goreleaser/v2/internal/ids"
 	"github.com/goreleaser/goreleaser/v2/internal/logext"
+	"github.com/goreleaser/goreleaser/v2/internal/pipe"
 	"github.com/goreleaser/goreleaser/v2/internal/semerrgroup"
 	"github.com/goreleaser/goreleaser/v2/internal/skips"
 	"github.com/goreleaser/goreleaser/v2/internal/tmpl"
@@ -73,7 +75,7 @@ func setConfigDefaults(cfg *config.SBOM) error {
 	}
 	if cfg.Cmd == "syft" {
 		if len(cfg.Args) == 0 {
-			cfg.Args = []string{"$artifact", "--output", "spdx-json=$document"}
+			cfg.Args = []string{"$artifact", "--output", "spdx-json=$document", "--enrich", "all"}
 		}
 		if len(cfg.Env) == 0 && (cfg.Artifacts == "source" || cfg.Artifacts == "archive") {
 			cfg.Env = []string{
@@ -84,7 +86,6 @@ func setConfigDefaults(cfg *config.SBOM) error {
 	if cfg.ID == "" {
 		cfg.ID = "default"
 	}
-
 	if cfg.Artifacts != "any" && len(cfg.Documents) > 1 {
 		return fmt.Errorf("multiple SBOM outputs when artifacts=%q is unsupported", cfg.Artifacts)
 	}
@@ -93,50 +94,55 @@ func setConfigDefaults(cfg *config.SBOM) error {
 
 // Run executes the Pipe.
 func (Pipe) Run(ctx *context.Context) error {
-	g := semerrgroup.New(ctx.Parallelism)
+	g := semerrgroup.NewSkipAware(semerrgroup.New(ctx.Parallelism))
 	for _, cfg := range ctx.Config.SBOMs {
-		g.Go(catalogTask(ctx, cfg))
+		g.Go(func() error { return catalogTask(ctx, cfg) })
 	}
 	return g.Wait()
 }
 
-func catalogTask(ctx *context.Context, cfg config.SBOM) func() error {
-	return func() error {
-		var filters []artifact.Filter
-		switch cfg.Artifacts {
-		case "source":
-			filters = append(filters, artifact.ByType(artifact.UploadableSourceArchive))
-			if len(cfg.IDs) > 0 {
-				log.Warn("when artifacts is `source`, `ids` has no effect. ignoring")
-			}
-		case "archive":
-			filters = append(filters, artifact.ByType(artifact.UploadableArchive))
-		case "binary":
-			filters = append(filters, artifact.ByBinaryLikeArtifacts(ctx.Artifacts))
-		case "package":
-			filters = append(filters, artifact.ByType(artifact.LinuxPackage))
-		case "any":
-			newArtifacts, err := catalogArtifact(ctx, cfg, nil)
-			if err != nil {
-				return err
-			}
-			for _, newArtifact := range newArtifacts {
-				ctx.Artifacts.Add(newArtifact)
-			}
-			return nil
-		default:
-			return fmt.Errorf("invalid list of artifacts to catalog: %s", cfg.Artifacts)
-		}
-
-		if len(cfg.IDs) > 0 {
-			filters = append(filters, artifact.ByIDs(cfg.IDs...))
-		}
-		artifacts := ctx.Artifacts.Filter(artifact.And(filters...)).List()
-		if len(artifacts) == 0 {
-			log.Warn("no artifacts matching current filters")
-		}
-		return catalog(ctx, cfg, artifacts)
+func catalogTask(ctx *context.Context, cfg config.SBOM) error {
+	disabled, err := tmpl.New(ctx).Bool(cfg.Disable)
+	if err != nil {
+		return err
 	}
+	if disabled {
+		return pipe.Skip("configuration is disabled")
+	}
+	var filters []artifact.Filter
+	switch cfg.Artifacts {
+	case "source":
+		filters = append(filters, artifact.ByType(artifact.UploadableSourceArchive))
+		if len(cfg.IDs) > 0 {
+			log.Warn("when artifacts is `source`, `ids` has no effect. ignoring")
+		}
+	case "archive":
+		filters = append(filters, artifact.ByType(artifact.UploadableArchive))
+	case "binary":
+		filters = append(filters, artifact.ByBinaryLikeArtifacts(ctx.Artifacts))
+	case "package":
+		filters = append(filters, artifact.ByType(artifact.LinuxPackage))
+	case "any":
+		newArtifacts, err := catalogArtifact(ctx, cfg, nil)
+		if err != nil {
+			return err
+		}
+		for _, newArtifact := range newArtifacts {
+			ctx.Artifacts.Add(newArtifact)
+		}
+		return nil
+	default:
+		return fmt.Errorf("invalid list of artifacts to catalog: %s", cfg.Artifacts)
+	}
+
+	if len(cfg.IDs) > 0 {
+		filters = append(filters, artifact.ByIDs(cfg.IDs...))
+	}
+	artifacts := ctx.Artifacts.Filter(artifact.And(filters...)).List()
+	if len(artifacts) == 0 {
+		log.Warn("no artifacts matching current filters")
+	}
+	return catalog(ctx, cfg, artifacts)
 }
 
 func catalog(ctx *context.Context, cfg config.SBOM, artifacts []*artifact.Artifact) error {
@@ -235,7 +241,7 @@ func catalogArtifact(ctx *context.Context, cfg config.SBOM, a *artifact.Artifact
 				Type: artifact.SBOM,
 				Name: filepath.Base(path),
 				Path: match,
-				Extra: map[string]interface{}{
+				Extra: map[string]any{
 					artifact.ExtraID: cfg.ID,
 				},
 			})

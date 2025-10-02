@@ -77,6 +77,14 @@ changelog:
     use: anthropic
     prompt: "The prompt..."
 
+  # Title of the changelog.
+  #
+  # Default: "Changelog".
+  # <!-- md:inline_pro -->.
+  # <!-- md:inline_version v2.12 -->.
+  # Templates: allowed.
+  title: "Release Notes"
+
   # Group commits messages by given regex and title.
   # Order value defines the order of the groups.
   # Providing no regex means all commits will be grouped under the default group.
@@ -211,6 +219,10 @@ to not use emojis.
 You can of course set anything you wish makes sense in the `prompt` field.
 Don't forget to give it the current release notes as well, available as
 `{{ .ReleaseNotes }}`.
+
+This is the [default
+prompt](https://gist.githubusercontent.com/caarlos0/419c8cb2bab28f7c53c7e228af3ab219/raw/70e3e7f0ba85b02a23692d150e3a0d1752c79d64/prompt.md)
+in case you're interested.
 
 You can test this by using the
 [`goreleaser changelog` command](../cmd/goreleaser_changelog.md).

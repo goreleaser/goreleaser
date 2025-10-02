@@ -72,6 +72,6 @@ Read the documentation for each topic:
 
 - [GitHub](../scm/github.md)
 - [GitHub Actions](../ci/actions.md)
-- [Homebrew Tap](../customization/homebrew.md)
+- [Homebrew](../customization/homebrew_casks.md)
 - [Krew Plugin Manifests](../customization/krew.md)
 - [Scoop Manifests](../customization/scoop.md)

@@ -102,7 +102,7 @@ func GitMakeBareRepository(tb testing.TB) string {
 	tb.Helper()
 	dir := tb.TempDir()
 	_, err := git.Run(
-		context.Background(),
+		tb.Context(),
 		"-C", dir,
 		"-c", "init.defaultBranch=master",
 		"init",
@@ -140,7 +140,8 @@ func CatFileFromBareRepository(tb testing.TB, url, name string) []byte {
 func CatFileFromBareRepositoryOnBranch(tb testing.TB, url, branch, name string) []byte {
 	tb.Helper()
 
-	out, err := exec.Command(
+	out, err := exec.CommandContext(
+		tb.Context(),
 		"git",
 		"-C", url,
 		"show",

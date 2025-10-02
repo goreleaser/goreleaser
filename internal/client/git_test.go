@@ -246,7 +246,7 @@ func TestKeyPath(t *testing.T) {
 	t.Run("with invalid path", func(t *testing.T) {
 		result, err := keyPath("testdata/nope")
 		require.ErrorIs(t, err, os.ErrNotExist)
-		require.Equal(t, "", result)
+		require.Empty(t, result)
 	})
 
 	t.Run("with password protected key path", func(t *testing.T) {
@@ -278,7 +278,7 @@ func TestKeyPath(t *testing.T) {
 	t.Run("empty", func(t *testing.T) {
 		result, err := keyPath("")
 		require.EqualError(t, err, `private_key is empty`)
-		require.Equal(t, "", result)
+		require.Empty(t, result)
 	})
 	t.Run("with invalid EOF", func(t *testing.T) {
 		path := testlib.MakeNewSSHKey(t, "")
@@ -291,6 +291,116 @@ func TestKeyPath(t *testing.T) {
 		resultbts, err := os.ReadFile(result)
 		require.NoError(t, err)
 		require.Equal(t, string(bts), string(resultbts))
+	})
+}
+
+func TestGitClientWithSigning(t *testing.T) {
+	t.Run("commit signing enabled", func(t *testing.T) {
+		author := config.CommitAuthor{
+			Name:  "Foo",
+			Email: "foo@bar.com",
+			Signing: config.CommitSigning{
+				Enabled: true,
+				Key:     "ABC123DEF456",
+				Program: "/usr/bin/gpg",
+				Format:  "openpgp",
+			},
+		}
+
+		url := testlib.GitMakeBareRepository(t)
+		ctx := testctx.NewWithCfg(config.Project{
+			Dist: t.TempDir(),
+		})
+		repo := Repo{
+			GitURL:     url,
+			PrivateKey: testlib.MakeNewSSHKey(t, ""),
+			Name:       "test-signing",
+		}
+		cli := NewGitUploadClient(repo.Branch)
+
+		// Test will fail due to missing GPG program, but this verifies the git config is applied
+		err := cli.CreateFile(
+			ctx,
+			author,
+			repo,
+			[]byte("test content with signing"),
+			"signed.txt",
+			"test signed commit",
+		)
+		// We expect this to fail in CI environments without GPG setup
+		// The important part is that it tries to sign (not just config error)
+		require.ErrorContains(t, err, "gpg")
+	})
+
+	t.Run("commit signing disabled", func(t *testing.T) {
+		author := config.CommitAuthor{
+			Name:  "Foo",
+			Email: "foo@bar.com",
+			Signing: config.CommitSigning{
+				Enabled: false,
+			},
+		}
+
+		url := testlib.GitMakeBareRepository(t)
+		ctx := testctx.NewWithCfg(config.Project{
+			Dist: t.TempDir(),
+		})
+		repo := Repo{
+			GitURL:     url,
+			PrivateKey: testlib.MakeNewSSHKey(t, ""),
+			Name:       "test-no-signing",
+		}
+		cli := NewGitUploadClient(repo.Branch)
+
+		require.NoError(t, cli.CreateFile(
+			ctx,
+			author,
+			repo,
+			[]byte("test content without signing"),
+			"unsigned.txt",
+			"test unsigned commit",
+		))
+	})
+
+	t.Run("commit signing with ssh format", func(t *testing.T) {
+		author := config.CommitAuthor{
+			Name:  "Foo",
+			Email: "foo@bar.com",
+			Signing: config.CommitSigning{
+				Enabled: true,
+				Key:     "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIG...",
+				Format:  "ssh",
+			},
+		}
+
+		url := testlib.GitMakeBareRepository(t)
+		ctx := testctx.NewWithCfg(config.Project{
+			Dist: t.TempDir(),
+		})
+		repo := Repo{
+			GitURL:     url,
+			PrivateKey: testlib.MakeNewSSHKey(t, ""),
+			Name:       "test-ssh-signing",
+		}
+		cli := NewGitUploadClient(repo.Branch)
+
+		// Test will fail due to missing SSH key file, but this verifies the git config is applied
+		err := cli.CreateFile(
+			ctx,
+			author,
+			repo,
+			[]byte("test content with ssh signing"),
+			"ssh-signed.txt",
+			"test ssh signed commit",
+		)
+		// We expect this to fail in CI environments without proper SSH key setup
+		// The important part is that it tries to sign with SSH format
+		if testlib.IsWindows() {
+			// on windows we get a slightly different error message...
+			require.Error(t, err)
+			return
+		}
+		require.ErrorContains(t, err, "public key")
 	})
 }
 

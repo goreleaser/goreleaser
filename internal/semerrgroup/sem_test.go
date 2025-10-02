@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"sync"
 	"testing"
+	"testing/synctest"
 	"time"
 
 	"github.com/goreleaser/goreleaser/v2/internal/pipe"
@@ -12,59 +13,68 @@ import (
 )
 
 func TestBlockingFirst(t *testing.T) {
-	g := NewBlockingFirst(New(5))
-	var lock sync.Mutex
-	var counter int
-	for i := 0; i < 10; i++ {
-		g.Go(func() error {
-			time.Sleep(10 * time.Millisecond)
-			lock.Lock()
-			defer lock.Unlock()
-			counter++
-			return nil
-		})
-	}
-	require.NoError(t, g.Wait())
-	require.Equal(t, 10, counter)
+	synctest.Test(t, func(t *testing.T) {
+		t.Helper()
+		g := NewBlockingFirst(New(5))
+		var lock sync.Mutex
+		var counter int
+		for range 10 {
+			g.Go(func() error {
+				time.Sleep(10 * time.Millisecond)
+				lock.Lock()
+				defer lock.Unlock()
+				counter++
+				return nil
+			})
+		}
+		require.NoError(t, g.Wait())
+		require.Equal(t, 10, counter)
+	})
 }
 
 func TestBlockingFirstError(t *testing.T) {
-	g := NewBlockingFirst(New(5))
-	var lock sync.Mutex
-	var counter int
-	for i := 0; i < 10; i++ {
-		g.Go(func() error {
-			time.Sleep(10 * time.Millisecond)
-			lock.Lock()
-			defer lock.Unlock()
-			if counter == 0 {
-				return fmt.Errorf("my error")
-			}
-			counter++
-			return nil
-		})
-	}
-	require.EqualError(t, g.Wait(), "my error")
-	require.Equal(t, 0, counter)
+	synctest.Test(t, func(t *testing.T) {
+		t.Helper()
+		g := NewBlockingFirst(New(5))
+		var lock sync.Mutex
+		var counter int
+		for range 10 {
+			g.Go(func() error {
+				time.Sleep(10 * time.Millisecond)
+				lock.Lock()
+				defer lock.Unlock()
+				if counter == 0 {
+					return fmt.Errorf("my error")
+				}
+				counter++
+				return nil
+			})
+		}
+		require.EqualError(t, g.Wait(), "my error")
+		require.Equal(t, 0, counter)
+	})
 }
 
 func TestSemaphore(t *testing.T) {
 	for _, i := range []int{1, 4} {
 		t.Run(fmt.Sprintf("limit-%d", i), func(t *testing.T) {
-			g := New(i)
-			var lock sync.Mutex
-			var counter int
-			for i := 0; i < 10; i++ {
-				g.Go(func() error {
-					time.Sleep(10 * time.Millisecond)
-					lock.Lock()
-					counter++
-					lock.Unlock()
-					return nil
-				})
-			}
-			require.NoError(t, g.Wait())
-			require.Equal(t, 10, counter)
+			synctest.Test(t, func(t *testing.T) {
+				t.Helper()
+				g := New(i)
+				var lock sync.Mutex
+				var counter int
+				for range 10 {
+					g.Go(func() error {
+						time.Sleep(10 * time.Millisecond)
+						lock.Lock()
+						counter++
+						lock.Unlock()
+						return nil
+					})
+				}
+				require.NoError(t, g.Wait())
+				require.Equal(t, 10, counter)
+			})
 		})
 	}
 }
@@ -73,7 +83,7 @@ func TestSemaphoreOrder(t *testing.T) {
 	num := 10
 	g := New(1)
 	output := []int{}
-	for i := 0; i < num; i++ {
+	for i := range num {
 		g.Go(func() error {
 			output = append(output, i)
 			return nil
@@ -89,7 +99,7 @@ func TestSemaphoreError(t *testing.T) {
 			g := New(i)
 			var lock sync.Mutex
 			output := []int{}
-			for i := 0; i < 10; i++ {
+			for i := range 10 {
 				g.Go(func() error {
 					lock.Lock()
 					defer lock.Unlock()
@@ -106,16 +116,19 @@ func TestSemaphoreError(t *testing.T) {
 func TestSemaphoreSkipAware(t *testing.T) {
 	for _, i := range []int{1, 4} {
 		t.Run(fmt.Sprintf("limit-%d", i), func(t *testing.T) {
-			g := NewSkipAware(New(i))
-			for i := 0; i < 10; i++ {
-				g.Go(func() error {
-					time.Sleep(10 * time.Millisecond)
-					return pipe.Skip("fake skip")
-				})
-			}
-			merr := &multierror.Error{}
-			require.ErrorAs(t, g.Wait(), &merr, "must be a multierror")
-			require.Len(t, merr.Errors, 10)
+			synctest.Test(t, func(t *testing.T) {
+				t.Helper()
+				g := NewSkipAware(New(i))
+				for range 10 {
+					g.Go(func() error {
+						time.Sleep(10 * time.Millisecond)
+						return pipe.Skip("fake skip")
+					})
+				}
+				merr := &multierror.Error{}
+				require.ErrorAs(t, g.Wait(), &merr, "must be a multierror")
+				require.Len(t, merr.Errors, 10)
+			})
 		})
 	}
 }
@@ -123,17 +136,20 @@ func TestSemaphoreSkipAware(t *testing.T) {
 func TestSemaphoreSkipAwareSingleError(t *testing.T) {
 	for _, i := range []int{1, 4} {
 		t.Run(fmt.Sprintf("limit-%d", i), func(t *testing.T) {
-			g := NewSkipAware(New(i))
-			for i := 0; i < 10; i++ {
-				g.Go(func() error {
-					time.Sleep(10 * time.Millisecond)
-					if i == 5 {
-						return pipe.Skip("fake skip")
-					}
-					return nil
-				})
-			}
-			require.EqualError(t, g.Wait(), "fake skip")
+			synctest.Test(t, func(t *testing.T) {
+				t.Helper()
+				g := NewSkipAware(New(i))
+				for i := range 10 {
+					g.Go(func() error {
+						time.Sleep(10 * time.Millisecond)
+						if i == 5 {
+							return pipe.Skip("fake skip")
+						}
+						return nil
+					})
+				}
+				require.EqualError(t, g.Wait(), "fake skip")
+			})
 		})
 	}
 }
@@ -141,29 +157,35 @@ func TestSemaphoreSkipAwareSingleError(t *testing.T) {
 func TestSemaphoreSkipAwareNoSkips(t *testing.T) {
 	for _, i := range []int{1, 4} {
 		t.Run(fmt.Sprintf("limit-%d", i), func(t *testing.T) {
-			g := NewSkipAware(New(i))
-			for i := 0; i < 10; i++ {
-				g.Go(func() error {
-					time.Sleep(10 * time.Millisecond)
-					return nil
-				})
-			}
-			require.NoError(t, g.Wait())
+			synctest.Test(t, func(t *testing.T) {
+				t.Helper()
+				g := NewSkipAware(New(i))
+				for range 10 {
+					g.Go(func() error {
+						time.Sleep(10 * time.Millisecond)
+						return nil
+					})
+				}
+				require.NoError(t, g.Wait())
+			})
 		})
 	}
 }
 
 func TestSemaphoreSkipAndRealError(t *testing.T) {
-	g := NewSkipAware(New(10))
-	for i := 0; i < 100; i++ {
+	synctest.Test(t, func(t *testing.T) {
+		t.Helper()
+		g := NewSkipAware(New(10))
+		for range 100 {
+			g.Go(func() error {
+				time.Sleep(10 * time.Millisecond)
+				return pipe.Skip("fake skip")
+			})
+		}
 		g.Go(func() error {
 			time.Sleep(10 * time.Millisecond)
-			return pipe.Skip("fake skip")
+			return fmt.Errorf("errrrrr")
 		})
-	}
-	g.Go(func() error {
-		time.Sleep(10 * time.Millisecond)
-		return fmt.Errorf("errrrrr")
+		require.EqualError(t, g.Wait(), "errrrrr")
 	})
-	require.EqualError(t, g.Wait(), "errrrrr")
 }

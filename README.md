@@ -3,16 +3,18 @@
   <h3 align="center">GoReleaser</h3>
   <p align="center">Release engineering, simplified.</p>
   <p align="center">
-    <img alt="Go" src="./www/docs/static/go-light.svg#gh-light-mode-only" height="60" />
-    <img alt="Go" src="./www/docs/static/go-dark.svg#gh-dark-mode-only" height="60" />
-    <img alt="Rust" src="./www/docs/static/rust-light.svg#gh-light-mode-only" height="60" />
-    <img alt="Rust" src="./www/docs/static/rust-dark.svg#gh-dark-mode-only" height="60" />
-    <img alt="Zig" src="./www/docs/static/zig-light.svg#gh-light-mode-only" height="60" />
-    <img alt="Zig" src="./www/docs/static/zig-dark.svg#gh-dark-mode-only" height="60" />
-    <img alt="Bun" src="./www/docs/static/bun-light.svg#gh-light-mode-only" height="60" />
-    <img alt="Bun" src="./www/docs/static/bun-dark.svg#gh-dark-mode-only" height="60" />
-    <img alt="Deno" src="./www/docs/static/deno-light.svg#gh-light-mode-only" height="60" />
-    <img alt="Deno" src="./www/docs/static/deno-dark.svg#gh-dark-mode-only" height="60" />
+    <img alt="Go" src="./www/docs/static/go-light.svg#gh-light-mode-only" height="30" width="30" />
+    <img alt="Go" src="./www/docs/static/go-dark.svg#gh-dark-mode-only" height="30" width="30" />
+    <img alt="Rust" src="./www/docs/static/rust-light.svg#gh-light-mode-only" height="30" width="30" />
+    <img alt="Rust" src="./www/docs/static/rust-dark.svg#gh-dark-mode-only" height="30" width="30" />
+    <img alt="Zig" src="./www/docs/static/zig-light.svg#gh-light-mode-only" height="30" width="30" />
+    <img alt="Zig" src="./www/docs/static/zig-dark.svg#gh-dark-mode-only" height="30" width="30" />
+    <img alt="Bun" src="./www/docs/static/bun-light.svg#gh-light-mode-only" height="30" width="30" />
+    <img alt="Bun" src="./www/docs/static/bun-dark.svg#gh-dark-mode-only" height="30" width="30" />
+    <img alt="Deno" src="./www/docs/static/deno-light.svg#gh-light-mode-only" height="30" width="30" />
+    <img alt="Deno" src="./www/docs/static/deno-dark.svg#gh-dark-mode-only" height="30" width="30" />
+    <img alt="Python" src="./www/docs/static/python-light.svg#gh-light-mode-only" height="30" width="30" />
+    <img alt="Python" src="./www/docs/static/python-dark.svg#gh-dark-mode-only" height="30" width="30" />
   </p>
 </p>
 
@@ -70,9 +72,8 @@ Please refer to our [contributing guidelines](CONTRIBUTING.md) for further infor
 
 ## GitHub Sponsors
 
-High-tier sponsors of [@caarlos0](https://github.com/sponsors/caarlos0/) on GitHub:
-
-<a href="https://smallstep.com" target="_blank"><img width="200" src="https://github.com/goreleaser/goreleaser/assets/245435/05ade839-6652-474a-af90-da3ea67dde24"></a>
+Sponsor [@caarlos0 on GitHub](https://github.com/sponsors/caarlos0/) to get
+featured here.
 
 ## OpenCollective
 

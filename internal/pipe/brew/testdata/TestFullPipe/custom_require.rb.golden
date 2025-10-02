@@ -16,7 +16,7 @@ class CustomRequire < Formula
 
   on_macos do
     if Hardware::CPU.intel?
-      url "https://dummyhost/download/v1.0.1/bin.tar.gz", using: CustomDownloadStrategy
+      url "https://dummyhost/download/v1.0.1/bin.tgz", using: CustomDownloadStrategy
       sha256 "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
 
       def install
@@ -24,7 +24,7 @@ class CustomRequire < Formula
       end
     end
     if Hardware::CPU.arm?
-      url "https://dummyhost/download/v1.0.1/bin.tar.gz", using: CustomDownloadStrategy
+      url "https://dummyhost/download/v1.0.1/bin.txz", using: CustomDownloadStrategy
       sha256 "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
 
       def install
@@ -34,14 +34,11 @@ class CustomRequire < Formula
   end
 
   on_linux do
-    if Hardware::CPU.intel?
-      if Hardware::CPU.is_64_bit?
-        url "https://dummyhost/download/v1.0.1/bin.tar.gz", using: CustomDownloadStrategy
-        sha256 "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
-
-        def install
-          bin.install "custom_require_linux_amd64 => custom_require"
-        end
+    if Hardware::CPU.intel? && Hardware::CPU.is_64_bit?
+      url "https://dummyhost/download/v1.0.1/bin.tar.zst", using: CustomDownloadStrategy
+      sha256 "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      def install
+        bin.install "custom_require_linux_amd64 => custom_require"
       end
     end
   end

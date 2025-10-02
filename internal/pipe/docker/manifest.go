@@ -1,16 +1,21 @@
 package docker
 
 import (
+	"cmp"
 	"fmt"
 	"maps"
 	"math"
 	"slices"
 	"strings"
+	"sync"
+	"time"
 
 	"github.com/agnivade/levenshtein"
+	"github.com/avast/retry-go/v4"
 	"github.com/caarlos0/log"
 	"github.com/goreleaser/goreleaser/v2/internal/artifact"
 	"github.com/goreleaser/goreleaser/v2/internal/ids"
+	"github.com/goreleaser/goreleaser/v2/internal/logext"
 	"github.com/goreleaser/goreleaser/v2/internal/pipe"
 	"github.com/goreleaser/goreleaser/v2/internal/semerrgroup"
 	"github.com/goreleaser/goreleaser/v2/internal/skips"
@@ -43,8 +48,22 @@ func (ManifestPipe) Dependencies(ctx *context.Context) []string {
 
 // Default sets the pipe defaults.
 func (ManifestPipe) Default(ctx *context.Context) error {
+	var warnOnce sync.Once
 	ids := ids.New("docker_manifests")
 	for i := range ctx.Config.DockerManifests {
+		// TODO: properly deprecate this.
+		warnOnce.Do(func() {
+			log.Warn(
+				logext.Keyword("dockers") +
+					logext.Warning(" and ") +
+					logext.Keyword("docker_manifests") +
+					logext.Warning(" are being phased out and will eventually be replaced by ") +
+					logext.Keyword("dockers_v2") +
+					logext.Warning(", check ") +
+					logext.URL("https://goreleaser.com/deprecations#dockers") +
+					logext.Warning(" for more info"),
+			)
+		})
 		manifest := &ctx.Config.DockerManifests[i]
 		if manifest.ID != "" {
 			ids.Inc(manifest.ID)
@@ -52,6 +71,9 @@ func (ManifestPipe) Default(ctx *context.Context) error {
 		if manifest.Use == "" {
 			manifest.Use = useDocker
 		}
+		manifest.Retry.Attempts = cmp.Or(manifest.Retry.Attempts, 10)
+		manifest.Retry.Delay = cmp.Or(manifest.Retry.Delay, 10*time.Second)
+		manifest.Retry.MaxDelay = cmp.Or(manifest.Retry.MaxDelay, 5*time.Minute)
 		if err := validateManifester(manifest.Use); err != nil {
 			return err
 		}
@@ -87,28 +109,50 @@ func (ManifestPipe) Publish(ctx *context.Context) error {
 			}
 
 			manifester := manifesters[manifest.Use]
-
-			log.WithField("manifest", name).
-				WithField("images", images).
-				Info("creating")
-			if err := manifester.Create(ctx, name, images, manifest.CreateFlags); err != nil {
+			if err := retry.Do(
+				func() error {
+					log.WithField("manifest", name).
+						WithField("images", images).
+						Info("creating manifest")
+					return manifester.Create(ctx, name, images, manifest.CreateFlags)
+				},
+				retry.RetryIf(isRetriableManifestCreate),
+				retry.Attempts(manifest.Retry.Attempts),
+				retry.Delay(manifest.Retry.Delay),
+				retry.MaxDelay(manifest.Retry.MaxDelay),
+				retry.LastErrorOnly(true),
+			); err != nil {
 				return err
 			}
 			art := &artifact.Artifact{
 				Type:  artifact.DockerManifest,
 				Name:  name,
 				Path:  name,
-				Extra: map[string]interface{}{},
+				Extra: map[string]any{},
 			}
 			if manifest.ID != "" {
 				art.Extra[artifact.ExtraID] = manifest.ID
 			}
 
-			log.WithField("manifest", name).Info("created, pushing")
-			digest, err := manifester.Push(ctx, name, manifest.PushFlags)
+			digest, err := retry.DoWithData(
+				func() (string, error) {
+					log.WithField("manifest", name).Info("pushing manifest")
+					return manifester.Push(ctx, name, manifest.PushFlags)
+				},
+				retry.RetryIf(isRetriablePush),
+				retry.Attempts(manifest.Retry.Attempts),
+				retry.Delay(manifest.Retry.Delay),
+				retry.MaxDelay(manifest.Retry.MaxDelay),
+				retry.LastErrorOnly(true),
+			)
 			if err != nil {
 				return err
 			}
+
+			log.WithField("image", name).
+				WithField("digest", digest).
+				Info("artifact pushed")
+
 			art.Extra[artifact.ExtraDigest] = digest
 			ctx.Artifacts.Add(art)
 			return nil
@@ -143,7 +187,10 @@ func manifestImages(ctx *context.Context, manifest config.DockerManifest) ([]str
 		if err != nil {
 			return []string{}, err
 		}
-		imgs = append(imgs, withDigest(str, artifacts))
+
+		if str != "" {
+			imgs = append(imgs, withDigest(str, artifacts))
+		}
 	}
 	if strings.TrimSpace(strings.Join(manifest.ImageTemplates, "")) == "" {
 		return imgs, pipe.Skip("manifest has no images")
@@ -173,4 +220,8 @@ func withDigest(name string, images []*artifact.Artifact) string {
 
 	log.Warnf("could not find %q, did you mean %q?", name, suggestion)
 	return name
+}
+
+func isRetriableManifestCreate(err error) bool {
+	return strings.Contains(err.Error(), "manifest verification failed for digest")
 }

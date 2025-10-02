@@ -55,7 +55,7 @@ func TestRun(t *testing.T) {
 			Goos:   "darwin",
 			Goarch: "amd64",
 			Goarm:  "7",
-			Extra: map[string]interface{}{
+			Extra: map[string]any{
 				"foo": "bar",
 			},
 		})

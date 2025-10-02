@@ -1,3 +1,4 @@
+// Package cmd provides the command line interface for goreleaser.
 package cmd
 
 import (
@@ -5,10 +6,12 @@ import (
 	"fmt"
 	"path/filepath"
 	"runtime"
+	"slices"
 	"strings"
 	"time"
 
-	"github.com/caarlos0/ctrlc"
+	stdctx "context"
+
 	"github.com/caarlos0/log"
 	"github.com/goreleaser/goreleaser/v2/internal/artifact"
 	"github.com/goreleaser/goreleaser/v2/internal/gio"
@@ -62,14 +65,9 @@ When using ` + "`--single-target`" + `, you use the ` + "`TARGET`, or GOOS`, `GO
 		SilenceErrors:     true,
 		Args:              cobra.NoArgs,
 		ValidArgsFunction: cobra.NoFileCompletions,
-		RunE: timedRunE("build", func(_ *cobra.Command, _ []string) error {
-			ctx, err := buildProject(root.opts)
-			if err != nil {
-				return err
-			}
-			deprecateWarn(ctx)
-			return nil
-		}),
+		RunE: func(cmd *cobra.Command, _ []string) error {
+			return buildProject(cmd.Context(), root.opts)
+		},
 	}
 
 	cmd.Flags().StringVarP(&root.opts.config, "config", "f", "", "Load configuration from file")
@@ -79,11 +77,11 @@ When using ` + "`--single-target`" + `, you use the ` + "`TARGET`, or GOOS`, `GO
 	cmd.Flags().BoolVar(&root.opts.clean, "clean", false, "Removes the 'dist' directory before building")
 	cmd.Flags().IntVarP(&root.opts.parallelism, "parallelism", "p", 0, "Number of tasks to run concurrently (default: number of CPUs)")
 	_ = cmd.RegisterFlagCompletionFunc("parallelism", cobra.NoFileCompletions)
-	cmd.Flags().DurationVar(&root.opts.timeout, "timeout", 30*time.Minute, "Timeout to the entire build process")
+	cmd.Flags().DurationVar(&root.opts.timeout, "timeout", time.Hour, "Timeout to the entire build process")
 	_ = cmd.RegisterFlagCompletionFunc("timeout", cobra.NoFileCompletions)
 	cmd.Flags().BoolVar(&root.opts.singleTarget, "single-target", false, "Builds only for current GOOS and GOARCH, regardless of what's set in the configuration file")
 	cmd.Flags().StringArrayVar(&root.opts.ids, "id", nil, "Builds only the specified build ids")
-	_ = cmd.RegisterFlagCompletionFunc("id", func(_ *cobra.Command, _ []string, _ string) ([]string, cobra.ShellCompDirective) {
+	_ = cmd.RegisterFlagCompletionFunc("id", func(_ *cobra.Command, _ []string, toComplete string) ([]string, cobra.ShellCompDirective) {
 		// TODO: improve this
 		cfg, err := loadConfig(!root.opts.snapshot, root.opts.config)
 		if err != nil {
@@ -91,6 +89,9 @@ When using ` + "`--single-target`" + `, you use the ` + "`TARGET`, or GOOS`, `GO
 		}
 		ids := make([]string, 0, len(cfg.Builds))
 		for _, build := range cfg.Builds {
+			if !strings.HasPrefix(build.ID, toComplete) {
+				continue
+			}
 			ids = append(ids, build.ID)
 		}
 		return ids, cobra.ShellCompDirectiveNoFileComp
@@ -114,30 +115,34 @@ When using ` + "`--single-target`" + `, you use the ` + "`TARGET`, or GOOS`, `GO
 	return root
 }
 
-func buildProject(options buildOpts) (*context.Context, error) {
+func buildProject(parent stdctx.Context, options buildOpts) error {
+	start := time.Now()
 	cfg, err := loadConfig(!options.snapshot, options.config)
 	if err != nil {
-		return nil, err
+		return decorateWithCtxErr(parent, err, "build", after(start))
 	}
-	ctx, cancel := context.NewWithTimeout(cfg, options.timeout)
+
+	ctx, cancel := context.WrapWithTimeout(parent, cfg, options.timeout)
 	defer cancel()
+
 	if err := setupBuildContext(ctx, options); err != nil {
-		return nil, err
+		return decorateWithCtxErr(ctx, err, "build", after(start))
 	}
-	return ctx, ctrlc.Default.Run(ctx, func() error {
-		for _, pipe := range setupPipeline(ctx, options) {
-			if err := skip.Maybe(
-				pipe,
-				logging.Log(
-					pipe.String(),
-					errhandler.Handle(pipe.Run),
-				),
-			)(ctx); err != nil {
-				return err
-			}
+	for _, pipe := range setupPipeline(ctx, options) {
+		if err := skip.Maybe(
+			pipe,
+			logging.Log(
+				pipe.String(),
+				errhandler.Handle(pipe.Run),
+			),
+		)(ctx); err != nil {
+			return decorateWithCtxErr(ctx, err, "build", after(start))
 		}
-		return nil
-	})
+	}
+
+	deprecateWarn(ctx)
+	log.Infof(boldStyle.Render(fmt.Sprintf("build succeeded after %s", after(start).String())))
+	return nil
 }
 
 func setupPipeline(ctx *context.Context, options buildOpts) []pipeline.Piper {
@@ -202,11 +207,8 @@ func setupBuildID(ctx *context.Context, ids []string) error {
 
 	var keep []config.Build
 	for _, build := range ctx.Config.Builds {
-		for _, id := range ids {
-			if build.ID == id {
-				keep = append(keep, build)
-				break
-			}
+		if slices.Contains(ids, build.ID) {
+			keep = append(keep, build)
 		}
 	}
 

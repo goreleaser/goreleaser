@@ -99,7 +99,7 @@ func TestBuild(t *testing.T) {
 	folder := testlib.Mktmp(t)
 	folder = filepath.Join(folder, "proj")
 	require.NoError(t, os.MkdirAll(folder, 0o755))
-	cmd := exec.Command("zig", "init")
+	cmd := exec.CommandContext(t.Context(), "zig", "init")
 	cmd.Dir = folder
 	_, err := cmd.CombinedOutput()
 	require.NoError(t, err)
@@ -164,6 +164,7 @@ func TestBuild(t *testing.T) {
 			artifact.ExtraBuilder: "zig",
 			artifact.ExtraExt:     "",
 			artifact.ExtraID:      "default",
+			keyAbi:                "",
 		},
 	}, *bin)
 

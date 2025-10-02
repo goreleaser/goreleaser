@@ -4,27 +4,35 @@ on:
   pull_request:
   push:
     branches: [main]
+  schedule:
+    - cron: "0 2 * * *"
+
+permissions:
+  contents: read
+
+concurrency:
+  group: codeql-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
 
 jobs:
   analyze:
     name: analyze
     runs-on: ubuntu-latest
-
+    strategy:
+      fail-fast: false
+      matrix:
+        language: ["go", "actions"]
     permissions:
-      security-events: write
       actions: read
       contents: read
-
+      pull-requests: read
+      security-events: write
     steps:
-      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4
-      - uses: dagger/dagger-for-github@8.0.0
+      - uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
         with:
-          verb: develop
-          args: "-q"
-      # - run: dagger develop
-      - uses: actions/setup-go@0aaccfd150d50ccaeb58ebd88d36e91967a5f35b # v4
+          persist-credentials: false
+      - uses: github/codeql-action/init@3599b3baa15b485a2e49ef411a7a4bb2452e7f93 # v3.30.5
         with:
-          go-version: stable
-      - uses: github/codeql-action/init@5f8171a638ada777af81d42b55959a643bb29017 # v3
-      - uses: github/codeql-action/autobuild@5f8171a638ada777af81d42b55959a643bb29017 # v3
-      - uses: github/codeql-action/analyze@5f8171a638ada777af81d42b55959a643bb29017 # v3
+          languages: ${{ matrix.language }}
+      - uses: github/codeql-action/autobuild@3599b3baa15b485a2e49ef411a7a4bb2452e7f93 # v3.30.5
+      - uses: github/codeql-action/analyze@3599b3baa15b485a2e49ef411a7a4bb2452e7f93 # v3.30.5

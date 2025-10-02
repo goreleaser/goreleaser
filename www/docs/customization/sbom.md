@@ -42,7 +42,7 @@ sboms:
     #   Otherwise:       ["{{ .ArtifactName }}.sbom.json"]
     # Templates: allowed.
     documents:
-      - "${artifact}.spdx.sbom.json"
+      - "${artifact}.spdx.json"
 
     # Path to the SBOM generator command
     #
@@ -53,7 +53,7 @@ sboms:
 
     # Command line arguments for the command
     #
-    # Default: ["$artifact", "--output", "spdx-json=$document"].
+    # Default: ["$artifact", "--output", "spdx-json=$document", "--enrich", "all"].
     # Templates: allowed.
     args: ["$artifact", "--output", "cyclonedx-json=$document"]
 
@@ -86,6 +86,13 @@ sboms:
     ids:
       - foo
       - bar
+
+    # Whether this SBOM configuration is disabled.
+    #
+    # Default: 'true'.
+    # Templates: allowed.
+    # <!-- md:inline_version v2.10 -->
+    disable: true
 ```
 
 ### Available variable names

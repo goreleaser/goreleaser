@@ -30,7 +30,7 @@ goreleaser build [flags]
       --single-target      Builds only for current GOOS and GOARCH, regardless of what's set in the configuration file
       --skip strings       Skip the given options (valid options are: after, before, before-publish, post-hooks, pre-hooks, report-sizes, validate)
       --snapshot           Generate an unversioned snapshot build, skipping all validations
-      --timeout duration   Timeout to the entire build process (default 30m0s)
+      --timeout duration   Timeout to the entire build process (default 1h0m0s)
 ```
 
 ## Options inherited from parent commands

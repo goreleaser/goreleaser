@@ -15,7 +15,7 @@ class WithManyHeaders < Formula
 
   on_macos do
     if Hardware::CPU.intel?
-      url "https://dummyhost/download/v1.0.1/bin.tar.gz",
+      url "https://dummyhost/download/v1.0.1/bin.tgz",
         headers: [
           "Accept: application/octet-stream",
           "Authorization: bearer #{ENV["HOMEBREW_GITHUB_API_TOKEN"]}"
@@ -27,7 +27,7 @@ class WithManyHeaders < Formula
       end
     end
     if Hardware::CPU.arm?
-      url "https://dummyhost/download/v1.0.1/bin.tar.gz",
+      url "https://dummyhost/download/v1.0.1/bin.txz",
         headers: [
           "Accept: application/octet-stream",
           "Authorization: bearer #{ENV["HOMEBREW_GITHUB_API_TOKEN"]}"
@@ -41,18 +41,15 @@ class WithManyHeaders < Formula
   end
 
   on_linux do
-    if Hardware::CPU.intel?
-      if Hardware::CPU.is_64_bit?
-        url "https://dummyhost/download/v1.0.1/bin.tar.gz",
-          headers: [
-            "Accept: application/octet-stream",
-            "Authorization: bearer #{ENV["HOMEBREW_GITHUB_API_TOKEN"]}"
-          ]
-        sha256 "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
-
-        def install
-          bin.install "with_many_headers_linux_amd64 => with_many_headers"
-        end
+    if Hardware::CPU.intel? && Hardware::CPU.is_64_bit?
+      url "https://dummyhost/download/v1.0.1/bin.tar.zst",
+        headers: [
+          "Accept: application/octet-stream",
+          "Authorization: bearer #{ENV["HOMEBREW_GITHUB_API_TOKEN"]}"
+        ]
+      sha256 "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      def install
+        bin.install "with_many_headers_linux_amd64 => with_many_headers"
       end
     end
   end

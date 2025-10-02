@@ -32,6 +32,14 @@ nightly:
   # releasing.
   # This allows you to keep a single pre-release.
   keep_single_release: true
+
+  # Whether to publish the nightly as a draft release.
+  # Notice that this might not play well with 'keep_single_release', as you'll
+  # end up with no published nightly releases.
+  #
+  # Default: value of 'release.draft'.
+  # <!-- md:inline_version v2.12 -->
+  draft: true
 ```
 
 !!! warning
@@ -55,6 +63,7 @@ use `{{ .Version }}` on your name templates, you'll get the nightly version.
 - Scoop manifests;
 - Arch User Repositories;
 - Krew Plugin Manifests;
+- NURs;
 - Milestone closing;
 - All announcers;
 

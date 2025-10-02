@@ -1,8 +1,10 @@
+// Package nix creates nix packages.
 package nix
 
 import (
 	"bufio"
 	"bytes"
+	"cmp"
 	"errors"
 	"fmt"
 	"maps"
@@ -13,6 +15,8 @@ import (
 	"slices"
 	"strings"
 	"text/template"
+
+	stdctx "context"
 
 	"github.com/caarlos0/log"
 	"github.com/goreleaser/goreleaser/v2/internal/artifact"
@@ -48,27 +52,21 @@ var (
 	errInvalidLicense = errors.New("nix.license is invalid")
 )
 
-// NewBuild returns a pipe to be used in the build phase.
-func NewBuild() Pipe {
-	return Pipe{buildShaPrefetcher{}}
-}
-
-// NewPublish returns a pipe to be used in the publish phase.
-func NewPublish() Pipe {
-	return Pipe{publishShaPrefetcher{
-		bin: nixPrefetchURLBin,
-	}}
+// New returns a pipe to be used in the publish phase.
+func New() Pipe {
+	return Pipe{realHasher}
 }
 
 type Pipe struct {
-	prefetcher shaPrefetcher
+	hasher fileHasher
 }
 
 func (Pipe) String() string                           { return "nixpkgs" }
 func (Pipe) ContinueOnError() bool                    { return true }
-func (Pipe) Dependencies(_ *context.Context) []string { return []string{"nix-prefetch-url"} }
+func (Pipe) Dependencies(_ *context.Context) []string { return []string{nixHashBin} }
+
 func (p Pipe) Skip(ctx *context.Context) bool {
-	return skips.Any(ctx, skips.Nix) || len(ctx.Config.Nix) == 0 || !p.prefetcher.Available()
+	return skips.Any(ctx, skips.Nix) || len(ctx.Config.Nix) == 0
 }
 
 func (Pipe) Default(ctx *context.Context) error {
@@ -95,6 +93,9 @@ func (Pipe) Default(ctx *context.Context) error {
 }
 
 func (p Pipe) Run(ctx *context.Context) error {
+	if !p.hasher.Available() {
+		return pipe.Skipf("%s is not available", nixHashBin)
+	}
 	cli, err := client.NewReleaseClient(ctx)
 	if err != nil {
 		return err
@@ -125,7 +126,7 @@ func (p Pipe) runAll(ctx *context.Context, cli client.ReleaseURLTemplater) error
 func (p Pipe) publishAll(ctx *context.Context, cli client.Client) error {
 	skips := pipe.SkipMemento{}
 	for _, nix := range ctx.Artifacts.Filter(artifact.ByType(artifact.Nixpkg)).List() {
-		err := doPublish(ctx, p.prefetcher, cli, nix)
+		err := doPublish(ctx, p.hasher, cli, nix)
 		if err != nil && pipe.IsSkip(err) {
 			skips.Remember(err)
 			continue
@@ -169,7 +170,7 @@ func (p Pipe) doRun(ctx *context.Context, nix config.Nix, cl client.ReleaseURLTe
 		return err
 	}
 
-	content, err := preparePkg(ctx, nix, cl, p.prefetcher)
+	content, err := preparePkg(ctx, nix, cl, p.hasher)
 	if err != nil {
 		return err
 	}
@@ -183,7 +184,7 @@ func (p Pipe) doRun(ctx *context.Context, nix config.Nix, cl client.ReleaseURLTe
 		Name: filepath.Base(path),
 		Path: path,
 		Type: artifact.Nixpkg,
-		Extra: map[string]interface{}{
+		Extra: map[string]any{
 			nixConfigExtra: nix,
 		},
 	})
@@ -195,13 +196,10 @@ func preparePkg(
 	ctx *context.Context,
 	nix config.Nix,
 	cli client.ReleaseURLTemplater,
-	prefetcher shaPrefetcher,
+	hasher fileHasher,
 ) (string, error) {
 	filters := []artifact.Filter{
-		artifact.Or(
-			artifact.ByGoos("darwin"),
-			artifact.ByGoos("linux"),
-		),
+		artifact.ByGooses("darwin", "linux"),
 		artifact.Or(
 			artifact.And(
 				artifact.ByGoarch("amd64"),
@@ -219,7 +217,7 @@ func preparePkg(
 			artifact.ByGoarch("all"),
 		),
 		artifact.And(
-			artifact.ByFormats("zip", "tar.gz"),
+			artifact.Not(artifact.ByFormats("gz")),
 			artifact.ByType(artifact.UploadableArchive),
 		),
 		artifact.OnlyReplacingUnibins,
@@ -284,11 +282,11 @@ func preparePkg(
 
 	platforms := map[string]bool{}
 	for _, art := range archives {
-		url, err := tmpl.New(ctx).WithArtifact(art).Apply(nix.URLTemplate)
+		sha, err := hasher.Hash(ctx, art.Path)
 		if err != nil {
 			return "", err
 		}
-		sha, err := prefetcher.Prefetch(url)
+		url, err := tmpl.New(ctx).WithArtifact(art).Apply(nix.URLTemplate)
 		if err != nil {
 			return "", err
 		}
@@ -302,10 +300,7 @@ func preparePkg(
 			if _, ok := data.Archives[key]; ok {
 				return "", ErrMultipleArchivesSamePlatform
 			}
-			folder := artifact.ExtraOr(*art, artifact.ExtraWrappedIn, ".")
-			if folder == "" {
-				folder = "."
-			}
+			folder := cmp.Or(artifact.ExtraOr(*art, artifact.ExtraWrappedIn, ""), ".")
 			data.SourceRoots[key] = folder
 			data.Archives[key] = archive
 			plat := goosToPlatform[art.Goos+goarch+art.Goarm]
@@ -342,12 +337,8 @@ var goosToPlatform = map[string]string{
 	"darwinarm64": "aarch64-darwin",
 }
 
-func doPublish(ctx *context.Context, prefetcher shaPrefetcher, cl client.Client, pkg *artifact.Artifact) error {
-	nix, err := artifact.Extra[config.Nix](*pkg, nixConfigExtra)
-	if err != nil {
-		return err
-	}
-
+func doPublish(ctx *context.Context, hasher fileHasher, cl client.Client, pkg *artifact.Artifact) error {
+	nix := artifact.MustExtra[config.Nix](*pkg, nixConfigExtra)
 	if strings.TrimSpace(nix.SkipUpload) == "true" {
 		return errSkipUpload
 	}
@@ -370,7 +361,7 @@ func doPublish(ctx *context.Context, prefetcher shaPrefetcher, cl client.Client,
 		return err
 	}
 
-	content, err := preparePkg(ctx, nix, cl, prefetcher)
+	content, err := preparePkg(ctx, nix, cl, hasher)
 	if err != nil {
 		return err
 	}
@@ -478,7 +469,7 @@ func installs(ctx *context.Context, nix config.Nix, art *artifact.Artifact) ([]s
 
 	result := []string{"mkdir -p $out/bin"}
 	binInstallFormat := binInstallFormats(nix)
-	for _, bin := range artifact.ExtraOr(*art, artifact.ExtraBinaries, []string{}) {
+	for _, bin := range artifact.MustExtra[[]string](*art, artifact.ExtraBinaries) {
 		for _, format := range binInstallFormat {
 			result = append(result, fmt.Sprintf(format, bin))
 		}
@@ -528,7 +519,7 @@ func binInstallFormats(nix config.Nix) []string {
 
 func split(s string) []string {
 	var result []string
-	for _, line := range strings.Split(strings.TrimSpace(s), "\n") {
+	for line := range strings.SplitSeq(strings.TrimSpace(s), "\n") {
 		line := strings.TrimSpace(line)
 		if line == "" {
 			continue
@@ -546,38 +537,35 @@ func depNames(deps []config.NixDependency) []string {
 	return result
 }
 
-type shaPrefetcher interface {
-	Prefetch(url string) (string, error)
+type fileHasher interface {
+	Hash(ctx stdctx.Context, name string) (string, error)
 	Available() bool
 }
 
-const (
-	zeroHash          = "0000000000000000000000000000000000000000000000000000"
-	nixPrefetchURLBin = "nix-prefetch-url"
-)
+const nixHashBin = "nix-hash"
 
-type buildShaPrefetcher struct{}
+var realHasher fileHasher = nixHasher{bin: nixHashBin}
 
-func (buildShaPrefetcher) Prefetch(_ string) (string, error) { return zeroHash, nil }
-func (buildShaPrefetcher) Available() bool                   { return true }
+type nixHasher struct{ bin string }
 
-type publishShaPrefetcher struct {
-	bin string
-}
-
-func (p publishShaPrefetcher) Available() bool {
+func (p nixHasher) Available() bool {
 	_, err := exec.LookPath(p.bin)
-	if err != nil {
-		log.Warnf("%s is not available", p.bin)
-	}
 	return err == nil
 }
 
-func (p publishShaPrefetcher) Prefetch(url string) (string, error) {
-	out, err := exec.Command(p.bin, url).Output()
+func (p nixHasher) Hash(ctx stdctx.Context, name string) (string, error) {
+	// $ nix-hash --type sha256 --flat --base32 <(echo test)
+	out, err := exec.CommandContext(
+		ctx,
+		p.bin,
+		"--type", "sha256",
+		"--flat",
+		"--base32",
+		name,
+	).Output()
 	outStr := strings.TrimSpace(string(out))
 	if err != nil {
-		return "", fmt.Errorf("could not prefetch url: %s: %w: %s", url, err, outStr)
+		return "", fmt.Errorf("could not hash file: %s: %w: %s", name, err, outStr)
 	}
 	return outStr, nil
 }

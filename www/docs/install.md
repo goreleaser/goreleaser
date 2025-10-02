@@ -10,16 +10,16 @@ You can see the instructions for each of them below.
 === "OSS"
 
     ```bash
-    brew install goreleaser/tap/goreleaser
+    brew install --cask goreleaser/tap/goreleaser
     ```
 
 === "Pro"
 
     ```bash
-    brew install goreleaser/tap/goreleaser-pro
+    brew install --cask goreleaser/tap/goreleaser-pro
     ```
 
-## Homebrew
+## Homebrew <!-- md:community -->
 
 === "OSS"
 
@@ -80,6 +80,28 @@ You can see the instructions for each of them below.
     scoop install goreleaser-pro
     ```
 
+## Chocolatey <!-- md:community -->
+
+=== "OSS"
+
+    ```bash
+    choco install goreleaser
+    ```
+
+## Winget
+
+=== "OSS"
+
+    ```bash
+    winget install goreleaser
+    ```
+
+=== "Pro"
+
+    ```bash
+    winget install goreleaser-pro
+    ```
+
 ## Apt Repository
 
 === "OSS"
@@ -107,8 +129,9 @@ You can see the instructions for each of them below.
     name=GoReleaser
     baseurl=https://repo.goreleaser.com/yum/
     enabled=1
-    gpgcheck=0' | sudo tee /etc/yum.repos.d/goreleaser.repo
-    sudo yum --exclude=goreleaser-pro install goreleaser
+    gpgcheck=0
+    exclude=goreleaser-pro' | sudo tee /etc/yum.repos.d/goreleaser.repo
+    sudo yum install goreleaser
     ```
 
 === "Pro"
@@ -118,8 +141,9 @@ You can see the instructions for each of them below.
     name=GoReleaser
     baseurl=https://repo.goreleaser.com/yum/
     enabled=1
-    gpgcheck=0' | sudo tee /etc/yum.repos.d/goreleaser.repo
-    sudo yum --exclude=goreleaser install goreleaser-pro
+    gpgcheck=0
+    exclude=goreleaser' | sudo tee /etc/yum.repos.d/goreleaser.repo
+    sudo yum install goreleaser-pro
     ```
 
 ## AUR
@@ -136,7 +160,7 @@ You can see the instructions for each of them below.
     yay -S goreleaser-pro-bin
     ```
 
-## Nixpkgs
+## Nixpkgs <!-- md:community -->
 
 === "OSS"
 
@@ -431,6 +455,7 @@ environment variable to `nightly`.
 [nightly-releases]: https://github.com/goreleaser/goreleaser/releases/nightly
 [cosign]: https://github.com/sigstore/cosign
 
-```
+## Community
 
-```
+Install options with the <!-- md:community --> mark are maintained by the
+community and might not always be up to date.

@@ -9,6 +9,8 @@ import (
 	"path/filepath"
 	"testing"
 
+	stdctx "context"
+
 	"github.com/goreleaser/goreleaser/v2/internal/artifact"
 	"github.com/goreleaser/goreleaser/v2/internal/testctx"
 	"github.com/goreleaser/goreleaser/v2/internal/testlib"
@@ -29,7 +31,7 @@ const (
 var listen string
 
 func TestMain(m *testing.M) {
-	if !testlib.InPath("docker") || testlib.IsWindows() || !testlib.IsDockerRunning() {
+	if !testlib.InPath("docker") || testlib.IsWindows() || !testlib.IsDockerRunning(stdctx.Background()) {
 		// there's no minio windows image
 		m.Run()
 		return
@@ -128,7 +130,7 @@ func TestMinioUpload(t *testing.T) {
 		Type: artifact.Signature,
 		Name: "checksum.txt.sig",
 		Path: sigpath,
-		Extra: map[string]interface{}{
+		Extra: map[string]any{
 			artifact.ExtraID: "foo",
 		},
 	})
@@ -136,7 +138,7 @@ func TestMinioUpload(t *testing.T) {
 		Type: artifact.Certificate,
 		Name: "checksum.pem",
 		Path: certpath,
-		Extra: map[string]interface{}{
+		Extra: map[string]any{
 			artifact.ExtraID: "foo",
 		},
 	})
@@ -144,7 +146,7 @@ func TestMinioUpload(t *testing.T) {
 		Type: artifact.UploadableSourceArchive,
 		Name: "source.tar.gz",
 		Path: srcpath,
-		Extra: map[string]interface{}{
+		Extra: map[string]any{
 			artifact.ExtraFormat: "tar.gz",
 		},
 	})
@@ -152,7 +154,7 @@ func TestMinioUpload(t *testing.T) {
 		Type: artifact.UploadableArchive,
 		Name: "bin.tar.gz",
 		Path: tgzpath,
-		Extra: map[string]interface{}{
+		Extra: map[string]any{
 			artifact.ExtraID: "foo",
 		},
 	})
@@ -160,7 +162,7 @@ func TestMinioUpload(t *testing.T) {
 		Type: artifact.LinuxPackage,
 		Name: "bin.deb",
 		Path: debpath,
-		Extra: map[string]interface{}{
+		Extra: map[string]any{
 			artifact.ExtraID: "bar",
 		},
 	})
@@ -380,7 +382,7 @@ func TestMinioUploadSkip(t *testing.T) {
 			Type: artifact.UploadableArchive,
 			Name: "bin.tar.gz",
 			Path: tgzpath,
-			Extra: map[string]interface{}{
+			Extra: map[string]any{
 				artifact.ExtraID: "foo",
 			},
 		})
@@ -388,7 +390,7 @@ func TestMinioUploadSkip(t *testing.T) {
 			Type: artifact.LinuxPackage,
 			Name: "bin.deb",
 			Path: debpath,
-			Extra: map[string]interface{}{
+			Extra: map[string]any{
 				artifact.ExtraID: "bar",
 			},
 		})

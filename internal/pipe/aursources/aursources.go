@@ -145,13 +145,13 @@ func doRun(ctx *context.Context, aur config.AURSource, cl client.ReleaseURLTempl
 			name: "PKGBUILD",
 			tpl:  aurTemplateData,
 			ext:  ".pkgbuild",
-			kind: artifact.PkgBuild,
+			kind: artifact.SourcePkgBuild,
 		},
 		{
 			name: ".SRCINFO",
 			tpl:  srcInfoTemplate,
 			ext:  ".srcinfo",
-			kind: artifact.SrcInfo,
+			kind: artifact.SourceSrcInfo,
 		},
 	} {
 		pkgContent, err := buildPkgFile(ctx, aur, cl, archives, info.tpl)
@@ -172,7 +172,7 @@ func doRun(ctx *context.Context, aur config.AURSource, cl client.ReleaseURLTempl
 			Name: info.name,
 			Path: path,
 			Type: info.kind,
-			Extra: map[string]interface{}{
+			Extra: map[string]any{
 				aurExtra:         aur,
 				artifact.ExtraID: aur.Name,
 			},
@@ -309,7 +309,7 @@ func dataFor(ctx *context.Context, cfg config.AURSource, cl client.ReleaseURLTem
 		result.Sources = sources{
 			DownloadURL: url,
 			SHA256:      sum,
-			Format:      artifact.ExtraOr(*art, artifact.ExtraFormat, ""),
+			Format:      art.Format(),
 		}
 	}
 
@@ -322,9 +322,9 @@ func dataFor(ctx *context.Context, cfg config.AURSource, cl client.ReleaseURLTem
 func (Pipe) Publish(ctx *context.Context) error {
 	skips := pipe.SkipMemento{}
 	for _, pkgs := range ctx.Artifacts.Filter(
-		artifact.Or(
-			artifact.ByType(artifact.PkgBuild),
-			artifact.ByType(artifact.SrcInfo),
+		artifact.ByTypes(
+			artifact.SourcePkgBuild,
+			artifact.SourceSrcInfo,
 		),
 	).GroupByID() {
 		err := doPublish(ctx, pkgs)
@@ -340,11 +340,7 @@ func (Pipe) Publish(ctx *context.Context) error {
 }
 
 func doPublish(ctx *context.Context, pkgs []*artifact.Artifact) error {
-	cfg, err := artifact.Extra[config.AURSource](*pkgs[0], aurExtra)
-	if err != nil {
-		return err
-	}
-
+	cfg := artifact.MustExtra[config.AURSource](*pkgs[0], aurExtra)
 	if strings.TrimSpace(cfg.SkipUpload) == "true" {
 		return pipe.Skip("aur.skip_upload is set")
 	}

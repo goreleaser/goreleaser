@@ -85,6 +85,14 @@ cloudsmiths:
     # The component (channel) for the package (e.g. 'main', 'unstable', etc).
     # <!-- md:inline_version v2.7 -->
     component: main
+
+    # If true, the uploaded package will overwrite any others with the same
+    # attributes (e.g. same version); otherwise, it will be flagged as a
+    # duplicate.
+    #
+    # <!-- md:inline_version v2.11 -->
+    # Templates: allowed.
+    republish: true
 ```
 
 [cloudsmith]: https://cloudsmith.io/

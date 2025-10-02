@@ -354,63 +354,68 @@ func TestFullPipe(t *testing.T) {
 			)
 			tt.prepare(ctx)
 			ctx.Artifacts.Add(&artifact.Artifact{
-				Name:    "bar_bin.tar.gz",
+				Name:    "bin.tgz",
+				Path:    filepath.Join(folder, "bin.tgz"),
+				Goos:    "darwin",
+				Goarch:  "amd64",
+				Goamd64: "v1",
+				Type:    artifact.UploadableArchive,
+				Extra: map[string]any{
+					artifact.ExtraID:       "foo",
+					artifact.ExtraFormat:   "tgz",
+					artifact.ExtraBinaries: []string{"foo"},
+				},
+			})
+			ctx.Artifacts.Add(&artifact.Artifact{
+				Name:   "bin.txz",
+				Path:   filepath.Join(folder, "bin.txz"),
+				Goos:   "darwin",
+				Goarch: "arm64",
+				Type:   artifact.UploadableArchive,
+				Extra: map[string]any{
+					artifact.ExtraID:       "foo",
+					artifact.ExtraFormat:   "txz",
+					artifact.ExtraBinaries: []string{"foo"},
+				},
+			})
+			ctx.Artifacts.Add(&artifact.Artifact{
+				Name:    "bin.tar.zst",
+				Path:    filepath.Join(folder, "bin.tar.zst"),
+				Goos:    "linux",
+				Goarch:  "amd64",
+				Goamd64: "v1",
+				Type:    artifact.UploadableArchive,
+				Extra: map[string]any{
+					artifact.ExtraID:       "foo",
+					artifact.ExtraFormat:   "tar.zst",
+					artifact.ExtraBinaries: []string{"foo"},
+				},
+			})
+			for _, a := range ctx.Artifacts.List() {
+				f, err := os.Create(a.Path)
+				require.NoError(t, err)
+				require.NoError(t, f.Close())
+			}
+			ctx.Artifacts.Add(&artifact.Artifact{
+				Name:    "bar_bin.tzst",
 				Path:    "doesnt matter",
 				Goos:    "darwin",
 				Goarch:  "amd64",
 				Goamd64: "v1",
 				Type:    artifact.UploadableArchive,
-				Extra: map[string]interface{}{
-					artifact.ExtraID:     "bar",
-					artifact.ExtraFormat: "tar.gz",
-				},
-			})
-			path := filepath.Join(folder, "bin.tar.gz")
-			ctx.Artifacts.Add(&artifact.Artifact{
-				Name:    "bin.tar.gz",
-				Path:    path,
-				Goos:    "darwin",
-				Goarch:  "amd64",
-				Goamd64: "v1",
-				Type:    artifact.UploadableArchive,
-				Extra: map[string]interface{}{
-					artifact.ExtraID:     "foo",
-					artifact.ExtraFormat: "tar.gz",
-				},
-			})
-			ctx.Artifacts.Add(&artifact.Artifact{
-				Name:   "bin.tar.gz",
-				Path:   path,
-				Goos:   "darwin",
-				Goarch: "arm64",
-				Type:   artifact.UploadableArchive,
-				Extra: map[string]interface{}{
-					artifact.ExtraID:     "foo",
-					artifact.ExtraFormat: "tar.gz",
-				},
-			})
-			ctx.Artifacts.Add(&artifact.Artifact{
-				Name:    "bin.tar.gz",
-				Path:    path,
-				Goos:    "linux",
-				Goarch:  "amd64",
-				Goamd64: "v1",
-				Type:    artifact.UploadableArchive,
-				Extra: map[string]interface{}{
-					artifact.ExtraID:     "foo",
-					artifact.ExtraFormat: "tar.gz",
+				Extra: map[string]any{
+					artifact.ExtraID:       "bar",
+					artifact.ExtraFormat:   "tzst",
+					artifact.ExtraBinaries: []string{"bar"},
 				},
 			})
 
-			f, err := os.Create(path)
-			require.NoError(t, err)
-			require.NoError(t, f.Close())
 			client := client.NewMock()
 			distFile := filepath.Join(folder, "homebrew", name+".rb")
 
 			require.NoError(t, Pipe{}.Default(ctx))
 
-			err = runAll(ctx, client)
+			err := runAll(ctx, client)
 			if tt.expectedRunError != "" {
 				require.EqualError(t, err, tt.expectedRunError)
 				return
@@ -487,9 +492,10 @@ func TestRunPipeNameTemplate(t *testing.T) {
 		Goarch:  "amd64",
 		Goamd64: "v1",
 		Type:    artifact.UploadableArchive,
-		Extra: map[string]interface{}{
-			artifact.ExtraID:     "foo",
-			artifact.ExtraFormat: "tar.gz",
+		Extra: map[string]any{
+			artifact.ExtraID:       "foo",
+			artifact.ExtraFormat:   "tar.gz",
+			artifact.ExtraBinaries: []string{"foo"},
 		},
 	})
 
@@ -579,9 +585,10 @@ func TestRunPipeMultipleBrewsWithSkip(t *testing.T) {
 		Goarch:  "amd64",
 		Goamd64: "v1",
 		Type:    artifact.UploadableArchive,
-		Extra: map[string]interface{}{
-			artifact.ExtraID:     "foo",
-			artifact.ExtraFormat: "tar.gz",
+		Extra: map[string]any{
+			artifact.ExtraID:       "foo",
+			artifact.ExtraFormat:   "tar.gz",
+			artifact.ExtraBinaries: []string{"foo"},
 		},
 	})
 
@@ -700,9 +707,10 @@ func TestRunPipeForMultipleAmd64Versions(t *testing.T) {
 					Goarch:  a.goarch,
 					Goamd64: a.goamd64,
 					Type:    artifact.UploadableArchive,
-					Extra: map[string]interface{}{
-						artifact.ExtraID:     a.name,
-						artifact.ExtraFormat: "tar.gz",
+					Extra: map[string]any{
+						artifact.ExtraID:       a.name,
+						artifact.ExtraFormat:   "tar.gz",
+						artifact.ExtraBinaries: []string{a.name},
 					},
 				})
 				f, err := os.Create(path)
@@ -821,9 +829,10 @@ func TestRunPipeForMultipleArmVersions(t *testing.T) {
 					Goarch: a.goarch,
 					Goarm:  a.goarm,
 					Type:   artifact.UploadableArchive,
-					Extra: map[string]interface{}{
-						artifact.ExtraID:     a.name,
-						artifact.ExtraFormat: "tar.gz",
+					Extra: map[string]any{
+						artifact.ExtraID:       a.name,
+						artifact.ExtraFormat:   "tar.gz",
+						artifact.ExtraBinaries: []string{a.name},
 					},
 				})
 				f, err := os.Create(path)
@@ -998,9 +1007,10 @@ func TestRunPipeMultipleArchivesSameOsBuild(t *testing.T) {
 				Goos:   ttt.goos,
 				Goarch: ttt.goarch,
 				Type:   artifact.UploadableArchive,
-				Extra: map[string]interface{}{
-					artifact.ExtraID:     fmt.Sprintf("foo%d", idx),
-					artifact.ExtraFormat: "tar.gz",
+				Extra: map[string]any{
+					artifact.ExtraID:       fmt.Sprintf("foo%d", idx),
+					artifact.ExtraFormat:   "tar.gz",
+					artifact.ExtraBinaries: []string{"foo"},
 				},
 			})
 		}
@@ -1041,7 +1051,7 @@ func TestRunPipeBinaryRelease(t *testing.T) {
 		Goos:   "darwin",
 		Goarch: "all",
 		Type:   artifact.UploadableBinary,
-		Extra: map[string]interface{}{
+		Extra: map[string]any{
 			artifact.ExtraID:     "foo",
 			artifact.ExtraFormat: "binary",
 			artifact.ExtraBinary: "foo",
@@ -1093,7 +1103,7 @@ func TestRunPipePullRequest(t *testing.T) {
 		Goos:   "darwin",
 		Goarch: "all",
 		Type:   artifact.UploadableBinary,
-		Extra: map[string]interface{}{
+		Extra: map[string]any{
 			artifact.ExtraID:     "foo",
 			artifact.ExtraFormat: "binary",
 			artifact.ExtraBinary: "foo",
@@ -1142,9 +1152,10 @@ func TestRunPipeNoUpload(t *testing.T) {
 		Goarch:  "amd64",
 		Goamd64: "v1",
 		Type:    artifact.UploadableArchive,
-		Extra: map[string]interface{}{
-			artifact.ExtraID:     "foo",
-			artifact.ExtraFormat: "tar.gz",
+		Extra: map[string]any{
+			artifact.ExtraID:       "foo",
+			artifact.ExtraFormat:   "tar.gz",
+			artifact.ExtraBinaries: []string{"foo"},
 		},
 	})
 	client := client.NewMock()
@@ -1199,9 +1210,10 @@ func TestRunEmptyTokenType(t *testing.T) {
 		Goarch:  "amd64",
 		Goamd64: "v1",
 		Type:    artifact.UploadableArchive,
-		Extra: map[string]interface{}{
-			artifact.ExtraID:     "foo",
-			artifact.ExtraFormat: "tar.gz",
+		Extra: map[string]any{
+			artifact.ExtraID:       "foo",
+			artifact.ExtraFormat:   "tar.gz",
+			artifact.ExtraBinaries: []string{"foo"},
 		},
 	})
 	client := client.NewMock()
@@ -1244,6 +1256,10 @@ func TestDefault(t *testing.T) {
 	require.NotEmpty(t, ctx.Config.Brews[0].CommitAuthor.Email)
 	require.NotEmpty(t, ctx.Config.Brews[0].CommitMessageTemplate)
 	require.Equal(t, repo, ctx.Config.Brews[0].Repository)
+	// TODO: add this back at some point:
+	// require.True(t, ctx.Deprecated)
+	// _, ok := ctx.NotifiedDeprecations["brews"]
+	// require.True(t, ok, "Brews should be deprecated")
 }
 
 func TestGHFolder(t *testing.T) {
@@ -1302,7 +1318,7 @@ func TestInstalls(t *testing.T) {
 			config.Homebrew{},
 			&artifact.Artifact{
 				Type: artifact.UploadableArchive,
-				Extra: map[string]interface{}{
+				Extra: map[string]any{
 					artifact.ExtraBinaries: []string{"foo", "bar"},
 				},
 			},
@@ -1321,7 +1337,7 @@ func TestInstalls(t *testing.T) {
 			&artifact.Artifact{
 				Name: "foo_macos",
 				Type: artifact.UploadableBinary,
-				Extra: map[string]interface{}{
+				Extra: map[string]any{
 					artifact.ExtraBinary: "foo",
 				},
 			},
@@ -1383,7 +1399,7 @@ func TestRunPipeUniversalBinary(t *testing.T) {
 		Goos:   "darwin",
 		Goarch: "all",
 		Type:   artifact.UploadableArchive,
-		Extra: map[string]interface{}{
+		Extra: map[string]any{
 			artifact.ExtraID:       "unibin",
 			artifact.ExtraFormat:   "tar.gz",
 			artifact.ExtraBinaries: []string{"unibin"},
@@ -1441,7 +1457,7 @@ func TestRunPipeUniversalBinaryNotReplacing(t *testing.T) {
 		Goarch:  "amd64",
 		Goamd64: "v1",
 		Type:    artifact.UploadableArchive,
-		Extra: map[string]interface{}{
+		Extra: map[string]any{
 			artifact.ExtraID:       "unibin",
 			artifact.ExtraFormat:   "tar.gz",
 			artifact.ExtraBinaries: []string{"unibin"},
@@ -1454,7 +1470,7 @@ func TestRunPipeUniversalBinaryNotReplacing(t *testing.T) {
 		Goarch:  "arm64",
 		Goamd64: "v1",
 		Type:    artifact.UploadableArchive,
-		Extra: map[string]interface{}{
+		Extra: map[string]any{
 			artifact.ExtraID:       "unibin",
 			artifact.ExtraFormat:   "tar.gz",
 			artifact.ExtraBinaries: []string{"unibin"},
@@ -1466,7 +1482,7 @@ func TestRunPipeUniversalBinaryNotReplacing(t *testing.T) {
 		Goos:   "darwin",
 		Goarch: "all",
 		Type:   artifact.UploadableArchive,
-		Extra: map[string]interface{}{
+		Extra: map[string]any{
 			artifact.ExtraID:       "unibin",
 			artifact.ExtraFormat:   "tar.gz",
 			artifact.ExtraBinaries: []string{"unibin"},

@@ -6,6 +6,8 @@ import (
 	"fmt"
 	"maps"
 	"net/url"
+	"os"
+	"os/user"
 	"path/filepath"
 	"regexp"
 	"strings"
@@ -26,7 +28,7 @@ type Template struct {
 }
 
 // Fields that will be available to the template engine.
-type Fields map[string]interface{}
+type Fields map[string]any
 
 // Template fields names used in build targets and more.
 const (
@@ -105,8 +107,8 @@ func New(ctx *context.Context) *Template {
 		treeState = "dirty"
 	}
 
-	fields := map[string]interface{}{}
-	for k, v := range map[string]interface{}{
+	fields := map[string]any{}
+	maps.Copy(fields, map[string]any{
 		projectName:     ctx.Config.ProjectName,
 		modulePath:      ctx.ModulePath,
 		version:         ctx.Version,
@@ -142,9 +144,7 @@ func New(ctx *context.Context) *Template {
 		tagContents:     ctx.Git.TagContents,
 		tagBody:         ctx.Git.TagBody,
 		runtimeK:        ctx.Runtime,
-	} {
-		fields[k] = v
-	}
+	})
 
 	return &Template{
 		fields: fields,
@@ -169,9 +169,7 @@ func (t *Template) SetEnv(single string) *Template {
 // It will override fields with the same name.
 func (t *Template) WithExtraFields(f Fields) *Template {
 	tt := t.copying()
-	for k, v := range f {
-		tt.fields[k] = v
-	}
+	maps.Copy(tt.fields, f)
 	return tt
 }
 
@@ -211,7 +209,7 @@ func (t *Template) WithArtifact(a *artifact.Artifact) *Template {
 		target:       a.Target,
 		binary:       artifact.ExtraOr(*a, binary, t.fields[projectName].(string)),
 		artifactName: a.Name,
-		artifactExt:  artifact.ExtraOr(*a, artifact.ExtraExt, ""),
+		artifactExt:  a.Ext(),
 		artifactPath: a.Path,
 	})
 }
@@ -329,6 +327,21 @@ func (t *Template) Apply(s string) (string, error) {
 			"map":            makemap,
 			"indexOrDefault": indexOrDefault,
 			"urlPathEscape":  url.PathEscape,
+			"blake2b":        checksum("blake2b"),
+			"blake2s":        checksum("blake2s"),
+			"crc32":          checksum("crc32"),
+			"md5":            checksum("md5"),
+			"sha224":         checksum("sha224"),
+			"sha384":         checksum("sha384"),
+			"sha256":         checksum("sha256"),
+			"sha1":           checksum("sha1"),
+			"sha512":         checksum("sha512"),
+			"sha3_224":       checksum("sha3-224"),
+			"sha3_384":       checksum("sha3-384"),
+			"sha3_256":       checksum("sha3-256"),
+			"sha3_512":       checksum("sha3-512"),
+			"readFile":       readFile,
+			"mustReadFile":   mustReadFile,
 		}).
 		Parse(s)
 	if err != nil {
@@ -349,6 +362,18 @@ func (t *Template) ApplyAll(sps ...*string) error {
 			return newTmplError(s, err)
 		}
 		*sp = result
+	}
+	return nil
+}
+
+// ApplySlice applies the template to all items in a slice.
+func (t *Template) ApplySlice(in *[]string) error {
+	for i, s := range *in {
+		ss, err := t.Apply(s)
+		if err != nil {
+			return newTmplError(s, err)
+		}
+		(*in)[i] = ss
 	}
 	return nil
 }
@@ -433,7 +458,7 @@ func filter(reverse bool) func(content, exp string) string {
 	return func(content, exp string) string {
 		re := regexp.MustCompilePOSIX(exp)
 		var lines []string
-		for _, line := range strings.Split(content, "\n") {
+		for line := range strings.SplitSeq(content, "\n") {
 			if reverse && re.MatchString(line) {
 				continue
 			}
@@ -489,4 +514,34 @@ func indexOrDefault(m map[string]string, name, value string) string {
 		return s
 	}
 	return value
+}
+
+func checksum(algorithm string) func(string) (string, error) {
+	return func(file string) (string, error) {
+		artifact := artifact.Artifact{
+			Path: file,
+		}
+
+		return artifact.Checksum(algorithm)
+	}
+}
+
+func mustReadFile(path string) (string, error) {
+	if strings.HasPrefix(path, "~/") {
+		user, err := user.Current()
+		if err != nil {
+			return "", err
+		}
+		path = user.HomeDir + path[1:]
+	}
+	bts, err := os.ReadFile(path)
+	if err != nil {
+		return "", err
+	}
+	return strings.TrimSpace(string(bts)), nil
+}
+
+func readFile(path string) string {
+	out, _ := mustReadFile(path)
+	return out
 }

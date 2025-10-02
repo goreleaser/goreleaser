@@ -112,74 +112,29 @@ changelog:
     - title: Other work
       order: 9999
 
-dockers:
-  - image_templates:
-      - "goreleaser/goreleaser:v{{ .Version }}-amd64"
-      - "ghcr.io/goreleaser/goreleaser:v{{ .Version }}-amd64"
-    dockerfile: Dockerfile
-    use: buildx
-    build_flag_templates:
-      - "--pull"
-      - "--label=io.artifacthub.package.readme-url=https://raw.githubusercontent.com/goreleaser/goreleaser/main/README.md"
-      - "--label=io.artifacthub.package.logo-url=https://goreleaser.com/static/avatar.png"
-      - '--label=io.artifacthub.package.maintainers=[{"name":"Carlos Alexandro Becker","email":"carlos@carlosbecker.dev"}]'
-      - "--label=io.artifacthub.package.license=MIT"
-      - "--label=org.opencontainers.image.description=Release engineering, simplified"
-      - "--label=org.opencontainers.image.created={{.Date}}"
-      - "--label=org.opencontainers.image.name={{.ProjectName}}"
-      - "--label=org.opencontainers.image.revision={{.FullCommit}}"
-      - "--label=org.opencontainers.image.version={{.Version}}"
-      - "--label=org.opencontainers.image.source={{.GitURL}}"
-      - "--platform=linux/amd64"
+dockers_v2:
+  - images:
+      - "goreleaser/goreleaser"
+      - "ghcr.io/goreleaser/goreleaser"
+    tags:
+      - "v{{ .Version }}"
+      - "{{ if .IsNightly }}nightly{{ end }}"
+      - "{{ if not .IsNightly }}latest{{ end }}"
     extra_files:
       - scripts/entrypoint.sh
-  - image_templates:
-      - "goreleaser/goreleaser:v{{ .Version }}-arm64"
-      - "ghcr.io/goreleaser/goreleaser:v{{ .Version }}-arm64"
-    dockerfile: Dockerfile
-    use: buildx
-    build_flag_templates:
-      - "--pull"
-      - "--label=io.artifacthub.package.readme-url=https://raw.githubusercontent.com/goreleaser/goreleaser/main/README.md"
-      - "--label=io.artifacthub.package.logo-url=https://goreleaser.com/static/avatar.png"
-      - '--label=io.artifacthub.package.maintainers=[{"name":"Carlos Alexandro Becker","email":"carlos@carlosbecker.dev"}]'
-      - "--label=io.artifacthub.package.license=MIT"
-      - "--label=org.opencontainers.image.description=Release engineering, simplified"
-      - "--label=org.opencontainers.image.created={{.Date}}"
-      - "--label=org.opencontainers.image.name={{.ProjectName}}"
-      - "--label=org.opencontainers.image.revision={{.FullCommit}}"
-      - "--label=org.opencontainers.image.version={{.Version}}"
-      - "--label=org.opencontainers.image.source={{.GitURL}}"
-      - "--platform=linux/arm64"
-    goarch: arm64
-    extra_files:
-      - scripts/entrypoint.sh
-
-docker_manifests:
-  - name_template: "goreleaser/goreleaser:v{{ .Version }}"
-    image_templates:
-      - "goreleaser/goreleaser:v{{ .Version }}-amd64"
-      - "goreleaser/goreleaser:v{{ .Version }}-arm64"
-  - name_template: "ghcr.io/goreleaser/goreleaser:v{{ .Version }}"
-    image_templates:
-      - "ghcr.io/goreleaser/goreleaser:v{{ .Version }}-amd64"
-      - "ghcr.io/goreleaser/goreleaser:v{{ .Version }}-arm64"
-  - name_template: "{{ if not .IsNightly }}goreleaser/goreleaser:latest{{ end }}"
-    image_templates:
-      - "goreleaser/goreleaser:v{{ .Version }}-amd64"
-      - "goreleaser/goreleaser:v{{ .Version }}-arm64"
-  - name_template: "{{ if not .IsNightly }}ghcr.io/goreleaser/goreleaser:latest{{ end }}"
-    image_templates:
-      - "ghcr.io/goreleaser/goreleaser:v{{ .Version }}-amd64"
-      - "ghcr.io/goreleaser/goreleaser:v{{ .Version }}-arm64"
-  - name_template: "{{ if .IsNightly }}goreleaser/goreleaser:nightly{{ end }}"
-    image_templates:
-      - "goreleaser/goreleaser:v{{ .Version }}-amd64"
-      - "goreleaser/goreleaser:v{{ .Version }}-arm64"
-  - name_template: "{{ if .IsNightly }}ghcr.io/goreleaser/goreleaser:nightly{{ end }}"
-    image_templates:
-      - "ghcr.io/goreleaser/goreleaser:v{{ .Version }}-amd64"
-      - "ghcr.io/goreleaser/goreleaser:v{{ .Version }}-arm64"
+    labels:
+      "io.artifacthub.package.readme-url": "https://raw.githubusercontent.com/goreleaser/goreleaser/main/README.md"
+      "io.artifacthub.package.logo-url": "https://goreleaser.com/static/avatar.png"
+      "io.artifacthub.package.maintainers": '[{"name":"Carlos Alexandro Becker","email":"carlos@carlosbecker.dev"}]'
+      "io.artifacthub.package.license": "MIT"
+      "org.opencontainers.image.description": "Release engineering, simplified"
+      "org.opencontainers.image.created": "{{.Date}}"
+      "org.opencontainers.image.name": "{{.ProjectName}}"
+      "org.opencontainers.image.revision": "{{.FullCommit}}"
+      "org.opencontainers.image.version": "{{.Version}}"
+      "org.opencontainers.image.source": "{{.GitURL}}"
+    annotations:
+      "org.opencontainers.image.description": "Release engineering, simplified"
 
 archives:
   - name_template: >-
@@ -218,36 +173,23 @@ archives:
           group: root
           mtime: "{{ .CommitDate }}"
 
-brews:
+homebrew_casks:
   - repository:
       owner: goreleaser
       name: homebrew-tap
-    directory: Formula
-    goarm: "7"
     homepage: https://goreleaser.com
     description: Release engineering, simplified
     license: MIT
-    test: |
-      system "#{bin}/goreleaser -v"
-    dependencies:
-      - name: go
-        type: optional
-      - name: node
-        type: optional
-      - name: rustup
-        type: optional
-      - name: zig
-        type: optional
-      - name: deno
-        type: optional
-      - name: git
     conflicts:
-      - goreleaser-pro
-    extra_install: |-
-      bash_completion.install "completions/goreleaser.bash" => "goreleaser"
-      zsh_completion.install "completions/goreleaser.zsh" => "_goreleaser"
-      fish_completion.install "completions/goreleaser.fish"
-      man1.install "manpages/goreleaser.1.gz"
+      - cask: goreleaser-pro
+    manpages:
+      - "manpages/goreleaser.1.gz"
+    completions:
+      bash: "completions/goreleaser.bash"
+      zsh: "completions/goreleaser.zsh"
+      fish: "completions/goreleaser.fish"
+    url:
+      verified: github.com/goreleaser/goreleaser/releases/download
 
 nix:
   - name: goreleaser
@@ -274,7 +216,6 @@ winget:
       branch: "goreleaser-{{.Version}}"
       pull_request:
         enabled: true
-        draft: true
         base:
           owner: microsoft
           name: winget-pkgs
@@ -416,6 +357,11 @@ milestones:
 
 release:
   name_template: "v{{ .Version }}"
+  header: |
+    ## Announcement
+
+    Read the official announcement: [Announcing GoReleaser v{{.Major}}.{{.Minor}}](https://goreleaser.com/blog/goreleaser-v{{.Major}}.{{.Minor}}/).
+
   footer: |
     **Full Changelog**: https://github.com/goreleaser/goreleaser/compare/{{ .PreviousTag }}...{{ if .IsNightly }}nightly{{ else }}{{ .Tag }}{{ end }}
 

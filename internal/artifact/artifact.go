@@ -63,8 +63,12 @@ const (
 	Certificate
 	// UploadableSourceArchive is the archive with the current commit source code.
 	UploadableSourceArchive
-	// BrewTap is an uploadable homebrew tap recipe file.
-	BrewTap
+	// BrewFormula is an uploadable homebrew formula file.
+	//
+	// Deprecated: use [BrewCask] instead.
+	BrewFormula
+	// BrewCask is an uploadable homebrew cask file.
+	BrewCask
 	// Nixpkg is an uploadable nix package.
 	Nixpkg
 	// WingetInstaller winget installer file.
@@ -77,6 +81,10 @@ const (
 	PkgBuild
 	// SrcInfo is an Arch Linux AUR .SRCINFO file.
 	SrcInfo
+	// SourcePkgBuild is an Arch Linux AUR PKGBUILD file for a source build.
+	SourcePkgBuild
+	// SourceSrcInfo is an Arch Linux AUR .SRCINFO file for a source build.
+	SourceSrcInfo
 	// KrewPluginManifest is a krew plugin manifest file.
 	KrewPluginManifest
 	// ScoopManifest is an uploadable scoop manifest file.
@@ -91,9 +99,34 @@ const (
 	CArchive
 	// CShared is a C shared library, generated via a CGo build with buildmode=c-shared.
 	CShared
+	// PyWheel is a Python wheel package.
+	PyWheel
+	// PySdist is a Python source distribution package.
+	PySdist
 	// Metadata is an internal goreleaser metadata JSON file.
 	Metadata
+	// Makeself is a makeself self-extracting archive.
+	Makeself
+	// DockerImageV2 is a container image in OCI format.
+	DockerImageV2
+	// lastMarker is used in tests to denote the last valid type.
+	// always add new types before this one.
+	lastMarker
 )
+
+func (t Type) isUploadable() bool {
+	switch t {
+	case UniversalBinary, Binary, // See: [UploadableBinary].
+		DockerImage,            // See: [PublishableDockerImage].
+		Snapcraft,              // See [PublishableSnapcraft].
+		Metadata,               // Local only.
+		SrcInfo, SourceSrcInfo, // It's always named `.SRCINFO`
+		PkgBuild, SourcePkgBuild: // It's always named `.PKGBUILD`
+		return false
+	default:
+		return true
+	}
+}
 
 func (t Type) String() string {
 	switch t {
@@ -105,7 +138,7 @@ func (t Type) String() string {
 		return "Binary"
 	case LinuxPackage:
 		return "Linux Package"
-	case PublishableDockerImage:
+	case PublishableDockerImage, DockerImageV2:
 		return "Docker Image"
 	case DockerImage:
 		return "Published Docker Image"
@@ -121,17 +154,19 @@ func (t Type) String() string {
 		return "Certificate"
 	case UploadableSourceArchive:
 		return "Source"
-	case BrewTap:
-		return "Brew Tap"
+	case BrewFormula:
+		return "Homebrew Formula"
+	case BrewCask:
+		return "Homebrew Cask"
 	case KrewPluginManifest:
 		return "Krew Plugin Manifest"
 	case ScoopManifest:
 		return "Scoop Manifest"
 	case SBOM:
 		return "SBOM"
-	case PkgBuild:
+	case PkgBuild, SourcePkgBuild:
 		return "PKGBUILD"
-	case SrcInfo:
+	case SrcInfo, SourceSrcInfo:
 		return "SRCINFO"
 	case PublishableChocolatey:
 		return "Chocolatey"
@@ -147,6 +182,12 @@ func (t Type) String() string {
 		return "Nixpkg"
 	case Metadata:
 		return "Metadata"
+	case PyWheel:
+		return "Wheel"
+	case PySdist:
+		return "Source Dist"
+	case Makeself:
+		return "Makeself Package"
 	default:
 		return "unknown"
 	}
@@ -206,19 +247,13 @@ func (a Artifact) String() string {
 	return a.Name
 }
 
-// Extra tries to get the extra field with the given name, returning either
-// its value, the default value for its type, or an error.
+// tryCastExtra tries to cast the given type into T.
 //
 // If the extra value cannot be cast into the given type, it'll try to convert
 // it to JSON and unmarshal it into the correct type after.
 //
 // If that fails as well, it'll error.
-func Extra[T any](a Artifact, key string) (T, error) {
-	ex := a.Extra[key]
-	if ex == nil {
-		return *(new(T)), nil
-	}
-
+func tryCastExtra[T any](ex any) (T, error) {
 	t, ok := ex.(T)
 	if ok {
 		return t, nil
@@ -226,30 +261,58 @@ func Extra[T any](a Artifact, key string) (T, error) {
 
 	bts, err := json.Marshal(ex)
 	if err != nil {
+		// this should never happen in theory
 		return t, err
 	}
 
 	decoder := json.NewDecoder(bytes.NewReader(bts))
 	decoder.DisallowUnknownFields()
-	err = decoder.Decode(&t)
-	return t, err
+	if err := decoder.Decode(&t); err != nil {
+		// this should never happen in theory
+		return t, err
+	}
+	return t, nil
+}
+
+// MustExtra tries to get the extra field with the given name, returning its
+// value or panicking.
+//
+// If the value cannot be cast into the given type, it'll panic.
+func MustExtra[T any](a Artifact, key string) T {
+	got, ok := a.Extra[key]
+	if !ok {
+		panic(fmt.Errorf("extra: %s: key not present", key))
+	}
+	t, err := tryCastExtra[T](got)
+	if err != nil {
+		panic(fmt.Errorf("extra: %s: %w", key, err))
+	}
+	return t
 }
 
 // ExtraOr returns the Extra field with the given key or the or value specified
 // if it is nil.
 //
-// Deprecated: this is not guaranteed to work, prefer using [Extra].
+// This should only be used in places where the key might or might not be
+// present.
+//
+// If the value cannot be cast into the given type, it'll panic.
 func ExtraOr[T any](a Artifact, key string, or T) T {
-	if a.Extra[key] == nil {
+	got, ok := a.Extra[key]
+	if !ok {
 		return or
 	}
-	return a.Extra[key].(T)
+	t, err := tryCastExtra[T](got)
+	if err != nil {
+		panic(fmt.Errorf("extra: %s: %w", key, err))
+	}
+	return t
 }
 
-// Checksum calculates the checksum of the artifact.
+// Checksum calculates the checksum of the artifact and sets it's Extra field.
 //
 //nolint:gosec
-func (a Artifact) Checksum(algorithm string) (string, error) {
+func (a *Artifact) Checksum(algorithm string) (string, error) {
 	log.Debugf("calculating checksum for %s", a.Path)
 	file, err := os.Open(a.Path)
 	if err != nil {
@@ -330,6 +393,11 @@ func (a Artifact) Format() string {
 	return ExtraOr(a, ExtraFormat, "")
 }
 
+// Ext returns the artifact Ext if it exists, empty otherwise.
+func (a Artifact) Ext() string {
+	return ExtraOr(a, ExtraExt, "")
+}
+
 // Artifacts is a list of artifacts.
 type Artifacts struct {
 	items []*Artifact
@@ -381,19 +449,23 @@ func (artifacts *Artifacts) GroupByPlatform() map[string][]*Artifact {
 	goamd64s := map[string]struct{}{}
 	gomipses := map[string]struct{}{}
 	goarms := map[string]struct{}{}
+	abis := map[string]struct{}{}
 	for _, a := range artifacts.List() {
 		plat := a.Goos + a.Goarch
-		fullplat := plat + a.Goarm + a.Gomips + a.Goamd64
+		abi := ExtraOr(*a, "Abi", "")
+		fullplat := plat + abi + a.Goarm + a.Gomips + a.Goamd64
 		goamd64s[a.Goamd64] = struct{}{}
 		gomipses[a.Gomips] = struct{}{}
 		goarms[a.Goarm] = struct{}{}
+		abis[abi] = struct{}{}
 		simpleResult[plat] = append(simpleResult[plat], a)
 		specificResult[fullplat] = append(specificResult[fullplat], a)
 	}
 
 	if len(nonEmpty(goamd64s)) > 1 ||
 		len(nonEmpty(gomipses)) > 1 ||
-		len(nonEmpty(goarms)) > 1 {
+		len(nonEmpty(goarms)) > 1 ||
+		len(nonEmpty(abis)) > 1 {
 		return specificResult
 	}
 
@@ -422,7 +494,7 @@ func relPath(a *Artifact) (string, error) {
 
 func shouldRelPath(a *Artifact) bool {
 	switch a.Type {
-	case DockerImage, DockerManifest, PublishableDockerImage:
+	case DockerImage, DockerManifest, PublishableDockerImage, DockerImageV2:
 		return false
 	default:
 		return filepath.IsAbs(a.Path)
@@ -441,11 +513,20 @@ func (artifacts *Artifacts) Add(a *Artifact) {
 		}
 	}
 	a.Path = filepath.ToSlash(a.Path)
+	if a.Type.isUploadable() &&
+		slices.ContainsFunc(artifacts.items, func(b *Artifact) bool {
+			return a.Name == b.Name
+		}) {
+		log.WithField("name", a.Name).
+			WithField("details", `this might cause errors when publishing
+please make sure your configuration is correct`).
+			Warn("artifact already present in the list")
+	}
+	artifacts.items = append(artifacts.items, a)
 	log.WithField("name", a.Name).
 		WithField("type", a.Type).
 		WithField("path", a.Path).
 		Debug("added new artifact")
-	artifacts.items = append(artifacts.items, a)
 }
 
 // Remove removes artifacts that match the given filter from the original artifact list.
@@ -491,11 +572,21 @@ func ByGoos(s string) Filter {
 	}
 }
 
+// ByGooses is a predefined filter that filters by the given goos.
+func ByGooses(in ...string) Filter {
+	return autoOr(in, ByGoos)
+}
+
 // ByGoarch is a predefined filter that filters by the given goarch.
 func ByGoarch(s string) Filter {
 	return func(a *Artifact) bool {
 		return a.Goarch == s
 	}
+}
+
+// ByGoarches is a predefined filter that filters by the given goarch.
+func ByGoarches(in ...string) Filter {
+	return autoOr(in, ByGoarch)
 }
 
 // ByGoarm is a predefined filter that filters by the given goarm.
@@ -506,12 +597,22 @@ func ByGoarm(s string) Filter {
 	}
 }
 
+// ByGoarms is a predefined filter that filters by the given goarm.
+func ByGoarms(s ...string) Filter {
+	return autoOr(s, ByGoarm)
+}
+
 // ByGoamd64 is a predefined filter that filters by the given goamd64.
 func ByGoamd64(s string) Filter {
 	return func(a *Artifact) bool {
 		return s == a.Goamd64 ||
 			(a.Goarch == "amd64" && a.Goamd64 == "" && s == "v1")
 	}
+}
+
+// ByGoamd64s is a predefined filter that filters by the given goamd64.
+func ByGoamd64s(s ...string) Filter {
+	return autoOr(s, ByGoamd64)
 }
 
 // ByType is a predefined filter that filters by the given type.
@@ -521,46 +622,63 @@ func ByType(t Type) Filter {
 	}
 }
 
+// ByTypes is a predefined filter that filters by the given type.
+func ByTypes(types ...Type) Filter {
+	return autoOr(types, ByType)
+}
+
+// ByFormat filters artifacts by a `Format` extra field.
+func ByFormat(format string) Filter {
+	return func(a *Artifact) bool {
+		return a.Format() == format
+	}
+}
+
 // ByFormats filters artifacts by a `Format` extra field.
 func ByFormats(formats ...string) Filter {
-	filters := make([]Filter, 0, len(formats))
-	for _, format := range formats {
-		filters = append(filters, func(a *Artifact) bool {
-			return a.Format() == format
-		})
+	return autoOr(formats, ByFormat)
+}
+
+// Not negates the given filter.
+func Not(filter Filter) Filter {
+	return func(a *Artifact) bool {
+		return !filter(a)
 	}
-	return Or(filters...)
+}
+
+// ByID filter artifacts by an `ID` extra field.
+func ByID(id string) Filter {
+	return func(a *Artifact) bool {
+		// checksum and source archive are always for all artifacts, so return always true.
+		return a.Type == Checksum ||
+			a.Type == UploadableSourceArchive ||
+			a.Type == UploadableFile ||
+			a.Type == Metadata ||
+			a.ID() == id
+	}
 }
 
 // ByIDs filter artifacts by an `ID` extra field.
 func ByIDs(ids ...string) Filter {
-	filters := make([]Filter, 0, len(ids))
-	for _, id := range ids {
-		filters = append(filters, func(a *Artifact) bool {
-			// checksum and source archive are always for all artifacts, so return always true.
-			return a.Type == Checksum ||
-				a.Type == UploadableSourceArchive ||
-				a.Type == UploadableFile ||
-				a.Type == Metadata ||
-				a.ID() == id
-		})
-	}
-	return Or(filters...)
+	return autoOr(ids, ByID)
 }
 
 // ByExt filter artifact by their 'Ext' extra field.
 //
 // The comp is done ignoring the preceding '.', so `ByExt("deb")` and
 // `ByExt(".deb")` have the same result.
-func ByExt(exts ...string) Filter {
-	filters := make([]Filter, 0, len(exts))
-	for _, ext := range exts {
-		filters = append(filters, func(a *Artifact) bool {
-			actual := ExtraOr(*a, ExtraExt, "")
-			return strings.TrimPrefix(actual, ".") == strings.TrimPrefix(ext, ".")
-		})
+func ByExt(ext string) Filter {
+	return func(a *Artifact) bool {
+		return strings.TrimPrefix(a.Ext(), ".") == strings.TrimPrefix(ext, ".")
 	}
-	return Or(filters...)
+}
+
+// ByExts filter artifact by their 'Ext' extra field.
+//
+// The comp is done ignoring the preceding '.', so `ByExt("deb")` and
+// `ByExt(".deb")` have the same result.
+func ByExts(exts ...string) Filter {
+	return autoOr(exts, ByExt)
 }
 
 // ByBinaryLikeArtifacts filter artifacts down to artifacts that are Binary, UploadableBinary, or UniversalBinary,
@@ -587,10 +705,10 @@ func ByBinaryLikeArtifacts(arts *Artifacts) Filter {
 
 	return And(
 		// allow all of the binary-like artifacts as possible...
-		Or(
-			ByType(Binary),
-			ByType(UploadableBinary),
-			ByType(UniversalBinary),
+		ByTypes(
+			Binary,
+			UploadableBinary,
+			UniversalBinary,
 		),
 		// ... but remove any duplicates found
 		deduplicateByPath,
@@ -601,7 +719,7 @@ func ByBinaryLikeArtifacts(arts *Artifacts) Filter {
 func Or(filters ...Filter) Filter {
 	return func(a *Artifact) bool {
 		for _, f := range filters {
-			if f(a) {
+			if f == nil || f(a) {
 				return true
 			}
 		}
@@ -613,7 +731,7 @@ func Or(filters ...Filter) Filter {
 func And(filters ...Filter) Filter {
 	return func(a *Artifact) bool {
 		for _, f := range filters {
-			if !f(a) {
+			if f != nil && !f(a) {
 				return false
 			}
 		}
@@ -673,4 +791,34 @@ func cleanName(a Artifact) string {
 			Warn("removed trailing whitespaces from artifact name")
 	}
 	return result
+}
+
+// autoOr automatically creates an [Or] filter with the given input and the
+// given [Filter].
+//
+// If the input is empty, it'll return nil.
+// If the inputs's length is 1, it'll return [Filter] with it as input.
+// Otherwise, it'll return the filter for each item in the input, wrapped in an
+// [Or] filter.
+//
+// Basically, these two statements are the same:
+//
+//	Or(ByGoos("linux"), ByGoos("darwin"))
+//	autoOr([]string{"linux", "darwin"}, ByGoos)
+//	ByGooses("linux", "darwin")
+//
+// This should help reducing the amount of handling around that in the codebase.
+func autoOr[T any](input []T, filter func(T) Filter) Filter {
+	switch len(input) {
+	case 0:
+		return nil
+	case 1:
+		return filter(input[0])
+	default:
+		filters := make([]Filter, 0, len(input))
+		for _, s := range input {
+			filters = append(filters, filter(s))
+		}
+		return Or(filters...)
+	}
 }

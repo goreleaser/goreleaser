@@ -1,6 +1,7 @@
 package docker
 
 import (
+	"cmp"
 	"errors"
 	"fmt"
 	"io"
@@ -11,13 +12,16 @@ import (
 	"path/filepath"
 	"slices"
 	"strings"
+	"sync"
 	"time"
 
+	"github.com/avast/retry-go/v4"
 	"github.com/caarlos0/log"
 	"github.com/goreleaser/goreleaser/v2/internal/artifact"
 	"github.com/goreleaser/goreleaser/v2/internal/experimental"
 	"github.com/goreleaser/goreleaser/v2/internal/gio"
 	"github.com/goreleaser/goreleaser/v2/internal/ids"
+	"github.com/goreleaser/goreleaser/v2/internal/logext"
 	"github.com/goreleaser/goreleaser/v2/internal/pipe"
 	"github.com/goreleaser/goreleaser/v2/internal/semerrgroup"
 	"github.com/goreleaser/goreleaser/v2/internal/skips"
@@ -56,8 +60,23 @@ func (Pipe) Dependencies(ctx *context.Context) []string {
 
 // Default sets the pipe defaults.
 func (Pipe) Default(ctx *context.Context) error {
+	var warnOnce sync.Once
 	ids := ids.New("dockers")
 	for i := range ctx.Config.Dockers {
+		// TODO: properly deprecate this.
+		warnOnce.Do(func() {
+			log.Warn(
+				logext.Keyword("dockers") +
+					logext.Warning(" and ") +
+					logext.Keyword("docker_manifests") +
+					logext.Warning(" are being phased out and will eventually be replaced by ") +
+					logext.Keyword("dockers_v2") +
+					logext.Warning(", check ") +
+					logext.URL("https://goreleaser.com/deprecations#dockers") +
+					logext.Warning(" for more info"),
+			)
+		})
+
 		docker := &ctx.Config.Dockers[i]
 
 		if docker.ID != "" {
@@ -81,6 +100,9 @@ func (Pipe) Default(ctx *context.Context) error {
 		if docker.Use == "" {
 			docker.Use = useDocker
 		}
+		docker.Retry.Attempts = cmp.Or(docker.Retry.Attempts, 10)
+		docker.Retry.Delay = cmp.Or(docker.Retry.Delay, 10*time.Second)
+		docker.Retry.MaxDelay = cmp.Or(docker.Retry.MaxDelay, 5*time.Minute)
 		if err := validateImager(docker.Use); err != nil {
 			return err
 		}
@@ -121,9 +143,11 @@ func (Pipe) Run(ctx *context.Context) error {
 			filters := []artifact.Filter{
 				artifact.ByGoos(docker.Goos),
 				artifact.ByGoarch(docker.Goarch),
-				artifact.Or(
-					artifact.ByType(artifact.Binary),
-					artifact.ByType(artifact.LinuxPackage),
+				artifact.ByTypes(
+					artifact.Binary,
+					artifact.LinuxPackage,
+					artifact.CArchive,
+					artifact.CShared,
 				),
 			}
 			// TODO: properly test this
@@ -136,7 +160,12 @@ func (Pipe) Run(ctx *context.Context) error {
 			if len(docker.IDs) > 0 {
 				filters = append(filters, artifact.ByIDs(docker.IDs...))
 			}
-			artifacts := ctx.Artifacts.Filter(artifact.And(filters...))
+
+			artifacts := ctx.Artifacts.Filter(
+				artifact.Or(
+					artifact.And(filters...),
+					artifact.ByType(artifact.PyWheel),
+				))
 			if d := len(docker.IDs); d > 0 && len(artifacts.GroupByID()) != d {
 				return pipe.Skipf("expected to find %d artifacts for ids %v, found %d\nLearn more at https://goreleaser.com/errors/docker-build\n", d, docker.IDs, len(artifacts.List()))
 			}
@@ -247,7 +276,7 @@ Previous error:
 			Goarch: docker.Goarch,
 			Goos:   docker.Goos,
 			Goarm:  docker.Goarm,
-			Extra: map[string]interface{}{
+			Extra: map[string]any{
 				dockerConfigExtra: docker,
 			},
 		})
@@ -301,11 +330,7 @@ func processBuildFlagTemplates(ctx *context.Context, docker config.Docker) ([]st
 func dockerPush(ctx *context.Context, image *artifact.Artifact) error {
 	log.WithField("image", image.Name).Info("pushing")
 
-	docker, err := artifact.Extra[config.Docker](*image, dockerConfigExtra)
-	if err != nil {
-		return err
-	}
-
+	docker := artifact.MustExtra[config.Docker](*image, dockerConfigExtra)
 	skip, err := tmpl.New(ctx).Apply(docker.SkipPush)
 	if err != nil {
 		return err
@@ -317,14 +342,25 @@ func dockerPush(ctx *context.Context, image *artifact.Artifact) error {
 		return pipe.Skip("prerelease detected with 'auto' push, skipping docker publish: " + image.Name)
 	}
 
-	digest, err := doPush(ctx, imagers[docker.Use], image.Name, docker.PushFlags)
+	digest, err := retry.DoWithData(
+		func() (string, error) {
+			log.WithField("image", image.Name).
+				Info("pushing image")
+			return imagers[docker.Use].Push(ctx, image.Name, docker.PushFlags)
+		},
+		retry.RetryIf(isRetriablePush),
+		retry.Attempts(docker.Retry.Attempts),
+		retry.Delay(docker.Retry.Delay),
+		retry.MaxDelay(docker.Retry.MaxDelay),
+		retry.LastErrorOnly(true),
+	)
 	if err != nil {
 		return err
 	}
 
 	log.WithField("image", image.Name).
 		WithField("digest", digest).
-		Info("pushed")
+		Info("image pushed")
 	art := &artifact.Artifact{
 		Type:   artifact.DockerImage,
 		Name:   image.Name,
@@ -332,7 +368,7 @@ func dockerPush(ctx *context.Context, image *artifact.Artifact) error {
 		Goarch: image.Goarch,
 		Goos:   image.Goos,
 		Goarm:  image.Goarm,
-		Extra: map[string]interface{}{
+		Extra: map[string]any{
 			dockerConfigExtra:    docker,
 			artifact.ExtraDigest: digest,
 		},
@@ -345,28 +381,7 @@ func dockerPush(ctx *context.Context, image *artifact.Artifact) error {
 	return nil
 }
 
-func doPush(ctx *context.Context, img imager, name string, flags []string) (string, error) {
-	var try int
-	for try < 10 {
-		digest, err := img.Push(ctx, name, flags)
-		if err == nil {
-			return digest, nil
-		}
-		if isRetryable(err) {
-			log.WithField("try", try).
-				WithField("image", name).
-				WithError(err).
-				Warnf("failed to push image, will retry")
-			time.Sleep(time.Duration(try*10) * time.Second)
-			try++
-			continue
-		}
-		return "", fmt.Errorf("failed to push %s after %d tries: %w", name, try+1, err)
-	}
-	return "", nil // will never happen
-}
-
-func isRetryable(err error) bool {
+func isRetriablePush(err error) bool {
 	if errors.Is(err, io.EOF) {
 		return true
 	}

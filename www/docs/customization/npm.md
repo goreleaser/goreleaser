@@ -6,7 +6,7 @@
 
 <!-- md:pro -->
 
-The `npm` section configures how GoReleaser publishes your packages to NPM
+The `npms` section configures how GoReleaser publishes your packages to NPM
 registries.
 
 ## How it works
@@ -28,7 +28,7 @@ For each NPM configuration, GoReleaser will:
 
 ```yaml
 # .goreleaser.yaml
-npm:
+npms:
   - # ID of the resulting image.
     #
     # Default: the project name.
@@ -124,6 +124,13 @@ npm:
     #
     # Templates: allowed.
     disable: "{{ gt .Patch 0 }}"
+
+    # URL which is determined by the given Token (github, gitlab or gitea).
+    #
+    # Default depends on the client.
+    # Templates: allowed.
+    # <!-- md:inline_version v2.10 -->.
+    url_template: "https://github.mycompany.com/foo/bar/releases/download/{{ .Tag }}/{{ .ArtifactName }}"
 ```
 
 !!! warning "Caveat"

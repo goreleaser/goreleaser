@@ -103,6 +103,19 @@ kos:
     # Valid options are: spdx and none.
     sbom: none
 
+    # Path to file where the SBOM will be written
+    #
+    # Default: unset - no SBOM written to filesystem (but still uploaded to oci repository).
+    sbom_directory: "out/sbom"
+
+    # Ko publishes images to the local Docker daemon
+    # when Goreleaser is executed with the --snapshot flag.
+    # Use the local_domain attribute to configure the local registry (e.g. kind.local).
+    #
+    # Default "goreleaser.ko.local" - local docker registry is used.
+    # <!-- md:inline_version v2.10 -->.
+    local_domain: "goreleaser.ko.local"
+
     # Ldflags to use on build.
     #
     # Default: build.ldflags.

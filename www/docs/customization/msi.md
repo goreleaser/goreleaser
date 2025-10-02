@@ -53,6 +53,12 @@ msi:
       - '{{ if eq .Runtime.Goos "windows" }}WixUIExtension{{ end }}'
       - "WixUtilExtension"
 
+    # Whether to disable this particular MSI configuration.
+    #
+    # Templates: allowed.
+    # <!-- md:inline_version v2.12 -->.
+    disable: "{{ .IsSnapshot }}"
+
     # Whether to remove the archives from the artifact list.
     # If left as false, your end release will have both the zip and the msi
     # files.

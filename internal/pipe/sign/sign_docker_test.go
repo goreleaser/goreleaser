@@ -26,9 +26,8 @@ func TestDockerSignDefault(t *testing.T) {
 	err := DockerPipe{}.Default(ctx)
 	require.NoError(t, err)
 	require.Equal(t, "cosign", ctx.Config.DockerSigns[0].Cmd)
-	require.Equal(t, "", ctx.Config.DockerSigns[0].Signature)
+	require.Empty(t, ctx.Config.DockerSigns[0].Signature)
 	require.Equal(t, []string{"sign", "--key=cosign.key", "${artifact}@${digest}", "--yes"}, ctx.Config.DockerSigns[0].Args)
-	require.Equal(t, "none", ctx.Config.DockerSigns[0].Artifacts)
 }
 
 func TestDockerSignDisabled(t *testing.T) {
@@ -65,10 +64,12 @@ func TestDockerSignArtifacts(t *testing.T) {
 	man1 := "ghcr.io/caarlos0/goreleaser-docker-manifest-actions-example:1.2.1"
 	man1Digest := "sha256:b5db21408555f1ef5d68008a0a03a7caba3f29b62c64f1404e139b005a20bf03"
 
-	for name, cfg := range map[string]struct {
+	type testcase struct {
 		Signs    []config.Sign
 		Expected []string
-	}{
+	}
+
+	v1Cases := map[string]testcase{
 		"no signature file": {
 			Expected: nil, // no sigs
 			Signs: []config.Sign{
@@ -153,59 +154,124 @@ func TestDockerSignArtifacts(t *testing.T) {
 			},
 		},
 		// TODO: keyless test?
-	} {
+	}
+
+	v2Cases := map[string]testcase{
+		"empty": {
+			Expected: []string{"manifests_man1.sig"},
+			Signs: []config.Sign{
+				{
+					Stdin:     &password,
+					Signature: "manifests_${artifactID}.sig",
+					Cmd:       cmd,
+					Args:      args,
+				},
+			},
+		},
+		"images": {
+			Expected: []string{"manifests_man1.sig"},
+			Signs: []config.Sign{
+				{
+					Artifacts: "images",
+					Stdin:     &password,
+					Signature: "manifests_${artifactID}.sig",
+					Cmd:       cmd,
+					Args:      args,
+				},
+			},
+		},
+		"manifests": {
+			Expected: []string{"manifests_man1.sig"},
+			Signs: []config.Sign{
+				{
+					Artifacts: "manifests",
+					Stdin:     &password,
+					Signature: "manifests_${artifactID}.sig",
+					Cmd:       cmd,
+					Args:      args,
+				},
+			},
+		},
+	}
+
+	testWithArtifacts := func(tb testing.TB, cfg testcase, arts []artifact.Artifact) {
+		tb.Helper()
+		ctx := testctx.NewWithCfg(config.Project{
+			DockerSigns: cfg.Signs,
+		})
+		wd, err := os.Getwd()
+		require.NoError(tb, err)
+		tmp := testlib.Mktmp(tb)
+		require.NoError(tb, gio.Copy(filepath.Join(wd, "testdata/cosign/"), tmp))
+		ctx.Config.Dist = "dist"
+		require.NoError(tb, os.Mkdir("dist", 0o755))
+
+		for _, art := range arts {
+			ctx.Artifacts.Add(&art)
+		}
+
+		require.NoError(tb, DockerPipe{}.Default(ctx))
+		require.NoError(tb, DockerPipe{}.Publish(ctx))
+		var sigs []string
+		for _, sig := range ctx.Artifacts.Filter(
+			artifact.Or(
+				artifact.ByType(artifact.Signature),
+				artifact.ByType(artifact.Certificate),
+			),
+		).List() {
+			sigs = append(sigs, sig.Name)
+			require.Truef(tb, strings.HasPrefix(sig.Path, ctx.Config.Dist), "signature %q is not in dist dir %q", sig.Path, ctx.Config.Dist)
+		}
+		require.Equal(tb, cfg.Expected, sigs)
+	}
+
+	for name, cfg := range v1Cases {
 		t.Run(name, func(t *testing.T) {
-			ctx := testctx.NewWithCfg(config.Project{
-				DockerSigns: cfg.Signs,
+			testWithArtifacts(t, cfg, []artifact.Artifact{
+				{
+					Name: img1,
+					Path: img1,
+					Type: artifact.DockerImage,
+					Extra: map[string]any{
+						artifact.ExtraID:     "img1",
+						artifact.ExtraDigest: img1Digest,
+					},
+				},
+				{
+					Name: img2,
+					Path: img2,
+					Type: artifact.DockerImage,
+					Extra: map[string]any{
+						artifact.ExtraID:     "img2",
+						artifact.ExtraDigest: img2Digest,
+					},
+				},
+				{
+					Name: man1,
+					Path: man1,
+					Type: artifact.DockerManifest,
+					Extra: map[string]any{
+						artifact.ExtraID:     "man1",
+						artifact.ExtraDigest: man1Digest,
+					},
+				},
 			})
-			wd, err := os.Getwd()
-			require.NoError(t, err)
-			tmp := testlib.Mktmp(t)
-			require.NoError(t, gio.Copy(filepath.Join(wd, "testdata/cosign/"), tmp))
-			ctx.Config.Dist = "dist"
-			require.NoError(t, os.Mkdir("dist", 0o755))
+		})
+	}
 
-			ctx.Artifacts.Add(&artifact.Artifact{
-				Name: img1,
-				Path: img1,
-				Type: artifact.DockerImage,
-				Extra: map[string]interface{}{
-					artifact.ExtraID:     "img1",
-					artifact.ExtraDigest: img1Digest,
+	for name, cfg := range v2Cases {
+		t.Run(name, func(t *testing.T) {
+			testWithArtifacts(t, cfg, []artifact.Artifact{
+				{
+					Name: man1,
+					Path: man1,
+					Type: artifact.DockerImageV2,
+					Extra: map[string]any{
+						artifact.ExtraID:     "man1",
+						artifact.ExtraDigest: man1Digest,
+					},
 				},
 			})
-			ctx.Artifacts.Add(&artifact.Artifact{
-				Name: img2,
-				Path: img2,
-				Type: artifact.DockerImage,
-				Extra: map[string]interface{}{
-					artifact.ExtraID:     "img2",
-					artifact.ExtraDigest: img2Digest,
-				},
-			})
-			ctx.Artifacts.Add(&artifact.Artifact{
-				Name: man1,
-				Path: man1,
-				Type: artifact.DockerManifest,
-				Extra: map[string]interface{}{
-					artifact.ExtraID:     "man1",
-					artifact.ExtraDigest: man1Digest,
-				},
-			})
-
-			require.NoError(t, DockerPipe{}.Default(ctx))
-			require.NoError(t, DockerPipe{}.Publish(ctx))
-			var sigs []string
-			for _, sig := range ctx.Artifacts.Filter(
-				artifact.Or(
-					artifact.ByType(artifact.Signature),
-					artifact.ByType(artifact.Certificate),
-				),
-			).List() {
-				sigs = append(sigs, sig.Name)
-				require.Truef(t, strings.HasPrefix(sig.Path, ctx.Config.Dist), "signature %q is not in dist dir %q", sig.Path, ctx.Config.Dist)
-			}
-			require.Equal(t, cfg.Expected, sigs)
 		})
 	}
 }

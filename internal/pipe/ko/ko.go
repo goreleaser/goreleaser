@@ -189,6 +189,7 @@ type buildOptions struct {
 	creationTime        *v1.Time
 	koDataCreationTime  *v1.Time
 	sbom                string
+	SBOMDirectory       string
 	ldflags             []string
 	bare                bool
 	preserveImportPaths bool
@@ -254,6 +255,9 @@ func (o *buildOptions) makeBuilder(ctx *context.Context) (*build.Caching, error)
 	switch o.sbom {
 	case "spdx":
 		buildOptions = append(buildOptions, build.WithSPDX("devel"))
+		if o.SBOMDirectory != "" {
+			buildOptions = append(buildOptions, build.WithSBOMDir(o.SBOMDirectory))
+		}
 	case "none":
 		buildOptions = append(buildOptions, build.WithDisabledSBOM())
 	default:
@@ -265,6 +269,14 @@ func (o *buildOptions) makeBuilder(ctx *context.Context) (*build.Caching, error)
 		return nil, fmt.Errorf("newGo: %w", err)
 	}
 	return build.NewCaching(b)
+}
+
+func getLocalDomain(ko config.Ko) string {
+	localDomain := "goreleaser.ko.local"
+	if ko.LocalDomain != "" {
+		localDomain = ko.LocalDomain
+	}
+	return localDomain
 }
 
 func doBuild(ctx *context.Context, ko config.Ko) error {
@@ -289,7 +301,7 @@ func doBuild(ctx *context.Context, ko config.Ko) error {
 		BaseImportPaths:     opts.baseImportPaths,
 		Tags:                opts.tags,
 		Local:               ctx.Snapshot,
-		LocalDomain:         "goreleaser.ko.local",
+		LocalDomain:         getLocalDomain(ko),
 	}
 	var p publish.Interface
 	if ctx.Snapshot {
@@ -391,6 +403,7 @@ func buildBuildOptions(ctx *context.Context, cfg config.Ko) (*buildOptions, erro
 		sbom:                cfg.SBOM,
 		imageRepos:          cfg.Repositories,
 		user:                cfg.User,
+		SBOMDirectory:       cfg.SBOMDirectory,
 	}
 
 	tags, err := applyTemplate(ctx, cfg.Tags)
@@ -539,7 +552,7 @@ func makeArtifact(id, name, digest string) *artifact.Artifact {
 		Type:  artifact.DockerManifest,
 		Name:  name,
 		Path:  name,
-		Extra: map[string]interface{}{},
+		Extra: map[string]any{},
 	}
 	if id != "" {
 		art.Extra[artifact.ExtraID] = id

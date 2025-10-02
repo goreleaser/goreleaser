@@ -3,7 +3,9 @@ package semver
 import (
 	"testing"
 
+	"github.com/goreleaser/goreleaser/v2/internal/skips"
 	"github.com/goreleaser/goreleaser/v2/internal/testctx"
+	"github.com/goreleaser/goreleaser/v2/internal/testlib"
 	"github.com/goreleaser/goreleaser/v2/pkg/context"
 	"github.com/stretchr/testify/require"
 )
@@ -27,4 +29,18 @@ func TestInvalidSemver(t *testing.T) {
 	ctx := testctx.New(testctx.WithCurrentTag("aaaav1.5.2-rc1"))
 	err := Pipe{}.Run(ctx)
 	require.ErrorContains(t, err, "failed to parse tag 'aaaav1.5.2-rc1' as semver")
+}
+
+func TestInvalidSemverSkipValidate(t *testing.T) {
+	ctx := testctx.New(
+		testctx.WithCurrentTag("aaaav1.5.2-rc1"),
+		testctx.Skip(skips.Validate),
+	)
+	testlib.AssertSkipped(t, Pipe{}.Run(ctx))
+	require.Equal(t, context.Semver{
+		Major:      0,
+		Minor:      0,
+		Patch:      0,
+		Prerelease: "",
+	}, ctx.Semver)
 }

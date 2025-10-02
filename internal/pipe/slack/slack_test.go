@@ -164,14 +164,14 @@ func TestUnmarshal(t *testing.T) {
 		t.Parallel()
 		ctx := testctx.New(testctx.WithVersion(testVersion))
 		var blocks slack.Blocks
-		require.NoError(t, unmarshal(ctx, []interface{}{map[string]interface{}{"type": "divider"}}, &blocks))
+		require.NoError(t, unmarshal(ctx, []any{map[string]any{"type": "divider"}}, &blocks))
 	})
 
 	t.Run("unmarshal fails on MarshalJSON", func(t *testing.T) {
 		t.Parallel()
 		ctx := testctx.New(testctx.WithVersion(testVersion))
 		var blocks slack.Blocks
-		require.Error(t, unmarshal(ctx, []interface{}{map[string]interface{}{"type": func() {}}}, &blocks))
+		require.Error(t, unmarshal(ctx, []any{map[string]any{"type": func() {}}}, &blocks))
 	})
 
 	t.Run("unmarshal happy to resolve template", func(t *testing.T) {

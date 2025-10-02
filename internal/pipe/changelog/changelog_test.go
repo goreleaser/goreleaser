@@ -68,7 +68,7 @@ func TestChangelogProvidedViaFlagIsReallyEmpty(t *testing.T) {
 	ctx.ReleaseNotesFile = "testdata/changes-really-empty.md"
 	require.NoError(t, Pipe{}.Default(ctx))
 	require.NoError(t, Pipe{}.Run(ctx))
-	require.Equal(t, "", ctx.ReleaseNotes)
+	require.Empty(t, ctx.ReleaseNotes)
 }
 
 func TestChangelogTmplProvidedViaFlagIsReallyEmpty(t *testing.T) {
@@ -76,7 +76,7 @@ func TestChangelogTmplProvidedViaFlagIsReallyEmpty(t *testing.T) {
 	ctx.ReleaseNotesTmpl = "testdata/changes-really-empty.md"
 	require.NoError(t, Pipe{}.Default(ctx))
 	require.NoError(t, Pipe{}.Run(ctx))
-	require.Equal(t, "", ctx.ReleaseNotes)
+	require.Empty(t, ctx.ReleaseNotes)
 }
 
 func TestTemplatedChangelogProvidedViaFlag(t *testing.T) {
@@ -334,7 +334,7 @@ func TestChangelogSort(t *testing.T) {
 				changes = append(changes, strings.TrimPrefix(line, li))
 			}
 			require.Len(t, changes, len(cfg.Entries))
-			require.EqualValues(t, cfg.Entries, changes)
+			require.Equal(t, cfg.Entries, changes)
 		})
 	}
 }
@@ -354,13 +354,13 @@ func Benchmark_sortEntries(b *testing.B) {
 
 	b.Run("asc", func(b *testing.B) {
 		ctx.Config.Changelog.Sort = "asc"
-		for range b.N {
+		for b.Loop() {
 			sortEntries(ctx, entries)
 		}
 	})
 	b.Run("desc", func(b *testing.B) {
 		ctx.Config.Changelog.Sort = "desc"
-		for range b.N {
+		for b.Loop() {
 			sortEntries(ctx, entries)
 		}
 	})
@@ -1108,7 +1108,7 @@ func TestIssue5595(t *testing.T) {
 
 			mock := client.NewMock()
 
-			for i := 0; i < 20; i++ {
+			for i := range 20 {
 				kind := "fix"
 				if i%2 == 0 {
 					kind = "feat"
@@ -1148,7 +1148,7 @@ func TestIssue5595(t *testing.T) {
 
 func ensureCommitHashLen(tb testing.TB, log string, l int) {
 	tb.Helper()
-	for _, line := range strings.Split(log, "\n") {
+	for line := range strings.SplitSeq(log, "\n") {
 		if strings.HasPrefix(line, "#") || strings.TrimSpace(line) == "" {
 			continue
 		}

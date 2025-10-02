@@ -8,7 +8,6 @@ import (
 	"fmt"
 	"io"
 	"net/http"
-	h "net/http"
 	"net/http/httptest"
 	"os"
 	"path/filepath"
@@ -52,7 +51,7 @@ func TestAssetOpenDefault(t *testing.T) {
 		t.Fatalf("should fail on missing file")
 	}
 	_, err = assetOpenDefault("blah", &artifact.Artifact{
-		Path: os.TempDir(),
+		Path: t.TempDir(),
 	})
 	if err == nil {
 		t.Fatalf("should fail on existing dir")
@@ -100,11 +99,14 @@ func TestCheckConfig(t *testing.T) {
 		wantErr bool
 	}{
 		{"ok", args{ctx, &config.Upload{Name: "a", Target: "http://blabla", Username: "pepe", Mode: ModeArchive}, "test"}, false},
+		{"ok password", args{ctx, &config.Upload{Name: "a", Target: "http://blabla", Username: "pepe", Password: "pass", Mode: ModeArchive}, "test"}, false},
 		{"secret missing", args{ctx, &config.Upload{Name: "b", Target: "http://blabla", Username: "pepe", Mode: ModeArchive}, "test"}, true},
 		{"target missing", args{ctx, &config.Upload{Name: "a", Username: "pepe", Mode: ModeArchive}, "test"}, true},
 		{"name missing", args{ctx, &config.Upload{Target: "http://blabla", Username: "pepe", Mode: ModeArchive}, "test"}, true},
 		{"username missing", args{ctx, &config.Upload{Name: "a", Target: "http://blabla", Mode: ModeArchive}, "test"}, true},
 		{"username present", args{ctx, &config.Upload{Name: "a", Target: "http://blabla", Username: "pepe", Mode: ModeArchive}, "test"}, false},
+		{"invalid username template", args{ctx, &config.Upload{Name: "a", Target: "http://blabla", Username: "{{ .pepe }}", Mode: ModeArchive}, "test"}, true},
+		{"invalid password template", args{ctx, &config.Upload{Name: "a", Target: "http://blabla", Password: "{{ .pepe }}", Mode: ModeArchive}, "test"}, true},
 		{"mode missing", args{ctx, &config.Upload{Name: "a", Target: "http://blabla", Username: "pepe"}, "test"}, true},
 		{"mode invalid", args{ctx, &config.Upload{Name: "a", Target: "http://blabla", Username: "pepe", Mode: "blabla"}, "test"}, true},
 		{"cert invalid", args{ctx, &config.Upload{Name: "a", Target: "http://blabla", Username: "pepe", Mode: ModeBinary, TrustedCerts: "bad cert!"}, "test"}, true},
@@ -144,8 +146,8 @@ type check struct {
 	headers map[string]string
 }
 
-func checks(checks ...check) func(rs []*h.Request) error {
-	return func(rs []*h.Request) error {
+func checks(checks ...check) func(rs []*http.Request) error {
+	return func(rs []*http.Request) error {
 		for _, r := range rs {
 			found := false
 			for _, c := range checks {
@@ -169,7 +171,7 @@ func checks(checks ...check) func(rs []*h.Request) error {
 	}
 }
 
-func doCheck(c check, r *h.Request) error {
+func doCheck(c check, r *http.Request) error {
 	contentLength := int64(len(c.content))
 	if r.ContentLength != contentLength {
 		return fmt.Errorf("request content-length header value %v unexpected, wanted %v", r.ContentLength, contentLength)
@@ -200,13 +202,13 @@ func doCheck(c check, r *h.Request) error {
 
 func TestUpload(t *testing.T) {
 	content := []byte("blah!")
-	requests := []*h.Request{}
+	requests := []*http.Request{}
 	var m sync.Mutex
-	mux := h.NewServeMux()
-	mux.Handle("/", h.HandlerFunc(func(w h.ResponseWriter, r *h.Request) {
+	mux := http.NewServeMux()
+	mux.Handle("/", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		bs, err := io.ReadAll(r.Body)
 		if err != nil {
-			w.WriteHeader(h.StatusInternalServerError)
+			w.WriteHeader(http.StatusInternalServerError)
 			fmt.Fprintf(w, "reading request body: %v", err)
 			return
 		}
@@ -214,7 +216,7 @@ func TestUpload(t *testing.T) {
 		m.Lock()
 		requests = append(requests, r)
 		m.Unlock()
-		w.WriteHeader(h.StatusCreated)
+		w.WriteHeader(http.StatusCreated)
 		w.Header().Set("Location", r.URL.RequestURI())
 	}))
 	assetOpen = func(_ string, _ *artifact.Artifact) (*asset, error) {
@@ -224,7 +226,7 @@ func TestUpload(t *testing.T) {
 		}, nil
 	}
 	defer assetOpenReset()
-	var is2xx ResponseChecker = func(r *h.Response) error {
+	var is2xx ResponseChecker = func(r *http.Response) error {
 		if r.StatusCode/100 == 2 {
 			return nil
 		}
@@ -239,32 +241,37 @@ func TestUpload(t *testing.T) {
 	}, testctx.WithVersion("2.1.0"))
 	folder := t.TempDir()
 	for _, a := range []struct {
-		ext string
-		typ artifact.Type
+		ext, format string
+		typ         artifact.Type
 	}{
-		{"", artifact.DockerImage},
-		{".deb", artifact.LinuxPackage},
-		{".bin", artifact.Binary},
-		{".tar", artifact.UploadableArchive},
-		{".tar.gz", artifact.UploadableSourceArchive},
-		{".ubi", artifact.UploadableBinary},
-		{".sum", artifact.Checksum},
-		{".meta", artifact.Metadata},
-		{".sig", artifact.Signature},
-		{".pem", artifact.Certificate},
+		{"", "", artifact.DockerImage},
+		{".deb", "", artifact.LinuxPackage},
+		{".bin", "", artifact.Binary},
+		{".tar", "tar", artifact.UploadableArchive},
+		{".tar.gz", "tar.gz", artifact.UploadableSourceArchive},
+		{".ubi", "", artifact.UploadableBinary},
+		{".sum", "", artifact.Checksum},
+		{".meta", "", artifact.Metadata},
+		{".sig", "", artifact.Signature},
+		{".pem", "", artifact.Certificate},
 	} {
 		file := filepath.Join(folder, "a"+a.ext)
 		require.NoError(t, os.WriteFile(file, []byte("lorem ipsum"), 0o644))
+		extra := map[string]any{
+			artifact.ExtraID: "foo",
+		}
+		if a.format != "" {
+			extra[artifact.ExtraFormat] = a.format
+		} else if a.ext != "" {
+			extra[artifact.ExtraExt] = a.ext
+		}
 		ctx.Artifacts.Add(&artifact.Artifact{
 			Name:   "a" + a.ext,
 			Goos:   "linux",
 			Goarch: "amd64",
 			Path:   file,
 			Type:   a.typ,
-			Extra: map[string]interface{}{
-				artifact.ExtraID:  "foo",
-				artifact.ExtraExt: a.ext,
-			},
+			Extra:  extra,
 		})
 	}
 
@@ -275,7 +282,7 @@ func TestUpload(t *testing.T) {
 		wantErrPlain bool
 		wantErrTLS   bool
 		setup        func(*httptest.Server) (*context.Context, config.Upload)
-		check        func(r []*h.Request) error
+		check        func(r []*http.Request) error
 	}{
 		{
 			"wrong-mode", true, true, true, true,
@@ -310,7 +317,7 @@ func TestUpload(t *testing.T) {
 			"post", true, true, false, false,
 			func(s *httptest.Server) (*context.Context, config.Upload) {
 				return ctx, config.Upload{
-					Method:       h.MethodPost,
+					Method:       http.MethodPost,
 					Mode:         ModeArchive,
 					Name:         "a",
 					Target:       s.URL + "/{{.ProjectName}}/{{.Version}}/",
@@ -607,11 +614,12 @@ func TestUpload(t *testing.T) {
 					Target:       s.URL + "/{{.ProjectName}}/{{.Version}}/",
 					Username:     "u3",
 					TrustedCerts: cert(s),
-					Exts:         []string{"deb", "rpm"},
+					Exts:         []string{"deb", "rpm", "tar.gz"},
 				}
 			},
 			checks(
 				check{"/blah/2.1.0/a.deb", "u3", "x", content, map[string]string{}},
+				check{"/blah/2.1.0/a.tar.gz", "u3", "x", content, map[string]string{}},
 			),
 		},
 		{
@@ -657,7 +665,7 @@ func TestUpload(t *testing.T) {
 		},
 	}
 
-	uploadAndCheck := func(t *testing.T, setup func(*httptest.Server) (*context.Context, config.Upload), wantErrPlain, wantErrTLS bool, check func(r []*h.Request) error, srv *httptest.Server) {
+	uploadAndCheck := func(t *testing.T, setup func(*httptest.Server) (*context.Context, config.Upload), wantErrPlain, wantErrTLS bool, check func(r []*http.Request) error, srv *httptest.Server) {
 		t.Helper()
 		requests = nil
 		ctx, upload := setup(srv)
@@ -707,8 +715,8 @@ func cert(srv *httptest.Server) string {
 
 func TestManyUploads(t *testing.T) {
 	var uploaded atomic.Bool
-	srv := httptest.NewServer(http.HandlerFunc(func(w h.ResponseWriter, _ *h.Request) {
-		w.WriteHeader(h.StatusCreated)
+	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
+		w.WriteHeader(http.StatusCreated)
 		uploaded.Store(true)
 	}))
 	t.Cleanup(srv.Close)
@@ -744,7 +752,7 @@ func TestManyUploads(t *testing.T) {
 		Path: "doesnt-matter",
 		Type: artifact.Checksum,
 	})
-	err := Upload(ctx, ctx.Config.Uploads, "test", func(*h.Response) error { return nil })
+	err := Upload(ctx, ctx.Config.Uploads, "test", func(*http.Response) error { return nil })
 	require.Error(t, err)
 	require.True(t, pipe.IsSkip(err), err)
 	require.True(t, uploaded.Load(), "should have uploaded")

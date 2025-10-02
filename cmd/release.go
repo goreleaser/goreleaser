@@ -1,11 +1,11 @@
 package cmd
 
 import (
+	stdctx "context"
 	"fmt"
 	"runtime"
 	"time"
 
-	"github.com/caarlos0/ctrlc"
 	"github.com/caarlos0/log"
 	"github.com/goreleaser/goreleaser/v2/internal/logext"
 	"github.com/goreleaser/goreleaser/v2/internal/middleware/errhandler"
@@ -53,14 +53,9 @@ func newReleaseCmd() *releaseCmd {
 		SilenceErrors:     true,
 		Args:              cobra.NoArgs,
 		ValidArgsFunction: cobra.NoFileCompletions,
-		RunE: timedRunE("release", func(_ *cobra.Command, _ []string) error {
-			ctx, err := releaseProject(root.opts)
-			if err != nil {
-				return err
-			}
-			deprecateWarn(ctx)
-			return nil
-		}),
+		RunE: func(cmd *cobra.Command, _ []string) error {
+			return releaseProject(cmd.Context(), root.opts)
+		},
 	}
 
 	cmd.Flags().StringVarP(&root.opts.config, "config", "f", "", "Load configuration from file")
@@ -84,7 +79,7 @@ func newReleaseCmd() *releaseCmd {
 	cmd.Flags().BoolVar(&root.opts.clean, "clean", false, "Removes the 'dist' directory")
 	cmd.Flags().IntVarP(&root.opts.parallelism, "parallelism", "p", 0, "Amount tasks to run concurrently (default: number of CPUs)")
 	_ = cmd.RegisterFlagCompletionFunc("parallelism", cobra.NoFileCompletions)
-	cmd.Flags().DurationVar(&root.opts.timeout, "timeout", 30*time.Minute, "Timeout to the entire release process")
+	cmd.Flags().DurationVar(&root.opts.timeout, "timeout", time.Hour, "Timeout to the entire release process")
 	_ = cmd.RegisterFlagCompletionFunc("timeout", cobra.NoFileCompletions)
 	cmd.Flags().BoolVar(&root.opts.deprecated, "deprecated", false, "Force print the deprecation message - tests only")
 	_ = cmd.Flags().MarkHidden("deprecated")
@@ -102,30 +97,34 @@ func newReleaseCmd() *releaseCmd {
 	return root
 }
 
-func releaseProject(options releaseOpts) (*context.Context, error) {
+func releaseProject(parent stdctx.Context, options releaseOpts) error {
+	start := time.Now()
 	cfg, err := loadConfig(!options.snapshot, options.config)
 	if err != nil {
-		return nil, err
+		return decorateWithCtxErr(parent, err, "release", after(start))
 	}
-	ctx, cancel := context.NewWithTimeout(cfg, options.timeout)
+
+	ctx, cancel := context.WrapWithTimeout(parent, cfg, options.timeout)
 	defer cancel()
+
 	if err := setupReleaseContext(ctx, options); err != nil {
-		return nil, err
+		return decorateWithCtxErr(ctx, err, "release", after(start))
 	}
-	return ctx, ctrlc.Default.Run(ctx, func() error {
-		for _, pipe := range pipeline.Pipeline {
-			if err := skip.Maybe(
-				pipe,
-				logging.Log(
-					pipe.String(),
-					errhandler.Handle(pipe.Run),
-				),
-			)(ctx); err != nil {
-				return err
-			}
+	for _, pipe := range pipeline.Pipeline {
+		if err := skip.Maybe(
+			pipe,
+			logging.Log(
+				pipe.String(),
+				errhandler.Handle(pipe.Run),
+			),
+		)(ctx); err != nil {
+			return decorateWithCtxErr(ctx, err, "release", after(start))
 		}
-		return nil
-	})
+	}
+
+	deprecateWarn(ctx)
+	log.Infof(boldStyle.Render(fmt.Sprintf("release succeeded after %s", after(start))))
+	return nil
 }
 
 func setupReleaseContext(ctx *context.Context, options releaseOpts) error {

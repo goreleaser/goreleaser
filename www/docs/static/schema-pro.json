@@ -518,6 +518,61 @@
 				"additionalProperties": false,
 				"type": "object"
 			},
+			"BinarySign": {
+				"properties": {
+					"id": {
+						"type": "string"
+					},
+					"cmd": {
+						"type": "string"
+					},
+					"args": {
+						"items": {
+							"type": "string"
+						},
+						"type": "array"
+					},
+					"signature": {
+						"type": "string"
+					},
+					"artifacts": {
+						"type": "string",
+						"enum": [
+							"binary",
+							"none"
+						]
+					},
+					"ids": {
+						"items": {
+							"type": "string"
+						},
+						"type": "array"
+					},
+					"if": {
+						"type": "string"
+					},
+					"stdin": {
+						"type": "string"
+					},
+					"stdin_file": {
+						"type": "string"
+					},
+					"env": {
+						"items": {
+							"type": "string"
+						},
+						"type": "array"
+					},
+					"certificate": {
+						"type": "string"
+					},
+					"output": {
+						"type": "boolean"
+					}
+				},
+				"additionalProperties": false,
+				"type": "object"
+			},
 			"Blob": {
 				"properties": {
 					"bucket": {
@@ -711,6 +766,8 @@
 							"zig",
 							"bun",
 							"deno",
+							"uv",
+							"poetry",
 							"prebuilt"
 						]
 					},
@@ -755,6 +812,8 @@
 							"c-archive",
 							"c-shared",
 							"pie",
+							"wheel",
+							"sdist",
 							""
 						],
 						"default": ""
@@ -835,6 +894,8 @@
 							"c-archive",
 							"c-shared",
 							"pie",
+							"wheel",
+							"sdist",
 							""
 						],
 						"default": ""
@@ -937,6 +998,9 @@
 					},
 					"ai": {
 						"$ref": "#/$defs/ChangelogAI"
+					},
+					"title": {
+						"type": "string"
 					}
 				},
 				"additionalProperties": false,
@@ -1176,6 +1240,16 @@
 					},
 					"component": {
 						"type": "string"
+					},
+					"republish": {
+						"oneOf": [
+							{
+								"type": "string"
+							},
+							{
+								"type": "boolean"
+							}
+						]
 					}
 				},
 				"additionalProperties": false,
@@ -1193,6 +1267,33 @@
 					},
 					"email": {
 						"type": "string"
+					},
+					"signing": {
+						"$ref": "#/$defs/CommitSigning"
+					}
+				},
+				"additionalProperties": false,
+				"type": "object"
+			},
+			"CommitSigning": {
+				"properties": {
+					"enabled": {
+						"type": "boolean"
+					},
+					"key": {
+						"type": "string"
+					},
+					"program": {
+						"type": "string"
+					},
+					"format": {
+						"type": "string",
+						"enum": [
+							"openpgp",
+							"x509",
+							"ssh"
+						],
+						"default": "openpgp"
 					}
 				},
 				"additionalProperties": false,
@@ -1364,6 +1465,9 @@
 						],
 						"default": "docker"
 					},
+					"retry": {
+						"$ref": "#/$defs/Retry"
+					},
 					"templated_files": {
 						"items": {
 							"$ref": "#/$defs/TemplatedExtraFileWithMode"
@@ -1371,6 +1475,25 @@
 						"type": "array"
 					},
 					"templated_dockerfile": {
+						"type": "string"
+					}
+				},
+				"additionalProperties": false,
+				"type": "object"
+			},
+			"DockerDigest": {
+				"properties": {
+					"disable": {
+						"oneOf": [
+							{
+								"type": "string"
+							},
+							{
+								"type": "boolean"
+							}
+						]
+					},
+					"name_template": {
 						"type": "string"
 					}
 				},
@@ -1442,6 +1565,78 @@
 					},
 					"use": {
 						"type": "string"
+					},
+					"retry": {
+						"$ref": "#/$defs/Retry"
+					}
+				},
+				"additionalProperties": false,
+				"type": "object"
+			},
+			"DockerV2": {
+				"properties": {
+					"id": {
+						"type": "string"
+					},
+					"ids": {
+						"items": {
+							"type": "string"
+						},
+						"type": "array"
+					},
+					"dockerfile": {
+						"type": "string"
+					},
+					"images": {
+						"items": {
+							"type": "string"
+						},
+						"type": "array"
+					},
+					"tags": {
+						"items": {
+							"type": "string"
+						},
+						"type": "array"
+					},
+					"labels": {
+						"additionalProperties": {
+							"type": "string"
+						},
+						"type": "object"
+					},
+					"annotations": {
+						"additionalProperties": {
+							"type": "string"
+						},
+						"type": "object"
+					},
+					"extra_files": {
+						"items": {
+							"type": "string"
+						},
+						"type": "array"
+					},
+					"platforms": {
+						"items": {
+							"type": "string"
+						},
+						"type": "array"
+					},
+					"build_args": {
+						"additionalProperties": {
+							"type": "string"
+						},
+						"type": "object"
+					},
+					"retry": {
+						"$ref": "#/$defs/Retry"
+					},
+					"flags": {
+						"items": {
+							"type": "string"
+						},
+						"type": "array"
 					}
 				},
 				"additionalProperties": false,
@@ -1650,7 +1845,8 @@
 						"enum": [
 							"-version:refname",
 							"-version:creatordate",
-							"semver"
+							"semver",
+							"smartsemver"
 						],
 						"default": "-version:refname"
 					},
@@ -1882,6 +2078,247 @@
 				"additionalProperties": false,
 				"type": "object"
 			},
+			"HomebrewCask": {
+				"properties": {
+					"name": {
+						"type": "string"
+					},
+					"repository": {
+						"$ref": "#/$defs/RepoRef"
+					},
+					"commit_author": {
+						"$ref": "#/$defs/CommitAuthor"
+					},
+					"commit_msg_template": {
+						"type": "string"
+					},
+					"directory": {
+						"type": "string"
+					},
+					"caveats": {
+						"type": "string"
+					},
+					"description": {
+						"type": "string"
+					},
+					"homepage": {
+						"type": "string"
+					},
+					"license": {
+						"type": "string"
+					},
+					"skip_upload": {
+						"oneOf": [
+							{
+								"type": "string"
+							},
+							{
+								"type": "boolean"
+							}
+						]
+					},
+					"custom_block": {
+						"type": "string"
+					},
+					"ids": {
+						"items": {
+							"type": "string"
+						},
+						"type": "array"
+					},
+					"service": {
+						"type": "string"
+					},
+					"binary": {
+						"type": "string"
+					},
+					"manpages": {
+						"items": {
+							"type": "string"
+						},
+						"type": "array"
+					},
+					"url": {
+						"$ref": "#/$defs/HomebrewCaskURL"
+					},
+					"completions": {
+						"$ref": "#/$defs/HomebrewCaskCompletions"
+					},
+					"dependencies": {
+						"items": {
+							"$ref": "#/$defs/HomebrewCaskDependency"
+						},
+						"type": "array"
+					},
+					"conflicts": {
+						"items": {
+							"$ref": "#/$defs/HomebrewCaskConflict"
+						},
+						"type": "array"
+					},
+					"hooks": {
+						"$ref": "#/$defs/HomebrewCaskHooks"
+					},
+					"uninstall": {
+						"$ref": "#/$defs/HomebrewCaskUninstall"
+					},
+					"zap": {
+						"$ref": "#/$defs/HomebrewCaskUninstall"
+					},
+					"alternative_names": {
+						"items": {
+							"type": "string"
+						},
+						"type": "array"
+					},
+					"app": {
+						"type": "string"
+					},
+					"manpage": {
+						"type": "string"
+					}
+				},
+				"additionalProperties": false,
+				"type": "object"
+			},
+			"HomebrewCaskCompletions": {
+				"properties": {
+					"bash": {
+						"type": "string"
+					},
+					"zsh": {
+						"type": "string"
+					},
+					"fish": {
+						"type": "string"
+					}
+				},
+				"additionalProperties": false,
+				"type": "object"
+			},
+			"HomebrewCaskConflict": {
+				"properties": {
+					"cask": {
+						"type": "string"
+					},
+					"formula": {
+						"type": "string"
+					}
+				},
+				"additionalProperties": false,
+				"type": "object"
+			},
+			"HomebrewCaskDependency": {
+				"properties": {
+					"cask": {
+						"type": "string"
+					},
+					"formula": {
+						"type": "string"
+					}
+				},
+				"additionalProperties": false,
+				"type": "object"
+			},
+			"HomebrewCaskHook": {
+				"properties": {
+					"install": {
+						"type": "string"
+					},
+					"uninstall": {
+						"type": "string"
+					}
+				},
+				"additionalProperties": false,
+				"type": "object"
+			},
+			"HomebrewCaskHooks": {
+				"properties": {
+					"pre": {
+						"$ref": "#/$defs/HomebrewCaskHook"
+					},
+					"post": {
+						"$ref": "#/$defs/HomebrewCaskHook"
+					}
+				},
+				"additionalProperties": false,
+				"type": "object"
+			},
+			"HomebrewCaskURL": {
+				"properties": {
+					"template": {
+						"type": "string"
+					},
+					"verified": {
+						"type": "string"
+					},
+					"using": {
+						"type": "string"
+					},
+					"cookies": {
+						"additionalProperties": {
+							"type": "string"
+						},
+						"type": "object"
+					},
+					"referer": {
+						"type": "string"
+					},
+					"headers": {
+						"items": {
+							"type": "string"
+						},
+						"type": "array"
+					},
+					"user_agent": {
+						"type": "string"
+					},
+					"data": {
+						"additionalProperties": {
+							"type": "string"
+						},
+						"type": "object"
+					}
+				},
+				"additionalProperties": false,
+				"type": "object"
+			},
+			"HomebrewCaskUninstall": {
+				"properties": {
+					"launchctl": {
+						"items": {
+							"type": "string"
+						},
+						"type": "array"
+					},
+					"quit": {
+						"items": {
+							"type": "string"
+						},
+						"type": "array"
+					},
+					"login_item": {
+						"items": {
+							"type": "string"
+						},
+						"type": "array"
+					},
+					"delete": {
+						"items": {
+							"type": "string"
+						},
+						"type": "array"
+					},
+					"trash": {
+						"items": {
+							"type": "string"
+						},
+						"type": "array"
+					}
+				},
+				"additionalProperties": false,
+				"type": "object"
+			},
 			"HomebrewDependency": {
 				"oneOf": [
 					{
@@ -1889,7 +2326,7 @@
 					},
 					{
 						"$schema": "https://json-schema.org/draft/2020-12/schema",
-						"$id": "https://github.com/goreleaser/goreleaser/v2/pkg/config/homebrew-dependency",
+						"$id": "https://github.com/goreleaser/goreleaser/v2/pkg/config/homebrew-dependency-alias",
 						"properties": {
 							"name": {
 								"type": "string"
@@ -2153,6 +2590,14 @@
 						"type": "string"
 					},
 					"sbom": {
+						"type": "string",
+						"enum": [
+							"spdx",
+							"none"
+						],
+						"default": "spdx"
+					},
+					"sbom_directory": {
 						"type": "string"
 					},
 					"ldflags": {
@@ -2181,6 +2626,9 @@
 					},
 					"base_import_paths": {
 						"type": "boolean"
+					},
+					"local_domain": {
+						"type": "string"
 					},
 					"disable": {
 						"oneOf": [
@@ -2335,6 +2783,16 @@
 						"enum": [
 							"v3",
 							"v4"
+						]
+					},
+					"disable": {
+						"oneOf": [
+							{
+								"type": "string"
+							},
+							{
+								"type": "boolean"
+							}
 						]
 					}
 				},
@@ -2491,6 +2949,129 @@
 					"sign",
 					"notarize"
 				]
+			},
+			"Makeself": {
+				"properties": {
+					"id": {
+						"type": "string"
+					},
+					"filename": {
+						"type": "string"
+					},
+					"script": {
+						"type": "string"
+					},
+					"compression": {
+						"type": "string",
+						"enum": [
+							"gzip",
+							"bzip2",
+							"xz",
+							"lzo",
+							"compress",
+							"none"
+						]
+					},
+					"extra_args": {
+						"items": {
+							"type": "string"
+						},
+						"type": "array"
+					},
+					"files": {
+						"items": {
+							"$ref": "#/$defs/MakeselfFile"
+						},
+						"type": "array"
+					},
+					"disable": {
+						"oneOf": [
+							{
+								"type": "string"
+							},
+							{
+								"type": "boolean"
+							}
+						]
+					},
+					"ids": {
+						"items": {
+							"type": "string"
+						},
+						"type": "array"
+					},
+					"goos": {
+						"items": {
+							"type": "string"
+						},
+						"type": "array"
+					},
+					"goarch": {
+						"items": {
+							"type": "string"
+						},
+						"type": "array"
+					},
+					"name": {
+						"type": "string"
+					},
+					"description": {
+						"type": "string"
+					},
+					"maintainer": {
+						"type": "string"
+					},
+					"keywords": {
+						"items": {
+							"type": "string"
+						},
+						"type": "array"
+					},
+					"homepage": {
+						"type": "string"
+					},
+					"license": {
+						"type": "string"
+					},
+					"templated_files": {
+						"items": {
+							"$ref": "#/$defs/MakeselfTemplatedFile"
+						},
+						"type": "array"
+					}
+				},
+				"additionalProperties": false,
+				"type": "object",
+				"required": [
+					"script"
+				]
+			},
+			"MakeselfFile": {
+				"properties": {
+					"src": {
+						"type": "string"
+					},
+					"dst": {
+						"type": "string"
+					},
+					"strip_parent": {
+						"type": "boolean"
+					}
+				},
+				"additionalProperties": false,
+				"type": "object"
+			},
+			"MakeselfTemplatedFile": {
+				"properties": {
+					"src": {
+						"type": "string"
+					},
+					"dst": {
+						"type": "string"
+					}
+				},
+				"additionalProperties": false,
+				"type": "object"
 			},
 			"Mastodon": {
 				"properties": {
@@ -3169,6 +3750,9 @@
 					},
 					"packager": {
 						"type": "string"
+					},
+					"buildhost": {
+						"type": "string"
 					}
 				},
 				"additionalProperties": false,
@@ -3293,6 +3877,9 @@
 								"type": "boolean"
 							}
 						]
+					},
+					"url_template": {
+						"type": "string"
 					}
 				},
 				"additionalProperties": false,
@@ -3303,9 +3890,6 @@
 					"version_template": {
 						"type": "string"
 					},
-					"name_template": {
-						"type": "string"
-					},
 					"tag_name": {
 						"type": "string"
 					},
@@ -3314,6 +3898,12 @@
 					},
 					"keep_single_release": {
 						"type": "boolean"
+					},
+					"draft": {
+						"type": "boolean"
+					},
+					"name_template": {
+						"type": "string"
 					}
 				},
 				"additionalProperties": false,
@@ -3510,15 +4100,15 @@
 						},
 						"type": "array"
 					},
-					"brews": {
-						"items": {
-							"$ref": "#/$defs/Homebrew"
-						},
-						"type": "array"
-					},
 					"npms": {
 						"items": {
 							"$ref": "#/$defs/NPM"
+						},
+						"type": "array"
+					},
+					"homebrew_casks": {
+						"items": {
+							"$ref": "#/$defs/HomebrewCask"
 						},
 						"type": "array"
 					},
@@ -3618,6 +4208,15 @@
 						},
 						"type": "array"
 					},
+					"dockers_v2": {
+						"items": {
+							"$ref": "#/$defs/DockerV2"
+						},
+						"type": "array"
+					},
+					"docker_digest": {
+						"$ref": "#/$defs/DockerDigest"
+					},
 					"docker_manifests": {
 						"items": {
 							"$ref": "#/$defs/DockerManifest"
@@ -3671,7 +4270,7 @@
 					},
 					"binary_signs": {
 						"items": {
-							"$ref": "#/$defs/Sign"
+							"$ref": "#/$defs/BinarySign"
 						},
 						"type": "array"
 					},
@@ -3714,9 +4313,9 @@
 					"metadata": {
 						"$ref": "#/$defs/ProjectMetadata"
 					},
-					"template_files": {
+					"makeselfs": {
 						"items": {
-							"$ref": "#/$defs/TemplateFile"
+							"$ref": "#/$defs/Makeself"
 						},
 						"type": "array"
 					},
@@ -3792,6 +4391,18 @@
 							"$ref": "#/$defs/BeforePublishHook"
 						},
 						"type": "array"
+					},
+					"template_files": {
+						"items": {
+							"$ref": "#/$defs/TemplateFile"
+						},
+						"type": "array"
+					},
+					"brews": {
+						"items": {
+							"$ref": "#/$defs/Homebrew"
+						},
+						"type": "array"
 					}
 				},
 				"additionalProperties": false,
@@ -3816,6 +4427,9 @@
 							"type": "string"
 						},
 						"type": "array"
+					},
+					"commit_author": {
+						"$ref": "#/$defs/CommitAuthor"
 					},
 					"full_description": {
 						"$ref": "#/$defs/IncludedMarkdown"
@@ -3880,6 +4494,9 @@
 					},
 					"if": {
 						"type": "string"
+					},
+					"output": {
+						"type": "string"
 					}
 				},
 				"additionalProperties": false,
@@ -3898,6 +4515,9 @@
 					},
 					"check_boxes": {
 						"type": "boolean"
+					},
+					"body": {
+						"type": "string"
 					}
 				},
 				"additionalProperties": false,
@@ -4111,6 +4731,21 @@
 				"additionalProperties": false,
 				"type": "object"
 			},
+			"Retry": {
+				"properties": {
+					"attempts": {
+						"type": "integer"
+					},
+					"delay": {
+						"type": "integer"
+					},
+					"max_delay": {
+						"type": "integer"
+					}
+				},
+				"additionalProperties": false,
+				"type": "object"
+			},
 			"SBOM": {
 				"properties": {
 					"id": {
@@ -4155,6 +4790,16 @@
 							"type": "string"
 						},
 						"type": "array"
+					},
+					"disable": {
+						"oneOf": [
+							{
+								"type": "string"
+							},
+							{
+								"type": "boolean"
+							}
+						]
 					}
 				},
 				"additionalProperties": false,
@@ -5036,7 +5681,12 @@
 						"type": "string"
 					},
 					"mode": {
-						"type": "string"
+						"type": "string",
+						"enum": [
+							"binary",
+							"archive"
+						],
+						"default": "archive"
 					},
 					"method": {
 						"type": "string"
@@ -5089,6 +5739,9 @@
 								"type": "boolean"
 							}
 						]
+					},
+					"password": {
+						"type": "string"
 					},
 					"matrix": {
 						"$ref": "#/$defs/Matrix"
@@ -5160,6 +5813,9 @@
 					"publisher_support_url": {
 						"type": "string"
 					},
+					"privacy_url": {
+						"type": "string"
+					},
 					"copyright": {
 						"type": "string"
 					},
@@ -5222,6 +5878,9 @@
 						"type": "string"
 					},
 					"release_notes_url": {
+						"type": "string"
+					},
+					"installation_notes": {
 						"type": "string"
 					},
 					"tags": {

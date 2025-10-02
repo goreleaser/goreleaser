@@ -2,7 +2,7 @@
 
 Putting it simply, GoReleaser is a release automation tool.
 
-It currently supports Go, Rust, Zig, and TypeScript (with Node.js, Deno and Bun).
+It currently supports Go, Rust, Zig, TypeScript (with Bun, Node.js and Deno), and Python.
 
 ## Why we made it?
 

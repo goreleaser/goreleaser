@@ -12,17 +12,28 @@ const (
 	defaultEmail = "bot@goreleaser.com"
 )
 
-// Get templates the commit author and returns the filled fields.
+// Get templates the commit author and returns a new [config.CommitAuthor].
 func Get(ctx *context.Context, og config.CommitAuthor) (config.CommitAuthor, error) {
-	var author config.CommitAuthor
-	var err error
-
-	author.Name, err = tmpl.New(ctx).Apply(og.Name)
-	if err != nil {
-		return author, err
+	author := config.CommitAuthor{
+		Name:  og.Name,
+		Email: og.Email,
+		Signing: config.CommitSigning{
+			Enabled: og.Signing.Enabled,
+			Key:     og.Signing.Key,
+			Program: og.Signing.Program,
+			Format:  og.Signing.Format,
+		},
 	}
-	author.Email, err = tmpl.New(ctx).Apply(og.Email)
-	return author, err
+	if err := tmpl.New(ctx).ApplyAll(
+		&author.Name,
+		&author.Email,
+		&author.Signing.Key,
+		&author.Signing.Program,
+		&author.Signing.Format,
+	); err != nil {
+		return config.CommitAuthor{}, err
+	}
+	return author, nil
 }
 
 // Default sets the default commit author name and email.
@@ -33,5 +44,11 @@ func Default(og config.CommitAuthor) config.CommitAuthor {
 	if og.Email == "" {
 		og.Email = defaultEmail
 	}
+
+	// set default signing format if enabled but format not specified
+	if og.Signing.Enabled && og.Signing.Format == "" {
+		og.Signing.Format = "openpgp"
+	}
+
 	return og
 }

@@ -27,12 +27,6 @@ source:
   # Templates: allowed.
   prefix_template: "{{ .ProjectName }}-{{ .Version }}/"
 
-  # This will make the destination paths be relative to the longest common
-  # path prefix between all the files matched and the source glob.
-  # Enabling this essentially mimic the behavior of nfpm's contents section.
-  # It will be the default by June 2023.
-  rlcp: true
-
   # Additional files/globs you want to add to the source archive.
   #
   # Templates: allowed.
