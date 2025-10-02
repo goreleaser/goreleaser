@@ -45,7 +45,20 @@ type Publish struct{ Base }
 func (p Base) String() string { return "docker images (v2)" }
 
 // Dependencies implements healthcheck.Healthchecker.
-func (Base) Dependencies(*context.Context) []string { return []string{"docker buildx"} }
+func (Base) Dependencies(ctx *context.Context) []string {
+	// If context is nil, default to requiring buildx for safety
+	if ctx == nil {
+		return []string{"docker buildx"}
+	}
+	// Check if any docker config uses multiple platforms
+	for _, d := range ctx.Config.DockersV2 {
+		if len(d.Platforms) > 1 {
+			return []string{"docker buildx"}
+		}
+	}
+	// If all configs use single platform, only need regular docker
+	return []string{"docker"}
+}
 
 // Skip implements Skipper.
 func (Base) Skip(ctx *context.Context) bool {
@@ -91,14 +104,33 @@ func (p Snapshot) Run(ctx *context.Context) error {
 
 	g := semerrgroup.NewSkipAware(semerrgroup.New(ctx.Parallelism))
 	for i := range ctx.Config.DockersV2 {
-		for _, plat := range ctx.Config.DockersV2[i].Platforms {
+		d := ctx.Config.DockersV2[i]
+
+		// For single platform builds, just build normally
+		if len(d.Platforms) == 1 {
 			g.Go(func() error {
-				// buildx won't allow us to `--load` a manifest, so we create
-				// one image per platform, adding it to the tags.
-				d := ctx.Config.DockersV2[i]
-				d.Platforms = []string{plat}
 				return buildImage(ctx, d, "--load")
 			})
+		} else {
+			// For multi-platform builds, build separate images per platform
+			for _, plat := range d.Platforms {
+				g.Go(func() error {
+					// buildx won't allow us to `--load` a manifest, so we create
+					// one image per platform, adding it to the tags.
+					d := ctx.Config.DockersV2[i]
+					d.Platforms = []string{plat}
+					// Add platform suffix to tags for multi-platform snapshot builds
+					suffix := tagSuffix(plat)
+					// Create a copy of tags to avoid data race
+					tags := make([]string, len(d.Tags))
+					copy(tags, d.Tags)
+					for j := range tags {
+						tags[j] += "-" + suffix
+					}
+					d.Tags = tags
+					return buildImage(ctx, d, "--load")
+				})
+			}
 		}
 	}
 	return g.Wait()
@@ -250,13 +282,8 @@ func makeArgs(ctx *context.Context, d config.DockerV2, extraArgs []string) ([]st
 	if len(tags) == 0 {
 		return nil, nil, errors.New("no tags provided")
 	}
-	// Append the -platform bit to non-empty tags.
-	if len(d.Platforms) == 1 && ctx.Snapshot {
-		suffix := tagSuffix(d.Platforms[0])
-		for j := range tags {
-			tags[j] += "-" + suffix
-		}
-	}
+	// Note: Platform suffixes are handled in the snapshot build logic
+	// where individual platform builds get their own suffixes
 	allImages := makeImageList(images, tags)
 
 	labelFlags, err := tplMapFlags(tpl, "--label", d.Labels)
@@ -284,11 +311,17 @@ func makeArgs(ctx *context.Context, d config.DockerV2, extraArgs []string) ([]st
 		return nil, nil, fmt.Errorf("invalid flags: %w", err)
 	}
 
-	arg := []string{
-		"buildx",
-		"build",
-		"--platform", strings.Join(d.Platforms, ","),
+	var arg []string
+
+	// Use regular docker build for single platform, buildx for multi-platform
+	if len(d.Platforms) == 1 {
+		arg = []string{"build"}
+		// For single platform, we can use --platform with regular docker build
+		arg = append(arg, "--platform", d.Platforms[0])
+	} else {
+		arg = []string{"buildx", "build", "--platform", strings.Join(d.Platforms, ",")}
 	}
+
 	for _, img := range allImages {
 		arg = append(arg, "-t", img)
 	}
