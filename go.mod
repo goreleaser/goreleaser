@@ -29,7 +29,7 @@ require (
 	github.com/google/go-github/v74 v74.0.0
 	github.com/google/ko v0.18.0
 	github.com/google/uuid v1.6.0
-	github.com/goreleaser/fileglob v1.3.0
+	github.com/goreleaser/fileglob v1.4.0
 	github.com/goreleaser/nfpm/v2 v2.43.1
 	github.com/hashicorp/go-multierror v1.1.1
 	github.com/invopop/jsonschema v0.13.0
