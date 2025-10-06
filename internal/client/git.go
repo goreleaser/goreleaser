@@ -227,7 +227,8 @@ func cloneRepo(ctx *context.Context, parent, url, name string, env []string) err
 			return runGitCmds(ctx, parent, env, [][]string{{"clone", url, name}})
 		},
 		retry.RetryIf(func(err error) bool {
-			return strings.Contains(err.Error(), "Connection reset")
+			return strings.Contains(err.Error(), "Connection reset") ||
+				strings.Contains(err.Error(), "Network is unreachable")
 		}),
 		retry.Attempts(10),
 		retry.Delay(time.Second),
