@@ -86,6 +86,7 @@ var validLicenses = []string{
 	"cpal10",
 	"commons-clause",
 	"cpl10",
+	"cnri-python",
 	"cronyx",
 	"curl",
 	"doc",
