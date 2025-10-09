@@ -8,6 +8,7 @@ linters:
     - depguard
     - forbidigo
     - gocritic
+    - godoclint
     - misspell
     - noctx
     - nolintlint
