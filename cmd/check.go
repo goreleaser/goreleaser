@@ -4,6 +4,7 @@ import (
 	"errors"
 	"fmt"
 	"io"
+	"maps"
 	"slices"
 
 	"github.com/caarlos0/log"
@@ -42,42 +43,66 @@ func newCheckCmd() *checkCmd {
 				args = append(args, root.config)
 			}
 
-			exits := []int{}
+			results := map[string]checkResult{}
 			for _, config := range args {
 				cfg, path, err := loadConfigCheck(config)
 				if err != nil {
-					return err
+					log.WithError(fmt.Errorf("configuration is invalid: %w", err)).Error(path)
+					results[path] = checkResult{
+						Err: err,
+					}
+					continue
 				}
 				ctx := context.Wrap(cmd.Context(), cfg)
 				ctx.Deprecated = root.deprecated
 
 				log.WithField("path", path).
-					Info(boldStyle.Render("checking"))
+					Debug(boldStyle.Render("checking"))
 
 				if err := (defaults.Pipe{}).Run(ctx); err != nil {
-					exits = append(exits, 1)
 					log.WithError(fmt.Errorf("configuration is invalid: %w", err)).Error(path)
+					results[path] = checkResult{
+						Err: err,
+					}
+					continue
 				}
 
-				if ctx.Deprecated {
-					exits = append(exits, 2)
-					log.WithError(errors.New("configuration is valid, but uses deprecated properties")).Warn(path)
+				results[path] = checkResult{
+					Deprecated: slices.Collect(maps.Keys(ctx.NotifiedDeprecations)),
+					Valid:      true,
 				}
+				if ctx.Deprecated {
+					log.WithError(errors.New("configuration is valid, but uses deprecated properties")).Warn(path)
+					continue
+				}
+				log.WithField("path", path).
+					Info(boldStyle.Render("configuration is valid"))
 			}
 
 			root.checked = len(args)
-
-			// so we get the exits in the right order, and can exit exits[0]
-			slices.Sort(exits)
-
-			if len(exits) > 0 {
+			exit := 0
+			issues := 0
+			for _, f := range results {
+				if f.Err != nil {
+					exit = 1
+					issues++
+					continue
+				}
+				if len(f.Deprecated) > 0 {
+					issues++
+					if exit == 0 {
+						exit = 2
+					}
+				}
+			}
+			if exit > 0 {
 				return gerrors.WrapExit(
 					fmt.Errorf(
 						"%d out of %d configuration file(s) have issues",
-						len(exits), len(args),
+						issues, len(args),
 					),
 					"check failed",
-					exits[0],
+					exit,
 				)
 			}
 
@@ -92,7 +117,14 @@ func newCheckCmd() *checkCmd {
 	cmd.Flags().BoolVar(&root.deprecated, "deprecated", false, "Force print the deprecation message - tests only")
 	_ = cmd.Flags().MarkHidden("deprecated")
 	_ = cmd.Flags().MarkHidden("config")
+	_ = cmd.Flags().MarkHidden("json")
 
 	root.cmd = cmd
 	return root
+}
+
+type checkResult struct {
+	Valid      bool     `json:"valid"`
+	Deprecated []string `json:"deprecated,omitempty"`
+	Err        error    `json:"error,omitempty"`
 }
