@@ -166,7 +166,7 @@ dockers_v2:
       - user/repo
     tags:
       - "{{.Version}}"
-    platform:
+    platforms:
       - linux/amd64
       - linux/arm64
 ```
