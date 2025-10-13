@@ -73,6 +73,7 @@ archives:
     # you'll get a directory 'goreleaser_Linux_arm64'.
     # If set to false, all files are extracted separately.
     # You can also set it to a custom directory name (templating is supported).
+    # Default: false.
     wrap_in_directory: true
 
     # If set to true, will strip the parent directories away from binary files.
