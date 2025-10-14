@@ -35,9 +35,9 @@ require (
 	github.com/invopop/jsonschema v0.13.0
 	github.com/jarcoal/httpmock v1.4.1
 	github.com/klauspost/pgzip v1.2.6
-	github.com/mark3labs/mcp-go v0.41.1
 	github.com/mattn/go-mastodon v0.0.10
 	github.com/mitchellh/go-homedir v1.1.0
+	github.com/modelcontextprotocol/go-sdk v1.0.0
 	github.com/muesli/mango-cobra v1.3.0
 	github.com/muesli/roff v0.1.0
 	github.com/ory/dockertest/v3 v3.12.0
@@ -84,6 +84,7 @@ require (
 	github.com/erikgeiser/coninput v0.0.0-20211004153227-1c3628e74d0f // indirect
 	github.com/go-chi/chi/v5 v5.2.2 // indirect
 	github.com/google/certificate-transparency-go v1.3.1 // indirect
+	github.com/google/jsonschema-go v0.3.0 // indirect
 	github.com/in-toto/attestation v1.1.1 // indirect
 	github.com/in-toto/in-toto-golang v0.9.0 // indirect
 	github.com/mattn/go-localereader v0.0.2-0.20220822084749-2491eb6c1c75 // indirect
