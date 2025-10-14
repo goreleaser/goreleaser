@@ -231,7 +231,7 @@ type HomebrewCask struct {
 	Service               string       `yaml:"service,omitempty" json:"service,omitempty"`
 
 	// Cask only:
-	Binary       string                   `yaml:"binary,omitempty" json:"binary,omitempty"`
+	Binaries     []string                 `yaml:"binaries,omitempty" json:"binaries,omitempty"`
 	Manpages     []string                 `yaml:"manpages,omitempty" json:"manpages,omitempty"`
 	URL          HomebrewCaskURL          `yaml:"url,omitempty" json:"url,omitempty"`
 	Completions  HomebrewCaskCompletions  `yaml:"completions,omitempty" json:"completions,omitempty"`
@@ -243,6 +243,9 @@ type HomebrewCask struct {
 
 	// Deprecated: use [HomebrewCask.Manpages] instead.
 	Manpage string `yaml:"manpage,omitempty" json:"manpage,omitempty"`
+
+	// Deprecated: use [HomebrewCask.Binaries] instead.
+	Binary string `yaml:"binary,omitempty" json:"binary,omitempty"`
 }
 
 type HomebrewCaskURL struct {

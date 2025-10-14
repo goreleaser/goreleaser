@@ -67,8 +67,12 @@ func (Pipe) Default(ctx *context.Context) error {
 		if brew.Directory != "Casks" {
 			log.Warnf("%q might not work properly for your end users, for reference, the default is \"Casks\"", brew.Directory)
 		}
-		if brew.Binary == "" {
-			brew.Binary = brew.Name
+		if len(brew.Binaries) == 0 || brew.Binaries[0] == "" {
+			brew.Binaries = []string{brew.Name}
+		}
+		if brew.Binary != "" {
+			deprecate.Notice(ctx, "homebrew_casks.binary")
+			brew.Binaries = append(brew.Binaries, brew.Binary)
 		}
 		if brew.Manpage != "" {
 			deprecate.Notice(ctx, "homebrew_casks.manpage")
@@ -238,6 +242,10 @@ func doRun(ctx *context.Context, brew config.HomebrewCask, cl client.ReleaseURLT
 		&brew.Completions.Fish,
 		&brew.SkipUpload,
 	); err != nil {
+		return err
+	}
+
+	if err := tmpl.New(ctx).ApplySlice(&brew.Binaries); err != nil {
 		return err
 	}
 

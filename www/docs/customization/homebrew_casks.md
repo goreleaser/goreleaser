@@ -40,7 +40,9 @@ homebrew_casks:
     #
     # Default: the cask name.
     # Templates: allowed.
-    binary: myapp
+    binaries:
+      - myapp
+      - myapp2
 
     # App to use instead of the binary.
     # This will then make GoReleaser use only the DMG files instead of archives.

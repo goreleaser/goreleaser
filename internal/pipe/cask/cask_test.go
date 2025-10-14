@@ -59,7 +59,7 @@ var defaultTemplateData = templateData{
 	HomebrewCask: config.HomebrewCask{
 		Description: "Some desc",
 		Homepage:    "https://google.com",
-		Binary:      "mybin",
+		Binaries:    []string{"mybin"},
 		Completions: config.HomebrewCaskCompletions{
 			Fish: "mybin.fish",
 			Bash: "mybin.bash",
@@ -432,7 +432,7 @@ func TestFullPipe(t *testing.T) {
 									Install: "system \"echo\"\ntouch \"/tmp/hi\"",
 								},
 							},
-							Binary: "{{.ProjectName}}",
+							Binaries: []string{"{{.ProjectName}}"},
 						},
 					},
 					Env: []string{"FOO=foo_is_bar"},
@@ -556,7 +556,7 @@ func TestRunPipeNameTemplate(t *testing.T) {
 					Name:        "foo_{{ .Env.FOO_BAR }}",
 					Description: "Foo bar",
 					Homepage:    "https://goreleaser.com",
-					Binary:      "foo",
+					Binaries:    []string{"foo"},
 					Repository: config.RepoRef{
 						Owner: "foo",
 						Name:  "bar",
@@ -824,7 +824,7 @@ func TestRunPipeBinaryRelease(t *testing.T) {
 						Owner: "foo",
 						Name:  "bar",
 					},
-					Binary:   "foo",
+					Binaries: []string{"foo"},
 					Manpages: []string{"./man/foo.1.gz"},
 				},
 			},
@@ -1040,7 +1040,7 @@ func TestDefault(t *testing.T) {
 	require.NoError(t, Pipe{}.Default(ctx))
 	require.True(t, ctx.Deprecated)
 	require.Equal(t, ctx.Config.ProjectName, ctx.Config.Casks[0].Name)
-	require.Equal(t, ctx.Config.ProjectName, ctx.Config.Casks[0].Binary)
+	require.Equal(t, ctx.Config.ProjectName, ctx.Config.Casks[0].Binaries[0])
 	require.NotEmpty(t, ctx.Config.Casks[0].CommitAuthor.Name)
 	require.NotEmpty(t, ctx.Config.Casks[0].CommitAuthor.Email)
 	require.NotEmpty(t, ctx.Config.Casks[0].CommitMessageTemplate)
@@ -1102,7 +1102,7 @@ func TestRunPipeUniversalBinary(t *testing.T) {
 					IDs: []string{
 						"unibin",
 					},
-					Binary: "unibin",
+					Binaries: []string{"unibin"},
 				},
 			},
 		},
@@ -1157,7 +1157,7 @@ func TestRunPipeUniversalBinaryNotReplacing(t *testing.T) {
 					IDs: []string{
 						"unibin",
 					},
-					Binary: "unibin",
+					Binaries: []string{"unibin"},
 				},
 			},
 		},
