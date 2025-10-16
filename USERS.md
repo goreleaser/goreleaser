@@ -38,6 +38,7 @@ Here's a running list of some organizations using GoReleaser[^1]:
 1. [Fleet for osquery](https://fleetdm.com)
 1. [Flipt](https://www.flipt.io)
 1. [FluxCD](https://fluxcd.io)
+1. [Flyte](https://flyte.org)
 1. [Gaia Pipeline](https://github.com/gaia-pipeline)
 1. [GitGuardian](https://gitguardian.com)
 1. [GitHub](https://github.com)
