@@ -12,8 +12,7 @@ import (
 	goversion "github.com/caarlos0/go-version"
 	"github.com/goreleaser/goreleaser/v2/internal/pipe/defaults"
 	"github.com/goreleaser/goreleaser/v2/pkg/context"
-	"github.com/mark3labs/mcp-go/mcp"
-	"github.com/mark3labs/mcp-go/server"
+	"github.com/modelcontextprotocol/go-sdk/mcp"
 	"github.com/spf13/cobra"
 )
 
@@ -31,54 +30,39 @@ func newMcpCmd(version goversion.Info) *mcpCmd {
 		SilenceErrors:     true,
 		Args:              cobra.NoArgs,
 		ValidArgsFunction: cobra.NoFileCompletions,
-		RunE: func(*cobra.Command, []string) error {
+		RunE: func(cmd *cobra.Command, _ []string) error {
 			bin, err := os.Executable()
 			if err != nil {
 				return err
 			}
 			root.bin = bin
-			s := server.NewMCPServer("goreleaser", version.GitVersion)
 
-			s.AddTool(
-				mcp.NewTool(
-					"check",
-					mcp.WithDescription("Checks a GoReleaser configuration for errors or deprecations"),
-					mcp.WithString("configuration",
-						mcp.Title("GoReleaser config file"),
-						mcp.Description("Path to the goreleaser YAML configuration file. If empty will use the default."),
-					),
-					mcp.WithReadOnlyHintAnnotation(true),
-				),
-				root.check,
-			)
+			server := mcp.NewServer(&mcp.Implementation{
+				Name:    "goreleaser",
+				Version: version.GitVersion,
+			}, nil)
 
-			s.AddTool(
-				mcp.NewTool(
-					"healthcheck",
-					mcp.WithDescription("Checks if GoReleaser has all the dependencies installed"),
-				),
-				root.healthcheck,
-			)
+			mcp.AddTool(server, &mcp.Tool{
+				Name:        "check",
+				Description: "Checks a GoReleaser configuration for errors or deprecations",
+			}, root.check)
 
-			s.AddTool(
-				mcp.NewTool(
-					"build",
-					mcp.WithDescription("Builds the current project for the current platform"),
-					mcp.WithDestructiveHintAnnotation(true),
-				),
-				root.build,
-			)
+			mcp.AddTool(server, &mcp.Tool{
+				Name:        "healthcheck",
+				Description: "Checks if GoReleaser has all the dependencies installed",
+			}, root.healthcheck)
 
-			s.AddTool(
-				mcp.NewTool(
-					"init",
-					mcp.WithDescription("Initializes GoReleaser in the current directory"),
-					mcp.WithDestructiveHintAnnotation(true),
-				),
-				root.init,
-			)
+			mcp.AddTool(server, &mcp.Tool{
+				Name:        "build",
+				Description: "Builds the current project for the current platform",
+			}, root.build)
 
-			return server.ServeStdio(s)
+			mcp.AddTool(server, &mcp.Tool{
+				Name:        "init",
+				Description: "Initializes GoReleaser in the current directory",
+			}, root.init)
+
+			return server.Run(cmd.Context(), &mcp.StdioTransport{})
 		},
 	}
 
@@ -86,19 +70,40 @@ func newMcpCmd(version goversion.Info) *mcpCmd {
 	return root
 }
 
-func (c *mcpCmd) init(ctx stdctx.Context, _ mcp.CallToolRequest) (*mcp.CallToolResult, error) {
+type (
+	initArgs   struct{}
+	initOutput struct {
+		Output string `json:"output"`
+	}
+)
+
+func (c *mcpCmd) init(ctx stdctx.Context, _ *mcp.CallToolRequest, _ initArgs) (*mcp.CallToolResult, initOutput, error) {
 	out, _ := exec.CommandContext(ctx, c.bin, "init").CombinedOutput()
-	return mcp.NewToolResultText(string(out)), nil
+	return nil, initOutput{Output: string(out)}, nil
 }
 
-func (c *mcpCmd) healthcheck(ctx stdctx.Context, _ mcp.CallToolRequest) (*mcp.CallToolResult, error) {
+type (
+	healthcheckArgs   struct{}
+	healthcheckOutput struct {
+		Output string `json:"output"`
+	}
+)
+
+func (c *mcpCmd) healthcheck(ctx stdctx.Context, _ *mcp.CallToolRequest, _ healthcheckArgs) (*mcp.CallToolResult, healthcheckOutput, error) {
 	out, _ := exec.CommandContext(ctx, c.bin, "healthcheck").CombinedOutput()
-	return mcp.NewToolResultText(string(out)), nil
+	return nil, healthcheckOutput{Output: string(out)}, nil
 }
 
-func (c *mcpCmd) build(ctx stdctx.Context, _ mcp.CallToolRequest) (*mcp.CallToolResult, error) {
+type (
+	buildArgs   struct{}
+	buildOutput struct {
+		Output string `json:"output"`
+	}
+)
+
+func (c *mcpCmd) build(ctx stdctx.Context, _ *mcp.CallToolRequest, _ buildArgs) (*mcp.CallToolResult, buildOutput, error) {
 	out, _ := exec.CommandContext(ctx, c.bin, "build", "--snapshot", "--clean", "--single-target", "-o", ".").CombinedOutput()
-	return mcp.NewToolResultText(string(out)), nil
+	return nil, buildOutput{Output: string(out)}, nil
 }
 
 var instructions = map[string]string{
@@ -116,16 +121,24 @@ var instructions = map[string]string{
 	"snapshot.name_template":           "rename `name_template` to `version_template`",
 }
 
-func (*mcpCmd) check(ctx stdctx.Context, request mcp.CallToolRequest) (*mcp.CallToolResult, error) {
-	input := request.GetString("configuration", "")
-	cfg, path, err := loadConfigCheck(input)
+type (
+	checkArgs struct {
+		Configuration string `json:"configuration" jsonschema:"Path to the goreleaser YAML configuration file. If empty will use the default."`
+	}
+	checkOutput struct {
+		Message string `json:"message"`
+	}
+)
+
+func (*mcpCmd) check(ctx stdctx.Context, _ *mcp.CallToolRequest, args checkArgs) (*mcp.CallToolResult, checkOutput, error) {
+	cfg, path, err := loadConfigCheck(args.Configuration)
 	if err != nil {
-		return mcp.NewToolResultErrorFromErr("Configuration is invalid", err), nil
+		return nil, checkOutput{}, fmt.Errorf("configuration is invalid: %w", err)
 	}
 
 	gctx := context.Wrap(ctx, cfg)
 	if err := (defaults.Pipe{}).Run(gctx); err != nil {
-		return mcp.NewToolResultErrorFromErr("Configuration is invalid", err), nil
+		return nil, checkOutput{}, fmt.Errorf("configuration is invalid: %w", err)
 	}
 
 	if gctx.Deprecated {
@@ -134,11 +147,10 @@ func (*mcpCmd) check(ctx stdctx.Context, request mcp.CallToolRequest) (*mcp.Call
 		for _, key := range slices.Collect(maps.Keys(gctx.NotifiedDeprecations)) {
 			sb.WriteString(fmt.Sprintf("## %s\n\nInstructions: %s\n\n", key, instructions[key]))
 		}
-		return mcp.NewToolResultText(sb.String()), nil
+		return nil, checkOutput{Message: sb.String()}, nil
 	}
 
-	return mcp.NewToolResultText(fmt.Sprintf(
-		"Configuration at %q is valid!",
-		path,
-	)), nil
+	return nil, checkOutput{
+		Message: fmt.Sprintf("Configuration at %q is valid!", path),
+	}, nil
 }
