@@ -3,8 +3,10 @@ updates:
   - package-ecosystem: "gomod"
     directory: "/"
     schedule:
-      interval: "daily"
-      time: "08:00"
+      interval: "weekly"
+      day: "friday"
+      time: "05:00"
+      timezone: "America/Sao_Paulo"
     labels:
       - "dependencies"
     commit-message:
@@ -14,45 +16,61 @@ updates:
       - dependency-name: github.com/charmbracelet/lipgloss/v2
         versions:
           - v2.0.0-beta1
+    groups:
+      gomod:
+        patterns:
+          - "*"
+
   - package-ecosystem: "github-actions"
     directory: "/"
     schedule:
-      interval: "daily"
-      time: "08:00"
+      interval: "weekly"
+      day: "friday"
+      time: "05:00"
+      timezone: "America/Sao_Paulo"
     labels:
       - "dependencies"
     commit-message:
-      prefix: "chore"
+      prefix: "ci"
       include: "scope"
+    groups:
+      actions:
+        patterns:
+          - "*"
+
   - package-ecosystem: "docker"
-    directory: "/"
+    directories:
+      - "/"
+      - "/www"
     schedule:
-      interval: "daily"
-      time: "08:00"
+      interval: "weekly"
+      day: "friday"
+      time: "05:00"
+      timezone: "America/Sao_Paulo"
     labels:
       - "dependencies"
     commit-message:
       prefix: "chore"
       include: "scope"
+    groups:
+      docker:
+        patterns:
+          - "*"
 
   # Docs:
-  - package-ecosystem: "docker"
-    directory: "/www"
-    schedule:
-      interval: "daily"
-      time: "08:00"
-    labels:
-      - "dependencies"
-    commit-message:
-      prefix: "chore"
-      include: "scope"
   - package-ecosystem: "pip"
     directory: "/www"
     schedule:
-      interval: "daily"
-      time: "08:00"
+      interval: "weekly"
+      day: "friday"
+      time: "05:00"
+      timezone: "America/Sao_Paulo"
     labels:
       - "dependencies"
     commit-message:
-      prefix: "chore"
+      prefix: "docs"
       include: "scope"
+    groups:
+      docs:
+        patterns:
+          - "*"
