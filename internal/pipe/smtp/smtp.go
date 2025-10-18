@@ -49,12 +49,12 @@ func (Pipe) Default(ctx *context.Context) error {
 func (Pipe) Announce(ctx *context.Context) error {
 	subject, err := tmpl.New(ctx).Apply(ctx.Config.Announce.SMTP.SubjectTemplate)
 	if err != nil {
-		return fmt.Errorf("SMTP: %w", err)
+		return err
 	}
 
 	body, err := tmpl.New(ctx).Apply(ctx.Config.Announce.SMTP.BodyTemplate)
 	if err != nil {
-		return fmt.Errorf("SMTP: %w", err)
+		return err
 	}
 
 	m := gomail.NewMessage()
@@ -86,7 +86,7 @@ func (Pipe) Announce(ctx *context.Context) error {
 
 	// Now send E-Mail
 	if err := d.DialAndSend(m); err != nil {
-		return fmt.Errorf("SMTP: %w", err)
+		return fmt.Errorf("send: %w", err)
 	}
 
 	log.Infof("The mail has been send from %s to %s\n", ctx.Config.Announce.SMTP.From, receivers)
@@ -95,9 +95,9 @@ func (Pipe) Announce(ctx *context.Context) error {
 }
 
 var (
-	errNoPort     = errors.New("SMTP: missing smtp.port or $SMTP_PORT")
-	errNoUsername = errors.New("SMTP: missing smtp.username or $SMTP_USERNAME")
-	errNoHost     = errors.New("SMTP: missing smtp.host or $SMTP_HOST")
+	errNoPort     = errors.New("missing smtp.port or $SMTP_PORT")
+	errNoUsername = errors.New("missing smtp.username or $SMTP_USERNAME")
+	errNoHost     = errors.New("missing smtp.host or $SMTP_HOST")
 )
 
 func getConfig(smtp config.SMTP) (Config, error) {
@@ -107,7 +107,7 @@ func getConfig(smtp config.SMTP) (Config, error) {
 		Username: smtp.Username,
 	}
 	if err := env.Parse(&cfg); err != nil {
-		return cfg, fmt.Errorf("SMTP: %w", err)
+		return cfg, err
 	}
 	if cfg.Username == "" {
 		return cfg, errNoUsername
