@@ -41,6 +41,26 @@ PS: Don't forget to add it to cmd/mcp.go as well!
 
 -->
 
+### homebrew_casks.binary
+
+> since v2.12.6
+
+It should now be in plural form.
+
+=== "Before"
+
+    ```yaml
+    homebrew_casks:
+    - binary: foo
+    ```
+
+=== "After"
+
+    ```yaml
+    homebrew_casks:
+    - binaries: [ foo ]
+    ```
+
 ### dockers
 
 We're re-implementing the docker feature from the ground up.
