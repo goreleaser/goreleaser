@@ -67,12 +67,12 @@ func (Pipe) Default(ctx *context.Context) error {
 		if brew.Directory != "Casks" {
 			log.Warnf("%q might not work properly for your end users, for reference, the default is \"Casks\"", brew.Directory)
 		}
-		if len(brew.Binaries) == 0 || brew.Binaries[0] == "" {
-			brew.Binaries = []string{brew.Name}
-		}
 		if brew.Binary != "" {
 			deprecate.Notice(ctx, "homebrew_casks.binary")
 			brew.Binaries = append(brew.Binaries, brew.Binary)
+		}
+		if len(brew.Binaries) == 0 || brew.Binaries[0] == "" {
+			brew.Binaries = []string{brew.Name}
 		}
 		if brew.Manpage != "" {
 			deprecate.Notice(ctx, "homebrew_casks.manpage")

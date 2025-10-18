@@ -1032,20 +1032,34 @@ func TestDefault(t *testing.T) {
 		ProjectName: "myproject",
 		Casks: []config.HomebrewCask{
 			{
-				Manpage:    "a",
 				Repository: repo,
 			},
 		},
 	}, testctx.GitHubTokenType)
 	require.NoError(t, Pipe{}.Default(ctx))
-	require.True(t, ctx.Deprecated)
+	require.False(t, ctx.Deprecated)
 	require.Equal(t, ctx.Config.ProjectName, ctx.Config.Casks[0].Name)
 	require.Equal(t, ctx.Config.ProjectName, ctx.Config.Casks[0].Binaries[0])
 	require.NotEmpty(t, ctx.Config.Casks[0].CommitAuthor.Name)
 	require.NotEmpty(t, ctx.Config.Casks[0].CommitAuthor.Email)
 	require.NotEmpty(t, ctx.Config.Casks[0].CommitMessageTemplate)
 	require.Equal(t, repo, ctx.Config.Casks[0].Repository)
-	require.Equal(t, []string{"a"}, ctx.Config.Casks[0].Manpages)
+}
+
+func TestDefaultDeprecated(t *testing.T) {
+	ctx := testctx.NewWithCfg(config.Project{
+		ProjectName: "myproject",
+		Casks: []config.HomebrewCask{
+			{
+				Binary:  "bin",
+				Manpage: "man",
+			},
+		},
+	}, testctx.GitHubTokenType)
+	require.NoError(t, Pipe{}.Default(ctx))
+	require.True(t, ctx.Deprecated)
+	require.Equal(t, []string{"bin"}, ctx.Config.Casks[0].Binaries)
+	require.Equal(t, []string{"man"}, ctx.Config.Casks[0].Manpages)
 }
 
 func TestGHFolder(t *testing.T) {
