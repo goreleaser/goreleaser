@@ -236,7 +236,6 @@ func doRun(ctx *context.Context, brew config.HomebrewCask, cl client.ReleaseURLT
 	if err := tmpl.New(ctx).ApplyAll(
 		&brew.Name,
 		&brew.SkipUpload,
-		&brew.Binary,
 		&brew.Completions.Bash,
 		&brew.Completions.Zsh,
 		&brew.Completions.Fish,
