@@ -144,6 +144,7 @@ var validLicenses = []string{
 	"inria-compcert",
 	"inria-icesl",
 	"inria-zelus",
+	"intel-eula",
 	"interbase",
 	"ipa",
 	"ipl10",
