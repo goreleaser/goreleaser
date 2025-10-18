@@ -100,7 +100,7 @@ release:
   # Templates: allowed. (Since v2.6)
   make_latest: true
 
-  # What to do with the release notes in case there the release already exists.
+  # What to do with the release notes in case the release already exists.
   #
   # Valid options are:
   # - `keep-existing`: keep the existing notes
