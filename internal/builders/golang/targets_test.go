@@ -50,6 +50,12 @@ func TestAllBuildTargets(t *testing.T) {
 			"5",
 			"6",
 			"7",
+			"5,softfloat",
+			"5,hardfloat",
+			"6,softfloat",
+			"6,hardfloat",
+			"7,softfloat",
+			"7,hardfloat",
 		},
 		Goarm64: []string{
 			"v8.0",
