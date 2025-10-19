@@ -1716,8 +1716,11 @@
 					"service": {
 						"type": "string"
 					},
-					"binary": {
-						"type": "string"
+					"binaries": {
+						"items": {
+							"type": "string"
+						},
+						"type": "array"
 					},
 					"manpages": {
 						"items": {
@@ -1753,6 +1756,9 @@
 						"$ref": "#/$defs/HomebrewCaskUninstall"
 					},
 					"manpage": {
+						"type": "string"
+					},
+					"binary": {
 						"type": "string"
 					}
 				},
