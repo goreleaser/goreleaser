@@ -309,6 +309,9 @@
 					},
 					"bluesky": {
 						"$ref": "#/$defs/Bluesky"
+					},
+					"discourse": {
+						"$ref": "#/$defs/Discourse"
 					}
 				},
 				"additionalProperties": false,
