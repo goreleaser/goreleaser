@@ -27,6 +27,7 @@ var validLicenses = []string{
 	"asl11",
 	"asl20",
 	"baekmuk",
+	"bitstreamCharter",
 	"bitstreamVera",
 	"bitTorrent10",
 	"bitTorrent11",
