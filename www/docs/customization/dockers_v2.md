@@ -103,6 +103,12 @@ dockers_v2:
       - linux/amd64
       - linux/arm64
 
+    # Whether to disable this particular Docker configuration.
+    #
+    # Templates: allowed.
+    # <!-- md:inline_version v2.12.7-unreleased -->.
+    disable: "{{ .IsSnapshot }}"
+
     # Additional `--build-arg`s to be passed.
     #
     # Templates: allowed.

@@ -116,6 +116,14 @@ func buildImage(ctx *context.Context, d config.DockerV2, extraArgs ...string) er
 		return pipe.Skip("no platforms to build")
 	}
 
+	disable, err := tmpl.New(ctx).Bool(d.Disable)
+	if err != nil {
+		return err
+	}
+	if disable {
+		return pipe.Skip("configuration is disabled")
+	}
+
 	arg, images, err := makeArgs(ctx, d, extraArgs)
 	if err != nil {
 		return err
