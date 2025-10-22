@@ -411,7 +411,7 @@ func toPlatform(a *artifact.Artifact) (string, error) {
 	case "arm":
 		parts = append(parts, a.Goarch)
 		switch a.Goarm {
-		case "6", "7":
+		case "5", "6", "7":
 			parts = append(parts, "v"+a.Goarm)
 		default:
 			return "", fmt.Errorf("unsupported arch: arm/v%q", a.Goarm)
