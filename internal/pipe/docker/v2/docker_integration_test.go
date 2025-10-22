@@ -179,6 +179,7 @@ func TestPublish(t *testing.T) {
 	testlib.StartRegistry(t, "registry-v2", "5060")
 	testlib.StartRegistry(t, "alt_registry-v2", "5061")
 
+	b := false
 	dist := t.TempDir()
 	ctx := testctx.NewWithCfg(
 		config.Project{
@@ -205,6 +206,7 @@ func TestPublish(t *testing.T) {
 					Dockerfile: "./testdata/Dockerfile.python",
 					Images:     []string{"localhost:5060/python"},
 					Tags:       []string{"latest"},
+					SBOM:       &b,
 				},
 			},
 		},
@@ -262,6 +264,8 @@ func TestPublish(t *testing.T) {
 		require.Equal(t, map[string]string{
 			"org.opencontainers.image.description": "My multi-arch image",
 		}, manifest.Annotations)
+
+		require.True(t, hasSBOM(t, "localhost:5060/foo:v1.0.0"))
 	})
 	t.Run("python", func(t *testing.T) {
 		images := ctx.Artifacts.
@@ -278,6 +282,7 @@ func TestPublish(t *testing.T) {
 		for _, img := range images {
 			require.NotEmpty(t, artifact.ExtraOr(*img, artifact.ExtraDigest, ""))
 		}
+		require.False(t, hasSBOM(t, "localhost:5060/python:latest"))
 	})
 }
 
@@ -326,4 +331,18 @@ func inspectManifest(tb testing.TB, image string) v1.Manifest {
 	var t v1.Manifest
 	require.NoError(tb, json.Unmarshal(out, &t))
 	return t
+}
+
+func hasSBOM(tb testing.TB, image string) bool {
+	tb.Helper()
+	out, err := exec.CommandContext(
+		tb.Context(),
+		"docker",
+		"buildx",
+		"imagetools",
+		"inspect",
+		`--format={{ json (index .SBOM "linux/amd64").SPDX.SPDXID }}`,
+		image,
+	).CombinedOutput()
+	return err == nil && string(out) == `"SPDXRef-DOCUMENT"`
 }

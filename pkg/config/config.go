@@ -1088,6 +1088,7 @@ type DockerV2 struct {
 	BuildArgs   map[string]string `yaml:"build_args,omitempty" json:"build_args,omitempty"`
 	Retry       Retry             `yaml:"retry,omitempty" json:"retry,omitempty"`
 	Flags       []string          `yaml:"flags,omitempty" json:"flags,omitempty"`
+	SBOM        *bool             `yaml:"sbom,omitempty" json:"sbom,omitempty"`
 }
 
 // DockerDigest config.

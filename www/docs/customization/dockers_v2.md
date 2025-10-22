@@ -103,6 +103,12 @@ dockers_v2:
       - linux/amd64
       - linux/arm64
 
+    # Whether to create and attach a SBOM to the image.
+    # Default: true
+    #
+    # <!-- md:inline_version v2.12.7-unreleased -->.
+    sbom: false
+
     # Additional `--build-arg`s to be passed.
     #
     # Templates: allowed.
