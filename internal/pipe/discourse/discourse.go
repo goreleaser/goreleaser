@@ -32,7 +32,6 @@ type Config struct {
 }
 
 func (Pipe) Default(ctx *context.Context) error {
-
 	if ctx.Config.Announce.Discourse.TitleTemplate == "" {
 		ctx.Config.Announce.Discourse.TitleTemplate = defaultTitleTemplate
 	}
@@ -49,7 +48,6 @@ func (Pipe) Default(ctx *context.Context) error {
 }
 
 func (p Pipe) Announce(ctx *context.Context) error {
-
 	title, err := tmpl.New(ctx).Apply(ctx.Config.Announce.Discourse.TitleTemplate)
 	if err != nil {
 		return fmt.Errorf("%s: %w", p, err)
@@ -62,12 +60,12 @@ func (p Pipe) Announce(ctx *context.Context) error {
 
 	// Make 'server' a required config field.
 	if ctx.Config.Announce.Discourse.Server == "" {
-		return fmt.Errorf("%s: 'server' is a required config key.", p)
+		return fmt.Errorf("%s: 'server' is a required config key", p)
 	}
 
 	// Make 'category_id' a required config field.
 	if ctx.Config.Announce.Discourse.CategoryID == 0 {
-		return fmt.Errorf("%s: 'category_id' is a required config key.", p)
+		return fmt.Errorf("%s: 'category_id' is a required config key", p)
 	}
 
 	cfg, err := env.ParseAs[Config]()
@@ -103,8 +101,9 @@ func (p Pipe) Announce(ctx *context.Context) error {
 	if err != nil {
 		return fmt.Errorf("%s: %w", p, err)
 	}
+	defer resp.Body.Close()
 
-	if resp.StatusCode != 200 {
+	if resp.StatusCode < 200 || resp.StatusCode > 299 {
 		return fmt.Errorf("%s: There was an error posting to Discourse. Check your config again. HTTP code: %d", p, resp.StatusCode)
 	}
 

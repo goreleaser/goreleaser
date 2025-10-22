@@ -15,9 +15,7 @@ import (
 )
 
 func TestAnnounce(t *testing.T) {
-
 	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-
 		if r.Method != http.MethodPost {
 			w.WriteHeader(http.StatusMethodNotAllowed)
 			return
@@ -36,7 +34,6 @@ func TestAnnounce(t *testing.T) {
 		assert.Equal(t, "Honk v1.0.0 is out!", pr.Title)
 		assert.Equal(t, "Honk v1.0.0 is out! Check it out at https://github.com/honk/honk/releases/tag/v1.0.0", pr.Raw)
 
-		w.WriteHeader(200)
 		w.WriteHeader(http.StatusNoContent)
 	}))
 	defer ts.Close()
@@ -45,8 +42,9 @@ func TestAnnounce(t *testing.T) {
 		ProjectName: "Honk",
 		Announce: config.Announce{
 			Discourse: config.Discourse{
-				Enabled: "true",
-				Server:  ts.URL,
+				Enabled:    "true",
+				Server:     ts.URL,
+				CategoryID: 4,
 			},
 		},
 	})
@@ -75,11 +73,14 @@ func TestAnnounceInvalidTemplate(t *testing.T) {
 func TestAnnounceMissingEnv(t *testing.T) {
 	ctx := testctx.NewWithCfg(config.Project{
 		Announce: config.Announce{
-			Discourse: config.Discourse{},
+			Discourse: config.Discourse{
+				Server:     "http://forum.example.com",
+				CategoryID: 4,
+			},
 		},
 	})
 	require.NoError(t, Pipe{}.Default(ctx))
-	require.EqualError(t, Pipe{}.Announce(ctx), `discourse: env: environment variable "DISCOURSE_API_KEY" should not be empty.`)
+	require.EqualError(t, Pipe{}.Announce(ctx), `discourse: env: environment variable "DISCOURSE_API_KEY" should not be empty`)
 }
 
 func TestDefault(t *testing.T) {
@@ -115,7 +116,6 @@ func TestStringer(t *testing.T) {
 
 func TestLive(t *testing.T) {
 	t.SkipNow()
-	//t.Setenv("DISCORD_WEBHOOK_TOKEN", "TODO")
 
 	ctx := testctx.NewWithCfg(config.Project{
 		Announce: config.Announce{
