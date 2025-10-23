@@ -243,6 +243,11 @@ func TestToPlatform(t *testing.T) {
 			Goarch: "arm",
 			Goarm:  "6",
 		},
+		"linux/arm/v5": {
+			Goos:   "linux",
+			Goarch: "arm",
+			Goarm:  "5",
+		},
 		"linux/386": {
 			Goos:   "linux",
 			Goarch: "386",
@@ -286,7 +291,7 @@ func TestToPlatform(t *testing.T) {
 		_, err := toPlatform(&artifact.Artifact{
 			Goos:   "linux",
 			Goarch: "arm",
-			Goarm:  "5",
+			Goarm:  "4",
 		})
 		require.Error(t, err)
 	})
