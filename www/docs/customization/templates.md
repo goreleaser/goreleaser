@@ -29,7 +29,7 @@ In fields that support templates, these fields are always available:
 | `.Major`           | the major part of the version[^tag-is-semver]                                                              |
 | `.Minor`           | the minor part of the version[^tag-is-semver]                                                              |
 | `.Patch`           | the patch part of the version[^tag-is-semver]                                                              |
-| `.Prerelease`      | the prerelease part of the version, e.g. `beta`[^tag-is-semver]                                            |
+| `.Prerelease`      | the prerelease part of the version, e.g. `beta.1`[^tag-is-semver]                                          |
 | `.RawVersion`      | composed of `{Major}.{Minor}.{Patch}` [^tag-is-semver]                                                     |
 | `.ReleaseNotes`    | the generated release notes, available after the changelog step has been executed                          |
 | `.IsDraft`         | `true` if `release.draft` is set in the configuration, `false` otherwise                                   |

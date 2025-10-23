@@ -270,7 +270,7 @@ func dataFor(ctx *context.Context, cfg config.AURSource, cl client.ReleaseURLTem
 		Name:         cfg.Name,
 		Desc:         cfg.Description,
 		Homepage:     cfg.Homepage,
-		Version:      fmt.Sprintf("%d.%d.%d", ctx.Semver.Major, ctx.Semver.Minor, ctx.Semver.Patch),
+		Version:      strings.ReplaceAll(ctx.Version, "-", "_"),
 		License:      cfg.License,
 		Rel:          cfg.Rel,
 		Maintainers:  cfg.Maintainers,
