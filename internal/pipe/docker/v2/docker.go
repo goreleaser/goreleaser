@@ -105,7 +105,11 @@ func (Publish) Publish(ctx *context.Context) error {
 	g := semerrgroup.NewSkipAware(semerrgroup.New(ctx.Parallelism))
 	for _, d := range ctx.Config.DockersV2 {
 		g.Go(func() error {
-			return buildImage(ctx, d, "--push", "--attest=type=sbom")
+			extraArgs := []string{"--push"}
+			if d.SBOM == nil || *d.SBOM {
+				extraArgs = append(extraArgs, "--attest=type=sbom")
+			}
+			return buildImage(ctx, d, extraArgs...)
 		})
 	}
 	return g.Wait()
@@ -419,7 +423,7 @@ func toPlatform(a *artifact.Artifact) (string, error) {
 	case "arm":
 		parts = append(parts, a.Goarch)
 		switch a.Goarm {
-		case "6", "7":
+		case "5", "6", "7":
 			parts = append(parts, "v"+a.Goarm)
 		default:
 			return "", fmt.Errorf("unsupported arch: arm/v%q", a.Goarm)
