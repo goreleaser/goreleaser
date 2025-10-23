@@ -105,7 +105,11 @@ func (Publish) Publish(ctx *context.Context) error {
 	g := semerrgroup.NewSkipAware(semerrgroup.New(ctx.Parallelism))
 	for _, d := range ctx.Config.DockersV2 {
 		g.Go(func() error {
-			return buildImage(ctx, d, "--push", "--attest=type=sbom")
+			extraArgs := []string{"--push"}
+			if d.SBOM == nil || *d.SBOM {
+				extraArgs = append(extraArgs, "--attest=type=sbom")
+			}
+			return buildImage(ctx, d, extraArgs...)
 		})
 	}
 	return g.Wait()
