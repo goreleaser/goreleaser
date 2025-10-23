@@ -103,10 +103,16 @@ dockers_v2:
       - linux/amd64
       - linux/arm64
 
+    # Whether to disable this particular Docker configuration.
+    #
+    # Templates: allowed.
+    # <!-- md:inline_version v2.12.7-unreleased -->.
+    disable: "{{ .IsSnapshot }}"
+
     # Whether to create and attach a SBOM to the image.
     # Default: true
     #
-    # <!-- md:inline_version v2.12.7-unreleased -->
+    # <!-- md:inline_version v2.12.7-unreleased -->.
     sbom: false
 
     # Additional `--build-arg`s to be passed.

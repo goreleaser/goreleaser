@@ -215,6 +215,33 @@ func TestMakeArgs(t *testing.T) {
 	})
 }
 
+func TestDisable(t *testing.T) {
+	t.Run("disabled", func(t *testing.T) {
+		ctx := testctx.NewWithCfg(config.Project{
+			DockersV2: []config.DockerV2{
+				{
+					Disable: "true",
+				},
+			},
+		})
+		require.NoError(t, Base{}.Default(ctx))
+		testlib.AssertSkipped(t, Snapshot{}.Run(ctx))
+		testlib.AssertSkipped(t, Publish{}.Publish(ctx))
+	})
+	t.Run("template error", func(t *testing.T) {
+		ctx := testctx.NewWithCfg(config.Project{
+			DockersV2: []config.DockerV2{
+				{
+					Disable: "{{ .no }}",
+				},
+			},
+		})
+		require.NoError(t, Base{}.Default(ctx))
+		testlib.RequireTemplateError(t, Snapshot{}.Run(ctx))
+		testlib.RequireTemplateError(t, Publish{}.Publish(ctx))
+	})
+}
+
 func TestToPlatform(t *testing.T) {
 	for expected, art := range map[string]artifact.Artifact{
 		"windows/amd64": {
