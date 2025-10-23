@@ -179,7 +179,6 @@ func TestPublish(t *testing.T) {
 	testlib.StartRegistry(t, "registry-v2", "5060")
 	testlib.StartRegistry(t, "alt_registry-v2", "5061")
 
-	b := false
 	dist := t.TempDir()
 	ctx := testctx.NewWithCfg(
 		config.Project{
@@ -206,7 +205,7 @@ func TestPublish(t *testing.T) {
 					Dockerfile: "./testdata/Dockerfile.python",
 					Images:     []string{"localhost:5060/python"},
 					Tags:       []string{"latest"},
-					SBOM:       &b,
+					SBOM:       "{{ .IsSnapshot }}",
 				},
 			},
 		},

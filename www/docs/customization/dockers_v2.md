@@ -110,10 +110,11 @@ dockers_v2:
     disable: "{{ .IsSnapshot }}"
 
     # Whether to create and attach a SBOM to the image.
-    # Default: true
     #
+    # Default: 'true'
+    # Templates: allowed.
     # <!-- md:inline_version v2.12.7-unreleased -->.
-    sbom: false
+    sbom: "{{ not .IsNightly }}"
 
     # Additional `--build-arg`s to be passed.
     #

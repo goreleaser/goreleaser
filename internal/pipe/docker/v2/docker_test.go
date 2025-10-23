@@ -66,6 +66,7 @@ func TestDefault(t *testing.T) {
 	require.NotEmpty(t, d.Dockerfile)
 	require.NotEmpty(t, d.Tags)
 	require.NotEmpty(t, d.Platforms)
+	require.Equal(t, "true", d.SBOM)
 }
 
 func TestMakeContext(t *testing.T) {
@@ -106,6 +107,31 @@ func TestMakeContext(t *testing.T) {
 		require.FileExists(t, filepath.Join(dir, "linux/amd64/mybin"))
 		require.FileExists(t, filepath.Join(dir, "linux/arm/v7/mybin"))
 		require.FileExists(t, filepath.Join(dir, "testdata/foo.conf"))
+	})
+}
+
+func TestPublishExtraArgs(t *testing.T) {
+	ctx := testctx.New()
+
+	t.Run("sbom disabled", func(t *testing.T) {
+		args, err := Publish{}.extraArgs(ctx, config.DockerV2{
+			SBOM: "{{ .IsSnapshot }}",
+		})
+		require.NoError(t, err)
+		require.Equal(t, []string{"--push"}, args)
+	})
+	t.Run("sbom enabled", func(t *testing.T) {
+		args, err := Publish{}.extraArgs(ctx, config.DockerV2{
+			SBOM: "{{ not .IsSnapshot }}",
+		})
+		require.NoError(t, err)
+		require.Equal(t, []string{"--push", "--attest=type=sbom"}, args)
+	})
+	t.Run("tmpl err", func(t *testing.T) {
+		_, err := Publish{}.extraArgs(ctx, config.DockerV2{
+			SBOM: "{{ not .IsSn",
+		})
+		testlib.RequireTemplateError(t, err)
 	})
 }
 
