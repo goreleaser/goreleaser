@@ -91,7 +91,7 @@ sboms:
     #
     # Default: 'true'.
     # Templates: allowed.
-    # <!-- md:inline_version v2.10 -->
+    # <!-- md:inline_version v2.10 -->.
     disable: true
 ```
 

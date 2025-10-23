@@ -40,7 +40,7 @@ archives:
     #
     # Default: ['tar.gz'].
     format: "zip" # Singular form, single format, deprecated.
-    formats: ["zip", "tar.gz"] # Plural form, multiple formats. <!-- md:inline_version v2.6 -->
+    formats: ["zip", "tar.gz"] # Plural form, multiple formats. <!-- md:inline_version v2.6 -->.
 
     # This will create an archive without any binaries, only the files are there.
     # The name template must not contain any references to `Os`, `Arch` and etc, since the archive will be meta.
@@ -104,7 +104,7 @@ archives:
         # - `none`   # skips this archive
         #
         format: "zip" # Singular form, single format, deprecated.
-        formats: ["zip", "tar.gz"] # Plural form, multiple formats. <!-- md:inline_version v2.6 -->
+        formats: ["zip", "tar.gz"] # Plural form, multiple formats. <!-- md:inline_version v2.6 -->.
 
     # Additional files/globs you want to add to the archive.
     #
