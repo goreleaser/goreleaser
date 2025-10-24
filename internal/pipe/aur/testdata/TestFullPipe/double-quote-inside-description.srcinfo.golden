@@ -1,6 +1,6 @@
 pkgbase = double-quote-inside-description-bin
 	pkgdesc = This is a "test"
-	pkgver = 1.0.1
+	pkgver = 1.0.1_foo
 	pkgrel = 1
 	license = MIT
 	conflicts = double-quote-inside-description
