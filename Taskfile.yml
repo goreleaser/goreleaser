@@ -78,7 +78,7 @@ tasks:
   lint:
     desc: Lint the code with golangci-lint
     cmds:
-      - golangci-lint run --config ./.golangci.yaml ./...
+      - golangci-lint run --timeout 10m --config ./.golangci.yaml ./...
 
   ci:
     desc: Run all CI steps
