@@ -1280,6 +1280,19 @@
 							"type": "string"
 						},
 						"type": "array"
+					},
+					"disable": {
+						"oneOf": [
+							{
+								"type": "string"
+							},
+							{
+								"type": "boolean"
+							}
+						]
+					},
+					"sbom": {
+						"type": "boolean"
 					}
 				},
 				"additionalProperties": false,

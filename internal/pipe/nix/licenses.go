@@ -113,7 +113,6 @@ var validLicenses = []string{
 	"fontException",
 	"fraunhofer-fdk",
 	"free",
-	"freeimage",
 	"fsl11Mit",
 	"fsl11Asl20",
 	"ftl",
