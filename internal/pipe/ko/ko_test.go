@@ -166,11 +166,13 @@ func TestPublishPipeSuccess(t *testing.T) {
 
 	chainguardStaticLabels := map[string]string{
 		"dev.chainguard.package.main":      "",
+		"dev.chainguard.image.title":       "static",
 		"org.opencontainers.image.authors": "Chainguard Team https://www.chainguard.dev/",
 		"org.opencontainers.image.source":  "https://github.com/chainguard-images/images/tree/main/images/static",
 		"org.opencontainers.image.url":     "https://images.chainguard.dev/directory/image/static/overview",
 		"org.opencontainers.image.vendor":  "Chainguard",
 		"org.opencontainers.image.created": ".*",
+		"org.opencontainers.image.title":   "static",
 	}
 	baseImageAnnotations := map[string]string{
 		"org.opencontainers.image.base.name":   ".*",
