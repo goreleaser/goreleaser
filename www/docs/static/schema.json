@@ -1292,7 +1292,14 @@
 						]
 					},
 					"sbom": {
-						"type": "boolean"
+						"oneOf": [
+							{
+								"type": "string"
+							},
+							{
+								"type": "boolean"
+							}
+						]
 					}
 				},
 				"additionalProperties": false,
