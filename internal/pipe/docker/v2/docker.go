@@ -71,6 +71,9 @@ func (Base) Default(ctx *context.Context) error {
 		if len(docker.Platforms) == 0 {
 			docker.Platforms = []string{"linux/amd64", "linux/arm64"}
 		}
+		if docker.SBOM == "" {
+			docker.SBOM = "true"
+		}
 		docker.Retry.Attempts = cmp.Or(docker.Retry.Attempts, 10)
 		docker.Retry.Delay = cmp.Or(docker.Retry.Delay, 10*time.Second)
 		docker.Retry.MaxDelay = cmp.Or(docker.Retry.MaxDelay, 5*time.Minute)
@@ -100,19 +103,31 @@ func (p Snapshot) Run(ctx *context.Context) error {
 }
 
 // Publish implements publish.Publisher.
-func (Publish) Publish(ctx *context.Context) error {
+func (p Publish) Publish(ctx *context.Context) error {
 	warnExperimental()
 	g := semerrgroup.NewSkipAware(semerrgroup.New(ctx.Parallelism))
 	for _, d := range ctx.Config.DockersV2 {
 		g.Go(func() error {
-			extraArgs := []string{"--push"}
-			if d.SBOM == nil || *d.SBOM {
-				extraArgs = append(extraArgs, "--attest=type=sbom")
+			extraArgs, err := p.extraArgs(ctx, d)
+			if err != nil {
+				return fmt.Errorf("dockers_v2.sbom: %w", err)
 			}
 			return buildImage(ctx, d, extraArgs...)
 		})
 	}
 	return g.Wait()
+}
+
+func (Publish) extraArgs(ctx *context.Context, d config.DockerV2) ([]string, error) {
+	sbom, err := tmpl.New(ctx).Bool(d.SBOM)
+	if err != nil {
+		return nil, fmt.Errorf("dockers_v2.sbom: %w", err)
+	}
+	extraArgs := []string{"--push"}
+	if sbom {
+		extraArgs = append(extraArgs, "--attest=type=sbom")
+	}
+	return extraArgs, nil
 }
 
 func buildImage(ctx *context.Context, d config.DockerV2, extraArgs ...string) error {

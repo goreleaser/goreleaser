@@ -1089,7 +1089,7 @@ type DockerV2 struct {
 	Retry       Retry             `yaml:"retry,omitempty" json:"retry,omitempty"`
 	Flags       []string          `yaml:"flags,omitempty" json:"flags,omitempty"`
 	Disable     string            `yaml:"disable,omitempty" json:"disable,omitempty" jsonschema:"oneof_type=string;boolean"`
-	SBOM        *bool             `yaml:"sbom,omitempty" json:"sbom,omitempty"`
+	SBOM        string            `yaml:"sbom,omitempty" json:"sbom,omitempty" jsonschema:"oneof_type=string;boolean"`
 }
 
 // DockerDigest config.
