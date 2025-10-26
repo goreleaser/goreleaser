@@ -1,6 +1,6 @@
 pkgbase = with-more-opts
 	pkgdesc = A run pipe test fish food and FOO=foo_is_bar
-	pkgver = 1.0.1
+	pkgver = 1.0.1_foo
 	pkgrel = 1
 	url = https://github.com/goreleaser
 	arch = aarch64
