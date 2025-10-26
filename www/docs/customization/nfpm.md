@@ -122,7 +122,7 @@ nfpms:
     # Templates: allowed.
     libdirs:
       # Default: '/usr/include'.
-      headers: /usr/include/something
+      header: /usr/include/something
 
       # Default: '/usr/lib'.
       cshared: /usr/lib/foo
