@@ -6,7 +6,7 @@ import (
 	"fmt"
 	"maps"
 	"net/url"
-	"os"
+	sys "os" // renamed import
 	"os/user"
 	"path/filepath"
 	"regexp"
@@ -50,6 +50,7 @@ const (
 	rawVersion      = "RawVersion"
 	tag             = "Tag"
 	previousTag     = "PreviousTag"
+	arch            = "Arch"
 	branch          = "Branch"
 	commit          = "Commit"
 	shortCommit     = "ShortCommit"
@@ -67,6 +68,7 @@ const (
 	gitTreeState    = "GitTreeState"
 	major           = "Major"
 	minor           = "Minor"
+	os              = "Os"
 	patch           = "Patch"
 	prerelease      = "Prerelease"
 	isSnapshot      = "IsSnapshot"
@@ -112,6 +114,8 @@ func New(ctx *context.Context) *Template {
 		projectName:     ctx.Config.ProjectName,
 		modulePath:      ctx.ModulePath,
 		version:         ctx.Version,
+		arch:            ctx.Runtime.Goarch,
+		os:              ctx.Runtime.Goos,
 		rawVersion:      rawVersionV,
 		summary:         ctx.Git.Summary,
 		tag:             ctx.Git.CurrentTag,
@@ -534,7 +538,7 @@ func mustReadFile(path string) (string, error) {
 		}
 		path = user.HomeDir + path[1:]
 	}
-	bts, err := os.ReadFile(path)
+	bts, err := sys.ReadFile(path)
 	if err != nil {
 		return "", err
 	}
