@@ -22,9 +22,9 @@ We can use the goreleaser check command to grab the deprecation notices and how 
 If that's not enough, use the documentation resources to find out more details.
 The resource paths to look at are:
 
-- docs://deprecataions.md
+- docs://deprecations.md
 - docs://customization/{feature name}.md
-- docs://old-deprecataions.md (this one only if updating between goreleaser major versions)
+- docs://old-deprecations.md (this one only if updating between goreleaser major versions)
 `
 
 type mcpCmd struct {
