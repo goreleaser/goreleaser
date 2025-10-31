@@ -1043,6 +1043,7 @@ type Retry struct {
 }
 
 // Docker image config.
+//
 // Deprecated: use [DockerV2] instead.
 type Docker struct {
 	ID                 string   `yaml:"id,omitempty" json:"id,omitempty"`
@@ -1062,6 +1063,7 @@ type Docker struct {
 }
 
 // DockerManifest config.
+//
 // Deprecated: use [DockerV2] instead.
 type DockerManifest struct {
 	ID             string   `yaml:"id,omitempty" json:"id,omitempty"`
