@@ -4,21 +4,31 @@ import (
 	stdctx "context"
 	"fmt"
 	"maps"
-	"os"
-	"os/exec"
 	"slices"
 	"strings"
 
 	goversion "github.com/caarlos0/go-version"
 	"github.com/goreleaser/goreleaser/v2/internal/pipe/defaults"
 	"github.com/goreleaser/goreleaser/v2/pkg/context"
+	"github.com/goreleaser/goreleaser/v2/www/docs"
 	"github.com/modelcontextprotocol/go-sdk/mcp"
 	"github.com/spf13/cobra"
 )
 
+const updatePrompt = `Let's update the goreleaser configuration to latest.
+
+We can use the goreleaser check command to grab the deprecation notices and how to fix them.
+
+If that's not enough, use the documentation resources to find out more details.
+The resource paths to look at are:
+
+- docs://deprecataions.md
+- docs://customization/{feature name}.md
+- docs://old-deprecataions.md (this one only if updating between goreleaser major versions)
+`
+
 type mcpCmd struct {
 	cmd *cobra.Command
-	bin string
 }
 
 func newMcpCmd(version goversion.Info) *mcpCmd {
@@ -31,36 +41,42 @@ func newMcpCmd(version goversion.Info) *mcpCmd {
 		Args:              cobra.NoArgs,
 		ValidArgsFunction: cobra.NoFileCompletions,
 		RunE: func(cmd *cobra.Command, _ []string) error {
-			bin, err := os.Executable()
-			if err != nil {
-				return err
-			}
-			root.bin = bin
-
 			server := mcp.NewServer(&mcp.Implementation{
 				Name:    "goreleaser",
 				Version: version.GitVersion,
 			}, nil)
 
+			server.AddPrompt(&mcp.Prompt{
+				Name:  "update_config",
+				Title: "Update GoReleaser Configuration",
+			}, func(ctx stdctx.Context, gpr *mcp.GetPromptRequest) (*mcp.GetPromptResult, error) {
+				return &mcp.GetPromptResult{
+					Messages: []*mcp.PromptMessage{
+						{Content: &mcp.TextContent{Text: updatePrompt}},
+					},
+				}, nil
+			})
+
+			server.AddResourceTemplate(&mcp.ResourceTemplate{
+				URITemplate: "docs://{f}",
+			}, func(ctx stdctx.Context, req *mcp.ReadResourceRequest) (*mcp.ReadResourceResult, error) {
+				uri := strings.TrimPrefix(req.Params.URI, "docs://")
+				bts, err := docs.FS.ReadFile(uri)
+				if err != nil {
+					return nil, mcp.ResourceNotFoundError(uri)
+				}
+				return &mcp.ReadResourceResult{
+					Contents: []*mcp.ResourceContents{{
+						URI:  req.Params.URI,
+						Text: string(bts),
+					}},
+				}, nil
+			})
+
 			mcp.AddTool(server, &mcp.Tool{
 				Name:        "check",
 				Description: "Checks a GoReleaser configuration for errors or deprecations",
 			}, root.check)
-
-			mcp.AddTool(server, &mcp.Tool{
-				Name:        "healthcheck",
-				Description: "Checks if GoReleaser has all the dependencies installed",
-			}, root.healthcheck)
-
-			mcp.AddTool(server, &mcp.Tool{
-				Name:        "build",
-				Description: "Builds the current project for the current platform",
-			}, root.build)
-
-			mcp.AddTool(server, &mcp.Tool{
-				Name:        "init",
-				Description: "Initializes GoReleaser in the current directory",
-			}, root.init)
 
 			return server.Run(cmd.Context(), &mcp.StdioTransport{})
 		},
@@ -70,48 +86,13 @@ func newMcpCmd(version goversion.Info) *mcpCmd {
 	return root
 }
 
-type (
-	initArgs   struct{}
-	initOutput struct {
-		Output string `json:"output"`
-	}
-)
-
-func (c *mcpCmd) init(ctx stdctx.Context, _ *mcp.CallToolRequest, _ initArgs) (*mcp.CallToolResult, initOutput, error) {
-	out, _ := exec.CommandContext(ctx, c.bin, "init").CombinedOutput()
-	return nil, initOutput{Output: string(out)}, nil
-}
-
-type (
-	healthcheckArgs   struct{}
-	healthcheckOutput struct {
-		Output string `json:"output"`
-	}
-)
-
-func (c *mcpCmd) healthcheck(ctx stdctx.Context, _ *mcp.CallToolRequest, _ healthcheckArgs) (*mcp.CallToolResult, healthcheckOutput, error) {
-	out, _ := exec.CommandContext(ctx, c.bin, "healthcheck").CombinedOutput()
-	return nil, healthcheckOutput{Output: string(out)}, nil
-}
-
-type (
-	buildArgs   struct{}
-	buildOutput struct {
-		Output string `json:"output"`
-	}
-)
-
-func (c *mcpCmd) build(ctx stdctx.Context, _ *mcp.CallToolRequest, _ buildArgs) (*mcp.CallToolResult, buildOutput, error) {
-	out, _ := exec.CommandContext(ctx, c.bin, "build", "--snapshot", "--clean", "--single-target", "-o", ".").CombinedOutput()
-	return nil, buildOutput{Output: string(out)}, nil
-}
-
 var instructions = map[string]string{
 	"archives.builds":                  "replace `builds` with `ids`",
 	"archives.format":                  "replace `format` with `formats` and make its value an array",
 	"archives.format_overrides.format": "replace `format` with `formats` and make its value an array",
 	"builds.gobinary":                  "rename `gobinary` to `tool`",
 	"homebrew_casks.manpage":           "replace `manpage` with `manpages`, and make its value an array",
+	"homebrew_casks.binary":            "replace `binary` with `binaries`, and make its value an array",
 	"homebrew_casks.conflicts.formula": "remove the `formula: <name>` from the `conflicts` list",
 	"kos.repository":                   "replace `repository` with `repositories`, and make its value an array",
 	"kos.sbom":                         "the value of `sbom` can only be `spdx` or `none`, set it to `spdx` if there's any other value there",
