@@ -324,6 +324,14 @@ func TestFullPipe(t *testing.T) {
 			},
 			expectedRunErrorAs: &tmpl.Error{},
 		},
+		"invalid_hooks_template": {
+			prepare: func(ctx *context.Context) {
+				ctx.Config.Casks[0].Repository.Owner = "test"
+				ctx.Config.Casks[0].Repository.Name = "test"
+				ctx.Config.Casks[0].Hooks.Pre.Install = "{{ .InvalidField }"
+			},
+			expectedRunErrorAs: &tmpl.Error{},
+		},
 		"uninstall": {
 			prepare: func(ctx *context.Context) {
 				ctx.Config.Casks[0].Repository.Owner = "test"
@@ -370,6 +378,23 @@ func TestFullPipe(t *testing.T) {
 				ctx.Config.Casks[0].URL.Verified = "https://dummyhost/download/"
 				ctx.Config.Casks[0].URL.Headers = []string{"Accept: application/octet-stream"}
 				ctx.Config.Casks[0].URL.Data = map[string]string{"payload": "hello_world"}
+			},
+		},
+		"hooks_templated": {
+			prepare: func(ctx *context.Context) {
+				ctx.Config.Casks[0].Repository.Owner = "test"
+				ctx.Config.Casks[0].Repository.Name = "test"
+				ctx.Config.Casks[0].Homepage = "https://github.com/goreleaser"
+				ctx.Config.Casks[0].Hooks = config.HomebrewCaskHooks{
+					Pre: config.HomebrewCaskHook{
+						Install:   `system_command "echo", args: ["Installing {{ .ProjectName }} version {{ .Version }}"]`,
+						Uninstall: `system_command "echo", args: ["Uninstalling {{ .ProjectName }}"]`,
+					},
+					Post: config.HomebrewCaskHook{
+						Install:   `system_command "echo", args: ["Post-install {{ .ProjectName }} {{ .Tag }}"]`,
+						Uninstall: `system_command "echo", args: ["Post-uninstall for {{ .ProjectName }}"]`,
+					},
+				}
 			},
 		},
 		"many-dependencies-and-conflicts": {
