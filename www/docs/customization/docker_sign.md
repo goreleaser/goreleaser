@@ -77,6 +77,8 @@ docker_signs:
     # By default, the stdout and stderr of the signing cmd are discarded unless
     # GoReleaser is running with `--verbose` set.
     # You can set this to true if you want them to be displayed regardless.
+    #
+    # Templates: allowed.
     output: true
 ```
 
