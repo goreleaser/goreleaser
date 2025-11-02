@@ -140,9 +140,6 @@ func (a *NixDependency) UnmarshalYAML(unmarshal func(any) error) error {
 	return nil
 }
 
-// type alias to prevent stack overflowing in the custom unmarshaler.
-type pullRequestBase PullRequestBase
-
 // UnmarshalYAML is a custom unmarshaler that accept brew deps in both the old and new format.
 func (a *PullRequestBase) UnmarshalYAML(unmarshal func(any) error) error {
 	var str string
@@ -151,7 +148,8 @@ func (a *PullRequestBase) UnmarshalYAML(unmarshal func(any) error) error {
 		return nil
 	}
 
-	var base pullRequestBase
+	type t PullRequestBase
+	var base t
 	if err := unmarshal(&base); err != nil {
 		return err
 	}
