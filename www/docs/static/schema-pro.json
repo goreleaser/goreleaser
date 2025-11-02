@@ -3913,6 +3913,9 @@
 					},
 					"url_template": {
 						"type": "string"
+					},
+					"tag": {
+						"type": "string"
 					}
 				},
 				"additionalProperties": false,

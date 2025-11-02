@@ -107,6 +107,13 @@ npms:
     # Access level: public or restricted.
     access: public
 
+    # Tag to publish the package with.
+    #
+    # Default: 'latest'.
+    # Templates: allowed.
+    # <!-- md:inline_version v2.13-unreleased -->.
+    tag: latest
+
     # Package format: tar, tgz, tar.gz, zip, or binary.
     #
     # Required: if more than one archive format is being used.
