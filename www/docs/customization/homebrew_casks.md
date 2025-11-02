@@ -168,7 +168,7 @@ homebrew_casks:
 
     # Hooks for the cask lifecycle.
     #
-    # Templates: allowed.
+    # Templates: allowed (since v2.13-unreleased).
     hooks:
       pre:
         install: |
@@ -243,23 +243,6 @@ homebrew_casks:
             system_command "/usr/bin/xattr", args: ["-dr", "com.apple.quarantine", "#{staged_path}/foo"]
           end
 ```
-
-!!! tip "Templates in hooks"
-
-    You can use GoReleaser templates in hook fields to access project
-    information dynamically:
-
-    ```yaml title=".goreleaser.yaml"
-    homebrew_casks:
-      - name: myapp
-        hooks:
-          post:
-            install: |
-              system_command "echo", args: ["Installed {{ .ProjectName }} version {{ .Version }}"]
-          pre:
-            uninstall: |
-              system_command "echo", args: ["Uninstalling {{ .ProjectName }}"]
-    ```
 
 !!! danger "What happens if I don't follow the steps above?"
 
