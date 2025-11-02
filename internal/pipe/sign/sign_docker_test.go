@@ -153,6 +153,32 @@ func TestDockerSignArtifacts(t *testing.T) {
 				},
 			},
 		},
+		"sign with templated output true": {
+			Expected: []string{"output_true_man1.sig"},
+			Signs: []config.Sign{
+				{
+					Artifacts: "manifests",
+					Stdin:     &password,
+					Signature: "output_true_${artifactID}.sig",
+					Cmd:       cmd,
+					Args:      args,
+					Output:    "true",
+				},
+			},
+		},
+		"sign with templated output false": {
+			Expected: []string{"output_false_man1.sig"},
+			Signs: []config.Sign{
+				{
+					Artifacts: "manifests",
+					Stdin:     &password,
+					Signature: "output_false_${artifactID}.sig",
+					Cmd:       cmd,
+					Args:      args,
+					Output:    "false",
+				},
+			},
+		},
 		// TODO: keyless test?
 	}
 

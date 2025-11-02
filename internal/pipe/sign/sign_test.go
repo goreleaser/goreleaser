@@ -518,6 +518,44 @@ func TestSignArtifacts(t *testing.T) {
 			signatureNames:   []string{"artifact1.sig", "artifact2.sig", "artifact3_1.0.0_linux_amd64.sig", "checksum.sig", "checksum2.sig", "artifact4_1.0.0_linux_amd64.sig", "artifact5.tar.gz.sig", "artifact5.tar.gz.sbom.sig", "package1.deb.sig"},
 			certificateNames: []string{"artifact1_honk.pem", "artifact2_honk.pem", "artifact3_1.0.0_linux_amd64_honk.pem", "checksum_honk.pem", "checksum2_honk.pem", "artifact4_1.0.0_linux_amd64_honk.pem", "artifact5_honk.pem", "artifact5.tar.gz.sbom_honk.pem", "package1_honk.pem"},
 		},
+		{
+			desc: "sign with templated output true",
+			ctx: testctx.NewWithCfg(config.Project{
+				Signs: []config.Sign{
+					{
+						Artifacts: "all",
+						Output:    "true",
+					},
+				},
+			}),
+			signaturePaths: []string{"artifact1.sig", "artifact2.sig", "artifact3.sig", "checksum.sig", "checksum2.sig", "linux_amd64/artifact4.sig", "artifact5.tar.gz.sig", "artifact5.tar.gz.sbom.sig", "package1.deb.sig"},
+			signatureNames: []string{"artifact1.sig", "artifact2.sig", "artifact3_1.0.0_linux_amd64.sig", "checksum.sig", "checksum2.sig", "artifact4_1.0.0_linux_amd64.sig", "artifact5.tar.gz.sig", "artifact5.tar.gz.sbom.sig", "package1.deb.sig"},
+		},
+		{
+			desc: "sign with templated output false",
+			ctx: testctx.NewWithCfg(config.Project{
+				Signs: []config.Sign{
+					{
+						Artifacts: "all",
+						Output:    "false",
+					},
+				},
+			}),
+			signaturePaths: []string{"artifact1.sig", "artifact2.sig", "artifact3.sig", "checksum.sig", "checksum2.sig", "linux_amd64/artifact4.sig", "artifact5.tar.gz.sig", "artifact5.tar.gz.sbom.sig", "package1.deb.sig"},
+			signatureNames: []string{"artifact1.sig", "artifact2.sig", "artifact3_1.0.0_linux_amd64.sig", "checksum.sig", "checksum2.sig", "artifact4_1.0.0_linux_amd64.sig", "artifact5.tar.gz.sig", "artifact5.tar.gz.sbom.sig", "package1.deb.sig"},
+		},
+		{
+			desc:          "sign with invalid output template",
+			expectedErrAs: &tmpl.Error{},
+			ctx: testctx.NewWithCfg(config.Project{
+				Signs: []config.Sign{
+					{
+						Artifacts: "all",
+						Output:    "{{ .blah }}",
+					},
+				},
+			}),
+		},
 	}
 
 	for _, test := range tests {
