@@ -114,7 +114,7 @@ jobs:
       - uses: crazy-max/ghaction-upx@db8cc9515a4a7ea1b312cb82fbeae6d716daf777 # v3.2.0
         with:
           install-only: true
-      - uses: cachix/install-nix-action@fd24c48048070c1be9acd18c9d369a83f0fe94d7 # v31.8.1
+      - uses: cachix/install-nix-action@456688f15bc354bef6d396e4a35f4f89d40bf2b7 # v31.8.2
         with:
           github_access_token: ${{ secrets.GITHUB_TOKEN }}
       - name: dockerhub-login

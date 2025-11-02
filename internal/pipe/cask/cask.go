@@ -252,6 +252,15 @@ func doRun(ctx *context.Context, brew config.HomebrewCask, cl client.ReleaseURLT
 		return err
 	}
 
+	if err := tmpl.New(ctx).ApplyAll(
+		&brew.Hooks.Pre.Install,
+		&brew.Hooks.Pre.Uninstall,
+		&brew.Hooks.Post.Install,
+		&brew.Hooks.Post.Uninstall,
+	); err != nil {
+		return err
+	}
+
 	ref, err := client.TemplateRef(tmpl.New(ctx).Apply, brew.Repository)
 	if err != nil {
 		return err

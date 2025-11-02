@@ -893,7 +893,7 @@ type Sign struct {
 	StdinFile   string   `yaml:"stdin_file,omitempty" json:"stdin_file,omitempty"`
 	Env         []string `yaml:"env,omitempty" json:"env,omitempty"`
 	Certificate string   `yaml:"certificate,omitempty" json:"certificate,omitempty"`
-	Output      bool     `yaml:"output,omitempty" json:"output,omitempty"`
+	Output      string   `yaml:"output,omitempty" json:"output,omitempty" jsonschema:"oneof_type=string;boolean"`
 }
 
 // BinarySign config.
@@ -908,7 +908,7 @@ type BinarySign struct {
 	StdinFile   string   `yaml:"stdin_file,omitempty" json:"stdin_file,omitempty"`
 	Env         []string `yaml:"env,omitempty" json:"env,omitempty"`
 	Certificate string   `yaml:"certificate,omitempty" json:"certificate,omitempty"`
-	Output      bool     `yaml:"output,omitempty" json:"output,omitempty"`
+	Output      string   `yaml:"output,omitempty" json:"output,omitempty" jsonschema:"oneof_type=string;boolean"`
 }
 
 type Notarize struct {
@@ -1043,6 +1043,7 @@ type Retry struct {
 }
 
 // Docker image config.
+//
 // Deprecated: use [DockerV2] instead.
 type Docker struct {
 	ID                 string   `yaml:"id,omitempty" json:"id,omitempty"`
@@ -1062,6 +1063,7 @@ type Docker struct {
 }
 
 // DockerManifest config.
+//
 // Deprecated: use [DockerV2] instead.
 type DockerManifest struct {
 	ID             string   `yaml:"id,omitempty" json:"id,omitempty"`
