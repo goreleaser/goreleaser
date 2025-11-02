@@ -567,7 +567,14 @@
 						"type": "string"
 					},
 					"output": {
-						"type": "boolean"
+						"oneOf": [
+							{
+								"type": "string"
+							},
+							{
+								"type": "boolean"
+							}
+						]
 					}
 				},
 				"additionalProperties": false,
@@ -1637,6 +1644,26 @@
 							"type": "string"
 						},
 						"type": "array"
+					},
+					"disable": {
+						"oneOf": [
+							{
+								"type": "string"
+							},
+							{
+								"type": "boolean"
+							}
+						]
+					},
+					"sbom": {
+						"oneOf": [
+							{
+								"type": "string"
+							},
+							{
+								"type": "boolean"
+							}
+						]
 					}
 				},
 				"additionalProperties": false,
@@ -2129,8 +2156,11 @@
 					"service": {
 						"type": "string"
 					},
-					"binary": {
-						"type": "string"
+					"binaries": {
+						"items": {
+							"type": "string"
+						},
+						"type": "array"
 					},
 					"manpages": {
 						"items": {
@@ -2175,6 +2205,9 @@
 						"type": "string"
 					},
 					"manpage": {
+						"type": "string"
+					},
+					"binary": {
 						"type": "string"
 					}
 				},
@@ -4999,7 +5032,14 @@
 						"type": "string"
 					},
 					"output": {
-						"type": "boolean"
+						"oneOf": [
+							{
+								"type": "string"
+							},
+							{
+								"type": "boolean"
+							}
+						]
 					}
 				},
 				"additionalProperties": false,
