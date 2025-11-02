@@ -791,9 +791,6 @@
 							}
 						]
 					},
-					"gobinary": {
-						"type": "string"
-					},
 					"tool": {
 						"type": "string"
 					},
@@ -854,6 +851,9 @@
 					},
 					"prebuilt": {
 						"$ref": "#/$defs/PreBuiltOptions"
+					},
+					"gobinary": {
+						"type": "string"
 					}
 				},
 				"additionalProperties": false,
@@ -2131,9 +2131,6 @@
 					"homepage": {
 						"type": "string"
 					},
-					"license": {
-						"type": "string"
-					},
 					"skip_upload": {
 						"oneOf": [
 							{
@@ -2194,6 +2191,9 @@
 					},
 					"zap": {
 						"$ref": "#/$defs/HomebrewCaskUninstall"
+					},
+					"license": {
+						"type": "string"
 					},
 					"alternative_names": {
 						"items": {
@@ -2595,9 +2595,6 @@
 					"user": {
 						"type": "string"
 					},
-					"repository": {
-						"type": "string"
-					},
 					"repositories": {
 						"items": {
 							"type": "string"
@@ -2672,6 +2669,9 @@
 								"type": "boolean"
 							}
 						]
+					},
+					"repository": {
+						"type": "string"
 					}
 				},
 				"additionalProperties": false,
@@ -4238,12 +4238,6 @@
 					"checksum": {
 						"$ref": "#/$defs/Checksum"
 					},
-					"dockers": {
-						"items": {
-							"$ref": "#/$defs/Docker"
-						},
-						"type": "array"
-					},
 					"dockers_v2": {
 						"items": {
 							"$ref": "#/$defs/DockerV2"
@@ -4252,12 +4246,6 @@
 					},
 					"docker_digest": {
 						"$ref": "#/$defs/DockerDigest"
-					},
-					"docker_manifests": {
-						"items": {
-							"$ref": "#/$defs/DockerManifest"
-						},
-						"type": "array"
 					},
 					"artifactories": {
 						"items": {
@@ -4437,6 +4425,18 @@
 					"brews": {
 						"items": {
 							"$ref": "#/$defs/Homebrew"
+						},
+						"type": "array"
+					},
+					"dockers": {
+						"items": {
+							"$ref": "#/$defs/Docker"
+						},
+						"type": "array"
+					},
+					"docker_manifests": {
+						"items": {
+							"$ref": "#/$defs/DockerManifest"
 						},
 						"type": "array"
 					}

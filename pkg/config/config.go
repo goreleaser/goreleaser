@@ -7,8 +7,6 @@ import (
 	"io/fs"
 	"os"
 	"time"
-
-	"github.com/goreleaser/nfpm/v2"
 )
 
 type Versioned struct {
@@ -101,9 +99,6 @@ type PullRequestBase struct {
 	Name   string `yaml:"name,omitempty" json:"name,omitempty"`
 	Branch string `yaml:"branch,omitempty" json:"branch,omitempty"`
 }
-
-// type alias to prevent stack overflowing in the custom unmarshaler.
-type pullRequestBase PullRequestBase
 
 type PullRequest struct {
 	Enabled bool            `yaml:"enabled,omitempty" json:"enabled,omitempty"`
@@ -812,14 +807,6 @@ type NFPMIPKAlternative struct {
 	LinkName string `yaml:"link_name,omitempty" json:"link_name,omitempty"`
 }
 
-func (alt NFPMIPKAlternative) ToNFP() nfpm.IPKAlternative {
-	return nfpm.IPKAlternative{
-		Priority: alt.Priority,
-		Target:   alt.Target,
-		LinkName: alt.LinkName,
-	}
-}
-
 type NFPMIPK struct {
 	ABIVersion    string               `yaml:"abi_version,omitempty" json:"abi_version,omitempty"`
 	Alternatives  []NFPMIPKAlternative `yaml:"alternatives,omitempty" json:"alternatives,omitempty"`
@@ -828,14 +815,6 @@ type NFPMIPK struct {
 	Predepends    []string             `yaml:"predepends,omitempty" json:"predepends,omitempty"`
 	Tags          []string             `yaml:"tags,omitempty" json:"tags,omitempty"`
 	Fields        map[string]string    `yaml:"fields,omitempty" json:"fields,omitempty"`
-}
-
-func (ipk NFPMIPK) ToNFPAlts() []nfpm.IPKAlternative {
-	alts := make([]nfpm.IPKAlternative, len(ipk.Alternatives))
-	for i, alt := range ipk.Alternatives {
-		alts[i] = alt.ToNFP()
-	}
-	return alts
 }
 
 // NFPMOverridables is used to specify per package format settings.
