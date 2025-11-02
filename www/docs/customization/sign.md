@@ -114,7 +114,7 @@ signs:
     # GoReleaser is running with `--verbose` set.
     # You can set this to true if you want them to be displayed regardless.
     #
-    # Templates: allowed.
+    # Templates: allowed (since v2.13-unreleased).
     output: true
 ```
 
