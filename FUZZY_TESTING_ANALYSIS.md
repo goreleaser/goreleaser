@@ -2,6 +2,14 @@
 
 This document identifies the top ten places in the GoReleaser codebase that would most benefit from fuzzy testing.
 
+## Quick Links
+
+- **Create Issues**: See [HOW_TO_CREATE_ISSUES.md](HOW_TO_CREATE_ISSUES.md) for instructions on creating the GitHub issues
+- **Issue Templates**: Browse [.github/ISSUE_TEMPLATES_FUZZING/](.github/ISSUE_TEMPLATES_FUZZING/) for detailed issue specifications
+- **Automation Scripts**: 
+  - Python: [scripts/create-fuzzing-issues.py](scripts/create-fuzzing-issues.py)
+  - Bash: [scripts/create-fuzzing-issues.sh](scripts/create-fuzzing-issues.sh)
+
 ## Background
 
 Fuzzy testing (or fuzz testing) is a software testing technique that involves providing invalid, unexpected, or random data as inputs to a program. GoReleaser already has some fuzzy tests:
