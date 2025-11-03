@@ -342,7 +342,7 @@ func dataFor(ctx *context.Context, cfg config.AUR, cl client.ReleaseURLTemplater
 		}
 
 		releasePackage := releasePackage{
-			DownloadURL: url,
+			DownloadURL: strings.ReplaceAll(url, result.Version, "${pkgver}"),
 			SHA256:      sum,
 			Arch:        toPkgBuildArch(art.Goarch + art.Goarm),
 			Format:      art.Format(),
