@@ -20,6 +20,7 @@ import (
 	"github.com/goreleaser/goreleaser/v2/internal/pipe/dockerdigest"
 	"github.com/goreleaser/goreleaser/v2/internal/pipe/ko"
 	"github.com/goreleaser/goreleaser/v2/internal/pipe/krew"
+	"github.com/goreleaser/goreleaser/v2/internal/pipe/mcp"
 	"github.com/goreleaser/goreleaser/v2/internal/pipe/milestone"
 	"github.com/goreleaser/goreleaser/v2/internal/pipe/nix"
 	"github.com/goreleaser/goreleaser/v2/internal/pipe/release"
@@ -66,6 +67,7 @@ func New() Pipe {
 			krew.Pipe{},
 			scoop.Pipe{},
 			chocolatey.Pipe{},
+			mcp.Pipe{},
 			milestone.Pipe{},
 			custompublishers.Pipe{},
 		},
