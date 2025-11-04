@@ -19,14 +19,14 @@ import (
 
 // Pipe for MCP.
 type Pipe struct {
-	registry     string
-	authProvider func(method, token, registryURL string) (auth.Provider, error)
+	registry       string
+	authProviderFn func(method, token, registryURL string) (auth.Provider, error)
 }
 
 func New() Pipe {
 	return Pipe{
-		registry:     proto.DefaultRegistryURL,
-		authProvider: authProvider,
+		registry:       proto.DefaultRegistryURL,
+		authProviderFn: authProvider,
 	}
 }
 
@@ -60,7 +60,7 @@ func (p Pipe) Publish(ctx *context.Context) error {
 		return fmt.Errorf("could not apply templates: %w", err)
 	}
 
-	authp, err := p.authProvider(
+	provider, err := p.authProviderFn(
 		mcp.Auth.Type,
 		mcp.Auth.Token,
 		p.registry,
@@ -68,10 +68,10 @@ func (p Pipe) Publish(ctx *context.Context) error {
 	if err != nil {
 		return fmt.Errorf("could not login: %w", err)
 	}
-	if err := authp.Login(ctx); err != nil {
+	if err := provider.Login(ctx); err != nil {
 		return fmt.Errorf("could not login: %w", err)
 	}
-	token, err := authp.GetToken(ctx)
+	token, err := provider.GetToken(ctx)
 	if err != nil {
 		return fmt.Errorf("could not get token: %w", err)
 	}
@@ -94,6 +94,7 @@ func (p Pipe) Publish(ctx *context.Context) error {
 		if err := tmpl.New(ctx).ApplyAll(
 			&pkg.Identifier,
 		); err != nil {
+			return fmt.Errorf("could not apply templates: %w", err)
 		}
 		serverJSON.Packages = append(serverJSON.Packages, model.Package{
 			RegistryType: pkg.RegistryType,
