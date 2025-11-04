@@ -67,7 +67,7 @@ func New() Pipe {
 			krew.Pipe{},
 			scoop.Pipe{},
 			chocolatey.Pipe{},
-			mcp.Pipe{},
+			mcp.New(),
 			milestone.Pipe{},
 			custompublishers.Pipe{},
 		},

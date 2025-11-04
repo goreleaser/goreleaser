@@ -19,16 +19,19 @@ import (
 
 // Pipe for MCP.
 type Pipe struct {
-	registry string
+	registry     string
+	authProvider func(method, token, registryURL string) (auth.Provider, error)
 }
 
 func New() Pipe {
 	return Pipe{
-		registry: proto.DefaultRegistryURL,
+		registry:     proto.DefaultRegistryURL,
+		authProvider: authProvider,
 	}
 }
 
-func (Pipe) String() string { return "mcp" }
+func (Pipe) String() string                 { return "mcp" }
+func (Pipe) Skip(ctx *context.Context) bool { return skips.Any(ctx, skips.MCP) }
 
 func (Pipe) Default(ctx *context.Context) error {
 	mcp := &ctx.Config.MCP
@@ -40,7 +43,6 @@ func (Pipe) Default(ctx *context.Context) error {
 	}
 	return nil
 }
-func (Pipe) Skip(ctx *context.Context) bool { return skips.Any(ctx, skips.MCP) }
 
 func (p Pipe) Publish(ctx *context.Context) error {
 	mcp := ctx.Config.MCP
@@ -58,7 +60,7 @@ func (p Pipe) Publish(ctx *context.Context) error {
 		return fmt.Errorf("could not apply templates: %w", err)
 	}
 
-	authp, err := authProvider(
+	authp, err := p.authProvider(
 		mcp.Auth.Type,
 		mcp.Auth.Token,
 		p.registry,
@@ -70,8 +72,8 @@ func (p Pipe) Publish(ctx *context.Context) error {
 		return fmt.Errorf("could not login: %w", err)
 	}
 	token, err := authp.GetToken(ctx)
-	if err := authp.Login(ctx); err != nil {
-		return fmt.Errorf("could not login: %w", err)
+	if err != nil {
+		return fmt.Errorf("could not get token: %w", err)
 	}
 
 	serverJSON := apiv0.ServerJSON{
