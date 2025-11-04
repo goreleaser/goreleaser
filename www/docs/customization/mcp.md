@@ -134,7 +134,7 @@ mcp:
 GoReleaser will generate a `server.json` conforming to the
 [MCP Schema](https://static.modelcontextprotocol.io/schemas/2025-10-17/server.schema.json).
 
-Then, it'll login used the provided authentication details.
+Then, it'll login using the provided authentication details.
 
 Finally, it'll publish the server.json to the registry.
 
