@@ -121,6 +121,7 @@ var validLicenses = []string{
 	"generaluser",
 	"gfl",
 	"gfsl",
+	"gnuplot",
 	"gpl1Only",
 	"gpl1Plus",
 	"gpl2Only",
