@@ -124,7 +124,6 @@ goreleaser release
 		newDocsCmd().cmd,
 		newManCmd().cmd,
 		newSchemaCmd().cmd,
-		newMcpCmd(version).cmd,
 	)
 	root.cmd = cmd
 	return root
