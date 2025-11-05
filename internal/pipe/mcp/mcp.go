@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+	"os"
 
 	"github.com/caarlos0/log"
 	"github.com/goreleaser/goreleaser/v2/internal/skips"
@@ -17,10 +18,15 @@ import (
 	"github.com/modelcontextprotocol/registry/pkg/model"
 )
 
+const (
+	gitHubTokenFilePath   = ".mcpregistry_github_token"   // #nosec:G101
+	registryTokenFilePath = ".mcpregistry_registry_token" // #nosec:G101
+)
+
 // Pipe for MCP.
 type Pipe struct {
 	registry       string
-	authProviderFn func(method, token, registryURL string) (auth.Provider, error)
+	authProviderFn func(registryURL, method, token string) (auth.Provider, error)
 }
 
 func New() Pipe {
@@ -61,9 +67,9 @@ func (p Pipe) Publish(ctx *context.Context) error {
 	}
 
 	provider, err := p.authProviderFn(
+		p.registry,
 		mcp.Auth.Type,
 		mcp.Auth.Token,
-		p.registry,
 	)
 	if err != nil {
 		return fmt.Errorf("could not login: %w", err)
@@ -71,6 +77,11 @@ func (p Pipe) Publish(ctx *context.Context) error {
 	if err := provider.Login(ctx); err != nil {
 		return fmt.Errorf("could not login: %w", err)
 	}
+	defer func() {
+		// logout...
+		_ = os.Remove(gitHubTokenFilePath)
+		_ = os.Remove(registryTokenFilePath)
+	}()
 	token, err := provider.GetToken(ctx)
 	if err != nil {
 		return fmt.Errorf("could not get token: %w", err)
@@ -96,10 +107,14 @@ func (p Pipe) Publish(ctx *context.Context) error {
 		); err != nil {
 			return fmt.Errorf("could not apply templates: %w", err)
 		}
+		version := ctx.Version
+		if pkg.RegistryType == "oci" {
+			version = ""
+		}
 		serverJSON.Packages = append(serverJSON.Packages, model.Package{
 			RegistryType: pkg.RegistryType,
 			Identifier:   pkg.Identifier,
-			Version:      ctx.Version,
+			Version:      version,
 			Transport: model.Transport{
 				Type: pkg.Transport.Type,
 			},
@@ -111,7 +126,7 @@ func (p Pipe) Publish(ctx *context.Context) error {
 		return fmt.Errorf("could not serialize request: %w", err)
 	}
 
-	publishURL := p.registry + "v0/publish"
+	publishURL := p.registry + "/v0/publish"
 
 	req, err := http.NewRequestWithContext(ctx, http.MethodPost, publishURL, bytes.NewBuffer(jsonData))
 	if err != nil {
@@ -149,7 +164,7 @@ func (p Pipe) Publish(ctx *context.Context) error {
 	return nil
 }
 
-func authProvider(method, token, registryURL string) (auth.Provider, error) {
+func authProvider(registryURL, method, token string) (auth.Provider, error) {
 	switch method {
 	case proto.MethodGitHub:
 		return auth.NewGitHubATProvider(true, registryURL, token), nil
