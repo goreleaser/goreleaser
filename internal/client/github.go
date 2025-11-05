@@ -323,13 +323,9 @@ func (c *githubClient) CreateFile(
 				return fmt.Errorf("could not get ref %q: %w", "refs/heads/"+defBranch, err)
 			}
 
-			sha := ""
-			if defRef.Object.SHA != nil {
-				sha = *defRef.Object.SHA
-			}
 			if _, _, err := c.client.Git.CreateRef(ctx, repo.Owner, repo.Name, github.CreateRef{
 				Ref: "refs/heads/" + branch,
-				SHA: sha,
+				SHA: defRef.Object.GetSHA(),
 			}); err != nil {
 				rerr := new(github.ErrorResponse)
 				if !errors.As(err, &rerr) || rerr.Message != "Reference already exists" {
