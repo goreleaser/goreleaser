@@ -219,7 +219,7 @@ func TestGitHubGetDefaultBranch(t *testing.T) {
 		w.WriteHeader(http.StatusOK)
 		fmt.Fprint(w, `{"default_branch": "main"}`)
 	}))
-	defer srv.Close()
+	t.Cleanup(srv.Close)
 
 	ctx := testctx.WrapWithCfg(t.Context(), config.Project{
 		GitHubURLs: config.GitHubURLs{
@@ -249,7 +249,7 @@ func TestGitHubGetDefaultBranchErr(t *testing.T) {
 		w.WriteHeader(http.StatusNotImplemented)
 		fmt.Fprint(w, "{}")
 	}))
-	defer srv.Close()
+	t.Cleanup(srv.Close)
 
 	ctx := testctx.WrapWithCfg(t.Context(), config.Project{
 		GitHubURLs: config.GitHubURLs{
@@ -287,7 +287,7 @@ func TestGitHubChangelog(t *testing.T) {
 			return
 		}
 	}))
-	defer srv.Close()
+	t.Cleanup(srv.Close)
 
 	ctx := testctx.WrapWithCfg(t.Context(), config.Project{
 		GitHubURLs: config.GitHubURLs{
@@ -334,7 +334,7 @@ func TestGitHubReleaseNotes(t *testing.T) {
 			return
 		}
 	}))
-	defer srv.Close()
+	t.Cleanup(srv.Close)
 
 	ctx := testctx.WrapWithCfg(t.Context(), config.Project{
 		GitHubURLs: config.GitHubURLs{
@@ -367,7 +367,7 @@ func TestGitHubReleaseNotesError(t *testing.T) {
 			return
 		}
 	}))
-	defer srv.Close()
+	t.Cleanup(srv.Close)
 
 	ctx := testctx.WrapWithCfg(t.Context(), config.Project{
 		GitHubURLs: config.GitHubURLs{
@@ -407,7 +407,7 @@ func TestGitHubCloseMilestone(t *testing.T) {
 			return
 		}
 	}))
-	defer srv.Close()
+	t.Cleanup(srv.Close)
 
 	ctx := testctx.WrapWithCfg(t.Context(), config.Project{
 		GitHubURLs: config.GitHubURLs{
@@ -465,7 +465,7 @@ func TestGitHubOpenPullRequestCrossRepo(t *testing.T) {
 
 		t.Error("unhandled request: " + r.URL.Path)
 	}))
-	defer srv.Close()
+	t.Cleanup(srv.Close)
 
 	ctx := testctx.WrapWithCfg(t.Context(), config.Project{
 		GitHubURLs: config.GitHubURLs{
@@ -519,7 +519,7 @@ func TestGitHubOpenPullRequestHappyPath(t *testing.T) {
 
 		t.Error("unhandled request: " + r.URL.Path)
 	}))
-	defer srv.Close()
+	t.Cleanup(srv.Close)
 
 	ctx := testctx.WrapWithCfg(t.Context(), config.Project{
 		GitHubURLs: config.GitHubURLs{
@@ -578,7 +578,7 @@ func TestGitHubOpenPullRequestNoBaseBranchDraft(t *testing.T) {
 
 		t.Error("unhandled request: " + r.URL.Path)
 	}))
-	defer srv.Close()
+	t.Cleanup(srv.Close)
 
 	ctx := testctx.WrapWithCfg(t.Context(), config.Project{
 		GitHubURLs: config.GitHubURLs{
@@ -625,7 +625,7 @@ func TestGitHubOpenPullRequestPRExists(t *testing.T) {
 
 		t.Error("unhandled request: " + r.URL.Path)
 	}))
-	defer srv.Close()
+	t.Cleanup(srv.Close)
 
 	ctx := testctx.WrapWithCfg(t.Context(), config.Project{
 		GitHubURLs: config.GitHubURLs{
@@ -676,7 +676,7 @@ func TestGitHubOpenPullRequestBaseEmpty(t *testing.T) {
 
 		t.Error("unhandled request: " + r.URL.Path)
 	}))
-	defer srv.Close()
+	t.Cleanup(srv.Close)
 
 	ctx := testctx.WrapWithCfg(t.Context(), config.Project{
 		GitHubURLs: config.GitHubURLs{
@@ -727,7 +727,7 @@ func TestGitHubOpenPullRequestHeadEmpty(t *testing.T) {
 
 		t.Error("unhandled request: " + r.URL.Path)
 	}))
-	defer srv.Close()
+	t.Cleanup(srv.Close)
 
 	ctx := testctx.WrapWithCfg(t.Context(), config.Project{
 		GitHubURLs: config.GitHubURLs{
@@ -773,7 +773,7 @@ func TestGitHubCreateFileHappyPathCreate(t *testing.T) {
 
 		t.Error("unhandled request: " + r.URL.Path)
 	}))
-	defer srv.Close()
+	t.Cleanup(srv.Close)
 
 	ctx := testctx.WrapWithCfg(t.Context(), config.Project{
 		GitHubURLs: config.GitHubURLs{
@@ -819,7 +819,7 @@ func TestGitHubCreateFileHappyPathUpdate(t *testing.T) {
 
 		t.Error("unhandled request: " + r.URL.Path)
 	}))
-	defer srv.Close()
+	t.Cleanup(srv.Close)
 
 	ctx := testctx.WrapWithCfg(t.Context(), config.Project{
 		GitHubURLs: config.GitHubURLs{
@@ -880,7 +880,7 @@ func TestGitHubCreateFileFeatureBranchAlreadyExists(t *testing.T) {
 
 		t.Error("unhandled request: " + r.Method + " " + r.URL.Path)
 	}))
-	defer srv.Close()
+	t.Cleanup(srv.Close)
 
 	ctx := testctx.WrapWithCfg(t.Context(), config.Project{
 		GitHubURLs: config.GitHubURLs{
@@ -941,7 +941,7 @@ func TestGitHubCreateFileFeatureBranchDoesNotExist(t *testing.T) {
 
 		t.Error("unhandled request: " + r.Method + " " + r.URL.Path)
 	}))
-	defer srv.Close()
+	t.Cleanup(srv.Close)
 
 	ctx := testctx.WrapWithCfg(t.Context(), config.Project{
 		GitHubURLs: config.GitHubURLs{
@@ -988,7 +988,7 @@ func TestGitHubCreateFileFeatureBranchNilObject(t *testing.T) {
 
 		t.Error("unhandled request: " + r.Method + " " + r.URL.Path)
 	}))
-	defer srv.Close()
+	t.Cleanup(srv.Close)
 
 	ctx := testctx.WrapWithCfg(t.Context(), config.Project{
 		GitHubURLs: config.GitHubURLs{
@@ -1031,7 +1031,7 @@ func TestGitHubCheckRateLimit(t *testing.T) {
 		}
 		t.Error("unhandled request: " + r.Method + " " + r.URL.Path)
 	}))
-	defer srv.Close()
+	t.Cleanup(srv.Close)
 
 	ctx := testctx.WrapWithCfg(t.Context(), config.Project{
 		GitHubURLs: config.GitHubURLs{
@@ -1071,7 +1071,7 @@ func TestGitHubCreateRelease(t *testing.T) {
 
 		t.Error("unhandled request: " + r.Method + " " + r.URL.Path)
 	}))
-	defer srv.Close()
+	t.Cleanup(srv.Close)
 
 	ctx := testctx.WrapWithCfg(t.Context(),
 		config.Project{
@@ -1139,7 +1139,7 @@ func TestGitHubCreateReleaseDeleteExistingDraft(t *testing.T) {
 
 		t.Error("unhandled request: " + r.Method + " " + r.URL.Path)
 	}))
-	defer srv.Close()
+	t.Cleanup(srv.Close)
 
 	ctx := testctx.WrapWithCfg(t.Context(),
 		config.Project{
@@ -1197,7 +1197,7 @@ func TestGitHubCreateReleaseUpdateExisting(t *testing.T) {
 
 		t.Error("unhandled request: " + r.Method + " " + r.URL.Path)
 	}))
-	defer srv.Close()
+	t.Cleanup(srv.Close)
 
 	ctx := testctx.WrapWithCfg(t.Context(),
 		config.Project{
@@ -1258,7 +1258,7 @@ func TestGitHubCreateReleaseUseExistingDraft(t *testing.T) {
 
 		t.Error("unhandled request: " + r.Method + " " + r.URL.Path)
 	}))
-	defer srv.Close()
+	t.Cleanup(srv.Close)
 
 	ctx := testctx.WrapWithCfg(t.Context(),
 		config.Project{
