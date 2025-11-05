@@ -13,7 +13,7 @@ import (
 	"text/template"
 	"time"
 
-	"github.com/google/go-github/v74/github"
+	"github.com/google/go-github/v77/github"
 	"github.com/goreleaser/goreleaser/v2/internal/artifact"
 	"github.com/goreleaser/goreleaser/v2/internal/testctx"
 	"github.com/goreleaser/goreleaser/v2/internal/testlib"
@@ -26,7 +26,7 @@ import (
 func TestNewGitHubClient(t *testing.T) {
 	t.Run("good urls", func(t *testing.T) {
 		githubURL := "https://github.mycompany.com"
-		ctx := testctx.NewWithCfg(config.Project{
+		ctx := testctx.WrapWithCfg(t.Context(), config.Project{
 			GitHubURLs: config.GitHubURLs{
 				API:    githubURL + "/api",
 				Upload: githubURL + "/upload",
@@ -40,7 +40,7 @@ func TestNewGitHubClient(t *testing.T) {
 	})
 
 	t.Run("bad api url", func(t *testing.T) {
-		ctx := testctx.NewWithCfg(config.Project{
+		ctx := testctx.WrapWithCfg(t.Context(), config.Project{
 			GitHubURLs: config.GitHubURLs{
 				API:    "://github.mycompany.com/api",
 				Upload: "https://github.mycompany.com/upload",
@@ -52,7 +52,7 @@ func TestNewGitHubClient(t *testing.T) {
 	})
 
 	t.Run("bad upload url", func(t *testing.T) {
-		ctx := testctx.NewWithCfg(config.Project{
+		ctx := testctx.WrapWithCfg(t.Context(), config.Project{
 			GitHubURLs: config.GitHubURLs{
 				API:    "https://github.mycompany.com/api",
 				Upload: "not a url:4994",
@@ -65,7 +65,7 @@ func TestNewGitHubClient(t *testing.T) {
 
 	t.Run("template", func(t *testing.T) {
 		githubURL := "https://github.mycompany.com"
-		ctx := testctx.NewWithCfg(config.Project{
+		ctx := testctx.WrapWithCfg(t.Context(), config.Project{
 			Env: []string{
 				fmt.Sprintf("GORELEASER_TEST_GITHUB_URLS_API=%s/api", githubURL),
 				fmt.Sprintf("GORELEASER_TEST_GITHUB_URLS_UPLOAD=%s/upload", githubURL),
@@ -83,7 +83,7 @@ func TestNewGitHubClient(t *testing.T) {
 	})
 
 	t.Run("template invalid api", func(t *testing.T) {
-		ctx := testctx.NewWithCfg(config.Project{
+		ctx := testctx.WrapWithCfg(t.Context(), config.Project{
 			GitHubURLs: config.GitHubURLs{
 				API: "{{ .Env.GORELEASER_NOT_EXISTS }}",
 			},
@@ -94,7 +94,7 @@ func TestNewGitHubClient(t *testing.T) {
 	})
 
 	t.Run("template invalid upload", func(t *testing.T) {
-		ctx := testctx.NewWithCfg(config.Project{
+		ctx := testctx.WrapWithCfg(t.Context(), config.Project{
 			GitHubURLs: config.GitHubURLs{
 				API:    "https://github.mycompany.com/api",
 				Upload: "{{ .Env.GORELEASER_NOT_EXISTS }}",
@@ -106,7 +106,7 @@ func TestNewGitHubClient(t *testing.T) {
 	})
 
 	t.Run("template invalid", func(t *testing.T) {
-		ctx := testctx.NewWithCfg(config.Project{
+		ctx := testctx.WrapWithCfg(t.Context(), config.Project{
 			GitHubURLs: config.GitHubURLs{
 				API: "{{.dddddddddd",
 			},
@@ -118,7 +118,7 @@ func TestNewGitHubClient(t *testing.T) {
 }
 
 func TestGitHubUploadReleaseIDNotInt(t *testing.T) {
-	ctx := testctx.New()
+	ctx := testctx.Wrap(t.Context())
 	client, err := newGitHub(ctx, ctx.Token)
 	require.NoError(t, err)
 
@@ -160,7 +160,7 @@ func TestGitHubReleaseURLTemplate(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			ctx := testctx.NewWithCfg(config.Project{
+			ctx := testctx.WrapWithCfg(t.Context(), config.Project{
 				Env: []string{
 					"GORELEASER_TEST_GITHUB_URLS_DOWNLOAD=https://github.mycompany.com",
 				},
@@ -190,7 +190,7 @@ func TestGitHubReleaseURLTemplate(t *testing.T) {
 }
 
 func TestGitHubCreateReleaseWrongNameTemplate(t *testing.T) {
-	ctx := testctx.NewWithCfg(config.Project{
+	ctx := testctx.WrapWithCfg(t.Context(), config.Project{
 		Release: config.Release{
 			NameTemplate: "{{.dddddddddd",
 		},
@@ -221,7 +221,7 @@ func TestGitHubGetDefaultBranch(t *testing.T) {
 	}))
 	defer srv.Close()
 
-	ctx := testctx.NewWithCfg(config.Project{
+	ctx := testctx.WrapWithCfg(t.Context(), config.Project{
 		GitHubURLs: config.GitHubURLs{
 			API: srv.URL + "/",
 		},
@@ -251,7 +251,7 @@ func TestGitHubGetDefaultBranchErr(t *testing.T) {
 	}))
 	defer srv.Close()
 
-	ctx := testctx.NewWithCfg(config.Project{
+	ctx := testctx.WrapWithCfg(t.Context(), config.Project{
 		GitHubURLs: config.GitHubURLs{
 			API: srv.URL + "/",
 		},
@@ -289,7 +289,7 @@ func TestGitHubChangelog(t *testing.T) {
 	}))
 	defer srv.Close()
 
-	ctx := testctx.NewWithCfg(config.Project{
+	ctx := testctx.WrapWithCfg(t.Context(), config.Project{
 		GitHubURLs: config.GitHubURLs{
 			API: srv.URL + "/",
 		},
@@ -336,7 +336,7 @@ func TestGitHubReleaseNotes(t *testing.T) {
 	}))
 	defer srv.Close()
 
-	ctx := testctx.NewWithCfg(config.Project{
+	ctx := testctx.WrapWithCfg(t.Context(), config.Project{
 		GitHubURLs: config.GitHubURLs{
 			API: srv.URL + "/",
 		},
@@ -369,7 +369,7 @@ func TestGitHubReleaseNotesError(t *testing.T) {
 	}))
 	defer srv.Close()
 
-	ctx := testctx.NewWithCfg(config.Project{
+	ctx := testctx.WrapWithCfg(t.Context(), config.Project{
 		GitHubURLs: config.GitHubURLs{
 			API: srv.URL + "/",
 		},
@@ -409,7 +409,7 @@ func TestGitHubCloseMilestone(t *testing.T) {
 	}))
 	defer srv.Close()
 
-	ctx := testctx.NewWithCfg(config.Project{
+	ctx := testctx.WrapWithCfg(t.Context(), config.Project{
 		GitHubURLs: config.GitHubURLs{
 			API: srv.URL + "/",
 		},
@@ -467,7 +467,7 @@ func TestGitHubOpenPullRequestCrossRepo(t *testing.T) {
 	}))
 	defer srv.Close()
 
-	ctx := testctx.NewWithCfg(config.Project{
+	ctx := testctx.WrapWithCfg(t.Context(), config.Project{
 		GitHubURLs: config.GitHubURLs{
 			API: srv.URL + "/",
 		},
@@ -521,7 +521,7 @@ func TestGitHubOpenPullRequestHappyPath(t *testing.T) {
 	}))
 	defer srv.Close()
 
-	ctx := testctx.NewWithCfg(config.Project{
+	ctx := testctx.WrapWithCfg(t.Context(), config.Project{
 		GitHubURLs: config.GitHubURLs{
 			API: srv.URL + "/",
 		},
@@ -580,7 +580,7 @@ func TestGitHubOpenPullRequestNoBaseBranchDraft(t *testing.T) {
 	}))
 	defer srv.Close()
 
-	ctx := testctx.NewWithCfg(config.Project{
+	ctx := testctx.WrapWithCfg(t.Context(), config.Project{
 		GitHubURLs: config.GitHubURLs{
 			API: srv.URL + "/",
 		},
@@ -627,7 +627,7 @@ func TestGitHubOpenPullRequestPRExists(t *testing.T) {
 	}))
 	defer srv.Close()
 
-	ctx := testctx.NewWithCfg(config.Project{
+	ctx := testctx.WrapWithCfg(t.Context(), config.Project{
 		GitHubURLs: config.GitHubURLs{
 			API: srv.URL + "/",
 		},
@@ -678,7 +678,7 @@ func TestGitHubOpenPullRequestBaseEmpty(t *testing.T) {
 	}))
 	defer srv.Close()
 
-	ctx := testctx.NewWithCfg(config.Project{
+	ctx := testctx.WrapWithCfg(t.Context(), config.Project{
 		GitHubURLs: config.GitHubURLs{
 			API: srv.URL + "/",
 		},
@@ -729,7 +729,7 @@ func TestGitHubOpenPullRequestHeadEmpty(t *testing.T) {
 	}))
 	defer srv.Close()
 
-	ctx := testctx.NewWithCfg(config.Project{
+	ctx := testctx.WrapWithCfg(t.Context(), config.Project{
 		GitHubURLs: config.GitHubURLs{
 			API: srv.URL + "/",
 		},
@@ -775,7 +775,7 @@ func TestGitHubCreateFileHappyPathCreate(t *testing.T) {
 	}))
 	defer srv.Close()
 
-	ctx := testctx.NewWithCfg(config.Project{
+	ctx := testctx.WrapWithCfg(t.Context(), config.Project{
 		GitHubURLs: config.GitHubURLs{
 			API: srv.URL + "/",
 		},
@@ -821,7 +821,7 @@ func TestGitHubCreateFileHappyPathUpdate(t *testing.T) {
 	}))
 	defer srv.Close()
 
-	ctx := testctx.NewWithCfg(config.Project{
+	ctx := testctx.WrapWithCfg(t.Context(), config.Project{
 		GitHubURLs: config.GitHubURLs{
 			API: srv.URL + "/",
 		},
@@ -882,7 +882,7 @@ func TestGitHubCreateFileFeatureBranchAlreadyExists(t *testing.T) {
 	}))
 	defer srv.Close()
 
-	ctx := testctx.NewWithCfg(config.Project{
+	ctx := testctx.WrapWithCfg(t.Context(), config.Project{
 		GitHubURLs: config.GitHubURLs{
 			API: srv.URL + "/",
 		},
@@ -943,7 +943,7 @@ func TestGitHubCreateFileFeatureBranchDoesNotExist(t *testing.T) {
 	}))
 	defer srv.Close()
 
-	ctx := testctx.NewWithCfg(config.Project{
+	ctx := testctx.WrapWithCfg(t.Context(), config.Project{
 		GitHubURLs: config.GitHubURLs{
 			API: srv.URL + "/",
 		},
@@ -983,7 +983,7 @@ func TestGitHubCheckRateLimit(t *testing.T) {
 	}))
 	defer srv.Close()
 
-	ctx := testctx.NewWithCfg(config.Project{
+	ctx := testctx.WrapWithCfg(t.Context(), config.Project{
 		GitHubURLs: config.GitHubURLs{
 			API: srv.URL + "/",
 		},
@@ -1023,7 +1023,7 @@ func TestGitHubCreateRelease(t *testing.T) {
 	}))
 	defer srv.Close()
 
-	ctx := testctx.NewWithCfg(
+	ctx := testctx.WrapWithCfg(t.Context(),
 		config.Project{
 			GitHubURLs: config.GitHubURLs{
 				API: srv.URL + "/",
@@ -1091,7 +1091,7 @@ func TestGitHubCreateReleaseDeleteExistingDraft(t *testing.T) {
 	}))
 	defer srv.Close()
 
-	ctx := testctx.NewWithCfg(
+	ctx := testctx.WrapWithCfg(t.Context(),
 		config.Project{
 			GitHubURLs: config.GitHubURLs{
 				API: srv.URL + "/",
@@ -1149,7 +1149,7 @@ func TestGitHubCreateReleaseUpdateExisting(t *testing.T) {
 	}))
 	defer srv.Close()
 
-	ctx := testctx.NewWithCfg(
+	ctx := testctx.WrapWithCfg(t.Context(),
 		config.Project{
 			GitHubURLs: config.GitHubURLs{
 				API: srv.URL + "/",
@@ -1210,7 +1210,7 @@ func TestGitHubCreateReleaseUseExistingDraft(t *testing.T) {
 	}))
 	defer srv.Close()
 
-	ctx := testctx.NewWithCfg(
+	ctx := testctx.WrapWithCfg(t.Context(),
 		config.Project{
 			GitHubURLs: config.GitHubURLs{
 				API: srv.URL + "/",
