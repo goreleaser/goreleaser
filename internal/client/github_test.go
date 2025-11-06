@@ -1287,5 +1287,128 @@ func TestGitHubCreateReleaseUseExistingDraft(t *testing.T) {
 	require.Equal(t, "1", release)
 }
 
+func TestGitHubCreateFileWithGitHubAppToken(t *testing.T) {
+	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		defer r.Body.Close()
+
+		if r.URL.Path == "/repos/someone/something" {
+			w.WriteHeader(http.StatusOK)
+			fmt.Fprint(w, `{"default_branch": "main"}`)
+			return
+		}
+
+		if r.URL.Path == "/repos/someone/something/contents/file.txt" && r.Method == http.MethodGet {
+			w.WriteHeader(http.StatusNotFound)
+			return
+		}
+
+		if r.URL.Path == "/repos/someone/something/contents/file.txt" && r.Method == http.MethodPut {
+			// Verify that committer is not set in the request
+			body, err := io.ReadAll(r.Body)
+			require.NoError(t, err)
+
+			var reqData map[string]interface{}
+			err = json.Unmarshal(body, &reqData)
+			require.NoError(t, err)
+
+			// Verify committer is not present when using GitHub App token
+			_, hasCommitter := reqData["committer"]
+			require.False(t, hasCommitter, "committer should not be set when using GitHub App token")
+
+			w.WriteHeader(http.StatusOK)
+			return
+		}
+
+		if r.URL.Path == "/rate_limit" {
+			w.WriteHeader(http.StatusOK)
+			fmt.Fprint(w, `{"resources":{"core":{"remaining":120}}}`)
+			return
+		}
+
+		t.Error("unhandled request: " + r.URL.Path)
+	}))
+	t.Cleanup(srv.Close)
+
+	ctx := testctx.WrapWithCfg(t.Context(), config.Project{
+		GitHubURLs: config.GitHubURLs{
+			API: srv.URL + "/",
+		},
+	})
+	client, err := newGitHub(ctx, "test-token")
+	require.NoError(t, err)
+	repo := Repo{
+		Owner: "someone",
+		Name:  "something",
+	}
+
+	require.NoError(t, client.CreateFile(ctx, config.CommitAuthor{
+		UseGitHubAppToken: true,
+	}, repo, []byte("content"), "file.txt", "message"))
+}
+
+func TestGitHubCreateFileWithoutGitHubAppToken(t *testing.T) {
+	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		defer r.Body.Close()
+
+		if r.URL.Path == "/repos/someone/something" {
+			w.WriteHeader(http.StatusOK)
+			fmt.Fprint(w, `{"default_branch": "main"}`)
+			return
+		}
+
+		if r.URL.Path == "/repos/someone/something/contents/file.txt" && r.Method == http.MethodGet {
+			w.WriteHeader(http.StatusNotFound)
+			return
+		}
+
+		if r.URL.Path == "/repos/someone/something/contents/file.txt" && r.Method == http.MethodPut {
+			// Verify that committer is set in the request
+			body, err := io.ReadAll(r.Body)
+			require.NoError(t, err)
+
+			var reqData map[string]interface{}
+			err = json.Unmarshal(body, &reqData)
+			require.NoError(t, err)
+
+			// Verify committer is present when not using GitHub App token
+			committer, hasCommitter := reqData["committer"]
+			require.True(t, hasCommitter, "committer should be set when not using GitHub App token")
+			
+			committerMap := committer.(map[string]interface{})
+			require.Equal(t, "test-author", committerMap["name"])
+			require.Equal(t, "test@example.com", committerMap["email"])
+
+			w.WriteHeader(http.StatusOK)
+			return
+		}
+
+		if r.URL.Path == "/rate_limit" {
+			w.WriteHeader(http.StatusOK)
+			fmt.Fprint(w, `{"resources":{"core":{"remaining":120}}}`)
+			return
+		}
+
+		t.Error("unhandled request: " + r.URL.Path)
+	}))
+	t.Cleanup(srv.Close)
+
+	ctx := testctx.WrapWithCfg(t.Context(), config.Project{
+		GitHubURLs: config.GitHubURLs{
+			API: srv.URL + "/",
+		},
+	})
+	client, err := newGitHub(ctx, "test-token")
+	require.NoError(t, err)
+	repo := Repo{
+		Owner: "someone",
+		Name:  "something",
+	}
+
+	require.NoError(t, client.CreateFile(ctx, config.CommitAuthor{
+		Name:  "test-author",
+		Email: "test@example.com",
+	}, repo, []byte("content"), "file.txt", "message"))
+}
+
 // TODO: test create upload file to release
 // TODO: test create PR

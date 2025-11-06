@@ -15,8 +15,9 @@ const (
 // Get templates the commit author and returns a new [config.CommitAuthor].
 func Get(ctx *context.Context, og config.CommitAuthor) (config.CommitAuthor, error) {
 	author := config.CommitAuthor{
-		Name:  og.Name,
-		Email: og.Email,
+		Name:              og.Name,
+		Email:             og.Email,
+		UseGitHubAppToken: og.UseGitHubAppToken,
 		Signing: config.CommitSigning{
 			Enabled: og.Signing.Enabled,
 			Key:     og.Signing.Key,
@@ -38,11 +39,15 @@ func Get(ctx *context.Context, og config.CommitAuthor) (config.CommitAuthor, err
 
 // Default sets the default commit author name and email.
 func Default(og config.CommitAuthor) config.CommitAuthor {
-	if og.Name == "" {
-		og.Name = defaultName
-	}
-	if og.Email == "" {
-		og.Email = defaultEmail
+	// When using GitHub App token, name and email should not be set
+	// to allow GitHub to auto-sign the commits
+	if !og.UseGitHubAppToken {
+		if og.Name == "" {
+			og.Name = defaultName
+		}
+		if og.Email == "" {
+			og.Email = defaultEmail
+		}
 	}
 
 	// set default signing format if enabled but format not specified

@@ -291,12 +291,17 @@ func (c *githubClient) CreateFile(
 	}
 
 	options := &github.RepositoryContentFileOptions{
-		Committer: &github.CommitAuthor{
-			Name:  github.Ptr(commitAuthor.Name),
-			Email: github.Ptr(commitAuthor.Email),
-		},
 		Content: content,
 		Message: github.Ptr(message),
+	}
+
+	// When using a GitHub App token, omit the committer to get automatic signed commits
+	// See: https://docs.github.com/en/authentication/managing-commit-signature-verification/about-commit-signature-verification#signature-verification-for-bots
+	if !commitAuthor.UseGitHubAppToken {
+		options.Committer = &github.CommitAuthor{
+			Name:  github.Ptr(commitAuthor.Name),
+			Email: github.Ptr(commitAuthor.Email),
+		}
 	}
 
 	// Set the branch if we got it above...otherwise, just default to
