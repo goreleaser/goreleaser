@@ -14,7 +14,7 @@ import (
 	"time"
 
 	"github.com/caarlos0/log"
-	"github.com/google/go-github/v74/github"
+	"github.com/google/go-github/v77/github"
 	"github.com/goreleaser/goreleaser/v2/internal/artifact"
 	"github.com/goreleaser/goreleaser/v2/internal/tmpl"
 	"github.com/goreleaser/goreleaser/v2/pkg/config"
@@ -323,11 +323,9 @@ func (c *githubClient) CreateFile(
 				return fmt.Errorf("could not get ref %q: %w", "refs/heads/"+defBranch, err)
 			}
 
-			if _, _, err := c.client.Git.CreateRef(ctx, repo.Owner, repo.Name, &github.Reference{
-				Ref: github.Ptr("refs/heads/" + branch),
-				Object: &github.GitObject{
-					SHA: defRef.Object.SHA,
-				},
+			if _, _, err := c.client.Git.CreateRef(ctx, repo.Owner, repo.Name, github.CreateRef{
+				Ref: "refs/heads/" + branch,
+				SHA: defRef.Object.GetSHA(),
 			}); err != nil {
 				rerr := new(github.ErrorResponse)
 				if !errors.As(err, &rerr) || rerr.Message != "Reference already exists" {

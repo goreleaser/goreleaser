@@ -13,7 +13,7 @@ import (
 	"text/template"
 	"time"
 
-	"github.com/google/go-github/v74/github"
+	"github.com/google/go-github/v77/github"
 	"github.com/goreleaser/goreleaser/v2/internal/artifact"
 	"github.com/goreleaser/goreleaser/v2/internal/testctx"
 	"github.com/goreleaser/goreleaser/v2/internal/testlib"
@@ -26,7 +26,7 @@ import (
 func TestNewGitHubClient(t *testing.T) {
 	t.Run("good urls", func(t *testing.T) {
 		githubURL := "https://github.mycompany.com"
-		ctx := testctx.NewWithCfg(config.Project{
+		ctx := testctx.WrapWithCfg(t.Context(), config.Project{
 			GitHubURLs: config.GitHubURLs{
 				API:    githubURL + "/api",
 				Upload: githubURL + "/upload",
@@ -40,7 +40,7 @@ func TestNewGitHubClient(t *testing.T) {
 	})
 
 	t.Run("bad api url", func(t *testing.T) {
-		ctx := testctx.NewWithCfg(config.Project{
+		ctx := testctx.WrapWithCfg(t.Context(), config.Project{
 			GitHubURLs: config.GitHubURLs{
 				API:    "://github.mycompany.com/api",
 				Upload: "https://github.mycompany.com/upload",
@@ -52,7 +52,7 @@ func TestNewGitHubClient(t *testing.T) {
 	})
 
 	t.Run("bad upload url", func(t *testing.T) {
-		ctx := testctx.NewWithCfg(config.Project{
+		ctx := testctx.WrapWithCfg(t.Context(), config.Project{
 			GitHubURLs: config.GitHubURLs{
 				API:    "https://github.mycompany.com/api",
 				Upload: "not a url:4994",
@@ -65,7 +65,7 @@ func TestNewGitHubClient(t *testing.T) {
 
 	t.Run("template", func(t *testing.T) {
 		githubURL := "https://github.mycompany.com"
-		ctx := testctx.NewWithCfg(config.Project{
+		ctx := testctx.WrapWithCfg(t.Context(), config.Project{
 			Env: []string{
 				fmt.Sprintf("GORELEASER_TEST_GITHUB_URLS_API=%s/api", githubURL),
 				fmt.Sprintf("GORELEASER_TEST_GITHUB_URLS_UPLOAD=%s/upload", githubURL),
@@ -83,7 +83,7 @@ func TestNewGitHubClient(t *testing.T) {
 	})
 
 	t.Run("template invalid api", func(t *testing.T) {
-		ctx := testctx.NewWithCfg(config.Project{
+		ctx := testctx.WrapWithCfg(t.Context(), config.Project{
 			GitHubURLs: config.GitHubURLs{
 				API: "{{ .Env.GORELEASER_NOT_EXISTS }}",
 			},
@@ -94,7 +94,7 @@ func TestNewGitHubClient(t *testing.T) {
 	})
 
 	t.Run("template invalid upload", func(t *testing.T) {
-		ctx := testctx.NewWithCfg(config.Project{
+		ctx := testctx.WrapWithCfg(t.Context(), config.Project{
 			GitHubURLs: config.GitHubURLs{
 				API:    "https://github.mycompany.com/api",
 				Upload: "{{ .Env.GORELEASER_NOT_EXISTS }}",
@@ -106,7 +106,7 @@ func TestNewGitHubClient(t *testing.T) {
 	})
 
 	t.Run("template invalid", func(t *testing.T) {
-		ctx := testctx.NewWithCfg(config.Project{
+		ctx := testctx.WrapWithCfg(t.Context(), config.Project{
 			GitHubURLs: config.GitHubURLs{
 				API: "{{.dddddddddd",
 			},
@@ -118,7 +118,7 @@ func TestNewGitHubClient(t *testing.T) {
 }
 
 func TestGitHubUploadReleaseIDNotInt(t *testing.T) {
-	ctx := testctx.New()
+	ctx := testctx.Wrap(t.Context())
 	client, err := newGitHub(ctx, ctx.Token)
 	require.NoError(t, err)
 
@@ -160,7 +160,7 @@ func TestGitHubReleaseURLTemplate(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			ctx := testctx.NewWithCfg(config.Project{
+			ctx := testctx.WrapWithCfg(t.Context(), config.Project{
 				Env: []string{
 					"GORELEASER_TEST_GITHUB_URLS_DOWNLOAD=https://github.mycompany.com",
 				},
@@ -190,7 +190,7 @@ func TestGitHubReleaseURLTemplate(t *testing.T) {
 }
 
 func TestGitHubCreateReleaseWrongNameTemplate(t *testing.T) {
-	ctx := testctx.NewWithCfg(config.Project{
+	ctx := testctx.WrapWithCfg(t.Context(), config.Project{
 		Release: config.Release{
 			NameTemplate: "{{.dddddddddd",
 		},
@@ -219,9 +219,9 @@ func TestGitHubGetDefaultBranch(t *testing.T) {
 		w.WriteHeader(http.StatusOK)
 		fmt.Fprint(w, `{"default_branch": "main"}`)
 	}))
-	defer srv.Close()
+	t.Cleanup(srv.Close)
 
-	ctx := testctx.NewWithCfg(config.Project{
+	ctx := testctx.WrapWithCfg(t.Context(), config.Project{
 		GitHubURLs: config.GitHubURLs{
 			API: srv.URL + "/",
 		},
@@ -249,9 +249,9 @@ func TestGitHubGetDefaultBranchErr(t *testing.T) {
 		w.WriteHeader(http.StatusNotImplemented)
 		fmt.Fprint(w, "{}")
 	}))
-	defer srv.Close()
+	t.Cleanup(srv.Close)
 
-	ctx := testctx.NewWithCfg(config.Project{
+	ctx := testctx.WrapWithCfg(t.Context(), config.Project{
 		GitHubURLs: config.GitHubURLs{
 			API: srv.URL + "/",
 		},
@@ -287,9 +287,9 @@ func TestGitHubChangelog(t *testing.T) {
 			return
 		}
 	}))
-	defer srv.Close()
+	t.Cleanup(srv.Close)
 
-	ctx := testctx.NewWithCfg(config.Project{
+	ctx := testctx.WrapWithCfg(t.Context(), config.Project{
 		GitHubURLs: config.GitHubURLs{
 			API: srv.URL + "/",
 		},
@@ -334,9 +334,9 @@ func TestGitHubReleaseNotes(t *testing.T) {
 			return
 		}
 	}))
-	defer srv.Close()
+	t.Cleanup(srv.Close)
 
-	ctx := testctx.NewWithCfg(config.Project{
+	ctx := testctx.WrapWithCfg(t.Context(), config.Project{
 		GitHubURLs: config.GitHubURLs{
 			API: srv.URL + "/",
 		},
@@ -367,9 +367,9 @@ func TestGitHubReleaseNotesError(t *testing.T) {
 			return
 		}
 	}))
-	defer srv.Close()
+	t.Cleanup(srv.Close)
 
-	ctx := testctx.NewWithCfg(config.Project{
+	ctx := testctx.WrapWithCfg(t.Context(), config.Project{
 		GitHubURLs: config.GitHubURLs{
 			API: srv.URL + "/",
 		},
@@ -407,9 +407,9 @@ func TestGitHubCloseMilestone(t *testing.T) {
 			return
 		}
 	}))
-	defer srv.Close()
+	t.Cleanup(srv.Close)
 
-	ctx := testctx.NewWithCfg(config.Project{
+	ctx := testctx.WrapWithCfg(t.Context(), config.Project{
 		GitHubURLs: config.GitHubURLs{
 			API: srv.URL + "/",
 		},
@@ -465,9 +465,9 @@ func TestGitHubOpenPullRequestCrossRepo(t *testing.T) {
 
 		t.Error("unhandled request: " + r.URL.Path)
 	}))
-	defer srv.Close()
+	t.Cleanup(srv.Close)
 
-	ctx := testctx.NewWithCfg(config.Project{
+	ctx := testctx.WrapWithCfg(t.Context(), config.Project{
 		GitHubURLs: config.GitHubURLs{
 			API: srv.URL + "/",
 		},
@@ -519,9 +519,9 @@ func TestGitHubOpenPullRequestHappyPath(t *testing.T) {
 
 		t.Error("unhandled request: " + r.URL.Path)
 	}))
-	defer srv.Close()
+	t.Cleanup(srv.Close)
 
-	ctx := testctx.NewWithCfg(config.Project{
+	ctx := testctx.WrapWithCfg(t.Context(), config.Project{
 		GitHubURLs: config.GitHubURLs{
 			API: srv.URL + "/",
 		},
@@ -578,9 +578,9 @@ func TestGitHubOpenPullRequestNoBaseBranchDraft(t *testing.T) {
 
 		t.Error("unhandled request: " + r.URL.Path)
 	}))
-	defer srv.Close()
+	t.Cleanup(srv.Close)
 
-	ctx := testctx.NewWithCfg(config.Project{
+	ctx := testctx.WrapWithCfg(t.Context(), config.Project{
 		GitHubURLs: config.GitHubURLs{
 			API: srv.URL + "/",
 		},
@@ -625,9 +625,9 @@ func TestGitHubOpenPullRequestPRExists(t *testing.T) {
 
 		t.Error("unhandled request: " + r.URL.Path)
 	}))
-	defer srv.Close()
+	t.Cleanup(srv.Close)
 
-	ctx := testctx.NewWithCfg(config.Project{
+	ctx := testctx.WrapWithCfg(t.Context(), config.Project{
 		GitHubURLs: config.GitHubURLs{
 			API: srv.URL + "/",
 		},
@@ -676,9 +676,9 @@ func TestGitHubOpenPullRequestBaseEmpty(t *testing.T) {
 
 		t.Error("unhandled request: " + r.URL.Path)
 	}))
-	defer srv.Close()
+	t.Cleanup(srv.Close)
 
-	ctx := testctx.NewWithCfg(config.Project{
+	ctx := testctx.WrapWithCfg(t.Context(), config.Project{
 		GitHubURLs: config.GitHubURLs{
 			API: srv.URL + "/",
 		},
@@ -727,9 +727,9 @@ func TestGitHubOpenPullRequestHeadEmpty(t *testing.T) {
 
 		t.Error("unhandled request: " + r.URL.Path)
 	}))
-	defer srv.Close()
+	t.Cleanup(srv.Close)
 
-	ctx := testctx.NewWithCfg(config.Project{
+	ctx := testctx.WrapWithCfg(t.Context(), config.Project{
 		GitHubURLs: config.GitHubURLs{
 			API: srv.URL + "/",
 		},
@@ -773,9 +773,9 @@ func TestGitHubCreateFileHappyPathCreate(t *testing.T) {
 
 		t.Error("unhandled request: " + r.URL.Path)
 	}))
-	defer srv.Close()
+	t.Cleanup(srv.Close)
 
-	ctx := testctx.NewWithCfg(config.Project{
+	ctx := testctx.WrapWithCfg(t.Context(), config.Project{
 		GitHubURLs: config.GitHubURLs{
 			API: srv.URL + "/",
 		},
@@ -819,9 +819,9 @@ func TestGitHubCreateFileHappyPathUpdate(t *testing.T) {
 
 		t.Error("unhandled request: " + r.URL.Path)
 	}))
-	defer srv.Close()
+	t.Cleanup(srv.Close)
 
-	ctx := testctx.NewWithCfg(config.Project{
+	ctx := testctx.WrapWithCfg(t.Context(), config.Project{
 		GitHubURLs: config.GitHubURLs{
 			API: srv.URL + "/",
 		},
@@ -880,9 +880,9 @@ func TestGitHubCreateFileFeatureBranchAlreadyExists(t *testing.T) {
 
 		t.Error("unhandled request: " + r.Method + " " + r.URL.Path)
 	}))
-	defer srv.Close()
+	t.Cleanup(srv.Close)
 
-	ctx := testctx.NewWithCfg(config.Project{
+	ctx := testctx.WrapWithCfg(t.Context(), config.Project{
 		GitHubURLs: config.GitHubURLs{
 			API: srv.URL + "/",
 		},
@@ -941,9 +941,9 @@ func TestGitHubCreateFileFeatureBranchDoesNotExist(t *testing.T) {
 
 		t.Error("unhandled request: " + r.Method + " " + r.URL.Path)
 	}))
-	defer srv.Close()
+	t.Cleanup(srv.Close)
 
-	ctx := testctx.NewWithCfg(config.Project{
+	ctx := testctx.WrapWithCfg(t.Context(), config.Project{
 		GitHubURLs: config.GitHubURLs{
 			API: srv.URL + "/",
 		},
@@ -957,6 +957,56 @@ func TestGitHubCreateFileFeatureBranchDoesNotExist(t *testing.T) {
 	}
 
 	require.NoError(t, client.CreateFile(ctx, config.CommitAuthor{}, repo, []byte("content"), "file.txt", "message"))
+}
+
+func TestGitHubCreateFileFeatureBranchNilObject(t *testing.T) {
+	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		defer r.Body.Close()
+
+		if r.URL.Path == "/repos/someone/something/branches/feature" && r.Method == http.MethodGet {
+			w.WriteHeader(http.StatusNotFound)
+			return
+		}
+
+		if r.URL.Path == "/repos/someone/something/git/ref/heads/main" {
+			// Return ref with nil object
+			fmt.Fprint(w, `{}`)
+			return
+		}
+
+		if r.URL.Path == "/repos/someone/something" {
+			w.WriteHeader(http.StatusOK)
+			fmt.Fprint(w, `{"default_branch": "main"}`)
+			return
+		}
+
+		if r.URL.Path == "/rate_limit" {
+			w.WriteHeader(http.StatusOK)
+			fmt.Fprint(w, `{"resources":{"core":{"remaining":120}}}`)
+			return
+		}
+
+		t.Error("unhandled request: " + r.Method + " " + r.URL.Path)
+	}))
+	t.Cleanup(srv.Close)
+
+	ctx := testctx.WrapWithCfg(t.Context(), config.Project{
+		GitHubURLs: config.GitHubURLs{
+			API: srv.URL + "/",
+		},
+	})
+	client, err := newGitHub(ctx, "test-token")
+	require.NoError(t, err)
+	repo := Repo{
+		Owner:  "someone",
+		Name:   "something",
+		Branch: "feature",
+	}
+
+	err = client.CreateFile(ctx, config.CommitAuthor{}, repo, []byte("content"), "file.txt", "message")
+	require.Error(t, err)
+	require.Contains(t, err.Error(), "could not create ref")
+	require.Contains(t, err.Error(), "sha must be provided")
 }
 
 func TestGitHubCheckRateLimit(t *testing.T) {
@@ -981,9 +1031,9 @@ func TestGitHubCheckRateLimit(t *testing.T) {
 		}
 		t.Error("unhandled request: " + r.Method + " " + r.URL.Path)
 	}))
-	defer srv.Close()
+	t.Cleanup(srv.Close)
 
-	ctx := testctx.NewWithCfg(config.Project{
+	ctx := testctx.WrapWithCfg(t.Context(), config.Project{
 		GitHubURLs: config.GitHubURLs{
 			API: srv.URL + "/",
 		},
@@ -1021,9 +1071,9 @@ func TestGitHubCreateRelease(t *testing.T) {
 
 		t.Error("unhandled request: " + r.Method + " " + r.URL.Path)
 	}))
-	defer srv.Close()
+	t.Cleanup(srv.Close)
 
-	ctx := testctx.NewWithCfg(
+	ctx := testctx.WrapWithCfg(t.Context(),
 		config.Project{
 			GitHubURLs: config.GitHubURLs{
 				API: srv.URL + "/",
@@ -1089,9 +1139,9 @@ func TestGitHubCreateReleaseDeleteExistingDraft(t *testing.T) {
 
 		t.Error("unhandled request: " + r.Method + " " + r.URL.Path)
 	}))
-	defer srv.Close()
+	t.Cleanup(srv.Close)
 
-	ctx := testctx.NewWithCfg(
+	ctx := testctx.WrapWithCfg(t.Context(),
 		config.Project{
 			GitHubURLs: config.GitHubURLs{
 				API: srv.URL + "/",
@@ -1147,9 +1197,9 @@ func TestGitHubCreateReleaseUpdateExisting(t *testing.T) {
 
 		t.Error("unhandled request: " + r.Method + " " + r.URL.Path)
 	}))
-	defer srv.Close()
+	t.Cleanup(srv.Close)
 
-	ctx := testctx.NewWithCfg(
+	ctx := testctx.WrapWithCfg(t.Context(),
 		config.Project{
 			GitHubURLs: config.GitHubURLs{
 				API: srv.URL + "/",
@@ -1208,9 +1258,9 @@ func TestGitHubCreateReleaseUseExistingDraft(t *testing.T) {
 
 		t.Error("unhandled request: " + r.Method + " " + r.URL.Path)
 	}))
-	defer srv.Close()
+	t.Cleanup(srv.Close)
 
-	ctx := testctx.NewWithCfg(
+	ctx := testctx.WrapWithCfg(t.Context(),
 		config.Project{
 			GitHubURLs: config.GitHubURLs{
 				API: srv.URL + "/",

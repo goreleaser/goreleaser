@@ -333,20 +333,19 @@ sboms:
 
 signs:
   - cmd: cosign
-    certificate: "${artifact}.pem"
-    output: true
+    signature: "${artifact}.sigstore.json"
+    output: '{{ not (isEnvSet "CI" )}}'
     artifacts: checksum
     args:
       - sign-blob
-      - "--output-certificate=${certificate}"
-      - "--output-signature=${signature}"
+      - "--bundle=${signature}"
       - "${artifact}"
       - --yes
 
 docker_signs:
   - cmd: cosign
     artifacts: manifests
-    output: true
+    output: '{{ not (isEnvSet "CI" )}}'
     args:
       - "sign"
       - "${artifact}@${digest}"
