@@ -1373,7 +1373,7 @@ func TestGitHubCreateFileWithoutGitHubAppToken(t *testing.T) {
 			// Verify committer is present when not using GitHub App token
 			committer, hasCommitter := reqData["committer"]
 			require.True(t, hasCommitter, "committer should be set when not using GitHub App token")
-			
+
 			committerMap := committer.(map[string]interface{})
 			require.Equal(t, "test-author", committerMap["name"])
 			require.Equal(t, "test@example.com", committerMap["email"])
