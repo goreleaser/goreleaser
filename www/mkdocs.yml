@@ -74,6 +74,7 @@ plugins:
         "customization/zig-builds.md": customization/builds/zig.md
         "customization/deno-builds.md": customization/builds/deno.md
         "customization/homebrew.md": customization/homebrew_casks.md
+        "cookbooks/cgo-and-crosscompiling.md": limitations/cgo.md
   - minify:
       minify_html: true
   - include-markdown
@@ -244,7 +245,6 @@ nav:
           - cookbooks/builds-complex-envs.md
           - cookbooks/multi-platform-docker-images.md
           - cookbooks/build-go-modules.md
-          - cookbooks/cgo-and-crosscompiling.md
           - cookbooks/debconf-templates.md
           - cookbooks/using-jfrog-cli-to-publish-to-artifactory.md
           - cookbooks/publish-to-nexus.md
