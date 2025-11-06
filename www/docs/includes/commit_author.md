@@ -17,6 +17,14 @@ search:
       # Templates: allowed.
       email: bot@goreleaser.com
 
+      # Use GitHub App token for signed commits.
+      # When enabled, the committer field is omitted from API calls,
+      # allowing GitHub to automatically sign commits with the GitHub App identity.
+      # See: https://docs.github.com/en/authentication/managing-commit-signature-verification/about-commit-signature-verification#signature-verification-for-bots
+      #
+      # Default: false.
+      use_github_app_token: false
+
       # Git commit signing configuration.
       # Only useful if repository is of type 'git'.
       #
