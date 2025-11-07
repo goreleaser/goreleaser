@@ -187,6 +187,8 @@ func TestDefault(t *testing.T) {
 
 	t.Run("use github app token", func(t *testing.T) {
 		require.Equal(t, config.CommitAuthor{
+			Name:              defaultName,
+			Email:             defaultEmail,
 			UseGitHubAppToken: true,
 		}, Default(config.CommitAuthor{
 			UseGitHubAppToken: true,

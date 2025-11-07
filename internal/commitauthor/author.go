@@ -39,15 +39,11 @@ func Get(ctx *context.Context, og config.CommitAuthor) (config.CommitAuthor, err
 
 // Default sets the default commit author name and email.
 func Default(og config.CommitAuthor) config.CommitAuthor {
-	// When using GitHub App token, name and email should not be set
-	// to allow GitHub to auto-sign the commits
-	if !og.UseGitHubAppToken {
-		if og.Name == "" {
-			og.Name = defaultName
-		}
-		if og.Email == "" {
-			og.Email = defaultEmail
-		}
+	if og.Name == "" {
+		og.Name = defaultName
+	}
+	if og.Email == "" {
+		og.Email = defaultEmail
 	}
 
 	// set default signing format if enabled but format not specified
