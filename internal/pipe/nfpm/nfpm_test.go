@@ -427,7 +427,12 @@ func TestRunPipe(t *testing.T) {
 		require.Equal(t, "."+pkg.Format(), pkg.Ext())
 		arch := pkg.Goarch
 		if pkg.Goarm != "" {
-			arch += "v" + pkg.Goarm
+			// Normalize goarm to handle comma-separated values like "6,softfloat"
+			normalizedGoarm := pkg.Goarm
+			if idx := strings.Index(normalizedGoarm, ","); idx > 0 {
+				normalizedGoarm = normalizedGoarm[:idx]
+			}
+			arch += "v" + normalizedGoarm
 		}
 		if pkg.Goamd64 != "v1" {
 			arch += pkg.Goamd64
@@ -468,13 +473,19 @@ func TestRunPipe(t *testing.T) {
 			require.Equal(t, now.UTC(), src.FileInfo.MTime.UTC(), src.Destination)
 		}
 
+		// Normalize goarm to handle comma-separated values like "6,softfloat"
+		normalizedGoarm := pkg.Goarm
+		if idx := strings.Index(normalizedGoarm, ","); idx > 0 {
+			normalizedGoarm = normalizedGoarm[:idx]
+		}
+
 		require.ElementsMatch(t, []string{
 			"./testdata/testfile.txt",
 			"./testdata/testfile.txt",
 			"./testdata/testfile.txt",
 			"/etc/nope.conf",
 			"./testdata/folder",
-			"./testdata/testfile-" + pkg.Goarch + pkg.Goamd64 + pkg.Goarm + pkg.Gomips + ".txt",
+			"./testdata/testfile-" + pkg.Goarch + pkg.Goamd64 + normalizedGoarm + pkg.Gomips + ".txt",
 			binPath,
 			foohPath,
 			fooaPath,
