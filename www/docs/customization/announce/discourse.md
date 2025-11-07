@@ -1,5 +1,8 @@
 # Discourse
 
+<!-- md:version v2.13-unreleased -->.
+
+
 This announcer enables posting new release messages to a [Discourse](https://discourse.org/) forum.
 It will create a new Discourse "topic" (a new post/thread) in the desired category.
 
