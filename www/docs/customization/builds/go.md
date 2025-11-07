@@ -120,6 +120,14 @@ builds:
     # For more info refer to: https://pkg.go.dev/cmd/go#hdr-Environment_variables
     # and https://go.dev/wiki/MinimumRequirements#microarchitecture-support
     #
+    # You can also specify softfloat and hardfloat explicitly (since Go 1.22):
+    #   - 5,softfloat
+    #   - 5,hardfloat
+    #   - 6,softfloat
+    #   - 6,hardfloat
+    #   - 7,softfloat
+    #   - 7,hardfloat
+    #
     # Default: [ 6 ].
     goarm:
       - 6
