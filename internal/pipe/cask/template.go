@@ -21,12 +21,14 @@ type templateData struct {
 }
 
 type releasePackage struct {
-	SHA256 string
-	OS     string
-	Arch   string
-	URL    downloadURL
-	Name   string
-	Binary string
+	SHA256    string
+	OS        string
+	Arch      string
+	URL       downloadURL
+	Name      string
+	Binary    string
+	WrappedIn string
+	Binaries  []string
 }
 
 type downloadURL struct {

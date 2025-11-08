@@ -213,6 +213,15 @@ func TestFullPipe(t *testing.T) {
 				ctx.Config.Casks[0].Homepage = "https://github.com/goreleaser"
 			},
 		},
+		"wrapped-in": {
+			prepare: func(ctx *context.Context) {
+				ctx.TokenType = context.TokenTypeGitHub
+				ctx.Config.Casks[0].Repository.Owner = "test"
+				ctx.Config.Casks[0].Repository.Name = "test"
+				ctx.Config.Casks[0].Homepage = "https://github.com/goreleaser"
+				ctx.Config.Casks[0].IDs = []string{"foo2"}
+			},
+		},
 		"git_remote": {
 			prepare: func(ctx *context.Context) {
 				ctx.TokenType = context.TokenTypeGitHub
@@ -502,6 +511,46 @@ func TestFullPipe(t *testing.T) {
 					artifact.ExtraID:       "foo",
 					artifact.ExtraFormat:   "tar.zst",
 					artifact.ExtraBinaries: []string{"foo"},
+				},
+			})
+			ctx.Artifacts.Add(&artifact.Artifact{
+				Name:   "bin2.tgz",
+				Path:   filepath.Join(folder, "bin.tgz"),
+				Goos:   "darwin",
+				Goarch: "amd64",
+				Type:   artifact.UploadableArchive,
+				Extra: map[string]any{
+					artifact.ExtraID:        "foo2",
+					artifact.ExtraFormat:    "tgz",
+					artifact.ExtraBinaries:  []string{"foo"},
+					artifact.ExtraWrappedIn: "foo-231-amd64",
+				},
+			})
+			ctx.Artifacts.Add(&artifact.Artifact{
+				Name:   "bin2.txz",
+				Path:   filepath.Join(folder, "bin.txz"),
+				Goos:   "darwin",
+				Goarch: "arm64",
+				Type:   artifact.UploadableArchive,
+				Extra: map[string]any{
+					artifact.ExtraID:        "foo2",
+					artifact.ExtraFormat:    "txz",
+					artifact.ExtraBinaries:  []string{"foo"},
+					artifact.ExtraWrappedIn: "foo-231-arm64",
+				},
+			})
+			ctx.Artifacts.Add(&artifact.Artifact{
+				Name:    "bin2.tar.zst",
+				Path:    filepath.Join(folder, "bin.tar.zst"),
+				Goos:    "linux",
+				Goarch:  "amd64",
+				Goamd64: "v1",
+				Type:    artifact.UploadableArchive,
+				Extra: map[string]any{
+					artifact.ExtraID:        "foo2",
+					artifact.ExtraFormat:    "tar.zst",
+					artifact.ExtraBinaries:  []string{"foo"},
+					artifact.ExtraWrappedIn: "foo-2.3.1-linux-amd64",
 				},
 			})
 			for _, a := range ctx.Artifacts.List() {

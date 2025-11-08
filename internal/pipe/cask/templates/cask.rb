@@ -21,7 +21,7 @@ cask "{{ .Name }}" do
   {{- end }}
   {{- end }}
   {{- range .Manpages }}
-  manpage "{{ .}}"
+  manpage "{{ . }}"
   {{- end }}
   {{- with .Completions.Bash }}
   bash_completion "{{ . }}"

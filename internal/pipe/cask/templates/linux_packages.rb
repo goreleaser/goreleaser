@@ -7,6 +7,12 @@
   {{- end }}
     url "{{ $element.URL.Download }}"{{- include "additional_url_params" $element.URL }}
     sha256 "{{ $element.SHA256 }}"
+    {{- if .WrappedIn }}
+    {{- $wrap := .WrappedIn }}
+    {{- range .Binaries }}
+    rename "{{ $wrap }}", "{{  . }}"
+    {{- end }}
+    {{- end }}
     {{- if .Binary }}
     binary "{{ .Name }}", target: "{{ .Binary }}"
     {{- end }}

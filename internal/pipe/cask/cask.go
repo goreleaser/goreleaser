@@ -411,10 +411,12 @@ func dataFor(ctx *context.Context, cfg config.HomebrewCask, cl client.ReleaseURL
 		url.Download = strings.ReplaceAll(url.Download, ctx.Version, "#{version}")
 
 		pkg := releasePackage{
-			URL:    url,
-			SHA256: sum,
-			OS:     art.Goos,
-			Arch:   art.Goarch,
+			URL:       url,
+			SHA256:    sum,
+			OS:        art.Goos,
+			Arch:      art.Goarch,
+			WrappedIn: artifact.ExtraOr(*art, artifact.ExtraWrappedIn, ""),
+			Binaries:  artifact.ExtraOr(*art, string(artifact.ExtraBinaries), []string{}),
 		}
 
 		if art.Type == artifact.UploadableBinary {
