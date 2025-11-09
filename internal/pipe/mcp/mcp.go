@@ -89,19 +89,23 @@ func (p Pipe) Publish(ctx *context.Context) error {
 		return fmt.Errorf("could not get token: %w", err)
 	}
 
+	var repo *model.Repository
+	if mcp.Repository.URL != "" {
+		repo = &model.Repository{
+			URL:       mcp.Repository.URL,
+			Source:    mcp.Repository.Source,
+			ID:        mcp.Repository.ID,
+			Subfolder: mcp.Repository.Subfolder,
+		}
+	}
 	server := apiv0.ServerJSON{
 		Schema:      "https://static.modelcontextprotocol.io/schemas/2025-10-17/server.schema.json",
 		Name:        mcp.Name,
 		Description: mcp.Description,
 		Title:       mcp.Title,
-		Repository: &model.Repository{
-			URL:       mcp.Repository.URL,
-			Source:    mcp.Repository.Source,
-			ID:        mcp.Repository.ID,
-			Subfolder: mcp.Repository.Subfolder,
-		},
-		Version:    ctx.Version,
-		WebsiteURL: mcp.Homepage,
+		Repository:  repo,
+		Version:     ctx.Version,
+		WebsiteURL:  mcp.Homepage,
 	}
 	for _, pkg := range mcp.Packages {
 		if err := tmpl.New(ctx).ApplyAll(
