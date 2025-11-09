@@ -153,14 +153,14 @@ If you are using the `oci` transport type, make sure to add the required
 label to the image as well:
 
 ```yaml
-# New Docker:
+# Docker v2 (new):
 dockers_v2:
   - images:
       - ghcr.io/etc/etc
     labels:
       io.modelcontextprotocol.server.name: "io.github.username/server-name"
 
-# Old:
+# Docker (old):
 dockers:
   - image_templates:
       - ghcr.io/etc/etc:{{ .Version }}
