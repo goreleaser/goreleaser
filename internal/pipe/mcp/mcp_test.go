@@ -7,6 +7,7 @@ import (
 	"io"
 	"net/http"
 	"net/http/httptest"
+	"os"
 	"testing"
 
 	"github.com/goreleaser/goreleaser/v2/internal/skips"
@@ -664,4 +665,49 @@ func (m *mockAuthProvider) Login(context.Context) error {
 
 func (m *mockAuthProvider) Name() string {
 	return "mock"
+}
+
+func TestPublishIntegration(t *testing.T) {
+	t.Skip("integration test")
+
+	ctx := testctx.WrapWithCfg(t.Context(), config.Project{
+		ProjectName: "goreleaser-mcp",
+		MCP: config.MCP{
+			Name:        "io.github.goreleaser/mcp",
+			Description: "GoReleaser MCP server for build automation",
+			Repository: config.MCPRepository{
+				Source: "github",
+				URL:    "https://github.com/goreleaser/mcp",
+			},
+			Packages: []config.MCPPackage{
+				{
+					RegistryType: "oci",
+					Identifier:   "ghcr.io/goreleaser/mcp:{{.Version}}",
+					Transport: config.MCPTransport{
+						Type: "stdio",
+					},
+				},
+				{
+					RegistryType: "npm",
+					Identifier:   "@goreleaser/mcp",
+					Transport: config.MCPTransport{
+						Type: "stdio",
+					},
+				},
+			},
+			Auth: config.MCPAuth{
+				Type:  "github",
+				Token: os.Getenv("GITHUB_TOKEN"),
+			},
+		},
+	})
+	ctx.Version = "0.1.4"
+
+	pipe := Pipe{
+		registry:       "https://staging.registry.modelcontextprotocol.io",
+		authProviderFn: authProvider,
+	}
+
+	require.NoError(t, pipe.Default(ctx))
+	require.NoError(t, pipe.Publish(ctx))
 }
