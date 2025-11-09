@@ -35,7 +35,7 @@ type Announcer interface {
 //nolint:gochecknoglobals
 var announcers = []Announcer{
 	// XXX: keep asc sorting
-	bluesky.Pipe{},
+	bluesky.New(),
 	discord.Pipe{},
 	discourse.Pipe{},
 	linkedin.Pipe{},
