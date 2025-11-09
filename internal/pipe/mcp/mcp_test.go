@@ -26,15 +26,33 @@ func TestStringer(t *testing.T) {
 
 func TestSkip(t *testing.T) {
 	t.Run("skip", func(t *testing.T) {
+		ctx := testctx.WrapWithCfg(t.Context(), config.Project{
+			MCP: config.MCP{
+				Name: "foo",
+			},
+		})
+		skips.Set(ctx, skips.MCP)
+		require.True(t, Pipe{}.Skip(ctx))
+	})
+
+	t.Run("skip no mcp name", func(t *testing.T) {
 		ctx := testctx.Wrap(t.Context())
 		skips.Set(ctx, skips.MCP)
 		require.True(t, Pipe{}.Skip(ctx))
 	})
 
 	t.Run("dont skip", func(t *testing.T) {
-		ctx := testctx.Wrap(t.Context())
+		ctx := testctx.WrapWithCfg(t.Context(), config.Project{
+			MCP: config.MCP{
+				Name: "foo",
+			},
+		})
 		require.False(t, Pipe{}.Skip(ctx))
 	})
+}
+
+func TestContinueOnError(t *testing.T) {
+	require.True(t, Pipe{}.ContinueOnError())
 }
 
 func TestDefault(t *testing.T) {
@@ -280,7 +298,7 @@ func TestPublishInvalidTemplate(t *testing.T) {
 func TestPublishServerError(t *testing.T) {
 	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
 		w.WriteHeader(http.StatusInternalServerError)
-		_, _ = w.Write([]byte("internal server error"))
+		_, _ = io.WriteString(w, "internal server error")
 	}))
 	defer srv.Close()
 
@@ -308,7 +326,7 @@ func TestPublishServerError(t *testing.T) {
 func TestPublishBadRequest(t *testing.T) {
 	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
 		w.WriteHeader(http.StatusBadRequest)
-		_, _ = w.Write([]byte(`{"error": "invalid server name"}`))
+		_, _ = io.WriteString(w, `{"error": "invalid server name"}`)
 	}))
 	defer srv.Close()
 

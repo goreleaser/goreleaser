@@ -36,8 +36,11 @@ func New() Pipe {
 	}
 }
 
-func (Pipe) String() string                 { return "mcp" }
-func (Pipe) Skip(ctx *context.Context) bool { return skips.Any(ctx, skips.MCP) }
+func (Pipe) String() string        { return "mcp" }
+func (Pipe) ContinueOnError() bool { return true }
+func (Pipe) Skip(ctx *context.Context) bool {
+	return skips.Any(ctx, skips.MCP) || ctx.Config.MCP.Name == ""
+}
 
 func (Pipe) Default(ctx *context.Context) error {
 	mcp := &ctx.Config.MCP
