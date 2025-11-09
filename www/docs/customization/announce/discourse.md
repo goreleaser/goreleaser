@@ -2,30 +2,35 @@
 
 <!-- md:version v2.13-unreleased -->.
 
-
-This announcer enables posting new release messages to a [Discourse](https://discourse.org/) forum.
-It will create a new Discourse "topic" (a new post/thread) in the desired category.
+This announcer enables posting new release messages to a
+[Discourse](https://discourse.org/) forum.
+It will create a new Discourse "topic" (a new post/thread) in the desired
+category.
 
 ## Setup
 
-To setup, a forum admin will need to create an API key at `https://<your.forum.hostname>/admin/api/keys`.
+To setup, a forum admin will need to create an API key at
+`https://<your.forum.hostname>/admin/api/keys`.
 While not required, for security the recommended settings are:
+
 - User level -> Single user
 - Scope -> Granular
   - [x] topics/write
 
-Where GoReleaser is running, the following environment variable should be set with the API key as the value:
+Where GoReleaser is running, the following environment variable should be set
+with the API key as the value:
 
 - `DISCOURSE_API_KEY`
 
-After this, you can add following section to your `.goreleaser.yaml` configuration:
+After this, you can add following section to your `.goreleaser.yaml`
+configuration:
 
 ```yaml title=".goreleaser.yaml"
 announce:
   discourse:
     # Whether this announcer is enabled or not.
     #
-    # Templates: allowed (since v2.6).
+    # Templates: allowed.
     enabled: true
 
     # The fully qualified domain name (FQDN) of the Discourse forum.
@@ -57,6 +62,8 @@ announce:
     category_id: 4
 ```
 
+<!-- md:templates -->
+
 ## Troubleshooting
 
 If you get the error message:
@@ -65,13 +72,12 @@ If you get the error message:
 discourse: There was an error posting to Discourse. Check your config again. HTTP code: XXX
 ```
 
-then double check the Discourse section of your GoReleaser config.
+Then double check the Discourse section of your GoReleaser configuration.
 Make sure everything is correct.
 Here are some common error codes and what they **might** mean:
 
 - 404 - The server field is either incorrect or your forum is down/unreachable.
-- 403 - The API Key doesn't have the correct permission it needs or the `username` key in GoReleaser config doesn't match what's configured in Discourse.
+- 403 - The API Key doesn't have the correct permission it needs or the
+  `username` key in GoReleaser configuration doesn't match what's configured in
+  Discourse.
 - 5XX - The Discourse forum is having a bad day and throwing back errors.
-
-
-<!-- md:templates -->
