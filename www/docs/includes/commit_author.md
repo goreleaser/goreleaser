@@ -22,7 +22,7 @@ search:
       # allowing GitHub to automatically sign commits with the GitHub App identity.
       # See: https://docs.github.com/en/authentication/managing-commit-signature-verification/about-commit-signature-verification#signature-verification-for-bots
       #
-      # <!-- md:inline_version v2.13 -->.
+      # <!-- md:inline_version v2.13-unreleased -->.
       # Default: false.
       use_github_app_token: false
 
