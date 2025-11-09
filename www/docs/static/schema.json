@@ -548,6 +548,37 @@
 				"additionalProperties": false,
 				"type": "object"
 			},
+			"Discourse": {
+				"properties": {
+					"enabled": {
+						"oneOf": [
+							{
+								"type": "string"
+							},
+							{
+								"type": "boolean"
+							}
+						]
+					},
+					"server": {
+						"type": "string"
+					},
+					"title_template": {
+						"type": "string"
+					},
+					"message_template": {
+						"type": "string"
+					},
+					"username": {
+						"type": "string"
+					},
+					"category_id": {
+						"type": "integer"
+					}
+				},
+				"additionalProperties": false,
+				"type": "object"
+			},
 			"Build": {
 				"properties": {
 					"id": {

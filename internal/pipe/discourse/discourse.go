@@ -8,7 +8,6 @@ import (
 	"net/http"
 
 	"github.com/caarlos0/env/v11"
-	"github.com/caarlos0/log"
 	"github.com/goreleaser/goreleaser/v2/internal/tmpl"
 	"github.com/goreleaser/goreleaser/v2/pkg/context"
 )
@@ -92,11 +91,10 @@ func (p Pipe) Announce(ctx *context.Context) error {
 	}
 
 	req.Header.Set("Content-Type", "application/json")
-	req.Header.Set("User-Agent", "GoReleaser/v2")
+	req.Header.Set("User-Agent", "GoReleaser/v3")
 	req.Header.Set("Api-Username", ctx.Config.Announce.Discourse.Username)
 	req.Header.Set("Api-Key", cfg.APIKey)
 
-	log.Infof("posting: '%s'", msg)
 	resp, err := http.DefaultClient.Do(req)
 	if err != nil {
 		return fmt.Errorf("%s: %w", p, err)

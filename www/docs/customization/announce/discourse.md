@@ -61,7 +61,7 @@ announce:
 
 If you get the error message:
 
-```
+```text
 discourse: There was an error posting to Discourse. Check your config again. HTTP code: XXX
 ```
 
