@@ -1378,6 +1378,8 @@ type Telegram struct {
 	MessageTemplate string `yaml:"message_template,omitempty" json:"message_template,omitempty"`
 	ChatID          string `yaml:"chat_id,omitempty" json:"chat_id,omitempty" jsonschema:"oneof_type=string;integer"`
 	ParseMode       string `yaml:"parse_mode,omitempty" json:"parse_mode,omitempty" jsonschema:"enum=MarkdownV2,enum=HTML,default=MarkdownV2"`
+	MessageThreadID string `yaml:"message_thread_id" json:"message_thread_id" jsonschema:"oneof_type=string;integer"`
+	SkipTLSVerify   bool   `yaml:"skip_tls_verify,omitempty" json:"skip_tls_verify,omitempty"`
 }
 
 type OpenCollective struct {
