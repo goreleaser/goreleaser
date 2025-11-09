@@ -150,7 +150,7 @@ func TestPublishSuccess(t *testing.T) {
 	})
 	ctx.Version = "1.0.0"
 
-	pipe := &Pipe{registry: srv.URL + "/"}
+	pipe := &Pipe{registry: srv.URL}
 	pipe.authProviderFn = func(_, _, token string) (auth.Provider, error) {
 		return &mockAuthProvider{token: "test-token"}, nil
 	}
@@ -252,7 +252,7 @@ func TestPublishWithTemplates(t *testing.T) {
 	})
 	ctx.Version = "1.2.3"
 
-	pipe := &Pipe{registry: srv.URL + "/"}
+	pipe := &Pipe{registry: srv.URL}
 	pipe.authProviderFn = func(_, _, token string) (auth.Provider, error) {
 		return &mockAuthProvider{token: "test-token"}, nil
 	}
@@ -270,7 +270,7 @@ func TestPublishInvalidTemplate(t *testing.T) {
 		},
 	})
 
-	pipe := &Pipe{registry: "http://localhost/"}
+	pipe := &Pipe{registry: "http://localhost"}
 	pipe.authProviderFn = func(_, _, token string) (auth.Provider, error) {
 		return &mockAuthProvider{token: "test-token"}, nil
 	}
@@ -295,7 +295,7 @@ func TestPublishServerError(t *testing.T) {
 	})
 	ctx.Version = "1.0.0"
 
-	pipe := &Pipe{registry: srv.URL + "/"}
+	pipe := &Pipe{registry: srv.URL}
 	pipe.authProviderFn = func(_, _, token string) (auth.Provider, error) {
 		return &mockAuthProvider{token: "test-token"}, nil
 	}
@@ -323,7 +323,7 @@ func TestPublishBadRequest(t *testing.T) {
 	})
 	ctx.Version = "1.0.0"
 
-	pipe := &Pipe{registry: srv.URL + "/"}
+	pipe := &Pipe{registry: srv.URL}
 	pipe.authProviderFn = func(_, _, token string) (auth.Provider, error) {
 		return &mockAuthProvider{token: "test-token"}, nil
 	}
@@ -388,7 +388,7 @@ func TestPublishMultiplePackages(t *testing.T) {
 	})
 	ctx.Version = "2.0.0"
 
-	pipe := &Pipe{registry: srv.URL + "/"}
+	pipe := &Pipe{registry: srv.URL}
 	pipe.authProviderFn = func(_, _, token string) (auth.Provider, error) {
 		return &mockAuthProvider{token: "test-token"}, nil
 	}
@@ -420,7 +420,6 @@ func TestPublishMultiplePackages(t *testing.T) {
 			{
 				RegistryType: "oci",
 				Identifier:   "ghcr.io/test/server",
-				Version:      "2.0.0",
 				Transport: model.Transport{
 					Type: "streamable-http",
 				},
@@ -469,7 +468,7 @@ func TestPublishWithRepository(t *testing.T) {
 	})
 	ctx.Version = "1.5.0"
 
-	pipe := &Pipe{registry: srv.URL + "/"}
+	pipe := &Pipe{registry: srv.URL}
 	pipe.authProviderFn = func(_, _, token string) (auth.Provider, error) {
 		return &mockAuthProvider{token: "test-token"}, nil
 	}
@@ -535,7 +534,7 @@ func TestPublishAuthLoginError(t *testing.T) {
 	})
 	ctx.Version = "1.0.0"
 
-	pipe := &Pipe{registry: "http://localhost/"}
+	pipe := &Pipe{registry: "http://localhost"}
 	pipe.authProviderFn = func(_, _, _ string) (auth.Provider, error) {
 		return &mockAuthProvider{
 			token:    "test-token",
@@ -578,7 +577,7 @@ func TestPublishGetTokenError(t *testing.T) {
 	})
 	ctx.Version = "1.0.0"
 
-	pipe := &Pipe{registry: "http://localhost/"}
+	pipe := &Pipe{registry: "http://localhost"}
 	pipe.authProviderFn = func(_, _, _ string) (auth.Provider, error) {
 		return &mockAuthProvider{
 			token:       "test-token",
@@ -626,7 +625,7 @@ func TestPublishNoPackages(t *testing.T) {
 	})
 	ctx.Version = "1.0.0"
 
-	pipe := &Pipe{registry: srv.URL + "/"}
+	pipe := &Pipe{registry: srv.URL}
 	pipe.authProviderFn = func(_, _, token string) (auth.Provider, error) {
 		return &mockAuthProvider{token: "test-token"}, nil
 	}
@@ -645,7 +644,7 @@ func TestPublishInvalidJSON(t *testing.T) {
 	})
 	ctx.Version = "1.0.0"
 
-	pipe := &Pipe{registry: "http://invalid-url-that-does-not-exist.local/"}
+	pipe := &Pipe{registry: "http://invalid-url-that-does-not-exist.local"}
 	pipe.authProviderFn = func(_, _, token string) (auth.Provider, error) {
 		return &mockAuthProvider{token: "test-token"}, nil
 	}
