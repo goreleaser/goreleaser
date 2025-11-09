@@ -191,7 +191,7 @@ func TestAnnounceWithMockServer(t *testing.T) {
 		require.NoError(t, Pipe{}.Default(ctx))
 		t.Setenv("BLUESKY_APP_PASSWORD", "test-password")
 
-		pipe := Pipe{server.URL}
+		pipe := Pipe{pdsURL: server.URL}
 		require.NoError(t, pipe.Announce(ctx))
 	})
 
@@ -219,7 +219,7 @@ func TestAnnounceWithMockServer(t *testing.T) {
 		require.NoError(t, Pipe{}.Default(ctx))
 		t.Setenv("BLUESKY_APP_PASSWORD", "wrong-password")
 
-		pipe := Pipe{server.URL}
+		pipe := Pipe{pdsURL: server.URL}
 		err := pipe.Announce(ctx)
 		require.Error(t, err)
 		require.Contains(t, err.Error(), "could not log in to Bluesky")
