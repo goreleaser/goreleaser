@@ -21,7 +21,15 @@ const (
 	defaultMessageTemplate = `{{ .ProjectName }} {{ .Tag }} is out! Check it out at {{ .ReleaseURL }}`
 )
 
-type Pipe struct{}
+// Pipe announcer implementation.
+type Pipe struct {
+	pdsURL string
+}
+
+// New bluesky announcer.
+func New() Pipe {
+	return Pipe{pdsURL: defaultPDSURL}
+}
 
 func (Pipe) String() string { return "bluesky" }
 func (Pipe) Skip(ctx *context.Context) (bool, error) {
@@ -82,7 +90,7 @@ func (p Pipe) Announce(ctx *context.Context) error {
 
 	xrpcClient := &xrpc.Client{
 		Client:    httpClient,
-		Host:      defaultPDSURL,
+		Host:      p.pdsURL,
 		UserAgent: &userAgent,
 	}
 
