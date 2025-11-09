@@ -1,3 +1,3 @@
-FROM squidfunk/mkdocs-material:9@sha256:f5c556a6d30ce0c1c0df10e3c38c79bbcafdaea4b1c1be366809d0d4f6f9d57f
+FROM squidfunk/mkdocs-material:9@sha256:58dee36ad85b0ae4836522ee6d3f0150d828bca9a1f7d3bfbf430bca771c1441
 COPY requirements.txt .
 RUN pip install -r requirements.txt
