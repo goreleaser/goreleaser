@@ -66,33 +66,6 @@ func TestDefault(t *testing.T) {
 		require.Equal(t, "none", ctx.Config.MCP.Auth.Type)
 	})
 
-	t.Run("github auth without token", func(t *testing.T) {
-		ctx := testctx.WrapWithCfg(t.Context(), config.Project{
-			MCP: config.MCP{
-				Name: "test-server",
-				Auth: config.MCPAuth{
-					Type: "github",
-				},
-			},
-		})
-		require.NoError(t, Pipe{}.Default(ctx))
-		require.Equal(t, "{{ .Env.GITHUB_TOKEN }}", ctx.Config.MCP.Auth.Token)
-	})
-
-	t.Run("github auth with token", func(t *testing.T) {
-		ctx := testctx.WrapWithCfg(t.Context(), config.Project{
-			MCP: config.MCP{
-				Name: "test-server",
-				Auth: config.MCPAuth{
-					Type:  "github",
-					Token: "custom-token",
-				},
-			},
-		})
-		require.NoError(t, Pipe{}.Default(ctx))
-		require.Equal(t, "custom-token", ctx.Config.MCP.Auth.Token)
-	})
-
 	t.Run("none auth", func(t *testing.T) {
 		ctx := testctx.WrapWithCfg(t.Context(), config.Project{
 			MCP: config.MCP{

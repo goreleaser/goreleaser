@@ -47,9 +47,6 @@ func (Pipe) Default(ctx *context.Context) error {
 	if mcp.Auth.Type == "" {
 		mcp.Auth.Type = proto.MethodNone
 	}
-	if mcp.Auth.Token == "" && mcp.Auth.Type == proto.MethodGitHub {
-		mcp.Auth.Token = "{{ .Env.GITHUB_TOKEN }}"
-	}
 	return nil
 }
 
@@ -65,7 +62,16 @@ func (p Pipe) Publish(ctx *context.Context) error {
 		&mcp.Repository.Source,
 		&mcp.Repository.ID,
 		&mcp.Repository.Subfolder,
+		&mcp.Auth.Type,
 	); err != nil {
+		return fmt.Errorf("could not apply templates: %w", err)
+	}
+
+	if mcp.Auth.Token == "" && mcp.Auth.Type == proto.MethodGitHub {
+		mcp.Auth.Token = "{{ .Env.GITHUB_TOKEN }}"
+	}
+
+	if err := tmpl.New(ctx).ApplyAll(&mcp.Auth.Token); err != nil {
 		return fmt.Errorf("could not apply templates: %w", err)
 	}
 
