@@ -1236,6 +1236,7 @@ type Project struct {
 	Makeselfs         []Makeself        `yaml:"makeselfs,omitempty" json:"makeselfs,omitempty"`
 	UniversalBinaries []UniversalBinary `yaml:"universal_binaries,omitempty" json:"universal_binaries,omitempty"`
 	UPXs              []UPX             `yaml:"upx,omitempty" json:"upx,omitempty"`
+	MCP               MCP               `yaml:"mcp,omitempty" json:"mcp,omitempty"`
 
 	// force the SCM token to use when multiple are set
 	ForceToken string `yaml:"force_token,omitempty" json:"force_token,omitempty" jsonschema:"enum=github,enum=gitlab,enum=gitea,enum=,default="`
@@ -1474,4 +1475,40 @@ type MakeselfFile struct {
 	Source      string `yaml:"src,omitempty" json:"src,omitempty"`
 	Destination string `yaml:"dst,omitempty" json:"dst,omitempty"`
 	StripParent bool   `yaml:"strip_parent,omitempty" json:"strip_parent,omitempty"`
+}
+
+// MCP server configuration.
+type MCP struct {
+	Name        string         `yaml:"name" json:"name"`
+	Title       string         `yaml:"title" json:"title"`
+	Description string         `yaml:"description,omitempty" json:"description,omitempty"`
+	Homepage    string         `yaml:"homepage,omitempty" json:"homepage,omitempty"`
+	Packages    []MCPPackage   `yaml:"packages,omitempty" json:"packages,omitempty"`
+	Transports  []MCPTransport `yaml:"transports,omitempty" json:"transports,omitempty"`
+	Disable     string         `yaml:"disable,omitempty" json:"disable,omitempty" jsonschema:"oneof_type=string;boolean"`
+	Repository  MCPRepository  `yaml:"repository,omitempty" json:"repository,omitempty"`
+	Auth        MCPAuth        `yaml:"auth" json:"auth"`
+}
+
+type MCPRepository struct {
+	URL       string `yaml:"url,omitempty" json:"url,omitempty" `
+	Source    string `yaml:"source,omitempty" json:"source,omitempty" jsonschema:"enum=github,enum=gitlab,enum=gitea"`
+	ID        string `yaml:"id,omitempty" json:"id,omitempty"`
+	Subfolder string `yaml:"subfolder,omitempty" json:"subfolder,omitempty"`
+}
+
+type MCPAuth struct {
+	Type  string `json:"type" yaml:"type,omitempty" jsonschema:"enum=none,enum=github,enum=github-oidc,default=none"`
+	Token string `yaml:"token,omitempty" json:"token,omitempty"`
+}
+
+// MCPPackage represents an MCP package configuration.
+type MCPPackage struct {
+	RegistryType string       `yaml:"registry_type" json:"registry_type" jsonschema:"enum=oci,enum=npm,enum=pypi,enum=nuget,enum=mcpb"`
+	Identifier   string       `yaml:"identifier" json:"identifier"`
+	Transport    MCPTransport `yaml:"transport" json:"transport"`
+}
+
+type MCPTransport struct {
+	Type string `yaml:"type,omitempty" json:"type,omitempty" jsonschema:"enum=stdio,enum=streamable-http,enum=sse"`
 }

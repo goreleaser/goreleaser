@@ -179,6 +179,7 @@ nav:
           - customization/npm.md
           - Krew: customization/krew.md
           - Scoop: customization/scoop.md
+          - MCP: customization/mcp.md
           - customization/changelog.md
           - customization/upload.md
           - customization/artifactory.md

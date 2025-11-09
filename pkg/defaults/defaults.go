@@ -30,6 +30,7 @@ import (
 	"github.com/goreleaser/goreleaser/v2/internal/pipe/makeself"
 	"github.com/goreleaser/goreleaser/v2/internal/pipe/mastodon"
 	"github.com/goreleaser/goreleaser/v2/internal/pipe/mattermost"
+	"github.com/goreleaser/goreleaser/v2/internal/pipe/mcp"
 	"github.com/goreleaser/goreleaser/v2/internal/pipe/milestone"
 	"github.com/goreleaser/goreleaser/v2/internal/pipe/nfpm"
 	"github.com/goreleaser/goreleaser/v2/internal/pipe/nix"
@@ -106,6 +107,7 @@ var Defaulters = []Defaulter{
 	krew.Pipe{},
 	ko.Pipe{},
 	scoop.Pipe{},
+	mcp.Pipe{},
 	discord.Pipe{},
 	reddit.Pipe{},
 	slack.Pipe{},
