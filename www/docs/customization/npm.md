@@ -142,7 +142,7 @@ npms:
     # Set extra fields at the root level of the generated package.json.
     #
     # <!-- md:inline_version v2.13-unreleased -->.
-    extras:
+    extra:
       mcpName: io.github.foo/bar
       complex:
         foo: bar
