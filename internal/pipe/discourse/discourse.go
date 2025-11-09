@@ -91,7 +91,7 @@ func (p Pipe) Announce(ctx *context.Context) error {
 	}
 
 	req.Header.Set("Content-Type", "application/json")
-	req.Header.Set("User-Agent", "GoReleaser/v3")
+	req.Header.Set("User-Agent", "goreleaser/v2")
 	req.Header.Set("Api-Username", ctx.Config.Announce.Discourse.Username)
 	req.Header.Set("Api-Key", cfg.APIKey)
 

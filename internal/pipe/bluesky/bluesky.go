@@ -78,7 +78,7 @@ func (p Pipe) Announce(ctx *context.Context) error {
 	}
 
 	httpClient := butil.RobustHTTPClient()
-	userAgent := "goreleaser/v3"
+	userAgent := "goreleaser/v2"
 
 	xrpcClient := &xrpc.Client{
 		Client:    httpClient,
