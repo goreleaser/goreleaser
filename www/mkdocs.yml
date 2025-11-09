@@ -193,6 +193,7 @@ nav:
           - Introduction: customization/announce/index.md
           - customization/announce/bluesky.md
           - customization/announce/discord.md
+          - customization/announce/discourse.md
           - customization/announce/linkedin.md
           - customization/announce/mastodon.md
           - customization/announce/mattermost.md

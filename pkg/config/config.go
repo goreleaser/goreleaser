@@ -1286,6 +1286,7 @@ type Announce struct {
 	Webhook        Webhook        `yaml:"webhook,omitempty" json:"webhook,omitempty"`
 	OpenCollective OpenCollective `yaml:"opencollective,omitempty" json:"opencollective,omitempty"`
 	Bluesky        Bluesky        `yaml:"bluesky,omitempty" json:"bluesky,omitempty"`
+	Discourse      Discourse      `yaml:"discourse,omitempty" json:"discourse,omitempty"`
 }
 
 type Webhook struct {
@@ -1392,6 +1393,16 @@ type Bluesky struct {
 	Enabled         string `yaml:"enabled,omitempty" json:"enabled,omitempty" jsonschema:"oneof_type=string;boolean"`
 	Username        string `yaml:"username,omitempty" json:"username,omitempty"`
 	MessageTemplate string `yaml:"message_template,omitempty" json:"message_template,omitempty"`
+}
+
+// Discourse represents the discourse portion of a GoReleaser.
+type Discourse struct {
+	Enabled         string `yaml:"enabled,omitempty" json:"enabled,omitempty" jsonschema:"oneof_type=string;boolean"`
+	TitleTemplate   string `yaml:"title_template,omitempty" json:"title_template,omitempty"`
+	MessageTemplate string `yaml:"message_template,omitempty" json:"message_template,omitempty"`
+	Server          string `yaml:"server,omitempty" json:"server,omitempty"`
+	CategoryID      int    `yaml:"category_id,omitempty" json:"category_id,omitempty"`
+	Username        string `yaml:"username,omitempty" json:"username,omitempty"`
 }
 
 // SlackBlock represents the untyped structure of a rich slack message layout.
