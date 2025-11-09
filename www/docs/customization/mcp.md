@@ -48,10 +48,10 @@ mcp:
     # Default: none.
     type: github-oidc
 
-    # Authentication token (for github auth type).
+    # Authentication token (for github type only).
     #
     # Templates: allowed.
-    # Default: $GITHUB_TOKEN when type is 'github', empty otherwise.
+    # Default: '$MCP_GITHUB_TOKEN'.
     token: "{{ .Env.GITHUB_TOKEN }}"
 
   # Repository metadata for the MCP server source code.

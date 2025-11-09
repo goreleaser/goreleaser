@@ -63,15 +63,8 @@ func (p Pipe) Publish(ctx *context.Context) error {
 		&mcp.Repository.ID,
 		&mcp.Repository.Subfolder,
 		&mcp.Auth.Type,
+		&mcp.Auth.Token,
 	); err != nil {
-		return fmt.Errorf("could not apply templates: %w", err)
-	}
-
-	if mcp.Auth.Token == "" && mcp.Auth.Type == proto.MethodGitHub {
-		mcp.Auth.Token = "{{ .Env.GITHUB_TOKEN }}"
-	}
-
-	if err := tmpl.New(ctx).ApplyAll(&mcp.Auth.Token); err != nil {
 		return fmt.Errorf("could not apply templates: %w", err)
 	}
 
@@ -96,7 +89,7 @@ func (p Pipe) Publish(ctx *context.Context) error {
 		return fmt.Errorf("could not get token: %w", err)
 	}
 
-	serverJSON := apiv0.ServerJSON{
+	server := apiv0.ServerJSON{
 		Schema:      "https://static.modelcontextprotocol.io/schemas/2025-10-17/server.schema.json",
 		Name:        mcp.Name,
 		Description: mcp.Description,
@@ -120,7 +113,7 @@ func (p Pipe) Publish(ctx *context.Context) error {
 		if pkg.RegistryType == "oci" {
 			version = ""
 		}
-		serverJSON.Packages = append(serverJSON.Packages, model.Package{
+		server.Packages = append(server.Packages, model.Package{
 			RegistryType: pkg.RegistryType,
 			Identifier:   pkg.Identifier,
 			Version:      version,
@@ -130,7 +123,7 @@ func (p Pipe) Publish(ctx *context.Context) error {
 		})
 	}
 
-	jsonData, err := json.Marshal(serverJSON)
+	jsonData, err := json.Marshal(server)
 	if err != nil {
 		return fmt.Errorf("could not serialize request: %w", err)
 	}
@@ -166,7 +159,7 @@ func (p Pipe) Publish(ctx *context.Context) error {
 	}
 
 	log.
-		WithField("name", serverJSON.Name).
+		WithField("name", server.Name).
 		WithField("status", serverResponse.Meta.Official.Status).
 		Info("published to MCP registry")
 
