@@ -55,24 +55,24 @@ func (p Pipe) Default(ctx *context.Context) error {
 func (p Pipe) Announce(ctx *context.Context) error {
 	msg, err := tmpl.New(ctx).Apply(ctx.Config.Announce.Discord.MessageTemplate)
 	if err != nil {
-		return fmt.Errorf("discord: %w", err)
+		return fmt.Errorf("%s: %w", p, err)
 	}
 
 	cfg, err := env.ParseAs[Config]()
 	if err != nil {
-		return fmt.Errorf("discord: %w", err)
+		return fmt.Errorf("%s: %w", p, err)
 	}
 
 	log.Infof("posting: '%s'", msg)
 
 	color, err := strconv.Atoi(ctx.Config.Announce.Discord.Color)
 	if err != nil {
-		return fmt.Errorf("discord: %w", err)
+		return fmt.Errorf("%s: %w", p, err)
 	}
 
 	u, err := url.Parse(cfg.API)
 	if err != nil {
-		return fmt.Errorf("discord: %w", err)
+		return fmt.Errorf("%s: %w", p, err)
 	}
 	u = u.JoinPath("webhooks", cfg.WebhookID, cfg.WebhookToken)
 
@@ -89,23 +89,23 @@ func (p Pipe) Announce(ctx *context.Context) error {
 		},
 	})
 	if err != nil {
-		return fmt.Errorf("discord: %w", err)
+		return fmt.Errorf("%s: %w", p, err)
 	}
 
 	req, err := http.NewRequestWithContext(ctx, http.MethodPost, u.String(), bytes.NewReader(bts))
 	if err != nil {
-		return fmt.Errorf("discord: %w", err)
+		return fmt.Errorf("%s: %w", p, err)
 	}
 	req.Header.Set("Content-Type", "application/json")
 
 	resp, err := http.DefaultClient.Do(req)
 	if err != nil {
-		return fmt.Errorf("discord: %w", err)
+		return fmt.Errorf("%s: %w", p, err)
 	}
 	defer resp.Body.Close()
 
 	if resp.StatusCode != 204 && resp.StatusCode != 200 {
-		return fmt.Errorf("discord: %s", resp.Status)
+		return fmt.Errorf("%s: %s", p, resp.Status)
 	}
 
 	return nil
