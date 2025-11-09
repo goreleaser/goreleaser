@@ -196,7 +196,7 @@ func TestAnnounceWithMockServer(t *testing.T) {
 	})
 
 	t.Run("login failure", func(t *testing.T) {
-		server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
 			w.WriteHeader(http.StatusUnauthorized)
 			assert.NoError(t, json.NewEncoder(w).Encode(map[string]interface{}{
 				"error":   "AuthenticationRequired",
