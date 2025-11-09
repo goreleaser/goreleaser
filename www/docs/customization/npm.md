@@ -138,6 +138,14 @@ npms:
     # Templates: allowed.
     # <!-- md:inline_version v2.10 -->.
     url_template: "https://github.mycompany.com/foo/bar/releases/download/{{ .Tag }}/{{ .ArtifactName }}"
+
+    # Set extra fields at the root level of the generated package.json.
+    #
+    # <!-- md:inline_version v2.13-unreleased -->.
+    extras:
+      mcpName: io.github.foo/bar
+      complex:
+        foo: bar
 ```
 
 !!! warning "Caveat"

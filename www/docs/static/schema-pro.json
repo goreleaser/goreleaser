@@ -1389,6 +1389,37 @@
 				"additionalProperties": false,
 				"type": "object"
 			},
+			"Discourse": {
+				"properties": {
+					"enabled": {
+						"oneOf": [
+							{
+								"type": "string"
+							},
+							{
+								"type": "boolean"
+							}
+						]
+					},
+					"title_template": {
+						"type": "string"
+					},
+					"message_template": {
+						"type": "string"
+					},
+					"server": {
+						"type": "string"
+					},
+					"category_id": {
+						"type": "integer"
+					},
+					"username": {
+						"type": "string"
+					}
+				},
+				"additionalProperties": false,
+				"type": "object"
+			},
 			"Docker": {
 				"properties": {
 					"id": {
@@ -3919,6 +3950,9 @@
 					},
 					"tag": {
 						"type": "string"
+					},
+					"extra": {
+						"type": "object"
 					}
 				},
 				"additionalProperties": false,
@@ -4569,7 +4603,7 @@
 					},
 					{
 						"$schema": "https://json-schema.org/draft/2020-12/schema",
-						"$id": "https://github.com/goreleaser/goreleaser/v2/pkg/config/pull-request-base",
+						"$id": "https://github.com/goreleaser/goreleaser/v2/pkg/config/pull-request-base-alias",
 						"properties": {
 							"owner": {
 								"type": "string"
