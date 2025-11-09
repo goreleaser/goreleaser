@@ -182,6 +182,7 @@ var validLicenses = []string{
 	"miros",
 	"mit",
 	"mit-cmu",
+	"mit-enna",
 	"mit-feh",
 	"mit-modern",
 	"mitAdvertising",

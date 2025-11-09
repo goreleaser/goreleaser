@@ -44,12 +44,12 @@ func (Pipe) Default(ctx *context.Context) error {
 func (p Pipe) Announce(ctx *context.Context) error {
 	msg, err := tmpl.New(ctx).Apply(ctx.Config.Announce.Bluesky.MessageTemplate)
 	if err != nil {
-		return fmt.Errorf("bluesky: %w", err)
+		return fmt.Errorf("%s: %w", p, err)
 	}
 
 	var cfg Config
 	if err = env.Parse(&cfg); err != nil {
-		return fmt.Errorf("bluesky: %w", err)
+		return fmt.Errorf("%s: %w", p, err)
 	}
 
 	post := bsky.FeedPost{
@@ -78,7 +78,7 @@ func (p Pipe) Announce(ctx *context.Context) error {
 	}
 
 	httpClient := butil.RobustHTTPClient()
-	userAgent := "goreleaser/v1"
+	userAgent := "goreleaser/v2"
 
 	xrpcClient := &xrpc.Client{
 		Client:    httpClient,

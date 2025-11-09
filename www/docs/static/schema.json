@@ -309,6 +309,9 @@
 					},
 					"bluesky": {
 						"$ref": "#/$defs/Bluesky"
+					},
+					"discourse": {
+						"$ref": "#/$defs/Discourse"
 					}
 				},
 				"additionalProperties": false,
@@ -547,6 +550,37 @@
 					},
 					"message_template": {
 						"type": "string"
+					}
+				},
+				"additionalProperties": false,
+				"type": "object"
+			},
+			"Discourse": {
+				"properties": {
+					"enabled": {
+						"oneOf": [
+							{
+								"type": "string"
+							},
+							{
+								"type": "boolean"
+							}
+						]
+					},
+					"server": {
+						"type": "string"
+					},
+					"title_template": {
+						"type": "string"
+					},
+					"message_template": {
+						"type": "string"
+					},
+					"username": {
+						"type": "string"
+					},
+					"category_id": {
+						"type": "integer"
 					}
 				},
 				"additionalProperties": false,

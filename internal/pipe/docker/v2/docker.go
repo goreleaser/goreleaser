@@ -497,8 +497,7 @@ func isRetriableManifestCreate(err error) bool {
 }
 
 func isFileNotFoundError(out string) bool {
-	return strings.Contains(out, ": not found") ||
-		strings.Contains(out, ">>> COPY") ||
+	return strings.Contains(out, ">>> COPY") ||
 		strings.Contains(out, ">>> ADD")
 }
 

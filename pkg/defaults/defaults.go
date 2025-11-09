@@ -18,6 +18,7 @@ import (
 	"github.com/goreleaser/goreleaser/v2/internal/pipe/checksums"
 	"github.com/goreleaser/goreleaser/v2/internal/pipe/chocolatey"
 	"github.com/goreleaser/goreleaser/v2/internal/pipe/discord"
+	"github.com/goreleaser/goreleaser/v2/internal/pipe/discourse"
 	"github.com/goreleaser/goreleaser/v2/internal/pipe/dist"
 	"github.com/goreleaser/goreleaser/v2/internal/pipe/docker"
 	dockerv2 "github.com/goreleaser/goreleaser/v2/internal/pipe/docker/v2"
@@ -122,4 +123,5 @@ var Defaulters = []Defaulter{
 	chocolatey.Pipe{},
 	opencollective.Pipe{},
 	bluesky.Pipe{},
+	discourse.Pipe{},
 }
