@@ -16,6 +16,7 @@ import (
 	"github.com/modelcontextprotocol/registry/cmd/publisher/auth"
 	apiv0 "github.com/modelcontextprotocol/registry/pkg/api/v0"
 	"github.com/modelcontextprotocol/registry/pkg/model"
+	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
 
@@ -84,7 +85,7 @@ func TestDefault(t *testing.T) {
 			},
 		})
 		require.NoError(t, Pipe{}.Default(ctx))
-		require.Equal(t, "", ctx.Config.MCP.Auth.Token)
+		require.Empty(t, ctx.Config.MCP.Auth.Token)
 	})
 }
 
@@ -93,18 +94,18 @@ func TestPublishSuccess(t *testing.T) {
 	var receivedToken string
 
 	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		require.Equal(t, "/v0/publish", r.URL.Path)
-		require.Equal(t, "POST", r.Method)
-		require.Equal(t, "application/json", r.Header.Get("Content-Type"))
+		assert.Equal(t, "/v0/publish", r.URL.Path)
+		assert.Equal(t, "POST", r.Method)
+		assert.Equal(t, "application/json", r.Header.Get("Content-Type"))
 
 		receivedToken = r.Header.Get("Authorization")
-		require.Contains(t, receivedToken, "Bearer ")
+		assert.Contains(t, receivedToken, "Bearer ")
 
 		body, err := io.ReadAll(r.Body)
-		require.NoError(t, err)
+		assert.NoError(t, err)
 
 		err = json.Unmarshal(body, &receivedRequest)
-		require.NoError(t, err)
+		assert.NoError(t, err)
 
 		response := apiv0.ServerResponse{
 			Meta: apiv0.ResponseMeta{
@@ -116,8 +117,7 @@ func TestPublishSuccess(t *testing.T) {
 
 		w.WriteHeader(http.StatusCreated)
 		w.Header().Set("Content-Type", "application/json")
-		err = json.NewEncoder(w).Encode(response)
-		require.NoError(t, err)
+		assert.NoError(t, json.NewEncoder(w).Encode(response))
 	}))
 	defer srv.Close()
 
@@ -151,7 +151,7 @@ func TestPublishSuccess(t *testing.T) {
 	ctx.Version = "1.0.0"
 
 	pipe := &Pipe{registry: srv.URL + "/"}
-	pipe.authProviderFn = func(registryURL, token, method string) (auth.Provider, error) {
+	pipe.authProviderFn = func(_, token, _ string) (auth.Provider, error) {
 		return &mockAuthProvider{token: "test-token"}, nil
 	}
 	require.NoError(t, pipe.Publish(ctx))
@@ -186,9 +186,8 @@ func TestPublishWithTemplates(t *testing.T) {
 	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		var req apiv0.ServerJSON
 		body, err := io.ReadAll(r.Body)
-		require.NoError(t, err)
-		err = json.Unmarshal(body, &req)
-		require.NoError(t, err)
+		assert.NoError(t, err)
+		assert.NoError(t, json.Unmarshal(body, &req))
 
 		expected := apiv0.ServerJSON{
 			Schema:      "https://static.modelcontextprotocol.io/schemas/2025-10-17/server.schema.json",
@@ -211,7 +210,7 @@ func TestPublishWithTemplates(t *testing.T) {
 				},
 			},
 		}
-		require.Equal(t, expected, req)
+		assert.Equal(t, expected, req)
 
 		response := apiv0.ServerResponse{
 			Meta: apiv0.ResponseMeta{
@@ -223,8 +222,7 @@ func TestPublishWithTemplates(t *testing.T) {
 
 		w.WriteHeader(http.StatusOK)
 		w.Header().Set("Content-Type", "application/json")
-		err = json.NewEncoder(w).Encode(response)
-		require.NoError(t, err)
+		assert.NoError(t, json.NewEncoder(w).Encode(response))
 	}))
 	defer srv.Close()
 
@@ -255,7 +253,7 @@ func TestPublishWithTemplates(t *testing.T) {
 	ctx.Version = "1.2.3"
 
 	pipe := &Pipe{registry: srv.URL + "/"}
-	pipe.authProviderFn = func(registryURL, token, method string) (auth.Provider, error) {
+	pipe.authProviderFn = func(_, token, _ string) (auth.Provider, error) {
 		return &mockAuthProvider{token: "test-token"}, nil
 	}
 	require.NoError(t, pipe.Publish(ctx))
@@ -273,16 +271,16 @@ func TestPublishInvalidTemplate(t *testing.T) {
 	})
 
 	pipe := &Pipe{registry: "http://localhost/"}
-	pipe.authProviderFn = func(registryURL, token, method string) (auth.Provider, error) {
+	pipe.authProviderFn = func(_, token, _ string) (auth.Provider, error) {
 		return &mockAuthProvider{token: "test-token"}, nil
 	}
 	testlib.RequireTemplateError(t, pipe.Publish(ctx))
 }
 
 func TestPublishServerError(t *testing.T) {
-	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
 		w.WriteHeader(http.StatusInternalServerError)
-		w.Write([]byte("internal server error"))
+		_, _ = w.Write([]byte("internal server error"))
 	}))
 	defer srv.Close()
 
@@ -298,7 +296,7 @@ func TestPublishServerError(t *testing.T) {
 	ctx.Version = "1.0.0"
 
 	pipe := &Pipe{registry: srv.URL + "/"}
-	pipe.authProviderFn = func(registryURL, token, method string) (auth.Provider, error) {
+	pipe.authProviderFn = func(_, token, _ string) (auth.Provider, error) {
 		return &mockAuthProvider{token: "test-token"}, nil
 	}
 	err := pipe.Publish(ctx)
@@ -308,9 +306,9 @@ func TestPublishServerError(t *testing.T) {
 }
 
 func TestPublishBadRequest(t *testing.T) {
-	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
 		w.WriteHeader(http.StatusBadRequest)
-		w.Write([]byte(`{"error": "invalid server name"}`))
+		_, _ = w.Write([]byte(`{"error": "invalid server name"}`))
 	}))
 	defer srv.Close()
 
@@ -326,7 +324,7 @@ func TestPublishBadRequest(t *testing.T) {
 	ctx.Version = "1.0.0"
 
 	pipe := &Pipe{registry: srv.URL + "/"}
-	pipe.authProviderFn = func(registryURL, token, method string) (auth.Provider, error) {
+	pipe.authProviderFn = func(_, token, _ string) (auth.Provider, error) {
 		return &mockAuthProvider{token: "test-token"}, nil
 	}
 	err := pipe.Publish(ctx)
@@ -339,9 +337,8 @@ func TestPublishMultiplePackages(t *testing.T) {
 
 	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		body, err := io.ReadAll(r.Body)
-		require.NoError(t, err)
-		err = json.Unmarshal(body, &receivedRequest)
-		require.NoError(t, err)
+		assert.NoError(t, err)
+		assert.NoError(t, json.Unmarshal(body, &receivedRequest))
 
 		response := apiv0.ServerResponse{
 			Meta: apiv0.ResponseMeta{
@@ -353,8 +350,7 @@ func TestPublishMultiplePackages(t *testing.T) {
 
 		w.WriteHeader(http.StatusCreated)
 		w.Header().Set("Content-Type", "application/json")
-		err = json.NewEncoder(w).Encode(response)
-		require.NoError(t, err)
+		assert.NoError(t, json.NewEncoder(w).Encode(response))
 	}))
 	defer srv.Close()
 
@@ -393,7 +389,7 @@ func TestPublishMultiplePackages(t *testing.T) {
 	ctx.Version = "2.0.0"
 
 	pipe := &Pipe{registry: srv.URL + "/"}
-	pipe.authProviderFn = func(registryURL, token, method string) (auth.Provider, error) {
+	pipe.authProviderFn = func(_, token, _ string) (auth.Provider, error) {
 		return &mockAuthProvider{token: "test-token"}, nil
 	}
 	require.NoError(t, pipe.Publish(ctx))
@@ -439,9 +435,8 @@ func TestPublishWithRepository(t *testing.T) {
 
 	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		body, err := io.ReadAll(r.Body)
-		require.NoError(t, err)
-		err = json.Unmarshal(body, &receivedRequest)
-		require.NoError(t, err)
+		assert.NoError(t, err)
+		assert.NoError(t, json.Unmarshal(body, &receivedRequest))
 
 		response := apiv0.ServerResponse{
 			Meta: apiv0.ResponseMeta{
@@ -453,8 +448,7 @@ func TestPublishWithRepository(t *testing.T) {
 
 		w.WriteHeader(http.StatusCreated)
 		w.Header().Set("Content-Type", "application/json")
-		err = json.NewEncoder(w).Encode(response)
-		require.NoError(t, err)
+		assert.NoError(t, json.NewEncoder(w).Encode(response))
 	}))
 	defer srv.Close()
 
@@ -476,7 +470,7 @@ func TestPublishWithRepository(t *testing.T) {
 	ctx.Version = "1.5.0"
 
 	pipe := &Pipe{registry: srv.URL + "/"}
-	pipe.authProviderFn = func(registryURL, token, method string) (auth.Provider, error) {
+	pipe.authProviderFn = func(_, token, _ string) (auth.Provider, error) {
 		return &mockAuthProvider{token: "test-token"}, nil
 	}
 	require.NoError(t, pipe.Publish(ctx))
@@ -494,7 +488,7 @@ func TestPublishWithRepository(t *testing.T) {
 		},
 		Packages: nil,
 	}
-	require.EqualValues(t, expected, receivedRequest)
+	require.Equal(t, expected, receivedRequest)
 }
 
 func TestAuthProvider(t *testing.T) {
@@ -542,7 +536,7 @@ func TestPublishAuthLoginError(t *testing.T) {
 	ctx.Version = "1.0.0"
 
 	pipe := &Pipe{registry: "http://localhost/"}
-	pipe.authProviderFn = func(registryURL, token, method string) (auth.Provider, error) {
+	pipe.authProviderFn = func(_, _, _ string) (auth.Provider, error) {
 		return &mockAuthProvider{
 			token:    "test-token",
 			loginErr: fmt.Errorf("login failed"),
@@ -585,7 +579,7 @@ func TestPublishGetTokenError(t *testing.T) {
 	ctx.Version = "1.0.0"
 
 	pipe := &Pipe{registry: "http://localhost/"}
-	pipe.authProviderFn = func(registryURL, token, method string) (auth.Provider, error) {
+	pipe.authProviderFn = func(_, _, _ string) (auth.Provider, error) {
 		return &mockAuthProvider{
 			token:       "test-token",
 			getTokenErr: fmt.Errorf("token retrieval failed"),
@@ -601,11 +595,10 @@ func TestPublishNoPackages(t *testing.T) {
 	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		var req apiv0.ServerJSON
 		body, err := io.ReadAll(r.Body)
-		require.NoError(t, err)
-		err = json.Unmarshal(body, &req)
-		require.NoError(t, err)
+		assert.NoError(t, err)
+		assert.NoError(t, json.Unmarshal(body, &req))
 
-		require.Len(t, req.Packages, 0)
+		assert.Empty(t, req.Packages)
 
 		response := apiv0.ServerResponse{
 			Meta: apiv0.ResponseMeta{
@@ -617,8 +610,7 @@ func TestPublishNoPackages(t *testing.T) {
 
 		w.WriteHeader(http.StatusCreated)
 		w.Header().Set("Content-Type", "application/json")
-		err = json.NewEncoder(w).Encode(response)
-		require.NoError(t, err)
+		assert.NoError(t, json.NewEncoder(w).Encode(response))
 	}))
 	defer srv.Close()
 
@@ -635,7 +627,7 @@ func TestPublishNoPackages(t *testing.T) {
 	ctx.Version = "1.0.0"
 
 	pipe := &Pipe{registry: srv.URL + "/"}
-	pipe.authProviderFn = func(registryURL, token, method string) (auth.Provider, error) {
+	pipe.authProviderFn = func(_, token, _ string) (auth.Provider, error) {
 		return &mockAuthProvider{token: "test-token"}, nil
 	}
 	require.NoError(t, pipe.Publish(ctx))
@@ -654,7 +646,7 @@ func TestPublishInvalidJSON(t *testing.T) {
 	ctx.Version = "1.0.0"
 
 	pipe := &Pipe{registry: "http://invalid-url-that-does-not-exist.local/"}
-	pipe.authProviderFn = func(registryURL, token, method string) (auth.Provider, error) {
+	pipe.authProviderFn = func(_, token, _ string) (auth.Provider, error) {
 		return &mockAuthProvider{token: "test-token"}, nil
 	}
 	err := pipe.Publish(ctx)
@@ -668,7 +660,7 @@ type mockAuthProvider struct {
 	getTokenErr error
 }
 
-func (m *mockAuthProvider) GetToken(ctx context.Context) (string, error) {
+func (m *mockAuthProvider) GetToken(context.Context) (string, error) {
 	return m.token, m.getTokenErr
 }
 
@@ -676,7 +668,7 @@ func (m *mockAuthProvider) NeedsLogin() bool {
 	return false
 }
 
-func (m *mockAuthProvider) Login(ctx context.Context) error {
+func (m *mockAuthProvider) Login(context.Context) error {
 	return m.loginErr
 }
 
