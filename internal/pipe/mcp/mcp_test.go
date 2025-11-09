@@ -151,7 +151,7 @@ func TestPublishSuccess(t *testing.T) {
 	ctx.Version = "1.0.0"
 
 	pipe := &Pipe{registry: srv.URL + "/"}
-	pipe.authProviderFn = func(_, token, _ string) (auth.Provider, error) {
+	pipe.authProviderFn = func(_, _, token string) (auth.Provider, error) {
 		return &mockAuthProvider{token: "test-token"}, nil
 	}
 	require.NoError(t, pipe.Publish(ctx))
@@ -253,7 +253,7 @@ func TestPublishWithTemplates(t *testing.T) {
 	ctx.Version = "1.2.3"
 
 	pipe := &Pipe{registry: srv.URL + "/"}
-	pipe.authProviderFn = func(_, token, _ string) (auth.Provider, error) {
+	pipe.authProviderFn = func(_, _, token string) (auth.Provider, error) {
 		return &mockAuthProvider{token: "test-token"}, nil
 	}
 	require.NoError(t, pipe.Publish(ctx))
@@ -271,7 +271,7 @@ func TestPublishInvalidTemplate(t *testing.T) {
 	})
 
 	pipe := &Pipe{registry: "http://localhost/"}
-	pipe.authProviderFn = func(_, token, _ string) (auth.Provider, error) {
+	pipe.authProviderFn = func(_, _, token string) (auth.Provider, error) {
 		return &mockAuthProvider{token: "test-token"}, nil
 	}
 	testlib.RequireTemplateError(t, pipe.Publish(ctx))
@@ -296,7 +296,7 @@ func TestPublishServerError(t *testing.T) {
 	ctx.Version = "1.0.0"
 
 	pipe := &Pipe{registry: srv.URL + "/"}
-	pipe.authProviderFn = func(_, token, _ string) (auth.Provider, error) {
+	pipe.authProviderFn = func(_, _, token string) (auth.Provider, error) {
 		return &mockAuthProvider{token: "test-token"}, nil
 	}
 	err := pipe.Publish(ctx)
@@ -324,7 +324,7 @@ func TestPublishBadRequest(t *testing.T) {
 	ctx.Version = "1.0.0"
 
 	pipe := &Pipe{registry: srv.URL + "/"}
-	pipe.authProviderFn = func(_, token, _ string) (auth.Provider, error) {
+	pipe.authProviderFn = func(_, _, token string) (auth.Provider, error) {
 		return &mockAuthProvider{token: "test-token"}, nil
 	}
 	err := pipe.Publish(ctx)
@@ -389,7 +389,7 @@ func TestPublishMultiplePackages(t *testing.T) {
 	ctx.Version = "2.0.0"
 
 	pipe := &Pipe{registry: srv.URL + "/"}
-	pipe.authProviderFn = func(_, token, _ string) (auth.Provider, error) {
+	pipe.authProviderFn = func(_, _, token string) (auth.Provider, error) {
 		return &mockAuthProvider{token: "test-token"}, nil
 	}
 	require.NoError(t, pipe.Publish(ctx))
@@ -470,7 +470,7 @@ func TestPublishWithRepository(t *testing.T) {
 	ctx.Version = "1.5.0"
 
 	pipe := &Pipe{registry: srv.URL + "/"}
-	pipe.authProviderFn = func(_, token, _ string) (auth.Provider, error) {
+	pipe.authProviderFn = func(_, _, token string) (auth.Provider, error) {
 		return &mockAuthProvider{token: "test-token"}, nil
 	}
 	require.NoError(t, pipe.Publish(ctx))
@@ -493,25 +493,25 @@ func TestPublishWithRepository(t *testing.T) {
 
 func TestAuthProvider(t *testing.T) {
 	t.Run("none auth", func(t *testing.T) {
-		provider, err := authProvider("none", "", "http://registry.test")
+		provider, err := authProvider("http://registry.test", "none", "")
 		require.NoError(t, err)
 		require.NotNil(t, provider)
 	})
 
 	t.Run("github auth", func(t *testing.T) {
-		provider, err := authProvider("github", "test-token", "http://registry.test")
+		provider, err := authProvider("http://registry.test", "github", "test-token")
 		require.NoError(t, err)
 		require.NotNil(t, provider)
 	})
 
 	t.Run("github-oidc auth", func(t *testing.T) {
-		provider, err := authProvider("github-oidc", "", "http://registry.test")
+		provider, err := authProvider("http://registry.test", "github-oidc", "")
 		require.NoError(t, err)
 		require.NotNil(t, provider)
 	})
 
 	t.Run("unknown auth method", func(t *testing.T) {
-		provider, err := authProvider("unknown", "", "http://registry.test")
+		provider, err := authProvider("http://registry.test", "unknown", "")
 		require.Error(t, err)
 		require.Nil(t, provider)
 		require.Contains(t, err.Error(), "unknown auth method: unknown")
@@ -627,7 +627,7 @@ func TestPublishNoPackages(t *testing.T) {
 	ctx.Version = "1.0.0"
 
 	pipe := &Pipe{registry: srv.URL + "/"}
-	pipe.authProviderFn = func(_, token, _ string) (auth.Provider, error) {
+	pipe.authProviderFn = func(_, _, token string) (auth.Provider, error) {
 		return &mockAuthProvider{token: "test-token"}, nil
 	}
 	require.NoError(t, pipe.Publish(ctx))
@@ -646,7 +646,7 @@ func TestPublishInvalidJSON(t *testing.T) {
 	ctx.Version = "1.0.0"
 
 	pipe := &Pipe{registry: "http://invalid-url-that-does-not-exist.local/"}
-	pipe.authProviderFn = func(_, token, _ string) (auth.Provider, error) {
+	pipe.authProviderFn = func(_, _, token string) (auth.Provider, error) {
 		return &mockAuthProvider{token: "test-token"}, nil
 	}
 	err := pipe.Publish(ctx)
