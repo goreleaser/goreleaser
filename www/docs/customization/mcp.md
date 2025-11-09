@@ -173,7 +173,7 @@ If you're using NPM, you can use the `extra` field to set the `mcpName`:
 ```yaml
 npms:
   - name: "@foo/bar"
-    extras:
+    extra:
       mcpName: io.github.foo/bar
 ```
 
