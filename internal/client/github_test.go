@@ -1305,15 +1305,14 @@ func TestGitHubCreateFileWithGitHubAppToken(t *testing.T) {
 		if r.URL.Path == "/repos/someone/something/contents/file.txt" && r.Method == http.MethodPut {
 			// Verify that committer is not set in the request
 			body, err := io.ReadAll(r.Body)
-			require.NoError(t, err)
+			assert.NoError(t, err)
 
 			var reqData map[string]interface{}
-			err = json.Unmarshal(body, &reqData)
-			require.NoError(t, err)
+			assert.NoError(t, json.Unmarshal(body, &reqData))
 
 			// Verify committer is not present when using GitHub App token
 			_, hasCommitter := reqData["committer"]
-			require.False(t, hasCommitter, "committer should not be set when using GitHub App token")
+			assert.False(t, hasCommitter, "committer should not be set when using GitHub App token")
 
 			w.WriteHeader(http.StatusOK)
 			return
@@ -1364,19 +1363,18 @@ func TestGitHubCreateFileWithoutGitHubAppToken(t *testing.T) {
 		if r.URL.Path == "/repos/someone/something/contents/file.txt" && r.Method == http.MethodPut {
 			// Verify that committer is set in the request
 			body, err := io.ReadAll(r.Body)
-			require.NoError(t, err)
+			assert.NoError(t, err)
 
 			var reqData map[string]interface{}
-			err = json.Unmarshal(body, &reqData)
-			require.NoError(t, err)
+			assert.NoError(t, json.Unmarshal(body, &reqData))
 
 			// Verify committer is present when not using GitHub App token
 			committer, hasCommitter := reqData["committer"]
-			require.True(t, hasCommitter, "committer should be set when not using GitHub App token")
+			assert.True(t, hasCommitter, "committer should be set when not using GitHub App token")
 
 			committerMap := committer.(map[string]interface{})
-			require.Equal(t, "test-author", committerMap["name"])
-			require.Equal(t, "test@example.com", committerMap["email"])
+			assert.Equal(t, "test-author", committerMap["name"])
+			assert.Equal(t, "test@example.com", committerMap["email"])
 
 			w.WriteHeader(http.StatusOK)
 			return
