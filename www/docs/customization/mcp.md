@@ -46,12 +46,12 @@ mcp:
     #
     # Valid values: none, github, github-oidc.
     # Default: none.
-    type: none
+    type: github-oidc
 
     # Authentication token (for github auth type).
     #
     # Templates: allowed.
-    # Default: $GITHUB_TOKEN if type is 'github'.
+    # Default: $GITHUB_TOKEN when type is 'github', empty otherwise.
     token: "{{ .Env.GITHUB_TOKEN }}"
 
   # Repository metadata for the MCP server source code.
@@ -146,3 +146,39 @@ for more details.
 
     You don't need to install `mcp-publisher` nor run any commands.
     GoReleaser takes care of it all.
+
+## Tips
+
+If you are using the `oci` transport type, make sure to add the required
+label to the image as well:
+
+```yaml
+# New Docker:
+dockers_v2:
+  - images:
+      - ghcr.io/etc/etc
+    labels:
+      io.modelcontextprotocol.server.name: "io.github.username/server-name"
+
+# Old:
+dockers:
+  - image_templates:
+      - ghcr.io/etc/etc:{{ .Version }}
+    build_flag_templates:
+      - '--label=io.modelcontextprotocol.server.name="io.github.username/server-name"'
+```
+
+If you're using NPM, you can use the `extra` field to set the `mcpName`:
+
+```yaml
+npms:
+  - name: "@foo/bar"
+    extras:
+      mcpName: io.github.foo/bar
+```
+
+If you don't set these fields, publishing the MCP will fail.
+
+Read
+[this page](https://github.com/modelcontextprotocol/registry/blob/main/docs/guides/publishing/publish-server.md)
+for more information.
