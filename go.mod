@@ -30,7 +30,7 @@ require (
 	github.com/google/uuid v1.6.0
 	github.com/goreleaser/fileglob v1.4.0
 	github.com/goreleaser/nfpm/v2 v2.43.4
-	github.com/goreleaser/quill v0.0.0-20251110005303-c9c7cfc6e591
+	github.com/goreleaser/quill v0.0.0-20251110005729-a69db24af177
 	github.com/hashicorp/go-multierror v1.1.1
 	github.com/invopop/jsonschema v0.13.0
 	github.com/jarcoal/httpmock v1.4.1
