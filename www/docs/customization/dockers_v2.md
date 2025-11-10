@@ -4,7 +4,7 @@
 
 <!-- md:version v2.12 -->
 
-!!! warning "alpha "
+!!! warning "alpha"
 
     This feature is in *alpha* state.
     It will be improved until its deemed stable, at which point we'll

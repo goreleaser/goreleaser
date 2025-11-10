@@ -1,5 +1,7 @@
 # Model Context Protocol (MCP) Server
 
+<!-- md:alpha -->
+
 <!-- md:version v2.13-unreleased -->
 
 After building your binaries, GoReleaser can generate and publish a Model

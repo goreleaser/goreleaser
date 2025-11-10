@@ -9,6 +9,7 @@ import (
 	"os"
 
 	"github.com/caarlos0/log"
+	"github.com/goreleaser/goreleaser/v2/internal/logext"
 	"github.com/goreleaser/goreleaser/v2/internal/skips"
 	"github.com/goreleaser/goreleaser/v2/internal/tmpl"
 	"github.com/goreleaser/goreleaser/v2/pkg/context"
@@ -51,6 +52,7 @@ func (Pipe) Default(ctx *context.Context) error {
 }
 
 func (p Pipe) Publish(ctx *context.Context) error {
+	warnExperimental()
 	mcp := ctx.Config.MCP
 
 	if err := tmpl.New(ctx).ApplyAll(
@@ -181,4 +183,10 @@ func authProvider(registryURL, method, token string) (auth.Provider, error) {
 	default:
 		return nil, fmt.Errorf("unknown auth method: %s", method)
 	}
+}
+
+func warnExperimental() {
+	log.WithField("details", `Keep an eye on the release notes if you wish to rely on this for production builds.
+Please provide any feedback you might have at https://github.com/orgs/goreleaser/discussions/6251`).
+		Warn(logext.Warning("mcp is experimental and subject to change"))
 }
