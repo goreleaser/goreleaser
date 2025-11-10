@@ -69,6 +69,7 @@ plugins:
         m.md: https://fosstodon.org/@goreleaser
         t.md: https://twitter.com/goreleaser
         x.md: https://twitter.com/goreleaser
+        mcp.md: https://github.com/goreleaser/mcp
         "customization/build.md": customization/builds/index.md
         "customization/rust-builds.md": customization/builds/rust.md
         "customization/zig-builds.md": customization/builds/zig.md
