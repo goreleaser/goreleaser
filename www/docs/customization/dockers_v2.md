@@ -1,8 +1,8 @@
 # Docker (v2)
 
-<!-- md:alpha -->
-
 <!-- md:version v2.12 -->
+
+<!-- md:experimental https://github.com/orgs/goreleaser/discussions/6005 -->
 
 !!! warning "alpha"
 

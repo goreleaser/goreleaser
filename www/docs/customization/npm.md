@@ -2,8 +2,6 @@
 
 <!-- md:version v2.8 -->
 
-<!-- md:alpha -->
-
 <!-- md:pro -->
 
 The `npms` section configures how GoReleaser publishes your packages to NPM

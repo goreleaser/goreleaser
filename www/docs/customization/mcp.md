@@ -1,8 +1,8 @@
 # Model Context Protocol (MCP) Server
 
-<!-- md:alpha -->
-
 <!-- md:version v2.13-unreleased -->
+
+<!-- md:experimental https://github.com/orgs/goreleaser/discussions/6251 -->
 
 After building your binaries, GoReleaser can generate and publish a Model
 Context Protocol (MCP) server manifest file (`server.json`).
