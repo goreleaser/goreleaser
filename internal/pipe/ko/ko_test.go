@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"maps"
 	"os/exec"
+	"runtime"
 	"strconv"
 	"strings"
 	"testing"
@@ -621,7 +622,12 @@ func TestPublishLocalBaseImage(t *testing.T) {
 					Tags:         []string{"latest", "{{.Tag}}"},
 					BaseImage:    "local-base:latest",
 					SBOM:         "none",
-					Platforms:    []string{"linux/arm64"},
+					Platforms: []string{fmt.Sprintf("%s/%s", func() string {
+						if runtime.GOOS != "linux" {
+							return "linux"
+						}
+						return runtime.GOOS
+					}(), runtime.GOARCH)},
 				},
 			},
 		}, testctx.WithCurrentTag("v1.0.0"))
