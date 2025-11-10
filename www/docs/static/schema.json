@@ -555,37 +555,6 @@
 				"additionalProperties": false,
 				"type": "object"
 			},
-			"Discourse": {
-				"properties": {
-					"enabled": {
-						"oneOf": [
-							{
-								"type": "string"
-							},
-							{
-								"type": "boolean"
-							}
-						]
-					},
-					"server": {
-						"type": "string"
-					},
-					"title_template": {
-						"type": "string"
-					},
-					"message_template": {
-						"type": "string"
-					},
-					"username": {
-						"type": "string"
-					},
-					"category_id": {
-						"type": "integer"
-					}
-				},
-				"additionalProperties": false,
-				"type": "object"
-			},
 			"Build": {
 				"properties": {
 					"id": {
@@ -1104,6 +1073,37 @@
 						"type": "string"
 					},
 					"icon_url": {
+						"type": "string"
+					}
+				},
+				"additionalProperties": false,
+				"type": "object"
+			},
+			"Discourse": {
+				"properties": {
+					"enabled": {
+						"oneOf": [
+							{
+								"type": "string"
+							},
+							{
+								"type": "boolean"
+							}
+						]
+					},
+					"title_template": {
+						"type": "string"
+					},
+					"message_template": {
+						"type": "string"
+					},
+					"server": {
+						"type": "string"
+					},
+					"category_id": {
+						"type": "integer"
+					},
+					"username": {
 						"type": "string"
 					}
 				},
@@ -2282,6 +2282,142 @@
 					},
 					"message_template": {
 						"type": "string"
+					}
+				},
+				"additionalProperties": false,
+				"type": "object"
+			},
+			"MCP": {
+				"properties": {
+					"name": {
+						"type": "string"
+					},
+					"title": {
+						"type": "string"
+					},
+					"description": {
+						"type": "string"
+					},
+					"homepage": {
+						"type": "string"
+					},
+					"packages": {
+						"items": {
+							"$ref": "#/$defs/MCPPackage"
+						},
+						"type": "array"
+					},
+					"transports": {
+						"items": {
+							"$ref": "#/$defs/MCPTransport"
+						},
+						"type": "array"
+					},
+					"disable": {
+						"oneOf": [
+							{
+								"type": "string"
+							},
+							{
+								"type": "boolean"
+							}
+						]
+					},
+					"repository": {
+						"$ref": "#/$defs/MCPRepository"
+					},
+					"auth": {
+						"$ref": "#/$defs/MCPAuth"
+					}
+				},
+				"additionalProperties": false,
+				"type": "object",
+				"required": [
+					"name",
+					"title",
+					"auth"
+				]
+			},
+			"MCPAuth": {
+				"properties": {
+					"type": {
+						"type": "string",
+						"enum": [
+							"none",
+							"github",
+							"github-oidc"
+						],
+						"default": "none"
+					},
+					"token": {
+						"type": "string"
+					}
+				},
+				"additionalProperties": false,
+				"type": "object",
+				"required": [
+					"type"
+				]
+			},
+			"MCPPackage": {
+				"properties": {
+					"registry_type": {
+						"type": "string",
+						"enum": [
+							"oci",
+							"npm",
+							"pypi",
+							"nuget",
+							"mcpb"
+						]
+					},
+					"identifier": {
+						"type": "string"
+					},
+					"transport": {
+						"$ref": "#/$defs/MCPTransport"
+					}
+				},
+				"additionalProperties": false,
+				"type": "object",
+				"required": [
+					"registry_type",
+					"identifier",
+					"transport"
+				]
+			},
+			"MCPRepository": {
+				"properties": {
+					"url": {
+						"type": "string"
+					},
+					"source": {
+						"type": "string",
+						"enum": [
+							"github",
+							"gitlab",
+							"gitea"
+						]
+					},
+					"id": {
+						"type": "string"
+					},
+					"subfolder": {
+						"type": "string"
+					}
+				},
+				"additionalProperties": false,
+				"type": "object"
+			},
+			"MCPTransport": {
+				"properties": {
+					"type": {
+						"type": "string",
+						"enum": [
+							"stdio",
+							"streamable-http",
+							"sse"
+						]
 					}
 				},
 				"additionalProperties": false,
@@ -3507,6 +3643,9 @@
 							"$ref": "#/$defs/UPX"
 						},
 						"type": "array"
+					},
+					"mcp": {
+						"$ref": "#/$defs/MCP"
 					},
 					"force_token": {
 						"type": "string",
