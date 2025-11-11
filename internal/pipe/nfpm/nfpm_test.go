@@ -417,9 +417,9 @@ func TestRunPipe(t *testing.T) {
 		require.Equal(t, "."+pkg.Format(), pkg.Ext())
 		arch := pkg.Goarch
 		if pkg.Goarm != "" {
-			// Normalize goarm to handle comma-separated values like "6,softfloat"
+			// Normalize goarm to handle underscore-separated values like "6_softfloat"
 			normalizedGoarm := pkg.Goarm
-			if idx := strings.Index(normalizedGoarm, ","); idx > 0 {
+			if idx := strings.Index(normalizedGoarm, "_"); idx > 0 {
 				normalizedGoarm = normalizedGoarm[:idx]
 			}
 			arch += "v" + normalizedGoarm
@@ -463,9 +463,9 @@ func TestRunPipe(t *testing.T) {
 			require.Equal(t, now.UTC(), src.FileInfo.MTime.UTC(), src.Destination)
 		}
 
-		// Normalize goarm to handle comma-separated values like "6,softfloat"
+		// Normalize goarm to handle underscore-separated values like "6_softfloat"
 		normalizedGoarm := pkg.Goarm
-		if idx := strings.Index(normalizedGoarm, ","); idx > 0 {
+		if idx := strings.Index(normalizedGoarm, "_"); idx > 0 {
 			normalizedGoarm = normalizedGoarm[:idx]
 		}
 

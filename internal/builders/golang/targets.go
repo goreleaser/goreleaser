@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"regexp"
 	"slices"
+	"strings"
 
 	"github.com/caarlos0/log"
 	"github.com/goreleaser/goreleaser/v2/internal/tmpl"
@@ -67,12 +68,15 @@ func (t Target) String() string {
 }
 
 func (t Target) env() []string {
+	// Convert underscore to comma for GOARM environment variable
+	// (goreleaser uses underscores internally, but Go expects commas)
+	goarm := strings.ReplaceAll(t.Goarm, "_", ",")
 	return []string{
 		"GOOS=" + t.Goos,
 		"GOARCH=" + t.Goarch,
 		"GOAMD64=" + t.Goamd64,
 		"GO386=" + t.Go386,
-		"GOARM=" + t.Goarm,
+		"GOARM=" + goarm,
 		"GOARM64=" + t.Goarm64,
 		"GOMIPS=" + t.Gomips,
 		"GOMIPS64=" + t.Gomips,
@@ -357,7 +361,7 @@ var (
 
 	validGoamd64   = []string{"v1", "v2", "v3", "v4"}
 	validGo386     = []string{"sse2", "softfloat"}
-	validGoarm     = []string{"5", "6", "7", "5,softfloat", "5,hardfloat", "6,softfloat", "6,hardfloat", "7,softfloat", "7,hardfloat"}
+	validGoarm     = []string{"5", "6", "7", "5_softfloat", "5_hardfloat", "6_softfloat", "6_hardfloat", "7_softfloat", "7_hardfloat"}
 	validGoarm64   = regexp.MustCompile(`(v8\.[0-9]|v9\.[0-5])((,lse|,crypto)?)+`)
 	validGomips    = []string{"hardfloat", "softfloat"}
 	validGoppc64   = []string{"power8", "power9", "power10"}

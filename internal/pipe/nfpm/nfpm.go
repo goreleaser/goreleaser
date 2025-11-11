@@ -164,7 +164,7 @@ func isSupportedTermuxArch(goos, goarch string) bool {
 // arch officially only supports x86_64.
 // however, there are unofficial ports for 686, arm64, and armv7
 func isSupportedArchlinuxArch(goarch, goarm string) bool {
-	// Normalize goarm to handle comma-separated values like "7,softfloat"
+	// Normalize goarm to handle underscore-separated values like "7_softfloat"
 	normalizedGoarm := normalizeGoarm(goarm)
 	if goarch == "arm" && normalizedGoarm == "7" {
 		return true
@@ -184,10 +184,10 @@ var termuxArchReplacer = strings.NewReplacer(
 	"arm6", "arm",
 )
 
-// normalizeGoarm extracts the base GOARM version from values like "6,softfloat" or "7,hardfloat".
+// normalizeGoarm extracts the base GOARM version from values like "6_softfloat" or "7_hardfloat".
 // For plain values like "6" or "7", it returns them as-is.
 func normalizeGoarm(goarm string) string {
-	if idx := strings.Index(goarm, ","); idx > 0 {
+	if idx := strings.Index(goarm, "_"); idx > 0 {
 		return goarm[:idx]
 	}
 	return goarm
@@ -195,9 +195,9 @@ func normalizeGoarm(goarm string) string {
 
 func create(ctx *context.Context, fpm config.NFPM, format string, artifacts []*artifact.Artifact) error {
 	// TODO: improve this.
-	// Normalize goarm to handle comma-separated values like "6,softfloat"
+	// Normalize goarm to handle underscore-separated values like "6_softfloat"
 	normalizedGoarm := normalizeGoarm(artifacts[0].Goarm)
-	infoArch := artifacts[0].Goarch + normalizedGoarm + artifacts[0].Gomips                                                          // key used for the ConventionalFileName et al
+	infoArch := artifacts[0].Goarch + normalizedGoarm + artifacts[0].Gomips                                                             // key used for the ConventionalFileName et al
 	arch := infoArch + artifacts[0].Go386 + artifacts[0].Goamd64 + artifacts[0].Goarm64 + artifacts[0].Goppc64 + artifacts[0].Goriscv64 // unique arch key
 	infoPlatform := artifacts[0].Goos
 	if infoPlatform == "ios" {
