@@ -121,12 +121,12 @@ builds:
     # and https://go.dev/wiki/MinimumRequirements#microarchitecture-support
     #
     # You can also specify softfloat and hardfloat explicitly (since Go 1.22):
-    #   - 5,softfloat
-    #   - 5,hardfloat
-    #   - 6,softfloat
-    #   - 6,hardfloat
-    #   - 7,softfloat
-    #   - 7,hardfloat
+    #   - 5_softfloat
+    #   - 5_hardfloat
+    #   - 6_softfloat
+    #   - 6_hardfloat
+    #   - 7_softfloat
+    #   - 7_hardfloat
     #
     # Default: [ 6 ].
     goarm:

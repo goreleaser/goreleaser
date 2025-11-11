@@ -296,7 +296,7 @@ func preparePkg(
 		}
 
 		for _, goarch := range expandGoarch(art.Goarch) {
-			// Normalize goarm to handle comma-separated values like "6,softfloat"
+			// Normalize goarm to handle underscore-separated values like "6_softfloat"
 			normalizedGoarm := normalizeGoarm(art.Goarm)
 			key := art.Goos + goarch + normalizedGoarm
 			if _, ok := data.Archives[key]; ok {
@@ -328,10 +328,10 @@ func expandGoarch(goarch string) []string {
 	return []string{goarch}
 }
 
-// normalizeGoarm extracts the base GOARM version from values like "6,softfloat" or "7,hardfloat".
+// normalizeGoarm extracts the base GOARM version from values like "6_softfloat" or "7_hardfloat".
 // For plain values like "6" or "7", it returns them as-is.
 func normalizeGoarm(goarm string) string {
-	if idx := strings.Index(goarm, ","); idx > 0 {
+	if idx := strings.Index(goarm, "_"); idx > 0 {
 		return goarm[:idx]
 	}
 	return goarm
