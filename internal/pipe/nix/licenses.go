@@ -136,6 +136,7 @@ var validLicenses = []string{
 	"hpndDoc",
 	"hpndDocSell",
 	"hpndUc",
+	"hyphenBulgarian",
 	"iasl",
 	"icu",
 	"ijg",
