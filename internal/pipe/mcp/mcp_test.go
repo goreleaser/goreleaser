@@ -387,11 +387,10 @@ func TestPublishMultiplePackages(t *testing.T) {
 	require.NoError(t, pipe.Publish(ctx))
 
 	expected := apiv0.ServerJSON{
-		Schema:     "https://static.modelcontextprotocol.io/schemas/2025-10-17/server.schema.json",
-		Name:       "multi-package-server",
-		Title:      "Multi Package Server",
-		Version:    "2.0.0",
-		Repository: &model.Repository{},
+		Schema:  "https://static.modelcontextprotocol.io/schemas/2025-10-17/server.schema.json",
+		Name:    "multi-package-server",
+		Title:   "Multi Package Server",
+		Version: "2.0.0",
 		Packages: []model.Package{
 			{
 				RegistryType: "npm",
