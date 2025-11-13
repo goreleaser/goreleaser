@@ -1,10 +1,12 @@
 package golang
 
 import (
+	"errors"
 	"fmt"
 	"go/ast"
 	"go/parser"
 	"go/token"
+	"io/fs"
 	"maps"
 	"os"
 	"path/filepath"
@@ -550,7 +552,7 @@ func getHeaderArtifactForLibrary(build config.Build, options api.Options) *artif
 	headerName := basePath + ".h"
 	t := options.Target.(Target)
 
-	if _, err := os.Stat(fullPath); os.IsNotExist(err) {
+	if _, err := os.Stat(fullPath); errors.Is(err, fs.ErrNotExist) {
 		return nil
 	}
 
