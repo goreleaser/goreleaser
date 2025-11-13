@@ -1686,6 +1686,44 @@ something something
 	})
 }
 
+func TestArtifactType(t *testing.T) {
+	t.Run("c-archive", func(t *testing.T) {
+		require.Equal(t, artifact.CArchive, artifactType(Target{}, "c-archive"))
+	})
+	t.Run("c-shared", func(t *testing.T) {
+		require.Equal(t, artifact.CShared, artifactType(Target{Target: "linux_arm64"}, "c-shared"))
+	})
+	t.Run("c-shared/wasm", func(t *testing.T) {
+		require.Equal(t, artifact.Binary, artifactType(Target{Target: "wasm"}, "c-shared"))
+	})
+	t.Run("binary", func(t *testing.T) {
+		require.Equal(t, artifact.Binary, artifactType(Target{}, ""))
+	})
+}
+
+func TestGetHeaderArtifactForLibrary(t *testing.T) {
+	t.Run("no .h", func(t *testing.T) {
+		require.Nil(t, getHeaderArtifactForLibrary(config.Build{}, api.Options{
+			Path:   "foo.so",
+			Target: Target{},
+		}))
+	})
+	t.Run(".h", func(t *testing.T) {
+		tmp := t.TempDir()
+		so := filepath.Join(tmp, "foo.so")
+		h := filepath.Join(tmp, "foo.h")
+		require.NoError(t, os.WriteFile(so, nil, 0o644))
+		require.NoError(t, os.WriteFile(h, nil, 0o644))
+		a := getHeaderArtifactForLibrary(config.Build{}, api.Options{
+			Path:   so,
+			Ext:    ".so",
+			Target: Target{},
+		})
+		require.NotNil(t, a)
+		require.Equal(t, h, a.Path)
+	})
+}
+
 //
 // Helpers
 //
