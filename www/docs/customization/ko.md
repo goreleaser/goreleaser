@@ -38,6 +38,8 @@ kos:
 
     # Base image to publish to use.
     #
+    # Local images will take priority over fetching remote images
+    #
     # Default: 'cgr.dev/chainguard/static'.
     base_image: alpine
 
