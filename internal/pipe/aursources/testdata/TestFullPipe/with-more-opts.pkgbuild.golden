@@ -3,7 +3,7 @@
 # Contributor: me as well
 
 pkgname='with-more-opts'
-pkgver=1.0.1
+pkgver=1.0.1_foo
 pkgrel=1
 pkgdesc='A run pipe test fish food and FOO=foo_is_bar'
 url='https://github.com/goreleaser'

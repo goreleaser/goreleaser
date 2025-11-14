@@ -1,6 +1,6 @@
 pkgbase = double-quote-inside-description
 	pkgdesc = This is a "test"
-	pkgver = 1.0.1
+	pkgver = 1.0.1_foo
 	pkgrel = 1
 	arch = aarch64
 	arch = x86_64
