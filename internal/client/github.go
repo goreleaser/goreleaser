@@ -5,6 +5,7 @@ import (
 	"crypto/tls"
 	"errors"
 	"fmt"
+	"io"
 	"net/http"
 	"net/url"
 	"os"
@@ -255,7 +256,7 @@ func (c *githubClient) SyncFork(ctx *context.Context, head, base Repo) error {
 		}
 		branch = def
 	}
-	res, _, err := c.client.Repositories.MergeUpstream(
+	res, resp, err := c.client.Repositories.MergeUpstream(
 		ctx,
 		head.Owner,
 		head.Name,
@@ -263,12 +264,14 @@ func (c *githubClient) SyncFork(ctx *context.Context, head, base Repo) error {
 			Branch: github.Ptr(branch),
 		},
 	)
-	if res != nil {
-		log.WithField("merge_type", res.GetMergeType()).
-			WithField("base_branch", res.GetBaseBranch()).
-			Info(res.GetMessage())
+	if err != nil {
+		bts, _ := io.ReadAll(resp.Body)
+		return fmt.Errorf("%w: %s", err, string(bts))
 	}
-	return err
+	log.WithField("merge_type", res.GetMergeType()).
+		WithField("base_branch", res.GetBaseBranch()).
+		Info(res.GetMessage())
+	return nil
 }
 
 func (c *githubClient) CreateFile(
@@ -323,13 +326,14 @@ func (c *githubClient) CreateFile(
 				return fmt.Errorf("could not get ref %q: %w", "refs/heads/"+defBranch, err)
 			}
 
-			if _, _, err := c.client.Git.CreateRef(ctx, repo.Owner, repo.Name, github.CreateRef{
+			if _, resp, err := c.client.Git.CreateRef(ctx, repo.Owner, repo.Name, github.CreateRef{
 				Ref: "refs/heads/" + branch,
 				SHA: defRef.Object.GetSHA(),
 			}); err != nil {
 				rerr := new(github.ErrorResponse)
 				if !errors.As(err, &rerr) || rerr.Message != "Reference already exists" {
-					return fmt.Errorf("could not create ref %q from %q: %w", "refs/heads/"+branch, defRef.Object.GetSHA(), err)
+					bts, _ := io.ReadAll(resp.Body)
+					return fmt.Errorf("could not create ref %q from %q: %w: %s", "refs/heads/"+branch, defRef.Object.GetSHA(), err, string(bts))
 				}
 			}
 		}
