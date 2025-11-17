@@ -14,6 +14,7 @@ import (
 	"path/filepath"
 	"slices"
 	"strings"
+	"sync"
 	"time"
 
 	"github.com/avast/retry-go/v4"
@@ -142,6 +143,8 @@ func buildImage(ctx *context.Context, d config.DockerV2, extraArgs ...string) er
 	if disable {
 		return pipe.Skip("configuration is disabled")
 	}
+
+	checkBuildxDriver(ctx)
 
 	arg, images, err := makeArgs(ctx, d, extraArgs)
 	if err != nil {
@@ -505,4 +508,46 @@ func warnExperimental() {
 	log.WithField("details", `Keep an eye on the release notes if you wish to rely on this for production builds.
 Please provide any feedback you might have at https://github.com/orgs/goreleaser/discussions/6005`).
 		Warn(logext.Warning("dockers_v2 is experimental and subject to change"))
+}
+
+var driverWarningOnce sync.Once
+
+// checkBuildxDriver checks if the buildx driver is docker-container and warns if not.
+func checkBuildxDriver(ctx *context.Context) {
+	driverWarningOnce.Do(func() {
+		driver := getBuildxDriver(ctx)
+		if driver != "" && driver != "docker-container" {
+			log.Warn(
+				logext.Warning("docker buildx is using the ") +
+					logext.Keyword(driver) +
+					logext.Warning(" driver, which may cause issues with attestations when pushing images. ") +
+					logext.Warning("Consider switching to the ") +
+					logext.Keyword("docker-container") +
+					logext.Warning(" driver. Learn more at ") +
+					logext.URL("https://docs.docker.com/go/attestations/"),
+			)
+		}
+	})
+}
+
+// getBuildxDriver returns the current buildx driver name.
+func getBuildxDriver(ctx *context.Context) string {
+	cmd := exec.CommandContext(ctx, "docker", "buildx", "inspect")
+	out, err := cmd.CombinedOutput()
+	if err != nil {
+		// If we can't inspect, silently continue as buildx might not be available
+		return ""
+	}
+
+	// Parse the output to find the Driver line
+	lines := strings.Split(string(out), "\n")
+	for _, line := range lines {
+		if strings.HasPrefix(line, "Driver:") {
+			parts := strings.Fields(line)
+			if len(parts) >= 2 {
+				return parts[1]
+			}
+		}
+	}
+	return ""
 }
