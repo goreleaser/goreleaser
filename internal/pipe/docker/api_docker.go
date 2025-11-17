@@ -3,11 +3,7 @@ package docker
 import (
 	"fmt"
 	"regexp"
-	"strings"
-	"sync"
 
-	"github.com/caarlos0/log"
-	"github.com/goreleaser/goreleaser/v2/internal/logext"
 	"github.com/goreleaser/goreleaser/v2/pkg/context"
 )
 
@@ -53,10 +49,7 @@ type dockerImager struct {
 	buildx bool
 }
 
-var (
-	dockerDigestPattern = regexp.MustCompile("sha256:[a-z0-9]{64}")
-	driverWarningOnce   sync.Once
-)
+var dockerDigestPattern = regexp.MustCompile("sha256:[a-z0-9]{64}")
 
 func (i dockerImager) Push(ctx *context.Context, image string, _ []string) (string, error) {
 	bts, err := runCommandWithOutput(ctx, ".", "docker", "push", image)
@@ -71,9 +64,6 @@ func (i dockerImager) Push(ctx *context.Context, image string, _ []string) (stri
 }
 
 func (i dockerImager) Build(ctx *context.Context, root string, images, flags []string) error {
-	if i.buildx {
-		checkBuildxDriver(ctx)
-	}
 	if err := runCommand(ctx, root, "docker", i.buildCommand(images, flags)...); err != nil {
 		return fmt.Errorf("failed to build %s: %w", images[0], err)
 	}
@@ -90,43 +80,4 @@ func (i dockerImager) buildCommand(images, flags []string) []string {
 	}
 	base = append(base, flags...)
 	return base
-}
-
-// checkBuildxDriver checks if the buildx driver is docker-container and warns if not.
-func checkBuildxDriver(ctx *context.Context) {
-	driverWarningOnce.Do(func() {
-		driver := getBuildxDriver(ctx)
-		if driver != "" && driver != "docker-container" {
-			log.Warn(
-				logext.Warning("docker buildx is using the ") +
-					logext.Keyword(driver) +
-					logext.Warning(" driver, which may cause issues with attestations when pushing images. ") +
-					logext.Warning("Consider switching to the ") +
-					logext.Keyword("docker-container") +
-					logext.Warning(" driver. Learn more at ") +
-					logext.URL("https://docs.docker.com/go/attestations/"),
-			)
-		}
-	})
-}
-
-// getBuildxDriver returns the current buildx driver name.
-func getBuildxDriver(ctx *context.Context) string {
-	out, err := runCommandWithOutput(ctx, ".", "docker", "buildx", "inspect")
-	if err != nil {
-		// If we can't inspect, silently continue as buildx might not be available
-		return ""
-	}
-
-	// Parse the output to find the Driver line
-	lines := strings.Split(string(out), "\n")
-	for _, line := range lines {
-		if strings.HasPrefix(line, "Driver:") {
-			parts := strings.Fields(line)
-			if len(parts) >= 2 {
-				return parts[1]
-			}
-		}
-	}
-	return ""
 }
