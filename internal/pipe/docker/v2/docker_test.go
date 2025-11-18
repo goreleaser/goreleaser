@@ -417,14 +417,6 @@ func TestTagSuffix(t *testing.T) {
 
 func TestGetBuildxDriver(t *testing.T) {
 	testlib.CheckDocker(t)
-
-	ctx := testctx.New()
-	driver := getBuildxDriver(ctx)
-
-	// The driver should be one of the known types, or empty if buildx is not available
-	// We just verify it doesn't crash and returns a string
-	t.Logf("detected buildx driver: %q", driver)
-	require.NotPanics(t, func() {
-		getBuildxDriver(ctx)
-	})
+	checkBuildxDriver(t.Context())
+	require.NotEmpty(t, getBuildxDriver(t.Context()))
 }
