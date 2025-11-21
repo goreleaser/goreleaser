@@ -217,17 +217,16 @@ func (o *buildOptions) makeBuilder(ctx *context.Context) (*build.Caching, error)
 
 			if cached, found := baseImages.Load(o.baseImage); found {
 				return ref, cached.(build.Result), nil
-			} else {
-				localImage, err := daemon.Image(ref)
-				if err != nil {
-					if !errdefs.IsNotFound(err) {
-						return nil, nil, err
-					}
+			}
+			localImage, err := daemon.Image(ref)
+			if err != nil {
+				if !errdefs.IsNotFound(err) {
+					return nil, nil, err
 				}
-				if localImage != nil {
-					baseImages.Store(o.baseImage, localImage)
-					return ref, localImage, err
-				}
+			}
+			if localImage != nil {
+				baseImages.Store(o.baseImage, localImage)
+				return ref, localImage, err
 			}
 
 			desc, err := remote.Get(
