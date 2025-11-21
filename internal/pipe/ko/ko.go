@@ -219,10 +219,8 @@ func (o *buildOptions) makeBuilder(ctx *context.Context) (*build.Caching, error)
 				return ref, cached.(build.Result), nil
 			}
 			localImage, err := daemon.Image(ref)
-			if err != nil {
-				if !errdefs.IsNotFound(err) {
-					return nil, nil, err
-				}
+			if err != nil && !errdefs.IsNotFound(err) {
+				return nil, nil, err
 			}
 			if localImage != nil {
 				baseImages.Store(o.baseImage, localImage)
