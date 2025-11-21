@@ -169,8 +169,6 @@ changelog:
 
 <!-- md:version v2.6 -->
 
-<!-- md:alpha -->
-
 You can also use AI to enhance your release notes:
 
 ```yaml title=".goreleaser.yaml"

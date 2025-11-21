@@ -80,35 +80,41 @@ func TestSemaphore(t *testing.T) {
 }
 
 func TestSemaphoreOrder(t *testing.T) {
-	num := 10
-	g := New(1)
-	output := []int{}
-	for i := range num {
-		g.Go(func() error {
-			output = append(output, i)
-			return nil
-		})
-	}
-	require.NoError(t, g.Wait())
-	require.Equal(t, []int{0, 1, 2, 3, 4, 5, 6, 7, 8, 9}, output)
+	synctest.Test(t, func(t *testing.T) {
+		t.Helper()
+		num := 10
+		g := New(1)
+		output := []int{}
+		for i := range num {
+			g.Go(func() error {
+				output = append(output, i)
+				return nil
+			})
+		}
+		require.NoError(t, g.Wait())
+		require.Equal(t, []int{0, 1, 2, 3, 4, 5, 6, 7, 8, 9}, output)
+	})
 }
 
 func TestSemaphoreError(t *testing.T) {
 	for _, i := range []int{1, 4} {
 		t.Run(fmt.Sprintf("limit-%d", i), func(t *testing.T) {
-			g := New(i)
-			var lock sync.Mutex
-			output := []int{}
-			for i := range 10 {
-				g.Go(func() error {
-					lock.Lock()
-					defer lock.Unlock()
-					output = append(output, i)
-					return fmt.Errorf("fake err")
-				})
-			}
-			require.EqualError(t, g.Wait(), "fake err")
-			require.Len(t, output, 10)
+			synctest.Test(t, func(t *testing.T) {
+				t.Helper()
+				g := New(i)
+				var lock sync.Mutex
+				output := []int{}
+				for i := range 10 {
+					g.Go(func() error {
+						lock.Lock()
+						defer lock.Unlock()
+						output = append(output, i)
+						return fmt.Errorf("fake err")
+					})
+				}
+				require.EqualError(t, g.Wait(), "fake err")
+				require.Len(t, output, 10)
+			})
 		})
 	}
 }

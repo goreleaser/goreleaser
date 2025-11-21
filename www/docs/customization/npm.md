@@ -2,8 +2,6 @@
 
 <!-- md:version v2.8 -->
 
-<!-- md:alpha -->
-
 <!-- md:pro -->
 
 The `npms` section configures how GoReleaser publishes your packages to NPM
@@ -138,6 +136,14 @@ npms:
     # Templates: allowed.
     # <!-- md:inline_version v2.10 -->.
     url_template: "https://github.mycompany.com/foo/bar/releases/download/{{ .Tag }}/{{ .ArtifactName }}"
+
+    # Set extra fields at the root level of the generated package.json.
+    #
+    # <!-- md:inline_version v2.13-unreleased -->.
+    extra:
+      mcpName: io.github.foo/bar
+      complex:
+        foo: bar
 ```
 
 !!! warning "Caveat"

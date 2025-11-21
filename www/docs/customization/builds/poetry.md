@@ -2,8 +2,6 @@
 
 <!-- md:version v2.9 -->
 
-<!-- md:alpha -->
-
 You can now build Python `wheel` and `sdist` files using `poetry build` and
 GoReleaser!
 

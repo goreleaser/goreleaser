@@ -55,7 +55,7 @@ which is different from what other git sorting options might give you.
 
 <!-- md:version v2.12 -->
 
-<!-- md:alpha -->
+<!-- md:experimental -->
 
 <!-- md:featpro -->
 

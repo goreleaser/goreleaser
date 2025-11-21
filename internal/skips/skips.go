@@ -35,6 +35,7 @@ const (
 	Chocolatey     Key = "chocolatey"
 	Notarize       Key = "notarize"
 	Archive        Key = "archive"
+	MCP            Key = "mcp"
 )
 
 func String(ctx *context.Context) string {
@@ -128,6 +129,7 @@ var Release = Keys{
 	Before,
 	Notarize,
 	Archive,
+	MCP,
 }
 
 var Build = Keys{

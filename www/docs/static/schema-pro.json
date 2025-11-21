@@ -318,6 +318,9 @@
 					},
 					"bluesky": {
 						"$ref": "#/$defs/Bluesky"
+					},
+					"discourse": {
+						"$ref": "#/$defs/Discourse"
 					}
 				},
 				"additionalProperties": false,
@@ -1380,6 +1383,37 @@
 						"type": "string"
 					},
 					"icon_url": {
+						"type": "string"
+					}
+				},
+				"additionalProperties": false,
+				"type": "object"
+			},
+			"Discourse": {
+				"properties": {
+					"enabled": {
+						"oneOf": [
+							{
+								"type": "string"
+							},
+							{
+								"type": "boolean"
+							}
+						]
+					},
+					"title_template": {
+						"type": "string"
+					},
+					"message_template": {
+						"type": "string"
+					},
+					"server": {
+						"type": "string"
+					},
+					"category_id": {
+						"type": "integer"
+					},
+					"username": {
 						"type": "string"
 					}
 				},
@@ -2773,6 +2807,142 @@
 				"additionalProperties": false,
 				"type": "object"
 			},
+			"MCP": {
+				"properties": {
+					"name": {
+						"type": "string"
+					},
+					"title": {
+						"type": "string"
+					},
+					"description": {
+						"type": "string"
+					},
+					"homepage": {
+						"type": "string"
+					},
+					"packages": {
+						"items": {
+							"$ref": "#/$defs/MCPPackage"
+						},
+						"type": "array"
+					},
+					"transports": {
+						"items": {
+							"$ref": "#/$defs/MCPTransport"
+						},
+						"type": "array"
+					},
+					"disable": {
+						"oneOf": [
+							{
+								"type": "string"
+							},
+							{
+								"type": "boolean"
+							}
+						]
+					},
+					"repository": {
+						"$ref": "#/$defs/MCPRepository"
+					},
+					"auth": {
+						"$ref": "#/$defs/MCPAuth"
+					}
+				},
+				"additionalProperties": false,
+				"type": "object",
+				"required": [
+					"name",
+					"title",
+					"auth"
+				]
+			},
+			"MCPAuth": {
+				"properties": {
+					"type": {
+						"type": "string",
+						"enum": [
+							"none",
+							"github",
+							"github-oidc"
+						],
+						"default": "none"
+					},
+					"token": {
+						"type": "string"
+					}
+				},
+				"additionalProperties": false,
+				"type": "object",
+				"required": [
+					"type"
+				]
+			},
+			"MCPPackage": {
+				"properties": {
+					"registry_type": {
+						"type": "string",
+						"enum": [
+							"oci",
+							"npm",
+							"pypi",
+							"nuget",
+							"mcpb"
+						]
+					},
+					"identifier": {
+						"type": "string"
+					},
+					"transport": {
+						"$ref": "#/$defs/MCPTransport"
+					}
+				},
+				"additionalProperties": false,
+				"type": "object",
+				"required": [
+					"registry_type",
+					"identifier",
+					"transport"
+				]
+			},
+			"MCPRepository": {
+				"properties": {
+					"url": {
+						"type": "string"
+					},
+					"source": {
+						"type": "string",
+						"enum": [
+							"github",
+							"gitlab",
+							"gitea"
+						]
+					},
+					"id": {
+						"type": "string"
+					},
+					"subfolder": {
+						"type": "string"
+					}
+				},
+				"additionalProperties": false,
+				"type": "object"
+			},
+			"MCPTransport": {
+				"properties": {
+					"type": {
+						"type": "string",
+						"enum": [
+							"stdio",
+							"streamable-http",
+							"sse"
+						]
+					}
+				},
+				"additionalProperties": false,
+				"type": "object"
+			},
 			"MSI": {
 				"properties": {
 					"id": {
@@ -3916,6 +4086,9 @@
 					},
 					"tag": {
 						"type": "string"
+					},
+					"extra": {
+						"type": "object"
 					}
 				},
 				"additionalProperties": false,
@@ -4355,6 +4528,9 @@
 						},
 						"type": "array"
 					},
+					"mcp": {
+						"$ref": "#/$defs/MCP"
+					},
 					"force_token": {
 						"type": "string",
 						"enum": [
@@ -4566,7 +4742,7 @@
 					},
 					{
 						"$schema": "https://json-schema.org/draft/2020-12/schema",
-						"$id": "https://github.com/goreleaser/goreleaser/v2/pkg/config/pull-request-base",
+						"$id": "https://github.com/goreleaser/goreleaser/v2/pkg/config/pull-request-base-alias",
 						"properties": {
 							"owner": {
 								"type": "string"
