@@ -21,7 +21,7 @@ func TestRun(t *testing.T) {
 	testlib.SkipIfWindows(t, "registry images only available for windows")
 
 	dist := t.TempDir()
-	ctx := testctx.NewWithCfg(config.Project{
+	ctx := testctx.WrapWithCfg(t.Context(), config.Project{
 		ProjectName: "dockerv2",
 		Dist:        dist,
 		DockersV2: []config.DockerV2{
@@ -180,7 +180,7 @@ func TestPublish(t *testing.T) {
 	testlib.StartRegistry(t, "alt_registry-v2", "5061")
 
 	dist := t.TempDir()
-	ctx := testctx.NewWithCfg(
+	ctx := testctx.WrapWithCfg(t.Context(),
 		config.Project{
 			ProjectName: "dockerv2",
 			Dist:        dist,
@@ -283,6 +283,13 @@ func TestPublish(t *testing.T) {
 		}
 		require.False(t, hasSBOM(t, "localhost:5060/python:latest"))
 	})
+}
+
+func TestGetBuildxDriver(t *testing.T) {
+	testlib.CheckDocker(t)
+	testlib.SkipIfWindows(t, "no buildx on Windows")
+	checkBuildxDriver(t.Context())
+	require.NotEmpty(t, getBuildxDriver(t.Context()))
 }
 
 func names(in []*artifact.Artifact) []string {

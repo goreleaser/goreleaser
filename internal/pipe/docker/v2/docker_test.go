@@ -414,9 +414,3 @@ func TestTagSuffix(t *testing.T) {
 		})
 	}
 }
-
-func TestGetBuildxDriver(t *testing.T) {
-	testlib.CheckDocker(t)
-	checkBuildxDriver(t.Context())
-	require.NotEmpty(t, getBuildxDriver(t.Context()))
-}
