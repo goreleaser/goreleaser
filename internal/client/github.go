@@ -730,6 +730,7 @@ func bodyOf(resp *github.Response) string {
 	if resp == nil {
 		return "no response"
 	}
+	defer resp.Body.Close()
 	bts, _ := io.ReadAll(resp.Body)
 	return string(bts)
 }
