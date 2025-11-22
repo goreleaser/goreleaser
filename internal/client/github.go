@@ -265,8 +265,7 @@ func (c *githubClient) SyncFork(ctx *context.Context, head, base Repo) error {
 		},
 	)
 	if err != nil {
-		bts, _ := io.ReadAll(resp.Body)
-		return fmt.Errorf("%w: %s", err, string(bts))
+		return fmt.Errorf("%w: %s", err, bodyOf(resp))
 	}
 	log.WithField("merge_type", res.GetMergeType()).
 		WithField("base_branch", res.GetBaseBranch()).
@@ -332,8 +331,7 @@ func (c *githubClient) CreateFile(
 			}); err != nil {
 				rerr := new(github.ErrorResponse)
 				if !errors.As(err, &rerr) || rerr.Message != "Reference already exists" {
-					bts, _ := io.ReadAll(resp.Body)
-					return fmt.Errorf("could not create ref %q from %q: %w: %s", "refs/heads/"+branch, defRef.Object.GetSHA(), err, string(bts))
+					return fmt.Errorf("could not create ref %q from %q: %w: %s", "refs/heads/"+branch, defRef.Object.GetSHA(), err, bodyOf(resp))
 				}
 			}
 		}
@@ -726,4 +724,12 @@ func githubErrLogger(resp *github.Response, err error) *log.Entry {
 		requestID = resp.Header.Get("X-GitHub-Request-Id")
 	}
 	return log.WithField("request-id", requestID).WithError(err)
+}
+
+func bodyOf(resp *github.Response) string {
+	if resp == nil {
+		return "no response"
+	}
+	bts, _ := io.ReadAll(resp.Body)
+	return string(bts)
 }
