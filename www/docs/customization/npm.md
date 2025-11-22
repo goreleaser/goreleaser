@@ -109,7 +109,7 @@ npms:
     #
     # Default: 'latest'.
     # Templates: allowed.
-    # <!-- md:inline_version v2.13-unreleased -->.
+    # <!-- md:inline_version v2.13 -->.
     tag: latest
 
     # Package format: tar, tgz, tar.gz, zip, or binary.
@@ -139,7 +139,7 @@ npms:
 
     # Set extra fields at the root level of the generated package.json.
     #
-    # <!-- md:inline_version v2.13-unreleased -->.
+    # <!-- md:inline_version v2.13 -->.
     extra:
       mcpName: io.github.foo/bar
       complex:

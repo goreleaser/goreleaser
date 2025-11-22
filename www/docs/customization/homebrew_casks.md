@@ -168,7 +168,7 @@ homebrew_casks:
 
     # Hooks for the cask lifecycle.
     #
-    # Templates: allowed (since v2.13-unreleased).
+    # Templates: allowed (since v2.13).
     hooks:
       pre:
         install: |
