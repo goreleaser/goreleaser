@@ -727,7 +727,7 @@ func githubErrLogger(resp *github.Response, err error) *log.Entry {
 }
 
 func bodyOf(resp *github.Response) string {
-	if resp == nil {
+	if resp == nil || resp.Body == nil {
 		return "no response"
 	}
 	defer resp.Body.Close()
