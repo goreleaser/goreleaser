@@ -62,13 +62,13 @@ In fields that support templates, these fields are always available:
 | `.IsRelease`           | `true` if regular release (not a nightly nor a snapshot) (since v2.8)      |
 | `.IsMerging`           | `true` if you are running with `--merge` (since v2.8)                      |
 | `.Artifacts`           | [the current artifacts list](#artifacts)                                   |
-| `.Metadata`            | [project metadata fields](#metadata) (since v2.13-unreleased)              |
+| `.Metadata`            | [project metadata fields](#metadata) (since v2.13)                         |
 
 ## Metadata
 
 <!-- md:featpro -->
 
-<!-- md:version v2.13-unreleased -->
+<!-- md:version v2.13 -->
 
 If you use the `.Metadata` field, it evaluates to the project metadata configuration.
 You can access all fields defined in the `metadata` section of your config:
