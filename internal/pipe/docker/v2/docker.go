@@ -15,7 +15,6 @@ import (
 	"path/filepath"
 	"slices"
 	"strings"
-	"sync"
 	"time"
 
 	"github.com/avast/retry-go/v4"
@@ -511,25 +510,20 @@ Please provide any feedback you might have at https://github.com/orgs/goreleaser
 		Warn(logext.Warning("dockers_v2 is experimental and subject to change"))
 }
 
-var driverWarningOnce sync.Once
-
 // checkBuildxDriver checks if the buildx driver is docker-container and warns if not.
 func checkBuildxDriver(ctx stdctx.Context) {
-	driverWarningOnce.Do(func() {
-		driver := getBuildxDriver(ctx)
-		if driver == "" || driver == "docker-container" {
-			return
-		}
-		log.Warn(
-			logext.Warning("docker buildx is using the ") +
-				logext.Keyword(driver) +
-				logext.Warning(" driver, which may cause issues with attestations when pushing images. ") +
-				logext.Warning("Consider switching to the ") +
-				logext.Keyword("docker-container") +
-				logext.Warning(" driver. Learn more at ") +
-				logext.URL("https://docs.docker.com/go/attestations/"),
-		)
-	})
+	driver := getBuildxDriver(ctx)
+	if driver == "" || driver == "docker-container" {
+		return
+	}
+	details := logext.Warning("docker buildx is using the ") +
+		logext.Keyword(driver) +
+		logext.Warning(" driver, which may cause issues with attestations when pushing images. ") +
+		logext.Warning("Consider switching to the ") +
+		logext.Keyword("docker-container") +
+		logext.Warning(" driver.\nLearn more at ") +
+		logext.URL("https://docs.docker.com/go/attestations/")
+	log.WithField("details", details).Warn("unknown docker buildx driver")
 }
 
 // getBuildxDriver returns the current buildx driver name.
