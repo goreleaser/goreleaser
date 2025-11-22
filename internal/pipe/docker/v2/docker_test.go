@@ -26,29 +26,29 @@ func TestDependencies(t *testing.T) {
 
 func TestSkip(t *testing.T) {
 	t.Run("set", func(t *testing.T) {
-		ctx := testctx.NewWithCfg(config.Project{
+		ctx := testctx.WrapWithCfg(t.Context(), config.Project{
 			DockersV2: []config.DockerV2{{}},
 		}, testctx.Skip(skips.Docker))
 		require.True(t, Base{}.Skip(ctx))
 	})
 	t.Run("no dockers", func(t *testing.T) {
-		ctx := testctx.NewWithCfg(config.Project{})
+		ctx := testctx.WrapWithCfg(t.Context(), config.Project{})
 		require.True(t, Base{}.Skip(ctx))
 	})
 	t.Run("don't skip", func(t *testing.T) {
-		ctx := testctx.NewWithCfg(config.Project{
+		ctx := testctx.WrapWithCfg(t.Context(), config.Project{
 			DockersV2: []config.DockerV2{{}},
 		})
 		require.False(t, Base{}.Skip(ctx))
 	})
 	t.Run("snapshot don't skip snapshot", func(t *testing.T) {
-		ctx := testctx.NewWithCfg(config.Project{
+		ctx := testctx.WrapWithCfg(t.Context(), config.Project{
 			DockersV2: []config.DockerV2{{}},
 		}, testctx.Snapshot)
 		require.False(t, Snapshot{}.Skip(ctx))
 	})
 	t.Run("snapshot skip non snapshot", func(t *testing.T) {
-		ctx := testctx.NewWithCfg(config.Project{
+		ctx := testctx.WrapWithCfg(t.Context(), config.Project{
 			DockersV2: []config.DockerV2{{}},
 		})
 		require.True(t, Snapshot{}.Skip(ctx))
@@ -56,7 +56,7 @@ func TestSkip(t *testing.T) {
 }
 
 func TestDefault(t *testing.T) {
-	ctx := testctx.NewWithCfg(config.Project{
+	ctx := testctx.WrapWithCfg(t.Context(), config.Project{
 		ProjectName: "dockerv2",
 		DockersV2:   []config.DockerV2{{}},
 	})
@@ -71,17 +71,17 @@ func TestDefault(t *testing.T) {
 
 func TestMakeContext(t *testing.T) {
 	t.Run("no dockerfile", func(t *testing.T) {
-		_, err := makeContext(testctx.New(), config.DockerV2{}, nil)
+		_, err := makeContext(testctx.Wrap(t.Context()), config.DockerV2{}, nil)
 		testlib.AssertSkipped(t, err)
 	})
 	t.Run("dockerfile tmpl error", func(t *testing.T) {
-		_, err := makeContext(testctx.New(), config.DockerV2{
+		_, err := makeContext(testctx.Wrap(t.Context()), config.DockerV2{
 			Dockerfile: "{{.Nope}}",
 		}, nil)
 		testlib.RequireTemplateError(t, err)
 	})
 	t.Run("simple", func(t *testing.T) {
-		dir, err := makeContext(testctx.New(), config.DockerV2{
+		dir, err := makeContext(testctx.Wrap(t.Context()), config.DockerV2{
 			Dockerfile: "./testdata/Dockerfile",
 			ExtraFiles: []string{"./testdata/foo.conf"},
 		}, []*artifact.Artifact{
@@ -111,7 +111,7 @@ func TestMakeContext(t *testing.T) {
 }
 
 func TestPublishExtraArgs(t *testing.T) {
-	ctx := testctx.New()
+	ctx := testctx.Wrap(t.Context())
 
 	t.Run("sbom disabled", func(t *testing.T) {
 		args, err := Publish{}.extraArgs(ctx, config.DockerV2{
@@ -146,7 +146,7 @@ func TestMakeArgs(t *testing.T) {
 			"flags":       func(d *config.DockerV2) { d.Flags = []string{"{{.Nope}}"} },
 		} {
 			t.Run(name, func(t *testing.T) {
-				ctx := testctx.New()
+				ctx := testctx.Wrap(t.Context())
 				d := config.DockerV2{
 					Dockerfile: "Dockerfile",
 					Images:     []string{"ghcr.io/foo/bar"},
@@ -159,20 +159,20 @@ func TestMakeArgs(t *testing.T) {
 		}
 	})
 	t.Run("no images", func(t *testing.T) {
-		_, _, err := makeArgs(testctx.New(), config.DockerV2{
+		_, _, err := makeArgs(testctx.Wrap(t.Context()), config.DockerV2{
 			Dockerfile: "a",
 		}, nil)
 		testlib.AssertSkipped(t, err)
 	})
 	t.Run("no tags", func(t *testing.T) {
-		_, _, err := makeArgs(testctx.New(), config.DockerV2{
+		_, _, err := makeArgs(testctx.Wrap(t.Context()), config.DockerV2{
 			Dockerfile: "a",
 			Images:     []string{"ghcr.io/foo/bar"},
 		}, nil)
 		require.Error(t, err)
 	})
 	t.Run("simple", func(t *testing.T) {
-		ctx := testctx.NewWithCfg(
+		ctx := testctx.WrapWithCfg(t.Context(),
 			config.Project{
 				ProjectName: "dockerv2",
 			},
@@ -243,7 +243,7 @@ func TestMakeArgs(t *testing.T) {
 
 func TestDisable(t *testing.T) {
 	t.Run("disabled", func(t *testing.T) {
-		ctx := testctx.NewWithCfg(config.Project{
+		ctx := testctx.WrapWithCfg(t.Context(), config.Project{
 			DockersV2: []config.DockerV2{
 				{
 					Disable: "true",
@@ -255,7 +255,7 @@ func TestDisable(t *testing.T) {
 		testlib.AssertSkipped(t, Publish{}.Publish(ctx))
 	})
 	t.Run("template error", func(t *testing.T) {
-		ctx := testctx.NewWithCfg(config.Project{
+		ctx := testctx.WrapWithCfg(t.Context(), config.Project{
 			DockersV2: []config.DockerV2{
 				{
 					Disable: "{{ .no }}",
@@ -362,7 +362,7 @@ func TestParsePlatform(t *testing.T) {
 }
 
 func TestContextArtifacts(t *testing.T) {
-	ctx := testctx.NewWithCfg(config.Project{
+	ctx := testctx.WrapWithCfg(t.Context(), config.Project{
 		ProjectName: "dockerv2",
 	})
 
@@ -413,4 +413,10 @@ func TestTagSuffix(t *testing.T) {
 			require.Equal(t, suffix, tagSuffix(plat))
 		})
 	}
+}
+
+func TestGetBuildxDriver(t *testing.T) {
+	testlib.CheckDocker(t)
+	checkBuildxDriver(t.Context())
+	require.NotEmpty(t, getBuildxDriver(t.Context()))
 }
