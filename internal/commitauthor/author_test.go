@@ -96,6 +96,16 @@ func TestGet(t *testing.T) {
 			})
 		require.Error(t, err)
 	})
+
+	t.Run("use github app token", func(t *testing.T) {
+		author, err := Get(testctx.New(), config.CommitAuthor{
+			UseGitHubAppToken: true,
+		})
+		require.NoError(t, err)
+		require.Equal(t, config.CommitAuthor{
+			UseGitHubAppToken: true,
+		}, author)
+	})
 }
 
 func TestDefault(t *testing.T) {
@@ -172,6 +182,28 @@ func TestDefault(t *testing.T) {
 				Key:     "ABC123",
 				Format:  "ssh",
 			},
+		}))
+	})
+
+	t.Run("use github app token", func(t *testing.T) {
+		require.Equal(t, config.CommitAuthor{
+			Name:              defaultName,
+			Email:             defaultEmail,
+			UseGitHubAppToken: true,
+		}, Default(config.CommitAuthor{
+			UseGitHubAppToken: true,
+		}))
+	})
+
+	t.Run("use github app token with name and email set", func(t *testing.T) {
+		require.Equal(t, config.CommitAuthor{
+			Name:              "explicit-name",
+			Email:             "explicit@email.com",
+			UseGitHubAppToken: true,
+		}, Default(config.CommitAuthor{
+			Name:              "explicit-name",
+			Email:             "explicit@email.com",
+			UseGitHubAppToken: true,
 		}))
 	})
 }
