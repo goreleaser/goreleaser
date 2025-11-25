@@ -15,8 +15,9 @@ const (
 // Get templates the commit author and returns a new [config.CommitAuthor].
 func Get(ctx *context.Context, og config.CommitAuthor) (config.CommitAuthor, error) {
 	author := config.CommitAuthor{
-		Name:  og.Name,
-		Email: og.Email,
+		Name:              og.Name,
+		Email:             og.Email,
+		UseGitHubAppToken: og.UseGitHubAppToken,
 		Signing: config.CommitSigning{
 			Enabled: og.Signing.Enabled,
 			Key:     og.Signing.Key,
