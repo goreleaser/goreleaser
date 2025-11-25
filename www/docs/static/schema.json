@@ -1022,6 +1022,9 @@
 					},
 					"signing": {
 						"$ref": "#/$defs/CommitSigning"
+					},
+					"use_github_app_token": {
+						"type": "boolean"
 					}
 				},
 				"additionalProperties": false,
