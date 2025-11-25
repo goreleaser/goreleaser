@@ -4,6 +4,7 @@ package docker
 import (
 	"bytes"
 	"cmp"
+	stdctx "context"
 	"errors"
 	"fmt"
 	"io"
@@ -71,6 +72,9 @@ func (Base) Default(ctx *context.Context) error {
 		if len(docker.Platforms) == 0 {
 			docker.Platforms = []string{"linux/amd64", "linux/arm64"}
 		}
+		if docker.SBOM == "" {
+			docker.SBOM = "true"
+		}
 		docker.Retry.Attempts = cmp.Or(docker.Retry.Attempts, 10)
 		docker.Retry.Delay = cmp.Or(docker.Retry.Delay, 10*time.Second)
 		docker.Retry.MaxDelay = cmp.Or(docker.Retry.MaxDelay, 5*time.Minute)
@@ -82,6 +86,7 @@ func (Base) Default(ctx *context.Context) error {
 // Run implements pipeline.Piper.
 func (p Snapshot) Run(ctx *context.Context) error {
 	warnExperimental()
+	checkBuildxDriver(ctx)
 	log.Warn("snapshot build: will not push any images")
 
 	g := semerrgroup.NewSkipAware(semerrgroup.New(ctx.Parallelism))
@@ -100,19 +105,32 @@ func (p Snapshot) Run(ctx *context.Context) error {
 }
 
 // Publish implements publish.Publisher.
-func (Publish) Publish(ctx *context.Context) error {
+func (p Publish) Publish(ctx *context.Context) error {
 	warnExperimental()
+	checkBuildxDriver(ctx)
 	g := semerrgroup.NewSkipAware(semerrgroup.New(ctx.Parallelism))
 	for _, d := range ctx.Config.DockersV2 {
 		g.Go(func() error {
-			extraArgs := []string{"--push"}
-			if d.SBOM == nil || *d.SBOM {
-				extraArgs = append(extraArgs, "--attest=type=sbom")
+			extraArgs, err := p.extraArgs(ctx, d)
+			if err != nil {
+				return fmt.Errorf("dockers_v2.sbom: %w", err)
 			}
 			return buildImage(ctx, d, extraArgs...)
 		})
 	}
 	return g.Wait()
+}
+
+func (Publish) extraArgs(ctx *context.Context, d config.DockerV2) ([]string, error) {
+	sbom, err := tmpl.New(ctx).Bool(d.SBOM)
+	if err != nil {
+		return nil, fmt.Errorf("dockers_v2.sbom: %w", err)
+	}
+	extraArgs := []string{"--push"}
+	if sbom {
+		extraArgs = append(extraArgs, "--attest=type=sbom")
+	}
+	return extraArgs, nil
 }
 
 func buildImage(ctx *context.Context, d config.DockerV2, extraArgs ...string) error {
@@ -482,8 +500,7 @@ func isRetriableManifestCreate(err error) bool {
 }
 
 func isFileNotFoundError(out string) bool {
-	return strings.Contains(out, ": not found") ||
-		strings.Contains(out, ">>> COPY") ||
+	return strings.Contains(out, ">>> COPY") ||
 		strings.Contains(out, ">>> ADD")
 }
 
@@ -491,4 +508,42 @@ func warnExperimental() {
 	log.WithField("details", `Keep an eye on the release notes if you wish to rely on this for production builds.
 Please provide any feedback you might have at https://github.com/orgs/goreleaser/discussions/6005`).
 		Warn(logext.Warning("dockers_v2 is experimental and subject to change"))
+}
+
+// checkBuildxDriver checks if the buildx driver is docker-container and warns if not.
+func checkBuildxDriver(ctx stdctx.Context) {
+	driver := getBuildxDriver(ctx)
+	if driver == "" || driver == "docker-container" {
+		return
+	}
+	details := logext.Warning("docker buildx is using the ") +
+		logext.Keyword(driver) +
+		logext.Warning(" driver, which may cause issues with attestations when pushing images. ") +
+		logext.Warning("Consider switching to the ") +
+		logext.Keyword("docker-container") +
+		logext.Warning(" driver.\nLearn more at ") +
+		logext.URL("https://docs.docker.com/go/attestations/")
+	log.WithField("details", details).Warn("unknown docker buildx driver")
+}
+
+// getBuildxDriver returns the current buildx driver name.
+func getBuildxDriver(ctx stdctx.Context) string {
+	cmd := exec.CommandContext(ctx, "docker", "buildx", "inspect")
+	out, err := cmd.CombinedOutput()
+	if err != nil {
+		// If we can't inspect, silently continue as buildx might not be available
+		return ""
+	}
+
+	// Parse the output to find the Driver line
+	for line := range strings.SplitSeq(string(out), "\n") {
+		if !strings.HasPrefix(line, "Driver:") {
+			continue
+		}
+		parts := strings.Fields(line)
+		if len(parts) >= 2 {
+			return parts[1]
+		}
+	}
+	return ""
 }

@@ -43,7 +43,7 @@ func (Pipe) Default(ctx *context.Context) error {
 	return nil
 }
 
-func (Pipe) Announce(ctx *context.Context) error {
+func (p Pipe) Announce(ctx *context.Context) error {
 	msg, chatID, err := getMessageDetails(ctx)
 	if err != nil {
 		return err
@@ -51,20 +51,20 @@ func (Pipe) Announce(ctx *context.Context) error {
 
 	cfg, err := env.ParseAs[Config]()
 	if err != nil {
-		return fmt.Errorf("telegram: %w", err)
+		return fmt.Errorf("%s: %w", p, err)
 	}
 
 	log.Infof("posting: '%s'", msg)
 	bot, err := api.NewBotAPI(cfg.ConsumerToken)
 	if err != nil {
-		return fmt.Errorf("telegram: %w", err)
+		return fmt.Errorf("%s: %w", p, err)
 	}
 
 	tm := api.NewMessage(chatID, msg)
 	tm.ParseMode = "MarkdownV2"
 	_, err = bot.Send(tm)
 	if err != nil {
-		return fmt.Errorf("telegram: %w", err)
+		return fmt.Errorf("%s: %w", p, err)
 	}
 	log.Debug("message sent")
 	return nil

@@ -69,11 +69,13 @@ plugins:
         m.md: https://fosstodon.org/@goreleaser
         t.md: https://twitter.com/goreleaser
         x.md: https://twitter.com/goreleaser
+        mcp.md: https://github.com/goreleaser/mcp
         "customization/build.md": customization/builds/index.md
         "customization/rust-builds.md": customization/builds/rust.md
         "customization/zig-builds.md": customization/builds/zig.md
         "customization/deno-builds.md": customization/builds/deno.md
         "customization/homebrew.md": customization/homebrew_casks.md
+        "cookbooks/cgo-and-crosscompiling.md": limitations/cgo.md
   - minify:
       minify_html: true
   - include-markdown
@@ -178,6 +180,7 @@ nav:
           - customization/npm.md
           - Krew: customization/krew.md
           - Scoop: customization/scoop.md
+          - MCP: customization/mcp.md
           - customization/changelog.md
           - customization/upload.md
           - customization/artifactory.md
@@ -192,6 +195,7 @@ nav:
           - Introduction: customization/announce/index.md
           - customization/announce/bluesky.md
           - customization/announce/discord.md
+          - customization/announce/discourse.md
           - customization/announce/linkedin.md
           - customization/announce/mastodon.md
           - customization/announce/mattermost.md
@@ -244,7 +248,6 @@ nav:
           - cookbooks/builds-complex-envs.md
           - cookbooks/multi-platform-docker-images.md
           - cookbooks/build-go-modules.md
-          - cookbooks/cgo-and-crosscompiling.md
           - cookbooks/debconf-templates.md
           - cookbooks/using-jfrog-cli-to-publish-to-artifactory.md
           - cookbooks/publish-to-nexus.md

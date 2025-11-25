@@ -2,8 +2,6 @@
 
 <!-- md:version v2.5 -->
 
-<!-- md:alpha -->
-
 You can now build Zig binaries using `zig build` and GoReleaser!
 
 Simply set the `builder` to `zig`, for instance:

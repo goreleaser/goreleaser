@@ -3,6 +3,8 @@ package ko
 import (
 	"fmt"
 	"maps"
+	"os/exec"
+	"runtime"
 	"strconv"
 	"strings"
 	"testing"
@@ -166,11 +168,13 @@ func TestPublishPipeSuccess(t *testing.T) {
 
 	chainguardStaticLabels := map[string]string{
 		"dev.chainguard.package.main":      "",
+		"dev.chainguard.image.title":       "static",
 		"org.opencontainers.image.authors": "Chainguard Team https://www.chainguard.dev/",
 		"org.opencontainers.image.source":  "https://github.com/chainguard-images/images/tree/main/images/static",
 		"org.opencontainers.image.url":     "https://images.chainguard.dev/directory/image/static/overview",
 		"org.opencontainers.image.vendor":  "Chainguard",
 		"org.opencontainers.image.created": ".*",
+		"org.opencontainers.image.title":   "static",
 	}
 	baseImageAnnotations := map[string]string{
 		"org.opencontainers.image.base.name":   ".*",
@@ -588,6 +592,47 @@ func TestKoValidateMainPathIssue4382(t *testing.T) {
 		},
 	})
 	require.ErrorIs(t, Pipe{}.Default(ctxWithInvalidMainPath), errInvalidMainPath)
+}
+
+func TestPublishLocalBaseImage(t *testing.T) {
+	testlib.SkipIfWindows(t, "ko doesn't work in windows")
+	testlib.CheckDocker(t)
+	cmd := exec.Command("docker", "build", "-t", "local-base:latest", "-f", "./testdata/Dockerfile", ".")
+	output, err := cmd.CombinedOutput()
+	t.Cleanup(func() {
+		_ = exec.Command("docker", "rmi", "local-base:latest").Run()
+	})
+	require.NoError(t, err, string(output))
+
+	makeCtx := func() *context.Context {
+		return testctx.NewWithCfg(config.Project{
+			Builds: []config.Build{
+				{
+					ID:   "foo",
+					Main: "./...",
+				},
+			},
+			Kos: []config.Ko{
+				{
+					ID:           "default",
+					Build:        "foo",
+					WorkingDir:   "./testdata/app/",
+					Repository:   "NOPE",
+					Repositories: []string{""},
+					Tags:         []string{"latest", "{{.Tag}}"},
+					BaseImage:    "local-base:latest",
+					SBOM:         "none",
+					Platforms:    []string{fmt.Sprintf("linux/%s", runtime.GOARCH)},
+				},
+			},
+		}, testctx.WithCurrentTag("v1.0.0"))
+	}
+
+	t.Run("use local base image", func(t *testing.T) {
+		ctx := makeCtx()
+		ctx.Snapshot = true
+		require.NoError(t, doBuild(ctx, ctx.Config.Kos[0]))
+	})
 }
 
 func TestPublishPipeError(t *testing.T) {

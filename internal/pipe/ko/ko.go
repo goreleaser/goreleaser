@@ -17,11 +17,13 @@ import (
 	"github.com/awslabs/amazon-ecr-credential-helper/ecr-login"
 	"github.com/caarlos0/log"
 	"github.com/chrismellard/docker-credential-acr-env/pkg/credhelper"
+	errdefs "github.com/docker/docker/errdefs"
 	"github.com/google/go-containerregistry/pkg/authn"
 	"github.com/google/go-containerregistry/pkg/authn/github"
 	"github.com/google/go-containerregistry/pkg/crane"
 	"github.com/google/go-containerregistry/pkg/name"
 	v1 "github.com/google/go-containerregistry/pkg/v1"
+	"github.com/google/go-containerregistry/pkg/v1/daemon"
 	"github.com/google/go-containerregistry/pkg/v1/google"
 	"github.com/google/go-containerregistry/pkg/v1/remote"
 	"github.com/google/ko/pkg/build"
@@ -215,6 +217,14 @@ func (o *buildOptions) makeBuilder(ctx *context.Context) (*build.Caching, error)
 
 			if cached, found := baseImages.Load(o.baseImage); found {
 				return ref, cached.(build.Result), nil
+			}
+			localImage, err := daemon.Image(ref)
+			if err != nil && !errdefs.IsNotFound(err) {
+				return nil, nil, err
+			}
+			if localImage != nil {
+				baseImages.Store(o.baseImage, localImage)
+				return ref, localImage, err
 			}
 
 			desc, err := remote.Get(

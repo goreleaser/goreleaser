@@ -1,10 +1,10 @@
 # Docker (v2)
 
-<!-- md:alpha -->
-
 <!-- md:version v2.12 -->
 
-!!! warning "alpha "
+<!-- md:experimental https://github.com/orgs/goreleaser/discussions/6005 -->
+
+!!! warning "alpha"
 
     This feature is in *alpha* state.
     It will be improved until its deemed stable, at which point we'll
@@ -110,10 +110,11 @@ dockers_v2:
     disable: "{{ .IsSnapshot }}"
 
     # Whether to create and attach a SBOM to the image.
-    # Default: true
     #
+    # Default: 'true'
+    # Templates: allowed.
     # <!-- md:inline_version v2.12.7-unreleased -->.
-    sbom: false
+    sbom: "{{ not .IsNightly }}"
 
     # Additional `--build-arg`s to be passed.
     #

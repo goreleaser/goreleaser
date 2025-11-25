@@ -148,7 +148,8 @@ func (a *PullRequestBase) UnmarshalYAML(unmarshal func(any) error) error {
 		return nil
 	}
 
-	var base pullRequestBase
+	type t PullRequestBase
+	var base t
 	if err := unmarshal(&base); err != nil {
 		return err
 	}

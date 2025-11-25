@@ -93,10 +93,11 @@ func (a NixDependency) JSONSchema() *jsonschema.Schema {
 }
 
 func (a PullRequestBase) JSONSchema() *jsonschema.Schema {
+	type pullRequestBaseAlias PullRequestBase
 	reflector := jsonschema.Reflector{
 		ExpandedStruct: true,
 	}
-	schema := reflector.Reflect(&pullRequestBase{})
+	schema := reflector.Reflect(&pullRequestBaseAlias{})
 	return &jsonschema.Schema{
 		OneOf: []*jsonschema.Schema{
 			{

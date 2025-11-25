@@ -2,8 +2,6 @@
 
 <!-- md:version v2.6 -->
 
-<!-- md:alpha -->
-
 You can now build TypeScript binaries using `deno compile` and GoReleaser!
 
 Simply set the `builder` to `deno`, for instance:
