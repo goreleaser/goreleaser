@@ -22,7 +22,7 @@ func TestHealthcheckConfigThatDoesNotExist(t *testing.T) {
 func TestHealthcheckMissingTool(t *testing.T) {
 	cmd := newHealthcheckCmd()
 	cmd.cmd.SetArgs([]string{"-f", "testdata/missing_tool.yml"})
-	require.EqualError(t, cmd.cmd.Execute(), "one or more needed tools are not present")
+	require.EqualError(t, cmd.cmd.Execute(), "one or more checks failed")
 }
 
 func TestHealthcheckQuier(t *testing.T) {
