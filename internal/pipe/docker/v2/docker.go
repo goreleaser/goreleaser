@@ -44,8 +44,17 @@ type Publish struct{ Base }
 // String implements pipeline.Piper.
 func (p Base) String() string { return "docker images (v2)" }
 
-// Dependencies implements healthcheck.Healthchecker.
+// Dependencies implements DependencyChecker.
 func (Base) Dependencies(*context.Context) []string { return []string{"docker buildx"} }
+
+// Healthcheck implements Healthchecker
+func (Base) Healthcheck(ctx *context.Context) error {
+	driver := getBuildxDriver(ctx)
+	if isDriverValid(driver) {
+		return nil
+	}
+	return fmt.Errorf("unknown docker buildx driver: %s", driver)
+}
 
 // Skip implements Skipper.
 func (Base) Skip(ctx *context.Context) bool {
@@ -513,17 +522,23 @@ Please provide any feedback you might have at https://github.com/orgs/goreleaser
 // checkBuildxDriver checks if the buildx driver is docker-container and warns if not.
 func checkBuildxDriver(ctx stdctx.Context) {
 	driver := getBuildxDriver(ctx)
-	if driver == "" || driver == "docker-container" {
+	if isDriverValid(driver) {
 		return
 	}
 	details := logext.Warning("docker buildx is using the ") +
 		logext.Keyword(driver) +
-		logext.Warning(" driver, which may cause issues with attestations when pushing images. ") +
+		logext.Warning(" driver, which isn't tested and may cause issues. ") +
 		logext.Warning("Consider switching to the ") +
 		logext.Keyword("docker-container") +
 		logext.Warning(" driver.\nLearn more at ") +
 		logext.URL("https://docs.docker.com/go/attestations/")
-	log.WithField("details", details).Warn("unknown docker buildx driver")
+	log.WithField("details", details).
+		WithField("driver", driver).
+		Warn("invalid docker buildx driver")
+}
+
+func isDriverValid(driver string) bool {
+	return driver == "docker-container"
 }
 
 // getBuildxDriver returns the current buildx driver name.
@@ -531,11 +546,9 @@ func getBuildxDriver(ctx stdctx.Context) string {
 	cmd := exec.CommandContext(ctx, "docker", "buildx", "inspect")
 	out, err := cmd.CombinedOutput()
 	if err != nil {
-		// If we can't inspect, silently continue as buildx might not be available
-		return ""
+		return "unknown"
 	}
 
-	// Parse the output to find the Driver line
 	for line := range strings.SplitSeq(string(out), "\n") {
 		if !strings.HasPrefix(line, "Driver:") {
 			continue
@@ -545,5 +558,5 @@ func getBuildxDriver(ctx stdctx.Context) string {
 			return parts[1]
 		}
 	}
-	return ""
+	return "unknown"
 }

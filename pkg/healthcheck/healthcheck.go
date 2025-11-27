@@ -16,18 +16,34 @@ import (
 	"github.com/goreleaser/goreleaser/v2/pkg/context"
 )
 
-// Healthchecker should be implemented by pipes that want checks.
-type Healthchecker interface {
+// HealthChecker should be implemented by pipes that want checks.
+type HealthChecker interface {
+	fmt.Stringer
+
+	// Healthcheck does checks that are more complex than [DependencyChecker],
+	// and returns an error if they fail.
+	Healthcheck(ctx *context.Context) error
+}
+
+// DependencyChecker should be implemented by pipes that want checks.
+type DependencyChecker interface {
 	fmt.Stringer
 
 	// Dependencies return the binaries of the dependencies needed.
 	Dependencies(ctx *context.Context) []string
 }
 
-// Healthcheckers is the list of healthchekers.
+// HealthCheckers is the list of health checkers.
 //
 //nolint:gochecknoglobals
-var Healthcheckers = []Healthchecker{
+var HealthCheckers = []HealthChecker{
+	dockerv2.Base{},
+}
+
+// DependencyCheckers is the list of dependency checkers..
+//
+//nolint:gochecknoglobals
+var DependencyCheckers = []DependencyChecker{
 	system{},
 	builds{},
 	snapcraft.Pipe{},
