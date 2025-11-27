@@ -172,6 +172,81 @@ func TestRun(t *testing.T) {
 	})
 }
 
+func TestPublishSinglePlatform(t *testing.T) {
+	testlib.CheckDocker(t)
+	testlib.SkipIfWindows(t, "registry images only available for windows")
+
+	testlib.StartRegistry(t, "registry-v2", "5060")
+	testlib.StartRegistry(t, "alt_registry-v2", "5061")
+
+	dist := t.TempDir()
+	ctx := testctx.WrapWithCfg(t.Context(),
+		config.Project{
+			ProjectName: "dockerv2",
+			Dist:        dist,
+			DockersV2: []config.DockerV2{
+				{
+					ID:         "myimg",
+					IDs:        []string{"id1"},
+					Dockerfile: "./testdata/Dockerfile",
+					Images:     []string{"localhost:5060/foo", "localhost:5061/bar"},
+					Tags:       []string{"latest", "v{{.Version}}", "{{if .IsNightly}}nightly{{end}}"},
+					ExtraFiles: []string{"./testdata/foo.conf"},
+					Platforms:  []string{"linux/amd64"},
+					Labels: map[string]string{
+						"org.opencontainers.image.licenses": "MIT",
+					},
+					Annotations: map[string]string{
+						"index:org.opencontainers.image.description": "My multi-arch image",
+					},
+					SBOM: "false",
+				},
+			},
+		},
+		testctx.WithVersion("1.0.0"),
+		testctx.WithCurrentTag("v1.0.0"),
+		testctx.WithSemver(1, 0, 0, ""),
+	)
+	for _, arch := range []string{"amd64", "arm64"} {
+		ctx.Artifacts.Add(&artifact.Artifact{
+			Name:   "mybin",
+			Path:   "./testdata/mybin",
+			Goos:   "linux",
+			Goarch: arch,
+			Type:   artifact.Binary,
+			Extra: artifact.Extras{
+				artifact.ExtraID: "id1",
+			},
+		})
+	}
+
+	require.NoError(t, Base{}.Default(ctx))
+	err := Publish{}.Publish(ctx)
+	require.NoError(t, err, "message: %s, output: %v", gerrors.MessageOf(err), gerrors.DetailsOf(err))
+
+	images := ctx.Artifacts.
+		Filter(artifact.And(
+			artifact.ByIDs("myimg"),
+			artifact.ByType(artifact.DockerImageV2),
+		)).
+		List()
+	require.Len(t, images, 4)
+	require.Equal(t, []string{
+		"localhost:5060/foo:latest",
+		"localhost:5060/foo:v1.0.0",
+		"localhost:5061/bar:latest",
+		"localhost:5061/bar:v1.0.0",
+	}, names(images))
+
+	for _, image := range images {
+		require.NotEmpty(t, artifact.ExtraOr(*image, artifact.ExtraDigest, ""))
+		require.Len(t, inspectImage(t, image.Path), 1)
+		man := inspectManifest(t, image.Path)
+		t.Log(man)
+		t.Error()
+	}
+}
+
 func TestPublish(t *testing.T) {
 	testlib.CheckDocker(t)
 	testlib.SkipIfWindows(t, "registry images only available for windows")
@@ -263,6 +338,8 @@ func TestPublish(t *testing.T) {
 		require.Equal(t, map[string]string{
 			"org.opencontainers.image.description": "My multi-arch image",
 		}, manifest.Annotations)
+		t.Log(manifest, "AQUI")
+		t.Error()
 
 		require.True(t, hasSBOM(t, "localhost:5060/foo:v1.0.0"))
 	})
