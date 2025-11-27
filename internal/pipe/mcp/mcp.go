@@ -37,14 +37,14 @@ func New() Pipe {
 	}
 }
 
-func (Pipe) String() string        { return "mcp" }
+func (Pipe) String() string        { return "github mcp registry" }
 func (Pipe) ContinueOnError() bool { return true }
 func (Pipe) Skip(ctx *context.Context) bool {
-	return skips.Any(ctx, skips.MCP) || ctx.Config.MCP.Name == ""
+	return skips.Any(ctx, skips.MCP) || ctx.Config.MCP.GitHub.Name == ""
 }
 
 func (Pipe) Default(ctx *context.Context) error {
-	mcp := &ctx.Config.MCP
+	mcp := &ctx.Config.MCP.GitHub
 	if mcp.Auth.Type == "" {
 		mcp.Auth.Type = proto.MethodNone
 	}
@@ -53,7 +53,7 @@ func (Pipe) Default(ctx *context.Context) error {
 
 func (p Pipe) Publish(ctx *context.Context) error {
 	warnExperimental()
-	mcp := ctx.Config.MCP
+	mcp := ctx.Config.MCP.GitHub
 
 	if err := tmpl.New(ctx).ApplyAll(
 		&mcp.Name,

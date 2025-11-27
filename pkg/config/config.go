@@ -1480,6 +1480,11 @@ type MakeselfFile struct {
 
 // MCP server configuration.
 type MCP struct {
+	GitHub GitHubMCP `yaml:"github,omitempty" json:"github,omitempty"`
+}
+
+// GitHubMCP registry configuration.
+type GitHubMCP struct {
 	Name        string         `yaml:"name" json:"name"`
 	Title       string         `yaml:"title" json:"title"`
 	Description string         `yaml:"description,omitempty" json:"description,omitempty"`

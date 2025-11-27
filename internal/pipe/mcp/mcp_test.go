@@ -22,14 +22,16 @@ import (
 )
 
 func TestStringer(t *testing.T) {
-	require.Equal(t, "mcp", Pipe{}.String())
+	require.NotEmpty(t, Pipe{}.String())
 }
 
 func TestSkip(t *testing.T) {
 	t.Run("skip", func(t *testing.T) {
 		ctx := testctx.WrapWithCfg(t.Context(), config.Project{
 			MCP: config.MCP{
-				Name: "foo",
+				GitHub: config.GitHubMCP{
+					Name: "foo",
+				},
 			},
 		})
 		skips.Set(ctx, skips.MCP)
@@ -45,7 +47,9 @@ func TestSkip(t *testing.T) {
 	t.Run("dont skip", func(t *testing.T) {
 		ctx := testctx.WrapWithCfg(t.Context(), config.Project{
 			MCP: config.MCP{
-				Name: "foo",
+				GitHub: config.GitHubMCP{
+					Name: "foo",
+				},
 			},
 		})
 		require.False(t, Pipe{}.Skip(ctx))
@@ -60,24 +64,28 @@ func TestDefault(t *testing.T) {
 	t.Run("empty auth type", func(t *testing.T) {
 		ctx := testctx.WrapWithCfg(t.Context(), config.Project{
 			MCP: config.MCP{
-				Name: "test-server",
+				GitHub: config.GitHubMCP{
+					Name: "foo",
+				},
 			},
 		})
 		require.NoError(t, Pipe{}.Default(ctx))
-		require.Equal(t, "none", ctx.Config.MCP.Auth.Type)
+		require.Equal(t, "none", ctx.Config.MCP.GitHub.Auth.Type)
 	})
 
 	t.Run("none auth", func(t *testing.T) {
 		ctx := testctx.WrapWithCfg(t.Context(), config.Project{
 			MCP: config.MCP{
-				Name: "test-server",
-				Auth: config.MCPAuth{
-					Type: "none",
+				GitHub: config.GitHubMCP{
+					Name: "test-server",
+					Auth: config.MCPAuth{
+						Type: "none",
+					},
 				},
 			},
 		})
 		require.NoError(t, Pipe{}.Default(ctx))
-		require.Empty(t, ctx.Config.MCP.Auth.Token)
+		require.Empty(t, ctx.Config.MCP.GitHub.Auth.Token)
 	})
 }
 
@@ -116,27 +124,29 @@ func TestPublishSuccess(t *testing.T) {
 	ctx := testctx.WrapWithCfg(t.Context(), config.Project{
 		ProjectName: "test-project",
 		MCP: config.MCP{
-			Name:        "test-server",
-			Title:       "Test Server",
-			Description: "A test MCP server",
-			Homepage:    "https://example.com",
-			Repository: config.MCPRepository{
-				URL:    "https://github.com/test/repo",
-				Source: "github",
-				ID:     "test/repo",
-			},
-			Packages: []config.MCPPackage{
-				{
-					RegistryType: "npm",
-					Identifier:   "@test/server",
-					Transport: config.MCPTransport{
-						Type: "stdio",
+			GitHub: config.GitHubMCP{
+				Name:        "test-server",
+				Title:       "Test Server",
+				Description: "A test MCP server",
+				Homepage:    "https://example.com",
+				Repository: config.MCPRepository{
+					URL:    "https://github.com/test/repo",
+					Source: "github",
+					ID:     "test/repo",
+				},
+				Packages: []config.MCPPackage{
+					{
+						RegistryType: "npm",
+						Identifier:   "@test/server",
+						Transport: config.MCPTransport{
+							Type: "stdio",
+						},
 					},
 				},
-			},
-			Auth: config.MCPAuth{
-				Type:  "none",
-				Token: "",
+				Auth: config.MCPAuth{
+					Type:  "none",
+					Token: "",
+				},
 			},
 		},
 	})
@@ -221,24 +231,26 @@ func TestPublishWithTemplates(t *testing.T) {
 	ctx := testctx.WrapWithCfg(t.Context(), config.Project{
 		ProjectName: "my-test-project",
 		MCP: config.MCP{
-			Name:        "{{ .ProjectName }}",
-			Title:       "{{ .ProjectName | title }} v{{ .Version }}",
-			Description: "Server for {{ .ProjectName }}",
-			Repository: config.MCPRepository{
-				URL: "https://github.com/user/{{ .ProjectName }}",
-				ID:  "user/{{ .ProjectName }}",
-			},
-			Packages: []config.MCPPackage{
-				{
-					RegistryType: "npm",
-					Identifier:   "@my-org/{{ .ProjectName }}",
-					Transport: config.MCPTransport{
-						Type: "stdio",
+			GitHub: config.GitHubMCP{
+				Name:        "{{ .ProjectName }}",
+				Title:       "{{ .ProjectName | title }} v{{ .Version }}",
+				Description: "Server for {{ .ProjectName }}",
+				Repository: config.MCPRepository{
+					URL: "https://github.com/user/{{ .ProjectName }}",
+					ID:  "user/{{ .ProjectName }}",
+				},
+				Packages: []config.MCPPackage{
+					{
+						RegistryType: "npm",
+						Identifier:   "@my-org/{{ .ProjectName }}",
+						Transport: config.MCPTransport{
+							Type: "stdio",
+						},
 					},
 				},
-			},
-			Auth: config.MCPAuth{
-				Type: "none",
+				Auth: config.MCPAuth{
+					Type: "none",
+				},
 			},
 		},
 	})
@@ -254,10 +266,12 @@ func TestPublishWithTemplates(t *testing.T) {
 func TestPublishInvalidTemplate(t *testing.T) {
 	ctx := testctx.WrapWithCfg(t.Context(), config.Project{
 		MCP: config.MCP{
-			Name:  "{{ .InvalidField }",
-			Title: "Test",
-			Auth: config.MCPAuth{
-				Type: "none",
+			GitHub: config.GitHubMCP{
+				Name:  "{{ .InvalidField }",
+				Title: "Test",
+				Auth: config.MCPAuth{
+					Type: "none",
+				},
 			},
 		},
 	})
@@ -278,10 +292,12 @@ func TestPublishServerError(t *testing.T) {
 
 	ctx := testctx.WrapWithCfg(t.Context(), config.Project{
 		MCP: config.MCP{
-			Name:  "test-server",
-			Title: "Test Server",
-			Auth: config.MCPAuth{
-				Type: "none",
+			GitHub: config.GitHubMCP{
+				Name:  "test-server",
+				Title: "Test Server",
+				Auth: config.MCPAuth{
+					Type: "none",
+				},
 			},
 		},
 	})
@@ -306,10 +322,12 @@ func TestPublishBadRequest(t *testing.T) {
 
 	ctx := testctx.WrapWithCfg(t.Context(), config.Project{
 		MCP: config.MCP{
-			Name:  "test-server",
-			Title: "Test Server",
-			Auth: config.MCPAuth{
-				Type: "none",
+			GitHub: config.GitHubMCP{
+				Name:  "test-server",
+				Title: "Test Server",
+				Auth: config.MCPAuth{
+					Type: "none",
+				},
 			},
 		},
 	})
@@ -348,33 +366,35 @@ func TestPublishMultiplePackages(t *testing.T) {
 
 	ctx := testctx.WrapWithCfg(t.Context(), config.Project{
 		MCP: config.MCP{
-			Name:  "multi-package-server",
-			Title: "Multi Package Server",
-			Packages: []config.MCPPackage{
-				{
-					RegistryType: "npm",
-					Identifier:   "@test/server-npm",
-					Transport: config.MCPTransport{
-						Type: "stdio",
+			GitHub: config.GitHubMCP{
+				Name:  "multi-package-server",
+				Title: "Multi Package Server",
+				Packages: []config.MCPPackage{
+					{
+						RegistryType: "npm",
+						Identifier:   "@test/server-npm",
+						Transport: config.MCPTransport{
+							Type: "stdio",
+						},
+					},
+					{
+						RegistryType: "pypi",
+						Identifier:   "test-server-pypi",
+						Transport: config.MCPTransport{
+							Type: "sse",
+						},
+					},
+					{
+						RegistryType: "oci",
+						Identifier:   "ghcr.io/test/server",
+						Transport: config.MCPTransport{
+							Type: "streamable-http",
+						},
 					},
 				},
-				{
-					RegistryType: "pypi",
-					Identifier:   "test-server-pypi",
-					Transport: config.MCPTransport{
-						Type: "sse",
-					},
+				Auth: config.MCPAuth{
+					Type: "none",
 				},
-				{
-					RegistryType: "oci",
-					Identifier:   "ghcr.io/test/server",
-					Transport: config.MCPTransport{
-						Type: "streamable-http",
-					},
-				},
-			},
-			Auth: config.MCPAuth{
-				Type: "none",
 			},
 		},
 	})
@@ -444,16 +464,18 @@ func TestPublishWithRepository(t *testing.T) {
 
 	ctx := testctx.WrapWithCfg(t.Context(), config.Project{
 		MCP: config.MCP{
-			Name:  "repo-server",
-			Title: "Repo Server",
-			Repository: config.MCPRepository{
-				URL:       "https://gitlab.com/group/project",
-				Source:    "gitlab",
-				ID:        "group/project",
-				Subfolder: "servers/mcp",
-			},
-			Auth: config.MCPAuth{
-				Type: "none",
+			GitHub: config.GitHubMCP{
+				Name:  "repo-server",
+				Title: "Repo Server",
+				Repository: config.MCPRepository{
+					URL:       "https://gitlab.com/group/project",
+					Source:    "gitlab",
+					ID:        "group/project",
+					Subfolder: "servers/mcp",
+				},
+				Auth: config.MCPAuth{
+					Type: "none",
+				},
 			},
 		},
 	})
@@ -516,10 +538,12 @@ func TestNew(t *testing.T) {
 func TestPublishAuthLoginError(t *testing.T) {
 	ctx := testctx.WrapWithCfg(t.Context(), config.Project{
 		MCP: config.MCP{
-			Name:  "test-server",
-			Title: "Test Server",
-			Auth: config.MCPAuth{
-				Type: "none",
+			GitHub: config.GitHubMCP{
+				Name:  "test-server",
+				Title: "Test Server",
+				Auth: config.MCPAuth{
+					Type: "none",
+				},
 			},
 		},
 	})
@@ -541,10 +565,12 @@ func TestPublishAuthLoginError(t *testing.T) {
 func TestPublishAuthProviderError(t *testing.T) {
 	ctx := testctx.WrapWithCfg(t.Context(), config.Project{
 		MCP: config.MCP{
-			Name:  "test-server",
-			Title: "Test Server",
-			Auth: config.MCPAuth{
-				Type: "invalid",
+			GitHub: config.GitHubMCP{
+				Name:  "test-server",
+				Title: "Test Server",
+				Auth: config.MCPAuth{
+					Type: "invalid",
+				},
 			},
 		},
 	})
@@ -559,10 +585,12 @@ func TestPublishAuthProviderError(t *testing.T) {
 func TestPublishGetTokenError(t *testing.T) {
 	ctx := testctx.WrapWithCfg(t.Context(), config.Project{
 		MCP: config.MCP{
-			Name:  "test-server",
-			Title: "Test Server",
-			Auth: config.MCPAuth{
-				Type: "none",
+			GitHub: config.GitHubMCP{
+				Name:  "test-server",
+				Title: "Test Server",
+				Auth: config.MCPAuth{
+					Type: "none",
+				},
 			},
 		},
 	})
@@ -606,11 +634,13 @@ func TestPublishNoPackages(t *testing.T) {
 
 	ctx := testctx.WrapWithCfg(t.Context(), config.Project{
 		MCP: config.MCP{
-			Name:     "no-packages-server",
-			Title:    "No Packages Server",
-			Packages: []config.MCPPackage{},
-			Auth: config.MCPAuth{
-				Type: "none",
+			GitHub: config.GitHubMCP{
+				Name:     "no-packages-server",
+				Title:    "No Packages Server",
+				Packages: []config.MCPPackage{},
+				Auth: config.MCPAuth{
+					Type: "none",
+				},
 			},
 		},
 	})
@@ -626,10 +656,12 @@ func TestPublishNoPackages(t *testing.T) {
 func TestPublishInvalidJSON(t *testing.T) {
 	ctx := testctx.WrapWithCfg(t.Context(), config.Project{
 		MCP: config.MCP{
-			Name:  "test-server",
-			Title: "Test Server",
-			Auth: config.MCPAuth{
-				Type: "none",
+			GitHub: config.GitHubMCP{
+				Name:  "test-server",
+				Title: "Test Server",
+				Auth: config.MCPAuth{
+					Type: "none",
+				},
 			},
 		},
 	})
@@ -672,31 +704,33 @@ func TestPublishIntegration(t *testing.T) {
 	ctx := testctx.WrapWithCfg(t.Context(), config.Project{
 		ProjectName: "goreleaser-mcp",
 		MCP: config.MCP{
-			Name:        "io.github.goreleaser/mcp",
-			Description: "GoReleaser MCP server for build automation",
-			Repository: config.MCPRepository{
-				Source: "github",
-				URL:    "https://github.com/goreleaser/mcp",
-			},
-			Packages: []config.MCPPackage{
-				{
-					RegistryType: "oci",
-					Identifier:   "ghcr.io/goreleaser/mcp:{{.Version}}",
-					Transport: config.MCPTransport{
-						Type: "stdio",
+			GitHub: config.GitHubMCP{
+				Name:        "io.github.goreleaser/mcp",
+				Description: "GoReleaser MCP server for build automation",
+				Repository: config.MCPRepository{
+					Source: "github",
+					URL:    "https://github.com/goreleaser/mcp",
+				},
+				Packages: []config.MCPPackage{
+					{
+						RegistryType: "oci",
+						Identifier:   "ghcr.io/goreleaser/mcp:{{.Version}}",
+						Transport: config.MCPTransport{
+							Type: "stdio",
+						},
+					},
+					{
+						RegistryType: "npm",
+						Identifier:   "@goreleaser/mcp",
+						Transport: config.MCPTransport{
+							Type: "stdio",
+						},
 					},
 				},
-				{
-					RegistryType: "npm",
-					Identifier:   "@goreleaser/mcp",
-					Transport: config.MCPTransport{
-						Type: "stdio",
-					},
+				Auth: config.MCPAuth{
+					Type:  "github",
+					Token: os.Getenv("GITHUB_TOKEN"),
 				},
-			},
-			Auth: config.MCPAuth{
-				Type:  "github",
-				Token: os.Getenv("GITHUB_TOKEN"),
 			},
 		},
 	})
