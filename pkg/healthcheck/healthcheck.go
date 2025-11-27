@@ -40,7 +40,7 @@ var HealthCheckers = []HealthChecker{
 	dockerv2.Base{},
 }
 
-// DependencyCheckers is the list of dependency checkers..
+// DependencyCheckers is the list of dependency checkers.
 //
 //nolint:gochecknoglobals
 var DependencyCheckers = []DependencyChecker{

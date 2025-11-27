@@ -47,7 +47,7 @@ func (p Base) String() string { return "docker images (v2)" }
 // Dependencies implements DependencyChecker.
 func (Base) Dependencies(*context.Context) []string { return []string{"docker buildx"} }
 
-// Healthcheck implements Healthchecker
+// Healthcheck implements Healthchecker.
 func (Base) Healthcheck(ctx *context.Context) error {
 	driver := getBuildxDriver(ctx)
 	if isDriverValid(driver) {
