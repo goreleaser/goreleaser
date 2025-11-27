@@ -53,7 +53,7 @@ func (Base) Healthcheck(ctx *context.Context) error {
 	if isDriverValid(driver) {
 		return nil
 	}
-	return fmt.Errorf("unknown docker buildx driver: %s", driver)
+	return fmt.Errorf("invalid docker buildx driver: %s", driver)
 }
 
 // Skip implements Skipper.
