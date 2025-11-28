@@ -51,9 +51,8 @@ func createTemplateData() templateData {
 			"Fulano <fulano@example.com>",
 			"Beltrano <beltrano@example.com>",
 		},
-		License:      "MIT",
-		Version:      "0.1.3",
-		CleanVersion: "0.1.3",
+		License: "MIT",
+		Version: "0.1.3",
 		Prepare: `cd "${pkgname}_${pkgver}"
 		# download dependencies
 		go mod download`,
@@ -266,9 +265,9 @@ func TestFullPipe(t *testing.T) {
 					},
 					Env: []string{"FOO=foo_is_bar"},
 				},
-				testctx.WithCurrentTag("v1.0.1-foo"),
-				testctx.WithSemver(1, 0, 1, "foo"),
-				testctx.WithVersion("1.0.1-foo"),
+				testctx.WithCurrentTag("v1.0.1"),
+				testctx.WithSemver(1, 0, 1, ""),
+				testctx.WithVersion("1.0.1"),
 			)
 
 			tt.prepare(ctx)

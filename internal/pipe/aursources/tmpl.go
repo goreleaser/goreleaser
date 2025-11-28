@@ -5,7 +5,6 @@ type templateData struct {
 	Desc         string
 	Homepage     string
 	Version      string
-	CleanVersion string
 	License      string
 	Sources      sources
 	Maintainers  []string
