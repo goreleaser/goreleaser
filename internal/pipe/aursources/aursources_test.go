@@ -51,8 +51,9 @@ func createTemplateData() templateData {
 			"Fulano <fulano@example.com>",
 			"Beltrano <beltrano@example.com>",
 		},
-		License: "MIT",
-		Version: "0.1.3",
+		License:      "MIT",
+		Version:      "0.1.3",
+		CleanVersion: "0.1.3",
 		Prepare: `cd "${pkgname}_${pkgver}"
 		# download dependencies
 		go mod download`,
@@ -82,7 +83,7 @@ func createTemplateData() templateData {
 
 func TestFullAur(t *testing.T) {
 	data := createTemplateData()
-	pkg, err := applyTemplate(testctx.NewWithCfg(config.Project{
+	pkg, err := applyTemplate(testctx.WrapWithCfg(t.Context(), config.Project{
 		ProjectName: "foo",
 	}), aurTemplateData, data)
 	require.NoError(t, err)
@@ -91,7 +92,7 @@ func TestFullAur(t *testing.T) {
 }
 
 func TestAurSimple(t *testing.T) {
-	pkg, err := applyTemplate(testctx.New(), aurTemplateData, createTemplateData())
+	pkg, err := applyTemplate(testctx.Wrap(t.Context()), aurTemplateData, createTemplateData())
 	require.NoError(t, err)
 	require.Contains(t, pkg, `# Maintainer: Ciclano <ciclano@example.com>`)
 	require.Contains(t, pkg, `# Maintainer: Cicrano <cicrano@example.com>`)
@@ -107,7 +108,7 @@ func TestAurSimple(t *testing.T) {
 func TestFullSrcInfo(t *testing.T) {
 	data := createTemplateData()
 	data.License = "MIT"
-	pkg, err := applyTemplate(testctx.NewWithCfg(config.Project{
+	pkg, err := applyTemplate(testctx.WrapWithCfg(t.Context(), config.Project{
 		ProjectName: "foo",
 	}), srcInfoTemplate, data)
 	require.NoError(t, err)
@@ -116,7 +117,7 @@ func TestFullSrcInfo(t *testing.T) {
 }
 
 func TestSrcInfoSimple(t *testing.T) {
-	pkg, err := applyTemplate(testctx.New(), srcInfoTemplate, createTemplateData())
+	pkg, err := applyTemplate(testctx.Wrap(t.Context()), srcInfoTemplate, createTemplateData())
 	require.NoError(t, err)
 	require.Contains(t, pkg, `pkgbase = test`)
 	require.Contains(t, pkg, `pkgname = test`)
@@ -249,7 +250,7 @@ func TestFullPipe(t *testing.T) {
 			key := testlib.MakeNewSSHKey(t, "")
 
 			folder := t.TempDir()
-			ctx := testctx.NewWithCfg(
+			ctx := testctx.WrapWithCfg(t.Context(),
 				config.Project{
 					Dist:        folder,
 					ProjectName: name,
@@ -354,7 +355,7 @@ func TestRunPipe(t *testing.T) {
 	key := testlib.MakeNewSSHKey(t, "")
 
 	folder := t.TempDir()
-	ctx := testctx.NewWithCfg(
+	ctx := testctx.WrapWithCfg(t.Context(),
 		config.Project{
 			Dist:        folder,
 			ProjectName: "foo",
@@ -428,7 +429,7 @@ func TestRunPipeMultipleConfigurations(t *testing.T) {
 	key := testlib.MakeNewSSHKey(t, "")
 
 	folder := t.TempDir()
-	ctx := testctx.NewWithCfg(
+	ctx := testctx.WrapWithCfg(t.Context(),
 		config.Project{
 			Dist:        folder,
 			ProjectName: "foo",
@@ -497,7 +498,7 @@ func TestRunPipeMultipleConfigurations(t *testing.T) {
 	require.NoError(t, Pipe{}.Publish(ctx))
 
 	dir := t.TempDir()
-	_, err = git.Run(testctx.New(), "-C", dir, "clone", url, "repo")
+	_, err = git.Run(testctx.Wrap(t.Context()), "-C", dir, "clone", url, "repo")
 	require.NoError(t, err)
 
 	require.FileExists(t, filepath.Join(dir, "repo", "foo", ".SRCINFO"))
@@ -507,7 +508,7 @@ func TestRunPipeMultipleConfigurations(t *testing.T) {
 }
 
 func TestRunPipeNoBuilds(t *testing.T) {
-	ctx := testctx.NewWithCfg(config.Project{
+	ctx := testctx.WrapWithCfg(t.Context(), config.Project{
 		ProjectName: "foo",
 		AURSources:  []config.AURSource{{}},
 	}, testctx.GitHubTokenType)
@@ -521,7 +522,7 @@ func TestRunPipeWrappedInDirectory(t *testing.T) {
 	url := testlib.GitMakeBareRepository(t)
 	key := testlib.MakeNewSSHKey(t, "")
 	folder := t.TempDir()
-	ctx := testctx.NewWithCfg(
+	ctx := testctx.WrapWithCfg(t.Context(),
 		config.Project{
 			Dist:        folder,
 			ProjectName: "foo",
@@ -566,7 +567,7 @@ func TestRunPipeBinaryRelease(t *testing.T) {
 	url := testlib.GitMakeBareRepository(t)
 	key := testlib.MakeNewSSHKey(t, "")
 	folder := t.TempDir()
-	ctx := testctx.NewWithCfg(
+	ctx := testctx.WrapWithCfg(t.Context(),
 		config.Project{
 			Dist:        folder,
 			ProjectName: "foo",
@@ -610,7 +611,7 @@ func TestRunPipeNoUpload(t *testing.T) {
 	folder := t.TempDir()
 	testPublish := func(tb testing.TB, modifier func(ctx *context.Context)) {
 		tb.Helper()
-		ctx := testctx.NewWithCfg(
+		ctx := testctx.WrapWithCfg(t.Context(),
 			config.Project{
 				Dist:        folder,
 				ProjectName: "foo",
@@ -664,7 +665,7 @@ func TestRunPipeNoUpload(t *testing.T) {
 
 func TestRunEmptyTokenType(t *testing.T) {
 	folder := t.TempDir()
-	ctx := testctx.NewWithCfg(
+	ctx := testctx.WrapWithCfg(t.Context(),
 		config.Project{
 			Dist:        folder,
 			ProjectName: "foo",
@@ -698,7 +699,7 @@ func TestRunEmptyTokenType(t *testing.T) {
 
 func TestDefault(t *testing.T) {
 	t.Run("empty", func(t *testing.T) {
-		ctx := testctx.NewWithCfg(config.Project{
+		ctx := testctx.WrapWithCfg(t.Context(), config.Project{
 			ProjectName: "myproject",
 			AURSources:  []config.AURSource{{}},
 		}, testctx.GitHubTokenType)
@@ -720,7 +721,7 @@ func TestDefault(t *testing.T) {
 	})
 
 	t.Run("name-with-bin-suffix", func(t *testing.T) {
-		ctx := testctx.NewWithCfg(config.Project{
+		ctx := testctx.WrapWithCfg(t.Context(), config.Project{
 			ProjectName: "myproject-bin",
 			AURSources: []config.AURSource{
 				{
@@ -746,7 +747,7 @@ func TestDefault(t *testing.T) {
 	})
 
 	t.Run("partial", func(t *testing.T) {
-		ctx := testctx.NewWithCfg(config.Project{
+		ctx := testctx.WrapWithCfg(t.Context(), config.Project{
 			ProjectName: "myproject",
 			AURSources: []config.AURSource{
 				{
@@ -775,10 +776,10 @@ func TestDefault(t *testing.T) {
 
 func TestSkip(t *testing.T) {
 	t.Run("skip", func(t *testing.T) {
-		require.True(t, Pipe{}.Skip(testctx.New()))
+		require.True(t, Pipe{}.Skip(testctx.Wrap(t.Context())))
 	})
 	t.Run("skip flag", func(t *testing.T) {
-		ctx := testctx.NewWithCfg(config.Project{
+		ctx := testctx.WrapWithCfg(t.Context(), config.Project{
 			AURSources: []config.AURSource{
 				{},
 			},
@@ -786,7 +787,7 @@ func TestSkip(t *testing.T) {
 		require.True(t, Pipe{}.Skip(ctx))
 	})
 	t.Run("dont skip", func(t *testing.T) {
-		ctx := testctx.NewWithCfg(config.Project{
+		ctx := testctx.WrapWithCfg(t.Context(), config.Project{
 			AURSources: []config.AURSource{
 				{},
 			},
@@ -798,7 +799,7 @@ func TestSkip(t *testing.T) {
 func requireEqualRepoFilesMap(tb testing.TB, repoDir, url string, files map[string]string) {
 	tb.Helper()
 	dir := tb.TempDir()
-	_, err := git.Run(testctx.New(), "-C", dir, "clone", url, "repo")
+	_, err := git.Run(tb.Context(), "-C", dir, "clone", url, "repo")
 	require.NoError(tb, err)
 
 	for reponame, distpath := range files {

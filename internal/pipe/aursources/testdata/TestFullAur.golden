@@ -8,6 +8,7 @@ pkgname='test'
 pkgver=0.1.3
 pkgrel=1
 pkgdesc='Some desc'
+_version=0.1.3
 url='https://example.com'
 arch=('x86_64' 'i686' 'aarch64' 'armv6h' 'armv7h')
 license=('MIT')

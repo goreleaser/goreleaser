@@ -4,6 +4,7 @@ pkgname='foo'
 pkgver=1.0.1
 pkgrel=1
 pkgdesc='A run pipe test aur and FOO=foo_is_bar'
+_version=1.0.1
 url='https://github.com/goreleaser'
 arch=('aarch64' 'x86_64')
 license=('MIT')
@@ -11,5 +12,5 @@ provides=('foo')
 conflicts=('foo')
 makedepends=('go' 'git')
 install=foo.install
-source=("${pkgname}_${pkgver}.tar.gz::https://dummyhost/download/v1.0.1/source.tar.gz")
+source=("${pkgname}_${pkgver}.tar.gz::https://dummyhost/download/v${_version}/source.tar.gz")
 sha256sums=('e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855')
