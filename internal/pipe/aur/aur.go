@@ -10,7 +10,6 @@ import (
 	"os"
 	"path"
 	"path/filepath"
-	"regexp"
 	"slices"
 	"strings"
 	"text/template"
@@ -305,19 +304,12 @@ func toPkgBuildArch(arch string) string {
 	}
 }
 
-var cleanVersionRegex = regexp.MustCompile(`[^a-zA-Z0-9._]`)
-
-func cleanVersion(version string) string {
-	return cleanVersionRegex.ReplaceAllString(version, "_")
-}
-
 func dataFor(ctx *context.Context, cfg config.AUR, cl client.ReleaseURLTemplater, artifacts []*artifact.Artifact) (templateData, error) {
 	result := templateData{
 		Name:         cfg.Name,
 		Desc:         cfg.Description,
 		Homepage:     cfg.Homepage,
-		CleanVersion: cleanVersion(ctx.Version),
-		Version:      ctx.Version,
+		Version:      strings.ReplaceAll(ctx.Version, "-", "_"),
 		License:      cfg.License,
 		Rel:          cfg.Rel,
 		Maintainers:  cfg.Maintainers,
@@ -350,7 +342,7 @@ func dataFor(ctx *context.Context, cfg config.AUR, cl client.ReleaseURLTemplater
 		}
 
 		releasePackage := releasePackage{
-			DownloadURL: strings.ReplaceAll(url, result.Version, "${_version}"),
+			DownloadURL: strings.ReplaceAll(url, result.Version, "${pkgver}"),
 			SHA256:      sum,
 			Arch:        toPkgBuildArch(art.Goarch + art.Goarm),
 			Format:      art.Format(),

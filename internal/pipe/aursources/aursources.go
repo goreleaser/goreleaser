@@ -9,7 +9,6 @@ import (
 	"os"
 	"path"
 	"path/filepath"
-	"regexp"
 	"slices"
 	"strings"
 	"text/template"
@@ -266,19 +265,12 @@ func toPkgBuildArray(ss []string) string {
 	return strings.Join(result, " ")
 }
 
-var cleanVersionRegex = regexp.MustCompile(`[^a-zA-Z0-9._]`)
-
-func cleanVersion(version string) string {
-	return cleanVersionRegex.ReplaceAllString(version, "_")
-}
-
 func dataFor(ctx *context.Context, cfg config.AURSource, cl client.ReleaseURLTemplater, artifacts []*artifact.Artifact) (templateData, error) {
 	result := templateData{
 		Name:         cfg.Name,
 		Desc:         cfg.Description,
 		Homepage:     cfg.Homepage,
-		Version:      ctx.Version,
-		CleanVersion: cleanVersion(ctx.Version),
+		Version:      strings.ReplaceAll(ctx.Version, "-", "_"),
 		License:      cfg.License,
 		Rel:          cfg.Rel,
 		Maintainers:  cfg.Maintainers,
@@ -315,7 +307,7 @@ func dataFor(ctx *context.Context, cfg config.AURSource, cl client.ReleaseURLTem
 		}
 
 		result.Sources = sources{
-			DownloadURL: strings.ReplaceAll(url, result.Version, "${_version}"),
+			DownloadURL: strings.ReplaceAll(url, result.Version, "${pkgver}"),
 			SHA256:      sum,
 			Format:      art.Format(),
 		}
