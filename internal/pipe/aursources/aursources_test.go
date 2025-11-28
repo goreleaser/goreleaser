@@ -497,7 +497,7 @@ func TestRunPipeMultipleConfigurations(t *testing.T) {
 	require.NoError(t, Pipe{}.Publish(ctx))
 
 	dir := t.TempDir()
-	_, err = git.Run(testctx.Wrap(t.Context()), "-C", dir, "clone", url, "repo")
+	_, err = git.Run(t.Context(), "-C", dir, "clone", url, "repo")
 	require.NoError(t, err)
 
 	require.FileExists(t, filepath.Join(dir, "repo", "foo", ".SRCINFO"))
