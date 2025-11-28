@@ -292,6 +292,12 @@ func TestGetBuildxDriver(t *testing.T) {
 	require.NotEmpty(t, getBuildxDriver(t.Context()))
 }
 
+func TestHealthcheck(t *testing.T) {
+	testlib.CheckDocker(t)
+	testlib.SkipIfWindows(t, "no buildx on Windows")
+	require.NoError(t, Base{}.Healthcheck(testctx.Wrap(t.Context())))
+}
+
 func names(in []*artifact.Artifact) []string {
 	out := make([]string, 0, len(in))
 	for _, art := range in {
