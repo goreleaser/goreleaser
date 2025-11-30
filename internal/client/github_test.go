@@ -28,15 +28,15 @@ func TestNewGitHubClient(t *testing.T) {
 		githubURL := "https://github.mycompany.com"
 		ctx := testctx.WrapWithCfg(t.Context(), config.Project{
 			GitHubURLs: config.GitHubURLs{
-				API:    githubURL + "/api",
-				Upload: githubURL + "/upload",
+				API:    githubURL + "/api/v3",
+				Upload: githubURL,
 			},
 		})
 
 		client, err := newGitHub(ctx, ctx.Token)
 		require.NoError(t, err)
-		require.Equal(t, githubURL+"/api", client.client.BaseURL.String())
-		require.Equal(t, githubURL+"/upload", client.client.UploadURL.String())
+		require.Equal(t, githubURL+"/api/v3/", client.client.BaseURL.String())
+		require.Equal(t, githubURL+"/api/uploads/", client.client.UploadURL.String())
 	})
 
 	t.Run("bad api url", func(t *testing.T) {
@@ -67,8 +67,8 @@ func TestNewGitHubClient(t *testing.T) {
 		githubURL := "https://github.mycompany.com"
 		ctx := testctx.WrapWithCfg(t.Context(), config.Project{
 			Env: []string{
-				fmt.Sprintf("GORELEASER_TEST_GITHUB_URLS_API=%s/api", githubURL),
-				fmt.Sprintf("GORELEASER_TEST_GITHUB_URLS_UPLOAD=%s/upload", githubURL),
+				fmt.Sprintf("GORELEASER_TEST_GITHUB_URLS_API=%s", githubURL),
+				fmt.Sprintf("GORELEASER_TEST_GITHUB_URLS_UPLOAD=%s", githubURL),
 			},
 			GitHubURLs: config.GitHubURLs{
 				API:    "{{ .Env.GORELEASER_TEST_GITHUB_URLS_API }}",
@@ -78,8 +78,8 @@ func TestNewGitHubClient(t *testing.T) {
 
 		client, err := newGitHub(ctx, ctx.Token)
 		require.NoError(t, err)
-		require.Equal(t, githubURL+"/api", client.client.BaseURL.String())
-		require.Equal(t, githubURL+"/upload", client.client.UploadURL.String())
+		require.Equal(t, githubURL+"/api/v3/", client.client.BaseURL.String())
+		require.Equal(t, githubURL+"/api/uploads/", client.client.UploadURL.String())
 	})
 
 	t.Run("template invalid api", func(t *testing.T) {
@@ -209,7 +209,7 @@ func TestGitHubGetDefaultBranch(t *testing.T) {
 		totalRequests++
 		defer r.Body.Close()
 
-		if r.URL.Path == "/rate_limit" {
+		if r.URL.Path == "/api/v3/rate_limit" {
 			w.WriteHeader(http.StatusOK)
 			fmt.Fprint(w, `{"resources":{"core":{"remaining":120}}}`)
 			return
@@ -272,7 +272,7 @@ func TestGitHubChangelog(t *testing.T) {
 	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		defer r.Body.Close()
 
-		if r.URL.Path == "/repos/someone/something/compare/v1.0.0...v1.1.0" {
+		if r.URL.Path == "/api/v3/repos/someone/something/compare/v1.0.0...v1.1.0" {
 			r, err := os.Open("testdata/github/compare.json")
 			if assert.NoError(t, err) {
 				defer r.Close()
@@ -281,7 +281,7 @@ func TestGitHubChangelog(t *testing.T) {
 			}
 			return
 		}
-		if r.URL.Path == "/rate_limit" {
+		if r.URL.Path == "/api/v3/rate_limit" {
 			w.WriteHeader(http.StatusOK)
 			fmt.Fprint(w, `{"resources":{"core":{"remaining":120}}}`)
 			return
@@ -319,7 +319,7 @@ func TestGitHubReleaseNotes(t *testing.T) {
 	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		defer r.Body.Close()
 
-		if r.URL.Path == "/repos/someone/something/releases/generate-notes" {
+		if r.URL.Path == "/api/v3/repos/someone/something/releases/generate-notes" {
 			r, err := os.Open("testdata/github/releasenotes.json")
 			if assert.NoError(t, err) {
 				defer r.Close()
@@ -328,7 +328,7 @@ func TestGitHubReleaseNotes(t *testing.T) {
 			}
 			return
 		}
-		if r.URL.Path == "/rate_limit" {
+		if r.URL.Path == "/api/v3/rate_limit" {
 			w.WriteHeader(http.StatusOK)
 			fmt.Fprint(w, `{"resources":{"core":{"remaining":120}}}`)
 			return
@@ -358,10 +358,10 @@ func TestGitHubReleaseNotesError(t *testing.T) {
 	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		defer r.Body.Close()
 
-		if r.URL.Path == "/repos/someone/something/releases/generate-notes" {
+		if r.URL.Path == "/api/v3/repos/someone/something/releases/generate-notes" {
 			w.WriteHeader(http.StatusBadRequest)
 		}
-		if r.URL.Path == "/rate_limit" {
+		if r.URL.Path == "/api/v3/rate_limit" {
 			w.WriteHeader(http.StatusOK)
 			fmt.Fprint(w, `{"resources":{"core":{"remaining":120}}}`)
 			return
@@ -391,7 +391,7 @@ func TestGitHubCloseMilestone(t *testing.T) {
 		defer r.Body.Close()
 		t.Log(r.URL.Path)
 
-		if r.URL.Path == "/repos/someone/something/milestones" {
+		if r.URL.Path == "/api/v3/repos/someone/something/milestones" {
 			r, err := os.Open("testdata/github/milestones.json")
 			if assert.NoError(t, err) {
 				defer r.Close()
@@ -401,7 +401,7 @@ func TestGitHubCloseMilestone(t *testing.T) {
 			return
 		}
 
-		if r.URL.Path == "/rate_limit" {
+		if r.URL.Path == "/api/v3/rate_limit" {
 			w.WriteHeader(http.StatusOK)
 			fmt.Fprint(w, `{"resources":{"core":{"remaining":120}}}`)
 			return
@@ -430,7 +430,7 @@ func TestGitHubOpenPullRequestCrossRepo(t *testing.T) {
 	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		defer r.Body.Close()
 
-		if r.URL.Path == "/repos/someone/something/contents/.github/PULL_REQUEST_TEMPLATE.md" {
+		if r.URL.Path == "/api/v3/repos/someone/something/contents/.github/PULL_REQUEST_TEMPLATE.md" {
 			content := github.RepositoryContent{
 				Encoding: github.Ptr("base64"),
 				Content:  github.Ptr(base64.StdEncoding.EncodeToString([]byte(testPRTemplate))),
@@ -440,7 +440,7 @@ func TestGitHubOpenPullRequestCrossRepo(t *testing.T) {
 			return
 		}
 
-		if r.URL.Path == "/repos/someone/something/pulls" {
+		if r.URL.Path == "/api/v3/repos/someone/something/pulls" {
 			got, err := io.ReadAll(r.Body)
 			assert.NoError(t, err)
 			var pr github.NewPullRequest
@@ -457,7 +457,7 @@ func TestGitHubOpenPullRequestCrossRepo(t *testing.T) {
 			return
 		}
 
-		if r.URL.Path == "/rate_limit" {
+		if r.URL.Path == "/api/v3/rate_limit" {
 			w.WriteHeader(http.StatusOK)
 			fmt.Fprint(w, `{"resources":{"core":{"remaining":120}}}`)
 			return
@@ -491,7 +491,7 @@ func TestGitHubOpenPullRequestHappyPath(t *testing.T) {
 	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		defer r.Body.Close()
 
-		if r.URL.Path == "/repos/someone/something/contents/.github/PULL_REQUEST_TEMPLATE.md" {
+		if r.URL.Path == "/api/v3/repos/someone/something/contents/.github/PULL_REQUEST_TEMPLATE.md" {
 			content := github.RepositoryContent{
 				Encoding: github.Ptr("base64"),
 				Content:  github.Ptr(base64.StdEncoding.EncodeToString([]byte(testPRTemplate))),
@@ -501,7 +501,7 @@ func TestGitHubOpenPullRequestHappyPath(t *testing.T) {
 			return
 		}
 
-		if r.URL.Path == "/repos/someone/something/pulls" {
+		if r.URL.Path == "/api/v3/repos/someone/something/pulls" {
 			r, err := os.Open("testdata/github/pull.json")
 			if assert.NoError(t, err) {
 				defer r.Close()
@@ -511,7 +511,7 @@ func TestGitHubOpenPullRequestHappyPath(t *testing.T) {
 			return
 		}
 
-		if r.URL.Path == "/rate_limit" {
+		if r.URL.Path == "/api/v3/rate_limit" {
 			w.WriteHeader(http.StatusOK)
 			fmt.Fprint(w, `{"resources":{"core":{"remaining":120}}}`)
 			return
@@ -541,12 +541,12 @@ func TestGitHubOpenPullRequestNoBaseBranchDraft(t *testing.T) {
 	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		defer r.Body.Close()
 
-		if r.URL.Path == "/repos/someone/something/contents/.github/PULL_REQUEST_TEMPLATE.md" {
+		if r.URL.Path == "/api/v3/repos/someone/something/contents/.github/PULL_REQUEST_TEMPLATE.md" {
 			w.WriteHeader(http.StatusNotFound)
 			return
 		}
 
-		if r.URL.Path == "/repos/someone/something/pulls" {
+		if r.URL.Path == "/api/v3/repos/someone/something/pulls" {
 			got, err := io.ReadAll(r.Body)
 			assert.NoError(t, err)
 			var pr github.NewPullRequest
@@ -564,13 +564,13 @@ func TestGitHubOpenPullRequestNoBaseBranchDraft(t *testing.T) {
 			return
 		}
 
-		if r.URL.Path == "/repos/someone/something" {
+		if r.URL.Path == "/api/v3/repos/someone/something" {
 			w.WriteHeader(http.StatusOK)
 			fmt.Fprint(w, `{"default_branch": "main"}`)
 			return
 		}
 
-		if r.URL.Path == "/rate_limit" {
+		if r.URL.Path == "/api/v3/rate_limit" {
 			w.WriteHeader(http.StatusOK)
 			fmt.Fprint(w, `{"resources":{"core":{"remaining":120}}}`)
 			return
@@ -601,12 +601,12 @@ func TestGitHubOpenPullRequestPRExists(t *testing.T) {
 	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		defer r.Body.Close()
 
-		if r.URL.Path == "/repos/someone/something/contents/.github/PULL_REQUEST_TEMPLATE.md" {
+		if r.URL.Path == "/api/v3/repos/someone/something/contents/.github/PULL_REQUEST_TEMPLATE.md" {
 			w.WriteHeader(http.StatusNotFound)
 			return
 		}
 
-		if r.URL.Path == "/repos/someone/something/pulls" {
+		if r.URL.Path == "/api/v3/repos/someone/something/pulls" {
 			w.WriteHeader(http.StatusUnprocessableEntity)
 			r, err := os.Open("testdata/github/pull.json")
 			if assert.NoError(t, err) {
@@ -617,7 +617,7 @@ func TestGitHubOpenPullRequestPRExists(t *testing.T) {
 			return
 		}
 
-		if r.URL.Path == "/rate_limit" {
+		if r.URL.Path == "/api/v3/rate_limit" {
 			w.WriteHeader(http.StatusOK)
 			fmt.Fprint(w, `{"resources":{"core":{"remaining":120}}}`)
 			return
@@ -647,12 +647,12 @@ func TestGitHubOpenPullRequestBaseEmpty(t *testing.T) {
 	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		defer r.Body.Close()
 
-		if r.URL.Path == "/repos/someone/something/contents/.github/PULL_REQUEST_TEMPLATE.md" {
+		if r.URL.Path == "/api/v3/repos/someone/something/contents/.github/PULL_REQUEST_TEMPLATE.md" {
 			w.WriteHeader(http.StatusNotFound)
 			return
 		}
 
-		if r.URL.Path == "/repos/someone/something/pulls" {
+		if r.URL.Path == "/api/v3/repos/someone/something/pulls" {
 			r, err := os.Open("testdata/github/pull.json")
 			if assert.NoError(t, err) {
 				defer r.Close()
@@ -662,13 +662,13 @@ func TestGitHubOpenPullRequestBaseEmpty(t *testing.T) {
 			return
 		}
 
-		if r.URL.Path == "/repos/someone/something" {
+		if r.URL.Path == "/api/v3/repos/someone/something" {
 			w.WriteHeader(http.StatusOK)
 			fmt.Fprint(w, `{"default_branch": "main"}`)
 			return
 		}
 
-		if r.URL.Path == "/rate_limit" {
+		if r.URL.Path == "/api/v3/rate_limit" {
 			w.WriteHeader(http.StatusOK)
 			fmt.Fprint(w, `{"resources":{"core":{"remaining":120}}}`)
 			return
@@ -698,12 +698,12 @@ func TestGitHubOpenPullRequestHeadEmpty(t *testing.T) {
 	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		defer r.Body.Close()
 
-		if r.URL.Path == "/repos/someone/something/contents/.github/PULL_REQUEST_TEMPLATE.md" {
+		if r.URL.Path == "/api/v3/repos/someone/something/contents/.github/PULL_REQUEST_TEMPLATE.md" {
 			w.WriteHeader(http.StatusNotFound)
 			return
 		}
 
-		if r.URL.Path == "/repos/someone/something/pulls" {
+		if r.URL.Path == "/api/v3/repos/someone/something/pulls" {
 			r, err := os.Open("testdata/github/pull.json")
 			if assert.NoError(t, err) {
 				defer r.Close()
@@ -713,13 +713,13 @@ func TestGitHubOpenPullRequestHeadEmpty(t *testing.T) {
 			return
 		}
 
-		if r.URL.Path == "/repos/someone/something" {
+		if r.URL.Path == "/api/v3/repos/someone/something" {
 			w.WriteHeader(http.StatusOK)
 			fmt.Fprint(w, `{"default_branch": "main"}`)
 			return
 		}
 
-		if r.URL.Path == "/rate_limit" {
+		if r.URL.Path == "/api/v3/rate_limit" {
 			w.WriteHeader(http.StatusOK)
 			fmt.Fprint(w, `{"resources":{"core":{"remaining":120}}}`)
 			return
@@ -749,23 +749,23 @@ func TestGitHubCreateFileHappyPathCreate(t *testing.T) {
 	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		defer r.Body.Close()
 
-		if r.URL.Path == "/repos/someone/something" {
+		if r.URL.Path == "/api/v3/repos/someone/something" {
 			w.WriteHeader(http.StatusOK)
 			fmt.Fprint(w, `{"default_branch": "main"}`)
 			return
 		}
 
-		if r.URL.Path == "/repos/someone/something/contents/file.txt" && r.Method == http.MethodGet {
+		if r.URL.Path == "/api/v3/repos/someone/something/contents/file.txt" && r.Method == http.MethodGet {
 			w.WriteHeader(http.StatusNotFound)
 			return
 		}
 
-		if r.URL.Path == "/repos/someone/something/contents/file.txt" && r.Method == http.MethodPut {
+		if r.URL.Path == "/api/v3/repos/someone/something/contents/file.txt" && r.Method == http.MethodPut {
 			w.WriteHeader(http.StatusOK)
 			return
 		}
 
-		if r.URL.Path == "/rate_limit" {
+		if r.URL.Path == "/api/v3/rate_limit" {
 			w.WriteHeader(http.StatusOK)
 			fmt.Fprint(w, `{"resources":{"core":{"remaining":120}}}`)
 			return
@@ -794,24 +794,24 @@ func TestGitHubCreateFileHappyPathUpdate(t *testing.T) {
 	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		defer r.Body.Close()
 
-		if r.URL.Path == "/repos/someone/something" {
+		if r.URL.Path == "/api/v3/repos/someone/something" {
 			w.WriteHeader(http.StatusOK)
 			fmt.Fprint(w, `{"default_branch": "main"}`)
 			return
 		}
 
-		if r.URL.Path == "/repos/someone/something/contents/file.txt" && r.Method == http.MethodGet {
+		if r.URL.Path == "/api/v3/repos/someone/something/contents/file.txt" && r.Method == http.MethodGet {
 			w.WriteHeader(http.StatusOK)
 			fmt.Fprint(w, `{"sha": "fake"}`)
 			return
 		}
 
-		if r.URL.Path == "/repos/someone/something/contents/file.txt" && r.Method == http.MethodPut {
+		if r.URL.Path == "/api/v3/repos/someone/something/contents/file.txt" && r.Method == http.MethodPut {
 			w.WriteHeader(http.StatusOK)
 			return
 		}
 
-		if r.URL.Path == "/rate_limit" {
+		if r.URL.Path == "/api/v3/rate_limit" {
 			w.WriteHeader(http.StatusOK)
 			fmt.Fprint(w, `{"resources":{"core":{"remaining":120}}}`)
 			return
@@ -840,39 +840,39 @@ func TestGitHubCreateFileFeatureBranchAlreadyExists(t *testing.T) {
 	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		defer r.Body.Close()
 
-		if r.URL.Path == "/repos/someone/something/branches/feature" && r.Method == http.MethodGet {
+		if r.URL.Path == "/api/v3/repos/someone/something/branches/feature" && r.Method == http.MethodGet {
 			w.WriteHeader(http.StatusNotFound)
 			return
 		}
 
-		if r.URL.Path == "/repos/someone/something/git/ref/heads/main" {
+		if r.URL.Path == "/api/v3/repos/someone/something/git/ref/heads/main" {
 			fmt.Fprint(w, `{"object": {"sha": "fake-sha"}}`)
 			return
 		}
 
-		if r.URL.Path == "/repos/someone/something/git/refs" && r.Method == http.MethodPost {
+		if r.URL.Path == "/api/v3/repos/someone/something/git/refs" && r.Method == http.MethodPost {
 			w.WriteHeader(http.StatusUnprocessableEntity)
 			fmt.Fprintf(w, `{"message": "Reference already exists"}`)
 			return
 		}
 
-		if r.URL.Path == "/repos/someone/something" {
+		if r.URL.Path == "/api/v3/repos/someone/something" {
 			w.WriteHeader(http.StatusOK)
 			fmt.Fprint(w, `{"default_branch": "main"}`)
 			return
 		}
 
-		if r.URL.Path == "/repos/someone/something/contents/file.txt" && r.Method == http.MethodGet {
+		if r.URL.Path == "/api/v3/repos/someone/something/contents/file.txt" && r.Method == http.MethodGet {
 			w.WriteHeader(http.StatusNotFound)
 			return
 		}
 
-		if r.URL.Path == "/repos/someone/something/contents/file.txt" && r.Method == http.MethodPut {
+		if r.URL.Path == "/api/v3/repos/someone/something/contents/file.txt" && r.Method == http.MethodPut {
 			w.WriteHeader(http.StatusOK)
 			return
 		}
 
-		if r.URL.Path == "/rate_limit" {
+		if r.URL.Path == "/api/v3/rate_limit" {
 			w.WriteHeader(http.StatusOK)
 			fmt.Fprint(w, `{"resources":{"core":{"remaining":120}}}`)
 			return
@@ -902,38 +902,38 @@ func TestGitHubCreateFileFeatureBranchDoesNotExist(t *testing.T) {
 	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		defer r.Body.Close()
 
-		if r.URL.Path == "/repos/someone/something/branches/feature" && r.Method == http.MethodGet {
+		if r.URL.Path == "/api/v3/repos/someone/something/branches/feature" && r.Method == http.MethodGet {
 			w.WriteHeader(http.StatusNotFound)
 			return
 		}
 
-		if r.URL.Path == "/repos/someone/something/git/ref/heads/main" {
+		if r.URL.Path == "/api/v3/repos/someone/something/git/ref/heads/main" {
 			fmt.Fprint(w, `{"object": {"sha": "fake-sha"}}`)
 			return
 		}
 
-		if r.URL.Path == "/repos/someone/something/git/refs" && r.Method == http.MethodPost {
+		if r.URL.Path == "/api/v3/repos/someone/something/git/refs" && r.Method == http.MethodPost {
 			w.WriteHeader(http.StatusOK)
 			return
 		}
 
-		if r.URL.Path == "/repos/someone/something" {
+		if r.URL.Path == "/api/v3/repos/someone/something" {
 			w.WriteHeader(http.StatusOK)
 			fmt.Fprint(w, `{"default_branch": "main"}`)
 			return
 		}
 
-		if r.URL.Path == "/repos/someone/something/contents/file.txt" && r.Method == http.MethodGet {
+		if r.URL.Path == "/api/v3/repos/someone/something/contents/file.txt" && r.Method == http.MethodGet {
 			w.WriteHeader(http.StatusNotFound)
 			return
 		}
 
-		if r.URL.Path == "/repos/someone/something/contents/file.txt" && r.Method == http.MethodPut {
+		if r.URL.Path == "/api/v3/repos/someone/something/contents/file.txt" && r.Method == http.MethodPut {
 			w.WriteHeader(http.StatusOK)
 			return
 		}
 
-		if r.URL.Path == "/rate_limit" {
+		if r.URL.Path == "/api/v3/rate_limit" {
 			w.WriteHeader(http.StatusOK)
 			fmt.Fprint(w, `{"resources":{"core":{"remaining":120}}}`)
 			return
@@ -963,24 +963,24 @@ func TestGitHubCreateFileFeatureBranchNilObject(t *testing.T) {
 	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		defer r.Body.Close()
 
-		if r.URL.Path == "/repos/someone/something/branches/feature" && r.Method == http.MethodGet {
+		if r.URL.Path == "/api/v3/repos/someone/something/branches/feature" && r.Method == http.MethodGet {
 			w.WriteHeader(http.StatusNotFound)
 			return
 		}
 
-		if r.URL.Path == "/repos/someone/something/git/ref/heads/main" {
+		if r.URL.Path == "/api/v3/repos/someone/something/git/ref/heads/main" {
 			// Return ref with nil object
 			fmt.Fprint(w, `{}`)
 			return
 		}
 
-		if r.URL.Path == "/repos/someone/something" {
+		if r.URL.Path == "/api/v3/repos/someone/something" {
 			w.WriteHeader(http.StatusOK)
 			fmt.Fprint(w, `{"default_branch": "main"}`)
 			return
 		}
 
-		if r.URL.Path == "/rate_limit" {
+		if r.URL.Path == "/api/v3/rate_limit" {
 			w.WriteHeader(http.StatusOK)
 			fmt.Fprint(w, `{"resources":{"core":{"remaining":120}}}`)
 			return
@@ -1015,7 +1015,7 @@ func TestGitHubCheckRateLimit(t *testing.T) {
 	var first atomic.Bool
 	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		defer r.Body.Close()
-		if r.URL.Path == "/rate_limit" {
+		if r.URL.Path == "/api/v3/rate_limit" {
 			w.WriteHeader(http.StatusOK)
 			resetstr, _ := github.Timestamp{Time: reset}.MarshalJSON()
 			if first.Load() {
@@ -1048,12 +1048,12 @@ func TestGitHubCreateRelease(t *testing.T) {
 	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		defer r.Body.Close()
 
-		if r.URL.Path == "/repos/goreleaser/test/releases/tags/v1.0.0" {
+		if r.URL.Path == "/api/v3/repos/goreleaser/test/releases/tags/v1.0.0" {
 			w.WriteHeader(http.StatusNotFound)
 			return
 		}
 
-		if r.URL.Path == "/repos/goreleaser/test/releases" && r.Method == http.MethodPost {
+		if r.URL.Path == "/api/v3/repos/goreleaser/test/releases" && r.Method == http.MethodPost {
 			got, err := io.ReadAll(r.Body)
 			assert.NoError(t, err)
 			assert.JSONEq(t, `{"name": "v1.0.0", "tag_name": "v1.0.0", "target_commitish": "test", "body": "test release", "draft": true, "prerelease": false}`, string(got))
@@ -1063,7 +1063,7 @@ func TestGitHubCreateRelease(t *testing.T) {
 			return
 		}
 
-		if r.URL.Path == "/rate_limit" {
+		if r.URL.Path == "/api/v3/rate_limit" {
 			w.WriteHeader(http.StatusOK)
 			fmt.Fprint(w, `{"resources":{"core":{"remaining":120}}}`)
 			return
@@ -1104,7 +1104,7 @@ func TestGitHubCreateReleaseDeleteExistingDraft(t *testing.T) {
 	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		defer r.Body.Close()
 
-		if r.URL.Path == "/repos/goreleaser/test/releases" && r.Method == http.MethodGet {
+		if r.URL.Path == "/api/v3/repos/goreleaser/test/releases" && r.Method == http.MethodGet {
 			w.WriteHeader(http.StatusOK)
 			r, err := os.Open("testdata/github/releases.json")
 			if assert.NoError(t, err) {
@@ -1115,23 +1115,23 @@ func TestGitHubCreateReleaseDeleteExistingDraft(t *testing.T) {
 			return
 		}
 
-		if r.URL.Path == "/repos/goreleaser/test/releases/1" && r.Method == http.MethodDelete {
+		if r.URL.Path == "/api/v3/repos/goreleaser/test/releases/1" && r.Method == http.MethodDelete {
 			w.WriteHeader(http.StatusNoContent)
 			return
 		}
 
-		if r.URL.Path == "/repos/goreleaser/test/releases/tags/v1.0.0" {
+		if r.URL.Path == "/api/v3/repos/goreleaser/test/releases/tags/v1.0.0" {
 			w.WriteHeader(http.StatusNotFound)
 			return
 		}
 
-		if r.URL.Path == "/repos/goreleaser/test/releases" && r.Method == http.MethodPost {
+		if r.URL.Path == "/api/v3/repos/goreleaser/test/releases" && r.Method == http.MethodPost {
 			w.WriteHeader(http.StatusCreated)
 			fmt.Fprint(w, `{"id": 2, "html_url": "https://github.com/goreleaser/test/releases/v1.0.0"}`)
 			return
 		}
 
-		if r.URL.Path == "/rate_limit" {
+		if r.URL.Path == "/api/v3/rate_limit" {
 			w.WriteHeader(http.StatusOK)
 			fmt.Fprint(w, `{"resources":{"core":{"remaining":120}}}`)
 			return
@@ -1173,13 +1173,13 @@ func TestGitHubCreateReleaseUpdateExisting(t *testing.T) {
 	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		defer r.Body.Close()
 
-		if r.URL.Path == "/repos/goreleaser/test/releases/tags/v1.0.0" {
+		if r.URL.Path == "/api/v3/repos/goreleaser/test/releases/tags/v1.0.0" {
 			w.WriteHeader(http.StatusOK)
 			fmt.Fprint(w, `{"id": 3, "name": "v1.0.0", "body": "This is an existing release"}`)
 			return
 		}
 
-		if r.URL.Path == "/repos/goreleaser/test/releases/3" && r.Method == http.MethodPatch {
+		if r.URL.Path == "/api/v3/repos/goreleaser/test/releases/3" && r.Method == http.MethodPatch {
 			got, err := io.ReadAll(r.Body)
 			assert.NoError(t, err)
 			assert.JSONEq(t, `{"name": "v1.0.0", "tag_name": "v1.0.0", "body": "This is an existing release", "prerelease": false}`, string(got))
@@ -1189,7 +1189,7 @@ func TestGitHubCreateReleaseUpdateExisting(t *testing.T) {
 			return
 		}
 
-		if r.URL.Path == "/rate_limit" {
+		if r.URL.Path == "/api/v3/rate_limit" {
 			w.WriteHeader(http.StatusOK)
 			fmt.Fprint(w, `{"resources":{"core":{"remaining":120}}}`)
 			return
@@ -1229,7 +1229,7 @@ func TestGitHubCreateReleaseUseExistingDraft(t *testing.T) {
 	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		defer r.Body.Close()
 
-		if r.URL.Path == "/repos/goreleaser/test/releases" && r.Method == http.MethodGet {
+		if r.URL.Path == "/api/v3/repos/goreleaser/test/releases" && r.Method == http.MethodGet {
 			w.WriteHeader(http.StatusOK)
 			r, err := os.Open("testdata/github/releases.json")
 			if assert.NoError(t, err) {
@@ -1240,7 +1240,7 @@ func TestGitHubCreateReleaseUseExistingDraft(t *testing.T) {
 			return
 		}
 
-		if r.URL.Path == "/repos/goreleaser/test/releases/1" && r.Method == http.MethodPatch {
+		if r.URL.Path == "/api/v3/repos/goreleaser/test/releases/1" && r.Method == http.MethodPatch {
 			got, err := io.ReadAll(r.Body)
 			assert.NoError(t, err)
 			assert.JSONEq(t, `{"name": "v1.0.0", "tag_name": "v1.0.0", "body": "Existing draft release", "draft": true, "prerelease": false}`, string(got))
@@ -1250,7 +1250,7 @@ func TestGitHubCreateReleaseUseExistingDraft(t *testing.T) {
 			return
 		}
 
-		if r.URL.Path == "/rate_limit" {
+		if r.URL.Path == "/api/v3/rate_limit" {
 			w.WriteHeader(http.StatusOK)
 			fmt.Fprint(w, `{"resources":{"core":{"remaining":120}}}`)
 			return
@@ -1291,18 +1291,18 @@ func TestGitHubCreateFileWithGitHubAppToken(t *testing.T) {
 	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		defer r.Body.Close()
 
-		if r.URL.Path == "/repos/someone/something" {
+		if r.URL.Path == "/api/v3/repos/someone/something" {
 			w.WriteHeader(http.StatusOK)
 			fmt.Fprint(w, `{"default_branch": "main"}`)
 			return
 		}
 
-		if r.URL.Path == "/repos/someone/something/contents/file.txt" && r.Method == http.MethodGet {
+		if r.URL.Path == "/api/v3/repos/someone/something/contents/file.txt" && r.Method == http.MethodGet {
 			w.WriteHeader(http.StatusNotFound)
 			return
 		}
 
-		if r.URL.Path == "/repos/someone/something/contents/file.txt" && r.Method == http.MethodPut {
+		if r.URL.Path == "/api/v3/repos/someone/something/contents/file.txt" && r.Method == http.MethodPut {
 			// Verify that committer is not set in the request
 			body, err := io.ReadAll(r.Body)
 			assert.NoError(t, err)
@@ -1318,7 +1318,7 @@ func TestGitHubCreateFileWithGitHubAppToken(t *testing.T) {
 			return
 		}
 
-		if r.URL.Path == "/rate_limit" {
+		if r.URL.Path == "/api/v3/rate_limit" {
 			w.WriteHeader(http.StatusOK)
 			fmt.Fprint(w, `{"resources":{"core":{"remaining":120}}}`)
 			return
@@ -1349,18 +1349,18 @@ func TestGitHubCreateFileWithoutGitHubAppToken(t *testing.T) {
 	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		defer r.Body.Close()
 
-		if r.URL.Path == "/repos/someone/something" {
+		if r.URL.Path == "/api/v3/repos/someone/something" {
 			w.WriteHeader(http.StatusOK)
 			fmt.Fprint(w, `{"default_branch": "main"}`)
 			return
 		}
 
-		if r.URL.Path == "/repos/someone/something/contents/file.txt" && r.Method == http.MethodGet {
+		if r.URL.Path == "/api/v3/repos/someone/something/contents/file.txt" && r.Method == http.MethodGet {
 			w.WriteHeader(http.StatusNotFound)
 			return
 		}
 
-		if r.URL.Path == "/repos/someone/something/contents/file.txt" && r.Method == http.MethodPut {
+		if r.URL.Path == "/api/v3/repos/someone/something/contents/file.txt" && r.Method == http.MethodPut {
 			// Verify that committer is set in the request
 			body, err := io.ReadAll(r.Body)
 			assert.NoError(t, err)
@@ -1380,7 +1380,7 @@ func TestGitHubCreateFileWithoutGitHubAppToken(t *testing.T) {
 			return
 		}
 
-		if r.URL.Path == "/rate_limit" {
+		if r.URL.Path == "/api/v3/rate_limit" {
 			w.WriteHeader(http.StatusOK)
 			fmt.Fprint(w, `{"resources":{"core":{"remaining":120}}}`)
 			return
