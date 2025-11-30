@@ -1,6 +1,6 @@
 # Model Context Protocol (MCP) Server
 
-<!-- md:version v2.13-unreleased -->
+<!-- md:version v2.13 -->
 
 <!-- md:experimental https://github.com/orgs/goreleaser/discussions/6251 -->
 
