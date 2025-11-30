@@ -15,7 +15,7 @@ While not required, for security the recommended settings are:
 
 - User level -> Single user
 - Scope -> Granular
-  - [x] topics/write
+  - `(x) topics/write`
 
 Where GoReleaser is running, the following environment variable should be set
 with the API key as the value:

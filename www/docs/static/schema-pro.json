@@ -1280,6 +1280,9 @@
 					},
 					"signing": {
 						"$ref": "#/$defs/CommitSigning"
+					},
+					"use_github_app_token": {
+						"type": "boolean"
 					}
 				},
 				"additionalProperties": false,
@@ -1929,6 +1932,57 @@
 				},
 				"additionalProperties": false,
 				"type": "object"
+			},
+			"GitHubMCP": {
+				"properties": {
+					"name": {
+						"type": "string"
+					},
+					"title": {
+						"type": "string"
+					},
+					"description": {
+						"type": "string"
+					},
+					"homepage": {
+						"type": "string"
+					},
+					"packages": {
+						"items": {
+							"$ref": "#/$defs/MCPPackage"
+						},
+						"type": "array"
+					},
+					"transports": {
+						"items": {
+							"$ref": "#/$defs/MCPTransport"
+						},
+						"type": "array"
+					},
+					"disable": {
+						"oneOf": [
+							{
+								"type": "string"
+							},
+							{
+								"type": "boolean"
+							}
+						]
+					},
+					"repository": {
+						"$ref": "#/$defs/MCPRepository"
+					},
+					"auth": {
+						"$ref": "#/$defs/MCPAuth"
+					}
+				},
+				"additionalProperties": false,
+				"type": "object",
+				"required": [
+					"name",
+					"title",
+					"auth"
+				]
 			},
 			"GitHubURLs": {
 				"properties": {
@@ -2809,54 +2863,12 @@
 			},
 			"MCP": {
 				"properties": {
-					"name": {
-						"type": "string"
-					},
-					"title": {
-						"type": "string"
-					},
-					"description": {
-						"type": "string"
-					},
-					"homepage": {
-						"type": "string"
-					},
-					"packages": {
-						"items": {
-							"$ref": "#/$defs/MCPPackage"
-						},
-						"type": "array"
-					},
-					"transports": {
-						"items": {
-							"$ref": "#/$defs/MCPTransport"
-						},
-						"type": "array"
-					},
-					"disable": {
-						"oneOf": [
-							{
-								"type": "string"
-							},
-							{
-								"type": "boolean"
-							}
-						]
-					},
-					"repository": {
-						"$ref": "#/$defs/MCPRepository"
-					},
-					"auth": {
-						"$ref": "#/$defs/MCPAuth"
+					"github": {
+						"$ref": "#/$defs/GitHubMCP"
 					}
 				},
 				"additionalProperties": false,
-				"type": "object",
-				"required": [
-					"name",
-					"title",
-					"auth"
-				]
+				"type": "object"
 			},
 			"MCPAuth": {
 				"properties": {

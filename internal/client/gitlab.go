@@ -662,7 +662,7 @@ func (c *gitlabClient) OpenPullRequest(
 	if err := c.checkIsPrivateToken(); err != nil {
 		return fmt.Errorf("open merge request: %w", err)
 	}
-	var targetProjectID int
+	var targetProjectID int64
 	if base.Owner != "" {
 		fullProjectPath := fmt.Sprintf("%s/%s", base.Owner, base.Name)
 

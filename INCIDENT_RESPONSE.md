@@ -15,32 +15,34 @@ including code, releases, and GitHub workflows.
 ## 2. Roles & Contacts
 
 - **Incident Lead:** By default, [@caarlos0](https://github.com/caarlos0).
-- **Security Contact:** All incidents must be reported via only
+- **Security Contact:** All incidents must be reported exclusively through
   [GitHub Security Advisories][gsa].
 
 ## 3. Detection & Reporting
 
-**All security incidents are initially considered sensitive.**
+**All security incidents are initially considered sensitive** and must be
+reported privately and exclusively through [GitHub Security Advisories][gsa].
 
-They must be reported privately and exclusively through
-[GitHub Security Advisories][gsa].
-
-Do not disclose incidents via issues, pull requests, or public channels.
+Do not disclose incidents through issues, pull requests, or public channels.
 
 ## 4. Initial Response
 
 1. **Acknowledge** the report and thank the reporter.
-2. **Assess** the severity and validity. See [CIA][cia].
+2. **Assess** the severity and validity (confidentiality, integrity, availability).
+   See [CIA triad][cia].
 3. **Engage** other maintainers if needed.
-4. **Contain** the issue if possible (revoke credentials, disable workflows).
+4. **Contain** the threat immediately if possible (e.g., revoke credentials,
+   disable workflows).
+5. **Notify Pro customers** through [Gumroad](https://gumroad.com/emails/new) if
+   the incident is severe or directly affects them.
 
 ## 5. Investigation & Mitigation
 
-- **Investigate** root cause and potential impact.
+- **Investigate** the root cause and potential impact.
 - **Mitigate**:
   - Patch vulnerabilities.
-  - Rotate credentials (tokens/keys) if needed.
-- **Document** all findings and actions.
+  - Rotate compromised credentials (tokens/keys).
+- **Document** all findings and actions taken.
 
 ## 6. Resolution Timeline
 
@@ -52,16 +54,20 @@ acknowledgment.
 All communication regarding security incidents must occur exclusively through
 the GitHub Security Advisories page.
 
-Once the incident is resolved, a coordinated disclosure is agreed upon,
-and a fix is released, a public summary will be published.
-Typically we request a CVE as well.
+Once the incident is resolved and a fix is released, we will:
+
+1. Coordinate disclosure timing with the reporter.
+2. Publish a public advisory summarizing the incident.
+3. Request a CVE identifier if applicable.
+4. Send a follow-up to Pro customers through [Gumroad](https://gumroad.com/emails/new)
+   with the full resolution details (if not already notified during initial response).
 
 ## 8. Post-Incident
 
-1. **Review** the incident and response.
-2. **Update** documentation or automation as needed.
-3. **Publish** an advisory for significant incidents.
-4. **Credit** everyone involved unless they explicitly ask to remain anonymous.
+1. **Review** the incident response and identify lessons learned.
+2. **Update** documentation, processes, or automation as needed.
+3. **Publish** a public advisory for significant incidents.
+4. **Credit** all contributors unless they explicitly request to remain anonymous.
 
 ## 9. References
 
