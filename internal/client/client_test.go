@@ -15,7 +15,7 @@ import (
 )
 
 func TestClientEmpty(t *testing.T) {
-	ctx := testctx.New()
+	ctx := testctx.Wrap(t.Context())
 	client, err := New(ctx)
 	require.Nil(t, client)
 	require.EqualError(t, err, `invalid client token type: ""`)
@@ -23,7 +23,7 @@ func TestClientEmpty(t *testing.T) {
 
 func TestNewReleaseClient(t *testing.T) {
 	t.Run("normal", func(t *testing.T) {
-		cli, err := NewReleaseClient(testctx.New(
+		cli, err := NewReleaseClient(testctx.Wrap(t.Context(),
 			testctx.WithTokenType(context.TokenTypeGitHub),
 		))
 		require.NoError(t, err)
@@ -31,7 +31,7 @@ func TestNewReleaseClient(t *testing.T) {
 	})
 
 	t.Run("bad tmpl", func(t *testing.T) {
-		_, err := NewReleaseClient(testctx.NewWithCfg(
+		_, err := NewReleaseClient(testctx.WrapWithCfg(t.Context(),
 			config.Project{
 				Release: config.Release{
 					Disable: "{{ .Nope }}",
@@ -43,7 +43,7 @@ func TestNewReleaseClient(t *testing.T) {
 	})
 
 	t.Run("disabled", func(t *testing.T) {
-		cli, err := NewReleaseClient(testctx.NewWithCfg(
+		cli, err := NewReleaseClient(testctx.WrapWithCfg(t.Context(),
 			config.Project{
 				Release: config.Release{
 					Disable: "true",
@@ -61,7 +61,7 @@ func TestNewReleaseClient(t *testing.T) {
 }
 
 func TestClientNewGitea(t *testing.T) {
-	ctx := testctx.NewWithCfg(config.Project{
+	ctx := testctx.WrapWithCfg(t.Context(), config.Project{
 		GiteaURLs: config.GiteaURLs{
 			API:      fakeGitea(t).URL,
 			Download: "https://gitea.com",
@@ -74,7 +74,7 @@ func TestClientNewGitea(t *testing.T) {
 }
 
 func TestClientNewGiteaInvalidURL(t *testing.T) {
-	ctx := testctx.NewWithCfg(config.Project{
+	ctx := testctx.WrapWithCfg(t.Context(), config.Project{
 		GiteaURLs: config.GiteaURLs{
 			API: "://gitea.com/api/v1",
 		},
@@ -85,7 +85,7 @@ func TestClientNewGiteaInvalidURL(t *testing.T) {
 }
 
 func TestClientNewGitLab(t *testing.T) {
-	ctx := testctx.New(testctx.GitLabTokenType)
+	ctx := testctx.Wrap(t.Context(), testctx.GitLabTokenType)
 	client, err := New(ctx)
 	require.NoError(t, err)
 	_, ok := client.(*gitlabClient)
@@ -104,13 +104,13 @@ func TestCheckBodyMaxLength(t *testing.T) {
 
 func TestNewIfToken(t *testing.T) {
 	t.Run("valid", func(t *testing.T) {
-		ctx := testctx.New(testctx.GitLabTokenType)
+		ctx := testctx.Wrap(t.Context(), testctx.GitLabTokenType)
 		client, err := New(ctx)
 		require.NoError(t, err)
 		_, ok := client.(*gitlabClient)
 		require.True(t, ok)
 
-		ctx = testctx.NewWithCfg(config.Project{
+		ctx = testctx.WrapWithCfg(t.Context(), config.Project{
 			Env: []string{"VAR=giteatoken"},
 			GiteaURLs: config.GiteaURLs{
 				API: fakeGitea(t).URL,
@@ -123,7 +123,7 @@ func TestNewIfToken(t *testing.T) {
 	})
 
 	t.Run("empty", func(t *testing.T) {
-		ctx := testctx.New(testctx.GitLabTokenType)
+		ctx := testctx.Wrap(t.Context(), testctx.GitLabTokenType)
 
 		client, err := New(ctx)
 		require.NoError(t, err)
@@ -135,7 +135,7 @@ func TestNewIfToken(t *testing.T) {
 	})
 
 	t.Run("invalid tmpl", func(t *testing.T) {
-		ctx := testctx.New(testctx.GitLabTokenType)
+		ctx := testctx.Wrap(t.Context(), testctx.GitLabTokenType)
 		_, err := NewIfToken(ctx, nil, "nope")
 		require.EqualError(t, err, `expected {{ .Env.VAR_NAME }} only (no plain-text or other interpolation)`)
 	})
@@ -143,7 +143,7 @@ func TestNewIfToken(t *testing.T) {
 
 func TestNewWithToken(t *testing.T) {
 	t.Run("gitlab", func(t *testing.T) {
-		ctx := testctx.NewWithCfg(config.Project{
+		ctx := testctx.WrapWithCfg(t.Context(), config.Project{
 			Env: []string{"TK=token"},
 		}, testctx.GitLabTokenType)
 
@@ -155,7 +155,7 @@ func TestNewWithToken(t *testing.T) {
 	})
 
 	t.Run("gitea", func(t *testing.T) {
-		ctx := testctx.NewWithCfg(config.Project{
+		ctx := testctx.WrapWithCfg(t.Context(), config.Project{
 			Env: []string{"TK=token"},
 			GiteaURLs: config.GiteaURLs{
 				API: fakeGitea(t).URL,
@@ -170,7 +170,7 @@ func TestNewWithToken(t *testing.T) {
 	})
 
 	t.Run("invalid", func(t *testing.T) {
-		ctx := testctx.NewWithCfg(config.Project{
+		ctx := testctx.WrapWithCfg(t.Context(), config.Project{
 			Env: []string{"TK=token"},
 		}, testctx.WithTokenType(context.TokenType("nope")))
 		cli, err := newWithToken(ctx, "{{ .Env.TK }}")
