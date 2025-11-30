@@ -69,7 +69,7 @@ func TestGitLabReleaseURLTemplate(t *testing.T) {
 	}
 
 	for _, tt := range tests {
-		ctx := testctx.NewWithCfg(config.Project{
+		ctx := testctx.WrapWithCfg(t.Context(), config.Project{
 			Env: []string{
 				"GORELEASER_TEST_GITLAB_URLS_DOWNLOAD=https://gitlab.mycompany.com",
 			},
@@ -121,7 +121,7 @@ func TestGitLabURLsAPITemplate(t *testing.T) {
 				gitlabURLs.API = "{{ .Env.GORELEASER_TEST_GITLAB_URLS_API }}"
 			}
 
-			ctx := testctx.NewWithCfg(config.Project{
+			ctx := testctx.WrapWithCfg(t.Context(), config.Project{
 				Env:        envs,
 				GitLabURLs: gitlabURLs,
 			})
@@ -133,7 +133,7 @@ func TestGitLabURLsAPITemplate(t *testing.T) {
 	}
 
 	t.Run("no_env_specified", func(t *testing.T) {
-		ctx := testctx.NewWithCfg(config.Project{
+		ctx := testctx.WrapWithCfg(t.Context(), config.Project{
 			GitLabURLs: config.GitLabURLs{
 				API: "{{ .Env.GORELEASER_NOT_EXISTS }}",
 			},
@@ -144,7 +144,7 @@ func TestGitLabURLsAPITemplate(t *testing.T) {
 	})
 
 	t.Run("invalid_template", func(t *testing.T) {
-		ctx := testctx.NewWithCfg(config.Project{
+		ctx := testctx.WrapWithCfg(t.Context(), config.Project{
 			GitLabURLs: config.GitLabURLs{
 				API: "{{.dddddddddd",
 			},
@@ -239,7 +239,7 @@ func TestGitLabURLsDownloadTemplate(t *testing.T) {
 				}))
 				defer srv.Close()
 
-				ctx := testctx.NewWithCfg(config.Project{
+				ctx := testctx.WrapWithCfg(t.Context(), config.Project{
 					ProjectName: "projectname",
 					Env: []string{
 						"GORELEASER_TEST_GITLAB_URLS_DOWNLOAD=https://gitlab.mycompany.com",
@@ -284,7 +284,7 @@ func TestGitLabURLsDownloadTemplate(t *testing.T) {
 }
 
 func TestGitLabCreateReleaseUnknownHost(t *testing.T) {
-	ctx := testctx.NewWithCfg(config.Project{
+	ctx := testctx.WrapWithCfg(t.Context(), config.Project{
 		Release: config.Release{
 			GitLab: config.Repo{
 				Owner: "owner",
@@ -338,7 +338,7 @@ func TestGitLabCreateReleaseReleaseNotExists(t *testing.T) {
 			}))
 			defer srv.Close()
 
-			ctx := testctx.NewWithCfg(config.Project{
+			ctx := testctx.WrapWithCfg(t.Context(), config.Project{
 				GitLabURLs: config.GitLabURLs{
 					API: srv.URL,
 				},
@@ -391,7 +391,7 @@ func TestGitLabCreateReleaseReleaseExists(t *testing.T) {
 	}))
 	defer srv.Close()
 
-	ctx := testctx.NewWithCfg(config.Project{
+	ctx := testctx.WrapWithCfg(t.Context(), config.Project{
 		GitLabURLs: config.GitLabURLs{
 			API: srv.URL,
 		},
@@ -419,7 +419,7 @@ func TestGitLabCreateReleaseUnknownHTTPError(t *testing.T) {
 	}))
 	defer srv.Close()
 
-	ctx := testctx.NewWithCfg(config.Project{
+	ctx := testctx.WrapWithCfg(t.Context(), config.Project{
 		GitLabURLs: config.GitLabURLs{
 			API: srv.URL,
 		},
@@ -444,7 +444,7 @@ func TestGitLabGetDefaultBranch(t *testing.T) {
 	}))
 	t.Cleanup(srv.Close)
 
-	ctx := testctx.NewWithCfg(config.Project{
+	ctx := testctx.WrapWithCfg(t.Context(), config.Project{
 		GitLabURLs: config.GitLabURLs{
 			API: srv.URL,
 		},
@@ -471,7 +471,7 @@ func TestGitLabGetDefaultBranchEnv(t *testing.T) {
 	}))
 	t.Cleanup(srv.Close)
 
-	ctx := testctx.NewWithCfg(config.Project{
+	ctx := testctx.WrapWithCfg(t.Context(), config.Project{
 		GitLabURLs: config.GitLabURLs{
 			API: srv.URL,
 		},
@@ -500,7 +500,7 @@ func TestGitLabGetDefaultBranchErr(t *testing.T) {
 	}))
 	defer srv.Close()
 
-	ctx := testctx.NewWithCfg(config.Project{
+	ctx := testctx.WrapWithCfg(t.Context(), config.Project{
 		GitLabURLs: config.GitLabURLs{
 			API: srv.URL,
 		},
@@ -532,7 +532,7 @@ func TestGitLabChangelog(t *testing.T) {
 	}))
 	defer srv.Close()
 
-	ctx := testctx.NewWithCfg(config.Project{
+	ctx := testctx.WrapWithCfg(t.Context(), config.Project{
 		GitLabURLs: config.GitLabURLs{
 			API: srv.URL,
 		},
@@ -626,7 +626,7 @@ func TestGitLabCreateFile(t *testing.T) {
 	}))
 	defer srv.Close()
 
-	ctx := testctx.NewWithCfg(config.Project{
+	ctx := testctx.WrapWithCfg(t.Context(), config.Project{
 		GitLabURLs: config.GitLabURLs{
 			API: srv.URL,
 		},
@@ -708,7 +708,7 @@ func TestGitLabCloseMilestone(t *testing.T) {
 	}))
 	defer srv.Close()
 
-	ctx := testctx.NewWithCfg(config.Project{
+	ctx := testctx.WrapWithCfg(t.Context(), config.Project{
 		GitLabURLs: config.GitLabURLs{
 			API: srv.URL,
 		},
@@ -774,7 +774,7 @@ func TestGitLabCheckUseJobToken(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			t.Setenv("CI_JOB_TOKEN", tt.ciToken)
-			ctx := testctx.NewWithCfg(config.Project{
+			ctx := testctx.WrapWithCfg(t.Context(), config.Project{
 				GitLabURLs: config.GitLabURLs{
 					UseJobToken: tt.useJobToken,
 				},
@@ -809,7 +809,7 @@ func TestGitLabOpenPullRequestCrossRepo(t *testing.T) {
 			assert.Equal(t, "main", pr.TargetBranch)
 			assert.Equal(t, "foo", pr.SourceBranch)
 			assert.Equal(t, "some title", pr.Title)
-			assert.Equal(t, 32156, pr.TargetProjectID)
+			assert.EqualValues(t, 32156, pr.TargetProjectID)
 			assert.Equal(t, prFooter, pr.Description)
 
 			_, err = io.Copy(w, strings.NewReader(`{"web_url": "https://gitlab.com/someoneelse/something/merge_requests/1"}`))
@@ -821,7 +821,7 @@ func TestGitLabOpenPullRequestCrossRepo(t *testing.T) {
 	}))
 	defer srv.Close()
 
-	ctx := testctx.NewWithCfg(config.Project{
+	ctx := testctx.WrapWithCfg(t.Context(), config.Project{
 		GitLabURLs: config.GitLabURLs{
 			API: srv.URL,
 		},
@@ -867,7 +867,7 @@ func TestGitLabOpenPullRequestBaseEmpty(t *testing.T) {
 			assert.Equal(t, "main", pr.TargetBranch)
 			assert.Equal(t, "foo", pr.SourceBranch)
 			assert.Equal(t, "some title", pr.Title)
-			assert.Equal(t, 0, pr.TargetProjectID)
+			assert.EqualValues(t, 0, pr.TargetProjectID)
 			assert.Equal(t, prFooter, pr.Description)
 
 			_, err = io.Copy(w, strings.NewReader(`{"web_url": "https://gitlab.com/someoneelse/something/merge_requests/1"}`))
@@ -879,7 +879,7 @@ func TestGitLabOpenPullRequestBaseEmpty(t *testing.T) {
 	}))
 	defer srv.Close()
 
-	ctx := testctx.NewWithCfg(config.Project{
+	ctx := testctx.WrapWithCfg(t.Context(), config.Project{
 		GitLabURLs: config.GitLabURLs{
 			API: srv.URL,
 		},
@@ -921,7 +921,7 @@ func TestGitLabOpenPullRequestDraft(t *testing.T) {
 			assert.Equal(t, "main", pr.TargetBranch)
 			assert.Equal(t, "main", pr.SourceBranch)
 			assert.Equal(t, "Draft: some title", pr.Title)
-			assert.Equal(t, 0, pr.TargetProjectID)
+			assert.EqualValues(t, 0, pr.TargetProjectID)
 			assert.Equal(t, prFooter, pr.Description)
 
 			_, err = io.Copy(w, strings.NewReader(`{"web_url": "https://gitlab.com/someoneelse/something/merge_requests/1"}`))
@@ -933,7 +933,7 @@ func TestGitLabOpenPullRequestDraft(t *testing.T) {
 	}))
 	defer srv.Close()
 
-	ctx := testctx.NewWithCfg(config.Project{
+	ctx := testctx.WrapWithCfg(t.Context(), config.Project{
 		GitLabURLs: config.GitLabURLs{
 			API: srv.URL,
 		},
@@ -969,7 +969,7 @@ func TestGitLabOpenPullRequestBaseBranchGiven(t *testing.T) {
 			assert.Equal(t, "main", pr.TargetBranch)
 			assert.Equal(t, "foo", pr.SourceBranch)
 			assert.Equal(t, "some title", pr.Title)
-			assert.Equal(t, 0, pr.TargetProjectID)
+			assert.EqualValues(t, 0, pr.TargetProjectID)
 			assert.Equal(t, prFooter, pr.Description)
 
 			_, err = io.Copy(w, strings.NewReader(`{"web_url": "https://gitlab.com/someoneelse/something/merge_requests/1"}`))
@@ -981,7 +981,7 @@ func TestGitLabOpenPullRequestBaseBranchGiven(t *testing.T) {
 	}))
 	defer srv.Close()
 
-	ctx := testctx.NewWithCfg(config.Project{
+	ctx := testctx.WrapWithCfg(t.Context(), config.Project{
 		GitLabURLs: config.GitLabURLs{
 			API: srv.URL,
 		},

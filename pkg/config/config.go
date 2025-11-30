@@ -426,9 +426,10 @@ type Scoop struct {
 
 // CommitAuthor is the author of a Git commit.
 type CommitAuthor struct {
-	Name    string        `yaml:"name,omitempty" json:"name,omitempty"`
-	Email   string        `yaml:"email,omitempty" json:"email,omitempty"`
-	Signing CommitSigning `yaml:"signing,omitempty" json:"signing,omitempty"`
+	Name              string        `yaml:"name,omitempty" json:"name,omitempty"`
+	Email             string        `yaml:"email,omitempty" json:"email,omitempty"`
+	Signing           CommitSigning `yaml:"signing,omitempty" json:"signing,omitempty"`
+	UseGitHubAppToken bool          `yaml:"use_github_app_token,omitempty" json:"use_github_app_token,omitempty"`
 }
 
 type CommitSigning struct {
@@ -1479,6 +1480,11 @@ type MakeselfFile struct {
 
 // MCP server configuration.
 type MCP struct {
+	GitHub GitHubMCP `yaml:"github,omitempty" json:"github,omitempty"`
+}
+
+// GitHubMCP registry configuration.
+type GitHubMCP struct {
 	Name        string         `yaml:"name" json:"name"`
 	Title       string         `yaml:"title" json:"title"`
 	Description string         `yaml:"description,omitempty" json:"description,omitempty"`

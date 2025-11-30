@@ -7,7 +7,6 @@ import (
 	"fmt"
 	"io"
 	"net/http"
-	"net/url"
 	"os"
 	"reflect"
 	"strconv"
@@ -60,13 +59,27 @@ func newGitHub(ctx *context.Context, token string) (*githubClient, error) {
 	base.(*http.Transport).Proxy = http.ProxyFromEnvironment
 	httpClient.Transport.(*oauth2.Transport).Base = base
 
-	client := github.NewClient(httpClient)
-	err := overrideGitHubClientAPI(ctx, client)
+	client, err := setEnterpriseURLs(ctx, github.NewClient(httpClient))
 	if err != nil {
 		return &githubClient{}, err
 	}
 
 	return &githubClient{client: client}, nil
+}
+
+func setEnterpriseURLs(ctx *context.Context, client *github.Client) (*github.Client, error) {
+	if ctx.Config.GitHubURLs.API == "" {
+		return client, nil
+	}
+	baseURL, err := tmpl.New(ctx).Apply(ctx.Config.GitHubURLs.API)
+	if err != nil {
+		return nil, fmt.Errorf("templating GitHub API URL: %w", err)
+	}
+	uploadURL, err := tmpl.New(ctx).Apply(ctx.Config.GitHubURLs.Upload)
+	if err != nil {
+		return nil, fmt.Errorf("templating GitHub upload URL: %w", err)
+	}
+	return client.WithEnterpriseURLs(baseURL, uploadURL)
 }
 
 func (c *githubClient) checkRateLimit(ctx *context.Context) {
@@ -293,12 +306,17 @@ func (c *githubClient) CreateFile(
 	}
 
 	options := &github.RepositoryContentFileOptions{
-		Committer: &github.CommitAuthor{
-			Name:  github.Ptr(commitAuthor.Name),
-			Email: github.Ptr(commitAuthor.Email),
-		},
 		Content: content,
 		Message: github.Ptr(message),
+	}
+
+	// When using a GitHub App token, omit the committer to get automatic signed commits
+	// See: https://docs.github.com/en/authentication/managing-commit-signature-verification/about-commit-signature-verification#signature-verification-for-bots
+	if !commitAuthor.UseGitHubAppToken {
+		options.Committer = &github.CommitAuthor{
+			Name:  github.Ptr(commitAuthor.Name),
+			Email: github.Ptr(commitAuthor.Email),
+		}
 	}
 
 	// Set the branch if we got it above...otherwise, just default to
@@ -638,35 +656,6 @@ func (c *githubClient) getMilestoneByTitle(ctx *context.Context, repo Repo, titl
 	}
 
 	return nil, nil
-}
-
-func overrideGitHubClientAPI(ctx *context.Context, client *github.Client) error {
-	if ctx.Config.GitHubURLs.API == "" {
-		return nil
-	}
-
-	apiURL, err := tmpl.New(ctx).Apply(ctx.Config.GitHubURLs.API)
-	if err != nil {
-		return fmt.Errorf("templating GitHub API URL: %w", err)
-	}
-	api, err := url.Parse(apiURL)
-	if err != nil {
-		return err
-	}
-
-	uploadURL, err := tmpl.New(ctx).Apply(ctx.Config.GitHubURLs.Upload)
-	if err != nil {
-		return fmt.Errorf("templating GitHub upload URL: %w", err)
-	}
-	upload, err := url.Parse(uploadURL)
-	if err != nil {
-		return err
-	}
-
-	client.BaseURL = api
-	client.UploadURL = upload
-
-	return nil
 }
 
 func (c *githubClient) deleteExistingDraftRelease(ctx *context.Context, name string) error {

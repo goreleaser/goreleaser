@@ -1162,7 +1162,7 @@ func ensureCommitHashLen(tb testing.TB, log string, l int) {
 func withFirstCommit(tb testing.TB) testctx.Opt {
 	tb.Helper()
 	return func(ctx *context.Context) {
-		s, err := git.Clean(git.Run(testctx.New(), "rev-list", "--max-parents=0", "HEAD"))
+		s, err := git.Clean(git.Run(tb.Context(), "rev-list", "--max-parents=0", "HEAD"))
 		require.NoError(tb, err)
 		ctx.Git.FirstCommit = s
 	}

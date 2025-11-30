@@ -414,3 +414,8 @@ func TestTagSuffix(t *testing.T) {
 		})
 	}
 }
+
+func TestIsDriverValid(t *testing.T) {
+	require.True(t, isDriverValid("docker-container"))
+	require.False(t, isDriverValid("other"))
+}

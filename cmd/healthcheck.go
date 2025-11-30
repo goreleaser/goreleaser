@@ -55,12 +55,20 @@ func newHealthcheckCmd() *healthcheckCmd {
 			defer log.ResetPadding()
 
 			var errs []error
-			for _, hc := range healthcheck.Healthcheckers {
+			for _, hc := range healthcheck.DependencyCheckers {
 				_ = skip.Maybe(hc, func(ctx *context.Context) error {
 					for _, tool := range hc.Dependencies(ctx) {
 						if err := checkPath(ctx, tool); err != nil {
 							errs = append(errs, err)
 						}
+					}
+					return nil
+				})(ctx)
+			}
+			for _, hc := range healthcheck.HealthCheckers {
+				_ = skip.Maybe(hc, func(ctx *context.Context) error {
+					if err := check(hc.String(), hc.Healthcheck(ctx)); err != nil {
+						errs = append(errs, err)
 					}
 					return nil
 				})(ctx)
@@ -71,7 +79,7 @@ func newHealthcheckCmd() *healthcheckCmd {
 				return nil
 			}
 
-			return errors.New("one or more needed tools are not present")
+			return errors.New("one or more checks failed")
 		},
 	}
 
@@ -85,6 +93,17 @@ func newHealthcheckCmd() *healthcheckCmd {
 }
 
 var toolsChecked = &sync.Map{}
+
+func check(name string, err error) error {
+	if err == nil {
+		st := lipgloss.NewStyle().Foreground(lipgloss.Color("2")).Bold(true)
+		log.Infof("%s %s", st.Render("✓"), codeStyle.Render(name))
+		return nil
+	}
+	st := log.Styles[log.ErrorLevel]
+	log.Warnf("%s %s - %s", st.Render("⚠"), codeStyle.Render(name), st.Render(err.Error()))
+	return err
+}
 
 func checkPath(ctx stdctx.Context, tool string) error {
 	if _, ok := toolsChecked.LoadOrStore(tool, true); ok {
