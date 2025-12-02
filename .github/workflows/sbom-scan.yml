@@ -11,27 +11,20 @@ jobs:
     name: scan-release-sboms
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@1af3b93b6815bc44a9784bd300feb67ff0d1eeb3 # v6.0.0
-      - name: Get latest release
-        id: release
+      - id: release
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          # Get the latest release excluding nightly
           RELEASE=$(gh release list --exclude-pre-releases --limit 1 --json tagName | jq -r '.[0].tagName')
           echo "tag=$RELEASE" >> $GITHUB_OUTPUT
-      - name: Download SBOMs
-        env:
+      - env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          TAG="${{ steps.release.outputs.tag }}"
-          echo "Downloading SBOM files from release $TAG"
-          mkdir -p sboms
-          gh release download "$TAG" --pattern "*.sbom.json" --dir sboms
+          gh release download "${{ steps.release.outputs.tag }}" --pattern goreleaser_Linux_x86_64.tar.gz.sbom.json
       - uses: anchore/scan-action@40a61b52209e9d50e87917c5b901783d546b12d0 # v7.2.1
         id: scan
         with:
-          path: "sboms/"
+          sbom: goreleaser_Linux_x86_64.tar.gz.sbom.json
           fail-build: true
           severity-cutoff: critical
       - if: always()
