@@ -7,8 +7,7 @@ on:
   schedule:
     - cron: "0 2 * * *"
 
-permissions:
-  contents: read
+permissions: read-all
 
 concurrency:
   group: codeql-${{ github.event.pull_request.number || github.ref }}
