@@ -761,6 +761,9 @@ func TestGitHubCreateFileHappyPathCreate(t *testing.T) {
 		}
 
 		if r.URL.Path == "/api/v3/repos/someone/something/contents/file.txt" && r.Method == http.MethodPut {
+			var data github.RepositoryContentFileOptions
+			assert.NoError(t, json.NewDecoder(r.Body).Decode(&data))
+			assert.Nil(t, data.SHA)
 			w.WriteHeader(http.StatusOK)
 			return
 		}
@@ -807,6 +810,9 @@ func TestGitHubCreateFileHappyPathUpdate(t *testing.T) {
 		}
 
 		if r.URL.Path == "/api/v3/repos/someone/something/contents/file.txt" && r.Method == http.MethodPut {
+			var data github.RepositoryContentFileOptions
+			assert.NoError(t, json.NewDecoder(r.Body).Decode(&data))
+			assert.Equal(t, "fake", data.GetSHA())
 			w.WriteHeader(http.StatusOK)
 			return
 		}

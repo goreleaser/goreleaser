@@ -368,7 +368,9 @@ func (c *githubClient) CreateFile(
 		return fmt.Errorf("could not get %q: %w", path, err)
 	}
 
-	options.SHA = github.Ptr(file.GetSHA())
+	if file != nil {
+		options.SHA = file.SHA
+	}
 	if _, _, err := c.client.Repositories.UpdateFile(
 		ctx,
 		repo.Owner,
