@@ -5,11 +5,12 @@ on:
   workflow_dispatch:
 permissions:
   contents: read
-  security-events: write
 jobs:
   scan-sboms:
     name: scan-release-sboms
     runs-on: ubuntu-latest
+    permissions:
+      security-events: write
     steps:
       - id: release
         env:
