@@ -1,0 +1,40 @@
+name: sbom-scan
+on:
+  schedule:
+    - cron: "0 0 * * *"
+  workflow_dispatch:
+permissions:
+  contents: read
+  security-events: write
+jobs:
+  scan-sboms:
+    name: scan-release-sboms
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@1af3b93b6815bc44a9784bd300feb67ff0d1eeb3 # v6.0.0
+      - name: Get latest release
+        id: release
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          # Get the latest release excluding nightly
+          RELEASE=$(gh release list --exclude-pre-releases --limit 1 --json tagName | jq -r '.[0].tagName')
+          echo "tag=$RELEASE" >> $GITHUB_OUTPUT
+      - name: Download SBOMs
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          TAG="${{ steps.release.outputs.tag }}"
+          echo "Downloading SBOM files from release $TAG"
+          mkdir -p sboms
+          gh release download "$TAG" --pattern "*.sbom.json" --dir sboms
+      - uses: anchore/scan-action@40a61b52209e9d50e87917c5b901783d546b12d0 # v7.2.1
+        id: scan
+        with:
+          path: "sboms/"
+          fail-build: true
+          severity-cutoff: critical
+      - if: always()
+        uses: github/codeql-action/upload-sarif@fdbfb4d2750291e159f0156def62b853c2798ca2 # v4.31.5
+        with:
+          sarif_file: ${{ steps.scan.outputs.sarif }}
