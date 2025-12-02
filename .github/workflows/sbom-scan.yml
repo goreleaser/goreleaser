@@ -15,12 +15,12 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          RELEASE=$(gh release list --exclude-pre-releases --limit 1 --json tagName | jq -r '.[0].tagName')
+          RELEASE=$(gh release list -R goreleaser/goreleaser --exclude-pre-releases --limit 1 --json tagName | jq -r '.[0].tagName')
           echo "tag=$RELEASE" >> $GITHUB_OUTPUT
       - env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          gh release download "${{ steps.release.outputs.tag }}" --pattern goreleaser_Linux_x86_64.tar.gz.sbom.json
+          gh release download -R goreleaser/goreleaser "${{ steps.release.outputs.tag }}" --pattern goreleaser_Linux_x86_64.tar.gz.sbom.json
       - uses: anchore/scan-action@40a61b52209e9d50e87917c5b901783d546b12d0 # v7.2.1
         id: scan
         with:
