@@ -348,14 +348,14 @@ All artifacts are checksummed, and the checksum file is signed with [cosign][].
     1. Download the files you want, and the `checksums.txt`, `checksum.txt.pem` and `checksums.txt.sig` files from the [releases][releases] page:
       ```bash
       wget 'https://github.com/goreleaser/goreleaser/releases/download/__VERSION__/checksums.txt'
+      wget 'https://github.com/goreleaser/goreleaser/releases/download/__VERSION__/checksums.txt.sigstore.json'
       ```
     1. Verify the signature:
       ```bash
       cosign verify-blob \
         --certificate-identity 'https://github.com/goreleaser/goreleaser/.github/workflows/release.yml@refs/tags/__VERSION__' \
         --certificate-oidc-issuer 'https://token.actions.githubusercontent.com' \
-        --cert 'https://github.com/goreleaser/goreleaser/releases/download/__VERSION__/checksums.txt.pem' \
-        --signature 'https://github.com/goreleaser/goreleaser/releases/download/__VERSION__/checksums.txt.sig' \
+        --bundle checksums.txt.sigstore.json \
         ./checksums.txt
       ```
     1. If the signature is valid, you can then verify the SHA256 sums match with the downloaded binary:
@@ -368,14 +368,14 @@ All artifacts are checksummed, and the checksum file is signed with [cosign][].
     1. Download the files you want, and the `checksums.txt`, `checksum.txt.pem` and `checksums.txt.sig` files from the [releases][pro-releases] page:
       ```bash
       wget 'https://github.com/goreleaser/goreleaser-pro/releases/download/__VERSION__/checksums.txt'
+      wget 'https://github.com/goreleaser/goreleaser-pro/releases/download/__VERSION__/checksums.txt.sigstore.json'
       ```
     1. Verify the signature:
       ```bash
       cosign verify-blob \
         --certificate-identity 'https://github.com/goreleaser/goreleaser-pro-internal/.github/workflows/release-pro.yml@refs/tags/__VERSION__' \
         --certificate-oidc-issuer 'https://token.actions.githubusercontent.com' \
-        --cert 'https://github.com/goreleaser/goreleaser-pro/releases/download/__VERSION__/checksums.txt.pem' \
-        --signature 'https://github.com/goreleaser/goreleaser-pro/releases/download/__VERSION__/checksums.txt.sig' \
+        --bundle checksums.txt.sigstore.json \
         ./checksums.txt
       ```
     1. If the signature is valid, you can then verify the SHA256 sums match with the downloaded binary:
