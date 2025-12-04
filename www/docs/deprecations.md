@@ -3,6 +3,8 @@
 This page is used to list deprecation notices across GoReleaser.
 
 Deprecated options are only removed on major versions of GoReleaser.
+Deprecated versions on features deemed experimental (you see a warning when
+using them) might be removed in feature releases.
 
 Nevertheless, it's a good thing to keep your configuration up-to-date to prevent
 any issues.
