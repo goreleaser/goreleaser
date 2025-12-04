@@ -1529,57 +1529,6 @@
 				"additionalProperties": false,
 				"type": "object"
 			},
-			"GitHubMCP": {
-				"properties": {
-					"name": {
-						"type": "string"
-					},
-					"title": {
-						"type": "string"
-					},
-					"description": {
-						"type": "string"
-					},
-					"homepage": {
-						"type": "string"
-					},
-					"packages": {
-						"items": {
-							"$ref": "#/$defs/MCPPackage"
-						},
-						"type": "array"
-					},
-					"transports": {
-						"items": {
-							"$ref": "#/$defs/MCPTransport"
-						},
-						"type": "array"
-					},
-					"disable": {
-						"oneOf": [
-							{
-								"type": "string"
-							},
-							{
-								"type": "boolean"
-							}
-						]
-					},
-					"repository": {
-						"$ref": "#/$defs/MCPRepository"
-					},
-					"auth": {
-						"$ref": "#/$defs/MCPAuth"
-					}
-				},
-				"additionalProperties": false,
-				"type": "object",
-				"required": [
-					"name",
-					"title",
-					"auth"
-				]
-			},
 			"GitHubURLs": {
 				"properties": {
 					"api": {
@@ -2344,11 +2293,56 @@
 			"MCP": {
 				"properties": {
 					"github": {
-						"$ref": "#/$defs/GitHubMCP"
+						"$ref": "#/$defs/MCPDetails"
+					},
+					"name": {
+						"type": "string"
+					},
+					"title": {
+						"type": "string"
+					},
+					"description": {
+						"type": "string"
+					},
+					"homepage": {
+						"type": "string"
+					},
+					"packages": {
+						"items": {
+							"$ref": "#/$defs/MCPPackage"
+						},
+						"type": "array"
+					},
+					"transports": {
+						"items": {
+							"$ref": "#/$defs/MCPTransport"
+						},
+						"type": "array"
+					},
+					"disable": {
+						"oneOf": [
+							{
+								"type": "string"
+							},
+							{
+								"type": "boolean"
+							}
+						]
+					},
+					"repository": {
+						"$ref": "#/$defs/MCPRepository"
+					},
+					"auth": {
+						"$ref": "#/$defs/MCPAuth"
 					}
 				},
 				"additionalProperties": false,
-				"type": "object"
+				"type": "object",
+				"required": [
+					"name",
+					"title",
+					"auth"
+				]
 			},
 			"MCPAuth": {
 				"properties": {
@@ -2369,6 +2363,57 @@
 				"type": "object",
 				"required": [
 					"type"
+				]
+			},
+			"MCPDetails": {
+				"properties": {
+					"name": {
+						"type": "string"
+					},
+					"title": {
+						"type": "string"
+					},
+					"description": {
+						"type": "string"
+					},
+					"homepage": {
+						"type": "string"
+					},
+					"packages": {
+						"items": {
+							"$ref": "#/$defs/MCPPackage"
+						},
+						"type": "array"
+					},
+					"transports": {
+						"items": {
+							"$ref": "#/$defs/MCPTransport"
+						},
+						"type": "array"
+					},
+					"disable": {
+						"oneOf": [
+							{
+								"type": "string"
+							},
+							{
+								"type": "boolean"
+							}
+						]
+					},
+					"repository": {
+						"$ref": "#/$defs/MCPRepository"
+					},
+					"auth": {
+						"$ref": "#/$defs/MCPAuth"
+					}
+				},
+				"additionalProperties": false,
+				"type": "object",
+				"required": [
+					"name",
+					"title",
+					"auth"
 				]
 			},
 			"MCPPackage": {

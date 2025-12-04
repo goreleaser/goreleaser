@@ -2,6 +2,7 @@ package mcp
 
 import (
 	"bytes"
+	"cmp"
 	"encoding/json"
 	"fmt"
 	"io"
@@ -9,6 +10,7 @@ import (
 	"os"
 
 	"github.com/caarlos0/log"
+	"github.com/goreleaser/goreleaser/v2/internal/deprecate"
 	"github.com/goreleaser/goreleaser/v2/internal/logext"
 	"github.com/goreleaser/goreleaser/v2/internal/skips"
 	"github.com/goreleaser/goreleaser/v2/internal/tmpl"
@@ -37,23 +39,34 @@ func New() Pipe {
 	}
 }
 
-func (Pipe) String() string        { return "github mcp registry" }
+func (Pipe) String() string        { return "mcp registry" }
 func (Pipe) ContinueOnError() bool { return true }
 func (Pipe) Skip(ctx *context.Context) bool {
-	return skips.Any(ctx, skips.MCP) || ctx.Config.MCP.GitHub.Name == ""
+	return skips.Any(ctx, skips.MCP) || (ctx.Config.MCP.Name == "" && ctx.Config.MCP.GitHub.Name == "")
 }
 
 func (Pipe) Default(ctx *context.Context) error {
-	mcp := &ctx.Config.MCP.GitHub
-	if mcp.Auth.Type == "" {
-		mcp.Auth.Type = proto.MethodNone
+	// Migrate from deprecated mcp.github to top-level mcp if needed
+	if ctx.Config.MCP.GitHub.Name != "" && ctx.Config.MCP.Name == "" {
+		deprecate.Notice(ctx, "mcp.github")
+		ctx.Config.MCP.Name = ctx.Config.MCP.GitHub.Name
+		ctx.Config.MCP.Title = ctx.Config.MCP.GitHub.Title
+		ctx.Config.MCP.Description = ctx.Config.MCP.GitHub.Description
+		ctx.Config.MCP.Homepage = ctx.Config.MCP.GitHub.Homepage
+		ctx.Config.MCP.Packages = ctx.Config.MCP.GitHub.Packages
+		ctx.Config.MCP.Transports = ctx.Config.MCP.GitHub.Transports
+		ctx.Config.MCP.Disable = ctx.Config.MCP.GitHub.Disable
+		ctx.Config.MCP.Repository = ctx.Config.MCP.GitHub.Repository
+		ctx.Config.MCP.Auth = ctx.Config.MCP.GitHub.Auth
 	}
+
+	ctx.Config.MCP.Auth.Type = cmp.Or(ctx.Config.MCP.Auth.Type, proto.MethodNone)
 	return nil
 }
 
 func (p Pipe) Publish(ctx *context.Context) error {
 	warnExperimental()
-	mcp := ctx.Config.MCP.GitHub
+	mcp := ctx.Config.MCP
 
 	if err := tmpl.New(ctx).ApplyAll(
 		&mcp.Name,
