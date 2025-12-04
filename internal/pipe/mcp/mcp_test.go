@@ -93,7 +93,7 @@ func TestDefault(t *testing.T) {
 	t.Run("migrate from github to mcp", func(t *testing.T) {
 		ctx := testctx.WrapWithCfg(t.Context(), config.Project{
 			MCP: config.MCP{
-				MCPDetails: config.MCPDetails{
+				GitHub: config.MCPDetails{
 					Name:  "test-server",
 					Title: "Test Title",
 					Auth: config.MCPAuth{
