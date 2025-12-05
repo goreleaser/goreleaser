@@ -1,6 +1,6 @@
 blank_issues_enabled: false
 contact_links:
-  - name: Features, Bug Reports, Questions
+  - name: Feature suggestions and Questions
     url: https://github.com/goreleaser/goreleaser/discussions/new/choose
     about: Our preferred starting point if you have any problems, questions, or suggestions about configuration, features or behavior.
   - name: Chat on Discord
