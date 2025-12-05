@@ -57,7 +57,7 @@ jobs:
       matrix:
         format: [deb, rpm, apk]
     steps:
-      - uses: actions/checkout@1af3b93b6815bc44a9784bd300feb67ff0d1eeb3 # v6.0.0
+      - uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6.0.1
         with:
           fetch-depth: 0
       - uses: go-task/setup-task@0ab1b2a65bc55236a3bc64cde78f80e20e8885c2 # v1.0.0
@@ -86,7 +86,7 @@ jobs:
           sudo docker image prune --all --force
           sudo docker builder prune -a
       - run: df -h
-      - uses: actions/checkout@1af3b93b6815bc44a9784bd300feb67ff0d1eeb3 # v6.0.0
+      - uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6.0.1
         with:
           fetch-depth: 0
       - uses: go-task/setup-task@0ab1b2a65bc55236a3bc64cde78f80e20e8885c2 # v1.0.0

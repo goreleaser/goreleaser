@@ -20,7 +20,7 @@ jobs:
   license-check:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@1af3b93b6815bc44a9784bd300feb67ff0d1eeb3 # v6.0.0
+      - uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6.0.1
       - uses: actions/setup-go@4dc6199c7b1a012772edbd06daecab0f50c9053c # v6.1.0
         with:
           go-version: stable
@@ -44,7 +44,7 @@ jobs:
     env:
       DOCKER_CLI_EXPERIMENTAL: "enabled"
     steps:
-      - uses: actions/checkout@1af3b93b6815bc44a9784bd300feb67ff0d1eeb3 # v6.0.0
+      - uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6.0.1
         with:
           fetch-depth: 0
       - uses: go-task/setup-task@0ab1b2a65bc55236a3bc64cde78f80e20e8885c2 # v1.0.0
@@ -73,7 +73,7 @@ jobs:
       - uses: actions/setup-go@4dc6199c7b1a012772edbd06daecab0f50c9053c # v6.1.0
         with:
           go-version-file: go.mod
-      - uses: mlugg/setup-zig@8d6198c65fb0feaa111df26e6b467fea8345e46f # v2.0.5
+      - uses: mlugg/setup-zig@fa65c4058643678a4e4a9a60513944a7d8d35440 # v2.1.0
       - uses: oven-sh/setup-bun@735343b667d3e6f658f44d0eca948eb6282f2b76 # v2.0.2
       - uses: denoland/setup-deno@e95548e56dfa95d4e1a28d6f422fafe75c4c26fb # v2.0.3
       - uses: cargo-bins/cargo-binstall@3fc81674af4165a753833a94cae9f91d8849049f # v1.16.2
@@ -102,7 +102,7 @@ jobs:
   check:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@1af3b93b6815bc44a9784bd300feb67ff0d1eeb3 # v6.0.0
+      - uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6.0.1
         with:
           fetch-depth: 0
       - run: go run . check
