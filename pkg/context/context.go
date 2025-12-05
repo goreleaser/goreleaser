@@ -4,7 +4,11 @@
 // The context extends the standard library context and add a few more
 // fields and other things, so pipes can gather data provided by previous
 // pipes without really knowing each other.
+//
+//revive:disable:var-naming
 package context
+
+//revive:enable:var-naming
 
 import (
 	stdctx "context"

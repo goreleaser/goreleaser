@@ -1,5 +1,9 @@
 // Package http implements functionality common to HTTP uploading pipelines.
+//
+//revive:disable:var-naming
 package http
+
+//revive:enable:var-naming
 
 import (
 	"crypto/tls"
