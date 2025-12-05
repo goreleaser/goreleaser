@@ -43,6 +43,35 @@ PS: Don't forget to add it to cmd/mcp.go as well!
 
 -->
 
+### mcp.github
+
+> since v2.13.1
+
+The MCP configuration was initially nested under `github`, but the registry is
+actually run by the MCP committee, not GitHub specifically.
+The configuration should now be at the top level of `mcp`.
+
+=== "Before"
+
+    ```yaml
+    mcp:
+      github:
+        name: io.github.user/myserver
+        title: "My MCP Server"
+        description: "MCP server for my project"
+        # ...
+    ```
+
+=== "After"
+
+    ```yaml
+    mcp:
+      name: io.github.user/myserver
+      title: "My MCP Server"
+      description: "MCP server for my project"
+      # ...
+    ```
+
 ### homebrew_casks.binary
 
 > since v2.12.6

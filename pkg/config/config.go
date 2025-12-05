@@ -1480,11 +1480,14 @@ type MakeselfFile struct {
 
 // MCP server configuration.
 type MCP struct {
-	GitHub GitHubMCP `yaml:"github,omitempty" json:"github,omitempty"`
+	// Deprecated: Use top-level MCP fields instead of nesting under GitHub.
+	GitHub MCPDetails `yaml:"github,omitempty" json:"github,omitempty" jsonschema:"deprecated=Use top-level MCP fields instead"`
+
+	MCPDetails `yaml:",inline" json:",inline"`
 }
 
-// GitHubMCP registry configuration.
-type GitHubMCP struct {
+// MCPDetails registry configuration.
+type MCPDetails struct {
 	Name        string         `yaml:"name" json:"name"`
 	Title       string         `yaml:"title" json:"title"`
 	Description string         `yaml:"description,omitempty" json:"description,omitempty"`

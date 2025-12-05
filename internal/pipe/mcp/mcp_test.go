@@ -29,7 +29,7 @@ func TestSkip(t *testing.T) {
 	t.Run("skip", func(t *testing.T) {
 		ctx := testctx.WrapWithCfg(t.Context(), config.Project{
 			MCP: config.MCP{
-				GitHub: config.GitHubMCP{
+				MCPDetails: config.MCPDetails{
 					Name: "foo",
 				},
 			},
@@ -47,7 +47,7 @@ func TestSkip(t *testing.T) {
 	t.Run("dont skip", func(t *testing.T) {
 		ctx := testctx.WrapWithCfg(t.Context(), config.Project{
 			MCP: config.MCP{
-				GitHub: config.GitHubMCP{
+				MCPDetails: config.MCPDetails{
 					Name: "foo",
 				},
 			},
@@ -64,19 +64,20 @@ func TestDefault(t *testing.T) {
 	t.Run("empty auth type", func(t *testing.T) {
 		ctx := testctx.WrapWithCfg(t.Context(), config.Project{
 			MCP: config.MCP{
-				GitHub: config.GitHubMCP{
+				MCPDetails: config.MCPDetails{
 					Name: "foo",
 				},
 			},
 		})
 		require.NoError(t, Pipe{}.Default(ctx))
-		require.Equal(t, "none", ctx.Config.MCP.GitHub.Auth.Type)
+		// After migration, auth type should be set on top-level MCP
+		require.Equal(t, "none", ctx.Config.MCP.Auth.Type)
 	})
 
 	t.Run("none auth", func(t *testing.T) {
 		ctx := testctx.WrapWithCfg(t.Context(), config.Project{
 			MCP: config.MCP{
-				GitHub: config.GitHubMCP{
+				MCPDetails: config.MCPDetails{
 					Name: "test-server",
 					Auth: config.MCPAuth{
 						Type: "none",
@@ -85,7 +86,26 @@ func TestDefault(t *testing.T) {
 			},
 		})
 		require.NoError(t, Pipe{}.Default(ctx))
-		require.Empty(t, ctx.Config.MCP.GitHub.Auth.Token)
+		// After migration, should check top-level MCP
+		require.Empty(t, ctx.Config.MCP.Auth.Token)
+	})
+
+	t.Run("migrate from github to mcp", func(t *testing.T) {
+		ctx := testctx.WrapWithCfg(t.Context(), config.Project{
+			MCP: config.MCP{
+				GitHub: config.MCPDetails{
+					Name:  "test-server",
+					Title: "Test Title",
+					Auth: config.MCPAuth{
+						Type: "github-oidc",
+					},
+				},
+			},
+		})
+		require.NoError(t, Pipe{}.Default(ctx))
+		require.Equal(t, "test-server", ctx.Config.MCP.Name)
+		require.Equal(t, "Test Title", ctx.Config.MCP.Title)
+		require.Equal(t, "github-oidc", ctx.Config.MCP.Auth.Type)
 	})
 }
 
@@ -124,7 +144,7 @@ func TestPublishSuccess(t *testing.T) {
 	ctx := testctx.WrapWithCfg(t.Context(), config.Project{
 		ProjectName: "test-project",
 		MCP: config.MCP{
-			GitHub: config.GitHubMCP{
+			MCPDetails: config.MCPDetails{
 				Name:        "test-server",
 				Title:       "Test Server",
 				Description: "A test MCP server",
@@ -156,6 +176,7 @@ func TestPublishSuccess(t *testing.T) {
 	pipe.authProviderFn = func(_, _, token string) (auth.Provider, error) {
 		return &mockAuthProvider{token: "test-token"}, nil
 	}
+	require.NoError(t, pipe.Default(ctx))
 	require.NoError(t, pipe.Publish(ctx))
 
 	expected := apiv0.ServerJSON{
@@ -231,7 +252,7 @@ func TestPublishWithTemplates(t *testing.T) {
 	ctx := testctx.WrapWithCfg(t.Context(), config.Project{
 		ProjectName: "my-test-project",
 		MCP: config.MCP{
-			GitHub: config.GitHubMCP{
+			MCPDetails: config.MCPDetails{
 				Name:        "{{ .ProjectName }}",
 				Title:       "{{ .ProjectName | title }} v{{ .Version }}",
 				Description: "Server for {{ .ProjectName }}",
@@ -260,13 +281,14 @@ func TestPublishWithTemplates(t *testing.T) {
 	pipe.authProviderFn = func(_, _, token string) (auth.Provider, error) {
 		return &mockAuthProvider{token: "test-token"}, nil
 	}
+	require.NoError(t, pipe.Default(ctx))
 	require.NoError(t, pipe.Publish(ctx))
 }
 
 func TestPublishInvalidTemplate(t *testing.T) {
 	ctx := testctx.WrapWithCfg(t.Context(), config.Project{
 		MCP: config.MCP{
-			GitHub: config.GitHubMCP{
+			MCPDetails: config.MCPDetails{
 				Name:  "{{ .InvalidField }",
 				Title: "Test",
 				Auth: config.MCPAuth{
@@ -280,6 +302,7 @@ func TestPublishInvalidTemplate(t *testing.T) {
 	pipe.authProviderFn = func(_, _, token string) (auth.Provider, error) {
 		return &mockAuthProvider{token: "test-token"}, nil
 	}
+	require.NoError(t, pipe.Default(ctx))
 	testlib.RequireTemplateError(t, pipe.Publish(ctx))
 }
 
@@ -292,7 +315,7 @@ func TestPublishServerError(t *testing.T) {
 
 	ctx := testctx.WrapWithCfg(t.Context(), config.Project{
 		MCP: config.MCP{
-			GitHub: config.GitHubMCP{
+			MCPDetails: config.MCPDetails{
 				Name:  "test-server",
 				Title: "Test Server",
 				Auth: config.MCPAuth{
@@ -322,7 +345,7 @@ func TestPublishBadRequest(t *testing.T) {
 
 	ctx := testctx.WrapWithCfg(t.Context(), config.Project{
 		MCP: config.MCP{
-			GitHub: config.GitHubMCP{
+			MCPDetails: config.MCPDetails{
 				Name:  "test-server",
 				Title: "Test Server",
 				Auth: config.MCPAuth{
@@ -366,7 +389,7 @@ func TestPublishMultiplePackages(t *testing.T) {
 
 	ctx := testctx.WrapWithCfg(t.Context(), config.Project{
 		MCP: config.MCP{
-			GitHub: config.GitHubMCP{
+			MCPDetails: config.MCPDetails{
 				Name:  "multi-package-server",
 				Title: "Multi Package Server",
 				Packages: []config.MCPPackage{
@@ -404,6 +427,7 @@ func TestPublishMultiplePackages(t *testing.T) {
 	pipe.authProviderFn = func(_, _, token string) (auth.Provider, error) {
 		return &mockAuthProvider{token: "test-token"}, nil
 	}
+	require.NoError(t, pipe.Default(ctx))
 	require.NoError(t, pipe.Publish(ctx))
 
 	expected := apiv0.ServerJSON{
@@ -464,7 +488,7 @@ func TestPublishWithRepository(t *testing.T) {
 
 	ctx := testctx.WrapWithCfg(t.Context(), config.Project{
 		MCP: config.MCP{
-			GitHub: config.GitHubMCP{
+			MCPDetails: config.MCPDetails{
 				Name:  "repo-server",
 				Title: "Repo Server",
 				Repository: config.MCPRepository{
@@ -485,6 +509,7 @@ func TestPublishWithRepository(t *testing.T) {
 	pipe.authProviderFn = func(_, _, token string) (auth.Provider, error) {
 		return &mockAuthProvider{token: "test-token"}, nil
 	}
+	require.NoError(t, pipe.Default(ctx))
 	require.NoError(t, pipe.Publish(ctx))
 
 	expected := apiv0.ServerJSON{
@@ -538,7 +563,7 @@ func TestNew(t *testing.T) {
 func TestPublishAuthLoginError(t *testing.T) {
 	ctx := testctx.WrapWithCfg(t.Context(), config.Project{
 		MCP: config.MCP{
-			GitHub: config.GitHubMCP{
+			MCPDetails: config.MCPDetails{
 				Name:  "test-server",
 				Title: "Test Server",
 				Auth: config.MCPAuth{
@@ -565,7 +590,7 @@ func TestPublishAuthLoginError(t *testing.T) {
 func TestPublishAuthProviderError(t *testing.T) {
 	ctx := testctx.WrapWithCfg(t.Context(), config.Project{
 		MCP: config.MCP{
-			GitHub: config.GitHubMCP{
+			MCPDetails: config.MCPDetails{
 				Name:  "test-server",
 				Title: "Test Server",
 				Auth: config.MCPAuth{
@@ -585,7 +610,7 @@ func TestPublishAuthProviderError(t *testing.T) {
 func TestPublishGetTokenError(t *testing.T) {
 	ctx := testctx.WrapWithCfg(t.Context(), config.Project{
 		MCP: config.MCP{
-			GitHub: config.GitHubMCP{
+			MCPDetails: config.MCPDetails{
 				Name:  "test-server",
 				Title: "Test Server",
 				Auth: config.MCPAuth{
@@ -634,7 +659,7 @@ func TestPublishNoPackages(t *testing.T) {
 
 	ctx := testctx.WrapWithCfg(t.Context(), config.Project{
 		MCP: config.MCP{
-			GitHub: config.GitHubMCP{
+			MCPDetails: config.MCPDetails{
 				Name:     "no-packages-server",
 				Title:    "No Packages Server",
 				Packages: []config.MCPPackage{},
@@ -650,13 +675,14 @@ func TestPublishNoPackages(t *testing.T) {
 	pipe.authProviderFn = func(_, _, token string) (auth.Provider, error) {
 		return &mockAuthProvider{token: "test-token"}, nil
 	}
+	require.NoError(t, pipe.Default(ctx))
 	require.NoError(t, pipe.Publish(ctx))
 }
 
 func TestPublishInvalidJSON(t *testing.T) {
 	ctx := testctx.WrapWithCfg(t.Context(), config.Project{
 		MCP: config.MCP{
-			GitHub: config.GitHubMCP{
+			MCPDetails: config.MCPDetails{
 				Name:  "test-server",
 				Title: "Test Server",
 				Auth: config.MCPAuth{
@@ -704,7 +730,7 @@ func TestPublishIntegration(t *testing.T) {
 	ctx := testctx.WrapWithCfg(t.Context(), config.Project{
 		ProjectName: "goreleaser-mcp",
 		MCP: config.MCP{
-			GitHub: config.GitHubMCP{
+			MCPDetails: config.MCPDetails{
 				Name:        "io.github.goreleaser/mcp",
 				Description: "GoReleaser MCP server for build automation",
 				Repository: config.MCPRepository{
