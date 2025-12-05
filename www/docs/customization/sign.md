@@ -132,120 +132,31 @@ templates:
 
 You can sign your artifacts with [cosign][] as well.
 
-Assuming you have a `cosign.key` in the repository root and a `COSIGN_PWD`
-environment variable set, a simple usage example would look like this:
+Cosign uses the `--bundle` flag, which combines the certificate and
+signature into a single `.sigstore.json` file:
 
 ```yaml title=".goreleaser.yaml"
 signs:
   - cmd: cosign
-    stdin: "{{ .Env.COSIGN_PWD }}"
+    signature: "${artifact}.sigstore.json"
     args:
       - "sign-blob"
-      - "--key=cosign.key"
-      - "--output-signature=${signature}"
+      - "--bundle=${signature}"
       - "${artifact}"
-      - "--yes" # needed on cosign 2.0.0+
-    artifacts: all
+      - "--yes"
+    artifacts: checksum
 ```
 
 Your users can then verify the signature with:
 
 ```sh
-cosign verify-blob -key cosign.pub -signature file.tar.gz.sig file.tar.gz
+cosign verify-blob --bundle file.tar.gz.sigstore.json file.tar.gz
 ```
 
-<!-- TODO: keyless signing with cosign example -->
+## Signing and notarizing macOS executables
 
-## Signing executables
-
-Executables can be signed after build using post hooks.
-
-### With gon
-
-!!! notice
-
-    [gon][] was discontinued by its maintainer, but it lives on in a
-    [fork][gon-fork], which we'll use here.
-
-For example, you can use [gon][gon-fork] to create notarized macOS apps:
-
-```yaml title=".goreleaser.yaml"
-builds:
-  - binary: foo
-    id: foo
-    goos:
-      - linux
-      - windows
-    goarch:
-      - amd64
-
-  # notice that we need a separated build for the MacOS binary only:
-  - binary: foo
-    id: foo-macos
-    goos:
-      - darwin
-    goarch:
-      - amd64
-    hooks:
-      post: gon gon.hcl
-```
-
-And:
-
-```terraform
-# gon.hcl
-#
-# The path follows a pattern
-# ./dist/BUILD-ID_TARGET/BINARY-NAME
-source = ["./dist/foo-macos_darwin_amd64/foo"]
-bundle_id = "com.mitchellh.example.terraform"
-
-apple_id {
-  username = "mitchell@example.com"
-  password = "@env:AC_PASSWORD"
-}
-
-sign {
-  application_identity = "Developer ID Application: Mitchell Hashimoto"
-}
-```
-
-Note that notarizing may take some time, and will need to be run from a macOS
-machine.
-
-If you generate ZIP or DMG as part of your signing via gon you may need to
-ensure their file names align with desired pattern of other artifacts as
-GoReleaser doesn't control how these get generated beyond just executing `gon`
-with given arguments. Relatedly you may need to list these additional artifacts
-as `extra_files` in the `release` section to make sure they also get uploaded.
-
-You can also check
-[this issue](https://github.com/goreleaser/goreleaser/issues/1227) for more
-details.
-
-### With cosign
-
-You can also use [cosign][] to sign the binaries directly, but you'll need to
-manually add the `.sig` files to the release and/or archive:
-
-```yaml title=".goreleaser.yaml"
-builds:
-  - hooks:
-      post:
-        - sh -c "COSIGN_PASSWORD=$COSIGN_PWD cosign sign-blob --key cosign.key --output-signature dist/{{ .ProjectName }}_{{ .Version }}_{{ .Target }}.sig {{ .Path }}"
-
-# add to the release directly:
-release:
-  extra_files:
-    - glob: dist/*.sig
-
-# or just to the archives:
-archives:
-  - files:
-      - dist/*.sig
-```
-
-While this works, I would recommend using the signing pipe directly.
+For signing and notarizing macOS executables, please refer to
+[Notarize macOS applications](notarize.md).
 
 ## Signing Docker images and manifests
 
@@ -271,6 +182,4 @@ signs:
 And it will work just fine. Just make sure to always use the `${signature}`
 template variable as the result file name and `${artifact}` as the origin file.
 
-[gon]: https://github.com/mitchellh/gon
-[gon-fork]: https://github.com/Bearer/gon
 [cosign]: https://github.com/sigstore/cosign
