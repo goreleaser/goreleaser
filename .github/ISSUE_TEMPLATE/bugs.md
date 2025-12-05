@@ -1,11 +1,10 @@
 ---
 name: Bug Report
-description: File a bug report.
-title: ""
+about: File a bug report.
 labels: ["bug", "triage"]
+type: Bug
 assignees:
   - caarlos0
-type: Bug
 ---
 
 <!--
@@ -17,5 +16,7 @@ Also, share details about your environment: GoReleaser version, Go/Rust/Zig/etc 
 Even better: if you can, please share a minimum reproducible project and how to consistently reproduce the bug.
 
 Thank you for taking the time to report this.
+
+PS: please delete this comment before submitting. Thank you!
 
 -->
