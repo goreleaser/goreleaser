@@ -87,6 +87,10 @@ func (b *Builder) Parse(target string) (api.Target, error) {
 			t.Go386 = extra
 		case "arm":
 			t.Goarm = extra
+			// Handle ARM with float mode (e.g., linux_arm_6_softfloat)
+			if len(parts) > 3 {
+				t.Goarm = extra + "_" + parts[3]
+			}
 		case "mips", "mipsle", "mips64", "mips64le":
 			t.Gomips = extra
 		case "ppc64":
