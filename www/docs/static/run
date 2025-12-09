@@ -34,20 +34,31 @@ TAR_FILE="${FILE_BASENAME}_${OS}_${ARCH}.tar.gz"
 	echo "Downloading GoReleaser $VERSION..."
 	curl -sfLO "$RELEASES_URL/download/$VERSION/$TAR_FILE"
 	curl -sfLO "$RELEASES_URL/download/$VERSION/checksums.txt"
-	curl -sfLO "$RELEASES_URL/download/$VERSION/checksums.txt.sigstore.json"
 	echo "Verifying checksums..."
 	sha256sum --ignore-missing --quiet --check checksums.txt
 	if command -v cosign >/dev/null 2>&1; then
-		echo "Verifying signatures..."
 		REF="refs/tags/$VERSION"
 		if test "$VERSION" = "nightly"; then
 			REF="refs/heads/main"
 		fi
-		cosign verify-blob \
-			--certificate-identity-regexp "https://github.com/goreleaser/goreleaser.*/.github/workflows/.*.yml@$REF" \
-			--certificate-oidc-issuer 'https://token.actions.githubusercontent.com' \
-			--bundle checksums.txt.sigstore.json \
-			checksums.txt
+		if curl -sfLO "$RELEASES_URL/download/$VERSION/checksums.txt.sigstore.json"; then
+			echo "Verifying signatures..."
+			cosign verify-blob \
+				--certificate-identity-regexp "https://github.com/goreleaser/goreleaser.*/.github/workflows/.*.yml@$REF" \
+				--certificate-oidc-issuer 'https://token.actions.githubusercontent.com' \
+				--bundle checksums.txt.sigstore.json \
+				checksums.txt
+		elif curl -sfLO "$RELEASES_URL/download/$VERSION/checksums.txt.sig"; then
+			echo "Verifying signatures..."
+			cosign verify-blob \
+				--certificate-identity-regexp "https://github.com/goreleaser/goreleaser.*/.github/workflows/.*.yml@$REF" \
+				--certificate-oidc-issuer 'https://token.actions.githubusercontent.com' \
+				--cert "$RELEASES_URL/download/$VERSION/checksums.txt.pem" \
+				--signature "checksums.txt.sig" \
+				checksums.txt
+		else
+			echo "No signatures to verify."
+		fi
 	else
 		echo "Could not verify signatures, cosign is not installed."
 	fi
