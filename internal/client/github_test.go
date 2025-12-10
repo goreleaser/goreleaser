@@ -238,7 +238,7 @@ func TestGitHubGetDefaultBranch(t *testing.T) {
 
 	ctx := testctx.WrapWithCfg(t.Context(), config.Project{
 		GitHubURLs: config.GitHubURLs{
-			API: srv.URL + "/",
+			API: srv.URL,
 		},
 	})
 
@@ -268,7 +268,7 @@ func TestGitHubGetDefaultBranchErr(t *testing.T) {
 
 	ctx := testctx.WrapWithCfg(t.Context(), config.Project{
 		GitHubURLs: config.GitHubURLs{
-			API: srv.URL + "/",
+			API: srv.URL,
 		},
 	})
 	client, err := newGitHub(ctx, "test-token")
@@ -306,7 +306,7 @@ func TestGitHubChangelog(t *testing.T) {
 
 	ctx := testctx.WrapWithCfg(t.Context(), config.Project{
 		GitHubURLs: config.GitHubURLs{
-			API: srv.URL + "/",
+			API: srv.URL,
 		},
 	})
 	client, err := newGitHub(ctx, "test-token")
@@ -353,7 +353,7 @@ func TestGitHubReleaseNotes(t *testing.T) {
 
 	ctx := testctx.WrapWithCfg(t.Context(), config.Project{
 		GitHubURLs: config.GitHubURLs{
-			API: srv.URL + "/",
+			API: srv.URL,
 		},
 	})
 	client, err := newGitHub(ctx, "test-token")
@@ -386,7 +386,7 @@ func TestGitHubReleaseNotesError(t *testing.T) {
 
 	ctx := testctx.WrapWithCfg(t.Context(), config.Project{
 		GitHubURLs: config.GitHubURLs{
-			API: srv.URL + "/",
+			API: srv.URL,
 		},
 	})
 	client, err := newGitHub(ctx, "test-token")
@@ -425,7 +425,7 @@ func TestGitHubCloseMilestone(t *testing.T) {
 
 	ctx := testctx.WrapWithCfg(t.Context(), config.Project{
 		GitHubURLs: config.GitHubURLs{
-			API: srv.URL + "/",
+			API: srv.URL,
 		},
 	})
 	client, err := newGitHub(ctx, "test-token")
@@ -483,7 +483,7 @@ func TestGitHubOpenPullRequestCrossRepo(t *testing.T) {
 
 	ctx := testctx.WrapWithCfg(t.Context(), config.Project{
 		GitHubURLs: config.GitHubURLs{
-			API: srv.URL + "/",
+			API: srv.URL,
 		},
 	})
 	client, err := newGitHub(ctx, "test-token")
@@ -537,7 +537,7 @@ func TestGitHubOpenPullRequestHappyPath(t *testing.T) {
 
 	ctx := testctx.WrapWithCfg(t.Context(), config.Project{
 		GitHubURLs: config.GitHubURLs{
-			API: srv.URL + "/",
+			API: srv.URL,
 		},
 	})
 	client, err := newGitHub(ctx, "test-token")
@@ -596,7 +596,7 @@ func TestGitHubOpenPullRequestNoBaseBranchDraft(t *testing.T) {
 
 	ctx := testctx.WrapWithCfg(t.Context(), config.Project{
 		GitHubURLs: config.GitHubURLs{
-			API: srv.URL + "/",
+			API: srv.URL,
 		},
 	})
 	client, err := newGitHub(ctx, "test-token")
@@ -643,7 +643,7 @@ func TestGitHubOpenPullRequestPRExists(t *testing.T) {
 
 	ctx := testctx.WrapWithCfg(t.Context(), config.Project{
 		GitHubURLs: config.GitHubURLs{
-			API: srv.URL + "/",
+			API: srv.URL,
 		},
 	})
 	client, err := newGitHub(ctx, "test-token")
@@ -694,7 +694,7 @@ func TestGitHubOpenPullRequestBaseEmpty(t *testing.T) {
 
 	ctx := testctx.WrapWithCfg(t.Context(), config.Project{
 		GitHubURLs: config.GitHubURLs{
-			API: srv.URL + "/",
+			API: srv.URL,
 		},
 	})
 	client, err := newGitHub(ctx, "test-token")
@@ -745,7 +745,7 @@ func TestGitHubOpenPullRequestHeadEmpty(t *testing.T) {
 
 	ctx := testctx.WrapWithCfg(t.Context(), config.Project{
 		GitHubURLs: config.GitHubURLs{
-			API: srv.URL + "/",
+			API: srv.URL,
 		},
 	})
 	client, err := newGitHub(ctx, "test-token")
@@ -794,7 +794,7 @@ func TestGitHubCreateFileHappyPathCreate(t *testing.T) {
 
 	ctx := testctx.WrapWithCfg(t.Context(), config.Project{
 		GitHubURLs: config.GitHubURLs{
-			API: srv.URL + "/",
+			API: srv.URL,
 		},
 	})
 	client, err := newGitHub(ctx, "test-token")
@@ -843,7 +843,7 @@ func TestGitHubCreateFileHappyPathUpdate(t *testing.T) {
 
 	ctx := testctx.WrapWithCfg(t.Context(), config.Project{
 		GitHubURLs: config.GitHubURLs{
-			API: srv.URL + "/",
+			API: srv.URL,
 		},
 	})
 	client, err := newGitHub(ctx, "test-token")
@@ -904,7 +904,7 @@ func TestGitHubCreateFileFeatureBranchAlreadyExists(t *testing.T) {
 
 	ctx := testctx.WrapWithCfg(t.Context(), config.Project{
 		GitHubURLs: config.GitHubURLs{
-			API: srv.URL + "/",
+			API: srv.URL,
 		},
 	})
 	client, err := newGitHub(ctx, "test-token")
@@ -965,7 +965,7 @@ func TestGitHubCreateFileFeatureBranchDoesNotExist(t *testing.T) {
 
 	ctx := testctx.WrapWithCfg(t.Context(), config.Project{
 		GitHubURLs: config.GitHubURLs{
-			API: srv.URL + "/",
+			API: srv.URL,
 		},
 	})
 	client, err := newGitHub(ctx, "test-token")
@@ -1012,7 +1012,7 @@ func TestGitHubCreateFileFeatureBranchNilObject(t *testing.T) {
 
 	ctx := testctx.WrapWithCfg(t.Context(), config.Project{
 		GitHubURLs: config.GitHubURLs{
-			API: srv.URL + "/",
+			API: srv.URL,
 		},
 	})
 	client, err := newGitHub(ctx, "test-token")
@@ -1055,7 +1055,7 @@ func TestGitHubCheckRateLimit(t *testing.T) {
 
 	ctx := testctx.WrapWithCfg(t.Context(), config.Project{
 		GitHubURLs: config.GitHubURLs{
-			API: srv.URL + "/",
+			API: srv.URL,
 		},
 	})
 	client, err := newGitHub(ctx, "test-token")
@@ -1096,7 +1096,7 @@ func TestGitHubCreateRelease(t *testing.T) {
 	ctx := testctx.WrapWithCfg(t.Context(),
 		config.Project{
 			GitHubURLs: config.GitHubURLs{
-				API: srv.URL + "/",
+				API: srv.URL,
 			},
 			Release: config.Release{
 				NameTemplate: "v1.0.0",
@@ -1164,7 +1164,7 @@ func TestGitHubCreateReleaseDeleteExistingDraft(t *testing.T) {
 	ctx := testctx.WrapWithCfg(t.Context(),
 		config.Project{
 			GitHubURLs: config.GitHubURLs{
-				API: srv.URL + "/",
+				API: srv.URL,
 			},
 			Release: config.Release{
 				NameTemplate: "v1.0.0",
@@ -1222,7 +1222,7 @@ func TestGitHubCreateReleaseUpdateExisting(t *testing.T) {
 	ctx := testctx.WrapWithCfg(t.Context(),
 		config.Project{
 			GitHubURLs: config.GitHubURLs{
-				API: srv.URL + "/",
+				API: srv.URL,
 			},
 			Release: config.Release{
 				NameTemplate: "v1.0.0",
@@ -1283,7 +1283,7 @@ func TestGitHubCreateReleaseUseExistingDraft(t *testing.T) {
 	ctx := testctx.WrapWithCfg(t.Context(),
 		config.Project{
 			GitHubURLs: config.GitHubURLs{
-				API: srv.URL + "/",
+				API: srv.URL,
 			},
 			Release: config.Release{
 				NameTemplate: "v1.0.0",
@@ -1350,7 +1350,7 @@ func TestGitHubCreateFileWithGitHubAppToken(t *testing.T) {
 
 	ctx := testctx.WrapWithCfg(t.Context(), config.Project{
 		GitHubURLs: config.GitHubURLs{
-			API: srv.URL + "/",
+			API: srv.URL,
 		},
 	})
 	client, err := newGitHub(ctx, "test-token")
@@ -1412,7 +1412,7 @@ func TestGitHubCreateFileWithoutGitHubAppToken(t *testing.T) {
 
 	ctx := testctx.WrapWithCfg(t.Context(), config.Project{
 		GitHubURLs: config.GitHubURLs{
-			API: srv.URL + "/",
+			API: srv.URL,
 		},
 	})
 	client, err := newGitHub(ctx, "test-token")
