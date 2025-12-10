@@ -13,7 +13,7 @@ import (
 	"text/template"
 	"time"
 
-	"github.com/google/go-github/v78/github"
+	"github.com/google/go-github/v80/github"
 	"github.com/goreleaser/goreleaser/v2/internal/artifact"
 	"github.com/goreleaser/goreleaser/v2/internal/testctx"
 	"github.com/goreleaser/goreleaser/v2/internal/testlib"
@@ -30,6 +30,21 @@ func TestNewGitHubClient(t *testing.T) {
 			GitHubURLs: config.GitHubURLs{
 				API:    githubURL + "/api/v3",
 				Upload: githubURL,
+			},
+		})
+
+		client, err := newGitHub(ctx, ctx.Token)
+		require.NoError(t, err)
+		require.Equal(t, githubURL+"/api/v3/", client.client.BaseURL.String())
+		require.Equal(t, githubURL+"/api/uploads/", client.client.UploadURL.String())
+	})
+
+	t.Run("good urls ending with /", func(t *testing.T) {
+		githubURL := "https://github.mycompany.com"
+		ctx := testctx.WrapWithCfg(t.Context(), config.Project{
+			GitHubURLs: config.GitHubURLs{
+				API:    githubURL + "/api/v3/",
+				Upload: githubURL + "/api/uploads/",
 			},
 		})
 
@@ -389,7 +404,6 @@ func TestGitHubReleaseNotesError(t *testing.T) {
 func TestGitHubCloseMilestone(t *testing.T) {
 	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		defer r.Body.Close()
-		t.Log(r.URL.Path)
 
 		if r.URL.Path == "/api/v3/repos/someone/something/milestones" {
 			r, err := os.Open("testdata/github/milestones.json")
