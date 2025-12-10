@@ -59,6 +59,7 @@ TAR_FILE="${FILE_BASENAME}_${OS}_${ARCH}.tar.gz"
 				checksums.txt
 		else
 			echo "No signatures to verify."
+			exit 1
 		fi
 	else
 		echo "Could not verify signatures, cosign is not installed."
