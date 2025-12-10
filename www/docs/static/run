@@ -49,11 +49,12 @@ TAR_FILE="${FILE_BASENAME}_${OS}_${ARCH}.tar.gz"
 				--bundle checksums.txt.sigstore.json \
 				checksums.txt
 		elif curl -sfLO "$RELEASES_URL/download/$VERSION/checksums.txt.sig"; then
+			curl -sfLO "$RELEASES_URL/download/$VERSION/checksums.txt.pem"
 			echo "Verifying signatures..."
 			cosign verify-blob \
 				--certificate-identity-regexp "https://github.com/goreleaser/goreleaser.*/.github/workflows/.*.yml@$REF" \
 				--certificate-oidc-issuer 'https://token.actions.githubusercontent.com' \
-				--cert "$RELEASES_URL/download/$VERSION/checksums.txt.pem" \
+				--cert "checksums.txt.pem" \
 				--signature "checksums.txt.sig" \
 				checksums.txt
 		else
