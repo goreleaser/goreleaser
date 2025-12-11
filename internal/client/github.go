@@ -14,7 +14,7 @@ import (
 	"time"
 
 	"github.com/caarlos0/log"
-	"github.com/google/go-github/v78/github"
+	"github.com/google/go-github/v80/github"
 	"github.com/goreleaser/goreleaser/v2/internal/artifact"
 	"github.com/goreleaser/goreleaser/v2/internal/tmpl"
 	"github.com/goreleaser/goreleaser/v2/pkg/config"
@@ -59,18 +59,6 @@ func newGitHub(ctx *context.Context, token string) (*githubClient, error) {
 	base.(*http.Transport).Proxy = http.ProxyFromEnvironment
 	httpClient.Transport.(*oauth2.Transport).Base = base
 
-	client, err := setEnterpriseURLs(ctx, github.NewClient(httpClient))
-	if err != nil {
-		return &githubClient{}, err
-	}
-
-	return &githubClient{client: client}, nil
-}
-
-func setEnterpriseURLs(ctx *context.Context, client *github.Client) (*github.Client, error) {
-	if ctx.Config.GitHubURLs.API == "" {
-		return client, nil
-	}
 	baseURL, err := tmpl.New(ctx).Apply(ctx.Config.GitHubURLs.API)
 	if err != nil {
 		return nil, fmt.Errorf("templating GitHub API URL: %w", err)
@@ -79,7 +67,16 @@ func setEnterpriseURLs(ctx *context.Context, client *github.Client) (*github.Cli
 	if err != nil {
 		return nil, fmt.Errorf("templating GitHub upload URL: %w", err)
 	}
-	return client.WithEnterpriseURLs(baseURL, uploadURL)
+
+	if baseURL == "" {
+		return &githubClient{client: github.NewClient(httpClient)}, nil
+	}
+
+	client, err := github.NewClient(httpClient).WithEnterpriseURLs(baseURL, uploadURL)
+	if err != nil {
+		return &githubClient{}, err
+	}
+	return &githubClient{client: client}, nil
 }
 
 func (c *githubClient) checkRateLimit(ctx *context.Context) {
