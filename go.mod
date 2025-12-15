@@ -46,6 +46,7 @@ require (
 	github.com/stretchr/testify v1.11.1
 	github.com/ulikunitz/xz v0.5.15
 	gitlab.com/gitlab-org/api/client-go v1.6.0
+	go.yaml.in/yaml/v3 v3.0.4
 	gocloud.dev v0.44.0
 	golang.org/x/crypto v0.45.0
 	golang.org/x/oauth2 v0.33.0
@@ -53,7 +54,6 @@ require (
 	golang.org/x/text v0.31.0
 	golang.org/x/tools v0.39.0
 	gopkg.in/mail.v2 v2.3.1
-	gopkg.in/yaml.v3 v3.0.1
 )
 
 require (
@@ -119,7 +119,7 @@ require (
 	go.opentelemetry.io/otel/log v0.14.0 // indirect
 	go.opentelemetry.io/otel/sdk/log v0.14.0 // indirect
 	go.yaml.in/yaml/v2 v2.4.2 // indirect
-	go.yaml.in/yaml/v3 v3.0.4 // indirect
+	gopkg.in/yaml.v3 v3.0.1 // indirect
 	k8s.io/klog/v2 v2.130.1 // indirect
 )
 
