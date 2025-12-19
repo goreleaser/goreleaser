@@ -180,7 +180,7 @@ func TestPublishSuccess(t *testing.T) {
 	require.NoError(t, pipe.Publish(ctx))
 
 	expected := apiv0.ServerJSON{
-		Schema:      "https://static.modelcontextprotocol.io/schemas/2025-10-17/server.schema.json",
+		Schema:      model.CurrentSchemaURL,
 		Name:        "test-server",
 		Title:       "Test Server",
 		Description: "A test MCP server",
@@ -213,7 +213,7 @@ func TestPublishWithTemplates(t *testing.T) {
 		assert.NoError(t, json.Unmarshal(body, &req))
 
 		expected := apiv0.ServerJSON{
-			Schema:      "https://static.modelcontextprotocol.io/schemas/2025-10-17/server.schema.json",
+			Schema:      model.CurrentSchemaURL,
 			Name:        "my-test-project",
 			Title:       "My-Test-Project v1.2.3",
 			Description: "Server for my-test-project",
@@ -431,7 +431,7 @@ func TestPublishMultiplePackages(t *testing.T) {
 	require.NoError(t, pipe.Publish(ctx))
 
 	expected := apiv0.ServerJSON{
-		Schema:  "https://static.modelcontextprotocol.io/schemas/2025-10-17/server.schema.json",
+		Schema:  model.CurrentSchemaURL,
 		Name:    "multi-package-server",
 		Title:   "Multi Package Server",
 		Version: "2.0.0",
@@ -513,7 +513,7 @@ func TestPublishWithRepository(t *testing.T) {
 	require.NoError(t, pipe.Publish(ctx))
 
 	expected := apiv0.ServerJSON{
-		Schema:  "https://static.modelcontextprotocol.io/schemas/2025-10-17/server.schema.json",
+		Schema:  model.CurrentSchemaURL,
 		Name:    "repo-server",
 		Title:   "Repo Server",
 		Version: "1.5.0",

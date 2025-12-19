@@ -114,7 +114,7 @@ func (p Pipe) Publish(ctx *context.Context) error {
 		}
 	}
 	server := apiv0.ServerJSON{
-		Schema:      "https://static.modelcontextprotocol.io/schemas/2025-10-17/server.schema.json",
+		Schema:      model.CurrentSchemaURL,
 		Name:        mcp.Name,
 		Description: mcp.Description,
 		Title:       mcp.Title,
