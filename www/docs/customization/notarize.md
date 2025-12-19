@@ -20,7 +20,7 @@ To use these features, you'll need:
 - A [certificate](https://developer.apple.com/account/resources/certificates/add)
   from said account. It should be of "Developer ID Application" type.
   This will give you a `.cer` file. You'll need to import it into
-  `KeyChain.app`, and then export it as a `.p12` file. It'll will have a
+  `KeyChain.app`, and then export it as a `.p12` file. It'll have a
   password.
 - An App Store Connect
   [API key](https://appstoreconnect.apple.com/access/integrations/api/new).
