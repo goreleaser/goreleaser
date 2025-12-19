@@ -6,3 +6,4 @@ allow_licenses:
   - Apache-2.0
   - MPL-2.0
   - ISC
+  - google-patent-license-golang
