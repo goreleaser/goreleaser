@@ -71,7 +71,7 @@ jobs:
             ./dist/*.deb
             ./dist/*.rpm
             ./dist/*.apk
-          key: ${{ github.ref }}
+          key: ${{ github.sha }}
       - run: task goreleaser:test:${{ matrix.format }}
   goreleaser:
     runs-on: ubuntu-latest
@@ -106,7 +106,7 @@ jobs:
             ./dist/*.deb
             ./dist/*.rpm
             ./dist/*.apk
-          key: ${{ github.ref }}
+          key: ${{ github.sha }}
       - uses: sigstore/cosign-installer@faadad0cce49287aee09b3a48701e75088a2c6ad # v4.0.0
       - uses: anchore/sbom-action/download-syft@43a17d6e7add2b5535efe4dcae9952337c479a93 # v0.20.11
       - uses: crazy-max/ghaction-upx@db8cc9515a4a7ea1b312cb82fbeae6d716daf777 # v3.2.0
