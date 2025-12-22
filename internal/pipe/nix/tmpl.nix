@@ -111,8 +111,6 @@ stdenvNoCC.mkDerivation {
   '';
   {{- end }}
 
-  system = system;
-
   meta = {
     {{- with .Description }}
     description = "{{ . }}";

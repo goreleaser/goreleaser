@@ -51,7 +51,6 @@ stdenvNoCC.mkDerivation {
     wrapProgram $out/bin/foo --prefix PATH : ${lib.makeBinPath (lib.optionals stdenvNoCC.isDarwin [ chromium ] ++ lib.optionals stdenvNoCC.isLinux [ ttyd ] ++ [ fish bash ])}
   '';
 
-  system = system;
 
   meta = {
 

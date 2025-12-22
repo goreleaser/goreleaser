@@ -52,7 +52,6 @@ stdenvNoCC.mkDerivation {
     installManPage ./manpages/foo.1.gz
   '';
 
-  system = system;
 
   meta = {
 

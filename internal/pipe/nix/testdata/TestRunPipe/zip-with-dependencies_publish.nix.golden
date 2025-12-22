@@ -45,7 +45,6 @@ stdenvNoCC.mkDerivation {
     wrapProgram $out/bin/foo --prefix PATH : ${lib.makeBinPath ([ git ])}
   '';
 
-  system = system;
 
   meta = {
     description = "my test";

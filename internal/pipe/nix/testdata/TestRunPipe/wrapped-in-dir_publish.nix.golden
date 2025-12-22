@@ -52,7 +52,6 @@ stdenvNoCC.mkDerivation {
     echo "do something"
   '';
 
-  system = system;
 
   meta = {
     description = "my test";

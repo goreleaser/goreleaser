@@ -35,7 +35,6 @@ stdenvNoCC.mkDerivation {
     cp -vr ./foo $out/bin/foo
   '';
 
-  system = system;
 
   meta = {
 
