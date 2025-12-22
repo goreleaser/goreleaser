@@ -7,7 +7,7 @@
   stdenvNoCC,
 }:
 let
-  system = stdenvNoCC.hostPlatform.system;
+  inherit (stdenvNoCC.hostPlatform) system;
   shaMap = {
     x86_64-linux = "sha1";
     x86_64-darwin = "sha3";

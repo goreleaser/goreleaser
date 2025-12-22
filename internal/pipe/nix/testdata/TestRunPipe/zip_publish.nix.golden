@@ -8,7 +8,7 @@
   unzip,
 }:
 let
-  system = stdenvNoCC.hostPlatform.system;
+  inherit (stdenvNoCC.hostPlatform) system;
   shaMap = {
     i686-linux = "sha15";
     x86_64-linux = "sha8";

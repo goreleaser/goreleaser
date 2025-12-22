@@ -10,7 +10,7 @@
 {{- end }}
 }:
 let
-  system = stdenvNoCC.hostPlatform.system;
+  inherit (stdenvNoCC.hostPlatform) system;
   shaMap = {
     {{- with  .Archives.linux386.Sha }}
     i686-linux = "{{ . }}";
