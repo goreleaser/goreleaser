@@ -214,6 +214,7 @@ tasks:
   goreleaser:test:pkg:
     desc: Test a package
     cmds:
+      - docker pull --platform linux/{{.Platform}} {{.Image}}
       - docker run --platform linux/{{.Platform}} --rm --workdir /tmp -v $PWD/dist:/tmp {{.Image}} sh -c '{{.Cmd}} && goreleaser --version'
 
   goreleaser:test:rpm:
