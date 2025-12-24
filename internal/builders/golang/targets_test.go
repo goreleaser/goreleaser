@@ -50,6 +50,12 @@ func TestAllBuildTargets(t *testing.T) {
 			"5",
 			"6",
 			"7",
+			"5_softfloat",
+			"5_hardfloat",
+			"6_softfloat",
+			"6_hardfloat",
+			"7_softfloat",
+			"7_hardfloat",
 		},
 		Goarm64: []string{
 			"v8.0",
@@ -120,6 +126,12 @@ func TestAllBuildTargets(t *testing.T) {
 			"linux_amd64_v4",
 			"linux_arm_5",
 			"linux_arm_6",
+			"linux_arm_5_softfloat",
+			"linux_arm_5_hardfloat",
+			"linux_arm_6_softfloat",
+			"linux_arm_6_hardfloat",
+			"linux_arm_7_softfloat",
+			"linux_arm_7_hardfloat",
 			"linux_arm64_v9.0",
 			"linux_mips_softfloat",
 			"linux_mips64_softfloat",
@@ -142,6 +154,12 @@ func TestAllBuildTargets(t *testing.T) {
 			"freebsd_arm_5",
 			"freebsd_arm_6",
 			"freebsd_arm_7",
+			"freebsd_arm_5_softfloat",
+			"freebsd_arm_5_hardfloat",
+			"freebsd_arm_6_softfloat",
+			"freebsd_arm_6_hardfloat",
+			"freebsd_arm_7_softfloat",
+			"freebsd_arm_7_hardfloat",
 			"freebsd_arm64_v9.0",
 			"openbsd_386_softfloat",
 			"openbsd_amd64_v2",
@@ -156,6 +174,12 @@ func TestAllBuildTargets(t *testing.T) {
 			"windows_arm_5",
 			"windows_arm_6",
 			"windows_arm_7",
+			"windows_arm_5_softfloat",
+			"windows_arm_5_hardfloat",
+			"windows_arm_6_softfloat",
+			"windows_arm_6_hardfloat",
+			"windows_arm_7_softfloat",
+			"windows_arm_7_hardfloat",
 			"windows_arm64_v9.0",
 			"js_wasm",
 			"ios_arm64_v9.0",
@@ -299,5 +323,35 @@ func TestListTargets(t *testing.T) {
 		})
 		require.NoError(t, err)
 		require.Equal(t, []string{"linux_amd64_v2"}, targets)
+	})
+
+	t.Run("goarm with softfloat and hardfloat", func(t *testing.T) {
+		targets, err := listTargets(config.Build{
+			Goos:   []string{"linux"},
+			Goarch: []string{"arm"},
+			Goarm:  []string{"5", "6", "7", "5_softfloat", "5_hardfloat", "6_softfloat", "6_hardfloat", "7_softfloat", "7_hardfloat"},
+			Tool:   "go",
+		})
+		require.NoError(t, err)
+		require.Equal(t, []string{
+			"linux_arm_5",
+			"linux_arm_6",
+			"linux_arm_7",
+			"linux_arm_5_softfloat",
+			"linux_arm_5_hardfloat",
+			"linux_arm_6_softfloat",
+			"linux_arm_6_hardfloat",
+			"linux_arm_7_softfloat",
+			"linux_arm_7_hardfloat",
+		}, targets)
+	})
+
+	t.Run("invalid goarm with invalid softfloat syntax", func(t *testing.T) {
+		_, err := listTargets(config.Build{
+			Goos:   []string{"linux"},
+			Goarch: []string{"arm"},
+			Goarm:  []string{"5,invalid"},
+		})
+		require.EqualError(t, err, "invalid goarm: 5,invalid")
 	})
 }
