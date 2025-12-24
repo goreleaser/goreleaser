@@ -341,13 +341,15 @@ You may also want to make the _Cask_ conflict with the previous _Formula_.
     Casks **need** to be in the `Casks` directory - which is the default.
 
 The preferred way to migrate is to create a `tap_migrations.json` file in the
-root of your tap, and delete the Formula:
+root of your tap:
 
-```json title="tap_migrations.json
+```json
 {
   "foo": "foo"
 }
 ```
+
+And then delete the Formula:
 
 ```sh
 rm Formula/foo.rb
