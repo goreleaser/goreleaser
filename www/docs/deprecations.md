@@ -340,28 +340,21 @@ You may also want to make the _Cask_ conflict with the previous _Formula_.
     Don't forget to remove the `directory: Formula` from your configuration.
     Casks **need** to be in the `Casks` directory - which is the default.
 
-I would also recommend manually editing your Formula to disable it, e.g.:
+The preferred way to migrate is to create a `tap_migrations.json` file in the
+root of your tap, and delete the Formula:
 
-```ruby
-class Foo < Formula
-  # ...
-  # make sure to bump the version:
-  version "1.2.3"
-  # ...
-  disable! date: "2025-06-10", because: "the cask should be used now instead", replacement_cask: "foo"
-  # ...
-end
+```json title="tap_migrations.json
+{
+  "foo": "foo"
+}
 ```
 
-With this, when the user tries to upgrade, they should see and error like so:
+```sh
+rm Formula/foo.rb
+```
 
-```
-==> Upgrading 1 outdated package:
-goreleaser/tap/goreleaser 2.9.0 -> 2.9.1
-Error: goreleaser/tap/goreleaser has been disabled because it the cask should be used now instead! It will be disabled on 2025-06-14.
-Replacement:
-  brew install --cask goreleaser
-```
+With this, when the user tries to upgrade, it should automatically update to the
+Formula instead.
 
 ### archives.builds
 
