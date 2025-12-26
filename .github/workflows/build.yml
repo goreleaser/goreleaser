@@ -53,7 +53,7 @@ jobs:
           repo-token: ${{ secrets.GITHUB_TOKEN }}
       - uses: docker/setup-qemu-action@c7c53464625b32c7a7e944ae62b3e17d2b600130 # v3.7.0
         if: matrix.os == 'ubuntu-latest'
-      - uses: docker/setup-buildx-action@e468171a9de216ec08956ac3ada2f0791b6bd435 # v3.11.1
+      - uses: docker/setup-buildx-action@8d2750c68a42422c14e847fe6c8ac0403b4cbd6f # v3.12.0
         if: matrix.os == 'ubuntu-latest'
         with:
           driver-opts: network=host
@@ -76,7 +76,7 @@ jobs:
       - uses: mlugg/setup-zig@fa65c4058643678a4e4a9a60513944a7d8d35440 # v2.1.0
       - uses: oven-sh/setup-bun@735343b667d3e6f658f44d0eca948eb6282f2b76 # v2.0.2
       - uses: denoland/setup-deno@e95548e56dfa95d4e1a28d6f422fafe75c4c26fb # v2.0.3
-      - uses: cargo-bins/cargo-binstall@ea60fcf749c6a52a729e0eaabb5eb33391d44823 # v1.16.4
+      - uses: cargo-bins/cargo-binstall@4a9028576ed64318f7b24193a62695e96dcbe015 # v1.16.5
       - name: setup-cargo
         run: |
           rustup default stable
@@ -88,7 +88,7 @@ jobs:
       - uses: sigstore/cosign-installer@faadad0cce49287aee09b3a48701e75088a2c6ad # v4.0.0
         with:
           cosign-release: "v3.0.3"
-      - uses: anchore/sbom-action/download-syft@43a17d6e7add2b5535efe4dcae9952337c479a93 # v0.20.11
+      - uses: anchore/sbom-action/download-syft@a930d0ac434e3182448fe678398ba5713717112a # v0.21.0
       - run: task setup
       - run: task build
       - run: task test
