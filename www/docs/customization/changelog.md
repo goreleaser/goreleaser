@@ -32,17 +32,26 @@ changelog:
   #
   # Default:
   #    if 'git': '{{ .SHA }} {{ .Message }}'
-  #   otherwise: '{{ .SHA }}: {{ .Message }} ({{ with .AuthorUsername }}@{{ . }}{{ else }}{{ .AuthorName }} <{{ .AuthorEmail }}>{{ end }})'.
+  #   otherwise: '{{ .SHA }}: {{ .Message }} ({{ with .Author.Username }}@{{ . }}{{ else }}{{ .Author.Name }} <{{ .Author.Email }}>{{ end }})'.
   #
   # Extra template fields:
   # - `SHA`: the commit SHA1
   # - `Message`: the first line of the commit message, otherwise known as commit subject
+  # - `Author`: the author of the commit
+  # - `CoAuthors`: the list of co-authors
+  #
+  # An `Author` is composed of:
+  # - `Name`: the author full name (considers mailmap if 'git')
+  # - `Email`: the author email (considers mailmap if 'git')
+  # - `Username`: github/gitlab/gitea username - not available if 'git', might be empty on CoAuthors.
+  #
+  # Deprecated in v2.14:
   # - `AuthorName`: the author full name (considers mailmap if 'git')
   # - `AuthorEmail`: the author email (considers mailmap if 'git')
   # - `AuthorUsername`: github/gitlab/gitea username - not available if 'git'
   #
-  # Usage with 'git': <!-- md:inline_version v2.8 -->.
-  format: "{{.SHA}}: {{.Message}} (@{{.AuthorUsername}})"
+  # Usage with 'github': <!-- md:inline_version v2.8 -->.
+  format: "{{.SHA}}: {{.Message}} (@{{.Author.Username}})"
 
   # Sorts the changelog by the commit's messages.
   # Could either be asc, desc or empty

@@ -16,6 +16,7 @@ import (
 	"github.com/caarlos0/log"
 	"github.com/google/go-github/v80/github"
 	"github.com/goreleaser/goreleaser/v2/internal/artifact"
+	"github.com/goreleaser/goreleaser/v2/internal/changelog"
 	"github.com/goreleaser/goreleaser/v2/internal/tmpl"
 	"github.com/goreleaser/goreleaser/v2/pkg/config"
 	"github.com/goreleaser/goreleaser/v2/pkg/context"
@@ -123,12 +124,20 @@ func (c *githubClient) Changelog(ctx *context.Context, repo Repo, prev, current 
 			return nil, err
 		}
 		for _, commit := range result.Commits {
+			author := Author{
+				Name:     commit.GetAuthor().GetName(),
+				Email:    commit.GetAuthor().GetEmail(),
+				Username: commit.GetAuthor().GetLogin(),
+			}
+			coauthors := changelog.ExtractCoAuthors(commit.Commit.GetMessage())
 			log = append(log, ChangelogItem{
 				SHA:            commit.GetSHA(),
 				Message:        strings.Split(commit.Commit.GetMessage(), "\n")[0],
-				AuthorName:     commit.GetAuthor().GetName(),
-				AuthorEmail:    commit.GetAuthor().GetEmail(),
-				AuthorUsername: commit.GetAuthor().GetLogin(),
+				Author:         author,
+				CoAuthors:      c.authorsLookup(ctx, coauthors),
+				AuthorName:     author.Name,
+				AuthorEmail:    author.Email,
+				AuthorUsername: author.Username,
 			})
 		}
 		if resp.NextPage == 0 {
@@ -138,6 +147,28 @@ func (c *githubClient) Changelog(ctx *context.Context, repo Repo, prev, current 
 	}
 
 	return log, nil
+}
+
+func (c *githubClient) authorsLookup(ctx *context.Context, authors []Author) []Author {
+	cache := map[string]string{}
+	for i := range authors {
+		author := &authors[i]
+		if before, ok := strings.CutSuffix(author.Email, "@users.noreply.github.com"); ok {
+			author.Username = before
+			continue
+		}
+		if username, ok := cache[author.Email]; ok {
+			author.Username = username
+			continue
+		}
+		res, _, err := c.client.Search.Users(ctx, author.Email, nil)
+		if err == nil && len(res.Users) == 1 {
+			author.Username = res.Users[0].GetLogin()
+			cache[author.Email] = author.Username
+			continue
+		}
+	}
+	return authors
 }
 
 // getDefaultBranch returns the default branch of a github repo

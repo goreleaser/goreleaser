@@ -13,6 +13,7 @@ import (
 	"github.com/Masterminds/semver/v3"
 	"github.com/caarlos0/log"
 	"github.com/goreleaser/goreleaser/v2/internal/artifact"
+	"github.com/goreleaser/goreleaser/v2/internal/changelog"
 	"github.com/goreleaser/goreleaser/v2/internal/tmpl"
 	"github.com/goreleaser/goreleaser/v2/pkg/config"
 	"github.com/goreleaser/goreleaser/v2/pkg/context"
@@ -118,8 +119,13 @@ func (c *gitlabClient) Changelog(_ *context.Context, repo Repo, prev, current st
 
 	for _, commit := range result.Commits {
 		log = append(log, ChangelogItem{
-			SHA:         commit.ID,
-			Message:     strings.Split(commit.Message, "\n")[0],
+			SHA:     commit.ID,
+			Message: strings.Split(commit.Message, "\n")[0],
+			Author: Author{
+				Name:  commit.AuthorName,
+				Email: commit.AuthorEmail,
+			},
+			CoAuthors:   changelog.ExtractCoAuthors(commit.Message),
 			AuthorName:  commit.AuthorName,
 			AuthorEmail: commit.AuthorEmail,
 		})
