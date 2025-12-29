@@ -451,7 +451,7 @@ func (c *githubClient) PublishRelease(ctx *context.Context, releaseID string) er
 	if err != nil {
 		return fmt.Errorf("could not update existing release: %w", err)
 	}
-	log.WithField("url", release.GetHTMLURL()).Info("published")
+	log.WithField("url", release.GetHTMLURL()).Debug("published")
 	return nil
 }
 
