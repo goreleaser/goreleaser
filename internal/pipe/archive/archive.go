@@ -246,6 +246,7 @@ func create(ctx *context.Context, arch config.Archive, binaries []*artifact.Arti
 			artifact.ExtraFormat:    format,
 			artifact.ExtraWrappedIn: wrap,
 			artifact.ExtraBinaries:  bins,
+			artifact.ExtraFiles:     listExtraFiles(files),
 		},
 	}
 	if len(binaries) > 0 {
@@ -266,6 +267,14 @@ func create(ctx *context.Context, arch config.Archive, binaries []*artifact.Arti
 
 	ctx.Artifacts.Add(art)
 	return nil
+}
+
+func listExtraFiles(files []config.File) []string {
+	result := make([]string, 0, len(files))
+	for _, f := range files {
+		result = append(result, f.Destination)
+	}
+	return result
 }
 
 func wrapFolder(a config.Archive) string {
