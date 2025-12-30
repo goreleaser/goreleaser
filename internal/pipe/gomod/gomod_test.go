@@ -15,17 +15,18 @@ import (
 
 func TestSkip(t *testing.T) {
 	t.Run("skip", func(t *testing.T) {
-		ctx := testctx.NewWithCfg(config.Project{
+		ctx := testctx.WrapWithCfg(t.Context(), config.Project{
 			Builds: []config.Build{
 				{
 					Builder: "zig",
 				},
 			},
 		})
+
 		require.True(t, Pipe{}.Skip(ctx))
 	})
 	t.Run("dont skip", func(t *testing.T) {
-		ctx := testctx.NewWithCfg(config.Project{
+		ctx := testctx.WrapWithCfg(t.Context(), config.Project{
 			Builds: []config.Build{
 				{
 					Builder: "go",
@@ -35,12 +36,13 @@ func TestSkip(t *testing.T) {
 				},
 			},
 		})
+
 		require.False(t, Pipe{}.Skip(ctx))
 	})
 }
 
 func TestRun(t *testing.T) {
-	ctx := testctx.New()
+	ctx := testctx.Wrap(t.Context())
 	require.NoError(t, Pipe{}.Default(ctx))
 	require.NoError(t, Pipe{}.Run(ctx))
 	require.Equal(t, "github.com/goreleaser/goreleaser/v2", ctx.ModulePath)
@@ -67,18 +69,19 @@ func TestRunGoWork(t *testing.T) {
 	out, err := exec.CommandContext(t.Context(), "go", "list", "-m").CombinedOutput()
 	require.NoError(t, err)
 	require.Equal(t, "a\na/b", strings.TrimSpace(string(out)))
-	ctx := testctx.New()
+	ctx := testctx.Wrap(t.Context())
 	require.NoError(t, Pipe{}.Default(ctx))
 	require.NoError(t, Pipe{}.Run(ctx))
 	require.Equal(t, "a", ctx.ModulePath)
 }
 
 func TestRunCustomMod(t *testing.T) {
-	ctx := testctx.NewWithCfg(config.Project{
+	ctx := testctx.WrapWithCfg(t.Context(), config.Project{
 		GoMod: config.GoMod{
 			Mod: "readonly",
 		},
 	})
+
 	require.NoError(t, Pipe{}.Default(ctx))
 	require.NoError(t, Pipe{}.Run(ctx))
 	require.Equal(t, "github.com/goreleaser/goreleaser/v2", ctx.ModulePath)
@@ -92,12 +95,13 @@ func TestCustomEnv(t *testing.T) {
 		content = []byte("@echo off\r\nif not \"%FOO%\"==\"bar\" exit /b 1")
 	}
 	require.NoError(t, os.WriteFile(bin, content, 0o755))
-	ctx := testctx.NewWithCfg(config.Project{
+	ctx := testctx.WrapWithCfg(t.Context(), config.Project{
 		GoMod: config.GoMod{
 			GoBinary: bin,
 			Env:      []string{"FOO=bar"},
 		},
 	})
+
 	require.NoError(t, Pipe{}.Default(ctx))
 	require.NoError(t, Pipe{}.Run(ctx))
 }
@@ -115,11 +119,12 @@ func TestRunCustomDir(t *testing.T) {
 		[]byte("module foo"),
 		0o666,
 	))
-	ctx := testctx.NewWithCfg(config.Project{
+	ctx := testctx.WrapWithCfg(t.Context(), config.Project{
 		GoMod: config.GoMod{
 			Dir: filepath.Join(dir, "src"),
 		},
 	})
+
 	require.NoError(t, Pipe{}.Default(ctx))
 	require.NoError(t, Pipe{}.Run(ctx))
 	require.Equal(t, "foo", ctx.ModulePath)
@@ -132,18 +137,19 @@ func TestRunOutsideGoModule(t *testing.T) {
 		[]byte("package main\nfunc main() {println(0)}"),
 		0o666,
 	))
-	ctx := testctx.New()
+	ctx := testctx.Wrap(t.Context())
 	require.NoError(t, Pipe{}.Default(ctx))
 	testlib.AssertSkipped(t, Pipe{}.Run(ctx))
 	require.Empty(t, ctx.ModulePath)
 }
 
 func TestRunCommandError(t *testing.T) {
-	ctx := testctx.NewWithCfg(config.Project{
+	ctx := testctx.WrapWithCfg(t.Context(), config.Project{
 		GoMod: config.GoMod{
 			GoBinary: "not-a-valid-binary",
 		},
 	})
+
 	path := "$PATH"
 	if testlib.IsWindows() {
 		path = "%PATH%"
@@ -164,11 +170,12 @@ func TestRunOldGoVersion(t *testing.T) {
 		content = []byte("@echo off\r\necho flag provided but not defined: -m\r\nexit /b 1")
 	}
 	require.NoError(t, os.WriteFile(bin, content, 0o755))
-	ctx := testctx.NewWithCfg(config.Project{
+	ctx := testctx.WrapWithCfg(t.Context(), config.Project{
 		GoMod: config.GoMod{
 			GoBinary: bin,
 		},
 	})
+
 	testlib.AssertSkipped(t, Pipe{}.Run(ctx))
 	require.Empty(t, ctx.ModulePath)
 }

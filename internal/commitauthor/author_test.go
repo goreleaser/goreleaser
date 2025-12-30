@@ -10,12 +10,14 @@ import (
 
 func TestGet(t *testing.T) {
 	t.Run("valid", func(t *testing.T) {
-		author, err := Get(testctx.NewWithCfg(config.Project{
+		author, err := Get(testctx.WrapWithCfg(t.Context(), config.Project{
 			Env: []string{"NAME=foo", "MAIL=foo@bar"},
-		}), config.CommitAuthor{
-			Name:  "{{.Env.NAME}}",
-			Email: "{{.Env.MAIL}}",
-		})
+		}),
+
+			config.CommitAuthor{
+				Name:  "{{.Env.NAME}}",
+				Email: "{{.Env.MAIL}}",
+			})
 		require.NoError(t, err)
 		require.Equal(t, config.CommitAuthor{
 			Name:  "foo",
@@ -24,18 +26,20 @@ func TestGet(t *testing.T) {
 	})
 
 	t.Run("valid with signing", func(t *testing.T) {
-		author, err := Get(testctx.NewWithCfg(config.Project{
+		author, err := Get(testctx.WrapWithCfg(t.Context(), config.Project{
 			Env: []string{"NAME=foo", "MAIL=foo@bar", "SIGNING_KEY=ABC123", "GPG_PROGRAM=/usr/bin/gpg"},
-		}), config.CommitAuthor{
-			Name:  "{{.Env.NAME}}",
-			Email: "{{.Env.MAIL}}",
-			Signing: config.CommitSigning{
-				Enabled: true,
-				Key:     "{{.Env.SIGNING_KEY}}",
-				Program: "{{.Env.GPG_PROGRAM}}",
-				Format:  "openpgp",
-			},
-		})
+		}),
+
+			config.CommitAuthor{
+				Name:  "{{.Env.NAME}}",
+				Email: "{{.Env.MAIL}}",
+				Signing: config.CommitSigning{
+					Enabled: true,
+					Key:     "{{.Env.SIGNING_KEY}}",
+					Program: "{{.Env.GPG_PROGRAM}}",
+					Format:  "openpgp",
+				},
+			})
 		require.NoError(t, err)
 		require.Equal(t, config.CommitAuthor{
 			Name:  "foo",
@@ -51,7 +55,7 @@ func TestGet(t *testing.T) {
 
 	t.Run("invalid name tmpl", func(t *testing.T) {
 		_, err := Get(
-			testctx.New(),
+			testctx.Wrap(t.Context()),
 			config.CommitAuthor{
 				Name:  "{{.Env.NOPE}}",
 				Email: "a",
@@ -61,7 +65,7 @@ func TestGet(t *testing.T) {
 
 	t.Run("invalid email tmpl", func(t *testing.T) {
 		_, err := Get(
-			testctx.New(),
+			testctx.Wrap(t.Context()),
 			config.CommitAuthor{
 				Name:  "a",
 				Email: "{{.Env.NOPE}}",
@@ -71,7 +75,7 @@ func TestGet(t *testing.T) {
 
 	t.Run("invalid signing key tmpl", func(t *testing.T) {
 		_, err := Get(
-			testctx.New(),
+			testctx.Wrap(t.Context()),
 			config.CommitAuthor{
 				Name:  "a",
 				Email: "b",
@@ -85,7 +89,7 @@ func TestGet(t *testing.T) {
 
 	t.Run("invalid signing program tmpl", func(t *testing.T) {
 		_, err := Get(
-			testctx.New(),
+			testctx.Wrap(t.Context()),
 			config.CommitAuthor{
 				Name:  "a",
 				Email: "b",
@@ -98,7 +102,7 @@ func TestGet(t *testing.T) {
 	})
 
 	t.Run("use github app token", func(t *testing.T) {
-		author, err := Get(testctx.New(), config.CommitAuthor{
+		author, err := Get(testctx.Wrap(t.Context()), config.CommitAuthor{
 			UseGitHubAppToken: true,
 		})
 		require.NoError(t, err)

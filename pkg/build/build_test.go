@@ -62,12 +62,11 @@ func TestRegisterAndGet(t *testing.T) {
 }
 
 func TestDependencies(t *testing.T) {
-	require.Equal(t, []string{"fake"}, Dependencies(testctx.NewWithCfg(
+	require.Equal(t, []string{"fake"}, Dependencies(testctx.WrapWithCfg(t.Context(),
 		config.Project{
 			Builds: []config.Build{
 				{Builder: "completedummy"},
 				{Builder: "dummy"},
 			},
-		},
-	)))
+		})))
 }

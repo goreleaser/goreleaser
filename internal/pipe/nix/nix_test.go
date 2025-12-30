@@ -31,17 +31,17 @@ func TestString(t *testing.T) {
 
 func TestSkip(t *testing.T) {
 	t.Run("no-nix", func(t *testing.T) {
-		require.True(t, Pipe{}.Skip(testctx.New()))
+		require.True(t, Pipe{}.Skip(testctx.Wrap(t.Context())))
 	})
 	t.Run("skip flag", func(t *testing.T) {
-		require.True(t, New().Skip(testctx.NewWithCfg(config.Project{
+		require.True(t, New().Skip(testctx.WrapWithCfg(t.Context(), config.Project{
 			Nix: []config.Nix{{}},
 		}, testctx.Skip(skips.Nix))))
 	})
 	t.Run("nix-all-good", func(t *testing.T) {
 		testlib.CheckPath(t, "nix-hash")
 		testlib.SkipIfWindows(t, "nix doesn't work on windows")
-		require.False(t, New().Skip(testctx.NewWithCfg(config.Project{
+		require.False(t, New().Skip(testctx.WrapWithCfg(t.Context(), config.Project{
 			Nix: []config.Nix{{}},
 		})))
 	})
@@ -423,7 +423,7 @@ func TestRunPipe(t *testing.T) {
 	} {
 		t.Run(tt.name, func(t *testing.T) {
 			folder := t.TempDir()
-			ctx := testctx.NewWithCfg(
+			ctx := testctx.WrapWithCfg(t.Context(),
 				config.Project{
 					Dist:        folder,
 					ProjectName: "foo",
@@ -431,8 +431,8 @@ func TestRunPipe(t *testing.T) {
 				},
 				testctx.WithVersion("1.2.1"),
 				testctx.WithCurrentTag("v1.2.1"),
-				testctx.WithSemver(1, 2, 1, "rc1"),
-			)
+				testctx.WithSemver(1, 2, 1, "rc1"))
+
 			createFakeArtifact := func(id, goos, goarch, goamd64, goarm, format string, extra map[string]any) {
 				if goarch != "arm" {
 					goarm = ""

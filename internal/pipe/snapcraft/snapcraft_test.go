@@ -37,11 +37,12 @@ func TestRunPipeMissingInfo(t *testing.T) {
 		pipe.Skip("no summary nor description were provided"): {},
 	} {
 		t.Run(fmt.Sprintf("testing if %v happens", eerr), func(t *testing.T) {
-			ctx := testctx.NewWithCfg(config.Project{
+			ctx := testctx.WrapWithCfg(t.Context(), config.Project{
 				Snapcrafts: []config.Snapcraft{
 					snap,
 				},
 			})
+
 			require.Equal(t, eerr, Pipe{}.Run(ctx))
 		})
 	}
@@ -53,7 +54,7 @@ func TestRunPipe(t *testing.T) {
 	folder := t.TempDir()
 	dist := filepath.Join(folder, "dist")
 	require.NoError(t, os.Mkdir(dist, 0o755))
-	ctx := testctx.NewWithCfg(config.Project{
+	ctx := testctx.WrapWithCfg(t.Context(), config.Project{
 		ProjectName: "mybin",
 		Dist:        dist,
 		Snapcrafts: []config.Snapcraft{
@@ -92,6 +93,7 @@ func TestRunPipe(t *testing.T) {
 			},
 		},
 	}, testctx.WithCurrentTag("v1.2.3"), testctx.WithVersion("1.2.3"), testctx.WithEnv(map[string]string{"SKIP": "true"}))
+
 	addBinaries(t, ctx, "foo", filepath.Join(dist, "foo"))
 	addBinaries(t, ctx, "bar", filepath.Join(dist, "bar"))
 	testlib.AssertSkipped(t, Pipe{}.Run(ctx))
@@ -105,7 +107,7 @@ func TestBadTemplate(t *testing.T) {
 	folder := t.TempDir()
 	dist := filepath.Join(folder, "dist")
 	require.NoError(t, os.Mkdir(dist, 0o755))
-	ctx := testctx.NewWithCfg(config.Project{
+	ctx := testctx.WrapWithCfg(t.Context(), config.Project{
 		ProjectName: "mybin",
 		Dist:        dist,
 		Snapcrafts: []config.Snapcraft{
@@ -117,6 +119,7 @@ func TestBadTemplate(t *testing.T) {
 			},
 		},
 	}, testctx.WithCurrentTag("v1.2.3"), testctx.WithVersion("1.2.3"))
+
 	addBinaries(t, ctx, "foo", filepath.Join(dist, "foo"))
 
 	t.Run("description", func(t *testing.T) {
@@ -138,7 +141,7 @@ func TestRunPipeInvalidNameTemplate(t *testing.T) {
 	folder := t.TempDir()
 	dist := filepath.Join(folder, "dist")
 	require.NoError(t, os.Mkdir(dist, 0o755))
-	ctx := testctx.NewWithCfg(config.Project{
+	ctx := testctx.WrapWithCfg(t.Context(), config.Project{
 		ProjectName: "foo",
 		Dist:        dist,
 		Snapcrafts: []config.Snapcraft{
@@ -151,6 +154,7 @@ func TestRunPipeInvalidNameTemplate(t *testing.T) {
 			},
 		},
 	}, testctx.WithCurrentTag("v1.2.3"), testctx.WithVersion("1.2.3"))
+
 	addBinaries(t, ctx, "foo", dist)
 	testlib.RequireTemplateError(t, Pipe{}.Run(ctx))
 }
@@ -161,7 +165,7 @@ func TestRunPipeWithName(t *testing.T) {
 	folder := t.TempDir()
 	dist := filepath.Join(folder, "dist")
 	require.NoError(t, os.Mkdir(dist, 0o755))
-	ctx := testctx.NewWithCfg(config.Project{
+	ctx := testctx.WrapWithCfg(t.Context(), config.Project{
 		ProjectName: "testprojectname",
 		Dist:        dist,
 		Snapcrafts: []config.Snapcraft{
@@ -177,6 +181,7 @@ func TestRunPipeWithName(t *testing.T) {
 			},
 		},
 	}, testctx.WithCurrentTag("v1.2.3"), testctx.WithVersion("1.2.3"))
+
 	addBinaries(t, ctx, "foo", dist)
 	require.NoError(t, Pipe{}.Run(ctx))
 	yamlFile, err := os.ReadFile(filepath.Join(dist, "foo_amd64", "prime", "meta", "snap.yaml"))
@@ -196,7 +201,7 @@ func TestRunPipeMetadata(t *testing.T) {
 	folder := t.TempDir()
 	dist := filepath.Join(folder, "dist")
 	require.NoError(t, os.Mkdir(dist, 0o755))
-	ctx := testctx.NewWithCfg(config.Project{
+	ctx := testctx.WrapWithCfg(t.Context(), config.Project{
 		ProjectName: "testprojectname",
 		Dist:        dist,
 		Snapcrafts: []config.Snapcraft{
@@ -227,7 +232,7 @@ func TestRunPipeMetadata(t *testing.T) {
 						BusName:      "foo_busname",
 						CommandChain: []string{"foo_cmd_chain"},
 						CommonID:     "foo_common_id",
-						Completer:    "", // Separately tested in TestCompleter
+						Completer:    "",
 						Daemon:       "simple",
 						Desktop:      "foo_desktop",
 						Environment: map[string]any{
@@ -270,6 +275,7 @@ func TestRunPipeMetadata(t *testing.T) {
 			},
 		},
 	}, testctx.WithCurrentTag("v1.2.3"), testctx.WithVersion("1.2.3"))
+
 	addBinaries(t, ctx, "foo", dist)
 	require.NoError(t, Pipe{}.Run(ctx))
 	yamlFile, err := os.ReadFile(filepath.Join(dist, "foo_amd64", "prime", "meta", "snap.yaml"))
@@ -335,7 +341,7 @@ func TestRunPipeMetadata(t *testing.T) {
 
 func TestNoSnapcraftInPath(t *testing.T) {
 	t.Setenv("PATH", "")
-	ctx := testctx.NewWithCfg(config.Project{
+	ctx := testctx.WrapWithCfg(t.Context(), config.Project{
 		Snapcrafts: []config.Snapcraft{
 			{
 				Summary:     "dummy",
@@ -343,6 +349,7 @@ func TestNoSnapcraftInPath(t *testing.T) {
 			},
 		},
 	})
+
 	require.EqualError(t, Pipe{}.Run(ctx), ErrNoSnapcraft.Error())
 }
 
@@ -352,7 +359,7 @@ func TestRunNoArguments(t *testing.T) {
 	folder := t.TempDir()
 	dist := filepath.Join(folder, "dist")
 	require.NoError(t, os.Mkdir(dist, 0o755))
-	ctx := testctx.NewWithCfg(config.Project{
+	ctx := testctx.WrapWithCfg(t.Context(), config.Project{
 		ProjectName: "testprojectname",
 		Dist:        dist,
 		Snapcrafts: []config.Snapcraft{
@@ -371,6 +378,7 @@ func TestRunNoArguments(t *testing.T) {
 			},
 		},
 	}, testctx.WithCurrentTag("v1.2.3"), testctx.WithVersion("1.2.3"))
+
 	addBinaries(t, ctx, "foo", dist)
 	require.NoError(t, Pipe{}.Run(ctx))
 	yamlFile, err := os.ReadFile(filepath.Join(dist, "foo_amd64", "prime", "meta", "snap.yaml"))
@@ -387,7 +395,7 @@ func TestCompleter(t *testing.T) {
 	folder := t.TempDir()
 	dist := filepath.Join(folder, "dist")
 	require.NoError(t, os.Mkdir(dist, 0o755))
-	ctx := testctx.NewWithCfg(config.Project{
+	ctx := testctx.WrapWithCfg(t.Context(), config.Project{
 		ProjectName: "testprojectname",
 		Dist:        dist,
 		Snapcrafts: []config.Snapcraft{
@@ -407,6 +415,7 @@ func TestCompleter(t *testing.T) {
 			},
 		},
 	}, testctx.WithCurrentTag("v1.2.3"), testctx.WithVersion("1.2.3"))
+
 	addBinaries(t, ctx, "foo", dist)
 	addBinaries(t, ctx, "bar", dist)
 	require.NoError(t, Pipe{}.Run(ctx))
@@ -425,7 +434,7 @@ func TestCommand(t *testing.T) {
 	folder := t.TempDir()
 	dist := filepath.Join(folder, "dist")
 	require.NoError(t, os.Mkdir(dist, 0o755))
-	ctx := testctx.NewWithCfg(config.Project{
+	ctx := testctx.WrapWithCfg(t.Context(), config.Project{
 		ProjectName: "testprojectname",
 		Dist:        dist,
 		Snapcrafts: []config.Snapcraft{
@@ -445,6 +454,7 @@ func TestCommand(t *testing.T) {
 			},
 		},
 	}, testctx.WithCurrentTag("v1.2.3"), testctx.WithVersion("1.2.3"))
+
 	addBinaries(t, ctx, "foo", dist)
 	require.NoError(t, Pipe{}.Run(ctx))
 	yamlFile, err := os.ReadFile(filepath.Join(dist, "foo_amd64", "prime", "meta", "snap.yaml"))
@@ -461,7 +471,7 @@ func TestExtraFile(t *testing.T) {
 	folder := t.TempDir()
 	dist := filepath.Join(folder, "dist")
 	require.NoError(t, os.Mkdir(dist, 0o755))
-	ctx := testctx.NewWithCfg(config.Project{
+	ctx := testctx.WrapWithCfg(t.Context(), config.Project{
 		ProjectName: "testprojectname",
 		Dist:        dist,
 		Snapcrafts: []config.Snapcraft{
@@ -484,6 +494,7 @@ func TestExtraFile(t *testing.T) {
 			},
 		},
 	}, testctx.WithCurrentTag("v1.2.3"), testctx.WithVersion("1.2.3"))
+
 	addBinaries(t, ctx, "foo", dist)
 	require.NoError(t, Pipe{}.Run(ctx))
 
@@ -494,13 +505,14 @@ func TestExtraFile(t *testing.T) {
 }
 
 func TestDefault(t *testing.T) {
-	ctx := testctx.NewWithCfg(config.Project{
+	ctx := testctx.WrapWithCfg(t.Context(), config.Project{
 		Snapcrafts: []config.Snapcraft{{
 			Description: "hi",
 			Summary:     "hi",
 			Builds:      []string{"a"},
 		}},
 	})
+
 	require.NoError(t, Pipe{}.Default(ctx))
 	require.Equal(t, defaultNameTemplate, ctx.Config.Snapcrafts[0].NameTemplate)
 	require.Equal(t, []string{"edge", "beta", "candidate", "stable"}, ctx.Config.Snapcrafts[0].ChannelTemplates)
@@ -511,27 +523,29 @@ func TestDefault(t *testing.T) {
 }
 
 func TestDefaultNoDescription(t *testing.T) {
-	ctx := testctx.NewWithCfg(config.Project{
+	ctx := testctx.WrapWithCfg(t.Context(), config.Project{
 		Builds: []config.Build{{ID: "foo"}},
 		Snapcrafts: []config.Snapcraft{{
 			Summary: "hi",
 		}},
 	})
+
 	require.Error(t, Pipe{}.Default(ctx))
 }
 
 func TestDefaultNoSummary(t *testing.T) {
-	ctx := testctx.NewWithCfg(config.Project{
+	ctx := testctx.WrapWithCfg(t.Context(), config.Project{
 		Builds: []config.Build{{ID: "foo"}},
 		Snapcrafts: []config.Snapcraft{{
 			Description: "hi",
 		}},
 	})
+
 	require.Error(t, Pipe{}.Default(ctx))
 }
 
 func TestDefaultGradeTmpl(t *testing.T) {
-	ctx := testctx.NewWithCfg(config.Project{
+	ctx := testctx.WrapWithCfg(t.Context(), config.Project{
 		Env: []string{"Grade=devel"},
 		Snapcrafts: []config.Snapcraft{
 			{
@@ -541,6 +555,7 @@ func TestDefaultGradeTmpl(t *testing.T) {
 			},
 		},
 	})
+
 	require.NoError(t, Pipe{}.Default(ctx))
 	require.Equal(t, defaultNameTemplate, ctx.Config.Snapcrafts[0].NameTemplate)
 	require.Equal(t, []string{"edge", "beta"}, ctx.Config.Snapcrafts[0].ChannelTemplates)
@@ -548,15 +563,16 @@ func TestDefaultGradeTmpl(t *testing.T) {
 }
 
 func TestDefaultGradeTmplError(t *testing.T) {
-	ctx := testctx.NewWithCfg(config.Project{
+	ctx := testctx.WrapWithCfg(t.Context(), config.Project{
 		Builds:     []config.Build{{ID: "foo"}},
 		Snapcrafts: []config.Snapcraft{{Grade: "{{.Env.Grade}}"}},
 	})
+
 	testlib.RequireTemplateError(t, Pipe{}.Default(ctx))
 }
 
 func TestPublish(t *testing.T) {
-	ctx := testctx.New()
+	ctx := testctx.Wrap(t.Context())
 	ctx.Artifacts.Add(&artifact.Artifact{
 		Name:   "mybin",
 		Path:   "nope.snap",
@@ -572,7 +588,7 @@ func TestPublish(t *testing.T) {
 }
 
 func TestDefaultSet(t *testing.T) {
-	ctx := testctx.NewWithCfg(config.Project{
+	ctx := testctx.WrapWithCfg(t.Context(), config.Project{
 		Snapcrafts: []config.Snapcraft{
 			{
 				ID:           "devel",
@@ -590,6 +606,7 @@ func TestDefaultSet(t *testing.T) {
 			},
 		},
 	})
+
 	require.NoError(t, Pipe{}.Default(ctx))
 	require.Equal(t, "foo", ctx.Config.Snapcrafts[0].NameTemplate)
 	require.Equal(t, []string{"edge", "beta"}, ctx.Config.Snapcrafts[0].ChannelTemplates)
@@ -597,7 +614,7 @@ func TestDefaultSet(t *testing.T) {
 }
 
 func Test_processChannelsTemplates(t *testing.T) {
-	ctx := testctx.NewWithCfg(
+	ctx := testctx.WrapWithCfg(t.Context(),
 		config.Project{
 			Builds: []config.Build{
 				{
@@ -620,8 +637,7 @@ func Test_processChannelsTemplates(t *testing.T) {
 		testctx.WithCommit("a1b2c3d4"),
 		testctx.WithCurrentTag("v1.0.0"),
 		testctx.WithSemver(1, 0, 0, ""),
-		testctx.WithVersion("1.0.0"),
-	)
+		testctx.WithVersion("1.0.0"))
 
 	require.NoError(t, Pipe{}.Default(ctx))
 	snap := ctx.Config.Snapcrafts[0]
@@ -687,7 +703,7 @@ func addBinaries(t *testing.T, ctx *context.Context, name, dist string) {
 }
 
 func TestSeveralSnapssWithTheSameID(t *testing.T) {
-	ctx := testctx.NewWithCfg(config.Project{
+	ctx := testctx.WrapWithCfg(t.Context(), config.Project{
 		Snapcrafts: []config.Snapcraft{
 			{
 				ID:          "a",
@@ -701,6 +717,7 @@ func TestSeveralSnapssWithTheSameID(t *testing.T) {
 			},
 		},
 	})
+
 	require.EqualError(t, Pipe{}.Default(ctx), "found 2 snapcrafts with the ID 'a', please fix your config")
 }
 
@@ -726,32 +743,35 @@ func Test_isValidArch(t *testing.T) {
 
 func TestSkip(t *testing.T) {
 	t.Run("skip", func(t *testing.T) {
-		require.True(t, Pipe{}.Skip(testctx.New()))
+		require.True(t, Pipe{}.Skip(testctx.Wrap(t.Context())))
 	})
 	t.Run("skip flag", func(t *testing.T) {
-		ctx := testctx.NewWithCfg(config.Project{
+		ctx := testctx.WrapWithCfg(t.Context(), config.Project{
 			Snapcrafts: []config.Snapcraft{
 				{},
 			},
 		}, testctx.Skip(skips.Snapcraft))
+
 		require.True(t, Pipe{}.Skip(ctx))
 	})
 	t.Run("dont skip", func(t *testing.T) {
-		ctx := testctx.NewWithCfg(config.Project{
+		ctx := testctx.WrapWithCfg(t.Context(), config.Project{
 			Snapcrafts: []config.Snapcraft{
 				{},
 			},
 		})
+
 		require.False(t, Pipe{}.Skip(ctx))
 	})
 }
 
 func TestDependencies(t *testing.T) {
-	ctx := testctx.NewWithCfg(config.Project{
+	ctx := testctx.WrapWithCfg(t.Context(), config.Project{
 		Snapcrafts: []config.Snapcraft{
 			{},
 		},
 	})
+
 	require.Equal(t, []string{"snapcraft"}, Pipe{}.Dependencies(ctx))
 }
 

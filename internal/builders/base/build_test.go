@@ -85,7 +85,7 @@ func TestChTimes(t *testing.T) {
 		build := config.Build{
 			ModTimestamp: "{{.Env.A}}",
 		}
-		tpl := tmpl.New(testctx.New()).SetEnv("A=" + strconv.FormatInt(modTime.Unix(), 10))
+		tpl := tmpl.New(testctx.Wrap(t.Context())).SetEnv("A=" + strconv.FormatInt(modTime.Unix(), 10))
 		require.NoError(t, ChTimes(build, tpl, &artifact.Artifact{
 			Path: name,
 		}))
@@ -99,7 +99,7 @@ func TestChTimes(t *testing.T) {
 		build := config.Build{
 			ModTimestamp: "{{.Env.A}}",
 		}
-		tpl := tmpl.New(testctx.New())
+		tpl := tmpl.New(testctx.Wrap(t.Context()))
 		require.Error(t, ChTimes(build, tpl, &artifact.Artifact{
 			Path: name,
 		}))
@@ -109,7 +109,7 @@ func TestChTimes(t *testing.T) {
 		build := config.Build{
 			ModTimestamp: "invalid",
 		}
-		tpl := tmpl.New(testctx.New())
+		tpl := tmpl.New(testctx.Wrap(t.Context()))
 		require.Error(t, ChTimes(build, tpl, &artifact.Artifact{
 			Path: name,
 		}))
@@ -117,7 +117,7 @@ func TestChTimes(t *testing.T) {
 	t.Run("empty", func(t *testing.T) {
 		name := filepath.Join(t.TempDir(), "file")
 		build := config.Build{}
-		tpl := tmpl.New(testctx.New())
+		tpl := tmpl.New(testctx.Wrap(t.Context()))
 		require.NoError(t, ChTimes(build, tpl, &artifact.Artifact{
 			Path: name,
 		}))
@@ -140,7 +140,7 @@ func TestTemplateEnv(t *testing.T) {
 			},
 		},
 	}
-	tpl := tmpl.New(testctx.New()).SetEnv("FU=foobar").WithArtifact(&artifact.Artifact{
+	tpl := tmpl.New(testctx.Wrap(t.Context())).SetEnv("FU=foobar").WithArtifact(&artifact.Artifact{
 		Goos: "linux",
 	})
 
@@ -154,5 +154,5 @@ func TestTemplateEnv(t *testing.T) {
 }
 
 func TestExec(t *testing.T) {
-	require.NoError(t, Exec(testctx.New(), []string{"echo", "$FOO"}, []string{"FOO=foobar"}, "."))
+	require.NoError(t, Exec(testctx.Wrap(t.Context()), []string{"echo", "$FOO"}, []string{"FOO=foobar"}, "."))
 }

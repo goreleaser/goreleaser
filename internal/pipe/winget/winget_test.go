@@ -28,15 +28,15 @@ func TestString(t *testing.T) {
 
 func TestSkip(t *testing.T) {
 	t.Run("should", func(t *testing.T) {
-		require.True(t, Pipe{}.Skip(testctx.New()))
+		require.True(t, Pipe{}.Skip(testctx.Wrap(t.Context())))
 	})
 	t.Run("skip flag", func(t *testing.T) {
-		require.True(t, Pipe{}.Skip(testctx.NewWithCfg(config.Project{
+		require.True(t, Pipe{}.Skip(testctx.WrapWithCfg(t.Context(), config.Project{
 			Winget: []config.Winget{{}},
 		}, testctx.Skip(skips.Winget))))
 	})
 	t.Run("should not", func(t *testing.T) {
-		require.False(t, Pipe{}.Skip(testctx.NewWithCfg(config.Project{
+		require.False(t, Pipe{}.Skip(testctx.WrapWithCfg(t.Context(), config.Project{
 			Winget: []config.Winget{{}},
 		})))
 	})
@@ -661,7 +661,7 @@ func TestRunPipe(t *testing.T) {
 	} {
 		t.Run(tt.name, func(t *testing.T) {
 			folder := t.TempDir()
-			ctx := testctx.NewWithCfg(
+			ctx := testctx.WrapWithCfg(t.Context(),
 				config.Project{
 					Dist:        folder,
 					ProjectName: "foo",
@@ -670,8 +670,8 @@ func TestRunPipe(t *testing.T) {
 				testctx.WithVersion("1.2.1"),
 				testctx.WithCurrentTag("v1.2.1"),
 				testctx.WithSemver(1, 2, 1, "rc1"),
-				testctx.WithDate(time.Date(2023, 6, 12, 20, 32, 10, 12, time.Local)),
-			)
+				testctx.WithDate(time.Date(2023, 6, 12, 20, 32, 10, 12, time.Local)))
+
 			ctx.ReleaseNotes = "the changelog for this release..."
 			createFakeArtifact := func(id, goos, goarch, goamd64, goarm string, extra map[string]any) {
 				path := filepath.Join(folder, "dist/foo_"+goos+goarch+goamd64+goarm+".zip")
@@ -806,10 +806,11 @@ func TestErrNoArchivesFound(t *testing.T) {
 }
 
 func TestDefault(t *testing.T) {
-	ctx := testctx.NewWithCfg(config.Project{
+	ctx := testctx.WrapWithCfg(t.Context(), config.Project{
 		ProjectName: "foo",
 		Winget:      []config.Winget{{}},
 	})
+
 	require.NoError(t, Pipe{}.Default(ctx))
 	winget := ctx.Config.Winget[0]
 	require.Equal(t, "v1", winget.Goamd64)
@@ -819,7 +820,7 @@ func TestDefault(t *testing.T) {
 
 func TestFormatBinary(t *testing.T) {
 	folder := t.TempDir()
-	ctx := testctx.NewWithCfg(
+	ctx := testctx.WrapWithCfg(t.Context(),
 		config.Project{
 			Dist:        folder,
 			ProjectName: "foo",
@@ -838,8 +839,8 @@ func TestFormatBinary(t *testing.T) {
 		testctx.WithVersion("1.2.1"),
 		testctx.WithCurrentTag("v1.2.1"),
 		testctx.WithSemver(1, 2, 1, "rc1"),
-		testctx.WithDate(time.Date(2023, 6, 12, 20, 32, 10, 12, time.Local)),
-	)
+		testctx.WithDate(time.Date(2023, 6, 12, 20, 32, 10, 12, time.Local)))
+
 	ctx.ReleaseNotes = "the changelog for this release..."
 	createFakeArtifact := func(id, goos, goarch, goamd64 string) {
 		path := filepath.Join(folder, "dist/foo_"+goos+goarch+goamd64+".exe")

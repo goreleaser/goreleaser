@@ -16,7 +16,7 @@ import (
 
 func TestDescribeBody(t *testing.T) {
 	changelog := "feature1: description\nfeature2: other description"
-	ctx := testctx.New()
+	ctx := testctx.Wrap(t.Context())
 	ctx.ReleaseNotes = changelog
 	out, err := describeBody(ctx)
 	require.NoError(t, err)
@@ -26,7 +26,7 @@ func TestDescribeBody(t *testing.T) {
 
 func TestDontEscapeHTML(t *testing.T) {
 	changelog := "<h1>test</h1>"
-	ctx := testctx.New()
+	ctx := testctx.Wrap(t.Context())
 	ctx.ReleaseNotes = changelog
 
 	out, err := describeBody(ctx)
@@ -35,7 +35,7 @@ func TestDontEscapeHTML(t *testing.T) {
 }
 
 func TestDescribeBodyMultipleChecksums(t *testing.T) {
-	ctx := testctx.NewWithCfg(
+	ctx := testctx.WrapWithCfg(t.Context(),
 		config.Project{
 			Release: config.Release{
 				Header: "## Yada yada yada\nsomething\n",
@@ -48,8 +48,7 @@ func TestDescribeBodyMultipleChecksums(t *testing.T) {
 			},
 		},
 		testctx.WithCurrentTag("v1.0"),
-		func(ctx *context.Context) { ctx.ReleaseNotes = "nothing" },
-	)
+		func(ctx *context.Context) { ctx.ReleaseNotes = "nothing" })
 
 	checksums := map[string]string{
 		"bar.zip": "f674623cf1edd0f753e620688cedee4e7c0e837ac1e53c0cbbce132ffe35fd52",
@@ -80,7 +79,7 @@ func TestDescribeBodyMultipleChecksums(t *testing.T) {
 
 func TestDescribeBodyWithHeaderAndFooter(t *testing.T) {
 	changelog := "feature1: description\nfeature2: other description"
-	ctx := testctx.NewWithCfg(
+	ctx := testctx.WrapWithCfg(t.Context(),
 		config.Project{
 			Release: config.Release{
 				Header: "## Yada yada yada\nsomething\n",
@@ -102,8 +101,7 @@ Get GoReleaser Pro at https://goreleaser.com/pro
 			},
 		},
 		testctx.WithCurrentTag("v1.0"),
-		func(ctx *context.Context) { ctx.ReleaseNotes = changelog },
-	)
+		func(ctx *context.Context) { ctx.ReleaseNotes = changelog })
 
 	checksumPath := filepath.Join(t.TempDir(), "checksums.txt")
 	checksumContent := "f674623cf1edd0f753e620688cedee4e7c0e837ac1e53c0cbbce132ffe35fd52  foo.zip"
@@ -127,21 +125,23 @@ Get GoReleaser Pro at https://goreleaser.com/pro
 }
 
 func TestDescribeBodyWithInvalidHeaderTemplate(t *testing.T) {
-	ctx := testctx.NewWithCfg(config.Project{
+	ctx := testctx.WrapWithCfg(t.Context(), config.Project{
 		Release: config.Release{
 			Header: "## {{ .Nop }\n",
 		},
 	})
+
 	_, err := describeBody(ctx)
 	testlib.RequireTemplateError(t, err)
 }
 
 func TestDescribeBodyWithInvalidFooterTemplate(t *testing.T) {
-	ctx := testctx.NewWithCfg(config.Project{
+	ctx := testctx.WrapWithCfg(t.Context(), config.Project{
 		Release: config.Release{
 			Footer: "{{ .Nops }",
 		},
 	})
+
 	_, err := describeBody(ctx)
 	testlib.RequireTemplateError(t, err)
 }

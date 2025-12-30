@@ -116,9 +116,11 @@ func TestFullFormulae(t *testing.T) {
 	data.PostInstall = []string{`touch "/tmp/foo"`, `system "echo", "done"`}
 	data.CustomBlock = []string{"devel do", `  url "https://github.com/caarlos0/test/releases/download/v0.1.3/test_Darwin_x86_64.tar.gz"`, `  sha256 "1633f61598ab0791e213135923624eb342196b3494909c91899bcd0560f84c68"`, "end"}
 	data.Tests = []string{`system "#{bin}/{{.ProjectName}}", "-version"`}
-	formulae, err := doBuildFormula(testctx.NewWithCfg(config.Project{
+	formulae, err := doBuildFormula(testctx.WrapWithCfg(t.Context(), config.Project{
 		ProjectName: "foo",
-	}), data)
+	}),
+
+		data)
 	require.NoError(t, err)
 
 	golden.RequireEqualRb(t, []byte(formulae))
@@ -127,9 +129,11 @@ func TestFullFormulae(t *testing.T) {
 func TestFullFormulaeLinuxOnly(t *testing.T) {
 	data := defaultTemplateData
 	data.MacOSPackages = []releasePackage{}
-	formulae, err := doBuildFormula(testctx.NewWithCfg(config.Project{
+	formulae, err := doBuildFormula(testctx.WrapWithCfg(t.Context(), config.Project{
 		ProjectName: "foo",
-	}), data)
+	}),
+
+		data)
 	require.NoError(t, err)
 
 	golden.RequireEqualRb(t, []byte(formulae))
@@ -138,16 +142,18 @@ func TestFullFormulaeLinuxOnly(t *testing.T) {
 func TestFullFormulaeMacOSOnly(t *testing.T) {
 	data := defaultTemplateData
 	data.LinuxPackages = []releasePackage{}
-	formulae, err := doBuildFormula(testctx.NewWithCfg(config.Project{
+	formulae, err := doBuildFormula(testctx.WrapWithCfg(t.Context(), config.Project{
 		ProjectName: "foo",
-	}), data)
+	}),
+
+		data)
 	require.NoError(t, err)
 
 	golden.RequireEqualRb(t, []byte(formulae))
 }
 
 func TestFormulaeSimple(t *testing.T) {
-	formulae, err := doBuildFormula(testctx.NewWithCfg(config.Project{}), defaultTemplateData)
+	formulae, err := doBuildFormula(testctx.WrapWithCfg(t.Context(), config.Project{}), defaultTemplateData)
 	require.NoError(t, err)
 	assertDefaultTemplateData(t, formulae)
 	require.NotContains(t, formulae, "def caveats")
@@ -320,7 +326,7 @@ func TestFullPipe(t *testing.T) {
 	} {
 		t.Run(name, func(t *testing.T) {
 			folder := t.TempDir()
-			ctx := testctx.NewWithCfg(
+			ctx := testctx.WrapWithCfg(t.Context(),
 				config.Project{
 					Dist:        folder,
 					ProjectName: name,
@@ -350,8 +356,8 @@ func TestFullPipe(t *testing.T) {
 					Env: []string{"FOO=foo_is_bar"},
 				},
 				testctx.WithVersion("1.0.1"),
-				testctx.WithCurrentTag("v1.0.1"),
-			)
+				testctx.WithCurrentTag("v1.0.1"))
+
 			tt.prepare(ctx)
 			ctx.Artifacts.Add(&artifact.Artifact{
 				Name:    "bin.tgz",
@@ -459,7 +465,7 @@ func TestFullPipe(t *testing.T) {
 
 func TestRunPipeNameTemplate(t *testing.T) {
 	folder := t.TempDir()
-	ctx := testctx.NewWithCfg(
+	ctx := testctx.WrapWithCfg(t.Context(),
 		config.Project{
 			Dist:        folder,
 			ProjectName: "foo",
@@ -482,8 +488,8 @@ func TestRunPipeNameTemplate(t *testing.T) {
 			Env: []string{"FOO_BAR=is_bar"},
 		},
 		testctx.WithVersion("1.0.1"),
-		testctx.WithCurrentTag("v1.0.1"),
-	)
+		testctx.WithCurrentTag("v1.0.1"))
+
 	path := filepath.Join(folder, "bin.tar.gz")
 	ctx.Artifacts.Add(&artifact.Artifact{
 		Name:    "bin.tar.gz",
@@ -516,7 +522,7 @@ func TestRunPipeNameTemplate(t *testing.T) {
 
 func TestRunPipeMultipleBrewsWithSkip(t *testing.T) {
 	folder := t.TempDir()
-	ctx := testctx.NewWithCfg(
+	ctx := testctx.WrapWithCfg(t.Context(),
 		config.Project{
 			Dist:        folder,
 			ProjectName: "foo",
@@ -575,8 +581,8 @@ func TestRunPipeMultipleBrewsWithSkip(t *testing.T) {
 			},
 		},
 		testctx.WithVersion("1.0.1"),
-		testctx.WithCurrentTag("v1.0.1"),
-	)
+		testctx.WithCurrentTag("v1.0.1"))
+
 	path := filepath.Join(folder, "bin.tar.gz")
 	ctx.Artifacts.Add(&artifact.Artifact{
 		Name:    "bin.tar.gz",
@@ -625,7 +631,7 @@ func TestRunPipeForMultipleAmd64Versions(t *testing.T) {
 	} {
 		t.Run(name, func(t *testing.T) {
 			folder := t.TempDir()
-			ctx := testctx.NewWithCfg(
+			ctx := testctx.WrapWithCfg(t.Context(),
 				config.Project{
 					Dist:        folder,
 					ProjectName: name,
@@ -655,8 +661,8 @@ func TestRunPipeForMultipleAmd64Versions(t *testing.T) {
 				},
 				testctx.GitHubTokenType,
 				testctx.WithVersion("1.0.1"),
-				testctx.WithCurrentTag("v1.0.1"),
-			)
+				testctx.WithCurrentTag("v1.0.1"))
+
 			fn(ctx)
 			for _, a := range []struct {
 				name    string
@@ -747,7 +753,7 @@ func TestRunPipeForMultipleArmVersions(t *testing.T) {
 	} {
 		t.Run(name, func(t *testing.T) {
 			folder := t.TempDir()
-			ctx := testctx.NewWithCfg(
+			ctx := testctx.WrapWithCfg(t.Context(),
 				config.Project{
 					Dist:        folder,
 					ProjectName: name,
@@ -783,8 +789,8 @@ func TestRunPipeForMultipleArmVersions(t *testing.T) {
 				},
 				testctx.GitHubTokenType,
 				testctx.WithVersion("1.0.1"),
-				testctx.WithCurrentTag("v1.0.1"),
-			)
+				testctx.WithCurrentTag("v1.0.1"))
+
 			fn(ctx)
 			for _, a := range []struct {
 				name   string
@@ -856,7 +862,7 @@ func TestRunPipeForMultipleArmVersions(t *testing.T) {
 }
 
 func TestRunPipeNoBuilds(t *testing.T) {
-	ctx := testctx.NewWithCfg(config.Project{
+	ctx := testctx.WrapWithCfg(t.Context(), config.Project{
 		Brews: []config.Homebrew{
 			{
 				Repository: config.RepoRef{
@@ -867,6 +873,7 @@ func TestRunPipeNoBuilds(t *testing.T) {
 			},
 		},
 	}, testctx.GitHubTokenType)
+
 	client := client.NewMock()
 	require.NoError(t, Pipe{}.Default(ctx))
 	require.EqualError(t, runAll(ctx, client), ErrNoArchivesFound{
@@ -878,7 +885,7 @@ func TestRunPipeNoBuilds(t *testing.T) {
 }
 
 func TestRunPipeMultipleArchivesSameOsBuild(t *testing.T) {
-	ctx := testctx.NewWithCfg(config.Project{
+	ctx := testctx.WrapWithCfg(t.Context(), config.Project{
 		Brews: []config.Homebrew{
 			{
 				Repository: config.RepoRef{
@@ -1024,7 +1031,7 @@ func TestRunPipeMultipleArchivesSameOsBuild(t *testing.T) {
 
 func TestRunPipeBinaryRelease(t *testing.T) {
 	folder := t.TempDir()
-	ctx := testctx.NewWithCfg(
+	ctx := testctx.WrapWithCfg(t.Context(),
 		config.Project{
 			Dist:        folder,
 			ProjectName: "foo",
@@ -1042,8 +1049,8 @@ func TestRunPipeBinaryRelease(t *testing.T) {
 			},
 		},
 		testctx.WithVersion("1.2.1"),
-		testctx.WithCurrentTag("v1.2.1"),
-	)
+		testctx.WithCurrentTag("v1.2.1"))
+
 	path := filepath.Join(folder, "dist/foo_darwin_all/foo")
 	ctx.Artifacts.Add(&artifact.Artifact{
 		Name:   "foo_macos",
@@ -1072,7 +1079,7 @@ func TestRunPipeBinaryRelease(t *testing.T) {
 
 func TestRunPipePullRequest(t *testing.T) {
 	folder := t.TempDir()
-	ctx := testctx.NewWithCfg(
+	ctx := testctx.WrapWithCfg(t.Context(),
 		config.Project{
 			Dist:        folder,
 			ProjectName: "foo",
@@ -1094,8 +1101,8 @@ func TestRunPipePullRequest(t *testing.T) {
 			},
 		},
 		testctx.WithVersion("1.2.1"),
-		testctx.WithCurrentTag("v1.2.1"),
-	)
+		testctx.WithCurrentTag("v1.2.1"))
+
 	path := filepath.Join(folder, "dist/foo_darwin_all/foo")
 	ctx.Artifacts.Add(&artifact.Artifact{
 		Name:   "foo_macos",
@@ -1126,7 +1133,7 @@ func TestRunPipePullRequest(t *testing.T) {
 
 func TestRunPipeNoUpload(t *testing.T) {
 	folder := t.TempDir()
-	ctx := testctx.NewWithCfg(config.Project{
+	ctx := testctx.WrapWithCfg(t.Context(), config.Project{
 		Dist:        folder,
 		ProjectName: "foo",
 		Release:     config.Release{},
@@ -1141,6 +1148,7 @@ func TestRunPipeNoUpload(t *testing.T) {
 		},
 		Env: []string{"SKIP_UPLOAD=true"},
 	}, testctx.WithCurrentTag("v1.0.1"), testctx.GitHubTokenType)
+
 	path := filepath.Join(folder, "whatever.tar.gz")
 	f, err := os.Create(path)
 	require.NoError(t, err)
@@ -1185,7 +1193,7 @@ func TestRunPipeNoUpload(t *testing.T) {
 
 func TestRunEmptyTokenType(t *testing.T) {
 	folder := t.TempDir()
-	ctx := testctx.NewWithCfg(config.Project{
+	ctx := testctx.WrapWithCfg(t.Context(), config.Project{
 		Dist:        folder,
 		ProjectName: "foo",
 		Release:     config.Release{},
@@ -1199,6 +1207,7 @@ func TestRunEmptyTokenType(t *testing.T) {
 			},
 		},
 	}, testctx.WithCurrentTag("v1.0.0"))
+
 	path := filepath.Join(folder, "whatever.tar.gz")
 	f, err := os.Create(path)
 	require.NoError(t, err)
@@ -1242,7 +1251,7 @@ func TestDefault(t *testing.T) {
 			Draft: true,
 		},
 	}
-	ctx := testctx.NewWithCfg(config.Project{
+	ctx := testctx.WrapWithCfg(t.Context(), config.Project{
 		ProjectName: "myproject",
 		Brews: []config.Homebrew{
 			{
@@ -1250,6 +1259,7 @@ func TestDefault(t *testing.T) {
 			},
 		},
 	}, testctx.GitHubTokenType)
+
 	require.NoError(t, Pipe{}.Default(ctx))
 	require.Equal(t, ctx.Config.ProjectName, ctx.Config.Brews[0].Name)
 	require.NotEmpty(t, ctx.Config.Brews[0].CommitAuthor.Name)
@@ -1269,28 +1279,30 @@ func TestGHFolder(t *testing.T) {
 
 func TestSkip(t *testing.T) {
 	t.Run("skip", func(t *testing.T) {
-		require.True(t, Pipe{}.Skip(testctx.New()))
+		require.True(t, Pipe{}.Skip(testctx.Wrap(t.Context())))
 	})
 	t.Run("skip flag", func(t *testing.T) {
-		ctx := testctx.NewWithCfg(config.Project{
+		ctx := testctx.WrapWithCfg(t.Context(), config.Project{
 			Brews: []config.Homebrew{
 				{},
 			},
 		}, testctx.Skip(skips.Homebrew))
+
 		require.True(t, Pipe{}.Skip(ctx))
 	})
 	t.Run("dont skip", func(t *testing.T) {
-		ctx := testctx.NewWithCfg(config.Project{
+		ctx := testctx.WrapWithCfg(t.Context(), config.Project{
 			Brews: []config.Homebrew{
 				{},
 			},
 		})
+
 		require.False(t, Pipe{}.Skip(ctx))
 	})
 }
 
 func TestRunSkipNoName(t *testing.T) {
-	ctx := testctx.NewWithCfg(config.Project{
+	ctx := testctx.WrapWithCfg(t.Context(), config.Project{
 		Brews: []config.Homebrew{{}},
 	})
 
@@ -1301,7 +1313,7 @@ func TestRunSkipNoName(t *testing.T) {
 func TestInstalls(t *testing.T) {
 	t.Run("provided", func(t *testing.T) {
 		install, err := installs(
-			testctx.New(),
+			testctx.Wrap(t.Context()),
 			config.Homebrew{Install: "bin.install \"foo\"\nbin.install \"bar\""},
 			&artifact.Artifact{},
 		)
@@ -1314,7 +1326,7 @@ func TestInstalls(t *testing.T) {
 
 	t.Run("from archives", func(t *testing.T) {
 		install, err := installs(
-			testctx.New(),
+			testctx.Wrap(t.Context()),
 			config.Homebrew{},
 			&artifact.Artifact{
 				Type: artifact.UploadableArchive,
@@ -1332,7 +1344,7 @@ func TestInstalls(t *testing.T) {
 
 	t.Run("from binary", func(t *testing.T) {
 		install, err := installs(
-			testctx.New(),
+			testctx.Wrap(t.Context()),
 			config.Homebrew{},
 			&artifact.Artifact{
 				Name: "foo_macos",
@@ -1350,7 +1362,7 @@ func TestInstalls(t *testing.T) {
 
 	t.Run("from template", func(t *testing.T) {
 		install, err := installs(
-			testctx.New(),
+			testctx.Wrap(t.Context()),
 			config.Homebrew{
 				Install: `bin.install "foo_{{.Os}}" => "foo"`,
 			},
@@ -1369,7 +1381,7 @@ func TestInstalls(t *testing.T) {
 
 func TestRunPipeUniversalBinary(t *testing.T) {
 	folder := t.TempDir()
-	ctx := testctx.NewWithCfg(
+	ctx := testctx.WrapWithCfg(t.Context(),
 		config.Project{
 			Dist:        folder,
 			ProjectName: "unibin",
@@ -1390,8 +1402,8 @@ func TestRunPipeUniversalBinary(t *testing.T) {
 			},
 		},
 		testctx.WithCurrentTag("v1.0.1"),
-		testctx.WithVersion("1.0.1"),
-	)
+		testctx.WithVersion("1.0.1"))
+
 	path := filepath.Join(folder, "bin.tar.gz")
 	ctx.Artifacts.Add(&artifact.Artifact{
 		Name:   "bin.tar.gz",
@@ -1424,7 +1436,7 @@ func TestRunPipeUniversalBinary(t *testing.T) {
 
 func TestRunPipeUniversalBinaryNotReplacing(t *testing.T) {
 	folder := t.TempDir()
-	ctx := testctx.NewWithCfg(
+	ctx := testctx.WrapWithCfg(t.Context(),
 		config.Project{
 			Dist:        folder,
 			ProjectName: "unibin",
@@ -1447,8 +1459,8 @@ func TestRunPipeUniversalBinaryNotReplacing(t *testing.T) {
 		},
 
 		testctx.WithCurrentTag("v1.0.1"),
-		testctx.WithVersion("1.0.1"),
-	)
+		testctx.WithVersion("1.0.1"))
+
 	path := filepath.Join(folder, "bin.tar.gz")
 	ctx.Artifacts.Add(&artifact.Artifact{
 		Name:    "bin_amd64.tar.gz",

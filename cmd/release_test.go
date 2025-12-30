@@ -58,7 +58,7 @@ func TestReleaseBrokenProject(t *testing.T) {
 func TestReleaseFlags(t *testing.T) {
 	setup := func(tb testing.TB, opts releaseOpts) *context.Context {
 		tb.Helper()
-		ctx := testctx.New()
+		ctx := testctx.Wrap(t.Context())
 		require.NoError(t, setupReleaseContext(ctx, opts))
 		return ctx
 	}
@@ -77,11 +77,12 @@ func TestReleaseFlags(t *testing.T) {
 		})
 
 		t.Run("set in config", func(t *testing.T) {
-			ctx := testctx.NewWithCfg(config.Project{
+			ctx := testctx.WrapWithCfg(t.Context(), config.Project{
 				Release: config.Release{
 					Draft: true,
 				},
 			})
+
 			require.NoError(t, setupReleaseContext(ctx, releaseOpts{}))
 			require.True(t, ctx.Config.Release.Draft)
 		})

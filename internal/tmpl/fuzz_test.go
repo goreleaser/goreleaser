@@ -12,7 +12,7 @@ import (
 
 func FuzzTemplateApplier(f *testing.F) {
 	f.Fuzz(func(t *testing.T, data string) {
-		ctx := testctx.NewWithCfg(config.Project{ProjectName: "test"})
+		ctx := testctx.WrapWithCfg(t.Context(), config.Project{ProjectName: "test"})
 		tpl := New(ctx)
 		_, err := tpl.Apply(data)
 		if err == nil {
@@ -24,7 +24,7 @@ func FuzzTemplateApplier(f *testing.F) {
 
 func FuzzTemplateWithArtifact(f *testing.F) {
 	f.Fuzz(func(t *testing.T, data string) {
-		ctx := testctx.NewWithCfg(config.Project{ProjectName: "test"})
+		ctx := testctx.WrapWithCfg(t.Context(), config.Project{ProjectName: "test"})
 		tpl := New(ctx).WithArtifact(&artifact.Artifact{
 			Name:   "test",
 			Path:   "fake-filename.bin",
@@ -43,7 +43,7 @@ func FuzzTemplateWithArtifact(f *testing.F) {
 
 func FuzzTemplateBool(f *testing.F) {
 	f.Fuzz(func(t *testing.T, data string) {
-		ctx := testctx.New()
+		ctx := testctx.Wrap(t.Context())
 		tpl := New(ctx)
 		_, err := tpl.Apply(data)
 		if err == nil {
@@ -55,7 +55,7 @@ func FuzzTemplateBool(f *testing.F) {
 
 func FuzzTemplateSlice(f *testing.F) {
 	f.Fuzz(func(t *testing.T, data string) {
-		ctx := testctx.New()
+		ctx := testctx.Wrap(t.Context())
 		tpl := New(ctx)
 		_, err := tpl.Slice([]string{data})
 		if err == nil {
@@ -67,7 +67,7 @@ func FuzzTemplateSlice(f *testing.F) {
 
 func FuzzTemplateWithBuildOptions(f *testing.F) {
 	f.Fuzz(func(t *testing.T, data string) {
-		ctx := testctx.New()
+		ctx := testctx.Wrap(t.Context())
 		target := &buildTarget{
 			Target: "linux_amd64",
 			Goos:   "linux",

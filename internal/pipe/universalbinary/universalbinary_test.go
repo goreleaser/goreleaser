@@ -25,12 +25,13 @@ func TestDescription(t *testing.T) {
 
 func TestDefault(t *testing.T) {
 	t.Run("empty", func(t *testing.T) {
-		ctx := testctx.NewWithCfg(config.Project{
+		ctx := testctx.WrapWithCfg(t.Context(), config.Project{
 			ProjectName: "proj",
 			UniversalBinaries: []config.UniversalBinary{
 				{},
 			},
 		})
+
 		require.NoError(t, Pipe{}.Default(ctx))
 		require.Equal(t, config.UniversalBinary{
 			ID:           "proj",
@@ -40,12 +41,13 @@ func TestDefault(t *testing.T) {
 	})
 
 	t.Run("given ids", func(t *testing.T) {
-		ctx := testctx.NewWithCfg(config.Project{
+		ctx := testctx.WrapWithCfg(t.Context(), config.Project{
 			ProjectName: "proj",
 			UniversalBinaries: []config.UniversalBinary{
 				{IDs: []string{"foo"}},
 			},
 		})
+
 		require.NoError(t, Pipe{}.Default(ctx))
 		require.Equal(t, config.UniversalBinary{
 			ID:           "proj",
@@ -55,12 +57,13 @@ func TestDefault(t *testing.T) {
 	})
 
 	t.Run("given id", func(t *testing.T) {
-		ctx := testctx.NewWithCfg(config.Project{
+		ctx := testctx.WrapWithCfg(t.Context(), config.Project{
 			ProjectName: "proj",
 			UniversalBinaries: []config.UniversalBinary{
 				{ID: "foo"},
 			},
 		})
+
 		require.NoError(t, Pipe{}.Default(ctx))
 		require.Equal(t, config.UniversalBinary{
 			ID:           "foo",
@@ -70,12 +73,13 @@ func TestDefault(t *testing.T) {
 	})
 
 	t.Run("given name", func(t *testing.T) {
-		ctx := testctx.NewWithCfg(config.Project{
+		ctx := testctx.WrapWithCfg(t.Context(), config.Project{
 			ProjectName: "proj",
 			UniversalBinaries: []config.UniversalBinary{
 				{NameTemplate: "foo"},
 			},
 		})
+
 		require.NoError(t, Pipe{}.Default(ctx))
 		require.Equal(t, config.UniversalBinary{
 			ID:           "proj",
@@ -85,26 +89,28 @@ func TestDefault(t *testing.T) {
 	})
 
 	t.Run("duplicated ids", func(t *testing.T) {
-		ctx := testctx.NewWithCfg(config.Project{
+		ctx := testctx.WrapWithCfg(t.Context(), config.Project{
 			ProjectName: "proj",
 			UniversalBinaries: []config.UniversalBinary{
 				{ID: "foo"},
 				{ID: "foo"},
 			},
 		})
+
 		require.EqualError(t, Pipe{}.Default(ctx), `found 2 universal_binaries with the ID 'foo', please fix your config`)
 	})
 }
 
 func TestSkip(t *testing.T) {
 	t.Run("skip", func(t *testing.T) {
-		require.True(t, Pipe{}.Skip(testctx.New()))
+		require.True(t, Pipe{}.Skip(testctx.Wrap(t.Context())))
 	})
 
 	t.Run("dont skip", func(t *testing.T) {
-		ctx := testctx.NewWithCfg(config.Project{
+		ctx := testctx.WrapWithCfg(t.Context(), config.Project{
 			UniversalBinaries: []config.UniversalBinary{{}},
 		})
+
 		require.False(t, Pipe{}.Skip(ctx))
 	})
 }
@@ -131,9 +137,9 @@ func TestRun(t *testing.T) {
 			},
 		},
 	}
-	ctx1 := testctx.NewWithCfg(cfg)
+	ctx1 := testctx.WrapWithCfg(t.Context(), cfg)
 
-	ctx2 := testctx.NewWithCfg(config.Project{
+	ctx2 := testctx.WrapWithCfg(t.Context(), config.Project{
 		Dist: dist,
 		UniversalBinaries: []config.UniversalBinary{
 			{
@@ -144,7 +150,7 @@ func TestRun(t *testing.T) {
 		},
 	})
 
-	ctx3 := testctx.NewWithCfg(config.Project{
+	ctx3 := testctx.WrapWithCfg(t.Context(), config.Project{
 		Dist: dist,
 		UniversalBinaries: []config.UniversalBinary{
 			{
@@ -155,7 +161,7 @@ func TestRun(t *testing.T) {
 		},
 	})
 
-	ctx4 := testctx.NewWithCfg(config.Project{
+	ctx4 := testctx.WrapWithCfg(t.Context(), config.Project{
 		Dist: dist,
 		UniversalBinaries: []config.UniversalBinary{
 			{
@@ -166,7 +172,7 @@ func TestRun(t *testing.T) {
 		},
 	})
 
-	ctx5 := testctx.NewWithCfg(config.Project{
+	ctx5 := testctx.WrapWithCfg(t.Context(), config.Project{
 		Dist: dist,
 		UniversalBinaries: []config.UniversalBinary{
 			{
@@ -186,7 +192,7 @@ func TestRun(t *testing.T) {
 		},
 	})
 
-	ctx6 := testctx.NewWithCfg(config.Project{
+	ctx6 := testctx.WrapWithCfg(t.Context(), config.Project{
 		Dist: dist,
 		UniversalBinaries: []config.UniversalBinary{
 			{
@@ -198,7 +204,7 @@ func TestRun(t *testing.T) {
 	})
 
 	modTime := time.Now().AddDate(-1, 0, 0).Round(time.Second).UTC()
-	ctx7 := testctx.NewWithCfg(config.Project{
+	ctx7 := testctx.WrapWithCfg(t.Context(), config.Project{
 		Dist: dist,
 		UniversalBinaries: []config.UniversalBinary{
 			{
@@ -287,7 +293,7 @@ func TestRun(t *testing.T) {
 	})
 
 	t.Run("bad template", func(t *testing.T) {
-		testlib.RequireTemplateError(t, Pipe{}.Run(testctx.NewWithCfg(config.Project{
+		testlib.RequireTemplateError(t, Pipe{}.Run(testctx.WrapWithCfg(t.Context(), config.Project{
 			UniversalBinaries: []config.UniversalBinary{
 				{
 					NameTemplate: "{{.Name}",

@@ -90,7 +90,7 @@ func TestBuild(t *testing.T) {
 	t.Chdir(filepath.Join(folder, "proj"))
 
 	modTime := time.Now().AddDate(-1, 0, 0).Round(time.Second).UTC()
-	ctx := testctx.NewWithCfg(config.Project{
+	ctx := testctx.WrapWithCfg(t.Context(), config.Project{
 		Dist:        filepath.Join(folder, "dist"),
 		ProjectName: "proj",
 		Builds: []config.Build{
@@ -184,7 +184,7 @@ func TestBuildSpecificModes(t *testing.T) {
 	t.Chdir(filepath.Join(folder, "proj"))
 
 	modTime := time.Now().AddDate(-1, 0, 0).Round(time.Second).UTC()
-	ctx := testctx.NewWithCfg(config.Project{
+	ctx := testctx.WrapWithCfg(t.Context(), config.Project{
 		Dist:        filepath.Join(folder, "dist"),
 		ProjectName: "proj",
 		Builds: []config.Build{

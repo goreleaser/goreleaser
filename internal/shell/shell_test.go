@@ -15,7 +15,7 @@ import (
 func TestRunCommand(t *testing.T) {
 	t.Run("simple", func(t *testing.T) {
 		require.NoError(t, shell.Run(
-			testctx.New(),
+			testctx.Wrap(t.Context()),
 			"",
 			strings.Fields(testlib.Echo("oi")),
 			[]string{},
@@ -25,7 +25,7 @@ func TestRunCommand(t *testing.T) {
 
 	t.Run("empty command", func(t *testing.T) {
 		require.NoError(t, shell.Run(
-			testctx.New(),
+			testctx.Wrap(t.Context()),
 			"",
 			[]string{},
 			[]string{},
@@ -35,7 +35,7 @@ func TestRunCommand(t *testing.T) {
 
 	t.Run("cmd failed", func(t *testing.T) {
 		require.Error(t, shell.Run(
-			testctx.New(),
+			testctx.Wrap(t.Context()),
 			"",
 			strings.Fields(testlib.Exit(1)),
 			[]string{},
@@ -46,7 +46,7 @@ func TestRunCommand(t *testing.T) {
 	t.Run("cmd with output", func(t *testing.T) {
 		testlib.SkipIfWindows(t, "what would be a similar behavior in windows?")
 		err := shell.Run(
-			testctx.New(),
+			testctx.Wrap(t.Context()),
 			".",
 			[]string{"sh", "-c", `echo something; exit 1`},
 			[]string{},
@@ -64,7 +64,7 @@ func TestRunCommand(t *testing.T) {
 		touch, err := exec.LookPath("touch")
 		require.NoError(t, err)
 		err = shell.Run(
-			testctx.New(),
+			testctx.Wrap(t.Context()),
 			dir,
 			[]string{"sh", "-c", touch + " $FOO"},
 			[]string{"FOO=bar"},

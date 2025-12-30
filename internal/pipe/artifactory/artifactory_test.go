@@ -167,7 +167,7 @@ func TestRunPipe_ModeBinary(t *testing.T) {
 		  }`)
 	})
 
-	ctx := testctx.NewWithCfg(config.Project{
+	ctx := testctx.WrapWithCfg(t.Context(), config.Project{
 		ProjectName: "mybin",
 		Dist:        dist,
 		Artifactories: []config.Upload{
@@ -190,6 +190,7 @@ func TestRunPipe_ModeBinary(t *testing.T) {
 			"ARTIFACTORY_PRODUCTION-EU_SECRET=productionuser-apikey",
 		},
 	})
+
 	for _, goos := range []string{"linux", "darwin"} {
 		ctx.Artifacts.Add(&artifact.Artifact{
 			Name:   "mybin",
@@ -216,7 +217,7 @@ func TestRunPipe_ModeArchive(t *testing.T) {
 	require.NoError(t, err)
 	require.NoError(t, debfile.Close())
 
-	ctx := testctx.NewWithCfg(config.Project{
+	ctx := testctx.WrapWithCfg(t.Context(), config.Project{
 		ProjectName: "goreleaser",
 		Dist:        folder,
 		Artifactories: []config.Upload{
@@ -230,6 +231,7 @@ func TestRunPipe_ModeArchive(t *testing.T) {
 		Archives: []config.Archive{{}},
 		Env:      []string{"ARTIFACTORY_PRODUCTION_SECRET=deployuser-secret"},
 	}, testctx.WithVersion("1.0.0"))
+
 	ctx.Artifacts.Add(&artifact.Artifact{
 		Type: artifact.UploadableArchive,
 		Name: "bin.tar.gz",
@@ -311,7 +313,7 @@ func TestRunPipe_ArtifactoryDown(t *testing.T) {
 	require.NoError(t, err)
 	require.NoError(t, tarfile.Close())
 
-	ctx := testctx.NewWithCfg(config.Project{
+	ctx := testctx.WrapWithCfg(t.Context(), config.Project{
 		ProjectName: "goreleaser",
 		Dist:        folder,
 		Artifactories: []config.Upload{
@@ -324,6 +326,7 @@ func TestRunPipe_ArtifactoryDown(t *testing.T) {
 		},
 		Env: []string{"ARTIFACTORY_PRODUCTION_SECRET=deployuser-secret"},
 	}, testctx.WithVersion("2.0.0"))
+
 	ctx.Artifacts.Add(&artifact.Artifact{
 		Type: artifact.UploadableArchive,
 		Name: "bin.tar.gz",
@@ -343,14 +346,14 @@ func TestRunPipe_TargetTemplateError(t *testing.T) {
 	dist := filepath.Join(folder, "dist")
 	binPath := filepath.Join(dist, "mybin", "mybin")
 
-	ctx := testctx.NewWithCfg(config.Project{
+	ctx := testctx.WrapWithCfg(t.Context(), config.Project{
 		ProjectName: "mybin",
 		Dist:        dist,
 		Artifactories: []config.Upload{
 			{
 				Name: "production",
 				Mode: "binary",
-				// This template is not correct and should fail
+
 				Target:   "http://storage.company.com/example-repo-local/{{.Name}",
 				Username: "deployuser",
 			},
@@ -358,6 +361,7 @@ func TestRunPipe_TargetTemplateError(t *testing.T) {
 		Archives: []config.Archive{{}},
 		Env:      []string{"ARTIFACTORY_PRODUCTION_SECRET=deployuser-secret"},
 	})
+
 	ctx.Artifacts.Add(&artifact.Artifact{
 		Name:   "mybin",
 		Path:   binPath,
@@ -398,7 +402,7 @@ func TestRunPipe_BadCredentials(t *testing.T) {
 		  }`)
 	})
 
-	ctx := testctx.NewWithCfg(config.Project{
+	ctx := testctx.WrapWithCfg(t.Context(), config.Project{
 		ProjectName: "mybin",
 		Dist:        dist,
 		Artifactories: []config.Upload{
@@ -412,6 +416,7 @@ func TestRunPipe_BadCredentials(t *testing.T) {
 		Archives: []config.Archive{{}},
 		Env:      []string{"ARTIFACTORY_PRODUCTION_SECRET=deployuser-secret"},
 	})
+
 	ctx.Artifacts.Add(&artifact.Artifact{
 		Name:   "mybin",
 		Path:   binPath,
@@ -448,7 +453,7 @@ func TestRunPipe_UnparsableErrorResponse(t *testing.T) {
 		fmt.Fprint(w, `<body><h1>error</h1></body>`)
 	})
 
-	ctx := testctx.NewWithCfg(config.Project{
+	ctx := testctx.WrapWithCfg(t.Context(), config.Project{
 		ProjectName: "mybin",
 		Dist:        dist,
 		Artifactories: []config.Upload{
@@ -462,6 +467,7 @@ func TestRunPipe_UnparsableErrorResponse(t *testing.T) {
 		Env:      []string{"ARTIFACTORY_PRODUCTION_SECRET=deployuser-secret"},
 		Archives: []config.Archive{{}},
 	})
+
 	ctx.Artifacts.Add(&artifact.Artifact{
 		Name:   "mybin",
 		Path:   binPath,
@@ -475,7 +481,7 @@ func TestRunPipe_UnparsableErrorResponse(t *testing.T) {
 }
 
 func TestRunPipe_FileNotFound(t *testing.T) {
-	ctx := testctx.NewWithCfg(config.Project{
+	ctx := testctx.WrapWithCfg(t.Context(), config.Project{
 		ProjectName: "mybin",
 		Dist:        "archivetest/dist",
 		Artifactories: []config.Upload{
@@ -489,6 +495,7 @@ func TestRunPipe_FileNotFound(t *testing.T) {
 		Env:      []string{"ARTIFACTORY_PRODUCTION_SECRET=deployuser-secret"},
 		Archives: []config.Archive{{}},
 	})
+
 	ctx.Artifacts.Add(&artifact.Artifact{
 		Name:   "mybin",
 		Path:   "archivetest/dist/mybin/mybin",
@@ -510,7 +517,7 @@ func TestRunPipe_UnparsableTarget(t *testing.T) {
 	d1 := []byte("hello\ngo\n")
 	require.NoError(t, os.WriteFile(binPath, d1, 0o666))
 
-	ctx := testctx.NewWithCfg(config.Project{
+	ctx := testctx.WrapWithCfg(t.Context(), config.Project{
 		ProjectName: "mybin",
 		Dist:        dist,
 		Artifactories: []config.Upload{
@@ -524,6 +531,7 @@ func TestRunPipe_UnparsableTarget(t *testing.T) {
 		Archives: []config.Archive{{}},
 		Env:      []string{"ARTIFACTORY_PRODUCTION_SECRET=deployuser-secret"},
 	})
+
 	ctx.Artifacts.Add(&artifact.Artifact{
 		Name:   "mybin",
 		Path:   binPath,
@@ -543,7 +551,7 @@ func TestRunPipe_DirUpload(t *testing.T) {
 	require.NoError(t, os.Mkdir(filepath.Join(dist, "mybin"), 0o755))
 	binPath := filepath.Join(dist, "mybin")
 
-	ctx := testctx.NewWithCfg(config.Project{
+	ctx := testctx.WrapWithCfg(t.Context(), config.Project{
 		ProjectName: "mybin",
 		Dist:        dist,
 		Artifactories: []config.Upload{
@@ -557,6 +565,7 @@ func TestRunPipe_DirUpload(t *testing.T) {
 		Archives: []config.Archive{{}},
 		Env:      []string{"ARTIFACTORY_PRODUCTION_SECRET=deployuser-secret"},
 	})
+
 	ctx.Artifacts.Add(&artifact.Artifact{
 		Name:   "mybin",
 		Path:   filepath.Dir(binPath),
@@ -574,7 +583,7 @@ func TestDescription(t *testing.T) {
 }
 
 func TestArtifactoriesWithoutTarget(t *testing.T) {
-	ctx := testctx.NewWithCfg(config.Project{
+	ctx := testctx.WrapWithCfg(t.Context(), config.Project{
 		Artifactories: []config.Upload{
 			{
 				Name:     "production",
@@ -583,12 +592,13 @@ func TestArtifactoriesWithoutTarget(t *testing.T) {
 		},
 		Env: []string{"ARTIFACTORY_PRODUCTION_SECRET=deployuser-secret"},
 	})
+
 	require.NoError(t, Pipe{}.Default(ctx))
 	testlib.AssertSkipped(t, Pipe{}.Publish(ctx))
 }
 
 func TestArtifactoriesWithoutUsername(t *testing.T) {
-	ctx := testctx.NewWithCfg(config.Project{
+	ctx := testctx.WrapWithCfg(t.Context(), config.Project{
 		Artifactories: []config.Upload{
 			{
 				Name:   "production",
@@ -597,12 +607,13 @@ func TestArtifactoriesWithoutUsername(t *testing.T) {
 		},
 		Env: []string{"ARTIFACTORY_PRODUCTION_SECRET=deployuser-secret"},
 	})
+
 	require.NoError(t, Pipe{}.Default(ctx))
 	testlib.AssertSkipped(t, Pipe{}.Publish(ctx))
 }
 
 func TestArtifactoriesWithoutName(t *testing.T) {
-	ctx := testctx.NewWithCfg(config.Project{
+	ctx := testctx.WrapWithCfg(t.Context(), config.Project{
 		Artifactories: []config.Upload{
 			{
 				Username: "deployuser",
@@ -610,12 +621,13 @@ func TestArtifactoriesWithoutName(t *testing.T) {
 			},
 		},
 	})
+
 	require.NoError(t, Pipe{}.Default(ctx))
 	testlib.AssertSkipped(t, Pipe{}.Publish(ctx))
 }
 
 func TestArtifactoriesWithoutSecret(t *testing.T) {
-	ctx := testctx.NewWithCfg(config.Project{
+	ctx := testctx.WrapWithCfg(t.Context(), config.Project{
 		Artifactories: []config.Upload{
 			{
 				Name:     "production",
@@ -624,12 +636,13 @@ func TestArtifactoriesWithoutSecret(t *testing.T) {
 			},
 		},
 	})
+
 	require.NoError(t, Pipe{}.Default(ctx))
 	testlib.AssertSkipped(t, Pipe{}.Publish(ctx))
 }
 
 func TestArtifactoriesWithInvalidMode(t *testing.T) {
-	ctx := testctx.NewWithCfg(config.Project{
+	ctx := testctx.WrapWithCfg(t.Context(), config.Project{
 		Artifactories: []config.Upload{
 			{
 				Name:     "production",
@@ -640,12 +653,13 @@ func TestArtifactoriesWithInvalidMode(t *testing.T) {
 		},
 		Env: []string{"ARTIFACTORY_PRODUCTION_SECRET=deployuser-secret"},
 	})
+
 	require.NoError(t, Pipe{}.Default(ctx))
 	require.Error(t, Pipe{}.Publish(ctx))
 }
 
 func TestDefault(t *testing.T) {
-	ctx := testctx.NewWithCfg(config.Project{
+	ctx := testctx.WrapWithCfg(t.Context(), config.Project{
 		Artifactories: []config.Upload{
 			{
 				Name:     "production",
@@ -662,15 +676,16 @@ func TestDefault(t *testing.T) {
 }
 
 func TestDefaultNoArtifactories(t *testing.T) {
-	ctx := testctx.NewWithCfg(config.Project{
+	ctx := testctx.WrapWithCfg(t.Context(), config.Project{
 		Artifactories: []config.Upload{},
 	})
+
 	require.NoError(t, Pipe{}.Default(ctx))
 	require.Empty(t, ctx.Config.Artifactories)
 }
 
 func TestDefaultSet(t *testing.T) {
-	ctx := testctx.NewWithCfg(config.Project{
+	ctx := testctx.WrapWithCfg(t.Context(), config.Project{
 		Artifactories: []config.Upload{
 			{
 				Mode:           "custom",
@@ -678,6 +693,7 @@ func TestDefaultSet(t *testing.T) {
 			},
 		},
 	})
+
 	require.NoError(t, Pipe{}.Default(ctx))
 	require.Len(t, ctx.Config.Artifactories, 1)
 	artifactory := ctx.Config.Artifactories[0]
@@ -687,13 +703,14 @@ func TestDefaultSet(t *testing.T) {
 
 func TestSkip(t *testing.T) {
 	t.Run("skip", func(t *testing.T) {
-		require.True(t, Pipe{}.Skip(testctx.New()))
+		require.True(t, Pipe{}.Skip(testctx.Wrap(t.Context())))
 	})
 
 	t.Run("dont skip", func(t *testing.T) {
-		ctx := testctx.NewWithCfg(config.Project{
+		ctx := testctx.WrapWithCfg(t.Context(), config.Project{
 			Artifactories: []config.Upload{{}},
 		})
+
 		require.False(t, Pipe{}.Skip(ctx))
 	})
 }

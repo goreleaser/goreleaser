@@ -135,17 +135,3 @@ func WrapWithCfg(parent stdctx.Context, c config.Project, opts ...Opt) *context.
 func Wrap(parent stdctx.Context, opts ...Opt) *context.Context {
 	return WrapWithCfg(parent, config.Project{}, opts...)
 }
-
-// NewWithCfg creates a new context.
-//
-// Deprecated: use [WrapWithCfg] instead.
-func NewWithCfg(c config.Project, opts ...Opt) *context.Context {
-	return WrapWithCfg(stdctx.Background(), c, opts...)
-}
-
-// New creates a new context with default configuration.
-//
-// Deprecated: use [Wrap] instead.
-func New(opts ...Opt) *context.Context {
-	return NewWithCfg(config.Project{}, opts...)
-}

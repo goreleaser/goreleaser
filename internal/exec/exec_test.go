@@ -17,7 +17,7 @@ import (
 )
 
 func TestExecute(t *testing.T) {
-	ctx := testctx.NewWithCfg(config.Project{
+	ctx := testctx.WrapWithCfg(t.Context(), config.Project{
 		ProjectName: "blah",
 		Env: []string{
 			"TEST_A_SECRET=x",

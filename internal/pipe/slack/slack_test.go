@@ -19,19 +19,20 @@ func TestStringer(t *testing.T) {
 }
 
 func TestDefault(t *testing.T) {
-	ctx := testctx.New()
+	ctx := testctx.Wrap(t.Context())
 	require.NoError(t, Pipe{}.Default(ctx))
 	require.Equal(t, defaultMessageTemplate, ctx.Config.Announce.Slack.MessageTemplate)
 }
 
 func TestAnnounceInvalidTemplate(t *testing.T) {
-	ctx := testctx.NewWithCfg(config.Project{
+	ctx := testctx.WrapWithCfg(t.Context(), config.Project{
 		Announce: config.Announce{
 			Slack: config.Slack{
 				MessageTemplate: "{{ .Foo }",
 			},
 		},
 	})
+
 	testlib.RequireTemplateError(t, Pipe{}.Announce(ctx))
 }
 
@@ -40,20 +41,21 @@ func TestAnnounceWithQuotes(t *testing.T) {
 	t.Setenv("USER", "bot-mc-botyson")
 
 	t.Run("with a plain message", func(t *testing.T) {
-		ctx := testctx.NewWithCfg(config.Project{
+		ctx := testctx.WrapWithCfg(t.Context(), config.Project{
 			Announce: config.Announce{
 				Slack: config.Slack{
 					MessageTemplate: "{{ envOrDefault \"USER\" \"\" }}",
 				},
 			},
 		})
+
 		require.NoError(t, Pipe{}.Announce(ctx))
 	})
 
 	t.Run("with rich text", func(t *testing.T) {
 		var project config.Project
 		require.NoError(t, yaml.Unmarshal(goodRichSlackConfWithEnv(), &project))
-		ctx := testctx.NewWithCfg(project)
+		ctx := testctx.WrapWithCfg(t.Context(), project)
 		blocks, attachments, err := parseAdvancedFormatting(ctx)
 		require.NoError(t, err)
 		assert.Len(t, blocks.BlockSet, 2)
@@ -72,30 +74,32 @@ func TestAnnounceWithQuotes(t *testing.T) {
 }
 
 func TestAnnounceMissingEnv(t *testing.T) {
-	ctx := testctx.NewWithCfg(config.Project{
+	ctx := testctx.WrapWithCfg(t.Context(), config.Project{
 		Announce: config.Announce{
 			Slack: config.Slack{},
 		},
 	})
+
 	require.NoError(t, Pipe{}.Default(ctx))
 	require.EqualError(t, Pipe{}.Announce(ctx), `slack: env: environment variable "SLACK_WEBHOOK" should not be empty`)
 }
 
 func TestSkip(t *testing.T) {
 	t.Run("skip", func(t *testing.T) {
-		skip, err := Pipe{}.Skip(testctx.New())
+		skip, err := Pipe{}.Skip(testctx.Wrap(t.Context()))
 		require.NoError(t, err)
 		require.True(t, skip)
 	})
 
 	t.Run("dont skip", func(t *testing.T) {
-		ctx := testctx.NewWithCfg(config.Project{
+		ctx := testctx.WrapWithCfg(t.Context(), config.Project{
 			Announce: config.Announce{
 				Slack: config.Slack{
 					Enabled: "true",
 				},
 			},
 		})
+
 		skip, err := Pipe{}.Skip(ctx)
 		require.NoError(t, err)
 		require.False(t, skip)
@@ -111,7 +115,7 @@ func TestParseRichText(t *testing.T) {
 		t.Parallel()
 		var project config.Project
 		require.NoError(t, yaml.Unmarshal(goodRichSlackConf(), &project))
-		ctx := testctx.NewWithCfg(project, testctx.WithVersion(testVersion))
+		ctx := testctx.WrapWithCfg(t.Context(), project, testctx.WithVersion(testVersion))
 		blocks, attachments, err := parseAdvancedFormatting(ctx)
 		require.NoError(t, err)
 		require.Len(t, blocks.BlockSet, 4)
@@ -122,7 +126,7 @@ func TestParseRichText(t *testing.T) {
 		t.Parallel()
 		var project config.Project
 		require.NoError(t, yaml.Unmarshal(badBlocksSlackConf(), &project))
-		ctx := testctx.NewWithCfg(project, testctx.WithVersion(testVersion))
+		ctx := testctx.WrapWithCfg(t.Context(), project, testctx.WithVersion(testVersion))
 		_, _, err := parseAdvancedFormatting(ctx)
 		require.ErrorContains(t, err, "json")
 	})
@@ -131,7 +135,7 @@ func TestParseRichText(t *testing.T) {
 		t.Parallel()
 		var project config.Project
 		require.NoError(t, yaml.Unmarshal(badAttachmentsSlackConf(), &project))
-		ctx := testctx.NewWithCfg(project, testctx.WithVersion(testVersion))
+		ctx := testctx.WrapWithCfg(t.Context(), project, testctx.WithVersion(testVersion))
 		_, _, err := parseAdvancedFormatting(ctx)
 		require.ErrorContains(t, err, "json")
 	})
@@ -144,14 +148,14 @@ func TestRichText(t *testing.T) {
 		t.SkipNow() // requires a valid webhook for integration testing
 		var project config.Project
 		require.NoError(t, yaml.Unmarshal(goodRichSlackConf(), &project))
-		ctx := testctx.NewWithCfg(project, testctx.WithVersion(testVersion))
+		ctx := testctx.WrapWithCfg(t.Context(), project, testctx.WithVersion(testVersion))
 		require.NoError(t, Pipe{}.Announce(ctx))
 	})
 
 	t.Run("slack config with bad blocks", func(t *testing.T) {
 		var project config.Project
 		require.NoError(t, yaml.Unmarshal(badBlocksSlackConf(), &project))
-		ctx := testctx.NewWithCfg(project, testctx.WithVersion(testVersion))
+		ctx := testctx.WrapWithCfg(t.Context(), project, testctx.WithVersion(testVersion))
 		err := Pipe{}.Announce(ctx)
 		require.ErrorContains(t, err, "json")
 	})
@@ -162,14 +166,14 @@ func TestUnmarshal(t *testing.T) {
 
 	t.Run("happy unmarshal", func(t *testing.T) {
 		t.Parallel()
-		ctx := testctx.New(testctx.WithVersion(testVersion))
+		ctx := testctx.Wrap(t.Context(), testctx.WithVersion(testVersion))
 		var blocks slack.Blocks
 		require.NoError(t, unmarshal(ctx, []any{map[string]any{"type": "divider"}}, &blocks))
 	})
 
 	t.Run("unmarshal fails on MarshalJSON", func(t *testing.T) {
 		t.Parallel()
-		ctx := testctx.New(testctx.WithVersion(testVersion))
+		ctx := testctx.Wrap(t.Context(), testctx.WithVersion(testVersion))
 		var blocks slack.Blocks
 		require.Error(t, unmarshal(ctx, []any{map[string]any{"type": func() {}}}, &blocks))
 	})
@@ -178,7 +182,7 @@ func TestUnmarshal(t *testing.T) {
 		t.Parallel()
 		var project config.Project
 		require.NoError(t, yaml.Unmarshal(goodTemplateSlackConf(), &project))
-		ctx := testctx.NewWithCfg(project, testctx.WithVersion(testVersion))
+		ctx := testctx.WrapWithCfg(t.Context(), project, testctx.WithVersion(testVersion))
 		var blocks slack.Blocks
 		require.NoError(t, unmarshal(ctx, ctx.Config.Announce.Slack.Blocks, &blocks))
 		require.Len(t, blocks.BlockSet, 1)
@@ -191,7 +195,7 @@ func TestUnmarshal(t *testing.T) {
 		t.Parallel()
 		var project config.Project
 		require.NoError(t, yaml.Unmarshal(badTemplateSlackConf(), &project))
-		ctx := testctx.NewWithCfg(project, testctx.WithVersion(testVersion))
+		ctx := testctx.WrapWithCfg(t.Context(), project, testctx.WithVersion(testVersion))
 		var blocks slack.Blocks
 		require.Error(t, unmarshal(ctx, ctx.Config.Announce.Slack.Blocks, &blocks))
 	})

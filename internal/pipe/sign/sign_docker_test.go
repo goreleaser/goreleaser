@@ -20,9 +20,10 @@ func TestDockerSignDescription(t *testing.T) {
 }
 
 func TestDockerSignDefault(t *testing.T) {
-	ctx := testctx.NewWithCfg(config.Project{
+	ctx := testctx.WrapWithCfg(t.Context(), config.Project{
 		DockerSigns: []config.Sign{{}},
 	})
+
 	err := DockerPipe{}.Default(ctx)
 	require.NoError(t, err)
 	require.Equal(t, "cosign", ctx.Config.DockerSigns[0].Cmd)
@@ -31,21 +32,23 @@ func TestDockerSignDefault(t *testing.T) {
 }
 
 func TestDockerSignDisabled(t *testing.T) {
-	ctx := testctx.NewWithCfg(config.Project{
+	ctx := testctx.WrapWithCfg(t.Context(), config.Project{
 		DockerSigns: []config.Sign{
 			{Artifacts: "none"},
 		},
 	})
+
 	err := DockerPipe{}.Publish(ctx)
 	require.EqualError(t, err, "artifact signing is disabled")
 }
 
 func TestDockerSignInvalidArtifacts(t *testing.T) {
-	ctx := testctx.NewWithCfg(config.Project{
+	ctx := testctx.WrapWithCfg(t.Context(), config.Project{
 		DockerSigns: []config.Sign{
 			{Artifacts: "foo"},
 		},
 	})
+
 	err := DockerPipe{}.Publish(ctx)
 	require.EqualError(t, err, "invalid list of artifacts to sign: foo")
 }
@@ -222,9 +225,10 @@ func TestDockerSignArtifacts(t *testing.T) {
 
 	testWithArtifacts := func(tb testing.TB, cfg testcase, arts []artifact.Artifact) {
 		tb.Helper()
-		ctx := testctx.NewWithCfg(config.Project{
+		ctx := testctx.WrapWithCfg(t.Context(), config.Project{
 			DockerSigns: cfg.Signs,
 		})
+
 		wd, err := os.Getwd()
 		require.NoError(tb, err)
 		tmp := testlib.Mktmp(tb)
@@ -304,30 +308,32 @@ func TestDockerSignArtifacts(t *testing.T) {
 
 func TestDockerSkip(t *testing.T) {
 	t.Run("skip", func(t *testing.T) {
-		require.True(t, DockerPipe{}.Skip(testctx.New()))
+		require.True(t, DockerPipe{}.Skip(testctx.Wrap(t.Context())))
 	})
 
 	t.Run("skip sign", func(t *testing.T) {
-		ctx := testctx.New(testctx.Skip(skips.Sign))
+		ctx := testctx.Wrap(t.Context(), testctx.Skip(skips.Sign))
 		require.True(t, DockerPipe{}.Skip(ctx))
 	})
 
 	t.Run("dont skip", func(t *testing.T) {
-		ctx := testctx.NewWithCfg(config.Project{
+		ctx := testctx.WrapWithCfg(t.Context(), config.Project{
 			DockerSigns: []config.Sign{
 				{},
 			},
 		})
+
 		require.False(t, DockerPipe{}.Skip(ctx))
 	})
 }
 
 func TestDockerDependencies(t *testing.T) {
-	ctx := testctx.NewWithCfg(config.Project{
+	ctx := testctx.WrapWithCfg(t.Context(), config.Project{
 		DockerSigns: []config.Sign{
 			{Cmd: "cosign"},
 			{Cmd: "gpg2"},
 		},
 	})
+
 	require.Equal(t, []string{"cosign", "gpg2"}, DockerPipe{}.Dependencies(ctx))
 }

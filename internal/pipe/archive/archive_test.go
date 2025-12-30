@@ -70,7 +70,7 @@ func TestRunPipe(t *testing.T) {
 			f, err := os.Create(filepath.Join(folder, "foo", "bar", "foobar", "blah.txt"))
 			require.NoError(t, err)
 			require.NoError(t, f.Close())
-			ctx := testctx.NewWithCfg(
+			ctx := testctx.WrapWithCfg(t.Context(),
 				config.Project{
 					Dist:        dist,
 					ProjectName: "foobar",
@@ -101,8 +101,8 @@ func TestRunPipe(t *testing.T) {
 							},
 						},
 					},
-				},
-			)
+				})
+
 			darwinUniversalBinary := &artifact.Artifact{
 				Goos:   "darwin",
 				Goarch: "all",
@@ -289,7 +289,7 @@ func TestRunPipeDifferentBinaryCount(t *testing.T) {
 		createFakeBinary(t, dist, arch, "bin/mybin")
 	}
 	createFakeBinary(t, dist, "darwinamd64", "bin/foobar")
-	ctx := testctx.NewWithCfg(config.Project{
+	ctx := testctx.WrapWithCfg(t.Context(), config.Project{
 		Dist:        dist,
 		ProjectName: "foobar",
 		Archives: []config.Archive{
@@ -301,6 +301,7 @@ func TestRunPipeDifferentBinaryCount(t *testing.T) {
 			},
 		},
 	})
+
 	darwinBuild := &artifact.Artifact{
 		Goos:   "darwin",
 		Goarch: "amd64",
@@ -356,13 +357,14 @@ func TestRunPipeNoBinaries(t *testing.T) {
 	folder := testlib.Mktmp(t)
 	dist := filepath.Join(folder, "dist")
 	require.NoError(t, os.Mkdir(dist, 0o755))
-	ctx := testctx.NewWithCfg(config.Project{
+	ctx := testctx.WrapWithCfg(t.Context(), config.Project{
 		Dist:        dist,
 		ProjectName: "foobar",
 		Archives: []config.Archive{{
 			Builds: []string{"not-default"},
 		}},
 	}, testctx.WithVersion("0.0.1"), testctx.WithCurrentTag("v1.0.0"))
+
 	ctx.Artifacts.Add(&artifact.Artifact{
 		Goos:   "linux",
 		Goarch: "amd64",
@@ -435,7 +437,7 @@ func TestRunPipeBinary(t *testing.T) {
 	f, err = os.Create(filepath.Join(folder, "README.md"))
 	require.NoError(t, err)
 	require.NoError(t, f.Close())
-	ctx := testctx.NewWithCfg(
+	ctx := testctx.WrapWithCfg(t.Context(),
 		config.Project{
 			Dist: dist,
 			Archives: []config.Archive{
@@ -447,8 +449,8 @@ func TestRunPipeBinary(t *testing.T) {
 			},
 		},
 		testctx.WithVersion("0.0.1"),
-		testctx.WithCurrentTag("v0.0.1"),
-	)
+		testctx.WithCurrentTag("v0.0.1"))
+
 	ctx.Artifacts.Add(&artifact.Artifact{
 		Goos:   "darwin",
 		Goarch: "amd64",
@@ -525,7 +527,7 @@ func TestRunPipeBinary(t *testing.T) {
 }
 
 func TestRunPipeDistRemoved(t *testing.T) {
-	ctx := testctx.NewWithCfg(
+	ctx := testctx.WrapWithCfg(t.Context(),
 		config.Project{
 			Dist: "/tmp/path/to/nope",
 			Archives: []config.Archive{
@@ -536,8 +538,8 @@ func TestRunPipeDistRemoved(t *testing.T) {
 				},
 			},
 		},
-		testctx.WithCurrentTag("v0.0.1"),
-	)
+		testctx.WithCurrentTag("v0.0.1"))
+
 	ctx.Artifacts.Add(&artifact.Artifact{
 		Goos:   "windows",
 		Goarch: "amd64",
@@ -562,7 +564,7 @@ func TestRunPipeInvalidGlob(t *testing.T) {
 	f, err := os.Create(filepath.Join(dist, "darwinamd64", "mybin"))
 	require.NoError(t, err)
 	require.NoError(t, f.Close())
-	ctx := testctx.NewWithCfg(
+	ctx := testctx.WrapWithCfg(t.Context(),
 		config.Project{
 			Dist: dist,
 			Archives: []config.Archive{
@@ -576,8 +578,8 @@ func TestRunPipeInvalidGlob(t *testing.T) {
 				},
 			},
 		},
-		testctx.WithCurrentTag("v0.0.1"),
-	)
+		testctx.WithCurrentTag("v0.0.1"))
+
 	ctx.Git.CurrentTag = "v0.0.1"
 	ctx.Artifacts.Add(&artifact.Artifact{
 		Goos:   "darwin",
@@ -601,7 +603,7 @@ func TestRunPipeNameTemplateWithSpace(t *testing.T) {
 	f, err := os.Create(filepath.Join(dist, "darwinamd64", "mybin"))
 	require.NoError(t, err)
 	require.NoError(t, f.Close())
-	ctx := testctx.NewWithCfg(
+	ctx := testctx.WrapWithCfg(t.Context(),
 		config.Project{
 			Dist: dist,
 			Archives: []config.Archive{
@@ -617,8 +619,8 @@ func TestRunPipeNameTemplateWithSpace(t *testing.T) {
 				},
 			},
 		},
-		testctx.WithCurrentTag("v0.0.1"),
-	)
+		testctx.WithCurrentTag("v0.0.1"))
+
 	ctx.Artifacts.Add(&artifact.Artifact{
 		Goos:   "darwin",
 		Goarch: "amd64",
@@ -647,7 +649,7 @@ func TestRunPipeInvalidNameTemplate(t *testing.T) {
 	f, err := os.Create(filepath.Join(dist, "darwinamd64", "mybin"))
 	require.NoError(t, err)
 	require.NoError(t, f.Close())
-	ctx := testctx.NewWithCfg(
+	ctx := testctx.WrapWithCfg(t.Context(),
 		config.Project{
 			Dist: dist,
 			Archives: []config.Archive{
@@ -658,8 +660,8 @@ func TestRunPipeInvalidNameTemplate(t *testing.T) {
 				},
 			},
 		},
-		testctx.WithCurrentTag("v0.0.1"),
-	)
+		testctx.WithCurrentTag("v0.0.1"))
+
 	ctx.Artifacts.Add(&artifact.Artifact{
 		Goos:   "darwin",
 		Goarch: "amd64",
@@ -682,7 +684,7 @@ func TestRunPipeInvalidFilesNameTemplate(t *testing.T) {
 	f, err := os.Create(filepath.Join(dist, "darwinamd64", "mybin"))
 	require.NoError(t, err)
 	require.NoError(t, f.Close())
-	ctx := testctx.NewWithCfg(
+	ctx := testctx.WrapWithCfg(t.Context(),
 		config.Project{
 			Dist: dist,
 			Archives: []config.Archive{
@@ -696,8 +698,8 @@ func TestRunPipeInvalidFilesNameTemplate(t *testing.T) {
 				},
 			},
 		},
-		testctx.WithCurrentTag("v0.0.1"),
-	)
+		testctx.WithCurrentTag("v0.0.1"))
+
 	ctx.Artifacts.Add(&artifact.Artifact{
 		Goos:   "darwin",
 		Goarch: "amd64",
@@ -720,7 +722,7 @@ func TestRunPipeInvalidWrapInDirectoryTemplate(t *testing.T) {
 	f, err := os.Create(filepath.Join(dist, "darwinamd64", "mybin"))
 	require.NoError(t, err)
 	require.NoError(t, f.Close())
-	ctx := testctx.NewWithCfg(
+	ctx := testctx.WrapWithCfg(t.Context(),
 		config.Project{
 			Dist: dist,
 			Archives: []config.Archive{
@@ -732,8 +734,8 @@ func TestRunPipeInvalidWrapInDirectoryTemplate(t *testing.T) {
 				},
 			},
 		},
-		testctx.WithCurrentTag("v0.0.1"),
-	)
+		testctx.WithCurrentTag("v0.0.1"))
+
 	ctx.Artifacts.Add(&artifact.Artifact{
 		Goos:   "darwin",
 		Goarch: "amd64",
@@ -759,7 +761,7 @@ func TestRunPipeWrap(t *testing.T) {
 	f, err = os.Create(filepath.Join(folder, "README.md"))
 	require.NoError(t, err)
 	require.NoError(t, f.Close())
-	ctx := testctx.NewWithCfg(
+	ctx := testctx.WrapWithCfg(t.Context(),
 		config.Project{
 			Dist: dist,
 			Archives: []config.Archive{
@@ -774,8 +776,8 @@ func TestRunPipeWrap(t *testing.T) {
 				},
 			},
 		},
-		testctx.WithCurrentTag("v0.0.1"),
-	)
+		testctx.WithCurrentTag("v0.0.1"))
+
 	ctx.Artifacts.Add(&artifact.Artifact{
 		Goos:   "darwin",
 		Goarch: "amd64",
@@ -801,9 +803,10 @@ func TestRunPipeWrap(t *testing.T) {
 }
 
 func TestDefault(t *testing.T) {
-	ctx := testctx.NewWithCfg(config.Project{
+	ctx := testctx.WrapWithCfg(t.Context(), config.Project{
 		Archives: []config.Archive{},
 	})
+
 	require.NoError(t, Pipe{}.Default(ctx))
 	require.NotEmpty(t, ctx.Config.Archives[0].NameTemplate)
 	require.Equal(t, "tar.gz", ctx.Config.Archives[0].Formats[0])
@@ -812,7 +815,7 @@ func TestDefault(t *testing.T) {
 }
 
 func TestDefaultSet(t *testing.T) {
-	ctx := testctx.NewWithCfg(config.Project{
+	ctx := testctx.WrapWithCfg(t.Context(), config.Project{
 		Archives: []config.Archive{
 			{
 				Builds:       []string{"default"},
@@ -824,6 +827,7 @@ func TestDefaultSet(t *testing.T) {
 			},
 		},
 	})
+
 	require.NoError(t, Pipe{}.Default(ctx))
 	require.Equal(t, "foo", ctx.Config.Archives[0].NameTemplate)
 	require.Equal(t, "zip", ctx.Config.Archives[0].Formats[0])
@@ -831,43 +835,46 @@ func TestDefaultSet(t *testing.T) {
 }
 
 func TestDefaultMixFormats(t *testing.T) {
-	ctx := testctx.NewWithCfg(config.Project{
+	ctx := testctx.WrapWithCfg(t.Context(), config.Project{
 		Archives: []config.Archive{
 			{
 				Formats: []string{"tar.gz", "binary"},
 			},
 		},
 	})
+
 	require.NoError(t, Pipe{}.Default(ctx))
 	require.Equal(t, defaultBinaryNameTemplate, ctx.Config.Archives[0].NameTemplate)
 }
 
 func TestDefaultNoFiles(t *testing.T) {
-	ctx := testctx.NewWithCfg(config.Project{
+	ctx := testctx.WrapWithCfg(t.Context(), config.Project{
 		Archives: []config.Archive{
 			{
 				Formats: []string{"tar.gz"},
 			},
 		},
 	})
+
 	require.NoError(t, Pipe{}.Default(ctx))
 	require.Equal(t, defaultNameTemplate, ctx.Config.Archives[0].NameTemplate)
 }
 
 func TestDefaultFormatBinary(t *testing.T) {
-	ctx := testctx.NewWithCfg(config.Project{
+	ctx := testctx.WrapWithCfg(t.Context(), config.Project{
 		Archives: []config.Archive{
 			{
 				Formats: []string{"binary"},
 			},
 		},
 	})
+
 	require.NoError(t, Pipe{}.Default(ctx))
 	require.Equal(t, defaultBinaryNameTemplate, ctx.Config.Archives[0].NameTemplate)
 }
 
 func TestFormatFor(t *testing.T) {
-	ctx := testctx.NewWithCfg(config.Project{
+	ctx := testctx.WrapWithCfg(t.Context(), config.Project{
 		Archives: []config.Archive{
 			{
 				Builds:  []string{"default"},
@@ -885,6 +892,7 @@ func TestFormatFor(t *testing.T) {
 			},
 		},
 	})
+
 	require.Equal(t, []string{"zip", "7z"}, packageFormats(ctx.Config.Archives[0], "windows"))
 	require.Equal(t, []string{"tar.gz", "tar.xz"}, packageFormats(ctx.Config.Archives[0], "linux"))
 	require.Equal(t, []string{"none"}, packageFormats(ctx.Config.Archives[0], "darwin"))
@@ -905,7 +913,7 @@ func TestBinaryOverride(t *testing.T) {
 	f, err = os.Create(filepath.Join(folder, "README.md"))
 	require.NoError(t, err)
 	require.NoError(t, f.Close())
-	ctx := testctx.NewWithCfg(
+	ctx := testctx.WrapWithCfg(t.Context(),
 		config.Project{
 			Dist:        dist,
 			ProjectName: "foobar",
@@ -926,8 +934,8 @@ func TestBinaryOverride(t *testing.T) {
 				},
 			},
 		},
-		testctx.WithCurrentTag("v0.0.1"),
-	)
+		testctx.WithCurrentTag("v0.0.1"))
+
 	ctx.Artifacts.Add(&artifact.Artifact{
 		Goos:   "darwin",
 		Goarch: "amd64",
@@ -984,7 +992,7 @@ func TestRunPipeSameArchiveFilename(t *testing.T) {
 	f, err = os.Create(filepath.Join(dist, "windowsamd64", "mybin.exe"))
 	require.NoError(t, err)
 	require.NoError(t, f.Close())
-	ctx := testctx.NewWithCfg(
+	ctx := testctx.WrapWithCfg(t.Context(),
 		config.Project{
 			Dist:        dist,
 			ProjectName: "foobar",
@@ -999,8 +1007,8 @@ func TestRunPipeSameArchiveFilename(t *testing.T) {
 					Formats: []string{"tar.gz"},
 				},
 			},
-		},
-	)
+		})
+
 	ctx.Artifacts.Add(&artifact.Artifact{
 		Goos:   "darwin",
 		Goarch: "amd64",
@@ -1077,7 +1085,7 @@ func TestWrapInDirectory(t *testing.T) {
 }
 
 func TestSeveralArchivesWithTheSameID(t *testing.T) {
-	ctx := testctx.NewWithCfg(config.Project{
+	ctx := testctx.WrapWithCfg(t.Context(), config.Project{
 		Archives: []config.Archive{
 			{
 				ID: "a",
@@ -1087,6 +1095,7 @@ func TestSeveralArchivesWithTheSameID(t *testing.T) {
 			},
 		},
 	})
+
 	require.EqualError(t, Pipe{}.Default(ctx), "found 2 archives with the ID 'a', please fix your config")
 }
 
@@ -1097,7 +1106,7 @@ func TestArchive_globbing(t *testing.T) {
 		require.NoError(t, err)
 		t.Cleanup(func() { require.NoError(t, bin.Close()) })
 		dist := t.TempDir()
-		ctx := testctx.NewWithCfg(config.Project{
+		ctx := testctx.WrapWithCfg(t.Context(), config.Project{
 			Dist: dist,
 			Archives: []config.Archive{
 				{
@@ -1175,7 +1184,7 @@ func TestArchive_globbing(t *testing.T) {
 }
 
 func TestInvalidFormat(t *testing.T) {
-	ctx := testctx.NewWithCfg(config.Project{
+	ctx := testctx.WrapWithCfg(t.Context(), config.Project{
 		Dist: t.TempDir(),
 		Archives: []config.Archive{
 			{
@@ -1186,11 +1195,12 @@ func TestInvalidFormat(t *testing.T) {
 			},
 		},
 	})
+
 	require.EqualError(t, Pipe{}.Run(ctx), "invalid archive format: 7z")
 }
 
 func TestIssue3803(t *testing.T) {
-	ctx := testctx.NewWithCfg(config.Project{
+	ctx := testctx.WrapWithCfg(t.Context(), config.Project{
 		Dist: t.TempDir(),
 		Archives: []config.Archive{
 			{
@@ -1213,13 +1223,14 @@ func TestIssue3803(t *testing.T) {
 			},
 		},
 	})
+
 	require.NoError(t, Pipe{}.Run(ctx))
 	archives := ctx.Artifacts.List()
 	require.Len(t, archives, 2)
 }
 
 func TestExtraFormatWhenOverride(t *testing.T) {
-	ctx := testctx.NewWithCfg(config.Project{
+	ctx := testctx.WrapWithCfg(t.Context(), config.Project{
 		Dist: t.TempDir(),
 		Archives: []config.Archive{
 			{
@@ -1236,6 +1247,7 @@ func TestExtraFormatWhenOverride(t *testing.T) {
 			},
 		},
 	})
+
 	windowsBuild := &artifact.Artifact{
 		Goos:    "windows",
 		Goarch:  "amd64",
@@ -1261,11 +1273,11 @@ func TestExtraFormatWhenOverride(t *testing.T) {
 
 func TestSkip(t *testing.T) {
 	t.Run("skip", func(t *testing.T) {
-		ctx := testctx.New(testctx.Skip(skips.Archive))
+		ctx := testctx.Wrap(t.Context(), testctx.Skip(skips.Archive))
 		require.True(t, Pipe{}.Skip(ctx))
 	})
 	t.Run("dont skip", func(t *testing.T) {
-		require.False(t, Pipe{}.Skip(testctx.New()))
+		require.False(t, Pipe{}.Skip(testctx.Wrap(t.Context())))
 	})
 }
 
@@ -1275,7 +1287,7 @@ func TestFormatOverrideWithNoFormatOrNoGoos(t *testing.T) {
 	require.NoError(t, os.Mkdir(dist, 0o755))
 	createFakeBinary(t, dist, "windowsamd64", "mybin.exe")
 
-	ctx := testctx.NewWithCfg(
+	ctx := testctx.WrapWithCfg(t.Context(),
 		config.Project{
 			Dist:        dist,
 			ProjectName: "foobar",
@@ -1291,8 +1303,7 @@ func TestFormatOverrideWithNoFormatOrNoGoos(t *testing.T) {
 			},
 		},
 		testctx.WithVersion("0.0.1"),
-		testctx.WithCurrentTag("v0.0.1"),
-	)
+		testctx.WithCurrentTag("v0.0.1"))
 
 	windowsBuild := &artifact.Artifact{
 		Goos:    "windows",
@@ -1325,7 +1336,7 @@ func TestFormatOverrideWithNoFormatOrNoGoos(t *testing.T) {
 }
 
 func TestDefaultDeprecatd(t *testing.T) {
-	ctx := testctx.NewWithCfg(config.Project{
+	ctx := testctx.WrapWithCfg(t.Context(), config.Project{
 		Archives: []config.Archive{
 			{
 				Format: "tar.gz",
@@ -1337,6 +1348,7 @@ func TestDefaultDeprecatd(t *testing.T) {
 			},
 		},
 	})
+
 	require.NoError(t, Pipe{}.Default(ctx))
 	require.True(t, ctx.Deprecated)
 	require.Equal(t, "tar.gz", ctx.Config.Archives[0].Formats[0])

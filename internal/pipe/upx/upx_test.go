@@ -20,11 +20,12 @@ func TestStringer(t *testing.T) {
 }
 
 func TestDefault(t *testing.T) {
-	ctx := testctx.NewWithCfg(config.Project{
+	ctx := testctx.WrapWithCfg(t.Context(), config.Project{
 		UPXs: []config.UPX{
 			{},
 		},
 	})
+
 	require.NoError(t, Pipe{}.Default(ctx))
 	require.Len(t, ctx.Config.UPXs, 1)
 	require.Equal(t, "upx", ctx.Config.UPXs[0].Binary)
@@ -32,17 +33,19 @@ func TestDefault(t *testing.T) {
 
 func TestSkip(t *testing.T) {
 	t.Run("skip", func(t *testing.T) {
-		ctx := testctx.NewWithCfg(config.Project{
+		ctx := testctx.WrapWithCfg(t.Context(), config.Project{
 			UPXs: []config.UPX{},
 		})
+
 		require.True(t, Pipe{}.Skip(ctx))
 	})
 	t.Run("do not skip", func(t *testing.T) {
-		ctx := testctx.NewWithCfg(config.Project{
+		ctx := testctx.WrapWithCfg(t.Context(), config.Project{
 			UPXs: []config.UPX{
 				{},
 			},
 		})
+
 		require.False(t, Pipe{}.Skip(ctx))
 	})
 }
@@ -55,7 +58,7 @@ func TestRun(t *testing.T) {
 	fakeupx, err := filepath.Abs(bin)
 	require.NoError(t, err)
 
-	ctx := testctx.NewWithCfg(config.Project{
+	ctx := testctx.WrapWithCfg(t.Context(), config.Project{
 		UPXs: []config.UPX{
 			{
 				Enabled: "true",
@@ -140,37 +143,40 @@ func TestRun(t *testing.T) {
 
 func TestEnabled(t *testing.T) {
 	t.Run("no config", func(t *testing.T) {
-		ctx := testctx.NewWithCfg(config.Project{
+		ctx := testctx.WrapWithCfg(t.Context(), config.Project{
 			UPXs: []config.UPX{
 				{},
 			},
 		})
+
 		testlib.AssertSkipped(t, Pipe{}.Run(ctx))
 	})
 	t.Run("tmpl", func(t *testing.T) {
-		ctx := testctx.NewWithCfg(config.Project{
+		ctx := testctx.WrapWithCfg(t.Context(), config.Project{
 			UPXs: []config.UPX{
 				{
 					Enabled: `{{ printf "false" }}`,
 				},
 			},
 		})
+
 		testlib.AssertSkipped(t, Pipe{}.Run(ctx))
 	})
 	t.Run("invalid template", func(t *testing.T) {
-		ctx := testctx.NewWithCfg(config.Project{
+		ctx := testctx.WrapWithCfg(t.Context(), config.Project{
 			UPXs: []config.UPX{
 				{
 					Enabled: `{{ .Foo }}`,
 				},
 			},
 		})
+
 		testlib.RequireTemplateError(t, Pipe{}.Run(ctx))
 	})
 }
 
 func TestUpxNotInstalled(t *testing.T) {
-	ctx := testctx.NewWithCfg(config.Project{
+	ctx := testctx.WrapWithCfg(t.Context(), config.Project{
 		UPXs: []config.UPX{
 			{
 				Enabled: "true",
@@ -178,11 +184,12 @@ func TestUpxNotInstalled(t *testing.T) {
 			},
 		},
 	})
+
 	testlib.AssertSkipped(t, Pipe{}.Run(ctx))
 }
 
 func TestFindBinaries(t *testing.T) {
-	ctx := testctx.New()
+	ctx := testctx.Wrap(t.Context())
 	tmp := t.TempDir()
 	main := filepath.Join(tmp, "main.go")
 	require.NoError(t, os.WriteFile(main, []byte("package main\nfunc main(){ println(1) }"), 0o644))
