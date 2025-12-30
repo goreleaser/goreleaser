@@ -14,6 +14,7 @@ import (
 	"text/template"
 
 	"github.com/caarlos0/log"
+	"github.com/gobwas/glob"
 	"github.com/goreleaser/goreleaser/v2/internal/artifact"
 	"github.com/goreleaser/goreleaser/v2/internal/client"
 	"github.com/goreleaser/goreleaser/v2/internal/commitauthor"
@@ -252,6 +253,12 @@ func doRun(ctx *context.Context, brew config.HomebrewCask, cl client.ReleaseURLT
 		return err
 	}
 
+	manpages, err := compileManpages(brew, archives)
+	if err != nil {
+		return err
+	}
+	brew.Manpages = manpages
+
 	if err := tmpl.New(ctx).ApplyAll(
 		&brew.Hooks.Pre.Install,
 		&brew.Hooks.Pre.Uninstall,
@@ -453,4 +460,29 @@ func compareByArch(a, b releasePackage) int {
 
 func caskNameFor(name string) string {
 	return strings.ToLower(strings.ReplaceAll(name, " ", "-"))
+}
+
+func compileManpages(brew config.HomebrewCask, archives []*artifact.Artifact) ([]string, error) {
+	allManpages := []string{}
+	extraFiles := artifact.ExtraOr(*archives[0], artifact.ExtraFiles, []string{})
+	for _, archive := range archives {
+		if !slices.Equal(extraFiles, artifact.ExtraOr(*archive, artifact.ExtraFiles, []string{})) {
+			log.Warn("archives have different extra_files, manpage matching will not work")
+			return brew.Manpages, nil
+		}
+	}
+
+	for _, man := range brew.Manpages {
+		g, err := glob.Compile(man, '/')
+		if err != nil {
+			return nil, err
+		}
+		for _, f := range extraFiles {
+			if g.Match(f) {
+				allManpages = append(allManpages, f)
+			}
+		}
+	}
+
+	return allManpages, nil
 }
