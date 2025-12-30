@@ -150,7 +150,7 @@ module Utils
   end
 end
 `
-	cask, err := doBuildCask(testctx.NewWithCfg(config.Project{
+	cask, err := doBuildCask(testctx.WrapWithCfg(t.Context(), config.Project{
 		ProjectName: "foo",
 	}), data)
 	require.NoError(t, err)
@@ -161,7 +161,7 @@ end
 func TestFullCaskLinuxOnly(t *testing.T) {
 	data := defaultTemplateData
 	data.MacOSPackages = []releasePackage{}
-	cask, err := doBuildCask(testctx.NewWithCfg(config.Project{
+	cask, err := doBuildCask(testctx.WrapWithCfg(t.Context(), config.Project{
 		ProjectName: "foo",
 	}), data)
 	require.NoError(t, err)
@@ -172,7 +172,7 @@ func TestFullCaskLinuxOnly(t *testing.T) {
 func TestFullCaskMacOSOnly(t *testing.T) {
 	data := defaultTemplateData
 	data.LinuxPackages = []releasePackage{}
-	cask, err := doBuildCask(testctx.NewWithCfg(config.Project{
+	cask, err := doBuildCask(testctx.WrapWithCfg(t.Context(), config.Project{
 		ProjectName: "foo",
 	}), data)
 	require.NoError(t, err)
@@ -181,7 +181,7 @@ func TestFullCaskMacOSOnly(t *testing.T) {
 }
 
 func TestCaskSimple(t *testing.T) {
-	cask, err := doBuildCask(testctx.NewWithCfg(config.Project{}), defaultTemplateData)
+	cask, err := doBuildCask(testctx.WrapWithCfg(t.Context(), config.Project{}), defaultTemplateData)
 	require.NoError(t, err)
 	assertDefaultTemplateData(t, cask)
 	require.NotContains(t, cask, "def caveats")
@@ -428,7 +428,7 @@ func TestFullPipe(t *testing.T) {
 	} {
 		t.Run(name, func(t *testing.T) {
 			folder := t.TempDir()
-			ctx := testctx.NewWithCfg(
+			ctx := testctx.WrapWithCfg(t.Context(),
 				config.Project{
 					Dist:        folder,
 					ProjectName: name,
@@ -572,7 +572,7 @@ func TestFullPipe(t *testing.T) {
 
 func TestRunPipeNameTemplate(t *testing.T) {
 	folder := t.TempDir()
-	ctx := testctx.NewWithCfg(
+	ctx := testctx.WrapWithCfg(t.Context(),
 		config.Project{
 			Dist:        folder,
 			ProjectName: "foo",
@@ -628,7 +628,7 @@ func TestRunPipeNameTemplate(t *testing.T) {
 
 func TestRunPipeMultipleBrewsWithSkip(t *testing.T) {
 	folder := t.TempDir()
-	ctx := testctx.NewWithCfg(
+	ctx := testctx.WrapWithCfg(t.Context(),
 		config.Project{
 			Dist:        folder,
 			ProjectName: "foo",
@@ -717,7 +717,7 @@ func TestRunPipeMultipleBrewsWithSkip(t *testing.T) {
 }
 
 func TestRunPipeNoBuilds(t *testing.T) {
-	ctx := testctx.NewWithCfg(config.Project{
+	ctx := testctx.WrapWithCfg(t.Context(), config.Project{
 		Casks: []config.HomebrewCask{
 			{
 				Repository: config.RepoRef{
@@ -737,7 +737,7 @@ func TestRunPipeNoBuilds(t *testing.T) {
 }
 
 func TestRunPipeMultipleArchivesSameOsBuild(t *testing.T) {
-	ctx := testctx.NewWithCfg(config.Project{
+	ctx := testctx.WrapWithCfg(t.Context(), config.Project{
 		Casks: []config.HomebrewCask{
 			{
 				Repository: config.RepoRef{
@@ -836,7 +836,7 @@ func TestRunPipeMultipleArchivesSameOsBuild(t *testing.T) {
 
 func TestRunPipeBinaryRelease(t *testing.T) {
 	folder := t.TempDir()
-	ctx := testctx.NewWithCfg(
+	ctx := testctx.WrapWithCfg(t.Context(),
 		config.Project{
 			Dist:        folder,
 			ProjectName: "foo",
@@ -885,7 +885,7 @@ func TestRunPipeBinaryRelease(t *testing.T) {
 
 func TestRunPipePullRequest(t *testing.T) {
 	folder := t.TempDir()
-	ctx := testctx.NewWithCfg(
+	ctx := testctx.WrapWithCfg(t.Context(),
 		config.Project{
 			Dist:        folder,
 			ProjectName: "foo",
@@ -939,7 +939,7 @@ func TestRunPipePullRequest(t *testing.T) {
 
 func TestRunPipeNoUpload(t *testing.T) {
 	folder := t.TempDir()
-	ctx := testctx.NewWithCfg(config.Project{
+	ctx := testctx.WrapWithCfg(t.Context(), config.Project{
 		Dist:        folder,
 		ProjectName: "foo",
 		Release:     config.Release{},
@@ -997,7 +997,7 @@ func TestRunPipeNoUpload(t *testing.T) {
 
 func TestRunEmptyTokenType(t *testing.T) {
 	folder := t.TempDir()
-	ctx := testctx.NewWithCfg(config.Project{
+	ctx := testctx.WrapWithCfg(t.Context(), config.Project{
 		Dist:        folder,
 		ProjectName: "foo",
 		Release:     config.Release{},
@@ -1053,7 +1053,7 @@ func TestDefault(t *testing.T) {
 			Draft: true,
 		},
 	}
-	ctx := testctx.NewWithCfg(config.Project{
+	ctx := testctx.WrapWithCfg(t.Context(), config.Project{
 		ProjectName: "myproject",
 		Casks: []config.HomebrewCask{
 			{
@@ -1072,7 +1072,7 @@ func TestDefault(t *testing.T) {
 }
 
 func TestDefaultDeprecated(t *testing.T) {
-	ctx := testctx.NewWithCfg(config.Project{
+	ctx := testctx.WrapWithCfg(t.Context(), config.Project{
 		ProjectName: "myproject",
 		Casks: []config.HomebrewCask{
 			{
@@ -1094,10 +1094,10 @@ func TestGHFolder(t *testing.T) {
 
 func TestSkip(t *testing.T) {
 	t.Run("skip", func(t *testing.T) {
-		require.True(t, Pipe{}.Skip(testctx.New()))
+		require.True(t, Pipe{}.Skip(testctx.Wrap(t.Context())))
 	})
 	t.Run("skip flag", func(t *testing.T) {
-		ctx := testctx.NewWithCfg(config.Project{
+		ctx := testctx.WrapWithCfg(t.Context(), config.Project{
 			Casks: []config.HomebrewCask{
 				{},
 			},
@@ -1105,7 +1105,7 @@ func TestSkip(t *testing.T) {
 		require.True(t, Pipe{}.Skip(ctx))
 	})
 	t.Run("dont skip", func(t *testing.T) {
-		ctx := testctx.NewWithCfg(config.Project{
+		ctx := testctx.WrapWithCfg(t.Context(), config.Project{
 			Casks: []config.HomebrewCask{
 				{},
 			},
@@ -1115,7 +1115,7 @@ func TestSkip(t *testing.T) {
 }
 
 func TestRunSkipNoName(t *testing.T) {
-	ctx := testctx.NewWithCfg(config.Project{
+	ctx := testctx.WrapWithCfg(t.Context(), config.Project{
 		Casks: []config.HomebrewCask{{}},
 	})
 
@@ -1125,7 +1125,7 @@ func TestRunSkipNoName(t *testing.T) {
 
 func TestRunPipeUniversalBinary(t *testing.T) {
 	folder := t.TempDir()
-	ctx := testctx.NewWithCfg(
+	ctx := testctx.WrapWithCfg(t.Context(),
 		config.Project{
 			Dist:        folder,
 			ProjectName: "unibin",
@@ -1180,7 +1180,7 @@ func TestRunPipeUniversalBinary(t *testing.T) {
 
 func TestRunPipeUniversalBinaryNotReplacing(t *testing.T) {
 	folder := t.TempDir()
-	ctx := testctx.NewWithCfg(
+	ctx := testctx.WrapWithCfg(t.Context(),
 		config.Project{
 			Dist:        folder,
 			ProjectName: "unibin",
