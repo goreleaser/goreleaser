@@ -28,7 +28,7 @@ type GetInstanceURLSuite struct {
 func (s *GetInstanceURLSuite) TestWithScheme() {
 	t := s.T()
 	rootURL := "https://gitea.com"
-	ctx := testctx.NewWithCfg(config.Project{
+	ctx := testctx.WrapWithCfg(t.Context(), config.Project{
 		GiteaURLs: config.GiteaURLs{
 			API: rootURL + "/api/v1",
 		},
@@ -41,7 +41,7 @@ func (s *GetInstanceURLSuite) TestWithScheme() {
 
 func (s *GetInstanceURLSuite) TestParseError() {
 	t := s.T()
-	ctx := testctx.NewWithCfg(config.Project{
+	ctx := testctx.WrapWithCfg(t.Context(), config.Project{
 		GiteaURLs: config.GiteaURLs{
 			API: "://wrong.gitea.com",
 		},
@@ -54,7 +54,7 @@ func (s *GetInstanceURLSuite) TestParseError() {
 
 func (s *GetInstanceURLSuite) TestNoScheme() {
 	t := s.T()
-	ctx := testctx.NewWithCfg(config.Project{
+	ctx := testctx.WrapWithCfg(t.Context(), config.Project{
 		GiteaURLs: config.GiteaURLs{
 			API: "gitea.com",
 		},
@@ -67,7 +67,7 @@ func (s *GetInstanceURLSuite) TestNoScheme() {
 
 func (s *GetInstanceURLSuite) TestEmpty() {
 	t := s.T()
-	ctx := testctx.NewWithCfg(config.Project{
+	ctx := testctx.WrapWithCfg(t.Context(), config.Project{
 		GiteaURLs: config.GiteaURLs{
 			API: "",
 		},
@@ -81,7 +81,7 @@ func (s *GetInstanceURLSuite) TestEmpty() {
 func (s *GetInstanceURLSuite) TestTemplate() {
 	t := s.T()
 	rootURL := "https://gitea.mycompany.com"
-	ctx := testctx.NewWithCfg(config.Project{
+	ctx := testctx.WrapWithCfg(t.Context(), config.Project{
 		Env: []string{
 			fmt.Sprintf("GORELEASER_TEST_GITAEA_URLS_API=%s", rootURL),
 		},
@@ -97,7 +97,7 @@ func (s *GetInstanceURLSuite) TestTemplate() {
 
 func (s *GetInstanceURLSuite) TestTemplateMissingValue() {
 	t := s.T()
-	ctx := testctx.NewWithCfg(config.Project{
+	ctx := testctx.WrapWithCfg(t.Context(), config.Project{
 		GiteaURLs: config.GiteaURLs{
 			API: "{{ .Env.GORELEASER_NOT_EXISTS }}",
 		},
@@ -110,7 +110,7 @@ func (s *GetInstanceURLSuite) TestTemplateMissingValue() {
 
 func (s *GetInstanceURLSuite) TestTemplateInvalid() {
 	t := s.T()
-	ctx := testctx.NewWithCfg(config.Project{
+	ctx := testctx.WrapWithCfg(t.Context(), config.Project{
 		GiteaURLs: config.GiteaURLs{
 			API: "{{.dddddddddd",
 		},
@@ -160,7 +160,8 @@ func (s *GiteaReleasesTestSuite) SetupTest() {
 	s.commit = "some commit hash"
 	s.isDraft = false
 	s.isPrerelease = true
-	s.ctx = testctx.NewWithCfg(
+	s.ctx = testctx.WrapWithCfg(
+		s.T().Context(),
 		config.Project{
 			ProjectName: "project",
 			Release: config.Release{
@@ -182,8 +183,8 @@ func (s *GiteaReleasesTestSuite) SetupTest() {
 		func(ctx *context.Context) {
 			ctx.PreRelease = s.isPrerelease
 		},
-		testctx.WithSemver(6, 6, 6, ""),
-	)
+		testctx.WithSemver(6, 6, 6, ""))
+
 	s.releaseID = 666
 	s.releaseURL = fmt.Sprintf("%v/%v", s.releasesURL, s.releaseID)
 	httpmock.RegisterResponder("GET", fmt.Sprintf("%s/api/v1/version", s.url), httpmock.NewStringResponder(200, "{\"version\":\"1.12.0\"}"))
@@ -507,7 +508,7 @@ func TestGiteaReleaseURLTemplate(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			ctx := testctx.NewWithCfg(config.Project{
+			ctx := testctx.WrapWithCfg(t.Context(), config.Project{
 				Env: []string{
 					"GORELEASER_TEST_GITEA_URLS_DOWNLOAD=https://gitea.mycompany.com",
 				},
@@ -522,6 +523,7 @@ func TestGiteaReleaseURLTemplate(t *testing.T) {
 					},
 				},
 			})
+
 			client, err := newGitea(ctx, ctx.Token)
 			require.NoError(t, err)
 
@@ -553,11 +555,12 @@ func TestGiteaGetDefaultBranch(t *testing.T) {
 	}))
 	defer srv.Close()
 
-	ctx := testctx.NewWithCfg(config.Project{
+	ctx := testctx.WrapWithCfg(t.Context(), config.Project{
 		GiteaURLs: config.GiteaURLs{
 			API: srv.URL,
 		},
 	})
+
 	client, err := newGitea(ctx, "test-token")
 	require.NoError(t, err)
 	repo := Repo{
@@ -584,11 +587,12 @@ func TestGiteaGetDefaultBranchErr(t *testing.T) {
 	}))
 	defer srv.Close()
 
-	ctx := testctx.NewWithCfg(config.Project{
+	ctx := testctx.WrapWithCfg(t.Context(), config.Project{
 		GiteaURLs: config.GiteaURLs{
 			API: srv.URL,
 		},
 	})
+
 	client, err := newGitea(ctx, "test-token")
 	require.NoError(t, err)
 	repo := Repo{
@@ -642,11 +646,12 @@ func TestGiteaChangelog(t *testing.T) {
 	}))
 	defer srv.Close()
 
-	ctx := testctx.NewWithCfg(config.Project{
+	ctx := testctx.WrapWithCfg(t.Context(), config.Project{
 		GiteaURLs: config.GiteaURLs{
 			API: srv.URL,
 		},
 	})
+
 	client, err := newGitea(ctx, "test-token")
 	require.NoError(t, err)
 	repo := Repo{
@@ -673,11 +678,12 @@ func TestGiteaChangelog(t *testing.T) {
 }
 
 func TestGiteatGetInstanceURL(t *testing.T) {
-	ctx := testctx.NewWithCfg(config.Project{
+	ctx := testctx.WrapWithCfg(t.Context(), config.Project{
 		GiteaURLs: config.GiteaURLs{
 			API: "http://our.internal.gitea.media/api/v1",
 		},
 	})
+
 	url, err := getInstanceURL(ctx)
 	require.NoError(t, err)
 	require.Equal(t, "http://our.internal.gitea.media", url)

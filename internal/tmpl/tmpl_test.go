@@ -18,7 +18,7 @@ import (
 
 func TestWithArtifact(t *testing.T) {
 	t.Parallel()
-	ctx := testctx.NewWithCfg(
+	ctx := testctx.WrapWithCfg(t.Context(),
 		config.Project{
 			ProjectName: "proj",
 			Release: config.Release{
@@ -50,8 +50,8 @@ func TestWithArtifact(t *testing.T) {
 			ctx.ReleaseNotes = "test release notes"
 			ctx.Date = time.Unix(1678327562, 0)
 			ctx.SingleTarget = true
-		},
-	)
+		})
+
 	for expect, tmpl := range map[string]string{
 		"bar":                                 "{{.Env.FOO}}",
 		"linux":                               "{{.Os}}",
@@ -181,10 +181,10 @@ func TestEnv(t *testing.T) {
 			out:  "",
 		},
 	}
-	ctx := testctx.New(
+	ctx := testctx.Wrap(t.Context(),
 		testctx.WithEnv(map[string]string{"FOO": "BAR"}),
-		testctx.WithCurrentTag("v1.2.3"),
-	)
+		testctx.WithCurrentTag("v1.2.3"))
+
 	for _, tC := range testCases {
 		t.Run(tC.desc, func(t *testing.T) {
 			out, _ := New(ctx).Apply(tC.in)
@@ -194,10 +194,10 @@ func TestEnv(t *testing.T) {
 }
 
 func TestWithEnvS(t *testing.T) {
-	ctx := testctx.New(
+	ctx := testctx.Wrap(t.Context(),
 		testctx.WithEnv(map[string]string{"FOO": "BAR"}),
-		testctx.WithCurrentTag("v1.2.3"),
-	)
+		testctx.WithCurrentTag("v1.2.3"))
+
 	tpl := New(ctx).WithEnvS([]string{
 		"FOO=foo",
 		"BAR=bar",
@@ -224,7 +224,7 @@ func TestWithEnvS(t *testing.T) {
 }
 
 func TestSetEnv(t *testing.T) {
-	ctx := testctx.New()
+	ctx := testctx.Wrap(t.Context())
 	tpl := New(ctx).
 		WithEnvS([]string{
 			"FOO=foo",
@@ -241,12 +241,13 @@ func TestSetEnv(t *testing.T) {
 }
 
 func TestFuncMap(t *testing.T) {
-	ctx := testctx.NewWithCfg(config.Project{
+	ctx := testctx.WrapWithCfg(t.Context(), config.Project{
 		ProjectName: "proj",
 		Env: []string{
 			"FOO=bar",
 		},
 	})
+
 	wd, err := os.Getwd()
 	require.NoError(t, err)
 
@@ -421,14 +422,14 @@ func TestChecksum(t *testing.T) {
 			Expected: "f80eebd9aabb1a15fb869ed568d858a5c0dca3d5da07a410e1bd988763918d973e344814625f7c844695b2de36ffd27af290d0e34362c51dee5947d58d40527a",
 		},
 	} {
-		out, err := New(testctx.New()).WithArtifact(&artifact).Apply(tc.Template)
+		out, err := New(testctx.Wrap(t.Context())).WithArtifact(&artifact).Apply(tc.Template)
 		require.NoError(t, err)
 		require.Equal(t, tc.Expected, out)
 	}
 }
 
 func TestMustReadFile(t *testing.T) {
-	tpl := New(testctx.New())
+	tpl := New(testctx.Wrap(t.Context()))
 
 	t.Run("file exists", func(t *testing.T) {
 		got, err := tpl.Apply(`{{ mustReadFile "./testdata/file_a.txt" }}`)
@@ -448,7 +449,7 @@ func TestMustReadFile(t *testing.T) {
 }
 
 func TestReadFile(t *testing.T) {
-	tpl := New(testctx.New())
+	tpl := New(testctx.Wrap(t.Context()))
 
 	t.Run("file exists", func(t *testing.T) {
 		got, err := tpl.Apply(`{{ readFile "./testdata/file_a.txt" }}`)
@@ -468,7 +469,7 @@ func TestReadFile(t *testing.T) {
 }
 
 func TestApplyAll(t *testing.T) {
-	tpl := New(testctx.New()).WithEnvS([]string{
+	tpl := New(testctx.Wrap(t.Context())).WithEnvS([]string{
 		"FOO=bar",
 	})
 	t.Run("success", func(t *testing.T) {
@@ -486,7 +487,7 @@ func TestApplyAll(t *testing.T) {
 }
 
 func TestApplySlice(t *testing.T) {
-	tpl := New(testctx.New()).WithEnvS([]string{
+	tpl := New(testctx.Wrap(t.Context())).WithEnvS([]string{
 		"FOO=bar",
 	})
 	t.Run("success", func(t *testing.T) {
@@ -502,7 +503,7 @@ func TestApplySlice(t *testing.T) {
 }
 
 func TestApplySingleEnvOnly(t *testing.T) {
-	ctx := testctx.NewWithCfg(config.Project{
+	ctx := testctx.WrapWithCfg(t.Context(), config.Project{
 		Env: []string{
 			"FOO=value",
 			"BAR=another",
@@ -578,14 +579,14 @@ func TestApplySingleEnvOnly(t *testing.T) {
 }
 
 func TestInvalidTemplate(t *testing.T) {
-	ctx := testctx.New()
+	ctx := testctx.Wrap(t.Context())
 	_, err := New(ctx).Apply("{{{.Foo}")
 	require.ErrorAs(t, err, &Error{})
 	require.EqualError(t, err, `template: failed to apply "{{{.Foo}": unexpected "{" in command`)
 }
 
 func TestEnvNotFound(t *testing.T) {
-	ctx := testctx.New(testctx.WithCurrentTag("v1.2.4"))
+	ctx := testctx.Wrap(t.Context(), testctx.WithCurrentTag("v1.2.4"))
 	result, err := New(ctx).Apply("{{.Env.FOO}}")
 	require.Empty(t, result)
 	require.ErrorAs(t, err, &Error{})
@@ -593,7 +594,7 @@ func TestEnvNotFound(t *testing.T) {
 }
 
 func TestWithExtraFields(t *testing.T) {
-	ctx := testctx.New()
+	ctx := testctx.Wrap(t.Context())
 	out, _ := New(ctx).WithExtraFields(Fields{
 		"MyCustomField": "foo",
 	}).Apply("{{ .MyCustomField }}")
@@ -608,9 +609,10 @@ func TestBool(t *testing.T) {
 			"TRUE",
 		} {
 			t.Run(v, func(t *testing.T) {
-				ctx := testctx.NewWithCfg(config.Project{
+				ctx := testctx.WrapWithCfg(t.Context(), config.Project{
 					Env: []string{"FOO=" + v},
 				})
+
 				b, err := New(ctx).Bool("{{.Env.FOO}}")
 				require.NoError(t, err)
 				require.True(t, b)
@@ -625,9 +627,10 @@ func TestBool(t *testing.T) {
 			"yada yada",
 		} {
 			t.Run(v, func(t *testing.T) {
-				ctx := testctx.NewWithCfg(config.Project{
+				ctx := testctx.WrapWithCfg(t.Context(), config.Project{
 					Env: []string{"FOO=" + v},
 				})
+
 				b, err := New(ctx).Bool("{{.Env.FOO}}")
 				require.NoError(t, err)
 				require.False(t, b)
@@ -644,14 +647,14 @@ func TestMdv2Escape(t *testing.T) {
 }
 
 func TestInvalidMap(t *testing.T) {
-	_, err := New(testctx.New()).Apply(`{{ $m := map "a" }}`)
+	_, err := New(testctx.Wrap(t.Context())).Apply(`{{ $m := map "a" }}`)
 	require.ErrorContains(t, err, "map expects even number of arguments, got 1")
 }
 
 func TestWithBuildOptions(t *testing.T) {
 	// testtarget doesn ot set riscv64, it still should not fail to compile the template
 	ts := "{{.Name}}_{{.Path}}_{{.Ext}}_{{.Target}}_{{.Os}}_{{.Arch}}_{{.Amd64}}_{{.Arm}}_{{.Mips}}{{with .Riscv64}}{{.}}{{end}}"
-	out, err := New(testctx.New()).WithBuildOptions(build.Options{
+	out, err := New(testctx.Wrap(t.Context())).WithBuildOptions(build.Options{
 		Name: "name",
 		Path: "./path",
 		Ext:  ".ext",
@@ -669,7 +672,7 @@ func TestWithBuildOptions(t *testing.T) {
 }
 
 func TestReuseTpl(t *testing.T) {
-	tp := New(testctx.New()).WithExtraFields(Fields{
+	tp := New(testctx.Wrap(t.Context())).WithExtraFields(Fields{
 		"foo": "bar",
 	})
 	s1, err := tp.Apply("{{.foo}}")
@@ -686,10 +689,9 @@ func TestReuseTpl(t *testing.T) {
 }
 
 func TestSlice(t *testing.T) {
-	ctx := testctx.New(
+	ctx := testctx.Wrap(t.Context(),
 		testctx.WithVersion("1.2.3"),
-		testctx.WithCurrentTag("5.6.7"),
-	)
+		testctx.WithCurrentTag("5.6.7"))
 
 	artifact := &artifact.Artifact{
 		Name:   "name",
@@ -728,7 +730,7 @@ func TestSlice(t *testing.T) {
 }
 
 func TestSliceInvalid(t *testing.T) {
-	ctx := testctx.New()
+	ctx := testctx.Wrap(t.Context())
 	source := []string{
 		"{{.Version}",
 	}
@@ -738,7 +740,7 @@ func TestSliceInvalid(t *testing.T) {
 }
 
 func TestSliceIgnoreEmptyFlags(t *testing.T) {
-	ctx := testctx.New()
+	ctx := testctx.Wrap(t.Context())
 	source := []string{
 		"{{if eq 1 2}}-ignore-me{{end}}",
 	}

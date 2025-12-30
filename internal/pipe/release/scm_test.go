@@ -11,7 +11,7 @@ import (
 
 func TestSetupGitLab(t *testing.T) {
 	t.Run("no repo", func(t *testing.T) {
-		ctx := testctx.New()
+		ctx := testctx.Wrap(t.Context())
 		require.NoError(t, setupGitLab(ctx))
 		repo, err := git.ExtractRepoFromConfig(ctx)
 		require.NoError(t, err)
@@ -20,7 +20,7 @@ func TestSetupGitLab(t *testing.T) {
 	})
 
 	t.Run("with templates", func(t *testing.T) {
-		ctx := testctx.NewWithCfg(config.Project{
+		ctx := testctx.WrapWithCfg(t.Context(), config.Project{
 			Env: []string{"NAME=foo", "OWNER=bar"},
 			GitLabURLs: config.GitLabURLs{
 				Download: "https://{{ .Env.OWNER }}/download",
@@ -41,7 +41,7 @@ func TestSetupGitLab(t *testing.T) {
 
 	t.Run("with invalid templates", func(t *testing.T) {
 		t.Run("owner", func(t *testing.T) {
-			ctx := testctx.NewWithCfg(config.Project{
+			ctx := testctx.WrapWithCfg(t.Context(), config.Project{
 				Release: config.Release{
 					GitLab: config.Repo{
 						Name:  "foo",
@@ -54,7 +54,7 @@ func TestSetupGitLab(t *testing.T) {
 		})
 
 		t.Run("name", func(t *testing.T) {
-			ctx := testctx.NewWithCfg(config.Project{
+			ctx := testctx.WrapWithCfg(t.Context(), config.Project{
 				Release: config.Release{
 					GitLab: config.Repo{
 						Name: "{{.Env.NOPE}}",
@@ -69,13 +69,13 @@ func TestSetupGitLab(t *testing.T) {
 
 func TestSetupGitea(t *testing.T) {
 	t.Run("no repo", func(t *testing.T) {
-		ctx := testctx.New()
+		ctx := testctx.Wrap(t.Context())
 		require.NoError(t, setupGitea(ctx))
 		require.Equal(t, "goreleaser", ctx.Config.Release.Gitea.Name)
 	})
 
 	t.Run("with templates", func(t *testing.T) {
-		ctx := testctx.NewWithCfg(config.Project{
+		ctx := testctx.WrapWithCfg(t.Context(), config.Project{
 			Env: []string{"NAME=foo", "OWNER=bar"},
 			GiteaURLs: config.GiteaURLs{
 				Download: "https://{{ .Env.OWNER }}/download",
@@ -96,7 +96,7 @@ func TestSetupGitea(t *testing.T) {
 
 	t.Run("with invalid templates", func(t *testing.T) {
 		t.Run("owner", func(t *testing.T) {
-			ctx := testctx.NewWithCfg(config.Project{
+			ctx := testctx.WrapWithCfg(t.Context(), config.Project{
 				Release: config.Release{
 					Gitea: config.Repo{
 						Name:  "foo",
@@ -109,7 +109,7 @@ func TestSetupGitea(t *testing.T) {
 		})
 
 		t.Run("name", func(t *testing.T) {
-			ctx := testctx.NewWithCfg(config.Project{
+			ctx := testctx.WrapWithCfg(t.Context(), config.Project{
 				Release: config.Release{
 					Gitea: config.Repo{
 						Name: "{{.Env.NOPE}}",
@@ -124,13 +124,13 @@ func TestSetupGitea(t *testing.T) {
 
 func TestSetupGitHub(t *testing.T) {
 	t.Run("no repo", func(t *testing.T) {
-		ctx := testctx.New()
+		ctx := testctx.Wrap(t.Context())
 		require.NoError(t, setupGitHub(ctx))
 		require.Equal(t, "goreleaser", ctx.Config.Release.GitHub.Name)
 	})
 
 	t.Run("with templates", func(t *testing.T) {
-		ctx := testctx.NewWithCfg(config.Project{
+		ctx := testctx.WrapWithCfg(t.Context(), config.Project{
 			Env: []string{"NAME=foo", "OWNER=bar"},
 			GitHubURLs: config.GitHubURLs{
 				Download: "https://{{ .Env.OWNER }}/download",
@@ -151,7 +151,7 @@ func TestSetupGitHub(t *testing.T) {
 
 	t.Run("with invalid templates", func(t *testing.T) {
 		t.Run("owner", func(t *testing.T) {
-			ctx := testctx.NewWithCfg(config.Project{
+			ctx := testctx.WrapWithCfg(t.Context(), config.Project{
 				Release: config.Release{
 					GitHub: config.Repo{
 						Name:  "foo",
@@ -164,7 +164,7 @@ func TestSetupGitHub(t *testing.T) {
 		})
 
 		t.Run("name", func(t *testing.T) {
-			ctx := testctx.NewWithCfg(config.Project{
+			ctx := testctx.WrapWithCfg(t.Context(), config.Project{
 				Release: config.Release{
 					GitHub: config.Repo{
 						Name: "{{.Env.NOPE}}",

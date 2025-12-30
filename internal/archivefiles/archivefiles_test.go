@@ -13,9 +13,10 @@ import (
 
 func TestEval(t *testing.T) {
 	now := time.Now().Truncate(time.Second)
-	ctx := testctx.NewWithCfg(config.Project{
+	ctx := testctx.WrapWithCfg(t.Context(), config.Project{
 		Env: []string{"OWNER=carlos", "FOLDER=d"},
 	})
+
 	ctx.Git.CommitDate = now
 	tmpl := tmpl.New(ctx)
 

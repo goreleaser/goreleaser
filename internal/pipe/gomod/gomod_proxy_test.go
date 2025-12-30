@@ -25,7 +25,7 @@ func TestCheckGoMod(t *testing.T) {
 	t.Run("replace on snapshot", func(t *testing.T) {
 		dir := testlib.Mktmp(t)
 		dist := filepath.Join(dir, "dist")
-		ctx := testctx.NewWithCfg(config.Project{
+		ctx := testctx.WrapWithCfg(t.Context(), config.Project{
 			Dist: dist,
 			GoMod: config.GoMod{
 				Proxy:    true,
@@ -49,7 +49,7 @@ func TestCheckGoMod(t *testing.T) {
 	t.Run("no go mod", func(t *testing.T) {
 		dir := testlib.Mktmp(t)
 		dist := filepath.Join(dir, "dist")
-		ctx := testctx.NewWithCfg(config.Project{
+		ctx := testctx.WrapWithCfg(t.Context(), config.Project{
 			Dist: dist,
 			GoMod: config.GoMod{
 				Proxy:    true,
@@ -71,7 +71,7 @@ func TestCheckGoMod(t *testing.T) {
 	t.Run("replace", func(t *testing.T) {
 		dir := testlib.Mktmp(t)
 		dist := filepath.Join(dir, "dist")
-		ctx := testctx.NewWithCfg(config.Project{
+		ctx := testctx.WrapWithCfg(t.Context(), config.Project{
 			Dist: dist,
 			GoMod: config.GoMod{
 				Proxy:    true,
@@ -98,7 +98,7 @@ func TestGoModProxy(t *testing.T) {
 	t.Run("testmod", func(t *testing.T) {
 		dir := testlib.Mktmp(t)
 		dist := filepath.Join(dir, "dist")
-		ctx := testctx.NewWithCfg(config.Project{
+		ctx := testctx.WrapWithCfg(t.Context(), config.Project{
 			Dist: dist,
 			GoMod: config.GoMod{
 				Proxy:    true,
@@ -115,6 +115,7 @@ func TestGoModProxy(t *testing.T) {
 		}, testctx.WithCurrentTag("v0.1.1"), func(ctx *context.Context) {
 			ctx.ModulePath = "github.com/goreleaser/test-mod"
 		})
+
 		fakeGoModAndSum(t, ctx.ModulePath)
 		require.NoError(t, ProxyPipe{}.Run(ctx))
 		requireGoMod(t)
@@ -126,7 +127,7 @@ func TestGoModProxy(t *testing.T) {
 	t.Run("no go.sum", func(t *testing.T) {
 		dir := testlib.Mktmp(t)
 		dist := filepath.Join(dir, "dist")
-		ctx := testctx.NewWithCfg(config.Project{
+		ctx := testctx.WrapWithCfg(t.Context(), config.Project{
 			Dist: dist,
 			GoMod: config.GoMod{
 				Proxy:    true,
@@ -142,6 +143,7 @@ func TestGoModProxy(t *testing.T) {
 		}, testctx.WithCurrentTag("v0.0.1"), func(ctx *context.Context) {
 			ctx.ModulePath = "github.com/goreleaser/example-mod-proxy"
 		})
+
 		fakeGoMod(t, ctx.ModulePath)
 		require.NoError(t, ProxyPipe{}.Run(ctx))
 		requireGoMod(t)
@@ -152,7 +154,7 @@ func TestGoModProxy(t *testing.T) {
 	t.Run("goreleaser with main.go", func(t *testing.T) {
 		dir := testlib.Mktmp(t)
 		dist := filepath.Join(dir, "dist")
-		ctx := testctx.NewWithCfg(config.Project{
+		ctx := testctx.WrapWithCfg(t.Context(), config.Project{
 			Dist: dist,
 			GoMod: config.GoMod{
 				Proxy:    true,
@@ -182,37 +184,40 @@ func TestProxyDescription(t *testing.T) {
 
 func TestSkipProxy(t *testing.T) {
 	t.Run("skip false gomod.proxy", func(t *testing.T) {
-		ctx := testctx.New()
+		ctx := testctx.Wrap(t.Context())
 		require.True(t, ProxyPipe{}.Skip(ctx))
 		require.True(t, CheckGoModPipe{}.Skip(ctx))
 	})
 
 	t.Run("skip snapshot", func(t *testing.T) {
-		ctx := testctx.NewWithCfg(config.Project{
+		ctx := testctx.WrapWithCfg(t.Context(), config.Project{
 			GoMod: config.GoMod{
 				Proxy: true,
 			},
 		}, withTestModulePath, testctx.Snapshot)
+
 		require.True(t, ProxyPipe{}.Skip(ctx))
 		require.False(t, CheckGoModPipe{}.Skip(ctx))
 	})
 
 	t.Run("skip not a go module", func(t *testing.T) {
-		ctx := testctx.NewWithCfg(config.Project{
+		ctx := testctx.WrapWithCfg(t.Context(), config.Project{
 			GoMod: config.GoMod{
 				Proxy: true,
 			},
 		}, func(ctx *context.Context) { ctx.ModulePath = "" })
+
 		require.True(t, ProxyPipe{}.Skip(ctx))
 		require.True(t, CheckGoModPipe{}.Skip(ctx))
 	})
 
 	t.Run("dont skip", func(t *testing.T) {
-		ctx := testctx.NewWithCfg(config.Project{
+		ctx := testctx.WrapWithCfg(t.Context(), config.Project{
 			GoMod: config.GoMod{
 				Proxy: true,
 			},
 		}, withTestModulePath)
+
 		require.False(t, ProxyPipe{}.Skip(ctx))
 		require.False(t, CheckGoModPipe{}.Skip(ctx))
 	})

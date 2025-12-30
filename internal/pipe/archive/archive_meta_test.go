@@ -13,7 +13,7 @@ import (
 func TestMeta(t *testing.T) {
 	t.Run("good", func(t *testing.T) {
 		dist := t.TempDir()
-		ctx := testctx.NewWithCfg(config.Project{
+		ctx := testctx.WrapWithCfg(t.Context(), config.Project{
 			Dist: dist,
 			Archives: []config.Archive{
 				{
@@ -37,7 +37,7 @@ func TestMeta(t *testing.T) {
 
 	t.Run("bad tmpl", func(t *testing.T) {
 		dist := t.TempDir()
-		ctx := testctx.NewWithCfg(config.Project{
+		ctx := testctx.WrapWithCfg(t.Context(), config.Project{
 			Dist: dist,
 			Archives: []config.Archive{
 				{
@@ -56,7 +56,7 @@ func TestMeta(t *testing.T) {
 
 	t.Run("no files", func(t *testing.T) {
 		dist := t.TempDir()
-		ctx := testctx.NewWithCfg(config.Project{
+		ctx := testctx.WrapWithCfg(t.Context(), config.Project{
 			Dist: dist,
 			Archives: []config.Archive{
 				{
