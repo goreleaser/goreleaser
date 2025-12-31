@@ -18,15 +18,16 @@ func TestDescription(t *testing.T) {
 }
 
 func TestPublish(t *testing.T) {
-	ctx := testctx.NewWithCfg(config.Project{
+	ctx := testctx.WrapWithCfg(t.Context(), config.Project{
 		Release:      config.Release{Disable: "true"},
 		DockerDigest: config.DockerDigest{Disable: "true"},
 	}, testctx.GitHubTokenType)
+
 	require.NoError(t, New().Run(ctx))
 }
 
 func TestPublishSuccess(t *testing.T) {
-	ctx := testctx.New()
+	ctx := testctx.Wrap(t.Context())
 	lastStep := &testPublisher{}
 	err := Pipe{
 		pipeline: []Publisher{
@@ -50,7 +51,7 @@ func TestPublishSuccess(t *testing.T) {
 }
 
 func TestPublishError(t *testing.T) {
-	ctx := testctx.New()
+	ctx := testctx.Wrap(t.Context())
 	lastStep := &testPublisher{}
 	err := Pipe{
 		pipeline: []Publisher{
@@ -74,12 +75,12 @@ func TestPublishError(t *testing.T) {
 
 func TestSkip(t *testing.T) {
 	t.Run("skip", func(t *testing.T) {
-		ctx := testctx.New(testctx.Skip(skips.Publish))
+		ctx := testctx.Wrap(t.Context(), testctx.Skip(skips.Publish))
 		require.True(t, Pipe{}.Skip(ctx))
 	})
 
 	t.Run("dont skip", func(t *testing.T) {
-		require.False(t, Pipe{}.Skip(testctx.New()))
+		require.False(t, Pipe{}.Skip(testctx.Wrap(t.Context())))
 	})
 }
 

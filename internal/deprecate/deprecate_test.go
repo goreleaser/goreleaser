@@ -16,7 +16,7 @@ func TestNotice(t *testing.T) {
 	log.Log = log.New(&w)
 
 	log.Info("first")
-	ctx := testctx.New()
+	ctx := testctx.Wrap(t.Context())
 	Notice(ctx, "foo.bar_whatever: foobar")
 	Notice(ctx, "foo.bar_whatever: foobar")
 	Notice(ctx, "foo.bar_whatever: foobar")
@@ -32,7 +32,7 @@ func TestNoticeCustom(t *testing.T) {
 	log.Log = log.New(&w)
 
 	log.Info("first")
-	ctx := testctx.New()
+	ctx := testctx.Wrap(t.Context())
 	NoticeCustom(ctx, "something-else", "some custom template with a url {{ .URL }}")
 	NoticeCustom(ctx, "something-else", "ignored")
 	NoticeCustom(ctx, "something-else", "ignored")

@@ -101,8 +101,8 @@ func TestRunPipe(t *testing.T) {
 							},
 						},
 					},
-				},
-			)
+				})
+
 			darwinUniversalBinary := &artifact.Artifact{
 				Goos:   "darwin",
 				Goarch: "all",
@@ -301,6 +301,7 @@ func TestRunPipeDifferentBinaryCount(t *testing.T) {
 			},
 		},
 	})
+
 	darwinBuild := &artifact.Artifact{
 		Goos:   "darwin",
 		Goarch: "amd64",
@@ -363,6 +364,7 @@ func TestRunPipeNoBinaries(t *testing.T) {
 			Builds: []string{"not-default"},
 		}},
 	}, testctx.WithVersion("0.0.1"), testctx.WithCurrentTag("v1.0.0"))
+
 	ctx.Artifacts.Add(&artifact.Artifact{
 		Goos:   "linux",
 		Goarch: "amd64",
@@ -447,8 +449,8 @@ func TestRunPipeBinary(t *testing.T) {
 			},
 		},
 		testctx.WithVersion("0.0.1"),
-		testctx.WithCurrentTag("v0.0.1"),
-	)
+		testctx.WithCurrentTag("v0.0.1"))
+
 	ctx.Artifacts.Add(&artifact.Artifact{
 		Goos:   "darwin",
 		Goarch: "amd64",
@@ -536,8 +538,8 @@ func TestRunPipeDistRemoved(t *testing.T) {
 				},
 			},
 		},
-		testctx.WithCurrentTag("v0.0.1"),
-	)
+		testctx.WithCurrentTag("v0.0.1"))
+
 	ctx.Artifacts.Add(&artifact.Artifact{
 		Goos:   "windows",
 		Goarch: "amd64",
@@ -576,8 +578,8 @@ func TestRunPipeInvalidGlob(t *testing.T) {
 				},
 			},
 		},
-		testctx.WithCurrentTag("v0.0.1"),
-	)
+		testctx.WithCurrentTag("v0.0.1"))
+
 	ctx.Git.CurrentTag = "v0.0.1"
 	ctx.Artifacts.Add(&artifact.Artifact{
 		Goos:   "darwin",
@@ -617,8 +619,8 @@ func TestRunPipeNameTemplateWithSpace(t *testing.T) {
 				},
 			},
 		},
-		testctx.WithCurrentTag("v0.0.1"),
-	)
+		testctx.WithCurrentTag("v0.0.1"))
+
 	ctx.Artifacts.Add(&artifact.Artifact{
 		Goos:   "darwin",
 		Goarch: "amd64",
@@ -658,8 +660,8 @@ func TestRunPipeInvalidNameTemplate(t *testing.T) {
 				},
 			},
 		},
-		testctx.WithCurrentTag("v0.0.1"),
-	)
+		testctx.WithCurrentTag("v0.0.1"))
+
 	ctx.Artifacts.Add(&artifact.Artifact{
 		Goos:   "darwin",
 		Goarch: "amd64",
@@ -696,8 +698,8 @@ func TestRunPipeInvalidFilesNameTemplate(t *testing.T) {
 				},
 			},
 		},
-		testctx.WithCurrentTag("v0.0.1"),
-	)
+		testctx.WithCurrentTag("v0.0.1"))
+
 	ctx.Artifacts.Add(&artifact.Artifact{
 		Goos:   "darwin",
 		Goarch: "amd64",
@@ -732,8 +734,8 @@ func TestRunPipeInvalidWrapInDirectoryTemplate(t *testing.T) {
 				},
 			},
 		},
-		testctx.WithCurrentTag("v0.0.1"),
-	)
+		testctx.WithCurrentTag("v0.0.1"))
+
 	ctx.Artifacts.Add(&artifact.Artifact{
 		Goos:   "darwin",
 		Goarch: "amd64",
@@ -774,8 +776,8 @@ func TestRunPipeWrap(t *testing.T) {
 				},
 			},
 		},
-		testctx.WithCurrentTag("v0.0.1"),
-	)
+		testctx.WithCurrentTag("v0.0.1"))
+
 	ctx.Artifacts.Add(&artifact.Artifact{
 		Goos:   "darwin",
 		Goarch: "amd64",
@@ -804,6 +806,7 @@ func TestDefault(t *testing.T) {
 	ctx := testctx.WrapWithCfg(t.Context(), config.Project{
 		Archives: []config.Archive{},
 	})
+
 	require.NoError(t, Pipe{}.Default(ctx))
 	require.NotEmpty(t, ctx.Config.Archives[0].NameTemplate)
 	require.Equal(t, "tar.gz", ctx.Config.Archives[0].Formats[0])
@@ -824,6 +827,7 @@ func TestDefaultSet(t *testing.T) {
 			},
 		},
 	})
+
 	require.NoError(t, Pipe{}.Default(ctx))
 	require.Equal(t, "foo", ctx.Config.Archives[0].NameTemplate)
 	require.Equal(t, "zip", ctx.Config.Archives[0].Formats[0])
@@ -838,6 +842,7 @@ func TestDefaultMixFormats(t *testing.T) {
 			},
 		},
 	})
+
 	require.NoError(t, Pipe{}.Default(ctx))
 	require.Equal(t, defaultBinaryNameTemplate, ctx.Config.Archives[0].NameTemplate)
 }
@@ -850,6 +855,7 @@ func TestDefaultNoFiles(t *testing.T) {
 			},
 		},
 	})
+
 	require.NoError(t, Pipe{}.Default(ctx))
 	require.Equal(t, defaultNameTemplate, ctx.Config.Archives[0].NameTemplate)
 }
@@ -862,6 +868,7 @@ func TestDefaultFormatBinary(t *testing.T) {
 			},
 		},
 	})
+
 	require.NoError(t, Pipe{}.Default(ctx))
 	require.Equal(t, defaultBinaryNameTemplate, ctx.Config.Archives[0].NameTemplate)
 }
@@ -885,6 +892,7 @@ func TestFormatFor(t *testing.T) {
 			},
 		},
 	})
+
 	require.Equal(t, []string{"zip", "7z"}, packageFormats(ctx.Config.Archives[0], "windows"))
 	require.Equal(t, []string{"tar.gz", "tar.xz"}, packageFormats(ctx.Config.Archives[0], "linux"))
 	require.Equal(t, []string{"none"}, packageFormats(ctx.Config.Archives[0], "darwin"))
@@ -926,8 +934,8 @@ func TestBinaryOverride(t *testing.T) {
 				},
 			},
 		},
-		testctx.WithCurrentTag("v0.0.1"),
-	)
+		testctx.WithCurrentTag("v0.0.1"))
+
 	ctx.Artifacts.Add(&artifact.Artifact{
 		Goos:   "darwin",
 		Goarch: "amd64",
@@ -999,8 +1007,8 @@ func TestRunPipeSameArchiveFilename(t *testing.T) {
 					Formats: []string{"tar.gz"},
 				},
 			},
-		},
-	)
+		})
+
 	ctx.Artifacts.Add(&artifact.Artifact{
 		Goos:   "darwin",
 		Goarch: "amd64",
@@ -1087,6 +1095,7 @@ func TestSeveralArchivesWithTheSameID(t *testing.T) {
 			},
 		},
 	})
+
 	require.EqualError(t, Pipe{}.Default(ctx), "found 2 archives with the ID 'a', please fix your config")
 }
 
@@ -1186,6 +1195,7 @@ func TestInvalidFormat(t *testing.T) {
 			},
 		},
 	})
+
 	require.EqualError(t, Pipe{}.Run(ctx), "invalid archive format: 7z")
 }
 
@@ -1213,6 +1223,7 @@ func TestIssue3803(t *testing.T) {
 			},
 		},
 	})
+
 	require.NoError(t, Pipe{}.Run(ctx))
 	archives := ctx.Artifacts.List()
 	require.Len(t, archives, 2)
@@ -1236,6 +1247,7 @@ func TestExtraFormatWhenOverride(t *testing.T) {
 			},
 		},
 	})
+
 	windowsBuild := &artifact.Artifact{
 		Goos:    "windows",
 		Goarch:  "amd64",
@@ -1291,8 +1303,7 @@ func TestFormatOverrideWithNoFormatOrNoGoos(t *testing.T) {
 			},
 		},
 		testctx.WithVersion("0.0.1"),
-		testctx.WithCurrentTag("v0.0.1"),
-	)
+		testctx.WithCurrentTag("v0.0.1"))
 
 	windowsBuild := &artifact.Artifact{
 		Goos:    "windows",
@@ -1337,6 +1348,7 @@ func TestDefaultDeprecatd(t *testing.T) {
 			},
 		},
 	})
+
 	require.NoError(t, Pipe{}.Default(ctx))
 	require.True(t, ctx.Deprecated)
 	require.Equal(t, "tar.gz", ctx.Config.Archives[0].Formats[0])

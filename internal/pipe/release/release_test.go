@@ -49,7 +49,7 @@ func TestRunPipeWithoutIDsThenDoesNotFilter(t *testing.T) {
 			IncludeMeta: true,
 		},
 	}
-	ctx := testctx.NewWithCfg(config, testctx.WithCurrentTag("v1.0.0"))
+	ctx := testctx.WrapWithCfg(t.Context(), config, testctx.WithCurrentTag("v1.0.0"))
 	ctx.Artifacts.Add(&artifact.Artifact{
 		Type: artifact.UploadableArchive,
 		Name: "bin.tar.gz",
@@ -168,7 +168,7 @@ func TestRunPipeWithIDsThenFilters(t *testing.T) {
 			},
 		},
 	}
-	ctx := testctx.NewWithCfg(config, testctx.WithCurrentTag("v1.0.0"))
+	ctx := testctx.WrapWithCfg(t.Context(), config, testctx.WithCurrentTag("v1.0.0"))
 	ctx.Artifacts.Add(&artifact.Artifact{
 		Type: artifact.UploadableArchive,
 		Name: "bin.tar.gz",
@@ -222,7 +222,7 @@ func TestRunPipeReleaseCreationFailed(t *testing.T) {
 			},
 		},
 	}
-	ctx := testctx.NewWithCfg(config, testctx.WithCurrentTag("v1.0.0"))
+	ctx := testctx.WrapWithCfg(t.Context(), config, testctx.WithCurrentTag("v1.0.0"))
 	client := &client.Mock{
 		FailToCreateRelease: true,
 	}
@@ -241,7 +241,7 @@ func TestRunPipeWithFileThatDontExist(t *testing.T) {
 			},
 		},
 	}
-	ctx := testctx.NewWithCfg(config, testctx.WithCurrentTag("v1.0.0"))
+	ctx := testctx.WrapWithCfg(t.Context(), config, testctx.WithCurrentTag("v1.0.0"))
 	ctx.Artifacts.Add(&artifact.Artifact{
 		Type: artifact.UploadableArchive,
 		Name: "bin.tar.gz",
@@ -266,7 +266,7 @@ func TestRunPipeUploadFailure(t *testing.T) {
 			},
 		},
 	}
-	ctx := testctx.NewWithCfg(config, testctx.WithCurrentTag("v1.0.0"))
+	ctx := testctx.WrapWithCfg(t.Context(), config, testctx.WithCurrentTag("v1.0.0"))
 	ctx.Artifacts.Add(&artifact.Artifact{
 		Type: artifact.UploadableArchive,
 		Name: "bin.tar.gz",
@@ -294,7 +294,7 @@ func TestRunPipeExtraFileNotFound(t *testing.T) {
 			},
 		},
 	}
-	ctx := testctx.NewWithCfg(config, testctx.WithCurrentTag("v1.0.0"))
+	ctx := testctx.WrapWithCfg(t.Context(), config, testctx.WithCurrentTag("v1.0.0"))
 	client := &client.Mock{}
 	require.EqualError(t, doPublish(ctx, client), "globbing failed for pattern ./nope: matching \"./nope\": file does not exist")
 	require.True(t, client.CreatedRelease)
@@ -314,7 +314,7 @@ func TestRunPipeExtraOverride(t *testing.T) {
 			},
 		},
 	}
-	ctx := testctx.NewWithCfg(config, testctx.WithCurrentTag("v1.0.0"))
+	ctx := testctx.WrapWithCfg(t.Context(), config, testctx.WithCurrentTag("v1.0.0"))
 	client := &client.Mock{}
 	require.NoError(t, doPublish(ctx, client))
 	require.True(t, client.CreatedRelease)
@@ -336,7 +336,7 @@ func TestRunPipeUploadRetry(t *testing.T) {
 			},
 		},
 	}
-	ctx := testctx.NewWithCfg(config, testctx.WithCurrentTag("v1.0.0"))
+	ctx := testctx.WrapWithCfg(t.Context(), config, testctx.WithCurrentTag("v1.0.0"))
 	ctx.Artifacts.Add(&artifact.Artifact{
 		Type: artifact.UploadableArchive,
 		Name: "bin.tar.gz",
@@ -356,15 +356,15 @@ func TestDefault(t *testing.T) {
 	testlib.GitInit(t)
 	testlib.GitRemoteAdd(t, "git@github.com:goreleaser/goreleaser.git")
 
-	ctx := testctx.NewWithCfg(
+	ctx := testctx.WrapWithCfg(t.Context(),
 		config.Project{
 			GitHubURLs: config.GitHubURLs{
 				Download: "https://github.com",
 			},
 		},
 		testctx.GitHubTokenType,
-		testctx.WithCurrentTag("v1.0.0"),
-	)
+		testctx.WithCurrentTag("v1.0.0"))
+
 	require.NoError(t, Pipe{}.Default(ctx))
 	require.Equal(t, "goreleaser", ctx.Config.Release.GitHub.Name)
 	require.Equal(t, "goreleaser", ctx.Config.Release.GitHub.Owner)
@@ -375,15 +375,15 @@ func TestDefaultInvalidURL(t *testing.T) {
 	testlib.Mktmp(t)
 	testlib.GitInit(t)
 	testlib.GitRemoteAdd(t, "git@github.com:goreleaser.git")
-	ctx := testctx.NewWithCfg(
+	ctx := testctx.WrapWithCfg(t.Context(),
 		config.Project{
 			GitHubURLs: config.GitHubURLs{
 				Download: "https://github.com",
 			},
 		},
 		testctx.GitHubTokenType,
-		testctx.WithCurrentTag("v1.0.0"),
-	)
+		testctx.WithCurrentTag("v1.0.0"))
+
 	require.Error(t, Pipe{}.Default(ctx))
 }
 
@@ -392,15 +392,15 @@ func TestDefaultWithGitlab(t *testing.T) {
 	testlib.GitInit(t)
 	testlib.GitRemoteAdd(t, "git@gitlab.com:gitlabowner/gitlabrepo.git")
 
-	ctx := testctx.NewWithCfg(
+	ctx := testctx.WrapWithCfg(t.Context(),
 		config.Project{
 			GitLabURLs: config.GitLabURLs{
 				Download: "https://gitlab.com",
 			},
 		},
 		testctx.GitLabTokenType,
-		testctx.WithCurrentTag("v1.0.0"),
-	)
+		testctx.WithCurrentTag("v1.0.0"))
+
 	require.NoError(t, Pipe{}.Default(ctx))
 	require.Equal(t, "gitlabrepo", ctx.Config.Release.GitLab.Name)
 	require.Equal(t, "gitlabowner", ctx.Config.Release.GitLab.Owner)
@@ -411,15 +411,15 @@ func TestDefaultWithGitlabInvalidURL(t *testing.T) {
 	testlib.Mktmp(t)
 	testlib.GitInit(t)
 	testlib.GitRemoteAdd(t, "git@gitlab.com:gitlabrepo.git")
-	ctx := testctx.NewWithCfg(
+	ctx := testctx.WrapWithCfg(t.Context(),
 		config.Project{
 			GitLabURLs: config.GitLabURLs{
 				Download: "https://gitlab.com",
 			},
 		},
 		testctx.GiteaTokenType,
-		testctx.WithCurrentTag("v1.0.0"),
-	)
+		testctx.WithCurrentTag("v1.0.0"))
+
 	require.Error(t, Pipe{}.Default(ctx))
 }
 
@@ -428,15 +428,15 @@ func TestDefaultWithGitea(t *testing.T) {
 	testlib.GitInit(t)
 	testlib.GitRemoteAdd(t, "git@gitea.example.com:giteaowner/gitearepo.git")
 
-	ctx := testctx.NewWithCfg(
+	ctx := testctx.WrapWithCfg(t.Context(),
 		config.Project{
 			GiteaURLs: config.GiteaURLs{
 				Download: "https://git.honk.com",
 			},
 		},
 		testctx.GiteaTokenType,
-		testctx.WithCurrentTag("v1.0.0"),
-	)
+		testctx.WithCurrentTag("v1.0.0"))
+
 	require.NoError(t, Pipe{}.Default(ctx))
 	require.Equal(t, "gitearepo", ctx.Config.Release.Gitea.Name)
 	require.Equal(t, "giteaowner", ctx.Config.Release.Gitea.Owner)
@@ -447,15 +447,15 @@ func TestDefaultWithGiteaInvalidURL(t *testing.T) {
 	testlib.Mktmp(t)
 	testlib.GitInit(t)
 	testlib.GitRemoteAdd(t, "git@gitea.example.com:gitearepo.git")
-	ctx := testctx.NewWithCfg(
+	ctx := testctx.WrapWithCfg(t.Context(),
 		config.Project{
 			GiteaURLs: config.GiteaURLs{
 				Download: "https://git.honk.com",
 			},
 		},
 		testctx.GiteaTokenType,
-		testctx.WithCurrentTag("v1.0.0"),
-	)
+		testctx.WithCurrentTag("v1.0.0"))
+
 	require.Error(t, Pipe{}.Default(ctx))
 }
 
@@ -465,11 +465,12 @@ func TestDefaultPreRelease(t *testing.T) {
 	testlib.GitRemoteAdd(t, "git@github.com:goreleaser/goreleaser.git")
 
 	t.Run("prerelease", func(t *testing.T) {
-		ctx := testctx.NewWithCfg(config.Project{
+		ctx := testctx.WrapWithCfg(t.Context(), config.Project{
 			Release: config.Release{
 				Prerelease: "true",
 			},
 		})
+
 		ctx.TokenType = context.TokenTypeGitHub
 		ctx.Semver = context.Semver{
 			Major: 1,
@@ -481,9 +482,10 @@ func TestDefaultPreRelease(t *testing.T) {
 	})
 
 	t.Run("release", func(t *testing.T) {
-		ctx := testctx.NewWithCfg(config.Project{
+		ctx := testctx.WrapWithCfg(t.Context(), config.Project{
 			Release: config.Release{},
 		})
+
 		ctx.TokenType = context.TokenTypeGitHub
 		ctx.Semver = context.Semver{
 			Major:      1,
@@ -496,35 +498,35 @@ func TestDefaultPreRelease(t *testing.T) {
 	})
 
 	t.Run("auto-release", func(t *testing.T) {
-		ctx := testctx.NewWithCfg(
+		ctx := testctx.WrapWithCfg(t.Context(),
 			config.Project{
 				Release: config.Release{
 					Prerelease: "auto",
 				},
 			},
 			testctx.GitHubTokenType,
-			testctx.WithSemver(1, 0, 0, ""),
-		)
+			testctx.WithSemver(1, 0, 0, ""))
+
 		require.NoError(t, Pipe{}.Default(ctx))
 		require.False(t, ctx.PreRelease)
 	})
 
 	t.Run("auto-rc", func(t *testing.T) {
-		ctx := testctx.NewWithCfg(
+		ctx := testctx.WrapWithCfg(t.Context(),
 			config.Project{
 				Release: config.Release{
 					Prerelease: "auto",
 				},
 			},
 			testctx.GitHubTokenType,
-			testctx.WithSemver(1, 0, 0, "rc1"),
-		)
+			testctx.WithSemver(1, 0, 0, "rc1"))
+
 		require.NoError(t, Pipe{}.Default(ctx))
 		require.True(t, ctx.PreRelease)
 	})
 
 	t.Run("auto-rc-github-setup", func(t *testing.T) {
-		ctx := testctx.NewWithCfg(
+		ctx := testctx.WrapWithCfg(t.Context(),
 			config.Project{
 				Release: config.Release{
 					GitHub: config.Repo{
@@ -535,8 +537,8 @@ func TestDefaultPreRelease(t *testing.T) {
 				},
 			},
 			testctx.GitHubTokenType,
-			testctx.WithSemver(1, 0, 0, "rc1"),
-		)
+			testctx.WithSemver(1, 0, 0, "rc1"))
+
 		require.NoError(t, Pipe{}.Default(ctx))
 		require.True(t, ctx.PreRelease)
 	})
@@ -547,11 +549,12 @@ func TestDefaultPipeDisabled(t *testing.T) {
 	testlib.GitInit(t)
 	testlib.GitRemoteAdd(t, "git@github.com:goreleaser/goreleaser.git")
 
-	ctx := testctx.NewWithCfg(config.Project{
+	ctx := testctx.WrapWithCfg(t.Context(), config.Project{
 		Release: config.Release{
 			Disable: "true",
 		},
 	})
+
 	ctx.TokenType = context.TokenTypeGitHub
 	testlib.AssertSkipped(t, Pipe{}.Default(ctx))
 	require.Empty(t, ctx.Config.Release.GitHub.Name)
@@ -563,7 +566,7 @@ func TestDefaultFilled(t *testing.T) {
 	testlib.GitInit(t)
 	testlib.GitRemoteAdd(t, "git@github.com:goreleaser/goreleaser.git")
 
-	ctx := testctx.NewWithCfg(config.Project{
+	ctx := testctx.WrapWithCfg(t.Context(), config.Project{
 		Release: config.Release{
 			GitHub: config.Repo{
 				Name:  "foo",
@@ -571,6 +574,7 @@ func TestDefaultFilled(t *testing.T) {
 			},
 		},
 	})
+
 	ctx.TokenType = context.TokenTypeGitHub
 	require.NoError(t, Pipe{}.Default(ctx))
 	require.Equal(t, "foo", ctx.Config.Release.GitHub.Name)
@@ -579,14 +583,14 @@ func TestDefaultFilled(t *testing.T) {
 
 func TestDefaultNotAGitRepo(t *testing.T) {
 	testlib.Mktmp(t)
-	ctx := testctx.New(testctx.GitHubTokenType)
+	ctx := testctx.Wrap(t.Context(), testctx.GitHubTokenType)
 	require.EqualError(t, Pipe{}.Default(ctx), "current folder is not a git repository")
 	require.Empty(t, ctx.Config.Release.GitHub.String())
 }
 
 func TestDefaultGitRepoWithoutOrigin(t *testing.T) {
 	testlib.Mktmp(t)
-	ctx := testctx.New(testctx.GitHubTokenType)
+	ctx := testctx.Wrap(t.Context(), testctx.GitHubTokenType)
 	testlib.GitInit(t)
 	require.EqualError(t, Pipe{}.Default(ctx), "no remote configured to list refs from")
 	require.Empty(t, ctx.Config.Release.GitHub.String())
@@ -594,20 +598,20 @@ func TestDefaultGitRepoWithoutOrigin(t *testing.T) {
 
 func TestDefaultNotAGitRepoSnapshot(t *testing.T) {
 	testlib.Mktmp(t)
-	ctx := testctx.New(testctx.GitHubTokenType, testctx.Snapshot)
+	ctx := testctx.Wrap(t.Context(), testctx.GitHubTokenType, testctx.Snapshot)
 	require.NoError(t, Pipe{}.Default(ctx))
 	require.Empty(t, ctx.Config.Release.GitHub.String())
 }
 
 func TestDefaultGitRepoWithoutRemote(t *testing.T) {
 	testlib.Mktmp(t)
-	ctx := testctx.New(testctx.GitHubTokenType)
+	ctx := testctx.Wrap(t.Context(), testctx.GitHubTokenType)
 	require.Error(t, Pipe{}.Default(ctx))
 	require.Empty(t, ctx.Config.Release.GitHub.String())
 }
 
 func TestDefaultMultipleReleasesDefined(t *testing.T) {
-	ctx := testctx.NewWithCfg(config.Project{
+	ctx := testctx.WrapWithCfg(t.Context(), config.Project{
 		Release: config.Release{
 			GitHub: config.Repo{
 				Owner: "githubName",
@@ -623,50 +627,55 @@ func TestDefaultMultipleReleasesDefined(t *testing.T) {
 			},
 		},
 	})
+
 	require.EqualError(t, Pipe{}.Default(ctx), ErrMultipleReleases.Error())
 }
 
 func TestSkip(t *testing.T) {
 	t.Run("skip", func(t *testing.T) {
-		ctx := testctx.NewWithCfg(config.Project{
+		ctx := testctx.WrapWithCfg(t.Context(), config.Project{
 			Release: config.Release{
 				Disable: "true",
 			},
 		})
+
 		b, err := Pipe{}.Skip(ctx)
 		require.NoError(t, err)
 		require.True(t, b)
 	})
 
 	t.Run("skip tmpl", func(t *testing.T) {
-		ctx := testctx.NewWithCfg(config.Project{
+		ctx := testctx.WrapWithCfg(t.Context(), config.Project{
 			Env: []string{"FOO=true"},
 			Release: config.Release{
 				Disable: "{{ .Env.FOO }}",
 			},
 		})
+
 		b, err := Pipe{}.Skip(ctx)
 		require.NoError(t, err)
 		require.True(t, b)
 	})
 
 	t.Run("tmpl err", func(t *testing.T) {
-		ctx := testctx.NewWithCfg(config.Project{
+		ctx := testctx.WrapWithCfg(t.Context(), config.Project{
 			Release: config.Release{
 				Disable: "{{ .Env.FOO }}",
 			},
 		})
+
 		_, err := Pipe{}.Skip(ctx)
 		require.Error(t, err)
 	})
 
 	t.Run("skip upload", func(t *testing.T) {
-		ctx := testctx.NewWithCfg(config.Project{
+		ctx := testctx.WrapWithCfg(t.Context(), config.Project{
 			Env: []string{"FOO=true"},
 			Release: config.Release{
 				SkipUpload: "{{ .Env.FOO }}",
 			},
 		})
+
 		ctx.Artifacts.Add(&artifact.Artifact{
 			Name: "a",
 			Path: "./doc.go",
@@ -680,11 +689,12 @@ func TestSkip(t *testing.T) {
 	})
 
 	t.Run("skip upload tmpl", func(t *testing.T) {
-		ctx := testctx.NewWithCfg(config.Project{
+		ctx := testctx.WrapWithCfg(t.Context(), config.Project{
 			Release: config.Release{
 				SkipUpload: "true",
 			},
 		})
+
 		ctx.Artifacts.Add(&artifact.Artifact{
 			Name: "a",
 			Path: "./doc.go",
@@ -698,7 +708,7 @@ func TestSkip(t *testing.T) {
 	})
 
 	t.Run("dont skip", func(t *testing.T) {
-		ctx := testctx.New()
+		ctx := testctx.Wrap(t.Context())
 		ctx.Artifacts.Add(&artifact.Artifact{
 			Name: "a",
 			Path: "./doc.go",
