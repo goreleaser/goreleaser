@@ -26,7 +26,7 @@ Usage:
     python3 scripts/update-sponsors.py
 
 Environment variables:
-    GITHUB_TOKEN - Required for fetching GitHub Sponsors
+    GITHUB_TOKEN - Required for fetching GitHub Sponsors (script will exit if not set)
 """
 
 import os
@@ -508,8 +508,8 @@ def main():
     print(f"\nGrouping {len(all_sponsors)} total sponsors by tier...")
     unified_tiers = group_members_by_tier(all_sponsors)
     
-    # Check if we have any sponsors after grouping
-    if not unified_tiers or not any(unified_tiers.values()):
+    # Check if we have any sponsors after grouping (all tier lists must have at least one member)
+    if not unified_tiers or not any(members for members in unified_tiers.values()):
         print("Error: No sponsors found after grouping by tier", file=sys.stderr)
         sys.exit(1)
     for tier_name, members_list in unified_tiers.items():
