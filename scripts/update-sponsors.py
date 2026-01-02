@@ -6,10 +6,17 @@ This script fetches the current list of sponsors and backers from both
 OpenCollective and GitHub Sponsors APIs and updates www/docs/sponsors.md
 and README.md with the latest data.
 
+Filters applied:
+- Only active sponsors
+- Only recurring contributions (excludes one-time)
+- Only public GitHub sponsorships (excludes private)
+
 Sponsors are grouped into tiers based on their monthly contribution:
-- Gold Sponsors: $100+ per month (with logo)
-- Silver Sponsors: $50-99 per month (with logo)
-- Bronze Sponsors: $20-49 per month (with logo)
+- Diamond Sponsors: $500+ per month (128px logo)
+- Platinum Sponsors: $250-499 per month (112px logo)
+- Gold Sponsors: $100-249 per month (96px logo)
+- Silver Sponsors: $50-99 per month (80px logo)
+- Bronze Sponsors: $20-49 per month (64px logo)
 - Backers: <$20 per month (text list only)
 
 Usage:
@@ -121,7 +128,7 @@ def fetch_members() -> List[Dict[str, Any]]:
 
 
 def fetch_github_sponsors(token: Optional[str]) -> List[Dict[str, Any]]:
-    """Fetch active, recurring GitHub sponsors."""
+    """Fetch active, recurring, public GitHub sponsors."""
     if not token:
         print("⚠ Skipping GitHub Sponsors (GITHUB_TOKEN not set)", file=sys.stderr)
         return []
@@ -150,6 +157,7 @@ def fetch_github_sponsors(token: Optional[str]) -> List[Dict[str, Any]]:
               monthlyPriceInDollars
               isOneTime
             }
+            privacyLevel
             createdAt
           }
         }
@@ -191,12 +199,17 @@ def fetch_github_sponsors(token: Optional[str]) -> List[Dict[str, Any]]:
     for s in sponsorships:
         entity = s.get("sponsorEntity", {})
         tier = s.get("tier", {})
+        privacy_level = s.get("privacyLevel", "PUBLIC")
         
         if not entity:
             continue
         
         # Skip one-time sponsors
         if tier.get("isOneTime", False):
+            continue
+        
+        # Skip private sponsors
+        if privacy_level != "PUBLIC":
             continue
         
         sponsors.append({
@@ -272,7 +285,11 @@ def group_members_by_tier(members: List[Dict[str, Any]]) -> Dict[str, List[Dict[
         }
         
         # Group by amount ranges
-        if monthly_amount >= 100:
+        if monthly_amount >= 500:
+            tier_key = "Diamond Sponsors"
+        elif monthly_amount >= 250:
+            tier_key = "Platinum Sponsors"
+        elif monthly_amount >= 100:
             tier_key = "Gold Sponsors"
         elif monthly_amount >= 50:
             tier_key = "Silver Sponsors"
@@ -301,8 +318,8 @@ def group_members_by_tier(members: List[Dict[str, Any]]) -> Dict[str, List[Dict[
     return tiers
 
 
-def generate_markdown_detailed(tiers: Dict[str, List[Dict[str, Any]]]) -> str:
-    """Generate detailed markdown for the sponsors.md file."""
+def generate_markdown(tiers: Dict[str, List[Dict[str, Any]]]) -> str:
+    """Generate markdown for sponsors list."""
     from datetime import datetime
     
     lines = []
@@ -310,10 +327,17 @@ def generate_markdown_detailed(tiers: Dict[str, List[Dict[str, Any]]]) -> str:
     lines.append(f"<!-- Last updated: {datetime.now().strftime('%Y-%m-%d %H:%M:%S UTC')} -->")
     lines.append("")
     
-    # Define tier order
-    tier_order = ["Gold Sponsors", "Silver Sponsors", "Bronze Sponsors", "Backers"]
+    # Define tier order and logo sizes
+    tier_config = {
+        "Diamond Sponsors": 128,
+        "Platinum Sponsors": 112,
+        "Gold Sponsors": 96,
+        "Silver Sponsors": 80,
+        "Bronze Sponsors": 64,
+        "Backers": 0  # Text only
+    }
     
-    for tier_name in tier_order:
+    for tier_name, logo_size in tier_config.items():
         if tier_name not in tiers:
             continue
         
@@ -334,7 +358,7 @@ def generate_markdown_detailed(tiers: Dict[str, List[Dict[str, Any]]]) -> str:
                 if member["imageUrl"]:
                     lines.append(
                         f'  <a href="{url}" target="_blank" rel="noopener sponsored">'
-                        f'<img src="{member["imageUrl"]}" alt="{member["name"]}" width="96" height="96" style="border-radius: 8px; margin: 8px;"></a>'
+                        f'<img src="{member["imageUrl"]}" alt="{member["name"]}" width="{logo_size}" height="{logo_size}" style="border-radius: 8px; margin: 8px;"></a>'
                     )
             lines.append("")
             lines.append("</div>")
@@ -345,48 +369,6 @@ def generate_markdown_detailed(tiers: Dict[str, List[Dict[str, Any]]]) -> str:
                 url = member["website"] or f"https://opencollective.com/{member['slug']}"
                 lines.append(f"- [{member['name']}]({url})")
             lines.append("")
-    
-    return "\n".join(lines)
-
-
-def generate_markdown_readme(tiers: Dict[str, List[Dict[str, Any]]]) -> str:
-    """Generate compact markdown for the README.md file."""
-    from datetime import datetime
-    
-    lines = []
-    lines.append(f"<!-- This list is auto-generated by scripts/update-sponsors.py -->")
-    lines.append(f"<!-- Last updated: {datetime.now().strftime('%Y-%m-%d %H:%M:%S UTC')} -->")
-    lines.append("")
-    
-    # Combine all sponsor tiers (not backers) into one section
-    sponsor_tiers = ["Gold Sponsors", "Silver Sponsors", "Bronze Sponsors"]
-    all_sponsors = []
-    for tier_name in sponsor_tiers:
-        if tier_name in tiers:
-            all_sponsors.extend(tiers[tier_name])
-    
-    if all_sponsors:
-        lines.append("### Sponsors")
-        lines.append("")
-        lines.append("Does your company use goreleaser? Help keep the project bug-free and feature rich by [sponsoring the project](https://opencollective.com/goreleaser#sponsor).")
-        lines.append("")
-        for i, member in enumerate(all_sponsors):
-            url = member["website"] or f"https://opencollective.com/{member['slug']}"
-            img_url = member["imageUrl"] or f"https://opencollective.com/goreleaser/sponsors/{i}/avatar"
-            lines.append(f'<a href="{url}" rel="nofollow sponsored" target="_blank"><img src="{img_url}"></a>')
-        lines.append("")
-    
-    # Backers section
-    if "Backers" in tiers and tiers["Backers"]:
-        lines.append("### Backers")
-        lines.append("")
-        lines.append("Love our work and community? [Become a backer](https://opencollective.com/goreleaser).")
-        lines.append("")
-        for i, member in enumerate(tiers["Backers"]):
-            url = member["website"] or f"https://opencollective.com/{member['slug']}"
-            img_url = member["imageUrl"] or f"https://opencollective.com/goreleaser/backers/{i}/avatar"
-            lines.append(f'<a href="{url}" rel="nofollow sponsored" target="_blank"><img src="{img_url}"></a>')
-        lines.append("")
     
     return "\n".join(lines)
 
@@ -437,7 +419,7 @@ def main():
     if github_token:
         print("Fetching sponsors from GitHub...")
         gh_members = fetch_github_sponsors(github_token)
-        print(f"✓ Found {len(gh_members)} active recurring GitHub sponsors")
+        print(f"✓ Found {len(gh_members)} active, recurring, public GitHub sponsors")
         all_sponsors.extend(gh_members)
     else:
         print("⚠ Skipping GitHub Sponsors (GITHUB_TOKEN not set)")
@@ -449,17 +431,14 @@ def main():
         print(f"  {tier_name}: {len(members_list)} member(s)")
     
     # Generate unified markdown
-    print("\nGenerating unified sponsors markdown for sponsors.md...")
-    markdown_detailed = generate_markdown_detailed(unified_tiers)
-    
-    print("Generating unified sponsors markdown for README.md...")
-    markdown_readme = generate_markdown_readme(unified_tiers)
+    print("\nGenerating unified sponsors markdown...")
+    markdown = generate_markdown(unified_tiers)
     
     print("Updating sponsors.md...")
-    update_file_with_markers(SPONSORS_FILE, markdown_detailed, SPONSORS_BEGIN_MARKER, SPONSORS_END_MARKER)
+    update_file_with_markers(SPONSORS_FILE, markdown, SPONSORS_BEGIN_MARKER, SPONSORS_END_MARKER)
     
     print("Updating README.md...")
-    update_file_with_markers(README_FILE, markdown_readme, SPONSORS_BEGIN_MARKER, SPONSORS_END_MARKER)
+    update_file_with_markers(README_FILE, markdown, SPONSORS_BEGIN_MARKER, SPONSORS_END_MARKER)
     
     print("\n✨ Done! Sponsors lists updated successfully.")
 
