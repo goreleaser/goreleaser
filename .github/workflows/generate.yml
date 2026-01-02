@@ -35,6 +35,9 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       - run: task docs:generate
+      - run: task docs:sponsors
+        env:
+          GITHUB_TOKEN: ${{ secrets.GH_PAT }}
       - run: task schema:generate
       - run: task schema:validate
       - run: task nix:licenses:generate
