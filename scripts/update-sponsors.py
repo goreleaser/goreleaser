@@ -351,9 +351,9 @@ def group_members_by_tier(members: List[Dict[str, Any]]) -> Dict[str, List[Dict[
         # Track this member
         seen_members[slug] = {"total_donations": total_donations, "tier": tier_key}
     
-    # Sort members within each tier by total donations (descending)
+    # Sort members within each tier by monthly amount (descending)
     for tier in tiers.values():
-        tier.sort(key=lambda x: x["total_donations"], reverse=True)
+        tier.sort(key=lambda x: x["monthly_amount"], reverse=True)
     
     return tiers
 
@@ -447,6 +447,8 @@ def generate_home_html(tiers: Dict[str, List[Dict[str, Any]]], min_monthly_amoun
             lines.append(f'\t\t\t\t\t\t<a href="{url}" target="_blank" rel="noopener sponsored">')
             lines.append(f'\t\t\t\t\t\t\t<img src="{member["imageUrl"]}" alt="{member["name"]}" width="{logo_size}" height="{logo_size}" style="border-radius: 8px;">')
             lines.append(f'\t\t\t\t\t\t</a>')
+            lines.append(f'\t\t\t\t\t\t<br>')
+            lines.append(f'\t\t\t\t\t\t{member["name"]}')
             lines.append(f'\t\t\t\t\t</p>')
         
         lines.append(f'\t\t\t\t</div>')
