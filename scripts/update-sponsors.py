@@ -26,7 +26,7 @@ Usage:
     python3 scripts/update-sponsors.py
 
 Environment variables:
-    GITHUB_TOKEN - Required for fetching GitHub Sponsors (optional, skips if not set)
+    GITHUB_TOKEN - Required for fetching GitHub Sponsors
 """
 
 import os
@@ -153,8 +153,8 @@ def fetch_github_sponsors(token: Optional[str]) -> List[Dict[str, Any]]:
     from datetime import datetime, timedelta
     
     if not token:
-        print("⚠ Skipping GitHub Sponsors (GITHUB_TOKEN not set)", file=sys.stderr)
-        return []
+        print("Error: GITHUB_TOKEN environment variable is required", file=sys.stderr)
+        sys.exit(1)
     
     query = """
     query {
@@ -206,14 +206,14 @@ def fetch_github_sponsors(token: Optional[str]) -> List[Dict[str, Any]]:
     except urllib.error.HTTPError as e:
         print(f"Error: GitHub API returned status code {e.code}", file=sys.stderr)
         print(f"Response: {e.read().decode('utf-8')}", file=sys.stderr)
-        return []
+        sys.exit(1)
     except urllib.error.URLError as e:
         print(f"Error: Failed to connect to GitHub API: {e}", file=sys.stderr)
-        return []
+        sys.exit(1)
     
     if "errors" in data:
         print(f"GraphQL errors: {data['errors']}", file=sys.stderr)
-        return []
+        sys.exit(1)
     
     sponsorships = data.get("data", {}).get("user", {}).get("sponsorshipsAsMaintainer", {}).get("nodes", [])
     
@@ -494,17 +494,24 @@ def main():
     # Fetch GitHub Sponsors
     github_token = os.environ.get("GITHUB_TOKEN")
     
-    if github_token:
-        print("Fetching sponsors from GitHub...")
-        gh_members = fetch_github_sponsors(github_token)
-        print(f"✓ Found {len(gh_members)} active GitHub sponsors (recurring + one-time from last year)")
-        all_sponsors.extend(gh_members)
-    else:
-        print("⚠ Skipping GitHub Sponsors (GITHUB_TOKEN not set)")
+    print("Fetching sponsors from GitHub...")
+    gh_members = fetch_github_sponsors(github_token)
+    print(f"✓ Found {len(gh_members)} active GitHub sponsors (recurring + one-time from last year)")
+    all_sponsors.extend(gh_members)
+    
+    # Check if we found any sponsors at all
+    if not all_sponsors:
+        print("Error: No sponsors found from either OpenCollective or GitHub", file=sys.stderr)
+        sys.exit(1)
     
     # Group all sponsors together by tier
     print(f"\nGrouping {len(all_sponsors)} total sponsors by tier...")
     unified_tiers = group_members_by_tier(all_sponsors)
+    
+    # Check if we have any sponsors after grouping
+    if not unified_tiers or not any(unified_tiers.values()):
+        print("Error: No sponsors found after grouping by tier", file=sys.stderr)
+        sys.exit(1)
     for tier_name, members_list in unified_tiers.items():
         print(f"  {tier_name}: {len(members_list)} member(s)")
     
