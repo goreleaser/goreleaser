@@ -8,7 +8,8 @@ and README.md with the latest data.
 
 Filters applied:
 - Only active sponsors
-- Only recurring contributions (excludes one-time)
+- Recurring contributions: full monthly amount
+- One-time contributions: included if within last year, divided by 12
 - Only public GitHub sponsorships (excludes private)
 
 Sponsors are grouped into tiers based on their monthly contribution:
@@ -49,6 +50,8 @@ SPONSORS_END_MARKER = "<!-- sponsors:end -->"
 
 def fetch_members() -> List[Dict[str, Any]]:
     """Fetch all active members from OpenCollective using GraphQL."""
+    from datetime import datetime, timedelta
+    
     query = """
     query collective($slug: String!) {
       collective(slug: $slug) {
@@ -104,8 +107,10 @@ def fetch_members() -> List[Dict[str, Any]]:
     
     members = data.get("data", {}).get("collective", {}).get("members", {}).get("nodes", [])
     
-    # Filter out inactive members and one-time contributions
+    # Filter out inactive members
+    one_year_ago = datetime.now() - timedelta(days=365)
     active_members = []
+    
     for m in members:
         # Must be active
         if not m.get("isActive", False):
@@ -115,20 +120,34 @@ def fetch_members() -> List[Dict[str, Any]]:
         if m.get("totalDonations", {}).get("value", 0) <= 0:
             continue
         
-        # Check if it's a recurring contribution
+        # Check if it's a recurring or recent one-time contribution
         tier_info = m.get("tier", {})
         if tier_info:
             frequency = tier_info.get("frequency")
-            # Only include if it's recurring (MONTHLY or YEARLY)
-            # Skip ONETIME or null frequency
+            
+            # Include recurring contributions
             if frequency in ["MONTHLY", "YEARLY"]:
                 active_members.append(m)
+            # Include one-time contributions from the last year
+            elif frequency == "ONETIME":
+                since_str = m.get("since")
+                if since_str:
+                    try:
+                        # Parse ISO 8601 date
+                        since_date = datetime.fromisoformat(since_str.replace('Z', '+00:00'))
+                        if since_date.replace(tzinfo=None) >= one_year_ago:
+                            active_members.append(m)
+                    except (ValueError, AttributeError):
+                        # Skip if date parsing fails
+                        pass
         
     return active_members
 
 
 def fetch_github_sponsors(token: Optional[str]) -> List[Dict[str, Any]]:
-    """Fetch active, recurring, public GitHub sponsors."""
+    """Fetch active, recurring, public GitHub sponsors and recent one-time sponsors."""
+    from datetime import datetime, timedelta
+    
     if not token:
         print("⚠ Skipping GitHub Sponsors (GITHUB_TOKEN not set)", file=sys.stderr)
         return []
@@ -194,23 +213,38 @@ def fetch_github_sponsors(token: Optional[str]) -> List[Dict[str, Any]]:
     
     sponsorships = data.get("data", {}).get("user", {}).get("sponsorshipsAsMaintainer", {}).get("nodes", [])
     
-    # Convert to similar format as OpenCollective, filtering for recurring only
+    # Convert to similar format as OpenCollective
+    one_year_ago = datetime.now() - timedelta(days=365)
     sponsors = []
+    
     for s in sponsorships:
         entity = s.get("sponsorEntity", {})
         tier = s.get("tier", {})
         privacy_level = s.get("privacyLevel", "PUBLIC")
+        created_at_str = s.get("createdAt")
         
         if not entity:
-            continue
-        
-        # Skip one-time sponsors
-        if tier.get("isOneTime", False):
             continue
         
         # Skip private sponsors
         if privacy_level != "PUBLIC":
             continue
+        
+        is_one_time = tier.get("isOneTime", False)
+        monthly_price = tier.get("monthlyPriceInDollars", 0)
+        
+        # For one-time sponsors, check if within last year
+        if is_one_time:
+            if not created_at_str:
+                continue
+            try:
+                created_at = datetime.fromisoformat(created_at_str.replace('Z', '+00:00'))
+                if created_at.replace(tzinfo=None) < one_year_ago:
+                    continue
+                # Divide by 12 for one-time contributions
+                monthly_price = monthly_price / 12
+            except (ValueError, AttributeError):
+                continue
         
         sponsors.append({
             "account": {
@@ -222,14 +256,14 @@ def fetch_github_sponsors(token: Optional[str]) -> List[Dict[str, Any]]:
             "tier": {
                 "name": tier.get("name", "Sponsor"),
                 "amount": {
-                    "value": tier.get("monthlyPriceInDollars", 0)
+                    "value": monthly_price
                 },
-                "frequency": "MONTHLY"
+                "frequency": "ONETIME" if is_one_time else "MONTHLY"
             },
             "totalDonations": {
-                "value": tier.get("monthlyPriceInDollars", 0)  # Approximate
+                "value": monthly_price  # Approximate
             },
-            "since": s.get("createdAt"),
+            "since": created_at_str,
             "isActive": True
         })
     
@@ -263,10 +297,12 @@ def group_members_by_tier(members: List[Dict[str, Any]]) -> Dict[str, List[Dict[
             if amount_info:
                 monthly_amount = amount_info.get("value", 0)
             
-            # Convert yearly to monthly
             frequency = tier_info.get("frequency")
+            # Convert yearly to monthly
             if frequency == "YEARLY" and monthly_amount > 0:
                 monthly_amount = monthly_amount / 12
+            # One-time contributions already divided by 12 in fetch functions
+            # so no additional processing needed here
         
         # Skip if no valid amount
         if monthly_amount <= 0:
@@ -419,7 +455,7 @@ def main():
     if github_token:
         print("Fetching sponsors from GitHub...")
         gh_members = fetch_github_sponsors(github_token)
-        print(f"✓ Found {len(gh_members)} active, recurring, public GitHub sponsors")
+        print(f"✓ Found {len(gh_members)} active GitHub sponsors (recurring + one-time from last year)")
         all_sponsors.extend(gh_members)
     else:
         print("⚠ Skipping GitHub Sponsors (GITHUB_TOKEN not set)")
