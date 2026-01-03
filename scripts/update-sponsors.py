@@ -489,6 +489,9 @@ def main():
     print("Fetching sponsors from OpenCollective...")
     oc_members = fetch_members()
     print(f"✓ Found {len(oc_members)} active OpenCollective sponsors/backers")
+    if len(oc_members) == 0:
+        print("Error: Found 0 sponsors from OpenCollective - API may not be working correctly", file=sys.stderr)
+        sys.exit(1)
     all_sponsors.extend(oc_members)
     
     # Fetch GitHub Sponsors
@@ -497,12 +500,10 @@ def main():
     print("Fetching sponsors from GitHub...")
     gh_members = fetch_github_sponsors(github_token)
     print(f"✓ Found {len(gh_members)} active GitHub sponsors (recurring + one-time from last year)")
-    all_sponsors.extend(gh_members)
-    
-    # Check if we found any sponsors at all
-    if not all_sponsors:
-        print("Error: No sponsors found from either OpenCollective or GitHub", file=sys.stderr)
+    if len(gh_members) == 0:
+        print("Error: Found 0 sponsors from GitHub - API may not be working correctly or token lacks permissions", file=sys.stderr)
         sys.exit(1)
+    all_sponsors.extend(gh_members)
     
     # Group all sponsors together by tier
     print(f"\nGrouping {len(all_sponsors)} total sponsors by tier...")

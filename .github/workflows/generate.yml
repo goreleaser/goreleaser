@@ -37,7 +37,7 @@ jobs:
       - run: task docs:generate
       - run: task docs:sponsors
         env:
-          GITHUB_TOKEN: ${{ secrets.GH_PAT }}
+          GITHUB_TOKEN: ${{ secrets.SPONSORS_TOKEN }}
       - run: task schema:generate
       - run: task schema:validate
       - run: task nix:licenses:generate
