@@ -12,6 +12,7 @@ import (
 	"strings"
 
 	"github.com/caarlos0/log"
+	"github.com/goreleaser/goreleaser/v2/internal/changelog"
 	"github.com/goreleaser/goreleaser/v2/internal/client"
 	"github.com/goreleaser/goreleaser/v2/internal/git"
 	"github.com/goreleaser/goreleaser/v2/internal/tmpl"
@@ -19,7 +20,10 @@ import (
 )
 
 // Item is a type alias of [client.Changelog].
-type Item = client.ChangelogItem
+type (
+	Item   = changelog.Item
+	Author = changelog.Author
+)
 
 // ErrInvalidSortDirection happens when the sort order is invalid.
 var ErrInvalidSortDirection = errors.New("invalid sort direction")
@@ -52,7 +56,7 @@ func (Pipe) Default(ctx *context.Context) error {
 		case "", "git":
 			ctx.Config.Changelog.Format = "{{ .SHA }} {{ .Message }}"
 		default:
-			ctx.Config.Changelog.Format = "{{ .SHA }}: {{ .Message }} ({{ with .AuthorUsername }}@{{ . }}{{ else }}{{ .AuthorName }} <{{ .AuthorEmail }}>{{ end }})"
+			ctx.Config.Changelog.Format = "{{ .SHA }}: {{ .Message }} ({{ with .Author.Username }}@{{ . }}{{ else }}{{ .Author.Name }} <{{ .Author.Email }}>{{ end }})"
 		}
 	}
 	return nil
@@ -256,6 +260,8 @@ func formatEntry(ctx *context.Context, entry Item) (string, error) {
 	line, err := tmpl.New(ctx).WithExtraFields(tmpl.Fields{
 		"SHA":            abbrevEntry(entry.SHA, ctx.Config.Changelog.Abbrev),
 		"Message":        entry.Message,
+		"Author":         entry.Author,
+		"CoAuthors":      entry.CoAuthors,
 		"AuthorUsername": entry.AuthorUsername,
 		"AuthorName":     entry.AuthorName,
 		"AuthorEmail":    entry.AuthorEmail,
@@ -454,7 +460,7 @@ func (g gitChangeloger) Log(ctx *context.Context) ([]Item, error) {
 		return nil, err
 	}
 	var entries []Item
-	for line := range strings.SplitSeq(out, "\n") {
+	for line := range strings.SplitSeq(out, commitDivider+"\n") {
 		if strings.TrimSpace(line) == "" {
 			continue
 		}
@@ -499,36 +505,48 @@ func (w wrappingChangeloger) Log(ctx *context.Context) (string, error) {
 }
 
 const (
-	shaOpen      = "<goreleaser_sha>"
-	shaClose     = "</goreleaser_sha>"
-	messageOpen  = "<goreleaser_message>"
-	messageClose = "</goreleaser_message>"
-	authorOpen   = "<goreleaser_author>"
-	authorClose  = "</goreleaser_author>"
-	emailOpen    = "<goreleaser_email>"
-	emailClose   = "</goreleaser_email>"
+	shaOpen          = "<goreleaser_sha>"
+	shaClose         = "</goreleaser_sha>"
+	messageOpen      = "<goreleaser_message>"
+	messageClose     = "</goreleaser_message>"
+	messageBodyOpen  = "<goreleaser_message_body>"
+	messageBodyClose = "</goreleaser_message_body>"
+	authorOpen       = "<goreleaser_author>"
+	authorClose      = "</goreleaser_author>"
+	emailOpen        = "<goreleaser_email>"
+	emailClose       = "</goreleaser_email>"
+	commitDivider    = "<goreleaser_commit_divider>"
 
 	gitLogFormat = shaOpen + "%H" + shaClose +
 		messageOpen + "%s" + messageClose +
+		messageBodyOpen + "%b" + messageBodyClose +
 		authorOpen + "%an" + authorClose +
-		emailOpen + "%aE" + emailClose
+		emailOpen + "%aE" + emailClose +
+		commitDivider
 )
 
 func decode(line string) Item {
 	var (
-		shaOpenIdx      = strings.Index(line, shaOpen) + len(shaOpen)
-		shaCloseIdx     = strings.Index(line, shaClose)
-		messageOpenIdx  = strings.Index(line, messageOpen) + len(messageOpen)
-		messageCloseIdx = strings.Index(line, messageClose)
-		authorOpenIdx   = strings.Index(line, authorOpen) + len(authorOpen)
-		authorCloseIdx  = strings.Index(line, authorClose)
-		emailOpenIdx    = strings.Index(line, emailOpen) + len(emailOpen)
-		emailCloseIdx   = strings.Index(line, emailClose)
+		shaOpenIdx          = strings.Index(line, shaOpen) + len(shaOpen)
+		shaCloseIdx         = strings.Index(line, shaClose)
+		messageOpenIdx      = strings.Index(line, messageOpen) + len(messageOpen)
+		messageCloseIdx     = strings.Index(line, messageClose)
+		messageBodyOpenIdx  = strings.Index(line, messageBodyOpen) + len(messageBodyOpen)
+		messageBodyCloseIdx = strings.Index(line, messageBodyClose)
+		authorOpenIdx       = strings.Index(line, authorOpen) + len(authorOpen)
+		authorCloseIdx      = strings.Index(line, authorClose)
+		emailOpenIdx        = strings.Index(line, emailOpen) + len(emailOpen)
+		emailCloseIdx       = strings.Index(line, emailClose)
 	)
 
 	return Item{
-		SHA:         line[shaOpenIdx:shaCloseIdx],
-		Message:     line[messageOpenIdx:messageCloseIdx],
+		SHA:     line[shaOpenIdx:shaCloseIdx],
+		Message: line[messageOpenIdx:messageCloseIdx],
+		Author: Author{
+			Name:  line[authorOpenIdx:authorCloseIdx],
+			Email: line[emailOpenIdx:emailCloseIdx],
+		},
+		CoAuthors:   changelog.ExtractCoAuthors(line[messageBodyOpenIdx:messageBodyCloseIdx]),
 		AuthorName:  line[authorOpenIdx:authorCloseIdx],
 		AuthorEmail: line[emailOpenIdx:emailCloseIdx],
 	}

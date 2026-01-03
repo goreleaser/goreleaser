@@ -13,6 +13,7 @@ import (
 	"code.gitea.io/sdk/gitea"
 	"github.com/caarlos0/log"
 	"github.com/goreleaser/goreleaser/v2/internal/artifact"
+	"github.com/goreleaser/goreleaser/v2/internal/changelog"
 	"github.com/goreleaser/goreleaser/v2/internal/tmpl"
 	"github.com/goreleaser/goreleaser/v2/pkg/config"
 	"github.com/goreleaser/goreleaser/v2/pkg/context"
@@ -84,10 +85,17 @@ func (c *giteaClient) Changelog(_ *context.Context, repo Repo, prev, current str
 
 	for _, commit := range result.Commits {
 		item := ChangelogItem{
-			SHA:     commit.SHA,
-			Message: strings.Split(commit.RepoCommit.Message, "\n")[0],
+			SHA:       commit.SHA,
+			Message:   strings.Split(commit.RepoCommit.Message, "\n")[0],
+			CoAuthors: changelog.ExtractCoAuthors(commit.RepoCommit.Message),
 		}
+
 		if author := commit.Author; author != nil {
+			item.Author = Author{
+				Name:     author.FullName,
+				Email:    author.Email,
+				Username: author.UserName,
+			}
 			item.AuthorName = author.FullName
 			item.AuthorEmail = author.Email
 			item.AuthorUsername = author.UserName
