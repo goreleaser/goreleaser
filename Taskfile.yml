@@ -134,7 +134,7 @@ tasks:
       - www/docs/security.md
 
   docs:sponsors:
-    desc: Update OpenCollective sponsors list
+    desc: Update OpenCollective and GitHub sponsors list
     cmds:
       - python3 scripts/update-sponsors.py
     sources:
