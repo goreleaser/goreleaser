@@ -15,19 +15,20 @@ func TestStringer(t *testing.T) {
 
 func TestSkip(t *testing.T) {
 	t.Run("skip", func(t *testing.T) {
-		skip, err := Pipe{}.Skip(testctx.New())
+		skip, err := Pipe{}.Skip(testctx.Wrap(t.Context()))
 		require.NoError(t, err)
 		require.True(t, skip)
 	})
 
 	t.Run("dont skip", func(t *testing.T) {
-		ctx := testctx.NewWithCfg(config.Project{
+		ctx := testctx.WrapWithCfg(t.Context(), config.Project{
 			Announce: config.Announce{
 				SMTP: config.SMTP{
 					Enabled: "true",
 				},
 			},
 		})
+
 		skip, err := Pipe{}.Skip(ctx)
 		require.NoError(t, err)
 		require.False(t, skip)
@@ -35,13 +36,14 @@ func TestSkip(t *testing.T) {
 }
 
 func TestDefault(t *testing.T) {
-	ctx := testctx.NewWithCfg(config.Project{
+	ctx := testctx.WrapWithCfg(t.Context(), config.Project{
 		Announce: config.Announce{
 			SMTP: config.SMTP{
 				Enabled: "true",
 			},
 		},
 	})
+
 	require.NoError(t, Pipe{}.Default(ctx))
 	require.Equal(t, defaultBodyTemplate, ctx.Config.Announce.SMTP.BodyTemplate)
 	require.Equal(t, defaultSubjectTemplate, ctx.Config.Announce.SMTP.SubjectTemplate)

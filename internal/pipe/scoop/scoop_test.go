@@ -27,7 +27,7 @@ func TestDescription(t *testing.T) {
 func TestDefault(t *testing.T) {
 	testlib.Mktmp(t)
 
-	ctx := testctx.NewWithCfg(
+	ctx := testctx.WrapWithCfg(t.Context(),
 		config.Project{
 			ProjectName: "barr",
 			Scoops: []config.Scoop{
@@ -38,8 +38,8 @@ func TestDefault(t *testing.T) {
 				},
 			},
 		},
-		testctx.GitHubTokenType,
-	)
+		testctx.GitHubTokenType)
+
 	require.NoError(t, Pipe{}.Default(ctx))
 	require.Len(t, ctx.Config.Scoops, 1)
 	require.Equal(t, ctx.Config.ProjectName, ctx.Config.Scoops[0].Name)
@@ -86,7 +86,7 @@ func Test_doRun(t *testing.T) {
 		{
 			"multiple_artifacts",
 			args{
-				testctx.NewWithCfg(
+				testctx.WrapWithCfg(t.Context(),
 					config.Project{
 						Dist:        t.TempDir(),
 						ProjectName: "multi-arts",
@@ -102,8 +102,8 @@ func Test_doRun(t *testing.T) {
 					},
 					testctx.GitHubTokenType,
 					testctx.WithCurrentTag("v1.0.1"),
-					testctx.WithVersion("1.0.1"),
-				),
+					testctx.WithVersion("1.0.1")),
+
 				client.NewMock(),
 			},
 			[]artifact.Artifact{
@@ -128,7 +128,7 @@ func Test_doRun(t *testing.T) {
 		{
 			"multiple_binaries",
 			args{
-				testctx.NewWithCfg(
+				testctx.WrapWithCfg(t.Context(),
 					config.Project{
 						Dist:        t.TempDir(),
 						ProjectName: "multi-bins",
@@ -145,8 +145,8 @@ func Test_doRun(t *testing.T) {
 					},
 					testctx.GitHubTokenType,
 					testctx.WithCurrentTag("v1.0.1"),
-					testctx.WithVersion("1.0.1"),
-				),
+					testctx.WithVersion("1.0.1")),
+
 				client.NewMock(),
 			},
 			[]artifact.Artifact{
@@ -184,7 +184,7 @@ func Test_doRun(t *testing.T) {
 		{
 			"valid public github",
 			args{
-				testctx.NewWithCfg(
+				testctx.WrapWithCfg(t.Context(),
 					config.Project{
 						Dist:        t.TempDir(),
 						ProjectName: "run-pipe",
@@ -202,8 +202,8 @@ func Test_doRun(t *testing.T) {
 					},
 					testctx.GitHubTokenType,
 					testctx.WithCurrentTag("v1.0.1"),
-					testctx.WithVersion("1.0.1"),
-				),
+					testctx.WithVersion("1.0.1")),
+
 				client.NewMock(),
 			},
 			[]artifact.Artifact{
@@ -238,7 +238,7 @@ func Test_doRun(t *testing.T) {
 		{
 			"git_remote",
 			args{
-				testctx.NewWithCfg(
+				testctx.WrapWithCfg(t.Context(),
 					config.Project{
 						ProjectName: "git-run-pipe",
 						Dist:        t.TempDir(),
@@ -260,8 +260,8 @@ func Test_doRun(t *testing.T) {
 					},
 					testctx.GitHubTokenType,
 					testctx.WithCurrentTag("v1.0.1"),
-					testctx.WithVersion("1.0.1"),
-				),
+					testctx.WithVersion("1.0.1")),
+
 				client.NewMock(),
 			},
 			[]artifact.Artifact{
@@ -301,7 +301,7 @@ func Test_doRun(t *testing.T) {
 		{
 			"wrap in directory",
 			args{
-				testctx.NewWithCfg(
+				testctx.WrapWithCfg(t.Context(),
 					config.Project{
 						ProjectName: "run-pipe",
 						Scoops: []config.Scoop{
@@ -317,8 +317,8 @@ func Test_doRun(t *testing.T) {
 					},
 					testctx.GitHubTokenType,
 					testctx.WithCurrentTag("v1.0.1"),
-					testctx.WithVersion("1.0.1"),
-				),
+					testctx.WithVersion("1.0.1")),
+
 				client.NewMock(),
 			},
 			[]artifact.Artifact{
@@ -351,7 +351,7 @@ func Test_doRun(t *testing.T) {
 		{
 			"valid enterprise github",
 			args{
-				testctx.NewWithCfg(
+				testctx.WrapWithCfg(t.Context(),
 					config.Project{
 						GitHubURLs:  config.GitHubURLs{Download: "https://api.custom.github.enterprise.com"},
 						ProjectName: "run-pipe",
@@ -368,8 +368,8 @@ func Test_doRun(t *testing.T) {
 					},
 					testctx.GitHubTokenType,
 					testctx.WithCurrentTag("v1.0.1"),
-					testctx.WithVersion("1.0.1"),
-				),
+					testctx.WithVersion("1.0.1")),
+
 				client.NewMock(),
 			},
 			[]artifact.Artifact{
@@ -403,7 +403,7 @@ func Test_doRun(t *testing.T) {
 		{
 			"valid public gitlab",
 			args{
-				testctx.NewWithCfg(
+				testctx.WrapWithCfg(t.Context(),
 					config.Project{
 						ProjectName: "run-pipe",
 						Scoops: []config.Scoop{
@@ -419,8 +419,8 @@ func Test_doRun(t *testing.T) {
 					},
 					testctx.GitHubTokenType,
 					testctx.WithCurrentTag("v1.0.1"),
-					testctx.WithVersion("1.0.1"),
-				),
+					testctx.WithVersion("1.0.1")),
+
 				client.NewMock(),
 			},
 			[]artifact.Artifact{
@@ -451,7 +451,7 @@ func Test_doRun(t *testing.T) {
 		{
 			"valid enterprise gitlab",
 			args{
-				testctx.NewWithCfg(
+				testctx.WrapWithCfg(t.Context(),
 					config.Project{
 						GitHubURLs:  config.GitHubURLs{Download: "https://api.custom.gitlab.enterprise.com"},
 						ProjectName: "run-pipe",
@@ -468,8 +468,8 @@ func Test_doRun(t *testing.T) {
 					},
 					testctx.GitHubTokenType,
 					testctx.WithCurrentTag("v1.0.1"),
-					testctx.WithVersion("1.0.1"),
-				),
+					testctx.WithVersion("1.0.1")),
+
 				client.NewMock(),
 			},
 			[]artifact.Artifact{
@@ -500,7 +500,7 @@ func Test_doRun(t *testing.T) {
 		{
 			"no windows build",
 			args{
-				testctx.NewWithCfg(
+				testctx.WrapWithCfg(t.Context(),
 					config.Project{
 						ProjectName: "run-pipe",
 						Scoops: []config.Scoop{
@@ -516,8 +516,8 @@ func Test_doRun(t *testing.T) {
 					},
 					testctx.GitHubTokenType,
 					testctx.WithCurrentTag("v1.0.1"),
-					testctx.WithVersion("1.0.1"),
-				),
+					testctx.WithVersion("1.0.1")),
+
 				client.NewMock(),
 			},
 			[]artifact.Artifact{},
@@ -528,7 +528,7 @@ func Test_doRun(t *testing.T) {
 		{
 			"is prerelease and skip upload set to auto",
 			args{
-				testctx.NewWithCfg(
+				testctx.WrapWithCfg(t.Context(),
 					config.Project{
 						ProjectName: "run-pipe",
 						Scoops: []config.Scoop{
@@ -546,8 +546,8 @@ func Test_doRun(t *testing.T) {
 					testctx.GitHubTokenType,
 					testctx.WithCurrentTag("v1.0.1-pre.1"),
 					testctx.WithVersion("1.0.1-pre.1"),
-					testctx.WithSemver(1, 0, 0, "pre.1"),
-				),
+					testctx.WithSemver(1, 0, 0, "pre.1")),
+
 				client.NewMock(),
 			},
 			[]artifact.Artifact{
@@ -578,7 +578,7 @@ func Test_doRun(t *testing.T) {
 		{
 			"skip upload set to true",
 			args{
-				testctx.NewWithCfg(
+				testctx.WrapWithCfg(t.Context(),
 					config.Project{
 						ProjectName: "run-pipe",
 						Scoops: []config.Scoop{
@@ -595,8 +595,8 @@ func Test_doRun(t *testing.T) {
 					},
 					testctx.GitHubTokenType,
 					testctx.WithCurrentTag("v1.0.1"),
-					testctx.WithVersion("1.0.1"),
-				),
+					testctx.WithVersion("1.0.1")),
+
 				client.NewMock(),
 			},
 			[]artifact.Artifact{
@@ -627,7 +627,7 @@ func Test_doRun(t *testing.T) {
 		{
 			"no archive",
 			args{
-				testctx.NewWithCfg(
+				testctx.WrapWithCfg(t.Context(),
 					config.Project{
 						ProjectName: "run-pipe",
 						Scoops: []config.Scoop{
@@ -643,8 +643,8 @@ func Test_doRun(t *testing.T) {
 					},
 					testctx.GitHubTokenType,
 					testctx.WithCurrentTag("v1.0.1"),
-					testctx.WithVersion("1.0.1"),
-				),
+					testctx.WithVersion("1.0.1")),
+
 				client.NewMock(),
 			},
 			[]artifact.Artifact{},
@@ -655,7 +655,7 @@ func Test_doRun(t *testing.T) {
 		{
 			"invalid name tmpl",
 			args{
-				testctx.NewWithCfg(
+				testctx.WrapWithCfg(t.Context(),
 					config.Project{
 						ProjectName: "run-pipe",
 						Scoops: []config.Scoop{
@@ -670,8 +670,8 @@ func Test_doRun(t *testing.T) {
 					},
 					testctx.GitHubTokenType,
 					testctx.WithCurrentTag("v1.0.1"),
-					testctx.WithVersion("1.0.1"),
-				),
+					testctx.WithVersion("1.0.1")),
+
 				client.NewMock(),
 			},
 			[]artifact.Artifact{
@@ -684,7 +684,7 @@ func Test_doRun(t *testing.T) {
 		{
 			"invalid description tmpl",
 			args{
-				testctx.NewWithCfg(
+				testctx.WrapWithCfg(t.Context(),
 					config.Project{
 						ProjectName: "run-pipe",
 						Scoops: []config.Scoop{
@@ -699,8 +699,8 @@ func Test_doRun(t *testing.T) {
 					},
 					testctx.GitHubTokenType,
 					testctx.WithCurrentTag("v1.0.1"),
-					testctx.WithVersion("1.0.1"),
-				),
+					testctx.WithVersion("1.0.1")),
+
 				client.NewMock(),
 			},
 			[]artifact.Artifact{
@@ -713,7 +713,7 @@ func Test_doRun(t *testing.T) {
 		{
 			"invalid homepage tmpl",
 			args{
-				testctx.NewWithCfg(
+				testctx.WrapWithCfg(t.Context(),
 					config.Project{
 						ProjectName: "run-pipe",
 						Scoops: []config.Scoop{
@@ -728,8 +728,8 @@ func Test_doRun(t *testing.T) {
 					},
 					testctx.GitHubTokenType,
 					testctx.WithCurrentTag("v1.0.1"),
-					testctx.WithVersion("1.0.1"),
-				),
+					testctx.WithVersion("1.0.1")),
+
 				client.NewMock(),
 			},
 			[]artifact.Artifact{
@@ -742,7 +742,7 @@ func Test_doRun(t *testing.T) {
 		{
 			"invalid skip upload tmpl",
 			args{
-				testctx.NewWithCfg(
+				testctx.WrapWithCfg(t.Context(),
 					config.Project{
 						ProjectName: "run-pipe",
 						Scoops: []config.Scoop{
@@ -757,8 +757,8 @@ func Test_doRun(t *testing.T) {
 					},
 					testctx.GitHubTokenType,
 					testctx.WithCurrentTag("v1.0.1"),
-					testctx.WithVersion("1.0.1"),
-				),
+					testctx.WithVersion("1.0.1")),
+
 				client.NewMock(),
 			},
 			[]artifact.Artifact{
@@ -771,7 +771,7 @@ func Test_doRun(t *testing.T) {
 		{
 			"invalid ref tmpl",
 			args{
-				testctx.NewWithCfg(
+				testctx.WrapWithCfg(t.Context(),
 					config.Project{
 						ProjectName: "run-pipe",
 						Scoops: []config.Scoop{
@@ -788,8 +788,8 @@ func Test_doRun(t *testing.T) {
 					},
 					testctx.GitHubTokenType,
 					testctx.WithCurrentTag("v1.0.1"),
-					testctx.WithVersion("1.0.1"),
-				),
+					testctx.WithVersion("1.0.1")),
+
 				client.NewMock(),
 			},
 			[]artifact.Artifact{
@@ -811,7 +811,7 @@ func Test_doRun(t *testing.T) {
 		{
 			"ref templ",
 			args{
-				testctx.NewWithCfg(
+				testctx.WrapWithCfg(t.Context(),
 					config.Project{
 						Env:         []string{"FOO=test", "BRANCH=main"},
 						ProjectName: "run-pipe",
@@ -828,8 +828,8 @@ func Test_doRun(t *testing.T) {
 					},
 					testctx.GitHubTokenType,
 					testctx.WithCurrentTag("v1.0.1"),
-					testctx.WithVersion("1.0.1"),
-				),
+					testctx.WithVersion("1.0.1")),
+
 				client.NewMock(),
 			},
 			[]artifact.Artifact{
@@ -872,7 +872,7 @@ func Test_doRun(t *testing.T) {
 
 func TestRunPipePullRequest(t *testing.T) {
 	directory := t.TempDir()
-	ctx := testctx.NewWithCfg(
+	ctx := testctx.WrapWithCfg(t.Context(),
 		config.Project{
 			Dist:        directory,
 			ProjectName: "foo",
@@ -892,8 +892,8 @@ func TestRunPipePullRequest(t *testing.T) {
 		},
 		testctx.WithVersion("1.2.1"),
 		testctx.WithCurrentTag("v1.2.1"),
-		testctx.WithEnv(map[string]string{"FOO": "foobar"}),
-	)
+		testctx.WithEnv(map[string]string{"FOO": "foobar"}))
+
 	path := filepath.Join(directory, "dist/foo_windows_amd64/foo.exe")
 	ctx.Artifacts.Add(&artifact.Artifact{
 		Name:   "foo_windows_amd64.tar.gz",
@@ -933,7 +933,7 @@ func Test_buildManifest(t *testing.T) {
 	}{
 		{
 			"common",
-			testctx.NewWithCfg(
+			testctx.WrapWithCfg(t.Context(),
 				config.Project{
 					GitHubURLs: config.GitHubURLs{
 						Download: "https://github.com",
@@ -959,12 +959,11 @@ func Test_buildManifest(t *testing.T) {
 				},
 				testctx.GitHubTokenType,
 				testctx.WithCurrentTag("v1.0.1"),
-				testctx.WithVersion("1.0.1"),
-			),
+				testctx.WithVersion("1.0.1")),
 		},
 		{
 			"pre-post-install",
-			testctx.NewWithCfg(
+			testctx.WrapWithCfg(t.Context(),
 				config.Project{
 					GitHubURLs: config.GitHubURLs{
 						Download: "https://github.com",
@@ -992,12 +991,11 @@ func Test_buildManifest(t *testing.T) {
 				},
 				testctx.GitHubTokenType,
 				testctx.WithCurrentTag("v1.0.1"),
-				testctx.WithVersion("1.0.1"),
-			),
+				testctx.WithVersion("1.0.1")),
 		},
 		{
 			"url template",
-			testctx.NewWithCfg(
+			testctx.WrapWithCfg(t.Context(),
 				config.Project{
 					GitHubURLs: config.GitHubURLs{
 						Download: "https://github.com",
@@ -1019,12 +1017,11 @@ func Test_buildManifest(t *testing.T) {
 				},
 				testctx.WithCurrentTag("v1.0.1"),
 				testctx.GitHubTokenType,
-				testctx.WithVersion("1.0.1"),
-			),
+				testctx.WithVersion("1.0.1")),
 		},
 		{
 			"gitlab url template",
-			testctx.NewWithCfg(
+			testctx.WrapWithCfg(t.Context(),
 				config.Project{
 					GitLabURLs: config.GitLabURLs{
 						Download: "https://gitlab.com",
@@ -1046,8 +1043,7 @@ func Test_buildManifest(t *testing.T) {
 				},
 				testctx.GitHubTokenType,
 				testctx.WithCurrentTag("v1.0.1"),
-				testctx.WithVersion("1.0.1"),
-			),
+				testctx.WithVersion("1.0.1")),
 		},
 	}
 
@@ -1122,8 +1118,9 @@ func Test_buildManifest(t *testing.T) {
 	}
 }
 
-func getScoopPipeSkipCtx(directory string) (*context.Context, string) {
-	ctx := testctx.NewWithCfg(
+func getScoopPipeSkipCtx(tb testing.TB, directory string) (*context.Context, string) {
+	tb.Helper()
+	ctx := testctx.WrapWithCfg(tb.Context(),
 		config.Project{
 			Dist:        directory,
 			ProjectName: "run-pipe",
@@ -1140,8 +1137,7 @@ func getScoopPipeSkipCtx(directory string) (*context.Context, string) {
 			},
 		},
 		testctx.WithCurrentTag("v1.0.1"),
-		testctx.WithVersion("1.0.1"),
-	)
+		testctx.WithVersion("1.0.1"))
 
 	path := filepath.Join(directory, "bin.tar.gz")
 
@@ -1177,7 +1173,7 @@ func getScoopPipeSkipCtx(directory string) (*context.Context, string) {
 
 func TestRunPipeScoopWithSkipUpload(t *testing.T) {
 	directory := t.TempDir()
-	ctx, path := getScoopPipeSkipCtx(directory)
+	ctx, path := getScoopPipeSkipCtx(t, directory)
 	ctx.Config.Scoops[0].SkipUpload = "true"
 
 	f, err := os.Create(path)
@@ -1199,7 +1195,7 @@ func TestWrapInDirectory(t *testing.T) {
 	file := filepath.Join(directory, "archive")
 	require.NoError(t, os.WriteFile(file, []byte("lorem ipsum"), 0o644))
 
-	ctx := testctx.NewWithCfg(
+	ctx := testctx.WrapWithCfg(t.Context(),
 		config.Project{
 			GitLabURLs: config.GitLabURLs{
 				Download: "https://gitlab.com",
@@ -1219,8 +1215,7 @@ func TestWrapInDirectory(t *testing.T) {
 		},
 		testctx.GitHubTokenType,
 		testctx.WithCurrentTag("v1.0.1"),
-		testctx.WithVersion("1.0.1"),
-	)
+		testctx.WithVersion("1.0.1"))
 
 	require.NoError(t, Pipe{}.Default(ctx))
 	cl, err := client.New(ctx)
@@ -1250,10 +1245,10 @@ func TestWrapInDirectory(t *testing.T) {
 
 func TestSkip(t *testing.T) {
 	t.Run("skip", func(t *testing.T) {
-		require.True(t, Pipe{}.Skip(testctx.New()))
+		require.True(t, Pipe{}.Skip(testctx.Wrap(t.Context())))
 	})
 	t.Run("skip flag", func(t *testing.T) {
-		ctx := testctx.NewWithCfg(config.Project{
+		ctx := testctx.WrapWithCfg(t.Context(), config.Project{
 			Scoops: []config.Scoop{
 				{
 					Repository: config.RepoRef{
@@ -1262,10 +1257,11 @@ func TestSkip(t *testing.T) {
 				},
 			},
 		}, testctx.Skip(skips.Scoop))
+
 		require.True(t, Pipe{}.Skip(ctx))
 	})
 	t.Run("dont skip", func(t *testing.T) {
-		ctx := testctx.NewWithCfg(config.Project{
+		ctx := testctx.WrapWithCfg(t.Context(), config.Project{
 			Scoops: []config.Scoop{
 				{
 					Repository: config.RepoRef{
@@ -1274,6 +1270,7 @@ func TestSkip(t *testing.T) {
 				},
 			},
 		})
+
 		require.False(t, Pipe{}.Skip(ctx))
 	})
 }

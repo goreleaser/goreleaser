@@ -18,9 +18,10 @@ func TestBinarySignDescription(t *testing.T) {
 }
 
 func TestBinarySignDefault(t *testing.T) {
-	ctx := testctx.NewWithCfg(config.Project{
+	ctx := testctx.WrapWithCfg(t.Context(), config.Project{
 		BinarySigns: []config.BinarySign{{}},
 	})
+
 	err := BinaryPipe{}.Default(ctx)
 	require.NoError(t, err)
 	require.Equal(t, "gpg", ctx.Config.BinarySigns[0].Cmd)
@@ -30,52 +31,56 @@ func TestBinarySignDefault(t *testing.T) {
 }
 
 func TestBinarySignDisabled(t *testing.T) {
-	ctx := testctx.NewWithCfg(config.Project{
+	ctx := testctx.WrapWithCfg(t.Context(), config.Project{
 		BinarySigns: []config.BinarySign{
 			{Artifacts: "none"},
 		},
 	})
+
 	err := BinaryPipe{}.Run(ctx)
 	require.EqualError(t, err, "artifact signing is disabled")
 }
 
 func TestBinarySignInvalidOption(t *testing.T) {
-	ctx := testctx.NewWithCfg(config.Project{
+	ctx := testctx.WrapWithCfg(t.Context(), config.Project{
 		BinarySigns: []config.BinarySign{
 			{Artifacts: "archive"},
 		},
 	})
+
 	err := BinaryPipe{}.Run(ctx)
 	require.EqualError(t, err, "invalid list of artifacts to sign: archive")
 }
 
 func TestBinarySkip(t *testing.T) {
 	t.Run("skip", func(t *testing.T) {
-		require.True(t, BinaryPipe{}.Skip(testctx.New()))
+		require.True(t, BinaryPipe{}.Skip(testctx.Wrap(t.Context())))
 	})
 
 	t.Run("skip sign", func(t *testing.T) {
-		ctx := testctx.New(testctx.Skip(skips.Sign))
+		ctx := testctx.Wrap(t.Context(), testctx.Skip(skips.Sign))
 		require.True(t, BinaryPipe{}.Skip(ctx))
 	})
 
 	t.Run("dont skip", func(t *testing.T) {
-		ctx := testctx.NewWithCfg(config.Project{
+		ctx := testctx.WrapWithCfg(t.Context(), config.Project{
 			BinarySigns: []config.BinarySign{
 				{},
 			},
 		})
+
 		require.False(t, BinaryPipe{}.Skip(ctx))
 	})
 }
 
 func TestBinaryDependencies(t *testing.T) {
-	ctx := testctx.NewWithCfg(config.Project{
+	ctx := testctx.WrapWithCfg(t.Context(), config.Project{
 		BinarySigns: []config.BinarySign{
 			{Cmd: "cosign"},
 			{Cmd: "gpg2"},
 		},
 	})
+
 	require.Equal(t, []string{"cosign", "gpg2"}, BinaryPipe{}.Dependencies(ctx))
 }
 
@@ -86,7 +91,7 @@ func TestBinarySign(t *testing.T) {
 		tb.Helper()
 		tmpdir := tb.TempDir()
 
-		ctx := testctx.NewWithCfg(config.Project{
+		ctx := testctx.WrapWithCfg(t.Context(), config.Project{
 			BinarySigns: []config.BinarySign{sign},
 		})
 

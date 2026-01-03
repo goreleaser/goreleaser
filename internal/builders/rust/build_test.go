@@ -63,7 +63,7 @@ func TestBuild(t *testing.T) {
 	require.NoError(t, err)
 
 	modTime := time.Now().AddDate(-1, 0, 0).Round(time.Second).UTC()
-	ctx := testctx.NewWithCfg(config.Project{
+	ctx := testctx.WrapWithCfg(t.Context(), config.Project{
 		Dist:        "dist",
 		ProjectName: "proj",
 		Builds: []config.Build{
@@ -77,6 +77,7 @@ func TestBuild(t *testing.T) {
 			},
 		},
 	})
+
 	build, err := Default.WithDefaults(ctx.Config.Builds[0])
 	require.NoError(t, err)
 	require.NoError(t, Default.Prepare(ctx, build))

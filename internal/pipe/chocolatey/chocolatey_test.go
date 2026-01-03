@@ -27,23 +27,25 @@ func TestDescription(t *testing.T) {
 
 func TestSkip(t *testing.T) {
 	t.Run("skip", func(t *testing.T) {
-		require.True(t, Pipe{}.Skip(testctx.New()))
+		require.True(t, Pipe{}.Skip(testctx.Wrap(t.Context())))
 	})
 	t.Run("skip flag", func(t *testing.T) {
-		ctx := testctx.NewWithCfg(config.Project{
+		ctx := testctx.WrapWithCfg(t.Context(), config.Project{
 			Chocolateys: []config.Chocolatey{
 				{},
 			},
 		}, testctx.Skip(skips.Chocolatey))
+
 		require.True(t, Pipe{}.Skip(ctx))
 	})
 
 	t.Run("dont skip", func(t *testing.T) {
-		ctx := testctx.NewWithCfg(config.Project{
+		ctx := testctx.WrapWithCfg(t.Context(), config.Project{
 			Chocolateys: []config.Chocolatey{
 				{},
 			},
 		})
+
 		require.False(t, Pipe{}.Skip(ctx))
 	})
 }
@@ -51,7 +53,7 @@ func TestSkip(t *testing.T) {
 func TestDefault(t *testing.T) {
 	testlib.Mktmp(t)
 
-	ctx := testctx.NewWithCfg(config.Project{
+	ctx := testctx.WrapWithCfg(t.Context(), config.Project{
 		ProjectName: "myproject",
 		Chocolateys: []config.Chocolatey{
 			{},
@@ -129,14 +131,13 @@ func Test_doRun(t *testing.T) {
 				cmd = stdCmd{}
 			})
 
-			ctx := testctx.NewWithCfg(
+			ctx := testctx.WrapWithCfg(t.Context(),
 				config.Project{
 					Dist:        folder,
 					ProjectName: "run-all",
 				},
 				testctx.WithCurrentTag("v1.0.1"),
-				testctx.WithVersion("1.0.1"),
-			)
+				testctx.WithVersion("1.0.1"))
 
 			ctx.Artifacts.Add(&artifact.Artifact{
 				Name:    "app_1.0.1_windows_amd64.zip",
@@ -169,7 +170,7 @@ func Test_doRun(t *testing.T) {
 }
 
 func Test_buildNuspec(t *testing.T) {
-	ctx := testctx.New(testctx.WithVersion("1.12.3"))
+	ctx := testctx.Wrap(t.Context(), testctx.WithVersion("1.12.3"))
 	choco := config.Chocolatey{
 		Name:        "goreleaser",
 		IDs:         []string{},
@@ -194,7 +195,7 @@ func Test_buildTemplate(t *testing.T) {
 	folder := t.TempDir()
 	file := filepath.Join(folder, "archive")
 	require.NoError(t, os.WriteFile(file, []byte("lorem ipsum"), 0o644))
-	ctx := testctx.New(testctx.WithVersion("1.0.0"), testctx.WithCurrentTag("v1.0.0"))
+	ctx := testctx.Wrap(t.Context(), testctx.WithVersion("1.0.0"), testctx.WithCurrentTag("v1.0.0"))
 	artifacts := []*artifact.Artifact{
 		{
 			Name:    "app_1.0.0_windows_386.zip",
@@ -309,7 +310,7 @@ func TestPublish(t *testing.T) {
 				cmd = stdCmd{}
 			})
 
-			ctx := testctx.New()
+			ctx := testctx.Wrap(t.Context())
 			for _, artifact := range tt.artifacts {
 				ctx.Artifacts.Add(&artifact)
 			}

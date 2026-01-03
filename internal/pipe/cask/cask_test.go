@@ -152,7 +152,9 @@ end
 `
 	cask, err := doBuildCask(testctx.WrapWithCfg(t.Context(), config.Project{
 		ProjectName: "foo",
-	}), data)
+	}),
+
+		data)
 	require.NoError(t, err)
 
 	golden.RequireEqualRb(t, []byte(cask))
@@ -163,7 +165,9 @@ func TestFullCaskLinuxOnly(t *testing.T) {
 	data.MacOSPackages = []releasePackage{}
 	cask, err := doBuildCask(testctx.WrapWithCfg(t.Context(), config.Project{
 		ProjectName: "foo",
-	}), data)
+	}),
+
+		data)
 	require.NoError(t, err)
 
 	golden.RequireEqualRb(t, []byte(cask))
@@ -174,7 +178,9 @@ func TestFullCaskMacOSOnly(t *testing.T) {
 	data.LinuxPackages = []releasePackage{}
 	cask, err := doBuildCask(testctx.WrapWithCfg(t.Context(), config.Project{
 		ProjectName: "foo",
-	}), data)
+	}),
+
+		data)
 	require.NoError(t, err)
 
 	golden.RequireEqualRb(t, []byte(cask))
@@ -472,8 +478,8 @@ func TestFullPipe(t *testing.T) {
 					Env: []string{"FOO=foo_is_bar"},
 				},
 				testctx.WithVersion("1.0.1"),
-				testctx.WithCurrentTag("v1.0.1"),
-			)
+				testctx.WithCurrentTag("v1.0.1"))
+
 			tt.prepare(ctx)
 			ctx.Artifacts.Add(&artifact.Artifact{
 				Name:    "bin.tgz",
@@ -606,8 +612,8 @@ func TestRunPipeNameTemplate(t *testing.T) {
 			Env: []string{"FOO_BAR=is_bar"},
 		},
 		testctx.WithVersion("1.0.1"),
-		testctx.WithCurrentTag("v1.0.1"),
-	)
+		testctx.WithCurrentTag("v1.0.1"))
+
 	path := filepath.Join(folder, "bin.tar.gz")
 	ctx.Artifacts.Add(&artifact.Artifact{
 		Name:    "bin.tar.gz",
@@ -695,8 +701,8 @@ func TestRunPipeMultipleBrewsWithSkip(t *testing.T) {
 			},
 		},
 		testctx.WithVersion("1.0.1"),
-		testctx.WithCurrentTag("v1.0.1"),
-	)
+		testctx.WithCurrentTag("v1.0.1"))
+
 	path := filepath.Join(folder, "bin.tar.gz")
 	ctx.Artifacts.Add(&artifact.Artifact{
 		Name:    "bin.tar.gz",
@@ -740,6 +746,7 @@ func TestRunPipeNoBuilds(t *testing.T) {
 			},
 		},
 	}, testctx.GitHubTokenType)
+
 	client := client.NewMock()
 	require.NoError(t, Pipe{}.Default(ctx))
 	require.EqualError(t, runAll(ctx, client), ErrNoArchivesFound{
@@ -867,8 +874,8 @@ func TestRunPipeBinaryRelease(t *testing.T) {
 			},
 		},
 		testctx.WithVersion("1.2.1"),
-		testctx.WithCurrentTag("v1.2.1"),
-	)
+		testctx.WithCurrentTag("v1.2.1"))
+
 	path := filepath.Join(folder, "dist/foo_darwin_all/foo")
 	ctx.Artifacts.Add(&artifact.Artifact{
 		Name:   "foo_macos",
@@ -920,8 +927,8 @@ func TestRunPipePullRequest(t *testing.T) {
 			},
 		},
 		testctx.WithVersion("1.2.1"),
-		testctx.WithCurrentTag("v1.2.1"),
-	)
+		testctx.WithCurrentTag("v1.2.1"))
+
 	path := filepath.Join(folder, "dist/foo_darwin_all/foo")
 	ctx.Artifacts.Add(&artifact.Artifact{
 		Name:   "foo_macos",
@@ -967,6 +974,7 @@ func TestRunPipeNoUpload(t *testing.T) {
 		},
 		Env: []string{"SKIP_UPLOAD=true"},
 	}, testctx.WithCurrentTag("v1.0.1"), testctx.GitHubTokenType)
+
 	path := filepath.Join(folder, "whatever.tar.gz")
 	f, err := os.Create(path)
 	require.NoError(t, err)
@@ -1024,6 +1032,7 @@ func TestRunEmptyTokenType(t *testing.T) {
 			},
 		},
 	}, testctx.WithCurrentTag("v1.0.0"))
+
 	path := filepath.Join(folder, "whatever.tar.gz")
 	f, err := os.Create(path)
 	require.NoError(t, err)
@@ -1075,6 +1084,7 @@ func TestDefault(t *testing.T) {
 			},
 		},
 	}, testctx.GitHubTokenType)
+
 	require.NoError(t, Pipe{}.Default(ctx))
 	require.False(t, ctx.Deprecated)
 	require.Equal(t, ctx.Config.ProjectName, ctx.Config.Casks[0].Name)
@@ -1095,6 +1105,7 @@ func TestDefaultDeprecated(t *testing.T) {
 			},
 		},
 	}, testctx.GitHubTokenType)
+
 	require.NoError(t, Pipe{}.Default(ctx))
 	require.True(t, ctx.Deprecated)
 	require.Equal(t, []string{"bin"}, ctx.Config.Casks[0].Binaries)
@@ -1116,6 +1127,7 @@ func TestSkip(t *testing.T) {
 				{},
 			},
 		}, testctx.Skip(skips.Homebrew))
+
 		require.True(t, Pipe{}.Skip(ctx))
 	})
 	t.Run("dont skip", func(t *testing.T) {
@@ -1124,6 +1136,7 @@ func TestSkip(t *testing.T) {
 				{},
 			},
 		})
+
 		require.False(t, Pipe{}.Skip(ctx))
 	})
 }
@@ -1160,8 +1173,8 @@ func TestRunPipeUniversalBinary(t *testing.T) {
 			},
 		},
 		testctx.WithCurrentTag("v1.0.1"),
-		testctx.WithVersion("1.0.1"),
-	)
+		testctx.WithVersion("1.0.1"))
+
 	path := filepath.Join(folder, "bin.tar.gz")
 	ctx.Artifacts.Add(&artifact.Artifact{
 		Name:   "bin.tar.gz",
@@ -1215,8 +1228,8 @@ func TestRunPipeUniversalBinaryNotReplacing(t *testing.T) {
 			},
 		},
 		testctx.WithCurrentTag("v1.0.1"),
-		testctx.WithVersion("1.0.1"),
-	)
+		testctx.WithVersion("1.0.1"))
+
 	path := filepath.Join(folder, "bin.tar.gz")
 	ctx.Artifacts.Add(&artifact.Artifact{
 		Name:    "bin_amd64.tar.gz",

@@ -7,7 +7,7 @@ permissions: read-all
 jobs:
   docs:
     permissions:
-      contents: write
+      contents: read
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6.0.1
@@ -35,6 +35,9 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       - run: task docs:generate
+      - run: task docs:sponsors
+        env:
+          GITHUB_TOKEN: ${{ secrets.SPONSORS_TOKEN }}
       - run: task schema:generate
       - run: task schema:validate
       - run: task nix:licenses:generate
