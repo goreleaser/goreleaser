@@ -590,10 +590,24 @@ func ByGoarches(in ...string) Filter {
 }
 
 // ByGoarm is a predefined filter that filters by the given goarm.
+// It intelligently handles underscore-separated values:
+// - If the filter includes an underscore (e.g., "6_softfloat"), it matches exactly
+// - If the filter is just a version (e.g., "6"), it matches both "6" and "6_softfloat"/"6_hardfloat"
 func ByGoarm(s string) Filter {
 	return func(a *Artifact) bool {
-		return s == a.Goarm ||
-			(a.Goarch == "arm" && a.Goarm == "" && s == experimental.DefaultGOARM())
+		// Exact match
+		if s == a.Goarm {
+			return true
+		}
+		// Default GOARM handling
+		if a.Goarch == "arm" && a.Goarm == "" && s == experimental.DefaultGOARM() {
+			return true
+		}
+		// If filter doesn't specify float mode, match base version only
+		if !strings.Contains(s, "_") && strings.HasPrefix(a.Goarm, s+"_") {
+			return true
+		}
+		return false
 	}
 }
 
