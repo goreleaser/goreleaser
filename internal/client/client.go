@@ -8,6 +8,7 @@ import (
 
 	"github.com/caarlos0/log"
 	"github.com/goreleaser/goreleaser/v2/internal/artifact"
+	"github.com/goreleaser/goreleaser/v2/internal/changelog"
 	"github.com/goreleaser/goreleaser/v2/internal/tmpl"
 	"github.com/goreleaser/goreleaser/v2/pkg/config"
 	"github.com/goreleaser/goreleaser/v2/pkg/context"
@@ -50,6 +51,11 @@ func (r Repo) String() string {
 	return r.Owner + "/" + r.Name
 }
 
+type (
+	ChangelogItem = changelog.Item
+	Author        = changelog.Author
+)
+
 // Client interface.
 type Client interface {
 	CloseMilestone(ctx *context.Context, repo Repo, title string) (err error)
@@ -60,15 +66,6 @@ type Client interface {
 	Changelog(ctx *context.Context, repo Repo, prev, current string) ([]ChangelogItem, error)
 	ReleaseURLTemplater
 	FileCreator
-}
-
-// ChangelogItem represents a changelog item, basically, a commit and its author.
-type ChangelogItem struct {
-	SHA            string
-	Message        string
-	AuthorName     string
-	AuthorEmail    string
-	AuthorUsername string
 }
 
 // ReleaseURLTemplater provides the release URL as a template, containing the
