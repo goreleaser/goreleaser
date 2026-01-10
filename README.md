@@ -118,6 +118,7 @@ A big **thank you** to all current, past, and future sponsors!
 
 ### Backers
 
+- [Marcel Eichner](https://github.com/Ephigenia)
 - [Chatpong Voranartaksorn](https://github.com/psychvc)
 - [Bruno Paz](https://brunopaz.dev/)
 - [Guest](https://opencollective.com/guest-341ba997)
