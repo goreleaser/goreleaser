@@ -115,7 +115,7 @@ func TestAnnounceWithMockServer(t *testing.T) {
 			switch r.URL.Path {
 			case "/xrpc/com.atproto.server.createSession":
 				w.Header().Set("Content-Type", "application/json")
-				assert.NoError(t, json.NewEncoder(w).Encode(map[string]interface{}{
+				assert.NoError(t, json.NewEncoder(w).Encode(map[string]any{
 					"accessJwt":  "test-access-token",
 					"refreshJwt": "test-refresh-token",
 					"handle":     "testuser.bsky.social",
@@ -123,7 +123,7 @@ func TestAnnounceWithMockServer(t *testing.T) {
 				}))
 			case "/xrpc/com.atproto.repo.createRecord":
 				w.Header().Set("Content-Type", "application/json")
-				assert.NoError(t, json.NewEncoder(w).Encode(map[string]interface{}{
+				assert.NoError(t, json.NewEncoder(w).Encode(map[string]any{
 					"uri": "at://did:plc:test123/app.bsky.feed.post/test",
 					"cid": "testcid",
 				}))
@@ -158,7 +158,7 @@ func TestAnnounceWithMockServer(t *testing.T) {
 			switch r.URL.Path {
 			case "/xrpc/com.atproto.server.createSession":
 				w.Header().Set("Content-Type", "application/json")
-				assert.NoError(t, json.NewEncoder(w).Encode(map[string]interface{}{
+				assert.NoError(t, json.NewEncoder(w).Encode(map[string]any{
 					"accessJwt":  "test-access-token",
 					"refreshJwt": "test-refresh-token",
 					"handle":     "testuser.bsky.social",
@@ -166,7 +166,7 @@ func TestAnnounceWithMockServer(t *testing.T) {
 				}))
 			case "/xrpc/com.atproto.repo.createRecord":
 				w.Header().Set("Content-Type", "application/json")
-				assert.NoError(t, json.NewEncoder(w).Encode(map[string]interface{}{
+				assert.NoError(t, json.NewEncoder(w).Encode(map[string]any{
 					"uri": "at://did:plc:test123/app.bsky.feed.post/test",
 					"cid": "testcid",
 				}))
@@ -198,7 +198,7 @@ func TestAnnounceWithMockServer(t *testing.T) {
 	t.Run("login failure", func(t *testing.T) {
 		server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
 			w.WriteHeader(http.StatusUnauthorized)
-			assert.NoError(t, json.NewEncoder(w).Encode(map[string]interface{}{
+			assert.NoError(t, json.NewEncoder(w).Encode(map[string]any{
 				"error":   "AuthenticationRequired",
 				"message": "Invalid credentials",
 			}))
@@ -230,7 +230,7 @@ func TestAnnounceWithMockServer(t *testing.T) {
 			switch r.URL.Path {
 			case "/xrpc/com.atproto.server.createSession":
 				w.Header().Set("Content-Type", "application/json")
-				assert.NoError(t, json.NewEncoder(w).Encode(map[string]interface{}{
+				assert.NoError(t, json.NewEncoder(w).Encode(map[string]any{
 					"accessJwt":  "test-access-token",
 					"refreshJwt": "test-refresh-token",
 					"handle":     "testuser.bsky.social",
@@ -238,7 +238,7 @@ func TestAnnounceWithMockServer(t *testing.T) {
 				}))
 			case "/xrpc/com.atproto.repo.createRecord":
 				w.WriteHeader(http.StatusBadRequest)
-				assert.NoError(t, json.NewEncoder(w).Encode(map[string]interface{}{
+				assert.NoError(t, json.NewEncoder(w).Encode(map[string]any{
 					"error":   "InvalidRequest",
 					"message": "Invalid record",
 				}))
