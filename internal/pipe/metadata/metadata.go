@@ -36,7 +36,7 @@ func (ArtifactsPipe) Run(ctx *context.Context) error { return writeArtifacts(ctx
 
 func writeMetadata(ctx *context.Context) error {
 	const name = "metadata.json"
-	path, err := writeJSON(ctx, metadata{
+	path, err := writeJSON(ctx, Metadata{
 		ProjectName: ctx.Config.ProjectName,
 		Tag:         ctx.Git.CurrentTag,
 		PreviousTag: ctx.Git.PreviousTag,
@@ -80,7 +80,7 @@ func writeJSON(ctx *context.Context, j any, name string) (string, error) {
 	return path, gio.Chtimes(path, ctx.Config.Metadata.ModTimestamp)
 }
 
-type metadata struct {
+type Metadata struct {
 	ProjectName string      `json:"project_name"`
 	Tag         string      `json:"tag"`
 	PreviousTag string      `json:"previous_tag"`

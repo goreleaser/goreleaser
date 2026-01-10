@@ -103,17 +103,27 @@ tasks:
     desc: Generate JSONSchema
     cmds:
       - go run . schema -o ./www/docs/static/schema.json
+      - go run . schema artifacts -o ./www/docs/static/schema-artifacts.json
+      - go run . schema metadata -o ./www/docs/static/schema-metadata.json
     sources:
       - pkg/config/config.go
+      - internal/artifact/artifact.go
+      - internal/pipe/metadata/metadata.go
     generates:
       - ./www/docs/static/schema.json
+      - ./www/docs/static/schema-artifacts.json
+      - ./www/docs/static/schema-metadata.json
 
   schema:validate:
     desc: Validate JSONSchema
     cmds:
       - jv ./www/docs/static/schema.json
+      - jv ./www/docs/static/schema-artifacts.json
+      - jv ./www/docs/static/schema-metadata.json
     sources:
       - ./www/docs/static/schema.json
+      - ./www/docs/static/schema-artifacts.json
+      - ./www/docs/static/schema-metadata.json
 
   docs:generate:
     desc: Generate docs
