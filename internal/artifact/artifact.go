@@ -200,6 +200,7 @@ const (
 	ExtraFormat     = "Format"
 	ExtraWrappedIn  = "WrappedIn"
 	ExtraBinaries   = "Binaries"
+	ExtraFiles      = "Files"
 	ExtraRefresh    = "Refresh"
 	ExtraReplaces   = "Replaces"
 	ExtraDigest     = "Digest"
