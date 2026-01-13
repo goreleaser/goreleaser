@@ -356,7 +356,7 @@ rm Formula/foo.rb
 ```
 
 With this, when the user tries to upgrade, it should automatically update to the
-Formula instead.
+Cask instead.
 
 ### archives.builds
 
