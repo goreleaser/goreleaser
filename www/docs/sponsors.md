@@ -79,7 +79,6 @@ A big **thank you** to all current, past, and future sponsors!
 - [Joseph Sirianni](https://github.com/jsirianni)
 - [Oleg Balunenko](https://github.com/obalunenko)
 - [^.{5}\s.{2}ram.{3}$](https://github.com/umatare5)
-- [Ethan Troy](https://github.com/ethanolivertroy)
 
 <!-- sponsors:end -->
 
