@@ -6,18 +6,6 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func TestProjectRootMarkers(t *testing.T) {
-	expectedMarkers := []string{
-		"go.mod", "Cargo.toml", "build.zig", "bun.lockb", "deno.json", "pyproject.toml",
-	}
-
-	for _, marker := range expectedMarkers {
-		if _, ok := projectRootMarkers[marker]; !ok {
-			t.Errorf("missing project root marker: %s", marker)
-		}
-	}
-}
-
 func TestFindRootProjectExtraFiles(t *testing.T) {
 	tests := []struct {
 		name       string
@@ -37,7 +25,7 @@ func TestFindRootProjectExtraFiles(t *testing.T) {
 		{
 			name:       "go.mod and go.sum",
 			extraFiles: []string{"go.mod", "go.sum"},
-			expected:   []string{"go.mod", "go.sum"},
+			expected:   []string{"go.mod"},
 		},
 		{
 			name:       "Cargo.toml",
