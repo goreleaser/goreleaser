@@ -63,6 +63,6 @@ func TestFindRootProjectExtraFiles_EnvDisable(t *testing.T) {
 	require.Nil(t, result)
 }
 
-func TestEmitExtraFilesWarning(t *testing.T) {
+func TestEmitExtraFilesWarning(*testing.T) {
 	emitExtraFilesWarning([]string{"go.mod", "go.sum"})
 }
