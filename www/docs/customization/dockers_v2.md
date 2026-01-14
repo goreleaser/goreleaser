@@ -222,6 +222,27 @@ This configuration will build and push a Docker image named `user/repo:tagname`.
 
 ### The Docker build context
 
+!!! warning "Don't build binaries in your Dockerfile"
+
+    GoReleaser already builds your binaries (for all target platforms), so you
+    don't need to build them again inside the Dockerfile.
+
+    If your Dockerfile has a multi-stage build with a `builder` stage, or
+    contains commands like `go build`, `cargo build`, `npm run build`, etc.,
+    you're likely duplicating work and **slowing down your builds significantly**.
+
+    Instead, simply copy the pre-built binaries:
+
+    ```dockerfile
+    FROM scratch
+    ARG TARGETPLATFORM
+    ENTRYPOINT ["/usr/bin/myprogram"]
+    COPY $TARGETPLATFORM/myprogram /usr/bin/
+    ```
+
+    GoReleaser will warn you if it detects patterns that suggest unnecessary
+    rebuilds in your Dockerfile.
+
 Note that we are not building any binaries in the `Dockerfile`, we are instead
 merely copying the binary to a `scratch` image and setting up the `entrypoint`.
 
