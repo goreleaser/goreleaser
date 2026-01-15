@@ -80,7 +80,7 @@ The most common fields are:
 | `Format`    | `string`   | The archive format (e.g., `tar.gz`, `zip`)                 |
 | `WrappedIn` | `string`   | The directory name the files are wrapped in                |
 | `Checksum`  | `string`   | The checksum in `algorithm:hash` format                    |
-| `Size`      | `int64`    | The file size in bytes (when `report_sizes` is enabled)    |
+| `Size`      | `int`      | The file size in bytes (when `report_sizes` is enabled)    |
 | `Digest`    | `string`   | The Docker image digest                                    |
 | `Replaces`  | `bool`     | Whether a universal binary replaces single-arch ones       |
 
