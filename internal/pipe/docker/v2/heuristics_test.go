@@ -45,7 +45,7 @@ func TestFindRootProjectExtraFiles(t *testing.T) {
 		{
 			name:       "mixed files",
 			extraFiles: []string{"config.yaml", "go.mod", "README.md", "Cargo.toml"},
-			expected:   []string{"go.mod", "Cargo.toml"},
+			expected:   []string{"Cargo.toml", "go.mod"},
 		},
 	}
 

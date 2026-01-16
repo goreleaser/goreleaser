@@ -38,7 +38,9 @@ func findRootProjectExtraFiles(extraFiles []string) []string {
 			found[base] = struct{}{}
 		}
 	}
-	return slices.Collect(maps.Keys(found))
+	keys := slices.Collect(maps.Keys(found))
+	slices.Sort(keys)
+	return keys
 }
 
 func emitExtraFilesWarning(markers []string) {
