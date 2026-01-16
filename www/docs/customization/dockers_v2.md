@@ -241,7 +241,7 @@ This configuration will build and push a Docker image named `user/repo:tagname`.
     ```
 
     GoReleaser will warn you if it detects patterns that suggest unnecessary
-    rebuilds in your Dockerfile.
+    rebuilds in your `extra_files`.
 
 Note that we are not building any binaries in the `Dockerfile`, we are instead
 merely copying the binary to a `scratch` image and setting up the `entrypoint`.
