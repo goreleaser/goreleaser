@@ -1,8 +1,10 @@
 package docker
 
 import (
+	"maps"
 	"os"
 	"path/filepath"
+	"slices"
 	"strings"
 
 	"github.com/caarlos0/log"
@@ -29,14 +31,14 @@ func findRootProjectExtraFiles(extraFiles []string) []string {
 	if os.Getenv("GORELEASER_NO_SLOW_DOCKER_WARN") != "" {
 		return nil
 	}
-	var found []string
+	found := map[string]struct{}{}
 	for _, file := range extraFiles {
 		base := filepath.Base(file)
 		if _, ok := projectRootMarkers[base]; ok {
-			found = append(found, base)
+			found[base] = struct{}{}
 		}
 	}
-	return found
+	return slices.Collect(maps.Keys(found))
 }
 
 func emitExtraFilesWarning(markers []string) {
