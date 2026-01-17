@@ -76,8 +76,8 @@ func (Pipe) Default(ctx *context.Context) error {
 }
 
 func trimBin(s string) string {
-	if strings.HasSuffix(s, "-bin") {
-		return trimBin(strings.TrimSuffix(s, "-bin"))
+	if before, ok := strings.CutSuffix(s, "-bin"); ok {
+		return trimBin(before)
 	}
 
 	return s
