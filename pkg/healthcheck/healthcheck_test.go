@@ -11,6 +11,7 @@ import (
 	_ "github.com/goreleaser/goreleaser/v2/internal/builders/bun"
 	_ "github.com/goreleaser/goreleaser/v2/internal/builders/deno"
 	_ "github.com/goreleaser/goreleaser/v2/internal/builders/golang"
+	_ "github.com/goreleaser/goreleaser/v2/internal/builders/node"
 	_ "github.com/goreleaser/goreleaser/v2/internal/builders/rust"
 	_ "github.com/goreleaser/goreleaser/v2/internal/builders/zig"
 )
@@ -32,6 +33,7 @@ func TestBuildDependencies(t *testing.T) {
 			{Builder: "go"},
 			{Builder: "rust"},
 			{Builder: "zig"},
+			{Builder: "node"},
 		},
 	})
 	require.Equal(t, []string{
@@ -43,6 +45,8 @@ func TestBuildDependencies(t *testing.T) {
 		"cargo-zigbuild",
 		"zig",
 		"zig", // dedup happens later on
+		"node",
+		"nodejs-sea-creator",
 	}, builds{}.Dependencies(ctx))
 }
 
