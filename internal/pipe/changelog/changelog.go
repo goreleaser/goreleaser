@@ -56,7 +56,7 @@ func (Pipe) Default(ctx *context.Context) error {
 		case "", "git":
 			ctx.Config.Changelog.Format = "{{ .SHA }} {{ .Message }}"
 		default:
-			ctx.Config.Changelog.Format = "{{ .SHA }}: {{ .Message }} ({{ with .Author.Username }}@{{ . }}{{ else }}{{ .Author.Name }} <{{ .Author.Email }}>{{ end }})"
+			ctx.Config.Changelog.Format = "{{ .SHA }}: {{ .Message }} ({{ with .AuthorUsername }}@{{ . }}{{ else }}{{ .AuthorName }} <{{ .AuthorEmail }}>{{ end }})"
 		}
 	}
 	return nil
