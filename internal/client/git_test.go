@@ -20,9 +20,10 @@ func TestGitClient(t *testing.T) {
 
 	t.Run("full", func(t *testing.T) {
 		url := testlib.GitMakeBareRepository(t)
-		ctx := testctx.NewWithCfg(config.Project{
+		ctx := testctx.WrapWithCfg(t.Context(), config.Project{
 			Dist: t.TempDir(),
 		})
+
 		repo := Repo{
 			GitURL:     url,
 			PrivateKey: testlib.MakeNewSSHKey(t, ""),
@@ -55,9 +56,10 @@ func TestGitClient(t *testing.T) {
 
 	t.Run("with new branch", func(t *testing.T) {
 		url := testlib.GitMakeBareRepository(t)
-		ctx := testctx.NewWithCfg(config.Project{
+		ctx := testctx.WrapWithCfg(t.Context(), config.Project{
 			Dist: t.TempDir(),
 		})
+
 		repo := Repo{
 			GitURL:     url,
 			PrivateKey: testlib.MakeNewSSHKey(t, ""),
@@ -102,9 +104,10 @@ func TestGitClient(t *testing.T) {
 
 	t.Run("no repo name", func(t *testing.T) {
 		url := testlib.GitMakeBareRepository(t)
-		ctx := testctx.NewWithCfg(config.Project{
+		ctx := testctx.WrapWithCfg(t.Context(), config.Project{
 			Dist: t.TempDir(),
 		})
+
 		repo := Repo{
 			GitURL:     url,
 			PrivateKey: testlib.MakeNewSSHKey(t, ""),
@@ -129,9 +132,10 @@ func TestGitClient(t *testing.T) {
 		require.Equal(t, "fake content 2", string(testlib.CatFileFromBareRepository(t, url, "fake.txt")))
 	})
 	t.Run("bad url", func(t *testing.T) {
-		ctx := testctx.NewWithCfg(config.Project{
+		ctx := testctx.WrapWithCfg(t.Context(), config.Project{
 			Dist: t.TempDir(),
 		})
+
 		repo := Repo{
 			GitURL: "{{ .Nope }}",
 		}
@@ -146,9 +150,10 @@ func TestGitClient(t *testing.T) {
 		))
 	})
 	t.Run("clone fail", func(t *testing.T) {
-		ctx := testctx.NewWithCfg(config.Project{
+		ctx := testctx.WrapWithCfg(t.Context(), config.Project{
 			Dist: t.TempDir(),
 		})
+
 		repo := Repo{
 			GitURL:     "git@github.com:nope/nopenopenopenope",
 			PrivateKey: testlib.MakeNewSSHKey(t, ""),
@@ -165,9 +170,10 @@ func TestGitClient(t *testing.T) {
 		require.ErrorContains(t, err, "failed to clone")
 	})
 	t.Run("bad ssh cmd", func(t *testing.T) {
-		ctx := testctx.NewWithCfg(config.Project{
+		ctx := testctx.WrapWithCfg(t.Context(), config.Project{
 			Dist: t.TempDir(),
 		})
+
 		repo := Repo{
 			GitURL:        testlib.GitMakeBareRepository(t),
 			PrivateKey:    testlib.MakeNewSSHKey(t, ""),
@@ -184,9 +190,10 @@ func TestGitClient(t *testing.T) {
 		))
 	})
 	t.Run("empty url", func(t *testing.T) {
-		ctx := testctx.NewWithCfg(config.Project{
+		ctx := testctx.WrapWithCfg(t.Context(), config.Project{
 			Dist: t.TempDir(),
 		})
+
 		repo := Repo{}
 		cli := NewGitUploadClient(repo.Branch)
 		require.EqualError(t, cli.CreateFile(
@@ -199,9 +206,10 @@ func TestGitClient(t *testing.T) {
 		), "url is empty")
 	})
 	t.Run("bad ssh cmd", func(t *testing.T) {
-		ctx := testctx.NewWithCfg(config.Project{
+		ctx := testctx.WrapWithCfg(t.Context(), config.Project{
 			Dist: t.TempDir(),
 		})
+
 		repo := Repo{
 			GitURL:     testlib.GitMakeBareRepository(t),
 			PrivateKey: "{{.Foo}}",
@@ -217,9 +225,10 @@ func TestGitClient(t *testing.T) {
 		))
 	})
 	t.Run("bad key path", func(t *testing.T) {
-		ctx := testctx.NewWithCfg(config.Project{
+		ctx := testctx.WrapWithCfg(t.Context(), config.Project{
 			Dist: t.TempDir(),
 		})
+
 		repo := Repo{
 			GitURL:     testlib.GitMakeBareRepository(t),
 			PrivateKey: "./nope",
@@ -308,9 +317,10 @@ func TestGitClientWithSigning(t *testing.T) {
 		}
 
 		url := testlib.GitMakeBareRepository(t)
-		ctx := testctx.NewWithCfg(config.Project{
+		ctx := testctx.WrapWithCfg(t.Context(), config.Project{
 			Dist: t.TempDir(),
 		})
+
 		repo := Repo{
 			GitURL:     url,
 			PrivateKey: testlib.MakeNewSSHKey(t, ""),
@@ -342,9 +352,10 @@ func TestGitClientWithSigning(t *testing.T) {
 		}
 
 		url := testlib.GitMakeBareRepository(t)
-		ctx := testctx.NewWithCfg(config.Project{
+		ctx := testctx.WrapWithCfg(t.Context(), config.Project{
 			Dist: t.TempDir(),
 		})
+
 		repo := Repo{
 			GitURL:     url,
 			PrivateKey: testlib.MakeNewSSHKey(t, ""),
@@ -374,9 +385,10 @@ func TestGitClientWithSigning(t *testing.T) {
 		}
 
 		url := testlib.GitMakeBareRepository(t)
-		ctx := testctx.NewWithCfg(config.Project{
+		ctx := testctx.WrapWithCfg(t.Context(), config.Project{
 			Dist: t.TempDir(),
 		})
+
 		repo := Repo{
 			GitURL:     url,
 			PrivateKey: testlib.MakeNewSSHKey(t, ""),

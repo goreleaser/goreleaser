@@ -115,6 +115,7 @@ nav:
           - customization/project.md
           - customization/metadata.md
           - customization/dist.md
+          - customization/artifacts.md
           - customization/includes.md
           - customization/templates.md
           - customization/templatefiles.md

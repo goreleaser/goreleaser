@@ -133,6 +133,15 @@ tasks:
       - www/docs/eula.md
       - www/docs/security.md
 
+  docs:sponsors:
+    desc: Update OpenCollective and GitHub sponsors list
+    cmds:
+      - python3 scripts/update-sponsors.py
+    sources:
+      - scripts/update-sponsors.py
+    generates:
+      - www/docs/sponsors.md
+
   docs:releases:
     desc: Generate releases.json and latest files
     cmds:

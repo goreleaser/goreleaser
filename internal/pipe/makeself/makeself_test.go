@@ -24,25 +24,26 @@ func TestDescription(t *testing.T) {
 
 func TestSkip(t *testing.T) {
 	t.Run("skip", func(t *testing.T) {
-		ctx := testctx.New(testctx.Skip(skips.Makeself))
+		ctx := testctx.Wrap(t.Context(), testctx.Skip(skips.Makeself))
 		require.True(t, Pipe{}.Skip(ctx))
 	})
 
 	t.Run("dont skip", func(t *testing.T) {
-		ctx := testctx.NewWithCfg(config.Project{
+		ctx := testctx.WrapWithCfg(t.Context(), config.Project{
 			Makeselfs: []config.Makeself{{}},
 		})
+
 		require.False(t, Pipe{}.Skip(ctx))
 	})
 
 	t.Run("skip no makeselfs", func(t *testing.T) {
-		ctx := testctx.New()
+		ctx := testctx.Wrap(t.Context())
 		require.True(t, Pipe{}.Skip(ctx))
 	})
 }
 
 func TestDefault(t *testing.T) {
-	ctx := testctx.NewWithCfg(config.Project{
+	ctx := testctx.WrapWithCfg(t.Context(), config.Project{
 		Makeselfs: []config.Makeself{
 			{},
 			{
@@ -72,10 +73,11 @@ func TestDefault(t *testing.T) {
 
 func makeContext(tb testing.TB) *context.Context {
 	tb.Helper()
-	ctx := testctx.NewWithCfg(config.Project{
+	ctx := testctx.WrapWithCfg(tb.Context(), config.Project{
 		ProjectName: "myproj",
 		Dist:        tb.TempDir(),
 	}, testctx.WithVersion("1.2.3"))
+
 	tmp := tb.TempDir()
 	require.NoError(tb, os.WriteFile(
 		filepath.Join(tmp, "mybin"),

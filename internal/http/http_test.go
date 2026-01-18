@@ -84,10 +84,11 @@ func TestDefaults(t *testing.T) {
 }
 
 func TestCheckConfig(t *testing.T) {
-	ctx := testctx.NewWithCfg(config.Project{
+	ctx := testctx.WrapWithCfg(t.Context(), config.Project{
 		ProjectName: "blah",
 		Env:         []string{"TEST_A_SECRET=x"},
 	})
+
 	type args struct {
 		ctx    *context.Context
 		upload *config.Upload
@@ -232,13 +233,14 @@ func TestUpload(t *testing.T) {
 		}
 		return fmt.Errorf("unexpected http status code: %v", r.StatusCode)
 	}
-	ctx := testctx.NewWithCfg(config.Project{
+	ctx := testctx.WrapWithCfg(t.Context(), config.Project{
 		ProjectName: "blah",
 		Env: []string{
 			"TEST_A_SECRET=x",
 			"TEST_A_USERNAME=u2",
 		},
 	}, testctx.WithVersion("2.1.0"))
+
 	folder := t.TempDir()
 	for _, a := range []struct {
 		ext, format string
@@ -727,7 +729,7 @@ func TestManyUploads(t *testing.T) {
 		}, nil
 	}
 	defer assetOpenReset()
-	ctx := testctx.NewWithCfg(config.Project{
+	ctx := testctx.WrapWithCfg(t.Context(), config.Project{
 		ProjectName: "blah",
 		Env:         []string{"FOO=1"},
 		Uploads: []config.Upload{
@@ -747,6 +749,7 @@ func TestManyUploads(t *testing.T) {
 			},
 		},
 	}, testctx.WithVersion("2.1.0"))
+
 	ctx.Artifacts.Add(&artifact.Artifact{
 		Name: "checksums.txt",
 		Path: "doesnt-matter",

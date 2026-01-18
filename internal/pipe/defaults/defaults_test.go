@@ -17,7 +17,7 @@ func TestFillBasicData(t *testing.T) {
 	testlib.Mktmp(t)
 	testlib.GitInit(t)
 	testlib.GitRemoteAdd(t, "git@github.com:goreleaser/goreleaser.git")
-	ctx := testctx.New(testctx.GitHubTokenType)
+	ctx := testctx.Wrap(t.Context(), testctx.GitHubTokenType)
 	require.NoError(t, Pipe{}.Run(ctx))
 	require.Equal(t, "goreleaser", ctx.Config.Release.GitHub.Owner)
 	require.Equal(t, "goreleaser", ctx.Config.Release.GitHub.Name)
@@ -41,7 +41,7 @@ func TestFillPartial(t *testing.T) {
 	testlib.GitInit(t)
 	testlib.GitRemoteAdd(t, "git@github.com:goreleaser/goreleaser.git")
 
-	ctx := testctx.NewWithCfg(config.Project{
+	ctx := testctx.WrapWithCfg(t.Context(), config.Project{
 		GitHubURLs: config.GitHubURLs{
 			Download: "https://github.company.com",
 		},
@@ -84,6 +84,7 @@ func TestFillPartial(t *testing.T) {
 			},
 		},
 	})
+
 	require.NoError(t, Pipe{}.Run(ctx))
 	require.Len(t, ctx.Config.Archives[0].Files, 1)
 	require.NotEmpty(t, ctx.Config.Dockers[0].Goos)
@@ -94,7 +95,7 @@ func TestFillPartial(t *testing.T) {
 	require.Equal(t, "disttt", ctx.Config.Dist)
 	require.NotEqual(t, "https://github.com", ctx.Config.GitHubURLs.Download)
 
-	ctx = testctx.NewWithCfg(config.Project{
+	ctx = testctx.WrapWithCfg(t.Context(), config.Project{
 		GiteaURLs: config.GiteaURLs{
 			API: "https://gitea.com/api/v1/",
 		},
@@ -131,7 +132,7 @@ func TestGiteaTemplateDownloadURL(t *testing.T) {
 	}
 
 	for _, tt := range tests {
-		ctx := testctx.NewWithCfg(config.Project{
+		ctx := testctx.WrapWithCfg(t.Context(), config.Project{
 			Env: []string{"GORELEASER_TEST_GITEA_URLS_API=https://gitea.com/api/v1"},
 			GiteaURLs: config.GiteaURLs{
 				API: tt.apiURL,

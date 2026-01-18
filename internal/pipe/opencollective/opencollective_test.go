@@ -14,46 +14,48 @@ func TestStringer(t *testing.T) {
 }
 
 func TestDefault(t *testing.T) {
-	ctx := testctx.New()
+	ctx := testctx.Wrap(t.Context())
 	require.NoError(t, Pipe{}.Default(ctx))
 	require.Equal(t, defaultTitleTemplate, ctx.Config.Announce.OpenCollective.TitleTemplate)
 	require.Equal(t, defaultMessageTemplate, ctx.Config.Announce.OpenCollective.MessageTemplate)
 }
 
 func TestAnnounceInvalidTemplate(t *testing.T) {
-	ctx := testctx.NewWithCfg(config.Project{
+	ctx := testctx.WrapWithCfg(t.Context(), config.Project{
 		Announce: config.Announce{
 			OpenCollective: config.OpenCollective{
 				MessageTemplate: "{{ .Foo }",
 			},
 		},
 	})
+
 	testlib.RequireTemplateError(t, Pipe{}.Announce(ctx))
 }
 
 func TestAnnounceMissingEnv(t *testing.T) {
-	ctx := testctx.NewWithCfg(config.Project{
+	ctx := testctx.WrapWithCfg(t.Context(), config.Project{
 		Announce: config.Announce{
 			OpenCollective: config.OpenCollective{},
 		},
 	})
+
 	require.NoError(t, Pipe{}.Default(ctx))
 	require.EqualError(t, Pipe{}.Announce(ctx), `opencollective: env: environment variable "OPENCOLLECTIVE_TOKEN" should not be empty`)
 }
 
 func TestSkip(t *testing.T) {
 	t.Run("skip", func(t *testing.T) {
-		skip, err := Pipe{}.Skip(testctx.New())
+		skip, err := Pipe{}.Skip(testctx.Wrap(t.Context()))
 		require.NoError(t, err)
 		require.True(t, skip)
 	})
 
 	t.Run("skip empty slug", func(t *testing.T) {
-		skip, err := Pipe{}.Skip(testctx.NewWithCfg(config.Project{
+		skip, err := Pipe{}.Skip(testctx.WrapWithCfg(t.Context(), config.Project{
 			Announce: config.Announce{
 				OpenCollective: config.OpenCollective{
 					Enabled: "true",
-					Slug:    "", // empty
+					Slug:    "",
 				},
 			},
 		}))
@@ -62,7 +64,7 @@ func TestSkip(t *testing.T) {
 	})
 
 	t.Run("dont skip", func(t *testing.T) {
-		skip, err := Pipe{}.Skip(testctx.NewWithCfg(config.Project{
+		skip, err := Pipe{}.Skip(testctx.WrapWithCfg(t.Context(), config.Project{
 			Announce: config.Announce{
 				OpenCollective: config.OpenCollective{
 					Enabled: "true",

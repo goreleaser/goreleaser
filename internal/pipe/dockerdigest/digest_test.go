@@ -17,20 +17,20 @@ func TestString(t *testing.T) {
 
 func TestSkip(t *testing.T) {
 	t.Run("disabled", func(t *testing.T) {
-		ctx := testctx.New()
+		ctx := testctx.Wrap(t.Context())
 		ctx.Config.DockerDigest.Disable = "true"
 		skip, err := Pipe{}.Skip(ctx)
 		require.NoError(t, err)
 		require.True(t, skip)
 	})
 	t.Run("skip", func(t *testing.T) {
-		ctx := testctx.New(testctx.Skip(skips.Docker))
+		ctx := testctx.Wrap(t.Context(), testctx.Skip(skips.Docker))
 		skip, err := Pipe{}.Skip(ctx)
 		require.NoError(t, err)
 		require.True(t, skip)
 	})
 	t.Run("normal", func(t *testing.T) {
-		ctx := testctx.New()
+		ctx := testctx.Wrap(t.Context())
 		skip, err := Pipe{}.Skip(ctx)
 		require.NoError(t, err)
 		require.False(t, skip)
@@ -38,13 +38,13 @@ func TestSkip(t *testing.T) {
 }
 
 func TestDefault(t *testing.T) {
-	ctx := testctx.New()
+	ctx := testctx.Wrap(t.Context())
 	require.NoError(t, Pipe{}.Default(ctx))
 	require.NotEmpty(t, ctx.Config.DockerDigest.NameTemplate)
 }
 
 func TestRun(t *testing.T) {
-	ctx := testctx.New()
+	ctx := testctx.Wrap(t.Context())
 	ctx.Config.Dist = t.TempDir()
 	ctx.Artifacts.Add(&artifact.Artifact{
 		Name:  "img1",
@@ -77,7 +77,7 @@ digest3  img3
 }
 
 func TestRunInvalidNameTemplate(t *testing.T) {
-	ctx := testctx.New()
+	ctx := testctx.Wrap(t.Context())
 	ctx.Config.DockerDigest.NameTemplate = "{{.Nope}}"
 	testlib.RequireTemplateError(t, Pipe{}.Publish(ctx))
 }

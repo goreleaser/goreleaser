@@ -349,6 +349,10 @@ func makeContext(ctx *context.Context, d config.DockerV2, artifacts []*artifact.
 		return "", fmt.Errorf("failed to copy dockerfile: %w: %s", err, d.ID)
 	}
 
+	if markers := findRootProjectExtraFiles(d.ExtraFiles); len(markers) > 0 {
+		emitExtraFilesWarning(markers)
+	}
+
 	for _, file := range d.ExtraFiles {
 		if err := os.MkdirAll(filepath.Join(tmp, filepath.Dir(file)), 0o755); err != nil {
 			return "", fmt.Errorf("failed to copy extra file '%s': %w", file, err)

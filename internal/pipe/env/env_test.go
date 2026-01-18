@@ -36,7 +36,7 @@ func TestDescription(t *testing.T) {
 
 func TestSetDefaultTokenFiles(t *testing.T) {
 	t.Run("empty config", func(t *testing.T) {
-		ctx := testctx.New()
+		ctx := testctx.Wrap(t.Context())
 		setDefaultTokenFiles(ctx)
 		require.Equal(t, "~/.config/goreleaser/github_token", ctx.Config.EnvFiles.GitHubToken)
 		require.Equal(t, "~/.config/goreleaser/gitlab_token", ctx.Config.EnvFiles.GitLabToken)
@@ -44,16 +44,17 @@ func TestSetDefaultTokenFiles(t *testing.T) {
 	})
 	t.Run("custom config config", func(t *testing.T) {
 		cfg := "what"
-		ctx := testctx.NewWithCfg(config.Project{
+		ctx := testctx.WrapWithCfg(t.Context(), config.Project{
 			EnvFiles: config.EnvFiles{
 				GitHubToken: cfg,
 			},
 		})
+
 		setDefaultTokenFiles(ctx)
 		require.Equal(t, cfg, ctx.Config.EnvFiles.GitHubToken)
 	})
 	t.Run("templates", func(t *testing.T) {
-		ctx := testctx.NewWithCfg(config.Project{
+		ctx := testctx.WrapWithCfg(t.Context(), config.Project{
 			ProjectName: "foobar",
 			Env: []string{
 				"FOO=FOO_{{ .Env.BAR }}",
@@ -61,6 +62,7 @@ func TestSetDefaultTokenFiles(t *testing.T) {
 				"EMPTY_VAL=",
 			},
 		})
+
 		ctx.Env["FOOBAR"] = "old foobar"
 		t.Setenv("BAR", "lebar")
 		t.Setenv("GITHUB_TOKEN", "fake")
@@ -71,16 +73,17 @@ func TestSetDefaultTokenFiles(t *testing.T) {
 	})
 
 	t.Run("template error", func(t *testing.T) {
-		ctx := testctx.NewWithCfg(config.Project{
+		ctx := testctx.WrapWithCfg(t.Context(), config.Project{
 			Env: []string{
 				"FOO={{ .Asss }",
 			},
 		})
+
 		testlib.RequireTemplateError(t, Pipe{}.Run(ctx))
 	})
 
 	t.Run("no token", func(t *testing.T) {
-		ctx := testctx.New()
+		ctx := testctx.Wrap(t.Context())
 		require.EqualError(t, Pipe{}.Run(ctx), ErrMissingToken.Error())
 	})
 }
@@ -89,21 +92,21 @@ func TestForceToken(t *testing.T) {
 	t.Run("github", func(t *testing.T) {
 		t.Setenv("GITHUB_TOKEN", "fake")
 		t.Setenv("GORELEASER_FORCE_TOKEN", "github")
-		ctx := testctx.New()
+		ctx := testctx.Wrap(t.Context())
 		require.NoError(t, Pipe{}.Run(ctx))
 		require.Equal(t, context.TokenTypeGitHub, ctx.TokenType)
 	})
 	t.Run("gitlab", func(t *testing.T) {
 		t.Setenv("GITLAB_TOKEN", "fake")
 		t.Setenv("GORELEASER_FORCE_TOKEN", "gitlab")
-		ctx := testctx.New()
+		ctx := testctx.Wrap(t.Context())
 		require.NoError(t, Pipe{}.Run(ctx))
 		require.Equal(t, context.TokenTypeGitLab, ctx.TokenType)
 	})
 	t.Run("gitea", func(t *testing.T) {
 		t.Setenv("GITEA_TOKEN", "fake")
 		t.Setenv("GORELEASER_FORCE_TOKEN", "gitea")
-		ctx := testctx.New()
+		ctx := testctx.Wrap(t.Context())
 		require.NoError(t, Pipe{}.Run(ctx))
 		require.Equal(t, context.TokenTypeGitea, ctx.TokenType)
 	})
@@ -111,7 +114,7 @@ func TestForceToken(t *testing.T) {
 
 func TestValidGithubEnv(t *testing.T) {
 	t.Setenv("GITHUB_TOKEN", "asdf")
-	ctx := testctx.New()
+	ctx := testctx.Wrap(t.Context())
 	require.NoError(t, Pipe{}.Run(ctx))
 	require.Equal(t, "asdf", ctx.Token)
 	require.Equal(t, context.TokenTypeGitHub, ctx.TokenType)
@@ -119,7 +122,7 @@ func TestValidGithubEnv(t *testing.T) {
 
 func TestValidGitlabEnv(t *testing.T) {
 	t.Setenv("GITLAB_TOKEN", "qwertz")
-	ctx := testctx.New()
+	ctx := testctx.Wrap(t.Context())
 	require.NoError(t, Pipe{}.Run(ctx))
 	require.Equal(t, "qwertz", ctx.Token)
 	require.Equal(t, context.TokenTypeGitLab, ctx.TokenType)
@@ -127,14 +130,14 @@ func TestValidGitlabEnv(t *testing.T) {
 
 func TestValidGiteaEnv(t *testing.T) {
 	t.Setenv("GITEA_TOKEN", "token")
-	ctx := testctx.New()
+	ctx := testctx.Wrap(t.Context())
 	require.NoError(t, Pipe{}.Run(ctx))
 	require.Equal(t, "token", ctx.Token)
 	require.Equal(t, context.TokenTypeGitea, ctx.TokenType)
 }
 
 func TestInvalidEnv(t *testing.T) {
-	ctx := testctx.New()
+	ctx := testctx.Wrap(t.Context())
 	require.Error(t, Pipe{}.Run(ctx))
 	require.EqualError(t, Pipe{}.Run(ctx), ErrMissingToken.Error())
 }
@@ -143,7 +146,7 @@ func TestMultipleEnvTokens(t *testing.T) {
 	t.Setenv("GITHUB_TOKEN", "asdf")
 	t.Setenv("GITLAB_TOKEN", "qwertz")
 	t.Setenv("GITEA_TOKEN", "token")
-	ctx := testctx.New()
+	ctx := testctx.Wrap(t.Context())
 	require.Error(t, Pipe{}.Run(ctx))
 	require.EqualError(t, Pipe{}.Run(ctx), "multiple tokens found, but only one is allowed: GITHUB_TOKEN, GITLAB_TOKEN, GITEA_TOKEN\n\nLearn more at https://goreleaser.com/errors/multiple-tokens\n")
 }
@@ -152,23 +155,23 @@ func TestMultipleEnvTokensForce(t *testing.T) {
 	t.Setenv("GITHUB_TOKEN", "asdf")
 	t.Setenv("GITLAB_TOKEN", "qwertz")
 	t.Setenv("GITEA_TOKEN", "token")
-	ctx := testctx.New()
+	ctx := testctx.Wrap(t.Context())
 	require.Error(t, Pipe{}.Run(ctx))
 	require.EqualError(t, Pipe{}.Run(ctx), "multiple tokens found, but only one is allowed: GITHUB_TOKEN, GITLAB_TOKEN, GITEA_TOKEN\n\nLearn more at https://goreleaser.com/errors/multiple-tokens\n")
 }
 
 func TestEmptyGithubFileEnv(t *testing.T) {
-	ctx := testctx.New()
+	ctx := testctx.Wrap(t.Context())
 	require.Error(t, Pipe{}.Run(ctx))
 }
 
 func TestEmptyGitlabFileEnv(t *testing.T) {
-	ctx := testctx.New()
+	ctx := testctx.Wrap(t.Context())
 	require.Error(t, Pipe{}.Run(ctx))
 }
 
 func TestEmptyGiteaFileEnv(t *testing.T) {
-	ctx := testctx.New()
+	ctx := testctx.Wrap(t.Context())
 	require.Error(t, Pipe{}.Run(ctx))
 }
 
@@ -177,11 +180,12 @@ func TestEmptyGithubEnvFile(t *testing.T) {
 	require.NoError(t, err)
 	require.NoError(t, f.Close())
 	require.NoError(t, os.Chmod(f.Name(), 0o377))
-	ctx := testctx.NewWithCfg(config.Project{
+	ctx := testctx.WrapWithCfg(t.Context(), config.Project{
 		EnvFiles: config.EnvFiles{
 			GitHubToken: f.Name(),
 		},
 	})
+
 	err = Pipe{}.Run(ctx)
 	require.ErrorContains(t, err, "failed to load github token")
 }
@@ -191,11 +195,12 @@ func TestEmptyGitlabEnvFile(t *testing.T) {
 	require.NoError(t, err)
 	require.NoError(t, f.Close())
 	require.NoError(t, os.Chmod(f.Name(), 0o377))
-	ctx := testctx.NewWithCfg(config.Project{
+	ctx := testctx.WrapWithCfg(t.Context(), config.Project{
 		EnvFiles: config.EnvFiles{
 			GitLabToken: f.Name(),
 		},
 	})
+
 	err = Pipe{}.Run(ctx)
 	require.ErrorContains(t, err, "failed to load gitlab token")
 }
@@ -205,57 +210,62 @@ func TestEmptyGiteaEnvFile(t *testing.T) {
 	require.NoError(t, err)
 	require.NoError(t, f.Close())
 	require.NoError(t, os.Chmod(f.Name(), 0o377))
-	ctx := testctx.NewWithCfg(config.Project{
+	ctx := testctx.WrapWithCfg(t.Context(), config.Project{
 		EnvFiles: config.EnvFiles{
 			GiteaToken: f.Name(),
 		},
 	})
+
 	err = Pipe{}.Run(ctx)
 	require.ErrorContains(t, err, "failed to load gitea token")
 }
 
 func TestInvalidEnvChecksSkipped(t *testing.T) {
-	ctx := testctx.New(testctx.Skip(skips.Publish))
+	ctx := testctx.Wrap(t.Context(), testctx.Skip(skips.Publish))
 	require.NoError(t, Pipe{}.Run(ctx))
 }
 
 func TestInvalidEnvReleaseDisabled(t *testing.T) {
 	t.Run("true", func(t *testing.T) {
-		ctx := testctx.NewWithCfg(config.Project{
+		ctx := testctx.WrapWithCfg(t.Context(), config.Project{
 			Env: []string{},
 			Release: config.Release{
 				Disable: "true",
 			},
 		})
+
 		require.NoError(t, Pipe{}.Run(ctx))
 	})
 
 	t.Run("tmpl true", func(t *testing.T) {
-		ctx := testctx.NewWithCfg(config.Project{
+		ctx := testctx.WrapWithCfg(t.Context(), config.Project{
 			Env: []string{"FOO=true"},
 			Release: config.Release{
 				Disable: "{{ .Env.FOO }}",
 			},
 		})
+
 		require.NoError(t, Pipe{}.Run(ctx))
 	})
 
 	t.Run("tmpl false", func(t *testing.T) {
-		ctx := testctx.NewWithCfg(config.Project{
+		ctx := testctx.WrapWithCfg(t.Context(), config.Project{
 			Env: []string{"FOO=true"},
 			Release: config.Release{
 				Disable: "{{ .Env.FOO }}-nope",
 			},
 		})
+
 		require.EqualError(t, Pipe{}.Run(ctx), ErrMissingToken.Error())
 	})
 
 	t.Run("tmpl error", func(t *testing.T) {
-		ctx := testctx.NewWithCfg(config.Project{
+		ctx := testctx.WrapWithCfg(t.Context(), config.Project{
 			Release: config.Release{
 				Disable: "{{ .Env.FOO }}",
 			},
 		})
+
 		testlib.RequireTemplateError(t, Pipe{}.Run(ctx))
 	})
 }

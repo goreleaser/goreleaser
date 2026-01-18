@@ -17,17 +17,17 @@ func TestString(t *testing.T) {
 
 func TestSkip(t *testing.T) {
 	t.Run("skip", func(t *testing.T) {
-		require.True(t, Pipe{}.Skip(testctx.New()))
+		require.True(t, Pipe{}.Skip(testctx.Wrap(t.Context())))
 	})
 	t.Run("dont skip", func(t *testing.T) {
-		require.False(t, Pipe{}.Skip(testctx.NewWithCfg(config.Project{
+		require.False(t, Pipe{}.Skip(testctx.WrapWithCfg(t.Context(), config.Project{
 			ReportSizes: true,
 		})))
 	})
 }
 
 func TestRun(t *testing.T) {
-	ctx := testctx.New()
+	ctx := testctx.Wrap(t.Context())
 	for i, tp := range []artifact.Type{
 		artifact.Binary,
 		artifact.UniversalBinary,

@@ -10,6 +10,7 @@ import (
 	"os/user"
 	"path/filepath"
 	"regexp"
+	"slices"
 	"strings"
 	"text/template"
 	"time"
@@ -342,6 +343,7 @@ func (t *Template) Apply(s string) (string, error) {
 			"sha3_512":       checksum("sha3-512"),
 			"readFile":       readFile,
 			"mustReadFile":   mustReadFile,
+			"englishJoin":    englishJoin,
 		}).
 		Parse(s)
 	if err != nil {
@@ -544,4 +546,35 @@ func mustReadFile(path string) (string, error) {
 func readFile(path string) string {
 	out, _ := mustReadFile(path)
 	return out
+}
+
+func englishJoin(ss ...string) string {
+	ss = slices.DeleteFunc(ss, func(s string) bool {
+		return strings.TrimSpace(s) == ""
+	})
+	if len(ss) == 0 {
+		return ""
+	}
+	b := strings.Builder{}
+	for i, s := range ss {
+		if s == "" {
+			continue
+		}
+
+		if i == 0 {
+			b.WriteString(s)
+			continue
+		}
+
+		if len(ss) > 1 && i == len(ss)-1 {
+			if i > 1 {
+				b.WriteRune(',')
+			}
+			b.WriteString(" and " + s)
+			continue
+		}
+
+		b.WriteString(", " + s)
+	}
+	return b.String()
 }
