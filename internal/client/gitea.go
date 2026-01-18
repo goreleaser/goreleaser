@@ -85,21 +85,23 @@ func (c *giteaClient) Changelog(_ *context.Context, repo Repo, prev, current str
 
 	for _, commit := range result.Commits {
 		item := ChangelogItem{
-			SHA:       commit.SHA,
-			Message:   strings.Split(commit.RepoCommit.Message, "\n")[0],
-			CoAuthors: changelog.ExtractCoAuthors(commit.RepoCommit.Message),
+			SHA:     commit.SHA,
+			Message: strings.Split(commit.RepoCommit.Message, "\n")[0],
 		}
 
 		if author := commit.Author; author != nil {
-			item.Author = Author{
+			item.Authors = append(item.Authors, Author{
 				Name:     author.FullName,
 				Email:    author.Email,
 				Username: author.UserName,
-			}
+			})
 			item.AuthorName = author.FullName
 			item.AuthorEmail = author.Email
 			item.AuthorUsername = author.UserName
 		}
+
+		item.Authors = append(item.Authors, changelog.ExtractCoAuthors(commit.RepoCommit.Message)...)
+
 		log = append(log, item)
 	}
 	return log, nil

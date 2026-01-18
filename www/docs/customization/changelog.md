@@ -37,13 +37,13 @@ changelog:
   # Extra template fields:
   # - `SHA`: the commit SHA1
   # - `Message`: the first line of the commit message, otherwise known as commit subject
-  # - `Author`: the author of the commit
-  # - `CoAuthors`: the list of co-authors
+  # - `Authors`: all authors of the commit
+  # - `Logins`: all non-empty logins of the authors of the commit, prefixed with an '@' (not available if 'git')
   #
   # An `Author` is composed of:
   # - `Name`: the author full name (considers mailmap if 'git')
   # - `Email`: the author email (considers mailmap if 'git')
-  # - `Username`: github/gitlab/gitea username - not available if 'git', might be empty on CoAuthors.
+  # - `Username`: github/gitlab/gitea username - not available if 'git', might be empty
   #
   # Deprecated in v2.14:
   # - `AuthorName`: the author full name (considers mailmap if 'git')

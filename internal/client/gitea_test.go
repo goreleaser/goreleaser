@@ -670,11 +670,11 @@ func TestGiteaChangelog(t *testing.T) {
 		{
 			SHA:     "c8488dc825debca26ade35aefca234b142a515c9",
 			Message: "feat: impl something",
-			Author: Author{
+			Authors: []Author{{
 				Username: "johndoe",
 				Name:     "John Doe",
 				Email:    "nope@nope.nope",
-			},
+			}},
 			AuthorUsername: "johndoe",
 			AuthorName:     "John Doe",
 			AuthorEmail:    "nope@nope.nope",

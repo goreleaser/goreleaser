@@ -121,11 +121,13 @@ func (c *gitlabClient) Changelog(_ *context.Context, repo Repo, prev, current st
 		log = append(log, ChangelogItem{
 			SHA:     commit.ID,
 			Message: strings.Split(commit.Message, "\n")[0],
-			Author: Author{
-				Name:  commit.AuthorName,
-				Email: commit.AuthorEmail,
-			},
-			CoAuthors:   changelog.ExtractCoAuthors(commit.Message),
+			Authors: append(
+				[]Author{{
+					Name:  commit.AuthorName,
+					Email: commit.AuthorEmail,
+				}},
+				changelog.ExtractCoAuthors(commit.Message)...,
+			),
 			AuthorName:  commit.AuthorName,
 			AuthorEmail: commit.AuthorEmail,
 		})

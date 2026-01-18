@@ -260,13 +260,25 @@ func formatEntry(ctx *context.Context, entry Item) (string, error) {
 	line, err := tmpl.New(ctx).WithExtraFields(tmpl.Fields{
 		"SHA":            abbrevEntry(entry.SHA, ctx.Config.Changelog.Abbrev),
 		"Message":        entry.Message,
-		"Author":         entry.Author,
-		"CoAuthors":      entry.CoAuthors,
+		"Authors":        entry.Authors,
+		"Logins":         logins(entry.Authors),
 		"AuthorUsername": entry.AuthorUsername,
 		"AuthorName":     entry.AuthorName,
 		"AuthorEmail":    entry.AuthorEmail,
 	}).Apply(ctx.Config.Changelog.Format)
+	// TODO: func to pluck login, name, etc
 	return prefixItem(line), err
+}
+
+func logins(authors []Author) []string {
+	var logins []string
+	for _, a := range authors {
+		if a.Username == "" {
+			continue
+		}
+		logins = append(logins, "@"+a.Username)
+	}
+	return logins
 }
 
 func formatEntries(ctx *context.Context, entries []Item) ([]string, error) {
@@ -542,11 +554,13 @@ func decode(line string) Item {
 	return Item{
 		SHA:     line[shaOpenIdx:shaCloseIdx],
 		Message: line[messageOpenIdx:messageCloseIdx],
-		Author: Author{
-			Name:  line[authorOpenIdx:authorCloseIdx],
-			Email: line[emailOpenIdx:emailCloseIdx],
-		},
-		CoAuthors:   changelog.ExtractCoAuthors(line[messageBodyOpenIdx:messageBodyCloseIdx]),
+		Authors: append(
+			[]Author{{
+				Name:  line[authorOpenIdx:authorCloseIdx],
+				Email: line[emailOpenIdx:emailCloseIdx],
+			}},
+			changelog.ExtractCoAuthors(line[messageBodyOpenIdx:messageBodyCloseIdx])...,
+		),
 		AuthorName:  line[authorOpenIdx:authorCloseIdx],
 		AuthorEmail: line[emailOpenIdx:emailCloseIdx],
 	}

@@ -7,18 +7,17 @@ import (
 
 // Item represents a changelog item, basically, a commit and its authors.
 type Item struct {
-	SHA       string
-	Message   string
-	Author    Author
-	CoAuthors []Author
+	SHA     string
+	Message string
+	Authors []Author
 
-	// Deprecated: use [ChangelogItem.Author].
+	// Deprecated: use [ChangelogItem.Authors].
 	AuthorName string
 
-	// Deprecated: use [ChangelogItem.Author].
+	// Deprecated: use [ChangelogItem.Authors].
 	AuthorEmail string
 
-	// Deprecated: use [ChangelogItem.Author].
+	// Deprecated: use [ChangelogItem.Authors].
 	AuthorUsername string
 }
 

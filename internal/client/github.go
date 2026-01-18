@@ -133,8 +133,7 @@ func (c *githubClient) Changelog(ctx *context.Context, repo Repo, prev, current 
 			log = append(log, ChangelogItem{
 				SHA:            commit.GetSHA(),
 				Message:        strings.Split(commit.Commit.GetMessage(), "\n")[0],
-				Author:         author,
-				CoAuthors:      c.authorsLookup(ctx, coauthors),
+				Authors:        append([]Author{author}, c.authorsLookup(ctx, coauthors)...),
 				AuthorName:     author.Name,
 				AuthorEmail:    author.Email,
 				AuthorUsername: author.Username,

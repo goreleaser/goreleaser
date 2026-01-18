@@ -551,11 +551,11 @@ func TestGitLabChangelog(t *testing.T) {
 		{
 			SHA:     "6dcb09b5b57875f334f61aebed695e2e4193db5e",
 			Message: "Fix all the bugs",
-			Author: Author{
+			Authors: []Author{{
 				Name:     "Joey User",
 				Email:    "joey@user.edu",
 				Username: "",
-			},
+			}},
 			AuthorName:     "Joey User",
 			AuthorEmail:    "joey@user.edu",
 			AuthorUsername: "",
