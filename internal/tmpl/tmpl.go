@@ -344,6 +344,7 @@ func (t *Template) Apply(s string) (string, error) {
 			"readFile":       readFile,
 			"mustReadFile":   mustReadFile,
 			"englishJoin":    englishJoin,
+			"slice":          func(items ...string) []string { return items },
 		}).
 		Parse(s)
 	if err != nil {
@@ -548,7 +549,7 @@ func readFile(path string) string {
 	return out
 }
 
-func englishJoin(ss ...string) string {
+func englishJoin(ss []string) string {
 	ss = slices.DeleteFunc(ss, func(s string) bool {
 		return strings.TrimSpace(s) == ""
 	})
