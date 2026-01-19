@@ -28,7 +28,7 @@ type Author struct {
 	Username string
 }
 
-var coauthorRe = regexp.MustCompile(`(?i)^co-authored-by:\s*([^<]+)\s*<([^>]+)>`)
+var coauthorRe = regexp.MustCompile(`(?i)^co-authored-by:\s*([^<]+[^<\s])\s*<([^>]+)>`)
 
 // ExtractCoAuthors extracts co-authors from a commit message.
 //
