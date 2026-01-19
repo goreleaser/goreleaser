@@ -1,3 +1,4 @@
+// Package changelog holds the basic changelog struct and shared logic.
 package changelog
 
 import (
