@@ -11,13 +11,13 @@ type Item struct {
 	Message string
 	Authors []Author
 
-	// Deprecated: use [ChangelogItem.Authors].
+	// Deprecated: use [Item.Authors].
 	AuthorName string
 
-	// Deprecated: use [ChangelogItem.Authors].
+	// Deprecated: use [Item.Authors].
 	AuthorEmail string
 
-	// Deprecated: use [ChangelogItem.Authors].
+	// Deprecated: use [Item.Authors].
 	AuthorUsername string
 }
 
