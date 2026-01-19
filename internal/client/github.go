@@ -81,24 +81,34 @@ func newGitHub(ctx *context.Context, token string) (*githubClient, error) {
 }
 
 func (c *githubClient) checkRateLimit(ctx *context.Context) {
+	c.rateLimitChecker(ctx, 100, func(limits *github.RateLimits) *github.Rate {
+		return limits.Core
+	})
+}
+
+func (c *githubClient) checkSearchRateLimit(ctx *context.Context) {
+	// 5 should be safe enough (search limit is 30/min)
+	c.rateLimitChecker(ctx, 5, func(limits *github.RateLimits) *github.Rate {
+		return limits.Search
+	})
+}
+
+func (c *githubClient) rateLimitChecker(ctx *context.Context, target int, which func(*github.RateLimits) *github.Rate) {
 	limits, _, err := c.client.RateLimit.Get(ctx)
 	if err != nil {
 		log.Warn("could not check rate limits, hoping for the best...")
 		return
 	}
-	if limits.Core.Remaining > 100 { // 100 should be safe enough
+	rate := which(limits)
+	if rate.Remaining > target {
 		return
 	}
-	sleep := limits.Core.Reset.UTC().Sub(time.Now().UTC())
-	if sleep <= 0 {
-		// it seems that sometimes, after the rate limit just reset, it might
-		// still get <100 remaining and a reset time in the past... in such
-		// cases we can probably sleep a bit more before trying again...
-		sleep = 15 * time.Second
-	}
-	log.Warnf("token too close to rate limiting, will sleep for %s before continuing...", sleep)
+	// sometimes, after the rate limit just reset, it might still report
+	// low remaining and a reset time in the past - sleep at least 5s
+	sleep := max(time.Until(rate.Reset.Time), 5*time.Second)
+	log.Warnf("rate limit almost reached (%d remaining), sleeping for %s...", rate.Remaining, sleep)
 	time.Sleep(sleep)
-	c.checkRateLimit(ctx)
+	c.rateLimitChecker(ctx, target, which)
 }
 
 func (c *githubClient) GenerateReleaseNotes(ctx *context.Context, repo Repo, prev, current string) (string, error) {
@@ -166,7 +176,7 @@ func (c *githubClient) authorsLookup(ctx *context.Context, authors []Author, cac
 			author.Username = username
 			continue
 		}
-		c.checkRateLimit(ctx)
+		c.checkSearchRateLimit(ctx)
 		res, _, err := c.client.Search.Users(ctx, author.Email, nil)
 		if err == nil && len(res.Users) == 1 {
 			author.Username = res.Users[0].GetLogin()
