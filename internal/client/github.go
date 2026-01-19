@@ -154,7 +154,8 @@ func (c *githubClient) authorsLookup(ctx *context.Context, authors []Author) []A
 	for i := range authors {
 		author := &authors[i]
 		if before, ok := strings.CutSuffix(author.Email, "@users.noreply.github.com"); ok {
-			author.Username = before
+			clean, _, _ := strings.Cut(before, "+")
+			author.Username = clean
 			continue
 		}
 		if username, ok := cache[author.Email]; ok {
