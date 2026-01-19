@@ -1437,6 +1437,12 @@ func TestGitHubAuthorsLookup(t *testing.T) {
 	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		defer r.Body.Close()
 
+		if r.URL.Path == "/api/v3/rate_limit" {
+			w.WriteHeader(http.StatusOK)
+			fmt.Fprint(w, `{"resources":{"core":{"remaining":120},"search":{"remaining":10}}}`)
+			return
+		}
+
 		if r.URL.Path == "/api/v3/search/users" {
 			q := r.URL.Query().Get("q")
 			switch q {
