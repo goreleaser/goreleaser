@@ -117,6 +117,7 @@ func (c *githubClient) Changelog(ctx *context.Context, repo Repo, prev, current 
 	c.checkRateLimit(ctx)
 	var log []ChangelogItem
 	opts := &github.ListOptions{PerPage: 100}
+	cache := map[string]string{}
 
 	for {
 		result, resp, err := c.client.Repositories.CompareCommits(ctx, repo.Owner, repo.Name, prev, current, opts)
@@ -133,7 +134,7 @@ func (c *githubClient) Changelog(ctx *context.Context, repo Repo, prev, current 
 				})
 			}
 			coauthors := changelog.ExtractCoAuthors(commit.Commit.GetMessage())
-			authors = append(authors, c.authorsLookup(ctx, coauthors)...)
+			authors = append(authors, c.authorsLookup(ctx, coauthors, cache)...)
 			log = append(log, fillDeprecated(ChangelogItem{
 				SHA:     commit.GetSHA(),
 				Message: strings.Split(commit.Commit.GetMessage(), "\n")[0],
@@ -149,19 +150,23 @@ func (c *githubClient) Changelog(ctx *context.Context, repo Repo, prev, current 
 	return log, nil
 }
 
-func (c *githubClient) authorsLookup(ctx *context.Context, authors []Author) []Author {
-	cache := map[string]string{}
+func (c *githubClient) authorsLookup(ctx *context.Context, authors []Author, cache map[string]string) []Author {
 	for i := range authors {
 		author := &authors[i]
 		if before, ok := strings.CutSuffix(author.Email, "@users.noreply.github.com"); ok {
-			clean, _, _ := strings.Cut(before, "+")
-			author.Username = clean
+			// GitHub noreply format: ID+USERNAME@users.noreply.github.com
+			if _, clean, ok := strings.Cut(before, "+"); ok {
+				author.Username = clean
+				continue
+			}
+			author.Username = before
 			continue
 		}
 		if username, ok := cache[author.Email]; ok {
 			author.Username = username
 			continue
 		}
+		c.checkRateLimit(ctx)
 		res, _, err := c.client.Search.Users(ctx, author.Email, nil)
 		if err == nil && len(res.Users) == 1 {
 			author.Username = res.Users[0].GetLogin()

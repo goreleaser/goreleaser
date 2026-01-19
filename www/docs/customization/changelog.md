@@ -51,7 +51,7 @@ changelog:
   # - `AuthorUsername`: github/gitlab/gitea username - not available if 'git'
   #
   # Usage with 'github': <!-- md:inline_version v2.8 -->.
-  format: "{{.SHA}}: {{.Message}} (@{{.Author.Username}})"
+  format: "{{.SHA}}: {{.Message}}{{ if .Logins }} ({{ .Logins | englishJoin }}){{ end }}"
 
   # Sorts the changelog by the commit's messages.
   # Could either be asc, desc or empty

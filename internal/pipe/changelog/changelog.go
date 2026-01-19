@@ -266,7 +266,6 @@ func formatEntry(ctx *context.Context, entry Item) (string, error) {
 		"AuthorName":     entry.AuthorName,
 		"AuthorEmail":    entry.AuthorEmail,
 	}).Apply(ctx.Config.Changelog.Format)
-	// TODO: func to pluck login, name, etc
 	return prefixItem(line), err
 }
 
