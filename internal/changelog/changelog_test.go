@@ -11,6 +11,8 @@ func TestExtractCoAuthors(t *testing.T) {
 
 Co-authored-by: Name <name@example.com>
 co-authored-by: Another Name <another-name@example.com>
+Co-authored-by: no email
+Co-authored-by: <no name>
 Assisted-by: Crush <charm@lalla>
 
 `)

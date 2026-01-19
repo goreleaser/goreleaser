@@ -124,20 +124,21 @@ func (c *githubClient) Changelog(ctx *context.Context, repo Repo, prev, current 
 			return nil, err
 		}
 		for _, commit := range result.Commits {
-			author := Author{
-				Name:     commit.GetAuthor().GetName(),
-				Email:    commit.GetAuthor().GetEmail(),
-				Username: commit.GetAuthor().GetLogin(),
+			var authors []Author
+			if author := commit.GetAuthor(); author != nil {
+				authors = append(authors, Author{
+					Name:     author.GetName(),
+					Email:    author.GetEmail(),
+					Username: author.GetLogin(),
+				})
 			}
 			coauthors := changelog.ExtractCoAuthors(commit.Commit.GetMessage())
-			log = append(log, ChangelogItem{
-				SHA:            commit.GetSHA(),
-				Message:        strings.Split(commit.Commit.GetMessage(), "\n")[0],
-				Authors:        append([]Author{author}, c.authorsLookup(ctx, coauthors)...),
-				AuthorName:     author.Name,
-				AuthorEmail:    author.Email,
-				AuthorUsername: author.Username,
-			})
+			authors = append(authors, c.authorsLookup(ctx, coauthors)...)
+			log = append(log, fillDeprecated(ChangelogItem{
+				SHA:     commit.GetSHA(),
+				Message: strings.Split(commit.Commit.GetMessage(), "\n")[0],
+				Authors: authors,
+			}))
 		}
 		if resp.NextPage == 0 {
 			break

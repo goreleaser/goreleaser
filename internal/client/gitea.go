@@ -95,14 +95,11 @@ func (c *giteaClient) Changelog(_ *context.Context, repo Repo, prev, current str
 				Email:    author.Email,
 				Username: author.UserName,
 			})
-			item.AuthorName = author.FullName
-			item.AuthorEmail = author.Email
-			item.AuthorUsername = author.UserName
 		}
 
 		item.Authors = append(item.Authors, changelog.ExtractCoAuthors(commit.RepoCommit.Message)...)
 
-		log = append(log, item)
+		log = append(log, fillDeprecated(item))
 	}
 	return log, nil
 }

@@ -118,7 +118,7 @@ func (c *gitlabClient) Changelog(_ *context.Context, repo Repo, prev, current st
 	}
 
 	for _, commit := range result.Commits {
-		log = append(log, ChangelogItem{
+		log = append(log, fillDeprecated(ChangelogItem{
 			SHA:     commit.ID,
 			Message: strings.Split(commit.Message, "\n")[0],
 			Authors: append(
@@ -128,9 +128,7 @@ func (c *gitlabClient) Changelog(_ *context.Context, repo Repo, prev, current st
 				}},
 				changelog.ExtractCoAuthors(commit.Message)...,
 			),
-			AuthorName:  commit.AuthorName,
-			AuthorEmail: commit.AuthorEmail,
-		})
+		}))
 	}
 	return log, nil
 }

@@ -183,3 +183,17 @@ type RetriableError struct {
 func (e RetriableError) Error() string {
 	return e.Err.Error()
 }
+
+// fillDeprecated fills the deprecated field based on the contents of Authors.
+//
+// Deprecated: This should be removed in v3.
+func fillDeprecated(i ChangelogItem) ChangelogItem {
+	if len(i.Authors) == 0 {
+		return i
+	}
+	author := i.Authors[0]
+	i.AuthorName = author.Name
+	i.AuthorUsername = author.Username
+	i.AuthorEmail = author.Email
+	return i
+}
