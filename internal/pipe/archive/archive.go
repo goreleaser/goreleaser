@@ -262,6 +262,12 @@ func create(ctx *context.Context, arch config.Archive, binaries []*artifact.Arti
 		if rep, ok := binaries[0].Extra[artifact.ExtraReplaces]; ok {
 			art.Extra[artifact.ExtraReplaces] = rep
 		}
+		for _, bin := range binaries {
+			if artifact.ExtraOr(*bin, artifact.ExtraDynamicallyLinked, false) {
+				art.Extra[artifact.ExtraDynamicallyLinked] = true
+				break
+			}
+		}
 	}
 
 	ctx.Artifacts.Add(art)
@@ -312,6 +318,9 @@ func skip(ctx *context.Context, archive config.Archive, binaries []*artifact.Art
 		}
 		if rep, ok := binaries[0].Extra[artifact.ExtraReplaces]; ok {
 			art.Extra[artifact.ExtraReplaces] = rep
+		}
+		if artifact.ExtraOr(*binary, artifact.ExtraDynamicallyLinked, false) {
+			art.Extra[artifact.ExtraDynamicallyLinked] = true
 		}
 		ctx.Artifacts.Add(art)
 	}

@@ -258,26 +258,35 @@ func preparePkg(
 		inputs = append(inputs, "makeWrapper")
 		dependencies = append(dependencies, "makeWrapper")
 	}
+
+	var dynamicallyLinked bool
 	for _, arch := range archives {
 		if arch.Format() == "zip" {
 			inputs = append(inputs, "unzip")
 			dependencies = append(dependencies, "unzip")
-			break
+		}
+		if !dynamicallyLinked && artifact.ExtraOr(*arch, artifact.ExtraDynamicallyLinked, false) {
+			inputs = append(inputs, "autoPatchelfHook")
+			dynamicallyLinked = true
 		}
 	}
 
+	inputs = slices.Compact(slices.Sorted(slices.Values(inputs)))
+	dependencies = slices.Compact(slices.Sorted(slices.Values(dependencies)))
+
 	data := templateData{
-		Name:         nix.Name,
-		Version:      ctx.Version,
-		Install:      installs,
-		PostInstall:  postInstall,
-		Archives:     map[string]Archive{},
-		SourceRoots:  map[string]string{},
-		Description:  nix.Description,
-		Homepage:     nix.Homepage,
-		License:      nix.License,
-		Inputs:       inputs,
-		Dependencies: dependencies,
+		Name:              nix.Name,
+		Version:           ctx.Version,
+		Install:           installs,
+		PostInstall:       postInstall,
+		Archives:          map[string]Archive{},
+		SourceRoots:       map[string]string{},
+		Description:       nix.Description,
+		Homepage:          nix.Homepage,
+		License:           nix.License,
+		Inputs:            inputs,
+		Dependencies:      dependencies,
+		DynamicallyLinked: dynamicallyLinked,
 	}
 
 	platforms := map[string]bool{}

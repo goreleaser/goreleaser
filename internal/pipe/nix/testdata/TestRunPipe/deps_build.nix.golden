@@ -5,11 +5,11 @@
   fetchurl,
   installShellFiles,
   stdenvNoCC,
-  fish,
   bash,
-  ttyd,
   chromium,
+  fish,
   makeWrapper,
+  ttyd,
 }:
 let
   inherit (stdenvNoCC.hostPlatform) system;

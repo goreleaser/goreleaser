@@ -13,6 +13,7 @@ import (
 	"github.com/goreleaser/goreleaser/v2/internal/artifact"
 	"github.com/goreleaser/goreleaser/v2/internal/builders/base"
 	"github.com/goreleaser/goreleaser/v2/internal/cargo"
+	"github.com/goreleaser/goreleaser/v2/internal/elf"
 	"github.com/goreleaser/goreleaser/v2/internal/gio"
 	"github.com/goreleaser/goreleaser/v2/internal/tmpl"
 	api "github.com/goreleaser/goreleaser/v2/pkg/build"
@@ -201,6 +202,10 @@ func (b *Builder) Build(ctx *context.Context, build config.Build, options api.Op
 
 	if err := base.ChTimes(build, tpl, a); err != nil {
 		return err
+	}
+
+	if elf.IsDynamicallyLinked(a.Path) {
+		a.Extra[artifact.ExtraDynamicallyLinked] = true
 	}
 
 	ctx.Artifacts.Add(a)

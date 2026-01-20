@@ -10,17 +10,18 @@ type Archive struct {
 }
 
 type templateData struct {
-	Name         string
-	Version      string
-	Install      []string
-	PostInstall  []string
-	SourceRoot   string
-	SourceRoots  map[string]string
-	Archives     map[string]Archive
-	Description  string
-	Homepage     string
-	License      string
-	Platforms    []string
-	Inputs       []string
-	Dependencies []string
+	Name              string
+	Version           string
+	Install           []string
+	PostInstall       []string
+	SourceRoot        string
+	SourceRoots       map[string]string
+	Archives          map[string]Archive
+	Description       string
+	Homepage          string
+	License           string
+	Platforms         []string
+	Inputs            []string
+	Dependencies      []string
+	DynamicallyLinked bool
 }
