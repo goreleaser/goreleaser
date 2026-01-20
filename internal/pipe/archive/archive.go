@@ -262,11 +262,10 @@ func create(ctx *context.Context, arch config.Archive, binaries []*artifact.Arti
 		if rep, ok := binaries[0].Extra[artifact.ExtraReplaces]; ok {
 			art.Extra[artifact.ExtraReplaces] = rep
 		}
-		for _, bin := range binaries {
-			if artifact.ExtraOr(*bin, artifact.ExtraDynamicallyLinked, false) {
-				art.Extra[artifact.ExtraDynamicallyLinked] = true
-				break
-			}
+		if slices.ContainsFunc(binaries, func(bin *artifact.Artifact) bool {
+			return artifact.ExtraOr(*bin, artifact.ExtraDynamicallyLinked, false)
+		}) {
+			art.Extra[artifact.ExtraDynamicallyLinked] = true
 		}
 	}
 

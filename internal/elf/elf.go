@@ -1,7 +1,10 @@
 // Package elf helps handling ELF files.
 package elf
 
-import "debug/elf"
+import (
+	"debug/elf"
+	"slices"
+)
 
 // IsDynamicallyLinked checks if the given binary is dynamically linked.
 // It returns true if the binary is an ELF file with a PT_INTERP segment,
@@ -14,10 +17,7 @@ func IsDynamicallyLinked(path string) bool {
 	}
 	defer f.Close()
 
-	for _, prog := range f.Progs {
-		if prog.Type == elf.PT_INTERP {
-			return true
-		}
-	}
-	return false
+	return slices.ContainsFunc(f.Progs, func(prog *elf.Prog) bool {
+		return prog.Type == elf.PT_INTERP
+	})
 }
