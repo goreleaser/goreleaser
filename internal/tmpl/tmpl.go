@@ -268,34 +268,6 @@ func WithPrefix(prefix string) SliceOpt {
 	}
 }
 
-type sliceOptions struct {
-	filtering func(string) bool
-	mapping   func(string) string
-}
-
-// Slice applies to all items in the given input.
-func (t *Template) Slice(in []string, opts ...SliceOpt) ([]string, error) {
-	var opt sliceOptions
-	for _, option := range opts {
-		option(&opt)
-	}
-	var out []string
-	for _, s := range in {
-		applied, err := t.Apply(s)
-		if err != nil {
-			return nil, err
-		}
-		if opt.filtering != nil && !opt.filtering(applied) {
-			continue
-		}
-		if opt.mapping != nil {
-			applied = opt.mapping(applied)
-		}
-		out = append(out, applied)
-	}
-	return out, nil
-}
-
 // Apply applies the given string against the Fields stored in the template.
 func (t *Template) Apply(s string) (string, error) {
 	var out bytes.Buffer
@@ -370,15 +342,41 @@ func (t *Template) ApplyAll(sps ...*string) error {
 }
 
 // ApplySlice applies the template to all items in a slice.
-func (t *Template) ApplySlice(in *[]string) error {
-	for i, s := range *in {
-		ss, err := t.Apply(s)
-		if err != nil {
-			return newTmplError(s, err)
-		}
-		(*in)[i] = ss
+func (t *Template) ApplySlice(in *[]string, opts ...SliceOpt) error {
+	out, err := t.Slice(*in, opts...)
+	if err != nil {
+		return err
 	}
+	*in = out
 	return nil
+}
+
+type sliceOptions struct {
+	filtering func(string) bool
+	mapping   func(string) string
+}
+
+// Slice applies to all items in the given input, returning a new slice.
+func (t *Template) Slice(in []string, opts ...SliceOpt) ([]string, error) {
+	var opt sliceOptions
+	for _, option := range opts {
+		option(&opt)
+	}
+	var out []string
+	for _, s := range in {
+		applied, err := t.Apply(s)
+		if err != nil {
+			return nil, newTmplError(s, err)
+		}
+		if opt.filtering != nil && !opt.filtering(applied) {
+			continue
+		}
+		if opt.mapping != nil {
+			applied = opt.mapping(applied)
+		}
+		out = append(out, applied)
+	}
+	return out, nil
 }
 
 func (t *Template) isEnvSet(name string) bool {
