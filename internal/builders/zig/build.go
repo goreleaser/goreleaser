@@ -179,7 +179,7 @@ func (b *Builder) Build(ctx *context.Context, build config.Build, options api.Op
 	}
 
 	if elf.IsDynamicallyLinked(a.Path) {
-		a.Extra[artifact.ExtraDynamicallyLinked] = true
+		a.Extra[artifact.ExtranDynLink] = true
 	}
 
 	ctx.Artifacts.Add(a)

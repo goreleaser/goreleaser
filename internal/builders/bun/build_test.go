@@ -159,10 +159,11 @@ func TestBuild(t *testing.T) {
 		Target: "bun-darwin-arm64",
 		Type:   artifact.Binary,
 		Extra: artifact.Extras{
-			artifact.ExtraBinary:  "proj",
-			artifact.ExtraBuilder: "bun",
-			artifact.ExtraExt:     "",
-			artifact.ExtraID:      "default",
+			artifact.ExtraBinary:   "proj",
+			artifact.ExtraBuilder:  "bun",
+			artifact.ExtraExt:      "",
+			artifact.ExtraID:       "default",
+			artifact.ExtranDynLink: true,
 		},
 	}, *bin)
 

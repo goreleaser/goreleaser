@@ -123,11 +123,12 @@ func TestBuild(t *testing.T) {
 		Target: "aarch64-apple-darwin",
 		Type:   artifact.Binary,
 		Extra: artifact.Extras{
-			artifact.ExtraBinary:  "proj",
-			artifact.ExtraBuilder: "deno",
-			artifact.ExtraExt:     "",
-			artifact.ExtraID:      "default",
-			keyAbi:                "",
+			artifact.ExtraBinary:   "proj",
+			artifact.ExtraBuilder:  "deno",
+			artifact.ExtraExt:      "",
+			artifact.ExtraID:       "default",
+			keyAbi:                 "",
+			artifact.ExtranDynLink: true,
 		},
 	}, *bin)
 

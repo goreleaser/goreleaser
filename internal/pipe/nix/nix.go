@@ -265,7 +265,7 @@ func preparePkg(
 			inputs = append(inputs, "unzip")
 			dependencies = append(dependencies, "unzip")
 		}
-		if !dynamicallyLinked && artifact.ExtraOr(*arch, artifact.ExtraDynamicallyLinked, false) {
+		if !dynamicallyLinked && artifact.ExtraOr(*arch, artifact.ExtranDynLink, false) {
 			inputs = append(inputs, "autoPatchelfHook")
 			dynamicallyLinked = true
 		}

@@ -728,11 +728,11 @@ func TestDynamicallyLinked(t *testing.T) {
 			Goarch: goarch,
 			Type:   artifact.UploadableArchive,
 			Extra: map[string]any{
-				artifact.ExtraID:                "dynlink",
-				artifact.ExtraFormat:            "tar.gz",
-				artifact.ExtraBinaries:          []string{"foo"},
-				artifact.ExtraWrappedIn:         "",
-				artifact.ExtraDynamicallyLinked: dynLinked,
+				artifact.ExtraID:        "dynlink",
+				artifact.ExtraFormat:    "tar.gz",
+				artifact.ExtraBinaries:  []string{"foo"},
+				artifact.ExtraWrappedIn: "",
+				artifact.ExtranDynLink:  dynLinked,
 			},
 		}
 		ctx.Artifacts.Add(&art)
