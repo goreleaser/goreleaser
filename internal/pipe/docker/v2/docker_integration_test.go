@@ -10,6 +10,7 @@ import (
 	v1 "github.com/google/go-containerregistry/pkg/v1"
 	"github.com/goreleaser/goreleaser/v2/internal/artifact"
 	"github.com/goreleaser/goreleaser/v2/internal/gerrors"
+	"github.com/goreleaser/goreleaser/v2/internal/pipe"
 	"github.com/goreleaser/goreleaser/v2/internal/testctx"
 	"github.com/goreleaser/goreleaser/v2/internal/testlib"
 	"github.com/goreleaser/goreleaser/v2/pkg/config"
@@ -32,7 +33,7 @@ func TestRun(t *testing.T) {
 				Images:     []string{"image1", "image2"},
 				Tags:       []string{"tag1", "tag2"},
 				ExtraFiles: []string{"./testdata/foo.conf"},
-				Platforms:  []string{"linux/amd64", "linux/arm64", "linux/arm/v7"},
+				Platforms:  []string{"linux/amd64", "linux/arm64", "linux/arm/v7", `{{- if isEnvSet "FOO" }}this will be empty{{ end -}}`},
 				Labels: map[string]string{
 					"org.opencontainers.image.licenses": "MIT",
 				},
@@ -90,7 +91,10 @@ func TestRun(t *testing.T) {
 
 	require.NoError(t, Base{}.Default(ctx))
 	err := Snapshot{}.Run(ctx)
-	require.NoError(t, err, "message: %s, output: %v", gerrors.MessageOf(err), gerrors.DetailsOf(err))
+	require.Error(t, err)
+	if !pipe.IsSkip(err) {
+		t.Errorf("should have been a skip, got message: %s, output: %v", gerrors.MessageOf(err), gerrors.DetailsOf(err))
+	}
 
 	t.Run("main", func(t *testing.T) {
 		images := ctx.Artifacts.Filter(
@@ -192,6 +196,7 @@ func TestPublish(t *testing.T) {
 					Images:     []string{"localhost:5060/foo", "localhost:5061/bar"},
 					Tags:       []string{"latest", "v{{.Version}}", "{{if .IsNightly}}nightly{{end}}"},
 					ExtraFiles: []string{"./testdata/foo.conf"},
+					Platforms:  []string{"linux/amd64", "linux/arm64", `{{- if isEnvSet "FOO" }}this will be empty{{ end -}}`},
 					Labels: map[string]string{
 						"org.opencontainers.image.licenses": "MIT",
 					},
