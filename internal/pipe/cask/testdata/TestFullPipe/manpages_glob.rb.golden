@@ -10,8 +10,8 @@ cask "manpages_glob" do
   end
 
   binary "manpages_glob"
-  manpage "manpages/foo.3"
   manpage "manpages/bar.3"
+  manpage "manpages/foo.3"
   depends_on cask: [
       "fish",
       "powershell",

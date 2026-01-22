@@ -484,5 +484,11 @@ func compileManpages(brew config.HomebrewCask, archives []*artifact.Artifact) ([
 		}
 	}
 
+	slices.Sort(allManpages)
+	allManpages = slices.Compact(allManpages)
+
+	if len(allManpages) == 0 && len(brew.Manpages) > 0 {
+		log.Warnf("no manpages matched the configured globs; configured manpages: %v", brew.Manpages)
+	}
 	return allManpages, nil
 }

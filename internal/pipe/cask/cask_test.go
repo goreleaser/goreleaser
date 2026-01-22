@@ -225,7 +225,7 @@ func TestFullPipe(t *testing.T) {
 				ctx.Config.Casks[0].Repository.Owner = "test"
 				ctx.Config.Casks[0].Repository.Name = "test"
 				ctx.Config.Casks[0].Homepage = "https://github.com/goreleaser"
-				ctx.Config.Casks[0].Manpages = []string{"manpages/*"}
+				ctx.Config.Casks[0].Manpages = []string{"manpages/*", "man*/*"}
 			},
 		},
 		"git_remote": {
