@@ -275,6 +275,7 @@ var validLicenses = []string{
 	"wtfpl",
 	"wxWindowsException31",
 	"x11",
+	"x11BsdClause",
 	"x11NoPermitPersons",
 	"xerox",
 	"xfig",

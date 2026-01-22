@@ -143,11 +143,15 @@ func (Publish) extraArgs(ctx *context.Context, d config.DockerV2) ([]string, err
 }
 
 func buildImage(ctx *context.Context, d config.DockerV2, extraArgs ...string) error {
+	tpl := tmpl.New(ctx)
+	if err := tpl.ApplySlice(&d.Platforms, tmpl.NonEmpty()); err != nil {
+		return err
+	}
 	if len(d.Platforms) == 0 {
 		return pipe.Skip("no platforms to build")
 	}
 
-	disable, err := tmpl.New(ctx).Bool(d.Disable)
+	disable, err := tpl.Bool(d.Disable)
 	if err != nil {
 		return err
 	}
@@ -347,6 +351,10 @@ func makeContext(ctx *context.Context, d config.DockerV2, artifacts []*artifact.
 
 	if err := gio.Copy(dockerfile, filepath.Join(tmp, "Dockerfile")); err != nil {
 		return "", fmt.Errorf("failed to copy dockerfile: %w: %s", err, d.ID)
+	}
+
+	if markers := findRootProjectExtraFiles(d.ExtraFiles); len(markers) > 0 {
+		emitExtraFilesWarning(markers)
 	}
 
 	for _, file := range d.ExtraFiles {

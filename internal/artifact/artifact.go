@@ -193,6 +193,9 @@ func (t Type) String() string {
 	}
 }
 
+// Extra field keys used across multiple pipes.
+// If you add or change these, please update the documentation at
+// www/docs/customization/artifacts.md as well.
 const (
 	ExtraID         = "ID"
 	ExtraBinary     = "Binary"

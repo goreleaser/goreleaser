@@ -118,6 +118,7 @@ A big **thank you** to all current, past, and future sponsors!
 
 ### Backers
 
+- [Marcel Eichner](https://github.com/Ephigenia)
 - [Chatpong Voranartaksorn](https://github.com/psychvc)
 - [Bruno Paz](https://brunopaz.dev/)
 - [Guest](https://opencollective.com/guest-341ba997)
@@ -150,7 +151,6 @@ A big **thank you** to all current, past, and future sponsors!
 - [Joseph Sirianni](https://github.com/jsirianni)
 - [Oleg Balunenko](https://github.com/obalunenko)
 - [^.{5}\s.{2}ram.{3}$](https://github.com/umatare5)
-- [Ethan Troy](https://github.com/ethanolivertroy)
 
 <!-- sponsors:end -->
 

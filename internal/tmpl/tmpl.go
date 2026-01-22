@@ -10,6 +10,7 @@ import (
 	"os/user"
 	"path/filepath"
 	"regexp"
+	"slices"
 	"strings"
 	"text/template"
 	"time"
@@ -267,34 +268,6 @@ func WithPrefix(prefix string) SliceOpt {
 	}
 }
 
-type sliceOptions struct {
-	filtering func(string) bool
-	mapping   func(string) string
-}
-
-// Slice applies to all items in the given input.
-func (t *Template) Slice(in []string, opts ...SliceOpt) ([]string, error) {
-	var opt sliceOptions
-	for _, option := range opts {
-		option(&opt)
-	}
-	var out []string
-	for _, s := range in {
-		applied, err := t.Apply(s)
-		if err != nil {
-			return nil, err
-		}
-		if opt.filtering != nil && !opt.filtering(applied) {
-			continue
-		}
-		if opt.mapping != nil {
-			applied = opt.mapping(applied)
-		}
-		out = append(out, applied)
-	}
-	return out, nil
-}
-
 // Apply applies the given string against the Fields stored in the template.
 func (t *Template) Apply(s string) (string, error) {
 	var out bytes.Buffer
@@ -342,6 +315,8 @@ func (t *Template) Apply(s string) (string, error) {
 			"sha3_512":       checksum("sha3-512"),
 			"readFile":       readFile,
 			"mustReadFile":   mustReadFile,
+			"englishJoin":    englishJoin,
+			"slice":          func(items ...string) []string { return items },
 		}).
 		Parse(s)
 	if err != nil {
@@ -367,15 +342,41 @@ func (t *Template) ApplyAll(sps ...*string) error {
 }
 
 // ApplySlice applies the template to all items in a slice.
-func (t *Template) ApplySlice(in *[]string) error {
-	for i, s := range *in {
-		ss, err := t.Apply(s)
-		if err != nil {
-			return newTmplError(s, err)
-		}
-		(*in)[i] = ss
+func (t *Template) ApplySlice(in *[]string, opts ...SliceOpt) error {
+	out, err := t.Slice(*in, opts...)
+	if err != nil {
+		return err
 	}
+	*in = out
 	return nil
+}
+
+type sliceOptions struct {
+	filtering func(string) bool
+	mapping   func(string) string
+}
+
+// Slice applies to all items in the given input, returning a new slice.
+func (t *Template) Slice(in []string, opts ...SliceOpt) ([]string, error) {
+	var opt sliceOptions
+	for _, option := range opts {
+		option(&opt)
+	}
+	var out []string
+	for _, s := range in {
+		applied, err := t.Apply(s)
+		if err != nil {
+			return nil, newTmplError(s, err)
+		}
+		if opt.filtering != nil && !opt.filtering(applied) {
+			continue
+		}
+		if opt.mapping != nil {
+			applied = opt.mapping(applied)
+		}
+		out = append(out, applied)
+	}
+	return out, nil
 }
 
 func (t *Template) isEnvSet(name string) bool {
@@ -544,4 +545,35 @@ func mustReadFile(path string) (string, error) {
 func readFile(path string) string {
 	out, _ := mustReadFile(path)
 	return out
+}
+
+func englishJoin(ss []string) string {
+	ss = slices.DeleteFunc(ss, func(s string) bool {
+		return strings.TrimSpace(s) == ""
+	})
+	if len(ss) == 0 {
+		return ""
+	}
+	b := strings.Builder{}
+	for i, s := range ss {
+		if s == "" {
+			continue
+		}
+
+		if i == 0 {
+			b.WriteString(s)
+			continue
+		}
+
+		if len(ss) > 1 && i == len(ss)-1 {
+			if i > 1 {
+				b.WriteRune(',')
+			}
+			b.WriteString(" and " + s)
+			continue
+		}
+
+		b.WriteString(", " + s)
+	}
+	return b.String()
 }

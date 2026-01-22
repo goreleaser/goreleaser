@@ -21,13 +21,13 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           gh release download -R goreleaser/goreleaser "${{ steps.release.outputs.tag }}" --pattern goreleaser_Linux_x86_64.tar.gz.sbom.json
-      - uses: anchore/scan-action@3c9a191a0fbab285ca6b8530b5de5a642cba332f # v7.2.2
+      - uses: anchore/scan-action@62b74fb7bb810d2c45b1865f47a77655621862a5 # v7.2.3
         id: scan
         with:
           sbom: goreleaser_Linux_x86_64.tar.gz.sbom.json
           fail-build: true
           severity-cutoff: critical
       - if: always()
-        uses: github/codeql-action/upload-sarif@5d4e8d1aca955e8d8589aabd499c5cae939e33c7 # v4.31.9
+        uses: github/codeql-action/upload-sarif@cdefb33c0f6224e58673d9004f47f7cb3e328b89 # v4.31.10
         with:
           sarif_file: ${{ steps.scan.outputs.sarif }}
