@@ -9,6 +9,7 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/goreleaser/goreleaser/v2/internal/changelog"
 	"github.com/goreleaser/goreleaser/v2/internal/client"
 	"github.com/goreleaser/goreleaser/v2/internal/git"
 	"github.com/goreleaser/goreleaser/v2/internal/golden"
@@ -1168,6 +1169,84 @@ func TestIssue5595(t *testing.T) {
 			golden.RequireEqualExt(t, []byte(log), ".md")
 		})
 	}
+}
+
+func TestAuthors(t *testing.T) {
+	ctx := testctx.WrapWithCfg(t.Context(), config.Project{
+		Changelog: config.Changelog{
+			Use:    useGitHub,
+			Format: `{{ .SHA }}: {{ .Message }} ({{ .Logins | englishJoin }})`,
+			Abbrev: 3,
+			Groups: []config.ChangelogGroup{
+				{
+					Title:  "Features",
+					Regexp: `^.*?feat(\([[:word:]]+\))??!?:.+$`,
+					Order:  0,
+				},
+				{
+					Title:  "Fixes",
+					Regexp: `^.*?fix(\([[:word:]]+\))??!?:.+$`,
+					Order:  1,
+				},
+				{
+					Title: "Others",
+					Order: 999,
+				},
+			},
+			Filters: config.Filters{
+				Exclude: []string{
+					"^docs:",
+					"typo",
+					"(?i)foo",
+				},
+				Include: []string{
+					"^feat:",
+					"^fix:",
+				},
+			},
+		},
+	}, testctx.WithCurrentTag("v0.0.2"), withFirstCommit(t))
+
+	require.NoError(t, Pipe{}.Default(ctx))
+
+	mock := client.NewMock()
+
+	for i := range 20 {
+		kind := "fix"
+		if i%2 == 0 {
+			kind = "feat"
+		}
+		if i%5 == 0 {
+			kind = "chore"
+		}
+		if i%7 == 0 {
+			kind = "docs"
+		}
+		msg := fmt.Sprintf("%s: commit #%d", kind, i)
+		mock.Changes = append(mock.Changes, Item{
+			SHA:     "cafebabe",
+			Message: msg,
+			Authors: []changelog.Author{
+				{Username: "caarlos0"},
+				{Username: "github-actions"},
+				{Username: "charmcrush"},
+			},
+		})
+	}
+
+	cl := wrappingChangeloger{
+		changeloger: &scmChangeloger{
+			client: mock,
+			repo: client.Repo{
+				Owner: "test",
+				Name:  "test",
+			},
+		},
+	}
+
+	log, err := cl.Log(ctx)
+	require.NoError(t, err)
+	golden.RequireEqualExt(t, []byte(log), ".md")
 }
 
 func ensureCommitHashLen(tb testing.TB, log string, l int) {
