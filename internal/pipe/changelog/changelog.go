@@ -257,16 +257,31 @@ func buildChangelog(ctx *context.Context) (string, error) {
 }
 
 func formatEntry(ctx *context.Context, entry Item) (string, error) {
+	authors := cleanupAuthors(entry.Authors)
 	line, err := tmpl.New(ctx).WithExtraFields(tmpl.Fields{
 		"SHA":            abbrevEntry(entry.SHA, ctx.Config.Changelog.Abbrev),
 		"Message":        entry.Message,
-		"Authors":        entry.Authors,
-		"Logins":         logins(entry.Authors),
+		"Authors":        authors,
+		"Logins":         logins(authors),
 		"AuthorUsername": entry.AuthorUsername,
 		"AuthorName":     entry.AuthorName,
 		"AuthorEmail":    entry.AuthorEmail,
 	}).Apply(ctx.Config.Changelog.Format)
 	return prefixItem(line), err
+}
+
+func cleanupAuthors(authors []Author) []Author {
+	seen := map[string]bool{}
+	var result []Author
+	for _, a := range authors {
+		key := cmp.Or(a.Username, a.Email, a.Name)
+		if seen[key] || key == "" {
+			continue
+		}
+		seen[key] = true
+		result = append(result, a)
+	}
+	return result
 }
 
 func logins(authors []Author) []string {
