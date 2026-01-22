@@ -1332,7 +1332,7 @@ func TestGitHubCreateFileWithGitHubAppToken(t *testing.T) {
 			body, err := io.ReadAll(r.Body)
 			assert.NoError(t, err)
 
-			var reqData map[string]interface{}
+			var reqData map[string]any
 			assert.NoError(t, json.Unmarshal(body, &reqData))
 
 			// Verify committer is not present when using GitHub App token
@@ -1390,14 +1390,14 @@ func TestGitHubCreateFileWithoutGitHubAppToken(t *testing.T) {
 			body, err := io.ReadAll(r.Body)
 			assert.NoError(t, err)
 
-			var reqData map[string]interface{}
+			var reqData map[string]any
 			assert.NoError(t, json.Unmarshal(body, &reqData))
 
 			// Verify committer is present when not using GitHub App token
 			committer, hasCommitter := reqData["committer"]
 			assert.True(t, hasCommitter, "committer should be set when not using GitHub App token")
 
-			committerMap := committer.(map[string]interface{})
+			committerMap := committer.(map[string]any)
 			assert.Equal(t, "test-author", committerMap["name"])
 			assert.Equal(t, "test@example.com", committerMap["email"])
 
