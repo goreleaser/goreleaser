@@ -202,6 +202,61 @@ func TestSplit(t *testing.T) {
 	require.Equal(t, []string{}, parts)
 }
 
+func TestCompileManpagesBrokenGlob(t *testing.T) {
+	brew := config.HomebrewCask{
+		Manpages: []string{"[invalid"},
+	}
+	archives := []*artifact.Artifact{
+		{
+			Extra: map[string]any{
+				artifact.ExtraFiles: []string{"man/foo.1.gz"},
+			},
+		},
+	}
+
+	_, err := compileManpages(brew, archives)
+	require.Error(t, err)
+}
+
+func TestCompileManpagesNoMatch(t *testing.T) {
+	brew := config.HomebrewCask{
+		Manpages: []string{"mandocs/*"},
+	}
+	archives := []*artifact.Artifact{
+		{
+			Extra: map[string]any{
+				artifact.ExtraFiles: []string{"man/foo.1.gz"},
+			},
+		},
+	}
+
+	result, err := compileManpages(brew, archives)
+	require.NoError(t, err)
+	require.Empty(t, result)
+}
+
+func TestCompileManpagesDifferentExtraFiles(t *testing.T) {
+	brew := config.HomebrewCask{
+		Manpages: []string{"man/*"},
+	}
+	archives := []*artifact.Artifact{
+		{
+			Extra: map[string]any{
+				artifact.ExtraFiles: []string{"man/foo.1.gz"},
+			},
+		},
+		{
+			Extra: map[string]any{
+				artifact.ExtraFiles: []string{"man/bar.1.gz", "man/baz.1.gz"},
+			},
+		},
+	}
+
+	result, err := compileManpages(brew, archives)
+	require.NoError(t, err)
+	require.Equal(t, brew.Manpages, result)
+}
+
 func TestFullPipe(t *testing.T) {
 	type testcase struct {
 		prepare                func(ctx *context.Context)
