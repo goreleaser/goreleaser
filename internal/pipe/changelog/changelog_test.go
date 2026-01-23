@@ -1264,7 +1264,7 @@ func TestFormatEntry(t *testing.T) {
 				{Username: "bob"},
 				{Username: "alice"}, // duplicate
 				{Username: "charlie"},
-				{Username: "bob"},   // duplicate
+				{Username: "bob"}, // duplicate
 			},
 		}
 		result, err := formatEntry(ctx, entry)
