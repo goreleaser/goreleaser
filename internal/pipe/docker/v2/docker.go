@@ -99,14 +99,17 @@ func (p Snapshot) Run(ctx *context.Context) error {
 	log.Warn("snapshot build: will not push any images")
 
 	canLoad := isDockerDaemonAvailable(ctx)
+	if !canLoad {
+		log.Warn("no docker daemon available, build result will only remain in the build cache")
+	}
 
 	g := semerrgroup.NewSkipAware(semerrgroup.New(ctx.Parallelism))
 	for i := range ctx.Config.DockersV2 {
 		d := ctx.Config.DockersV2[i]
 
 		if !canLoad {
-			log.WithField("id", d.ID).
-				Warn("images will not be available because we can't connect to a docker daemon")
+			// not running on a docker daemon, `--load` won't work, and
+			// without it, images will have `--output=type=cacheonly`.
 			g.Go(func() error {
 				return buildImage(ctx, d)
 			})
