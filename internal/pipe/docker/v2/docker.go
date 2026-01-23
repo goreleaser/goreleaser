@@ -106,20 +106,21 @@ func (p Snapshot) Run(ctx *context.Context) error {
 
 		if !canLoad {
 			log.WithField("id", d.ID).
-				Info("snapshot build: skipping --load option because cannot connect to docker daemon")
+				Warn("images will not be available because we can't connect to a docker daemon")
 			g.Go(func() error {
-				return buildImage(ctx, d, []string{}...)
+				return buildImage(ctx, d)
 			})
-		} else {
-			// buildx won't allow us to `--load` a manifest, so we create
-			// one image per platform, adding it to the tags.
-			for _, plat := range d.Platforms {
-				g.Go(func() error {
-					d := d
-					d.Platforms = []string{plat}
-					return buildImage(ctx, d, "--load")
-				})
-			}
+			continue
+		}
+
+		// buildx won't allow us to `--load` a manifest, so we create
+		// one image per platform, adding it to the tags.
+		for _, plat := range d.Platforms {
+			g.Go(func() error {
+				d := d
+				d.Platforms = []string{plat}
+				return buildImage(ctx, d, "--load")
+			})
 		}
 	}
 	return g.Wait()
