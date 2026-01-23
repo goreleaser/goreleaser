@@ -268,6 +268,11 @@ func TestDisable(t *testing.T) {
 	})
 }
 
+func TestIsDockerDaemonAvailableNoDaemon(t *testing.T) {
+	t.Setenv("DOCKER_HOST", "unix:///nonexistent.sock")
+	require.False(t, isDockerDaemonAvailable(t.Context()))
+}
+
 func TestToPlatform(t *testing.T) {
 	for expected, art := range map[string]artifact.Artifact{
 		"windows/amd64": {

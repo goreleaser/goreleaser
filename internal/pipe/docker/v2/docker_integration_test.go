@@ -303,6 +303,69 @@ func TestHealthcheck(t *testing.T) {
 	require.NoError(t, Base{}.Healthcheck(testctx.Wrap(t.Context())))
 }
 
+func TestIsDockerDaemonAvailable(t *testing.T) {
+	testlib.CheckDocker(t)
+	require.True(t, isDockerDaemonAvailable(t.Context()))
+}
+
+func TestSnapshotNoDaemon(t *testing.T) {
+	testlib.CheckDocker(t)
+	testlib.SkipIfWindows(t, "registry images only available for windows")
+
+	// Force isDockerDaemonAvailable to return false for this test
+	testForceNoDaemon = true
+	defer func() { testForceNoDaemon = false }()
+
+	dist := t.TempDir()
+	ctx := testctx.WrapWithCfg(t.Context(), config.Project{
+		ProjectName: "dockerv2",
+		Dist:        dist,
+		DockersV2: []config.DockerV2{
+			{
+				ID:         "myimg",
+				IDs:        []string{"id1"},
+				Dockerfile: "./testdata/Dockerfile",
+				Images:     []string{"nodaemon/image1"},
+				Tags:       []string{"test-no-daemon"},
+				ExtraFiles: []string{"./testdata/foo.conf"},
+				Platforms:  []string{"linux/amd64", "linux/arm64"},
+			},
+		},
+	}, testctx.Snapshot)
+
+	for _, arch := range []string{"amd64", "arm64"} {
+		ctx.Artifacts.Add(&artifact.Artifact{
+			Name:   "mybin",
+			Path:   "./testdata/mybin",
+			Goos:   "linux",
+			Goarch: arch,
+			Type:   artifact.Binary,
+			Extra: artifact.Extras{
+				artifact.ExtraID: "id1",
+			},
+		})
+	}
+
+	require.NoError(t, Base{}.Default(ctx))
+	err := Snapshot{}.Run(ctx)
+	require.NoError(t, err, "message: %s, output: %v", gerrors.MessageOf(err), gerrors.DetailsOf(err))
+
+	images := ctx.Artifacts.Filter(
+		artifact.And(
+			artifact.ByType(artifact.DockerImageV2),
+			artifact.ByIDs("myimg"),
+		),
+	).List()
+
+	require.Len(t, images, 1, "expected 1 multi-arch image when daemon unavailable")
+
+	for _, img := range images {
+		cmd := exec.CommandContext(t.Context(), "docker", "inspect", img.Name)
+		out, err := cmd.CombinedOutput()
+		require.Error(t, err, "image %s should not be loaded locally when daemon unavailable, but docker inspect succeeded: %s", img.Name, string(out))
+	}
+}
+
 func names(in []*artifact.Artifact) []string {
 	out := make([]string, 0, len(in))
 	for _, art := range in {
