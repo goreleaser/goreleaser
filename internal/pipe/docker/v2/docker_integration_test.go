@@ -10,6 +10,7 @@ import (
 	v1 "github.com/google/go-containerregistry/pkg/v1"
 	"github.com/goreleaser/goreleaser/v2/internal/artifact"
 	"github.com/goreleaser/goreleaser/v2/internal/gerrors"
+	"github.com/goreleaser/goreleaser/v2/internal/pipe"
 	"github.com/goreleaser/goreleaser/v2/internal/testctx"
 	"github.com/goreleaser/goreleaser/v2/internal/testlib"
 	"github.com/goreleaser/goreleaser/v2/pkg/config"
@@ -32,7 +33,7 @@ func TestRun(t *testing.T) {
 				Images:     []string{"image1", "image2"},
 				Tags:       []string{"tag1", "tag2"},
 				ExtraFiles: []string{"./testdata/foo.conf"},
-				Platforms:  []string{"linux/amd64", "linux/arm64", "linux/arm/v7"},
+				Platforms:  []string{"linux/amd64", "linux/arm64", "linux/arm/v7", `{{- if isEnvSet "FOO" }}this will be empty{{ end -}}`},
 				Labels: map[string]string{
 					"org.opencontainers.image.licenses": "MIT",
 				},
@@ -90,7 +91,10 @@ func TestRun(t *testing.T) {
 
 	require.NoError(t, Base{}.Default(ctx))
 	err := Snapshot{}.Run(ctx)
-	require.NoError(t, err, "message: %s, output: %v", gerrors.MessageOf(err), gerrors.DetailsOf(err))
+	require.Error(t, err)
+	if !pipe.IsSkip(err) {
+		t.Errorf("should have been a skip, got message: %s, output: %v", gerrors.MessageOf(err), gerrors.DetailsOf(err))
+	}
 
 	t.Run("main", func(t *testing.T) {
 		images := ctx.Artifacts.Filter(
@@ -192,6 +196,7 @@ func TestPublish(t *testing.T) {
 					Images:     []string{"localhost:5060/foo", "localhost:5061/bar"},
 					Tags:       []string{"latest", "v{{.Version}}", "{{if .IsNightly}}nightly{{end}}"},
 					ExtraFiles: []string{"./testdata/foo.conf"},
+					Platforms:  []string{"linux/amd64", "linux/arm64", `{{- if isEnvSet "FOO" }}this will be empty{{ end -}}`},
 					Labels: map[string]string{
 						"org.opencontainers.image.licenses": "MIT",
 					},
@@ -296,6 +301,69 @@ func TestHealthcheck(t *testing.T) {
 	testlib.CheckDocker(t)
 	testlib.SkipIfWindows(t, "no buildx on Windows")
 	require.NoError(t, Base{}.Healthcheck(testctx.Wrap(t.Context())))
+}
+
+func TestIsDockerDaemonAvailable(t *testing.T) {
+	testlib.CheckDocker(t)
+	require.True(t, isDockerDaemonAvailable(t.Context()))
+}
+
+func TestSnapshotNoDaemon(t *testing.T) {
+	testlib.CheckDocker(t)
+	testlib.SkipIfWindows(t, "registry images only available for windows")
+
+	// Force isDockerDaemonAvailable to return false for this test
+	testForceNoDaemon = true
+	defer func() { testForceNoDaemon = false }()
+
+	dist := t.TempDir()
+	ctx := testctx.WrapWithCfg(t.Context(), config.Project{
+		ProjectName: "dockerv2",
+		Dist:        dist,
+		DockersV2: []config.DockerV2{
+			{
+				ID:         "myimg",
+				IDs:        []string{"id1"},
+				Dockerfile: "./testdata/Dockerfile",
+				Images:     []string{"nodaemon/image1"},
+				Tags:       []string{"test-no-daemon"},
+				ExtraFiles: []string{"./testdata/foo.conf"},
+				Platforms:  []string{"linux/amd64", "linux/arm64"},
+			},
+		},
+	}, testctx.Snapshot)
+
+	for _, arch := range []string{"amd64", "arm64"} {
+		ctx.Artifacts.Add(&artifact.Artifact{
+			Name:   "mybin",
+			Path:   "./testdata/mybin",
+			Goos:   "linux",
+			Goarch: arch,
+			Type:   artifact.Binary,
+			Extra: artifact.Extras{
+				artifact.ExtraID: "id1",
+			},
+		})
+	}
+
+	require.NoError(t, Base{}.Default(ctx))
+	err := Snapshot{}.Run(ctx)
+	require.NoError(t, err, "message: %s, output: %v", gerrors.MessageOf(err), gerrors.DetailsOf(err))
+
+	images := ctx.Artifacts.Filter(
+		artifact.And(
+			artifact.ByType(artifact.DockerImageV2),
+			artifact.ByIDs("myimg"),
+		),
+	).List()
+
+	require.Len(t, images, 1, "expected 1 multi-arch image when daemon unavailable")
+
+	for _, img := range images {
+		cmd := exec.CommandContext(t.Context(), "docker", "inspect", img.Name)
+		out, err := cmd.CombinedOutput()
+		require.Error(t, err, "image %s should not be loaded locally when daemon unavailable, but docker inspect succeeded: %s", img.Name, string(out))
+	}
 }
 
 func names(in []*artifact.Artifact) []string {

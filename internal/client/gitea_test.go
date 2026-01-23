@@ -668,8 +668,13 @@ func TestGiteaChangelog(t *testing.T) {
 			Message: "chore: commit without author",
 		},
 		{
-			SHA:            "c8488dc825debca26ade35aefca234b142a515c9",
-			Message:        "feat: impl something",
+			SHA:     "c8488dc825debca26ade35aefca234b142a515c9",
+			Message: "feat: impl something",
+			Authors: []Author{{
+				Username: "johndoe",
+				Name:     "John Doe",
+				Email:    "nope@nope.nope",
+			}},
 			AuthorUsername: "johndoe",
 			AuthorName:     "John Doe",
 			AuthorEmail:    "nope@nope.nope",

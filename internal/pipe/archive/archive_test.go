@@ -230,6 +230,10 @@ func TestRunPipe(t *testing.T) {
 				}
 				require.Equal(t, "myid", arch.ID(), "all archives must have the archive ID set")
 				require.Equal(t, []string{expectBin}, artifact.MustExtra[[]string](*arch, artifact.ExtraBinaries))
+				require.Equal(t, []string{
+					"README." + arch.Goos + ".md",
+					"foo/bar/foobar/blah.txt",
+				}, artifact.MustExtra[[]string](*arch, artifact.ExtraFiles))
 				require.Empty(t, artifact.ExtraOr(*arch, artifact.ExtraBinary, ""))
 			}
 			require.Len(t, archives, 13)

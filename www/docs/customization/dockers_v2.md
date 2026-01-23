@@ -99,6 +99,7 @@ dockers_v2:
     # Platforms to build.
     #
     # Default: [ linux/amd64 linux/arm64 ]
+    # Templates: allowed. (since v2.14)
     platforms:
       - linux/amd64
       - linux/arm64
@@ -189,6 +190,13 @@ publish `user/repo:1.2.3`, for example.
 
 If we run `goreleaser release --snapshot`, it'll build two images instead:
 `user/repo:1.2.4-amd64` and `user/repo:1.2.4-arm64`.
+
+!!! tip "Daemonless clients"
+
+    If no Docker daemon is detected (e.g., when using remote Buildkit drivers
+    like `kubernetes` on daemonless clients in CI env), `goreleaser release --snapshot`
+    will automatically skip the `--load` option and build a single multi-arch image
+    `user/repo:1.2.4` (similar to `goreleaser release`).
 
 This way you can verify that your Docker build and Docker image work as
 expected.

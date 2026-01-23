@@ -202,6 +202,61 @@ func TestSplit(t *testing.T) {
 	require.Equal(t, []string{}, parts)
 }
 
+func TestCompileManpagesBrokenGlob(t *testing.T) {
+	brew := config.HomebrewCask{
+		Manpages: []string{"[invalid"},
+	}
+	archives := []*artifact.Artifact{
+		{
+			Extra: map[string]any{
+				artifact.ExtraFiles: []string{"man/foo.1.gz"},
+			},
+		},
+	}
+
+	_, err := compileManpages(brew, archives)
+	require.Error(t, err)
+}
+
+func TestCompileManpagesNoMatch(t *testing.T) {
+	brew := config.HomebrewCask{
+		Manpages: []string{"mandocs/*"},
+	}
+	archives := []*artifact.Artifact{
+		{
+			Extra: map[string]any{
+				artifact.ExtraFiles: []string{"man/foo.1.gz"},
+			},
+		},
+	}
+
+	result, err := compileManpages(brew, archives)
+	require.NoError(t, err)
+	require.Empty(t, result)
+}
+
+func TestCompileManpagesDifferentExtraFiles(t *testing.T) {
+	brew := config.HomebrewCask{
+		Manpages: []string{"man/*"},
+	}
+	archives := []*artifact.Artifact{
+		{
+			Extra: map[string]any{
+				artifact.ExtraFiles: []string{"man/foo.1.gz"},
+			},
+		},
+		{
+			Extra: map[string]any{
+				artifact.ExtraFiles: []string{"man/bar.1.gz", "man/baz.1.gz"},
+			},
+		},
+	}
+
+	result, err := compileManpages(brew, archives)
+	require.NoError(t, err)
+	require.Equal(t, brew.Manpages, result)
+}
+
 func TestFullPipe(t *testing.T) {
 	type testcase struct {
 		prepare                func(ctx *context.Context)
@@ -217,6 +272,15 @@ func TestFullPipe(t *testing.T) {
 				ctx.Config.Casks[0].Repository.Owner = "test"
 				ctx.Config.Casks[0].Repository.Name = "test"
 				ctx.Config.Casks[0].Homepage = "https://github.com/goreleaser"
+			},
+		},
+		"manpages_glob": {
+			prepare: func(ctx *context.Context) {
+				ctx.TokenType = context.TokenTypeGitHub
+				ctx.Config.Casks[0].Repository.Owner = "test"
+				ctx.Config.Casks[0].Repository.Name = "test"
+				ctx.Config.Casks[0].Homepage = "https://github.com/goreleaser"
+				ctx.Config.Casks[0].Manpages = []string{"manpages/*", "man*/*"}
 			},
 		},
 		"git_remote": {
@@ -483,6 +547,7 @@ func TestFullPipe(t *testing.T) {
 					artifact.ExtraID:       "foo",
 					artifact.ExtraFormat:   "tgz",
 					artifact.ExtraBinaries: []string{"foo"},
+					artifact.ExtraFiles:    []string{"manpages/foo.3", "manpages/bar.3", "completions/foo.zsh"},
 				},
 			})
 			ctx.Artifacts.Add(&artifact.Artifact{
@@ -495,6 +560,7 @@ func TestFullPipe(t *testing.T) {
 					artifact.ExtraID:       "foo",
 					artifact.ExtraFormat:   "txz",
 					artifact.ExtraBinaries: []string{"foo"},
+					artifact.ExtraFiles:    []string{"manpages/foo.3", "manpages/bar.3", "completions/foo.zsh"},
 				},
 			})
 			ctx.Artifacts.Add(&artifact.Artifact{
@@ -508,6 +574,7 @@ func TestFullPipe(t *testing.T) {
 					artifact.ExtraID:       "foo",
 					artifact.ExtraFormat:   "tar.zst",
 					artifact.ExtraBinaries: []string{"foo"},
+					artifact.ExtraFiles:    []string{"manpages/foo.3", "manpages/bar.3", "completions/foo.zsh"},
 				},
 			})
 			for _, a := range ctx.Artifacts.List() {
@@ -857,7 +924,7 @@ func TestRunPipeBinaryRelease(t *testing.T) {
 						Name:  "bar",
 					},
 					Binaries: []string{"foo"},
-					Manpages: []string{"./man/foo.1.gz"},
+					Manpages: []string{"man/foo.1.gz"},
 				},
 			},
 		},
@@ -875,6 +942,7 @@ func TestRunPipeBinaryRelease(t *testing.T) {
 			artifact.ExtraID:     "foo",
 			artifact.ExtraFormat: "binary",
 			artifact.ExtraBinary: "foo",
+			artifact.ExtraFiles:  []string{"man/foo.1.gz"},
 		},
 	})
 
@@ -901,7 +969,7 @@ func TestRunPipePullRequest(t *testing.T) {
 					Name:        "foo",
 					Homepage:    "https://goreleaser.com",
 					Description: "Fake desc",
-					Manpages:    []string{"./man/foo.1.gz"},
+					Manpages:    []string{"man/foo.1.gz"},
 					Repository: config.RepoRef{
 						Owner:  "foo",
 						Name:   "bar",
@@ -927,6 +995,7 @@ func TestRunPipePullRequest(t *testing.T) {
 			artifact.ExtraID:     "foo",
 			artifact.ExtraFormat: "binary",
 			artifact.ExtraBinary: "foo",
+			artifact.ExtraFiles:  []string{"man/foo.1.gz"},
 		},
 	})
 

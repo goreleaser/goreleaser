@@ -83,6 +83,7 @@ The most common fields are:
 | `Size`              | `int`      | The file size in bytes (when `report_sizes` is enabled)    |
 | `Digest`            | `string`   | The Docker image digest                                    |
 | `Replaces`          | `bool`     | Whether a universal binary replaces single-arch ones       |
+| `Files`             | `[]string` | Any extra files an archive might have                      |
 | `DynamicallyLinked` | `bool`     | Whether or not the binary is dynamically linked            |
 
 !!! note

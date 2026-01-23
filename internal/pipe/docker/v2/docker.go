@@ -98,13 +98,29 @@ func (p Snapshot) Run(ctx *context.Context) error {
 	checkBuildxDriver(ctx)
 	log.Warn("snapshot build: will not push any images")
 
+	canLoad := isDockerDaemonAvailable(ctx)
+	if !canLoad {
+		log.Warn("no docker daemon available, build result will only remain in the build cache")
+	}
+
 	g := semerrgroup.NewSkipAware(semerrgroup.New(ctx.Parallelism))
 	for i := range ctx.Config.DockersV2 {
-		for _, plat := range ctx.Config.DockersV2[i].Platforms {
+		d := ctx.Config.DockersV2[i]
+
+		if !canLoad {
+			// not running on a docker daemon, `--load` won't work, and
+			// without it, images will have `--output=type=cacheonly`.
 			g.Go(func() error {
-				// buildx won't allow us to `--load` a manifest, so we create
-				// one image per platform, adding it to the tags.
-				d := ctx.Config.DockersV2[i]
+				return buildImage(ctx, d)
+			})
+			continue
+		}
+
+		// buildx won't allow us to `--load` a manifest, so we create
+		// one image per platform, adding it to the tags.
+		for _, plat := range d.Platforms {
+			g.Go(func() error {
+				d := d
 				d.Platforms = []string{plat}
 				return buildImage(ctx, d, "--load")
 			})
@@ -143,11 +159,15 @@ func (Publish) extraArgs(ctx *context.Context, d config.DockerV2) ([]string, err
 }
 
 func buildImage(ctx *context.Context, d config.DockerV2, extraArgs ...string) error {
+	tpl := tmpl.New(ctx)
+	if err := tpl.ApplySlice(&d.Platforms, tmpl.NonEmpty()); err != nil {
+		return err
+	}
 	if len(d.Platforms) == 0 {
 		return pipe.Skip("no platforms to build")
 	}
 
-	disable, err := tmpl.New(ctx).Bool(d.Disable)
+	disable, err := tpl.Bool(d.Disable)
 	if err != nil {
 		return err
 	}
@@ -543,6 +563,18 @@ func checkBuildxDriver(ctx stdctx.Context) {
 
 func isDriverValid(driver string) bool {
 	return driver == "docker-container"
+}
+
+// testForceNoDaemon is a test-only flag to simulate daemon unavailability.
+var testForceNoDaemon = false
+
+// isDockerDaemonAvailable checks if the docker daemon is accessible.
+func isDockerDaemonAvailable(ctx stdctx.Context) bool {
+	if testForceNoDaemon {
+		return false
+	}
+	cmd := exec.CommandContext(ctx, "docker", "info")
+	return cmd.Run() == nil
 }
 
 // getBuildxDriver returns the current buildx driver name.

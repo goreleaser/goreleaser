@@ -135,6 +135,7 @@ var validLicenses = []string{
 	"hpndDifferentDisclaimer",
 	"hpndSellVariant",
 	"hpndSellVariantMitDisclaimerXserver",
+	"hpndSellVariantSafetyClause",
 	"hpndDec",
 	"hpndDoc",
 	"hpndDocSell",

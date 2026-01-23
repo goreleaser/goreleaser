@@ -9,6 +9,7 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/goreleaser/goreleaser/v2/internal/changelog"
 	"github.com/goreleaser/goreleaser/v2/internal/client"
 	"github.com/goreleaser/goreleaser/v2/internal/git"
 	"github.com/goreleaser/goreleaser/v2/internal/golden"
@@ -1168,6 +1169,220 @@ func TestIssue5595(t *testing.T) {
 			golden.RequireEqualExt(t, []byte(log), ".md")
 		})
 	}
+}
+
+func TestAuthors(t *testing.T) {
+	ctx := testctx.WrapWithCfg(t.Context(), config.Project{
+		Changelog: config.Changelog{
+			Use:    useGitHub,
+			Format: `{{ .SHA }}: {{ .Message }} ({{ .Logins | englishJoin }})`,
+			Abbrev: 3,
+			Groups: []config.ChangelogGroup{
+				{
+					Title:  "Features",
+					Regexp: `^.*?feat(\([[:word:]]+\))??!?:.+$`,
+					Order:  0,
+				},
+				{
+					Title:  "Fixes",
+					Regexp: `^.*?fix(\([[:word:]]+\))??!?:.+$`,
+					Order:  1,
+				},
+				{
+					Title: "Others",
+					Order: 999,
+				},
+			},
+			Filters: config.Filters{
+				Exclude: []string{
+					"^docs:",
+					"typo",
+					"(?i)foo",
+				},
+				Include: []string{
+					"^feat:",
+					"^fix:",
+				},
+			},
+		},
+	}, testctx.WithCurrentTag("v0.0.2"), withFirstCommit(t))
+
+	require.NoError(t, Pipe{}.Default(ctx))
+
+	mock := client.NewMock()
+
+	for i := range 20 {
+		kind := "fix"
+		if i%2 == 0 {
+			kind = "feat"
+		}
+		if i%5 == 0 {
+			kind = "chore"
+		}
+		if i%7 == 0 {
+			kind = "docs"
+		}
+		msg := fmt.Sprintf("%s: commit #%d", kind, i)
+		mock.Changes = append(mock.Changes, Item{
+			SHA:     "cafebabe",
+			Message: msg,
+			Authors: []changelog.Author{
+				{Username: "caarlos0"},
+				{Username: "github-actions"},
+				{Username: "charmcrush"},
+			},
+		})
+	}
+
+	cl := wrappingChangeloger{
+		changeloger: &scmChangeloger{
+			client: mock,
+			repo: client.Repo{
+				Owner: "test",
+				Name:  "test",
+			},
+		},
+	}
+
+	log, err := cl.Log(ctx)
+	require.NoError(t, err)
+	golden.RequireEqualExt(t, []byte(log), ".md")
+}
+
+func TestFormatEntry(t *testing.T) {
+	t.Run("deduplicates authors with same username", func(t *testing.T) {
+		ctx := testctx.WrapWithCfg(t.Context(), config.Project{
+			Changelog: config.Changelog{
+				Format: "{{ .Logins | englishJoin }}",
+			},
+		})
+		entry := Item{
+			SHA:     "abc123",
+			Message: "test commit",
+			Authors: []Author{
+				{Username: "alice"},
+				{Username: "bob"},
+				{Username: "alice"}, // duplicate
+				{Username: "charlie"},
+				{Username: "bob"}, // duplicate
+			},
+		}
+		result, err := formatEntry(ctx, entry)
+		require.NoError(t, err)
+		require.Equal(t, "@alice, @bob, and @charlie", strings.TrimPrefix(result, "* "))
+	})
+
+	t.Run("deduplicates authors with same email (no username)", func(t *testing.T) {
+		ctx := testctx.WrapWithCfg(t.Context(), config.Project{
+			Changelog: config.Changelog{
+				Format: "{{ .Authors | len }}",
+			},
+		})
+		entry := Item{
+			SHA:     "abc123",
+			Message: "test commit",
+			Authors: []Author{
+				{Email: "alice@example.com"},
+				{Email: "alice@example.com"}, // duplicate email
+				{Email: "bob@example.com"},
+			},
+		}
+		result, err := formatEntry(ctx, entry)
+		require.NoError(t, err)
+		require.Equal(t, "2", strings.TrimPrefix(result, "* "))
+	})
+
+	t.Run("deduplicates authors with same name (no username/email)", func(t *testing.T) {
+		ctx := testctx.WrapWithCfg(t.Context(), config.Project{
+			Changelog: config.Changelog{
+				Format: "{{ .Authors | len }}",
+			},
+		})
+		entry := Item{
+			SHA:     "abc123",
+			Message: "test commit",
+			Authors: []Author{
+				{Name: "Alice Smith"},
+				{Name: "Alice Smith"}, // duplicate name
+				{Name: "Bob Jones"},
+			},
+		}
+		result, err := formatEntry(ctx, entry)
+		require.NoError(t, err)
+		require.Equal(t, "2", strings.TrimPrefix(result, "* "))
+	})
+
+	t.Run("username takes priority over email/name", func(t *testing.T) {
+		ctx := testctx.WrapWithCfg(t.Context(), config.Project{
+			Changelog: config.Changelog{
+				Format: "{{ .Authors | len }}",
+			},
+		})
+		entry := Item{
+			SHA:     "abc123",
+			Message: "test commit",
+			Authors: []Author{
+				{Username: "alice", Email: "alice@example.com", Name: "Alice Smith"},
+				{Email: "alice@example.com", Name: "Alice Smith"}, // only duplicate by email/name, but no username
+			},
+		}
+		result, err := formatEntry(ctx, entry)
+		require.NoError(t, err)
+		require.Equal(t, "2", strings.TrimPrefix(result, "* "))
+	})
+
+	t.Run("skips authors without username/email/name", func(t *testing.T) {
+		ctx := testctx.WrapWithCfg(t.Context(), config.Project{
+			Changelog: config.Changelog{
+				Format: "{{ .Authors | len }}",
+			},
+		})
+		entry := Item{
+			SHA:     "abc123",
+			Message: "test commit",
+			Authors: []Author{
+				{Username: "alice"},
+				{}, // empty author
+				{Username: "bob"},
+				{Email: ""}, // empty email only
+			},
+		}
+		result, err := formatEntry(ctx, entry)
+		require.NoError(t, err)
+		require.Equal(t, "2", strings.TrimPrefix(result, "* "))
+	})
+
+	t.Run("handles empty authors list", func(t *testing.T) {
+		ctx := testctx.WrapWithCfg(t.Context(), config.Project{
+			Changelog: config.Changelog{
+				Format: "{{ .SHA }} {{ .Message }}",
+			},
+		})
+		entry := Item{
+			SHA:     "abc123",
+			Message: "test commit",
+			Authors: []Author{},
+		}
+		result, err := formatEntry(ctx, entry)
+		require.NoError(t, err)
+		require.Equal(t, "* abc123 test commit", result)
+	})
+
+	t.Run("with abbrev", func(t *testing.T) {
+		ctx := testctx.WrapWithCfg(t.Context(), config.Project{
+			Changelog: config.Changelog{
+				Format: "{{ .SHA }}: {{ .Message }}",
+				Abbrev: 7,
+			},
+		})
+		entry := Item{
+			SHA:     "abc1234567890",
+			Message: "test commit",
+		}
+		result, err := formatEntry(ctx, entry)
+		require.NoError(t, err)
+		require.Equal(t, "* abc1234: test commit", result)
+	})
 }
 
 func ensureCommitHashLen(tb testing.TB, log string, l int) {
