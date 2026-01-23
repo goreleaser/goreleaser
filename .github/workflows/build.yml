@@ -74,6 +74,8 @@ jobs:
         with:
           go-version-file: go.mod
       - uses: mlugg/setup-zig@e7d1537c378b83b8049f65dda471d87a2f7b2df2 # v2.2.0
+        with:
+          version: 0.15.2
       - uses: oven-sh/setup-bun@db6bcf6eb8d88a8aa03265b887ec7bd84d64cd68 # v2.1.1
       - uses: denoland/setup-deno@e95548e56dfa95d4e1a28d6f422fafe75c4c26fb # v2.0.3
       - uses: cargo-bins/cargo-binstall@80aaafe04903087c333980fa2686259ddd34b2d9 # v1.16.6
