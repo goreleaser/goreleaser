@@ -155,11 +155,15 @@ func (Publish) extraArgs(ctx *context.Context, d config.DockerV2) ([]string, err
 }
 
 func buildImage(ctx *context.Context, d config.DockerV2, extraArgs ...string) error {
+	tpl := tmpl.New(ctx)
+	if err := tpl.ApplySlice(&d.Platforms, tmpl.NonEmpty()); err != nil {
+		return err
+	}
 	if len(d.Platforms) == 0 {
 		return pipe.Skip("no platforms to build")
 	}
 
-	disable, err := tmpl.New(ctx).Bool(d.Disable)
+	disable, err := tpl.Bool(d.Disable)
 	if err != nil {
 		return err
 	}
