@@ -5,6 +5,9 @@
   fetchurl,
   installShellFiles,
   stdenvNoCC,
+{{- if .DynamicallyLinked }}
+  stdenv,
+{{- end }}
 {{- range $index, $element := .Dependencies }}
   {{ . }},
 {{- end }}
@@ -96,6 +99,12 @@ stdenvNoCC.mkDerivation {
   sourceRoot = {{ with .SourceRoot }}"{{ . }}"{{ else }}sourceRootMap.${system}{{ end }};
 
   nativeBuildInputs = [ {{ range $input, $plat := .Inputs }}{{ . }} {{ end }}];
+{{- if .DynamicallyLinked }}
+
+  buildInputs = lib.optionals stdenvNoCC.isLinux [
+    stdenv.cc.cc.lib
+  ];
+{{- end }}
 
   installPhase = ''
     {{- range $index, $element := .Install }}

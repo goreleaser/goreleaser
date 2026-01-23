@@ -263,6 +263,11 @@ func create(ctx *context.Context, arch config.Archive, binaries []*artifact.Arti
 		if rep, ok := binaries[0].Extra[artifact.ExtraReplaces]; ok {
 			art.Extra[artifact.ExtraReplaces] = rep
 		}
+		if slices.ContainsFunc(binaries, func(bin *artifact.Artifact) bool {
+			return artifact.ExtraOr(*bin, artifact.ExtranDynLink, false)
+		}) {
+			art.Extra[artifact.ExtranDynLink] = true
+		}
 	}
 
 	ctx.Artifacts.Add(art)
@@ -321,6 +326,9 @@ func skip(ctx *context.Context, archive config.Archive, binaries []*artifact.Art
 		}
 		if rep, ok := binaries[0].Extra[artifact.ExtraReplaces]; ok {
 			art.Extra[artifact.ExtraReplaces] = rep
+		}
+		if artifact.ExtraOr(*binary, artifact.ExtranDynLink, false) {
+			art.Extra[artifact.ExtranDynLink] = true
 		}
 		ctx.Artifacts.Add(art)
 	}

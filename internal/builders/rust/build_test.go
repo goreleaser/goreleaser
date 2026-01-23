@@ -114,11 +114,12 @@ func TestBuild(t *testing.T) {
 		Target: target,
 		Type:   artifact.Binary,
 		Extra: artifact.Extras{
-			artifact.ExtraBinary:  "proj",
-			artifact.ExtraBuilder: "rust",
-			artifact.ExtraExt:     "",
-			artifact.ExtraID:      "default",
-			keyAbi:                "gnu",
+			artifact.ExtraBinary:   "proj",
+			artifact.ExtraBuilder:  "rust",
+			artifact.ExtraExt:      "",
+			artifact.ExtraID:       "default",
+			artifact.ExtranDynLink: true,
+			keyAbi:                 "gnu",
 		},
 	}, *bin)
 

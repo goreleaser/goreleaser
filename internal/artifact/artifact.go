@@ -211,6 +211,7 @@ const (
 	ExtraChecksum   = "Checksum"
 	ExtraChecksumOf = "ChecksumOf"
 	ExtraBuilder    = "Builder"
+	ExtranDynLink   = "DynamicallyLinked"
 )
 
 // Extras represents the extra fields in an artifact.

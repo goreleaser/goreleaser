@@ -699,3 +699,67 @@ type alwaysZeroHasher struct{}
 
 func (alwaysZeroHasher) Hash(stdctx.Context, string) (string, error) { return zeroHash, nil }
 func (alwaysZeroHasher) Available() bool                             { return true }
+
+func TestDynamicallyLinked(t *testing.T) {
+	folder := t.TempDir()
+	ctx := testctx.WrapWithCfg(t.Context(),
+		config.Project{
+			Dist:        folder,
+			ProjectName: "foo",
+			Nix: []config.Nix{{
+				IDs: []string{"dynlink"},
+				Repository: config.RepoRef{
+					Owner: "foo",
+					Name:  "bar",
+				},
+			}},
+		},
+		testctx.WithVersion("1.0.0"),
+		testctx.WithCurrentTag("v1.0.0"),
+	)
+
+	createDynlinkArtifact := func(goos, goarch string, dynLinked bool) {
+		name := "foo_" + goos + "_" + goarch + ".tar.gz"
+		path := filepath.Join(folder, "dist", name)
+		art := artifact.Artifact{
+			Name:   name,
+			Path:   path,
+			Goos:   goos,
+			Goarch: goarch,
+			Type:   artifact.UploadableArchive,
+			Extra: map[string]any{
+				artifact.ExtraID:        "dynlink",
+				artifact.ExtraFormat:    "tar.gz",
+				artifact.ExtraBinaries:  []string{"foo"},
+				artifact.ExtraWrappedIn: "",
+				artifact.ExtranDynLink:  dynLinked,
+			},
+		}
+		ctx.Artifacts.Add(&art)
+		require.NoError(t, os.MkdirAll(filepath.Dir(path), 0o755))
+		f, err := os.Create(path)
+		require.NoError(t, err)
+		require.NoError(t, f.Close())
+	}
+
+	// Create linux archives with dynamic linking
+	createDynlinkArtifact("linux", "amd64", true)
+	createDynlinkArtifact("linux", "arm64", true)
+	// Darwin archives won't be dynamically linked (macOS uses different mechanism)
+	createDynlinkArtifact("darwin", "amd64", false)
+	createDynlinkArtifact("darwin", "arm64", false)
+
+	client := client.NewMock()
+	pipe := Pipe{alwaysZeroHasher{}}
+
+	require.NoError(t, pipe.Default(ctx))
+	require.NoError(t, pipe.runAll(ctx, client))
+
+	nixpkgs := ctx.Artifacts.Filter(artifact.ByType(artifact.Nixpkg)).List()
+	require.Len(t, nixpkgs, 1)
+
+	content, err := os.ReadFile(nixpkgs[0].Path)
+	require.NoError(t, err)
+
+	golden.RequireEqual(t, content)
+}

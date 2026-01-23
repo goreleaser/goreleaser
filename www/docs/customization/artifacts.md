@@ -71,19 +71,20 @@ The `type` field indicates what kind of artifact it is:
 The `extra` field contains additional metadata that varies by artifact type.
 The most common fields are:
 
-| Field       | Type       | Description                                                |
-| ----------- | ---------- | ---------------------------------------------------------- |
-| `ID`        | `string`   | The artifact ID from the configuration                     |
-| `Binary`    | `string`   | The binary name (for archives with a single binary)        |
-| `Binaries`  | `[]string` | List of binary names (for archives with multiple binaries) |
-| `Ext`       | `string`   | The file extension (including the leading `.`)             |
-| `Format`    | `string`   | The archive format (e.g., `tar.gz`, `zip`)                 |
-| `WrappedIn` | `string`   | The directory name the files are wrapped in                |
-| `Checksum`  | `string`   | The checksum in `algorithm:hash` format                    |
-| `Size`      | `int`      | The file size in bytes (when `report_sizes` is enabled)    |
-| `Digest`    | `string`   | The Docker image digest                                    |
-| `Replaces`  | `bool`     | Whether a universal binary replaces single-arch ones       |
-| `Files`     | `[]string` | Any extra files an archive might have                      |
+| Field               | Type       | Description                                                |
+| ------------------- | ---------- | ---------------------------------------------------------- |
+| `ID`                | `string`   | The artifact ID from the configuration                     |
+| `Binary`            | `string`   | The binary name (for archives with a single binary)        |
+| `Binaries`          | `[]string` | List of binary names (for archives with multiple binaries) |
+| `Ext`               | `string`   | The file extension (including the leading `.`)             |
+| `Format`            | `string`   | The archive format (e.g., `tar.gz`, `zip`)                 |
+| `WrappedIn`         | `string`   | The directory name the files are wrapped in                |
+| `Checksum`          | `string`   | The checksum in `algorithm:hash` format                    |
+| `Size`              | `int`      | The file size in bytes (when `report_sizes` is enabled)    |
+| `Digest`            | `string`   | The Docker image digest                                    |
+| `Replaces`          | `bool`     | Whether a universal binary replaces single-arch ones       |
+| `Files`             | `[]string` | Any extra files an archive might have                      |
+| `DynamicallyLinked` | `bool`     | Whether or not the binary is dynamically linked            |
 
 !!! note
 
