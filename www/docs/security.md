@@ -7,7 +7,7 @@ Only the last stable version at any given point.
 ## Response Timeline
 
 We aim to acknowledge vulnerability reports within 3 business days.
-Resolution or assessment is typically provided within 7 days.
+Resolution or assessment is typically provided within 30 days.
 
 ## Scope
 
