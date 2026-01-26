@@ -18,10 +18,11 @@ import (
 )
 
 func TestRunWithError(t *testing.T) {
-	ctx := testctx.NewWithCfg(config.Project{
+	ctx := testctx.WrapWithCfg(t.Context(), config.Project{
 		Dist:        "testadata/nope",
 		ProjectName: "foo",
 	})
+
 	require.ErrorIs(t, MetaPipe{}.Run(ctx), os.ErrNotExist)
 	require.ErrorIs(t, ArtifactsPipe{}.Run(ctx), os.ErrNotExist)
 }
@@ -30,7 +31,8 @@ func TestRun(t *testing.T) {
 	modTime := time.Now().AddDate(-1, 0, 0).Round(time.Second).UTC()
 
 	getCtx := func(tmp string) *context.Context {
-		ctx := testctx.NewWithCfg(
+		ctx := testctx.WrapWithCfg(
+			t.Context(),
 			config.Project{
 				Dist:        tmp,
 				ProjectName: "name",

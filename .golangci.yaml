@@ -72,6 +72,10 @@ linters:
         - name: unused-parameter
         - name: var-declaration
         - name: var-naming
+          arguments:
+            - []
+            - []
+            - - skip-package-name-collision-with-go-std: true
         # we are not providing an API anyway... maybe someday...
         # - name: exported
         # - name: package-comments

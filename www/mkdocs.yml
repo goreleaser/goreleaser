@@ -115,6 +115,7 @@ nav:
           - customization/project.md
           - customization/metadata.md
           - customization/dist.md
+          - customization/artifacts.md
           - customization/includes.md
           - customization/templates.md
           - customization/templatefiles.md
@@ -147,6 +148,7 @@ nav:
           - customization/app_bundles.md
           - customization/dmg.md
           - customization/msi.md
+          - customization/nsis.md
           - customization/checksum.md
           - Snaps: customization/snapcraft.md
           - Chocolatey: customization/chocolatey.md

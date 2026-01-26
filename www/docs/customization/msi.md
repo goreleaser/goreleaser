@@ -80,6 +80,33 @@ msi:
     # Default: inferred from the .wxs file.
     # <!-- md:inline_version v2.7 -->.
     version: v4
+
+    # Before and after hooks for each MSI.
+    # This feature is only available in GoReleaser Pro.
+    # <!-- md:inline_version v2.14-unreleased -->.
+    #
+    # The after hooks have access to the MSI artifact, so you can use:
+    # - {{ .ArtifactPath }} - full path to the MSI file
+    # - {{ .ArtifactName }} - filename (e.g., foo_x64.msi)
+    # - {{ .ArtifactExt }} - extension (.msi)
+    hooks:
+      before:
+        - make clean # simple string
+        - cmd: go generate ./... # specify cmd
+        - cmd: go mod tidy
+          output: true # always prints command output
+          dir: ./submodule # specify command working directory
+        - cmd: touch {{ .Env.FILE_TO_TOUCH }}
+          env:
+            - "FILE_TO_TOUCH=something-{{ .ProjectName }}" # specify hook level environment variables
+
+      after:
+        - cmd: codesign {{ .ArtifactPath }} # sign the MSI
+        - cmd: cat *.yaml
+          dir: ./submodule
+        - cmd: touch {{ .Env.RELEASE_DONE }}
+          env:
+            - "RELEASE_DONE=something-{{ .ProjectName }}" # specify hook level environment variables
 ```
 
 On Windows, it'll try to use the `candle` and `light` binaries from the

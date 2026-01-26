@@ -52,7 +52,7 @@ func TestPipe(t *testing.T) {
 			folder := t.TempDir()
 			file := filepath.Join(folder, binary)
 			require.NoError(t, os.WriteFile(file, []byte("some string"), 0o644))
-			ctx := testctx.NewWithCfg(
+			ctx := testctx.WrapWithCfg(t.Context(),
 				config.Project{
 					Dist:        folder,
 					ProjectName: binary,
@@ -63,8 +63,8 @@ func TestPipe(t *testing.T) {
 					},
 					Env: []string{"FOO=bar"},
 				},
-				testctx.WithCurrentTag("1.2.3"),
-			)
+				testctx.WithCurrentTag("1.2.3"))
+
 			ctx.Artifacts.Add(&artifact.Artifact{
 				Name: binary,
 				Path: file,
@@ -112,15 +112,15 @@ func TestPipeSplit(t *testing.T) {
 	folder := t.TempDir()
 	file := filepath.Join(folder, binary)
 	require.NoError(t, os.WriteFile(file, []byte("some string"), 0o644))
-	ctx := testctx.NewWithCfg(
+	ctx := testctx.WrapWithCfg(t.Context(),
 		config.Project{
 			Dist:        folder,
 			ProjectName: "foo",
 			Checksum: config.Checksum{
 				Split: true,
 			},
-		},
-	)
+		})
+
 	ctx.Artifacts.Add(&artifact.Artifact{
 		Name: binary,
 		Path: file,
@@ -168,7 +168,7 @@ func TestRefreshModifying(t *testing.T) {
 	folder := t.TempDir()
 	file := filepath.Join(folder, binary)
 	require.NoError(t, os.WriteFile(file, []byte("some string"), 0o644))
-	ctx := testctx.NewWithCfg(config.Project{
+	ctx := testctx.WrapWithCfg(t.Context(), config.Project{
 		Dist:        folder,
 		ProjectName: binary,
 		Checksum: config.Checksum{
@@ -177,6 +177,7 @@ func TestRefreshModifying(t *testing.T) {
 		},
 		Env: []string{"FOO=bar"},
 	}, testctx.WithCurrentTag("1.2.3"))
+
 	ctx.Artifacts.Add(&artifact.Artifact{
 		Name: binary,
 		Path: file,
@@ -199,7 +200,7 @@ func TestRefreshModifyingSplit(t *testing.T) {
 	folder := t.TempDir()
 	file := filepath.Join(folder, binary)
 	require.NoError(t, os.WriteFile(file, []byte("some string"), 0o644))
-	ctx := testctx.NewWithCfg(config.Project{
+	ctx := testctx.WrapWithCfg(t.Context(), config.Project{
 		Dist:        folder,
 		ProjectName: binary,
 		Checksum: config.Checksum{
@@ -207,6 +208,7 @@ func TestRefreshModifyingSplit(t *testing.T) {
 		},
 		Env: []string{"FOO=bar"},
 	}, testctx.WithCurrentTag("1.2.3"))
+
 	ctx.Artifacts.Add(&artifact.Artifact{
 		Name: binary,
 		Path: file,
@@ -227,15 +229,15 @@ func TestRefreshModifyingSplit(t *testing.T) {
 
 func TestPipeFileNotExist(t *testing.T) {
 	folder := t.TempDir()
-	ctx := testctx.NewWithCfg(
+	ctx := testctx.WrapWithCfg(t.Context(),
 		config.Project{
 			Dist: folder,
 			Checksum: config.Checksum{
 				NameTemplate: "checksums.txt",
 			},
 		},
-		testctx.WithCurrentTag("1.2.3"),
-	)
+		testctx.WithCurrentTag("1.2.3"))
+
 	ctx.Artifacts.Add(&artifact.Artifact{
 		Name: "nope",
 		Path: "/nope",
@@ -258,7 +260,7 @@ func TestPipeInvalidNameTemplate(t *testing.T) {
 		for _, split := range []bool{true, false} {
 			t.Run(fmt.Sprintf("split_%v_%s", split, template), func(t *testing.T) {
 				folder := t.TempDir()
-				ctx := testctx.NewWithCfg(
+				ctx := testctx.WrapWithCfg(t.Context(),
 					config.Project{
 						Dist:        folder,
 						ProjectName: "name",
@@ -268,8 +270,8 @@ func TestPipeInvalidNameTemplate(t *testing.T) {
 							Split:        split,
 						},
 					},
-					testctx.WithCurrentTag("1.2.3"),
-				)
+					testctx.WithCurrentTag("1.2.3"))
+
 				ctx.Artifacts.Add(&artifact.Artifact{
 					Name: "whatever",
 					Type: artifact.UploadableBinary,
@@ -282,15 +284,16 @@ func TestPipeInvalidNameTemplate(t *testing.T) {
 }
 
 func TestPipeWhenNoArtifacts(t *testing.T) {
-	ctx := testctx.New()
+	ctx := testctx.Wrap(t.Context())
 	require.NoError(t, Pipe{}.Run(ctx))
 	require.Empty(t, ctx.Artifacts.List())
 }
 
 func TestDefault(t *testing.T) {
-	ctx := testctx.NewWithCfg(config.Project{
+	ctx := testctx.WrapWithCfg(t.Context(), config.Project{
 		Checksum: config.Checksum{},
 	})
+
 	require.NoError(t, Pipe{}.Default(ctx))
 	require.Equal(
 		t,
@@ -301,11 +304,12 @@ func TestDefault(t *testing.T) {
 }
 
 func TestDefaultSPlit(t *testing.T) {
-	ctx := testctx.NewWithCfg(config.Project{
+	ctx := testctx.WrapWithCfg(t.Context(), config.Project{
 		Checksum: config.Checksum{
 			Split: true,
 		},
 	})
+
 	require.NoError(t, Pipe{}.Default(ctx))
 	require.Equal(
 		t,
@@ -316,11 +320,12 @@ func TestDefaultSPlit(t *testing.T) {
 }
 
 func TestDefaultSet(t *testing.T) {
-	ctx := testctx.NewWithCfg(config.Project{
+	ctx := testctx.WrapWithCfg(t.Context(), config.Project{
 		Checksum: config.Checksum{
 			NameTemplate: "checksums.txt",
 		},
 	})
+
 	require.NoError(t, Pipe{}.Default(ctx))
 	require.Equal(t, "checksums.txt", ctx.Config.Checksum.NameTemplate)
 }
@@ -334,7 +339,7 @@ func TestPipeChecksumsSortByFilename(t *testing.T) {
 	file := filepath.Join(folder, binary)
 	require.NoError(t, os.WriteFile(file, []byte("some string"), 0o644))
 
-	ctx := testctx.NewWithCfg(
+	ctx := testctx.WrapWithCfg(t.Context(),
 		config.Project{
 			Dist:        folder,
 			ProjectName: binary,
@@ -345,8 +350,7 @@ func TestPipeChecksumsSortByFilename(t *testing.T) {
 					{Glob: filePaths},
 				},
 			},
-		},
-	)
+		})
 
 	ctx.Artifacts.Add(&artifact.Artifact{
 		Name: binary,
@@ -427,7 +431,7 @@ func TestPipeCheckSumsWithExtraFiles(t *testing.T) {
 			folder := t.TempDir()
 			file := filepath.Join(folder, binary)
 			require.NoError(t, os.WriteFile(file, []byte("some string"), 0o644))
-			ctx := testctx.NewWithCfg(
+			ctx := testctx.WrapWithCfg(t.Context(),
 				config.Project{
 					Dist:        folder,
 					ProjectName: binary,
@@ -437,8 +441,7 @@ func TestPipeCheckSumsWithExtraFiles(t *testing.T) {
 						ExtraFiles:   tt.extraFiles,
 						IDs:          tt.ids,
 					},
-				},
-			)
+				})
 
 			ctx.Artifacts.Add(&artifact.Artifact{
 				Name: binary,
@@ -479,7 +482,7 @@ func TestPipeCheckSumsWithExtraFiles(t *testing.T) {
 
 func TestExtraFilesNoMatch(t *testing.T) {
 	dir := t.TempDir()
-	ctx := testctx.NewWithCfg(
+	ctx := testctx.WrapWithCfg(t.Context(),
 		config.Project{
 			Dist:        dir,
 			ProjectName: "fake",
@@ -488,8 +491,7 @@ func TestExtraFilesNoMatch(t *testing.T) {
 				NameTemplate: "checksums.txt",
 				ExtraFiles:   []config.ExtraFile{{Glob: "./nope/nope.txt"}},
 			},
-		},
-	)
+		})
 
 	ctx.Artifacts.Add(&artifact.Artifact{
 		Name: "fake",
@@ -503,17 +505,16 @@ func TestExtraFilesNoMatch(t *testing.T) {
 
 func TestSkip(t *testing.T) {
 	t.Run("skip", func(t *testing.T) {
-		ctx := testctx.NewWithCfg(config.Project{
+		ctx := testctx.WrapWithCfg(t.Context(), config.Project{
 			Checksum: config.Checksum{
 				Disable: true,
 			},
 		})
+
 		require.True(t, Pipe{}.Skip(ctx))
 	})
 
 	t.Run("dont skip", func(t *testing.T) {
-		require.False(t, Pipe{}.Skip(testctx.New()))
+		require.False(t, Pipe{}.Skip(testctx.Wrap(t.Context())))
 	})
 }
-
-// TODO: add tests for LinuxPackage and UploadableSourceArchive

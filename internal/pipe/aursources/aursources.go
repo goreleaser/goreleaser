@@ -51,7 +51,7 @@ func (Pipe) Default(ctx *context.Context) error {
 		if pkg.Name == "" {
 			pkg.Name = ctx.Config.ProjectName
 		}
-		pkg.Name = trimBin(pkg.Name)
+		pkg.Name = strings.TrimSuffix(pkg.Name, "-bin")
 		if len(pkg.Arches) == 0 {
 			pkg.Arches = []string{"x86_64", "aarch64"}
 		}
@@ -73,14 +73,6 @@ func (Pipe) Default(ctx *context.Context) error {
 	}
 
 	return nil
-}
-
-func trimBin(s string) string {
-	if strings.HasSuffix(s, "-bin") {
-		return trimBin(strings.TrimSuffix(s, "-bin"))
-	}
-
-	return s
 }
 
 func (Pipe) Run(ctx *context.Context) error {

@@ -32,7 +32,7 @@ const (
 )
 
 func TestDefault(t *testing.T) {
-	ctx := testctx.NewWithCfg(config.Project{
+	ctx := testctx.WrapWithCfg(t.Context(), config.Project{
 		Env: []string{
 			"KO_DOCKER_REPO=" + registry1,
 			"COSIGN_REPOSITORY=" + registry1,
@@ -56,6 +56,7 @@ func TestDefault(t *testing.T) {
 			{},
 		},
 	})
+
 	require.NoError(t, Pipe{}.Default(ctx))
 	require.Equal(t, config.Ko{
 		ID:           "test",
@@ -73,7 +74,7 @@ func TestDefault(t *testing.T) {
 }
 
 func TestDefaultCycloneDX(t *testing.T) {
-	ctx := testctx.NewWithCfg(config.Project{
+	ctx := testctx.WrapWithCfg(t.Context(), config.Project{
 		ProjectName: "test",
 		Env:         []string{"KO_DOCKER_REPO=" + registry1},
 		Kos: []config.Ko{
@@ -83,13 +84,14 @@ func TestDefaultCycloneDX(t *testing.T) {
 			{ID: "test"},
 		},
 	})
+
 	require.NoError(t, Pipe{}.Default(ctx))
 	require.True(t, ctx.Deprecated)
 	require.Equal(t, "none", ctx.Config.Kos[0].SBOM)
 }
 
 func TestDefaultGoVersionM(t *testing.T) {
-	ctx := testctx.NewWithCfg(config.Project{
+	ctx := testctx.WrapWithCfg(t.Context(), config.Project{
 		ProjectName: "test",
 		Env:         []string{"KO_DOCKER_REPO=" + registry1},
 		Kos: []config.Ko{
@@ -99,13 +101,14 @@ func TestDefaultGoVersionM(t *testing.T) {
 			{ID: "test"},
 		},
 	})
+
 	require.NoError(t, Pipe{}.Default(ctx))
 	require.True(t, ctx.Deprecated)
 	require.Equal(t, "none", ctx.Config.Kos[0].SBOM)
 }
 
 func TestDefaultNoImage(t *testing.T) {
-	ctx := testctx.NewWithCfg(config.Project{
+	ctx := testctx.WrapWithCfg(t.Context(), config.Project{
 		ProjectName: "test",
 		Builds: []config.Build{
 			{
@@ -116,6 +119,7 @@ func TestDefaultNoImage(t *testing.T) {
 			{},
 		},
 	})
+
 	require.ErrorIs(t, Pipe{}.Default(ctx), errNoRepositories)
 }
 
@@ -125,25 +129,27 @@ func TestDescription(t *testing.T) {
 
 func TestSkip(t *testing.T) {
 	t.Run("skip ko set", func(t *testing.T) {
-		ctx := testctx.NewWithCfg(config.Project{
+		ctx := testctx.WrapWithCfg(t.Context(), config.Project{
 			Kos: []config.Ko{{}},
 		}, testctx.Skip(skips.Ko))
+
 		require.True(t, Pipe{}.Skip(ctx))
 	})
 	t.Run("skip no kos", func(t *testing.T) {
-		ctx := testctx.New()
+		ctx := testctx.Wrap(t.Context())
 		require.True(t, Pipe{}.Skip(ctx))
 	})
 	t.Run("dont skip", func(t *testing.T) {
-		ctx := testctx.NewWithCfg(config.Project{
+		ctx := testctx.WrapWithCfg(t.Context(), config.Project{
 			Kos: []config.Ko{{}},
 		})
+
 		require.False(t, Pipe{}.Skip(ctx))
 	})
 }
 
 func TestPublishPipeNoMatchingBuild(t *testing.T) {
-	ctx := testctx.NewWithCfg(config.Project{
+	ctx := testctx.WrapWithCfg(t.Context(), config.Project{
 		Builds: []config.Build{
 			{
 				ID: "doesnt matter",
@@ -268,7 +274,7 @@ func TestPublishPipeSuccess(t *testing.T) {
 			if len(table.Tags) == 0 {
 				table.Tags = []string{table.Name}
 			}
-			ctx := testctx.NewWithCfg(config.Project{
+			ctx := testctx.WrapWithCfg(t.Context(), config.Project{
 				ProjectName: "test",
 				Builds: []config.Build{
 					{
@@ -443,7 +449,7 @@ func TestPublishPipeSuccess(t *testing.T) {
 func TestSnapshot(t *testing.T) {
 	testlib.SkipIfWindows(t, "ko doesn't work in windows")
 	testlib.CheckDocker(t)
-	ctx := testctx.NewWithCfg(config.Project{
+	ctx := testctx.WrapWithCfg(t.Context(), config.Project{
 		ProjectName: "test",
 		Builds: []config.Build{
 			{
@@ -480,7 +486,7 @@ func TestSnapshot(t *testing.T) {
 func TestDisable(t *testing.T) {
 	testlib.SkipIfWindows(t, "ko doesn't work in windows")
 	testlib.CheckDocker(t)
-	ctx := testctx.NewWithCfg(config.Project{
+	ctx := testctx.WrapWithCfg(t.Context(), config.Project{
 		ProjectName: "test",
 		Builds: []config.Build{
 			{
@@ -525,7 +531,7 @@ func TestDisable(t *testing.T) {
 func TestDisableInvalidTemplate(t *testing.T) {
 	testlib.SkipIfWindows(t, "ko doesn't work in windows")
 	testlib.CheckDocker(t)
-	ctx := testctx.NewWithCfg(config.Project{
+	ctx := testctx.WrapWithCfg(t.Context(), config.Project{
 		ProjectName: "test",
 		Builds:      []config.Build{{ID: "foo"}},
 		Kos: []config.Ko{
@@ -559,7 +565,7 @@ func TestKoValidateMainPathIssue4382(t *testing.T) {
 	require.ErrorIs(t, validateMainPath("./testdata/app/main.go"), errInvalidMainGoPath)
 
 	// testing with real context
-	ctxOk := testctx.NewWithCfg(config.Project{
+	ctxOk := testctx.WrapWithCfg(t.Context(), config.Project{
 		Builds: []config.Build{
 			{
 				ID:   "foo",
@@ -574,9 +580,10 @@ func TestKoValidateMainPathIssue4382(t *testing.T) {
 			},
 		},
 	})
+
 	require.NoError(t, Pipe{}.Default(ctxOk))
 
-	ctxWithInvalidMainPath := testctx.NewWithCfg(config.Project{
+	ctxWithInvalidMainPath := testctx.WrapWithCfg(t.Context(), config.Project{
 		Builds: []config.Build{
 			{
 				ID:   "foo",
@@ -591,6 +598,7 @@ func TestKoValidateMainPathIssue4382(t *testing.T) {
 			},
 		},
 	})
+
 	require.ErrorIs(t, Pipe{}.Default(ctxWithInvalidMainPath), errInvalidMainPath)
 }
 
@@ -605,7 +613,7 @@ func TestPublishLocalBaseImage(t *testing.T) {
 	require.NoError(t, err, string(output))
 
 	makeCtx := func() *context.Context {
-		return testctx.NewWithCfg(config.Project{
+		return testctx.WrapWithCfg(t.Context(), config.Project{
 			Builds: []config.Build{
 				{
 					ID:   "foo",
@@ -637,7 +645,7 @@ func TestPublishLocalBaseImage(t *testing.T) {
 
 func TestPublishPipeError(t *testing.T) {
 	makeCtx := func() *context.Context {
-		return testctx.NewWithCfg(config.Project{
+		return testctx.WrapWithCfg(t.Context(), config.Project{
 			Builds: []config.Build{
 				{
 					ID:   "foo",
@@ -755,14 +763,16 @@ func TestPublishPipeError(t *testing.T) {
 
 func TestApplyTemplate(t *testing.T) {
 	t.Run("success", func(t *testing.T) {
-		foo, err := applyTemplate(testctx.NewWithCfg(config.Project{
+		foo, err := applyTemplate(testctx.WrapWithCfg(t.Context(), config.Project{
 			Env: []string{"FOO=bar"},
-		}), []string{"{{ .Env.FOO }}"})
+		}),
+
+			[]string{"{{ .Env.FOO }}"})
 		require.NoError(t, err)
 		require.Equal(t, []string{"bar"}, foo)
 	})
 	t.Run("error", func(t *testing.T) {
-		_, err := applyTemplate(testctx.New(), []string{"{{ .Nope}}"})
+		_, err := applyTemplate(testctx.Wrap(t.Context()), []string{"{{ .Nope}}"})
 		require.Error(t, err)
 	})
 }

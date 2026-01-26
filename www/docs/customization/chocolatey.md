@@ -52,6 +52,7 @@ chocolateys:
     #
     # Valid options are:
     # - 'msi':     msi installers (requires the MSI pipe configured, Pro only)
+    # - 'nsis':    nsis installers (requires the NSIS pipe configured, Pro only)
     # - 'archive': archives (only if format is zip),
     #
     # Default: 'archive'.

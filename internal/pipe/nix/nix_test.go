@@ -31,17 +31,17 @@ func TestString(t *testing.T) {
 
 func TestSkip(t *testing.T) {
 	t.Run("no-nix", func(t *testing.T) {
-		require.True(t, Pipe{}.Skip(testctx.New()))
+		require.True(t, Pipe{}.Skip(testctx.Wrap(t.Context())))
 	})
 	t.Run("skip flag", func(t *testing.T) {
-		require.True(t, New().Skip(testctx.NewWithCfg(config.Project{
+		require.True(t, New().Skip(testctx.WrapWithCfg(t.Context(), config.Project{
 			Nix: []config.Nix{{}},
 		}, testctx.Skip(skips.Nix))))
 	})
 	t.Run("nix-all-good", func(t *testing.T) {
 		testlib.CheckPath(t, "nix-hash")
 		testlib.SkipIfWindows(t, "nix doesn't work on windows")
-		require.False(t, New().Skip(testctx.NewWithCfg(config.Project{
+		require.False(t, New().Skip(testctx.WrapWithCfg(t.Context(), config.Project{
 			Nix: []config.Nix{{}},
 		})))
 	})
@@ -423,7 +423,7 @@ func TestRunPipe(t *testing.T) {
 	} {
 		t.Run(tt.name, func(t *testing.T) {
 			folder := t.TempDir()
-			ctx := testctx.NewWithCfg(
+			ctx := testctx.WrapWithCfg(t.Context(),
 				config.Project{
 					Dist:        folder,
 					ProjectName: "foo",
@@ -431,8 +431,8 @@ func TestRunPipe(t *testing.T) {
 				},
 				testctx.WithVersion("1.2.1"),
 				testctx.WithCurrentTag("v1.2.1"),
-				testctx.WithSemver(1, 2, 1, "rc1"),
-			)
+				testctx.WithSemver(1, 2, 1, "rc1"))
+
 			createFakeArtifact := func(id, goos, goarch, goamd64, goarm, format string, extra map[string]any) {
 				if goarch != "arm" {
 					goarm = ""
@@ -699,3 +699,67 @@ type alwaysZeroHasher struct{}
 
 func (alwaysZeroHasher) Hash(stdctx.Context, string) (string, error) { return zeroHash, nil }
 func (alwaysZeroHasher) Available() bool                             { return true }
+
+func TestDynamicallyLinked(t *testing.T) {
+	folder := t.TempDir()
+	ctx := testctx.WrapWithCfg(t.Context(),
+		config.Project{
+			Dist:        folder,
+			ProjectName: "foo",
+			Nix: []config.Nix{{
+				IDs: []string{"dynlink"},
+				Repository: config.RepoRef{
+					Owner: "foo",
+					Name:  "bar",
+				},
+			}},
+		},
+		testctx.WithVersion("1.0.0"),
+		testctx.WithCurrentTag("v1.0.0"),
+	)
+
+	createDynlinkArtifact := func(goos, goarch string, dynLinked bool) {
+		name := "foo_" + goos + "_" + goarch + ".tar.gz"
+		path := filepath.Join(folder, "dist", name)
+		art := artifact.Artifact{
+			Name:   name,
+			Path:   path,
+			Goos:   goos,
+			Goarch: goarch,
+			Type:   artifact.UploadableArchive,
+			Extra: map[string]any{
+				artifact.ExtraID:        "dynlink",
+				artifact.ExtraFormat:    "tar.gz",
+				artifact.ExtraBinaries:  []string{"foo"},
+				artifact.ExtraWrappedIn: "",
+				artifact.ExtranDynLink:  dynLinked,
+			},
+		}
+		ctx.Artifacts.Add(&art)
+		require.NoError(t, os.MkdirAll(filepath.Dir(path), 0o755))
+		f, err := os.Create(path)
+		require.NoError(t, err)
+		require.NoError(t, f.Close())
+	}
+
+	// Create linux archives with dynamic linking
+	createDynlinkArtifact("linux", "amd64", true)
+	createDynlinkArtifact("linux", "arm64", true)
+	// Darwin archives won't be dynamically linked (macOS uses different mechanism)
+	createDynlinkArtifact("darwin", "amd64", false)
+	createDynlinkArtifact("darwin", "arm64", false)
+
+	client := client.NewMock()
+	pipe := Pipe{alwaysZeroHasher{}}
+
+	require.NoError(t, pipe.Default(ctx))
+	require.NoError(t, pipe.runAll(ctx, client))
+
+	nixpkgs := ctx.Artifacts.Filter(artifact.ByType(artifact.Nixpkg)).List()
+	require.Len(t, nixpkgs, 1)
+
+	content, err := os.ReadFile(nixpkgs[0].Path)
+	require.NoError(t, err)
+
+	golden.RequireEqual(t, content)
+}

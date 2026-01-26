@@ -1196,7 +1196,8 @@
 						"type": "string",
 						"enum": [
 							"archive",
-							"msi"
+							"msi",
+							"nsis"
 						],
 						"default": "archive"
 					}
@@ -3038,6 +3039,9 @@
 						},
 						"type": "array"
 					},
+					"hooks": {
+						"$ref": "#/$defs/MSIHooks"
+					},
 					"version": {
 						"type": "string",
 						"enum": [
@@ -3062,6 +3066,18 @@
 					"name",
 					"wxs"
 				]
+			},
+			"MSIHooks": {
+				"properties": {
+					"before": {
+						"$ref": "#/$defs/Hooks"
+					},
+					"after": {
+						"$ref": "#/$defs/Hooks"
+					}
+				},
+				"additionalProperties": false,
+				"type": "object"
 			},
 			"MacOSNotarize": {
 				"properties": {
@@ -4151,6 +4167,62 @@
 				"additionalProperties": false,
 				"type": "object"
 			},
+			"NSIS": {
+				"properties": {
+					"id": {
+						"type": "string"
+					},
+					"name": {
+						"type": "string"
+					},
+					"script": {
+						"type": "string"
+					},
+					"ids": {
+						"items": {
+							"type": "string"
+						},
+						"type": "array"
+					},
+					"goamd64": {
+						"type": "string"
+					},
+					"extra_files": {
+						"items": {
+							"$ref": "#/$defs/ExtraFile"
+						},
+						"type": "array"
+					},
+					"templated_extra_files": {
+						"items": {
+							"$ref": "#/$defs/TemplatedExtraFile"
+						},
+						"type": "array"
+					},
+					"replace": {
+						"type": "boolean"
+					},
+					"mod_timestamp": {
+						"type": "string"
+					},
+					"disable": {
+						"oneOf": [
+							{
+								"type": "string"
+							},
+							{
+								"type": "boolean"
+							}
+						]
+					}
+				},
+				"additionalProperties": false,
+				"type": "object",
+				"required": [
+					"name",
+					"script"
+				]
+			},
 			"Nightly": {
 				"properties": {
 					"version_template": {
@@ -4393,6 +4465,12 @@
 					"msi": {
 						"items": {
 							"$ref": "#/$defs/MSI"
+						},
+						"type": "array"
+					},
+					"nsis": {
+						"items": {
+							"$ref": "#/$defs/NSIS"
 						},
 						"type": "array"
 					},
@@ -5202,7 +5280,8 @@
 						"type": "string",
 						"enum": [
 							"archive",
-							"msi"
+							"msi",
+							"nsis"
 						],
 						"default": "archive"
 					}
@@ -6179,7 +6258,8 @@
 						"enum": [
 							"archive",
 							"binary",
-							"msi"
+							"msi",
+							"nsis"
 						]
 					}
 				},

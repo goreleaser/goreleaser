@@ -13,7 +13,7 @@ import (
 	"text/template"
 	"time"
 
-	"github.com/google/go-github/v78/github"
+	"github.com/google/go-github/v80/github"
 	"github.com/goreleaser/goreleaser/v2/internal/artifact"
 	"github.com/goreleaser/goreleaser/v2/internal/testctx"
 	"github.com/goreleaser/goreleaser/v2/internal/testlib"
@@ -30,6 +30,21 @@ func TestNewGitHubClient(t *testing.T) {
 			GitHubURLs: config.GitHubURLs{
 				API:    githubURL + "/api/v3",
 				Upload: githubURL,
+			},
+		})
+
+		client, err := newGitHub(ctx, ctx.Token)
+		require.NoError(t, err)
+		require.Equal(t, githubURL+"/api/v3/", client.client.BaseURL.String())
+		require.Equal(t, githubURL+"/api/uploads/", client.client.UploadURL.String())
+	})
+
+	t.Run("good urls ending with /", func(t *testing.T) {
+		githubURL := "https://github.mycompany.com"
+		ctx := testctx.WrapWithCfg(t.Context(), config.Project{
+			GitHubURLs: config.GitHubURLs{
+				API:    githubURL + "/api/v3/",
+				Upload: githubURL + "/api/uploads/",
 			},
 		})
 
@@ -223,7 +238,7 @@ func TestGitHubGetDefaultBranch(t *testing.T) {
 
 	ctx := testctx.WrapWithCfg(t.Context(), config.Project{
 		GitHubURLs: config.GitHubURLs{
-			API: srv.URL + "/",
+			API: srv.URL,
 		},
 	})
 
@@ -253,7 +268,7 @@ func TestGitHubGetDefaultBranchErr(t *testing.T) {
 
 	ctx := testctx.WrapWithCfg(t.Context(), config.Project{
 		GitHubURLs: config.GitHubURLs{
-			API: srv.URL + "/",
+			API: srv.URL,
 		},
 	})
 	client, err := newGitHub(ctx, "test-token")
@@ -291,7 +306,7 @@ func TestGitHubChangelog(t *testing.T) {
 
 	ctx := testctx.WrapWithCfg(t.Context(), config.Project{
 		GitHubURLs: config.GitHubURLs{
-			API: srv.URL + "/",
+			API: srv.URL,
 		},
 	})
 	client, err := newGitHub(ctx, "test-token")
@@ -306,8 +321,13 @@ func TestGitHubChangelog(t *testing.T) {
 	require.NoError(t, err)
 	require.Equal(t, []ChangelogItem{
 		{
-			SHA:            "6dcb09b5b57875f334f61aebed695e2e4193db5e",
-			Message:        "Fix all the bugs",
+			SHA:     "6dcb09b5b57875f334f61aebed695e2e4193db5e",
+			Message: "Fix all the bugs",
+			Authors: []Author{{
+				Name:     "Octocat",
+				Email:    "octo@cat",
+				Username: "octocat",
+			}},
 			AuthorName:     "Octocat",
 			AuthorEmail:    "octo@cat",
 			AuthorUsername: "octocat",
@@ -338,7 +358,7 @@ func TestGitHubReleaseNotes(t *testing.T) {
 
 	ctx := testctx.WrapWithCfg(t.Context(), config.Project{
 		GitHubURLs: config.GitHubURLs{
-			API: srv.URL + "/",
+			API: srv.URL,
 		},
 	})
 	client, err := newGitHub(ctx, "test-token")
@@ -371,7 +391,7 @@ func TestGitHubReleaseNotesError(t *testing.T) {
 
 	ctx := testctx.WrapWithCfg(t.Context(), config.Project{
 		GitHubURLs: config.GitHubURLs{
-			API: srv.URL + "/",
+			API: srv.URL,
 		},
 	})
 	client, err := newGitHub(ctx, "test-token")
@@ -389,7 +409,6 @@ func TestGitHubReleaseNotesError(t *testing.T) {
 func TestGitHubCloseMilestone(t *testing.T) {
 	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		defer r.Body.Close()
-		t.Log(r.URL.Path)
 
 		if r.URL.Path == "/api/v3/repos/someone/something/milestones" {
 			r, err := os.Open("testdata/github/milestones.json")
@@ -411,7 +430,7 @@ func TestGitHubCloseMilestone(t *testing.T) {
 
 	ctx := testctx.WrapWithCfg(t.Context(), config.Project{
 		GitHubURLs: config.GitHubURLs{
-			API: srv.URL + "/",
+			API: srv.URL,
 		},
 	})
 	client, err := newGitHub(ctx, "test-token")
@@ -469,7 +488,7 @@ func TestGitHubOpenPullRequestCrossRepo(t *testing.T) {
 
 	ctx := testctx.WrapWithCfg(t.Context(), config.Project{
 		GitHubURLs: config.GitHubURLs{
-			API: srv.URL + "/",
+			API: srv.URL,
 		},
 	})
 	client, err := newGitHub(ctx, "test-token")
@@ -523,7 +542,7 @@ func TestGitHubOpenPullRequestHappyPath(t *testing.T) {
 
 	ctx := testctx.WrapWithCfg(t.Context(), config.Project{
 		GitHubURLs: config.GitHubURLs{
-			API: srv.URL + "/",
+			API: srv.URL,
 		},
 	})
 	client, err := newGitHub(ctx, "test-token")
@@ -582,7 +601,7 @@ func TestGitHubOpenPullRequestNoBaseBranchDraft(t *testing.T) {
 
 	ctx := testctx.WrapWithCfg(t.Context(), config.Project{
 		GitHubURLs: config.GitHubURLs{
-			API: srv.URL + "/",
+			API: srv.URL,
 		},
 	})
 	client, err := newGitHub(ctx, "test-token")
@@ -629,7 +648,7 @@ func TestGitHubOpenPullRequestPRExists(t *testing.T) {
 
 	ctx := testctx.WrapWithCfg(t.Context(), config.Project{
 		GitHubURLs: config.GitHubURLs{
-			API: srv.URL + "/",
+			API: srv.URL,
 		},
 	})
 	client, err := newGitHub(ctx, "test-token")
@@ -680,7 +699,7 @@ func TestGitHubOpenPullRequestBaseEmpty(t *testing.T) {
 
 	ctx := testctx.WrapWithCfg(t.Context(), config.Project{
 		GitHubURLs: config.GitHubURLs{
-			API: srv.URL + "/",
+			API: srv.URL,
 		},
 	})
 	client, err := newGitHub(ctx, "test-token")
@@ -731,7 +750,7 @@ func TestGitHubOpenPullRequestHeadEmpty(t *testing.T) {
 
 	ctx := testctx.WrapWithCfg(t.Context(), config.Project{
 		GitHubURLs: config.GitHubURLs{
-			API: srv.URL + "/",
+			API: srv.URL,
 		},
 	})
 	client, err := newGitHub(ctx, "test-token")
@@ -780,7 +799,7 @@ func TestGitHubCreateFileHappyPathCreate(t *testing.T) {
 
 	ctx := testctx.WrapWithCfg(t.Context(), config.Project{
 		GitHubURLs: config.GitHubURLs{
-			API: srv.URL + "/",
+			API: srv.URL,
 		},
 	})
 	client, err := newGitHub(ctx, "test-token")
@@ -829,7 +848,7 @@ func TestGitHubCreateFileHappyPathUpdate(t *testing.T) {
 
 	ctx := testctx.WrapWithCfg(t.Context(), config.Project{
 		GitHubURLs: config.GitHubURLs{
-			API: srv.URL + "/",
+			API: srv.URL,
 		},
 	})
 	client, err := newGitHub(ctx, "test-token")
@@ -890,7 +909,7 @@ func TestGitHubCreateFileFeatureBranchAlreadyExists(t *testing.T) {
 
 	ctx := testctx.WrapWithCfg(t.Context(), config.Project{
 		GitHubURLs: config.GitHubURLs{
-			API: srv.URL + "/",
+			API: srv.URL,
 		},
 	})
 	client, err := newGitHub(ctx, "test-token")
@@ -951,7 +970,7 @@ func TestGitHubCreateFileFeatureBranchDoesNotExist(t *testing.T) {
 
 	ctx := testctx.WrapWithCfg(t.Context(), config.Project{
 		GitHubURLs: config.GitHubURLs{
-			API: srv.URL + "/",
+			API: srv.URL,
 		},
 	})
 	client, err := newGitHub(ctx, "test-token")
@@ -998,7 +1017,7 @@ func TestGitHubCreateFileFeatureBranchNilObject(t *testing.T) {
 
 	ctx := testctx.WrapWithCfg(t.Context(), config.Project{
 		GitHubURLs: config.GitHubURLs{
-			API: srv.URL + "/",
+			API: srv.URL,
 		},
 	})
 	client, err := newGitHub(ctx, "test-token")
@@ -1041,7 +1060,7 @@ func TestGitHubCheckRateLimit(t *testing.T) {
 
 	ctx := testctx.WrapWithCfg(t.Context(), config.Project{
 		GitHubURLs: config.GitHubURLs{
-			API: srv.URL + "/",
+			API: srv.URL,
 		},
 	})
 	client, err := newGitHub(ctx, "test-token")
@@ -1082,7 +1101,7 @@ func TestGitHubCreateRelease(t *testing.T) {
 	ctx := testctx.WrapWithCfg(t.Context(),
 		config.Project{
 			GitHubURLs: config.GitHubURLs{
-				API: srv.URL + "/",
+				API: srv.URL,
 			},
 			Release: config.Release{
 				NameTemplate: "v1.0.0",
@@ -1150,7 +1169,7 @@ func TestGitHubCreateReleaseDeleteExistingDraft(t *testing.T) {
 	ctx := testctx.WrapWithCfg(t.Context(),
 		config.Project{
 			GitHubURLs: config.GitHubURLs{
-				API: srv.URL + "/",
+				API: srv.URL,
 			},
 			Release: config.Release{
 				NameTemplate: "v1.0.0",
@@ -1208,7 +1227,7 @@ func TestGitHubCreateReleaseUpdateExisting(t *testing.T) {
 	ctx := testctx.WrapWithCfg(t.Context(),
 		config.Project{
 			GitHubURLs: config.GitHubURLs{
-				API: srv.URL + "/",
+				API: srv.URL,
 			},
 			Release: config.Release{
 				NameTemplate: "v1.0.0",
@@ -1269,7 +1288,7 @@ func TestGitHubCreateReleaseUseExistingDraft(t *testing.T) {
 	ctx := testctx.WrapWithCfg(t.Context(),
 		config.Project{
 			GitHubURLs: config.GitHubURLs{
-				API: srv.URL + "/",
+				API: srv.URL,
 			},
 			Release: config.Release{
 				NameTemplate: "v1.0.0",
@@ -1313,7 +1332,7 @@ func TestGitHubCreateFileWithGitHubAppToken(t *testing.T) {
 			body, err := io.ReadAll(r.Body)
 			assert.NoError(t, err)
 
-			var reqData map[string]interface{}
+			var reqData map[string]any
 			assert.NoError(t, json.Unmarshal(body, &reqData))
 
 			// Verify committer is not present when using GitHub App token
@@ -1336,7 +1355,7 @@ func TestGitHubCreateFileWithGitHubAppToken(t *testing.T) {
 
 	ctx := testctx.WrapWithCfg(t.Context(), config.Project{
 		GitHubURLs: config.GitHubURLs{
-			API: srv.URL + "/",
+			API: srv.URL,
 		},
 	})
 	client, err := newGitHub(ctx, "test-token")
@@ -1371,14 +1390,14 @@ func TestGitHubCreateFileWithoutGitHubAppToken(t *testing.T) {
 			body, err := io.ReadAll(r.Body)
 			assert.NoError(t, err)
 
-			var reqData map[string]interface{}
+			var reqData map[string]any
 			assert.NoError(t, json.Unmarshal(body, &reqData))
 
 			// Verify committer is present when not using GitHub App token
 			committer, hasCommitter := reqData["committer"]
 			assert.True(t, hasCommitter, "committer should be set when not using GitHub App token")
 
-			committerMap := committer.(map[string]interface{})
+			committerMap := committer.(map[string]any)
 			assert.Equal(t, "test-author", committerMap["name"])
 			assert.Equal(t, "test@example.com", committerMap["email"])
 
@@ -1398,7 +1417,7 @@ func TestGitHubCreateFileWithoutGitHubAppToken(t *testing.T) {
 
 	ctx := testctx.WrapWithCfg(t.Context(), config.Project{
 		GitHubURLs: config.GitHubURLs{
-			API: srv.URL + "/",
+			API: srv.URL,
 		},
 	})
 	client, err := newGitHub(ctx, "test-token")
@@ -1412,6 +1431,106 @@ func TestGitHubCreateFileWithoutGitHubAppToken(t *testing.T) {
 		Name:  "test-author",
 		Email: "test@example.com",
 	}, repo, []byte("content"), "file.txt", "message"))
+}
+
+func TestGitHubAuthorsLookup(t *testing.T) {
+	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		defer r.Body.Close()
+
+		if r.URL.Path == "/api/v3/rate_limit" {
+			w.WriteHeader(http.StatusOK)
+			fmt.Fprint(w, `{"resources":{"core":{"remaining":120},"search":{"remaining":10}}}`)
+			return
+		}
+
+		if r.URL.Path == "/api/v3/search/users" {
+			q := r.URL.Query().Get("q")
+			switch q {
+			case "single@example.com", "cached@example.com":
+				fmt.Fprint(w, `{"total_count": 1, "items": [{"login": "singleuser"}]}`)
+			case "multiple@example.com":
+				fmt.Fprint(w, `{"total_count": 2, "items": [{"login": "user1"}, {"login": "user2"}]}`)
+			case "error@example.com":
+				w.WriteHeader(http.StatusInternalServerError)
+			default:
+				fmt.Fprint(w, `{"total_count": 0, "items": []}`)
+			}
+			return
+		}
+		w.WriteHeader(http.StatusNotFound)
+	}))
+	t.Cleanup(srv.Close)
+
+	ctx := testctx.WrapWithCfg(t.Context(), config.Project{
+		GitHubURLs: config.GitHubURLs{
+			API: srv.URL,
+		},
+	})
+	client, err := newGitHub(ctx, "test-token")
+	require.NoError(t, err)
+	cache := map[string]string{}
+
+	t.Run("noreply email without numeric id", func(t *testing.T) {
+		result := client.authorsLookup(ctx, []Author{
+			{Name: "Foo Bar", Email: "foobar@users.noreply.github.com"},
+		}, cache)
+		require.Equal(t, "foobar", result[0].Username)
+	})
+
+	t.Run("noreply email with numeric id", func(t *testing.T) {
+		result := client.authorsLookup(ctx, []Author{
+			{Name: "Foo Bar", Email: "12345+foobar@users.noreply.github.com"},
+		}, cache)
+		require.Equal(t, "foobar", result[0].Username)
+	})
+
+	t.Run("api lookup single result", func(t *testing.T) {
+		result := client.authorsLookup(ctx, []Author{
+			{Name: "Single User", Email: "single@example.com"},
+		}, cache)
+		require.Equal(t, "singleuser", result[0].Username)
+	})
+
+	t.Run("api lookup cache", func(t *testing.T) {
+		result := client.authorsLookup(ctx, []Author{
+			{Name: "Cached User", Email: "cached@example.com"},
+			{Name: "Cached User 2", Email: "cached@example.com"},
+		}, cache)
+		require.Equal(t, "singleuser", result[0].Username)
+		require.Equal(t, "singleuser", result[1].Username)
+	})
+
+	t.Run("api lookup no results", func(t *testing.T) {
+		result := client.authorsLookup(ctx, []Author{
+			{Name: "Unknown User", Email: "unknown@example.com"},
+		}, cache)
+		require.Empty(t, result[0].Username)
+	})
+
+	t.Run("api lookup multiple results", func(t *testing.T) {
+		result := client.authorsLookup(ctx, []Author{
+			{Name: "Ambiguous User", Email: "multiple@example.com"},
+		}, cache)
+		require.Empty(t, result[0].Username)
+	})
+
+	t.Run("api lookup error", func(t *testing.T) {
+		result := client.authorsLookup(ctx, []Author{
+			{Name: "Error User", Email: "error@example.com"},
+		}, cache)
+		require.Empty(t, result[0].Username)
+	})
+
+	t.Run("mixed authors", func(t *testing.T) {
+		result := client.authorsLookup(ctx, []Author{
+			{Name: "Noreply User", Email: "noreplyuser@users.noreply.github.com"},
+			{Name: "Noreply Plus", Email: "999+noreplyplus@users.noreply.github.com"},
+			{Name: "Single User", Email: "single@example.com"},
+		}, cache)
+		require.Equal(t, "noreplyuser", result[0].Username)
+		require.Equal(t, "noreplyplus", result[1].Username)
+		require.Equal(t, "singleuser", result[2].Username)
+	})
 }
 
 // TODO: test create upload file to release

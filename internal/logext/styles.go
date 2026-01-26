@@ -4,8 +4,8 @@ import (
 	"fmt"
 	"time"
 
+	"charm.land/lipgloss/v2"
 	"github.com/caarlos0/log"
-	"github.com/charmbracelet/lipgloss/v2"
 )
 
 var (

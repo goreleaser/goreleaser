@@ -1,4 +1,4 @@
-// Package yaml wraps gopkg.in/yaml.v3 and helps transition from v2.
+// Package yaml wraps go.yaml.in/yaml.
 package yaml
 
 import (
@@ -6,7 +6,7 @@ import (
 	"errors"
 	"io"
 
-	yaml "gopkg.in/yaml.v3"
+	"go.yaml.in/yaml/v3"
 )
 
 // UnmarshalStrict unmarshals a YAML document with strict behavior (only declared fields are tolerated).

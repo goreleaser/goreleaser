@@ -7,6 +7,7 @@ import (
 	"crypto/md5"
 	"crypto/sha1"
 	"crypto/sha256"
+	"crypto/sha3"
 	"crypto/sha512"
 	"encoding/hex"
 	"encoding/json"
@@ -25,7 +26,6 @@ import (
 	"github.com/goreleaser/goreleaser/v2/internal/experimental"
 	"golang.org/x/crypto/blake2b"
 	"golang.org/x/crypto/blake2s"
-	"golang.org/x/crypto/sha3"
 )
 
 // Type defines the type of an artifact.
@@ -201,6 +201,9 @@ func (t Type) String() string {
 	}
 }
 
+// Extra field keys used across multiple pipes.
+// If you add or change these, please update the documentation at
+// www/docs/customization/artifacts.md as well.
 const (
 	ExtraID         = "ID"
 	ExtraBinary     = "Binary"
@@ -208,6 +211,7 @@ const (
 	ExtraFormat     = "Format"
 	ExtraWrappedIn  = "WrappedIn"
 	ExtraBinaries   = "Binaries"
+	ExtraFiles      = "Files"
 	ExtraRefresh    = "Refresh"
 	ExtraReplaces   = "Replaces"
 	ExtraDigest     = "Digest"
@@ -215,6 +219,7 @@ const (
 	ExtraChecksum   = "Checksum"
 	ExtraChecksumOf = "ChecksumOf"
 	ExtraBuilder    = "Builder"
+	ExtranDynLink   = "DynamicallyLinked"
 )
 
 // Extras represents the extra fields in an artifact.
@@ -354,13 +359,13 @@ func (a *Artifact) Checksum(algorithm string) (string, error) {
 	case "sha512":
 		h = sha512.New()
 	case "sha3-224":
-		h = sha3.New224()
+		h = hash.Hash(sha3.New224())
 	case "sha3-384":
-		h = sha3.New384()
+		h = hash.Hash(sha3.New384())
 	case "sha3-256":
-		h = sha3.New256()
+		h = hash.Hash(sha3.New256())
 	case "sha3-512":
-		h = sha3.New512()
+		h = hash.Hash(sha3.New512())
 	default:
 		return "", fmt.Errorf("invalid algorithm: %s", algorithm)
 	}

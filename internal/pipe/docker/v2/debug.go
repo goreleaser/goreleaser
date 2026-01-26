@@ -4,7 +4,7 @@ import (
 	"os"
 	"path/filepath"
 
-	"github.com/charmbracelet/lipgloss/v2/tree"
+	"charm.land/lipgloss/v2/tree"
 )
 
 func fileNotFoundDetails(wd string) string {

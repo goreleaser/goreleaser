@@ -133,6 +133,15 @@ tasks:
       - www/docs/eula.md
       - www/docs/security.md
 
+  docs:sponsors:
+    desc: Update OpenCollective and GitHub sponsors list
+    cmds:
+      - python3 scripts/update-sponsors.py
+    sources:
+      - scripts/update-sponsors.py
+    generates:
+      - www/docs/sponsors.md
+
   docs:releases:
     desc: Generate releases.json and latest files
     cmds:
@@ -214,6 +223,7 @@ tasks:
   goreleaser:test:pkg:
     desc: Test a package
     cmds:
+      - docker pull --platform linux/{{.Platform}} {{.Image}}
       - docker run --platform linux/{{.Platform}} --rm --workdir /tmp -v $PWD/dist:/tmp {{.Image}} sh -c '{{.Cmd}} && goreleaser --version'
 
   goreleaser:test:rpm:

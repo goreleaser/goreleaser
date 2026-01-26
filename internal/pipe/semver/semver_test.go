@@ -15,7 +15,7 @@ func TestDescription(t *testing.T) {
 }
 
 func TestValidSemver(t *testing.T) {
-	ctx := testctx.New(testctx.WithCurrentTag("v1.5.2-rc1"))
+	ctx := testctx.Wrap(t.Context(), testctx.WithCurrentTag("v1.5.2-rc1"))
 	require.NoError(t, Pipe{}.Run(ctx))
 	require.Equal(t, context.Semver{
 		Major:      1,
@@ -26,16 +26,16 @@ func TestValidSemver(t *testing.T) {
 }
 
 func TestInvalidSemver(t *testing.T) {
-	ctx := testctx.New(testctx.WithCurrentTag("aaaav1.5.2-rc1"))
+	ctx := testctx.Wrap(t.Context(), testctx.WithCurrentTag("aaaav1.5.2-rc1"))
 	err := Pipe{}.Run(ctx)
 	require.ErrorContains(t, err, "failed to parse tag 'aaaav1.5.2-rc1' as semver")
 }
 
 func TestInvalidSemverSkipValidate(t *testing.T) {
-	ctx := testctx.New(
+	ctx := testctx.Wrap(t.Context(),
 		testctx.WithCurrentTag("aaaav1.5.2-rc1"),
-		testctx.Skip(skips.Validate),
-	)
+		testctx.Skip(skips.Validate))
+
 	testlib.AssertSkipped(t, Pipe{}.Run(ctx))
 	require.Equal(t, context.Semver{
 		Major:      0,

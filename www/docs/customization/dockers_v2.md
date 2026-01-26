@@ -99,6 +99,7 @@ dockers_v2:
     # Platforms to build.
     #
     # Default: [ linux/amd64 linux/arm64 ]
+    # Templates: allowed. (since v2.14)
     platforms:
       - linux/amd64
       - linux/arm64
@@ -190,6 +191,13 @@ publish `user/repo:1.2.3`, for example.
 If we run `goreleaser release --snapshot`, it'll build two images instead:
 `user/repo:1.2.4-amd64` and `user/repo:1.2.4-arm64`.
 
+!!! tip "Daemonless clients"
+
+    If no Docker daemon is detected (e.g., when using remote Buildkit drivers
+    like `kubernetes` on daemonless clients in CI env), `goreleaser release --snapshot`
+    will automatically skip the `--load` option and build a single multi-arch image
+    `user/repo:1.2.4` (similar to `goreleaser release`).
+
 This way you can verify that your Docker build and Docker image work as
 expected.
 
@@ -221,6 +229,27 @@ COPY $TARGETPLATFORM/myprogram /usr/bin/
 This configuration will build and push a Docker image named `user/repo:tagname`.
 
 ### The Docker build context
+
+!!! warning "Don't build binaries in your Dockerfile"
+
+    GoReleaser already builds your binaries (for all target platforms), so you
+    don't need to build them again inside the Dockerfile.
+
+    If your Dockerfile has a multi-stage build with a `builder` stage, or
+    contains commands like `go build`, `cargo build`, `npm run build`, etc.,
+    you're likely duplicating work and **slowing down your builds significantly**.
+
+    Instead, simply copy the pre-built binaries:
+
+    ```dockerfile
+    FROM scratch
+    ARG TARGETPLATFORM
+    ENTRYPOINT ["/usr/bin/myprogram"]
+    COPY $TARGETPLATFORM/myprogram /usr/bin/
+    ```
+
+    GoReleaser will warn you if it detects patterns that suggest unnecessary
+    rebuilds in your `extra_files`.
 
 Note that we are not building any binaries in the `Dockerfile`, we are instead
 merely copying the binary to a `scratch` image and setting up the `entrypoint`.
