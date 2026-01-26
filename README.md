@@ -134,7 +134,6 @@ A big **thank you** to all current, past, and future sponsors!
 - [KEINOS](https://github.com/KEINOS)
 - [Eden Zimbelman](https://github.com/zimeg)
 - [Ben Lechlitner](https://github.com/asphaltbuffet)
-- [Santosh Yadav](https://github.com/santoshyadavdev)
 - [Alexey Palazhchenko](https://github.com/AlekSi)
 - [David Birks](https://github.com/dbirks)
 - [Alex Viscreanu](https://github.com/aexvir)
