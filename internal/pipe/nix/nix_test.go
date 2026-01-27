@@ -770,6 +770,8 @@ func TestDynamicallyLinked(t *testing.T) {
 }
 
 func TestFormat(t *testing.T) {
+	testlib.SkipIfWindows(t, "nix.format won't work on Windows")
+
 	t.Run("invalid formatter", func(t *testing.T) {
 		ctx := testctx.Wrap(t.Context())
 		require.False(t, format(ctx, "invalid-formatter", "nope.nix"))

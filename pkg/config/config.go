@@ -313,6 +313,7 @@ type Nix struct {
 
 	Dependencies []NixDependency `yaml:"dependencies,omitempty" json:"dependencies,omitempty"`
 
+	// v2.14+
 	Formatter string `yaml:"formatter,omitempty" json:"formatter,omitempty" jsonschema:"enum=alejandra,enum=nixfmt"`
 }
 
