@@ -6,8 +6,7 @@
   installShellFiles,
   stdenvNoCC,
   unzip,
-}:
-let
+}: let
   inherit (stdenvNoCC.hostPlatform) system;
   shaMap = {
     i686-linux = "0000000000000000000000000000000000000000000000000000";
@@ -21,34 +20,34 @@ let
     aarch64-darwin = "https://dummyhost/download/v1.2.1/foo_darwin_arm64.zip";
   };
 in
-stdenvNoCC.mkDerivation {
-  pname = "foozip";
-  version = "1.2.1";
-  src = fetchurl {
-    url = urlMap.${system};
-    sha256 = shaMap.${system};
-  };
+  stdenvNoCC.mkDerivation {
+    pname = "foozip";
+    version = "1.2.1";
+    src = fetchurl {
+      url = urlMap.${system};
+      sha256 = shaMap.${system};
+    };
 
-  sourceRoot = ".";
+    sourceRoot = ".";
 
-  nativeBuildInputs = [ installShellFiles unzip ];
+    nativeBuildInputs = [installShellFiles unzip];
 
-  installPhase = ''
-    mkdir -p $out/bin
-    cp -vr ./foo $out/bin/foo
-  '';
+    installPhase = ''
+      mkdir -p $out/bin
+      cp -vr ./foo $out/bin/foo
+    '';
 
-  meta = {
-    description = "my test";
-    homepage = "https://goreleaser.com";
-    license = lib.licenses.mit;
+    meta = {
+      description = "my test";
+      homepage = "https://goreleaser.com";
+      license = lib.licenses.mit;
 
-    sourceProvenance = [ lib.sourceTypes.binaryNativeCode ];
+      sourceProvenance = [lib.sourceTypes.binaryNativeCode];
 
-    platforms = [
-      "aarch64-darwin"
-      "aarch64-linux"
-      "i686-linux"
-    ];
-  };
-}
+      platforms = [
+        "aarch64-darwin"
+        "aarch64-linux"
+        "i686-linux"
+      ];
+    };
+  }

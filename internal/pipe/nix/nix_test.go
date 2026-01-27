@@ -218,6 +218,7 @@ func TestRunPipe(t *testing.T) {
 				Description: "my test",
 				Homepage:    "https://goreleaser.com",
 				License:     "mit",
+				Formatter:   "alejandra",
 				Repository: config.RepoRef{
 					Owner: "foo",
 					Name:  "bar",
@@ -233,6 +234,7 @@ func TestRunPipe(t *testing.T) {
 				Description: "my test",
 				Homepage:    "https://goreleaser.com",
 				License:     "mit",
+				Formatter:   "nixfmt",
 				Repository: config.RepoRef{
 					Owner: "foo",
 					Name:  "bar",
@@ -422,6 +424,9 @@ func TestRunPipe(t *testing.T) {
 		},
 	} {
 		t.Run(tt.name, func(t *testing.T) {
+			if cmd := tt.nix.Formatter; cmd != "" {
+				testlib.CheckPath(t, cmd)
+			}
 			folder := t.TempDir()
 			ctx := testctx.WrapWithCfg(t.Context(),
 				config.Project{
@@ -762,4 +767,56 @@ func TestDynamicallyLinked(t *testing.T) {
 	require.NoError(t, err)
 
 	golden.RequireEqual(t, content)
+}
+
+func TestFormat(t *testing.T) {
+	t.Run("invalid formatter", func(t *testing.T) {
+		ctx := testctx.Wrap(t.Context())
+		require.False(t, format(ctx, "invalid-formatter", "nope.nix"))
+	})
+
+	const input = `{  foo = "bar";
+							baz = "qux";	}`
+
+	t.Run("alejandra", func(t *testing.T) {
+		testlib.CheckPath(t, "alejandra")
+
+		ctx := testctx.Wrap(t.Context())
+		path := filepath.Join(t.TempDir(), "test.nix")
+		require.NoError(t, os.WriteFile(path, []byte(input), 0o644))
+
+		require.True(t, format(ctx, "alejandra", path))
+
+		content, err := os.ReadFile(path)
+		require.NoError(t, err)
+		golden.RequireEqualExt(t, content, "nix")
+	})
+
+	t.Run("nixfmt", func(t *testing.T) {
+		testlib.CheckPath(t, "nixfmt")
+
+		ctx := testctx.Wrap(t.Context())
+		path := filepath.Join(t.TempDir(), "test.nix")
+		require.NoError(t, os.WriteFile(path, []byte(input), 0o644))
+
+		require.True(t, format(ctx, "nixfmt", path))
+
+		content, err := os.ReadFile(path)
+		require.NoError(t, err)
+		golden.RequireEqualExt(t, content, "nix")
+	})
+
+	t.Run("invalid file", func(t *testing.T) {
+		testlib.CheckPath(t, "nixfmt")
+
+		ctx := testctx.Wrap(t.Context())
+		path := filepath.Join(t.TempDir(), "test.nix")
+		require.NoError(t, os.WriteFile(path, []byte(`{ invalid file`), 0o644))
+
+		require.False(t, format(ctx, "nixfmt", path))
+
+		content, err := os.ReadFile(path)
+		require.NoError(t, err)
+		golden.RequireEqualExt(t, content, "nix")
+	})
 }

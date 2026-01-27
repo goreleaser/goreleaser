@@ -103,6 +103,12 @@ nix:
     post_install: |
       installShellCompletion ./completions/*
 
+    # Format the generated file.
+    # Valid options: 'nixfmt', 'alejandra'.
+    #
+    # <!-- md:inline_version v2.14-unreleased -->.
+    formatter: nixfmt
+
 {% include-markdown "../includes/repository.md" comments=false start='---\n\n' %}
 ```
 
