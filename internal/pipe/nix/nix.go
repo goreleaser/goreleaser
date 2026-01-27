@@ -180,6 +180,10 @@ func (p Pipe) doRun(ctx *context.Context, nix config.Nix, cl client.ReleaseURLTe
 		return fmt.Errorf("failed to write nixpkg: %w", err)
 	}
 
+	if fmt := nix.Formatter; fmt != "" {
+		format(ctx, fmt, path)
+	}
+
 	ctx.Artifacts.Add(&artifact.Artifact{
 		Name: filepath.Base(path),
 		Path: path,
@@ -190,6 +194,27 @@ func (p Pipe) doRun(ctx *context.Context, nix config.Nix, cl client.ReleaseURLTe
 	})
 
 	return nil
+}
+
+func format(ctx *context.Context, fmt, path string) bool {
+	switch fmt {
+	case "alejandra", "nixfmt":
+		out, err := exec.CommandContext(ctx, fmt, path).CombinedOutput()
+		if err != nil {
+			log.WithField("output", string(out)).
+				WithField("formatter", fmt).
+				WithField("path", path).
+				Warn("could not format")
+			return false
+		}
+		log.WithField("formatter", fmt).
+			WithField("path", path).
+			Info("formatted")
+		return true
+	default:
+		log.Warn("invalid nix formatter: " + fmt)
+		return false
+	}
 }
 
 func preparePkg(

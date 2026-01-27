@@ -312,6 +312,9 @@ type Nix struct {
 	License               string       `yaml:"license,omitempty" json:"license,omitempty"`
 
 	Dependencies []NixDependency `yaml:"dependencies,omitempty" json:"dependencies,omitempty"`
+
+	// v2.14+
+	Formatter string `yaml:"formatter,omitempty" json:"formatter,omitempty" jsonschema:"enum=alejandra,enum=nixfmt"`
 }
 
 type NixDependency struct {
