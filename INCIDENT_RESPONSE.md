@@ -46,7 +46,7 @@ Do not disclose incidents through issues, pull requests, or public channels.
 
 ## 6. Resolution Timeline
 
-Resolution or assessment will typically be provided within **30 days** of
+Resolution or assessment will typically be provided within **7 days** of
 acknowledgment.
 
 ## 7. Communication

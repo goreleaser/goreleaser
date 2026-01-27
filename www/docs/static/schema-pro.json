@@ -4309,6 +4309,13 @@
 							"$ref": "#/$defs/NixDependency"
 						},
 						"type": "array"
+					},
+					"formatter": {
+						"type": "string",
+						"enum": [
+							"alejandra",
+							"nixfmt"
+						]
 					}
 				},
 				"additionalProperties": false,
