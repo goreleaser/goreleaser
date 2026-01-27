@@ -789,7 +789,7 @@ func TestFormat(t *testing.T) {
 
 		content, err := os.ReadFile(path)
 		require.NoError(t, err)
-		golden.RequireEqualExt(t, content, "nix")
+		golden.RequireEqualExt(t, content, ".nix")
 	})
 
 	t.Run("nixfmt", func(t *testing.T) {
@@ -803,7 +803,7 @@ func TestFormat(t *testing.T) {
 
 		content, err := os.ReadFile(path)
 		require.NoError(t, err)
-		golden.RequireEqualExt(t, content, "nix")
+		golden.RequireEqualExt(t, content, ".nix")
 	})
 
 	t.Run("invalid file", func(t *testing.T) {
@@ -817,6 +817,6 @@ func TestFormat(t *testing.T) {
 
 		content, err := os.ReadFile(path)
 		require.NoError(t, err)
-		golden.RequireEqualExt(t, content, "nix")
+		golden.RequireEqualExt(t, content, ".nix")
 	})
 }
