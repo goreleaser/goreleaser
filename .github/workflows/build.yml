@@ -70,7 +70,7 @@ jobs:
         if: matrix.os == 'ubuntu-latest'
         with:
           github_access_token: ${{ secrets.GITHUB_TOKEN }}
-      - run: nix-env -iA nixpkgs.nixfmt
+      - run: nix-env -iA nixpkgs.nixfmt-rfc-style
         if: matrix.os == 'ubuntu-latest'
       - run: nix-env -iA nixpkgs.alejandra
         if: matrix.os == 'ubuntu-latest'
