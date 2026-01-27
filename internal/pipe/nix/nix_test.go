@@ -218,7 +218,6 @@ func TestRunPipe(t *testing.T) {
 				Description: "my test",
 				Homepage:    "https://goreleaser.com",
 				License:     "mit",
-				Formatter:   "alejandra",
 				Repository: config.RepoRef{
 					Owner: "foo",
 					Name:  "bar",
@@ -234,7 +233,6 @@ func TestRunPipe(t *testing.T) {
 				Description: "my test",
 				Homepage:    "https://goreleaser.com",
 				License:     "mit",
-				Formatter:   "nixfmt",
 				Repository: config.RepoRef{
 					Owner: "foo",
 					Name:  "bar",
@@ -424,9 +422,6 @@ func TestRunPipe(t *testing.T) {
 		},
 	} {
 		t.Run(tt.name, func(t *testing.T) {
-			if cmd := tt.nix.Formatter; cmd != "" {
-				testlib.CheckPath(t, cmd)
-			}
 			folder := t.TempDir()
 			ctx := testctx.WrapWithCfg(t.Context(),
 				config.Project{
