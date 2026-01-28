@@ -21,7 +21,7 @@ class WithHeader < Formula
         ]
       sha256 "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
 
-      def install
+      define_method(:install) do
         bin.install "with_header_darwin_amd64 => with_header"
       end
     end
@@ -32,7 +32,7 @@ class WithHeader < Formula
         ]
       sha256 "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
 
-      def install
+      define_method(:install) do
         bin.install "with_header_darwin_arm64 => with_header"
       end
     end
@@ -45,7 +45,7 @@ class WithHeader < Formula
           "Authorization: bearer #{ENV["HOMEBREW_GITHUB_API_TOKEN"]}"
         ]
       sha256 "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
-      def install
+      define_method(:install) do
         bin.install "with_header_linux_amd64 => with_header"
       end
     end
