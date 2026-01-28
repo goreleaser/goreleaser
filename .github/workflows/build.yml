@@ -70,7 +70,7 @@ jobs:
         if: matrix.os == 'ubuntu-latest'
         with:
           github_access_token: ${{ secrets.GITHUB_TOKEN }}
-      - run: nix profile install nixpkgs#nixfmt-rfc-style nixpkgs#alejandra
+      - run: nix profile add nixpkgs#pkgs.nixfmt nixpkgs#alejandra
         if: matrix.os == 'ubuntu-latest'
       - uses: actions/setup-go@7a3fe6cf4cb3a834922a1244abfce67bcef6a0c5 # v6.2.0
         with:
