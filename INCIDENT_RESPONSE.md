@@ -1,5 +1,7 @@
 # Incident Response Plan
 
+**Last Updated:** January 27, 2026.
+
 This document outlines how the GoReleaser team responds to security incidents,
 critical bugs, or operational disruptions that could affect users or the
 trustworthiness of the project.
@@ -46,8 +48,8 @@ Do not disclose incidents through issues, pull requests, or public channels.
 
 ## 6. Resolution Timeline
 
-Resolution or assessment will typically be provided within **7 days** of
-acknowledgment.
+Resolution or assessment will typically be provided within **7 business days**
+from the report date.
 
 ## 7. Communication
 
