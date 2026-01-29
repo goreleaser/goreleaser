@@ -1,12 +1,14 @@
 package ko
 
 import (
+	stdctx "context"
 	"fmt"
 	"maps"
 	"os/exec"
 	"runtime"
 	"strconv"
 	"strings"
+	"sync"
 	"testing"
 	"time"
 
@@ -282,7 +284,7 @@ func TestPublishPipeSuccess(t *testing.T) {
 						BuildDetails: config.BuildDetails{
 							Ldflags: []string{"-s", "-w"},
 							Flags:   []string{"-tags", "netgo"},
-							Env:     []string{"GOCACHE=" + t.TempDir()},
+							Env:     []string{"GOCACHE=" + gocacheOnce()},
 						},
 					},
 				},
@@ -457,7 +459,7 @@ func TestSnapshot(t *testing.T) {
 				BuildDetails: config.BuildDetails{
 					Ldflags: []string{"-s", "-w"},
 					Flags:   []string{"-tags", "netgo"},
-					Env:     []string{"GOCACHE=" + t.TempDir()},
+					Env:     []string{"GOCACHE=" + gocacheOnce()},
 				},
 			},
 		},
@@ -494,7 +496,7 @@ func TestDisable(t *testing.T) {
 				BuildDetails: config.BuildDetails{
 					Ldflags: []string{"-s", "-w"},
 					Flags:   []string{"-tags", "netgo"},
-					Env:     []string{"GOCACHE=" + t.TempDir()},
+					Env:     []string{"GOCACHE=" + gocacheOnce()},
 				},
 			},
 		},
@@ -810,3 +812,11 @@ func compareMaps(t *testing.T, expected, actual map[string]string) {
 		require.Regexp(t, v, got, "key: %s", k)
 	}
 }
+
+var gocacheOnce = sync.OnceValue(func() string {
+	out, err := exec.CommandContext(stdctx.Background(), "go", "env", "GOCACHE").CombinedOutput()
+	if err == nil {
+		return strings.TrimSpace(string(out))
+	}
+	return ""
+})

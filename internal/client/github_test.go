@@ -1065,8 +1065,11 @@ func TestGitHubCheckRateLimit(t *testing.T) {
 	})
 	client, err := newGitHub(ctx, "test-token")
 	require.NoError(t, err)
-	client.checkRateLimit(ctx)
-	require.True(t, time.Now().UTC().After(reset))
+
+	var sleepDuration time.Duration
+	client.checkRateLimit(ctx, func(d time.Duration) { sleepDuration = d })
+
+	require.GreaterOrEqual(t, sleepDuration, 5*time.Second)
 }
 
 func TestGitHubCreateRelease(t *testing.T) {
