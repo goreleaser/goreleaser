@@ -6,6 +6,7 @@
   installShellFiles,
   stdenvNoCC,
   stdenv,
+  autoPatchelfHook,
 }:
 let
   inherit (stdenvNoCC.hostPlatform) system;

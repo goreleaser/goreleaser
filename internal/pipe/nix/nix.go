@@ -292,6 +292,7 @@ func preparePkg(
 		}
 		if !dynamicallyLinked && artifact.ExtraOr(*arch, artifact.ExtranDynLink, false) {
 			inputs = append(inputs, "autoPatchelfHook")
+			dependencies = append(dependencies, "autoPatchelfHook")
 			dynamicallyLinked = true
 		}
 	}
