@@ -1,6 +1,7 @@
 # GoReleaser End User License Agreement (EULA)
 
 ## 1. Licensed software.
+
 GoReleaser Pro is licensed as commercial software and must not be used without a valid license key from Becker Software LTDA
 
 ### 1.1 "Supplier"
@@ -23,6 +24,7 @@ If you are not so authorized, then neither you nor your company or organization 
 This Agreement, including any supplemental terms is between You ("Customer") and Becker Software LTDA ("Supplier").
 
 ### 2.3 Governing law.
+
 This Agreement is entered into the law of Brazil and shall be governed by, and construed in accordance with, the laws of Brazil, exclusive of its choice of law rules.
 
 ## 3. Free Trial
@@ -37,13 +39,14 @@ Any such additional terms and conditions are incorporated into this Agreement by
 ## 4. Grant of License; Ownership.
 
 ### 4.1 License Grant.
+
 Subject to the terms and conditions of this Agreement and Order Form, Becker Software LTDA hereby:
 
 - (i) grants to the Licensee a limited, non-exclusive, non-transferable, revocable, license to use the Licensed Software and solely for its internal business purposes for use by End Users and for the term and in accordance with the conditions and limitations set forth herein and in the Order Form.
 - (ii) To the extent that there is any Third Party Software embedded in, bundled with, or otherwise provided to Licensee in connection with the Licensed Program Materials under this License Agreement, such third party software shall be considered Licensed Software and such Third Party Software shall be used and operated solely with the operation of the Licensed Program Materials and not as a standalone application or any other purpose.
-Certain Third Party Software may be subject to an open source license (“OSS License”), which when required by such license is included with the documentation for the Licensed Software (“Documentation”).
-Licensee’s license rights with respect to Third Party Software subject to an OSS License are defined by the terms of the applicable OSS License; nothing in this Agreement shall restrict, limit, or otherwise affect any rights or obligations Licensee may have, or conditions to which Licensee may be subject, under such OSS License.
-The foregoing includes, without limitation, the MIT License found at: https://opensource.org/licenses/MIT
+  Certain Third Party Software may be subject to an open source license (“OSS License”), which when required by such license is included with the documentation for the Licensed Software (“Documentation”).
+  Licensee’s license rights with respect to Third Party Software subject to an OSS License are defined by the terms of the applicable OSS License; nothing in this Agreement shall restrict, limit, or otherwise affect any rights or obligations Licensee may have, or conditions to which Licensee may be subject, under such OSS License.
+  The foregoing includes, without limitation, the MIT License found at: https://opensource.org/licenses/MIT
 
 ### 4.2 Ownership.
 
