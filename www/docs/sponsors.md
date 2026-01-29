@@ -60,6 +60,7 @@ A big **thank you** to all current, past, and future sponsors!
 - [Guest](https://opencollective.com/guest-341ba997)
 - [Automatio AI](https://automatio.ai/)
 - [Bileta Avioni](https://biletaavioni.al/)
+- [Time.so](https://time.so/)
 - [Jared Allard](https://github.com/jaredallard)
 - [joe miller](https://github.com/joemiller)
 - [Ryan Nixon](https://github.com/taiidani)

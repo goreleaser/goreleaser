@@ -91,7 +91,10 @@ def fetch_members() -> List[Dict[str, Any]]:
     req = urllib.request.Request(
         OPENCOLLECTIVE_API,
         data=payload,
-        headers={"Content-Type": "application/json"}
+        headers={
+            "Content-Type": "application/json",
+            "User-Agent": "goreleaser-sponsors-script"
+        }
     )
     
     try:
