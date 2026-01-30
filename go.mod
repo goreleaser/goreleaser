@@ -29,7 +29,7 @@ require (
 	github.com/google/ko v0.18.1
 	github.com/google/uuid v1.6.0
 	github.com/goreleaser/fileglob v1.4.0
-	github.com/goreleaser/nfpm/v2 v2.44.1
+	github.com/goreleaser/nfpm/v2 v2.44.2
 	github.com/goreleaser/quill v0.0.0-20251224035235-ab943733386f
 	github.com/hashicorp/go-multierror v1.1.1
 	github.com/invopop/jsonschema v0.13.0
@@ -45,7 +45,7 @@ require (
 	github.com/spf13/cobra v1.10.2
 	github.com/stretchr/testify v1.11.1
 	github.com/ulikunitz/xz v0.5.15
-	gitlab.com/gitlab-org/api/client-go v1.16.0
+	gitlab.com/gitlab-org/api/client-go v1.24.0
 	go.yaml.in/yaml/v3 v3.0.4
 	gocloud.dev v0.44.0
 	golang.org/x/crypto v0.47.0
@@ -181,7 +181,7 @@ require (
 	github.com/aws/aws-sdk-go-v2/service/internal/presigned-url v1.13.17 // indirect
 	github.com/aws/aws-sdk-go-v2/service/internal/s3shared v1.19.17 // indirect
 	github.com/aws/aws-sdk-go-v2/service/kms v1.49.1 // indirect
-	github.com/aws/aws-sdk-go-v2/service/s3 v1.95.1
+	github.com/aws/aws-sdk-go-v2/service/s3 v1.96.0
 	github.com/aws/aws-sdk-go-v2/service/sso v1.30.7 // indirect
 	github.com/aws/aws-sdk-go-v2/service/ssooidc v1.35.12 // indirect
 	github.com/aws/aws-sdk-go-v2/service/sts v1.41.5 // indirect
