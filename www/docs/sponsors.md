@@ -61,6 +61,8 @@ A big **thank you** to all current, past, and future sponsors!
 - [Automatio AI](https://automatio.ai/)
 - [Bileta Avioni](https://biletaavioni.al/)
 - [Time.so](https://time.so/)
+- [Feetpedia](https://feetpedia.com/)
+- [Time.now Worldwide Developer API](https://time.now/developer)
 - [Jared Allard](https://github.com/jaredallard)
 - [joe miller](https://github.com/joemiller)
 - [Ryan Nixon](https://github.com/taiidani)
