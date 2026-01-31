@@ -63,6 +63,8 @@ A big **thank you** to all current, past, and future sponsors!
 - [Time.so](https://time.so/)
 - [Feetpedia](https://feetpedia.com/)
 - [Time.now Worldwide Developer API](https://time.now/developer)
+- [Calculators](https://calculator.now/)
+- [YouTube Transcript](https://transcript.you/)
 - [Jared Allard](https://github.com/jaredallard)
 - [joe miller](https://github.com/joemiller)
 - [Ryan Nixon](https://github.com/taiidani)
