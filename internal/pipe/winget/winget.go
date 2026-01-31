@@ -1,6 +1,7 @@
 package winget
 
 import (
+	"cmp"
 	"errors"
 	"fmt"
 	"os"
@@ -70,6 +71,7 @@ func (Pipe) Default(ctx *context.Context) error {
 		if winget.Goamd64 == "" {
 			winget.Goamd64 = "v1"
 		}
+		winget.PackageName = cmp.Or(winget.PackageName, winget.Name)
 	}
 
 	return nil
@@ -113,6 +115,7 @@ func (p Pipe) doRun(ctx *context.Context, winget config.Winget, cl client.Releas
 	err := tp.ApplyAll(
 		&winget.Publisher,
 		&winget.Name,
+		&winget.PackageName,
 		&winget.Author,
 		&winget.PublisherURL,
 		&winget.PublisherSupportURL,
@@ -238,7 +241,7 @@ func (p Pipe) doRun(ctx *context.Context, winget config.Winget, cl client.Releas
 		PublisherSupportURL: winget.PublisherSupportURL,
 		PrivacyURL:          winget.PrivacyURL,
 		Author:              winget.Author,
-		PackageName:         winget.Name,
+		PackageName:         winget.PackageName,
 		PackageURL:          winget.Homepage,
 		License:             winget.License,
 		LicenseURL:          winget.LicenseURL,
