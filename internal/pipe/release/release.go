@@ -98,6 +98,15 @@ func getRepository(ctx *context.Context) (config.Repo, error) {
 	return repo, nil
 }
 
+func (Pipe) Run(ctx *context.Context) error {
+	draft, err := tmpl.New(ctx).Bool(ctx.Config.Release.Draft)
+	if err != nil {
+		return err
+	}
+	ctx.Draft = draft
+	return nil
+}
+
 // Publish the release.
 func (Pipe) Publish(ctx *context.Context) error {
 	c, err := client.New(ctx)
@@ -107,7 +116,7 @@ func (Pipe) Publish(ctx *context.Context) error {
 	if err := doPublish(ctx, c); err != nil {
 		return err
 	}
-	if !ctx.Config.Release.Draft {
+	if !ctx.Draft {
 		log.WithField("url", ctx.ReleaseURL).
 			Info("release published")
 	}

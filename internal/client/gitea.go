@@ -213,7 +213,7 @@ func (c *giteaClient) createRelease(ctx *context.Context, title, body string) (*
 		Target:       ctx.Git.Commit,
 		Title:        title,
 		Note:         body,
-		IsDraft:      releaseConfig.Draft,
+		IsDraft:      ctx.Draft,
 		IsPrerelease: ctx.PreRelease,
 	}
 	release, _, err := c.client.CreateRelease(owner, repoName, opts)
@@ -251,7 +251,7 @@ func (c *giteaClient) updateRelease(ctx *context.Context, title, body string, id
 		Target:       ctx.Git.Commit,
 		Title:        title,
 		Note:         body,
-		IsDraft:      &releaseConfig.Draft,
+		IsDraft:      &ctx.Draft,
 		IsPrerelease: &ctx.PreRelease,
 	}
 

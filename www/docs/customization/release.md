@@ -27,6 +27,8 @@ release:
   # If set to true, will not auto-publish the release.
   # Note: all GitHub releases start as drafts while artifacts are uploaded.
   # Available only for GitHub and Gitea.
+  #
+  # Templates: allowed. (since v2.14-unreleased)
   draft: true
 
   # Whether to remove existing draft releases with the same name before creating

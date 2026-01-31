@@ -1249,7 +1249,7 @@ func TestDefaultDockerfile(t *testing.T) {
 func TestDraftRelease(t *testing.T) {
 	ctx := testctx.WrapWithCfg(t.Context(), config.Project{
 		Release: config.Release{
-			Draft: true,
+			Draft: "true",
 		},
 	})
 

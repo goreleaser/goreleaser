@@ -1180,13 +1180,13 @@ func TestGitHubCreateReleaseDeleteExistingDraft(t *testing.T) {
 					Owner: "goreleaser",
 					Name:  "test",
 				},
-				Draft:                true,
 				ReplaceExistingDraft: true,
 			},
 		},
 		testctx.WithGitInfo(context.GitInfo{
 			CurrentTag: "v1.0.0",
 		}),
+		func(ctx *context.Context) { ctx.Draft = true },
 	)
 
 	client, err := newGitHub(ctx, "test-token")

@@ -21,9 +21,6 @@ func TestWithArtifact(t *testing.T) {
 	ctx := testctx.WrapWithCfg(t.Context(),
 		config.Project{
 			ProjectName: "proj",
-			Release: config.Release{
-				Draft: true,
-			},
 		},
 		testctx.WithVersion("1.2.3"),
 		testctx.WithGitInfo(context.GitInfo{
@@ -50,6 +47,7 @@ func TestWithArtifact(t *testing.T) {
 			ctx.ReleaseNotes = "test release notes"
 			ctx.Date = time.Unix(1678327562, 0)
 			ctx.SingleTarget = true
+			ctx.Draft = true
 		})
 
 	for expect, tmpl := range map[string]string{

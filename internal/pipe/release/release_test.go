@@ -722,3 +722,32 @@ func TestSkip(t *testing.T) {
 		require.True(t, client.UploadedFile)
 	})
 }
+
+func TestRun(t *testing.T) {
+	t.Run("false", func(t *testing.T) {
+		ctx := testctx.WrapWithCfg(t.Context(), config.Project{
+			Release: config.Release{
+				Draft: "false",
+			},
+		})
+		require.NoError(t, Pipe{}.Run(ctx))
+		require.False(t, ctx.Draft)
+	})
+	t.Run("true", func(t *testing.T) {
+		ctx := testctx.WrapWithCfg(t.Context(), config.Project{
+			Release: config.Release{
+				Draft: "true",
+			},
+		})
+		require.NoError(t, Pipe{}.Run(ctx))
+		require.True(t, ctx.Draft)
+	})
+	t.Run("tmpl err", func(t *testing.T) {
+		ctx := testctx.WrapWithCfg(t.Context(), config.Project{
+			Release: config.Release{
+				Draft: "{{ .Nope }}",
+			},
+		})
+		testlib.RequireTemplateError(t, Pipe{}.Run(ctx))
+	})
+}

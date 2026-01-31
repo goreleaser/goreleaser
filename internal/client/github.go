@@ -439,7 +439,7 @@ func (c *githubClient) CreateRelease(ctx *context.Context, body string) (string,
 		return "", err
 	}
 
-	if ctx.Config.Release.Draft && ctx.Config.Release.ReplaceExistingDraft {
+	if ctx.Draft && ctx.Config.Release.ReplaceExistingDraft {
 		if err := c.deleteExistingDraftRelease(ctx, title); err != nil {
 			return "", err
 		}
@@ -478,7 +478,7 @@ func (c *githubClient) CreateRelease(ctx *context.Context, body string) (string,
 }
 
 func (c *githubClient) PublishRelease(ctx *context.Context, releaseID string) error {
-	draft := ctx.Config.Release.Draft
+	draft := ctx.Draft
 	if draft {
 		return nil
 	}

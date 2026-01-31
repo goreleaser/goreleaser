@@ -99,6 +99,7 @@ type Context struct {
 	ModulePath        string
 	PartialTarget     string
 	Snapshot          bool
+	Draft             bool
 	FailFast          bool
 	Partial           bool
 	SingleTarget      bool

@@ -138,7 +138,7 @@ func New(ctx *context.Context) *Template {
 		isSnapshot:      ctx.Snapshot,
 		isSingleTarget:  ctx.SingleTarget,
 		isNightly:       false,
-		isDraft:         ctx.Config.Release.Draft,
+		isDraft:         ctx.Draft,
 		releaseNotes:    ctx.ReleaseNotes,
 		releaseURL:      ctx.ReleaseURL,
 		tagSubject:      ctx.Git.TagSubject,

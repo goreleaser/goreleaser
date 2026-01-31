@@ -150,7 +150,7 @@ func setupReleaseContext(ctx *context.Context, options releaseOpts) error {
 	}
 
 	if options.draft {
-		ctx.Config.Release.Draft = true
+		ctx.Config.Release.Draft = "true"
 	}
 
 	if err := skips.SetRelease(ctx, options.skips...); err != nil {

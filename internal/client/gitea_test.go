@@ -170,7 +170,6 @@ func (s *GiteaReleasesTestSuite) SetupTest() {
 					Owner: s.owner,
 					Name:  s.repoName,
 				},
-				Draft: s.isDraft,
 			},
 		},
 		testctx.WithVersion("6.6.6"),
@@ -182,6 +181,7 @@ func (s *GiteaReleasesTestSuite) SetupTest() {
 		}),
 		func(ctx *context.Context) {
 			ctx.PreRelease = s.isPrerelease
+			ctx.Draft = s.isDraft
 		},
 		testctx.WithSemver(6, 6, 6, ""))
 

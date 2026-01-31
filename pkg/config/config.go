@@ -635,7 +635,7 @@ type Release struct {
 	GitHub                 Repo        `yaml:"github,omitempty" json:"github,omitempty"`
 	GitLab                 Repo        `yaml:"gitlab,omitempty" json:"gitlab,omitempty"`
 	Gitea                  Repo        `yaml:"gitea,omitempty" json:"gitea,omitempty"`
-	Draft                  bool        `yaml:"draft,omitempty" json:"draft,omitempty"`
+	Draft                  string      `yaml:"draft,omitempty" json:"draft,omitempty" jsonschema:"oneof_type=string;boolean"`
 	ReplaceExistingDraft   bool        `yaml:"replace_existing_draft,omitempty" json:"replace_existing_draft,omitempty"`
 	UseExistingDraft       bool        `yaml:"use_existing_draft,omitempty" json:"use_existing_draft,omitempty"`
 	TargetCommitish        string      `yaml:"target_commitish,omitempty" json:"target_commitish,omitempty"`

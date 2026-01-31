@@ -33,6 +33,7 @@ import (
 	"github.com/goreleaser/goreleaser/v2/internal/pipe/partial"
 	"github.com/goreleaser/goreleaser/v2/internal/pipe/prebuild"
 	"github.com/goreleaser/goreleaser/v2/internal/pipe/publish"
+	"github.com/goreleaser/goreleaser/v2/internal/pipe/release"
 	"github.com/goreleaser/goreleaser/v2/internal/pipe/reportsizes"
 	"github.com/goreleaser/goreleaser/v2/internal/pipe/sbom"
 	"github.com/goreleaser/goreleaser/v2/internal/pipe/scoop"
@@ -73,6 +74,8 @@ var BuildPipeline = []Piper{
 	partial.Pipe{},
 	// snapshot version handling
 	snapshot.Pipe{},
+	// handles ctx.Draft.
+	release.Pipe{},
 	// run global hooks before build
 	before.Pipe{},
 	// ensure ./dist exists and is empty

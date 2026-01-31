@@ -66,25 +66,25 @@ func TestReleaseFlags(t *testing.T) {
 	t.Run("draft", func(t *testing.T) {
 		t.Run("not set", func(t *testing.T) {
 			ctx := setup(t, releaseOpts{})
-			require.False(t, ctx.Config.Release.Draft)
+			require.Empty(t, ctx.Config.Release.Draft)
 		})
 
 		t.Run("set via flag", func(t *testing.T) {
 			ctx := setup(t, releaseOpts{
 				draft: true,
 			})
-			require.True(t, ctx.Config.Release.Draft)
+			require.Equal(t, "true", ctx.Config.Release.Draft)
 		})
 
 		t.Run("set in config", func(t *testing.T) {
 			ctx := testctx.WrapWithCfg(t.Context(), config.Project{
 				Release: config.Release{
-					Draft: true,
+					Draft: "true",
 				},
 			})
 
 			require.NoError(t, setupReleaseContext(ctx, releaseOpts{}))
-			require.True(t, ctx.Config.Release.Draft)
+			require.Equal(t, "true", ctx.Config.Release.Draft)
 		})
 	})
 
