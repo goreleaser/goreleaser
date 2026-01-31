@@ -52,9 +52,16 @@ winget:
 
     # Package identifier.
     #
-    # Default: Publisher.ProjectName.
+    # Default: the project name.
     # Templates: allowed.
     package_identifier: myproject.myproject
+
+    # Package name.
+    #
+    # Default: name.
+    # <!-- md:inline_version v2.14-unreleased -->.
+    # Templates: allowed.
+    packaget_name: "Foo Bar"
 
     # IDs of the archives to use.
     # Empty means all IDs.

@@ -8,7 +8,7 @@ PublisherUrl: https://carlosbecker.com
 PublisherSupportUrl: https://carlosbecker.com/support
 PrivacyUrl: https://carlosbecker.com/privacy
 Author: Carlos Becker
-PackageName: foo
+PackageName: Foo Bar Pkg
 PackageUrl: https://goreleaser.com
 License: MIT
 LicenseUrl: https://goreleaser.com/eula/

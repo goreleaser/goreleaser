@@ -81,12 +81,13 @@ func TestRunPipe(t *testing.T) {
 			},
 		},
 		{
-			name:       "package id",
+			name:       "package id and name",
 			expectPath: "manifests/b/beckersoft/foo/1.2.1",
 			winget: config.Winget{
 				Name:                "foo",
 				Publisher:           "Beckersoft LTDA",
 				PackageIdentifier:   "beckersoft.foo",
+				PackageName:         "Foo Bar Pkg",
 				PublisherURL:        "https://carlosbecker.com",
 				PublisherSupportURL: "https://carlosbecker.com/support",
 				PrivacyURL:          "https://carlosbecker.com/privacy",

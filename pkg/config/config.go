@@ -324,6 +324,7 @@ type NixDependency struct {
 
 type Winget struct {
 	Name                  string             `yaml:"name,omitempty" json:"name,omitempty"`
+	PackageName           string             `yaml:"package_name,omitempty" json:"package_name,omitempty"`
 	PackageIdentifier     string             `yaml:"package_identifier,omitempty" json:"package_identifier,omitempty"`
 	Publisher             string             `yaml:"publisher" json:"publisher"`
 	PublisherURL          string             `yaml:"publisher_url,omitempty" json:"publisher_url,omitempty"`
