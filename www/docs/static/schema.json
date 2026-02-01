@@ -4997,6 +4997,9 @@
 					"name": {
 						"type": "string"
 					},
+					"package_name": {
+						"type": "string"
+					},
 					"package_identifier": {
 						"type": "string"
 					},
