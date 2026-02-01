@@ -14,7 +14,6 @@ require (
 	github.com/bluesky-social/indigo v0.0.0-20240813042137-4006c0eca043
 	github.com/caarlos0/env/v11 v11.3.1
 	github.com/caarlos0/go-reddit/v3 v3.0.1
-	github.com/caarlos0/go-shellwords v1.0.12
 	github.com/caarlos0/go-version v0.2.2
 	github.com/caarlos0/log v0.5.4
 	github.com/charmbracelet/fang v0.4.4
@@ -29,6 +28,7 @@ require (
 	github.com/google/ko v0.18.1
 	github.com/google/uuid v1.6.0
 	github.com/goreleaser/fileglob v1.4.0
+	github.com/goreleaser/go-shellwords v1.0.13
 	github.com/goreleaser/nfpm/v2 v2.44.2
 	github.com/goreleaser/quill v0.0.0-20251224035235-ab943733386f
 	github.com/hashicorp/go-multierror v1.1.1
