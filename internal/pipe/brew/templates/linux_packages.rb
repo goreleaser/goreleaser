@@ -15,7 +15,7 @@
       ]
     {{- end }}
     sha256 "{{ $element.SHA256 }}"
-    def install
+    define_method(:install) do
     {{- range $index, $element := .Install }}
       {{ . -}}
     {{- end }}
