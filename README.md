@@ -139,6 +139,7 @@ A big **thank you** to all current, past, and future sponsors!
 - [Calculators](https://calculator.now/)
 - [YouTube Transcript](https://transcript.you/)
 - [Video Downloader](https://orbitdownloader.com/)
+- [OhMyFacts](https://ohmyfacts.com/)
 - [Jared Allard](https://github.com/jaredallard)
 - [joe miller](https://github.com/joemiller)
 - [Ryan Nixon](https://github.com/taiidani)
