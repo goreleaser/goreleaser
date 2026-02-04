@@ -217,6 +217,7 @@ func applyTemplate(ctx *context.Context, tpl string, data templateData) (string,
 				"fixLines":   fixLines,
 				"pkgArray":   toPkgBuildArray,
 				"quoteField": quoteField,
+				"replaceAll": strings.ReplaceAll,
 			}).
 			Parse(tpl),
 	)
@@ -299,7 +300,7 @@ func dataFor(ctx *context.Context, cfg config.AURSource, cl client.ReleaseURLTem
 		}
 
 		result.Sources = sources{
-			DownloadURL: strings.ReplaceAll(url, result.Version, "${pkgver}"),
+			DownloadURL: url,
 			SHA256:      sum,
 			Format:      art.Format(),
 		}
