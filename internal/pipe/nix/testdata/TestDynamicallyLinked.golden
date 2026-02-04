@@ -34,7 +34,7 @@ stdenvNoCC.mkDerivation {
 
   sourceRoot = ".";
 
-  nativeBuildInputs = [ autoPatchelfHook installShellFiles ];
+  nativeBuildInputs = [ installShellFiles ] ++ lib.optionals stdenvNoCC.isLinux [ autoPatchelfHook ];
 
   buildInputs = lib.optionals stdenvNoCC.isLinux [
     stdenv.cc.cc.lib
