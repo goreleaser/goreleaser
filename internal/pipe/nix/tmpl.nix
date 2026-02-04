@@ -7,6 +7,7 @@
   stdenvNoCC,
 {{- if .DynamicallyLinked }}
   stdenv,
+  autoPatchelfHook,
 {{- end }}
 {{- range $index, $element := .Dependencies }}
   {{ . }},
@@ -98,7 +99,7 @@ stdenvNoCC.mkDerivation {
 
   sourceRoot = {{ with .SourceRoot }}"{{ . }}"{{ else }}sourceRootMap.${system}{{ end }};
 
-  nativeBuildInputs = [ {{ range $input, $plat := .Inputs }}{{ . }} {{ end }}];
+  nativeBuildInputs = [ {{ range $input, $plat := .Inputs }}{{ . }} {{ end }}]{{ if .DynamicallyLinked }} ++ lib.optionals stdenvNoCC.isLinux [ autoPatchelfHook ]{{ end }};
 {{- if .DynamicallyLinked }}
 
   buildInputs = lib.optionals stdenvNoCC.isLinux [
