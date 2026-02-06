@@ -105,6 +105,34 @@ func (Pipe) Run(ctx *context.Context) error {
 }
 
 func doRun(ctx *context.Context, fpm config.NFPM) error {
+	artifacts, err := findArtifacts(ctx, fpm)
+	if err != nil {
+		return err
+	}
+	g := semerrgroup.New(ctx.Parallelism)
+	for _, format := range fpm.Formats {
+		for _, artifacts := range artifacts {
+			g.Go(func() error {
+				return create(ctx, fpm, format, artifacts)
+			})
+		}
+	}
+	return g.Wait()
+}
+
+func findArtifacts(ctx *context.Context, fpm config.NFPM) (map[string][]*artifact.Artifact, error) {
+	if fpm.Meta {
+		return map[string][]*artifact.Artifact{
+			"linuxall": {{
+				Goos:   "linux",
+				Goarch: "all",
+			}},
+			"androidall": {{
+				Goos:   "android",
+				Goarch: "all",
+			}},
+		}, nil
+	}
 	filters := []artifact.Filter{
 		artifact.ByTypes(
 			artifact.Binary,
@@ -119,17 +147,9 @@ func doRun(ctx *context.Context, fpm config.NFPM) error {
 		Filter(artifact.And(filters...)).
 		GroupByPlatform()
 	if len(linuxBinaries) == 0 {
-		return fmt.Errorf("no linux/unix binaries found for builds %v", fpm.IDs)
+		return nil, fmt.Errorf("no linux/unix binaries found for builds %v", fpm.IDs)
 	}
-	g := semerrgroup.New(ctx.Parallelism)
-	for _, format := range fpm.Formats {
-		for _, artifacts := range linuxBinaries {
-			g.Go(func() error {
-				return create(ctx, fpm, format, artifacts)
-			})
-		}
-	}
-	return g.Wait()
+	return linuxBinaries, nil
 }
 
 func mergeOverrides(fpm config.NFPM, format string) (*config.NFPMOverridables, error) {
@@ -153,26 +173,25 @@ func isSupportedTermuxArch(goos, goarch string) bool {
 	if goos != "android" {
 		return false
 	}
-	for _, arch := range []string{"amd64", "arm64", "arm", "386"} {
-		if strings.HasPrefix(goarch, arch) {
-			return true
-		}
+	switch goarch {
+	case "all", "amd64", "arm64", "arm", "386":
+		return true
+	default:
+		return false
 	}
-	return false
 }
 
 // arch officially only supports x86_64.
 // however, there are unofficial ports for 686, arm64, and armv7
 func isSupportedArchlinuxArch(goarch, goarm string) bool {
-	if goarch == "arm" && goarm == "7" {
+	switch goarch {
+	case "all", "amd64", "arm64", "386":
 		return true
+	case "arm":
+		return goarm == "7"
+	default:
+		return false
 	}
-	for _, arch := range []string{"amd64", "arm64", "386"} {
-		if strings.HasPrefix(goarch, arch) {
-			return true
-		}
-	}
-	return false
 }
 
 var termuxArchReplacer = strings.NewReplacer(
