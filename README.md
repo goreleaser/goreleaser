@@ -144,7 +144,6 @@ A big **thank you** to all current, past, and future sponsors!
 - [Jared Allard](https://github.com/jaredallard)
 - [joe miller](https://github.com/joemiller)
 - [Ryan Nixon](https://github.com/taiidani)
-- [Lawrence Gripper](https://github.com/lawrencegripper)
 - [Francis Lavoie](https://github.com/francislavoie)
 - [Nicolas Gotchac](https://github.com/ngotchac)
 - [Ben](https://github.com/iwpnd)
