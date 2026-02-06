@@ -4,7 +4,7 @@ go 1.25.6
 
 require (
 	charm.land/lipgloss/v2 v2.0.0-beta.3.0.20251120230642-dcccabe2cd63
-	code.gitea.io/sdk/gitea v0.22.1
+	code.gitea.io/sdk/gitea v0.23.2
 	dario.cat/mergo v1.0.2
 	github.com/Masterminds/semver/v3 v3.4.0
 	github.com/agnivade/levenshtein v1.2.1
@@ -29,7 +29,7 @@ require (
 	github.com/google/uuid v1.6.0
 	github.com/goreleaser/fileglob v1.4.0
 	github.com/goreleaser/go-shellwords v1.0.13
-	github.com/goreleaser/nfpm/v2 v2.44.2
+	github.com/goreleaser/nfpm/v2 v2.45.0
 	github.com/goreleaser/quill v0.0.0-20251224035235-ab943733386f
 	github.com/hashicorp/go-multierror v1.1.1
 	github.com/invopop/jsonschema v0.13.0
@@ -45,7 +45,7 @@ require (
 	github.com/spf13/cobra v1.10.2
 	github.com/stretchr/testify v1.11.1
 	github.com/ulikunitz/xz v0.5.15
-	gitlab.com/gitlab-org/api/client-go v1.24.0
+	gitlab.com/gitlab-org/api/client-go v1.28.0
 	go.yaml.in/yaml/v3 v3.0.4
 	gocloud.dev v0.44.0
 	golang.org/x/crypto v0.47.0
