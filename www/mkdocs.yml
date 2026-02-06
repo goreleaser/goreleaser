@@ -147,6 +147,7 @@ nav:
           - Self-Extracting Archives: customization/makeself.md
           - customization/app_bundles.md
           - customization/dmg.md
+          - customization/pkg.md
           - customization/msi.md
           - customization/nsis.md
           - customization/checksum.md

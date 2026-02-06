@@ -1,6 +1,6 @@
 # Discourse
 
-<!-- md:version v2.13 -->.
+<!-- md:version v2.13 -->
 
 This announcer enables posting new release messages to a
 [Discourse](https://discourse.org/) forum.

@@ -3120,6 +3120,52 @@
 					"profile_name"
 				]
 			},
+			"MacOSPkg": {
+				"properties": {
+					"id": {
+						"type": "string"
+					},
+					"name": {
+						"type": "string"
+					},
+					"ids": {
+						"items": {
+							"type": "string"
+						},
+						"type": "array"
+					},
+					"replace": {
+						"type": "boolean"
+					},
+					"mod_timestamp": {
+						"type": "string"
+					},
+					"if": {
+						"type": "string"
+					},
+					"use": {
+						"type": "string",
+						"enum": [
+							"binary",
+							"appbundle"
+						]
+					},
+					"identifier": {
+						"type": "string"
+					},
+					"install_location": {
+						"type": "string"
+					},
+					"scripts": {
+						"type": "string"
+					}
+				},
+				"additionalProperties": false,
+				"type": "object",
+				"required": [
+					"name"
+				]
+			},
 			"MacOSSign": {
 				"properties": {
 					"certificate": {
@@ -3217,6 +3263,14 @@
 					},
 					"notarize": {
 						"$ref": "#/$defs/MacOSNotarizeNative"
+					},
+					"use": {
+						"type": "string",
+						"enum": [
+							"dmg",
+							"pkg"
+						],
+						"default": "dmg"
 					}
 				},
 				"additionalProperties": false,
@@ -4490,6 +4544,12 @@
 					"dmg": {
 						"items": {
 							"$ref": "#/$defs/DMG"
+						},
+						"type": "array"
+					},
+					"pkgs": {
+						"items": {
+							"$ref": "#/$defs/MacOSPkg"
 						},
 						"type": "array"
 					},

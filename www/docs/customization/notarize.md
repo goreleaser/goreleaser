@@ -18,7 +18,8 @@ To use these features, you'll need:
 
 - An [Apple Developer Account](https://developer.apple.com/) ($99/year).
 - A [certificate](https://developer.apple.com/account/resources/certificates/add)
-  from said account. It should be of "Developer ID Application" type.
+  from said account. It should be of "Developer ID Application" type for DMGs,
+  or "Developer ID Installer" for Pkgs.
   This will give you a `.cer` file. You'll need to import it into
   `KeyChain.app`, and then export it as a `.p12` file. It'll have a
   password.
@@ -181,11 +182,11 @@ jobs:
 <!-- md:version v2.8 -->
 <!-- md:pro -->
 
-This method can sign and notarize [App Bundles][appbundles], but it depends on
-`xcrun` and `codesign`.
+This method can sign and notarize [App Bundles][appbundles] and
+[macOS Pkgs][macospkg], but it depends on `xcrun`, `codesign`, and
+`productsign`.
 
-For now, it'll only works if you package your app as a [DMG][DMG], but we might
-add more support in future releases.
+It works with both [DMGs][DMG] and [macOS Pkgs][macospkg].
 
 See the configuration options below.
 
@@ -205,7 +206,17 @@ notarize:
         - build1
         - build2
 
-      # Before notarizing, we need to sign the app bundle.
+      # Which artifact type this config applies to.
+      # Valid options are "dmg" (default) and "pkg".
+      #
+      # When "dmg": signs AppBundle with codesign, notarizes DMG.
+      # When "pkg": signs MacOSPkg with productsign, notarizes MacOSPkg.
+      #
+      # Default: "dmg".
+      # <!-- md:inline_version v2.14-unreleased -->.
+      use: dmg
+
+      # Before notarizing, we need to sign the artifact.
       # This block defines the configuration for doing so.
       sign:
         # The path to the Keychain, if needed.
@@ -214,20 +225,22 @@ notarize:
         keychain: "{{ .Env.KEYCHAIN_PATH }}"
 
         # The identity in Keychain.
+        # For DMGs, use "Developer ID Application: Name".
+        # For Pkgs, use "Developer ID Installer: Name".
         #
         # Templates: allowed.
         identity: "Developer ID Application: Carlos Becker"
 
-        # Options to pass to 'codesign'.
+        # Options to pass to 'codesign' (only used for DMGs).
         # You will generally want to add 'runtime' here.
         options: [runtime]
 
-        # Allows to set the signature entitlements XML file.
+        # Allows to set the signature entitlements XML file (only used for DMGs).
         #
         # Templates: allowed.
         entitlements: ./path/to/entitlements.xml
 
-      # Then, we notarize the DMGs.
+      # Then, we notarize the artifacts.
       notarize:
         # Profile name.
         #
@@ -385,4 +398,5 @@ the relevant steps are executed:
 [appbundles]: ./app_bundles.md
 [quill]: https://github.com/anchore/quill
 [DMG]: ./dmg.md
+[macospkg]: ./pkg.md
 [gh-guide]: https://docs.github.com/en/actions/use-cases-and-examples/deploying/installing-an-apple-certificate-on-macos-runners-for-xcode-development

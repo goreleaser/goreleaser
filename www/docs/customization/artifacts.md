@@ -63,6 +63,7 @@ The `type` field indicates what kind of artifact it is:
 | `Makeself Package`       | A Makeself self-extracting archive         |
 | `App Bundle`             | A macOS .app bundle                        |
 | `DMG`                    | A macOS disk image                         |
+| `MacOS Package`          | A macOS installer package                  |
 | `MSI`                    | A Windows MSI installer                    |
 | `NPM Package`            | An NPM package                             |
 
