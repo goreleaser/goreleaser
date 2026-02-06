@@ -34,7 +34,7 @@ git:
     - "{{.Env.IGNORE_TAG_PREFIX}}/bar"
 ```
 
-## Semver sorting
+## SemVer sorting
 
 <!-- md:featpro -->
 

@@ -3,8 +3,9 @@
 GoReleaser Pro is a paid, closed-source GoReleaser distribution with some
 additional features:
 
+- [x] Smart [SemVer tag sorting](customization/git.md#semver-sorting);
 - [x] Publish to [NPM registries](customization/npm.md);
-- [x] Native macOS App Bundles signing and DMG
+- [x] Native macOS App Bundles, DMG, and `.pkg` signing and
       [notarization](customization/notarize.md#native);
 - [x] Use [AI](customization/changelog.md#enhance-with-ai) to improve/format
       your release notes;
@@ -58,7 +59,8 @@ additional features:
 
 <script src="https://gumroad.com/js/gumroad.js"></script>
 
-<a class="gumroad-button" href="https://gumroad.com/l/CadfZ" target="_blank">Get GoReleaser Pro</a>
+<a class="gumroad-button" href="https://gumroad.com/l/CadfZ" target="_blank">Get
+GoReleaser Pro</a>
 
 ## Using GoReleaser Pro
 
