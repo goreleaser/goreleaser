@@ -1674,12 +1674,14 @@ func TestMeta(t *testing.T) {
 	}
 	require.NoError(t, Pipe{}.Run(ctx))
 	packages := ctx.Artifacts.Filter(artifact.ByType(artifact.LinuxPackage)).List()
-	require.Len(t, packages, 4)
+	require.Len(t, packages, 2)
 	for _, pkg := range packages {
 		format := pkg.Format()
 		require.NotEmpty(t, format)
-		require.Equal(t, pkg.Name, "foo_1.0.0_linux_"+pkg.Goarch+"-10-20."+format)
+		require.Equal(t, pkg.Name, "foo_1.0.0_linux_all-10-20."+format)
 		require.Equal(t, "someid", pkg.ID())
+		require.Equal(t, "all", pkg.Goarch)
+		require.Equal(t, "linux", pkg.Goos)
 		require.ElementsMatch(t, []string{
 			"/var/log/foobar",
 			"/usr/share/testfile.txt",
@@ -1689,6 +1691,57 @@ func TestMeta(t *testing.T) {
 	}
 
 	require.Len(t, ctx.Config.NFPMs[0].Contents, 4, "should not modify the config file list")
+}
+
+func TestMetaNoBinaries(t *testing.T) {
+	folder := t.TempDir()
+	dist := filepath.Join(folder, "dist")
+	require.NoError(t, os.Mkdir(dist, 0o755))
+	ctx := testctx.WrapWithCfg(t.Context(), config.Project{
+		ProjectName: "testpkg",
+		Dist:        dist,
+		NFPMs: []config.NFPM{
+			{
+				ID:          "someid",
+				Bindir:      "/usr/bin",
+				Formats:     []string{"deb", "rpm"},
+				Description: "Some description",
+				License:     "MIT",
+				Maintainer:  "me@me",
+				Vendor:      "asdf",
+				Homepage:    "https://goreleaser.github.io",
+				Meta:        true,
+				NFPMOverridables: config.NFPMOverridables{
+					PackageName: "foo",
+					Contents: []config.NFPMContent{
+						{
+							Source:      "testdata/testfile.txt",
+							Destination: "/usr/share/testfile.txt",
+						},
+						{
+							Destination: "/var/log/foobar",
+							Type:        "dir",
+						},
+					},
+				},
+			},
+		},
+	}, testctx.WithVersion("1.0.0"), testctx.WithCurrentTag("v1.0.0"))
+
+	require.NoError(t, Pipe{}.Run(ctx))
+	packages := ctx.Artifacts.Filter(artifact.ByType(artifact.LinuxPackage)).List()
+	require.Len(t, packages, 2)
+	for _, pkg := range packages {
+		format := pkg.Format()
+		require.NotEmpty(t, format)
+		require.Equal(t, "someid", pkg.ID())
+		require.Equal(t, "all", pkg.Goarch)
+		require.Equal(t, "linux", pkg.Goos)
+		require.ElementsMatch(t, []string{
+			"/var/log/foobar",
+			"/usr/share/testfile.txt",
+		}, destinations(artifact.MustExtra[files.Contents](*pkg, extraFiles)))
+	}
 }
 
 func TestSkipSign(t *testing.T) {
@@ -1865,29 +1918,10 @@ func TestTemplateExt(t *testing.T) {
 				Meta:       true,
 				Maintainer: "foo@bar",
 				Formats:    []string{"deb", "rpm", "termux.deb", "apk", "archlinux"},
-				Builds:     []string{"default"},
 			},
 		},
 	})
 
-	ctx.Artifacts.Add(&artifact.Artifact{
-		Name:   "mybin",
-		Goos:   "android",
-		Goarch: "amd64",
-		Type:   artifact.Binary,
-		Extra: map[string]any{
-			artifact.ExtraID: "default",
-		},
-	})
-	ctx.Artifacts.Add(&artifact.Artifact{
-		Name:   "mybin",
-		Goos:   "linux",
-		Goarch: "amd64",
-		Type:   artifact.Binary,
-		Extra: map[string]any{
-			artifact.ExtraID: "default",
-		},
-	})
 	require.NoError(t, Pipe{}.Run(ctx))
 
 	packages := ctx.Artifacts.Filter(artifact.ByType(artifact.LinuxPackage)).List()
