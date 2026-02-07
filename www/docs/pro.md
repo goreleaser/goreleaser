@@ -3,24 +3,24 @@
 GoReleaser Pro is a paid, closed-source GoReleaser distribution with some
 additional features:
 
-- [x] Create macOS [`.pkg` installers](customization/pkg.md);
-- [x] Create Windows installers with [NSIS](customization/nsis.md);
+- [x] Create [macOS installers (`.pkg`)](customization/pkg.md);
+- [x] Create [Windows installers (`.exe`) with NSIS](customization/nsis.md);
 - [x] Smart [SemVer tag sorting](customization/git.md#semver-sorting);
 - [x] Publish to [NPM registries](customization/npm.md);
-- [x] Native macOS App Bundles, DMG, and `.pkg` signing and
-      [notarization](customization/notarize.md#native);
+- [x] [Native sign and notarize](customization/notarize.md#native)
+      macOS App Bundles, Disk Images, and Installers;
 - [x] Use [AI](customization/changelog.md#enhance-with-ai) to improve/format
       your release notes;
 - [x] Further filter artifacts with `if` statements;
-- [x] Create macOS [App Bundles][appbundles];
+- [x] Create [macOS App Bundles (`.app`)](customization/app_bundles.md);
 - [x] Easily create `alpine`, `apt`, and `yum` repositories with the
       [CloudSmith integration](customization/cloudsmith.md);
 - [x] Have [global defaults for homepage, description, etc](customization/metadata.md);
 - [x] Run [hooks before publishing](customization/beforepublish.md) artifacts;
 - [x] Cross publish (e.g. releases to GitLab, pushes Homebrew Tap to GitHub);
 - [x] Keep [DockerHub image descriptions up to date](customization/dockerhub.md);
-- [x] Create [macOS disk images (DMGs)][DMG];
-- [x] Create [Windows installers](customization/msi.md);
+- [x] Create [macOS disk images (`.dmg`)](customization/dmg.md);
+- [x] Create [Windows installers (`.msi`) with Wix](customization/msi.md);
 - [x] Use `goreleaser release --single-target` to build the whole pipeline for a
       single architecture locally;
 - [x] Check boxes in pull request templates;
@@ -72,30 +72,6 @@ Once you have it, you can use the serial key with either `--key` or by setting
 
 See [this page](./post-checkout.md) for more information.
 
-## Road map
-
-We don't have a properly organized public road map, but we are always open to
-suggestions!
-
-Once you subscribe, feel free to
-[email me](mailto:carlos@becker.software?subject=GoReleaser%20Feature%20Suggestion)
-with your suggestions and ideas.
-
-## Pricing & Sponsors
-
-- The current pricing is low and is likely to increase as we keep adding more
-  pro-only features;
-- If you sponsor either the project or any of its developers, you [can ask for a
-  discount](mailto:carlos@becker.software?subject=GoReleaser%20Coupon%20Request)!
-
-## Enterprise support
-
-I don't have a plan for that yet, but please [email
-me](mailto:carlos@becker.software?subject=GoReleaser%20Enterprise%20Support) if
-you are interested.
-
-## Using GoReleaser Pro
-
 Once you [buy it](https://gum.co/goreleaser), you'll get a license key. You can
 then pass it to the [`release` command](cmd/goreleaser_release.md) either via the
 `--key` flag or the `GORELEASER_KEY` environment variable.
@@ -104,6 +80,8 @@ If you use the GitHub action, you will want to set the `distribution` option to
 `goreleaser-pro`. Check the [documentation](ci/actions.md) for more details.
 
 ### Offline licenses
+
+<!-- md:version v2.14-unreleased -->
 
 If you run GoReleaser in an environment without internet access (air-gaped),
 you can export an offline license and use it instead of the regular key.
@@ -141,6 +119,29 @@ GoReleaser will automatically detect the offline license and verify it locally.
 
     Offline licenses are available on the **Business** and **Enterprise** plans.
 
+## Road map
+
+We don't have a properly organized public road map, but we are always open to
+suggestions!
+
+Once you subscribe, feel free to
+[email me](mailto:carlos@becker.software?subject=GoReleaser%20Feature%20Suggestion)
+with your suggestions and ideas.
+
+## Pricing & Sponsors
+
+- The current pricing is low and is likely to increase as we keep adding more
+  pro-only features;
+- If you sponsor either the project or any of its developers, you [can ask for a
+  discount](mailto:carlos@becker.software?subject=GoReleaser%20Coupon%20Request)!
+
+## Enterprise support
+
+We can also provide enterprise support contracts, with proper SLAs and help
+designing and updating your release pipelines.
+If this sound interesting to you, feel free to
+[contact us](mailto:carlos@becker.software?subject=GoReleaser%20Enterprise%20Support).
+
 ## EULA
 
 Please, make sure you read and agree with our [EULA](eula.md).
@@ -148,6 +149,3 @@ Please, make sure you read and agree with our [EULA](eula.md).
 ---
 
 **✨✨ Thanks for your support! ✨✨**
-
-[appbundles]: customization/app_bundles.md
-[DMG]: customization/dmg.md
