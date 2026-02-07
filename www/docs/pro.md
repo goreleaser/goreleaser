@@ -3,6 +3,7 @@
 GoReleaser Pro is a paid, closed-source GoReleaser distribution with some
 additional features:
 
+- [x] Create macOS [`.pkg` installers](customization/pkg.md);
 - [x] Smart [SemVer tag sorting](customization/git.md#semver-sorting);
 - [x] Publish to [NPM registries](customization/npm.md);
 - [x] Native macOS App Bundles, DMG, and `.pkg` signing and
