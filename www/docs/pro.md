@@ -103,6 +103,44 @@ then pass it to the [`release` command](cmd/goreleaser_release.md) either via th
 If you use the GitHub action, you will want to set the `distribution` option to
 `goreleaser-pro`. Check the [documentation](ci/actions.md) for more details.
 
+### Offline licenses
+
+If you run GoReleaser in an environment without internet access (air-gaped),
+you can export an offline license and use it instead of the regular key.
+
+Offline licenses are verified locally — no network calls are made
+during verification.
+
+**Exporting an offline license:**
+
+```bash
+goreleaser license-export --key "your-license-key" -o goreleaser.key
+```
+
+This contacts the GoReleaser signing server, verifies your subscription, and
+writes a signed license blob to the given file.
+You can also export to `STDOUT` with `-o -`.
+
+**Using an offline license:**
+
+Set `GORELEASER_KEY` to the contents of the exported file:
+
+```bash
+export GORELEASER_KEY="$(cat goreleaser.key)"
+goreleaser release
+```
+
+GoReleaser will automatically detect the offline license and verify it locally.
+
+!!! warning
+
+    Offline licenses expire based on your billing cycle (at most 90 days).
+    You will need to re-export before expiry.
+
+!!! note
+
+    Offline licenses are available on the **Business** and **Enterprise** plans.
+
 ## EULA
 
 Please, make sure you read and agree with our [EULA](eula.md).

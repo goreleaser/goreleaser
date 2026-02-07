@@ -52,8 +52,9 @@ goreleaser release
 * [goreleaser healthcheck](goreleaser_healthcheck.md)	 - Checks if needed tools are installed
 * [goreleaser init](goreleaser_init.md)	 - Generates a .goreleaser.yaml file
 * [goreleaser jsonschema](goreleaser_jsonschema.md)	 - Outputs goreleaser's JSON schema
+* [goreleaser license-export](goreleaser_license-export.md)	 - Export an offline license file from a valid license key
+* [goreleaser license-verify](goreleaser_license-verify.md)	 - Verify if the given license is valid
 * [goreleaser publish](goreleaser_publish.md)	 - Publishes a previously prepared release
 * [goreleaser release](goreleaser_release.md)	 - Releases the current project
 * [goreleaser subscribe](goreleaser_subscribe.md)	 - Subscribe to GoReleaser Pro, or manage your subscription
-* [goreleaser verify-license](goreleaser_verify-license.md)	 - Verify if the given license is valid
 
