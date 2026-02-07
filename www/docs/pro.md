@@ -4,6 +4,7 @@ GoReleaser Pro is a paid, closed-source GoReleaser distribution with some
 additional features:
 
 - [x] Create macOS [`.pkg` installers](customization/pkg.md);
+- [x] Create Windows installers with [NSIS](customization/nsis.md);
 - [x] Smart [SemVer tag sorting](customization/git.md#semver-sorting);
 - [x] Publish to [NPM registries](customization/npm.md);
 - [x] Native macOS App Bundles, DMG, and `.pkg` signing and
@@ -73,14 +74,10 @@ See [this page](./post-checkout.md) for more information.
 
 ## Road map
 
-We don't have a properly organized public road map (_yet_), but these are some
-of the things we plan to work on, in one form or another:
+We don't have a properly organized public road map, but we are always open to
+suggestions!
 
-- [ ] `--dry-run` to test the release locally, possibly skipping the actual
-      build of the binaries to focus on faster iteration of the other parts;
-
-That said, your input is always welcome!
-Once you buy it, feel free to
+Once you subscribe, feel free to
 [email me](mailto:carlos@becker.software?subject=GoReleaser%20Feature%20Suggestion)
 with your suggestions and ideas.
 
