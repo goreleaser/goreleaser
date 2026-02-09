@@ -12,7 +12,7 @@ Then, you need to pass your account name to GoReleaser and have your push token
 as an environment variable named `FURY_TOKEN`:
 
 ```yaml title=".goreleaser.yaml"
-furies:
+gemfury:
   - account: myaccount
 ```
 
@@ -23,7 +23,7 @@ This will automatically upload all your `deb` and `rpm` files.
 You can also have plenty of customization options:
 
 ```yaml title=".goreleaser.yaml"
-furies:
+gemfury:
   - # Fury account.
     # Config is skipped if empty
     account: "{{ .Env.FURY_ACCOUNT }}"

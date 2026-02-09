@@ -4770,7 +4770,7 @@
 					"nightly": {
 						"$ref": "#/$defs/Nightly"
 					},
-					"furies": {
+					"gemfury": {
 						"items": {
 							"$ref": "#/$defs/Fury"
 						},
@@ -4797,6 +4797,12 @@
 					"template_files": {
 						"items": {
 							"$ref": "#/$defs/TemplateFile"
+						},
+						"type": "array"
+					},
+					"furies": {
+						"items": {
+							"$ref": "#/$defs/Fury"
 						},
 						"type": "array"
 					},

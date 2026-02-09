@@ -43,6 +43,26 @@ PS: Don't forget to add it to cmd/mcp.go as well!
 
 -->
 
+### furies
+
+> since v2.14-unreleased
+
+`furies` was renamed to `gemfury` for clarity.
+
+=== "Before"
+
+    ```yaml
+    furies:
+      - account: myaccount
+    ```
+
+=== "After"
+
+    ```yaml
+    gemfury:
+      - account: myaccount
+    ```
+
 ### mcp.github
 
 > since v2.13.1
