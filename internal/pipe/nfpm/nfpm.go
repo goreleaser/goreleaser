@@ -445,6 +445,7 @@ func create(ctx *context.Context, fpm config.NFPM, format string, artifacts []*a
 				PostRemove:  overridden.Scripts.PostRemove,
 			},
 			Deb: nfpm.Deb{
+				ArchVariant: artifacts[0].Goamd64,
 				Compression: overridden.Deb.Compression,
 				Fields:      overridden.Deb.Fields,
 				Predepends:  overridden.Deb.Predepends,
