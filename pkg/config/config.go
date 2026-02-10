@@ -692,6 +692,9 @@ type NFPM struct {
 
 	ParsedMTime time.Time `yaml:"-" json:"-"`
 
+	// v2.14+
+	GoAmd64 []string `yaml:"goamd64,omitempty" json:"goamd64,omitempty"`
+
 	// Deprecated: use [IDs] instead.
 	Builds []string `yaml:"builds,omitempty" json:"builds,omitempty" jsonschema:"deprecated=true"`
 }

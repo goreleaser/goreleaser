@@ -171,6 +171,19 @@ nfpms:
     # Experimental.
     changelog: ./foo.yml
 
+    # The GOAMD64 variants to package.
+    #
+    # Note that albeit GoReleaser will build the package, it might not be
+    # supported by the underlying distribution.
+    # If you want to be safe, build only for `v1`.
+    # Generally, most people don't build for more than one GOAMD64, so probably
+    # you don't need to worry about this.
+    #
+    # <!-- md:inline_version v2.14-unreleased -->.
+    goamd64:
+      - v1
+      - v3
+
     # Contents to add to the package.
     # GoReleaser will automatically add the binaries.
     contents:
