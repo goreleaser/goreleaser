@@ -141,6 +141,10 @@ func findArtifacts(ctx *context.Context, fpm config.NFPM) (map[string][]*artifac
 			artifact.CShared,
 		),
 		artifact.ByGooses("linux", "ios", "android", "aix"),
+		artifact.Or(
+			artifact.Not(artifact.ByGoarch("amd64")),
+			artifact.ByGoamd64s(fpm.GoAmd64...),
+		),
 		artifact.ByIDs(fpm.IDs...),
 	}
 	linuxBinaries := ctx.Artifacts.

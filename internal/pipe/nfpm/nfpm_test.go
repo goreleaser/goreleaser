@@ -140,6 +140,7 @@ func TestRunPipe(t *testing.T) {
 				Homepage:    "https://goreleaser.com/{{ .Env.PRO }}",
 				Changelog:   "./testdata/changelog.yaml",
 				MTime:       "{{.CommitDate}}",
+				GoAmd64:     []string{"v1", "v2", "v3", "v4"},
 				Libdirs: config.Libdirs{
 					Header:   libPrefix + "/headers",
 					CArchive: libPrefix + "/c-archives",
@@ -272,7 +273,8 @@ func TestRunPipe(t *testing.T) {
 					})
 				}
 			case "amd64":
-				for _, goamd64 := range []string{"v1", "v2", "v3", "v4"} {
+				// v5 is invalid, filtered out in tests
+				for _, goamd64 := range []string{"v1", "v2", "v3", "v4", "v5"} {
 					ctx.Artifacts.Add(&artifact.Artifact{
 						Name:    "subdir/mybin",
 						Path:    binPath,
