@@ -2897,6 +2897,12 @@
 					"meta": {
 						"type": "boolean"
 					},
+					"goamd64": {
+						"items": {
+							"type": "string"
+						},
+						"type": "array"
+					},
 					"builds": {
 						"items": {
 							"type": "string"
