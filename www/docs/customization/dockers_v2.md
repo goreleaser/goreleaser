@@ -299,3 +299,27 @@ docker run --privileged --rm tonistiigi/binfmt --install all
 ```
 
 For what it's worth, this feature was built and tested with buildx v0.24.0.
+
+## Docker manifests vs Docker images
+
+This will always use `docker buildx`, which, by default, builds Docker
+Manifests.
+
+If you are building single-arch images and want Images instead of Manifests, you
+can disable SBOMs and add the `--attest=false` to your configuration, for
+example:
+
+```yaml title=".goreleaser.yaml"
+dockers_v2:
+  - images:
+      - foo
+    tags:
+      - latest
+
+    # These are the important bits:
+    platforms:
+      - linux/amd64
+    sbom: false
+    flags:
+      - "--provenance=false"
+```
