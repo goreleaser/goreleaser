@@ -3671,6 +3671,12 @@
 					"if": {
 						"type": "string"
 					},
+					"goamd64": {
+						"items": {
+							"type": "string"
+						},
+						"type": "array"
+					},
 					"builds": {
 						"items": {
 							"type": "string"
