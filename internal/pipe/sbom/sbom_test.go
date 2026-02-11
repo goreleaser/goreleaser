@@ -8,6 +8,7 @@ import (
 	"testing"
 
 	"github.com/goreleaser/goreleaser/v2/internal/artifact"
+	"github.com/goreleaser/goreleaser/v2/internal/gerrors"
 	"github.com/goreleaser/goreleaser/v2/internal/skips"
 	"github.com/goreleaser/goreleaser/v2/internal/testctx"
 	"github.com/goreleaser/goreleaser/v2/internal/testlib"
@@ -287,7 +288,7 @@ func TestSBOMCatalogArtifacts(t *testing.T) {
 	}{
 		{
 			desc:           "catalog errors",
-			expectedErrMsg: "failed",
+			expectedErrMsg: "could not catalog artifact",
 			ctx: testctx.WrapWithCfg(t.Context(), config.Project{
 				SBOMs: []config.SBOM{
 					{
@@ -476,7 +477,7 @@ func TestSBOMCatalogArtifacts(t *testing.T) {
 				},
 			}),
 
-			expectedErrMsg: "cataloging artifacts: false failed: ",
+			expectedErrMsg: "could not catalog artifact",
 		},
 		{
 			desc: "catalog wrong command",
@@ -607,7 +608,12 @@ func testSBOMCataloging(
 	// run the pipeline
 	if expectedErrMsg != "" {
 		err := Pipe{}.Run(ctx)
-		require.ErrorContains(tb, err, expectedErrMsg)
+		require.Error(tb, err)
+		if msg := gerrors.MessageOf(err); msg != "" {
+			require.Contains(tb, msg, expectedErrMsg)
+		} else {
+			require.ErrorContains(tb, err, expectedErrMsg)
+		}
 		return
 	}
 	if expectedErrAs != nil {

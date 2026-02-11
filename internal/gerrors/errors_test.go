@@ -30,6 +30,7 @@ func TestDetailsStacking(t *testing.T) {
 		"foo":     "bar",
 		"hi":      10,
 		"stacked": true,
+		"cause":   "message1",
 	}, DetailsOf(err))
 	require.Empty(t, DetailsOf(og))
 	require.Equal(t, 2, ExitOf(err))

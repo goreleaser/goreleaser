@@ -2,10 +2,9 @@
 package before
 
 import (
-	"fmt"
-
 	"github.com/caarlos0/log"
 	"github.com/goreleaser/go-shellwords"
+	"github.com/goreleaser/goreleaser/v2/internal/gerrors"
 	"github.com/goreleaser/goreleaser/v2/internal/shell"
 	"github.com/goreleaser/goreleaser/v2/internal/skips"
 	"github.com/goreleaser/goreleaser/v2/internal/tmpl"
@@ -37,7 +36,7 @@ func (Pipe) Run(ctx *context.Context) error {
 
 		log.WithField("hook", s).Info("running")
 		if err := shell.Run(ctx, "", args, ctx.Env.Strings(), false); err != nil {
-			return fmt.Errorf("hook failed: %w", err)
+			return gerrors.Wrap(err, "hook failed")
 		}
 	}
 	return nil

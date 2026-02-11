@@ -54,7 +54,7 @@ func TestRunCommand(t *testing.T) {
 		)
 		require.EqualError(
 			t, err,
-			`shell: 'sh -c echo something; exit 1': exit status 1: something`,
+			`exit status 1`,
 		)
 	})
 

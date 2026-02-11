@@ -5,6 +5,7 @@ import (
 	"testing"
 
 	"github.com/caarlos0/log"
+	"github.com/goreleaser/goreleaser/v2/internal/gerrors"
 	"github.com/goreleaser/goreleaser/v2/internal/skips"
 	"github.com/goreleaser/goreleaser/v2/internal/testctx"
 	"github.com/goreleaser/goreleaser/v2/internal/testlib"
@@ -68,7 +69,8 @@ func TestRunPipeFail(t *testing.T) {
 			})
 
 		err := Pipe{}.Run(ctx)
-		require.ErrorContains(t, err, "hook failed")
+		require.Error(t, err)
+		require.Contains(t, gerrors.MessageOf(err), "hook failed")
 	}
 }
 

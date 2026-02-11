@@ -46,6 +46,12 @@ func WrapExit(err error, message string, exit int, pairs ...any) error {
 	if dets := DetailsOf(err); len(dets) > 0 {
 		maps.Copy(details, dets)
 	}
+	if msg := MessageOf(err); msg != "" {
+		if cause, ok := details["cause"].(string); ok {
+			msg += ": " + cause
+		}
+		details["cause"] = msg
+	}
 	return errDetailed{
 		err:     err,
 		details: details,

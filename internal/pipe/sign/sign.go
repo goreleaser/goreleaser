@@ -14,11 +14,13 @@ import (
 
 	"github.com/caarlos0/log"
 	"github.com/goreleaser/goreleaser/v2/internal/artifact"
+	"github.com/goreleaser/goreleaser/v2/internal/gerrors"
 	"github.com/goreleaser/goreleaser/v2/internal/gio"
 	"github.com/goreleaser/goreleaser/v2/internal/git"
 	"github.com/goreleaser/goreleaser/v2/internal/ids"
 	"github.com/goreleaser/goreleaser/v2/internal/logext"
 	"github.com/goreleaser/goreleaser/v2/internal/pipe"
+	"github.com/goreleaser/goreleaser/v2/internal/redact"
 	"github.com/goreleaser/goreleaser/v2/internal/semerrgroup"
 	"github.com/goreleaser/goreleaser/v2/internal/skips"
 	"github.com/goreleaser/goreleaser/v2/internal/tmpl"
@@ -249,17 +251,24 @@ func signone(ctx *context.Context, cfg config.Sign, art *artifact.Artifact) ([]*
 	// tells the scanner to ignore this.
 	// #nosec
 	cmd := exec.CommandContext(ctx, cfg.Cmd, args...)
+	cmd.Env = env.Strings()
+
 	var b bytes.Buffer
 	w := gio.Safe(&b)
-	cmd.Stderr = io.MultiWriter(logext.NewConditionalWriter(output), w)
-	cmd.Stdout = io.MultiWriter(logext.NewConditionalWriter(output), w)
+	cmd.Stderr = redact.Writer(io.MultiWriter(logext.NewConditionalWriter(output), w), cmd.Env)
+	cmd.Stdout = redact.Writer(io.MultiWriter(logext.NewConditionalWriter(output), w), cmd.Env)
 	if stdin != nil {
 		cmd.Stdin = stdin
 	}
-	cmd.Env = env.Strings()
 	log.Info("signing")
 	if err := cmd.Run(); err != nil {
-		return nil, fmt.Errorf("sign: %s failed: %w: %s", cfg.Cmd, err, b.String())
+		return nil, gerrors.Wrap(
+			err,
+			"could not sign artifact",
+			"cmd", cfg.Cmd,
+			"artifact", art.Name,
+			"output", b.String(),
+		)
 	}
 
 	var result []*artifact.Artifact
