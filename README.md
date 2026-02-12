@@ -117,7 +117,6 @@ A big **thank you** to all current, past, and future sponsors!
 
 <div align="center">
 
-  <a href="https://github.com/leaanthony" target="_blank" rel="noopener sponsored"><img src="https://avatars.githubusercontent.com/u/1943904?v=4" alt="Lea Anthony" width="64" height="64" style="border-radius: 8px; margin: 8px;"></a>
   <a href="https://github.com/conetcloud" target="_blank" rel="noopener sponsored"><img src="https://avatars.githubusercontent.com/u/35725664?v=4" alt="conet cloud" width="64" height="64" style="border-radius: 8px; margin: 8px;"></a>
   <a href="https://github.com/encoredev" target="_blank" rel="noopener sponsored"><img src="https://avatars.githubusercontent.com/u/50438175?v=4" alt="Encore" width="64" height="64" style="border-radius: 8px; margin: 8px;"></a>
   <a href="https://www.numary.com" target="_blank" rel="noopener sponsored"><img src="https://images.opencollective.com/numary/c4ef831/logo/96.png" alt="Numary" width="64" height="64" style="border-radius: 8px; margin: 8px;"></a>
@@ -145,6 +144,7 @@ A big **thank you** to all current, past, and future sponsors!
 - [Jared Allard](https://github.com/jaredallard)
 - [joe miller](https://github.com/joemiller)
 - [Ryan Nixon](https://github.com/taiidani)
+- [Lea Anthony](https://github.com/leaanthony)
 - [Francis Lavoie](https://github.com/francislavoie)
 - [Nicolas Gotchac](https://github.com/ngotchac)
 - [Ben](https://github.com/iwpnd)
