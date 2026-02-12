@@ -2,6 +2,8 @@ package docker
 
 import (
 	"encoding/json"
+	"errors"
+	"maps"
 	"os/exec"
 	"slices"
 	"testing"
@@ -93,7 +95,9 @@ func TestRun(t *testing.T) {
 	err := Snapshot{}.Run(ctx)
 	require.Error(t, err)
 	if !pipe.IsSkip(err) {
-		t.Errorf("should have been a skip, got message: %s, output: %v", gerrors.MessageOf(err), gerrors.DetailsOf(err))
+		de, ok := errors.AsType[gerrors.ErrDetailed](err)
+		require.True(t, ok)
+		t.Errorf("should have been a skip, got message: %s, output: %v", de.Messages(), maps.Collect(de.Details()))
 	}
 
 	t.Run("main", func(t *testing.T) {
@@ -243,7 +247,11 @@ func TestPublish(t *testing.T) {
 
 	require.NoError(t, Base{}.Default(ctx))
 	err := Publish{}.Publish(ctx)
-	require.NoError(t, err, "message: %s, output: %v", gerrors.MessageOf(err), gerrors.DetailsOf(err))
+	if err != nil {
+		de, ok := errors.AsType[gerrors.ErrDetailed](err)
+		require.True(t, ok)
+		t.Errorf("should have been a skip, got message: %s, output: %v", de.Messages(), maps.Collect(de.Details()))
+	}
 
 	t.Run("main", func(t *testing.T) {
 		images := ctx.Artifacts.
@@ -348,7 +356,11 @@ func TestSnapshotNoDaemon(t *testing.T) {
 
 	require.NoError(t, Base{}.Default(ctx))
 	err := Snapshot{}.Run(ctx)
-	require.NoError(t, err, "message: %s, output: %v", gerrors.MessageOf(err), gerrors.DetailsOf(err))
+	if err != nil {
+		de, ok := errors.AsType[gerrors.ErrDetailed](err)
+		require.True(t, ok)
+		t.Errorf("should have been a skip, got message: %s, output: %v", de.Messages(), maps.Collect(de.Details()))
+	}
 
 	images := ctx.Artifacts.Filter(
 		artifact.And(

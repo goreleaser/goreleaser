@@ -2,6 +2,7 @@ package gerrors
 
 import (
 	"errors"
+	"maps"
 	"testing"
 
 	"github.com/stretchr/testify/require"
@@ -9,44 +10,73 @@ import (
 
 func TestDetails(t *testing.T) {
 	og := errors.New("fake")
-	err := Wrap(og, "message", "foo", "bar", "hi", 10)
+	err := Wrap(
+		og,
+		WithMessage("message"),
+		WithDetails(
+			"foo", "bar",
+			"hi", 10,
+		),
+	)
+
+	de, ok := errors.AsType[ErrDetailed](err)
+	require.True(t, ok)
+
 	require.Equal(t, map[string]any{
 		"foo": "bar",
 		"hi":  10,
-	}, DetailsOf(err))
-	require.Equal(t, 1, ExitOf(err))
-	require.Equal(t, 1, ExitOf(og))
-	require.Equal(t, "message", MessageOf(err))
-	require.Empty(t, DetailsOf(og))
+	}, maps.Collect(de.Details()))
+	require.Equal(t, 1, de.Exit())
+	require.Equal(t, []string{"message"}, de.Messages())
 	require.ErrorIs(t, err, og)
 	require.Equal(t, "fake", err.Error())
 }
 
 func TestDetailsStacking(t *testing.T) {
 	og := errors.New("fake")
-	err := Wrap(og, "message1", "foo", "bar", "hi", 10)
-	err = WrapExit(err, "message2", 2, "stacked", true)
+	err := Wrap(
+		og,
+		WithMessage("message1"),
+		WithDetails(
+			"foo", "bar",
+			"hi", 10,
+		),
+	)
+	err = Wrap(
+		err,
+		WithMessage("message2"),
+		WithExit(2),
+		WithDetails("stacked", true),
+	)
+
+	de, ok := errors.AsType[ErrDetailed](err)
+	require.True(t, ok)
+
 	require.Equal(t, map[string]any{
 		"foo":     "bar",
 		"hi":      10,
 		"stacked": true,
-	}, DetailsOf(err))
-	require.Empty(t, DetailsOf(og))
-	require.Equal(t, 2, ExitOf(err))
-	require.Equal(t, 1, ExitOf(og))
-	require.Equal(t, "message2", MessageOf(err))
-	require.ErrorIs(t, err, og)
+	}, maps.Collect(de.Details()))
+	require.Equal(t, 2, de.Exit())
+	require.Equal(t, []string{"message2", "message1"}, de.Messages())
 	require.Equal(t, "fake", err.Error())
 }
 
 func TestDetailsOdd(t *testing.T) {
 	og := errors.New("fake")
-	err := Wrap(og, "message", "foo", "bar", "hi")
+	err := Wrap(
+		og,
+		WithMessage("message"),
+		WithDetails("foo", "bar", "hi"),
+	)
+
+	de, ok := errors.AsType[ErrDetailed](err)
+	require.True(t, ok)
+
 	require.Equal(t, map[string]any{
 		"foo": "bar",
 		"hi":  "missing value",
-	}, DetailsOf(err))
-	require.Empty(t, DetailsOf(og))
+	}, maps.Collect(de.Details()))
 	require.ErrorIs(t, err, og)
 	require.Equal(t, "fake", err.Error())
 }

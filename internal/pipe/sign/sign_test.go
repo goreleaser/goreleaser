@@ -124,13 +124,12 @@ func TestSignArtifacts(t *testing.T) {
 		},
 		{
 			desc:           "sign errors",
-			expectedErrMsg: "sign: exit failed",
+			expectedErrMsg: "exit status 1",
 			ctx: testctx.WrapWithCfg(t.Context(), config.Project{
 				Signs: []config.Sign{
 					{
 						Artifacts: "all",
-						Cmd:       "exit",
-						Args:      []string{"1"},
+						Cmd:       "false",
 					},
 				},
 			}),

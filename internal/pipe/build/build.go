@@ -131,7 +131,7 @@ func runPipeOnBuild(ctx *context.Context, g semerrgroup.Group, build config.Buil
 	for _, target := range filter(ctx, build) {
 		g.Go(func() error {
 			if err := buildTarget(ctx, build, target); err != nil {
-				return gerrors.Wrap(err, "", "target", target)
+				return gerrors.Wrap(err, gerrors.WithDetails("target", target))
 			}
 			return nil
 		})

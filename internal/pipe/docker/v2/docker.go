@@ -25,6 +25,7 @@ import (
 	"github.com/goreleaser/goreleaser/v2/internal/ids"
 	"github.com/goreleaser/goreleaser/v2/internal/logext"
 	"github.com/goreleaser/goreleaser/v2/internal/pipe"
+	"github.com/goreleaser/goreleaser/v2/internal/redact"
 	"github.com/goreleaser/goreleaser/v2/internal/semerrgroup"
 	"github.com/goreleaser/goreleaser/v2/internal/skips"
 	"github.com/goreleaser/goreleaser/v2/internal/tmpl"
@@ -222,23 +223,27 @@ func doBuild(ctx *context.Context, d config.DockerV2, wd string, arg []string) (
 			cmd.Env = append(ctx.Env.Strings(), cmd.Environ()...)
 			var b bytes.Buffer
 			w := gio.Safe(&b)
-			cmd.Stderr = io.MultiWriter(logext.NewWriter(), w)
-			cmd.Stdout = io.MultiWriter(logext.NewWriter(), w)
+			cmd.Stderr = redact.Writer(io.MultiWriter(logext.NewWriter(), w), cmd.Env)
+			cmd.Stdout = redact.Writer(io.MultiWriter(logext.NewWriter(), w), cmd.Env)
 			if err := cmd.Run(); err != nil {
 				if isFileNotFoundError(b.String()) {
 					return gerrors.Wrap(
 						err,
-						"could not build docker image",
-						"id", d.ID,
-						"details", fileNotFoundDetails(wd),
+						gerrors.WithMessage("could not build docker image"),
+						gerrors.WithDetails(
+							"id", d.ID,
+							"details", fileNotFoundDetails(wd),
+						),
 					)
 				}
 				return gerrors.Wrap(
 					err,
-					"could not build docker image",
-					"args", strings.Join(cmd.Args, " "),
-					"id", d.ID,
-					"output", b.String(),
+					gerrors.WithMessage("could not build docker image"),
+					gerrors.WithDetails(
+						"args", strings.Join(cmd.Args, " "),
+						"id", d.ID,
+					),
+					gerrors.WithOutput(b.String()),
 				)
 			}
 			return nil
@@ -256,8 +261,8 @@ func doBuild(ctx *context.Context, d config.DockerV2, wd string, arg []string) (
 	if err != nil {
 		return "", gerrors.Wrap(
 			err,
-			"could not get image digest",
-			"id", d.ID,
+			gerrors.WithMessage("could not get image digest"),
+			gerrors.WithDetails("id", d.ID),
 		)
 	}
 	return string(digest), nil
@@ -525,11 +530,10 @@ func tplMapFlags(tpl *tmpl.Template, flag string, m map[string]string) ([]string
 }
 
 func isRetriableManifestCreate(err error) bool {
-	out, ok := gerrors.DetailsOf(err)["output"]
-	if !ok {
-		return false
+	if de, ok := errors.AsType[gerrors.ErrDetailed](err); ok {
+		return strings.Contains(de.Output(), "manifest verification failed for digest")
 	}
-	return strings.Contains(out.(string), "manifest verification failed for digest")
+	return false
 }
 
 func isFileNotFoundError(out string) bool {

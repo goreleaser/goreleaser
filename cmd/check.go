@@ -71,13 +71,13 @@ func newCheckCmd() *checkCmd {
 			slices.Sort(exits)
 
 			if len(exits) > 0 {
-				return gerrors.WrapExit(
+				return gerrors.Wrap(
 					fmt.Errorf(
 						"%d out of %d configuration file(s) have issues",
 						len(exits), len(args),
 					),
-					"check failed",
-					exits[0],
+					gerrors.WithMessage("check failed"),
+					gerrors.WithExit(exits[0]),
 				)
 			}
 
