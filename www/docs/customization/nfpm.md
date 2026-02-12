@@ -460,6 +460,11 @@ nfpms:
       breaks:
         - some-package
 
+      # Data compression algorithm (gzip (default), xz, zstd or none).
+      # 
+      # <!-- md:inline_version v2.14-unreleased -->.
+      compression: zstd
+
       # The package is signed if a key_file is set
       signature:
         # PGP secret key file path (can also be ASCII-armored).
