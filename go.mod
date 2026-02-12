@@ -15,7 +15,7 @@ require (
 	github.com/caarlos0/env/v11 v11.3.1
 	github.com/caarlos0/go-reddit/v3 v3.0.1
 	github.com/caarlos0/go-version v0.2.2
-	github.com/caarlos0/log v0.5.4
+	github.com/caarlos0/log v0.6.0
 	github.com/charmbracelet/fang v0.4.4
 	github.com/charmbracelet/keygen v0.5.4
 	github.com/chrismellard/docker-credential-acr-env v0.0.0-20230304212654-82a0ddb27589
