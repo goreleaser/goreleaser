@@ -8,26 +8,33 @@ import (
 	"iter"
 )
 
+// Option changes things in an [ErrDetailed].
 type Option func(*ErrDetailed)
 
+// WithExit sets the exit code in an [ErrDetailed].
 func WithExit(exit int) Option {
 	return func(ed *ErrDetailed) {
 		ed.exit = exit
 	}
 }
 
+// WithMessage adds a message to an [ErrDetailed].
 func WithMessage(message string) Option {
 	return func(ed *ErrDetailed) {
 		ed.messages = append(ed.messages, message)
 	}
 }
 
+// WithOutput sets the output in an [ErrDetailed].
 func WithOutput(output string) Option {
 	return func(ed *ErrDetailed) {
 		ed.output = output
 	}
 }
 
+// WithDetails adds details to an [ErrDetailed].
+//
+// Details are key-value pairs, so the number of arguments should be even.
 func WithDetails(pairs ...any) Option {
 	return func(ed *ErrDetailed) {
 		if len(pairs)%2 != 0 {
@@ -57,6 +64,7 @@ func Wrap(err error, opts ...Option) error {
 	return result
 }
 
+// ErrDetailed is an error with details, mainly used for logging.
 type ErrDetailed struct {
 	err      error
 	exit     int
@@ -65,6 +73,8 @@ type ErrDetailed struct {
 	details  []any
 }
 
+// Details returns the details of an [ErrDetailed] as a sequence of key-value
+// pairs.
 func (e ErrDetailed) Details() iter.Seq2[string, any] {
 	return func(yield func(string, any) bool) {
 		for i := 0; i < len(e.details); i += 2 {
@@ -86,14 +96,10 @@ func (e ErrDetailed) Error() string { return e.err.Error() }
 func (e ErrDetailed) Unwrap() error { return e.err }
 
 // Exit gets the exit code of an error, if available.
-func (e ErrDetailed) Exit() int {
-	return e.exit
-}
+func (e ErrDetailed) Exit() int { return e.exit }
 
-func (e ErrDetailed) Messages() []string {
-	return e.messages
-}
+// Messages returns the messages of an [ErrDetailed].
+func (e ErrDetailed) Messages() []string { return e.messages }
 
-func (e ErrDetailed) Output() string {
-	return e.output
-}
+// Output returns the output of an [ErrDetailed].
+func (e ErrDetailed) Output() string { return e.output }
