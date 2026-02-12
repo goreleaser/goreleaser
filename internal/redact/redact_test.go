@@ -2,6 +2,7 @@ package redact
 
 import (
 	"bytes"
+	"io"
 	"testing"
 
 	"github.com/stretchr/testify/require"
@@ -159,7 +160,7 @@ func TestRedactWriter(t *testing.T) {
 		t.Parallel()
 		var buf bytes.Buffer
 		w := Writer(&buf, env)
-		_, err := w.Write([]byte("using key123key123 and pass456pass456\n"))
+		_, err := io.WriteString(w, "using key123key123 and pass456pass456\n")
 		require.NoError(t, err)
 		require.Equal(t, "using $API_KEY and $DB_SECRET\n", buf.String())
 	})
@@ -168,8 +169,8 @@ func TestRedactWriter(t *testing.T) {
 		t.Parallel()
 		var buf bytes.Buffer
 		w := Writer(&buf, env)
-		input := []byte("key123key123\n")
-		n, err := w.Write(input)
+		input := "key123key123\n"
+		n, err := io.WriteString(w, input)
 		require.NoError(t, err)
 		require.Equal(t, len(input), n)
 	})
@@ -178,7 +179,7 @@ func TestRedactWriter(t *testing.T) {
 		t.Parallel()
 		var buf bytes.Buffer
 		w := Writer(&buf, env)
-		_, err := w.Write([]byte("nothing secret here\n"))
+		_, err := io.WriteString(w, "nothing secret here\n")
 		require.NoError(t, err)
 		require.Equal(t, "nothing secret here\n", buf.String())
 	})
