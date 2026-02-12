@@ -20,6 +20,7 @@ func NewConditionalWriter(condition bool) io.Writer {
 		if !ok {
 			return os.Stderr
 		}
+		// TODO: indent the output of this so it looks nicer?
 		return logger.Writer
 	}
 	return io.Discard
