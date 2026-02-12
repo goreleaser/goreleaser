@@ -20,7 +20,7 @@ func NewConditionalWriter(condition bool) io.Writer {
 		if !ok {
 			return os.Stderr
 		}
-		return logger.Writer
+		return logger.Writer()
 	}
 	return io.Discard
 }
