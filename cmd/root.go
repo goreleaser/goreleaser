@@ -62,9 +62,12 @@ func errorHandler(_ io.Writer, _ fang.Styles, err error) {
 	if de, ok := errors.AsType[gerrors.ErrDetailed](err); ok {
 		if len(de.Messages()) > 0 {
 			message = de.Messages()[0]
-			if len(de.Messages()) > 1 {
-				log = log.WithField("info", strings.Join(de.Messages()[1:], ": "))
-			}
+		}
+		if len(de.Messages()) > 1 {
+			log = log.WithField(
+				"message",
+				strings.Join(de.Messages()[1:], ": "),
+			)
 		}
 		for k, v := range de.Details() {
 			log = log.WithField(k, v)
