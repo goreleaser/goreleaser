@@ -115,9 +115,9 @@ func executeCommand(c *command, artifact *artifact.Artifact) error {
 	if err := cmd.Run(); err != nil {
 		return gerrors.Wrap(
 			err,
-			"publishing failed",
-			"cmd", cmd.Args[0],
-			"output", b.String(),
+			gerrors.WithMessage("publishing failed"),
+			gerrors.WithDetails("cmd", cmd.Args[0]),
+			gerrors.WithOutput(b.String()),
 		)
 	}
 

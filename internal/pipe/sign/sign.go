@@ -264,10 +264,12 @@ func signone(ctx *context.Context, cfg config.Sign, art *artifact.Artifact) ([]*
 	if err := cmd.Run(); err != nil {
 		return nil, gerrors.Wrap(
 			err,
-			"could not sign artifact",
-			"cmd", cfg.Cmd,
-			"artifact", art.Name,
-			"output", b.String(),
+			gerrors.WithMessage("could not sign artifact"),
+			gerrors.WithDetails(
+				"cmd", cfg.Cmd,
+				"artifact", art.Name,
+			),
+			gerrors.WithOutput(b.String()),
 		)
 	}
 

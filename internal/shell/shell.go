@@ -3,7 +3,6 @@ package shell
 
 import (
 	"bytes"
-	"cmp"
 	"io"
 	"os/exec"
 	"strings"
@@ -48,9 +47,9 @@ func Run(ctx *context.Context, dir string, command, env []string, output bool) e
 	if err := cmd.Run(); err != nil {
 		return gerrors.Wrap(
 			err,
-			"command failed",
-			"cmd", command[0],
-			"output", cmp.Or(strings.TrimSpace(b.String()), "[no output]"),
+			gerrors.WithMessage("command failed"),
+			gerrors.WithDetails("cmd", command[0]),
+			gerrors.WithOutput(strings.TrimSpace(b.String())),
 		)
 	}
 

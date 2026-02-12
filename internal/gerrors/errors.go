@@ -2,78 +2,98 @@
 package gerrors
 
 import (
+	"cmp"
 	"errors"
 	"fmt"
-	"maps"
+	"iter"
 )
 
-// DetailsOf gets the details of an error, if available.
-func DetailsOf(err error) map[string]any {
-	var de errDetailed
-	if errors.As(err, &de) {
-		return de.details
+type Option func(*ErrDetailed)
+
+func WithExit(exit int) Option {
+	return func(ed *ErrDetailed) {
+		ed.exit = exit
 	}
-	return map[string]any{}
 }
 
-// ExitOf gets the exit code of an error, if available.
-func ExitOf(err error) int {
-	var de errDetailed
-	if errors.As(err, &de) {
-		return de.exit
+func WithMessage(message string) Option {
+	return func(ed *ErrDetailed) {
+		ed.messages = append(ed.messages, message)
 	}
-	return 1
 }
 
-// MessageOf gets the message of an error, if available.
-func MessageOf(err error) string {
-	var de errDetailed
-	if errors.As(err, &de) {
-		return de.message
+func WithOutput(output string) Option {
+	return func(ed *ErrDetailed) {
+		ed.output = output
 	}
-	return ""
 }
 
-// WrapExit makes an error with details and an exit code, mainly used for logging.
-func WrapExit(err error, message string, exit int, pairs ...any) error {
-	details := map[string]any{}
-	if len(pairs)%2 != 0 {
-		pairs = append(pairs, "missing value")
-	}
-	for i := 0; i < len(pairs); i += 2 {
-		details[fmt.Sprintf("%v", pairs[i])] = pairs[i+1]
-	}
-	if dets := DetailsOf(err); len(dets) > 0 {
-		maps.Copy(details, dets)
-	}
-	if msg := MessageOf(err); msg != "" {
-		if cause, ok := details["cause"].(string); ok {
-			msg += ": " + cause
+func WithDetails(pairs ...any) Option {
+	return func(ed *ErrDetailed) {
+		if len(pairs)%2 != 0 {
+			pairs = append(pairs, "missing value")
 		}
-		details["cause"] = msg
-	}
-	return errDetailed{
-		err:     err,
-		details: details,
-		exit:    exit,
-		message: message,
+		ed.details = pairs
 	}
 }
 
 // Wrap makes an error with details, mainly used for logging.
-func Wrap(err error, message string, pairs ...any) error {
-	return WrapExit(err, message, 1, pairs...)
+func Wrap(err error, opts ...Option) error {
+	result := ErrDetailed{
+		err:  err,
+		exit: 1,
+	}
+
+	for _, opt := range opts {
+		opt(&result)
+	}
+
+	if de, ok := errors.AsType[ErrDetailed](err); ok {
+		result.details = append(de.details, result.details...)
+		result.messages = append(result.messages, de.messages...)
+		result.output = cmp.Or(result.output, de.output)
+	}
+
+	return result
 }
 
-type errDetailed struct {
-	err     error
-	exit    int
-	message string
-	details map[string]any
+type ErrDetailed struct {
+	err      error
+	exit     int
+	output   string
+	messages []string
+	details  []any
+}
+
+func (e ErrDetailed) Details() iter.Seq2[string, any] {
+	return func(yield func(string, any) bool) {
+		for i := 0; i < len(e.details); i += 2 {
+			key, ok := e.details[i].(string)
+			if !ok {
+				key = fmt.Sprintf("%v", e.details[i])
+			}
+			if !yield(key, e.details[i+1]) {
+				break
+			}
+		}
+	}
 }
 
 // Error implements error.
-func (e errDetailed) Error() string { return e.err.Error() }
+func (e ErrDetailed) Error() string { return e.err.Error() }
 
 // Unwrap implements unwrap.
-func (e errDetailed) Unwrap() error { return e.err }
+func (e ErrDetailed) Unwrap() error { return e.err }
+
+// Exit gets the exit code of an error, if available.
+func (e ErrDetailed) Exit() int {
+	return e.exit
+}
+
+func (e ErrDetailed) Messages() []string {
+	return e.messages
+}
+
+func (e ErrDetailed) Output() string {
+	return e.output
+}

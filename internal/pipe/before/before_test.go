@@ -1,6 +1,7 @@
 package before
 
 import (
+	"errors"
 	"path/filepath"
 	"testing"
 
@@ -70,7 +71,11 @@ func TestRunPipeFail(t *testing.T) {
 
 		err := Pipe{}.Run(ctx)
 		require.Error(t, err)
-		require.Contains(t, gerrors.MessageOf(err), "hook failed")
+
+		de, ok := errors.AsType[gerrors.ErrDetailed](err)
+		require.True(t, ok)
+
+		require.Contains(t, de.Messages(), "hook failed")
 	}
 }
 

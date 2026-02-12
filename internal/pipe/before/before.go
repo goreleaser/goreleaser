@@ -36,7 +36,7 @@ func (Pipe) Run(ctx *context.Context) error {
 
 		log.WithField("hook", s).Info("running")
 		if err := shell.Run(ctx, "", args, ctx.Env.Strings(), false); err != nil {
-			return gerrors.Wrap(err, "hook failed")
+			return gerrors.Wrap(err, gerrors.WithMessage("hook failed"))
 		}
 	}
 	return nil

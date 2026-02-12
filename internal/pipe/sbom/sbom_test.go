@@ -1,6 +1,7 @@
 package sbom
 
 import (
+	"errors"
 	"fmt"
 	"os"
 	"path/filepath"
@@ -609,8 +610,10 @@ func testSBOMCataloging(
 	if expectedErrMsg != "" {
 		err := Pipe{}.Run(ctx)
 		require.Error(tb, err)
-		if msg := gerrors.MessageOf(err); msg != "" {
-			require.Contains(tb, msg, expectedErrMsg)
+
+		de, ok := errors.AsType[gerrors.ErrDetailed](err)
+		if ok {
+			require.Contains(tb, de.Messages(), expectedErrMsg)
 		} else {
 			require.ErrorContains(tb, err, expectedErrMsg)
 		}

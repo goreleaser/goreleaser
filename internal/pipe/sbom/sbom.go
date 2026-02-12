@@ -226,11 +226,13 @@ func catalogArtifact(ctx *context.Context, cfg config.SBOM, a *artifact.Artifact
 	if err := cmd.Run(); err != nil {
 		return nil, gerrors.Wrap(
 			err,
-			"could not catalog artifact",
-			"cmd", cfg.Cmd,
-			"artifact", artifactDisplayName,
-			"sbom", names,
-			"output", b.String(),
+			gerrors.WithMessage("could not catalog artifact"),
+			gerrors.WithDetails(
+				"cmd", cfg.Cmd,
+				"artifact", artifactDisplayName,
+				"sbom", names,
+			),
+			gerrors.WithOutput(b.String()),
 		)
 	}
 
