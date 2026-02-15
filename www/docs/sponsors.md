@@ -47,7 +47,6 @@ A big **thank you** to all current, past, and future sponsors!
 
   <a href="https://github.com/conetcloud" target="_blank" rel="noopener sponsored"><img src="https://avatars.githubusercontent.com/u/35725664?v=4" alt="conet cloud" width="64" height="64" style="border-radius: 8px; margin: 8px;"></a>
   <a href="https://github.com/encoredev" target="_blank" rel="noopener sponsored"><img src="https://avatars.githubusercontent.com/u/50438175?v=4" alt="Encore" width="64" height="64" style="border-radius: 8px; margin: 8px;"></a>
-  <a href="https://www.numary.com" target="_blank" rel="noopener sponsored"><img src="https://images.opencollective.com/numary/c4ef831/logo/96.png" alt="Numary" width="64" height="64" style="border-radius: 8px; margin: 8px;"></a>
   <a href="https://about.gitea.com/" target="_blank" rel="noopener sponsored"><img src="https://images.opencollective.com/gitea/bf35c2f/logo/96.png" alt="Gitea" width="64" height="64" style="border-radius: 8px; margin: 8px;"></a>
   <a href="https://github.com/comet-ml" target="_blank" rel="noopener sponsored"><img src="https://avatars.githubusercontent.com/u/31487821?v=4" alt="Comet" width="64" height="64" style="border-radius: 8px; margin: 8px;"></a>
 
