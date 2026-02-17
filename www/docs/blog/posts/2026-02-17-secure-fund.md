@@ -1,5 +1,5 @@
 ---
-date: 2026-01-15
+date: 2026-02-17
 slug: github-secure-fund
 categories: [announcements]
 authors: [caarlos0]
