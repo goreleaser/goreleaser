@@ -3,7 +3,6 @@ package exec
 
 import (
 	"bytes"
-	"fmt"
 	"io"
 	"os"
 	"os/exec"
@@ -12,6 +11,7 @@ import (
 	"github.com/goreleaser/go-shellwords"
 	"github.com/goreleaser/goreleaser/v2/internal/artifact"
 	"github.com/goreleaser/goreleaser/v2/internal/extrafiles"
+	"github.com/goreleaser/goreleaser/v2/internal/gerrors"
 	"github.com/goreleaser/goreleaser/v2/internal/gio"
 	"github.com/goreleaser/goreleaser/v2/internal/logext"
 	"github.com/goreleaser/goreleaser/v2/internal/pipe"
@@ -113,7 +113,12 @@ func executeCommand(c *command, artifact *artifact.Artifact) error {
 
 	log.Info("publishing")
 	if err := cmd.Run(); err != nil {
-		return fmt.Errorf("publishing: %s failed: %w: %s", c.Args[0], err, b.String())
+		return gerrors.Wrap(
+			err,
+			gerrors.WithMessage("publishing failed"),
+			gerrors.WithDetails("cmd", cmd.Args[0]),
+			gerrors.WithOutput(b.String()),
+		)
 	}
 
 	log.Debug("command finished successfully")

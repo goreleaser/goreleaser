@@ -1,10 +1,12 @@
 package before
 
 import (
+	"errors"
 	"path/filepath"
 	"testing"
 
 	"github.com/caarlos0/log"
+	"github.com/goreleaser/goreleaser/v2/internal/gerrors"
 	"github.com/goreleaser/goreleaser/v2/internal/skips"
 	"github.com/goreleaser/goreleaser/v2/internal/testctx"
 	"github.com/goreleaser/goreleaser/v2/internal/testlib"
@@ -68,7 +70,12 @@ func TestRunPipeFail(t *testing.T) {
 			})
 
 		err := Pipe{}.Run(ctx)
-		require.ErrorContains(t, err, "hook failed")
+		require.Error(t, err)
+
+		de, ok := errors.AsType[gerrors.ErrDetailed](err)
+		require.True(t, ok)
+
+		require.Contains(t, de.Messages(), "hook failed")
 	}
 }
 

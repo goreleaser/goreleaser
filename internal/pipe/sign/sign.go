@@ -14,6 +14,7 @@ import (
 
 	"github.com/caarlos0/log"
 	"github.com/goreleaser/goreleaser/v2/internal/artifact"
+	"github.com/goreleaser/goreleaser/v2/internal/gerrors"
 	"github.com/goreleaser/goreleaser/v2/internal/gio"
 	"github.com/goreleaser/goreleaser/v2/internal/git"
 	"github.com/goreleaser/goreleaser/v2/internal/ids"
@@ -250,6 +251,8 @@ func signone(ctx *context.Context, cfg config.Sign, art *artifact.Artifact) ([]*
 	// tells the scanner to ignore this.
 	// #nosec
 	cmd := exec.CommandContext(ctx, cfg.Cmd, args...)
+	cmd.Env = env.Strings()
+
 	var b bytes.Buffer
 	w := gio.Safe(&b)
 	cmd.Stderr = redact.Writer(io.MultiWriter(logext.NewConditionalWriter(output), w), cmd.Env)
@@ -257,10 +260,17 @@ func signone(ctx *context.Context, cfg config.Sign, art *artifact.Artifact) ([]*
 	if stdin != nil {
 		cmd.Stdin = stdin
 	}
-	cmd.Env = env.Strings()
 	log.Info("signing")
 	if err := cmd.Run(); err != nil {
-		return nil, fmt.Errorf("sign: %s failed: %w: %s", cfg.Cmd, err, b.String())
+		return nil, gerrors.Wrap(
+			err,
+			gerrors.WithMessage("could not sign artifact"),
+			gerrors.WithDetails(
+				"cmd", cfg.Cmd,
+				"artifact", art.Name,
+			),
+			gerrors.WithOutput(b.String()),
+		)
 	}
 
 	var result []*artifact.Artifact

@@ -204,10 +204,12 @@ func create(ctx *context.Context, cfg config.Makeself, plat string, binaries []*
 	if err := cmd.Run(); err != nil {
 		return gerrors.Wrap(
 			err,
-			"could not create makeself package",
-			"args", strings.Join(cmd.Args, " "),
-			"id", cfg.ID,
-			"output", b.String(),
+			gerrors.WithMessage("could not create makeself package"),
+			gerrors.WithDetails(
+				"args", strings.Join(cmd.Args, " "),
+				"id", cfg.ID,
+			),
+			gerrors.WithOutput(b.String()),
 		)
 	}
 

@@ -401,8 +401,8 @@ func TestContextArtifacts(t *testing.T) {
 }
 
 func TestIsRetriableManifestCreate(t *testing.T) {
-	require.True(t, isRetriableManifestCreate(gerrors.Wrap(nil, "", "output", "manifest verification failed for digest")))
-	require.False(t, isRetriableManifestCreate(gerrors.Wrap(nil, "", "output", "some other error")))
+	require.True(t, isRetriableManifestCreate(gerrors.Wrap(nil, gerrors.WithOutput("manifest verification failed for digest"))))
+	require.False(t, isRetriableManifestCreate(gerrors.Wrap(nil, gerrors.WithOutput("some other error"))))
 	require.False(t, isRetriableManifestCreate(errors.New("some other error")))
 	require.False(t, isRetriableManifestCreate(nil))
 }
