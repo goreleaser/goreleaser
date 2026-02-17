@@ -3815,6 +3815,7 @@
 						"enum": [
 							"gzip",
 							"xz",
+							"zstd",
 							"none"
 						],
 						"default": "gzip"
