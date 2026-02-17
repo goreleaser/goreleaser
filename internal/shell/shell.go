@@ -13,6 +13,7 @@ import (
 	"github.com/caarlos0/log"
 	"github.com/goreleaser/goreleaser/v2/internal/gio"
 	"github.com/goreleaser/goreleaser/v2/internal/logext"
+	"github.com/goreleaser/goreleaser/v2/internal/redact"
 	"github.com/goreleaser/goreleaser/v2/pkg/context"
 )
 
@@ -30,8 +31,8 @@ func Run(ctx *context.Context, dir string, command, env []string, output bool) e
 	var b bytes.Buffer
 	w := gio.Safe(&b)
 
-	cmd.Stderr = io.MultiWriter(logext.NewConditionalWriter(output), w)
-	cmd.Stdout = io.MultiWriter(logext.NewConditionalWriter(output), w)
+	cmd.Stderr = redact.Writer(io.MultiWriter(logext.NewConditionalWriter(output), w), cmd.Env)
+	cmd.Stdout = redact.Writer(io.MultiWriter(logext.NewConditionalWriter(output), w), cmd.Env)
 
 	if dir != "" {
 		cmd.Dir = dir

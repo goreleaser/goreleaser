@@ -25,6 +25,7 @@ import (
 	"github.com/goreleaser/goreleaser/v2/internal/ids"
 	"github.com/goreleaser/goreleaser/v2/internal/logext"
 	"github.com/goreleaser/goreleaser/v2/internal/pipe"
+	"github.com/goreleaser/goreleaser/v2/internal/redact"
 	"github.com/goreleaser/goreleaser/v2/internal/semerrgroup"
 	"github.com/goreleaser/goreleaser/v2/internal/skips"
 	"github.com/goreleaser/goreleaser/v2/internal/tmpl"
@@ -222,8 +223,8 @@ func doBuild(ctx *context.Context, d config.DockerV2, wd string, arg []string) (
 			cmd.Env = append(ctx.Env.Strings(), cmd.Environ()...)
 			var b bytes.Buffer
 			w := gio.Safe(&b)
-			cmd.Stderr = io.MultiWriter(logext.NewWriter(), w)
-			cmd.Stdout = io.MultiWriter(logext.NewWriter(), w)
+			cmd.Stderr = redact.Writer(io.MultiWriter(logext.NewWriter(), w), cmd.Env)
+			cmd.Stdout = redact.Writer(io.MultiWriter(logext.NewWriter(), w), cmd.Env)
 			if err := cmd.Run(); err != nil {
 				if isFileNotFoundError(b.String()) {
 					return gerrors.Wrap(

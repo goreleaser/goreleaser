@@ -19,6 +19,7 @@ import (
 	"github.com/goreleaser/goreleaser/v2/internal/ids"
 	"github.com/goreleaser/goreleaser/v2/internal/logext"
 	"github.com/goreleaser/goreleaser/v2/internal/pipe"
+	"github.com/goreleaser/goreleaser/v2/internal/redact"
 	"github.com/goreleaser/goreleaser/v2/internal/semerrgroup"
 	"github.com/goreleaser/goreleaser/v2/internal/skips"
 	"github.com/goreleaser/goreleaser/v2/internal/tmpl"
@@ -251,8 +252,8 @@ func signone(ctx *context.Context, cfg config.Sign, art *artifact.Artifact) ([]*
 	cmd := exec.CommandContext(ctx, cfg.Cmd, args...)
 	var b bytes.Buffer
 	w := gio.Safe(&b)
-	cmd.Stderr = io.MultiWriter(logext.NewConditionalWriter(output), w)
-	cmd.Stdout = io.MultiWriter(logext.NewConditionalWriter(output), w)
+	cmd.Stderr = redact.Writer(io.MultiWriter(logext.NewConditionalWriter(output), w), cmd.Env)
+	cmd.Stdout = redact.Writer(io.MultiWriter(logext.NewConditionalWriter(output), w), cmd.Env)
 	if stdin != nil {
 		cmd.Stdin = stdin
 	}
