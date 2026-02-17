@@ -13,6 +13,7 @@ import (
 
 	"github.com/caarlos0/log"
 	"github.com/goreleaser/goreleaser/v2/internal/artifact"
+	"github.com/goreleaser/goreleaser/v2/internal/gerrors"
 	"github.com/goreleaser/goreleaser/v2/internal/gio"
 	"github.com/goreleaser/goreleaser/v2/internal/ids"
 	"github.com/goreleaser/goreleaser/v2/internal/logext"
@@ -223,7 +224,16 @@ func catalogArtifact(ctx *context.Context, cfg config.SBOM, a *artifact.Artifact
 		WithField("sbom", names).
 		Info("cataloging")
 	if err := cmd.Run(); err != nil {
-		return nil, fmt.Errorf("cataloging artifacts: %s failed: %w: %s", cfg.Cmd, err, b.String())
+		return nil, gerrors.Wrap(
+			err,
+			gerrors.WithMessage("could not catalog artifact"),
+			gerrors.WithDetails(
+				"cmd", cfg.Cmd,
+				"artifact", artifactDisplayName,
+				"sbom", names,
+			),
+			gerrors.WithOutput(b.String()),
+		)
 	}
 
 	var artifacts []*artifact.Artifact
