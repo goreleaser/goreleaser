@@ -14,6 +14,8 @@ That's why we were thrilled to be selected for the third session of the
 
 <!-- more -->
 
+![](http://carlosbecker.com/posts/goreleaser-github-secure-oss-fund/img.png)
+
 We joined a group with so [many great projects][announcement] that I feel bad
 trying to name just a few of them - so you should check the official
 [announcement][] for the full list!
