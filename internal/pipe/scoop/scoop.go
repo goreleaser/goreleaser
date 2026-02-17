@@ -37,17 +37,17 @@ func (e ErrIncorrectArchiveCount) Error() string {
 	if len(e.archives) == 0 {
 		_, _ = b.WriteString("but no archives ")
 	} else {
-		_, _ = b.WriteString(fmt.Sprintf("but found %d archives ", len(e.archives)))
+		_, _ = fmt.Fprintf(&b, "but found %d archives ", len(e.archives))
 	}
 
-	_, _ = b.WriteString(fmt.Sprintf("matching the given filters: goos=windows goarch=[386 amd64 arm64] goamd64=%s ids=%s", e.goamd64, e.ids))
+	_, _ = fmt.Fprintf(&b, "matching the given filters: goos=windows goarch=[386 amd64 arm64] goamd64=%s ids=%s", e.goamd64, e.ids)
 
 	if len(e.archives) > 0 {
 		names := make([]string, 0, len(e.archives))
 		for _, a := range e.archives {
 			names = append(names, a.Name)
 		}
-		_, _ = b.WriteString(fmt.Sprintf(": %s", names))
+		_, _ = fmt.Fprintf(&b, ": %s", names)
 	}
 
 	_, _ = b.WriteString("\nLearn more at https://goreleaser.com/errors/scoop-archive\n")
