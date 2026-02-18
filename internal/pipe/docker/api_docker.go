@@ -3,6 +3,8 @@ package docker
 import (
 	"fmt"
 	"regexp"
+	"slices"
+	"strings"
 
 	"github.com/goreleaser/goreleaser/v2/pkg/context"
 )
@@ -78,6 +80,22 @@ func (i dockerImager) buildCommand(images, flags []string) []string {
 	for _, image := range images {
 		base = append(base, "-t", image)
 	}
-	base = append(base, flags...)
+	base = append(base, ensureProvenanceAndSBOM(flags)...)
 	return base
+}
+
+func ensureProvenanceAndSBOM(flags []string) []string {
+	if !containsFlag(flags, "--provenance") {
+		flags = append(flags, "--provenance=false")
+	}
+	if !containsFlag(flags, "--sbom") {
+		flags = append(flags, "--sbom=false")
+	}
+	return flags
+}
+
+func containsFlag(flags []string, flag string) bool {
+	return slices.ContainsFunc(flags, func(s string) bool {
+		return strings.Contains(s, flag)
+	})
 }

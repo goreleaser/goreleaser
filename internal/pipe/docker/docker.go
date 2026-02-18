@@ -19,6 +19,7 @@ import (
 	"github.com/caarlos0/log"
 	"github.com/goreleaser/goreleaser/v2/internal/artifact"
 	"github.com/goreleaser/goreleaser/v2/internal/experimental"
+	"github.com/goreleaser/goreleaser/v2/internal/gerrors"
 	"github.com/goreleaser/goreleaser/v2/internal/gio"
 	"github.com/goreleaser/goreleaser/v2/internal/ids"
 	"github.com/goreleaser/goreleaser/v2/internal/logext"
@@ -251,16 +252,20 @@ func process(ctx *context.Context, docker config.Docker, artifacts []*artifact.A
 				files = append(files, info.Name())
 				return nil
 			})
-			return fmt.Errorf(`seems like you tried to copy a file that is not available in the build context.
+			return gerrors.Wrap(
+				err,
+				gerrors.WithMessage("could not build image"),
+				gerrors.WithDetails(
+					"use", docker.Use,
+					"image", images[0],
+					"info", fmt.Sprintf(`seems like you tried to copy a file that is not available in the build context.
 
 Here's more information about the build context:
 
 dir: %q
 files in that dir:
  %s
-
-Previous error:
-%w`, tmp, strings.Join(files, "\n "), err)
+`, tmp, strings.Join(files, "\n "))))
 		}
 		if isBuildxContextError(err.Error()) {
 			return errors.New("docker buildx is not set to default context - please switch with 'docker context use default'")
