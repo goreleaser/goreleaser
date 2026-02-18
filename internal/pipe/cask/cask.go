@@ -427,6 +427,9 @@ func dataFor(ctx *context.Context, cfg config.HomebrewCask, cl client.ReleaseURL
 		if art.Type == artifact.UploadableBinary {
 			pkg.Binary = artifact.MustExtra[string](*art, artifact.ExtraBinary)
 			pkg.Name = art.Name
+		} else {
+			pkg.Binaries = artifact.ExtraOr(*art, string(artifact.ExtraBinaries), []string{})
+			pkg.WrappedIn = artifact.ExtraOr(*art, string(artifact.ExtraWrappedIn), "")
 		}
 
 		formatCounts[art.Type]++
