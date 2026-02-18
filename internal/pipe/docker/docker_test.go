@@ -1,6 +1,7 @@
 package docker
 
 import (
+	"errors"
 	"fmt"
 	"os"
 	"os/exec"
@@ -10,6 +11,7 @@ import (
 	"time"
 
 	"github.com/goreleaser/goreleaser/v2/internal/artifact"
+	"github.com/goreleaser/goreleaser/v2/internal/gerrors"
 	"github.com/goreleaser/goreleaser/v2/internal/pipe"
 	"github.com/goreleaser/goreleaser/v2/internal/skips"
 	"github.com/goreleaser/goreleaser/v2/internal/testctx"
@@ -41,7 +43,24 @@ func TestRunPipe(t *testing.T) {
 	shouldErr := func(msg string) errChecker {
 		return func(t *testing.T, err error) {
 			t.Helper()
-			require.ErrorContains(t, err, msg)
+			if ge, ok := errors.AsType[gerrors.ErrDetailed](err); ok {
+				for _, s := range ge.Messages() {
+					if strings.Contains(s, msg) {
+						return
+					}
+				}
+				for _, a := range ge.Details() {
+					s, ok := a.(string)
+					if !ok {
+						continue
+					}
+					if strings.Contains(s, msg) {
+						return
+					}
+				}
+			} else {
+				require.ErrorContains(t, err, msg)
+			}
 		}
 	}
 	shouldNotErr := func(t *testing.T, err error) {
@@ -91,14 +110,14 @@ func TestRunPipe(t *testing.T) {
 					Goos:               "linux",
 					Goarch:             "amd64",
 					Dockerfile:         "testdata/Dockerfile.arch",
-					BuildFlagTemplates: []string{"--build-arg", "ARCH=amd64", "--platform", "amd64"},
+					BuildFlagTemplates: []string{"--build-arg", "ARCH=amd64", "--platform", "linux/amd64"},
 				},
 				{
 					ImageTemplates:     []string{registry + "goreleaser/test_multiarch:test-arm64v8"},
 					Goos:               "linux",
 					Goarch:             "arm64",
 					Dockerfile:         "testdata/Dockerfile.arch",
-					BuildFlagTemplates: []string{"--build-arg", "ARCH=arm64v8", "--platform", "arm64"},
+					BuildFlagTemplates: []string{"--build-arg", "ARCH=arm64v8", "--platform", "linux/arm64"},
 				},
 			},
 			manifests: []config.DockerManifest{
@@ -209,14 +228,14 @@ func TestRunPipe(t *testing.T) {
 					Goos:               "linux",
 					Goarch:             "amd64",
 					Dockerfile:         "testdata/Dockerfile.arch",
-					BuildFlagTemplates: []string{"--build-arg", "ARCH=amd64", "--platform", "amd64"},
+					BuildFlagTemplates: []string{"--build-arg", "ARCH=amd64", "--platform", "linux/amd64"},
 				},
 				{
 					ImageTemplates:     []string{registry + "goreleaser/test_multiarch:2test-arm64v8"},
 					Goos:               "linux",
 					Goarch:             "arm64",
 					Dockerfile:         "testdata/Dockerfile.arch",
-					BuildFlagTemplates: []string{"--build-arg", "ARCH=arm64v8", "--platform", "arm64"},
+					BuildFlagTemplates: []string{"--build-arg", "ARCH=arm64v8", "--platform", "linux/arm64"},
 				},
 			},
 			manifests: []config.DockerManifest{
@@ -240,7 +259,7 @@ func TestRunPipe(t *testing.T) {
 				t.Helper()
 				for _, cmd := range []string{
 					fmt.Sprintf("docker manifest rm %sgoreleaser/test_multiarch:2test || true", registry),
-					fmt.Sprintf("docker build -t %sgoreleaser/dummy:v1 --platform linux/amd64 -f testdata/Dockerfile.dummy .", registry),
+					fmt.Sprintf("docker build --sbom=false --provenance=false -t %sgoreleaser/dummy:v1 --platform linux/amd64 -f testdata/Dockerfile.dummy .", registry),
 					fmt.Sprintf("docker push %sgoreleaser/dummy:v1", registry),
 					fmt.Sprintf("docker manifest create %sgoreleaser/test_multiarch:2test --amend %sgoreleaser/dummy:v1 --insecure", registry, registry),
 				} {
@@ -259,7 +278,7 @@ func TestRunPipe(t *testing.T) {
 					Goos:               "linux",
 					Goarch:             "arm64",
 					Dockerfile:         "testdata/Dockerfile.arch",
-					BuildFlagTemplates: []string{"--build-arg", "ARCH=arm64v8", "--platform", "arm64"},
+					BuildFlagTemplates: []string{"--build-arg", "ARCH=arm64v8", "--platform", "linux/arm64"},
 				},
 			},
 			manifests: []config.DockerManifest{
@@ -1099,23 +1118,23 @@ func TestBuildCommand(t *testing.T) {
 		{
 			name:   "no flags",
 			flags:  []string{},
-			expect: []string{"build", ".", "-t", images[0], "-t", images[1]},
+			expect: []string{"build", ".", "-t", images[0], "-t", images[1], "--provenance=false", "--sbom=false"},
 		},
 		{
 			name:   "single flag",
 			flags:  []string{"--label=foo"},
-			expect: []string{"build", ".", "-t", images[0], "-t", images[1], "--label=foo"},
+			expect: []string{"build", ".", "-t", images[0], "-t", images[1], "--label=foo", "--provenance=false", "--sbom=false"},
 		},
 		{
 			name:   "multiple flags",
 			flags:  []string{"--label=foo", "--build-arg=bar=baz"},
-			expect: []string{"build", ".", "-t", images[0], "-t", images[1], "--label=foo", "--build-arg=bar=baz"},
+			expect: []string{"build", ".", "-t", images[0], "-t", images[1], "--label=foo", "--build-arg=bar=baz", "--provenance=false", "--sbom=false"},
 		},
 		{
 			name:   "buildx",
 			buildx: true,
 			flags:  []string{"--label=foo", "--build-arg=bar=baz"},
-			expect: []string{"buildx", "build", ".", "--load", "-t", images[0], "-t", images[1], "--label=foo", "--build-arg=bar=baz"},
+			expect: []string{"buildx", "build", ".", "--load", "-t", images[0], "-t", images[1], "--label=foo", "--build-arg=bar=baz", "--provenance=false", "--sbom=false"},
 		},
 	}
 	for _, tt := range tests {
