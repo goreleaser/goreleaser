@@ -10,6 +10,12 @@
     {{- if .Binary }}
     binary "{{ .Name }}", target: "{{ .Binary }}"
     {{- end }}
+    {{- if .WrappedIn }}
+    {{- $wrap := .WrappedIn }}
+    {{- range .Binaries }}
+    rename "{{ $wrap }}/{{ . }}", "{{ . }}"
+    {{- end }}
+    {{- end }}
   end
 {{- end }}
 {{- end }}

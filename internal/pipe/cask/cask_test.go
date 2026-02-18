@@ -1340,3 +1340,86 @@ func TestRunPipeUniversalBinaryNotReplacing(t *testing.T) {
 	require.NoError(t, err)
 	require.Equal(t, client.Content, string(distBts))
 }
+
+func TestRunPipeWrappedIn(t *testing.T) {
+	folder := t.TempDir()
+	ctx := testctx.WrapWithCfg(t.Context(),
+		config.Project{
+			Dist:        folder,
+			ProjectName: "wrappedin",
+			Casks: []config.HomebrewCask{
+				{
+					Name:        "wrappedin",
+					Homepage:    "https://goreleaser.com",
+					Description: "Fake desc",
+					Repository: config.RepoRef{
+						Owner: "wrappedin",
+						Name:  "bar",
+					},
+					IDs: []string{
+						"wrappedin",
+					},
+					Binaries: []string{"wrappedin", "other"},
+				},
+			},
+		},
+		testctx.WithCurrentTag("v1.0.1"),
+		testctx.WithVersion("1.0.1"))
+
+	path := filepath.Join(folder, "bin.tar.gz")
+	ctx.Artifacts.Add(&artifact.Artifact{
+		Name:    "bin_amd64.tar.gz",
+		Path:    path,
+		Goos:    "darwin",
+		Goarch:  "amd64",
+		Goamd64: "v1",
+		Type:    artifact.UploadableArchive,
+		Extra: map[string]any{
+			artifact.ExtraID:        "wrappedin",
+			artifact.ExtraFormat:    "tar.gz",
+			artifact.ExtraBinaries:  []string{"wrappedin", "other"},
+			artifact.ExtraWrappedIn: "wrappedin_1.0.1_darwin_amd64",
+		},
+	})
+	ctx.Artifacts.Add(&artifact.Artifact{
+		Name:   "bin_arm64.tar.gz",
+		Path:   path,
+		Goos:   "darwin",
+		Goarch: "arm64",
+		Type:   artifact.UploadableArchive,
+		Extra: map[string]any{
+			artifact.ExtraID:        "wrappedin",
+			artifact.ExtraFormat:    "tar.gz",
+			artifact.ExtraBinaries:  []string{"wrappedin", "other"},
+			artifact.ExtraWrappedIn: "wrappedin_1.0.1_darwin_arm64",
+		},
+	})
+	ctx.Artifacts.Add(&artifact.Artifact{
+		Name:    "bin_linux.tar.gz",
+		Path:    path,
+		Goos:    "linux",
+		Goarch:  "amd64",
+		Goamd64: "v1",
+		Type:    artifact.UploadableArchive,
+		Extra: map[string]any{
+			artifact.ExtraID:        "wrappedin",
+			artifact.ExtraFormat:    "tar.gz",
+			artifact.ExtraBinaries:  []string{"wrappedin", "other"},
+			artifact.ExtraWrappedIn: "wrappedin_1.0.1_linux_amd64",
+		},
+	})
+
+	f, err := os.Create(path)
+	require.NoError(t, err)
+	require.NoError(t, f.Close())
+	cli := client.NewMock()
+	distFile := filepath.Join(folder, "homebrew", "wrappedin.rb")
+
+	require.NoError(t, runAll(ctx, cli))
+	require.NoError(t, publishAll(ctx, cli))
+	require.True(t, cli.CreatedFile)
+	golden.RequireEqualRb(t, []byte(cli.Content))
+	distBts, err := os.ReadFile(distFile)
+	require.NoError(t, err)
+	require.Equal(t, cli.Content, string(distBts))
+}
