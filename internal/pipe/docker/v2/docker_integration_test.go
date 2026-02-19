@@ -313,12 +313,12 @@ func TestIntegrationHealthcheck(t *testing.T) {
 	require.NoError(t, Base{}.Healthcheck(testctx.Wrap(t.Context())))
 }
 
-func TestIIntegrationsDockerDaemonAvailable(t *testing.T) {
+func TestIntegrationIsDockerDaemonAvailable(t *testing.T) {
 	testlib.CheckDocker(t)
 	require.True(t, isDockerDaemonAvailable(t.Context()))
 }
 
-func TestSIntegrationnapshotNoDaemon(t *testing.T) {
+func TestIntegrationSnapshotNoDaemon(t *testing.T) {
 	testlib.CheckDocker(t)
 	testlib.SkipIfWindows(t, "registry images only available for windows")
 
