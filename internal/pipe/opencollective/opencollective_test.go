@@ -33,6 +33,7 @@ func TestAnnounceInvalidTemplate(t *testing.T) {
 }
 
 func TestAnnounceMissingEnv(t *testing.T) {
+	t.Setenv("OPENCOLLECTIVE_TOKEN", "")
 	ctx := testctx.WrapWithCfg(t.Context(), config.Project{
 		Announce: config.Announce{
 			OpenCollective: config.OpenCollective{},
