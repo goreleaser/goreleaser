@@ -313,6 +313,7 @@ func TestGitClientWithSigning(t *testing.T) {
 	sshKey := testlib.MakeNewSSHKey(t, "")
 
 	t.Run("commit signing enabled", func(t *testing.T) {
+		t.Parallel()
 		author := config.CommitAuthor{
 			Name:  "Foo",
 			Email: "foo@bar.com",
@@ -348,6 +349,7 @@ func TestGitClientWithSigning(t *testing.T) {
 	})
 
 	t.Run("commit signing disabled", func(t *testing.T) {
+		t.Parallel()
 		author := config.CommitAuthor{
 			Name:  "Foo",
 			Email: "foo@bar.com",
@@ -379,6 +381,7 @@ func TestGitClientWithSigning(t *testing.T) {
 	})
 
 	t.Run("commit signing with ssh format", func(t *testing.T) {
+		t.Parallel()
 		author := config.CommitAuthor{
 			Name:  "Foo",
 			Email: "foo@bar.com",
