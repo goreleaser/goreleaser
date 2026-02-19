@@ -8,10 +8,12 @@ import (
 	"testing"
 
 	"github.com/goreleaser/goreleaser/v2/internal/artifact"
+	"github.com/goreleaser/goreleaser/v2/internal/gio"
 	"github.com/goreleaser/goreleaser/v2/internal/testctx"
 	"github.com/goreleaser/goreleaser/v2/internal/testlib"
 	"github.com/goreleaser/goreleaser/v2/internal/yaml"
 	"github.com/goreleaser/goreleaser/v2/pkg/config"
+	"github.com/goreleaser/goreleaser/v2/pkg/context"
 	"github.com/stretchr/testify/require"
 )
 
@@ -455,4 +457,62 @@ func TestIntegrationExtraFile(t *testing.T) {
 	bpath := filepath.Join(dist, "foo_amd64", "prime", "testdata", "extra-file-2.txt")
 	requireEqualFileContents(t, "testdata/extra-file.txt", apath)
 	requireEqualFileContents(t, "testdata/extra-file-2.txt", bpath)
+}
+
+func requireEqualFileContents(tb testing.TB, a, b string) {
+	tb.Helper()
+	eq, err := gio.EqualFileContents(a, b)
+	require.NoError(tb, err)
+	require.True(tb, eq, "%s != %s", a, b)
+}
+
+func addBinaries(t *testing.T, ctx *context.Context, name, dist string) {
+	t.Helper()
+	for _, goos := range []string{"linux", "darwin"} {
+		for _, goarch := range []string{"amd64", "386", "arm"} {
+			binPath := filepath.Join(dist, name)
+			require.NoError(t, os.MkdirAll(filepath.Dir(binPath), 0o755))
+			f, err := os.Create(binPath)
+			require.NoError(t, err)
+			require.NoError(t, f.Close())
+			switch goarch {
+			case "arm":
+				ctx.Artifacts.Add(&artifact.Artifact{
+					Name:   "subdir/" + name,
+					Path:   binPath,
+					Goarch: goarch,
+					Goos:   goos,
+					Goarm:  "6",
+					Type:   artifact.Binary,
+					Extra: map[string]any{
+						artifact.ExtraID: name,
+					},
+				})
+
+			case "amd64":
+				ctx.Artifacts.Add(&artifact.Artifact{
+					Name:    "subdir/" + name,
+					Path:    binPath,
+					Goarch:  goarch,
+					Goos:    goos,
+					Goamd64: "v1",
+					Type:    artifact.Binary,
+					Extra: map[string]any{
+						artifact.ExtraID: name,
+					},
+				})
+			default:
+				ctx.Artifacts.Add(&artifact.Artifact{
+					Name:   "subdir/" + name,
+					Path:   binPath,
+					Goarch: goarch,
+					Goos:   goos,
+					Type:   artifact.Binary,
+					Extra: map[string]any{
+						artifact.ExtraID: name,
+					},
+				})
+			}
+		}
+	}
 }

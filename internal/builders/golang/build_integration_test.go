@@ -658,3 +658,35 @@ func TestIntegrationInvalidGoBinaryTpl(t *testing.T) {
 		Ext:    "",
 	}))
 }
+
+func writeMainWithoutMainFunc(t *testing.T, folder string) {
+	t.Helper()
+	require.NoError(t, os.WriteFile(
+		filepath.Join(folder, "main.go"),
+		[]byte("package main\nconst a = 2\nfunc notMain() {println(0)}"),
+		0o644,
+	))
+}
+
+func writeGoodMain(t *testing.T, folder string) {
+	t.Helper()
+	require.NoError(t, os.WriteFile(
+		filepath.Join(folder, "main.go"),
+		[]byte("package main\nvar a = 1\nfunc main() {println(0)}"),
+		0o644,
+	))
+}
+
+func writeTest(t *testing.T, folder string) {
+	t.Helper()
+	require.NoError(t, os.WriteFile(
+		filepath.Join(folder, "main_test.go"),
+		[]byte("package main\nimport\"testing\"\nfunc TestFoo(t *testing.T) {t.Log(\"OK\")}"),
+		0o644,
+	))
+	require.NoError(t, os.WriteFile(
+		filepath.Join(folder, "go.mod"),
+		[]byte("module foo\n"),
+		0o666,
+	))
+}

@@ -4,6 +4,7 @@ package sign
 
 import (
 	"bytes"
+	"crypto/rand"
 	"fmt"
 	"os"
 	"os/exec"
@@ -12,6 +13,7 @@ import (
 	"testing"
 
 	"github.com/goreleaser/goreleaser/v2/internal/artifact"
+	"github.com/goreleaser/goreleaser/v2/internal/gio"
 	"github.com/goreleaser/goreleaser/v2/internal/testctx"
 	"github.com/goreleaser/goreleaser/v2/internal/testlib"
 	"github.com/goreleaser/goreleaser/v2/internal/tmpl"
@@ -20,6 +22,30 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
+
+var (
+	originKeyring = "testdata/gnupg"
+	keyring       string
+)
+
+const (
+	user             = "nopass"
+	passwordUser     = "password"
+	passwordUserTmpl = "{{ .Env.GPG_PASSWORD }}"
+	fakeGPGKeyID     = "23E7505E"
+)
+
+func TestMain(m *testing.M) {
+	keyring = filepath.Join(os.TempDir(), fmt.Sprintf("gorel_gpg_test.%d", rand.Int()))
+	fmt.Println("copying", originKeyring, "to", keyring)
+	if err := gio.Copy(originKeyring, keyring); err != nil {
+		fmt.Printf("failed to copy %s to %s: %s", originKeyring, keyring, err)
+		os.Exit(1)
+	}
+
+	m.Run()
+	_ = os.RemoveAll(keyring)
+}
 
 func TestIntegrationSignArtifacts(t *testing.T) {
 	testlib.SkipIfWindows(t, "tries to use /usr/bin/gpg-agent")

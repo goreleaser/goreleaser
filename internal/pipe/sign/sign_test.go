@@ -1,13 +1,8 @@
 package sign
 
 import (
-	"fmt"
-	"math/rand/v2"
-	"os"
-	"path/filepath"
 	"testing"
 
-	"github.com/goreleaser/goreleaser/v2/internal/gio"
 	"github.com/goreleaser/goreleaser/v2/internal/git"
 	"github.com/goreleaser/goreleaser/v2/internal/skips"
 	"github.com/goreleaser/goreleaser/v2/internal/testctx"
@@ -16,30 +11,6 @@ import (
 	"github.com/goreleaser/goreleaser/v2/pkg/context"
 	"github.com/stretchr/testify/require"
 )
-
-var (
-	originKeyring = "testdata/gnupg"
-	keyring       string
-)
-
-const (
-	user             = "nopass"
-	passwordUser     = "password"
-	passwordUserTmpl = "{{ .Env.GPG_PASSWORD }}"
-	fakeGPGKeyID     = "23E7505E"
-)
-
-func TestMain(m *testing.M) {
-	keyring = filepath.Join(os.TempDir(), fmt.Sprintf("gorel_gpg_test.%d", rand.Int()))
-	fmt.Println("copying", originKeyring, "to", keyring)
-	if err := gio.Copy(originKeyring, keyring); err != nil {
-		fmt.Printf("failed to copy %s to %s: %s", originKeyring, keyring, err)
-		os.Exit(1)
-	}
-
-	m.Run()
-	_ = os.RemoveAll(keyring)
-}
 
 func TestDescription(t *testing.T) {
 	require.NotEmpty(t, Pipe{}.String())
