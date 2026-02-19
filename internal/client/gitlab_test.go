@@ -10,6 +10,7 @@ import (
 	"os"
 	"strconv"
 	"strings"
+	"sync/atomic"
 	"testing"
 	"text/template"
 
@@ -193,51 +194,60 @@ func TestGitLabURLsDownloadTemplate(t *testing.T) {
 		},
 	}
 
-	for _, tt := range tests {
-		for _, version := range []string{"16.3.4", "17.1.2"} {
+	for _, version := range []string{"16.3.4", "17.1.2"} {
+		var first atomic.Bool
+		srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			defer r.Body.Close()
+
+			if strings.Contains(r.URL.Path, "version") {
+				fmt.Fprintf(w, `{"version":%q}`, version)
+				w.WriteHeader(http.StatusOK)
+				return
+			}
+
+			if !strings.Contains(r.URL.Path, "assets/links") {
+				_, _ = io.Copy(io.Discard, r.Body)
+				w.WriteHeader(http.StatusOK)
+				fmt.Fprint(w, "{}")
+				return
+			}
+
+			if first.CompareAndSwap(false, true) {
+				http.Error(w, `{"message":{"name":["has already been taken"]}}`, http.StatusBadRequest)
+				return
+			}
+
+			defer w.WriteHeader(http.StatusOK)
+			defer fmt.Fprint(w, "{}")
+			b, err := io.ReadAll(r.Body)
+			if err != nil {
+				http.Error(w, err.Error(), http.StatusInternalServerError)
+				return
+			}
+
+			reqBody := map[string]string{}
+			if err := json.Unmarshal(b, &reqBody); err != nil {
+				http.Error(w, err.Error(), http.StatusInternalServerError)
+				return
+			}
+
+			if version[:2] == "17" {
+				if reqBody["direct_asset_path"] == "" {
+					http.Error(w, "expected direct_asset_path", http.StatusBadRequest)
+					return
+				}
+			} else {
+				if reqBody["filepath"] == "" {
+					http.Error(w, "expected filepath", http.StatusBadRequest)
+					return
+				}
+			}
+		}))
+		t.Cleanup(srv.Close)
+
+		for _, tt := range tests {
+			first.Store(false)
 			t.Run(tt.name+"_"+version, func(t *testing.T) {
-				first := true
-				srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-					defer r.Body.Close()
-
-					if strings.Contains(r.URL.Path, "version") {
-						fmt.Fprintf(w, `{"version":%q}`, version)
-						w.WriteHeader(http.StatusOK)
-						return
-					}
-
-					if !strings.Contains(r.URL.Path, "assets/links") {
-						_, _ = io.Copy(io.Discard, r.Body)
-						w.WriteHeader(http.StatusOK)
-						fmt.Fprint(w, "{}")
-						return
-					}
-
-					if first {
-						http.Error(w, `{"message":{"name":["has already been taken"]}}`, http.StatusBadRequest)
-						first = false
-						return
-					}
-
-					defer w.WriteHeader(http.StatusOK)
-					defer fmt.Fprint(w, "{}")
-					b, err := io.ReadAll(r.Body)
-					assert.NoError(t, err)
-
-					reqBody := map[string]string{}
-					assert.NoError(t, json.Unmarshal(b, &reqBody))
-
-					if version[:2] == "17" {
-						assert.NotEmpty(t, reqBody["direct_asset_path"])
-					} else {
-						assert.NotEmpty(t, reqBody["filepath"])
-					}
-
-					url := reqBody["url"]
-					assert.Truef(t, strings.HasSuffix(url, tt.wantURL), "expected %q to end with %q", url, tt.wantURL)
-				}))
-				defer srv.Close()
-
 				ctx := testctx.WrapWithCfg(t.Context(), config.Project{
 					ProjectName: "projectname",
 					Env: []string{

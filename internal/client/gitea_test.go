@@ -506,6 +506,7 @@ func TestGiteaReleaseURLTemplate(t *testing.T) {
 		},
 	}
 
+	srv := fakeGitea(t)
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			ctx := testctx.WrapWithCfg(t.Context(), config.Project{
@@ -513,7 +514,7 @@ func TestGiteaReleaseURLTemplate(t *testing.T) {
 					"GORELEASER_TEST_GITEA_URLS_DOWNLOAD=https://gitea.mycompany.com",
 				},
 				GiteaURLs: config.GiteaURLs{
-					API:      fakeGitea(t).URL,
+					API:      srv.URL,
 					Download: tt.downloadURL,
 				},
 				Release: config.Release{
