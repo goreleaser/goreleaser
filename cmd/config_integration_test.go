@@ -1,3 +1,5 @@
+//go:build integration
+
 package cmd
 
 import (
@@ -9,7 +11,7 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func TestConfigFlagNotSetButExists(t *testing.T) {
+func TestIntegrationConfigFlagNotSetButExists(t *testing.T) {
 	for _, name := range []string{
 		".config/goreleaser.yml",
 		".config/goreleaser.yaml",
@@ -37,7 +39,7 @@ pro: true
 some_possibly_pro_option: {}
 `
 
-func TestProConfigFile(t *testing.T) {
+func TestIntegrationProConfigFile(t *testing.T) {
 	folder := setup(t)
 	require.NoError(t, os.WriteFile(
 		filepath.Join(folder, "goreleaser.yml"),
@@ -63,7 +65,7 @@ func TestProConfigFile(t *testing.T) {
 	})
 }
 
-func TestConfigFileDoesntExist(t *testing.T) {
+func TestIntegrationConfigFileDoesntExist(t *testing.T) {
 	folder := setup(t)
 	err := os.Remove(filepath.Join(folder, "goreleaser.yml"))
 	require.NoError(t, err)
@@ -72,7 +74,7 @@ func TestConfigFileDoesntExist(t *testing.T) {
 	require.Equal(t, config.Project{}, proj)
 }
 
-func TestConfigFileFromStdin(t *testing.T) {
+func TestIntegrationConfigFileFromStdin(t *testing.T) {
 	folder := setup(t)
 	err := os.Remove(filepath.Join(folder, "goreleaser.yml"))
 	require.NoError(t, err)
