@@ -1,3 +1,5 @@
+//go:build integration
+
 package docker
 
 import (
@@ -19,7 +21,7 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func TestRun(t *testing.T) {
+func TestIntegrationRun(t *testing.T) {
 	testlib.CheckDocker(t)
 	testlib.SkipIfWindows(t, "registry images only available for windows")
 
@@ -180,7 +182,7 @@ func TestRun(t *testing.T) {
 	})
 }
 
-func TestPublish(t *testing.T) {
+func TestIntegrationPublish(t *testing.T) {
 	testlib.CheckDocker(t)
 	testlib.SkipIfWindows(t, "registry images only available for windows")
 
@@ -298,25 +300,25 @@ func TestPublish(t *testing.T) {
 	})
 }
 
-func TestGetBuildxDriver(t *testing.T) {
+func TestIntegrationGetBuildxDriver(t *testing.T) {
 	testlib.CheckDocker(t)
 	testlib.SkipIfWindows(t, "no buildx on Windows")
 	checkBuildxDriver(t.Context())
 	require.NotEmpty(t, getBuildxDriver(t.Context()))
 }
 
-func TestHealthcheck(t *testing.T) {
+func TestIntegrationHealthcheck(t *testing.T) {
 	testlib.CheckDocker(t)
 	testlib.SkipIfWindows(t, "no buildx on Windows")
 	require.NoError(t, Base{}.Healthcheck(testctx.Wrap(t.Context())))
 }
 
-func TestIsDockerDaemonAvailable(t *testing.T) {
+func TestIIntegrationsDockerDaemonAvailable(t *testing.T) {
 	testlib.CheckDocker(t)
 	require.True(t, isDockerDaemonAvailable(t.Context()))
 }
 
-func TestSnapshotNoDaemon(t *testing.T) {
+func TestSIntegrationnapshotNoDaemon(t *testing.T) {
 	testlib.CheckDocker(t)
 	testlib.SkipIfWindows(t, "registry images only available for windows")
 
@@ -376,6 +378,38 @@ func TestSnapshotNoDaemon(t *testing.T) {
 		out, err := cmd.CombinedOutput()
 		require.Error(t, err, "image %s should not be loaded locally when daemon unavailable, but docker inspect succeeded: %s", img.Name, string(out))
 	}
+}
+
+func TestIntegrationIsDockerDaemonAvailableNoDaemon(t *testing.T) {
+	t.Setenv("DOCKER_HOST", "unix:///nonexistent.sock")
+	require.False(t, isDockerDaemonAvailable(t.Context()))
+}
+
+func TestIntegrationDisable(t *testing.T) {
+	t.Run("disabled", func(t *testing.T) {
+		ctx := testctx.WrapWithCfg(t.Context(), config.Project{
+			DockersV2: []config.DockerV2{
+				{
+					Disable: "true",
+				},
+			},
+		})
+		require.NoError(t, Base{}.Default(ctx))
+		testlib.AssertSkipped(t, Snapshot{}.Run(ctx))
+		testlib.AssertSkipped(t, Publish{}.Publish(ctx))
+	})
+	t.Run("template error", func(t *testing.T) {
+		ctx := testctx.WrapWithCfg(t.Context(), config.Project{
+			DockersV2: []config.DockerV2{
+				{
+					Disable: "{{ .no }}",
+				},
+			},
+		})
+		require.NoError(t, Base{}.Default(ctx))
+		testlib.RequireTemplateError(t, Snapshot{}.Run(ctx))
+		testlib.RequireTemplateError(t, Publish{}.Publish(ctx))
+	})
 }
 
 func names(in []*artifact.Artifact) []string {
