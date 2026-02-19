@@ -1,13 +1,10 @@
 package sign
 
 import (
-	"bytes"
 	"fmt"
 	"math/rand/v2"
 	"os"
-	"os/exec"
 	"path/filepath"
-	"strings"
 	"testing"
 
 	"github.com/goreleaser/goreleaser/v2/internal/gio"
