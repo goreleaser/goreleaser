@@ -62,6 +62,12 @@ func TestBuild(t *testing.T) {
 	_, err := exec.CommandContext(t.Context(), "cargo", "init", "--bin", "--name=proj").CombinedOutput()
 	require.NoError(t, err)
 
+	f, err := os.OpenFile("Cargo.toml", os.O_APPEND|os.O_WRONLY, 0o644)
+	require.NoError(t, err)
+	_, err = f.WriteString("\n[profile.release]\nopt-level = 0\n")
+	require.NoError(t, f.Close())
+	require.NoError(t, err)
+
 	modTime := time.Now().AddDate(-1, 0, 0).Round(time.Second).UTC()
 	ctx := testctx.WrapWithCfg(t.Context(), config.Project{
 		Dist:        "dist",

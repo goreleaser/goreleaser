@@ -30,7 +30,7 @@ func TestIsDynamicallyLinked(t *testing.T) {
 			tmp := createTempFile(t, tc.source)
 
 			binPath := filepath.Join(tmp, "bin")
-			cmd := exec.Command("go", "build", "-o", binPath, ".")
+			cmd := exec.Command("go", "build", "-ldflags=-s -w", "-gcflags=all=-N -l", "-o", binPath, ".")
 			cmd.Dir = tmp
 			cmd.Env = append(os.Environ(), "CGO_ENABLED=0", "GOOS=linux", "GOARCH=amd64")
 			output, err := cmd.CombinedOutput()
