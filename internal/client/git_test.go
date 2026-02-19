@@ -155,7 +155,7 @@ func TestGitClient(t *testing.T) {
 		})
 
 		repo := Repo{
-			GitURL:     "git@github.com:nope/nopenopenopenope",
+			GitURL:     "git@localhost:nope/nopenopenopenope",
 			PrivateKey: testlib.MakeNewSSHKey(t, ""),
 		}
 		cli := NewGitUploadClient(repo.Branch)

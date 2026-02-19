@@ -85,6 +85,7 @@ func TestClientNewGiteaInvalidURL(t *testing.T) {
 }
 
 func TestClientNewGitLab(t *testing.T) {
+	t.Setenv("CI_SERVER_VERSION", "18.0.0")
 	ctx := testctx.Wrap(t.Context(), testctx.GitLabTokenType)
 	client, err := New(ctx)
 	require.NoError(t, err)
@@ -103,6 +104,7 @@ func TestCheckBodyMaxLength(t *testing.T) {
 }
 
 func TestNewIfToken(t *testing.T) {
+	t.Setenv("CI_SERVER_VERSION", "18.0.0")
 	t.Run("valid", func(t *testing.T) {
 		ctx := testctx.Wrap(t.Context(), testctx.GitLabTokenType)
 		client, err := New(ctx)

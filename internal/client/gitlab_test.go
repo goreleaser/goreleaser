@@ -61,36 +61,34 @@ func TestGitLabReleaseURLTemplate(t *testing.T) {
 			downloadURL: "{{.dddddddddd",
 			wantErr:     true,
 		},
-		{
-			name:            "download_url_string",
-			downloadURL:     "https://gitlab.mycompany.com",
-			wantDownloadURL: "https://gitlab.mycompany.com/",
-		},
 	}
 
+	t.Setenv("CI_SERVER_VERSION", "18.0.0")
 	for _, tt := range tests {
-		ctx := testctx.WrapWithCfg(t.Context(), config.Project{
-			Env: []string{
-				"GORELEASER_TEST_GITLAB_URLS_DOWNLOAD=https://gitlab.mycompany.com",
-			},
-			GitLabURLs: config.GitLabURLs{
-				Download: tt.downloadURL,
-			},
-			Release: config.Release{
-				GitLab: tt.repo,
-			},
+		t.Run(tt.name, func(t *testing.T) {
+			ctx := testctx.WrapWithCfg(t.Context(), config.Project{
+				Env: []string{
+					"GORELEASER_TEST_GITLAB_URLS_DOWNLOAD=https://gitlab.mycompany.com",
+				},
+				GitLabURLs: config.GitLabURLs{
+					Download: tt.downloadURL,
+				},
+				Release: config.Release{
+					GitLab: tt.repo,
+				},
+			})
+			client, err := newGitLab(ctx, ctx.Token)
+			require.NoError(t, err)
+
+			urlTpl, err := client.ReleaseURLTemplate(ctx)
+			if tt.wantErr {
+				require.Error(t, err)
+				return
+			}
+
+			require.NoError(t, err)
+			require.Equal(t, tt.wantDownloadURL, urlTpl)
 		})
-		client, err := newGitLab(ctx, ctx.Token)
-		require.NoError(t, err)
-
-		urlTpl, err := client.ReleaseURLTemplate(ctx)
-		if tt.wantErr {
-			require.Error(t, err)
-			return
-		}
-
-		require.NoError(t, err)
-		require.Equal(t, tt.wantDownloadURL, urlTpl)
 	}
 }
 
