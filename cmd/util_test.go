@@ -17,7 +17,7 @@ func (e *exitMemento) Exit(i int) {
 	e.code = i
 }
 
-func setup(tb testing.TB) string {
+func setup(tb testing.TB) string { //nolint:unparam
 	tb.Helper()
 
 	_ = os.Unsetenv("GITHUB_TOKEN")
