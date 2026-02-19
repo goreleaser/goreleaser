@@ -37,6 +37,7 @@ A big **thank you** to all current, past, and future sponsors!
 <div align="center">
 
   <a href="https://depot.dev" target="_blank" rel="noopener sponsored"><img src="https://images.opencollective.com/depot/39125a1/logo/96.png" alt="Depot" width="80" height="80" style="border-radius: 8px; margin: 8px;"></a>
+  <a href="https://www.n-ix.com/" target="_blank" rel="noopener sponsored"><img src="https://images.opencollective.com/n-ix-ltd/575a7a5/logo/96.png" alt="N-iX Ltd" width="80" height="80" style="border-radius: 8px; margin: 8px;"></a>
   <a href="https://github.com/DataDog" target="_blank" rel="noopener sponsored"><img src="https://avatars.githubusercontent.com/u/365230?v=4" alt="Datadog, Inc." width="80" height="80" style="border-radius: 8px; margin: 8px;"></a>
 
 </div>
