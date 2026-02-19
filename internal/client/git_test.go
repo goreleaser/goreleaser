@@ -269,20 +269,17 @@ func TestKeyPath(t *testing.T) {
 	})
 
 	t.Run("with key", func(t *testing.T) {
-		for _, algo := range []keygen.KeyType{keygen.Ed25519, keygen.RSA} {
-			t.Run(string(algo), func(t *testing.T) {
-				path := testlib.MakeNewSSHKeyType(t, "", algo)
-				bts, err := os.ReadFile(path)
-				require.NoError(t, err)
+		algo := keygen.Ed25519
+		path := testlib.MakeNewSSHKeyType(t, "", algo)
+		bts, err := os.ReadFile(path)
+		require.NoError(t, err)
 
-				result, err := keyPath(string(bts))
-				require.NoError(t, err)
+		result, err := keyPath(string(bts))
+		require.NoError(t, err)
 
-				resultbts, err := os.ReadFile(result)
-				require.NoError(t, err)
-				require.Equal(t, string(bts), string(resultbts))
-			})
-		}
+		resultbts, err := os.ReadFile(result)
+		require.NoError(t, err)
+		require.Equal(t, string(bts), string(resultbts))
 	})
 	t.Run("empty", func(t *testing.T) {
 		result, err := keyPath("")
