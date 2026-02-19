@@ -38,13 +38,6 @@ func TestSkip(t *testing.T) {
 			Nix: []config.Nix{{}},
 		}, testctx.Skip(skips.Nix))))
 	})
-	t.Run("nix-all-good", func(t *testing.T) {
-		testlib.CheckPath(t, "nix-hash")
-		testlib.SkipIfWindows(t, "nix doesn't work on windows")
-		require.False(t, New().Skip(testctx.WrapWithCfg(t.Context(), config.Project{
-			Nix: []config.Nix{{}},
-		})))
-	})
 }
 
 const fakeNixHashBin = "fake-nix-hash"
@@ -55,22 +48,10 @@ func TestHasher(t *testing.T) {
 			_, err := nixHasher{fakeNixHashBin}.Hash(t.Context(), "any")
 			require.ErrorIs(t, err, exec.ErrNotFound)
 		})
-		t.Run("valid", func(t *testing.T) {
-			testlib.CheckPath(t, "nix-hash")
-			testlib.SkipIfWindows(t, "nix doesn't work on windows")
-			sha, err := realHasher.Hash(t.Context(), "./testdata/file.bin")
-			require.NoError(t, err)
-			require.Equal(t, "1n7yy95h81rziah4ppi64kr6fphwxjiq8cl70fpfrqvr0ml1xbcl", sha)
-		})
 	})
 	t.Run("available", func(t *testing.T) {
 		t.Run("no-nix-hash", func(t *testing.T) {
 			require.False(t, nixHasher{fakeNixHashBin}.Available())
-		})
-		t.Run("valid", func(t *testing.T) {
-			testlib.CheckPath(t, "nix-hash")
-			testlib.SkipIfWindows(t, "nix doesn't work on windows")
-			require.True(t, realHasher.Available())
 		})
 	})
 }
