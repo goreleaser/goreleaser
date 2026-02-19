@@ -88,7 +88,7 @@ func TestExecute(t *testing.T) {
 				return []config.Publisher{{
 					Name: "test",
 					IDs:  []string{"archive"},
-					Cmd:  testlib.Touch(outDir + "/{{ .ArtifactName }}"),
+					Cmd:  testlib.Touch(filepath.Join(outDir, "{{ .ArtifactName }}")),
 				}}
 			},
 			check: func(tb testing.TB, outDir string) {
@@ -101,7 +101,7 @@ func TestExecute(t *testing.T) {
 			publishers: func(outDir string) []config.Publisher {
 				return []config.Publisher{{
 					Name:    "test",
-					Cmd:     testlib.Touch(outDir + "/{{ .ArtifactName }}"),
+					Cmd:     testlib.Touch(filepath.Join(outDir, "{{ .ArtifactName }}")),
 					Disable: "false",
 				}}
 			},
@@ -138,7 +138,7 @@ func TestExecute(t *testing.T) {
 				return []config.Publisher{{
 					Name:     "test",
 					Checksum: true,
-					Cmd:      testlib.Touch(outDir + "/{{ .ArtifactName }}"),
+					Cmd:      testlib.Touch(filepath.Join(outDir, "{{ .ArtifactName }}")),
 				}}
 			},
 			check: func(tb testing.TB, outDir string) {
@@ -152,7 +152,7 @@ func TestExecute(t *testing.T) {
 				return []config.Publisher{{
 					Name: "test",
 					Meta: true,
-					Cmd:  testlib.Touch(outDir + "/{{ .ArtifactName }}"),
+					Cmd:  testlib.Touch(filepath.Join(outDir, "{{ .ArtifactName }}")),
 				}}
 			},
 			check: func(tb testing.TB, outDir string) {
@@ -166,7 +166,7 @@ func TestExecute(t *testing.T) {
 				return []config.Publisher{{
 					Name:      "test",
 					Signature: true,
-					Cmd:       testlib.Touch(outDir + "/{{ .ArtifactName }}"),
+					Cmd:       testlib.Touch(filepath.Join(outDir, "{{ .ArtifactName }}")),
 				}}
 			},
 			check: func(tb testing.TB, outDir string) {
@@ -180,7 +180,7 @@ func TestExecute(t *testing.T) {
 				return []config.Publisher{{
 					Name: "test",
 					IDs:  []string{"img", "mnf"},
-					Cmd:  testlib.Touch(outDir + "/{{ .ArtifactName }}"),
+					Cmd:  testlib.Touch(filepath.Join(outDir, "{{ .ArtifactName }}")),
 				}}
 			},
 			check: func(tb testing.TB, outDir string) {
@@ -193,7 +193,7 @@ func TestExecute(t *testing.T) {
 			publishers: func(outDir string) []config.Publisher {
 				return []config.Publisher{{
 					Name: "test",
-					Cmd:  testlib.Touch(outDir + "/{{ .ArtifactName }}"),
+					Cmd:  testlib.Touch(filepath.Join(outDir, "{{ .ArtifactName }}")),
 					ExtraFiles: []config.ExtraFile{
 						{Glob: path.Join("testdata", "*.txt")},
 					},
@@ -209,7 +209,7 @@ func TestExecute(t *testing.T) {
 			publishers: func(outDir string) []config.Publisher {
 				return []config.Publisher{{
 					Name: "test",
-					Cmd:  testlib.Touch(outDir + "/{{ .ArtifactName }}"),
+					Cmd:  testlib.Touch(filepath.Join(outDir, "{{ .ArtifactName }}")),
 					ExtraFiles: []config.ExtraFile{
 						{
 							Glob:         path.Join("testdata", "*.txt"),
@@ -231,7 +231,7 @@ func TestExecute(t *testing.T) {
 					Signature: true,
 					IDs:       []string{"debpkg"},
 					Dir:       "{{ dir .ArtifactPath }}",
-					Cmd:       testlib.Touch(outDir + "/{{ .ArtifactName }}"),
+					Cmd:       testlib.Touch(filepath.Join(outDir, "{{ .ArtifactName }}")),
 				}}
 			},
 			check: func(tb testing.TB, outDir string) {
