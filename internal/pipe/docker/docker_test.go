@@ -7,6 +7,7 @@ import (
 	"os/exec"
 	"path/filepath"
 	"strings"
+	"sync"
 	"testing"
 	"time"
 
@@ -31,12 +32,14 @@ const (
 func start(tb testing.TB) {
 	tb.Helper()
 	tb.Log("starting registries")
-	testlib.StartRegistry(tb, "registry", registryPort)
-	testlib.StartRegistry(tb, "alt_registry", altRegistryPort)
+	var wg sync.WaitGroup
+	wg.Go(func() { testlib.StartRegistry(tb, "alt_registry", altRegistryPort) })
+	wg.Go(func() { testlib.StartRegistry(tb, "registry", registryPort) })
+	wg.Wait()
 }
 
 // TODO: this test is too big... split in smaller tests? Mainly the manifest ones...
-func TestRunPipe(t *testing.T) {
+func TestRunPipe(t *testing.T) { //nolint:tparallel
 	testlib.CheckDocker(t)
 	testlib.SkipIfWindows(t, "registry images only available for windows")
 	type errChecker func(*testing.T, error)
@@ -102,6 +105,7 @@ func TestRunPipe(t *testing.T) {
 		pubAssertError      errChecker
 		manifestAssertError errChecker
 		extraPrepare        func(t *testing.T, ctx *context.Context)
+		singleImager        bool
 	}{
 		"multiarch": {
 			dockers: []config.Docker{
@@ -423,7 +427,7 @@ func TestRunPipe(t *testing.T) {
 				altRegistry + "goreleaser/test_run_pipe:latest",
 			},
 			assertImageLabels: shouldFindImagesWithLabels(
-				"goreleaser/test_run_pipe",
+				"goreleaser/test_run_pipe:v1.0.0",
 				"label=org.label-schema.schema-version=1.0",
 				"label=org.label-schema.version=1.0.0",
 				"label=org.label-schema.vcs-ref=a1b2c3d4",
@@ -488,6 +492,7 @@ func TestRunPipe(t *testing.T) {
 			assertImageLabels:   noLabels,
 			pubAssertError:      shouldNotErr,
 			manifestAssertError: shouldNotErr,
+			singleImager:        true,
 		},
 		"image template with env": {
 			env: map[string]string{
@@ -567,6 +572,7 @@ func TestRunPipe(t *testing.T) {
 			assertError:         shouldErr("no image templates found"),
 			pubAssertError:      shouldNotErr,
 			manifestAssertError: shouldNotErr,
+			singleImager:        true,
 		},
 		"valid with ids": {
 			dockers: []config.Docker{
@@ -779,6 +785,7 @@ func TestRunPipe(t *testing.T) {
 			},
 			assertImageLabels: noLabels,
 			assertError:       shouldTemplateErr,
+			singleImager:      true,
 		},
 		"build_flag_template_error": {
 			dockers: []config.Docker{
@@ -796,6 +803,7 @@ func TestRunPipe(t *testing.T) {
 			},
 			assertImageLabels: noLabels,
 			assertError:       shouldTemplateErr,
+			singleImager:      true,
 		},
 		"missing_env_on_tag_template": {
 			dockers: []config.Docker{
@@ -810,6 +818,7 @@ func TestRunPipe(t *testing.T) {
 			},
 			assertImageLabels: noLabels,
 			assertError:       shouldTemplateErr,
+			singleImager:      true,
 		},
 		"missing_env_on_build_flag_template": {
 			dockers: []config.Docker{
@@ -827,6 +836,7 @@ func TestRunPipe(t *testing.T) {
 			},
 			assertImageLabels: noLabels,
 			assertError:       shouldTemplateErr,
+			singleImager:      true,
 		},
 		"image_has_projectname_template_variable": {
 			dockers: []config.Docker{
@@ -856,18 +866,18 @@ func TestRunPipe(t *testing.T) {
 		"no_permissions": {
 			dockers: []config.Docker{
 				{
-					ImageTemplates: []string{"docker.io/nope:latest"},
+					ImageTemplates: []string{"localhost:1/nope:latest"},
 					Goos:           "linux",
 					Goarch:         "amd64",
 					Dockerfile:     "testdata/Dockerfile",
 				},
 			},
 			expect: []string{
-				"docker.io/nope:latest",
+				"localhost:1/nope:latest",
 			},
 			assertImageLabels:   noLabels,
 			assertError:         shouldNotErr,
-			pubAssertError:      shouldErr(`failed to push docker.io/nope:latest`),
+			pubAssertError:      shouldErr(`failed to push localhost:1/nope:latest`),
 			manifestAssertError: shouldNotErr,
 		},
 		"dockerfile_doesnt_exist": {
@@ -881,6 +891,7 @@ func TestRunPipe(t *testing.T) {
 			},
 			assertImageLabels: noLabels,
 			assertError:       shouldErr(`failed to copy dockerfile`),
+			singleImager:      true,
 		},
 		"extra_file_doesnt_exist": {
 			dockers: []config.Docker{
@@ -896,6 +907,7 @@ func TestRunPipe(t *testing.T) {
 			},
 			assertImageLabels: noLabels,
 			assertError:       shouldErr(`failed to copy extra file 'testdata/nope.txt'`),
+			singleImager:      true,
 		},
 		"binary doesnt exist": {
 			dockers: []config.Docker{
@@ -922,6 +934,7 @@ func TestRunPipe(t *testing.T) {
 					},
 				})
 			},
+			singleImager: true,
 		},
 		"multiple_ids": {
 			dockers: []config.Docker{
@@ -984,6 +997,7 @@ func TestRunPipe(t *testing.T) {
 	for name, docker := range table {
 		for imager := range imagers {
 			t.Run(name+" on "+imager, func(t *testing.T) {
+				t.Parallel()
 				folder := t.TempDir()
 				dist := filepath.Join(folder, "dist")
 				require.NoError(t, os.MkdirAll(filepath.Join(dist, "mybin", "subdir"), 0o755))
@@ -1056,9 +1070,18 @@ func TestRunPipe(t *testing.T) {
 					return exec.CommandContext(t.Context(), "docker", "rmi", "--force", img).Run()
 				}
 
-				// this might fail as the image doesnt exist yet, so lets ignore the error
-				for _, img := range docker.expect {
-					_ = rmi(img)
+				t.Cleanup(func() {
+					for _, img := range docker.expect {
+						_ = rmi(img)
+					}
+					for _, m := range docker.manifests {
+						_ = exec.CommandContext(t.Context(), "docker", "manifest", "rm", m.NameTemplate).Run()
+					}
+				})
+
+				// pre-clean manifests from previous runs to avoid "refusing to amend" errors
+				for _, m := range docker.manifests {
+					_ = exec.CommandContext(t.Context(), "docker", "manifest", "rm", m.NameTemplate).Run()
 				}
 
 				for i := range ctx.Config.Dockers {
@@ -1085,11 +1108,9 @@ func TestRunPipe(t *testing.T) {
 					docker.assertImageLabels(t, d.Use)
 				}
 
-				// this might should not fail as the image should have been created when
-				// the step ran
+				// verify images exist
 				for _, img := range docker.expect {
-					// t.Log("removing docker image", img)
-					require.NoError(t, rmi(img), "could not delete image %s", img)
+					require.NoError(t, exec.CommandContext(t.Context(), "docker", "inspect", img).Run(), "could not find image %s", img)
 				}
 
 				_ = ctx.Artifacts.Filter(
@@ -1103,6 +1124,9 @@ func TestRunPipe(t *testing.T) {
 					return nil
 				})
 			})
+			if docker.singleImager {
+				break
+			}
 		}
 	}
 }
