@@ -92,6 +92,7 @@ func TestExecute(t *testing.T) {
 				}}
 			},
 			check: func(tb testing.TB, outDir string) {
+				tb.Helper()
 				require.Equal(tb, []string{"a.tar"}, dirFiles(tb, outDir))
 			},
 		},
@@ -105,6 +106,7 @@ func TestExecute(t *testing.T) {
 				}}
 			},
 			check: func(tb testing.TB, outDir string) {
+				tb.Helper()
 				require.ElementsMatch(tb, []string{"a.deb", "a.tar", "a.ubi", "foobar", "foobar-amd64"}, dirFiles(tb, outDir))
 			},
 		},
@@ -140,6 +142,7 @@ func TestExecute(t *testing.T) {
 				}}
 			},
 			check: func(tb testing.TB, outDir string) {
+				tb.Helper()
 				require.ElementsMatch(tb, []string{"a.deb", "a.sum", "a.tar", "a.ubi", "foobar", "foobar-amd64"}, dirFiles(tb, outDir))
 			},
 		},
@@ -153,6 +156,7 @@ func TestExecute(t *testing.T) {
 				}}
 			},
 			check: func(tb testing.TB, outDir string) {
+				tb.Helper()
 				require.ElementsMatch(tb, []string{"a.deb", "a.json", "a.tar", "a.ubi", "foobar", "foobar-amd64"}, dirFiles(tb, outDir))
 			},
 		},
@@ -166,6 +170,7 @@ func TestExecute(t *testing.T) {
 				}}
 			},
 			check: func(tb testing.TB, outDir string) {
+				tb.Helper()
 				require.ElementsMatch(tb, []string{"a.deb", "a.pem", "a.sig", "a.tar", "a.ubi", "foobar", "foobar-amd64"}, dirFiles(tb, outDir))
 			},
 		},
@@ -179,6 +184,7 @@ func TestExecute(t *testing.T) {
 				}}
 			},
 			check: func(tb testing.TB, outDir string) {
+				tb.Helper()
 				require.ElementsMatch(tb, []string{"foobar", "foobar-amd64"}, dirFiles(tb, outDir))
 			},
 		},
@@ -194,6 +200,7 @@ func TestExecute(t *testing.T) {
 				}}
 			},
 			check: func(tb testing.TB, outDir string) {
+				tb.Helper()
 				require.ElementsMatch(tb, []string{"a.deb", "a.tar", "a.txt", "a.ubi", "foobar", "foobar-amd64"}, dirFiles(tb, outDir))
 			},
 		},
@@ -212,6 +219,7 @@ func TestExecute(t *testing.T) {
 				}}
 			},
 			check: func(tb testing.TB, outDir string) {
+				tb.Helper()
 				require.ElementsMatch(tb, []string{"a.deb", "a.tar", "a.ubi", "b.txt", "foobar", "foobar-amd64"}, dirFiles(tb, outDir))
 			},
 		},
@@ -227,6 +235,7 @@ func TestExecute(t *testing.T) {
 				}}
 			},
 			check: func(tb testing.TB, outDir string) {
+				tb.Helper()
 				require.Equal(tb, []string{"a.deb"}, dirFiles(tb, outDir))
 			},
 		},
@@ -236,7 +245,11 @@ func TestExecute(t *testing.T) {
 				return []config.Publisher{{
 					Name: "test",
 					IDs:  []string{"debpkg"},
-					Cmd:  assertEnv(map[string]string{"PROJECT": "blah", "ARTIFACT": "a.deb", "SECRET": "x"}),
+					Cmd: assertEnv(map[string]string{
+						"PROJECT":  "blah",
+						"ARTIFACT": "a.deb",
+						"SECRET":   "x",
+					}),
 					Env: []string{
 						"PROJECT={{.ProjectName}}",
 						"ARTIFACT={{.ArtifactName}}",
@@ -299,22 +312,22 @@ func TestExecute(t *testing.T) {
 
 func assertEnv(kvs map[string]string) string {
 	var (
-		fmt_ string
-		join string
-		wrap string
+		format string
+		join   string
+		wrap   string
 	)
 	if testlib.IsWindows() {
-		fmt_ = `if not "%%%s%%"=="%s" exit /b 1`
+		format = `if not "%%%s%%"=="%s" exit /b 1`
 		join = " & "
 		wrap = "cmd.exe /c '%s'"
 	} else {
-		fmt_ = `test "$%s" = "%s"`
+		format = `test "$%s" = "%s"`
 		join = " && "
 		wrap = "sh -c '%s'"
 	}
 	var parts []string
 	for k, v := range kvs {
-		parts = append(parts, fmt.Sprintf(fmt_, k, v))
+		parts = append(parts, fmt.Sprintf(format, k, v))
 	}
 	return fmt.Sprintf(wrap, strings.Join(parts, join))
 }
