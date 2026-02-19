@@ -1,0 +1,214 @@
+//go:build integration
+
+package poetry
+
+import (
+	"fmt"
+	"os"
+	"os/exec"
+	"path/filepath"
+	"testing"
+	"time"
+
+	"github.com/goreleaser/goreleaser/v2/internal/artifact"
+	"github.com/goreleaser/goreleaser/v2/internal/testctx"
+	"github.com/goreleaser/goreleaser/v2/internal/testlib"
+	api "github.com/goreleaser/goreleaser/v2/pkg/build"
+	"github.com/goreleaser/goreleaser/v2/pkg/config"
+	"github.com/stretchr/testify/require"
+)
+
+func TestIntegrationBuild(t *testing.T) {
+	testlib.CheckPath(t, "poetry")
+
+	folder := testlib.Mktmp(t)
+	cmd := exec.CommandContext(t.Context(), "poetry", "new", "proj")
+	cmd.Dir = folder
+	_, err := cmd.CombinedOutput()
+	require.NoError(t, err)
+
+	t.Chdir(filepath.Join(folder, "proj"))
+
+	modTime := time.Now().AddDate(-1, 0, 0).Round(time.Second).UTC()
+	ctx := testctx.WrapWithCfg(t.Context(), config.Project{
+		Dist:        filepath.Join(folder, "dist"),
+		ProjectName: "proj",
+		Builds: []config.Build{
+			{
+				ID:           "proj-wheel",
+				ModTimestamp: fmt.Sprintf("%d", modTime.Unix()),
+				BuildDetails: config.BuildDetails{
+					Buildmode: "wheel",
+				},
+			},
+			{
+				ID:           "proj-sdist",
+				ModTimestamp: fmt.Sprintf("%d", modTime.Unix()),
+				BuildDetails: config.BuildDetails{
+					Buildmode: "sdist",
+				},
+			},
+		},
+	})
+
+	dir := filepath.Join("dist", "proj-all-all", "proj")
+	require.NoError(t, os.MkdirAll(filepath.Dir(dir), 0o755)) // this happens on internal/pipe/build/ when in prod
+	for _, build := range ctx.Config.Builds {
+		build, err := Default.WithDefaults(build)
+		require.NoError(t, err)
+		opts := api.Options{
+			Path:   dir,
+			Target: Target{},
+		}
+		require.NoError(t, Default.Build(ctx, build, opts))
+	}
+
+	list := ctx.Artifacts
+	require.NoError(t, list.Visit(func(a *artifact.Artifact) error {
+		s, err := filepath.Rel(folder, a.Path)
+		if err == nil {
+			a.Path = s
+		}
+		return nil
+	}))
+
+	builds := list.List()
+	require.Len(t, builds, 2)
+
+	testlib.RequireEqualArtifacts(t, []*artifact.Artifact{
+		{
+			Name:   "proj-0.1.0-py3-none-any.whl",
+			Path:   "dist/proj-all-all/proj-0.1.0-py3-none-any.whl",
+			Goos:   "all",
+			Goarch: "all",
+			Target: "none-any",
+			Type:   artifact.PyWheel,
+			Extra: artifact.Extras{
+				artifact.ExtraBuilder: "poetry",
+				artifact.ExtraExt:     ".whl",
+				artifact.ExtraID:      "proj-wheel",
+			},
+		},
+		{
+			Name:   "proj-0.1.0.tar.gz",
+			Path:   "dist/proj-all-all/proj-0.1.0.tar.gz",
+			Goos:   "all",
+			Goarch: "all",
+			Target: "none-any",
+			Type:   artifact.PySdist,
+			Extra: artifact.Extras{
+				artifact.ExtraBuilder: "poetry",
+				artifact.ExtraExt:     ".tar.gz",
+				artifact.ExtraID:      "proj-sdist",
+			},
+		},
+	}, builds)
+
+	for _, art := range builds {
+		require.FileExists(t, art.Path)
+		fi, err := os.Stat(art.Path)
+		require.NoError(t, err)
+		require.True(t, modTime.Equal(fi.ModTime()))
+	}
+}
+
+func TestIntegrationBuildSpecificModes(t *testing.T) {
+	testlib.CheckPath(t, "poetry")
+
+	folder := testlib.Mktmp(t)
+	cmd := exec.CommandContext(t.Context(), "poetry", "new", "proj")
+	cmd.Dir = folder
+	_, err := cmd.CombinedOutput()
+	require.NoError(t, err)
+
+	t.Chdir(filepath.Join(folder, "proj"))
+
+	modTime := time.Now().AddDate(-1, 0, 0).Round(time.Second).UTC()
+	ctx := testctx.WrapWithCfg(t.Context(), config.Project{
+		Dist:        filepath.Join(folder, "dist"),
+		ProjectName: "proj",
+		Builds: []config.Build{
+			{
+				ID:           "wheel",
+				ModTimestamp: fmt.Sprintf("%d", modTime.Unix()),
+				BuildDetails: config.BuildDetails{
+					Buildmode: "wheel",
+				},
+			},
+			{
+				ID:           "sdist",
+				ModTimestamp: fmt.Sprintf("%d", modTime.Unix()),
+				BuildDetails: config.BuildDetails{
+					Buildmode: "sdist",
+				},
+			},
+		},
+	})
+
+	dir := filepath.Join("dist", "proj-all-all")
+	require.NoError(t, os.MkdirAll(dir, 0o755)) // this happens on internal/pipe/build/ when in prod
+
+	wheelBuild, err := Default.WithDefaults(ctx.Config.Builds[0])
+	require.NoError(t, err)
+	wheelOptions := api.Options{
+		Path:   filepath.Join(dir, "proj"),
+		Target: Target{},
+	}
+	require.NoError(t, Default.Build(ctx, wheelBuild, wheelOptions))
+
+	sdistBuild, err := Default.WithDefaults(ctx.Config.Builds[1])
+	require.NoError(t, err)
+	sdistOptions := api.Options{
+		Path:   filepath.Join(dir, "proj"),
+		Target: Target{},
+	}
+	require.NoError(t, Default.Build(ctx, sdistBuild, sdistOptions))
+
+	list := ctx.Artifacts
+	require.NoError(t, list.Visit(func(a *artifact.Artifact) error {
+		s, err := filepath.Rel(folder, a.Path)
+		if err == nil {
+			a.Path = s
+		}
+		return nil
+	}))
+
+	builds := list.List()
+	require.Len(t, builds, 2)
+
+	testlib.RequireEqualArtifacts(t, []*artifact.Artifact{
+		{
+			Name:   "proj-0.1.0-py3-none-any.whl",
+			Path:   "dist/proj-all-all/proj-0.1.0-py3-none-any.whl",
+			Goos:   "all",
+			Goarch: "all",
+			Target: "none-any",
+			Type:   artifact.PyWheel,
+			Extra: artifact.Extras{
+				artifact.ExtraBuilder: "poetry",
+				artifact.ExtraExt:     ".whl",
+				artifact.ExtraID:      "wheel",
+			},
+		},
+		{
+			Name:   "proj-0.1.0.tar.gz",
+			Path:   "dist/proj-all-all/proj-0.1.0.tar.gz",
+			Goos:   "all",
+			Goarch: "all",
+			Target: "none-any",
+			Type:   artifact.PySdist,
+			Extra: artifact.Extras{
+				artifact.ExtraBuilder: "poetry",
+				artifact.ExtraExt:     ".tar.gz",
+				artifact.ExtraID:      "sdist",
+			},
+		},
+	}, builds)
+
+	for _, art := range builds {
+		require.FileExists(t, art.Path)
+		fi, err := os.Stat(art.Path)
+		require.NoError(t, err)
+		require.True(t, modTime.Equal(fi.ModTime()))
+	}
+}

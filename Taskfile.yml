@@ -58,7 +58,8 @@ tasks:
       SOURCE_FILES: '{{default "./..." .SOURCE_FILES}}'
       TEST_PATTERN: '{{default "." .TEST_PATTERN}}'
     cmds:
-      - go test {{.TEST_OPTIONS}} -failfast -race -coverpkg=./... -covermode=atomic -coverprofile=unit-coverage.txt {{.SOURCE_FILES}} -run {{.TEST_PATTERN}} -timeout=1m
+      # TODO: lower timeout once all slow tests migrated to integration tests
+      - go test {{.TEST_OPTIONS}} -failfast -race -coverpkg=./... -covermode=atomic -coverprofile=unit-coverage.txt {{.SOURCE_FILES}} -run {{.TEST_PATTERN}} -timeout=15m
 
   fuzz:tmpl:
     cmds:
