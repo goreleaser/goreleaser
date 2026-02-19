@@ -9,7 +9,6 @@ import (
 	"github.com/goreleaser/goreleaser/v2/internal/testctx"
 	"github.com/goreleaser/goreleaser/v2/internal/testlib"
 	"github.com/goreleaser/goreleaser/v2/pkg/config"
-	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
 
@@ -110,30 +109,52 @@ func TestSkip(t *testing.T) {
 }
 
 func TestAnnounceWithMockServer(t *testing.T) {
-	t.Run("success with release URL", func(t *testing.T) {
-		server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-			switch r.URL.Path {
-			case "/xrpc/com.atproto.server.createSession":
-				w.Header().Set("Content-Type", "application/json")
-				assert.NoError(t, json.NewEncoder(w).Encode(map[string]any{
-					"accessJwt":  "test-access-token",
-					"refreshJwt": "test-refresh-token",
-					"handle":     "testuser.bsky.social",
-					"did":        "did:plc:test123",
-				}))
-			case "/xrpc/com.atproto.repo.createRecord":
-				w.Header().Set("Content-Type", "application/json")
-				assert.NoError(t, json.NewEncoder(w).Encode(map[string]any{
-					"uri": "at://did:plc:test123/app.bsky.feed.post/test",
-					"cid": "testcid",
-				}))
-			default:
-				assert.Failf(t, "unexpected request", "unexpected request to %s", r.URL.Path)
-				w.WriteHeader(http.StatusNotFound)
-			}
-		}))
-		t.Cleanup(server.Close)
+	var lastPassword string
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		switch r.URL.Path {
+		case "/xrpc/com.atproto.server.createSession":
+			var body map[string]string
+			_ = json.NewDecoder(r.Body).Decode(&body)
+			lastPassword = body["password"]
 
+			if lastPassword == "wrong-password" {
+				w.WriteHeader(http.StatusUnauthorized)
+				_ = json.NewEncoder(w).Encode(map[string]any{
+					"error":   "AuthenticationRequired",
+					"message": "Invalid credentials",
+				})
+				return
+			}
+
+			w.Header().Set("Content-Type", "application/json")
+			_ = json.NewEncoder(w).Encode(map[string]any{
+				"accessJwt":  "test-access-token",
+				"refreshJwt": "test-refresh-token",
+				"handle":     "testuser.bsky.social",
+				"did":        "did:plc:test123",
+			})
+		case "/xrpc/com.atproto.repo.createRecord":
+			if lastPassword == "bad-record-password" {
+				w.WriteHeader(http.StatusBadRequest)
+				_ = json.NewEncoder(w).Encode(map[string]any{
+					"error":   "InvalidRequest",
+					"message": "Invalid record",
+				})
+				return
+			}
+
+			w.Header().Set("Content-Type", "application/json")
+			_ = json.NewEncoder(w).Encode(map[string]any{
+				"uri": "at://did:plc:test123/app.bsky.feed.post/test",
+				"cid": "testcid",
+			})
+		default:
+			w.WriteHeader(http.StatusNotFound)
+		}
+	}))
+	t.Cleanup(server.Close)
+
+	t.Run("success with release URL", func(t *testing.T) {
 		ctx := testctx.WrapWithCfg(t.Context(), config.Project{
 			ProjectName: "test-project",
 			Announce: config.Announce{
@@ -154,29 +175,6 @@ func TestAnnounceWithMockServer(t *testing.T) {
 	})
 
 	t.Run("success without release URL", func(t *testing.T) {
-		server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-			switch r.URL.Path {
-			case "/xrpc/com.atproto.server.createSession":
-				w.Header().Set("Content-Type", "application/json")
-				assert.NoError(t, json.NewEncoder(w).Encode(map[string]any{
-					"accessJwt":  "test-access-token",
-					"refreshJwt": "test-refresh-token",
-					"handle":     "testuser.bsky.social",
-					"did":        "did:plc:test123",
-				}))
-			case "/xrpc/com.atproto.repo.createRecord":
-				w.Header().Set("Content-Type", "application/json")
-				assert.NoError(t, json.NewEncoder(w).Encode(map[string]any{
-					"uri": "at://did:plc:test123/app.bsky.feed.post/test",
-					"cid": "testcid",
-				}))
-			default:
-				assert.Failf(t, "unexpected request", "unexpected request to %s", r.URL.Path)
-				w.WriteHeader(http.StatusNotFound)
-			}
-		}))
-		t.Cleanup(server.Close)
-
 		ctx := testctx.WrapWithCfg(t.Context(), config.Project{
 			ProjectName: "test-project",
 			Announce: config.Announce{
@@ -196,15 +194,6 @@ func TestAnnounceWithMockServer(t *testing.T) {
 	})
 
 	t.Run("login failure", func(t *testing.T) {
-		server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
-			w.WriteHeader(http.StatusUnauthorized)
-			assert.NoError(t, json.NewEncoder(w).Encode(map[string]any{
-				"error":   "AuthenticationRequired",
-				"message": "Invalid credentials",
-			}))
-		}))
-		t.Cleanup(server.Close)
-
 		ctx := testctx.WrapWithCfg(t.Context(), config.Project{
 			ProjectName: "test-project",
 			Announce: config.Announce{
@@ -226,28 +215,6 @@ func TestAnnounceWithMockServer(t *testing.T) {
 	})
 
 	t.Run("create record failure", func(t *testing.T) {
-		server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-			switch r.URL.Path {
-			case "/xrpc/com.atproto.server.createSession":
-				w.Header().Set("Content-Type", "application/json")
-				assert.NoError(t, json.NewEncoder(w).Encode(map[string]any{
-					"accessJwt":  "test-access-token",
-					"refreshJwt": "test-refresh-token",
-					"handle":     "testuser.bsky.social",
-					"did":        "did:plc:test123",
-				}))
-			case "/xrpc/com.atproto.repo.createRecord":
-				w.WriteHeader(http.StatusBadRequest)
-				assert.NoError(t, json.NewEncoder(w).Encode(map[string]any{
-					"error":   "InvalidRequest",
-					"message": "Invalid record",
-				}))
-			default:
-				w.WriteHeader(http.StatusNotFound)
-			}
-		}))
-		t.Cleanup(server.Close)
-
 		ctx := testctx.WrapWithCfg(t.Context(), config.Project{
 			ProjectName: "test-project",
 			Announce: config.Announce{
@@ -260,9 +227,9 @@ func TestAnnounceWithMockServer(t *testing.T) {
 		ctx.Version = "v1.0.0"
 
 		require.NoError(t, Pipe{}.Default(ctx))
-		t.Setenv("BLUESKY_APP_PASSWORD", "test-password")
+		t.Setenv("BLUESKY_APP_PASSWORD", "bad-record-password")
 
-		pipe := Pipe{server.URL}
+		pipe := Pipe{pdsURL: server.URL}
 		err := pipe.Announce(ctx)
 		require.Error(t, err)
 	})
