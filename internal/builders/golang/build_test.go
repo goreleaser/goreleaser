@@ -682,7 +682,9 @@ func TestBuildCodeInSubdir(t *testing.T) {
 				Tool:    "go",
 				Command: "build",
 				BuildDetails: config.BuildDetails{
-					Env: []string{"GO111MODULE=off"},
+					Env:     []string{"GO111MODULE=off"},
+					Gcflags: []string{"all=-N -l"},
+					Ldflags: []string{"-s -w"},
 				},
 			},
 		},
@@ -711,7 +713,9 @@ func TestBuildWithDotGoDir(t *testing.T) {
 				Tool:    "go",
 				Command: "build",
 				BuildDetails: config.BuildDetails{
-					Env: []string{"GO111MODULE=off"},
+					Env:     []string{"GO111MODULE=off"},
+					Gcflags: []string{"all=-N -l"},
+					Ldflags: []string{"-s -w"},
 				},
 			},
 		},
@@ -905,7 +909,9 @@ func TestBuildTests(t *testing.T) {
 			Binary:  "foo.test",
 			Command: "test",
 			BuildDetails: config.BuildDetails{
-				Flags: []string{"-c"},
+				Flags:   []string{"-c"},
+				Gcflags: []string{"all=-N -l"},
+				Ldflags: []string{"-s -w"},
 			},
 			NoMainCheck: true,
 		}},
@@ -961,6 +967,10 @@ import _ "github.com/goreleaser/test-mod"
 				},
 				Tool:    "go",
 				Command: "build",
+				BuildDetails: config.BuildDetails{
+					Gcflags: []string{"all=-N -l"},
+					Ldflags: []string{"-s -w"},
+				},
 			},
 		},
 	})
@@ -986,7 +996,9 @@ func TestRunPipeWithMainFuncNotInMainGoFile(t *testing.T) {
 					runtimeTarget,
 				},
 				BuildDetails: config.BuildDetails{
-					Env: []string{"GO111MODULE=off"},
+					Env:     []string{"GO111MODULE=off"},
+					Gcflags: []string{"all=-N -l"},
+					Ldflags: []string{"-s -w"},
 				},
 				Tool:    "go",
 				Command: "build",
@@ -1077,8 +1089,9 @@ func TestBuildModTimestamp(t *testing.T) {
 				BuildDetails: config.BuildDetails{
 					Env:      []string{"GO111MODULE=off"},
 					Asmflags: []string{".=", "all="},
-					Gcflags:  []string{"all="},
+					Gcflags:  []string{"all=-N -l"},
 					Flags:    []string{"{{.Env.GO_FLAGS}}"},
+					Ldflags:  []string{"-s -w"},
 				},
 				ModTimestamp: fmt.Sprintf("%d", modTime.Unix()),
 				Tool:         "go",
