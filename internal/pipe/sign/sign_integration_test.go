@@ -4,8 +4,8 @@ package sign
 
 import (
 	"bytes"
-	"crypto/rand"
 	"fmt"
+	"math/rand"
 	"os"
 	"os/exec"
 	"path/filepath"
