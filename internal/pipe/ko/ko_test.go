@@ -349,5 +349,3 @@ func TestGetLocalDomain(t *testing.T) {
 		require.Equal(t, "custom.domain", got)
 	})
 }
-
-
