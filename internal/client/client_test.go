@@ -145,6 +145,7 @@ func TestNewIfToken(t *testing.T) {
 
 func TestNewWithToken(t *testing.T) {
 	t.Run("gitlab", func(t *testing.T) {
+		t.Setenv("CI_SERVER_VERSION", "18.0.0")
 		ctx := testctx.WrapWithCfg(t.Context(), config.Project{
 			Env: []string{"TK=token"},
 		}, testctx.GitLabTokenType)

@@ -433,11 +433,11 @@ func (c *githubClient) CreateFile(
 }
 
 func (c *githubClient) CreateRelease(ctx *context.Context, body string) (string, error) {
-	c.checkRateLimit(ctx, time.Sleep)
 	title, err := tmpl.New(ctx).Apply(ctx.Config.Release.NameTemplate)
 	if err != nil {
 		return "", err
 	}
+	c.checkRateLimit(ctx, time.Sleep)
 
 	if ctx.Config.Release.Draft && ctx.Config.Release.ReplaceExistingDraft {
 		if err := c.deleteExistingDraftRelease(ctx, title); err != nil {

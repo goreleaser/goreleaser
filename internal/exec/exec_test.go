@@ -5,12 +5,14 @@ import (
 	"os"
 	"path"
 	"path/filepath"
+	"sort"
 	"strings"
 	"testing"
 
 	"github.com/goreleaser/goreleaser/v2/internal/artifact"
 	"github.com/goreleaser/goreleaser/v2/internal/pipe"
 	"github.com/goreleaser/goreleaser/v2/internal/testctx"
+	"github.com/goreleaser/goreleaser/v2/internal/testlib"
 	"github.com/goreleaser/goreleaser/v2/internal/tmpl"
 	"github.com/goreleaser/goreleaser/v2/pkg/config"
 	"github.com/stretchr/testify/require"
@@ -25,7 +27,6 @@ func TestExecute(t *testing.T) {
 		},
 	}, testctx.WithVersion("2.1.0"))
 
-	// Preload artifacts
 	folder := t.TempDir()
 	for _, a := range []struct {
 		id  string
@@ -56,370 +57,242 @@ func TestExecute(t *testing.T) {
 	}
 
 	ctx.Artifacts.Add(&artifact.Artifact{
-		Name:   "foo/bar:amd64",
+		Name:   "foobar-amd64",
 		Goos:   "linux",
 		Goarch: "amd64",
-		Path:   "foo/bar:amd64",
+		Path:   "foobar-amd64",
 		Type:   artifact.DockerImage,
 		Extra: map[string]any{
 			artifact.ExtraID: "img",
 		},
 	})
 	ctx.Artifacts.Add(&artifact.Artifact{
-		Name: "foo/bar",
-		Path: "foo/bar",
+		Name: "foobar",
+		Path: "foobar",
 		Type: artifact.DockerManifest,
 		Extra: map[string]any{
 			artifact.ExtraID: "mnf",
 		},
 	})
 
-	osEnv := func(ignores ...string) []string {
-		var result []string
-	outer:
-		for _, key := range passthroughEnvVars {
-			for _, ignore := range ignores {
-				if key == ignore {
-					continue outer
-				}
-			}
-			if value := os.Getenv(key); value != "" {
-				result = append(result, key+"="+value)
-			}
-		}
-		return result
-	}
-
 	testCases := []struct {
 		name        string
-		publishers  []config.Publisher
+		publishers  func(outDir string) []config.Publisher
+		check       func(tb testing.TB, outDir string)
 		expectErr   error
 		expectErrAs any
 	}{
 		{
-			"filter by IDs",
-			[]config.Publisher{
-				{
+			name: "filter by IDs",
+			publishers: func(outDir string) []config.Publisher {
+				return []config.Publisher{{
 					Name: "test",
 					IDs:  []string{"archive"},
-					Cmd:  MockCmd + " {{ .ArtifactName }}",
-					Env: []string{
-						MarshalMockEnv(&MockData{
-							AnyOf: []MockCall{
-								{ExpectedArgs: []string{"a.tar"}, ExitCode: 0, ExpectedEnv: osEnv()},
-							},
-						}),
-					},
-				},
+					Cmd:  testlib.Touch(filepath.Join(outDir, "{{ .ArtifactName }}")),
+				}}
 			},
-			nil,
-			nil,
+			check: func(tb testing.TB, outDir string) {
+				tb.Helper()
+				require.Equal(tb, []string{"a.tar"}, dirFiles(tb, outDir))
+			},
 		},
 		{
-			"no filter",
-			[]config.Publisher{
-				{
+			name: "no filter",
+			publishers: func(outDir string) []config.Publisher {
+				return []config.Publisher{{
 					Name:    "test",
-					Cmd:     MockCmd + " {{ .ArtifactName }}",
+					Cmd:     testlib.Touch(filepath.Join(outDir, "{{ .ArtifactName }}")),
 					Disable: "false",
-					Env: []string{
-						MarshalMockEnv(&MockData{
-							AnyOf: []MockCall{
-								{ExpectedArgs: []string{"a.deb"}, ExitCode: 0, ExpectedEnv: osEnv()},
-								{ExpectedArgs: []string{"a.ubi"}, ExitCode: 0, ExpectedEnv: osEnv()},
-								{ExpectedArgs: []string{"a.tar"}, ExitCode: 0, ExpectedEnv: osEnv()},
-								{ExpectedArgs: []string{"foo/bar"}, ExitCode: 0, ExpectedEnv: osEnv()},
-								{ExpectedArgs: []string{"foo/bar:amd64"}, ExitCode: 0, ExpectedEnv: osEnv()},
-							},
-						}),
-					},
-				},
+				}}
 			},
-			nil,
-			nil,
+			check: func(tb testing.TB, outDir string) {
+				tb.Helper()
+				require.ElementsMatch(tb, []string{"a.deb", "a.tar", "a.ubi", "foobar", "foobar-amd64"}, dirFiles(tb, outDir))
+			},
 		},
 		{
-			"disabled",
-			[]config.Publisher{
-				{
+			name: "disabled",
+			publishers: func(string) []config.Publisher {
+				return []config.Publisher{{
 					Name:    "test",
-					Cmd:     MockCmd + " {{ .ArtifactName }}",
+					Cmd:     testlib.Echo("nope"),
 					Disable: "true",
-					Env:     []string{},
-				},
+				}}
 			},
-			pipe.ErrSkip{},
-			nil,
+			expectErr: pipe.ErrSkip{},
 		},
 		{
-			"disabled invalid tmpl",
-			[]config.Publisher{
-				{
+			name: "disabled invalid tmpl",
+			publishers: func(string) []config.Publisher {
+				return []config.Publisher{{
 					Name:    "test",
-					Cmd:     MockCmd + " {{ .ArtifactName }}",
+					Cmd:     testlib.Echo("nope"),
 					Disable: "{{ .NOPE }}",
-					Env:     []string{},
-				},
+				}}
 			},
-			nil,
-			&tmpl.Error{},
+			expectErrAs: &tmpl.Error{},
 		},
 		{
-			"include checksum",
-			[]config.Publisher{
-				{
+			name: "include checksum",
+			publishers: func(outDir string) []config.Publisher {
+				return []config.Publisher{{
 					Name:     "test",
 					Checksum: true,
-					Cmd:      MockCmd + " {{ .ArtifactName }}",
-					Env: []string{
-						MarshalMockEnv(&MockData{
-							AnyOf: []MockCall{
-								{ExpectedArgs: []string{"a.deb"}, ExitCode: 0, ExpectedEnv: osEnv()},
-								{ExpectedArgs: []string{"a.ubi"}, ExitCode: 0, ExpectedEnv: osEnv()},
-								{ExpectedArgs: []string{"a.tar"}, ExitCode: 0, ExpectedEnv: osEnv()},
-								{ExpectedArgs: []string{"a.sum"}, ExitCode: 0, ExpectedEnv: osEnv()},
-								{ExpectedArgs: []string{"foo/bar"}, ExitCode: 0, ExpectedEnv: osEnv()},
-								{ExpectedArgs: []string{"foo/bar:amd64"}, ExitCode: 0, ExpectedEnv: osEnv()},
-							},
-						}),
-					},
-				},
+					Cmd:      testlib.Touch(filepath.Join(outDir, "{{ .ArtifactName }}")),
+				}}
 			},
-			nil,
-			nil,
+			check: func(tb testing.TB, outDir string) {
+				tb.Helper()
+				require.ElementsMatch(tb, []string{"a.deb", "a.sum", "a.tar", "a.ubi", "foobar", "foobar-amd64"}, dirFiles(tb, outDir))
+			},
 		},
 		{
-			"include metadata",
-			[]config.Publisher{
-				{
+			name: "include metadata",
+			publishers: func(outDir string) []config.Publisher {
+				return []config.Publisher{{
 					Name: "test",
 					Meta: true,
-					Cmd:  MockCmd + " {{ .ArtifactName }}",
-					Env: []string{
-						MarshalMockEnv(&MockData{
-							AnyOf: []MockCall{
-								{ExpectedArgs: []string{"a.deb"}, ExitCode: 0, ExpectedEnv: osEnv()},
-								{ExpectedArgs: []string{"a.ubi"}, ExitCode: 0, ExpectedEnv: osEnv()},
-								{ExpectedArgs: []string{"a.tar"}, ExitCode: 0, ExpectedEnv: osEnv()},
-								{ExpectedArgs: []string{"a.json"}, ExitCode: 0, ExpectedEnv: osEnv()},
-								{ExpectedArgs: []string{"foo/bar"}, ExitCode: 0, ExpectedEnv: osEnv()},
-								{ExpectedArgs: []string{"foo/bar:amd64"}, ExitCode: 0, ExpectedEnv: osEnv()},
-							},
-						}),
-					},
-				},
+					Cmd:  testlib.Touch(filepath.Join(outDir, "{{ .ArtifactName }}")),
+				}}
 			},
-			nil,
-			nil,
+			check: func(tb testing.TB, outDir string) {
+				tb.Helper()
+				require.ElementsMatch(tb, []string{"a.deb", "a.json", "a.tar", "a.ubi", "foobar", "foobar-amd64"}, dirFiles(tb, outDir))
+			},
 		},
 		{
-			"include signatures",
-			[]config.Publisher{
-				{
+			name: "include signatures",
+			publishers: func(outDir string) []config.Publisher {
+				return []config.Publisher{{
 					Name:      "test",
 					Signature: true,
-					Cmd:       MockCmd + " {{ .ArtifactName }}",
-					Env: []string{
-						MarshalMockEnv(&MockData{
-							AnyOf: []MockCall{
-								{ExpectedArgs: []string{"a.deb"}, ExitCode: 0, ExpectedEnv: osEnv()},
-								{ExpectedArgs: []string{"a.ubi"}, ExitCode: 0, ExpectedEnv: osEnv()},
-								{ExpectedArgs: []string{"a.tar"}, ExitCode: 0, ExpectedEnv: osEnv()},
-								{ExpectedArgs: []string{"a.sig"}, ExitCode: 0, ExpectedEnv: osEnv()},
-								{ExpectedArgs: []string{"a.pem"}, ExitCode: 0, ExpectedEnv: osEnv()},
-								{ExpectedArgs: []string{"foo/bar"}, ExitCode: 0, ExpectedEnv: osEnv()},
-								{ExpectedArgs: []string{"foo/bar:amd64"}, ExitCode: 0, ExpectedEnv: osEnv()},
-							},
-						}),
-					},
-				},
+					Cmd:       testlib.Touch(filepath.Join(outDir, "{{ .ArtifactName }}")),
+				}}
 			},
-			nil,
-			nil,
+			check: func(tb testing.TB, outDir string) {
+				tb.Helper()
+				require.ElementsMatch(tb, []string{"a.deb", "a.pem", "a.sig", "a.tar", "a.ubi", "foobar", "foobar-amd64"}, dirFiles(tb, outDir))
+			},
 		},
 		{
-			"docker",
-			[]config.Publisher{
-				{
+			name: "docker",
+			publishers: func(outDir string) []config.Publisher {
+				return []config.Publisher{{
 					Name: "test",
 					IDs:  []string{"img", "mnf"},
-					Cmd:  MockCmd + " {{ .ArtifactName }}",
-					Env: []string{
-						MarshalMockEnv(&MockData{
-							AnyOf: []MockCall{
-								{ExpectedArgs: []string{"foo/bar"}, ExitCode: 0, ExpectedEnv: osEnv()},
-								{ExpectedArgs: []string{"foo/bar:amd64"}, ExitCode: 0, ExpectedEnv: osEnv()},
-							},
-						}),
-					},
-				},
+					Cmd:  testlib.Touch(filepath.Join(outDir, "{{ .ArtifactName }}")),
+				}}
 			},
-			nil,
-			nil,
+			check: func(tb testing.TB, outDir string) {
+				tb.Helper()
+				require.ElementsMatch(tb, []string{"foobar", "foobar-amd64"}, dirFiles(tb, outDir))
+			},
 		},
 		{
-			"extra files",
-			[]config.Publisher{
-				{
+			name: "extra files",
+			publishers: func(outDir string) []config.Publisher {
+				return []config.Publisher{{
 					Name: "test",
-					Cmd:  MockCmd + " {{ .ArtifactName }}",
-					Env: []string{
-						MarshalMockEnv(&MockData{
-							AnyOf: []MockCall{
-								{ExpectedArgs: []string{"a.deb"}, ExitCode: 0, ExpectedEnv: osEnv()},
-								{ExpectedArgs: []string{"a.ubi"}, ExitCode: 0, ExpectedEnv: osEnv()},
-								{ExpectedArgs: []string{"a.tar"}, ExitCode: 0, ExpectedEnv: osEnv()},
-								{ExpectedArgs: []string{"a.txt"}, ExitCode: 0, ExpectedEnv: osEnv()},
-								{ExpectedArgs: []string{"foo/bar"}, ExitCode: 0, ExpectedEnv: osEnv()},
-								{ExpectedArgs: []string{"foo/bar:amd64"}, ExitCode: 0, ExpectedEnv: osEnv()},
-							},
-						}),
-					},
+					Cmd:  testlib.Touch(filepath.Join(outDir, "{{ .ArtifactName }}")),
 					ExtraFiles: []config.ExtraFile{
 						{Glob: path.Join("testdata", "*.txt")},
 					},
-				},
+				}}
 			},
-			nil,
-			nil,
+			check: func(tb testing.TB, outDir string) {
+				tb.Helper()
+				require.ElementsMatch(tb, []string{"a.deb", "a.tar", "a.txt", "a.ubi", "foobar", "foobar-amd64"}, dirFiles(tb, outDir))
+			},
 		},
 		{
-			"extra files with rename",
-			[]config.Publisher{
-				{
+			name: "extra files with rename",
+			publishers: func(outDir string) []config.Publisher {
+				return []config.Publisher{{
 					Name: "test",
-					Cmd:  MockCmd + " {{ .ArtifactName }}",
-					Env: []string{
-						MarshalMockEnv(&MockData{
-							AnyOf: []MockCall{
-								{ExpectedArgs: []string{"a.deb"}, ExitCode: 0, ExpectedEnv: osEnv()},
-								{ExpectedArgs: []string{"a.ubi"}, ExitCode: 0, ExpectedEnv: osEnv()},
-								{ExpectedArgs: []string{"a.tar"}, ExitCode: 0, ExpectedEnv: osEnv()},
-								{ExpectedArgs: []string{"b.txt"}, ExitCode: 0, ExpectedEnv: osEnv()},
-								{ExpectedArgs: []string{"foo/bar"}, ExitCode: 0, ExpectedEnv: osEnv()},
-								{ExpectedArgs: []string{"foo/bar:amd64"}, ExitCode: 0, ExpectedEnv: osEnv()},
-							},
-						}),
-					},
+					Cmd:  testlib.Touch(filepath.Join(outDir, "{{ .ArtifactName }}")),
 					ExtraFiles: []config.ExtraFile{
 						{
 							Glob:         path.Join("testdata", "*.txt"),
 							NameTemplate: "b.txt",
 						},
 					},
-				},
+				}}
 			},
-			nil,
-			nil,
+			check: func(tb testing.TB, outDir string) {
+				tb.Helper()
+				require.ElementsMatch(tb, []string{"a.deb", "a.tar", "a.ubi", "b.txt", "foobar", "foobar-amd64"}, dirFiles(tb, outDir))
+			},
 		},
 		{
-			"try dir templating",
-			[]config.Publisher{
-				{
+			name: "try dir templating",
+			publishers: func(outDir string) []config.Publisher {
+				return []config.Publisher{{
 					Name:      "test",
 					Signature: true,
 					IDs:       []string{"debpkg"},
 					Dir:       "{{ dir .ArtifactPath }}",
-					Cmd:       MockCmd + " {{ .ArtifactName }}",
-					Env: []string{
-						MarshalMockEnv(&MockData{
-							AnyOf: []MockCall{
-								{ExpectedArgs: []string{"a.deb"}, ExitCode: 0, ExpectedEnv: osEnv()},
-							},
-						}),
-					},
-				},
+					Cmd:       testlib.Touch(filepath.Join(outDir, "{{ .ArtifactName }}")),
+				}}
 			},
-			nil,
-			nil,
+			check: func(tb testing.TB, outDir string) {
+				tb.Helper()
+				require.Equal(tb, []string{"a.deb"}, dirFiles(tb, outDir))
+			},
 		},
 		{
-			"check env templating",
-			[]config.Publisher{
-				{
+			name: "check env templating",
+			publishers: func(string) []config.Publisher {
+				return []config.Publisher{{
 					Name: "test",
 					IDs:  []string{"debpkg"},
-					Cmd:  MockCmd,
+					Cmd: assertEnv(map[string]string{
+						"PROJECT":  "blah",
+						"ARTIFACT": "a.deb",
+						"SECRET":   "x",
+					}),
 					Env: []string{
 						"PROJECT={{.ProjectName}}",
 						"ARTIFACT={{.ArtifactName}}",
 						"SECRET={{.Env.TEST_A_SECRET}}",
-						MarshalMockEnv(&MockData{
-							AnyOf: []MockCall{
-								{
-									ExpectedEnv: append(
-										[]string{"PROJECT=blah", "ARTIFACT=a.deb", "SECRET=x"},
-										osEnv()...,
-									),
-									ExitCode: 0,
-								},
-							},
-						}),
 					},
-				},
+				}}
 			},
-			nil,
-			nil,
 		},
 		{
-			"override path",
-			[]config.Publisher{
-				{
+			name: "override path",
+			publishers: func(string) []config.Publisher {
+				return []config.Publisher{{
 					Name: "test",
 					IDs:  []string{"debpkg"},
-					Cmd:  MockCmd,
+					Cmd:  assertEnv(map[string]string{"PATH": "/something-else"}),
 					Env: []string{
 						"PATH=/something-else",
-						MarshalMockEnv(&MockData{
-							AnyOf: []MockCall{
-								{
-									ExpectedEnv: append(
-										[]string{"PATH=/something-else"},
-										osEnv("PATH")...,
-									),
-									ExitCode: 0,
-								},
-							},
-						}),
 					},
-				},
+				}}
 			},
-			nil,
-			nil,
 		},
 		{
-			"command error",
-			[]config.Publisher{
-				{
-					Disable: "true",
-				},
-				{
-					Name: "test",
-					IDs:  []string{"debpkg"},
-					Cmd:  MockCmd + " {{.ArtifactName}}",
-					Env: []string{
-						MarshalMockEnv(&MockData{
-							AnyOf: []MockCall{
-								{
-									ExpectedArgs: []string{"a.deb"},
-									ExpectedEnv:  osEnv(),
-									Stderr:       "test error",
-									ExitCode:     1,
-								},
-							},
-						}),
+			name: "command error",
+			publishers: func(string) []config.Publisher {
+				return []config.Publisher{
+					{
+						Disable: "true",
 					},
-				},
+					{
+						Name: "test",
+						IDs:  []string{"debpkg"},
+						Cmd:  testlib.ShC("exit 1"),
+					},
+				}
 			},
-			// stderr is sent to output via logger
-			fmt.Errorf(`exit status 1`),
-			nil,
+			expectErr: fmt.Errorf(`exit status 1`),
 		},
 	}
 
 	for i, tc := range testCases {
 		t.Run(fmt.Sprintf("%d-%s", i, tc.name), func(t *testing.T) {
-			err := Execute(ctx, tc.publishers)
+			outDir := t.TempDir()
+			err := Execute(ctx, tc.publishers(outDir))
 			if tc.expectErr != nil {
 				require.Error(t, err)
 				require.True(t, strings.HasPrefix(err.Error(), tc.expectErr.Error()), err.Error())
@@ -430,6 +303,43 @@ func TestExecute(t *testing.T) {
 				return
 			}
 			require.NoError(t, err)
+			if tc.check != nil {
+				tc.check(t, outDir)
+			}
 		})
 	}
+}
+
+func assertEnv(kvs map[string]string) string {
+	var (
+		format string
+		join   string
+		wrap   string
+	)
+	if testlib.IsWindows() {
+		format = `if not "%%%s%%"=="%s" exit /b 1`
+		join = " & "
+		wrap = "cmd.exe /c '%s'"
+	} else {
+		format = `test "$%s" = "%s"`
+		join = " && "
+		wrap = "sh -c '%s'"
+	}
+	var parts []string
+	for k, v := range kvs {
+		parts = append(parts, fmt.Sprintf(format, k, v))
+	}
+	return fmt.Sprintf(wrap, strings.Join(parts, join))
+}
+
+func dirFiles(tb testing.TB, dir string) []string {
+	tb.Helper()
+	entries, err := os.ReadDir(dir)
+	require.NoError(tb, err)
+	names := make([]string, len(entries))
+	for i, e := range entries {
+		names[i] = e.Name()
+	}
+	sort.Strings(names)
+	return names
 }

@@ -93,6 +93,7 @@ func TestGitLabReleaseURLTemplate(t *testing.T) {
 }
 
 func TestGitLabURLsAPITemplate(t *testing.T) {
+	t.Setenv("CI_SERVER_VERSION", "18.0.0")
 	tests := []struct {
 		name     string
 		apiURL   string
