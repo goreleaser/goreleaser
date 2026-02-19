@@ -6,6 +6,7 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
+	"slices"
 	"strings"
 	"sync"
 	"testing"
@@ -1023,8 +1024,8 @@ func TestRunPipe(t *testing.T) { //nolint:tparallel
 					config.Project{
 						ProjectName:     "mybin",
 						Dist:            dist,
-						Dockers:         docker.dockers,
-						DockerManifests: docker.manifests,
+						Dockers:         slices.Clone(docker.dockers),
+						DockerManifests: slices.Clone(docker.manifests),
 					},
 					testctx.WithEnv(docker.env),
 					testctx.WithVersion("1.0.0"),
