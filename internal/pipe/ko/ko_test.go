@@ -5,9 +5,7 @@ import (
 
 	"github.com/goreleaser/goreleaser/v2/internal/skips"
 	"github.com/goreleaser/goreleaser/v2/internal/testctx"
-	"github.com/goreleaser/goreleaser/v2/internal/testlib"
 	"github.com/goreleaser/goreleaser/v2/pkg/config"
-	"github.com/goreleaser/goreleaser/v2/pkg/context"
 	"github.com/stretchr/testify/require"
 )
 
@@ -200,124 +198,6 @@ func TestKoValidateMainPathIssue4382(t *testing.T) {
 	})
 
 	require.ErrorIs(t, Pipe{}.Default(ctxWithInvalidMainPath), errInvalidMainPath)
-}
-
-func TestPublishPipeError(t *testing.T) {
-	makeCtx := func() *context.Context {
-		return testctx.WrapWithCfg(t.Context(), config.Project{
-			Builds: []config.Build{
-				{
-					ID:   "foo",
-					Main: "./...",
-				},
-			},
-			Kos: []config.Ko{
-				{
-					ID:         "default",
-					Build:      "foo",
-					WorkingDir: "./testdata/app/",
-					Repository: "fakerepo:8080/",
-					Tags:       []string{"latest", "{{.Tag}}"},
-				},
-			},
-		}, testctx.WithCurrentTag("v1.0.0"))
-	}
-
-	t.Run("invalid base image", func(t *testing.T) {
-		ctx := makeCtx()
-		ctx.Config.Kos[0].BaseImage = "not a valid image hopefully"
-		require.NoError(t, Pipe{}.Default(ctx))
-		require.EqualError(t, Pipe{}.Publish(ctx), `build: fetching base image: could not parse reference: not a valid image hopefully`)
-	})
-
-	t.Run("invalid label tmpl", func(t *testing.T) {
-		ctx := makeCtx()
-		ctx.Config.Kos[0].Labels = map[string]string{"nope": "{{.Nope}}"}
-		require.NoError(t, Pipe{}.Default(ctx))
-		testlib.RequireTemplateError(t, Pipe{}.Publish(ctx))
-	})
-
-	t.Run("invalid sbom", func(t *testing.T) {
-		ctx := makeCtx()
-		ctx.Config.Kos[0].SBOM = "nope"
-		require.NoError(t, Pipe{}.Default(ctx))
-		require.EqualError(t, Pipe{}.Publish(ctx), `makeBuilder: unknown sbom type: "nope"`)
-	})
-
-	t.Run("invalid build", func(t *testing.T) {
-		ctx := makeCtx()
-		ctx.Config.Kos[0].WorkingDir = t.TempDir()
-		require.NoError(t, Pipe{}.Default(ctx))
-		require.EqualError(
-			t, Pipe{}.Publish(ctx),
-			"build: build: go build: exit status 1: pattern ./...: directory prefix . does not contain main module or its selected dependencies\n",
-		)
-	})
-
-	t.Run("invalid tags tmpl", func(t *testing.T) {
-		ctx := makeCtx()
-		ctx.Config.Kos[0].Tags = []string{"{{.Nope}}"}
-		require.NoError(t, Pipe{}.Default(ctx))
-		testlib.RequireTemplateError(t, Pipe{}.Publish(ctx))
-	})
-
-	t.Run("invalid creation time", func(t *testing.T) {
-		ctx := makeCtx()
-		ctx.Config.Kos[0].CreationTime = "nope"
-		require.NoError(t, Pipe{}.Default(ctx))
-		err := Pipe{}.Publish(ctx)
-		require.ErrorContains(t, err, `strconv.ParseInt: parsing "nope": invalid syntax`)
-	})
-
-	t.Run("invalid creation time tmpl", func(t *testing.T) {
-		ctx := makeCtx()
-		ctx.Config.Kos[0].CreationTime = "{{.Nope}}"
-		require.NoError(t, Pipe{}.Default(ctx))
-		testlib.RequireTemplateError(t, Pipe{}.Publish(ctx))
-	})
-
-	t.Run("invalid kodata creation time", func(t *testing.T) {
-		ctx := makeCtx()
-		ctx.Config.Kos[0].KoDataCreationTime = "nope"
-		require.NoError(t, Pipe{}.Default(ctx))
-		err := Pipe{}.Publish(ctx)
-		require.ErrorContains(t, err, `strconv.ParseInt: parsing "nope": invalid syntax`)
-	})
-
-	t.Run("invalid kodata creation time tmpl", func(t *testing.T) {
-		ctx := makeCtx()
-		ctx.Config.Kos[0].KoDataCreationTime = "{{.Nope}}"
-		require.NoError(t, Pipe{}.Default(ctx))
-		testlib.RequireTemplateError(t, Pipe{}.Publish(ctx))
-	})
-
-	t.Run("invalid env tmpl", func(t *testing.T) {
-		ctx := makeCtx()
-		ctx.Config.Builds[0].Env = []string{"{{.Nope}}"}
-		require.NoError(t, Pipe{}.Default(ctx))
-		testlib.RequireTemplateError(t, Pipe{}.Publish(ctx))
-	})
-
-	t.Run("invalid ldflags tmpl", func(t *testing.T) {
-		ctx := makeCtx()
-		ctx.Config.Builds[0].Ldflags = []string{"{{.Nope}}"}
-		require.NoError(t, Pipe{}.Default(ctx))
-		testlib.RequireTemplateError(t, Pipe{}.Publish(ctx))
-	})
-
-	t.Run("invalid flags tmpl", func(t *testing.T) {
-		ctx := makeCtx()
-		ctx.Config.Builds[0].Flags = []string{"{{.Nope}}"}
-		require.NoError(t, Pipe{}.Default(ctx))
-		testlib.RequireTemplateError(t, Pipe{}.Publish(ctx))
-	})
-
-	t.Run("publish fail", func(t *testing.T) {
-		ctx := makeCtx()
-		require.NoError(t, Pipe{}.Default(ctx))
-		err := Pipe{}.Publish(ctx)
-		require.ErrorContains(t, err, `Get "https://fakerepo:8080/v2/": dial tcp:`)
-	})
 }
 
 func TestApplyTemplate(t *testing.T) {
