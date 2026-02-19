@@ -181,9 +181,9 @@ func buildImage(ctx *context.Context, d config.DockerV2, extraArgs ...string) er
 		return err
 	}
 
-	log := log.WithField("images", strings.Join(images, "\n")).
-		WithField("id", d.ID)
-	log.Info("creating images")
+	log.WithField("id", d.ID).
+		WithField("images", strings.Join(images, "\n")).
+		Info("creating images")
 
 	wd, err := makeContext(ctx, d, contextArtifacts(ctx, d))
 	if err != nil {
@@ -196,8 +196,10 @@ func buildImage(ctx *context.Context, d config.DockerV2, extraArgs ...string) er
 		return err
 	}
 
-	log.WithField("digest", digest).
+	log.WithField("id", d.ID).
+		WithField("images", strings.Join(appendDigest(images, digest), "\n")).
 		Info("created images")
+
 	for _, img := range images {
 		ctx.Artifacts.Add(&artifact.Artifact{
 			Name: img,
@@ -211,6 +213,14 @@ func buildImage(ctx *context.Context, d config.DockerV2, extraArgs ...string) er
 	}
 
 	return nil
+}
+
+func appendDigest(images []string, digest string) []string {
+	result := make([]string, 0, len(images))
+	for _, img := range images {
+		result = append(result, img+"@"+digest)
+	}
+	return result
 }
 
 func doBuild(ctx *context.Context, d config.DockerV2, wd string, arg []string) (string, error) {
@@ -566,7 +576,7 @@ func checkBuildxDriver(ctx stdctx.Context) {
 }
 
 func isDriverValid(driver string) bool {
-	return driver == "docker-container"
+	return driver == "docker-container" || driver == "docker"
 }
 
 // testForceNoDaemon is a test-only flag to simulate daemon unavailability.
