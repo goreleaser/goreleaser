@@ -133,8 +133,20 @@ func TestNewGitHubClient(t *testing.T) {
 }
 
 func TestGitHubUploadReleaseIDNotInt(t *testing.T) {
-	ctx := testctx.Wrap(t.Context())
-	client, err := newGitHub(ctx, ctx.Token)
+	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if r.URL.Path == "/api/v3/rate_limit" {
+			w.WriteHeader(http.StatusOK)
+			fmt.Fprint(w, `{"resources":{"core":{"remaining":120}}}`)
+			return
+		}
+	}))
+	t.Cleanup(srv.Close)
+	ctx := testctx.WrapWithCfg(t.Context(), config.Project{
+		GitHubURLs: config.GitHubURLs{
+			API: srv.URL,
+		},
+	})
+	client, err := newGitHub(ctx, "test-token")
 	require.NoError(t, err)
 
 	require.EqualError(

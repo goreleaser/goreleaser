@@ -693,7 +693,10 @@ func TestPublishInvalidJSON(t *testing.T) {
 	})
 	ctx.Version = "1.0.0"
 
-	pipe := &Pipe{registry: "http://invalid-url-that-does-not-exist.local"}
+	srv := httptest.NewServer(http.HandlerFunc(func(http.ResponseWriter, *http.Request) {}))
+	srv.Close()
+
+	pipe := &Pipe{registry: srv.URL}
 	pipe.authProviderFn = func(_, _, token string) (auth.Provider, error) {
 		return &mockAuthProvider{token: "test-token"}, nil
 	}

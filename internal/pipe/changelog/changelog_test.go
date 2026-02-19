@@ -178,7 +178,7 @@ func TestChangelog(t *testing.T) {
 	require.NotEmpty(t, string(bts))
 }
 
-func TestChangelogInclude(t *testing.T) {
+func TestChangelogFilters(t *testing.T) {
 	folder := testlib.Mktmp(t)
 	testlib.GitInit(t)
 	testlib.GitCommit(t, "first")
@@ -192,64 +192,14 @@ func TestChangelogInclude(t *testing.T) {
 	testlib.GitCommit(t, "Merge pull request #999 from goreleaser/some-branch")
 	testlib.GitCommit(t, "this is not a Merge pull request")
 	testlib.GitTag(t, "v0.0.2")
-	ctx := testctx.WrapWithCfg(t.Context(), config.Project{
-		Dist: folder,
-		Changelog: config.Changelog{
-			Use: "git",
-			Filters: config.Filters{
-				Include: []string{
-					"docs:",
-					"ignored:",
-					"(?i)cars",
-					"^Merge pull request",
-				},
-			},
-		},
-	}, testctx.WithCurrentTag("v0.0.2"), testctx.WithPreviousTag("v0.0.1"))
 
-	require.NoError(t, Pipe{}.Default(ctx))
-	require.NoError(t, Pipe{}.Run(ctx))
-	require.Contains(t, ctx.ReleaseNotes, "## Changelog")
-	require.NotContains(t, ctx.ReleaseNotes, "first")
-	require.NotContains(t, ctx.ReleaseNotes, "added feature 1")
-	require.NotContains(t, ctx.ReleaseNotes, "fixed bug 2")
-	require.Contains(t, ctx.ReleaseNotes, "docs")
-	require.Contains(t, ctx.ReleaseNotes, "ignored")
-	require.Contains(t, ctx.ReleaseNotes, "cArs")
-	require.Contains(t, ctx.ReleaseNotes, "from goreleaser/some-branch")
-
-	for _, line := range strings.Split(ctx.ReleaseNotes, "\n")[1:] {
-		if line == "" {
-			continue
-		}
-		require.Truef(t, strings.HasPrefix(line, "* "), "%q: changelog commit must be a list item", line)
-	}
-
-	bts, err := os.ReadFile(filepath.Join(folder, "CHANGELOG.md"))
-	require.NoError(t, err)
-	require.NotEmpty(t, string(bts))
-}
-
-func TestChangelogForGitlab(t *testing.T) {
-	folder := testlib.Mktmp(t)
-	testlib.GitInit(t)
-	testlib.GitCommit(t, "first")
-	testlib.GitTag(t, "v0.0.1")
-	testlib.GitCommit(t, "added feature 1")
-	testlib.GitCommit(t, "fixed bug 2")
-	testlib.GitCommit(t, "ignored: whatever")
-	testlib.GitCommit(t, "docs: whatever")
-	testlib.GitCommit(t, "something about cArs we dont need")
-	testlib.GitCommit(t, "feat: added that thing")
-	testlib.GitCommit(t, "Merge pull request #999 from goreleaser/some-branch")
-	testlib.GitCommit(t, "this is not a Merge pull request")
-	testlib.GitTag(t, "v0.0.2")
-	ctx := testctx.WrapWithCfg(t.Context(),
-		config.Project{
+	t.Run("include", func(t *testing.T) {
+		ctx := testctx.WrapWithCfg(t.Context(), config.Project{
 			Dist: folder,
 			Changelog: config.Changelog{
+				Use: "git",
 				Filters: config.Filters{
-					Exclude: []string{
+					Include: []string{
 						"docs:",
 						"ignored:",
 						"(?i)cars",
@@ -257,25 +207,65 @@ func TestChangelogForGitlab(t *testing.T) {
 					},
 				},
 			},
-		},
-		testctx.GitLabTokenType,
-		testctx.WithCurrentTag("v0.0.2"),
-		testctx.WithPreviousTag("v0.0.1"))
+		}, testctx.WithCurrentTag("v0.0.2"), testctx.WithPreviousTag("v0.0.1"))
 
-	require.NoError(t, Pipe{}.Default(ctx))
-	require.NoError(t, Pipe{}.Run(ctx))
-	require.Contains(t, ctx.ReleaseNotes, "## Changelog")
-	require.NotContains(t, ctx.ReleaseNotes, "first")
-	require.Contains(t, ctx.ReleaseNotes, "added feature 1") // no whitespace because its the last entry of the changelog
-	require.Contains(t, ctx.ReleaseNotes, "fixed bug 2   ")  // whitespaces are on purpose
-	require.NotContains(t, ctx.ReleaseNotes, "docs")
-	require.NotContains(t, ctx.ReleaseNotes, "ignored")
-	require.NotContains(t, ctx.ReleaseNotes, "cArs")
-	require.NotContains(t, ctx.ReleaseNotes, "from goreleaser/some-branch")
+		require.NoError(t, Pipe{}.Default(ctx))
+		require.NoError(t, Pipe{}.Run(ctx))
+		require.Contains(t, ctx.ReleaseNotes, "## Changelog")
+		require.NotContains(t, ctx.ReleaseNotes, "first")
+		require.NotContains(t, ctx.ReleaseNotes, "added feature 1")
+		require.NotContains(t, ctx.ReleaseNotes, "fixed bug 2")
+		require.Contains(t, ctx.ReleaseNotes, "docs")
+		require.Contains(t, ctx.ReleaseNotes, "ignored")
+		require.Contains(t, ctx.ReleaseNotes, "cArs")
+		require.Contains(t, ctx.ReleaseNotes, "from goreleaser/some-branch")
 
-	bts, err := os.ReadFile(filepath.Join(folder, "CHANGELOG.md"))
-	require.NoError(t, err)
-	require.NotEmpty(t, string(bts))
+		for _, line := range strings.Split(ctx.ReleaseNotes, "\n")[1:] {
+			if line == "" {
+				continue
+			}
+			require.Truef(t, strings.HasPrefix(line, "* "), "%q: changelog commit must be a list item", line)
+		}
+
+		bts, err := os.ReadFile(filepath.Join(folder, "CHANGELOG.md"))
+		require.NoError(t, err)
+		require.NotEmpty(t, string(bts))
+	})
+
+	t.Run("gitlab", func(t *testing.T) {
+		ctx := testctx.WrapWithCfg(t.Context(),
+			config.Project{
+				Dist: folder,
+				Changelog: config.Changelog{
+					Filters: config.Filters{
+						Exclude: []string{
+							"docs:",
+							"ignored:",
+							"(?i)cars",
+							"^Merge pull request",
+						},
+					},
+				},
+			},
+			testctx.GitLabTokenType,
+			testctx.WithCurrentTag("v0.0.2"),
+			testctx.WithPreviousTag("v0.0.1"))
+
+		require.NoError(t, Pipe{}.Default(ctx))
+		require.NoError(t, Pipe{}.Run(ctx))
+		require.Contains(t, ctx.ReleaseNotes, "## Changelog")
+		require.NotContains(t, ctx.ReleaseNotes, "first")
+		require.Contains(t, ctx.ReleaseNotes, "added feature 1") // no whitespace because its the last entry of the changelog
+		require.Contains(t, ctx.ReleaseNotes, "fixed bug 2   ")  // whitespaces are on purpose
+		require.NotContains(t, ctx.ReleaseNotes, "docs")
+		require.NotContains(t, ctx.ReleaseNotes, "ignored")
+		require.NotContains(t, ctx.ReleaseNotes, "cArs")
+		require.NotContains(t, ctx.ReleaseNotes, "from goreleaser/some-branch")
+
+		bts, err := os.ReadFile(filepath.Join(folder, "CHANGELOG.md"))
+		require.NoError(t, err)
+		require.NotEmpty(t, string(bts))
+	})
 }
 
 func TestChangelogSort(t *testing.T) {
@@ -409,39 +399,36 @@ func TestChangelogFilterInvalidRegex(t *testing.T) {
 	testlib.GitTag(t, "v0.0.3")
 	testlib.GitCommit(t, "commitzzz")
 	testlib.GitTag(t, "v0.0.4")
-	ctx := testctx.WrapWithCfg(t.Context(), config.Project{
-		Changelog: config.Changelog{
-			Filters: config.Filters{
-				Exclude: []string{
-					"(?iasdr4qasd)not a valid regex i guess",
+
+	t.Run("exclude", func(t *testing.T) {
+		ctx := testctx.WrapWithCfg(t.Context(), config.Project{
+			Changelog: config.Changelog{
+				Filters: config.Filters{
+					Exclude: []string{
+						"(?iasdr4qasd)not a valid regex i guess",
+					},
 				},
 			},
-		},
-	}, testctx.WithCurrentTag("v0.0.4"), testctx.WithPreviousTag("v0.0.3"))
+		}, testctx.WithCurrentTag("v0.0.4"), testctx.WithPreviousTag("v0.0.3"))
 
-	require.NoError(t, Pipe{}.Default(ctx))
-	require.EqualError(t, Pipe{}.Run(ctx), "error parsing regexp: invalid or unsupported Perl syntax: `(?ia`")
-}
+		require.NoError(t, Pipe{}.Default(ctx))
+		require.EqualError(t, Pipe{}.Run(ctx), "error parsing regexp: invalid or unsupported Perl syntax: `(?ia`")
+	})
 
-func TestChangelogFilterIncludeInvalidRegex(t *testing.T) {
-	testlib.Mktmp(t)
-	testlib.GitInit(t)
-	testlib.GitCommit(t, "commitssss")
-	testlib.GitTag(t, "v0.0.3")
-	testlib.GitCommit(t, "commitzzz")
-	testlib.GitTag(t, "v0.0.4")
-	ctx := testctx.WrapWithCfg(t.Context(), config.Project{
-		Changelog: config.Changelog{
-			Filters: config.Filters{
-				Include: []string{
-					"(?iasdr4qasd)not a valid regex i guess",
+	t.Run("include", func(t *testing.T) {
+		ctx := testctx.WrapWithCfg(t.Context(), config.Project{
+			Changelog: config.Changelog{
+				Filters: config.Filters{
+					Include: []string{
+						"(?iasdr4qasd)not a valid regex i guess",
+					},
 				},
 			},
-		},
-	}, testctx.WithCurrentTag("v0.0.4"), testctx.WithPreviousTag("v0.0.3"))
+		}, testctx.WithCurrentTag("v0.0.4"), testctx.WithPreviousTag("v0.0.3"))
 
-	require.NoError(t, Pipe{}.Default(ctx))
-	require.EqualError(t, Pipe{}.Run(ctx), "error parsing regexp: invalid or unsupported Perl syntax: `(?ia`")
+		require.NoError(t, Pipe{}.Default(ctx))
+		require.EqualError(t, Pipe{}.Run(ctx), "error parsing regexp: invalid or unsupported Perl syntax: `(?ia`")
+	})
 }
 
 func TestChangelogNoTags(t *testing.T) {
@@ -461,30 +448,7 @@ func TestChangelogNoTags(t *testing.T) {
 	}
 }
 
-func TestChangelogOnBranchWithSameNameAsTag(t *testing.T) {
-	testlib.Mktmp(t)
-	testlib.GitInit(t)
-	msgs := []string{
-		"initial commit",
-		"another one",
-		"one more",
-		"and finally this one",
-	}
-	for _, msg := range msgs {
-		testlib.GitCommit(t, msg)
-	}
-	testlib.GitTag(t, "v0.0.1")
-	testlib.GitCheckoutBranch(t, "v0.0.1")
-	ctx := testctx.Wrap(t.Context(), testctx.WithCurrentTag("v0.0.1"), withFirstCommit(t))
-	require.NoError(t, Pipe{}.Default(ctx))
-	require.NoError(t, Pipe{}.Run(ctx))
-	require.Contains(t, ctx.ReleaseNotes, "## Changelog")
-	for _, msg := range msgs {
-		require.Contains(t, ctx.ReleaseNotes, msg)
-	}
-}
-
-func TestChangeLogWithReleaseHeader(t *testing.T) {
+func TestChangelogHeaderFooter(t *testing.T) {
 	current, err := os.Getwd()
 	require.NoError(t, err)
 	tmpdir := testlib.Mktmp(t)
@@ -501,113 +465,62 @@ func TestChangeLogWithReleaseHeader(t *testing.T) {
 	}
 	testlib.GitTag(t, "v0.0.1")
 	testlib.GitCheckoutBranch(t, "v0.0.1")
-	ctx := testctx.Wrap(t.Context(), testctx.WithCurrentTag("v0.0.1"), withFirstCommit(t))
-	ctx.ReleaseHeaderFile = "testdata/release-header.md"
-	require.NoError(t, Pipe{}.Default(ctx))
-	require.NoError(t, Pipe{}.Run(ctx))
-	require.Contains(t, ctx.ReleaseNotes, "## Changelog")
-	require.Contains(t, ctx.ReleaseNotes, "test header")
-}
 
-func TestChangeLogWithTemplatedReleaseHeader(t *testing.T) {
-	current, err := os.Getwd()
-	require.NoError(t, err)
-	tmpdir := testlib.Mktmp(t)
-	require.NoError(t, os.Symlink(current+"/testdata", tmpdir+"/testdata"))
-	testlib.GitInit(t)
-	msgs := []string{
-		"initial commit",
-		"another one",
-		"one more",
-		"and finally this one",
-	}
-	for _, msg := range msgs {
-		testlib.GitCommit(t, msg)
-	}
-	testlib.GitTag(t, "v0.0.1")
-	testlib.GitCheckoutBranch(t, "v0.0.1")
-	ctx := testctx.Wrap(t.Context(), testctx.WithCurrentTag("v0.0.1"), withFirstCommit(t))
-	ctx.ReleaseHeaderTmpl = "testdata/release-header-templated.md"
-	require.NoError(t, Pipe{}.Default(ctx))
-	require.NoError(t, Pipe{}.Run(ctx))
-	require.Contains(t, ctx.ReleaseNotes, "## Changelog")
-	require.Contains(t, ctx.ReleaseNotes, "test header with tag v0.0.1")
-}
+	t.Run("on branch with same name as tag", func(t *testing.T) {
+		ctx := testctx.Wrap(t.Context(), testctx.WithCurrentTag("v0.0.1"), withFirstCommit(t))
+		require.NoError(t, Pipe{}.Default(ctx))
+		require.NoError(t, Pipe{}.Run(ctx))
+		require.Contains(t, ctx.ReleaseNotes, "## Changelog")
+		for _, msg := range msgs {
+			require.Contains(t, ctx.ReleaseNotes, msg)
+		}
+	})
 
-func TestChangeLogWithReleaseFooter(t *testing.T) {
-	current, err := os.Getwd()
-	require.NoError(t, err)
-	tmpdir := testlib.Mktmp(t)
-	require.NoError(t, os.Symlink(current+"/testdata", tmpdir+"/testdata"))
-	testlib.GitInit(t)
-	msgs := []string{
-		"initial commit",
-		"another one",
-		"one more",
-		"and finally this one",
-	}
-	for _, msg := range msgs {
-		testlib.GitCommit(t, msg)
-	}
-	testlib.GitTag(t, "v0.0.1")
-	testlib.GitCheckoutBranch(t, "v0.0.1")
-	ctx := testctx.Wrap(t.Context(), testctx.WithCurrentTag("v0.0.1"), withFirstCommit(t))
-	ctx.ReleaseFooterFile = "testdata/release-footer.md"
-	require.NoError(t, Pipe{}.Default(ctx))
-	require.NoError(t, Pipe{}.Run(ctx))
-	require.Contains(t, ctx.ReleaseNotes, "## Changelog")
-	require.Contains(t, ctx.ReleaseNotes, "test footer")
-	require.Equal(t, '\n', rune(ctx.ReleaseNotes[len(ctx.ReleaseNotes)-1]))
-}
+	t.Run("release header", func(t *testing.T) {
+		ctx := testctx.Wrap(t.Context(), testctx.WithCurrentTag("v0.0.1"), withFirstCommit(t))
+		ctx.ReleaseHeaderFile = "testdata/release-header.md"
+		require.NoError(t, Pipe{}.Default(ctx))
+		require.NoError(t, Pipe{}.Run(ctx))
+		require.Contains(t, ctx.ReleaseNotes, "## Changelog")
+		require.Contains(t, ctx.ReleaseNotes, "test header")
+	})
 
-func TestChangeLogWithTemplatedReleaseFooter(t *testing.T) {
-	current, err := os.Getwd()
-	require.NoError(t, err)
-	tmpdir := testlib.Mktmp(t)
-	require.NoError(t, os.Symlink(current+"/testdata", tmpdir+"/testdata"))
-	testlib.GitInit(t)
-	msgs := []string{
-		"initial commit",
-		"another one",
-		"one more",
-		"and finally this one",
-	}
-	for _, msg := range msgs {
-		testlib.GitCommit(t, msg)
-	}
-	testlib.GitTag(t, "v0.0.1")
-	testlib.GitCheckoutBranch(t, "v0.0.1")
-	ctx := testctx.Wrap(t.Context(), testctx.WithCurrentTag("v0.0.1"), withFirstCommit(t))
-	ctx.ReleaseFooterTmpl = "testdata/release-footer-templated.md"
-	require.NoError(t, Pipe{}.Default(ctx))
-	require.NoError(t, Pipe{}.Run(ctx))
-	require.Contains(t, ctx.ReleaseNotes, "## Changelog")
-	require.Contains(t, ctx.ReleaseNotes, "test footer with tag v0.0.1")
-	require.Equal(t, '\n', rune(ctx.ReleaseNotes[len(ctx.ReleaseNotes)-1]))
-}
+	t.Run("templated release header", func(t *testing.T) {
+		ctx := testctx.Wrap(t.Context(), testctx.WithCurrentTag("v0.0.1"), withFirstCommit(t))
+		ctx.ReleaseHeaderTmpl = "testdata/release-header-templated.md"
+		require.NoError(t, Pipe{}.Default(ctx))
+		require.NoError(t, Pipe{}.Run(ctx))
+		require.Contains(t, ctx.ReleaseNotes, "## Changelog")
+		require.Contains(t, ctx.ReleaseNotes, "test header with tag v0.0.1")
+	})
 
-func TestChangeLogWithoutReleaseFooter(t *testing.T) {
-	current, err := os.Getwd()
-	require.NoError(t, err)
-	tmpdir := testlib.Mktmp(t)
-	require.NoError(t, os.Symlink(current+"/testdata", tmpdir+"/testdata"))
-	testlib.GitInit(t)
-	msgs := []string{
-		"initial commit",
-		"another one",
-		"one more",
-		"and finally this one",
-	}
-	for _, msg := range msgs {
-		testlib.GitCommit(t, msg)
-	}
-	testlib.GitTag(t, "v0.0.1")
-	testlib.GitCheckoutBranch(t, "v0.0.1")
-	ctx := testctx.Wrap(t.Context(), testctx.WithCurrentTag("v0.0.1"), withFirstCommit(t))
-	require.NoError(t, Pipe{}.Default(ctx))
-	require.NoError(t, Pipe{}.Run(ctx))
-	require.Contains(t, ctx.ReleaseNotes, "## Changelog")
-	require.Equal(t, '\n', rune(ctx.ReleaseNotes[len(ctx.ReleaseNotes)-1]))
+	t.Run("release footer", func(t *testing.T) {
+		ctx := testctx.Wrap(t.Context(), testctx.WithCurrentTag("v0.0.1"), withFirstCommit(t))
+		ctx.ReleaseFooterFile = "testdata/release-footer.md"
+		require.NoError(t, Pipe{}.Default(ctx))
+		require.NoError(t, Pipe{}.Run(ctx))
+		require.Contains(t, ctx.ReleaseNotes, "## Changelog")
+		require.Contains(t, ctx.ReleaseNotes, "test footer")
+		require.Equal(t, '\n', rune(ctx.ReleaseNotes[len(ctx.ReleaseNotes)-1]))
+	})
+
+	t.Run("templated release footer", func(t *testing.T) {
+		ctx := testctx.Wrap(t.Context(), testctx.WithCurrentTag("v0.0.1"), withFirstCommit(t))
+		ctx.ReleaseFooterTmpl = "testdata/release-footer-templated.md"
+		require.NoError(t, Pipe{}.Default(ctx))
+		require.NoError(t, Pipe{}.Run(ctx))
+		require.Contains(t, ctx.ReleaseNotes, "## Changelog")
+		require.Contains(t, ctx.ReleaseNotes, "test footer with tag v0.0.1")
+		require.Equal(t, '\n', rune(ctx.ReleaseNotes[len(ctx.ReleaseNotes)-1]))
+	})
+
+	t.Run("without release footer", func(t *testing.T) {
+		ctx := testctx.Wrap(t.Context(), testctx.WithCurrentTag("v0.0.1"), withFirstCommit(t))
+		require.NoError(t, Pipe{}.Default(ctx))
+		require.NoError(t, Pipe{}.Run(ctx))
+		require.Contains(t, ctx.ReleaseNotes, "## Changelog")
+		require.Equal(t, '\n', rune(ctx.ReleaseNotes[len(ctx.ReleaseNotes)-1]))
+	})
 }
 
 func TestGetChangelogGitHubNative(t *testing.T) {
@@ -735,6 +648,7 @@ func TestGetChangeloger(t *testing.T) {
 	})
 
 	t.Run(useGitLab, func(t *testing.T) {
+		t.Setenv("CI_SERVER_VERSION", "17.0.0")
 		ctx := testctx.WrapWithCfg(t.Context(), config.Project{
 			Changelog: config.Changelog{
 				Use: useGitLab,
@@ -857,7 +771,7 @@ func TestSkip(t *testing.T) {
 	})
 }
 
-func TestGroup(t *testing.T) {
+func TestGroupAndAbbrev(t *testing.T) {
 	folder := testlib.Mktmp(t)
 	testlib.GitInit(t)
 	testlib.GitCommit(t, "first")
@@ -873,41 +787,43 @@ func TestGroup(t *testing.T) {
 	testlib.GitCommit(t, "bug: Merge pull request #999 from goreleaser/some-branch")
 	testlib.GitCommit(t, "this is not a Merge pull request")
 	testlib.GitTag(t, "v0.0.2")
-	ctx := testctx.WrapWithCfg(t.Context(), config.Project{
-		Dist: folder,
-		Changelog: config.Changelog{
-			Groups: []config.ChangelogGroup{
-				{
-					Title:  "Bots",
-					Regexp: ".*bot.*",
-					Order:  900,
-				},
-				{
-					Title:  "Features",
-					Regexp: `^.*?feat(\([[:word:]]+\))??!?:.+$`,
-					Order:  0,
-				},
-				{
-					Title:  "Bug Fixes",
-					Regexp: `^.*?bug(\([[:word:]]+\))??!?:.+$`,
-					Order:  1,
-				},
-				{
-					Title:  "Catch nothing",
-					Regexp: "yada yada yada honk the planet",
-					Order:  10,
-				},
-				{
-					Title: "Others",
-					Order: 999,
+
+	t.Run("group", func(t *testing.T) {
+		ctx := testctx.WrapWithCfg(t.Context(), config.Project{
+			Dist: folder,
+			Changelog: config.Changelog{
+				Groups: []config.ChangelogGroup{
+					{
+						Title:  "Bots",
+						Regexp: ".*bot.*",
+						Order:  900,
+					},
+					{
+						Title:  "Features",
+						Regexp: `^.*?feat(\([[:word:]]+\))??!?:.+$`,
+						Order:  0,
+					},
+					{
+						Title:  "Bug Fixes",
+						Regexp: `^.*?bug(\([[:word:]]+\))??!?:.+$`,
+						Order:  1,
+					},
+					{
+						Title:  "Catch nothing",
+						Regexp: "yada yada yada honk the planet",
+						Order:  10,
+					},
+					{
+						Title: "Others",
+						Order: 999,
+					},
 				},
 			},
-		},
-	}, testctx.WithCurrentTag("v0.0.2"), withFirstCommit(t))
+		}, testctx.WithCurrentTag("v0.0.2"), withFirstCommit(t))
 
-	require.NoError(t, Pipe{}.Default(ctx))
-	require.NoError(t, Pipe{}.Run(ctx))
-	require.Regexp(t, `## Changelog
+		require.NoError(t, Pipe{}.Default(ctx))
+		require.NoError(t, Pipe{}.Run(ctx))
+		require.Regexp(t, `## Changelog
 ### Features
 \* \w+ feat: added that thing
 ### Bug Fixes
@@ -924,6 +840,69 @@ func TestGroup(t *testing.T) {
 \* \w+ added feature 1
 \* \w+ first
 `, ctx.ReleaseNotes)
+	})
+
+	t.Run("no abbrev", func(t *testing.T) {
+		ctx := testctx.WrapWithCfg(t.Context(), config.Project{
+			Dist:      folder,
+			Changelog: config.Changelog{},
+		}, testctx.WithCurrentTag("v0.0.2"), withFirstCommit(t))
+
+		require.NoError(t, Pipe{}.Default(ctx))
+		require.NoError(t, Pipe{}.Run(ctx))
+		ensureCommitHashLen(t, ctx.ReleaseNotes, 40)
+	})
+
+	t.Run("abbrev -1", func(t *testing.T) {
+		ctx := testctx.WrapWithCfg(t.Context(), config.Project{
+			Dist: folder,
+			Changelog: config.Changelog{
+				Abbrev: -1,
+			},
+		}, testctx.WithCurrentTag("v0.0.2"), withFirstCommit(t))
+
+		require.NoError(t, Pipe{}.Default(ctx))
+		require.NoError(t, Pipe{}.Run(ctx))
+	})
+
+	t.Run("abbrev 3", func(t *testing.T) {
+		ctx := testctx.WrapWithCfg(t.Context(), config.Project{
+			Dist: folder,
+			Changelog: config.Changelog{
+				Abbrev: 3,
+			},
+		}, testctx.WithCurrentTag("v0.0.2"), withFirstCommit(t))
+
+		require.NoError(t, Pipe{}.Default(ctx))
+		require.NoError(t, Pipe{}.Run(ctx))
+		ensureCommitHashLen(t, ctx.ReleaseNotes, 3)
+	})
+
+	t.Run("abbrev 7", func(t *testing.T) {
+		ctx := testctx.WrapWithCfg(t.Context(), config.Project{
+			Dist: folder,
+			Changelog: config.Changelog{
+				Abbrev: 7,
+			},
+		}, testctx.WithCurrentTag("v0.0.2"), withFirstCommit(t))
+
+		require.NoError(t, Pipe{}.Default(ctx))
+		require.NoError(t, Pipe{}.Run(ctx))
+		ensureCommitHashLen(t, ctx.ReleaseNotes, 7)
+	})
+
+	t.Run("abbrev 50", func(t *testing.T) {
+		ctx := testctx.WrapWithCfg(t.Context(), config.Project{
+			Dist: folder,
+			Changelog: config.Changelog{
+				Abbrev: 50,
+			},
+		}, testctx.WithCurrentTag("v0.0.2"), withFirstCommit(t))
+
+		require.NoError(t, Pipe{}.Default(ctx))
+		require.NoError(t, Pipe{}.Run(ctx))
+		ensureCommitHashLen(t, ctx.ReleaseNotes, 40)
+	})
 }
 
 func TestGroupBadRegex(t *testing.T) {
@@ -1005,86 +984,6 @@ func TestChangelogFormat(t *testing.T) {
 * aef653 bar`, out)
 			})
 		}
-	})
-}
-
-func TestAbbrev(t *testing.T) {
-	folder := testlib.Mktmp(t)
-	testlib.GitInit(t)
-	testlib.GitCommit(t, "first")
-	testlib.GitTag(t, "v0.0.1")
-	testlib.GitCommit(t, "added feature 1")
-	testlib.GitCommit(t, "fixed bug 2")
-	testlib.GitCommit(t, "ignored: whatever")
-	testlib.GitCommit(t, "feat(deps): update foobar [bot]")
-	testlib.GitCommit(t, "fix: whatever")
-	testlib.GitCommit(t, "docs: whatever")
-	testlib.GitCommit(t, "chore: something about cArs we dont need")
-	testlib.GitCommit(t, "feat: added that thing")
-	testlib.GitCommit(t, "bug: Merge pull request #999 from goreleaser/some-branch")
-	testlib.GitCommit(t, "this is not a Merge pull request")
-	testlib.GitTag(t, "v0.0.2")
-
-	t.Run("no abbrev", func(t *testing.T) {
-		ctx := testctx.WrapWithCfg(t.Context(), config.Project{
-			Dist:      folder,
-			Changelog: config.Changelog{},
-		}, testctx.WithCurrentTag("v0.0.2"), withFirstCommit(t))
-
-		require.NoError(t, Pipe{}.Default(ctx))
-		require.NoError(t, Pipe{}.Run(ctx))
-		ensureCommitHashLen(t, ctx.ReleaseNotes, 40)
-	})
-
-	t.Run("abbrev -1", func(t *testing.T) {
-		ctx := testctx.WrapWithCfg(t.Context(), config.Project{
-			Dist: folder,
-			Changelog: config.Changelog{
-				Abbrev: -1,
-			},
-		}, testctx.WithCurrentTag("v0.0.2"), withFirstCommit(t))
-
-		require.NoError(t, Pipe{}.Default(ctx))
-		require.NoError(t, Pipe{}.Run(ctx))
-	})
-
-	t.Run("abbrev 3", func(t *testing.T) {
-		ctx := testctx.WrapWithCfg(t.Context(), config.Project{
-			Dist: folder,
-			Changelog: config.Changelog{
-				Abbrev: 3,
-			},
-		}, testctx.WithCurrentTag("v0.0.2"), withFirstCommit(t))
-
-		require.NoError(t, Pipe{}.Default(ctx))
-		require.NoError(t, Pipe{}.Run(ctx))
-		ensureCommitHashLen(t, ctx.ReleaseNotes, 3)
-	})
-
-	t.Run("abbrev 7", func(t *testing.T) {
-		ctx := testctx.WrapWithCfg(t.Context(), config.Project{
-			Dist: folder,
-			Changelog: config.Changelog{
-				Abbrev: 7,
-			},
-		}, testctx.WithCurrentTag("v0.0.2"), withFirstCommit(t))
-
-		require.NoError(t, Pipe{}.Default(ctx))
-		require.NoError(t, Pipe{}.Run(ctx))
-		ensureCommitHashLen(t, ctx.ReleaseNotes, 7)
-	})
-
-	t.Run("abbrev 50", func(t *testing.T) {
-		ctx := testctx.WrapWithCfg(t.Context(), config.Project{
-			Dist: folder,
-			Changelog: config.Changelog{
-				Abbrev: 50,
-			},
-		}, testctx.WithCurrentTag("v0.0.2"), withFirstCommit(t))
-
-		require.NoError(t, Pipe{}.Default(ctx))
-		require.NoError(t, Pipe{}.Run(ctx))
-		ensureCommitHashLen(t, ctx.ReleaseNotes, 40)
 	})
 }
 

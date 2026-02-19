@@ -3,6 +3,8 @@ package slack
 import (
 	"bytes"
 	"encoding/json"
+	"net/http"
+	"net/http/httptest"
 	"testing"
 
 	"github.com/goreleaser/goreleaser/v2/internal/testctx"
@@ -37,7 +39,11 @@ func TestAnnounceInvalidTemplate(t *testing.T) {
 }
 
 func TestAnnounceWithQuotes(t *testing.T) {
-	t.Setenv("SLACK_WEBHOOK", slackTestHook())
+	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
+		w.WriteHeader(http.StatusOK)
+	}))
+	t.Cleanup(srv.Close)
+	t.Setenv("SLACK_WEBHOOK", srv.URL)
 	t.Setenv("USER", "bot-mc-botyson")
 
 	t.Run("with a plain message", func(t *testing.T) {
@@ -142,7 +148,11 @@ func TestParseRichText(t *testing.T) {
 }
 
 func TestRichText(t *testing.T) {
-	t.Setenv("SLACK_WEBHOOK", slackTestHook())
+	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
+		w.WriteHeader(http.StatusOK)
+	}))
+	t.Cleanup(srv.Close)
+	t.Setenv("SLACK_WEBHOOK", srv.URL)
 
 	t.Run("e2e - full slack config with blocks and attachments", func(t *testing.T) {
 		t.SkipNow() // requires a valid webhook for integration testing
@@ -199,13 +209,6 @@ func TestUnmarshal(t *testing.T) {
 		var blocks slack.Blocks
 		require.Error(t, unmarshal(ctx, ctx.Config.Announce.Slack.Blocks, &blocks))
 	})
-}
-
-func slackTestHook() string {
-	// redacted: replace this by a real Slack Web Incoming Hook to test the feature end to end.
-	const hook = "https://hooks.slack.com/services/*********/***********/************************"
-
-	return hook
 }
 
 func goodRichSlackConf() []byte {
