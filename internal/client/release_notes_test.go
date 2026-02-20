@@ -8,6 +8,7 @@ import (
 )
 
 func TestGetReleaseNotes(t *testing.T) {
+	t.Parallel()
 	const existing = "existing rel notes"
 	const current = "current rel notes"
 

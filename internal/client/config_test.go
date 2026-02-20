@@ -9,6 +9,7 @@ import (
 )
 
 func TestRepoFromRef(t *testing.T) {
+	t.Parallel()
 	owner := "someowner"
 	name := "somename"
 	branch := "somebranch"
@@ -28,6 +29,7 @@ func TestRepoFromRef(t *testing.T) {
 }
 
 func TestTemplateRef(t *testing.T) {
+	t.Parallel()
 	expected := config.RepoRef{
 		Owner:  "owner",
 		Name:   "name",

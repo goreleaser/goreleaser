@@ -156,6 +156,7 @@ func TestGitLabURLsAPITemplate(t *testing.T) {
 }
 
 func TestGitLabURLsDownloadTemplate(t *testing.T) {
+	t.Parallel()
 	tests := []struct {
 		name               string
 		usePackageRegistry bool
@@ -293,6 +294,7 @@ func TestGitLabURLsDownloadTemplate(t *testing.T) {
 }
 
 func TestGitLabCreateReleaseUnknownHost(t *testing.T) {
+	t.Parallel()
 	ctx := testctx.WrapWithCfg(t.Context(), config.Project{
 		Release: config.Release{
 			GitLab: config.Repo{
@@ -312,6 +314,7 @@ func TestGitLabCreateReleaseUnknownHost(t *testing.T) {
 }
 
 func TestGitLabCreateReleaseReleaseNotExists(t *testing.T) {
+	t.Parallel()
 	notExistsStatusCodes := []int{http.StatusNotFound, http.StatusForbidden}
 
 	for _, tt := range notExistsStatusCodes {
@@ -364,6 +367,7 @@ func TestGitLabCreateReleaseReleaseNotExists(t *testing.T) {
 }
 
 func TestGitLabCreateReleaseReleaseExists(t *testing.T) {
+	t.Parallel()
 	totalRequests := 0
 	createdRelease := false
 	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
@@ -418,6 +422,7 @@ func TestGitLabCreateReleaseReleaseExists(t *testing.T) {
 }
 
 func TestGitLabCreateReleaseUnknownHTTPError(t *testing.T) {
+	t.Parallel()
 	totalRequests := 0
 	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		totalRequests++
@@ -442,6 +447,7 @@ func TestGitLabCreateReleaseUnknownHTTPError(t *testing.T) {
 }
 
 func TestGitLabGetDefaultBranch(t *testing.T) {
+	t.Parallel()
 	totalRequests := 0
 	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		totalRequests++
@@ -500,6 +506,7 @@ func TestGitLabGetDefaultBranchEnv(t *testing.T) {
 }
 
 func TestGitLabGetDefaultBranchErr(t *testing.T) {
+	t.Parallel()
 	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		defer r.Body.Close()
 
@@ -527,6 +534,7 @@ func TestGitLabGetDefaultBranchErr(t *testing.T) {
 }
 
 func TestGitLabChangelog(t *testing.T) {
+	t.Parallel()
 	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		if strings.HasSuffix(r.URL.Path, "projects/someone/something/repository/compare") {
 			r, err := os.Open("testdata/gitlab/compare.json")
@@ -573,6 +581,7 @@ func TestGitLabChangelog(t *testing.T) {
 }
 
 func TestGitLabCreateFile(t *testing.T) {
+	t.Parallel()
 	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		// Handle the test where we know the branch and it exists
 		if strings.HasSuffix(r.URL.Path, "projects/someone/something/repository/branches/somebranch") {
@@ -700,6 +709,7 @@ func TestGitLabCreateFile(t *testing.T) {
 }
 
 func TestGitLabCloseMilestone(t *testing.T) {
+	t.Parallel()
 	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		if strings.HasSuffix(r.URL.Path, "projects/someone/something/milestones") {
 			r, err := os.Open("testdata/gitlab/milestones.json")
@@ -744,6 +754,7 @@ func TestGitLabCloseMilestone(t *testing.T) {
 }
 
 func TestGitLabCheckUseJobToken(t *testing.T) {
+	t.Parallel()
 	tests := []struct {
 		useJobToken bool
 		token       string
@@ -800,6 +811,7 @@ func TestGitLabCheckUseJobToken(t *testing.T) {
 }
 
 func TestGitLabOpenPullRequestCrossRepo(t *testing.T) {
+	t.Parallel()
 	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		defer r.Body.Close()
 
@@ -858,6 +870,7 @@ func TestGitLabOpenPullRequestCrossRepo(t *testing.T) {
 }
 
 func TestGitLabOpenPullRequestBaseEmpty(t *testing.T) {
+	t.Parallel()
 	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		defer r.Body.Close()
 
@@ -912,6 +925,7 @@ func TestGitLabOpenPullRequestBaseEmpty(t *testing.T) {
 }
 
 func TestGitLabOpenPullRequestDraft(t *testing.T) {
+	t.Parallel()
 	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		defer r.Body.Close()
 
@@ -966,6 +980,7 @@ func TestGitLabOpenPullRequestDraft(t *testing.T) {
 }
 
 func TestGitLabOpenPullRequestBaseBranchGiven(t *testing.T) {
+	t.Parallel()
 	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		defer r.Body.Close()
 

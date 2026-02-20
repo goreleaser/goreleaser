@@ -15,6 +15,7 @@ import (
 )
 
 func TestClientEmpty(t *testing.T) {
+	t.Parallel()
 	ctx := testctx.Wrap(t.Context())
 	client, err := New(ctx)
 	require.Nil(t, client)
@@ -22,7 +23,9 @@ func TestClientEmpty(t *testing.T) {
 }
 
 func TestNewReleaseClient(t *testing.T) {
+	t.Parallel()
 	t.Run("normal", func(t *testing.T) {
+		t.Parallel()
 		cli, err := NewReleaseClient(testctx.Wrap(t.Context(),
 			testctx.WithTokenType(context.TokenTypeGitHub),
 		))
@@ -31,6 +34,7 @@ func TestNewReleaseClient(t *testing.T) {
 	})
 
 	t.Run("bad tmpl", func(t *testing.T) {
+		t.Parallel()
 		_, err := NewReleaseClient(testctx.WrapWithCfg(t.Context(),
 			config.Project{
 				Release: config.Release{
@@ -43,6 +47,7 @@ func TestNewReleaseClient(t *testing.T) {
 	})
 
 	t.Run("disabled", func(t *testing.T) {
+		t.Parallel()
 		cli, err := NewReleaseClient(testctx.WrapWithCfg(t.Context(),
 			config.Project{
 				Release: config.Release{
@@ -61,6 +66,7 @@ func TestNewReleaseClient(t *testing.T) {
 }
 
 func TestClientNewGitea(t *testing.T) {
+	t.Parallel()
 	ctx := testctx.WrapWithCfg(t.Context(), config.Project{
 		GiteaURLs: config.GiteaURLs{
 			API:      fakeGitea(t).URL,
@@ -74,6 +80,7 @@ func TestClientNewGitea(t *testing.T) {
 }
 
 func TestClientNewGiteaInvalidURL(t *testing.T) {
+	t.Parallel()
 	ctx := testctx.WrapWithCfg(t.Context(), config.Project{
 		GiteaURLs: config.GiteaURLs{
 			API: "://gitea.com/api/v1",
@@ -94,6 +101,7 @@ func TestClientNewGitLab(t *testing.T) {
 }
 
 func TestCheckBodyMaxLength(t *testing.T) {
+	t.Parallel()
 	letters := []rune("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ")
 	b := make([]rune, maxReleaseBodyLength)
 	for i := range b {
@@ -183,6 +191,7 @@ func TestNewWithToken(t *testing.T) {
 }
 
 func TestClientBlanks(t *testing.T) {
+	t.Parallel()
 	repo := Repo{}
 	require.Empty(t, repo.String())
 }

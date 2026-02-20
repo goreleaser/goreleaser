@@ -24,7 +24,9 @@ import (
 )
 
 func TestNewGitHubClient(t *testing.T) {
+	t.Parallel()
 	t.Run("good urls", func(t *testing.T) {
+		t.Parallel()
 		githubURL := "https://github.mycompany.com"
 		ctx := testctx.WrapWithCfg(t.Context(), config.Project{
 			GitHubURLs: config.GitHubURLs{
@@ -40,6 +42,7 @@ func TestNewGitHubClient(t *testing.T) {
 	})
 
 	t.Run("good urls ending with /", func(t *testing.T) {
+		t.Parallel()
 		githubURL := "https://github.mycompany.com"
 		ctx := testctx.WrapWithCfg(t.Context(), config.Project{
 			GitHubURLs: config.GitHubURLs{
@@ -55,6 +58,7 @@ func TestNewGitHubClient(t *testing.T) {
 	})
 
 	t.Run("bad api url", func(t *testing.T) {
+		t.Parallel()
 		ctx := testctx.WrapWithCfg(t.Context(), config.Project{
 			GitHubURLs: config.GitHubURLs{
 				API:    "://github.mycompany.com/api",
@@ -67,6 +71,7 @@ func TestNewGitHubClient(t *testing.T) {
 	})
 
 	t.Run("bad upload url", func(t *testing.T) {
+		t.Parallel()
 		ctx := testctx.WrapWithCfg(t.Context(), config.Project{
 			GitHubURLs: config.GitHubURLs{
 				API:    "https://github.mycompany.com/api",
@@ -79,6 +84,7 @@ func TestNewGitHubClient(t *testing.T) {
 	})
 
 	t.Run("template", func(t *testing.T) {
+		t.Parallel()
 		githubURL := "https://github.mycompany.com"
 		ctx := testctx.WrapWithCfg(t.Context(), config.Project{
 			Env: []string{
@@ -98,6 +104,7 @@ func TestNewGitHubClient(t *testing.T) {
 	})
 
 	t.Run("template invalid api", func(t *testing.T) {
+		t.Parallel()
 		ctx := testctx.WrapWithCfg(t.Context(), config.Project{
 			GitHubURLs: config.GitHubURLs{
 				API: "{{ .Env.GORELEASER_NOT_EXISTS }}",
@@ -109,6 +116,7 @@ func TestNewGitHubClient(t *testing.T) {
 	})
 
 	t.Run("template invalid upload", func(t *testing.T) {
+		t.Parallel()
 		ctx := testctx.WrapWithCfg(t.Context(), config.Project{
 			GitHubURLs: config.GitHubURLs{
 				API:    "https://github.mycompany.com/api",
@@ -121,6 +129,7 @@ func TestNewGitHubClient(t *testing.T) {
 	})
 
 	t.Run("template invalid", func(t *testing.T) {
+		t.Parallel()
 		ctx := testctx.WrapWithCfg(t.Context(), config.Project{
 			GitHubURLs: config.GitHubURLs{
 				API: "{{.dddddddddd",
@@ -133,6 +142,7 @@ func TestNewGitHubClient(t *testing.T) {
 }
 
 func TestGitHubUploadReleaseIDNotInt(t *testing.T) {
+	t.Parallel()
 	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		if r.URL.Path == "/api/v3/rate_limit" {
 			w.WriteHeader(http.StatusOK)
@@ -157,6 +167,7 @@ func TestGitHubUploadReleaseIDNotInt(t *testing.T) {
 }
 
 func TestGitHubReleaseURLTemplate(t *testing.T) {
+	t.Parallel()
 	tests := []struct {
 		name            string
 		downloadURL     string
@@ -187,6 +198,7 @@ func TestGitHubReleaseURLTemplate(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
 			ctx := testctx.WrapWithCfg(t.Context(), config.Project{
 				Env: []string{
 					"GORELEASER_TEST_GITHUB_URLS_DOWNLOAD=https://github.mycompany.com",
@@ -217,6 +229,7 @@ func TestGitHubReleaseURLTemplate(t *testing.T) {
 }
 
 func TestGitHubCreateReleaseWrongNameTemplate(t *testing.T) {
+	t.Parallel()
 	ctx := testctx.WrapWithCfg(t.Context(), config.Project{
 		Release: config.Release{
 			NameTemplate: "{{.dddddddddd",
@@ -231,6 +244,7 @@ func TestGitHubCreateReleaseWrongNameTemplate(t *testing.T) {
 }
 
 func TestGitHubGetDefaultBranch(t *testing.T) {
+	t.Parallel()
 	totalRequests := 0
 	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		totalRequests++
@@ -269,6 +283,7 @@ func TestGitHubGetDefaultBranch(t *testing.T) {
 }
 
 func TestGitHubGetDefaultBranchErr(t *testing.T) {
+	t.Parallel()
 	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		defer r.Body.Close()
 
@@ -296,6 +311,7 @@ func TestGitHubGetDefaultBranchErr(t *testing.T) {
 }
 
 func TestGitHubChangelog(t *testing.T) {
+	t.Parallel()
 	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		defer r.Body.Close()
 
@@ -348,6 +364,7 @@ func TestGitHubChangelog(t *testing.T) {
 }
 
 func TestGitHubReleaseNotes(t *testing.T) {
+	t.Parallel()
 	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		defer r.Body.Close()
 
@@ -387,6 +404,7 @@ func TestGitHubReleaseNotes(t *testing.T) {
 }
 
 func TestGitHubReleaseNotesError(t *testing.T) {
+	t.Parallel()
 	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		defer r.Body.Close()
 
@@ -419,6 +437,7 @@ func TestGitHubReleaseNotesError(t *testing.T) {
 }
 
 func TestGitHubCloseMilestone(t *testing.T) {
+	t.Parallel()
 	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		defer r.Body.Close()
 
@@ -458,6 +477,7 @@ func TestGitHubCloseMilestone(t *testing.T) {
 const testPRTemplate = "fake template\n- [ ] mark this\n---"
 
 func TestGitHubOpenPullRequestCrossRepo(t *testing.T) {
+	t.Parallel()
 	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		defer r.Body.Close()
 
@@ -519,6 +539,7 @@ func TestGitHubOpenPullRequestCrossRepo(t *testing.T) {
 }
 
 func TestGitHubOpenPullRequestHappyPath(t *testing.T) {
+	t.Parallel()
 	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		defer r.Body.Close()
 
@@ -569,6 +590,7 @@ func TestGitHubOpenPullRequestHappyPath(t *testing.T) {
 }
 
 func TestGitHubOpenPullRequestNoBaseBranchDraft(t *testing.T) {
+	t.Parallel()
 	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		defer r.Body.Close()
 
@@ -629,6 +651,7 @@ func TestGitHubOpenPullRequestNoBaseBranchDraft(t *testing.T) {
 }
 
 func TestGitHubOpenPullRequestPRExists(t *testing.T) {
+	t.Parallel()
 	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		defer r.Body.Close()
 
@@ -675,6 +698,7 @@ func TestGitHubOpenPullRequestPRExists(t *testing.T) {
 }
 
 func TestGitHubOpenPullRequestBaseEmpty(t *testing.T) {
+	t.Parallel()
 	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		defer r.Body.Close()
 
@@ -726,6 +750,7 @@ func TestGitHubOpenPullRequestBaseEmpty(t *testing.T) {
 }
 
 func TestGitHubOpenPullRequestHeadEmpty(t *testing.T) {
+	t.Parallel()
 	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		defer r.Body.Close()
 
@@ -777,6 +802,7 @@ func TestGitHubOpenPullRequestHeadEmpty(t *testing.T) {
 }
 
 func TestGitHubCreateFileHappyPathCreate(t *testing.T) {
+	t.Parallel()
 	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		defer r.Body.Close()
 
@@ -825,6 +851,7 @@ func TestGitHubCreateFileHappyPathCreate(t *testing.T) {
 }
 
 func TestGitHubCreateFileHappyPathUpdate(t *testing.T) {
+	t.Parallel()
 	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		defer r.Body.Close()
 
@@ -874,6 +901,7 @@ func TestGitHubCreateFileHappyPathUpdate(t *testing.T) {
 }
 
 func TestGitHubCreateFileFeatureBranchAlreadyExists(t *testing.T) {
+	t.Parallel()
 	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		defer r.Body.Close()
 
@@ -936,6 +964,7 @@ func TestGitHubCreateFileFeatureBranchAlreadyExists(t *testing.T) {
 }
 
 func TestGitHubCreateFileFeatureBranchDoesNotExist(t *testing.T) {
+	t.Parallel()
 	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		defer r.Body.Close()
 
@@ -997,6 +1026,7 @@ func TestGitHubCreateFileFeatureBranchDoesNotExist(t *testing.T) {
 }
 
 func TestGitHubCreateFileFeatureBranchNilObject(t *testing.T) {
+	t.Parallel()
 	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		defer r.Body.Close()
 
@@ -1047,6 +1077,7 @@ func TestGitHubCreateFileFeatureBranchNilObject(t *testing.T) {
 }
 
 func TestGitHubCheckRateLimit(t *testing.T) {
+	t.Parallel()
 	now := time.Now().UTC()
 	reset := now.Add(1392 * time.Millisecond)
 	var first atomic.Bool
@@ -1085,6 +1116,7 @@ func TestGitHubCheckRateLimit(t *testing.T) {
 }
 
 func TestGitHubCreateRelease(t *testing.T) {
+	t.Parallel()
 	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		defer r.Body.Close()
 
@@ -1141,6 +1173,7 @@ func TestGitHubCreateRelease(t *testing.T) {
 }
 
 func TestGitHubCreateReleaseDeleteExistingDraft(t *testing.T) {
+	t.Parallel()
 	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		defer r.Body.Close()
 
@@ -1210,6 +1243,7 @@ func TestGitHubCreateReleaseDeleteExistingDraft(t *testing.T) {
 }
 
 func TestGitHubCreateReleaseUpdateExisting(t *testing.T) {
+	t.Parallel()
 	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		defer r.Body.Close()
 
@@ -1266,6 +1300,7 @@ func TestGitHubCreateReleaseUpdateExisting(t *testing.T) {
 }
 
 func TestGitHubCreateReleaseUseExistingDraft(t *testing.T) {
+	t.Parallel()
 	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		defer r.Body.Close()
 
@@ -1328,6 +1363,7 @@ func TestGitHubCreateReleaseUseExistingDraft(t *testing.T) {
 }
 
 func TestGitHubCreateFileWithGitHubAppToken(t *testing.T) {
+	t.Parallel()
 	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		defer r.Body.Close()
 
@@ -1386,6 +1422,7 @@ func TestGitHubCreateFileWithGitHubAppToken(t *testing.T) {
 }
 
 func TestGitHubCreateFileWithoutGitHubAppToken(t *testing.T) {
+	t.Parallel()
 	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		defer r.Body.Close()
 
@@ -1449,6 +1486,7 @@ func TestGitHubCreateFileWithoutGitHubAppToken(t *testing.T) {
 }
 
 func TestGitHubAuthorsLookup(t *testing.T) {
+	t.Parallel()
 	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		defer r.Body.Close()
 

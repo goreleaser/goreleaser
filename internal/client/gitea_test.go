@@ -122,6 +122,7 @@ func (s *GetInstanceURLSuite) TestTemplateInvalid() {
 }
 
 func TestGetInstanceURLSuite(t *testing.T) {
+	t.Parallel()
 	suite.Run(t, new(GetInstanceURLSuite))
 }
 
@@ -478,6 +479,7 @@ func TestGiteaUploadSuite(t *testing.T) {
 }
 
 func TestGiteaReleaseURLTemplate(t *testing.T) {
+	t.Parallel()
 	tests := []struct {
 		name            string
 		downloadURL     string
@@ -541,6 +543,7 @@ func TestGiteaReleaseURLTemplate(t *testing.T) {
 }
 
 func TestGiteaGetDefaultBranch(t *testing.T) {
+	t.Parallel()
 	totalRequests := 0
 	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		totalRequests++
@@ -576,6 +579,7 @@ func TestGiteaGetDefaultBranch(t *testing.T) {
 }
 
 func TestGiteaGetDefaultBranchErr(t *testing.T) {
+	t.Parallel()
 	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		defer r.Body.Close()
 		if strings.HasSuffix(r.URL.Path, "api/v1/version") {
@@ -607,6 +611,7 @@ func TestGiteaGetDefaultBranchErr(t *testing.T) {
 }
 
 func TestGiteaChangelog(t *testing.T) {
+	t.Parallel()
 	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		defer r.Body.Close()
 		if strings.HasSuffix(r.URL.Path, "api/v1/version") {
@@ -684,6 +689,7 @@ func TestGiteaChangelog(t *testing.T) {
 }
 
 func TestGiteatGetInstanceURL(t *testing.T) {
+	t.Parallel()
 	ctx := testctx.WrapWithCfg(t.Context(), config.Project{
 		GiteaURLs: config.GiteaURLs{
 			API: "http://our.internal.gitea.media/api/v1",
