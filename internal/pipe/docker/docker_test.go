@@ -40,61 +40,9 @@ func start(tb testing.TB) {
 }
 
 // TODO: this test is too big... split in smaller tests? Mainly the manifest ones...
-func TestRunPipe(t *testing.T) { //nolint:tparallel
+func TestRunPipe(t *testing.T) {
 	testlib.CheckDocker(t)
 	testlib.SkipIfWindows(t, "registry images only available for windows")
-	type errChecker func(*testing.T, error)
-	shouldErr := func(msg string) errChecker {
-		return func(t *testing.T, err error) {
-			t.Helper()
-			if ge, ok := errors.AsType[gerrors.ErrDetailed](err); ok {
-				for _, s := range ge.Messages() {
-					if strings.Contains(s, msg) {
-						return
-					}
-				}
-				for _, a := range ge.Details() {
-					s, ok := a.(string)
-					if !ok {
-						continue
-					}
-					if strings.Contains(s, msg) {
-						return
-					}
-				}
-			} else {
-				require.ErrorContains(t, err, msg)
-			}
-		}
-	}
-	shouldNotErr := func(t *testing.T, err error) {
-		t.Helper()
-		require.NoError(t, err)
-	}
-	shouldTemplateErr := func(t *testing.T, err error) {
-		t.Helper()
-		testlib.RequireTemplateError(t, err)
-	}
-	type imageLabelFinder func(*testing.T, string)
-	shouldFindImagesWithLabels := func(image string, filters ...string) func(*testing.T, string) {
-		return func(t *testing.T, _ string) {
-			t.Helper()
-			for _, filter := range filters {
-				cmd := exec.CommandContext(t.Context(), "docker", "images", "-q", "--filter", "reference=*/"+image, "--filter", filter)
-				// t.Log("running", cmd)
-				output, err := cmd.CombinedOutput()
-				require.NoError(t, err, string(output))
-				uniqueIDs := map[string]string{}
-				for id := range strings.SplitSeq(strings.TrimSpace(string(output)), "\n") {
-					uniqueIDs[id] = id
-				}
-				require.Len(t, uniqueIDs, 1)
-			}
-		}
-	}
-	noLabels := func(t *testing.T, _ string) {
-		t.Helper()
-	}
 
 	table := map[string]struct {
 		dockers             []config.Docker
@@ -111,14 +59,14 @@ func TestRunPipe(t *testing.T) { //nolint:tparallel
 		"multiarch": {
 			dockers: []config.Docker{
 				{
-					ImageTemplates:     []string{registry + "goreleaser/test_multiarch:test-amd64"},
+					ImageTemplates:     []string{registry + "goreleaser/img1:test-amd64"},
 					Goos:               "linux",
 					Goarch:             "amd64",
 					Dockerfile:         "testdata/Dockerfile.arch",
 					BuildFlagTemplates: []string{"--build-arg", "ARCH=amd64", "--platform", "linux/amd64"},
 				},
 				{
-					ImageTemplates:     []string{registry + "goreleaser/test_multiarch:test-arm64v8"},
+					ImageTemplates:     []string{registry + "goreleaser/img1:test-arm64v8"},
 					Goos:               "linux",
 					Goarch:             "arm64",
 					Dockerfile:         "testdata/Dockerfile.arch",
@@ -127,16 +75,16 @@ func TestRunPipe(t *testing.T) { //nolint:tparallel
 			},
 			manifests: []config.DockerManifest{
 				{
-					NameTemplate: registry + "goreleaser/test_multiarch:test",
+					NameTemplate: registry + "goreleaser/img1:test",
 					ImageTemplates: []string{
-						registry + "goreleaser/test_multiarch:test-amd64",
-						registry + "goreleaser/test_multiarch:test-arm64v8",
+						registry + "goreleaser/img1:test-amd64",
+						registry + "goreleaser/img1:test-arm64v8",
 					},
 				},
 			},
 			expect: []string{
-				registry + "goreleaser/test_multiarch:test-amd64",
-				registry + "goreleaser/test_multiarch:test-arm64v8",
+				registry + "goreleaser/img1:test-amd64",
+				registry + "goreleaser/img1:test-arm64v8",
 			},
 			assertError:         shouldNotErr,
 			pubAssertError:      shouldNotErr,
@@ -147,7 +95,7 @@ func TestRunPipe(t *testing.T) { //nolint:tparallel
 			env: map[string]string{"AUTO": "auto"},
 			dockers: []config.Docker{
 				{
-					ImageTemplates: []string{registry + "goreleaser/test_manifestskip:test-amd64"},
+					ImageTemplates: []string{registry + "goreleaser/img2:test-amd64"},
 					Goos:           "linux",
 					Goarch:         "amd64",
 					Dockerfile:     "testdata/Dockerfile",
@@ -155,15 +103,15 @@ func TestRunPipe(t *testing.T) { //nolint:tparallel
 			},
 			manifests: []config.DockerManifest{
 				{
-					NameTemplate: registry + "goreleaser/test_manifestskip:test",
+					NameTemplate: registry + "goreleaser/img2:test",
 					ImageTemplates: []string{
-						registry + "goreleaser/test_manifestskip:test-amd64",
+						registry + "goreleaser/img2:test-amd64",
 					},
 					SkipPush: "{{ .Env.AUTO }}",
 				},
 			},
 			expect: []string{
-				registry + "goreleaser/test_manifestskip:test-amd64",
+				registry + "goreleaser/img2:test-amd64",
 			},
 			assertError:         shouldNotErr,
 			pubAssertError:      shouldNotErr,
@@ -173,7 +121,7 @@ func TestRunPipe(t *testing.T) { //nolint:tparallel
 		"manifest autoskip prerelease": {
 			dockers: []config.Docker{
 				{
-					ImageTemplates: []string{registry + "goreleaser/test_manifestskip-prerelease:test-amd64"},
+					ImageTemplates: []string{registry + "goreleaser/img3:test-amd64"},
 					Goos:           "linux",
 					Goarch:         "amd64",
 					Dockerfile:     "testdata/Dockerfile",
@@ -181,15 +129,15 @@ func TestRunPipe(t *testing.T) { //nolint:tparallel
 			},
 			manifests: []config.DockerManifest{
 				{
-					NameTemplate: registry + "goreleaser/test_manifestskip-prerelease:test",
+					NameTemplate: registry + "goreleaser/img3:test",
 					ImageTemplates: []string{
-						registry + "goreleaser/test_manifestskip-prerelease:test-amd64",
+						registry + "goreleaser/img3:test-amd64",
 					},
 					SkipPush: "auto",
 				},
 			},
 			expect: []string{
-				registry + "goreleaser/test_manifestskip-prerelease:test-amd64",
+				registry + "goreleaser/img3:test-amd64",
 			},
 			assertError:         shouldNotErr,
 			pubAssertError:      shouldNotErr,
@@ -203,7 +151,7 @@ func TestRunPipe(t *testing.T) { //nolint:tparallel
 		"manifest skip": {
 			dockers: []config.Docker{
 				{
-					ImageTemplates: []string{registry + "goreleaser/test_manifestskip-true:test-amd64"},
+					ImageTemplates: []string{registry + "goreleaser/img4:test-amd64"},
 					Goos:           "linux",
 					Goarch:         "amd64",
 					Dockerfile:     "testdata/Dockerfile",
@@ -211,15 +159,15 @@ func TestRunPipe(t *testing.T) { //nolint:tparallel
 			},
 			manifests: []config.DockerManifest{
 				{
-					NameTemplate: registry + "goreleaser/test_manifestskip-true:test",
+					NameTemplate: registry + "goreleaser/img4:test",
 					ImageTemplates: []string{
-						registry + "goreleaser/test_manifestskip-true:test-amd64",
+						registry + "goreleaser/img4:test-amd64",
 					},
 					SkipPush: "true",
 				},
 			},
 			expect: []string{
-				registry + "goreleaser/test_manifestskip-true:test-amd64",
+				registry + "goreleaser/img4:test-amd64",
 			},
 			assertError:         shouldNotErr,
 			pubAssertError:      shouldNotErr,
@@ -229,14 +177,14 @@ func TestRunPipe(t *testing.T) { //nolint:tparallel
 		"multiarch with previous existing manifest": {
 			dockers: []config.Docker{
 				{
-					ImageTemplates:     []string{registry + "goreleaser/test_multiarch:2test-amd64"},
+					ImageTemplates:     []string{registry + "goreleaser/img4:2test-amd64"},
 					Goos:               "linux",
 					Goarch:             "amd64",
 					Dockerfile:         "testdata/Dockerfile.arch",
 					BuildFlagTemplates: []string{"--build-arg", "ARCH=amd64", "--platform", "linux/amd64"},
 				},
 				{
-					ImageTemplates:     []string{registry + "goreleaser/test_multiarch:2test-arm64v8"},
+					ImageTemplates:     []string{registry + "goreleaser/img4:2test-arm64v8"},
 					Goos:               "linux",
 					Goarch:             "arm64",
 					Dockerfile:         "testdata/Dockerfile.arch",
@@ -245,16 +193,16 @@ func TestRunPipe(t *testing.T) { //nolint:tparallel
 			},
 			manifests: []config.DockerManifest{
 				{
-					NameTemplate: registry + "goreleaser/test_multiarch:2test",
+					NameTemplate: registry + "goreleaser/img4:2test",
 					ImageTemplates: []string{
-						registry + "goreleaser/test_multiarch:2test-amd64",
-						registry + "goreleaser/test_multiarch:2test-arm64v8",
+						registry + "goreleaser/img4:2test-amd64",
+						registry + "goreleaser/img4:2test-arm64v8",
 					},
 				},
 			},
 			expect: []string{
-				registry + "goreleaser/test_multiarch:2test-amd64",
-				registry + "goreleaser/test_multiarch:2test-arm64v8",
+				registry + "goreleaser/img4:2test-amd64",
+				registry + "goreleaser/img4:2test-arm64v8",
 			},
 			assertError:         shouldNotErr,
 			pubAssertError:      shouldNotErr,
@@ -263,10 +211,10 @@ func TestRunPipe(t *testing.T) { //nolint:tparallel
 			extraPrepare: func(t *testing.T, ctx *context.Context) {
 				t.Helper()
 				for _, cmd := range []string{
-					fmt.Sprintf("docker manifest rm %sgoreleaser/test_multiarch:2test || true", registry),
+					fmt.Sprintf("docker manifest rm %sgoreleaser/img4:2test || true", registry),
 					fmt.Sprintf("docker build --sbom=false --provenance=false -t %sgoreleaser/dummy:v1 --platform linux/amd64 -f testdata/Dockerfile.dummy .", registry),
 					fmt.Sprintf("docker push %sgoreleaser/dummy:v1", registry),
-					fmt.Sprintf("docker manifest create %sgoreleaser/test_multiarch:2test --amend %sgoreleaser/dummy:v1 --insecure", registry, registry),
+					fmt.Sprintf("docker manifest create %sgoreleaser/img4:2test --amend %sgoreleaser/dummy:v1 --insecure", registry, registry),
 				} {
 					parts := strings.Fields(strings.TrimSuffix(cmd, " || true"))
 					out, err := exec.CommandContext(ctx, parts[0], parts[1:]...).CombinedOutput()
@@ -279,7 +227,7 @@ func TestRunPipe(t *testing.T) { //nolint:tparallel
 		"multiarch image not found": {
 			dockers: []config.Docker{
 				{
-					ImageTemplates:     []string{registry + "goreleaser/test_multiarch_fail:latest-arm64v8"},
+					ImageTemplates:     []string{registry + "goreleaser/img5:latest-arm64v8"},
 					Goos:               "linux",
 					Goarch:             "arm64",
 					Dockerfile:         "testdata/Dockerfile.arch",
@@ -288,20 +236,20 @@ func TestRunPipe(t *testing.T) { //nolint:tparallel
 			},
 			manifests: []config.DockerManifest{
 				{
-					NameTemplate:   registry + "goreleaser/test_multiarch_fail:test",
-					ImageTemplates: []string{registry + "goreleaser/test_multiarch_fail:latest-amd64"},
+					NameTemplate:   registry + "goreleaser/img5:test",
+					ImageTemplates: []string{registry + "goreleaser/img5:latest-amd64"},
 				},
 			},
-			expect:              []string{registry + "goreleaser/test_multiarch_fail:latest-arm64v8"},
+			expect:              []string{registry + "goreleaser/img5:latest-arm64v8"},
 			assertError:         shouldNotErr,
 			pubAssertError:      shouldNotErr,
-			manifestAssertError: shouldErr("failed to create localhost:5050/goreleaser/test_multiarch_fail:test"),
+			manifestAssertError: shouldErr("failed to create localhost:5050/goreleaser/img5:test"),
 			assertImageLabels:   noLabels,
 		},
 		"multiarch manifest template error": {
 			dockers: []config.Docker{
 				{
-					ImageTemplates: []string{registry + "goreleaser/test_multiarch_manifest_tmpl_error"},
+					ImageTemplates: []string{registry + "goreleaser/img6"},
 					Goos:           "linux",
 					Goarch:         "arm64",
 					Dockerfile:     "testdata/Dockerfile",
@@ -309,11 +257,11 @@ func TestRunPipe(t *testing.T) { //nolint:tparallel
 			},
 			manifests: []config.DockerManifest{
 				{
-					NameTemplate:   registry + "goreleaser/test_multiarch_manifest_tmpl_error:{{ .Goos }",
-					ImageTemplates: []string{registry + "goreleaser/test_multiarch_manifest_tmpl_error"},
+					NameTemplate:   registry + "goreleaser/img6:{{ .Goos }",
+					ImageTemplates: []string{registry + "goreleaser/img6"},
 				},
 			},
-			expect:              []string{registry + "goreleaser/test_multiarch_manifest_tmpl_error"},
+			expect:              []string{registry + "goreleaser/img6"},
 			assertError:         shouldNotErr,
 			pubAssertError:      shouldNotErr,
 			manifestAssertError: shouldTemplateErr,
@@ -322,7 +270,7 @@ func TestRunPipe(t *testing.T) { //nolint:tparallel
 		"multiarch image template error": {
 			dockers: []config.Docker{
 				{
-					ImageTemplates: []string{registry + "goreleaser/test_multiarch_img_tmpl_error"},
+					ImageTemplates: []string{registry + "goreleaser/img7"},
 					Goos:           "linux",
 					Goarch:         "arm64",
 					Dockerfile:     "testdata/Dockerfile",
@@ -330,11 +278,11 @@ func TestRunPipe(t *testing.T) { //nolint:tparallel
 			},
 			manifests: []config.DockerManifest{
 				{
-					NameTemplate:   registry + "goreleaser/test_multiarch_img_tmpl_error",
-					ImageTemplates: []string{registry + "goreleaser/test_multiarch_img_tmpl_error:{{ .Goos }"},
+					NameTemplate:   registry + "goreleaser/img7",
+					ImageTemplates: []string{registry + "goreleaser/img7:{{ .Goos }"},
 				},
 			},
-			expect:              []string{registry + "goreleaser/test_multiarch_img_tmpl_error"},
+			expect:              []string{registry + "goreleaser/img7"},
 			assertError:         shouldNotErr,
 			pubAssertError:      shouldNotErr,
 			manifestAssertError: shouldTemplateErr,
@@ -343,7 +291,7 @@ func TestRunPipe(t *testing.T) { //nolint:tparallel
 		"multiarch missing manifest name": {
 			dockers: []config.Docker{
 				{
-					ImageTemplates: []string{registry + "goreleaser/test_multiarch_no_manifest_name"},
+					ImageTemplates: []string{registry + "goreleaser/img8"},
 					Goos:           "linux",
 					Goarch:         "arm64",
 					Dockerfile:     "testdata/Dockerfile",
@@ -352,10 +300,10 @@ func TestRunPipe(t *testing.T) { //nolint:tparallel
 			manifests: []config.DockerManifest{
 				{
 					NameTemplate:   "  ",
-					ImageTemplates: []string{registry + "goreleaser/test_multiarch_no_manifest_name"},
+					ImageTemplates: []string{registry + "goreleaser/img8"},
 				},
 			},
-			expect:              []string{registry + "goreleaser/test_multiarch_no_manifest_name"},
+			expect:              []string{registry + "goreleaser/img8"},
 			assertError:         shouldNotErr,
 			pubAssertError:      shouldNotErr,
 			manifestAssertError: testlib.AssertSkipped,
@@ -364,7 +312,7 @@ func TestRunPipe(t *testing.T) { //nolint:tparallel
 		"multiarch missing images": {
 			dockers: []config.Docker{
 				{
-					ImageTemplates: []string{registry + "goreleaser/test_multiarch_no_manifest_images"},
+					ImageTemplates: []string{registry + "goreleaser/img9"},
 					Dockerfile:     "testdata/Dockerfile",
 					Goos:           "linux",
 					Goarch:         "arm64",
@@ -376,7 +324,7 @@ func TestRunPipe(t *testing.T) { //nolint:tparallel
 					ImageTemplates: []string{" ", "   ", ""},
 				},
 			},
-			expect:              []string{registry + "goreleaser/test_multiarch_no_manifest_images"},
+			expect:              []string{registry + "goreleaser/img9"},
 			assertError:         shouldNotErr,
 			pubAssertError:      shouldNotErr,
 			manifestAssertError: testlib.AssertSkipped,
@@ -389,16 +337,16 @@ func TestRunPipe(t *testing.T) { //nolint:tparallel
 			dockers: []config.Docker{
 				{
 					ImageTemplates: []string{
-						registry + "goreleaser/test_run_pipe:{{.Tag}}-{{.Env.FOO}}",
-						registry + "goreleaser/test_run_pipe:v{{.Major}}",
-						registry + "goreleaser/test_run_pipe:v{{.Major}}.{{.Minor}}",
-						registry + "goreleaser/test_run_pipe:commit-{{.Commit}}",
-						registry + "goreleaser/test_run_pipe:latest",
-						altRegistry + "goreleaser/test_run_pipe:{{.Tag}}-{{.Env.FOO}}",
-						altRegistry + "goreleaser/test_run_pipe:v{{.Major}}",
-						altRegistry + "goreleaser/test_run_pipe:v{{.Major}}.{{.Minor}}",
-						altRegistry + "goreleaser/test_run_pipe:commit-{{.Commit}}",
-						altRegistry + "goreleaser/test_run_pipe:latest",
+						registry + "goreleaser/img10:{{.Tag}}-{{.Env.FOO}}",
+						registry + "goreleaser/img10:v{{.Major}}",
+						registry + "goreleaser/img10:v{{.Major}}.{{.Minor}}",
+						registry + "goreleaser/img10:commit-{{.Commit}}",
+						registry + "goreleaser/img10:latest",
+						altRegistry + "goreleaser/img10:{{.Tag}}-{{.Env.FOO}}",
+						altRegistry + "goreleaser/img10:v{{.Major}}",
+						altRegistry + "goreleaser/img10:v{{.Major}}.{{.Minor}}",
+						altRegistry + "goreleaser/img10:commit-{{.Commit}}",
+						altRegistry + "goreleaser/img10:latest",
 					},
 					Goos:       "linux",
 					Goarch:     "amd64",
@@ -416,19 +364,19 @@ func TestRunPipe(t *testing.T) { //nolint:tparallel
 				},
 			},
 			expect: []string{
-				registry + "goreleaser/test_run_pipe:v1.0.0-123",
-				registry + "goreleaser/test_run_pipe:v1",
-				registry + "goreleaser/test_run_pipe:v1.0",
-				registry + "goreleaser/test_run_pipe:commit-a1b2c3d4",
-				registry + "goreleaser/test_run_pipe:latest",
-				altRegistry + "goreleaser/test_run_pipe:v1.0.0-123",
-				altRegistry + "goreleaser/test_run_pipe:v1",
-				altRegistry + "goreleaser/test_run_pipe:v1.0",
-				altRegistry + "goreleaser/test_run_pipe:commit-a1b2c3d4",
-				altRegistry + "goreleaser/test_run_pipe:latest",
+				registry + "goreleaser/img10:v1.0.0-123",
+				registry + "goreleaser/img10:v1",
+				registry + "goreleaser/img10:v1.0",
+				registry + "goreleaser/img10:commit-a1b2c3d4",
+				registry + "goreleaser/img10:latest",
+				altRegistry + "goreleaser/img10:v1.0.0-123",
+				altRegistry + "goreleaser/img10:v1",
+				altRegistry + "goreleaser/img10:v1.0",
+				altRegistry + "goreleaser/img10:commit-a1b2c3d4",
+				altRegistry + "goreleaser/img10:latest",
 			},
 			assertImageLabels: shouldFindImagesWithLabels(
-				"goreleaser/test_run_pipe:v1.0.0",
+				"goreleaser/img10",
 				"label=org.label-schema.schema-version=1.0",
 				"label=org.label-schema.version=1.0.0",
 				"label=org.label-schema.vcs-ref=a1b2c3d4",
@@ -445,7 +393,7 @@ func TestRunPipe(t *testing.T) { //nolint:tparallel
 			dockers: []config.Docker{
 				{
 					ImageTemplates: []string{
-						registry + "goreleaser/templated_dockerfile:v1",
+						registry + "goreleaser/img11:v1",
 					},
 					Goos:       "linux",
 					Goarch:     "amd64",
@@ -456,7 +404,7 @@ func TestRunPipe(t *testing.T) { //nolint:tparallel
 				},
 			},
 			expect: []string{
-				registry + "goreleaser/templated_dockerfile:v1",
+				registry + "goreleaser/img11:v1",
 			},
 			assertError:         shouldNotErr,
 			assertImageLabels:   noLabels,
@@ -467,7 +415,7 @@ func TestRunPipe(t *testing.T) { //nolint:tparallel
 			dockers: []config.Docker{
 				{
 					ImageTemplates: []string{
-						registry + "goreleaser/wrong_bin_name:v1",
+						registry + "goreleaser/img12:v1",
 					},
 					Goos:       "linux",
 					Goarch:     "amd64",
@@ -481,7 +429,7 @@ func TestRunPipe(t *testing.T) { //nolint:tparallel
 			dockers: []config.Docker{
 				{
 					ImageTemplates: []string{
-						registry + "goreleaser/invalid-templated-dockerfile:v1",
+						registry + "goreleaser/img13:v1",
 					},
 					Goos:       "linux",
 					Goarch:     "amd64",
@@ -497,7 +445,7 @@ func TestRunPipe(t *testing.T) { //nolint:tparallel
 		},
 		"image template with env": {
 			env: map[string]string{
-				"FOO": "test_run_pipe_template",
+				"FOO": "img14",
 			},
 			dockers: []config.Docker{
 				{
@@ -510,7 +458,7 @@ func TestRunPipe(t *testing.T) { //nolint:tparallel
 				},
 			},
 			expect: []string{
-				registry + "goreleaser/test_run_pipe_template:v1.0.0",
+				registry + "goreleaser/img14:v1.0.0",
 			},
 			assertImageLabels:   noLabels,
 			assertError:         shouldNotErr,
@@ -519,7 +467,7 @@ func TestRunPipe(t *testing.T) { //nolint:tparallel
 		},
 		"image template uppercase": {
 			env: map[string]string{
-				"FOO": "test_run_pipe_template_UPPERCASE",
+				"FOO": "img15_UPPERCASE",
 			},
 			dockers: []config.Docker{
 				{
@@ -533,7 +481,7 @@ func TestRunPipe(t *testing.T) { //nolint:tparallel
 			},
 			expect:              []string{},
 			assertImageLabels:   noLabels,
-			assertError:         shouldErr(`failed to build localhost:5050/goreleaser/test_run_pipe_template_UPPERCASE:v1.0.0`),
+			assertError:         shouldErr(`failed to build localhost:5050/goreleaser/img15_UPPERCASE:v1.0.0`),
 			pubAssertError:      shouldNotErr,
 			manifestAssertError: shouldNotErr,
 		},
@@ -542,7 +490,7 @@ func TestRunPipe(t *testing.T) { //nolint:tparallel
 				{
 					ImageTemplates: []string{
 						"",
-						registry + "goreleaser/empty_tag:latest",
+						registry + "goreleaser/img16:latest",
 					},
 					Goos:       "linux",
 					Goarch:     "amd64",
@@ -550,7 +498,7 @@ func TestRunPipe(t *testing.T) { //nolint:tparallel
 				},
 			},
 			expect: []string{
-				registry + "goreleaser/empty_tag:latest",
+				registry + "goreleaser/img16:latest",
 			},
 			assertImageLabels:   noLabels,
 			assertError:         shouldNotErr,
@@ -579,7 +527,7 @@ func TestRunPipe(t *testing.T) { //nolint:tparallel
 			dockers: []config.Docker{
 				{
 					ImageTemplates: []string{
-						registry + "goreleaser/test_run_pipe_build:latest",
+						registry + "goreleaser/img17:latest",
 					},
 					Goos:       "linux",
 					Goarch:     "amd64",
@@ -588,7 +536,7 @@ func TestRunPipe(t *testing.T) { //nolint:tparallel
 				},
 			},
 			expect: []string{
-				registry + "goreleaser/test_run_pipe_build:latest",
+				registry + "goreleaser/img17:latest",
 			},
 			assertImageLabels:   noLabels,
 			assertError:         shouldNotErr,
@@ -599,7 +547,7 @@ func TestRunPipe(t *testing.T) { //nolint:tparallel
 			dockers: []config.Docker{
 				{
 					ImageTemplates: []string{
-						registry + "goreleaser/multiplefiles1:latest",
+						registry + "goreleaser/img18:latest",
 					},
 					Goos:       "linux",
 					Goarch:     "amd64",
@@ -608,7 +556,7 @@ func TestRunPipe(t *testing.T) { //nolint:tparallel
 				},
 				{
 					ImageTemplates: []string{
-						registry + "goreleaser/multiplefiles2:latest",
+						registry + "goreleaser/img19:latest",
 					},
 					Goos:       "linux",
 					Goarch:     "amd64",
@@ -617,8 +565,8 @@ func TestRunPipe(t *testing.T) { //nolint:tparallel
 				},
 			},
 			expect: []string{
-				registry + "goreleaser/multiplefiles1:latest",
-				registry + "goreleaser/multiplefiles2:latest",
+				registry + "goreleaser/img18:latest",
+				registry + "goreleaser/img19:latest",
 			},
 			assertImageLabels:   noLabels,
 			assertError:         shouldNotErr,
@@ -629,7 +577,7 @@ func TestRunPipe(t *testing.T) { //nolint:tparallel
 			dockers: []config.Docker{
 				{
 					ImageTemplates: []string{
-						registry + "goreleaser/test_run_pipe:latest",
+						registry + "goreleaser/img20:latest",
 					},
 					Goos:       "linux",
 					Goarch:     "amd64",
@@ -637,7 +585,7 @@ func TestRunPipe(t *testing.T) { //nolint:tparallel
 				},
 				{
 					ImageTemplates: []string{
-						registry + "goreleaser/test_run_pipe2:latest",
+						registry + "goreleaser/img21:latest",
 					},
 					Goos:       "linux",
 					Goarch:     "amd64",
@@ -646,8 +594,8 @@ func TestRunPipe(t *testing.T) { //nolint:tparallel
 			},
 			assertImageLabels: noLabels,
 			expect: []string{
-				registry + "goreleaser/test_run_pipe:latest",
-				registry + "goreleaser/test_run_pipe2:latest",
+				registry + "goreleaser/img20:latest",
+				registry + "goreleaser/img21:latest",
 			},
 			assertError:         shouldNotErr,
 			pubAssertError:      shouldNotErr,
@@ -658,7 +606,7 @@ func TestRunPipe(t *testing.T) { //nolint:tparallel
 			dockers: []config.Docker{
 				{
 					ImageTemplates: []string{
-						registry + "goreleaser/test_run_pipe:latest",
+						registry + "goreleaser/img22:latest",
 					},
 					Goos:       "linux",
 					Goarch:     "amd64",
@@ -667,7 +615,7 @@ func TestRunPipe(t *testing.T) { //nolint:tparallel
 				},
 			},
 			expect: []string{
-				registry + "goreleaser/test_run_pipe:latest",
+				registry + "goreleaser/img22:latest",
 			},
 			assertImageLabels:   noLabels,
 			assertError:         shouldNotErr,
@@ -678,7 +626,7 @@ func TestRunPipe(t *testing.T) { //nolint:tparallel
 			dockers: []config.Docker{
 				{
 					ImageTemplates: []string{
-						registry + "goreleaser/one_img_error_with_skip_push:true",
+						registry + "goreleaser/img23:true",
 					},
 					Goos:       "linux",
 					Goarch:     "amd64",
@@ -687,7 +635,7 @@ func TestRunPipe(t *testing.T) { //nolint:tparallel
 				},
 				{
 					ImageTemplates: []string{
-						registry + "goreleaser/one_img_error_with_skip_push:false",
+						registry + "goreleaser/img23:false",
 					},
 					Goos:       "linux",
 					Goarch:     "amd64",
@@ -696,16 +644,16 @@ func TestRunPipe(t *testing.T) { //nolint:tparallel
 				},
 			},
 			expect: []string{
-				registry + "goreleaser/one_img_error_with_skip_push:true",
+				registry + "goreleaser/img23:true",
 			},
 			assertImageLabels: noLabels,
-			assertError:       shouldErr("failed to build localhost:5050/goreleaser/one_img_error_with_skip_push:false"),
+			assertError:       shouldErr("failed to build localhost:5050/goreleaser/img23:false"),
 		},
 		"valid_no_latest": {
 			dockers: []config.Docker{
 				{
 					ImageTemplates: []string{
-						registry + "goreleaser/test_run_pipe:{{.Version}}",
+						registry + "goreleaser/img24:{{.Version}}",
 					},
 					Goos:       "linux",
 					Goarch:     "amd64",
@@ -713,7 +661,7 @@ func TestRunPipe(t *testing.T) { //nolint:tparallel
 				},
 			},
 			expect: []string{
-				registry + "goreleaser/test_run_pipe:1.0.0",
+				registry + "goreleaser/img24:1.0.0",
 			},
 			assertImageLabels:   noLabels,
 			assertError:         shouldNotErr,
@@ -724,7 +672,7 @@ func TestRunPipe(t *testing.T) { //nolint:tparallel
 			dockers: []config.Docker{
 				{
 					ImageTemplates: []string{
-						registry + "goreleaser/test_build_args:latest",
+						registry + "goreleaser/img25:latest",
 					},
 					Goos:       "linux",
 					Goarch:     "amd64",
@@ -735,7 +683,7 @@ func TestRunPipe(t *testing.T) { //nolint:tparallel
 				},
 			},
 			expect: []string{
-				registry + "goreleaser/test_build_args:latest",
+				registry + "goreleaser/img25:latest",
 			},
 			assertImageLabels:   noLabels,
 			assertError:         shouldNotErr,
@@ -746,7 +694,7 @@ func TestRunPipe(t *testing.T) { //nolint:tparallel
 			dockers: []config.Docker{
 				{
 					ImageTemplates: []string{
-						registry + "goreleaser/test_build_args:latest",
+						registry + "goreleaser/img26:latest",
 					},
 					Goos:       "linux",
 					Goarch:     "amd64",
@@ -757,13 +705,13 @@ func TestRunPipe(t *testing.T) { //nolint:tparallel
 				},
 			},
 			assertImageLabels: noLabels,
-			assertError:       shouldErr("failed to build localhost:5050/goreleaser/test_build_args:latest"),
+			assertError:       shouldErr("failed to build localhost:5050/goreleaser/img26:latest"),
 		},
 		"bad_dockerfile": {
 			dockers: []config.Docker{
 				{
 					ImageTemplates: []string{
-						registry + "goreleaser/bad_dockerfile:latest",
+						registry + "goreleaser/img27:latest",
 					},
 					Goos:       "linux",
 					Goarch:     "amd64",
@@ -771,13 +719,13 @@ func TestRunPipe(t *testing.T) { //nolint:tparallel
 				},
 			},
 			assertImageLabels: noLabels,
-			assertError:       shouldErr("failed to build localhost:5050/goreleaser/bad_dockerfile:latest"),
+			assertError:       shouldErr("failed to build localhost:5050/goreleaser/img27:latest"),
 		},
 		"tag_template_error": {
 			dockers: []config.Docker{
 				{
 					ImageTemplates: []string{
-						registry + "goreleaser/test_run_pipe:{{.Tag}",
+						registry + "goreleaser/img28:{{.Tag}",
 					},
 					Goos:       "linux",
 					Goarch:     "amd64",
@@ -792,7 +740,7 @@ func TestRunPipe(t *testing.T) { //nolint:tparallel
 			dockers: []config.Docker{
 				{
 					ImageTemplates: []string{
-						registry + "goreleaser/test_run_pipe:latest",
+						registry + "goreleaser/img29:latest",
 					},
 					Goos:       "linux",
 					Goarch:     "amd64",
@@ -810,7 +758,7 @@ func TestRunPipe(t *testing.T) { //nolint:tparallel
 			dockers: []config.Docker{
 				{
 					ImageTemplates: []string{
-						registry + "goreleaser/test_run_pipe:{{.Env.NOPE}}",
+						registry + "goreleaser/img30:{{.Env.NOPE}}",
 					},
 					Goos:       "linux",
 					Goarch:     "amd64",
@@ -825,7 +773,7 @@ func TestRunPipe(t *testing.T) { //nolint:tparallel
 			dockers: []config.Docker{
 				{
 					ImageTemplates: []string{
-						registry + "goreleaser/test_run_pipe:latest",
+						registry + "goreleaser/img31:latest",
 					},
 					Goos:       "linux",
 					Goarch:     "amd64",
@@ -843,8 +791,8 @@ func TestRunPipe(t *testing.T) { //nolint:tparallel
 			dockers: []config.Docker{
 				{
 					ImageTemplates: []string{
-						registry + "goreleaser/{{.ProjectName}}:{{.Tag}}-{{.Env.FOO}}",
-						registry + "goreleaser/{{.ProjectName}}:latest",
+						registry + "goreleaser/img32_{{.ProjectName}}:{{.Tag}}-{{.Env.FOO}}",
+						registry + "goreleaser/img32_{{.ProjectName}}:latest",
 					},
 					Goos:       "linux",
 					Goarch:     "amd64",
@@ -856,8 +804,8 @@ func TestRunPipe(t *testing.T) { //nolint:tparallel
 				"FOO": "123",
 			},
 			expect: []string{
-				registry + "goreleaser/mybin:v1.0.0-123",
-				registry + "goreleaser/mybin:latest",
+				registry + "goreleaser/img32_mybin:v1.0.0-123",
+				registry + "goreleaser/img32_mybin:latest",
 			},
 			assertImageLabels:   noLabels,
 			assertError:         shouldNotErr,
@@ -867,24 +815,24 @@ func TestRunPipe(t *testing.T) { //nolint:tparallel
 		"no_permissions": {
 			dockers: []config.Docker{
 				{
-					ImageTemplates: []string{"localhost:1/nope:latest"},
+					ImageTemplates: []string{"localhost:1/img33:latest"},
 					Goos:           "linux",
 					Goarch:         "amd64",
 					Dockerfile:     "testdata/Dockerfile",
 				},
 			},
 			expect: []string{
-				"localhost:1/nope:latest",
+				"docker.io/nope:latest",
 			},
 			assertImageLabels:   noLabels,
 			assertError:         shouldNotErr,
-			pubAssertError:      shouldErr(`failed to push localhost:1/nope:latest`),
+			pubAssertError:      shouldErr(`failed to push localhost:0/img33:latest`),
 			manifestAssertError: shouldNotErr,
 		},
 		"dockerfile_doesnt_exist": {
 			dockers: []config.Docker{
 				{
-					ImageTemplates: []string{"whatever:latest"},
+					ImageTemplates: []string{"img34:latest"},
 					Goos:           "linux",
 					Goarch:         "amd64",
 					Dockerfile:     "testdata/Dockerfilezzz",
@@ -897,7 +845,7 @@ func TestRunPipe(t *testing.T) { //nolint:tparallel
 		"extra_file_doesnt_exist": {
 			dockers: []config.Docker{
 				{
-					ImageTemplates: []string{"whatever:latest"},
+					ImageTemplates: []string{"img35:latest"},
 					Goos:           "linux",
 					Goarch:         "amd64",
 					Dockerfile:     "testdata/Dockerfile",
@@ -913,7 +861,7 @@ func TestRunPipe(t *testing.T) { //nolint:tparallel
 		"binary doesnt exist": {
 			dockers: []config.Docker{
 				{
-					ImageTemplates: []string{"whatever:latest"},
+					ImageTemplates: []string{"img36:latest"},
 					Goos:           "linux",
 					Goarch:         "amd64",
 					Dockerfile:     "testdata/Dockerfile",
@@ -922,6 +870,7 @@ func TestRunPipe(t *testing.T) { //nolint:tparallel
 			},
 			assertImageLabels: noLabels,
 			assertError:       shouldErr(`failed to copy wont-exist`),
+			singleImager:      true,
 			extraPrepare: func(t *testing.T, ctx *context.Context) {
 				t.Helper()
 				ctx.Artifacts.Add(&artifact.Artifact{
@@ -935,12 +884,11 @@ func TestRunPipe(t *testing.T) { //nolint:tparallel
 					},
 				})
 			},
-			singleImager: true,
 		},
 		"multiple_ids": {
 			dockers: []config.Docker{
 				{
-					ImageTemplates: []string{registry + "goreleaser/multiple:latest"},
+					ImageTemplates: []string{registry + "goreleaser/img37:latest"},
 					Goos:           "darwin",
 					Goarch:         "amd64",
 					IDs:            []string{"mybin", "anotherbin", "subdir/subbin"},
@@ -952,13 +900,13 @@ func TestRunPipe(t *testing.T) { //nolint:tparallel
 			pubAssertError:      shouldNotErr,
 			manifestAssertError: shouldNotErr,
 			expect: []string{
-				registry + "goreleaser/multiple:latest",
+				registry + "goreleaser/img37:latest",
 			},
 		},
 		"nfpm and multiple binaries": {
 			dockers: []config.Docker{
 				{
-					ImageTemplates: []string{registry + "goreleaser/test_nfpm:latest"},
+					ImageTemplates: []string{registry + "goreleaser/img38:latest"},
 					Goos:           "linux",
 					Goarch:         "amd64",
 					IDs:            []string{"mybin", "anotherbin"},
@@ -970,13 +918,13 @@ func TestRunPipe(t *testing.T) { //nolint:tparallel
 			pubAssertError:      shouldNotErr,
 			manifestAssertError: shouldNotErr,
 			expect: []string{
-				registry + "goreleaser/test_nfpm:latest",
+				registry + "goreleaser/img38:latest",
 			},
 		},
 		"nfpm and multiple binaries on arm64": {
 			dockers: []config.Docker{
 				{
-					ImageTemplates: []string{registry + "goreleaser/test_nfpm_arm:latest"},
+					ImageTemplates: []string{registry + "goreleaser/img39:latest"},
 					Goos:           "linux",
 					Goarch:         "arm64",
 					IDs:            []string{"mybin", "anotherbin"},
@@ -988,13 +936,14 @@ func TestRunPipe(t *testing.T) { //nolint:tparallel
 			pubAssertError:      shouldNotErr,
 			manifestAssertError: shouldNotErr,
 			expect: []string{
-				registry + "goreleaser/test_nfpm_arm:latest",
+				registry + "goreleaser/img39:latest",
 			},
 		},
 	}
 
 	start(t)
 
+	t.Parallel()
 	for name, docker := range table {
 		for imager := range imagers {
 			t.Run(name+" on "+imager, func(t *testing.T) {
@@ -1071,19 +1020,12 @@ func TestRunPipe(t *testing.T) { //nolint:tparallel
 					return exec.CommandContext(t.Context(), "docker", "rmi", "--force", img).Run()
 				}
 
-				t.Cleanup(func() {
-					for _, img := range docker.expect {
-						_ = rmi(img)
-					}
-					for _, m := range docker.manifests {
-						_ = exec.CommandContext(t.Context(), "docker", "manifest", "rm", m.NameTemplate).Run()
-					}
-				})
-
-				// pre-clean manifests from previous runs to avoid "refusing to amend" errors
-				for _, m := range docker.manifests {
-					_ = exec.CommandContext(t.Context(), "docker", "manifest", "rm", m.NameTemplate).Run()
+				// this might fail as the image doesnt exist yet, so lets ignore the error
+				var wg sync.WaitGroup
+				for _, img := range docker.expect {
+					wg.Go(func() { _ = rmi(img) })
 				}
+				wg.Wait()
 
 				for i := range ctx.Config.Dockers {
 					docker := &ctx.Config.Dockers[i]
@@ -1109,9 +1051,11 @@ func TestRunPipe(t *testing.T) { //nolint:tparallel
 					docker.assertImageLabels(t, d.Use)
 				}
 
-				// verify images exist
+				// this might should not fail as the image should have been created when
+				// the step ran
 				for _, img := range docker.expect {
-					require.NoError(t, exec.CommandContext(t.Context(), "docker", "inspect", img).Run(), "could not find image %s", img)
+					// t.Log("removing docker image", img)
+					require.NoError(t, rmi(img), "could not delete image %s", img)
 				}
 
 				_ = ctx.Artifacts.Filter(
@@ -1125,9 +1069,9 @@ func TestRunPipe(t *testing.T) { //nolint:tparallel
 					return nil
 				})
 			})
-			if docker.singleImager {
-				break
-			}
+		}
+		if docker.singleImager {
+			break
 		}
 	}
 }
@@ -1529,5 +1473,64 @@ func TestValidateImager(t *testing.T) {
 			}
 			require.NoError(t, err)
 		})
+	}
+}
+
+func shouldNotErr(t *testing.T, err error) {
+	t.Helper()
+	require.NoError(t, err)
+}
+
+func shouldTemplateErr(t *testing.T, err error) {
+	t.Helper()
+	testlib.RequireTemplateError(t, err)
+}
+
+type imageLabelFinder func(*testing.T, string)
+
+func shouldFindImagesWithLabels(image string, filters ...string) func(*testing.T, string) {
+	return func(t *testing.T, _ string) {
+		t.Helper()
+		for _, filter := range filters {
+			cmd := exec.CommandContext(t.Context(), "docker", "images", "-q", "--filter", "reference=*/"+image, "--filter", filter)
+			// t.Log("running", cmd)
+			output, err := cmd.CombinedOutput()
+			require.NoError(t, err, string(output))
+			uniqueIDs := map[string]string{}
+			for id := range strings.SplitSeq(strings.TrimSpace(string(output)), "\n") {
+				uniqueIDs[id] = id
+			}
+			require.Len(t, uniqueIDs, 1)
+		}
+	}
+}
+
+func noLabels(t *testing.T, _ string) {
+	t.Helper()
+}
+
+type errChecker func(*testing.T, error)
+
+func shouldErr(msg string) errChecker {
+	return func(t *testing.T, err error) {
+		t.Helper()
+		if ge, ok := errors.AsType[gerrors.ErrDetailed](err); ok {
+			for _, s := range ge.Messages() {
+				if strings.Contains(s, msg) {
+					return
+				}
+			}
+			for _, a := range ge.Details() {
+				s, ok := a.(string)
+				if !ok {
+					continue
+				}
+				if strings.Contains(s, msg) {
+					return
+				}
+			}
+		} else {
+			require.ErrorContains(t, err, msg)
+		}
 	}
 }
