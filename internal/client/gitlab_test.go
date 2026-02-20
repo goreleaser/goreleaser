@@ -754,7 +754,6 @@ func TestGitLabCloseMilestone(t *testing.T) {
 }
 
 func TestGitLabCheckUseJobToken(t *testing.T) {
-	t.Parallel()
 	tests := []struct {
 		useJobToken bool
 		token       string

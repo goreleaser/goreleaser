@@ -53,12 +53,13 @@ func newGitHub(ctx *context.Context, token string) (*githubClient, error) {
 	if base == nil || reflect.ValueOf(base).IsNil() {
 		base = http.DefaultTransport
 	}
+	transport := base.(*http.Transport).Clone()
 	//nolint:gosec
-	base.(*http.Transport).TLSClientConfig = &tls.Config{
+	transport.TLSClientConfig = &tls.Config{
 		InsecureSkipVerify: ctx.Config.GitHubURLs.SkipTLSVerify,
 	}
-	base.(*http.Transport).Proxy = http.ProxyFromEnvironment
-	httpClient.Transport.(*oauth2.Transport).Base = base
+	transport.Proxy = http.ProxyFromEnvironment
+	httpClient.Transport.(*oauth2.Transport).Base = transport
 
 	baseURL, err := tmpl.New(ctx).Apply(ctx.Config.GitHubURLs.API)
 	if err != nil {
