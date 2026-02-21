@@ -72,9 +72,6 @@ jobs:
           github_access_token: ${{ secrets.GITHUB_TOKEN }}
       - run: nix profile add nixpkgs#pkgs.nixfmt nixpkgs#alejandra
         if: matrix.os == 'ubuntu-latest'
-      - uses: actions/setup-go@7a3fe6cf4cb3a834922a1244abfce67bcef6a0c5 # v6.2.0
-        with:
-          go-version-file: go.mod
       - uses: mlugg/setup-zig@d1434d08867e3ee9daa34448df10607b98908d29 # v2.2.1
       - uses: oven-sh/setup-bun@3d267786b128fe76c2f16a390aa2448b815359f3 # v2.1.2
       - uses: denoland/setup-deno@e95548e56dfa95d4e1a28d6f422fafe75c4c26fb # v2.0.3
@@ -91,10 +88,13 @@ jobs:
         with:
           cosign-release: "v3.0.3"
       - uses: anchore/sbom-action/download-syft@28d71544de8eaf1b958d335707167c5f783590ad # v0.22.2
-      - run: task setup
       - name: normalize-mtimes
         run: find . -exec touch -t 200001010000 {} +
         if: matrix.os == 'ubuntu-latest'
+      - uses: actions/setup-go@7a3fe6cf4cb3a834922a1244abfce67bcef6a0c5 # v6.2.0
+        with:
+          go-version-file: go.mod
+      - run: task setup
       - run: task test
       - run: task build
       - uses: codecov/codecov-action@671740ac38dd9b0130fbe1cec585b89eea48d3de # v5.5.2
