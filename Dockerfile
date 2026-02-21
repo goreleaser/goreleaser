@@ -9,6 +9,7 @@ RUN apk add --no-cache bash \
 	docker-cli \
 	docker-cli-buildx \
 	git \
+	git-lfs \
 	gpg \
 	mercurial \
 	make \
