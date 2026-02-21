@@ -179,7 +179,7 @@ nfpms:
     # Generally, most people don't build for more than one GOAMD64, so probably
     # you don't need to worry about this.
     #
-    # <!-- md:inline_version v2.14-unreleased -->.
+    # <!-- md:inline_version v2.14 -->.
     goamd64:
       - v1
       - v3
@@ -461,8 +461,8 @@ nfpms:
         - some-package
 
       # Data compression algorithm (gzip (default), xz, zstd or none).
-      # 
-      # <!-- md:inline_version v2.14-unreleased -->.
+      #
+      # <!-- md:inline_version v2.14 -->.
       compression: zstd
 
       # The package is signed if a key_file is set

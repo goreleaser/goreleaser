@@ -1,7 +1,7 @@
 # NSIS
 
 <!-- md:pro -->
-<!-- md:version v2.14-unreleased -->
+<!-- md:version v2.14 -->
 
 GoReleaser can create Nullsoft Scriptable Install System (NSIS) installers for
 Windows binaries using [makensis][].

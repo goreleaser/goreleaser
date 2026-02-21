@@ -213,7 +213,7 @@ notarize:
       # When "pkg": signs MacOSPkg with productsign, notarizes MacOSPkg.
       #
       # Default: "dmg".
-      # <!-- md:inline_version v2.14-unreleased -->.
+      # <!-- md:inline_version v2.14 -->.
       use: dmg
 
       # Before notarizing, we need to sign the artifact.

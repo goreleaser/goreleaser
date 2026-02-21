@@ -45,7 +45,7 @@ PS: Don't forget to add it to cmd/mcp.go as well!
 
 ### furies
 
-> since v2.14-unreleased
+> since v2.14
 
 `furies` was renamed to `gemfury` for clarity.
 

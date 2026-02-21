@@ -83,7 +83,7 @@ msi:
 
     # Before and after hooks for each MSI.
     # This feature is only available in GoReleaser Pro.
-    # <!-- md:inline_version v2.14-unreleased -->.
+    # <!-- md:inline_version v2.14 -->.
     #
     # The after hooks have access to the MSI artifact, so you can use:
     # - {{ .ArtifactPath }} - full path to the MSI file
