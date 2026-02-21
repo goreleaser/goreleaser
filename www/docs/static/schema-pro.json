@@ -3161,10 +3161,7 @@
 					}
 				},
 				"additionalProperties": false,
-				"type": "object",
-				"required": [
-					"name"
-				]
+				"type": "object"
 			},
 			"MacOSSign": {
 				"properties": {
