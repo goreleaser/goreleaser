@@ -1,4 +1,4 @@
-# Fury - apt and rpm repositories
+# GemFury - apt and rpm repositories
 
 <!-- md:pro -->
 
