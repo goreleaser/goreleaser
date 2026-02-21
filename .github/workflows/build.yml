@@ -47,10 +47,6 @@ jobs:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
         with:
           fetch-depth: 0
-      # this should help go build cache work properly
-      - name: normalize-mtimes
-        run: find . -type f -exec touch -t 200001010000 {} +
-        if: matrix.os == 'ubuntu-latest'
       - uses: go-task/setup-task@0ab1b2a65bc55236a3bc64cde78f80e20e8885c2 # v1.0.0
         with:
           version: 3.x
@@ -96,12 +92,15 @@ jobs:
           cosign-release: "v3.0.3"
       - uses: anchore/sbom-action/download-syft@28d71544de8eaf1b958d335707167c5f783590ad # v0.22.2
       - run: task setup
+      - name: normalize-mtimes
+        run: find . -exec touch -t 200001010000 {} +
+        if: matrix.os == 'ubuntu-latest'
       - run: task test
       - run: task build
       - uses: codecov/codecov-action@671740ac38dd9b0130fbe1cec585b89eea48d3de # v5.5.2
         if: matrix.os == 'ubuntu-latest'
         with:
-          file: ./coverage.txt
+          files: ./coverage.txt
         env:
           CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
       - run: git diff
