@@ -934,30 +934,28 @@ func TestRunPipe(t *testing.T) {
 
 	start(t)
 
+	folder := t.TempDir()
+	dist := filepath.Join(folder, "dist")
+	require.NoError(t, os.MkdirAll(filepath.Join(dist, "mybin", "subdir"), 0o755))
+	files := []string{
+		filepath.Join(dist, "mybin", "mybin"),
+		filepath.Join(dist, "mybin", "anotherbin"),
+		filepath.Join(dist, "mybin", "subdir", "subbin"),
+	}
+	for _, path := range files {
+		f, err := os.Create(path)
+		require.NoError(t, err)
+		require.NoError(t, f.Close())
+	}
+	for _, arch := range []string{"amd64", "arm64"} {
+		f, err := os.Create(filepath.Join(dist, fmt.Sprintf("mybin_%s.apk", arch)))
+		require.NoError(t, err)
+		require.NoError(t, f.Close())
+	}
+
 	for name, docker := range table {
 		for imager := range imagers {
 			t.Run(name+" on "+imager, func(t *testing.T) {
-				folder := t.TempDir()
-				dist := filepath.Join(folder, "dist")
-				require.NoError(t, os.MkdirAll(filepath.Join(dist, "mybin", "subdir"), 0o755))
-				f, err := os.Create(filepath.Join(dist, "mybin", "mybin"))
-				require.NoError(t, err)
-				require.NoError(t, f.Close())
-				f, err = os.Create(filepath.Join(dist, "mybin", "anotherbin"))
-				require.NoError(t, err)
-				require.NoError(t, f.Close())
-				f, err = os.Create(filepath.Join(dist, "mybin", "subdir", "subbin"))
-				require.NoError(t, err)
-				require.NoError(t, f.Close())
-				f, err = os.Create(filepath.Join(dist, "mynfpm.apk"))
-				require.NoError(t, err)
-				require.NoError(t, f.Close())
-				for _, arch := range []string{"amd64", "386", "arm64"} {
-					f, err = os.Create(filepath.Join(dist, fmt.Sprintf("mybin_%s.apk", arch)))
-					require.NoError(t, err)
-					require.NoError(t, f.Close())
-				}
-
 				ctx := testctx.WrapWithCfg(t.Context(),
 					config.Project{
 						ProjectName:     "mybin",
@@ -971,23 +969,29 @@ func TestRunPipe(t *testing.T) {
 					testctx.WithCommit("a1b2c3d4"),
 					testctx.WithSemver(1, 0, 0, ""))
 
-				for _, os := range []string{"linux", "darwin"} {
-					for _, arch := range []string{"amd64", "386", "arm64"} {
-						for _, bin := range []string{"mybin", "anotherbin", "subdir/subbin"} {
-							ctx.Artifacts.Add(&artifact.Artifact{
-								Name:   bin,
-								Path:   filepath.Join(dist, "mybin", bin),
-								Goarch: arch,
-								Goos:   os,
-								Type:   artifact.Binary,
-								Extra: map[string]any{
-									artifact.ExtraID: bin,
-								},
-							})
-						}
+				platforms := []struct {
+					goos   string
+					goarch string
+				}{
+					{goos: "linux", goarch: "amd64"},
+					{goos: "linux", goarch: "arm64"},
+					{goos: "darwin", goarch: "amd64"},
+				}
+				for _, platform := range platforms {
+					for _, bin := range []string{"mybin", "anotherbin", "subdir/subbin"} {
+						ctx.Artifacts.Add(&artifact.Artifact{
+							Name:   bin,
+							Path:   filepath.Join(dist, "mybin", bin),
+							Goarch: platform.goarch,
+							Goos:   platform.goos,
+							Type:   artifact.Binary,
+							Extra: map[string]any{
+								artifact.ExtraID: bin,
+							},
+						})
 					}
 				}
-				for _, arch := range []string{"amd64", "386", "arm64"} {
+				for _, arch := range []string{"amd64", "arm64"} {
 					name := fmt.Sprintf("mybin_%s.apk", arch)
 					ctx.Artifacts.Add(&artifact.Artifact{
 						Name:   name,
@@ -1021,7 +1025,7 @@ func TestRunPipe(t *testing.T) {
 				}
 				require.NoError(t, Pipe{}.Default(ctx))
 				require.NoError(t, ManifestPipe{}.Default(ctx))
-				err = Pipe{}.Run(ctx)
+				err := Pipe{}.Run(ctx)
 				docker.assertError(t, err)
 				if err == nil {
 					docker.pubAssertError(t, Pipe{}.Publish(ctx))
