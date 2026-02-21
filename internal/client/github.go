@@ -53,12 +53,13 @@ func newGitHub(ctx *context.Context, token string) (*githubClient, error) {
 	if base == nil || reflect.ValueOf(base).IsNil() {
 		base = http.DefaultTransport
 	}
+	transport := base.(*http.Transport).Clone()
 	//nolint:gosec
-	base.(*http.Transport).TLSClientConfig = &tls.Config{
+	transport.TLSClientConfig = &tls.Config{
 		InsecureSkipVerify: ctx.Config.GitHubURLs.SkipTLSVerify,
 	}
-	base.(*http.Transport).Proxy = http.ProxyFromEnvironment
-	httpClient.Transport.(*oauth2.Transport).Base = base
+	transport.Proxy = http.ProxyFromEnvironment
+	httpClient.Transport.(*oauth2.Transport).Base = transport
 
 	baseURL, err := tmpl.New(ctx).Apply(ctx.Config.GitHubURLs.API)
 	if err != nil {
@@ -433,11 +434,11 @@ func (c *githubClient) CreateFile(
 }
 
 func (c *githubClient) CreateRelease(ctx *context.Context, body string) (string, error) {
-	c.checkRateLimit(ctx, time.Sleep)
 	title, err := tmpl.New(ctx).Apply(ctx.Config.Release.NameTemplate)
 	if err != nil {
 		return "", err
 	}
+	c.checkRateLimit(ctx, time.Sleep)
 
 	if ctx.Config.Release.Draft && ctx.Config.Release.ReplaceExistingDraft {
 		if err := c.deleteExistingDraftRelease(ctx, title); err != nil {

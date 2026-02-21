@@ -79,6 +79,7 @@ changelog:
   format: "{{ .SHA }}: {{ .Message }}{{ if .Logins }} ({{ .Logins | englishJoin }}){{ end }}"
   filters:
     exclude:
+      - "^fixup! "
       - "^test:"
       - "^test\\("
       - "^chore: update$"

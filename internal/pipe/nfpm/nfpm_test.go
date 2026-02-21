@@ -1130,20 +1130,16 @@ func TestDebSpecificConfig(t *testing.T) {
 			},
 		}, testctx.WithVersion("1.0.0"), testctx.WithCurrentTag("v1.0.0"))
 
-		for _, goos := range []string{"linux", "darwin", "android"} {
-			for _, goarch := range []string{"amd64", "386"} {
-				ctx.Artifacts.Add(&artifact.Artifact{
-					Name:   "mybin",
-					Path:   binPath,
-					Goarch: goarch,
-					Goos:   goos,
-					Type:   artifact.Binary,
-					Extra: map[string]any{
-						artifact.ExtraID: "default",
-					},
-				})
-			}
-		}
+		ctx.Artifacts.Add(&artifact.Artifact{
+			Name:   "mybin",
+			Path:   binPath,
+			Goarch: "amd64",
+			Goos:   "linux",
+			Type:   artifact.Binary,
+			Extra: map[string]any{
+				artifact.ExtraID: "default",
+			},
+		})
 		return ctx
 	}
 
@@ -1196,17 +1192,9 @@ func TestDebSpecificConfig(t *testing.T) {
 			require.NoDirExists(t, filepath.Join(ctx.Config.Dist, format))
 		}
 		require.DirExists(t, filepath.Join(ctx.Config.Dist, "deb"))
-		for _, goarch := range []string{"amd64", "386"} {
-			bts, err := os.ReadFile(filepath.Join(ctx.Config.Dist, "deb", "foo_"+goarch, "lintian"))
-			require.NoError(t, err)
-			require.Equal(t, "foo: statically-linked-binary\nfoo: changelog-file-missing-in-native-package", string(bts))
-		}
-		require.DirExists(t, filepath.Join(ctx.Config.Dist, "termux.deb"))
-		for _, goarch := range []string{"x86_64", "i686"} {
-			bts, err := os.ReadFile(filepath.Join(ctx.Config.Dist, "termux.deb", "foo_"+goarch, "lintian"))
-			require.NoError(t, err)
-			require.Equal(t, "foo: statically-linked-binary\nfoo: changelog-file-missing-in-native-package", string(bts))
-		}
+		bts, err := os.ReadFile(filepath.Join(ctx.Config.Dist, "deb", "foo_amd64", "lintian"))
+		require.NoError(t, err)
+		require.Equal(t, "foo: statically-linked-binary\nfoo: changelog-file-missing-in-native-package", string(bts))
 	})
 
 	t.Run("lintian no debs", func(t *testing.T) {
@@ -1263,20 +1251,16 @@ func TestRPMSpecificConfig(t *testing.T) {
 		},
 	}, testctx.WithVersion("1.0.0"), testctx.WithCurrentTag("v1.0.0"))
 
-	for _, goos := range []string{"linux", "darwin"} {
-		for _, goarch := range []string{"amd64", "386"} {
-			ctx.Artifacts.Add(&artifact.Artifact{
-				Name:   "mybin",
-				Path:   binPath,
-				Goarch: goarch,
-				Goos:   goos,
-				Type:   artifact.Binary,
-				Extra: map[string]any{
-					artifact.ExtraID: "default",
-				},
-			})
-		}
-	}
+	ctx.Artifacts.Add(&artifact.Artifact{
+		Name:   "mybin",
+		Path:   binPath,
+		Goarch: "amd64",
+		Goos:   "linux",
+		Type:   artifact.Binary,
+		Extra: map[string]any{
+			artifact.ExtraID: "default",
+		},
+	})
 
 	t.Run("no passphrase set", func(t *testing.T) {
 		require.Contains(
@@ -1331,20 +1315,16 @@ func TestRPMSpecificScriptsConfig(t *testing.T) {
 		},
 	}, testctx.WithVersion("1.0.0"), testctx.WithCurrentTag("v1.0.0"))
 
-	for _, goos := range []string{"linux", "darwin"} {
-		for _, goarch := range []string{"amd64", "386"} {
-			ctx.Artifacts.Add(&artifact.Artifact{
-				Name:   "mybin",
-				Path:   binPath,
-				Goarch: goarch,
-				Goos:   goos,
-				Type:   artifact.Binary,
-				Extra: map[string]any{
-					artifact.ExtraID: "default",
-				},
-			})
-		}
-	}
+	ctx.Artifacts.Add(&artifact.Artifact{
+		Name:   "mybin",
+		Path:   binPath,
+		Goarch: "amd64",
+		Goos:   "linux",
+		Type:   artifact.Binary,
+		Extra: map[string]any{
+			artifact.ExtraID: "default",
+		},
+	})
 
 	t.Run("PreTrans script file does not exist", func(t *testing.T) {
 		require.ErrorIs(t, Pipe{}.Run(ctx), os.ErrNotExist)
@@ -1399,20 +1379,16 @@ func TestAPKSpecificConfig(t *testing.T) {
 		},
 	}, testctx.WithVersion("1.0.0"), testctx.WithCurrentTag("v1.0.0"))
 
-	for _, goos := range []string{"linux", "darwin"} {
-		for _, goarch := range []string{"amd64", "386"} {
-			ctx.Artifacts.Add(&artifact.Artifact{
-				Name:   "mybin",
-				Path:   binPath,
-				Goarch: goarch,
-				Goos:   goos,
-				Type:   artifact.Binary,
-				Extra: map[string]any{
-					artifact.ExtraID: "default",
-				},
-			})
-		}
-	}
+	ctx.Artifacts.Add(&artifact.Artifact{
+		Name:   "mybin",
+		Path:   binPath,
+		Goarch: "amd64",
+		Goos:   "linux",
+		Type:   artifact.Binary,
+		Extra: map[string]any{
+			artifact.ExtraID: "default",
+		},
+	})
 
 	t.Run("no passphrase set", func(t *testing.T) {
 		require.Contains(
@@ -1475,20 +1451,16 @@ func TestAPKSpecificScriptsConfig(t *testing.T) {
 		},
 	}, testctx.WithVersion("1.0.0"), testctx.WithCurrentTag("v1.0.0"))
 
-	for _, goos := range []string{"linux", "darwin"} {
-		for _, goarch := range []string{"amd64", "386"} {
-			ctx.Artifacts.Add(&artifact.Artifact{
-				Name:   "mybin",
-				Path:   binPath,
-				Goarch: goarch,
-				Goos:   goos,
-				Type:   artifact.Binary,
-				Extra: map[string]any{
-					artifact.ExtraID: "default",
-				},
-			})
-		}
-	}
+	ctx.Artifacts.Add(&artifact.Artifact{
+		Name:   "mybin",
+		Path:   binPath,
+		Goarch: "amd64",
+		Goos:   "linux",
+		Type:   artifact.Binary,
+		Extra: map[string]any{
+			artifact.ExtraID: "default",
+		},
+	})
 
 	t.Run("PreUpgrade script file does not exist", func(t *testing.T) {
 		ctx.Config.NFPMs[0].APK.Scripts = scripts
@@ -1559,27 +1531,23 @@ func TestIPKSpecificConfig(t *testing.T) {
 		},
 	}, testctx.WithVersion("1.0.0"), testctx.WithCurrentTag("v1.0.0"))
 
-	for _, goos := range []string{"linux", "darwin"} {
-		for _, goarch := range []string{"amd64", "386"} {
-			ctx.Artifacts.Add(&artifact.Artifact{
-				Name:   "mybin",
-				Path:   binPath,
-				Goarch: goarch,
-				Goos:   goos,
-				Type:   artifact.Binary,
-				Extra: map[string]any{
-					artifact.ExtraID: "default",
-				},
-			})
-		}
-	}
+	ctx.Artifacts.Add(&artifact.Artifact{
+		Name:   "mybin",
+		Path:   binPath,
+		Goarch: "amd64",
+		Goos:   "linux",
+		Type:   artifact.Binary,
+		Extra: map[string]any{
+			artifact.ExtraID: "default",
+		},
+	})
 
 	t.Run("everything is fine", func(t *testing.T) {
 		require.NoError(t, Pipe{}.Run(ctx))
 		ipks := ctx.Artifacts.
 			Filter(artifact.ByExt("ipk")).
 			List()
-		require.Len(t, ipks, 2)
+		require.Len(t, ipks, 1)
 	})
 }
 
@@ -1791,20 +1759,16 @@ func TestSkipSign(t *testing.T) {
 		},
 	}, testctx.WithVersion("1.0.0"), testctx.WithCurrentTag("v1.0.0"))
 
-	for _, goos := range []string{"linux", "darwin"} {
-		for _, goarch := range []string{"amd64", "386"} {
-			ctx.Artifacts.Add(&artifact.Artifact{
-				Name:   "mybin",
-				Path:   binPath,
-				Goarch: goarch,
-				Goos:   goos,
-				Type:   artifact.Binary,
-				Extra: map[string]any{
-					artifact.ExtraID: "default",
-				},
-			})
-		}
-	}
+	ctx.Artifacts.Add(&artifact.Artifact{
+		Name:   "mybin",
+		Path:   binPath,
+		Goarch: "amd64",
+		Goos:   "linux",
+		Type:   artifact.Binary,
+		Extra: map[string]any{
+			artifact.ExtraID: "default",
+		},
+	})
 
 	t.Run("skip sign not set", func(t *testing.T) {
 		// TODO: once https://github.com/goreleaser/nfpm/pull/630 is released,

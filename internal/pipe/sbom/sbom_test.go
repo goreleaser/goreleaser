@@ -149,7 +149,6 @@ func TestSBOMCatalogDefault(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(fmt.Sprintf("artifact=%q", test.configs[0].Artifacts), func(t *testing.T) {
-			testlib.CheckPath(t, "syft")
 			ctx := testctx.WrapWithCfg(t.Context(), config.Project{
 				SBOMs: test.configs,
 			})
@@ -514,6 +513,44 @@ func TestSBOMCatalogArtifacts(t *testing.T) {
 	}
 }
 
+func TestSBOMCatalogRealSyft(t *testing.T) {
+	testlib.CheckPath(t, "syft")
+	tmp := t.TempDir()
+
+	bin := filepath.Join(tmp, "fake_bin")
+	require.NoError(t, os.WriteFile(bin, []byte("fake"), 0o644))
+
+	ctx := testctx.WrapWithCfg(t.Context(), config.Project{
+		Dist: tmp,
+		SBOMs: []config.SBOM{
+			{
+				Artifacts: "binary",
+				Args:      []string{"$artifact", "--output", "spdx-json=$document"},
+			},
+		},
+	})
+
+	ctx.Version = "1.0.0"
+	ctx.Artifacts.Add(&artifact.Artifact{
+		Name:   "fake_bin",
+		Path:   bin,
+		Goos:   "linux",
+		Goarch: "amd64",
+		Type:   artifact.UploadableBinary,
+		Extra: map[string]any{
+			artifact.ExtraID:     "test",
+			artifact.ExtraBinary: "fake_bin",
+		},
+	})
+
+	require.NoError(t, Pipe{}.Default(ctx))
+	require.NoError(t, Pipe{}.Run(ctx))
+
+	sboms := ctx.Artifacts.Filter(artifact.ByType(artifact.SBOM)).List()
+	require.Len(t, sboms, 1)
+	require.Equal(t, "fake_bin_1.0.0_linux_amd64.sbom.json", sboms[0].Name)
+}
+
 func testSBOMCataloging(
 	tb testing.TB,
 	ctx *context.Context,
@@ -522,7 +559,15 @@ func testSBOMCataloging(
 	expectedErrMsg string,
 ) {
 	tb.Helper()
-	testlib.CheckPath(tb, "syft")
+
+	// resolve fakesyft path before Mktmp changes the working directory
+	fakesyft := "./testdata/fakesyft"
+	if testlib.IsWindows() {
+		fakesyft += ".bat"
+	}
+	fakesyft, err := filepath.Abs(fakesyft)
+	require.NoError(tb, err)
+
 	tmpdir := testlib.Mktmp(tb)
 
 	ctx.Config.Dist = tmpdir
@@ -605,6 +650,13 @@ func testSBOMCataloging(
 
 	// configure the pipeline
 	require.NoError(tb, Pipe{}.Default(ctx))
+
+	// use fakesyft for tests that rely on the default cmd
+	for i, cfg := range ctx.Config.SBOMs {
+		if cfg.Cmd == "syft" {
+			ctx.Config.SBOMs[i].Cmd = fakesyft
+		}
+	}
 
 	// run the pipeline
 	if expectedErrMsg != "" {
