@@ -191,6 +191,12 @@ func TestRunPipe_ModeBinary(t *testing.T) {
 		},
 	})
 
+	// XXX: this seems to be a bug with newer windows versions + go1.26.
+	// Investigate, at some point.
+	if testlib.IsWindows() {
+		ctx.Parallelism = 1
+	}
+
 	for _, goos := range []string{"linux", "darwin"} {
 		ctx.Artifacts.Add(&artifact.Artifact{
 			Name:   "mybin",
