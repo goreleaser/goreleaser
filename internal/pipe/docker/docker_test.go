@@ -1013,6 +1013,7 @@ func TestRunPipe(t *testing.T) {
 	t.Parallel()
 	for imager := range imagers {
 		t.Run(imager, func(t *testing.T) {
+			t.Parallel()
 			for name, docker := range table {
 				t.Run(name, func(t *testing.T) {
 					t.Parallel()
@@ -1085,7 +1086,7 @@ func TestRunPipe(t *testing.T) {
 					}
 
 					// this might fail as the image doesnt exist yet, so lets ignore the error
-					rmis(t, docker.expect)
+					_ = rmis(t, docker.expect)
 
 					for i := range ctx.Config.Dockers {
 						docker := &ctx.Config.Dockers[i]
@@ -1113,7 +1114,7 @@ func TestRunPipe(t *testing.T) {
 
 					// this might should not fail as the image should have been created when
 					// the step ran
-					rmis(t, docker.expect)
+					require.NoError(t, rmis(t, docker.expect))
 
 					_ = ctx.Artifacts.Filter(
 						artifact.Or(
