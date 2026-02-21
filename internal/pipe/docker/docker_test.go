@@ -1010,13 +1010,10 @@ func TestRunPipe(t *testing.T) {
 
 	start(t)
 
-	t.Parallel()
 	for imager := range imagers {
 		t.Run(imager, func(t *testing.T) {
-			t.Parallel()
 			for name, docker := range table {
 				t.Run(name, func(t *testing.T) {
-					t.Parallel()
 					folder := t.TempDir()
 					dist := filepath.Join(folder, "dist")
 					require.NoError(t, os.MkdirAll(filepath.Join(dist, "mybin", "subdir"), 0o755))
