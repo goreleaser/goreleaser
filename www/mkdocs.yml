@@ -173,7 +173,7 @@ nav:
           - customization/nightlies.md
           - customization/blob.md
           - Cloudsmith: customization/cloudsmith.md
-          - Fury: customization/fury.md
+          - GemFury: customization/gemfury.md
           - customization/dockerhub.md
           - customization/homebrew_casks.md
           - customization/homebrew_formulas.md

@@ -48,8 +48,8 @@ additional features:
 - [x] Rootless build [Docker images](customization/docker.md#using-podman) and
       [manifests](customization/docker_manifest.md#using-podman) with
       [Podman](https://podman.io);
-- [x] Easily create `apt` and `yum` repositories with the
-      [fury.io integration](customization/fury.md);
+- [x] Easily create `apt`, `yum`, and alpine repositories with the
+      [gemfury.io integration](customization/gemfury.md);
 - [x] Reuse configuration files with the
       [include keyword](customization/includes.md);
 - [x] Run commands after the release with

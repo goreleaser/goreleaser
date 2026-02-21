@@ -3,6 +3,7 @@
 Tutorials made by the community.
 
 <!-- please, keep A-Z sorting -->
+
 - [Creating debs and rpms with Go](https://carlosbecker.com/posts/nfpm/)
 - [Cross compile with CGO and GoReleaser](https://medium.com/@robdefeo/cross-compile-with-cgo-and-goreleaser-6af884731222?source=friends_link&sk=baf6553fa48cb0e28ea3519615f02576)
 - [Cross-compiling a CGO project using GoReleaser](https://www.jvt.me/posts/2023/02/24/goreleaser-cgo-cross-compile/)
@@ -16,10 +17,10 @@ Tutorials made by the community.
 - [Multi-platform Docker images with GoReleaser and GitHub Actions](https://carlosbecker.com/posts/multi-platform-docker-images-goreleaser-gh-actions/)
 - [Multi-platform Docker images with GoReleaser, Podman and GitHub Actions](https://carlosbecker.com/posts/goreleaser-actions-podman/)
 - [Painless GitHub releases with Drone and GoReleaser](https://medium.com/@stepanvrany/painless-github-releases-with-drone-and-goreleaser-853bbbccd0c0)
-- [Publishing dep/rpm packages with GoReleaser and Fury.io](https://netdevops.me/2021/building-and-publishing-debrpm-packages-with-goreleaser-and-gemfury/)
+- [Publishing dep/rpm packages with GoReleaser and GemFury.io](https://netdevops.me/2021/building-and-publishing-debrpm-packages-with-goreleaser-and-gemfury/)
 - [Shipping Rust Binaries with GoReleaser](https://medium.com/@jondot/shipping-rust-binaries-with-goreleaser-d5aa42a46be0)
 - [Using GoReleaser includes feature](https://carlosbecker.com/posts/goreleaser-includes/)
 - [Packaging and Publishing Go Binaries on NPM Registry](https://thetnaingtun.dev/posts/go/packaging-and-publising-go-binaries-on-npm-registry/)
-  
+
 !!! tip
-    Click on the "Edit" button to add your page here.
+Click on the "Edit" button to add your page here.
