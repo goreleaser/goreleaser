@@ -27,7 +27,7 @@ npms:
       - deno
       - docker
 
-furies:
+gemfury:
   - account: goreleaser
     disable: "{{ .IsNightly }}"
 
