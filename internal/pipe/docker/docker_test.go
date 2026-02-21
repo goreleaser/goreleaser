@@ -40,6 +40,197 @@ func start(tb testing.TB) {
 	wg.Wait()
 }
 
+func TestRunPipeFast(t *testing.T) {
+	t.Parallel()
+	testlib.CheckDocker(t)
+	testlib.SkipIfWindows(t, "registry images only available for windows")
+
+	table := map[string]struct {
+		dockers      []config.Docker
+		env          map[string]string
+		assertError  errChecker
+		extraPrepare func(t *testing.T, ctx *context.Context)
+	}{
+		"templated-dockerfile-invalid": {
+			dockers: []config.Docker{
+				{
+					ImageTemplates: []string{
+						registry + "goreleaser/invalid-templated-dockerfile:v1",
+					},
+					Goos:       "linux",
+					Goarch:     "amd64",
+					Dockerfile: "{{ .Env.Dockerfile }}",
+				},
+			},
+			assertError: shouldTemplateErr,
+		},
+		"tag_template_error": {
+			dockers: []config.Docker{
+				{
+					ImageTemplates: []string{
+						registry + "goreleaser/test_run_pipe:{{.Tag}",
+					},
+					Goos:       "linux",
+					Goarch:     "amd64",
+					Dockerfile: "testdata/Dockerfile",
+				},
+			},
+			assertError: shouldTemplateErr,
+		},
+		"build_flag_template_error": {
+			dockers: []config.Docker{
+				{
+					ImageTemplates: []string{
+						registry + "goreleaser/test_run_pipe:latest",
+					},
+					Goos:       "linux",
+					Goarch:     "amd64",
+					Dockerfile: "testdata/Dockerfile",
+					BuildFlagTemplates: []string{
+						"--label=tag={{.Tag}",
+					},
+				},
+			},
+			assertError: shouldTemplateErr,
+		},
+		"missing_env_on_tag_template": {
+			dockers: []config.Docker{
+				{
+					ImageTemplates: []string{
+						registry + "goreleaser/test_run_pipe:{{.Env.NOPE}}",
+					},
+					Goos:       "linux",
+					Goarch:     "amd64",
+					Dockerfile: "testdata/Dockerfile",
+				},
+			},
+			assertError: shouldTemplateErr,
+		},
+		"missing_env_on_build_flag_template": {
+			dockers: []config.Docker{
+				{
+					ImageTemplates: []string{
+						registry + "goreleaser/test_run_pipe:latest",
+					},
+					Goos:       "linux",
+					Goarch:     "amd64",
+					Dockerfile: "testdata/Dockerfile",
+					BuildFlagTemplates: []string{
+						"--label=nope={{.Env.NOPE}}",
+					},
+				},
+			},
+			assertError: shouldTemplateErr,
+		},
+		"no image tags": {
+			dockers: []config.Docker{
+				{
+					ImageTemplates: []string{
+						"",
+					},
+					Goos:       "linux",
+					Goarch:     "amd64",
+					Dockerfile: "testdata/Dockerfile",
+				},
+			},
+			assertError: shouldErr("no image templates found"),
+		},
+		"dockerfile_doesnt_exist": {
+			dockers: []config.Docker{
+				{
+					ImageTemplates: []string{"whatever:latest"},
+					Goos:           "linux",
+					Goarch:         "amd64",
+					Dockerfile:     "testdata/Dockerfilezzz",
+				},
+			},
+			assertError: shouldErr(`failed to copy dockerfile`),
+		},
+		"extra_file_doesnt_exist": {
+			dockers: []config.Docker{
+				{
+					ImageTemplates: []string{"whatever:latest"},
+					Goos:           "linux",
+					Goarch:         "amd64",
+					Dockerfile:     "testdata/Dockerfile",
+					Files: []string{
+						"testdata/nope.txt",
+					},
+				},
+			},
+			assertError: shouldErr(`failed to copy extra file 'testdata/nope.txt'`),
+		},
+		"binary doesnt exist": {
+			dockers: []config.Docker{
+				{
+					ImageTemplates: []string{"whatever:latest"},
+					Goos:           "linux",
+					Goarch:         "amd64",
+					Dockerfile:     "testdata/Dockerfile",
+					IDs:            []string{"nope"},
+				},
+			},
+			assertError: shouldErr(`failed to copy wont-exist`),
+			extraPrepare: func(t *testing.T, ctx *context.Context) {
+				t.Helper()
+				ctx.Artifacts.Add(&artifact.Artifact{
+					Name:   "wont-exist",
+					Path:   "wont-exist",
+					Goarch: "amd64",
+					Goos:   "linux",
+					Type:   artifact.Binary,
+					Extra: map[string]any{
+						artifact.ExtraID: "nope",
+					},
+				})
+			},
+		},
+	}
+
+	for name, docker := range table {
+		for imager := range imagers {
+			docker := docker
+
+			t.Run(name+" on "+imager, func(t *testing.T) {
+				t.Parallel()
+				dist := t.TempDir()
+				dockers := append([]config.Docker(nil), docker.dockers...)
+				env := map[string]string(nil)
+				if docker.env != nil {
+					env = map[string]string{}
+					for k, v := range docker.env {
+						env[k] = v
+					}
+				}
+				ctx := testctx.WrapWithCfg(t.Context(),
+					config.Project{
+						ProjectName: "mybin",
+						Dist:        dist,
+						Dockers:     dockers,
+					},
+					testctx.WithEnv(env),
+					testctx.WithVersion("1.0.0"),
+					testctx.WithCurrentTag("v1.0.0"),
+					testctx.WithCommit("a1b2c3d4"),
+					testctx.WithSemver(1, 0, 0, ""))
+
+				if docker.extraPrepare != nil {
+					docker.extraPrepare(t, ctx)
+				}
+
+				for i := range ctx.Config.Dockers {
+					docker := &ctx.Config.Dockers[i]
+					docker.Use = imager
+					docker.PushFlags = []string{}
+				}
+				require.NoError(t, Pipe{}.Default(ctx))
+				err := Pipe{}.Run(ctx)
+				docker.assertError(t, err)
+			})
+		}
+	}
+}
+
 // TODO: this test is too big... split in smaller tests? Mainly the manifest ones...
 func TestRunPipe(t *testing.T) {
 	testlib.CheckDocker(t)
@@ -246,48 +437,6 @@ func TestRunPipe(t *testing.T) {
 			manifestAssertError: shouldErr("failed to create localhost:5050/goreleaser/test_multiarch_fail:test"),
 			assertImageLabels:   noLabels,
 		},
-		"multiarch manifest template error": {
-			dockers: []config.Docker{
-				{
-					ImageTemplates: []string{registry + "goreleaser/test_multiarch_manifest_tmpl_error"},
-					Goos:           "linux",
-					Goarch:         "arm64",
-					Dockerfile:     "testdata/Dockerfile",
-				},
-			},
-			manifests: []config.DockerManifest{
-				{
-					NameTemplate:   registry + "goreleaser/test_multiarch_manifest_tmpl_error:{{ .Goos }",
-					ImageTemplates: []string{registry + "goreleaser/test_multiarch_manifest_tmpl_error"},
-				},
-			},
-			expect:              []string{registry + "goreleaser/test_multiarch_manifest_tmpl_error"},
-			assertError:         shouldNotErr,
-			pubAssertError:      shouldNotErr,
-			manifestAssertError: shouldTemplateErr,
-			assertImageLabels:   noLabels,
-		},
-		"multiarch image template error": {
-			dockers: []config.Docker{
-				{
-					ImageTemplates: []string{registry + "goreleaser/test_multiarch_img_tmpl_error"},
-					Goos:           "linux",
-					Goarch:         "arm64",
-					Dockerfile:     "testdata/Dockerfile",
-				},
-			},
-			manifests: []config.DockerManifest{
-				{
-					NameTemplate:   registry + "goreleaser/test_multiarch_img_tmpl_error",
-					ImageTemplates: []string{registry + "goreleaser/test_multiarch_img_tmpl_error:{{ .Goos }"},
-				},
-			},
-			expect:              []string{registry + "goreleaser/test_multiarch_img_tmpl_error"},
-			assertError:         shouldNotErr,
-			pubAssertError:      shouldNotErr,
-			manifestAssertError: shouldTemplateErr,
-			assertImageLabels:   noLabels,
-		},
 		"multiarch missing manifest name": {
 			dockers: []config.Docker{
 				{
@@ -425,23 +574,6 @@ func TestRunPipe(t *testing.T) {
 			assertError:       shouldErr("seems like you tried to copy a file that is not available in the build context"),
 			assertImageLabels: noLabels,
 		},
-		"templated-dockerfile-invalid": {
-			dockers: []config.Docker{
-				{
-					ImageTemplates: []string{
-						registry + "goreleaser/invalid-templated-dockerfile:v1",
-					},
-					Goos:       "linux",
-					Goarch:     "amd64",
-					Dockerfile: "{{ .Env.Dockerfile }}",
-				},
-			},
-			expect:              []string{},
-			assertError:         shouldTemplateErr,
-			assertImageLabels:   noLabels,
-			pubAssertError:      shouldNotErr,
-			manifestAssertError: shouldNotErr,
-		},
 		"image template with env": {
 			env: map[string]string{
 				"FOO": "test_run_pipe_template",
@@ -501,23 +633,6 @@ func TestRunPipe(t *testing.T) {
 			},
 			assertImageLabels:   noLabels,
 			assertError:         shouldNotErr,
-			pubAssertError:      shouldNotErr,
-			manifestAssertError: shouldNotErr,
-		},
-		"no image tags": {
-			dockers: []config.Docker{
-				{
-					ImageTemplates: []string{
-						"",
-					},
-					Goos:       "linux",
-					Goarch:     "amd64",
-					Dockerfile: "testdata/Dockerfile",
-				},
-			},
-			expect:              []string{},
-			assertImageLabels:   noLabels,
-			assertError:         shouldErr("no image templates found"),
 			pubAssertError:      shouldNotErr,
 			manifestAssertError: shouldNotErr,
 		},
@@ -719,68 +834,6 @@ func TestRunPipe(t *testing.T) {
 			assertImageLabels: noLabels,
 			assertError:       shouldErr("failed to build localhost:5050/goreleaser/bad_dockerfile:latest"),
 		},
-		"tag_template_error": {
-			dockers: []config.Docker{
-				{
-					ImageTemplates: []string{
-						registry + "goreleaser/test_run_pipe:{{.Tag}",
-					},
-					Goos:       "linux",
-					Goarch:     "amd64",
-					Dockerfile: "testdata/Dockerfile",
-				},
-			},
-			assertImageLabels: noLabels,
-			assertError:       shouldTemplateErr,
-		},
-		"build_flag_template_error": {
-			dockers: []config.Docker{
-				{
-					ImageTemplates: []string{
-						registry + "goreleaser/test_run_pipe:latest",
-					},
-					Goos:       "linux",
-					Goarch:     "amd64",
-					Dockerfile: "testdata/Dockerfile",
-					BuildFlagTemplates: []string{
-						"--label=tag={{.Tag}",
-					},
-				},
-			},
-			assertImageLabels: noLabels,
-			assertError:       shouldTemplateErr,
-		},
-		"missing_env_on_tag_template": {
-			dockers: []config.Docker{
-				{
-					ImageTemplates: []string{
-						registry + "goreleaser/test_run_pipe:{{.Env.NOPE}}",
-					},
-					Goos:       "linux",
-					Goarch:     "amd64",
-					Dockerfile: "testdata/Dockerfile",
-				},
-			},
-			assertImageLabels: noLabels,
-			assertError:       shouldTemplateErr,
-		},
-		"missing_env_on_build_flag_template": {
-			dockers: []config.Docker{
-				{
-					ImageTemplates: []string{
-						registry + "goreleaser/test_run_pipe:latest",
-					},
-					Goos:       "linux",
-					Goarch:     "amd64",
-					Dockerfile: "testdata/Dockerfile",
-					BuildFlagTemplates: []string{
-						"--label=nope={{.Env.NOPE}}",
-					},
-				},
-			},
-			assertImageLabels: noLabels,
-			assertError:       shouldTemplateErr,
-		},
 		"image_has_projectname_template_variable": {
 			dockers: []config.Docker{
 				{
@@ -822,59 +875,6 @@ func TestRunPipe(t *testing.T) {
 			assertError:         shouldNotErr,
 			pubAssertError:      shouldErr(`failed to push docker.io/nope:latest`),
 			manifestAssertError: shouldNotErr,
-		},
-		"dockerfile_doesnt_exist": {
-			dockers: []config.Docker{
-				{
-					ImageTemplates: []string{"whatever:latest"},
-					Goos:           "linux",
-					Goarch:         "amd64",
-					Dockerfile:     "testdata/Dockerfilezzz",
-				},
-			},
-			assertImageLabels: noLabels,
-			assertError:       shouldErr(`failed to copy dockerfile`),
-		},
-		"extra_file_doesnt_exist": {
-			dockers: []config.Docker{
-				{
-					ImageTemplates: []string{"whatever:latest"},
-					Goos:           "linux",
-					Goarch:         "amd64",
-					Dockerfile:     "testdata/Dockerfile",
-					Files: []string{
-						"testdata/nope.txt",
-					},
-				},
-			},
-			assertImageLabels: noLabels,
-			assertError:       shouldErr(`failed to copy extra file 'testdata/nope.txt'`),
-		},
-		"binary doesnt exist": {
-			dockers: []config.Docker{
-				{
-					ImageTemplates: []string{"whatever:latest"},
-					Goos:           "linux",
-					Goarch:         "amd64",
-					Dockerfile:     "testdata/Dockerfile",
-					IDs:            []string{"nope"},
-				},
-			},
-			assertImageLabels: noLabels,
-			assertError:       shouldErr(`failed to copy wont-exist`),
-			extraPrepare: func(t *testing.T, ctx *context.Context) {
-				t.Helper()
-				ctx.Artifacts.Add(&artifact.Artifact{
-					Name:   "wont-exist",
-					Path:   "wont-exist",
-					Goarch: "amd64",
-					Goos:   "linux",
-					Type:   artifact.Binary,
-					Extra: map[string]any{
-						artifact.ExtraID: "nope",
-					},
-				})
-			},
 		},
 		"multiple_ids": {
 			dockers: []config.Docker{
