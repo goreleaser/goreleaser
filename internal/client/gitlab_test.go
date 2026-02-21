@@ -156,7 +156,6 @@ func TestGitLabURLsAPITemplate(t *testing.T) {
 }
 
 func TestGitLabURLsDownloadTemplate(t *testing.T) {
-	t.Parallel()
 	tests := []struct {
 		name               string
 		usePackageRegistry bool
@@ -319,6 +318,7 @@ func TestGitLabCreateReleaseReleaseNotExists(t *testing.T) {
 
 	for _, tt := range notExistsStatusCodes {
 		t.Run(strconv.Itoa(tt), func(t *testing.T) {
+			t.Parallel()
 			totalRequests := 0
 			createdRelease := false
 			srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {

@@ -1486,7 +1486,6 @@ func TestGitHubCreateFileWithoutGitHubAppToken(t *testing.T) {
 }
 
 func TestGitHubAuthorsLookup(t *testing.T) {
-	t.Parallel()
 	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		defer r.Body.Close()
 
