@@ -1,0 +1,270 @@
+//go:build integration
+
+package sign
+
+import (
+	"os"
+	"path/filepath"
+	"strings"
+	"testing"
+
+	"github.com/goreleaser/goreleaser/v2/internal/artifact"
+	"github.com/goreleaser/goreleaser/v2/internal/gio"
+	"github.com/goreleaser/goreleaser/v2/internal/testctx"
+	"github.com/goreleaser/goreleaser/v2/internal/testlib"
+	"github.com/goreleaser/goreleaser/v2/pkg/config"
+	"github.com/stretchr/testify/require"
+)
+
+func TestIntegrationDockerSignArtifacts(t *testing.T) {
+	testlib.CheckPath(t, "cosign")
+	key := "cosign.key"
+	cmd := "sh"
+	args := []string{"-c", "echo ${artifact}@${digest} > ${signature} && cosign sign --key=" + key + " --upload=false ${artifact}@${digest} --yes > ${signature}"}
+	password := "password"
+
+	img1 := "ghcr.io/caarlos0/goreleaser-docker-manifest-actions-example:1.2.1-amd64"
+	img1Digest := "sha256:d7bf8be1b156cc0cd9d2e33765a69bc968d4ef6b2dea9b207d63129b9709862a"
+	img2 := "ghcr.io/caarlos0/goreleaser-docker-manifest-actions-example:1.2.1-arm64v8"
+	img2Digest := "sha256:551801b7f42f8c33bfabb06e25804c2aca14776d2b7df33e07de54e887910b72"
+	man1 := "ghcr.io/caarlos0/goreleaser-docker-manifest-actions-example:1.2.1"
+	man1Digest := "sha256:b5db21408555f1ef5d68008a0a03a7caba3f29b62c64f1404e139b005a20bf03"
+
+	type testcase struct {
+		Signs    []config.Sign
+		Expected []string
+	}
+
+	v1Cases := map[string]testcase{
+		"no signature file": {
+			Expected: nil, // no sigs
+			Signs: []config.Sign{
+				{
+					Artifacts: "all",
+					Stdin:     &password,
+					Cmd:       "cosign",
+					Args:      []string{"sign", "--key=" + key, "--upload=false", "${artifact}", "--yes"},
+				},
+			},
+		},
+		"only certificate": {
+			Expected: []string{
+				"ghcrio-caarlos0-goreleaser-docker-manifest-actions-example-121-amd64.pem",
+				"ghcrio-caarlos0-goreleaser-docker-manifest-actions-example-121-arm64v8.pem",
+				"ghcrio-caarlos0-goreleaser-docker-manifest-actions-example-121.pem",
+			},
+			Signs: []config.Sign{
+				{
+					Artifacts:   "all",
+					Stdin:       &password,
+					Cmd:         "cosign",
+					Certificate: `{{ replace (replace (replace .Env.artifact "/" "-") ":" "-") "." "" }}.pem`,
+					Args:        []string{"sign", "--output-certificate=${certificate}", "--key=" + key, "--upload=false", "${artifact}@${digest}", "--yes"},
+				},
+			},
+		},
+		"sign all": {
+			Expected: []string{
+				"all_img1.sig",
+				"all_img2.sig",
+				"all_man1.sig",
+			},
+			Signs: []config.Sign{
+				{
+					Artifacts: "all",
+					Stdin:     &password,
+					Signature: `all_${artifactID}.sig`,
+					Cmd:       cmd,
+					Args:      args,
+				},
+			},
+		},
+		"sign all filtering id": {
+			Expected: []string{"all_filter_by_id_img2.sig"},
+			Signs: []config.Sign{
+				{
+					Artifacts: "all",
+					IDs:       []string{"img2"},
+					Stdin:     &password,
+					Signature: "all_filter_by_id_${artifactID}.sig",
+					Cmd:       cmd,
+					Args:      args,
+				},
+			},
+		},
+		"sign images only": {
+			Expected: []string{
+				"images_img1.sig",
+				"images_img2.sig",
+			},
+			Signs: []config.Sign{
+				{
+					Artifacts: "images",
+					Stdin:     &password,
+					Signature: "images_${artifactID}.sig",
+					Cmd:       cmd,
+					Args:      args,
+				},
+			},
+		},
+		"sign manifests only": {
+			Expected: []string{"manifests_man1.sig"},
+			Signs: []config.Sign{
+				{
+					Artifacts: "manifests",
+					Stdin:     &password,
+					Signature: "manifests_${artifactID}.sig",
+					Cmd:       cmd,
+					Args:      args,
+				},
+			},
+		},
+		"sign with templated output true": {
+			Expected: []string{"output_true_man1.sig"},
+			Signs: []config.Sign{
+				{
+					Artifacts: "manifests",
+					Stdin:     &password,
+					Signature: "output_true_${artifactID}.sig",
+					Cmd:       cmd,
+					Args:      args,
+					Output:    "true",
+				},
+			},
+		},
+		"sign with templated output false": {
+			Expected: []string{"output_false_man1.sig"},
+			Signs: []config.Sign{
+				{
+					Artifacts: "manifests",
+					Stdin:     &password,
+					Signature: "output_false_${artifactID}.sig",
+					Cmd:       cmd,
+					Args:      args,
+					Output:    "false",
+				},
+			},
+		},
+		// TODO: keyless test?
+	}
+
+	v2Cases := map[string]testcase{
+		"empty": {
+			Expected: []string{"manifests_man1.sig"},
+			Signs: []config.Sign{
+				{
+					Stdin:     &password,
+					Signature: "manifests_${artifactID}.sig",
+					Cmd:       cmd,
+					Args:      args,
+				},
+			},
+		},
+		"images": {
+			Expected: []string{"manifests_man1.sig"},
+			Signs: []config.Sign{
+				{
+					Artifacts: "images",
+					Stdin:     &password,
+					Signature: "manifests_${artifactID}.sig",
+					Cmd:       cmd,
+					Args:      args,
+				},
+			},
+		},
+		"manifests": {
+			Expected: []string{"manifests_man1.sig"},
+			Signs: []config.Sign{
+				{
+					Artifacts: "manifests",
+					Stdin:     &password,
+					Signature: "manifests_${artifactID}.sig",
+					Cmd:       cmd,
+					Args:      args,
+				},
+			},
+		},
+	}
+
+	testWithArtifacts := func(tb testing.TB, cfg testcase, arts []artifact.Artifact) {
+		tb.Helper()
+		ctx := testctx.WrapWithCfg(t.Context(), config.Project{
+			DockerSigns: cfg.Signs,
+		})
+
+		wd, err := os.Getwd()
+		require.NoError(tb, err)
+		tmp := testlib.Mktmp(tb)
+		require.NoError(tb, gio.Copy(filepath.Join(wd, "testdata/cosign/"), tmp))
+		ctx.Config.Dist = "dist"
+		require.NoError(tb, os.Mkdir("dist", 0o755))
+
+		for _, art := range arts {
+			ctx.Artifacts.Add(&art)
+		}
+
+		require.NoError(tb, DockerPipe{}.Default(ctx))
+		require.NoError(tb, DockerPipe{}.Publish(ctx))
+		var sigs []string
+		for _, sig := range ctx.Artifacts.Filter(
+			artifact.Or(
+				artifact.ByType(artifact.Signature),
+				artifact.ByType(artifact.Certificate),
+			),
+		).List() {
+			sigs = append(sigs, sig.Name)
+			require.Truef(tb, strings.HasPrefix(sig.Path, ctx.Config.Dist), "signature %q is not in dist dir %q", sig.Path, ctx.Config.Dist)
+		}
+		require.Equal(tb, cfg.Expected, sigs)
+	}
+
+	for name, cfg := range v1Cases {
+		t.Run(name, func(t *testing.T) {
+			testWithArtifacts(t, cfg, []artifact.Artifact{
+				{
+					Name: img1,
+					Path: img1,
+					Type: artifact.DockerImage,
+					Extra: map[string]any{
+						artifact.ExtraID:     "img1",
+						artifact.ExtraDigest: img1Digest,
+					},
+				},
+				{
+					Name: img2,
+					Path: img2,
+					Type: artifact.DockerImage,
+					Extra: map[string]any{
+						artifact.ExtraID:     "img2",
+						artifact.ExtraDigest: img2Digest,
+					},
+				},
+				{
+					Name: man1,
+					Path: man1,
+					Type: artifact.DockerManifest,
+					Extra: map[string]any{
+						artifact.ExtraID:     "man1",
+						artifact.ExtraDigest: man1Digest,
+					},
+				},
+			})
+		})
+	}
+
+	for name, cfg := range v2Cases {
+		t.Run(name, func(t *testing.T) {
+			testWithArtifacts(t, cfg, []artifact.Artifact{
+				{
+					Name: man1,
+					Path: man1,
+					Type: artifact.DockerImageV2,
+					Extra: map[string]any{
+						artifact.ExtraID:     "man1",
+						artifact.ExtraDigest: man1Digest,
+					},
+				},
+			})
+		})
+	}
+}

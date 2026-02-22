@@ -1,3 +1,5 @@
+//go:build integration
+
 package blob
 
 import (
@@ -76,7 +78,7 @@ func TestMain(m *testing.M) {
 	requireNoErr(pool.Purge(resource))
 }
 
-func TestMinioUpload(t *testing.T) {
+func TestIntegrationMinioUpload(t *testing.T) {
 	testlib.CheckDocker(t)
 	testlib.SkipIfWindows(t, "minio image not available for windows")
 	name := "basic"
@@ -184,7 +186,7 @@ func TestMinioUpload(t *testing.T) {
 	})
 }
 
-func TestMinioUploadCustomBucketID(t *testing.T) {
+func TestIntegrationUploadCustomBucketID(t *testing.T) {
 	testlib.CheckDocker(t)
 	testlib.SkipIfWindows(t, "minio image not available for windows")
 	name := "fromenv"
@@ -223,7 +225,7 @@ func TestMinioUploadCustomBucketID(t *testing.T) {
 	require.NoError(t, Pipe{}.Publish(ctx))
 }
 
-func TestMinioUploadExtraFilesOnly(t *testing.T) {
+func TestIntegrationUploadExtraFilesOnly(t *testing.T) {
 	testlib.CheckDocker(t)
 	testlib.SkipIfWindows(t, "minio image not available for windows")
 	name := "only-extra-files"
@@ -271,7 +273,7 @@ func TestMinioUploadExtraFilesOnly(t *testing.T) {
 	})
 }
 
-func TestMinioUploadRootDirectory(t *testing.T) {
+func TestIntegrationUploadRootDirectory(t *testing.T) {
 	testlib.CheckDocker(t)
 	testlib.SkipIfWindows(t, "minio image not available for windows")
 	name := "rootdir"
@@ -309,7 +311,7 @@ func TestMinioUploadRootDirectory(t *testing.T) {
 	require.NoError(t, Pipe{}.Publish(ctx))
 }
 
-func TestMinioUploadInvalidCustomBucketID(t *testing.T) {
+func TestIntegrationUploadInvalidCustomBucketID(t *testing.T) {
 	testlib.CheckDocker(t)
 	testlib.SkipIfWindows(t, "minio image not available for windows")
 	directory := t.TempDir()
@@ -344,7 +346,7 @@ func TestMinioUploadInvalidCustomBucketID(t *testing.T) {
 	require.Error(t, Pipe{}.Publish(ctx))
 }
 
-func TestMinioUploadSkip(t *testing.T) {
+func TestIntegrationUploadSkip(t *testing.T) {
 	testlib.CheckDocker(t)
 	testlib.SkipIfWindows(t, "minio image not available for windows")
 	name := "basic"

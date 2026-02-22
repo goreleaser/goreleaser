@@ -21,44 +21,11 @@ func TestNoRemote(t *testing.T) {
 	require.EqualError(t, err, `no remote configured to list refs from`)
 }
 
-func TestRelativeRemote(t *testing.T) {
-	ctx := t.Context()
-	testlib.Mktmp(t)
-	testlib.GitInit(t)
-	testlib.GitRemoteAddWithName(t, "upstream", "https://github.com/goreleaser/goreleaser.git")
-	_, err := git.Run(ctx, "pull", "upstream", "main")
-	require.NoError(t, err)
-	_, err = git.Run(ctx, "branch", "--set-upstream-to", "upstream/main")
-	require.NoError(t, err)
-	_, err = git.Run(ctx, "checkout", "--track", "-b", "relative_branch")
-	require.NoError(t, err)
-	gitCfg, err := git.Run(ctx, "config", "--local", "--list")
-	require.NoError(t, err)
-	require.Contains(t, gitCfg, "branch.relative_branch.remote=.")
-	repo, err := git.ExtractRepoFromConfig(ctx)
-	require.NoError(t, err)
-	require.Equal(t, "goreleaser/goreleaser", repo.String())
-}
-
 func TestRepoName(t *testing.T) {
 	testlib.Mktmp(t)
 	testlib.GitInit(t)
 	testlib.GitRemoteAdd(t, "git@github.com:goreleaser/goreleaser.git")
 	repo, err := git.ExtractRepoFromConfig(t.Context())
-	require.NoError(t, err)
-	require.Equal(t, "goreleaser/goreleaser", repo.String())
-}
-
-func TestRepoNameWithDifferentRemote(t *testing.T) {
-	ctx := t.Context()
-	testlib.Mktmp(t)
-	testlib.GitInit(t)
-	testlib.GitRemoteAddWithName(t, "upstream", "https://github.com/goreleaser/goreleaser.git")
-	_, err := git.Run(ctx, "pull", "upstream", "main")
-	require.NoError(t, err)
-	_, err = git.Run(ctx, "branch", "--set-upstream-to", "upstream/main")
-	require.NoError(t, err)
-	repo, err := git.ExtractRepoFromConfig(ctx)
 	require.NoError(t, err)
 	require.Equal(t, "goreleaser/goreleaser", repo.String())
 }
