@@ -23,10 +23,10 @@ import (
 	"sync"
 
 	"github.com/caarlos0/log"
-	"lukechampine.com/blake3"
 	"github.com/goreleaser/goreleaser/v2/internal/experimental"
 	"golang.org/x/crypto/blake2b"
 	"golang.org/x/crypto/blake2s"
+	"lukechampine.com/blake3"
 )
 
 // Type defines the type of an artifact.
