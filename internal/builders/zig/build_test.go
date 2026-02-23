@@ -109,7 +109,7 @@ func TestBuild(t *testing.T) {
 		Dist:        "dist",
 		ProjectName: "proj",
 		Env: []string{
-			"OPTIMIZE_FOR=ReleaseSmall",
+			"OPTIMIZE_FOR=Debug",
 		},
 		Builds: []config.Build{
 			{
