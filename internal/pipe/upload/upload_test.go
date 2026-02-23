@@ -18,25 +18,6 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-var (
-	// mux is the HTTP request multiplexer used with the test server.
-	mux *http.ServeMux
-
-	// server is a test HTTP server used to provide mock API responses.
-	server *httptest.Server
-)
-
-func setup() {
-	// test server
-	mux = http.NewServeMux()
-	server = httptest.NewServer(mux)
-}
-
-// teardown closes the test HTTP server.
-func teardown() {
-	server.Close()
-}
-
 func requireMethodPut(t *testing.T, r *http.Request) {
 	t.Helper()
 	require.Equal(t, http.MethodPut, r.Method)
@@ -51,8 +32,9 @@ func requireHeader(t *testing.T, r *http.Request, header, want string) {
 // were called or not.
 
 func TestRunPipe_ModeBinary(t *testing.T) {
-	setup()
-	defer teardown()
+	mux := http.NewServeMux()
+	server := httptest.NewServer(mux)
+	t.Cleanup(server.Close)
 
 	folder := t.TempDir()
 	dist := filepath.Join(folder, "dist")
@@ -140,8 +122,9 @@ func TestRunPipe_ModeBinary(t *testing.T) {
 }
 
 func TestRunPipe_ModeArchive(t *testing.T) {
-	setup()
-	defer teardown()
+	mux := http.NewServeMux()
+	server := httptest.NewServer(mux)
+	t.Cleanup(server.Close)
 
 	folder := t.TempDir()
 	tarfile, err := os.Create(filepath.Join(folder, "bin.tar.gz"))
@@ -208,8 +191,9 @@ func TestRunPipe_ModeArchive(t *testing.T) {
 }
 
 func TestRunPipe_ModeBinary_CustomArtifactName(t *testing.T) {
-	setup()
-	defer teardown()
+	mux := http.NewServeMux()
+	server := httptest.NewServer(mux)
+	t.Cleanup(server.Close)
 
 	folder := t.TempDir()
 	dist := filepath.Join(folder, "dist")
@@ -270,8 +254,9 @@ func TestRunPipe_ModeBinary_CustomArtifactName(t *testing.T) {
 }
 
 func TestRunPipe_ModeArchive_CustomArtifactName(t *testing.T) {
-	setup()
-	defer teardown()
+	mux := http.NewServeMux()
+	server := httptest.NewServer(mux)
+	t.Cleanup(server.Close)
 
 	folder := t.TempDir()
 	tarfile, err := os.Create(filepath.Join(folder, "bin.tar.gz"))
@@ -406,8 +391,9 @@ func TestRunPipe_TargetTemplateError(t *testing.T) {
 }
 
 func TestRunPipe_BadCredentials(t *testing.T) {
-	setup()
-	defer teardown()
+	mux := http.NewServeMux()
+	server := httptest.NewServer(mux)
+	t.Cleanup(server.Close)
 
 	folder := t.TempDir()
 	dist := filepath.Join(folder, "dist")
