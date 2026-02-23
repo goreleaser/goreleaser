@@ -17,6 +17,7 @@ func FuzzChecksum(f *testing.F) {
 	f.Add("sha512", []byte("more data"))
 	f.Add("blake2b", []byte("blake2b test"))
 	f.Add("blake2s", []byte("blake2s test"))
+	f.Add("blake3", []byte("blake3 test"))
 	f.Add("sha224", []byte("sha224 data"))
 	f.Add("sha384", []byte("sha384 content"))
 	f.Add("sha3-256", []byte("sha3 example"))
@@ -72,6 +73,7 @@ var validAlgorithms = map[string]bool{
 	"sha512":   true,
 	"blake2b":  true,
 	"blake2s":  true,
+	"blake3":   true,
 	"sha224":   true,
 	"sha384":   true,
 	"sha3-224": true,

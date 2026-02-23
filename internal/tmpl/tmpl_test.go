@@ -372,6 +372,11 @@ func TestChecksum(t *testing.T) {
 			Expected: "7cd93f6d174040f3618982922701c54ec5b02dd28902b5160628b1d5516a62c9",
 		},
 		{
+			Template: `{{ blake3 .ArtifactPath }}`,
+			Name:     "blake3",
+			Expected: "25352ae068b54a93ef60942c085da23a321a7f7985193910221cd4fffff5ffb6",
+		},
+		{
 			Template: `{{ crc32 .ArtifactPath }}`,
 			Name:     "crc32",
 			Expected: "72d7748e",
