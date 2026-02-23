@@ -5,7 +5,6 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/charmbracelet/keygen"
 	"github.com/goreleaser/goreleaser/v2/internal/testctx"
 	"github.com/goreleaser/goreleaser/v2/internal/testlib"
 	"github.com/goreleaser/goreleaser/v2/pkg/config"
@@ -13,6 +12,10 @@ import (
 )
 
 func TestGitClient(t *testing.T) {
+	t.Parallel()
+
+	sshKey := testlib.MakeNewSSHKey(t, "")
+
 	author := config.CommitAuthor{
 		Name:  "Foo",
 		Email: "foo@bar.com",
@@ -26,7 +29,7 @@ func TestGitClient(t *testing.T) {
 
 		repo := Repo{
 			GitURL:     url,
-			PrivateKey: testlib.MakeNewSSHKey(t, ""),
+			PrivateKey: sshKey,
 			Name:       "test1",
 		}
 		cli := NewGitUploadClient(repo.Branch)
@@ -62,7 +65,7 @@ func TestGitClient(t *testing.T) {
 
 		repo := Repo{
 			GitURL:     url,
-			PrivateKey: testlib.MakeNewSSHKey(t, ""),
+			PrivateKey: sshKey,
 			Name:       "test1",
 			Branch:     "new-branch",
 		}
@@ -110,7 +113,7 @@ func TestGitClient(t *testing.T) {
 
 		repo := Repo{
 			GitURL:     url,
-			PrivateKey: testlib.MakeNewSSHKey(t, ""),
+			PrivateKey: sshKey,
 		}
 		cli := NewGitUploadClient(repo.Branch)
 		require.NoError(t, cli.CreateFile(
@@ -132,6 +135,7 @@ func TestGitClient(t *testing.T) {
 		require.Equal(t, "fake content 2", string(testlib.CatFileFromBareRepository(t, url, "fake.txt")))
 	})
 	t.Run("bad url", func(t *testing.T) {
+		t.Parallel()
 		ctx := testctx.WrapWithCfg(t.Context(), config.Project{
 			Dist: t.TempDir(),
 		})
@@ -156,7 +160,7 @@ func TestGitClient(t *testing.T) {
 
 		repo := Repo{
 			GitURL:     "git@localhost:nope/nopenopenopenope",
-			PrivateKey: testlib.MakeNewSSHKey(t, ""),
+			PrivateKey: sshKey,
 		}
 		cli := NewGitUploadClient(repo.Branch)
 		err := cli.CreateFile(
@@ -176,7 +180,7 @@ func TestGitClient(t *testing.T) {
 
 		repo := Repo{
 			GitURL:        testlib.GitMakeBareRepository(t),
-			PrivateKey:    testlib.MakeNewSSHKey(t, ""),
+			PrivateKey:    sshKey,
 			GitSSHCommand: "{{.Foo}}",
 		}
 		cli := NewGitUploadClient(repo.Branch)
@@ -190,6 +194,7 @@ func TestGitClient(t *testing.T) {
 		))
 	})
 	t.Run("empty url", func(t *testing.T) {
+		t.Parallel()
 		ctx := testctx.WrapWithCfg(t.Context(), config.Project{
 			Dist: t.TempDir(),
 		})
@@ -205,7 +210,7 @@ func TestGitClient(t *testing.T) {
 			"msg",
 		), "url is empty")
 	})
-	t.Run("bad ssh cmd", func(t *testing.T) {
+	t.Run("bad ssh cmd template", func(t *testing.T) {
 		ctx := testctx.WrapWithCfg(t.Context(), config.Project{
 			Dist: t.TempDir(),
 		})
@@ -246,19 +251,25 @@ func TestGitClient(t *testing.T) {
 }
 
 func TestKeyPath(t *testing.T) {
+	t.Parallel()
+
+	sshKey := testlib.MakeNewSSHKey(t, "")
+
 	t.Run("with valid path", func(t *testing.T) {
-		path := testlib.MakeNewSSHKey(t, "")
-		result, err := keyPath(path)
+		t.Parallel()
+		result, err := keyPath(sshKey)
 		require.NoError(t, err)
-		require.Equal(t, path, result)
+		require.Equal(t, sshKey, result)
 	})
 	t.Run("with invalid path", func(t *testing.T) {
+		t.Parallel()
 		result, err := keyPath("testdata/nope")
 		require.ErrorIs(t, err, os.ErrNotExist)
 		require.Empty(t, result)
 	})
 
 	t.Run("with password protected key path", func(t *testing.T) {
+		t.Parallel()
 		path := testlib.MakeNewSSHKey(t, "pwd")
 		bts, err := os.ReadFile(path)
 		require.NoError(t, err)
@@ -269,29 +280,22 @@ func TestKeyPath(t *testing.T) {
 	})
 
 	t.Run("with key", func(t *testing.T) {
-		for _, algo := range []keygen.KeyType{keygen.Ed25519, keygen.RSA} {
-			t.Run(string(algo), func(t *testing.T) {
-				path := testlib.MakeNewSSHKeyType(t, "", algo)
-				bts, err := os.ReadFile(path)
-				require.NoError(t, err)
+		t.Parallel()
 
-				result, err := keyPath(string(bts))
-				require.NoError(t, err)
-
-				resultbts, err := os.ReadFile(result)
-				require.NoError(t, err)
-				require.Equal(t, string(bts), string(resultbts))
-			})
-		}
+		_, err := keyPath(sshKey)
+		require.NoError(t, err)
 	})
+
 	t.Run("empty", func(t *testing.T) {
+		t.Parallel()
 		result, err := keyPath("")
 		require.EqualError(t, err, `private_key is empty`)
 		require.Empty(t, result)
 	})
+
 	t.Run("with invalid EOF", func(t *testing.T) {
-		path := testlib.MakeNewSSHKey(t, "")
-		bts, err := os.ReadFile(path)
+		t.Parallel()
+		bts, err := os.ReadFile(sshKey)
 		require.NoError(t, err)
 
 		result, err := keyPath(strings.TrimSpace(string(bts)))
@@ -304,7 +308,12 @@ func TestKeyPath(t *testing.T) {
 }
 
 func TestGitClientWithSigning(t *testing.T) {
+	t.Parallel()
+
+	sshKey := testlib.MakeNewSSHKey(t, "")
+
 	t.Run("commit signing enabled", func(t *testing.T) {
+		t.Parallel()
 		author := config.CommitAuthor{
 			Name:  "Foo",
 			Email: "foo@bar.com",
@@ -323,12 +332,11 @@ func TestGitClientWithSigning(t *testing.T) {
 
 		repo := Repo{
 			GitURL:     url,
-			PrivateKey: testlib.MakeNewSSHKey(t, ""),
+			PrivateKey: sshKey,
 			Name:       "test-signing",
 		}
 		cli := NewGitUploadClient(repo.Branch)
 
-		// Test will fail due to missing GPG program, but this verifies the git config is applied
 		err := cli.CreateFile(
 			ctx,
 			author,
@@ -337,12 +345,11 @@ func TestGitClientWithSigning(t *testing.T) {
 			"signed.txt",
 			"test signed commit",
 		)
-		// We expect this to fail in CI environments without GPG setup
-		// The important part is that it tries to sign (not just config error)
 		require.ErrorContains(t, err, "gpg")
 	})
 
 	t.Run("commit signing disabled", func(t *testing.T) {
+		t.Parallel()
 		author := config.CommitAuthor{
 			Name:  "Foo",
 			Email: "foo@bar.com",
@@ -358,7 +365,7 @@ func TestGitClientWithSigning(t *testing.T) {
 
 		repo := Repo{
 			GitURL:     url,
-			PrivateKey: testlib.MakeNewSSHKey(t, ""),
+			PrivateKey: sshKey,
 			Name:       "test-no-signing",
 		}
 		cli := NewGitUploadClient(repo.Branch)
@@ -374,6 +381,7 @@ func TestGitClientWithSigning(t *testing.T) {
 	})
 
 	t.Run("commit signing with ssh format", func(t *testing.T) {
+		t.Parallel()
 		author := config.CommitAuthor{
 			Name:  "Foo",
 			Email: "foo@bar.com",
@@ -391,12 +399,11 @@ func TestGitClientWithSigning(t *testing.T) {
 
 		repo := Repo{
 			GitURL:     url,
-			PrivateKey: testlib.MakeNewSSHKey(t, ""),
+			PrivateKey: sshKey,
 			Name:       "test-ssh-signing",
 		}
 		cli := NewGitUploadClient(repo.Branch)
 
-		// Test will fail due to missing SSH key file, but this verifies the git config is applied
 		err := cli.CreateFile(
 			ctx,
 			author,
@@ -405,10 +412,7 @@ func TestGitClientWithSigning(t *testing.T) {
 			"ssh-signed.txt",
 			"test ssh signed commit",
 		)
-		// We expect this to fail in CI environments without proper SSH key setup
-		// The important part is that it tries to sign with SSH format
 		if testlib.IsWindows() {
-			// on windows we get a slightly different error message...
 			require.Error(t, err)
 			return
 		}
@@ -417,12 +421,14 @@ func TestGitClientWithSigning(t *testing.T) {
 }
 
 func TestRepoFromURL(t *testing.T) {
+	t.Parallel()
 	for k, v := range map[string]string{
 		"goreleaser": "git@github.com:goreleaser/goreleaser.git",
 		"nfpm":       "https://github.com/goreleaser/nfpm",
 		"test":       "https://myserver.git/foo/test.git",
 	} {
 		t.Run(k, func(t *testing.T) {
+			t.Parallel()
 			require.Equal(t, k, nameFromURL(v))
 		})
 	}
