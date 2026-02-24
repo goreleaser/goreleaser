@@ -182,7 +182,7 @@ On all fields, you have these available functions:
 | `urlPathEscape "foo/bar"`         | escapes URL paths. See [PathEscape](https://pkg.go.dev/net/url#PathEscape) (since v2.5)                                   |
 | `blake2b .ArtifactPath`           | `blake2b` checksum of the artifact. See [Blake2b](https://pkg.go.dev/golang.org/x/crypto/blake2b) (since v2.9)            |
 | `blake2s .ArtifactPath`           | `blake2s` checksum of the artifact. See [Blake2s](https://pkg.go.dev/golang.org/x/crypto/blake2s) (since v2.9)            |
-| `blake3 .ArtifactPath`            | `blake3` checksum of the artifact. See [Blake3](https://pkg.go.dev/lukechampine.com/blake3) (since v2.9)                  |
+| `blake3 .ArtifactPath`            | `blake3` checksum of the artifact. See [Blake3](https://pkg.go.dev/lukechampine.com/blake3) (since v2.15-unreleased)                  |
 | `crc32 .ArtifactPath`             | `crc32` checksum of the artifact. See [CRC32](https://pkg.go.dev/hash/crc32) (since v2.9)                                 |
 | `md5 .ArtifactPath`               | `md5` checksum of the artifact. See [MD5](https://pkg.go.dev/crypto/md5) (since v2.9)                                     |
 | `sha224 .ArtifactPath`            | `sha224` checksum of the artifact. See [SHA224](https://pkg.go.dev/crypto/sha256) (since v2.9)                            |
