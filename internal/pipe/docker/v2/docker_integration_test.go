@@ -6,6 +6,7 @@ import (
 	"maps"
 	"os/exec"
 	"slices"
+	"sync"
 	"testing"
 
 	api "github.com/docker/docker/api/types/image"
@@ -19,10 +20,21 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func TestRun(t *testing.T) {
+func TestIntegration(t *testing.T) {
 	testlib.CheckDocker(t)
 	testlib.SkipIfWindows(t, "registry images only available for windows")
+	var wg sync.WaitGroup
+	wg.Go(func() {
+		testlib.StartRegistry(t, "alt_registry-v2", "5061")
+	})
+	testlib.StartRegistry(t, "registry-v2", "5060")
+	wg.Wait()
 
+	t.Run("run", testRun)
+	t.Run("publish", testPublish)
+}
+
+func testRun(t *testing.T) {
 	dist := t.TempDir()
 	ctx := testctx.WrapWithCfg(t.Context(), config.Project{
 		ProjectName: "dockerv2",
@@ -180,13 +192,7 @@ func TestRun(t *testing.T) {
 	})
 }
 
-func TestPublish(t *testing.T) {
-	testlib.CheckDocker(t)
-	testlib.SkipIfWindows(t, "registry images only available for windows")
-
-	testlib.StartRegistry(t, "registry-v2", "5060")
-	testlib.StartRegistry(t, "alt_registry-v2", "5061")
-
+func testPublish(t *testing.T) {
 	dist := t.TempDir()
 	ctx := testctx.WrapWithCfg(t.Context(),
 		config.Project{
