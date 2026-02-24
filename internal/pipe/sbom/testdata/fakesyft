@@ -1,0 +1,11 @@
+#!/bin/bash
+set -euo pipefail
+
+# Parse args to find output files from --output spdx-json=<path> patterns
+for arg in "$@"; do
+	if [[ "$arg" == spdx-json=* ]]; then
+		outfile="${arg#spdx-json=}"
+		echo '{"spdxVersion":"SPDX-2.3","name":"fake"}' > "$outfile"
+		echo "Fake cataloged: $outfile"
+	fi
+done
