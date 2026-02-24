@@ -195,7 +195,8 @@ On all fields, you have these available functions:
 | `sha3_512 .ArtifactPath`          | `sha3_512` checksum of the artifact. See [SHA3-512](https://pkg.go.dev/golang.org/x/crypto/sha3) (since v2.9)             |
 | `mustReadFile "/foo/bar.txt"`     | reads the file contents or fails if it can't be read (since v2.12)                                                        |
 | `readFile "/foo/bar.txt"`         | reads the file contents if it it can be read, or return empty string (since v2.12)                                        |
-| `englishJoin "foo" "bar"`         | will join multiple items in english (since v2.14)                                                                         |
+| `englishJoin`                     | will join multiple items in english (since v2.14)                                                                         |
+| `toSlice "foo" "bar"`             | creates a slice with the given items (since v2.14)                                                                        |
 
 ## Functions (Pro)
 

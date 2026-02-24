@@ -111,10 +111,10 @@ func TestWithArtifact(t *testing.T) {
 		"remove this": "{{ filter .Env.MULTILINE \".*remove.*\" }}",
 		"something with\nmultiple lines\n to test things": "{{ reverseFilter .Env.MULTILINE \".*remove.*\" }}",
 
-		"single item":           `{{ slice "single item" "" | englishJoin }}`,
-		"two and items":         `{{ slice "two" "items" "" | englishJoin }}`,
-		"many, more, and items": `{{ slice "many" "" "more" "items" " " | englishJoin }}`,
-		"no items":              `no items{{ slice "" "" | englishJoin }}`,
+		"single item":           `{{ toSlice "single item" "" | englishJoin }}`,
+		"two and items":         `{{ toSlice "two" "items" "" | englishJoin }}`,
+		"many, more, and items": `{{ toSlice "many" "" "more" "items" " " | englishJoin }}`,
+		"no items":              `no items{{ toSlice "" "" | englishJoin }}`,
 
 		// maps
 		"123": `{{ $m := map "a" "1" "b" "2" }}{{ index $m "a" }}{{ indexOrDefault $m "b" "10" }}{{ indexOrDefault $m "c" "3" }}{{ index $m "z" }}`,

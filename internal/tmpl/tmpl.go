@@ -316,7 +316,7 @@ func (t *Template) Apply(s string) (string, error) {
 			"readFile":       readFile,
 			"mustReadFile":   mustReadFile,
 			"englishJoin":    englishJoin,
-			"slice":          func(items ...string) []string { return items },
+			"toSlice":        func(items ...string) []string { return items },
 		}).
 		Parse(s)
 	if err != nil {
