@@ -229,7 +229,7 @@ func TestRun(t *testing.T) {
 	})
 
 	for arch, path := range paths {
-		cmd := exec.CommandContext(t.Context(), "go", "build", "-o", path, src)
+		cmd := exec.CommandContext(t.Context(), "go", "build", "-ldflags=-s -w", "-gcflags=all=-N -l", "-o", path, src)
 		cmd.Env = append(os.Environ(), "GOOS=darwin", "GOARCH="+arch)
 		_, err := cmd.CombinedOutput()
 		require.NoError(t, err)
