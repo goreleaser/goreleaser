@@ -316,7 +316,7 @@ func (t *Template) Apply(s string) (string, error) {
 			"readFile":       readFile,
 			"mustReadFile":   mustReadFile,
 			"englishJoin":    englishJoin,
-			"toSlice":        func(items ...string) []string { return items },
+			"list":           makeList,
 		}).
 		Parse(s)
 	if err != nil {
@@ -496,6 +496,10 @@ var mdv2EscapeReplacer = strings.NewReplacer(
 
 func mdv2Escape(s string) string {
 	return mdv2EscapeReplacer.Replace(s)
+}
+
+func makeList(input ...string) []string {
+	return input
 }
 
 func makemap(kvs ...string) (map[string]string, error) {

@@ -196,7 +196,7 @@ On all fields, you have these available functions:
 | `mustReadFile "/foo/bar.txt"`     | reads the file contents or fails if it can't be read (since v2.12)                                                        |
 | `readFile "/foo/bar.txt"`         | reads the file contents if it it can be read, or return empty string (since v2.12)                                        |
 | `englishJoin`                     | will join multiple items in english (since v2.14)                                                                         |
-| `toSlice "foo" "bar"`             | creates a slice with the given items (since v2.14)                                                                        |
+| `list "a" "b" "c"`                | makes a list of strings                                                                                                   |
 
 ## Functions (Pro)
 
@@ -204,7 +204,6 @@ On all fields, you have these available functions:
 
 | Usage                                | Description                                                                                                                                                                                                             |
 | ------------------------------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `list "a" "b" "c"`                   | makes a list of strings                                                                                                                                                                                                 |
 | `in (list "a" "b" "c") "b"`          | checks if a slice contains a value                                                                                                                                                                                      |
 | `reReplaceAll "(.*)" "foo" "bar-$1"` | compiles the first argument with [`regexp.Compile`](https://pkg.go.dev/regexp#Compile), then uses [`ReplaceAllString`](https://pkg.go.dev/regexp#Regexp.ReplaceAllStringFunc) with the following arguments (since v2.8) |
 
