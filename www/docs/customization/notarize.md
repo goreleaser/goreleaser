@@ -168,7 +168,7 @@ jobs:
       MACOS_NOTARY_ISSUER_ID: ${{ secrets.MACOS_NOTARY_ISSUER_ID }}
     steps:
       # ...
-      - uses: goreleaser/goreleaser-action@v6
+      - uses: goreleaser/goreleaser-action@v7
         with:
           distribution: goreleaser-pro
           version: "~> v2"
@@ -213,7 +213,7 @@ notarize:
       # When "pkg": signs MacOSPkg with productsign, notarizes MacOSPkg.
       #
       # Default: "dmg".
-      # <!-- md:inline_version v2.14-unreleased -->.
+      # <!-- md:inline_version v2.14 -->.
       use: dmg
 
       # Before notarizing, we need to sign the artifact.
@@ -346,7 +346,7 @@ jobs:
 
       # ...
 
-      - uses: goreleaser/goreleaser-action@v6
+      - uses: goreleaser/goreleaser-action@v7
         with:
           distribution: goreleaser-pro
           version: "~> v2"

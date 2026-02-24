@@ -48,8 +48,8 @@ additional features:
 - [x] Rootless build [Docker images](customization/docker.md#using-podman) and
       [manifests](customization/docker_manifest.md#using-podman) with
       [Podman](https://podman.io);
-- [x] Easily create `apt` and `yum` repositories with the
-      [fury.io integration](customization/fury.md);
+- [x] Easily create `apt`, `yum`, and alpine repositories with the
+      [gemfury.io integration](customization/gemfury.md);
 - [x] Reuse configuration files with the
       [include keyword](customization/includes.md);
 - [x] Run commands after the release with
@@ -81,9 +81,9 @@ If you use the GitHub action, you will want to set the `distribution` option to
 
 ### Offline licenses
 
-<!-- md:version v2.14-unreleased -->
+<!-- md:version v2.14 -->
 
-If you run GoReleaser in an environment without internet access (air-gaped),
+If you run GoReleaser in an environment without internet access (air-gapped),
 you can export an offline license and use it instead of the regular key.
 
 Offline licenses are verified locally — no network calls are made

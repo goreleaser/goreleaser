@@ -1,7 +1,7 @@
 # macOS Pkg
 
 <!-- md:pro -->
-<!-- md:version v2.14-unreleased -->
+<!-- md:version v2.14 -->
 
 GoReleaser can create macOS `.pkg` installer files using `pkgbuild`.
 

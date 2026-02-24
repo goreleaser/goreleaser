@@ -59,7 +59,7 @@ winget:
     # Package name.
     #
     # Default: name.
-    # <!-- md:inline_version v2.14-unreleased -->.
+    # <!-- md:inline_version v2.14 -->.
     # Templates: allowed.
     packaget_name: "Foo Bar"
 

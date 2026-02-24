@@ -38,7 +38,7 @@ changelog:
   # - `SHA`: the commit SHA1
   # - `Message`: the first line of the commit message, otherwise known as commit subject
   # - `Authors`: all authors of the commit
-  # - `Logins`: all non-empty logins of the authors of the commit, prefixed with an '@' (not available if 'git') (since v2.14-unreleased)
+  # - `Logins`: all non-empty logins of the authors of the commit, prefixed with an '@' (not available if 'git') (since v2.14)
   #
   # An `Author` is composed of:
   # - `Name`: the author full name (considers mailmap if 'git')
