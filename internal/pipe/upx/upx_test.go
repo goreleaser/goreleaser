@@ -3,7 +3,6 @@ package upx
 import (
 	"fmt"
 	"os"
-	"os/exec"
 	"path/filepath"
 	"strconv"
 	"testing"
@@ -191,8 +190,6 @@ func TestUpxNotInstalled(t *testing.T) {
 func TestFindBinaries(t *testing.T) {
 	ctx := testctx.Wrap(t.Context())
 	tmp := t.TempDir()
-	main := filepath.Join(tmp, "main.go")
-	require.NoError(t, os.WriteFile(main, []byte("package main\nfunc main(){ println(1) }"), 0o644))
 	for _, goos := range []string{"linux", "windows", "darwin"} {
 		for _, goarch := range []string{"386", "amd64", "arm64", "arm", "mips"} {
 			ext := ""
@@ -224,20 +221,9 @@ func TestFindBinaries(t *testing.T) {
 					continue
 				}
 			}
+
 			path := filepath.Join(tmp, fmt.Sprintf("bin_%s_%s%s", goos, goarch, ext))
-			cmd := exec.CommandContext(t.Context(), "go", "build", "-o", path, main)
-			cmd.Env = append([]string{
-				"CGO_ENABLED=0",
-				"GOOS=" + goos,
-				"GOARCH=" + goarch,
-				"GOAMD64=" + goamd64,
-				"GOARM=" + goarm,
-				"GOMIPS=" + gomips,
-			}, cmd.Environ()...)
-			if cmd.Run() != nil {
-				// ignore unsupported arches
-				continue
-			}
+			require.NoError(t, os.WriteFile(path, []byte("#!/bin/sh\necho oi"), 0o755))
 
 			for i := 1; i <= 5; i++ {
 				ctx.Artifacts.Add(&artifact.Artifact{
