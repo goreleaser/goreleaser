@@ -23,11 +23,10 @@ import (
 func TestIntegration(t *testing.T) {
 	testlib.CheckDocker(t)
 	testlib.SkipIfWindows(t, "registry images only available for windows")
+
 	var wg sync.WaitGroup
-	wg.Go(func() {
-		testlib.StartRegistry(t, "alt_registry-v2", "5061")
-	})
-	testlib.StartRegistry(t, "registry-v2", "5060")
+	wg.Go(func() { testlib.StartRegistry(t, "alt_registry-v2", "5061") })
+	wg.Go(func() { testlib.StartRegistry(t, "registry-v2", "5060") })
 	wg.Wait()
 
 	t.Run("run", testRun)
@@ -200,10 +199,10 @@ func testPublish(t *testing.T) {
 			Dist:        dist,
 			DockersV2: []config.DockerV2{
 				{
-					ID:         "myimg",
+					ID:         "pub-myimg",
 					IDs:        []string{"id1"},
 					Dockerfile: "./testdata/Dockerfile",
-					Images:     []string{"localhost:5060/foo", "localhost:5061/bar"},
+					Images:     []string{"localhost:5060/pub-foo", "localhost:5061/pub-bar"},
 					Tags:       []string{"latest", "v{{.Version}}", "{{if .IsNightly}}nightly{{end}}"},
 					ExtraFiles: []string{"./testdata/foo.conf"},
 					Platforms:  []string{"linux/amd64", "linux/arm64", `{{- if isEnvSet "FOO" }}this will be empty{{ end -}}`},
@@ -215,10 +214,10 @@ func testPublish(t *testing.T) {
 					},
 				},
 				{
-					ID:         "python",
+					ID:         "pub-python",
 					IDs:        []string{"id2"},
 					Dockerfile: "./testdata/Dockerfile.python",
-					Images:     []string{"localhost:5060/python"},
+					Images:     []string{"localhost:5060/pub-python"},
 					Tags:       []string{"latest"},
 					SBOM:       "{{ .IsSnapshot }}",
 				},
@@ -256,51 +255,52 @@ func testPublish(t *testing.T) {
 	if err != nil {
 		de, ok := errors.AsType[gerrors.ErrDetailed](err)
 		require.True(t, ok)
-		t.Errorf("should have been a skip, got message: %s, output: %v", de.Messages(), maps.Collect(de.Details()))
+		t.Errorf("should have been a skip, got message: %s, details: %v", de.Messages(), maps.Collect(de.Details()))
+		return
 	}
 
 	t.Run("main", func(t *testing.T) {
 		images := ctx.Artifacts.
 			Filter(artifact.And(
-				artifact.ByIDs("myimg"),
+				artifact.ByIDs("pub-myimg"),
 				artifact.ByType(artifact.DockerImageV2),
 			)).
 			List()
 		require.Len(t, images, 4)
 		require.Equal(t, []string{
-			"localhost:5060/foo:latest",
-			"localhost:5060/foo:v1.0.0",
-			"localhost:5061/bar:latest",
-			"localhost:5061/bar:v1.0.0",
+			"localhost:5060/pub-foo:latest",
+			"localhost:5060/pub-foo:v1.0.0",
+			"localhost:5061/pub-bar:latest",
+			"localhost:5061/pub-bar:v1.0.0",
 		}, names(images))
 
 		for _, img := range images {
 			require.NotEmpty(t, artifact.ExtraOr(*img, artifact.ExtraDigest, ""))
 		}
 
-		manifest := inspectManifest(t, "localhost:5060/foo:v1.0.0")
+		manifest := inspectManifest(t, "localhost:5060/pub-foo:v1.0.0")
 		require.Equal(t, map[string]string{
 			"org.opencontainers.image.description": "My multi-arch image",
 		}, manifest.Annotations)
 
-		require.True(t, hasSBOM(t, "localhost:5060/foo:v1.0.0"))
+		require.True(t, hasSBOM(t, "localhost:5060/pub-foo:v1.0.0"))
 	})
 	t.Run("python", func(t *testing.T) {
 		images := ctx.Artifacts.
 			Filter(artifact.And(
-				artifact.ByIDs("python"),
+				artifact.ByIDs("pub-python"),
 				artifact.ByType(artifact.DockerImageV2),
 			)).
 			List()
 		require.Len(t, images, 1)
 		require.Equal(t, []string{
-			"localhost:5060/python:latest",
+			"localhost:5060/pub-python:latest",
 		}, names(images))
 
 		for _, img := range images {
 			require.NotEmpty(t, artifact.ExtraOr(*img, artifact.ExtraDigest, ""))
 		}
-		require.False(t, hasSBOM(t, "localhost:5060/python:latest"))
+		require.False(t, hasSBOM(t, "localhost:5060/pub-python:latest"))
 	})
 }
 
