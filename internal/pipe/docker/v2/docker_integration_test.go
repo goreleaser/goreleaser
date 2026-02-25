@@ -108,7 +108,8 @@ func testRun(t *testing.T) {
 	if !pipe.IsSkip(err) {
 		de, ok := errors.AsType[gerrors.ErrDetailed](err)
 		require.True(t, ok)
-		t.Errorf("should have been a skip, got message: %s, output: %v", de.Messages(), maps.Collect(de.Details()))
+		t.Errorf("should have been a skip, got message: %s, details: %v, output: %s", de.Messages(), maps.Collect(de.Details()), de.Output())
+		return
 	}
 
 	t.Run("main", func(t *testing.T) {
@@ -255,7 +256,7 @@ func testPublish(t *testing.T) {
 	if err != nil {
 		de, ok := errors.AsType[gerrors.ErrDetailed](err)
 		require.True(t, ok)
-		t.Errorf("should have been a skip, got message: %s, details: %v", de.Messages(), maps.Collect(de.Details()))
+		t.Errorf("should have been a skip, got message: %s, details: %v, output: %s", de.Messages(), maps.Collect(de.Details()), de.Output())
 		return
 	}
 
@@ -365,7 +366,8 @@ func TestSnapshotNoDaemon(t *testing.T) {
 	if err != nil {
 		de, ok := errors.AsType[gerrors.ErrDetailed](err)
 		require.True(t, ok)
-		t.Errorf("should have been a skip, got message: %s, output: %v", de.Messages(), maps.Collect(de.Details()))
+		t.Errorf("should have been a skip, got message: %s, details: %v, output: %s", de.Messages(), maps.Collect(de.Details()), de.Output())
+		return
 	}
 
 	images := ctx.Artifacts.Filter(

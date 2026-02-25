@@ -240,6 +240,7 @@ func doBuild(ctx *context.Context, d config.DockerV2, wd string, arg []string) (
 					return gerrors.Wrap(
 						err,
 						gerrors.WithMessage("could not build docker image"),
+						gerrors.WithOutput(b.String()),
 						gerrors.WithDetails(
 							"id", d.ID,
 							"details", fileNotFoundDetails(wd),
@@ -249,6 +250,7 @@ func doBuild(ctx *context.Context, d config.DockerV2, wd string, arg []string) (
 				return gerrors.Wrap(
 					err,
 					gerrors.WithMessage("could not build docker image"),
+					gerrors.WithOutput(b.String()),
 					gerrors.WithDetails(
 						"args", strings.Join(cmd.Args, " "),
 						"id", d.ID,
