@@ -109,6 +109,10 @@ const (
 	Makeself
 	// DockerImageV2 is a container image in OCI format.
 	DockerImageV2
+	// SourceRPM is a source RPM.
+	SourceRPM
+	// RPMSpec is an RPM .spec file.
+	RPMSpec
 	// lastMarker is used in tests to denote the last valid type.
 	// always add new types before this one.
 	lastMarker
@@ -188,6 +192,10 @@ func (t Type) String() string {
 		return "Source Dist"
 	case Makeself:
 		return "Makeself Package"
+	case SourceRPM:
+		return "Source RPM"
+	case RPMSpec:
+		return "RPM Spec"
 	default:
 		return "unknown"
 	}
