@@ -394,7 +394,8 @@ func installs(ctx *context.Context, cfg config.Homebrew, art *artifact.Artifact)
 	}
 
 	result := slices.Sorted(maps.Keys(installMap))
-	log.WithField("install", result).Info("guessing install")
+	log.WithField("install", strings.Join(result, " ")).
+		Info("guessing install")
 
 	return append(result, split(extraInstall)...), nil
 }

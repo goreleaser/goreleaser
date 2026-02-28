@@ -82,7 +82,6 @@ func (g *gitClient) CreateFiles(
 	env := []string{fmt.Sprintf("GIT_SSH_COMMAND=%s", sshcmd)}
 
 	if _, err := os.Stat(cwd); errors.Is(err, os.ErrNotExist) {
-		log.Infof("cloning %s %s", name, cwd)
 		if err := os.MkdirAll(parent, 0o755); err != nil {
 			return fmt.Errorf("git: failed to create parent: %w", err)
 		}
@@ -223,7 +222,9 @@ func isPasswordError(err error) bool {
 func cloneRepo(ctx *context.Context, parent, url, name string, env []string) error {
 	if err := retry.Do(
 		func() error {
-			log.WithField("url", url).Infof("cloning %s", name)
+			log.WithField("url", url).
+				WithField("dir", filepath.Join(parent, name)).
+				Info("cloning")
 			return runGitCmds(ctx, parent, env, [][]string{{"clone", url, name}})
 		},
 		retry.RetryIf(func(err error) bool {

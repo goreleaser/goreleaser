@@ -32,7 +32,7 @@ var passthroughEnvVars = []string{"HOME", "USER", "USERPROFILE", "TMPDIR", "TMP"
 // Pipe that catalogs common artifacts as an SBOM.
 type Pipe struct{}
 
-func (Pipe) String() string { return "cataloging artifacts" }
+func (Pipe) String() string { return "software bill of materials" }
 func (Pipe) Skip(ctx *context.Context) bool {
 	return skips.Any(ctx, skips.SBOM) || len(ctx.Config.SBOMs) == 0
 }
@@ -220,7 +220,6 @@ func catalogArtifact(ctx *context.Context, cfg config.SBOM, a *artifact.Artifact
 	cmd.Stdout = redact.Writer(io.MultiWriter(logext.NewWriter(), w), cmd.Env)
 
 	log.WithField("cmd", cfg.Cmd).
-		WithField("artifact", artifactDisplayName).
 		WithField("sbom", strings.Join(names, "\n")).
 		Info("cataloging")
 	if err := cmd.Run(); err != nil {

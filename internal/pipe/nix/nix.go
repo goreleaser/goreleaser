@@ -508,7 +508,8 @@ func installs(ctx *context.Context, nix config.Nix, art *artifact.Artifact) ([]s
 		}
 	}
 
-	log.WithField("install", result).Info("guessing install")
+	log.WithField("install", strings.Join(result, " ")).
+		Info("guessing install")
 
 	return append(result, split(extraInstall)...), nil
 }
