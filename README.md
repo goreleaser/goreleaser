@@ -159,7 +159,6 @@ A big **thank you** to all current, past, and future sponsors!
 - [Carl Tsai](https://github.com/moonape1226)
 - [David Dymko](https://github.com/ddymko)
 - [Jan De Dobbeleer](https://github.com/JanDeDobbeleer)
-- [Paul Greenberg](https://github.com/greenpau)
 - [Baptiste Canton](https://github.com/batmac)
 - [Andrew](https://github.com/wobondar)
 - [Sidartha Karna](https://github.com/sidarthakarna)
