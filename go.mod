@@ -1,6 +1,6 @@
 module github.com/goreleaser/goreleaser/v2
 
-go 1.26.0
+go 1.26.1
 
 require (
 	charm.land/lipgloss/v2 v2.0.0
