@@ -35,6 +35,7 @@ func TestDefault(t *testing.T) {
 }
 
 func TestAnnounceInvalidTemplate(t *testing.T) {
+	t.Setenv("TELEGRAM_TOKEN", "")
 	t.Run("message", func(t *testing.T) {
 		ctx := testctx.WrapWithCfg(t.Context(), config.Project{
 			Announce: config.Announce{
@@ -58,22 +59,23 @@ func TestAnnounceInvalidTemplate(t *testing.T) {
 
 		testlib.RequireTemplateError(t, Pipe{}.Announce(ctx))
 	})
-	t.Run("chatid not int", func(t *testing.T) {
+	t.Run("message thread id not int", func(t *testing.T) {
 		ctx := testctx.WrapWithCfg(t.Context(), config.Project{
-			Env: []string{"CHAT_ID=test"},
+			Env: []string{"MESSAGE_THREAD_ID=test"},
 			Announce: config.Announce{
 				Telegram: config.Telegram{
 					MessageTemplate: "test",
-					ChatID:          "{{ .Env.CHAT_ID }}",
+					ChatID:          "10",
+					MessageThreadID: "{{ .Env.MESSAGE_THREAD_ID }}",
 				},
 			},
 		})
-
 		require.EqualError(t, Pipe{}.Announce(ctx), "telegram: strconv.ParseInt: parsing \"test\": invalid syntax")
 	})
 }
 
 func TestAnnounceMissingEnv(t *testing.T) {
+	t.Setenv("TELEGRAM_TOKEN", "")
 	ctx := testctx.WrapWithCfg(t.Context(), config.Project{
 		Env: []string{"CHAT_ID=10"},
 		Announce: config.Announce{
@@ -123,8 +125,9 @@ func TestGetMessageDetails(t *testing.T) {
 			testctx.WithCurrentTag("v1.0.0"))
 
 		require.NoError(t, Pipe{}.Default(ctx))
-		msg, _, err := getMessageDetails(ctx)
+		args, err := getMessageDetails(ctx)
 		require.NoError(t, err)
-		require.Equal(t, "foo v1\\.0\\.0 is out\\! Check it out at ", msg)
+		require.Equal(t, "1230212", args["chat_id"])
+		require.Equal(t, "foo v1\\.0\\.0 is out\\! Check it out at ", args["text"])
 	})
 }

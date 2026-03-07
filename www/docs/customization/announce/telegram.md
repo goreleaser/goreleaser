@@ -1,15 +1,18 @@
 # Telegram
 
 For it to work, you'll need to
-[create a new Telegram app](https://core.telegram.org/bots), and set
-some environment variables on your pipeline:
+[create a new Telegram bot](https://core.telegram.org/bots).
 
-- `TELEGRAM_TOKEN`
+You should get a token, which you should set export as `TELEGRAM_TOKEN`.
 
-Also you need to know your channel's chat ID to talk with.
+You will also need to create a channel, and either its numerical ID or its
+`@channelname`.
+
+You'll need to add your bot as a channel admin, and give it "Post Messages"
+permissions (its inside the "Manage Messages" permission menu).
 
 Then, you can add something like the following to your `.goreleaser.yaml`
-config:
+configuration file:
 
 ```yaml title=".goreleaser.yaml"
 announce:
@@ -19,26 +22,36 @@ announce:
     # Templates: allowed (since v2.6).
     enabled: true
 
-    # Integer representation of your channel
+    # Integer or `@` representation of your channel.
     #
     # Templates: allowed.
-    chat_id: 123456
+    chat_id: "@goreleasernews"
 
     # Message template to use while publishing.
     #
-    # Default: '{{ mdv2escape .ProjectName }} {{ mdv2escape .Tag }} is out{{ mdv2escape "!" }} Check it out at {{ mdv2escape .ReleaseURL }}'.
+    # Default: '{{ print .ProjectName " " .Tag " is out! Check it out at " .ReleaseURL | mdv2escape }}'.
     # Templates: allowed.
-    message_template: 'Awesome project {{.Tag}} is out{{ mdv2escape "!" }}'
+    message_template: '<a href="{{.ReleaseURL}}">{{ .ProjectName }} {{.Tag}}</a> is out!'
 
     # Parse mode.
     #
-    # Valid options are MarkdownV2 and HTML.
+    # Valid options are 'MarkdownV2' and 'HTML'.
     #
     # Default: 'MarkdownV2'.
     parse_mode: HTML
+
+    # Specific thread to reply to.
+    #
+    # <!-- md:inline_version v2.15-unreleased -->.
+    message_thread_id: 1234
 ```
 
-You can format your message using `MarkdownV2`, for reference, see the
-[Telegram Bot API](https://core.telegram.org/bots/api#markdownv2-style).
+You can format your message using `MarkdownV2` or `HTML`, for reference, see the
+[Telegram Formatting Options documentation](https://core.telegram.org/bots/api#formatting-options).
+
+!!! tip
+
+    If you use `MarkdownV2`, its probably easier to do
+    `{{ print "your message bits" | mdv2escape }}` to prevent issues.
 
 <!-- md:templates -->
