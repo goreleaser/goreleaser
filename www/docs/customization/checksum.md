@@ -30,6 +30,7 @@ checksum:
   # - sha3-384
   # - blake2s
   # - blake2b
+  # - blake3
   #
   # Default: 'sha256'.
   algorithm: sha256

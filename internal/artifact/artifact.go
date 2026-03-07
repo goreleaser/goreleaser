@@ -26,6 +26,7 @@ import (
 	"github.com/goreleaser/goreleaser/v2/internal/experimental"
 	"golang.org/x/crypto/blake2b"
 	"golang.org/x/crypto/blake2s"
+	"lukechampine.com/blake3"
 )
 
 // Type defines the type of an artifact.
@@ -336,6 +337,8 @@ func (a *Artifact) Checksum(algorithm string) (string, error) {
 		if err != nil {
 			return "", fmt.Errorf("failed to checksum: %w", err)
 		}
+	case "blake3":
+		h = blake3.New(32, nil)
 	case "crc32":
 		h = crc32.NewIEEE()
 	case "md5":

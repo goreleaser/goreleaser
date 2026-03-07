@@ -445,6 +445,7 @@ func TestChecksum(t *testing.T) {
 		"sha3-384": "ba6ea7b48af10d7025c4b0c6a105f410278705020d921377c729fe41e88cd9fc2b851002b4cc5a42ba5c34ca8a07b36d",
 		"blake2s":  "7cd93f6d174040f3618982922701c54ec5b02dd28902b5160628b1d5516a62c9",
 		"blake2b":  "ca0dbbe27fca7e5d97b612a76b66d9d42fd67ece4265a50c09ccaefcdc03d9d5a87fa1fddc926ae10c6667342c69df5c33117cf636fca82ac1377c2b4e23e2bc",
+		"blake3":   "25352ae068b54a93ef60942c085da23a321a7f7985193910221cd4fffff5ffb6",
 	} {
 		t.Run(algo, func(t *testing.T) {
 			sum, err := artifact.Checksum(algo)

@@ -302,6 +302,7 @@ func (t *Template) Apply(s string) (string, error) {
 			"urlPathEscape":  url.PathEscape,
 			"blake2b":        checksum("blake2b"),
 			"blake2s":        checksum("blake2s"),
+			"blake3":         checksum("blake3"),
 			"crc32":          checksum("crc32"),
 			"md5":            checksum("md5"),
 			"sha224":         checksum("sha224"),
