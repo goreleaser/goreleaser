@@ -8,6 +8,9 @@ You should get a token, which you should set export as `TELEGRAM_TOKEN`.
 You will also need to create a channel, and either its numerical ID or its
 `@channelname`.
 
+You'll need to add your bot as a channel admin, and give it "Post Messages"
+permissions (its inside the "Manage Messages" permission menu).
+
 Then, you can add something like the following to your `.goreleaser.yaml`
 configuration file:
 
