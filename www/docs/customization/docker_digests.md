@@ -6,7 +6,7 @@ Creates a `digests.txt` file with the digests and image names of all images and
 manifests published.
 This is specially useful if you want to do something with this information, for
 instance, send it to
-[GitHub's attestation action](https://github.com/actions/attest-build-provenance).
+[GitHub's attestation action](https://github.com/actions/attest).
 
 Here's a commented out configuration:
 
