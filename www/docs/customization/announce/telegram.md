@@ -26,7 +26,7 @@ announce:
 
     # Message template to use while publishing.
     #
-    # Default: '{{ mdv2escape .ProjectName }} {{ mdv2escape .Tag }} is out{{ mdv2escape "!" }} Check it out at {{ mdv2escape .ReleaseURL }}'.
+    # Default: '{{ print .ProjectName " " .Tag " is out! Check it out at " .ReleaseURL | mdv2escape }}'.
     # Templates: allowed.
     message_template: 'Awesome project {{.Tag}} is out{{ mdv2escape "!" }}'
 
@@ -38,7 +38,12 @@ announce:
     parse_mode: HTML
 ```
 
-You can format your message using `MarkdownV2`, for reference, see the
-[Telegram Bot API](https://core.telegram.org/bots/api#markdownv2-style).
+You can format your message using `MarkdownV2` or `HTML`, for reference, see the
+[Telegram Formatting Options documentation](https://core.telegram.org/bots/api#formatting-options).
+
+!!! tip
+
+    If you use `MarkdownV2`, it's probably easier to do
+    `{{ print "your message bits" | mdv2escape }}` to prevent issues.
 
 <!-- md:templates -->
