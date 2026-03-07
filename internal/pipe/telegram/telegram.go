@@ -2,12 +2,13 @@
 package telegram
 
 import (
+	"bytes"
+	"encoding/json"
 	"fmt"
-	"strconv"
+	"net/http"
 
 	"github.com/caarlos0/env/v11"
 	"github.com/caarlos0/log"
-	api "github.com/go-telegram-bot-api/telegram-bot-api/v5"
 	"github.com/goreleaser/goreleaser/v2/internal/tmpl"
 	"github.com/goreleaser/goreleaser/v2/pkg/context"
 )
@@ -30,6 +31,12 @@ type Config struct {
 	ConsumerToken string `env:"TELEGRAM_TOKEN,notEmpty"`
 }
 
+type SendMessageResponse struct {
+	Ok          bool   `json:"ok"`
+	ErrorCode   int    `json:"error_code"`
+	Description string `json:"description"`
+}
+
 func (Pipe) Default(ctx *context.Context) error {
 	if ctx.Config.Announce.Telegram.MessageTemplate == "" {
 		ctx.Config.Announce.Telegram.MessageTemplate = defaultMessageTemplate
@@ -43,46 +50,68 @@ func (Pipe) Default(ctx *context.Context) error {
 	return nil
 }
 
-func (p Pipe) Announce(ctx *context.Context) error {
-	msg, chatID, err := getMessageDetails(ctx)
+func (Pipe) Announce(ctx *context.Context) error {
+	args, err := getMessageDetails(ctx)
 	if err != nil {
 		return err
 	}
 
 	cfg, err := env.ParseAs[Config]()
 	if err != nil {
-		return fmt.Errorf("%s: %w", p, err)
+		return fmt.Errorf("telegram: %w", err)
 	}
 
-	log.Infof("posting: '%s'", msg)
-	bot, err := api.NewBotAPI(cfg.ConsumerToken)
-	if err != nil {
-		return fmt.Errorf("%s: %w", p, err)
+	var b bytes.Buffer
+	if err := json.NewEncoder(&b).Encode(args); err != nil {
+		return fmt.Errorf("telegram: %w", err)
 	}
 
-	tm := api.NewMessage(chatID, msg)
-	tm.ParseMode = "MarkdownV2"
-	_, err = bot.Send(tm)
+	request, err := http.NewRequestWithContext(ctx, http.MethodPost, fmt.Sprintf("https://api.telegram.org/bot%s/sendMessage", cfg.ConsumerToken), &b)
 	if err != nil {
-		return fmt.Errorf("%s: %w", p, err)
+		return fmt.Errorf("telegram: %w", err)
 	}
+	request.Header.Set("Content-Type", "application/json")
+
+	log.Infof("posting: '%s'", args["text"])
+	resp, err := http.DefaultClient.Do(request)
+	if err != nil {
+		return fmt.Errorf("telegram: %w", err)
+	}
+
+	if resp.StatusCode != http.StatusOK {
+		return fmt.Errorf("telegram: status code %d", resp.StatusCode)
+	}
+	defer resp.Body.Close()
+
+	var telegramResponse SendMessageResponse
+	if err := json.NewDecoder(resp.Body).Decode(&telegramResponse); err != nil {
+		return fmt.Errorf("telegram: %w", err)
+	}
+
+	if !telegramResponse.Ok {
+		return fmt.Errorf("telegram: send failed with error code %d: %s", telegramResponse.ErrorCode, telegramResponse.Description)
+	}
+
 	log.Debug("message sent")
 	return nil
 }
 
-func getMessageDetails(ctx *context.Context) (string, int64, error) {
+func getMessageDetails(ctx *context.Context) (map[string]any, error) {
+	m := map[string]any{}
+	if ctx.Config.Announce.Telegram.ParseMode != "" {
+		m["parse_mode"] = ctx.Config.Announce.Telegram.ParseMode
+	}
 	msg, err := tmpl.New(ctx).Apply(ctx.Config.Announce.Telegram.MessageTemplate)
 	if err != nil {
-		return "", 0, fmt.Errorf("telegram: %w", err)
+		return nil, fmt.Errorf("telegram: %w", err)
 	}
-	chatIDStr, err := tmpl.New(ctx).Apply(ctx.Config.Announce.Telegram.ChatID)
-	if err != nil {
-		return "", 0, fmt.Errorf("telegram: %w", err)
-	}
-	chatID, err := strconv.ParseInt(chatIDStr, 10, 64)
-	if err != nil {
-		return "", 0, fmt.Errorf("telegram: %w", err)
-	}
+	m["text"] = msg
 
-	return msg, chatID, nil
+	chatID, err := tmpl.New(ctx).Apply(ctx.Config.Announce.Telegram.ChatID)
+	if err != nil {
+		return nil, fmt.Errorf("telegram: %w", err)
+	}
+	m["chat_id"] = chatID
+
+	return m, nil
 }
