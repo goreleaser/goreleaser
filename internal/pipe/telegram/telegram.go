@@ -3,7 +3,6 @@ package telegram
 
 import (
 	"bytes"
-	"crypto/tls"
 	"encoding/json"
 	"fmt"
 	"net/http"
@@ -68,16 +67,6 @@ func (Pipe) Announce(ctx *context.Context) error {
 		return fmt.Errorf("telegram: %w", err)
 	}
 
-	customTransport := http.DefaultTransport.(*http.Transport).Clone()
-	customTransport.TLSClientConfig = &tls.Config{
-		InsecureSkipVerify: ctx.Config.Announce.Telegram.SkipTLSVerify,
-	}
-
-	client := &http.Client{
-		Transport: customTransport,
-	}
-	defer client.CloseIdleConnections()
-
 	request, err := http.NewRequest(http.MethodPost, fmt.Sprintf("https://api.telegram.org/bot%s/sendMessage", cfg.ConsumerToken), &b)
 	if err != nil {
 		return fmt.Errorf("telegram:  %w", err)
@@ -85,7 +74,7 @@ func (Pipe) Announce(ctx *context.Context) error {
 	request.Header.Set("Content-Type", "application/json")
 
 	log.Infof("posting: '%s'", args["msg"])
-	resp, err := client.Do(request)
+	resp, err := http.DefaultClient.Do(request)
 	if err != nil {
 		return fmt.Errorf("telegram: %w", err)
 	}
