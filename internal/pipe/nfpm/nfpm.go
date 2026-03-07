@@ -2,6 +2,7 @@
 package nfpm
 
 import (
+	"errors"
 	"fmt"
 	"io"
 	"os"
@@ -151,7 +152,7 @@ func findArtifacts(ctx *context.Context, fpm config.NFPM) (map[string][]*artifac
 		Filter(artifact.And(filters...)).
 		GroupByPlatform()
 	if len(linuxBinaries) == 0 {
-		return nil, fmt.Errorf("no linux binaries found")
+		return nil, errors.New("no linux binaries found")
 	}
 	return linuxBinaries, nil
 }
