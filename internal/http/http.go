@@ -71,6 +71,7 @@ func assetOpenDefault(kind string, a *artifact.Artifact) (*asset, error) {
 		// using sendFile/TransmitFile on Windows, which has a known
 		// data race between the connection's readLoop and writeBody
 		// goroutines on the underlying TCP socket FD.
+		// See: https://github.com/golang/go/issues/78015
 		ReadCloser: struct {
 			io.Reader
 			io.Closer
