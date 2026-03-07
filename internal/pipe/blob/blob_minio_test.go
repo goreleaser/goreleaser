@@ -9,6 +9,8 @@ import (
 	"path/filepath"
 	"testing"
 
+	stdctx "context"
+
 	"github.com/goreleaser/goreleaser/v2/internal/artifact"
 	"github.com/goreleaser/goreleaser/v2/internal/testctx"
 	"github.com/goreleaser/goreleaser/v2/internal/testlib"
@@ -29,7 +31,7 @@ const (
 var listen string
 
 func TestMain(m *testing.M) {
-	if !testlib.InPath("docker") || testlib.IsWindows() || !testlib.IsDockerRunning() {
+	if !testlib.InPath("docker") || testlib.IsWindows() || !testlib.IsDockerRunning(stdctx.Background()) {
 		// there's no minio windows image
 		m.Run()
 		return
@@ -93,7 +95,7 @@ func TestMinioUpload(t *testing.T) {
 	require.NoError(t, os.WriteFile(debpath, []byte("fake\ndeb"), 0o744))
 	require.NoError(t, os.WriteFile(sigpath, []byte("fake\nsig"), 0o744))
 	require.NoError(t, os.WriteFile(certpath, []byte("fake\ncert"), 0o744))
-	ctx := testctx.NewWithCfg(config.Project{
+	ctx := testctx.WrapWithCfg(t.Context(), config.Project{
 		Dist:        directory,
 		ProjectName: "testupload",
 		Blobs: []config.Blob{
@@ -114,6 +116,7 @@ func TestMinioUpload(t *testing.T) {
 			},
 		},
 	}, testctx.WithCurrentTag("v1.0.0"))
+
 	ctx.Artifacts.Add(&artifact.Artifact{
 		Type: artifact.Metadata,
 		Name: "metadata.json",
@@ -192,7 +195,7 @@ func TestMinioUploadCustomBucketID(t *testing.T) {
 	require.NoError(t, os.WriteFile(debpath, []byte("fake\ndeb"), 0o744))
 	// Set custom BUCKET_ID env variable.
 	t.Setenv("BUCKET_ID", name)
-	ctx := testctx.NewWithCfg(config.Project{
+	ctx := testctx.WrapWithCfg(t.Context(), config.Project{
 		Dist:        directory,
 		ProjectName: "testupload",
 		Blobs: []config.Blob{
@@ -203,6 +206,7 @@ func TestMinioUploadCustomBucketID(t *testing.T) {
 			},
 		},
 	}, testctx.WithCurrentTag("v1.0.0"))
+
 	ctx.Artifacts.Add(&artifact.Artifact{
 		Type: artifact.UploadableArchive,
 		Name: "bin.tar.gz",
@@ -228,7 +232,7 @@ func TestMinioUploadExtraFilesOnly(t *testing.T) {
 	debpath := filepath.Join(directory, "bin.deb")
 	require.NoError(t, os.WriteFile(tgzpath, []byte("fake\ntargz"), 0o744))
 	require.NoError(t, os.WriteFile(debpath, []byte("fake\ndeb"), 0o744))
-	ctx := testctx.NewWithCfg(config.Project{
+	ctx := testctx.WrapWithCfg(t.Context(), config.Project{
 		Dist:        directory,
 		ProjectName: "testupload",
 		Blobs: []config.Blob{
@@ -246,6 +250,7 @@ func TestMinioUploadExtraFilesOnly(t *testing.T) {
 			},
 		},
 	}, testctx.WithCurrentTag("v1.0.0"))
+
 	ctx.Artifacts.Add(&artifact.Artifact{
 		Type: artifact.UploadableArchive,
 		Name: "bin.tar.gz",
@@ -275,7 +280,7 @@ func TestMinioUploadRootDirectory(t *testing.T) {
 	debpath := filepath.Join(directory, "bin.deb")
 	require.NoError(t, os.WriteFile(tgzpath, []byte("fake\ntargz"), 0o744))
 	require.NoError(t, os.WriteFile(debpath, []byte("fake\ndeb"), 0o744))
-	ctx := testctx.NewWithCfg(config.Project{
+	ctx := testctx.WrapWithCfg(t.Context(), config.Project{
 		Dist:        directory,
 		ProjectName: "testupload",
 		Blobs: []config.Blob{
@@ -287,6 +292,7 @@ func TestMinioUploadRootDirectory(t *testing.T) {
 			},
 		},
 	}, testctx.WithCurrentTag("v1.0.0"))
+
 	ctx.Artifacts.Add(&artifact.Artifact{
 		Type: artifact.UploadableArchive,
 		Name: "bin.tar.gz",
@@ -311,7 +317,7 @@ func TestMinioUploadInvalidCustomBucketID(t *testing.T) {
 	debpath := filepath.Join(directory, "bin.deb")
 	require.NoError(t, os.WriteFile(tgzpath, []byte("fake\ntargz"), 0o744))
 	require.NoError(t, os.WriteFile(debpath, []byte("fake\ndeb"), 0o744))
-	ctx := testctx.NewWithCfg(config.Project{
+	ctx := testctx.WrapWithCfg(t.Context(), config.Project{
 		Dist:        directory,
 		ProjectName: "testupload",
 		Blobs: []config.Blob{
@@ -322,6 +328,7 @@ func TestMinioUploadInvalidCustomBucketID(t *testing.T) {
 			},
 		},
 	}, testctx.WithCurrentTag("v1.1.0"))
+
 	ctx.Artifacts.Add(&artifact.Artifact{
 		Type: artifact.UploadableArchive,
 		Name: "bin.tar.gz",
@@ -348,7 +355,7 @@ func TestMinioUploadSkip(t *testing.T) {
 	require.NoError(t, os.WriteFile(debpath, []byte("fake\ndeb"), 0o744))
 
 	buildCtx := func(uploadID string) *context.Context {
-		ctx := testctx.NewWithCfg(
+		ctx := testctx.WrapWithCfg(t.Context(),
 			config.Project{
 				Dist:        directory,
 				ProjectName: "testupload",
@@ -374,8 +381,8 @@ func TestMinioUploadSkip(t *testing.T) {
 			testctx.WithCurrentTag("v1.0.0"),
 			testctx.WithEnv(map[string]string{
 				"UPLOAD_ID": uploadID,
-			}),
-		)
+			}))
+
 		ctx.Artifacts.Add(&artifact.Artifact{
 			Type: artifact.UploadableArchive,
 			Name: "bin.tar.gz",

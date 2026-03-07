@@ -40,7 +40,7 @@ archives:
     #
     # Default: ['tar.gz'].
     format: "zip" # Singular form, single format, deprecated.
-    formats: ["zip", "tar.gz"] # Plural form, multiple formats. <!-- md:inline_version v2.6 -->
+    formats: ["zip", "tar.gz"] # Plural form, multiple formats. <!-- md:inline_version v2.6 -->.
 
     # This will create an archive without any binaries, only the files are there.
     # The name template must not contain any references to `Os`, `Arch` and etc, since the archive will be meta.
@@ -73,6 +73,7 @@ archives:
     # you'll get a directory 'goreleaser_Linux_arm64'.
     # If set to false, all files are extracted separately.
     # You can also set it to a custom directory name (templating is supported).
+    # Default: false.
     wrap_in_directory: true
 
     # If set to true, will strip the parent directories away from binary files.
@@ -80,12 +81,6 @@ archives:
     # This might be useful if you have your binary be built with a sub-directory
     # for some reason, but do no want that sub-directory inside the archive.
     strip_binary_directory: true
-
-    # This will make the destination paths be relative to the longest common
-    # path prefix between all the files matched and the source glob.
-    # Enabling this essentially mimic the behavior of nfpm's contents section.
-    # It will be the default by June 2023.
-    rlcp: true
 
     # Can be used to change the archive formats for specific GOOSs.
     # Most common use case is to archive as zip on Windows.
@@ -109,7 +104,7 @@ archives:
         # - `none`   # skips this archive
         #
         format: "zip" # Singular form, single format, deprecated.
-        formats: ["zip", "tar.gz"] # Plural form, multiple formats. <!-- md:inline_version v2.6 -->
+        formats: ["zip", "tar.gz"] # Plural form, multiple formats. <!-- md:inline_version v2.6 -->.
 
     # Additional files/globs you want to add to the archive.
     #

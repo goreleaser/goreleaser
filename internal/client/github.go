@@ -5,8 +5,8 @@ import (
 	"crypto/tls"
 	"errors"
 	"fmt"
+	"io"
 	"net/http"
-	"net/url"
 	"os"
 	"reflect"
 	"strconv"
@@ -14,8 +14,9 @@ import (
 	"time"
 
 	"github.com/caarlos0/log"
-	"github.com/google/go-github/v71/github"
+	"github.com/google/go-github/v84/github"
 	"github.com/goreleaser/goreleaser/v2/internal/artifact"
+	"github.com/goreleaser/goreleaser/v2/internal/changelog"
 	"github.com/goreleaser/goreleaser/v2/internal/tmpl"
 	"github.com/goreleaser/goreleaser/v2/pkg/config"
 	"github.com/goreleaser/goreleaser/v2/pkg/context"
@@ -52,45 +53,72 @@ func newGitHub(ctx *context.Context, token string) (*githubClient, error) {
 	if base == nil || reflect.ValueOf(base).IsNil() {
 		base = http.DefaultTransport
 	}
+	transport := base.(*http.Transport).Clone()
 	//nolint:gosec
-	base.(*http.Transport).TLSClientConfig = &tls.Config{
+	transport.TLSClientConfig = &tls.Config{
 		InsecureSkipVerify: ctx.Config.GitHubURLs.SkipTLSVerify,
 	}
-	base.(*http.Transport).Proxy = http.ProxyFromEnvironment
-	httpClient.Transport.(*oauth2.Transport).Base = base
+	transport.Proxy = http.ProxyFromEnvironment
+	httpClient.Transport.(*oauth2.Transport).Base = transport
 
-	client := github.NewClient(httpClient)
-	err := overrideGitHubClientAPI(ctx, client)
+	baseURL, err := tmpl.New(ctx).Apply(ctx.Config.GitHubURLs.API)
+	if err != nil {
+		return nil, fmt.Errorf("templating GitHub API URL: %w", err)
+	}
+	uploadURL, err := tmpl.New(ctx).Apply(ctx.Config.GitHubURLs.Upload)
+	if err != nil {
+		return nil, fmt.Errorf("templating GitHub upload URL: %w", err)
+	}
+
+	if baseURL == "" {
+		return &githubClient{client: github.NewClient(httpClient)}, nil
+	}
+
+	client, err := github.NewClient(httpClient).WithEnterpriseURLs(baseURL, uploadURL)
 	if err != nil {
 		return &githubClient{}, err
 	}
-
 	return &githubClient{client: client}, nil
 }
 
-func (c *githubClient) checkRateLimit(ctx *context.Context) {
+func (c *githubClient) checkRateLimit(ctx *context.Context, sleepFn func(time.Duration)) {
+	c.rateLimitChecker(ctx, 100, sleepFn, func(limits *github.RateLimits) *github.Rate {
+		return limits.Core
+	})
+}
+
+func (c *githubClient) checkSearchRateLimit(ctx *context.Context, sleepFn func(time.Duration)) {
+	// 5 should be safe enough (search limit is 30/min)
+	c.rateLimitChecker(ctx, 5, sleepFn, func(limits *github.RateLimits) *github.Rate {
+		return limits.Search
+	})
+}
+
+func (c *githubClient) rateLimitChecker(
+	ctx *context.Context,
+	target int,
+	sleepFn func(time.Duration),
+	which func(*github.RateLimits) *github.Rate,
+) {
 	limits, _, err := c.client.RateLimit.Get(ctx)
 	if err != nil {
 		log.Warn("could not check rate limits, hoping for the best...")
 		return
 	}
-	if limits.Core.Remaining > 100 { // 100 should be safe enough
+	rate := which(limits)
+	if rate.Remaining > target {
 		return
 	}
-	sleep := limits.Core.Reset.UTC().Sub(time.Now().UTC())
-	if sleep <= 0 {
-		// it seems that sometimes, after the rate limit just reset, it might
-		// still get <100 remaining and a reset time in the past... in such
-		// cases we can probably sleep a bit more before trying again...
-		sleep = 15 * time.Second
-	}
-	log.Warnf("token too close to rate limiting, will sleep for %s before continuing...", sleep)
-	time.Sleep(sleep)
-	c.checkRateLimit(ctx)
+	// sometimes, after the rate limit just reset, it might still report
+	// low remaining and a reset time in the past - sleep at least 5s
+	sleep := max(time.Until(rate.Reset.Time), 5*time.Second)
+	log.Warnf("rate limit almost reached (%d remaining), sleeping for %s...", rate.Remaining, sleep)
+	sleepFn(sleep)
+	c.rateLimitChecker(ctx, target, sleepFn, which)
 }
 
 func (c *githubClient) GenerateReleaseNotes(ctx *context.Context, repo Repo, prev, current string) (string, error) {
-	c.checkRateLimit(ctx)
+	c.checkRateLimit(ctx, time.Sleep)
 	notes, _, err := c.client.Repositories.GenerateReleaseNotes(ctx, repo.Owner, repo.Name, &github.GenerateNotesOptions{
 		TagName:         current,
 		PreviousTagName: github.Ptr(prev),
@@ -102,9 +130,10 @@ func (c *githubClient) GenerateReleaseNotes(ctx *context.Context, repo Repo, pre
 }
 
 func (c *githubClient) Changelog(ctx *context.Context, repo Repo, prev, current string) ([]ChangelogItem, error) {
-	c.checkRateLimit(ctx)
+	c.checkRateLimit(ctx, time.Sleep)
 	var log []ChangelogItem
 	opts := &github.ListOptions{PerPage: 100}
+	cache := map[string]string{}
 
 	for {
 		result, resp, err := c.client.Repositories.CompareCommits(ctx, repo.Owner, repo.Name, prev, current, opts)
@@ -112,13 +141,21 @@ func (c *githubClient) Changelog(ctx *context.Context, repo Repo, prev, current 
 			return nil, err
 		}
 		for _, commit := range result.Commits {
-			log = append(log, ChangelogItem{
-				SHA:            commit.GetSHA(),
-				Message:        strings.Split(commit.Commit.GetMessage(), "\n")[0],
-				AuthorName:     commit.GetAuthor().GetName(),
-				AuthorEmail:    commit.GetAuthor().GetEmail(),
-				AuthorUsername: commit.GetAuthor().GetLogin(),
-			})
+			var authors []Author
+			if author := commit.GetAuthor(); author != nil {
+				authors = append(authors, Author{
+					Name:     author.GetName(),
+					Email:    author.GetEmail(),
+					Username: author.GetLogin(),
+				})
+			}
+			coauthors := changelog.ExtractCoAuthors(commit.Commit.GetMessage())
+			authors = append(authors, c.authorsLookup(ctx, coauthors, cache)...)
+			log = append(log, fillDeprecated(ChangelogItem{
+				SHA:     commit.GetSHA(),
+				Message: strings.Split(commit.Commit.GetMessage(), "\n")[0],
+				Authors: authors,
+			}))
 		}
 		if resp.NextPage == 0 {
 			break
@@ -129,9 +166,36 @@ func (c *githubClient) Changelog(ctx *context.Context, repo Repo, prev, current 
 	return log, nil
 }
 
+func (c *githubClient) authorsLookup(ctx *context.Context, authors []Author, cache map[string]string) []Author {
+	for i := range authors {
+		author := &authors[i]
+		if before, ok := strings.CutSuffix(author.Email, "@users.noreply.github.com"); ok {
+			// GitHub noreply format: ID+USERNAME@users.noreply.github.com
+			if _, clean, ok := strings.Cut(before, "+"); ok {
+				author.Username = clean
+				continue
+			}
+			author.Username = before
+			continue
+		}
+		if username, ok := cache[author.Email]; ok {
+			author.Username = username
+			continue
+		}
+		c.checkSearchRateLimit(ctx, time.Sleep)
+		res, _, err := c.client.Search.Users(ctx, author.Email, nil)
+		if err == nil && len(res.Users) == 1 {
+			author.Username = res.Users[0].GetLogin()
+			cache[author.Email] = author.Username
+			continue
+		}
+	}
+	return authors
+}
+
 // getDefaultBranch returns the default branch of a github repo
 func (c *githubClient) getDefaultBranch(ctx *context.Context, repo Repo) (string, error) {
-	c.checkRateLimit(ctx)
+	c.checkRateLimit(ctx, time.Sleep)
 	p, res, err := c.client.Repositories.Get(ctx, repo.Owner, repo.Name)
 	if err != nil {
 		log := log.WithField("projectID", repo.String())
@@ -148,7 +212,7 @@ func (c *githubClient) getDefaultBranch(ctx *context.Context, repo Repo) (string
 
 // CloseMilestone closes a given milestone.
 func (c *githubClient) CloseMilestone(ctx *context.Context, repo Repo, title string) error {
-	c.checkRateLimit(ctx)
+	c.checkRateLimit(ctx, time.Sleep)
 	milestone, err := c.getMilestoneByTitle(ctx, repo, title)
 	if err != nil {
 		return err
@@ -200,7 +264,7 @@ func (c *githubClient) OpenPullRequest(
 	title string,
 	draft bool,
 ) error {
-	c.checkRateLimit(ctx)
+	c.checkRateLimit(ctx, time.Sleep)
 	base.Owner = cmp.Or(base.Owner, head.Owner)
 	base.Name = cmp.Or(base.Name, head.Name)
 	if base.Branch == "" {
@@ -255,7 +319,7 @@ func (c *githubClient) SyncFork(ctx *context.Context, head, base Repo) error {
 		}
 		branch = def
 	}
-	res, _, err := c.client.Repositories.MergeUpstream(
+	res, resp, err := c.client.Repositories.MergeUpstream(
 		ctx,
 		head.Owner,
 		head.Name,
@@ -263,12 +327,13 @@ func (c *githubClient) SyncFork(ctx *context.Context, head, base Repo) error {
 			Branch: github.Ptr(branch),
 		},
 	)
-	if res != nil {
-		log.WithField("merge_type", res.GetMergeType()).
-			WithField("base_branch", res.GetBaseBranch()).
-			Info(res.GetMessage())
+	if err != nil {
+		return fmt.Errorf("%w: %s", err, bodyOf(resp))
 	}
-	return err
+	log.WithField("merge_type", res.GetMergeType()).
+		WithField("base_branch", res.GetBaseBranch()).
+		Info(res.GetMessage())
+	return nil
 }
 
 func (c *githubClient) CreateFile(
@@ -279,7 +344,7 @@ func (c *githubClient) CreateFile(
 	path,
 	message string,
 ) error {
-	c.checkRateLimit(ctx)
+	c.checkRateLimit(ctx, time.Sleep)
 	defBranch, err := c.getDefaultBranch(ctx, repo)
 	if err != nil {
 		return fmt.Errorf("could not get default branch: %w", err)
@@ -291,12 +356,17 @@ func (c *githubClient) CreateFile(
 	}
 
 	options := &github.RepositoryContentFileOptions{
-		Committer: &github.CommitAuthor{
-			Name:  github.Ptr(commitAuthor.Name),
-			Email: github.Ptr(commitAuthor.Email),
-		},
 		Content: content,
 		Message: github.Ptr(message),
+	}
+
+	// When using a GitHub App token, omit the committer to get automatic signed commits
+	// See: https://docs.github.com/en/authentication/managing-commit-signature-verification/about-commit-signature-verification#signature-verification-for-bots
+	if !commitAuthor.UseGitHubAppToken {
+		options.Committer = &github.CommitAuthor{
+			Name:  github.Ptr(commitAuthor.Name),
+			Email: github.Ptr(commitAuthor.Email),
+		}
 	}
 
 	// Set the branch if we got it above...otherwise, just default to
@@ -323,15 +393,13 @@ func (c *githubClient) CreateFile(
 				return fmt.Errorf("could not get ref %q: %w", "refs/heads/"+defBranch, err)
 			}
 
-			if _, _, err := c.client.Git.CreateRef(ctx, repo.Owner, repo.Name, &github.Reference{
-				Ref: github.Ptr("refs/heads/" + branch),
-				Object: &github.GitObject{
-					SHA: defRef.Object.SHA,
-				},
+			if _, resp, err := c.client.Git.CreateRef(ctx, repo.Owner, repo.Name, github.CreateRef{
+				Ref: "refs/heads/" + branch,
+				SHA: defRef.Object.GetSHA(),
 			}); err != nil {
 				rerr := new(github.ErrorResponse)
 				if !errors.As(err, &rerr) || rerr.Message != "Reference already exists" {
-					return fmt.Errorf("could not create ref %q from %q: %w", "refs/heads/"+branch, defRef.Object.GetSHA(), err)
+					return fmt.Errorf("could not create ref %q from %q: %w: %s", "refs/heads/"+branch, defRef.Object.GetSHA(), err, bodyOf(resp))
 				}
 			}
 		}
@@ -350,7 +418,9 @@ func (c *githubClient) CreateFile(
 		return fmt.Errorf("could not get %q: %w", path, err)
 	}
 
-	options.SHA = github.Ptr(file.GetSHA())
+	if file != nil {
+		options.SHA = file.SHA
+	}
 	if _, _, err := c.client.Repositories.UpdateFile(
 		ctx,
 		repo.Owner,
@@ -364,11 +434,11 @@ func (c *githubClient) CreateFile(
 }
 
 func (c *githubClient) CreateRelease(ctx *context.Context, body string) (string, error) {
-	c.checkRateLimit(ctx)
 	title, err := tmpl.New(ctx).Apply(ctx.Config.Release.NameTemplate)
 	if err != nil {
 		return "", err
 	}
+	c.checkRateLimit(ctx, time.Sleep)
 
 	if ctx.Config.Release.Draft && ctx.Config.Release.ReplaceExistingDraft {
 		if err := c.deleteExistingDraftRelease(ctx, title); err != nil {
@@ -434,12 +504,12 @@ func (c *githubClient) PublishRelease(ctx *context.Context, releaseID string) er
 	if err != nil {
 		return fmt.Errorf("could not update existing release: %w", err)
 	}
-	log.WithField("url", release.GetHTMLURL()).Info("published")
+	log.WithField("url", release.GetHTMLURL()).Debug("published")
 	return nil
 }
 
 func (c *githubClient) createOrUpdateRelease(ctx *context.Context, data *github.RepositoryRelease, body string) (*github.RepositoryRelease, error) {
-	c.checkRateLimit(ctx)
+	c.checkRateLimit(ctx, time.Sleep)
 	release, err := c.findRelease(ctx, data.GetTagName())
 	if err != nil || release == nil {
 		release, resp, err := c.client.Repositories.CreateRelease(
@@ -487,7 +557,7 @@ func (c *githubClient) findRelease(ctx *context.Context, name string) (*github.R
 }
 
 func (c *githubClient) updateRelease(ctx *context.Context, id int64, data *github.RepositoryRelease) (*github.RepositoryRelease, error) {
-	c.checkRateLimit(ctx)
+	c.checkRateLimit(ctx, time.Sleep)
 	release, resp, err := c.client.Repositories.EditRelease(
 		ctx,
 		ctx.Config.Release.GitHub.Owner,
@@ -517,7 +587,7 @@ func (c *githubClient) ReleaseURLTemplate(ctx *context.Context) (string, error) 
 }
 
 func (c *githubClient) deleteReleaseArtifact(ctx *context.Context, releaseID int64, name string, page int) error {
-	c.checkRateLimit(ctx)
+	c.checkRateLimit(ctx, time.Sleep)
 	log.WithField("name", name).Info("delete pre-existing asset from the release")
 	assets, resp, err := c.client.Repositories.ListReleaseAssets(
 		ctx,
@@ -566,7 +636,7 @@ func (c *githubClient) Upload(
 	artifact *artifact.Artifact,
 	file *os.File,
 ) error {
-	c.checkRateLimit(ctx)
+	c.checkRateLimit(ctx, time.Sleep)
 	githubReleaseID, err := strconv.ParseInt(releaseID, 10, 64)
 	if err != nil {
 		return err
@@ -607,7 +677,7 @@ func (c *githubClient) Upload(
 
 // getMilestoneByTitle returns a milestone by title.
 func (c *githubClient) getMilestoneByTitle(ctx *context.Context, repo Repo, title string) (*github.Milestone, error) {
-	c.checkRateLimit(ctx)
+	c.checkRateLimit(ctx, time.Sleep)
 	// The GitHub API/SDK does not provide lookup by title functionality currently.
 	opts := &github.MilestoneListOptions{
 		ListOptions: github.ListOptions{PerPage: 100},
@@ -640,37 +710,8 @@ func (c *githubClient) getMilestoneByTitle(ctx *context.Context, repo Repo, titl
 	return nil, nil
 }
 
-func overrideGitHubClientAPI(ctx *context.Context, client *github.Client) error {
-	if ctx.Config.GitHubURLs.API == "" {
-		return nil
-	}
-
-	apiURL, err := tmpl.New(ctx).Apply(ctx.Config.GitHubURLs.API)
-	if err != nil {
-		return fmt.Errorf("templating GitHub API URL: %w", err)
-	}
-	api, err := url.Parse(apiURL)
-	if err != nil {
-		return err
-	}
-
-	uploadURL, err := tmpl.New(ctx).Apply(ctx.Config.GitHubURLs.Upload)
-	if err != nil {
-		return fmt.Errorf("templating GitHub upload URL: %w", err)
-	}
-	upload, err := url.Parse(uploadURL)
-	if err != nil {
-		return err
-	}
-
-	client.BaseURL = api
-	client.UploadURL = upload
-
-	return nil
-}
-
 func (c *githubClient) deleteExistingDraftRelease(ctx *context.Context, name string) error {
-	c.checkRateLimit(ctx)
+	c.checkRateLimit(ctx, time.Sleep)
 	release, err := c.findDraftRelease(ctx, name)
 	if err != nil {
 		return fmt.Errorf("could not delete existing drafts: %w", err)
@@ -694,7 +735,7 @@ func (c *githubClient) deleteExistingDraftRelease(ctx *context.Context, name str
 }
 
 func (c *githubClient) findDraftRelease(ctx *context.Context, name string) (*github.RepositoryRelease, error) {
-	c.checkRateLimit(ctx)
+	c.checkRateLimit(ctx, time.Sleep)
 	opt := github.ListOptions{PerPage: 50}
 	for {
 		releases, resp, err := c.client.Repositories.ListReleases(
@@ -724,4 +765,13 @@ func githubErrLogger(resp *github.Response, err error) *log.Entry {
 		requestID = resp.Header.Get("X-GitHub-Request-Id")
 	}
 	return log.WithField("request-id", requestID).WithError(err)
+}
+
+func bodyOf(resp *github.Response) string {
+	if resp == nil || resp.Body == nil {
+		return "no response"
+	}
+	defer resp.Body.Close()
+	bts, _ := io.ReadAll(resp.Body)
+	return string(bts)
 }

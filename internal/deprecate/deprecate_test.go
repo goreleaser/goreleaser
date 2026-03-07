@@ -5,21 +5,18 @@ import (
 	"testing"
 
 	"github.com/caarlos0/log"
-	"github.com/charmbracelet/lipgloss"
 	"github.com/goreleaser/goreleaser/v2/internal/golden"
 	"github.com/goreleaser/goreleaser/v2/internal/testctx"
-	"github.com/muesli/termenv"
 	"github.com/stretchr/testify/require"
 )
 
 func TestNotice(t *testing.T) {
-	lipgloss.SetColorProfile(termenv.Ascii)
-
+	t.Setenv("CI", "")
 	var w bytes.Buffer
 	log.Log = log.New(&w)
 
 	log.Info("first")
-	ctx := testctx.New()
+	ctx := testctx.Wrap(t.Context())
 	Notice(ctx, "foo.bar_whatever: foobar")
 	Notice(ctx, "foo.bar_whatever: foobar")
 	Notice(ctx, "foo.bar_whatever: foobar")
@@ -30,13 +27,12 @@ func TestNotice(t *testing.T) {
 }
 
 func TestNoticeCustom(t *testing.T) {
-	lipgloss.SetColorProfile(termenv.Ascii)
-
+	t.Setenv("CI", "")
 	var w bytes.Buffer
 	log.Log = log.New(&w)
 
 	log.Info("first")
-	ctx := testctx.New()
+	ctx := testctx.Wrap(t.Context())
 	NoticeCustom(ctx, "something-else", "some custom template with a url {{ .URL }}")
 	NoticeCustom(ctx, "something-else", "ignored")
 	NoticeCustom(ctx, "something-else", "ignored")

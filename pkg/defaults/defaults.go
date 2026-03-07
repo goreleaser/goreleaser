@@ -13,18 +13,24 @@ import (
 	"github.com/goreleaser/goreleaser/v2/internal/pipe/bluesky"
 	"github.com/goreleaser/goreleaser/v2/internal/pipe/brew"
 	"github.com/goreleaser/goreleaser/v2/internal/pipe/build"
+	"github.com/goreleaser/goreleaser/v2/internal/pipe/cask"
 	"github.com/goreleaser/goreleaser/v2/internal/pipe/changelog"
 	"github.com/goreleaser/goreleaser/v2/internal/pipe/checksums"
 	"github.com/goreleaser/goreleaser/v2/internal/pipe/chocolatey"
 	"github.com/goreleaser/goreleaser/v2/internal/pipe/discord"
+	"github.com/goreleaser/goreleaser/v2/internal/pipe/discourse"
 	"github.com/goreleaser/goreleaser/v2/internal/pipe/dist"
 	"github.com/goreleaser/goreleaser/v2/internal/pipe/docker"
+	dockerv2 "github.com/goreleaser/goreleaser/v2/internal/pipe/docker/v2"
+	"github.com/goreleaser/goreleaser/v2/internal/pipe/dockerdigest"
 	"github.com/goreleaser/goreleaser/v2/internal/pipe/gomod"
 	"github.com/goreleaser/goreleaser/v2/internal/pipe/ko"
 	"github.com/goreleaser/goreleaser/v2/internal/pipe/krew"
 	"github.com/goreleaser/goreleaser/v2/internal/pipe/linkedin"
+	"github.com/goreleaser/goreleaser/v2/internal/pipe/makeself"
 	"github.com/goreleaser/goreleaser/v2/internal/pipe/mastodon"
 	"github.com/goreleaser/goreleaser/v2/internal/pipe/mattermost"
+	"github.com/goreleaser/goreleaser/v2/internal/pipe/mcp"
 	"github.com/goreleaser/goreleaser/v2/internal/pipe/milestone"
 	"github.com/goreleaser/goreleaser/v2/internal/pipe/nfpm"
 	"github.com/goreleaser/goreleaser/v2/internal/pipe/nix"
@@ -78,6 +84,7 @@ var Defaulters = []Defaulter{
 	notary.MacOS{},
 	sourcearchive.Pipe{},
 	archive.Pipe{},
+	makeself.Pipe{},
 	nfpm.Pipe{},
 	snapcraft.Pipe{},
 	checksums.Pipe{},
@@ -85,7 +92,9 @@ var Defaulters = []Defaulter{
 	sign.DockerPipe{},
 	sbom.Pipe{},
 	docker.Pipe{},
+	dockerv2.Base{},
 	docker.ManifestPipe{},
+	dockerdigest.Pipe{},
 	artifactory.Pipe{},
 	blob.Pipe{},
 	upload.Pipe{},
@@ -94,9 +103,11 @@ var Defaulters = []Defaulter{
 	nix.Pipe{},
 	winget.Pipe{},
 	brew.Pipe{},
+	cask.Pipe{},
 	krew.Pipe{},
 	ko.Pipe{},
 	scoop.Pipe{},
+	mcp.Pipe{},
 	discord.Pipe{},
 	reddit.Pipe{},
 	slack.Pipe{},
@@ -112,4 +123,5 @@ var Defaulters = []Defaulter{
 	chocolatey.Pipe{},
 	opencollective.Pipe{},
 	bluesky.Pipe{},
+	discourse.Pipe{},
 }

@@ -23,21 +23,21 @@ func TestDescription(t *testing.T) {
 }
 
 func TestRunPipeNoFormats(t *testing.T) {
-	ctx := testctx.NewWithCfg(
+	ctx := testctx.WrapWithCfg(t.Context(),
 		config.Project{
 			NFPMs: []config.NFPM{
 				{},
 			},
 		},
 		testctx.WithCurrentTag("v1.0.1"),
-		testctx.WithVersion("1.0.1"),
-	)
+		testctx.WithVersion("1.0.1"))
+
 	require.NoError(t, Pipe{}.Default(ctx))
 	testlib.AssertSkipped(t, Pipe{}.Run(ctx))
 }
 
 func TestRunPipeError(t *testing.T) {
-	ctx := testctx.NewWithCfg(config.Project{
+	ctx := testctx.WrapWithCfg(t.Context(), config.Project{
 		Dist: t.TempDir(),
 		NFPMs: []config.NFPM{
 			{
@@ -48,6 +48,7 @@ func TestRunPipeError(t *testing.T) {
 			},
 		},
 	})
+
 	ctx.Artifacts.Add(&artifact.Artifact{
 		Name:   "mybin",
 		Path:   "testdata/testfile.txt",
@@ -63,7 +64,7 @@ func TestRunPipeError(t *testing.T) {
 }
 
 func TestRunPipeInvalidFormat(t *testing.T) {
-	ctx := testctx.NewWithCfg(config.Project{
+	ctx := testctx.WrapWithCfg(t.Context(), config.Project{
 		ProjectName: "nope",
 		NFPMs: []config.NFPM{
 			{
@@ -77,6 +78,7 @@ func TestRunPipeInvalidFormat(t *testing.T) {
 			},
 		},
 	}, testctx.WithVersion("1.2.3"), testctx.WithCurrentTag("v1.2.3"))
+
 	for _, goos := range []string{"linux", "darwin"} {
 		for _, goarch := range []string{"amd64", "386"} {
 			ctx.Artifacts.Add(&artifact.Artifact{
@@ -115,7 +117,7 @@ func TestRunPipe(t *testing.T) {
 	fileInfo := config.FileInfo{
 		MTime: "{{.CommitDate}}",
 	}
-	ctx := testctx.NewWithCfg(config.Project{
+	ctx := testctx.WrapWithCfg(t.Context(), config.Project{
 		ProjectName: "mybin",
 		Dist:        dist,
 		Env: []string{
@@ -138,6 +140,7 @@ func TestRunPipe(t *testing.T) {
 				Homepage:    "https://goreleaser.com/{{ .Env.PRO }}",
 				Changelog:   "./testdata/changelog.yaml",
 				MTime:       "{{.CommitDate}}",
+				GoAmd64:     []string{"v1", "v2", "v3", "v4"},
 				Libdirs: config.Libdirs{
 					Header:   libPrefix + "/headers",
 					CArchive: libPrefix + "/c-archives",
@@ -212,6 +215,7 @@ func TestRunPipe(t *testing.T) {
 	}, testctx.WithVersion("1.0.0"), testctx.WithCurrentTag("v1.0.0"), func(ctx *context.Context) {
 		ctx.Git.CommitDate = now
 	})
+
 	for _, goos := range []string{"linux", "darwin", "ios", "android", "aix"} {
 		for _, goarch := range []string{"amd64", "386", "arm64", "arm", "mips", "ppc64"} {
 			if goos == "ios" && goarch != "arm64" {
@@ -269,7 +273,8 @@ func TestRunPipe(t *testing.T) {
 					})
 				}
 			case "amd64":
-				for _, goamd64 := range []string{"v1", "v2", "v3", "v4"} {
+				// v5 is invalid, filtered out in tests
+				for _, goamd64 := range []string{"v1", "v2", "v3", "v4", "v5"} {
 					ctx.Artifacts.Add(&artifact.Artifact{
 						Name:    "subdir/mybin",
 						Path:    binPath,
@@ -520,7 +525,7 @@ func TestSkipOne(t *testing.T) {
 	require.NoError(t, os.Mkdir(dist, 0o755))
 	binPath := filepath.ToSlash(filepath.Join(dist, "mybin"))
 	require.NoError(t, os.WriteFile(binPath, nil, 0o755))
-	ctx := testctx.NewWithCfg(config.Project{
+	ctx := testctx.WrapWithCfg(t.Context(), config.Project{
 		ProjectName: "mybin",
 		Dist:        dist,
 		NFPMs: []config.NFPM{
@@ -532,6 +537,7 @@ func TestSkipOne(t *testing.T) {
 			},
 		},
 	}, testctx.WithVersion("1.0.0"))
+
 	for _, goos := range []string{"linux", "darwin"} {
 		for _, goarch := range []string{"amd64", "arm64"} {
 			ctx.Artifacts.Add(&artifact.Artifact{
@@ -573,7 +579,7 @@ func doTestRunPipeConventionalNameTemplate(t *testing.T, snapshot bool) {
 	require.NoError(t, os.Mkdir(filepath.Join(dist, "mybin"), 0o755))
 	binPath := filepath.ToSlash(filepath.Join(dist, "mybin", "mybin"))
 	require.NoError(t, os.WriteFile(binPath, []byte("nope"), 0o755))
-	ctx := testctx.NewWithCfg(config.Project{
+	ctx := testctx.WrapWithCfg(t.Context(), config.Project{
 		ProjectName: "mybin",
 		Dist:        dist,
 		NFPMs: []config.NFPM{
@@ -601,6 +607,7 @@ func doTestRunPipeConventionalNameTemplate(t *testing.T, snapshot bool) {
 			},
 		},
 	}, testctx.WithVersion("1.0.0"), testctx.WithCurrentTag("v1.0.0"))
+
 	if snapshot {
 		ctx.Snapshot = true
 	}
@@ -796,7 +803,7 @@ func doTestRunPipeConventionalNameTemplate(t *testing.T, snapshot bool) {
 
 func TestInvalidTemplate(t *testing.T) {
 	makeCtx := func() *context.Context {
-		ctx := testctx.NewWithCfg(
+		ctx := testctx.WrapWithCfg(t.Context(),
 			config.Project{
 				ProjectName: "test",
 				NFPMs: []config.NFPM{
@@ -806,8 +813,8 @@ func TestInvalidTemplate(t *testing.T) {
 					},
 				},
 			},
-			testctx.WithVersion("1.2.3"),
-		)
+			testctx.WithVersion("1.2.3"))
+
 		ctx.Artifacts.Add(&artifact.Artifact{
 			Name:   "mybin",
 			Goos:   "linux",
@@ -906,7 +913,7 @@ func TestInvalidTemplate(t *testing.T) {
 }
 
 func TestRunPipeInvalidContentsSourceTemplate(t *testing.T) {
-	ctx := testctx.NewWithCfg(config.Project{
+	ctx := testctx.WrapWithCfg(t.Context(), config.Project{
 		NFPMs: []config.NFPM{
 			{
 				NFPMOverridables: config.NFPMOverridables{
@@ -923,6 +930,7 @@ func TestRunPipeInvalidContentsSourceTemplate(t *testing.T) {
 			},
 		},
 	})
+
 	ctx.Artifacts.Add(&artifact.Artifact{
 		Name:   "mybin",
 		Goos:   "linux",
@@ -936,7 +944,7 @@ func TestRunPipeInvalidContentsSourceTemplate(t *testing.T) {
 }
 
 func TestNoBuildsFound(t *testing.T) {
-	ctx := testctx.NewWithCfg(config.Project{
+	ctx := testctx.WrapWithCfg(t.Context(), config.Project{
 		NFPMs: []config.NFPM{
 			{
 				Formats: []string{"deb"},
@@ -944,6 +952,7 @@ func TestNoBuildsFound(t *testing.T) {
 			},
 		},
 	})
+
 	ctx.Artifacts.Add(&artifact.Artifact{
 		Name:   "mybin",
 		Goos:   "linux",
@@ -953,7 +962,7 @@ func TestNoBuildsFound(t *testing.T) {
 			artifact.ExtraID: "default",
 		},
 	})
-	require.EqualError(t, Pipe{}.Run(ctx), `no linux/unix binaries found for builds [nope]`)
+	require.EqualError(t, Pipe{}.Run(ctx), `no linux binaries found`)
 }
 
 func TestCreateFileDoesntExist(t *testing.T) {
@@ -961,7 +970,7 @@ func TestCreateFileDoesntExist(t *testing.T) {
 	dist := filepath.Join(folder, "dist")
 	require.NoError(t, os.Mkdir(dist, 0o755))
 	require.NoError(t, os.Mkdir(filepath.Join(dist, "mybin"), 0o755))
-	ctx := testctx.NewWithCfg(config.Project{
+	ctx := testctx.WrapWithCfg(t.Context(), config.Project{
 		Dist:        dist,
 		ProjectName: "asd",
 		NFPMs: []config.NFPM{
@@ -980,6 +989,7 @@ func TestCreateFileDoesntExist(t *testing.T) {
 			},
 		},
 	}, testctx.WithVersion("1.2.3"), testctx.WithCurrentTag("v1.2.3"))
+
 	ctx.Artifacts.Add(&artifact.Artifact{
 		Name:   "mybin",
 		Path:   filepath.Join(dist, "mybin", "mybin"),
@@ -998,7 +1008,7 @@ func TestInvalidConfig(t *testing.T) {
 	dist := filepath.Join(folder, "dist")
 	require.NoError(t, os.Mkdir(dist, 0o755))
 	require.NoError(t, os.Mkdir(filepath.Join(dist, "mybin"), 0o755))
-	ctx := testctx.NewWithCfg(config.Project{
+	ctx := testctx.WrapWithCfg(t.Context(), config.Project{
 		Dist: dist,
 		NFPMs: []config.NFPM{
 			{
@@ -1007,6 +1017,7 @@ func TestInvalidConfig(t *testing.T) {
 			},
 		},
 	}, testctx.WithCurrentTag("v1.2.3"), testctx.WithVersion("1.2.3"))
+
 	ctx.Artifacts.Add(&artifact.Artifact{
 		Name:   "mybin",
 		Path:   filepath.Join(dist, "mybin", "mybin"),
@@ -1021,12 +1032,13 @@ func TestInvalidConfig(t *testing.T) {
 }
 
 func TestDefault(t *testing.T) {
-	ctx := testctx.NewWithCfg(config.Project{
+	ctx := testctx.WrapWithCfg(t.Context(), config.Project{
 		ProjectName: "foobar",
 		NFPMs: []config.NFPM{
 			{},
 		},
 	})
+
 	require.NoError(t, Pipe{}.Default(ctx))
 	require.Equal(t, "/usr/bin", ctx.Config.NFPMs[0].Bindir)
 	require.Empty(t, ctx.Config.NFPMs[0].Builds)
@@ -1035,7 +1047,7 @@ func TestDefault(t *testing.T) {
 }
 
 func TestDefaultSet(t *testing.T) {
-	ctx := testctx.NewWithCfg(config.Project{
+	ctx := testctx.WrapWithCfg(t.Context(), config.Project{
 		NFPMs: []config.NFPM{
 			{
 				Builds: []string{"foo"},
@@ -1046,6 +1058,7 @@ func TestDefaultSet(t *testing.T) {
 			},
 		},
 	})
+
 	require.NoError(t, Pipe{}.Default(ctx))
 	require.Equal(t, "/bin", ctx.Config.NFPMs[0].Bindir)
 	require.Equal(t, "foo", ctx.Config.NFPMs[0].FileNameTemplate)
@@ -1054,7 +1067,7 @@ func TestDefaultSet(t *testing.T) {
 }
 
 func TestOverrides(t *testing.T) {
-	ctx := testctx.NewWithCfg(config.Project{
+	ctx := testctx.WrapWithCfg(t.Context(), config.Project{
 		NFPMs: []config.NFPM{
 			{
 				Bindir: "/bin",
@@ -1069,6 +1082,7 @@ func TestOverrides(t *testing.T) {
 			},
 		},
 	})
+
 	require.NoError(t, Pipe{}.Default(ctx))
 	merged, err := mergeOverrides(ctx.Config.NFPMs[0], "deb")
 	require.NoError(t, err)
@@ -1089,7 +1103,7 @@ func TestDebSpecificConfig(t *testing.T) {
 		f, err := os.Create(binPath)
 		require.NoError(t, err)
 		require.NoError(t, f.Close())
-		ctx := testctx.NewWithCfg(config.Project{
+		ctx := testctx.WrapWithCfg(t.Context(), config.Project{
 			ProjectName: "mybin",
 			Dist:        dist,
 			NFPMs: []config.NFPM{
@@ -1115,6 +1129,7 @@ func TestDebSpecificConfig(t *testing.T) {
 				},
 			},
 		}, testctx.WithVersion("1.0.0"), testctx.WithCurrentTag("v1.0.0"))
+
 		for _, goos := range []string{"linux", "darwin", "android"} {
 			for _, goarch := range []string{"amd64", "386"} {
 				ctx.Artifacts.Add(&artifact.Artifact{
@@ -1222,7 +1237,7 @@ func TestRPMSpecificConfig(t *testing.T) {
 	f, err := os.Create(binPath)
 	require.NoError(t, err)
 	require.NoError(t, f.Close())
-	ctx := testctx.NewWithCfg(config.Project{
+	ctx := testctx.WrapWithCfg(t.Context(), config.Project{
 		ProjectName: "mybin",
 		Dist:        dist,
 		NFPMs: []config.NFPM{
@@ -1247,6 +1262,7 @@ func TestRPMSpecificConfig(t *testing.T) {
 			},
 		},
 	}, testctx.WithVersion("1.0.0"), testctx.WithCurrentTag("v1.0.0"))
+
 	for _, goos := range []string{"linux", "darwin"} {
 		for _, goarch := range []string{"amd64", "386"} {
 			ctx.Artifacts.Add(&artifact.Artifact{
@@ -1294,7 +1310,7 @@ func TestRPMSpecificScriptsConfig(t *testing.T) {
 	f, err := os.Create(binPath)
 	require.NoError(t, err)
 	require.NoError(t, f.Close())
-	ctx := testctx.NewWithCfg(config.Project{
+	ctx := testctx.WrapWithCfg(t.Context(), config.Project{
 		ProjectName: "mybin",
 		Dist:        dist,
 		NFPMs: []config.NFPM{
@@ -1314,6 +1330,7 @@ func TestRPMSpecificScriptsConfig(t *testing.T) {
 			},
 		},
 	}, testctx.WithVersion("1.0.0"), testctx.WithCurrentTag("v1.0.0"))
+
 	for _, goos := range []string{"linux", "darwin"} {
 		for _, goarch := range []string{"amd64", "386"} {
 			ctx.Artifacts.Add(&artifact.Artifact{
@@ -1355,7 +1372,7 @@ func TestAPKSpecificConfig(t *testing.T) {
 	f, err := os.Create(binPath)
 	require.NoError(t, err)
 	require.NoError(t, f.Close())
-	ctx := testctx.NewWithCfg(config.Project{
+	ctx := testctx.WrapWithCfg(t.Context(), config.Project{
 		ProjectName: "mybin",
 		Dist:        dist,
 		NFPMs: []config.NFPM{
@@ -1381,6 +1398,7 @@ func TestAPKSpecificConfig(t *testing.T) {
 			},
 		},
 	}, testctx.WithVersion("1.0.0"), testctx.WithCurrentTag("v1.0.0"))
+
 	for _, goos := range []string{"linux", "darwin"} {
 		for _, goarch := range []string{"amd64", "386"} {
 			ctx.Artifacts.Add(&artifact.Artifact{
@@ -1432,7 +1450,7 @@ func TestAPKSpecificScriptsConfig(t *testing.T) {
 		PreUpgrade:  "/does/not/exist_preupgrade.sh",
 		PostUpgrade: "/does/not/exist_postupgrade.sh",
 	}
-	ctx := testctx.NewWithCfg(config.Project{
+	ctx := testctx.WrapWithCfg(t.Context(), config.Project{
 		ProjectName: "mybin",
 		Dist:        dist,
 		NFPMs: []config.NFPM{
@@ -1456,6 +1474,7 @@ func TestAPKSpecificScriptsConfig(t *testing.T) {
 			},
 		},
 	}, testctx.WithVersion("1.0.0"), testctx.WithCurrentTag("v1.0.0"))
+
 	for _, goos := range []string{"linux", "darwin"} {
 		for _, goarch := range []string{"amd64", "386"} {
 			ctx.Artifacts.Add(&artifact.Artifact{
@@ -1501,7 +1520,7 @@ func TestIPKSpecificConfig(t *testing.T) {
 	require.NoError(t, err)
 	require.NoError(t, f.Close())
 
-	ctx := testctx.NewWithCfg(config.Project{
+	ctx := testctx.WrapWithCfg(t.Context(), config.Project{
 		ProjectName: "mybin",
 		Dist:        dist,
 		NFPMs: []config.NFPM{
@@ -1539,6 +1558,7 @@ func TestIPKSpecificConfig(t *testing.T) {
 			},
 		},
 	}, testctx.WithVersion("1.0.0"), testctx.WithCurrentTag("v1.0.0"))
+
 	for _, goos := range []string{"linux", "darwin"} {
 		for _, goarch := range []string{"amd64", "386"} {
 			ctx.Artifacts.Add(&artifact.Artifact{
@@ -1564,7 +1584,7 @@ func TestIPKSpecificConfig(t *testing.T) {
 }
 
 func TestSeveralNFPMsWithTheSameID(t *testing.T) {
-	ctx := testctx.NewWithCfg(config.Project{
+	ctx := testctx.WrapWithCfg(t.Context(), config.Project{
 		NFPMs: []config.NFPM{
 			{
 				ID: "a",
@@ -1574,6 +1594,7 @@ func TestSeveralNFPMsWithTheSameID(t *testing.T) {
 			},
 		},
 	})
+
 	require.EqualError(t, Pipe{}.Default(ctx), "found 2 nfpms with the ID 'a', please fix your config")
 }
 
@@ -1586,7 +1607,7 @@ func TestMeta(t *testing.T) {
 	f, err := os.Create(binPath)
 	require.NoError(t, err)
 	require.NoError(t, f.Close())
-	ctx := testctx.NewWithCfg(config.Project{
+	ctx := testctx.WrapWithCfg(t.Context(), config.Project{
 		ProjectName: "mybin",
 		Dist:        dist,
 		NFPMs: []config.NFPM{
@@ -1638,6 +1659,7 @@ func TestMeta(t *testing.T) {
 			},
 		},
 	}, testctx.WithVersion("1.0.0"), testctx.WithCurrentTag("v1.0.0"))
+
 	for _, goos := range []string{"linux", "darwin"} {
 		for _, goarch := range []string{"amd64", "386"} {
 			ctx.Artifacts.Add(&artifact.Artifact{
@@ -1654,12 +1676,14 @@ func TestMeta(t *testing.T) {
 	}
 	require.NoError(t, Pipe{}.Run(ctx))
 	packages := ctx.Artifacts.Filter(artifact.ByType(artifact.LinuxPackage)).List()
-	require.Len(t, packages, 4)
+	require.Len(t, packages, 2)
 	for _, pkg := range packages {
 		format := pkg.Format()
 		require.NotEmpty(t, format)
-		require.Equal(t, pkg.Name, "foo_1.0.0_linux_"+pkg.Goarch+"-10-20."+format)
+		require.Equal(t, pkg.Name, "foo_1.0.0_linux_all-10-20."+format)
 		require.Equal(t, "someid", pkg.ID())
+		require.Equal(t, "all", pkg.Goarch)
+		require.Equal(t, "linux", pkg.Goos)
 		require.ElementsMatch(t, []string{
 			"/var/log/foobar",
 			"/usr/share/testfile.txt",
@@ -1671,6 +1695,57 @@ func TestMeta(t *testing.T) {
 	require.Len(t, ctx.Config.NFPMs[0].Contents, 4, "should not modify the config file list")
 }
 
+func TestMetaNoBinaries(t *testing.T) {
+	folder := t.TempDir()
+	dist := filepath.Join(folder, "dist")
+	require.NoError(t, os.Mkdir(dist, 0o755))
+	ctx := testctx.WrapWithCfg(t.Context(), config.Project{
+		ProjectName: "testpkg",
+		Dist:        dist,
+		NFPMs: []config.NFPM{
+			{
+				ID:          "someid",
+				Bindir:      "/usr/bin",
+				Formats:     []string{"deb", "rpm"},
+				Description: "Some description",
+				License:     "MIT",
+				Maintainer:  "me@me",
+				Vendor:      "asdf",
+				Homepage:    "https://goreleaser.github.io",
+				Meta:        true,
+				NFPMOverridables: config.NFPMOverridables{
+					PackageName: "foo",
+					Contents: []config.NFPMContent{
+						{
+							Source:      "testdata/testfile.txt",
+							Destination: "/usr/share/testfile.txt",
+						},
+						{
+							Destination: "/var/log/foobar",
+							Type:        "dir",
+						},
+					},
+				},
+			},
+		},
+	}, testctx.WithVersion("1.0.0"), testctx.WithCurrentTag("v1.0.0"))
+
+	require.NoError(t, Pipe{}.Run(ctx))
+	packages := ctx.Artifacts.Filter(artifact.ByType(artifact.LinuxPackage)).List()
+	require.Len(t, packages, 2)
+	for _, pkg := range packages {
+		format := pkg.Format()
+		require.NotEmpty(t, format)
+		require.Equal(t, "someid", pkg.ID())
+		require.Equal(t, "all", pkg.Goarch)
+		require.Equal(t, "linux", pkg.Goos)
+		require.ElementsMatch(t, []string{
+			"/var/log/foobar",
+			"/usr/share/testfile.txt",
+		}, destinations(artifact.MustExtra[files.Contents](*pkg, extraFiles)))
+	}
+}
+
 func TestSkipSign(t *testing.T) {
 	folder := t.TempDir()
 	dist := filepath.Join(folder, "dist")
@@ -1679,7 +1754,7 @@ func TestSkipSign(t *testing.T) {
 	binPath := filepath.Join(dist, "mybin", "mybin")
 	_, err := os.Create(binPath)
 	require.NoError(t, err)
-	ctx := testctx.NewWithCfg(config.Project{
+	ctx := testctx.WrapWithCfg(t.Context(), config.Project{
 		ProjectName: "mybin",
 		Dist:        dist,
 		NFPMs: []config.NFPM{
@@ -1715,6 +1790,7 @@ func TestSkipSign(t *testing.T) {
 			},
 		},
 	}, testctx.WithVersion("1.0.0"), testctx.WithCurrentTag("v1.0.0"))
+
 	for _, goos := range []string{"linux", "darwin"} {
 		for _, goarch := range []string{"amd64", "386"} {
 			ctx.Artifacts.Add(&artifact.Artifact{
@@ -1751,7 +1827,7 @@ func TestBinDirTemplating(t *testing.T) {
 	f, err := os.Create(binPath)
 	require.NoError(t, err)
 	require.NoError(t, f.Close())
-	ctx := testctx.NewWithCfg(config.Project{
+	ctx := testctx.WrapWithCfg(t.Context(), config.Project{
 		ProjectName: "mybin",
 		Dist:        dist,
 		Env: []string{
@@ -1762,7 +1838,7 @@ func TestBinDirTemplating(t *testing.T) {
 		NFPMs: []config.NFPM{
 			{
 				ID: "someid",
-				// Bindir should pass through the template engine
+
 				Bindir:      "/usr/lib/{{ .Env.PRO }}/nagios/plugins",
 				Builds:      []string{"default"},
 				Formats:     []string{"rpm"},
@@ -1779,6 +1855,7 @@ func TestBinDirTemplating(t *testing.T) {
 			},
 		},
 	}, testctx.WithVersion("1.0.0"), testctx.WithCurrentTag("v1.0.0"))
+
 	for _, goos := range []string{"linux"} {
 		for _, goarch := range []string{"amd64", "386"} {
 			ctx.Artifacts.Add(&artifact.Artifact{
@@ -1808,29 +1885,31 @@ func TestBinDirTemplating(t *testing.T) {
 
 func TestSkip(t *testing.T) {
 	t.Run("skip", func(t *testing.T) {
-		require.True(t, Pipe{}.Skip(testctx.New()))
+		require.True(t, Pipe{}.Skip(testctx.Wrap(t.Context())))
 	})
 	t.Run("skip flag", func(t *testing.T) {
-		ctx := testctx.NewWithCfg(config.Project{
+		ctx := testctx.WrapWithCfg(t.Context(), config.Project{
 			NFPMs: []config.NFPM{
 				{},
 			},
 		}, testctx.Skip(skips.NFPM))
+
 		require.True(t, Pipe{}.Skip(ctx))
 	})
 
 	t.Run("dont skip", func(t *testing.T) {
-		ctx := testctx.NewWithCfg(config.Project{
+		ctx := testctx.WrapWithCfg(t.Context(), config.Project{
 			NFPMs: []config.NFPM{
 				{},
 			},
 		})
+
 		require.False(t, Pipe{}.Skip(ctx))
 	})
 }
 
 func TestTemplateExt(t *testing.T) {
-	ctx := testctx.NewWithCfg(config.Project{
+	ctx := testctx.WrapWithCfg(t.Context(), config.Project{
 		Dist: t.TempDir(),
 		NFPMs: []config.NFPM{
 			{
@@ -1841,28 +1920,10 @@ func TestTemplateExt(t *testing.T) {
 				Meta:       true,
 				Maintainer: "foo@bar",
 				Formats:    []string{"deb", "rpm", "termux.deb", "apk", "archlinux"},
-				Builds:     []string{"default"},
 			},
 		},
 	})
-	ctx.Artifacts.Add(&artifact.Artifact{
-		Name:   "mybin",
-		Goos:   "android",
-		Goarch: "amd64",
-		Type:   artifact.Binary,
-		Extra: map[string]any{
-			artifact.ExtraID: "default",
-		},
-	})
-	ctx.Artifacts.Add(&artifact.Artifact{
-		Name:   "mybin",
-		Goos:   "linux",
-		Goarch: "amd64",
-		Type:   artifact.Binary,
-		Extra: map[string]any{
-			artifact.ExtraID: "default",
-		},
-	})
+
 	require.NoError(t, Pipe{}.Run(ctx))
 
 	packages := ctx.Artifacts.Filter(artifact.ByType(artifact.LinuxPackage)).List()

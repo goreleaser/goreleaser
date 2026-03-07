@@ -20,28 +20,30 @@ func TestStringer(t *testing.T) {
 }
 
 func TestDefault(t *testing.T) {
-	ctx := testctx.New()
+	ctx := testctx.Wrap(t.Context())
 	require.NoError(t, Pipe{}.Default(ctx))
 	require.Equal(t, defaultMessageTemplate, ctx.Config.Announce.Discord.MessageTemplate)
 }
 
 func TestAnnounceInvalidTemplate(t *testing.T) {
-	ctx := testctx.NewWithCfg(config.Project{
+	ctx := testctx.WrapWithCfg(t.Context(), config.Project{
 		Announce: config.Announce{
 			Discord: config.Discord{
 				MessageTemplate: "{{ .Foo }",
 			},
 		},
 	})
+
 	testlib.RequireTemplateError(t, Pipe{}.Announce(ctx))
 }
 
 func TestAnnounceMissingEnv(t *testing.T) {
-	ctx := testctx.NewWithCfg(config.Project{
+	ctx := testctx.WrapWithCfg(t.Context(), config.Project{
 		Announce: config.Announce{
 			Discord: config.Discord{},
 		},
 	})
+
 	require.NoError(t, Pipe{}.Default(ctx))
 	require.EqualError(t, Pipe{}.Announce(ctx), `discord: env: environment variable "DISCORD_WEBHOOK_ID" should not be empty; environment variable "DISCORD_WEBHOOK_TOKEN" should not be empty`)
 }
@@ -69,7 +71,7 @@ func TestAnnounce(t *testing.T) {
 	}))
 	defer ts.Close()
 
-	ctx := testctx.NewWithCfg(config.Project{
+	ctx := testctx.WrapWithCfg(t.Context(), config.Project{
 		ProjectName: "Honk",
 		Announce: config.Announce{
 			Discord: config.Discord{
@@ -92,19 +94,20 @@ func TestAnnounce(t *testing.T) {
 
 func TestSkip(t *testing.T) {
 	t.Run("skip", func(t *testing.T) {
-		skip, err := Pipe{}.Skip(testctx.New())
+		skip, err := Pipe{}.Skip(testctx.Wrap(t.Context()))
 		require.NoError(t, err)
 		require.True(t, skip)
 	})
 
 	t.Run("dont skip", func(t *testing.T) {
-		ctx := testctx.NewWithCfg(config.Project{
+		ctx := testctx.WrapWithCfg(t.Context(), config.Project{
 			Announce: config.Announce{
 				Discord: config.Discord{
 					Enabled: "true",
 				},
 			},
 		})
+
 		skip, err := Pipe{}.Skip(ctx)
 		require.NoError(t, err)
 		require.False(t, skip)
@@ -116,7 +119,7 @@ func TestLive(t *testing.T) {
 	t.Setenv("DISCORD_WEBHOOK_ID", "TODO")
 	t.Setenv("DISCORD_WEBHOOK_TOKEN", "TODO")
 
-	ctx := testctx.NewWithCfg(config.Project{
+	ctx := testctx.WrapWithCfg(t.Context(), config.Project{
 		Announce: config.Announce{
 			Discord: config.Discord{
 				MessageTemplate: "test",

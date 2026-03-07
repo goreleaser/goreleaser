@@ -29,7 +29,7 @@ You'll need to add it as secret and pass it to the action, for instance:
 ```yaml
 # .github/workflows/release.yaml
 # ...
-- uses: goreleaser/goreleaser-action@v6
+- uses: goreleaser/goreleaser-action@v7
   env:
     GITHUB_TOKEN: ${{ secrets.GH_PAT }}
 # ...
@@ -46,7 +46,7 @@ We would need to change the workflow file:
 ```yaml
 # .github/workflows/release.yaml
 # ...
-- uses: goreleaser/goreleaser-action@v6
+- uses: goreleaser/goreleaser-action@v7
   env:
     GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
     TAP_GITHUB_TOKEN: ${{ secrets.TAP_GITHUB_TOKEN }}
@@ -72,6 +72,6 @@ Read the documentation for each topic:
 
 - [GitHub](../scm/github.md)
 - [GitHub Actions](../ci/actions.md)
-- [Homebrew Tap](../customization/homebrew.md)
+- [Homebrew](../customization/homebrew_casks.md)
 - [Krew Plugin Manifests](../customization/krew.md)
 - [Scoop Manifests](../customization/scoop.md)

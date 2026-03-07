@@ -1,10 +1,14 @@
 package ko
 
 import (
+	stdctx "context"
 	"fmt"
 	"maps"
+	"os/exec"
+	"runtime"
 	"strconv"
 	"strings"
+	"sync"
 	"testing"
 	"time"
 
@@ -30,7 +34,7 @@ const (
 )
 
 func TestDefault(t *testing.T) {
-	ctx := testctx.NewWithCfg(config.Project{
+	ctx := testctx.WrapWithCfg(t.Context(), config.Project{
 		Env: []string{
 			"KO_DOCKER_REPO=" + registry1,
 			"COSIGN_REPOSITORY=" + registry1,
@@ -54,6 +58,7 @@ func TestDefault(t *testing.T) {
 			{},
 		},
 	})
+
 	require.NoError(t, Pipe{}.Default(ctx))
 	require.Equal(t, config.Ko{
 		ID:           "test",
@@ -71,7 +76,7 @@ func TestDefault(t *testing.T) {
 }
 
 func TestDefaultCycloneDX(t *testing.T) {
-	ctx := testctx.NewWithCfg(config.Project{
+	ctx := testctx.WrapWithCfg(t.Context(), config.Project{
 		ProjectName: "test",
 		Env:         []string{"KO_DOCKER_REPO=" + registry1},
 		Kos: []config.Ko{
@@ -81,13 +86,14 @@ func TestDefaultCycloneDX(t *testing.T) {
 			{ID: "test"},
 		},
 	})
+
 	require.NoError(t, Pipe{}.Default(ctx))
 	require.True(t, ctx.Deprecated)
 	require.Equal(t, "none", ctx.Config.Kos[0].SBOM)
 }
 
 func TestDefaultGoVersionM(t *testing.T) {
-	ctx := testctx.NewWithCfg(config.Project{
+	ctx := testctx.WrapWithCfg(t.Context(), config.Project{
 		ProjectName: "test",
 		Env:         []string{"KO_DOCKER_REPO=" + registry1},
 		Kos: []config.Ko{
@@ -97,13 +103,14 @@ func TestDefaultGoVersionM(t *testing.T) {
 			{ID: "test"},
 		},
 	})
+
 	require.NoError(t, Pipe{}.Default(ctx))
 	require.True(t, ctx.Deprecated)
 	require.Equal(t, "none", ctx.Config.Kos[0].SBOM)
 }
 
 func TestDefaultNoImage(t *testing.T) {
-	ctx := testctx.NewWithCfg(config.Project{
+	ctx := testctx.WrapWithCfg(t.Context(), config.Project{
 		ProjectName: "test",
 		Builds: []config.Build{
 			{
@@ -114,6 +121,7 @@ func TestDefaultNoImage(t *testing.T) {
 			{},
 		},
 	})
+
 	require.ErrorIs(t, Pipe{}.Default(ctx), errNoRepositories)
 }
 
@@ -123,25 +131,27 @@ func TestDescription(t *testing.T) {
 
 func TestSkip(t *testing.T) {
 	t.Run("skip ko set", func(t *testing.T) {
-		ctx := testctx.NewWithCfg(config.Project{
+		ctx := testctx.WrapWithCfg(t.Context(), config.Project{
 			Kos: []config.Ko{{}},
 		}, testctx.Skip(skips.Ko))
+
 		require.True(t, Pipe{}.Skip(ctx))
 	})
 	t.Run("skip no kos", func(t *testing.T) {
-		ctx := testctx.New()
+		ctx := testctx.Wrap(t.Context())
 		require.True(t, Pipe{}.Skip(ctx))
 	})
 	t.Run("dont skip", func(t *testing.T) {
-		ctx := testctx.NewWithCfg(config.Project{
+		ctx := testctx.WrapWithCfg(t.Context(), config.Project{
 			Kos: []config.Ko{{}},
 		})
+
 		require.False(t, Pipe{}.Skip(ctx))
 	})
 }
 
 func TestPublishPipeNoMatchingBuild(t *testing.T) {
-	ctx := testctx.NewWithCfg(config.Project{
+	ctx := testctx.WrapWithCfg(t.Context(), config.Project{
 		Builds: []config.Build{
 			{
 				ID: "doesnt matter",
@@ -166,11 +176,13 @@ func TestPublishPipeSuccess(t *testing.T) {
 
 	chainguardStaticLabels := map[string]string{
 		"dev.chainguard.package.main":      "",
+		"dev.chainguard.image.title":       "static",
 		"org.opencontainers.image.authors": "Chainguard Team https://www.chainguard.dev/",
 		"org.opencontainers.image.source":  "https://github.com/chainguard-images/images/tree/main/images/static",
 		"org.opencontainers.image.url":     "https://images.chainguard.dev/directory/image/static/overview",
 		"org.opencontainers.image.vendor":  "Chainguard",
 		"org.opencontainers.image.created": ".*",
+		"org.opencontainers.image.title":   "static",
 	}
 	baseImageAnnotations := map[string]string{
 		"org.opencontainers.image.base.name":   ".*",
@@ -180,6 +192,7 @@ func TestPublishPipeSuccess(t *testing.T) {
 	table := []struct {
 		Name                string
 		SBOM                string
+		SBOMDirectory       string
 		BaseImage           string
 		Labels              map[string]string
 		ExpectedLabels      map[string]string
@@ -190,15 +203,22 @@ func TestPublishPipeSuccess(t *testing.T) {
 		Tags                []string
 		CreationTime        string
 		KoDataCreationTime  string
+		LocalDomain         string
 	}{
 		{
 			// Must be first as others add an SBOM for the same image
-			Name: "sbom-none",
-			SBOM: "none",
+			Name:          "sbom-none",
+			SBOM:          "none",
+			SBOMDirectory: "",
 		},
 		{
 			Name: "sbom-spdx",
 			SBOM: "spdx",
+		},
+		{
+			Name:          "sbom-spdx-with-dir",
+			SBOM:          "spdx",
+			SBOMDirectory: "testdata/app/",
 		},
 		{
 			Name:      "base-image-is-not-index",
@@ -256,7 +276,7 @@ func TestPublishPipeSuccess(t *testing.T) {
 			if len(table.Tags) == 0 {
 				table.Tags = []string{table.Name}
 			}
-			ctx := testctx.NewWithCfg(config.Project{
+			ctx := testctx.WrapWithCfg(t.Context(), config.Project{
 				ProjectName: "test",
 				Builds: []config.Build{
 					{
@@ -264,7 +284,7 @@ func TestPublishPipeSuccess(t *testing.T) {
 						BuildDetails: config.BuildDetails{
 							Ldflags: []string{"-s", "-w"},
 							Flags:   []string{"-tags", "netgo"},
-							Env:     []string{"GOCACHE=" + t.TempDir()},
+							Env:     []string{"GOCACHE=" + gocacheOnce()},
 						},
 					},
 				},
@@ -283,6 +303,7 @@ func TestPublishPipeSuccess(t *testing.T) {
 						CreationTime:       table.CreationTime,
 						KoDataCreationTime: table.KoDataCreationTime,
 						SBOM:               table.SBOM,
+						SBOMDirectory:      table.SBOMDirectory,
 						Bare:               true,
 					},
 				},
@@ -430,7 +451,7 @@ func TestPublishPipeSuccess(t *testing.T) {
 func TestSnapshot(t *testing.T) {
 	testlib.SkipIfWindows(t, "ko doesn't work in windows")
 	testlib.CheckDocker(t)
-	ctx := testctx.NewWithCfg(config.Project{
+	ctx := testctx.WrapWithCfg(t.Context(), config.Project{
 		ProjectName: "test",
 		Builds: []config.Build{
 			{
@@ -438,7 +459,7 @@ func TestSnapshot(t *testing.T) {
 				BuildDetails: config.BuildDetails{
 					Ldflags: []string{"-s", "-w"},
 					Flags:   []string{"-tags", "netgo"},
-					Env:     []string{"GOCACHE=" + t.TempDir()},
+					Env:     []string{"GOCACHE=" + gocacheOnce()},
 				},
 			},
 		},
@@ -467,7 +488,7 @@ func TestSnapshot(t *testing.T) {
 func TestDisable(t *testing.T) {
 	testlib.SkipIfWindows(t, "ko doesn't work in windows")
 	testlib.CheckDocker(t)
-	ctx := testctx.NewWithCfg(config.Project{
+	ctx := testctx.WrapWithCfg(t.Context(), config.Project{
 		ProjectName: "test",
 		Builds: []config.Build{
 			{
@@ -475,7 +496,7 @@ func TestDisable(t *testing.T) {
 				BuildDetails: config.BuildDetails{
 					Ldflags: []string{"-s", "-w"},
 					Flags:   []string{"-tags", "netgo"},
-					Env:     []string{"GOCACHE=" + t.TempDir()},
+					Env:     []string{"GOCACHE=" + gocacheOnce()},
 				},
 			},
 		},
@@ -512,7 +533,7 @@ func TestDisable(t *testing.T) {
 func TestDisableInvalidTemplate(t *testing.T) {
 	testlib.SkipIfWindows(t, "ko doesn't work in windows")
 	testlib.CheckDocker(t)
-	ctx := testctx.NewWithCfg(config.Project{
+	ctx := testctx.WrapWithCfg(t.Context(), config.Project{
 		ProjectName: "test",
 		Builds:      []config.Build{{ID: "foo"}},
 		Kos: []config.Ko{
@@ -546,7 +567,7 @@ func TestKoValidateMainPathIssue4382(t *testing.T) {
 	require.ErrorIs(t, validateMainPath("./testdata/app/main.go"), errInvalidMainGoPath)
 
 	// testing with real context
-	ctxOk := testctx.NewWithCfg(config.Project{
+	ctxOk := testctx.WrapWithCfg(t.Context(), config.Project{
 		Builds: []config.Build{
 			{
 				ID:   "foo",
@@ -561,9 +582,10 @@ func TestKoValidateMainPathIssue4382(t *testing.T) {
 			},
 		},
 	})
+
 	require.NoError(t, Pipe{}.Default(ctxOk))
 
-	ctxWithInvalidMainPath := testctx.NewWithCfg(config.Project{
+	ctxWithInvalidMainPath := testctx.WrapWithCfg(t.Context(), config.Project{
 		Builds: []config.Build{
 			{
 				ID:   "foo",
@@ -578,12 +600,54 @@ func TestKoValidateMainPathIssue4382(t *testing.T) {
 			},
 		},
 	})
+
 	require.ErrorIs(t, Pipe{}.Default(ctxWithInvalidMainPath), errInvalidMainPath)
+}
+
+func TestPublishLocalBaseImage(t *testing.T) {
+	testlib.SkipIfWindows(t, "ko doesn't work in windows")
+	testlib.CheckDocker(t)
+	cmd := exec.Command("docker", "build", "-t", "local-base:latest", "-f", "./testdata/Dockerfile", ".")
+	output, err := cmd.CombinedOutput()
+	t.Cleanup(func() {
+		_ = exec.Command("docker", "rmi", "local-base:latest").Run()
+	})
+	require.NoError(t, err, string(output))
+
+	makeCtx := func() *context.Context {
+		return testctx.WrapWithCfg(t.Context(), config.Project{
+			Builds: []config.Build{
+				{
+					ID:   "foo",
+					Main: "./...",
+				},
+			},
+			Kos: []config.Ko{
+				{
+					ID:           "default",
+					Build:        "foo",
+					WorkingDir:   "./testdata/app/",
+					Repository:   "NOPE",
+					Repositories: []string{""},
+					Tags:         []string{"latest", "{{.Tag}}"},
+					BaseImage:    "local-base:latest",
+					SBOM:         "none",
+					Platforms:    []string{fmt.Sprintf("linux/%s", runtime.GOARCH)},
+				},
+			},
+		}, testctx.WithCurrentTag("v1.0.0"))
+	}
+
+	t.Run("use local base image", func(t *testing.T) {
+		ctx := makeCtx()
+		ctx.Snapshot = true
+		require.NoError(t, doBuild(ctx, ctx.Config.Kos[0]))
+	})
 }
 
 func TestPublishPipeError(t *testing.T) {
 	makeCtx := func() *context.Context {
-		return testctx.NewWithCfg(config.Project{
+		return testctx.WrapWithCfg(t.Context(), config.Project{
 			Builds: []config.Build{
 				{
 					ID:   "foo",
@@ -695,22 +759,37 @@ func TestPublishPipeError(t *testing.T) {
 		ctx := makeCtx()
 		require.NoError(t, Pipe{}.Default(ctx))
 		err := Pipe{}.Publish(ctx)
-		require.Error(t, err)
-		require.Contains(t, err.Error(), `Get "https://fakerepo:8080/v2/": dial tcp:`)
+		require.ErrorContains(t, err, `Get "https://fakerepo:8080/v2/": dial tcp:`)
 	})
 }
 
 func TestApplyTemplate(t *testing.T) {
 	t.Run("success", func(t *testing.T) {
-		foo, err := applyTemplate(testctx.NewWithCfg(config.Project{
+		foo, err := applyTemplate(testctx.WrapWithCfg(t.Context(), config.Project{
 			Env: []string{"FOO=bar"},
-		}), []string{"{{ .Env.FOO }}"})
+		}),
+
+			[]string{"{{ .Env.FOO }}"})
 		require.NoError(t, err)
 		require.Equal(t, []string{"bar"}, foo)
 	})
 	t.Run("error", func(t *testing.T) {
-		_, err := applyTemplate(testctx.New(), []string{"{{ .Nope}}"})
+		_, err := applyTemplate(testctx.Wrap(t.Context()), []string{"{{ .Nope}}"})
 		require.Error(t, err)
+	})
+}
+
+func TestGetLocalDomain(t *testing.T) {
+	t.Run("default local domain", func(t *testing.T) {
+		ko := config.Ko{}
+		got := getLocalDomain(ko)
+		require.Equal(t, "goreleaser.ko.local", got)
+	})
+
+	t.Run("custom local domain", func(t *testing.T) {
+		ko := config.Ko{LocalDomain: "custom.domain"}
+		got := getLocalDomain(ko)
+		require.Equal(t, "custom.domain", got)
 	})
 }
 
@@ -733,3 +812,11 @@ func compareMaps(t *testing.T, expected, actual map[string]string) {
 		require.Regexp(t, v, got, "key: %s", k)
 	}
 }
+
+var gocacheOnce = sync.OnceValue(func() string {
+	out, err := exec.CommandContext(stdctx.Background(), "go", "env", "GOCACHE").CombinedOutput()
+	if err == nil {
+		return strings.TrimSpace(string(out))
+	}
+	return ""
+})

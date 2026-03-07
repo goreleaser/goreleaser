@@ -9,10 +9,10 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func TestNew(t *testing.T) {
+func TestWrap(t *testing.T) {
 	t.Setenv("FOO", "NOT BAR")
 	t.Setenv("BAR", "1")
-	ctx := New(config.Project{
+	ctx := Wrap(t.Context(), config.Project{
 		Env: []string{
 			"FOO=BAR",
 		},
@@ -24,8 +24,8 @@ func TestNew(t *testing.T) {
 	require.Equal(t, runtime.GOARCH, ctx.Runtime.Goarch)
 }
 
-func TestNewWithTimeout(t *testing.T) {
-	ctx, cancel := NewWithTimeout(config.Project{}, time.Second)
+func TestWrapWithTimeout(t *testing.T) {
+	ctx, cancel := WrapWithTimeout(t.Context(), config.Project{}, time.Second)
 	require.NotEmpty(t, ctx.Env)
 	require.Equal(t, 4, ctx.Parallelism)
 	cancel()

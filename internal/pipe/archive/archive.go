@@ -115,15 +115,15 @@ func (Pipe) Run(ctx *context.Context) error {
 			continue
 		}
 
-		filter := []artifact.Filter{artifact.Or(
-			artifact.ByType(artifact.Binary),
-			artifact.ByType(artifact.UniversalBinary),
-			artifact.ByType(artifact.Header),
-			artifact.ByType(artifact.CArchive),
-			artifact.ByType(artifact.CShared),
-		)}
-		if len(archive.IDs) > 0 {
-			filter = append(filter, artifact.ByIDs(archive.IDs...))
+		filter := []artifact.Filter{
+			artifact.ByTypes(
+				artifact.Binary,
+				artifact.UniversalBinary,
+				artifact.Header,
+				artifact.CArchive,
+				artifact.CShared,
+			),
+			artifact.ByIDs(archive.IDs...),
 		}
 
 		isBinary := slices.Contains(archive.Formats, "binary")
@@ -246,6 +246,7 @@ func create(ctx *context.Context, arch config.Archive, binaries []*artifact.Arti
 			artifact.ExtraFormat:    format,
 			artifact.ExtraWrappedIn: wrap,
 			artifact.ExtraBinaries:  bins,
+			artifact.ExtraFiles:     listExtraFiles(files),
 		},
 	}
 	if len(binaries) > 0 {
@@ -262,10 +263,23 @@ func create(ctx *context.Context, arch config.Archive, binaries []*artifact.Arti
 		if rep, ok := binaries[0].Extra[artifact.ExtraReplaces]; ok {
 			art.Extra[artifact.ExtraReplaces] = rep
 		}
+		if slices.ContainsFunc(binaries, func(bin *artifact.Artifact) bool {
+			return artifact.ExtraOr(*bin, artifact.ExtranDynLink, false)
+		}) {
+			art.Extra[artifact.ExtranDynLink] = true
+		}
 	}
 
 	ctx.Artifacts.Add(art)
 	return nil
+}
+
+func listExtraFiles(files []config.File) []string {
+	result := make([]string, 0, len(files))
+	for _, f := range files {
+		result = append(result, f.Destination)
+	}
+	return result
 }
 
 func wrapFolder(a config.Archive) string {
@@ -313,6 +327,9 @@ func skip(ctx *context.Context, archive config.Archive, binaries []*artifact.Art
 		if rep, ok := binaries[0].Extra[artifact.ExtraReplaces]; ok {
 			art.Extra[artifact.ExtraReplaces] = rep
 		}
+		if artifact.ExtraOr(*binary, artifact.ExtranDynLink, false) {
+			art.Extra[artifact.ExtranDynLink] = true
+		}
 		ctx.Artifacts.Add(art)
 	}
 	return nil
@@ -320,6 +337,15 @@ func skip(ctx *context.Context, archive config.Archive, binaries []*artifact.Art
 
 func packageFormats(archive config.Archive, platform string) []string {
 	for _, override := range archive.FormatOverrides {
+		if override.Goos == "" {
+			log.Warn("override has no goos, ignoring")
+			continue
+		}
+		if len(override.Formats) == 0 {
+			log.WithField("goos", override.Goos).
+				Warn("override has no formats, ignoring")
+			continue
+		}
 		if strings.HasPrefix(platform, override.Goos) {
 			return override.Formats
 		}

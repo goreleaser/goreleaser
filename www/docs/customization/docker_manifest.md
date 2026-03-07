@@ -1,4 +1,7 @@
-# Docker Manifests
+# Docker Manifests (deprecated)
+
+> [Phasing out](./../deprecations.md#dockers) in v2.12.
+> [Docker Images v2](./dockers_v2.md) is preferred instead.
 
 GoReleaser can also create and push Docker multi-platform images using the
 `docker manifest` tool.
@@ -50,6 +53,25 @@ docker_manifests:
     # Extra flags to be passed down to the manifest push command.
     push_flags:
       - --insecure
+
+    # Retry configuration for manifest operations.
+    #
+    # <!-- md:inline_version v2.12 -->.
+    retry:
+      # Attempts of retry.
+      #
+      # Default: 10.
+      attempts: 5
+
+      # Delay between retry attempts.
+      #
+      # Default: 10s.
+      delay: 5s
+
+      # Maximum delay between retry attempts.
+      #
+      # Default: 5m.
+      max_delay: 2m
 
     # Skips the Docker manifest.
     # If you set this to `false` or `auto` on your source Docker configuration,

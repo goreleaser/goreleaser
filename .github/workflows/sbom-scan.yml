@@ -1,0 +1,33 @@
+name: sbom-scan
+on:
+  schedule:
+    - cron: "0 0 * * *"
+  workflow_dispatch:
+permissions: read-all
+jobs:
+  scan-sboms:
+    name: scan-release-sboms
+    runs-on: ubuntu-latest
+    permissions:
+      security-events: write
+    steps:
+      - id: release
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          RELEASE=$(gh release list -R goreleaser/goreleaser --exclude-pre-releases --limit 1 --json tagName | jq -r '.[0].tagName')
+          echo "tag=$RELEASE" >> $GITHUB_OUTPUT
+      - env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh release download -R goreleaser/goreleaser "${{ steps.release.outputs.tag }}" --pattern goreleaser_Linux_x86_64.tar.gz.sbom.json
+      - uses: anchore/scan-action@7037fa011853d5a11690026fb85feee79f4c946c # v7.3.2
+        id: scan
+        with:
+          sbom: goreleaser_Linux_x86_64.tar.gz.sbom.json
+          fail-build: true
+          severity-cutoff: critical
+      - if: always()
+        uses: github/codeql-action/upload-sarif@0d579ffd059c29b07949a3cce3983f0780820c98 # v4.32.6
+        with:
+          sarif_file: ${{ steps.scan.outputs.sarif }}

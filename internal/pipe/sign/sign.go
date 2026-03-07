@@ -14,11 +14,13 @@ import (
 
 	"github.com/caarlos0/log"
 	"github.com/goreleaser/goreleaser/v2/internal/artifact"
+	"github.com/goreleaser/goreleaser/v2/internal/gerrors"
 	"github.com/goreleaser/goreleaser/v2/internal/gio"
 	"github.com/goreleaser/goreleaser/v2/internal/git"
 	"github.com/goreleaser/goreleaser/v2/internal/ids"
 	"github.com/goreleaser/goreleaser/v2/internal/logext"
 	"github.com/goreleaser/goreleaser/v2/internal/pipe"
+	"github.com/goreleaser/goreleaser/v2/internal/redact"
 	"github.com/goreleaser/goreleaser/v2/internal/semerrgroup"
 	"github.com/goreleaser/goreleaser/v2/internal/skips"
 	"github.com/goreleaser/goreleaser/v2/internal/tmpl"
@@ -99,13 +101,16 @@ func (Pipe) Run(ctx *context.Context) error {
 					log.Warn("when artifacts is `source`, `ids` has no effect. ignoring")
 				}
 			case "all":
-				filters = append(filters, artifact.Or(
-					artifact.ByType(artifact.UploadableArchive),
-					artifact.ByType(artifact.UploadableBinary),
-					artifact.ByType(artifact.UploadableSourceArchive),
-					artifact.ByType(artifact.Checksum),
-					artifact.ByType(artifact.LinuxPackage),
-					artifact.ByType(artifact.SBOM),
+				filters = append(filters, artifact.ByTypes(
+					artifact.UploadableArchive,
+					artifact.UploadableBinary,
+					artifact.UploadableSourceArchive,
+					artifact.Makeself,
+					artifact.Checksum,
+					artifact.LinuxPackage,
+					artifact.SBOM,
+					artifact.PySdist,
+					artifact.PyWheel,
 				))
 			case "archive":
 				filters = append(filters, artifact.ByType(artifact.UploadableArchive))
@@ -121,9 +126,7 @@ func (Pipe) Run(ctx *context.Context) error {
 				return fmt.Errorf("invalid list of artifacts to sign: %s", cfg.Artifacts)
 			}
 
-			if len(cfg.IDs) > 0 {
-				filters = append(filters, artifact.ByIDs(cfg.IDs...))
-			}
+			filters = append(filters, artifact.ByIDs(cfg.IDs...))
 			return sign(ctx, cfg, ctx.Artifacts.Filter(artifact.And(filters...)).List())
 		})
 	}
@@ -238,22 +241,36 @@ func signone(ctx *context.Context, cfg config.Sign, art *artifact.Artifact) ([]*
 		log = log.WithField("certificate", cert)
 	}
 
+	output, err := tmpl.New(ctx).WithEnv(env).Bool(cfg.Output)
+	if err != nil {
+		return nil, fmt.Errorf("sign failed: %s: %w", art.Name, err)
+	}
+
 	// The GoASTScanner flags this as a security risk.
 	// However, this works as intended. The nosec annotation
 	// tells the scanner to ignore this.
 	// #nosec
 	cmd := exec.CommandContext(ctx, cfg.Cmd, args...)
+	cmd.Env = env.Strings()
+
 	var b bytes.Buffer
 	w := gio.Safe(&b)
-	cmd.Stderr = io.MultiWriter(logext.NewConditionalWriter(cfg.Output), w)
-	cmd.Stdout = io.MultiWriter(logext.NewConditionalWriter(cfg.Output), w)
+	cmd.Stderr = redact.Writer(io.MultiWriter(logext.NewConditionalWriter(output), w), cmd.Env)
+	cmd.Stdout = redact.Writer(io.MultiWriter(logext.NewConditionalWriter(output), w), cmd.Env)
 	if stdin != nil {
 		cmd.Stdin = stdin
 	}
-	cmd.Env = env.Strings()
 	log.Info("signing")
 	if err := cmd.Run(); err != nil {
-		return nil, fmt.Errorf("sign: %s failed: %w: %s", cfg.Cmd, err, b.String())
+		return nil, gerrors.Wrap(
+			err,
+			gerrors.WithMessage("could not sign artifact"),
+			gerrors.WithDetails(
+				"cmd", cfg.Cmd,
+				"artifact", art.Name,
+			),
+			gerrors.WithOutput(b.String()),
+		)
 	}
 
 	var result []*artifact.Artifact

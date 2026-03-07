@@ -1,4 +1,4 @@
-# Name Templates
+# Templates
 
 Several fields in GoReleaser's config file support templating.
 
@@ -29,7 +29,7 @@ In fields that support templates, these fields are always available:
 | `.Major`           | the major part of the version[^tag-is-semver]                                                              |
 | `.Minor`           | the minor part of the version[^tag-is-semver]                                                              |
 | `.Patch`           | the patch part of the version[^tag-is-semver]                                                              |
-| `.Prerelease`      | the prerelease part of the version, e.g. `beta`[^tag-is-semver]                                            |
+| `.Prerelease`      | the prerelease part of the version, e.g. `beta.1`[^tag-is-semver]                                          |
 | `.RawVersion`      | composed of `{Major}.{Minor}.{Patch}` [^tag-is-semver]                                                     |
 | `.ReleaseNotes`    | the generated release notes, available after the changelog step has been executed                          |
 | `.IsDraft`         | `true` if `release.draft` is set in the configuration, `false` otherwise                                   |
@@ -48,6 +48,7 @@ In fields that support templates, these fields are always available:
 | `.TagBody`         | the annotated tag message's body, or the message's body of the commit it points out[^git-tag-body]         |
 | `.Runtime.Goos`    | equivalent to `runtime.GOOS`                                                                               |
 | `.Runtime.Goarch`  | equivalent to `runtime.GOARCH`                                                                             |
+| `.Outputs`         | custom outputs (since v2.11)                                                                               |
 
 ## Common Fields (Pro)
 
@@ -61,6 +62,24 @@ In fields that support templates, these fields are always available:
 | `.IsRelease`           | `true` if regular release (not a nightly nor a snapshot) (since v2.8)      |
 | `.IsMerging`           | `true` if you are running with `--merge` (since v2.8)                      |
 | `.Artifacts`           | [the current artifacts list](#artifacts)                                   |
+| `.Metadata`            | [project metadata fields](#metadata) (since v2.13)                         |
+
+## Metadata
+
+<!-- md:featpro -->
+
+<!-- md:version v2.13 -->
+
+If you use the `.Metadata` field, it evaluates to the project metadata configuration.
+You can access all fields defined in the `metadata` section of your config:
+
+| Key                      | Description                     |
+| ------------------------ | ------------------------------- |
+| `.Metadata.Description`  | project description             |
+| `.Metadata.Homepage`     | project homepage URL            |
+| `.Metadata.License`      | project license                 |
+| `.Metadata.Maintainers`  | list of project maintainers     |
+| `.Metadata.ModTimestamp` | modification timestamp template |
 
 ## Artifacts
 
@@ -161,6 +180,23 @@ On all fields, you have these available functions:
 | `incminor "v1.2.4"`               | increments the minor of the given version[^panic-if-not-semver]                                                           |
 | `incmajor "v1.2.4"`               | increments the major of the given version[^panic-if-not-semver]                                                           |
 | `urlPathEscape "foo/bar"`         | escapes URL paths. See [PathEscape](https://pkg.go.dev/net/url#PathEscape) (since v2.5)                                   |
+| `blake2b .ArtifactPath`           | `blake2b` checksum of the artifact. See [Blake2b](https://pkg.go.dev/golang.org/x/crypto/blake2b) (since v2.9)            |
+| `blake2s .ArtifactPath`           | `blake2s` checksum of the artifact. See [Blake2s](https://pkg.go.dev/golang.org/x/crypto/blake2s) (since v2.9)            |
+| `crc32 .ArtifactPath`             | `crc32` checksum of the artifact. See [CRC32](https://pkg.go.dev/hash/crc32) (since v2.9)                                 |
+| `md5 .ArtifactPath`               | `md5` checksum of the artifact. See [MD5](https://pkg.go.dev/crypto/md5) (since v2.9)                                     |
+| `sha224 .ArtifactPath`            | `sha224` checksum of the artifact. See [SHA224](https://pkg.go.dev/crypto/sha256) (since v2.9)                            |
+| `sha384 .ArtifactPath`            | `sha384` checksum of the artifact. See [SHA384](https://pkg.go.dev/golang.org/x/crypto/sha3) (since v2.9)                 |
+| `sha256 .ArtifactPath`            | `sha256` checksum of the artifact. See [SHA256](https://pkg.go.dev/crypto/sha256) (since v2.9)                            |
+| `sha1 .ArtifactPath`              | `sha1` checksum of the artifact. See [SHA1](https://pkg.go.dev/crypto/sha1) (since v2.9)                                  |
+| `sha512 .ArtifactPath`            | `sha512` checksum of the artifact. See [SHA512](https://pkg.go.dev/crypto/sha512) (since v2.9)                            |
+| `sha3_224 .ArtifactPath`          | `sha3_224` checksum of the artifact. See [SHA3-224](https://pkg.go.dev/golang.org/x/crypto/sha3) (since v2.9)             |
+| `sha3_384 .ArtifactPath`          | `sha3_384` checksum of the artifact. See [SHA3-384](https://pkg.go.dev/golang.org/x/crypto/sha3) (since v2.9)             |
+| `sha3_256 .ArtifactPath`          | `sha3_256` checksum of the artifact. See [SHA3-256](https://pkg.go.dev/golang.org/x/crypto/sha3) (since v2.9)             |
+| `sha3_512 .ArtifactPath`          | `sha3_512` checksum of the artifact. See [SHA3-512](https://pkg.go.dev/golang.org/x/crypto/sha3) (since v2.9)             |
+| `mustReadFile "/foo/bar.txt"`     | reads the file contents or fails if it can't be read (since v2.12)                                                        |
+| `readFile "/foo/bar.txt"`         | reads the file contents if it it can be read, or return empty string (since v2.12)                                        |
+| `englishJoin`                     | will join multiple items in english (since v2.14)                                                                         |
+| `list "a" "b" "c"`                | makes a list of strings                                                                                                   |
 
 ## Functions (Pro)
 
@@ -168,7 +204,6 @@ On all fields, you have these available functions:
 
 | Usage                                | Description                                                                                                                                                                                                             |
 | ------------------------------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `list "a" "b" "c"`                   | makes a list of strings                                                                                                                                                                                                 |
 | `in (list "a" "b" "c") "b"`          | checks if a slice contains a value                                                                                                                                                                                      |
 | `reReplaceAll "(.*)" "foo" "bar-$1"` | compiles the first argument with [`regexp.Compile`](https://pkg.go.dev/regexp#Compile), then uses [`ReplaceAllString`](https://pkg.go.dev/regexp#Regexp.ReplaceAllStringFunc) with the following arguments (since v2.8) |
 

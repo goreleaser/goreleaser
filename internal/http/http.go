@@ -102,16 +102,24 @@ func CheckConfig(ctx *context.Context, upload *config.Upload, kind string) error
 		return misconfigured(kind, upload, "mode must be 'binary' or 'archive'")
 	}
 
-	username := getUsername(ctx, upload, kind)
-	password := getPassword(ctx, upload, kind)
+	username, err := getUsername(ctx, upload, kind)
+	if err != nil {
+		return fmt.Errorf("%s: could not get username: %w", upload.Name, err)
+	}
+
+	password, err := getPassword(ctx, upload, kind)
+	if err != nil {
+		return fmt.Errorf("%s: could not get password: %w", upload.Name, err)
+	}
+
 	passwordEnv := fmt.Sprintf("%s_%s_SECRET", strings.ToUpper(kind), strings.ToUpper(upload.Name))
 
 	if password != "" && username == "" {
-		return misconfigured(kind, upload, fmt.Sprintf("'username' is required when '%s' environment variable is set", passwordEnv))
+		return misconfigured(kind, upload, fmt.Sprintf("'username' is required when 'password' or the '%s' environment variable are set", passwordEnv))
 	}
 
 	if username != "" && password == "" {
-		return misconfigured(kind, upload, fmt.Sprintf("environment variable '%s' is required when 'username' is set", passwordEnv))
+		return misconfigured(kind, upload, fmt.Sprintf("either 'password' or environment variable '%s' are required when 'username' is set", passwordEnv))
 	}
 
 	if upload.TrustedCerts != "" && !x509.NewCertPool().AppendCertsFromPEM([]byte(upload.TrustedCerts)) {
@@ -135,19 +143,29 @@ func CheckConfig(ctx *context.Context, upload *config.Upload, kind string) error
 }
 
 // username is optional
-func getUsername(ctx *context.Context, upload *config.Upload, kind string) string {
-	if upload.Username != "" {
-		return upload.Username
+func getUsername(ctx *context.Context, upload *config.Upload, kind string) (string, error) {
+	username, err := tmpl.New(ctx).Apply(upload.Username)
+	if err != nil {
+		return "", err
 	}
-
+	if username != "" {
+		return username, nil
+	}
 	key := fmt.Sprintf("%s_%s_USERNAME", strings.ToUpper(kind), strings.ToUpper(upload.Name))
-	return ctx.Env[key]
+	return ctx.Env[key], nil
 }
 
 // password is optional
-func getPassword(ctx *context.Context, upload *config.Upload, kind string) string {
+func getPassword(ctx *context.Context, upload *config.Upload, kind string) (string, error) {
+	password, err := tmpl.New(ctx).Apply(upload.Password)
+	if err != nil {
+		return "", err
+	}
+	if password != "" {
+		return password, nil
+	}
 	key := fmt.Sprintf("%s_%s_SECRET", strings.ToUpper(kind), strings.ToUpper(upload.Name))
-	return ctx.Env[key]
+	return ctx.Env[key], nil
 }
 
 func misconfigured(kind string, upload *config.Upload, reason string) error {
@@ -185,39 +203,44 @@ func uploadOne(ctx *context.Context, upload config.Upload, kind string, check Re
 		return pipe.Skip("skip evaluates to true")
 	}
 
-	filters := []artifact.Filter{}
+	types := []artifact.Type{}
 	if upload.Checksum {
-		filters = append(filters, artifact.ByType(artifact.Checksum))
+		types = append(types, artifact.Checksum)
 	}
 	if upload.Meta {
-		filters = append(filters, artifact.ByType(artifact.Metadata))
+		types = append(types, artifact.Metadata)
 	}
 	if upload.Signature {
-		filters = append(filters, artifact.ByType(artifact.Signature), artifact.ByType(artifact.Certificate))
+		types = append(types, artifact.Signature, artifact.Certificate)
 	}
 	// We support two different modes
 	//	- "archive": Upload all artifacts
 	//	- "binary": Upload only the raw binaries
 	switch v := strings.ToLower(upload.Mode); v {
 	case ModeArchive:
-		filters = append(filters,
-			artifact.ByType(artifact.UploadableArchive),
-			artifact.ByType(artifact.UploadableSourceArchive),
-			artifact.ByType(artifact.LinuxPackage),
+		types = append(
+			types,
+			artifact.UploadableArchive,
+			artifact.UploadableSourceArchive,
+			artifact.Makeself,
+			artifact.LinuxPackage,
+			artifact.PySdist,
+			artifact.PyWheel,
 		)
 	case ModeBinary:
-		filters = append(filters, artifact.ByType(artifact.UploadableBinary))
+		types = append(types, artifact.UploadableBinary)
 	default:
 		return fmt.Errorf("%s: %s: mode \"%s\" not supported", upload.Name, kind, v)
 	}
 
-	filter := artifact.Or(filters...)
-	if len(upload.IDs) > 0 {
-		filter = artifact.And(filter, artifact.ByIDs(upload.IDs...))
-	}
-	if len(upload.Exts) > 0 {
-		filter = artifact.And(filter, artifact.ByExt(upload.Exts...))
-	}
+	filter := artifact.And(
+		artifact.ByTypes(types...),
+		artifact.ByIDs(upload.IDs...),
+		artifact.Or(
+			artifact.ByExts(upload.Exts...),
+			artifact.ByFormats(upload.Exts...),
+		),
+	)
 	if err := uploadWithFilter(ctx, &upload, filter, kind, check); err != nil {
 		return err
 	}
@@ -260,8 +283,14 @@ func uploadWithFilter(ctx *context.Context, upload *config.Upload, filter artifa
 func uploadAsset(ctx *context.Context, upload *config.Upload, artifact *artifact.Artifact, kind string, check ResponseChecker) error {
 	// username and secret are optional since the server may not support/need
 	// basic authentication always
-	username := getUsername(ctx, upload, kind)
-	secret := getPassword(ctx, upload, kind)
+	username, err := getUsername(ctx, upload, kind)
+	if err != nil {
+		return fmt.Errorf("%s: could not get username: %w", upload.Name, err)
+	}
+	secret, err := getPassword(ctx, upload, kind)
+	if err != nil {
+		return fmt.Errorf("%s: could not get password: %w", upload.Name, err)
+	}
 
 	// Generate the target url
 	targetURL, err := tmpl.New(ctx).WithArtifact(artifact).Apply(upload.Target)
@@ -302,6 +331,11 @@ func uploadAsset(ctx *context.Context, upload *config.Upload, artifact *artifact
 		headers[upload.ChecksumHeader] = sum
 	}
 
+	log.WithField("instance", upload.Name).
+		WithField("mode", upload.Mode).
+		WithField("file", artifact.Name).
+		Info("uploading")
+
 	res, err := uploadAssetToServer(ctx, upload, targetURL, username, secret, headers, asset, check)
 	if err != nil {
 		return fmt.Errorf("%s: %s: upload failed: %w", upload.Name, kind, err)
@@ -309,10 +343,6 @@ func uploadAsset(ctx *context.Context, upload *config.Upload, artifact *artifact
 	if err := res.Body.Close(); err != nil {
 		log.WithError(err).Warn("failed to close response body")
 	}
-
-	log.WithField("instance", upload.Name).
-		WithField("mode", upload.Mode).
-		Info("uploaded successful")
 
 	return nil
 }

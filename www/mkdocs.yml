@@ -25,6 +25,7 @@ theme:
   icon:
     admonition:
       example: material/professional-hexagon
+    annotation: material/star-four-points-circle
   palette:
     - media: "(prefers-color-scheme: light)" # Light mode
       scheme: default
@@ -57,7 +58,7 @@ plugins:
   - search
   - redirects:
       redirect_maps:
-        discord.md: https://discord.gg/rYWM4AZvy7
+        discord.md: https://discord.gg/RGEBtg8vQ6
         github.md: https://github.com/goreleaser
         linkedin.md: https://www.linkedin.com/company/goreleaser/
         mastodon.md: https://fosstodon.org/@goreleaser
@@ -67,10 +68,15 @@ plugins:
         l.md: https://www.linkedin.com/company/goreleaser/
         m.md: https://fosstodon.org/@goreleaser
         t.md: https://twitter.com/goreleaser
+        x.md: https://twitter.com/goreleaser
+        mcp.md: https://github.com/goreleaser/mcp
+        "customization/fury.md": customization/gemfury.md
         "customization/build.md": customization/builds/index.md
         "customization/rust-builds.md": customization/builds/rust.md
         "customization/zig-builds.md": customization/builds/zig.md
         "customization/deno-builds.md": customization/builds/deno.md
+        "customization/homebrew.md": customization/homebrew_casks.md
+        "cookbooks/cgo-and-crosscompiling.md": limitations/cgo.md
   - minify:
       minify_html: true
   - include-markdown
@@ -85,9 +91,6 @@ plugins:
 
 extra:
   generator: false
-  analytics:
-    provider: google
-    property: "G-3MZGQS8EPS"
   social:
     - icon: fontawesome/brands/x-twitter
       link: https://x.com/goreleaser
@@ -110,13 +113,15 @@ nav:
   - Documentation:
       - customization/index.md
       - General:
+          - customization/project.md
+          - customization/metadata.md
+          - customization/dist.md
+          - customization/artifacts.md
           - customization/includes.md
           - customization/templates.md
           - customization/templatefiles.md
           - customization/env.md
           - customization/hooks.md
-          - customization/dist.md
-          - customization/project.md
           - customization/git.md
           - Split & Merge: customization/partial.md
       - Build:
@@ -140,18 +145,22 @@ nav:
           - customization/archive.md
           - customization/source.md
           - Linux Packages: customization/nfpm.md
+          - Self-Extracting Archives: customization/makeself.md
           - customization/app_bundles.md
           - customization/dmg.md
+          - customization/pkg.md
           - customization/msi.md
+          - customization/nsis.md
           - customization/checksum.md
           - Snaps: customization/snapcraft.md
           - Chocolatey: customization/chocolatey.md
-          - Docker: customization/docker.md
-          - Docker Manifests: customization/docker_manifest.md
+          - customization/dockers_v2.md
+          - customization/docker.md
+          - customization/docker_manifest.md
+          - customization/docker_digests.md
           - Ko: customization/ko.md
       - SBOMs: customization/sbom.md
       - customization/reportsizes.md
-      - customization/metadata.md
       - Sign & Notarize:
           - Binaries: customization/binary_sign.md
           - Archives, installers, packages, and checksums: customization/sign.md
@@ -164,16 +173,18 @@ nav:
           - customization/nightlies.md
           - customization/blob.md
           - Cloudsmith: customization/cloudsmith.md
-          - Fury: customization/fury.md
+          - GemFury: customization/gemfury.md
           - customization/dockerhub.md
-          - customization/homebrew.md
+          - customization/homebrew_casks.md
+          - customization/homebrew_formulas.md
           - customization/winget.md
           - NUR: customization/nix.md
           - AUR: customization/aur.md
-          - customization/npm.md
           - AUR (Sources): customization/aursources.md
+          - customization/npm.md
           - Krew: customization/krew.md
           - Scoop: customization/scoop.md
+          - MCP: customization/mcp.md
           - customization/changelog.md
           - customization/upload.md
           - customization/artifactory.md
@@ -188,6 +199,7 @@ nav:
           - Introduction: customization/announce/index.md
           - customization/announce/bluesky.md
           - customization/announce/discord.md
+          - customization/announce/discourse.md
           - customization/announce/linkedin.md
           - customization/announce/mastodon.md
           - customization/announce/mattermost.md
@@ -240,7 +252,6 @@ nav:
           - cookbooks/builds-complex-envs.md
           - cookbooks/multi-platform-docker-images.md
           - cookbooks/build-go-modules.md
-          - cookbooks/cgo-and-crosscompiling.md
           - cookbooks/debconf-templates.md
           - cookbooks/using-jfrog-cli-to-publish-to-artifactory.md
           - cookbooks/publish-to-nexus.md

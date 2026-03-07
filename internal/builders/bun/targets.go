@@ -24,6 +24,7 @@ type Target struct {
 	Target string
 	Os     string
 	Arch   string
+	Abi    string
 	Type   string
 }
 
@@ -32,6 +33,7 @@ func (t Target) Fields() map[string]string {
 	return map[string]string{
 		tmpl.KeyOS:   t.Os,
 		tmpl.KeyArch: t.Arch,
+		"Abi":        t.Abi,
 		"Type":       t.Type,
 	}
 }
@@ -56,7 +58,15 @@ func (b *Builder) Parse(target string) (api.Target, error) {
 	}
 
 	if len(parts) > 2 {
-		t.Type = parts[2]
+		switch p := parts[2]; p {
+		case "musl":
+			t.Abi = p
+			if len(parts) > 3 {
+				t.Type = parts[3]
+			}
+		default:
+			t.Type = p
+		}
 	}
 
 	return t, nil

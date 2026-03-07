@@ -1,43 +1,48 @@
 name: generate
-
 on:
   workflow_dispatch: {}
-
-permissions:
-  contents: read
-
+  schedule:
+    - cron: "0 8 * * *"
+permissions: read-all
 jobs:
   docs:
     permissions:
-      contents: write
+      contents: read
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
         with:
           token: ${{ secrets.GH_PAT }}
-      - uses: actions/setup-go@0aaccfd150d50ccaeb58ebd88d36e91967a5f35b # v4
+      - uses: actions/setup-go@4b73464bb391d4059bd26b0524d20df3927bd417 # v6.3.0
         with:
-          go-version: stable
+          go-version-file: go.mod
           cache: true
-      - uses: arduino/setup-task@b91d5d2c96a56797b48ac1e0e89220bf64044611 # v1
+      - uses: go-task/setup-task@0ab1b2a65bc55236a3bc64cde78f80e20e8885c2 # v1.0.0
         with:
           version: 3.x
           repo-token: ${{ secrets.GITHUB_TOKEN }}
-      - run: "go install mvdan.cc/gofumpt@latest"
-      - run: "go install github.com/santhosh-tekuri/jsonschema/cmd/jv@latest"
+      - name: "install tools"
+        run: |
+          mkdir -p ~/bin
+          wget -O ~/bin/gofumpt https://github.com/mvdan/gofumpt/releases/download/v0.9.1/gofumpt_v0.9.1_linux_amd64
+          chmod +x ~/bin/gofumpt
+          wget -O jv.tar.gz https://github.com/santhosh-tekuri/jsonschema/releases/download/v6.0.2/jv-v6.0.2-linux-amd64.tar.gz
+          tar xzvf jv.tar.gz -C ~/bin jv
+          chmod +x ~/bin/jv
+          rm jv.tar.gz
+          echo "$HOME/bin" >> $GITHUB_PATH
       - run: task docs:releases
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      - uses: cachix/install-nix-action@v31
-        with:
-          github_access_token: ${{ secrets.GITHUB_TOKEN }}
       - run: task docs:generate
+      - run: task docs:sponsors
+        env:
+          GITHUB_TOKEN: ${{ secrets.SPONSORS_TOKEN }}
       - run: task schema:generate
-      - run: task nix:licenses:generate
-      - run: task nix:flake:update
       - run: task schema:validate
+      - run: task nix:licenses:generate
       - run: "git pull"
-      - uses: stefanzweifel/git-auto-commit-action@e348103e9026cc0eee72ae06630dbe30c8bf7a79 # v5
+      - uses: stefanzweifel/git-auto-commit-action@04702edda442b2e678b25b537cec683a1493fcb9 # v7.1.0
         with:
           commit_message: "chore: auto-update generated files"
           branch: main
@@ -51,7 +56,7 @@ jobs:
     if: ${{ failure() }}
     steps:
       - name: Notify
-        uses: nobrayner/discord-webhook@v1
+        uses: nobrayner/discord-webhook@1766a33bf571acdcc0678f00da4fb83aad01ebc7 # v1
         with:
           github-token: ${{ secrets.github_token }}
           title: "generate job failed"

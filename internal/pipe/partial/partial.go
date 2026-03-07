@@ -60,12 +60,14 @@ func getGoEnvFilter() string {
 		if !strings.HasSuffix(target, "_"+suffix) {
 			continue
 		}
+		var sb strings.Builder
 		for _, key := range keys {
 			if env := os.Getenv(key); env != "" {
-				target += "_" + env
+				sb.WriteString("_" + env)
 				break
 			}
 		}
+		target += sb.String()
 	}
 	return target
 }

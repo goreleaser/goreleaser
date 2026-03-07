@@ -21,12 +21,12 @@ func newSchemaCmd() *schemaCmd {
 	cmd := &cobra.Command{
 		Use:               "jsonschema",
 		Aliases:           []string{"schema"},
-		Short:             "outputs goreleaser's JSON schema",
+		Short:             "Outputs goreleaser's JSON schema",
 		SilenceUsage:      true,
 		SilenceErrors:     true,
 		Args:              cobra.NoArgs,
 		ValidArgsFunction: cobra.NoFileCompletions,
-		RunE: func(_ *cobra.Command, _ []string) error {
+		RunE: func(*cobra.Command, []string) error {
 			schema := jsonschema.Reflect(&config.Project{})
 			schema.Definitions["FileInfo"] = jsonschema.Reflect(&config.FileInfo{})
 			schema.Description = "goreleaser configuration definition file"

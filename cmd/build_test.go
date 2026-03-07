@@ -70,7 +70,7 @@ func TestSetupPipeline(t *testing.T) {
 		require.Equal(
 			t,
 			pipeline.BuildCmdPipeline,
-			setupPipeline(testctx.New(), buildOpts{}),
+			setupPipeline(testctx.Wrap(t.Context()), buildOpts{}),
 		)
 	})
 
@@ -78,7 +78,7 @@ func TestSetupPipeline(t *testing.T) {
 		require.Equal(
 			t,
 			pipeline.BuildCmdPipeline,
-			setupPipeline(testctx.New(), buildOpts{
+			setupPipeline(testctx.Wrap(t.Context()), buildOpts{
 				singleTarget: true,
 			}),
 		)
@@ -88,7 +88,7 @@ func TestSetupPipeline(t *testing.T) {
 		require.Equal(
 			t,
 			pipeline.BuildCmdPipeline,
-			setupPipeline(testctx.New(), buildOpts{
+			setupPipeline(testctx.Wrap(t.Context()), buildOpts{
 				singleTarget: true,
 				ids:          []string{"foo"},
 			}),
@@ -99,7 +99,7 @@ func TestSetupPipeline(t *testing.T) {
 		require.Equal(
 			t,
 			append(pipeline.BuildCmdPipeline, withOutputPipe{"foobar"}),
-			setupPipeline(testctx.New(), buildOpts{
+			setupPipeline(testctx.Wrap(t.Context()), buildOpts{
 				singleTarget: true,
 				ids:          []string{"foo"},
 				output:       ".",
@@ -112,9 +112,10 @@ func TestSetupPipeline(t *testing.T) {
 			t,
 			pipeline.BuildCmdPipeline,
 			setupPipeline(
-				testctx.NewWithCfg(config.Project{
+				testctx.WrapWithCfg(t.Context(), config.Project{
 					Builds: []config.Build{{}},
 				}),
+
 				buildOpts{
 					singleTarget: true,
 				},
@@ -127,7 +128,7 @@ func TestSetupPipeline(t *testing.T) {
 			t,
 			append(pipeline.BuildCmdPipeline, withOutputPipe{"foobar"}),
 			setupPipeline(
-				testctx.New(),
+				testctx.Wrap(t.Context()),
 				buildOpts{
 					singleTarget: true,
 					ids:          []string{"foo"},
@@ -142,9 +143,10 @@ func TestSetupPipeline(t *testing.T) {
 			t,
 			append(pipeline.BuildCmdPipeline, withOutputPipe{"zaz"}),
 			setupPipeline(
-				testctx.NewWithCfg(config.Project{
+				testctx.WrapWithCfg(t.Context(), config.Project{
 					Builds: []config.Build{{}},
 				}),
+
 				buildOpts{
 					singleTarget: true,
 					output:       "zaz",
@@ -156,7 +158,7 @@ func TestSetupPipeline(t *testing.T) {
 
 func TestBuildFlags(t *testing.T) {
 	setup := func(opts buildOpts) *context.Context {
-		ctx := testctx.New()
+		ctx := testctx.Wrap(t.Context())
 		require.NoError(t, setupBuildContext(ctx, opts))
 		return ctx
 	}
@@ -200,7 +202,7 @@ func TestBuildFlags(t *testing.T) {
 
 	t.Run("id", func(t *testing.T) {
 		t.Run("match", func(t *testing.T) {
-			ctx := testctx.NewWithCfg(config.Project{
+			ctx := testctx.WrapWithCfg(t.Context(), config.Project{
 				Builds: []config.Build{
 					{
 						ID: "default",
@@ -210,13 +212,14 @@ func TestBuildFlags(t *testing.T) {
 					},
 				},
 			})
+
 			require.NoError(t, setupBuildContext(ctx, buildOpts{
 				ids: []string{"foo"},
 			}))
 		})
 
 		t.Run("match-multiple", func(t *testing.T) {
-			ctx := testctx.NewWithCfg(config.Project{
+			ctx := testctx.WrapWithCfg(t.Context(), config.Project{
 				Builds: []config.Build{
 					{
 						ID: "default",
@@ -226,13 +229,14 @@ func TestBuildFlags(t *testing.T) {
 					},
 				},
 			})
+
 			require.NoError(t, setupBuildContext(ctx, buildOpts{
 				ids: []string{"foo", "default"},
 			}))
 		})
 
 		t.Run("match-partial", func(t *testing.T) {
-			ctx := testctx.NewWithCfg(config.Project{
+			ctx := testctx.WrapWithCfg(t.Context(), config.Project{
 				Builds: []config.Build{
 					{
 						ID: "default",
@@ -242,13 +246,14 @@ func TestBuildFlags(t *testing.T) {
 					},
 				},
 			})
+
 			require.NoError(t, setupBuildContext(ctx, buildOpts{
 				ids: []string{"foo", "notdefault"},
 			}))
 		})
 
 		t.Run("dont match", func(t *testing.T) {
-			ctx := testctx.NewWithCfg(config.Project{
+			ctx := testctx.WrapWithCfg(t.Context(), config.Project{
 				Builds: []config.Build{
 					{
 						ID: "foo",
@@ -258,26 +263,28 @@ func TestBuildFlags(t *testing.T) {
 					},
 				},
 			})
+
 			require.EqualError(t, setupBuildContext(ctx, buildOpts{
 				ids: []string{"bar", "fooz"},
 			}), "no builds with ids bar, fooz")
 		})
 
 		t.Run("default config", func(t *testing.T) {
-			ctx := testctx.New()
+			ctx := testctx.Wrap(t.Context())
 			require.NoError(t, setupBuildContext(ctx, buildOpts{
 				ids: []string{"aaa"},
 			}))
 		})
 
 		t.Run("single build config", func(t *testing.T) {
-			ctx := testctx.NewWithCfg(config.Project{
+			ctx := testctx.WrapWithCfg(t.Context(), config.Project{
 				Builds: []config.Build{
 					{
 						ID: "foo",
 					},
 				},
 			})
+
 			require.NoError(t, setupBuildContext(ctx, buildOpts{
 				ids: []string{"not foo but doesnt matter"},
 			}))

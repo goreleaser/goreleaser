@@ -32,17 +32,26 @@ changelog:
   #
   # Default:
   #    if 'git': '{{ .SHA }} {{ .Message }}'
-  #   otherwise: '{{ .SHA }}: {{ .Message }} ({{ with .AuthorUsername }}@{{ . }}{{ else }}{{ .AuthorName }} <{{ .AuthorEmail }}>{{ end }})'.
+  #   otherwise: '{{ .SHA }}: {{ .Message }} ({{ with .Author.Username }}@{{ . }}{{ else }}{{ .Author.Name }} <{{ .Author.Email }}>{{ end }})'.
   #
   # Extra template fields:
   # - `SHA`: the commit SHA1
   # - `Message`: the first line of the commit message, otherwise known as commit subject
+  # - `Authors`: all authors of the commit
+  # - `Logins`: all non-empty logins of the authors of the commit, prefixed with an '@' (not available if 'git') (since v2.14)
+  #
+  # An `Author` is composed of:
+  # - `Name`: the author full name (considers mailmap if 'git')
+  # - `Email`: the author email (considers mailmap if 'git')
+  # - `Username`: github/gitlab/gitea username - not available if 'git', might be empty
+  #
+  # Deprecated in v2.14:
   # - `AuthorName`: the author full name (considers mailmap if 'git')
   # - `AuthorEmail`: the author email (considers mailmap if 'git')
   # - `AuthorUsername`: github/gitlab/gitea username - not available if 'git'
   #
-  # Usage with 'git': <!-- md:inline_version v2.8 -->.
-  format: "{{.SHA}}: {{.Message}} (@{{.AuthorUsername}})"
+  # Usage with 'github': <!-- md:inline_version v2.8 -->.
+  format: "{{.SHA}}: {{.Message}}{{ if .Logins }} ({{ .Logins | englishJoin }}){{ end }}"
 
   # Sorts the changelog by the commit's messages.
   # Could either be asc, desc or empty
@@ -76,6 +85,14 @@ changelog:
   ai:
     use: anthropic
     prompt: "The prompt..."
+
+  # Title of the changelog.
+  #
+  # Default: "Changelog".
+  # <!-- md:inline_pro -->.
+  # <!-- md:inline_version v2.12 -->.
+  # Templates: allowed.
+  title: "Release Notes"
 
   # Group commits messages by given regex and title.
   # Order value defines the order of the groups.
@@ -161,8 +178,6 @@ changelog:
 
 <!-- md:version v2.6 -->
 
-<!-- md:alpha -->
-
 You can also use AI to enhance your release notes:
 
 ```yaml title=".goreleaser.yaml"
@@ -211,6 +226,10 @@ to not use emojis.
 You can of course set anything you wish makes sense in the `prompt` field.
 Don't forget to give it the current release notes as well, available as
 `{{ .ReleaseNotes }}`.
+
+This is the [default
+prompt](https://gist.githubusercontent.com/caarlos0/419c8cb2bab28f7c53c7e228af3ab219/raw/70e3e7f0ba85b02a23692d150e3a0d1752c79d64/prompt.md)
+in case you're interested.
 
 You can test this by using the
 [`goreleaser changelog` command](../cmd/goreleaser_changelog.md).

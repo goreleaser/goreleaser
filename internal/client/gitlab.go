@@ -13,6 +13,7 @@ import (
 	"github.com/Masterminds/semver/v3"
 	"github.com/caarlos0/log"
 	"github.com/goreleaser/goreleaser/v2/internal/artifact"
+	"github.com/goreleaser/goreleaser/v2/internal/changelog"
 	"github.com/goreleaser/goreleaser/v2/internal/tmpl"
 	"github.com/goreleaser/goreleaser/v2/pkg/config"
 	"github.com/goreleaser/goreleaser/v2/pkg/context"
@@ -78,12 +79,16 @@ func newGitLab(ctx *context.Context, token string, opts ...gitlab.ClientOptionFu
 }
 
 func isV17(client *gitlab.Client) bool {
-	v, _, err := client.Version.GetVersion(nil)
-	if err != nil {
-		log.WithError(err).Warn("could not get gitlab version")
-		return false
+	v := os.Getenv("CI_SERVER_VERSION")
+	if v == "" {
+		gitlabVersion, _, err := client.Version.GetVersion(nil)
+		if err != nil {
+			log.WithError(err).Warn("could not get gitlab version")
+			return false
+		}
+		v = gitlabVersion.Version
 	}
-	vv, err := semver.NewVersion(v.Version)
+	vv, err := semver.NewVersion(v)
 	if err != nil {
 		log.WithError(err).Warn("could not parse gitlab version")
 		return false
@@ -113,12 +118,17 @@ func (c *gitlabClient) Changelog(_ *context.Context, repo Repo, prev, current st
 	}
 
 	for _, commit := range result.Commits {
-		log = append(log, ChangelogItem{
-			SHA:         commit.ID,
-			Message:     strings.Split(commit.Message, "\n")[0],
-			AuthorName:  commit.AuthorName,
-			AuthorEmail: commit.AuthorEmail,
-		})
+		log = append(log, fillDeprecated(ChangelogItem{
+			SHA:     commit.ID,
+			Message: strings.Split(commit.Message, "\n")[0],
+			Authors: append(
+				[]Author{{
+					Name:  commit.AuthorName,
+					Email: commit.AuthorEmail,
+				}},
+				changelog.ExtractCoAuthors(commit.Message)...,
+			),
+		}))
 	}
 	return log, nil
 }
@@ -527,7 +537,7 @@ func (c *gitlabClient) Upload(
 		linkURL = c.client.BaseURL().String() + baseLinkURL
 	} else {
 		log.WithField("file", file.Name()).Debug("uploading file as attachment")
-		projectFile, _, err := c.client.Projects.UploadFile(
+		projectFile, _, err := c.client.ProjectMarkdownUploads.UploadProjectMarkdown(
 			projectID,
 			file,
 			filepath.Base(file.Name()),
@@ -658,7 +668,7 @@ func (c *gitlabClient) OpenPullRequest(
 	if err := c.checkIsPrivateToken(); err != nil {
 		return fmt.Errorf("open merge request: %w", err)
 	}
-	var targetProjectID int
+	var targetProjectID int64
 	if base.Owner != "" {
 		fullProjectPath := fmt.Sprintf("%s/%s", base.Owner, base.Name)
 
@@ -698,6 +708,7 @@ func (c *gitlabClient) OpenPullRequest(
 		SourceBranch: &head.Branch,
 		TargetBranch: &base.Branch,
 		Title:        &title,
+		Description:  gitlab.Ptr(prFooter),
 	}
 
 	if targetProjectID != 0 {

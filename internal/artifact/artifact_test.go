@@ -68,6 +68,11 @@ func TestFilter(t *testing.T) {
 			Goarch: "arm",
 		},
 		{
+			Name:   "foo",
+			Goos:   "darwin",
+			Goarch: "arm64",
+		},
+		{
 			Name:    "bar",
 			Goarch:  "amd64",
 			Goamd64: "v1",
@@ -131,26 +136,34 @@ func TestFilter(t *testing.T) {
 	}
 
 	require.Len(t, artifacts.Filter(ByGoos("linux")).items, 1)
-	require.Len(t, artifacts.Filter(ByGoos("darwin")).items, 2)
+	require.Len(t, artifacts.Filter(ByGoos("darwin")).items, 3)
+	require.Len(t, artifacts.Filter(ByGooses("linux", "darwin")).items, 4)
 
 	require.Len(t, artifacts.Filter(ByGoarch("amd64")).items, 5)
 	require.Empty(t, artifacts.Filter(ByGoarch("386")).items)
+	require.Len(t, artifacts.Filter(ByGoarches("arm64", "amd64")).items, 6)
 
 	require.Len(t, artifacts.Filter(And(ByGoarch("amd64"), ByGoamd64("v1"))).items, 2)
+	require.Len(t, artifacts.Filter(ByGoamd64s("v2", "v3")).items, 2)
 	require.Len(t, artifacts.Filter(ByGoamd64("v2")).items, 1)
 	require.Len(t, artifacts.Filter(ByGoamd64("v3")).items, 1)
 	require.Len(t, artifacts.Filter(ByGoamd64("v4")).items, 1)
 
 	require.Len(t, artifacts.Filter(And(ByGoarch("arm"), ByGoarm("6"))).items, 3)
 	require.Empty(t, artifacts.Filter(ByGoarm("7")).items)
+	require.Len(t, artifacts.Filter(ByGoarms("6", "7")).items, 3)
 
 	require.Len(t, artifacts.Filter(ByType(Checksum)).items, 2)
 	require.Empty(t, artifacts.Filter(ByType(Binary)).items)
+	require.Len(t, artifacts.Filter(ByTypes(Binary, Checksum)).items, 2)
 
-	require.Len(t, artifacts.Filter(OnlyReplacingUnibins).items, 11)
-	require.Len(t, artifacts.Filter(And(OnlyReplacingUnibins, ByGoos("darwin"))).items, 1)
+	require.Len(t, artifacts.Filter(OnlyReplacingUnibins).items, 12)
+	require.Len(t, artifacts.Filter(And(OnlyReplacingUnibins, ByGoos("darwin"))).items, 2)
+	require.Len(t, artifacts.Filter(And(Not(ByGoos("linux")), ByGoarch("arm64"))).items, 1)
 
-	require.Len(t, artifacts.Filter(nil).items, 12)
+	require.Len(t, artifacts.Filter(nil).items, 13)
+	require.Len(t, artifacts.Filter(Or(nil)).items, 13)
+	require.Len(t, artifacts.Filter(And(nil)).items, 13)
 
 	require.Len(t, artifacts.Filter(
 		And(
@@ -380,6 +393,35 @@ func TestGroupByPlatform_mixingBuilders(t *testing.T) {
 	require.Len(t, groups["linuxarm"], 2)
 }
 
+func TestGroupByPlatform_abi(t *testing.T) {
+	data := []*Artifact{
+		{
+			Name:   "foo",
+			Goos:   "linux",
+			Goarch: "amd64",
+			Extra: map[string]any{
+				"Abi": "musl",
+			},
+		},
+		{
+			Name:   "foo",
+			Goos:   "linux",
+			Goarch: "amd64",
+			Extra: map[string]any{
+				"Abi": "gnu",
+			},
+		},
+	}
+	artifacts := New()
+	for _, a := range data {
+		artifacts.Add(a)
+	}
+	groups := artifacts.GroupByPlatform()
+	require.Len(t, groups, 2)
+	require.Len(t, groups["linuxamd64musl"], 1)
+	require.Len(t, groups["linuxamd64gnu"], 1)
+}
+
 func TestChecksum(t *testing.T) {
 	folder := t.TempDir()
 	file := filepath.Join(folder, "subject")
@@ -410,6 +452,21 @@ func TestChecksum(t *testing.T) {
 			require.Equal(t, result, sum)
 		})
 	}
+}
+
+func TestChecksumSetArtifactExtra(t *testing.T) {
+	folder := t.TempDir()
+	file := filepath.Join(folder, "subject")
+	require.NoError(t, os.WriteFile(file, []byte("lorem ipsum"), 0o644))
+	artifact := Artifact{
+		Path:  file,
+		Extra: nil,
+	}
+
+	sum, err := artifact.Checksum("crc32")
+	require.NoError(t, err)
+	require.Equal(t, "72d7748e", sum)
+	require.Equal(t, Extras{ExtraChecksum: "crc32:72d7748e"}, artifact.Extra)
 }
 
 func TestChecksumFileDoesntExist(t *testing.T) {
@@ -537,9 +594,11 @@ func TestByIDs(t *testing.T) {
 		artifacts.Add(a)
 	}
 
-	require.Len(t, artifacts.Filter(ByIDs("check")).items, 2)
+	require.Len(t, artifacts.Filter(ByID("check")).items, 2)
+	require.Len(t, artifacts.Filter(ByID("foo")).items, 3)
 	require.Len(t, artifacts.Filter(ByIDs("foo")).items, 3)
 	require.Len(t, artifacts.Filter(ByIDs("foo", "bar")).items, 4)
+	require.Len(t, artifacts.Filter(ByIDs()).items, 5)
 }
 
 func TestByExts(t *testing.T) {
@@ -574,7 +633,9 @@ func TestByExts(t *testing.T) {
 
 	require.Len(t, artifacts.Filter(ByExt("deb")).items, 2)
 	require.Len(t, artifacts.Filter(ByExt("rpm")).items, 1)
-	require.Len(t, artifacts.Filter(ByExt("rpm", ".deb")).items, 3)
+	require.Len(t, artifacts.Filter(ByExts("rpm")).items, 1)
+	require.Len(t, artifacts.Filter(ByExts("rpm", ".deb")).items, 3)
+	require.Len(t, artifacts.Filter(ByExts()).items, 4)
 	require.Empty(t, artifacts.Filter(ByExt("foo")).items)
 }
 
@@ -1009,7 +1070,7 @@ func TestArtifactStringer(t *testing.T) {
 }
 
 func TestArtifactTypeStringer(t *testing.T) {
-	for i := 1; i <= 30; i++ {
+	for i := 1; i < int(lastMarker); i++ {
 		t.Run(fmt.Sprintf("type-%d-%s", i, Type(i).String()), func(t *testing.T) {
 			require.NotEqual(t, "unknown", Type(i).String())
 		})
@@ -1021,15 +1082,20 @@ func TestArtifactTypeStringer(t *testing.T) {
 }
 
 func TestArtifactTypeIsUploadable(t *testing.T) {
-	nonUploadable := []int{
-		int(Binary),
-		int(Metadata),
-		int(SrcInfo),
-		int(UniversalBinary),
+	nonUploadable := []Type{
+		Binary,
+		Metadata,
+		SrcInfo,
+		SourceSrcInfo,
+		PkgBuild,
+		SourcePkgBuild,
+		UniversalBinary,
+		DockerImage,
+		Snapcraft,
 	}
-	for i := 1; i <= 30; i++ {
-		up := Type(i).isUploadable()
-		t.Run(fmt.Sprintf("%s-%v", Type(i).String(), up), func(t *testing.T) {
+	for i := range lastMarker - 1 {
+		up := i.isUploadable()
+		t.Run(fmt.Sprintf("%s-%v", i.String(), up), func(t *testing.T) {
 			if slices.Contains(nonUploadable, i) {
 				require.False(t, up)
 				return

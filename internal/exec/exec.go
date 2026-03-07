@@ -3,18 +3,19 @@ package exec
 
 import (
 	"bytes"
-	"fmt"
 	"io"
 	"os"
 	"os/exec"
 
-	"github.com/caarlos0/go-shellwords"
 	"github.com/caarlos0/log"
+	"github.com/goreleaser/go-shellwords"
 	"github.com/goreleaser/goreleaser/v2/internal/artifact"
 	"github.com/goreleaser/goreleaser/v2/internal/extrafiles"
+	"github.com/goreleaser/goreleaser/v2/internal/gerrors"
 	"github.com/goreleaser/goreleaser/v2/internal/gio"
 	"github.com/goreleaser/goreleaser/v2/internal/logext"
 	"github.com/goreleaser/goreleaser/v2/internal/pipe"
+	"github.com/goreleaser/goreleaser/v2/internal/redact"
 	"github.com/goreleaser/goreleaser/v2/internal/semerrgroup"
 	"github.com/goreleaser/goreleaser/v2/internal/tmpl"
 	"github.com/goreleaser/goreleaser/v2/pkg/config"
@@ -51,7 +52,7 @@ func executePublisher(ctx *context.Context, publisher config.Publisher) error {
 	}
 
 	log.Debugf("filtering %d artifacts", len(ctx.Artifacts.List()))
-	artifacts := filterArtifacts(ctx.Artifacts, publisher)
+	artifacts := filterArtifacts(ctx, publisher)
 
 	extraFiles, err := extrafiles.Find(ctx, publisher.ExtraFiles)
 	if err != nil {
@@ -104,50 +105,57 @@ func executeCommand(c *command, artifact *artifact.Artifact) error {
 
 	var b bytes.Buffer
 	w := gio.Safe(&b)
-	cmd.Stderr = io.MultiWriter(logext.NewWriter(), w)
-	cmd.Stdout = io.MultiWriter(logext.NewWriter(), w)
+	cmd.Stderr = redact.Writer(io.MultiWriter(logext.NewWriter(), w), cmd.Env)
+	cmd.Stdout = redact.Writer(io.MultiWriter(logext.NewWriter(), w), cmd.Env)
 
 	log := log.WithField("cmd", c.Args[0]).
 		WithField("artifact", artifact.Name)
 
 	log.Info("publishing")
 	if err := cmd.Run(); err != nil {
-		return fmt.Errorf("publishing: %s failed: %w: %s", c.Args[0], err, b.String())
+		return gerrors.Wrap(
+			err,
+			gerrors.WithMessage("publishing failed"),
+			gerrors.WithDetails("cmd", cmd.Args[0]),
+			gerrors.WithOutput(b.String()),
+		)
 	}
 
 	log.Debug("command finished successfully")
 	return nil
 }
 
-func filterArtifacts(artifacts *artifact.Artifacts, publisher config.Publisher) []*artifact.Artifact {
-	filters := []artifact.Filter{
-		artifact.ByType(artifact.UploadableArchive),
-		artifact.ByType(artifact.UploadableFile),
-		artifact.ByType(artifact.LinuxPackage),
-		artifact.ByType(artifact.UploadableBinary),
-		artifact.ByType(artifact.DockerImage),
-		artifact.ByType(artifact.DockerManifest),
+func filterArtifacts(ctx *context.Context, publisher config.Publisher) []*artifact.Artifact {
+	types := []artifact.Type{
+		artifact.UploadableArchive,
+		artifact.UploadableFile,
+		artifact.LinuxPackage,
+		artifact.UploadableBinary,
+		artifact.DockerImage,
+		artifact.DockerManifest,
+		artifact.DockerImageV2,
+		artifact.UploadableSourceArchive,
+		artifact.SBOM,
+		artifact.PySdist,
+		artifact.PyWheel,
 	}
 
 	if publisher.Checksum {
-		filters = append(filters, artifact.ByType(artifact.Checksum))
+		types = append(types, artifact.Checksum)
 	}
 
 	if publisher.Meta {
-		filters = append(filters, artifact.ByType(artifact.Metadata))
+		types = append(types, artifact.Metadata)
 	}
 
 	if publisher.Signature {
-		filters = append(filters, artifact.ByType(artifact.Signature), artifact.ByType(artifact.Certificate))
+		types = append(types, artifact.Signature, artifact.Certificate)
 	}
 
-	filter := artifact.Or(filters...)
-
-	if len(publisher.IDs) > 0 {
-		filter = artifact.And(filter, artifact.ByIDs(publisher.IDs...))
-	}
-
-	return artifacts.Filter(filter).List()
+	return ctx.Artifacts.Filter(artifact.And(
+		artifact.ByTypes(types...),
+		artifact.ByIDs(publisher.IDs...),
+	)).List()
 }
 
 type command struct {

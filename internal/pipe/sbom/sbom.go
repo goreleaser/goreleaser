@@ -13,9 +13,12 @@ import (
 
 	"github.com/caarlos0/log"
 	"github.com/goreleaser/goreleaser/v2/internal/artifact"
+	"github.com/goreleaser/goreleaser/v2/internal/gerrors"
 	"github.com/goreleaser/goreleaser/v2/internal/gio"
 	"github.com/goreleaser/goreleaser/v2/internal/ids"
 	"github.com/goreleaser/goreleaser/v2/internal/logext"
+	"github.com/goreleaser/goreleaser/v2/internal/pipe"
+	"github.com/goreleaser/goreleaser/v2/internal/redact"
 	"github.com/goreleaser/goreleaser/v2/internal/semerrgroup"
 	"github.com/goreleaser/goreleaser/v2/internal/skips"
 	"github.com/goreleaser/goreleaser/v2/internal/tmpl"
@@ -29,7 +32,7 @@ var passthroughEnvVars = []string{"HOME", "USER", "USERPROFILE", "TMPDIR", "TMP"
 // Pipe that catalogs common artifacts as an SBOM.
 type Pipe struct{}
 
-func (Pipe) String() string { return "cataloging artifacts" }
+func (Pipe) String() string { return "software bill of materials" }
 func (Pipe) Skip(ctx *context.Context) bool {
 	return skips.Any(ctx, skips.SBOM) || len(ctx.Config.SBOMs) == 0
 }
@@ -74,7 +77,7 @@ func setConfigDefaults(cfg *config.SBOM) error {
 	}
 	if cfg.Cmd == "syft" {
 		if len(cfg.Args) == 0 {
-			cfg.Args = []string{"$artifact", "--output", "spdx-json=$document"}
+			cfg.Args = []string{"$artifact", "--output", "spdx-json=$document", "--enrich", "all"}
 		}
 		if len(cfg.Env) == 0 && (cfg.Artifacts == "source" || cfg.Artifacts == "archive") {
 			cfg.Env = []string{
@@ -85,7 +88,6 @@ func setConfigDefaults(cfg *config.SBOM) error {
 	if cfg.ID == "" {
 		cfg.ID = "default"
 	}
-
 	if cfg.Artifacts != "any" && len(cfg.Documents) > 1 {
 		return fmt.Errorf("multiple SBOM outputs when artifacts=%q is unsupported", cfg.Artifacts)
 	}
@@ -94,50 +96,55 @@ func setConfigDefaults(cfg *config.SBOM) error {
 
 // Run executes the Pipe.
 func (Pipe) Run(ctx *context.Context) error {
-	g := semerrgroup.New(ctx.Parallelism)
+	g := semerrgroup.NewSkipAware(semerrgroup.New(ctx.Parallelism))
 	for _, cfg := range ctx.Config.SBOMs {
-		g.Go(catalogTask(ctx, cfg))
+		g.Go(func() error { return catalogTask(ctx, cfg) })
 	}
 	return g.Wait()
 }
 
-func catalogTask(ctx *context.Context, cfg config.SBOM) func() error {
-	return func() error {
-		var filters []artifact.Filter
-		switch cfg.Artifacts {
-		case "source":
-			filters = append(filters, artifact.ByType(artifact.UploadableSourceArchive))
-			if len(cfg.IDs) > 0 {
-				log.Warn("when artifacts is `source`, `ids` has no effect. ignoring")
-			}
-		case "archive":
-			filters = append(filters, artifact.ByType(artifact.UploadableArchive))
-		case "binary":
-			filters = append(filters, artifact.ByBinaryLikeArtifacts(ctx.Artifacts))
-		case "package":
-			filters = append(filters, artifact.ByType(artifact.LinuxPackage))
-		case "any":
-			newArtifacts, err := catalogArtifact(ctx, cfg, nil)
-			if err != nil {
-				return err
-			}
-			for _, newArtifact := range newArtifacts {
-				ctx.Artifacts.Add(newArtifact)
-			}
-			return nil
-		default:
-			return fmt.Errorf("invalid list of artifacts to catalog: %s", cfg.Artifacts)
-		}
-
-		if len(cfg.IDs) > 0 {
-			filters = append(filters, artifact.ByIDs(cfg.IDs...))
-		}
-		artifacts := ctx.Artifacts.Filter(artifact.And(filters...)).List()
-		if len(artifacts) == 0 {
-			log.Warn("no artifacts matching current filters")
-		}
-		return catalog(ctx, cfg, artifacts)
+func catalogTask(ctx *context.Context, cfg config.SBOM) error {
+	disabled, err := tmpl.New(ctx).Bool(cfg.Disable)
+	if err != nil {
+		return err
 	}
+	if disabled {
+		return pipe.Skip("configuration is disabled")
+	}
+	var filters []artifact.Filter
+	switch cfg.Artifacts {
+	case "source":
+		filters = append(filters, artifact.ByType(artifact.UploadableSourceArchive))
+		if len(cfg.IDs) > 0 {
+			log.Warn("when artifacts is `source`, `ids` has no effect. ignoring")
+		}
+	case "archive":
+		filters = append(filters, artifact.ByType(artifact.UploadableArchive))
+	case "binary":
+		filters = append(filters, artifact.ByBinaryLikeArtifacts(ctx.Artifacts))
+	case "package":
+		filters = append(filters, artifact.ByType(artifact.LinuxPackage))
+	case "any":
+		newArtifacts, err := catalogArtifact(ctx, cfg, nil)
+		if err != nil {
+			return err
+		}
+		for _, newArtifact := range newArtifacts {
+			ctx.Artifacts.Add(newArtifact)
+		}
+		return nil
+	default:
+		return fmt.Errorf("invalid list of artifacts to catalog: %s", cfg.Artifacts)
+	}
+
+	if len(cfg.IDs) > 0 {
+		filters = append(filters, artifact.ByIDs(cfg.IDs...))
+	}
+	artifacts := ctx.Artifacts.Filter(artifact.And(filters...)).List()
+	if len(artifacts) == 0 {
+		log.Warn("no artifacts matching current filters")
+	}
+	return catalog(ctx, cfg, artifacts)
 }
 
 func catalog(ctx *context.Context, cfg config.SBOM, artifacts []*artifact.Artifact) error {
@@ -209,15 +216,23 @@ func catalogArtifact(ctx *context.Context, cfg config.SBOM, a *artifact.Artifact
 
 	var b bytes.Buffer
 	w := gio.Safe(&b)
-	cmd.Stderr = io.MultiWriter(logext.NewWriter(), w)
-	cmd.Stdout = io.MultiWriter(logext.NewWriter(), w)
+	cmd.Stderr = redact.Writer(io.MultiWriter(logext.NewWriter(), w), cmd.Env)
+	cmd.Stdout = redact.Writer(io.MultiWriter(logext.NewWriter(), w), cmd.Env)
 
 	log.WithField("cmd", cfg.Cmd).
-		WithField("artifact", artifactDisplayName).
-		WithField("sbom", names).
+		WithField("sbom", strings.Join(names, "\n")).
 		Info("cataloging")
 	if err := cmd.Run(); err != nil {
-		return nil, fmt.Errorf("cataloging artifacts: %s failed: %w: %s", cfg.Cmd, err, b.String())
+		return nil, gerrors.Wrap(
+			err,
+			gerrors.WithMessage("could not catalog artifact"),
+			gerrors.WithDetails(
+				"cmd", cfg.Cmd,
+				"artifact", artifactDisplayName,
+				"sbom", names,
+			),
+			gerrors.WithOutput(b.String()),
+		)
 	}
 
 	var artifacts []*artifact.Artifact

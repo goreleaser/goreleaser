@@ -52,20 +52,20 @@ func (Pipe) Default(ctx *context.Context) error {
 	return nil
 }
 
-func (Pipe) Announce(ctx *context.Context) error {
+func (p Pipe) Announce(ctx *context.Context) error {
 	msg, err := tmpl.New(ctx).Apply(ctx.Config.Announce.Mattermost.MessageTemplate)
 	if err != nil {
-		return fmt.Errorf("mattermost: %w", err)
+		return fmt.Errorf("%s: %w", p, err)
 	}
 
 	title, err := tmpl.New(ctx).Apply(ctx.Config.Announce.Mattermost.TitleTemplate)
 	if err != nil {
-		return fmt.Errorf("teams: %w", err)
+		return fmt.Errorf("%s: %w", p, err)
 	}
 
 	cfg, err := env.ParseAs[Config]()
 	if err != nil {
-		return fmt.Errorf("mattermost: %w", err)
+		return fmt.Errorf("%s: %w", p, err)
 	}
 
 	log.Infof("posting: %q", msg)
@@ -86,7 +86,7 @@ func (Pipe) Announce(ctx *context.Context) error {
 
 	err = postWebhook(ctx, cfg.Webhook, wm)
 	if err != nil {
-		return fmt.Errorf("mattermost: %w", err)
+		return fmt.Errorf("%s: %w", p, err)
 	}
 
 	return nil

@@ -9,6 +9,7 @@ import (
 	"github.com/goreleaser/goreleaser/v2/internal/pipe"
 	"github.com/goreleaser/goreleaser/v2/internal/semerrgroup"
 	"github.com/goreleaser/goreleaser/v2/internal/skips"
+	"github.com/goreleaser/goreleaser/v2/pkg/config"
 	"github.com/goreleaser/goreleaser/v2/pkg/context"
 )
 
@@ -80,7 +81,7 @@ func (BinaryPipe) Run(ctx *context.Context) error {
 			if len(cfg.IDs) > 0 {
 				filters = append(filters, artifact.ByIDs(cfg.IDs...))
 			}
-			return sign(ctx, cfg, ctx.Artifacts.Filter(artifact.And(filters...)).List())
+			return sign(ctx, config.Sign(cfg), ctx.Artifacts.Filter(artifact.And(filters...)).List())
 		})
 	}
 	return g.Wait()

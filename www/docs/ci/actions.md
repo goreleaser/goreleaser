@@ -44,7 +44,7 @@ jobs:
       # More assembly might be required: Docker logins, GPG, etc.
       # It all depends on your needs.
       - name: Run GoReleaser
-        uses: goreleaser/goreleaser-action@v6
+        uses: goreleaser/goreleaser-action@v7
         with:
           # either 'goreleaser' (default) or 'goreleaser-pro'
           distribution: goreleaser
@@ -94,7 +94,7 @@ jobs:
           gpg_private_key: ${{ secrets.GPG_PRIVATE_KEY }}
           passphrase: ${{ secrets.PASSPHRASE }}
       - name: Run GoReleaser
-        uses: goreleaser/goreleaser-action@v6
+        uses: goreleaser/goreleaser-action@v7
         with:
           version: "~> v2"
           args: release --clean
@@ -165,7 +165,7 @@ are required by GoReleaser:
 
 - `contents: write` if you wish to
   - [upload archives as GitHub Releases](../customization/release.md), or
-  - publish to [Homebrew](../customization/homebrew.md), or
+  - publish to [Homebrew](../customization/homebrew_casks.md), or
     [Scoop](../customization/scoop.md) (assuming it's part of the same repository)
 - or just `contents: read` if you don't need any of the above
 - `packages: write` if you [push Docker images](../customization/docker.md) to
@@ -191,7 +191,7 @@ jobs:
     steps:
       # ...
       - name: Run GoReleaser
-        uses: goreleaser/goreleaser-action@v6
+        uses: goreleaser/goreleaser-action@v7
         with:
           version: "~> v2"
           args: release --clean

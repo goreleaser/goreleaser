@@ -16,6 +16,8 @@ import (
 	"strings"
 	"text/template"
 
+	stdctx "context"
+
 	"github.com/caarlos0/log"
 	"github.com/goreleaser/goreleaser/v2/internal/artifact"
 	"github.com/goreleaser/goreleaser/v2/internal/client"
@@ -50,13 +52,8 @@ var (
 	errInvalidLicense = errors.New("nix.license is invalid")
 )
 
-// NewBuild returns a pipe to be used in the build phase.
-func NewBuild() Pipe {
-	return Pipe{zeroHasher}
-}
-
-// NewPublish returns a pipe to be used in the publish phase.
-func NewPublish() Pipe {
+// New returns a pipe to be used in the publish phase.
+func New() Pipe {
 	return Pipe{realHasher}
 }
 
@@ -66,9 +63,10 @@ type Pipe struct {
 
 func (Pipe) String() string                           { return "nixpkgs" }
 func (Pipe) ContinueOnError() bool                    { return true }
-func (Pipe) Dependencies(_ *context.Context) []string { return []string{"nix-hash"} }
+func (Pipe) Dependencies(_ *context.Context) []string { return []string{nixHashBin} }
+
 func (p Pipe) Skip(ctx *context.Context) bool {
-	return skips.Any(ctx, skips.Nix) || len(ctx.Config.Nix) == 0 || !p.hasher.Available()
+	return skips.Any(ctx, skips.Nix) || len(ctx.Config.Nix) == 0
 }
 
 func (Pipe) Default(ctx *context.Context) error {
@@ -95,6 +93,9 @@ func (Pipe) Default(ctx *context.Context) error {
 }
 
 func (p Pipe) Run(ctx *context.Context) error {
+	if !p.hasher.Available() {
+		return pipe.Skipf("%s is not available", nixHashBin)
+	}
 	cli, err := client.NewReleaseClient(ctx)
 	if err != nil {
 		return err
@@ -179,6 +180,10 @@ func (p Pipe) doRun(ctx *context.Context, nix config.Nix, cl client.ReleaseURLTe
 		return fmt.Errorf("failed to write nixpkg: %w", err)
 	}
 
+	if fmt := nix.Formatter; fmt != "" {
+		format(ctx, fmt, path)
+	}
+
 	ctx.Artifacts.Add(&artifact.Artifact{
 		Name: filepath.Base(path),
 		Path: path,
@@ -191,6 +196,27 @@ func (p Pipe) doRun(ctx *context.Context, nix config.Nix, cl client.ReleaseURLTe
 	return nil
 }
 
+func format(ctx *context.Context, fmt, path string) bool {
+	switch fmt {
+	case "alejandra", "nixfmt":
+		out, err := exec.CommandContext(ctx, fmt, path).CombinedOutput()
+		if err != nil {
+			log.WithField("output", string(out)).
+				WithField("formatter", fmt).
+				WithField("path", path).
+				Warn("could not format")
+			return false
+		}
+		log.WithField("formatter", fmt).
+			WithField("path", path).
+			Info("formatted")
+		return true
+	default:
+		log.Warn("invalid nix formatter: " + fmt)
+		return false
+	}
+}
+
 func preparePkg(
 	ctx *context.Context,
 	nix config.Nix,
@@ -198,10 +224,7 @@ func preparePkg(
 	hasher fileHasher,
 ) (string, error) {
 	filters := []artifact.Filter{
-		artifact.Or(
-			artifact.ByGoos("darwin"),
-			artifact.ByGoos("linux"),
-		),
+		artifact.ByGooses("darwin", "linux"),
 		artifact.Or(
 			artifact.And(
 				artifact.ByGoarch("amd64"),
@@ -219,7 +242,7 @@ func preparePkg(
 			artifact.ByGoarch("all"),
 		),
 		artifact.And(
-			artifact.ByFormats("zip", "tar.gz"),
+			artifact.Not(artifact.ByFormats("gz")),
 			artifact.ByType(artifact.UploadableArchive),
 		),
 		artifact.OnlyReplacingUnibins,
@@ -260,31 +283,39 @@ func preparePkg(
 		inputs = append(inputs, "makeWrapper")
 		dependencies = append(dependencies, "makeWrapper")
 	}
+
+	var dynamicallyLinked bool
 	for _, arch := range archives {
 		if arch.Format() == "zip" {
 			inputs = append(inputs, "unzip")
 			dependencies = append(dependencies, "unzip")
-			break
+		}
+		if !dynamicallyLinked && artifact.ExtraOr(*arch, artifact.ExtranDynLink, false) {
+			dynamicallyLinked = true
 		}
 	}
 
+	inputs = slices.Compact(slices.Sorted(slices.Values(inputs)))
+	dependencies = slices.Compact(slices.Sorted(slices.Values(dependencies)))
+
 	data := templateData{
-		Name:         nix.Name,
-		Version:      ctx.Version,
-		Install:      installs,
-		PostInstall:  postInstall,
-		Archives:     map[string]Archive{},
-		SourceRoots:  map[string]string{},
-		Description:  nix.Description,
-		Homepage:     nix.Homepage,
-		License:      nix.License,
-		Inputs:       inputs,
-		Dependencies: dependencies,
+		Name:              nix.Name,
+		Version:           ctx.Version,
+		Install:           installs,
+		PostInstall:       postInstall,
+		Archives:          map[string]Archive{},
+		SourceRoots:       map[string]string{},
+		Description:       nix.Description,
+		Homepage:          nix.Homepage,
+		License:           nix.License,
+		Inputs:            inputs,
+		Dependencies:      dependencies,
+		DynamicallyLinked: dynamicallyLinked,
 	}
 
 	platforms := map[string]bool{}
 	for _, art := range archives {
-		sha, err := hasher.Hash(art.Path)
+		sha, err := hasher.Hash(ctx, art.Path)
 		if err != nil {
 			return "", err
 		}
@@ -477,7 +508,8 @@ func installs(ctx *context.Context, nix config.Nix, art *artifact.Artifact) ([]s
 		}
 	}
 
-	log.WithField("install", result).Info("guessing install")
+	log.WithField("install", strings.Join(result, " ")).
+		Info("guessing install")
 
 	return append(result, split(extraInstall)...), nil
 }
@@ -540,38 +572,25 @@ func depNames(deps []config.NixDependency) []string {
 }
 
 type fileHasher interface {
-	Hash(name string) (string, error)
+	Hash(ctx stdctx.Context, name string) (string, error)
 	Available() bool
 }
 
-const (
-	zeroHash   = "0000000000000000000000000000000000000000000000000000"
-	nixHashBin = "nix-hash"
-)
+const nixHashBin = "nix-hash"
 
-var (
-	zeroHasher fileHasher = alwaysZeroHasher{}
-	realHasher fileHasher = nixHasher{bin: nixHashBin}
-)
-
-type alwaysZeroHasher struct{}
-
-func (alwaysZeroHasher) Hash(string) (string, error) { return zeroHash, nil }
-func (alwaysZeroHasher) Available() bool             { return true }
+var realHasher fileHasher = nixHasher{bin: nixHashBin}
 
 type nixHasher struct{ bin string }
 
 func (p nixHasher) Available() bool {
 	_, err := exec.LookPath(p.bin)
-	if err != nil {
-		log.Warnf("%s is not available", p.bin)
-	}
 	return err == nil
 }
 
-func (p nixHasher) Hash(name string) (string, error) {
+func (p nixHasher) Hash(ctx stdctx.Context, name string) (string, error) {
 	// $ nix-hash --type sha256 --flat --base32 <(echo test)
-	out, err := exec.Command(
+	out, err := exec.CommandContext(
+		ctx,
 		p.bin,
 		"--type", "sha256",
 		"--flat",

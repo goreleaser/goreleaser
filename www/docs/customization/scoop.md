@@ -35,17 +35,12 @@ scoops:
     #
     # Valid options are:
     # - 'msi':     msi installers (requires the MSI pipe configured, Pro only)
+    # - 'nsis':    nsis installers (requires the NSIS pipe configured, Pro only)
     # - 'archive': archives (only if format is zip),
     #
     # This feature is only available in GoReleaser Pro.
     # Default: 'archive'.
     use: msi
-
-    # Git author used to commit to the repository.
-    # Templates: allowed.
-    commit_author:
-      name: goreleaserbot
-      email: bot@goreleaser.com
 
     # The project name and current git tag are used in the format string.
     #

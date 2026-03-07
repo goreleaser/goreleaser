@@ -68,7 +68,7 @@ install={{ .Name }}.install
 {{- end }}
 
 {{- with .Sources }}
-source=("${pkgname}_${pkgver}.{{ .Format }}::{{ .DownloadURL }}")
+source=("${pkgname}_${pkgver}.{{ .Format }}::{{ replaceAll .DownloadURL $.Version "${pkgver}" }}")
 sha256sums=('{{ .SHA256 }}')
 {{ end }}
 

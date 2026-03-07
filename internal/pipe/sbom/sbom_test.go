@@ -1,6 +1,7 @@
 package sbom
 
 import (
+	"errors"
 	"fmt"
 	"os"
 	"path/filepath"
@@ -8,10 +9,12 @@ import (
 	"testing"
 
 	"github.com/goreleaser/goreleaser/v2/internal/artifact"
+	"github.com/goreleaser/goreleaser/v2/internal/gerrors"
 	"github.com/goreleaser/goreleaser/v2/internal/skips"
 	"github.com/goreleaser/goreleaser/v2/internal/testctx"
 	"github.com/goreleaser/goreleaser/v2/internal/testlib"
 	"github.com/goreleaser/goreleaser/v2/internal/tmpl"
+	"github.com/goreleaser/goreleaser/v2/pkg/archive"
 	"github.com/goreleaser/goreleaser/v2/pkg/config"
 	"github.com/goreleaser/goreleaser/v2/pkg/context"
 	"github.com/stretchr/testify/assert"
@@ -23,7 +26,7 @@ func TestDescription(t *testing.T) {
 }
 
 func TestSBOMCatalogDefault(t *testing.T) {
-	defaultArgs := []string{"$artifact", "--output", "spdx-json=$document"}
+	defaultArgs := []string{"$artifact", "--output", "spdx-json=$document", "--enrich", "all"}
 	defaultSboms := []string{
 		"{{ .ArtifactName }}.sbom.json",
 	}
@@ -146,10 +149,10 @@ func TestSBOMCatalogDefault(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(fmt.Sprintf("artifact=%q", test.configs[0].Artifacts), func(t *testing.T) {
-			testlib.CheckPath(t, "syft")
-			ctx := testctx.NewWithCfg(config.Project{
+			ctx := testctx.WrapWithCfg(t.Context(), config.Project{
 				SBOMs: test.configs,
 			})
+
 			err := Pipe{}.Default(ctx)
 			if test.err {
 				require.Error(t, err)
@@ -166,15 +169,17 @@ func TestSBOMCatalogDefault(t *testing.T) {
 }
 
 func TestSBOMCatalogInvalidArtifacts(t *testing.T) {
-	ctx := testctx.NewWithCfg(config.Project{
+	ctx := testctx.WrapWithCfg(t.Context(), config.Project{
 		SBOMs: []config.SBOM{{Artifacts: "foo"}},
 	})
+
+	require.NoError(t, Pipe{}.Default(ctx))
 	err := Pipe{}.Run(ctx)
 	require.EqualError(t, err, "invalid list of artifacts to catalog: foo")
 }
 
 func TestSeveralSBOMsWithTheSameID(t *testing.T) {
-	ctx := testctx.NewWithCfg(config.Project{
+	ctx := testctx.WrapWithCfg(t.Context(), config.Project{
 		SBOMs: []config.SBOM{
 			{
 				ID: "a",
@@ -184,34 +189,91 @@ func TestSeveralSBOMsWithTheSameID(t *testing.T) {
 			},
 		},
 	})
+
 	require.EqualError(t, Pipe{}.Default(ctx), "found 2 sboms with the ID 'a', please fix your config")
 }
 
 func TestSkipCataloging(t *testing.T) {
 	t.Run("skip", func(t *testing.T) {
-		require.True(t, Pipe{}.Skip(testctx.New()))
+		require.True(t, Pipe{}.Skip(testctx.Wrap(t.Context())))
 	})
 
 	t.Run("skip SBOM cataloging", func(t *testing.T) {
-		ctx := testctx.NewWithCfg(config.Project{
+		ctx := testctx.WrapWithCfg(t.Context(), config.Project{
 			SBOMs: []config.SBOM{
 				{
 					Artifacts: "all",
 				},
 			},
 		}, testctx.Skip(skips.SBOM))
+
 		require.True(t, Pipe{}.Skip(ctx))
 	})
 
 	t.Run("dont skip", func(t *testing.T) {
-		ctx := testctx.NewWithCfg(config.Project{
+		ctx := testctx.WrapWithCfg(t.Context(), config.Project{
 			SBOMs: []config.SBOM{
 				{
 					Artifacts: "all",
 				},
 			},
 		})
+
 		require.False(t, Pipe{}.Skip(ctx))
+	})
+}
+
+func TestDisable(t *testing.T) {
+	t.Run("enabled", func(t *testing.T) {
+		ctx := testctx.WrapWithCfg(t.Context(), config.Project{
+			SBOMs: []config.SBOM{
+				{Disable: "false"},
+			},
+		})
+
+		require.NoError(t, Pipe{}.Default(ctx))
+		require.NoError(t, Pipe{}.Run(ctx))
+	})
+
+	t.Run("disabled", func(t *testing.T) {
+		ctx := testctx.WrapWithCfg(t.Context(), config.Project{
+			SBOMs: []config.SBOM{
+				{Disable: "true"},
+			},
+		})
+
+		testlib.AssertSkipped(t, Pipe{}.Run(ctx))
+	})
+
+	t.Run("enabled template", func(t *testing.T) {
+		ctx := testctx.WrapWithCfg(t.Context(), config.Project{
+			SBOMs: []config.SBOM{
+				{Disable: `{{ eq .Env.SBOM_DISABLED "1" }}`},
+			},
+		}, testctx.WithEnv(map[string]string{"SBOM_DISABLED": "0"}))
+
+		require.NoError(t, Pipe{}.Default(ctx))
+		require.NoError(t, Pipe{}.Run(ctx))
+	})
+
+	t.Run("disabled template", func(t *testing.T) {
+		ctx := testctx.WrapWithCfg(t.Context(), config.Project{
+			SBOMs: []config.SBOM{
+				{Disable: `{{ eq .Env.SBOM_DISABLED "1" }}`},
+			},
+		}, testctx.WithEnv(map[string]string{"SBOM_DISABLED": "1"}))
+
+		testlib.AssertSkipped(t, Pipe{}.Run(ctx))
+	})
+
+	t.Run("enabled invalid template", func(t *testing.T) {
+		ctx := testctx.WrapWithCfg(t.Context(), config.Project{
+			SBOMs: []config.SBOM{
+				{Disable: "{{ .Invalid }}"},
+			},
+		})
+
+		testlib.RequireTemplateError(t, Pipe{}.Run(ctx))
 	})
 }
 
@@ -226,8 +288,8 @@ func TestSBOMCatalogArtifacts(t *testing.T) {
 	}{
 		{
 			desc:           "catalog errors",
-			expectedErrMsg: "failed",
-			ctx: testctx.NewWithCfg(config.Project{
+			expectedErrMsg: "could not catalog artifact",
+			ctx: testctx.WrapWithCfg(t.Context(), config.Project{
 				SBOMs: []config.SBOM{
 					{
 						Artifacts: "binary",
@@ -240,7 +302,7 @@ func TestSBOMCatalogArtifacts(t *testing.T) {
 		{
 			desc:          "invalid args template",
 			expectedErrAs: &tmpl.Error{},
-			ctx: testctx.NewWithCfg(config.Project{
+			ctx: testctx.WrapWithCfg(t.Context(), config.Project{
 				SBOMs: []config.SBOM{
 					{
 						Artifacts: "binary",
@@ -255,41 +317,45 @@ func TestSBOMCatalogArtifacts(t *testing.T) {
 		},
 		{
 			desc: "catalog source archives",
-			ctx: testctx.NewWithCfg(config.Project{
+			ctx: testctx.WrapWithCfg(t.Context(), config.Project{
 				SBOMs: []config.SBOM{
 					{Artifacts: "source"},
 				},
 			}),
+
 			sbomPaths: []string{"artifact5.tar.gz.sbom.json"},
 			sbomNames: []string{"artifact5.tar.gz.sbom.json"},
 		},
 		{
 			desc: "catalog archives",
-			ctx: testctx.NewWithCfg(config.Project{
+			ctx: testctx.WrapWithCfg(t.Context(), config.Project{
 				SBOMs: []config.SBOM{
 					{Artifacts: "archive"},
 				},
 			}),
+
 			sbomPaths: []string{"artifact1.sbom.json", "artifact2.sbom.json"},
 			sbomNames: []string{"artifact1.sbom.json", "artifact2.sbom.json"},
 		},
 		{
 			desc: "catalog linux packages",
-			ctx: testctx.NewWithCfg(config.Project{
+			ctx: testctx.WrapWithCfg(t.Context(), config.Project{
 				SBOMs: []config.SBOM{
 					{Artifacts: "package"},
 				},
 			}),
+
 			sbomPaths: []string{"package1.deb.sbom.json"},
 			sbomNames: []string{"package1.deb.sbom.json"},
 		},
 		{
 			desc: "catalog binaries",
-			ctx: testctx.NewWithCfg(config.Project{
+			ctx: testctx.WrapWithCfg(t.Context(), config.Project{
 				SBOMs: []config.SBOM{
 					{Artifacts: "binary"},
 				},
 			}),
+
 			sbomPaths: []string{
 				"artifact3-name_1.2.2_linux_amd64.sbom.json",
 				"artifact4-name_1.2.2_linux_amd64.sbom.json",
@@ -301,7 +367,7 @@ func TestSBOMCatalogArtifacts(t *testing.T) {
 		},
 		{
 			desc: "manual cataloging",
-			ctx: testctx.NewWithCfg(config.Project{
+			ctx: testctx.WrapWithCfg(t.Context(), config.Project{
 				SBOMs: []config.SBOM{
 					{
 						Artifacts: "any",
@@ -316,12 +382,13 @@ func TestSBOMCatalogArtifacts(t *testing.T) {
 					},
 				},
 			}),
+
 			sbomPaths: []string{"final.sbom.json"},
 			sbomNames: []string{"final.sbom.json"},
 		},
 		{
 			desc: "multiple SBOM configs",
-			ctx: testctx.NewWithCfg(config.Project{
+			ctx: testctx.WrapWithCfg(t.Context(), config.Project{
 				Env: []string{
 					"SBOM_SUFFIX=s2-ish",
 				},
@@ -337,6 +404,7 @@ func TestSBOMCatalogArtifacts(t *testing.T) {
 					},
 				},
 			}),
+
 			sbomPaths: []string{
 				"artifact1.s2-ish.sbom.json",
 				"artifact2.s2-ish.sbom.json",
@@ -352,7 +420,7 @@ func TestSBOMCatalogArtifacts(t *testing.T) {
 		},
 		{
 			desc: "catalog artifacts with filtered by ID",
-			ctx: testctx.NewWithCfg(config.Project{
+			ctx: testctx.WrapWithCfg(t.Context(), config.Project{
 				SBOMs: []config.SBOM{
 					{
 						Artifacts: "binary",
@@ -360,6 +428,7 @@ func TestSBOMCatalogArtifacts(t *testing.T) {
 					},
 				},
 			}),
+
 			sbomPaths: []string{
 				"artifact3-name_1.2.2_linux_amd64.sbom.json",
 			},
@@ -369,7 +438,7 @@ func TestSBOMCatalogArtifacts(t *testing.T) {
 		},
 		{
 			desc: "catalog binary artifacts with env in arguments",
-			ctx: testctx.NewWithCfg(config.Project{
+			ctx: testctx.WrapWithCfg(t.Context(), config.Project{
 				SBOMs: []config.SBOM{
 					{
 						Artifacts: "binary",
@@ -387,6 +456,7 @@ func TestSBOMCatalogArtifacts(t *testing.T) {
 					"TEST_USER=test-user-name",
 				},
 			}),
+
 			sbomPaths: []string{
 				"artifact3-name.test-user-name.sbom.json",
 				"artifact4.test-user-name.sbom.json",
@@ -398,7 +468,7 @@ func TestSBOMCatalogArtifacts(t *testing.T) {
 		},
 		{
 			desc: "cataloging 'any' artifacts fails",
-			ctx: testctx.NewWithCfg(config.Project{
+			ctx: testctx.WrapWithCfg(t.Context(), config.Project{
 				SBOMs: []config.SBOM{
 					{
 						Artifacts: "any",
@@ -406,20 +476,22 @@ func TestSBOMCatalogArtifacts(t *testing.T) {
 					},
 				},
 			}),
-			expectedErrMsg: "cataloging artifacts: false failed: ",
+
+			expectedErrMsg: "could not catalog artifact",
 		},
 		{
 			desc: "catalog wrong command",
-			ctx: testctx.NewWithCfg(config.Project{
+			ctx: testctx.WrapWithCfg(t.Context(), config.Project{
 				SBOMs: []config.SBOM{
 					{Args: []string{"$artifact", "--file", "$sbom", "--output", "spdx-json"}},
 				},
 			}),
+
 			expectedErrMsg: "cataloging artifacts: command did not write any files, check your configuration",
 		},
 		{
 			desc: "no matches",
-			ctx: testctx.NewWithCfg(config.Project{
+			ctx: testctx.WrapWithCfg(t.Context(), config.Project{
 				SBOMs: []config.SBOM{
 					{IDs: []string{"nopenopenope"}},
 				},
@@ -441,6 +513,44 @@ func TestSBOMCatalogArtifacts(t *testing.T) {
 	}
 }
 
+func TestSBOMCatalogRealSyft(t *testing.T) {
+	testlib.CheckPath(t, "syft")
+	tmp := t.TempDir()
+
+	bin := filepath.Join(tmp, "fake_bin")
+	require.NoError(t, os.WriteFile(bin, []byte("fake"), 0o644))
+
+	ctx := testctx.WrapWithCfg(t.Context(), config.Project{
+		Dist: tmp,
+		SBOMs: []config.SBOM{
+			{
+				Artifacts: "binary",
+				Args:      []string{"$artifact", "--output", "spdx-json=$document"},
+			},
+		},
+	})
+
+	ctx.Version = "1.0.0"
+	ctx.Artifacts.Add(&artifact.Artifact{
+		Name:   "fake_bin",
+		Path:   bin,
+		Goos:   "linux",
+		Goarch: "amd64",
+		Type:   artifact.UploadableBinary,
+		Extra: map[string]any{
+			artifact.ExtraID:     "test",
+			artifact.ExtraBinary: "fake_bin",
+		},
+	})
+
+	require.NoError(t, Pipe{}.Default(ctx))
+	require.NoError(t, Pipe{}.Run(ctx))
+
+	sboms := ctx.Artifacts.Filter(artifact.ByType(artifact.SBOM)).List()
+	require.Len(t, sboms, 1)
+	require.Equal(t, "fake_bin_1.0.0_linux_amd64.sbom.json", sboms[0].Name)
+}
+
 func testSBOMCataloging(
 	tb testing.TB,
 	ctx *context.Context,
@@ -449,7 +559,15 @@ func testSBOMCataloging(
 	expectedErrMsg string,
 ) {
 	tb.Helper()
-	testlib.CheckPath(tb, "syft")
+
+	// resolve fakesyft path before Mktmp changes the working directory
+	fakesyft := "./testdata/fakesyft"
+	if testlib.IsWindows() {
+		fakesyft += ".bat"
+	}
+	fakesyft, err := filepath.Abs(fakesyft)
+	require.NoError(tb, err)
+
 	tmpdir := testlib.Mktmp(tb)
 
 	ctx.Config.Dist = tmpdir
@@ -462,9 +580,21 @@ func testSBOMCataloging(
 		file := filepath.Join(tmpdir, f)
 		require.NoError(tb, os.WriteFile(file, []byte("foo"), 0o644))
 	}
+
 	require.NoError(tb, os.WriteFile(filepath.Join(tmpdir, "linux_amd64", "artifact4"), []byte("foo"), 0o644))
 	artifacts = append(artifacts, "linux_amd64/artifact4")
-	require.NoError(tb, os.WriteFile(filepath.Join(tmpdir, "artifact5.tar.gz"), []byte("foo"), 0o644))
+
+	tgz, err := os.OpenFile(filepath.Join(tmpdir, "artifact5.tar.gz"), os.O_CREATE|os.O_TRUNC|os.O_RDWR, 0o644)
+	require.NoError(tb, err)
+	tb.Cleanup(func() { _ = tgz.Close() })
+	a, err := archive.New(tgz, "tar.gz")
+	require.NoError(tb, err)
+	require.NoError(tb, a.Add(config.File{
+		Source:      filepath.Join(tmpdir, "linux_amd64", "artifact4"),
+		Destination: "artifact",
+	}))
+	require.NoError(tb, a.Close())
+
 	artifacts = append(artifacts, "artifact5.tar.gz")
 	ctx.Artifacts.Add(&artifact.Artifact{
 		Name: "artifact1",
@@ -521,10 +651,24 @@ func testSBOMCataloging(
 	// configure the pipeline
 	require.NoError(tb, Pipe{}.Default(ctx))
 
+	// use fakesyft for tests that rely on the default cmd
+	for i, cfg := range ctx.Config.SBOMs {
+		if cfg.Cmd == "syft" {
+			ctx.Config.SBOMs[i].Cmd = fakesyft
+		}
+	}
+
 	// run the pipeline
 	if expectedErrMsg != "" {
 		err := Pipe{}.Run(ctx)
-		require.ErrorContains(tb, err, expectedErrMsg)
+		require.Error(tb, err)
+
+		de, ok := errors.AsType[gerrors.ErrDetailed](err)
+		if ok {
+			require.Contains(tb, de.Messages(), expectedErrMsg)
+		} else {
+			require.ErrorContains(tb, err, expectedErrMsg)
+		}
 		return
 	}
 	if expectedErrAs != nil {
@@ -749,7 +893,7 @@ func Test_templateNames(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			ctx := testctx.NewWithCfg(config.Project{
+			ctx := testctx.WrapWithCfg(t.Context(), config.Project{
 				Dist: tt.dist,
 			}, testctx.WithVersion(tt.version))
 
@@ -786,11 +930,12 @@ func Test_templateNames(t *testing.T) {
 }
 
 func TestDependencies(t *testing.T) {
-	ctx := testctx.NewWithCfg(config.Project{
+	ctx := testctx.WrapWithCfg(t.Context(), config.Project{
 		SBOMs: []config.SBOM{
 			{Cmd: "syft"},
 			{Cmd: "foobar"},
 		},
 	})
+
 	require.Equal(t, []string{"syft", "foobar"}, Pipe{}.Dependencies(ctx))
 }

@@ -20,6 +20,7 @@ tasks:
   docker:setup:
     desc: Setup Docker for multi-arch image builds
     cmds:
+      - "docker buildx create --name=goreleaser --driver-opt network=host --use || true"
       - docker run --privileged --rm tonistiigi/binfmt --install all
 
   build:
@@ -42,6 +43,28 @@ tasks:
     cmds:
       - go test {{.TEST_OPTIONS}} -failfast -race -coverpkg=./... -covermode=atomic -coverprofile=coverage.txt {{.SOURCE_FILES}} -run {{.TEST_PATTERN}} -timeout=15m
 
+  fuzz:tmpl:
+    cmds:
+      - scripts/fuzz.sh ./internal/tmpl 30s
+
+  fuzz:artifact:
+    cmds:
+      - scripts/fuzz.sh ./internal/artifact 30s
+
+  fuzz:
+    desc: Run fuzz tests
+  cmds:
+    - task: fuzz:tmpl
+    - task: fuzz:artifact
+
+  test:golden:update:
+    desc: Run all tests that write goldne files, updating the files.
+    sources:
+      - ./pkg/config/*.go
+      - ./pkg/context/*.go
+    cmds:
+      - ./scripts/test-golden.sh
+
   cover:
     desc: Open the cover tool
     cmds:
@@ -55,7 +78,7 @@ tasks:
   lint:
     desc: Lint the code with golangci-lint
     cmds:
-      - golangci-lint run --config ./.golangci.yaml ./...
+      - golangci-lint run --tests --timeout 10m --fix --config ./.golangci.yaml ./...
 
   ci:
     desc: Run all CI steps
@@ -68,19 +91,6 @@ tasks:
     desc: Runs the default tasks
     cmds:
       - task: ci
-
-  nix:flake:build:
-    desc: build goreleaser using the nix flake
-    cmds:
-      - task: nix:flake:update-vendor
-      - nix build .
-
-  nix:flake:update:
-    desc: update flake.lock
-    cmds:
-      - nix flake update
-    generates:
-      - flake.lock
 
   nix:licenses:generate:
     desc: Generate nix/licenses.go
@@ -122,6 +132,15 @@ tasks:
       - www/docs/users.md
       - www/docs/eula.md
       - www/docs/security.md
+
+  docs:sponsors:
+    desc: Update OpenCollective and GitHub sponsors list
+    cmds:
+      - python3 scripts/update-sponsors.py
+    sources:
+      - scripts/update-sponsors.py
+    generates:
+      - www/docs/sponsors.md
 
   docs:releases:
     desc: Generate releases.json and latest files
@@ -204,6 +223,7 @@ tasks:
   goreleaser:test:pkg:
     desc: Test a package
     cmds:
+      - docker pull --platform linux/{{.Platform}} {{.Image}}
       - docker run --platform linux/{{.Platform}} --rm --workdir /tmp -v $PWD/dist:/tmp {{.Image}} sh -c '{{.Cmd}} && goreleaser --version'
 
   goreleaser:test:rpm:
@@ -304,3 +324,14 @@ tasks:
       - gh workflow run nightly-oss.yml
       - sleep 5
       - task: nightly:watch
+
+  licenses:check:
+    cmds:
+      - |
+        go run github.com/google/go-licenses/v2@latest check \
+          --allowed_licenses=MIT,Apache-2.0,BSD-3-Clause,BSD-2-Clause,ISC,MPL-2.0 \
+          --ignore github.com/in-toto \
+          --ignore github.com/multiformats/go-base36 \
+          --ignore github.com/ipfs/bbloom \
+          --ignore github.com/cyberphone/json-canonicalization/go/src/webpki.org/jsoncanonicalizer \
+          ./...

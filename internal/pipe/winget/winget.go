@@ -1,7 +1,7 @@
-// Package winget creates winget manifests.
 package winget
 
 import (
+	"cmp"
 	"errors"
 	"fmt"
 	"os"
@@ -71,6 +71,7 @@ func (Pipe) Default(ctx *context.Context) error {
 		if winget.Goamd64 == "" {
 			winget.Goamd64 = "v1"
 		}
+		winget.PackageName = cmp.Or(winget.PackageName, winget.Name)
 	}
 
 	return nil
@@ -114,14 +115,17 @@ func (p Pipe) doRun(ctx *context.Context, winget config.Winget, cl client.Releas
 	err := tp.ApplyAll(
 		&winget.Publisher,
 		&winget.Name,
+		&winget.PackageName,
 		&winget.Author,
 		&winget.PublisherURL,
 		&winget.PublisherSupportURL,
+		&winget.PrivacyURL,
 		&winget.Homepage,
 		&winget.SkipUpload,
 		&winget.Description,
 		&winget.ShortDescription,
 		&winget.ReleaseNotesURL,
+		&winget.InstallationNotes,
 		&winget.Path,
 		&winget.Copyright,
 		&winget.CopyrightURL,
@@ -235,8 +239,9 @@ func (p Pipe) doRun(ctx *context.Context, winget config.Winget, cl client.Releas
 		Publisher:           winget.Publisher,
 		PublisherURL:        winget.PublisherURL,
 		PublisherSupportURL: winget.PublisherSupportURL,
+		PrivacyURL:          winget.PrivacyURL,
 		Author:              winget.Author,
-		PackageName:         winget.Name,
+		PackageName:         winget.PackageName,
 		PackageURL:          winget.Homepage,
 		License:             winget.License,
 		LicenseURL:          winget.LicenseURL,
@@ -248,6 +253,7 @@ func (p Pipe) doRun(ctx *context.Context, winget config.Winget, cl client.Releas
 		Tags:                fixTags(winget.Tags),
 		ReleaseNotes:        winget.ReleaseNotes,
 		ReleaseNotesURL:     winget.ReleaseNotesURL,
+		InstallationNotes:   winget.InstallationNotes,
 		ManifestType:        "defaultLocale",
 		ManifestVersion:     manifestVersion,
 	}, artifact.WingetDefaultLocale)
@@ -255,10 +261,10 @@ func (p Pipe) doRun(ctx *context.Context, winget config.Winget, cl client.Releas
 
 func (p Pipe) publishAll(ctx *context.Context, cli client.Client) error {
 	skips := pipe.SkipMemento{}
-	for _, files := range ctx.Artifacts.Filter(artifact.Or(
-		artifact.ByType(artifact.WingetInstaller),
-		artifact.ByType(artifact.WingetVersion),
-		artifact.ByType(artifact.WingetDefaultLocale),
+	for _, files := range ctx.Artifacts.Filter(artifact.ByTypes(
+		artifact.WingetInstaller,
+		artifact.WingetVersion,
+		artifact.WingetDefaultLocale,
 	)).GroupByID() {
 		err := doPublish(ctx, cli, files)
 		if err != nil && pipe.IsSkip(err) {

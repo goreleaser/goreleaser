@@ -14,45 +14,47 @@ func TestStringer(t *testing.T) {
 }
 
 func TestDefault(t *testing.T) {
-	ctx := testctx.New()
+	ctx := testctx.Wrap(t.Context())
 	require.NoError(t, Pipe{}.Default(ctx))
 	require.Equal(t, defaultMessageTemplate, ctx.Config.Announce.Mastodon.MessageTemplate)
 }
 
 func TestAnnounceInvalidTemplate(t *testing.T) {
-	ctx := testctx.NewWithCfg(config.Project{
+	ctx := testctx.WrapWithCfg(t.Context(), config.Project{
 		Announce: config.Announce{
 			Mastodon: config.Mastodon{
 				MessageTemplate: "{{ .Foo }",
 			},
 		},
 	})
+
 	testlib.RequireTemplateError(t, Pipe{}.Announce(ctx))
 }
 
 func TestAnnounceMissingEnv(t *testing.T) {
-	ctx := testctx.NewWithCfg(config.Project{
+	ctx := testctx.WrapWithCfg(t.Context(), config.Project{
 		Announce: config.Announce{
 			Mastodon: config.Mastodon{},
 		},
 	})
+
 	require.NoError(t, Pipe{}.Default(ctx))
 	require.EqualError(t, Pipe{}.Announce(ctx), `mastodon: env: environment variable "MASTODON_CLIENT_ID" should not be empty; environment variable "MASTODON_CLIENT_SECRET" should not be empty; environment variable "MASTODON_ACCESS_TOKEN" should not be empty`)
 }
 
 func TestSkip(t *testing.T) {
 	t.Run("skip", func(t *testing.T) {
-		skip, err := Pipe{}.Skip(testctx.New())
+		skip, err := Pipe{}.Skip(testctx.Wrap(t.Context()))
 		require.NoError(t, err)
 		require.True(t, skip)
 	})
 
 	t.Run("skip empty server", func(t *testing.T) {
-		skip, err := Pipe{}.Skip(testctx.NewWithCfg(config.Project{
+		skip, err := Pipe{}.Skip(testctx.WrapWithCfg(t.Context(), config.Project{
 			Announce: config.Announce{
 				Mastodon: config.Mastodon{
 					Enabled: "true",
-					Server:  "", // empty
+					Server:  "",
 				},
 			},
 		}))
@@ -61,7 +63,7 @@ func TestSkip(t *testing.T) {
 	})
 
 	t.Run("dont skip", func(t *testing.T) {
-		skip, err := Pipe{}.Skip(testctx.NewWithCfg(config.Project{
+		skip, err := Pipe{}.Skip(testctx.WrapWithCfg(t.Context(), config.Project{
 			Announce: config.Announce{
 				Mastodon: config.Mastodon{
 					Enabled: "true",

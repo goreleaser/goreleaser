@@ -103,20 +103,20 @@ func TestBuild(t *testing.T) {
 		},
 	}
 
-	ctx := testctx.NewWithCfg(
+	ctx := testctx.WrapWithCfg(t.Context(),
 		config,
 		testctx.WithVersion("1.2.3"),
 		testctx.WithGitInfo(context.GitInfo{
 			CurrentTag: "v1.2.3",
 			Commit:     "123",
-		}),
-	)
+		}))
+
 	require.NoError(t, buildTarget(ctx, ctx.Config.Builds[0], "darwin_amd64"))
 }
 
 func TestRunPipe(t *testing.T) {
 	folder := testlib.Mktmp(t)
-	ctx := testctx.NewWithCfg(config.Project{
+	ctx := testctx.WrapWithCfg(t.Context(), config.Project{
 		Dist: folder,
 		Builds: []config.Build{
 			{
@@ -130,6 +130,7 @@ func TestRunPipe(t *testing.T) {
 			},
 		},
 	}, testctx.WithCurrentTag("2.4.5"))
+
 	require.NoError(t, Pipe{}.Run(ctx))
 	require.Equal(t, []*artifact.Artifact{{
 		Name: "testing",
@@ -168,7 +169,7 @@ func TestRunFullPipe(t *testing.T) {
 		},
 		Dist: folder,
 	}
-	ctx := testctx.NewWithCfg(config, testctx.WithCurrentTag("2.4.5"))
+	ctx := testctx.WrapWithCfg(t.Context(), config, testctx.WithCurrentTag("2.4.5"))
 	require.NoError(t, Pipe{}.Default(ctx))
 	require.NoError(t, Pipe{}.Run(ctx))
 	require.Equal(t, []*artifact.Artifact{{
@@ -207,7 +208,7 @@ func TestRunFullPipeFail(t *testing.T) {
 			},
 		},
 	}
-	ctx := testctx.NewWithCfg(config, testctx.WithCurrentTag("2.4.5"))
+	ctx := testctx.WrapWithCfg(t.Context(), config, testctx.WithCurrentTag("2.4.5"))
 	require.ErrorIs(t, Pipe{}.Run(ctx), errFailedBuild)
 	require.Empty(t, ctx.Artifacts.List())
 	require.FileExists(t, pre)
@@ -227,7 +228,7 @@ func TestRunPipeFailingHooks(t *testing.T) {
 		},
 	}
 	t.Run("pre-hook", func(t *testing.T) {
-		ctx := testctx.NewWithCfg(cfg, testctx.WithCurrentTag("2.4.5"))
+		ctx := testctx.WrapWithCfg(t.Context(), cfg, testctx.WithCurrentTag("2.4.5"))
 		ctx.Config.Builds[0].Hooks.Pre = []config.Hook{{Cmd: "exit 1"}}
 		ctx.Config.Builds[0].Hooks.Post = []config.Hook{{Cmd: testlib.Echo("post")}}
 
@@ -236,7 +237,7 @@ func TestRunPipeFailingHooks(t *testing.T) {
 		require.ErrorContains(t, err, "pre hook failed")
 	})
 	t.Run("post-hook", func(t *testing.T) {
-		ctx := testctx.NewWithCfg(cfg, testctx.WithCurrentTag("2.4.5"))
+		ctx := testctx.WrapWithCfg(t.Context(), cfg, testctx.WithCurrentTag("2.4.5"))
 		ctx.Config.Builds[0].Hooks.Pre = []config.Hook{{Cmd: testlib.Echo("pre")}}
 		ctx.Config.Builds[0].Hooks.Post = []config.Hook{{Cmd: "exit 1"}}
 		err := Pipe{}.Run(ctx)
@@ -245,22 +246,22 @@ func TestRunPipeFailingHooks(t *testing.T) {
 	})
 
 	t.Run("post-hook-skip", func(t *testing.T) {
-		ctx := testctx.NewWithCfg(
+		ctx := testctx.WrapWithCfg(t.Context(),
 			cfg,
 			testctx.WithCurrentTag("2.4.5"),
-			testctx.Skip(skips.PostBuildHooks),
-		)
+			testctx.Skip(skips.PostBuildHooks))
+
 		ctx.Config.Builds[0].Hooks.Pre = []config.Hook{{Cmd: testlib.Echo("pre")}}
 		ctx.Config.Builds[0].Hooks.Post = []config.Hook{{Cmd: "exit 1"}}
 		require.NoError(t, Pipe{}.Run(ctx))
 	})
 
 	t.Run("pre-hook-skip", func(t *testing.T) {
-		ctx := testctx.NewWithCfg(
+		ctx := testctx.WrapWithCfg(t.Context(),
 			cfg,
 			testctx.WithCurrentTag("2.4.5"),
-			testctx.Skip(skips.PreBuildHooks),
-		)
+			testctx.Skip(skips.PreBuildHooks))
+
 		ctx.Config.Builds[0].Hooks.Pre = []config.Hook{{Cmd: "exit 1"}}
 		ctx.Config.Builds[0].Hooks.Post = []config.Hook{{Cmd: testlib.Echo("pre")}}
 		require.NoError(t, Pipe{}.Run(ctx))
@@ -268,7 +269,7 @@ func TestRunPipeFailingHooks(t *testing.T) {
 }
 
 func TestDefaultNoBuilds(t *testing.T) {
-	ctx := testctx.New()
+	ctx := testctx.Wrap(t.Context())
 	require.NoError(t, Pipe{}.Default(ctx))
 }
 
@@ -282,14 +283,14 @@ func TestDefaultFail(t *testing.T) {
 			},
 		},
 	}
-	ctx := testctx.NewWithCfg(config)
+	ctx := testctx.WrapWithCfg(t.Context(), config)
 	require.EqualError(t, Pipe{}.Default(ctx), errFailedDefault.Error())
 	require.Empty(t, ctx.Artifacts.List())
 }
 
 func TestDefaultExpandEnv(t *testing.T) {
 	t.Setenv("XBAR", "FOOBAR")
-	ctx := testctx.NewWithCfg(config.Project{
+	ctx := testctx.WrapWithCfg(t.Context(), config.Project{
 		Builds: []config.Build{
 			{
 				BuildDetails: config.BuildDetails{
@@ -300,18 +301,20 @@ func TestDefaultExpandEnv(t *testing.T) {
 			},
 		},
 	})
+
 	require.NoError(t, Pipe{}.Default(ctx))
 	env := ctx.Config.Builds[0].Env[0]
 	require.Equal(t, "XFOO=bar_FOOBAR", env)
 }
 
 func TestDefaultEmptyBuild(t *testing.T) {
-	ctx := testctx.NewWithCfg(config.Project{
+	ctx := testctx.WrapWithCfg(t.Context(), config.Project{
 		ProjectName: "foo",
 		Builds: []config.Build{
 			{},
 		},
 	})
+
 	require.NoError(t, Pipe{}.Default(ctx))
 	build := ctx.Config.Builds[0]
 	require.Equal(t, ctx.Config.ProjectName, build.ID)
@@ -328,7 +331,7 @@ func TestDefaultEmptyBuild(t *testing.T) {
 }
 
 func TestDefaultBuildID(t *testing.T) {
-	ctx := testctx.NewWithCfg(config.Project{
+	ctx := testctx.WrapWithCfg(t.Context(), config.Project{
 		ProjectName: "foo",
 		Builds: []config.Build{
 			{
@@ -339,6 +342,7 @@ func TestDefaultBuildID(t *testing.T) {
 			},
 		},
 	})
+
 	require.EqualError(t, Pipe{}.Default(ctx), "found 2 builds with the ID 'foo', please fix your config")
 	build1 := ctx.Config.Builds[0].ID
 	build2 := ctx.Config.Builds[1].ID
@@ -347,7 +351,7 @@ func TestDefaultBuildID(t *testing.T) {
 }
 
 func TestSeveralBuildsWithTheSameID(t *testing.T) {
-	ctx := testctx.NewWithCfg(config.Project{
+	ctx := testctx.WrapWithCfg(t.Context(), config.Project{
 		Builds: []config.Build{
 			{
 				ID:     "a",
@@ -359,11 +363,12 @@ func TestSeveralBuildsWithTheSameID(t *testing.T) {
 			},
 		},
 	})
+
 	require.EqualError(t, Pipe{}.Default(ctx), "found 2 builds with the ID 'a', please fix your config")
 }
 
 func TestDefaultPartialBuilds(t *testing.T) {
-	ctx := testctx.NewWithCfg(config.Project{
+	ctx := testctx.WrapWithCfg(t.Context(), config.Project{
 		Builds: []config.Build{
 			{
 				ID:     "build1",
@@ -382,6 +387,7 @@ func TestDefaultPartialBuilds(t *testing.T) {
 			},
 		},
 	})
+
 	// Create any 'Dir' paths necessary for builds.
 	t.Chdir(t.TempDir())
 	for _, b := range ctx.Config.Builds {
@@ -425,7 +431,7 @@ func TestSkipBuild(t *testing.T) {
 			},
 		},
 	}
-	ctx := testctx.NewWithCfg(config, testctx.WithCurrentTag("2.4.5"))
+	ctx := testctx.WrapWithCfg(t.Context(), config, testctx.WithCurrentTag("2.4.5"))
 	require.NoError(t, Pipe{}.Run(ctx))
 	require.Empty(t, ctx.Artifacts.List())
 }
@@ -441,7 +447,7 @@ func TestSkipBuildTmpl(t *testing.T) {
 			},
 		},
 	}
-	ctx := testctx.NewWithCfg(config, testctx.WithCurrentTag("2.4.5"))
+	ctx := testctx.WrapWithCfg(t.Context(), config, testctx.WithCurrentTag("2.4.5"))
 	require.NoError(t, Pipe{}.Run(ctx))
 	require.Empty(t, ctx.Artifacts.List())
 }
@@ -492,12 +498,12 @@ func TestExtOthers(t *testing.T) {
 }
 
 func TestTemplate(t *testing.T) {
-	ctx := testctx.New(
+	ctx := testctx.Wrap(t.Context(),
 		testctx.WithEnv(map[string]string{"FOO": "123"}),
 		testctx.WithVersion("1.2.3"),
 		testctx.WithCurrentTag("v1.2.3"),
-		testctx.WithCommit("123"),
-	)
+		testctx.WithCommit("123"))
+
 	binary, err := tmpl.New(ctx).
 		Apply(`-s -w -X main.version={{.Version}} -X main.tag={{.Tag}} -X main.date={{.Date}} -X main.commit={{.Commit}} -X "main.foo={{.Env.FOO}}"`)
 	require.NoError(t, err)
@@ -529,11 +535,12 @@ func TestBuild_hooksKnowGoosGoarch(t *testing.T) {
 		},
 	}
 
-	ctx := testctx.NewWithCfg(config.Project{
+	ctx := testctx.WrapWithCfg(t.Context(), config.Project{
 		Builds: []config.Build{
 			build,
 		},
 	})
+
 	g := semerrgroup.New(ctx.Parallelism)
 	runPipeOnBuild(ctx, g, build)
 	require.NoError(t, g.Wait())
@@ -561,11 +568,12 @@ func TestPipeOnBuild_hooksRunPerTarget(t *testing.T) {
 			},
 		},
 	}
-	ctx := testctx.NewWithCfg(config.Project{
+	ctx := testctx.WrapWithCfg(t.Context(), config.Project{
 		Builds: []config.Build{
 			build,
 		},
 	})
+
 	g := semerrgroup.New(ctx.Parallelism)
 	runPipeOnBuild(ctx, g, build)
 	require.NoError(t, g.Wait())
@@ -585,11 +593,12 @@ func TestPipeOnBuild_invalidBinaryTpl(t *testing.T) {
 			"linux_amd64",
 		},
 	}
-	ctx := testctx.NewWithCfg(config.Project{
+	ctx := testctx.WrapWithCfg(t.Context(), config.Project{
 		Builds: []config.Build{
 			build,
 		},
 	})
+
 	g := semerrgroup.New(ctx.Parallelism)
 	runPipeOnBuild(ctx, g, build)
 	testlib.RequireTemplateError(t, g.Wait())
@@ -708,10 +717,11 @@ func TestBuildOptionsForTarget(t *testing.T) {
 
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
-			ctx := testctx.NewWithCfg(config.Project{
+			ctx := testctx.WrapWithCfg(t.Context(), config.Project{
 				Dist:   tmpDir,
 				Builds: []config.Build{tc.build},
 			})
+
 			require.NoError(t, Pipe{}.Default(ctx))
 			opts, err := buildOptionsForTarget(ctx, ctx.Config.Builds[0], ctx.Config.Builds[0].Targets[0])
 			if tc.expectedErr == "" {
@@ -746,7 +756,7 @@ func TestRunHookFailWithLogs(t *testing.T) {
 			},
 		},
 	}
-	ctx := testctx.NewWithCfg(config, testctx.WithCurrentTag("2.4.5"))
+	ctx := testctx.WrapWithCfg(t.Context(), config, testctx.WithCurrentTag("2.4.5"))
 	err := Pipe{}.Run(ctx)
 	require.ErrorContains(t, err, "pre hook failed")
 	require.Empty(t, ctx.Artifacts.List())

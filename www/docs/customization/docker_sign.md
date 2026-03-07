@@ -41,8 +41,9 @@ docker_signs:
     #   none:      no signing
     #   images:    only docker images
     #   manifests: only docker manifests
+    #   '':        images built by dockers_v2
     #
-    # Default: 'none'.
+    # Default: ''.
     artifacts: all
 
     # IDs of the artifacts to sign.
@@ -76,6 +77,8 @@ docker_signs:
     # By default, the stdout and stderr of the signing cmd are discarded unless
     # GoReleaser is running with `--verbose` set.
     # You can set this to true if you want them to be displayed regardless.
+    #
+    # Templates: allowed (since v2.13).
     output: true
 ```
 

@@ -14,21 +14,22 @@ func TestDescription(t *testing.T) {
 
 func TestSkip(t *testing.T) {
 	t.Run("skip", func(t *testing.T) {
-		require.True(t, Pipe{}.Skip(testctx.New()))
+		require.True(t, Pipe{}.Skip(testctx.Wrap(t.Context())))
 	})
 
 	t.Run("dont skip", func(t *testing.T) {
-		ctx := testctx.NewWithCfg(config.Project{
+		ctx := testctx.WrapWithCfg(t.Context(), config.Project{
 			Publishers: []config.Publisher{
 				{},
 			},
 		})
+
 		require.False(t, Pipe{}.Skip(ctx))
 	})
 }
 
 func TestPublish(t *testing.T) {
-	require.NoError(t, Pipe{}.Publish(testctx.NewWithCfg(config.Project{
+	require.NoError(t, Pipe{}.Publish(testctx.WrapWithCfg(t.Context(), config.Project{
 		Publishers: []config.Publisher{
 			{
 				Cmd: "echo",

@@ -29,7 +29,7 @@ func (Pipe) Default(ctx *context.Context) error {
 		ctx.Config.Release.GitHub.Name,
 		ctx.Config.Release.GitLab.Name,
 		ctx.Config.Release.Gitea.Name,
-		moduleName(),
+		moduleName(ctx),
 		gitRemote(ctx),
 	} {
 		if candidate == "" {
@@ -53,8 +53,8 @@ func cargoName() string {
 	return ""
 }
 
-func moduleName() string {
-	bts, err := exec.Command("go", "list", "-m").CombinedOutput()
+func moduleName(ctx *context.Context) string {
+	bts, err := exec.CommandContext(ctx, "go", "list", "-m").CombinedOutput()
 	if err != nil {
 		return ""
 	}

@@ -23,8 +23,8 @@ func newManCmd() *manCmd {
 		Hidden:                true,
 		Args:                  cobra.NoArgs,
 		ValidArgsFunction:     cobra.NoFileCompletions,
-		RunE: func(_ *cobra.Command, _ []string) error {
-			manPage, err := mcoral.NewManPage(1, root.cmd.Root())
+		RunE: func(cmd *cobra.Command, _ []string) error {
+			manPage, err := mcoral.NewManPage(1, cmd.Root())
 			if err != nil {
 				return err
 			}

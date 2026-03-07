@@ -1,10 +1,12 @@
 package golang
 
 import (
+	"errors"
 	"fmt"
 	"go/ast"
 	"go/parser"
 	"go/token"
+	"io/fs"
 	"maps"
 	"os"
 	"path/filepath"
@@ -14,7 +16,8 @@ import (
 	"dario.cat/mergo"
 	"github.com/caarlos0/log"
 	"github.com/goreleaser/goreleaser/v2/internal/artifact"
-	"github.com/goreleaser/goreleaser/v2/internal/builders/common"
+	"github.com/goreleaser/goreleaser/v2/internal/builders/base"
+	"github.com/goreleaser/goreleaser/v2/internal/elf"
 	"github.com/goreleaser/goreleaser/v2/internal/experimental"
 	"github.com/goreleaser/goreleaser/v2/internal/logext"
 	"github.com/goreleaser/goreleaser/v2/internal/tmpl"
@@ -261,7 +264,7 @@ func (*Builder) Build(ctx *context.Context, build config.Build, options api.Opti
 	t := options.Target.(Target)
 
 	a := &artifact.Artifact{
-		Type:      artifact.Binary,
+		Type:      artifactType(t, build.Buildmode),
 		Path:      options.Path,
 		Name:      options.Name,
 		Goos:      t.Goos,
@@ -282,13 +285,10 @@ func (*Builder) Build(ctx *context.Context, build config.Build, options api.Opti
 		},
 	}
 
-	if build.Buildmode == "c-archive" {
-		a.Type = artifact.CArchive
-		ctx.Artifacts.Add(getHeaderArtifactForLibrary(build, options))
-	}
-	if build.Buildmode == "c-shared" && !strings.Contains(t.Target, "wasm") {
-		a.Type = artifact.CShared
-		ctx.Artifacts.Add(getHeaderArtifactForLibrary(build, options))
+	if a.Type == artifact.CShared || a.Type == artifact.CArchive {
+		if ha := getHeaderArtifactForLibrary(build, options); ha != nil {
+			ctx.Artifacts.Add(ha)
+		}
 	}
 
 	details, err := withOverrides(ctx, build, t)
@@ -306,7 +306,7 @@ func (*Builder) Build(ctx *context.Context, build config.Build, options api.Opti
 		WithEnvS(env).
 		WithArtifact(a)
 
-	tenv, err := common.TemplateEnv(details.Env, tpl)
+	tenv, err := base.TemplateEnv(details.Env, tpl)
 	if err != nil {
 		return err
 	}
@@ -330,12 +330,16 @@ func (*Builder) Build(ctx *context.Context, build config.Build, options api.Opti
 		return err
 	}
 
-	if err := common.Exec(ctx, cmd, env, build.Dir); err != nil {
+	if err := base.Exec(ctx, cmd, env, build.Dir); err != nil {
 		return err
 	}
 
-	if err := common.ChTimes(build, tpl, a); err != nil {
+	if err := base.ChTimes(build, tpl, a); err != nil {
 		return err
+	}
+
+	if elf.IsDynamicallyLinked(a.Path) {
+		a.Extra[artifact.ExtranDynLink] = true
 	}
 
 	ctx.Artifacts.Add(a)
@@ -534,12 +538,28 @@ func hasMain(file *ast.File) bool {
 	return false
 }
 
+func artifactType(t Target, buildmode string) artifact.Type {
+	switch buildmode {
+	case "c-archive":
+		return artifact.CArchive
+	case "c-shared":
+		if !strings.Contains(t.Target, "wasm") {
+			return artifact.CShared
+		}
+	}
+	return artifact.Binary
+}
+
 func getHeaderArtifactForLibrary(build config.Build, options api.Options) *artifact.Artifact {
 	fullPathWithoutExt := strings.TrimSuffix(options.Path, options.Ext)
 	basePath := filepath.Base(fullPathWithoutExt)
 	fullPath := fullPathWithoutExt + ".h"
 	headerName := basePath + ".h"
 	t := options.Target.(Target)
+
+	if _, err := os.Stat(fullPath); errors.Is(err, fs.ErrNotExist) {
+		return nil
+	}
 
 	return &artifact.Artifact{
 		Type:      artifact.Header,

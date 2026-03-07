@@ -9,6 +9,7 @@ import (
 	"github.com/goreleaser/goreleaser/v2/internal/middleware/skip"
 	"github.com/goreleaser/goreleaser/v2/internal/pipe/bluesky"
 	"github.com/goreleaser/goreleaser/v2/internal/pipe/discord"
+	"github.com/goreleaser/goreleaser/v2/internal/pipe/discourse"
 	"github.com/goreleaser/goreleaser/v2/internal/pipe/linkedin"
 	"github.com/goreleaser/goreleaser/v2/internal/pipe/mastodon"
 	"github.com/goreleaser/goreleaser/v2/internal/pipe/mattermost"
@@ -34,8 +35,9 @@ type Announcer interface {
 //nolint:gochecknoglobals
 var announcers = []Announcer{
 	// XXX: keep asc sorting
-	bluesky.Pipe{},
+	bluesky.New(),
 	discord.Pipe{},
+	discourse.Pipe{},
 	linkedin.Pipe{},
 	mastodon.Pipe{},
 	mattermost.Pipe{},

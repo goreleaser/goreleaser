@@ -5,8 +5,6 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
-	"runtime"
-	"strings"
 	"testing"
 	"time"
 
@@ -59,12 +57,19 @@ func TestWithDefaults(t *testing.T) {
 func TestBuild(t *testing.T) {
 	testlib.CheckPath(t, "cargo")
 	testlib.CheckPath(t, "cargo-zigbuild")
+
 	folder := testlib.Mktmp(t)
-	_, err := exec.Command("cargo", "init", "--bin", "--name=proj").CombinedOutput()
+	_, err := exec.CommandContext(t.Context(), "cargo", "init", "--bin", "--name=proj").CombinedOutput()
+	require.NoError(t, err)
+
+	f, err := os.OpenFile("Cargo.toml", os.O_APPEND|os.O_WRONLY, 0o644)
+	require.NoError(t, err)
+	_, err = f.WriteString("\n[profile.release]\nopt-level = 0\n")
+	require.NoError(t, f.Close())
 	require.NoError(t, err)
 
 	modTime := time.Now().AddDate(-1, 0, 0).Round(time.Second).UTC()
-	ctx := testctx.NewWithCfg(config.Project{
+	ctx := testctx.WrapWithCfg(t.Context(), config.Project{
 		Dist:        "dist",
 		ProjectName: "proj",
 		Builds: []config.Build{
@@ -78,19 +83,15 @@ func TestBuild(t *testing.T) {
 			},
 		},
 	})
+
 	build, err := Default.WithDefaults(ctx.Config.Builds[0])
 	require.NoError(t, err)
 	require.NoError(t, Default.Prepare(ctx, build))
 
-	target := runtimeTarget()
-	if target == "" {
-		t.Skip("runtime not supported")
-	}
-
+	target := "aarch64-unknown-linux-gnu"
 	options := api.Options{
-		Name: "proj" + maybeExe(target),
-		Path: filepath.Join("dist", "proj-"+target, "proj") + maybeExe(target),
-		Ext:  maybeExe(target),
+		Name: "proj",
+		Path: filepath.Join("dist", "proj-"+target, "proj"),
 	}
 	options.Target, err = Default.Parse(target)
 	require.NoError(t, err)
@@ -112,17 +113,19 @@ func TestBuild(t *testing.T) {
 
 	bin := bins[0]
 	require.Equal(t, artifact.Artifact{
-		Name:   "proj" + maybeExe(target),
+		Name:   "proj",
 		Path:   filepath.ToSlash(options.Path),
-		Goos:   runtime.GOOS,
-		Goarch: runtime.GOARCH,
+		Goos:   "linux",
+		Goarch: "arm64",
 		Target: target,
 		Type:   artifact.Binary,
 		Extra: artifact.Extras{
-			artifact.ExtraBinary:  "proj",
-			artifact.ExtraBuilder: "rust",
-			artifact.ExtraExt:     maybeExe(target),
-			artifact.ExtraID:      "default",
+			artifact.ExtraBinary:   "proj",
+			artifact.ExtraBuilder:  "rust",
+			artifact.ExtraExt:      "",
+			artifact.ExtraID:       "default",
+			artifact.ExtranDynLink: true,
+			keyAbi:                 "gnu",
 		},
 	}, *bin)
 
@@ -153,11 +156,11 @@ func TestParse(t *testing.T) {
 		target, err := Default.Parse("aarch64-pc-windows-gnullvm")
 		require.NoError(t, err)
 		require.Equal(t, Target{
-			Target:      "aarch64-pc-windows-gnullvm",
-			Os:          "windows",
-			Arch:        "arm64",
-			Vendor:      "pc",
-			Environment: "gnullvm",
+			Target: "aarch64-pc-windows-gnullvm",
+			Os:     "windows",
+			Arch:   "arm64",
+			Vendor: "pc",
+			Abi:    "gnullvm",
 		}, target)
 	})
 }
@@ -176,22 +179,4 @@ func TestIsSettingPackage(t *testing.T) {
 			require.Equal(t, tt.expect, got)
 		})
 	}
-}
-
-func runtimeTarget() string {
-	targets := map[string]string{
-		"windows-arm64": "aarch64-pc-windows-msvc",
-		"linux-amd64":   "x86_64-unknown-linux-gnu",
-		"linux-arm64":   "aarch64-unknown-linux-gnu",
-		"darwin-amd64":  "x86_64-apple-darwin",
-		"darwin-arm64":  "aarch64-apple-darwin",
-	}
-	return targets[runtime.GOOS+"-"+runtime.GOARCH]
-}
-
-func maybeExe(s string) string {
-	if strings.Contains(s, "windows") {
-		return ".exe"
-	}
-	return ""
 }

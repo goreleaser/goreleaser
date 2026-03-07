@@ -99,17 +99,17 @@ func TestBuild(t *testing.T) {
 	folder := testlib.Mktmp(t)
 	folder = filepath.Join(folder, "proj")
 	require.NoError(t, os.MkdirAll(folder, 0o755))
-	cmd := exec.Command("zig", "init")
+	cmd := exec.CommandContext(t.Context(), "zig", "init")
 	cmd.Dir = folder
 	_, err := cmd.CombinedOutput()
 	require.NoError(t, err)
 
 	modTime := time.Now().AddDate(-1, 0, 0).Round(time.Second).UTC()
-	ctx := testctx.NewWithCfg(config.Project{
+	ctx := testctx.WrapWithCfg(t.Context(), config.Project{
 		Dist:        "dist",
 		ProjectName: "proj",
 		Env: []string{
-			"OPTIMIZE_FOR=ReleaseSmall",
+			"OPTIMIZE_FOR=Debug",
 		},
 		Builds: []config.Build{
 			{
@@ -125,6 +125,7 @@ func TestBuild(t *testing.T) {
 			},
 		},
 	})
+
 	build, err := Default.WithDefaults(ctx.Config.Builds[0])
 	require.NoError(t, err)
 
@@ -164,6 +165,7 @@ func TestBuild(t *testing.T) {
 			artifact.ExtraBuilder: "zig",
 			artifact.ExtraExt:     "",
 			artifact.ExtraID:      "default",
+			keyAbi:                "",
 		},
 	}, *bin)
 

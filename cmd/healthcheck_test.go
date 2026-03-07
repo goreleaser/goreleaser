@@ -22,11 +22,18 @@ func TestHealthcheckConfigThatDoesNotExist(t *testing.T) {
 func TestHealthcheckMissingTool(t *testing.T) {
 	cmd := newHealthcheckCmd()
 	cmd.cmd.SetArgs([]string{"-f", "testdata/missing_tool.yml"})
-	require.EqualError(t, cmd.cmd.Execute(), "one or more needed tools are not present")
+	require.EqualError(t, cmd.cmd.Execute(), "one or more checks failed")
 }
 
 func TestHealthcheckQuier(t *testing.T) {
 	cmd := newHealthcheckCmd()
 	cmd.cmd.SetArgs([]string{"-f", "testdata/good.yml", "--quiet"})
 	require.NoError(t, cmd.cmd.Execute())
+}
+
+func TestCheckPath(t *testing.T) {
+	require.NoError(t, checkPath(t.Context(), "go"))
+	require.NoError(t, checkPath(t.Context(), "git version"))
+	require.Error(t, checkPath(t.Context(), "docker something-inalid"))
+	require.Error(t, checkPath(t.Context(), "some invalid command"))
 }

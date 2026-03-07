@@ -91,11 +91,7 @@ func doRun(ctx *context.Context, krew config.Krew, cl client.ReleaseURLTemplater
 	}
 
 	filters := []artifact.Filter{
-		artifact.Or(
-			artifact.ByGoos("darwin"),
-			artifact.ByGoos("linux"),
-			artifact.ByGoos("windows"),
-		),
+		artifact.ByGooses("darwin", "linux", "windows"),
 		artifact.Or(
 			artifact.And(
 				artifact.ByGoarch("amd64"),

@@ -309,6 +309,9 @@
 					},
 					"bluesky": {
 						"$ref": "#/$defs/Bluesky"
+					},
+					"discourse": {
+						"$ref": "#/$defs/Discourse"
 					}
 				},
 				"additionalProperties": false,
@@ -396,6 +399,65 @@
 							"type": "string"
 						},
 						"type": "array"
+					}
+				},
+				"additionalProperties": false,
+				"type": "object"
+			},
+			"BinarySign": {
+				"properties": {
+					"id": {
+						"type": "string"
+					},
+					"cmd": {
+						"type": "string"
+					},
+					"args": {
+						"items": {
+							"type": "string"
+						},
+						"type": "array"
+					},
+					"signature": {
+						"type": "string"
+					},
+					"artifacts": {
+						"type": "string",
+						"enum": [
+							"binary",
+							"none"
+						]
+					},
+					"ids": {
+						"items": {
+							"type": "string"
+						},
+						"type": "array"
+					},
+					"stdin": {
+						"type": "string"
+					},
+					"stdin_file": {
+						"type": "string"
+					},
+					"env": {
+						"items": {
+							"type": "string"
+						},
+						"type": "array"
+					},
+					"certificate": {
+						"type": "string"
+					},
+					"output": {
+						"oneOf": [
+							{
+								"type": "string"
+							},
+							{
+								"type": "boolean"
+							}
+						]
 					}
 				},
 				"additionalProperties": false,
@@ -584,7 +646,9 @@
 							"rust",
 							"zig",
 							"bun",
-							"deno"
+							"deno",
+							"uv",
+							"poetry"
 						]
 					},
 					"mod_timestamp": {
@@ -599,9 +663,6 @@
 								"type": "boolean"
 							}
 						]
-					},
-					"gobinary": {
-						"type": "string"
 					},
 					"tool": {
 						"type": "string"
@@ -628,6 +689,8 @@
 							"c-archive",
 							"c-shared",
 							"pie",
+							"wheel",
+							"sdist",
 							""
 						],
 						"default": ""
@@ -658,6 +721,9 @@
 							"$ref": "#/$defs/BuildDetailsOverride"
 						},
 						"type": "array"
+					},
+					"gobinary": {
+						"type": "string"
 					}
 				},
 				"additionalProperties": false,
@@ -705,6 +771,8 @@
 							"c-archive",
 							"c-shared",
 							"pie",
+							"wheel",
+							"sdist",
 							""
 						],
 						"default": ""
@@ -951,6 +1019,36 @@
 					},
 					"email": {
 						"type": "string"
+					},
+					"signing": {
+						"$ref": "#/$defs/CommitSigning"
+					},
+					"use_github_app_token": {
+						"type": "boolean"
+					}
+				},
+				"additionalProperties": false,
+				"type": "object"
+			},
+			"CommitSigning": {
+				"properties": {
+					"enabled": {
+						"type": "boolean"
+					},
+					"key": {
+						"type": "string"
+					},
+					"program": {
+						"type": "string"
+					},
+					"format": {
+						"type": "string",
+						"enum": [
+							"openpgp",
+							"x509",
+							"ssh"
+						],
+						"default": "openpgp"
 					}
 				},
 				"additionalProperties": false,
@@ -978,6 +1076,37 @@
 						"type": "string"
 					},
 					"icon_url": {
+						"type": "string"
+					}
+				},
+				"additionalProperties": false,
+				"type": "object"
+			},
+			"Discourse": {
+				"properties": {
+					"enabled": {
+						"oneOf": [
+							{
+								"type": "string"
+							},
+							{
+								"type": "boolean"
+							}
+						]
+					},
+					"title_template": {
+						"type": "string"
+					},
+					"message_template": {
+						"type": "string"
+					},
+					"server": {
+						"type": "string"
+					},
+					"category_id": {
+						"type": "integer"
+					},
+					"username": {
 						"type": "string"
 					}
 				},
@@ -1058,6 +1187,28 @@
 							"buildx"
 						],
 						"default": "docker"
+					},
+					"retry": {
+						"$ref": "#/$defs/Retry"
+					}
+				},
+				"additionalProperties": false,
+				"type": "object"
+			},
+			"DockerDigest": {
+				"properties": {
+					"disable": {
+						"oneOf": [
+							{
+								"type": "string"
+							},
+							{
+								"type": "boolean"
+							}
+						]
+					},
+					"name_template": {
+						"type": "string"
 					}
 				},
 				"additionalProperties": false,
@@ -1101,6 +1252,98 @@
 					},
 					"use": {
 						"type": "string"
+					},
+					"retry": {
+						"$ref": "#/$defs/Retry"
+					}
+				},
+				"additionalProperties": false,
+				"type": "object"
+			},
+			"DockerV2": {
+				"properties": {
+					"id": {
+						"type": "string"
+					},
+					"ids": {
+						"items": {
+							"type": "string"
+						},
+						"type": "array"
+					},
+					"dockerfile": {
+						"type": "string"
+					},
+					"images": {
+						"items": {
+							"type": "string"
+						},
+						"type": "array"
+					},
+					"tags": {
+						"items": {
+							"type": "string"
+						},
+						"type": "array"
+					},
+					"labels": {
+						"additionalProperties": {
+							"type": "string"
+						},
+						"type": "object"
+					},
+					"annotations": {
+						"additionalProperties": {
+							"type": "string"
+						},
+						"type": "object"
+					},
+					"extra_files": {
+						"items": {
+							"type": "string"
+						},
+						"type": "array"
+					},
+					"platforms": {
+						"items": {
+							"type": "string"
+						},
+						"type": "array"
+					},
+					"build_args": {
+						"additionalProperties": {
+							"type": "string"
+						},
+						"type": "object"
+					},
+					"retry": {
+						"$ref": "#/$defs/Retry"
+					},
+					"flags": {
+						"items": {
+							"type": "string"
+						},
+						"type": "array"
+					},
+					"disable": {
+						"oneOf": [
+							{
+								"type": "string"
+							},
+							{
+								"type": "boolean"
+							}
+						]
+					},
+					"sbom": {
+						"oneOf": [
+							{
+								"type": "string"
+							},
+							{
+								"type": "boolean"
+							}
+						]
 					}
 				},
 				"additionalProperties": false,
@@ -1486,6 +1729,244 @@
 				"additionalProperties": false,
 				"type": "object"
 			},
+			"HomebrewCask": {
+				"properties": {
+					"name": {
+						"type": "string"
+					},
+					"repository": {
+						"$ref": "#/$defs/RepoRef"
+					},
+					"commit_author": {
+						"$ref": "#/$defs/CommitAuthor"
+					},
+					"commit_msg_template": {
+						"type": "string"
+					},
+					"directory": {
+						"type": "string"
+					},
+					"caveats": {
+						"type": "string"
+					},
+					"description": {
+						"type": "string"
+					},
+					"homepage": {
+						"type": "string"
+					},
+					"skip_upload": {
+						"oneOf": [
+							{
+								"type": "string"
+							},
+							{
+								"type": "boolean"
+							}
+						]
+					},
+					"custom_block": {
+						"type": "string"
+					},
+					"ids": {
+						"items": {
+							"type": "string"
+						},
+						"type": "array"
+					},
+					"service": {
+						"type": "string"
+					},
+					"binaries": {
+						"items": {
+							"type": "string"
+						},
+						"type": "array"
+					},
+					"manpages": {
+						"items": {
+							"type": "string"
+						},
+						"type": "array"
+					},
+					"url": {
+						"$ref": "#/$defs/HomebrewCaskURL"
+					},
+					"completions": {
+						"$ref": "#/$defs/HomebrewCaskCompletions"
+					},
+					"dependencies": {
+						"items": {
+							"$ref": "#/$defs/HomebrewCaskDependency"
+						},
+						"type": "array"
+					},
+					"conflicts": {
+						"items": {
+							"$ref": "#/$defs/HomebrewCaskConflict"
+						},
+						"type": "array"
+					},
+					"hooks": {
+						"$ref": "#/$defs/HomebrewCaskHooks"
+					},
+					"uninstall": {
+						"$ref": "#/$defs/HomebrewCaskUninstall"
+					},
+					"zap": {
+						"$ref": "#/$defs/HomebrewCaskUninstall"
+					},
+					"license": {
+						"type": "string"
+					},
+					"manpage": {
+						"type": "string"
+					},
+					"binary": {
+						"type": "string"
+					}
+				},
+				"additionalProperties": false,
+				"type": "object"
+			},
+			"HomebrewCaskCompletions": {
+				"properties": {
+					"bash": {
+						"type": "string"
+					},
+					"zsh": {
+						"type": "string"
+					},
+					"fish": {
+						"type": "string"
+					}
+				},
+				"additionalProperties": false,
+				"type": "object"
+			},
+			"HomebrewCaskConflict": {
+				"properties": {
+					"cask": {
+						"type": "string"
+					},
+					"formula": {
+						"type": "string"
+					}
+				},
+				"additionalProperties": false,
+				"type": "object"
+			},
+			"HomebrewCaskDependency": {
+				"properties": {
+					"cask": {
+						"type": "string"
+					},
+					"formula": {
+						"type": "string"
+					}
+				},
+				"additionalProperties": false,
+				"type": "object"
+			},
+			"HomebrewCaskHook": {
+				"properties": {
+					"install": {
+						"type": "string"
+					},
+					"uninstall": {
+						"type": "string"
+					}
+				},
+				"additionalProperties": false,
+				"type": "object"
+			},
+			"HomebrewCaskHooks": {
+				"properties": {
+					"pre": {
+						"$ref": "#/$defs/HomebrewCaskHook"
+					},
+					"post": {
+						"$ref": "#/$defs/HomebrewCaskHook"
+					}
+				},
+				"additionalProperties": false,
+				"type": "object"
+			},
+			"HomebrewCaskURL": {
+				"properties": {
+					"template": {
+						"type": "string"
+					},
+					"verified": {
+						"type": "string"
+					},
+					"using": {
+						"type": "string"
+					},
+					"cookies": {
+						"additionalProperties": {
+							"type": "string"
+						},
+						"type": "object"
+					},
+					"referer": {
+						"type": "string"
+					},
+					"headers": {
+						"items": {
+							"type": "string"
+						},
+						"type": "array"
+					},
+					"user_agent": {
+						"type": "string"
+					},
+					"data": {
+						"additionalProperties": {
+							"type": "string"
+						},
+						"type": "object"
+					}
+				},
+				"additionalProperties": false,
+				"type": "object"
+			},
+			"HomebrewCaskUninstall": {
+				"properties": {
+					"launchctl": {
+						"items": {
+							"type": "string"
+						},
+						"type": "array"
+					},
+					"quit": {
+						"items": {
+							"type": "string"
+						},
+						"type": "array"
+					},
+					"login_item": {
+						"items": {
+							"type": "string"
+						},
+						"type": "array"
+					},
+					"delete": {
+						"items": {
+							"type": "string"
+						},
+						"type": "array"
+					},
+					"trash": {
+						"items": {
+							"type": "string"
+						},
+						"type": "array"
+					}
+				},
+				"additionalProperties": false,
+				"type": "object"
+			},
 			"HomebrewDependency": {
 				"oneOf": [
 					{
@@ -1493,7 +1974,7 @@
 					},
 					{
 						"$schema": "https://json-schema.org/draft/2020-12/schema",
-						"$id": "https://github.com/goreleaser/goreleaser/v2/pkg/config/homebrew-dependency",
+						"$id": "https://github.com/goreleaser/goreleaser/v2/pkg/config/homebrew-dependency-alias",
 						"properties": {
 							"name": {
 								"type": "string"
@@ -1631,9 +2112,6 @@
 					"user": {
 						"type": "string"
 					},
-					"repository": {
-						"type": "string"
-					},
 					"repositories": {
 						"items": {
 							"type": "string"
@@ -1659,6 +2137,14 @@
 						"type": "string"
 					},
 					"sbom": {
+						"type": "string",
+						"enum": [
+							"spdx",
+							"none"
+						],
+						"default": "spdx"
+					},
+					"sbom_directory": {
 						"type": "string"
 					},
 					"ldflags": {
@@ -1688,6 +2174,9 @@
 					"base_import_paths": {
 						"type": "boolean"
 					},
+					"local_domain": {
+						"type": "string"
+					},
 					"disable": {
 						"oneOf": [
 							{
@@ -1697,6 +2186,9 @@
 								"type": "boolean"
 							}
 						]
+					},
+					"repository": {
+						"type": "string"
 					}
 				},
 				"additionalProperties": false,
@@ -1798,6 +2290,196 @@
 				"additionalProperties": false,
 				"type": "object"
 			},
+			"MCP": {
+				"properties": {
+					"github": {
+						"$ref": "#/$defs/MCPDetails"
+					},
+					"name": {
+						"type": "string"
+					},
+					"title": {
+						"type": "string"
+					},
+					"description": {
+						"type": "string"
+					},
+					"homepage": {
+						"type": "string"
+					},
+					"packages": {
+						"items": {
+							"$ref": "#/$defs/MCPPackage"
+						},
+						"type": "array"
+					},
+					"transports": {
+						"items": {
+							"$ref": "#/$defs/MCPTransport"
+						},
+						"type": "array"
+					},
+					"disable": {
+						"oneOf": [
+							{
+								"type": "string"
+							},
+							{
+								"type": "boolean"
+							}
+						]
+					},
+					"repository": {
+						"$ref": "#/$defs/MCPRepository"
+					},
+					"auth": {
+						"$ref": "#/$defs/MCPAuth"
+					}
+				},
+				"additionalProperties": false,
+				"type": "object",
+				"required": [
+					"name",
+					"title",
+					"auth"
+				]
+			},
+			"MCPAuth": {
+				"properties": {
+					"type": {
+						"type": "string",
+						"enum": [
+							"none",
+							"github",
+							"github-oidc"
+						],
+						"default": "none"
+					},
+					"token": {
+						"type": "string"
+					}
+				},
+				"additionalProperties": false,
+				"type": "object",
+				"required": [
+					"type"
+				]
+			},
+			"MCPDetails": {
+				"properties": {
+					"name": {
+						"type": "string"
+					},
+					"title": {
+						"type": "string"
+					},
+					"description": {
+						"type": "string"
+					},
+					"homepage": {
+						"type": "string"
+					},
+					"packages": {
+						"items": {
+							"$ref": "#/$defs/MCPPackage"
+						},
+						"type": "array"
+					},
+					"transports": {
+						"items": {
+							"$ref": "#/$defs/MCPTransport"
+						},
+						"type": "array"
+					},
+					"disable": {
+						"oneOf": [
+							{
+								"type": "string"
+							},
+							{
+								"type": "boolean"
+							}
+						]
+					},
+					"repository": {
+						"$ref": "#/$defs/MCPRepository"
+					},
+					"auth": {
+						"$ref": "#/$defs/MCPAuth"
+					}
+				},
+				"additionalProperties": false,
+				"type": "object",
+				"required": [
+					"name",
+					"title",
+					"auth"
+				]
+			},
+			"MCPPackage": {
+				"properties": {
+					"registry_type": {
+						"type": "string",
+						"enum": [
+							"oci",
+							"npm",
+							"pypi",
+							"nuget",
+							"mcpb"
+						]
+					},
+					"identifier": {
+						"type": "string"
+					},
+					"transport": {
+						"$ref": "#/$defs/MCPTransport"
+					}
+				},
+				"additionalProperties": false,
+				"type": "object",
+				"required": [
+					"registry_type",
+					"identifier",
+					"transport"
+				]
+			},
+			"MCPRepository": {
+				"properties": {
+					"url": {
+						"type": "string"
+					},
+					"source": {
+						"type": "string",
+						"enum": [
+							"github",
+							"gitlab",
+							"gitea"
+						]
+					},
+					"id": {
+						"type": "string"
+					},
+					"subfolder": {
+						"type": "string"
+					}
+				},
+				"additionalProperties": false,
+				"type": "object"
+			},
+			"MCPTransport": {
+				"properties": {
+					"type": {
+						"type": "string",
+						"enum": [
+							"stdio",
+							"streamable-http",
+							"sse"
+						]
+					}
+				},
+				"additionalProperties": false,
+				"type": "object"
+			},
 			"MacOSNotarize": {
 				"properties": {
 					"issuer_id": {
@@ -1874,6 +2556,111 @@
 					"sign",
 					"notarize"
 				]
+			},
+			"Makeself": {
+				"properties": {
+					"id": {
+						"type": "string"
+					},
+					"filename": {
+						"type": "string"
+					},
+					"script": {
+						"type": "string"
+					},
+					"compression": {
+						"type": "string",
+						"enum": [
+							"gzip",
+							"bzip2",
+							"xz",
+							"lzo",
+							"compress",
+							"none"
+						]
+					},
+					"extra_args": {
+						"items": {
+							"type": "string"
+						},
+						"type": "array"
+					},
+					"files": {
+						"items": {
+							"$ref": "#/$defs/MakeselfFile"
+						},
+						"type": "array"
+					},
+					"disable": {
+						"oneOf": [
+							{
+								"type": "string"
+							},
+							{
+								"type": "boolean"
+							}
+						]
+					},
+					"ids": {
+						"items": {
+							"type": "string"
+						},
+						"type": "array"
+					},
+					"goos": {
+						"items": {
+							"type": "string"
+						},
+						"type": "array"
+					},
+					"goarch": {
+						"items": {
+							"type": "string"
+						},
+						"type": "array"
+					},
+					"name": {
+						"type": "string"
+					},
+					"description": {
+						"type": "string"
+					},
+					"maintainer": {
+						"type": "string"
+					},
+					"keywords": {
+						"items": {
+							"type": "string"
+						},
+						"type": "array"
+					},
+					"homepage": {
+						"type": "string"
+					},
+					"license": {
+						"type": "string"
+					}
+				},
+				"additionalProperties": false,
+				"type": "object",
+				"required": [
+					"script"
+				]
+			},
+			"MakeselfFile": {
+				"properties": {
+					"src": {
+						"type": "string"
+					},
+					"dst": {
+						"type": "string"
+					},
+					"strip_parent": {
+						"type": "boolean"
+					}
+				},
+				"additionalProperties": false,
+				"type": "object"
 			},
 			"Mastodon": {
 				"properties": {
@@ -2110,6 +2897,12 @@
 					"meta": {
 						"type": "boolean"
 					},
+					"goamd64": {
+						"items": {
+							"type": "string"
+						},
+						"type": "array"
+					},
 					"builds": {
 						"items": {
 							"type": "string"
@@ -2248,6 +3041,7 @@
 						"enum": [
 							"gzip",
 							"xz",
+							"zstd",
 							"none"
 						],
 						"default": "gzip"
@@ -2510,6 +3304,9 @@
 					},
 					"packager": {
 						"type": "string"
+					},
+					"buildhost": {
+						"type": "string"
 					}
 				},
 				"additionalProperties": false,
@@ -2616,6 +3413,13 @@
 							"$ref": "#/$defs/NixDependency"
 						},
 						"type": "array"
+					},
+					"formatter": {
+						"type": "string",
+						"enum": [
+							"alejandra",
+							"nixfmt"
+						]
 					}
 				},
 				"additionalProperties": false,
@@ -2719,9 +3523,9 @@
 						},
 						"type": "array"
 					},
-					"brews": {
+					"homebrew_casks": {
 						"items": {
-							"$ref": "#/$defs/Homebrew"
+							"$ref": "#/$defs/HomebrewCask"
 						},
 						"type": "array"
 					},
@@ -2797,17 +3601,14 @@
 					"checksum": {
 						"$ref": "#/$defs/Checksum"
 					},
-					"dockers": {
+					"dockers_v2": {
 						"items": {
-							"$ref": "#/$defs/Docker"
+							"$ref": "#/$defs/DockerV2"
 						},
 						"type": "array"
 					},
-					"docker_manifests": {
-						"items": {
-							"$ref": "#/$defs/DockerManifest"
-						},
-						"type": "array"
+					"docker_digest": {
+						"$ref": "#/$defs/DockerDigest"
 					},
 					"artifactories": {
 						"items": {
@@ -2856,7 +3657,7 @@
 					},
 					"binary_signs": {
 						"items": {
-							"$ref": "#/$defs/Sign"
+							"$ref": "#/$defs/BinarySign"
 						},
 						"type": "array"
 					},
@@ -2896,6 +3697,12 @@
 					"metadata": {
 						"$ref": "#/$defs/ProjectMetadata"
 					},
+					"makeselfs": {
+						"items": {
+							"$ref": "#/$defs/Makeself"
+						},
+						"type": "array"
+					},
 					"universal_binaries": {
 						"items": {
 							"$ref": "#/$defs/UniversalBinary"
@@ -2907,6 +3714,9 @@
 							"$ref": "#/$defs/UPX"
 						},
 						"type": "array"
+					},
+					"mcp": {
+						"$ref": "#/$defs/MCP"
 					},
 					"force_token": {
 						"type": "string",
@@ -2926,6 +3736,24 @@
 					},
 					"gitea_urls": {
 						"$ref": "#/$defs/GiteaURLs"
+					},
+					"brews": {
+						"items": {
+							"$ref": "#/$defs/Homebrew"
+						},
+						"type": "array"
+					},
+					"dockers": {
+						"items": {
+							"$ref": "#/$defs/Docker"
+						},
+						"type": "array"
+					},
+					"docker_manifests": {
+						"items": {
+							"$ref": "#/$defs/DockerManifest"
+						},
+						"type": "array"
 					}
 				},
 				"additionalProperties": false,
@@ -3014,7 +3842,7 @@
 					},
 					{
 						"$schema": "https://json-schema.org/draft/2020-12/schema",
-						"$id": "https://github.com/goreleaser/goreleaser/v2/pkg/config/pull-request-base",
+						"$id": "https://github.com/goreleaser/goreleaser/v2/pkg/config/pull-request-base-alias",
 						"properties": {
 							"owner": {
 								"type": "string"
@@ -3198,6 +4026,21 @@
 				"additionalProperties": false,
 				"type": "object"
 			},
+			"Retry": {
+				"properties": {
+					"attempts": {
+						"type": "integer"
+					},
+					"delay": {
+						"type": "integer"
+					},
+					"max_delay": {
+						"type": "integer"
+					}
+				},
+				"additionalProperties": false,
+				"type": "object"
+			},
 			"SBOM": {
 				"properties": {
 					"id": {
@@ -3232,7 +4075,7 @@
 							"archive",
 							"binary",
 							"any",
-							"any"
+							"none"
 						],
 						"default": "archive"
 					},
@@ -3241,6 +4084,16 @@
 							"type": "string"
 						},
 						"type": "array"
+					},
+					"disable": {
+						"oneOf": [
+							{
+								"type": "string"
+							},
+							{
+								"type": "boolean"
+							}
+						]
 					}
 				},
 				"additionalProperties": false,
@@ -3427,7 +4280,14 @@
 						"type": "string"
 					},
 					"output": {
-						"type": "boolean"
+						"oneOf": [
+							{
+								"type": "string"
+							},
+							{
+								"type": "boolean"
+							}
+						]
 					}
 				},
 				"additionalProperties": false,
@@ -4033,7 +4893,12 @@
 						"type": "string"
 					},
 					"mode": {
-						"type": "string"
+						"type": "string",
+						"enum": [
+							"binary",
+							"archive"
+						],
+						"default": "archive"
 					},
 					"method": {
 						"type": "string"
@@ -4086,6 +4951,9 @@
 								"type": "boolean"
 							}
 						]
+					},
+					"password": {
+						"type": "string"
 					}
 				},
 				"additionalProperties": false,
@@ -4136,6 +5004,9 @@
 					"name": {
 						"type": "string"
 					},
+					"package_name": {
+						"type": "string"
+					},
 					"package_identifier": {
 						"type": "string"
 					},
@@ -4146,6 +5017,9 @@
 						"type": "string"
 					},
 					"publisher_support_url": {
+						"type": "string"
+					},
+					"privacy_url": {
 						"type": "string"
 					},
 					"copyright": {
@@ -4210,6 +5084,9 @@
 						"type": "string"
 					},
 					"release_notes_url": {
+						"type": "string"
+					},
+					"installation_notes": {
 						"type": "string"
 					},
 					"tags": {

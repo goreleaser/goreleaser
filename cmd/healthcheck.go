@@ -1,14 +1,15 @@
 package cmd
 
 import (
+	stdctx "context"
 	"errors"
 	"io"
 	"os/exec"
+	"strings"
 	"sync"
 
-	"github.com/caarlos0/ctrlc"
+	"charm.land/lipgloss/v2"
 	"github.com/caarlos0/log"
-	"github.com/charmbracelet/lipgloss"
 	"github.com/goreleaser/goreleaser/v2/internal/middleware/skip"
 	"github.com/goreleaser/goreleaser/v2/internal/pipe/defaults"
 	"github.com/goreleaser/goreleaser/v2/pkg/context"
@@ -33,7 +34,7 @@ func newHealthcheckCmd() *healthcheckCmd {
 		SilenceErrors:     true,
 		Args:              cobra.NoArgs,
 		ValidArgsFunction: cobra.NoFileCompletions,
-		RunE: func(_ *cobra.Command, _ []string) error {
+		RunE: func(cmd *cobra.Command, _ []string) error {
 			if root.quiet {
 				log.Log = log.New(io.Discard)
 			}
@@ -42,42 +43,43 @@ func newHealthcheckCmd() *healthcheckCmd {
 			if err != nil {
 				return err
 			}
-			ctx := context.New(cfg)
+			ctx := context.Wrap(cmd.Context(), cfg)
 
-			if err := ctrlc.Default.Run(ctx, func() error {
-				log.Info(boldStyle.Render("checking tools..."))
+			log.Info(boldStyle.Render("checking tools..."))
 
-				err := defaults.Pipe{}.Run(ctx)
-				if err != nil {
-					return err
-				}
-
-				log.IncreasePadding()
-				defer log.ResetPadding()
-
-				var errs []error
-				for _, hc := range healthcheck.Healthcheckers {
-					_ = skip.Maybe(hc, func(ctx *context.Context) error {
-						for _, tool := range hc.Dependencies(ctx) {
-							if err := checkPath(tool); err != nil {
-								errs = append(errs, err)
-							}
-						}
-						return nil
-					})(ctx)
-				}
-
-				if len(errs) == 0 {
-					return nil
-				}
-
-				return errors.New("one or more needed tools are not present")
-			}); err != nil {
+			if err := (defaults.Pipe{}).Run(ctx); err != nil {
 				return err
 			}
 
-			log.Infof(boldStyle.Render("done!"))
-			return nil
+			log.IncreasePadding()
+			defer log.ResetPadding()
+
+			var errs []error
+			for _, hc := range healthcheck.DependencyCheckers {
+				_ = skip.Maybe(hc, func(ctx *context.Context) error {
+					for _, tool := range hc.Dependencies(ctx) {
+						if err := checkPath(ctx, tool); err != nil {
+							errs = append(errs, err)
+						}
+					}
+					return nil
+				})(ctx)
+			}
+			for _, hc := range healthcheck.HealthCheckers {
+				_ = skip.Maybe(hc, func(ctx *context.Context) error {
+					if err := check(hc.String(), hc.Healthcheck(ctx)); err != nil {
+						errs = append(errs, err)
+					}
+					return nil
+				})(ctx)
+			}
+
+			if len(errs) == 0 {
+				log.Infof(boldStyle.Render("done!"))
+				return nil
+			}
+
+			return errors.New("one or more checks failed")
 		},
 	}
 
@@ -92,14 +94,33 @@ func newHealthcheckCmd() *healthcheckCmd {
 
 var toolsChecked = &sync.Map{}
 
-func checkPath(tool string) error {
+func check(name string, err error) error {
+	if err == nil {
+		st := lipgloss.NewStyle().Foreground(lipgloss.Color("2")).Bold(true)
+		log.Infof("%s %s", st.Render("✓"), codeStyle.Render(name))
+		return nil
+	}
+	st := log.Styles[log.ErrorLevel]
+	log.Warnf("%s %s - %s", st.Render("⚠"), codeStyle.Render(name), st.Render(err.Error()))
+	return err
+}
+
+func checkPath(ctx stdctx.Context, tool string) error {
 	if _, ok := toolsChecked.LoadOrStore(tool, true); ok {
 		return nil
 	}
-	if _, err := exec.LookPath(tool); err != nil {
+	args := strings.Fields(tool)
+	if _, err := exec.LookPath(args[0]); err != nil {
 		st := log.Styles[log.ErrorLevel]
 		log.Warnf("%s %s - %s", st.Render("⚠"), codeStyle.Render(tool), st.Render("not present in path"))
 		return err
+	}
+	if len(args) > 1 {
+		if err := exec.CommandContext(ctx, args[0], args[1:]...).Run(); err != nil {
+			st := log.Styles[log.ErrorLevel]
+			log.Warnf("%s %s - %s", st.Render("⚠"), codeStyle.Render(tool), st.Render("command failed"))
+			return err
+		}
 	}
 	st := lipgloss.NewStyle().Foreground(lipgloss.Color("2")).Bold(true)
 	log.Infof("%s %s", st.Render("✓"), codeStyle.Render(tool))

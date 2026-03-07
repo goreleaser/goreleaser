@@ -30,10 +30,10 @@ func (e VersionError) Error() string {
 }
 
 // Load config file.
-func Load(file string) (config Project, err error) {
+func Load(file string) (Project, error) {
 	f, err := os.Open(file) // #nosec
 	if err != nil {
-		return
+		return Project{}, err
 	}
 	defer f.Close()
 	return LoadReader(f)

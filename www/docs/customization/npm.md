@@ -2,11 +2,9 @@
 
 <!-- md:version v2.8 -->
 
-<!-- md:alpha -->
-
 <!-- md:pro -->
 
-The `npm` section configures how GoReleaser publishes your packages to NPM
+The `npms` section configures how GoReleaser publishes your packages to NPM
 registries.
 
 ## How it works
@@ -28,7 +26,7 @@ For each NPM configuration, GoReleaser will:
 
 ```yaml
 # .goreleaser.yaml
-npm:
+npms:
   - # ID of the resulting image.
     #
     # Default: the project name.
@@ -107,6 +105,13 @@ npm:
     # Access level: public or restricted.
     access: public
 
+    # Tag to publish the package with.
+    #
+    # Default: 'latest'.
+    # Templates: allowed.
+    # <!-- md:inline_version v2.13 -->.
+    tag: latest
+
     # Package format: tar, tgz, tar.gz, zip, or binary.
     #
     # Required: if more than one archive format is being used.
@@ -124,6 +129,21 @@ npm:
     #
     # Templates: allowed.
     disable: "{{ gt .Patch 0 }}"
+
+    # URL which is determined by the given Token (github, gitlab or gitea).
+    #
+    # Default depends on the client.
+    # Templates: allowed.
+    # <!-- md:inline_version v2.10 -->.
+    url_template: "https://github.mycompany.com/foo/bar/releases/download/{{ .Tag }}/{{ .ArtifactName }}"
+
+    # Set extra fields at the root level of the generated package.json.
+    #
+    # <!-- md:inline_version v2.13 -->.
+    extra:
+      mcpName: io.github.foo/bar
+      complex:
+        foo: bar
 ```
 
 !!! warning "Caveat"

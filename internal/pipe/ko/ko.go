@@ -22,6 +22,7 @@ import (
 	"github.com/google/go-containerregistry/pkg/crane"
 	"github.com/google/go-containerregistry/pkg/name"
 	v1 "github.com/google/go-containerregistry/pkg/v1"
+	"github.com/google/go-containerregistry/pkg/v1/daemon"
 	"github.com/google/go-containerregistry/pkg/v1/google"
 	"github.com/google/go-containerregistry/pkg/v1/remote"
 	"github.com/google/ko/pkg/build"
@@ -189,6 +190,7 @@ type buildOptions struct {
 	creationTime        *v1.Time
 	koDataCreationTime  *v1.Time
 	sbom                string
+	SBOMDirectory       string
 	ldflags             []string
 	bare                bool
 	preserveImportPaths bool
@@ -214,6 +216,11 @@ func (o *buildOptions) makeBuilder(ctx *context.Context) (*build.Caching, error)
 
 			if cached, found := baseImages.Load(o.baseImage); found {
 				return ref, cached.(build.Result), nil
+			}
+
+			if localImage, _ := daemon.Image(ref); localImage != nil {
+				baseImages.Store(o.baseImage, localImage)
+				return ref, localImage, err
 			}
 
 			desc, err := remote.Get(
@@ -254,6 +261,9 @@ func (o *buildOptions) makeBuilder(ctx *context.Context) (*build.Caching, error)
 	switch o.sbom {
 	case "spdx":
 		buildOptions = append(buildOptions, build.WithSPDX("devel"))
+		if o.SBOMDirectory != "" {
+			buildOptions = append(buildOptions, build.WithSBOMDir(o.SBOMDirectory))
+		}
 	case "none":
 		buildOptions = append(buildOptions, build.WithDisabledSBOM())
 	default:
@@ -265,6 +275,14 @@ func (o *buildOptions) makeBuilder(ctx *context.Context) (*build.Caching, error)
 		return nil, fmt.Errorf("newGo: %w", err)
 	}
 	return build.NewCaching(b)
+}
+
+func getLocalDomain(ko config.Ko) string {
+	localDomain := "goreleaser.ko.local"
+	if ko.LocalDomain != "" {
+		localDomain = ko.LocalDomain
+	}
+	return localDomain
 }
 
 func doBuild(ctx *context.Context, ko config.Ko) error {
@@ -289,7 +307,7 @@ func doBuild(ctx *context.Context, ko config.Ko) error {
 		BaseImportPaths:     opts.baseImportPaths,
 		Tags:                opts.tags,
 		Local:               ctx.Snapshot,
-		LocalDomain:         "goreleaser.ko.local",
+		LocalDomain:         getLocalDomain(ko),
 	}
 	var p publish.Interface
 	if ctx.Snapshot {
@@ -391,6 +409,7 @@ func buildBuildOptions(ctx *context.Context, cfg config.Ko) (*buildOptions, erro
 		sbom:                cfg.SBOM,
 		imageRepos:          cfg.Repositories,
 		user:                cfg.User,
+		SBOMDirectory:       cfg.SBOMDirectory,
 	}
 
 	tags, err := applyTemplate(ctx, cfg.Tags)

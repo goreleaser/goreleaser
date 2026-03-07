@@ -21,7 +21,7 @@ var filterTestTargets = []string{
 
 func TestFilter(t *testing.T) {
 	t.Run("none", func(t *testing.T) {
-		ctx := testctx.New()
+		ctx := testctx.Wrap(t.Context())
 		require.Equal(t, filterTestTargets, filter(ctx, config.Build{
 			Builder: "go",
 			Targets: filterTestTargets,
@@ -29,10 +29,11 @@ func TestFilter(t *testing.T) {
 	})
 
 	t.Run("target", func(t *testing.T) {
-		ctx := testctx.New(func(ctx *context.Context) {
+		ctx := testctx.Wrap(t.Context(), func(ctx *context.Context) {
 			ctx.Partial = true
 			ctx.PartialTarget = "darwin_amd64_v1"
 		})
+
 		require.Equal(t, []string{
 			"darwin_amd64_v1",
 		}, filter(ctx, config.Build{
@@ -42,10 +43,11 @@ func TestFilter(t *testing.T) {
 	})
 
 	t.Run("incomplete target", func(t *testing.T) {
-		ctx := testctx.New(func(ctx *context.Context) {
+		ctx := testctx.Wrap(t.Context(), func(ctx *context.Context) {
 			ctx.Partial = true
 			ctx.PartialTarget = "darwin_amd64"
 		})
+
 		require.Equal(t, []string{
 			"darwin_amd64_v1",
 		}, filter(ctx, config.Build{
@@ -55,10 +57,11 @@ func TestFilter(t *testing.T) {
 	})
 
 	t.Run("target no match", func(t *testing.T) {
-		ctx := testctx.New(func(ctx *context.Context) {
+		ctx := testctx.Wrap(t.Context(), func(ctx *context.Context) {
 			ctx.Partial = true
 			ctx.PartialTarget = "linux_amd64_v1"
 		})
+
 		require.Empty(t, filter(ctx, config.Build{
 			Builder: "go",
 			Targets: []string{"darwin_amd64_v1"},

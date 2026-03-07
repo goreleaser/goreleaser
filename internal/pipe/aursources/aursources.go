@@ -51,7 +51,7 @@ func (Pipe) Default(ctx *context.Context) error {
 		if pkg.Name == "" {
 			pkg.Name = ctx.Config.ProjectName
 		}
-		pkg.Name = trimBin(pkg.Name)
+		pkg.Name = strings.TrimSuffix(pkg.Name, "-bin")
 		if len(pkg.Arches) == 0 {
 			pkg.Arches = []string{"x86_64", "aarch64"}
 		}
@@ -73,14 +73,6 @@ func (Pipe) Default(ctx *context.Context) error {
 	}
 
 	return nil
-}
-
-func trimBin(s string) string {
-	if strings.HasSuffix(s, "-bin") {
-		return trimBin(strings.TrimSuffix(s, "-bin"))
-	}
-
-	return s
 }
 
 func (Pipe) Run(ctx *context.Context) error {
@@ -145,13 +137,13 @@ func doRun(ctx *context.Context, aur config.AURSource, cl client.ReleaseURLTempl
 			name: "PKGBUILD",
 			tpl:  aurTemplateData,
 			ext:  ".pkgbuild",
-			kind: artifact.PkgBuild,
+			kind: artifact.SourcePkgBuild,
 		},
 		{
 			name: ".SRCINFO",
 			tpl:  srcInfoTemplate,
 			ext:  ".srcinfo",
-			kind: artifact.SrcInfo,
+			kind: artifact.SourceSrcInfo,
 		},
 	} {
 		pkgContent, err := buildPkgFile(ctx, aur, cl, archives, info.tpl)
@@ -225,6 +217,7 @@ func applyTemplate(ctx *context.Context, tpl string, data templateData) (string,
 				"fixLines":   fixLines,
 				"pkgArray":   toPkgBuildArray,
 				"quoteField": quoteField,
+				"replaceAll": strings.ReplaceAll,
 			}).
 			Parse(tpl),
 	)
@@ -270,7 +263,7 @@ func dataFor(ctx *context.Context, cfg config.AURSource, cl client.ReleaseURLTem
 		Name:         cfg.Name,
 		Desc:         cfg.Description,
 		Homepage:     cfg.Homepage,
-		Version:      fmt.Sprintf("%d.%d.%d", ctx.Semver.Major, ctx.Semver.Minor, ctx.Semver.Patch),
+		Version:      strings.ReplaceAll(ctx.Version, "-", "_"),
 		License:      cfg.License,
 		Rel:          cfg.Rel,
 		Maintainers:  cfg.Maintainers,
@@ -322,9 +315,9 @@ func dataFor(ctx *context.Context, cfg config.AURSource, cl client.ReleaseURLTem
 func (Pipe) Publish(ctx *context.Context) error {
 	skips := pipe.SkipMemento{}
 	for _, pkgs := range ctx.Artifacts.Filter(
-		artifact.Or(
-			artifact.ByType(artifact.PkgBuild),
-			artifact.ByType(artifact.SrcInfo),
+		artifact.ByTypes(
+			artifact.SourcePkgBuild,
+			artifact.SourceSrcInfo,
 		),
 	).GroupByID() {
 		err := doPublish(ctx, pkgs)

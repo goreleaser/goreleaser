@@ -9,6 +9,7 @@ import (
 )
 
 func TestRepoFromRef(t *testing.T) {
+	t.Parallel()
 	owner := "someowner"
 	name := "somename"
 	branch := "somebranch"
@@ -28,6 +29,7 @@ func TestRepoFromRef(t *testing.T) {
 }
 
 func TestTemplateRef(t *testing.T) {
+	t.Parallel()
 	expected := config.RepoRef{
 		Owner:  "owner",
 		Name:   "name",
@@ -40,6 +42,7 @@ func TestTemplateRef(t *testing.T) {
 		},
 	}
 	t.Run("success", func(t *testing.T) {
+		t.Parallel()
 		ref, err := TemplateRef(func(s string) (string, error) {
 			if s == "token" {
 				return "", fmt.Errorf("nope")
@@ -51,6 +54,7 @@ func TestTemplateRef(t *testing.T) {
 	})
 
 	t.Run("fail owner", func(t *testing.T) {
+		t.Parallel()
 		_, err := TemplateRef(func(s string) (string, error) {
 			if s == "token" || s == "owner" {
 				return "", fmt.Errorf("nope")
@@ -60,6 +64,7 @@ func TestTemplateRef(t *testing.T) {
 		require.Error(t, err)
 	})
 	t.Run("fail name", func(t *testing.T) {
+		t.Parallel()
 		_, err := TemplateRef(func(s string) (string, error) {
 			if s == "token" || s == "name" {
 				return "", fmt.Errorf("nope")
@@ -69,6 +74,7 @@ func TestTemplateRef(t *testing.T) {
 		require.Error(t, err)
 	})
 	t.Run("fail branch", func(t *testing.T) {
+		t.Parallel()
 		_, err := TemplateRef(func(s string) (string, error) {
 			if s == "token" || s == "branch" {
 				return "", fmt.Errorf("nope")
@@ -78,6 +84,7 @@ func TestTemplateRef(t *testing.T) {
 		require.Error(t, err)
 	})
 	t.Run("fail giturl", func(t *testing.T) {
+		t.Parallel()
 		_, err := TemplateRef(func(s string) (string, error) {
 			if s == "token" || s == "giturl" {
 				return "", fmt.Errorf("nope")
@@ -87,6 +94,7 @@ func TestTemplateRef(t *testing.T) {
 		require.Error(t, err)
 	})
 	t.Run("fail privatekey", func(t *testing.T) {
+		t.Parallel()
 		_, err := TemplateRef(func(s string) (string, error) {
 			if s == "token" || s == "privatekey" {
 				return "", fmt.Errorf("nope")

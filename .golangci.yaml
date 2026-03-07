@@ -8,6 +8,7 @@ linters:
     - depguard
     - forbidigo
     - gocritic
+    - godoclint
     - misspell
     - noctx
     - nolintlint
@@ -60,6 +61,7 @@ linters:
         - name: errorf
         - name: increment-decrement
         - name: indent-error-flow
+        - name: modifies-value-receiver
         - name: range
         - name: receiver-naming
         - name: redefines-builtin-id
@@ -70,6 +72,10 @@ linters:
         - name: unused-parameter
         - name: var-declaration
         - name: var-naming
+          arguments:
+            - []
+            - []
+            - - skip-package-name-collision-with-go-std: true
         # we are not providing an API anyway... maybe someday...
         # - name: exported
         # - name: package-comments

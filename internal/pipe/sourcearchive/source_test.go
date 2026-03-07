@@ -50,7 +50,7 @@ subfolder/
 			t.Run("with extra files", func(t *testing.T) {
 				doVerifyTestArchive(
 					t,
-					testctx.NewWithCfg(
+					testctx.WrapWithCfg(t.Context(),
 						config.Project{
 							ProjectName: "foo",
 							Dist:        "dist",
@@ -66,8 +66,8 @@ subfolder/
 						},
 						testctx.WithCommit("HEAD"),
 						testctx.WithVersion("1.0.0"),
-						testctx.WithCurrentTag("v1.0.0"),
-					),
+						testctx.WithCurrentTag("v1.0.0")),
+
 					tmp,
 					format,
 					[]string{
@@ -91,7 +91,7 @@ subfolder/
 			t.Run("simple", func(t *testing.T) {
 				doVerifyTestArchive(
 					t,
-					testctx.NewWithCfg(
+					testctx.WrapWithCfg(t.Context(),
 						config.Project{
 							ProjectName: "foo",
 							Dist:        "dist",
@@ -103,8 +103,8 @@ subfolder/
 						},
 						testctx.WithCommit("HEAD"),
 						testctx.WithVersion("1.0.0"),
-						testctx.WithCurrentTag("v1.0.0"),
-					),
+						testctx.WithCurrentTag("v1.0.0")),
+
 					tmp,
 					format,
 					[]string{
@@ -151,7 +151,7 @@ func doVerifyTestArchive(tb testing.TB, ctx *context.Context, tmp, format string
 }
 
 func TestInvalidFormat(t *testing.T) {
-	ctx := testctx.NewWithCfg(config.Project{
+	ctx := testctx.WrapWithCfg(t.Context(), config.Project{
 		Dist:        t.TempDir(),
 		ProjectName: "foo",
 		Source: config.Source{
@@ -160,12 +160,13 @@ func TestInvalidFormat(t *testing.T) {
 			PrefixTemplate: "{{ .ProjectName }}-{{ .Version }}/",
 		},
 	})
+
 	require.NoError(t, Pipe{}.Default(ctx))
 	require.EqualError(t, Pipe{}.Run(ctx), "invalid source archive format: 7z")
 }
 
 func TestDefault(t *testing.T) {
-	ctx := testctx.New()
+	ctx := testctx.Wrap(t.Context())
 	require.NoError(t, Pipe{}.Default(ctx))
 	require.Equal(t, config.Source{
 		NameTemplate: "{{ .ProjectName }}-{{ .Version }}",
@@ -174,12 +175,13 @@ func TestDefault(t *testing.T) {
 }
 
 func TestInvalidNameTemplate(t *testing.T) {
-	ctx := testctx.NewWithCfg(config.Project{
+	ctx := testctx.WrapWithCfg(t.Context(), config.Project{
 		Source: config.Source{
 			Enabled:      true,
 			NameTemplate: "{{ .foo }-asdda",
 		},
 	})
+
 	require.NoError(t, Pipe{}.Default(ctx))
 	testlib.RequireTemplateError(t, Pipe{}.Run(ctx))
 }
@@ -193,7 +195,7 @@ func TestInvalidInvalidFileTemplate(t *testing.T) {
 	testlib.GitAdd(t)
 	testlib.GitCommit(t, "feat: first")
 
-	ctx := testctx.NewWithCfg(config.Project{
+	ctx := testctx.WrapWithCfg(t.Context(), config.Project{
 		ProjectName: "foo",
 		Dist:        "dist",
 		Source: config.Source{
@@ -204,6 +206,7 @@ func TestInvalidInvalidFileTemplate(t *testing.T) {
 			},
 		},
 	})
+
 	ctx.Git.FullCommit = "HEAD"
 	ctx.Version = "1.0.0"
 	require.NoError(t, Pipe{}.Default(ctx))
@@ -211,32 +214,34 @@ func TestInvalidInvalidFileTemplate(t *testing.T) {
 }
 
 func TestInvalidPrefixTemplate(t *testing.T) {
-	ctx := testctx.NewWithCfg(config.Project{
+	ctx := testctx.WrapWithCfg(t.Context(), config.Project{
 		Dist: t.TempDir(),
 		Source: config.Source{
 			Enabled:        true,
 			PrefixTemplate: "{{ .ProjectName }/",
 		},
 	})
+
 	require.NoError(t, Pipe{}.Default(ctx))
 	testlib.RequireTemplateError(t, Pipe{}.Run(ctx))
 }
 
 func TestDisabled(t *testing.T) {
-	require.True(t, Pipe{}.Skip(testctx.New()))
+	require.True(t, Pipe{}.Skip(testctx.Wrap(t.Context())))
 }
 
 func TestSkip(t *testing.T) {
 	t.Run("skip", func(t *testing.T) {
-		require.True(t, Pipe{}.Skip(testctx.New()))
+		require.True(t, Pipe{}.Skip(testctx.Wrap(t.Context())))
 	})
 
 	t.Run("dont skip", func(t *testing.T) {
-		ctx := testctx.NewWithCfg(config.Project{
+		ctx := testctx.WrapWithCfg(t.Context(), config.Project{
 			Source: config.Source{
 				Enabled: true,
 			},
 		})
+
 		require.False(t, Pipe{}.Skip(ctx))
 	})
 }

@@ -28,15 +28,15 @@ func TestString(t *testing.T) {
 
 func TestSkip(t *testing.T) {
 	t.Run("should", func(t *testing.T) {
-		require.True(t, Pipe{}.Skip(testctx.New()))
+		require.True(t, Pipe{}.Skip(testctx.Wrap(t.Context())))
 	})
 	t.Run("skip flag", func(t *testing.T) {
-		require.True(t, Pipe{}.Skip(testctx.NewWithCfg(config.Project{
+		require.True(t, Pipe{}.Skip(testctx.WrapWithCfg(t.Context(), config.Project{
 			Winget: []config.Winget{{}},
 		}, testctx.Skip(skips.Winget))))
 	})
 	t.Run("should not", func(t *testing.T) {
-		require.False(t, Pipe{}.Skip(testctx.NewWithCfg(config.Project{
+		require.False(t, Pipe{}.Skip(testctx.WrapWithCfg(t.Context(), config.Project{
 			Winget: []config.Winget{{}},
 		})))
 	})
@@ -81,14 +81,16 @@ func TestRunPipe(t *testing.T) {
 			},
 		},
 		{
-			name:       "package id",
+			name:       "package id and name",
 			expectPath: "manifests/b/beckersoft/foo/1.2.1",
 			winget: config.Winget{
 				Name:                "foo",
 				Publisher:           "Beckersoft LTDA",
 				PackageIdentifier:   "beckersoft.foo",
+				PackageName:         "Foo Bar Pkg",
 				PublisherURL:        "https://carlosbecker.com",
 				PublisherSupportURL: "https://carlosbecker.com/support",
+				PrivacyURL:          "https://carlosbecker.com/privacy",
 				Copyright:           "bla bla bla",
 				CopyrightURL:        "https://goreleaser.com/copyright",
 				Author:              "Carlos Becker",
@@ -103,12 +105,13 @@ func TestRunPipe(t *testing.T) {
 				yadaa yada yada loooaaasssss
 
 				sss`,
-				Homepage:        "https://goreleaser.com",
-				License:         "MIT",
-				LicenseURL:      "https://goreleaser.com/eula/",
-				ReleaseNotesURL: "https://github.com/goreleaser/goreleaser/tags/{{.Tag}}",
-				ReleaseNotes:    "{{.Changelog}}",
-				Tags:            []string{"foo", "bar", "foo bar baz"},
+				Homepage:          "https://goreleaser.com",
+				License:           "MIT",
+				LicenseURL:        "https://goreleaser.com/eula/",
+				ReleaseNotesURL:   "https://github.com/goreleaser/goreleaser/tags/{{.Tag}}",
+				ReleaseNotes:      "{{.Changelog}}",
+				InstallationNotes: "https://goreleaser.com/install/",
+				Tags:              []string{"foo", "bar", "foo bar baz"},
 			},
 		},
 		{
@@ -119,6 +122,7 @@ func TestRunPipe(t *testing.T) {
 				Publisher:           "Beckersoft",
 				PublisherURL:        "https://carlosbecker.com",
 				PublisherSupportURL: "https://carlosbecker.com/support",
+				PrivacyURL:          "https://carlosbecker.com/privacy",
 				Copyright:           "bla bla bla",
 				CopyrightURL:        "https://goreleaser.com/copyright",
 				Author:              "Carlos Becker",
@@ -134,12 +138,13 @@ func TestRunPipe(t *testing.T) {
 				yadaa yada yada loooaaasssss
 
 				sss`,
-				Homepage:        "https://goreleaser.com",
-				License:         "MIT",
-				LicenseURL:      "https://goreleaser.com/eula/",
-				ReleaseNotesURL: "https://github.com/goreleaser/goreleaser/tags/{{.Tag}}",
-				ReleaseNotes:    "{{.Changelog}}",
-				Tags:            []string{"Foo", "bar", "FoO BaSiMdrR LAmd"},
+				Homepage:          "https://goreleaser.com",
+				License:           "MIT",
+				LicenseURL:        "https://goreleaser.com/eula/",
+				ReleaseNotesURL:   "https://github.com/goreleaser/goreleaser/tags/{{.Tag}}",
+				ReleaseNotes:      "{{.Changelog}}",
+				InstallationNotes: "https://goreleaser.com/install/",
+				Tags:              []string{"Foo", "bar", "FoO BaSiMdrR LAmd"},
 			},
 		},
 		{
@@ -657,7 +662,7 @@ func TestRunPipe(t *testing.T) {
 	} {
 		t.Run(tt.name, func(t *testing.T) {
 			folder := t.TempDir()
-			ctx := testctx.NewWithCfg(
+			ctx := testctx.WrapWithCfg(t.Context(),
 				config.Project{
 					Dist:        folder,
 					ProjectName: "foo",
@@ -666,8 +671,8 @@ func TestRunPipe(t *testing.T) {
 				testctx.WithVersion("1.2.1"),
 				testctx.WithCurrentTag("v1.2.1"),
 				testctx.WithSemver(1, 2, 1, "rc1"),
-				testctx.WithDate(time.Date(2023, 6, 12, 20, 32, 10, 12, time.Local)),
-			)
+				testctx.WithDate(time.Date(2023, 6, 12, 20, 32, 10, 12, time.Local)))
+
 			ctx.ReleaseNotes = "the changelog for this release..."
 			createFakeArtifact := func(id, goos, goarch, goamd64, goarm string, extra map[string]any) {
 				path := filepath.Join(folder, "dist/foo_"+goos+goarch+goamd64+goarm+".zip")
@@ -745,10 +750,10 @@ func TestRunPipe(t *testing.T) {
 			}
 
 			require.NoError(t, pipe.runAll(ctx, client))
-			for _, winget := range ctx.Artifacts.Filter(artifact.Or(
-				artifact.ByType(artifact.WingetInstaller),
-				artifact.ByType(artifact.WingetVersion),
-				artifact.ByType(artifact.WingetDefaultLocale),
+			for _, winget := range ctx.Artifacts.Filter(artifact.ByTypes(
+				artifact.WingetInstaller,
+				artifact.WingetVersion,
+				artifact.WingetDefaultLocale,
 			)).List() {
 				bts, err := os.ReadFile(winget.Path)
 				require.NoError(t, err)
@@ -802,10 +807,11 @@ func TestErrNoArchivesFound(t *testing.T) {
 }
 
 func TestDefault(t *testing.T) {
-	ctx := testctx.NewWithCfg(config.Project{
+	ctx := testctx.WrapWithCfg(t.Context(), config.Project{
 		ProjectName: "foo",
 		Winget:      []config.Winget{{}},
 	})
+
 	require.NoError(t, Pipe{}.Default(ctx))
 	winget := ctx.Config.Winget[0]
 	require.Equal(t, "v1", winget.Goamd64)
@@ -815,7 +821,7 @@ func TestDefault(t *testing.T) {
 
 func TestFormatBinary(t *testing.T) {
 	folder := t.TempDir()
-	ctx := testctx.NewWithCfg(
+	ctx := testctx.WrapWithCfg(t.Context(),
 		config.Project{
 			Dist:        folder,
 			ProjectName: "foo",
@@ -834,8 +840,8 @@ func TestFormatBinary(t *testing.T) {
 		testctx.WithVersion("1.2.1"),
 		testctx.WithCurrentTag("v1.2.1"),
 		testctx.WithSemver(1, 2, 1, "rc1"),
-		testctx.WithDate(time.Date(2023, 6, 12, 20, 32, 10, 12, time.Local)),
-	)
+		testctx.WithDate(time.Date(2023, 6, 12, 20, 32, 10, 12, time.Local)))
+
 	ctx.ReleaseNotes = "the changelog for this release..."
 	createFakeArtifact := func(id, goos, goarch, goamd64 string) {
 		path := filepath.Join(folder, "dist/foo_"+goos+goarch+goamd64+".exe")
@@ -868,10 +874,10 @@ func TestFormatBinary(t *testing.T) {
 
 	require.NoError(t, pipe.Default(ctx))
 	require.NoError(t, pipe.runAll(ctx, client))
-	for _, winget := range ctx.Artifacts.Filter(artifact.Or(
-		artifact.ByType(artifact.WingetInstaller),
-		artifact.ByType(artifact.WingetVersion),
-		artifact.ByType(artifact.WingetDefaultLocale),
+	for _, winget := range ctx.Artifacts.Filter(artifact.ByTypes(
+		artifact.WingetInstaller,
+		artifact.WingetVersion,
+		artifact.WingetDefaultLocale,
 	)).List() {
 		bts, err := os.ReadFile(winget.Path)
 		require.NoError(t, err)

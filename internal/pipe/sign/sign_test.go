@@ -56,9 +56,10 @@ func TestSignDefault(t *testing.T) {
 	_ = testlib.Mktmp(t)
 	testlib.GitInit(t)
 
-	ctx := testctx.NewWithCfg(config.Project{
+	ctx := testctx.WrapWithCfg(t.Context(), config.Project{
 		Signs: []config.Sign{{}},
 	})
+
 	setGpg(t, ctx, "") // force empty gpg.program
 
 	require.NoError(t, Pipe{}.Default(ctx))
@@ -72,9 +73,10 @@ func TestDefaultGpgFromGitConfig(t *testing.T) {
 	_ = testlib.Mktmp(t)
 	testlib.GitInit(t)
 
-	ctx := testctx.NewWithCfg(config.Project{
+	ctx := testctx.WrapWithCfg(t.Context(), config.Project{
 		Signs: []config.Sign{{}},
 	})
+
 	setGpg(t, ctx, "not-really-gpg")
 
 	require.NoError(t, Pipe{}.Default(ctx))
@@ -82,13 +84,13 @@ func TestDefaultGpgFromGitConfig(t *testing.T) {
 }
 
 func TestSignDisabled(t *testing.T) {
-	ctx := testctx.NewWithCfg(config.Project{Signs: []config.Sign{{Artifacts: "none"}}})
+	ctx := testctx.WrapWithCfg(t.Context(), config.Project{Signs: []config.Sign{{Artifacts: "none"}}})
 	err := Pipe{}.Run(ctx)
 	require.EqualError(t, err, "artifact signing is disabled")
 }
 
 func TestSignInvalidArtifacts(t *testing.T) {
-	ctx := testctx.NewWithCfg(config.Project{Signs: []config.Sign{{Artifacts: "foo"}}})
+	ctx := testctx.WrapWithCfg(t.Context(), config.Project{Signs: []config.Sign{{Artifacts: "foo"}}})
 	err := Pipe{}.Run(ctx)
 	require.EqualError(t, err, "invalid list of artifacts to sign: foo")
 }
@@ -111,7 +113,7 @@ func TestSignArtifacts(t *testing.T) {
 		{
 			desc:          "sign cmd not found",
 			expectedErrIs: exec.ErrNotFound,
-			ctx: testctx.NewWithCfg(config.Project{
+			ctx: testctx.WrapWithCfg(t.Context(), config.Project{
 				Signs: []config.Sign{
 					{
 						Artifacts: "all",
@@ -122,13 +124,12 @@ func TestSignArtifacts(t *testing.T) {
 		},
 		{
 			desc:           "sign errors",
-			expectedErrMsg: "sign: exit failed",
-			ctx: testctx.NewWithCfg(config.Project{
+			expectedErrMsg: "exit status 1",
+			ctx: testctx.WrapWithCfg(t.Context(), config.Project{
 				Signs: []config.Sign{
 					{
 						Artifacts: "all",
-						Cmd:       "exit",
-						Args:      []string{"1"},
+						Cmd:       "false",
 					},
 				},
 			}),
@@ -136,7 +137,7 @@ func TestSignArtifacts(t *testing.T) {
 		{
 			desc:          "invalid certificate template",
 			expectedErrAs: &tmpl.Error{},
-			ctx: testctx.NewWithCfg(config.Project{
+			ctx: testctx.WrapWithCfg(t.Context(), config.Project{
 				Signs: []config.Sign{
 					{
 						Artifacts:   "all",
@@ -149,7 +150,7 @@ func TestSignArtifacts(t *testing.T) {
 		{
 			desc:          "invalid signature template",
 			expectedErrAs: &tmpl.Error{},
-			ctx: testctx.NewWithCfg(config.Project{
+			ctx: testctx.WrapWithCfg(t.Context(), config.Project{
 				Signs: []config.Sign{
 					{
 						Artifacts: "all",
@@ -162,7 +163,7 @@ func TestSignArtifacts(t *testing.T) {
 		{
 			desc:          "invalid args template",
 			expectedErrAs: &tmpl.Error{},
-			ctx: testctx.NewWithCfg(config.Project{
+			ctx: testctx.WrapWithCfg(t.Context(), config.Project{
 				Signs: []config.Sign{
 					{
 						Artifacts: "all",
@@ -178,7 +179,7 @@ func TestSignArtifacts(t *testing.T) {
 		{
 			desc:          "invalid env template",
 			expectedErrAs: &tmpl.Error{},
-			ctx: testctx.NewWithCfg(config.Project{
+			ctx: testctx.WrapWithCfg(t.Context(), config.Project{
 				Signs: []config.Sign{
 					{
 						Artifacts: "all",
@@ -190,55 +191,59 @@ func TestSignArtifacts(t *testing.T) {
 		},
 		{
 			desc: "sign all artifacts",
-			ctx: testctx.NewWithCfg(config.Project{
+			ctx: testctx.WrapWithCfg(t.Context(), config.Project{
 				Signs: []config.Sign{
 					{
 						Artifacts: "all",
 					},
 				},
 			}),
+
 			signaturePaths: []string{"artifact1.sig", "artifact2.sig", "artifact3.sig", "checksum.sig", "checksum2.sig", "linux_amd64/artifact4.sig", "artifact5.tar.gz.sig", "artifact5.tar.gz.sbom.sig", "package1.deb.sig"},
 			signatureNames: []string{"artifact1.sig", "artifact2.sig", "artifact3_1.0.0_linux_amd64.sig", "checksum.sig", "checksum2.sig", "artifact4_1.0.0_linux_amd64.sig", "artifact5.tar.gz.sig", "artifact5.tar.gz.sbom.sig", "package1.deb.sig"},
 		},
 		{
 			desc: "sign archives",
-			ctx: testctx.NewWithCfg(config.Project{
+			ctx: testctx.WrapWithCfg(t.Context(), config.Project{
 				Signs: []config.Sign{
 					{
 						Artifacts: "archive",
 					},
 				},
 			}),
+
 			signaturePaths: []string{"artifact1.sig", "artifact2.sig"},
 			signatureNames: []string{"artifact1.sig", "artifact2.sig"},
 		},
 		{
 			desc: "sign packages",
-			ctx: testctx.NewWithCfg(config.Project{
+			ctx: testctx.WrapWithCfg(t.Context(), config.Project{
 				Signs: []config.Sign{
 					{
 						Artifacts: "package",
 					},
 				},
 			}),
+
 			signaturePaths: []string{"package1.deb.sig"},
 			signatureNames: []string{"package1.deb.sig"},
 		},
 		{
 			desc: "sign binaries",
-			ctx: testctx.NewWithCfg(config.Project{
+			ctx: testctx.WrapWithCfg(t.Context(), config.Project{
 				Signs: []config.Sign{
 					{
 						Artifacts: "binary",
 					},
 				},
 			}),
+
 			signaturePaths: []string{"artifact3.sig", "linux_amd64/artifact4.sig"},
 			signatureNames: []string{"artifact3_1.0.0_linux_amd64.sig", "artifact4_1.0.0_linux_amd64.sig"},
 		},
 		{
 			desc: "multiple sign configs",
-			ctx: testctx.NewWithCfg(config.Project{
+			ctx: testctx.WrapWithCfg(t.Context(), config.Project{
 				Env: []string{
 					"GPG_KEY_ID=" + fakeGPGKeyID,
 				},
@@ -254,6 +259,7 @@ func TestSignArtifacts(t *testing.T) {
 					},
 				},
 			}),
+
 			signaturePaths: []string{
 				"artifact1." + fakeGPGKeyID + ".sig",
 				"artifact2." + fakeGPGKeyID + ".sig",
@@ -269,7 +275,7 @@ func TestSignArtifacts(t *testing.T) {
 		},
 		{
 			desc: "sign filtered artifacts",
-			ctx: testctx.NewWithCfg(config.Project{
+			ctx: testctx.WrapWithCfg(t.Context(), config.Project{
 				Signs: []config.Sign{
 					{
 						Artifacts: "all",
@@ -277,24 +283,26 @@ func TestSignArtifacts(t *testing.T) {
 					},
 				},
 			}),
+
 			signaturePaths: []string{"artifact1.sig", "artifact3.sig", "checksum.sig", "checksum2.sig", "artifact5.tar.gz.sig", "package1.deb.sig"},
 			signatureNames: []string{"artifact1.sig", "artifact3_1.0.0_linux_amd64.sig", "checksum.sig", "checksum2.sig", "artifact5.tar.gz.sig", "package1.deb.sig"},
 		},
 		{
 			desc: "sign only checksums",
-			ctx: testctx.NewWithCfg(config.Project{
+			ctx: testctx.WrapWithCfg(t.Context(), config.Project{
 				Signs: []config.Sign{
 					{
 						Artifacts: "checksum",
 					},
 				},
 			}),
+
 			signaturePaths: []string{"checksum.sig", "checksum2.sig"},
 			signatureNames: []string{"checksum.sig", "checksum2.sig"},
 		},
 		{
 			desc: "sign only filtered checksums",
-			ctx: testctx.NewWithCfg(config.Project{
+			ctx: testctx.WrapWithCfg(t.Context(), config.Project{
 				Signs: []config.Sign{
 					{
 						Artifacts: "checksum",
@@ -302,24 +310,26 @@ func TestSignArtifacts(t *testing.T) {
 					},
 				},
 			}),
+
 			signaturePaths: []string{"checksum.sig", "checksum2.sig"},
 			signatureNames: []string{"checksum.sig", "checksum2.sig"},
 		},
 		{
 			desc: "sign only source",
-			ctx: testctx.NewWithCfg(config.Project{
+			ctx: testctx.WrapWithCfg(t.Context(), config.Project{
 				Signs: []config.Sign{
 					{
 						Artifacts: "source",
 					},
 				},
 			}),
+
 			signaturePaths: []string{"artifact5.tar.gz.sig"},
 			signatureNames: []string{"artifact5.tar.gz.sig"},
 		},
 		{
 			desc: "sign only source filter by id",
-			ctx: testctx.NewWithCfg(config.Project{
+			ctx: testctx.WrapWithCfg(t.Context(), config.Project{
 				Signs: []config.Sign{
 					{
 						Artifacts: "source",
@@ -327,24 +337,26 @@ func TestSignArtifacts(t *testing.T) {
 					},
 				},
 			}),
+
 			signaturePaths: []string{"artifact5.tar.gz.sig"},
 			signatureNames: []string{"artifact5.tar.gz.sig"},
 		},
 		{
 			desc: "sign only sbom",
-			ctx: testctx.NewWithCfg(config.Project{
+			ctx: testctx.WrapWithCfg(t.Context(), config.Project{
 				Signs: []config.Sign{
 					{
 						Artifacts: "sbom",
 					},
 				},
 			}),
+
 			signaturePaths: []string{"artifact5.tar.gz.sbom.sig"},
 			signatureNames: []string{"artifact5.tar.gz.sbom.sig"},
 		},
 		{
 			desc: "sign all artifacts with env",
-			ctx: testctx.NewWithCfg(config.Project{
+			ctx: testctx.WrapWithCfg(t.Context(), config.Project{
 				Signs: []config.Sign{
 					{
 						Artifacts: "all",
@@ -362,12 +374,13 @@ func TestSignArtifacts(t *testing.T) {
 					fmt.Sprintf("TEST_USER=%s", user),
 				},
 			}),
+
 			signaturePaths: []string{"artifact1.sig", "artifact2.sig", "artifact3.sig", "checksum.sig", "checksum2.sig", "linux_amd64/artifact4.sig", "artifact5.tar.gz.sig", "artifact5.tar.gz.sbom.sig", "package1.deb.sig"},
 			signatureNames: []string{"artifact1.sig", "artifact2.sig", "artifact3_1.0.0_linux_amd64.sig", "checksum.sig", "checksum2.sig", "artifact4_1.0.0_linux_amd64.sig", "artifact5.tar.gz.sig", "artifact5.tar.gz.sbom.sig", "package1.deb.sig"},
 		},
 		{
 			desc: "sign all artifacts with template",
-			ctx: testctx.NewWithCfg(config.Project{
+			ctx: testctx.WrapWithCfg(t.Context(), config.Project{
 				Signs: []config.Sign{
 					{
 						Artifacts: "all",
@@ -385,12 +398,13 @@ func TestSignArtifacts(t *testing.T) {
 					fmt.Sprintf("SOME_TEST_USER=%s", user),
 				},
 			}),
+
 			signaturePaths: []string{"artifact1.sig", "artifact2.sig", "artifact3.sig", "checksum.sig", "checksum2.sig", "linux_amd64/artifact4.sig", "artifact5.tar.gz.sig", "artifact5.tar.gz.sbom.sig", "package1.deb.sig"},
 			signatureNames: []string{"artifact1.sig", "artifact2.sig", "artifact3_1.0.0_linux_amd64.sig", "checksum.sig", "checksum2.sig", "artifact4_1.0.0_linux_amd64.sig", "artifact5.tar.gz.sig", "artifact5.tar.gz.sbom.sig", "package1.deb.sig"},
 		},
 		{
 			desc: "sign single with password from stdin",
-			ctx: testctx.NewWithCfg(config.Project{
+			ctx: testctx.WrapWithCfg(t.Context(), config.Project{
 				Signs: []config.Sign{
 					{
 						Artifacts: "all",
@@ -411,13 +425,14 @@ func TestSignArtifacts(t *testing.T) {
 					},
 				},
 			}),
+
 			signaturePaths: []string{"artifact1.sig", "artifact2.sig", "artifact3.sig", "checksum.sig", "checksum2.sig", "linux_amd64/artifact4.sig", "artifact5.tar.gz.sig", "artifact5.tar.gz.sbom.sig", "package1.deb.sig"},
 			signatureNames: []string{"artifact1.sig", "artifact2.sig", "artifact3_1.0.0_linux_amd64.sig", "checksum.sig", "checksum2.sig", "artifact4_1.0.0_linux_amd64.sig", "artifact5.tar.gz.sig", "artifact5.tar.gz.sbom.sig", "package1.deb.sig"},
 			user:           passwordUser,
 		},
 		{
 			desc: "sign single with password from templated stdin",
-			ctx: testctx.NewWithCfg(config.Project{
+			ctx: testctx.WrapWithCfg(t.Context(), config.Project{
 				Env: []string{"GPG_PASSWORD=" + stdin},
 				Signs: []config.Sign{
 					{
@@ -439,13 +454,14 @@ func TestSignArtifacts(t *testing.T) {
 					},
 				},
 			}),
+
 			signaturePaths: []string{"artifact1.sig", "artifact2.sig", "artifact3.sig", "checksum.sig", "checksum2.sig", "linux_amd64/artifact4.sig", "artifact5.tar.gz.sig", "artifact5.tar.gz.sbom.sig", "package1.deb.sig"},
 			signatureNames: []string{"artifact1.sig", "artifact2.sig", "artifact3_1.0.0_linux_amd64.sig", "checksum.sig", "checksum2.sig", "artifact4_1.0.0_linux_amd64.sig", "artifact5.tar.gz.sig", "artifact5.tar.gz.sbom.sig", "package1.deb.sig"},
 			user:           passwordUser,
 		},
 		{
 			desc: "sign single with password from stdin_file",
-			ctx: testctx.NewWithCfg(config.Project{
+			ctx: testctx.WrapWithCfg(t.Context(), config.Project{
 				Signs: []config.Sign{
 					{
 						Artifacts: "all",
@@ -466,13 +482,14 @@ func TestSignArtifacts(t *testing.T) {
 					},
 				},
 			}),
+
 			signaturePaths: []string{"artifact1.sig", "artifact2.sig", "artifact3.sig", "checksum.sig", "checksum2.sig", "linux_amd64/artifact4.sig", "artifact5.tar.gz.sig", "artifact5.tar.gz.sbom.sig", "package1.deb.sig"},
 			signatureNames: []string{"artifact1.sig", "artifact2.sig", "artifact3_1.0.0_linux_amd64.sig", "checksum.sig", "checksum2.sig", "artifact4_1.0.0_linux_amd64.sig", "artifact5.tar.gz.sig", "artifact5.tar.gz.sbom.sig", "package1.deb.sig"},
 			user:           passwordUser,
 		},
 		{
 			desc: "missing stdin_file",
-			ctx: testctx.NewWithCfg(config.Project{
+			ctx: testctx.WrapWithCfg(t.Context(), config.Project{
 				Signs: []config.Sign{
 					{
 						Artifacts: "all",
@@ -487,11 +504,12 @@ func TestSignArtifacts(t *testing.T) {
 					},
 				},
 			}),
+
 			expectedErrIs: os.ErrNotExist,
 		},
 		{
 			desc: "sign creating certificate",
-			ctx: testctx.NewWithCfg(config.Project{
+			ctx: testctx.WrapWithCfg(t.Context(), config.Project{
 				Signs: []config.Sign{
 					{
 						Certificate: "${artifact}.pem",
@@ -499,13 +517,14 @@ func TestSignArtifacts(t *testing.T) {
 					},
 				},
 			}),
+
 			signaturePaths:   []string{"checksum.sig", "checksum2.sig"},
 			signatureNames:   []string{"checksum.sig", "checksum2.sig"},
 			certificateNames: []string{"checksum.pem", "checksum2.pem"},
 		},
 		{
 			desc: "sign all artifacts with env and certificate",
-			ctx: testctx.NewWithCfg(config.Project{
+			ctx: testctx.WrapWithCfg(t.Context(), config.Project{
 				Signs: []config.Sign{
 					{
 						Env:         []string{"NOT_HONK=honk", "HONK={{ .Env.NOT_HONK }}"},
@@ -514,9 +533,50 @@ func TestSignArtifacts(t *testing.T) {
 					},
 				},
 			}),
+
 			signaturePaths:   []string{"artifact1.sig", "artifact2.sig", "artifact3.sig", "checksum.sig", "checksum2.sig", "linux_amd64/artifact4.sig", "artifact5.tar.gz.sig", "artifact5.tar.gz.sbom.sig", "package1.deb.sig"},
 			signatureNames:   []string{"artifact1.sig", "artifact2.sig", "artifact3_1.0.0_linux_amd64.sig", "checksum.sig", "checksum2.sig", "artifact4_1.0.0_linux_amd64.sig", "artifact5.tar.gz.sig", "artifact5.tar.gz.sbom.sig", "package1.deb.sig"},
 			certificateNames: []string{"artifact1_honk.pem", "artifact2_honk.pem", "artifact3_1.0.0_linux_amd64_honk.pem", "checksum_honk.pem", "checksum2_honk.pem", "artifact4_1.0.0_linux_amd64_honk.pem", "artifact5_honk.pem", "artifact5.tar.gz.sbom_honk.pem", "package1_honk.pem"},
+		},
+		{
+			desc: "sign with templated output true",
+			ctx: testctx.WrapWithCfg(t.Context(), config.Project{
+				Signs: []config.Sign{
+					{
+						Artifacts: "all",
+						Output:    "true",
+					},
+				},
+			}),
+
+			signaturePaths: []string{"artifact1.sig", "artifact2.sig", "artifact3.sig", "checksum.sig", "checksum2.sig", "linux_amd64/artifact4.sig", "artifact5.tar.gz.sig", "artifact5.tar.gz.sbom.sig", "package1.deb.sig"},
+			signatureNames: []string{"artifact1.sig", "artifact2.sig", "artifact3_1.0.0_linux_amd64.sig", "checksum.sig", "checksum2.sig", "artifact4_1.0.0_linux_amd64.sig", "artifact5.tar.gz.sig", "artifact5.tar.gz.sbom.sig", "package1.deb.sig"},
+		},
+		{
+			desc: "sign with templated output false",
+			ctx: testctx.WrapWithCfg(t.Context(), config.Project{
+				Signs: []config.Sign{
+					{
+						Artifacts: "all",
+						Output:    "false",
+					},
+				},
+			}),
+
+			signaturePaths: []string{"artifact1.sig", "artifact2.sig", "artifact3.sig", "checksum.sig", "checksum2.sig", "linux_amd64/artifact4.sig", "artifact5.tar.gz.sig", "artifact5.tar.gz.sbom.sig", "package1.deb.sig"},
+			signatureNames: []string{"artifact1.sig", "artifact2.sig", "artifact3_1.0.0_linux_amd64.sig", "checksum.sig", "checksum2.sig", "artifact4_1.0.0_linux_amd64.sig", "artifact5.tar.gz.sig", "artifact5.tar.gz.sbom.sig", "package1.deb.sig"},
+		},
+		{
+			desc:          "sign with invalid output template",
+			expectedErrAs: &tmpl.Error{},
+			ctx: testctx.WrapWithCfg(t.Context(), config.Project{
+				Signs: []config.Sign{
+					{
+						Artifacts: "all",
+						Output:    "{{ .blah }}",
+					},
+				},
+			}),
 		},
 	}
 
@@ -726,7 +786,7 @@ func verifySignature(tb testing.TB, ctx *context.Context, sig string, user strin
 	artifact = strings.TrimSuffix(artifact, "."+fakeGPGKeyID)
 
 	// verify signature was made with key for user 'nopass'
-	cmd := exec.Command("gpg", "--homedir", keyring, "--verify", filepath.Join(ctx.Config.Dist, sig), filepath.Join(ctx.Config.Dist, artifact))
+	cmd := exec.CommandContext(tb.Context(), "gpg", "--homedir", keyring, "--verify", filepath.Join(ctx.Config.Dist, sig), filepath.Join(ctx.Config.Dist, artifact))
 	out, err := cmd.CombinedOutput()
 	require.NoError(tb, err, string(out))
 
@@ -740,7 +800,7 @@ func verifySignature(tb testing.TB, ctx *context.Context, sig string, user strin
 }
 
 func TestSeveralSignsWithTheSameID(t *testing.T) {
-	ctx := testctx.NewWithCfg(config.Project{
+	ctx := testctx.WrapWithCfg(t.Context(), config.Project{
 		Signs: []config.Sign{
 			{
 				ID: "a",
@@ -750,36 +810,39 @@ func TestSeveralSignsWithTheSameID(t *testing.T) {
 			},
 		},
 	})
+
 	require.EqualError(t, Pipe{}.Default(ctx), "found 2 signs with the ID 'a', please fix your config")
 }
 
 func TestSkip(t *testing.T) {
 	t.Run("skip", func(t *testing.T) {
-		require.True(t, Pipe{}.Skip(testctx.New()))
+		require.True(t, Pipe{}.Skip(testctx.Wrap(t.Context())))
 	})
 
 	t.Run("skip sign", func(t *testing.T) {
-		ctx := testctx.New(testctx.Skip(skips.Sign))
+		ctx := testctx.Wrap(t.Context(), testctx.Skip(skips.Sign))
 		require.True(t, Pipe{}.Skip(ctx))
 	})
 
 	t.Run("dont skip", func(t *testing.T) {
-		ctx := testctx.NewWithCfg(config.Project{
+		ctx := testctx.WrapWithCfg(t.Context(), config.Project{
 			Signs: []config.Sign{
 				{},
 			},
 		})
+
 		require.False(t, Pipe{}.Skip(ctx))
 	})
 }
 
 func TestDependencies(t *testing.T) {
-	ctx := testctx.NewWithCfg(config.Project{
+	ctx := testctx.WrapWithCfg(t.Context(), config.Project{
 		Signs: []config.Sign{
 			{Cmd: "cosign"},
 			{Cmd: "gpg2"},
 		},
 	})
+
 	require.Equal(t, []string{"cosign", "gpg2"}, Pipe{}.Dependencies(ctx))
 }
 

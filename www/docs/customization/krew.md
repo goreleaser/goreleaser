@@ -47,12 +47,6 @@ krews:
     # Templates: allowed.
     url_template: "http://github.mycompany.com/foo/bar/releases/{{ .Tag }}/{{ .ArtifactName }}"
 
-    # Git author used to commit to the repository.
-    # Templates: allowed.
-    commit_author:
-      name: goreleaserbot
-      email: bot@goreleaser.com
-
     # The project name and current git tag are used in the format string.
     commit_msg_template: "Krew plugin update for {{ .ProjectName }} version {{ .Tag }}"
 

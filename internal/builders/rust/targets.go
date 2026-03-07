@@ -21,27 +21,27 @@ var (
 )
 
 const (
-	keyVendor      = "Vendor"
-	keyEnvironment = "Environment"
+	keyVendor = "Vendor"
+	keyAbi    = "Abi"
 )
 
 // Target is a Rust build target.
 type Target struct {
 	// The Rust formatted target (arch-vendor-os-env).
-	Target      string
-	Os          string
-	Arch        string
-	Vendor      string
-	Environment string
+	Target string
+	Os     string
+	Arch   string
+	Vendor string
+	Abi    string
 }
 
 // Fields implements build.Target.
 func (t Target) Fields() map[string]string {
 	return map[string]string{
-		tmpl.KeyOS:     t.Os,
-		tmpl.KeyArch:   t.Arch,
-		keyEnvironment: t.Environment,
-		keyVendor:      t.Vendor,
+		tmpl.KeyOS:   t.Os,
+		tmpl.KeyArch: t.Arch,
+		keyAbi:       t.Abi,
+		keyVendor:    t.Vendor,
 	}
 }
 

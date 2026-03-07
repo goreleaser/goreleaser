@@ -42,6 +42,32 @@ func TestParse(t *testing.T) {
 			Os:     "linux",
 			Arch:   "arm64",
 		},
+		"bun-linux-arm64-musl": {
+			Target: "bun-linux-arm64-musl",
+			Os:     "linux",
+			Arch:   "arm64",
+			Abi:    "musl",
+		},
+		"linux-arm64-musl": {
+			Target: "bun-linux-arm64-musl",
+			Os:     "linux",
+			Arch:   "arm64",
+			Abi:    "musl",
+		},
+		"bun-linux-x64-musl-modern": {
+			Target: "bun-linux-x64-musl-modern",
+			Os:     "linux",
+			Arch:   "x64",
+			Abi:    "musl",
+			Type:   "modern",
+		},
+		"linux-x64-musl-modern": {
+			Target: "bun-linux-x64-musl-modern",
+			Os:     "linux",
+			Arch:   "x64",
+			Abi:    "musl",
+			Type:   "modern",
+		},
 	} {
 		t.Run(target, func(t *testing.T) {
 			got, err := Default.Parse(target)
@@ -83,11 +109,11 @@ func TestWithDefaults(t *testing.T) {
 func TestBuild(t *testing.T) {
 	testlib.CheckPath(t, "bun")
 	folder := testlib.Mktmp(t)
-	_, err := exec.Command("bun", "init", "--yes").CombinedOutput()
+	_, err := exec.CommandContext(t.Context(), "bun", "init", "--yes").CombinedOutput()
 	require.NoError(t, err)
 
 	modTime := time.Now().AddDate(-1, 0, 0).Round(time.Second).UTC()
-	ctx := testctx.NewWithCfg(config.Project{
+	ctx := testctx.WrapWithCfg(t.Context(), config.Project{
 		Dist:        "dist",
 		ProjectName: "proj",
 		Builds: []config.Build{
@@ -98,6 +124,7 @@ func TestBuild(t *testing.T) {
 			},
 		},
 	})
+
 	build, err := Default.WithDefaults(ctx.Config.Builds[0])
 	require.NoError(t, err)
 
@@ -150,11 +177,11 @@ func TestIsValid(t *testing.T) {
 		"darwin-arm64",
 		"darwin-x64",
 		"linux-arm64",
-		"linux-x64",
-		"linux-x64-baseline",
+		"linux-arm64-musl",
 		"linux-x64-modern",
-		"windows-x64",
-		"windows-x64-baseline",
+		"linux-x64-musl",
+		"linux-x64-musl-baseline",
+		"linux-x64-musl-modern",
 		"windows-x64-modern",
 	} {
 		t.Run(target, func(t *testing.T) {

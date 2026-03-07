@@ -20,7 +20,7 @@ func TestCreateLinkedInClient(t *testing.T) {
 		{
 			"non-empty context and access token",
 			oauthClientConfig{
-				Context:     testctx.New(),
+				Context:     testctx.Wrap(t.Context()),
 				AccessToken: "foo",
 			},
 			nil,
@@ -36,7 +36,7 @@ func TestCreateLinkedInClient(t *testing.T) {
 		{
 			"empty access token",
 			oauthClientConfig{
-				Context:     testctx.New(),
+				Context:     testctx.Wrap(t.Context()),
 				AccessToken: "",
 			},
 			fmt.Errorf("empty access token"),
@@ -66,7 +66,7 @@ func TestClient_Share(t *testing.T) {
 	defer server.Close()
 
 	c, err := createLinkedInClient(oauthClientConfig{
-		Context:     testctx.New(),
+		Context:     testctx.Wrap(t.Context()),
 		AccessToken: "foo",
 	})
 	if err != nil {
@@ -101,7 +101,7 @@ func TestClientLegacyProfile_Share(t *testing.T) {
 	defer server.Close()
 
 	c, err := createLinkedInClient(oauthClientConfig{
-		Context:     testctx.New(),
+		Context:     testctx.Wrap(t.Context()),
 		AccessToken: "foo",
 	})
 	if err != nil {

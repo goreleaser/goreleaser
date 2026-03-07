@@ -6,8 +6,11 @@ import (
 	"fmt"
 	"maps"
 	"net/url"
+	"os"
+	"os/user"
 	"path/filepath"
 	"regexp"
+	"slices"
 	"strings"
 	"text/template"
 	"time"
@@ -265,34 +268,6 @@ func WithPrefix(prefix string) SliceOpt {
 	}
 }
 
-type sliceOptions struct {
-	filtering func(string) bool
-	mapping   func(string) string
-}
-
-// Slice applies to all items in the given input.
-func (t *Template) Slice(in []string, opts ...SliceOpt) ([]string, error) {
-	var opt sliceOptions
-	for _, option := range opts {
-		option(&opt)
-	}
-	var out []string
-	for _, s := range in {
-		applied, err := t.Apply(s)
-		if err != nil {
-			return nil, err
-		}
-		if opt.filtering != nil && !opt.filtering(applied) {
-			continue
-		}
-		if opt.mapping != nil {
-			applied = opt.mapping(applied)
-		}
-		out = append(out, applied)
-	}
-	return out, nil
-}
-
 // Apply applies the given string against the Fields stored in the template.
 func (t *Template) Apply(s string) (string, error) {
 	var out bytes.Buffer
@@ -325,6 +300,23 @@ func (t *Template) Apply(s string) (string, error) {
 			"map":            makemap,
 			"indexOrDefault": indexOrDefault,
 			"urlPathEscape":  url.PathEscape,
+			"blake2b":        checksum("blake2b"),
+			"blake2s":        checksum("blake2s"),
+			"crc32":          checksum("crc32"),
+			"md5":            checksum("md5"),
+			"sha224":         checksum("sha224"),
+			"sha384":         checksum("sha384"),
+			"sha256":         checksum("sha256"),
+			"sha1":           checksum("sha1"),
+			"sha512":         checksum("sha512"),
+			"sha3_224":       checksum("sha3-224"),
+			"sha3_384":       checksum("sha3-384"),
+			"sha3_256":       checksum("sha3-256"),
+			"sha3_512":       checksum("sha3-512"),
+			"readFile":       readFile,
+			"mustReadFile":   mustReadFile,
+			"englishJoin":    englishJoin,
+			"list":           makeList,
 		}).
 		Parse(s)
 	if err != nil {
@@ -347,6 +339,44 @@ func (t *Template) ApplyAll(sps ...*string) error {
 		*sp = result
 	}
 	return nil
+}
+
+// ApplySlice applies the template to all items in a slice.
+func (t *Template) ApplySlice(in *[]string, opts ...SliceOpt) error {
+	out, err := t.Slice(*in, opts...)
+	if err != nil {
+		return err
+	}
+	*in = out
+	return nil
+}
+
+type sliceOptions struct {
+	filtering func(string) bool
+	mapping   func(string) string
+}
+
+// Slice applies to all items in the given input, returning a new slice.
+func (t *Template) Slice(in []string, opts ...SliceOpt) ([]string, error) {
+	var opt sliceOptions
+	for _, option := range opts {
+		option(&opt)
+	}
+	var out []string
+	for _, s := range in {
+		applied, err := t.Apply(s)
+		if err != nil {
+			return nil, newTmplError(s, err)
+		}
+		if opt.filtering != nil && !opt.filtering(applied) {
+			continue
+		}
+		if opt.mapping != nil {
+			applied = opt.mapping(applied)
+		}
+		out = append(out, applied)
+	}
+	return out, nil
 }
 
 func (t *Template) isEnvSet(name string) bool {
@@ -468,6 +498,10 @@ func mdv2Escape(s string) string {
 	return mdv2EscapeReplacer.Replace(s)
 }
 
+func makeList(input ...string) []string {
+	return input
+}
+
 func makemap(kvs ...string) (map[string]string, error) {
 	if len(kvs)%2 != 0 {
 		return nil, fmt.Errorf("map expects even number of arguments, got %d", len(kvs))
@@ -485,4 +519,65 @@ func indexOrDefault(m map[string]string, name, value string) string {
 		return s
 	}
 	return value
+}
+
+func checksum(algorithm string) func(string) (string, error) {
+	return func(file string) (string, error) {
+		artifact := artifact.Artifact{
+			Path: file,
+		}
+
+		return artifact.Checksum(algorithm)
+	}
+}
+
+func mustReadFile(path string) (string, error) {
+	if strings.HasPrefix(path, "~/") {
+		user, err := user.Current()
+		if err != nil {
+			return "", err
+		}
+		path = user.HomeDir + path[1:]
+	}
+	bts, err := os.ReadFile(path)
+	if err != nil {
+		return "", err
+	}
+	return strings.TrimSpace(string(bts)), nil
+}
+
+func readFile(path string) string {
+	out, _ := mustReadFile(path)
+	return out
+}
+
+func englishJoin(ss []string) string {
+	ss = slices.DeleteFunc(ss, func(s string) bool {
+		return strings.TrimSpace(s) == ""
+	})
+	if len(ss) == 0 {
+		return ""
+	}
+	b := strings.Builder{}
+	for i, s := range ss {
+		if s == "" {
+			continue
+		}
+
+		if i == 0 {
+			b.WriteString(s)
+			continue
+		}
+
+		if len(ss) > 1 && i == len(ss)-1 {
+			if i > 1 {
+				b.WriteRune(',')
+			}
+			b.WriteString(" and " + s)
+			continue
+		}
+
+		b.WriteString(", " + s)
+	}
+	return b.String()
 }

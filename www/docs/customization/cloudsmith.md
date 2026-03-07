@@ -77,14 +77,22 @@ cloudsmiths:
       alpine: "alpine/v3.8"
       # You can also set multiple distributions for a format.
       #
-      # <!-- md:inline_version v2.8 -->
+      # <!-- md:inline_version v2.8 -->.
       deb:
       - "ubuntu/xenial"
       - "ubuntu/focal"
 
     # The component (channel) for the package (e.g. 'main', 'unstable', etc).
-    # <!-- md:inline_version v2.7 -->
+    # <!-- md:inline_version v2.7 -->.
     component: main
+
+    # If true, the uploaded package will overwrite any others with the same
+    # attributes (e.g. same version); otherwise, it will be flagged as a
+    # duplicate.
+    #
+    # <!-- md:inline_version v2.11 -->.
+    # Templates: allowed.
+    republish: true
 ```
 
 [cloudsmith]: https://cloudsmith.io/

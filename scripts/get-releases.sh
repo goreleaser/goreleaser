@@ -26,14 +26,14 @@ generate() {
 	done
 
 	jq -s 'add' "$tmp"/*.json >"$file"
-	du -hs "$file"
+	wc -c "$file"
 }
 
 latest() {
 	local url="$1"
 	local file="$2"
 	curl -sfL "$url/latest" | jq -r ".tag_name" >"$file"
-	du -hs "$file"
+	wc -c "$file"
 }
 
 latest "https://api.github.com/repos/goreleaser/goreleaser/releases" "www/docs/static/latest"

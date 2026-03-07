@@ -83,7 +83,8 @@ func doPublish(ctx *context.Context, vcsClient client.Client) error {
 
 			log.WithField("milestone", name).
 				WithField("repo", repo.String()).
-				Warnf("error closing milestone: %s", err)
+				WithError(err).
+				Warn("could not close milestone")
 		}
 	}
 

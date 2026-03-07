@@ -63,7 +63,7 @@ install={{ trimsuffix .Name "-bin" }}.install
 {{- end }}
 
 {{ range .ReleasePackages -}}
-source_{{ .Arch }}=("${pkgname}_${pkgver}_{{ .Arch }}.{{ .Format }}::{{ .DownloadURL }}")
+source_{{ .Arch }}=("${pkgname}_${pkgver}_{{ .Arch }}.{{ .Format }}::{{ replaceAll .DownloadURL $.Version "${pkgver}" }}")
 sha256sums_{{ .Arch }}=('{{ .SHA256 }}')
 {{ printf "" }}
 {{ end }}

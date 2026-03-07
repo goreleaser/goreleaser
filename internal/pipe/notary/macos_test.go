@@ -20,7 +20,7 @@ func TestMacOSSkip(t *testing.T) {
 	p := MacOS{}
 	t.Run("skip notarize", func(t *testing.T) {
 		require.True(t,
-			p.Skip(testctx.NewWithCfg(config.Project{
+			p.Skip(testctx.WrapWithCfg(t.Context(), config.Project{
 				Notarize: config.Notarize{
 					MacOS: []config.MacOSSignNotarize{
 						{},
@@ -30,11 +30,11 @@ func TestMacOSSkip(t *testing.T) {
 	})
 	t.Run("skip no configs", func(t *testing.T) {
 		require.True(t,
-			p.Skip(testctx.NewWithCfg(config.Project{})))
+			p.Skip(testctx.WrapWithCfg(t.Context(), config.Project{})))
 	})
 	t.Run("dont skip", func(t *testing.T) {
 		require.False(t,
-			p.Skip(testctx.NewWithCfg(config.Project{
+			p.Skip(testctx.WrapWithCfg(t.Context(), config.Project{
 				Notarize: config.Notarize{
 					MacOS: []config.MacOSSignNotarize{
 						{},
@@ -45,7 +45,7 @@ func TestMacOSSkip(t *testing.T) {
 }
 
 func TestMacOSDefault(t *testing.T) {
-	ctx := testctx.NewWithCfg(config.Project{
+	ctx := testctx.WrapWithCfg(t.Context(), config.Project{
 		ProjectName: "foo",
 		Notarize: config.Notarize{
 			MacOS: []config.MacOSSignNotarize{
@@ -61,6 +61,7 @@ func TestMacOSDefault(t *testing.T) {
 			},
 		},
 	})
+
 	require.NoError(t, MacOS{}.Default(ctx))
 	require.Equal(t, []config.MacOSSignNotarize{
 		{
@@ -142,20 +143,21 @@ func TestMacOSRun(t *testing.T) {
 			},
 		} {
 			t.Run(name, func(t *testing.T) {
-				ctx := testctx.NewWithCfg(config.Project{
+				ctx := testctx.WrapWithCfg(t.Context(), config.Project{
 					Notarize: config.Notarize{
 						MacOS: []config.MacOSSignNotarize{
 							{},
 						},
 					},
 				})
+
 				fn(ctx)
 				testlib.RequireTemplateError(t, MacOS{}.Run(ctx))
 			})
 		}
 	})
 	t.Run("skip", func(t *testing.T) {
-		ctx := testctx.NewWithCfg(config.Project{
+		ctx := testctx.WrapWithCfg(t.Context(), config.Project{
 			Notarize: config.Notarize{
 				MacOS: []config.MacOSSignNotarize{
 					{},
@@ -165,6 +167,7 @@ func TestMacOSRun(t *testing.T) {
 				},
 			},
 		}, testctx.WithEnv(map[string]string{"SKIP": "false"}))
+
 		testlib.AssertSkipped(t, MacOS{}.Run(ctx))
 	})
 }

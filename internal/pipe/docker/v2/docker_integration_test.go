@@ -1,0 +1,440 @@
+package docker
+
+import (
+	"encoding/json"
+	"errors"
+	"maps"
+	"os/exec"
+	"slices"
+	"testing"
+
+	api "github.com/docker/docker/api/types/image"
+	v1 "github.com/google/go-containerregistry/pkg/v1"
+	"github.com/goreleaser/goreleaser/v2/internal/artifact"
+	"github.com/goreleaser/goreleaser/v2/internal/gerrors"
+	"github.com/goreleaser/goreleaser/v2/internal/pipe"
+	"github.com/goreleaser/goreleaser/v2/internal/testctx"
+	"github.com/goreleaser/goreleaser/v2/internal/testlib"
+	"github.com/goreleaser/goreleaser/v2/pkg/config"
+	"github.com/stretchr/testify/require"
+)
+
+func TestRun(t *testing.T) {
+	testlib.CheckDocker(t)
+	testlib.SkipIfWindows(t, "registry images only available for windows")
+
+	dist := t.TempDir()
+	ctx := testctx.WrapWithCfg(t.Context(), config.Project{
+		ProjectName: "dockerv2",
+		Dist:        dist,
+		DockersV2: []config.DockerV2{
+			{
+				ID:         "myimg",
+				IDs:        []string{"id1"},
+				Dockerfile: "./testdata/Dockerfile",
+				Images:     []string{"image1", "image2"},
+				Tags:       []string{"tag1", "tag2"},
+				ExtraFiles: []string{"./testdata/foo.conf"},
+				Platforms:  []string{"linux/amd64", "linux/arm64", "linux/arm/v7", `{{- if isEnvSet "FOO" }}this will be empty{{ end -}}`},
+				Labels: map[string]string{
+					"org.opencontainers.image.licenses": "MIT",
+				},
+				Annotations: map[string]string{
+					"org.opencontainers.image.description": "My multi-arch image",
+				},
+			},
+			{
+				ID:         "clean",
+				Dockerfile: "./testdata/Dockerfile.clean",
+				Images:     []string{"image3", "image4"},
+				Tags:       []string{"tag3"},
+				ExtraFiles: []string{"./testdata/foo.conf"},
+				IDs:        []string{"nopenopenope"},
+				Labels: map[string]string{
+					"org.opencontainers.image.licenses": "BSD",
+				},
+				Annotations: map[string]string{
+					"org.opencontainers.image.description": "My multi-arch image",
+				},
+			},
+			{
+				ID:         "python",
+				IDs:        []string{"id2"},
+				Dockerfile: "./testdata/Dockerfile.python",
+				Images:     []string{"image5"},
+				Tags:       []string{"latest"},
+			},
+		},
+	}, testctx.Snapshot)
+	for _, arch := range []string{"amd64", "arm64", "arm"} {
+		ctx.Artifacts.Add(&artifact.Artifact{
+			Name:   "mybin",
+			Path:   "./testdata/mybin",
+			Goos:   "linux",
+			Goarch: arch,
+			Goarm:  "7",
+			Type:   artifact.Binary,
+			Extra: artifact.Extras{
+				artifact.ExtraID: "id1",
+			},
+		})
+	}
+
+	ctx.Artifacts.Add(&artifact.Artifact{
+		Name:   "mybin",
+		Path:   "./testdata/mybin",
+		Goos:   "all",
+		Goarch: "all",
+		Type:   artifact.PyWheel,
+		Extra: artifact.Extras{
+			artifact.ExtraID: "id2",
+		},
+	})
+
+	require.NoError(t, Base{}.Default(ctx))
+	err := Snapshot{}.Run(ctx)
+	require.Error(t, err)
+	if !pipe.IsSkip(err) {
+		de, ok := errors.AsType[gerrors.ErrDetailed](err)
+		require.True(t, ok)
+		t.Fatalf("should have been a skip, got message: %s, details: %v, output: %s", de.Messages(), maps.Collect(de.Details()), de.Output())
+	}
+
+	t.Run("main", func(t *testing.T) {
+		images := ctx.Artifacts.Filter(
+			artifact.And(
+				artifact.ByType(artifact.DockerImageV2),
+				artifact.ByIDs("myimg"),
+			),
+		).List()
+		require.Len(t, images, 12)
+
+		image := inspectImage(t, images[0].Name)[0]
+		require.Equal(t, map[string]string{
+			"org.opencontainers.image.licenses": "MIT",
+		}, image.Config.Labels)
+
+		require.Equal(t, []string{
+			"image1:tag1-amd64",
+			"image1:tag1-arm64",
+			"image1:tag1-armv7",
+			"image1:tag2-amd64",
+			"image1:tag2-arm64",
+			"image1:tag2-armv7",
+			"image2:tag1-amd64",
+			"image2:tag1-arm64",
+			"image2:tag1-armv7",
+			"image2:tag2-amd64",
+			"image2:tag2-arm64",
+			"image2:tag2-armv7",
+		}, names(images))
+		for _, img := range images {
+			require.NotEmpty(t, artifact.ExtraOr(*img, artifact.ExtraDigest, ""))
+			rmi(t, img.Name)
+		}
+	})
+
+	t.Run("clean", func(t *testing.T) {
+		images := ctx.Artifacts.Filter(
+			artifact.And(
+				artifact.ByType(artifact.DockerImageV2),
+				artifact.ByIDs("clean"),
+			),
+		).List()
+
+		image := inspectImage(t, images[0].Name)[0]
+		require.Equal(t, map[string]string{
+			"org.opencontainers.image.licenses": "BSD",
+		}, image.Config.Labels)
+
+		require.Equal(t, []string{
+			"image3:tag3-amd64",
+			"image3:tag3-arm64",
+			"image4:tag3-amd64",
+			"image4:tag3-arm64",
+		}, names(images))
+		for _, img := range images {
+			require.NotEmpty(t, artifact.ExtraOr(*img, artifact.ExtraDigest, ""))
+			rmi(t, img.Name)
+		}
+	})
+
+	t.Run("python", func(t *testing.T) {
+		images := ctx.Artifacts.Filter(
+			artifact.And(
+				artifact.ByType(artifact.DockerImageV2),
+				artifact.ByIDs("python"),
+			),
+		).List()
+
+		require.Len(t, images, 2)
+
+		require.Equal(t, []string{
+			"image5:latest-amd64",
+			"image5:latest-arm64",
+		}, names(images))
+		for _, img := range images {
+			require.NotEmpty(t, artifact.ExtraOr(*img, artifact.ExtraDigest, ""))
+			rmi(t, img.Name)
+		}
+	})
+}
+
+func TestPublish(t *testing.T) {
+	testlib.CheckDocker(t)
+	testlib.SkipIfWindows(t, "registry images only available for windows")
+
+	testlib.StartRegistry(t, "registry-v2", "5060")
+	testlib.StartRegistry(t, "alt_registry-v2", "5061")
+
+	dist := t.TempDir()
+	ctx := testctx.WrapWithCfg(t.Context(),
+		config.Project{
+			ProjectName: "dockerv2",
+			Dist:        dist,
+			DockersV2: []config.DockerV2{
+				{
+					ID:         "myimg",
+					IDs:        []string{"id1"},
+					Dockerfile: "./testdata/Dockerfile",
+					Images:     []string{"localhost:5060/foo", "localhost:5061/bar"},
+					Tags:       []string{"latest", "v{{.Version}}", "{{if .IsNightly}}nightly{{end}}"},
+					ExtraFiles: []string{"./testdata/foo.conf"},
+					Platforms:  []string{"linux/amd64", "linux/arm64", `{{- if isEnvSet "FOO" }}this will be empty{{ end -}}`},
+					Labels: map[string]string{
+						"org.opencontainers.image.licenses": "MIT",
+					},
+					Annotations: map[string]string{
+						"index:org.opencontainers.image.description": "My multi-arch image",
+					},
+				},
+				{
+					ID:         "python",
+					IDs:        []string{"id2"},
+					Dockerfile: "./testdata/Dockerfile.python",
+					Images:     []string{"localhost:5060/python"},
+					Tags:       []string{"latest"},
+					SBOM:       "{{ .IsSnapshot }}",
+				},
+			},
+		},
+		testctx.WithVersion("1.0.0"),
+		testctx.WithCurrentTag("v1.0.0"),
+		testctx.WithSemver(1, 0, 0, ""),
+	)
+	for _, arch := range []string{"amd64", "arm64"} {
+		ctx.Artifacts.Add(&artifact.Artifact{
+			Name:   "mybin",
+			Path:   "./testdata/mybin",
+			Goos:   "linux",
+			Goarch: arch,
+			Type:   artifact.Binary,
+			Extra: artifact.Extras{
+				artifact.ExtraID: "id1",
+			},
+		})
+	}
+	ctx.Artifacts.Add(&artifact.Artifact{
+		Name:   "mybin",
+		Path:   "./testdata/mybin",
+		Goos:   "all",
+		Goarch: "all",
+		Type:   artifact.PyWheel,
+		Extra: artifact.Extras{
+			artifact.ExtraID: "id2",
+		},
+	})
+
+	require.NoError(t, Base{}.Default(ctx))
+	err := Publish{}.Publish(ctx)
+	if err != nil {
+		de, ok := errors.AsType[gerrors.ErrDetailed](err)
+		require.True(t, ok)
+		t.Fatalf("should have been a skip, got message: %s, details: %v, output: %s", de.Messages(), maps.Collect(de.Details()), de.Output())
+	}
+
+	t.Run("main", func(t *testing.T) {
+		images := ctx.Artifacts.
+			Filter(artifact.And(
+				artifact.ByIDs("myimg"),
+				artifact.ByType(artifact.DockerImageV2),
+			)).
+			List()
+		require.Len(t, images, 4)
+		require.Equal(t, []string{
+			"localhost:5060/foo:latest",
+			"localhost:5060/foo:v1.0.0",
+			"localhost:5061/bar:latest",
+			"localhost:5061/bar:v1.0.0",
+		}, names(images))
+
+		for _, img := range images {
+			require.NotEmpty(t, artifact.ExtraOr(*img, artifact.ExtraDigest, ""))
+		}
+
+		manifest := inspectManifest(t, "localhost:5060/foo:v1.0.0")
+		require.Equal(t, map[string]string{
+			"org.opencontainers.image.description": "My multi-arch image",
+		}, manifest.Annotations)
+
+		require.True(t, hasSBOM(t, "localhost:5060/foo:v1.0.0"))
+	})
+	t.Run("python", func(t *testing.T) {
+		images := ctx.Artifacts.
+			Filter(artifact.And(
+				artifact.ByIDs("python"),
+				artifact.ByType(artifact.DockerImageV2),
+			)).
+			List()
+		require.Len(t, images, 1)
+		require.Equal(t, []string{
+			"localhost:5060/python:latest",
+		}, names(images))
+
+		for _, img := range images {
+			require.NotEmpty(t, artifact.ExtraOr(*img, artifact.ExtraDigest, ""))
+		}
+		require.False(t, hasSBOM(t, "localhost:5060/python:latest"))
+	})
+}
+
+func TestGetBuildxDriver(t *testing.T) {
+	testlib.CheckDocker(t)
+	testlib.SkipIfWindows(t, "no buildx on Windows")
+	checkBuildxDriver(t.Context())
+	require.NotEmpty(t, getBuildxDriver(t.Context()))
+}
+
+func TestHealthcheck(t *testing.T) {
+	testlib.CheckDocker(t)
+	testlib.SkipIfWindows(t, "no buildx on Windows")
+	require.NoError(t, Base{}.Healthcheck(testctx.Wrap(t.Context())))
+}
+
+func TestIsDockerDaemonAvailable(t *testing.T) {
+	testlib.CheckDocker(t)
+	require.True(t, isDockerDaemonAvailable(t.Context()))
+}
+
+func TestSnapshotNoDaemon(t *testing.T) {
+	testlib.CheckDocker(t)
+	testlib.SkipIfWindows(t, "registry images only available for windows")
+
+	// Force isDockerDaemonAvailable to return false for this test
+	testForceNoDaemon = true
+	defer func() { testForceNoDaemon = false }()
+
+	dist := t.TempDir()
+	ctx := testctx.WrapWithCfg(t.Context(), config.Project{
+		ProjectName: "dockerv2",
+		Dist:        dist,
+		DockersV2: []config.DockerV2{
+			{
+				ID:         "myimg",
+				IDs:        []string{"id1"},
+				Dockerfile: "./testdata/Dockerfile",
+				Images:     []string{"nodaemon/image1"},
+				Tags:       []string{"test-no-daemon"},
+				ExtraFiles: []string{"./testdata/foo.conf"},
+				Platforms:  []string{"linux/amd64", "linux/arm64"},
+			},
+		},
+	}, testctx.Snapshot)
+
+	for _, arch := range []string{"amd64", "arm64"} {
+		ctx.Artifacts.Add(&artifact.Artifact{
+			Name:   "mybin",
+			Path:   "./testdata/mybin",
+			Goos:   "linux",
+			Goarch: arch,
+			Type:   artifact.Binary,
+			Extra: artifact.Extras{
+				artifact.ExtraID: "id1",
+			},
+		})
+	}
+
+	require.NoError(t, Base{}.Default(ctx))
+	err := Snapshot{}.Run(ctx)
+	if err != nil {
+		de, ok := errors.AsType[gerrors.ErrDetailed](err)
+		require.True(t, ok)
+		t.Fatalf("should have been a skip, got message: %s, details: %v, output: %s", de.Messages(), maps.Collect(de.Details()), de.Output())
+	}
+
+	images := ctx.Artifacts.Filter(
+		artifact.And(
+			artifact.ByType(artifact.DockerImageV2),
+			artifact.ByIDs("myimg"),
+		),
+	).List()
+
+	require.Len(t, images, 1, "expected 1 multi-arch image when daemon unavailable")
+
+	for _, img := range images {
+		cmd := exec.CommandContext(t.Context(), "docker", "inspect", img.Name)
+		out, err := cmd.CombinedOutput()
+		require.Error(t, err, "image %s should not be loaded locally when daemon unavailable, but docker inspect succeeded: %s", img.Name, string(out))
+	}
+}
+
+func names(in []*artifact.Artifact) []string {
+	out := make([]string, 0, len(in))
+	for _, art := range in {
+		out = append(out, art.Name)
+	}
+	slices.Sort(out)
+	return out
+}
+
+func rmi(tb testing.TB, img string) {
+	tb.Helper()
+	require.NoError(tb, exec.CommandContext(tb.Context(), "docker", "rmi", "--force", img).Run())
+}
+
+func inspectImage(tb testing.TB, image string) []api.InspectResponse {
+	tb.Helper()
+	out, err := exec.CommandContext(
+		tb.Context(),
+		"docker",
+		"inspect",
+		image,
+	).CombinedOutput()
+	require.NoError(tb, err, "output: %s", string(out))
+
+	var t []api.InspectResponse
+	require.NoError(tb, json.Unmarshal(out, &t))
+	return t
+}
+
+func inspectManifest(tb testing.TB, image string) v1.Manifest {
+	tb.Helper()
+	out, err := exec.CommandContext(
+		tb.Context(),
+		"docker",
+		"buildx",
+		"imagetools",
+		"inspect",
+		"--raw",
+		image,
+	).CombinedOutput()
+	require.NoError(tb, err, "output: %s", string(out))
+
+	var t v1.Manifest
+	require.NoError(tb, json.Unmarshal(out, &t))
+	return t
+}
+
+func hasSBOM(tb testing.TB, image string) bool {
+	tb.Helper()
+	out, err := exec.CommandContext(
+		tb.Context(),
+		"docker",
+		"buildx",
+		"imagetools",
+		"inspect",
+		`--format={{ json (index .SBOM "linux/amd64").SPDX.SPDXID }}`,
+		image,
+	).CombinedOutput()
+	return err == nil && string(out) == `"SPDXRef-DOCUMENT"`
+}

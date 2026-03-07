@@ -17,7 +17,7 @@ func TestString(t *testing.T) {
 		"before, ko, and sbom": {skips.SBOM, skips.Ko, skips.Before},
 	} {
 		t.Run(expect, func(t *testing.T) {
-			ctx := testctx.New(testctx.Skip(keys...))
+			ctx := testctx.Wrap(t.Context(), testctx.Skip(keys...))
 			require.Equal(t, expect, skips.String(ctx))
 		})
 	}
@@ -25,29 +25,29 @@ func TestString(t *testing.T) {
 
 func TestAny(t *testing.T) {
 	t.Run("false", func(t *testing.T) {
-		ctx := testctx.New()
+		ctx := testctx.Wrap(t.Context())
 		require.False(t, skips.Any(ctx, skips.Release...))
 	})
 	t.Run("true", func(t *testing.T) {
-		ctx := testctx.New(testctx.Skip(skips.Publish))
+		ctx := testctx.Wrap(t.Context(), testctx.Skip(skips.Publish))
 		require.True(t, skips.Any(ctx, skips.Release...))
 	})
 }
 
 func TestSet(t *testing.T) {
-	ctx := testctx.New()
+	ctx := testctx.Wrap(t.Context())
 	skips.Set(ctx, skips.Publish, skips.Announce)
 	require.ElementsMatch(t, []string{"publish", "announce"}, slices.Collect(maps.Keys(ctx.Skips)))
 }
 
 func TestSetAllowed(t *testing.T) {
 	t.Run("success", func(t *testing.T) {
-		ctx := testctx.New()
+		ctx := testctx.Wrap(t.Context())
 		require.NoError(t, skips.SetBuild(ctx, "", "validate", ""))
 		require.ElementsMatch(t, []string{"validate"}, slices.Collect(maps.Keys(ctx.Skips)))
 	})
 	t.Run("error", func(t *testing.T) {
-		ctx := testctx.New()
+		ctx := testctx.Wrap(t.Context())
 		require.ErrorContains(t, skips.SetBuild(ctx, "validate", "", "publish", ""), "--skip=publish is not allowed.")
 		require.ElementsMatch(t, []string{"validate"}, slices.Collect(maps.Keys(ctx.Skips)))
 	})

@@ -7,14 +7,12 @@ import (
 	"testing"
 
 	"github.com/caarlos0/log"
-	"github.com/charmbracelet/lipgloss"
 	"github.com/goreleaser/goreleaser/v2/internal/golden"
-	"github.com/muesli/termenv"
 	"github.com/stretchr/testify/require"
 )
 
 func TestWriter(t *testing.T) {
-	lipgloss.SetColorProfile(termenv.Ascii)
+	t.Setenv("CI", "")
 
 	t.Run("info", func(t *testing.T) {
 		t.Cleanup(func() {

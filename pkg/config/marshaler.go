@@ -148,7 +148,8 @@ func (a *PullRequestBase) UnmarshalYAML(unmarshal func(any) error) error {
 		return nil
 	}
 
-	var base pullRequestBase
+	type t PullRequestBase
+	var base t
 	if err := unmarshal(&base); err != nil {
 		return err
 	}
@@ -168,7 +169,8 @@ func (a *HomebrewDependency) UnmarshalYAML(unmarshal func(any) error) error {
 		return nil
 	}
 
-	var dep homebrewDependency
+	type t HomebrewDependency
+	var dep t
 	if err := unmarshal(&dep); err != nil {
 		return err
 	}

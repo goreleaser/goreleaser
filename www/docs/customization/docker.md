@@ -1,4 +1,7 @@
-# Docker Images
+# Docker Images (deprecated)
+
+> [Phasing out](./../deprecations.md#dockers) in v2.12.
+> [Docker Images v2](./dockers_v2.md) is preferred instead.
 
 GoReleaser can build and push Docker images.
 Let's see how it works.
@@ -164,6 +167,25 @@ dockers:
     # Extra flags to be passed down to the push command.
     push_flags:
       - --tls-verify=false
+
+    # Retry configuration for push operations.
+    #
+    # <!-- md:inline_version v2.12 -->.
+    retry:
+      # Attempts of retry.
+      #
+      # Default: 10.
+      attempts: 5
+
+      # Delay between retry attempts.
+      #
+      # Default: 10s.
+      delay: 5s
+
+      # Maximum delay between retry attempts.
+      #
+      # Default: 5m.
+      max_delay: 2m
 
     # If your Dockerfile copies files other than binaries and packages,
     # you should list them here as well.

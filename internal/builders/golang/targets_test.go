@@ -148,6 +148,7 @@ func TestAllBuildTargets(t *testing.T) {
 			"openbsd_amd64_v3",
 			"openbsd_amd64_v4",
 			"openbsd_arm64_v9.0",
+			"openbsd_riscv64_rva22u64",
 			"windows_386_softfloat",
 			"windows_amd64_v2",
 			"windows_amd64_v3",
@@ -260,6 +261,10 @@ func TestGoosGoarchCombos(t *testing.T) {
 		{"windows", "arm", true},
 		{"windows", "arm64", true},
 		{"js", "wasm", true},
+		// experimental targets:
+		{os: "openbsd", arch: "riscv64", valid: true},
+		// broken/to-be-removed:
+		{os: "windows", arch: "arm", valid: true},
 		// invalid targets
 		{"darwin", "386", false},
 		{"darwin", "arm", false},

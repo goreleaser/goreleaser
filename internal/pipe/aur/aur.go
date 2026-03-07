@@ -123,9 +123,9 @@ func doRun(ctx *context.Context, aur config.AUR, cl client.ReleaseURLTemplater) 
 				),
 			),
 		),
-		artifact.Or(
-			artifact.ByType(artifact.UploadableArchive),
-			artifact.ByType(artifact.UploadableBinary),
+		artifact.ByTypes(
+			artifact.UploadableArchive,
+			artifact.UploadableBinary,
 		),
 	}
 	if len(aur.IDs) > 0 {
@@ -147,12 +147,12 @@ func doRun(ctx *context.Context, aur config.AUR, cl client.ReleaseURLTemplater) 
 		case artifact.UploadableBinary:
 			name := art.Name
 			bin := artifact.MustExtra[string](*art, artifact.ExtraBinary)
-			pkg = fmt.Sprintf(`install -Dm755 "./%s "${pkgdir}/usr/bin/%s"`, name, bin)
+			pkg = fmt.Sprintf("install -Dm755 %q %q", "./"+name, "${pkgdir}/usr/bin/"+bin)
 		case artifact.UploadableArchive:
 			folder := artifact.ExtraOr(*art, artifact.ExtraWrappedIn, ".")
 			for _, bin := range artifact.MustExtra[[]string](*art, artifact.ExtraBinaries) {
 				path := filepath.ToSlash(filepath.Clean(filepath.Join(folder, bin)))
-				pkg = fmt.Sprintf(`install -Dm755 "./%s" "${pkgdir}/usr/bin/%s"`, path, bin)
+				pkg = fmt.Sprintf("install -Dm755 %q %q", "./"+path, "${pkgdir}/usr/bin/"+bin)
 				break
 			}
 		}
@@ -249,6 +249,7 @@ func applyTemplate(ctx *context.Context, tpl string, data templateData) (string,
 				"pkgArray":   toPkgBuildArray,
 				"quoteField": quoteField,
 				"trimsuffix": strings.TrimSuffix,
+				"replaceAll": strings.ReplaceAll,
 			}).
 			Parse(tpl),
 	)
@@ -309,7 +310,7 @@ func dataFor(ctx *context.Context, cfg config.AUR, cl client.ReleaseURLTemplater
 		Name:         cfg.Name,
 		Desc:         cfg.Description,
 		Homepage:     cfg.Homepage,
-		Version:      fmt.Sprintf("%d.%d.%d", ctx.Semver.Major, ctx.Semver.Minor, ctx.Semver.Patch),
+		Version:      strings.ReplaceAll(ctx.Version, "-", "_"),
 		License:      cfg.License,
 		Rel:          cfg.Rel,
 		Maintainers:  cfg.Maintainers,

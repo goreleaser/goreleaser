@@ -16,7 +16,7 @@ import (
 )
 
 func TestSystemDependencies(t *testing.T) {
-	ctx := testctx.New()
+	ctx := testctx.Wrap(t.Context())
 	require.Equal(t, []string{"git"}, system{}.Dependencies(ctx))
 }
 
@@ -25,7 +25,7 @@ func TestSystemStringer(t *testing.T) {
 }
 
 func TestBuildDependencies(t *testing.T) {
-	ctx := testctx.NewWithCfg(config.Project{
+	ctx := testctx.WrapWithCfg(t.Context(), config.Project{
 		Builds: []config.Build{
 			{Builder: "bun"},
 			{Builder: "deno"},
@@ -48,4 +48,12 @@ func TestBuildDependencies(t *testing.T) {
 
 func TestBuildStringer(t *testing.T) {
 	require.NotEmpty(t, builds{}.String())
+}
+
+func TestHealthCheckers(t *testing.T) {
+	require.NotEmpty(t, HealthCheckers)
+}
+
+func TestDependencyCheckers(t *testing.T) {
+	require.NotEmpty(t, DependencyCheckers)
 }

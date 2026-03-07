@@ -1,4 +1,3 @@
-// Package cmd provides the command line interface for goreleaser.
 package cmd
 
 import (
@@ -9,6 +8,7 @@ import (
 
 	"github.com/caarlos0/log"
 	"github.com/goreleaser/goreleaser/v2/internal/packagejson"
+	"github.com/goreleaser/goreleaser/v2/internal/pyproject"
 	"github.com/goreleaser/goreleaser/v2/internal/static"
 	"github.com/spf13/cobra"
 )
@@ -64,6 +64,11 @@ func newInitCmd() *initCmd {
 				example = static.BunExampleConfig
 			case "deno":
 				example = static.DenoExampleConfig
+			case "uv":
+				example = static.UVExampleConfig
+				gitignoreLines = append(gitignoreLines, "build/")
+			case "poetry":
+				example = static.PoetryExampleConfig
 			default:
 				return fmt.Errorf("invalid language: %s", root.lang)
 			}
@@ -111,14 +116,23 @@ func newInitCmd() *initCmd {
 
 func setupGitignore(path string, lines []string) (bool, error) {
 	ignored, _ := os.ReadFile(path)
+	content := strings.ReplaceAll(string(ignored), "\r\n", "\n")
+
 	f, err := os.OpenFile(path, os.O_WRONLY|os.O_CREATE|os.O_APPEND, 0o644)
 	if err != nil {
 		return false, err
 	}
 	defer f.Close()
+
+	if len(content) > 0 && !strings.HasSuffix(content, "\n") {
+		if _, err := f.WriteString("\n"); err != nil {
+			return false, err
+		}
+	}
+
 	var modified bool
 	for _, line := range lines {
-		if !strings.Contains(string(ignored), line+"\n") {
+		if !strings.Contains(content, line+"\n") {
 			if !modified {
 				line = "# Added by goreleaser init:\n" + line
 				modified = true
@@ -130,6 +144,11 @@ func setupGitignore(path string, lines []string) (bool, error) {
 	}
 	return modified, nil
 }
+
+const (
+	packageJSON   = "package.json"
+	pyprojectToml = "pyproject.toml"
+)
 
 func langDetect() string {
 	code := func(s string) string {
@@ -147,10 +166,19 @@ func langDetect() string {
 		}
 	}
 
-	file := "package.json"
-	if pkg, err := packagejson.Open(file); err == nil && pkg.IsBun() {
-		log.Info("project contains a " + code(file) + " with " + code("@types/bun") + " in its " + code("devDependencies") + ", using default " + code("bun") + " configuration")
+	if pkg, err := packagejson.Open(packageJSON); err == nil && pkg.IsBun() {
+		log.Info("project contains a " + code(packageJSON) + " with " + code("@types/bun") + " in its " + code("devDependencies") + ", using default " + code("bun") + " configuration")
 		return "bun"
+	}
+
+	pyproj, err := pyproject.Open(pyprojectToml)
+	if err == nil {
+		if pyproj.IsPoetry() {
+			log.Info("project contains a " + code(pyprojectToml) + " with " + code("[tool.poetry]") + " in it, using default " + code("poetry") + " configuration")
+			return "poetry"
+		}
+		log.Info("project contains a " + code(pyprojectToml) + " file, using default " + code("uv") + " configuration")
+		return "uv"
 	}
 
 	return "go"

@@ -3,16 +3,18 @@
   <h3 align="center">GoReleaser</h3>
   <p align="center">Release engineering, simplified.</p>
   <p align="center">
-    <img alt="Go" src="./www/docs/static/go-light.svg#gh-light-mode-only" height="60" />
-    <img alt="Go" src="./www/docs/static/go-dark.svg#gh-dark-mode-only" height="60" />
-    <img alt="Rust" src="./www/docs/static/rust-light.svg#gh-light-mode-only" height="60" />
-    <img alt="Rust" src="./www/docs/static/rust-dark.svg#gh-dark-mode-only" height="60" />
-    <img alt="Zig" src="./www/docs/static/zig-light.svg#gh-light-mode-only" height="60" />
-    <img alt="Zig" src="./www/docs/static/zig-dark.svg#gh-dark-mode-only" height="60" />
-    <img alt="Bun" src="./www/docs/static/bun-light.svg#gh-light-mode-only" height="60" />
-    <img alt="Bun" src="./www/docs/static/bun-dark.svg#gh-dark-mode-only" height="60" />
-    <img alt="Deno" src="./www/docs/static/deno-light.svg#gh-light-mode-only" height="60" />
-    <img alt="Deno" src="./www/docs/static/deno-dark.svg#gh-dark-mode-only" height="60" />
+    <img alt="Go" src="./www/docs/static/go-light.svg#gh-light-mode-only" height="30" width="30" />
+    <img alt="Go" src="./www/docs/static/go-dark.svg#gh-dark-mode-only" height="30" width="30" />
+    <img alt="Rust" src="./www/docs/static/rust-light.svg#gh-light-mode-only" height="30" width="30" />
+    <img alt="Rust" src="./www/docs/static/rust-dark.svg#gh-dark-mode-only" height="30" width="30" />
+    <img alt="Zig" src="./www/docs/static/zig-light.svg#gh-light-mode-only" height="30" width="30" />
+    <img alt="Zig" src="./www/docs/static/zig-dark.svg#gh-dark-mode-only" height="30" width="30" />
+    <img alt="Bun" src="./www/docs/static/bun-light.svg#gh-light-mode-only" height="30" width="30" />
+    <img alt="Bun" src="./www/docs/static/bun-dark.svg#gh-dark-mode-only" height="30" width="30" />
+    <img alt="Deno" src="./www/docs/static/deno-light.svg#gh-light-mode-only" height="30" width="30" />
+    <img alt="Deno" src="./www/docs/static/deno-dark.svg#gh-dark-mode-only" height="30" width="30" />
+    <img alt="Python" src="./www/docs/static/python-light.svg#gh-light-mode-only" height="30" width="30" />
+    <img alt="Python" src="./www/docs/static/python-dark.svg#gh-dark-mode-only" height="30" width="30" />
   </p>
 </p>
 
@@ -68,70 +70,104 @@ Please refer to our [contributing guidelines](CONTRIBUTING.md) for further infor
 [![CII Best Practices](https://img.shields.io/cii/summary/5420?label=openssf%20best%20practices&style=for-the-badge)](https://bestpractices.coreinfrastructure.org/projects/5420)
 [![GoReportCard](https://goreportcard.com/badge/github.com/goreleaser/goreleaser?style=for-the-badge)](https://goreportcard.com/report/github.com/goreleaser/goreleaser)
 
-## GitHub Sponsors
+## Sponsors
 
-High-tier sponsors of [@caarlos0](https://github.com/sponsors/caarlos0/) on GitHub:
+Does you or your company use GoReleaser?
 
-<a href="https://smallstep.com" target="_blank"><img width="200" src="https://github.com/goreleaser/goreleaser/assets/245435/05ade839-6652-474a-af90-da3ea67dde24"></a>
+You can help keep the project bug-free and feature rich by sponsoring the
+project and its maintainers.
 
-## OpenCollective
+You can sponsor GoReleaser via:
 
-### Sponsors
+- **[GitHub Sponsors](https://github.com/sponsors/caarlos0)**
+- **[OpenCollective](https://opencollective.com/goreleaser)**
 
-Does your company use goreleaser? Help keep the project bug-free and feature rich by [sponsoring the project](https://opencollective.com/goreleaser#sponsor).
+A big **thank you** to all current, past, and future sponsors!
 
-<a href="https://opencollective.com/goreleaser/sponsors/0/website" rel="nofollow sponsored" target="_blank"><img src="https://opencollective.com/goreleaser/sponsors/0/avatar"></a>
-<a href="https://opencollective.com/goreleaser/sponsors/1/website" rel="nofollow sponsored" target="_blank"><img src="https://opencollective.com/goreleaser/sponsors/1/avatar"></a>
-<a href="https://opencollective.com/goreleaser/sponsors/2/website" rel="nofollow sponsored" target="_blank"><img src="https://opencollective.com/goreleaser/sponsors/2/avatar"></a>
-<a href="https://opencollective.com/goreleaser/sponsors/3/website" rel="nofollow sponsored" target="_blank"><img src="https://opencollective.com/goreleaser/sponsors/3/avatar"></a>
-<a href="https://opencollective.com/goreleaser/sponsors/4/website" rel="nofollow sponsored" target="_blank"><img src="https://opencollective.com/goreleaser/sponsors/4/avatar"></a>
-<a href="https://opencollective.com/goreleaser/sponsors/5/website" rel="nofollow sponsored" target="_blank"><img src="https://opencollective.com/goreleaser/sponsors/5/avatar"></a>
-<a href="https://opencollective.com/goreleaser/sponsors/6/website" rel="nofollow sponsored" target="_blank"><img src="https://opencollective.com/goreleaser/sponsors/6/avatar"></a>
-<a href="https://opencollective.com/goreleaser/sponsors/7/website" rel="nofollow sponsored" target="_blank"><img src="https://opencollective.com/goreleaser/sponsors/7/avatar"></a>
-<a href="https://opencollective.com/goreleaser/sponsors/8/website" rel="nofollow sponsored" target="_blank"><img src="https://opencollective.com/goreleaser/sponsors/8/avatar"></a>
-<a href="https://opencollective.com/goreleaser/sponsors/9/website" rel="nofollow sponsored" target="_blank"><img src="https://opencollective.com/goreleaser/sponsors/9/avatar"></a>
-<a href="https://opencollective.com/goreleaser/sponsors/10/website" rel="nofollow sponsored" target="_blank"><img src="https://opencollective.com/goreleaser/sponsors/10/avatar"></a>
-<a href="https://opencollective.com/goreleaser/sponsors/11/website" rel="nofollow sponsored" target="_blank"><img src="https://opencollective.com/goreleaser/sponsors/11/avatar"></a>
-<a href="https://opencollective.com/goreleaser/sponsors/12/website" rel="nofollow sponsored" target="_blank"><img src="https://opencollective.com/goreleaser/sponsors/12/avatar"></a>
-<a href="https://opencollective.com/goreleaser/sponsors/13/website" rel="nofollow sponsored" target="_blank"><img src="https://opencollective.com/goreleaser/sponsors/13/avatar"></a>
-<a href="https://opencollective.com/goreleaser/sponsors/14/website" rel="nofollow sponsored" target="_blank"><img src="https://opencollective.com/goreleaser/sponsors/14/avatar"></a>
-<a href="https://opencollective.com/goreleaser/sponsors/15/website" rel="nofollow sponsored" target="_blank"><img src="https://opencollective.com/goreleaser/sponsors/15/avatar"></a>
-<a href="https://opencollective.com/goreleaser/sponsors/16/website" rel="nofollow sponsored" target="_blank"><img src="https://opencollective.com/goreleaser/sponsors/16/avatar"></a>
+<!-- sponsors:begin -->
+<!-- This list is auto-generated by scripts/update-sponsors.py -->
+
+### Platinum Sponsors
+
+<div align="center">
+
+  <a href="https://github.com/SAP" target="_blank" rel="noopener sponsored"><img src="https://avatars.githubusercontent.com/u/2531208?v=4" alt="SAP" width="112" height="112" style="border-radius: 8px; margin: 8px;"></a>
+
+</div>
+
+### Gold Sponsors
+
+<div align="center">
+
+  <a href="https://github.com/mercedes-benz" target="_blank" rel="noopener sponsored"><img src="https://avatars.githubusercontent.com/u/34240465?v=4" alt="Mercedes-Benz Group" width="96" height="96" style="border-radius: 8px; margin: 8px;"></a>
+  <a href="https://github.com/nitrictech" target="_blank" rel="noopener sponsored"><img src="https://avatars.githubusercontent.com/u/72055470?v=4" alt="nitric" width="96" height="96" style="border-radius: 8px; margin: 8px;"></a>
+
+</div>
+
+### Silver Sponsors
+
+<div align="center">
+
+  <a href="https://depot.dev" target="_blank" rel="noopener sponsored"><img src="https://images.opencollective.com/depot/39125a1/logo/96.png" alt="Depot" width="80" height="80" style="border-radius: 8px; margin: 8px;"></a>
+  <a href="https://www.n-ix.com/" target="_blank" rel="noopener sponsored"><img src="https://images.opencollective.com/n-ix-ltd/575a7a5/logo/96.png" alt="N-iX Ltd" width="80" height="80" style="border-radius: 8px; margin: 8px;"></a>
+  <a href="https://github.com/DataDog" target="_blank" rel="noopener sponsored"><img src="https://avatars.githubusercontent.com/u/365230?v=4" alt="Datadog, Inc." width="80" height="80" style="border-radius: 8px; margin: 8px;"></a>
+
+</div>
+
+### Bronze Sponsors
+
+<div align="center">
+
+  <a href="https://github.com/conetcloud" target="_blank" rel="noopener sponsored"><img src="https://avatars.githubusercontent.com/u/35725664?v=4" alt="conet cloud" width="64" height="64" style="border-radius: 8px; margin: 8px;"></a>
+  <a href="https://github.com/encoredev" target="_blank" rel="noopener sponsored"><img src="https://avatars.githubusercontent.com/u/50438175?v=4" alt="Encore" width="64" height="64" style="border-radius: 8px; margin: 8px;"></a>
+  <a href="https://about.gitea.com/" target="_blank" rel="noopener sponsored"><img src="https://images.opencollective.com/gitea/bf35c2f/logo/96.png" alt="Gitea" width="64" height="64" style="border-radius: 8px; margin: 8px;"></a>
+  <a href="https://github.com/comet-ml" target="_blank" rel="noopener sponsored"><img src="https://avatars.githubusercontent.com/u/31487821?v=4" alt="Comet" width="64" height="64" style="border-radius: 8px; margin: 8px;"></a>
+
+</div>
 
 ### Backers
 
-Love our work and community? [Become a backer](https://opencollective.com/goreleaser).
+- [Marcel Eichner](https://github.com/Ephigenia)
+- [Chatpong Voranartaksorn](https://github.com/psychvc)
+- [Bruno Paz](https://brunopaz.dev/)
+- [Guest](https://opencollective.com/guest-341ba997)
+- [Automatio AI](https://automatio.ai/)
+- [Bileta Avioni](https://biletaavioni.al/)
+- [Time.so](https://time.so/)
+- [Feetpedia](https://feetpedia.com/)
+- [Time.now Worldwide Developer API](https://time.now/developer)
+- [Calculators](https://calculator.now/)
+- [YouTube Transcript](https://transcript.you/)
+- [Video Downloader](https://orbitdownloader.com/)
+- [OhMyFacts](https://ohmyfacts.com/)
+- [Network Tools](https://gf.dev/)
+- [Jared Allard](https://github.com/jaredallard)
+- [joe miller](https://github.com/joemiller)
+- [Ryan Nixon](https://github.com/taiidani)
+- [Lea Anthony](https://github.com/leaanthony)
+- [Francis Lavoie](https://github.com/francislavoie)
+- [Nicolas Gotchac](https://github.com/ngotchac)
+- [Ben](https://github.com/iwpnd)
+- [KEINOS](https://github.com/KEINOS)
+- [Eden Zimbelman](https://github.com/zimeg)
+- [Ben Lechlitner](https://github.com/asphaltbuffet)
+- [Alexey Palazhchenko](https://github.com/AlekSi)
+- [David Birks](https://github.com/dbirks)
+- [Alex Viscreanu](https://github.com/aexvir)
+- [Ethan Li](https://github.com/ethanjli)
+- [Benjamin Kane](https://github.com/bbkane)
+- [Carl Tsai](https://github.com/moonape1226)
+- [David Dymko](https://github.com/ddymko)
+- [Jan De Dobbeleer](https://github.com/JanDeDobbeleer)
+- [Baptiste Canton](https://github.com/batmac)
+- [Andrew](https://github.com/wobondar)
+- [Sidartha Karna](https://github.com/sidarthakarna)
+- [Kazuma Watanabe](https://github.com/wata727)
+- [Joseph Sirianni](https://github.com/jsirianni)
+- [Oleg Balunenko](https://github.com/obalunenko)
+- [^.{5}\s.{2}ram.{3}$](https://github.com/umatare5)
 
-<a href="https://opencollective.com/goreleaser/backers/0/website" rel="nofollow sponsored" target="_blank"><img src="https://opencollective.com/goreleaser/backers/0/avatar"></a>
-<a href="https://opencollective.com/goreleaser/backers/1/website" rel="nofollow sponsored" target="_blank"><img src="https://opencollective.com/goreleaser/backers/1/avatar"></a>
-<a href="https://opencollective.com/goreleaser/backers/2/website" rel="nofollow sponsored" target="_blank"><img src="https://opencollective.com/goreleaser/backers/2/avatar"></a>
-<a href="https://opencollective.com/goreleaser/backers/3/website" rel="nofollow sponsored" target="_blank"><img src="https://opencollective.com/goreleaser/backers/3/avatar"></a>
-<a href="https://opencollective.com/goreleaser/backers/4/website" rel="nofollow sponsored" target="_blank"><img src="https://opencollective.com/goreleaser/backers/4/avatar"></a>
-<a href="https://opencollective.com/goreleaser/backers/5/website" rel="nofollow sponsored" target="_blank"><img src="https://opencollective.com/goreleaser/backers/5/avatar"></a>
-<a href="https://opencollective.com/goreleaser/backers/6/website" rel="nofollow sponsored" target="_blank"><img src="https://opencollective.com/goreleaser/backers/6/avatar"></a>
-<a href="https://opencollective.com/goreleaser/backers/7/website" rel="nofollow sponsored" target="_blank"><img src="https://opencollective.com/goreleaser/backers/7/avatar"></a>
-<a href="https://opencollective.com/goreleaser/backers/8/website" rel="nofollow sponsored" target="_blank"><img src="https://opencollective.com/goreleaser/backers/8/avatar"></a>
-<a href="https://opencollective.com/goreleaser/backers/9/website" rel="nofollow sponsored" target="_blank"><img src="https://opencollective.com/goreleaser/backers/9/avatar"></a>
-<a href="https://opencollective.com/goreleaser/backers/10/website" rel="nofollow sponsored" target="_blank"><img src="https://opencollective.com/goreleaser/backers/10/avatar"></a>
-<a href="https://opencollective.com/goreleaser/backers/11/website" rel="nofollow sponsored" target="_blank"><img src="https://opencollective.com/goreleaser/backers/11/avatar"></a>
-<a href="https://opencollective.com/goreleaser/backers/12/website" rel="nofollow sponsored" target="_blank"><img src="https://opencollective.com/goreleaser/backers/12/avatar"></a>
-<a href="https://opencollective.com/goreleaser/backers/13/website" rel="nofollow sponsored" target="_blank"><img src="https://opencollective.com/goreleaser/backers/13/avatar"></a>
-<a href="https://opencollective.com/goreleaser/backers/14/website" rel="nofollow sponsored" target="_blank"><img src="https://opencollective.com/goreleaser/backers/14/avatar"></a>
-<a href="https://opencollective.com/goreleaser/backers/15/website" rel="nofollow sponsored" target="_blank"><img src="https://opencollective.com/goreleaser/backers/15/avatar"></a>
-<a href="https://opencollective.com/goreleaser/backers/16/website" rel="nofollow sponsored" target="_blank"><img src="https://opencollective.com/goreleaser/backers/16/avatar"></a>
-<a href="https://opencollective.com/goreleaser/backers/17/website" rel="nofollow sponsored" target="_blank"><img src="https://opencollective.com/goreleaser/backers/17/avatar"></a>
-<a href="https://opencollective.com/goreleaser/backers/18/website" rel="nofollow sponsored" target="_blank"><img src="https://opencollective.com/goreleaser/backers/18/avatar"></a>
-<a href="https://opencollective.com/goreleaser/backers/19/website" rel="nofollow sponsored" target="_blank"><img src="https://opencollective.com/goreleaser/backers/19/avatar"></a>
-<a href="https://opencollective.com/goreleaser/backers/20/website" rel="nofollow sponsored" target="_blank"><img src="https://opencollective.com/goreleaser/backers/20/avatar"></a>
-<a href="https://opencollective.com/goreleaser/backers/21/website" rel="nofollow sponsored" target="_blank"><img src="https://opencollective.com/goreleaser/backers/21/avatar"></a>
-<a href="https://opencollective.com/goreleaser/backers/22/website" rel="nofollow sponsored" target="_blank"><img src="https://opencollective.com/goreleaser/backers/22/avatar"></a>
-<a href="https://opencollective.com/goreleaser/backers/23/website" rel="nofollow sponsored" target="_blank"><img src="https://opencollective.com/goreleaser/backers/23/avatar"></a>
-<a href="https://opencollective.com/goreleaser/backers/24/website" rel="nofollow sponsored" target="_blank"><img src="https://opencollective.com/goreleaser/backers/24/avatar"></a>
-<a href="https://opencollective.com/goreleaser/backers/25/website" rel="nofollow sponsored" target="_blank"><img src="https://opencollective.com/goreleaser/backers/25/avatar"></a>
-<a href="https://opencollective.com/goreleaser/backers/26/website" rel="nofollow sponsored" target="_blank"><img src="https://opencollective.com/goreleaser/backers/26/avatar"></a>
-<a href="https://opencollective.com/goreleaser/backers/27/website" rel="nofollow sponsored" target="_blank"><img src="https://opencollective.com/goreleaser/backers/27/avatar"></a>
-<a href="https://opencollective.com/goreleaser/backers/28/website" rel="nofollow sponsored" target="_blank"><img src="https://opencollective.com/goreleaser/backers/28/avatar"></a>
-<a href="https://opencollective.com/goreleaser/backers/29/website" rel="nofollow sponsored" target="_blank"><img src="https://opencollective.com/goreleaser/backers/29/avatar"></a>
+<!-- sponsors:end -->
 
 ### Contributors
 

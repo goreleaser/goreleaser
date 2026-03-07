@@ -1,6 +1,8 @@
 package nix
 
 import (
+	stdctx "context"
+	"errors"
 	"html/template"
 	"maps"
 	"os"
@@ -29,23 +31,17 @@ func TestString(t *testing.T) {
 
 func TestSkip(t *testing.T) {
 	t.Run("no-nix", func(t *testing.T) {
-		require.True(t, Pipe{}.Skip(testctx.New()))
+		require.True(t, Pipe{}.Skip(testctx.Wrap(t.Context())))
 	})
 	t.Run("skip flag", func(t *testing.T) {
-		require.True(t, NewPublish().Skip(testctx.NewWithCfg(config.Project{
+		require.True(t, New().Skip(testctx.WrapWithCfg(t.Context(), config.Project{
 			Nix: []config.Nix{{}},
 		}, testctx.Skip(skips.Nix))))
 	})
 	t.Run("nix-all-good", func(t *testing.T) {
 		testlib.CheckPath(t, "nix-hash")
 		testlib.SkipIfWindows(t, "nix doesn't work on windows")
-		require.False(t, NewPublish().Skip(testctx.NewWithCfg(config.Project{
-			Nix: []config.Nix{{}},
-		})))
-	})
-	t.Run("nix-hash-not-in-path", func(t *testing.T) {
-		t.Setenv("PATH", "nope")
-		require.True(t, NewPublish().Skip(testctx.NewWithCfg(config.Project{
+		require.False(t, New().Skip(testctx.WrapWithCfg(t.Context(), config.Project{
 			Nix: []config.Nix{{}},
 		})))
 	})
@@ -54,39 +50,27 @@ func TestSkip(t *testing.T) {
 const fakeNixHashBin = "fake-nix-hash"
 
 func TestHasher(t *testing.T) {
-	t.Run("zero hash", func(t *testing.T) {
-		t.Run("build", func(t *testing.T) {
-			sha, err := alwaysZeroHasher{}.Hash("any")
-			require.NoError(t, err)
-			require.Equal(t, zeroHash, sha)
+	t.Run("hash", func(t *testing.T) {
+		t.Run("fake-nix-hash", func(t *testing.T) {
+			_, err := nixHasher{fakeNixHashBin}.Hash(t.Context(), "any")
+			require.ErrorIs(t, err, exec.ErrNotFound)
 		})
-		t.Run("publish", func(t *testing.T) {
-			t.Run("nix-hash", func(t *testing.T) {
-				_, err := nixHasher{fakeNixHashBin}.Hash("any")
-				require.ErrorIs(t, err, exec.ErrNotFound)
-			})
-			t.Run("valid", func(t *testing.T) {
-				testlib.CheckPath(t, "nix-hash")
-				testlib.SkipIfWindows(t, "nix doesn't work on windows")
-				sha, err := realHasher.Hash("./testdata/file.bin")
-				require.NoError(t, err)
-				require.Equal(t, "1n7yy95h81rziah4ppi64kr6fphwxjiq8cl70fpfrqvr0ml1xbcl", sha)
-			})
+		t.Run("valid", func(t *testing.T) {
+			testlib.CheckPath(t, "nix-hash")
+			testlib.SkipIfWindows(t, "nix doesn't work on windows")
+			sha, err := realHasher.Hash(t.Context(), "./testdata/file.bin")
+			require.NoError(t, err)
+			require.Equal(t, "1n7yy95h81rziah4ppi64kr6fphwxjiq8cl70fpfrqvr0ml1xbcl", sha)
 		})
 	})
 	t.Run("available", func(t *testing.T) {
-		t.Run("build", func(t *testing.T) {
-			require.True(t, alwaysZeroHasher{}.Available())
+		t.Run("no-nix-hash", func(t *testing.T) {
+			require.False(t, nixHasher{fakeNixHashBin}.Available())
 		})
-		t.Run("publish", func(t *testing.T) {
-			t.Run("no-nix-hash", func(t *testing.T) {
-				require.False(t, nixHasher{fakeNixHashBin}.Available())
-			})
-			t.Run("valid", func(t *testing.T) {
-				testlib.CheckPath(t, "nix-hash")
-				testlib.SkipIfWindows(t, "nix doesn't work on windows")
-				require.True(t, realHasher.Available())
-			})
+		t.Run("valid", func(t *testing.T) {
+			testlib.CheckPath(t, "nix-hash")
+			testlib.SkipIfWindows(t, "nix doesn't work on windows")
+			require.True(t, realHasher.Available())
 		})
 	})
 }
@@ -439,7 +423,7 @@ func TestRunPipe(t *testing.T) {
 	} {
 		t.Run(tt.name, func(t *testing.T) {
 			folder := t.TempDir()
-			ctx := testctx.NewWithCfg(
+			ctx := testctx.WrapWithCfg(t.Context(),
 				config.Project{
 					Dist:        folder,
 					ProjectName: "foo",
@@ -447,8 +431,8 @@ func TestRunPipe(t *testing.T) {
 				},
 				testctx.WithVersion("1.2.1"),
 				testctx.WithCurrentTag("v1.2.1"),
-				testctx.WithSemver(1, 2, 1, "rc1"),
-			)
+				testctx.WithSemver(1, 2, 1, "rc1"))
+
 			createFakeArtifact := func(id, goos, goarch, goamd64, goarm, format string, extra map[string]any) {
 				if goarch != "arm" {
 					goarm = ""
@@ -483,20 +467,20 @@ func TestRunPipe(t *testing.T) {
 			}
 
 			createFakeArtifact("unibin-replaces", "darwin", "all", "", "", "tar.gz", map[string]any{artifact.ExtraReplaces: true})
-			createFakeArtifact("unibin", "darwin", "all", "", "", "tar.gz", nil)
+			createFakeArtifact("unibin", "darwin", "all", "", "", "tgz", nil)
 			for _, goos := range []string{"linux", "darwin", "windows"} {
 				for _, goarch := range []string{"amd64", "arm64", "386", "arm"} {
 					if goos+goarch == "darwin386" {
 						continue
 					}
 					if goarch == "amd64" {
-						createFakeArtifact("partial", goos, goarch, "v1", "", "tar.gz", nil)
-						createFakeArtifact("foo", goos, goarch, "v1", "", "tar.gz", nil)
-						createFakeArtifact("unibin", goos, goarch, "v1", "", "tar.gz", nil)
+						createFakeArtifact("partial", goos, goarch, "v1", "", "tar.xz", nil)
+						createFakeArtifact("foo", goos, goarch, "v1", "", "txz", nil)
+						createFakeArtifact("unibin", goos, goarch, "v1", "", "tar.zst", nil)
 						if goos != "darwin" {
-							createFakeArtifact("unibin-replaces", goos, goarch, "v1", "", "tar.gz", nil)
+							createFakeArtifact("unibin-replaces", goos, goarch, "v1", "", "tzst", nil)
 						}
-						createFakeArtifact("wrapped-in-dir", goos, goarch, "v1", "", "tar.gz", map[string]any{artifact.ExtraWrappedIn: "./foo_" + goarch})
+						createFakeArtifact("wrapped-in-dir", goos, goarch, "v1", "", "tar", map[string]any{artifact.ExtraWrappedIn: "./foo_" + goarch})
 						createFakeArtifact("foo-zip", goos, goarch, "v1", "", "zip", nil)
 						continue
 					}
@@ -526,13 +510,22 @@ func TestRunPipe(t *testing.T) {
 			}
 
 			client := client.NewMock()
-			bpipe := NewBuild()
+			bpipe := Pipe{
+				alwaysZeroHasher{},
+			}
 			ppipe := Pipe{
 				fakeHasher{
+					"foo_linux_amd64v1.txz":     "sha1",
+					"foo_linux_amd64v1.tzst":    "sha1",
+					"foo_linux_amd64v1.tar.xz":  "sha1",
+					"foo_linux_amd64v1.tar":     "sha1",
 					"foo_linux_amd64v1.tar.gz":  "sha1",
 					"foo_linux_arm64.tar.gz":    "sha2",
-					"foo_darwin_amd64v1.tar.gz": "sha3",
+					"foo_darwin_amd64v1.txz":    "sha3",
+					"foo_darwin_amd64v1.tar":    "sha3",
+					"foo_darwin_amd64v1.tar.xz": "sha3",
 					"foo_darwin_arm64.tar.gz":   "sha4",
+					"foo_darwin_all.tgz":        "sha5",
 					"foo_darwin_all.tar.gz":     "sha5",
 					"foo_linux_arm6.tar.gz":     "sha6",
 					"foo_linux_arm7.tar.gz":     "sha7",
@@ -592,6 +585,18 @@ func TestRunPipe(t *testing.T) {
 			}
 		})
 	}
+}
+
+func TestRunSkipNoNix(t *testing.T) {
+	ctx := testctx.WrapWithCfg(t.Context(), config.Project{
+		Nix: []config.Nix{
+			{},
+		},
+	})
+	p := Pipe{}
+	p.hasher = unavailableHasher{}
+	require.NoError(t, p.Default(ctx))
+	testlib.AssertSkipped(t, p.Run(ctx))
 }
 
 func TestErrNoArchivesFound(t *testing.T) {
@@ -674,9 +679,141 @@ func linuxDep(s string) config.NixDependency {
 	}
 }
 
+type unavailableHasher struct{}
+
+func (m unavailableHasher) Hash(stdctx.Context, string) (string, error) {
+	return "", errors.New("unavailable hasher")
+}
+func (m unavailableHasher) Available() bool { return false }
+
 type fakeHasher map[string]string
 
-func (m fakeHasher) Hash(path string) (string, error) {
+func (m fakeHasher) Hash(_ stdctx.Context, path string) (string, error) {
 	return m[filepath.Base(path)], nil
 }
 func (m fakeHasher) Available() bool { return true }
+
+const zeroHash = "0000000000000000000000000000000000000000000000000000"
+
+type alwaysZeroHasher struct{}
+
+func (alwaysZeroHasher) Hash(stdctx.Context, string) (string, error) { return zeroHash, nil }
+func (alwaysZeroHasher) Available() bool                             { return true }
+
+func TestDynamicallyLinked(t *testing.T) {
+	folder := t.TempDir()
+	ctx := testctx.WrapWithCfg(t.Context(),
+		config.Project{
+			Dist:        folder,
+			ProjectName: "foo",
+			Nix: []config.Nix{{
+				IDs: []string{"dynlink"},
+				Repository: config.RepoRef{
+					Owner: "foo",
+					Name:  "bar",
+				},
+			}},
+		},
+		testctx.WithVersion("1.0.0"),
+		testctx.WithCurrentTag("v1.0.0"),
+	)
+
+	createDynlinkArtifact := func(goos, goarch string, dynLinked bool) {
+		name := "foo_" + goos + "_" + goarch + ".tar.gz"
+		path := filepath.Join(folder, "dist", name)
+		art := artifact.Artifact{
+			Name:   name,
+			Path:   path,
+			Goos:   goos,
+			Goarch: goarch,
+			Type:   artifact.UploadableArchive,
+			Extra: map[string]any{
+				artifact.ExtraID:        "dynlink",
+				artifact.ExtraFormat:    "tar.gz",
+				artifact.ExtraBinaries:  []string{"foo"},
+				artifact.ExtraWrappedIn: "",
+				artifact.ExtranDynLink:  dynLinked,
+			},
+		}
+		ctx.Artifacts.Add(&art)
+		require.NoError(t, os.MkdirAll(filepath.Dir(path), 0o755))
+		f, err := os.Create(path)
+		require.NoError(t, err)
+		require.NoError(t, f.Close())
+	}
+
+	// Create linux archives with dynamic linking
+	createDynlinkArtifact("linux", "amd64", true)
+	createDynlinkArtifact("linux", "arm64", true)
+	// Darwin archives won't be dynamically linked (macOS uses different mechanism)
+	createDynlinkArtifact("darwin", "amd64", false)
+	createDynlinkArtifact("darwin", "arm64", false)
+
+	client := client.NewMock()
+	pipe := Pipe{alwaysZeroHasher{}}
+
+	require.NoError(t, pipe.Default(ctx))
+	require.NoError(t, pipe.runAll(ctx, client))
+
+	nixpkgs := ctx.Artifacts.Filter(artifact.ByType(artifact.Nixpkg)).List()
+	require.Len(t, nixpkgs, 1)
+
+	content, err := os.ReadFile(nixpkgs[0].Path)
+	require.NoError(t, err)
+
+	golden.RequireEqual(t, content)
+}
+
+func TestFormat(t *testing.T) {
+	testlib.SkipIfWindows(t, "nix.format won't work on Windows")
+
+	t.Run("invalid formatter", func(t *testing.T) {
+		ctx := testctx.Wrap(t.Context())
+		require.False(t, format(ctx, "invalid-formatter", "nope.nix"))
+	})
+
+	const input = `{  foo = "bar";
+							baz = "qux";	}`
+
+	t.Run("alejandra", func(t *testing.T) {
+		testlib.CheckPath(t, "alejandra")
+
+		ctx := testctx.Wrap(t.Context())
+		path := filepath.Join(t.TempDir(), "test.nix")
+		require.NoError(t, os.WriteFile(path, []byte(input), 0o644))
+
+		require.True(t, format(ctx, "alejandra", path))
+
+		content, err := os.ReadFile(path)
+		require.NoError(t, err)
+		golden.RequireEqualExt(t, content, ".nix")
+	})
+
+	t.Run("nixfmt", func(t *testing.T) {
+		testlib.CheckPath(t, "nixfmt")
+
+		ctx := testctx.Wrap(t.Context())
+		path := filepath.Join(t.TempDir(), "test.nix")
+		require.NoError(t, os.WriteFile(path, []byte(input), 0o644))
+
+		require.True(t, format(ctx, "nixfmt", path))
+
+		content, err := os.ReadFile(path)
+		require.NoError(t, err)
+		golden.RequireEqualExt(t, content, ".nix")
+	})
+
+	t.Run("invalid file", func(t *testing.T) {
+		testlib.CheckPath(t, "nixfmt")
+
+		ctx := testctx.Wrap(t.Context())
+		path := filepath.Join(t.TempDir(), "test.nix")
+		require.NoError(t, os.WriteFile(path, []byte(`{ invalid file`), 0o644))
+
+		require.False(t, format(ctx, "nixfmt", path))
+
+		content, err := os.ReadFile(path)
+		require.NoError(t, err)
+		golden.RequireEqualExt(t, content, ".nix")
+	})
+}

@@ -6,12 +6,13 @@ import (
 	"crypto/tls"
 	"encoding/json"
 	"fmt"
+	"net/http"
+	"strconv"
+
 	"github.com/caarlos0/env/v11"
 	"github.com/caarlos0/log"
 	"github.com/goreleaser/goreleaser/v2/internal/tmpl"
 	"github.com/goreleaser/goreleaser/v2/pkg/context"
-	"net/http"
-	"strconv"
 )
 
 const (
@@ -51,7 +52,7 @@ func (Pipe) Default(ctx *context.Context) error {
 	return nil
 }
 
-func (Pipe) Announce(ctx *context.Context) error {
+func (p Pipe) Announce(ctx *context.Context) error {
 	args, err := getMessageDetails(ctx)
 	if err != nil {
 		return err
@@ -59,13 +60,13 @@ func (Pipe) Announce(ctx *context.Context) error {
 
 	cfg, err := env.ParseAs[Config]()
 	if err != nil {
-		return fmt.Errorf("telegram: %w", err)
+		return fmt.Errorf("%s: %w", p, err)
 	}
 
 	var b bytes.Buffer
 	err = json.NewEncoder(&b).Encode(args)
 	if err != nil {
-		return fmt.Errorf("telegram: %w", err)
+		return fmt.Errorf("%s: %w", p, err)
 	}
 
 	customTransport := http.DefaultTransport.(*http.Transport).Clone()
@@ -80,7 +81,7 @@ func (Pipe) Announce(ctx *context.Context) error {
 
 	request, err := http.NewRequest(http.MethodPost, fmt.Sprintf("https://api.telegram.org/bot%s/sendMessage", cfg.ConsumerToken), &b)
 	if err != nil {
-		return fmt.Errorf("telegram: %w", err)
+		return fmt.Errorf("%s: %w", p, err)
 	}
 	request.Header.Set("Content-Type", "application/json")
 
@@ -118,10 +119,6 @@ func getMessageDetails(ctx *context.Context) (map[string]any, error) {
 	m["text"] = msg
 
 	chatID, err := tmpl.New(ctx).Apply(ctx.Config.Announce.Telegram.ChatID)
-	if err != nil {
-		return nil, fmt.Errorf("telegram: %w", err)
-	}
-	_, err = strconv.ParseInt(chatID, 10, 64)
 	if err != nil {
 		return nil, fmt.Errorf("telegram: %w", err)
 	}

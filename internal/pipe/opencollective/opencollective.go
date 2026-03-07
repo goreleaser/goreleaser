@@ -42,30 +42,30 @@ func (Pipe) Default(ctx *context.Context) error {
 	return nil
 }
 
-func (Pipe) Announce(ctx *context.Context) error {
+func (p Pipe) Announce(ctx *context.Context) error {
 	title, err := tmpl.New(ctx).Apply(ctx.Config.Announce.OpenCollective.TitleTemplate)
 	if err != nil {
-		return fmt.Errorf("opencollective: %w", err)
+		return fmt.Errorf("%s: %w", p, err)
 	}
 	html, err := tmpl.New(ctx).Apply(ctx.Config.Announce.OpenCollective.MessageTemplate)
 	if err != nil {
-		return fmt.Errorf("opencollective: %w", err)
+		return fmt.Errorf("%s: %w", p, err)
 	}
 
 	cfg, err := env.ParseAs[Config]()
 	if err != nil {
-		return fmt.Errorf("opencollective: %w", err)
+		return fmt.Errorf("%s: %w", p, err)
 	}
 
 	log.Infof("posting: %q | %q", title, html)
 
 	id, err := createUpdate(ctx, title, html, ctx.Config.Announce.OpenCollective.Slug, cfg.Token)
 	if err != nil {
-		return fmt.Errorf("opencollective: %w", err)
+		return fmt.Errorf("%s: %w", p, err)
 	}
 
 	if err := publishUpdate(ctx, id, cfg.Token); err != nil {
-		return fmt.Errorf("opencollective: %w", err)
+		return fmt.Errorf("%s: %w", p, err)
 	}
 
 	return nil

@@ -14,9 +14,10 @@ func TestTemplate(t *testing.T) {
 		{Glob: "./testdata/file{{ .Env.ONE }}.golden"},
 	}
 
-	ctx := testctx.NewWithCfg(config.Project{
+	ctx := testctx.WrapWithCfg(t.Context(), config.Project{
 		Env: []string{"ONE=1"},
 	})
+
 	files, err := Find(ctx, globs)
 	require.NoError(t, err)
 	require.Len(t, files, 1)
@@ -28,7 +29,7 @@ func TestBadTemplate(t *testing.T) {
 		{Glob: "./testdata/file{{ .Env.NOPE }}.golden"},
 	}
 
-	ctx := testctx.New()
+	ctx := testctx.Wrap(t.Context())
 	files, err := Find(ctx, globs)
 	require.Empty(t, files)
 	testlib.RequireTemplateError(t, err)
@@ -41,7 +42,7 @@ func TestShouldGetSpecificFile(t *testing.T) {
 		{Glob: "./testdata/file1.golden"},
 	}
 
-	files, err := Find(testctx.New(), globs)
+	files, err := Find(testctx.Wrap(t.Context()), globs)
 	require.NoError(t, err)
 	require.Len(t, files, 1)
 
@@ -53,7 +54,7 @@ func TestFailToGetSpecificFile(t *testing.T) {
 		{Glob: "./testdata/file453.golden"},
 	}
 
-	files, err := Find(testctx.New(), globs)
+	files, err := Find(testctx.Wrap(t.Context()), globs)
 	require.EqualError(t, err, "globbing failed for pattern ./testdata/file453.golden: matching \"./testdata/file453.golden\": file does not exist")
 	require.Empty(t, files)
 }
@@ -63,7 +64,7 @@ func TestShouldGetFilesWithSuperStar(t *testing.T) {
 		{Glob: "./**/file?.golden"},
 	}
 
-	files, err := Find(testctx.New(), globs)
+	files, err := Find(testctx.Wrap(t.Context()), globs)
 	require.NoError(t, err)
 	require.Len(t, files, 3)
 	require.Equal(t, "testdata/file2.golden", files["file2.golden"])
@@ -76,7 +77,7 @@ func TestShouldGetAllFilesWithGoldenExtension(t *testing.T) {
 		{Glob: "./testdata/*.golden"},
 	}
 
-	files, err := Find(testctx.New(), globs)
+	files, err := Find(testctx.Wrap(t.Context()), globs)
 	require.NoError(t, err)
 	require.Len(t, files, 2)
 	require.Equal(t, "testdata/file1.golden", files["file1.golden"])
@@ -88,7 +89,7 @@ func TestShouldGetAllFilesInsideTestdata(t *testing.T) {
 		{Glob: "./testdata/*"},
 	}
 
-	files, err := Find(testctx.New(), globs)
+	files, err := Find(testctx.Wrap(t.Context()), globs)
 	require.NoError(t, err)
 	require.Len(t, files, 4)
 	require.Equal(t, "testdata/sub3/file1.golden", files["file1.golden"])
@@ -105,7 +106,7 @@ func TestTargetName(t *testing.T) {
 		},
 	}
 
-	ctx := testctx.New(testctx.WithCurrentTag("v1.0.0"))
+	ctx := testctx.Wrap(t.Context(), testctx.WithCurrentTag("v1.0.0"))
 	files, err := Find(ctx, globs)
 	require.NoError(t, err)
 	require.Len(t, files, 1)
@@ -121,7 +122,7 @@ func TestTargetInvalidNameTemplate(t *testing.T) {
 		},
 	}
 
-	ctx := testctx.New()
+	ctx := testctx.Wrap(t.Context())
 	files, err := Find(ctx, globs)
 	require.Empty(t, files)
 	testlib.RequireTemplateError(t, err)
@@ -135,7 +136,7 @@ func TestTargetNameMatchesMultipleFiles(t *testing.T) {
 		},
 	}
 
-	ctx := testctx.New()
+	ctx := testctx.Wrap(t.Context())
 	files, err := Find(ctx, globs)
 	require.Empty(t, files)
 	require.EqualError(t, err, `failed to add extra_file: "./testdata/*" -> "file1.golden": glob matches multiple files`)
@@ -149,7 +150,7 @@ func TestTargetNameNoMatches(t *testing.T) {
 		},
 	}
 
-	ctx := testctx.New()
+	ctx := testctx.Wrap(t.Context())
 	files, err := Find(ctx, globs)
 	require.Empty(t, files)
 	require.EqualError(t, err, `globbing failed for pattern ./testdata/file1.silver: matching "./testdata/file1.silver": file does not exist`)
@@ -160,7 +161,7 @@ func TestGlobEvalsToEmpty(t *testing.T) {
 		{Glob: `{{ printf "" }}`},
 	}
 
-	ctx := testctx.New()
+	ctx := testctx.Wrap(t.Context())
 	files, err := Find(ctx, globs)
 	require.Empty(t, files)
 	require.NoError(t, err)
@@ -171,7 +172,7 @@ func TestTargetNameNoGlob(t *testing.T) {
 		{NameTemplate: "file1.golden"},
 	}
 
-	ctx := testctx.New()
+	ctx := testctx.Wrap(t.Context())
 	files, err := Find(ctx, globs)
 	require.Empty(t, files)
 	require.NoError(t, err)

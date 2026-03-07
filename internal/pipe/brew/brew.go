@@ -12,6 +12,7 @@ import (
 	"path/filepath"
 	"slices"
 	"strings"
+	"sync"
 	"text/template"
 
 	"github.com/caarlos0/log"
@@ -19,6 +20,7 @@ import (
 	"github.com/goreleaser/goreleaser/v2/internal/client"
 	"github.com/goreleaser/goreleaser/v2/internal/commitauthor"
 	"github.com/goreleaser/goreleaser/v2/internal/experimental"
+	"github.com/goreleaser/goreleaser/v2/internal/logext"
 	"github.com/goreleaser/goreleaser/v2/internal/pipe"
 	"github.com/goreleaser/goreleaser/v2/internal/skips"
 	"github.com/goreleaser/goreleaser/v2/internal/tmpl"
@@ -44,16 +46,32 @@ func (e ErrNoArchivesFound) Error() string {
 }
 
 // Pipe for brew deployment.
+//
+// Deprecated: in favor of [cask.Pipe].
 type Pipe struct{}
 
-func (Pipe) String() string        { return "homebrew tap formula" }
+func (Pipe) String() string        { return "homebrew formula" }
 func (Pipe) ContinueOnError() bool { return true }
 func (Pipe) Skip(ctx *context.Context) bool {
 	return skips.Any(ctx, skips.Homebrew) || len(ctx.Config.Brews) == 0
 }
 
 func (Pipe) Default(ctx *context.Context) error {
+	var warnOnce sync.Once
 	for i := range ctx.Config.Brews {
+		// TODO: add this back at some point:
+		// deprecate.Notice(ctx, "brews")
+		warnOnce.Do(func() {
+			log.Warn(
+				logext.Keyword("brews") +
+					logext.Warning(" is being phased out in favor of ") +
+					logext.Keyword("homebrew_casks") +
+					logext.Warning(", check ") +
+					logext.URL("https://goreleaser.com/deprecations#brews") +
+					logext.Warning(" for more info"),
+			)
+		})
+
 		brew := &ctx.Config.Brews[i]
 
 		brew.CommitAuthor = commitauthor.Default(brew.CommitAuthor)
@@ -107,7 +125,7 @@ func publishAll(ctx *context.Context, cli client.Client) error {
 	// even if one of them skips, we run them all, and then show return the skips all at once.
 	// this is needed so we actually create the `dist/foo.rb` file, which is useful for debugging.
 	skips := pipe.SkipMemento{}
-	for _, formula := range ctx.Artifacts.Filter(artifact.ByType(artifact.BrewTap)).List() {
+	for _, formula := range ctx.Artifacts.Filter(artifact.ByType(artifact.BrewFormula)).List() {
 		err := doPublish(ctx, formula, cli)
 		if err != nil && pipe.IsSkip(err) {
 			skips.Remember(err)
@@ -215,7 +233,7 @@ func doRun(ctx *context.Context, brew config.Homebrew, cl client.ReleaseURLTempl
 		),
 		artifact.Or(
 			artifact.And(
-				artifact.ByFormats("zip", "tar.gz", "tar.xz"),
+				artifact.Not(artifact.ByFormats("gz")),
 				artifact.ByType(artifact.UploadableArchive),
 			),
 			artifact.ByType(artifact.UploadableBinary),
@@ -272,7 +290,7 @@ func doRun(ctx *context.Context, brew config.Homebrew, cl client.ReleaseURLTempl
 	ctx.Artifacts.Add(&artifact.Artifact{
 		Name: filename,
 		Path: path,
-		Type: artifact.BrewTap,
+		Type: artifact.BrewFormula,
 		Extra: map[string]any{
 			brewConfigExtra: brew,
 		},
@@ -294,7 +312,7 @@ func buildFormula(ctx *context.Context, brew config.Homebrew, client client.Rele
 }
 
 func doBuildFormula(ctx *context.Context, data templateData) (string, error) {
-	t := template.New("cask.rb")
+	t := template.New("formula.rb")
 	var err error
 	t, err = t.Funcs(map[string]any{
 		"include": func(name string, data any) (string, error) {
@@ -376,7 +394,8 @@ func installs(ctx *context.Context, cfg config.Homebrew, art *artifact.Artifact)
 	}
 
 	result := slices.Sorted(maps.Keys(installMap))
-	log.WithField("install", result).Info("guessing install")
+	log.WithField("install", strings.Join(result, " ")).
+		Info("guessing install")
 
 	return append(result, split(extraInstall)...), nil
 }

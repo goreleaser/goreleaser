@@ -73,11 +73,11 @@ func TestWithDefaults(t *testing.T) {
 func TestBuild(t *testing.T) {
 	testlib.CheckPath(t, "deno")
 	folder := testlib.Mktmp(t)
-	_, err := exec.Command("deno", "init").CombinedOutput()
+	_, err := exec.CommandContext(t.Context(), "deno", "init").CombinedOutput()
 	require.NoError(t, err)
 
 	modTime := time.Now().AddDate(-1, 0, 0).Round(time.Second).UTC()
-	ctx := testctx.NewWithCfg(config.Project{
+	ctx := testctx.WrapWithCfg(t.Context(), config.Project{
 		Dist:        "dist",
 		ProjectName: "proj",
 		Builds: []config.Build{
@@ -88,6 +88,7 @@ func TestBuild(t *testing.T) {
 			},
 		},
 	})
+
 	build, err := Default.WithDefaults(ctx.Config.Builds[0])
 	require.NoError(t, err)
 
@@ -126,6 +127,7 @@ func TestBuild(t *testing.T) {
 			artifact.ExtraBuilder: "deno",
 			artifact.ExtraExt:     "",
 			artifact.ExtraID:      "default",
+			keyAbi:                "",
 		},
 	}, *bin)
 

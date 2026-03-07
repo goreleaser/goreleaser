@@ -122,7 +122,7 @@ nfpms:
     # Templates: allowed.
     libdirs:
       # Default: '/usr/include'.
-      headers: /usr/include/something
+      header: /usr/include/something
 
       # Default: '/usr/lib'.
       cshared: /usr/lib/foo
@@ -171,6 +171,19 @@ nfpms:
     # Experimental.
     changelog: ./foo.yml
 
+    # The GOAMD64 variants to package.
+    #
+    # Note that albeit GoReleaser will build the package, it might not be
+    # supported by the underlying distribution.
+    # If you want to be safe, build only for `v1`.
+    # Generally, most people don't build for more than one GOAMD64, so probably
+    # you don't need to worry about this.
+    #
+    # <!-- md:inline_version v2.14 -->.
+    goamd64:
+      - v1
+      - v3
+
     # Contents to add to the package.
     # GoReleaser will automatically add the binaries.
     contents:
@@ -215,7 +228,7 @@ nfpms:
         type: config
 
       # Simple symlink.
-      # Corresponds to `ln -s /sbin/foo /usr/local/bin/foo`
+      # Corresponds to `ln -s /sbin/foo /usr/bin/foo`
       - src: /sbin/foo
         dst: /usr/bin/foo
         type: "symlink"
@@ -392,6 +405,12 @@ nfpms:
       # This will expand any env var you set in the field, eg packager: ${PACKAGER}
       packager: GoReleaser <staff@goreleaser.com>
 
+      # The hostname of the machine the rpm was built with.
+      #
+      # Default: os.Hostname()
+      # <!-- md:inline_version v2.10 -->.
+      buildhost: foo.bar
+
       # Compression algorithm (gzip (default), lzma or xz).
       compression: lzma
 
@@ -440,6 +459,11 @@ nfpms:
       # is already installed.
       breaks:
         - some-package
+
+      # Data compression algorithm (gzip (default), xz, zstd or none).
+      #
+      # <!-- md:inline_version v2.14 -->.
+      compression: zstd
 
       # The package is signed if a key_file is set
       signature:
@@ -591,9 +615,21 @@ will be set `$NFPM_DEFAULT_DEB_PASSPHRASE`. GoReleaser will try that, then
 
 Termux is the same format as `deb`, the differences are:
 
-- it uses a different `bindir` (prefixed with `/data/data/com.termux/files/`)
+- it uses a different file structure (`/data/data/com.termux/files/`)
+- `bindir` is automatically adjusted, but other files might require extra
+  configuration (see bellow)
 - it uses slightly different architecture names than Debian
 - it will only package binaries built for Android
+
+**Example prefixing other files:**
+
+```yaml title=".goreleaser.yaml"
+nfpms:
+  - formats: [deb termux.deb rpm]
+    contents:
+      - src: ./foo.conf
+        dst: '{{ if eq .Format "termux.deb" }}/data/data/com.termux/files{{ end }}/usr/share/foo.conf'
+```
 
 ## Conventional file names, Debian, and ARMv6
 

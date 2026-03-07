@@ -1,14 +1,17 @@
 package docker
 
 import (
+	"errors"
 	"fmt"
 	"os"
 	"os/exec"
 	"path/filepath"
 	"strings"
 	"testing"
+	"time"
 
 	"github.com/goreleaser/goreleaser/v2/internal/artifact"
+	"github.com/goreleaser/goreleaser/v2/internal/gerrors"
 	"github.com/goreleaser/goreleaser/v2/internal/pipe"
 	"github.com/goreleaser/goreleaser/v2/internal/skips"
 	"github.com/goreleaser/goreleaser/v2/internal/testctx"
@@ -35,12 +38,29 @@ func start(tb testing.TB) {
 // TODO: this test is too big... split in smaller tests? Mainly the manifest ones...
 func TestRunPipe(t *testing.T) {
 	testlib.CheckDocker(t)
-	testlib.SkipIfWindows(t, "images only available for windows")
+	testlib.SkipIfWindows(t, "registry images only available for windows")
 	type errChecker func(*testing.T, error)
 	shouldErr := func(msg string) errChecker {
 		return func(t *testing.T, err error) {
 			t.Helper()
-			require.ErrorContains(t, err, msg)
+			if ge, ok := errors.AsType[gerrors.ErrDetailed](err); ok {
+				for _, s := range ge.Messages() {
+					if strings.Contains(s, msg) {
+						return
+					}
+				}
+				for _, a := range ge.Details() {
+					s, ok := a.(string)
+					if !ok {
+						continue
+					}
+					if strings.Contains(s, msg) {
+						return
+					}
+				}
+			} else {
+				require.ErrorContains(t, err, msg)
+			}
 		}
 	}
 	shouldNotErr := func(t *testing.T, err error) {
@@ -56,7 +76,7 @@ func TestRunPipe(t *testing.T) {
 		return func(t *testing.T, _ string) {
 			t.Helper()
 			for _, filter := range filters {
-				cmd := exec.Command("docker", "images", "-q", "--filter", "reference=*/"+image, "--filter", filter)
+				cmd := exec.CommandContext(t.Context(), "docker", "images", "-q", "--filter", "reference=*/"+image, "--filter", filter)
 				// t.Log("running", cmd)
 				output, err := cmd.CombinedOutput()
 				require.NoError(t, err, string(output))
@@ -90,14 +110,14 @@ func TestRunPipe(t *testing.T) {
 					Goos:               "linux",
 					Goarch:             "amd64",
 					Dockerfile:         "testdata/Dockerfile.arch",
-					BuildFlagTemplates: []string{"--build-arg", "ARCH=amd64", "--platform", "amd64"},
+					BuildFlagTemplates: []string{"--build-arg", "ARCH=amd64", "--platform", "linux/amd64"},
 				},
 				{
 					ImageTemplates:     []string{registry + "goreleaser/test_multiarch:test-arm64v8"},
 					Goos:               "linux",
 					Goarch:             "arm64",
 					Dockerfile:         "testdata/Dockerfile.arch",
-					BuildFlagTemplates: []string{"--build-arg", "ARCH=arm64v8", "--platform", "arm64"},
+					BuildFlagTemplates: []string{"--build-arg", "ARCH=arm64v8", "--platform", "linux/arm64"},
 				},
 			},
 			manifests: []config.DockerManifest{
@@ -208,14 +228,14 @@ func TestRunPipe(t *testing.T) {
 					Goos:               "linux",
 					Goarch:             "amd64",
 					Dockerfile:         "testdata/Dockerfile.arch",
-					BuildFlagTemplates: []string{"--build-arg", "ARCH=amd64", "--platform", "amd64"},
+					BuildFlagTemplates: []string{"--build-arg", "ARCH=amd64", "--platform", "linux/amd64"},
 				},
 				{
 					ImageTemplates:     []string{registry + "goreleaser/test_multiarch:2test-arm64v8"},
 					Goos:               "linux",
 					Goarch:             "arm64",
 					Dockerfile:         "testdata/Dockerfile.arch",
-					BuildFlagTemplates: []string{"--build-arg", "ARCH=arm64v8", "--platform", "arm64"},
+					BuildFlagTemplates: []string{"--build-arg", "ARCH=arm64v8", "--platform", "linux/arm64"},
 				},
 			},
 			manifests: []config.DockerManifest{
@@ -239,7 +259,7 @@ func TestRunPipe(t *testing.T) {
 				t.Helper()
 				for _, cmd := range []string{
 					fmt.Sprintf("docker manifest rm %sgoreleaser/test_multiarch:2test || true", registry),
-					fmt.Sprintf("docker build -t %sgoreleaser/dummy:v1 --platform linux/amd64 -f testdata/Dockerfile.dummy .", registry),
+					fmt.Sprintf("docker build --sbom=false --provenance=false -t %sgoreleaser/dummy:v1 --platform linux/amd64 -f testdata/Dockerfile.dummy .", registry),
 					fmt.Sprintf("docker push %sgoreleaser/dummy:v1", registry),
 					fmt.Sprintf("docker manifest create %sgoreleaser/test_multiarch:2test --amend %sgoreleaser/dummy:v1 --insecure", registry, registry),
 				} {
@@ -258,7 +278,7 @@ func TestRunPipe(t *testing.T) {
 					Goos:               "linux",
 					Goarch:             "arm64",
 					Dockerfile:         "testdata/Dockerfile.arch",
-					BuildFlagTemplates: []string{"--build-arg", "ARCH=arm64v8", "--platform", "arm64"},
+					BuildFlagTemplates: []string{"--build-arg", "ARCH=arm64v8", "--platform", "linux/arm64"},
 				},
 			},
 			manifests: []config.DockerManifest{
@@ -985,7 +1005,7 @@ func TestRunPipe(t *testing.T) {
 					require.NoError(t, f.Close())
 				}
 
-				ctx := testctx.NewWithCfg(
+				ctx := testctx.WrapWithCfg(t.Context(),
 					config.Project{
 						ProjectName:     "mybin",
 						Dist:            dist,
@@ -996,8 +1016,8 @@ func TestRunPipe(t *testing.T) {
 					testctx.WithVersion("1.0.0"),
 					testctx.WithCurrentTag("v1.0.0"),
 					testctx.WithCommit("a1b2c3d4"),
-					testctx.WithSemver(1, 0, 0, ""),
-				)
+					testctx.WithSemver(1, 0, 0, ""))
+
 				for _, os := range []string{"linux", "darwin"} {
 					for _, arch := range []string{"amd64", "386", "arm64"} {
 						for _, bin := range []string{"mybin", "anotherbin", "subdir/subbin"} {
@@ -1033,7 +1053,7 @@ func TestRunPipe(t *testing.T) {
 				}
 
 				rmi := func(img string) error {
-					return exec.Command("docker", "rmi", "--force", img).Run()
+					return exec.CommandContext(t.Context(), "docker", "rmi", "--force", img).Run()
 				}
 
 				// this might fail as the image doesnt exist yet, so lets ignore the error
@@ -1052,6 +1072,8 @@ func TestRunPipe(t *testing.T) {
 					manifest.PushFlags = []string{"--insecure"}
 					manifest.CreateFlags = []string{"--insecure"}
 				}
+				require.NoError(t, Pipe{}.Default(ctx))
+				require.NoError(t, ManifestPipe{}.Default(ctx))
 				err = Pipe{}.Run(ctx)
 				docker.assertError(t, err)
 				if err == nil {
@@ -1096,23 +1118,23 @@ func TestBuildCommand(t *testing.T) {
 		{
 			name:   "no flags",
 			flags:  []string{},
-			expect: []string{"build", ".", "-t", images[0], "-t", images[1]},
+			expect: []string{"build", ".", "-t", images[0], "-t", images[1], "--provenance=false", "--sbom=false"},
 		},
 		{
 			name:   "single flag",
 			flags:  []string{"--label=foo"},
-			expect: []string{"build", ".", "-t", images[0], "-t", images[1], "--label=foo"},
+			expect: []string{"build", ".", "-t", images[0], "-t", images[1], "--label=foo", "--provenance=false", "--sbom=false"},
 		},
 		{
 			name:   "multiple flags",
 			flags:  []string{"--label=foo", "--build-arg=bar=baz"},
-			expect: []string{"build", ".", "-t", images[0], "-t", images[1], "--label=foo", "--build-arg=bar=baz"},
+			expect: []string{"build", ".", "-t", images[0], "-t", images[1], "--label=foo", "--build-arg=bar=baz", "--provenance=false", "--sbom=false"},
 		},
 		{
 			name:   "buildx",
 			buildx: true,
 			flags:  []string{"--label=foo", "--build-arg=bar=baz"},
-			expect: []string{"buildx", "build", ".", "--load", "-t", images[0], "-t", images[1], "--label=foo", "--build-arg=bar=baz"},
+			expect: []string{"buildx", "build", ".", "--load", "-t", images[0], "-t", images[1], "--label=foo", "--build-arg=bar=baz", "--provenance=false", "--sbom=false"},
 		},
 	}
 	for _, tt := range tests {
@@ -1130,7 +1152,7 @@ func TestDescription(t *testing.T) {
 }
 
 func TestNoDockerWithoutImageName(t *testing.T) {
-	testlib.AssertSkipped(t, Pipe{}.Run(testctx.NewWithCfg(config.Project{
+	testlib.AssertSkipped(t, Pipe{}.Run(testctx.WrapWithCfg(t.Context(), config.Project{
 		Dockers: []config.Docker{
 			{
 				Goos: "linux",
@@ -1140,7 +1162,7 @@ func TestNoDockerWithoutImageName(t *testing.T) {
 }
 
 func TestDefault(t *testing.T) {
-	ctx := testctx.NewWithCfg(config.Project{
+	ctx := testctx.WrapWithCfg(t.Context(), config.Project{
 		Dockers: []config.Docker{
 			{
 				IDs: []string{"aa"},
@@ -1156,6 +1178,7 @@ func TestDefault(t *testing.T) {
 			},
 		},
 	})
+
 	require.NoError(t, Pipe{}.Default(ctx))
 	require.Len(t, ctx.Config.Dockers, 2)
 	docker := ctx.Config.Dockers[0]
@@ -1166,34 +1189,44 @@ func TestDefault(t *testing.T) {
 	require.Equal(t, useDocker, docker.Use)
 	docker = ctx.Config.Dockers[1]
 	require.Equal(t, useBuildx, docker.Use)
+	require.Equal(t, uint(10), docker.Retry.Attempts)
+	require.Equal(t, 10*time.Second, docker.Retry.Delay)
+	require.Equal(t, 5*time.Minute, docker.Retry.MaxDelay)
 
 	require.NoError(t, ManifestPipe{}.Default(ctx))
 	require.Len(t, ctx.Config.DockerManifests, 2)
 	require.Equal(t, useDocker, ctx.Config.DockerManifests[0].Use)
 	require.Equal(t, useDocker, ctx.Config.DockerManifests[1].Use)
+
+	for _, manifest := range ctx.Config.DockerManifests {
+		require.Equal(t, uint(10), manifest.Retry.Attempts)
+		require.Equal(t, 10*time.Second, manifest.Retry.Delay)
+		require.Equal(t, 5*time.Minute, manifest.Retry.MaxDelay)
+	}
 }
 
 func TestDefaultDuplicateID(t *testing.T) {
-	ctx := testctx.NewWithCfg(config.Project{
+	ctx := testctx.WrapWithCfg(t.Context(), config.Project{
 		Dockers: []config.Docker{
 			{ID: "foo"},
-			{ /* empty */ },
+			{},
 			{ID: "bar"},
 			{ID: "foo"},
 		},
 		DockerManifests: []config.DockerManifest{
 			{ID: "bar"},
-			{ /* empty */ },
+			{},
 			{ID: "bar"},
 			{ID: "foo"},
 		},
 	})
+
 	require.EqualError(t, Pipe{}.Default(ctx), "found 2 dockers with the ID 'foo', please fix your config")
 	require.EqualError(t, ManifestPipe{}.Default(ctx), "found 2 docker_manifests with the ID 'bar', please fix your config")
 }
 
 func TestDefaultInvalidUse(t *testing.T) {
-	ctx := testctx.NewWithCfg(config.Project{
+	ctx := testctx.WrapWithCfg(t.Context(), config.Project{
 		Dockers: []config.Docker{
 			{
 				Use: "something",
@@ -1205,6 +1238,7 @@ func TestDefaultInvalidUse(t *testing.T) {
 			},
 		},
 	})
+
 	err := Pipe{}.Default(ctx)
 	require.Error(t, err)
 	require.True(t, strings.HasPrefix(err.Error(), `docker: invalid use: something, valid options are`))
@@ -1215,7 +1249,7 @@ func TestDefaultInvalidUse(t *testing.T) {
 }
 
 func TestDefaultDockerfile(t *testing.T) {
-	ctx := testctx.NewWithCfg(config.Project{
+	ctx := testctx.WrapWithCfg(t.Context(), config.Project{
 		Builds: []config.Build{
 			{},
 		},
@@ -1224,6 +1258,7 @@ func TestDefaultDockerfile(t *testing.T) {
 			{},
 		},
 	})
+
 	require.NoError(t, Pipe{}.Default(ctx))
 	require.Len(t, ctx.Config.Dockers, 2)
 	require.Equal(t, "Dockerfile", ctx.Config.Dockers[0].Dockerfile)
@@ -1231,7 +1266,7 @@ func TestDefaultDockerfile(t *testing.T) {
 }
 
 func TestDraftRelease(t *testing.T) {
-	ctx := testctx.NewWithCfg(config.Project{
+	ctx := testctx.WrapWithCfg(t.Context(), config.Project{
 		Release: config.Release{
 			Draft: true,
 		},
@@ -1241,15 +1276,16 @@ func TestDraftRelease(t *testing.T) {
 }
 
 func TestDefaultNoDockers(t *testing.T) {
-	ctx := testctx.NewWithCfg(config.Project{
+	ctx := testctx.WrapWithCfg(t.Context(), config.Project{
 		Dockers: []config.Docker{},
 	})
+
 	require.NoError(t, Pipe{}.Default(ctx))
 	require.Empty(t, ctx.Config.Dockers)
 }
 
 func TestDefaultFilesDot(t *testing.T) {
-	ctx := testctx.NewWithCfg(config.Project{
+	ctx := testctx.WrapWithCfg(t.Context(), config.Project{
 		Dist: "/tmp/distt",
 		Dockers: []config.Docker{
 			{
@@ -1257,11 +1293,12 @@ func TestDefaultFilesDot(t *testing.T) {
 			},
 		},
 	})
+
 	require.NoError(t, Pipe{}.Default(ctx))
 }
 
 func TestDefaultFilesDis(t *testing.T) {
-	ctx := testctx.NewWithCfg(config.Project{
+	ctx := testctx.WrapWithCfg(t.Context(), config.Project{
 		Dist: "/tmp/dist",
 		Dockers: []config.Docker{
 			{
@@ -1269,11 +1306,12 @@ func TestDefaultFilesDis(t *testing.T) {
 			},
 		},
 	})
+
 	require.NoError(t, Pipe{}.Default(ctx))
 }
 
 func TestDefaultSet(t *testing.T) {
-	ctx := testctx.NewWithCfg(config.Project{
+	ctx := testctx.WrapWithCfg(t.Context(), config.Project{
 		Dockers: []config.Docker{
 			{
 				IDs:        []string{"foo"},
@@ -1283,6 +1321,7 @@ func TestDefaultSet(t *testing.T) {
 			},
 		},
 	})
+
 	require.NoError(t, Pipe{}.Default(ctx))
 	require.Len(t, ctx.Config.Dockers, 1)
 	docker := ctx.Config.Dockers[0]
@@ -1293,7 +1332,7 @@ func TestDefaultSet(t *testing.T) {
 }
 
 func Test_processImageTemplates(t *testing.T) {
-	ctx := testctx.NewWithCfg(
+	ctx := testctx.WrapWithCfg(t.Context(),
 		config.Project{
 			Builds: []config.Build{
 				{
@@ -1316,8 +1355,7 @@ func Test_processImageTemplates(t *testing.T) {
 		testctx.WithVersion("1.0.0"),
 		testctx.WithCurrentTag("v1.0.0"),
 		testctx.WithCommit("a1b2c3d4"),
-		testctx.WithSemver(1, 0, 0, ""),
-	)
+		testctx.WithSemver(1, 0, 0, ""))
 
 	require.NoError(t, Pipe{}.Default(ctx))
 	require.Len(t, ctx.Config.Dockers, 1)
@@ -1337,40 +1375,44 @@ func Test_processImageTemplates(t *testing.T) {
 func TestSkip(t *testing.T) {
 	t.Run("image", func(t *testing.T) {
 		t.Run("skip", func(t *testing.T) {
-			require.True(t, Pipe{}.Skip(testctx.New()))
+			require.True(t, Pipe{}.Skip(testctx.Wrap(t.Context())))
 		})
 
 		t.Run("skip docker", func(t *testing.T) {
-			ctx := testctx.NewWithCfg(config.Project{
+			ctx := testctx.WrapWithCfg(t.Context(), config.Project{
 				Dockers: []config.Docker{{}},
 			}, testctx.Skip(skips.Docker))
+
 			require.True(t, Pipe{}.Skip(ctx))
 		})
 
 		t.Run("dont skip", func(t *testing.T) {
-			ctx := testctx.NewWithCfg(config.Project{
+			ctx := testctx.WrapWithCfg(t.Context(), config.Project{
 				Dockers: []config.Docker{{}},
 			})
+
 			require.False(t, Pipe{}.Skip(ctx))
 		})
 	})
 
 	t.Run("manifest", func(t *testing.T) {
 		t.Run("skip", func(t *testing.T) {
-			require.True(t, ManifestPipe{}.Skip(testctx.New()))
+			require.True(t, ManifestPipe{}.Skip(testctx.Wrap(t.Context())))
 		})
 
 		t.Run("skip docker", func(t *testing.T) {
-			ctx := testctx.NewWithCfg(config.Project{
+			ctx := testctx.WrapWithCfg(t.Context(), config.Project{
 				DockerManifests: []config.DockerManifest{{}},
 			}, testctx.Skip(skips.Docker))
+
 			require.True(t, ManifestPipe{}.Skip(ctx))
 		})
 
 		t.Run("dont skip", func(t *testing.T) {
-			ctx := testctx.NewWithCfg(config.Project{
+			ctx := testctx.WrapWithCfg(t.Context(), config.Project{
 				DockerManifests: []config.DockerManifest{{}},
 			})
+
 			require.False(t, ManifestPipe{}.Skip(ctx))
 		})
 	})
@@ -1415,7 +1457,7 @@ func TestWithDigest(t *testing.T) {
 }
 
 func TestDependencies(t *testing.T) {
-	ctx := testctx.NewWithCfg(config.Project{
+	ctx := testctx.WrapWithCfg(t.Context(), config.Project{
 		Dockers: []config.Docker{
 			{Use: useBuildx},
 			{Use: useDocker},
@@ -1427,6 +1469,7 @@ func TestDependencies(t *testing.T) {
 			{Use: "nope"},
 		},
 	})
+
 	require.Equal(t, []string{"docker", "docker"}, Pipe{}.Dependencies(ctx))
 	require.Equal(t, []string{"docker", "docker"}, ManifestPipe{}.Dependencies(ctx))
 }
