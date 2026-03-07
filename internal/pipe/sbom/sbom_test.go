@@ -483,7 +483,7 @@ func TestSBOMCatalogArtifacts(t *testing.T) {
 			desc: "catalog wrong command",
 			ctx: testctx.WrapWithCfg(t.Context(), config.Project{
 				SBOMs: []config.SBOM{
-					{Args: []string{"$artifact", "--file", "$sbom", "--output", "spdx-json"}},
+					{Cmd: "go", Args: []string{"version"}},
 				},
 			}),
 
@@ -586,7 +586,6 @@ func testSBOMCataloging(
 
 	tgz, err := os.OpenFile(filepath.Join(tmpdir, "artifact5.tar.gz"), os.O_CREATE|os.O_TRUNC|os.O_RDWR, 0o644)
 	require.NoError(tb, err)
-	tb.Cleanup(func() { _ = tgz.Close() })
 	a, err := archive.New(tgz, "tar.gz")
 	require.NoError(tb, err)
 	require.NoError(tb, a.Add(config.File{
@@ -594,6 +593,7 @@ func testSBOMCataloging(
 		Destination: "artifact",
 	}))
 	require.NoError(tb, a.Close())
+	require.NoError(tb, tgz.Close())
 
 	artifacts = append(artifacts, "artifact5.tar.gz")
 	ctx.Artifacts.Add(&artifact.Artifact{
@@ -719,39 +719,45 @@ func Test_subprocessDistPath(t *testing.T) {
 	require.NoError(t, err)
 
 	tests := []struct {
-		name              string
-		distDir           string
-		pathRelativeToCwd string
-		expects           string
+		name    string
+		distDir string
+		path    string
+		expects string
 	}{
 		{
-			name:              "relative dist with anchor",
-			distDir:           "./dist",
-			pathRelativeToCwd: "dist/my.sbom",
-			expects:           "my.sbom",
+			name:    "relative dist with anchor",
+			distDir: "./dist",
+			path:    "dist/my.sbom",
+			expects: "my.sbom",
 		},
 		{
-			name:              "relative dist without anchor",
-			distDir:           "dist",
-			pathRelativeToCwd: "dist/my.sbom",
-			expects:           "my.sbom",
+			name:    "relative dist without anchor",
+			distDir: "dist",
+			path:    "dist/my.sbom",
+			expects: "my.sbom",
 		},
 		{
-			name:              "relative dist with nested resource",
-			distDir:           "dist",
-			pathRelativeToCwd: "dist/something/my.sbom",
-			expects:           "something/my.sbom",
+			name:    "relative dist with nested resource",
+			distDir: "dist",
+			path:    "dist/something/my.sbom",
+			expects: "something/my.sbom",
 		},
 		{
-			name:              "absolute dist with nested resource",
-			distDir:           filepath.Join(cwd, "dist/"),
-			pathRelativeToCwd: "dist/something/my.sbom",
-			expects:           "something/my.sbom",
+			name:    "absolute dist with nested resource",
+			distDir: filepath.Join(cwd, "dist/"),
+			path:    filepath.Join(cwd, "dist/something/my.sbom"),
+			expects: "something/my.sbom",
+		},
+		{
+			name:    "absolute dist with absolute path",
+			distDir: filepath.Join(cwd, "dist"),
+			path:    filepath.Join(cwd, "dist", "artifact.tar.gz.sbom.json"),
+			expects: "artifact.tar.gz.sbom.json",
 		},
 	}
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
-			actual, err := subprocessDistPath(test.distDir, test.pathRelativeToCwd)
+			actual, err := subprocessDistPath(test.distDir, test.path)
 			require.NoError(t, err)
 			assert.Equal(t, filepath.ToSlash(test.expects), filepath.ToSlash(actual))
 		})
@@ -759,9 +765,14 @@ func Test_subprocessDistPath(t *testing.T) {
 }
 
 func Test_templateNames(t *testing.T) {
+	wd, err := os.Getwd()
+	require.NoError(t, err)
+
+	// Use an artifact path inside the dist directory (realistic scenario).
+	dist := filepath.Join(wd, "somewhere", "to", "dist")
 	art := artifact.Artifact{
 		Name:   "name-it",
-		Path:   "to/a/place",
+		Path:   filepath.Join(dist, "name-it"),
 		Goos:   "darwin",
 		Goarch: "amd64",
 		Type:   artifact.Binary,
@@ -769,14 +780,6 @@ func Test_templateNames(t *testing.T) {
 			artifact.ExtraID: "id-it",
 			"Binary":         "binary-name",
 		},
-	}
-
-	wd, err := os.Getwd()
-	require.NoError(t, err)
-
-	abs := func(path string) string {
-		path, _ = filepath.Abs(path)
-		return path
 	}
 
 	tests := []struct {
@@ -792,30 +795,30 @@ func Test_templateNames(t *testing.T) {
 			name:     "default configuration",
 			artifact: art,
 			cfg:      config.SBOM{},
-			dist:     abs("/somewhere/to/dist"),
+			dist:     dist,
 			expectedPaths: []string{
-				abs("/somewhere/to/dist/name-it.sbom.json"),
+				"name-it.sbom.json",
 			},
 			expectedValues: map[string]string{
-				"artifact":   filepath.FromSlash("to/a/place"),
+				"artifact":   "name-it",
 				"artifactID": "id-it",
-				"document":   abs("/somewhere/to/dist/name-it.sbom.json"),
-				"document0":  abs("/somewhere/to/dist/name-it.sbom.json"),
+				"document":   "name-it.sbom.json",
+				"document0":  "name-it.sbom.json",
 			},
 		},
 		{
 			name:     "default configuration + relative dist",
 			artifact: art,
 			cfg:      config.SBOM{},
-			dist:     "somewhere/to/dist",
+			dist:     filepath.Join("somewhere", "to", "dist"),
 			expectedPaths: []string{
-				filepath.Join(wd, "somewhere/to/dist/name-it.sbom.json"),
+				"name-it.sbom.json",
 			},
 			expectedValues: map[string]string{
-				"artifact":   filepath.FromSlash("to/a/place"), // note: this is always relative to ${dist}
+				"artifact":   "name-it",
 				"artifactID": "id-it",
-				"document":   filepath.Join(wd, "somewhere/to/dist/name-it.sbom.json"),
-				"document0":  filepath.Join(wd, "somewhere/to/dist/name-it.sbom.json"),
+				"document":   "name-it.sbom.json",
+				"document0":  "name-it.sbom.json",
 			},
 		},
 		{
@@ -831,15 +834,15 @@ func Test_templateNames(t *testing.T) {
 					"${artifact}.cdx.sbom.json",
 				},
 			},
-			dist: "somewhere/to/dist",
+			dist: filepath.Join("somewhere", "to", "dist"),
 			expectedPaths: []string{
-				filepath.Join(wd, "somewhere/to/dist/to/a/place.cdx.sbom.json"),
+				"name-it.cdx.sbom.json",
 			},
 			expectedValues: map[string]string{
-				"artifact":   filepath.FromSlash("to/a/place"),
+				"artifact":   "name-it",
 				"artifactID": "id-it",
-				"document":   filepath.Join(wd, "somewhere/to/dist/to/a/place.cdx.sbom.json"),
-				"document0":  filepath.Join(wd, "somewhere/to/dist/to/a/place.cdx.sbom.json"),
+				"document":   "name-it.cdx.sbom.json",
+				"document0":  "name-it.cdx.sbom.json",
 			},
 		},
 		{
@@ -851,15 +854,15 @@ func Test_templateNames(t *testing.T) {
 				},
 			},
 			version: "1.0.0",
-			dist:    "somewhere/to/dist",
+			dist:    filepath.Join("somewhere", "to", "dist"),
 			expectedPaths: []string{
-				filepath.Join(wd, "somewhere/to/dist/binary-name_1.0.0_darwin_amd64.cdx.sbom.json"),
+				"binary-name_1.0.0_darwin_amd64.cdx.sbom.json",
 			},
 			expectedValues: map[string]string{
-				"artifact":   filepath.FromSlash("to/a/place"),
+				"artifact":   "name-it",
 				"artifactID": "id-it",
-				"document":   filepath.Join(wd, "somewhere/to/dist/binary-name_1.0.0_darwin_amd64.cdx.sbom.json"),
-				"document0":  filepath.Join(wd, "somewhere/to/dist/binary-name_1.0.0_darwin_amd64.cdx.sbom.json"),
+				"document":   "binary-name_1.0.0_darwin_amd64.cdx.sbom.json",
+				"document0":  "binary-name_1.0.0_darwin_amd64.cdx.sbom.json",
 			},
 		},
 		{
@@ -876,18 +879,18 @@ func Test_templateNames(t *testing.T) {
 				},
 			},
 			version: "1.0.0",
-			dist:    "somewhere/to/dist",
+			dist:    filepath.Join("somewhere", "to", "dist"),
 			expectedPaths: []string{
-				filepath.Join(wd, "somewhere/to/dist/binary-name_1.0.0_darwin_amd64.cdx.sbom.json"),
+				"binary-name_1.0.0_darwin_amd64.cdx.sbom.json",
 			},
 			expectedValues: map[string]string{
-				"artifact":     filepath.FromSlash("to/a/place"),
+				"artifact":     "name-it",
 				"artifactID":   "id-it",
 				"with-env-var": "value",
 				"custom-os":    "darwin-unique",
 				"custom-arch":  "amd64-unique",
-				"document":     filepath.Join(wd, "somewhere/to/dist/binary-name_1.0.0_darwin_amd64.cdx.sbom.json"),
-				"document0":    filepath.Join(wd, "somewhere/to/dist/binary-name_1.0.0_darwin_amd64.cdx.sbom.json"),
+				"document":     "binary-name_1.0.0_darwin_amd64.cdx.sbom.json",
+				"document0":    "binary-name_1.0.0_darwin_amd64.cdx.sbom.json",
 			},
 		},
 	}
