@@ -39,6 +39,11 @@ announce:
     #
     # Default: 'MarkdownV2'.
     parse_mode: HTML
+
+    # Specific thread to reply to.
+    #
+    # <!-- md:inline_version v2.15-unreleased -->.
+    message_thread_id: 1234
 ```
 
 You can format your message using `MarkdownV2` or `HTML`, for reference, see the
