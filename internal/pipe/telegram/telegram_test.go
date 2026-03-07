@@ -13,21 +13,6 @@ func TestStringer(t *testing.T) {
 	require.Equal(t, "telegram", Pipe{}.String())
 }
 
-func TestReal(t *testing.T) {
-	ctx := testctx.Wrap(t.Context())
-	ctx.Version = "v2.13.1"
-	ctx.Git.CurrentTag = "v2.13.1"
-	ctx.Config.ProjectName = "goreleaser"
-	ctx.Config.Announce.Telegram = config.Telegram{
-		Enabled:         "true",
-		ChatID:          "@goreleasernews",
-		MessageTemplate: `{{ print "GoReleaser " .Tag " is out! Check it out: https://github.com/goreleaser/goreleaser/releases/tag/" .Tag  | mdv2escape }}`,
-		ParseMode:       "MarkdownV2",
-	}
-	require.NoError(t, Pipe{}.Default(ctx))
-	require.NoError(t, Pipe{}.Announce(ctx))
-}
-
 func TestDefault(t *testing.T) {
 	t.Run("empty", func(t *testing.T) {
 		ctx := testctx.Wrap(t.Context())

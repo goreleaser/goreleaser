@@ -15,6 +15,7 @@ completions/
 manpages
 output.json
 .direnv
+.env
 *.pyc
 .intentionally-empty-file.o
 internal/pipe/ko/testdata/app/testapp-linux-amd64.spdx.json
