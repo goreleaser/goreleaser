@@ -160,24 +160,24 @@ func catalog(ctx *context.Context, cfg config.SBOM, artifacts []*artifact.Artifa
 	return nil
 }
 
-func subprocessDistPath(distDir string, pathRelativeToCwd string) (string, error) {
+func subprocessDistPath(distDir string, path string) (string, error) {
 	distDir = filepath.Clean(distDir)
-	pathRelativeToCwd = filepath.Clean(pathRelativeToCwd)
-	cwd, err := os.Getwd()
-	if err != nil {
-		return "", err
-	}
+	path = filepath.Clean(path)
 	if !filepath.IsAbs(distDir) {
+		var err error
 		distDir, err = filepath.Abs(distDir)
 		if err != nil {
 			return "", err
 		}
 	}
-	relativePath, err := filepath.Rel(cwd, distDir)
-	if err != nil {
-		return "", err
+	if !filepath.IsAbs(path) {
+		var err error
+		path, err = filepath.Abs(path)
+		if err != nil {
+			return "", err
+		}
 	}
-	return strings.TrimPrefix(pathRelativeToCwd, relativePath+string(filepath.Separator)), nil
+	return filepath.Rel(distDir, path)
 }
 
 func catalogArtifact(ctx *context.Context, cfg config.SBOM, a *artifact.Artifact) ([]*artifact.Artifact, error) {
