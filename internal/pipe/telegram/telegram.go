@@ -52,7 +52,7 @@ func (Pipe) Default(ctx *context.Context) error {
 	return nil
 }
 
-func (p Pipe) Announce(ctx *context.Context) error {
+func (Pipe) Announce(ctx *context.Context) error {
 	args, err := getMessageDetails(ctx)
 	if err != nil {
 		return err
@@ -60,13 +60,12 @@ func (p Pipe) Announce(ctx *context.Context) error {
 
 	cfg, err := env.ParseAs[Config]()
 	if err != nil {
-		return fmt.Errorf("%s: %w", p, err)
+		return fmt.Errorf("telegram: %w", err)
 	}
 
 	var b bytes.Buffer
-	err = json.NewEncoder(&b).Encode(args)
-	if err != nil {
-		return fmt.Errorf("%s: %w", p, err)
+	if err := json.NewEncoder(&b).Encode(args); err != nil {
+		return fmt.Errorf("telegram: %w", err)
 	}
 
 	customTransport := http.DefaultTransport.(*http.Transport).Clone()
@@ -81,7 +80,7 @@ func (p Pipe) Announce(ctx *context.Context) error {
 
 	request, err := http.NewRequest(http.MethodPost, fmt.Sprintf("https://api.telegram.org/bot%s/sendMessage", cfg.ConsumerToken), &b)
 	if err != nil {
-		return fmt.Errorf("%s: %w", p, err)
+		return fmt.Errorf("telegram:  %w", err)
 	}
 	request.Header.Set("Content-Type", "application/json")
 
@@ -93,14 +92,12 @@ func (p Pipe) Announce(ctx *context.Context) error {
 	defer resp.Body.Close()
 
 	var telegramResponse SendMessageResponse
-	err = json.NewDecoder(resp.Body).Decode(&telegramResponse)
-	if err != nil {
+	if err := json.NewDecoder(resp.Body).Decode(&telegramResponse); err != nil {
 		return fmt.Errorf("telegram: %w", err)
 	}
 
 	if !telegramResponse.Ok {
-		log.Errorf("send telegram failed with %s", telegramResponse.Description)
-		return fmt.Errorf("send telegram failed with (%d)%s", telegramResponse.ErrorCode, telegramResponse.Description)
+		return fmt.Errorf("telegram: send failed with error code %d: %s", telegramResponse.ErrorCode, telegramResponse.Description)
 	}
 
 	log.Debug("message sent")

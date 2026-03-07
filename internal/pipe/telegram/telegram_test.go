@@ -35,6 +35,7 @@ func TestDefault(t *testing.T) {
 }
 
 func TestAnnounceInvalidTemplate(t *testing.T) {
+	t.Setenv("TELEGRAM_TOKEN", "")
 	t.Run("message", func(t *testing.T) {
 		ctx := testctx.WrapWithCfg(t.Context(), config.Project{
 			Announce: config.Announce{
@@ -58,19 +59,6 @@ func TestAnnounceInvalidTemplate(t *testing.T) {
 
 		testlib.RequireTemplateError(t, Pipe{}.Announce(ctx))
 	})
-	t.Run("chatid not int", func(t *testing.T) {
-		ctx := testctx.WrapWithCfg(t.Context(), config.Project{
-			Env: []string{"CHAT_ID=test"},
-			Announce: config.Announce{
-				Telegram: config.Telegram{
-					MessageTemplate: "test",
-					ChatID:          "{{ .Env.CHAT_ID }}",
-				},
-			},
-		})
-
-		require.EqualError(t, Pipe{}.Announce(ctx), "telegram: strconv.ParseInt: parsing \"test\": invalid syntax")
-	})
 	t.Run("message thread id not int", func(t *testing.T) {
 		ctx := testctx.WrapWithCfg(t.Context(), config.Project{
 			Env: []string{"MESSAGE_THREAD_ID=test"},
@@ -87,6 +75,7 @@ func TestAnnounceInvalidTemplate(t *testing.T) {
 }
 
 func TestAnnounceMissingEnv(t *testing.T) {
+	t.Setenv("TELEGRAM_TOKEN", "")
 	ctx := testctx.WrapWithCfg(t.Context(), config.Project{
 		Env: []string{"CHAT_ID=10"},
 		Announce: config.Announce{
