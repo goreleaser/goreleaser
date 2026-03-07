@@ -387,6 +387,10 @@ announce:
     message_template: "#GoReleaser {{ .Tag }} is out! Check it out: https://github.com/goreleaser/goreleaser/releases/tag/{{ .Tag }}"
     server: https://fosstodon.org
 
+  opencollective:
+    enabled: true
+    slug: goreleaser
+
   discord:
     enabled: true
     message_template: "GoReleaser {{ .Tag }} is out! Check it out: https://github.com/goreleaser/goreleaser/releases/tag/{{ .Tag }}"
