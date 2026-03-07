@@ -1,38 +1,41 @@
 # Telegram
 
 For it to work, you'll need to
-[create a new Telegram app](https://core.telegram.org/bots), and set
-some environment variables on your pipeline:
+[create a new Telegram bot](https://core.telegram.org/bots).
 
-- `TELEGRAM_TOKEN`
+You should get a token, and export it as `TELEGRAM_TOKEN`.
 
-Also you need to know your channel's chat ID to talk with.
+You will also need to create a channel, and either its numerical ID or its
+`@channelname`.
+
+You'll need to add your bot as a channel admin, and give it "Post Messages"
+permissions (it's inside the "Manage Messages" permission menu).
 
 Then, you can add something like the following to your `.goreleaser.yaml`
-config:
+configuration file:
 
 ```yaml title=".goreleaser.yaml"
 announce:
   telegram:
-    # Whether its enabled or not.
+    # Whether it's enabled or not.
     #
     # Templates: allowed (since v2.6).
     enabled: true
 
-    # Integer representation of your channel
+    # Integer or `@` representation of your channel.
     #
     # Templates: allowed.
-    chat_id: 123456
+    chat_id: "@goreleasernews"
 
     # Message template to use while publishing.
     #
     # Default: '{{ print .ProjectName " " .Tag " is out! Check it out at " .ReleaseURL | mdv2escape }}'.
     # Templates: allowed.
-    message_template: 'Awesome project {{.Tag}} is out{{ mdv2escape "!" }}'
+    message_template: '<a href="{{.ReleaseURL}}">{{ .ProjectName }} {{.Tag}}</a> is out!'
 
     # Parse mode.
     #
-    # Valid options are MarkdownV2 and HTML.
+    # Valid options are 'MarkdownV2' and 'HTML'.
     #
     # Default: 'MarkdownV2'.
     parse_mode: HTML
