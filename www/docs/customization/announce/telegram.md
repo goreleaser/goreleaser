@@ -49,4 +49,7 @@ You can format your message using `MarkdownV2` or `HTML`, for reference, see the
     If you use `MarkdownV2`, it's probably easier to do
     `{{ print "your message bits" | mdv2escape }}` to prevent issues.
 
+You can also follow [our channel on Telegram](https://t.me/goreleasernews) if
+you'd like.
+
 <!-- md:templates -->
