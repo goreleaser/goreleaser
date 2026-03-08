@@ -44,6 +44,7 @@ Here are ways to get in touch with the GoReleaser community:
 
 [![Join Discord](https://img.shields.io/badge/Join_our_Discord_server-5865F2?style=for-the-badge&logo=discord&logoColor=white)](https://discord.gg/RGEBtg8vQ6)
 [![Follow Twitter](https://img.shields.io/badge/follow_on_twitter-1DA1F2?style=for-the-badge&logo=twitter&logoColor=white)](https://twitter.com/goreleaser)
+[![Telegram Channel](https://img.shields.io/badge/telegram-Telegram?style=for-the-badge&logo=telegram&logoColor=%23FFFFFF&color=%2326A5E4)](https://t.me/goreleasernews)
 [![GitHub Discussions](https://img.shields.io/badge/GITHUB_DISCUSSION-181717?style=for-the-badge&logo=github&logoColor=white)](https://github.com/goreleaser/goreleaser/discussions)
 
 You can find the links above and all others [here](https://goreleaser.com/links/).
