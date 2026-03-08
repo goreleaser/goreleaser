@@ -100,6 +100,8 @@ extra:
       link: https://github.com/goreleaser
     - icon: fontawesome/brands/discord
       link: /discord
+    - icon: fontawesome/brands/telegram
+      link: https://t.me/goreleasernews
 
 nav:
   - Getting Started:
