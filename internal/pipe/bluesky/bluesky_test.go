@@ -60,7 +60,7 @@ func TestAnnounceMissingEnv(t *testing.T) {
 		},
 	})
 	require.NoError(t, Pipe{}.Default(ctx))
-	require.EqualError(t, Pipe{}.Announce(ctx), `bluesky: env: environment variable "BLUESKY_APP_PASSWORD" should not be empty`)
+	require.EqualError(t, Pipe{}.Announce(ctx), `env: environment variable "BLUESKY_APP_PASSWORD" should not be empty`)
 }
 
 func TestSkip(t *testing.T) {

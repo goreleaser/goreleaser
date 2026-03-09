@@ -67,13 +67,12 @@ func (Pipe) Skip(ctx *context.Context) (bool, error) {
 func (Pipe) Run(ctx *context.Context) error {
 	memo := errhandler.Memo{}
 	for _, announcer := range announcers {
-		_ = skip.Maybe(
+		if err := skip.Maybe(
 			announcer,
-			logging.PadLog(announcer.String(), memo.Wrap(announcer.Announce)),
-		)(ctx)
+			logging.PadLog(announcer.String(), errhandler.Handle(announcer.Announce)),
+		)(ctx); err != nil {
+			memo.Memorize(fmt.Errorf("%s: %w", announcer.String(), err))
+		}
 	}
-	if memo.Error() != nil {
-		return fmt.Errorf("failed to announce release: %w", memo.Error())
-	}
-	return nil
+	return memo.Error()
 }

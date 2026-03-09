@@ -82,7 +82,7 @@ func TestAnnounceMissingEnv(t *testing.T) {
 	})
 
 	require.NoError(t, Pipe{}.Default(ctx))
-	require.EqualError(t, Pipe{}.Announce(ctx), `discourse: env: environment variable "DISCOURSE_API_KEY" should not be empty`)
+	require.EqualError(t, Pipe{}.Announce(ctx), `env: environment variable "DISCOURSE_API_KEY" should not be empty`)
 }
 
 func TestDefault(t *testing.T) {

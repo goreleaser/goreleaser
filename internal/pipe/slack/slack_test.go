@@ -87,7 +87,7 @@ func TestAnnounceMissingEnv(t *testing.T) {
 	})
 
 	require.NoError(t, Pipe{}.Default(ctx))
-	require.EqualError(t, Pipe{}.Announce(ctx), `slack: env: environment variable "SLACK_WEBHOOK" should not be empty`)
+	require.EqualError(t, Pipe{}.Announce(ctx), `env: environment variable "SLACK_WEBHOOK" should not be empty`)
 }
 
 func TestSkip(t *testing.T) {

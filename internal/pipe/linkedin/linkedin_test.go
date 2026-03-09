@@ -22,7 +22,7 @@ func TestDefault(t *testing.T) {
 func TestAnnounceDisabled(t *testing.T) {
 	ctx := testctx.Wrap(t.Context())
 	require.NoError(t, Pipe{}.Default(ctx))
-	require.EqualError(t, Pipe{}.Announce(ctx), `linkedin: env: environment variable "LINKEDIN_ACCESS_TOKEN" should not be empty`)
+	require.EqualError(t, Pipe{}.Announce(ctx), `env: environment variable "LINKEDIN_ACCESS_TOKEN" should not be empty`)
 }
 
 func TestAnnounceInvalidTemplate(t *testing.T) {
@@ -48,7 +48,7 @@ func TestAnnounceMissingEnv(t *testing.T) {
 	})
 
 	require.NoError(t, Pipe{}.Default(ctx))
-	require.EqualError(t, Pipe{}.Announce(ctx), `linkedin: env: environment variable "LINKEDIN_ACCESS_TOKEN" should not be empty`)
+	require.EqualError(t, Pipe{}.Announce(ctx), `env: environment variable "LINKEDIN_ACCESS_TOKEN" should not be empty`)
 }
 
 func TestSkip(t *testing.T) {

@@ -2,8 +2,6 @@
 package reddit
 
 import (
-	"fmt"
-
 	"github.com/caarlos0/env/v11"
 	"github.com/caarlos0/go-reddit/v3/reddit"
 	"github.com/caarlos0/log"
@@ -44,12 +42,12 @@ func (Pipe) Default(ctx *context.Context) error {
 func (p Pipe) Announce(ctx *context.Context) error {
 	title, err := tmpl.New(ctx).Apply(ctx.Config.Announce.Reddit.TitleTemplate)
 	if err != nil {
-		return fmt.Errorf("%s: %w", p, err)
+		return err
 	}
 
 	url, err := tmpl.New(ctx).Apply(ctx.Config.Announce.Reddit.URLTemplate)
 	if err != nil {
-		return fmt.Errorf("%s: %w", p, err)
+		return err
 	}
 
 	linkRequest := reddit.SubmitLinkRequest{
@@ -60,18 +58,18 @@ func (p Pipe) Announce(ctx *context.Context) error {
 
 	cfg, err := env.ParseAs[Config]()
 	if err != nil {
-		return fmt.Errorf("%s: %w", p, err)
+		return err
 	}
 
 	credentials := reddit.Credentials{ID: ctx.Config.Announce.Reddit.ApplicationID, Secret: cfg.Secret, Username: ctx.Config.Announce.Reddit.Username, Password: cfg.Password}
 	client, err := reddit.NewClient(credentials)
 	if err != nil {
-		return fmt.Errorf("%s: %w", p, err)
+		return err
 	}
 
 	post, _, err := client.Post.SubmitLink(ctx, linkRequest)
 	if err != nil {
-		return fmt.Errorf("%s: %w", p, err)
+		return err
 	}
 
 	log.Infof("The text post is available at: %s\n", post.URL)

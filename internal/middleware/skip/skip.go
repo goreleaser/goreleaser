@@ -33,7 +33,7 @@ func Maybe(skipper any, next middleware.Action) middleware.Action {
 		return func(ctx *context.Context) error {
 			skip, err := skipper.Skip(ctx)
 			if err != nil {
-				return fmt.Errorf("skip %s: %w", skipper.String(), err)
+				return fmt.Errorf("skip: %w", err)
 			}
 			if skip {
 				log.Debugf("skipped %s", skipper.String())

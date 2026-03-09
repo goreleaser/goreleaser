@@ -531,7 +531,7 @@ func tplMapFlags(tpl *tmpl.Template, flag string, m map[string]string) ([]string
 	for _, k := range keys {
 		v := m[k]
 		if err := tpl.ApplyAll(&k, &v); err != nil {
-			return nil, fmt.Errorf("docker: %w", err)
+			return nil, err
 		}
 		if strings.TrimSpace(k) == "" || strings.TrimSpace(v) == "" {
 			continue

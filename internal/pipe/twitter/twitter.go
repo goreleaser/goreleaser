@@ -2,8 +2,6 @@
 package twitter
 
 import (
-	"fmt"
-
 	"github.com/caarlos0/env/v11"
 	"github.com/caarlos0/log"
 	"github.com/dghubble/go-twitter/twitter"
@@ -39,12 +37,12 @@ func (Pipe) Default(ctx *context.Context) error {
 func (p Pipe) Announce(ctx *context.Context) error {
 	msg, err := tmpl.New(ctx).Apply(ctx.Config.Announce.Twitter.MessageTemplate)
 	if err != nil {
-		return fmt.Errorf("%s: %w", p, err)
+		return err
 	}
 
 	cfg, err := env.ParseAs[Config]()
 	if err != nil {
-		return fmt.Errorf("%s: %w", p, err)
+		return err
 	}
 
 	log.Infof("posting: '%s'", msg)
@@ -52,7 +50,7 @@ func (p Pipe) Announce(ctx *context.Context) error {
 	token := oauth1.NewToken(cfg.AccessToken, cfg.AccessSecret)
 	client := twitter.NewClient(config.Client(oauth1.NoContext, token))
 	if _, _, err := client.Statuses.Update(msg, nil); err != nil {
-		return fmt.Errorf("%s: %w", p, err)
+		return err
 	}
 	return nil
 }

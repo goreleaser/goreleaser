@@ -29,7 +29,7 @@ func TestNoEndpoint(t *testing.T) {
 	})
 
 	require.NoError(t, Pipe{}.Default(ctx))
-	require.EqualError(t, Pipe{}.Announce(ctx), `webhook: no endpoint url`)
+	require.EqualError(t, Pipe{}.Announce(ctx), `no endpoint url`)
 }
 
 func TestMalformedEndpoint(t *testing.T) {
@@ -41,7 +41,7 @@ func TestMalformedEndpoint(t *testing.T) {
 		},
 	})
 
-	require.EqualError(t, Pipe{}.Announce(ctx), `webhook: Post "httxxx://example.com": unsupported protocol scheme "httxxx"`)
+	require.EqualError(t, Pipe{}.Announce(ctx), `Post "httxxx://example.com": unsupported protocol scheme "httxxx"`)
 }
 
 func TestAnnounceInvalidMessageTemplate(t *testing.T) {

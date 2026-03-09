@@ -180,7 +180,7 @@ func buildmanifest(
 func doBuildManifest(data Manifest) (string, error) {
 	out, err := yaml.Marshal(data)
 	if err != nil {
-		return "", fmt.Errorf("krew: failed to marshal yaml: %w", err)
+		return "", fmt.Errorf("failed to marshal yaml: %w", err)
 	}
 	return string(out), nil
 }
@@ -232,7 +232,7 @@ func manifestFor(
 		for _, arch := range goarch {
 			bins := artifact.MustExtra[[]string](*art, artifact.ExtraBinaries)
 			if len(bins) != 1 {
-				return result, fmt.Errorf("krew: only one binary per archive allowed, got %d on %q", len(bins), art.Name)
+				return result, fmt.Errorf("only one binary per archive allowed, got %d on %q", len(bins), art.Name)
 			}
 			result.Spec.Platforms = append(result.Spec.Platforms, Platform{
 				Bin:    bins[0],

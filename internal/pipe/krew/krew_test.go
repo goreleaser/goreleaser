@@ -951,7 +951,7 @@ func TestRunMultipleBinaries(t *testing.T) {
 	})
 	require.NoError(t, Pipe{}.Default(ctx))
 	client := client.NewMock()
-	require.EqualError(t, runAll(ctx, client), `krew: only one binary per archive allowed, got 2 on "bin.tar.gz"`)
+	require.EqualError(t, runAll(ctx, client), `only one binary per archive allowed, got 2 on "bin.tar.gz"`)
 }
 
 func TestDefault(t *testing.T) {
