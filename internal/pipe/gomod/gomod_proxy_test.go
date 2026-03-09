@@ -239,6 +239,28 @@ func TestErrors(t *testing.T) {
 	})
 }
 
+func TestIsProxyRetriable(t *testing.T) {
+	t.Run("404 not found", func(t *testing.T) {
+		err := newDetailedErrProxy(errors.New("exit status 1"), "go: downloading github.com/foo/bar v1.0.0\nreading https://sum.golang.org/lookup/github.com/foo/bar@v1.0.0: 404 Not Found\n\tserver response: not found: github.com/foo/bar@v1.0.0: invalid version: unknown revision v1.0.0")
+		require.True(t, isProxyRetriable(err))
+	})
+
+	t.Run("other error", func(t *testing.T) {
+		err := newDetailedErrProxy(errors.New("exit status 1"), "go: some other error")
+		require.False(t, isProxyRetriable(err))
+	})
+
+	t.Run("non-proxy error", func(t *testing.T) {
+		err := errors.New("some random error")
+		require.False(t, isProxyRetriable(err))
+	})
+
+	t.Run("no details", func(t *testing.T) {
+		err := newErrProxy(errors.New("exit status 1"))
+		require.False(t, isProxyRetriable(err))
+	})
+}
+
 func requireGoMod(tb testing.TB) {
 	tb.Helper()
 

@@ -1,6 +1,7 @@
 package gomod
 
 import (
+	stdctx "context"
 	"errors"
 	"fmt"
 	"io"
@@ -10,7 +11,9 @@ import (
 	"path/filepath"
 	"regexp"
 	"strings"
+	"time"
 
+	"github.com/avast/retry-go/v4"
 	"github.com/caarlos0/log"
 	"github.com/goreleaser/goreleaser/v2/internal/logext"
 	"github.com/goreleaser/goreleaser/v2/internal/tmpl"
@@ -154,11 +157,30 @@ func proxyBuild(ctx *context.Context, build *config.Build) error {
 	}
 
 	log.Debugf("tidying")
-	cmd := exec.CommandContext(ctx, ctx.Config.GoMod.GoBinary, "get", ctx.ModulePath+"@"+ctx.Git.CurrentTag)
-	cmd.Dir = dir
-	cmd.Env = append(ctx.Config.GoMod.Env, os.Environ()...)
-	if out, err := cmd.CombinedOutput(); err != nil {
-		return newDetailedErrProxy(err, string(out))
+	proxyCtx, cancel := stdctx.WithTimeout(ctx, 10*time.Minute)
+	defer cancel()
+	if err := retry.Do(
+		func() error {
+			cmd := exec.CommandContext(proxyCtx, ctx.Config.GoMod.GoBinary, "get", ctx.ModulePath+"@"+ctx.Git.CurrentTag)
+			cmd.Dir = dir
+			cmd.Env = append(ctx.Config.GoMod.Env, os.Environ()...)
+			if out, err := cmd.CombinedOutput(); err != nil {
+				return newDetailedErrProxy(err, string(out))
+			}
+			return nil
+		},
+		retry.Context(proxyCtx),
+		retry.RetryIf(isProxyRetriable),
+		retry.DelayType(retry.BackOffDelay),
+		retry.Delay(time.Second),
+		retry.MaxDelay(time.Minute),
+		retry.Attempts(0), // 0 means unlimited attempts; context timeout controls the deadline
+		retry.LastErrorOnly(true),
+		retry.OnRetry(func(n uint, err error) {
+			log.WithField("attempt", n+1).Warn("module not yet available in proxy, retrying")
+		}),
+	); err != nil {
+		return err
 	}
 
 	build.UnproxiedMain = build.Main
@@ -186,4 +208,9 @@ func copyGoSum(src, dst string) error {
 
 	_, err = io.Copy(w, r)
 	return err
+}
+
+func isProxyRetriable(err error) bool {
+	var e ErrProxy
+	return errors.As(err, &e) && strings.Contains(e.details, "404 Not Found")
 }
