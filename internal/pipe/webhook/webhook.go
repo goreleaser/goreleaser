@@ -3,6 +3,7 @@ package webhook
 
 import (
 	"crypto/tls"
+	"errors"
 	"fmt"
 	"io"
 	"net/http"
@@ -66,7 +67,7 @@ func (p Pipe) Announce(ctx *context.Context) error {
 		return err
 	}
 	if len(endpointURLConfig) == 0 {
-		return fmt.Errorf("no endpoint url")
+		return errors.New("no endpoint url")
 	}
 
 	if _, err := url.ParseRequestURI(endpointURLConfig); err != nil {

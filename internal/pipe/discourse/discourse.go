@@ -4,6 +4,7 @@ package discourse
 import (
 	"bytes"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"net/http"
 
@@ -59,12 +60,12 @@ func (p Pipe) Announce(ctx *context.Context) error {
 
 	// Make 'server' a required config field.
 	if ctx.Config.Announce.Discourse.Server == "" {
-		return fmt.Errorf("'server' is a required config key")
+		return errors.New("'server' is a required config key")
 	}
 
 	// Make 'category_id' a required config field.
 	if ctx.Config.Announce.Discourse.CategoryID == 0 {
-		return fmt.Errorf("'category_id' is a required config key")
+		return errors.New("'category_id' is a required config key")
 	}
 
 	cfg, err := env.ParseAs[Config]()
@@ -102,7 +103,7 @@ func (p Pipe) Announce(ctx *context.Context) error {
 	defer resp.Body.Close()
 
 	if resp.StatusCode < 200 || resp.StatusCode > 299 {
-		return fmt.Errorf("There was an error posting to Discourse. Check your config again. HTTP code: %d", resp.StatusCode)
+		return fmt.Errorf("error posting to Discourse, check your config again, HTTP code: %d", resp.StatusCode)
 	}
 
 	return nil
