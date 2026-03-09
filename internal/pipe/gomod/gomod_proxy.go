@@ -1,7 +1,6 @@
 package gomod
 
 import (
-	stdctx "context"
 	"errors"
 	"fmt"
 	"io"
@@ -157,11 +156,9 @@ func proxyBuild(ctx *context.Context, build *config.Build) error {
 	}
 
 	log.Debugf("tidying")
-	proxyCtx, cancel := stdctx.WithTimeout(ctx, 10*time.Minute)
-	defer cancel()
 	if err := retry.Do(
 		func() error {
-			cmd := exec.CommandContext(proxyCtx, ctx.Config.GoMod.GoBinary, "get", ctx.ModulePath+"@"+ctx.Git.CurrentTag)
+			cmd := exec.CommandContext(ctx, ctx.Config.GoMod.GoBinary, "get", ctx.ModulePath+"@"+ctx.Git.CurrentTag)
 			cmd.Dir = dir
 			cmd.Env = append(ctx.Config.GoMod.Env, os.Environ()...)
 			if out, err := cmd.CombinedOutput(); err != nil {
@@ -169,12 +166,14 @@ func proxyBuild(ctx *context.Context, build *config.Build) error {
 			}
 			return nil
 		},
-		retry.Context(proxyCtx),
+		retry.Context(ctx),
 		retry.RetryIf(isProxyRetriable),
 		retry.DelayType(retry.BackOffDelay),
 		retry.Delay(time.Second),
 		retry.MaxDelay(time.Minute),
-		retry.Attempts(0), // 0 means unlimited attempts; context timeout controls the deadline
+		// 15 attempts with exponential backoff (1s→2s→4s→8s→16s→32s→60s×8)
+		// gives ~9 minutes of total wait time.
+		retry.Attempts(15),
 		retry.LastErrorOnly(true),
 		retry.OnRetry(func(n uint, err error) {
 			log.WithField("attempt", n+1).Warn("module not yet available in proxy, retrying")
