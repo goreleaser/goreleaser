@@ -6,6 +6,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+	"strconv"
 
 	"github.com/caarlos0/env/v11"
 	"github.com/caarlos0/log"
@@ -112,6 +113,19 @@ func getMessageDetails(ctx *context.Context) (map[string]any, error) {
 		return nil, fmt.Errorf("telegram: %w", err)
 	}
 	m["chat_id"] = chatID
+
+	messageThreadIDStr, err := tmpl.New(ctx).Apply(ctx.Config.Announce.Telegram.MessageThreadID)
+	if err != nil {
+		return nil, err
+	}
+
+	if messageThreadIDStr != "" {
+		messageThreadID, err := strconv.ParseInt(messageThreadIDStr, 10, 64)
+		if err != nil {
+			return nil, err
+		}
+		m["message_thread_id"] = messageThreadID
+	}
 
 	return m, nil
 }
