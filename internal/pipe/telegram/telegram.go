@@ -77,11 +77,11 @@ func (Pipe) Announce(ctx *context.Context) error {
 	if err != nil {
 		return fmt.Errorf("telegram: %w", err)
 	}
+	defer resp.Body.Close()
 
 	if resp.StatusCode != http.StatusOK {
 		return fmt.Errorf("telegram: status code %d", resp.StatusCode)
 	}
-	defer resp.Body.Close()
 
 	var telegramResponse SendMessageResponse
 	if err := json.NewDecoder(resp.Body).Decode(&telegramResponse); err != nil {
