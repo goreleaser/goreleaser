@@ -78,6 +78,18 @@ task docker:setup
 
 Make sure to enable "Developer Mode" in Settings.
 
+## Writing pipes
+
+Pipes should follow these conventions for consistent error output:
+
+- **Do not prefix error messages with the pipe name.** Error wrapping with
+  the pipe name is done at the meta-pipe level (`publish`, `announce`,
+  `defaults`), so individual pipes should only describe the problem itself
+  (e.g., `"no archives found"` instead of `"archive: no archives found"`).
+- **Use the pipe's `String()` method for context.** Meta-pipes wrap errors
+  using `fmt.Errorf("%s: %w", pipe.String(), err)`, which provides
+  consistent, non-redundant context.
+
 ## Creating a commit
 
 Commit messages should be well formatted, and to make that "standardized", we

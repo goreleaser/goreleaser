@@ -5902,10 +5902,23 @@
 							"HTML"
 						],
 						"default": "MarkdownV2"
+					},
+					"message_thread_id": {
+						"oneOf": [
+							{
+								"type": "string"
+							},
+							{
+								"type": "integer"
+							}
+						]
 					}
 				},
 				"additionalProperties": false,
-				"type": "object"
+				"type": "object",
+				"required": [
+					"message_thread_id"
+				]
 			},
 			"TemplateFile": {
 				"properties": {
