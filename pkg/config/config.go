@@ -1390,7 +1390,7 @@ type Telegram struct {
 	ParseMode       string `yaml:"parse_mode,omitempty" json:"parse_mode,omitempty" jsonschema:"enum=MarkdownV2,enum=HTML,default=MarkdownV2"`
 
 	// v2.15+
-	MessageThreadID string `yaml:"message_thread_id" json:"message_thread_id" jsonschema:"oneof_type=string;integer"`
+	MessageThreadID string `yaml:"message_thread_id,omitempty" json:"message_thread_id,omitempty" jsonschema:"oneof_type=string;integer"`
 }
 
 type OpenCollective struct {
