@@ -59,6 +59,20 @@ func TestAnnounceInvalidTemplate(t *testing.T) {
 
 		testlib.RequireTemplateError(t, Pipe{}.Announce(ctx))
 	})
+
+	t.Run("message thread id not int", func(t *testing.T) {
+		ctx := testctx.WrapWithCfg(t.Context(), config.Project{
+			Env: []string{"MESSAGE_THREAD_ID=test"},
+			Announce: config.Announce{
+				Telegram: config.Telegram{
+					MessageTemplate: "test",
+					ChatID:          "10",
+					MessageThreadID: "{{ .Env.MESSAGE_THREAD_ID }}",
+				},
+			},
+		})
+		require.EqualError(t, Pipe{}.Announce(ctx), "strconv.ParseInt: parsing \"test\": invalid syntax")
+	})
 }
 
 func TestAnnounceMissingEnv(t *testing.T) {

@@ -27,6 +27,11 @@ announce:
     # Templates: allowed.
     chat_id: "@goreleasernews"
 
+    # Specific thread ID to reply to.
+    #
+    # <!-- md:inline_version v2.15-unreleased -->.
+    message_thread_id: 1234
+
     # Message template to use while publishing.
     #
     # Default: '{{ print .ProjectName " " .Tag " is out! Check it out at " .ReleaseURL | mdv2escape }}'.
