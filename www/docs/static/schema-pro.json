@@ -5915,10 +5915,7 @@
 					}
 				},
 				"additionalProperties": false,
-				"type": "object",
-				"required": [
-					"message_thread_id"
-				]
+				"type": "object"
 			},
 			"TemplateFile": {
 				"properties": {
