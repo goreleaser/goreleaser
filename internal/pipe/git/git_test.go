@@ -10,6 +10,7 @@ import (
 	"github.com/goreleaser/goreleaser/v2/internal/testctx"
 	"github.com/goreleaser/goreleaser/v2/internal/testlib"
 	"github.com/goreleaser/goreleaser/v2/pkg/config"
+	"github.com/goreleaser/goreleaser/v2/pkg/context"
 	"github.com/stretchr/testify/require"
 )
 
@@ -409,5 +410,126 @@ func TestFilterTags(t *testing.T) {
 		})
 
 		testlib.RequireTemplateError(t, Pipe{}.Run(ctx))
+	})
+}
+
+func TestSemverOnGitPipe(t *testing.T) {
+	testlib.Mktmp(t)
+	testlib.GitInit(t)
+	testlib.GitRemoteAdd(t, "git@github.com:foo/bar.git")
+	testlib.GitCommit(t, "commit1")
+	testlib.GitTag(t, "v1.2.3")
+	ctx := testctx.Wrap(t.Context())
+	require.NoError(t, Pipe{}.Run(ctx))
+	require.Equal(t, context.Semver{
+		Major:      1,
+		Minor:      2,
+		Patch:      3,
+		Prerelease: "",
+	}, ctx.Semver)
+}
+
+func TestSemverOnGitPipePrerelease(t *testing.T) {
+	testlib.Mktmp(t)
+	testlib.GitInit(t)
+	testlib.GitRemoteAdd(t, "git@github.com:foo/bar.git")
+	testlib.GitCommit(t, "commit1")
+	testlib.GitTag(t, "v1.2.3-rc1")
+	ctx := testctx.Wrap(t.Context())
+	require.NoError(t, Pipe{}.Run(ctx))
+	require.Equal(t, context.Semver{
+		Major:      1,
+		Minor:      2,
+		Patch:      3,
+		Prerelease: "rc1",
+	}, ctx.Semver)
+}
+
+func TestSemverOnGitPipeInvalidSemver(t *testing.T) {
+	testlib.Mktmp(t)
+	testlib.GitInit(t)
+	testlib.GitRemoteAdd(t, "git@github.com:foo/bar.git")
+	testlib.GitCommit(t, "commit1")
+	testlib.GitTag(t, "not-a-semver")
+	ctx := testctx.Wrap(t.Context())
+	require.ErrorContains(t, Pipe{}.Run(ctx), "failed to parse tag")
+}
+
+func TestSemverOnGitPipeInvalidSemverSkipValidate(t *testing.T) {
+	testlib.Mktmp(t)
+	testlib.GitInit(t)
+	testlib.GitRemoteAdd(t, "git@github.com:foo/bar.git")
+	testlib.GitCommit(t, "commit1")
+	testlib.GitTag(t, "not-a-semver")
+	ctx := testctx.Wrap(t.Context(), testctx.Skip(skips.Validate))
+	testlib.AssertSkipped(t, Pipe{}.Run(ctx))
+	require.Equal(t, context.Semver{}, ctx.Semver)
+}
+
+func TestPreviousTagPrerelease(t *testing.T) {
+	t.Run("prerelease tag prefers prerelease previous", func(t *testing.T) {
+		testlib.Mktmp(t)
+		testlib.GitInit(t)
+		testlib.GitRemoteAdd(t, "git@github.com:foo/bar.git")
+		testlib.GitCommit(t, "commit1")
+		testlib.GitTag(t, "v1.0.0")
+		testlib.GitCommit(t, "commit2")
+		testlib.GitTag(t, "v1.1.0-rc1")
+		testlib.GitCommit(t, "commit3")
+		testlib.GitTag(t, "v1.1.0-rc2")
+		ctx := testctx.Wrap(t.Context())
+		require.NoError(t, Pipe{}.Run(ctx))
+		require.Equal(t, "v1.1.0-rc2", ctx.Git.CurrentTag)
+		require.Equal(t, "v1.1.0-rc1", ctx.Git.PreviousTag)
+		require.Equal(t, "rc2", ctx.Semver.Prerelease)
+	})
+
+	t.Run("stable tag skips prerelease previous", func(t *testing.T) {
+		testlib.Mktmp(t)
+		testlib.GitInit(t)
+		testlib.GitRemoteAdd(t, "git@github.com:foo/bar.git")
+		testlib.GitCommit(t, "commit1")
+		testlib.GitTag(t, "v1.0.0")
+		testlib.GitCommit(t, "commit2")
+		testlib.GitTag(t, "v1.1.0-rc1")
+		testlib.GitCommit(t, "commit3")
+		testlib.GitTag(t, "v1.1.0-rc2")
+		testlib.GitCommit(t, "commit4")
+		testlib.GitTag(t, "v1.1.0")
+		ctx := testctx.Wrap(t.Context())
+		require.NoError(t, Pipe{}.Run(ctx))
+		require.Equal(t, "v1.1.0", ctx.Git.CurrentTag)
+		require.Equal(t, "v1.0.0", ctx.Git.PreviousTag)
+		require.Empty(t, ctx.Semver.Prerelease)
+	})
+
+	t.Run("stable tag with only prerelease history", func(t *testing.T) {
+		testlib.Mktmp(t)
+		testlib.GitInit(t)
+		testlib.GitRemoteAdd(t, "git@github.com:foo/bar.git")
+		testlib.GitCommit(t, "commit1")
+		testlib.GitTag(t, "v1.0.0-rc1")
+		testlib.GitCommit(t, "commit2")
+		testlib.GitTag(t, "v1.0.0")
+		ctx := testctx.Wrap(t.Context())
+		require.NoError(t, Pipe{}.Run(ctx))
+		require.Equal(t, "v1.0.0", ctx.Git.CurrentTag)
+		require.Empty(t, ctx.Git.PreviousTag)
+		require.Empty(t, ctx.Semver.Prerelease)
+	})
+
+	t.Run("first prerelease has no prerelease previous", func(t *testing.T) {
+		testlib.Mktmp(t)
+		testlib.GitInit(t)
+		testlib.GitRemoteAdd(t, "git@github.com:foo/bar.git")
+		testlib.GitCommit(t, "commit1")
+		testlib.GitTag(t, "v1.0.0")
+		testlib.GitCommit(t, "commit2")
+		testlib.GitTag(t, "v1.1.0-rc1")
+		ctx := testctx.Wrap(t.Context())
+		require.NoError(t, Pipe{}.Run(ctx))
+		require.Equal(t, "v1.1.0-rc1", ctx.Git.CurrentTag)
+		require.Equal(t, "v1.0.0", ctx.Git.PreviousTag)
+		require.Equal(t, "rc1", ctx.Semver.Prerelease)
 	})
 }
