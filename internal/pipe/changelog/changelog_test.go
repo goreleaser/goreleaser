@@ -746,6 +746,18 @@ func TestGetChangeloger(t *testing.T) {
 		require.IsType(t, &scmChangeloger{}, c)
 	})
 
+	t.Run(useGitLab+" no previous", func(t *testing.T) {
+		ctx := testctx.WrapWithCfg(t.Context(), config.Project{
+			Changelog: config.Changelog{
+				Use: useGitLab,
+			},
+		}, testctx.GitLabTokenType)
+
+		c, err := getChangeloger(ctx)
+		require.NoError(t, err)
+		require.IsType(t, gitChangeloger{}, c)
+	})
+
 	t.Run(useGitHub+"-invalid-repo", func(t *testing.T) {
 		testlib.Mktmp(t)
 		testlib.GitInit(t)
@@ -782,6 +794,18 @@ func TestGetChangeloger(t *testing.T) {
 		c, err := getChangeloger(ctx)
 		require.NoError(t, err)
 		require.IsType(t, &scmChangeloger{}, c)
+	})
+
+	t.Run(useGitea+" no previous", func(t *testing.T) {
+		ctx := testctx.WrapWithCfg(t.Context(), config.Project{
+			Changelog: config.Changelog{
+				Use: useGitea,
+			},
+		}, testctx.GiteaTokenType)
+
+		c, err := getChangeloger(ctx)
+		require.NoError(t, err)
+		require.IsType(t, gitChangeloger{}, c)
 	})
 
 	t.Run("invalid", func(t *testing.T) {
