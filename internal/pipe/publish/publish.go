@@ -96,7 +96,7 @@ func (p Pipe) Run(ctx *context.Context) error {
 				memo.Memorize(fmt.Errorf("%s: %w", publisher.String(), err))
 				continue
 			}
-			return fmt.Errorf("%s: %w", publisher.String(), err)
+			return fmt.Errorf("%s: failed to publish artifacts: %w", publisher.String(), err)
 		}
 	}
 	return memo.Error()

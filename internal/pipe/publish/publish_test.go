@@ -69,7 +69,7 @@ func TestPublishError(t *testing.T) {
 		},
 	}.Run(ctx)
 	require.Error(t, err)
-	require.EqualError(t, err, "test: errored")
+	require.EqualError(t, err, "test: failed to publish artifacts: errored")
 	require.False(t, lastStep.ran)
 }
 
