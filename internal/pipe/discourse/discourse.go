@@ -4,6 +4,7 @@ package discourse
 import (
 	"bytes"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"net/http"
 
@@ -49,27 +50,27 @@ func (Pipe) Default(ctx *context.Context) error {
 func (p Pipe) Announce(ctx *context.Context) error {
 	title, err := tmpl.New(ctx).Apply(ctx.Config.Announce.Discourse.TitleTemplate)
 	if err != nil {
-		return fmt.Errorf("%s: %w", p, err)
+		return err
 	}
 
 	msg, err := tmpl.New(ctx).Apply(ctx.Config.Announce.Discourse.MessageTemplate)
 	if err != nil {
-		return fmt.Errorf("%s: %w", p, err)
+		return err
 	}
 
 	// Make 'server' a required config field.
 	if ctx.Config.Announce.Discourse.Server == "" {
-		return fmt.Errorf("%s: 'server' is a required config key", p)
+		return errors.New("'server' is a required config key")
 	}
 
 	// Make 'category_id' a required config field.
 	if ctx.Config.Announce.Discourse.CategoryID == 0 {
-		return fmt.Errorf("%s: 'category_id' is a required config key", p)
+		return errors.New("'category_id' is a required config key")
 	}
 
 	cfg, err := env.ParseAs[Config]()
 	if err != nil {
-		return fmt.Errorf("%s: %w", p, err)
+		return err
 	}
 
 	pr := &postsRequest{
@@ -82,12 +83,12 @@ func (p Pipe) Announce(ctx *context.Context) error {
 
 	payload, err := json.Marshal(pr)
 	if err != nil {
-		return fmt.Errorf("%s: %w", p, err)
+		return err
 	}
 
 	req, err := http.NewRequestWithContext(ctx, http.MethodPost, endpoint, bytes.NewReader(payload))
 	if err != nil {
-		return fmt.Errorf("%s: %w", p, err)
+		return err
 	}
 
 	req.Header.Set("Content-Type", "application/json")
@@ -97,12 +98,12 @@ func (p Pipe) Announce(ctx *context.Context) error {
 
 	resp, err := http.DefaultClient.Do(req)
 	if err != nil {
-		return fmt.Errorf("%s: %w", p, err)
+		return err
 	}
 	defer resp.Body.Close()
 
 	if resp.StatusCode < 200 || resp.StatusCode > 299 {
-		return fmt.Errorf("%s: There was an error posting to Discourse. Check your config again. HTTP code: %d", p, resp.StatusCode)
+		return fmt.Errorf("error posting to Discourse, check your config again, HTTP code: %d", resp.StatusCode)
 	}
 
 	return nil

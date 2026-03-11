@@ -58,38 +58,38 @@ func (Pipe) Announce(ctx *context.Context) error {
 
 	cfg, err := env.ParseAs[Config]()
 	if err != nil {
-		return fmt.Errorf("telegram: %w", err)
+		return err
 	}
 
 	var b bytes.Buffer
 	if err := json.NewEncoder(&b).Encode(args); err != nil {
-		return fmt.Errorf("telegram: %w", err)
+		return err
 	}
 
 	request, err := http.NewRequestWithContext(ctx, http.MethodPost, fmt.Sprintf("https://api.telegram.org/bot%s/sendMessage", cfg.ConsumerToken), &b)
 	if err != nil {
-		return fmt.Errorf("telegram: %w", err)
+		return err
 	}
 	request.Header.Set("Content-Type", "application/json")
 
 	log.Infof("posting: '%s'", args["text"])
 	resp, err := http.DefaultClient.Do(request)
 	if err != nil {
-		return fmt.Errorf("telegram: %w", err)
+		return err
 	}
 	defer resp.Body.Close()
 
 	if resp.StatusCode != http.StatusOK {
-		return fmt.Errorf("telegram: status code %d", resp.StatusCode)
+		return fmt.Errorf("status code %d", resp.StatusCode)
 	}
 
 	var telegramResponse SendMessageResponse
 	if err := json.NewDecoder(resp.Body).Decode(&telegramResponse); err != nil {
-		return fmt.Errorf("telegram: %w", err)
+		return err
 	}
 
 	if !telegramResponse.Ok {
-		return fmt.Errorf("telegram: send failed with error code %d: %s", telegramResponse.ErrorCode, telegramResponse.Description)
+		return fmt.Errorf("send failed with error code %d: %s", telegramResponse.ErrorCode, telegramResponse.Description)
 	}
 
 	log.Debug("message sent")
@@ -103,13 +103,13 @@ func getMessageDetails(ctx *context.Context) (map[string]any, error) {
 	}
 	msg, err := tmpl.New(ctx).Apply(ctx.Config.Announce.Telegram.MessageTemplate)
 	if err != nil {
-		return nil, fmt.Errorf("telegram: %w", err)
+		return nil, err
 	}
 	m["text"] = msg
 
 	chatID, err := tmpl.New(ctx).Apply(ctx.Config.Announce.Telegram.ChatID)
 	if err != nil {
-		return nil, fmt.Errorf("telegram: %w", err)
+		return nil, err
 	}
 	m["chat_id"] = chatID
 

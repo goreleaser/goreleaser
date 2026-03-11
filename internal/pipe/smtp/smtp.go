@@ -49,12 +49,12 @@ func (Pipe) Default(ctx *context.Context) error {
 func (p Pipe) Announce(ctx *context.Context) error {
 	subject, err := tmpl.New(ctx).Apply(ctx.Config.Announce.SMTP.SubjectTemplate)
 	if err != nil {
-		return fmt.Errorf("%s: %w", p, err)
+		return err
 	}
 
 	body, err := tmpl.New(ctx).Apply(ctx.Config.Announce.SMTP.BodyTemplate)
 	if err != nil {
-		return fmt.Errorf("%s: %w", p, err)
+		return err
 	}
 
 	m := gomail.NewMessage()
@@ -86,7 +86,7 @@ func (p Pipe) Announce(ctx *context.Context) error {
 
 	// Now send E-Mail
 	if err := d.DialAndSend(m); err != nil {
-		return fmt.Errorf("%s: %w", p, err)
+		return err
 	}
 
 	log.Infof("The mail has been send from %s to %s\n", ctx.Config.Announce.SMTP.From, receivers)

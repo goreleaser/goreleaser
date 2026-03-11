@@ -52,12 +52,12 @@ func (Pipe) Default(ctx *context.Context) error {
 func (p Pipe) Announce(ctx *context.Context) error {
 	msg, err := tmpl.New(ctx).Apply(ctx.Config.Announce.Bluesky.MessageTemplate)
 	if err != nil {
-		return fmt.Errorf("%s: %w", p, err)
+		return err
 	}
 
 	var cfg Config
 	if err = env.Parse(&cfg); err != nil {
-		return fmt.Errorf("%s: %w", p, err)
+		return err
 	}
 
 	post := bsky.FeedPost{

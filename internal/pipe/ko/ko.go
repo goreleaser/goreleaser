@@ -544,11 +544,11 @@ func copyImage(src, dst string) (string, error) {
 		WithField("dst", dst).
 		Info("copying manifest")
 	if err := crane.Copy(src, dst, crane.WithAuthFromKeychain(keychain)); err != nil {
-		return "", fmt.Errorf("ko: could not copy %q to %q: %w", src, dst, err)
+		return "", fmt.Errorf("could not copy %q to %q: %w", src, dst, err)
 	}
 	digest, err := crane.Digest(dst, crane.WithAuthFromKeychain(keychain))
 	if err != nil {
-		return "", fmt.Errorf("ko: could not get digest of %q: %w", dst, err)
+		return "", fmt.Errorf("could not get digest of %q: %w", dst, err)
 	}
 	return digest, nil
 }

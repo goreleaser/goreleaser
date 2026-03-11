@@ -2,8 +2,6 @@
 package mastodon
 
 import (
-	"fmt"
-
 	"github.com/caarlos0/env/v11"
 	"github.com/caarlos0/log"
 	"github.com/goreleaser/goreleaser/v2/internal/tmpl"
@@ -38,12 +36,12 @@ func (Pipe) Default(ctx *context.Context) error {
 func (p Pipe) Announce(ctx *context.Context) error {
 	msg, err := tmpl.New(ctx).Apply(ctx.Config.Announce.Mastodon.MessageTemplate)
 	if err != nil {
-		return fmt.Errorf("%s: %w", p, err)
+		return err
 	}
 
 	cfg, err := env.ParseAs[Config]()
 	if err != nil {
-		return fmt.Errorf("%s: %w", p, err)
+		return err
 	}
 
 	client := mastodon.NewClient(&mastodon.Config{
@@ -57,7 +55,7 @@ func (p Pipe) Announce(ctx *context.Context) error {
 	if _, err := client.PostStatus(ctx, &mastodon.Toot{
 		Status: msg,
 	}); err != nil {
-		return fmt.Errorf("%s: %w", p, err)
+		return err
 	}
 	return nil
 }

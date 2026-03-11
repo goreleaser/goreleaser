@@ -36,7 +36,7 @@ func (Pipe) Run(ctx *context.Context) error {
 	}
 	for _, defaulter := range defaults.Defaulters {
 		if err := errhandler.Handle(defaulter.Default)(ctx); err != nil {
-			return err
+			return fmt.Errorf("%s: %w", defaulter.String(), err)
 		}
 	}
 	return nil

@@ -41,7 +41,7 @@ func TestAnnounceMissingEnv(t *testing.T) {
 	})
 
 	require.NoError(t, Pipe{}.Default(ctx))
-	require.EqualError(t, Pipe{}.Announce(ctx), `opencollective: env: environment variable "OPENCOLLECTIVE_TOKEN" should not be empty`)
+	require.EqualError(t, Pipe{}.Announce(ctx), `env: environment variable "OPENCOLLECTIVE_TOKEN" should not be empty`)
 }
 
 func TestSkip(t *testing.T) {

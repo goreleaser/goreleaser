@@ -43,12 +43,12 @@ func (Pipe) Default(ctx *context.Context) error {
 func (p Pipe) Announce(ctx *context.Context) error {
 	msg, err := tmpl.New(ctx).Apply(ctx.Config.Announce.Slack.MessageTemplate)
 	if err != nil {
-		return fmt.Errorf("%s: %w", p, err)
+		return err
 	}
 
 	cfg, err := env.ParseAs[Config]()
 	if err != nil {
-		return fmt.Errorf("%s: %w", p, err)
+		return err
 	}
 
 	log.Infof("posting: '%s'", msg)
@@ -71,12 +71,7 @@ func (p Pipe) Announce(ctx *context.Context) error {
 		Attachments: attachments,
 	}
 
-	err = slack.PostWebhook(cfg.Webhook, wm)
-	if err != nil {
-		return fmt.Errorf("%s: %w", p, err)
-	}
-
-	return nil
+	return slack.PostWebhook(cfg.Webhook, wm)
 }
 
 func parseAdvancedFormatting(ctx *context.Context) (*slack.Blocks, []slack.Attachment, error) {

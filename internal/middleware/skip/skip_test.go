@@ -41,7 +41,7 @@ func TestSkipErr(t *testing.T) {
 		require.EqualError(t, Maybe(
 			errSkipper{false, fmt.Errorf("skip err")},
 			action,
-		)(nil), "skip blah: skip err")
+		)(nil), "skip: skip err")
 	})
 }
 
