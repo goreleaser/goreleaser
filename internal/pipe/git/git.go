@@ -314,7 +314,9 @@ func getTag(ctx *context.Context, excluding []string) (string, error) {
 
 func getPreviousTag(ctx *context.Context, current string, excluding []string, currentIsPrerelease bool) (string, error) {
 	if envTag := os.Getenv("GORELEASER_PREVIOUS_TAG"); envTag != "" {
-		return envTag, nil
+		if tag := filterOut([]string{envTag}, excluding); tag != "" {
+			return tag, nil
+		}
 	}
 
 	var fallback string

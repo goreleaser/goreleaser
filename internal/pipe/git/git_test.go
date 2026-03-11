@@ -318,6 +318,29 @@ func TestTagFromCI(t *testing.T) {
 	}
 }
 
+func TestEnvTagsIgnored(t *testing.T) {
+	testlib.Mktmp(t)
+	testlib.GitInit(t)
+	testlib.GitRemoteAdd(t, "git@github.com:foo/bar.git")
+	testlib.GitCommit(t, "commit1")
+	testlib.GitTag(t, "v0.0.1")
+	testlib.GitCommit(t, "commit2")
+	testlib.GitTag(t, "v0.0.2")
+	testlib.GitTag(t, "v0.0.3")
+
+	t.Setenv("GORELEASER_CURRENT_TAG", "v0.0.2")
+	t.Setenv("GORELEASER_PREVIOUS_TAG", "v0.0.2")
+
+	ctx := testctx.WrapWithCfg(t.Context(), config.Project{
+		Git: config.Git{
+			IgnoreTags: []string{"v0.0.2"},
+		},
+	})
+	require.NoError(t, Pipe{}.Run(ctx))
+	require.Equal(t, "v0.0.3", ctx.Git.CurrentTag)
+	require.Equal(t, "v0.0.1", ctx.Git.PreviousTag)
+}
+
 func TestNoPreviousTag(t *testing.T) {
 	testlib.Mktmp(t)
 	testlib.GitInit(t)
