@@ -84,12 +84,7 @@ func (p Pipe) Announce(ctx *context.Context) error {
 		},
 	}
 
-	err = postWebhook(ctx, cfg.Webhook, wm)
-	if err != nil {
-		return err
-	}
-
-	return nil
+	return postWebhook(ctx, cfg.Webhook, wm)
 }
 
 func postWebhook(ctx *context.Context, url string, msg *incomingWebhookRequest) error {

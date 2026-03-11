@@ -71,12 +71,7 @@ func (p Pipe) Announce(ctx *context.Context) error {
 		Attachments: attachments,
 	}
 
-	err = slack.PostWebhook(cfg.Webhook, wm)
-	if err != nil {
-		return err
-	}
-
-	return nil
+	return slack.PostWebhook(cfg.Webhook, wm)
 }
 
 func parseAdvancedFormatting(ctx *context.Context) (*slack.Blocks, []slack.Attachment, error) {

@@ -77,9 +77,5 @@ func (p Pipe) Announce(ctx *context.Context) error {
 	if err != nil {
 		return err
 	}
-	err = client.Send(cfg.Webhook, msgCard)
-	if err != nil {
-		return err
-	}
-	return nil
+	return client.Send(cfg.Webhook, msgCard)
 }
