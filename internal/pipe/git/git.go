@@ -166,7 +166,12 @@ func getGitInfo(ctx *context.Context) (context.GitInfo, error) {
 		return context.GitInfo{}, fmt.Errorf("couldn't get tag content body: %w", err)
 	}
 
-	previous, err := getPreviousTag(ctx, tag, excluding)
+	isPrerelease := isTagPrerelease(tag)
+	if !isPrerelease {
+		log.Debug("current tag is not a prerelease, excluding prerelease tags from previous tag search")
+	}
+
+	previous, err := getPreviousTag(ctx, tag, excluding, isPrerelease)
 	if err != nil {
 		// shouldn't error, will only affect templates and changelog
 		log.Warnf("couldn't find any tags before %q", tag)
@@ -307,27 +312,29 @@ func getTag(ctx *context.Context, excluding []string) (string, error) {
 	return "", nil
 }
 
-func getPreviousTag(ctx *context.Context, current string, excluding []string) (string, error) {
-	for _, fn := range []func() ([]string, error){
-		getFromEnv("GORELEASER_PREVIOUS_TAG"),
-		func() ([]string, error) {
-			sha, err := previousTagSha(ctx, current, excluding)
-			if err != nil {
-				return nil, err
-			}
-			return gitTagsPointingAt(ctx, sha)
-		},
-	} {
-		tags, err := fn()
+func getPreviousTag(ctx *context.Context, current string, excluding []string, currentIsPrerelease bool) (string, error) {
+	if envTag := os.Getenv("GORELEASER_PREVIOUS_TAG"); envTag != "" {
+		return envTag, nil
+	}
+
+	for found := current; ; {
+		sha, err := previousTagSha(ctx, found, excluding)
 		if err != nil {
 			return "", err
 		}
-		if tag := filterOut(tags, excluding); tag != "" {
-			return tag, nil
+		tags, err := gitTagsPointingAt(ctx, sha)
+		if err != nil {
+			return "", err
 		}
+		found = filterOut(tags, excluding)
+		if found == "" {
+			return "", nil
+		}
+		if currentIsPrerelease || !isTagPrerelease(found) {
+			return found, nil
+		}
+		log.Debugf("skipping prerelease tag %q", found)
 	}
-
-	return "", nil
 }
 
 func gitTagsPointingAt(ctx *context.Context, ref string) ([]string, error) {
@@ -396,4 +403,12 @@ func filterOut(tags []string, exclude []string) string {
 		}
 	}
 	return ""
+}
+
+func isTagPrerelease(tag string) bool {
+	sv, err := semver.NewVersion(tag)
+	if err != nil {
+		return false
+	}
+	return sv.Prerelease() != ""
 }
