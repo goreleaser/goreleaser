@@ -10,6 +10,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/Masterminds/semver/v3"
 	"github.com/caarlos0/log"
 	"github.com/goreleaser/goreleaser/v2/internal/git"
 	"github.com/goreleaser/goreleaser/v2/internal/pipe"
@@ -51,6 +52,9 @@ func (Pipe) Run(ctx *context.Context) error {
 		WithField("dirty", info.Dirty).
 		Info("git state")
 	ctx.Version = strings.TrimPrefix(ctx.Git.CurrentTag, "v")
+	if err := parseSemver(ctx); err != nil {
+		return err
+	}
 	return validate(ctx)
 }
 
@@ -184,6 +188,26 @@ func getGitInfo(ctx *context.Context) (context.GitInfo, error) {
 		TagBody:     body,
 		Dirty:       CheckDirty(ctx) != nil,
 	}, nil
+}
+
+func parseSemver(ctx *context.Context) error {
+	sv, err := semver.NewVersion(ctx.Git.CurrentTag)
+	if err != nil {
+		if skips.Any(ctx, skips.Validate) {
+			log.WithError(err).
+				WithField("tag", ctx.Git.CurrentTag).
+				Warn("current tag is not semver")
+			return pipe.ErrSkipValidateEnabled
+		}
+		return fmt.Errorf("failed to parse tag '%s' as semver: %w", ctx.Git.CurrentTag, err)
+	}
+	ctx.Semver = context.Semver{
+		Major:      sv.Major(),
+		Minor:      sv.Minor(),
+		Patch:      sv.Patch(),
+		Prerelease: sv.Prerelease(),
+	}
+	return nil
 }
 
 func validate(ctx *context.Context) error {

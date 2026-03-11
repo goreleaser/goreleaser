@@ -36,7 +36,6 @@ import (
 	"github.com/goreleaser/goreleaser/v2/internal/pipe/reportsizes"
 	"github.com/goreleaser/goreleaser/v2/internal/pipe/sbom"
 	"github.com/goreleaser/goreleaser/v2/internal/pipe/scoop"
-	"github.com/goreleaser/goreleaser/v2/internal/pipe/semver"
 	"github.com/goreleaser/goreleaser/v2/internal/pipe/sign"
 	"github.com/goreleaser/goreleaser/v2/internal/pipe/snapcraft"
 	"github.com/goreleaser/goreleaser/v2/internal/pipe/snapshot"
@@ -65,8 +64,6 @@ var BuildPipeline = []Piper{
 	env.Pipe{},
 	// get and validate git repo state
 	git.Pipe{},
-	// parse current tag to a semver
-	semver.Pipe{},
 	// load default configs
 	defaults.Pipe{},
 	// setup things for partial builds/releases

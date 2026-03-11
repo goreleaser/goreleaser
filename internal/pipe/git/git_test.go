@@ -59,12 +59,12 @@ func TestBranch(t *testing.T) {
 	testlib.GitInit(t)
 	testlib.GitRemoteAdd(t, "git@github.com:foo/bar.git")
 	testlib.GitCommit(t, "test-branch-commit")
-	testlib.GitTag(t, "test-branch-tag")
+	testlib.GitTag(t, "v1.0.0")
 	testlib.GitCheckoutBranch(t, "test-branch")
 	ctx := testctx.Wrap(t.Context())
 	require.NoError(t, Pipe{}.Run(ctx))
 	require.Equal(t, "test-branch", ctx.Git.Branch)
-	require.Equal(t, "test-branch-tag", ctx.Git.Summary)
+	require.Equal(t, "v1.0.0", ctx.Git.Summary)
 }
 
 func TestNoRemote(t *testing.T) {
