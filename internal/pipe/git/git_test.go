@@ -514,7 +514,7 @@ func TestPreviousTagPrerelease(t *testing.T) {
 		ctx := testctx.Wrap(t.Context())
 		require.NoError(t, Pipe{}.Run(ctx))
 		require.Equal(t, "v1.0.0", ctx.Git.CurrentTag)
-		require.Empty(t, ctx.Git.PreviousTag)
+		require.Equal(t, "v1.0.0-rc1", ctx.Git.PreviousTag)
 		require.Empty(t, ctx.Semver.Prerelease)
 	})
 

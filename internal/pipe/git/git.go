@@ -317,23 +317,27 @@ func getPreviousTag(ctx *context.Context, current string, excluding []string, cu
 		return envTag, nil
 	}
 
+	var fallback string
 	for found := current; ; {
 		sha, err := previousTagSha(ctx, found, excluding)
 		if err != nil {
-			return "", err
+			return fallback, nil
 		}
 		tags, err := gitTagsPointingAt(ctx, sha)
 		if err != nil {
-			return "", err
+			return fallback, nil
 		}
 		found = filterOut(tags, excluding)
 		if found == "" {
-			return "", nil
+			return fallback, nil
 		}
-		if currentIsPrerelease || !isTagPrerelease(found) {
+		if isTagPrerelease(found) == currentIsPrerelease {
 			return found, nil
 		}
-		log.Debugf("skipping prerelease tag %q", found)
+		if fallback == "" {
+			fallback = found
+			log.Debugf("found possible previous tag %q, but looking for a better match", found)
+		}
 	}
 }
 
