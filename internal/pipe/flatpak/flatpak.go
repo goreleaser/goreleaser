@@ -12,7 +12,6 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
-	"slices"
 	"strings"
 
 	"github.com/caarlos0/log"
@@ -211,22 +210,24 @@ func create(ctx *context.Context, fp config.Flatpak, arch string, binaries []*ar
 	}
 
 	log.Info("building flatpak")
-	if err := runFlatpakBuilder(ctx, workDir, "build", "repo", manifestName, arch); err != nil {
+	if err := runCmd(ctx, workDir, "failed to build flatpak", "flatpak-builder",
+		"--force-clean", "--arch="+arch, "--repo=repo", "build", manifestName,
+	); err != nil {
 		return err
 	}
 
 	flatpakName := folder + ".flatpak"
 	log.WithField("flatpak", flatpakName).Info("creating flatpak bundle")
-	if err := runFlatpakBuildBundle(ctx, workDir, "repo", flatpakName, fp.AppID, ctx.Version, arch); err != nil {
+	if err := runCmd(ctx, workDir, "failed to create flatpak bundle", "flatpak",
+		"build-bundle", "--arch="+arch, "repo", flatpakName, fp.AppID, ctx.Version,
+	); err != nil {
 		return err
 	}
 
-	flatpakFile := filepath.Join(workDir, flatpakName)
-
 	ctx.Artifacts.Add(&artifact.Artifact{
 		Type:      artifact.Flatpak,
-		Name:      folder + ".flatpak",
-		Path:      flatpakFile,
+		Name:      flatpakName,
+		Path:      filepath.Join(workDir, flatpakName),
 		Goos:      binaries[0].Goos,
 		Goarch:    binaries[0].Goarch,
 		Goamd64:   binaries[0].Goamd64,
@@ -245,16 +246,9 @@ func create(ctx *context.Context, fp config.Flatpak, arch string, binaries []*ar
 	return nil
 }
 
-func runFlatpakBuilder(ctx *context.Context, workDir, buildDir, repoDir, manifest, arch string) error {
-	args := []string{
-		"--force-clean",
-		"--arch=" + arch,
-		"--repo=" + repoDir,
-		buildDir,
-		manifest,
-	}
-	cmd := exec.CommandContext(ctx, "flatpak-builder", args...)
-	cmd.Dir = workDir
+func runCmd(ctx *context.Context, dir, errMsg, bin string, args ...string) error {
+	cmd := exec.CommandContext(ctx, bin, args...)
+	cmd.Dir = dir
 	cmd.Env = append(ctx.Env.Strings(), cmd.Environ()...)
 	var b bytes.Buffer
 	w := gio.Safe(&b)
@@ -263,34 +257,7 @@ func runFlatpakBuilder(ctx *context.Context, workDir, buildDir, repoDir, manifes
 	if err := cmd.Run(); err != nil {
 		return gerrors.Wrap(
 			err,
-			gerrors.WithMessage("failed to build flatpak"),
-			gerrors.WithDetails("args", strings.Join(cmd.Args, " ")),
-			gerrors.WithOutput(b.String()),
-		)
-	}
-	return nil
-}
-
-func runFlatpakBuildBundle(ctx *context.Context, workDir, repoDir, outputFile, appID, branch, arch string) error {
-	args := []string{
-		"build-bundle",
-		"--arch=" + arch,
-		repoDir,
-		outputFile,
-		appID,
-		branch,
-	}
-	cmd := exec.CommandContext(ctx, "flatpak", args...)
-	cmd.Env = append(ctx.Env.Strings(), cmd.Environ()...)
-	cmd.Dir = workDir
-	var b bytes.Buffer
-	w := gio.Safe(&b)
-	cmd.Stderr = redact.Writer(io.MultiWriter(logext.NewWriter(), w), cmd.Env)
-	cmd.Stdout = redact.Writer(io.MultiWriter(logext.NewWriter(), w), cmd.Env)
-	if err := cmd.Run(); err != nil {
-		return gerrors.Wrap(
-			err,
-			gerrors.WithMessage("failed to create flatpak bundle"),
+			gerrors.WithMessage(errMsg),
 			gerrors.WithDetails("args", strings.Join(cmd.Args, " ")),
 			gerrors.WithOutput(b.String()),
 		)
@@ -307,19 +274,18 @@ var archToFlatpak = map[string]string{
 	"arm7":  "arm",
 }
 
+var validArches = map[string]bool{
+	"x86_64":  true,
+	"aarch64": true,
+	"arm":     true,
+	"i386":    true,
+}
+
 func flatpakArch(key string) string {
 	arch := strings.TrimPrefix(key, "linux")
-	for _, suffix := range []string{
-		"hardfloat",
-		"softfloat",
-		"v1",
-		"v2",
-		"v3",
-		"v4",
-	} {
+	for _, suffix := range []string{"v1", "v2", "v3", "v4"} {
 		arch = strings.TrimSuffix(arch, suffix)
 	}
-
 	if got, ok := archToFlatpak[arch]; ok {
 		return got
 	}
@@ -327,5 +293,5 @@ func flatpakArch(key string) string {
 }
 
 func isValidArch(arch string) bool {
-	return slices.Contains([]string{"x86_64", "aarch64", "arm", "i386"}, arch)
+	return validArches[arch]
 }

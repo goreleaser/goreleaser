@@ -47,79 +47,56 @@ func TestSkip(t *testing.T) {
 
 func TestDefault(t *testing.T) {
 	ctx := testctx.WrapWithCfg(t.Context(), config.Project{
-		Flatpaks: []config.Flatpak{{
-			AppID:          "org.example.App",
-			Runtime:        "org.freedesktop.Platform",
-			RuntimeVersion: "24.08",
-			SDK:            "org.freedesktop.Sdk",
-		}},
+		Flatpaks: []config.Flatpak{validFlatpak()},
 	})
 	require.NoError(t, Pipe{}.Default(ctx))
 	require.Equal(t, defaultNameTemplate, ctx.Config.Flatpaks[0].NameTemplate)
 }
 
 func TestDefaultNoAppID(t *testing.T) {
+	fp := validFlatpak()
+	fp.AppID = ""
 	ctx := testctx.WrapWithCfg(t.Context(), config.Project{
-		Flatpaks: []config.Flatpak{{
-			Runtime:        "org.freedesktop.Platform",
-			RuntimeVersion: "24.08",
-			SDK:            "org.freedesktop.Sdk",
-		}},
+		Flatpaks: []config.Flatpak{fp},
 	})
 	require.ErrorIs(t, Pipe{}.Default(ctx), ErrNoAppID)
 }
 
 func TestDefaultNoRuntime(t *testing.T) {
+	fp := validFlatpak()
+	fp.Runtime = ""
 	ctx := testctx.WrapWithCfg(t.Context(), config.Project{
-		Flatpaks: []config.Flatpak{{
-			AppID:          "org.example.App",
-			RuntimeVersion: "24.08",
-			SDK:            "org.freedesktop.Sdk",
-		}},
+		Flatpaks: []config.Flatpak{fp},
 	})
 	require.ErrorIs(t, Pipe{}.Default(ctx), ErrNoRuntime)
 }
 
 func TestDefaultNoRuntimeVersion(t *testing.T) {
+	fp := validFlatpak()
+	fp.RuntimeVersion = ""
 	ctx := testctx.WrapWithCfg(t.Context(), config.Project{
-		Flatpaks: []config.Flatpak{{
-			AppID:   "org.example.App",
-			Runtime: "org.freedesktop.Platform",
-			SDK:     "org.freedesktop.Sdk",
-		}},
+		Flatpaks: []config.Flatpak{fp},
 	})
 	require.ErrorIs(t, Pipe{}.Default(ctx), ErrNoRuntimeVersion)
 }
 
 func TestDefaultNoSDK(t *testing.T) {
+	fp := validFlatpak()
+	fp.SDK = ""
 	ctx := testctx.WrapWithCfg(t.Context(), config.Project{
-		Flatpaks: []config.Flatpak{{
-			AppID:          "org.example.App",
-			Runtime:        "org.freedesktop.Platform",
-			RuntimeVersion: "24.08",
-		}},
+		Flatpaks: []config.Flatpak{fp},
 	})
 	require.ErrorIs(t, Pipe{}.Default(ctx), ErrNoSDK)
 }
 
 func TestSeveralFlatpaksWithTheSameID(t *testing.T) {
+	fp1 := validFlatpak()
+	fp1.ID = "a"
+	fp2 := validFlatpak()
+	fp2.ID = "a"
+	fp2.AppID = "org.example.App2"
 	ctx := testctx.WrapWithCfg(t.Context(), config.Project{
-		Flatpaks: []config.Flatpak{
-			{
-				ID:             "a",
-				AppID:          "org.example.App",
-				Runtime:        "org.freedesktop.Platform",
-				RuntimeVersion: "24.08",
-				SDK:            "org.freedesktop.Sdk",
-			},
-			{
-				ID:             "a",
-				AppID:          "org.example.App2",
-				Runtime:        "org.freedesktop.Platform",
-				RuntimeVersion: "24.08",
-				SDK:            "org.freedesktop.Sdk",
-			},
-		},
+		Flatpaks: []config.Flatpak{fp1, fp2},
 	})
 	require.EqualError(t, Pipe{}.Default(ctx), "found 2 flatpaks with the ID 'a', please fix your config")
 }
@@ -127,57 +104,39 @@ func TestSeveralFlatpaksWithTheSameID(t *testing.T) {
 func TestNoFlatpakBuilderInPath(t *testing.T) {
 	t.Setenv("PATH", "")
 	ctx := testctx.WrapWithCfg(t.Context(), config.Project{
-		Flatpaks: []config.Flatpak{{
-			AppID:          "org.example.App",
-			Runtime:        "org.freedesktop.Platform",
-			RuntimeVersion: "24.08",
-			SDK:            "org.freedesktop.Sdk",
-		}},
+		Flatpaks: []config.Flatpak{validFlatpak()},
 	})
 	require.ErrorIs(t, Pipe{}.Run(ctx), ErrNoFlatpakBuilder)
 }
 
 func TestRunPipeDisabled(t *testing.T) {
+	fp := validFlatpak()
+	fp.Disable = "true"
 	ctx := testctx.WrapWithCfg(t.Context(), config.Project{
-		Flatpaks: []config.Flatpak{{
-			AppID:          "org.example.App",
-			Runtime:        "org.freedesktop.Platform",
-			RuntimeVersion: "24.08",
-			SDK:            "org.freedesktop.Sdk",
-			Disable:        "true",
-		}},
+		Flatpaks: []config.Flatpak{fp},
 	})
 	testlib.AssertSkipped(t, Pipe{}.Run(ctx))
 }
 
 func TestRunPipeDisabledTemplate(t *testing.T) {
+	fp := validFlatpak()
+	fp.Disable = "{{.Env.SKIP}}"
 	ctx := testctx.WrapWithCfg(t.Context(), config.Project{
-		Flatpaks: []config.Flatpak{{
-			AppID:          "org.example.App",
-			Runtime:        "org.freedesktop.Platform",
-			RuntimeVersion: "24.08",
-			SDK:            "org.freedesktop.Sdk",
-			Disable:        "{{.Env.SKIP}}",
-		}},
+		Flatpaks: []config.Flatpak{fp},
 	}, testctx.WithEnv(map[string]string{"SKIP": "true"}))
 	testlib.AssertSkipped(t, Pipe{}.Run(ctx))
 }
 
 func TestRunPipeInvalidNameTemplate(t *testing.T) {
 	testlib.CheckPath(t, "flatpak-builder")
-	folder := t.TempDir()
-	dist := filepath.Join(folder, "dist")
+	dist := filepath.Join(t.TempDir(), "dist")
 	require.NoError(t, os.Mkdir(dist, 0o755))
+	fp := validFlatpak()
+	fp.NameTemplate = "foo_{{.Arch}"
 	ctx := testctx.WrapWithCfg(t.Context(), config.Project{
 		ProjectName: "foo",
 		Dist:        dist,
-		Flatpaks: []config.Flatpak{{
-			NameTemplate:   "foo_{{.Arch}",
-			AppID:          "org.example.App",
-			Runtime:        "org.freedesktop.Platform",
-			RuntimeVersion: "24.08",
-			SDK:            "org.freedesktop.Sdk",
-		}},
+		Flatpaks:    []config.Flatpak{fp},
 	}, testctx.WithCurrentTag("v1.2.3"), testctx.WithVersion("1.2.3"))
 
 	addBinaries(t, ctx, "foo", dist)
@@ -187,60 +146,33 @@ func TestRunPipeInvalidNameTemplate(t *testing.T) {
 func TestRunPipe(t *testing.T) {
 	testlib.CheckPath(t, "flatpak-builder")
 	testlib.CheckPath(t, "flatpak")
-	folder := t.TempDir()
-	dist := filepath.Join(folder, "dist")
+	dist := filepath.Join(t.TempDir(), "dist")
 	require.NoError(t, os.Mkdir(dist, 0o755))
+	fp := validFlatpak()
+	fp.NameTemplate = "foo_{{.Arch}}"
+	fp.AppID = "org.example.MyBin"
+	fp.IDs = []string{"foo"}
+	fp.Command = "mycommand"
+	fp.FinishArgs = []string{"--share=network", "--socket=x11"}
 	ctx := testctx.WrapWithCfg(t.Context(), config.Project{
 		ProjectName: "mybin",
 		Dist:        dist,
-		Flatpaks: []config.Flatpak{{
-			NameTemplate:   "foo_{{.Arch}}",
-			AppID:          "org.example.MyBin",
-			Runtime:        "org.freedesktop.Platform",
-			RuntimeVersion: "24.08",
-			SDK:            "org.freedesktop.Sdk",
-			IDs:            []string{"foo"},
-			FinishArgs:     []string{"--share=network"},
-		}},
+		Flatpaks:    []config.Flatpak{fp},
 	}, testctx.WithCurrentTag("v1.2.3"), testctx.WithVersion("1.2.3"))
 
 	addBinaries(t, ctx, "foo", filepath.Join(dist, "foo"))
 	requireNoGerror(t, Pipe{}.Run(ctx))
+
 	list := ctx.Artifacts.Filter(artifact.ByType(artifact.Flatpak)).List()
 	require.NotEmpty(t, list)
-}
 
-func TestRunPipeManifest(t *testing.T) {
-	testlib.CheckPath(t, "flatpak-builder")
-	testlib.CheckPath(t, "flatpak")
-	folder := t.TempDir()
-	dist := filepath.Join(folder, "dist")
-	require.NoError(t, os.Mkdir(dist, 0o755))
-	ctx := testctx.WrapWithCfg(t.Context(), config.Project{
-		ProjectName: "testproject",
-		Dist:        dist,
-		Flatpaks: []config.Flatpak{{
-			NameTemplate:   "foo_{{.Arch}}",
-			AppID:          "org.example.TestProject",
-			Runtime:        "org.freedesktop.Platform",
-			RuntimeVersion: "24.08",
-			SDK:            "org.freedesktop.Sdk",
-			Command:        "mycommand",
-			FinishArgs:     []string{"--share=network", "--socket=x11"},
-		}},
-	}, testctx.WithCurrentTag("v1.2.3"), testctx.WithVersion("1.2.3"))
-
-	addBinaries(t, ctx, "foo", dist)
-
-	requireNoGerror(t, Pipe{}.Run(ctx))
-
-	manifestFile := filepath.Join(dist, "flatpak", "foo_amd64", "org.example.TestProject.json")
+	manifestFile := filepath.Join(dist, "flatpak", "foo_amd64", "org.example.MyBin.json")
 	manifestBytes, err := os.ReadFile(manifestFile)
 	require.NoError(t, err)
 
 	var manifest Manifest
 	require.NoError(t, json.Unmarshal(manifestBytes, &manifest))
-	require.Equal(t, "org.example.TestProject", manifest.ID)
+	require.Equal(t, "org.example.MyBin", manifest.ID)
 	require.Equal(t, "org.freedesktop.Platform", manifest.Runtime)
 	require.Equal(t, "24.08", manifest.RuntimeVersion)
 	require.Equal(t, "org.freedesktop.Sdk", manifest.SDK)
@@ -255,89 +187,40 @@ func TestDependencies(t *testing.T) {
 }
 
 func TestFlatpakArch(t *testing.T) {
-	tests := []struct {
-		key  string
-		want string
-	}{
-		{"linuxamd64v1", "x86_64"},
-		{"linuxarm64", "aarch64"},
-		{"linux386", "i386"},
-		{"linuxarm6", "arm"},
-		{"linuxarm7", "arm"},
-	}
-	for _, tt := range tests {
-		t.Run(tt.key, func(t *testing.T) {
-			require.Equal(t, tt.want, flatpakArch(tt.key))
+	for key, want := range map[string]string{
+		"linuxamd64v1": "x86_64",
+		"linuxarm64":   "aarch64",
+		"linux386":     "i386",
+		"linuxarm6":    "arm",
+		"linuxarm7":    "arm",
+	} {
+		t.Run(key, func(t *testing.T) {
+			require.Equal(t, want, flatpakArch(key))
 		})
 	}
 }
 
 func TestIsValidArch(t *testing.T) {
-	tests := []struct {
-		arch string
-		want bool
-	}{
-		{"x86_64", true},
-		{"aarch64", true},
-		{"arm", true},
-		{"i386", true},
-		{"mips", false},
-		{"ppc64le", false},
-	}
-	for _, tt := range tests {
-		t.Run(tt.arch, func(t *testing.T) {
-			require.Equal(t, tt.want, isValidArch(tt.arch))
+	for arch, want := range map[string]bool{
+		"x86_64":  true,
+		"aarch64": true,
+		"arm":     true,
+		"i386":    true,
+		"mips":    false,
+		"ppc64le": false,
+	} {
+		t.Run(arch, func(t *testing.T) {
+			require.Equal(t, want, isValidArch(arch))
 		})
 	}
 }
 
-func addBinaries(t *testing.T, ctx *context.Context, name, dist string) {
-	t.Helper()
-	for _, goos := range []string{"linux", "darwin"} {
-		for _, goarch := range []string{"amd64", "386", "arm"} {
-			binPath := filepath.Join(dist, name)
-			require.NoError(t, os.MkdirAll(filepath.Dir(binPath), 0o755))
-			f, err := os.Create(binPath)
-			require.NoError(t, err)
-			require.NoError(t, f.Close())
-			switch goarch {
-			case "arm":
-				ctx.Artifacts.Add(&artifact.Artifact{
-					Name:   name,
-					Path:   binPath,
-					Goarch: goarch,
-					Goos:   goos,
-					Goarm:  "6",
-					Type:   artifact.Binary,
-					Extra: map[string]any{
-						artifact.ExtraID: name,
-					},
-				})
-			case "amd64":
-				ctx.Artifacts.Add(&artifact.Artifact{
-					Name:    name,
-					Path:    binPath,
-					Goarch:  goarch,
-					Goos:    goos,
-					Goamd64: "v1",
-					Type:    artifact.Binary,
-					Extra: map[string]any{
-						artifact.ExtraID: name,
-					},
-				})
-			default:
-				ctx.Artifacts.Add(&artifact.Artifact{
-					Name:   name,
-					Path:   binPath,
-					Goarch: goarch,
-					Goos:   goos,
-					Type:   artifact.Binary,
-					Extra: map[string]any{
-						artifact.ExtraID: name,
-					},
-				})
-			}
-		}
+func validFlatpak() config.Flatpak {
+	return config.Flatpak{
+		AppID:          "org.example.App",
+		Runtime:        "org.freedesktop.Platform",
+		RuntimeVersion: "24.08",
+		SDK:            "org.freedesktop.Sdk",
 	}
 }
 
@@ -349,4 +232,34 @@ func requireNoGerror(tb testing.TB, err error) {
 	gerr, ok := errors.AsType[gerrors.ErrDetailed](err)
 	require.True(tb, ok)
 	require.NoError(tb, err, fmt.Sprintf("messages: %v, details: %v, output: %s", gerr.Messages(), maps.Collect(gerr.Details()), gerr.Output()))
+}
+
+func addBinaries(t *testing.T, ctx *context.Context, name, dist string) {
+	t.Helper()
+	binPath := filepath.Join(dist, name)
+	require.NoError(t, os.MkdirAll(filepath.Dir(binPath), 0o755))
+	f, err := os.Create(binPath)
+	require.NoError(t, err)
+	require.NoError(t, f.Close())
+	for _, goos := range []string{"linux", "darwin"} {
+		for _, goarch := range []string{"amd64", "386", "arm"} {
+			a := &artifact.Artifact{
+				Name:   name,
+				Path:   binPath,
+				Goarch: goarch,
+				Goos:   goos,
+				Type:   artifact.Binary,
+				Extra: map[string]any{
+					artifact.ExtraID: name,
+				},
+			}
+			switch goarch {
+			case "amd64":
+				a.Goamd64 = "v1"
+			case "arm":
+				a.Goarm = "6"
+			}
+			ctx.Artifacts.Add(a)
+		}
+	}
 }
