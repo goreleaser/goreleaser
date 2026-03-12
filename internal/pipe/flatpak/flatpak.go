@@ -157,7 +157,7 @@ func create(ctx *context.Context, fp config.Flatpak, arch string, binaries []*ar
 		command = filepath.Base(binaries[0].Name)
 	}
 
-	workDir := filepath.Join(ctx.Config.Dist, "flatpak", folder)
+	workDir := filepath.Join(ctx.Config.Dist, "flatpak", folder, arch)
 	if err := os.MkdirAll(workDir, 0o755); err != nil {
 		return fmt.Errorf("failed to create flatpak work directory: %w", err)
 	}

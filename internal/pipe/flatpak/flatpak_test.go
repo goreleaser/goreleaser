@@ -166,7 +166,7 @@ func TestRunPipe(t *testing.T) {
 	list := ctx.Artifacts.Filter(artifact.ByType(artifact.Flatpak)).List()
 	require.NotEmpty(t, list)
 
-	manifestFile := filepath.Join(dist, "flatpak", "foo_amd64", "org.example.MyBin.json")
+	manifestFile := filepath.Join(dist, "flatpak", "foo_amd64", "x86_64", "org.example.MyBin.json")
 	manifestBytes, err := os.ReadFile(manifestFile)
 	require.NoError(t, err)
 
