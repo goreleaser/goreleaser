@@ -23,6 +23,7 @@ func (Pipe) Run(ctx *context.Context) error {
 		artifact.Makeself,
 		artifact.PublishableSnapcraft,
 		artifact.LinuxPackage,
+		artifact.Flatpak,
 		artifact.CArchive,
 		artifact.CShared,
 		artifact.Header,

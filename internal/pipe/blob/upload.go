@@ -168,6 +168,7 @@ func artifactList(ctx *context.Context, conf config.Blob) []*artifact.Artifact {
 		artifact.Signature,
 		artifact.Certificate,
 		artifact.LinuxPackage,
+		artifact.Flatpak,
 		artifact.SBOM,
 		artifact.PySdist,
 		artifact.PyWheel,

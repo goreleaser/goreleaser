@@ -1008,6 +1008,33 @@ type SnapcraftExtraFiles struct {
 	Mode        uint32 `yaml:"mode,omitempty" json:"mode,omitempty"`
 }
 
+// Flatpak config.
+type Flatpak struct {
+	ID           string   `yaml:"id,omitempty" json:"id,omitempty"`
+	IDs          []string `yaml:"ids,omitempty" json:"ids,omitempty"`
+	NameTemplate string   `yaml:"name_template,omitempty" json:"name_template,omitempty"`
+
+	// Flatpak application ID in reverse-DNS notation (e.g. org.example.MyApp).
+	AppID string `yaml:"app_id" json:"app_id"`
+
+	// Runtime to use (e.g. org.freedesktop.Platform).
+	Runtime string `yaml:"runtime" json:"runtime"`
+
+	// Runtime version (e.g. "24.08").
+	RuntimeVersion string `yaml:"runtime_version" json:"runtime_version"`
+
+	// SDK to use (e.g. org.freedesktop.Sdk).
+	SDK string `yaml:"sdk" json:"sdk"`
+
+	// Command to run inside the Flatpak sandbox.
+	Command string `yaml:"command,omitempty" json:"command,omitempty"`
+
+	// Sandbox permissions.
+	FinishArgs []string `yaml:"finish_args,omitempty" json:"finish_args,omitempty"`
+
+	Disable string `yaml:"disable,omitempty" json:"disable,omitempty" jsonschema:"oneof_type=string;boolean"`
+}
+
 // Snapshot config.
 type Snapshot struct {
 	// Deprecated: use VersionTemplate.
@@ -1217,6 +1244,7 @@ type Project struct {
 	Archives          []Archive         `yaml:"archives,omitempty" json:"archives,omitempty"`
 	NFPMs             []NFPM            `yaml:"nfpms,omitempty" json:"nfpms,omitempty"`
 	Snapcrafts        []Snapcraft       `yaml:"snapcrafts,omitempty" json:"snapcrafts,omitempty"`
+	Flatpaks          []Flatpak         `yaml:"flatpaks,omitempty" json:"flatpaks,omitempty"`
 	Snapshot          Snapshot          `yaml:"snapshot,omitempty" json:"snapshot,omitempty"`
 	Checksum          Checksum          `yaml:"checksum,omitempty" json:"checksum,omitempty"`
 	DockersV2         []DockerV2        `yaml:"dockers_v2,omitempty" json:"dockers_v2,omitempty"`

@@ -155,6 +155,7 @@ nav:
           - customization/nsis.md
           - customization/checksum.md
           - Snaps: customization/snapcraft.md
+          - Flatpak: customization/flatpak.md
           - Chocolatey: customization/chocolatey.md
           - customization/dockers_v2.md
           - customization/docker.md

@@ -7,6 +7,7 @@ import (
 
 	"github.com/goreleaser/goreleaser/v2/internal/pipe/chocolatey"
 	"github.com/goreleaser/goreleaser/v2/internal/pipe/docker"
+	"github.com/goreleaser/goreleaser/v2/internal/pipe/flatpak"
 	dockerv2 "github.com/goreleaser/goreleaser/v2/internal/pipe/docker/v2"
 	"github.com/goreleaser/goreleaser/v2/internal/pipe/nix"
 	"github.com/goreleaser/goreleaser/v2/internal/pipe/sbom"
@@ -56,6 +57,7 @@ var DependencyCheckers = []DependencyChecker{
 	dockerv2.Base{},
 	chocolatey.Pipe{},
 	nix.New(),
+	flatpak.Pipe{},
 }
 
 type system struct{}
