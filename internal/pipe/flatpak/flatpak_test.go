@@ -154,7 +154,7 @@ func TestRunPipe(t *testing.T) {
 	fp.NameTemplate = "foo_{{.Arch}}"
 	fp.AppID = "org.example.MyBin"
 	fp.IDs = []string{"foo"}
-	fp.Command = "mycommand"
+	fp.Command = "foo"
 	fp.FinishArgs = []string{"--share=network", "--socket=x11"}
 	ctx := testctx.WrapWithCfg(t.Context(), config.Project{
 		ProjectName: "mybin",
@@ -178,7 +178,7 @@ func TestRunPipe(t *testing.T) {
 	require.Equal(t, "org.freedesktop.Platform", manifest.Runtime)
 	require.Equal(t, "24.08", manifest.RuntimeVersion)
 	require.Equal(t, "org.freedesktop.Sdk", manifest.SDK)
-	require.Equal(t, "mycommand", manifest.Command)
+	require.Equal(t, "foo", manifest.Command)
 	require.Equal(t, []string{"--share=network", "--socket=x11"}, manifest.FinishArgs)
 	require.Len(t, manifest.Modules, 1)
 	require.Equal(t, "simple", manifest.Modules[0].BuildSystem)
