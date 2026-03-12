@@ -146,12 +146,13 @@ func doRun(ctx *context.Context, fp config.Flatpak) error {
 }
 
 func create(ctx *context.Context, fp config.Flatpak, arch string, binaries []*artifact.Artifact) error {
-	log := log.WithField("arch", arch)
 	folder, err := tmpl.New(ctx).WithArtifact(binaries[0]).Apply(fp.NameTemplate)
 	if err != nil {
 		return err
 	}
 
+	flatpakName := folder + ".flatpak"
+	log := log.WithField("arch", arch).WithField("flatpak", flatpakName)
 	command := fp.Command
 	if command == "" {
 		command = filepath.Base(binaries[0].Name)
@@ -209,17 +210,33 @@ func create(ctx *context.Context, fp config.Flatpak, arch string, binaries []*ar
 		return err
 	}
 
-	log.Info("building flatpak")
-	if err := runCmd(ctx, workDir, "failed to build flatpak", "flatpak-builder",
-		"--force-clean", "--arch="+arch, "--default-branch="+ctx.Version, "--repo=repo", "build", manifestName,
+	if err := runCmd(
+		ctx,
+		workDir,
+		"failed to build flatpak",
+		"flatpak-builder",
+		"--force-clean",
+		"--arch="+arch,
+		"--default-branch="+ctx.Version,
+		"--repo=repo",
+		"build",
+		manifestName,
 	); err != nil {
 		return err
 	}
 
-	flatpakName := folder + ".flatpak"
-	log.WithField("flatpak", flatpakName).Info("creating flatpak bundle")
-	if err := runCmd(ctx, workDir, "failed to create flatpak bundle", "flatpak",
-		"build-bundle", "--arch="+arch, "repo", flatpakName, fp.AppID, ctx.Version,
+	log.Info("creating bundle")
+	if err := runCmd(
+		ctx,
+		workDir,
+		"failed to create flatpak bundle",
+		"flatpak",
+		"build-bundle",
+		"--arch="+arch,
+		"repo",
+		flatpakName,
+		fp.AppID,
+		ctx.Version,
 	); err != nil {
 		return err
 	}
