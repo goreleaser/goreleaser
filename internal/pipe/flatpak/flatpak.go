@@ -211,7 +211,7 @@ func create(ctx *context.Context, fp config.Flatpak, arch string, binaries []*ar
 
 	log.Info("building flatpak")
 	if err := runCmd(ctx, workDir, "failed to build flatpak", "flatpak-builder",
-		"--force-clean", "--arch="+arch, "--repo=repo", "build", manifestName,
+		"--force-clean", "--arch="+arch, "--default-branch="+ctx.Version, "--repo=repo", "build", manifestName,
 	); err != nil {
 		return err
 	}
