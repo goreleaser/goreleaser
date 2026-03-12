@@ -41,6 +41,14 @@ func SkipIfWindows(tb testing.TB, args ...any) {
 	}
 }
 
+// OnlyOnLinux skips the test unless the runtime OS is Linux.
+func OnlyOnLinux(tb testing.TB, args ...any) {
+	tb.Helper()
+	if runtime.GOOS != "linux" {
+		tb.Skip(args...)
+	}
+}
+
 // Echo returns a `echo s` command, handling it on windows.
 func Echo(s string) string {
 	if IsWindows() {

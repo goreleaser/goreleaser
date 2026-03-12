@@ -128,6 +128,7 @@ func TestRunPipeDisabledTemplate(t *testing.T) {
 }
 
 func TestRunPipeInvalidNameTemplate(t *testing.T) {
+	testlib.OnlyOnLinux(t, "flatpak only works on linux")
 	testlib.CheckPath(t, "flatpak-builder")
 	dist := filepath.Join(t.TempDir(), "dist")
 	require.NoError(t, os.Mkdir(dist, 0o755))
@@ -144,6 +145,7 @@ func TestRunPipeInvalidNameTemplate(t *testing.T) {
 }
 
 func TestRunPipe(t *testing.T) {
+	testlib.OnlyOnLinux(t, "flatpak only works on linux")
 	testlib.CheckPath(t, "flatpak-builder")
 	testlib.CheckPath(t, "flatpak")
 	dist := filepath.Join(t.TempDir(), "dist")
