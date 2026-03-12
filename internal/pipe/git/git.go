@@ -32,6 +32,9 @@ func setDefaults(ctx *context.Context) {
 	if ctx.Config.Git.TagSort == "" {
 		ctx.Config.Git.TagSort = "-version:refname"
 	}
+	if ctx.Config.Git.PrereleaseSuffix == "" {
+		ctx.Config.Git.PrereleaseSuffix = "-"
+	}
 }
 
 // Run the pipe.
@@ -318,28 +321,30 @@ func getPreviousTag(ctx *context.Context, current string, excluding []string, cu
 		}
 	}
 
-	var fallback string
-	for found := current; ; {
-		sha, err := previousTagSha(ctx, found, excluding)
+	// try to find a previous tag with the same prerelease-ness first,
+	// then fall back to any tag
+	for _, pre := range []bool{currentIsPrerelease, !currentIsPrerelease} {
+		tag, err := previousTagFromGit(ctx, current, excluding, pre)
 		if err != nil {
 			return "", err
 		}
-		tags, err := gitTagsPointingAt(ctx, sha)
-		if err != nil {
-			return "", err
-		}
-		found = filterOut(tags, excluding)
-		if found == "" {
-			return fallback, nil
-		}
-		if isTagPrerelease(found) == currentIsPrerelease {
-			return found, nil
-		}
-		if fallback == "" {
-			fallback = found
-			log.Debugf("found possible previous tag %q, but looking for a better match", found)
+		if tag != "" {
+			return tag, nil
 		}
 	}
+	return "", nil
+}
+
+func previousTagFromGit(ctx *context.Context, current string, excluding []string, prerelease bool) (string, error) {
+	sha, err := previousTagSha(ctx, current, excluding, prerelease)
+	if err != nil {
+		return "", nil
+	}
+	tags, err := gitTagsPointingAt(ctx, sha)
+	if err != nil {
+		return "", err
+	}
+	return filterOut(tags, excluding), nil
 }
 
 func gitTagsPointingAt(ctx *context.Context, ref string) ([]string, error) {
@@ -375,8 +380,25 @@ func gitDescribe(ctx *context.Context, ref string, excluding []string) (string, 
 	return git.Clean(git.Run(ctx, args...))
 }
 
-func previousTagSha(ctx *context.Context, current string, excluding []string) (string, error) {
-	tag, err := gitDescribe(ctx, fmt.Sprintf("tags/%s^", current), excluding)
+func previousTagSha(ctx *context.Context, current string, excluding []string, prerelease bool) (string, error) {
+	ref := fmt.Sprintf("tags/%s^", current)
+	args := []string{
+		"describe",
+		"--tags",
+		"--abbrev=0",
+		ref,
+	}
+	for _, exclude := range excluding {
+		args = append(args, "--exclude="+exclude)
+	}
+	if suffix := ctx.Config.Git.PrereleaseSuffix; suffix != "" {
+		if prerelease {
+			args = append(args, "--match=*"+suffix+"*")
+		} else {
+			args = append(args, "--exclude=*"+suffix+"*")
+		}
+	}
+	tag, err := git.Clean(git.Run(ctx, args...))
 	if err != nil {
 		return "", err
 	}
