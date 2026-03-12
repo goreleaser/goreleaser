@@ -173,7 +173,6 @@ func getGitInfo(ctx *context.Context) (context.GitInfo, error) {
 
 	previous, err := getPreviousTag(ctx, tag, excluding, isPrerelease)
 	if err != nil {
-		// shouldn't error, will only affect templates and changelog
 		log.Warnf("couldn't find any tags before %q", tag)
 	}
 
@@ -323,11 +322,11 @@ func getPreviousTag(ctx *context.Context, current string, excluding []string, cu
 	for found := current; ; {
 		sha, err := previousTagSha(ctx, found, excluding)
 		if err != nil {
-			return fallback, nil
+			return "", err
 		}
 		tags, err := gitTagsPointingAt(ctx, sha)
 		if err != nil {
-			return fallback, nil
+			return "", err
 		}
 		found = filterOut(tags, excluding)
 		if found == "" {
