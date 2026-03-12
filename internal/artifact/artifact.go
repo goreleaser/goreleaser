@@ -112,8 +112,6 @@ const (
 	DockerImageV2
 	// Flatpak is a Flatpak bundle.
 	Flatpak
-	// FlatpakManifest is a Flatpak manifest file.
-	FlatpakManifest
 	// lastMarker is used in tests to denote the last valid type.
 	// always add new types before this one.
 	lastMarker
@@ -195,8 +193,6 @@ func (t Type) String() string {
 		return "Makeself Package"
 	case Flatpak:
 		return "Flatpak"
-	case FlatpakManifest:
-		return "Flatpak Manifest"
 	default:
 		return "unknown"
 	}

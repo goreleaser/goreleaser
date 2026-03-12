@@ -242,16 +242,6 @@ func create(ctx *context.Context, fp config.Flatpak, arch string, binaries []*ar
 			artifact.ExtraFormat: "flatpak",
 		},
 	})
-	ctx.Artifacts.Add(&artifact.Artifact{
-		Type:   artifact.FlatpakManifest,
-		Name:   fp.AppID + ".json",
-		Path:   manifestFile,
-		Goos:   binaries[0].Goos,
-		Goarch: binaries[0].Goarch,
-		Extra: map[string]any{
-			artifact.ExtraID: fp.ID,
-		},
-	})
 	return nil
 }
 
