@@ -299,7 +299,7 @@ func getTag(ctx *context.Context, excluding []string) (string, error) {
 		func() ([]string, error) {
 			// this will get the last tag, even if it wasn't made against the
 			// last commit...
-			return git.CleanAllLines(gitDescribe(ctx, "HEAD", excluding))
+			return git.CleanAllLines(gitDescribe(ctx, "HEAD", nil, excluding))
 		},
 	} {
 		tags, err := fn()
@@ -367,12 +367,15 @@ func gitTagsPointingAt(ctx *context.Context, ref string) ([]string, error) {
 	return git.CleanAllLines(git.Run(ctx, args...))
 }
 
-func gitDescribe(ctx *context.Context, ref string, excluding []string) (string, error) {
+func gitDescribe(ctx *context.Context, ref string, matching, excluding []string) (string, error) {
 	args := []string{
 		"describe",
 		"--tags",
 		"--abbrev=0",
 		ref,
+	}
+	for _, match := range matching {
+		args = append(args, "--match="+match)
 	}
 	for _, exclude := range excluding {
 		args = append(args, "--exclude="+exclude)
@@ -381,24 +384,21 @@ func gitDescribe(ctx *context.Context, ref string, excluding []string) (string, 
 }
 
 func previousTagSha(ctx *context.Context, current string, excluding []string, prerelease bool) (string, error) {
-	ref := fmt.Sprintf("tags/%s^", current)
-	args := []string{
-		"describe",
-		"--tags",
-		"--abbrev=0",
-		ref,
-	}
-	for _, exclude := range excluding {
-		args = append(args, "--exclude="+exclude)
-	}
+	var matching []string
 	if suffix := ctx.Config.Git.PrereleaseSuffix; suffix != "" {
+		filter := "*" + suffix + "*"
 		if prerelease {
-			args = append(args, "--match=*"+suffix+"*")
+			matching = []string{filter}
 		} else {
-			args = append(args, "--exclude=*"+suffix+"*")
+			excluding = append(excluding, filter)
 		}
 	}
-	tag, err := git.Clean(git.Run(ctx, args...))
+	tag, err := gitDescribe(
+		ctx,
+		fmt.Sprintf("tags/%s^", current),
+		matching,
+		excluding,
+	)
 	if err != nil {
 		return "", err
 	}
