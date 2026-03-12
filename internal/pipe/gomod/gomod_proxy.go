@@ -171,11 +171,10 @@ func proxyBuild(ctx *context.Context, build *config.Build) error {
 		retry.DelayType(retry.BackOffDelay),
 		retry.Delay(time.Second),
 		retry.MaxDelay(time.Minute),
-		// 15 attempts with exponential backoff (1s→2s→4s→8s→16s→32s→60s×8)
-		// gives ~9 minutes of total wait time.
+		// 15 attempts with gives ~9 minutes of total wait time
 		retry.Attempts(15),
 		retry.LastErrorOnly(true),
-		retry.OnRetry(func(n uint, err error) {
+		retry.OnRetry(func(n uint, _ error) {
 			log.WithField("attempt", n+1).Warn("module not yet available in proxy, retrying")
 		}),
 	); err != nil {
