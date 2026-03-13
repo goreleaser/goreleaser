@@ -66,7 +66,7 @@ jobs:
       - name: setup-makeself
         if: matrix.os == 'ubuntu-latest'
         run: sudo apt install -yq makeself
-      - uses: cachix/install-nix-action@19effe9fe722874e6d46dd7182e4b8b7a43c4a99 # v31.10.0
+      - uses: cachix/install-nix-action@1ca7d21a94afc7c957383a2d217460d980de4934 # v31.10.1
         if: matrix.os == 'ubuntu-latest'
         with:
           github_access_token: ${{ secrets.GITHUB_TOKEN }}
@@ -78,7 +78,7 @@ jobs:
       - uses: mlugg/setup-zig@d1434d08867e3ee9daa34448df10607b98908d29 # v2.2.1
       - uses: oven-sh/setup-bun@ecf28ddc73e819eb6fa29df6b34ef8921c743461 # v2.1.3
       - uses: denoland/setup-deno@e95548e56dfa95d4e1a28d6f422fafe75c4c26fb # v2.0.3
-      - uses: cargo-bins/cargo-binstall@bc432b49369a3f25c8c8b19578a82060c18a5dd6 # v1.17.6
+      - uses: cargo-bins/cargo-binstall@1800853f2578f8c34492ec76154caef8e163fbca # v1.17.7
       - name: setup-cargo
         run: |
           rustup default stable
@@ -86,11 +86,11 @@ jobs:
       - uses: snok/install-poetry@76e04a911780d5b312d89783f7b1cd627778900a # v1.4.1
       - if: matrix.os == 'windows-latest'
         run: 'echo "C:\Users\runneradmin\.local\bin" | Out-File -FilePath $env:GITHUB_PATH -Encoding utf8 -Append'
-      - uses: astral-sh/setup-uv@5a095e7a2014a4212f075830d4f7277575a9d098 # v7.3.1
-      - uses: sigstore/cosign-installer@faadad0cce49287aee09b3a48701e75088a2c6ad # v4.0.0
+      - uses: astral-sh/setup-uv@e06108dd0aef18192324c70427afc47652e63a82 # v7.5.0
+      - uses: sigstore/cosign-installer@ba7bc0a3fef59531c69a25acd34668d6d3fe6f22 # v4.1.0
         with:
           cosign-release: "v3.0.3"
-      - uses: anchore/sbom-action/download-syft@17ae1740179002c89186b61233e0f892c3118b11 # v0.23.0
+      - uses: anchore/sbom-action/download-syft@57aae528053a48a3f6235f2d9461b05fbcb7366d # v0.23.1
       - run: task setup
       - run: task build
       - run: task test
