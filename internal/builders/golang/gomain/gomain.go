@@ -1,6 +1,6 @@
-// Package findmains helps find all the `func main`'s in a given dir following
+// Package gomain helps find all the `func main`'s in a given dir following
 // some patterns.
-package findmains
+package gomain
 
 import (
 	"cmp"
@@ -35,6 +35,9 @@ func (e ErrNoMain) Error() string {
 
 // Check checks if the given 'main' (either file or directory) contains a 'func
 // main', returning an error otherwise.
+//
+// Deprecated: this is here for backward compatibility, but it is recommended
+// to use [All] instead, which is more robust and works on modules.
 func Check(main, binary string) error {
 	stat, ferr := os.Stat(main)
 	if ferr != nil {
@@ -64,26 +67,27 @@ func Check(main, binary string) error {
 	return ErrNoMain{binary}
 }
 
+const mode = packages.NeedName |
+	packages.NeedTypes |
+	packages.NeedSyntax |
+	packages.NeedTypesInfo |
+	packages.NeedDeps |
+	packages.NeedFiles |
+	packages.NeedModule
+
 // All finds all the `func main`'s in the given dir following the given patterns.
 // The result is either a map of binaryName -> ./relative/path or an error.
+// This only works on a go module.
 func All(dir string, patterns ...string) (map[string]string, error) {
-	dirabs, err := filepath.Abs(dir)
+	absDir, err := filepath.Abs(dir)
 	if err != nil {
 		return nil, fmt.Errorf("could not find '%s' absolute path: %w", dir, err)
 	}
 
 	cfg := &packages.Config{
-		Mode: packages.NeedName |
-			packages.NeedTypes |
-			packages.NeedSyntax |
-			packages.NeedTypesInfo |
-			packages.NeedDeps |
-			packages.NeedFiles |
-			packages.NeedModule,
-		Tests: false,
-		Dir:   dirabs,
+		Mode: mode,
+		Dir:  absDir,
 	}
-
 	pkgs, err := packages.Load(cfg, patterns...)
 	if err != nil {
 		return nil, fmt.Errorf("could not load packages: %w", err)
@@ -106,7 +110,7 @@ func All(dir string, patterns ...string) (map[string]string, error) {
 		}
 
 		relPkgDir := pkg.Dir
-		if rel, err := filepath.Rel(dirabs, relPkgDir); err == nil {
+		if rel, err := filepath.Rel(absDir, relPkgDir); err == nil {
 			relPkgDir = cmp.Or(rel, ".")
 			if relPkgDir != "." {
 				relPkgDir = "./" + relPkgDir

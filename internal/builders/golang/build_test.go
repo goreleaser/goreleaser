@@ -11,7 +11,7 @@ import (
 	"time"
 
 	"github.com/goreleaser/goreleaser/v2/internal/artifact"
-	"github.com/goreleaser/goreleaser/v2/internal/builders/golang/findmains"
+	"github.com/goreleaser/goreleaser/v2/internal/builders/golang/gomain"
 	"github.com/goreleaser/goreleaser/v2/internal/experimental"
 	"github.com/goreleaser/goreleaser/v2/internal/testctx"
 	"github.com/goreleaser/goreleaser/v2/internal/testlib"
@@ -861,7 +861,7 @@ func TestRunPipeWithoutMainFunc(t *testing.T) {
 		ctx.Config.Builds[0].Main = ""
 		require.ErrorAs(t, Default.Build(ctx, ctx.Config.Builds[0], api.Options{
 			Target: mustParse(t, runtimeTarget),
-		}), &findmains.ErrNoMain{})
+		}), &gomain.ErrNoMain{})
 	})
 	t.Run("not main.go", func(t *testing.T) {
 		ctx := newCtx(t)
@@ -875,14 +875,14 @@ func TestRunPipeWithoutMainFunc(t *testing.T) {
 		ctx.Config.Builds[0].Main = "."
 		require.ErrorAs(t, Default.Build(ctx, ctx.Config.Builds[0], api.Options{
 			Target: mustParse(t, runtimeTarget),
-		}), &findmains.ErrNoMain{})
+		}), &gomain.ErrNoMain{})
 	})
 	t.Run("fixed main.go", func(t *testing.T) {
 		ctx := newCtx(t)
 		ctx.Config.Builds[0].Main = "main.go"
 		require.ErrorAs(t, Default.Build(ctx, ctx.Config.Builds[0], api.Options{
 			Target: mustParse(t, runtimeTarget),
-		}), &findmains.ErrNoMain{})
+		}), &gomain.ErrNoMain{})
 	})
 	t.Run("using gomod.proxy", func(t *testing.T) {
 		ctx := newCtx(t)
@@ -893,7 +893,7 @@ func TestRunPipeWithoutMainFunc(t *testing.T) {
 		ctx.Config.Builds[0].UnproxiedMain = "."
 		require.ErrorAs(t, Default.Build(ctx, ctx.Config.Builds[0], api.Options{
 			Target: mustParse(t, runtimeTarget),
-		}), &findmains.ErrNoMain{})
+		}), &gomain.ErrNoMain{})
 	})
 }
 

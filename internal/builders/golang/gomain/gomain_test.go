@@ -1,6 +1,6 @@
 // Package findmains helps find all the `func main`'s in a given dir following
 // some patterns.
-package findmains
+package gomain
 
 import (
 	"os"
@@ -11,7 +11,7 @@ import (
 	"golang.org/x/tools/go/packages"
 )
 
-func TestLoad(t *testing.T) {
+func TestAll(t *testing.T) {
 	dir := t.TempDir()
 	require.NoError(t, os.WriteFile(filepath.Join(dir, "go.mod"), []byte("module github.com/foo/bar/v10"), 0o644))
 	for _, m := range []string{
@@ -35,7 +35,7 @@ func TestLoad(t *testing.T) {
 	}, mains)
 }
 
-func TestLoadErrors(t *testing.T) {
+func TestAllErrors(t *testing.T) {
 	mains, err := All(t.TempDir(), "./...")
 	require.ErrorIs(t, err, ErrNoMains)
 	require.Nil(t, mains)

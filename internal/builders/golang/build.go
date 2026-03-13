@@ -15,7 +15,7 @@ import (
 	"github.com/caarlos0/log"
 	"github.com/goreleaser/goreleaser/v2/internal/artifact"
 	"github.com/goreleaser/goreleaser/v2/internal/builders/base"
-	"github.com/goreleaser/goreleaser/v2/internal/builders/golang/findmains"
+	gomain "github.com/goreleaser/goreleaser/v2/internal/builders/golang/gomain"
 	"github.com/goreleaser/goreleaser/v2/internal/elf"
 	"github.com/goreleaser/goreleaser/v2/internal/experimental"
 	"github.com/goreleaser/goreleaser/v2/internal/logext"
@@ -547,7 +547,7 @@ func checkBuild(build config.Build, options api.Options) (map[string]string, []*
 		if dir != "" {
 			main = filepath.Join(dir, main)
 		}
-		if err := findmains.Check(main, build.Binary); err != nil {
+		if err := gomain.Check(main, build.Binary); err != nil {
 			return nil, nil, err
 		}
 		return nil, []*artifact.Artifact{
@@ -561,7 +561,7 @@ func checkBuild(build config.Build, options api.Options) (map[string]string, []*
 	}
 
 	var binaries []*artifact.Artifact
-	mains, err := findmains.All(dir, main)
+	mains, err := gomain.All(dir, main)
 	if err != nil {
 		return nil, nil, err
 	}
