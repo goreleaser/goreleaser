@@ -192,9 +192,6 @@ func TestFlatpakArch(t *testing.T) {
 	for key, want := range map[string]string{
 		"linuxamd64v1": "x86_64",
 		"linuxarm64":   "aarch64",
-		"linux386":     "i386",
-		"linuxarm6":    "arm",
-		"linuxarm7":    "arm",
 	} {
 		t.Run(key, func(t *testing.T) {
 			require.Equal(t, want, flatpakArch(key))
@@ -206,8 +203,8 @@ func TestIsValidArch(t *testing.T) {
 	for arch, want := range map[string]bool{
 		"x86_64":  true,
 		"aarch64": true,
-		"arm":     true,
-		"i386":    true,
+		"i386":    false,
+		"arm":     false,
 		"mips":    false,
 		"ppc64le": false,
 	} {
@@ -244,7 +241,7 @@ func addBinaries(t *testing.T, ctx *context.Context, name, dist string) {
 	require.NoError(t, err)
 	require.NoError(t, f.Close())
 	for _, goos := range []string{"linux", "darwin"} {
-		for _, goarch := range []string{"amd64", "386", "arm"} {
+		for _, goarch := range []string{"amd64", "arm64"} {
 			a := &artifact.Artifact{
 				Name:   name,
 				Path:   binPath,
@@ -255,11 +252,8 @@ func addBinaries(t *testing.T, ctx *context.Context, name, dist string) {
 					artifact.ExtraID: name,
 				},
 			}
-			switch goarch {
-			case "amd64":
+			if goarch == "amd64" {
 				a.Goamd64 = "v1"
-			case "arm":
-				a.Goarm = "6"
 			}
 			ctx.Artifacts.Add(a)
 		}

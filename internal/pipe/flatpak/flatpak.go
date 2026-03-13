@@ -285,17 +285,11 @@ func runCmd(ctx *context.Context, dir, errMsg, bin string, args ...string) error
 var archToFlatpak = map[string]string{
 	"amd64": "x86_64",
 	"arm64": "aarch64",
-	"386":   "i386",
-	"arm":   "arm",
-	"arm6":  "arm",
-	"arm7":  "arm",
 }
 
 var validArches = map[string]bool{
 	"x86_64":  true,
 	"aarch64": true,
-	"arm":     true,
-	"i386":    true,
 }
 
 func flatpakArch(key string) string {

@@ -97,10 +97,9 @@ flatpaks:
     |---------|-------------|
     | `amd64` | `x86_64`    |
     | `arm64` | `aarch64`   |
-    | `386`   | `i386`      |
-    | `arm`   | `arm`       |
 
-    Unsupported architectures are skipped with a warning.
+    Other architectures are skipped with a warning, as the runtimes
+    are only available for `x86_64` and `aarch64`.
 
 !!! warning
 
@@ -109,7 +108,12 @@ flatpaks:
     Make sure to install them before running GoReleaser:
 
     ```bash
-    flatpak install flathub org.freedesktop.Platform//24.08 org.freedesktop.Sdk//24.08
+    flatpak install flathub \
+      org.freedesktop.Platform/x86_64/24.08 \
+      org.freedesktop.Sdk/x86_64/24.08 \
+      org.freedesktop.Platform/aarch64/24.08 \
+      org.freedesktop.Sdk/aarch64/24.08
+
     ```
 
 [Flatpak]: https://flatpak.org/
