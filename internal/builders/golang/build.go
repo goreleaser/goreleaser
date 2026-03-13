@@ -3,7 +3,6 @@ package golang
 import (
 	"errors"
 	"fmt"
-	"go/ast"
 	"go/parser"
 	"go/token"
 	"io/fs"
@@ -523,19 +522,6 @@ type errNoMain struct {
 
 func (e errNoMain) Error() string {
 	return fmt.Sprintf("build for %s does not contain a main function\nLearn more at https://goreleaser.com/errors/no-main\n", e.bin)
-}
-
-func hasMain(file *ast.File) bool {
-	for _, decl := range file.Decls {
-		fn, isFn := decl.(*ast.FuncDecl)
-		if !isFn {
-			continue
-		}
-		if fn.Name.Name == "main" && fn.Recv == nil {
-			return true
-		}
-	}
-	return false
 }
 
 func artifactType(t Target, buildmode string) artifact.Type {
