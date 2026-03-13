@@ -186,7 +186,7 @@ func requireNoGerror(tb testing.TB, err error) {
 	}
 	gerr, ok := errors.AsType[gerrors.ErrDetailed](err)
 	require.True(tb, ok)
-	require.NoError(tb, err, fmt.Sprintf("messages: %v, details: %v, output: %s", gerr.Messages(), maps.Collect(gerr.Details()), gerr.Output()))
+	require.NoError(tb, err, "messages: %v, details: %v, output: %s", gerr.Messages(), maps.Collect(gerr.Details()), gerr.Output())
 }
 
 func addBinaries(t *testing.T, ctx *context.Context, name, dist string) {
