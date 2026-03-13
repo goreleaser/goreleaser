@@ -634,6 +634,168 @@ func TestBuild(t *testing.T) {
 	testlib.RequireEqualArtifacts(t, expected, got)
 }
 
+func TestBuildVariadic(t *testing.T) {
+	folder := testlib.Mktmp(t)
+
+	writeGoMod(t, folder, "bar/foo/v2")
+	for _, m := range []string{
+		"",
+		"cmd/a",
+	} {
+		writeGoodMain(t, filepath.Join(folder, m))
+	}
+	writeMainWithoutMainFunc(t, filepath.Join(folder, "cmd/nope"))
+
+	build := config.Build{
+		ID:     "foo",
+		Main:   "./...",
+		Binary: "foo",
+		InternalDefaults: config.BuildInternalDefaults{
+			Binary: true,
+		},
+		Targets: []string{
+			"linux_amd64",
+			"windows_amd64",
+			"js_wasm",
+		},
+	}
+	ctx := testctx.WrapWithCfg(t.Context(), config.Project{
+		ProjectName: "foo",
+		Builds:      []config.Build{build},
+	}, testctx.WithCurrentTag("v5.6.7"), testctx.WithVersion("v5.6.7"))
+
+	build, err := Default.WithDefaults(build)
+	require.NoError(t, err)
+
+	for _, target := range build.Targets {
+		var ext string
+		if strings.HasPrefix(target, "windows") {
+			ext = ".exe"
+		} else if target == "js_wasm" {
+			ext = ".wasm"
+		}
+
+		gtarget, err := Default.Parse(target)
+		require.NoError(t, err)
+
+		// NOTE: When building a single target, go build will create the target
+		// dir, which doesn't happen when multiple targets.
+		// Regardless, the builder pipe does it, so we can do it only on the tests.
+		dir := filepath.Join(folder, "dist", target)
+		require.NoError(t, os.MkdirAll(dir, 0o755))
+
+		require.NoError(t, Default.Build(ctx, build, api.Options{
+			Target: gtarget,
+			Name:   build.Binary + ext,
+			Path:   filepath.Join(folder, "dist", target, build.Binary+ext),
+			Ext:    ext,
+		}))
+	}
+
+	list := ctx.Artifacts
+	require.NoError(t, list.Visit(func(a *artifact.Artifact) error {
+		s, err := filepath.Rel(folder, a.Path)
+		if err == nil {
+			a.Path = s
+		}
+		return nil
+	}))
+
+	expected := []*artifact.Artifact{
+		{
+			Name:    "a",
+			Path:    filepath.ToSlash(filepath.Join("dist", "linux_amd64_v1", "a")),
+			Goos:    "linux",
+			Goarch:  "amd64",
+			Goamd64: "v1",
+			Target:  "linux_amd64_v1",
+			Type:    artifact.Binary,
+			Extra: map[string]any{
+				artifact.ExtraID:      "foo",
+				artifact.ExtraExt:     "",
+				artifact.ExtraBinary:  "a",
+				artifact.ExtraBuilder: "go",
+			},
+		},
+		{
+			Name:    "foo",
+			Path:    filepath.ToSlash(filepath.Join("dist", "linux_amd64_v1", "foo")),
+			Goos:    "linux",
+			Goarch:  "amd64",
+			Goamd64: "v1",
+			Target:  "linux_amd64_v1",
+			Type:    artifact.Binary,
+			Extra: map[string]any{
+				artifact.ExtraID:      "foo",
+				artifact.ExtraExt:     "",
+				artifact.ExtraBinary:  "foo",
+				artifact.ExtraBuilder: "go",
+			},
+		},
+		{
+			Name:    "a.exe",
+			Path:    filepath.ToSlash(filepath.Join("dist", "windows_amd64_v1", "a.exe")),
+			Goos:    "windows",
+			Goarch:  "amd64",
+			Goamd64: "v1",
+			Target:  "windows_amd64_v1",
+			Type:    artifact.Binary,
+			Extra: map[string]any{
+				artifact.ExtraID:      "foo",
+				artifact.ExtraExt:     ".exe",
+				artifact.ExtraBinary:  "a",
+				artifact.ExtraBuilder: "go",
+			},
+		},
+		{
+			Name:    "foo.exe",
+			Path:    filepath.ToSlash(filepath.Join("dist", "windows_amd64_v1", "foo.exe")),
+			Goos:    "windows",
+			Goarch:  "amd64",
+			Goamd64: "v1",
+			Target:  "windows_amd64_v1",
+			Type:    artifact.Binary,
+			Extra: map[string]any{
+				artifact.ExtraID:      "foo",
+				artifact.ExtraExt:     ".exe",
+				artifact.ExtraBinary:  "foo",
+				artifact.ExtraBuilder: "go",
+			},
+		},
+		{
+			Name:   "a.wasm",
+			Path:   filepath.ToSlash(filepath.Join("dist", "js_wasm", "a.wasm")),
+			Goos:   "js",
+			Goarch: "wasm",
+			Target: "js_wasm",
+			Type:   artifact.Binary,
+			Extra: map[string]any{
+				artifact.ExtraID:      "foo",
+				artifact.ExtraExt:     ".wasm",
+				artifact.ExtraBinary:  "a",
+				artifact.ExtraBuilder: "go",
+			},
+		},
+		{
+			Name:   "foo.wasm",
+			Path:   filepath.ToSlash(filepath.Join("dist", "js_wasm", "foo.wasm")),
+			Goos:   "js",
+			Goarch: "wasm",
+			Target: "js_wasm",
+			Type:   artifact.Binary,
+			Extra: map[string]any{
+				artifact.ExtraID:      "foo",
+				artifact.ExtraExt:     ".wasm",
+				artifact.ExtraBinary:  "foo",
+				artifact.ExtraBuilder: "go",
+			},
+		},
+	}
+
+	got := list.List()
+	testlib.RequireEqualArtifacts(t, expected, got)
+}
+
 func TestBuildInvalidEnv(t *testing.T) {
 	folder := testlib.Mktmp(t)
 	writeGoodMain(t, folder)
@@ -1748,33 +1910,47 @@ func TestGetHeaderArtifactForLibrary(t *testing.T) {
 //
 // Helpers
 //
+//
 
-func writeMainWithoutMainFunc(t *testing.T, folder string) {
-	t.Helper()
-	require.NoError(t, os.WriteFile(
+func writeGoMod(tb testing.TB, folder, modname string) {
+	tb.Helper()
+
+	require.NoError(tb, os.MkdirAll(folder, 0o755))
+	require.NoError(tb, os.WriteFile(
+		filepath.Join(folder, "go.mod"),
+		[]byte("module "+modname),
+		0o644,
+	))
+}
+
+func writeMainWithoutMainFunc(tb testing.TB, folder string) {
+	tb.Helper()
+	require.NoError(tb, os.MkdirAll(folder, 0o755))
+	require.NoError(tb, os.WriteFile(
 		filepath.Join(folder, "main.go"),
 		[]byte("package main\nconst a = 2\nfunc notMain() {println(0)}"),
 		0o644,
 	))
 }
 
-func writeGoodMain(t *testing.T, folder string) {
-	t.Helper()
-	require.NoError(t, os.WriteFile(
+func writeGoodMain(tb testing.TB, folder string) {
+	tb.Helper()
+	require.NoError(tb, os.MkdirAll(filepath.Join(folder, folder), 0o755))
+	require.NoError(tb, os.WriteFile(
 		filepath.Join(folder, "main.go"),
 		[]byte("package main\nvar a = 1\nfunc main() {println(0)}"),
 		0o644,
 	))
 }
 
-func writeTest(t *testing.T, folder string) {
-	t.Helper()
-	require.NoError(t, os.WriteFile(
+func writeTest(tb testing.TB, folder string) {
+	tb.Helper()
+	require.NoError(tb, os.WriteFile(
 		filepath.Join(folder, "main_test.go"),
 		[]byte("package main\nimport\"testing\"\nfunc TestFoo(t *testing.T) {t.Log(\"OK\")}"),
 		0o644,
 	))
-	require.NoError(t, os.WriteFile(
+	require.NoError(tb, os.WriteFile(
 		filepath.Join(folder, "go.mod"),
 		[]byte("module foo\n"),
 		0o666,
