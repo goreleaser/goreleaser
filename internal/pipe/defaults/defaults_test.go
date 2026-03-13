@@ -23,7 +23,7 @@ func TestFillBasicData(t *testing.T) {
 	require.Equal(t, "goreleaser", ctx.Config.Release.GitHub.Name)
 	require.NotEmpty(t, ctx.Config.Builds)
 	require.Equal(t, "goreleaser", ctx.Config.Builds[0].Binary)
-	require.Equal(t, ".", ctx.Config.Builds[0].Main)
+	require.Equal(t, "", ctx.Config.Builds[0].Main)
 	require.Contains(t, ctx.Config.Builds[0].Goos, "darwin")
 	require.Contains(t, ctx.Config.Builds[0].Goos, "linux")
 	require.Contains(t, ctx.Config.Builds[0].Goarch, "386")
