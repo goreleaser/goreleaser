@@ -4,8 +4,6 @@ import (
 	"cmp"
 	"errors"
 	"fmt"
-	"go/parser"
-	"go/token"
 	"io/fs"
 	"maps"
 	"os"
@@ -17,6 +15,7 @@ import (
 	"github.com/caarlos0/log"
 	"github.com/goreleaser/goreleaser/v2/internal/artifact"
 	"github.com/goreleaser/goreleaser/v2/internal/builders/base"
+	"github.com/goreleaser/goreleaser/v2/internal/builders/golang/findmains"
 	"github.com/goreleaser/goreleaser/v2/internal/elf"
 	"github.com/goreleaser/goreleaser/v2/internal/experimental"
 	"github.com/goreleaser/goreleaser/v2/internal/logext"
@@ -460,43 +459,6 @@ func buildOutput(out []byte) string {
 	return strings.Join(lines, "\n")
 }
 
-func checkMain(main, binary string) error {
-	stat, ferr := os.Stat(main)
-	if ferr != nil {
-		return fmt.Errorf("couldn't find main file: %w", ferr)
-	}
-	if stat.IsDir() {
-		packs, err := parser.ParseDir(token.NewFileSet(), main, nil, 0)
-		if err != nil {
-			return fmt.Errorf("failed to parse dir: %s: %w", main, err)
-		}
-		for _, pack := range packs {
-			for _, file := range pack.Files {
-				if hasMain(file) {
-					return nil
-				}
-			}
-		}
-		return errNoMain{binary}
-	}
-	file, err := parser.ParseFile(token.NewFileSet(), main, nil, 0)
-	if err != nil {
-		return fmt.Errorf("failed to parse file: %s: %w", main, err)
-	}
-	if hasMain(file) {
-		return nil
-	}
-	return errNoMain{binary}
-}
-
-type errNoMain struct {
-	bin string
-}
-
-func (e errNoMain) Error() string {
-	return fmt.Sprintf("build for %s does not contain a main function\nLearn more at https://goreleaser.com/errors/no-main\n", e.bin)
-}
-
 func artifactType(t Target, buildmode string) artifact.Type {
 	switch buildmode {
 	case "c-archive":
@@ -585,7 +547,7 @@ func checkBuild(build config.Build, options api.Options) (map[string]string, []*
 		if dir != "" {
 			main = filepath.Join(dir, main)
 		}
-		if err := checkMain(main, build.Binary); err != nil {
+		if err := findmains.Check(main, build.Binary); err != nil {
 			return nil, nil, err
 		}
 		return nil, []*artifact.Artifact{
@@ -599,7 +561,7 @@ func checkBuild(build config.Build, options api.Options) (map[string]string, []*
 	}
 
 	var binaries []*artifact.Artifact
-	mains, err := findMains(dir, main)
+	mains, err := findmains.All(dir, main)
 	if err != nil {
 		return nil, nil, err
 	}

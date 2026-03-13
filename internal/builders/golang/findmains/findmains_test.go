@@ -1,4 +1,6 @@
-package golang
+// Package findmains helps find all the `func main`'s in a given dir following
+// some patterns.
+package findmains
 
 import (
 	"os"
@@ -9,7 +11,7 @@ import (
 	"golang.org/x/tools/go/packages"
 )
 
-func TestFindMains(t *testing.T) {
+func TestLoad(t *testing.T) {
 	dir := t.TempDir()
 	require.NoError(t, os.WriteFile(filepath.Join(dir, "go.mod"), []byte("module github.com/foo/bar/v10"), 0o644))
 	for _, m := range []string{
@@ -23,7 +25,7 @@ func TestFindMains(t *testing.T) {
 		require.NoError(t, os.WriteFile(filepath.Join(dir, m), []byte("package main\nfunc main(){}"), 0o644))
 	}
 
-	mains, err := findMains(dir, "./...")
+	mains, err := All(dir, "./...")
 	require.NoError(t, err)
 	require.Equal(t, map[string]string{
 		"bar": ".",
@@ -33,13 +35,13 @@ func TestFindMains(t *testing.T) {
 	}, mains)
 }
 
-func TestFindMainsErrors(t *testing.T) {
-	mains, err := findMains(t.TempDir(), "./...")
-	require.ErrorIs(t, err, errNoMains)
+func TestLoadErrors(t *testing.T) {
+	mains, err := All(t.TempDir(), "./...")
+	require.ErrorIs(t, err, ErrNoMains)
 	require.Nil(t, mains)
 }
 
-func TestComputeBinaryName(t *testing.T) {
+func TestBinaryNameFor(t *testing.T) {
 	for expected, pkg := range map[string]packages.Package{
 		"foo": {
 			Dir: "./cmd/foo",
@@ -60,7 +62,7 @@ func TestComputeBinaryName(t *testing.T) {
 		},
 	} {
 		t.Run(expected, func(t *testing.T) {
-			require.Equal(t, expected, computeBinaryName(&pkg))
+			require.Equal(t, expected, BinaryNameFor(&pkg))
 		})
 	}
 }

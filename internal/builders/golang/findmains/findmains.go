@@ -1,10 +1,15 @@
-package golang
+// Package findmains helps find all the `func main`'s in a given dir following
+// some patterns.
+package findmains
 
 import (
 	"cmp"
 	"errors"
 	"fmt"
 	"go/ast"
+	"go/parser"
+	"go/token"
+	"os"
 	"path"
 	"path/filepath"
 	"slices"
@@ -15,9 +20,53 @@ import (
 	"golang.org/x/tools/go/packages"
 )
 
-var errNoMains = errors.New("no main functions found")
+// ErrNoMains happens when, after scanning the module, we still didn't find any
+// 'func main'.
+var ErrNoMains = errors.New("directory does not contain any main function\nLearn more at https://goreleaser.com/errors/no-main\n")
 
-func findMains(dir string, patterns ...string) (map[string]string, error) {
+// ErrNoMain happens when no 'func main' is found at a specific path.
+type ErrNoMain struct {
+	bin string
+}
+
+func (e ErrNoMain) Error() string {
+	return fmt.Sprintf("build for %s does not contain a main function\nLearn more at https://goreleaser.com/errors/no-main\n", e.bin)
+}
+
+// Check checks if the given 'main' (either file or directory) contains a 'func
+// main', returning an error otherwise.
+func Check(main, binary string) error {
+	stat, ferr := os.Stat(main)
+	if ferr != nil {
+		return fmt.Errorf("couldn't find main file: %w", ferr)
+	}
+	if stat.IsDir() {
+		packs, err := parser.ParseDir(token.NewFileSet(), main, nil, 0)
+		if err != nil {
+			return fmt.Errorf("failed to parse dir: %s: %w", main, err)
+		}
+		for _, pack := range packs {
+			for _, file := range pack.Files {
+				if hasMain(file) {
+					return nil
+				}
+			}
+		}
+		return ErrNoMain{binary}
+	}
+	file, err := parser.ParseFile(token.NewFileSet(), main, nil, 0)
+	if err != nil {
+		return fmt.Errorf("failed to parse file: %s: %w", main, err)
+	}
+	if hasMain(file) {
+		return nil
+	}
+	return ErrNoMain{binary}
+}
+
+// All finds all the `func main`'s in the given dir following the given patterns.
+// The result is either a map of binaryName -> ./relative/path or an error.
+func All(dir string, patterns ...string) (map[string]string, error) {
 	dirabs, err := filepath.Abs(dir)
 	if err != nil {
 		return nil, fmt.Errorf("could not find '%s' absolute path: %w", dir, err)
@@ -50,7 +99,7 @@ func findMains(dir string, patterns ...string) (map[string]string, error) {
 			continue
 		}
 
-		binaryName := computeBinaryName(pkg)
+		binaryName := BinaryNameFor(pkg)
 		if binaryName == "" {
 			log.WithField("package", pkg.PkgPath).Warn("didn't find a binary name for package")
 			continue
@@ -73,7 +122,7 @@ func findMains(dir string, patterns ...string) (map[string]string, error) {
 	}
 
 	if len(result) == 0 {
-		return nil, errNoMains
+		return nil, ErrNoMains
 	}
 
 	return result, nil
@@ -96,7 +145,9 @@ func hasMain(file *ast.File) bool {
 	return false
 }
 
-func computeBinaryName(pkg *packages.Package) string {
+// BinaryNameFor returns the 'go build' chosen binary name for the given
+// package.
+func BinaryNameFor(pkg *packages.Package) string {
 	if pkg.Module == nil {
 		return path.Base(pkg.Dir)
 	}
