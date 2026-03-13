@@ -1135,7 +1135,11 @@ func TestBuildGoBuildLine(t *testing.T) {
 			build,
 			dets,
 			options,
-			&artifact.Artifact{},
+			&artifact.Artifact{
+				Name: "foo",
+				Path: ".",
+			},
+			nil,
 			[]string{},
 		)
 		require.NoError(t, err)
@@ -1717,10 +1721,11 @@ func TestArtifactType(t *testing.T) {
 
 func TestGetHeaderArtifactForLibrary(t *testing.T) {
 	t.Run("no .h", func(t *testing.T) {
-		require.Nil(t, getHeaderArtifactForLibrary(config.Build{}, api.Options{
-			Path:   "foo.so",
-			Target: Target{},
-		}))
+		require.Nil(t, getHeaderArtifactForLibrary(
+			config.Build{},
+			Target{},
+			"foo",
+		))
 	})
 	t.Run(".h", func(t *testing.T) {
 		tmp := t.TempDir()
@@ -1728,11 +1733,12 @@ func TestGetHeaderArtifactForLibrary(t *testing.T) {
 		h := filepath.Join(tmp, "foo.h")
 		require.NoError(t, os.WriteFile(so, nil, 0o644))
 		require.NoError(t, os.WriteFile(h, nil, 0o644))
-		a := getHeaderArtifactForLibrary(config.Build{}, api.Options{
-			Path:   so,
-			Ext:    ".so",
-			Target: Target{},
-		})
+
+		a := getHeaderArtifactForLibrary(
+			config.Build{},
+			Target{},
+			filepath.Join(tmp, "foo"),
+		)
 		require.NotNil(t, a)
 		require.Equal(t, h, a.Path)
 	})

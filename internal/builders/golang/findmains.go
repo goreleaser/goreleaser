@@ -18,6 +18,11 @@ import (
 var errNoMains = errors.New("no main functions found")
 
 func findMains(dir string, patterns ...string) (map[string]string, error) {
+	dirabs, err := filepath.Abs(dir)
+	if err != nil {
+		return nil, fmt.Errorf("could not find '%s' absolute path: %w", dir, err)
+	}
+
 	cfg := &packages.Config{
 		Mode: packages.NeedName |
 			packages.NeedTypes |
@@ -27,7 +32,7 @@ func findMains(dir string, patterns ...string) (map[string]string, error) {
 			packages.NeedFiles |
 			packages.NeedModule,
 		Tests: false,
-		Dir:   dir,
+		Dir:   dirabs,
 	}
 
 	pkgs, err := packages.Load(cfg, patterns...)
@@ -52,7 +57,7 @@ func findMains(dir string, patterns ...string) (map[string]string, error) {
 		}
 
 		relPkgDir := pkg.Dir
-		if rel, err := filepath.Rel(dir, relPkgDir); err == nil {
+		if rel, err := filepath.Rel(dirabs, relPkgDir); err == nil {
 			relPkgDir = cmp.Or(rel, ".")
 			if relPkgDir != "." {
 				relPkgDir = "./" + relPkgDir

@@ -1,6 +1,7 @@
 package golang
 
 import (
+	"cmp"
 	"errors"
 	"fmt"
 	"go/parser"
@@ -109,9 +110,6 @@ func (*Builder) WithDefaults(build config.Build) (config.Build, error) {
 	}
 	if build.Dir == "" {
 		build.Dir = "."
-	}
-	if build.Main == "" {
-		build.Main = "."
 	}
 	if len(build.Ldflags) == 0 {
 		build.Ldflags = []string{"-s -w -X main.version={{.Version}} -X main.commit={{.Commit}} -X main.date={{.Date}} -X main.builtBy=goreleaser"}
@@ -256,40 +254,25 @@ var go118FirstClassTargets = []string{
 
 // Build builds a golang build.
 func (*Builder) Build(ctx *context.Context, build config.Build, options api.Options) error {
-	if err := checkMain(build); err != nil {
+	mains, allbinaries, err := checkBuild(build, options)
+	if err != nil {
 		return err
 	}
 
-	t := options.Target.(Target)
-
-	a := &artifact.Artifact{
-		Type:      artifactType(t, build.Buildmode),
-		Path:      options.Path,
-		Name:      options.Name,
-		Goos:      t.Goos,
-		Goarch:    t.Goarch,
-		Goamd64:   t.Goamd64,
-		Go386:     t.Go386,
-		Goarm:     t.Goarm,
-		Goarm64:   t.Goarm64,
-		Gomips:    t.Gomips,
-		Goppc64:   t.Goppc64,
-		Goriscv64: t.Goriscv64,
-		Target:    t.Target,
-		Extra: map[string]any{
-			artifact.ExtraBinary:  strings.TrimSuffix(filepath.Base(options.Path), options.Ext),
-			artifact.ExtraExt:     options.Ext,
-			artifact.ExtraID:      build.ID,
-			artifact.ExtraBuilder: "go",
-		},
-	}
-
-	if a.Type == artifact.CShared || a.Type == artifact.CArchive {
-		if ha := getHeaderArtifactForLibrary(build, options); ha != nil {
-			ctx.Artifacts.Add(ha)
+	for _, a := range allbinaries {
+		if a.Type == artifact.CShared || a.Type == artifact.CArchive {
+			fullPathWithoutExt := strings.TrimSuffix(a.Path, options.Ext)
+			if ha := getHeaderArtifactForLibrary(
+				build,
+				options.Target.(Target),
+				fullPathWithoutExt,
+			); ha != nil {
+				ctx.Artifacts.Add(ha)
+			}
 		}
 	}
 
+	t := options.Target.(Target)
 	details, err := withOverrides(ctx, build, t)
 	if err != nil {
 		return err
@@ -303,7 +286,7 @@ func (*Builder) Build(ctx *context.Context, build config.Build, options api.Opti
 	tpl := tmpl.New(ctx).
 		WithBuildOptions(options).
 		WithEnvS(env).
-		WithArtifact(a)
+		WithArtifact(allbinaries[0])
 
 	tenv, err := base.TemplateEnv(details.Env, tpl)
 	if err != nil {
@@ -321,10 +304,12 @@ func (*Builder) Build(ctx *context.Context, build config.Build, options api.Opti
 	}
 
 	if len(testEnvs) > 0 {
-		a.Extra["testEnvs"] = testEnvs
+		for i := range allbinaries {
+			allbinaries[i].Extra["testEnvs"] = testEnvs
+		}
 	}
 
-	cmd, err := buildGoBuildLine(ctx, build, details, options, a, env)
+	cmd, err := buildGoBuildLine(ctx, build, details, options, allbinaries[0], mains, env)
 	if err != nil {
 		return err
 	}
@@ -333,15 +318,15 @@ func (*Builder) Build(ctx *context.Context, build config.Build, options api.Opti
 		return err
 	}
 
-	if err := base.ChTimes(build, tpl, a); err != nil {
-		return err
+	for _, a := range allbinaries {
+		if err := base.ChTimes(build, tpl, a); err != nil {
+			return err
+		}
+		if elf.IsDynamicallyLinked(a.Path) {
+			a.Extra[artifact.ExtranDynLink] = true
+		}
+		ctx.Artifacts.Add(a)
 	}
-
-	if elf.IsDynamicallyLinked(a.Path) {
-		a.Extra[artifact.ExtranDynLink] = true
-	}
-
-	ctx.Artifacts.Add(a)
 	return nil
 }
 
@@ -383,6 +368,7 @@ func buildGoBuildLine(
 	details config.BuildDetails,
 	options api.Options,
 	artifact *artifact.Artifact,
+	mains map[string]string,
 	env []string,
 ) ([]string, error) {
 	gobin, err := tmpl.New(ctx).WithBuildOptions(options).Apply(build.Tool)
@@ -440,7 +426,12 @@ func buildGoBuildLine(
 		cmd = append(cmd, "-buildmode="+details.Buildmode)
 	}
 
-	cmd = append(cmd, "-o", options.Path, build.Main)
+	if mains == nil {
+		cmd = append(cmd, "-o", options.Path, build.Main)
+	} else {
+		cmd = append(cmd, "-o", filepath.Dir(options.Path))
+		cmd = append(cmd, slices.Collect(maps.Values(mains))...)
+	}
 	return cmd, nil
 }
 
@@ -469,25 +460,7 @@ func buildOutput(out []byte) string {
 	return strings.Join(lines, "\n")
 }
 
-func checkMain(build config.Build) error {
-	if build.NoMainCheck {
-		return nil
-	}
-	main := build.Main
-	if build.UnproxiedMain != "" {
-		main = build.UnproxiedMain
-	}
-	dir := build.Dir
-	if build.UnproxiedDir != "" {
-		dir = build.UnproxiedDir
-	}
-
-	if main == "" {
-		main = "."
-	}
-	if dir != "" {
-		main = filepath.Join(dir, main)
-	}
+func checkMain(main, binary string) error {
 	stat, ferr := os.Stat(main)
 	if ferr != nil {
 		return fmt.Errorf("couldn't find main file: %w", ferr)
@@ -504,7 +477,7 @@ func checkMain(build config.Build) error {
 				}
 			}
 		}
-		return errNoMain{build.Binary}
+		return errNoMain{binary}
 	}
 	file, err := parser.ParseFile(token.NewFileSet(), main, nil, 0)
 	if err != nil {
@@ -513,7 +486,7 @@ func checkMain(build config.Build) error {
 	if hasMain(file) {
 		return nil
 	}
-	return errNoMain{build.Binary}
+	return errNoMain{binary}
 }
 
 type errNoMain struct {
@@ -536,12 +509,10 @@ func artifactType(t Target, buildmode string) artifact.Type {
 	return artifact.Binary
 }
 
-func getHeaderArtifactForLibrary(build config.Build, options api.Options) *artifact.Artifact {
-	fullPathWithoutExt := strings.TrimSuffix(options.Path, options.Ext)
+func getHeaderArtifactForLibrary(build config.Build, t Target, fullPathWithoutExt string) *artifact.Artifact {
 	basePath := filepath.Base(fullPathWithoutExt)
 	fullPath := fullPathWithoutExt + ".h"
 	headerName := basePath + ".h"
-	t := options.Target.(Target)
 
 	if _, err := os.Stat(fullPath); errors.Is(err, fs.ErrNotExist) {
 		return nil
@@ -567,4 +538,88 @@ func getHeaderArtifactForLibrary(build config.Build, options api.Options) *artif
 			artifact.ExtraID:     build.ID,
 		},
 	}
+}
+
+func getBinaryArtifact(
+	t Target,
+	build config.Build,
+	name, path, ext string,
+) *artifact.Artifact {
+	return &artifact.Artifact{
+		Type:      artifactType(t, build.Buildmode),
+		Path:      path,
+		Name:      name,
+		Goos:      t.Goos,
+		Goarch:    t.Goarch,
+		Goamd64:   t.Goamd64,
+		Go386:     t.Go386,
+		Goarm:     t.Goarm,
+		Goarm64:   t.Goarm64,
+		Gomips:    t.Gomips,
+		Goppc64:   t.Goppc64,
+		Goriscv64: t.Goriscv64,
+		Target:    t.Target,
+		Extra: map[string]any{
+			artifact.ExtraBinary:  strings.TrimSuffix(filepath.Base(name), ext),
+			artifact.ExtraExt:     ext,
+			artifact.ExtraID:      build.ID,
+			artifact.ExtraBuilder: "go",
+		},
+	}
+}
+
+func checkBuild(build config.Build, options api.Options) (map[string]string, []*artifact.Artifact, error) {
+	main := cmp.Or(build.UnproxiedMain, build.Main, ".")
+	dir := cmp.Or(build.UnproxiedDir, build.Dir)
+
+	t := options.Target.(Target)
+
+	if build.NoMainCheck {
+		return nil, []*artifact.Artifact{
+			getBinaryArtifact(t, build, options.Name, options.Path, options.Ext),
+		}, nil
+	}
+
+	if main != "./..." {
+		// old behavior
+		if dir != "" {
+			main = filepath.Join(dir, main)
+		}
+		if err := checkMain(main, build.Binary); err != nil {
+			return nil, nil, err
+		}
+		return nil, []*artifact.Artifact{
+			getBinaryArtifact(t, build, options.Name, options.Path, options.Ext),
+		}, nil
+	}
+
+	// we should try and find all `func main`'s:
+	if build.Binary != "" && !build.InternalDefaults.Binary {
+		return nil, nil, errors.New("'main' is './...' but 'binary' is also set - either set 'main' to a specific package or 'binary' to empty to auto-detect all mains and binary names")
+	}
+
+	var binaries []*artifact.Artifact
+	mains, err := findMains(dir, main)
+	if err != nil {
+		return nil, nil, err
+	}
+
+	var bins []string
+	var pkgs []string
+
+	for _, bin := range slices.SortedFunc(maps.Keys(mains), func(a, b string) int {
+		return strings.Compare(mains[a], mains[b])
+	}) {
+		name := bin + options.Ext
+		path := filepath.Join(filepath.Dir(options.Path), name)
+		bins = append(bins, name)
+		pkgs = append(pkgs, mains[bin])
+		binaries = append(binaries, getBinaryArtifact(t, build, name, path, options.Ext))
+	}
+
+	log.
+		WithField("paths", strings.Join(pkgs, " ")).
+		WithField("binaries", strings.Join(bins, " ")).
+		Info("building")
+	return mains, binaries, nil
 }

@@ -16,7 +16,8 @@ before:
     - go generate ./...
 
 builds:
-  - env:
+  - main: ./...
+    env:
       - CGO_ENABLED=0
     goarch:
       - arm64
