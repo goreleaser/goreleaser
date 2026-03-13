@@ -18,6 +18,10 @@ before:
 builds:
   - env:
       - CGO_ENABLED=0
+    goarch:
+      - arm64
+      - amd64
+      - "386"
     goos:
       - linux
       - windows
