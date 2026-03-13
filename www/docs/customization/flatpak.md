@@ -7,7 +7,7 @@ binaries.
 Flatpak is a framework for distributing desktop applications across various
 Linux distributions, providing sandboxed environments with consistent runtimes.
 
-The resulting `.flatpak` bundles can be uploaded to GitHub/GitLab releases, blob
+The resulting `.flatpak` bundles can be uploaded to releases, blob
 storage, or distributed directly to users.
 
 !!! note
@@ -16,7 +16,7 @@ storage, or distributed directly to users.
     your system `$PATH`.
     You can install them from your system package manager.
     The configured runtime and SDK must also be installed on the build machine.
-    Flatpak generally only works from Linux.
+    Flatpak only works from Linux.
 
 ## Configuration
 
@@ -98,8 +98,7 @@ flatpaks:
     | `amd64` | `x86_64`    |
     | `arm64` | `aarch64`   |
 
-    Other architectures are skipped with a warning, as the runtimes
-    are only available for `x86_64` and `aarch64`.
+    Other architectures are ignored.
 
 !!! warning
 

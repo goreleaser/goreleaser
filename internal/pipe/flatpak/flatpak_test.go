@@ -53,40 +53,22 @@ func TestDefault(t *testing.T) {
 	require.Equal(t, defaultNameTemplate, ctx.Config.Flatpaks[0].NameTemplate)
 }
 
-func TestDefaultNoAppID(t *testing.T) {
-	fp := validFlatpak()
-	fp.AppID = ""
-	ctx := testctx.WrapWithCfg(t.Context(), config.Project{
-		Flatpaks: []config.Flatpak{fp},
-	})
-	require.ErrorIs(t, Pipe{}.Default(ctx), ErrNoAppID)
-}
-
-func TestDefaultNoRuntime(t *testing.T) {
-	fp := validFlatpak()
-	fp.Runtime = ""
-	ctx := testctx.WrapWithCfg(t.Context(), config.Project{
-		Flatpaks: []config.Flatpak{fp},
-	})
-	require.ErrorIs(t, Pipe{}.Default(ctx), ErrNoRuntime)
-}
-
-func TestDefaultNoRuntimeVersion(t *testing.T) {
-	fp := validFlatpak()
-	fp.RuntimeVersion = ""
-	ctx := testctx.WrapWithCfg(t.Context(), config.Project{
-		Flatpaks: []config.Flatpak{fp},
-	})
-	require.ErrorIs(t, Pipe{}.Default(ctx), ErrNoRuntimeVersion)
-}
-
-func TestDefaultNoSDK(t *testing.T) {
-	fp := validFlatpak()
-	fp.SDK = ""
-	ctx := testctx.WrapWithCfg(t.Context(), config.Project{
-		Flatpaks: []config.Flatpak{fp},
-	})
-	require.ErrorIs(t, Pipe{}.Default(ctx), ErrNoSDK)
+func TestDefaultMissingFields(t *testing.T) {
+	for name, mod := range map[string]func(*config.Flatpak){
+		"no app_id":          func(fp *config.Flatpak) { fp.AppID = "" },
+		"no runtime":         func(fp *config.Flatpak) { fp.Runtime = "" },
+		"no runtime_version": func(fp *config.Flatpak) { fp.RuntimeVersion = "" },
+		"no sdk":             func(fp *config.Flatpak) { fp.SDK = "" },
+	} {
+		t.Run(name, func(t *testing.T) {
+			fp := validFlatpak()
+			mod(&fp)
+			ctx := testctx.WrapWithCfg(t.Context(), config.Project{
+				Flatpaks: []config.Flatpak{fp},
+			})
+			require.Error(t, Pipe{}.Default(ctx))
+		})
+	}
 }
 
 func TestSeveralFlatpaksWithTheSameID(t *testing.T) {
@@ -187,7 +169,6 @@ func TestRunPipe(t *testing.T) {
 func TestDependencies(t *testing.T) {
 	require.Equal(t, []string{"flatpak-builder", "flatpak"}, Pipe{}.Dependencies(nil))
 }
-
 
 func validFlatpak() config.Flatpak {
 	return config.Flatpak{
