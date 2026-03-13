@@ -22,7 +22,7 @@ import (
 
 // ErrNoMains happens when, after scanning the module, we still didn't find any
 // 'func main'.
-var ErrNoMains = errors.New("directory does not contain any main function\nLearn more at https://goreleaser.com/errors/no-main\n")
+var ErrNoMains = errors.New("directory does not contain any main function\nLearn more at https://goreleaser.com/errors/no-main\n") //nolint:revive,staticcheck
 
 // ErrNoMain happens when no 'func main' is found at a specific path.
 type ErrNoMain struct {

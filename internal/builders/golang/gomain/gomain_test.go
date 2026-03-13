@@ -1,5 +1,3 @@
-// Package findmains helps find all the `func main`'s in a given dir following
-// some patterns.
 package gomain
 
 import (

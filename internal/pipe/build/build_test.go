@@ -410,7 +410,7 @@ func TestDefaultPartialBuilds(t *testing.T) {
 	t.Run("build1", func(t *testing.T) {
 		build := ctx.Config.Builds[1]
 		require.Equal(t, "foo", build.Binary)
-		require.Equal(t, "", build.Main)
+		require.Empty(t, build.Main)
 		require.Equal(t, "baz", build.Dir)
 		require.Equal(t, []string{"linux", "darwin", "windows"}, build.Goos)
 		require.Equal(t, []string{"386"}, build.Goarch)
