@@ -3,7 +3,6 @@ package flatpak
 import (
 	"encoding/json"
 	"errors"
-	"fmt"
 	"maps"
 	"os"
 	"path/filepath"
