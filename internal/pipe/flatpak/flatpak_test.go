@@ -188,31 +188,6 @@ func TestDependencies(t *testing.T) {
 	require.Equal(t, []string{"flatpak-builder", "flatpak"}, Pipe{}.Dependencies(nil))
 }
 
-func TestFlatpakArch(t *testing.T) {
-	for key, want := range map[string]string{
-		"linuxamd64v1": "x86_64",
-		"linuxarm64":   "aarch64",
-	} {
-		t.Run(key, func(t *testing.T) {
-			require.Equal(t, want, flatpakArch(key))
-		})
-	}
-}
-
-func TestIsValidArch(t *testing.T) {
-	for arch, want := range map[string]bool{
-		"x86_64":  true,
-		"aarch64": true,
-		"i386":    false,
-		"arm":     false,
-		"mips":    false,
-		"ppc64le": false,
-	} {
-		t.Run(arch, func(t *testing.T) {
-			require.Equal(t, want, isValidArch(arch))
-		})
-	}
-}
 
 func validFlatpak() config.Flatpak {
 	return config.Flatpak{

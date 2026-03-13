@@ -126,18 +126,15 @@ func doRun(ctx *context.Context, fp config.Flatpak) error {
 	filters := []artifact.Filter{
 		artifact.ByGoos("linux"),
 		artifact.ByType(artifact.Binary),
+		artifact.ByGoarches("amd64", "arm64"),
 	}
 	if len(fp.IDs) > 0 {
 		filters = append(filters, artifact.ByIDs(fp.IDs...))
 	}
-	for platform, binaries := range ctx.Artifacts.Filter(
+	for _, binaries := range ctx.Artifacts.Filter(
 		artifact.And(filters...),
 	).GroupByPlatform() {
-		arch := flatpakArch(platform)
-		if !isValidArch(arch) {
-			log.WithField("arch", arch).Warn("ignored unsupported flatpak arch")
-			continue
-		}
+		arch := archToFlatpak[binaries[0].Goarch]
 		g.Go(func() error {
 			return create(ctx, fp, arch, binaries)
 		})
@@ -285,24 +282,4 @@ func runCmd(ctx *context.Context, dir, errMsg, bin string, args ...string) error
 var archToFlatpak = map[string]string{
 	"amd64": "x86_64",
 	"arm64": "aarch64",
-}
-
-var validArches = map[string]bool{
-	"x86_64":  true,
-	"aarch64": true,
-}
-
-func flatpakArch(key string) string {
-	arch := strings.TrimPrefix(key, "linux")
-	for _, suffix := range []string{"v1", "v2", "v3", "v4"} {
-		arch = strings.TrimSuffix(arch, suffix)
-	}
-	if got, ok := archToFlatpak[arch]; ok {
-		return got
-	}
-	return arch
-}
-
-func isValidArch(arch string) bool {
-	return validArches[arch]
 }
