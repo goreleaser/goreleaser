@@ -2008,7 +2008,7 @@ func writeMainWithoutMainFunc(tb testing.TB, folder string) {
 
 func writeGoodMain(tb testing.TB, folder string) {
 	tb.Helper()
-	require.NoError(tb, os.MkdirAll(filepath.Join(folder, folder), 0o755))
+	require.NoError(tb, os.MkdirAll(folder, 0o755))
 	require.NoError(tb, os.WriteFile(
 		filepath.Join(folder, "main.go"),
 		[]byte("package main\nvar a = 1\nfunc main() {println(0)}"),
