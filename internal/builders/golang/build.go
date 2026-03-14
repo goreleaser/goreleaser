@@ -314,8 +314,6 @@ func (*Builder) Build(ctx *context.Context, build config.Build, options api.Opti
 		return err
 	}
 
-	fmt.Println("AUQI", cmd)
-
 	if err := base.Exec(ctx, cmd, env, build.Dir); err != nil {
 		return err
 	}
@@ -534,7 +532,7 @@ func getBinaryArtifact(
 }
 
 func checkBuild(build config.Build, options api.Options) (map[string]string, []*artifact.Artifact, error) {
-	main := cmp.Or(build.Main, ".")
+	main := cmp.Or(build.UnproxiedMain, build.Main, ".")
 	dir := cmp.Or(build.UnproxiedDir, build.Dir)
 
 	t := options.Target.(Target)
@@ -585,7 +583,6 @@ func checkBuildElipsis(
 	for _, bin := range slices.SortedFunc(maps.Keys(mains), func(a, b string) int {
 		return strings.Compare(mains[a], mains[b])
 	}) {
-
 		name := bin + options.Ext
 		path := filepath.Join(filepath.Dir(options.Path), name)
 		if build.UnproxiedMain != "" {
