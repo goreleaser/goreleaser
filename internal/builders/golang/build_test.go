@@ -1429,6 +1429,79 @@ func TestBuildGoBuildLine(t *testing.T) {
 	})
 }
 
+func TestToProxiedImportPath(t *testing.T) {
+	tests := []struct {
+		name  string
+		build config.Build
+		rel   string
+		want  string
+	}{
+		{
+			name: "variadic from module root keeps root",
+			build: config.Build{
+				Main:          "github.com/foo/bar/...",
+				UnproxiedMain: "./...",
+			},
+			rel:  ".",
+			want: "github.com/foo/bar",
+		},
+		{
+			name: "variadic from module root prefixes nested package",
+			build: config.Build{
+				Main:          "github.com/foo/bar/...",
+				UnproxiedMain: "./...",
+			},
+			rel:  "./cmd/a",
+			want: "github.com/foo/bar/cmd/a",
+		},
+		{
+			name: "variadic from subpath does not duplicate path segments",
+			build: config.Build{
+				Main:          "github.com/foo/bar/cmd/...",
+				UnproxiedMain: "./cmd/...",
+			},
+			rel:  "./cmd/a",
+			want: "github.com/foo/bar/cmd/a",
+		},
+	}
+
+	for _, tc := range tests {
+		t.Run(tc.name, func(t *testing.T) {
+			require.Equal(t, tc.want, toProxiedImportPath(tc.build, tc.rel))
+		})
+	}
+}
+
+func TestCheckBuildElipsisWithProxiedSubpathMain(t *testing.T) {
+	folder := testlib.Mktmp(t)
+	writeGoMod(t, folder, "github.com/foo/bar")
+	writeGoodMain(t, filepath.Join(folder, "cmd", "a"))
+	writeGoodMain(t, filepath.Join(folder, "cmd", "b"))
+
+	options := api.Options{
+		Target: mustParse(t, runtimeTarget),
+		Path:   filepath.Join(folder, "dist", runtimeTarget, "foo"),
+	}
+
+	mains, binaries, err := checkBuild(config.Build{
+		ID:            "foo",
+		Main:          "github.com/foo/bar/cmd/...",
+		UnproxiedMain: "./cmd/...",
+		UnproxiedDir:  folder,
+		Dir:           filepath.Join(folder, "dist", "proxy", "foo"),
+	}, options)
+	require.NoError(t, err)
+	require.Equal(t, map[string]string{
+		"a": "github.com/foo/bar/cmd/a",
+		"b": "github.com/foo/bar/cmd/b",
+	}, mains)
+	require.Len(t, binaries, 2)
+	for _, b := range binaries {
+		require.NotContains(t, b.Path, "github.com/foo/bar")
+		require.Equal(t, filepath.Dir(options.Path), filepath.Dir(b.Path))
+	}
+}
+
 func TestOverrides(t *testing.T) {
 	for _, arch := range []string{
 		"amd64",

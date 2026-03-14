@@ -7,6 +7,7 @@ import (
 	"io/fs"
 	"maps"
 	"os"
+	"path"
 	"path/filepath"
 	"slices"
 	"strings"
@@ -587,9 +588,8 @@ func checkBuildElipsis(
 
 		name := bin + options.Ext
 		path := filepath.Join(filepath.Dir(options.Path), name)
-		if build.UnproxiedMain != "" && !strings.HasSuffix(mains[bin], "/.") {
-			mains[bin] = strings.TrimSuffix(build.Main, "/...") + "/" + mains[bin]
-			path = mains[bin]
+		if build.UnproxiedMain != "" {
+			mains[bin] = toProxiedImportPath(build, mains[bin])
 		}
 		bins = append(bins, name)
 		pkgs = append(pkgs, mains[bin])
@@ -601,4 +601,17 @@ func checkBuildElipsis(
 		WithField("binaries", strings.Join(bins, " ")).
 		Info("building")
 	return mains, binaries, nil
+}
+
+func toProxiedImportPath(build config.Build, rel string) string {
+	modulePath := strings.TrimSuffix(build.Main, "/...")
+	if suffix := strings.TrimPrefix(strings.TrimSuffix(build.UnproxiedMain, "/..."), "."); suffix != "" {
+		modulePath = strings.TrimSuffix(build.Main, suffix+"/...")
+	}
+
+	if rel == "." {
+		return modulePath
+	}
+
+	return path.Join(modulePath, strings.TrimPrefix(rel, "./"))
 }
