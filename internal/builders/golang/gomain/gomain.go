@@ -116,6 +116,7 @@ func All(dir string, patterns ...string) (map[string]string, error) {
 				relPkgDir = "./" + relPkgDir
 			}
 		}
+		relPkgDir = filepath.ToSlash(relPkgDir)
 
 		if old, exists := result[binaryName]; exists && old != dir {
 			log.Warnf("duplicate binary name %q for packages %q and %q", binaryName, old, relPkgDir)
@@ -153,7 +154,7 @@ func hasMain(file *ast.File) bool {
 // package.
 func BinaryNameFor(pkg *packages.Package) string {
 	if pkg.Module == nil {
-		return path.Base(pkg.Dir)
+		return filepath.Base(pkg.Dir)
 	}
 
 	modulePath := pkg.Module.Path
@@ -163,7 +164,7 @@ func BinaryNameFor(pkg *packages.Package) string {
 		strings.TrimRight(pkg.Dir, string(filepath.Separator)) == moduleDir
 
 	if !isRoot {
-		return path.Base(pkg.Dir)
+		return filepath.Base(pkg.Dir)
 	}
 
 	base := path.Base(modulePath)
