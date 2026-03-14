@@ -248,7 +248,6 @@ func buildOptionsForTarget(ctx *context.Context, build config.Build, target stri
 	buildOpts.Path = path
 	buildOpts.Name = name
 
-	log.WithField("binary", relpath).Info("building")
 	return &buildOpts, nil
 }
 

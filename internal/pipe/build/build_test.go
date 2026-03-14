@@ -320,7 +320,6 @@ func TestDefaultEmptyBuild(t *testing.T) {
 	require.Equal(t, ctx.Config.ProjectName, build.ID)
 	require.Equal(t, ctx.Config.ProjectName, build.Binary)
 	require.Equal(t, ".", build.Dir)
-	require.Equal(t, ".", build.Main)
 	require.Equal(t, []string{"linux", "darwin", "windows"}, build.Goos)
 	require.Equal(t, []string{"amd64", "arm64", "386"}, build.Goarch)
 	require.Equal(t, []string{"6"}, build.Goarm)
@@ -411,7 +410,7 @@ func TestDefaultPartialBuilds(t *testing.T) {
 	t.Run("build1", func(t *testing.T) {
 		build := ctx.Config.Builds[1]
 		require.Equal(t, "foo", build.Binary)
-		require.Equal(t, ".", build.Main)
+		require.Empty(t, build.Main)
 		require.Equal(t, "baz", build.Dir)
 		require.Equal(t, []string{"linux", "darwin", "windows"}, build.Goos)
 		require.Equal(t, []string{"386"}, build.Goarch)
