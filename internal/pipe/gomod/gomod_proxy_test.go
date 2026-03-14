@@ -123,6 +123,34 @@ func TestGoModProxy(t *testing.T) {
 		require.Equal(t, filepath.Join(dist, "proxy", "foo"), ctx.Config.Builds[0].Dir)
 	})
 
+	t.Run("testmod variadic main", func(t *testing.T) {
+		dir := testlib.Mktmp(t)
+		dist := filepath.Join(dir, "dist")
+		ctx := testctx.WrapWithCfg(t.Context(), config.Project{
+			Dist: dist,
+			GoMod: config.GoMod{
+				Proxy:    true,
+				GoBinary: "go",
+			},
+			Builds: []config.Build{
+				{
+					ID:     "foo",
+					Goos:   []string{runtime.GOOS},
+					Goarch: []string{runtime.GOARCH},
+					Main:   "./...",
+				},
+			},
+		}, testctx.WithCurrentTag("v0.1.1"), func(ctx *context.Context) {
+			ctx.ModulePath = "github.com/goreleaser/test-mod"
+		})
+
+		fakeGoModAndSum(t, ctx.ModulePath)
+		require.NoError(t, ProxyPipe{}.Run(ctx))
+		requireGoMod(t)
+		require.Equal(t, ctx.ModulePath+"/...", ctx.Config.Builds[0].Main)
+		require.Equal(t, filepath.Join(dist, "proxy", "foo"), ctx.Config.Builds[0].Dir)
+	})
+
 	// this repo does not have a go.sum file, which is ok, a project might not have any dependencies
 	t.Run("no go.sum", func(t *testing.T) {
 		dir := testlib.Mktmp(t)

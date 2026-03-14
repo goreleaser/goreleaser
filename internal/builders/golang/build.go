@@ -313,6 +313,8 @@ func (*Builder) Build(ctx *context.Context, build config.Build, options api.Opti
 		return err
 	}
 
+	fmt.Println("AUQI", cmd)
+
 	if err := base.Exec(ctx, cmd, env, build.Dir); err != nil {
 		return err
 	}
@@ -531,7 +533,7 @@ func getBinaryArtifact(
 }
 
 func checkBuild(build config.Build, options api.Options) (map[string]string, []*artifact.Artifact, error) {
-	main := cmp.Or(build.UnproxiedMain, build.Main, ".")
+	main := cmp.Or(build.Main, ".")
 	dir := cmp.Or(build.UnproxiedDir, build.Dir)
 
 	t := options.Target.(Target)
@@ -542,19 +544,28 @@ func checkBuild(build config.Build, options api.Options) (map[string]string, []*
 		}, nil
 	}
 
-	if main != "./..." {
-		// old behavior
-		if dir != "" {
-			main = filepath.Join(dir, main)
-		}
-		if err := gomain.Check(main, build.Binary); err != nil {
-			return nil, nil, err
-		}
-		return nil, []*artifact.Artifact{
-			getBinaryArtifact(t, build, options.Name, options.Path, options.Ext),
-		}, nil
+	if strings.HasSuffix(main, "/...") {
+		return checkBuildElipsis(build, options, dir, main)
 	}
 
+	// old behavior
+	if dir != "" {
+		main = filepath.Join(dir, main)
+	}
+	if err := gomain.Check(main, build.Binary); err != nil {
+		return nil, nil, err
+	}
+	return nil, []*artifact.Artifact{
+		getBinaryArtifact(t, build, options.Name, options.Path, options.Ext),
+	}, nil
+}
+
+func checkBuildElipsis(
+	build config.Build,
+	options api.Options,
+	dir, main string,
+) (map[string]string, []*artifact.Artifact, error) {
+	log.Info("finding all " + logext.Keyword("func main()") + " in " + logext.Keyword(main))
 	// we should try and find all `func main`'s:
 	if build.Binary != "" && !build.InternalDefaults.Binary {
 		return nil, nil, errors.New("'main' is './...' but 'binary' is also set - either set 'main' to a specific package or 'binary' to empty to auto-detect all mains and binary names")
@@ -568,12 +579,18 @@ func checkBuild(build config.Build, options api.Options) (map[string]string, []*
 
 	var bins []string
 	var pkgs []string
+	t := options.Target.(Target)
 
 	for _, bin := range slices.SortedFunc(maps.Keys(mains), func(a, b string) int {
 		return strings.Compare(mains[a], mains[b])
 	}) {
+
 		name := bin + options.Ext
 		path := filepath.Join(filepath.Dir(options.Path), name)
+		if build.UnproxiedMain != "" && !strings.HasSuffix(mains[bin], "/.") {
+			mains[bin] = strings.TrimSuffix(build.Main, "/...") + "/" + mains[bin]
+			path = mains[bin]
+		}
 		bins = append(bins, name)
 		pkgs = append(pkgs, mains[bin])
 		binaries = append(binaries, getBinaryArtifact(t, build, name, path, options.Ext))
