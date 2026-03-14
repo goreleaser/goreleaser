@@ -129,9 +129,11 @@ func (b *Builder) Build(ctx *context.Context, build config.Build, options api.Op
 	case "wheel", "":
 		buildFlags = []string{"--format", "wheel"}
 		art = wheel(proj, build, options)
+		log.WithField("wheel", art.Path).Info("building")
 	case "sdist":
 		buildFlags = []string{"--format", "sdist"}
 		art = sdist(proj, build, options)
+		log.WithField("sdist", art.Path).Info("building")
 	default:
 		return fmt.Errorf("poetry: invalid buildmode %q", build.Buildmode)
 	}
