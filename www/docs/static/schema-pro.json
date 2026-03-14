@@ -1846,6 +1846,61 @@
 					}
 				]
 			},
+			"Flatpak": {
+				"properties": {
+					"id": {
+						"type": "string"
+					},
+					"ids": {
+						"items": {
+							"type": "string"
+						},
+						"type": "array"
+					},
+					"name_template": {
+						"type": "string"
+					},
+					"app_id": {
+						"type": "string"
+					},
+					"runtime": {
+						"type": "string"
+					},
+					"runtime_version": {
+						"type": "string"
+					},
+					"sdk": {
+						"type": "string"
+					},
+					"command": {
+						"type": "string"
+					},
+					"finish_args": {
+						"items": {
+							"type": "string"
+						},
+						"type": "array"
+					},
+					"disable": {
+						"oneOf": [
+							{
+								"type": "string"
+							},
+							{
+								"type": "boolean"
+							}
+						]
+					}
+				},
+				"additionalProperties": false,
+				"type": "object",
+				"required": [
+					"app_id",
+					"runtime",
+					"runtime_version",
+					"sdk"
+				]
+			},
 			"FormatOverride": {
 				"properties": {
 					"goos": {
@@ -4608,6 +4663,12 @@
 					"snapcrafts": {
 						"items": {
 							"$ref": "#/$defs/Snapcraft"
+						},
+						"type": "array"
+					},
+					"flatpaks": {
+						"items": {
+							"$ref": "#/$defs/Flatpak"
 						},
 						"type": "array"
 					},
