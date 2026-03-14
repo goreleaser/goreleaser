@@ -63,9 +63,12 @@ jobs:
       - uses: crazy-max/ghaction-upx@c83f378efc804f828e988debb88ed6116feb2368 # v4.0.0
         with:
           install-only: true
-      - name: setup-makeself
+      - name: setup-makeself-flatpak
         if: matrix.os == 'ubuntu-latest'
-        run: sudo apt install -yq makeself
+        run: |
+          sudo apt install -yq makeself flatpak flatpak-builder
+          sudo flatpak remote-add --if-not-exists flathub https://dl.flathub.org/repo/flathub.flatpakrepo
+          sudo flatpak install -y --noninteractive flathub org.freedesktop.Platform/x86_64/24.08 org.freedesktop.Sdk/x86_64/24.08 org.freedesktop.Platform/aarch64/24.08 org.freedesktop.Sdk/aarch64/24.08
       - uses: cachix/install-nix-action@1ca7d21a94afc7c957383a2d217460d980de4934 # v31.10.1
         if: matrix.os == 'ubuntu-latest'
         with:

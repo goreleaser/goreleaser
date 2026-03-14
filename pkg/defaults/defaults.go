@@ -23,6 +23,7 @@ import (
 	"github.com/goreleaser/goreleaser/v2/internal/pipe/docker"
 	dockerv2 "github.com/goreleaser/goreleaser/v2/internal/pipe/docker/v2"
 	"github.com/goreleaser/goreleaser/v2/internal/pipe/dockerdigest"
+	"github.com/goreleaser/goreleaser/v2/internal/pipe/flatpak"
 	"github.com/goreleaser/goreleaser/v2/internal/pipe/gomod"
 	"github.com/goreleaser/goreleaser/v2/internal/pipe/ko"
 	"github.com/goreleaser/goreleaser/v2/internal/pipe/krew"
@@ -87,6 +88,7 @@ var Defaulters = []Defaulter{
 	makeself.Pipe{},
 	nfpm.Pipe{},
 	snapcraft.Pipe{},
+	flatpak.Pipe{},
 	checksums.Pipe{},
 	sign.Pipe{},
 	sign.DockerPipe{},
