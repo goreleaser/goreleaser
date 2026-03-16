@@ -49,9 +49,9 @@ cask "custom_block" do
     touch "/tmp/hi"
   end
 
-  caveats do
-    "don't do this custom_block"
-  end
+  caveats <<~EOS
+    don't do this custom_block
+  EOS
 
   service "foo.plist"
 

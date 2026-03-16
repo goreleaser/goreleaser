@@ -47,9 +47,9 @@ cask "default" do
     touch "/tmp/hi"
   end
 
-  caveats do
-    "don't do this default"
-  end
+  caveats <<~EOS
+    don't do this default
+  EOS
 
   service "foo.plist"
 

@@ -193,6 +193,17 @@ func TestCaskSimple(t *testing.T) {
 	require.NotContains(t, cask, "def caveats")
 }
 
+func TestCaskCaveatsWithShellMetacharacters(t *testing.T) {
+	data := defaultTemplateData
+	data.Caveats = "To enable shell integration, add to your shell rc file:\n\n  eval \"$(mytool init zsh)\"   # for zsh\n  eval \"$(mytool init bash)\"  # for bash\n\nRun 'mytool tutorial' to get started!"
+	cask, err := doBuildCask(testctx.WrapWithCfg(t.Context(), config.Project{}), data)
+	require.NoError(t, err)
+	require.Contains(t, cask, "caveats <<~EOS")
+	require.Contains(t, cask, `eval "$(mytool init zsh)"`)
+	require.Contains(t, cask, `eval "$(mytool init bash)"`)
+	require.Contains(t, cask, "EOS")
+}
+
 func TestSplit(t *testing.T) {
 	parts := split("system \"true\"\nsystem \"#{bin}/foo\", \"-h\"")
 	require.Equal(t, []string{"system \"true\"", "system \"#{bin}/foo\", \"-h\""}, parts)
