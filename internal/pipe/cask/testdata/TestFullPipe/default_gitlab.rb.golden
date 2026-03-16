@@ -47,9 +47,9 @@ cask "default_gitlab" do
     touch "/tmp/hi"
   end
 
-  caveats do
-    "don't do this default_gitlab"
-  end
+  caveats <<~EOS
+    don't do this default_gitlab
+  EOS
 
   service "foo.plist"
 

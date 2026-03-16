@@ -47,9 +47,9 @@ cask "zap" do
     touch "/tmp/hi"
   end
 
-  caveats do
-    "don't do this zap"
-  end
+  caveats <<~EOS
+    don't do this zap
+  EOS
 
   service "foo.plist"
 

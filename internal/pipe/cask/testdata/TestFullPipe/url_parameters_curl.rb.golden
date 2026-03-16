@@ -74,9 +74,9 @@ cask "url_parameters_curl" do
     touch "/tmp/hi"
   end
 
-  caveats do
-    "don't do this url_parameters_curl"
-  end
+  caveats <<~EOS
+    don't do this url_parameters_curl
+  EOS
 
   service "foo.plist"
 

@@ -58,9 +58,9 @@ cask "hooks_templated" do
     system_command "echo", args: ["Post-uninstall for hooks_templated"]
   end
 
-  caveats do
-    "don't do this hooks_templated"
-  end
+  caveats <<~EOS
+    don't do this hooks_templated
+  EOS
 
   service "foo.plist"
 

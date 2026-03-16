@@ -47,9 +47,9 @@ cask "git_remote" do
     touch "/tmp/hi"
   end
 
-  caveats do
-    "don't do this git_remote"
-  end
+  caveats <<~EOS
+    don't do this git_remote
+  EOS
 
   service "foo.plist"
 
