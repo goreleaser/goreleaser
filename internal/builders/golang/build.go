@@ -319,7 +319,7 @@ func (*Builder) Build(ctx *context.Context, build config.Build, options api.Opti
 	}
 
 	for _, a := range allbinaries {
-		if err := base.ChTimes(build, tpl, a); err != nil {
+		if err := base.ChTimes(build, tpl.WithArtifact(a), a); err != nil {
 			return err
 		}
 		if elf.IsDynamicallyLinked(a.Path) {
@@ -427,10 +427,11 @@ func buildGoBuildLine(
 	}
 
 	if mains == nil {
+		// NOTE: build.Main will never be empty here
 		cmd = append(cmd, "-o", options.Path, build.Main)
 	} else {
 		cmd = append(cmd, "-o", filepath.Dir(options.Path))
-		cmd = append(cmd, slices.Collect(maps.Values(mains))...)
+		cmd = append(cmd, slices.Sorted(maps.Values(mains))...)
 	}
 	return cmd, nil
 }
@@ -554,6 +555,9 @@ func checkBuild(build config.Build, options api.Options) (map[string]string, []*
 	if err := gomain.Check(main, build.Binary); err != nil {
 		return nil, nil, err
 	}
+
+	logBuild(main, build.Binary, t.String())
+
 	return nil, []*artifact.Artifact{
 		getBinaryArtifact(t, build, options.Name, options.Path, options.Ext),
 	}, nil
@@ -593,10 +597,7 @@ func checkBuildElipsis(
 		binaries = append(binaries, getBinaryArtifact(t, build, name, path, options.Ext))
 	}
 
-	log.
-		WithField("paths", strings.Join(pkgs, " ")).
-		WithField("binaries", strings.Join(bins, " ")).
-		Info("building")
+	logBuild(pkgs, bins, t.String())
 	return mains, binaries, nil
 }
 
@@ -611,4 +612,12 @@ func toProxiedImportPath(build config.Build, rel string) string {
 	}
 
 	return path.Join(modulePath, strings.TrimPrefix(rel, "./"))
+}
+
+func logBuild[T string | []string](paths T, binaries T, target string) {
+	log.
+		WithField("paths", paths).
+		WithField("binaries", binaries).
+		WithField("target", target).
+		Info("building")
 }

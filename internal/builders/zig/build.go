@@ -165,7 +165,9 @@ func (b *Builder) Build(ctx *context.Context, build config.Build, options api.Op
 	}
 	command = append(command, flags...)
 
-	log.WithField("binary", options.Path).Info("building")
+	log.WithField("binary", options.Name).
+		WithField("target", options.Target.String()).
+		Info("building")
 	if err := base.Exec(ctx, command, env, build.Dir); err != nil {
 		return err
 	}
