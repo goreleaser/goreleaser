@@ -411,3 +411,30 @@ func TestFilterTags(t *testing.T) {
 		testlib.RequireTemplateError(t, Pipe{}.Run(ctx))
 	})
 }
+
+func TestFilterOut(t *testing.T) {
+	t.Run("no exclude returns first tag", func(t *testing.T) {
+		require.Equal(t, "v1.0.0", filterOut([]string{"v1.0.0", "v0.9.0"}, nil))
+	})
+
+	t.Run("excludes matching tag", func(t *testing.T) {
+		require.Equal(t, "v0.9.0", filterOut([]string{"v1.0.0", "v0.9.0"}, []string{"v1.0.0"}))
+	})
+
+	t.Run("multiple excludes: tag matching any entry is excluded", func(t *testing.T) {
+		// v0.0.3 is in the exclude list, so it must not be returned
+		require.Equal(t, "", filterOut([]string{"v0.0.3"}, []string{"v0.0.3", "v0.0.2"}))
+	})
+
+	t.Run("multiple excludes: non-matching tag is returned", func(t *testing.T) {
+		require.Equal(t, "v1.0.0", filterOut([]string{"v1.0.0"}, []string{"v0.0.3", "v0.0.2"}))
+	})
+
+	t.Run("all tags excluded returns empty", func(t *testing.T) {
+		require.Equal(t, "", filterOut([]string{"v1.0.0", "v0.9.0"}, []string{"v1.0.0", "v0.9.0"}))
+	})
+
+	t.Run("empty tags returns empty", func(t *testing.T) {
+		require.Equal(t, "", filterOut([]string{}, []string{"v1.0.0"}))
+	})
+}
