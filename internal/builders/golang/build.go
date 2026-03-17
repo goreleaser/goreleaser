@@ -571,7 +571,7 @@ func checkBuildElipsis(
 	log.Info("finding all " + logext.Keyword("func main()") + " in " + logext.Keyword(main))
 	// we should try and find all `func main`'s:
 	if build.Binary != "" && !build.InternalDefaults.Binary {
-		return nil, nil, errors.New("'main' is './...' but 'binary' is also set - either set 'main' to a specific package or 'binary' to empty to auto-detect all mains and binary names")
+		return nil, nil, errors.New("'main' contains an ellipsis path (e.g. './...') and 'binary' is also set: either set 'main' to a specific package, or unset 'binary' to auto-detect all mains and binary names")
 	}
 
 	var binaries []*artifact.Artifact
