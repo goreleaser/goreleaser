@@ -21,6 +21,7 @@ import (
 	dockerv2 "github.com/goreleaser/goreleaser/v2/internal/pipe/docker/v2"
 	"github.com/goreleaser/goreleaser/v2/internal/pipe/effectiveconfig"
 	"github.com/goreleaser/goreleaser/v2/internal/pipe/env"
+	"github.com/goreleaser/goreleaser/v2/internal/pipe/flatpak"
 	"github.com/goreleaser/goreleaser/v2/internal/pipe/git"
 	"github.com/goreleaser/goreleaser/v2/internal/pipe/gomod"
 	"github.com/goreleaser/goreleaser/v2/internal/pipe/ko"
@@ -129,6 +130,8 @@ var Pipeline = append(
 	makeself.Pipe{},
 	// archive via snapcraft (snap)
 	snapcraft.Pipe{},
+	// create flatpak bundles
+	flatpak.Pipe{},
 	// create SBOMs of artifacts
 	sbom.Pipe{},
 	// checksums of the files

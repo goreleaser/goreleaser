@@ -73,9 +73,9 @@ cask "test" do
     post-uninstall
   end
 
-  caveats do
-    "Here are some caveats"
-  end
+  caveats <<~EOS
+    Here are some caveats
+  EOS
 
   # No zap stanza required
 end

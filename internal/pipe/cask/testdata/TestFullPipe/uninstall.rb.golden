@@ -47,9 +47,9 @@ cask "uninstall" do
     touch "/tmp/hi"
   end
 
-  caveats do
-    "don't do this uninstall"
-  end
+  caveats <<~EOS
+    don't do this uninstall
+  EOS
 
   service "foo.plist"
 

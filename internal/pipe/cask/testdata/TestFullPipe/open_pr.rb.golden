@@ -47,9 +47,9 @@ cask "open_pr" do
     touch "/tmp/hi"
   end
 
-  caveats do
-    "don't do this open_pr"
-  end
+  caveats <<~EOS
+    don't do this open_pr
+  EOS
 
   service "foo.plist"
 

@@ -49,9 +49,9 @@ cask "manpages_glob" do
     touch "/tmp/hi"
   end
 
-  caveats do
-    "don't do this manpages_glob"
-  end
+  caveats <<~EOS
+    don't do this manpages_glob
+  EOS
 
   service "foo.plist"
 

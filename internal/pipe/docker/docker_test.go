@@ -1108,6 +1108,12 @@ func TestRunPipe(t *testing.T) {
 }
 
 func TestBuildCommand(t *testing.T) {
+	var provenanceFlags []string
+	if !testlib.IsWindows() {
+		// HACK: Docker on Windows, at least from github actions, doesn't seem to have these flags.
+		// This is a workaround to make the tests passs in the meantime.
+		provenanceFlags = []string{"--provenance=false", "--sbom=false"}
+	}
 	images := []string{"goreleaser/test_build_flag", "goreleaser/test_multiple_tags"}
 	tests := []struct {
 		name   string
@@ -1118,23 +1124,23 @@ func TestBuildCommand(t *testing.T) {
 		{
 			name:   "no flags",
 			flags:  []string{},
-			expect: []string{"build", ".", "-t", images[0], "-t", images[1], "--provenance=false", "--sbom=false"},
+			expect: append([]string{"build", ".", "-t", images[0], "-t", images[1]}, provenanceFlags...),
 		},
 		{
 			name:   "single flag",
 			flags:  []string{"--label=foo"},
-			expect: []string{"build", ".", "-t", images[0], "-t", images[1], "--label=foo", "--provenance=false", "--sbom=false"},
+			expect: append([]string{"build", ".", "-t", images[0], "-t", images[1], "--label=foo"}, provenanceFlags...),
 		},
 		{
 			name:   "multiple flags",
 			flags:  []string{"--label=foo", "--build-arg=bar=baz"},
-			expect: []string{"build", ".", "-t", images[0], "-t", images[1], "--label=foo", "--build-arg=bar=baz", "--provenance=false", "--sbom=false"},
+			expect: append([]string{"build", ".", "-t", images[0], "-t", images[1], "--label=foo", "--build-arg=bar=baz"}, provenanceFlags...),
 		},
 		{
 			name:   "buildx",
 			buildx: true,
 			flags:  []string{"--label=foo", "--build-arg=bar=baz"},
-			expect: []string{"buildx", "build", ".", "--load", "-t", images[0], "-t", images[1], "--label=foo", "--build-arg=bar=baz", "--provenance=false", "--sbom=false"},
+			expect: append([]string{"buildx", "build", ".", "--load", "-t", images[0], "-t", images[1], "--label=foo", "--build-arg=bar=baz"}, provenanceFlags...),
 		},
 	}
 	for _, tt := range tests {

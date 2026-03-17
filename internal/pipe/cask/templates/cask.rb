@@ -86,11 +86,11 @@ cask "{{ .Name }}" do
   {{- end }}
 
   {{ with .Caveats -}}
-  caveats do
+  caveats <<~EOS
     {{- range (split .) }}
-    "{{ . -}}"
+    {{ . -}}
     {{- end }}
-  end
+  EOS
   {{- end }}
 
   {{ with .Service -}}

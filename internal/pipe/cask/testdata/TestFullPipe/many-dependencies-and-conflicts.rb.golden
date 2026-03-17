@@ -59,9 +59,9 @@ cask "many-dependencies-and-conflicts" do
     touch "/tmp/hi"
   end
 
-  caveats do
-    "don't do this many-dependencies-and-conflicts"
-  end
+  caveats <<~EOS
+    don't do this many-dependencies-and-conflicts
+  EOS
 
   service "foo.plist"
 

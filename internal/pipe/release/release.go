@@ -167,6 +167,7 @@ func doPublish(ctx *context.Context, client client.Client) error {
 		artifact.Signature,
 		artifact.Certificate,
 		artifact.LinuxPackage,
+		artifact.Flatpak,
 		artifact.SBOM,
 		artifact.PyWheel,
 		artifact.PySdist,

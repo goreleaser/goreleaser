@@ -94,9 +94,9 @@ cask "custom_block_url" do
     touch "/tmp/hi"
   end
 
-  caveats do
-    "don't do this custom_block_url"
-  end
+  caveats <<~EOS
+    don't do this custom_block_url
+  EOS
 
   service "foo.plist"
 

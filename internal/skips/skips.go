@@ -32,6 +32,7 @@ const (
 	AURSource      Key = "aur-source"
 	NFPM           Key = "nfpm"
 	Makeself       Key = "makeself"
+	Flatpak        Key = "flatpak"
 	Chocolatey     Key = "chocolatey"
 	Notarize       Key = "notarize"
 	Archive        Key = "archive"
@@ -126,6 +127,7 @@ var Release = Keys{
 	AURSource,
 	NFPM,
 	Makeself,
+	Flatpak,
 	Before,
 	Notarize,
 	Archive,

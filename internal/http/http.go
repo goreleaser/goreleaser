@@ -233,6 +233,7 @@ func uploadOne(ctx *context.Context, upload config.Upload, kind string, check Re
 			artifact.UploadableSourceArchive,
 			artifact.Makeself,
 			artifact.LinuxPackage,
+			artifact.Flatpak,
 			artifact.PySdist,
 			artifact.PyWheel,
 		)
