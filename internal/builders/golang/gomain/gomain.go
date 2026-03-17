@@ -118,7 +118,7 @@ func All(dir string, patterns ...string) (map[string]string, error) {
 		}
 		relPkgDir = filepath.ToSlash(relPkgDir)
 
-		if old, exists := result[binaryName]; exists && old != dir {
+		if old, exists := result[binaryName]; exists && old != relPkgDir {
 			log.Warnf("duplicate binary name %q for packages %q and %q", binaryName, old, relPkgDir)
 			continue
 		}
