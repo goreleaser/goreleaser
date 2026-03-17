@@ -11,6 +11,7 @@ import (
 	"path/filepath"
 	"slices"
 	"strings"
+	"sync"
 
 	"dario.cat/mergo"
 	"github.com/caarlos0/log"
@@ -568,7 +569,8 @@ func checkBuildElipsis(
 	options api.Options,
 	dir, main string,
 ) (map[string]string, []*artifact.Artifact, error) {
-	log.Info("finding all " + logext.Keyword("func main()") + " in " + logext.Keyword(main))
+	logFindingMains(build, main)
+
 	// we should try and find all `func main`'s:
 	if build.Binary != "" && !build.InternalDefaults.Binary {
 		return nil, nil, errors.New("'main' contains an ellipsis path (e.g. './...') and 'binary' is also set: either set 'main' to a specific package, or unset 'binary' to auto-detect all mains and binary names")
@@ -612,6 +614,17 @@ func toProxiedImportPath(build config.Build, rel string) string {
 	}
 
 	return path.Join(modulePath, strings.TrimPrefix(rel, "./"))
+}
+
+var ellipsisLog = sync.Map{}
+
+func logFindingMains(build config.Build, main string) {
+	if _, loaded := ellipsisLog.LoadOrStore(build.ID, true); !loaded {
+		log.
+			WithField("id", build.ID).
+			WithField("path", main).
+			Info("finding all " + logext.Keyword("func main()"))
+	}
 }
 
 func logBuild[T string | []string](paths T, binaries T, target string) {
