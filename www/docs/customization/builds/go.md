@@ -19,6 +19,8 @@ builds:
 
     # Path to main.go file or main package.
     # Notice: when used with `gomod.proxy`, this must be a package.
+    # If you set it to a ellipsis path (e.g. './...'), GoReleaser will find all
+    # 'main' functions and build them all on a single command (since v2.15-unreleased).
     #
     # Default: `.`.
     main: ./cmd/my-app
@@ -527,5 +529,19 @@ builds:
     # Configure the buildmode flag to output a shared library
     buildmode: "c-shared" # or "c-archive" for a static library
 ```
+
+## Building ellipsis paths
+
+<!-- md:version v2.15-unreleased -->
+
+You can also set the `main` to an ellipsis import path, e.g. `./...`.
+
+GoReleaser will then look for all `main` packages with a `func main(){}`, and
+build all of them on a single pass, akin to something like
+`go build -o ./somedir . ./cmd/foo/ ./cmd/bar/`.
+Binary names will be inferred just like `go build` does.
+
+If you have multiple build configurations that change only the `main` and
+`binary` portions, this might be your friend.
 
 <!-- md:templates -->
