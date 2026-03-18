@@ -1244,7 +1244,7 @@ type Project struct {
 	Archives          []Archive         `yaml:"archives,omitempty" json:"archives,omitempty"`
 	NFPMs             []NFPM            `yaml:"nfpms,omitempty" json:"nfpms,omitempty"`
 	Snapcrafts        []Snapcraft       `yaml:"snapcrafts,omitempty" json:"snapcrafts,omitempty"`
-	Flatpaks          []Flatpak         `yaml:"flatpaks,omitempty" json:"flatpaks,omitempty"`
+	Flatpaks          []Flatpak         `yaml:"flatpak,omitempty" json:"flatpak,omitempty"`
 	Snapshot          Snapshot          `yaml:"snapshot,omitempty" json:"snapshot,omitempty"`
 	Checksum          Checksum          `yaml:"checksum,omitempty" json:"checksum,omitempty"`
 	DockersV2         []DockerV2        `yaml:"dockers_v2,omitempty" json:"dockers_v2,omitempty"`

@@ -329,7 +329,7 @@ snapcrafts:
     publish: true
     disable: "{{ if .IsNightly }}true{{ end }}"
 
-flatpaks:
+flatpak:
   - app_id: com.goreleaser.GoReleaser
     runtime: org.freedesktop.Platform
     runtime_version: "24.08"

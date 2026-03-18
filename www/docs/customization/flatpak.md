@@ -23,7 +23,7 @@ storage, or distributed directly to users.
 Here is a commented `flatpaks` section with all fields specified:
 
 ```yaml title=".goreleaser.yaml"
-flatpaks:
+flatpak:
   - #
     # ID of this Flatpak config, must be unique.
     #
