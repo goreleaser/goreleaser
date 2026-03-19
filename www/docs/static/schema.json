@@ -3650,7 +3650,7 @@
 						},
 						"type": "array"
 					},
-					"flatpaks": {
+					"flatpak": {
 						"items": {
 							"$ref": "#/$defs/Flatpak"
 						},
