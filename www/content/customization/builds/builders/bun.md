@@ -1,17 +1,13 @@
 ---
-title: "Zig"
-aliases:
-  - "/customization/zig-builds/"
-weight: 40
+title: Bun
+weight: 20
 ---
 
-# Zig
+{{< version "v2.6" >}}
 
-{{< version "v2.5" >}}
+You can now build TypeScript binaries using `bun build --compile` and GoReleaser!
 
-You can now build Zig binaries using `zig build` and GoReleaser!
-
-Simply set the `builder` to `zig`, for instance:
+Simply set the `builder` to `bun`, for instance:
 
 ```yaml title=".goreleaser.yaml"
 builds:
@@ -22,8 +18,8 @@ builds:
     # Default: Project directory name.
     id: "my-build"
 
-    # Use zig.
-    builder: zig
+    # Use bun.
+    builder: bun
 
     # Binary name.
     # Can be a path (e.g. `bin/app`) to wrap the binary in a directory.
@@ -31,29 +27,34 @@ builds:
     # Default: Project directory name.
     binary: program
 
-    # List of targets to be built, in Zig's format.
-    # Default: [ "x86_64-linux", "x86_64-macos", "x86_64-windows", "aarch64-linux", "aarch64-macos" ]
+    # List of targets to be built, in Bun's format.
+    #
+    # See: https://bun.sh/docs/bundler/executables
+    # The `bun-` prefix is added automatically.
+    # Default: [ "linux-x64-modern", "linux-arm64", "darwin-x64", "darwin-arm64", "windows-x64-modern" ]
     targets:
-      - aarch64-macos
-      - x86_64-linux-gnu
+      - linux-x64-modern
+      - darwin-arm64
 
     # Path to project's (sub)directory containing the code.
-    # This is the working directory for the Zig build command(s).
+    # This is the working directory for the `bun build` command(s).
     #
     # Default: '.'.
     dir: my-app
 
-    # Set a specific zig binary to use when building.
+    # Main entry point.
+    #
+    # Default: extracted from package.json or `.`.
+    main: "file.ts"
+
+    # Set a specific bun binary to use when building.
     # It is safe to ignore this option in most cases.
     #
-    # Default: "zig".
+    # Default: "bun".
     # Templates: allowed.
-    tool: "zig-nightly"
+    tool: "bun-nightly"
 
     # Sets the command to run to build.
-    # Can be useful if you want to build tests, for example,
-    # in which case you can set this to "test".
-    # It is safe to ignore this option in most cases.
     #
     # Default: build.
     command: not-build
@@ -61,9 +62,9 @@ builds:
     # Custom flags.
     #
     # Templates: allowed.
-    # Default: "-Doptimize=ReleaseSafe".
+    # Default: ["--compile"].
     flags:
-      - --release
+      - --minify
 
     # Custom environment variables to be set during the builds.
     # Invalid environment variables will be ignored.
@@ -86,8 +87,8 @@ builds:
     skip: false
 ```
 
-Some options are not supported yet[^fail], but it should be usable at least for
-simple projects already!
+Some options are not supported yet[^fail], but it should be usable for
+most projects already!
 
 {{< callout type="info" >}}
 
@@ -96,15 +97,15 @@ Learn more about [build hooks](./hooks.md).
 
 ### Environment setup
 
-GoReleaser will not install Zig or any other dependencies on which your
+GoReleaser will not install Bun or any other dependencies on which your
 workflow depends. Make sure to install them before running GoReleaser.
 
 ## Caveats
 
-GoReleaser will translate Zig's Os/Arch pair into a GOOS/GOARCH pair, so
+GoReleaser will translate Bun's Os/Arch pair into a GOOS/GOARCH pair, so
 templates should work the same as before.
 The original target name is available in templates as `.Target`, and so is the
-ABI as `.Abi`.
+Modern/Baseline bit as `.Type`.
 
 [^fail]:
     GoReleaser will error if you try to use them. Give it a try with

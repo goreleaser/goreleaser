@@ -1,8 +1,7 @@
 ---
 weight: 100
+title: Introduction
 ---
-
-# Introduction
 
 GoReleaser can be customized by tweaking a `.goreleaser.yaml`[^goreleaser-yaml] file.
 

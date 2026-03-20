@@ -1,9 +1,8 @@
 ---
 weight: 20
 url: "/customization/metadata/"
+title: Metadata
 ---
-
-# Metadata
 
 GoReleaser creates some metadata files in the `dist` directory before it
 finishes running.

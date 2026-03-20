@@ -1,8 +1,7 @@
 ---
+title: Poetry
 weight: 80
 ---
-
-# Poetry
 
 {{< version "v2.9" >}}
 

@@ -4,4 +4,3 @@ type: blog
 cascade:
   type: blog
 ---
-

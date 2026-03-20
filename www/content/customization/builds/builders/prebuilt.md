@@ -1,4 +1,6 @@
-# Import pre-built binaries
+---
+title: Import pre-built binaries
+---
 
 {{< pro >}}
 

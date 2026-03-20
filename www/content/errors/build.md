@@ -1,8 +1,7 @@
 ---
+title: Build Errors
 weight: 70
 ---
-
-# Build Errors
 
 ## Undefined methods
 

@@ -1,8 +1,7 @@
 ---
+title: UV
 weight: 70
 ---
-
-# UV
 
 {{< version "v2.9" >}}
 

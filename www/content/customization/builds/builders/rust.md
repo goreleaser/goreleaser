@@ -1,11 +1,9 @@
 ---
-title: "Rust"
+title: Rust
 aliases:
   - "/customization/rust-builds/"
 weight: 30
 ---
-
-# Rust
 
 {{< version "v2.5" >}}
 

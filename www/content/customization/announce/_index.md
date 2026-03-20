@@ -1,5 +1,5 @@
 ---
-weight: 1
+weight: 1000
 ---
 
 # Announce
@@ -21,24 +21,3 @@ announce:
   # Templates: allowed.
   skip: "{{gt .Patch 0}}"
 ```
-
-## Supported announcers:
-
-<div class="grid cards" markdown>
-
-- :simple-bluesky: [Bluesky](./bluesky.md)
-- :simple-discord: [Discord](./discord.md)
-- :simple-discourse: [Discourse](./discourse.md)
-- :material-linkedin: [LinkedIn](./linkedin.md)
-- :simple-mastodon: [Mastodon](./mastodon.md)
-- :simple-mattermost: [Mattermost](./mattermost.md)
-- :simple-opencollective: [OpenCollective](./opencollective.md)
-- :simple-reddit: [Reddit](./reddit.md)
-- :simple-slack: [Slack](./slack.md)
-- :material-email: [Email/SMTP](./smtp.md)
-- :material-microsoft-teams: [Teams](./teams.md)
-- :simple-telegram: [Telegram](./telegram.md)
-- :fontawesome-brands-x-twitter: [𝕏/Twitter](./twitter.md)
-- :material-webhook: [Webhooks](./webhook.md)
-
-</div>

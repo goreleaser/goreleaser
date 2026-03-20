@@ -1,7 +1,6 @@
 ---
 weight: 10
 title: Go
-linkTitle: Golang
 ---
 
 ## Options

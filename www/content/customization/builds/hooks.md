@@ -1,8 +1,7 @@
 ---
+title: Build Hooks
 weight: 100
 ---
-
-# Build Hooks
 
 Both pre and post hooks are run **for each build target**, regardless of whether
 these targets are generated via a matrix of OSes and architectures or defined

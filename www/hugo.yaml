@@ -49,6 +49,8 @@ menu:
         icon: github
 
 params:
+  imageZoom:
+    enable: true
   navbar:
     displayTitle: true
     displayLogo: true

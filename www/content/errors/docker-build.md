@@ -1,8 +1,7 @@
 ---
+title: Docker build failures
 weight: 50
 ---
-
-# Docker build failures
 
 ## `COPY failed: file not found in build context`
 

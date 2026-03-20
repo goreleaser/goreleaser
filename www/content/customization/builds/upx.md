@@ -1,9 +1,8 @@
 ---
 weight: 130
 url: "/customization/upx/"
+title: UPX
 ---
-
-# UPX
 
 Having small binary sizes are important, and Go is known for generating rather
 big binaries.

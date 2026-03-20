@@ -1,9 +1,8 @@
 ---
+title: macOS Universal Binaries
 weight: 120
-url: '/customization/universalbinaries/'
+url: "/customization/universalbinaries/"
 ---
-
-# macOS Universal Binaries
 
 GoReleaser can create _macOS Universal Binaries_ - also known as _Fat Binaries_.
 Those binaries are in a special format that contains both `arm64` and `amd64`
@@ -83,11 +82,12 @@ Example:
 
 ```yaml
 universal_binaries:
-- id: foo
-  name_template: bin1
-- id: bar
-  name_template: bin2
+  - id: foo
+    name_template: bin1
+  - id: bar
+    name_template: bin2
 ```
+
 {{< /callout >}}
 
 ## Naming templates

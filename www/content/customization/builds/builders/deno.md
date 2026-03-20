@@ -1,14 +1,15 @@
 ---
-weight: 20
+title: Deno
+aliases:
+  - "/customization/deno-builds/"
+weight: 50
 ---
-
-# Bun
 
 {{< version "v2.6" >}}
 
-You can now build TypeScript binaries using `bun build --compile` and GoReleaser!
+You can now build TypeScript binaries using `deno compile` and GoReleaser!
 
-Simply set the `builder` to `bun`, for instance:
+Simply set the `builder` to `deno`, for instance:
 
 ```yaml title=".goreleaser.yaml"
 builds:
@@ -19,8 +20,8 @@ builds:
     # Default: Project directory name.
     id: "my-build"
 
-    # Use bun.
-    builder: bun
+    # Use deno.
+    builder: deno
 
     # Binary name.
     # Can be a path (e.g. `bin/app`) to wrap the binary in a directory.
@@ -28,44 +29,47 @@ builds:
     # Default: Project directory name.
     binary: program
 
-    # List of targets to be built, in Bun's format.
+    # List of targets to be built, in Deno's format.
     #
-    # See: https://bun.sh/docs/bundler/executables
-    # The `bun-` prefix is added automatically.
-    # Default: [ "linux-x64-modern", "linux-arm64", "darwin-x64", "darwin-arm64", "windows-x64-modern" ]
+    # See: https://docs.deno.com/runtime/reference/cli/compile/#supported-targets
+    # Default: [ "x86_64-pc-windows-msvc", "x86_64-apple-darwin", "aarch64-apple-darwin", "x86_64-unknown-linux-gnu", "aarch64-unknown-linux-gnu" ]
     targets:
-      - linux-x64-modern
-      - darwin-arm64
+      - x86_64-unknown-linux-gnu
+      - aarch64-unknown-linux-gnu
+      - x86_64-pc-windows-msvc
+      - x86_64-apple-darwin
+      - aarch64-apple-darwin
 
     # Path to project's (sub)directory containing the code.
-    # This is the working directory for the `bun build` command(s).
+    # This is the working directory for the `deno compile` command(s).
     #
     # Default: '.'.
     dir: my-app
 
     # Main entry point.
     #
-    # Default: extracted from package.json or `.`.
+    # Default: 'main.ts'.
     main: "file.ts"
 
-    # Set a specific bun binary to use when building.
+    # Set a specific deno binary to use when building.
     # It is safe to ignore this option in most cases.
     #
-    # Default: "bun".
+    # Default: 'deno'.
     # Templates: allowed.
-    tool: "bun-nightly"
+    tool: "deno-canary"
 
     # Sets the command to run to build.
     #
-    # Default: build.
+    # Default: 'compile'.
     command: not-build
 
     # Custom flags.
     #
     # Templates: allowed.
-    # Default: ["--compile"].
+    # Default: [].
     flags:
-      - --minify
+      - --allow-read
+      - --allow-net
 
     # Custom environment variables to be set during the builds.
     # Invalid environment variables will be ignored.
@@ -98,15 +102,15 @@ Learn more about [build hooks](./hooks.md).
 
 ### Environment setup
 
-GoReleaser will not install Bun or any other dependencies on which your
+GoReleaser will not install Deno or any other dependencies on which your
 workflow depends. Make sure to install them before running GoReleaser.
 
 ## Caveats
 
-GoReleaser will translate Bun's Os/Arch pair into a GOOS/GOARCH pair, so
+GoReleaser will translate Deno's Os/Arch pair into a GOOS/GOARCH pair, so
 templates should work the same as before.
 The original target name is available in templates as `.Target`, and so is the
-Modern/Baseline bit as `.Type`.
+the ABI and Vendor as `.Abi` and `.Vendor`, respectively.
 
 [^fail]:
     GoReleaser will error if you try to use them. Give it a try with
