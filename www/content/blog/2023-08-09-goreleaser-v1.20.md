@@ -88,10 +88,6 @@ You can [install][] or upgrade using your favorite package manager, or see the
 full release notes and download the pre-compiled binaries [here][oss-rel] and
 [here (for Pro)][pro-rel].
 
-[install]: https://goreleaser.com/install
-[pro-rel]: https://github.com/goreleaser/goreleaser-pro/releases/tag/v1.20.0-pro
-[oss-rel]: https://github.com/goreleaser/goreleaser/releases/tag/v1.20.0
-[pro]: https://goreleaser.com/pro
 
 ## Helping out
 

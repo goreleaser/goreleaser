@@ -47,7 +47,4 @@ You may also be interested in buying a GoReleaser Pro license.
 
 You can find out more [here](https://goreleaser.com/sponsors/).
 
-[install]: https://goreleaser.com/install
-[pro-rel]: https://github.com/goreleaser/goreleaser-pro/releases/tag/v1.23.0-pro
-[oss-rel]: https://github.com/goreleaser/goreleaser/releases/tag/v1.23.0
 [discord]: https://goreleaser.com/discord

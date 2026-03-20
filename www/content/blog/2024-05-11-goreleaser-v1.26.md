@@ -64,8 +64,4 @@ improvements, and bug fixes.
 You can also [sponsor the project](/sponsors), or get a
 [GoReleaser Pro license][pro].
 
-[pro]: /pro
-[install]: https://goreleaser.com/install
-[pro-rel]: https://github.com/goreleaser/goreleaser-pro/releases/tag/v1.26.0-pro
-[oss-rel]: https://github.com/goreleaser/goreleaser/releases/tag/v1.26.0
 [discord]: https://goreleaser.com/discord

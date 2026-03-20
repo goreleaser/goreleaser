@@ -66,6 +66,8 @@ params:
       height: 40
       link: /
   page:
+    tabs:
+      sync: true
     width: wide
     contextMenu:
       enable: true

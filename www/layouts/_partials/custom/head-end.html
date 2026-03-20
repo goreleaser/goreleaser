@@ -7,3 +7,47 @@
   property="og:image"
   content="https://goreleaser.com/card.png"
 />
+<style>
+  .goreleaser-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4em;
+    padding: 0.45em 1em;
+    border-radius: 0.375rem;
+    font-size: 0.875rem;
+    font-weight: 500;
+    line-height: 1.5;
+    text-decoration: none;
+    transition: opacity 0.15s ease, background-color 0.15s ease;
+    margin: 0.25rem 0.25rem 0.25rem 0;
+    vertical-align: middle;
+  }
+  .goreleaser-btn svg {
+    flex-shrink: 0;
+  }
+  .goreleaser-btn--primary {
+    background-color: #7c3aed;
+    color: #fff !important;
+    border: 1px solid transparent;
+  }
+  .goreleaser-btn--primary:hover {
+    background-color: #6d28d9;
+  }
+  .dark .goreleaser-btn--primary {
+    background-color: #7c3aed;
+    color: #fff !important;
+  }
+  .dark .goreleaser-btn--primary:hover {
+    background-color: #8b5cf6;
+  }
+  .goreleaser-btn--secondary {
+    background-color: transparent;
+    color: inherit !important;
+    border: 1px solid currentColor;
+    opacity: 0.8;
+  }
+  .goreleaser-btn--secondary:hover {
+    opacity: 1;
+    background-color: rgba(124, 58, 237, 0.08);
+  }
+</style>

@@ -37,9 +37,6 @@ Let's take a look:
 You can [install][] the same way you always do, and you can see the full release
 notes [here][oss-rel] and [here (for Pro)][pro-rel].
 
-[install]: https://goreleaser.com/install
-[pro-rel]: https://github.com/goreleaser/goreleaser-pro/releases/tag/v1.17.0-pro
-[oss-rel]: https://github.com/goreleaser/goreleaser/releases/tag/v1.17.0
 
 ### Other news
 
