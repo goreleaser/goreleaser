@@ -8,8 +8,7 @@ env:
 before:
   hooks:
     - go mod tidy
-    - ./scripts/completions.sh
-    - ./scripts/manpages.sh
+    - ./scripts/completions_and_manpages.sh
 
 snapshot:
   version_template: "{{ incpatch .Version }}-next"
