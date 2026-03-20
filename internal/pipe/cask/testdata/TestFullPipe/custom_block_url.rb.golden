@@ -32,25 +32,7 @@ cask "custom_block_url" do
     end
   end
 
-  name "custom_block_url"
-  desc "Run pipe test formula and FOO=foo_is_bar"
-  homepage "https://github.com/goreleaser"
   version "1.0.1"
-
-  livecheck do
-    skip "Auto-generated on release."
-  end
-
-  binary "custom_block_url"
-  depends_on cask: [
-      "fish",
-      "powershell",
-    ],
-    formula: [
-      "ash",
-      "bash",
-      "zsh",
-    ]
 
   on_macos do
     on_intel do
@@ -85,20 +67,39 @@ cask "custom_block_url" do
     end
   end
 
+  name "custom_block_url"
+  desc "Run pipe test formula and FOO=foo_is_bar"
+  homepage "https://github.com/goreleaser"
+
+  livecheck do
+    skip "Auto-generated on release."
+  end
   conflicts_with cask: [
       "fish",
     ]
+
+  depends_on cask: [
+      "fish",
+      "powershell",
+    ],
+    formula: [
+      "ash",
+      "bash",
+      "zsh",
+    ]
+
+  binary "custom_block_url"
+
+  service "foo.plist"
 
   postflight do
     system "echo"
     touch "/tmp/hi"
   end
 
+  # No zap stanza required
+
   caveats <<~EOS
     don't do this custom_block_url
   EOS
-
-  service "foo.plist"
-
-  # No zap stanza required
 end
