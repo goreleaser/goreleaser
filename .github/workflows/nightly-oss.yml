@@ -43,7 +43,7 @@ jobs:
         with:
           fetch-depth: 0
           fetch-tags: true
-      - uses: go-task/setup-task@0ab1b2a65bc55236a3bc64cde78f80e20e8885c2 # v1.0.0
+      - uses: go-task/setup-task@3be4020d41929789a01026e0e427a4321ce0ad44 # v2.0.0
         with:
           version: 3.x
           repo-token: ${{ secrets.GITHUB_TOKEN }}
