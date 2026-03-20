@@ -30,7 +30,7 @@ func FuzzTemplateWithArtifact(f *testing.F) {
 			Path:   "fake-filename.bin",
 			Goarch: "amd64",
 			Goos:   "linux",
-			Target: "linux_amd64",
+			Target: "linux-amd64",
 		})
 
 		_, err := tpl.Apply(data)
@@ -69,7 +69,7 @@ func FuzzTemplateWithBuildOptions(f *testing.F) {
 	f.Fuzz(func(t *testing.T, data string) {
 		ctx := testctx.Wrap(t.Context())
 		target := &buildTarget{
-			Target: "linux_amd64",
+			Target: "linux-amd64",
 			Goos:   "linux",
 			Goarch: "amd64",
 		}

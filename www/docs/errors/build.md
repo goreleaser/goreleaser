@@ -5,7 +5,7 @@
 If you see an error that looks like this:
 
 ```shell
-  ⨯ release failed after 14s                 error=failed to build for darwin_amd64_v1: exit status 2: # github.com/rjeczalik/notify
+  ⨯ release failed after 14s                 error=failed to build for darwin-amd64-v1: exit status 2: # github.com/rjeczalik/notify
 ../../../../go/pkg/mod/github.com/rjeczalik/notify@v0.9.2/watcher_fsevents.go:49:11: undefined: stream
 ../../../../go/pkg/mod/github.com/rjeczalik/notify@v0.9.2/watcher_fsevents.go:200:13: undefined: newStream
 ```

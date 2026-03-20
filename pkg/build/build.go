@@ -90,8 +90,8 @@ type ConcurrentBuilder interface {
 }
 
 // TargetFixer allows the builder to provide a way to "default" an incomplete
-// target, e.g., on Go, 'darwin_arm64' would need to be defaulted to
-// 'darwin_arm64_v8.0'.
+// target, e.g., on Go, 'darwin-arm64' would need to be defaulted to
+// 'darwin-arm64-v8.0'.
 type TargetFixer interface {
 	FixTarget(target string) string
 }

@@ -314,11 +314,11 @@ func TestRun(t *testing.T) {
 		require.NoError(t, Pipe{}.Run(ctx5))
 		require.FileExists(t, pre)
 		require.FileExists(t, post)
-		post := filepath.Join(dist, "foo_darwin_all/foo.post")
+		post := filepath.Join(dist, "foo_darwin-all/foo.post")
 		require.FileExists(t, post)
 		bts, err := os.ReadFile(post)
 		require.NoError(t, err)
-		require.Contains(t, string(bts), "foo darwin all darwin_all")
+		require.Contains(t, string(bts), "foo darwin all darwin-all")
 	})
 
 	t.Run("failing pre-hook", func(t *testing.T) {
@@ -418,7 +418,7 @@ func TestRun(t *testing.T) {
 func checkUniversalBinary(tb testing.TB, unibin *artifact.Artifact) {
 	tb.Helper()
 
-	require.True(tb, strings.HasSuffix(unibin.Path, unibin.ID()+"_darwin_all/foo"))
+	require.True(tb, strings.HasSuffix(unibin.Path, unibin.ID()+"_darwin-all/foo"))
 	f, err := macho.OpenFat(unibin.Path)
 	require.NoError(tb, err)
 	require.Len(tb, f.Arches, 2)

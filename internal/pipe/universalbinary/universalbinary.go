@@ -148,7 +148,7 @@ func makeUniversalBinary(ctx *context.Context, opts *build.Options, unibin confi
 	name := unibin.NameTemplate
 	opts.Name = name
 
-	path := filepath.Join(ctx.Config.Dist, unibin.ID+"_darwin_all", name)
+	path := filepath.Join(ctx.Config.Dist, unibin.ID+"_darwin-all", name)
 	opts.Path = path
 	if err := os.MkdirAll(filepath.Dir(path), 0o755); err != nil {
 		return err

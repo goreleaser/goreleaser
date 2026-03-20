@@ -23,7 +23,7 @@ Each artifact in the `artifacts.json` file has the following fields:
 | `gomips`    | The MIPS floating point instruction set                          |
 | `goppc64`   | The PPC64 version                                                |
 | `goriscv64` | The RISC-V 64 version                                            |
-| `target`    | The full build target (e.g., `linux_amd64_v1`)                   |
+| `target`    | The full build target (e.g., `linux-amd64-v1`)                   |
 | `type`      | The artifact type (see below)                                    |
 | `extra`     | Additional metadata (see below)                                  |
 

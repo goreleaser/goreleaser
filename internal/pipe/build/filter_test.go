@@ -10,13 +10,13 @@ import (
 )
 
 var filterTestTargets = []string{
-	"linux_amd64_v1",
-	"linux_arm64",
-	"linux_riscv64",
-	"darwin_amd64_v1",
-	"darwin_amd64_v2",
-	"darwin_arm64",
-	"darwin_arm_7",
+	"linux-amd64-v1",
+	"linux-arm64",
+	"linux-riscv64",
+	"darwin-amd64-v1",
+	"darwin-amd64-v2",
+	"darwin-arm64",
+	"darwin-arm-7",
 }
 
 func TestFilter(t *testing.T) {
@@ -31,11 +31,11 @@ func TestFilter(t *testing.T) {
 	t.Run("target", func(t *testing.T) {
 		ctx := testctx.Wrap(t.Context(), func(ctx *context.Context) {
 			ctx.Partial = true
-			ctx.PartialTarget = "darwin_amd64_v1"
+			ctx.PartialTarget = "darwin-amd64-v1"
 		})
 
 		require.Equal(t, []string{
-			"darwin_amd64_v1",
+			"darwin-amd64-v1",
 		}, filter(ctx, config.Build{
 			Builder: "go",
 			Targets: filterTestTargets,
@@ -49,7 +49,7 @@ func TestFilter(t *testing.T) {
 		})
 
 		require.Equal(t, []string{
-			"darwin_amd64_v1",
+			"darwin-amd64-v1",
 		}, filter(ctx, config.Build{
 			Builder: "go",
 			Targets: filterTestTargets,
@@ -64,7 +64,7 @@ func TestFilter(t *testing.T) {
 
 		require.Empty(t, filter(ctx, config.Build{
 			Builder: "go",
-			Targets: []string{"darwin_amd64_v1"},
+			Targets: []string{"darwin-amd64-v1"},
 		}))
 	})
 }

@@ -13,8 +13,8 @@ builds:
   - id: "with-hooks"
     builder: go
     targets:
-      - "darwin_amd64"
-      - "windows_amd64"
+      - "darwin-amd64"
+      - "windows-amd64"
     hooks:
       pre:
         - first-script.sh
@@ -31,8 +31,8 @@ builds:
   - id: "with-hooks"
     builder: go
     targets:
-      - "darwin_amd64"
-      - "windows_amd64"
+      - "darwin-amd64"
+      - "windows-amd64"
     hooks:
       pre:
         - cmd: first-script.sh
@@ -56,7 +56,7 @@ hooks:
 | .Name   | Filename of the binary, e.g. `bin.exe` |
 | .Ext    | Extension, e.g. `.exe`                 |
 | .Path   | Absolute path to the binary            |
-| .Target | Build target, e.g. `darwin_amd64`      |
+| .Target | Build target, e.g. `darwin-amd64`      |
 
 Environment variables are inherited and overridden in the following order:
 

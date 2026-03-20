@@ -56,7 +56,7 @@ Copy from the `dist` directory.
 
 ```dockerfile
 FROM scratch
-COPY /dist/app_linux_amd64/app /app
+COPY /dist/app_linux-amd64/app /app
 ENTRYPOINT ["/app"]
 ```
 

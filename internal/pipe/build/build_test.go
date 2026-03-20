@@ -623,7 +623,7 @@ func TestBuildOptionsForTarget(t *testing.T) {
 			},
 			expectedOpts: api.Options{
 				Name: "testbinary",
-				Path: filepath.Join(tmpDir, "testid_linux_amd64_v1", "testbinary"),
+				Path: filepath.Join(tmpDir, "testid_linux-amd64-v1", "testbinary"),
 			},
 		},
 		{
@@ -637,7 +637,7 @@ func TestBuildOptionsForTarget(t *testing.T) {
 			},
 			expectedOpts: api.Options{
 				Name: "testbinary_linux_amd64",
-				Path: filepath.Join(tmpDir, "testid_linux_amd64_v1", "testbinary_linux_amd64"),
+				Path: filepath.Join(tmpDir, "testid_linux-amd64-v1", "testbinary_linux_amd64"),
 			},
 		},
 		{
@@ -667,7 +667,7 @@ func TestBuildOptionsForTarget(t *testing.T) {
 			},
 			expectedOpts: api.Options{
 				Name: "testbinary",
-				Path: filepath.Join(tmpDir, "testid_linux_amd64_v1", "testbinary"),
+				Path: filepath.Join(tmpDir, "testid_linux-amd64-v1", "testbinary"),
 			},
 		},
 		{
@@ -681,7 +681,7 @@ func TestBuildOptionsForTarget(t *testing.T) {
 			},
 			expectedOpts: api.Options{
 				Name: "testbinary",
-				Path: filepath.Join(tmpDir, "testid_linux_arm_6", "testbinary"),
+				Path: filepath.Join(tmpDir, "testid_linux-arm-6", "testbinary"),
 			},
 		},
 		{
@@ -695,7 +695,7 @@ func TestBuildOptionsForTarget(t *testing.T) {
 			},
 			expectedOpts: api.Options{
 				Name: "testbinary",
-				Path: filepath.Join(tmpDir, "testid_linux_mips_softfloat", "testbinary"),
+				Path: filepath.Join(tmpDir, "testid_linux-mips-softfloat", "testbinary"),
 			},
 		},
 		{
@@ -709,7 +709,7 @@ func TestBuildOptionsForTarget(t *testing.T) {
 			},
 			expectedOpts: api.Options{
 				Name: "testbinary",
-				Path: filepath.Join(tmpDir, "testid_linux_amd64_v3", "testbinary"),
+				Path: filepath.Join(tmpDir, "testid_linux-amd64-v3", "testbinary"),
 			},
 		},
 	}

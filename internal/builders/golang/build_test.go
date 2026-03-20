@@ -22,17 +22,17 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-var runtimeTarget = runtime.GOOS + "_" + runtime.GOARCH
+var runtimeTarget = runtime.GOOS + "-" + runtime.GOARCH
 
 var go118FirstClassAdjustedTargets = []string{
-	"darwin_amd64_v1",
-	"darwin_arm64_v8.0",
-	"linux_386_sse2",
-	"linux_amd64_v1",
-	"linux_arm_6",
-	"linux_arm64_v8.0",
-	"windows_386_sse2",
-	"windows_amd64_v1",
+	"darwin-amd64-v1",
+	"darwin-arm64-v8.0",
+	"linux-386-sse2",
+	"linux-amd64-v1",
+	"linux-arm-6",
+	"linux-arm64-v8.0",
+	"windows-386-sse2",
+	"windows-amd64-v1",
 }
 
 func TestDependencies(t *testing.T) {
@@ -41,62 +41,83 @@ func TestDependencies(t *testing.T) {
 
 func TestParse(t *testing.T) {
 	for target, dst := range map[string]Target{
+		// old underscore format (backward compat)
 		"linux_amd64": {
-			Target:  "linux_amd64_v1",
+			Target:  "linux-amd64-v1",
 			Goos:    "linux",
 			Goarch:  "amd64",
 			Goamd64: "v1",
 		},
-		"linux_amd64_v2": {
-			Target:  "linux_amd64_v2",
+		// new hyphen format
+		"linux-amd64": {
+			Target:  "linux-amd64-v1",
+			Goos:    "linux",
+			Goarch:  "amd64",
+			Goamd64: "v1",
+		},
+		"linux-amd64-v2": {
+			Target:  "linux-amd64-v2",
 			Goos:    "linux",
 			Goarch:  "amd64",
 			Goamd64: "v2",
 		},
 		"linux_arm": {
-			Target: "linux_arm_" + experimental.DefaultGOARM(),
+			Target: "linux-arm-" + experimental.DefaultGOARM(),
 			Goos:   "linux",
 			Goarch: "arm",
 			Goarm:  experimental.DefaultGOARM(),
 		},
-		"linux_arm_7": {
-			Target: "linux_arm_7",
+		"linux-arm-7": {
+			Target: "linux-arm-7",
 			Goos:   "linux",
 			Goarch: "arm",
 			Goarm:  "7",
 		},
+		// old underscore format with extra (backward compat)
+		"linux_arm_7": {
+			Target: "linux-arm-7",
+			Goos:   "linux",
+			Goarch: "arm",
+			Goarm:  "7",
+		},
+		"darwin_amd64_v2": {
+			Target:  "darwin-amd64-v2",
+			Goos:    "darwin",
+			Goarch:  "amd64",
+			Goamd64: "v2",
+		},
 		"linux_mips": {
-			Target: "linux_mips_hardfloat",
+			Target: "linux-mips-hardfloat",
 			Goos:   "linux",
 			Goarch: "mips",
 			Gomips: "hardfloat",
 		},
-		"linux_mips_softfloat": {
-			Target: "linux_mips_softfloat",
+		"linux-mips-softfloat": {
+			Target: "linux-mips-softfloat",
 			Goos:   "linux",
 			Goarch: "mips",
 			Gomips: "softfloat",
 		},
 		"linux_386": {
-			Target: "linux_386_sse2",
+			Target: "linux-386-sse2",
 			Goos:   "linux",
 			Goarch: "386",
 			Go386:  "sse2",
 		},
-		"linux_386_hardfloat": {
-			Target: "linux_386_hardfloat",
+		"linux-386-hardfloat": {
+			Target: "linux-386-hardfloat",
 			Goos:   "linux",
 			Goarch: "386",
 			Go386:  "hardfloat",
 		},
 		"linux_arm64": {
-			Target:  "linux_arm64_v8.0",
+			Target:  "linux-arm64-v8.0",
 			Goos:    "linux",
 			Goarch:  "arm64",
 			Goarm64: "v8.0",
 		},
-		"linux_arm64_v9.0": {
-			Target:  "linux_arm64_v9.0",
+		"linux-arm64-v9.0": {
+			Target:  "linux-arm64-v9.0",
 			Goos:    "linux",
 			Goarch:  "arm64",
 			Goarm64: "v9.0",
@@ -107,6 +128,34 @@ func TestParse(t *testing.T) {
 			require.NoError(t, err)
 			require.IsType(t, Target{}, got)
 			require.Equal(t, dst, got.(Target))
+		})
+	}
+}
+
+func TestFixTarget(t *testing.T) {
+	for input, expected := range map[string]string{
+		// new hyphen format passes through
+		"linux-amd64":         "linux-amd64-v1",
+		"linux-amd64-v3":      "linux-amd64-v3",
+		"linux-arm-7":         "linux-arm-7",
+		"linux-arm64-v9.0":    "linux-arm64-v9.0",
+		"linux-386-softfloat": "linux-386-softfloat",
+		"linux-mips":          "linux-mips-hardfloat",
+		"linux-ppc64":         "linux-ppc64-power8",
+		"linux-riscv64":       "linux-riscv64-rva20u64",
+		// old underscore format is normalized to hyphens
+		"linux_amd64":       "linux-amd64-v1",
+		"linux_amd64_v3":    "linux-amd64-v3",
+		"linux_arm_7":       "linux-arm-7",
+		"linux_arm64":       "linux-arm64-v8.0",
+		"linux_386":         "linux-386-sse2",
+		"darwin_arm64_v9.0": "darwin-arm64-v9.0",
+		"windows_mips64le":  "windows-mips64le-hardfloat",
+		"linux_ppc64le":     "linux-ppc64le-power8",
+		"linux_riscv64":     "linux-riscv64-rva20u64",
+	} {
+		t.Run(input, func(t *testing.T) {
+			require.Equal(t, expected, fixTarget(input))
 		})
 	}
 }
@@ -144,15 +193,15 @@ func TestWithDefaults(t *testing.T) {
 				Tool: "go1.2.3",
 			},
 			targets: []string{
-				"linux_amd64_v2",
-				"linux_amd64_v3",
-				"linux_mips_softfloat",
-				"darwin_amd64_v2",
-				"darwin_amd64_v3",
-				"windows_amd64_v3",
-				"windows_amd64_v2",
-				"windows_arm_6",
-				"linux_arm_6",
+				"linux-amd64-v2",
+				"linux-amd64-v3",
+				"linux-mips-softfloat",
+				"darwin-amd64-v2",
+				"darwin-amd64-v3",
+				"windows-amd64-v3",
+				"windows-amd64-v2",
+				"windows-arm-6",
+				"linux-arm-6",
 			},
 			tool: "go1.2.3",
 		},
@@ -162,14 +211,14 @@ func TestWithDefaults(t *testing.T) {
 				Binary: "foo",
 			},
 			targets: []string{
-				"linux_amd64_v1",
-				"linux_386_sse2",
-				"linux_arm64_v8.0",
-				"darwin_amd64_v1",
-				"darwin_arm64_v8.0",
-				"windows_amd64_v1",
-				"windows_arm64_v8.0",
-				"windows_386_sse2",
+				"linux-amd64-v1",
+				"linux-386-sse2",
+				"linux-arm64-v8.0",
+				"darwin-amd64-v1",
+				"darwin-arm64-v8.0",
+				"windows-amd64-v1",
+				"windows-arm64-v8.0",
+				"windows-386-sse2",
 			},
 			tool: "go",
 		},
@@ -178,13 +227,13 @@ func TestWithDefaults(t *testing.T) {
 				ID:     "foo3",
 				Binary: "foo",
 				Targets: []string{
-					"linux_386_sse2",
-					"darwin_amd64_v2",
+					"linux-386-sse2",
+					"darwin-amd64-v2",
 				},
 			},
 			targets: []string{
-				"linux_386_sse2",
-				"darwin_amd64_v2",
+				"linux-386-sse2",
+				"darwin-amd64-v2",
 			},
 			tool: "go",
 		},
@@ -193,13 +242,13 @@ func TestWithDefaults(t *testing.T) {
 				ID:     "foo3",
 				Binary: "foo",
 				Targets: []string{
-					"linux_386_sse2",
-					"darwin_amd64",
+					"linux-386-sse2",
+					"darwin-amd64",
 				},
 			},
 			targets: []string{
-				"linux_386_sse2",
-				"darwin_amd64_v1",
+				"linux-386-sse2",
+				"darwin-amd64-v1",
 			},
 			tool: "go",
 		},
@@ -207,72 +256,72 @@ func TestWithDefaults(t *testing.T) {
 			build: config.Build{
 				ID:      "foo3",
 				Binary:  "foo",
-				Targets: []string{"linux_arm"},
+				Targets: []string{"linux-arm"},
 			},
-			targets: []string{"linux_arm_6"},
+			targets: []string{"linux-arm-6"},
 			tool:    "go",
 		},
 		"custom targets no arm64": {
 			build: config.Build{
 				ID:      "foo3",
 				Binary:  "foo",
-				Targets: []string{"linux_arm64"},
+				Targets: []string{"linux-arm64"},
 			},
-			targets: []string{"linux_arm64_v8.0"},
+			targets: []string{"linux-arm64-v8.0"},
 			tool:    "go",
 		},
 		"custom targets no ppc64": {
 			build: config.Build{
 				ID:      "foo3",
 				Binary:  "foo",
-				Targets: []string{"linux_ppc64le", "linux_ppc64"},
+				Targets: []string{"linux-ppc64le", "linux-ppc64"},
 			},
-			targets: []string{"linux_ppc64le_power8", "linux_ppc64_power8"},
+			targets: []string{"linux-ppc64le-power8", "linux-ppc64-power8"},
 			tool:    "go",
 		},
 		"custom targets no riscv64": {
 			build: config.Build{
 				ID:      "foo3",
 				Binary:  "foo",
-				Targets: []string{"linux_riscv64"},
+				Targets: []string{"linux-riscv64"},
 			},
-			targets: []string{"linux_riscv64_rva20u64"},
+			targets: []string{"linux-riscv64-rva20u64"},
 			tool:    "go",
 		},
 		"custom targets no mips": {
 			build: config.Build{
 				ID:      "foo3",
 				Binary:  "foo",
-				Targets: []string{"linux_mips"},
+				Targets: []string{"linux-mips"},
 			},
-			targets: []string{"linux_mips_hardfloat"},
+			targets: []string{"linux-mips-hardfloat"},
 			tool:    "go",
 		},
 		"custom targets no mipsle": {
 			build: config.Build{
 				ID:      "foo3",
 				Binary:  "foo",
-				Targets: []string{"linux_mipsle"},
+				Targets: []string{"linux-mipsle"},
 			},
-			targets: []string{"linux_mipsle_hardfloat"},
+			targets: []string{"linux-mipsle-hardfloat"},
 			tool:    "go",
 		},
 		"custom targets no mips64": {
 			build: config.Build{
 				ID:      "foo3",
 				Binary:  "foo",
-				Targets: []string{"linux_mips64"},
+				Targets: []string{"linux-mips64"},
 			},
-			targets: []string{"linux_mips64_hardfloat"},
+			targets: []string{"linux-mips64-hardfloat"},
 			tool:    "go",
 		},
 		"custom targets no mips64le": {
 			build: config.Build{
 				ID:      "foo3",
 				Binary:  "foo",
-				Targets: []string{"linux_mips64le"},
+				Targets: []string{"linux-mips64le"},
 			},
-			targets: []string{"linux_mips64le_hardfloat"},
+			targets: []string{"linux-mips64le-hardfloat"},
 			tool:    "go",
 		},
 		"empty with custom dir": {
@@ -282,14 +331,14 @@ func TestWithDefaults(t *testing.T) {
 				Dir:    "./testdata",
 			},
 			targets: []string{
-				"linux_amd64_v1",
-				"linux_386_sse2",
-				"linux_arm64_v8.0",
-				"darwin_amd64_v1",
-				"darwin_arm64_v8.0",
-				"windows_amd64_v1",
-				"windows_arm64_v8.0",
-				"windows_386_sse2",
+				"linux-amd64-v1",
+				"linux-386-sse2",
+				"linux-arm64-v8.0",
+				"darwin-amd64-v1",
+				"darwin-arm64-v8.0",
+				"windows-amd64-v1",
+				"windows-arm64-v8.0",
+				"windows-386-sse2",
 			},
 			tool: "go",
 		},
@@ -300,14 +349,14 @@ func TestWithDefaults(t *testing.T) {
 				Dir:    "./nope",
 			},
 			targets: []string{
-				"linux_amd64_v1",
-				"linux_386_sse2",
-				"linux_arm64_v8.0",
-				"darwin_amd64_v1",
-				"darwin_arm64_v8.0",
-				"windows_amd64_v1",
-				"windows_arm64_v8.0",
-				"windows_386_sse2",
+				"linux-amd64-v1",
+				"linux-386-sse2",
+				"linux-arm64-v8.0",
+				"darwin-amd64-v1",
+				"darwin-arm64-v8.0",
+				"windows-amd64-v1",
+				"windows-arm64-v8.0",
+				"windows-386-sse2",
 			},
 			tool: "go",
 		},
@@ -333,9 +382,9 @@ func TestWithDefaults(t *testing.T) {
 			build: config.Build{
 				ID:      "foo3",
 				Binary:  "foo",
-				Targets: []string{"linux_amd64_v1", go118FirstClassTargetsName, "darwin_amd64_v2"},
+				Targets: []string{"linux-amd64-v1", go118FirstClassTargetsName, "darwin-amd64-v2"},
 			},
-			targets: append(go118FirstClassAdjustedTargets, "darwin_amd64_v2"),
+			targets: append(go118FirstClassAdjustedTargets, "darwin-amd64-v2"),
 			tool:    "go",
 		},
 		"repeating targets": {
@@ -466,12 +515,12 @@ func TestBuild(t *testing.T) {
 				ID:     "foo",
 				Binary: "bin/foo-{{ .Version }}",
 				Targets: []string{
-					"linux_amd64",
-					"darwin_amd64",
-					"windows_amd64",
-					"linux_arm_6",
-					"js_wasm",
-					"linux_mips_softfloat",
+					"linux-amd64",
+					"darwin-amd64",
+					"windows-amd64",
+					"linux-arm-6",
+					"js-wasm",
+					"linux-mips-softfloat",
 				},
 				Tool:    "{{ .Env.GOBIN }}",
 				Command: "build",
@@ -509,7 +558,7 @@ func TestBuild(t *testing.T) {
 		var ext string
 		if strings.HasPrefix(target, "windows") {
 			ext = ".exe"
-		} else if target == "js_wasm" {
+		} else if target == "js-wasm" {
 			ext = ".wasm"
 		}
 		bin, terr := tmpl.New(ctx).Apply(build.Binary)
@@ -535,11 +584,11 @@ func TestBuild(t *testing.T) {
 	expected := []*artifact.Artifact{
 		{
 			Name:    "bin/foo-v5.6.7",
-			Path:    filepath.ToSlash(filepath.Join("dist", "linux_amd64", "bin", "foo-v5.6.7")),
+			Path:    filepath.ToSlash(filepath.Join("dist", "linux-amd64", "bin", "foo-v5.6.7")),
 			Goos:    "linux",
 			Goarch:  "amd64",
 			Goamd64: "v1",
-			Target:  "linux_amd64_v1",
+			Target:  "linux-amd64-v1",
 			Type:    artifact.Binary,
 			Extra: map[string]any{
 				artifact.ExtraExt:     "",
@@ -551,11 +600,11 @@ func TestBuild(t *testing.T) {
 		},
 		{
 			Name:   "bin/foo-v5.6.7",
-			Path:   filepath.ToSlash(filepath.Join("dist", "linux_mips_softfloat", "bin", "foo-v5.6.7")),
+			Path:   filepath.ToSlash(filepath.Join("dist", "linux-mips-softfloat", "bin", "foo-v5.6.7")),
 			Goos:   "linux",
 			Goarch: "mips",
 			Gomips: "softfloat",
-			Target: "linux_mips_softfloat",
+			Target: "linux-mips-softfloat",
 			Type:   artifact.Binary,
 			Extra: map[string]any{
 				artifact.ExtraExt:     "",
@@ -567,11 +616,11 @@ func TestBuild(t *testing.T) {
 		},
 		{
 			Name:    "bin/foo-v5.6.7",
-			Path:    filepath.ToSlash(filepath.Join("dist", "darwin_amd64", "bin", "foo-v5.6.7")),
+			Path:    filepath.ToSlash(filepath.Join("dist", "darwin-amd64", "bin", "foo-v5.6.7")),
 			Goos:    "darwin",
 			Goarch:  "amd64",
 			Goamd64: "v1",
-			Target:  "darwin_amd64_v1",
+			Target:  "darwin-amd64-v1",
 			Type:    artifact.Binary,
 			Extra: map[string]any{
 				artifact.ExtraExt:     "",
@@ -583,11 +632,11 @@ func TestBuild(t *testing.T) {
 		},
 		{
 			Name:   "bin/foo-v5.6.7",
-			Path:   filepath.ToSlash(filepath.Join("dist", "linux_arm_6", "bin", "foo-v5.6.7")),
+			Path:   filepath.ToSlash(filepath.Join("dist", "linux-arm-6", "bin", "foo-v5.6.7")),
 			Goos:   "linux",
 			Goarch: "arm",
 			Goarm:  "6",
-			Target: "linux_arm_6",
+			Target: "linux-arm-6",
 			Type:   artifact.Binary,
 			Extra: map[string]any{
 				artifact.ExtraExt:     "",
@@ -599,11 +648,11 @@ func TestBuild(t *testing.T) {
 		},
 		{
 			Name:    "bin/foo-v5.6.7.exe",
-			Path:    filepath.ToSlash(filepath.Join("dist", "windows_amd64", "bin", "foo-v5.6.7.exe")),
+			Path:    filepath.ToSlash(filepath.Join("dist", "windows-amd64", "bin", "foo-v5.6.7.exe")),
 			Goos:    "windows",
 			Goarch:  "amd64",
 			Goamd64: "v1",
-			Target:  "windows_amd64_v1",
+			Target:  "windows-amd64-v1",
 			Type:    artifact.Binary,
 			Extra: map[string]any{
 				artifact.ExtraExt:     ".exe",
@@ -615,10 +664,10 @@ func TestBuild(t *testing.T) {
 		},
 		{
 			Name:   "bin/foo-v5.6.7.wasm",
-			Path:   filepath.ToSlash(filepath.Join("dist", "js_wasm", "bin", "foo-v5.6.7.wasm")),
+			Path:   filepath.ToSlash(filepath.Join("dist", "js-wasm", "bin", "foo-v5.6.7.wasm")),
 			Goos:   "js",
 			Goarch: "wasm",
-			Target: "js_wasm",
+			Target: "js-wasm",
 			Type:   artifact.Binary,
 			Extra: map[string]any{
 				artifact.ExtraExt:     ".wasm",
@@ -654,9 +703,9 @@ func TestBuildVariadic(t *testing.T) {
 			Binary: true,
 		},
 		Targets: []string{
-			"linux_amd64",
-			"windows_amd64",
-			"js_wasm",
+			"linux-amd64",
+			"windows-amd64",
+			"js-wasm",
 		},
 	}
 	ctx := testctx.WrapWithCfg(t.Context(), config.Project{
@@ -671,7 +720,7 @@ func TestBuildVariadic(t *testing.T) {
 		var ext string
 		if strings.HasPrefix(target, "windows") {
 			ext = ".exe"
-		} else if target == "js_wasm" {
+		} else if target == "js-wasm" {
 			ext = ".wasm"
 		}
 
@@ -704,11 +753,11 @@ func TestBuildVariadic(t *testing.T) {
 	expected := []*artifact.Artifact{
 		{
 			Name:    "a",
-			Path:    filepath.ToSlash(filepath.Join("dist", "linux_amd64_v1", "a")),
+			Path:    filepath.ToSlash(filepath.Join("dist", "linux-amd64-v1", "a")),
 			Goos:    "linux",
 			Goarch:  "amd64",
 			Goamd64: "v1",
-			Target:  "linux_amd64_v1",
+			Target:  "linux-amd64-v1",
 			Type:    artifact.Binary,
 			Extra: map[string]any{
 				artifact.ExtraID:      "foo",
@@ -719,11 +768,11 @@ func TestBuildVariadic(t *testing.T) {
 		},
 		{
 			Name:    "foo",
-			Path:    filepath.ToSlash(filepath.Join("dist", "linux_amd64_v1", "foo")),
+			Path:    filepath.ToSlash(filepath.Join("dist", "linux-amd64-v1", "foo")),
 			Goos:    "linux",
 			Goarch:  "amd64",
 			Goamd64: "v1",
-			Target:  "linux_amd64_v1",
+			Target:  "linux-amd64-v1",
 			Type:    artifact.Binary,
 			Extra: map[string]any{
 				artifact.ExtraID:      "foo",
@@ -734,11 +783,11 @@ func TestBuildVariadic(t *testing.T) {
 		},
 		{
 			Name:    "a.exe",
-			Path:    filepath.ToSlash(filepath.Join("dist", "windows_amd64_v1", "a.exe")),
+			Path:    filepath.ToSlash(filepath.Join("dist", "windows-amd64-v1", "a.exe")),
 			Goos:    "windows",
 			Goarch:  "amd64",
 			Goamd64: "v1",
-			Target:  "windows_amd64_v1",
+			Target:  "windows-amd64-v1",
 			Type:    artifact.Binary,
 			Extra: map[string]any{
 				artifact.ExtraID:      "foo",
@@ -749,11 +798,11 @@ func TestBuildVariadic(t *testing.T) {
 		},
 		{
 			Name:    "foo.exe",
-			Path:    filepath.ToSlash(filepath.Join("dist", "windows_amd64_v1", "foo.exe")),
+			Path:    filepath.ToSlash(filepath.Join("dist", "windows-amd64-v1", "foo.exe")),
 			Goos:    "windows",
 			Goarch:  "amd64",
 			Goamd64: "v1",
-			Target:  "windows_amd64_v1",
+			Target:  "windows-amd64-v1",
 			Type:    artifact.Binary,
 			Extra: map[string]any{
 				artifact.ExtraID:      "foo",
@@ -764,10 +813,10 @@ func TestBuildVariadic(t *testing.T) {
 		},
 		{
 			Name:   "a.wasm",
-			Path:   filepath.ToSlash(filepath.Join("dist", "js_wasm", "a.wasm")),
+			Path:   filepath.ToSlash(filepath.Join("dist", "js-wasm", "a.wasm")),
 			Goos:   "js",
 			Goarch: "wasm",
-			Target: "js_wasm",
+			Target: "js-wasm",
 			Type:   artifact.Binary,
 			Extra: map[string]any{
 				artifact.ExtraID:      "foo",
@@ -778,10 +827,10 @@ func TestBuildVariadic(t *testing.T) {
 		},
 		{
 			Name:   "foo.wasm",
-			Path:   filepath.ToSlash(filepath.Join("dist", "js_wasm", "foo.wasm")),
+			Path:   filepath.ToSlash(filepath.Join("dist", "js-wasm", "foo.wasm")),
 			Goos:   "js",
 			Goarch: "wasm",
-			Target: "js_wasm",
+			Target: "js-wasm",
 			Type:   artifact.Binary,
 			Extra: map[string]any{
 				artifact.ExtraID:      "foo",
@@ -908,7 +957,7 @@ func TestBuildFailed(t *testing.T) {
 	}, testctx.WithCurrentTag("5.6.7"))
 
 	err := Default.Build(ctx, ctx.Config.Builds[0], api.Options{
-		Target: mustParse(t, "darwin_amd64"),
+		Target: mustParse(t, "darwin-amd64"),
 	})
 	require.ErrorContains(t, err, `flag provided but not defined: -flag-that-dont-exists-to-force-failure`)
 	require.Empty(t, ctx.Artifacts.List())
@@ -1230,11 +1279,11 @@ func TestBuildModTimestamp(t *testing.T) {
 				ID:     "foo",
 				Binary: "bin/foo-{{ .Version }}",
 				Targets: []string{
-					"linux_amd64",
-					"darwin_amd64",
-					"linux_arm_6",
-					"linux_mips_softfloat",
-					"linux_mips64le_softfloat",
+					"linux-amd64",
+					"darwin-amd64",
+					"linux-arm-6",
+					"linux-mips-softfloat",
+					"linux-mips64le-softfloat",
 				},
 				BuildDetails: config.BuildDetails{
 					Env:      []string{"GO111MODULE=off"},
@@ -1287,7 +1336,7 @@ func TestBuildGoBuildLine(t *testing.T) {
 
 		options := api.Options{
 			Path:   ctx.Config.Builds[0].Binary,
-			Target: mustParse(t, "linux_amd64"),
+			Target: mustParse(t, "linux-amd64"),
 		}
 
 		dets, err := withOverrides(ctx, build, options.Target.(Target))
@@ -1530,7 +1579,7 @@ func TestOverrides(t *testing.T) {
 							},
 						},
 					},
-				}, mustParse(t, "linux_"+arch),
+				}, mustParse(t, "linux-"+arch),
 			)
 			require.NoError(t, err)
 			require.ElementsMatch(t, dets.Ldflags, []string{"overridden"})
@@ -1555,7 +1604,7 @@ func TestOverrides(t *testing.T) {
 						},
 					},
 				},
-			}, mustParse(t, "linux_amd64"),
+			}, mustParse(t, "linux-amd64"),
 		)
 		require.NoError(t, err)
 		require.Equal(t, config.BuildDetails{
@@ -1625,7 +1674,7 @@ func TestOverrides(t *testing.T) {
 						},
 					},
 				},
-			}, mustParse(t, "linux_arm64_v8.0"),
+			}, mustParse(t, "linux-arm64-v8.0"),
 		)
 		require.NoError(t, err)
 		require.Equal(t, config.BuildDetails{
@@ -1650,7 +1699,7 @@ func TestOverrides(t *testing.T) {
 						},
 					},
 				},
-			}, mustParse(t, "linux_arm64_v8.0"),
+			}, mustParse(t, "linux-arm64-v8.0"),
 		)
 		require.NoError(t, err)
 		require.Equal(t, config.BuildDetails{
@@ -1676,7 +1725,7 @@ func TestOverrides(t *testing.T) {
 						},
 					},
 				},
-			}, mustParse(t, "linux_arm_6"),
+			}, mustParse(t, "linux-arm-6"),
 		)
 		require.NoError(t, err)
 		require.Equal(t, config.BuildDetails{
@@ -1701,7 +1750,7 @@ func TestOverrides(t *testing.T) {
 						},
 					},
 				},
-			}, mustParse(t, "linux_arm_6"),
+			}, mustParse(t, "linux-arm-6"),
 		)
 		require.NoError(t, err)
 		require.Equal(t, config.BuildDetails{
@@ -1727,7 +1776,7 @@ func TestOverrides(t *testing.T) {
 						},
 					},
 				},
-			}, mustParse(t, "linux_mips_softfloat"),
+			}, mustParse(t, "linux-mips-softfloat"),
 		)
 		require.NoError(t, err)
 		require.Equal(t, config.BuildDetails{
@@ -1752,7 +1801,7 @@ func TestOverrides(t *testing.T) {
 						},
 					},
 				},
-			}, mustParse(t, "linux_mips_hardfloat"),
+			}, mustParse(t, "linux-mips-hardfloat"),
 		)
 		require.NoError(t, err)
 		require.Equal(t, config.BuildDetails{
@@ -1778,7 +1827,7 @@ func TestOverrides(t *testing.T) {
 						},
 					},
 				},
-			}, mustParse(t, "linux_riscv64_rva22u64"),
+			}, mustParse(t, "linux-riscv64-rva22u64"),
 		)
 		require.NoError(t, err)
 		require.Equal(t, config.BuildDetails{
@@ -1804,7 +1853,7 @@ func TestOverrides(t *testing.T) {
 						},
 					},
 				},
-			}, mustParse(t, "linux_riscv64_rva22u64"),
+			}, mustParse(t, "linux-riscv64-rva22u64"),
 		)
 		require.NoError(t, err)
 		require.Equal(t, config.BuildDetails{
@@ -1830,7 +1879,7 @@ func TestOverrides(t *testing.T) {
 						},
 					},
 				},
-			}, mustParse(t, "linux_386_sse2"),
+			}, mustParse(t, "linux-386-sse2"),
 		)
 		require.NoError(t, err)
 		require.Equal(t, config.BuildDetails{
@@ -1856,7 +1905,7 @@ func TestOverrides(t *testing.T) {
 						},
 					},
 				},
-			}, mustParse(t, "linux_386_sse2"),
+			}, mustParse(t, "linux-386-sse2"),
 		)
 		require.NoError(t, err)
 		require.Equal(t, config.BuildDetails{
@@ -1945,7 +1994,7 @@ func TestArtifactType(t *testing.T) {
 		require.Equal(t, artifact.CArchive, artifactType(Target{}, "c-archive"))
 	})
 	t.Run("c-shared", func(t *testing.T) {
-		require.Equal(t, artifact.CShared, artifactType(Target{Target: "linux_arm64"}, "c-shared"))
+		require.Equal(t, artifact.CShared, artifactType(Target{Target: "linux-arm64"}, "c-shared"))
 	})
 	t.Run("c-shared/wasm", func(t *testing.T) {
 		require.Equal(t, artifact.Binary, artifactType(Target{Target: "wasm"}, "c-shared"))

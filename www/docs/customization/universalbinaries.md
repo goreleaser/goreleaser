@@ -97,7 +97,7 @@ support the following build details:
 | .Arch   | `GOARCH`, always `all`            |
 | .Arm    | `GOARM`, always empty             |
 | .Ext    | Extension, always empty           |
-| .Target | Build target, always `darwin_all` |
+| .Target | Build target, always `darwin-all` |
 | .Path   | The binary path                   |
 | .Name   | The binary name                   |
 

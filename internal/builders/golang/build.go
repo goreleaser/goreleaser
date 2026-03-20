@@ -64,7 +64,7 @@ func (b *Builder) Dependencies() []string {
 // Parse implements build.Builder.
 func (b *Builder) Parse(target string) (api.Target, error) {
 	target = fixTarget(target)
-	parts := strings.Split(target, "_")
+	parts := strings.Split(target, "-")
 	if len(parts) < 2 {
 		return nil, fmt.Errorf("%s is not a valid build target", target)
 	}
@@ -181,30 +181,34 @@ func (b *Builder) FixTarget(target string) string {
 }
 
 func fixTarget(target string) string {
-	if strings.HasSuffix(target, "_amd64") {
-		return target + "_" + defaultGoamd64
+	// Normalize underscores to hyphens for backward compatibility with
+	// configs that use the old GOOS_GOARCH_EXTRA format.
+	target = strings.ReplaceAll(target, "_", "-")
+
+	if strings.HasSuffix(target, "-amd64") {
+		return target + "-" + defaultGoamd64
 	}
-	if strings.HasSuffix(target, "_386") {
-		return target + "_" + defaultGo386
+	if strings.HasSuffix(target, "-386") {
+		return target + "-" + defaultGo386
 	}
-	if strings.HasSuffix(target, "_arm") {
-		return target + "_" + experimental.DefaultGOARM()
+	if strings.HasSuffix(target, "-arm") {
+		return target + "-" + experimental.DefaultGOARM()
 	}
-	if strings.HasSuffix(target, "_arm64") {
-		return target + "_" + defaultGoarm64
+	if strings.HasSuffix(target, "-arm64") {
+		return target + "-" + defaultGoarm64
 	}
-	if strings.HasSuffix(target, "_mips") ||
-		strings.HasSuffix(target, "_mips64") ||
-		strings.HasSuffix(target, "_mipsle") ||
-		strings.HasSuffix(target, "_mips64le") {
-		return target + "_" + defaultGomips
+	if strings.HasSuffix(target, "-mips") ||
+		strings.HasSuffix(target, "-mips64") ||
+		strings.HasSuffix(target, "-mipsle") ||
+		strings.HasSuffix(target, "-mips64le") {
+		return target + "-" + defaultGomips
 	}
-	if strings.HasSuffix(target, "_ppc64") ||
-		strings.HasSuffix(target, "_ppc64le") {
-		return target + "_" + defaultGoppc64
+	if strings.HasSuffix(target, "-ppc64") ||
+		strings.HasSuffix(target, "-ppc64le") {
+		return target + "-" + defaultGoppc64
 	}
-	if strings.HasSuffix(target, "_riscv64") {
-		return target + "_" + defaultGoriscv64
+	if strings.HasSuffix(target, "-riscv64") {
+		return target + "-" + defaultGoriscv64
 	}
 	return target
 }
@@ -243,14 +247,14 @@ const (
 
 // go tool dist list -json | jq -r '.[] | select(.FirstClass) | [.GOOS, .GOARCH] | @tsv'
 var go118FirstClassTargets = []string{
-	"darwin_amd64",
-	"darwin_arm64",
-	"linux_386",
-	"linux_amd64",
-	"linux_arm",
-	"linux_arm64",
-	"windows_386",
-	"windows_amd64",
+	"darwin-amd64",
+	"darwin-arm64",
+	"linux-386",
+	"linux-amd64",
+	"linux-arm",
+	"linux-arm64",
+	"windows-386",
+	"windows-amd64",
 }
 
 // Build builds a golang build.

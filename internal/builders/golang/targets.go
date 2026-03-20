@@ -25,9 +25,9 @@ func formatBuildTarget(o config.BuildDetailsOverride) string {
 }
 
 func formatTarget(t Target) string {
-	target := t.Goos + "_" + t.Goarch
+	target := t.Goos + "-" + t.Goarch
 	if extra := t.Goamd64 + t.Go386 + t.Goarm + t.Goarm64 + t.Gomips + t.Goppc64 + t.Goriscv64; extra != "" {
-		target += "_" + extra
+		target += "-" + extra
 	}
 	return target
 }

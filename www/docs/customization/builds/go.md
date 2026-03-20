@@ -212,9 +212,9 @@ builds:
     targets:
       - go_first_class
       - go_118_first_class
-      - linux_amd64_v1
-      - darwin_arm64
-      - linux_arm_6
+      - linux-amd64-v1
+      - darwin-arm64
+      - linux-arm-6
 
     # Set a specific go binary to use when building.
     # It is safe to ignore this option in most cases.
@@ -381,7 +381,7 @@ following build details are exposed:
 | .Arch   | `GOARCH`                          |
 | .Arm    | `GOARM`                           |
 | .Ext    | Extension, e.g. `.exe`            |
-| .Target | Build target, e.g. `darwin_amd64` |
+| .Target | Build target, e.g. `darwin-amd64` |
 
 ## Understanding `GOMAXPROCS` in GoReleaser
 
