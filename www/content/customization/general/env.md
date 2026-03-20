@@ -8,7 +8,7 @@ Global environment variables to be passed down to all hooks and builds.
 If you have an environment variable named `FOOBAR` set to `on`, your
 `.goreleaser.yaml` file could use it like this:
 
-```yaml title=".goreleaser.yaml"
+```yaml {filename=".goreleaser.yaml"}
 env:
   - FOO={{ .Env.FOOBAR }}
   - ENV_WITH_DEFAULT={{ if index .Env "ENV_WITH_DEFAULT"  }}{{ .Env.ENV_WITH_DEFAULT }}{{ else }}default_value{{ end }}

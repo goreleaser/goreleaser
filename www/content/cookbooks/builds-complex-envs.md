@@ -17,7 +17,7 @@ Here are two different examples:
 This example creates once `CC_` and `CXX_` variable for each platform, and then
 set `CC` and `CXX` to the right one:
 
-```yaml title=".goreleaser.yaml"
+```yaml {filename=".goreleaser.yaml"}
 builds:
   - id: mybin
     binary: mybin
@@ -45,7 +45,7 @@ builds:
 
 This example uses `if` statements to set `CC` and `CXX`:
 
-```yaml title=".goreleaser.yaml"
+```yaml {filename=".goreleaser.yaml"}
 builds:
   - id: mybin
     binary: mybin

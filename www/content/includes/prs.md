@@ -4,7 +4,6 @@ search:
   exclude: true
 ---
 
-
 ## Pull Requests
 
 GoReleaser allows you to, instead of pushing directly to the main branch, push
@@ -24,7 +23,7 @@ You can also push to a fork, and open the pull request in the original branch.
 
 Here's an example on how to set it up:
 
-```yaml title=".goreleaser.yaml"
+```yaml {filename=".goreleaser.yaml"}
 something: # can be nix, brews, etc...
   - repository:
       owner: john

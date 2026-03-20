@@ -16,7 +16,7 @@ and the
 [formula cookbook](https://github.com/Homebrew/brew/blob/master/docs/Formula-Cookbook.md)
 for more details.
 
-```yaml title=".goreleaser.yaml"
+```yaml {filename=".goreleaser.yaml"}
 brews:
   -
     # Name of the recipe
@@ -271,7 +271,7 @@ your users, so they easily downgrade and/or keep using an older version.
 
 To do that, use `alternative_names`:
 
-```yaml title=".goreleaser.yaml"
+```yaml {filename=".goreleaser.yaml"}
 brews:
   - name: foo
     alternative_names:

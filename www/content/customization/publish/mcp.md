@@ -19,7 +19,7 @@ You can check the
 [Model Context Protocol specification](https://modelcontextprotocol.io/) for
 more details.
 
-```yaml title=".goreleaser.yaml"
+```yaml {filename=".goreleaser.yaml"}
 mcp:
   # Unique server name in reverse-DNS format.
   # Must contain exactly one forward slash separating namespace from server name.
@@ -143,7 +143,7 @@ Please migrate to the new top-level `mcp` configuration shown above. The old
 format will continue to work for backward compatibility, but is subject to
 removal in a future version.
 
-```yaml title="Deprecated (still works)"
+```yaml {filename="Deprecated (still works)"}
 mcp:
   github:
     name: io.github.user/myserver

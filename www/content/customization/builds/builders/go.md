@@ -13,7 +13,7 @@ the name of the binary, flags, environment variables, hooks and more.
 
 Here is a commented `builds` section with all fields specified:
 
-```yaml title=".goreleaser.yaml"
+```yaml {filename=".goreleaser.yaml"}
 builds:
   # You can have multiple builds defined as a yaml list
   - #
@@ -356,7 +356,7 @@ We also recommend reading the [official wiki about Go ports](https://go.dev/wiki
 
 Here is an example with multiple binaries:
 
-```yaml title=".goreleaser.yaml"
+```yaml {filename=".goreleaser.yaml"}
 builds:
   - main: ./cmd/cli
     id: "cli"
@@ -438,7 +438,7 @@ This configures:
 You can do that by using `{{ .Env.VARIABLE_NAME }}` in the template, for
 example:
 
-```yaml title=".goreleaser.yaml"
+```yaml {filename=".goreleaser.yaml"}
 builds:
   - ldflags:
    - -s -w -X "main.goversion={{.Env.GOVERSION}}"
@@ -459,7 +459,7 @@ likely to fail.
 You can solve this by running `go mod tidy` before calling `goreleaser` or
 by adding a [hook][] doing that on your `.goreleaser.yaml` file:
 
-```yaml title=".goreleaser.yaml"
+```yaml {filename=".goreleaser.yaml"}
 before:
   hooks:
     - go mod tidy
@@ -533,7 +533,7 @@ GoReleaser will:
 
 Example usage:
 
-```yaml title=".goreleaser.yaml"
+```yaml {filename=".goreleaser.yaml"}
 builds:
   - id: "my-library"
 

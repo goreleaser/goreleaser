@@ -17,7 +17,7 @@ You can check the
 [Homebrew Cask documentation](https://docs.brew.sh/Cask-Cookbook),
 for more details.
 
-```yaml title=".goreleaser.yaml"
+```yaml {filename=".goreleaser.yaml"}
 homebrew_casks:
   -
     # Name of the cask
@@ -239,7 +239,7 @@ Apple charges a yearly fee for that.
 If you don't want to do it, you still have the option to tell macOS to remove
 the quarantine bit from the binary on a post install hook:
 
-```yaml title=".goreleaser.yaml"
+```yaml {filename=".goreleaser.yaml"}
 homebrew_casks:
   - name: foo
     hooks:
@@ -254,7 +254,6 @@ homebrew_casks:
 {{< callout type="error" >}}
 **What happens if I don't follow the steps above?**
 
-
 **Not following this might lead to your app/binary to not run.**
 
 In these cases, users will see the infamous "_App Name is damaged and
@@ -268,7 +267,6 @@ You may do so in using the `caveats` property, for example.
 
 {{< callout type="warning" >}}
 **xattr bypasses macOS security - use with caution**
-
 
 Use of `xattr` to bypass Gatekeeper circumvents macOS security protections
 designed to verify software authenticity. This removes Apple's verification
@@ -292,7 +290,7 @@ your users, so they easily downgrade and/or keep using an older version.
 
 To do that, use `alternative_names`:
 
-```yaml title=".goreleaser.yaml"
+```yaml {filename=".goreleaser.yaml"}
 homebrew_casks:
   - name: foo
     alternative_names:
@@ -329,7 +327,7 @@ Please note that this example uses an internal Homebrew API to retrieve the GitH
 Replace with your implementation as needed.
 {{< /callout >}}
 
-```yaml title=".goreleaser.yaml"
+```yaml {filename=".goreleaser.yaml"}
 homebrew_casks:
   - name: foo
     custom_block: |

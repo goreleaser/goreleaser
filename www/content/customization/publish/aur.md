@@ -14,7 +14,7 @@ Before going further on this, make sure to read
 
 This page describes the available options.
 
-```yaml title=".goreleaser.yaml"
+```yaml {filename=".goreleaser.yaml"}
 aurs:
   - # The package name.
     #

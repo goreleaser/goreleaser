@@ -1,6 +1,7 @@
 ---
 title: Cloudsmith - apt, rpm, and alpine repositories
 weight: 60
+url: "/customization/cloudsmith/"
 ---
 
 {{< version "v2.1" >}}
@@ -17,6 +18,7 @@ token.
 
 Then, you need to pass your account name to GoReleaser and have your push token
 as an environment variable named `CLOUDSMITH_TOKEN`:
+{filename}
 
 ```yaml title=".goreleaser.yaml"
 cloudsmiths:
@@ -33,6 +35,7 @@ This will automatically upload all your `apk`, `deb`, and `rpm` files.
 ## Customization
 
 You can also have plenty of customization options:
+{filename}
 
 ```yaml title=".goreleaser.yaml"
 cloudsmiths:

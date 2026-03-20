@@ -6,7 +6,7 @@ weight: 230
 If you're using GitHub Actions and want to attest your build artifacts, you can
 do add the following to your release workflow:
 
-```yaml title=".github/workflows/release.yml"
+```yaml {filename=".github/workflows/release.yml"}
 # ...
 permissions:
   # ...
@@ -36,7 +36,7 @@ jobs:
 You will also want to adjust your Goreleaser configuration to produce the
 checksum file at a predictable filename matching the release workflow.
 
-```yaml title=".goreleaser.yaml"
+```yaml {filename=".goreleaser.yaml"}
 # Change the checksum filename:
 checksum:
   name_template: "checksums.txt"

@@ -15,7 +15,7 @@ its publishing phase), as cosign will change the image in the registry.
 
 To customize the signing pipeline you can use the following options:
 
-```yaml title=".goreleaser.yaml"
+```yaml {filename=".goreleaser.yaml"}
 docker_signs:
   - # ID of the sign config, must be unique.
     # Only relevant if you want to produce some sort of signature file.
@@ -111,7 +111,7 @@ Assuming you have a `cosign.key` in the repository root and a `COSIGN_PWD`
 environment variable, the simplest configuration to sign both Docker images
 and manifests would look like this:
 
-```yaml title=".goreleaser.yaml"
+```yaml {filename=".goreleaser.yaml"}
 docker_signs:
   - artifacts: all
     stdin: "{{ .Env.COSIGN_PWD }}"

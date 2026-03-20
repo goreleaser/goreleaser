@@ -155,7 +155,7 @@ artifactories:
 
 Of course, you can customize a lot of things:
 
-```yaml title=".goreleaser.yaml"
+```yaml {filename=".goreleaser.yaml"}
 artifactories:
   # You can have multiple Artifactory instances.
   - # Unique name of your artifactory instance. Used to identify the instance

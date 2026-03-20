@@ -15,7 +15,7 @@ Reasons you might want to do that include:
 
 In any case, its pretty easy to do that now:
 
-```yaml title=".goreleaser.yaml"
+```yaml {filename=".goreleaser.yaml"}
 builds:
   - # Set the builder to prebuilt
     builder: prebuilt

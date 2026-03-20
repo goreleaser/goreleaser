@@ -11,7 +11,7 @@ In addition to simple declarations as shown above _multiple_ hooks can be
 declared to help retaining reusability of configuration between different build
 environments.
 
-```yaml title=".goreleaser.yaml"
+```yaml {filename=".goreleaser.yaml"}
 builds:
   - id: "with-hooks"
     builder: go
@@ -29,7 +29,7 @@ builds:
 
 Each hook can also have its own work directory and environment variables:
 
-```yaml title=".goreleaser.yaml"
+```yaml {filename=".goreleaser.yaml"}
 builds:
   - id: "with-hooks"
     builder: go

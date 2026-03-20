@@ -19,7 +19,7 @@ It'll run as the last step before the `publish` phase kicks in when running
 
 Here's the list of options available:
 
-```yaml title=".goreleaser.yaml"
+```yaml {filename=".goreleaser.yaml"}
 before_publish:
   - # IDs of the artifacts to filter for.
     #

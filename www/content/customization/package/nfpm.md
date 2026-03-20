@@ -8,7 +8,7 @@ generate and publish `.deb`, `.rpm`, `.apk`, `.ipk`, and Archlinux packages.
 
 Available options:
 
-```yaml title=".goreleaser.yaml"
+```yaml {filename=".goreleaser.yaml"}
 nfpms:
   # note that this is an array of nfpm configs
   - #
@@ -627,7 +627,7 @@ Termux is the same format as `deb`, the differences are:
 
 **Example prefixing other files:**
 
-```yaml title=".goreleaser.yaml"
+```yaml {filename=".goreleaser.yaml"}
 nfpms:
   - formats: [deb termux.deb rpm]
     contents:
@@ -644,7 +644,7 @@ get duplicated file names.
 
 You can go around that with something like this:
 
-```yaml title=".goreleaser.yaml"
+```yaml {filename=".goreleaser.yaml"}
 nfpms:
   - # ...
     file_name_template: >-

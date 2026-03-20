@@ -28,7 +28,7 @@ with the API key as the value:
 After this, you can add following section to your `.goreleaser.yaml`
 configuration:
 
-```yaml title=".goreleaser.yaml"
+```yaml {filename=".goreleaser.yaml"}
 announce:
   discourse:
     # Whether this announcer is enabled or not.

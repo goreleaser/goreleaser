@@ -9,7 +9,7 @@ You can now build TypeScript binaries using `bun build --compile` and GoReleaser
 
 Simply set the `builder` to `bun`, for instance:
 
-```yaml title=".goreleaser.yaml"
+```yaml {filename=".goreleaser.yaml"}
 builds:
   # You can have multiple builds defined as a yaml list
   - #
@@ -92,7 +92,7 @@ most projects already!
 
 {{< callout type="info" >}}
 
-Learn more about [build hooks](/customization/builds/builders/hooks/).
+Learn more about [build hooks](./hooks.md).
 {{< /callout >}}
 
 ### Environment setup

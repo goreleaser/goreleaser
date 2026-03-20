@@ -11,7 +11,7 @@ Windows binaries using [makensis][].
 
 The `nsis` section specifies how the installers should be created:
 
-```yaml title=".goreleaser.yaml"
+```yaml {filename=".goreleaser.yaml"}
 nsis:
   - # ID of the resulting installer.
     #
@@ -96,7 +96,7 @@ The following template variables are available for use in your NSIS scripts
 
 ## Example NSIS Script
 
-```nsi title="installer.nsi"
+```nsi {filename="installer.nsi"}
 !define APP_NAME "{{ .ProjectName }}"
 !define APP_VERSION "{{ .Version }}"
 

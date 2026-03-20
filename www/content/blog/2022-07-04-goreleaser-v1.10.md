@@ -38,4 +38,4 @@ Fun fact: it is actually winter now here in Brazil. Regardless, this release is 
 - Our Discord server is getting new members almost daily. [Join and chat with us](https://discord.gg/RGEBtg8vQ6)!
 - Check out a preview of the split release phases feature:
 
-<iframe width="560" height="315" src="https://www.youtube-nocookie.com/embed/G0MF0R_LD1g?si=zunwxqAhjU6QFK9d" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe>
+<iframe width="560" height="315" src="https://www.youtube-nocookie.com/embed/G0MF0R_LD1g?si=zunwxqAhjU6QFK9d" {filename="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe>}

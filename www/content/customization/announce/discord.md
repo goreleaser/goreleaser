@@ -12,7 +12,7 @@ environment variables on your pipeline:
 
 After this, you can add following section to your `.goreleaser.yaml` config:
 
-```yaml title=".goreleaser.yaml"
+```yaml {filename=".goreleaser.yaml"}
 announce:
   discord:
     # Whether its enabled or not.

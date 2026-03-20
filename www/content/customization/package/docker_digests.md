@@ -13,7 +13,7 @@ instance, send it to
 
 Here's a commented out configuration:
 
-```yaml title=".goreleaser.yaml"
+```yaml {filename=".goreleaser.yaml"}
 docker_digest:
   # Name of the file.
   #

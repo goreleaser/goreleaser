@@ -11,7 +11,7 @@ You can now build Zig binaries using `zig build` and GoReleaser!
 
 Simply set the `builder` to `zig`, for instance:
 
-```yaml title=".goreleaser.yaml"
+```yaml {filename=".goreleaser.yaml"}
 builds:
   # You can have multiple builds defined as a yaml list
   - #

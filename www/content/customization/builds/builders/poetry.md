@@ -10,7 +10,7 @@ GoReleaser!
 
 Simply set the `builder` to `poetry` and set the `buildmode` you want:
 
-```yaml title=".goreleaser.yaml"
+```yaml {filename=".goreleaser.yaml"}
 builds:
   - builder: poetry
     buildmode: wheel
@@ -21,7 +21,7 @@ Docker images, and more.
 
 ## Options
 
-```yaml title=".goreleaser.yaml"
+```yaml {filename=".goreleaser.yaml"}
 builds:
   # You can have multiple builds defined as a yaml list
   - #
@@ -92,7 +92,7 @@ At this time only the target `py3-none-any` is supported.
 
 You need to declare 2 builds, one for each mode:
 
-```yaml title=".goreleaser.yaml"
+```yaml {filename=".goreleaser.yaml"}
 builds:
   - id: wheel
     builder: poetry
@@ -106,7 +106,7 @@ builds:
 
 You can use [global after hooks](/customization/builds/hooks/) to do it:
 
-```yaml title=".goreleaser.yaml"
+```yaml {filename=".goreleaser.yaml"}
 # global after hooks
 after:
   - cmd: "poetry publish"

@@ -67,7 +67,7 @@ below.
 
 Read the commented configuration excerpt below to learn how to use do it.
 
-```yaml title=".goreleaser.yaml"
+```yaml {filename=".goreleaser.yaml"}
 notarize:
   macos:
     - # Whether this configuration is enabled or not.
@@ -147,7 +147,7 @@ adding the environment variables to the `goreleaser-action` setup.
 <details>
   <summary>release.yml</summary>
 
-```yaml title=".github/workflows/release.yml"
+```yaml {filename=".github/workflows/release.yml"}
 name: goreleaser
 # ...
 
@@ -196,7 +196,7 @@ It works with both [DMGs][DMG] and [macOS Pkgs][macospkg].
 
 See the configuration options below.
 
-```yaml title=".goreleaser.yaml"
+```yaml {filename=".goreleaser.yaml"}
 notarize:
   macos_native:
     - # Whether this configuration is enabled or not.
@@ -288,7 +288,7 @@ You can also take a look at this
 <details>
   <summary>release.yml</summary>
 
-```yaml title=".github/workflows/release.yml"
+```yaml {filename=".github/workflows/release.yml"}
 name: goreleaser
 # ...
 

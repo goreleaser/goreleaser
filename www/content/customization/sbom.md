@@ -19,7 +19,7 @@ The default is configured to create an SBOM for each archive produced with
 
 To customize the artifact cataloging pipeline you can use the following options:
 
-```yaml title=".goreleaser.yaml"
+```yaml {filename=".goreleaser.yaml"}
 sboms:
   - # ID of the sbom config, must be unique.
     #

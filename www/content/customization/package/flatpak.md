@@ -26,7 +26,7 @@ Flatpak only works from Linux.
 
 Here is a commented `flatpaks` section with all fields specified:
 
-```yaml title=".goreleaser.yaml"
+```yaml {filename=".goreleaser.yaml"}
 flatpak:
   - #
     # ID of this Flatpak config, must be unique.

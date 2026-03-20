@@ -8,7 +8,7 @@ a _nix derivation_ to an existing [Nix User Repository][nur].
 
 The `nix` section specifies how the pkgs should be created:
 
-```yaml title=".goreleaser.yaml"
+```yaml {filename=".goreleaser.yaml"}
 nix:
   - #
     # Name of the recipe

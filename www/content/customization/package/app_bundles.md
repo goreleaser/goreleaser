@@ -10,7 +10,7 @@ GoReleaser can create macOS App Bundles (a.k.a. `.app` files).
 
 The `app_bundles` section specifies how the images should be created:
 
-```yaml title=".goreleaser.yaml"
+```yaml {filename=".goreleaser.yaml"}
 app_bundles:
   - # ID of the resulting image.
     #

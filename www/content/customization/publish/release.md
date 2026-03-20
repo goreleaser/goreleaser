@@ -11,7 +11,7 @@ previous tag.
 
 Let's see what can be customized in the `release` section for GitHub:
 
-```yaml title=".goreleaser.yaml"
+```yaml {filename=".goreleaser.yaml"}
 release:
   # Repo in which the release will be created.
   # Default: extracted from the origin remote URL or empty if its private hosted.
@@ -222,7 +222,7 @@ release:
 
 Let's see what can be customized in the `release` section for GitLab.
 
-```yaml title=".goreleaser.yaml"
+```yaml {filename=".goreleaser.yaml"}
 release:
   # Default: extracted from the origin remote URL or empty if its private
   #  hosted.
@@ -290,7 +290,7 @@ Only GitLab `v12.9+` is supported for releases.
 
 You can also configure the `release` section to upload to a [Gitea](https://gitea.io) instance:
 
-```yaml title=".goreleaser.yaml"
+```yaml {filename=".goreleaser.yaml"}
 release:
   gitea:
     owner: user

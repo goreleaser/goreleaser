@@ -22,7 +22,7 @@ For Ko to work you still need to login, either with `docker login` or
 something else.
 {{< /callout >}}
 
-```yaml title=".goreleaser.yaml"
+```yaml {filename=".goreleaser.yaml"}
 kos:
   - # ID of this image.
     id: foo
@@ -174,7 +174,7 @@ available.
 
 Here's a minimal example:
 
-```yaml title=".goreleaser.yaml"
+```yaml {filename=".goreleaser.yaml"}
 before:
   hooks:
     - go mod tidy
@@ -209,7 +209,7 @@ and `darwin/arm64`, as well as the Docker images and manifest for Linux.
 KO will add the built manifest to the artifact list, so you can sign them with
 `docker_signs`:
 
-```yaml title=".goreleaser.yaml"
+```yaml {filename=".goreleaser.yaml"}
 docker_signs:
   - artifacts: manifests
 ```

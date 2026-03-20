@@ -18,13 +18,14 @@ go mod init github.com/you/your-repo
 
 Then create a `main.go` file:
 
-```go title="main.go"
+```go {filename="main.go"}
 package main
 
 func main() {
   println("Ba dum, tss!")
 }
 ```
+
 {{< /tab >}}
 {{< tab ":simple-rust: Rust" >}}
 
@@ -33,6 +34,7 @@ Initialize your project with:
 ```sh
 cargo init --bin
 ```
+
 {{< /tab >}}
 {{< tab ":simple-zig: Zig" >}}
 
@@ -41,6 +43,7 @@ Initialize your project with:
 ```sh
 zig init
 ```
+
 {{< /tab >}}
 {{< tab ":simple-bun: Bun" >}}
 
@@ -49,6 +52,7 @@ Initialize your project with:
 ```sh
 bun init
 ```
+
 {{< /tab >}}
 {{< tab ":simple-deno: Deno" >}}
 
@@ -57,6 +61,7 @@ Initialize your project with:
 ```sh
 deno init
 ```
+
 {{< /tab >}}
 {{< /tabs >}}
 
@@ -100,6 +105,7 @@ It will default to your current `GOOS`/`GOARCH`.
 TARGET="aarch64-unknown-linux-gnu" \
   goreleaser build --single-target
 ```
+
 {{< /tab >}}
 {{< tab ":simple-zig: Zig" >}}
 
@@ -107,6 +113,7 @@ TARGET="aarch64-unknown-linux-gnu" \
 TARGET="aarch64-linux" \
   goreleaser build --single-target
 ```
+
 {{< /tab >}}
 {{< tab ":simple-bun: Bun" >}}
 
@@ -114,6 +121,7 @@ TARGET="aarch64-linux" \
 TARGET="bun-linux-arm64" \
   goreleaser build --single-target
 ```
+
 {{< /tab >}}
 {{< tab ":simple-deno: Deno" >}}
 
@@ -121,6 +129,7 @@ TARGET="bun-linux-arm64" \
 TARGET="aarch64-unknown-linux-gnu" \
   goreleaser build --single-target
 ```
+
 {{< /tab >}}
 {{< /tabs >}}
 
@@ -159,6 +168,7 @@ publishing based on the latest commit by using the `--snapshot` flag:
 ```sh
 goreleaser release --snapshot
 ```
+
 {{< /callout >}}
 
 Now you can run GoReleaser at the root of your repository:

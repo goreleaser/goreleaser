@@ -10,7 +10,7 @@ GoReleaser can create macOS `.pkg` installer files using `pkgbuild`.
 
 The `pkgs` section specifies how the installers should be created:
 
-```yaml title=".goreleaser.yaml"
+```yaml {filename=".goreleaser.yaml"}
 pkgs:
   - # ID of the resulting installer.
     #

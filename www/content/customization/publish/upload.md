@@ -28,9 +28,10 @@ Prerequisites:
 {{< callout type="info" >}}
 
 authentication is optional and may be provided if the server requires it
+
 - user/pass is for Basic Authentication
 - client x509 certificate is for mutual TLS authentication (aka "mTLS")
-{{< /callout >}}
+  {{< /callout >}}
 
 ### Target
 
@@ -151,7 +152,7 @@ uploads:
 
 Of course, you can customize a lot of things:
 
-```yaml title=".goreleaser.yaml"
+```yaml {filename=".goreleaser.yaml"}
 uploads:
   # You can have multiple upload instances.
   - # Unique name of your upload instance. Used to identify the instance.

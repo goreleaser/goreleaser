@@ -17,7 +17,7 @@ permissions (it's inside the "Manage Messages" permission menu).
 Then, you can add something like the following to your `.goreleaser.yaml`
 configuration file:
 
-```yaml title=".goreleaser.yaml"
+```yaml {filename=".goreleaser.yaml"}
 announce:
   telegram:
     # Whether it's enabled or not.

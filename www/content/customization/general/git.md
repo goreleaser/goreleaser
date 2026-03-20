@@ -5,7 +5,7 @@ weight: 100
 
 This allows you to change the behavior of some Git commands.
 
-```yaml title=".goreleaser.yaml"
+```yaml {filename=".goreleaser.yaml"}
 git:
   # What should be used to sort tags when gathering the current and previous
   # tags if there are more than one tag in the same commit.
@@ -43,7 +43,7 @@ git:
 
 This allows you to sort tags by semver:
 
-```yaml title=".goreleaser.yaml"
+```yaml {filename=".goreleaser.yaml"}
 git:
   tag_sort: semver
 ```
@@ -86,7 +86,7 @@ If you were to release `v0.2.0-beta.3`, though, it would still get
 
 To use it, add this to your configuration:
 
-```yaml title=".goreleaser.yaml"
+```yaml {filename=".goreleaser.yaml"}
 git:
   tag_sort: smartsemver
 ```

@@ -16,7 +16,7 @@ The `before` section allows for global hooks that will be executed
 The configuration is straightforward, here is an example will all possible
 options:
 
-```yaml title=".goreleaser.yaml"
+```yaml {filename=".goreleaser.yaml"}
 before:
   # Templates for the commands to be ran.
   hooks:
@@ -38,7 +38,7 @@ global hooks that will be executed **after** the release is started.
 The configuration is straightforward, here is an example will all possible
 options:
 
-```yaml title=".goreleaser.yaml"
+```yaml {filename=".goreleaser.yaml"}
 # global before hooks
 before:
   # Commands to be ran.

@@ -9,7 +9,7 @@ GoReleaser can create DMG images for macOS using `mkisofs` or `hdiutil`.
 
 The `dmg` section specifies how the images should be created:
 
-```yaml title=".goreleaser.yaml"
+```yaml {filename=".goreleaser.yaml"}
 dmg:
   - # ID of the resulting image.
     #

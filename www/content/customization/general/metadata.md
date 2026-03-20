@@ -8,7 +8,7 @@ finishes running.
 
 You can also set some global defaults that can be used by other features.
 
-```yaml title=".goreleaser.yaml"
+```yaml {filename=".goreleaser.yaml"}
 metadata:
   # Set the modified timestamp on the metadata files.
   #

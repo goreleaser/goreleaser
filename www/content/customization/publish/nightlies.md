@@ -13,7 +13,7 @@ To enable it, you must use the `--nightly` flag in the
 
 You also have some customization options available:
 
-```yaml title=".goreleaser.yaml"
+```yaml {filename=".goreleaser.yaml"}
 nightly:
   # Allows you to change the version of the generated nightly release.
   #

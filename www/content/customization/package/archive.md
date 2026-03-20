@@ -9,7 +9,7 @@ additional files, and format.
 
 Here is a commented `archives` section with all fields specified:
 
-```yaml title=".goreleaser.yaml"
+```yaml {filename=".goreleaser.yaml"}
 archives:
   - #
     # ID of this archive.
@@ -270,7 +270,7 @@ on the archive section.
 
 A working hack is to use something like this:
 
-```yaml title=".goreleaser.yaml"
+```yaml {filename=".goreleaser.yaml"}
 archives:
   - files:
       - none*
@@ -290,7 +290,7 @@ file inside.
 Presumably, you'll want that file to be the binary, so, your archive section
 will probably look like this:
 
-```yaml title=".goreleaser.yaml"
+```yaml {filename=".goreleaser.yaml"}
 archives:
   - format: gz
     files:
@@ -311,7 +311,7 @@ The alternative is to declare multiple archives filtering by build ID.
 If you want to publish the binaries directly, without any archiving, you can do
 so by setting `format` to `binary`:
 
-```yaml title=".goreleaser.yaml"
+```yaml {filename=".goreleaser.yaml"}
 archives:
   - format: binary
 ```

@@ -49,6 +49,11 @@ menu:
         icon: github
 
 params:
+  highlight:
+    copy:
+      enable: true
+      # hover | always
+      display: hover
   imageZoom:
     enable: true
   navbar:

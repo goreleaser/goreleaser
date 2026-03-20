@@ -19,14 +19,14 @@ with [GnuPG](https://www.gnupg.org/), and your default key.
 
 To enable signing just add this to your configuration:
 
-```yaml title=".goreleaser.yaml"
+```yaml {filename=".goreleaser.yaml"}
 signs:
   - artifacts: checksum
 ```
 
 To customize the signing pipeline you can use the following options:
 
-```yaml title=".goreleaser.yaml"
+```yaml {filename=".goreleaser.yaml"}
 signs:
   - #
     # ID of the sign config, must be unique.
@@ -138,7 +138,7 @@ You can sign your artifacts with [cosign][] as well.
 Cosign uses the `--bundle` flag, which combines the certificate and
 signature into a single `.sigstore.json` file:
 
-```yaml title=".goreleaser.yaml"
+```yaml {filename=".goreleaser.yaml"}
 signs:
   - cmd: cosign
     signature: "${artifact}.sigstore.json"
@@ -173,7 +173,7 @@ being signed.
 If you want to sign with something that writes to `STDOUT` instead of a file,
 you can wrap the command inside a `sh -c` execution, for instance:
 
-```yaml title=".goreleaser.yaml"
+```yaml {filename=".goreleaser.yaml"}
 signs:
   - cmd: sh
     args:

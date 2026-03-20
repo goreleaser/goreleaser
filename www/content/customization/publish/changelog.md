@@ -5,7 +5,7 @@ weight: 190
 
 You can customize how the changelog is generated using the `changelog` section in the config file:
 
-```yaml title=".goreleaser.yaml"
+```yaml {filename=".goreleaser.yaml"}
 changelog:
   # Set this to true if you don't want any changelog at all.
   #
@@ -184,7 +184,7 @@ Some things to keep an eye on:
 
 You can also use AI to enhance your release notes:
 
-```yaml title=".goreleaser.yaml"
+```yaml {filename=".goreleaser.yaml"}
 changelog:
   ai:
     # Which provider to use.

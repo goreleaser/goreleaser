@@ -8,8 +8,8 @@ Google GCS.
 
 ## Customization
 
-```yaml title=".goreleaser.yaml"
-blobs:
+```yaml {filename=".goreleaser.yaml"}
+blobs{filename}
   # You can have multiple blob configs
   - # Cloud provider name:
     # - s3 for AWS S3 Storage

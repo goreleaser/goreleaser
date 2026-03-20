@@ -11,7 +11,7 @@ following environment variable on your pipeline:
 After this, you can add following section to your `.goreleaser.yaml`
 configuration:
 
-```yaml title=".goreleaser.yaml"
+```yaml {filename=".goreleaser.yaml"}
 announce:
   bluesky:
     # Whether it's enabled or not.

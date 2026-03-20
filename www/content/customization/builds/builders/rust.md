@@ -11,7 +11,7 @@ You can now build Rust binaries using `cargo zigbuild` and GoReleaser!
 
 Simply set the `builder` to `rust`, for instance:
 
-```yaml title=".goreleaser.yaml"
+```yaml {filename=".goreleaser.yaml"}
 builds:
   # You can have multiple builds defined as a yaml list
   - #
@@ -98,7 +98,7 @@ You can use before hooks to install `cargo-zigbuild`.
 If you want to use `cargo-cross` instead, you can make sure it is installed and
 then make few changes:
 
-```yaml title=".goreleaser.yaml"
+```yaml {filename=".goreleaser.yaml"}
 builds:
   - # Use cargo cross:
     builder: rust
@@ -113,7 +113,7 @@ builds:
 
 You can use [global after hooks](/customization/builds/hooks/) to do it:
 
-```yaml title=".goreleaser.yaml"
+```yaml {filename=".goreleaser.yaml"}
 # global after hooks
 after:
   - cmd: "cargo publish {{ if .IsSnapshot }}--dry-run{{ end }} --quiet --no-verify"
@@ -140,7 +140,7 @@ declare.
 
 You can also add them to your [global before hooks](/customization/builds/hooks/), e.g.:
 
-```yaml title=".goreleaser.yaml"
+```yaml {filename=".goreleaser.yaml"}
 before:
   hooks:
     - rustup default stable

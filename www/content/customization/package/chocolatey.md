@@ -12,7 +12,7 @@ You can read more about it in the [chocolatey docs](https://docs.chocolatey.org/
 
 Available options:
 
-```yaml title=".goreleaser.yaml"
+```yaml {filename=".goreleaser.yaml"}
 chocolateys:
   - # Your app's package name.
     # The value may not contain spaces or character that are not valid for a

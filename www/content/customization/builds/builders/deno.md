@@ -11,7 +11,7 @@ You can now build TypeScript binaries using `deno compile` and GoReleaser!
 
 Simply set the `builder` to `deno`, for instance:
 
-```yaml title=".goreleaser.yaml"
+```yaml {filename=".goreleaser.yaml"}
 builds:
   # You can have multiple builds defined as a yaml list
   - #

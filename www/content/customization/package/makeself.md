@@ -24,7 +24,7 @@ You can install it from your system package manager or from
 
 Here is a commented `makeselfs` section with all fields specified:
 
-```yaml title=".goreleaser.yaml"
+```yaml {filename=".goreleaser.yaml"}
 makeselfs:
   - #
     # ID of this Makeself package.

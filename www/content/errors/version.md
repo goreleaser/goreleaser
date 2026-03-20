@@ -17,7 +17,7 @@ If you get it as a warning, your configuration file is valid in v2, but would
 benefit with the version header.
 You can remove the warning by adding this line to your configuration:
 
-```yaml title=".goreleaser.yml"
+```yaml {filename=".goreleaser.yml"}
 version: 2
 ```
 
@@ -43,7 +43,7 @@ builds and things like that.
 If you want to allow GoReleaser OSS to read and use a GoReleaser Pro
 configuration, set `pro: true` in your configuration file:
 
-```yaml title=".goreleaser.yml"
+```yaml {filename=".goreleaser.yml"}
 version: 2
 pro: true
 ```

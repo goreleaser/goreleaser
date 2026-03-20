@@ -80,7 +80,7 @@ goreleaser announce --merge
 
 You can choose by what you want your pipeline to be split by:
 
-```yaml title=".goreleaser.yaml"
+```yaml {filename=".goreleaser.yaml"}
 partial:
   # By what you want to build the partial things.
   #

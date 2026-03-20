@@ -24,7 +24,7 @@ reusing the previously built binaries and/or packages.
 
 Here's a commented out configuration:
 
-```yaml title=".goreleaser.yaml"
+```yaml {filename=".goreleaser.yaml"}
 dockers_v2:
   # You can have multiple Docker images.
   - #
@@ -181,7 +181,7 @@ suffix to each tag.
 Let's see what this means in practice.
 Assume we have a configuration like this:
 
-```yaml title=".goreleaser.yaml"
+```yaml {filename=".goreleaser.yaml"}
 snapshot:
   version_template: "{{ incpatch .Version }}"
 dockers_v2:
@@ -223,7 +223,7 @@ If you have only one item in the `builds` list,
 the configuration can be as easy as adding the
 name and tags of your images to your `.goreleaser.yaml` file:
 
-```yaml title=".goreleaser.yaml"
+```yaml {filename=".goreleaser.yaml"}
 dockers_v2:
   - images:
       - user/repo
@@ -231,7 +231,7 @@ dockers_v2:
 
 You also need to create a `Dockerfile` in your project's root directory:
 
-```dockerfile title="Dockerfile"
+```dockerfile {filename="Dockerfile"}
 FROM scratch
 ARG TARGETPLATFORM
 ENTRYPOINT ["/usr/bin/myprogram"]
@@ -324,7 +324,7 @@ If you are building single-arch images and want Images instead of Manifests, you
 can disable SBOMs and add the `--attest=false` to your configuration, for
 example:
 
-```yaml title=".goreleaser.yaml"
+```yaml {filename=".goreleaser.yaml"}
 dockers_v2:
   - images:
       - foo

@@ -19,7 +19,7 @@ You can read more about it in the [snapcraft docs](https://snapcraft.io/docs/).
 
 Available options:
 
-```yaml title=".goreleaser.yaml"
+```yaml {filename=".goreleaser.yaml"}
 snapcrafts:
   - #
     # ID of the snapcraft config, must be unique.
