@@ -1,0 +1,16 @@
+{{- $file := .Get "file" -}}
+{{- $indent := .Get "indent" | default 0 | int -}}
+{{- $path := path.Join "content" $file -}}
+{{- $content := readFile $path -}}
+{{/* Strip YAML frontmatter (--- ... ---) */}}
+{{- $content = replaceRE "(?s)^---\\s*\\n.*?\\n---\\s*\\n" "" $content -}}
+{{- if gt $indent 0 -}}
+  {{- $spaces := strings.Repeat " " $indent -}}
+  {{- $lines := split $content "\n" -}}
+  {{- $indented := slice -}}
+  {{- range $lines -}}
+    {{- $indented = $indented | append (printf "%s%s" $spaces .) -}}
+  {{- end -}}
+  {{- $content = delimit $indented "\n" -}}
+{{- end -}}
+{{ $content | markdownify }}

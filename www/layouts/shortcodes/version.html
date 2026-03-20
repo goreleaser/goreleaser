@@ -1,0 +1,12 @@
+{{- $text := .Get 0 -}}
+{{- $unreleased := strings.HasSuffix $text "-unreleased" -}}
+{{- if $unreleased -}}
+  {{- $tag := strings.TrimSuffix "-unreleased" $text -}}
+  <blockquote class="goreleaser-version-unreleased">
+    🏷️ This will be available in the next release (<strong>{{ $tag }}</strong>). Stay tuned!
+  </blockquote>
+{{- else -}}
+  <blockquote class="goreleaser-version">
+    🏷️ Since <a href="/blog/goreleaser-{{ $text }}">{{ $text }}</a>.
+  </blockquote>
+{{- end -}}

@@ -18,7 +18,7 @@ func TestNuspecBytes(t *testing.T) {
 			Title:                    "GoReleaser",
 			Authors:                  "caarlos0",
 			ProjectURL:               "https://goreleaser.com/",
-			IconURL:                  "https://raw.githubusercontent.com/goreleaser/goreleaser/main/www/docs/static/avatar.png",
+			IconURL:                  "https://raw.githubusercontent.com/goreleaser/goreleaser/main/www/static/avatar.png",
 			Copyright:                "2016-2022 Carlos Alexandro Becker",
 			LicenseURL:               "https://github.com/goreleaser/goreleaser/blob/main/LICENSE.md",
 			RequireLicenseAcceptance: true,

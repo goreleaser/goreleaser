@@ -6,7 +6,7 @@ if which gsed >/dev/null 2>&1; then
 	SED="gsed"
 fi
 
-rm -rf www/docs/cmd/*.md
+rm -rf www/content/cmd/*.md
 go run . docs
 "$SED" \
 	-i'' \
@@ -15,4 +15,4 @@ go run . docs
 	-e 's/^### /## /g' \
 	-e 's/^#### /### /g' \
 	-e 's/^##### /#### /g' \
-	./www/docs/cmd/*.md
+	./www/content/cmd/*.md

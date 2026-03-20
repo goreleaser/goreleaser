@@ -1,0 +1,104 @@
+baseURL: "https://goreleaser.com"
+languageCode: "en-us"
+title: "GoReleaser"
+
+module:
+  imports:
+    - path: github.com/imfing/hextra
+
+enableRobotsTXT: true
+enableGitInfo: true
+enableEmoji: true
+
+markup:
+  goldmark:
+    renderer:
+      unsafe: true
+    extensions:
+      footnote: true
+      taskList: true
+  highlight:
+    noClasses: false
+
+menu:
+  main:
+    - identifier: intro
+      name: Getting Started
+      pageRef: /intro
+      weight: 10
+    - identifier: documentation
+      name: Documentation
+      pageRef: /customization
+      weight: 20
+    - identifier: blog
+      name: News
+      pageRef: /blog
+      weight: 30
+    - identifier: pro
+      name: Pro
+      pageRef: /pro
+      weight: 40
+    - name: Search
+      weight: 50
+      params:
+        type: search
+    - name: GitHub
+      weight: 60
+      url: "https://github.com/goreleaser/goreleaser"
+      params:
+        icon: github
+
+params:
+  navbar:
+    displayTitle: true
+    displayLogo: true
+    logo:
+      path: avatar.png
+      dark: avatar.png
+      width: 40
+      height: 40
+      link: /
+  page:
+    width: wide
+  theme:
+    default: system
+    displayToggle: true
+  footer:
+    displayCopyright: true
+    displayPoweredBy: false
+    width: normal
+    copyright: >-
+      Made with 🩶 by the
+      <a href="https://github.com/goreleaser/goreleaser/graphs/contributors" target="_blank" rel="noopener">
+        GoReleaser contributors
+      </a>
+  displayUpdatedDate: true
+  dateFormat: "January 2, 2006"
+  search:
+    enable: true
+    type: flexsearch
+    maxResults: 10
+  blog:
+    list:
+      displayTags: false
+      sortBy: date
+      sortOrder: desc
+      pagerSize: 20
+  editPage:
+    enable: true
+    base: "https://github.com/goreleaser/goreleaser/edit/main/www/content"
+
+permalinks:
+  page:
+    blog: /blog/:slug
+
+outputs:
+  home: [html, rss]
+  section:
+    - html
+    - rss
+
+outputFormats:
+  rss:
+    mediaType: "application/rss+xml"
+    baseName: "feed"

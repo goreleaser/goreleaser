@@ -41,7 +41,6 @@ updates:
   - package-ecosystem: "docker"
     directories:
       - "/"
-      - "/www"
     schedule:
       interval: "weekly"
       day: "friday"
@@ -57,8 +56,8 @@ updates:
         patterns:
           - "*"
 
-  # Docs:
-  - package-ecosystem: "pip"
+  # Docs (Hugo modules):
+  - package-ecosystem: "gomod"
     directory: "/www"
     schedule:
       interval: "weekly"

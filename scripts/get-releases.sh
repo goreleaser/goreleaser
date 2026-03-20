@@ -36,7 +36,7 @@ latest() {
 	wc -c "$file"
 }
 
-latest "https://api.github.com/repos/goreleaser/goreleaser/releases" "www/docs/static/latest"
-latest "https://api.github.com/repos/goreleaser/goreleaser-pro/releases" "www/docs/static/latest-pro"
-generate "https://api.github.com/repos/goreleaser/goreleaser/releases" "www/docs/static/releases.json"
-generate "https://api.github.com/repos/goreleaser/goreleaser-pro/releases" "www/docs/static/releases-pro.json"
+latest "https://api.github.com/repos/goreleaser/goreleaser/releases" "www/static/latest"
+latest "https://api.github.com/repos/goreleaser/goreleaser-pro/releases" "www/static/latest-pro"
+generate "https://api.github.com/repos/goreleaser/goreleaser/releases" "www/static/releases.json"
+generate "https://api.github.com/repos/goreleaser/goreleaser-pro/releases" "www/static/releases-pro.json"

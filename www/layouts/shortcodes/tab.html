@@ -1,0 +1,20 @@
+{{- /* Override of Hextra's tab shortcode to also accept positional param 0 as name */ -}}
+
+{{- $name := .Get "name" | default (.Get 0) | default (printf "Tab %d" .Ordinal) -}}
+
+{{- $icon := .Get "icon" -}}
+
+{{- $selected := .Get "selected" -}}
+{{- if .Parent.Get "defaultIndex" -}}
+  {{- $selected = eq .Ordinal (int (.Parent.Get "defaultIndex")) -}}
+{{- end -}}
+
+{{- $tabs := .Parent.Store.Get "tabs" | default slice -}}
+{{ .Parent.Store.Set "tabs" ($tabs | append (dict
+    "id" .Ordinal
+    "name" $name
+    "icon" $icon
+    "content" .InnerDeindent
+    "selected" $selected
+  ))
+-}}

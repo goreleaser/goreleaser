@@ -1,0 +1,434 @@
+{{ define "main" }}
+<style>
+  :root {
+    --goreleaser-primary-color: #163959;
+  }
+
+  .goreleaser-hero-section {
+    padding: 3rem 1.5rem 5rem;
+    background: linear-gradient(135deg, #0a2540 0%, #163959 60%, #1a4a72 100%);
+  }
+
+  .dark .goreleaser-hero-section {
+    background: linear-gradient(135deg, #050f1a 0%, #0a2540 60%, #163959 100%);
+  }
+
+  .goreleaser-hero {
+    max-width: 72rem;
+    margin: 0 auto;
+    display: flex;
+    align-items: center;
+    gap: 3rem;
+    color: #fff;
+  }
+
+  .goreleaser-hero__content {
+    flex: 1;
+    max-width: 36rem;
+  }
+
+  .goreleaser-hero__image {
+    flex: 1;
+    text-align: center;
+  }
+
+  .goreleaser-hero__image img {
+    max-width: 100%;
+    border-radius: 8px;
+  }
+
+  .goreleaser-hero h1 {
+    font-size: 2.75rem;
+    font-weight: 700;
+    margin-bottom: 1rem;
+    line-height: 1.2;
+    color: #fff;
+  }
+
+  .goreleaser-hero h1 em {
+    font-style: normal;
+    color: #40a9ff;
+  }
+
+  .goreleaser-hero p {
+    font-size: 1.1rem;
+    margin-bottom: 0.5rem;
+    color: rgba(255,255,255,0.85);
+  }
+
+  .goreleaser-hero strong {
+    color: #fff;
+    font-weight: 700;
+  }
+
+  .goreleaser-hero .lang-icons {
+    display: flex;
+    gap: 0.5rem;
+    margin: 1.25rem 0;
+  }
+
+  .goreleaser-hero .lang-icons img {
+    width: 32px;
+    height: 32px;
+  }
+
+  .goreleaser-btn {
+    display: inline-block;
+    padding: 0.6rem 1.4rem;
+    border-radius: 6px;
+    font-weight: 600;
+    text-decoration: none;
+    margin-right: 0.75rem;
+    margin-top: 0.5rem;
+    transition: opacity 0.2s;
+  }
+
+  .goreleaser-btn:hover { opacity: 0.85; }
+
+  .goreleaser-btn--primary {
+    background: #fff;
+    color: var(--goreleaser-primary-color);
+    border: 2px solid #fff;
+  }
+
+  .goreleaser-btn--secondary {
+    background: transparent;
+    color: #fff;
+    border: 2px solid rgba(255,255,255,0.6);
+  }
+
+  .goreleaser-body-section {
+    padding: 4rem 1.5rem 3rem;
+  }
+
+  .goreleaser-section-inner {
+    max-width: 64rem;
+    margin: 0 auto;
+  }
+
+  .goreleaser-screenshot {
+    text-align: center;
+    margin-bottom: 4rem;
+  }
+
+  .goreleaser-screenshot img {
+    max-width: 100%;
+    border-radius: 8px;
+    box-shadow: 0 4px 24px rgba(0,0,0,0.15);
+  }
+
+  .dark .goreleaser-screenshot img {
+    box-shadow: 0 4px 24px rgba(0,0,0,0.5);
+  }
+
+  .goreleaser-section-title {
+    text-align: center;
+    margin-bottom: 0.5rem;
+  }
+
+  .goreleaser-section-title h2 {
+    font-size: 2rem;
+    font-weight: 700;
+  }
+
+  .goreleaser-section-subtitle {
+    text-align: center;
+    margin-bottom: 2.5rem;
+    color: #6b7280;
+  }
+
+  .dark .goreleaser-section-subtitle {
+    color: #9ca3af;
+  }
+
+  .goreleaser-feature-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+    gap: 1.5rem;
+    margin-bottom: 4rem;
+  }
+
+  .goreleaser-feature-card {
+    padding: 1.25rem;
+    border-radius: 8px;
+    border: 1px solid rgba(0,0,0,0.08);
+    background: rgba(0,0,0,0.02);
+  }
+
+  .dark .goreleaser-feature-card {
+    border-color: rgba(255,255,255,0.08);
+    background: rgba(255,255,255,0.03);
+  }
+
+  .goreleaser-feature-card h3 {
+    font-size: 1rem;
+    font-weight: 600;
+    margin-bottom: 0.5rem;
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+  }
+
+  .goreleaser-feature-card p {
+    font-size: 0.9rem;
+    color: #6b7280;
+    margin: 0;
+  }
+
+  .dark .goreleaser-feature-card p {
+    color: #9ca3af;
+  }
+
+  .goreleaser-cards-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+    gap: 1rem;
+    margin-bottom: 3rem;
+  }
+
+  .goreleaser-logo-card {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.4rem;
+    padding: 1rem;
+    border-radius: 8px;
+    border: 1px solid rgba(0,0,0,0.08);
+    font-size: 0.85rem;
+    font-weight: 500;
+    text-align: center;
+  }
+
+  .dark .goreleaser-logo-card {
+    border-color: rgba(255,255,255,0.08);
+  }
+
+  .goreleaser-logo-card img {
+    width: 48px;
+    height: 48px;
+    border-radius: 8px;
+  }
+
+  .goreleaser-sponsors-grid {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 1.5rem;
+    margin-bottom: 1rem;
+  }
+
+  .goreleaser-sponsor-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.85rem;
+    font-weight: 500;
+    text-align: center;
+    text-decoration: none;
+    color: inherit;
+  }
+
+  .goreleaser-sponsor-item img {
+    border-radius: 8px;
+  }
+
+  @media (max-width: 768px) {
+    .goreleaser-hero {
+      flex-direction: column;
+      padding: 2rem 1.5rem 3rem;
+    }
+    .goreleaser-hero__image { order: -1; }
+    .goreleaser-hero__image img { max-width: 280px; }
+    .goreleaser-hero h1 { font-size: 2rem; }
+  }
+</style>
+
+<section class="goreleaser-hero-section">
+  <div class="goreleaser-hero">
+    <div class="goreleaser-hero__image">
+      <img src="/goreleaser_hero.png" width="480" alt="GoReleaser hero image" />
+    </div>
+    <div class="goreleaser-hero__content">
+      <h1>Release engineering, <em>simplified.</em></h1>
+      <p>
+        We handle the complexities of releasing so you can focus on building
+        what really matters: <strong>your software</strong> &mdash; and it
+        doesn't need to be written in Go!
+      </p>
+      <div class="lang-icons">
+        <img src="/go-dark.svg" alt="Go" title="Go" class="dark:hidden" />
+        <img src="/go-light.svg" alt="Go" title="Go" class="hidden dark:block" />
+        <img src="/rust-dark.svg" alt="Rust" title="Rust" class="dark:hidden" />
+        <img src="/rust-light.svg" alt="Rust" title="Rust" class="hidden dark:block" />
+        <img src="/bun-dark.svg" alt="TypeScript" title="TypeScript" class="dark:hidden" />
+        <img src="/bun-light.svg" alt="TypeScript" title="TypeScript" class="hidden dark:block" />
+        <img src="/zig-dark.svg" alt="Zig" title="Zig" class="dark:hidden" />
+        <img src="/zig-light.svg" alt="Zig" title="Zig" class="hidden dark:block" />
+        <img src="/python-dark.svg" alt="Python" title="Python" class="dark:hidden" />
+        <img src="/python-light.svg" alt="Python" title="Python" class="hidden dark:block" />
+        <img src="/deno-dark.svg" alt="Deno" title="Deno" class="dark:hidden" />
+        <img src="/deno-light.svg" alt="Deno" title="Deno" class="hidden dark:block" />
+      </div>
+      <a href="/intro/" class="goreleaser-btn goreleaser-btn--primary">Get started</a>
+      <a href="/pro/" class="goreleaser-btn goreleaser-btn--secondary">Pro</a>
+    </div>
+  </div>
+</section>
+
+<section class="goreleaser-body-section">
+  <div class="goreleaser-section-inner">
+
+    <div class="goreleaser-screenshot">
+      <img src="/goreleaser.png" alt="GoReleaser releasing an example project." />
+    </div>
+
+    <div class="goreleaser-section-title">
+      <h2>Everything you need to release with confidence</h2>
+    </div>
+    <p class="goreleaser-section-subtitle">
+      GoReleaser does everything you need to create a professional release process for
+      Go, Rust, TypeScript, Zig, and Python projects.
+    </p>
+
+    <div class="goreleaser-feature-grid">
+      <div class="goreleaser-feature-card">
+        <h3>⚡ Fast &amp; Automated</h3>
+        <p>From commit to a release in seconds &mdash; automate your entire workflow with a single command.</p>
+      </div>
+      <div class="goreleaser-feature-card">
+        <h3>🌐 Multiple Languages</h3>
+        <p>First-class support for Go, Rust, TypeScript, Python, and Zig projects.</p>
+      </div>
+      <div class="goreleaser-feature-card">
+        <h3>🖥️ Cross-Platform</h3>
+        <p>Build and release for multiple platforms and architectures.</p>
+      </div>
+      <div class="goreleaser-feature-card">
+        <h3>📦 Multiple Formats</h3>
+        <p>Package your software exactly how your users want it &mdash; from binaries to Docker images and system packages.</p>
+      </div>
+      <div class="goreleaser-feature-card">
+        <h3>📋 Package Managers</h3>
+        <p>Automatically publish to Homebrew, Scoop, Winget, AUR, Nix, and more.</p>
+      </div>
+      <div class="goreleaser-feature-card">
+        <h3>🔒 Security Made Easy</h3>
+        <p>Release with confidence using built-in SBOM generation, code signing, and notarization.</p>
+      </div>
+      <div class="goreleaser-feature-card">
+        <h3>🚀 GitHub Actions and beyond</h3>
+        <p>Works seamlessly with GitHub Actions, GitLab CI, and other popular CI/CD platforms.</p>
+      </div>
+      <div class="goreleaser-feature-card">
+        <h3>🤖 AI Ready</h3>
+        <p>Easily integrate with AI tools using the <a href="https://github.com/goreleaser/mcp">GoReleaser MCP</a>.</p>
+      </div>
+      <div class="goreleaser-feature-card">
+        <h3>📝 What's changed?</h3>
+        <p>Keep users informed with auto-generated, customizable changelogs for every release.</p>
+      </div>
+      <div class="goreleaser-feature-card">
+        <h3>📣 Let your users know</h3>
+        <p>Announce releases to 𝕏, Slack, Discord, and more.</p>
+      </div>
+    </div>
+
+    <div class="goreleaser-section-title">
+      <h2>Trusted by Industry Leaders</h2>
+    </div>
+    <p class="goreleaser-section-subtitle">
+      Join <a href="/users/">thousands of developers and companies</a>
+      who rely on GoReleaser for their mission-critical releases.
+    </p>
+
+    <div class="goreleaser-cards-grid">
+      <div class="goreleaser-logo-card">
+        <img src="https://avatars.githubusercontent.com/google" alt="Google" />
+        Google
+      </div>
+      <div class="goreleaser-logo-card">
+        <img src="https://avatars.githubusercontent.com/microsoft" alt="Microsoft" />
+        Microsoft
+      </div>
+      <div class="goreleaser-logo-card">
+        <img src="https://avatars.githubusercontent.com/aws" alt="AWS" />
+        AWS
+      </div>
+      <div class="goreleaser-logo-card">
+        <img src="https://avatars.githubusercontent.com/shopify" alt="Shopify" />
+        Shopify
+      </div>
+      <div class="goreleaser-logo-card">
+        <img src="https://avatars.githubusercontent.com/uber" alt="Uber" />
+        Uber
+      </div>
+      <div class="goreleaser-logo-card">
+        <img src="https://avatars.githubusercontent.com/splunk" alt="Splunk" />
+        Splunk
+      </div>
+      <div class="goreleaser-logo-card">
+        <img src="https://avatars.githubusercontent.com/datadog" alt="Datadog" />
+        Datadog
+      </div>
+      <div class="goreleaser-logo-card">
+        <img src="https://avatars.githubusercontent.com/hashicorp" alt="HashiCorp" />
+        HashiCorp
+      </div>
+      <div class="goreleaser-logo-card">
+        <img src="https://avatars.githubusercontent.com/github" alt="GitHub" />
+        GitHub
+      </div>
+      <div class="goreleaser-logo-card">
+        <img src="https://avatars.githubusercontent.com/grafana" alt="Grafana" />
+        Grafana
+      </div>
+      <div class="goreleaser-logo-card">
+        <img src="https://avatars.githubusercontent.com/kubernetes" alt="Kubernetes" />
+        Kubernetes
+      </div>
+      <div class="goreleaser-logo-card">
+        <img src="https://avatars.githubusercontent.com/nginx" alt="NGINX" />
+        NGINX
+      </div>
+    </div>
+
+    <div class="goreleaser-section-title">
+      <h2>Supported by Amazing Sponsors</h2>
+    </div>
+    <p class="goreleaser-section-subtitle">
+      These are some of the companies that help make GoReleaser possible.
+      <a href="/sponsors/">Become a sponsor!</a>
+    </p>
+
+    <div class="goreleaser-sponsors-grid">
+<!-- sponsors:begin -->
+<!-- This list is auto-generated by scripts/update-sponsors.py -->
+
+      <a class="goreleaser-sponsor-item" href="https://github.com/SAP" target="_blank" rel="noopener sponsored">
+        <img src="https://avatars.githubusercontent.com/u/2531208?v=4" alt="SAP" width="112" height="112" />
+        SAP
+      </a>
+      <a class="goreleaser-sponsor-item" href="https://github.com/mercedes-benz" target="_blank" rel="noopener sponsored">
+        <img src="https://avatars.githubusercontent.com/u/34240465?v=4" alt="Mercedes-Benz Group" width="96" height="96" />
+        Mercedes-Benz Group
+      </a>
+      <a class="goreleaser-sponsor-item" href="https://github.com/nitrictech" target="_blank" rel="noopener sponsored">
+        <img src="https://avatars.githubusercontent.com/u/72055470?v=4" alt="nitric" width="96" height="96" />
+        nitric
+      </a>
+      <a class="goreleaser-sponsor-item" href="https://depot.dev" target="_blank" rel="noopener sponsored">
+        <img src="https://images.opencollective.com/depot/39125a1/logo/96.png" alt="Depot" width="80" height="80" />
+        Depot
+      </a>
+      <a class="goreleaser-sponsor-item" href="https://www.n-ix.com/" target="_blank" rel="noopener sponsored">
+        <img src="https://images.opencollective.com/n-ix-ltd/575a7a5/logo/96.png" alt="N-iX Ltd" width="80" height="80" />
+        N-iX Ltd
+      </a>
+<!-- sponsors:end -->
+    </div>
+
+    <a rel="me" href="https://fosstodon.org/@goreleaser" style="display:none"></a>
+  </div>
+</section>
+{{ end }}

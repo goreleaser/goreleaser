@@ -1,0 +1,12 @@
+---
+weight: 20
+---# How to add a new cookbook
+
+1. Create a new markdown file inside `www/content/cookbooks` with the content you want;
+2. Add it to `www/mkdocs.yml`, under the `Cookbooks` section;
+3. Open a pull request with these changes;
+    1. Please use the following commit message template: `docs: how to X`
+4. You're done! Thanks for the contribution!
+
+You can also test your changes locally by running `task docs:serve` and browsing
+`http://localhost:8000`.

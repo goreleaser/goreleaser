@@ -1,0 +1,6 @@
+{{- $text := .Get 0 -}}
+{{- $unreleased := strings.HasSuffix $text "-unreleased" -}}
+{{- if $unreleased -}}
+  {{- $tag := strings.TrimSuffix "-unreleased" $text -}}Since: {{ $tag }} (unreleased)
+{{- else -}}Since: {{ $text }}
+{{- end -}}

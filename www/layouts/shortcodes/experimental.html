@@ -1,0 +1,8 @@
+{{- $link := .Get 0 | default "" -}}
+{{- $feedback := "Feedback" -}}
+{{- if $link -}}
+  {{- $feedback = printf "<a href=\"%s\">Feedback</a>" $link -}}
+{{- end -}}
+<blockquote class="goreleaser-experimental">
+  🧪 This feature is currently experimental. {{ $feedback | safeHTML }} is greatly appreciated!
+</blockquote>
