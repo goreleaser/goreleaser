@@ -67,6 +67,15 @@ params:
       link: /
   page:
     width: wide
+    contextMenu:
+      enable: true
+      links:
+        - name: Open in Claude
+          icon: claude
+          url: "https://claude.ai/new?q=I%27m+looking+at+this+documentation%3A+{url}%0AHelp+me+understand+how+to+use+it."
+        - name: Open in ChatGPT
+          icon: chatgpt
+          url: "https://chatgpt.com/?hints=search&q=I%27m+looking+at+this+documentation%3A+{url}%0AHelp+me+understand+how+to+use+it."
   theme:
     default: system
     displayToggle: true
@@ -87,10 +96,12 @@ params:
     maxResults: 10
   blog:
     list:
-      displayTags: false
+      displayTags: true
       sortBy: date
       sortOrder: desc
       pagerSize: 20
+  toc:
+    displayTags: true
   editPage:
     enable: true
     base: "https://github.com/goreleaser/goreleaser/edit/main/www/content"
@@ -100,10 +111,11 @@ permalinks:
     blog: /blog/:slug
 
 outputs:
-  home: [html, rss]
+  home: [html, rss, llms, markdown]
   section:
     - html
     - rss
+    - markdown
 
 outputFormats:
   rss:
