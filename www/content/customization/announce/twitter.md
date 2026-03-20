@@ -1,8 +1,7 @@
 ---
+title: "𝕏/Twitter"
 weight: 130
 ---
-
-# 𝕏/Twitter
 
 {{< callout type="warning" >}}
 

@@ -1,8 +1,7 @@
 ---
+title: "Travis CI"
 weight: 110
 ---
-
-# Travis CI
 
 You may want to set up your project to auto-deploy your new tags on
 [Travis](https://travis-ci.org), for example:

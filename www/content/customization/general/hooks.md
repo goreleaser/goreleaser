@@ -1,9 +1,7 @@
 ---
+title: "Global Hooks"
 weight: 90
-url: "/customization/hooks/"
 ---
-
-# Global Hooks
 
 Some release cycles may need to run something before or after everything else.
 

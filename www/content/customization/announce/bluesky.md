@@ -1,8 +1,7 @@
 ---
+title: "Bluesky"
 weight: 10
 ---
-
-# Bluesky
 
 To use [Bluesky](https://bsky.app/), you need to create an account, and set the
 following environment variable on your pipeline:

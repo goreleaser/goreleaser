@@ -1,8 +1,7 @@
 ---
+title: "CircleCI"
 weight: 30
 ---
-
-# CircleCI
 
 Here is how to do it with [CircleCI](https://circleci.com):
 

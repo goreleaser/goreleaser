@@ -1,8 +1,7 @@
 ---
+title: "goreleaser announce"
 weight: 100
 ---
-
-# goreleaser announce
 
 Announces a previously prepared release
 
@@ -47,4 +46,4 @@ goreleaser announce [flags]
 
 ## See also
 
-- [goreleaser](goreleaser.md) - Release engineering, simplified
+- [goreleaser](/cmd/goreleaser/) - Release engineering, simplified

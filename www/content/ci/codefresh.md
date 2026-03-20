@@ -1,8 +1,7 @@
 ---
+title: "Codefresh"
 weight: 60
 ---
-
-# Codefresh
 
 Codefresh uses Docker based pipelines where all steps must be Docker containers.
 Using GoReleaser is very easy via the

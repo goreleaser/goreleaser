@@ -1,9 +1,7 @@
 ---
+title: "Model Context Protocol (MCP) Server"
 weight: 180
-url: '/customization/mcp/'
 ---
-
-# Model Context Protocol (MCP) Server
 
 {{< version "v2.13" >}}
 

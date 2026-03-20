@@ -1,5 +1,6 @@
-# goreleaser subscribe
-
+---
+title: "goreleaser subscribe"
+---
 Subscribe to GoReleaser Pro, or manage your subscription
 
 ```
@@ -20,5 +21,5 @@ goreleaser subscribe [flags]
 
 ## See also
 
-* [goreleaser](goreleaser.md)	 - Release engineering, simplified
+* [goreleaser](/cmd/goreleaser/)	 - Release engineering, simplified
 

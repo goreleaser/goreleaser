@@ -1,9 +1,7 @@
 ---
+title: "Snapcraft Packages (snaps)"
 weight: 110
-url: '/customization/snapcraft/'
 ---
-
-# Snapcraft Packages (snaps)
 
 GoReleaser can also generate `snap` packages.
 [Snaps](http://snapcraft.io/) are a new packaging format, that will let you

@@ -90,7 +90,7 @@ simple projects already!
 
 {{< callout type="info" >}}
 
-Learn more about [build hooks](./hooks.md).
+Learn more about [build hooks](/customization/builds/builders/hooks/).
 {{< /callout >}}
 
 GoReleaser will run `rustup target add` for each defined target.
@@ -111,7 +111,7 @@ builds:
 
 ## Publishing with Cargo
 
-You can use [global after hooks](../hooks.md) to do it:
+You can use [global after hooks](/customization/builds/hooks/) to do it:
 
 ```yaml title=".goreleaser.yaml"
 # global after hooks
@@ -138,7 +138,7 @@ Remember that you may also need to run `rustup default stable`.
 GoReleaser **will**, however, run `rustup target add` for each target you
 declare.
 
-You can also add them to your [global before hooks](../hooks.md), e.g.:
+You can also add them to your [global before hooks](/customization/builds/hooks/), e.g.:
 
 ```yaml title=".goreleaser.yaml"
 before:

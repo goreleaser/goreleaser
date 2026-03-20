@@ -1,8 +1,7 @@
 ---
+title: "GitHub release upload errors"
 weight: 40
 ---
-
-# GitHub release upload errors
 
 Here are some common errors that might happen when releasing to GitHub, and some
 guidance on how to fix them.

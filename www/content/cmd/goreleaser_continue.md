@@ -1,8 +1,7 @@
 ---
+title: "goreleaser continue"
 weight: 80
 ---
-
-# goreleaser continue
 
 Continues a previously prepared release
 
@@ -39,4 +38,4 @@ goreleaser continue [flags]
 
 ## See also
 
-- [goreleaser](goreleaser.md) - Release engineering, simplified
+- [goreleaser](/cmd/goreleaser/) - Release engineering, simplified

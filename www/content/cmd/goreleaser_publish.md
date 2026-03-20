@@ -1,8 +1,7 @@
 ---
+title: "goreleaser publish"
 weight: 90
 ---
-
-# goreleaser publish
 
 Publishes a previously prepared release
 
@@ -43,4 +42,4 @@ goreleaser publish [flags]
 
 ## See also
 
-- [goreleaser](goreleaser.md) - Release engineering, simplified
+- [goreleaser](/cmd/goreleaser/) - Release engineering, simplified

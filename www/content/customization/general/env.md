@@ -1,9 +1,7 @@
 ---
+title: "Environment Variables"
 weight: 80
-url: '/customization/env/'
 ---
-
-# Environment Variables
 
 Global environment variables to be passed down to all hooks and builds.
 

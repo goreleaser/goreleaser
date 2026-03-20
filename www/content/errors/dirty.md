@@ -1,8 +1,7 @@
 ---
+title: "Git is in a dirty state"
 weight: 20
 ---
-
-# Git is in a dirty state
 
 GoReleaser requires a clean git state to work.
 

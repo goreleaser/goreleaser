@@ -1,6 +1,5 @@
 ---
 weight: 20
-url: "/customization/metadata/"
 title: Metadata
 ---
 

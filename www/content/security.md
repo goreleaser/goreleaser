@@ -1,5 +1,6 @@
-# Security Policy
-
+---
+title: "Security Policy"
+---
 ## Supported Versions
 
 Only the last stable version at any given point.

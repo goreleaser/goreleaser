@@ -1,5 +1,6 @@
-# goreleaser license-verify
-
+---
+title: "goreleaser license-verify"
+---
 Verify if the given license is valid
 
 ## Synopsis
@@ -39,5 +40,5 @@ goreleaser license-verify
 
 ## See also
 
-* [goreleaser](goreleaser.md)	 - Release engineering, simplified
+* [goreleaser](/cmd/goreleaser/)	 - Release engineering, simplified
 

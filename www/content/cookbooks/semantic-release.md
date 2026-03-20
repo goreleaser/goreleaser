@@ -1,8 +1,7 @@
 ---
+title: "Semantic Release"
 weight: 110
 ---
-
-# Semantic Release
 
 GoReleaser does not create any tags, it just runs on what is already there.
 

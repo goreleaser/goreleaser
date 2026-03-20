@@ -1,5 +1,6 @@
-# Thanks for subscribing to GoReleaser Pro! 🥳
-
+---
+title: "Thanks for subscribing to GoReleaser Pro! 🥳"
+---
 A few notes on how to get started:
 
 - [x] GoReleaser Pro is distributed as a different binary than the free version.
@@ -22,10 +23,10 @@ I hope GoReleaser Pro helps improving your release workflow even more!
 
 Thank you!
 
-[^actions]: See all the GitHub Actions options [here](ci/actions.md).
+[^actions]: See all the GitHub Actions options [here](/ci/actions/).
 
-[^install]: Check out all the installation methods [here](install.md).
+[^install]: Check out all the installation methods [here](/install/).
 
-[^schema]: More about our JSONSchemas [here](customization/index.md).
+[^schema]: More about our JSONSchemas [here](/customization/index/).
 
-[^links]: All our contact, forums, and media links are available [here](links.md).
+[^links]: All our contact, forums, and media links are available [here](/links/).

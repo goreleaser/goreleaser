@@ -1,8 +1,7 @@
 ---
+title: "goreleaser check"
 weight: 40
 ---
-
-# goreleaser check
 
 Checks if configuration is valid
 
@@ -26,4 +25,4 @@ goreleaser check [configuration files] [flags]
 
 ## See also
 
-- [goreleaser](goreleaser.md) - Release engineering, simplified
+- [goreleaser](/cmd/goreleaser/) - Release engineering, simplified

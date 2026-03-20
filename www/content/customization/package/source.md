@@ -1,9 +1,7 @@
 ---
+title: "Source Archive"
 weight: 20
-url: '/customization/source/'
 ---
-
-# Source Archive
 
 You may add the current tag source archive to the release as well. This is
 particularly useful if you want to sign it, for example.

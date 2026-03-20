@@ -1,8 +1,8 @@
 ---
+title: "Maintainers"
 weight: 300
----<!-- prettier-ignore -->
-# Maintainers
-
+---
+<!-- prettier-ignore -->
 GoReleaser is maintained by:
 
 <div class="grid cards" markdown>

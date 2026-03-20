@@ -1,8 +1,7 @@
 ---
+title: "How to add a new cookbook"
 weight: 20
 ---
-
-# How to add a new cookbook
 
 1. Create a new markdown file inside `www/content/cookbooks` with the content you want;
 2. Add it to `www/mkdocs.yml`, under the `Cookbooks` section;

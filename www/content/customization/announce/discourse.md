@@ -1,8 +1,7 @@
 ---
+title: "Discourse"
 weight: 30
 ---
-
-# Discourse
 
 {{< version "v2.13" >}}
 

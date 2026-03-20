@@ -1,5 +1,6 @@
-# goreleaser license-export
-
+---
+title: "goreleaser license-export"
+---
 Export an offline license file from a valid license key
 
 ## Synopsis
@@ -42,5 +43,5 @@ goreleaser license-export -o -
 
 ## See also
 
-* [goreleaser](goreleaser.md)	 - Release engineering, simplified
+* [goreleaser](/cmd/goreleaser/)	 - Release engineering, simplified
 

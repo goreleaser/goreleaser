@@ -1,9 +1,7 @@
 ---
+title: "Templates"
 weight: 60
-url: '/customization/templates/'
 ---
-
-# Templates
 
 Several fields in GoReleaser's config file support templating.
 
@@ -243,7 +241,7 @@ Note that those are hypothetical examples and the fields `foo_template` and
 {{< featpro >}}
 
 You can also declare custom variables. This feature is specially useful with
-[includes](includes.md), so you can have more generic configuration
+[includes](/customization/general/includes/), so you can have more generic configuration
 files.
 
 Usage is as simple as you would expect:

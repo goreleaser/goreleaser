@@ -1,13 +1,12 @@
 ---
+title: "Publish to Artifactory using jfrog cli"
 weight: 80
 ---
 
-# Publish to Artifactory using jfrog cli
-
-This cookbook is an example of a [publishers](../customization/publishers.md)
+This cookbook is an example of a [publishers](/customization/publishers/)
 section that uses the [jfrog cli](https://jfrog.com/getcli/) to upload files to
 Artifactory. It is an alternative to using the
-[Artifactory Publisher](../customization/artifactory.md) to upload to
+[Artifactory Publisher](/customization/artifactory/) to upload to
 artifactory.
 
 The benefit of this method is that it uses the jfrog cli configuration instead
@@ -26,7 +25,7 @@ publishers:
  dir: "{{ dir .ArtifactPath }}"
 ```
 
-Example of a [publishers](../customization/publishers.md) section pushing files
+Example of a [publishers](/customization/publishers/) section pushing files
 to an Artifactory instance using jfrog cli with api key in environment
 
 ```yaml

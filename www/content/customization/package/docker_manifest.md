@@ -1,12 +1,10 @@
 ---
+title: "Docker Manifests (deprecated)"
 weight: 160
-url: '/customization/docker_manifest/'
 ---
 
-# Docker Manifests (deprecated)
-
-> [Phasing out](./../deprecations.md#dockers) in v2.12.
-> [Docker Images v2](./dockers_v2.md) is preferred instead.
+> [Phasing out](/customization/deprecations/#dockers) in v2.12.
+> [Docker Images v2](/customization/package/dockers_v2/) is preferred instead.
 
 GoReleaser can also create and push Docker multi-platform images using the
 `docker manifest` tool.

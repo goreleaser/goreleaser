@@ -1,9 +1,7 @@
 ---
+title: "Notarize macOS applications"
 weight: 40
-url: "/customization/notarize/"
 ---
-
-# Notarize macOS applications
 
 GoReleaser has two ways to do notarization for macOS:
 

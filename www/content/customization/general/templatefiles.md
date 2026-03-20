@@ -1,9 +1,7 @@
 ---
+title: "Template Files"
 weight: 70
-url: '/customization/templatefiles/'
 ---
-
-# Template Files
 
 {{< pro >}}
 

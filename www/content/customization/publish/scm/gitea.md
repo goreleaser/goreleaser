@@ -1,9 +1,7 @@
 ---
+title: "Gitea"
 weight: 30
-url: "/scm/gitea/"
 ---
-
-# Gitea
 
 ## API Token
 

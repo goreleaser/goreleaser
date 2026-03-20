@@ -1,9 +1,7 @@
 ---
+title: "Signing Binaries"
 weight: 10
-url: '/customization/binary_sign/'
 ---
-
-# Signing Binaries
 
 {{< version "v2.2" >}}
 

@@ -1,8 +1,7 @@
 ---
+title: "goreleaser completion fish"
 weight: 130
 ---
-
-# goreleaser completion fish
 
 Generate the autocompletion script for fish
 
@@ -39,4 +38,4 @@ goreleaser completion fish [flags]
 
 ## See also
 
-- [goreleaser completion](goreleaser_completion.md) - Generate the autocompletion script for the specified shell
+- [goreleaser completion](/cmd/goreleaser_completion/) - Generate the autocompletion script for the specified shell

@@ -1,8 +1,7 @@
 ---
+title: "Building in a private monorepo, publishing in to a public repository"
 weight: 30
 ---
-
-# Building in a private monorepo, publishing in to a public repository
 
 One fairly common usecase is on open-core projects is to have the code in a
 private monorepo, but publish its binaries to a public repository.
@@ -63,6 +62,6 @@ prefixed tag can be accessed with `{{.PrefixedTag}}`. Check the
 
 Make sure to take a look at the following documentation pages:
 
-- [Monorepo](../customization/monorepo.md)
-- [Release](../customization/release.md)
-- [Template variables](../customization/templates.md)
+- [Monorepo](/customization/monorepo/)
+- [Release](/customization/release/)
+- [Template variables](/customization/templates/)

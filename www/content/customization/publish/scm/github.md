@@ -1,9 +1,7 @@
 ---
+title: "GitHub"
 weight: 10
-url: '/scm/github/'
 ---
-
-# GitHub
 
 ## API Token
 

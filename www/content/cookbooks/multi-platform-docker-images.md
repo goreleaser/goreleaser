@@ -1,8 +1,7 @@
 ---
+title: "Multi-platform Docker images"
 weight: 50
 ---
-
-# Multi-platform Docker images
 
 On GoReleaser there are two main ways of doing that: the easier one is to use
 the [ko integration][ko].

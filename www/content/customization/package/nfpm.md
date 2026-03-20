@@ -1,9 +1,7 @@
 ---
+title: "Linux packages (via nFPM)"
 weight: 30
-url: '/customization/nfpm/'
 ---
-
-# Linux packages (via nFPM)
 
 GoReleaser can be wired to [nfpm](https://github.com/goreleaser/nfpm) to
 generate and publish `.deb`, `.rpm`, `.apk`, `.ipk`, and Archlinux packages.

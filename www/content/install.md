@@ -1,10 +1,9 @@
 ---
+title: "Install"
 weight: 20
 ---
 
-# Install
-
-There are two GoReleaser distributions: OSS and [Pro](pro.md), each have a
+There are two GoReleaser distributions: OSS and [Pro](/pro/), each have a
 multitude of installation options.
 
 You can see the instructions for each of them below.

@@ -1,4 +1,5 @@
 ---
+title: "..."
 search:
   exclude: true
 ---
@@ -24,7 +25,6 @@ You can also push to a fork, and open the pull request in the original branch.
 Here's an example on how to set it up:
 
 ```yaml title=".goreleaser.yaml"
-# ...
 something: # can be nix, brews, etc...
   - repository:
       owner: john

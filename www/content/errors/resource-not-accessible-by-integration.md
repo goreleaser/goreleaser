@@ -1,8 +1,7 @@
 ---
+title: "Resource not accessible by integration"
 weight: 80
 ---
-
-# Resource not accessible by integration
 
 When using GitHub Actions, you might feel tempted to use the action-bound
 `GITHUB_TOKEN`.
@@ -74,8 +73,8 @@ brews:
 
 Read the documentation for each topic:
 
-- [GitHub](../scm/github.md)
-- [GitHub Actions](../ci/actions.md)
-- [Homebrew](../customization/homebrew_casks.md)
-- [Krew Plugin Manifests](../customization/krew.md)
-- [Scoop Manifests](../customization/scoop.md)
+- [GitHub](/scm/github/)
+- [GitHub Actions](/ci/actions/)
+- [Homebrew](/customization/homebrew_casks/)
+- [Krew Plugin Manifests](/customization/krew/)
+- [Scoop Manifests](/customization/scoop/)

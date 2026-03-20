@@ -1,8 +1,7 @@
 ---
+title: "goreleaser changelog"
 weight: 50
 ---
-
-# goreleaser changelog
 
 Preview your changelog
 
@@ -39,4 +38,4 @@ goreleaser changelog
 
 ## See also
 
-- [goreleaser](goreleaser.md) - Release engineering, simplified
+- [goreleaser](/cmd/goreleaser/) - Release engineering, simplified

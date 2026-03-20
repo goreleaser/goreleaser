@@ -1,9 +1,7 @@
 ---
+title: "Checksums"
 weight: 100
-url: '/customization/checksum/'
 ---
-
-# Checksums
 
 GoReleaser generates a `project_1.0.0_checksums.txt` file and uploads it with the
 release, so your users can validate if the downloaded files are correct.

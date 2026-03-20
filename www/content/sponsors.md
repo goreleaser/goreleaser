@@ -1,8 +1,7 @@
 ---
+title: "Sponsors"
 weight: 410
 ---
-
-# Sponsors
 
 Does you or your company use GoReleaser?
 

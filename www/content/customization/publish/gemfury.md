@@ -3,7 +3,6 @@ title: "GemFury - apt and rpm repositories"
 aliases:
   - "/customization/fury/"
 weight: 70
-url: '/customization/gemfury/'
 ---
 
 # GemFury - apt and rpm repositories

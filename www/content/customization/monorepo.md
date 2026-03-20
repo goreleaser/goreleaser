@@ -1,8 +1,7 @@
 ---
+title: "Monorepo"
 weight: 25
 ---
-
-# Monorepo
 
 {{< pro >}}
 

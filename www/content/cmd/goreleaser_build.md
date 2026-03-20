@@ -1,8 +1,7 @@
 ---
+title: "goreleaser build"
 weight: 60
 ---
-
-# goreleaser build
 
 Builds the current project
 
@@ -44,4 +43,4 @@ goreleaser build [flags]
 
 ## See also
 
-- [goreleaser](goreleaser.md) - Release engineering, simplified
+- [goreleaser](/cmd/goreleaser/) - Release engineering, simplified

@@ -1,8 +1,7 @@
 ---
+title: "Email/SMTP"
 weight: 100
 ---
-
-# Email/SMTP
 
 For it to work, you'll need to set some environment variables on your pipeline:
 

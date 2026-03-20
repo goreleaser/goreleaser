@@ -1,7 +1,6 @@
 ---
 title: Verifiable Builds
 weight: 110
-url: "/customization/verifiable_builds/"
 ---
 
 GoReleaser has support for creating verifiable builds. A [verifiable build][vgo]

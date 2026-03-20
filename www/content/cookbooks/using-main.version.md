@@ -1,8 +1,7 @@
 ---
+title: "Using the `main.version` ldflag"
 weight: 130
 ---
-
-# Using the `main.version` ldflag
 
 By default, GoReleaser will set the following 3 _ldflags_:
 
@@ -31,4 +30,4 @@ func main() {
 ```
 
 You can override this by changing the `ldflags` option in the
-[`build` section](../customization/builds/go.md).
+[`build` section](/customization/builds/go/).

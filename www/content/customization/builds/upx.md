@@ -1,6 +1,5 @@
 ---
 weight: 130
-url: "/customization/upx/"
 title: UPX
 ---
 

@@ -1,9 +1,7 @@
 ---
+title: "Flatpak Packages"
 weight: 120
-url: '/customization/flatpak/'
 ---
-
-# Flatpak Packages
 
 {{< version "v2.15-unreleased" >}}
 

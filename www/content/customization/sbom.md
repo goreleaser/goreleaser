@@ -1,8 +1,7 @@
 ---
+title: "Cataloging artifacts"
 weight: 35
 ---
-
-# Cataloging artifacts
 
 A Software Bill of Materials (SBOM) is a description of the components that make
 up a software artifact.

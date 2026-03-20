@@ -1,5 +1,6 @@
-# GoReleaser End User License Agreement (EULA)
-
+---
+title: "GoReleaser End User License Agreement (EULA)"
+---
 ## 1. Licensed software.
 
 GoReleaser Pro is licensed as commercial software and must not be used without a valid license key from Becker Software LTDA

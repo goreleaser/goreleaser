@@ -1,8 +1,7 @@
 ---
+title: "Scoop requires single a windows archive"
 weight: 110
 ---
-
-# Scoop requires single a windows archive
 
 The Scoop pipe requires a Windows build and archive.
 
@@ -50,4 +49,4 @@ scoops:
 Also notice the `goamd64` options, it must match the one from your build.
 By default, only `GOAMD64` `v1` is built.
 
-Please refer to the [documentation](../customization/scoop.md) for more details.
+Please refer to the [documentation](/customization/scoop/) for more details.

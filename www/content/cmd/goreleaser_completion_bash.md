@@ -1,8 +1,7 @@
 ---
+title: "goreleaser completion bash"
 weight: 120
 ---
-
-# goreleaser completion bash
 
 Generate the autocompletion script for bash
 
@@ -48,4 +47,4 @@ goreleaser completion bash
 
 ## See also
 
-- [goreleaser completion](goreleaser_completion.md) - Generate the autocompletion script for the specified shell
+- [goreleaser completion](/cmd/goreleaser_completion/) - Generate the autocompletion script for the specified shell

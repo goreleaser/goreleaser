@@ -1,8 +1,7 @@
 ---
+title: "goreleaser jsonschema"
 weight: 160
 ---
-
-# goreleaser jsonschema
 
 Outputs goreleaser's JSON schema
 
@@ -25,4 +24,4 @@ goreleaser jsonschema [flags]
 
 ## See also
 
-- [goreleaser](goreleaser.md) - Release engineering, simplified
+- [goreleaser](/cmd/goreleaser/) - Release engineering, simplified

@@ -1,9 +1,7 @@
 ---
+title: "Krew Plugin Manifests"
 weight: 160
-url: "/customization/krew/"
 ---
-
-# Krew Plugin Manifests
 
 After releasing to GitHub or GitLab, GoReleaser can generate and publish a _Krew
 Plugin Manifest_ into a repository that you have access to.

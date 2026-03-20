@@ -1,5 +1,6 @@
-# Removed in v1 or earlier
-
+---
+title: "Removed in v1 or earlier"
+---
 ## Removed in v1.x
 
 The following options were deprecated in the past and were already removed.
@@ -212,7 +213,7 @@ instead of custom templates.
 
 > since 2022-01-20 (v1.4.0), removed 2023-05-01 (v1.18.0)
 
-In [GoReleaser PRO](pro.md) custom variables should now be prefixed with `.Var`.
+In [GoReleaser PRO](/pro/) custom variables should now be prefixed with `.Var`.
 
 {{< tabs >}}
 {{< tab "Before" >}}
@@ -308,7 +309,7 @@ You can still use any of the other install methods.
 This also includes `install.goreleaser.com`.
 
 Most common tools installed via that website were probably
-[GoReleaser](install.md) itself and
+[GoReleaser](/install/) itself and
 [golangci-lint](https://golangci-lint.run/welcome/install/).
 
 Please follow to the check their documentation for alternative install methods.

@@ -1,12 +1,10 @@
 ---
+title: "Homebrew Formulas (deprecated)"
 weight: 100
-url: '/customization/homebrew_formulas/'
 ---
 
-# Homebrew Formulas (deprecated)
-
-> [Deprecated](./../deprecations.md#brews) in v2.10.
-> [Homebrew Casks](./homebrew_casks.md) should be used instead.
+> [Deprecated](/customization/deprecations/#brews) in v2.10.
+> [Homebrew Casks](/customization/publish/homebrew_casks/) should be used instead.
 
 After releasing to GitHub, GitLab, or Gitea, GoReleaser can generate and publish
 a _homebrew-tap_ recipe into a repository that you have access to.

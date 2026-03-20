@@ -1,12 +1,10 @@
 ---
+title: "Signing Docker Images and Manifests"
 weight: 30
-url: '/customization/docker_sign/'
 ---
 
-# Signing Docker Images and Manifests
-
 Signing Docker Images and Manifests is also possible with GoReleaser.
-This pipe was designed based on the common [sign](sign.md) pipe
+This pipe was designed based on the common [sign](/customization/sign/sign/) pipe
 having [cosign](https://github.com/sigstore/cosign) in mind.
 
 {{< callout type="info" >}}

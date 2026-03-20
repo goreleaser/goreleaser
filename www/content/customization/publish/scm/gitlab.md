@@ -1,9 +1,7 @@
 ---
+title: "GitLab"
 weight: 20
-url: '/scm/gitlab/'
 ---
-
-# GitLab
 
 ## API Token
 

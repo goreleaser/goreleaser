@@ -1,9 +1,7 @@
 ---
+title: "Artifacts"
 weight: 40
-url: '/customization/artifacts/'
 ---
-
-# Artifacts
 
 GoReleaser generates an `artifacts.json` file in the `dist` folder containing
 information about all artifacts produced during the release.

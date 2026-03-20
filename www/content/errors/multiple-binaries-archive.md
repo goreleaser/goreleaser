@@ -1,8 +1,7 @@
 ---
+title: "Archive has different count of binaries for each platform"
 weight: 100
 ---
-
-# Archive has different count of binaries for each platform
 
 This error looks like this:
 

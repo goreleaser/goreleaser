@@ -1,8 +1,7 @@
 ---
+title: "Mastodon"
 weight: 50
 ---
-
-# Mastodon
 
 For it to work, you'll need to create a new Mastodon app
 `https://social.yourdomain.tld/settings/applications/new` with `write:statuses`

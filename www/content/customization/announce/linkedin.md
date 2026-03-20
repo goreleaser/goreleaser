@@ -1,8 +1,7 @@
 ---
+title: "LinkedIn"
 weight: 40
 ---
-
-# LinkedIn
 
 For it to work, you'll need to set some environment variables on your pipeline:
 

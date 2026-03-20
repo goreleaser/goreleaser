@@ -8,7 +8,7 @@ authors:
 title: Announcing GoReleaser v1.12 — the more-than-a-hundred commits release
 ---
 
-[The previous release had ~100 commits](2022-08-28-goreleaser-v1.11.md),
+[The previous release had ~100 commits](/blog/2022-08-28-goreleaser-v1.11/),
 and this one has 149 since previous feature release!
 
 <!--more-->

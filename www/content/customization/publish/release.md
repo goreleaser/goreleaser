@@ -1,9 +1,7 @@
 ---
+title: "Release"
 weight: 20
-url: '/customization/release/'
 ---
-
-# Release
 
 GoReleaser can create a GitHub/GitLab/Gitea release with the current tag, upload
 all the artifacts and generate the changelog based on the new commits since the
@@ -215,7 +213,7 @@ release:
 
 {{< callout type="info" >}}
 
-[Learn how to set up an API token, GitHub Enterprise, etc](../scm/github.md).
+[Learn how to set up an API token, GitHub Enterprise, etc](/customization/scm/github/).
 {{< /callout >}}
 
 {{< pro >}}
@@ -274,7 +272,7 @@ release:
 
 {{< callout type="info" >}}
 
-[Learn how to set up an API token, self-hosted GitLab, etc](../scm/gitlab.md).
+[Learn how to set up an API token, self-hosted GitLab, etc](/customization/scm/gitlab/).
 {{< /callout >}}
 
 {{< callout type="info" >}}
@@ -346,7 +344,7 @@ ALLOWED_TYPES = application/gzip|application/x-gzip|application/x-gtar|applicati
 
 {{< callout type="info" >}}
 
-[Learn how to set up an API token](../scm/gitea.md).
+[Learn how to set up an API token](/customization/scm/gitea/).
 {{< /callout >}}
 
 {{< templates >}}

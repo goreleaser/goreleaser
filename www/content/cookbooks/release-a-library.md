@@ -1,8 +1,7 @@
 ---
+title: "Release a library"
 weight: 100
 ---
-
-# Release a library
 
 Maybe you don't want to actually release binaries, but just generate a changelog and whatnot for your Go libraries? GoReleaser has you covered!
 

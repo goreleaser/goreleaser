@@ -1,8 +1,7 @@
 ---
+title: "Cirrus CI"
 weight: 40
 ---
-
-# Cirrus CI
 
 Here is how to do it with [Cirrus CI](https://cirrus-ci.org):
 

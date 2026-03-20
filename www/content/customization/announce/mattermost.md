@@ -1,8 +1,7 @@
 ---
+title: "Mattermost"
 weight: 60
 ---
-
-# Mattermost
 
 For it to work, you'll need to [create a new Incoming Webhook](https://docs.mattermost.com/developer/webhooks-incoming.html) in your own Mattermost deployment, and set some
 environment variables on your pipeline:

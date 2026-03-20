@@ -89,7 +89,7 @@ simple projects already!
 
 {{< callout type="info" >}}
 
-Learn more about [build hooks](./hooks.md).
+Learn more about [build hooks](/customization/builds/builders/hooks/).
 {{< /callout >}}
 
 ### Environment setup

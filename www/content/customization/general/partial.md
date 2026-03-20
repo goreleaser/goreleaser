@@ -1,9 +1,7 @@
 ---
+title: "Splitting and Merging the entire process"
 weight: 110
-url: "/customization/partial/"
 ---
-
-# Splitting and Merging the entire process
 
 With GoReleaser Pro, you can split and merge `goreleaser release` runs.
 

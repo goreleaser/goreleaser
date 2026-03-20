@@ -1,9 +1,7 @@
 ---
+title: "Git"
 weight: 100
-url: "/customization/git/"
 ---
-
-# Git
 
 This allows you to change the behavior of some Git commands.
 

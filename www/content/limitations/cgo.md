@@ -14,7 +14,7 @@ Here are a few ways you can do it with GoReleaser:
 
 ## GoReleaser Pro
 
-If you have [GoReleaser Pro](../pro.md), you can use the split and merge feature
+If you have [GoReleaser Pro](/pro/), you can use the split and merge feature
 to build for each platform natively and merge the builds later.
 
 This is the recommended approach as it's the simplest and most reliable.

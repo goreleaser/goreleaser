@@ -1,12 +1,10 @@
 ---
+title: "Docker Images (deprecated)"
 weight: 150
-url: '/customization/docker/'
 ---
 
-# Docker Images (deprecated)
-
-> [Phasing out](./../deprecations.md#dockers) in v2.12.
-> [Docker Images v2](./dockers_v2.md) is preferred instead.
+> [Phasing out](/customization/deprecations/#dockers) in v2.12.
+> [Docker Images v2](/customization/package/dockers_v2/) is preferred instead.
 
 GoReleaser can build and push Docker images.
 Let's see how it works.
@@ -227,7 +225,7 @@ want to push to — GoReleaser does not login by itself.
 
 {{< callout type="info" >}}
 
-You can also create multi-platform images using the [docker_manifests](docker_manifest.md) config.
+You can also create multi-platform images using the [docker_manifests](/customization/package/docker_manifest/) config.
 {{< /callout >}}
 
 These settings should allow you to generate multiple Docker images,

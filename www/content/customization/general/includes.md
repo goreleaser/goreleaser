@@ -1,9 +1,7 @@
 ---
+title: "Includes"
 weight: 50
-url: "/customization/includes/"
 ---
-
-# Includes
 
 {{< pro >}}
 

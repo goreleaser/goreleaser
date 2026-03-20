@@ -1,9 +1,7 @@
 ---
+title: "Chocolatey Packages"
 weight: 130
-url: '/customization/chocolatey/'
 ---
-
-# Chocolatey Packages
 
 GoReleaser can also generate `nupkg` packages.
 [Chocolatey](http://chocolatey.org/) are packages based on `nupkg` format, that

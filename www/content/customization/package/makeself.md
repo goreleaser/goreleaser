@@ -1,9 +1,7 @@
 ---
+title: "Self-Extracting Archives"
 weight: 40
-url: '/customization/makeself/'
 ---
-
-# Self-Extracting Archives
 
 GoReleaser can create self-extracting archives using [Makeself][].
 These files are executables that self-extract themselves, and might run the

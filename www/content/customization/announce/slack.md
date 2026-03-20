@@ -1,8 +1,7 @@
 ---
+title: "Slack"
 weight: 90
 ---
-
-# Slack
 
 For it to work, you'll need to [create a new Incoming Webhook](https://api.slack.com/messaging/webhooks), and set some
 environment variables on your pipeline:

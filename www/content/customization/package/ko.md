@@ -1,9 +1,7 @@
 ---
+title: "Docker Images with Ko"
 weight: 180
-url: '/customization/ko/'
 ---
-
-# Docker Images with Ko
 
 You can also use [ko][] to build and publish Docker container images.
 

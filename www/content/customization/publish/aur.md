@@ -1,9 +1,7 @@
 ---
+title: "Arch User Repositories"
 weight: 130
-url: '/customization/aur/'
 ---
-
-# Arch User Repositories
 
 After releasing to GitHub, GitLab, or Gitea, GoReleaser can generate and publish
 a `PKGBUILD` to an _Arch User Repository_.
