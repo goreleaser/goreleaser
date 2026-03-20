@@ -1,4 +1,5 @@
 ---
+title: Announcing GoReleaser v1.10 — the summer release
 date: 2022-07-04
 categories:
   - announcements
@@ -6,9 +7,6 @@ authors:
   - caarlos0
 slug: goreleaser-v1.10
 ---
-
-
-# Announcing GoReleaser v1.10 — the summer release
 
 Fun fact: it is actually winter now here in Brazil. Regardless, this release is packed with new features, quality-of-life improvements and bug fixes!
 

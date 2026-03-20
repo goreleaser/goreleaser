@@ -1,6 +1,8 @@
 ---
 weight: 100
----# goreleaser announce
+---
+
+# goreleaser announce
 
 Announces a previously prepared release
 
@@ -20,7 +22,6 @@ which means you might need to specify the dist directory path if it is different
 than the default.
 
 This command is only available in GoReleaser Pro.
-
 
 ```
 goreleaser announce [flags]
@@ -46,5 +47,4 @@ goreleaser announce [flags]
 
 ## See also
 
-* [goreleaser](goreleaser/)	 - Release engineering, simplified
-
+- [goreleaser](goreleaser.md) - Release engineering, simplified

@@ -39,5 +39,5 @@ goreleaser license-verify
 
 ## See also
 
-* [goreleaser](goreleaser/)	 - Release engineering, simplified
+* [goreleaser](goreleaser.md)	 - Release engineering, simplified
 

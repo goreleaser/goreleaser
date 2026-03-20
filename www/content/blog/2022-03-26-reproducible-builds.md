@@ -1,4 +1,5 @@
 ---
+title: Reproducible Builds
 date: 2022-03-26
 slug: reproducible-builds
 categories:
@@ -6,9 +7,6 @@ categories:
 authors:
   - caarlos0
 ---
-
-
-# Reproducible Builds
 
 GoReleaser can help you, to some extent, to have reproducible builds.
 

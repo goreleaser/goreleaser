@@ -1,7 +1,9 @@
 ---
 weight: 20
 url: '/scm/gitlab/'
----# GitLab
+---
+
+# GitLab
 
 ## API Token
 

@@ -1,11 +1,9 @@
 ---
+title: Announcing GoReleaser v1.14 — the Christmas release
 date: 2022-12-27
 slug: goreleaser-v1.14
 tags: [goreleaser, goreleaser-pro, golang]
 ---
-
-
-# Announcing GoReleaser v1.14 — the Christmas release
 
 Another month, another release!
 In fact, the last release of the year.

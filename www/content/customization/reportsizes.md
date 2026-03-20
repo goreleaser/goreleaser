@@ -1,6 +1,8 @@
 ---
 weight: 36
----# Report Sizes
+---
+
+# Report Sizes
 
 You might want to enable this if you want to keep an eye on your binary/package
 sizes.

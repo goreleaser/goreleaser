@@ -1,6 +1,8 @@
 ---
 weight: 10
----# Version-related configuration errors
+---
+
+# Version-related configuration errors
 
 ## Unsupported configuration version
 
@@ -24,11 +26,11 @@ If you get it as a fatal error, it means your configuration is invalid.
 You can still add the `version` header mentioned above, and it'll tell you which
 parts of the configuration need to be fixed.
 
-You can check the [deprecations](../deprecations/) page to see how to fix
+You can check the [deprecations](../deprecations.md) page to see how to fix
 them.
 
 Also worth reading the
-[v2 announcement](../blog/posts/2024-06-04-goreleaser-v2/), which contains an
+[v2 announcement](../blog/posts/2024-06-04-goreleaser-v2.md), which contains an
 upgrade guide.
 
 ## Using a Pro configuration file with GoReleaser OSS

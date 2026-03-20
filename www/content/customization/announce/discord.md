@@ -1,6 +1,8 @@
 ---
 weight: 20
----# Discord
+---
+
+# Discord
 
 To use [Discord](https://discord.com/), you need
 to [create a Webhook](https://support.discord.com/hc/en-us/articles/228383668-Intro-to-Webhooks), and set following

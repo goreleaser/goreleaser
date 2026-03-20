@@ -1,7 +1,9 @@
 ---
 weight: 90
 url: '/customization/nsis/'
----# NSIS
+---
+
+# NSIS
 
 {{< pro >}}
 {{< version "v2.14" >}}

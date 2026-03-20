@@ -1,6 +1,8 @@
 ---
 weight: 330
----# Experimental features
+---
+
+# Experimental features
 
 Much like Go, GoReleaser can be told to use an experimental feature via
 environment variables.

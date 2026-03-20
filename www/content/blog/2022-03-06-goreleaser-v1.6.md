@@ -1,4 +1,5 @@
 ---
+title: Announcing GoReleaser v1.6 — the boring release
 date: 2022-03-06
 slug: goreleaser-v1.6
 categories:
@@ -6,9 +7,6 @@ categories:
 authors:
   - caarlos0
 ---
-
-
-# Announcing GoReleaser v1.6 — the boring release
 
 GoReleaser 1.6 is out! Another "boring" release with some miscellaneous improvements and bug fixes.
 

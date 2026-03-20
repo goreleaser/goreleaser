@@ -1,6 +1,8 @@
 ---
 weight: 40
----# Builds: using complex template environment variables
+---
+
+# Builds: using complex template environment variables
 
 Builds' environment variables accept templates.
 

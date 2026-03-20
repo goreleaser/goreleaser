@@ -1,12 +1,10 @@
 ---
+title: Announcing GoReleaser v1.22 - steady improvement
 date: 2023-11-06
 slug: goreleaser-v1.22
 categories: [announcements]
 authors: [caarlos0]
 ---
-
-
-# Announcing GoReleaser v1.22 - steady improvement
 
 Another boring release, with mostly bug fixes and quality-of-life improvements.
 

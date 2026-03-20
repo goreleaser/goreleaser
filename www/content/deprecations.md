@@ -1,6 +1,8 @@
 ---
 weight: 320
----# Deprecation notices
+---
+
+# Deprecation notices
 
 This page is used to list deprecation notices across GoReleaser.
 
@@ -61,6 +63,7 @@ foo: bar
 furies:
   - account: myaccount
 ```
+
 {{< /tab >}}
 {{< tab "After" >}}
 
@@ -68,6 +71,7 @@ furies:
 gemfury:
   - account: myaccount
 ```
+
 {{< /tab >}}
 {{< /tabs >}}
 
@@ -90,6 +94,7 @@ mcp:
     description: "MCP server for my project"
     # ...
 ```
+
 {{< /tab >}}
 {{< tab "After" >}}
 
@@ -100,6 +105,7 @@ mcp:
   description: "MCP server for my project"
   # ...
 ```
+
 {{< /tab >}}
 {{< /tabs >}}
 
@@ -114,15 +120,17 @@ It should now be in plural form.
 
 ```yaml
 homebrew_casks:
-- binary: foo
+  - binary: foo
 ```
+
 {{< /tab >}}
 {{< tab "After" >}}
 
 ```yaml
 homebrew_casks:
-- binaries: [ foo ]
+  - binaries: [foo]
 ```
+
 {{< /tab >}}
 {{< /tabs >}}
 
@@ -202,6 +210,7 @@ docker_manifests:
       - "ghcr.io/foo/bar:v{{ .Version }}-amd64"
       - "ghcr.io/foo/bar:v{{ .Version }}-arm64"
 ```
+
 {{< /tab >}}
 {{< tab "After" >}}
 
@@ -222,6 +231,7 @@ dockers_v2:
       "org.opencontainers.image.version": "{{.Version}}"
       "org.opencontainers.image.source": "{{.GitURL}}"
 ```
+
 {{< /tab >}}
 {{< /tabs >}}
 
@@ -239,6 +249,7 @@ context:
 FROM alpine
 COPY my-binary /usr/bin
 ```
+
 {{< /tab >}}
 {{< tab "After" >}}
 
@@ -247,6 +258,7 @@ FROM alpine
 ARG TARGETPLATFORM
 COPY $TARGETPLATFORM/my-binary /usr/bin
 ```
+
 {{< /tab >}}
 {{< /tabs >}}
 
@@ -272,13 +284,15 @@ docker_signs:
   - artifacts: images
     # etc..
 ```
+
 {{< /tab >}}
 {{< tab "After" >}}
 
 ```yaml
 docker_signs:
-  - # etc..
+  -  # etc..
 ```
+
 {{< /tab >}}
 {{< /tabs >}}
 
@@ -297,16 +311,18 @@ It was a no-op before, and is now
 
 ```yaml
 homebrew_casks:
-- conflicts:
-  - formula: foo
+  - conflicts:
+      - formula: foo
 ```
+
 {{< /tab >}}
 {{< tab "After" >}}
 
 ```yaml
 homebrew_casks:
-- {}
+  - {}
 ```
+
 {{< /tab >}}
 {{< /tabs >}}
 
@@ -321,16 +337,18 @@ You may now define multiple man pages, which was not possible in v2.10.
 
 ```yaml
 homebrew_casks:
-- manpage: foo.1.gz
+  - manpage: foo.1.gz
 ```
+
 {{< /tab >}}
 {{< tab "After" >}}
 
 ```yaml
 homebrew_casks:
-- manpages:
-  - foo.1.gz
+  - manpages:
+      - foo.1.gz
 ```
+
 {{< /tab >}}
 {{< /tabs >}}
 
@@ -347,7 +365,7 @@ That said, we now have a `homebrew_casks` section!
 
 For simple cases, simply replacing one with the other will be good enough.
 More complex settings might require further change.
-Check the [new documentation](./customization/homebrew_casks/) for more
+Check the [new documentation](./customization/homebrew_casks.md) for more
 details.
 
 Once you do the first release this way, you might also want to delete the old
@@ -359,31 +377,33 @@ You may also want to make the _Cask_ conflict with the previous _Formula_.
 
 ```yaml
 brews:
-- name: foo
-  directory: Formulas
+  - name: foo
+    directory: Formulas
 ```
+
 {{< /tab >}}
 {{< tab "After" >}}
 
 ```yaml
 homebrew_casks:
-- name: foo
-  # Optional: either set it to Casks, or remove it:
-  directory: Casks
+  - name: foo
+    # Optional: either set it to Casks, or remove it:
+    directory: Casks
 
-  # Optional: helps pass `homebrew audit` if homepage is different from download domain:
-  url:
-    verified: github.com/myorg/myrepo
+    # Optional: helps pass `homebrew audit` if homepage is different from download domain:
+    url:
+      verified: github.com/myorg/myrepo
 
-  # Optional: if your app/binary isn't signed and notarized, you'll need this:
-  hooks:
-    post:
-      # replace foo with the actual binary name
-      install: |
-        if OS.mac?
-          system_command "/usr/bin/xattr", args: ["-dr", "com.apple.quarantine", "#{staged_path}/foo"]
-        end
+    # Optional: if your app/binary isn't signed and notarized, you'll need this:
+    hooks:
+      post:
+        # replace foo with the actual binary name
+        install: |
+          if OS.mac?
+            system_command "/usr/bin/xattr", args: ["-dr", "com.apple.quarantine", "#{staged_path}/foo"]
+          end
 ```
+
 {{< /tab >}}
 {{< /tabs >}}
 
@@ -425,6 +445,7 @@ used everywhere else.
 archives:
   builds: [a, b]
 ```
+
 {{< /tab >}}
 {{< tab "After" >}}
 
@@ -432,6 +453,7 @@ archives:
 archives:
   ids: [a, b]
 ```
+
 {{< /tab >}}
 {{< /tabs >}}
 
@@ -449,6 +471,7 @@ used everywhere else.
 snaps:
   builds: [a, b]
 ```
+
 {{< /tab >}}
 {{< tab "After" >}}
 
@@ -456,6 +479,7 @@ snaps:
 snaps:
   ids: [a, b]
 ```
+
 {{< /tab >}}
 {{< /tabs >}}
 
@@ -473,6 +497,7 @@ used everywhere else.
 nfpms:
   builds: [a, b]
 ```
+
 {{< /tab >}}
 {{< tab "After" >}}
 
@@ -480,6 +505,7 @@ nfpms:
 nfpms:
   ids: [a, b]
 ```
+
 {{< /tab >}}
 {{< /tabs >}}
 
@@ -496,13 +522,15 @@ Format was renamed to `formats`, and now accepts a list of formats.
 archives:
   - format: zip
 ```
+
 {{< /tab >}}
 {{< tab "After" >}}
 
 ```yaml
 archives:
-  - formats: [ 'zip' ]
+  - formats: ["zip"]
 ```
+
 {{< /tab >}}
 {{< /tabs >}}
 
@@ -530,16 +558,18 @@ In most cases you can simply rename the property to formats.
 ```yaml
 archives:
   - format_overrides:
-    - format: zip
+      - format: zip
 ```
+
 {{< /tab >}}
 {{< tab "After" >}}
 
 ```yaml
 archives:
   - format_overrides:
-    - formats: [ 'zip' ]
+      - formats: ["zip"]
 ```
+
 {{< /tab >}}
 {{< /tabs >}}
 
@@ -563,6 +593,7 @@ having to rebuild each of them.
 kos:
   - repository: foo/bar
 ```
+
 {{< /tab >}}
 {{< tab "After" >}}
 
@@ -571,6 +602,7 @@ kos:
   - repositories:
       - foo/bar
 ```
+
 {{< /tab >}}
 {{< /tabs >}}
 
@@ -585,15 +617,17 @@ The property was renamed to `tool`, as to better accommodate multiple languages.
 
 ```yaml
 builds:
-  - gobinary: 'go1.2.3'
+  - gobinary: "go1.2.3"
 ```
+
 {{< /tab >}}
 {{< tab "After" >}}
 
 ```yaml
 builds:
-  - tool: 'go1.2.3'
+  - tool: "go1.2.3"
 ```
+
 {{< /tab >}}
 {{< /tabs >}}
 
@@ -617,15 +651,17 @@ Property renamed so its easier to reason about.
 
 ```yaml
 nightly:
-  name_template: 'foo'
+  name_template: "foo"
 ```
+
 {{< /tab >}}
 {{< tab "After" >}}
 
 ```yaml
 nightly:
-  version_template: 'foo'
+  version_template: "foo"
 ```
+
 {{< /tab >}}
 {{< /tabs >}}
 
@@ -640,15 +676,17 @@ Property renamed so its easier to reason about.
 
 ```yaml
 snapshot:
-  name_template: 'foo'
+  name_template: "foo"
 ```
+
 {{< /tab >}}
 {{< tab "After" >}}
 
 ```yaml
 snapshot:
-  version_template: 'foo'
+  version_template: "foo"
 ```
+
 {{< /tab >}}
 {{< /tabs >}}
 
@@ -665,17 +703,17 @@ Property was renamed to be consistent across all configurations.
 
 ```yaml
 archives:
-  -
-    strip_parent_binary_folder: true
+  - strip_parent_binary_folder: true
 ```
+
 {{< /tab >}}
 {{< tab "After" >}}
 
 ```yaml
 archives:
-  -
-    strip_binary_directory: true
+  - strip_binary_directory: true
 ```
+
 {{< /tab >}}
 {{< /tabs >}}
 
@@ -690,17 +728,17 @@ Property was renamed to be consistent across all configurations.
 
 ```yaml
 blobs:
-  -
-    folder: foo
+  - folder: foo
 ```
+
 {{< /tab >}}
 {{< tab "After" >}}
 
 ```yaml
 blobs:
-  -
-    directory: foo
+  - directory: foo
 ```
+
 {{< /tab >}}
 {{< /tabs >}}
 
@@ -715,17 +753,17 @@ Property was renamed to be consistent across all configurations.
 
 ```yaml
 brews:
-  -
-    folder: foo
+  - folder: foo
 ```
+
 {{< /tab >}}
 {{< tab "After" >}}
 
 ```yaml
 brews:
-  -
-    directory: foo
+  - directory: foo
 ```
+
 {{< /tab >}}
 {{< /tabs >}}
 
@@ -740,17 +778,17 @@ Property was renamed to be consistent across all configurations.
 
 ```yaml
 scoops:
-  -
-    folder: foo
+  - folder: foo
 ```
+
 {{< /tab >}}
 {{< tab "After" >}}
 
 ```yaml
 scoops:
-  -
-    directory: foo
+  - directory: foo
 ```
+
 {{< /tab >}}
 {{< /tabs >}}
 
@@ -767,6 +805,7 @@ Changed to `disable` to conform with all other pipes.
 furies:
   - skip: true
 ```
+
 {{< /tab >}}
 {{< tab "After" >}}
 
@@ -774,6 +813,7 @@ furies:
 furies:
   - disable: true
 ```
+
 {{< /tab >}}
 {{< /tabs >}}
 
@@ -790,6 +830,7 @@ Changed to `disable` to conform with all other pipes.
 changelog:
   skip: true
 ```
+
 {{< /tab >}}
 {{< tab "After" >}}
 
@@ -797,6 +838,7 @@ changelog:
 changelog:
   disable: true
 ```
+
 {{< /tab >}}
 {{< /tabs >}}
 
@@ -813,6 +855,7 @@ Changed to `kms_key` to conform with all other options.
 blobs:
   - kmskey: foo
 ```
+
 {{< /tab >}}
 {{< tab "After" >}}
 
@@ -820,6 +863,7 @@ blobs:
 blobs:
   - kms_key: foo
 ```
+
 {{< /tab >}}
 {{< /tabs >}}
 
@@ -836,6 +880,7 @@ Changed to `disable_ssl` to conform with all other options.
 blobs:
   - disableSSL: true
 ```
+
 {{< /tab >}}
 {{< tab "After" >}}
 
@@ -843,6 +888,7 @@ blobs:
 blobs:
   - disable_ssl: true
 ```
+
 {{< /tab >}}
 {{< /tabs >}}
 
@@ -877,6 +923,7 @@ values.
 goreleaser build --skip-before --skip-validate
 goreleaser release --skip-validate --skip-publish
 ```
+
 {{< /tab >}}
 {{< tab "After" >}}
 
@@ -889,6 +936,7 @@ goreleaser release --skip=validate,publish
 goreleaser build --skip=before --skip=validate
 goreleaser release --skip=validate --skip=publish
 ```
+
 {{< /tab >}}
 {{< /tabs >}}
 
@@ -906,21 +954,21 @@ Replace `bucket` with `repository`.
 
 ```yaml
 scoops:
-  -
-    bucket:
+  - bucket:
       - name: foo
         owner: bar
 ```
+
 {{< /tab >}}
 {{< tab "After" >}}
 
 ```yaml
 scoops:
-  -
-    repository:
+  - repository:
       - name: foo
         owner: bar
 ```
+
 {{< /tab >}}
 {{< /tabs >}}
 
@@ -935,21 +983,21 @@ Replace `index` with `repository`.
 
 ```yaml
 krews:
-  -
-    index:
+  - index:
       - name: foo
         owner: bar
 ```
+
 {{< /tab >}}
 {{< tab "After" >}}
 
 ```yaml
 krews:
-  -
-    repository:
+  - repository:
       - name: foo
         owner: bar
 ```
+
 {{< /tab >}}
 {{< /tabs >}}
 
@@ -964,21 +1012,21 @@ Replace `tap` with `repository`.
 
 ```yaml
 brews:
-  -
-    tap:
+  - tap:
       - name: foo
         owner: bar
 ```
+
 {{< /tab >}}
 {{< tab "After" >}}
 
 ```yaml
 brews:
-  -
-    repository:
+  - repository:
       - name: foo
         owner: bar
 ```
+
 {{< /tab >}}
 {{< /tabs >}}
 
@@ -989,7 +1037,7 @@ brews:
 This option is now default and can't be changed. You can remove it from your
 configuration files.
 
-See [this](./old-deprecations/#archivesrlcp) for more info.
+See [this](./old-deprecations.md#archivesrlcp) for more info.
 
 ### source.rlcp
 
@@ -998,7 +1046,7 @@ See [this](./old-deprecations/#archivesrlcp) for more info.
 This option is now default and can't be changed. You can remove it from your
 configuration files.
 
-See [this](./old-deprecations/#sourcerlcp) for more info.
+See [this](./old-deprecations.md#sourcerlcp) for more info.
 
 ### brews.plist
 
@@ -1012,25 +1060,25 @@ instead.
 
 ```yaml
 brews:
--
-  plist: |
-    <?xml version="1.0" encoding="UTF-8"?>
-    <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
-    <plist version="1.0">
-    <dict>
-    # etc ...
+  - plist: |
+      <?xml version="1.0" encoding="UTF-8"?>
+      <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+      <plist version="1.0">
+      <dict>
+      # etc ...
 ```
+
 {{< /tab >}}
 {{< tab "After" >}}
 
 ```yaml
 brews:
--
-  service: |
-    run [opt_bin/"mybin"]
-    keep_alive true
-    # etc ...
+  - service: |
+      run [opt_bin/"mybin"]
+      keep_alive true
+      # etc ...
 ```
+
 {{< /tab >}}
 {{< /tabs >}}
 
@@ -1046,12 +1094,14 @@ brews:
 ```bash
 goreleaser release --debug
 ```
+
 {{< /tab >}}
 {{< tab "After" >}}
 
 ```bash
 goreleaser release --verbose
 ```
+
 {{< /tab >}}
 {{< /tabs >}}
 
@@ -1060,7 +1110,7 @@ goreleaser release --verbose
 > since 2023-04-30 (v1.18.0), removed 2024-05-26 (v2.0)
 
 GoReleaser now allows many `scoop` configurations, so it should be pluralized
-[accordingly](customization/scoop/).
+[accordingly](customization/scoop.md).
 
 {{< tabs >}}
 {{< tab "Before" >}}
@@ -1069,13 +1119,15 @@ GoReleaser now allows many `scoop` configurations, so it should be pluralized
 scoop:
   # ...
 ```
+
 {{< /tab >}}
 {{< tab "After" >}}
 
 ```yaml
 scoops:
-- # ...
+  -  # ...
 ```
+
 {{< /tab >}}
 {{< /tabs >}}
 
@@ -1087,7 +1139,7 @@ This option was still being supported, even though undocumented, for a couple
 of years now. It's finally time to sunset it.
 
 Simply use the pluralized form, `builds`, according to the
-[documentation](./customization/builds/index/).
+[documentation](./customization/builds/index.md).
 
 {{< tabs >}}
 {{< tab "Before" >}}
@@ -1096,13 +1148,15 @@ Simply use the pluralized form, `builds`, according to the
 build:
   # ...
 ```
+
 {{< /tab >}}
 {{< tab "After" >}}
 
 ```yaml
 builds:
-- # ...
+  -  # ...
 ```
+
 {{< /tab >}}
 {{< /tabs >}}
 
@@ -1118,12 +1172,14 @@ builds:
 ```bash
 goreleaser release --rm-dist
 ```
+
 {{< /tab >}}
 {{< tab "After" >}}
 
 ```bash
 goreleaser release --clean
 ```
+
 {{< /tab >}}
 {{< /tabs >}}
 
@@ -1138,18 +1194,20 @@ nFPM will soon make mandatory setting the maintainer field.
 
 ```yaml
 nfpms:
-- maintainer: ''
+  - maintainer: ""
 ```
+
 {{< /tab >}}
 {{< tab "After" >}}
 
 ```yaml
 nfpms:
-- maintainer: 'Name <email>'
+  - maintainer: "Name <email>"
 ```
+
 {{< /tab >}}
 {{< /tabs >}}
 
 ## Previous versions
 
-Deprecations that were removed in v1.x or earlier have been moved into its [own page](./old-deprecations/).
+Deprecations that were removed in v1.x or earlier have been moved into its [own page](./old-deprecations.md).

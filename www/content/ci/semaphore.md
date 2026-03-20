@@ -1,6 +1,8 @@
 ---
 weight: 100
----# Semaphore
+---
+
+# Semaphore
 
 In [Semaphore 2.0](https://semaphoreci.com) each project starts with the
 default pipeline specified in `.semaphore/semaphore.yml`.

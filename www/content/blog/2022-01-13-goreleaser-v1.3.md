@@ -1,4 +1,5 @@
 ---
+title: Announcing GoReleaser 1.3 — the first of 2022
 date: 2022-01-13
 slug: goreleaser-v1.3
 categories:
@@ -6,9 +7,6 @@ categories:
 authors:
   - caarlos0
 ---
-
-
-# Announcing GoReleaser 1.3 — the first of 2022
 
 We just launched GoReleaser v1.3, the first release of 2022!
 

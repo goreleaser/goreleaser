@@ -1,7 +1,9 @@
 ---
 weight: 90
-url: '/customization/hooks/'
----# Global Hooks
+url: "/customization/hooks/"
+---
+
+# Global Hooks
 
 Some release cycles may need to run something before or after everything else.
 
@@ -20,11 +22,12 @@ options:
 before:
   # Templates for the commands to be ran.
   hooks:
-  - make clean
-  - go generate ./...
-  - go mod tidy
-  - touch {{ .Env.FILE_TO_TOUCH }}
+    - make clean
+    - go generate ./...
+    - go mod tidy
+    - touch {{ .Env.FILE_TO_TOUCH }}
 ```
+
 {{< /tab >}}
 {{< tab "Pro" >}}
 
@@ -44,21 +47,21 @@ before:
   #
   # Templates: allowed.
   hooks:
-  - make clean # simple string
-  - cmd: 'go generate ./...' # specify cmd
-  - cmd: 'go mod tidy'
-    # Always prints command output.
-    output: true
-    # Specify directory.
-    dir: ./submodule # specify command working directory
-  - cmd: 'touch {{ .Env.FILE_TO_TOUCH }}'
-    # Specify extra environment variables.
-    env:
-    - 'FILE_TO_TOUCH=something-{{ .ProjectName }}' # specify hook level environment variables
-  - cmd: 'dotnet tool install --global wix'
-    # Make the hook optional:
-    # {{< inline_version "v2.7" >}}.
-    if: '{{ eq .Runtime.Goos "windows" }}'
+    - make clean # simple string
+    - cmd: "go generate ./..." # specify cmd
+    - cmd: "go mod tidy"
+      # Always prints command output.
+      output: true
+      # Specify directory.
+      dir: ./submodule # specify command working directory
+    - cmd: "touch {{ .Env.FILE_TO_TOUCH }}"
+      # Specify extra environment variables.
+      env:
+        - "FILE_TO_TOUCH=something-{{ .ProjectName }}" # specify hook level environment variables
+    - cmd: "dotnet tool install --global wix"
+      # Make the hook optional:
+      # {{< inline_version "v2.7" >}}.
+      if: '{{ eq .Runtime.Goos "windows" }}'
 
 # global after hooks
 after:
@@ -66,15 +69,16 @@ after:
   #
   # Templates: allowed.
   hooks:
-  - make clean
-  - cmd: cat *.yaml
-    dir: ./submodule
-  - cmd: touch {{ .Env.RELEASE_DONE }}
-    env:
-    - 'RELEASE_DONE=something-{{ .ProjectName }}' # specify hook level environment variables
-  - cmd: 'rm -rf ./something'
-    if: '{{ eq .Runtime.Goos "linux" }}'
+    - make clean
+    - cmd: cat *.yaml
+      dir: ./submodule
+    - cmd: touch {{ .Env.RELEASE_DONE }}
+      env:
+        - "RELEASE_DONE=something-{{ .ProjectName }}" # specify hook level environment variables
+    - cmd: "rm -rf ./something"
+      if: '{{ eq .Runtime.Goos "linux" }}'
 ```
+
 {{< /tab >}}
 {{< /tabs >}}
 

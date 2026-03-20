@@ -1,6 +1,8 @@
 ---
 weight: 70
----# OpenCollective
+---
+
+# OpenCollective
 
 For it to work, you'll need to create a personal token (`https://opencollective.com/<user>/admin/for-developers`) and set the environment variable on your pipeline:
 

@@ -1,6 +1,8 @@
 ---
 weight: 80
----# goreleaser continue
+---
+
+# goreleaser continue
 
 Continues a previously prepared release
 
@@ -12,7 +14,6 @@ Environment variables will be re-evaluated here, so make sure they are
 available to the continue command as well.
 
 This command is only available in GoReleaser Pro.
-
 
 ```
 goreleaser continue [flags]
@@ -38,5 +39,4 @@ goreleaser continue [flags]
 
 ## See also
 
-* [goreleaser](goreleaser/)	 - Release engineering, simplified
-
+- [goreleaser](goreleaser.md) - Release engineering, simplified

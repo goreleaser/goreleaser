@@ -1,4 +1,5 @@
 ---
+title: GoReleaser and Docker Manifests
 date: 2022-01-23
 slug: docker-manifests
 categories:
@@ -6,9 +7,6 @@ categories:
 authors:
   - dirien
 ---
-
-
-# GoReleaser and Docker Manifests
 
 Let's see how to create Docker manifests with GoReleaser.
 

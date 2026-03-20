@@ -1,7 +1,9 @@
 ---
 weight: 180
 url: '/customization/mcp/'
----# Model Context Protocol (MCP) Server
+---
+
+# Model Context Protocol (MCP) Server
 
 {{< version "v2.13" >}}
 
@@ -164,7 +166,7 @@ Then, it'll login using the provided authentication details.
 Finally, it'll publish the server.json to the registry.
 
 Follow
-[this guide](https://github.com/modelcontextprotocol/registry/blob/main/docs/guides/publishing/publish-server/)
+[this guide](https://github.com/modelcontextprotocol/registry/blob/main/docs/guides/publishing/publish-server.md)
 for more details.
 
 {{< callout type="info" >}}
@@ -206,5 +208,5 @@ npms:
 If you don't set these fields, publishing the MCP will fail.
 
 Read
-[this page](https://github.com/modelcontextprotocol/registry/blob/main/docs/guides/publishing/publish-server/)
+[this page](https://github.com/modelcontextprotocol/registry/blob/main/docs/guides/publishing/publish-server.md)
 for more information.

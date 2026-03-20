@@ -1,7 +1,9 @@
 ---
 weight: 10
 url: '/scm/github/'
----# GitHub
+---
+
+# GitHub
 
 ## API Token
 

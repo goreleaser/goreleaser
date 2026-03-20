@@ -1,6 +1,8 @@
 ---
 weight: 40
----# LinkedIn
+---
+
+# LinkedIn
 
 For it to work, you'll need to set some environment variables on your pipeline:
 

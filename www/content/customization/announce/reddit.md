@@ -1,6 +1,8 @@
 ---
 weight: 80
----# Reddit
+---
+
+# Reddit
 
 For it to work, you'll need to [create a new Reddit app](https://www.reddit.com/prefs/apps), and set some environment
 variables on your pipeline:

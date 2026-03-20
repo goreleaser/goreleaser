@@ -1,12 +1,10 @@
 ---
+title: Announcing GoReleaser v1.24 - the first of 2024
 date: 2024-02-05
 slug: goreleaser-v1.24
 categories: [announcements]
 authors: [caarlos0]
 ---
-
-
-# Announcing GoReleaser v1.24 - the first of 2024
 
 Happy new year!
 The first release of 2024 is here!

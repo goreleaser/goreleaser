@@ -1,6 +1,8 @@
 ---
 weight: 60
----# Building Go modules
+---
+
+# Building Go modules
 
 With the default configs, you can already build a Go module without issues.
 

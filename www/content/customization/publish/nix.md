@@ -1,7 +1,9 @@
 ---
 weight: 120
 url: '/customization/nix/'
----# Nix User Repositories
+---
+
+# Nix User Repositories
 
 After releasing to GitHub, GitLab, or Gitea, GoReleaser can generate and publish
 a _nix derivation_ to an existing [Nix User Repository][nur].
@@ -138,7 +140,7 @@ cannot use the default action token.
 You must use a separate token with content write privileges for the tap
 repository.
 You can check the
-[resource not accessible by integration](../errors/resource-not-accessible-by-integration/)
+[resource not accessible by integration](../errors/resource-not-accessible-by-integration.md)
 for more information.
 
 ## Setting up a NUR

@@ -1,4 +1,5 @@
 ---
+title: "Version strategy and release cadence: the future"
 date: 2023-09-27
 slug: release-cadence
 categories:
@@ -6,9 +7,6 @@ categories:
 authors:
   - caarlos0
 ---
-
-
-# Version strategy and release cadence: the future
 
 A couple of weeks ago, I got a couple of complaints about the way GoReleaser
 is being versioned - more precisely, the fact that deprecated options are

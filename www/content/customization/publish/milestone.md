@@ -1,7 +1,9 @@
 ---
 weight: 240
-url: '/customization/milestone/'
----# Closing Milestones
+url: "/customization/milestone/"
+---
+
+# Closing Milestones
 
 GoReleaser can close repository milestones after successfully publishing all
 artifacts.

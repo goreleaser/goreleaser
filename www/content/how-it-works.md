@@ -1,6 +1,8 @@
 ---
 weight: 40
----# How it works
+---
+
+# How it works
 
 GoReleaser's goal is to automate most of the boring work you'll have while
 releasing software, ideally using sensible defaults and making the most common
@@ -9,7 +11,7 @@ use cases easy.
 GoReleaser expects a couple of things:
 
 - a `.goreleaser.yaml` file with the configuration (see the
-  [customization section](./customization/index/) for more info)
+  [customization section](./customization/index.md) for more info)
 - a clean working tree
 - a SemVer-compatible version (e.g. `10.21.34-prerelease+buildmeta`)
 
@@ -26,6 +28,6 @@ A GoReleaser run is split into 4 major steps:
 - **announcing**: announces your release to the configured channels
 
 Some steps might be skipped with `--skip` flags (check the
-[command line docs](./cmd/goreleaser/) for details).
+[command line docs](./cmd/goreleaser.md) for details).
 
 If any of the previous steps fails, the next steps will not run.

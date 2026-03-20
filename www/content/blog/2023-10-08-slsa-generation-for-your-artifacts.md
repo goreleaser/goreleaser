@@ -1,4 +1,5 @@
 ---
+title: "Stay Calm and SLSA: Generating SLSA Provenance for Your Artifacts with GoReleaser and slsa-github-generator"
 date: 2023-10-11
 slug: slsa-generation-for-your-artifacts
 categories:
@@ -7,9 +8,6 @@ authors:
   - developerguy
   - dentrax
 ---
-
-
-# Stay Calm and SLSA: Generating SLSA Provenance for Your Artifacts with GoReleaser and slsa-github-generator
 
 In an age where software is at the heart of nearly every aspect of our lives, software supply chain security has become paramount. It involves a series of measures and practices aimed at ensuring the reliability and safety of the software we use daily. As cyber threats continue to evolve, the need for robust software supply chain security has never been greater. Organizations must take steps to protect their software development and distribution processes from potential vulnerabilities and attacks.
 

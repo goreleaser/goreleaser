@@ -1,10 +1,12 @@
 ---
 weight: 150
 url: '/customization/docker/'
----# Docker Images (deprecated)
+---
 
-> [Phasing out](./../deprecations/#dockers) in v2.12.
-> [Docker Images v2](./dockers_v2/) is preferred instead.
+# Docker Images (deprecated)
+
+> [Phasing out](./../deprecations.md#dockers) in v2.12.
+> [Docker Images v2](./dockers_v2.md) is preferred instead.
 
 GoReleaser can build and push Docker images.
 Let's see how it works.
@@ -225,7 +227,7 @@ want to push to — GoReleaser does not login by itself.
 
 {{< callout type="info" >}}
 
-You can also create multi-platform images using the [docker_manifests](docker_manifest/) config.
+You can also create multi-platform images using the [docker_manifests](docker_manifest.md) config.
 {{< /callout >}}
 
 These settings should allow you to generate multiple Docker images,
@@ -367,4 +369,4 @@ Note that GoReleaser will not install Podman for you, nor change any of its
 configuration.
 
 If you want to use it rootless, make sure to follow
-[this guide](https://github.com/containers/podman/blob/main/docs/tutorials/rootless_tutorial/).
+[this guide](https://github.com/containers/podman/blob/main/docs/tutorials/rootless_tutorial.md).

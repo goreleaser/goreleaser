@@ -1,7 +1,9 @@
 ---
 weight: 210
 url: '/customization/artifactory/'
----# Artifactory
+---
+
+# Artifactory
 
 Publish your artifacts to an Artifactory instance.
 

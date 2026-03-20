@@ -1,4 +1,5 @@
 ---
+title: Announcing GoReleaser v1.11 — the hundred commits release
 slug: goreleaser-v1.11
 date: 2022-08-28
 categories:
@@ -6,9 +7,6 @@ categories:
 authors:
   - caarlos0
 ---
-
-
-# Announcing GoReleaser v1.11 — the hundred commits release
 
 This release took a while, for all the good reasons: a ton of new features and
 bug fixes for your delight!

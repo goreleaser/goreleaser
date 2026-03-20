@@ -1,4 +1,5 @@
 ---
+title: Announcing GoReleaser v1.9 — the 10k stars release
 date: 2022-05-18
 categories:
   - announcements
@@ -6,9 +7,6 @@ authors:
   - caarlos0
 slug: goreleaser-v1.9
 ---
-
-
-# Announcing GoReleaser v1.9 — the 10k stars release
 
 This release contains several minor improvements and a couple of new features! Let's have a look!
 

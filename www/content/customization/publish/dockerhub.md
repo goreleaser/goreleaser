@@ -1,7 +1,9 @@
 ---
 weight: 80
-url: '/customization/dockerhub/'
----# DockerHub
+url: "/customization/dockerhub/"
+---
+
+# DockerHub
 
 {{< pro >}}
 

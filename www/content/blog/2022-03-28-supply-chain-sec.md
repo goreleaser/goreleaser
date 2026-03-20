@@ -1,4 +1,5 @@
 ---
+title: GoReleaser And Software Supply Chain Security
 date: 2022-03-28
 slug: supply-chain-security
 categories:
@@ -6,9 +7,6 @@ categories:
 authors:
   - developerguy
 ---
-
-
-# GoReleaser And Software Supply Chain Security
 
 Before talking about the security of the software supply chains, we should mention what should come to our minds first when we are talking about software supply chains.
 In most basic terms, you can think of **software supply chains are anything that's needed to deliver your product — including all the components you use**, for example, **your codebase**, **packages**, ** libs, your CI/CD pipeline**, **third-party services you use**, **anything that goes into or affects your code from development to gets deployed into production systems.**

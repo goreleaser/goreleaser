@@ -1,6 +1,8 @@
 ---
 weight: 120
----# Woodpecker
+---
+
+# Woodpecker
 
 By default, woodpecker only fetches tags on `tag` events. If you are not using a tag event, you will need to override the git plugin like so:
 

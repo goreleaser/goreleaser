@@ -1,12 +1,10 @@
 ---
+title: How GoReleaser strengthened security through GitHub's Secure Open Source Fund
 date: 2026-02-17
 slug: github-secure-fund
 categories: [announcements]
 authors: [caarlos0]
 ---
-
-
-# How GoReleaser strengthened security through GitHub's Secure Open Source Fund
 
 GoReleaser builds and ships release artifacts for thousands of projects, making
 it a high-value supply-chain target.

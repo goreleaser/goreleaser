@@ -1,7 +1,9 @@
 ---
 weight: 80
 url: '/customization/msi/'
----# MSI
+---
+
+# MSI
 
 {{< pro >}}
 

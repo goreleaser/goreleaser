@@ -1,6 +1,8 @@
 ---
 weight: 70
----# Drone
+---
+
+# Drone
 
 By default, drone does not fetch tags. `plugins/git` is used with default
 values, in most cases we'll need overwrite the `clone` step enabling tags, so

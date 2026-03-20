@@ -1,7 +1,9 @@
 ---
 weight: 140
 url: '/customization/aursources/'
----# Arch User Repositories (Sources)
+---
+
+# Arch User Repositories (Sources)
 
 {{< version "v2.5" >}}
 

@@ -1,7 +1,9 @@
 ---
 weight: 60
 url: '/customization/dmg/'
----# DMG
+---
+
+# DMG
 
 {{< pro >}}
 

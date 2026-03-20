@@ -1,4 +1,5 @@
 ---
+title: Announcing GoReleaser v2
 date: 2024-06-04
 slug: goreleaser-v2
 categories:
@@ -6,9 +7,6 @@ categories:
 authors:
   - caarlos0
 ---
-
-
-# Announcing GoReleaser v2
 
 The new major version of [GoReleaser][gorel] is here!
 

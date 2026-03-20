@@ -1,4 +1,5 @@
 ---
+title: Announcing GoReleaser v1.18 — the maintainers month release
 date: 2023-05-05
 slug: goreleaser-v1.18
 categories:
@@ -6,9 +7,6 @@ categories:
 authors:
   - caarlos0
 ---
-
-
-# Announcing GoReleaser v1.18 — the maintainers month release
 
 May is the [maintainers month](https://maintainermonth.github.com), so I would
 first like to thank all the maintainers out there for the hard work, you rock!

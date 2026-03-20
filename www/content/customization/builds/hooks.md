@@ -1,6 +1,8 @@
 ---
 weight: 100
----# Build Hooks
+---
+
+# Build Hooks
 
 Both pre and post hooks are run **for each build target**, regardless of whether
 these targets are generated via a matrix of OSes and architectures or defined
@@ -48,7 +50,7 @@ builds:
 ```
 
 All properties of a hook (`cmd`, `dir` and `env`) support
-[templating](../templates/) with `post` hooks having binary artifact
+[templating](../templates.md) with `post` hooks having binary artifact
 available (as these run _after_ the build).
 Additionally the following build details are exposed to both `pre` and `post`
 hooks:

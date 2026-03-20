@@ -1,14 +1,16 @@
 ---
 weight: 100
----# Introduction
+---
+
+# Introduction
 
 GoReleaser can be customized by tweaking a `.goreleaser.yaml`[^goreleaser-yaml] file.
 
 You can generate an example config by running
-[`goreleaser init`](../cmd/goreleaser_init/) or start from scratch.
+[`goreleaser init`](../cmd/goreleaser_init.md) or start from scratch.
 
 You can also check if your config is valid by running
-[`goreleaser check`](../cmd/goreleaser_check/), which will tell you if are
+[`goreleaser check`](../cmd/goreleaser_check.md), which will tell you if are
 using deprecated or invalid options.
 
 ## JSON Schema
@@ -25,9 +27,11 @@ https://goreleaser.com/static/schema.json
 
 You can also specify it in your `.goreleaser.yml` config file by adding a
 comment like the following:
+
 ```yaml
 # yaml-language-server: $schema=https://goreleaser.com/static/schema.json
 ```
+
 {{< /tab >}}
 {{< tab "Pro" >}}
 
@@ -37,9 +41,11 @@ https://goreleaser.com/static/schema-pro.json
 
 You can also specify it in your `.goreleaser.yml` config file by adding a
 comment like the following:
+
 ```yaml
 # yaml-language-server: $schema=https://goreleaser.com/static/schema-pro.json
 ```
+
 {{< /tab >}}
 {{< /tabs >}}
 
@@ -57,12 +63,14 @@ for `__VERSION__` (latest):
 ```sh
 https://raw.githubusercontent.com/goreleaser/goreleaser/__VERSION__/www/static/schema.json
 ```
+
 {{< /tab >}}
 {{< tab "Pro" >}}
 
 ```sh
 https://raw.githubusercontent.com/goreleaser/goreleaser/__VERSION__/www/static/schema-pro.json
 ```
+
 {{< /tab >}}
 {{< /tabs >}}
 

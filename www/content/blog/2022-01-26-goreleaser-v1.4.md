@@ -1,4 +1,5 @@
 ---
+title: Announcing GoReleaser v1.4 — the AUR release
 date: 2022-01-26
 slug: goreleaser-v1.4
 categories:
@@ -6,9 +7,6 @@ categories:
 authors:
   - caarlos0
 ---
-
-
-# Announcing GoReleaser v1.4 — the AUR release
 
 GoReleaser can now create and publish Arch Linux `PKGBUILD` files to Arch User
 Repositories!

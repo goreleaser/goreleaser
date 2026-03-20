@@ -1,6 +1,8 @@
 ---
 weight: 30
----# CircleCI
+---
+
+# CircleCI
 
 Here is how to do it with [CircleCI](https://circleci.com):
 

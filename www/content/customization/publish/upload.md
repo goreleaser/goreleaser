@@ -1,7 +1,9 @@
 ---
 weight: 200
 url: '/customization/upload/'
----# HTTP Upload
+---
+
+# HTTP Upload
 
 GoReleaser supports building and pushing artifacts to HTTP servers using simple
 HTTP requests.

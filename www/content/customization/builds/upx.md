@@ -1,7 +1,9 @@
 ---
 weight: 130
-url: '/customization/upx/'
----# UPX
+url: "/customization/upx/"
+---
+
+# UPX
 
 Having small binary sizes are important, and Go is known for generating rather
 big binaries.
@@ -15,7 +17,6 @@ and now UPX has its own configuration section:
 
 {{< callout type="warning" >}}
 **Compatibility**
-
 
 `upx` does not support all platforms! Make sure to check
 [their issues][upx-issues] and to test your packed binaries.

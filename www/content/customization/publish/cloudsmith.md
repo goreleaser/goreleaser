@@ -1,7 +1,9 @@
 ---
 weight: 60
 url: '/customization/cloudsmith/'
----# Cloudsmith - apt, rpm, and alpine repositories
+---
+
+# Cloudsmith - apt, rpm, and alpine repositories
 
 {{< version "v2.1" >}}
 

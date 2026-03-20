@@ -1,7 +1,9 @@
 ---
 weight: 70
 url: '/customization/templatefiles/'
----# Template Files
+---
+
+# Template Files
 
 {{< pro >}}
 

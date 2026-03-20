@@ -1,7 +1,9 @@
 ---
 weight: 30
 url: '/customization/snapshots/'
----# Snapshots
+---
+
+# Snapshots
 
 Sometimes we want to generate a full build of our project,
 but neither want to validate anything nor upload it to anywhere.
@@ -49,6 +51,6 @@ only be generated into the `dist` directory.
 **Maybe you are looking for something else?**
 
 
-- If just want to build the binaries, and no packages at all, check the [`goreleaser build` command](../cmd/goreleaser_build/);
-- If you actually want to create nightly builds, check out the [nightly documentation](nightlies/).
+- If just want to build the binaries, and no packages at all, check the [`goreleaser build` command](../cmd/goreleaser_build.md);
+- If you actually want to create nightly builds, check out the [nightly documentation](nightlies.md).
 {{< /callout >}}

@@ -1,7 +1,9 @@
 ---
 weight: 10
 url: '/customization/beforepublish/'
----# Before Publish Hooks
+---
+
+# Before Publish Hooks
 
 {{< version "v2.1" >}}
 

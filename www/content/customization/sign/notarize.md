@@ -1,7 +1,9 @@
 ---
 weight: 40
-url: '/customization/notarize/'
----# Notarize macOS applications
+url: "/customization/notarize/"
+---
+
+# Notarize macOS applications
 
 GoReleaser has two ways to do notarization for macOS:
 
@@ -46,6 +48,7 @@ To base64 encode a file, you run this:
 base64 -w0 < ./Certificates.p12
 base64 -w0 < ./ApiKey_AAABBBCCC.p8
 ```
+
 {{< /details >}}
 
 ## Cross-platform
@@ -271,6 +274,7 @@ xcrun notarytool store-credentials "$MACOS_NOTARY_PROFILE_NAME" \
   --issuer "$MACOS_NOTARY_ISSUER_ID" \
   --keychain $KEYCHAIN_PATH
 ```
+
 {{< /details >}}
 
 ### GitHub Actions

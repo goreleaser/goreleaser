@@ -1,6 +1,8 @@
 ---
 weight: 60
----# goreleaser build
+---
+
+# goreleaser build
 
 Builds the current project
 
@@ -13,7 +15,6 @@ Its intended usage is, for example, within Makefiles to avoid setting up ldflags
 It also allows you to generate a local build for your current machine only using the `--single-target` option, and specific build IDs using the `--id` option in case you have more than one.
 
 When using `--single-target`, you use the `TARGET`, or GOOS`, `GOARCH`, `GOARM`, `GOAMD64`, `GOARM64`, `GORISCV64`, `GO386`, `GOPPC64`, and `GOMIPS` environment variables to determine the target, defaulting to the current machine target if not set.
-
 
 ```
 goreleaser build [flags]
@@ -43,5 +44,4 @@ goreleaser build [flags]
 
 ## See also
 
-* [goreleaser](goreleaser/)	 - Release engineering, simplified
-
+- [goreleaser](goreleaser.md) - Release engineering, simplified

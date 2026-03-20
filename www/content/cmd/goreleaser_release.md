@@ -1,6 +1,8 @@
 ---
 weight: 70
----# goreleaser release
+---
+
+# goreleaser release
 
 Releases the current project
 
@@ -43,5 +45,4 @@ goreleaser release [flags]
 
 ## See also
 
-* [goreleaser](goreleaser/)	 - Release engineering, simplified
-
+- [goreleaser](goreleaser.md) - Release engineering, simplified

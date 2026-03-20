@@ -22,10 +22,10 @@ I hope GoReleaser Pro helps improving your release workflow even more!
 
 Thank you!
 
-[^actions]: See all the GitHub Actions options [here](ci/actions/).
+[^actions]: See all the GitHub Actions options [here](ci/actions.md).
 
-[^install]: Check out all the installation methods [here](install/).
+[^install]: Check out all the installation methods [here](install.md).
 
-[^schema]: More about our JSONSchemas [here](customization/index/).
+[^schema]: More about our JSONSchemas [here](customization/index.md).
 
-[^links]: All our contact, forums, and media links are available [here](links/).
+[^links]: All our contact, forums, and media links are available [here](links.md).

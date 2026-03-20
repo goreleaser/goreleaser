@@ -1,6 +1,8 @@
 ---
 weight: 70
----# Use debconf and templates
+---
+
+# Use debconf and templates
 
 Deb installation format has a support for user input during installation using [debconf](https://manpages.debian.org/testing/debconf-doc/debconf-devel.7.en.html).
 

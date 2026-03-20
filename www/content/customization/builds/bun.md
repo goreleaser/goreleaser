@@ -1,6 +1,8 @@
 ---
 weight: 20
----# Bun
+---
+
+# Bun
 
 {{< version "v2.6" >}}
 
@@ -91,7 +93,7 @@ most projects already!
 
 {{< callout type="info" >}}
 
-Learn more about [build hooks](./hooks/).
+Learn more about [build hooks](./hooks.md).
 {{< /callout >}}
 
 ### Environment setup

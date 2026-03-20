@@ -1,8 +1,10 @@
 ---
 weight: 20
----# Install
+---
 
-There are two GoReleaser distributions: OSS and [Pro](pro/), each have a
+# Install
+
+There are two GoReleaser distributions: OSS and [Pro](pro.md), each have a
 multitude of installation options.
 
 You can see the instructions for each of them below.
@@ -15,12 +17,14 @@ You can see the instructions for each of them below.
 ```bash
 brew install --cask goreleaser/tap/goreleaser
 ```
+
 {{< /tab >}}
 {{< tab "Pro" >}}
 
 ```bash
 brew install --cask goreleaser/tap/goreleaser-pro
 ```
+
 {{< /tab >}}
 {{< /tabs >}}
 
@@ -55,12 +59,14 @@ Not available.
 ```bash
 npm i -g @goreleaser/goreleaser
 ```
+
 {{< /tab >}}
 {{< tab "Pro" >}}
 
 ```bash
 npm i -g @goreleaser/goreleaser-pro
 ```
+
 {{< /tab >}}
 {{< /tabs >}}
 
@@ -72,6 +78,7 @@ npm i -g @goreleaser/goreleaser-pro
 ```bash
 sudo snap install --classic goreleaser
 ```
+
 {{< /tab >}}
 {{< tab "Pro" >}}
 
@@ -88,6 +95,7 @@ Not available.
 scoop bucket add goreleaser https://github.com/goreleaser/scoop-bucket.git
 scoop install goreleaser
 ```
+
 {{< /tab >}}
 {{< tab "Pro" >}}
 
@@ -95,6 +103,7 @@ scoop install goreleaser
 scoop bucket add goreleaser https://github.com/goreleaser/scoop-bucket.git
 scoop install goreleaser-pro
 ```
+
 {{< /tab >}}
 {{< /tabs >}}
 
@@ -106,6 +115,7 @@ scoop install goreleaser-pro
 ```bash
 choco install goreleaser
 ```
+
 {{< /tab >}}
 {{< /tabs >}}
 
@@ -117,12 +127,14 @@ choco install goreleaser
 ```bash
 winget install goreleaser
 ```
+
 {{< /tab >}}
 {{< tab "Pro" >}}
 
 ```bash
 winget install goreleaser-pro
 ```
+
 {{< /tab >}}
 {{< /tabs >}}
 
@@ -136,6 +148,7 @@ echo 'deb [trusted=yes] https://repo.goreleaser.com/apt/ /' | sudo tee /etc/apt/
 sudo apt update
 sudo apt install goreleaser
 ```
+
 {{< /tab >}}
 {{< tab "Pro" >}}
 
@@ -144,6 +157,7 @@ echo 'deb [trusted=yes] https://repo.goreleaser.com/apt/ /' | sudo tee /etc/apt/
 sudo apt update
 sudo apt install goreleaser-pro
 ```
+
 {{< /tab >}}
 {{< /tabs >}}
 
@@ -161,6 +175,7 @@ gpgcheck=0
 exclude=goreleaser-pro' | sudo tee /etc/yum.repos.d/goreleaser.repo
 sudo yum install goreleaser
 ```
+
 {{< /tab >}}
 {{< tab "Pro" >}}
 
@@ -173,6 +188,7 @@ gpgcheck=0
 exclude=goreleaser' | sudo tee /etc/yum.repos.d/goreleaser.repo
 sudo yum install goreleaser-pro
 ```
+
 {{< /tab >}}
 {{< /tabs >}}
 
@@ -184,12 +200,14 @@ sudo yum install goreleaser-pro
 ```bash
 yay -S goreleaser-bin
 ```
+
 {{< /tab >}}
 {{< tab "Pro" >}}
 
 ```bash
 yay -S goreleaser-pro-bin
 ```
+
 {{< /tab >}}
 {{< /tabs >}}
 
@@ -237,6 +255,7 @@ Once you do that, you can install the packages.
   ];
 }
 ```
+
 {{< /tab >}}
 {{< tab "Pro" >}}
 
@@ -247,6 +266,7 @@ Once you do that, you can install the packages.
   ];
 }
 ```
+
 {{< /tab >}}
 {{< /tabs >}}
 
@@ -273,6 +293,7 @@ docker run --rm --privileged \
   -e DOCKER_REGISTRY \
   goreleaser/goreleaser release
 ```
+
 {{< /tab >}}
 {{< tab "Pro" >}}
 
@@ -295,6 +316,7 @@ docker run --rm --privileged \
   -e GORELEASER_KEY \
   goreleaser/goreleaser-pro release
 ```
+
 {{< /tab >}}
 {{< /tabs >}}
 
@@ -365,12 +387,14 @@ Its purpose is to be used within scripts and CIs.
 ```bash
 curl -sfL https://goreleaser.com/static/run | bash VERSION=__VERSION__ -s -- check
 ```
+
 {{< /tab >}}
 {{< tab "Pro" >}}
 
 ```bash
 curl -sfL https://goreleaser.com/static/run | DISTRIBUTION=pro VERSION=__VERSION__ bash -s -- check
 ```
+
 {{< /tab >}}
 {{< /tabs >}}
 
@@ -405,42 +429,54 @@ All artifacts are checksummed, and the checksum file is signed with [cosign][].
 {{< tab "OSS" >}}
 
 1. Download the files you want, and the `checksums.txt`, `checksum.txt.pem` and `checksums.txt.sig` files from the [releases][releases] page:
-  ```bash
-  wget 'https://github.com/goreleaser/goreleaser/releases/download/__VERSION__/checksums.txt'
-  wget 'https://github.com/goreleaser/goreleaser/releases/download/__VERSION__/checksums.txt.sigstore.json'
-  ```
+
+```bash
+wget 'https://github.com/goreleaser/goreleaser/releases/download/__VERSION__/checksums.txt'
+wget 'https://github.com/goreleaser/goreleaser/releases/download/__VERSION__/checksums.txt.sigstore.json'
+```
+
 1. Verify the signature:
-  ```bash
-  cosign verify-blob \
-    --certificate-identity 'https://github.com/goreleaser/goreleaser/.github/workflows/release.yml@refs/tags/__VERSION__' \
-    --certificate-oidc-issuer 'https://token.actions.githubusercontent.com' \
-    --bundle checksums.txt.sigstore.json \
-    ./checksums.txt
-  ```
+
+```bash
+cosign verify-blob \
+  --certificate-identity 'https://github.com/goreleaser/goreleaser/.github/workflows/release.yml@refs/tags/__VERSION__' \
+  --certificate-oidc-issuer 'https://token.actions.githubusercontent.com' \
+  --bundle checksums.txt.sigstore.json \
+  ./checksums.txt
+```
+
 1. If the signature is valid, you can then verify the SHA256 sums match with the downloaded binary:
-  ```bash
-  sha256sum --ignore-missing -c checksums.txt
-  ```
+
+```bash
+sha256sum --ignore-missing -c checksums.txt
+```
+
 {{< /tab >}}
 {{< tab "Pro" >}}
 
 1. Download the files you want, and the `checksums.txt`, `checksum.txt.pem` and `checksums.txt.sig` files from the [releases][pro-releases] page:
-  ```bash
-  wget 'https://github.com/goreleaser/goreleaser-pro/releases/download/__VERSION__/checksums.txt'
-  wget 'https://github.com/goreleaser/goreleaser-pro/releases/download/__VERSION__/checksums.txt.sigstore.json'
-  ```
+
+```bash
+wget 'https://github.com/goreleaser/goreleaser-pro/releases/download/__VERSION__/checksums.txt'
+wget 'https://github.com/goreleaser/goreleaser-pro/releases/download/__VERSION__/checksums.txt.sigstore.json'
+```
+
 1. Verify the signature:
-  ```bash
-  cosign verify-blob \
-    --certificate-identity 'https://github.com/goreleaser/goreleaser-pro-internal/.github/workflows/release-pro.yml@refs/tags/__VERSION__' \
-    --certificate-oidc-issuer 'https://token.actions.githubusercontent.com' \
-    --bundle checksums.txt.sigstore.json \
-    ./checksums.txt
-  ```
+
+```bash
+cosign verify-blob \
+  --certificate-identity 'https://github.com/goreleaser/goreleaser-pro-internal/.github/workflows/release-pro.yml@refs/tags/__VERSION__' \
+  --certificate-oidc-issuer 'https://token.actions.githubusercontent.com' \
+  --bundle checksums.txt.sigstore.json \
+  ./checksums.txt
+```
+
 1. If the signature is valid, you can then verify the SHA256 sums match with the downloaded binary:
-  ```bash
-  sha256sum --ignore-missing -c checksums.txt
-  ```
+
+```bash
+sha256sum --ignore-missing -c checksums.txt
+```
+
 {{< /tab >}}
 {{< /tabs >}}
 
@@ -455,6 +491,7 @@ You can also verify the attestations:
 gh attestation verify --owner goreleaser *.tar.gz
 # PS: can be any file from the release
 ```
+
 {{< /tab >}}
 {{< tab "Pro" >}}
 
@@ -479,6 +516,7 @@ cosign verify \
   --certificate-oidc-issuer 'https://token.actions.githubusercontent.com' \
   goreleaser/goreleaser
 ```
+
 {{< /tab >}}
 {{< tab "Pro" >}}
 
@@ -488,6 +526,7 @@ cosign verify \
   --certificate-oidc-issuer 'https://token.actions.githubusercontent.com' \
   goreleaser/goreleaser-pro
 ```
+
 {{< /tab >}}
 {{< /tabs >}}
 

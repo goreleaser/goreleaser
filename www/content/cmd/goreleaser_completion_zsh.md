@@ -1,6 +1,8 @@
 ---
 weight: 150
----# goreleaser completion zsh
+---
+
+# goreleaser completion zsh
 
 Generate the autocompletion script for zsh
 
@@ -9,26 +11,25 @@ Generate the autocompletion script for zsh
 Generate the autocompletion script for the zsh shell.
 
 If shell completion is not already enabled in your environment you will need
-to enable it.  You can execute the following once:
+to enable it. You can execute the following once:
 
-	echo "autoload -U compinit; compinit" >> ~/.zshrc
+    echo "autoload -U compinit; compinit" >> ~/.zshrc
 
 To load completions in your current shell session:
 
-	source <(goreleaser completion zsh)
+    source <(goreleaser completion zsh)
 
 To load completions for every new session, execute once:
 
 ### Linux:
 
-	goreleaser completion zsh > "${fpath[1]}/_goreleaser"
+    goreleaser completion zsh > "${fpath[1]}/_goreleaser"
 
 ### macOS:
 
-	goreleaser completion zsh > $(brew --prefix)/share/zsh/site-functions/_goreleaser
+    goreleaser completion zsh > $(brew --prefix)/share/zsh/site-functions/_goreleaser
 
 You will need to start a new shell for this setup to take effect.
-
 
 ```
 goreleaser completion zsh [flags]
@@ -49,5 +50,4 @@ goreleaser completion zsh [flags]
 
 ## See also
 
-* [goreleaser completion](goreleaser_completion/)	 - Generate the autocompletion script for the specified shell
-
+- [goreleaser completion](goreleaser_completion.md) - Generate the autocompletion script for the specified shell

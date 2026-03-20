@@ -1,4 +1,5 @@
 ---
+title: Fast and Furious Building OCI compatible Container Images with GoReleaser and ko
 date: 2023-01-30
 slug: goreleaser-ko
 categories:
@@ -6,9 +7,6 @@ categories:
 authors:
   - developerguy
 ---
-
-
-# Fast and Furious Building OCI compatible Container Images with GoReleaser and ko
 
 GoReleaser and [ko][] are popular open-source, well-recognized projects, especially in the containerization and open-source ecosystem for Go applications.
 Many people use these projects for their Go applications because they are pretty straightforward and CI-friendly tools that make your releasing artifacts (binary and container image) process super elegant, which also helps you focus more on developing the business logic rather than planning to release software type of works.

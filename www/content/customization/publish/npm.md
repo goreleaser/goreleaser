@@ -1,7 +1,9 @@
 ---
 weight: 150
 url: '/customization/npm/'
----# NPM
+---
+
+# NPM
 
 {{< version "v2.8" >}}
 

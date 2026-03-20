@@ -1,6 +1,8 @@
 ---
 weight: 410
----# Sponsors
+---
+
+# Sponsors
 
 Does you or your company use GoReleaser?
 

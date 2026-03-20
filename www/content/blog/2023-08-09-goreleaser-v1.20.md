@@ -5,10 +5,8 @@ categories:
   - announcements
 authors:
   - caarlos0
+title: Announcing GoReleaser v1.20 — a quality-of-life release
 ---
-
-
-# Announcing GoReleaser v1.20 — a quality-of-life release
 
 A little over 100 commits in small-_ish_ quality-of-life improvements.
 

@@ -1,4 +1,5 @@
 ---
+title: Announcing GoReleaser v1.16 — the late February release
 date: 2023-03-06
 slug: goreleaser-v1.16
 categories:
@@ -6,9 +7,6 @@ categories:
 authors:
   - caarlos0
 ---
-
-
-# Announcing GoReleaser v1.16 — the late February release
 
 The February release got a little late... _better later than even later, I guess!_ 😄
 

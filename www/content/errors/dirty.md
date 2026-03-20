@@ -1,6 +1,8 @@
 ---
 weight: 20
----# Git is in a dirty state
+---
+
+# Git is in a dirty state
 
 GoReleaser requires a clean git state to work.
 
@@ -30,7 +32,6 @@ From here on, you have a couple of options:
 {{< callout type="info" >}}
 **./dist**
 
-
 The `dist` folder (usually `./dist`) needs to be added to `.gitignore`, or
 deleted before running GoReleaser.
 `goreleaser init` takes care of that for you, if you used it to start your
@@ -39,4 +40,5 @@ project, if not, you'll need to do it manually:
 ```sh
 echo './dist' >>.gitignore
 ```
+
 {{< /callout >}}

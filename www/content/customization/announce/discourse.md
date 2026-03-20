@@ -1,6 +1,8 @@
 ---
 weight: 30
----# Discourse
+---
+
+# Discourse
 
 {{< version "v2.13" >}}
 

@@ -1,4 +1,5 @@
 ---
+title: Announcing GoReleaser v1.19 — the big release
 date: 2023-06-28
 slug: goreleaser-v1.19
 categories:
@@ -6,9 +7,6 @@ categories:
 authors:
   - caarlos0
 ---
-
-
-# Announcing GoReleaser v1.19 — the big release
 
 Almost 200 commits adding Nix, Winget, and much more...
 

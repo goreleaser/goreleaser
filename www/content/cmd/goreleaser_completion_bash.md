@@ -1,6 +1,8 @@
 ---
 weight: 120
----# goreleaser completion bash
+---
+
+# goreleaser completion bash
 
 Generate the autocompletion script for bash
 
@@ -13,20 +15,19 @@ If it is not installed already, you can install it via your OS's package manager
 
 To load completions in your current shell session:
 
-	source <(goreleaser completion bash)
+    source <(goreleaser completion bash)
 
 To load completions for every new session, execute once:
 
 ### Linux:
 
-	goreleaser completion bash > /etc/bash_completion.d/goreleaser
+    goreleaser completion bash > /etc/bash_completion.d/goreleaser
 
 ### macOS:
 
-	goreleaser completion bash > $(brew --prefix)/etc/bash_completion.d/goreleaser
+    goreleaser completion bash > $(brew --prefix)/etc/bash_completion.d/goreleaser
 
 You will need to start a new shell for this setup to take effect.
-
 
 ```
 goreleaser completion bash
@@ -47,5 +48,4 @@ goreleaser completion bash
 
 ## See also
 
-* [goreleaser completion](goreleaser_completion/)	 - Generate the autocompletion script for the specified shell
-
+- [goreleaser completion](goreleaser_completion.md) - Generate the autocompletion script for the specified shell

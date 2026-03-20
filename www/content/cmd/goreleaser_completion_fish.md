@@ -1,6 +1,8 @@
 ---
 weight: 130
----# goreleaser completion fish
+---
+
+# goreleaser completion fish
 
 Generate the autocompletion script for fish
 
@@ -10,14 +12,13 @@ Generate the autocompletion script for the fish shell.
 
 To load completions in your current shell session:
 
-	goreleaser completion fish | source
+    goreleaser completion fish | source
 
 To load completions for every new session, execute once:
 
-	goreleaser completion fish > ~/.config/fish/completions/goreleaser.fish
+    goreleaser completion fish > ~/.config/fish/completions/goreleaser.fish
 
 You will need to start a new shell for this setup to take effect.
-
 
 ```
 goreleaser completion fish [flags]
@@ -38,5 +39,4 @@ goreleaser completion fish [flags]
 
 ## See also
 
-* [goreleaser completion](goreleaser_completion/)	 - Generate the autocompletion script for the specified shell
-
+- [goreleaser completion](goreleaser_completion.md) - Generate the autocompletion script for the specified shell

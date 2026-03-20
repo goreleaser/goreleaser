@@ -1,6 +1,8 @@
 ---
 weight: 20
----# Azure Pipelines
+---
+
+# Azure Pipelines
 
 GoReleaser can also be used within our official [GoReleaser Extensions for Azure
 DevOps][goreleaser-extension] through [Visual Studio marketplace][marketplace].

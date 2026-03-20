@@ -1,6 +1,8 @@
 ---
 weight: 50
----# goreleaser changelog
+---
+
+# goreleaser changelog
 
 Preview your changelog
 
@@ -15,7 +17,6 @@ You can also use this command to test the `changelog` configuration in your `.go
 This command skips all validations and does not publish anything.
 
 This command is only available in GoReleaser Pro.
-
 
 ```
 goreleaser changelog
@@ -38,5 +39,4 @@ goreleaser changelog
 
 ## See also
 
-* [goreleaser](goreleaser/)	 - Release engineering, simplified
-
+- [goreleaser](goreleaser.md) - Release engineering, simplified

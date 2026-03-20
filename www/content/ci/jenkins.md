@@ -1,6 +1,8 @@
 ---
 weight: 90
----# Jenkins
+---
+
+# Jenkins
 
 Here is how to set up a [Jenkins](https://www.jenkins.io/) pipeline using Jenkinsfile:
 

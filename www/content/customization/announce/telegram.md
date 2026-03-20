@@ -1,6 +1,8 @@
 ---
 weight: 120
----# Telegram
+---
+
+# Telegram
 
 For it to work, you'll need to
 [create a new Telegram bot](https://core.telegram.org/bots).

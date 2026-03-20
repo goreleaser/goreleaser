@@ -1,7 +1,9 @@
 ---
 weight: 110
 url: '/customization/winget/'
----# Winget
+---
+
+# Winget
 
 After releasing to GitHub, GitLab, or Gitea, GoReleaser can generate and publish
 a _winget manifest_ and commit to a git repository, and PR it to `winget-pkgs`

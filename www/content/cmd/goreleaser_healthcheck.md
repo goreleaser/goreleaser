@@ -1,6 +1,8 @@
 ---
 weight: 30
----# goreleaser healthcheck
+---
+
+# goreleaser healthcheck
 
 Checks if needed tools are installed
 
@@ -28,5 +30,4 @@ goreleaser healthcheck [flags]
 
 ## See also
 
-* [goreleaser](goreleaser/)	 - Release engineering, simplified
-
+- [goreleaser](goreleaser.md) - Release engineering, simplified

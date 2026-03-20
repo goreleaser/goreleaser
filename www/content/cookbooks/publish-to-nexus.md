@@ -1,8 +1,10 @@
 ---
 weight: 90
----# Publish to Nexus
+---
 
-Example of a [publishers](../customization/publishers/) section pushing files
+# Publish to Nexus
+
+Example of a [publishers](../customization/publishers.md) section pushing files
 to a Nexus instance:
 
 ```yaml

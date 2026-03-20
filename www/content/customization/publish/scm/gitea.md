@@ -1,7 +1,9 @@
 ---
 weight: 30
-url: '/scm/gitea/'
----# Gitea
+url: "/scm/gitea/"
+---
+
+# Gitea
 
 ## API Token
 

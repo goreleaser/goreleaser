@@ -1,7 +1,9 @@
 ---
 weight: 190
 url: '/customization/changelog/'
----# Changelog
+---
+
+# Changelog
 
 You can customize how the changelog is generated using the `changelog` section in the config file:
 
@@ -232,8 +234,8 @@ Don't forget to give it the current release notes as well, available as
 `{{ .ReleaseNotes }}`.
 
 This is the [default
-prompt](https://gist.githubusercontent.com/caarlos0/419c8cb2bab28f7c53c7e228af3ab219/raw/70e3e7f0ba85b02a23692d150e3a0d1752c79d64/prompt/)
+prompt](https://gist.githubusercontent.com/caarlos0/419c8cb2bab28f7c53c7e228af3ab219/raw/70e3e7f0ba85b02a23692d150e3a0d1752c79d64/prompt.md)
 in case you're interested.
 
 You can test this by using the
-[`goreleaser changelog` command](../cmd/goreleaser_changelog/).
+[`goreleaser changelog` command](../cmd/goreleaser_changelog.md).

@@ -1,4 +1,5 @@
 ---
+title: Announcing GoReleaser v1.2 — Santa/5 year anniversary edition
 date: 2021-12-21
 slug: goreleaser-v1.2
 categories:
@@ -6,9 +7,6 @@ categories:
 authors:
   - caarlos0
 ---
-
-
-# Announcing GoReleaser v1.2 — Santa/5 year anniversary edition
 
 GoReleaser v1.2 is out — likely be the last feature release of 2021. 
 It also marks the first 5 years since its [first commit](https://github.com/goreleaser/goreleaser/commit/8b63e6555be45234c4c2a69576ca2ddab705302c).

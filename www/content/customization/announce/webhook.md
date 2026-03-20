@@ -1,6 +1,8 @@
 ---
 weight: 140
----# WebHooks
+---
+
+# WebHooks
 
 WebHooks are a way to receive notifications.
 With this GoReleaser functionality, you can send events to any server

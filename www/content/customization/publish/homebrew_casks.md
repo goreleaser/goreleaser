@@ -234,7 +234,7 @@ homebrew_casks:
 
 Casks are supposed to be signed, even if they are coming from a tap.
 
-GoReleaser can [sign and notarize both binaries and apps](./notarize/), but,
+GoReleaser can [sign and notarize both binaries and apps](./notarize.md), but,
 Apple charges a yearly fee for that.
 
 If you don't want to do it, you still have the option to tell macOS to remove

@@ -1,6 +1,8 @@
 ---
 weight: 10
----# GitHub Actions
+---
+
+# GitHub Actions
 
 GoReleaser can also be used within our official [GoReleaser
 Action][goreleaser-action] through [GitHub Actions][actions].
@@ -62,14 +64,15 @@ jobs:
 {{< callout type="warning" >}}
 **Some things to look closely...**
 
-
 #### The action does not install, configure or authenticate into dependencies
+
 GoReleaser Action will not install nor setup any other software needed to
 release. It's the user's responsibility to install and configure Go, Docker,
 Syft, Cosign and any other tools the release might need. It's also the
 user's responsibility to log in into tools that need it, such as docker.
 
 #### Fetch all history
+
 Notice the `fetch-depth: 0` option in the `Checkout` workflow step.
 This is required for GoReleaser to work properly, as it will need the full
 history to work properly.
@@ -170,14 +173,14 @@ The following
 are required by GoReleaser:
 
 - `contents: write` if you wish to
-  - [upload archives as GitHub Releases](../customization/release/), or
-  - publish to [Homebrew](../customization/homebrew_casks/), or
-    [Scoop](../customization/scoop/) (assuming it's part of the same repository)
+  - [upload archives as GitHub Releases](../customization/release.md), or
+  - publish to [Homebrew](../customization/homebrew_casks.md), or
+    [Scoop](../customization/scoop.md) (assuming it's part of the same repository)
 - or just `contents: read` if you don't need any of the above
-- `packages: write` if you [push Docker images](../customization/docker/) to
+- `packages: write` if you [push Docker images](../customization/docker.md) to
   GitHub
 - `issues: write` if you use [milestone closing
-  capability](../customization/milestone/)
+  capability](../customization/milestone.md)
 - `id-token: write` if you wish use [Cosign][cosign] with [GitHub OIDC][oidc]
 
 `GITHUB_TOKEN` permissions [are limited to the repository][about-github-token]

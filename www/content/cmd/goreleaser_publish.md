@@ -1,6 +1,8 @@
 ---
 weight: 90
----# goreleaser publish
+---
+
+# goreleaser publish
 
 Publishes a previously prepared release
 
@@ -16,7 +18,6 @@ Environment variables will be re-evaluated here, so make sure they are
 available to the publish command as well.
 
 This command is only available in GoReleaser Pro.
-
 
 ```
 goreleaser publish [flags]
@@ -42,5 +43,4 @@ goreleaser publish [flags]
 
 ## See also
 
-* [goreleaser](goreleaser/)	 - Release engineering, simplified
-
+- [goreleaser](goreleaser.md) - Release engineering, simplified

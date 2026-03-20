@@ -1,7 +1,9 @@
 ---
 weight: 120
 url: '/customization/universalbinaries/'
----# macOS Universal Binaries
+---
+
+# macOS Universal Binaries
 
 GoReleaser can create _macOS Universal Binaries_ - also known as _Fat Binaries_.
 Those binaries are in a special format that contains both `arm64` and `amd64`
@@ -57,7 +59,7 @@ universal_binaries:
 
 {{< templates >}}
 
-For more info about hooks, see the [build section](./builds/hooks/).
+For more info about hooks, see the [build section](./builds/hooks.md).
 
 The minimal configuration for most setups would look like this:
 
@@ -90,7 +92,7 @@ universal_binaries:
 
 ## Naming templates
 
-Most fields that support [templates](templates/) will also
+Most fields that support [templates](templates.md) will also
 support the following build details:
 
 <!-- to format the tables, use: https://tabletomarkdown.com/format-markdown-table/ -->

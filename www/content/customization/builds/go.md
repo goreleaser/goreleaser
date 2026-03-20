@@ -1,6 +1,10 @@
 ---
 weight: 10
----# Go
+title: Go
+linkTitle: Golang
+---
+
+## Options
 
 Builds can be customized in multiple ways.
 
@@ -326,12 +330,11 @@ builds:
 
 {{< callout type="info" >}}
 
-Learn more about [build hooks](./hooks/).
+Learn more about [build hooks](./hooks.md).
 {{< /callout >}}
 
 {{< callout type="warning" >}}
 **GOAMD64, GORISCV64, GOPPC64, GO386, GOARM, GOARM64**
-
 
 You usually will need to specify the complete target in places like
 `targets` and `overrides`.
@@ -344,9 +347,11 @@ GOARCH-specific values.
 {{< callout type="info" >}}
 
 First-class build targets are gathered by running:
+
 ```sh
 go tool dist list -json | jq -r '.[] | select(.FirstClass) | [.GOOS, .GOARCH] | @tsv'
 ```
+
 We also recommend reading the [official wiki about Go ports](https://go.dev/wiki/PortingPolicy#first-class-ports).
 {{< /callout >}}
 
@@ -379,7 +384,7 @@ builds:
       - windows
 ```
 
-The binary name field supports [templating](../templates/). The
+The binary name field supports [templating](../templates.md). The
 following build details are exposed:
 
 | Key     | Description                       |

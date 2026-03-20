@@ -1,6 +1,8 @@
 ---
 weight: 20
----# goreleaser init
+---
+
+# goreleaser init
 
 Generates a .goreleaser.yaml file
 
@@ -24,5 +26,4 @@ goreleaser init [flags]
 
 ## See also
 
-* [goreleaser](goreleaser/)	 - Release engineering, simplified
-
+- [goreleaser](goreleaser.md) - Release engineering, simplified

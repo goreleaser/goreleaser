@@ -1,7 +1,9 @@
 ---
 weight: 10
-url: '/customization/archive/'
----# Archives
+url: "/customization/archive/"
+---
+
+# Archives
 
 The binaries built will be archived together with the `README` and `LICENSE` files into a
 `tar.gz` file. In the `archives` section you can customize the archive name,

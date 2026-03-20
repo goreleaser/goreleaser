@@ -1,7 +1,9 @@
 ---
 weight: 170
 url: '/customization/docker_digests/'
----# Docker Digests
+---
+
+# Docker Digests
 
 {{< version "v2.12" >}}
 
@@ -27,7 +29,7 @@ docker_digest:
   disable: "{{ .Env.NO_DIGEST }}"
 ```
 
-See [this page](./attestations/) for information on how to use this to attest
+See [this page](./attestations.md) for information on how to use this to attest
 images.
 
 {{< templates >}}

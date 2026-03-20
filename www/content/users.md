@@ -1,6 +1,8 @@
 ---
 weight: 310
----## Who uses GoReleaser?
+---
+
+## Who uses GoReleaser?
 
 GoReleaser is used by more than [40k][search] open source repositories!
 
@@ -116,7 +118,7 @@ Here's a running list of some organizations using GoReleaser[^1]:
 1. [Zeiss](https://github.com/ZEISS)
 1. [Zitatel](https://zitadel.com)
 
-Feel free to [add yours](https://github.com/goreleaser/goreleaser/edit/main/USERS/)!
+Feel free to [add yours](https://github.com/goreleaser/goreleaser/edit/main/USERS.md)!
 
 <!--
 Hey! Thanks for looking into this file!

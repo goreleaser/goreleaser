@@ -1,7 +1,9 @@
 ---
 weight: 50
-url: '/customization/includes/'
----# Includes
+url: "/customization/includes/"
+---
+
+# Includes
 
 {{< pro >}}
 

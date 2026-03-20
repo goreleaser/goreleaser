@@ -1,7 +1,9 @@
 ---
 weight: 140
 url: '/customization/dockers_v2/'
----# Docker (v2)
+---
+
+# Docker (v2)
 
 {{< version "v2.12" >}}
 

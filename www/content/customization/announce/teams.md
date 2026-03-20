@@ -1,6 +1,8 @@
 ---
 weight: 110
----# Teams
+---
+
+# Teams
 
 To use [Teams](https://www.microsoft.com/de-de/microsoft-teams/group-chat-software), you need
 to [create a Webhook](https://docs.microsoft.com/en-us/microsoftteams/platform/webhooks-and-connectors/how-to/add-incoming-webhook)

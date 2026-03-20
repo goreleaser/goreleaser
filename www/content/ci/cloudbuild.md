@@ -1,6 +1,8 @@
 ---
 weight: 50
----# Google CloudBuild
+---
+
+# Google CloudBuild
 
 CloudBuild works off a different clone than your GitHub repo: it seems that
 your changes are pulled to a repo like

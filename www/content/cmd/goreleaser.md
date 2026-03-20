@@ -1,6 +1,8 @@
 ---
 weight: 10
----# goreleaser
+---
+
+# goreleaser
 
 Release engineering, simplified
 
@@ -33,7 +35,7 @@ goreleaser release --snapshot
 
 # Run a complete release:
 goreleaser release
-		
+
 ```
 
 ## Options
@@ -45,18 +47,17 @@ goreleaser release
 
 ## See also
 
-* [goreleaser announce](goreleaser_announce/)	 - Announces a previously prepared release
-* [goreleaser build](goreleaser_build/)	 - Builds the current project
-* [goreleaser changelog](goreleaser_changelog/)	 - Preview your changelog
-* [goreleaser check](goreleaser_check/)	 - Checks if configuration is valid
-* [goreleaser completion](goreleaser_completion/)	 - Generate the autocompletion script for the specified shell
-* [goreleaser continue](goreleaser_continue/)	 - Continues a previously prepared release
-* [goreleaser healthcheck](goreleaser_healthcheck/)	 - Checks if needed tools are installed
-* [goreleaser init](goreleaser_init/)	 - Generates a .goreleaser.yaml file
-* [goreleaser jsonschema](goreleaser_jsonschema/)	 - Outputs goreleaser's JSON schema
-* [goreleaser license-export](goreleaser_license-export/)	 - Export an offline license file from a valid license key
-* [goreleaser license-verify](goreleaser_license-verify/)	 - Verify if the given license is valid
-* [goreleaser publish](goreleaser_publish/)	 - Publishes a previously prepared release
-* [goreleaser release](goreleaser_release/)	 - Releases the current project
-* [goreleaser subscribe](goreleaser_subscribe/)	 - Subscribe to GoReleaser Pro, or manage your subscription
-
+- [goreleaser announce](goreleaser_announce.md) - Announces a previously prepared release
+- [goreleaser build](goreleaser_build.md) - Builds the current project
+- [goreleaser changelog](goreleaser_changelog.md) - Preview your changelog
+- [goreleaser check](goreleaser_check.md) - Checks if configuration is valid
+- [goreleaser completion](goreleaser_completion.md) - Generate the autocompletion script for the specified shell
+- [goreleaser continue](goreleaser_continue.md) - Continues a previously prepared release
+- [goreleaser healthcheck](goreleaser_healthcheck.md) - Checks if needed tools are installed
+- [goreleaser init](goreleaser_init.md) - Generates a .goreleaser.yaml file
+- [goreleaser jsonschema](goreleaser_jsonschema.md) - Outputs goreleaser's JSON schema
+- [goreleaser license-export](goreleaser_license-export.md) - Export an offline license file from a valid license key
+- [goreleaser license-verify](goreleaser_license-verify.md) - Verify if the given license is valid
+- [goreleaser publish](goreleaser_publish.md) - Publishes a previously prepared release
+- [goreleaser release](goreleaser_release.md) - Releases the current project
+- [goreleaser subscribe](goreleaser_subscribe.md) - Subscribe to GoReleaser Pro, or manage your subscription

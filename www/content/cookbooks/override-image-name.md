@@ -1,6 +1,8 @@
 ---
 weight: 140
----# Override hardcoded registry and image name ?
+---
+
+# Override hardcoded registry and image name ?
 
 If you are curious about how to avoid hard-coded registry and image names within
 your `.goreleaser.yml`, we have good news for you. Here is the solution. Suppose

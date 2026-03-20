@@ -1,7 +1,9 @@
 ---
 weight: 170
 url: '/customization/scoop/'
----# Scoop Manifests
+---
+
+# Scoop Manifests
 
 After releasing to GitHub, GitLab, or Gitea, GoReleaser can generate and publish a
 _Scoop App Manifest_ into a repository that you have access to.

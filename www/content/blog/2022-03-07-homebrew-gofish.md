@@ -1,4 +1,5 @@
 ---
+title: "GoReleaser: How To Distribute Your Binaries With Homebrew Or GoFish"
 date: 2022-03-07
 slug: homebrew-gofish
 categories:
@@ -6,9 +7,6 @@ categories:
 authors:
   - dirien
 ---
-
-
-# GoReleaser: How To Distribute Your Binaries With Homebrew Or GoFish
 
 This article is going to be a quick bite (or drink)! We going to discover, how
 fast we can create a **Homebrew** or **GoFish** deployment of our binaries with
