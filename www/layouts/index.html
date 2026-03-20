@@ -221,12 +221,29 @@
 		border-radius: 8px;
 	}
 
+	.goreleaser-sponsors-tiers {
+		margin-bottom: 1rem;
+	}
+
+	.goreleaser-sponsors-tier {
+		margin-bottom: 2rem;
+	}
+
+	.goreleaser-sponsors-tier-label {
+		text-align: center;
+		font-size: 0.75rem;
+		font-weight: 600;
+		letter-spacing: 0.1em;
+		text-transform: uppercase;
+		color: #9ca3af;
+		margin-bottom: 1rem;
+	}
+
 	.goreleaser-sponsors-grid {
 		display: flex;
 		flex-wrap: wrap;
 		justify-content: center;
 		gap: 1.5rem;
-		margin-bottom: 1rem;
 	}
 
 	.goreleaser-sponsor-item {
@@ -280,78 +297,12 @@
 				written in Go!
 			</p>
 			<div class="lang-icons">
-				<img
-					src="/go-dark.svg"
-					alt="Go"
-					{filename="Go"
-					class="dark:hidden"
-				/>}
-				<img
-					src="/go-light.svg"
-					alt="Go"
-					{filename="Go"
-					class="hidden dark:block"
-				/>}
-				<img
-					src="/rust-dark.svg"
-					alt="Rust"
-					{filename="Rust"
-					class="dark:hidden"
-				/>}
-				<img
-					src="/rust-light.svg"
-					alt="Rust"
-					{filename="Rust"
-					class="hidden dark:block"
-				/>}
-				<img
-					src="/bun-dark.svg"
-					alt="TypeScript"
-					{filename="TypeScript"
-					class="dark:hidden"
-				/>}
-				<img
-					src="/bun-light.svg"
-					alt="TypeScript"
-					{filename="TypeScript"
-					class="hidden dark:block"
-				/>}
-				<img
-					src="/zig-dark.svg"
-					alt="Zig"
-					{filename="Zig"
-					class="dark:hidden"
-				/>}
-				<img
-					src="/zig-light.svg"
-					alt="Zig"
-					{filename="Zig"
-					class="hidden dark:block"
-				/>}
-				<img
-					src="/python-dark.svg"
-					alt="Python"
-					{filename="Python"
-					class="dark:hidden"
-				/>}
-				<img
-					src="/python-light.svg"
-					alt="Python"
-					{filename="Python"
-					class="hidden dark:block"
-				/>}
-				<img
-					src="/deno-dark.svg"
-					alt="Deno"
-					{filename="Deno"
-					class="dark:hidden"
-				/>}
-				<img
-					src="/deno-light.svg"
-					alt="Deno"
-					{filename="Deno"
-					class="hidden dark:block"
-				/>}
+				<img src="/go-dark.svg" alt="Go" />
+				<img src="/rust-dark.svg" alt="Rust" />
+				<img src="/bun-dark.svg" alt="TypeScript" />
+				<img src="/zig-dark.svg" alt="Zig" />
+				<img src="/python-dark.svg" alt="Python" />
+				<img src="/deno-dark.svg" alt="Deno" />
 			</div>
 			<a href="/intro/" class="goreleaser-btn goreleaser-btn--primary"
 				>Get started</a
@@ -452,101 +403,6 @@
 		</div>
 
 		<div class="goreleaser-section-title">
-			<h2>Trusted by Industry Leaders</h2>
-		</div>
-		<p class="goreleaser-section-subtitle">
-			Join <a href="/users/">thousands of developers and companies</a>
-			who rely on GoReleaser for their mission-critical releases.
-		</p>
-
-		<div class="goreleaser-cards-grid">
-			<div class="goreleaser-logo-card">
-				<img
-					src="https://avatars.githubusercontent.com/google"
-					alt="Google"
-				/>
-				Google
-			</div>
-			<div class="goreleaser-logo-card">
-				<img
-					src="https://avatars.githubusercontent.com/microsoft"
-					alt="Microsoft"
-				/>
-				Microsoft
-			</div>
-			<div class="goreleaser-logo-card">
-				<img
-					src="https://avatars.githubusercontent.com/aws"
-					alt="AWS"
-				/>
-				AWS
-			</div>
-			<div class="goreleaser-logo-card">
-				<img
-					src="https://avatars.githubusercontent.com/shopify"
-					alt="Shopify"
-				/>
-				Shopify
-			</div>
-			<div class="goreleaser-logo-card">
-				<img
-					src="https://avatars.githubusercontent.com/uber"
-					alt="Uber"
-				/>
-				Uber
-			</div>
-			<div class="goreleaser-logo-card">
-				<img
-					src="https://avatars.githubusercontent.com/splunk"
-					alt="Splunk"
-				/>
-				Splunk
-			</div>
-			<div class="goreleaser-logo-card">
-				<img
-					src="https://avatars.githubusercontent.com/datadog"
-					alt="Datadog"
-				/>
-				Datadog
-			</div>
-			<div class="goreleaser-logo-card">
-				<img
-					src="https://avatars.githubusercontent.com/hashicorp"
-					alt="HashiCorp"
-				/>
-				HashiCorp
-			</div>
-			<div class="goreleaser-logo-card">
-				<img
-					src="https://avatars.githubusercontent.com/github"
-					alt="GitHub"
-				/>
-				GitHub
-			</div>
-			<div class="goreleaser-logo-card">
-				<img
-					src="https://avatars.githubusercontent.com/grafana"
-					alt="Grafana"
-				/>
-				Grafana
-			</div>
-			<div class="goreleaser-logo-card">
-				<img
-					src="https://avatars.githubusercontent.com/kubernetes"
-					alt="Kubernetes"
-				/>
-				Kubernetes
-			</div>
-			<div class="goreleaser-logo-card">
-				<img
-					src="https://avatars.githubusercontent.com/nginx"
-					alt="NGINX"
-				/>
-				NGINX
-			</div>
-		</div>
-
-		<div class="goreleaser-section-title">
 			<h2>Supported by Amazing Sponsors</h2>
 		</div>
 		<p class="goreleaser-section-subtitle">
@@ -554,10 +410,13 @@
 			<a href="/sponsors/">Become a sponsor!</a>
 		</p>
 
-		<div class="goreleaser-sponsors-grid">
+		<div class="goreleaser-sponsors-tiers">
 			<!-- sponsors:begin -->
 			<!-- This list is auto-generated by scripts/update-sponsors.py -->
 
+			<div class="goreleaser-sponsors-tier">
+				<div class="goreleaser-sponsors-tier-label">Platinum</div>
+				<div class="goreleaser-sponsors-grid">
 			<a
 				class="goreleaser-sponsor-item"
 				href="https://github.com/SAP"
@@ -572,6 +431,11 @@
 				/>
 				SAP
 			</a>
+				</div>
+			</div>
+			<div class="goreleaser-sponsors-tier">
+				<div class="goreleaser-sponsors-tier-label">Gold</div>
+				<div class="goreleaser-sponsors-grid">
 			<a
 				class="goreleaser-sponsor-item"
 				href="https://github.com/mercedes-benz"
@@ -600,6 +464,11 @@
 				/>
 				nitric
 			</a>
+				</div>
+			</div>
+			<div class="goreleaser-sponsors-tier">
+				<div class="goreleaser-sponsors-tier-label">Silver</div>
+				<div class="goreleaser-sponsors-grid">
 			<a
 				class="goreleaser-sponsor-item"
 				href="https://depot.dev"
@@ -628,7 +497,104 @@
 				/>
 				N-iX Ltd
 			</a>
+				</div>
+			</div>
 			<!-- sponsors:end -->
+		</div>
+
+		<div class="goreleaser-section-title">
+			<h2>Trusted by Industry Leaders</h2>
+		</div>
+		<p class="goreleaser-section-subtitle">
+			Join <a href="/users/">thousands of developers and companies</a>
+			who rely on GoReleaser for their mission-critical releases.
+		</p>
+
+		<div class="goreleaser-cards-grid">
+			<div class="goreleaser-logo-card">
+				<img src="https://avatars.githubusercontent.com/google" alt="Google" />
+				Google
+			</div>
+			<div class="goreleaser-logo-card">
+				<img src="https://avatars.githubusercontent.com/microsoft" alt="Microsoft" />
+				Microsoft
+			</div>
+			<div class="goreleaser-logo-card">
+				<img src="https://avatars.githubusercontent.com/aws" alt="AWS" />
+				AWS
+			</div>
+			<div class="goreleaser-logo-card">
+				<img src="https://avatars.githubusercontent.com/ibm" alt="IBM" />
+				IBM
+			</div>
+			<div class="goreleaser-logo-card">
+				<img src="https://avatars.githubusercontent.com/github" alt="GitHub" />
+				GitHub
+			</div>
+			<div class="goreleaser-logo-card">
+				<img src="https://avatars.githubusercontent.com/kubernetes" alt="Kubernetes" />
+				Kubernetes
+			</div>
+			<div class="goreleaser-logo-card">
+				<img src="https://avatars.githubusercontent.com/vmware" alt="VMware" />
+				VMware
+			</div>
+			<div class="goreleaser-logo-card">
+				<img src="https://avatars.githubusercontent.com/hashicorp" alt="HashiCorp" />
+				HashiCorp
+			</div>
+			<div class="goreleaser-logo-card">
+				<img src="https://avatars.githubusercontent.com/shopify" alt="Shopify" />
+				Shopify
+			</div>
+			<div class="goreleaser-logo-card">
+				<img src="https://avatars.githubusercontent.com/uber" alt="Uber" />
+				Uber
+			</div>
+			<div class="goreleaser-logo-card">
+				<img src="https://avatars.githubusercontent.com/datadog" alt="Datadog" />
+				Datadog
+			</div>
+			<div class="goreleaser-logo-card">
+				<img src="https://avatars.githubusercontent.com/splunk" alt="Splunk" />
+				Splunk
+			</div>
+			<div class="goreleaser-logo-card">
+				<img src="https://avatars.githubusercontent.com/grafana" alt="Grafana" />
+				Grafana
+			</div>
+			<div class="goreleaser-logo-card">
+				<img src="https://avatars.githubusercontent.com/nginx" alt="NGINX" />
+				NGINX
+			</div>
+			<div class="goreleaser-logo-card">
+				<img src="https://avatars.githubusercontent.com/newrelic" alt="New Relic" />
+				New Relic
+			</div>
+			<div class="goreleaser-logo-card">
+				<img src="https://avatars.githubusercontent.com/pulumi" alt="Pulumi" />
+				Pulumi
+			</div>
+			<div class="goreleaser-logo-card">
+				<img src="https://avatars.githubusercontent.com/sourcegraph" alt="Sourcegraph" />
+				Sourcegraph
+			</div>
+			<div class="goreleaser-logo-card">
+				<img src="https://avatars.githubusercontent.com/planetscale" alt="PlanetScale" />
+				PlanetScale
+			</div>
+			<div class="goreleaser-logo-card">
+				<img src="https://avatars.githubusercontent.com/minio" alt="MinIO" />
+				MinIO
+			</div>
+			<div class="goreleaser-logo-card">
+				<img src="https://avatars.githubusercontent.com/nats-io" alt="NATS" />
+				NATS
+			</div>
+			<div class="goreleaser-logo-card">
+				<img src="https://avatars.githubusercontent.com/sigstore" alt="Sigstore" />
+				Sigstore
+			</div>
 		</div>
 
 		<a
