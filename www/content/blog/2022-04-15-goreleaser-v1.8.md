@@ -2,7 +2,7 @@
 title: Announcing GoReleaser v1.8 — the GOAMD64 release
 date: 2022-04-15
 slug: goreleaser-v1.8
-categories:
+tags:
   - announcements
 authors:
   - caarlos0

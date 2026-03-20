@@ -2,7 +2,7 @@
 title: Announcing GoReleaser v1.26 - The last v1, probably
 date: 2024-05-11
 slug: goreleaser-v1.26
-categories: [announcements]
+tags: [announcements]
 authors: [caarlos0]
 ---
 

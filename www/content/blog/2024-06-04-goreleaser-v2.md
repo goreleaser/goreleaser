@@ -2,7 +2,7 @@
 title: Announcing GoReleaser v2
 date: 2024-06-04
 slug: goreleaser-v2
-categories:
+tags:
   - announcements
 authors:
   - caarlos0

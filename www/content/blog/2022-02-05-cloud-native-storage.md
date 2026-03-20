@@ -2,7 +2,7 @@
 title: How to use GoReleaser with Cloud Native Storage
 date: 2022-02-05
 slug: cloud-native-storage
-categories:
+tags:
   - tutorials
 authors:
   - dirien

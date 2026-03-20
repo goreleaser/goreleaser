@@ -2,7 +2,7 @@
 title: Announcing GoReleaser v1.13 — the November release
 date: 2022-11-18
 slug: goreleaser-v1.13
-categories:
+tags:
   - announcements
 authors:
   - caarlos0

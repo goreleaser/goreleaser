@@ -2,7 +2,7 @@
 title: "Stay Calm and SLSA: Generating SLSA Provenance for Your Artifacts with GoReleaser and slsa-github-generator"
 date: 2023-10-11
 slug: slsa-generation-for-your-artifacts
-categories:
+tags:
   - tutorials
 authors:
   - developerguy

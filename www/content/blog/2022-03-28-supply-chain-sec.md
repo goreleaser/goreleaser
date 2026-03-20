@@ -2,7 +2,7 @@
 title: GoReleaser And Software Supply Chain Security
 date: 2022-03-28
 slug: supply-chain-security
-categories:
+tags:
   - tutorials
 authors:
   - developerguy

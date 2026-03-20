@@ -2,7 +2,7 @@
 title: Announcing GoReleaser v1.19 — the big release
 date: 2023-06-28
 slug: goreleaser-v1.19
-categories:
+tags:
   - announcements
 authors:
   - caarlos0

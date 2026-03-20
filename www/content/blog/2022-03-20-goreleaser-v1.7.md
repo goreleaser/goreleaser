@@ -2,7 +2,7 @@
 title: Announcing GoReleaser v1.7 — The Go 1.18 release
 date: 2022-03-20
 slug: goreleaser-v1.7
-categories:
+tags:
   - announcements
 authors:
   - caarlos0

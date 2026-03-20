@@ -1,7 +1,7 @@
 ---
 title: Announcing GoReleaser v1.9 — the 10k stars release
 date: 2022-05-18
-categories:
+tags:
   - announcements
 authors:
   - caarlos0

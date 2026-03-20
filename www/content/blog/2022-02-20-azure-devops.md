@@ -2,7 +2,7 @@
 title: Use GoReleaser With Azure DevOps
 date: 2022-02-20
 slug: azure-devops
-categories:
+tags:
   - tutorials
 authors:
   - dirien

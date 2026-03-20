@@ -2,7 +2,7 @@
 title: Announcing GoReleaser v1.25 - Easter edition
 date: 2024-04-02
 slug: goreleaser-v1.25
-categories: [announcements]
+tags: [announcements]
 authors: [caarlos0]
 ---
 

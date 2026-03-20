@@ -1,7 +1,7 @@
 ---
 title: Announcing GoReleaser v1.10 — the summer release
 date: 2022-07-04
-categories:
+tags:
   - announcements
 authors:
   - caarlos0

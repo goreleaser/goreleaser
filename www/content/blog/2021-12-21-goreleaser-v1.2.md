@@ -2,7 +2,7 @@
 title: Announcing GoReleaser v1.2 — Santa/5 year anniversary edition
 date: 2021-12-21
 slug: goreleaser-v1.2
-categories:
+tags:
   - announcements
 authors:
   - caarlos0

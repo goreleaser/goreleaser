@@ -2,7 +2,7 @@
 title: Nightly builds with GoReleaser and GitHub Actions
 date: 2022-05-22
 slug: nightly-actions
-categories:
+tags:
   - tutorials
 authors:
   - hariso

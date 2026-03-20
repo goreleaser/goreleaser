@@ -1,7 +1,7 @@
 ---
 date: 2023-08-09
 slug: goreleaser-v1.20
-categories:
+tags:
   - announcements
 authors:
   - caarlos0

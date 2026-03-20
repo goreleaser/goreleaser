@@ -2,7 +2,7 @@
 title: Announcing GoReleaser v1.23 - the last of 2023
 date: 2023-12-26
 slug: goreleaser-v1.23
-categories: [announcements]
+tags: [announcements]
 authors: [caarlos0]
 ---
 

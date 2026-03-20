@@ -2,7 +2,7 @@
 title: How GoReleaser strengthened security through GitHub's Secure Open Source Fund
 date: 2026-02-17
 slug: github-secure-fund
-categories: [announcements]
+tags: [announcements]
 authors: [caarlos0]
 ---
 

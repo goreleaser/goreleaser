@@ -1,7 +1,7 @@
 ---
 date: 2022-10-17
 slug: goreleaser-v1.12
-categories:
+tags:
   - announcements
 authors:
   - caarlos0

@@ -2,7 +2,7 @@
 title: Fast and Furious Building OCI compatible Container Images with GoReleaser and ko
 date: 2023-01-30
 slug: goreleaser-ko
-categories:
+tags:
   - tutorials
 authors:
   - developerguy

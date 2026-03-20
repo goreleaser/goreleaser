@@ -2,7 +2,7 @@
 title: "Version strategy and release cadence: the future"
 date: 2023-09-27
 slug: release-cadence
-categories:
+tags:
   - announcements
 authors:
   - caarlos0

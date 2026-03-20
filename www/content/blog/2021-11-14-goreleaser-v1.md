@@ -2,7 +2,7 @@
 title: Announcing GoReleaser v1 — the first v1 release
 date: 2021-11-14
 slug: goreleaser-v1
-categories:
+tags:
   - announcements
 authors:
   - caarlos0

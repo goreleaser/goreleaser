@@ -2,7 +2,7 @@
 title: Announcing GoReleaser v1.17 — the late Easter release
 date: 2023-04-10
 slug: goreleaser-v1.17
-categories:
+tags:
   - announcements
 authors:
   - caarlos0

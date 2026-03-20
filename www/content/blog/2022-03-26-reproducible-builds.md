@@ -2,7 +2,7 @@
 title: Reproducible Builds
 date: 2022-03-26
 slug: reproducible-builds
-categories:
+tags:
   - tutorials
 authors:
   - caarlos0

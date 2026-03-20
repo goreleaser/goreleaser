@@ -2,7 +2,7 @@
 title: Announcing GoReleaser v1.15 — the first of 2023
 date: 2023-01-30
 slug: goreleaser-v1.15
-categories:
+tags:
   - announcements
 authors:
   - caarlos0

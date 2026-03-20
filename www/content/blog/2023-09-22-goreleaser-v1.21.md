@@ -2,7 +2,7 @@
 title: Announcing GoReleaser v1.21 - mostly bug fixes
 date: 2023-09-22
 slug: goreleaser-v1.21
-categories:
+tags:
   - announcements
 authors:
   - caarlos0

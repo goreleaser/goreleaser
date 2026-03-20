@@ -2,7 +2,7 @@
 title: Announcing GoReleaser v1.5 — the misc improvements release
 date: 2022-02-12
 slug: goreleaser-v1.5
-categories:
+tags:
   - announcements
 authors:
   - caarlos0

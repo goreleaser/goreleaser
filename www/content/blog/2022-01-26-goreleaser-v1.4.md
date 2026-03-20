@@ -2,7 +2,7 @@
 title: Announcing GoReleaser v1.4 — the AUR release
 date: 2022-01-26
 slug: goreleaser-v1.4
-categories:
+tags:
   - announcements
 authors:
   - caarlos0

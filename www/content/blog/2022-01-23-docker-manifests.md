@@ -2,7 +2,7 @@
 title: GoReleaser and Docker Manifests
 date: 2022-01-23
 slug: docker-manifests
-categories:
+tags:
   - tutorials
 authors:
   - dirien
