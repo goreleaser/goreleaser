@@ -9,27 +9,7 @@ cask "test" do
     end
   end
 
-  name "test"
-  desc "Some desc"
-  homepage "https://google.com"
   version "0.1.3"
-
-  livecheck do
-    skip "Auto-generated on release."
-  end
-
-  binary "mybin"
-  manpage "mybin.1.gz"
-  manpage "mybin2.1.gz"
-  bash_completion "mybin.bash"
-  zsh_completion "mybin.zsh"
-  fish_completion "mybin.fish"
-  depends_on cask: [
-      "goreleaser",
-    ],
-    formula: [
-      "goreleaser",
-    ]
 
   on_macos do
     on_intel do
@@ -53,9 +33,30 @@ cask "test" do
     end
   end
 
+  name "test"
+  desc "Some desc"
+  homepage "https://google.com"
+
+  livecheck do
+    skip "Auto-generated on release."
+  end
   conflicts_with cask: [
       "goreleaser",
     ]
+
+  depends_on cask: [
+      "goreleaser",
+    ],
+    formula: [
+      "goreleaser",
+    ]
+
+  binary "mybin"
+  manpage "mybin.1.gz"
+  manpage "mybin2.1.gz"
+  bash_completion "mybin.bash"
+  fish_completion "mybin.fish"
+  zsh_completion "mybin.zsh"
 
   preflight do
     pre-install
@@ -73,9 +74,9 @@ cask "test" do
     post-uninstall
   end
 
+  # No zap stanza required
+
   caveats <<~EOS
     Here are some caveats
   EOS
-
-  # No zap stanza required
 end
