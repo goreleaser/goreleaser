@@ -3,17 +3,17 @@ weight: 100
 url: '/customization/homebrew_formulas/'
 ---# Homebrew Formulas (deprecated)
 
-> [Deprecated](./../deprecations.md#brews) in v2.10.
-> [Homebrew Casks](./homebrew_casks.md) should be used instead.
+> [Deprecated](./../deprecations/#brews) in v2.10.
+> [Homebrew Casks](./homebrew_casks/) should be used instead.
 
 After releasing to GitHub, GitLab, or Gitea, GoReleaser can generate and publish
 a _homebrew-tap_ recipe into a repository that you have access to.
 
 The `brews` section specifies how the formula should be created.
 You can check the
-[Homebrew documentation](https://github.com/Homebrew/brew/blob/master/docs/How-to-Create-and-Maintain-a-Tap.md),
+[Homebrew documentation](https://github.com/Homebrew/brew/blob/master/docs/How-to-Create-and-Maintain-a-Tap/),
 and the
-[formula cookbook](https://github.com/Homebrew/brew/blob/master/docs/Formula-Cookbook.md)
+[formula cookbook](https://github.com/Homebrew/brew/blob/master/docs/Formula-Cookbook/)
 for more details.
 
 ```yaml title=".goreleaser.yaml"

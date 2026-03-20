@@ -48,7 +48,7 @@ builds:
 ```
 
 All properties of a hook (`cmd`, `dir` and `env`) support
-[templating](../templates.md) with `post` hooks having binary artifact
+[templating](../templates/) with `post` hooks having binary artifact
 available (as these run _after_ the build).
 Additionally the following build details are exposed to both `pre` and `post`
 hooks:

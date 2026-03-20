@@ -7,15 +7,15 @@ weight: 380
   <a rel="me" href="https://fosstodon.org/@goreleaser">Mastodon</a>
   for updates
 - Join our [Discord server](/discord)
-- Read our [blog](./blog/index.md)[^blog] ([RSS](/feed_rss_created.xml))
+- Read our [blog](./blog/index/)[^blog] ([RSS](/feed_rss_created.xml))
 - Follow us on [LinkedIn](/linkedin)
 - Ask questions on [GitHub Discussions](https://github.com/goreleaser/goreleaser/discussions)
-- Before contributing, read the [Contributing Guidelines](./contributing.md)
-- [Security Policy](./security.md)
-- [EULA](./eula.md)
+- Before contributing, read the [Contributing Guidelines](./contributing/)
+- [Security Policy](./security/)
+- [EULA](./eula/)
 
 This project adheres to the Contributor Covenant
-[code of conduct](https://github.com/goreleaser/.github/blob/main/CODE_OF_CONDUCT.md).
+[code of conduct](https://github.com/goreleaser/.github/blob/main/CODE_OF_CONDUCT/).
 By participating, you are expected to uphold this code.
 
 [^blog]:

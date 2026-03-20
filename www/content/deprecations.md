@@ -347,7 +347,7 @@ That said, we now have a `homebrew_casks` section!
 
 For simple cases, simply replacing one with the other will be good enough.
 More complex settings might require further change.
-Check the [new documentation](./customization/homebrew_casks.md) for more
+Check the [new documentation](./customization/homebrew_casks/) for more
 details.
 
 Once you do the first release this way, you might also want to delete the old
@@ -989,7 +989,7 @@ brews:
 This option is now default and can't be changed. You can remove it from your
 configuration files.
 
-See [this](./old-deprecations.md#archivesrlcp) for more info.
+See [this](./old-deprecations/#archivesrlcp) for more info.
 
 ### source.rlcp
 
@@ -998,7 +998,7 @@ See [this](./old-deprecations.md#archivesrlcp) for more info.
 This option is now default and can't be changed. You can remove it from your
 configuration files.
 
-See [this](./old-deprecations.md#sourcerlcp) for more info.
+See [this](./old-deprecations/#sourcerlcp) for more info.
 
 ### brews.plist
 
@@ -1060,7 +1060,7 @@ goreleaser release --verbose
 > since 2023-04-30 (v1.18.0), removed 2024-05-26 (v2.0)
 
 GoReleaser now allows many `scoop` configurations, so it should be pluralized
-[accordingly](customization/scoop.md).
+[accordingly](customization/scoop/).
 
 {{< tabs >}}
 {{< tab "Before" >}}
@@ -1087,7 +1087,7 @@ This option was still being supported, even though undocumented, for a couple
 of years now. It's finally time to sunset it.
 
 Simply use the pluralized form, `builds`, according to the
-[documentation](./customization/builds/index.md).
+[documentation](./customization/builds/index/).
 
 {{< tabs >}}
 {{< tab "Before" >}}
@@ -1152,4 +1152,4 @@ nfpms:
 
 ## Previous versions
 
-Deprecations that were removed in v1.x or earlier have been moved into its [own page](./old-deprecations.md).
+Deprecations that were removed in v1.x or earlier have been moved into its [own page](./old-deprecations/).

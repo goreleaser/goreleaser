@@ -213,7 +213,7 @@ release:
 
 {{< callout type="info" >}}
 
-[Learn how to set up an API token, GitHub Enterprise, etc](../scm/github.md).
+[Learn how to set up an API token, GitHub Enterprise, etc](../scm/github/).
 {{< /callout >}}
 
 {{< pro >}}
@@ -272,7 +272,7 @@ release:
 
 {{< callout type="info" >}}
 
-[Learn how to set up an API token, self-hosted GitLab, etc](../scm/gitlab.md).
+[Learn how to set up an API token, self-hosted GitLab, etc](../scm/gitlab/).
 {{< /callout >}}
 
 {{< callout type="info" >}}
@@ -344,7 +344,7 @@ ALLOWED_TYPES = application/gzip|application/x-gzip|application/x-gtar|applicati
 
 {{< callout type="info" >}}
 
-[Learn how to set up an API token](../scm/gitea.md).
+[Learn how to set up an API token](../scm/gitea/).
 {{< /callout >}}
 
 {{< templates >}}

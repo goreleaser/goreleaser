@@ -59,28 +59,28 @@ deno init
 {{< /tab >}}
 {{< /tabs >}}
 
-Run the [init](cmd/goreleaser_init.md) command to create an example `.goreleaser.yaml` file:
+Run the [init](cmd/goreleaser_init/) command to create an example `.goreleaser.yaml` file:
 
 ```sh
 goreleaser init
 ```
 
-Now, lets run a "local-only" release to see if it works using the [release](cmd/goreleaser_release.md) command:
+Now, lets run a "local-only" release to see if it works using the [release](cmd/goreleaser_release/) command:
 
 ```sh
 goreleaser release --snapshot --clean
 ```
 
-At this point, you can [customize](customization/index.md) the generated `.goreleaser.yaml` or leave it as-is, it's up to you.
+At this point, you can [customize](customization/index/) the generated `.goreleaser.yaml` or leave it as-is, it's up to you.
 It is best practice to check `.goreleaser.yaml` into the source control.
 
-You can verify your `.goreleaser.yaml` is valid by running the [check](cmd/goreleaser_check.md) command:
+You can verify your `.goreleaser.yaml` is valid by running the [check](cmd/goreleaser_check/) command:
 
 ```sh
 goreleaser check
 ```
 
-You can also use GoReleaser to [build](cmd/goreleaser_build.md) the binary only for a given target, which is useful for local development:
+You can also use GoReleaser to [build](cmd/goreleaser_build/) the binary only for a given target, which is useful for local development:
 
 {{< tabs >}}
 {{< tab ":simple-go: Go" >}}
@@ -147,7 +147,7 @@ git push origin v0.1.0
 
 {{< callout type="info" >}}
 
-Check if your tag adheres to [semantic versioning](limitations/semver.md).
+Check if your tag adheres to [semantic versioning](limitations/semver/).
 {{< /callout >}}
 
 {{< callout type="info" >}}
@@ -171,11 +171,11 @@ That's all it takes!
 GoReleaser will build the binaries for your app for the default targets for the
 build mechanism being used.
 You can customize that by changing the `builds` section.
-Check the [documentation](customization/builds/index.md) for more information.
+Check the [documentation](customization/builds/index/) for more information.
 
 After building the binaries, GoReleaser will create an archive for each target into a separate file.
 You can customize several things by changing the `archives` section, including releasing only the binaries and not creating archives at all.
-Check the [documentation](customization/archive.md) for more information.
+Check the [documentation](customization/archive/) for more information.
 
 Finally, it will create a release on GitHub with all the artifacts.
 
@@ -229,7 +229,7 @@ goreleaser release --skip=publish
 
 ### More options
 
-You can check the command line usage help [here](./cmd/goreleaser.md) or with:
+You can check the command line usage help [here](./cmd/goreleaser/) or with:
 
 ```sh
 goreleaser --help

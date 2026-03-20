@@ -29,4 +29,4 @@ func main() {
 ```
 
 You can override this by changing the `ldflags` option in the
-[`build` section](../customization/builds/go.md).
+[`build` section](../customization/builds/go/).

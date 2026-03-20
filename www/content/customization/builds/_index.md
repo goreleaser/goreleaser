@@ -19,15 +19,15 @@ Here's the list:
 
 <div class="grid cards" markdown>
 
-- :simple-go: [Golang](./go.md)
-- :simple-rust: [Rust](./rust.md)
-- :simple-zig: [Zig](./zig.md)
-- :simple-bun: [Bun](./bun.md)
-- :simple-deno: [Deno](./deno.md)
-- :simple-uv: [UV](./uv.md)[^v2.9]
-- :simple-poetry: [Poetry](./poetry.md)[^v2.9]
-- :simple-python: [Python/Pip](./python.md)[^soon]
-- :material-asterisk: [Import from other build systems](../prebuilt.md)
+- :simple-go: [Golang](./go/)
+- :simple-rust: [Rust](./rust/)
+- :simple-zig: [Zig](./zig/)
+- :simple-bun: [Bun](./bun/)
+- :simple-deno: [Deno](./deno/)
+- :simple-uv: [UV](./uv/)[^v2.9]
+- :simple-poetry: [Poetry](./poetry/)[^v2.9]
+- :simple-python: [Python/Pip](./python/)[^soon]
+- :material-asterisk: [Import from other build systems](../prebuilt/)
 
 </div>
 

@@ -61,6 +61,6 @@ prefixed tag can be accessed with `{{.PrefixedTag}}`. Check the
 
 Make sure to take a look at the following documentation pages:
 
-- [Monorepo](../customization/monorepo.md)
-- [Release](../customization/release.md)
-- [Template variables](../customization/templates.md)
+- [Monorepo](../customization/monorepo/)
+- [Release](../customization/release/)
+- [Template variables](../customization/templates/)

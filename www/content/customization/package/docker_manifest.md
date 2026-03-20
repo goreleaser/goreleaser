@@ -3,14 +3,14 @@ weight: 160
 url: '/customization/docker_manifest/'
 ---# Docker Manifests (deprecated)
 
-> [Phasing out](./../deprecations.md#dockers) in v2.12.
-> [Docker Images v2](./dockers_v2.md) is preferred instead.
+> [Phasing out](./../deprecations/#dockers) in v2.12.
+> [Docker Images v2](./dockers_v2/) is preferred instead.
 
 GoReleaser can also create and push Docker multi-platform images using the
 `docker manifest` tool.
 
 For it to work, it needs to be enabled in the
-[client's configuration](https://github.com/docker/cli/blob/master/experimental/README.md).
+[client's configuration](https://github.com/docker/cli/blob/master/experimental/README/).
 
 Please make sure `docker manifest` works before opening issues.
 

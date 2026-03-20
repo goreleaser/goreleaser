@@ -99,7 +99,7 @@ most projects already!
 
 {{< callout type="info" >}}
 
-Learn more about [build hooks](./hooks.md).
+Learn more about [build hooks](./hooks/).
 {{< /callout >}}
 
 ### Environment setup

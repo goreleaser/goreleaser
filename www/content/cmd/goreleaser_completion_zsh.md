@@ -49,5 +49,5 @@ goreleaser completion zsh [flags]
 
 ## See also
 
-* [goreleaser completion](goreleaser_completion.md)	 - Generate the autocompletion script for the specified shell
+* [goreleaser completion](goreleaser_completion/)	 - Generate the autocompletion script for the specified shell
 

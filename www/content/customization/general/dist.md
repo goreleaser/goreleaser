@@ -16,6 +16,6 @@ More often than not, you won't need to change this.
 {{< callout type="warning" >}}
 
 If you change this value, and use
-[`goreleaser continue`](../cmd/goreleaser_continue.md),
+[`goreleaser continue`](../cmd/goreleaser_continue/),
 you'll need to specify `--dist` when running it.
 {{< /callout >}}

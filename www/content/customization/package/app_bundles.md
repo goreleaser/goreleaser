@@ -101,7 +101,7 @@ app_bundles:
 
 ## Limitations
 
-1. As of v2.4, App Bundles can only be used together with [DMGs](dmg.md). This
+1. As of v2.4, App Bundles can only be used together with [DMGs](dmg/). This
    might change in the future.
 1. As of v2.6, even though the configuration allows `mode`, `owner`, and `group`
    in `extra_files` and `templated_extra_files`, those are not used. You should

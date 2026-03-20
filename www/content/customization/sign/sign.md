@@ -159,11 +159,11 @@ cosign verify-blob --bundle file.tar.gz.sigstore.json file.tar.gz
 ## Signing and notarizing macOS executables
 
 For signing and notarizing macOS executables, please refer to
-[Notarize macOS applications](notarize.md).
+[Notarize macOS applications](notarize/).
 
 ## Signing Docker images and manifests
 
-Please refer to [Docker Images Signing](docker_sign.md).
+Please refer to [Docker Images Signing](docker_sign/).
 
 ## Limitations
 

@@ -57,7 +57,7 @@ universal_binaries:
 
 {{< templates >}}
 
-For more info about hooks, see the [build section](./builds/hooks.md).
+For more info about hooks, see the [build section](./builds/hooks/).
 
 The minimal configuration for most setups would look like this:
 
@@ -90,7 +90,7 @@ universal_binaries:
 
 ## Naming templates
 
-Most fields that support [templates](templates.md) will also
+Most fields that support [templates](templates/) will also
 support the following build details:
 
 <!-- to format the tables, use: https://tabletomarkdown.com/format-markdown-table/ -->

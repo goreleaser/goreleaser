@@ -164,7 +164,7 @@ Then, it'll login using the provided authentication details.
 Finally, it'll publish the server.json to the registry.
 
 Follow
-[this guide](https://github.com/modelcontextprotocol/registry/blob/main/docs/guides/publishing/publish-server.md)
+[this guide](https://github.com/modelcontextprotocol/registry/blob/main/docs/guides/publishing/publish-server/)
 for more details.
 
 {{< callout type="info" >}}
@@ -206,5 +206,5 @@ npms:
 If you don't set these fields, publishing the MCP will fail.
 
 Read
-[this page](https://github.com/modelcontextprotocol/registry/blob/main/docs/guides/publishing/publish-server.md)
+[this page](https://github.com/modelcontextprotocol/registry/blob/main/docs/guides/publishing/publish-server/)
 for more information.

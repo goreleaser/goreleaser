@@ -56,5 +56,5 @@ gh attestation verify --owner <user-or-org> <image>
 Refer to [this repository](https://github.com/goreleaser/example-supply-chain)
 for an example, as well as signing, SBOMs, and more.
 
-Also make sure to read the documentation for [checksums](./checksum.md) and
-[Docker digests](./docker_digests.md).
+Also make sure to read the documentation for [checksums](./checksum/) and
+[Docker digests](./docker_digests/).

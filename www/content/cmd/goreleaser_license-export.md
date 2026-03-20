@@ -42,5 +42,5 @@ goreleaser license-export -o -
 
 ## See also
 
-* [goreleaser](goreleaser.md)	 - Release engineering, simplified
+* [goreleaser](goreleaser/)	 - Release engineering, simplified
 

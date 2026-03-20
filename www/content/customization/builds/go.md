@@ -326,7 +326,7 @@ builds:
 
 {{< callout type="info" >}}
 
-Learn more about [build hooks](./hooks.md).
+Learn more about [build hooks](./hooks/).
 {{< /callout >}}
 
 {{< callout type="warning" >}}
@@ -379,7 +379,7 @@ builds:
       - windows
 ```
 
-The binary name field supports [templating](../templates.md). The
+The binary name field supports [templating](../templates/). The
 following build details are exposed:
 
 | Key     | Description                       |

@@ -5,10 +5,10 @@ weight: 100
 GoReleaser can be customized by tweaking a `.goreleaser.yaml`[^goreleaser-yaml] file.
 
 You can generate an example config by running
-[`goreleaser init`](../cmd/goreleaser_init.md) or start from scratch.
+[`goreleaser init`](../cmd/goreleaser_init/) or start from scratch.
 
 You can also check if your config is valid by running
-[`goreleaser check`](../cmd/goreleaser_check.md), which will tell you if are
+[`goreleaser check`](../cmd/goreleaser_check/), which will tell you if are
 using deprecated or invalid options.
 
 ## JSON Schema

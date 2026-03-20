@@ -103,7 +103,7 @@ builds:
 
 ## Publishing to PyPi
 
-You can use [global after hooks](../hooks.md) to do it:
+You can use [global after hooks](../hooks/) to do it:
 
 ```yaml title=".goreleaser.yaml"
 # global after hooks
