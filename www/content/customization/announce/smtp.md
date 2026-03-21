@@ -14,7 +14,7 @@ announce:
   smtp:
     # Whether its enabled or not.
     #
-    # Templates: allowed (since v2.6).
+    # Templates: allowed. {{< inline_version "v2.6" >}}
     enabled: true
 
     # SMTP Host.

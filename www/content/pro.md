@@ -32,7 +32,7 @@ additional features:
 - [x] [Template entire files](/customization/templatefiles/) and add them to the
       release. You can also template files that will be included in archives,
       packages, Docker images, etc...;
-- [x] Use the [`.Artifacts`](/customization/templates.md/#artifacts) template
+- [x] Use the [`.Artifacts`](/customization/templates/#artifacts) template
       variable to build more powerful customizations;
 - [x] [Split and merge builds](/customization/partial/) to speed up your release
       by splitting work, use CGO, or run platform-specific code;

@@ -95,7 +95,7 @@ dockers_v2:
     # Platforms to build.
     #
     # Default: [ linux/amd64 linux/arm64 ]
-    # Templates: allowed. (since v2.14)
+    # Templates: allowed. {{< inline_version "v2.14" >}}
     platforms:
       - linux/amd64
       - linux/arm64

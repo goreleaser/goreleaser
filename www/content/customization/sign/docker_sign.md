@@ -80,7 +80,7 @@ docker_signs:
     # GoReleaser is running with `--verbose` set.
     # You can set this to true if you want them to be displayed regardless.
     #
-    # Templates: allowed (since v2.13).
+    # Templates: allowed. {{< inline_version "v2.13" >}}
     output: true
 ```
 

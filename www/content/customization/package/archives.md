@@ -37,7 +37,7 @@ archives:
     # - `tar.xz`
     # - `txz`
     # - `tar.zst`
-    # - `tzst` # {{< inline_version "v2.1" >}}
+    # - `tzst` {{< inline_version "v2.1" >}}
     # - `tar`
     # - `gz`
     # - `zip`

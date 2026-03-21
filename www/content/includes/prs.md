@@ -1,7 +1,3 @@
----
-title: "..."
----
-
 ## Pull Requests
 
 GoReleaser allows you to, instead of pushing directly to the main branch, push

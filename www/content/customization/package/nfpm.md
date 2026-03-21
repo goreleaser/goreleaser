@@ -212,17 +212,17 @@ nfpms:
           mode: 0644
           # Modification time.
           #
-          # Templates: allowed (since v2.6).
+          # Templates: allowed. {{< inline_version "v2.6" >}}
           mtime: "{{.CommitDate}}"
 
           # Owner name.
           #
-          # Templates: allowed (since v2.6).
+          # Templates: allowed. {{< inline_version "v2.6" >}}
           owner: notRoot
 
           # Group name.
           #
-          # Templates: allowed (since v2.6).
+          # Templates: allowed. {{< inline_version "v2.6" >}}
           group: notRoot
 
       # Simple config file
@@ -299,17 +299,17 @@ nfpms:
           mode: 0644
           # Modification time.
           #
-          # Templates: allowed (since v2.6).
+          # Templates: allowed. {{< inline_version "v2.6" >}}
           mtime: "{{.CommitDate}}"
 
           # Owner name.
           #
-          # Templates: allowed (since v2.6).
+          # Templates: allowed. {{< inline_version "v2.6" >}}
           owner: notRoot
 
           # Group name.
+          # Templates: allowed. {{< inline_version "v2.6" >}}
           #
-          # Templates: allowed (since v2.6).
           group: notRoot
 
       # If `dst` ends with a `/`, it'll create the given path and copy the given

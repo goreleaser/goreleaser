@@ -1,6 +1,3 @@
----
----
-
     # Repository to push the generated files to.
     repository:
       # Repository owner.
@@ -103,8 +100,8 @@
 
     # Git author used to commit to the repository.
     #
-    # Since: v2.11.
-    # Default: inferred from global metadata (Since v2.12).
+    # {{< inline_version "v2.11" >}}
+    # Default: inferred from global metadata. {{< inline_version "v2.12" >}}
     commit_author:
       # Git author name.
       #

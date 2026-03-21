@@ -207,7 +207,7 @@ uploads:
 
     # An optional username that will be used for the deployment for basic auth.
     #
-    # Templates: allowed (since v2.12).
+    # Templates: allowed. {{< inline_version "v2.12" >}}
     username: deployuser
 
     # An optional password that will be used for the deployment for basic auth.

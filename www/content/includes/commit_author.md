@@ -1,9 +1,6 @@
----
----
-
     # Git author used to commit to the repository.
     #
-    # Default: inferred from global metadata (Since v2.12).
+    # Default: inferred from global metadata. {{< inline_version "v2.12" >}}
     commit_author:
       # Git author name.
       #
