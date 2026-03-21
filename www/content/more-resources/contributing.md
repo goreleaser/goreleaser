@@ -1,6 +1,6 @@
 ---
 title: "Contributing"
-weight: 370
+weight: 80
 ---
 
 By participating in this project, you agree to abide our

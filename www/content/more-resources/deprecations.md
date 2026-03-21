@@ -1,6 +1,6 @@
 ---
 title: "Deprecation notices"
-weight: 320
+weight: 30
 ---
 
 This page is used to list deprecation notices across GoReleaser.

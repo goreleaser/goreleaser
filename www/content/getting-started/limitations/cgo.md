@@ -5,8 +5,6 @@ aliases:
 weight: 10
 ---
 
-# CGO
-
 Compiling with CGO is tricky, especially when cross-compiling. It requires extra
 setup and won't work "out of the box".
 

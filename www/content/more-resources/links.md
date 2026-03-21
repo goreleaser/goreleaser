@@ -1,6 +1,6 @@
 ---
 title: "Links"
-weight: 380
+weight: 90
 ---
 
 - Follow the progress on the [GitHub repository](https://github.com/goreleaser/goreleaser)
@@ -11,7 +11,7 @@ weight: 380
 - Read our [blog](/blog/index/)[^blog] ([RSS](/feed_rss_created.xml))
 - Follow us on [LinkedIn](/linkedin)
 - Ask questions on [GitHub Discussions](https://github.com/goreleaser/goreleaser/discussions)
-- Before contributing, read the [Contributing Guidelines](/contributing/)
+- Before contributing, read the [Contributing Guidelines](/more-resources/contributing/)
 - [Security Policy](/security/)
 - [EULA](/eula/)
 

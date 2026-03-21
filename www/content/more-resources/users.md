@@ -1,5 +1,6 @@
 ---
-weight: 310
+title: "Users"
+weight: 20
 ---
 
 ## Who uses GoReleaser?

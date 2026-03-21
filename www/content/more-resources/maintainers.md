@@ -1,6 +1,6 @@
 ---
 title: "Maintainers"
-weight: 300
+weight: 10
 ---
 <!-- prettier-ignore -->
 GoReleaser is maintained by:

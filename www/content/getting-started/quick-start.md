@@ -157,7 +157,7 @@ git push origin v0.1.0
 
 {{< callout type="info" >}}
 
-Check if your tag adheres to [semantic versioning](/limitations/semver/).
+Check if your tag adheres to [semantic versioning](/getting-started/limitations/semver/).
 {{< /callout >}}
 
 {{< callout type="info" >}}

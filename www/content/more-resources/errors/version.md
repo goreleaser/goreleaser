@@ -25,7 +25,7 @@ If you get it as a fatal error, it means your configuration is invalid.
 You can still add the `version` header mentioned above, and it'll tell you which
 parts of the configuration need to be fixed.
 
-You can check the [deprecations](/deprecations/) page to see how to fix
+You can check the [deprecations](/more-resources/deprecations/) page to see how to fix
 them.
 
 Also worth reading the

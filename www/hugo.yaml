@@ -23,37 +23,36 @@ markup:
 
 menu:
   main:
-    - identifier: intro
+    - identifier: getting-started
       name: Getting Started
-      pageRef: /intro
+      pageRef: /getting-started
       weight: 10
     - identifier: documentation
       name: Documentation
       pageRef: /customization
       weight: 20
-      params:
-        icon: document-text
-        type: link
-    - identifier: blog
-      name: News
-      pageRef: /blog
+    - identifier: more-resources
+      name: More resources
+      pageRef: /more-resources
       weight: 30
-      params:
-        icon: newspaper
-        type: link
     - identifier: pro
       name: "Pro"
       pageRef: /pro
       weight: 40
-      params:
-        icon: badge-check
-        type: link
-    - name: Search
+    - identifier: blog
+      name: News
+      pageRef: /blog
       weight: 50
+    - identifier: sponsors
+      name: Sponsors
+      pageRef: /sponsors
+      weight: 60
+    - name: Search
+      weight: 70
       params:
         type: search
     - name: GitHub
-      weight: 60
+      weight: 80
       url: "https://github.com/goreleaser/goreleaser"
       params:
         icon: github
