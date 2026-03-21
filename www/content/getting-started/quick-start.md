@@ -209,11 +209,11 @@ That's all it takes!
 GoReleaser will build the binaries for your app for the default targets for the
 build mechanism being used.
 You can customize that by changing the `builds` section.
-Check the [documentation](/customization/builds/index/) for more information.
+Check the [documentation](/customization/builds/) for more information.
 
 After building the binaries, GoReleaser will create an archive for each target into a separate file.
 You can customize several things by changing the `archives` section, including releasing only the binaries and not creating archives at all.
-Check the [documentation](/customization/archive/) for more information.
+Check the [documentation](/customization/archives/) for more information.
 
 Finally, it will create a release on GitHub with all the artifacts.
 
