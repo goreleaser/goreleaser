@@ -5,8 +5,7 @@ weight: 30
 
 Here is how to do it with [CircleCI](https://circleci.com):
 
-```yaml
-# .circleci/config.yml
+```yaml {filename=".circleci/config.yml"}
 version: 2.1
 workflows:
   main:

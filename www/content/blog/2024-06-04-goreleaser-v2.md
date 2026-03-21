@@ -104,9 +104,7 @@ use `~> v2` by default if your `version` option is either empty or `latest`.
 
 I recommend you update it:
 
-```yaml
-# .github/workflows/release.yml
-
+```yaml {filename=".github/workflows/release.yml"}
 # ...
 jobs:
   goreleaser:

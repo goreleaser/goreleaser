@@ -27,8 +27,7 @@ For each NPM configuration, GoReleaser will:
 
 ## Options
 
-```yaml
-# .goreleaser.yaml
+```yaml {filename=".goreleaser.yaml"}
 npms:
   - # ID of the resulting image.
     #

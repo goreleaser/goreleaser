@@ -8,7 +8,7 @@ In this example we will build, archive and release a sample project.
 Create a GitHub repository, clone and `cd` into it, and let's get started!
 
 {{< tabs >}}
-{{< tab ":simple-go: Go" >}}
+{{< tab "Go" >}}
 
 Initialize your module with:
 
@@ -27,7 +27,7 @@ func main() {
 ```
 
 {{< /tab >}}
-{{< tab ":simple-rust: Rust" >}}
+{{< tab "Rust" >}}
 
 Initialize your project with:
 
@@ -36,7 +36,7 @@ cargo init --bin
 ```
 
 {{< /tab >}}
-{{< tab ":simple-zig: Zig" >}}
+{{< tab "Zig" >}}
 
 Initialize your project with:
 
@@ -45,7 +45,7 @@ zig init
 ```
 
 {{< /tab >}}
-{{< tab ":simple-bun: Bun" >}}
+{{< tab "Bun" >}}
 
 Initialize your project with:
 
@@ -54,7 +54,7 @@ bun init
 ```
 
 {{< /tab >}}
-{{< tab ":simple-deno: Deno" >}}
+{{< tab "Deno" >}}
 
 Initialize your project with:
 
@@ -89,7 +89,7 @@ goreleaser check
 You can also use GoReleaser to [build](/cmd/goreleaser_build/) the binary only for a given target, which is useful for local development:
 
 {{< tabs >}}
-{{< tab ":simple-go: Go" >}}
+{{< tab "Go" >}}
 
 ```sh
 GOOS="linux" \
@@ -99,7 +99,7 @@ GOARCH="arm64" \
 
 It will default to your current `GOOS`/`GOARCH`.
 {{< /tab >}}
-{{< tab ":simple-rust: Rust" >}}
+{{< tab "Rust" >}}
 
 ```sh
 TARGET="aarch64-unknown-linux-gnu" \
@@ -107,7 +107,7 @@ TARGET="aarch64-unknown-linux-gnu" \
 ```
 
 {{< /tab >}}
-{{< tab ":simple-zig: Zig" >}}
+{{< tab "Zig" >}}
 
 ```sh
 TARGET="aarch64-linux" \
@@ -115,7 +115,7 @@ TARGET="aarch64-linux" \
 ```
 
 {{< /tab >}}
-{{< tab ":simple-bun: Bun" >}}
+{{< tab "Bun" >}}
 
 ```sh
 TARGET="bun-linux-arm64" \
@@ -123,7 +123,7 @@ TARGET="bun-linux-arm64" \
 ```
 
 {{< /tab >}}
-{{< tab ":simple-deno: Deno" >}}
+{{< tab "Deno" >}}
 
 ```sh
 TARGET="aarch64-unknown-linux-gnu" \

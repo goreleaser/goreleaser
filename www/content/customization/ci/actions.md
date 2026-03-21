@@ -15,8 +15,7 @@ configuration to `.github/workflows/release.yml`.
 
 Below is a simple snippet to use this action in your workflow:
 
-```yaml
-# .github/workflows/release.yml
+```yaml {filename=".github/workflows/release.yml"}
 name: goreleaser
 
 on:
@@ -84,8 +83,7 @@ jobs:
 If [signing is enabled][signing] in your GoReleaser configuration, you can use
 the [Import GPG][import-gpg] GitHub Action along with this one:
 
-```yaml
-# .github/workflows/release.yml
+```yaml {filename=".github/workflows/release.yml"}
 jobs:
   # ...
   goreleaser:
@@ -187,8 +185,7 @@ custom [Personal Access Token][pat] with `repo` permissions and [add it as a
 secret in the repository][secrets]. If you create a secret named `GH_PAT`, the
 step will look like this:
 
-```yaml
-# .github/workflows/release.yml
+```yaml {filename=".github/workflows/release.yml"}
 jobs:
   # ...
   goreleaser:

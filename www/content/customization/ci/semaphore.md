@@ -6,8 +6,7 @@ weight: 100
 In [Semaphore 2.0](https://semaphoreci.com) each project starts with the
 default pipeline specified in `.semaphore/semaphore.yml`.
 
-```yaml
-# .semaphore/semaphore.yml.
+```yaml {filename=".semaphore/semaphore.yml."}
 version: v1.0
 name: Build
 agent:

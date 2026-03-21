@@ -225,8 +225,7 @@ archives:
 
 We'll walk through what happens in each case using some examples.
 
-```yaml
-# ...
+```yaml {filename="..."}
 files:
   # Adds `README.md` at the root of the archive:
   - README.md

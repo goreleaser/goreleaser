@@ -5,8 +5,7 @@ weight: 40
 
 Here is how to do it with [Cirrus CI](https://cirrus-ci.org):
 
-```yaml
-# .cirrus.yml
+```yaml {filename=".cirrus.yml"}
 task:
   name: Release
   only_if: $CIRRUS_TAG != '' # run only on tags

@@ -12,9 +12,7 @@ Note that you'll need to enable `tags` in repo settings and add `github_token`
 secret.
 
 #### 1.x
-```yaml
-# .drone.yml
-
+```yaml {filename=".drone.yml"}
 kind: pipeline
 name: default
 

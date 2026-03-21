@@ -6,8 +6,7 @@ weight: 110
 You may want to set up your project to auto-deploy your new tags on
 [Travis](https://travis-ci.org), for example:
 
-```yaml
-# .travis.yml
+```yaml {filename=".travis.yml"}
 language: go
 
 # needed only if you use the snap pipe:

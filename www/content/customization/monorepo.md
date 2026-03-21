@@ -23,8 +23,7 @@ You project falls into either one of these categories:
 You'll need to create a `.goreleaser.yaml` for each subproject you want to use
 GoReleaser in:
 
-```yaml
-# subroj1/.goreleaser.yaml
+```yaml {filename="subroj1/.goreleaser.yaml"}
 project_name: subproj1
 
 monorepo:
