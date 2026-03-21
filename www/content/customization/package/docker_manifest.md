@@ -3,7 +3,7 @@ title: "Docker Manifests (deprecated)"
 weight: 180
 ---
 
-> [Phasing out](/more-resources/deprecations/#dockers) in v2.12.
+> [Phasing out](/resources/deprecations/#dockers) in v2.12.
 > [Docker Images v2](/customization/package/dockers_v2/) is preferred instead.
 
 GoReleaser can also create and push Docker multi-platform images using the

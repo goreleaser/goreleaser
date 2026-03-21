@@ -29,4 +29,4 @@ Thank you!
 
 [^schema]: More about our JSONSchemas [here](/customization/index/).
 
-[^links]: All our contact, forums, and media links are available [here](/more-resources/links/).
+[^links]: All our contact, forums, and media links are available [here](/resources/links/).

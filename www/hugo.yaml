@@ -32,9 +32,9 @@ menu:
       name: Documentation
       pageRef: /customization
       weight: 20
-    - identifier: more-resources
+    - identifier: resources
       name: More resources
-      pageRef: /more-resources
+      pageRef: /resources/maintainers
       weight: 30
     - identifier: pro
       name: "Pro"

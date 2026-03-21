@@ -95,19 +95,19 @@
 /limitations/cgo/               /getting-started/limitations/cgo/               301
 /limitations/semver/            /getting-started/limitations/semver/            301
 
-# Moved to more-resources section
-/maintainers/                   /more-resources/maintainers/                    301
-/users/                         /more-resources/users/                          301
-/deprecations/                  /more-resources/deprecations/                   301
-/experiments/                   /more-resources/experiments/                    301
-/errors/                        /more-resources/errors/                         301
-/errors/*                       /more-resources/errors/:splat                   301
-/cookbooks/                     /more-resources/cookbooks/                      301
-/cookbooks/*                    /more-resources/cookbooks/:splat                301
-/cmd/                           /more-resources/cmd/                            301
-/cmd/*                          /more-resources/cmd/:splat                      301
-/contributing/                  /more-resources/contributing/                   301
-/links/                         /more-resources/links/                          301
+# Moved to resources section
+/maintainers/                   /resources/maintainers/                         301
+/users/                         /resources/users/                               301
+/deprecations/                  /resources/deprecations/                        301
+/experiments/                   /resources/experiments/                         301
+/errors/                        /resources/errors/                              301
+/errors/*                       /resources/errors/:splat                        301
+/cookbooks/                     /resources/cookbooks/                           301
+/cookbooks/*                    /resources/cookbooks/:splat                     301
+/cmd/                           /resources/cmd/                                 301
+/cmd/*                          /resources/cmd/:splat                           301
+/contributing/                  /resources/contributing/                        301
+/links/                         /resources/links/                               301
 
 # Customization publish release redirect
 /customization/publish/release/ /customization/publish/scm/                     301

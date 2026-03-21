@@ -40,7 +40,7 @@ releasing a v2 soon.
 - **release**: support project ID in GitLab
 - **build**: support `directory` in `gomod`
 - **deprecations**: a lot of deprecations, working towards making the
-  configuration file more consistent. [Details](/more-resources/deprecations)
+  configuration file more consistent. [Details](/resources/deprecations)
 
 As always, bug fixes, dependency updates, housekeeping, and documentation
 updates are included in this release as well.

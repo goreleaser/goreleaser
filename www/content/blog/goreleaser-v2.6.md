@@ -139,12 +139,12 @@ nevertheless, we have a few other news:
 - **new**: `.Format` template variable in `archives` (only on [Pro][pro])
 - **new**: Allow to template `release.make_latest`
 - **new**: Set the `mtime` in `nfpms`
-- **new**: We made a [maintainers page](/more-resources/maintainers). Make sure to check
+- **new**: We made a [maintainers page](/resources/maintainers). Make sure to check
   it out!
 - **deprecations**: we deprecated `archives.format` and
   `archives.format_overrides.format` in favor of
   `archives.formats` and `archives.format_overrides.formats`, respectively.
-  [Details](/more-resources/deprecations)
+  [Details](/resources/deprecations)
 
 As always, bug fixes, dependency updates, housekeeping, and documentation
 updates are included in this release as well.

@@ -34,5 +34,3 @@ Thanks, I hope you enjoy the new home. 😄
 > [`./www/docs/blog/posts/`](https://github.com/goreleaser/goreleaser/blob/main/www/docs/blog/posts/),
 > and/or join our [Discord](https://discord.gg/RGEBtg8vQ6) and discuss in the `blog` channel.
 >
-> You may also need to add yourself to
-> [`./www/docs/blog/.authors.yml`](https://github.com/goreleaser/goreleaser/blob/main/www/docs/blog/.authors.yml).
