@@ -1,6 +1,8 @@
 ---
 title: "GoReleaser Pro"
 weight: 400
+sidebar:
+  hide: true
 ---
 
 GoReleaser Pro is a paid, closed-source GoReleaser distribution with some

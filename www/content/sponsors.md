@@ -1,6 +1,9 @@
 ---
 title: "Sponsors"
 weight: 410
+sidebar:
+  hide: true
+toc: false
 ---
 
 Does you or your company use GoReleaser?
@@ -56,7 +59,7 @@ A big **thank you** to all current, past, and future sponsors!
 
 </div>
 
-### Backers
+## Backers
 
 - [Marcel Eichner](https://github.com/Ephigenia)
 - [Chatpong Voranartaksorn](https://github.com/psychvc)
