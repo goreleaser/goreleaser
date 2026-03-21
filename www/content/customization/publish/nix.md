@@ -112,7 +112,7 @@ nix:
     # {{< inline_version "v2.14" >}}
     formatter: nixfmt
 
-{{< include file="includes/repository.md" render=true >}}
+{{% include file="includes/repository.md" %}}
 ```
 
 {{< templates >}}
@@ -159,4 +159,4 @@ That's it!
 
 [nur]: https://github.com/nix-community/NUR
 
-{{< include file="includes/prs.md" render=true >}}
+{{% include file="includes/prs.md" %}}

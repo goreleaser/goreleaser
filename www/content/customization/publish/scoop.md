@@ -99,7 +99,7 @@ scoops:
     # Default: 'v1'.
     goamd64: v3
 
-{{< include file="includes/repository.md" render=true >}}
+{{% include file="includes/repository.md" %}}
 ```
 
 {{< templates >}}
@@ -139,4 +139,4 @@ You can check the
 [Scoop documentation](https://github.com/lukesampson/scoop/wiki) for more
 details.
 
-{{< include file="includes/prs.md" render=true >}}
+{{% include file="includes/prs.md" %}}

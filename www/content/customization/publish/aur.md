@@ -174,7 +174,7 @@ aurs:
     # {{< inline_version "v2.8" >}}
     disable: "{{ .IsSnapshot }}"
 
-{{< include file="includes/commit_author.md" render=true >}}
+{{% include file="includes/commit_author.md" %}}
 ```
 
 {{< templates >}}

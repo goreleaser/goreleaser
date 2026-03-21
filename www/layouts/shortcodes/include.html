@@ -1,6 +1,5 @@
 {{- $file := .Get "file" -}}
 {{- $outerIndent := .Get "indent" | default 0 | int -}}
-{{- $render := .Get "render" | default false -}}
 {{- $lang := .Get "lang" | default "" -}}
 {{- $path := path.Join "content" $file -}}
 {{- $content := readFile $path -}}
@@ -17,9 +16,7 @@
   {{- end -}}
   {{- $content = delimit $indented "\n" -}}
 {{- end -}}
-{{- if $render -}}
-{{ $content | markdownify }}
-{{- else if $lang -}}
+{{- if $lang -}}
 {{/* Dedent: detect and strip uniform leading indentation using regex */}}
 {{- $lines := split $content "\n" -}}
 {{- $minLen := 9999 -}}

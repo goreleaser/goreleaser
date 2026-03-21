@@ -222,7 +222,7 @@ homebrew_casks:
         - "~/.foo/bar"
         - "~/otherfile"
 
-{{< include file="includes/repository.md" render=true >}}
+{{% include file="includes/repository.md" %}}
 ```
 
 {{< templates >}}
@@ -365,4 +365,4 @@ homebrew_casks:
         - "X-GitHub-Api-Version: 2022-11-28"
 ```
 
-{{< include file="includes/prs.md" render=true >}}
+{{% include file="includes/prs.md" %}}

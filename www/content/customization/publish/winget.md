@@ -185,10 +185,10 @@ winget:
         minimum_version: 1.2.3
 
 
-{{< include file="includes/repository.md" render=true >}}
+{{% include file="includes/repository.md" %}}
 
 ```
 
 {{< templates >}}
 
-{{< include file="includes/prs.md" render=true >}}
+{{% include file="includes/prs.md" %}}

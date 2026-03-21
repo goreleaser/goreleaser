@@ -191,7 +191,7 @@ brews:
     	etc.install "app-config.conf"
       # ...
 
-{{< include file="includes/repository.md" render=true >}}
+{{% include file="includes/repository.md" %}}
 ```
 
 {{< templates >}}
@@ -294,4 +294,4 @@ You can check the [resource not accessible by integration](https://goreleaser.co
 
 - Only one `GOARM` build is allowed;
 
-{{< include file="includes/prs.md" render=true >}}
+{{% include file="includes/prs.md" %}}
