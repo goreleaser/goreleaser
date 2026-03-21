@@ -405,9 +405,9 @@ Finally, the DMG is notarized and used from that point on.
 {{< /tab >}}
 {{< /tabs >}}
 
-[unibin]: ./universalbinaries.md
-[appbundles]: ./app_bundles.md
+[unibin]: /customization/builds/universalbinaries/
+[appbundles]: /customization/package/app_bundles/
 [quill]: https://github.com/anchore/quill
-[DMG]: ./dmg.md
-[macospkg]: ./pkg.md
+[DMG]: /customization/package/dmg/
+[macospkg]: /customization/package/pkg/
 [gh-guide]: https://docs.github.com/en/actions/use-cases-and-examples/deploying/installing-an-apple-certificate-on-macos-runners-for-xcode-development

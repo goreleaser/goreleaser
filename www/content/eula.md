@@ -1,8 +1,4 @@
----
-title: "GoReleaser End User License Agreement (EULA)"
-sidebar:
-  hide: true
----
+# GoReleaser End User License Agreement (EULA)
 
 ## 1. Licensed software.
 

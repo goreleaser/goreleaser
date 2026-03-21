@@ -6,7 +6,7 @@ weight: 50
 On GoReleaser there are two main ways of doing that: the easier one is to use
 the [ko integration][ko].
 
-[ko]: ../customization/ko.md
+[ko]: /customization/package/ko/
 
 If you don't want to, or can't, use Ko for whatever reason, this guide is for
 you!

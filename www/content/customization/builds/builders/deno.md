@@ -1,7 +1,5 @@
 ---
 title: Deno
-aliases:
-  - "/customization/deno-builds/"
 weight: 50
 ---
 

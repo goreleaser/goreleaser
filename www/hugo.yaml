@@ -10,6 +10,7 @@ enableRobotsTXT: true
 enableGitInfo: true
 enableEmoji: true
 enableInlineShortcodes: true
+relativeURLs: true
 
 markup:
   goldmark:

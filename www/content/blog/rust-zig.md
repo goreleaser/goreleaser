@@ -443,24 +443,24 @@ For reference, these are the tools and versions used:
 |     docker     | 27.3.1  |
 | docker buildx  | 0.18.0  |
 
-[bun]: ../../customization/builds/bun.md
-[deno]: ../../customization/builds/deno.md
+[bun]: /customization/builds/builders/bun/
+[deno]: /customization/builds/builders/deno/
 [example-zig]: https://github.com/goreleaser/example-zig
 [example-rust]: https://github.com/goreleaser/example-rust
 [cargo-zigbuild]: https://github.com/rust-cross/cargo-zigbuild
 [cross-rs]: https://github.com/cross-rs/cross
 [goreleaser-rust-cross]: https://github.com/vedantmgoyal9/goreleaser-rust-cross/tree/main
-[v2.5]: ./2024-12-15-v2.5.md
-[unibins-docs]: ../../customization/universalbinaries.md
+[v2.5]: /blog/goreleaser-v2.5/
+[unibins-docs]: /customization/builds/universalbinaries/
 [nFPM]: https://nfpm.goreleaser.com
-[nfpm-docs]: ../../customization/nfpm.md
+[nfpm-docs]: /customization/package/nfpm/
 [cosign]: https://github.com/sigstore/cosign.md
-[sign-docs]: ../../customization/sign.md
-[sbom-docs]: ../../customization/sbom.md
-[brew-docs]: ../../customization/homebrew_casks.md
-[docker-docs]: ../../customization/docker.md
-[docker-manifest-docs]: ../../customization/docker_manifest.md
-[docker-sign-docs]: ../../customization/docker_sign.md
+[sign-docs]: /customization/sign/sign/
+[sbom-docs]: /customization/sbom/
+[brew-docs]: /customization/publish/homebrew_casks/
+[docker-docs]: /customization/package/docker/
+[docker-manifest-docs]: /customization/package/docker_manifest/
+[docker-sign-docs]: /customization/sign/docker_sign/
 [syft]: https://github.com/anchore/syft
 [taps]: https://docs.brew.sh/Taps
 [tap1]: https://github.com/goreleaser/homebrew-tap

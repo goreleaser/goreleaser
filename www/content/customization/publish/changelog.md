@@ -172,7 +172,7 @@ changelog:
 > - When releasing a [nightly][], `use` will fallback to `git`.
 > - The `github` changelog will only work if both tags exist in GitHub.
 
-[nightly]: ./nightlies.md
+[nightly]: /customization/publish/nightlies/
 
 ## Enhance with AI
 

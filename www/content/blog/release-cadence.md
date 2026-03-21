@@ -134,9 +134,9 @@ make GoReleaser better.
 
 See you all soon!
 
-[v1]: ./2021-11-14-goreleaser-v1.md
-[deprecations]: ../../deprecations.md
+[v1]: /blog/goreleaser-v1/
+[deprecations]: /more-resources/deprecations/
 [dis]: https://github.com/orgs/goreleaser/discussions/4169
-[gpro]: ../../pro.md
+[gpro]: /pro/
 [gha]: https://github.com/goreleaser/goreleaser-action
 [Sponsors]: https://github.com/caarlos0

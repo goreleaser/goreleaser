@@ -22,7 +22,7 @@
 
 # Auto-generated URL redirects (old MkDocs URLs → new Hugo URLs)
 /customization/app_bundles/ /customization/package/app_bundles/ 301
-/customization/archive/ /customization/package/archive/ 301
+/customization/archive/ /customization/package/archives/ 301
 /customization/artifactory/ /customization/publish/artifactory/ 301
 /customization/artifacts/ /customization/general/artifacts/ 301
 /customization/attestations/ /customization/publish/attestations/ 301
@@ -130,3 +130,12 @@
 # Blog archive/category/pagination pages
 /blog/archive/*                 /blog/                                          301
 /blog/category/*                /blog/                                          301
+
+# Aliases migrated from Hugo frontmatter
+/customization/build/           /customization/builds/                          301
+/customization/zig-builds/      /customization/builds/builders/zig/             301
+/customization/rust-builds/     /customization/builds/builders/rust/            301
+/customization/deno-builds/     /customization/builds/builders/deno/            301
+/customization/fury/            /customization/publish/gemfury/                 301
+/customization/homebrew/        /customization/publish/homebrew_casks/          301
+/cookbooks/cgo-and-crosscompiling/ /getting-started/limitations/cgo/            301

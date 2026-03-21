@@ -58,7 +58,7 @@ you are a beginner in the field and/or Go.
 
 Our blog was migrated to a new address (and out of medium)!
 
-You can read the announcement [here](/blog/2023-09-14-welcome/).
+You can read the announcement [here](/blog/welcome/).
 
 It still a work in progress, though.
 You can also see the still-open issue

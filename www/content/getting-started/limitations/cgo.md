@@ -1,7 +1,5 @@
 ---
 title: "CGO"
-aliases:
-  - "/cookbooks/cgo-and-crosscompiling/"
 weight: 10
 ---
 
@@ -38,7 +36,7 @@ You can find an example of this approach in
 This might not work for all cases, but it's a good alternative to explore.
 
 [1]: https://carlosbecker.com/posts/goreleaser-split-merge/
-[2]: ../customization/partial.md
+[2]: /customization/general/partial/
 
 ## Community tools
 

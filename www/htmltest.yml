@@ -24,6 +24,8 @@ IgnoreURLs:
   - docs.gitlab.com
   - blog.kubesimplify.com
   - blog.ediri.io/
+  - claude.ai
+  - chatgpt.com
 IgnoreDirs:
   - overrides
 IgnoreDirectoryMissingTrailingSlash: true

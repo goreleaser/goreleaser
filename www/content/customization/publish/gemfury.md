@@ -1,7 +1,5 @@
 ---
 title: "GemFury - apt and rpm repositories"
-aliases:
-  - "/customization/fury/"
 weight: 70
 ---
 

@@ -461,7 +461,7 @@ before:
 # rest of the file...
 ```
 
-[hook]: ../hooks.md
+[hook]: /customization/builds/hooks/
 
 ## Reproducible Builds
 

@@ -1,7 +1,5 @@
 ---
 title: "Homebrew Casks"
-aliases:
-  - "/customization/homebrew/"
 weight: 90
 ---
 

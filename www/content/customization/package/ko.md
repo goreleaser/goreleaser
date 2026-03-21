@@ -209,4 +209,4 @@ docker_signs:
 ```
 
 [ko]: https://ko.build
-[build]: builds/go.md
+[build]: /customization/builds/builders/go/

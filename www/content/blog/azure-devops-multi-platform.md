@@ -1,7 +1,7 @@
 ---
 title: Releasing multi-platform container images with GoReleaser in Azure DevOps
 date: 2023-01-10
-slug: azure-devops
+slug: azure-devops-multi-platform
 tags:
   - tutorials
 authors:

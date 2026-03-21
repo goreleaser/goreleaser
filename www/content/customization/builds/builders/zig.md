@@ -1,7 +1,5 @@
 ---
 title: Zig
-aliases:
-  - "/customization/zig-builds/"
 weight: 40
 ---
 

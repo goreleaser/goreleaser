@@ -1,8 +1,4 @@
----
-title: "Security Policy"
-sidebar:
-  hide: true
----
+# Security Policy
 
 ## Supported Versions
 

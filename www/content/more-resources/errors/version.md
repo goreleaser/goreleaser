@@ -29,7 +29,7 @@ You can check the [deprecations](/more-resources/deprecations/) page to see how 
 them.
 
 Also worth reading the
-[v2 announcement](/blog/posts/2024-06-04-goreleaser-v2/), which contains an
+[v2 announcement](/blog/goreleaser-v2/), which contains an
 upgrade guide.
 
 ## Using a Pro configuration file with GoReleaser OSS

@@ -1,7 +1,5 @@
 ---
 title: Rust
-aliases:
-  - "/customization/rust-builds/"
 weight: 30
 ---
 
