@@ -17,7 +17,7 @@ in your path, and
 [configured](https://www.jfrog.com/confluence/display/CLI/JFrog+CLI#JFrogCLI-JFrogPlatformConfiguration)
 with an API key.
 
-```yaml
+```yaml {filename=".goreleaser.yaml"}
 publishers:
 - name: artifactory
  cmd: >-
@@ -28,7 +28,7 @@ publishers:
 Example of a [publishers](/customization/publishers/) section pushing files
 to an Artifactory instance using jfrog cli with api key in environment
 
-```yaml
+```yaml {filename=".goreleaser.yaml"}
 publishers:
 - name: artifactory
  cmd: >-

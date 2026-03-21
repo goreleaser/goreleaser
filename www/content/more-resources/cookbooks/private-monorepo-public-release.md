@@ -13,7 +13,7 @@ This cookbook gives some suggestions on how to handle that.
 Usually, you'll rely on tag prefixes for each sub-project within your monorepo.
 GoReleaser can handle that within its [monorepo configuration][Monorepo]:
 
-```yaml
+```yaml {filename=".goreleaser.yaml"}
 monorepo:
   tag_prefix: app1/
   dir: ./app1/
@@ -25,7 +25,7 @@ should gracefully handling everything.
 But, if you want the release to happen in another repository, you'll also need
 to add some [release][Release] settings:
 
-```yaml
+```yaml {filename=".goreleaser.yaml"}
 release:
   github:
     owner: myorg
@@ -43,7 +43,7 @@ sense.
 
 You can remove it by setting the `release.tag` field:
 
-```yaml
+```yaml {filename=".goreleaser.yaml"}
 release:
   tag: "{{ .Tag }}"
   github:

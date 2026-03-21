@@ -18,9 +18,7 @@ goreleaser release --clean
 
 ## Example: semantic-release
 
-.releaserc.yml
-
-```yaml
+```yaml {filename=".releaserc.yml"}
 preset: angular
 plugins:
   - "@semantic-release/commit-analyzer"

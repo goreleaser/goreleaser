@@ -8,17 +8,31 @@ GoReleaser is configured through a `.goreleaser.yaml` file at the root of your r
 You can find all available options and their defaults in the sections below.
 
 > [!NOTE]
-> You can use `goreleaser init` to create a sample `.goreleaser.yaml` to get started, and
-> `goreleaser check` to validate your configuration file.
+> You can use `goreleaser init` to create a sample `.goreleaser.yaml` to get
+> started, and `goreleaser check` to validate your configuration file.
 
 ## JSON Schema
 
 GoReleaser's configuration is backed by a JSON Schema, which enables autocompletion and
-validation in editors that support it. The schema is available at
-`https://goreleaser.com/static/schema.json`.
+validation in editors that support it.
 
-You can add it to your `.goreleaser.yaml` with:
+You can instruct your LSP to use it by adding a comment to your
+`.goreleaser.yaml` file:
 
-```yaml
+{{< tabs >}}
+
+{{< tab name="OSS" >}}
+
+```yaml {filename=".goreleaser.yaml"}
 # yaml-language-server: $schema=https://goreleaser.com/static/schema.json
 ```
+
+{{< /tab >}}
+{{< tab name="Pro" >}}
+
+```yaml {filename=".goreleaser.yaml"}
+# yaml-language-server: $schema=https://goreleaser.com/static/schema-pro.json
+```
+
+{{< /tab >}}
+{{< /tabs >}}

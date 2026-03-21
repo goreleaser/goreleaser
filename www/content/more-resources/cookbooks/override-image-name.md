@@ -22,44 +22,45 @@ workflow](https://docs.github.com/en/actions/learn-github-actions/environment-va
 then pass those to the GoReleaser via `env` section of the GoReleaser's GitHub
 Action like the following:
 
-```YAML
- jobs:
+```yaml {filename=".github/workflows/release.yml"}
+jobs:
   # use goreleaser to cross-compile go binaries and add them to GitHub release
   goreleaser:
     runs-on: ubuntu-latest
     env:
       REGISTRY: "ghcr.io"
       IMAGE_NAME: "google/addlicense"
-...
+    steps:
+      # ...
       - name: Run GoReleaser
-        uses:  goreleaser/goreleaser-action@v4
+        uses: goreleaser/goreleaser-action@v4
         with:
           distribution: goreleaser
           version: latest
           args: release --clean
-       env:
-         REGISTRY: ${{ env.REGISTRY }}
-         IMAGE: ${{ env.IMAGE_NAME }}
-         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        env:
+          REGISTRY: ${{ env.REGISTRY }}
+          IMAGE: ${{ env.IMAGE_NAME }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 ```
 
 Once you pass those to the GoReleaser, you can access them within your
 `.goreleaser.yml` file as I mentioned above, here is the example of this:
 
-```YAML
+```yaml {filename=".goreleaser.yaml"}
 dockers:
-    - image_templates:
-        - '{{ .Env.REGISTRY }}/{{ .Env.IMAGE_NAME }}:{{ .Tag }}-amd64'
-      dockerfile: Dockerfile.goreleaser
-      use: buildx
-      build_flag_templates:
-        - "--pull"
-        - "--label=org.opencontainers.image.created={{.Date}}"
-        - "--label=org.opencontainers.image.name={{.ProjectName}}"
-        - "--label=org.opencontainers.image.revision={{.FullCommit}}"
-        - "--label=org.opencontainers.image.version={{.Version}}"
-        - "--label=org.opencontainers.image.source={{.GitURL}}"
-        - "--platform=linux/amd64"
+  - image_templates:
+      - "{{ .Env.REGISTRY }}/{{ .Env.IMAGE_NAME }}:{{ .Tag }}-amd64"
+    dockerfile: Dockerfile.goreleaser
+    use: buildx
+    build_flag_templates:
+      - "--pull"
+      - "--label=org.opencontainers.image.created={{.Date}}"
+      - "--label=org.opencontainers.image.name={{.ProjectName}}"
+      - "--label=org.opencontainers.image.revision={{.FullCommit}}"
+      - "--label=org.opencontainers.image.version={{.Version}}"
+      - "--label=org.opencontainers.image.source={{.GitURL}}"
+      - "--platform=linux/amd64"
 ```
 
 That's all we need to do, you even might be surprised when you notice that how

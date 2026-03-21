@@ -6,7 +6,7 @@ weight: 90
 Example of a [publishers](/customization/publishers/) section pushing files
 to a Nexus instance:
 
-```yaml
+```yaml {filename=".goreleaser.yaml"}
 publishers:
   - name: nexus
     cmd: >-

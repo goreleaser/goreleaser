@@ -39,6 +39,9 @@ menu:
       name: "Pro"
       pageRef: /pro
       weight: 40
+      params:
+        type: link
+        icon: sparkles
     - identifier: blog
       name: News
       pageRef: /blog
@@ -47,9 +50,6 @@ menu:
       name: Sponsors
       pageRef: /sponsors
       weight: 60
-      params:
-        type: link
-        icon: sparkles
     - name: Search
       weight: 70
       params:
