@@ -206,14 +206,7 @@ You can also read the [GitHub documentation](https://docs.github.com/en/github/a
 
 ## What does it look like?
 
-You can check [this example repository](https://github.com/goreleaser/example) for a real world example.
-
-<a href="https://github.com/goreleaser/example/releases">
-  <figure>
-    <img src="https://img.carlosbecker.dev/goreleaser-github.png"/>
-    <figcaption>Example release on GitHub.</figcaption>
-  </figure>
-</a>
+You can check [this example repository](https://github.com/goreleaser/example/releases/latest) for a real world example.
 
 [goreleaser-action]: https://github.com/goreleaser/goreleaser-action
 [actions]: https://github.com/features/actions

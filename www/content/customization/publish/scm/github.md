@@ -42,11 +42,4 @@ If none are set, they default to GitHub's public URLs.
 
 ## Example release
 
-Here's an example of what the release might look like:
-
-<a href="https://github.com/goreleaser/example/releases">
-  <figure>
-    <img src="https://img.carlosbecker.dev/goreleaser-github.png"/>
-    <figcaption>Example release on GitHub.</figcaption>
-  </figure>
-</a>
+You can check [this example repository](https://github.com/goreleaser/example/releases/latest) for a real world example.

@@ -185,13 +185,6 @@ Finally, it will create a release on GitHub with all the artifacts.
 
 Check your GitHub project's releases page!
 
-<a href="https://github.com/goreleaser/example/releases">
-  <figure>
-    <img src="https://img.carlosbecker.dev/goreleaser-github.png"/>
-    <figcaption>Example release on GitHub.</figcaption>
-  </figure>
-</a>
-
 ## Live examples
 
 We have a ton of example repositories!
