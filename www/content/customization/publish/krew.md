@@ -10,7 +10,7 @@ Check their [website](https://krew.sigs.k8s.io) for more information.
 
 The `krews` section specifies how the plugins should be created:
 
-{{< codeinclude lang="yaml" filename=".goreleaser.yaml" file="includes/repository.md" indent=4 >}}
+```yaml {filename=".goreleaser.yaml"}
 krews:
   -
     # Name of the recipe
@@ -83,7 +83,8 @@ krews:
     # in case there is an indicator for prerelease in the tag e.g. v1.0.0-rc1
     skip_upload: true
 
-{{< /codeinclude >}}
+{% include-markdown "../includes/repository.md" comments=false start='---\n\n' %}
+```
 
 {{< templates >}}
 

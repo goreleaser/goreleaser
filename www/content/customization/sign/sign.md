@@ -62,8 +62,8 @@ signs:
     # - checksum:   checksum files
     # - source:     source archive
     # - package:    Linux packages (deb, rpm, apk, etc)
-    # - installer:  Windows MSI installers (Pro only)
-    # - diskimage:  macOS DMG disk images (Pro only)
+    # - installer:  Windows MSI installers {{< inline_pro >}}
+    # - diskimage:  macOS DMG disk images {{< inline_pro >}}
     # - archive:    archives from archive pipe
     # - sbom:       any SBOMs generated for other artifacts
     # - binary:     binaries (only when `archives.format` is 'binary', use binary_signs otherwise)

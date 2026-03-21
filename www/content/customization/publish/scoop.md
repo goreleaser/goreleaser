@@ -9,7 +9,7 @@ _Scoop App Manifest_ into a repository that you have access to.
 The `scoop` section specifies how the manifest should be created. See the
 commented example below:
 
-{{< codeinclude lang="yaml" filename=".goreleaser.yaml" file="includes/repository.md" indent=4 >}}
+```yaml {filename=".goreleaser.yaml"}
 scoops:
   - # Name of the recipe
     #
@@ -37,8 +37,8 @@ scoops:
     # Which format to use.
     #
     # Valid options are:
-    # - 'msi':     msi installers (requires the MSI pipe configured, Pro only)
-    # - 'nsis':    nsis installers (requires the NSIS pipe configured, Pro only)
+    # - 'msi':     msi installers (requires the MSI pipe configured) {{< inline_pro >}}
+    # - 'nsis':    nsis installers (requires the NSIS pipe configured) {{< inline_pro >}}
     # - 'archive': archives (only if format is zip),
     #
     # This feature is only available in GoReleaser Pro.
@@ -99,7 +99,8 @@ scoops:
     # Default: 'v1'.
     goamd64: v3
 
-{{< /codeinclude >}}
+{% include-markdown "../includes/repository.md" comments=false start='---\n\n' %}
+```
 
 {{< templates >}}
 

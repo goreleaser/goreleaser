@@ -1,6 +1,6 @@
 ---
-title: "NUR"
-weight: 110
+title: "Nix User Repositories"
+weight: 130
 ---
 
 After releasing to GitHub, GitLab, or Gitea, GoReleaser can generate and publish
@@ -8,172 +8,112 @@ a _nix derivation_ to an existing [Nix User Repository][nur].
 
 The `nix` section specifies how the pkgs should be created:
 
-{{< codeinclude lang="yaml" filename=".goreleaser.yaml" file="includes/repository.md" indent=4 >}}
+```yaml {filename=".goreleaser.yaml"}
 nix:
+  - #
+    # Name of the recipe
+    #
+    # Default: the project name.
+    # Templates: allowed.
+    name: myproject
+
+    # IDs of the archives to use.
+    # Empty means all IDs.
+    ids:
+      - foo
+      - bar
+
+    # GOAMD64 to specify which amd64 version to use if there are multiple
+    # versions from the build section.
+    #
+    # Default: v1.
+    goamd64: v1
+
+    # URL which is determined by the given Token (github, gitlab or gitea).
+    #
+    # Default depends on the client.
+    # Templates: allowed.
+    url_template: "https://github.mycompany.com/foo/bar/releases/download/{{ .Tag }}/{{ .ArtifactName }}"
+
+    # The project name and current git tag are used in the format string.
+    #
+    # Templates: allowed.
+    commit_msg_template: "{{ .ProjectName }}: {{ .Tag }}"
+
+    # Path for the file inside the repository.
+    #
+    # Default: pkgs/<name>/default.nix.
+    # Templates: allowed.
+    path: pkgs/foo.nix
+
+    # Your app's homepage.
+    #
+    # Templates: allowed.
+    # Default: inferred from global metadata.
+    homepage: "https://example.com/"
+
+    # Your app's description.
+    #
+    # Templates: allowed.
+    # Default: inferred from global metadata.
+    description: "Software to create fast and easy drum rolls."
+
+    # License name.
+    #
+    # Default: inferred from global metadata.
+    license: "mit"
+
+    # Setting this will prevent goreleaser to actually try to commit the updated
+    # package - instead, it will be stored on the dist directory only,
+    # leaving the responsibility of publishing it to the user.
+    #
+    # If set to auto, the release will not be uploaded to the repository
+    # in case there is an indicator for prerelease in the tag e.g. v1.0.0-rc1
+    #
+    # Templates: allowed.
+    skip_upload: true
+
+    # Runtime dependencies of the package.
+    dependencies:
+    - zsh
+    - chromium
+    - name: bash
+      os: linux
+    - name: fish
+      os: darwin
+
+    # Custom install script.
+    #
+    # Default: 'mkdir -p $out/bin; cp -vr $binary $out/bin/$binary', and
+    #   `makeWrapper` if `dependencies` were provided.
+    # Templates: allowed.
+    install: |
+      mkdir -p $out/bin
+      cp -vr ./foo $out/bin/foo
+
+    # Custom additional install instructions.
+    # This has the advantage of preventing you to rewrite the `install` script
+    # if the defaults work for you.
+    #
+    # Templates: allowed.
+    extra_install: |
+      installManPage ./manpages/foo.1.gz
+
+    # Custom post_install script.
+    # Could be used to do any additional work after the "install" script
+    #
+    # Templates: allowed.
+    post_install: |
+      installShellCompletion ./completions/*
+
+    # Format the generated file.
+    # Valid options: 'nixfmt', 'alejandra'.
+    #
+    # {{< inline_version "v2.14" >}}
+    formatter: nixfmt
 
-- #
-
-  # Name of the recipe
-
-  #
-
-  # Default: the project name.
-
-  # Templates: allowed.
-
-  name: myproject
-
-  # IDs of the archives to use.
-
-  # Empty means all IDs.
-
-  ids:
-  - foo
-  - bar
-
-  # GOAMD64 to specify which amd64 version to use if there are multiple
-
-  # versions from the build section.
-
-  #
-
-  # Default: v1.
-
-  goamd64: v1
-
-  # URL which is determined by the given Token (github, gitlab or gitea).
-
-  #
-
-  # Default depends on the client.
-
-  # Templates: allowed.
-
-  url_template: "https://github.mycompany.com/foo/bar/releases/download/{{ .Tag }}/{{ .ArtifactName }}"
-
-  # The project name and current git tag are used in the format string.
-
-  #
-
-  # Templates: allowed.
-
-  commit_msg_template: "{{ .ProjectName }}: {{ .Tag }}"
-
-  # Path for the file inside the repository.
-
-  #
-
-  # Default: pkgs/<name>/default.nix.
-
-  # Templates: allowed.
-
-  path: pkgs/foo.nix
-
-  # Your app's homepage.
-
-  #
-
-  # Templates: allowed.
-
-  # Default: inferred from global metadata.
-
-  homepage: "https://example.com/"
-
-  # Your app's description.
-
-  #
-
-  # Templates: allowed.
-
-  # Default: inferred from global metadata.
-
-  description: "Software to create fast and easy drum rolls."
-
-  # License name.
-
-  #
-
-  # Default: inferred from global metadata.
-
-  license: "mit"
-
-  # Setting this will prevent goreleaser to actually try to commit the updated
-
-  # package - instead, it will be stored on the dist directory only,
-
-  # leaving the responsibility of publishing it to the user.
-
-  #
-
-  # If set to auto, the release will not be uploaded to the repository
-
-  # in case there is an indicator for prerelease in the tag e.g. v1.0.0-rc1
-
-  #
-
-  # Templates: allowed.
-
-  skip_upload: true
-
-  # Runtime dependencies of the package.
-
-  dependencies:
-  - zsh
-  - chromium
-  - name: bash
-    os: linux
-  - name: fish
-    os: darwin
-
-  # Custom install script.
-
-  #
-
-  # Default: 'mkdir -p $out/bin; cp -vr $binary $out/bin/$binary', and
-
-  # `makeWrapper` if `dependencies` were provided.
-
-  # Templates: allowed.
-
-  install: |
-  mkdir -p $out/bin
-  cp -vr ./foo $out/bin/foo
-
-  # Custom additional install instructions.
-
-  # This has the advantage of preventing you to rewrite the `install` script
-
-  # if the defaults work for you.
-
-  #
-
-  # Templates: allowed.
-
-  extra_install: |
-  installManPage ./manpages/foo.1.gz
-
-  # Custom post_install script.
-
-  # Could be used to do any additional work after the "install" script
-
-  #
-
-  # Templates: allowed.
-
-  post_install: |
-  installShellCompletion ./completions/\*
-
-  # Format the generated file.
-
-  # Valid options: 'nixfmt', 'alejandra'.
-
-  #
-
-  # {{< inline_version "v2.14" >}}
-
-  formatter: nixfmt
-
-{{< /codeinclude >}}
+{% include-markdown "../includes/repository.md" comments=false start='---\n\n' %}
+```
 
 {{< templates >}}
 

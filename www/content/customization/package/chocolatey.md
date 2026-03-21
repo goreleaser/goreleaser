@@ -54,8 +54,8 @@ chocolateys:
     # Which format to use.
     #
     # Valid options are:
-    # - 'msi':     msi installers (requires the MSI pipe configured, Pro only)
-    # - 'nsis':    nsis installers (requires the NSIS pipe configured, Pro only)
+    # - 'msi':     msi installers (requires the MSI pipe configured) {{< inline_pro >}}
+    # - 'nsis':    nsis installers (requires the NSIS pipe configured) {{< inline_pro >}}
     # - 'archive': archives (only if format is zip),
     #
     # Default: 'archive'.
@@ -141,7 +141,6 @@ chocolateys:
 
 > [!WARNING]
 > **Beware when testing this**
->
 >
 > Chocolatey packages are manually reviewed, so please, be mindful to not
 > publish "testing" packages that you do not intend on having published.

@@ -75,8 +75,8 @@ sboms:
     #               the cwd should be cataloged
     # - source:     source archive
     # - package:    Linux packages (deb, rpm, apk, etc)
-    # - installer:  Windows MSI installers (Pro only)
-    # - diskimage:  macOS DMG disk images (Pro only)
+    # - installer:  Windows MSI installers {{< inline_pro >}}
+    # - diskimage:  macOS DMG disk images {{< inline_pro >}}
     # - archive:    archives from archive pipe
     # - binary:     binaries output from the build stage
     #

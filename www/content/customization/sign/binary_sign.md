@@ -68,7 +68,7 @@ binary_signs:
     #
     # Artifacts that do not match this expression will be ignored.
     #
-    # Pro only.
+    # {{< inline_pro >}}
     # Templates: allowed.
     if: '{{ eq .Os "linux" }}'
 
