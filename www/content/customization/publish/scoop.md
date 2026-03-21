@@ -99,7 +99,7 @@ scoops:
     # Default: 'v1'.
     goamd64: v3
 
-{% include-markdown "../includes/repository.md" comments=false start='---\n\n' %}
+{{< include file="includes/repository.md" render=true >}}
 ```
 
 {{< templates >}}

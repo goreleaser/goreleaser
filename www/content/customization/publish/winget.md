@@ -185,7 +185,7 @@ winget:
         minimum_version: 1.2.3
 
 
-{% include-markdown "../includes/repository.md" comments=false start='---\n\n' %}
+{{< include file="includes/repository.md" render=true >}}
 
 ```
 

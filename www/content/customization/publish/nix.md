@@ -112,7 +112,7 @@ nix:
     # {{< inline_version "v2.14" >}}
     formatter: nixfmt
 
-{% include-markdown "../includes/repository.md" comments=false start='---\n\n' %}
+{{< include file="includes/repository.md" render=true >}}
 ```
 
 {{< templates >}}

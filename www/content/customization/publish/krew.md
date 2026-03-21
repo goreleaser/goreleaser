@@ -83,7 +83,7 @@ krews:
     # in case there is an indicator for prerelease in the tag e.g. v1.0.0-rc1
     skip_upload: true
 
-{% include-markdown "../includes/repository.md" comments=false start='---\n\n' %}
+{{< include file="includes/repository.md" render=true >}}
 ```
 
 {{< templates >}}

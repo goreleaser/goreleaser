@@ -222,7 +222,7 @@ homebrew_casks:
         - "~/.foo/bar"
         - "~/otherfile"
 
-{% include-markdown "../includes/repository.md" comments=false start='---\n\n' %}
+{{< include file="includes/repository.md" render=true >}}
 ```
 
 {{< templates >}}

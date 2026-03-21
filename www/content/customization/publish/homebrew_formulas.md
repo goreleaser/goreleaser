@@ -191,7 +191,7 @@ brews:
     	etc.install "app-config.conf"
       # ...
 
-{% include-markdown "../includes/repository.md" comments=false start='---\n\n' %}
+{{< include file="includes/repository.md" render=true >}}
 ```
 
 {{< templates >}}
