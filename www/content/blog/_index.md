@@ -3,6 +3,7 @@ title: Blog
 type: blog
 cascade:
   type: blog
+  excludeSearch: true
 ---
 
 <div style="text-align: center; margin-top: 1em;">

@@ -1,5 +1,4 @@
 ---
-excludeSearch: true
 ---
 
     # Git author used to commit to the repository.

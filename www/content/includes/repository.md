@@ -1,5 +1,4 @@
 ---
-excludeSearch: true
 ---
 
     # Repository to push the generated files to.
