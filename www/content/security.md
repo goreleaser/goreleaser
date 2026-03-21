@@ -1,6 +1,9 @@
 ---
 title: "Security Policy"
+sidebar:
+  hide: true
 ---
+
 ## Supported Versions
 
 Only the last stable version at any given point.

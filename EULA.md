@@ -6,7 +6,8 @@ GoReleaser Pro is licensed as commercial software and must not be used without a
 
 ### 1.1 "Supplier"
 
-Becker Software LTDA ("Supplier") is a registered company in Joinville, Santa Catarina, Brazil.
+Becker Software LTDA ("Supplier") is a registered company in Marechal Candido
+Rondon, Parana, Brazil.
 
 ## 2. Your agreement.
 

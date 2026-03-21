@@ -1198,7 +1198,3 @@ nfpms:
 
 {{< /tab >}}
 {{< /tabs >}}
-
-## Previous versions
-
-Deprecations that were removed in v1.x or earlier have been moved into its [own page](/old-deprecations/).

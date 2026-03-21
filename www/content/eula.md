@@ -1,13 +1,17 @@
 ---
 title: "GoReleaser End User License Agreement (EULA)"
+sidebar:
+  hide: true
 ---
+
 ## 1. Licensed software.
 
 GoReleaser Pro is licensed as commercial software and must not be used without a valid license key from Becker Software LTDA
 
 ### 1.1 "Supplier"
 
-Becker Software LTDA ("Supplier") is a registered company in Joinville, Santa Catarina, Brazil.
+Becker Software LTDA ("Supplier") is a registered company in Marechal Candido
+Rondon, Parana, Brazil.
 
 ## 2. Your agreement.
 
