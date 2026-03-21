@@ -27,7 +27,10 @@ brew install --cask goreleaser/tap/goreleaser-pro
 {{< /tab >}}
 {{< /tabs >}}
 
-## Homebrew {{< community >}}
+## Homebrew
+
+<br>
+{{< badge content="Community Owned" icon="sparkles" >}}
 
 {{< tabs >}}
 {{< tab "OSS" >}}
@@ -106,7 +109,10 @@ scoop install goreleaser-pro
 {{< /tab >}}
 {{< /tabs >}}
 
-## Chocolatey {{< community >}}
+## Chocolatey
+
+<br>
+{{< badge content="Community Owned" icon="sparkles" >}}
 
 {{< tabs >}}
 {{< tab "OSS" >}}
@@ -210,7 +216,10 @@ yay -S goreleaser-pro-bin
 {{< /tab >}}
 {{< /tabs >}}
 
-## Nixpkgs {{< community >}}
+## Nixpkgs
+
+<br>
+{{< badge content="Community Owned" icon="sparkles" >}}
 
 {{< tabs >}}
 {{< tab "OSS" >}}
@@ -221,7 +230,7 @@ nix-shell -p goreleaser
 
 {{< callout type="warning" >}}
 
-The [package in nixpkgs] might be slightly outdated, as it is not
+The package in nixpkgs might be slightly outdated, as it is not
 updated automatically.
 Use our NUR to always get the latest updates.
 {{< /callout >}}
@@ -565,5 +574,5 @@ environment variable to `nightly`.
 
 ## Community
 
-Install options with the {{< community >}} mark are maintained by the
-community and might not always be up to date.
+Install options with the {{< badge content="Community Owned" icon="sparkles" >}}
+mark are maintained by the community and might not always be up to date.
