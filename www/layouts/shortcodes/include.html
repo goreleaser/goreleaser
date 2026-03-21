@@ -1,5 +1,4 @@
 {{- $file := .Get "file" -}}
-{{- $outerIndent := .Get "indent" | default 0 | int -}}
 {{- $lang := .Get "lang" | default "" -}}
 {{- $path := path.Join "content" $file -}}
 {{- $content := readFile $path -}}
@@ -7,15 +6,6 @@
 {{- $content = replaceRE "(?s)^---\\s*\\n.*?\\n---\\s*\\n" "" $content -}}
 {{/* Strip leading blank lines */}}
 {{- $content = strings.TrimLeft "\n" $content -}}
-{{- if gt $outerIndent 0 -}}
-  {{- $spaces := strings.Repeat $outerIndent " " -}}
-  {{- $lines := split $content "\n" -}}
-  {{- $indented := slice -}}
-  {{- range $lines -}}
-    {{- $indented = $indented | append (printf "%s%s" $spaces .) -}}
-  {{- end -}}
-  {{- $content = delimit $indented "\n" -}}
-{{- end -}}
 {{- if $lang -}}
 {{/* Dedent: detect and strip uniform leading indentation using regex */}}
 {{- $lines := split $content "\n" -}}
