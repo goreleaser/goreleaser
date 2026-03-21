@@ -1,5 +1,6 @@
 ---
 title: Import pre-built binaries
+weight: 90
 ---
 
 {{< pro >}}

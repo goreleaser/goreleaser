@@ -1,6 +1,6 @@
 ---
 title: "Attestations"
-weight: 230
+weight: 170
 ---
 
 If you're using GitHub Actions and want to attest your build artifacts, you can

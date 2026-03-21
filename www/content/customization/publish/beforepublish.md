@@ -1,5 +1,5 @@
 ---
-title: "Before Publish Hooks"
+title: "Hooks"
 weight: 10
 ---
 

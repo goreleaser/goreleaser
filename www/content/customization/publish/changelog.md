@@ -1,6 +1,6 @@
 ---
 title: "Changelog"
-weight: 190
+weight: 180
 ---
 
 You can customize how the changelog is generated using the `changelog` section in the config file:

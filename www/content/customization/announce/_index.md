@@ -1,6 +1,6 @@
 ---
 title: "Announce"
-weight: 1000
+weight: 60
 ---
 
 GoReleaser can also announce new releases on social networks, chat rooms and via

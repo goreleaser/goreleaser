@@ -1,6 +1,6 @@
 ---
 title: "Krew Plugin Manifests"
-weight: 160
+weight: 140
 ---
 
 After releasing to GitHub or GitLab, GoReleaser can generate and publish a _Krew

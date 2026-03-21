@@ -1,6 +1,6 @@
 ---
 title: "Custom Publishers"
-weight: 220
+weight: 210
 ---
 
 GoReleaser supports publishing artifacts by executing a custom publisher.

@@ -1,6 +1,6 @@
 ---
 title: "Scoop Manifests"
-weight: 170
+weight: 150
 ---
 
 After releasing to GitHub, GitLab, or Gitea, GoReleaser can generate and publish a

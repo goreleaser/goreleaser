@@ -1,5 +1,5 @@
 ---
-title: "Signing Docker Images and Manifests"
+title: "Docker manifests"
 weight: 30
 ---
 

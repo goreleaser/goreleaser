@@ -1,89 +1,71 @@
 ---
-weight: 100
-title: Introduction
+title: "Introduction"
 ---
 
-GoReleaser can be customized by tweaking a `.goreleaser.yaml`[^goreleaser-yaml] file.
+Putting it simply, GoReleaser is a release automation tool.
 
-You can generate an example config by running
-[`goreleaser init`](/cmd/goreleaser_init/) or start from scratch.
+It currently supports Go, Rust, Zig, TypeScript (with Bun and Deno), and Python.
 
-You can also check if your config is valid by running
-[`goreleaser check`](/cmd/goreleaser_check/), which will tell you if are
-using deprecated or invalid options.
+## Why we made it?
 
-## JSON Schema
+GoReleaser was created to solve a problem we all had at some point: releasing
+software is boring and error prone.
 
-GoReleaser also has a [jsonschema][] file, which you can use to have better
-editor support:
+To fix that, we all end up creating scripts to automate the work, with various
+levels of success.
 
-{{< tabs >}}
-{{< tab "OSS" >}}
+Generally speaking, those scripts tend to not be reusable and have dependencies
+on many other tools - which makes it hard to run the process on other machines.
 
-```sh
-https://goreleaser.com/static/schema.json
-```
+GoReleaser aims to make all these scripts obsolete: instead of writing scripts,
+you write a simple YAML configuration file; instead of many tools, you (usually)
+only need a single `goreleaser` binary.
 
-You can also specify it in your `.goreleaser.yml` config file by adding a
-comment like the following:
+Then, you can simply run a single command to build, archive, package, sign and
+publish artifacts.
 
-```yaml
-# yaml-language-server: $schema=https://goreleaser.com/static/schema.json
-```
+We work hard to make it easy for you, our user, to do the best thing for your
+users.
+That's why we focus on providing easy-to-use integrations, good defaults and
+many tutorials with tools that help mitigate supply chain security issues,
+package managers, go mod proxying and so on.
 
-{{< /tab >}}
-{{< tab "Pro" >}}
+This way its easy to provide easy to install packages, with signed checksums,
+software bill of materials, and reproducible binaries, for example.
 
-```sh
-https://goreleaser.com/static/schema-pro.json
-```
+## Is it any good?
 
-You can also specify it in your `.goreleaser.yml` config file by adding a
-comment like the following:
+GoReleaser has been widely adopted by the Go community in the past few years,
+with
+[thousands of projects and companies](https://github.com/search?q=path%3A.goreleaser.yml+OR+path%3A.goreleaser.yaml+&type=code)
+using it to manage their releases.
 
-```yaml
-# yaml-language-server: $schema=https://goreleaser.com/static/schema-pro.json
-```
+You can check some of our users out [here](/users/).
 
-{{< /tab >}}
-{{< /tabs >}}
+## Use cases
 
-You can also generate it for your specific version using the
-[`goreleaser jsonschema`][schema] command.
+GoReleaser is built with CI tools in mind — you only really need to download and
+execute it in your build script.
 
-### Pin the schema version
+Installing it in your machine is entirely up to you, but still possible.
 
-You can pin the version by getting the schema from the GitHub tag, for example,
-for `__VERSION__` (latest):
+## Usage
 
-{{< tabs >}}
-{{< tab "OSS" >}}
+Your entire release process is customized through a `.goreleaser.yaml` file.
 
-```sh
-https://raw.githubusercontent.com/goreleaser/goreleaser/__VERSION__/www/static/schema.json
-```
+Once you set it up, every time you want to create a new release, all you need to
+do is push a git tag and run `goreleaser release`:
 
-{{< /tab >}}
-{{< tab "Pro" >}}
+![goreleaser example gif](https://raw.githubusercontent.com/goreleaser/example-simple/main/goreleaser.gif)
 
-```sh
-https://raw.githubusercontent.com/goreleaser/goreleaser/__VERSION__/www/static/schema-pro.json
-```
+You can also do it in your continuous integration platform of choice.
 
-{{< /tab >}}
-{{< /tabs >}}
+---
 
-[^goreleaser-yaml]:
-    While most of the documentation refers to the `.goreleaser.yaml` filename
-    for simplicity, a few different variants of it are actually accepted.
-    In order of precedence:
+Hopefully you find it useful, and the docs easy to follow.
 
-    - `.config/goreleaser.yml`
-    - `.config/goreleaser.yaml`
-    - `.goreleaser.yml`
-    - `.goreleaser.yaml`
-    - `goreleaser.yml`
-    - `goreleaser.yaml`
+Feel free to [create an issue][iss] if you find something that's not clear and
+join our [Discord][dis] to chat with other users and maintainers.
 
-[jsonschema]: http://json-schema.org/draft/2020-12/json-schema-validation.html
-[schema]: ../cmd/goreleaser_jsonschema.md
+[iss]: https://github.com/goreleaser/goreleaser/issues
+[dis]: https://discord.gg/RGEBtg8vQ6

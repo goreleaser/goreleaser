@@ -1,6 +1,6 @@
 ---
 title: "Flatpak Packages"
-weight: 120
+weight: 110
 ---
 
 {{< version "v2.15-unreleased" >}}

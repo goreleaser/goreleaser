@@ -1,5 +1,5 @@
 ---
-title: "Splitting and Merging the entire process"
+title: "Split & Merge"
 weight: 110
 ---
 

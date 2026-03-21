@@ -1,6 +1,6 @@
 ---
 title: "Docker Images with Ko"
-weight: 180
+weight: 140
 ---
 
 You can also use [ko][] to build and publish Docker container images.

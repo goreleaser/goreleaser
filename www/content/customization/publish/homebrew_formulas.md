@@ -1,6 +1,6 @@
 ---
 title: "Homebrew Formulas (deprecated)"
-weight: 100
+weight: 230
 ---
 
 > [Deprecated](/customization/deprecations/#brews) in v2.10.

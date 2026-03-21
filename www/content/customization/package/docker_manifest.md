@@ -1,6 +1,6 @@
 ---
 title: "Docker Manifests (deprecated)"
-weight: 160
+weight: 180
 ---
 
 > [Phasing out](/customization/deprecations/#dockers) in v2.12.

@@ -1,6 +1,6 @@
 ---
 title: "HTTP Upload"
-weight: 200
+weight: 190
 ---
 
 GoReleaser supports building and pushing artifacts to HTTP servers using simple

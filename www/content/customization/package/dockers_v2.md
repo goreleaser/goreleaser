@@ -1,6 +1,6 @@
 ---
 title: "Docker (v2)"
-weight: 140
+weight: 130
 ---
 
 {{< version "v2.12" >}}

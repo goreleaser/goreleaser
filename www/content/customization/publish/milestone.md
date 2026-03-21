@@ -1,6 +1,6 @@
 ---
 title: "Closing Milestones"
-weight: 240
+weight: 220
 ---
 
 GoReleaser can close repository milestones after successfully publishing all

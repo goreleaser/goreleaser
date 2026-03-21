@@ -1,6 +1,6 @@
 ---
 title: "Snapcraft Packages (snaps)"
-weight: 110
+weight: 100
 ---
 
 GoReleaser can also generate `snap` packages.

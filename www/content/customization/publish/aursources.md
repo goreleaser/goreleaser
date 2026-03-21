@@ -1,6 +1,6 @@
 ---
 title: "Arch User Repositories (Sources)"
-weight: 140
+weight: 130
 ---
 
 {{< version "v2.5" >}}

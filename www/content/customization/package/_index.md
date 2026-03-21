@@ -1,4 +1,4 @@
 ---
-title: "Package & Archive"
+title: "Package and Archive"
 weight: 30
 ---

@@ -1,6 +1,6 @@
 ---
 title: "Model Context Protocol (MCP) Server"
-weight: 180
+weight: 160
 ---
 
 {{< version "v2.13" >}}

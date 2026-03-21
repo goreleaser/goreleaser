@@ -25,7 +25,7 @@ to `true` as well, otherwise it might not work.
 
 {{< callout type="warning" >}}
 
-If you are using a [protected variable](https://docs.gitlab.com/ee/ci/variables/#protected-cicd-variables)
+If you are using a [protected variable](https://docs.gitlab.com/ee/customization/ci/variables/#protected-cicd-variables)
 to store any of the values needed by goreleaser, ensure that you are protecting the tags as CI jobs in
 Gitlab only may access protected variables if the job is run for protected refs
 ([branches](https://docs.gitlab.com/ee/user/project/protected_branches.html),
@@ -57,7 +57,7 @@ release:
 ```
 
 Notice that `entrypoint` is intentionally blank. See the
-[GitLab documentation on entrypoints](https://docs.gitlab.com/ee/ci/docker/using_docker_images.html#overriding-the-entrypoint-of-an-image)
+[GitLab documentation on entrypoints](https://docs.gitlab.com/ee/customization/ci/docker/using_docker_images.html#overriding-the-entrypoint-of-an-image)
 for more information.
 
 When tags are pushed to the repository,

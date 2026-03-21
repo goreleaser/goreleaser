@@ -1,6 +1,6 @@
 ---
 title: "Docker Images (deprecated)"
-weight: 150
+weight: 170
 ---
 
 > [Phasing out](/customization/deprecations/#dockers) in v2.12.

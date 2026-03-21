@@ -1,6 +1,6 @@
 ---
-title: "Nix User Repositories"
-weight: 120
+title: "NUR"
+weight: 110
 ---
 
 After releasing to GitHub, GitLab, or Gitea, GoReleaser can generate and publish

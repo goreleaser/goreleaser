@@ -1,6 +1,6 @@
 ---
 title: "Winget"
-weight: 110
+weight: 100
 ---
 
 After releasing to GitHub, GitLab, or Gitea, GoReleaser can generate and publish

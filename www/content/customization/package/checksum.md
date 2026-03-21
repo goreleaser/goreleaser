@@ -1,6 +1,6 @@
 ---
 title: "Checksums"
-weight: 100
+weight: 150
 ---
 
 GoReleaser generates a `project_1.0.0_checksums.txt` file and uploads it with the

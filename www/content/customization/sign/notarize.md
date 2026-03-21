@@ -1,5 +1,5 @@
 ---
-title: "Notarize macOS applications"
+title: "Notarize macOS Applications"
 weight: 40
 ---
 

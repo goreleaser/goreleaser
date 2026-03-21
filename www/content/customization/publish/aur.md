@@ -1,6 +1,6 @@
 ---
 title: "Arch User Repositories"
-weight: 130
+weight: 120
 ---
 
 After releasing to GitHub, GitLab, or Gitea, GoReleaser can generate and publish

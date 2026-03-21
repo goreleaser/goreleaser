@@ -1,6 +1,6 @@
 ---
 title: "Chocolatey Packages"
-weight: 130
+weight: 120
 ---
 
 GoReleaser can also generate `nupkg` packages.

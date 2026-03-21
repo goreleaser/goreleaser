@@ -1,5 +1,5 @@
 ---
-title: "Cataloging artifacts"
+title: "SBOMs"
 weight: 35
 ---
 

@@ -1,5 +1,5 @@
 ---
-title: "Builds"
+title: "Build"
 aliases:
   - "/customization/build/"
 weight: 20

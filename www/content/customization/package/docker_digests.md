@@ -1,6 +1,6 @@
 ---
 title: "Docker Digests"
-weight: 170
+weight: 160
 ---
 
 {{< version "v2.12" >}}
