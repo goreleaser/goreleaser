@@ -118,10 +118,10 @@ tasks:
   docs:generate:
     desc: Generate docs
     cmds:
-      - cp -rf CONTRIBUTING.md www/content/contributing.md
-      - cp -rf USERS.md www/content/users.md
-      - cp -rf EULA.md www/content/eula.md
-      - cp -rf SECURITY.md www/content/security.md
+      - scripts/copy-doc.sh CONTRIBUTING.md www/content/contributing.md
+      - scripts/copy-doc.sh USERS.md www/content/users.md
+      - scripts/copy-doc.sh EULA.md www/content/eula.md
+      - scripts/copy-doc.sh SECURITY.md www/content/security.md
     sources:
       - CONTRIBUTING.md
       - USERS.md
