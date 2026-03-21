@@ -141,7 +141,6 @@ goreleaser release
 		newCheckCmd().cmd,
 		newHealthcheckCmd().cmd,
 		newInitCmd().cmd,
-		newDocsCmd().cmd,
 		newManCmd().cmd,
 		newSchemaCmd().cmd,
 	)
