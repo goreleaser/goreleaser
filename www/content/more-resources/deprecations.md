@@ -1028,16 +1028,12 @@ brews:
 This option is now default and can't be changed. You can remove it from your
 configuration files.
 
-See [this](/old-deprecations/#archivesrlcp) for more info.
-
 ### source.rlcp
 
 > since 2023-06-06 (v1.19.0), removed 2024-05-26 (v2.0)
 
 This option is now default and can't be changed. You can remove it from your
 configuration files.
-
-See [this](/old-deprecations/#sourcerlcp) for more info.
 
 ### brews.plist
 

@@ -1,28 +1,17 @@
 # External short-links
 /discord/    https://discord.gg/RGEBtg8vQ6         302
-/discord     https://discord.gg/RGEBtg8vQ6         302
 /d/          https://discord.gg/RGEBtg8vQ6         302
-/d           https://discord.gg/RGEBtg8vQ6         302
 /github/     https://github.com/goreleaser         302
-/github      https://github.com/goreleaser         302
 /g/          https://github.com/goreleaser         302
-/g           https://github.com/goreleaser         302
 /linkedin/   https://www.linkedin.com/company/goreleaser/  302
-/linkedin    https://www.linkedin.com/company/goreleaser/  302
 /l/          https://www.linkedin.com/company/goreleaser/  302
-/l           https://www.linkedin.com/company/goreleaser/  302
 /mastodon/   https://fosstodon.org/@goreleaser     302
-/mastodon    https://fosstodon.org/@goreleaser     302
 /m/          https://fosstodon.org/@goreleaser     302
-/m           https://fosstodon.org/@goreleaser     302
 /twitter/    https://twitter.com/goreleaser        302
-/twitter     https://twitter.com/goreleaser        302
 /t/          https://twitter.com/goreleaser        302
-/t           https://twitter.com/goreleaser        302
 /x/          https://twitter.com/goreleaser        302
-/x           https://twitter.com/goreleaser        302
 /mcp/        https://github.com/goreleaser/mcp     302
-/mcp         https://github.com/goreleaser/mcp     302
+
 # Auto-generated URL redirects (old MkDocs URLs → new Hugo URLs)
 /customization/app_bundles/ /customization/package/app_bundles/ 301
 /customization/archive/ /customization/package/archive/ 301
@@ -118,3 +107,18 @@
 # CI pages moved to customization
 /ci/                            /customization/ci/                              301
 /ci/*                           /customization/ci/:splat                        301
+
+# Builders moved to builds/builders/
+/customization/builds/bun/      /customization/builds/builders/bun/             301
+/customization/builds/deno/     /customization/builds/builders/deno/            301
+/customization/builds/go/       /customization/builds/builders/go/              301
+/customization/builds/poetry/   /customization/builds/builders/poetry/          301
+/customization/builds/python/   /customization/builds/builders/python/          301
+/customization/builds/rust/     /customization/builds/builders/rust/            301
+/customization/builds/uv/       /customization/builds/builders/uv/              301
+/customization/builds/zig/      /customization/builds/builders/zig/             301
+/customization/prebuilt/        /customization/builds/builders/prebuilt/        301
+
+# Blog archive/category/pagination pages
+/blog/archive/*                 /blog/                                          301
+/blog/category/*                /blog/                                          301
