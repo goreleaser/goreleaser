@@ -17,7 +17,7 @@ You can check the
 [Homebrew Cask documentation](https://docs.brew.sh/Cask-Cookbook),
 for more details.
 
-```yaml {filename=".goreleaser.yaml"}
+{{< codeinclude lang="yaml" filename=".goreleaser.yaml" file="includes/repository.md" indent=4 >}}
 homebrew_casks:
   -
     # Name of the cask
@@ -224,8 +224,7 @@ homebrew_casks:
         - "~/.foo/bar"
         - "~/otherfile"
 
-{{< include file="includes/repository.md" >}}
-```
+{{< /codeinclude >}}
 
 {{< templates >}}
 
@@ -371,4 +370,4 @@ homebrew_casks:
         - "X-GitHub-Api-Version: 2022-11-28"
 ```
 
-{{< include file="includes/prs.md" >}}
+{{< include file="includes/prs.md" render=true >}}

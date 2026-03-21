@@ -16,7 +16,7 @@ Before going further on this, make sure to read
 
 This page describes the available options.
 
-```yaml {filename=".goreleaser.yaml"}
+{{< codeinclude lang="yaml" filename=".goreleaser.yaml" file="includes/commit_author.md" indent=4 >}}
 aur_sources:
   - # The package name.
     #
@@ -179,8 +179,7 @@ aur_sources:
     # {{< inline_version "v2.8" >}}.
     disable: "{{ .IsSnapshot }}"
 
-{{< include file="includes/commit_author.md" >}}
-```
+{{< /codeinclude >}}
 
 {{< templates >}}
 

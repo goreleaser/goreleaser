@@ -9,7 +9,7 @@ _Scoop App Manifest_ into a repository that you have access to.
 The `scoop` section specifies how the manifest should be created. See the
 commented example below:
 
-```yaml {filename=".goreleaser.yaml"}
+{{< codeinclude lang="yaml" filename=".goreleaser.yaml" file="includes/repository.md" indent=4 >}}
 scoops:
   - # Name of the recipe
     #
@@ -99,8 +99,7 @@ scoops:
     # Default: 'v1'.
     goamd64: v3
 
-{{< include file="includes/repository.md" >}}
-```
+{{< /codeinclude >}}
 
 {{< templates >}}
 
@@ -139,4 +138,4 @@ You can check the
 [Scoop documentation](https://github.com/lukesampson/scoop/wiki) for more
 details.
 
-{{< include file="includes/prs.md" >}}
+{{< include file="includes/prs.md" render=true >}}

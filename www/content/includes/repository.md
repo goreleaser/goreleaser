@@ -1,8 +1,6 @@
 ---
-search:
-  exclude: true
+excludeSearch: true
 ---
-
 
     # Repository to push the generated files to.
     repository:
@@ -64,7 +62,7 @@ search:
         # If the repository has a pull request template, it will be appended to
         # this.
         #
-        # {{< inline_version "v2.12" >}}.
+        # Since: v2.12.
         body: |
           cc/ @foobar
 
@@ -106,7 +104,7 @@ search:
 
     # Git author used to commit to the repository.
     #
-    # {{< inline_version "v2.11" >}}.
+    # Since: v2.11.
     # Default: inferred from global metadata (Since v2.12).
     commit_author:
       # Git author name.
@@ -122,7 +120,7 @@ search:
       # Git commit signing configuration.
       # Only useful if repository is of type 'git'.
       #
-      # {{< inline_version "v2.11" >}}.
+      # Since: v2.11.
       signing:
         # Enable commit signing.
         enabled: true

@@ -9,7 +9,7 @@ if instructed to.
 
 The `winget` section specifies how the **manifests** should be created:
 
-```yaml {filename=".goreleaser.yaml"}
+{{< codeinclude lang="yaml" filename=".goreleaser.yaml" file="includes/repository.md" indent=4 >}}
 winget:
   - # Name of the recipe
     #
@@ -185,9 +185,8 @@ winget:
         minimum_version: 1.2.3
 
 
-{{< include file="includes/repository.md" >}}
-```
+{{< /codeinclude >}}
 
 {{< templates >}}
 
-{{< include file="includes/prs.md" >}}
+{{< include file="includes/prs.md" render=true >}}

@@ -1,7 +1,6 @@
 ---
 title: "..."
-search:
-  exclude: true
+excludeSearch: true
 ---
 
 ## Pull Requests

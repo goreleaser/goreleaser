@@ -1,8 +1,6 @@
 ---
-search:
-  exclude: true
+excludeSearch: true
 ---
-
 
     # Git author used to commit to the repository.
     #
@@ -23,14 +21,14 @@ search:
       # allowing GitHub to automatically sign commits with the GitHub App identity.
       # See: https://docs.github.com/en/authentication/managing-commit-signature-verification/about-commit-signature-verification#signature-verification-for-bots
       #
-      # {{< inline_version "v2.13" >}}.
+      # Since: v2.13.
       # Default: false.
       use_github_app_token: false
 
       # Git commit signing configuration.
       # Only useful if repository is of type 'git'.
       #
-      # {{< inline_version "v2.11" >}}.
+      # Since: v2.11.
       signing:
         # Enable commit signing.
         enabled: true

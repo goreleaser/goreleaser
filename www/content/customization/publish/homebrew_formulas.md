@@ -16,7 +16,7 @@ and the
 [formula cookbook](https://github.com/Homebrew/brew/blob/master/docs/Formula-Cookbook.md)
 for more details.
 
-```yaml {filename=".goreleaser.yaml"}
+{{< codeinclude lang="yaml" filename=".goreleaser.yaml" file="includes/repository.md" indent=4 >}}
 brews:
   -
     # Name of the recipe
@@ -191,8 +191,7 @@ brews:
     	etc.install "app-config.conf"
       # ...
 
-{{< include file="includes/repository.md" >}}
-```
+{{< /codeinclude >}}
 
 {{< templates >}}
 
@@ -296,4 +295,4 @@ You can check the [resource not accessible by integration](https://goreleaser.co
 
 - Only one `GOARM` build is allowed;
 
-{{< include file="includes/prs.md" >}}
+{{< include file="includes/prs.md" render=true >}}

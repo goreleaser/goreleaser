@@ -8,7 +8,7 @@ finishes running.
 
 You can also set some global defaults that can be used by other features.
 
-```yaml {filename=".goreleaser.yaml"}
+{{< codeinclude lang="yaml" filename=".goreleaser.yaml" file="includes/commit_author.md" indent=4 >}}
 metadata:
   # Set the modified timestamp on the metadata files.
   #
@@ -106,7 +106,6 @@ metadata:
       # Default: openpgp.
       format: openpgp
 
-{{< include file="includes/commit_author.md" >}}
-```
+{{< /codeinclude >}}
 
 {{< templates >}}

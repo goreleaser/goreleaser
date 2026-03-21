@@ -8,7 +8,7 @@ a _nix derivation_ to an existing [Nix User Repository][nur].
 
 The `nix` section specifies how the pkgs should be created:
 
-```yaml {filename=".goreleaser.yaml"}
+{{< codeinclude lang="yaml" filename=".goreleaser.yaml" file="includes/repository.md" indent=4 >}}
 nix:
   - #
     # Name of the recipe
@@ -112,8 +112,7 @@ nix:
     # {{< inline_version "v2.14" >}}.
     formatter: nixfmt
 
-{{< include file="includes/repository.md" >}}
-```
+{{< /codeinclude >}}
 
 {{< templates >}}
 
@@ -159,4 +158,4 @@ That's it!
 
 [nur]: https://github.com/nix-community/NUR
 
-{{< include file="includes/prs.md" >}}
+{{< include file="includes/prs.md" render=true >}}
