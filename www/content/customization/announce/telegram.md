@@ -32,7 +32,7 @@ announce:
 
     # Specific thread ID to reply to.
     #
-    # {{< inline_version "v2.15-unreleased" >}}.
+    # {{< inline_version "v2.15-unreleased" >}}
     message_thread_id: 1234
 
     # Message template to use while publishing.

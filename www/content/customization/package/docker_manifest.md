@@ -60,7 +60,7 @@ docker_manifests:
 
     # Retry configuration for manifest operations.
     #
-    # {{< inline_version "v2.12" >}}.
+    # {{< inline_version "v2.12" >}}
     retry:
       # Attempts of retry.
       #
@@ -171,7 +171,7 @@ and push everything to Docker Hub.
 
 ## Using Podman
 
-{{< pro >}}
+{{< featpro >}}
 
 You can use [`podman`](https://podman.io) instead of `docker` by setting `use`
 to `podman` on your configuration:

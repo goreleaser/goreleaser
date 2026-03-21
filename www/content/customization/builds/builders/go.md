@@ -146,7 +146,7 @@ builds:
     # and https://go.dev/wiki/MinimumRequirements#microarchitecture-support
     #
     # Default: [ 'v8.0' ].
-    # {{< inline_version "v2.4" >}}.
+    # {{< inline_version "v2.4" >}}
     goarm64:
       - v9.0
 
@@ -155,7 +155,7 @@ builds:
     # and https://go.dev/wiki/MinimumRequirements#microarchitecture-support
     #
     # Default: [ 'hardfloat' ].
-    # {{< inline_version "v2.4" >}}.
+    # {{< inline_version "v2.4" >}}
     gomips:
       - hardfloat
       - softfloat
@@ -165,7 +165,7 @@ builds:
     # and https://go.dev/wiki/MinimumRequirements#microarchitecture-support
     #
     # Default: [ 'sse2' ].
-    # {{< inline_version "v2.4" >}}.
+    # {{< inline_version "v2.4" >}}
     go386:
       - sse2
       - softfloat
@@ -175,7 +175,7 @@ builds:
     # and https://go.dev/wiki/MinimumRequirements#microarchitecture-support
     #
     # Default: [ 'power8' ].
-    # {{< inline_version "v2.4" >}}.
+    # {{< inline_version "v2.4" >}}
     goppc64:
       - power8
       - power9
@@ -185,7 +185,7 @@ builds:
     # and https://go.dev/wiki/MinimumRequirements#microarchitecture-support
     #
     # Default: [ 'rva20u64' ].
-    # {{< inline_version "v2.4" >}}.
+    # {{< inline_version "v2.4" >}}
     goriscv64:
       - rva22u64
 
@@ -226,7 +226,7 @@ builds:
     #
     # Default: "go".
     # Templates: allowed.
-    # {{< inline_version "v2.5" >}}.
+    # {{< inline_version "v2.5" >}}
     tool: "go1.13.4"
 
     # Sets the command to run to build.
@@ -255,7 +255,7 @@ builds:
     # If true, skip the build.
     # Useful for library projects.
     #
-    # Templates: allowed ({{< inline_version "v2.3" >}}).
+    # Templates: allowed ({{< inline_version "v2.3" >}})
     skip: false
 
     # By default, GoReleaser will create your binaries inside
@@ -268,7 +268,7 @@ builds:
     # If you do, you are responsible for keeping different builds from
     # overriding each other.
     #
-    # Templates: allowed ({{< inline_version "v2.3" >}}).
+    # Templates: allowed ({{< inline_version "v2.3" >}})
     no_unique_dist_dir: true
 
     # By default, GoReleaser will check if the main filepath has a main

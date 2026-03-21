@@ -42,7 +42,7 @@ release:
   # Whether to use an existing draft release as the target release.
   #
   # Available only for GitHub.
-  # {{< inline_version "v2.5" >}}.
+  # {{< inline_version "v2.5" >}}
   use_existing_draft: true
 
   # Whether to remove an artifact that already exists.
@@ -216,7 +216,7 @@ release:
 [Learn how to set up an API token, GitHub Enterprise, etc](/customization/scm/github/).
 {{< /callout >}}
 
-{{< pro >}}
+{{< featpro >}}
 
 ## GitLab
 

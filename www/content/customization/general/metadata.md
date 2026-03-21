@@ -8,7 +8,7 @@ finishes running.
 
 You can also set some global defaults that can be used by other features.
 
-{{< codeinclude lang="yaml" filename=".goreleaser.yaml" file="includes/commit_author.md" indent=4 >}}
+```yaml {filename=".goreleaser.yaml"}
 metadata:
   # Set the modified timestamp on the metadata files.
   #
@@ -18,31 +18,31 @@ metadata:
   # The maintainers of this software.
   # Most features will only use the first maintainer defined here.
   #
-  # {{< inline_pro >}}.
-  # {{< inline_version "v2.1" >}}.
+  # {{< inline_pro >}}
+  # {{< inline_version "v2.1" >}}
   # Templates: allowed.
   maintainers:
     - "Foo Bar <foo at bar dot com>"
 
   # SPDX identifier of your app's license.
   #
-  # {{< inline_pro >}}.
-  # {{< inline_version "v2.1" >}}.
+  # {{< inline_pro >}}
+  # {{< inline_version "v2.1" >}}
   # Templates: allowed.
   license: "MIT"
 
   # Your homepage.
   #
-  # {{< inline_pro >}}.
-  # {{< inline_version "v2.1" >}}.
+  # {{< inline_pro >}}
+  # {{< inline_version "v2.1" >}}
   # Templates: allowed.
   homepage: "https://example.com/"
 
   # Your app's description.
   # Sometimes also referred as "short description".
   #
-  # {{< inline_pro >}}.
-  # {{< inline_version "v2.1" >}}.
+  # {{< inline_pro >}}
+  # {{< inline_version "v2.1" >}}
   # Templates: allowed.
   description: "Software to create fast and easy drum rolls."
 
@@ -51,8 +51,8 @@ metadata:
   # It can be a string directly, or you can use `from_url` or `from_file` to
   # source it from somewhere else.
   #
-  # {{< inline_pro >}}.
-  # {{< inline_version "v2.1" >}}.
+  # {{< inline_pro >}}
+  # {{< inline_version "v2.1" >}}
   # Templates: allowed.
   full_description:
     # Loads from an URL.
@@ -70,8 +70,8 @@ metadata:
 
   # Default git author used to commit to AUR, Homebrew, Winget, Nix, etc.
   #
-  # {{< inline_pro >}}.
-  # {{< inline_version "v2.12" >}}.
+  # {{< inline_pro >}}
+  # {{< inline_version "v2.12" >}}
   commit_author:
     # Git author name.
     #
@@ -105,7 +105,6 @@ metadata:
       # Valid options: openpgp, x509, ssh.
       # Default: openpgp.
       format: openpgp
-
-{{< /codeinclude >}}
+```
 
 {{< templates >}}

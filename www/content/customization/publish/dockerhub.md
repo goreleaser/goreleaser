@@ -3,7 +3,7 @@ title: "DockerHub"
 weight: 80
 ---
 
-{{< pro >}}
+{{< featpro >}}
 
 DockerHub allows you to set an image description and a full description.
 However, this is not possible via `docker push`.

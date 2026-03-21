@@ -38,7 +38,7 @@ In fields that support templates, these fields are always available:
 | `.IsDraft`         | `true` if `release.draft` is set in the configuration, `false` otherwise                                   |
 | `.IsSnapshot`      | `true` if `--snapshot` is set, `false` otherwise                                                           |
 | `.IsNightly`       | `true` if `--nightly` is set, `false` otherwise                                                            |
-| `.IsSingleTarget`  | `true` if `--single-target` is set, `false` otherwise (since v2.3)                                         |
+| `.IsSingleTarget`  | `true` if `--single-target` is set, `false` otherwise {{< inline_version "v2.3" >}}                        |
 | `.Env`             | a map with system's environment variables                                                                  |
 | `.Date`            | current UTC date in RFC 3339 format                                                                        |
 | `.Now`             | current UTC date as `time.Time` struct, allows all `time.Time` functions (e.g. `{{ .Now.Format "2006" }}`) |
@@ -51,21 +51,21 @@ In fields that support templates, these fields are always available:
 | `.TagBody`         | the annotated tag message's body, or the message's body of the commit it points out[^git-tag-body]         |
 | `.Runtime.Goos`    | equivalent to `runtime.GOOS`                                                                               |
 | `.Runtime.Goarch`  | equivalent to `runtime.GOARCH`                                                                             |
-| `.Outputs`         | custom outputs (since v2.11)                                                                               |
+| `.Outputs`         | custom outputs {{< inline_version "v2.11" >}}                                                              |
 
 ## Common Fields (Pro)
 
-{{< tmpl_pro >}}
+{{< featpro >}}
 
-| Key                    | Description                                                                |
-| ---------------------- | -------------------------------------------------------------------------- |
-| `.PrefixedTag`         | the current git tag prefixed with the monorepo config tag prefix (if any)  |
-| `.PrefixedPreviousTag` | the previous git tag prefixed with the monorepo config tag prefix (if any) |
-| `.PrefixedSummary`     | the git summary prefixed with the monorepo config tag prefix (if any)      |
-| `.IsRelease`           | `true` if regular release (not a nightly nor a snapshot) (since v2.8)      |
-| `.IsMerging`           | `true` if you are running with `--merge` (since v2.8)                      |
-| `.Artifacts`           | [the current artifacts list](#artifacts)                                   |
-| `.Metadata`            | [project metadata fields](#metadata) (since v2.13)                         |
+| Key                    | Description                                                                            |
+| ---------------------- | -------------------------------------------------------------------------------------- |
+| `.PrefixedTag`         | the current git tag prefixed with the monorepo config tag prefix (if any)              |
+| `.PrefixedPreviousTag` | the previous git tag prefixed with the monorepo config tag prefix (if any)             |
+| `.PrefixedSummary`     | the git summary prefixed with the monorepo config tag prefix (if any)                  |
+| `.IsRelease`           | `true` if regular release (not a nightly nor a snapshot) {{< inline_version "v2.8" >}} |
+| `.IsMerging`           | `true` if you are running with `--merge` {{< inline_version "v2.8" >}}                 |
+| `.Artifacts`           | [the current artifacts list](#artifacts)                                               |
+| `.Metadata`            | [project metadata fields](#metadata) {{< inline_version "v2.13" >}}                    |
 
 ## Metadata
 
@@ -99,12 +99,12 @@ You should be able to use all its fields on each item:
 - `.Goarm`
 - `.Gomips`
 - `.Goamd64`
-- `.Goarm64` (since v2.4)
-- `.Gomips64` (since v2.4)
-- `.Goppc64` (since v2.4)
-- `.Goriscv64` (since v2.4)
-- `.Go386` (since v2.4)
-- `.Target` (Since v2.5)
+- `.Goarm64` {{< inline_version "v2.4" >}}
+- `.Gomips64` {{< inline_version "v2.4" >}}
+- `.Goppc64` {{< inline_version "v2.4" >}}
+- `.Goriscv64` {{< inline_version "v2.4" >}}
+- `.Go386` {{< inline_version "v2.4" >}}
+- `.Target` {{< inline_version "v2.5" >}}
 - `.Type`
 - `.Extra`
 
@@ -113,24 +113,24 @@ You should be able to use all its fields on each item:
 On fields that are related to a single artifact (e.g., the binary name), you
 may have some extra fields:
 
-| Key             | Description                                   |
-| --------------- | --------------------------------------------- |
-| `.Os`           | `GOOS`                                        |
-| `.Arch`         | `GOARCH`                                      |
-| `.Arm`          | `GOARM`                                       |
-| `.Mips`         | `GOMIPS`                                      |
-| `.Amd64`        | `GOAMD64`                                     |
-| `.Arm64`        | `GOARM64` (since v2.4)                        |
-| `.Mips64`       | `GOMIPS64` (since v2.4)                       |
-| `.Ppc64`        | `GOPPC64` (since v2.4)                        |
-| `.Riscv64`      | `GORISCV64` (since v2.4)                      |
-| `.I386`         | `GO386` (since v2.4)                          |
-| `.Target`       | the whole target (since v2.5)                 |
-| `.Binary`       | artifact name                                 |
-| `.ArtifactID`   | artifact id (since v2.3[^pro])                |
-| `.ArtifactName` | artifact name                                 |
-| `.ArtifactPath` | absolute path to artifact                     |
-| `.ArtifactExt`  | artifact extension (e.g. `.exe`, `.dmg`, etc) |
+| Key             | Description                                                 |
+| --------------- | ----------------------------------------------------------- |
+| `.Os`           | `GOOS`                                                      |
+| `.Arch`         | `GOARCH`                                                    |
+| `.Arm`          | `GOARM`                                                     |
+| `.Mips`         | `GOMIPS`                                                    |
+| `.Amd64`        | `GOAMD64`                                                   |
+| `.Arm64`        | `GOARM64` {{< inline_version "v2.4" >}}                     |
+| `.Mips64`       | `GOMIPS64` {{< inline_version "v2.4" >}}                    |
+| `.Ppc64`        | `GOPPC64` {{< inline_version "v2.4" >}}                     |
+| `.Riscv64`      | `GORISCV64` {{< inline_version "v2.4" >}}                   |
+| `.I386`         | `GO386` {{< inline_version "v2.4" >}}                       |
+| `.Target`       | the whole target {{< inline_version "v2.5" >}}              |
+| `.Binary`       | artifact name                                               |
+| `.ArtifactID`   | artifact id {{< inline_version "v2.3" >}}{{< inline_pro >}} |
+| `.ArtifactName` | artifact name                                               |
+| `.ArtifactPath` | absolute path to artifact                                   |
+| `.ArtifactExt`  | artifact extension (e.g. `.exe`, `.dmg`, etc)               |
 
 ## nFPM extra fields
 
@@ -157,59 +157,59 @@ In the `release.body` field, you can use these extra fields:
 
 On all fields, you have these available functions:
 
-| Usage                             | Description                                                                                                               |
-| --------------------------------- | ------------------------------------------------------------------------------------------------------------------------- |
-| `replace "v1.2" "v" ""`           | replaces all matches. See [ReplaceAll](https://pkg.go.dev/strings#ReplaceAll)                                             |
-| `split "1.2" "."`                 | split string at separator. See [Split](https://pkg.go.dev/strings#Split)                                                  |
-| `time "01/02/2006"`               | current UTC time in the specified format (this is not deterministic, a new time for every call)                           |
-| `contains "foobar" "foo"`         | checks whether the first string contains the second. See [Contains](https://pkg.go.dev/strings#Contains)                  |
-| `tolower "V1.2"`                  | makes input string lowercase. See [ToLower](https://pkg.go.dev/strings#ToLower)                                           |
-| `toupper "v1.2"`                  | makes input string uppercase. See [ToUpper](https://pkg.go.dev/strings#ToUpper)                                           |
-| `trim " v1.2  "`                  | removes all leading and trailing white space. See [TrimSpace](https://pkg.go.dev/strings#TrimSpace)                       |
-| `trimprefix "v1.2" "v"`           | removes provided leading prefix string, if present. See [TrimPrefix](https://pkg.go.dev/strings#TrimPrefix)               |
-| `trimsuffix "1.2v" "v"`           | removes provided trailing suffix string, if present. See [TrimSuffix](https://pkg.go.dev/strings#TrimSuffix)              |
-| `dir .Path`                       | returns all but the last element of path, typically the path's directory. See [Dir](https://pkg.go.dev/path/filepath#Dir) |
-| `base .Path`                      | returns the last element of path. See [Base](https://pkg.go.dev/path/filepath#Base)                                       |
-| `abs .ArtifactPath`               | returns an absolute representation of path. See [Abs](https://pkg.go.dev/path/filepath#Abs)                               |
-| `filter "text" "regex"`           | keeps only the lines matching the given regex, analogous to `grep -E`                                                     |
-| `reverseFilter "text" "regex"`    | keeps only the lines **not** matching the given regex, analogous to `grep -vE`                                            |
-| `title "foo"`                     | "titlenize" the string using english as language. See [Title](https://pkg.go.dev/golang.org/x/text/cases#Title)           |
-| `mdv2escape "foo"`                | escape characters according to MarkdownV2, especially useful in the Telegram integration                                  |
-| `envOrDefault "NAME" "value"`     | either gets the value of the given environment variable, or the given default                                             |
-| `isEnvSet "NAME"`                 | returns true if the env is set and not empty, false otherwise                                                             |
-| `$m := map "KEY" "VALUE"`         | creates a map from a list of key and value pairs. Both keys and values must be of type `string`                           |
-| `indexOrDefault $m "KEY" "value"` | either gets the value of the given key or the given default value from the given map                                      |
-| `incpatch "v1.2.4"`               | increments the patch of the given version[^panic-if-not-semver]                                                           |
-| `incminor "v1.2.4"`               | increments the minor of the given version[^panic-if-not-semver]                                                           |
-| `incmajor "v1.2.4"`               | increments the major of the given version[^panic-if-not-semver]                                                           |
-| `urlPathEscape "foo/bar"`         | escapes URL paths. See [PathEscape](https://pkg.go.dev/net/url#PathEscape) (since v2.5)                                   |
-| `blake2b .ArtifactPath`           | `blake2b` checksum of the artifact. See [Blake2b](https://pkg.go.dev/golang.org/x/crypto/blake2b) (since v2.9)            |
-| `blake2s .ArtifactPath`           | `blake2s` checksum of the artifact. See [Blake2s](https://pkg.go.dev/golang.org/x/crypto/blake2s) (since v2.9)            |
-| `blake3 .ArtifactPath`            | `blake3` checksum of the artifact. See [Blake3](https://pkg.go.dev/lukechampine.com/blake3) (since v2.15-unreleased)                  |
-| `crc32 .ArtifactPath`             | `crc32` checksum of the artifact. See [CRC32](https://pkg.go.dev/hash/crc32) (since v2.9)                                 |
-| `md5 .ArtifactPath`               | `md5` checksum of the artifact. See [MD5](https://pkg.go.dev/crypto/md5) (since v2.9)                                     |
-| `sha224 .ArtifactPath`            | `sha224` checksum of the artifact. See [SHA224](https://pkg.go.dev/crypto/sha256) (since v2.9)                            |
-| `sha384 .ArtifactPath`            | `sha384` checksum of the artifact. See [SHA384](https://pkg.go.dev/golang.org/x/crypto/sha3) (since v2.9)                 |
-| `sha256 .ArtifactPath`            | `sha256` checksum of the artifact. See [SHA256](https://pkg.go.dev/crypto/sha256) (since v2.9)                            |
-| `sha1 .ArtifactPath`              | `sha1` checksum of the artifact. See [SHA1](https://pkg.go.dev/crypto/sha1) (since v2.9)                                  |
-| `sha512 .ArtifactPath`            | `sha512` checksum of the artifact. See [SHA512](https://pkg.go.dev/crypto/sha512) (since v2.9)                            |
-| `sha3_224 .ArtifactPath`          | `sha3_224` checksum of the artifact. See [SHA3-224](https://pkg.go.dev/golang.org/x/crypto/sha3) (since v2.9)             |
-| `sha3_384 .ArtifactPath`          | `sha3_384` checksum of the artifact. See [SHA3-384](https://pkg.go.dev/golang.org/x/crypto/sha3) (since v2.9)             |
-| `sha3_256 .ArtifactPath`          | `sha3_256` checksum of the artifact. See [SHA3-256](https://pkg.go.dev/golang.org/x/crypto/sha3) (since v2.9)             |
-| `sha3_512 .ArtifactPath`          | `sha3_512` checksum of the artifact. See [SHA3-512](https://pkg.go.dev/golang.org/x/crypto/sha3) (since v2.9)             |
-| `mustReadFile "/foo/bar.txt"`     | reads the file contents or fails if it can't be read (since v2.12)                                                        |
-| `readFile "/foo/bar.txt"`         | reads the file contents if it it can be read, or return empty string (since v2.12)                                        |
-| `englishJoin`                     | will join multiple items in english (since v2.14)                                                                         |
-| `list "a" "b" "c"`                | makes a list of strings                                                                                                   |
+| Usage                             | Description                                                                                                                           |
+| --------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------- |
+| `replace "v1.2" "v" ""`           | replaces all matches. See [ReplaceAll](https://pkg.go.dev/strings#ReplaceAll)                                                         |
+| `split "1.2" "."`                 | split string at separator. See [Split](https://pkg.go.dev/strings#Split)                                                              |
+| `time "01/02/2006"`               | current UTC time in the specified format (this is not deterministic, a new time for every call)                                       |
+| `contains "foobar" "foo"`         | checks whether the first string contains the second. See [Contains](https://pkg.go.dev/strings#Contains)                              |
+| `tolower "V1.2"`                  | makes input string lowercase. See [ToLower](https://pkg.go.dev/strings#ToLower)                                                       |
+| `toupper "v1.2"`                  | makes input string uppercase. See [ToUpper](https://pkg.go.dev/strings#ToUpper)                                                       |
+| `trim " v1.2  "`                  | removes all leading and trailing white space. See [TrimSpace](https://pkg.go.dev/strings#TrimSpace)                                   |
+| `trimprefix "v1.2" "v"`           | removes provided leading prefix string, if present. See [TrimPrefix](https://pkg.go.dev/strings#TrimPrefix)                           |
+| `trimsuffix "1.2v" "v"`           | removes provided trailing suffix string, if present. See [TrimSuffix](https://pkg.go.dev/strings#TrimSuffix)                          |
+| `dir .Path`                       | returns all but the last element of path, typically the path's directory. See [Dir](https://pkg.go.dev/path/filepath#Dir)             |
+| `base .Path`                      | returns the last element of path. See [Base](https://pkg.go.dev/path/filepath#Base)                                                   |
+| `abs .ArtifactPath`               | returns an absolute representation of path. See [Abs](https://pkg.go.dev/path/filepath#Abs)                                           |
+| `filter "text" "regex"`           | keeps only the lines matching the given regex, analogous to `grep -E`                                                                 |
+| `reverseFilter "text" "regex"`    | keeps only the lines **not** matching the given regex, analogous to `grep -vE`                                                        |
+| `title "foo"`                     | "titlenize" the string using english as language. See [Title](https://pkg.go.dev/golang.org/x/text/cases#Title)                       |
+| `mdv2escape "foo"`                | escape characters according to MarkdownV2, especially useful in the Telegram integration                                              |
+| `envOrDefault "NAME" "value"`     | either gets the value of the given environment variable, or the given default                                                         |
+| `isEnvSet "NAME"`                 | returns true if the env is set and not empty, false otherwise                                                                         |
+| `$m := map "KEY" "VALUE"`         | creates a map from a list of key and value pairs. Both keys and values must be of type `string`                                       |
+| `indexOrDefault $m "KEY" "value"` | either gets the value of the given key or the given default value from the given map                                                  |
+| `incpatch "v1.2.4"`               | increments the patch of the given version[^panic-if-not-semver]                                                                       |
+| `incminor "v1.2.4"`               | increments the minor of the given version[^panic-if-not-semver]                                                                       |
+| `incmajor "v1.2.4"`               | increments the major of the given version[^panic-if-not-semver]                                                                       |
+| `urlPathEscape "foo/bar"`         | escapes URL paths. See [PathEscape](https://pkg.go.dev/net/url#PathEscape) {{< inline_version "v2.5" >}}                              |
+| `blake2b .ArtifactPath`           | `blake2b` checksum of the artifact. See [Blake2b](https://pkg.go.dev/golang.org/x/crypto/blake2b) {{< inline_version "v2.9" >}}       |
+| `blake2s .ArtifactPath`           | `blake2s` checksum of the artifact. See [Blake2s](https://pkg.go.dev/golang.org/x/crypto/blake2s) {{< inline_version "v2.9" >}}       |
+| `blake3 .ArtifactPath`            | `blake3` checksum of the artifact. See [Blake3](https://pkg.go.dev/lukechampine.com/blake3) {{< inline_version "v2.15-unreleased" >}} |
+| `crc32 .ArtifactPath`             | `crc32` checksum of the artifact. See [CRC32](https://pkg.go.dev/hash/crc32) {{< inline_version "v2.9" >}}                            |
+| `md5 .ArtifactPath`               | `md5` checksum of the artifact. See [MD5](https://pkg.go.dev/crypto/md5) {{< inline_version "v2.9" >}}                                |
+| `sha224 .ArtifactPath`            | `sha224` checksum of the artifact. See [SHA224](https://pkg.go.dev/crypto/sha256) {{< inline_version "v2.9" >}}                       |
+| `sha384 .ArtifactPath`            | `sha384` checksum of the artifact. See [SHA384](https://pkg.go.dev/golang.org/x/crypto/sha3) {{< inline_version "v2.9" >}}            |
+| `sha256 .ArtifactPath`            | `sha256` checksum of the artifact. See [SHA256](https://pkg.go.dev/crypto/sha256) {{< inline_version "v2.9" >}}                       |
+| `sha1 .ArtifactPath`              | `sha1` checksum of the artifact. See [SHA1](https://pkg.go.dev/crypto/sha1) {{< inline_version "v2.9" >}}                             |
+| `sha512 .ArtifactPath`            | `sha512` checksum of the artifact. See [SHA512](https://pkg.go.dev/crypto/sha512) {{< inline_version "v2.9" >}}                       |
+| `sha3_224 .ArtifactPath`          | `sha3_224` checksum of the artifact. See [SHA3-224](https://pkg.go.dev/golang.org/x/crypto/sha3) {{< inline_version "v2.9" >}}        |
+| `sha3_384 .ArtifactPath`          | `sha3_384` checksum of the artifact. See [SHA3-384](https://pkg.go.dev/golang.org/x/crypto/sha3) {{< inline_version "v2.9" >}}        |
+| `sha3_256 .ArtifactPath`          | `sha3_256` checksum of the artifact. See [SHA3-256](https://pkg.go.dev/golang.org/x/crypto/sha3) {{< inline_version "v2.9" >}}        |
+| `sha3_512 .ArtifactPath`          | `sha3_512` checksum of the artifact. See [SHA3-512](https://pkg.go.dev/golang.org/x/crypto/sha3) {{< inline_version "v2.9" >}}        |
+| `mustReadFile "/foo/bar.txt"`     | reads the file contents or fails if it can't be read {{< inline_version "v2.12" >}}                                                   |
+| `readFile "/foo/bar.txt"`         | reads the file contents if it it can be read, or return empty string {{< inline_version "v2.12" >}}                                   |
+| `englishJoin`                     | will join multiple items in english {{< inline_version "v2.14" >}}                                                                    |
+| `list "a" "b" "c"`                | makes a list of strings                                                                                                               |
 
 ## Functions (Pro)
 
-{{< tmpl_pro >}}
+{{< featpro >}}
 
-| Usage                                | Description                                                                                                                                                                                                             |
-| ------------------------------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `in (list "a" "b" "c") "b"`          | checks if a slice contains a value                                                                                                                                                                                      |
-| `reReplaceAll "(.*)" "foo" "bar-$1"` | compiles the first argument with [`regexp.Compile`](https://pkg.go.dev/regexp#Compile), then uses [`ReplaceAllString`](https://pkg.go.dev/regexp#Regexp.ReplaceAllStringFunc) with the following arguments (since v2.8) |
+| Usage                                | Description                                                                                                                                                                                                                              |
+| ------------------------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `in (list "a" "b" "c") "b"`          | checks if a slice contains a value                                                                                                                                                                                                       |
+| `reReplaceAll "(.*)" "foo" "bar-$1"` | compiles the first argument with [`regexp.Compile`](https://pkg.go.dev/regexp#Compile), then uses [`ReplaceAllString`](https://pkg.go.dev/regexp#Regexp.ReplaceAllStringFunc) with the following arguments {{< inline_version "v2.8" >}} |
 
 With all those fields, you may be able to compose the name of your artifacts
 pretty much the way you want:
@@ -254,8 +254,6 @@ variables:
 ```
 
 And then you can use those fields as `{{ .Var.description }}`, for example.
-
-[^pro]: This feature is only available in [GoReleaser Pro](/pro).
 
 [^version-prefix]:
     The `v` prefix is stripped, and it might be changed in

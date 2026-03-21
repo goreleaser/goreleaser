@@ -47,6 +47,9 @@ menu:
       name: Sponsors
       pageRef: /sponsors
       weight: 60
+      params:
+        type: link
+        icon: sparkles
     - name: Search
       weight: 70
       params:

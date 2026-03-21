@@ -3,7 +3,7 @@ title: Import pre-built binaries
 weight: 90
 ---
 
-{{< pro >}}
+{{< featpro >}}
 
 It is also possible to import pre-built binaries into the GoReleaser lifecycle.
 

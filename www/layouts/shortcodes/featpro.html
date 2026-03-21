@@ -1,4 +1,19 @@
-<div class="hextra-callout hextra-callout-info" style="padding: 0.75rem 1rem; border-left: 4px solid #3b82f6; background: rgba(59,130,246,0.08); border-radius: 0 4px 4px 0; margin: 1rem 0;">
-<p style="font-weight:600; margin:0 0 0.25rem;">GoReleaser Pro</p>
-<p style="margin:0">This feature is exclusively available with <a href="/pro/">GoReleaser Pro</a>.</p>
+{{- $icon := "sparkles" -}}
+{{- $class := "hx:border-green-200 hx:bg-green-100 hx:text-green-900 hx:dark:border-green-200/30 hx:dark:bg-green-900/30 hx:dark:text-green-200" -}}
+<div
+	class="hx:overflow-x-auto hx:mt-6 hx:flex hx:rounded-lg hx:border hx:py-2 hx:ltr:pr-4 hx:rtl:pl-4 hx:contrast-more:border-current hx:contrast-more:dark:border-current {{ $class }}"
+>
+	<div class="hx:ltr:pl-3 hx:ltr:pr-2 hx:rtl:pr-3 hx:rtl:pl-2">
+		{{ partial "utils/icon.html" (dict 
+			"name" $icon
+			"attributes" `height=1.2em class="hx:inline-block hx:align-middle"`
+		) -}}
+	</div>
+
+	<div class="hx:w-full hx:min-w-0 hx:leading-7">
+		<div class="hx:mt-6 hx:leading-7 hx:first:mt-0">
+			This feature is exclusively available with
+			<a href="/pro/">GoReleaser Pro</a>. 
+		</div>
+	</div>
 </div>

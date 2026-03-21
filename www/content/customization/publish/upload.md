@@ -217,7 +217,7 @@ uploads:
     # An optional password that will be used for the deployment for basic auth.
     #
     # Templates: allowed.
-    # {{< inline_version "v2.12" >}}.
+    # {{< inline_version "v2.12" >}}
     password: '{{ readFile "~/.config/foo" }}'
 
     # Client certificate and key (when provided, added as client cert to TLS connections)
@@ -244,7 +244,7 @@ uploads:
     # Skip this upload configuration.
     #
     # Templates: allowed.
-    # {{< inline_version "v2.7" >}}.
+    # {{< inline_version "v2.7" >}}
     skip: "{{gt .Patch 0}}"
 
     # Certificate chain used to validate server certificates
@@ -261,7 +261,7 @@ uploads:
     # If another file with the same name exists, the last one found will be used.
     # These globs can also include templates.
     #
-    # {{< inline_version "v2.1" >}}.
+    # {{< inline_version "v2.1" >}}
     extra_files:
       - glob: ./path/to/file.txt
       - glob: ./docs/*.md
@@ -276,8 +276,8 @@ uploads:
     # Those files will have their contents pass through the template engine,
     # and its results will be uploaded.
     #
-    # {{< inline_pro >}}.
-    # {{< inline_version "v2.1" >}}.
+    # {{< inline_pro >}}
+    # {{< inline_version "v2.1" >}}
     # Templates: allowed.
     templated_extra_files:
       - src: LICENSE.tpl
@@ -285,11 +285,11 @@ uploads:
 
     # Upload only the files defined in extra_files.
     #
-    # {{< inline_version "v2.1" >}}.
+    # {{< inline_version "v2.1" >}}
     extra_files_only: true
 ```
 
-{{< pro >}}
+{{< featpro >}}
 
 These settings should allow you to push your artifacts into multiple HTTP
 servers.

@@ -5,7 +5,7 @@ weight: 10
 
 {{< version "v2.1" >}}
 
-{{< pro >}}
+{{< featpro >}}
 
 You can use the `before_publish` hooks to run command against artifacts before
 the publishing step kicks in.

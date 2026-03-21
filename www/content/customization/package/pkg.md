@@ -3,7 +3,7 @@ title: "macOS Pkg"
 weight: 70
 ---
 
-{{< pro >}}
+{{< featpro >}}
 {{< version "v2.14" >}}
 
 GoReleaser can create macOS `.pkg` installer files using `pkgbuild`.

@@ -3,6 +3,7 @@ title: "Docker Images (deprecated)"
 weight: 170
 ---
 
+> [!WARNING]
 > [Phasing out](/customization/deprecations/#dockers) in v2.12.
 > [Docker Images v2](/customization/package/dockers_v2/) is preferred instead.
 
@@ -19,7 +20,7 @@ If you have only one item in the `builds` list,
 the configuration can be as easy as adding the
 name of your image to your `.goreleaser.yaml` file:
 
-```yaml
+```yaml {filename=".goreleaser.yaml"}
 dockers:
   - image_templates:
       - user/repo
@@ -29,7 +30,7 @@ dockers:
 
 You also need to create a `Dockerfile` in your project's root directory:
 
-```dockerfile
+```dockerfile {filename="Dockerfile"}
 FROM scratch
 ENTRYPOINT ["/mybin"]
 COPY mybin /
@@ -173,7 +174,7 @@ dockers:
 
     # Retry configuration for push operations.
     #
-    # {{< inline_version "v2.12" >}}.
+    # {{< inline_version "v2.12" >}}
     retry:
       # Attempts of retry.
       #
@@ -352,7 +353,7 @@ Learn more about the [buildx builder instances](https://docs.docker.com/buildx/w
 
 ## Using Podman
 
-{{< pro >}}
+{{< featpro >}}
 
 You can use [`podman`](https://podman.io) instead of `docker` by setting `use` to `podman` on your config:
 

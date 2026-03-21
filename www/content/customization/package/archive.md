@@ -19,7 +19,7 @@ archives:
 
     # IDs of the builds which should be archived in this archive.
     #
-    # {{< inline_version "v2.8" >}} (use 'builds' in previous versions).
+    # {{< inline_version "v2.8" >}} (use 'builds' in previous versions)
     # Default: empty (include all).
     ids:
       - default
@@ -35,7 +35,7 @@ archives:
     # - `tar.xz`
     # - `txz`
     # - `tar.zst`
-    # - `tzst` # {{< inline_version "v2.1" >}}.
+    # - `tzst` # {{< inline_version "v2.1" >}}
     # - `tar`
     # - `gz`
     # - `zip`
@@ -43,7 +43,7 @@ archives:
     #
     # Default: ['tar.gz'].
     format: "zip" # Singular form, single format, deprecated.
-    formats: ["zip", "tar.gz"] # Plural form, multiple formats. {{< inline_version "v2.6" >}}.
+    formats: ["zip", "tar.gz"] # Plural form, multiple formats. {{< inline_version "v2.6" >}}
 
     # This will create an archive without any binaries, only the files are there.
     # The name template must not contain any references to `Os`, `Arch` and etc, since the archive will be meta.
@@ -99,7 +99,7 @@ archives:
         # - `tar.xz`
         # - `txz`
         # - `tar.zst`
-        # - `tzst` # {{< inline_version "v2.1" >}}.
+        # - `tzst` # {{< inline_version "v2.1" >}}
         # - `tar`
         # - `gz`
         # - `zip`
@@ -107,7 +107,7 @@ archives:
         # - `none`   # skips this archive
         #
         format: "zip" # Singular form, single format, deprecated.
-        formats: ["zip", "tar.gz"] # Plural form, multiple formats. {{< inline_version "v2.6" >}}.
+        formats: ["zip", "tar.gz"] # Plural form, multiple formats. {{< inline_version "v2.6" >}}
 
     # Additional files/globs you want to add to the archive.
     #
@@ -204,7 +204,7 @@ archives:
     allow_different_binary_count: true
 ```
 
-{{< pro >}}
+{{< featpro >}}
 
 {{< templates >}}
 

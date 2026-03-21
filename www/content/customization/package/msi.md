@@ -3,7 +3,7 @@ title: "MSI"
 weight: 80
 ---
 
-{{< pro >}}
+{{< featpro >}}
 
 GoReleaser can create MSI installers for windows binaries using [msitools][].
 
@@ -51,7 +51,7 @@ msi:
     # See: https://wixtoolset.org/docs/v3/howtos/general/extension_usage_introduction/
     #
     # Templates: allowed.
-    # {{< inline_version "v2.6" >}}.
+    # {{< inline_version "v2.6" >}}
     extensions:
       - '{{ if eq .Runtime.Goos "windows" }}WixUIExtension{{ end }}'
       - "WixUtilExtension"
@@ -59,7 +59,7 @@ msi:
     # Whether to disable this particular MSI configuration.
     #
     # Templates: allowed.
-    # {{< inline_version "v2.12" >}}.
+    # {{< inline_version "v2.12" >}}
     disable: "{{ .IsSnapshot }}"
 
     # Whether to remove the archives from the artifact list.
@@ -81,12 +81,12 @@ msi:
     #
     # Valid options: 'v3', 'v4'.
     # Default: inferred from the .wxs file.
-    # {{< inline_version "v2.7" >}}.
+    # {{< inline_version "v2.7" >}}
     version: v4
 
     # Before and after hooks for each MSI.
     # This feature is only available in GoReleaser Pro.
-    # {{< inline_version "v2.14" >}}.
+    # {{< inline_version "v2.14" >}}
     #
     # The after hooks have access to the MSI artifact, so you can use:
     # - {{ .ArtifactPath }} - full path to the MSI file
@@ -170,6 +170,7 @@ Here's an example `wsx` file that you can build upon:
   </Package>
 </Wix>
 ```
+
 {{< /tab >}}
 {{< tab "Schema v3" >}}
 
@@ -242,6 +243,7 @@ Here's an example `wsx` file that you can build upon:
   </Product>
 </Wix>
 ```
+
 {{< /tab >}}
 {{< /tabs >}}
 

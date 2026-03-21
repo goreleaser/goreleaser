@@ -5,7 +5,7 @@ weight: 110
 
 With GoReleaser Pro, you can split and merge `goreleaser release` runs.
 
-{{< pro >}}
+{{< featpro >}}
 
 This feature can help in some areas:
 

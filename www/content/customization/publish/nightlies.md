@@ -3,7 +3,7 @@ title: "Nightlies"
 weight: 40
 ---
 
-{{< pro >}}
+{{< featpro >}}
 
 Whether you need beta builds or a rolling-release system, the nightly builds
 feature will do it for you.
@@ -41,7 +41,7 @@ nightly:
   # end up with no published nightly releases.
   #
   # Default: value of 'release.draft'.
-  # {{< inline_version "v2.12" >}}.
+  # {{< inline_version "v2.12" >}}
   draft: true
 ```
 
@@ -82,9 +82,8 @@ You can also check if it is a nightly build inside a template with:
 {{< callout type="info" >}}
 **Maybe you are looking for something else?**
 
-
 - If just want to build the binaries, and no packages at all, check the
   [`goreleaser build` command](/customization/cmd/goreleaser_build/);
 - If you actually want to create a local "snapshot" build, check out the
   [snapshots documentation](/customization/publish/snapshots/).
-{{< /callout >}}
+  {{< /callout >}}

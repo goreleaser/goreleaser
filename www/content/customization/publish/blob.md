@@ -51,8 +51,8 @@ blobs{filename}
     #
     # Artifacts that do not match this expression will be ignored.
     #
-    # {{< inline_pro >}}.
-    # {{< inline_version "v2.3" >}}.
+    # {{< inline_pro >}}
+    # {{< inline_version "v2.3" >}}
     # Templates: allowed.
     if: '{{ eq .Os "linux" }}'
 

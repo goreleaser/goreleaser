@@ -120,7 +120,7 @@ kos:
     # Use the local_domain attribute to configure the local registry (e.g. kind.local).
     #
     # Default "goreleaser.ko.local" - local docker registry is used.
-    # {{< inline_version "v2.10" >}}.
+    # {{< inline_version "v2.10" >}}
     local_domain: "goreleaser.ko.local"
 
     # Ldflags to use on build.
@@ -147,7 +147,7 @@ kos:
     # Whether to disable this particular Ko configuration.
     #
     # Templates: allowed.
-    # {{< inline_version "v2.8" >}}.
+    # {{< inline_version "v2.8" >}}
     disable: "{{ .IsSnapshot }}"
 
     # Bare uses a tag on the $KO_DOCKER_REPO without anything additional.

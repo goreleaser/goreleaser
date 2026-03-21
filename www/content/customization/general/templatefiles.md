@@ -3,7 +3,7 @@ title: "Template Files"
 weight: 70
 ---
 
-{{< pro >}}
+{{< featpro >}}
 
 Template Files allow you to create custom files and/or scripts using
 GoReleaser's internal state and template variables, for example, an installer

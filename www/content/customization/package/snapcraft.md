@@ -29,7 +29,7 @@ snapcrafts:
 
     # IDs of the builds which should be archived in this package.
     #
-    # {{< inline_version "v2.8" >}} (use 'builds' in previous versions).
+    # {{< inline_version "v2.8" >}} (use 'builds' in previous versions)
     # Default: empty (include all).
     ids:
       - foo

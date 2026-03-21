@@ -59,8 +59,8 @@ docker_signs:
     #
     # Artifacts that do not match this expression will be ignored.
     #
-    # {{< inline_pro >}}.
-    # {{< inline_version "v2.2" >}}.
+    # {{< inline_pro >}}
+    # {{< inline_version "v2.2" >}}
     # Templates: allowed.
     if: '{{ eq .Os "linux" }}'
 

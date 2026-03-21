@@ -94,7 +94,7 @@ sboms:
     #
     # Default: 'true'.
     # Templates: allowed.
-    # {{< inline_version "v2.10" >}}.
+    # {{< inline_version "v2.10" >}}
     disable: true
 ```
 

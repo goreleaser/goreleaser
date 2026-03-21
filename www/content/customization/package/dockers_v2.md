@@ -7,16 +7,6 @@ weight: 130
 
 {{< experimental "https://github.com/orgs/goreleaser/discussions/6005" >}}
 
-{{< callout type="warning" >}}
-**alpha**
-
-
-This feature is in *alpha* state.
-It will be improved until its deemed stable, at which point we'll
-officially deprecate `dockers` and `docker_manifests` in preparations for
-GoReleaser v3, which should take over both of them.
-{{< /callout >}}
-
 This feature uses `docker buildx` to build multi-arch manifests,
 reusing the previously built binaries and/or packages.
 
@@ -113,14 +103,14 @@ dockers_v2:
     # Whether to disable this particular Docker configuration.
     #
     # Templates: allowed.
-    # {{< inline_version "v2.12.7" >}}.
+    # {{< inline_version "v2.12.7" >}}
     disable: "{{ .IsSnapshot }}"
 
     # Whether to create and attach a SBOM to the image.
     #
     # Default: 'true'
     # Templates: allowed.
-    # {{< inline_version "v2.12.7" >}}.
+    # {{< inline_version "v2.12.7" >}}
     sbom: "{{ not .IsNightly }}"
 
     # Additional `--build-arg`s to be passed.
@@ -158,7 +148,6 @@ dockers_v2:
 
 {{< callout type="warning" >}}
 **dockers_v2**
-
 
 The `dockers_v2` name is provisional.
 
@@ -203,7 +192,6 @@ If we run `goreleaser release --snapshot`, it'll build two images instead:
 {{< callout type="info" >}}
 **Daemonless clients**
 
-
 If no Docker daemon is detected (e.g., when using remote Buildkit drivers
 like `kubernetes` on daemonless clients in CI env), `goreleaser release --snapshot`
 will automatically skip the `--load` option and build a single multi-arch image
@@ -245,7 +233,6 @@ This configuration will build and push a Docker image named `user/repo:tagname`.
 {{< callout type="warning" >}}
 **Don't build binaries in your Dockerfile**
 
-
 GoReleaser already builds your binaries (for all target platforms), so you
 don't need to build them again inside the Dockerfile.
 
@@ -255,7 +242,7 @@ you're likely duplicating work and **slowing down your builds significantly**.
 
 Instead, simply copy the pre-built binaries:
 
-```dockerfile
+```dockerfile {filename="Dockerfile"}
 FROM scratch
 ARG TARGETPLATFORM
 ENTRYPOINT ["/usr/bin/myprogram"]

@@ -29,7 +29,7 @@ before:
 {{< /tab >}}
 {{< tab "Pro" >}}
 
-{{< pro >}}
+{{< featpro >}}
 
 The `before` section allows for global hooks that will be executed
 **before** the release is started. Likewise, the `after` section allows for
@@ -58,7 +58,7 @@ before:
         - "FILE_TO_TOUCH=something-{{ .ProjectName }}" # specify hook level environment variables
     - cmd: "dotnet tool install --global wix"
       # Make the hook optional:
-      # {{< inline_version "v2.7" >}}.
+      # {{< inline_version "v2.7" >}}
       if: '{{ eq .Runtime.Goos "windows" }}'
 
 # global after hooks

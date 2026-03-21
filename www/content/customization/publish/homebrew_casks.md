@@ -19,210 +19,289 @@ for more details.
 
 {{< codeinclude lang="yaml" filename=".goreleaser.yaml" file="includes/repository.md" indent=4 >}}
 homebrew_casks:
-  -
-    # Name of the cask
-    #
-    # Default: the project name.
-    # Templates: allowed.
-    name: myproject
 
-    # Alternative names for the current cask.
-    #
-    # Useful if you want to publish a versioned cask as well, so users can
-    # more easily downgrade.
-    #
-    # This feature is only available in GoReleaser Pro.
-    # Templates: allowed.
-    alternative_names:
-      - myproject@{{ .Version }}
-      - myproject@{{ .Major }}
+- # Name of the cask
 
-    # IDs of the archives to use.
-    # Empty means all IDs.
-    ids:
-      - foo
-      - bar
+  #
 
-    # Binary name inside the cask
-    #
-    # Default: the cask name.
-    # Templates: allowed.
-    binaries:
-      - myapp
-      - myapp2
+  # Default: the project name.
 
-    # App to use instead of the binary.
-    # This will then make GoReleaser use only the DMG files instead of archives.
-    #
-    # Pro only.
-    # Templates: allowed.
-    app: Foo.app
+  # Templates: allowed.
 
-    # Path to the manpage files.
-    #
-    # Templates: allowed.
-    manpages:
-      - man/myapp.1
-      - man/myapp-subcmd.1
+  name: myproject
 
-    # Completions for different shells
-    #
-    # Templates: allowed.
-    completions:
-      bash: completions/myapp.bash
-      zsh: completions/myapp.zsh
-      fish: completions/myapp.fish
+  # Alternative names for the current cask.
 
-    # This information will be used to build the URL section of your Cask.
-    #
-    # You can set the template, as well as additional parameters.
-    # These parameters can be used to provide extra headers, cookies, or other
-    # download requirements for your application.
-    # See https://docs.brew.sh/Cask-Cookbook#additional-url-parameters for more details.
-    #
-    # All fields are optional.
-    url:
-      # URL which is determined by the given Token (github, gitlab or gitea).
-      #
-      # Default depends on the client.
-      # Templates: allowed.
-      template: "https://github.mycompany.com/foo/bar/releases/download/{{ .Tag }}/{{ .ArtifactName }}"
+  #
 
-      # Used when the domains of `url` and `homepage` differ.
-      # Templates: allowed.
-      verified: "github.com/owner/repo/"
+  # Useful if you want to publish a versioned cask as well, so users can
 
-      # Download strategy or format specification
-      # See official Cask Cookbook for allowed values.
-      # Templates: allowed.
-      using: ":homebrew_curl"
+  # more easily downgrade.
 
-      # HTTP cookies to send with the download request
-      # Templates: allowed.
-      cookies:
-        license: "accept-backup"
+  #
 
-      # HTTP referer header
-      # Templates: allowed.
-      referer: "https://example.com/download-page"
+  # This feature is only available in GoReleaser Pro.
 
-      # Additional HTTP headers
-      # Templates: allowed.
-      headers:
-        - "X-Version: {{ .Version }}"
+  # Templates: allowed.
 
-      # Custom User-Agent header
-      # Templates: allowed.
-      user_agent: "MyApp/1.0 (macOS)"
+  alternative_names:
+  - myproject@{{ .Version }}
+  - myproject@{{ .Major }}
 
-      # Custom body when using POST request
-      # Templates: allowed.
-      data:
-        format: "dmg"
-        platform: "mac"
+  # IDs of the archives to use.
 
-    # The project name and current git tag are used in the format string.
-    #
-    # Templates: allowed.
-    commit_msg_template: "Brew cask update for {{ .ProjectName }} version {{ .Tag }}"
+  # Empty means all IDs.
 
-    # Directory inside the repository to put the cask.
-    # Default: Casks
-    directory: Casks
+  ids:
+  - foo
+  - bar
 
-    # Caveats for the user of your binary.
-    caveats: "How to use this binary"
+  # Binary name inside the cask
 
-    # Your app's homepage.
-    #
-    # Default: inferred from global metadata.
-    homepage: "https://example.com/"
+  #
 
-    # Your app's description.
-    #
-    # Templates: allowed.
-    # Default: inferred from global metadata.
-    description: "Software to create fast and easy drum rolls."
+  # Default: the cask name.
 
-    # Setting this will prevent goreleaser to actually try to commit the updated
-    # cask - instead, the cask file will be stored on the dist directory
-    # only, leaving the responsibility of publishing it to the user.
-    # If set to auto, the release will not be uploaded to the homebrew tap
-    # in case there is an indicator for prerelease in the tag e.g. v1.0.0-rc1
-    #
-    # Templates: allowed.
-    skip_upload: true
+  # Templates: allowed.
 
-    # Custom block for brew.
-    # Can be used to specify alternate downloads for devel or head releases.
-    #
-    # This block is placed at the top of the cask definition.
-    # It allows you to define custom modules and helper methods
-    # for advanced tasks, such as dynamic URL construction.
-    # For more information, see: https://docs.brew.sh/Cask-Cookbook#arbitrary-ruby-methods
-    custom_block: |
-      head "https://github.com/some/package.git"
-      ...
+  binaries:
+  - myapp
+  - myapp2
 
-    # Dependencies for the cask.
-    dependencies:
-      - cask: some-cask
-      - formula: some-formula
+  # App to use instead of the binary.
 
-    # Packages that conflict with your cask.
-    conflicts:
-      - cask: some-cask
+  # This will then make GoReleaser use only the DMG files instead of archives.
 
-    # Hooks for the cask lifecycle.
-    #
-    # Templates: allowed (since v2.13).
-    hooks:
-      pre:
-        install: |
-          system_command "/usr/bin/defaults", args: ["write", "com.example.app", "key", "value"]
-        uninstall: |
-          system_command "/usr/bin/defaults", args: ["delete", "com.example.app"]
-      post:
-        install: |
-          system_command "/usr/bin/open", args: ["#{appdir}/MyApp.app"]
-        uninstall: |
-          system_command "/usr/bin/rm", args: ["-rf", "~/.myapp"]
+  #
 
-    # Relative path to a Service that should be moved into the
-    # ~/Library/Services folder on installation.
-    service: "myapp.service"
+  # Pro only.
 
-    # Additional procedures for a more complete uninstall, including user files
-    # and shared resources.
-    zap:
-      launchctl:
-        - "my.fancy.package.service"
-      quit:
-        - "my.fancy.package"
-      login_item:
-        - "my.fancy.package"
-      trash:
-        - "~/.foo/bar"
-        - "~/otherfile"
-      delete:
-        - "~/.foo/bar"
-        - "~/otherfile"
+  # Templates: allowed.
 
-    # Procedures to uninstall a cask.
-    # Optional unless a pkg or installer artifact stanza is used.
-    uninstall:
-      launchctl:
-        - "my.fancy.package.service"
-      quit:
-        - "my.fancy.package"
-      login_item:
-        - "my.fancy.package"
-      trash:
-        - "~/.foo/bar"
-        - "~/otherfile"
-      delete:
-        - "~/.foo/bar"
-        - "~/otherfile"
+  app: Foo.app
+
+  # Path to the manpage files.
+
+  #
+
+  # Templates: allowed.
+
+  manpages:
+  - man/myapp.1
+  - man/myapp-subcmd.1
+
+  # Completions for different shells
+
+  #
+
+  # Templates: allowed.
+
+  completions:
+  bash: completions/myapp.bash
+  zsh: completions/myapp.zsh
+  fish: completions/myapp.fish
+
+  # This information will be used to build the URL section of your Cask.
+
+  #
+
+  # You can set the template, as well as additional parameters.
+
+  # These parameters can be used to provide extra headers, cookies, or other
+
+  # download requirements for your application.
+
+  # See https://docs.brew.sh/Cask-Cookbook#additional-url-parameters for more details.
+
+  #
+
+  # All fields are optional.
+
+  url:
+
+  # URL which is determined by the given Token (github, gitlab or gitea).
+
+  #
+
+  # Default depends on the client.
+
+  # Templates: allowed.
+
+  template: "https://github.mycompany.com/foo/bar/releases/download/{{ .Tag }}/{{ .ArtifactName }}"
+
+  # Used when the domains of `url` and `homepage` differ.
+
+  # Templates: allowed.
+
+  verified: "github.com/owner/repo/"
+
+  # Download strategy or format specification
+
+  # See official Cask Cookbook for allowed values.
+
+  # Templates: allowed.
+
+  using: ":homebrew_curl"
+
+  # HTTP cookies to send with the download request
+
+  # Templates: allowed.
+
+  cookies:
+  license: "accept-backup"
+
+  # HTTP referer header
+
+  # Templates: allowed.
+
+  referer: "https://example.com/download-page"
+
+  # Additional HTTP headers
+
+  # Templates: allowed.
+
+  headers: - "X-Version: {{ .Version }}"
+
+  # Custom User-Agent header
+
+  # Templates: allowed.
+
+  user_agent: "MyApp/1.0 (macOS)"
+
+  # Custom body when using POST request
+
+  # Templates: allowed.
+
+  data:
+  format: "dmg"
+  platform: "mac"
+
+  # The project name and current git tag are used in the format string.
+
+  #
+
+  # Templates: allowed.
+
+  commit_msg_template: "Brew cask update for {{ .ProjectName }} version {{ .Tag }}"
+
+  # Directory inside the repository to put the cask.
+
+  # Default: Casks
+
+  directory: Casks
+
+  # Caveats for the user of your binary.
+
+  caveats: "How to use this binary"
+
+  # Your app's homepage.
+
+  #
+
+  # Default: inferred from global metadata.
+
+  homepage: "https://example.com/"
+
+  # Your app's description.
+
+  #
+
+  # Templates: allowed.
+
+  # Default: inferred from global metadata.
+
+  description: "Software to create fast and easy drum rolls."
+
+  # Setting this will prevent goreleaser to actually try to commit the updated
+
+  # cask - instead, the cask file will be stored on the dist directory
+
+  # only, leaving the responsibility of publishing it to the user.
+
+  # If set to auto, the release will not be uploaded to the homebrew tap
+
+  # in case there is an indicator for prerelease in the tag e.g. v1.0.0-rc1
+
+  #
+
+  # Templates: allowed.
+
+  skip_upload: true
+
+  # Custom block for brew.
+
+  # Can be used to specify alternate downloads for devel or head releases.
+
+  #
+
+  # This block is placed at the top of the cask definition.
+
+  # It allows you to define custom modules and helper methods
+
+  # for advanced tasks, such as dynamic URL construction.
+
+  # For more information, see: https://docs.brew.sh/Cask-Cookbook#arbitrary-ruby-methods
+
+  custom_block: |
+  head "https://github.com/some/package.git"
+  ...
+
+  # Dependencies for the cask.
+
+  dependencies:
+  - cask: some-cask
+  - formula: some-formula
+
+  # Packages that conflict with your cask.
+
+  conflicts:
+  - cask: some-cask
+
+  # Hooks for the cask lifecycle.
+
+  #
+
+  # Templates: allowed (since v2.13).
+
+  hooks:
+  pre:
+  install: |
+  system_command "/usr/bin/defaults", args: ["write", "com.example.app", "key", "value"]
+  uninstall: |
+  system_command "/usr/bin/defaults", args: ["delete", "com.example.app"]
+  post:
+  install: |
+  system_command "/usr/bin/open", args: ["#{appdir}/MyApp.app"]
+  uninstall: |
+  system_command "/usr/bin/rm", args: ["-rf", "~/.myapp"]
+
+  # Relative path to a Service that should be moved into the
+
+  # ~/Library/Services folder on installation.
+
+  service: "myapp.service"
+
+  # Additional procedures for a more complete uninstall, including user files
+
+  # and shared resources.
+
+  zap:
+  launchctl: - "my.fancy.package.service"
+  quit: - "my.fancy.package"
+  login_item: - "my.fancy.package"
+  trash: - "~/.foo/bar" - "~/otherfile"
+  delete: - "~/.foo/bar" - "~/otherfile"
+
+  # Procedures to uninstall a cask.
+
+  # Optional unless a pkg or installer artifact stanza is used.
+
+  uninstall:
+  launchctl: - "my.fancy.package.service"
+  quit: - "my.fancy.package"
+  login_item: - "my.fancy.package"
+  trash: - "~/.foo/bar" - "~/otherfile"
+  delete: - "~/.foo/bar" - "~/otherfile"
 
 {{< /codeinclude >}}
 
@@ -281,7 +360,7 @@ without notice, potentially breaking software distribution that relies on it.
 
 ## Versioned Casks
 
-{{< pro >}}
+{{< featpro >}}
 
 GoReleaser can also create a versioned Cask.
 For instance, you might want to make keep previous minor versions available to

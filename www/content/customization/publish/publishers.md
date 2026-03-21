@@ -112,8 +112,8 @@ publishers:
     #
     # Artifacts that do not match this expression will be ignored.
     #
-    # {{< inline_pro >}}.
-    # {{< inline_version "v2.5" >}}.
+    # {{< inline_pro >}}
+    # {{< inline_version "v2.5" >}}
     # Templates: allowed.
     if: '{{ eq .Os "linux" }}'
 
@@ -170,7 +170,7 @@ publishers:
     # (assuming artifact name is 'foo.deb').
     #
     # Templates: allowed.
-    # {{< inline_version "v2.11" >}}.
+    # {{< inline_version "v2.11" >}}
     output: "check-{{ .ArtifactName }}"
 ```
 

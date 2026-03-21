@@ -3,7 +3,7 @@ title: "Includes"
 weight: 50
 ---
 
-{{< pro >}}
+{{< featpro >}}
 
 GoReleaser allows you to reuse configuration files by including them from either
 a URL or a file path.

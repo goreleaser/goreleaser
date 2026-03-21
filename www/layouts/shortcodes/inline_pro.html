@@ -1,1 +1,13 @@
-This feature is only available in GoReleaser Pro
+{{- $content := "This feature is available exclusively in GoReleaser Pro" -}}
+{{- $link := "/pro" -}}
+<a href="{{ $link }}" title="{{ $content | plainify }}" target="_blank" class="not-prose hx:inline-flex hx:align-middle hx:no-underline hover:hx:no-underline">
+	{{- partial "shortcodes/badge.html" (dict
+		  "content" "GoReleaser Pro"
+		  "color" "green"
+		  "class" ""
+		  "border" true
+		  "icon" "sparkles"
+		  "link" "/pro"
+		)
+	-}}
+</a>{{- /* no empty line */ -}}
