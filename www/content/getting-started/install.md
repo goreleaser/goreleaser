@@ -30,7 +30,7 @@ brew install --cask goreleaser/tap/goreleaser-pro
 ## Homebrew
 
 <br>
-{{< badge content="Community Owned" icon="sparkles" >}}
+{{< badge content="Community Owned" icon="external-link" >}}
 
 {{< tabs >}}
 {{< tab "OSS" >}}
@@ -42,6 +42,7 @@ brew install goreleaser
 > [!WARNING]
 > The [formula in homebrew-core] might be slightly outdated.
 > Use our homebrew tap to always get the latest updates.
+
 {{< /tab >}}
 {{< tab "Pro" >}}
 
@@ -110,7 +111,7 @@ scoop install goreleaser-pro
 ## Chocolatey
 
 <br>
-{{< badge content="Community Owned" icon="sparkles" >}}
+{{< badge content="Community Owned" icon="external-link" >}}
 
 {{< tabs >}}
 {{< tab "OSS" >}}
@@ -119,6 +120,9 @@ scoop install goreleaser-pro
 choco install goreleaser
 ```
 
+{{< /tab >}}
+{{< tab "Pro" >}}
+Not available.
 {{< /tab >}}
 {{< /tabs >}}
 
@@ -217,7 +221,7 @@ yay -S goreleaser-pro-bin
 ## Nixpkgs
 
 <br>
-{{< badge content="Community Owned" icon="sparkles" >}}
+{{< badge content="Community Owned" icon="external-link" >}}
 
 {{< tabs >}}
 {{< tab "OSS" >}}
@@ -230,6 +234,7 @@ nix-shell -p goreleaser
 > The package in nixpkgs might be slightly outdated, as it is not
 > updated automatically.
 > Use our NUR to always get the latest updates.
+
 {{< /tab >}}
 {{< tab "Pro" >}}
 
@@ -564,5 +569,5 @@ environment variable to `nightly`.
 
 ## Community
 
-Install options with the {{< badge content="Community Owned" icon="sparkles" >}}
-mark are maintained by the community and might not always be up to date.
+Install options with the "Community Owned" badge are maintained by the community
+and might not always be up to date.
