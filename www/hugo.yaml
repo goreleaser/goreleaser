@@ -9,6 +9,7 @@ module:
 enableRobotsTXT: true
 enableGitInfo: true
 enableEmoji: true
+enableInlineShortcodes: true
 
 markup:
   goldmark:
@@ -30,14 +31,23 @@ menu:
       name: Documentation
       pageRef: /customization
       weight: 20
+      params:
+        icon: document-text
+        type: link
     - identifier: blog
       name: News
       pageRef: /blog
       weight: 30
+      params:
+        icon: newspaper
+        type: link
     - identifier: pro
-      name: Pro
+      name: "Pro"
       pageRef: /pro
       weight: 40
+      params:
+        icon: badge-check
+        type: link
     - name: Search
       weight: 50
       params:

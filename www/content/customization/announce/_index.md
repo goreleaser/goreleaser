@@ -20,3 +20,22 @@ announce:
   # Templates: allowed.
   skip: "{{gt .Patch 0}}"
 ```
+
+## Supported announcers
+
+{{< cards >}}
+{{< card link="bluesky" title="Bluesky" >}}
+{{< card link="discord" title="Discord" >}}
+{{< card link="discourse" title="Discourse" >}}
+{{< card link="linkedin" title="Linkedin" >}}
+{{< card link="mastodon" title="Mastodon" >}}
+{{< card link="mattermost" title="Mattermost" >}}
+{{< card link="opencollective" title="Opencollective" >}}
+{{< card link="reddit" title="Reddit" >}}
+{{< card link="slack" title="Slack" >}}
+{{< card link="smtp" title="Smtp" >}}
+{{< card link="teams" title="Teams" >}}
+{{< card link="telegram" title="Telegram" >}}
+{{< card link="twitter" title="Twitter" >}}
+{{< card link="webhook" title="Webhook" >}}
+{{< /cards >}}
