@@ -7,11 +7,9 @@ Signing Docker Images and Manifests is also possible with GoReleaser.
 This pipe was designed based on the common [sign](/customization/sign/sign/) pipe
 having [cosign](https://github.com/sigstore/cosign) in mind.
 
-{{< callout type="info" >}}
-
-Note that this pipe will run only at the end of the GoReleaser execution (in
-its publishing phase), as cosign will change the image in the registry.
-{{< /callout >}}
+> [!NOTE]
+> Note that this pipe will run only at the end of the GoReleaser execution (in
+> its publishing phase), as cosign will change the image in the registry.
 
 To customize the signing pipeline you can use the following options:
 

@@ -13,14 +13,13 @@ the _de facto_ tool for the job.
 GoReleaser has been able to integrate with it via custom [build hooks][bhooks],
 and now UPX has its own configuration section:
 
-{{< callout type="warning" >}}
-**Compatibility**
-
-`upx` does not support all platforms! Make sure to check
-[their issues][upx-issues] and to test your packed binaries.
-
-Namely, _macOS Ventura_ is not supported at the moment.
-{{< /callout >}}
+> [!WARNING]
+> **Compatibility**
+>
+> `upx` does not support all platforms! Make sure to check
+> [their issues][upx-issues] and to test your packed binaries.
+>
+> Namely, _macOS Ventura_ is not supported at the moment.
 
 ```yaml {filename=".goreleaser.yaml"}
 upx:
@@ -55,10 +54,8 @@ upx:
     brute: true
 ```
 
-{{< callout type="info" >}}
-
-If `upx` is not in `$PATH`, GoReleaser will automatically avoid running it.
-{{< /callout >}}
+> [!NOTE]
+> If `upx` is not in `$PATH`, GoReleaser will automatically avoid running it.
 
 Notice you can define multiple `upx` definitions, filtering by various fields.
 You can use that to have different compression options depending on the target

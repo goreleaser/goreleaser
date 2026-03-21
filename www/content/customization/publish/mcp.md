@@ -134,23 +134,22 @@ mcp:
   disable: false
 ```
 
-{{< callout type="warning" >}}
-**Deprecated Configuration**
-
-
-The previous configuration format using `mcp.github` is deprecated.
-Please migrate to the new top-level `mcp` configuration shown above. The old
-format will continue to work for backward compatibility, but is subject to
-removal in a future version.
-
-```yaml {filename="Deprecated (still works)"}
-mcp:
-  github:
-    name: io.github.user/myserver
-    title: "My MCP Server"
-    # ...
-```
-{{< /callout >}}
+> [!WARNING]
+> **Deprecated Configuration**
+>
+>
+> The previous configuration format using `mcp.github` is deprecated.
+> Please migrate to the new top-level `mcp` configuration shown above. The old
+> format will continue to work for backward compatibility, but is subject to
+> removal in a future version.
+>
+> ```yaml {filename="Deprecated (still works)"}
+> mcp:
+>   github:
+>     name: io.github.user/myserver
+>     title: "My MCP Server"
+>     # ...
+> ```
 
 {{< templates >}}
 
@@ -167,11 +166,9 @@ Follow
 [this guide](https://github.com/modelcontextprotocol/registry/blob/main/docs/guides/publishing/publish-server.md)
 for more details.
 
-{{< callout type="info" >}}
-
-You don't need to install `mcp-publisher` nor run any commands.
-GoReleaser takes care of it all.
-{{< /callout >}}
+> [!NOTE]
+> You don't need to install `mcp-publisher` nor run any commands.
+> GoReleaser takes care of it all.
 
 ## Tips
 

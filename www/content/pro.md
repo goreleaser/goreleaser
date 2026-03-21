@@ -115,16 +115,12 @@ goreleaser release
 
 GoReleaser will automatically detect the offline license and verify it locally.
 
-{{< callout type="warning" >}}
+> [!WARNING]
+> Offline licenses expire based on your billing cycle (at most 90 days).
+> You will need to re-export before expiry.
 
-Offline licenses expire based on your billing cycle (at most 90 days).
-You will need to re-export before expiry.
-{{< /callout >}}
-
-{{< callout type="info" >}}
-
-Offline licenses are available on the **Business** and **Enterprise** plans.
-{{< /callout >}}
+> [!NOTE]
+> Offline licenses are available on the **Business** and **Enterprise** plans.
 
 ## Road map
 

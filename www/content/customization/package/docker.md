@@ -216,18 +216,14 @@ dockers:
         mode: 0644
 ```
 
-{{< callout type="warning" >}}
-
-Note that you will have to manually login into the Docker registries you
-want to push to — GoReleaser does not login by itself.
-{{< /callout >}}
+> [!WARNING]
+> Note that you will have to manually login into the Docker registries you
+> want to push to — GoReleaser does not login by itself.
 
 {{< templates >}}
 
-{{< callout type="info" >}}
-
-You can also create multi-platform images using the [docker_manifests](/customization/package/docker_manifest/) config.
-{{< /callout >}}
+> [!NOTE]
+> You can also create multi-platform images using the [docker_manifests](/customization/package/docker_manifest/) config.
 
 These settings should allow you to generate multiple Docker images,
 for example, using multiple `FROM` statements,
@@ -346,10 +342,8 @@ dockers:
       - "--builder=mybuilder"
 ```
 
-{{< callout type="info" >}}
-
-Learn more about the [buildx builder instances](https://docs.docker.com/buildx/working-with-buildx/#work-with-builder-instances).
-{{< /callout >}}
+> [!NOTE]
+> Learn more about the [buildx builder instances](https://docs.docker.com/buildx/working-with-buildx/#work-with-builder-instances).
 
 ## Using Podman
 

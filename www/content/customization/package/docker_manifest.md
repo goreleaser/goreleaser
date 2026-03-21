@@ -18,13 +18,11 @@ Notice that if you have something in the `docker_manifests` section in your
 config file, GoReleaser will add the manifest's to the release notes instead of
 the Docker images names.
 
-{{< callout type="warning" >}}
-
-Notice that the images used in the manifest **need to be pushed** for this
-to work. This is a limitation of how `docker manifest create` works. For
-more info, check
-[this issue](https://github.com/goreleaser/goreleaser/issues/2606).
-{{< /callout >}}
+> [!WARNING]
+> Notice that the images used in the manifest **need to be pushed** for this
+> to work. This is a limitation of how `docker manifest create` works. For
+> more info, check
+> [this issue](https://github.com/goreleaser/goreleaser/issues/2606).
 
 ## Customization
 
@@ -108,11 +106,9 @@ section to our configuration defining, which images are part of which manifests.
 
 GoReleaser will create and publish the manifest in its publishing phase.
 
-{{< callout type="warning" >}}
-
-Unfortunately, the manifest tool needs the images to be pushed to create
-the manifest, that's why we both create and push it in the publishing phase.
-{{< /callout >}}
+> [!WARNING]
+> Unfortunately, the manifest tool needs the images to be pushed to create
+> the manifest, that's why we both create and push it in the publishing phase.
 
 ## Example config
 
@@ -161,10 +157,8 @@ docker_manifests:
       - "foo/bar:{{ .Version }}-arm64v8"
 ```
 
-{{< callout type="warning" >}}
-
-Notice that `--platform` needs to be in the Docker platform format, not Go's.
-{{< /callout >}}
+> [!WARNING]
+> Notice that `--platform` needs to be in the Docker platform format, not Go's.
 
 That config will build the 2 Docker images defined, as well as the manifest,
 and push everything to Docker Hub.

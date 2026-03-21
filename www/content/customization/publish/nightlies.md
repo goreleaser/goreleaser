@@ -45,11 +45,9 @@ nightly:
   draft: true
 ```
 
-{{< callout type="warning" >}}
-
-Do not use the `{{.Tag}}` field in the `version_template`, as the version
-should not have the leading `v`.
-{{< /callout >}}
+> [!WARNING]
+> Do not use the `{{.Tag}}` field in the `version_template`, as the version
+> should not have the leading `v`.
 
 ## How it works
 
@@ -79,11 +77,10 @@ You can also check if it is a nightly build inside a template with:
 {{ if .IsNightly }}something{{ else }}something else{{ end }}
 ```
 
-{{< callout type="info" >}}
-**Maybe you are looking for something else?**
-
-- If just want to build the binaries, and no packages at all, check the
-  [`goreleaser build` command](/customization/cmd/goreleaser_build/);
-- If you actually want to create a local "snapshot" build, check out the
-  [snapshots documentation](/customization/publish/snapshots/).
-  {{< /callout >}}
+> [!NOTE]
+> **Maybe you are looking for something else?**
+>
+> - If just want to build the binaries, and no packages at all, check the
+>   [`goreleaser build` command](/customization/cmd/goreleaser_build/);
+> - If you actually want to create a local "snapshot" build, check out the
+>   [snapshots documentation](/customization/publish/snapshots/).

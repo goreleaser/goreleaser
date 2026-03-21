@@ -329,34 +329,32 @@ homebrew_casks:
           end
 ```
 
-{{< callout type="error" >}}
-**What happens if I don't follow the steps above?**
+> [!CAUTION]
+> **What happens if I don't follow the steps above?**
+>
+> **Not following this might lead to your app/binary to not run.**
+>
+> In these cases, users will see the infamous "_App Name is damaged and
+> cannot be opened_" alert.
+>
+> If you don't want to do any of the steps above, you may want to instruct
+> your users to run the appropriate `xattr` command manually.
+>
+> You may do so in using the `caveats` property, for example.
 
-**Not following this might lead to your app/binary to not run.**
-
-In these cases, users will see the infamous "_App Name is damaged and
-cannot be opened_" alert.
-
-If you don't want to do any of the steps above, you may want to instruct
-your users to run the appropriate `xattr` command manually.
-
-You may do so in using the `caveats` property, for example.
-{{< /callout >}}
-
-{{< callout type="warning" >}}
-**xattr bypasses macOS security - use with caution**
-
-Use of `xattr` to bypass Gatekeeper circumvents macOS security protections
-designed to verify software authenticity. This removes Apple's verification
-layer and requires users to trust the software directly.
-
-Proper code signing and notarization is Apple's recommended method for
-distributing software. This approach should only be considered when code
-signing is not feasible.
-
-Important: Apple may disable this bypass method in future macOS versions
-without notice, potentially breaking software distribution that relies on it.
-{{< /callout >}}
+> [!WARNING]
+> **xattr bypasses macOS security - use with caution**
+>
+> Use of `xattr` to bypass Gatekeeper circumvents macOS security protections
+> designed to verify software authenticity. This removes Apple's verification
+> layer and requires users to trust the software directly.
+>
+> Proper code signing and notarization is Apple's recommended method for
+> distributing software. This approach should only be considered when code
+> signing is not feasible.
+>
+> Important: Apple may disable this bypass method in future macOS versions
+> without notice, potentially breaking software distribution that relies on it.
 
 ## Versioned Casks
 
@@ -398,12 +396,10 @@ a custom template URL, and custom headers.
 
 Here's an example:
 
-{{< callout type="warning" >}}
-
-Please note that this example uses an internal Homebrew API to retrieve the GitHub API token.
-
-Replace with your implementation as needed.
-{{< /callout >}}
+> [!WARNING]
+> Please note that this example uses an internal Homebrew API to retrieve the GitHub API token.
+>
+> Replace with your implementation as needed.
 
 ```yaml {filename=".goreleaser.yaml"}
 homebrew_casks:

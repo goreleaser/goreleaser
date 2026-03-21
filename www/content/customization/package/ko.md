@@ -10,17 +10,13 @@ That shouldn't increase the release times too much, as it'll use the same build
 options as the [build][] pipe when possible, so the results will probably be
 cached.
 
-{{< callout type="warning" >}}
+> [!WARNING]
+> When on `--snapshot` mode, Ko will publish the image to `ko.local`.
+> If its a regular build, Ko will only run in the publishing phase.
 
-When on `--snapshot` mode, Ko will publish the image to `ko.local`.
-If its a regular build, Ko will only run in the publishing phase.
-{{< /callout >}}
-
-{{< callout type="info" >}}
-
-For Ko to work you still need to login, either with `docker login` or
-something else.
-{{< /callout >}}
+> [!NOTE]
+> For Ko to work you still need to login, either with `docker login` or
+> something else.
 
 ```yaml {filename=".goreleaser.yaml"}
 kos:
@@ -162,13 +158,11 @@ kos:
 
 Refer to [ko's project page][ko] for more information.
 
-{{< callout type="warning" >}}
-
-Note that while GoReleaser's build section will evaluate environment
-variables for each target being built, Ko doesn't.
-This means that variables like `.Os`, `.Arch`, and the sorts, will not be
-available.
-{{< /callout >}}
+> [!WARNING]
+> Note that while GoReleaser's build section will evaluate environment
+> variables for each target being built, Ko doesn't.
+> This means that variables like `.Os`, `.Arch`, and the sorts, will not be
+> available.
 
 ## Example
 

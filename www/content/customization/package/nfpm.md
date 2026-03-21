@@ -593,10 +593,8 @@ nfpms:
 
 {{< templates >}}
 
-{{< callout type="info" >}}
-
-Fields marked with "overridable" can be overridden for any format.
-{{< /callout >}}
+> [!NOTE]
+> Fields marked with "overridable" can be overridden for any format.
 
 ## Signing key passphrases
 

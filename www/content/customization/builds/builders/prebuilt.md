@@ -45,11 +45,9 @@ builds:
     binary: bin/mybin
 ```
 
-{{< callout type="info" >}}
-
-You can think of `prebuilt.path` as being the "external path" and the
-`binary` as being the "internal path to binary".
-{{< /callout >}}
+> [!NOTE]
+> You can think of `prebuilt.path` as being the "external path" and the
+> `binary` as being the "internal path to binary".
 
 This example config will import into your release pipeline the following
 binaries:
@@ -63,29 +61,23 @@ The other steps of the pipeline will act as if those were built by GoReleaser
 itself.
 There is no difference in how the binaries are handled.
 
-{{< callout type="info" >}}
+> [!NOTE]
+> A cool tip here, specially when using CGO, is that you can have one
+> `.goreleaser.yaml` file just for the builds, build each in its own machine
+> with [`goreleaser build --single-target`](/customization/builds/cmd/goreleaser_build/) and
+> have a second `.goreleaser.yaml` file that imports those binaries
+> and release them.
+> This tip can also be used to speed up the build process if you run all the
+> builds in different machines in parallel.
 
-A cool tip here, specially when using CGO, is that you can have one
-`.goreleaser.yaml` file just for the builds, build each in its own machine
-with [`goreleaser build --single-target`](/customization/builds/cmd/goreleaser_build/) and
-have a second `.goreleaser.yaml` file that imports those binaries
-and release them.
-This tip can also be used to speed up the build process if you run all the
-builds in different machines in parallel.
-{{< /callout >}}
+> [!WARNING]
+> GoReleaser will try to stat the final path, if any error happens while
+> doing that (e.g. file does not exist or permission issues),
+> GoReleaser will fail.
 
-{{< callout type="warning" >}}
-
-GoReleaser will try to stat the final path, if any error happens while
-doing that (e.g. file does not exist or permission issues),
-GoReleaser will fail.
-{{< /callout >}}
-
-{{< callout type="warning" >}}
-
-When using the `prebuilt` binary, there are no defaults for `goos`,
-`goarch`, `goarm`, `gomips` and `goamd64`.
-You'll need to either provide them or the final `targets` matrix.
-{{< /callout >}}
+> [!WARNING]
+> When using the `prebuilt` binary, there are no defaults for `goos`,
+> `goarch`, `goarm`, `gomips` and `goamd64`.
+> You'll need to either provide them or the final `targets` matrix.
 
 If you'd like to see this in action, check [this example on GitHub](https://github.com/caarlos0/goreleaser-pro-prebuilt-example).

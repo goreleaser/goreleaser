@@ -327,32 +327,27 @@ builds:
     gobinary: "go1.13.4"
 ```
 
-{{< callout type="info" >}}
+> [!NOTE]
+> Learn more about [build hooks](/customization/builds/builders/hooks/).
 
-Learn more about [build hooks](/customization/builds/builders/hooks/).
-{{< /callout >}}
-
-{{< callout type="warning" >}}
-**GOAMD64, GORISCV64, GOPPC64, GO386, GOARM, GOARM64**
-
-You usually will need to specify the complete target in places like
-`targets` and `overrides`.
-This includes the `_{goamd64}` suffix, as well as the other
-GOARCH-specific values.
-{{< /callout >}}
+> [!WARNING]
+> **GOAMD64, GORISCV64, GOPPC64, GO386, GOARM, GOARM64**
+>
+> You usually will need to specify the complete target in places like
+> `targets` and `overrides`.
+> This includes the `_{goamd64}` suffix, as well as the other
+> GOARCH-specific values.
 
 {{< templates >}}
 
-{{< callout type="info" >}}
-
-First-class build targets are gathered by running:
-
-```sh
-go tool dist list -json | jq -r '.[] | select(.FirstClass) | [.GOOS, .GOARCH] | @tsv'
-```
-
-We also recommend reading the [official wiki about Go ports](https://go.dev/wiki/PortingPolicy#first-class-ports).
-{{< /callout >}}
+> [!NOTE]
+> First-class build targets are gathered by running:
+>
+> ```sh
+> go tool dist list -json | jq -r '.[] | select(.FirstClass) | [.GOOS, .GOARCH] | @tsv'
+> ```
+>
+> We also recommend reading the [official wiki about Go ports](https://go.dev/wiki/PortingPolicy#first-class-ports).
 
 Here is an example with multiple binaries:
 

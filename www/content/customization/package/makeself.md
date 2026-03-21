@@ -12,13 +12,11 @@ installable without requiring users to manually extract archives.
 Typically this supports Linux, MacOS and any other platform that Makeself runs
 on.
 
-{{< callout type="info" >}}
-
-This feature requires the `makeself` command to be available in
-your system `$PATH`.
-You can install it from your system package manager or from
-[the Makeself project][Makeself].
-{{< /callout >}}
+> [!NOTE]
+> This feature requires the `makeself` command to be available in
+> your system `$PATH`.
+> You can install it from your system package manager or from
+> [the Makeself project][Makeself].
 
 ## Configuration
 
@@ -153,29 +151,24 @@ makeselfs:
 
 Please refer to the [Makeself documentation][Makeself] for more information.
 
-{{< callout type="info" >}}
+> [!NOTE]
+> The install script has access to all files included in the package,
+> so you can reference documentation, configuration files,
+> or other assets in your installation logic.
 
-The install script has access to all files included in the package,
-so you can reference documentation, configuration files,
-or other assets in your installation logic.
-{{< /callout >}}
+> [!NOTE]
+> **Root Privileges**
+>
+>
+> When using `--needroot` in `extra_args`, the Makeself installer will
+> automatically prompt for root privileges when executed.
+> This allows your install script to assume root access without using `sudo`
+> commands, making the script simpler and more reliable.
 
-{{< callout type="info" >}}
-**Root Privileges**
-
-
-When using `--needroot` in `extra_args`, the Makeself installer will
-automatically prompt for root privileges when executed.
-This allows your install script to assume root access without using `sudo`
-commands, making the script simpler and more reliable.
-{{< /callout >}}
-
-{{< callout type="warning" >}}
-
-Makeself packages are platform-specific (typically Linux and macos) and
-create executable files.
-Make sure your target users can execute them on their systems.
-{{< /callout >}}
+> [!WARNING]
+> Makeself packages are platform-specific (typically Linux and macos) and
+> create executable files.
+> Make sure your target users can execute them on their systems.
 
 {{< templates >}}
 

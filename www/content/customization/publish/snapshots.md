@@ -21,11 +21,9 @@ snapshot:
   version_template: "{{ incpatch .Version }}-devel"
 ```
 
-{{< callout type="warning" >}}
-
-Do not use the `{{.Tag}}` field in the `version_template`, as the version
-should not have the leading `v`.
-{{< /callout >}}
+> [!WARNING]
+> Do not use the `{{.Tag}}` field in the `version_template`, as the version
+> should not have the leading `v`.
 
 ## How it works
 
@@ -45,10 +43,9 @@ Note that the idea behind GoReleaser's snapshots is for local builds or to
 validate your build on the CI pipeline. Artifacts won't be uploaded and will
 only be generated into the `dist` directory.
 
-{{< callout type="info" >}}
-**Maybe you are looking for something else?**
-
-
-- If just want to build the binaries, and no packages at all, check the [`goreleaser build` command](/customization/cmd/goreleaser_build/);
-- If you actually want to create nightly builds, check out the [nightly documentation](/customization/publish/nightlies/).
-{{< /callout >}}
+> [!NOTE]
+> **Maybe you are looking for something else?**
+>
+>
+> - If just want to build the binaries, and no packages at all, check the [`goreleaser build` command](/customization/cmd/goreleaser_build/);
+> - If you actually want to create nightly builds, check out the [nightly documentation](/customization/publish/nightlies/).

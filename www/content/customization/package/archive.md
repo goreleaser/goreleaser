@@ -208,24 +208,18 @@ archives:
 
 {{< templates >}}
 
-{{< callout type="info" >}}
+> [!NOTE]
+> You can add entire directories, its sub-directories and files by using the
+> glob notation, for example: `mydirectory/**/*`.
 
-You can add entire directories, its sub-directories and files by using the
-glob notation, for example: `mydirectory/**/*`.
-{{< /callout >}}
+> [!WARNING]
+> The `files` and `wrap_in_directory` options are ignored if `format` is `binary`.
 
-{{< callout type="warning" >}}
-
-The `files` and `wrap_in_directory` options are ignored if `format` is `binary`.
-{{< /callout >}}
-
-{{< callout type="warning" >}}
-
-The `name_template` option will not reflect the filenames under the `dist`
-directory if `format` is `binary`.
-The template will be applied only where the binaries are uploaded (e.g.
-GitHub releases).
-{{< /callout >}}
+> [!WARNING]
+> The `name_template` option will not reflect the filenames under the `dist`
+> directory if `format` is `binary`.
+> The template will be applied only where the binaries are uploaded (e.g.
+> GitHub releases).
 
 ## Deep diving into the globbing options
 
@@ -300,11 +294,9 @@ archives:
 This should create `.gz` files with the binaries only, which should be
 extracted with something like `gzip -d file.gz`.
 
-{{< callout type="warning" >}}
-
-You won't be able to package multiple builds in a single archive either.
-The alternative is to declare multiple archives filtering by build ID.
-{{< /callout >}}
+> [!WARNING]
+> You won't be able to package multiple builds in a single archive either.
+> The alternative is to declare multiple archives filtering by build ID.
 
 ## Do not archive
 

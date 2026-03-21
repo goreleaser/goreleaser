@@ -139,18 +139,15 @@ chocolateys:
     goamd64: v1
 ```
 
-{{< callout type="warning" >}}
-**Beware when testing this**
-
-
-Chocolatey packages are manually reviewed, so please, be mindful to not
-publish "testing" packages that you do not intend on having published.
-{{< /callout >}}
+> [!WARNING]
+> **Beware when testing this**
+>
+>
+> Chocolatey packages are manually reviewed, so please, be mindful to not
+> publish "testing" packages that you do not intend on having published.
 
 {{< templates >}}
 
-{{< callout type="info" >}}
-
-GoReleaser will not install `chocolatey`/`choco` nor any of its dependencies
-for you.
-{{< /callout >}}
+> [!NOTE]
+> GoReleaser will not install `chocolatey`/`choco` nor any of its dependencies
+> for you.

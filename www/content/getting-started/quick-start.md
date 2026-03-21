@@ -137,10 +137,8 @@ To release to GitHub, you'll need to export a `GITHUB_TOKEN` environment variabl
 It will be used to deploy releases to your GitHub repository.
 You can create a new GitHub token [here](https://github.com/settings/tokens/new?scopes=repo,write:packages).
 
-{{< callout type="info" >}}
-
-The minimum permissions the `GITHUB_TOKEN` should have to run this are `write:packages`
-{{< /callout >}}
+> [!NOTE]
+> The minimum permissions the `GITHUB_TOKEN` should have to run this are `write:packages`
 
 ```sh
 export GITHUB_TOKEN="YOUR_GH_TOKEN"
@@ -155,21 +153,16 @@ git tag -a v0.1.0 -m "First release"
 git push origin v0.1.0
 ```
 
-{{< callout type="info" >}}
+> [!NOTE]
+> Check if your tag adheres to [semantic versioning](/getting-started/limitations/semver/).
 
-Check if your tag adheres to [semantic versioning](/getting-started/limitations/semver/).
-{{< /callout >}}
-
-{{< callout type="info" >}}
-
-If you don't want to create a tag yet, you can also run GoReleaser without
-publishing based on the latest commit by using the `--snapshot` flag:
-
-```sh
-goreleaser release --snapshot
-```
-
-{{< /callout >}}
+> [!NOTE]
+> If you don't want to create a tag yet, you can also run GoReleaser without
+> publishing based on the latest commit by using the `--snapshot` flag:
+>
+> ```sh
+> goreleaser release --snapshot
+> ```
 
 Now you can run GoReleaser at the root of your repository:
 

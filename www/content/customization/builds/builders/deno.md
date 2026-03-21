@@ -95,10 +95,8 @@ builds:
 Some options are not supported yet[^fail], but it should be usable for
 most projects already!
 
-{{< callout type="info" >}}
-
-Learn more about [build hooks](/customization/builds/builders/hooks/).
-{{< /callout >}}
+> [!NOTE]
+> Learn more about [build hooks](/customization/builds/builders/hooks/).
 
 ### Environment setup
 

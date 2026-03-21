@@ -43,22 +43,16 @@ gomod:
   dir: ./src
 ```
 
-{{< callout type="info" >}}
+> [!NOTE]
+> You can use `debug.ReadBuildInfo()` to get the version/checksum/dependencies
+> of the module.
 
-You can use `debug.ReadBuildInfo()` to get the version/checksum/dependencies
-of the module.
-{{< /callout >}}
+> [!WARNING]
+> VCS Info will not be embedded in the binary, as in practice it is not being
+> built from the source, but from the Go Mod Proxy.
 
-{{< callout type="warning" >}}
-
-VCS Info will not be embedded in the binary, as in practice it is not being
-built from the source, but from the Go Mod Proxy.
-{{< /callout >}}
-
-{{< callout type="warning" >}}
-
-If you have a `go.work` file, make sure to run `go work sync`, so the main
-module (`.`) is the first line inside the `use` block.
-{{< /callout >}}
+> [!WARNING]
+> If you have a `go.work` file, make sure to run `go work sync`, so the main
+> module (`.`) is the first line inside the `use` block.
 
 [vgo]: https://research.swtch.com/vgo-repro

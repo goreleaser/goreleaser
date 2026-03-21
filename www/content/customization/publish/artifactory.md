@@ -53,10 +53,8 @@ Supported variables:
 - `Arch`
 - `Arm`
 
-{{< callout type="info" >}}
-
-Variables _Os_, _Arch_ and _Arm_ are only supported in upload mode `binary`.
-{{< /callout >}}
+> [!NOTE]
+> Variables _Os_, _Arch_ and _Arm_ are only supported in upload mode `binary`.
 
 ### Username
 

@@ -230,11 +230,9 @@ And then you can run:
 GOVERSION=$(go version | awk '{print $3;}') goreleaser
 ```
 
-{{< callout type="warning" >}}
-
-Note that those are hypothetical examples and the fields `foo_template` and
-`example_template` are not valid GoReleaser configurations.
-{{< /callout >}}
+> [!WARNING]
+> Note that those are hypothetical examples and the fields `foo_template` and
+> `example_template` are not valid GoReleaser configurations.
 
 ## Custom variables
 

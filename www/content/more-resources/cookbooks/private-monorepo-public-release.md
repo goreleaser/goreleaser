@@ -51,12 +51,10 @@ release:
     name: app1
 ```
 
-{{< callout type="info" >}}
-
-On GoReleaser Pro, `{{.Tag}}` is the tag without the prefix, and the
-prefixed tag can be accessed with `{{.PrefixedTag}}`. Check the
-[documentation][Template variables] for more information.
-{{< /callout >}}
+> [!NOTE]
+> On GoReleaser Pro, `{{.Tag}}` is the tag without the prefix, and the
+> prefixed tag can be accessed with `{{.PrefixedTag}}`. Check the
+> [documentation][Template variables] for more information.
 
 ## Learning more
 

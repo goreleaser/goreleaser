@@ -7,10 +7,9 @@ GoReleaser is configured through a `.goreleaser.yaml` file at the root of your r
 
 You can find all available options and their defaults in the sections below.
 
-{{< callout type="info" >}}
-You can use `goreleaser init` to create a sample `.goreleaser.yaml` to get started, and
-`goreleaser check` to validate your configuration file.
-{{< /callout >}}
+> [!NOTE]
+> You can use `goreleaser init` to create a sample `.goreleaser.yaml` to get started, and
+> `goreleaser check` to validate your configuration file.
 
 ## JSON Schema
 

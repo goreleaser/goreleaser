@@ -90,12 +90,10 @@ The most common fields are:
 | `Files`             | `[]string` | Any extra files an archive might have                      |
 | `DynamicallyLinked` | `bool`     | Whether or not the binary is dynamically linked            |
 
-{{< callout type="info" >}}
-
-There might be other fields in `extra` depending on the artifact type and
-configuration. The fields listed above are the most commonly used ones
-across multiple artifact types.
-{{< /callout >}}
+> [!NOTE]
+> There might be other fields in `extra` depending on the artifact type and
+> configuration. The fields listed above are the most commonly used ones
+> across multiple artifact types.
 
 ## Example
 

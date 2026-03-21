@@ -3,11 +3,9 @@ title: "𝕏/Twitter"
 weight: 130
 ---
 
-{{< callout type="warning" >}}
-
-Twitter has [announced][tw] that API usage will no longer be free starting
-Feb 9, 2023.
-{{< /callout >}}
+> [!WARNING]
+> Twitter has [announced][tw] that API usage will no longer be free starting
+> Feb 9, 2023.
 
 [tw]: https://twitter.com/TwitterDev/status/1621026986784337922
 

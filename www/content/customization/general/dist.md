@@ -13,9 +13,7 @@ dist: another-folder-that-is-not-dist
 
 More often than not, you won't need to change this.
 
-{{< callout type="warning" >}}
-
-If you change this value, and use
-[`goreleaser continue`](/customization/cmd/goreleaser_continue/),
-you'll need to specify `--dist` when running it.
-{{< /callout >}}
+> [!WARNING]
+> If you change this value, and use
+> [`goreleaser continue`](/customization/cmd/goreleaser_continue/),
+> you'll need to specify `--dist` when running it.

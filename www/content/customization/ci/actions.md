@@ -60,27 +60,24 @@ jobs:
           # GORELEASER_KEY: ${{ secrets.GORELEASER_KEY }}
 ```
 
-{{< callout type="warning" >}}
-**Some things to look closely...**
+> [!WARNING]
+> **Some things to look closely...**
+>
+> #### The action does not install, configure or authenticate into dependencies
+>
+> GoReleaser Action will not install nor setup any other software needed to
+> release. It's the user's responsibility to install and configure Go, Docker,
+> Syft, Cosign and any other tools the release might need. It's also the
+> user's responsibility to log in into tools that need it, such as docker.
+>
+> #### Fetch all history
+>
+> Notice the `fetch-depth: 0` option in the `Checkout` workflow step.
+> This is required for GoReleaser to work properly, as it will need the full
+> history to work properly.
 
-#### The action does not install, configure or authenticate into dependencies
-
-GoReleaser Action will not install nor setup any other software needed to
-release. It's the user's responsibility to install and configure Go, Docker,
-Syft, Cosign and any other tools the release might need. It's also the
-user's responsibility to log in into tools that need it, such as docker.
-
-#### Fetch all history
-
-Notice the `fetch-depth: 0` option in the `Checkout` workflow step.
-This is required for GoReleaser to work properly, as it will need the full
-history to work properly.
-{{< /callout >}}
-
-{{< callout type="info" >}}
-
-For detailed instructions please follow GitHub Actions [workflow syntax][syntax].
-{{< /callout >}}
+> [!NOTE]
+> For detailed instructions please follow GitHub Actions [workflow syntax][syntax].
 
 ### Signing
 

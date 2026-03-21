@@ -18,20 +18,16 @@ env_files:
   gitlab_token: ~/.path/to/my/gitlab_token
 ```
 
-{{< callout type="warning" >}}
+> [!WARNING]
+> If you use a project access token, make sure to set `use_package_registry`
+> to `true` as well, otherwise it might not work.
 
-If you use a project access token, make sure to set `use_package_registry`
-to `true` as well, otherwise it might not work.
-{{< /callout >}}
-
-{{< callout type="warning" >}}
-
-If you are using a [protected variable](https://docs.gitlab.com/ee/ci/variables/#protected-cicd-variables)
-to store any of the values needed by goreleaser, ensure that you are protecting the tags as CI jobs in
-Gitlab only may access protected variables if the job is run for protected refs
-([branches](https://docs.gitlab.com/ee/user/project/protected_branches.html),
-[tags](https://docs.gitlab.com/ee/user/project/protected_tags.html)).
-{{< /callout >}}
+> [!WARNING]
+> If you are using a [protected variable](https://docs.gitlab.com/ee/ci/variables/#protected-cicd-variables)
+> to store any of the values needed by goreleaser, ensure that you are protecting the tags as CI jobs in
+> Gitlab only may access protected variables if the job is run for protected refs
+> ([branches](https://docs.gitlab.com/ee/user/project/protected_branches.html),
+> [tags](https://docs.gitlab.com/ee/user/project/protected_tags.html)).
 
 ## GitLab Enterprise or private hosted
 
@@ -56,12 +52,10 @@ gitlab_urls:
 
 If none are set, they default to GitLab's public URLs.
 
-{{< callout type="info" >}}
-
-Releasing to a private-hosted GitLab CE will only work for version `v12.9+`, due to dependencies
-on [release](https://docs.gitlab.com/ee/user/project/releases/index.html) functionality
-and [direct asset linking](https://docs.gitlab.com/ee/user/project/releases/index.html#permanent-links-to-release-assets).
-{{< /callout >}}
+> [!NOTE]
+> Releasing to a private-hosted GitLab CE will only work for version `v12.9+`, due to dependencies
+> on [release](https://docs.gitlab.com/ee/user/project/releases/index.html) functionality
+> and [direct asset linking](https://docs.gitlab.com/ee/user/project/releases/index.html#permanent-links-to-release-assets).
 
 ## Generic Package Registry
 

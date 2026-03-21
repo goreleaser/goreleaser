@@ -77,15 +77,11 @@ should work as expected from there on.
 
 ## A note about gomods and prefixed tags
 
-{{< callout type="info" >}}
+> [!NOTE]
+> If you have a `github.com/user/repo/moda` module, its tags should be named
+> `moda/v1.2.3`.
+> This will allow users to `go get github.com/user/repo/moda@v1.2.3`, and
+> everything should work as you'd expect.
 
-If you have a `github.com/user/repo/moda` module, its tags should be named
-`moda/v1.2.3`.
-This will allow users to `go get github.com/user/repo/moda@v1.2.3`, and
-everything should work as you'd expect.
-{{< /callout >}}
-
-{{< callout type="warning" >}}
-
-Tag prefixes that do not match the module name are not supported by go mods.
-{{< /callout >}}
+> [!WARNING]
+> Tag prefixes that do not match the module name are not supported by go mods.

@@ -6,11 +6,9 @@ weight: 120
 After releasing to GitHub, GitLab, or Gitea, GoReleaser can generate and publish
 a `PKGBUILD` to an _Arch User Repository_.
 
-{{< callout type="warning" >}}
-
-Before going further on this, make sure to read
-[AUR's Submission Guidelines](https://wiki.archlinux.org/title/AUR_submission_guidelines).
-{{< /callout >}}
+> [!WARNING]
+> Before going further on this, make sure to read
+> [AUR's Submission Guidelines](https://wiki.archlinux.org/title/AUR_submission_guidelines).
 
 This page describes the available options.
 
@@ -275,8 +273,6 @@ aurs:
 
 {{< templates >}}
 
-{{< callout type="info" >}}
-
-For more info about what each field does, please refer to
-[Arch's PKGBUILD reference](https://wiki.archlinux.org/title/PKGBUILD).
-{{< /callout >}}
+> [!NOTE]
+> For more info about what each field does, please refer to
+> [Arch's PKGBUILD reference](https://wiki.archlinux.org/title/PKGBUILD).

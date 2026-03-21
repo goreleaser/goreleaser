@@ -39,11 +39,9 @@ brew install --cask goreleaser/tap/goreleaser-pro
 brew install goreleaser
 ```
 
-{{< callout type="warning" >}}
-
-The [formula in homebrew-core] might be slightly outdated.
-Use our homebrew tap to always get the latest updates.
-{{< /callout >}}
+> [!WARNING]
+> The [formula in homebrew-core] might be slightly outdated.
+> Use our homebrew tap to always get the latest updates.
 {{< /tab >}}
 {{< tab "Pro" >}}
 
@@ -228,12 +226,10 @@ yay -S goreleaser-pro-bin
 nix-shell -p goreleaser
 ```
 
-{{< callout type="warning" >}}
-
-The package in nixpkgs might be slightly outdated, as it is not
-updated automatically.
-Use our NUR to always get the latest updates.
-{{< /callout >}}
+> [!WARNING]
+> The package in nixpkgs might be slightly outdated, as it is not
+> updated automatically.
+> Use our NUR to always get the latest updates.
 {{< /tab >}}
 {{< tab "Pro" >}}
 
@@ -328,10 +324,8 @@ docker run --rm --privileged \
 {{< /tab >}}
 {{< /tabs >}}
 
-{{< callout type="warning" >}}
-
-The provided docker image does not support the Snapcraft feature.
-{{< /callout >}}
+> [!WARNING]
+> The provided docker image does not support the Snapcraft feature.
 
 The `DOCKER_REGISTRY` environment variable can be left empty when you are
 releasing to the public docker registry.
@@ -340,10 +334,8 @@ If you need more things, you are encouraged to keep your own image. You can
 always use GoReleaser's [own Dockerfile][dockerfile] as an example though
 and iterate from that.
 
-{{< callout type="info" >}}
-
-There are also `:nightly` tags available with the latest nightly builds.
-{{< /callout >}}
+> [!NOTE]
+> There are also `:nightly` tags available with the latest nightly builds.
 
 ## Linux packages
 
@@ -406,11 +398,9 @@ curl -sfL https://goreleaser.com/static/run | DISTRIBUTION=pro VERSION=__VERSION
 {{< /tab >}}
 {{< /tabs >}}
 
-{{< callout type="info" >}}
-
-The `VERSION` environment variable can be omitted to get the latest stable
-version, or you can set it to `nightly` to get the last nightly build.
-{{< /callout >}}
+> [!NOTE]
+> The `VERSION` environment variable can be omitted to get the latest stable
+> version, or you can set it to `nightly` to get the last nightly build.
 
 ## Manually
 

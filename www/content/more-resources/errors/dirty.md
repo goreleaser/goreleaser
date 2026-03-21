@@ -28,16 +28,14 @@ From here on, you have a couple of options:
 - if you are running `goreleaser build`, you might want to add either the
   `--snapshot` or `--skip=validate` flags to it
 
-{{< callout type="info" >}}
-**./dist**
-
-The `dist` folder (usually `./dist`) needs to be added to `.gitignore`, or
-deleted before running GoReleaser.
-`goreleaser init` takes care of that for you, if you used it to start your
-project, if not, you'll need to do it manually:
-
-```sh
-echo './dist' >>.gitignore
-```
-
-{{< /callout >}}
+> [!NOTE]
+> **./dist**
+>
+> The `dist` folder (usually `./dist`) needs to be added to `.gitignore`, or
+> deleted before running GoReleaser.
+> `goreleaser init` takes care of that for you, if you used it to start your
+> project, if not, you'll need to do it manually:
+>
+> ```sh
+> echo './dist' >>.gitignore
+> ```

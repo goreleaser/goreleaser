@@ -17,20 +17,16 @@ be an API token with `api` scope for a user that has access to the project. This
 variable should be masked and optionally protected if the job will only run on
 protected branches and tags.
 
-{{< callout type="warning" >}}
+> [!WARNING]
+> If you use a project access token, make sure to set `use_package_registry`
+> to `true` as well, otherwise it might not work.
 
-If you use a project access token, make sure to set `use_package_registry`
-to `true` as well, otherwise it might not work.
-{{< /callout >}}
-
-{{< callout type="warning" >}}
-
-If you are using a [protected variable](https://docs.gitlab.com/ee/customization/ci/variables/#protected-cicd-variables)
-to store any of the values needed by goreleaser, ensure that you are protecting the tags as CI jobs in
-Gitlab only may access protected variables if the job is run for protected refs
-([branches](https://docs.gitlab.com/ee/user/project/protected_branches.html),
-[tags](https://docs.gitlab.com/ee/user/project/protected_tags.html)).
-{{< /callout >}}
+> [!WARNING]
+> If you are using a [protected variable](https://docs.gitlab.com/ee/customization/ci/variables/#protected-cicd-variables)
+> to store any of the values needed by goreleaser, ensure that you are protecting the tags as CI jobs in
+> Gitlab only may access protected variables if the job is run for protected refs
+> ([branches](https://docs.gitlab.com/ee/user/project/protected_branches.html),
+> [tags](https://docs.gitlab.com/ee/user/project/protected_tags.html)).
 
 See [Quick Start](https://goreleaser.com/quick-start/) for more information on
 GoReleaser's environment variables.

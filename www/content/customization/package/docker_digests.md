@@ -32,10 +32,9 @@ images.
 
 {{< templates >}}
 
-{{< callout type="warning" >}}
-**`sha256:` prefix**
-
-
-GitHub expects the digests without the `sha256:` prefix, so we trim the
-digest up until `:`.
-{{< /callout >}}
+> [!WARNING]
+> **`sha256:` prefix**
+>
+>
+> GitHub expects the digests without the `sha256:` prefix, so we trim the
+> digest up until `:`.

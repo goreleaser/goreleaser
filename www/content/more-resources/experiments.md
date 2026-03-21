@@ -21,8 +21,6 @@ export GORELEASER_EXPERIMENTAL="defaultgoarm"
 
 This will be default behavior in GoReleaser v3.
 
-{{< callout type="info" >}}
-
-You can also set the `GORELEASER_EXPERIMENTAL` variable in `env` array in
-your `.goreleaser.yml`.
-{{< /callout >}}
+> [!NOTE]
+> You can also set the `GORELEASER_EXPERIMENTAL` variable in `env` array in
+> your `.goreleaser.yml`.

@@ -406,11 +406,9 @@ homebrew_casks:
 {{< /tab >}}
 {{< /tabs >}}
 
-{{< callout type="warning" >}}
-
-Don't forget to remove the `directory: Formula` from your configuration.
-Casks **need** to be in the `Casks` directory - which is the default.
-{{< /callout >}}
+> [!WARNING]
+> Don't forget to remove the `directory: Formula` from your configuration.
+> Casks **need** to be in the `Casks` directory - which is the default.
 
 The preferred way to migrate is to create a `tap_migrations.json` file in the
 root of your tap:
@@ -533,11 +531,9 @@ archives:
 {{< /tab >}}
 {{< /tabs >}}
 
-{{< callout type="info" >}}
-
-It will still accept a single string, e.g.: `formats: zip`.
-In most cases you can simply rename the property to formats.
-{{< /callout >}}
+> [!NOTE]
+> It will still accept a single string, e.g.: `formats: zip`.
+> In most cases you can simply rename the property to formats.
 
 ### archives.format_overrides.format
 
@@ -545,11 +541,9 @@ In most cases you can simply rename the property to formats.
 
 Format was renamed to `formats`, and now accepts a list of formats.
 
-{{< callout type="info" >}}
-
-It will still accept a single string, e.g.: `formats: zip`.
-In most cases you can simply rename the property to formats.
-{{< /callout >}}
+> [!NOTE]
+> It will still accept a single string, e.g.: `formats: zip`.
+> In most cases you can simply rename the property to formats.
 
 {{< tabs >}}
 {{< tab "Before" >}}
@@ -572,11 +566,9 @@ archives:
 {{< /tab >}}
 {{< /tabs >}}
 
-{{< callout type="info" >}}
-
-It will still accept a single string, e.g.: `formats: zip`.
-In most cases you can simply rename the property to formats.
-{{< /callout >}}
+> [!NOTE]
+> It will still accept a single string, e.g.: `formats: zip`.
+> In most cases you can simply rename the property to formats.
 
 ### kos.repository
 

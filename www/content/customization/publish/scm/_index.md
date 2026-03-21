@@ -211,10 +211,8 @@ release:
 
 ```
 
-{{< callout type="info" >}}
-
-[Learn how to set up an API token, GitHub Enterprise, etc](/customization/scm/github/).
-{{< /callout >}}
+> [!NOTE]
+> [Learn how to set up an API token, GitHub Enterprise, etc](/customization/scm/github/).
 
 {{< featpro >}}
 
@@ -270,21 +268,15 @@ release:
       name_template: file.txt # note that this only works if glob matches 1 file only
 ```
 
-{{< callout type="info" >}}
+> [!NOTE]
+> [Learn how to set up an API token, self-hosted GitLab, etc](/customization/scm/gitlab/).
 
-[Learn how to set up an API token, self-hosted GitLab, etc](/customization/scm/gitlab/).
-{{< /callout >}}
+> [!NOTE]
+> If you use GitLab subgroups, you need to specify it in the `owner` field,
+> e.g. `mygroup/mysubgroup`.
 
-{{< callout type="info" >}}
-
-If you use GitLab subgroups, you need to specify it in the `owner` field,
-e.g. `mygroup/mysubgroup`.
-{{< /callout >}}
-
-{{< callout type="warning" >}}
-
-Only GitLab `v12.9+` is supported for releases.
-{{< /callout >}}
+> [!WARNING]
+> Only GitLab `v12.9+` is supported for releases.
 
 ## Gitea
 
@@ -342,24 +334,18 @@ following to your Gitea config in `app.ini`:
 ALLOWED_TYPES = application/gzip|application/x-gzip|application/x-gtar|application/x-tgz|application/x-compressed-tar|text/plain
 ```
 
-{{< callout type="info" >}}
-
-[Learn how to set up an API token](/customization/scm/gitea/).
-{{< /callout >}}
+> [!NOTE]
+> [Learn how to set up an API token](/customization/scm/gitea/).
 
 {{< templates >}}
 
-{{< callout type="warning" >}}
+> [!WARNING]
+> Gitea versions earlier than 1.9.2 do not support uploading `checksums.txt`
+> files because of a [bug](https://github.com/go-gitea/gitea/issues/7882),
+> so you will have to enable all file types with `*/*`.
 
-Gitea versions earlier than 1.9.2 do not support uploading `checksums.txt`
-files because of a [bug](https://github.com/go-gitea/gitea/issues/7882),
-so you will have to enable all file types with `*/*`.
-{{< /callout >}}
-
-{{< callout type="warning" >}}
-
-`draft` and `prerelease` are only supported by GitHub and Gitea.
-{{< /callout >}}
+> [!WARNING]
+> `draft` and `prerelease` are only supported by GitHub and Gitea.
 
 ## Custom release notes
 
@@ -382,9 +368,7 @@ Some changelog generators you can use:
 - [buchanae/github-release-notes](https://github.com/buchanae/github-release-notes)
 - [miniscruff/changie](https://github.com/miniscruff/changie)
 
-{{< callout type="info" >}}
-
-If you create the release before running GoReleaser, and the said release
-has some text in its body, GoReleaser will not override it with its release
-notes.
-{{< /callout >}}
+> [!NOTE]
+> If you create the release before running GoReleaser, and the said release
+> has some text in its body, GoReleaser will not override it with its release
+> notes.

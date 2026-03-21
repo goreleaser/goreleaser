@@ -90,10 +90,8 @@ builds:
 Some options are not supported yet[^fail], but it should be usable for
 most projects already!
 
-{{< callout type="info" >}}
-
-Learn more about [build hooks](./hooks.md).
-{{< /callout >}}
+> [!NOTE]
+> Learn more about [build hooks](./hooks.md).
 
 ### Environment setup
 

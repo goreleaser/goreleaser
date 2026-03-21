@@ -165,14 +165,12 @@ changelog:
       - "^feat:"
 ```
 
-{{< callout type="warning" >}}
-
-Some things to keep an eye on:
-
-- The `github-native` changelog does not support `groups`, `sort`, and `filter`.
-- When releasing a [nightly][], `use` will fallback to `git`.
-- The `github` changelog will only work if both tags exist in GitHub.
-  {{< /callout >}}
+> [!WARNING]
+> Some things to keep an eye on:
+>
+> - The `github-native` changelog does not support `groups`, `sort`, and `filter`.
+> - When releasing a [nightly][], `use` will fallback to `git`.
+> - The `github` changelog will only work if both tags exist in GitHub.
 
 [nightly]: ./nightlies.md
 

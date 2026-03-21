@@ -174,10 +174,8 @@ publishers:
     output: "check-{{ .ArtifactName }}"
 ```
 
-{{< callout type="info" >}}
-
-This will run as the last step of the publishing phase.
-{{< /callout >}}
+> [!NOTE]
+> This will run as the last step of the publishing phase.
 
 These settings should allow you to push your artifacts to any number of
 endpoints, which may require non-trivial authentication or has otherwise complex

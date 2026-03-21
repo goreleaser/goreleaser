@@ -149,11 +149,10 @@ npms:
         foo: bar
 ```
 
-{{< callout type="warning" >}}
-**Caveat**
-
-This will not work if the user installs with `--ignore-scripts`.
-{{< /callout >}}
+> [!WARNING]
+> **Caveat**
+>
+> This will not work if the user installs with `--ignore-scripts`.
 
 {{< templates >}}
 

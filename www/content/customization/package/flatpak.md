@@ -13,14 +13,12 @@ Linux distributions, providing sandboxed environments with consistent runtimes.
 The resulting `.flatpak` bundles can be uploaded to releases, blob
 storage, or distributed directly to users.
 
-{{< callout type="info" >}}
-
-This feature requires `flatpak-builder` and `flatpak` to be available in
-your system `$PATH`.
-You can install them from your system package manager.
-The configured runtime and SDK must also be installed on the build machine.
-Flatpak only works from Linux.
-{{< /callout >}}
+> [!NOTE]
+> This feature requires `flatpak-builder` and `flatpak` to be available in
+> your system `$PATH`.
+> You can install them from your system package manager.
+> The configured runtime and SDK must also be installed on the build machine.
+> Flatpak only works from Linux.
 
 ## Configuration
 
@@ -93,34 +91,31 @@ flatpak:
 
 {{< templates >}}
 
-{{< callout type="info" >}}
-**Supported Architectures**
+> [!NOTE]
+> **Supported Architectures**
+>
+>
+> GoReleaser maps Go architectures to Flatpak architectures automatically:
+>
+> | Go arch | Flatpak arch |
+> |---------|-------------|
+> | `amd64` | `x86_64`    |
+> | `arm64` | `aarch64`   |
+>
+> Other architectures are ignored.
 
-
-GoReleaser maps Go architectures to Flatpak architectures automatically:
-
-| Go arch | Flatpak arch |
-|---------|-------------|
-| `amd64` | `x86_64`    |
-| `arm64` | `aarch64`   |
-
-Other architectures are ignored.
-{{< /callout >}}
-
-{{< callout type="warning" >}}
-
-Flatpak packages require the configured runtime (e.g.
-`org.freedesktop.Platform`) and SDK to be installed on the build machine.
-Make sure to install them before running GoReleaser:
-
-```bash
-flatpak install flathub \
-  org.freedesktop.Platform/x86_64/24.08 \
-  org.freedesktop.Sdk/x86_64/24.08 \
-  org.freedesktop.Platform/aarch64/24.08 \
-  org.freedesktop.Sdk/aarch64/24.08
-
-```
-{{< /callout >}}
+> [!WARNING]
+> Flatpak packages require the configured runtime (e.g.
+> `org.freedesktop.Platform`) and SDK to be installed on the build machine.
+> Make sure to install them before running GoReleaser:
+>
+> ```bash
+> flatpak install flathub \
+>   org.freedesktop.Platform/x86_64/24.08 \
+>   org.freedesktop.Sdk/x86_64/24.08 \
+>   org.freedesktop.Platform/aarch64/24.08 \
+>   org.freedesktop.Sdk/aarch64/24.08
+>
+> ```
 
 [Flatpak]: https://flatpak.org/

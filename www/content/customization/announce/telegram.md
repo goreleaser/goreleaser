@@ -52,11 +52,9 @@ announce:
 You can format your message using `MarkdownV2` or `HTML`, for reference, see the
 [Telegram Formatting Options documentation](https://core.telegram.org/bots/api#formatting-options).
 
-{{< callout type="info" >}}
-
-If you use `MarkdownV2`, it's probably easier to do
-`{{ print "your message bits" | mdv2escape }}` to prevent issues.
-{{< /callout >}}
+> [!NOTE]
+> If you use `MarkdownV2`, it's probably easier to do
+> `{{ print "your message bits" | mdv2escape }}` to prevent issues.
 
 You can also follow [our channel on Telegram](https://t.me/goreleasernews) if
 you'd like.

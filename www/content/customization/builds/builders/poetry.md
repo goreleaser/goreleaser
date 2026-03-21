@@ -83,10 +83,8 @@ builds:
       post: ./script.sh {{ .Path }}
 ```
 
-{{< callout type="warning" >}}
-
-At this time only the target `py3-none-any` is supported.
-{{< /callout >}}
+> [!WARNING]
+> At this time only the target `py3-none-any` is supported.
 
 ## Building both wheel and sdist
 

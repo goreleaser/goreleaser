@@ -73,9 +73,7 @@ COPY app /app
 ENTRYPOINT ["/app"]
 ```
 
-{{< callout type="info" >}}
-
-If you still want your users to be able to `docker build` without an extra
-step, you can have a `Dockerfile` just for GoReleaser, for example, a
-`goreleaser.dockerfile`.
-{{< /callout >}}
+> [!NOTE]
+> If you still want your users to be able to `docker build` without an extra
+> step, you can have a `Dockerfile` just for GoReleaser, for example, a
+> `goreleaser.dockerfile`.
