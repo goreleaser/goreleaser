@@ -3,7 +3,7 @@ title: "Homebrew Formulas (deprecated)"
 weight: 230
 ---
 
-> [Deprecated](/customization/deprecations/#brews) in v2.10.
+> [Deprecated](/more-resources/deprecations/#brews) in v2.10.
 > [Homebrew Casks](/customization/publish/homebrew_casks/) should be used instead.
 
 After releasing to GitHub, GitLab, or Gitea, GoReleaser can generate and publish

@@ -12,13 +12,13 @@ A _builder_ gets a build configuration and emits binaries/libraries into the
 ## Supported builders
 
 {{< cards cols="2" >}}
-{{< card link="go" title="Golang" >}}
-{{< card link="rust" title="Rust" >}}
-{{< card link="zig" title="Zig" >}}
-{{< card link="bun" title="Bun" >}}
-{{< card link="deno" title="Deno" >}}
-{{< card link="uv" title="UV" >}}
-{{< card link="poetry" title="Poetry" >}}
-{{< card link="python" title="Python" tag="soon">}}
-{{< card link="prebuilt" title="Import from other build systems" >}}
+{{< card link="builders/go" title="Golang" >}}
+{{< card link="builders/rust" title="Rust" >}}
+{{< card link="builders/zig" title="Zig" >}}
+{{< card link="builders/bun" title="Bun" >}}
+{{< card link="builders/deno" title="Deno" >}}
+{{< card link="builders/uv" title="UV" >}}
+{{< card link="builders/poetry" title="Poetry" >}}
+{{< card link="builders/python" title="Python" tag="soon">}}
+{{< card link="builders/prebuilt" title="Import from other build systems" >}}
 {{< /cards >}}

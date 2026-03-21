@@ -185,7 +185,7 @@ During the process of generating SLSA (Supply Chain Levels for Software Artifact
 
 At the end of the day, you will be having a successful workflow run like this:
 
-![image](/static/slsa-provenance-generation.png)
+![image](/slsa-provenance-generation.png)
 
 ## Further Steps
 

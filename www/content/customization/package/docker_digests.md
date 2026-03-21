@@ -27,7 +27,7 @@ docker_digest:
   disable: "{{ .Env.NO_DIGEST }}"
 ```
 
-See [this page](/customization/package/attestations/) for information on how to use this to attest
+See [this page](/customization/publish/attestations/) for information on how to use this to attest
 images.
 
 {{< templates >}}

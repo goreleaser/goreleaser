@@ -61,5 +61,5 @@ release:
 Make sure to take a look at the following documentation pages:
 
 - [Monorepo](/customization/monorepo/)
-- [Release](/customization/release/)
-- [Template variables](/customization/templates/)
+- Release
+- [Template variables](/customization/general/templates/)

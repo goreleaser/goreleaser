@@ -3,7 +3,7 @@ title: "Publish to Nexus"
 weight: 90
 ---
 
-Example of a [publishers](/customization/publishers/) section pushing files
+Example of a [publishers](/customization/publish/publishers/) section pushing files
 to a Nexus instance:
 
 ```yaml {filename=".goreleaser.yaml"}

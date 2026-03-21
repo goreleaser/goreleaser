@@ -364,7 +364,7 @@ That said, we now have a `homebrew_casks` section!
 
 For simple cases, simply replacing one with the other will be good enough.
 More complex settings might require further change.
-Check the [new documentation](/customization/homebrew_casks/) for more
+Check the [new documentation](/customization/publish/homebrew_casks/) for more
 details.
 
 Once you do the first release this way, you might also want to delete the old
@@ -1097,7 +1097,7 @@ goreleaser release --verbose
 > since 2023-04-30 (v1.18.0), removed 2024-05-26 (v2.0)
 
 GoReleaser now allows many `scoop` configurations, so it should be pluralized
-[accordingly](/customization/scoop/).
+[accordingly](/customization/publish/scoop/).
 
 {{< tabs >}}
 {{< tab "Before" >}}

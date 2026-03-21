@@ -4,12 +4,12 @@ weight: 90
 ---
 
 - Follow the progress on the [GitHub repository](https://github.com/goreleaser/goreleaser)
-- Follow us on [Twitter](/twitter) and
+- Follow us on [Twitter](https://twitter.com/goreleaser) and
   <a rel="me" href="https://fosstodon.org/@goreleaser">Mastodon</a>
   for updates
-- Join our [Discord server](/discord)
-- Read our [blog](/blog/index/)[^blog] ([RSS](/feed_rss_created.xml))
-- Follow us on [LinkedIn](/linkedin)
+- Join our [Discord server](https://discord.gg/RGEBtg8vQ6)
+- Read our [blog](/blog/index/)[^blog] ([RSS](/blog/feed.xml))
+- Follow us on [LinkedIn](https://linkedin.com/company/goreleaser)
 - Ask questions on [GitHub Discussions](https://github.com/goreleaser/goreleaser/discussions)
 - Before contributing, read the [Contributing Guidelines](/more-resources/contributing/)
 - [Security Policy](/security/)

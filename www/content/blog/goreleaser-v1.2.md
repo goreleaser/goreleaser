@@ -40,8 +40,6 @@ You can notice that by the recent improvements and collaboration with [Sigstore
 We intend to keep improving in this area in order to make it easier for everyone to sign their work and publish SBOMs.
 Here's to safer internet in the future!
 
-{{< img caption="Here's to safer internet in the future!" src="c3595591-87bf-4e52-baba-a6bd8089a279.png" >}}
-
 ### **Houston, we have a blog!**
 
 We now have an official [blog](https://goreleaser.com/blog)!

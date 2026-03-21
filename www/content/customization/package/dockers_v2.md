@@ -103,14 +103,14 @@ dockers_v2:
     # Whether to disable this particular Docker configuration.
     #
     # Templates: allowed.
-    # {{< inline_version "v2.12.7" >}}
+    # {{< inline_version "v2.12" >}}
     disable: "{{ .IsSnapshot }}"
 
     # Whether to create and attach a SBOM to the image.
     #
     # Default: 'true'
     # Templates: allowed.
-    # {{< inline_version "v2.12.7" >}}
+    # {{< inline_version "v2.12" >}}
     sbom: "{{ not .IsNightly }}"
 
     # Additional `--build-arg`s to be passed.

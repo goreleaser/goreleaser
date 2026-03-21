@@ -109,9 +109,7 @@ Another change is in printing the artifacts' path: it will now, when possible,
 use relative paths in order to make the output a bit better.
 
 Last but not least, we have a new `goreleaser --version` output using
-[go-version](https://github.com/caarlos0/go-version):
-
-{{< img caption="new goreleaser -v output" src="img2.png" >}}
+[go-version](https://github.com/caarlos0/go-version).
 
 It's not much, but it's honest work!
 

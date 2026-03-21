@@ -30,7 +30,7 @@ The first release of 2024 is here!
 - **jsonschema**: we now validate our jsonschema every time it changes to make
   sure it is still valid
 - **deprecations**: we deprecated some options in the `changelog` and `blobs`
-  sections. [Details](/deprecations)
+  sections. [Details](/more-resources/deprecations)
 
 As always, bug fixes, dependency updates, housekeeping, and documentation
 updates are included in this release as well.

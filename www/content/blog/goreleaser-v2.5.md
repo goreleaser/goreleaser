@@ -157,7 +157,7 @@ nevertheless, we have a few other news:
 - **deprecations**: we deprecated `builds.gobinary` in favor of `builds.tool`
   to be more language-agnostic, and `kos.registry` in favor of `kos.registries`
   to support multiple registries.
-  [Details](/deprecations)
+  [Details](/more-resources/deprecations)
 
 [^crane]:
     This is accomplished by using crane to copy from one registry to the

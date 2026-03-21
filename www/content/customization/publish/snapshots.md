@@ -47,5 +47,5 @@ only be generated into the `dist` directory.
 > **Maybe you are looking for something else?**
 >
 >
-> - If just want to build the binaries, and no packages at all, check the [`goreleaser build` command](/customization/cmd/goreleaser_build/);
+> - If just want to build the binaries, and no packages at all, check the `goreleaser build` command;
 > - If you actually want to create nightly builds, check out the [nightly documentation](/customization/publish/nightlies/).

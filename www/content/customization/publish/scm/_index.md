@@ -212,7 +212,7 @@ release:
 ```
 
 > [!NOTE]
-> [Learn how to set up an API token, GitHub Enterprise, etc](/customization/scm/github/).
+> [Learn how to set up an API token, GitHub Enterprise, etc](/customization/publish/scm/github/).
 
 {{< featpro >}}
 
@@ -269,7 +269,7 @@ release:
 ```
 
 > [!NOTE]
-> [Learn how to set up an API token, self-hosted GitLab, etc](/customization/scm/gitlab/).
+> [Learn how to set up an API token, self-hosted GitLab, etc](/customization/publish/scm/gitlab/).
 
 > [!NOTE]
 > If you use GitLab subgroups, you need to specify it in the `owner` field,
@@ -335,7 +335,7 @@ ALLOWED_TYPES = application/gzip|application/x-gzip|application/x-gtar|applicati
 ```
 
 > [!NOTE]
-> [Learn how to set up an API token](/customization/scm/gitea/).
+> [Learn how to set up an API token](/customization/publish/scm/gitea/).
 
 {{< templates >}}
 

@@ -23,7 +23,7 @@ I hope GoReleaser Pro helps improving your release workflow even more!
 
 Thank you!
 
-[^actions]: See all the GitHub Actions options [here](/ci/actions/).
+[^actions]: See all the GitHub Actions options [here](/customization/ci/actions/).
 
 [^install]: Check out all the installation methods [here](/getting-started/install/).
 

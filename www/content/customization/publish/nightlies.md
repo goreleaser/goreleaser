@@ -9,7 +9,7 @@ Whether you need beta builds or a rolling-release system, the nightly builds
 feature will do it for you.
 
 To enable it, you must use the `--nightly` flag in the
-[`goreleaser release` command](/customization/cmd/goreleaser_release/).
+`goreleaser release` command.
 
 You also have some customization options available:
 
@@ -81,6 +81,6 @@ You can also check if it is a nightly build inside a template with:
 > **Maybe you are looking for something else?**
 >
 > - If just want to build the binaries, and no packages at all, check the
->   [`goreleaser build` command](/customization/cmd/goreleaser_build/);
+>   `goreleaser build` command;
 > - If you actually want to create a local "snapshot" build, check out the
 >   [snapshots documentation](/customization/publish/snapshots/).

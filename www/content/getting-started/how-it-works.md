@@ -27,6 +27,6 @@ A GoReleaser run is split into 4 major steps:
 - **announcing**: announces your release to the configured channels
 
 Some steps might be skipped with `--skip` flags (check the
-[command line docs](/cmd/goreleaser/) for details).
+command line docs for details).
 
 If any of the previous steps fails, the next steps will not run.

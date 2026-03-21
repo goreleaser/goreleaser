@@ -328,7 +328,7 @@ builds:
 ```
 
 > [!NOTE]
-> Learn more about [build hooks](/customization/builds/builders/hooks/).
+> Learn more about [build hooks](/customization/builds/hooks/).
 
 > [!WARNING]
 > **GOAMD64, GORISCV64, GOPPC64, GO386, GOARM, GOARM64**
@@ -378,7 +378,7 @@ builds:
       - windows
 ```
 
-The binary name field supports [templating](/customization/builds/templates/). The
+The binary name field supports [templating](/customization/general/templates/). The
 following build details are exposed:
 
 | Key     | Description                       |

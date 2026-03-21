@@ -13,7 +13,7 @@ Many people use these projects for their Go applications because they are pretty
 
 <!--more-->
 
-I’m so glad to announce that we finally [integrated these fantastic projects](/customization/ko)!
+I’m so glad to announce that we finally [integrated these fantastic projects](/customization/package/ko)!
 
 > If you are interested in learning more about the development process of that
 > feature, here is the [PR](https://github.com/goreleaser/goreleaser/pull/3653/) you can take a look.
@@ -97,7 +97,7 @@ It is time to create the configuration file for GoReleaser, which is
 
 The easiest way of creating that file is run: `goreleaser init`, which requires
 GoReleaser CLI to be installed on your environment; please refer to the
-installation page [here](/install) to install it.
+installation page [here](/getting-started/install) to install it.
 
 ```bash
 # it will create the .goreleaser.yml configuration file
@@ -108,7 +108,7 @@ $ goreleaser init
 ```
 
 Next, set ko configuration options into .goreleaser.yml. Fortunately, we have
-good documentation explaining how we can do this [here](/customization/ko).
+good documentation explaining how we can do this [here](/customization/package/ko).
 
 ```bash
 $ cat <<EOF >> .goreleaser.yml

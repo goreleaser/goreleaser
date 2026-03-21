@@ -167,14 +167,14 @@ The following
 are required by GoReleaser:
 
 - `contents: write` if you wish to
-  - [upload archives as GitHub Releases](/customization/release/), or
-  - publish to [Homebrew](/customization/homebrew_casks/), or
-    [Scoop](/customization/scoop/) (assuming it's part of the same repository)
+  - upload archives as GitHub Releases, or
+  - publish to [Homebrew](/customization/publish/homebrew_casks/), or
+    [Scoop](/customization/publish/scoop/) (assuming it's part of the same repository)
 - or just `contents: read` if you don't need any of the above
-- `packages: write` if you [push Docker images](/customization/docker/) to
+- `packages: write` if you [push Docker images](/customization/package/docker/) to
   GitHub
 - `issues: write` if you use [milestone closing
-  capability](/customization/milestone/)
+  capability](/customization/publish/milestone/)
 - `id-token: write` if you wish use [Cosign][cosign] with [GitHub OIDC][oidc]
 
 `GITHUB_TOKEN` permissions [are limited to the repository][about-github-token]

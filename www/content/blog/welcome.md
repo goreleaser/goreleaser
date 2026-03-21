@@ -19,7 +19,7 @@ here.
 
 You can follow the progress in [this issue](https://github.com/goreleaser/goreleaser/issues/3503).
 
-You can also subscribe to the [RSS feed](/feed_rss_created.xml)!
+You can also subscribe to the [RSS feed](/blog/feed.xml)!
 
 Thanks, I hope you enjoy the new home. 😄
 
@@ -32,7 +32,7 @@ Thanks, I hope you enjoy the new home. 😄
 >
 > If you feel like it, you can open a pull request adding your post to
 > [`./www/docs/blog/posts/`](https://github.com/goreleaser/goreleaser/blob/main/www/docs/blog/posts/),
-> and/or join our [Discord](/d) and discuss in the `blog` channel.
+> and/or join our [Discord](https://discord.gg/RGEBtg8vQ6) and discuss in the `blog` channel.
 >
 > You may also need to add yourself to
 > [`./www/docs/blog/.authors.yml`](https://github.com/goreleaser/goreleaser/blob/main/www/docs/blog/.authors.yml).

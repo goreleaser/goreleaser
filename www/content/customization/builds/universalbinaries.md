@@ -57,7 +57,7 @@ universal_binaries:
 
 {{< templates >}}
 
-For more info about hooks, see the [build section](/customization/builds/builds/hooks/).
+For more info about hooks, see the [build section](/customization/builds/hooks/).
 
 The minimal configuration for most setups would look like this:
 
@@ -88,7 +88,7 @@ You can use the Go template engine to remove it if you'd like.
 
 ## Naming templates
 
-Most fields that support [templates](/customization/builds/templates/) will also
+Most fields that support [templates](/customization/general/templates/) will also
 support the following build details:
 
 <!-- to format the tables, use: https://tabletomarkdown.com/format-markdown-table/ -->

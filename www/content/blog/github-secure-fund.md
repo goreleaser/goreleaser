@@ -65,7 +65,7 @@ There's a long road ahead, but I feel like we are way more secure now than
 before.
 
 If you are interested in security, or just want to help, I'm always available on
-the [GoReleaser Discord](/discord) - feel free to chime in there and let's chat. 🙏
+the [GoReleaser Discord](https://discord.gg/RGEBtg8vQ6) - feel free to chime in there and let's chat. 🙏
 [GitHub discussions][discussions] are also open.
 
 Our greatest thanks to both the fund and the fund's partners for making this

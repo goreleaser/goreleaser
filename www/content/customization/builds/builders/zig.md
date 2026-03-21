@@ -86,7 +86,7 @@ Some options are not supported yet[^fail], but it should be usable at least for
 simple projects already!
 
 > [!NOTE]
-> Learn more about [build hooks](/customization/builds/builders/hooks/).
+> Learn more about [build hooks](/customization/builds/hooks/).
 
 ### Environment setup
 

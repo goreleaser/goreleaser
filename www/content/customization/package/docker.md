@@ -4,7 +4,7 @@ weight: 170
 ---
 
 > [!WARNING]
-> [Phasing out](/customization/deprecations/#dockers) in v2.12.
+> [Phasing out](/more-resources/deprecations/#dockers) in v2.12.
 > [Docker Images v2](/customization/package/dockers_v2/) is preferred instead.
 
 GoReleaser can build and push Docker images.

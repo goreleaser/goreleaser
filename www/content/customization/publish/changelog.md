@@ -234,4 +234,4 @@ prompt](https://gist.githubusercontent.com/caarlos0/419c8cb2bab28f7c53c7e228af3a
 in case you're interested.
 
 You can test this by using the
-[`goreleaser changelog` command](/customization/cmd/goreleaser_changelog/).
+`goreleaser changelog` command.
