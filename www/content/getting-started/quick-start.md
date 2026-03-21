@@ -63,6 +63,24 @@ deno init
 ```
 
 {{< /tab >}}
+{{< tab "UV" >}}
+
+Initialize your project with:
+
+```sh
+uv init
+```
+
+{{< /tab >}}
+{{< tab "Poetry" >}}
+
+Initialize your project with:
+
+```sh
+poetry new .
+```
+
+{{< /tab >}}
 {{< /tabs >}}
 
 Run the [init](/cmd/goreleaser_init/) command to create an example `.goreleaser.yaml` file:
@@ -131,6 +149,22 @@ TARGET="aarch64-unknown-linux-gnu" \
 ```
 
 {{< /tab >}}
+{{< tab "UV" >}}
+
+```sh
+TARGET="py3-none-any" \
+  goreleaser build --single-target
+```
+
+{{< /tab >}}
+{{< tab "Poetry" >}}
+
+```sh
+TARGET="py3-none-any" \
+  goreleaser build --single-target
+```
+
+{{< /tab >}}
 {{< /tabs >}}
 
 To release to GitHub, you'll need to export a `GITHUB_TOKEN` environment variable, which should contain a valid GitHub token with the `repo` scope.
@@ -190,7 +224,8 @@ Check your GitHub project's releases page!
 We have a ton of example repositories!
 You can use them to learn more and see how GoReleaser works.
 
-[Browse example repositories](https://github.com/orgs/goreleaser/repositories?q=example){ .md-button .md-button--primary }
+<br>
+{{< button href="https://github.com/orgs/goreleaser/repositories?q=example" label="Browse example repositories" icon="github" primary="true" >}}
 
 ## Dry run
 
