@@ -26,6 +26,7 @@ IgnoreURLs:
   - blog.ediri.io/
   - claude.ai
   - chatgpt.com
+  - livereload.js
 IgnoreDirs:
   - overrides
 IgnoreDirectoryMissingTrailingSlash: true

@@ -181,7 +181,8 @@ tasks:
   docs:test:
     desc: Test docs with htmltest
     cmds:
-      - task: docs:build
+      - task: docs:generate
+      - cd www && hugo --minify --baseURL "/"
       - htmltest www/public -c www/htmltest.yml
 
   release:
