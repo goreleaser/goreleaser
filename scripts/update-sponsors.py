@@ -36,7 +36,6 @@ import urllib.request
 import urllib.error
 from typing import List, Dict, Any, Optional
 
-
 OPENCOLLECTIVE_API = "https://api.opencollective.com/graphql/v2"
 GITHUB_API = "https://api.github.com/graphql"
 SPONSORS_FILE = "www/content/sponsors.md"
@@ -55,7 +54,7 @@ SPONSORS_END_MARKER = "<!-- sponsors:end -->"
 def fetch_members() -> List[Dict[str, Any]]:
     """Fetch all active members from OpenCollective using GraphQL."""
     from datetime import datetime, timedelta
-    
+
     query = """
     query collective($slug: String!) {
       collective(slug: $slug) {
@@ -84,22 +83,22 @@ def fetch_members() -> List[Dict[str, Any]]:
       }
     }
     """
-    
+
     variables = {"slug": COLLECTIVE_SLUG}
-    payload = json.dumps({"query": query, "variables": variables}).encode('utf-8')
-    
+    payload = json.dumps({"query": query, "variables": variables}).encode("utf-8")
+
     req = urllib.request.Request(
         OPENCOLLECTIVE_API,
         data=payload,
         headers={
             "Content-Type": "application/json",
-            "User-Agent": "goreleaser-sponsors-script"
-        }
+            "User-Agent": "goreleaser-sponsors-script",
+        },
     )
-    
+
     try:
         with urllib.request.urlopen(req, timeout=30) as response:
-            data = json.loads(response.read().decode('utf-8'))
+            data = json.loads(response.read().decode("utf-8"))
     except urllib.error.HTTPError as e:
         print(f"Error: API returned status code {e.code}", file=sys.stderr)
         print(f"Response: {e.read().decode('utf-8')}", file=sys.stderr)
@@ -107,31 +106,33 @@ def fetch_members() -> List[Dict[str, Any]]:
     except urllib.error.URLError as e:
         print(f"Error: Failed to connect to API: {e}", file=sys.stderr)
         sys.exit(1)
-    
+
     if "errors" in data:
         print(f"GraphQL errors: {data['errors']}", file=sys.stderr)
         sys.exit(1)
-    
-    members = data.get("data", {}).get("collective", {}).get("members", {}).get("nodes", [])
-    
+
+    members = (
+        data.get("data", {}).get("collective", {}).get("members", {}).get("nodes", [])
+    )
+
     # Filter out inactive members
     one_year_ago = datetime.now() - timedelta(days=365)
     active_members = []
-    
+
     for m in members:
         # Must be active
         if not m.get("isActive", False):
             continue
-        
+
         # Must have made contributions
         if m.get("totalDonations", {}).get("value", 0) <= 0:
             continue
-        
+
         # Check if it's a recurring or recent one-time contribution
         tier_info = m.get("tier", {})
         if tier_info:
             frequency = tier_info.get("frequency")
-            
+
             # Include recurring contributions
             if frequency in ["MONTHLY", "YEARLY"]:
                 active_members.append(m)
@@ -141,25 +142,28 @@ def fetch_members() -> List[Dict[str, Any]]:
                 if since_str:
                     try:
                         # Parse ISO 8601 date
-                        since_date = datetime.fromisoformat(since_str.replace('Z', '+00:00'))
+                        since_date = datetime.fromisoformat(
+                            since_str.replace("Z", "+00:00")
+                        )
                         if since_date.replace(tzinfo=None) >= one_year_ago:
                             active_members.append(m)
                     except (ValueError, AttributeError):
                         # Skip if date parsing fails
                         pass
-        
+
     return active_members
 
 
 def fetch_github_sponsors(token: Optional[str]) -> List[Dict[str, Any]]:
     """Fetch active, recurring, public GitHub sponsors and recent one-time sponsors."""
     from datetime import datetime, timedelta
-    
+
     if not token:
         print("Error: GITHUB_TOKEN environment variable is required", file=sys.stderr)
         sys.exit(1)
-    
-    query = """
+
+    query = (
+        """
     query {
       user(login: "%s") {
         sponsorshipsAsMaintainer(first: 100, activeOnly: true) {
@@ -189,23 +193,25 @@ def fetch_github_sponsors(token: Optional[str]) -> List[Dict[str, Any]]:
         }
       }
     }
-    """ % GITHUB_USER
-    
-    payload = json.dumps({"query": query}).encode('utf-8')
-    
+    """
+        % GITHUB_USER
+    )
+
+    payload = json.dumps({"query": query}).encode("utf-8")
+
     req = urllib.request.Request(
         GITHUB_API,
         data=payload,
         headers={
             "Content-Type": "application/json",
             "Authorization": f"Bearer {token}",
-            "User-Agent": "goreleaser-sponsors-script"
-        }
+            "User-Agent": "goreleaser-sponsors-script",
+        },
     )
-    
+
     try:
         with urllib.request.urlopen(req, timeout=30) as response:
-            data = json.loads(response.read().decode('utf-8'))
+            data = json.loads(response.read().decode("utf-8"))
     except urllib.error.HTTPError as e:
         print(f"Error: GitHub API returned status code {e.code}", file=sys.stderr)
         print(f"Response: {e.read().decode('utf-8')}", file=sys.stderr)
@@ -213,110 +219,117 @@ def fetch_github_sponsors(token: Optional[str]) -> List[Dict[str, Any]]:
     except urllib.error.URLError as e:
         print(f"Error: Failed to connect to GitHub API: {e}", file=sys.stderr)
         sys.exit(1)
-    
+
     if "errors" in data:
         print(f"GraphQL errors: {data['errors']}", file=sys.stderr)
         sys.exit(1)
-    
-    sponsorships = data.get("data", {}).get("user", {}).get("sponsorshipsAsMaintainer", {}).get("nodes", [])
-    
+
+    sponsorships = (
+        data.get("data", {})
+        .get("user", {})
+        .get("sponsorshipsAsMaintainer", {})
+        .get("nodes", [])
+    )
+
     # Convert to similar format as OpenCollective
     one_year_ago = datetime.now() - timedelta(days=365)
     sponsors = []
-    
+
     for s in sponsorships:
         entity = s.get("sponsorEntity", {})
         tier = s.get("tier", {})
         privacy_level = s.get("privacyLevel", "PUBLIC")
         created_at_str = s.get("createdAt")
-        
+
         if not entity:
             continue
-        
+
         # Skip private sponsors
         if privacy_level != "PUBLIC":
             continue
-        
+
         is_one_time = tier.get("isOneTime", False)
         monthly_price = tier.get("monthlyPriceInDollars", 0)
-        
+
         # For one-time sponsors, check if within last year
         if is_one_time:
             if not created_at_str:
                 continue
             try:
-                created_at = datetime.fromisoformat(created_at_str.replace('Z', '+00:00'))
+                created_at = datetime.fromisoformat(
+                    created_at_str.replace("Z", "+00:00")
+                )
                 if created_at.replace(tzinfo=None) < one_year_ago:
                     continue
                 # Divide by 12 for one-time contributions
                 monthly_price = monthly_price / 12
             except (ValueError, AttributeError):
                 continue
-        
-        sponsors.append({
-            "account": {
-                "name": entity.get("name") or entity.get("login", "Anonymous"),
-                "slug": entity.get("login", ""),
-                "website": entity.get("url", ""),
-                "imageUrl": entity.get("avatarUrl", "")
-            },
-            "tier": {
-                "name": tier.get("name", "Sponsor"),
-                "amount": {
-                    "value": monthly_price
+
+        sponsors.append(
+            {
+                "account": {
+                    "name": entity.get("name") or entity.get("login", "Anonymous"),
+                    "slug": entity.get("login", ""),
+                    "website": entity.get("url", ""),
+                    "imageUrl": entity.get("avatarUrl", ""),
                 },
-                "frequency": "ONETIME" if is_one_time else "MONTHLY"
-            },
-            "totalDonations": {
-                "value": monthly_price  # Approximate
-            },
-            "since": created_at_str,
-            "isActive": True
-        })
-    
+                "tier": {
+                    "name": tier.get("name", "Sponsor"),
+                    "amount": {"value": monthly_price},
+                    "frequency": "ONETIME" if is_one_time else "MONTHLY",
+                },
+                "totalDonations": {"value": monthly_price},  # Approximate
+                "since": created_at_str,
+                "isActive": True,
+            }
+        )
+
     return sponsors
 
 
-def group_members_by_tier(members: List[Dict[str, Any]]) -> Dict[str, List[Dict[str, Any]]]:
+def group_members_by_tier(
+    members: List[Dict[str, Any]],
+) -> Dict[str, List[Dict[str, Any]]]:
     """Group members by their contribution tier/amount."""
     tiers = {}
     seen_members = {}  # Track by slug to deduplicate
-    
+
     for member in members:
         account = member.get("account", {})
         tier_info = member.get("tier", {})
         total_donations = member.get("totalDonations", {}).get("value", 0)
-        
+
         # Skip if no account info
         if not account.get("name"):
             continue
-        
+
         slug = account.get("slug", "")
         # Skip duplicates (keep the one with higher donations)
         if slug in seen_members:
             if seen_members[slug]["total_donations"] >= total_donations:
                 continue
-        
+
         # Get monthly amount from tier
         monthly_amount = 0
         if tier_info:
             amount_info = tier_info.get("amount", {})
             if amount_info:
                 monthly_amount = amount_info.get("value", 0)
-            
+
             frequency = tier_info.get("frequency")
             # Convert yearly to monthly
             if frequency == "YEARLY" and monthly_amount > 0:
                 monthly_amount = monthly_amount / 12
             # One-time contributions already divided by 12 in fetch functions
             # so no additional processing needed here
-        
+
         # Skip if no valid amount
         if monthly_amount <= 0:
             continue
-        
+
         tier_name = tier_info.get("name", "Backers") if tier_info else "Backers"
-        
+
         member_data = {
             "name": account.get("name", "Anonymous"),
             "slug": slug,
@@ -324,9 +337,9 @@ def group_members_by_tier(members: List[Dict[str, Any]]) -> Dict[str, List[Dict[
             "imageUrl": account.get("imageUrl", ""),
             "monthly_amount": monthly_amount,
             "total_donations": total_donations,
-            "tier_name": tier_name
+            "tier_name": tier_name,
         }
-        
+
         # Group by amount ranges
         if monthly_amount >= 500:
             tier_key = "Diamond Sponsors"
@@ -340,24 +353,24 @@ def group_members_by_tier(members: List[Dict[str, Any]]) -> Dict[str, List[Dict[
             tier_key = "Bronze Sponsors"
         else:
             tier_key = "Backers"
-        
+
         # Remove from previous tier if exists
         if slug in seen_members:
             prev_tier = seen_members[slug]["tier"]
             if prev_tier in tiers:
                 tiers[prev_tier] = [m for m in tiers[prev_tier] if m["slug"] != slug]
-        
+
         if tier_key not in tiers:
             tiers[tier_key] = []
         tiers[tier_key].append(member_data)
-        
+
         # Track this member
         seen_members[slug] = {"total_donations": total_donations, "tier": tier_key}
-    
+
     # Sort members within each tier by monthly amount (descending)
     for tier in tiers.values():
         tier.sort(key=lambda x: x["monthly_amount"], reverse=True)
-    
+
     return tiers
 
 
@@ -380,11 +393,11 @@ def generate_markdown(tiers: Dict[str, List[Dict[str, Any]]]) -> str:
     lines.append("")
 
     tier_order = [
-        ("Diamond Sponsors",  128, "Diamond"),
+        ("Diamond Sponsors", 128, "Diamond"),
         ("Platinum Sponsors", 112, "Platinum"),
-        ("Gold Sponsors",      96, "Gold"),
-        ("Silver Sponsors",    80, "Silver"),
-        ("Bronze Sponsors",    64, "Bronze"),
+        ("Gold Sponsors", 96, "Gold"),
+        ("Silver Sponsors", 80, "Silver"),
+        ("Bronze Sponsors", 64, "Bronze"),
     ]
 
     logo_tiers = [t[0] for t in tier_order]
@@ -399,19 +412,23 @@ def generate_markdown(tiers: Dict[str, List[Dict[str, Any]]]) -> str:
             if not members:
                 continue
             lines.append(f'<div class="goreleaser-sponsors-tier">')
-            lines.append(f'<div class="goreleaser-sponsors-tier-label">{tier_label}</div>')
+            lines.append(
+                f'<div class="goreleaser-sponsors-tier-label">{tier_label}</div>'
+            )
             lines.append(f'<div class="goreleaser-sponsors-grid">')
             for member in members:
-                url = member["website"] or f"https://opencollective.com/{member['slug']}"
+                url = (
+                    member["website"] or f"https://opencollective.com/{member['slug']}"
+                )
                 lines.append(
                     f'<a class="goreleaser-sponsor-item" href="{url}" target="_blank" rel="noopener sponsored">'
                     f'<img src="{sized_image_url(member["imageUrl"], logo_size)}" alt="{member["name"]}" width="{logo_size}" height="{logo_size}" />'
-                    f'{member["name"]}</a>'
+                    f"{member['name']}</a>"
                 )
-            lines.append('</div>')
-            lines.append('</div>')
+            lines.append("</div>")
+            lines.append("</div>")
             lines.append("")
-        lines.append('</div>')
+        lines.append("</div>")
         lines.append("")
 
     # Backers — plain text list
@@ -427,7 +444,9 @@ def generate_markdown(tiers: Dict[str, List[Dict[str, Any]]]) -> str:
     return "\n".join(lines)
 
 
-def generate_home_html(tiers: Dict[str, List[Dict[str, Any]]], min_monthly_amount: float = 50.0) -> str:
+def generate_home_html(
+    tiers: Dict[str, List[Dict[str, Any]]], min_monthly_amount: float = 50.0
+) -> str:
     """Generate HTML for home page sponsor cards, grouped by tier."""
     lines = []
     lines.append("<!-- This list is auto-generated by scripts/update-sponsors.py -->")
@@ -435,10 +454,10 @@ def generate_home_html(tiers: Dict[str, List[Dict[str, Any]]], min_monthly_amoun
 
     # Define tier order, logo sizes, and display labels for home page (only $50+)
     tier_config = {
-        "Diamond Sponsors":  (128, "Diamond"),
+        "Diamond Sponsors": (128, "Diamond"),
         "Platinum Sponsors": (112, "Platinum"),
-        "Gold Sponsors":     (96,  "Gold"),
-        "Silver Sponsors":   (80,  "Silver"),
+        "Gold Sponsors": (96, "Gold"),
+        "Silver Sponsors": (80, "Silver"),
     }
 
     for tier_name, (logo_size, tier_label) in tier_config.items():
@@ -450,109 +469,181 @@ def generate_home_html(tiers: Dict[str, List[Dict[str, Any]]], min_monthly_amoun
             continue
 
         lines.append(f'\t\t\t<div class="goreleaser-sponsors-tier">')
-        lines.append(f'\t\t\t\t<div class="goreleaser-sponsors-tier-label">{tier_label}</div>')
+        lines.append(
+            f'\t\t\t\t<div class="goreleaser-sponsors-tier-label">{tier_label}</div>'
+        )
         lines.append(f'\t\t\t\t<div class="goreleaser-sponsors-grid">')
         for member in members:
             url = member["website"] or f"https://opencollective.com/{member['slug']}"
-            lines.append(f'\t\t\t\t<a class="goreleaser-sponsor-item" href="{url}" target="_blank" rel="noopener sponsored">')
-            lines.append(f'\t\t\t\t\t<img src="{sized_image_url(member["imageUrl"], logo_size)}" alt="{member["name"]}" width="{logo_size}" height="{logo_size}" />')
-            lines.append(f'\t\t\t\t\t{member["name"]}')
-            lines.append(f'\t\t\t\t</a>')
-        lines.append(f'\t\t\t\t</div>')
-        lines.append(f'\t\t\t</div>')
+            lines.append(
+                f'\t\t\t\t<a class="goreleaser-sponsor-item" href="{url}" target="_blank" rel="noopener sponsored">'
+            )
+            lines.append(
+                f'\t\t\t\t\t<img src="{sized_image_url(member["imageUrl"], logo_size)}" alt="{member["name"]}" width="{logo_size}" height="{logo_size}" />'
+            )
+            lines.append(f"\t\t\t\t\t{member['name']}")
+            lines.append(f"\t\t\t\t</a>")
+        lines.append(f"\t\t\t\t</div>")
+        lines.append(f"\t\t\t</div>")
 
     return "\n".join(lines)
 
 
-def update_file_with_markers(file_path: str, new_content: str, begin_marker: str, end_marker: str):
+def generate_readme_markdown(tiers: Dict[str, List[Dict[str, Any]]]) -> str:
+    """Generate GitHub-compatible markdown for README (plain HTML, no CSS classes)."""
+    lines = []
+    lines.append("<!-- This list is auto-generated by scripts/update-sponsors.py -->")
+    lines.append("")
+
+    tier_order = [
+        ("Diamond Sponsors", 128, "Diamond Sponsors"),
+        ("Platinum Sponsors", 112, "Platinum Sponsors"),
+        ("Gold Sponsors", 96, "Gold Sponsors"),
+        ("Silver Sponsors", 80, "Silver Sponsors"),
+        ("Bronze Sponsors", 64, "Bronze Sponsors"),
+    ]
+
+    for tier_name, logo_size, tier_label in tier_order:
+        members = tiers.get(tier_name, [])
+        members = [m for m in members if m["imageUrl"]]
+        if not members:
+            continue
+        lines.append(f"### {tier_label}")
+        lines.append("")
+        lines.append('<div align="center">')
+        lines.append("")
+        for member in members:
+            url = member["website"] or f"https://opencollective.com/{member['slug']}"
+            lines.append(
+                f'  <a href="{url}" target="_blank" rel="noopener sponsored">'
+                f'<img src="{sized_image_url(member["imageUrl"], logo_size)}" alt="{member["name"]}"'
+                f' width="{logo_size}" height="{logo_size}" style="border-radius: 8px; margin: 8px;"></a>'
+            )
+        lines.append("")
+        lines.append("</div>")
+        lines.append("")
+
+    backers = tiers.get("Backers", [])
+    if backers:
+        lines.append("### Backers")
+        lines.append("")
+        for member in backers:
+            url = member["website"] or f"https://opencollective.com/{member['slug']}"
+            lines.append(f"- [{member['name']}]({url})")
+        lines.append("")
+
+    return "\n".join(lines)
+
+
+def update_file_with_markers(
+    file_path: str, new_content: str, begin_marker: str, end_marker: str
+):
     """Update a file between begin_marker and end_marker."""
     with open(file_path, "r") as f:
         content = f.read()
-    
+
     start_idx = content.find(begin_marker)
     if start_idx == -1:
         print(f"Error: Could not find {begin_marker} in {file_path}", file=sys.stderr)
         sys.exit(1)
-    
+
     end_idx = content.find(end_marker, start_idx)
     if end_idx == -1:
         print(f"Error: Could not find {end_marker} in {file_path}", file=sys.stderr)
         sys.exit(1)
-    
+
     # Build new content
     new_file_content = (
-        content[:start_idx + len(begin_marker)] + 
-        "\n" + 
-        new_content + 
-        "\n" + 
-        content[end_idx:]
+        content[: start_idx + len(begin_marker)]
+        + "\n"
+        + new_content
+        + "\n"
+        + content[end_idx:]
     )
-    
+
     with open(file_path, "w") as f:
         f.write(new_file_content)
-    
+
     print(f"✓ Updated {file_path} ({begin_marker})")
 
 
 def main():
     """Main function."""
     all_sponsors = []
-    
+
     # Fetch OpenCollective sponsors
     print("Fetching sponsors from OpenCollective...")
     oc_members = fetch_members()
     print(f"✓ Found {len(oc_members)} active OpenCollective sponsors/backers")
     if len(oc_members) == 0:
-        print("Error: Found 0 sponsors from OpenCollective - API may not be working correctly", file=sys.stderr)
+        print(
+            "Error: Found 0 sponsors from OpenCollective - API may not be working correctly",
+            file=sys.stderr,
+        )
         sys.exit(1)
     all_sponsors.extend(oc_members)
-    
+
     # Fetch GitHub Sponsors
     github_token = os.environ.get("GITHUB_TOKEN")
-    
+
     print("Fetching sponsors from GitHub...")
     gh_members = fetch_github_sponsors(github_token)
-    print(f"✓ Found {len(gh_members)} active GitHub sponsors (recurring + one-time from last year)")
+    print(
+        f"✓ Found {len(gh_members)} active GitHub sponsors (recurring + one-time from last year)"
+    )
     if len(gh_members) == 0:
-        print("Error: Found 0 sponsors from GitHub - API may not be working correctly or token lacks permissions", file=sys.stderr)
+        print(
+            "Error: Found 0 sponsors from GitHub - API may not be working correctly or token lacks permissions",
+            file=sys.stderr,
+        )
         sys.exit(1)
     all_sponsors.extend(gh_members)
-    
+
     # Group all sponsors together by tier
     print(f"\nGrouping {len(all_sponsors)} total sponsors by tier...")
     unified_tiers = group_members_by_tier(all_sponsors)
-    
+
     # Check if we have any sponsors after grouping (all tier lists must have at least one member)
     if not unified_tiers or not any(members for members in unified_tiers.values()):
         print("Error: No sponsors found after grouping by tier", file=sys.stderr)
         sys.exit(1)
     for tier_name, members_list in unified_tiers.items():
         print(f"  {tier_name}: {len(members_list)} member(s)")
-    
+
     # Generate unified markdown
     print("\nGenerating unified sponsors markdown...")
     markdown = generate_markdown(unified_tiers)
-    
+
     print("Updating sponsors.md...")
-    update_file_with_markers(SPONSORS_FILE, markdown, SPONSORS_BEGIN_MARKER, SPONSORS_END_MARKER)
-    
+    update_file_with_markers(
+        SPONSORS_FILE, markdown, SPONSORS_BEGIN_MARKER, SPONSORS_END_MARKER
+    )
+
     print("Updating README.md...")
-    update_file_with_markers(README_FILE, markdown, SPONSORS_BEGIN_MARKER, SPONSORS_END_MARKER)
-    
+    readme_markdown = generate_readme_markdown(unified_tiers)
+    update_file_with_markers(
+        README_FILE, readme_markdown, SPONSORS_BEGIN_MARKER, SPONSORS_END_MARKER
+    )
+
     # Generate home page HTML for top sponsors ($50+/month)
     print("\nGenerating home page HTML for top sponsors ($50+/month)...")
     home_html = generate_home_html(unified_tiers, min_monthly_amount=HOME_THRESHOLD_USD)
-    
+
     # Count how many top sponsors we have
-    top_count = sum(1 for tier_name, members in unified_tiers.items() 
-                    if tier_name != "Backers" 
-                    for member in members 
-                    if member["monthly_amount"] >= HOME_THRESHOLD_USD and member["imageUrl"])
+    top_count = sum(
+        1
+        for tier_name, members in unified_tiers.items()
+        if tier_name != "Backers"
+        for member in members
+        if member["monthly_amount"] >= HOME_THRESHOLD_USD and member["imageUrl"]
+    )
     print(f"  Found {top_count} sponsor(s) for home page")
-    
+
     print("Updating home.html...")
-    update_file_with_markers(HOME_FILE, home_html, SPONSORS_BEGIN_MARKER, SPONSORS_END_MARKER)
-    
+    update_file_with_markers(
+        HOME_FILE, home_html, SPONSORS_BEGIN_MARKER, SPONSORS_END_MARKER
+    )
+
     print("\n✨ Done! Sponsors lists updated successfully.")
 
 
