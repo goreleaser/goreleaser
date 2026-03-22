@@ -1,6 +1,6 @@
 ---
 title: "Limitations"
-weight: 50
+weight: 60
 ---
 
 Some things GoReleaser intentionally does not support, and why.

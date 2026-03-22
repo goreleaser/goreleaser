@@ -188,7 +188,7 @@ git push origin v0.1.0
 ```
 
 > [!NOTE]
-> Check if your tag adheres to [semantic versioning](/getting-started/limitations/semver/).
+> Check if your tag adheres to [semantic versioning](/resources/limitations/semver/).
 
 > [!NOTE]
 > If you don't want to create a tag yet, you can also run GoReleaser without
