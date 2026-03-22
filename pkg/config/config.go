@@ -428,6 +428,26 @@ type Scoop struct {
 	Goamd64               string       `yaml:"goamd64,omitempty" json:"goamd64,omitempty"`
 }
 
+type InstallScriptInstallTo struct {
+	Linux   string `yaml:"linux,omitempty" json:"linux,omitempty"`
+	Darwin  string `yaml:"darwin,omitempty" json:"darwin,omitempty"`
+	Windows string `yaml:"windows,omitempty" json:"windows,omitempty"`
+}
+
+type InstallScript struct {
+	IDs                   []string               `yaml:"ids,omitempty" json:"ids,omitempty"`
+	Repository            RepoRef                `yaml:"repository,omitempty" json:"repository,omitempty"`
+	CommitAuthor          CommitAuthor           `yaml:"commit_author,omitempty" json:"commit_author,omitempty"`
+	CommitMessageTemplate string                 `yaml:"commit_msg_template,omitempty" json:"commit_msg_template,omitempty"`
+	URLTemplate           string                 `yaml:"url_template,omitempty" json:"url_template,omitempty"`
+	Directory             string                 `yaml:"directory,omitempty" json:"directory,omitempty"`
+	Goamd64               string                 `yaml:"goamd64,omitempty" json:"goamd64,omitempty"`
+	InstallTo             InstallScriptInstallTo `yaml:"install_to,omitempty" json:"install_to,omitempty"`
+	MessageBefore         string                 `yaml:"message_before,omitempty" json:"message_before,omitempty"`
+	MessageAfter          string                 `yaml:"message_after,omitempty" json:"message_after,omitempty"`
+	Enable                string                 `yaml:"enable,omitempty" json:"enable,omitempty" jsonschema:"oneof_type=string;boolean"`
+}
+
 // CommitAuthor is the author of a Git commit.
 type CommitAuthor struct {
 	Name              string        `yaml:"name,omitempty" json:"name,omitempty"`
@@ -1240,6 +1260,7 @@ type Project struct {
 	Krews             []Krew            `yaml:"krews,omitempty" json:"krews,omitempty"`
 	Kos               []Ko              `yaml:"kos,omitempty" json:"kos,omitempty"`
 	Scoops            []Scoop           `yaml:"scoops,omitempty" json:"scoops,omitempty"`
+	InstallScript     InstallScript     `yaml:"install_script,omitempty" json:"install_script,omitempty"`
 	Builds            []Build           `yaml:"builds,omitempty" json:"builds,omitempty"`
 	Archives          []Archive         `yaml:"archives,omitempty" json:"archives,omitempty"`
 	NFPMs             []NFPM            `yaml:"nfpms,omitempty" json:"nfpms,omitempty"`

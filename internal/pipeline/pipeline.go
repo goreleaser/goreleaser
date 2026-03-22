@@ -24,6 +24,7 @@ import (
 	"github.com/goreleaser/goreleaser/v2/internal/pipe/flatpak"
 	"github.com/goreleaser/goreleaser/v2/internal/pipe/git"
 	"github.com/goreleaser/goreleaser/v2/internal/pipe/gomod"
+	"github.com/goreleaser/goreleaser/v2/internal/pipe/installscript"
 	"github.com/goreleaser/goreleaser/v2/internal/pipe/ko"
 	"github.com/goreleaser/goreleaser/v2/internal/pipe/krew"
 	"github.com/goreleaser/goreleaser/v2/internal/pipe/makeself"
@@ -154,6 +155,8 @@ var Pipeline = append(
 	krew.Pipe{},
 	// create scoop buckets
 	scoop.Pipe{},
+	// generate install scripts
+	installscript.Pipe{},
 	// create chocolatey pkg and publish
 	chocolatey.Pipe{},
 	// reports artifacts sizes to the log and to artifacts.json

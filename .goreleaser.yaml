@@ -337,6 +337,14 @@ flatpak:
       - --share=network
       - --filesystem=host
 
+install_script:
+  enable: true
+  directory: ./www/docs/static/
+  repository:
+    owner: goreleaser
+    name: goreleaser
+    branch: main
+
 sboms:
   - artifacts: archive
 

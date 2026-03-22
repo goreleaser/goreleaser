@@ -187,6 +187,7 @@ nav:
           - customization/npm.md
           - Krew: customization/krew.md
           - Scoop: customization/scoop.md
+          - Install Scripts: customization/install_script.md
           - MCP: customization/mcp.md
           - customization/changelog.md
           - customization/upload.md
