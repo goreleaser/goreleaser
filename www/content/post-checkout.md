@@ -1,6 +1,11 @@
 ---
 title: "Thanks for subscribing to GoReleaser Pro! 🥳"
+breadcrumbs: false
+sidebar:
+  hide: true
+excludeSearch: true
 ---
+
 A few notes on how to get started:
 
 - [x] GoReleaser Pro is distributed as a different binary than the free version.

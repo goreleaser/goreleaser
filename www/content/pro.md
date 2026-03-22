@@ -1,5 +1,6 @@
 ---
 title: "GoReleaser Pro"
+breadcrumbs: false
 weight: 400
 sidebar:
   hide: true
