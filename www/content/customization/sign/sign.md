@@ -1,5 +1,6 @@
 ---
-title: "Archives, installers, packages, and checksums"
+title: "Signing archives, installers, packages, and checksums"
+linkTitle: "Archives, installers, packages, and checksums"
 weight: 20
 ---
 

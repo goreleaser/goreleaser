@@ -1,5 +1,6 @@
 ---
-title: "Binaries"
+title: "Signing binaries"
+linkTitle: "Binaries"
 weight: 10
 ---
 

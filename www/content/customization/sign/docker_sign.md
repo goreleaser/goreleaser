@@ -1,5 +1,6 @@
 ---
-title: "Docker manifests"
+title: "Signing Docker manifests"
+linkTitle: "Docker Manifests"
 weight: 30
 ---
 

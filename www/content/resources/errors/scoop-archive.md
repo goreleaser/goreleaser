@@ -1,5 +1,5 @@
 ---
-title: "Scoop requires single a windows archive"
+title: "Scoop requires single a Windows archive"
 weight: 110
 ---
 

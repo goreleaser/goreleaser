@@ -43,7 +43,7 @@ IgnoreDirs:
 IgnoreDirectoryMissingTrailingSlash: true
 IgnoreAltMissing: true
 IgnoreInternalEmptyHash: true
-CheckInternalHash: false
+CheckInternalHash: true
 ExternalTimeout: 60
 HTTPHeaders:
   "Range": "bytes=0-10"

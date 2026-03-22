@@ -1,5 +1,6 @@
 ---
 title: "Notarize macOS Applications"
+linkTitle: "Notarization"
 weight: 40
 ---
 

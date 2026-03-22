@@ -200,7 +200,7 @@ func (t Type) String() string {
 
 // Extra field keys used across multiple pipes.
 // If you add or change these, please update the documentation at
-// www/content/customization/artifacts.md as well.
+// www/content/customization/general/artifacts.md as well.
 const (
 	ExtraID         = "ID"
 	ExtraBinary     = "Binary"
