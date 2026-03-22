@@ -64,7 +64,7 @@ winget:
     # Default: name.
     # {{< inline_version "v2.14" >}}
     # Templates: allowed.
-    packaget_name: "Foo Bar"
+    package_name: "Foo Bar"
 
     # IDs of the archives to use.
     # Empty means all IDs.

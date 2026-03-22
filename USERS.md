@@ -1,6 +1,6 @@
 ## Who uses GoReleaser?
 
-GoReleaser is used [~50k][search] open source repositories!
+GoReleaser is used by [~50k][search] open source repositories!
 
 ### Some notable mentions
 

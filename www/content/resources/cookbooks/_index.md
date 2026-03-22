@@ -9,7 +9,7 @@ Feel free to contribute any recipes you find interesting.
 
 ## How to contribute a cookbook
 
-1. Create a new markdown file inside `www/content/cookbooks` with the content you want;
+1. Create a new markdown file inside `www/content/resources/cookbooks` with the content you want;
 1. Open a pull request with these changes;
    1. Please use the following commit message template: `docs: how to X`
 1. You're done! Thanks for the contribution!

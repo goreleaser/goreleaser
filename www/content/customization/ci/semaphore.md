@@ -34,17 +34,17 @@ blocks:
 # On Semaphore 2.0 deployment and delivery is managed with promotions,
 # which may be automatic or manual and optionally depend on conditions.
 promotions:
-    - name: Release
-       pipeline_file: goreleaser.yaml
-       auto_promote_on:
-         - result: passed
-           branch:
-             - "^refs/tags/v*"
+  - name: Release
+    pipeline_file: goreleaser.yaml
+    auto_promote_on:
+      - result: passed
+        branch:
+          - "^refs/tags/v*"
 ```
 
 Pipeline file in `.semaphore/goreleaser.yaml`:
 
-```yaml
+```yaml {filename=".semaphore/goreleaser.yaml"}
 version: "v1.0"
 name: GoReleaser
 agent:
@@ -71,7 +71,7 @@ blocks:
 The following YAML file, `createSecret.yml` creates a new secret item that is
 called GoReleaser with one environment variable, named `GITHUB_TOKEN`:
 
-```yaml
+```yaml {filename="createSecret.yml"}
 apiVersion: v1alpha
 kind: Secret
 metadata:
