@@ -51,3 +51,7 @@ notes [here][oss-rel] and [here (for Pro)][pro-rel].
 - We made a bunch of progress towards getting 100% in the
   [OpenF Best Practices](https://bestpractices.coreinfrastructure.org/en/projects/5420#analysis)
   assessment... and we're almost there.
+
+[install]: /getting-started/install/
+[oss-rel]: https://github.com/goreleaser/goreleaser/releases/tag/v1.13.0
+[pro-rel]: https://github.com/goreleaser/goreleaser-pro/releases/tag/v1.13.0

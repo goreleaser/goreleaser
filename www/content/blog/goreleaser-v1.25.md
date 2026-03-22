@@ -67,3 +67,8 @@ You can also [sponsor the project](/sponsors), or get a
 [GoReleaser Pro license][pro].
 
 [discord]: https://goreleaser.com/discord
+
+[install]: /getting-started/install/
+[oss-rel]: https://github.com/goreleaser/goreleaser/releases/tag/v1.25.0
+[pro-rel]: https://github.com/goreleaser/goreleaser-pro/releases/tag/v1.25.0
+[pro]: /pro/

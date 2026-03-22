@@ -11,7 +11,7 @@ This cookbook gives some suggestions on how to handle that.
 {{< featpro >}}
 
 Usually, you'll rely on tag prefixes for each sub-project within your monorepo.
-GoReleaser can handle that within its [monorepo configuration][Monorepo]:
+GoReleaser can handle that within its [monorepo configuration](/customization/monorepo/):
 
 ```yaml {filename=".goreleaser.yaml"}
 monorepo:
@@ -23,7 +23,7 @@ With that you can already push a tag `app1/v1.0.0`, for example, and GoReleaser
 should gracefully handling everything.
 
 But, if you want the release to happen in another repository, you'll also need
-to add some [release][Release] settings:
+to add some [release](/customization/publish/scm/release/) settings:
 
 ```yaml {filename=".goreleaser.yaml"}
 release:
@@ -54,12 +54,12 @@ release:
 > [!NOTE]
 > On GoReleaser Pro, `{{.Tag}}` is the tag without the prefix, and the
 > prefixed tag can be accessed with `{{.PrefixedTag}}`. Check the
-> [documentation][Template variables] for more information.
+> [documentation](/customization/general/templates/) for more information.
 
 ## Learning more
 
 Make sure to take a look at the following documentation pages:
 
 - [Monorepo](/customization/monorepo/)
-- Release
+- [Release](/customization/publish/scm/release/)
 - [Template variables](/customization/general/templates/)

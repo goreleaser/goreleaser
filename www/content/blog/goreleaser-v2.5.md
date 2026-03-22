@@ -200,3 +200,8 @@ You can also [sponsor the project](/sponsors), or get a
 [vedant]: https://github.com/vedantmgoyal9
 [carine]: https://github.com/carinebecker
 [artwork]: https://github.com/goreleaser/artwork
+
+[install]: /getting-started/install/
+[oss-rel]: https://github.com/goreleaser/goreleaser/releases/tag/v2.5.0
+[pro-rel]: https://github.com/goreleaser/goreleaser-pro/releases/tag/v2.5.0
+[pro]: /pro/

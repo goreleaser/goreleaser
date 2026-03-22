@@ -65,3 +65,8 @@ You can also [sponsor the project](/sponsors), or get a
 [discord]: https://goreleaser.com/discord
 [experimental]: https://goreleaser.com/experiments/
 [Dagger]: https://dagger.io
+
+[install]: /getting-started/install/
+[oss-rel]: https://github.com/goreleaser/goreleaser/releases/tag/v2.4.0
+[pro-rel]: https://github.com/goreleaser/goreleaser-pro/releases/tag/v2.4.0
+[pro]: /pro/

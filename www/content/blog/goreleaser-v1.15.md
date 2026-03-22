@@ -59,3 +59,7 @@ as everyone who helped debug and test everything on
   [Join the conversation](https://goreleaser.com/discord)!
 - nFPM had new releases as well, 
   [check it out](https://github.com/goreleaser/nfpm/releases).
+
+[install]: /getting-started/install/
+[oss-rel]: https://github.com/goreleaser/goreleaser/releases/tag/v1.15.0
+[pro-rel]: https://github.com/goreleaser/goreleaser-pro/releases/tag/v1.15.0

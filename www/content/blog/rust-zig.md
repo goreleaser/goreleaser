@@ -484,3 +484,5 @@ For reference, these are the tools and versions used:
 
 Cross-posted from
 [carlosbecker.com](https://carlosbecker.com/posts/goreleaser-rust-zig/).
+
+[pro]: /pro/

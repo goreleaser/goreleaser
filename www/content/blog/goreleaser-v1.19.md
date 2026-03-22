@@ -235,3 +235,7 @@ You can help by contributing features and bug fixes, or by donating.
 You may also be interested in buying a GoReleaser Pro license.
 
 You can find out more [here](https://goreleaser.com/sponsors/).
+
+[install]: /getting-started/install/
+[oss-rel]: https://github.com/goreleaser/goreleaser/releases/tag/v1.19.0
+[pro-rel]: https://github.com/goreleaser/goreleaser-pro/releases/tag/v1.19.0
