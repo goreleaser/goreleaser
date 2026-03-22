@@ -18,9 +18,8 @@ token.
 
 Then, you need to pass your account name to GoReleaser and have your push token
 as an environment variable named `CLOUDSMITH_TOKEN`:
-{filename}
 
-```yaml title=".goreleaser.yaml"
+```yaml {filename=".goreleaser.yaml"}
 cloudsmiths:
   - organization: myorg
     repository: myrepo
@@ -35,9 +34,8 @@ This will automatically upload all your `apk`, `deb`, and `rpm` files.
 ## Customization
 
 You can also have plenty of customization options:
-{filename}
 
-```yaml title=".goreleaser.yaml"
+```yaml {filename=".goreleaser.yaml"}
 cloudsmiths:
   - # Cloudsmith organization.
     # Config is skipped if empty

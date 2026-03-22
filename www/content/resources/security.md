@@ -1,7 +1,6 @@
 ---
-title: "Security Policy"
-sidebar:
-  hide: true
+title: Security Policy
+weight: 900
 ---
 
 ## Supported Versions

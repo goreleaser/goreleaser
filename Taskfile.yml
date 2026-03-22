@@ -118,20 +118,20 @@ tasks:
   docs:generate:
     desc: Generate docs
     cmds:
-      - scripts/copy-doc.sh CONTRIBUTING.md www/content/contributing.md
-      - scripts/copy-doc.sh USERS.md www/content/users.md
-      - scripts/copy-doc.sh EULA.md www/content/eula.md
-      - scripts/copy-doc.sh SECURITY.md www/content/security.md
+      - scripts/copy-doc.sh CONTRIBUTING.md www/content/resources/contributing.md
+      - scripts/copy-doc.sh USERS.md www/content/resources/users.md
+      - scripts/copy-doc.sh EULA.md www/content/resources/eula.md
+      - scripts/copy-doc.sh SECURITY.md www/content/resources/security.md
     sources:
       - CONTRIBUTING.md
       - USERS.md
       - EULA.md
       - SECURITY.md
     generates:
-      - www/content/contributing.md
-      - www/content/users.md
-      - www/content/eula.md
-      - www/content/security.md
+      - www/content/resources/contributing.md
+      - www/content/resources/users.md
+      - www/content/resources/eula.md
+      - www/content/resources/security.md
 
   docs:sponsors:
     desc: Update OpenCollective and GitHub sponsors list

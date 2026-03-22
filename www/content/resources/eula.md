@@ -1,5 +1,7 @@
 ---
-title: "GoReleaser End User License Agreement (EULA)"
+title: GoReleaser End User License Agreement
+linkTitle: EULA
+weight: 800
 sidebar:
   hide: true
 ---

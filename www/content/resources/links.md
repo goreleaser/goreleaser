@@ -1,6 +1,6 @@
 ---
 title: "Links"
-weight: 90
+weight: 9000
 ---
 
 - Follow the progress on the [GitHub repository](https://github.com/goreleaser/goreleaser)
@@ -12,8 +12,6 @@ weight: 90
 - Follow us on [LinkedIn](https://linkedin.com/company/goreleaser)
 - Ask questions on [GitHub Discussions](https://github.com/goreleaser/goreleaser/discussions)
 - Before contributing, read the [Contributing Guidelines](/resources/contributing/)
-- [Security Policy](/security/)
-- [EULA](/eula/)
 
 This project adheres to the Contributor Covenant
 [code of conduct](https://github.com/goreleaser/.github/blob/main/CODE_OF_CONDUCT.md).
