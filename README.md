@@ -23,7 +23,7 @@
 We handle the complexities of releasing so you can focus in building what really
 matters: **your software**.
 
-![](https://goreleaser.com/static/goreleaser.png)
+![](https://goreleaser.com/static/goreleaser.svg)
 
 ---
 
