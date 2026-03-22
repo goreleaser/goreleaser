@@ -31,6 +31,5 @@ Thanks, I hope you enjoy the new home. 😄
 > We are also very happy to accept guest posts!
 >
 > If you feel like it, you can open a pull request adding your post to
-> [`./www/docs/blog/posts/`](https://github.com/goreleaser/goreleaser/blob/main/www/docs/blog/posts/),
+> [`./www/docs/blog/posts/`](https://github.com/goreleaser/goreleaser/blob/main/www/content/blog/),
 > and/or join our [Discord](https://discord.gg/RGEBtg8vQ6) and discuss in the `blog` channel.
->
