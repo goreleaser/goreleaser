@@ -23,7 +23,7 @@ With that you can already push a tag `app1/v1.0.0`, for example, and GoReleaser
 should gracefully handling everything.
 
 But, if you want the release to happen in another repository, you'll also need
-to add some [release](/customization/publish/scm/release/) settings:
+to add some [release](/customization/publish/scm/) settings:
 
 ```yaml {filename=".goreleaser.yaml"}
 release:
@@ -61,5 +61,5 @@ release:
 Make sure to take a look at the following documentation pages:
 
 - [Monorepo](/customization/monorepo/)
-- [Release](/customization/publish/scm/release/)
+- [Release](/customization/publish/scm/)
 - [Template variables](/customization/general/templates/)
