@@ -164,6 +164,7 @@ tasks:
       - convert www/static/avatar.png -resize x120 www/static/apple-touch-icon.png
       - convert www/static/avatar.png -resize 192x192 www/static/android-chrome-192x192.png
       - convert www/static/avatar.png -resize 512x512 www/static/android-chrome-512x512.png
+      - convert www/static/goreleaser_hero.png -resize 480x www/static/goreleaser_hero_480.png
 
   docs:serve:
     desc: Start documentation server
