@@ -1,8 +1,8 @@
-## Who uses GoReleaser?
+# Who uses GoReleaser?
 
 GoReleaser is used by [~50k][search] open source repositories!
 
-### Some notable mentions
+## Some notable mentions
 
 Here's a running list of some organizations using GoReleaser[^1]:
 

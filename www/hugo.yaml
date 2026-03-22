@@ -55,6 +55,10 @@ menu:
       weight: 70
       params:
         type: search
+    - name: Theme Toggle
+      weight: 75
+      params:
+        type: theme-toggle
     - name: GitHub
       weight: 80
       url: "https://github.com/goreleaser/goreleaser"
@@ -96,7 +100,7 @@ params:
           url: "https://chatgpt.com/?hints=search&q=I%27m+looking+at+this+documentation%3A+{url}%0AHelp+me+understand+how+to+use+it."
   theme:
     default: system
-    displayToggle: true
+    displayToggle: false
   footer:
     displayCopyright: true
     displayPoweredBy: false
