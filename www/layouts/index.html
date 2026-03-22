@@ -128,16 +128,27 @@
 	}
 
 	.goreleaser-hero h1 {
-		font-size: 2.75rem;
+		font-size: 3.5rem;
 		font-weight: 700;
 		margin-bottom: 1rem;
 		line-height: 1.2;
 		color: #fff;
 	}
 
-	.goreleaser-hero h1 em {
-		font-style: normal;
-		color: #40a9ff;
+	.gradient-text {
+		background: linear-gradient(to right, #e6f7ff, #40a9ff, #e6f7ff, #91d5ff);
+		-webkit-background-clip: text;
+		-webkit-text-fill-color: transparent;
+		background-clip: text;
+		color: transparent;
+	}
+
+	.gradient-text-2 {
+		background: linear-gradient(to right, #40a9ff, #e6f7ff, #91d5ff);
+		-webkit-background-clip: text;
+		-webkit-text-fill-color: transparent;
+		background-clip: text;
+		color: transparent;
 	}
 
 	.goreleaser-hero p {
@@ -367,11 +378,11 @@
 	</div>
 	<div class="goreleaser-hero">
 		<div class="goreleaser-hero__content">
-			<h1>Release engineering, <em>simplified.</em></h1>
+			<h1 class="gradient-text">Release engineering, simplified.</h1>
 			<p>
 				We handle the complexities of releasing so you can focus on
 				building what really matters:
-				<strong>your software</strong>.
+				<strong class="gradient-text-2">your software</strong>.
 			</p>
 			<div class="lang-icons">
 				<img src="/go-dark.svg" alt="Go" />
