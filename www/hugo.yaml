@@ -62,6 +62,9 @@ menu:
         icon: github
 
 params:
+  externalLinkDecoration: true
+  images:
+    - "/card.png"
   highlight:
     copy:
       enable: true
