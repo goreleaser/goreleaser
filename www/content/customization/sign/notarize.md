@@ -14,7 +14,7 @@ Note that putting a signed and notarized binary inside a non-notarized `.app`
 does not work!
 
 The second is the recommended way if you need to ship
-[App Bundles][appbundles] inside [DMGs][DMG].
+[App Bundles](/customization/package/app_bundles/) inside [DMGs][DMG].
 
 ## Getting the keys
 
@@ -39,7 +39,7 @@ So you should end up with:
 If you plan to use them in GitHub Actions (or another CI), you'll need to
 `base64` encode them as well.
 
-{{< details "base64 encoding" >}}
+{{< details title="base64 encoding" closed="true" >}}
 
 To base64 encode a file, you run this:
 
@@ -57,14 +57,12 @@ alternative.
 
 It has no external dependencies, and works on any operating system.
 
-{{< details "Do not use with App Bundles" >}}
-
-Do not use this method if you create [App Bundles][appbundles].
-App Bundles in which only the binary is signed/notarized are deemed damaged
-by macOS.
-In that case, use the [native signing](#native) and notarizing documented
-below.
-{{< /details >}}
+> [!NOTE]
+> Do not use this method if you create [App Bundles](/customization/package/app_bundles/).
+> App Bundles in which only the binary is signed/notarized are deemed damaged
+> by macOS.
+> In that case, use the [native signing](#native) and notarizing documented
+> below.
 
 Read the commented configuration excerpt below to learn how to use do it.
 
@@ -145,8 +143,7 @@ notarize:
 In this case, signing and notarizing inside GitHub Actions is just a matter of
 adding the environment variables to the `goreleaser-action` setup.
 
-<details>
-  <summary>release.yml</summary>
+{{< details title="example release.yml" closed="true" >}}
 
 ```yaml {filename=".github/workflows/release.yml"}
 name: goreleaser
@@ -182,15 +179,15 @@ jobs:
           args: release --clean
 ```
 
-</details>
+{{< /details >}}
 
 ## Native
 
 {{< version "v2.8" >}}
 {{< featpro >}}
 
-This method can sign and notarize [App Bundles][appbundles] and
-[macOS Pkgs][macospkg], but it depends on `xcrun`, `codesign`, and
+This method can sign and notarize [App Bundles](/customization/package/app_bundles/)
+and [macOS Pkgs][macospkg], but it depends on `xcrun`, `codesign`, and
 `productsign`.
 
 It works with both [DMGs][DMG] and [macOS Pkgs][macospkg].
@@ -261,7 +258,7 @@ notarize:
 
 {{< templates >}}
 
-{{< details "Creating a profile" >}}
+{{< details title="Creating a profile" closed="true" >}}
 
 To use this, you'll need to create a profile with `notarytool`.
 You can do so in your machine with:
@@ -286,8 +283,7 @@ we are doing it, in case you want to save some time.
 You can also take a look at this
 [live example](https://github.com/goreleaser/example-notarized-apps).
 
-<details>
-  <summary>release.yml</summary>
+{{< details title="example release.yml" closed="true" >}}
 
 ```yaml {filename=".github/workflows/release.yml"}
 name: goreleaser
@@ -362,15 +358,14 @@ jobs:
           args: release --clean
 ```
 
-</details>
+{{< /details >}}
 
 ## How it works
 
 To make the behavior of this featur a bit clearer, this is the order in which
 the relevant steps are executed:
 
-{{< tabs >}}
-{{< tab "Cross-platform" >}}
+### Cross-platform
 
 The cross-platform version uses [quill][] under the hood.
 It is imported as a Go library and built into GoReleaser, so this just
@@ -385,8 +380,8 @@ graph LR
 Once the binaries are built, the notary step does everything in a single
 run.
 The signed binaries are then used from that point forward.
-{{< /tab >}}
-{{< tab "Native" >}}
+
+### Native
 
 The native version runs `codesign` and `xcrun notarytool`.
 It only works on macOS and needs access to a Keychain.
@@ -403,11 +398,8 @@ Here things get a little bit more complicated.
 First, it only signs App Bundles, so they need to be created first.
 Once the App Bundle is signed, it needs to be packaged in a DMG.
 Finally, the DMG is notarized and used from that point on.
-{{< /tab >}}
-{{< /tabs >}}
 
 [unibin]: /customization/builds/universalbinaries/
-[appbundles]: /customization/package/app_bundles/
 [quill]: https://github.com/anchore/quill
 [DMG]: /customization/package/dmg/
 [macospkg]: /customization/package/pkg/
