@@ -36,21 +36,21 @@ menu:
       name: More resources
       pageRef: /resources/maintainers
       weight: 30
-    - identifier: pro
-      name: "Pro"
-      pageRef: /pro
-      weight: 40
-      params:
-        type: link
-        icon: sparkles
     - identifier: blog
-      name: News
+      name: Updates
       pageRef: /blog
-      weight: 50
+      weight: 40
     - identifier: sponsors
       name: Sponsors
       pageRef: /sponsors
+      weight: 50
+    - identifier: pro
+      name: "Pro"
+      pageRef: /pro
       weight: 60
+      params:
+        type: link
+        icon: sparkles
     - name: Search
       weight: 70
       params:

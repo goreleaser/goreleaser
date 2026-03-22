@@ -40,7 +40,7 @@ brew install goreleaser
 ```
 
 > [!WARNING]
-> The [formula in homebrew-core] might be slightly outdated.
+> The formula in homebrew-core might be slightly outdated.
 > Use our homebrew tap to always get the latest updates.
 
 {{< /tab >}}
@@ -347,11 +347,19 @@ and iterate from that.
 {{< tabs >}}
 {{< tab "OSS" >}}
 
-Download the `.deb`, `.rpm`, or `.apk` packages from the [releases page][releases] and install them with the appropriate tools.
+Download the `.deb`, `.rpm`, or `.apk` packages from the releases page and
+install them with the appropriate tools.
+
+{{% button href="https://github.com/goreleaser/goreleaser/releases/tag/__VERSION__" label="Download" icon="github" primary="true" %}}
+
 {{< /tab >}}
 {{< tab "Pro" >}}
 
-Download the `.deb`, `.rpm`, or `.apk` packages from the [releases page][pro-releases] and install them with the appropriate tools.
+Download the `.deb`, `.rpm`, or `.apk` packages from the releases page and
+install them with the appropriate tools.
+
+{{% button href="https://github.com/goreleaser/goreleaser-pro/releases/tag/__VERSION__" label="Download" icon="github" primary="true" %}}
+
 {{< /tab >}}
 {{< /tabs >}}
 
@@ -412,11 +420,19 @@ curl -sfL https://goreleaser.com/static/run | DISTRIBUTION=pro VERSION=__VERSION
 {{< tabs >}}
 {{< tab "OSS" >}}
 
-Download the pre-compiled binaries from the [releases page][releases] and copy them to the desired location.
+Download the pre-compiled binaries from the releases page and copy them to the
+desired location:
+
+{{% button href="https://github.com/goreleaser/goreleaser/releases/tag/__VERSION__" label="Download" icon="github" primary="true" %}}
+
 {{< /tab >}}
 {{< tab "Pro" >}}
 
-Download the pre-compiled binaries from the [releases page][pro-releases] and copy them to the desired location.
+Download the pre-compiled binaries from the releases page and copy them to the
+desired location:
+
+{{% button href="https://github.com/goreleaser/goreleaser-pro/releases/tag/__VERSION__" label="Download" icon="github" primary="true" %}}
+
 {{< /tab >}}
 {{< /tabs >}}
 
@@ -431,7 +447,9 @@ All artifacts are checksummed, and the checksum file is signed with [cosign][].
 {{< tabs >}}
 {{< tab "OSS" >}}
 
-1. Download the files you want, and the `checksums.txt`, `checksum.txt.pem` and `checksums.txt.sig` files from the [releases][releases] page:
+1. Download the files you want, and the `checksums.txt`, `checksum.txt.pem` and
+   `checksums.txt.sig` files from the
+   [releases](https://github.com/goreleaser/goreleaser/releases) page:
 
 ```bash
 wget 'https://github.com/goreleaser/goreleaser/releases/download/__VERSION__/checksums.txt'
@@ -457,7 +475,9 @@ sha256sum --ignore-missing -c checksums.txt
 {{< /tab >}}
 {{< tab "Pro" >}}
 
-1. Download the files you want, and the `checksums.txt`, `checksum.txt.pem` and `checksums.txt.sig` files from the [releases][pro-releases] page:
+1. Download the files you want, and the `checksums.txt`, `checksum.txt.pem` and
+   `checksums.txt.sig` files from the
+   [releases](https://github.com/goreleaser/goreleaser-pro/releases) page:
 
 ```bash
 wget 'https://github.com/goreleaser/goreleaser-pro/releases/download/__VERSION__/checksums.txt'
@@ -541,11 +561,16 @@ Use it for testing out new features only.
 {{< tabs >}}
 {{< tab "OSS" >}}
 
-Download the pre-compiled binaries from the [nightly release][nightly-releases] and copy them to the desired location.
+Download the pre-compiled binaries from the
+[nightly release](https://github.com/goreleaser/goreleaser/releases/nightly)
+and copy them to the desired location.
 {{< /tab >}}
 {{< tab "Pro" >}}
 
-Download the pre-compiled binaries from the [nightly release][nightly-pro-releases] and copy them to the desired location.
+Download the pre-compiled binaries from the
+[nightly release](https://github.com/goreleaser/goreleaser-pro/releases/nightly)
+and copy them to the desired location.
+
 {{< /tab >}}
 {{< /tabs >}}
 
@@ -561,10 +586,6 @@ environment variable to `nightly`.
 [![Packaging status](https://repology.org/badge/vertical-allrepos/goreleaser.svg)](https://repology.org/project/goreleaser/versions)
 
 [dockerfile]: https://github.com/goreleaser/goreleaser/blob/main/Dockerfile
-[releases]: https://github.com/goreleaser/goreleaser/releases
-[pro-releases]: https://github.com/goreleaser/goreleaser-pro/releases
-[nightly-pro-releases]: https://github.com/goreleaser/goreleaser-pro/releases/nightly
-[nightly-releases]: https://github.com/goreleaser/goreleaser/releases/nightly
 [cosign]: https://github.com/sigstore/cosign
 
 ## Community
