@@ -5,6 +5,8 @@
 	}
 
 	.goreleaser-hero-section {
+		position: relative;
+		overflow: hidden;
 		padding: 3rem 1.5rem 5rem;
 		background: linear-gradient(
 			135deg,
@@ -12,6 +14,84 @@
 			#163959 60%,
 			#1a4a72 100%
 		);
+	}
+
+	.goreleaser-hero-stars {
+		position: absolute;
+		inset: 0;
+		pointer-events: none;
+	}
+
+	.goreleaser-hero-stars span {
+		position: absolute;
+		display: block;
+		/* pointy 4-pointed sparkle with deeply concave curved sides */
+		background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M12 0C12 4 20 12 24 12C20 12 12 20 12 24C12 20 4 12 0 12C4 12 12 4 12 0Z' fill='white'/%3E%3C/svg%3E");
+		background-size: contain;
+		background-repeat: no-repeat;
+	}
+
+	.goreleaser-hero-stars span:nth-child(1) {
+		width: 18px;
+		height: 18px;
+		top: 10%;
+		left: 6%;
+		opacity: 0.45;
+		transform: rotate(20deg);
+	}
+
+	.goreleaser-hero-stars span:nth-child(2) {
+		width: 44px;
+		height: 44px;
+		top: 5%;
+		right: 12%;
+		opacity: 0.6;
+		transform: rotate(-35deg);
+	}
+
+	.goreleaser-hero-stars span:nth-child(3) {
+		width: 13px;
+		height: 13px;
+		top: 42%;
+		left: 1.5%;
+		opacity: 0.35;
+		transform: rotate(55deg);
+	}
+
+	.goreleaser-hero-stars span:nth-child(4) {
+		width: 30px;
+		height: 30px;
+		top: 18%;
+		right: 28%;
+		opacity: 0.4;
+		transform: rotate(-15deg);
+	}
+
+	.goreleaser-hero-stars span:nth-child(5) {
+		width: 22px;
+		height: 22px;
+		bottom: 18%;
+		left: 38%;
+		opacity: 0.35;
+		transform: rotate(40deg);
+	}
+
+	.goreleaser-hero-stars span:nth-child(6) {
+		width: 38px;
+		height: 38px;
+		bottom: 6%;
+		right: 6%;
+		opacity: 0.5;
+		transform: rotate(-60deg);
+	}
+
+	.goreleaser-hero-stars span:nth-child(7) {
+		width: 16px;
+		height: 16px;
+		bottom: 30%;
+		left: 18%;
+		opacity: 0.4;
+		transform: rotate(75deg);
 	}
 
 	.dark .goreleaser-hero-section {
@@ -276,14 +356,22 @@
 </style>
 
 <section class="goreleaser-hero-section">
+	<div class="goreleaser-hero-stars" aria-hidden="true">
+		<span></span>
+		<span></span>
+		<span></span>
+		<span></span>
+		<span></span>
+		<span></span>
+		<span></span>
+	</div>
 	<div class="goreleaser-hero">
 		<div class="goreleaser-hero__content">
 			<h1>Release engineering, <em>simplified.</em></h1>
 			<p>
 				We handle the complexities of releasing so you can focus on
 				building what really matters:
-				<strong>your software</strong> &mdash; and it doesn't need to be
-				written in Go!
+				<strong>your software</strong>.
 			</p>
 			<div class="lang-icons">
 				<img src="/go-dark.svg" alt="Go" />
@@ -311,7 +399,7 @@
 		<div class="goreleaser-hero__image">
 			<img
 				src="/hero.png"
-				width="480"
+				width="550"
 				alt="GoReleaser hero image"
 				fetchpriority="high"
 			/>
