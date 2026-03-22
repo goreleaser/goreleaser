@@ -148,7 +148,7 @@ If this sound interesting to you, feel free to
 
 ## EULA
 
-Please, make sure you read and agree with our [EULA](/eula/).
+Please, make sure you read and agree with our [EULA](/resources/eula/).
 
 ---
 
