@@ -26,6 +26,7 @@ const (
 	Winget         Key = "winget"
 	Snapcraft      Key = "snapcraft"
 	Scoop          Key = "scoop"
+	InstallScript  Key = "install-script"
 	Homebrew       Key = "homebrew"
 	Nix            Key = "nix"
 	AUR            Key = "aur"
@@ -121,6 +122,7 @@ var Release = Keys{
 	Chocolatey,
 	Snapcraft,
 	Scoop,
+	InstallScript,
 	Homebrew,
 	Nix,
 	AUR,
