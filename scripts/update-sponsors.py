@@ -65,7 +65,7 @@ def fetch_members() -> List[Dict[str, Any]]:
               name
               slug
               website
-              imageUrl(height: 96)
+              imageUrl
             }
             tier {
               name
@@ -361,6 +361,18 @@ def group_members_by_tier(members: List[Dict[str, Any]]) -> Dict[str, List[Dict[
     return tiers
 
 
+def sized_image_url(url: str, size: int) -> str:
+    """Append a size hint to a sponsor avatar URL."""
+    if not url:
+        return url
+    sep = "&" if "?" in url else "?"
+    if "avatars.githubusercontent.com" in url:
+        return f"{url}{sep}s={size}"
+    if "images.opencollective.com" in url:
+        return f"{url}{sep}height={size}"
+    return url
+
+
 def generate_markdown(tiers: Dict[str, List[Dict[str, Any]]]) -> str:
     """Generate markdown for sponsors list using tiered HTML (same structure as homepage)."""
     lines = []
@@ -393,7 +405,7 @@ def generate_markdown(tiers: Dict[str, List[Dict[str, Any]]]) -> str:
                 url = member["website"] or f"https://opencollective.com/{member['slug']}"
                 lines.append(
                     f'<a class="goreleaser-sponsor-item" href="{url}" target="_blank" rel="noopener sponsored">'
-                    f'<img src="{member["imageUrl"]}" alt="{member["name"]}" width="{logo_size}" height="{logo_size}" />'
+                    f'<img src="{sized_image_url(member["imageUrl"], logo_size)}" alt="{member["name"]}" width="{logo_size}" height="{logo_size}" />'
                     f'{member["name"]}</a>'
                 )
             lines.append('</div>')
@@ -443,7 +455,7 @@ def generate_home_html(tiers: Dict[str, List[Dict[str, Any]]], min_monthly_amoun
         for member in members:
             url = member["website"] or f"https://opencollective.com/{member['slug']}"
             lines.append(f'\t\t\t\t<a class="goreleaser-sponsor-item" href="{url}" target="_blank" rel="noopener sponsored">')
-            lines.append(f'\t\t\t\t\t<img src="{member["imageUrl"]}" alt="{member["name"]}" width="{logo_size}" height="{logo_size}" />')
+            lines.append(f'\t\t\t\t\t<img src="{sized_image_url(member["imageUrl"], logo_size)}" alt="{member["name"]}" width="{logo_size}" height="{logo_size}" />')
             lines.append(f'\t\t\t\t\t{member["name"]}')
             lines.append(f'\t\t\t\t</a>')
         lines.append(f'\t\t\t\t</div>')

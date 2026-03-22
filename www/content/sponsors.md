@@ -26,40 +26,40 @@ A big **thank you** to all current, past, and future sponsors!
 <div class="goreleaser-sponsors-tier">
 <div class="goreleaser-sponsors-tier-label">Platinum</div>
 <div class="goreleaser-sponsors-grid">
-<a class="goreleaser-sponsor-item" href="https://github.com/SAP" target="_blank" rel="noopener sponsored"><img src="https://avatars.githubusercontent.com/u/2531208?v=4" alt="SAP" width="112" height="112" />SAP</a>
+<a class="goreleaser-sponsor-item" href="https://github.com/SAP" target="_blank" rel="noopener sponsored"><img src="https://avatars.githubusercontent.com/u/2531208?v=4&s=112" alt="SAP" width="112" height="112" />SAP</a>
 </div>
 </div>
 
 <div class="goreleaser-sponsors-tier">
 <div class="goreleaser-sponsors-tier-label">Gold</div>
 <div class="goreleaser-sponsors-grid">
-<a class="goreleaser-sponsor-item" href="https://github.com/mercedes-benz" target="_blank" rel="noopener sponsored"><img src="https://avatars.githubusercontent.com/u/34240465?v=4" alt="Mercedes-Benz Group" width="96" height="96" />Mercedes-Benz Group</a>
-<a class="goreleaser-sponsor-item" href="https://github.com/nitrictech" target="_blank" rel="noopener sponsored"><img src="https://avatars.githubusercontent.com/u/72055470?v=4" alt="nitric" width="96" height="96" />nitric</a>
+<a class="goreleaser-sponsor-item" href="https://github.com/mercedes-benz" target="_blank" rel="noopener sponsored"><img src="https://avatars.githubusercontent.com/u/34240465?v=4&s=96" alt="Mercedes-Benz Group" width="96" height="96" />Mercedes-Benz Group</a>
+<a class="goreleaser-sponsor-item" href="https://github.com/nitrictech" target="_blank" rel="noopener sponsored"><img src="https://avatars.githubusercontent.com/u/72055470?v=4&s=96" alt="nitric" width="96" height="96" />nitric</a>
 </div>
 </div>
 
 <div class="goreleaser-sponsors-tier">
 <div class="goreleaser-sponsors-tier-label">Silver</div>
 <div class="goreleaser-sponsors-grid">
-<a class="goreleaser-sponsor-item" href="https://depot.dev" target="_blank" rel="noopener sponsored"><img src="https://images.opencollective.com/depot/39125a1/logo/96.png" alt="Depot" width="80" height="80" />Depot</a>
-<a class="goreleaser-sponsor-item" href="https://www.n-ix.com/" target="_blank" rel="noopener sponsored"><img src="https://images.opencollective.com/n-ix-ltd/575a7a5/logo/96.png" alt="N-iX Ltd" width="80" height="80" />N-iX Ltd</a>
+<a class="goreleaser-sponsor-item" href="https://depot.dev" target="_blank" rel="noopener sponsored"><img src="https://images.opencollective.com/depot/39125a1/logo.png?height=80" alt="Depot" width="80" height="80" />Depot</a>
+<a class="goreleaser-sponsor-item" href="https://www.n-ix.com/" target="_blank" rel="noopener sponsored"><img src="https://images.opencollective.com/n-ix-ltd/575a7a5/logo.png?height=80" alt="N-iX Ltd" width="80" height="80" />N-iX Ltd</a>
 </div>
 </div>
 
 <div class="goreleaser-sponsors-tier">
 <div class="goreleaser-sponsors-tier-label">Bronze</div>
 <div class="goreleaser-sponsors-grid">
-<a class="goreleaser-sponsor-item" href="https://github.com/conetcloud" target="_blank" rel="noopener sponsored"><img src="https://avatars.githubusercontent.com/u/35725664?v=4" alt="conet cloud" width="64" height="64" />conet cloud</a>
-<a class="goreleaser-sponsor-item" href="https://github.com/encoredev" target="_blank" rel="noopener sponsored"><img src="https://avatars.githubusercontent.com/u/50438175?v=4" alt="Encore" width="64" height="64" />Encore</a>
-<a class="goreleaser-sponsor-item" href="https://about.gitea.com/" target="_blank" rel="noopener sponsored"><img src="https://images.opencollective.com/gitea/bf35c2f/logo/96.png" alt="Gitea" width="64" height="64" />Gitea</a>
-<a class="goreleaser-sponsor-item" href="https://github.com/comet-ml" target="_blank" rel="noopener sponsored"><img src="https://avatars.githubusercontent.com/u/31487821?v=4" alt="Comet" width="64" height="64" />Comet</a>
-<a class="goreleaser-sponsor-item" href="https://github.com/snapit-cypher" target="_blank" rel="noopener sponsored"><img src="https://avatars.githubusercontent.com/u/115662654?v=4" alt="snapit-cypher" width="64" height="64" />snapit-cypher</a>
+<a class="goreleaser-sponsor-item" href="https://github.com/conetcloud" target="_blank" rel="noopener sponsored"><img src="https://avatars.githubusercontent.com/u/35725664?v=4&s=64" alt="conet cloud" width="64" height="64" />conet cloud</a>
+<a class="goreleaser-sponsor-item" href="https://github.com/encoredev" target="_blank" rel="noopener sponsored"><img src="https://avatars.githubusercontent.com/u/50438175?v=4&s=64" alt="Encore" width="64" height="64" />Encore</a>
+<a class="goreleaser-sponsor-item" href="https://about.gitea.com/" target="_blank" rel="noopener sponsored"><img src="https://images.opencollective.com/gitea/bf35c2f/logo.png?height=64" alt="Gitea" width="64" height="64" />Gitea</a>
+<a class="goreleaser-sponsor-item" href="https://github.com/comet-ml" target="_blank" rel="noopener sponsored"><img src="https://avatars.githubusercontent.com/u/31487821?v=4&s=64" alt="Comet" width="64" height="64" />Comet</a>
+<a class="goreleaser-sponsor-item" href="https://github.com/snapit-cypher" target="_blank" rel="noopener sponsored"><img src="https://avatars.githubusercontent.com/u/115662654?v=4&s=64" alt="snapit-cypher" width="64" height="64" />snapit-cypher</a>
 </div>
 </div>
 
 </div>
 
-## Backers
+### Backers
 
 - [Marcel Eichner](https://github.com/Ephigenia)
 - [Chatpong Voranartaksorn](https://github.com/psychvc)
