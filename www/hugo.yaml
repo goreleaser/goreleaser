@@ -64,7 +64,7 @@ menu:
 params:
   externalLinkDecoration: true
   images:
-    - "/card.png"
+    - card.png
   highlight:
     copy:
       enable: true
