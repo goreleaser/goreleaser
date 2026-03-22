@@ -1,10 +1,5 @@
 # static fieles
-/static/schema.json /schema.json 301
-/static/schema-pro.json /schema-pro.json 301
-/static/latest /latest 301
-/static/latest-pro /latest-pro 301
-/static/releases.json /releases.json 301
-/static/releases-pro.json /releases-pro.json 301
+/static/*	 /:splat							   301
 
 # External short-links
 /discord/    https://discord.gg/RGEBtg8vQ6         302
