@@ -135,14 +135,23 @@ tasks:
 
   docs:sponsors:
     desc: Update OpenCollective and GitHub sponsors list
-    env:
-      SPONSOR_ALIAS: "leaanthony=wailsapp,snapit-cypher=interviewpal-com"
     cmds:
-      - python3 scripts/update-sponsors.py
+      - which sponsors || go install github.com/goreleaser/sponsors@main
+      - sponsors generate --config gh://goreleaser/sponsors/.github/sponsors/sponsors.yml ./.github/sponsors/sponsors.json
+      - sponsors apply ./.github/sponsors/sponsors.json gh://goreleaser/sponsors/.github/sponsors/readme.tpl.md ./README.md
+      - sponsors apply ./.github/sponsors/sponsors.json ./.github/sponsors/sponsors.tpl.md ./www/content/sponsors.md
+      - sponsors apply ./.github/sponsors/sponsors.json ./.github/sponsors/index.tpl.html ./www/layouts/index.html
     sources:
-      - scripts/update-sponsors.py
+      - ./README.md
+      - ./www/content/sponsors.md
+      - ./www/layouts/index.html
+      - ./.github/sponsors/sponsors.json
+      - ./.github/sponsors/sponsors.yml
     generates:
-      - www/content/sponsors.md
+      - ./README.md
+      - ./www/content/sponsors.md
+      - ./www/layouts/index.html
+      - ./.github/sponsors/sponsors.json
 
   docs:releases:
     desc: Generate releases.json and latest files
