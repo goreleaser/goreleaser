@@ -40,6 +40,8 @@
 /builds/poetry   /customization/builds/builders/poetry/  301
 /builds/prebuilt/  /customization/builds/builders/prebuilt/  301
 /builds/prebuilt   /customization/builds/builders/prebuilt/  301
+/prebuilt/  /customization/builds/builders/prebuilt/  301
+/prebuilt   /customization/builds/builders/prebuilt/  301
 /builds/python/  /customization/builds/builders/python/  301
 /builds/python   /customization/builds/builders/python/  301
 /builds/rust/  /customization/builds/builders/rust/  301
@@ -208,6 +210,8 @@
 /customization/chocolatey   /customization/package/chocolatey/  301
 /customization/cloudsmith/  /customization/publish/cloudsmith/  301
 /customization/cloudsmith   /customization/publish/cloudsmith/  301
+/customization/discord/  /customization/announce/discord/  301
+/customization/discord   /customization/announce/discord/  301
 /customization/dist/  /customization/general/dist/  301
 /customization/dist   /customization/general/dist/  301
 /customization/dmg/  /customization/package/dmg/  301
@@ -292,12 +296,18 @@
 /customization/templates   /customization/general/templates/  301
 /customization/universalbinaries/  /customization/builds/universalbinaries/  301
 /customization/universalbinaries   /customization/builds/universalbinaries/  301
+/universalbinaries/  /customization/builds/universalbinaries/  301
+/universalbinaries   /customization/builds/universalbinaries/  301
 /customization/upload/  /customization/publish/upload/  301
 /customization/upload   /customization/publish/upload/  301
 /customization/upx/  /customization/builds/upx/  301
 /customization/upx   /customization/builds/upx/  301
+/upx/  /customization/builds/upx/  301
+/upx   /customization/builds/upx/  301
 /customization/verifiable_builds/  /customization/builds/verifiable_builds/  301
 /customization/verifiable_builds   /customization/builds/verifiable_builds/  301
+/verifiable_builds/  /customization/builds/verifiable_builds/  301
+/verifiable_builds   /customization/builds/verifiable_builds/  301
 /customization/winget/  /customization/publish/winget/  301
 /customization/winget   /customization/publish/winget/  301
 /customization/bluesky/  /customization/announce/bluesky/  301
@@ -366,10 +376,14 @@
 # Limitations moved to resources section
 /limitations/   /resources/limitations/  301
 /limitations    /resources/limitations/  301
+/old-deprecations/  /resources/deprecations/  301
+/old-deprecations   /resources/deprecations/  301
 
 # Moved to resources section
 /errors/   /resources/errors/  301
 /errors    /resources/errors/  301
+/cookbooks/contributing/  /resources/contributing/  301
+/cookbooks/contributing   /resources/contributing/  301
 /cookbooks/   /resources/cookbooks/  301
 /cookbooks    /resources/cookbooks/  301
 /cmd/   /resources/cmd/  301
