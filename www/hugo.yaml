@@ -8,6 +8,7 @@ module:
   mounts:
     - source: static
       target: static
+      # NOTE: this keeps compat with previous /static/* URLs
     - source: static
       target: static/static
 
