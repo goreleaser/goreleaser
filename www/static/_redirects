@@ -376,8 +376,7 @@
 # Limitations moved to resources section
 /limitations/   /resources/limitations/  301
 /limitations    /resources/limitations/  301
-/old-deprecations/  /resources/deprecations/  301
-/old-deprecations   /resources/deprecations/  301
+
 
 # Moved to resources section
 /errors/   /resources/errors/  301
