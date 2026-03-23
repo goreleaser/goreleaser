@@ -27,6 +27,16 @@ Usage:
 
 Environment variables:
     GITHUB_TOKEN - Required for fetching GitHub Sponsors (script will exit if not set)
+
+    SPONSOR_TIER_OVERRIDE - Optional comma-separated list of login=tier pairs that override
+        the tier assigned based on the contribution amount.
+        Valid tier names (case-insensitive): diamond, platinum, gold, silver, bronze, backer
+        Example: caarlos0=Gold,big-corp=Diamond
+
+    SPONSOR_ALIAS - Optional comma-separated list of source=target login pairs. The script
+        replaces the account info (name, avatar, URL) of the source login with that of the
+        target login (e.g. map a personal account to the owner's organisation).
+        Example: johndoe=acme-corp,foo=bar
 """
 
 import os
@@ -288,8 +298,149 @@ def fetch_github_sponsors(token: Optional[str]) -> List[Dict[str, Any]]:
     return sponsors
 
 
+def load_tier_overrides() -> Dict[str, str]:
+    """Load tier overrides from the SPONSOR_TIER_OVERRIDE environment variable.
+
+    Format: comma-separated login=tier pairs, e.g. ``caarlos0=Gold,big-corp=Diamond``.
+    Valid tier names (case-insensitive): diamond, platinum, gold, silver, bronze, backer.
+    """
+    raw = os.environ.get("SPONSOR_TIER_OVERRIDE", "")
+    if not raw:
+        return {}
+
+    tier_name_map = {
+        "diamond": "Diamond Sponsors",
+        "platinum": "Platinum Sponsors",
+        "gold": "Gold Sponsors",
+        "silver": "Silver Sponsors",
+        "bronze": "Bronze Sponsors",
+        "backer": "Backers",
+        "backers": "Backers",
+    }
+
+    overrides: Dict[str, str] = {}
+    for pair in raw.split(","):
+        pair = pair.strip()
+        if "=" not in pair:
+            print(
+                f"Warning: Skipping malformed entry in SPONSOR_TIER_OVERRIDE: '{pair}'",
+                file=sys.stderr,
+            )
+            continue
+        login, _, tier = pair.partition("=")
+        login = login.strip().lower()
+        tier = tier.strip()
+        normalized = tier_name_map.get(tier.lower())
+        if normalized:
+            overrides[login] = normalized
+        else:
+            print(
+                f"Warning: Unknown tier '{tier}' for '{login}' in SPONSOR_TIER_OVERRIDE, skipping",
+                file=sys.stderr,
+            )
+    return overrides
+
+
+def load_aliases() -> Dict[str, str]:
+    """Load sponsor aliases from the SPONSOR_ALIAS environment variable.
+
+    Format: comma-separated source=target login pairs, e.g. ``johndoe=acme-corp,foo=bar``.
+    The account info (name, avatar, URL) of the source login is replaced with that of the
+    target login.
+    """
+    raw = os.environ.get("SPONSOR_ALIAS", "")
+    if not raw:
+        return {}
+
+    aliases: Dict[str, str] = {}
+    for pair in raw.split(","):
+        pair = pair.strip()
+        if "=" not in pair:
+            print(
+                f"Warning: Skipping malformed entry in SPONSOR_ALIAS: '{pair}'",
+                file=sys.stderr,
+            )
+            continue
+        source, _, target = pair.partition("=")
+        source = source.strip().lower()
+        target = target.strip()
+        aliases[source] = target
+    return aliases
+
+
+def fetch_github_user_info(login: str, token: str) -> Dict[str, str]:
+    """Fetch name, avatar and website for a GitHub user or organisation."""
+    req = urllib.request.Request(
+        f"https://api.github.com/users/{login}",
+        headers={
+            "Accept": "application/vnd.github+json",
+            "Authorization": f"Bearer {token}",
+            "User-Agent": "goreleaser-sponsors-script",
+        },
+    )
+    try:
+        with urllib.request.urlopen(req, timeout=30) as response:
+            data = json.loads(response.read().decode("utf-8"))
+    except urllib.error.HTTPError as e:
+        print(
+            f"Warning: Could not fetch GitHub info for '{login}' ({e.code}), using login as fallback",
+            file=sys.stderr,
+        )
+        return {
+            "name": login,
+            "slug": login,
+            "website": f"https://github.com/{login}",
+            "imageUrl": f"https://github.com/{login}.png",
+        }
+    except urllib.error.URLError as e:
+        print(
+            f"Warning: Could not fetch GitHub info for '{login}' ({e}), using login as fallback",
+            file=sys.stderr,
+        )
+        return {
+            "name": login,
+            "slug": login,
+            "website": f"https://github.com/{login}",
+            "imageUrl": f"https://github.com/{login}.png",
+        }
+    return {
+        "name": data.get("name") or data.get("login", login),
+        "slug": data.get("login", login),
+        "website": data.get("blog") or data.get("html_url", f"https://github.com/{login}"),
+        "imageUrl": data.get("avatar_url", f"https://github.com/{login}.png"),
+    }
+
+
+def apply_aliases(
+    members: List[Dict[str, Any]], aliases: Dict[str, str], token: str
+) -> List[Dict[str, Any]]:
+    """Replace account info for sponsors that have an alias configured.
+
+    Fetches real name, avatar and website from the GitHub API for each target login.
+    """
+    if not aliases:
+        return members
+
+    # Pre-fetch info for each unique target to avoid duplicate API calls
+    target_info: Dict[str, Dict[str, str]] = {}
+    for target in set(aliases.values()):
+        print(f"  Fetching GitHub info for alias target '{target}'...")
+        target_info[target] = fetch_github_user_info(target, token)
+
+    result = []
+    for member in members:
+        login = member.get("account", {}).get("slug", "").lower()
+        if login in aliases:
+            target = aliases[login]
+            member = dict(member)
+            member["account"] = target_info[target]
+        result.append(member)
+    return result
+
+
 def group_members_by_tier(
     members: List[Dict[str, Any]],
+    tier_overrides: Optional[Dict[str, str]] = None,
 ) -> Dict[str, List[Dict[str, Any]]]:
     """Group members by their contribution tier/amount."""
     tiers = {}
@@ -353,6 +504,10 @@ def group_members_by_tier(
             tier_key = "Bronze Sponsors"
         else:
             tier_key = "Backers"
+
+        # Apply tier override if one is configured for this login
+        if tier_overrides and slug.lower() in tier_overrides:
+            tier_key = tier_overrides[slug.lower()]
 
         # Remove from previous tier if exists
         if slug in seen_members:
@@ -599,9 +754,20 @@ def main():
         sys.exit(1)
     all_sponsors.extend(gh_members)
 
+    # Load overrides and aliases
+    tier_overrides = load_tier_overrides()
+    aliases = load_aliases()
+    if tier_overrides:
+        print(f"  Tier overrides: {tier_overrides}")
+    if aliases:
+        print(f"  Aliases: {aliases}")
+
+    # Apply aliases before grouping
+    all_sponsors = apply_aliases(all_sponsors, aliases, github_token)
+
     # Group all sponsors together by tier
     print(f"\nGrouping {len(all_sponsors)} total sponsors by tier...")
-    unified_tiers = group_members_by_tier(all_sponsors)
+    unified_tiers = group_members_by_tier(all_sponsors, tier_overrides)
 
     # Check if we have any sponsors after grouping (all tier lists must have at least one member)
     if not unified_tiers or not any(members for members in unified_tiers.values()):

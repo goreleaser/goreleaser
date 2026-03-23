@@ -122,7 +122,7 @@ A big **thank you** to all current, past, and future sponsors!
   <a href="https://github.com/encoredev" target="_blank" rel="noopener sponsored"><img src="https://avatars.githubusercontent.com/u/50438175?v=4&s=64" alt="Encore" width="64" height="64" style="border-radius: 8px; margin: 8px;"></a>
   <a href="https://about.gitea.com/" target="_blank" rel="noopener sponsored"><img src="https://images.opencollective.com/gitea/bf35c2f/logo.png?height=64" alt="Gitea" width="64" height="64" style="border-radius: 8px; margin: 8px;"></a>
   <a href="https://github.com/comet-ml" target="_blank" rel="noopener sponsored"><img src="https://avatars.githubusercontent.com/u/31487821?v=4&s=64" alt="Comet" width="64" height="64" style="border-radius: 8px; margin: 8px;"></a>
-  <a href="https://github.com/snapit-cypher" target="_blank" rel="noopener sponsored"><img src="https://avatars.githubusercontent.com/u/115662654?v=4&s=64" alt="snapit-cypher" width="64" height="64" style="border-radius: 8px; margin: 8px;"></a>
+  <a href="www.interviewpal.com" target="_blank" rel="noopener sponsored"><img src="https://avatars.githubusercontent.com/u/268665632?v=4&s=64" alt="InterviewPal.com" width="64" height="64" style="border-radius: 8px; margin: 8px;"></a>
 
 </div>
 
@@ -146,7 +146,7 @@ A big **thank you** to all current, past, and future sponsors!
 - [Alexey Palazhchenko](https://github.com/AlekSi)
 - [joe miller](https://github.com/joemiller)
 - [Ryan Nixon](https://github.com/taiidani)
-- [Lea Anthony](https://github.com/leaanthony)
+- [Wails](https://wails.io)
 - [Francis Lavoie](https://github.com/francislavoie)
 - [Nicolas Gotchac](https://github.com/ngotchac)
 - [Ben](https://github.com/iwpnd)

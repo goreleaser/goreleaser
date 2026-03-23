@@ -135,6 +135,8 @@ tasks:
 
   docs:sponsors:
     desc: Update OpenCollective and GitHub sponsors list
+    env:
+      SPONSOR_ALIAS: "leaanthony=wailsapp,snapit-cypher=interviewpal-com"
     cmds:
       - python3 scripts/update-sponsors.py
     sources:
