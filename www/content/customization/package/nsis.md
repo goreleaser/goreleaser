@@ -38,7 +38,7 @@ nsis:
     # Required.
     script: ./windows/installer.nsi
 
-    # IDs of the archives to use.
+    # IDs of the binaries to use.
     # Empty means all IDs.
     ids:
       - foo
