@@ -1,5 +1,6 @@
 ---
 title: "GemFury - apt and rpm repositories"
+linkTitle: GemFury
 weight: 70
 ---
 

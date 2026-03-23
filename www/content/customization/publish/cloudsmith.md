@@ -1,5 +1,6 @@
 ---
 title: Cloudsmith - apt, rpm, and alpine repositories
+linkTitle: Cloudsmith
 weight: 60
 ---
 

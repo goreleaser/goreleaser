@@ -1,5 +1,6 @@
 ---
-title: "Blobs (s3, gcs, azblob)"
+title: "Blob Storage - s3, gcs, azblob"
+linkTitle: Blob Storage
 weight: 50
 ---
 
