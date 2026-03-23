@@ -111,6 +111,12 @@ true "displayPlaceholder" false) }}
 		--i: 20;
 	}
 
+	@media (max-width: 768px) {
+		.goreleaser-hero-stars span:nth-child(n + 11) {
+			display: none;
+		}
+	}
+
 	.dark .goreleaser-hero-section {
 		background: linear-gradient(
 			135deg,
