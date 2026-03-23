@@ -3,18 +3,18 @@
   <h3 align="center">GoReleaser</h3>
   <p align="center">Release engineering, simplified.</p>
   <p align="center">
-    <img alt="Go" src="./www/docs/static/go-light.svg#gh-light-mode-only" height="30" width="30" />
-    <img alt="Go" src="./www/docs/static/go-dark.svg#gh-dark-mode-only" height="30" width="30" />
-    <img alt="Rust" src="./www/docs/static/rust-light.svg#gh-light-mode-only" height="30" width="30" />
-    <img alt="Rust" src="./www/docs/static/rust-dark.svg#gh-dark-mode-only" height="30" width="30" />
-    <img alt="Zig" src="./www/docs/static/zig-light.svg#gh-light-mode-only" height="30" width="30" />
-    <img alt="Zig" src="./www/docs/static/zig-dark.svg#gh-dark-mode-only" height="30" width="30" />
-    <img alt="Bun" src="./www/docs/static/bun-light.svg#gh-light-mode-only" height="30" width="30" />
-    <img alt="Bun" src="./www/docs/static/bun-dark.svg#gh-dark-mode-only" height="30" width="30" />
-    <img alt="Deno" src="./www/docs/static/deno-light.svg#gh-light-mode-only" height="30" width="30" />
-    <img alt="Deno" src="./www/docs/static/deno-dark.svg#gh-dark-mode-only" height="30" width="30" />
-    <img alt="Python" src="./www/docs/static/python-light.svg#gh-light-mode-only" height="30" width="30" />
-    <img alt="Python" src="./www/docs/static/python-dark.svg#gh-dark-mode-only" height="30" width="30" />
+    <img alt="Go" src="./www/static/go-light.svg#gh-light-mode-only" height="30" width="30" />
+    <img alt="Go" src="./www/static/go-dark.svg#gh-dark-mode-only" height="30" width="30" />
+    <img alt="Rust" src="./www/static/rust-light.svg#gh-light-mode-only" height="30" width="30" />
+    <img alt="Rust" src="./www/static/rust-dark.svg#gh-dark-mode-only" height="30" width="30" />
+    <img alt="Zig" src="./www/static/zig-light.svg#gh-light-mode-only" height="30" width="30" />
+    <img alt="Zig" src="./www/static/zig-dark.svg#gh-dark-mode-only" height="30" width="30" />
+    <img alt="Bun" src="./www/static/bun-light.svg#gh-light-mode-only" height="30" width="30" />
+    <img alt="Bun" src="./www/static/bun-dark.svg#gh-dark-mode-only" height="30" width="30" />
+    <img alt="Deno" src="./www/static/deno-light.svg#gh-light-mode-only" height="30" width="30" />
+    <img alt="Deno" src="./www/static/deno-dark.svg#gh-dark-mode-only" height="30" width="30" />
+    <img alt="Python" src="./www/static/python-light.svg#gh-light-mode-only" height="30" width="30" />
+    <img alt="Python" src="./www/static/python-dark.svg#gh-dark-mode-only" height="30" width="30" />
   </p>
 </p>
 
@@ -23,7 +23,7 @@
 We handle the complexities of releasing so you can focus in building what really
 matters: **your software**.
 
-![](https://goreleaser.com/static/goreleaser.png)
+![](https://goreleaser.com/static/goreleaser.svg)
 
 ---
 
@@ -92,7 +92,7 @@ A big **thank you** to all current, past, and future sponsors!
 
 <div align="center">
 
-  <a href="https://github.com/SAP" target="_blank" rel="noopener sponsored"><img src="https://avatars.githubusercontent.com/u/2531208?v=4" alt="SAP" width="112" height="112" style="border-radius: 8px; margin: 8px;"></a>
+  <a href="https://github.com/SAP" target="_blank" rel="noopener sponsored"><img src="https://avatars.githubusercontent.com/u/2531208?v=4&s=112" alt="SAP" width="112" height="112" style="border-radius: 8px; margin: 8px;"></a>
 
 </div>
 
@@ -100,8 +100,8 @@ A big **thank you** to all current, past, and future sponsors!
 
 <div align="center">
 
-  <a href="https://github.com/mercedes-benz" target="_blank" rel="noopener sponsored"><img src="https://avatars.githubusercontent.com/u/34240465?v=4" alt="Mercedes-Benz Group" width="96" height="96" style="border-radius: 8px; margin: 8px;"></a>
-  <a href="https://github.com/nitrictech" target="_blank" rel="noopener sponsored"><img src="https://avatars.githubusercontent.com/u/72055470?v=4" alt="nitric" width="96" height="96" style="border-radius: 8px; margin: 8px;"></a>
+  <a href="https://github.com/mercedes-benz" target="_blank" rel="noopener sponsored"><img src="https://avatars.githubusercontent.com/u/34240465?v=4&s=96" alt="Mercedes-Benz Group" width="96" height="96" style="border-radius: 8px; margin: 8px;"></a>
+  <a href="https://github.com/nitrictech" target="_blank" rel="noopener sponsored"><img src="https://avatars.githubusercontent.com/u/72055470?v=4&s=96" alt="nitric" width="96" height="96" style="border-radius: 8px; margin: 8px;"></a>
 
 </div>
 
@@ -109,8 +109,8 @@ A big **thank you** to all current, past, and future sponsors!
 
 <div align="center">
 
-  <a href="https://depot.dev" target="_blank" rel="noopener sponsored"><img src="https://images.opencollective.com/depot/39125a1/logo/96.png" alt="Depot" width="80" height="80" style="border-radius: 8px; margin: 8px;"></a>
-  <a href="https://www.n-ix.com/" target="_blank" rel="noopener sponsored"><img src="https://images.opencollective.com/n-ix-ltd/575a7a5/logo/96.png" alt="N-iX Ltd" width="80" height="80" style="border-radius: 8px; margin: 8px;"></a>
+  <a href="https://depot.dev" target="_blank" rel="noopener sponsored"><img src="https://images.opencollective.com/depot/39125a1/logo.png?height=80" alt="Depot" width="80" height="80" style="border-radius: 8px; margin: 8px;"></a>
+  <a href="https://www.n-ix.com/" target="_blank" rel="noopener sponsored"><img src="https://images.opencollective.com/n-ix-ltd/575a7a5/logo.png?height=80" alt="N-iX Ltd" width="80" height="80" style="border-radius: 8px; margin: 8px;"></a>
 
 </div>
 
@@ -118,11 +118,11 @@ A big **thank you** to all current, past, and future sponsors!
 
 <div align="center">
 
-  <a href="https://github.com/conetcloud" target="_blank" rel="noopener sponsored"><img src="https://avatars.githubusercontent.com/u/35725664?v=4" alt="conet cloud" width="64" height="64" style="border-radius: 8px; margin: 8px;"></a>
-  <a href="https://github.com/encoredev" target="_blank" rel="noopener sponsored"><img src="https://avatars.githubusercontent.com/u/50438175?v=4" alt="Encore" width="64" height="64" style="border-radius: 8px; margin: 8px;"></a>
-  <a href="https://about.gitea.com/" target="_blank" rel="noopener sponsored"><img src="https://images.opencollective.com/gitea/bf35c2f/logo/96.png" alt="Gitea" width="64" height="64" style="border-radius: 8px; margin: 8px;"></a>
-  <a href="https://github.com/comet-ml" target="_blank" rel="noopener sponsored"><img src="https://avatars.githubusercontent.com/u/31487821?v=4" alt="Comet" width="64" height="64" style="border-radius: 8px; margin: 8px;"></a>
-  <a href="https://github.com/snapit-cypher" target="_blank" rel="noopener sponsored"><img src="https://avatars.githubusercontent.com/u/115662654?v=4" alt="snapit-cypher" width="64" height="64" style="border-radius: 8px; margin: 8px;"></a>
+  <a href="https://github.com/conetcloud" target="_blank" rel="noopener sponsored"><img src="https://avatars.githubusercontent.com/u/35725664?v=4&s=64" alt="conet cloud" width="64" height="64" style="border-radius: 8px; margin: 8px;"></a>
+  <a href="https://github.com/encoredev" target="_blank" rel="noopener sponsored"><img src="https://avatars.githubusercontent.com/u/50438175?v=4&s=64" alt="Encore" width="64" height="64" style="border-radius: 8px; margin: 8px;"></a>
+  <a href="https://about.gitea.com/" target="_blank" rel="noopener sponsored"><img src="https://images.opencollective.com/gitea/bf35c2f/logo.png?height=64" alt="Gitea" width="64" height="64" style="border-radius: 8px; margin: 8px;"></a>
+  <a href="https://github.com/comet-ml" target="_blank" rel="noopener sponsored"><img src="https://avatars.githubusercontent.com/u/31487821?v=4&s=64" alt="Comet" width="64" height="64" style="border-radius: 8px; margin: 8px;"></a>
+  <a href="https://github.com/snapit-cypher" target="_blank" rel="noopener sponsored"><img src="https://avatars.githubusercontent.com/u/115662654?v=4&s=64" alt="snapit-cypher" width="64" height="64" style="border-radius: 8px; margin: 8px;"></a>
 
 </div>
 

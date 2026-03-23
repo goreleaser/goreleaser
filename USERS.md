@@ -1,8 +1,8 @@
-## Who uses GoReleaser?
+# Who uses GoReleaser?
 
-GoReleaser is used by more than [40k][search] open source repositories!
+GoReleaser is used by [~50k][search] open source repositories!
 
-### Some notable mentions
+## Some notable mentions
 
 Here's a running list of some organizations using GoReleaser[^1]:
 
@@ -121,7 +121,7 @@ Hey! Thanks for looking into this file!
 If you're going to edit it, please:
 - keep a-z ordering :)
 - edit only the USERS.md file at the repository's root directory
-- /www/docs/users.md is auto-copied from /USERS.md
+- /www/content/resources/users.md is auto-copied from /USERS.md
 -->
 
 [^1]: Entries were either added by the companies themselves or by GoReleaser maintainers based on public information only.

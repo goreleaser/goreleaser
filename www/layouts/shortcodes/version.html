@@ -1,0 +1,30 @@
+{{- $text := .Get 0 -}}
+{{- $unreleased := strings.HasSuffix $text "-unreleased" -}}
+{{- $tag := $text}}
+{{- $icon := "status-online"}}
+{{- if $unreleased -}}
+  {{- $tag = strings.TrimSuffix "-unreleased" $text -}}
+  {{- $icon = "beaker" -}}
+{{- end -}}
+
+{{- $class := "hx:border-indigo-200 hx:bg-indigo-100 hx:text-indigo-900 hx:dark:border-indigo-200/30 hx:dark:bg-indigo-900/30 hx:dark:text-indigo-200" -}}
+<div
+	class="hx:overflow-x-auto hx:mt-6 hx:flex hx:rounded-lg hx:border hx:py-2 hx:ltr:pr-4 hx:rtl:pl-4 hx:contrast-more:border-current hx:contrast-more:dark:border-current {{ $class }}"
+>
+	<div class="hx:ltr:pl-3 hx:ltr:pr-2 hx:rtl:pr-3 hx:rtl:pl-2">
+		{{ partial "utils/icon.html" (dict
+			"name" $icon
+			"attributes" `height=1.2em class="hx:inline-block hx:align-middle"`
+		) -}}
+	</div>
+
+	<div class="hx:w-full hx:min-w-0 hx:leading-7">
+		<div class="hx:mt-6 hx:leading-7 hx:first:mt-0">
+			{{- if $unreleased -}}
+				This will be available in the next release (<strong>{{ $tag }}</strong>). Stay tuned!
+			{{- else -}}
+			Since <a href="/blog/goreleaser-{{ $tag }}">{{ $tag }}</a>.
+			{{- end -}}
+		</div>
+	</div>
+</div>

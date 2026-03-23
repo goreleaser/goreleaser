@@ -8,7 +8,7 @@
     <title>GoReleaser</title>
     <authors>caarlos0</authors>
     <projectUrl>https://goreleaser.com/</projectUrl>
-    <iconUrl>https://raw.githubusercontent.com/goreleaser/goreleaser/main/www/docs/static/avatar.png</iconUrl>
+    <iconUrl>https://raw.githubusercontent.com/goreleaser/goreleaser/main/www/static/avatar.png</iconUrl>
     <copyright>2016-2022 Carlos Alexandro Becker</copyright>
     <licenseUrl>https://github.com/goreleaser/goreleaser/blob/main/LICENSE.md</licenseUrl>
     <requireLicenseAcceptance>true</requireLicenseAcceptance>

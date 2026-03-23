@@ -1,0 +1,41 @@
+---
+title: "Announce"
+weight: 60
+---
+
+GoReleaser can also announce new releases on social networks, chat rooms and via
+email!
+
+It runs at the very end of the pipeline and can be skipped with the
+`--skip=announce` flag of the `release`
+command, or via the skip property:
+
+```yaml {filename=".goreleaser.yaml"}
+announce:
+  # Skip the announcing feature in some conditions, for instance, when
+  # publishing patch releases.
+  #
+  # Any value different from 'true' is evaluated to false.
+  #
+  # Templates: allowed.
+  skip: "{{gt .Patch 0}}"
+```
+
+## Supported announcers
+
+{{< cards >}}
+{{< card link="bluesky" title="Bluesky" >}}
+{{< card link="discord" title="Discord" >}}
+{{< card link="discourse" title="Discourse" >}}
+{{< card link="linkedin" title="Linkedin" >}}
+{{< card link="mastodon" title="Mastodon" >}}
+{{< card link="mattermost" title="Mattermost" >}}
+{{< card link="opencollective" title="Opencollective" >}}
+{{< card link="reddit" title="Reddit" >}}
+{{< card link="slack" title="Slack" >}}
+{{< card link="smtp" title="Smtp" >}}
+{{< card link="teams" title="Teams" >}}
+{{< card link="telegram" title="Telegram" >}}
+{{< card link="twitter" title="Twitter" >}}
+{{< card link="webhook" title="Webhook" >}}
+{{< /cards >}}

@@ -1,0 +1,53 @@
+{{- $lang := .Get "lang" | default "yaml" -}}
+{{- $file := .Get "file" | default "" -}}
+{{- $indent := .Get "indent" | default 4 | int -}}
+{{- $filename := .Get "filename" | default "" -}}
+{{- $inner := .Inner -}}
+{{/* Trim leading/trailing newlines from inner content */}}
+{{- $inner = strings.TrimRight "\n" $inner -}}
+{{- $inner = strings.TrimLeft "\n" $inner -}}
+{{- $combined := $inner -}}
+{{- if $file -}}
+  {{- $path := path.Join "content" $file -}}
+  {{- $included := readFile $path -}}
+  {{/* Strip YAML frontmatter */}}
+  {{- $included = replaceRE "(?s)^---\\s*\\n.*?\\n---\\s*\\n" "" $included -}}
+  {{/* Strip leading/trailing blank lines */}}
+  {{- $included = strings.Trim $included "\n" -}}
+  {{/* Dedent: strip uniform leading indentation */}}
+  {{- $lines := split $included "\n" -}}
+  {{- $minSpaces := 9999 -}}
+  {{- range $lines -}}
+    {{- $stripped := strings.TrimLeft " " . -}}
+    {{- if gt (len $stripped) 0 -}}
+      {{- $diff := sub (len .) (len $stripped) -}}
+      {{- if lt ($diff | int) $minSpaces -}}{{- $minSpaces = ($diff | int) -}}{{- end -}}
+    {{- end -}}
+  {{- end -}}
+  {{- if gt $minSpaces 0 -}}
+    {{- $pattern := printf "(?m)^%s" (strings.Repeat $minSpaces " ") -}}
+    {{- $included = replaceRE $pattern "" $included -}}
+  {{- end -}}
+  {{/* Re-indent at the desired level */}}
+  {{- if gt $indent 0 -}}
+    {{- $prefix := strings.Repeat $indent " " -}}
+    {{- $reindented := slice -}}
+    {{- range (split $included "\n") -}}
+      {{- if gt (len .) 0 -}}
+        {{- $reindented = $reindented | append (printf "%s%s" $prefix .) -}}
+      {{- else -}}
+        {{- $reindented = $reindented | append . -}}
+      {{- end -}}
+    {{- end -}}
+    {{- $included = delimit $reindented "\n" -}}
+  {{- end -}}
+  {{- $combined = printf "%s\n%s" $inner $included -}}
+{{- end -}}
+{{- if $filename -}}
+<div class="hextra-code-block hx:relative hx:mt-6 hx:first:mt-0 hx:group/code">
+<div class="hextra-code-filename not-prose" dir="auto">{{ $filename }}</div>
+<div>{{ transform.Highlight $combined $lang }}</div>
+</div>
+{{- else -}}
+{{ transform.Highlight $combined $lang }}
+{{- end -}}

@@ -24,10 +24,26 @@ IgnoreURLs:
   - docs.gitlab.com
   - blog.kubesimplify.com
   - blog.ediri.io/
+  - claude.ai
+  - chatgpt.com
+  - livereload.js
+  - "^#$"
+  - "^#content$"
+  - "#pro$"
+  - snapcraft\.io
+  - calculator\.now
+  - orbitdownloader\.com
+  - hashicorp\.com
+  - stackexchange\.com
+  - totvslabs\.com
+  - trendyol\.com
+  - discord\.gg
 IgnoreDirs:
   - overrides
 IgnoreDirectoryMissingTrailingSlash: true
 IgnoreAltMissing: true
+IgnoreInternalEmptyHash: true
+CheckInternalHash: true
 ExternalTimeout: 60
 HTTPHeaders:
   "Range": "bytes=0-10"

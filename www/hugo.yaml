@@ -1,0 +1,136 @@
+baseURL: "https://goreleaser.com"
+languageCode: "en-us"
+title: "GoReleaser"
+
+module:
+  imports:
+    - path: github.com/imfing/hextra
+
+enableRobotsTXT: true
+enableGitInfo: true
+enableEmoji: true
+enableInlineShortcodes: true
+relativeURLs: true
+
+markup:
+  goldmark:
+    renderer:
+      unsafe: true
+    extensions:
+      footnote: true
+      taskList: true
+  highlight:
+    noClasses: false
+
+menu:
+  main:
+    - identifier: getting-started
+      name: Getting Started
+      pageRef: /getting-started/intro
+      weight: 10
+    - identifier: documentation
+      name: Documentation
+      pageRef: /customization
+      weight: 20
+    - identifier: resources
+      name: More resources
+      pageRef: /resources/maintainers
+      weight: 30
+    - identifier: blog
+      name: Updates
+      pageRef: /blog
+      weight: 40
+    - identifier: sponsors
+      name: Sponsors
+      pageRef: /sponsors
+      weight: 50
+    - identifier: pro
+      name: "Pro"
+      pageRef: /pro
+      weight: 60
+      params:
+        type: link
+        icon: sparkles
+    - name: Search
+      weight: 70
+      params:
+        type: search
+    - name: GitHub
+      weight: 80
+      url: "https://github.com/goreleaser/goreleaser"
+      params:
+        icon: github
+
+params:
+  externalLinkDecoration: true
+  images:
+    - card.png
+  highlight:
+    copy:
+      enable: true
+      # hover | always
+      display: hover
+  imageZoom:
+    enable: true
+  navbar:
+    displayTitle: true
+    displayLogo: true
+    logo:
+      path: logo.svg
+      dark: logo.svg
+      width: 40
+      height: 40
+      link: /
+  page:
+    tabs:
+      sync: true
+    width: wide
+    contextMenu:
+      enable: true
+      links:
+        - name: Open in Claude
+          icon: claude
+          url: "https://claude.ai/new?q=I%27m+looking+at+this+documentation%3A+{url}%0AHelp+me+understand+how+to+use+it."
+        - name: Open in ChatGPT
+          icon: chatgpt
+          url: "https://chatgpt.com/?hints=search&q=I%27m+looking+at+this+documentation%3A+{url}%0AHelp+me+understand+how+to+use+it."
+  theme:
+    default: system
+    displayToggle: true
+  footer:
+    displayCopyright: true
+    displayPoweredBy: false
+    width: normal
+  displayUpdatedDate: true
+  dateFormat: "January 2, 2006"
+  search:
+    enable: true
+    type: flexsearch
+    maxResults: 10
+  blog:
+    list:
+      displayTags: true
+      sortBy: date
+      sortOrder: desc
+      pagerSize: 20
+  toc:
+    displayTags: true
+  editPage:
+    enable: true
+    base: "https://github.com/goreleaser/goreleaser/edit/main/www/content"
+
+permalinks:
+  page:
+    blog: /blog/:slug
+
+outputs:
+  home: [html, rss, llms, markdown]
+  section:
+    - html
+    - rss
+    - markdown
+
+outputFormats:
+  rss:
+    mediaType: "application/rss+xml"
+    baseName: "feed"

@@ -1,0 +1,27 @@
+{{- $file := .Get "file" -}}
+{{- $lang := .Get "lang" | default "" -}}
+{{- $path := path.Join "content" $file -}}
+{{- $content := readFile $path -}}
+{{/* Strip YAML frontmatter (--- ... ---) */}}
+{{- $content = replaceRE "(?s)^---\\s*\\n.*?\\n---\\s*\\n" "" $content -}}
+{{/* Strip leading blank lines */}}
+{{- $content = strings.TrimLeft "\n" $content -}}
+{{- if $lang -}}
+{{/* Dedent: detect and strip uniform leading indentation using regex */}}
+{{- $lines := split $content "\n" -}}
+{{- $minLen := 9999 -}}
+{{- range $lines -}}
+  {{- $stripped := strings.TrimLeft " " . -}}
+  {{- if gt (len $stripped) 0 -}}
+    {{- $diff := sub (len .) (len $stripped) -}}
+    {{- if lt ($diff | int) $minLen -}}{{- $minLen = ($diff | int) -}}{{- end -}}
+  {{- end -}}
+{{- end -}}
+{{- if gt $minLen 0 -}}
+  {{- $pattern := printf "(?m)^%s" (strings.Repeat $minLen " ") -}}
+  {{- $content = replaceRE $pattern "" $content -}}
+{{- end -}}
+{{ transform.Highlight $content $lang }}
+{{- else -}}
+{{ $content | safeHTML }}
+{{- end -}}

@@ -7,25 +7,29 @@ on:
     paths:
       - "www/**/*"
       - ".github/workflows/docs.yml"
-      - flake.nix
-      - flake.lock
   pull_request:
     paths:
       - "www/**/*"
       - ".github/workflows/docs.yml"
-      - flake.nix
-      - flake.lock
 
 permissions:
   contents: read
 
 jobs:
-  htmltest:
+  build:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
-      - uses: go-task/setup-task@3be4020d41929789a01026e0e427a4321ce0ad44 # v2.0.0
+      - uses: actions/setup-go@4b73464bb391d4059bd26b0524d20df3927bd417 # v6.3.0
         with:
-          version: 3.x
-          repo-token: ${{ secrets.GITHUB_TOKEN }}
-      - run: task docs:test
+          go-version-file: www/go.mod
+      - uses: peaceiris/actions-hugo@75d2e84710de30f6ff7268e08f310b60ef14033f # v3
+        with:
+          hugo-version: "latest"
+          extended: true
+      - run: hugo --minify --baseURL="/"
+        working-directory: ./www/
+      - uses: wjdp/htmltest-action@31be84a95c860a331e0cf9a99f71e3eb39d2f86b # master
+        with:
+          config: www/htmltest.yml
+          path: www/public
