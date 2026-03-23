@@ -20,7 +20,7 @@ additional features:
 - [x] Further filter artifacts with `if` statements;
 - [x] Create [macOS App Bundles (`.app`)](/customization/package/app_bundles/);
 - [x] Easily create `alpine`, `apt`, and `yum` repositories with the
-      [CloudSmith integration](/customization/cloudsmith/);
+      [CloudSmith integration](/customization/publish/cloudsmith/);
 - [x] Have [global defaults for homepage, description, etc](/customization/general/metadata/);
 - [x] Run [hooks before publishing](/customization/publish/beforepublish/) artifacts;
 - [x] Cross publish (e.g. releases to GitLab, pushes Homebrew Tap to GitHub);
