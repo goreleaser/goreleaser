@@ -288,8 +288,6 @@
 /cookbooks/cgo-and-crosscompiling   /resources/limitations/cgo/  301
 
 # Dynamic redirects (splats) — must appear after all static rules per Cloudflare Pages docs
-# static files
-/static/*  /:splat  301
 /announce/*  /customization/announce/:splat  301
 /limitations/*  /resources/limitations/:splat  301
 /errors/*  /resources/errors/:splat  301

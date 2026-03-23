@@ -5,6 +5,11 @@ title: "GoReleaser"
 module:
   imports:
     - path: github.com/imfing/hextra
+  mounts:
+    - source: static
+      target: static
+    - source: static
+      target: static/static
 
 enableRobotsTXT: true
 enableGitInfo: true
