@@ -1,5 +1,5 @@
-{{ define "main" }}
-{{ partial "sidebar.html" (dict "context" . "disableSidebar" true "displayPlaceholder" false) }}
+{{ define "main" }} {{ partial "sidebar.html" (dict "context" . "disableSidebar"
+true "displayPlaceholder" false) }}
 <style>
 	:root {
 		--goreleaser-primary-color: #163959;
@@ -585,26 +585,15 @@
 				<!-- prettier-ignore -->
 				<h3>
 					{{ partial "utils/icon.html" (dict
-						"name" "document-text"
-						"attributes" `height=1.1em class="hx:inline-block hx:align-middle hx:mr-1"`)
-					}}
-					What's changed?
-				</h3>
-				<p>
-					Keep users informed with auto-generated, customizable
-					changelogs for every release.
-				</p>
-			</div>
-			<div class="goreleaser-feature-card">
-				<!-- prettier-ignore -->
-				<h3>
-					{{ partial "utils/icon.html" (dict
 						"name" "speakerphone"
 						"attributes" `height=1.1em class="hx:inline-block hx:align-middle hx:mr-1"`)
 					}}
-					Let your users know
+					Keep users informed
 				</h3>
-				<p>Announce releases to 𝕏, Slack, Discord, and more.</p>
+				<p>
+					Generate customizable changelogs and announce releases to
+					𝕏, Slack, Discord, and more.
+				</p>
 			</div>
 		</div>
 
