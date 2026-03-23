@@ -126,7 +126,7 @@ may have some extra fields:
 | `.Riscv64`      | `GORISCV64` {{< inline_version "v2.4" >}}                   |
 | `.I386`         | `GO386` {{< inline_version "v2.4" >}}                       |
 | `.Target`       | the whole target {{< inline_version "v2.5" >}}              |
-| `.Binary`       | artifact name                                               |
+| `.Binary`       | artifact name (without the extension)                       |
 | `.ArtifactID`   | artifact id {{< inline_version "v2.3" >}}{{< inline_pro >}} |
 | `.ArtifactName` | artifact name                                               |
 | `.ArtifactPath` | absolute path to artifact                                   |
