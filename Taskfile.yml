@@ -137,10 +137,10 @@ tasks:
     desc: Update OpenCollective and GitHub sponsors list
     cmds:
       - which sponsors || go install github.com/goreleaser/sponsors@main
-      - sponsors generate --config gh://goreleaser/sponsors/.github/sponsors/sponsors.yml ./.github/sponsors/sponsors.json
-      - sponsors apply ./.github/sponsors/sponsors.json gh://goreleaser/sponsors/.github/sponsors/readme.tpl.md ./README.md
-      - sponsors apply ./.github/sponsors/sponsors.json ./.github/sponsors/sponsors.tpl.md ./www/content/sponsors.md
-      - sponsors apply ./.github/sponsors/sponsors.json ./.github/sponsors/index.tpl.html ./www/layouts/index.html
+      - sponsors generate --config gh://goreleaser/.github/sponsors.yml sponsors.json
+      - sponsors apply sponsors.json gh://goreleaser/.github/sponsors.tpl.md ./README.md
+      - sponsors apply sponsors.json ./.github/templates/sponsors.tpl.md ./www/content/sponsors.md
+      - sponsors apply sponsors.json ./.github/templates/index.tpl.html ./www/layouts/index.html
     sources:
       - ./README.md
       - ./www/content/sponsors.md
