@@ -1,5 +1,6 @@
 ---
-title: "Snapcraft Packages (snaps)"
+title: "Snapcraft Packages"
+linkTitle: Snap
 weight: 100
 ---
 

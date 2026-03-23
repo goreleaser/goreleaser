@@ -1,5 +1,6 @@
 ---
 title: "Arch User Repositories"
+linkTitle: AUR
 weight: 120
 ---
 

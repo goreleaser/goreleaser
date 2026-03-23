@@ -1,5 +1,6 @@
 ---
 title: "Scoop Manifests"
+linkTitle: Scoop
 weight: 150
 ---
 

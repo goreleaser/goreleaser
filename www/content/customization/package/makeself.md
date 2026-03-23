@@ -1,5 +1,6 @@
 ---
-title: "Self-Extracting Archives"
+title: "Makeself - Self-Extracting Archives"
+linkTitle: Makeself
 weight: 40
 ---
 
@@ -158,7 +159,6 @@ Please refer to the [Makeself documentation][Makeself] for more information.
 
 > [!NOTE]
 > **Root Privileges**
->
 >
 > When using `--needroot` in `extra_args`, the Makeself installer will
 > automatically prompt for root privileges when executed.

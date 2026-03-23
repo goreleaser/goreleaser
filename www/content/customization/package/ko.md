@@ -1,5 +1,6 @@
 ---
 title: "Docker Images with Ko"
+linkTitle: Ko
 weight: 140
 ---
 

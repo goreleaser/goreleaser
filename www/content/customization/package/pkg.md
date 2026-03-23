@@ -1,5 +1,6 @@
 ---
 title: "macOS Pkg"
+linkTitle: Pkg
 weight: 70
 ---
 

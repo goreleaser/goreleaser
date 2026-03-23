@@ -1,5 +1,6 @@
 ---
-title: "Model Context Protocol (MCP) Server"
+title: "Model Context Protocol (MCP) Server Registry"
+linkTitle: MCP Registry
 weight: 160
 ---
 
@@ -136,7 +137,6 @@ mcp:
 
 > [!WARNING]
 > **Deprecated Configuration**
->
 >
 > The previous configuration format using `mcp.github` is deprecated.
 > Please migrate to the new top-level `mcp` configuration shown above. The old

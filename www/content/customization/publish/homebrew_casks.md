@@ -1,5 +1,6 @@
 ---
 title: "Homebrew Casks"
+linkTitle: Homebrew
 weight: 90
 ---
 

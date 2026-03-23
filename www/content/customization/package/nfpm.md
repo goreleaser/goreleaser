@@ -1,5 +1,6 @@
 ---
-title: "Linux packages (via nFPM)"
+title: "nFPM - Linux packages"
+linkTitle: nFPM
 weight: 30
 ---
 

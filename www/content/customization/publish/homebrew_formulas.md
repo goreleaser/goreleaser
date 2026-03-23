@@ -1,5 +1,6 @@
 ---
 title: "Homebrew Formulas (deprecated)"
+linkTitle: "Homebrew (deprecated)"
 weight: 230
 ---
 

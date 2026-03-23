@@ -1,5 +1,6 @@
 ---
 title: "Flatpak Packages"
+linkTitle: Flatpak
 weight: 110
 ---
 
@@ -94,13 +95,12 @@ flatpak:
 > [!NOTE]
 > **Supported Architectures**
 >
->
 > GoReleaser maps Go architectures to Flatpak architectures automatically:
 >
 > | Go arch | Flatpak arch |
-> |---------|-------------|
-> | `amd64` | `x86_64`    |
-> | `arm64` | `aarch64`   |
+> | ------- | ------------ |
+> | `amd64` | `x86_64`     |
+> | `arm64` | `aarch64`    |
 >
 > Other architectures are ignored.
 

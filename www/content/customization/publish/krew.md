@@ -1,5 +1,6 @@
 ---
 title: "Krew Plugin Manifests"
+linkTitle: Krew
 weight: 140
 ---
 

@@ -1,5 +1,6 @@
 ---
 title: "Nix User Repositories"
+linkTitle: NUR
 weight: 130
 ---
 

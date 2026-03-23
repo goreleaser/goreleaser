@@ -1,5 +1,6 @@
 ---
 title: "Arch User Repositories (Sources)"
+linkTitle: AUR Sources
 weight: 130
 ---
 
