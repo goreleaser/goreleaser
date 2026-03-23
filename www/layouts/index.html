@@ -1,7 +1,18 @@
 {{ define "main" }}
+{{ partial "sidebar.html" (dict "context" . "disableSidebar" true "displayPlaceholder" false) }}
 <style>
 	:root {
 		--goreleaser-primary-color: #163959;
+	}
+
+	.hextra-sidebar-container {
+		display: none;
+	}
+
+	@media (max-width: 767px) {
+		.hextra-sidebar-container {
+			display: flex;
+		}
 	}
 
 	.goreleaser-hero-section {
@@ -98,30 +109,6 @@
 	}
 	.goreleaser-hero-stars span:nth-child(20) {
 		--i: 20;
-	}
-	.goreleaser-hero-stars span:nth-child(21) {
-		--i: 21;
-	}
-	.goreleaser-hero-stars span:nth-child(22) {
-		--i: 22;
-	}
-	.goreleaser-hero-stars span:nth-child(23) {
-		--i: 23;
-	}
-	.goreleaser-hero-stars span:nth-child(24) {
-		--i: 24;
-	}
-	.goreleaser-hero-stars span:nth-child(25) {
-		--i: 25;
-	}
-	.goreleaser-hero-stars span:nth-child(26) {
-		--i: 26;
-	}
-	.goreleaser-hero-stars span:nth-child(27) {
-		--i: 27;
-	}
-	.goreleaser-hero-stars span:nth-child(28) {
-		--i: 28;
 	}
 
 	.dark .goreleaser-hero-section {
@@ -408,14 +395,6 @@
 
 <section class="goreleaser-hero-section">
 	<div class="goreleaser-hero-stars" aria-hidden="true">
-		<span></span>
-		<span></span>
-		<span></span>
-		<span></span>
-		<span></span>
-		<span></span>
-		<span></span>
-		<span></span>
 		<span></span>
 		<span></span>
 		<span></span>
