@@ -243,6 +243,12 @@ true "displayPlaceholder" false) }}
 		border-radius: 8px;
 	}
 
+	.goreleaser-screenshot-caption {
+		font-size: 1.15rem;
+		color: rgba(255, 255, 255, 0.85);
+		margin-bottom: 1.5rem;
+	}
+
 	.goreleaser-section-title {
 		text-align: center;
 		margin-bottom: 0.5rem;
@@ -387,6 +393,9 @@ true "displayPlaceholder" false) }}
 		.goreleaser-hero h1 {
 			font-size: 2rem;
 		}
+		.goreleaser-screenshot {
+			display: none;
+		}
 	}
 </style>
 
@@ -455,6 +464,9 @@ true "displayPlaceholder" false) }}
 	</div>
 	<div class="goreleaser-section-inner">
 		<div class="goreleaser-screenshot">
+			<p class="goreleaser-screenshot-caption">
+				See GoReleaser in action &mdash; a single command to build, package, and publish your project.
+			</p>
 			<img
 				src="/goreleaser.svg"
 				alt="GoReleaser releasing an example project."
