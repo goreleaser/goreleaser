@@ -31,7 +31,6 @@ Let's take a look:
   can template entire files, and they'll get added to the release!
   [Documentation](https://goreleaser.com/customization/templatefiles/).
 - All GoReleaser distributions get a new subcommand: `healthcheck`.
-  [Documentation](https://goreleaser.com/cmd/goreleaser_healthcheck/).
 - The single `build` statement has been undocumented for many years, and has
   been deprecated.
 - You can now announce to OpenCollective.
@@ -47,7 +46,6 @@ Let's take a look:
 
 You can [install][] the same way you always do, and you can see the full release
 notes [here][oss-rel] and [here (for Pro)][pro-rel].
-
 
 ### Other news
 
