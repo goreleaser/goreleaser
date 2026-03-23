@@ -381,8 +381,7 @@
 # Moved to resources section
 /errors/   /resources/errors/  301
 /errors    /resources/errors/  301
-/cookbooks/contributing/  /resources/contributing/  301
-/cookbooks/contributing   /resources/contributing/  301
+
 /cookbooks/   /resources/cookbooks/  301
 /cookbooks    /resources/cookbooks/  301
 /cmd/   /resources/cmd/  301
