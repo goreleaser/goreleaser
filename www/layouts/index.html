@@ -198,29 +198,20 @@
 		height: 32px;
 	}
 
-	.goreleaser-btn {
-		display: inline-block;
+	/* Hero overrides: larger padding, white-on-dark secondary */
+	.goreleaser-hero .goreleaser-btn {
 		padding: 0.6rem 1.4rem;
 		border-radius: 6px;
 		font-weight: 600;
-		text-decoration: none;
 		margin-right: 0.75rem;
 		margin-top: 0.5rem;
-		transition: opacity 0.2s;
 	}
 
-	.goreleaser-btn:hover {
-		opacity: 0.85;
+	.goreleaser-hero .goreleaser-btn--primary {
+		border-width: 2px;
 	}
 
-	.goreleaser-btn--primary {
-		background: #1976d2;
-		color: #fff !important;
-		border: 2px solid #1976d2;
-	}
-
-	.goreleaser-btn--secondary {
-		background: transparent;
+	.goreleaser-hero .goreleaser-btn--secondary {
 		color: #fff !important;
 		border: 2px solid rgba(255, 255, 255, 0.6);
 	}
