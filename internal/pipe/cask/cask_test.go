@@ -120,6 +120,34 @@ func assertDefaultTemplateData(t *testing.T, cask string) {
 	require.Contains(t, cask, `version "0.1.3"`)
 }
 
+func TestGenerateCompletionsFromExecutable(t *testing.T) {
+	data := defaultTemplateData
+	data.GenerateCompletionsFromExecutable = config.HomebrewCaskGeneratedCompletions{
+		Executable: "bin/myapp",
+	}
+	cask, err := doBuildCask(testctx.WrapWithCfg(t.Context(), config.Project{
+		ProjectName: "foo",
+	}), data)
+	require.NoError(t, err)
+	golden.RequireEqualRb(t, []byte(cask))
+}
+
+func TestGenerateCompletionsFromExecutableAllOptions(t *testing.T) {
+	data := defaultTemplateData
+	data.GenerateCompletionsFromExecutable = config.HomebrewCaskGeneratedCompletions{
+		Executable:           "bin/myapp",
+		Args:                 []string{"completions"},
+		BaseName:             "myapp",
+		ShellParameterFormat: "cobra",
+		Shells:               []string{"bash", "zsh", "fish", "pwsh"},
+	}
+	cask, err := doBuildCask(testctx.WrapWithCfg(t.Context(), config.Project{
+		ProjectName: "foo",
+	}), data)
+	require.NoError(t, err)
+	golden.RequireEqualRb(t, []byte(cask))
+}
+
 func TestFullCask(t *testing.T) {
 	data := defaultTemplateData
 	data.Caveats = "Here are some caveats"
@@ -475,6 +503,33 @@ func TestFullPipe(t *testing.T) {
 						Install:   `system_command "echo", args: ["Post-install {{ .ProjectName }} {{ .Tag }}"]`,
 						Uninstall: `system_command "echo", args: ["Post-uninstall for {{ .ProjectName }}"]`,
 					},
+				}
+			},
+		},
+		"generate_completions": {
+			prepare: func(ctx *context.Context) {
+				ctx.TokenType = context.TokenTypeGitHub
+				ctx.Config.Casks[0].Repository.Owner = "test"
+				ctx.Config.Casks[0].Repository.Name = "test"
+				ctx.Config.Casks[0].Homepage = "https://github.com/goreleaser"
+				ctx.Config.Casks[0].GenerateCompletionsFromExecutable = config.HomebrewCaskGeneratedCompletions{
+					Executable:           "bin/generate_completions",
+					Args:                 []string{"completions"},
+					BaseName:             "generate_completions",
+					ShellParameterFormat: "cobra",
+					Shells:               []string{"bash", "zsh", "fish", "pwsh"},
+				}
+			},
+		},
+		"generate_completions_default_executable": {
+			prepare: func(ctx *context.Context) {
+				ctx.TokenType = context.TokenTypeGitHub
+				ctx.Config.Casks[0].Repository.Owner = "test"
+				ctx.Config.Casks[0].Repository.Name = "test"
+				ctx.Config.Casks[0].Homepage = "https://github.com/goreleaser"
+				// No executable set — should default to the first binary.
+				ctx.Config.Casks[0].GenerateCompletionsFromExecutable = config.HomebrewCaskGeneratedCompletions{
+					ShellParameterFormat: "cobra",
 				}
 			},
 		},

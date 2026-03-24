@@ -70,6 +70,38 @@ homebrew_casks:
       zsh: completions/myapp.zsh
       fish: completions/myapp.fish
 
+    # Generate shell completions by running the binary at install time.
+    #
+    # All fields except `executable` are optional.
+    #
+    # {{< inline_version "v2.15-unreleased" >}}
+    generate_completions_from_executable:
+      # Path to the executable inside the cask bundle.
+      #
+      # Default: the first binary in the cask.
+      executable: "bin/myapp"
+
+      # Additional subcommand arguments passed to the executable.
+      args:
+        - completions
+
+      # Override the base name used for the completion files.
+      # Default: the binary name.
+      base_name: "myapp"
+
+      # How the shell name is passed to the executable.
+      # Known values (rendered as Ruby symbols): arg, clap, click, cobra, flag, none, typer.
+      # Any other string is treated as a custom prefix (e.g. "--complete-").
+      shell_parameter_format: cobra
+
+      # Shells to generate completions for.
+      # Default: [bash, zsh, fish]. cobra and typer also include pwsh by default.
+      shells:
+        - bash
+        - zsh
+        - fish
+        - pwsh
+
     # This information will be used to build the URL section of your Cask.
     #
     # You can set the template, as well as additional parameters.
