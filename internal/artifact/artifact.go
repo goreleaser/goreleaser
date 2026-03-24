@@ -112,10 +112,38 @@ const (
 	DockerImageV2
 	// Flatpak is a Flatpak bundle.
 	Flatpak
+
+	// XXX: if it is an uploadable kind of artifact, add it to UploadableTypes
+	// below.
+
 	// lastMarker is used in tests to denote the last valid type.
 	// always add new types before this one.
 	lastMarker
 )
+
+// ReleaseUploadableTypes returns the canonical list of artifact types that should be
+// uploaded, checksummed, signed, and otherwise distributed.
+// When adding a new artifact type that should be part of a release, add it
+// here and all pipes that use this func will automatically include it.
+//
+// GoReleaser Pro has more formats: MSI, DMG, etc.
+func ReleaseUploadableTypes() []Type {
+	return []Type{
+		UploadableArchive,
+		UploadableBinary,
+		UploadableFile,
+		UploadableSourceArchive,
+		Makeself,
+		LinuxPackage,
+		Flatpak,
+		SBOM,
+		PyWheel,
+		PySdist,
+		Checksum,
+		Signature,
+		Certificate,
+	}
+}
 
 func (t Type) isUploadable() bool {
 	switch t {

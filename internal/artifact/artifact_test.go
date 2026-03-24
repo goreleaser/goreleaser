@@ -1105,3 +1105,25 @@ func TestArtifactTypeIsUploadable(t *testing.T) {
 		})
 	}
 }
+
+func TestReleaseUploadableTypes(t *testing.T) {
+	expected := []Type{
+		UploadableArchive,
+		UploadableBinary,
+		UploadableFile,
+		UploadableSourceArchive,
+		Makeself,
+		LinuxPackage,
+		Flatpak,
+		SBOM,
+		PyWheel,
+		PySdist,
+		Checksum,
+		Signature,
+		Certificate,
+	}
+	require.Equal(t, expected, ReleaseUploadableTypes())
+	for _, tp := range ReleaseUploadableTypes() {
+		require.Truef(t, tp.isUploadable(), "type %s should be uploadable", tp)
+	}
+}

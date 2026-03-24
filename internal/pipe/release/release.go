@@ -157,21 +157,7 @@ func doPublish(ctx *context.Context, client client.Client) error {
 		})
 	}
 
-	types := []artifact.Type{
-		artifact.UploadableArchive,
-		artifact.UploadableBinary,
-		artifact.UploadableSourceArchive,
-		artifact.Makeself,
-		artifact.UploadableFile,
-		artifact.Checksum,
-		artifact.Signature,
-		artifact.Certificate,
-		artifact.LinuxPackage,
-		artifact.Flatpak,
-		artifact.SBOM,
-		artifact.PyWheel,
-		artifact.PySdist,
-	}
+	types := artifact.ReleaseUploadableTypes()
 	if ctx.Config.Release.IncludeMeta {
 		types = append(types, artifact.Metadata)
 	}

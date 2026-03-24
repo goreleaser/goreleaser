@@ -17,16 +17,15 @@ func (Pipe) String() string                 { return "size reports" }
 
 func (Pipe) Run(ctx *context.Context) error {
 	return ctx.Artifacts.Filter(artifact.ByTypes(
-		artifact.Binary,
-		artifact.UniversalBinary,
-		artifact.UploadableArchive,
-		artifact.Makeself,
-		artifact.PublishableSnapcraft,
-		artifact.LinuxPackage,
-		artifact.Flatpak,
-		artifact.CArchive,
-		artifact.CShared,
-		artifact.Header,
+		append(
+			artifact.ReleaseUploadableTypes(),
+			artifact.Binary,
+			artifact.UniversalBinary,
+			artifact.PublishableSnapcraft,
+			artifact.CArchive,
+			artifact.CShared,
+			artifact.Header,
+		)...,
 	)).Visit(func(a *artifact.Artifact) error {
 		stat, err := os.Stat(a.Path)
 		if err != nil {
