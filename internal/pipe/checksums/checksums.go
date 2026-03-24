@@ -184,6 +184,7 @@ func buildArtifactList(ctx *context.Context) ([]*artifact.Artifact, error) {
 			artifact.UploadableSourceArchive,
 			artifact.Makeself,
 			artifact.LinuxPackage,
+			artifact.Flatpak,
 			artifact.SBOM,
 			artifact.PyWheel,
 			artifact.PySdist,

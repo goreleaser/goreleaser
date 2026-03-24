@@ -108,6 +108,7 @@ func (Pipe) Run(ctx *context.Context) error {
 					artifact.Makeself,
 					artifact.Checksum,
 					artifact.LinuxPackage,
+					artifact.Flatpak,
 					artifact.SBOM,
 					artifact.PySdist,
 					artifact.PyWheel,
