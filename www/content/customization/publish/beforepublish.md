@@ -35,8 +35,8 @@ before_publish:
     # Valid options are:
     # - checksum:   checksum files
     # - source:     source archive
-    # - package:    Linux packages (deb, rpm, apk, etc)
-    # - installer:  Windows MSI installers
+    # - package:    Linux packages (deb, rpm, apk, etc) and macOS .pkg
+    # - installer:  Windows MSI and NSIS installers
     # - diskimage:  macOS DMG disk images
     # - archive:    archives from archive pipe
     # - binary:     binaries output from the build stage
