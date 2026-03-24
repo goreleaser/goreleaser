@@ -109,7 +109,7 @@ A big **thank you** to all current, past, and future sponsors!
   <a href="https://github.com/encoredev" target="_blank" rel="noopener sponsored" ><img src="https://avatars.githubusercontent.com/u/50438175?v=4&s=64" alt="Encore" width="64" height="64"/></a>
   <a href="https://github.com/comet-ml" target="_blank" rel="noopener sponsored" ><img src="https://avatars.githubusercontent.com/u/31487821?v=4&s=64" alt="Comet" width="64" height="64"/></a>
   <a href="https://about.gitea.com/" target="_blank" rel="noopener sponsored" ><img src="https://images.opencollective.com/gitea/bf35c2f/logo.png?height=64" alt="Gitea" width="64" height="64"/></a>
-  <a href="www.interviewpal.com" target="_blank" rel="noopener sponsored" ><img src="https://avatars.githubusercontent.com/u/268665632?v=4&s=64" alt="InterviewPal.com" width="64" height="64"/></a>
+  <a href="https://www.interviewpal.com" target="_blank" rel="noopener sponsored" ><img src="https://avatars.githubusercontent.com/u/268665632?v=4&s=64" alt="InterviewPal.com" width="64" height="64"/></a>
   <h3>And many more!</h3>
   <p>See the full list <a href="https://goreleaser.com/sponsors" target="_blank" rel="noopener sponsored">here</a>.</p>
 </div>

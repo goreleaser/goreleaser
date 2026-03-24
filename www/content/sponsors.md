@@ -157,7 +157,7 @@ A big **thank you** to all current, past, and future sponsors!
           Gitea
         </a>
         <a class="goreleaser-sponsor-item" 
-          href="www.interviewpal.com" 
+          href="https://www.interviewpal.com" 
           target="_blank" 
           rel="noopener sponsored"
         >
