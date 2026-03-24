@@ -53,6 +53,7 @@ var validLicenses = []string{
 	"bsdProtection",
 	"bsdSourceCode",
 	"bsl11",
+	"bzip2",
 	"cal10",
 	"caldera",
 	"capec",
