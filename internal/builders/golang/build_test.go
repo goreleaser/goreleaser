@@ -151,7 +151,6 @@ func TestWithDefaults(t *testing.T) {
 				"darwin_amd64_v3",
 				"windows_amd64_v3",
 				"windows_amd64_v2",
-				"windows_arm_6",
 				"linux_arm_6",
 			},
 			tool: "go1.2.3",

@@ -12,6 +12,8 @@ import (
 
 type Pipe struct{}
 
+// TODO: make this accept a "min size" to report? or report only top N sizes? dunno
+
 func (Pipe) Skip(ctx *context.Context) bool { return !ctx.Config.ReportSizes }
 func (Pipe) String() string                 { return "size reports" }
 

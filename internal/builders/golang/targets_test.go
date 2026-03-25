@@ -255,14 +255,14 @@ func TestGoosGoarchCombos(t *testing.T) {
 		{"solaris", "sparc64", true},
 		{"windows", "386", true},
 		{"windows", "amd64", true},
-		{"windows", "arm", true},
 		{"windows", "arm64", true},
 		{"js", "wasm", true},
 		// experimental targets:
-		{os: "openbsd", arch: "riscv64", valid: true},
+		{"openbsd", "riscv64", true},
 		// broken/to-be-removed:
-		{os: "windows", arch: "arm", valid: true},
+		// none
 		// invalid targets
+		{"windows", "arm", false},
 		{"darwin", "386", false},
 		{"darwin", "arm", false},
 		{"windows", "riscv64", false},
