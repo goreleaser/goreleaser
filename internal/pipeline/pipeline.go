@@ -127,10 +127,10 @@ var Pipeline = append(
 	sourcearchive.Pipe{},
 	// archive via fpm (deb, rpm) using "native" go impl
 	nfpm.Pipe{},
-	// create makeself self-extracting archives
-	makeself.Pipe{},
 	// create source RPMs
 	srpm.Pipe{},
+	// create makeself self-extracting archives
+	makeself.Pipe{},
 	// archive via snapcraft (snap)
 	snapcraft.Pipe{},
 	// create flatpak bundles

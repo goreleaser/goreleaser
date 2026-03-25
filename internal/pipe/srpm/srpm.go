@@ -16,7 +16,7 @@ import (
 	"github.com/goreleaser/nfpm/v2"
 	"github.com/goreleaser/nfpm/v2/files"
 
-	_ "github.com/goreleaser/nfpm/v2/rpm" // blank import to register the format
+	_ "github.com/goreleaser/nfpm/v2/rpm" // blank import to register the srpm packager
 )
 
 var (
@@ -127,7 +127,6 @@ func (Pipe) Run(ctx *context.Context) error {
 	contents = append(contents, &files.Content{
 		Source:      sourceArchive.Path,
 		Destination: sourceArchive.Name,
-		Packager:    srpm.Packager,
 		FileInfo: &files.ContentFileInfo{
 			Owner: owner,
 			Group: group,
@@ -144,7 +143,6 @@ func (Pipe) Run(ctx *context.Context) error {
 	contents = append(contents, &files.Content{
 		Source:      specFileArtifact.Path,
 		Destination: specFileArtifact.Name,
-		Packager:    srpm.Packager,
 		FileInfo: &files.ContentFileInfo{
 			Owner: owner,
 			Group: group,
@@ -178,10 +176,9 @@ func (Pipe) Run(ctx *context.Context) error {
 				Compression: srpm.Compression,
 				Packager:    srpm.Packager,
 				Signature: nfpm.RPMSignature{
-					PackageSignature: nfpm.PackageSignature{ // FIXME @caarlos0 is this correct?
+					PackageSignature: nfpm.PackageSignature{
 						KeyFile:       keyFile,
-						KeyPassphrase: ctx.Env[fmt.Sprintf("SRPM_%s_PASSPHRASE", srpm.ID)], // FIXME use getPassphraseFromEnv from nfpm
-						// TODO: KeyID
+						KeyPassphrase: getPassphraseFromEnv(ctx, srpm.ID),
 					},
 				},
 			},
@@ -228,4 +225,17 @@ func (Pipe) Run(ctx *context.Context) error {
 	ctx.Artifacts.Add(specFileArtifact)
 	ctx.Artifacts.Add(srpmArtifact)
 	return nil
+}
+
+func getPassphraseFromEnv(ctx *context.Context, id string) string {
+	id = strings.ToUpper(id)
+	for _, k := range []string{
+		fmt.Sprintf("SRPM_%s_PASSPHRASE", id),
+		"SRPM_PASSPHRASE",
+	} {
+		if v, ok := ctx.Env[k]; ok {
+			return v
+		}
+	}
+	return ""
 }

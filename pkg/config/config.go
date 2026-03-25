@@ -1072,7 +1072,8 @@ type Flatpak struct {
 	Disable string `yaml:"disable,omitempty" json:"disable,omitempty" jsonschema:"oneof_type=string;boolean"`
 }
 
-// Snapshot config.
+
+
 type Snapshot struct {
 	// Deprecated: use VersionTemplate.
 	NameTemplate    string `yaml:"name_template,omitempty" json:"name_template,omitempty" jsonschema:"deprecated=true"`

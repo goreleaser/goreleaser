@@ -328,6 +328,26 @@ snapcrafts:
     publish: true
     disable: "{{ if .IsNightly }}true{{ end }}"
 
+source:
+  enabled: true
+  prefix_template: "{{ .ProjectName }}-{{ .Version }}/"
+
+srpm:
+  enabled: true
+  spec_template_file: scripts/goreleaser.spec.tmpl
+  import_path: github.com/goreleaser/goreleaser/v2
+  summary: Release engineering, simplified
+  license: MIT
+  license_file_name: LICENSE.md
+  url: https://goreleaser.com
+  description: |-
+    Release engineering, simplified.
+    GoReleaser allows you to release easily build, package, publish, and
+    announce to several places.
+  vendor: GoReleaser
+  docs:
+    - README.md
+
 flatpak:
   - app_id: com.goreleaser.GoReleaser
     runtime: org.freedesktop.Platform

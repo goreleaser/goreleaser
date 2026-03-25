@@ -46,7 +46,7 @@ jobs:
     if: github.ref == 'refs/heads/main'
     strategy:
       matrix:
-        format: [deb, rpm, apk]
+        format: [deb, rpm, apk, srpm]
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
         with:
@@ -62,6 +62,7 @@ jobs:
             ./dist/*.deb
             ./dist/*.rpm
             ./dist/*.apk
+            ./dist/*.src.rpm
           key: ${{ github.sha }}
       - run: task goreleaser:test:${{ matrix.format }}
   goreleaser:
@@ -103,6 +104,7 @@ jobs:
             ./dist/*.deb
             ./dist/*.rpm
             ./dist/*.apk
+            ./dist/*.src.rpm
           key: ${{ github.sha }}
       - uses: sigstore/cosign-installer@ba7bc0a3fef59531c69a25acd34668d6d3fe6f22 # v4.1.0
       - uses: anchore/sbom-action/download-syft@e22c389904149dbc22b58101806040fa8d37a610 # v0.24.0

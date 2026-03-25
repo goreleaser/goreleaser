@@ -137,6 +137,7 @@ func ReleaseUploadableTypes() []Type {
 		Makeself,
 		LinuxPackage,
 		Flatpak,
+		SourceRPM,
 		SBOM,
 		PyWheel,
 		PySdist,
@@ -153,7 +154,8 @@ func (t Type) isUploadable() bool {
 		Snapcraft,              // See [PublishableSnapcraft].
 		Metadata,               // Local only.
 		SrcInfo, SourceSrcInfo, // It's always named `.SRCINFO`
-		PkgBuild, SourcePkgBuild: // It's always named `.PKGBUILD`
+		PkgBuild, SourcePkgBuild, // It's always named `.PKGBUILD`
+		RPMSpec:                   // Intermediate file, not a final deliverable.
 		return false
 	default:
 		return true
