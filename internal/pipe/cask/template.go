@@ -148,3 +148,57 @@ func groupToS(name string, lines []string) string {
 	sb.WriteString("    ]")
 	return sb.String()
 }
+
+var knownShellParameterFormats = map[string]bool{
+	"arg":   true,
+	"clap":  true,
+	"click": true,
+	"cobra": true,
+	"flag":  true,
+	"none":  true,
+	"typer": true,
+}
+
+func isGenerateCompletionsConfigured(g config.HomebrewCaskGeneratedCompletions) bool {
+	return g.Executable != "" || len(g.Args) > 0 || g.BaseName != "" ||
+		g.ShellParameterFormat != "" || len(g.Shells) > 0
+}
+
+func generateCompletionsString(g config.HomebrewCaskGeneratedCompletions) string {
+	if g.Executable == "" {
+		return ""
+	}
+
+	args := []string{fmt.Sprintf("%q", g.Executable)}
+	for _, a := range g.Args {
+		args = append(args, fmt.Sprintf("%q", a))
+	}
+
+	var kwargs []string
+	if g.BaseName != "" {
+		kwargs = append(kwargs, fmt.Sprintf("base_name: %q", g.BaseName))
+	}
+	if g.ShellParameterFormat != "" {
+		if knownShellParameterFormats[g.ShellParameterFormat] {
+			kwargs = append(kwargs, fmt.Sprintf("shell_parameter_format: :%s", g.ShellParameterFormat))
+		} else {
+			kwargs = append(kwargs, fmt.Sprintf("shell_parameter_format: %q", g.ShellParameterFormat))
+		}
+	}
+	if len(g.Shells) > 0 {
+		shells := make([]string, len(g.Shells))
+		for i, s := range g.Shells {
+			shells[i] = ":" + s
+		}
+		kwargs = append(kwargs, fmt.Sprintf("shells: [%s]", strings.Join(shells, ", ")))
+	}
+
+	var sb strings.Builder
+	sb.WriteString("generate_completions_from_executable ")
+	sb.WriteString(strings.Join(args, ", "))
+	if len(kwargs) > 0 {
+		sb.WriteString(",\n    ")
+		sb.WriteString(strings.Join(kwargs, ",\n    "))
+	}
+	return sb.String()
+}

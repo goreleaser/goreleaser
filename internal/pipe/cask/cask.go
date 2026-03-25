@@ -75,6 +75,9 @@ func (Pipe) Default(ctx *context.Context) error {
 		if len(brew.Binaries) == 0 || brew.Binaries[0] == "" {
 			brew.Binaries = []string{brew.Name}
 		}
+		if isGenerateCompletionsConfigured(brew.GenerateCompletionsFromExecutable) && brew.GenerateCompletionsFromExecutable.Executable == "" {
+			brew.GenerateCompletionsFromExecutable.Executable = brew.Binaries[0]
+		}
 		if brew.Manpage != "" {
 			deprecate.Notice(ctx, "homebrew_casks.manpage")
 			brew.Manpages = append(brew.Manpages, brew.Manpage)
@@ -330,10 +333,11 @@ func doBuildCask(ctx *context.Context, data templateData) (string, error) {
 			pad := strings.Repeat(" ", spaces)
 			return pad + strings.ReplaceAll(v, "\n", "\n"+pad)
 		},
-		"uninstall": uninstallString,
-		"zap":       zapString,
-		"conflicts": conflictsString,
-		"depends":   dependsString,
+		"uninstall":           uninstallString,
+		"zap":                 zapString,
+		"conflicts":           conflictsString,
+		"depends":             dependsString,
+		"generateCompletions": generateCompletionsString,
 	}).ParseFS(templates, "templates/*.rb")
 	if err != nil {
 		return "", err

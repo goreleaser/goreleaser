@@ -54,6 +54,9 @@ cask "{{ .Name }}" do
   {{- with .Completions.Zsh }}
   zsh_completion "{{ . }}"
   {{- end }}
+  {{- with generateCompletions .GenerateCompletionsFromExecutable }}
+  {{ . }}
+  {{- end }}
 
   {{ with .Service -}}
   service "{{ . }}"

@@ -233,6 +233,9 @@ type HomebrewCask struct {
 	Uninstall             HomebrewCaskUninstall    `yaml:"uninstall,omitempty" json:"uninstall,omitempty"`
 	Zap                   HomebrewCaskUninstall    `yaml:"zap,omitempty" json:"zap,omitempty"`
 
+	// v2.15+
+	GenerateCompletionsFromExecutable HomebrewCaskGeneratedCompletions `yaml:"generate_completions_from_executable,omitempty" json:"generate_completions_from_executable,omitempty"`
+
 	// XXX: casks don't yet support it, it has no effect.
 	License string `yaml:"license,omitempty" json:"license,omitempty"`
 
@@ -292,6 +295,14 @@ type HomebrewCaskCompletions struct {
 	Bash string `yaml:"bash,omitempty" json:"bash,omitempty"`
 	Zsh  string `yaml:"zsh,omitempty" json:"zsh,omitempty"`
 	Fish string `yaml:"fish,omitempty" json:"fish,omitempty"`
+}
+
+type HomebrewCaskGeneratedCompletions struct {
+	Executable           string   `yaml:"executable,omitempty" json:"executable,omitempty"`
+	Args                 []string `yaml:"args,omitempty" json:"args,omitempty"`
+	BaseName             string   `yaml:"base_name,omitempty" json:"base_name,omitempty"`
+	ShellParameterFormat string   `yaml:"shell_parameter_format,omitempty" json:"shell_parameter_format,omitempty"`
+	Shells               []string `yaml:"shells,omitempty" json:"shells,omitempty"`
 }
 
 type Nix struct {
