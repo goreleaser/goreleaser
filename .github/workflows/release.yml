@@ -5,6 +5,7 @@ on:
       - "main"
     tags:
       - "v*"
+  pull_request: {}
 permissions:
   contents: write
   id-token: write
