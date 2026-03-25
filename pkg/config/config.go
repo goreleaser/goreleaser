@@ -7,8 +7,6 @@ import (
 	"io/fs"
 	"os"
 	"time"
-
-	"github.com/goreleaser/nfpm/v2/files"
 )
 
 type Versioned struct {
@@ -892,7 +890,7 @@ type SRPM struct {
 	Description          string            `yaml:"description,omitempty" json:"description,omitempty"`
 	Bins                 map[string]string `yaml:"bins,omitempty" json:"bins,omitempty"`
 	Docs                 []string          `yaml:"docs,omitempty" json:"docs,omitempty"`
-	Contents             files.Contents    `yaml:"contents,omitempty" json:"contents,omitempty"`
+	Contents             []NFPMContent     `yaml:"contents,omitempty" json:"contents,omitempty"`
 }
 
 // SBOM config.
@@ -1071,8 +1069,6 @@ type Flatpak struct {
 
 	Disable string `yaml:"disable,omitempty" json:"disable,omitempty" jsonschema:"oneof_type=string;boolean"`
 }
-
-
 
 type Snapshot struct {
 	// Deprecated: use VersionTemplate.

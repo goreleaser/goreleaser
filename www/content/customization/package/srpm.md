@@ -4,6 +4,8 @@ linkTitle: Source RPMs
 weight: 50
 ---
 
+{{< version "v2.15-unreleased" >}}
+
 GoReleaser can generate Source RPM (`.src.rpm`) packages.
 
 Source RPMs are the standard way to distribute software source code for RPM-based
@@ -24,11 +26,6 @@ archive and a `.spec` file that describes how to build binary RPMs from the sour
 ## Configuration
 
 ```yaml {filename=".goreleaser.yaml"}
-source:
-  # Required to enable source archive generation.
-  enabled: true
-  prefix_template: '{{ .ProjectName }}-{{ .Version }}/'
-
 srpm:
   # Whether to enable source RPM generation.
   #
@@ -117,26 +114,26 @@ srpm:
 You must provide a `.spec` file template. The template is rendered using
 [Go's text/template][gotmpl] with the following variables available:
 
-| Variable          | Description                                        |
-|-------------------|----------------------------------------------------|
-| `.Version`        | The release version                                |
-| `.FullCommit`     | The full git commit SHA                            |
-| `.PackageName`    | The package name                                   |
-| `.ImportPath`     | The Go import path                                 |
-| `.Summary`        | One-line summary                                   |
-| `.License`        | License identifier                                 |
-| `.LicenseFileName`| License file name                                  |
-| `.URL`            | Project homepage URL                               |
-| `.Description`    | Long description                                   |
-| `.Packager`       | Packager name                                      |
-| `.Vendor`         | Vendor name                                        |
-| `.Group`          | RPM group                                          |
-| `.Epoch`          | RPM epoch                                          |
-| `.Section`        | Section                                            |
-| `.Maintainer`     | Maintainer                                         |
-| `.Source`         | Source archive file name                           |
-| `.Bins`           | Map of binary names to import paths                |
-| `.Docs`           | List of documentation files                        |
+| Variable           | Description                         |
+| ------------------ | ----------------------------------- |
+| `.Version`         | The release version                 |
+| `.FullCommit`      | The full git commit SHA             |
+| `.PackageName`     | The package name                    |
+| `.ImportPath`      | The Go import path                  |
+| `.Summary`         | One-line summary                    |
+| `.License`         | License identifier                  |
+| `.LicenseFileName` | License file name                   |
+| `.URL`             | Project homepage URL                |
+| `.Description`     | Long description                    |
+| `.Packager`        | Packager name                       |
+| `.Vendor`          | Vendor name                         |
+| `.Group`           | RPM group                           |
+| `.Epoch`           | RPM epoch                           |
+| `.Section`         | Section                             |
+| `.Maintainer`      | Maintainer                          |
+| `.Source`          | Source archive file name            |
+| `.Bins`            | Map of binary names to import paths |
+| `.Docs`            | List of documentation files         |
 
 All standard [GoReleaser template variables][tmpl] are also available.
 

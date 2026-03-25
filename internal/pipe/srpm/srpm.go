@@ -7,6 +7,7 @@ import (
 	"os"
 	"path/filepath"
 	"strings"
+	"time"
 
 	"github.com/caarlos0/log"
 	"github.com/goreleaser/goreleaser/v2/internal/artifact"
@@ -137,7 +138,36 @@ func (Pipe) Run(ctx *context.Context) error {
 	})
 
 	// Add extra contents.
-	contents = append(contents, srpm.Contents...)
+	for _, content := range srpm.Contents {
+		if err := t.ApplyAll(
+			&content.Source,
+			&content.Destination,
+			&content.FileInfo.Owner,
+			&content.FileInfo.Group,
+			&content.FileInfo.MTime,
+		); err != nil {
+			return err
+		}
+		if content.FileInfo.MTime != "" {
+			var err error
+			content.FileInfo.ParsedMTime, err = time.Parse(time.RFC3339Nano, content.FileInfo.MTime)
+			if err != nil {
+				return fmt.Errorf("failed to parse %s: %w", content.FileInfo.MTime, err)
+			}
+		}
+		contents = append(contents, &files.Content{
+			Source:      filepath.ToSlash(content.Source),
+			Destination: filepath.ToSlash(content.Destination),
+			Type:        content.Type,
+			Packager:    content.Packager,
+			FileInfo: &files.ContentFileInfo{
+				Owner: content.FileInfo.Owner,
+				Group: content.FileInfo.Group,
+				Mode:  content.FileInfo.Mode,
+				MTime: content.FileInfo.ParsedMTime,
+			},
+		})
+	}
 
 	// Add the spec file.
 	contents = append(contents, &files.Content{
