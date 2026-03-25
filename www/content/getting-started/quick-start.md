@@ -8,7 +8,7 @@ In this example we will build, archive and release a sample project.
 Create a GitHub repository, clone and `cd` into it, and let's get started!
 
 {{< tabs >}}
-{{< tab "Go" >}}
+{{< tab name="Go" icon="go" >}}
 
 Initialize your module with:
 
@@ -27,7 +27,7 @@ func main() {
 ```
 
 {{< /tab >}}
-{{< tab "Rust" >}}
+{{< tab name="Rust" icon="rust" >}}
 
 Initialize your project with:
 
@@ -36,7 +36,7 @@ cargo init --bin
 ```
 
 {{< /tab >}}
-{{< tab "Zig" >}}
+{{< tab name="Zig" icon="zig" >}}
 
 Initialize your project with:
 
@@ -45,7 +45,7 @@ zig init
 ```
 
 {{< /tab >}}
-{{< tab "Bun" >}}
+{{< tab name="Bun" icon="bun" >}}
 
 Initialize your project with:
 
@@ -54,7 +54,7 @@ bun init
 ```
 
 {{< /tab >}}
-{{< tab "Deno" >}}
+{{< tab name="Deno" icon="deno" >}}
 
 Initialize your project with:
 
@@ -63,7 +63,7 @@ deno init
 ```
 
 {{< /tab >}}
-{{< tab "UV" >}}
+{{< tab name="UV" icon="uv" >}}
 
 Initialize your project with:
 
@@ -72,7 +72,7 @@ uv init
 ```
 
 {{< /tab >}}
-{{< tab "Poetry" >}}
+{{< tab name="Poetry" icon="poetry" >}}
 
 Initialize your project with:
 
@@ -107,7 +107,7 @@ goreleaser check
 You can also use GoReleaser to build the binary only for a given target, which is useful for local development:
 
 {{< tabs >}}
-{{< tab "Go" >}}
+{{< tab name="Go" icon="go" >}}
 
 ```sh
 GOOS="linux" \
@@ -117,7 +117,7 @@ GOARCH="arm64" \
 
 It will default to your current `GOOS`/`GOARCH`.
 {{< /tab >}}
-{{< tab "Rust" >}}
+{{< tab name="Rust" icon="rust" >}}
 
 ```sh
 TARGET="aarch64-unknown-linux-gnu" \
@@ -125,7 +125,7 @@ TARGET="aarch64-unknown-linux-gnu" \
 ```
 
 {{< /tab >}}
-{{< tab "Zig" >}}
+{{< tab name="Zig" icon="zig" >}}
 
 ```sh
 TARGET="aarch64-linux" \
@@ -133,7 +133,7 @@ TARGET="aarch64-linux" \
 ```
 
 {{< /tab >}}
-{{< tab "Bun" >}}
+{{< tab name="Bun" icon="bun" >}}
 
 ```sh
 TARGET="bun-linux-arm64" \
@@ -141,7 +141,7 @@ TARGET="bun-linux-arm64" \
 ```
 
 {{< /tab >}}
-{{< tab "Deno" >}}
+{{< tab name="Deno" icon="deno" >}}
 
 ```sh
 TARGET="aarch64-unknown-linux-gnu" \
@@ -149,7 +149,7 @@ TARGET="aarch64-unknown-linux-gnu" \
 ```
 
 {{< /tab >}}
-{{< tab "UV" >}}
+{{< tab name="UV" icon="uv" >}}
 
 ```sh
 TARGET="py3-none-any" \
@@ -157,7 +157,7 @@ TARGET="py3-none-any" \
 ```
 
 {{< /tab >}}
-{{< tab "Poetry" >}}
+{{< tab name="Poetry" icon="poetry" >}}
 
 ```sh
 TARGET="py3-none-any" \
