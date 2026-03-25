@@ -419,13 +419,14 @@
 				building what really matters:
 				<strong class="gradient-text-2">your software</strong>.
 			</p>
+			<!-- prettier-ignore -->
 			<div class="lang-icons">
-				<img src="/go-dark.svg" alt="Go" />
-				<img src="/rust-dark.svg" alt="Rust" />
-				<img src="/bun-dark.svg" alt="TypeScript" />
-				<img src="/zig-dark.svg" alt="Zig" />
-				<img src="/python-dark.svg" alt="Python" />
-				<img src="/deno-dark.svg" alt="Deno" />
+				{{ range $icon := slice "go" "rust" "zig" "typescript" "python" }}
+				{{ partial "utils/icon.html" (dict
+					"name" $icon
+					"attributes" `height=1.75em class="hx:inline-block hx:align-middle"`
+				)}}
+				{{ end }}
 			</div>
 			<!-- prettier-ignore -->
 			<a href="/getting-started/intro/" class="goreleaser-btn goreleaser-btn--primary">

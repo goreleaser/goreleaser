@@ -2,19 +2,12 @@
   <img alt="GoReleaser Logo" src="https://avatars2.githubusercontent.com/u/24697112?v=3&s=200" height="200" />
   <h3 align="center">GoReleaser</h3>
   <p align="center">Release engineering, simplified.</p>
-  <p align="center">
-    <img alt="Go" src="./www/static/go-light.svg#gh-light-mode-only" height="30" width="30" />
-    <img alt="Go" src="./www/static/go-dark.svg#gh-dark-mode-only" height="30" width="30" />
-    <img alt="Rust" src="./www/static/rust-light.svg#gh-light-mode-only" height="30" width="30" />
-    <img alt="Rust" src="./www/static/rust-dark.svg#gh-dark-mode-only" height="30" width="30" />
-    <img alt="Zig" src="./www/static/zig-light.svg#gh-light-mode-only" height="30" width="30" />
-    <img alt="Zig" src="./www/static/zig-dark.svg#gh-dark-mode-only" height="30" width="30" />
-    <img alt="Bun" src="./www/static/bun-light.svg#gh-light-mode-only" height="30" width="30" />
-    <img alt="Bun" src="./www/static/bun-dark.svg#gh-dark-mode-only" height="30" width="30" />
-    <img alt="Deno" src="./www/static/deno-light.svg#gh-light-mode-only" height="30" width="30" />
-    <img alt="Deno" src="./www/static/deno-dark.svg#gh-dark-mode-only" height="30" width="30" />
-    <img alt="Python" src="./www/static/python-light.svg#gh-light-mode-only" height="30" width="30" />
-    <img alt="Python" src="./www/static/python-dark.svg#gh-dark-mode-only" height="30" width="30" />
+  <p align="center" style="display: flex; justify-content: center; gap: 28px; flex-wrap: wrap;">
+    <img height="42" src="https://cdn.simpleicons.org/go/555555/ffffff" alt="Go" />
+    <img height="42" src="https://cdn.simpleicons.org/rust/555555/ffffff" alt="Rust" />
+    <img height="42" src="https://cdn.simpleicons.org/zig/555555/ffffff" alt="Zig" />
+    <img height="42" src="https://cdn.simpleicons.org/typescript/555555/ffffff" alt="TypeScript" />
+    <img height="42" src="https://cdn.simpleicons.org/python/555555/ffffff" alt="Python" />
   </p>
 </p>
 
