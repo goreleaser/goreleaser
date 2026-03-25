@@ -76,7 +76,12 @@ func isValid(target string) bool {
 	targetsOnce.Do(func() {
 		allTargets = strings.Split(string(allTargetsBts), "\n")
 	})
-
+	if strings.Contains(target, "-gnu.") {
+		prefix, _, ok := strings.Cut(target, ".")
+		if ok {
+			return slices.Contains(allTargets, prefix)
+		}
+	}
 	return slices.Contains(allTargets, target)
 }
 

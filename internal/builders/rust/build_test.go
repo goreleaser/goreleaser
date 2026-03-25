@@ -54,6 +54,21 @@ func TestWithDefaults(t *testing.T) {
 	})
 }
 
+func TestCustomGlibc(t *testing.T) {
+	t.Run("valid", func(t *testing.T) {
+		_, err := Default.WithDefaults(config.Build{
+			Targets: []string{"aarch64-unknown-linux-gnu.2.17"},
+		})
+		require.NoError(t, err)
+	})
+	t.Run("invalid", func(t *testing.T) {
+		_, err := Default.WithDefaults(config.Build{
+			Targets: []string{"aarch64-unknown-linux-musl.2.17"},
+		})
+		require.ErrorContains(t, err, "invalid target")
+	})
+}
+
 func TestBuild(t *testing.T) {
 	testlib.CheckPath(t, "cargo")
 	testlib.CheckPath(t, "cargo-zigbuild")
@@ -88,7 +103,7 @@ func TestBuild(t *testing.T) {
 	require.NoError(t, err)
 	require.NoError(t, Default.Prepare(ctx, build))
 
-	target := "aarch64-unknown-linux-gnu"
+	target := "aarch64-unknown-linux-gnu.2.17"
 	options := api.Options{
 		Name: "proj",
 		Path: filepath.Join("dist", "proj-"+target, "proj"),
