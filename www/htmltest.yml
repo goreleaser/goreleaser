@@ -1,50 +1,5 @@
-IgnoreExternalBrokenLinks: true
-IgnoreURLs:
-  - www.google-analytics.com
-  - fonts.gstatic.com
-  - support.discord.com
-  - microsoft.com
-  - linkedin.com
-  - repology.org
-  - reddit.com
-  - getrevue.co
-  - docs.github.com
-  - help.github.com
-  - github.com
-  - twitter.com
-  - x.com
-  - banzaicloud.com
-  - curio.sh
-  - medium.com
-  - gofi.sh
-  - visualstudio.com
-  - iron.security
-  - hub.docker.com
-  - wixtoolset.org
-  - docs.gitlab.com
-  - blog.kubesimplify.com
-  - blog.ediri.io/
-  - claude.ai
-  - chatgpt.com
-  - livereload.js
-  - "^#$"
-  - "^#content$"
-  - "#pro$"
-  - snapcraft\.io
-  - calculator\.now
-  - orbitdownloader\.com
-  - hashicorp\.com
-  - stackexchange\.com
-  - totvslabs\.com
-  - trendyol\.com
-  - discord\.gg
-IgnoreDirs:
-  - overrides
+CheckExternal: false
 IgnoreDirectoryMissingTrailingSlash: true
 IgnoreAltMissing: true
 IgnoreInternalEmptyHash: true
 CheckInternalHash: true
-ExternalTimeout: 60
-HTTPHeaders:
-  "Range": "bytes=0-10"
-  "Accept": "*/*"
