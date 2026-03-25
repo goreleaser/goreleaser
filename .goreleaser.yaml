@@ -336,7 +336,6 @@ srpm:
   enabled: true
   spec_template_file: scripts/goreleaser.spec.tmpl
   import_path: github.com/goreleaser/goreleaser/v2
-  summary: Release engineering, simplified
   license: MIT
   license_file_name: LICENSE.md
   url: https://goreleaser.com
