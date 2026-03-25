@@ -72,7 +72,7 @@ GoReleaser Pro</a>
 
 ## Using GoReleaser Pro
 
-GoReleaser Pro is a different binary, see the [install options](/getting-started/install/#pro).
+GoReleaser Pro is a different binary, see the [install options](/getting-started/install).
 Once you have it, you can use the serial key with either `--key` or by setting
 `GORELEASER_KEY`.
 
