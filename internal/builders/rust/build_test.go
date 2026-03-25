@@ -141,6 +141,7 @@ func TestBuild(t *testing.T) {
 			artifact.ExtraID:       "default",
 			artifact.ExtranDynLink: true,
 			keyAbi:                 "gnu",
+			keyLibc:                "2.17",
 		},
 	}, *bin)
 
@@ -176,6 +177,18 @@ func TestParse(t *testing.T) {
 			Arch:   "arm64",
 			Vendor: "pc",
 			Abi:    "gnullvm",
+		}, target)
+	})
+	t.Run("glibc-version", func(t *testing.T) {
+		target, err := Default.Parse("aarch64-unknown-linux-gnu.2.17")
+		require.NoError(t, err)
+		require.Equal(t, Target{
+			Target: "aarch64-unknown-linux-gnu.2.17",
+			Os:     "linux",
+			Arch:   "arm64",
+			Vendor: "unknown",
+			Abi:    "gnu",
+			Libc:   "2.17",
 		}, target)
 	})
 }

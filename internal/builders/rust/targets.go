@@ -23,6 +23,7 @@ var (
 const (
 	keyVendor = "Vendor"
 	keyAbi    = "Abi"
+	keyLibc   = "Libc"
 )
 
 // Target is a Rust build target.
@@ -33,6 +34,7 @@ type Target struct {
 	Arch   string
 	Vendor string
 	Abi    string
+	Libc   string
 }
 
 // Fields implements build.Target.
@@ -42,11 +44,24 @@ func (t Target) Fields() map[string]string {
 		tmpl.KeyArch: t.Arch,
 		keyAbi:       t.Abi,
 		keyVendor:    t.Vendor,
+		keyLibc:      t.Libc,
 	}
 }
 
 // String implements fmt.Stringer.
 func (t Target) String() string {
+	return t.Target
+}
+
+// clean returns the target without any gnu version suffix.
+// this is used by cargo-zigbuild internally.
+func (t Target) clean() string {
+	if strings.Contains(t.Target, "-gnu.") {
+		prefix, _, ok := strings.Cut(t.Target, ".")
+		if ok {
+			return prefix
+		}
+	}
 	return t.Target
 }
 
