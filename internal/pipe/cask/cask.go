@@ -333,10 +333,10 @@ func doBuildCask(ctx *context.Context, data templateData) (string, error) {
 			pad := strings.Repeat(" ", spaces)
 			return pad + strings.ReplaceAll(v, "\n", "\n"+pad)
 		},
-		"uninstall": uninstallString,
-		"zap":       zapString,
-		"conflicts": conflictsString,
-		"depends":   dependsString,
+		"uninstall":           uninstallString,
+		"zap":                 zapString,
+		"conflicts":           conflictsString,
+		"depends":             dependsString,
 		"generateCompletions": generateCompletionsString,
 	}).ParseFS(templates, "templates/*.rb")
 	if err != nil {
