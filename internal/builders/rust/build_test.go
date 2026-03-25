@@ -54,6 +54,21 @@ func TestWithDefaults(t *testing.T) {
 	})
 }
 
+func TestCustomGlibc(t *testing.T) {
+	t.Run("valid", func(t *testing.T) {
+		_, err := Default.WithDefaults(config.Build{
+			Targets: []string{"aarch64-unknown-linux-gnu.2.17"},
+		})
+		require.NoError(t, err)
+	})
+	t.Run("invalid", func(t *testing.T) {
+		_, err := Default.WithDefaults(config.Build{
+			Targets: []string{"aarch64-unknown-linux-musl.2.17"},
+		})
+		require.ErrorContains(t, err, "invalid target")
+	})
+}
+
 func TestBuild(t *testing.T) {
 	testlib.CheckPath(t, "cargo")
 	testlib.CheckPath(t, "cargo-zigbuild")
@@ -88,7 +103,7 @@ func TestBuild(t *testing.T) {
 	require.NoError(t, err)
 	require.NoError(t, Default.Prepare(ctx, build))
 
-	target := "aarch64-unknown-linux-gnu"
+	target := "aarch64-unknown-linux-gnu.2.17"
 	options := api.Options{
 		Name: "proj",
 		Path: filepath.Join("dist", "proj-"+target, "proj"),
@@ -126,6 +141,7 @@ func TestBuild(t *testing.T) {
 			artifact.ExtraID:       "default",
 			artifact.ExtranDynLink: true,
 			keyAbi:                 "gnu",
+			keyLibc:                "2.17",
 		},
 	}, *bin)
 
@@ -161,6 +177,18 @@ func TestParse(t *testing.T) {
 			Arch:   "arm64",
 			Vendor: "pc",
 			Abi:    "gnullvm",
+		}, target)
+	})
+	t.Run("glibc-version", func(t *testing.T) {
+		target, err := Default.Parse("aarch64-unknown-linux-gnu.2.17")
+		require.NoError(t, err)
+		require.Equal(t, Target{
+			Target: "aarch64-unknown-linux-gnu.2.17",
+			Os:     "linux",
+			Arch:   "arm64",
+			Vendor: "unknown",
+			Abi:    "gnu",
+			Libc:   "2.17",
 		}, target)
 	})
 }

@@ -77,6 +77,11 @@ func (b *Builder) Parse(target string) (api.Target, error) {
 
 	if len(parts) > 3 {
 		t.Abi = parts[3]
+		abi, libc, ok := strings.Cut(t.Abi, ".")
+		if ok {
+			t.Abi = abi
+			t.Libc = libc
+		}
 	}
 
 	return t, nil
@@ -159,6 +164,9 @@ func (b *Builder) Build(ctx *context.Context, build config.Build, options api.Op
 			keyAbi:                t.Abi,
 		},
 	}
+	if t.Libc != "" {
+		a.Extra[keyLibc] = t.Libc
+	}
 
 	env := []string{}
 	env = append(env, ctx.Env.Strings()...)
@@ -198,7 +206,7 @@ func (b *Builder) Build(ctx *context.Context, build config.Build, options api.Op
 		return err
 	}
 
-	realPath := filepath.Join(build.Dir, "target", t.Target, "release", options.Name)
+	realPath := filepath.Join(build.Dir, "target", t.clean(), "release", options.Name)
 	if err := gio.Copy(realPath, options.Path); err != nil {
 		return err
 	}
