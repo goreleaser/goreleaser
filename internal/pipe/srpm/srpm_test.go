@@ -131,3 +131,97 @@ func TestRunPipeNoSourceArchive(t *testing.T) {
 	require.NoError(t, Pipe{}.Default(ctx))
 	require.EqualError(t, Pipe{}.Run(ctx), "no source archives found")
 }
+
+func TestRunPipeContentsTemplates(t *testing.T) {
+	folder := t.TempDir()
+	dist := filepath.Join(folder, "dist")
+	require.NoError(t, os.Mkdir(dist, 0o755))
+	sourceArchivePath := filepath.Join(dist, "example-1.0.0.tar.gz")
+	f, err := os.Create(sourceArchivePath)
+	require.NoError(t, err)
+	require.NoError(t, f.Close())
+
+	// Create an extra file to include via contents.
+	extraPatch := filepath.Join(folder, "fix-build.patch")
+	require.NoError(t, os.WriteFile(extraPatch, []byte("--- a\n+++ b\n"), 0o644))
+
+	ctx := testctx.WrapWithCfg(t.Context(), config.Project{
+		ProjectName: "example",
+		Dist:        dist,
+		SRPM: config.SRPM{
+			NFPMRPM:          config.NFPMRPM{Summary: "Example summary"},
+			Enabled:          true,
+			ImportPath:       "github.com/example/example",
+			License:          "MIT",
+			SpecTemplateFile: "testdata/example.spec.tmpl",
+			Contents: []config.NFPMContent{
+				{
+					Source:      "{{ .Env.PATCH_FILE }}",
+					Destination: "fix-build-{{ .Version }}.patch",
+					FileInfo: config.FileInfo{
+						Owner: "{{ .Env.PATCH_OWNER }}",
+						Group: "mock",
+					},
+				},
+			},
+		},
+	})
+	ctx.Version = "1.0.0"
+	ctx.Git = context.GitInfo{FullCommit: "abc123"}
+	ctx.Env["PATCH_FILE"] = extraPatch
+	ctx.Env["PATCH_OWNER"] = "mockbuild"
+	ctx.Artifacts.Add(&artifact.Artifact{
+		Name: "example-1.0.0.tar.gz",
+		Path: sourceArchivePath,
+		Type: artifact.UploadableSourceArchive,
+	})
+
+	var pipe Pipe
+	require.NoError(t, pipe.Default(ctx))
+	require.NoError(t, pipe.Run(ctx))
+
+	sourceRPMs := ctx.Artifacts.Filter(artifact.ByType(artifact.SourceRPM)).List()
+	require.Len(t, sourceRPMs, 1)
+}
+
+func TestRunPipeContentsInvalidMTime(t *testing.T) {
+	folder := t.TempDir()
+	dist := filepath.Join(folder, "dist")
+	require.NoError(t, os.Mkdir(dist, 0o755))
+	sourceArchivePath := filepath.Join(dist, "example-1.0.0.tar.gz")
+	f, err := os.Create(sourceArchivePath)
+	require.NoError(t, err)
+	require.NoError(t, f.Close())
+
+	ctx := testctx.WrapWithCfg(t.Context(), config.Project{
+		ProjectName: "example",
+		Dist:        dist,
+		SRPM: config.SRPM{
+			NFPMRPM:          config.NFPMRPM{Summary: "Example summary"},
+			Enabled:          true,
+			ImportPath:       "github.com/example/example",
+			License:          "MIT",
+			SpecTemplateFile: "testdata/example.spec.tmpl",
+			Contents: []config.NFPMContent{
+				{
+					Source:      "README.md",
+					Destination: "README.md",
+					FileInfo: config.FileInfo{
+						MTime: "not-a-valid-time",
+					},
+				},
+			},
+		},
+	})
+	ctx.Version = "1.0.0"
+	ctx.Git = context.GitInfo{FullCommit: "abc123"}
+	ctx.Artifacts.Add(&artifact.Artifact{
+		Name: "example-1.0.0.tar.gz",
+		Path: sourceArchivePath,
+		Type: artifact.UploadableSourceArchive,
+	})
+
+	var pipe Pipe
+	require.NoError(t, pipe.Default(ctx))
+	require.ErrorContains(t, pipe.Run(ctx), "failed to parse not-a-valid-time")
+}

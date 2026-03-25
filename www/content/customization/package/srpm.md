@@ -104,9 +104,15 @@ srpm:
     key_file: "{{ .Env.GPG_KEY_FILE }}"
 
   # Extra files to include in the SRPM beyond the source archive and spec file.
+  # The `src`, `dst`, `file_info.owner`, `file_info.group`, and `file_info.mtime`
+  # fields support templates.
   contents:
-    - src: ./extra-patch.patch
-      dst: extra-patch.patch
+    - src: "{{ .Env.PATCH_DIR }}/fix-build-{{ .Version }}.patch"
+      dst: "fix-build-{{ .Version }}.patch"
+      file_info:
+        owner: mockbuild
+        group: mockbuild
+        mtime: "2006-01-02T15:04:05Z"
 ```
 
 ## Spec file template
