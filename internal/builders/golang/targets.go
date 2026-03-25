@@ -315,7 +315,9 @@ var (
 	}
 
 	brokenTargets = []string{
-		"windowsarm", // broken: https://golang.google.cn/doc/go1.24#windows , https://golang.google.cn/doc/go1.25#windows
+		// windowsarm was removed: broken in Go 1.24, removed in Go 1.25
+		// https://golang.google.cn/doc/go1.24#windows
+		// https://golang.google.cn/doc/go1.25#windows
 	}
 
 	validGoos = []string{
