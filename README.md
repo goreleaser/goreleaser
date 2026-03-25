@@ -3,11 +3,11 @@
   <h3 align="center">GoReleaser</h3>
   <p align="center">Release engineering, simplified.</p>
   <p align="center" style="display: flex; justify-content: center; gap: 28px; flex-wrap: wrap;">
-    <img height="42" src="https://cdn.simpleicons.org/go/555555/ffffff" alt="Go" />
-    <img height="42" src="https://cdn.simpleicons.org/rust/555555/ffffff" alt="Rust" />
-    <img height="42" src="https://cdn.simpleicons.org/zig/555555/ffffff" alt="Zig" />
-    <img height="42" src="https://cdn.simpleicons.org/typescript/555555/ffffff" alt="TypeScript" />
-    <img height="42" src="https://cdn.simpleicons.org/python/555555/ffffff" alt="Python" />
+    <img height="30" src="https://cdn.simpleicons.org/go/555555/ffffff" alt="Go" />
+    <img height="30" src="https://cdn.simpleicons.org/rust/555555/ffffff" alt="Rust" />
+    <img height="30" src="https://cdn.simpleicons.org/zig/555555/ffffff" alt="Zig" />
+    <img height="30" src="https://cdn.simpleicons.org/typescript/555555/ffffff" alt="TypeScript" />
+    <img height="30" src="https://cdn.simpleicons.org/python/555555/ffffff" alt="Python" />
   </p>
 </p>
 
