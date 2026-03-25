@@ -112,12 +112,13 @@ const (
 	DockerImageV2
 	// Flatpak is a Flatpak bundle.
 	Flatpak
+	// SourceRPM is a source RPM.
+	SourceRPM
+	// RPMSpec is an RPM .spec file.
+	RPMSpec
 
 	// XXX: if it is an uploadable kind of artifact, add it to UploadableTypes
 	// below.
-
-	// lastMarker is used in tests to denote the last valid type.
-	// always add new types before this one.
 	lastMarker
 )
 
@@ -221,6 +222,10 @@ func (t Type) String() string {
 		return "Makeself Package"
 	case Flatpak:
 		return "Flatpak"
+	case SourceRPM:
+		return "Source RPM"
+	case RPMSpec:
+		return "RPM Spec"
 	default:
 		return "unknown"
 	}

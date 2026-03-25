@@ -37,6 +37,7 @@ const (
 	Notarize       Key = "notarize"
 	Archive        Key = "archive"
 	MCP            Key = "mcp"
+	SRPM           Key = "srpm"
 )
 
 func String(ctx *context.Context) string {
@@ -128,6 +129,7 @@ var Release = Keys{
 	NFPM,
 	Makeself,
 	Flatpak,
+	SRPM,
 	Before,
 	Notarize,
 	Archive,
