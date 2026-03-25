@@ -2,7 +2,7 @@
   <img alt="GoReleaser Logo" src="https://avatars2.githubusercontent.com/u/24697112?v=3&s=200" height="200" />
   <h3 align="center">GoReleaser</h3>
   <p align="center">Release engineering, simplified.</p>
-  <p align="center" style="display: flex; justify-content: center; gap: 28px; flex-wrap: wrap;">
+  <p align="center">
     <img height="30" src="https://cdn.simpleicons.org/go/555555/ffffff" alt="Go" />
     <img height="30" src="https://cdn.simpleicons.org/rust/555555/ffffff" alt="Rust" />
     <img height="30" src="https://cdn.simpleicons.org/zig/555555/ffffff" alt="Zig" />
