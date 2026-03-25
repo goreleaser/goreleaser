@@ -159,20 +159,7 @@ func artifactList(ctx *context.Context, conf config.Blob) []*artifact.Artifact {
 	if conf.ExtraFilesOnly {
 		return nil
 	}
-	types := []artifact.Type{
-		artifact.UploadableArchive,
-		artifact.UploadableBinary,
-		artifact.UploadableSourceArchive,
-		artifact.Makeself,
-		artifact.Checksum,
-		artifact.Signature,
-		artifact.Certificate,
-		artifact.LinuxPackage,
-		artifact.Flatpak,
-		artifact.SBOM,
-		artifact.PySdist,
-		artifact.PyWheel,
-	}
+	types := artifact.ReleaseUploadableTypes()
 	if conf.IncludeMeta {
 		types = append(types, artifact.Metadata)
 	}
