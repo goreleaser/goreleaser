@@ -1871,6 +1871,9 @@
 					"zap": {
 						"$ref": "#/$defs/HomebrewCaskUninstall"
 					},
+					"generate_completions_from_executable": {
+						"$ref": "#/$defs/HomebrewCaskGeneratedCompletions"
+					},
 					"license": {
 						"type": "string"
 					},
@@ -1918,6 +1921,33 @@
 					},
 					"formula": {
 						"type": "string"
+					}
+				},
+				"additionalProperties": false,
+				"type": "object"
+			},
+			"HomebrewCaskGeneratedCompletions": {
+				"properties": {
+					"executable": {
+						"type": "string"
+					},
+					"args": {
+						"items": {
+							"type": "string"
+						},
+						"type": "array"
+					},
+					"base_name": {
+						"type": "string"
+					},
+					"shell_parameter_format": {
+						"type": "string"
+					},
+					"shells": {
+						"items": {
+							"type": "string"
+						},
+						"type": "array"
 					}
 				},
 				"additionalProperties": false,
