@@ -45,10 +45,8 @@ func TestDefault(t *testing.T) {
 		},
 	})
 	require.NoError(t, Pipe{}.Default(ctx))
-	require.Equal(t, "default", ctx.Config.SRPM.ID)
 	require.Equal(t, "example", ctx.Config.SRPM.PackageName)
 	require.Equal(t, defaultFileNameTemplate, ctx.Config.SRPM.FileNameTemplate)
-	require.Equal(t, defaultSpecFileNameTemplate, ctx.Config.SRPM.SpecFileNameTemplate)
 	require.Equal(t, map[string]string{"example": "%{goipath}"}, ctx.Config.SRPM.Bins)
 }
 
@@ -79,7 +77,7 @@ func TestRunPipe(t *testing.T) {
 			Docs: []string{
 				"README.md",
 			},
-			SpecTemplateFile: "testdata/example.spec.tmpl",
+			SpecFile: "testdata/example.spec.tmpl",
 		},
 	})
 	ctx.Version = "1.0.0"
@@ -104,9 +102,7 @@ func TestRunPipe(t *testing.T) {
 	require.Equal(t, filepath.ToSlash(filepath.Join(dist, "example-1.0.0.src.rpm")), sourceRPM.Path)
 
 	// Check the .spec artifact.
-	rpmSpecs := ctx.Artifacts.Filter(artifact.ByType(artifact.RPMSpec)).List()
-	require.Len(t, rpmSpecs, 1)
-	rpmSpecContents, err := os.ReadFile(rpmSpecs[0].Path)
+	rpmSpecContents, err := os.ReadFile(filepath.Join(dist, "srpm", "example.spec"))
 	require.NoError(t, err)
 	require.True(t, regexp.MustCompile(`(?m)^%global\s+goipath\s+github\.com/example/example$`).Match(rpmSpecContents))
 	require.True(t, regexp.MustCompile(`(?m)^%global\s+commit\s+e070258c90772fbcf1cb94c2b937ff25a011b5c8$`).Match(rpmSpecContents))
@@ -123,8 +119,8 @@ func TestRunPipeNoSourceArchive(t *testing.T) {
 		ProjectName: "example",
 		Dist:        t.TempDir(),
 		SRPM: config.SRPM{
-			Enabled:          true,
-			SpecTemplateFile: "testdata/example.spec.tmpl",
+			Enabled:  true,
+			SpecFile: "testdata/example.spec.tmpl",
 		},
 	})
 	ctx.Version = "1.0.0"
@@ -149,11 +145,11 @@ func TestRunPipeContentsTemplates(t *testing.T) {
 		ProjectName: "example",
 		Dist:        dist,
 		SRPM: config.SRPM{
-			NFPMRPM:          config.NFPMRPM{Summary: "Example summary"},
-			Enabled:          true,
-			ImportPath:       "github.com/example/example",
-			License:          "MIT",
-			SpecTemplateFile: "testdata/example.spec.tmpl",
+			NFPMRPM:    config.NFPMRPM{Summary: "Example summary"},
+			Enabled:    true,
+			ImportPath: "github.com/example/example",
+			License:    "MIT",
+			SpecFile:   "testdata/example.spec.tmpl",
 			Contents: []config.NFPMContent{
 				{
 					Source:      "{{ .Env.PATCH_FILE }}",
@@ -197,11 +193,11 @@ func TestRunPipeContentsInvalidMTime(t *testing.T) {
 		ProjectName: "example",
 		Dist:        dist,
 		SRPM: config.SRPM{
-			NFPMRPM:          config.NFPMRPM{Summary: "Example summary"},
-			Enabled:          true,
-			ImportPath:       "github.com/example/example",
-			License:          "MIT",
-			SpecTemplateFile: "testdata/example.spec.tmpl",
+			NFPMRPM:    config.NFPMRPM{Summary: "Example summary"},
+			Enabled:    true,
+			ImportPath: "github.com/example/example",
+			License:    "MIT",
+			SpecFile:   "testdata/example.spec.tmpl",
 			Contents: []config.NFPMContent{
 				{
 					Source:      "README.md",

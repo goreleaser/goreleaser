@@ -164,7 +164,7 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GH_PAT }}
       - uses: actions/attest@59d89421af93a897026c735860bf21b6eb4f7b26 # v4.1.0
-        if: ${{ always() }}
+        if: ${{ always() && startsWith(github.ref, 'refs/tags/v') }} # snapshots won't push docker images
         with:
           subject-checksums: ./dist/checksums.txt
       - uses: actions/attest@59d89421af93a897026c735860bf21b6eb4f7b26 # v4.1.0

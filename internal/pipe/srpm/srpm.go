@@ -20,10 +20,7 @@ import (
 	_ "github.com/goreleaser/nfpm/v2/rpm" // blank import to register the srpm packager
 )
 
-var (
-	defaultFileNameTemplate     = "{{ .PackageName }}-{{ .Version }}.src.rpm"
-	defaultSpecFileNameTemplate = "{{ .PackageName }}.spec"
-)
+const defaultFileNameTemplate = "{{ .PackageName }}-{{ .Version }}.src.rpm"
 
 // Pipe for source RPMs.
 type Pipe struct{}
@@ -36,17 +33,11 @@ func (Pipe) Skip(ctx *context.Context) bool {
 // Default sets the pipe defaults.
 func (Pipe) Default(ctx *context.Context) error {
 	srpm := &ctx.Config.SRPM
-	if srpm.ID == "" {
-		srpm.ID = "default"
-	}
 	if srpm.PackageName == "" {
 		srpm.PackageName = ctx.Config.ProjectName
 	}
 	if srpm.FileNameTemplate == "" {
 		srpm.FileNameTemplate = defaultFileNameTemplate
-	}
-	if srpm.SpecFileNameTemplate == "" {
-		srpm.SpecFileNameTemplate = defaultSpecFileNameTemplate
 	}
 	if srpm.Bins == nil {
 		srpm.Bins = map[string]string{
@@ -89,13 +80,7 @@ func (Pipe) Run(ctx *context.Context) error {
 		})
 
 	// Get the spec template.
-	specTemplate, err := os.ReadFile(srpm.SpecTemplateFile)
-	if err != nil {
-		return err
-	}
-
-	// Generate the spec file.
-	specFileName, err := t.Apply(srpm.SpecFileNameTemplate)
+	specTemplate, err := os.ReadFile(srpm.SpecFile)
 	if err != nil {
 		return err
 	}
@@ -103,14 +88,12 @@ func (Pipe) Run(ctx *context.Context) error {
 	if err != nil {
 		return err
 	}
-	specPath := filepath.Join(ctx.Config.Dist, specFileName)
-	if err := os.WriteFile(specPath, []byte(specContents), 0o666); err != nil {
+	specPath := filepath.Join(ctx.Config.Dist, "srpm", srpm.PackageName+".spec")
+	if err := os.MkdirAll(filepath.Dir(specPath), 0o755); err != nil {
 		return err
 	}
-	specFileArtifact := &artifact.Artifact{
-		Type: artifact.RPMSpec,
-		Name: specFileName,
-		Path: specPath,
+	if err := os.WriteFile(specPath, []byte(specContents), 0o666); err != nil {
+		return err
 	}
 
 	// Default file info.
@@ -171,8 +154,8 @@ func (Pipe) Run(ctx *context.Context) error {
 
 	// Add the spec file.
 	contents = append(contents, &files.Content{
-		Source:      specFileArtifact.Path,
-		Destination: specFileArtifact.Name,
+		Source:      specPath,
+		Destination: filepath.Base(specPath),
 		FileInfo: &files.ContentFileInfo{
 			Owner: owner,
 			Group: group,
@@ -182,8 +165,10 @@ func (Pipe) Run(ctx *context.Context) error {
 		},
 	})
 
-	keyFile, err := t.Apply(srpm.Signature.KeyFile)
-	if err != nil {
+	if err := t.ApplyAll(
+		&srpm.Signature.KeyFile,
+		&srpm.FileNameTemplate,
+	); err != nil {
 		return err
 	}
 
@@ -207,8 +192,8 @@ func (Pipe) Run(ctx *context.Context) error {
 				Packager:    srpm.Packager,
 				Signature: nfpm.RPMSignature{
 					PackageSignature: nfpm.PackageSignature{
-						KeyFile:       keyFile,
-						KeyPassphrase: getPassphraseFromEnv(ctx, srpm.ID),
+						KeyFile:       srpm.Signature.KeyFile,
+						KeyPassphrase: ctx.Env["SRPM_PASSPHRASE"],
 					},
 				},
 			},
@@ -226,14 +211,10 @@ func (Pipe) Run(ctx *context.Context) error {
 	info = nfpm.WithDefaults(info)
 
 	// Write the source RPM.
-	srpmFileName, err := t.Apply(srpm.FileNameTemplate)
-	if err != nil {
-		return err
+	if !strings.HasSuffix(srpm.FileNameTemplate, ".src.rpm") {
+		srpm.FileNameTemplate += ".src.rpm"
 	}
-	if !strings.HasSuffix(srpmFileName, ".src.rpm") {
-		srpmFileName += ".src.rpm"
-	}
-	srpmPath := filepath.Join(ctx.Config.Dist, srpmFileName)
+	srpmPath := filepath.Join(ctx.Config.Dist, srpm.FileNameTemplate)
 	log.WithField("file", srpmPath).Info("creating")
 	srpmFile, err := os.Create(srpmPath)
 	if err != nil {
@@ -246,26 +227,11 @@ func (Pipe) Run(ctx *context.Context) error {
 	if err := srpmFile.Close(); err != nil {
 		return fmt.Errorf("could not close package file: %w", err)
 	}
-	srpmArtifact := &artifact.Artifact{
+
+	ctx.Artifacts.Add(&artifact.Artifact{
 		Type: artifact.SourceRPM,
-		Name: srpmFileName,
+		Name: srpm.FileNameTemplate,
 		Path: srpmPath,
-	}
-
-	ctx.Artifacts.Add(specFileArtifact)
-	ctx.Artifacts.Add(srpmArtifact)
+	})
 	return nil
-}
-
-func getPassphraseFromEnv(ctx *context.Context, id string) string {
-	id = strings.ToUpper(id)
-	for _, k := range []string{
-		fmt.Sprintf("SRPM_%s_PASSPHRASE", id),
-		"SRPM_PASSPHRASE",
-	} {
-		if v, ok := ctx.Env[k]; ok {
-			return v
-		}
-	}
-	return ""
 }

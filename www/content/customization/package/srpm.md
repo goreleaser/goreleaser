@@ -32,11 +32,6 @@ srpm:
   # Default: false.
   enabled: true
 
-  # ID of this SRPM configuration.
-  #
-  # Default: 'default'.
-  id: default
-
   # Name of the source RPM package.
   #
   # Default: ProjectName.
@@ -44,19 +39,13 @@ srpm:
 
   # Path to the .spec file Go template.
   # This file is required and must be provided by you.
-  spec_template_file: myproject.spec.tmpl
+  spec_file: myproject.spec.tmpl
 
   # Template for the source RPM file name.
   #
   # Default: '{{ .PackageName }}-{{ .Version }}.src.rpm'.
   # Templates: allowed.
-  file_name_template: "{{ .PackageName }}-{{ .Version }}.src.rpm"
-
-  # Template for the generated .spec file name.
-  #
-  # Default: '{{ .PackageName }}.spec'.
-  # Templates: allowed.
-  spec_file_name_template: "{{ .PackageName }}.spec"
+  file_name_template: "{{ .ConventionalFileName }}.src.rpm"
 
   # Import path for the Go package (used in Fedora-style spec templates).
   import_path: github.com/myorg/myproject
@@ -100,6 +89,9 @@ srpm:
   compression: lzma
 
   # Signature configuration.
+  #
+  # If the key is password-protected, you'll need to set the `%SRPM_PASSPHRASE`
+  # environment variable when calling GoReleaser.
   signature:
     key_file: "{{ .Env.GPG_KEY_FILE }}"
 

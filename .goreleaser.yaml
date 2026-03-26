@@ -257,6 +257,22 @@ scoops:
     description: Release engineering, simplified
     license: MIT
 
+srpm:
+  enabled: true
+  file_name_template: "{{ .ConventionalFileName }}"
+  spec_file: scripts/goreleaser.spec.tmpl
+  import_path: github.com/goreleaser/goreleaser/v2
+  license: MIT
+  license_file_name: LICENSE.md
+  url: https://goreleaser.com
+  description: |-
+    Release engineering, simplified.
+    GoReleaser allows you to release easily build, package, publish, and
+    announce to several places.
+  vendor: GoReleaser
+  docs:
+    - README.md
+
 nfpms:
   - file_name_template: "{{ .ConventionalFileName }}"
     id: packages
@@ -331,21 +347,6 @@ snapcrafts:
 source:
   enabled: true
   prefix_template: "{{ .ProjectName }}-{{ .Version }}/"
-
-srpm:
-  enabled: true
-  spec_template_file: scripts/goreleaser.spec.tmpl
-  import_path: github.com/goreleaser/goreleaser/v2
-  license: MIT
-  license_file_name: LICENSE.md
-  url: https://goreleaser.com
-  description: |-
-    Release engineering, simplified.
-    GoReleaser allows you to release easily build, package, publish, and
-    announce to several places.
-  vendor: GoReleaser
-  docs:
-    - README.md
 
 flatpak:
   - app_id: com.goreleaser.GoReleaser

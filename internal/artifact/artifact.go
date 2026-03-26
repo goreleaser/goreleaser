@@ -114,8 +114,6 @@ const (
 	Flatpak
 	// SourceRPM is a source RPM.
 	SourceRPM
-	// RPMSpec is an RPM .spec file.
-	RPMSpec
 
 	// XXX: if it is an uploadable kind of artifact, add it to UploadableTypes
 	// below.
@@ -156,7 +154,6 @@ func (t Type) isUploadable() bool {
 		DockerImage,            // See: [PublishableDockerImage].
 		Snapcraft,              // See [PublishableSnapcraft].
 		Metadata,               // Local only.
-		RPMSpec,                // Intermediate file, not a final deliverable.
 		SrcInfo, SourceSrcInfo, // It's always named `.SRCINFO`
 		PkgBuild, SourcePkgBuild: // It's always named `.PKGBUILD`
 		return false
@@ -229,8 +226,6 @@ func (t Type) String() string {
 		return "Flatpak"
 	case SourceRPM:
 		return "Source RPM"
-	case RPMSpec:
-		return "RPM Spec"
 	default:
 		return "unknown"
 	}
