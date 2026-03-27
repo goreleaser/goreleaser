@@ -20,7 +20,10 @@ import (
 	_ "github.com/goreleaser/nfpm/v2/rpm" // blank import to register the srpm packager
 )
 
-const defaultFileNameTemplate = "{{ .PackageName }}-{{ .Version }}.src.rpm"
+const (
+	extension               = ".src.rpm"
+	defaultFileNameTemplate = "{{ .PackageName }}-{{ .Version }}" + extension
+)
 
 // Pipe for source RPMs.
 type Pipe struct{}
@@ -167,7 +170,6 @@ func (Pipe) Run(ctx *context.Context) error {
 
 	if err := t.ApplyAll(
 		&srpm.Signature.KeyFile,
-		&srpm.FileNameTemplate,
 	); err != nil {
 		return err
 	}
@@ -210,11 +212,19 @@ func (Pipe) Run(ctx *context.Context) error {
 	}
 	info = nfpm.WithDefaults(info)
 
-	// Write the source RPM.
-	if !strings.HasSuffix(srpm.FileNameTemplate, ".src.rpm") {
-		srpm.FileNameTemplate += ".src.rpm"
+	packageFilename, err := t.WithExtraFields(tmpl.Fields{
+		"ConventionalFileName":  packager.ConventionalFileName(info),
+		"ConventionalExtension": extension,
+	}).Apply(srpm.FileNameTemplate)
+	if err != nil {
+		return err
 	}
-	srpmPath := filepath.Join(ctx.Config.Dist, srpm.FileNameTemplate)
+	if !strings.HasSuffix(packageFilename, extension) {
+		packageFilename += extension
+	}
+
+	// Write the source RPM.
+	srpmPath := filepath.Join(ctx.Config.Dist, "srpm", packageFilename)
 	log.WithField("file", srpmPath).Info("creating")
 	srpmFile, err := os.Create(srpmPath)
 	if err != nil {
@@ -230,7 +240,7 @@ func (Pipe) Run(ctx *context.Context) error {
 
 	ctx.Artifacts.Add(&artifact.Artifact{
 		Type: artifact.SourceRPM,
-		Name: srpm.FileNameTemplate,
+		Name: packageFilename,
 		Path: srpmPath,
 	})
 	return nil

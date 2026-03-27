@@ -4,6 +4,7 @@ import (
 	"os"
 	"path/filepath"
 	"regexp"
+	"strings"
 	"testing"
 
 	"github.com/goreleaser/goreleaser/v2/internal/artifact"
@@ -112,6 +113,43 @@ func TestRunPipe(t *testing.T) {
 	require.True(t, regexp.MustCompile(`(?m)^Summary:\s+Example summary$`).Match(rpmSpecContents))
 	require.True(t, regexp.MustCompile(`(?m)^%doc\s+README\.md$`).Match(rpmSpecContents))
 	require.True(t, regexp.MustCompile(`(?m)^%license\s+LICENSE$`).Match(rpmSpecContents))
+}
+
+func TestRunPipeConventionalFileName(t *testing.T) {
+	folder := t.TempDir()
+	dist := filepath.Join(folder, "dist")
+	require.NoError(t, os.Mkdir(dist, 0o755))
+	sourceArchivePath := filepath.Join(dist, "example-1.0.0.tar.gz")
+	f, err := os.Create(sourceArchivePath)
+	require.NoError(t, err)
+	require.NoError(t, f.Close())
+	ctx := testctx.WrapWithCfg(t.Context(), config.Project{
+		ProjectName: "example",
+		Dist:        dist,
+		SRPM: config.SRPM{
+			NFPMRPM:          config.NFPMRPM{Summary: "Example summary"},
+			Enabled:          true,
+			ImportPath:       "github.com/example/example",
+			License:          "MIT",
+			SpecFile:         "testdata/example.spec.tmpl",
+			FileNameTemplate: "{{.ConventionalFileName}}",
+		},
+	})
+	ctx.Version = "1.0.0"
+	ctx.Git = context.GitInfo{FullCommit: "abc123"}
+	ctx.Artifacts.Add(&artifact.Artifact{
+		Name: "example-1.0.0.tar.gz",
+		Path: sourceArchivePath,
+		Type: artifact.UploadableSourceArchive,
+	})
+
+	var pipe Pipe
+	require.NoError(t, pipe.Default(ctx))
+	require.NoError(t, pipe.Run(ctx))
+
+	sourceRPMs := ctx.Artifacts.Filter(artifact.ByType(artifact.SourceRPM)).List()
+	require.Len(t, sourceRPMs, 1)
+	require.True(t, strings.HasSuffix(sourceRPMs[0].Name, ".src.rpm"), "expected .src.rpm suffix, got %q", sourceRPMs[0].Name)
 }
 
 func TestRunPipeNoSourceArchive(t *testing.T) {
