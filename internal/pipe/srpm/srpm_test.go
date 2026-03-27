@@ -100,7 +100,7 @@ func TestRunPipe(t *testing.T) {
 	require.Len(t, sourceRPMs, 1)
 	sourceRPM := sourceRPMs[0]
 	require.Equal(t, "example-1.0.0.src.rpm", sourceRPM.Name)
-	require.Equal(t, filepath.ToSlash(filepath.Join(dist, "example-1.0.0.src.rpm")), sourceRPM.Path)
+	require.Equal(t, filepath.ToSlash(filepath.Join(dist, "srpm", "example-1.0.0.src.rpm")), sourceRPM.Path)
 
 	// Check the .spec artifact.
 	rpmSpecContents, err := os.ReadFile(filepath.Join(dist, "srpm", "example.spec"))
