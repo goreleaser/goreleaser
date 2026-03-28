@@ -474,7 +474,7 @@ func processChannelsTemplates(ctx *context.Context, snap config.Snapcraft) ([]st
 	for _, channeltemplate := range snap.ChannelTemplates {
 		channel, err := tmpl.New(ctx).Apply(channeltemplate)
 		if err != nil {
-			return nil, fmt.Errorf("failed to execute channel template '%s': %w", err, err)
+			return nil, fmt.Errorf("failed to execute channel template '%s': %w", channeltemplate, err)
 		}
 		if channel == "" {
 			continue
