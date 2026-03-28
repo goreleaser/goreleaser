@@ -9,7 +9,7 @@
     <div class="goreleaser-sponsors-grid">
       {{- range $sponsors }}
         <a class="goreleaser-sponsor-item" 
-          href="{{ .Website }}" 
+          href="{{ .Website }}?utm_source=goreleaser&utm_medium=sponsor&utm_campaign=homepage&utm_content={{ .Source }}" 
           target="_blank" 
           rel="noopener sponsored"
         >
@@ -39,7 +39,7 @@
 ### Backers
 {{- printf "\n" }}
 {{- range . }}
-- [{{ .Name }}]({{ .Website }})
+- [{{ .Name }}]({{ .Website }}?utm_source=goreleaser&utm_medium=sponsor&utm_campaign=homepage&utm_content={{ .Source }})
 {{- end }}
 {{- end }}
 
