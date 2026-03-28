@@ -1115,6 +1115,7 @@ func TestReleaseUploadableTypes(t *testing.T) {
 		Makeself,
 		LinuxPackage,
 		Flatpak,
+		SourceRPM,
 		SBOM,
 		PyWheel,
 		PySdist,

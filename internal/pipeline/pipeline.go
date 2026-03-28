@@ -42,6 +42,7 @@ import (
 	"github.com/goreleaser/goreleaser/v2/internal/pipe/snapcraft"
 	"github.com/goreleaser/goreleaser/v2/internal/pipe/snapshot"
 	"github.com/goreleaser/goreleaser/v2/internal/pipe/sourcearchive"
+	"github.com/goreleaser/goreleaser/v2/internal/pipe/srpm"
 	"github.com/goreleaser/goreleaser/v2/internal/pipe/universalbinary"
 	"github.com/goreleaser/goreleaser/v2/internal/pipe/upx"
 	"github.com/goreleaser/goreleaser/v2/internal/pipe/winget"
@@ -126,6 +127,8 @@ var Pipeline = append(
 	sourcearchive.Pipe{},
 	// archive via fpm (deb, rpm) using "native" go impl
 	nfpm.Pipe{},
+	// create source RPMs
+	srpm.Pipe{},
 	// create makeself self-extracting archives
 	makeself.Pipe{},
 	// archive via snapcraft (snap)

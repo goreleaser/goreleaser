@@ -112,6 +112,8 @@ const (
 	DockerImageV2
 	// Flatpak is a Flatpak bundle.
 	Flatpak
+	// SourceRPM is a source RPM.
+	SourceRPM
 
 	// XXX: if it is an uploadable kind of artifact, add it to UploadableTypes
 	// below.
@@ -136,6 +138,7 @@ func ReleaseUploadableTypes() []Type {
 		Makeself,
 		LinuxPackage,
 		Flatpak,
+		SourceRPM,
 		SBOM,
 		PyWheel,
 		PySdist,
@@ -221,6 +224,8 @@ func (t Type) String() string {
 		return "Makeself Package"
 	case Flatpak:
 		return "Flatpak"
+	case SourceRPM:
+		return "Source RPM"
 	default:
 		return "unknown"
 	}
