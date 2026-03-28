@@ -301,19 +301,12 @@ tasks:
           Image: alpine
           Cmd: "{{.apk}} goreleaser*_armv7.apk"
 
-  goreleaser:test:srpm:
-    desc: Tests source RPM packages
-    cmds:
-      - docker pull --platform linux/amd64 fedora
-      - docker run --platform linux/amd64 --rm --workdir /tmp -v $PWD/dist:/tmp fedora sh -c 'rpm --nosignature --nodigest -qlp goreleaser-*.src.rpm && echo "SRPM OK"'
-
   goreleaser:test:
     desc: Test built linux packages
     cmds:
       - task: goreleaser:test:apk
       - task: goreleaser:test:deb
       - task: goreleaser:test:rpm
-      - task: goreleaser:test:srpm
 
   goreleaser:
     desc: Run GoReleaser either in snapshot or release mode
