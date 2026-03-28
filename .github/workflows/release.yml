@@ -43,7 +43,7 @@ jobs:
     env:
       DOCKER_CLI_EXPERIMENTAL: "enabled"
     needs: [goreleaser]
-    if: ${{ !startsWith(github.ref, 'refs/tags/v') }} # on main/prs
+    if: github.ref == 'refs/heads/main'
     strategy:
       matrix:
         format: [deb, rpm, apk]
@@ -104,12 +104,12 @@ jobs:
             ./dist/*.rpm
             ./dist/*.apk
           key: ${{ github.sha }}
-      - uses: sigstore/cosign-installer@ba7bc0a3fef59531c69a25acd34668d6d3fe6f22 # v4.1.0
+      - uses: sigstore/cosign-installer@cad07c2e89fa2edd6e2d7bab4c1aa38e53f76003 # v4.1.1
       - uses: anchore/sbom-action/download-syft@e22c389904149dbc22b58101806040fa8d37a610 # v0.24.0
       - uses: crazy-max/ghaction-upx@c83f378efc804f828e988debb88ed6116feb2368 # v4.0.0
         with:
           install-only: true
-      - uses: cachix/install-nix-action@1ca7d21a94afc7c957383a2d217460d980de4934 # v31.10.1
+      - uses: cachix/install-nix-action@96951a368ba55167b55f1c916f7d416bac6505fe # v31.10.3
         with:
           github_access_token: ${{ secrets.GITHUB_TOKEN }}
       - name: dockerhub-login
@@ -161,7 +161,7 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GH_PAT }}
       - uses: actions/attest@59d89421af93a897026c735860bf21b6eb4f7b26 # v4.1.0
-        if: ${{ always() && startsWith(github.ref, 'refs/tags/v') }} # snapshots won't push docker images
+        if: ${{ always() }}
         with:
           subject-checksums: ./dist/checksums.txt
       - uses: actions/attest@59d89421af93a897026c735860bf21b6eb4f7b26 # v4.1.0
