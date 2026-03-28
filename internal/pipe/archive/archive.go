@@ -324,7 +324,7 @@ func skip(ctx *context.Context, archive config.Archive, binaries []*artifact.Art
 				artifact.ExtraBinary: binary.Name,
 			},
 		}
-		if rep, ok := binaries[0].Extra[artifact.ExtraReplaces]; ok {
+		if rep, ok := binary.Extra[artifact.ExtraReplaces]; ok {
 			art.Extra[artifact.ExtraReplaces] = rep
 		}
 		if artifact.ExtraOr(*binary, artifact.ExtranDynLink, false) {
