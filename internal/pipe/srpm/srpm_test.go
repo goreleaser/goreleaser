@@ -100,10 +100,10 @@ func TestRunPipe(t *testing.T) {
 	require.Len(t, sourceRPMs, 1)
 	sourceRPM := sourceRPMs[0]
 	require.Equal(t, "example-1.0.0.src.rpm", sourceRPM.Name)
-	require.Equal(t, filepath.ToSlash(filepath.Join(dist, "srpm", "example-1.0.0.src.rpm")), sourceRPM.Path)
+	require.Equal(t, filepath.ToSlash(filepath.Join(dist, "example-1.0.0.src.rpm")), sourceRPM.Path)
 
 	// Check the .spec artifact.
-	rpmSpecContents, err := os.ReadFile(filepath.Join(dist, "srpm", "example.spec"))
+	rpmSpecContents, err := os.ReadFile(filepath.Join(dist, "example.srpm.spec"))
 	require.NoError(t, err)
 	require.True(t, regexp.MustCompile(`(?m)^%global\s+goipath\s+github\.com/example/example$`).Match(rpmSpecContents))
 	require.True(t, regexp.MustCompile(`(?m)^%global\s+commit\s+e070258c90772fbcf1cb94c2b937ff25a011b5c8$`).Match(rpmSpecContents))

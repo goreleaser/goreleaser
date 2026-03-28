@@ -91,7 +91,7 @@ func (Pipe) Run(ctx *context.Context) error {
 	if err != nil {
 		return err
 	}
-	specPath := filepath.Join(ctx.Config.Dist, "srpm", srpm.PackageName+".spec")
+	specPath := filepath.Join(ctx.Config.Dist, srpm.PackageName+".srpm.spec")
 	if err := os.MkdirAll(filepath.Dir(specPath), 0o755); err != nil {
 		return err
 	}
@@ -224,7 +224,7 @@ func (Pipe) Run(ctx *context.Context) error {
 	}
 
 	// Write the source RPM.
-	srpmPath := filepath.Join(ctx.Config.Dist, "srpm", packageFilename)
+	srpmPath := filepath.Join(ctx.Config.Dist, packageFilename)
 	log.WithField("file", srpmPath).Info("creating")
 	srpmFile, err := os.Create(srpmPath)
 	if err != nil {
