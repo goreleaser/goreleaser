@@ -2285,6 +2285,9 @@
 					"zap": {
 						"$ref": "#/$defs/HomebrewCaskUninstall"
 					},
+					"generate_completions_from_executable": {
+						"$ref": "#/$defs/HomebrewCaskGeneratedCompletions"
+					},
 					"license": {
 						"type": "string"
 					},
@@ -2341,6 +2344,33 @@
 					},
 					"formula": {
 						"type": "string"
+					}
+				},
+				"additionalProperties": false,
+				"type": "object"
+			},
+			"HomebrewCaskGeneratedCompletions": {
+				"properties": {
+					"executable": {
+						"type": "string"
+					},
+					"args": {
+						"items": {
+							"type": "string"
+						},
+						"type": "array"
+					},
+					"base_name": {
+						"type": "string"
+					},
+					"shell_parameter_format": {
+						"type": "string"
+					},
+					"shells": {
+						"items": {
+							"type": "string"
+						},
+						"type": "array"
 					}
 				},
 				"additionalProperties": false,
@@ -4660,6 +4690,9 @@
 						},
 						"type": "array"
 					},
+					"srpm": {
+						"$ref": "#/$defs/SRPM"
+					},
 					"snapcrafts": {
 						"items": {
 							"$ref": "#/$defs/Snapcraft"
@@ -5328,6 +5361,96 @@
 					},
 					"insecure_skip_verify": {
 						"type": "boolean"
+					}
+				},
+				"additionalProperties": false,
+				"type": "object"
+			},
+			"SRPM": {
+				"properties": {
+					"summary": {
+						"type": "string"
+					},
+					"group": {
+						"type": "string"
+					},
+					"compression": {
+						"type": "string"
+					},
+					"signature": {
+						"$ref": "#/$defs/NFPMRPMSignature"
+					},
+					"scripts": {
+						"$ref": "#/$defs/NFPMRPMScripts"
+					},
+					"prefixes": {
+						"items": {
+							"type": "string"
+						},
+						"type": "array"
+					},
+					"packager": {
+						"type": "string"
+					},
+					"buildhost": {
+						"type": "string"
+					},
+					"enabled": {
+						"type": "boolean"
+					},
+					"package_name": {
+						"type": "string"
+					},
+					"epoch": {
+						"type": "string"
+					},
+					"import_path": {
+						"type": "string"
+					},
+					"section": {
+						"type": "string"
+					},
+					"maintainer": {
+						"type": "string"
+					},
+					"file_name_template": {
+						"type": "string"
+					},
+					"spec_file": {
+						"type": "string"
+					},
+					"license": {
+						"type": "string"
+					},
+					"license_file_name": {
+						"type": "string"
+					},
+					"vendor": {
+						"type": "string"
+					},
+					"url": {
+						"type": "string"
+					},
+					"description": {
+						"type": "string"
+					},
+					"bins": {
+						"additionalProperties": {
+							"type": "string"
+						},
+						"type": "object"
+					},
+					"docs": {
+						"items": {
+							"type": "string"
+						},
+						"type": "array"
+					},
+					"contents": {
+						"items": {
+							"$ref": "#/$defs/NFPMContent"
+						},
+						"type": "array"
 					}
 				},
 				"additionalProperties": false,

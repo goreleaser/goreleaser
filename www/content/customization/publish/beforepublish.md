@@ -36,7 +36,7 @@ before_publish:
     # - checksum:   checksum files
     # - source:     source archive
     # - package:    Linux packages (deb, rpm, apk, etc) and macOS .pkg
-    # - installer:  Windows MSI and NSIS installers
+    # - installer:  Installers (MSI, NSIS, macOS pkgs) {{< inline_pro >}}
     # - diskimage:  macOS DMG disk images
     # - archive:    archives from archive pipe
     # - binary:     binaries output from the build stage
