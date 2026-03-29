@@ -1,6 +1,7 @@
 package cmd
 
 import (
+	"os/exec"
 	"path/filepath"
 	"testing"
 
@@ -16,6 +17,60 @@ func TestRelease(t *testing.T) {
 	cmd := newReleaseCmd()
 	cmd.cmd.SetArgs([]string{"--snapshot", "--timeout=1m", "--parallelism=2", "--deprecated"})
 	require.NoError(t, cmd.cmd.Execute())
+}
+
+func TestReleaseGoModProxyReplaceNotCaughtBySnapshotAlone(t *testing.T) {
+	t.Run("snapshot_accepts_replace", func(t *testing.T) {
+		setup(t)
+		createGoModProxyGoreleaser(t)
+		modEditReplace(t, "foo", "../bar")
+		cmd := newReleaseCmd()
+		cmd.cmd.SetArgs([]string{"--snapshot", "--timeout=1m", "--parallelism=2", "--deprecated", "--clean"})
+		require.NoError(t, cmd.cmd.Execute())
+	})
+
+	t.Run("non_snapshot_rejects_replace", func(t *testing.T) {
+		setup(t)
+		createGoModProxyGoreleaser(t)
+		modEditReplace(t, "foo", "../bar")
+		cmd := newReleaseCmd()
+		cmd.cmd.SetArgs([]string{
+			"--skip=publish,announce,validate",
+			"--timeout=1m",
+			"--parallelism=2",
+			"--deprecated",
+			"--clean",
+		})
+		err := cmd.cmd.Execute()
+		require.Error(t, err)
+		require.ErrorContains(t, err, "replace")
+	})
+}
+
+func createGoModProxyGoreleaser(tb testing.TB) {
+	tb.Helper()
+	createFile(tb, "goreleaser.yml", `gomod:
+  proxy: true
+builds:
+- id: foo
+  binary: 'fake{{if .IsSnapshot}}_snapshot{{end}}'
+  main: .
+  dir: .
+  goos:
+    - linux
+  goarch:
+    - amd64
+release:
+  github:
+    owner: goreleaser
+    name: fake
+`)
+}
+
+func modEditReplace(tb testing.TB, modulePath, replacement string) {
+	tb.Helper()
+	cmd := exec.CommandContext(tb.Context(), "go", "mod", "edit", "-replace", modulePath+"="+replacement)
+	require.NoError(tb, cmd.Run())
 }
 
 func TestReleaseAutoSnapshot(t *testing.T) {
