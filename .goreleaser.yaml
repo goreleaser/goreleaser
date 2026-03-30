@@ -90,6 +90,7 @@ changelog:
       - "^chore: schema update$"
       - "^chore\\(deps\\): "
       - "^(build|ci): "
+      - "^ci\\("
       - "merge conflict"
       - "merge conflict"
       - Merge pull request
