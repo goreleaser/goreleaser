@@ -230,8 +230,14 @@ func isRetriableGitError(err error) bool {
 func cloneRepo(ctx *context.Context, parent, url, name string, env []string) error {
 	if err := retry.Do(
 		func() error {
+			dir := filepath.Join(parent, name)
+			// Remove any leftover directory from a previous failed clone
+			// attempt so that `git clone` does not fail with "already exists".
+			if err := os.RemoveAll(dir); err != nil {
+				return fmt.Errorf("failed to clean up %q: %w", dir, err)
+			}
 			log.WithField("url", url).
-				WithField("dir", filepath.Join(parent, name)).
+				WithField("dir", dir).
 				Info("cloning")
 			return runGitCmds(ctx, parent, env, [][]string{{"clone", url, name}})
 		},
