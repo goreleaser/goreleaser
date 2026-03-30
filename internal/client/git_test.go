@@ -1,6 +1,7 @@
 package client
 
 import (
+	"errors"
 	"os"
 	"strings"
 	"testing"
@@ -418,6 +419,26 @@ func TestGitClientWithSigning(t *testing.T) {
 		}
 		require.ErrorContains(t, err, "public key")
 	})
+}
+
+func TestIsRetriableGitError(t *testing.T) {
+	t.Parallel()
+	for _, tt := range []struct {
+		name     string
+		err      string
+		expected bool
+	}{
+		{"connection reset", "Connection reset by peer", true},
+		{"network unreachable", "Network is unreachable", true},
+		{"connection closed", "Connection closed by 192.0.2.1 port 22", true},
+		{"other error", "permission denied (publickey)", false},
+		{"unrelated error", "repository not found", false},
+	} {
+		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+			require.Equal(t, tt.expected, isRetriableGitError(errors.New(tt.err)))
+		})
+	}
 }
 
 func TestRepoFromURL(t *testing.T) {
