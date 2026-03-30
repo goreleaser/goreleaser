@@ -234,7 +234,7 @@ func cloneRepo(ctx *context.Context, parent, url, name string, env []string) err
 			// Remove any leftover directory from a previous failed clone
 			// attempt so that `git clone` does not fail with "already exists".
 			if err := os.RemoveAll(dir); err != nil {
-				return fmt.Errorf("failed to clean up %q: %w", dir, err)
+				return fmt.Errorf("failed to remove partial clone directory %q: %w", dir, err)
 			}
 			log.WithField("url", url).
 				WithField("dir", dir).
