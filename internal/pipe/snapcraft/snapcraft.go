@@ -6,12 +6,15 @@ package snapcraft
 import (
 	"errors"
 	"fmt"
+	"net/http"
 	"os"
 	"os/exec"
 	"path/filepath"
 	"slices"
 	"strings"
+	"time"
 
+	"github.com/avast/retry-go/v4"
 	"github.com/caarlos0/log"
 	"github.com/goreleaser/goreleaser/v2/internal/artifact"
 	"github.com/goreleaser/goreleaser/v2/internal/deprecate"
@@ -448,20 +451,50 @@ const (
 	needsReviewMsg = `(NEEDS REVIEW)`
 )
 
+func isRetriableSnapPush(err error) bool {
+	for _, code := range []int{
+		http.StatusInternalServerError,
+		http.StatusBadGateway,
+		http.StatusServiceUnavailable,
+		http.StatusGatewayTimeout,
+	} {
+		if strings.Contains(err.Error(), fmt.Sprintf("[%d]", code)) {
+			return true
+		}
+	}
+	return false
+}
+
 func push(ctx *context.Context, snap *artifact.Artifact) error {
 	log := log.WithField("snap", snap.Name)
 	releases := artifact.MustExtra[[]string](*snap, releasesExtra)
-	/* #nosec */
-	cmd := exec.CommandContext(ctx, "snapcraft", "upload", "--release="+strings.Join(releases, ","), snap.Path)
-	log.WithField("args", cmd.Args).Info("pushing snap")
-	if out, err := cmd.CombinedOutput(); err != nil {
-		if strings.Contains(string(out), reviewWaitMsg) ||
-			strings.Contains(string(out), humanReviewMsg) ||
-			strings.Contains(string(out), needsReviewMsg) {
-			log.Warn(reviewWaitMsg)
-		} else {
-			return fmt.Errorf("failed to push %s package: %w: %s", snap.Path, err, string(out))
-		}
+	if err := retry.Do(
+		func() error {
+			/* #nosec */
+			cmd := exec.CommandContext(ctx, "snapcraft", "upload", "--release="+strings.Join(releases, ","), snap.Path)
+			log.WithField("args", cmd.Args).Info("pushing snap")
+			out, err := cmd.CombinedOutput()
+			if err != nil {
+				if strings.Contains(string(out), reviewWaitMsg) ||
+					strings.Contains(string(out), humanReviewMsg) ||
+					strings.Contains(string(out), needsReviewMsg) {
+					log.Warn(reviewWaitMsg)
+					return nil
+				}
+				return fmt.Errorf("failed to push %s package: %w: %s", snap.Path, err, string(out))
+			}
+			return nil
+		},
+		retry.RetryIf(isRetriableSnapPush),
+		retry.Attempts(10),
+		retry.Delay(10*time.Second),
+		retry.DelayType(retry.BackOffDelay),
+		retry.LastErrorOnly(true),
+		retry.OnRetry(func(n uint, err error) {
+			log.WithField("attempt", n+1).WithError(err).Warn("failed to push snap, retrying")
+		}),
+	); err != nil {
+		return err
 	}
 	snap.Type = artifact.Snapcraft
 	ctx.Artifacts.Add(snap)
