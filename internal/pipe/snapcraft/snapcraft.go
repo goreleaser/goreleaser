@@ -4,14 +4,18 @@
 package snapcraft
 
 import (
+	"cmp"
 	"errors"
 	"fmt"
+	"net/http"
 	"os"
 	"os/exec"
 	"path/filepath"
 	"slices"
 	"strings"
+	"time"
 
+	"github.com/avast/retry-go/v4"
 	"github.com/caarlos0/log"
 	"github.com/goreleaser/goreleaser/v2/internal/artifact"
 	"github.com/goreleaser/goreleaser/v2/internal/deprecate"
@@ -26,7 +30,10 @@ import (
 	"github.com/goreleaser/goreleaser/v2/pkg/context"
 )
 
-const releasesExtra = "releases"
+const (
+	releasesExtra   = "releases"
+	snapConfigExtra = "SnapConfig"
+)
 
 // ErrNoSnapcraft is shown when snapcraft cannot be found in $PATH.
 var ErrNoSnapcraft = errors.New("snapcraft not present in $PATH")
@@ -149,6 +156,9 @@ func (Pipe) Default(ctx *context.Context) error {
 				snap.ChannelTemplates = []string{"edge", "beta", "candidate", "stable"}
 			}
 		}
+		snap.Retry.Attempts = cmp.Or(snap.Retry.Attempts, uint(10))
+		snap.Retry.Delay = cmp.Or(snap.Retry.Delay, 10*time.Second)
+		snap.Retry.MaxDelay = cmp.Or(snap.Retry.MaxDelay, 5*time.Minute)
 		ids.Inc(snap.ID)
 	}
 	return ids.Validate()
@@ -436,7 +446,8 @@ func create(ctx *context.Context, snap config.Snapcraft, arch string, binaries [
 		Goriscv64: binaries[0].Goriscv64,
 		Target:    binaries[0].Target,
 		Extra: map[string]any{
-			releasesExtra: channels,
+			releasesExtra:   channels,
+			snapConfigExtra: snap,
 		},
 	})
 	return nil
@@ -448,20 +459,52 @@ const (
 	needsReviewMsg = `(NEEDS REVIEW)`
 )
 
+func isRetriableSnapPush(err error) bool {
+	for _, code := range []int{
+		http.StatusInternalServerError,
+		http.StatusBadGateway,
+		http.StatusServiceUnavailable,
+		http.StatusGatewayTimeout,
+	} {
+		if strings.Contains(err.Error(), fmt.Sprintf("[%d]", code)) {
+			return true
+		}
+	}
+	return false
+}
+
 func push(ctx *context.Context, snap *artifact.Artifact) error {
 	log := log.WithField("snap", snap.Name)
 	releases := artifact.MustExtra[[]string](*snap, releasesExtra)
-	/* #nosec */
-	cmd := exec.CommandContext(ctx, "snapcraft", "upload", "--release="+strings.Join(releases, ","), snap.Path)
-	log.WithField("args", cmd.Args).Info("pushing snap")
-	if out, err := cmd.CombinedOutput(); err != nil {
-		if strings.Contains(string(out), reviewWaitMsg) ||
-			strings.Contains(string(out), humanReviewMsg) ||
-			strings.Contains(string(out), needsReviewMsg) {
-			log.Warn(reviewWaitMsg)
-		} else {
-			return fmt.Errorf("failed to push %s package: %w: %s", snap.Path, err, string(out))
-		}
+	snapcfg := artifact.MustExtra[config.Snapcraft](*snap, snapConfigExtra)
+	if err := retry.Do(
+		func() error {
+			/* #nosec */
+			cmd := exec.CommandContext(ctx, "snapcraft", "upload", "--release="+strings.Join(releases, ","), snap.Path)
+			log.WithField("args", cmd.Args).Info("pushing snap")
+			out, err := cmd.CombinedOutput()
+			if err != nil {
+				if strings.Contains(string(out), reviewWaitMsg) ||
+					strings.Contains(string(out), humanReviewMsg) ||
+					strings.Contains(string(out), needsReviewMsg) {
+					log.Warn(reviewWaitMsg)
+					return nil
+				}
+				return fmt.Errorf("failed to push %s package: %w: %s", snap.Path, err, string(out))
+			}
+			return nil
+		},
+		retry.RetryIf(isRetriableSnapPush),
+		retry.Attempts(snapcfg.Retry.Attempts),
+		retry.Delay(snapcfg.Retry.Delay),
+		retry.MaxDelay(snapcfg.Retry.MaxDelay),
+		retry.DelayType(retry.BackOffDelay),
+		retry.LastErrorOnly(true),
+		retry.OnRetry(func(n uint, err error) {
+			log.WithField("attempt", n+1).WithError(err).Warn("failed to push snap, retrying")
+		}),
+	); err != nil {
+		return err
 	}
 	snap.Type = artifact.Snapcraft
 	ctx.Artifacts.Add(snap)

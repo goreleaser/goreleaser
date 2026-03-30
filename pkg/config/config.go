@@ -1030,6 +1030,8 @@ type Snapcraft struct {
 
 	Files []SnapcraftExtraFiles `yaml:"extra_files,omitempty" json:"extra_files,omitempty"`
 
+	Retry Retry `yaml:"retry,omitempty" json:"retry,omitempty"`
+
 	// Deprecated: use IDs.
 	Builds []string `yaml:"builds,omitempty" json:"builds,omitempty" jsonschema:"deprecated=true"`
 }
