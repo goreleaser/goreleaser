@@ -92,19 +92,19 @@ A big **thank you** to all current, past, and future sponsors!
   <h3>Diamond</h3>
   <a href="https://serpapi.com/?utm_source=goreleaser&utm_medium=sponsor&utm_campaign=homepage&utm_content=github" target="_blank" rel="noopener sponsored" ><img src="https://github.com/serpapi.png" alt="SerpApi" width="128" height="128"/></a>
   <h3>Platinum</h3>
-  <a href="https://opensource.sap.com?utm_source=goreleaser&utm_medium=sponsor&utm_campaign=homepage&utm_content=github" target="_blank" rel="noopener sponsored" ><img src="https://avatars.githubusercontent.com/u/2531208?v=4&s=112" alt="SAP" width="112" height="112"/></a>
+  <a href="https://opensource.sap.com?utm_source=goreleaser&utm_medium=sponsor&utm_campaign=homepage&utm_content=github" target="_blank" rel="noopener sponsored" ><img src="https://avatars.githubusercontent.com/u/2531208?s=112&v=4" alt="SAP" width="112" height="112"/></a>
   <h3>Gold</h3>
-  <a href="https://opensource.mercedes-benz.com/?utm_source=goreleaser&utm_medium=sponsor&utm_campaign=homepage&utm_content=github" target="_blank" rel="noopener sponsored" ><img src="https://avatars.githubusercontent.com/u/34240465?v=4&s=96" alt="Mercedes-Benz Group" width="96" height="96"/></a>
-  <a href="https://nitric.io?utm_source=goreleaser&utm_medium=sponsor&utm_campaign=homepage&utm_content=github" target="_blank" rel="noopener sponsored" ><img src="https://avatars.githubusercontent.com/u/72055470?v=4&s=96" alt="nitric" width="96" height="96"/></a>
+  <a href="https://opensource.mercedes-benz.com/?utm_source=goreleaser&utm_medium=sponsor&utm_campaign=homepage&utm_content=github" target="_blank" rel="noopener sponsored" ><img src="https://avatars.githubusercontent.com/u/34240465?s=96&v=4" alt="Mercedes-Benz Group" width="96" height="96"/></a>
+  <a href="https://nitric.io?utm_source=goreleaser&utm_medium=sponsor&utm_campaign=homepage&utm_content=github" target="_blank" rel="noopener sponsored" ><img src="https://avatars.githubusercontent.com/u/72055470?s=96&v=4" alt="nitric" width="96" height="96"/></a>
   <h3>Silver</h3>
   <a href="https://depot.dev?utm_source=goreleaser&utm_medium=sponsor&utm_campaign=homepage&utm_content=opencollective" target="_blank" rel="noopener sponsored" ><img src="https://images.opencollective.com/depot/39125a1/logo.png?height=80" alt="Depot" width="80" height="80"/></a>
   <a href="https://www.n-ix.com/?utm_source=goreleaser&utm_medium=sponsor&utm_campaign=homepage&utm_content=opencollective" target="_blank" rel="noopener sponsored" ><img src="https://images.opencollective.com/n-ix-ltd/575a7a5/logo.png?height=80" alt="N-iX Ltd" width="80" height="80"/></a>
   <h3>Bronze</h3>
-  <a href="https://www.conet.de?utm_source=goreleaser&utm_medium=sponsor&utm_campaign=homepage&utm_content=github" target="_blank" rel="noopener sponsored" ><img src="https://avatars.githubusercontent.com/u/35725664?v=4&s=64" alt="conet cloud" width="64" height="64"/></a>
-  <a href="https://encore.dev?utm_source=goreleaser&utm_medium=sponsor&utm_campaign=homepage&utm_content=github" target="_blank" rel="noopener sponsored" ><img src="https://avatars.githubusercontent.com/u/50438175?v=4&s=64" alt="Encore" width="64" height="64"/></a>
-  <a href="https://www.comet.com/site/?utm_source=goreleaser&utm_medium=sponsor&utm_campaign=homepage&utm_content=github" target="_blank" rel="noopener sponsored" ><img src="https://avatars.githubusercontent.com/u/31487821?v=4&s=64" alt="Comet" width="64" height="64"/></a>
+  <a href="https://www.conet.de?utm_source=goreleaser&utm_medium=sponsor&utm_campaign=homepage&utm_content=github" target="_blank" rel="noopener sponsored" ><img src="https://avatars.githubusercontent.com/u/35725664?s=64&v=4" alt="conet cloud" width="64" height="64"/></a>
+  <a href="https://encore.dev?utm_source=goreleaser&utm_medium=sponsor&utm_campaign=homepage&utm_content=github" target="_blank" rel="noopener sponsored" ><img src="https://avatars.githubusercontent.com/u/50438175?s=64&v=4" alt="Encore" width="64" height="64"/></a>
+  <a href="https://www.comet.com/site/?utm_source=goreleaser&utm_medium=sponsor&utm_campaign=homepage&utm_content=github" target="_blank" rel="noopener sponsored" ><img src="https://avatars.githubusercontent.com/u/31487821?s=64&v=4" alt="Comet" width="64" height="64"/></a>
   <a href="https://about.gitea.com/?utm_source=goreleaser&utm_medium=sponsor&utm_campaign=homepage&utm_content=opencollective" target="_blank" rel="noopener sponsored" ><img src="https://images.opencollective.com/gitea/bf35c2f/logo.png?height=64" alt="Gitea" width="64" height="64"/></a>
-  <a href="https://www.interviewpal.com?utm_source=goreleaser&utm_medium=sponsor&utm_campaign=homepage&utm_content=github" target="_blank" rel="noopener sponsored" ><img src="https://avatars.githubusercontent.com/u/268665632?v=4&s=64" alt="InterviewPal.com" width="64" height="64"/></a>
+  <a href="https://www.interviewpal.com?utm_source=goreleaser&utm_medium=sponsor&utm_campaign=homepage&utm_content=github" target="_blank" rel="noopener sponsored" ><img src="https://avatars.githubusercontent.com/u/268665632?s=64&v=4" alt="InterviewPal.com" width="64" height="64"/></a>
   <h3>And many more!</h3>
   <p>See the full list <a href="https://goreleaser.com/sponsors" target="_blank" rel="noopener sponsored">here</a>.</p>
 </div>

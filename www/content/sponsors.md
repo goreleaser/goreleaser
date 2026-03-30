@@ -48,7 +48,7 @@ A big **thank you** to all current, past, and future sponsors!
           rel="noopener sponsored"
         >
           <img 
-            src="https://avatars.githubusercontent.com/u/2531208?v=4&s=112" 
+            src="https://avatars.githubusercontent.com/u/2531208?s=112&v=4" 
             alt="SAP" 
             width="112" 
             height="112"
@@ -66,7 +66,7 @@ A big **thank you** to all current, past, and future sponsors!
           rel="noopener sponsored"
         >
           <img 
-            src="https://avatars.githubusercontent.com/u/34240465?v=4&s=96" 
+            src="https://avatars.githubusercontent.com/u/34240465?s=96&v=4" 
             alt="Mercedes-Benz Group" 
             width="96" 
             height="96"
@@ -79,7 +79,7 @@ A big **thank you** to all current, past, and future sponsors!
           rel="noopener sponsored"
         >
           <img 
-            src="https://avatars.githubusercontent.com/u/72055470?v=4&s=96" 
+            src="https://avatars.githubusercontent.com/u/72055470?s=96&v=4" 
             alt="nitric" 
             width="96" 
             height="96"
@@ -128,7 +128,7 @@ A big **thank you** to all current, past, and future sponsors!
           rel="noopener sponsored"
         >
           <img 
-            src="https://avatars.githubusercontent.com/u/35725664?v=4&s=64" 
+            src="https://avatars.githubusercontent.com/u/35725664?s=64&v=4" 
             alt="conet cloud" 
             width="64" 
             height="64"
@@ -141,7 +141,7 @@ A big **thank you** to all current, past, and future sponsors!
           rel="noopener sponsored"
         >
           <img 
-            src="https://avatars.githubusercontent.com/u/50438175?v=4&s=64" 
+            src="https://avatars.githubusercontent.com/u/50438175?s=64&v=4" 
             alt="Encore" 
             width="64" 
             height="64"
@@ -154,7 +154,7 @@ A big **thank you** to all current, past, and future sponsors!
           rel="noopener sponsored"
         >
           <img 
-            src="https://avatars.githubusercontent.com/u/31487821?v=4&s=64" 
+            src="https://avatars.githubusercontent.com/u/31487821?s=64&v=4" 
             alt="Comet" 
             width="64" 
             height="64"
@@ -180,7 +180,7 @@ A big **thank you** to all current, past, and future sponsors!
           rel="noopener sponsored"
         >
           <img 
-            src="https://avatars.githubusercontent.com/u/268665632?v=4&s=64" 
+            src="https://avatars.githubusercontent.com/u/268665632?s=64&v=4" 
             alt="InterviewPal.com" 
             width="64" 
             height="64"
