@@ -846,6 +846,71 @@ func TestDependencies(t *testing.T) {
 	require.Equal(t, []string{"cosign", "gpg2"}, Pipe{}.Dependencies(ctx))
 }
 
+func TestSignAllExcludesSignaturesAndCertificates(t *testing.T) {
+	tmpdir := t.TempDir()
+
+	ctx := testctx.WrapWithCfg(t.Context(), config.Project{
+		Dist: tmpdir,
+		Signs: []config.Sign{
+			{
+				Cmd:       "true",
+				Artifacts: "all",
+				Signature: "${artifact}.newsig",
+			},
+		},
+	})
+
+	require.NoError(t, os.WriteFile(filepath.Join(tmpdir, "archive.tar.gz"), []byte("foo"), 0o644))
+	require.NoError(t, os.WriteFile(filepath.Join(tmpdir, "checksums.txt"), []byte("foo"), 0o644))
+	require.NoError(t, os.WriteFile(filepath.Join(tmpdir, "checksums.txt.sig"), []byte("foo"), 0o644))
+	require.NoError(t, os.WriteFile(filepath.Join(tmpdir, "checksums.txt.pem"), []byte("foo"), 0o644))
+
+	ctx.Artifacts.Add(&artifact.Artifact{
+		Name:  "archive.tar.gz",
+		Path:  filepath.Join(tmpdir, "archive.tar.gz"),
+		Type:  artifact.UploadableArchive,
+		Extra: map[string]any{artifact.ExtraID: "default"},
+	})
+	ctx.Artifacts.Add(&artifact.Artifact{
+		Name: "checksums.txt",
+		Path: filepath.Join(tmpdir, "checksums.txt"),
+		Type: artifact.Checksum,
+	})
+	ctx.Artifacts.Add(&artifact.Artifact{
+		Name:  "checksums.txt.sig",
+		Path:  filepath.Join(tmpdir, "checksums.txt.sig"),
+		Type:  artifact.Signature,
+		Extra: map[string]any{artifact.ExtraID: "default"},
+	})
+	ctx.Artifacts.Add(&artifact.Artifact{
+		Name:  "checksums.txt.pem",
+		Path:  filepath.Join(tmpdir, "checksums.txt.pem"),
+		Type:  artifact.Certificate,
+		Extra: map[string]any{artifact.ExtraID: "default"},
+	})
+
+	require.NoError(t, Pipe{}.Default(ctx))
+	require.NoError(t, Pipe{}.Run(ctx))
+
+	// Collect only newly-created signatures (identified by the ".newsig"
+	// suffix configured above).
+	var signed []string
+	for _, a := range ctx.Artifacts.Filter(artifact.ByType(artifact.Signature)).List() {
+		if strings.HasSuffix(a.Name, ".newsig") {
+			signed = append(signed, a.Name)
+		}
+	}
+
+	// Only the archive and checksum should be signed.  Pre-existing
+	// signatures and certificates must be excluded — this is the fix for
+	// #6508: signing .sig/.pem files causes checksums.txt to include its
+	// own signature, breaking verification.
+	require.ElementsMatch(t, []string{
+		"archive.tar.gz.newsig",
+		"checksums.txt.newsig",
+	}, signed)
+}
+
 func setGpg(tb testing.TB, ctx *context.Context, p string) {
 	tb.Helper()
 	_, err := git.Run(ctx, "config", "--local", "--add", "gpg.program", p)

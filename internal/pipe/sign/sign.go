@@ -101,7 +101,12 @@ func (Pipe) Run(ctx *context.Context) error {
 					log.Warn("when artifacts is `source`, `ids` has no effect. ignoring")
 				}
 			case "all":
-				filters = append(filters, artifact.ByTypes(artifact.ReleaseUploadableTypes()...))
+				filters = append(filters,
+					artifact.And(
+						artifact.ByTypes(artifact.ReleaseUploadableTypes()...),
+						artifact.Not(artifact.ByTypes(artifact.Signature, artifact.Certificate)),
+					),
+				)
 			case "archive":
 				filters = append(filters, artifact.ByType(artifact.UploadableArchive))
 			case "binary":
