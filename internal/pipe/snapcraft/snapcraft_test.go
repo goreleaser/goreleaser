@@ -5,7 +5,6 @@ import (
 	"os"
 	"path/filepath"
 	"testing"
-	"time"
 
 	"github.com/goreleaser/goreleaser/v2/internal/artifact"
 	"github.com/goreleaser/goreleaser/v2/internal/gio"
@@ -582,13 +581,6 @@ func TestPublish(t *testing.T) {
 		Type:   artifact.PublishableSnapcraft,
 		Extra: map[string]any{
 			releasesExtra: []string{"stable", "candidate"},
-			snapConfigExtra: config.Snapcraft{
-				Retry: config.Retry{
-					Attempts: 1,
-					Delay:    time.Millisecond,
-					MaxDelay: time.Millisecond,
-				},
-			},
 		},
 	})
 	err := Pipe{}.Publish(ctx)
@@ -619,9 +611,6 @@ func TestDefaultSet(t *testing.T) {
 	require.Equal(t, "foo", ctx.Config.Snapcrafts[0].NameTemplate)
 	require.Equal(t, []string{"edge", "beta"}, ctx.Config.Snapcrafts[0].ChannelTemplates)
 	require.Equal(t, []string{"edge", "beta", "candidate", "stable"}, ctx.Config.Snapcrafts[1].ChannelTemplates)
-	require.EqualValues(t, 10, ctx.Config.Snapcrafts[0].Retry.Attempts)
-	require.Equal(t, 10*time.Second, ctx.Config.Snapcrafts[0].Retry.Delay)
-	require.Equal(t, 5*time.Minute, ctx.Config.Snapcrafts[0].Retry.MaxDelay)
 }
 
 func TestIsRetriableSnapPush(t *testing.T) {

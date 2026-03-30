@@ -4,7 +4,6 @@
 package snapcraft
 
 import (
-	"cmp"
 	"errors"
 	"fmt"
 	"net/http"
@@ -30,10 +29,7 @@ import (
 	"github.com/goreleaser/goreleaser/v2/pkg/context"
 )
 
-const (
-	releasesExtra   = "releases"
-	snapConfigExtra = "SnapConfig"
-)
+const releasesExtra = "releases"
 
 // ErrNoSnapcraft is shown when snapcraft cannot be found in $PATH.
 var ErrNoSnapcraft = errors.New("snapcraft not present in $PATH")
@@ -156,9 +152,6 @@ func (Pipe) Default(ctx *context.Context) error {
 				snap.ChannelTemplates = []string{"edge", "beta", "candidate", "stable"}
 			}
 		}
-		snap.Retry.Attempts = cmp.Or(snap.Retry.Attempts, uint(10))
-		snap.Retry.Delay = cmp.Or(snap.Retry.Delay, 10*time.Second)
-		snap.Retry.MaxDelay = cmp.Or(snap.Retry.MaxDelay, 5*time.Minute)
 		ids.Inc(snap.ID)
 	}
 	return ids.Validate()
@@ -446,8 +439,7 @@ func create(ctx *context.Context, snap config.Snapcraft, arch string, binaries [
 		Goriscv64: binaries[0].Goriscv64,
 		Target:    binaries[0].Target,
 		Extra: map[string]any{
-			releasesExtra:   channels,
-			snapConfigExtra: snap,
+			releasesExtra: channels,
 		},
 	})
 	return nil
@@ -476,7 +468,6 @@ func isRetriableSnapPush(err error) bool {
 func push(ctx *context.Context, snap *artifact.Artifact) error {
 	log := log.WithField("snap", snap.Name)
 	releases := artifact.MustExtra[[]string](*snap, releasesExtra)
-	snapcfg := artifact.MustExtra[config.Snapcraft](*snap, snapConfigExtra)
 	if err := retry.Do(
 		func() error {
 			/* #nosec */
@@ -495,9 +486,8 @@ func push(ctx *context.Context, snap *artifact.Artifact) error {
 			return nil
 		},
 		retry.RetryIf(isRetriableSnapPush),
-		retry.Attempts(snapcfg.Retry.Attempts),
-		retry.Delay(snapcfg.Retry.Delay),
-		retry.MaxDelay(snapcfg.Retry.MaxDelay),
+		retry.Attempts(10),
+		retry.Delay(10*time.Second),
 		retry.DelayType(retry.BackOffDelay),
 		retry.LastErrorOnly(true),
 		retry.OnRetry(func(n uint, err error) {
