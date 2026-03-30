@@ -384,7 +384,7 @@ release:
     ## Where to go next?
 
     * Find examples and commented usage of all options in our [website](https://goreleaser.com/intro/).
-    * Reach out on [Discord](https://discord.gg/RGEBtg8vQ6) and [Twitter](https://twitter.com/goreleaser)!
+    * Reach out on [Discord](https://discord.gg/RGEBtg8vQ6), [Twitter](https://twitter.com/goreleaser), and [Telegram](https://t.me/goreleasernews)!
 
     <a href="https://goreleaser.com"><img src="https://raw.githubusercontent.com/goreleaser/artwork/master/opencollective-header.png" with="100%" alt="GoReleaser logo"></a>
     {{ end }}

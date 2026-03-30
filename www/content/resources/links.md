@@ -4,9 +4,9 @@ weight: 9000
 ---
 
 - Follow the progress on the [GitHub repository](https://github.com/goreleaser/goreleaser)
-- Follow us on [Twitter](https://twitter.com/goreleaser) and
-  <a rel="me" href="https://fosstodon.org/@goreleaser">Mastodon</a>
-  for updates
+- Follow us on [Twitter](https://twitter.com/goreleaser),
+  <a rel="me" href="https://fosstodon.org/@goreleaser">Mastodon</a>,
+  and [Telegram](https://t.me/goreleasernews) for updates
 - Join our [Discord server](https://discord.gg/RGEBtg8vQ6)
 - Read our [blog](/blog/index/)[^blog] ([RSS](/blog/feed.xml))
 - Follow us on [LinkedIn](https://linkedin.com/company/goreleaser)

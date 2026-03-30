@@ -152,6 +152,8 @@ with the custom publisher, and are included when signing installers.
 ## Other news
 
 - GoReleaser now has ~15.7k stars and 458 contributors! Thanks, everyone!
+- You can now follow release updates on our
+  [Telegram channel](https://t.me/goreleasernews)!
 - We often discuss new features in our Discord server.
   [Join the conversation][discord]!
 - nFPM had new releases as well,
