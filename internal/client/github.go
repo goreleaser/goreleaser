@@ -121,7 +121,7 @@ func (c *githubClient) GenerateReleaseNotes(ctx *context.Context, repo Repo, pre
 	c.checkRateLimit(ctx, time.Sleep)
 	notes, _, err := c.client.Repositories.GenerateReleaseNotes(ctx, repo.Owner, repo.Name, &github.GenerateNotesOptions{
 		TagName:         current,
-		PreviousTagName: github.Ptr(prev),
+		PreviousTagName: &prev,
 	})
 	if err != nil {
 		return "", err
@@ -292,11 +292,11 @@ func (c *githubClient) OpenPullRequest(
 		base.Owner,
 		base.Name,
 		&github.NewPullRequest{
-			Title: github.Ptr(title),
-			Base:  github.Ptr(base.Branch),
-			Head:  github.Ptr(headString(base, head)),
-			Body:  github.Ptr(strings.Join([]string{tpl, prFooter}, "\n")),
-			Draft: github.Ptr(draft),
+			Title: &title,
+			Base:  &base.Branch,
+			Head:  new(headString(base, head)),
+			Body:  new(strings.Join([]string{tpl, prFooter}, "\n")),
+			Draft: &draft,
 		},
 	)
 	if err != nil {
@@ -324,7 +324,7 @@ func (c *githubClient) SyncFork(ctx *context.Context, head, base Repo) error {
 		head.Owner,
 		head.Name,
 		&github.RepoMergeUpstreamRequest{
-			Branch: github.Ptr(branch),
+			Branch: &branch,
 		},
 	)
 	if err != nil {
@@ -357,15 +357,15 @@ func (c *githubClient) CreateFile(
 
 	options := &github.RepositoryContentFileOptions{
 		Content: content,
-		Message: github.Ptr(message),
+		Message: &message,
 	}
 
 	// When using a GitHub App token, omit the committer to get automatic signed commits
 	// See: https://docs.github.com/en/authentication/managing-commit-signature-verification/about-commit-signature-verification#signature-verification-for-bots
 	if !commitAuthor.UseGitHubAppToken {
 		options.Committer = &github.CommitAuthor{
-			Name:  github.Ptr(commitAuthor.Name),
-			Email: github.Ptr(commitAuthor.Email),
+			Name:  &commitAuthor.Name,
+			Email: &commitAuthor.Email,
 		}
 	}
 
@@ -450,13 +450,13 @@ func (c *githubClient) CreateRelease(ctx *context.Context, body string) (string,
 	body = truncateReleaseBody(body)
 
 	data := &github.RepositoryRelease{
-		Name:    github.Ptr(title),
-		TagName: github.Ptr(ctx.Git.CurrentTag),
-		Body:    github.Ptr(body),
+		Name:    &title,
+		TagName: &ctx.Git.CurrentTag,
+		Body:    &body,
 		// Always start with a draft release while uploading artifacts.
 		// PublishRelease will undraft it.
-		Draft:      github.Ptr(true),
-		Prerelease: github.Ptr(ctx.PreRelease),
+		Draft:      new(true),
+		Prerelease: &ctx.PreRelease,
 	}
 
 	if target := ctx.Config.Release.TargetCommitish; target != "" {
@@ -465,7 +465,7 @@ func (c *githubClient) CreateRelease(ctx *context.Context, body string) (string,
 			return "", err
 		}
 		if target != "" {
-			data.TargetCommitish = github.Ptr(target)
+			data.TargetCommitish = &target
 		}
 	}
 
@@ -488,17 +488,17 @@ func (c *githubClient) PublishRelease(ctx *context.Context, releaseID string) er
 		return fmt.Errorf("non-numeric release ID %q: %w", releaseID, err)
 	}
 	data := &github.RepositoryRelease{
-		Draft: github.Ptr(draft),
+		Draft: &draft,
 	}
 	latest, err := tmpl.New(ctx).Apply(ctx.Config.Release.MakeLatest)
 	if err != nil {
 		return fmt.Errorf("templating GitHub make_latest: %w", err)
 	}
 	if latest != "" {
-		data.MakeLatest = github.Ptr(latest)
+		data.MakeLatest = &latest
 	}
 	if ctx.Config.Release.DiscussionCategoryName != "" {
-		data.DiscussionCategoryName = github.Ptr(ctx.Config.Release.DiscussionCategoryName)
+		data.DiscussionCategoryName = &ctx.Config.Release.DiscussionCategoryName
 	}
 	release, err := c.updateRelease(ctx, releaseIDInt, data)
 	if err != nil {
@@ -539,7 +539,7 @@ func (c *githubClient) createOrUpdateRelease(ctx *context.Context, data *github.
 	}
 
 	data.Draft = release.Draft
-	data.Body = github.Ptr(getReleaseNotes(release.GetBody(), body, ctx.Config.Release.ReleaseNotesMode))
+	data.Body = new(getReleaseNotes(release.GetBody(), body, ctx.Config.Release.ReleaseNotesMode))
 	return c.updateRelease(ctx, release.GetID(), data)
 }
 
