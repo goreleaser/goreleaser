@@ -866,9 +866,9 @@ func TestSignAllExcludesSignaturesAndCertificates(t *testing.T) {
 	require.NoError(t, os.WriteFile(filepath.Join(tmpdir, "checksums.txt.pem"), []byte("foo"), 0o644))
 
 	ctx.Artifacts.Add(&artifact.Artifact{
-		Name: "archive.tar.gz",
-		Path: filepath.Join(tmpdir, "archive.tar.gz"),
-		Type: artifact.UploadableArchive,
+		Name:  "archive.tar.gz",
+		Path:  filepath.Join(tmpdir, "archive.tar.gz"),
+		Type:  artifact.UploadableArchive,
 		Extra: map[string]any{artifact.ExtraID: "default"},
 	})
 	ctx.Artifacts.Add(&artifact.Artifact{
@@ -877,15 +877,15 @@ func TestSignAllExcludesSignaturesAndCertificates(t *testing.T) {
 		Type: artifact.Checksum,
 	})
 	ctx.Artifacts.Add(&artifact.Artifact{
-		Name: "checksums.txt.sig",
-		Path: filepath.Join(tmpdir, "checksums.txt.sig"),
-		Type: artifact.Signature,
+		Name:  "checksums.txt.sig",
+		Path:  filepath.Join(tmpdir, "checksums.txt.sig"),
+		Type:  artifact.Signature,
 		Extra: map[string]any{artifact.ExtraID: "default"},
 	})
 	ctx.Artifacts.Add(&artifact.Artifact{
-		Name: "checksums.txt.pem",
-		Path: filepath.Join(tmpdir, "checksums.txt.pem"),
-		Type: artifact.Certificate,
+		Name:  "checksums.txt.pem",
+		Path:  filepath.Join(tmpdir, "checksums.txt.pem"),
+		Type:  artifact.Certificate,
 		Extra: map[string]any{artifact.ExtraID: "default"},
 	})
 
