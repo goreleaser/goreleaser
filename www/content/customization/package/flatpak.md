@@ -4,7 +4,7 @@ linkTitle: Flatpak
 weight: 110
 ---
 
-{{< version "v2.15-unreleased" >}}
+{{< version "v2.15" >}}
 
 GoReleaser can create [Flatpak][] bundles (`.flatpak` files) for your Linux
 binaries.

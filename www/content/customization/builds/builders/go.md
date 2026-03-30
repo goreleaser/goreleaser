@@ -25,7 +25,7 @@ builds:
     # Path to main.go file or main package.
     # Notice: when used with `gomod.proxy`, this must be a package.
     # If you set it to a ellipsis path (e.g. './...'), GoReleaser will find all
-    # 'main' functions and build them all on a single command. {{< inline_version "v2.15-unreleased" >}}
+    # 'main' functions and build them all on a single command. {{< inline_version "v2.15" >}}
     #
     # Default: `.`.
     main: ./cmd/my-app
@@ -538,7 +538,7 @@ builds:
 
 ## Building ellipsis paths
 
-{{< version "v2.15-unreleased" >}}
+{{< version "v2.15" >}}
 
 You can also set the `main` to an ellipsis import path, e.g. `./...`.
 

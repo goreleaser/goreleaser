@@ -74,7 +74,7 @@ homebrew_casks:
     #
     # All fields except `executable` are optional.
     #
-    # {{< inline_version "v2.15-unreleased" >}}
+    # {{< inline_version "v2.15" >}}
     generate_completions_from_executable:
       # Path to the executable inside the cask bundle.
       #

@@ -4,7 +4,7 @@ linkTitle: Source RPMs
 weight: 50
 ---
 
-{{< version "v2.15-unreleased" >}}
+{{< version "v2.15" >}}
 
 GoReleaser can generate Source RPM (`.src.rpm`) packages.
 
