@@ -483,8 +483,8 @@ func TestGitHubOpenPullRequestCrossRepo(t *testing.T) {
 
 		if r.URL.Path == "/api/v3/repos/someone/something/contents/.github/PULL_REQUEST_TEMPLATE.md" {
 			content := github.RepositoryContent{
-				Encoding: github.Ptr("base64"),
-				Content:  github.Ptr(base64.StdEncoding.EncodeToString([]byte(testPRTemplate))),
+				Encoding: new("base64"),
+				Content:  new(base64.StdEncoding.EncodeToString([]byte(testPRTemplate))),
 			}
 			bts, _ := json.Marshal(content)
 			_, _ = w.Write(bts)
@@ -545,8 +545,8 @@ func TestGitHubOpenPullRequestHappyPath(t *testing.T) {
 
 		if r.URL.Path == "/api/v3/repos/someone/something/contents/.github/PULL_REQUEST_TEMPLATE.md" {
 			content := github.RepositoryContent{
-				Encoding: github.Ptr("base64"),
-				Content:  github.Ptr(base64.StdEncoding.EncodeToString([]byte(testPRTemplate))),
+				Encoding: new("base64"),
+				Content:  new(base64.StdEncoding.EncodeToString([]byte(testPRTemplate))),
 			}
 			bts, _ := json.Marshal(content)
 			_, _ = w.Write(bts)

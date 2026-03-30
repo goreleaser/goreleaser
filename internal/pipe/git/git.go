@@ -6,6 +6,7 @@ import (
 	"net/url"
 	"os"
 	"os/exec"
+	"slices"
 	"strconv"
 	"strings"
 	"time"
@@ -369,14 +370,7 @@ func filterOut(tags []string, exclude []string) string {
 		return tags[0]
 	}
 	for _, tag := range tags {
-		excluded := false
-		for _, exl := range exclude {
-			if exl == tag {
-				excluded = true
-				break
-			}
-		}
-		if !excluded {
+		if !slices.Contains(exclude, tag) {
 			return tag
 		}
 	}
