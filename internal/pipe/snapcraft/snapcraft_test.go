@@ -613,6 +613,15 @@ func TestDefaultSet(t *testing.T) {
 	require.Equal(t, []string{"edge", "beta", "candidate", "stable"}, ctx.Config.Snapcrafts[1].ChannelTemplates)
 }
 
+func TestIsRetriableSnapPush(t *testing.T) {
+	t.Parallel()
+	for _, code := range []int{500, 502, 503, 504} {
+		require.True(t, isRetriableSnapPush(fmt.Errorf("some error [%d] something", code)))
+	}
+	require.False(t, isRetriableSnapPush(fmt.Errorf("some other error")))
+	require.False(t, isRetriableSnapPush(fmt.Errorf("[404] not found")))
+}
+
 func Test_processChannelsTemplates(t *testing.T) {
 	ctx := testctx.WrapWithCfg(t.Context(),
 		config.Project{

@@ -125,9 +125,7 @@ You can read the full announcement [here](https://goreleaser.com/blog/new-site/)
 
 ## Before publish installer types and SBOM support
 
-> [!NOTE]
-> These features are only available in the
-> [Pro plans](https://beckersoft.gumroad.com/l/goreleaser).
+{{< featpro >}}
 
 The `before_publish` hook now works with NSIS and `.pkg` installer types, so
 you can run scripts before those artifacts are published.
