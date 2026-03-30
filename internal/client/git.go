@@ -151,7 +151,7 @@ func (g *gitClient) CreateFiles(
 		{"add", "-A", "."},
 		{"commit", "-m", message},
 	}); err != nil {
-		return fmt.Errorf("git: failed to push %q (%q): %w", repo.Name, url, err)
+		return fmt.Errorf("git: failed to commit %q (%q): %w", repo.Name, url, err)
 	}
 	if err := pushRepo(ctx, cwd, env); err != nil {
 		return fmt.Errorf("git: failed to push %q (%q): %w", repo.Name, url, err)
