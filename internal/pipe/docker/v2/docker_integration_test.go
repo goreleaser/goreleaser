@@ -97,7 +97,7 @@ func TestRun(t *testing.T) {
 	if !pipe.IsSkip(err) {
 		de, ok := errors.AsType[gerrors.ErrDetailed](err)
 		require.True(t, ok)
-		t.Fatalf("should have been a skip, got message: %s, details: %v, output: %s", de.Messages(), maps.Collect(de.Details()), de.Output())
+		require.Failf(t, "should have been a skip", "got message: %s, details: %v, output: %s", de.Messages(), maps.Collect(de.Details()), de.Output())
 	}
 
 	t.Run("main", func(t *testing.T) {
@@ -250,7 +250,7 @@ func TestPublish(t *testing.T) {
 	if err != nil {
 		de, ok := errors.AsType[gerrors.ErrDetailed](err)
 		require.True(t, ok)
-		t.Fatalf("should have been a skip, got message: %s, details: %v, output: %s", de.Messages(), maps.Collect(de.Details()), de.Output())
+		require.Failf(t, "should have been a skip", "got message: %s, details: %v, output: %s", de.Messages(), maps.Collect(de.Details()), de.Output())
 	}
 
 	t.Run("main", func(t *testing.T) {
@@ -359,7 +359,7 @@ func TestSnapshotNoDaemon(t *testing.T) {
 	if err != nil {
 		de, ok := errors.AsType[gerrors.ErrDetailed](err)
 		require.True(t, ok)
-		t.Fatalf("should have been a skip, got message: %s, details: %v, output: %s", de.Messages(), maps.Collect(de.Details()), de.Output())
+		require.Failf(t, "should have been a skip", "got message: %s, details: %v, output: %s", de.Messages(), maps.Collect(de.Details()), de.Output())
 	}
 
 	images := ctx.Artifacts.Filter(

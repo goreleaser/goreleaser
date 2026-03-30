@@ -397,7 +397,7 @@ func zipInfo(t *testing.T, path, name string) fs.FileInfo {
 			return next.FileInfo()
 		}
 	}
-	t.Fatalf("could not find %q in %q", name, path)
+	require.Failf(t, "unexpected", "could not find %q in %q", name, path)
 	return nil
 }
 
@@ -419,7 +419,7 @@ func tarInfo(t *testing.T, path, name string) *tar.Header {
 			return next
 		}
 	}
-	t.Fatalf("could not find %q in %q", name, path)
+	require.Failf(t, "unexpected", "could not find %q in %q", name, path)
 	return nil
 }
 

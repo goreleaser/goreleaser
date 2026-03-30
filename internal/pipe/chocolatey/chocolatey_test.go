@@ -155,12 +155,9 @@ func Test_doRun(t *testing.T) {
 			client := client.NewMock()
 			got := doRun(ctx, client, tt.choco)
 
-			var err string
-			if got != nil {
-				err = got.Error()
-			}
-			if tt.err != err {
-				t.Errorf("Unexpected error: %s (expected %s)", err, tt.err)
+			if tt.err != "" {
+				require.EqualError(t, got, tt.err)
+				return
 			}
 
 			list := ctx.Artifacts.Filter(artifact.ByType(artifact.PublishableChocolatey)).List()
@@ -220,9 +217,7 @@ func Test_buildTemplate(t *testing.T) {
 	client := client.NewMock()
 
 	data, err := dataFor(ctx, client, choco, artifacts)
-	if err != nil {
-		t.Error(err)
-	}
+	require.NoError(t, err)
 
 	out, err := buildTemplate(choco.Name, scriptTemplate, data)
 	require.NoError(t, err)
@@ -317,12 +312,10 @@ func TestPublish(t *testing.T) {
 
 			got := Pipe{}.Publish(ctx)
 
-			var err string
-			if got != nil {
-				err = got.Error()
-			}
-			if tt.err != err {
-				t.Errorf("Unexpected error: %s (expected %s)", err, tt.err)
+			if tt.err != "" {
+				require.EqualError(t, got, tt.err)
+			} else {
+				require.NoError(t, got)
 			}
 		})
 	}

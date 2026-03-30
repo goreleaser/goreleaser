@@ -69,16 +69,12 @@ func TestClient_Share(t *testing.T) {
 		Context:     testctx.Wrap(t.Context()),
 		AccessToken: "foo",
 	})
-	if err != nil {
-		t.Fatalf("could not create client: %v", err)
-	}
+	require.NoError(t, err)
 
 	c.baseURL = server.URL
 
 	link, err := c.Share(t.Context(), "test")
-	if err != nil {
-		t.Fatalf("could not share: %v", err)
-	}
+	require.NoError(t, err)
 
 	wantLink := "https://www.linkedin.com/feed/update/123456789"
 	require.Equal(t, wantLink, link)
@@ -104,16 +100,12 @@ func TestClientLegacyProfile_Share(t *testing.T) {
 		Context:     testctx.Wrap(t.Context()),
 		AccessToken: "foo",
 	})
-	if err != nil {
-		t.Fatalf("could not create client: %v", err)
-	}
+	require.NoError(t, err)
 
 	c.baseURL = server.URL
 
 	link, err := c.Share(t.Context(), "test")
-	if err != nil {
-		t.Fatalf("could not share: %v", err)
-	}
+	require.NoError(t, err)
 
 	wantLink := "https://www.linkedin.com/feed/update/123456789"
 	require.Equal(t, wantLink, link)

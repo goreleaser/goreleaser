@@ -346,7 +346,7 @@ func TestGitLabCreateReleaseReleaseNotExists(t *testing.T) {
 					return
 				}
 
-				t.Fatal("should not reach here")
+				assert.Fail(t, "should not reach here")
 			}))
 			defer srv.Close()
 
@@ -400,7 +400,7 @@ func TestGitLabCreateReleaseReleaseExists(t *testing.T) {
 			return
 		}
 
-		t.Fatal("should not reach here")
+		assert.Fail(t, "should not reach here")
 	}))
 	defer srv.Close()
 
@@ -482,7 +482,7 @@ func TestGitLabGetDefaultBranchEnv(t *testing.T) {
 		if strings.HasSuffix(r.URL.Path, "/version") {
 			return
 		}
-		t.Error("shouldn't have made any calls to the API")
+		assert.Fail(t, "shouldn't have made any calls to the API")
 	}))
 	t.Cleanup(srv.Close)
 
@@ -842,7 +842,7 @@ func TestGitLabOpenPullRequestCrossRepo(t *testing.T) {
 			return
 		}
 
-		t.Error("unhandled request: " + r.URL.Path)
+		assert.Fail(t, "unhandled request: "+r.URL.Path)
 	}))
 	defer srv.Close()
 
@@ -901,7 +901,7 @@ func TestGitLabOpenPullRequestBaseEmpty(t *testing.T) {
 			return
 		}
 
-		t.Error("unhandled request: " + r.URL.Path)
+		assert.Fail(t, "unhandled request: "+r.URL.Path)
 	}))
 	defer srv.Close()
 
@@ -956,7 +956,7 @@ func TestGitLabOpenPullRequestDraft(t *testing.T) {
 			return
 		}
 
-		t.Error("unhandled request: " + r.URL.Path)
+		assert.Fail(t, "unhandled request: "+r.URL.Path)
 	}))
 	defer srv.Close()
 
@@ -1005,7 +1005,7 @@ func TestGitLabOpenPullRequestBaseBranchGiven(t *testing.T) {
 			return
 		}
 
-		t.Error("unhandled request: " + r.URL.Path)
+		assert.Fail(t, "unhandled request: "+r.URL.Path)
 	}))
 	defer srv.Close()
 

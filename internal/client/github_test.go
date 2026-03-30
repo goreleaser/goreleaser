@@ -514,7 +514,7 @@ func TestGitHubOpenPullRequestCrossRepo(t *testing.T) {
 			return
 		}
 
-		t.Error("unhandled request: " + r.URL.Path)
+		assert.Fail(t, "unhandled request: "+r.URL.Path)
 	}))
 	t.Cleanup(srv.Close)
 
@@ -569,7 +569,7 @@ func TestGitHubOpenPullRequestHappyPath(t *testing.T) {
 			return
 		}
 
-		t.Error("unhandled request: " + r.URL.Path)
+		assert.Fail(t, "unhandled request: "+r.URL.Path)
 	}))
 	t.Cleanup(srv.Close)
 
@@ -629,7 +629,7 @@ func TestGitHubOpenPullRequestNoBaseBranchDraft(t *testing.T) {
 			return
 		}
 
-		t.Error("unhandled request: " + r.URL.Path)
+		assert.Fail(t, "unhandled request: "+r.URL.Path)
 	}))
 	t.Cleanup(srv.Close)
 
@@ -677,7 +677,7 @@ func TestGitHubOpenPullRequestPRExists(t *testing.T) {
 			return
 		}
 
-		t.Error("unhandled request: " + r.URL.Path)
+		assert.Fail(t, "unhandled request: "+r.URL.Path)
 	}))
 	t.Cleanup(srv.Close)
 
@@ -729,7 +729,7 @@ func TestGitHubOpenPullRequestBaseEmpty(t *testing.T) {
 			return
 		}
 
-		t.Error("unhandled request: " + r.URL.Path)
+		assert.Fail(t, "unhandled request: "+r.URL.Path)
 	}))
 	t.Cleanup(srv.Close)
 
@@ -781,7 +781,7 @@ func TestGitHubOpenPullRequestHeadEmpty(t *testing.T) {
 			return
 		}
 
-		t.Error("unhandled request: " + r.URL.Path)
+		assert.Fail(t, "unhandled request: "+r.URL.Path)
 	}))
 	t.Cleanup(srv.Close)
 
@@ -831,7 +831,7 @@ func TestGitHubCreateFileHappyPathCreate(t *testing.T) {
 			return
 		}
 
-		t.Error("unhandled request: " + r.URL.Path)
+		assert.Fail(t, "unhandled request: "+r.URL.Path)
 	}))
 	t.Cleanup(srv.Close)
 
@@ -881,7 +881,7 @@ func TestGitHubCreateFileHappyPathUpdate(t *testing.T) {
 			return
 		}
 
-		t.Error("unhandled request: " + r.URL.Path)
+		assert.Fail(t, "unhandled request: "+r.URL.Path)
 	}))
 	t.Cleanup(srv.Close)
 
@@ -943,7 +943,7 @@ func TestGitHubCreateFileFeatureBranchAlreadyExists(t *testing.T) {
 			return
 		}
 
-		t.Error("unhandled request: " + r.Method + " " + r.URL.Path)
+		assert.Fail(t, "unhandled request: "+r.Method+" "+r.URL.Path)
 	}))
 	t.Cleanup(srv.Close)
 
@@ -1005,7 +1005,7 @@ func TestGitHubCreateFileFeatureBranchDoesNotExist(t *testing.T) {
 			return
 		}
 
-		t.Error("unhandled request: " + r.Method + " " + r.URL.Path)
+		assert.Fail(t, "unhandled request: "+r.Method+" "+r.URL.Path)
 	}))
 	t.Cleanup(srv.Close)
 
@@ -1053,7 +1053,7 @@ func TestGitHubCreateFileFeatureBranchNilObject(t *testing.T) {
 			return
 		}
 
-		t.Error("unhandled request: " + r.Method + " " + r.URL.Path)
+		assert.Fail(t, "unhandled request: "+r.Method+" "+r.URL.Path)
 	}))
 	t.Cleanup(srv.Close)
 
@@ -1097,7 +1097,7 @@ func TestGitHubCheckRateLimit(t *testing.T) {
 			first.Store(true)
 			return
 		}
-		t.Error("unhandled request: " + r.Method + " " + r.URL.Path)
+		assert.Fail(t, "unhandled request: "+r.Method+" "+r.URL.Path)
 	}))
 	t.Cleanup(srv.Close)
 
@@ -1141,7 +1141,7 @@ func TestGitHubCreateRelease(t *testing.T) {
 			return
 		}
 
-		t.Error("unhandled request: " + r.Method + " " + r.URL.Path)
+		assert.Fail(t, "unhandled request: "+r.Method+" "+r.URL.Path)
 	}))
 	t.Cleanup(srv.Close)
 
@@ -1210,7 +1210,7 @@ func TestGitHubCreateReleaseDeleteExistingDraft(t *testing.T) {
 			return
 		}
 
-		t.Error("unhandled request: " + r.Method + " " + r.URL.Path)
+		assert.Fail(t, "unhandled request: "+r.Method+" "+r.URL.Path)
 	}))
 	t.Cleanup(srv.Close)
 
@@ -1269,7 +1269,7 @@ func TestGitHubCreateReleaseUpdateExisting(t *testing.T) {
 			return
 		}
 
-		t.Error("unhandled request: " + r.Method + " " + r.URL.Path)
+		assert.Fail(t, "unhandled request: "+r.Method+" "+r.URL.Path)
 	}))
 	t.Cleanup(srv.Close)
 
@@ -1331,7 +1331,7 @@ func TestGitHubCreateReleaseUseExistingDraft(t *testing.T) {
 			return
 		}
 
-		t.Error("unhandled request: " + r.Method + " " + r.URL.Path)
+		assert.Fail(t, "unhandled request: "+r.Method+" "+r.URL.Path)
 	}))
 	t.Cleanup(srv.Close)
 
@@ -1400,7 +1400,7 @@ func TestGitHubCreateFileWithGitHubAppToken(t *testing.T) {
 			return
 		}
 
-		t.Error("unhandled request: " + r.URL.Path)
+		assert.Fail(t, "unhandled request: "+r.URL.Path)
 	}))
 	t.Cleanup(srv.Close)
 
@@ -1463,7 +1463,7 @@ func TestGitHubCreateFileWithoutGitHubAppToken(t *testing.T) {
 			return
 		}
 
-		t.Error("unhandled request: " + r.URL.Path)
+		assert.Fail(t, "unhandled request: "+r.URL.Path)
 	}))
 	t.Cleanup(srv.Close)
 

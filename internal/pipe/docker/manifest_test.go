@@ -1,13 +1,12 @@
 package docker
 
 import (
-	"slices"
-	"strings"
 	"testing"
 
 	"github.com/goreleaser/goreleaser/v2/internal/artifact"
 	"github.com/goreleaser/goreleaser/v2/internal/testctx"
 	"github.com/goreleaser/goreleaser/v2/pkg/config"
+	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
 
@@ -136,15 +135,10 @@ func Test_manifestImages(t *testing.T) {
 			got, err := manifestImages(ctx, manifest)
 
 			if tt.wantErr {
-				require.Error(t, err)
-				if !strings.Contains(err.Error(), tt.errContains) {
-					t.Fatalf("expected error to contain %q, got: %v", tt.errContains, err)
-				}
+				require.ErrorContains(t, err, tt.errContains)
 			} else {
 				require.NoError(t, err)
-				if !slices.Equal(got, tt.want) {
-					t.Fatalf("unexpected output: want: %v, got: %v", tt.want, got)
-				}
+				assert.Equal(t, tt.want, got)
 			}
 		})
 	}

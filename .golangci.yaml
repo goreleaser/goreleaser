@@ -37,6 +37,9 @@ linters:
     forbidigo:
       forbid:
         - pattern: ioutil\.*
+        - pattern: ^testing\.T\.Errorf?$
+        - pattern: ^testing\.T\.Fatalf?$
+      analyze-types: true
     gocritic:
       disabled-checks:
         - appendAssign

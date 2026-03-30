@@ -21,6 +21,7 @@ import (
 	"github.com/goreleaser/goreleaser/v2/internal/testctx"
 	"github.com/goreleaser/goreleaser/v2/pkg/config"
 	"github.com/goreleaser/goreleaser/v2/pkg/context"
+	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
 
@@ -31,31 +32,21 @@ func TestAssetOpenDefault(t *testing.T) {
 	a, err := assetOpenDefault("blah", &artifact.Artifact{
 		Path: tf,
 	})
-	if err != nil {
-		t.Fatalf("can not open asset: %v", err)
-	}
+	require.NoError(t, err)
 	t.Cleanup(func() {
 		require.NoError(t, a.ReadCloser.Close())
 	})
 	bs, err := io.ReadAll(a.ReadCloser)
-	if err != nil {
-		t.Fatalf("can not read asset: %v", err)
-	}
-	if string(bs) != "a" {
-		t.Fatalf("unexpected read content")
-	}
+	require.NoError(t, err)
+	assert.Equal(t, "a", string(bs))
 	_, err = assetOpenDefault("blah", &artifact.Artifact{
 		Path: "blah",
 	})
-	if err == nil {
-		t.Fatalf("should fail on missing file")
-	}
+	require.Error(t, err)
 	_, err = assetOpenDefault("blah", &artifact.Artifact{
 		Path: t.TempDir(),
 	})
-	if err == nil {
-		t.Fatalf("should fail on existing dir")
-	}
+	require.Error(t, err)
 }
 
 func TestDefaults(t *testing.T) {
@@ -65,20 +56,17 @@ func TestDefaults(t *testing.T) {
 	tests := []struct {
 		name     string
 		args     args
-		wantErr  bool
 		wantMode string
 	}{
-		{"set default", args{[]config.Upload{{Name: "a", Target: "http://"}}}, false, ModeArchive},
-		{"keep value", args{[]config.Upload{{Name: "a", Target: "http://...", Mode: ModeBinary}}}, false, ModeBinary},
+		{"set default", args{[]config.Upload{{Name: "a", Target: "http://"}}}, ModeArchive},
+		{"keep value", args{[]config.Upload{{Name: "a", Target: "http://...", Mode: ModeBinary}}}, ModeBinary},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if err := Defaults(tt.args.uploads); (err != nil) != tt.wantErr {
-				t.Errorf("Defaults() error = %v, wantErr %v", err, tt.wantErr)
-			}
-			if tt.wantMode != tt.args.uploads[0].Mode {
-				t.Errorf("Incorrect Defaults() mode %q , wanted %q", tt.args.uploads[0].Mode, tt.wantMode)
-			}
+			err := Defaults(tt.args.uploads)
+
+			require.NoError(t, err)
+			assert.Equal(t, tt.wantMode, tt.args.uploads[0].Mode)
 		})
 	}
 }
@@ -114,8 +102,12 @@ func TestCheckConfig(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if err := CheckConfig(tt.args.ctx, tt.args.upload, tt.args.kind); (err != nil) != tt.wantErr {
-				t.Errorf("CheckConfig() error = %v, wantErr %v", err, tt.wantErr)
+			err := CheckConfig(tt.args.ctx, tt.args.upload, tt.args.kind)
+
+			if tt.wantErr {
+				assert.Error(t, err)
+			} else {
+				assert.NoError(t, err)
 			}
 		})
 	}
@@ -132,8 +124,11 @@ func TestCheckConfig(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if err := CheckConfig(tt.args.ctx, tt.args.upload, tt.args.kind); (err != nil) != tt.wantErr {
-				t.Errorf("CheckConfig() error = %v, wantErr %v", err, tt.wantErr)
+			err := CheckConfig(tt.args.ctx, tt.args.upload, tt.args.kind)
+			if tt.wantErr {
+				assert.Error(t, err)
+			} else {
+				assert.NoError(t, err)
 			}
 		})
 	}
@@ -675,12 +670,16 @@ func TestUpload(t *testing.T) {
 		if srv.Certificate() != nil {
 			wantErr = wantErrTLS
 		}
-		if err := Upload(ctx, []config.Upload{upload}, "test", is2xx); (err != nil) != wantErr {
-			t.Errorf("Upload() error = %v, wantErr %v", err, wantErr)
+
+		err := Upload(ctx, []config.Upload{upload}, "test", is2xx)
+		if wantErr {
+			require.Error(t, err)
+		} else {
+			require.NoError(t, err)
 		}
-		if err := check(requests); err != nil {
-			t.Errorf("Upload() request invalid. Error: %v", err)
-		}
+
+		err = check(requests)
+		require.NoError(t, err)
 	}
 
 	for _, tt := range tests {
