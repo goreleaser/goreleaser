@@ -39,6 +39,39 @@ jobs:
           ref: master
           workflow: goreleaser-bump
           inputs: '{ "tag" : "${{ env.RELEASE_TAG }}" }'
+  verify:
+    runs-on: ubuntu-latest
+    needs: [goreleaser]
+    if: startsWith(github.ref, 'refs/tags/v')
+    steps:
+      - uses: sigstore/cosign-installer@cad07c2e89fa2edd6e2d7bab4c1aa38e53f76003 # v4.1.1
+      - name: get tag
+        run: echo "TAG=${GITHUB_REF#refs/tags/}" >> "$GITHUB_ENV"
+      - name: download artifacts
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh release download "$TAG" \
+            --repo goreleaser/goreleaser \
+            --pattern 'goreleaser_Linux_x86_64.tar.gz' \
+            --pattern 'checksums.txt' \
+            --pattern 'checksums.txt.sigstore.json'
+      - name: verify checksums
+        run: shasum -a 256 --check --ignore-missing checksums.txt
+      - name: verify signature
+        run: |
+          cosign verify-blob \
+            --certificate-identity "https://github.com/goreleaser/goreleaser/.github/workflows/release.yml@refs/tags/$TAG" \
+            --certificate-oidc-issuer 'https://token.actions.githubusercontent.com' \
+            --bundle checksums.txt.sigstore.json \
+            checksums.txt
+      - name: verify attestations
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh attestation verify goreleaser_Linux_x86_64.tar.gz \
+            --repo goreleaser/goreleaser \
+            --signer-repo goreleaser/goreleaser
   goreleaser-check-pkgs:
     runs-on: ubuntu-latest
     env:
