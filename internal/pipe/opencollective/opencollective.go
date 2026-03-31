@@ -4,8 +4,11 @@ package opencollective
 import (
 	"bytes"
 	"encoding/json"
+	"errors"
 	"fmt"
+	"io"
 	"net/http"
+	"strings"
 
 	"github.com/caarlos0/env/v11"
 	"github.com/caarlos0/log"
@@ -16,7 +19,7 @@ import (
 const (
 	defaultTitleTemplate   = `{{ .Tag }}`
 	defaultMessageTemplate = `{{ .ProjectName }} {{ .Tag }} is out!<br/>Check it out at <a href="{{ .ReleaseURL }}">{{ .ReleaseURL }}</a>`
-	endpoint               = "https://api.opencollective.com/graphql/v2"
+	defaultEndpoint        = "https://api.opencollective.com/graphql/v2"
 )
 
 type Pipe struct{}
@@ -59,16 +62,22 @@ func (p Pipe) Announce(ctx *context.Context) error {
 
 	log.Infof("posting: %q | %q", title, html)
 
-	id, err := createUpdate(ctx, title, html, ctx.Config.Announce.OpenCollective.Slug, cfg.Token)
+	c := client{
+		endpoint: defaultEndpoint,
+		token:    cfg.Token,
+	}
+
+	id, err := c.createUpdate(ctx, title, html, ctx.Config.Announce.OpenCollective.Slug)
 	if err != nil {
 		return err
 	}
 
-	if err := publishUpdate(ctx, id, cfg.Token); err != nil {
-		return err
-	}
+	return c.publishUpdate(ctx, id)
+}
 
-	return nil
+type client struct {
+	endpoint string
+	token    string
 }
 
 type payload struct {
@@ -76,7 +85,29 @@ type payload struct {
 	Variables map[string]any `json:"variables"`
 }
 
-func createUpdate(ctx *context.Context, title, html, slug, token string) (string, error) {
+// graphqlResponse decodes GraphQL responses and checks for errors.
+// GraphQL APIs return HTTP 200 even on mutation failures — errors are in the
+// response body, not the status code.
+type graphqlResponse struct {
+	Errors []graphqlError `json:"errors"`
+}
+
+type graphqlError struct {
+	Message string `json:"message"`
+}
+
+func (r graphqlResponse) err() error {
+	if len(r.Errors) == 0 {
+		return nil
+	}
+	msgs := make([]string, 0, len(r.Errors))
+	for _, e := range r.Errors {
+		msgs = append(msgs, e.Message)
+	}
+	return fmt.Errorf("opencollective graphql error: %s", strings.Join(msgs, "; "))
+}
+
+func (c client) createUpdate(ctx *context.Context, title, html, slug string) (string, error) {
 	mutation := `mutation (
   $update: UpdateCreateInput!
 ) {
@@ -84,7 +115,7 @@ func createUpdate(ctx *context.Context, title, html, slug, token string) (string
     id
   }
 }`
-	payload := payload{
+	p := payload{
 		Query: mutation,
 		Variables: map[string]any{
 			"update": map[string]any{
@@ -97,28 +128,34 @@ func createUpdate(ctx *context.Context, title, html, slug, token string) (string
 		},
 	}
 
-	resp, err := doMutation(ctx, payload, token)
+	body, err := c.doMutation(ctx, p)
 	if err != nil {
 		return "", err
 	}
-	defer resp.Body.Close()
 
 	//nolint:tagliatelle
 	var envelope struct {
+		graphqlResponse
 		Data struct {
 			CreateUpdate struct {
 				ID string `json:"id"`
 			} `json:"createUpdate"`
 		} `json:"data"`
 	}
-	if err := json.NewDecoder(resp.Body).Decode(&envelope); err != nil {
+	if err := json.Unmarshal(body, &envelope); err != nil {
 		return "", fmt.Errorf("could not decode JSON response: %w", err)
+	}
+	if err := envelope.err(); err != nil {
+		return "", err
+	}
+	if envelope.Data.CreateUpdate.ID == "" {
+		return "", errors.New("opencollective returned empty update id")
 	}
 
 	return envelope.Data.CreateUpdate.ID, nil
 }
 
-func publishUpdate(ctx *context.Context, id, token string) error {
+func (c client) publishUpdate(ctx *context.Context, id string) error {
 	mutation := `mutation (
   $id: String!
   $audience: UpdateAudience
@@ -127,7 +164,7 @@ func publishUpdate(ctx *context.Context, id, token string) error {
     id
   }
 }`
-	payload := payload{
+	p := payload{
 		Query: mutation,
 		Variables: map[string]any{
 			"id":       id,
@@ -135,36 +172,45 @@ func publishUpdate(ctx *context.Context, id, token string) error {
 		},
 	}
 
-	resp, err := doMutation(ctx, payload, token)
+	body, err := c.doMutation(ctx, p)
 	if err != nil {
 		return err
 	}
-	defer resp.Body.Close()
 
-	return err
+	var envelope graphqlResponse
+	if err := json.Unmarshal(body, &envelope); err != nil {
+		return fmt.Errorf("could not decode JSON response: %w", err)
+	}
+	return envelope.err()
 }
 
-func doMutation(ctx *context.Context, payload payload, token string) (*http.Response, error) {
+func (c client) doMutation(ctx *context.Context, payload payload) ([]byte, error) {
 	p, err := json.Marshal(payload)
 	if err != nil {
 		return nil, fmt.Errorf("could not marshal payload: %w", err)
 	}
 
-	req, err := http.NewRequestWithContext(ctx, http.MethodPost, endpoint, bytes.NewReader(p))
+	req, err := http.NewRequestWithContext(ctx, http.MethodPost, c.endpoint, bytes.NewReader(p))
 	if err != nil {
 		return nil, fmt.Errorf("could not create request: %w", err)
 	}
-	req.Header.Set("Personal-Token", token)
+	req.Header.Set("Personal-Token", c.token)
 	req.Header.Set("Content-Type", "application/json")
 
 	resp, err := http.DefaultClient.Do(req)
 	if err != nil {
 		return nil, fmt.Errorf("could not send request to opencollective: %w", err)
 	}
+	defer resp.Body.Close()
 
-	if resp.StatusCode != http.StatusOK {
-		return resp, fmt.Errorf("incorrect response from opencollective: %s", resp.Status)
+	body, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return nil, fmt.Errorf("could not read response from opencollective: %w", err)
 	}
 
-	return resp, nil
+	if resp.StatusCode != http.StatusOK {
+		return nil, fmt.Errorf("incorrect response from opencollective: %s — %s", resp.Status, string(body))
+	}
+
+	return body, nil
 }
