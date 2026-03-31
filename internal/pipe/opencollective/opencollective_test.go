@@ -1,6 +1,7 @@
 package opencollective
 
 import (
+	"io"
 	"net/http"
 	"net/http/httptest"
 	"testing"
@@ -110,7 +111,7 @@ func newTestClient(t *testing.T, handler http.HandlerFunc) client {
 func TestCreateUpdateGraphqlError(t *testing.T) {
 	c := newTestClient(t, func(w http.ResponseWriter, _ *http.Request) {
 		w.WriteHeader(http.StatusOK)
-		_, _ = w.Write([]byte(`{"errors":[{"message":"You need to be logged in as an admin of this collective"}],"data":{"createUpdate":null}}`))
+		_, _ = io.WriteString(w, `{"errors":[{"message":"You need to be logged in as an admin of this collective"}],"data":{"createUpdate":null}}`)
 	})
 
 	ctx := testctx.Wrap(t.Context())
@@ -121,7 +122,7 @@ func TestCreateUpdateGraphqlError(t *testing.T) {
 func TestCreateUpdateEmptyID(t *testing.T) {
 	c := newTestClient(t, func(w http.ResponseWriter, _ *http.Request) {
 		w.WriteHeader(http.StatusOK)
-		_, _ = w.Write([]byte(`{"data":{"createUpdate":{"id":""}}}`))
+		_, _ = io.WriteString(w, `{"data":{"createUpdate":{"id":""}}}`)
 	})
 
 	ctx := testctx.Wrap(t.Context())
@@ -132,7 +133,7 @@ func TestCreateUpdateEmptyID(t *testing.T) {
 func TestPublishUpdateGraphqlError(t *testing.T) {
 	c := newTestClient(t, func(w http.ResponseWriter, _ *http.Request) {
 		w.WriteHeader(http.StatusOK)
-		_, _ = w.Write([]byte(`{"errors":[{"message":"Update not found"}]}`))
+		_, _ = io.WriteString(w, `{"errors":[{"message":"Update not found"}]}`)
 	})
 
 	ctx := testctx.Wrap(t.Context())
@@ -143,7 +144,7 @@ func TestPublishUpdateGraphqlError(t *testing.T) {
 func TestNonOKStatus(t *testing.T) {
 	c := newTestClient(t, func(w http.ResponseWriter, _ *http.Request) {
 		w.WriteHeader(http.StatusUnauthorized)
-		_, _ = w.Write([]byte(`Unauthorized`))
+		_, _ = io.WriteString(w, `Unauthorized`)
 	})
 
 	ctx := testctx.Wrap(t.Context())
