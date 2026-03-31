@@ -148,7 +148,7 @@ func (c client) createUpdate(ctx *context.Context, title, html, slug string) (st
 		return "", err
 	}
 	if envelope.Data.CreateUpdate.ID == "" {
-		return "", fmt.Errorf("opencollective returned empty update id")
+		return "", errors.New("opencollective returned empty update id")
 	}
 
 	return envelope.Data.CreateUpdate.ID, nil
