@@ -179,7 +179,7 @@ func refreshAll(ctx *context.Context, filepath string) error {
 func buildArtifactList(ctx *context.Context) ([]*artifact.Artifact, error) {
 	filter := artifact.And(
 		artifact.ByTypes(artifact.ReleaseUploadableTypes()...),
-		artifact.Not(artifact.ByType(artifact.Checksum)),
+		artifact.Not(artifact.ByTypes(artifact.Checksum, artifact.Signature, artifact.Certificate)),
 		artifact.ByIDs(ctx.Config.Checksum.IDs...),
 	)
 	artifactList := ctx.Artifacts.Filter(filter).List()

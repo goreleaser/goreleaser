@@ -518,3 +518,47 @@ func TestSkip(t *testing.T) {
 		require.False(t, Pipe{}.Skip(testctx.Wrap(t.Context())))
 	})
 }
+
+func TestChecksumExcludesSignaturesAndCertificates(t *testing.T) {
+	folder := t.TempDir()
+	file := filepath.Join(folder, "binary")
+	require.NoError(t, os.WriteFile(file, []byte("some string"), 0o644))
+
+	ctx := testctx.WrapWithCfg(t.Context(), config.Project{
+		Dist:        folder,
+		ProjectName: "proj",
+		Checksum: config.Checksum{
+			NameTemplate: "checksums.txt",
+			Algorithm:    "sha256",
+		},
+	}, testctx.WithCurrentTag("1.0.0"))
+
+	ctx.Artifacts.Add(&artifact.Artifact{
+		Name: "binary",
+		Path: file,
+		Type: artifact.UploadableBinary,
+		Extra: map[string]any{artifact.ExtraID: "default"},
+	})
+	ctx.Artifacts.Add(&artifact.Artifact{
+		Name: "binary.sig",
+		Path: file,
+		Type: artifact.Signature,
+		Extra: map[string]any{artifact.ExtraID: "default"},
+	})
+	ctx.Artifacts.Add(&artifact.Artifact{
+		Name: "binary.pem",
+		Path: file,
+		Type: artifact.Certificate,
+		Extra: map[string]any{artifact.ExtraID: "default"},
+	})
+
+	require.NoError(t, Pipe{}.Run(ctx))
+
+	bts, err := os.ReadFile(filepath.Join(folder, "checksums.txt"))
+	require.NoError(t, err)
+
+	content := string(bts)
+	require.Contains(t, content, "binary")
+	require.NotContains(t, content, "binary.sig", "signatures must not be checksummed")
+	require.NotContains(t, content, "binary.pem", "certificates must not be checksummed")
+}
