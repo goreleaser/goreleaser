@@ -534,21 +534,21 @@ func TestChecksumExcludesSignaturesAndCertificates(t *testing.T) {
 	}, testctx.WithCurrentTag("1.0.0"))
 
 	ctx.Artifacts.Add(&artifact.Artifact{
-		Name: "binary",
-		Path: file,
-		Type: artifact.UploadableBinary,
+		Name:  "binary",
+		Path:  file,
+		Type:  artifact.UploadableBinary,
 		Extra: map[string]any{artifact.ExtraID: "default"},
 	})
 	ctx.Artifacts.Add(&artifact.Artifact{
-		Name: "binary.sig",
-		Path: file,
-		Type: artifact.Signature,
+		Name:  "binary.sig",
+		Path:  file,
+		Type:  artifact.Signature,
 		Extra: map[string]any{artifact.ExtraID: "default"},
 	})
 	ctx.Artifacts.Add(&artifact.Artifact{
-		Name: "binary.pem",
-		Path: file,
-		Type: artifact.Certificate,
+		Name:  "binary.pem",
+		Path:  file,
+		Type:  artifact.Certificate,
 		Extra: map[string]any{artifact.ExtraID: "default"},
 	})
 
