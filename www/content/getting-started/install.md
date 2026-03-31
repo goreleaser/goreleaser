@@ -447,8 +447,7 @@ All artifacts are checksummed, and the checksum file is signed with [cosign][].
 {{< tabs >}}
 {{< tab "OSS" >}}
 
-1. Download the files you want, and the `checksums.txt`, `checksum.txt.pem` and
-   `checksums.txt.sig` files from the
+1. Download the files you want, and the `checksums.txt`, `checksum.txt.sigstore.json` files from the
    [releases](https://github.com/goreleaser/goreleaser/releases) page:
 
 ```bash
@@ -475,8 +474,7 @@ sha256sum --ignore-missing -c checksums.txt
 {{< /tab >}}
 {{< tab "Pro" >}}
 
-1. Download the files you want, and the `checksums.txt`, `checksum.txt.pem` and
-   `checksums.txt.sig` files from the
+1. Download the files you want, and the `checksums.txt`, `checksum.txt.sigstore.json` files from the
    [releases](https://github.com/goreleaser/goreleaser-pro/releases) page:
 
 ```bash
