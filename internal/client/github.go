@@ -17,6 +17,7 @@ import (
 	"github.com/google/go-github/v84/github"
 	"github.com/goreleaser/goreleaser/v2/internal/artifact"
 	"github.com/goreleaser/goreleaser/v2/internal/changelog"
+	"github.com/goreleaser/goreleaser/v2/internal/retryx"
 	"github.com/goreleaser/goreleaser/v2/internal/tmpl"
 	"github.com/goreleaser/goreleaser/v2/pkg/config"
 	"github.com/goreleaser/goreleaser/v2/pkg/context"
@@ -119,10 +120,17 @@ func (c *githubClient) rateLimitChecker(
 
 func (c *githubClient) GenerateReleaseNotes(ctx *context.Context, repo Repo, prev, current string) (string, error) {
 	c.checkRateLimit(ctx, time.Sleep)
-	notes, _, err := c.client.Repositories.GenerateReleaseNotes(ctx, repo.Owner, repo.Name, &github.GenerateNotesOptions{
-		TagName:         current,
-		PreviousTagName: &prev,
-	})
+	notes, err := retryx.DoWithData(
+		ctx.Config.Retry,
+		func() (*github.RepositoryReleaseNotes, error) {
+			notes, _, err := c.client.Repositories.GenerateReleaseNotes(ctx, repo.Owner, repo.Name, &github.GenerateNotesOptions{
+				TagName:         current,
+				PreviousTagName: &prev,
+			})
+			return notes, err
+		},
+		retryx.IsNetworkError,
+	)
 	if err != nil {
 		return "", err
 	}
@@ -136,7 +144,19 @@ func (c *githubClient) Changelog(ctx *context.Context, repo Repo, prev, current 
 	cache := map[string]string{}
 
 	for {
-		result, resp, err := c.client.Repositories.CompareCommits(ctx, repo.Owner, repo.Name, prev, current, opts)
+		nextPage := 0
+		result, err := retryx.DoWithData(
+			ctx.Config.Retry,
+			func() (*github.CommitsComparison, error) {
+				result, resp, err := c.client.Repositories.CompareCommits(ctx, repo.Owner, repo.Name, prev, current, opts)
+				if err != nil {
+					return nil, err
+				}
+				nextPage = resp.NextPage
+				return result, nil
+			},
+			retryx.IsNetworkError,
+		)
 		if err != nil {
 			return nil, err
 		}
@@ -157,10 +177,10 @@ func (c *githubClient) Changelog(ctx *context.Context, repo Repo, prev, current 
 				Authors: authors,
 			}))
 		}
-		if resp.NextPage == 0 {
+		if nextPage == 0 {
 			break
 		}
-		opts.Page = resp.NextPage
+		opts.Page = nextPage
 	}
 
 	return log, nil
@@ -183,7 +203,10 @@ func (c *githubClient) authorsLookup(ctx *context.Context, authors []Author, cac
 			continue
 		}
 		c.checkSearchRateLimit(ctx, time.Sleep)
-		res, _, err := c.client.Search.Users(ctx, author.Email, nil)
+		res, err := retryx.DoWithData(ctx.Config.Retry, func() (*github.UsersSearchResult, error) {
+			res, _, err := c.client.Search.Users(ctx, author.Email, nil)
+			return res, err
+		}, retryx.IsNetworkError)
 		if err == nil && len(res.Users) == 1 {
 			author.Username = res.Users[0].GetLogin()
 			cache[author.Email] = author.Username
