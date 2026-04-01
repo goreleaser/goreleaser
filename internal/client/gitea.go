@@ -326,7 +326,6 @@ func (c *giteaClient) Upload(
 	ctx *context.Context,
 	releaseID string,
 	artifact *artifact.Artifact,
-	file *os.File,
 ) error {
 	giteaReleaseID, err := strconv.ParseInt(releaseID, 10, 64)
 	if err != nil {
@@ -336,6 +335,11 @@ func (c *giteaClient) Upload(
 	owner := releaseConfig.Gitea.Owner
 	repoName := releaseConfig.Gitea.Name
 
+	file, err := os.Open(artifact.Path)
+	if err != nil {
+		return err
+	}
+	defer file.Close()
 	_, _, err = c.client.CreateReleaseAttachment(owner, repoName, giteaReleaseID, file, artifact.Name)
 	if err != nil {
 		return RetriableError{err}

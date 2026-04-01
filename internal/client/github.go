@@ -634,13 +634,19 @@ func (c *githubClient) Upload(
 	ctx *context.Context,
 	releaseID string,
 	artifact *artifact.Artifact,
-	file *os.File,
 ) error {
 	c.checkRateLimit(ctx, time.Sleep)
 	githubReleaseID, err := strconv.ParseInt(releaseID, 10, 64)
 	if err != nil {
 		return err
 	}
+
+	file, err := os.Open(artifact.Path)
+	if err != nil {
+		return err
+	}
+	defer file.Close()
+
 	_, resp, err := c.client.Repositories.UploadReleaseAsset(
 		ctx,
 		ctx.Config.Release.GitHub.Owner,

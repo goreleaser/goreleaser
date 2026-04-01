@@ -4,7 +4,6 @@ package client
 import (
 	"errors"
 	"fmt"
-	"os"
 
 	"github.com/caarlos0/log"
 	"github.com/goreleaser/goreleaser/v2/internal/artifact"
@@ -56,13 +55,23 @@ type (
 	Author        = changelog.Author
 )
 
+type FullClient interface {
+	Client
+	ReleaseURLTemplater
+	FileCreator
+	FilesCreator
+	ReleaseNotesGenerator
+	ForkSyncer
+	PullRequestOpener
+}
+
 // Client interface.
 type Client interface {
 	CloseMilestone(ctx *context.Context, repo Repo, title string) (err error)
 	// Creates a release. It's marked as draft if possible (should call PublishRelease to finish publishing).
 	CreateRelease(ctx *context.Context, body string) (releaseID string, err error)
 	PublishRelease(ctx *context.Context, releaseID string) (err error)
-	Upload(ctx *context.Context, releaseID string, artifact *artifact.Artifact, file *os.File) (err error)
+	Upload(ctx *context.Context, releaseID string, artifact *artifact.Artifact) (err error)
 	Changelog(ctx *context.Context, repo Repo, prev, current string) ([]ChangelogItem, error)
 	ReleaseURLTemplater
 	FileCreator

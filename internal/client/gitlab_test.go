@@ -269,16 +269,14 @@ func TestGitLabURLsDownloadTemplate(t *testing.T) {
 
 				tmpFile, err := os.CreateTemp(t.TempDir(), "")
 				require.NoError(t, err)
-				t.Cleanup(func() {
-					_ = tmpFile.Close()
-				})
+				_ = tmpFile.Close()
 
 				client, err := newGitLab(ctx, ctx.Token)
 				require.NoError(t, err)
 
-				err = client.Upload(ctx, "1234", &artifact.Artifact{Name: "test", Path: "some-path"}, tmpFile)
+				err = client.Upload(ctx, "1234", &artifact.Artifact{Name: "test", Path: tmpFile.Name()})
 				if errors.As(err, &RetriableError{}) {
-					err = client.Upload(ctx, "1234", &artifact.Artifact{Name: "test", Path: "some-path"}, tmpFile)
+					err = client.Upload(ctx, "1234", &artifact.Artifact{Name: "test", Path: tmpFile.Name()})
 				}
 				if tt.wantErr {
 					require.Error(t, err)

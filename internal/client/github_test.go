@@ -161,7 +161,7 @@ func TestGitHubUploadReleaseIDNotInt(t *testing.T) {
 
 	require.EqualError(
 		t,
-		client.Upload(ctx, "blah", &artifact.Artifact{}, nil),
+		client.Upload(ctx, "blah", &artifact.Artifact{}),
 		`strconv.ParseInt: parsing "blah": invalid syntax`,
 	)
 }

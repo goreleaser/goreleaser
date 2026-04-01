@@ -497,7 +497,6 @@ func (c *gitlabClient) Upload(
 	ctx *context.Context,
 	releaseID string,
 	artifact *artifact.Artifact,
-	file *os.File,
 ) error {
 	// create new template and apply name field
 	gitlabName, err := tmpl.New(ctx).Apply(ctx.Config.Release.GitLab.Name)
@@ -509,6 +508,12 @@ func (c *gitlabClient) Upload(
 	if ctx.Config.Release.GitLab.Owner != "" {
 		projectID = ctx.Config.Release.GitLab.Owner + "/" + projectID
 	}
+
+	file, err := os.Open(artifact.Path)
+	if err != nil {
+		return err
+	}
+	defer file.Close()
 
 	var baseLinkURL string
 	var linkURL string

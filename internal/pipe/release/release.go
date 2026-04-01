@@ -187,12 +187,7 @@ func upload(ctx *context.Context, cli client.Client, releaseID string, artifact 
 		func() error {
 			log.WithField("name", artifact.Name).
 				Info("uploading to release")
-			file, err := os.Open(artifact.Path)
-			if err != nil {
-				return err
-			}
-			defer file.Close()
-			return cli.Upload(ctx, releaseID, artifact, file)
+			return cli.Upload(ctx, releaseID, artifact)
 		},
 		retry.Attempts(10),
 		retry.Delay(50*time.Millisecond),

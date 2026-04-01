@@ -3,7 +3,6 @@ package client
 import (
 	"errors"
 	"fmt"
-	"io"
 	"os"
 	"sync"
 
@@ -106,14 +105,14 @@ func (c *Mock) CreateFile(_ *context.Context, _ config.CommitAuthor, _ Repo, con
 	return nil
 }
 
-func (c *Mock) Upload(_ *context.Context, _ string, artifact *artifact.Artifact, file *os.File) error {
+func (c *Mock) Upload(_ *context.Context, _ string, artifact *artifact.Artifact) error {
 	c.Lock.Lock()
 	defer c.Lock.Unlock()
 	if c.UploadedFilePaths == nil {
 		c.UploadedFilePaths = map[string]string{}
 	}
 	// ensure file is read to better mimic real behavior
-	_, err := io.ReadAll(file)
+	_, err := os.ReadFile(artifact.Path)
 	if err != nil {
 		return fmt.Errorf("unexpected error: %w", err)
 	}
