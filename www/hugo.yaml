@@ -135,11 +135,17 @@ permalinks:
     blog: /blog/:slug
 
 outputs:
-  home: [html, rss, llms, markdown]
+  home: [html, llms, markdown]
   section:
     - html
-    - rss
     - markdown
+  page:
+    - html
+    - markdown
+  taxonomy:
+    - html
+  term:
+    - html
 
 outputFormats:
   rss:
