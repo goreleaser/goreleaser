@@ -1110,7 +1110,8 @@ type Docker struct {
 	BuildFlagTemplates []string `yaml:"build_flag_templates,omitempty" json:"build_flag_templates,omitempty"`
 	PushFlags          []string `yaml:"push_flags,omitempty" json:"push_flags,omitempty"`
 	Use                string   `yaml:"use,omitempty" json:"use,omitempty" jsonschema:"enum=docker,enum=buildx,default=docker"`
-	Retry              Retry    `yaml:"retry,omitempty" json:"retry,omitempty"`
+
+	Retry Retry `yaml:"retry,omitempty" json:"retry,omitempty"` // Deprecated: use [Project.Retry] instead.
 }
 
 // DockerManifest config.
@@ -1124,7 +1125,8 @@ type DockerManifest struct {
 	CreateFlags    []string `yaml:"create_flags,omitempty" json:"create_flags,omitempty"`
 	PushFlags      []string `yaml:"push_flags,omitempty" json:"push_flags,omitempty"`
 	Use            string   `yaml:"use,omitempty" json:"use,omitempty"`
-	Retry          Retry    `yaml:"retry,omitempty" json:"retry,omitempty"`
+
+	Retry Retry `yaml:"retry,omitempty" json:"retry,omitempty"` // Deprecated: use [Project.Retry] instead.
 }
 
 // DockerV2 is the new Docker build pipe options.
@@ -1139,10 +1141,11 @@ type DockerV2 struct {
 	ExtraFiles  []string          `yaml:"extra_files,omitempty" json:"extra_files,omitempty"`
 	Platforms   []string          `yaml:"platforms,omitempty" json:"platforms,omitempty"`
 	BuildArgs   map[string]string `yaml:"build_args,omitempty" json:"build_args,omitempty"`
-	Retry       Retry             `yaml:"retry,omitempty" json:"retry,omitempty"`
 	Flags       []string          `yaml:"flags,omitempty" json:"flags,omitempty"`
 	Disable     string            `yaml:"disable,omitempty" json:"disable,omitempty" jsonschema:"oneof_type=string;boolean"`
 	SBOM        string            `yaml:"sbom,omitempty" json:"sbom,omitempty" jsonschema:"oneof_type=string;boolean"`
+
+	Retry Retry `yaml:"retry,omitempty" json:"retry,omitempty"` // Deprecated: use [Project.Retry] instead.
 }
 
 // DockerDigest config.
@@ -1307,6 +1310,7 @@ type Project struct {
 	UniversalBinaries []UniversalBinary `yaml:"universal_binaries,omitempty" json:"universal_binaries,omitempty"`
 	UPXs              []UPX             `yaml:"upx,omitempty" json:"upx,omitempty"`
 	MCP               MCP               `yaml:"mcp,omitempty" json:"mcp,omitempty"`
+	Retry             Retry             `yaml:"retry,omitempty" json:"retry,omitempty"`
 
 	// force the SCM token to use when multiple are set
 	ForceToken string `yaml:"force_token,omitempty" json:"force_token,omitempty" jsonschema:"enum=github,enum=gitlab,enum=gitea,enum=,default="`

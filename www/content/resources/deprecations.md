@@ -49,6 +49,96 @@ foo: bar
 
 -->
 
+### dockers_v2.retry
+
+> since v2.15.3
+
+All retry configuration were moved to the root of the configuration file:
+
+{{< tabs >}}
+{{< tab "Before" >}}
+
+```yaml
+dockers_v2:
+  - retry:
+      attempts: 3
+      delay: 5s
+      max_delay: 1m
+```
+
+{{< /tab >}}
+{{< tab "After" >}}
+
+```yaml
+retry:
+  attempts: 3
+  delay: 5s
+  max_delay: 1m
+```
+
+{{< /tab >}}
+{{< /tabs >}}
+
+### docker_manifests.retry
+
+> since v2.15.3
+
+All retry configuration were moved to the root of the configuration file:
+
+{{< tabs >}}
+{{< tab "Before" >}}
+
+```yaml
+docker_manifests:
+  - retry:
+      attempts: 3
+      delay: 5s
+      max_delay: 1m
+```
+
+{{< /tab >}}
+{{< tab "After" >}}
+
+```yaml
+retry:
+  attempts: 3
+  delay: 5s
+  max_delay: 1m
+```
+
+{{< /tab >}}
+{{< /tabs >}}
+
+### dockers.retry
+
+> since v2.15.3
+
+All retry configuration were moved to the root of the configuration file:
+
+{{< tabs >}}
+{{< tab "Before" >}}
+
+```yaml
+dockers:
+  - retry:
+      attempts: 3
+      delay: 5s
+      max_delay: 1m
+```
+
+{{< /tab >}}
+{{< tab "After" >}}
+
+```yaml
+retry:
+  attempts: 3
+  delay: 5s
+  max_delay: 1m
+```
+
+{{< /tab >}}
+{{< /tabs >}}
+
 ### furies
 
 > since v2.14

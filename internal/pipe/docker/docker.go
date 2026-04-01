@@ -13,17 +13,17 @@ import (
 	"slices"
 	"strings"
 	"sync"
-	"time"
 
-	"github.com/avast/retry-go/v4"
 	"github.com/caarlos0/log"
 	"github.com/goreleaser/goreleaser/v2/internal/artifact"
+	"github.com/goreleaser/goreleaser/v2/internal/deprecate"
 	"github.com/goreleaser/goreleaser/v2/internal/experimental"
 	"github.com/goreleaser/goreleaser/v2/internal/gerrors"
 	"github.com/goreleaser/goreleaser/v2/internal/gio"
 	"github.com/goreleaser/goreleaser/v2/internal/ids"
 	"github.com/goreleaser/goreleaser/v2/internal/logext"
 	"github.com/goreleaser/goreleaser/v2/internal/pipe"
+	"github.com/goreleaser/goreleaser/v2/internal/retryx"
 	"github.com/goreleaser/goreleaser/v2/internal/semerrgroup"
 	"github.com/goreleaser/goreleaser/v2/internal/skips"
 	"github.com/goreleaser/goreleaser/v2/internal/tmpl"
@@ -101,9 +101,16 @@ func (Pipe) Default(ctx *context.Context) error {
 		if docker.Use == "" {
 			docker.Use = useDocker
 		}
-		docker.Retry.Attempts = cmp.Or(docker.Retry.Attempts, 10)
-		docker.Retry.Delay = cmp.Or(docker.Retry.Delay, 10*time.Second)
-		docker.Retry.MaxDelay = cmp.Or(docker.Retry.MaxDelay, 5*time.Minute)
+
+		if docker.Retry.Attempts > 0 ||
+			docker.Retry.MaxDelay > 0 ||
+			docker.Retry.Delay > 0 {
+			deprecate.Notice(ctx, "dockers.retry")
+		}
+		docker.Retry.Attempts = cmp.Or(docker.Retry.Attempts, ctx.Config.Retry.Attempts)
+		docker.Retry.Delay = cmp.Or(docker.Retry.Delay, ctx.Config.Retry.Delay)
+		docker.Retry.MaxDelay = cmp.Or(docker.Retry.MaxDelay, ctx.Config.Retry.MaxDelay)
+
 		if err := validateImager(docker.Use); err != nil {
 			return err
 		}
@@ -347,17 +354,14 @@ func dockerPush(ctx *context.Context, image *artifact.Artifact) error {
 		return pipe.Skip("prerelease detected with 'auto' push, skipping docker publish: " + image.Name)
 	}
 
-	digest, err := retry.DoWithData(
+	digest, err := retryx.DoWithData(
+		docker.Retry,
 		func() (string, error) {
 			log.WithField("image", image.Name).
 				Info("pushing image")
 			return imagers[docker.Use].Push(ctx, image.Name, docker.PushFlags)
 		},
-		retry.RetryIf(isRetriablePush),
-		retry.Attempts(docker.Retry.Attempts),
-		retry.Delay(docker.Retry.Delay),
-		retry.MaxDelay(docker.Retry.MaxDelay),
-		retry.LastErrorOnly(true),
+		isRetriablePush,
 	)
 	if err != nil {
 		return err
