@@ -10,11 +10,10 @@ import (
 	"path/filepath"
 	"regexp"
 	"strings"
-	"time"
 
-	"github.com/avast/retry-go/v4"
 	"github.com/caarlos0/log"
 	"github.com/goreleaser/goreleaser/v2/internal/logext"
+	"github.com/goreleaser/goreleaser/v2/internal/retryx"
 	"github.com/goreleaser/goreleaser/v2/internal/tmpl"
 	"github.com/goreleaser/goreleaser/v2/pkg/config"
 	"github.com/goreleaser/goreleaser/v2/pkg/context"
@@ -156,7 +155,8 @@ func proxyBuild(ctx *context.Context, build *config.Build) error {
 	}
 
 	log.Debugf("tidying")
-	if err := retry.Do(
+	if err := retryx.Do(
+		ctx.Config.Retry,
 		func() error {
 			cmd := exec.CommandContext(ctx, ctx.Config.GoMod.GoBinary, "get", ctx.ModulePath+"@"+ctx.Git.CurrentTag)
 			cmd.Dir = dir
@@ -166,17 +166,7 @@ func proxyBuild(ctx *context.Context, build *config.Build) error {
 			}
 			return nil
 		},
-		retry.Context(ctx),
-		retry.RetryIf(isProxyRetriable),
-		retry.DelayType(retry.BackOffDelay),
-		retry.Delay(time.Second),
-		retry.MaxDelay(time.Minute),
-		// 15 attempts with gives ~9 minutes of total wait time
-		retry.Attempts(15),
-		retry.LastErrorOnly(true),
-		retry.OnRetry(func(n uint, _ error) {
-			log.WithField("attempt", n+1).Warn("module not yet available in proxy, retrying")
-		}),
+		isProxyRetriable,
 	); err != nil {
 		return err
 	}

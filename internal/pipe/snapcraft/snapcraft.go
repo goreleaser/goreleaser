@@ -12,15 +12,14 @@ import (
 	"path/filepath"
 	"slices"
 	"strings"
-	"time"
 
-	"github.com/avast/retry-go/v4"
 	"github.com/caarlos0/log"
 	"github.com/goreleaser/goreleaser/v2/internal/artifact"
 	"github.com/goreleaser/goreleaser/v2/internal/deprecate"
 	"github.com/goreleaser/goreleaser/v2/internal/gio"
 	"github.com/goreleaser/goreleaser/v2/internal/ids"
 	"github.com/goreleaser/goreleaser/v2/internal/pipe"
+	"github.com/goreleaser/goreleaser/v2/internal/retryx"
 	"github.com/goreleaser/goreleaser/v2/internal/semerrgroup"
 	"github.com/goreleaser/goreleaser/v2/internal/skips"
 	"github.com/goreleaser/goreleaser/v2/internal/tmpl"
@@ -468,7 +467,8 @@ func isRetriableSnapPush(err error) bool {
 func push(ctx *context.Context, snap *artifact.Artifact) error {
 	log := log.WithField("snap", snap.Name)
 	releases := artifact.MustExtra[[]string](*snap, releasesExtra)
-	if err := retry.Do(
+	if err := retryx.Do(
+		ctx.Config.Retry,
 		func() error {
 			/* #nosec */
 			cmd := exec.CommandContext(ctx, "snapcraft", "upload", "--release="+strings.Join(releases, ","), snap.Path)
@@ -485,14 +485,7 @@ func push(ctx *context.Context, snap *artifact.Artifact) error {
 			}
 			return nil
 		},
-		retry.RetryIf(isRetriableSnapPush),
-		retry.Attempts(10),
-		retry.Delay(10*time.Second),
-		retry.DelayType(retry.BackOffDelay),
-		retry.LastErrorOnly(true),
-		retry.OnRetry(func(n uint, err error) {
-			log.WithField("attempt", n+1).WithError(err).Warn("failed to push snap, retrying")
-		}),
+		isRetriableSnapPush,
 	); err != nil {
 		return err
 	}
