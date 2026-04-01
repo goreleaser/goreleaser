@@ -9,6 +9,7 @@ import (
 	"maps"
 	"net/http"
 	"os"
+	"os/exec"
 	"path/filepath"
 	"slices"
 	"strings"
@@ -53,7 +54,11 @@ func (Pipe) Dependencies(ctx *context.Context) []string {
 		switch s.Use {
 		case useDocker, useBuildx:
 			cmds = append(cmds, "docker")
-			// TODO: how to check if buildx is installed
+			if s.Use == useBuildx {
+				if err := checkBuildx(); err != nil {
+					log.Warn(logext.Warning(err.Error()))
+				}
+			}
 		}
 	}
 	return cmds
@@ -415,4 +420,15 @@ func isRetriablePush(err error) bool {
 		}
 	}
 	return false
+}
+
+func checkBuildx() error {
+	if _, err := exec.LookPath("docker"); err != nil {
+		return errors.New("docker not found in PATH")
+	}
+	cmd := exec.Command("docker", "buildx", "version")
+	if err := cmd.Run(); err != nil {
+		return errors.New("docker buildx is not installed")
+	}
+	return nil
 }
