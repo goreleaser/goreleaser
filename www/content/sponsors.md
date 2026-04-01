@@ -40,24 +40,6 @@ A big **thank you** to all current, past, and future sponsors!
     </div>
   </div>
   <div class="goreleaser-sponsors-tier">
-    <div class="goreleaser-sponsors-tier-label">Platinum</div>
-    <div class="goreleaser-sponsors-grid">
-        <a class="goreleaser-sponsor-item" 
-          href="https://opensource.sap.com?utm_source=goreleaser&utm_medium=sponsor&utm_campaign=homepage&utm_content=github" 
-          target="_blank" 
-          rel="noopener sponsored"
-        >
-          <img 
-            src="https://avatars.githubusercontent.com/u/2531208?s=112&v=4" 
-            alt="SAP" 
-            width="112" 
-            height="112"
-          />
-          SAP
-        </a>
-    </div>
-  </div>
-  <div class="goreleaser-sponsors-tier">
     <div class="goreleaser-sponsors-tier-label">Gold</div>
     <div class="goreleaser-sponsors-grid">
         <a class="goreleaser-sponsor-item" 

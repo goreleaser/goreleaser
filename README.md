@@ -91,8 +91,6 @@ A big **thank you** to all current, past, and future sponsors!
   <h2>Our Sponsors</h2>
   <h3>Diamond</h3>
   <a href="https://serpapi.com/?utm_source=goreleaser&utm_medium=sponsor&utm_campaign=homepage&utm_content=github" target="_blank" rel="noopener sponsored" ><img src="https://github.com/serpapi.png" alt="SerpApi" width="128" height="128"/></a>
-  <h3>Platinum</h3>
-  <a href="https://opensource.sap.com?utm_source=goreleaser&utm_medium=sponsor&utm_campaign=homepage&utm_content=github" target="_blank" rel="noopener sponsored" ><img src="https://avatars.githubusercontent.com/u/2531208?s=112&v=4" alt="SAP" width="112" height="112"/></a>
   <h3>Gold</h3>
   <a href="https://opensource.mercedes-benz.com/?utm_source=goreleaser&utm_medium=sponsor&utm_campaign=homepage&utm_content=github" target="_blank" rel="noopener sponsored" ><img src="https://avatars.githubusercontent.com/u/34240465?s=96&v=4" alt="Mercedes-Benz Group" width="96" height="96"/></a>
   <a href="https://nitric.io?utm_source=goreleaser&utm_medium=sponsor&utm_campaign=homepage&utm_content=github" target="_blank" rel="noopener sponsored" ><img src="https://avatars.githubusercontent.com/u/72055470?s=96&v=4" alt="nitric" width="96" height="96"/></a>
