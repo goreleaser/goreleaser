@@ -3,6 +3,7 @@ package bun
 
 import (
 	"fmt"
+	"os/exec"
 	"path/filepath"
 	"strings"
 	"sync"
@@ -41,8 +42,13 @@ type Builder struct{}
 func (b *Builder) AllowConcurrentBuilds() bool { return false }
 
 // Dependencies implements build.DependingBuilder.
-func (b *Builder) Dependencies() []string {
-	return []string{"bun"}
+func (b *Builder) Dependencies() []func() (string, error) {
+	return []func() (string, error){
+		func() (string, error) {
+			_, err := exec.LookPath("bun")
+			return "bun", err
+		},
+	}
 }
 
 var once sync.Once

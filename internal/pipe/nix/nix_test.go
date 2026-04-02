@@ -607,7 +607,13 @@ func TestErrNoArchivesFound(t *testing.T) {
 }
 
 func TestDependencies(t *testing.T) {
-	require.Equal(t, []string{"nix-hash"}, Pipe{}.Dependencies(nil))
+	dependencies := Pipe{}.Dependencies(nil)
+	var names []string
+	for _, dep := range dependencies {
+		name, _ := dep()
+		names = append(names, name)
+	}
+	require.Equal(t, []string{"nix-hash"}, names)
 }
 
 func TestBinInstallFormats(t *testing.T) {

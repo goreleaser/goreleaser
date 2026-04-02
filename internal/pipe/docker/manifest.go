@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"maps"
 	"math"
+	"os/exec"
 	"slices"
 	"strings"
 	"sync"
@@ -34,16 +35,25 @@ func (ManifestPipe) Skip(ctx *context.Context) bool {
 	return len(ctx.Config.DockerManifests) == 0 || skips.Any(ctx, skips.Docker)
 }
 
-func (ManifestPipe) Dependencies(ctx *context.Context) []string {
-	var cmds []string
+func (ManifestPipe) Dependencies(ctx *context.Context) []func() (string, error) {
+	var checks []func() (string, error)
 	for _, s := range ctx.Config.DockerManifests {
 		switch s.Use {
 		case useDocker, useBuildx:
-			cmds = append(cmds, "docker")
-			// TODO: check buildx
+			checks = append(checks, func() (string, error) {
+				_, err := exec.LookPath("docker")
+				return "docker", err
+			})
+
+			if s.Use == useBuildx {
+				checks = append(checks, func() (string, error) {
+					return "docker buildx", checkBuildx()
+				})
+			}
+			return checks
 		}
 	}
-	return cmds
+	return checks
 }
 
 // Default sets the pipe defaults.

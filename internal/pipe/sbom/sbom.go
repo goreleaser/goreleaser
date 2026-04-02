@@ -37,12 +37,16 @@ func (Pipe) Skip(ctx *context.Context) bool {
 	return skips.Any(ctx, skips.SBOM) || len(ctx.Config.SBOMs) == 0
 }
 
-func (Pipe) Dependencies(ctx *context.Context) []string {
-	var cmds []string
+func (Pipe) Dependencies(ctx *context.Context) []func() (string, error) {
+	var checks []func() (string, error)
 	for _, s := range ctx.Config.SBOMs {
-		cmds = append(cmds, s.Cmd)
+		cmd := s.Cmd
+		checks = append(checks, func() (string, error) {
+			_, err := exec.LookPath(cmd)
+			return cmd, err
+		})
 	}
-	return cmds
+	return checks
 }
 
 // Default sets the Pipes defaults.

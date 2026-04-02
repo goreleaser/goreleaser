@@ -775,13 +775,13 @@ func TestSkip(t *testing.T) {
 }
 
 func TestDependencies(t *testing.T) {
-	ctx := testctx.WrapWithCfg(t.Context(), config.Project{
-		Snapcrafts: []config.Snapcraft{
-			{},
-		},
-	})
-
-	require.Equal(t, []string{"snapcraft"}, Pipe{}.Dependencies(ctx))
+	dependencies := Pipe{}.Dependencies(nil)
+	var names []string
+	for _, dep := range dependencies {
+		name, _ := dep()
+		names = append(names, name)
+	}
+	require.Equal(t, []string{"snapcraft"}, names)
 }
 
 func requireEqualFileContents(tb testing.TB, a, b string) {

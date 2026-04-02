@@ -7,6 +7,7 @@ import (
 	"io/fs"
 	"maps"
 	"os"
+	"os/exec"
 	"path"
 	"path/filepath"
 	"slices"
@@ -57,8 +58,13 @@ func init() {
 type Builder struct{}
 
 // Dependencies implements build.DependingBuilder.
-func (b *Builder) Dependencies() []string {
-	return []string{"go"}
+func (b *Builder) Dependencies() []func() (string, error) {
+	return []func() (string, error){
+		func() (string, error) {
+			_, err := exec.LookPath("go")
+			return "go", err
+		},
+	}
 }
 
 // Parse implements build.Builder.

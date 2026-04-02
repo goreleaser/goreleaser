@@ -2,6 +2,7 @@ package sign
 
 import (
 	"fmt"
+	"os/exec"
 
 	"github.com/goreleaser/goreleaser/v2/internal/artifact"
 	"github.com/goreleaser/goreleaser/v2/internal/git"
@@ -24,12 +25,16 @@ func (BinaryPipe) Skip(ctx *context.Context) bool {
 	return skips.Any(ctx, skips.Sign) || len(ctx.Config.BinarySigns) == 0
 }
 
-func (BinaryPipe) Dependencies(ctx *context.Context) []string {
-	var cmds []string
+func (BinaryPipe) Dependencies(ctx *context.Context) []func() (string, error) {
+	var checks []func() (string, error)
 	for _, s := range ctx.Config.BinarySigns {
-		cmds = append(cmds, s.Cmd)
+		cmd := s.Cmd
+		checks = append(checks, func() (string, error) {
+			_, err := exec.LookPath(cmd)
+			return cmd, err
+		})
 	}
-	return cmds
+	return checks
 }
 
 // Default sets the Pipes defaults.

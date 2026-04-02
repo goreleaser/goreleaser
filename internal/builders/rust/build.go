@@ -43,8 +43,13 @@ func init() {
 type Builder struct{}
 
 // Dependencies implements build.DependingBuilder.
-func (b *Builder) Dependencies() []string {
-	return []string{"cargo", "rustup", "cargo-zigbuild", "zig"}
+func (b *Builder) Dependencies() []func() (string, error) {
+	return []func() (string, error){
+		func() (string, error) {
+			_, err := exec.LookPath("cargo")
+			return "cargo", err
+		},
+	}
 }
 
 // AllowConcurrentBuilds implements build.ConcurrentBuilder.

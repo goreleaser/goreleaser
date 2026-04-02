@@ -329,7 +329,13 @@ func TestPublish(t *testing.T) {
 }
 
 func TestDependencies(t *testing.T) {
-	require.Equal(t, []string{"choco"}, Pipe{}.Dependencies(nil))
+	dependencies := Pipe{}.Dependencies(nil)
+	var names []string
+	for _, dep := range dependencies {
+		name, _ := dep()
+		names = append(names, name)
+	}
+	require.Equal(t, []string{"choco"}, names)
 }
 
 type fakeCmd struct {

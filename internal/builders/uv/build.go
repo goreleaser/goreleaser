@@ -4,6 +4,7 @@ package uv
 import (
 	"errors"
 	"fmt"
+	"os/exec"
 	"path/filepath"
 	"strings"
 	"sync"
@@ -43,8 +44,13 @@ func init() {
 type Builder struct{}
 
 // Dependencies implements build.DependingBuilder.
-func (b *Builder) Dependencies() []string {
-	return []string{"uv"}
+func (b *Builder) Dependencies() []func() (string, error) {
+	return []func() (string, error){
+		func() (string, error) {
+			_, err := exec.LookPath("uv")
+			return "uv", err
+		},
+	}
 }
 
 // Parse implements build.Builder.

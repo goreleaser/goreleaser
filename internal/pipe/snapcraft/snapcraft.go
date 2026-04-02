@@ -108,9 +108,16 @@ const defaultNameTemplate = `{{ .ProjectName }}_{{ .Version }}_{{ .Os }}_{{ .Arc
 // Pipe for snapcraft packaging.
 type Pipe struct{}
 
-func (Pipe) String() string                           { return "snapcraft packages" }
-func (Pipe) ContinueOnError() bool                    { return true }
-func (Pipe) Dependencies(_ *context.Context) []string { return []string{"snapcraft"} }
+func (Pipe) String() string        { return "snapcraft packages" }
+func (Pipe) ContinueOnError() bool { return true }
+func (Pipe) Dependencies(_ *context.Context) []func() (string, error) {
+	return []func() (string, error){
+		func() (string, error) {
+			_, err := exec.LookPath("snapcraft")
+			return "snapcraft", err
+		},
+	}
+}
 func (Pipe) Skip(ctx *context.Context) bool {
 	return skips.Any(ctx, skips.Snapcraft) || len(ctx.Config.Snapcrafts) == 0
 }

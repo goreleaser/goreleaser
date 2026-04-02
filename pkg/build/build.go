@@ -4,6 +4,7 @@ package build
 import (
 	"sync"
 
+	"github.com/goreleaser/goreleaser/v2/internal/middleware/skip"
 	"github.com/goreleaser/goreleaser/v2/pkg/config"
 	"github.com/goreleaser/goreleaser/v2/pkg/context"
 )
@@ -33,14 +34,15 @@ func For(name string) Builder {
 }
 
 // Dependencies returns all dependencies from all builders being used.
-func Dependencies(ctx *context.Context) []string {
-	var result []string
-	for _, build := range ctx.Config.Builds {
-		dep, ok := For(build.Builder).(DependingBuilder)
-		if !ok {
-			continue
-		}
-		result = append(result, dep.Dependencies()...)
+func Dependencies(ctx *context.Context) []func() (string, error) {
+	var result []func() (string, error)
+	for _, builder := range builders {
+		_ = skip.Maybe(builder, func(ctx *context.Context) error {
+			if d, ok := builder.(DependingBuilder); ok {
+				result = append(result, d.Dependencies()...)
+			}
+			return nil
+		})(ctx)
 	}
 	return result
 }
@@ -74,7 +76,7 @@ type Builder interface {
 
 // DependingBuilder can be implemented by builders that have dependencies.
 type DependingBuilder interface {
-	Dependencies() []string
+	Dependencies() []func() (string, error)
 }
 
 // PreparedBuilder can be implemented to run something before all the actual

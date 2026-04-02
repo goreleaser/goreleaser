@@ -4,6 +4,7 @@ package healthcheck
 
 import (
 	"fmt"
+	"os/exec"
 
 	"github.com/goreleaser/goreleaser/v2/internal/pipe/chocolatey"
 	"github.com/goreleaser/goreleaser/v2/internal/pipe/docker"
@@ -30,8 +31,8 @@ type HealthChecker interface {
 type DependencyChecker interface {
 	fmt.Stringer
 
-	// Dependencies return the binaries of the dependencies needed.
-	Dependencies(ctx *context.Context) []string
+	// Dependencies return a list of check functions of the dependencies needed.
+	Dependencies(ctx *context.Context) []func() (string, error)
 }
 
 // HealthCheckers is the list of health checkers.
@@ -62,10 +63,19 @@ var DependencyCheckers = []DependencyChecker{
 
 type system struct{}
 
-func (system) String() string                         { return "system" }
-func (system) Dependencies(*context.Context) []string { return []string{"git"} }
+func (system) String() string { return "system" }
+func (system) Dependencies(*context.Context) []func() (string, error) {
+	return []func() (string, error){
+		func() (string, error) {
+			_, err := exec.LookPath("git")
+			return "git", err
+		},
+	}
+}
 
 type builds struct{}
 
-func (builds) String() string                             { return "build" }
-func (builds) Dependencies(ctx *context.Context) []string { return build.Dependencies(ctx) }
+func (builds) String() string { return "build" }
+func (builds) Dependencies(ctx *context.Context) []func() (string, error) {
+	return build.Dependencies(ctx)
+}

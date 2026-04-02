@@ -3,6 +3,7 @@ package deno
 
 import (
 	"fmt"
+	"os/exec"
 	"path/filepath"
 	"strings"
 	"sync"
@@ -36,8 +37,13 @@ func init() {
 type Builder struct{}
 
 // Dependencies implements build.DependingBuilder.
-func (b *Builder) Dependencies() []string {
-	return []string{"deno"}
+func (b *Builder) Dependencies() []func() (string, error) {
+	return []func() (string, error){
+		func() (string, error) {
+			_, err := exec.LookPath("deno")
+			return "deno", err
+		},
+	}
 }
 
 var once sync.Once

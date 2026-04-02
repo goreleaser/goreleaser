@@ -28,7 +28,9 @@ type failBuilder struct {
 func (f failBuilder) WithDefaults(b config.Build) (config.Build, error)   { return b, f.err }
 func (f failBuilder) Build(*context.Context, config.Build, Options) error { return f.err }
 func (f failBuilder) Parse(string) (Target, error)                        { return nil, f.err }
-func (f failBuilder) Dependencies() []string                              { return nil }
 func (f failBuilder) Prepare(*context.Context, config.Build) error        { return f.err }
 func (f failBuilder) AllowConcurrentBuilds() bool                         { return false }
 func (f failBuilder) FixTarget(string) string                             { return "" }
+func (f failBuilder) Dependencies() []func() (string, error) {
+	return nil
+}

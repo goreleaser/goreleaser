@@ -939,6 +939,11 @@ func TestDependencies(t *testing.T) {
 			{Cmd: "foobar"},
 		},
 	})
-
-	require.Equal(t, []string{"syft", "foobar"}, Pipe{}.Dependencies(ctx))
+	deps := Pipe{}.Dependencies(ctx)
+	var names []string
+	for _, d := range deps {
+		name, _ := d()
+		names = append(names, name)
+	}
+	require.Equal(t, []string{"syft", "foobar"}, names)
 }

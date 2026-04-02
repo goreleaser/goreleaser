@@ -4,6 +4,7 @@ package zig
 import (
 	"errors"
 	"fmt"
+	"os/exec"
 	"path/filepath"
 	"strings"
 	"sync"
@@ -39,8 +40,13 @@ func init() {
 type Builder struct{}
 
 // Dependencies implements build.DependingBuilder.
-func (b *Builder) Dependencies() []string {
-	return []string{"zig"}
+func (b *Builder) Dependencies() []func() (string, error) {
+	return []func() (string, error){
+		func() (string, error) {
+			_, err := exec.LookPath("zig")
+			return "zig", err
+		},
+	}
 }
 
 // Parse implements build.Builder.

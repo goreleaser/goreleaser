@@ -38,12 +38,18 @@ func (*dummy) Build(_ *context.Context, _ config.Build, _ Options) error { retur
 
 type completeDummy struct{}
 
-func (*completeDummy) Dependencies() []string                                    { return []string{"fake"} }
 func (*completeDummy) AllowConcurrentBuilds() bool                               { return true }
 func (*completeDummy) Prepare(*context.Context, config.Build) error              { return nil }
 func (*completeDummy) Parse(string) (Target, error)                              { return dummyTarget{}, nil }
 func (*completeDummy) WithDefaults(build config.Build) (config.Build, error)     { return build, nil }
 func (*completeDummy) Build(_ *context.Context, _ config.Build, _ Options) error { return nil }
+func (*completeDummy) Dependencies() []func() (string, error) {
+	return []func() (string, error){
+		func() (string, error) {
+			return "fake", nil
+		},
+	}
+}
 
 var (
 	defaultCompleteDummy = &completeDummy{}
@@ -62,11 +68,17 @@ func TestRegisterAndGet(t *testing.T) {
 }
 
 func TestDependencies(t *testing.T) {
-	require.Equal(t, []string{"fake"}, Dependencies(testctx.WrapWithCfg(t.Context(),
-		config.Project{
-			Builds: []config.Build{
-				{Builder: "completedummy"},
-				{Builder: "dummy"},
-			},
-		})))
+	ctx := testctx.WrapWithCfg(t.Context(), config.Project{
+		Builds: []config.Build{
+			{Builder: "completedummy"},
+			{Builder: "dummy"},
+		},
+	})
+	deps := Dependencies(ctx)
+	var names []string
+	for _, dep := range deps {
+		name, _ := dep()
+		names = append(names, name)
+	}
+	require.Equal(t, []string{"fake"}, names)
 }

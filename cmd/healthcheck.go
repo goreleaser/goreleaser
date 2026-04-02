@@ -1,11 +1,8 @@
 package cmd
 
 import (
-	stdctx "context"
 	"errors"
 	"io"
-	"os/exec"
-	"strings"
 	"sync"
 
 	"charm.land/lipgloss/v2"
@@ -57,14 +54,16 @@ func newHealthcheckCmd() *healthcheckCmd {
 			var errs []error
 			for _, hc := range healthcheck.DependencyCheckers {
 				_ = skip.Maybe(hc, func(ctx *context.Context) error {
-					for _, tool := range hc.Dependencies(ctx) {
-						if err := checkPath(ctx, tool); err != nil {
+					for _, checkFn := range hc.Dependencies(ctx) {
+						name, err := checkFn()
+						if err := check(name, err); err != nil {
 							errs = append(errs, err)
 						}
 					}
 					return nil
 				})(ctx)
 			}
+
 			for _, hc := range healthcheck.HealthCheckers {
 				_ = skip.Maybe(hc, func(ctx *context.Context) error {
 					if err := check(hc.String(), hc.Healthcheck(ctx)); err != nil {
@@ -103,26 +102,4 @@ func check(name string, err error) error {
 	st := log.Styles[log.ErrorLevel]
 	log.Warnf("%s %s - %s", st.Render("⚠"), codeStyle.Render(name), st.Render(err.Error()))
 	return err
-}
-
-func checkPath(ctx stdctx.Context, tool string) error {
-	if _, ok := toolsChecked.LoadOrStore(tool, true); ok {
-		return nil
-	}
-	args := strings.Fields(tool)
-	if _, err := exec.LookPath(args[0]); err != nil {
-		st := log.Styles[log.ErrorLevel]
-		log.Warnf("%s %s - %s", st.Render("⚠"), codeStyle.Render(tool), st.Render("not present in path"))
-		return err
-	}
-	if len(args) > 1 {
-		if err := exec.CommandContext(ctx, args[0], args[1:]...).Run(); err != nil {
-			st := log.Styles[log.ErrorLevel]
-			log.Warnf("%s %s - %s", st.Render("⚠"), codeStyle.Render(tool), st.Render("command failed"))
-			return err
-		}
-	}
-	st := lipgloss.NewStyle().Foreground(lipgloss.Color("2")).Bold(true)
-	log.Infof("%s %s", st.Render("✓"), codeStyle.Render(tool))
-	return nil
 }

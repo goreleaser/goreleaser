@@ -166,7 +166,13 @@ func TestRunPipe(t *testing.T) {
 }
 
 func TestDependencies(t *testing.T) {
-	require.Equal(t, []string{"flatpak-builder", "flatpak"}, Pipe{}.Dependencies(nil))
+	dependencies := Pipe{}.Dependencies(nil)
+	var names []string
+	for _, dep := range dependencies {
+		name, _ := dep()
+		names = append(names, name)
+	}
+	require.Equal(t, []string{"flatpak-builder", "flatpak"}, names)
 }
 
 func validFlatpak() config.Flatpak {

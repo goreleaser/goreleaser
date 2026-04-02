@@ -17,7 +17,13 @@ import (
 
 func TestSystemDependencies(t *testing.T) {
 	ctx := testctx.Wrap(t.Context())
-	require.Equal(t, []string{"git"}, system{}.Dependencies(ctx))
+	deps := system{}.Dependencies(ctx)
+	var names []string
+	for _, dep := range deps {
+		name, _ := dep()
+		names = append(names, name)
+	}
+	require.Equal(t, []string{"git"}, names)
 }
 
 func TestSystemStringer(t *testing.T) {
@@ -34,7 +40,13 @@ func TestBuildDependencies(t *testing.T) {
 			{Builder: "zig"},
 		},
 	})
-	require.Equal(t, []string{
+	deps := builds{}.Dependencies(ctx)
+	var names []string
+	for _, dep := range deps {
+		name, _ := dep()
+		names = append(names, name)
+	}
+	require.ElementsMatch(t, []string{
 		"bun",
 		"deno",
 		"go",
@@ -42,8 +54,8 @@ func TestBuildDependencies(t *testing.T) {
 		"rustup",
 		"cargo-zigbuild",
 		"zig",
-		"zig", // dedup happens later on
-	}, builds{}.Dependencies(ctx))
+		"zig",
+	}, names)
 }
 
 func TestBuildStringer(t *testing.T) {

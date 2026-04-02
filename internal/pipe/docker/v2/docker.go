@@ -46,7 +46,18 @@ type Publish struct{ Base }
 func (p Base) String() string { return "docker images (v2)" }
 
 // Dependencies implements DependencyChecker.
-func (Base) Dependencies(*context.Context) []string { return []string{"docker buildx"} }
+func (Base) Dependencies(*context.Context) []func() (string, error) {
+	return []func() (string, error){
+		func() (string, error) {
+			_, err := exec.LookPath("docker")
+			return "docker", err
+		},
+		func() (string, error) {
+			// v2 specifically requires buildx
+			return "docker buildx", checkBuildx()
+		},
+	}
+}
 
 // Healthcheck implements Healthchecker.
 func (Base) Healthcheck(ctx *context.Context) error {
@@ -611,4 +622,11 @@ func getBuildxDriver(ctx stdctx.Context) string {
 		}
 	}
 	return "unknown"
+}
+
+func checkBuildx() error {
+	if err := exec.Command("docker", "buildx", "version").Run(); err != nil {
+		return fmt.Errorf("docker buildx plugin is not installed or not working: %w", err)
+	}
+	return nil
 }

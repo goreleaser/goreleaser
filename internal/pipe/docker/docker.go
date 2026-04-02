@@ -48,20 +48,26 @@ func (Pipe) Skip(ctx *context.Context) bool {
 	return len(ctx.Config.Dockers) == 0 || skips.Any(ctx, skips.Docker)
 }
 
-func (Pipe) Dependencies(ctx *context.Context) []string {
-	var cmds []string
+func (Pipe) Dependencies(ctx *context.Context) []func() (string, error) {
+	var checks []func() (string, error)
 	for _, s := range ctx.Config.Dockers {
 		switch s.Use {
 		case useDocker, useBuildx:
-			cmds = append(cmds, "docker")
+			checks = append(checks, func() (string, error) {
+				_, err := exec.LookPath("docker")
+				return "docker", err
+			})
+
 			if s.Use == useBuildx {
-				if err := checkBuildx(); err != nil {
-					log.Warn(logext.Warning(err.Error()))
-				}
+				checks = append(checks, func() (string, error) {
+					return "docker buildx", checkBuildx()
+				})
 			}
+
+			return checks
 		}
 	}
-	return cmds
+	return checks
 }
 
 // Default sets the pipe defaults.
@@ -423,12 +429,8 @@ func isRetriablePush(err error) bool {
 }
 
 func checkBuildx() error {
-	if _, err := exec.LookPath("docker"); err != nil {
-		return errors.New("docker not found in PATH")
-	}
-	cmd := exec.Command("docker", "buildx", "version")
-	if err := cmd.Run(); err != nil {
-		return errors.New("docker buildx is not installed")
+	if err := exec.Command("docker", "buildx", "version").Run(); err != nil {
+		return fmt.Errorf("docker buildx plugin is not installed or not working: %w", err)
 	}
 	return nil
 }

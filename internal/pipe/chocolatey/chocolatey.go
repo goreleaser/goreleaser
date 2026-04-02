@@ -37,7 +37,14 @@ func (Pipe) ContinueOnError() bool { return true }
 func (Pipe) Skip(ctx *context.Context) bool {
 	return skips.Any(ctx, skips.Chocolatey) || len(ctx.Config.Chocolateys) == 0
 }
-func (Pipe) Dependencies(_ *context.Context) []string { return []string{"choco"} }
+func (Pipe) Dependencies(_ *context.Context) []func() (string, error) {
+	return []func() (string, error){
+		func() (string, error) {
+			_, err := exec.LookPath("choco")
+			return "choco", err
+		},
+	}
+}
 
 // Default sets the pipe defaults.
 func (Pipe) Default(ctx *context.Context) error {
