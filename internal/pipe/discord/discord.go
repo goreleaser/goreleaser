@@ -6,9 +6,10 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
-	"github.com/goreleaser/goreleaser/v2/internal/retryx"
 	"net/url"
 	"strconv"
+
+	"github.com/goreleaser/goreleaser/v2/internal/retryx"
 
 	"github.com/caarlos0/env/v11"
 	"github.com/caarlos0/log"

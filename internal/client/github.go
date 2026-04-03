@@ -773,9 +773,7 @@ func (c *githubClient) deleteExistingDraftRelease(ctx *context.Context, name str
 		err := retryx.Do(ctx.Config.Retry, func() error {
 			_, err := c.client.Repositories.DeleteRelease(ctx, ctx.Config.Release.GitHub.Owner, ctx.Config.Release.GitHub.Name, release.GetID())
 			return err
-		}, func(err error) bool {
-			return retryx.IsNetworkError(err)
-		})
+		}, retryx.IsNetworkError)
 		if err != nil {
 			return fmt.Errorf("could not delete previous draft release: %w", err)
 		}

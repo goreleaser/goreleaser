@@ -15,8 +15,8 @@ import (
 	"github.com/goreleaser/goreleaser/v2/internal/artifact"
 	"github.com/goreleaser/goreleaser/v2/internal/extrafiles"
 	"github.com/goreleaser/goreleaser/v2/internal/pipe"
-	"github.com/goreleaser/goreleaser/v2/internal/semerrgroup"
 	"github.com/goreleaser/goreleaser/v2/internal/retryx"
+	"github.com/goreleaser/goreleaser/v2/internal/semerrgroup"
 	"github.com/goreleaser/goreleaser/v2/internal/tmpl"
 	"github.com/goreleaser/goreleaser/v2/pkg/config"
 	"github.com/goreleaser/goreleaser/v2/pkg/context"
@@ -367,7 +367,7 @@ func uploadAssetToServer(ctx *context.Context, upload *config.Upload, target, us
 			return retryx.Unrecoverable(err)
 		}
 
-		resp, err = executeHTTPRequest(ctx, upload, req, check)
+		resp, err = executeHTTPRequest(ctx, upload, req, check) //nolint:bodyclose // closed by executeHTTPRequest
 		return err
 	}, func(err error) bool {
 		code := 0
