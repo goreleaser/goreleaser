@@ -297,6 +297,7 @@ func TestGitHubGetDefaultBranchErr(t *testing.T) {
 		GitHubURLs: config.GitHubURLs{
 			API: srv.URL,
 		},
+		Retry: config.Retry{Attempts: 1},
 	})
 	client, err := newGitHub(ctx, "test-token")
 	require.NoError(t, err)
@@ -1517,6 +1518,7 @@ func TestGitHubAuthorsLookup(t *testing.T) {
 		GitHubURLs: config.GitHubURLs{
 			API: srv.URL,
 		},
+		Retry: config.Retry{Attempts: 1},
 	})
 	client, err := newGitHub(ctx, "test-token")
 	require.NoError(t, err)
