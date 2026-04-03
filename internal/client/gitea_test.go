@@ -206,7 +206,7 @@ func (s *GetExistingReleaseSuite) TestNoReleases() {
 	t := s.T()
 	httpmock.RegisterResponder("GET", s.releasesURL, httpmock.NewStringResponder(200, "[]"))
 
-	release, err := s.client.getExistingRelease(s.owner, s.repoName, s.tag)
+	release, err := s.client.getExistingRelease(s.ctx, s.owner, s.repoName, s.tag)
 	require.Nil(t, release)
 	require.NoError(t, err)
 }
@@ -215,7 +215,7 @@ func (s *GetExistingReleaseSuite) TestNoRepo() {
 	t := s.T()
 	httpmock.RegisterResponder("GET", s.releasesURL, httpmock.NewStringResponder(404, ""))
 
-	release, err := s.client.getExistingRelease(s.owner, s.repoName, s.tag)
+	release, err := s.client.getExistingRelease(s.ctx, s.owner, s.repoName, s.tag)
 	require.Nil(t, release)
 	require.Error(t, err)
 }
@@ -227,7 +227,7 @@ func (s *GetExistingReleaseSuite) TestReleaseExists() {
 	require.NoError(t, err)
 	httpmock.RegisterResponder("GET", s.releasesURL, resp)
 
-	result, err := s.client.getExistingRelease(s.owner, s.repoName, s.tag)
+	result, err := s.client.getExistingRelease(s.ctx, s.owner, s.repoName, s.tag)
 	require.NotNil(t, result)
 	require.Equal(t, *result, release)
 	require.NoError(t, err)
