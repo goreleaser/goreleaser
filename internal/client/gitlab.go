@@ -221,7 +221,11 @@ func (c *gitlabClient) CloseMilestone(ctx *context.Context, repo Repo, title str
 	}
 
 	_, _, err = gitlabDo(ctx, func() (*gitlab.Milestone, *gitlab.Response, error) {
-		return c.client.Milestones.UpdateMilestone(repo.String(), milestone.ID, opts)
+		return c.client.Milestones.UpdateMilestone(
+			repo.String(),
+			milestone.ID,
+			opts,
+		)
 	})
 
 	return err

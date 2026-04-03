@@ -611,7 +611,13 @@ func (c *githubClient) findRelease(ctx *context.Context, name string) (*github.R
 func (c *githubClient) updateRelease(ctx *context.Context, id int64, data *github.RepositoryRelease) (*github.RepositoryRelease, error) {
 	c.checkRateLimit(ctx, time.Sleep)
 	release, resp, err := githubDo(ctx, func() (*github.RepositoryRelease, *github.Response, error) {
-		return c.client.Repositories.EditRelease(ctx, ctx.Config.Release.GitHub.Owner, ctx.Config.Release.GitHub.Name, id, data)
+		return c.client.Repositories.EditRelease(
+			ctx,
+			ctx.Config.Release.GitHub.Owner,
+			ctx.Config.Release.GitHub.Name,
+			id,
+			data,
+		)
 	})
 	log.WithField("name", data.GetName()).
 		WithField("release-id", release.GetID()).
