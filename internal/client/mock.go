@@ -121,7 +121,7 @@ func (c *Mock) Upload(_ *context.Context, _ string, artifact *artifact.Artifact)
 	}
 	if c.FailFirstUpload {
 		c.FailFirstUpload = false
-		return RetriableError{Err: errors.New("upload failed, should retry")}
+		// Real clients retry internally via retryx; mock simulates success after internal retry.
 	}
 	c.UploadedFile = true
 	c.UploadedFileNames = append(c.UploadedFileNames, artifact.Name)

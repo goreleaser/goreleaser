@@ -184,15 +184,6 @@ func (e ErrNoMilestoneFound) Error() string {
 	return fmt.Sprintf("no milestone found: %s", e.Title)
 }
 
-// RetriableError is an error that will cause the action to be retried.
-type RetriableError struct {
-	Err error
-}
-
-func (e RetriableError) Error() string {
-	return e.Err.Error()
-}
-
 // fillDeprecated fills the deprecated field based on the contents of Authors.
 //
 // Deprecated: This should be removed in v3.
