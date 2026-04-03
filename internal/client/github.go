@@ -233,7 +233,9 @@ func (c *githubClient) getDefaultBranch(ctx *context.Context, repo Repo) (string
 		if res != nil {
 			log = log.WithField("statusCode", res.StatusCode)
 		}
-		log.WithError(err).Warn("error checking for default branch")
+		log.
+			WithError(err).
+			Warn("error checking for default branch")
 		return "", err
 	}
 	return p.GetDefaultBranch(), nil
@@ -280,7 +282,9 @@ func (c *githubClient) getPRTemplate(ctx *context.Context, repo Repo) (string, e
 		content, _, resp, err := c.client.Repositories.GetContents(
 			ctx, repo.Owner, repo.Name,
 			".github/PULL_REQUEST_TEMPLATE.md",
-			&github.RepositoryContentGetOptions{Ref: repo.Branch},
+			&github.RepositoryContentGetOptions{
+				Ref: repo.Branch,
+			},
 		)
 		return content, resp, err
 	})
@@ -443,13 +447,19 @@ func (c *githubClient) CreateFile(
 		}
 	}
 
-	file, res2, err := githubDo(ctx, func() (*github.RepositoryContent, *github.Response, error) {
-		content, _, r, err := c.client.Repositories.GetContents(ctx, repo.Owner, repo.Name, path, &github.RepositoryContentGetOptions{
-			Ref: branch,
-		})
+	file, res, err := githubDo(ctx, func() (*github.RepositoryContent, *github.Response, error) {
+		content, _, r, err := c.client.Repositories.GetContents(
+			ctx,
+			repo.Owner,
+			repo.Name,
+			path,
+			&github.RepositoryContentGetOptions{
+				Ref: branch,
+			},
+		)
 		return content, r, err
 	})
-	if err != nil && (res2 == nil || res2.StatusCode != http.StatusNotFound) {
+	if err != nil && (res == nil || res.StatusCode != http.StatusNotFound) {
 		return fmt.Errorf("could not get %q: %w", path, err)
 	}
 
@@ -457,7 +467,13 @@ func (c *githubClient) CreateFile(
 		options.SHA = file.SHA
 	}
 	_, _, err = githubDo(ctx, func() (*github.RepositoryContentResponse, *github.Response, error) {
-		return c.client.Repositories.UpdateFile(ctx, repo.Owner, repo.Name, path, options)
+		return c.client.Repositories.UpdateFile(
+			ctx,
+			repo.Owner,
+			repo.Name,
+			path,
+			options,
+		)
 	})
 	if err != nil {
 		return fmt.Errorf("could not update %q: %w", path, err)
@@ -545,7 +561,12 @@ func (c *githubClient) createOrUpdateRelease(ctx *context.Context, data *github.
 	release, err := c.findRelease(ctx, data.GetTagName())
 	if err != nil || release == nil {
 		release, resp, err := githubDo(ctx, func() (*github.RepositoryRelease, *github.Response, error) {
-			return c.client.Repositories.CreateRelease(ctx, ctx.Config.Release.GitHub.Owner, ctx.Config.Release.GitHub.Name, data)
+			return c.client.Repositories.CreateRelease(
+				ctx,
+				ctx.Config.Release.GitHub.Owner,
+				ctx.Config.Release.GitHub.Name,
+				data,
+			)
 		})
 		if resp == nil {
 			log.WithField("name", data.GetName()).
@@ -575,7 +596,12 @@ func (c *githubClient) createOrUpdateRelease(ctx *context.Context, data *github.
 func (c *githubClient) findRelease(ctx *context.Context, name string) (*github.RepositoryRelease, error) {
 	if !ctx.Config.Release.UseExistingDraft {
 		release, _, err := githubDo(ctx, func() (*github.RepositoryRelease, *github.Response, error) {
-			return c.client.Repositories.GetReleaseByTag(ctx, ctx.Config.Release.GitHub.Owner, ctx.Config.Release.GitHub.Name, name)
+			return c.client.Repositories.GetReleaseByTag(
+				ctx,
+				ctx.Config.Release.GitHub.Owner,
+				ctx.Config.Release.GitHub.Name,
+				name,
+			)
 		})
 		return release, err
 	}
@@ -612,10 +638,16 @@ func (c *githubClient) deleteReleaseArtifact(ctx *context.Context, releaseID int
 	c.checkRateLimit(ctx, time.Sleep)
 	log.WithField("name", name).Info("delete pre-existing asset from the release")
 	assets, resp, err := githubDo(ctx, func() ([]*github.ReleaseAsset, *github.Response, error) {
-		return c.client.Repositories.ListReleaseAssets(ctx, ctx.Config.Release.GitHub.Owner, ctx.Config.Release.GitHub.Name, releaseID, &github.ListOptions{
-			PerPage: 100,
-			Page:    page,
-		})
+		return c.client.Repositories.ListReleaseAssets(
+			ctx,
+			ctx.Config.Release.GitHub.Owner,
+			ctx.Config.Release.GitHub.Name,
+			releaseID,
+			&github.ListOptions{
+				PerPage: 100,
+				Page:    page,
+			},
+		)
 	})
 	if err != nil {
 		githubErrLogger(resp, err).
@@ -629,7 +661,12 @@ func (c *githubClient) deleteReleaseArtifact(ctx *context.Context, releaseID int
 		}
 		var deleteResp *github.Response
 		err := retryx.Do(ctx.Config.Retry, func() error {
-			r, err := c.client.Repositories.DeleteReleaseAsset(ctx, ctx.Config.Release.GitHub.Owner, ctx.Config.Release.GitHub.Name, asset.GetID())
+			r, err := c.client.Repositories.DeleteReleaseAsset(
+				ctx,
+				ctx.Config.Release.GitHub.Owner,
+				ctx.Config.Release.GitHub.Name,
+				asset.GetID(),
+			)
 			deleteResp = r
 			return err
 		}, func(err error) bool {
@@ -691,10 +728,13 @@ func (c *githubClient) Upload(
 			WithField("release-id", releaseID).
 			Warn("upload failed")
 
+		// this status means the asset already exists
 		if resp != nil && resp.StatusCode == http.StatusUnprocessableEntity {
 			if !ctx.Config.Release.ReplaceExistingArtifacts {
 				return retryx.Unrecoverable(err)
 			}
+			// if the user allowed to delete assets, we delete it, and return
+			// the previous error, so we try again.
 			if delErr := c.deleteReleaseArtifact(ctx, githubReleaseID, artifact.Name, 1); delErr != nil {
 				return retryx.Unrecoverable(delErr)
 			}
@@ -713,7 +753,12 @@ func (c *githubClient) getMilestoneByTitle(ctx *context.Context, repo Repo, titl
 
 	for {
 		milestones, resp, err := githubDo(ctx, func() ([]*github.Milestone, *github.Response, error) {
-			return c.client.Issues.ListMilestones(ctx, repo.Owner, repo.Name, opts)
+			return c.client.Issues.ListMilestones(
+				ctx,
+				repo.Owner,
+				repo.Name,
+				opts,
+			)
 		})
 		if err != nil {
 			return nil, err
@@ -742,7 +787,12 @@ func (c *githubClient) deleteExistingDraftRelease(ctx *context.Context, name str
 	}
 	if release != nil {
 		err := retryx.Do(ctx.Config.Retry, func() error {
-			_, err := c.client.Repositories.DeleteRelease(ctx, ctx.Config.Release.GitHub.Owner, ctx.Config.Release.GitHub.Name, release.GetID())
+			_, err := c.client.Repositories.DeleteRelease(
+				ctx,
+				ctx.Config.Release.GitHub.Owner,
+				ctx.Config.Release.GitHub.Name,
+				release.GetID(),
+			)
 			return err
 		}, retryx.IsNetworkError)
 		if err != nil {
@@ -762,7 +812,12 @@ func (c *githubClient) findDraftRelease(ctx *context.Context, name string) (*git
 	opt := github.ListOptions{PerPage: 50}
 	for {
 		releases, resp, err := githubDo(ctx, func() ([]*github.RepositoryRelease, *github.Response, error) {
-			return c.client.Repositories.ListReleases(ctx, ctx.Config.Release.GitHub.Owner, ctx.Config.Release.GitHub.Name, &opt)
+			return c.client.Repositories.ListReleases(
+				ctx,
+				ctx.Config.Release.GitHub.Owner,
+				ctx.Config.Release.GitHub.Name,
+				&opt,
+			)
 		})
 		if err != nil {
 			return nil, fmt.Errorf("could not list existing drafts: %w", err)
