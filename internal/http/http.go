@@ -16,6 +16,7 @@ import (
 	"github.com/goreleaser/goreleaser/v2/internal/extrafiles"
 	"github.com/goreleaser/goreleaser/v2/internal/pipe"
 	"github.com/goreleaser/goreleaser/v2/internal/semerrgroup"
+	"github.com/goreleaser/goreleaser/v2/internal/retryx"
 	"github.com/goreleaser/goreleaser/v2/internal/tmpl"
 	"github.com/goreleaser/goreleaser/v2/pkg/config"
 	"github.com/goreleaser/goreleaser/v2/pkg/context"
@@ -359,12 +360,23 @@ func uploadAsset(ctx *context.Context, upload *config.Upload, artifact *artifact
 
 // uploadAssetToServer uploads the asset file to target.
 func uploadAssetToServer(ctx *context.Context, upload *config.Upload, target, username, secret string, headers map[string]string, a *asset, check ResponseChecker) (*h.Response, error) {
-	req, err := newUploadRequest(ctx, upload.Method, target, username, secret, headers, a)
-	if err != nil {
-		return nil, err
-	}
+	var resp *h.Response
+	err := retryx.Do(ctx.Config.Retry, func() error {
+		req, err := newUploadRequest(ctx, upload.Method, target, username, secret, headers, a)
+		if err != nil {
+			return retryx.Unrecoverable(err)
+		}
 
-	return executeHTTPRequest(ctx, upload, req, check)
+		resp, err = executeHTTPRequest(ctx, upload, req, check)
+		return err
+	}, func(err error) bool {
+		code := 0
+		if resp != nil {
+			code = resp.StatusCode
+		}
+		return retryx.IsRetriableHTTPError(code, err)
+	})
+	return resp, err
 }
 
 // newUploadRequest creates a new h.Request for uploading.
