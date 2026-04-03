@@ -1,6 +1,10 @@
 ---
 title: Blog
 type: blog
+outputs:
+  - html
+  - rss
+  - markdown
 cascade:
   type: blog
   excludeSearch: true

@@ -125,17 +125,27 @@ params:
   editPage:
     enable: true
     base: "https://github.com/goreleaser/goreleaser/edit/main/www/content"
+  banner:
+    key: "announcement-v2.15"
+    message: |
+      🎉 [GoReleaser v2.15 is out!](/blog/goreleaser-v2.15) with Flatpak, SRPM, and more!
 
 permalinks:
   page:
     blog: /blog/:slug
 
 outputs:
-  home: [html, rss, llms, markdown]
+  home: [html, llms, markdown]
   section:
     - html
-    - rss
     - markdown
+  page:
+    - html
+    - markdown
+  taxonomy:
+    - html
+  term:
+    - html
 
 outputFormats:
   rss:

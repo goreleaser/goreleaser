@@ -128,7 +128,7 @@ jobs:
           sudo apt install -yq flatpak flatpak-builder
           sudo flatpak remote-add --if-not-exists flathub https://dl.flathub.org/repo/flathub.flatpakrepo
           sudo flatpak install -y --noninteractive flathub org.freedesktop.Platform/x86_64/24.08 org.freedesktop.Sdk/x86_64/24.08 org.freedesktop.Platform/aarch64/24.08 org.freedesktop.Sdk/aarch64/24.08
-      - uses: actions/setup-go@4b73464bb391d4059bd26b0524d20df3927bd417 # v6.3.0
+      - uses: actions/setup-go@4a3601121dd01d1626a1e23e37211e3254c1c06c # v6.4.0
         with:
           go-version-file: go.mod
       - uses: actions/cache@668228422ae6a00e4ad889ee87cd7109ec5666a7 # v5.0.4
@@ -148,13 +148,13 @@ jobs:
           github_access_token: ${{ secrets.GITHUB_TOKEN }}
       - name: dockerhub-login
         if: startsWith(github.ref, 'refs/tags/v')
-        uses: docker/login-action@b45d80f862d83dbcd57f89517bcf500b2ab88fb2 # v4.0.0
+        uses: docker/login-action@4907a6ddec9925e35a0a9e82d7399ccc52663121 # v4.1.0
         with:
           username: ${{ secrets.DOCKER_USERNAME }}
           password: ${{ secrets.DOCKER_PASSWORD }}
       - name: ghcr-login
         if: startsWith(github.ref, 'refs/tags/v')
-        uses: docker/login-action@b45d80f862d83dbcd57f89517bcf500b2ab88fb2 # v4.0.0
+        uses: docker/login-action@4907a6ddec9925e35a0a9e82d7399ccc52663121 # v4.1.0
         with:
           registry: ghcr.io
           username: ${{ github.repository_owner }}

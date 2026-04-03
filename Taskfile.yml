@@ -170,14 +170,11 @@ tasks:
       - wget -O www/static/card.png https://raw.githubusercontent.com/goreleaser/artwork/master/twitter-card.png
       - wget -O www/static/hero.png https://raw.githubusercontent.com/goreleaser/artwork/master/hero.png
       - convert -background none www/static/favicon.svg -define icon:auto-resize=64,48,32,16 www/static/favicon.ico
-      - convert www/static/favicon.svg -resize 16x16 www/static/favicon-16x16.png
-      - convert www/static/favicon.svg -resize 32x32 www/static/favicon-32x32.png
-      - convert www/static/favicon.svg -resize x120 www/static/apple-touch-icon.png
-      - convert www/static/favicon.svg -resize 192x192 www/static/android-chrome-192x192.png
-      - convert www/static/favicon.svg -resize 512x512 www/static/android-chrome-512x512.png
-      - convert www/static/favicon.svg -resize x120 www/static/apple-touch-icon.png
-      - convert www/static/favicon.svg -resize 192x192 www/static/android-chrome-192x192.png
-      - convert www/static/favicon.svg -resize 512x512 www/static/android-chrome-512x512.png
+      - convert -background none www/static/favicon.svg -resize 16x16 -depth 8 www/static/favicon-16x16.png
+      - convert -background none www/static/favicon.svg -resize 32x32 -depth 8 www/static/favicon-32x32.png
+      - convert -background none www/static/favicon.svg -resize x120 -depth 8 www/static/apple-touch-icon.png
+      - convert -background none www/static/favicon.svg -resize 192x192 -depth 8 www/static/android-chrome-192x192.png
+      - convert -background none www/static/favicon.svg -resize 512x512 -depth 8 www/static/android-chrome-512x512.png
 
   docs:serve:
     desc: Start documentation server
