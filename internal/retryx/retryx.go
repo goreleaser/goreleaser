@@ -33,9 +33,7 @@ func opts(c config.Retry, retryIf func(error) bool) []retry.Option {
 		retry.MaxDelay(c.MaxDelay),
 		retry.LastErrorOnly(true),
 		retry.OnRetry(func(n uint, err error) {
-			log.IncreasePadding()
 			log.WithError(err).WithField("try", n+1).Warn("retrying")
-			log.DecreasePadding()
 		}),
 	}
 	if retryIf != nil {
