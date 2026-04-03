@@ -55,16 +55,6 @@ type (
 	Author        = changelog.Author
 )
 
-type FullClient interface {
-	Client
-	ReleaseURLTemplater
-	FileCreator
-	FilesCreator
-	ReleaseNotesGenerator
-	ForkSyncer
-	PullRequestOpener
-}
-
 // Client interface.
 type Client interface {
 	CloseMilestone(ctx *context.Context, repo Repo, title string) (err error)

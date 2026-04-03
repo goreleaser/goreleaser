@@ -47,13 +47,16 @@ func githubDo[T any](ctx *context.Context, fn func() (T, *github.Response, error
 		result, resp, err = fn()
 		return err
 	}, func(err error) bool {
-		code := 0
-		if resp != nil {
-			code = resp.StatusCode
-		}
-		return retryx.IsRetriableHTTPError(code, err)
+		return retryx.IsRetriableHTTPError(githubStatusCode(resp), err)
 	})
 	return result, resp, err
+}
+
+func githubStatusCode(resp *github.Response) int {
+	if resp == nil {
+		return 0
+	}
+	return resp.StatusCode
 }
 
 // NewGitHubReleaseNotesGenerator returns a GitHub client that can generate
