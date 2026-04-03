@@ -98,6 +98,21 @@ are using Conventional Commits.
 You can follow the documentation on
 [their website](https://www.conventionalcommits.org).
 
+## AI usage guidelines
+
+AI usage is permitted as long as all these rules are followed:
+
+1. It is disclosed, either with a `Co-authored-by` or `Assisted-by` in the
+   commit message, or if you specify in the PR description
+2. You have to disclose to what extend AI was used
+3. You (as an human) have to review all the work the AI has done
+
+Agents that keep going on random repositories pretending to be a human doing
+things are not allowed either.
+
+We reserve the right to close any and all issues/PRs/discussions that do not
+follow these rules.
+
 ## Submitting a pull request
 
 Push your branch to your `goreleaser` fork and open a pull request against the main branch.
