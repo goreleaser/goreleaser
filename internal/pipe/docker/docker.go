@@ -24,6 +24,7 @@ import (
 	"github.com/goreleaser/goreleaser/v2/internal/ids"
 	"github.com/goreleaser/goreleaser/v2/internal/logext"
 	"github.com/goreleaser/goreleaser/v2/internal/pipe"
+	v2 "github.com/goreleaser/goreleaser/v2/internal/pipe/docker/v2"
 	"github.com/goreleaser/goreleaser/v2/internal/semerrgroup"
 	"github.com/goreleaser/goreleaser/v2/internal/skips"
 	"github.com/goreleaser/goreleaser/v2/internal/tmpl"
@@ -39,6 +40,8 @@ const (
 )
 
 // Pipe for docker.
+//
+// Deprecated: use docker v2.
 type Pipe struct{}
 
 func (Pipe) String() string { return "docker images" }
@@ -57,6 +60,19 @@ func (Pipe) Dependencies(ctx *context.Context) []string {
 		}
 	}
 	return cmds
+}
+
+func (Pipe) Healthcheck(ctx *context.Context) error {
+	for _, s := range ctx.Config.Dockers {
+		switch s.Use {
+		case useBuildx:
+			vb := v2.Base{}
+			if err := vb.Healthcheck(ctx); err != nil {
+				return err
+			}
+		}
+	}
+	return nil
 }
 
 // Default sets the pipe defaults.
