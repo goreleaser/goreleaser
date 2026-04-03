@@ -161,13 +161,8 @@ func (c *githubClient) Changelog(ctx *context.Context, repo Repo, prev, current 
 	cache := map[string]string{}
 
 	for {
-		nextPage := 0
-		result, _, err := githubDo(ctx, func() (*github.CommitsComparison, *github.Response, error) {
-			result, resp, err := c.client.Repositories.CompareCommits(ctx, repo.Owner, repo.Name, prev, current, opts)
-			if err == nil {
-				nextPage = resp.NextPage
-			}
-			return result, resp, err
+		result, resp, err := githubDo(ctx, func() (*github.CommitsComparison, *github.Response, error) {
+			return c.client.Repositories.CompareCommits(ctx, repo.Owner, repo.Name, prev, current, opts)
 		})
 		if err != nil {
 			return nil, err
@@ -189,10 +184,10 @@ func (c *githubClient) Changelog(ctx *context.Context, repo Repo, prev, current 
 				Authors: authors,
 			}))
 		}
-		if nextPage == 0 {
+		if resp.NextPage == 0 {
 			break
 		}
-		opts.Page = nextPage
+		opts.Page = resp.NextPage
 	}
 
 	return log, nil
