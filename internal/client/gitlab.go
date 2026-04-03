@@ -36,12 +36,12 @@ type gitlabClient struct {
 }
 
 // gitlabDo wraps a go-gitlab SDK call with retry logic.
-func gitlabDo[T any](ctx *context.Context, fn func() (T, *gitlab.Response, error)) (T, error) {
+func gitlabDo[T any](ctx *context.Context, fn func() (T, *gitlab.Response, error)) (T, *gitlab.Response, error) {
 	var resp *gitlab.Response
-	return retryx.DoWithData(ctx.Config.Retry, func() (T, error) {
-		result, r, err := fn()
-		resp = r
-		return result, err
+	result, err := retryx.DoWithData(ctx.Config.Retry, func() (T, error) {
+		r, re, e := fn()
+		resp = re
+		return r, e
 	}, func(err error) bool {
 		code := 0
 		if resp != nil {
@@ -49,6 +49,7 @@ func gitlabDo[T any](ctx *context.Context, fn func() (T, *gitlab.Response, error
 		}
 		return retryx.IsRetriableHTTPError(code, err)
 	})
+	return result, resp, err
 }
 
 // newGitLab returns a gitlab client implementation.
@@ -128,7 +129,7 @@ func (c *gitlabClient) Changelog(ctx *context.Context, repo Repo, prev, current 
 		From: &prev,
 		To:   &current,
 	}
-	result, err := gitlabDo(ctx, func() (*gitlab.Compare, *gitlab.Response, error) {
+	result, _, err := gitlabDo(ctx, func() (*gitlab.Compare, *gitlab.Response, error) {
 		return c.client.Repositories.Compare(repo.String(), cmpOpts)
 	})
 	var log []ChangelogItem
@@ -161,11 +162,8 @@ func (c *gitlabClient) getDefaultBranch(ctx *context.Context, repo Repo) (string
 		return "", fmt.Errorf("get default branch: %w", err)
 	}
 	projectID := repo.String()
-	var res *gitlab.Response
-	p, err := gitlabDo(ctx, func() (*gitlab.Project, *gitlab.Response, error) {
-		p, r, err := c.client.Projects.GetProject(projectID, nil)
-		res = r
-		return p, r, err
+	p, res, err := gitlabDo(ctx, func() (*gitlab.Project, *gitlab.Response, error) {
+		return c.client.Projects.GetProject(projectID, nil)
 	})
 	if err != nil {
 		log := log.WithField("projectID", projectID)
@@ -185,11 +183,8 @@ func (c *gitlabClient) checkBranchExists(ctx *context.Context, repo Repo, branch
 		projectID = repo.Owner + "/" + projectID
 	}
 
-	var res *gitlab.Response
-	_, err := gitlabDo(ctx, func() (*gitlab.Branch, *gitlab.Response, error) {
-		b, r, err := c.client.Branches.GetBranch(projectID, branch)
-		res = r
-		return b, r, err
+	_, res, err := gitlabDo(ctx, func() (*gitlab.Branch, *gitlab.Response, error) {
+		return c.client.Branches.GetBranch(projectID, branch)
 	})
 	if err != nil && (res == nil || res.StatusCode != 404) {
 		log.WithError(err).
@@ -221,7 +216,7 @@ func (c *gitlabClient) CloseMilestone(ctx *context.Context, repo Repo, title str
 		Title:       &milestone.Title,
 	}
 
-	_, err = gitlabDo(ctx, func() (*gitlab.Milestone, *gitlab.Response, error) {
+	_, _, err = gitlabDo(ctx, func() (*gitlab.Milestone, *gitlab.Response, error) {
 		return c.client.Milestones.UpdateMilestone(repo.String(), milestone.ID, opts)
 	})
 
@@ -301,10 +296,8 @@ func (c *gitlabClient) CreateFile(
 
 	// Check if the file already exists
 	var res *gitlab.Response
-	_, err = gitlabDo(ctx, func() (*gitlab.File, *gitlab.Response, error) {
-		f, r, err := c.client.RepositoryFiles.GetFile(projectID, fileName, opts)
-		res = r
-		return f, r, err
+	_, res, err = gitlabDo(ctx, func() (*gitlab.File, *gitlab.Response, error) {
+		return c.client.RepositoryFiles.GetFile(projectID, fileName, opts)
 	})
 	if err != nil && (res == nil || res.StatusCode != 404) {
 		log := log.
@@ -348,7 +341,7 @@ func (c *gitlabClient) CreateFile(
 			createOpts.StartBranch = &defaultBranch
 		}
 
-		fileInfo, err := gitlabDo(ctx, func() (*gitlab.FileInfo, *gitlab.Response, error) {
+		fileInfo, _, err := gitlabDo(ctx, func() (*gitlab.FileInfo, *gitlab.Response, error) {
 			return c.client.RepositoryFiles.CreateFile(projectID, fileName, createOpts)
 		})
 		if err != nil {
@@ -393,11 +386,8 @@ func (c *gitlabClient) CreateFile(
 		updateOpts.StartBranch = &defaultBranch
 	}
 
-	var updateRes *gitlab.Response
-	updateFileInfo, err := gitlabDo(ctx, func() (*gitlab.FileInfo, *gitlab.Response, error) {
-		fi, r, err := c.client.RepositoryFiles.UpdateFile(projectID, fileName, updateOpts)
-		updateRes = r
-		return fi, r, err
+	updateFileInfo, updateRes, err := gitlabDo(ctx, func() (*gitlab.FileInfo, *gitlab.Response, error) {
+		return c.client.RepositoryFiles.UpdateFile(projectID, fileName, updateOpts)
 	})
 	if err != nil {
 		log := log.
@@ -447,11 +437,8 @@ func (c *gitlabClient) CreateRelease(ctx *context.Context, body string) (release
 
 	name := title
 	tagName := ctx.Git.CurrentTag
-	var resp *gitlab.Response
-	release, err := gitlabDo(ctx, func() (*gitlab.Release, *gitlab.Response, error) {
-		r, rr, err := c.client.Releases.GetRelease(projectID, tagName)
-		resp = rr
-		return r, rr, err
+	release, resp, err := gitlabDo(ctx, func() (*gitlab.Release, *gitlab.Response, error) {
+		return c.client.Releases.GetRelease(projectID, tagName)
 	})
 	if err != nil && (resp == nil || (resp.StatusCode != 403 && resp.StatusCode != 404)) {
 		return "", err
@@ -470,7 +457,7 @@ func (c *gitlabClient) CreateRelease(ctx *context.Context, body string) (release
 			WithField("ref", ref).
 			WithField("url", gitURL).
 			Debug("creating release")
-		release, err = gitlabDo(ctx, func() (*gitlab.Release, *gitlab.Response, error) {
+		release, _, err = gitlabDo(ctx, func() (*gitlab.Release, *gitlab.Response, error) {
 			return c.client.Releases.CreateRelease(projectID, &gitlab.CreateReleaseOptions{
 				Name:        &name,
 				Description: &description,
@@ -489,7 +476,7 @@ func (c *gitlabClient) CreateRelease(ctx *context.Context, body string) (release
 			desc = getReleaseNotes(release.Description, body, ctx.Config.Release.ReleaseNotesMode)
 		}
 
-		release, err = gitlabDo(ctx, func() (*gitlab.Release, *gitlab.Response, error) {
+		release, _, err = gitlabDo(ctx, func() (*gitlab.Release, *gitlab.Response, error) {
 			return c.client.Releases.UpdateRelease(projectID, tagName, &gitlab.UpdateReleaseOptions{
 				Name:        &name,
 				Description: &desc,
@@ -666,11 +653,8 @@ func (c *gitlabClient) getMilestoneByTitle(ctx *context.Context, repo Repo, titl
 	}
 
 	for {
-		var resp *gitlab.Response
-		milestones, err := gitlabDo(ctx, func() ([]*gitlab.Milestone, *gitlab.Response, error) {
-			m, r, err := c.client.Milestones.ListMilestones(repo.String(), opts)
-			resp = r
-			return m, r, err
+		milestones, resp, err := gitlabDo(ctx, func() ([]*gitlab.Milestone, *gitlab.Response, error) {
+			return c.client.Milestones.ListMilestones(repo.String(), opts)
 		})
 		if err != nil {
 			return nil, err
@@ -727,11 +711,8 @@ func (c *gitlabClient) OpenPullRequest(
 	if base.Owner != "" {
 		fullProjectPath := fmt.Sprintf("%s/%s", base.Owner, base.Name)
 
-		var res *gitlab.Response
-		p, err := gitlabDo(ctx, func() (*gitlab.Project, *gitlab.Response, error) {
-			p, r, err := c.client.Projects.GetProject(fullProjectPath, nil)
-			res = r
-			return p, r, err
+		p, res, err := gitlabDo(ctx, func() (*gitlab.Project, *gitlab.Response, error) {
+			return c.client.Projects.GetProject(fullProjectPath, nil)
 		})
 		if err != nil {
 			log := log.WithField("project", fullProjectPath)
@@ -775,7 +756,7 @@ func (c *gitlabClient) OpenPullRequest(
 		mrOptions.TargetProjectID = &targetProjectID
 	}
 
-	pr, err := gitlabDo(ctx, func() (*gitlab.MergeRequest, *gitlab.Response, error) {
+	pr, _, err := gitlabDo(ctx, func() (*gitlab.MergeRequest, *gitlab.Response, error) {
 		return c.client.MergeRequests.CreateMergeRequest(fmt.Sprintf("%s/%s", head.Owner, head.Name), mrOptions)
 	})
 	if err != nil {

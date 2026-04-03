@@ -26,12 +26,12 @@ type giteaClient struct {
 
 var _ Client = &giteaClient{}
 
-func giteaDo[T any](ctx *context.Context, fn func() (T, *gitea.Response, error)) (T, error) {
+func giteaDo[T any](ctx *context.Context, fn func() (T, *gitea.Response, error)) (T, *gitea.Response, error) {
 	var resp *gitea.Response
-	return retryx.DoWithData(ctx.Config.Retry, func() (T, error) {
-		result, r, err := fn()
-		resp = r
-		return result, err
+	result, err := retryx.DoWithData(ctx.Config.Retry, func() (T, error) {
+		r, re, e := fn()
+		resp = re
+		return r, e
 	}, func(err error) bool {
 		code := 0
 		if resp != nil {
@@ -39,6 +39,7 @@ func giteaDo[T any](ctx *context.Context, fn func() (T, *gitea.Response, error))
 		}
 		return retryx.IsRetriableHTTPError(code, err)
 	})
+	return result, resp, err
 }
 
 func getInstanceURL(ctx *context.Context) (string, error) {
@@ -93,7 +94,7 @@ func newGitea(ctx *context.Context, token string) (*giteaClient, error) {
 
 // Changelog fetches the changelog between two revisions.
 func (c *giteaClient) Changelog(ctx *context.Context, repo Repo, prev, current string) ([]ChangelogItem, error) {
-	result, err := giteaDo(ctx, func() (*gitea.Compare, *gitea.Response, error) {
+	result, _, err := giteaDo(ctx, func() (*gitea.Compare, *gitea.Response, error) {
 		return c.client.CompareCommits(repo.Owner, repo.Name, prev, current)
 	})
 	if err != nil {
@@ -130,11 +131,8 @@ func (c *giteaClient) CloseMilestone(ctx *context.Context, repo Repo, title stri
 		Title: title,
 	}
 
-	var resp *gitea.Response
-	_, err := giteaDo(ctx, func() (*gitea.Milestone, *gitea.Response, error) {
-		m, r, err := c.client.EditMilestoneByName(repo.Owner, repo.Name, title, opts)
-		resp = r
-		return m, r, err
+	_, resp, err := giteaDo(ctx, func() (*gitea.Milestone, *gitea.Response, error) {
+		return c.client.EditMilestoneByName(repo.Owner, repo.Name, title, opts)
 	})
 	if resp != nil && resp.StatusCode == http.StatusNotFound {
 		return ErrNoMilestoneFound{Title: title}
@@ -144,11 +142,8 @@ func (c *giteaClient) CloseMilestone(ctx *context.Context, repo Repo, title stri
 
 func (c *giteaClient) getDefaultBranch(ctx *context.Context, repo Repo) (string, error) {
 	projectID := repo.String()
-	var res *gitea.Response
-	p, err := giteaDo(ctx, func() (*gitea.Repository, *gitea.Response, error) {
-		p, r, err := c.client.GetRepo(repo.Owner, repo.Name)
-		res = r
-		return p, r, err
+	p, res, err := giteaDo(ctx, func() (*gitea.Repository, *gitea.Response, error) {
+		return c.client.GetRepo(repo.Owner, repo.Name)
 	})
 	if err != nil {
 		log := log.WithField("projectID", projectID)
@@ -208,18 +203,15 @@ func (c *giteaClient) CreateFile(
 		WithField("name", repo.Name).
 		Info("pushing")
 
-	var getResp *gitea.Response
-	currentFile, err := giteaDo(ctx, func() (*gitea.ContentsResponse, *gitea.Response, error) {
-		f, r, err := c.client.GetContents(repo.Owner, repo.Name, branch, path)
-		getResp = r
-		return f, r, err
+	currentFile, getResp, err := giteaDo(ctx, func() (*gitea.ContentsResponse, *gitea.Response, error) {
+		return c.client.GetContents(repo.Owner, repo.Name, branch, path)
 	})
 	// file not exist, create it
 	if err != nil {
 		if getResp == nil || getResp.StatusCode != http.StatusNotFound {
 			return err
 		}
-		_, err = giteaDo(ctx, func() (*gitea.FileResponse, *gitea.Response, error) {
+		_, _, err = giteaDo(ctx, func() (*gitea.FileResponse, *gitea.Response, error) {
 			return c.client.CreateFile(repo.Owner, repo.Name, path, gitea.CreateFileOptions{
 				FileOptions: fileOptions,
 				Content:     base64.StdEncoding.EncodeToString(content),
@@ -229,7 +221,7 @@ func (c *giteaClient) CreateFile(
 	}
 
 	// update file
-	_, err = giteaDo(ctx, func() (*gitea.FileResponse, *gitea.Response, error) {
+	_, _, err = giteaDo(ctx, func() (*gitea.FileResponse, *gitea.Response, error) {
 		return c.client.UpdateFile(repo.Owner, repo.Name, path, gitea.UpdateFileOptions{
 			FileOptions: fileOptions,
 			SHA:         currentFile.SHA,
@@ -253,7 +245,7 @@ func (c *giteaClient) createRelease(ctx *context.Context, title, body string) (*
 		IsDraft:      releaseConfig.Draft,
 		IsPrerelease: ctx.PreRelease,
 	}
-	release, err := giteaDo(ctx, func() (*gitea.Release, *gitea.Response, error) {
+	release, _, err := giteaDo(ctx, func() (*gitea.Release, *gitea.Response, error) {
 		return c.client.CreateRelease(owner, repoName, opts)
 	})
 	if err != nil {
@@ -265,7 +257,7 @@ func (c *giteaClient) createRelease(ctx *context.Context, title, body string) (*
 }
 
 func (c *giteaClient) getExistingRelease(ctx *context.Context, owner, repoName, tagName string) (*gitea.Release, error) {
-	releases, err := giteaDo(ctx, func() ([]*gitea.Release, *gitea.Response, error) {
+	releases, _, err := giteaDo(ctx, func() ([]*gitea.Release, *gitea.Response, error) {
 		return c.client.ListReleases(owner, repoName, gitea.ListReleasesOptions{})
 	})
 	if err != nil {
@@ -296,7 +288,7 @@ func (c *giteaClient) updateRelease(ctx *context.Context, title, body string, id
 		IsPrerelease: &ctx.PreRelease,
 	}
 
-	release, err := giteaDo(ctx, func() (*gitea.Release, *gitea.Response, error) {
+	release, _, err := giteaDo(ctx, func() (*gitea.Release, *gitea.Response, error) {
 		return c.client.EditRelease(owner, repoName, id, opts)
 	})
 	if err != nil {
