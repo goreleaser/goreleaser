@@ -177,6 +177,7 @@ var validLicenses = []string{
 	"libpng",
 	"libpng2",
 	"libtiff",
+	"liliq-p-11",
 	"llgpl21",
 	"llvm-exception",
 	"lppl1",
