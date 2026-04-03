@@ -2,7 +2,6 @@ package client
 
 import (
 	"encoding/json"
-	"errors"
 	"fmt"
 	"io"
 	"net/http"
@@ -265,6 +264,7 @@ func TestGitLabURLsDownloadTemplate(t *testing.T) {
 						Download:           tt.downloadURL,
 						UsePackageRegistry: tt.usePackageRegistry,
 					},
+					Retry: config.Retry{Attempts: 2},
 				}, testctx.WithVersion("1.0.0"))
 
 				tmpFile, err := os.CreateTemp(t.TempDir(), "")
@@ -275,13 +275,8 @@ func TestGitLabURLsDownloadTemplate(t *testing.T) {
 				require.NoError(t, err)
 
 				err = client.Upload(ctx, "1234", &artifact.Artifact{Name: "test", Path: tmpFile.Name()})
-				if errors.As(err, &RetriableError{}) {
-					err = client.Upload(ctx, "1234", &artifact.Artifact{Name: "test", Path: tmpFile.Name()})
-				}
 				if tt.wantErr {
 					require.Error(t, err)
-					retriable := errors.As(err, &RetriableError{})
-					require.False(t, retriable, "should be a final error")
 					return
 				}
 				require.NoError(t, err)
