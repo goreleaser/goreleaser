@@ -40,17 +40,18 @@ type githubClient struct {
 // githubDo wraps a go-github SDK call with retry logic.
 // It captures the response for status-code-based retry decisions.
 func githubDo[T any](ctx *context.Context, fn func() (T, *github.Response, error)) (T, *github.Response, error) {
+	var result T
 	var resp *github.Response
-	result, err := retryx.DoWithData(ctx.Config.Retry, func() (T, error) {
-		r, re, e := fn()
-		resp = re
-		return r, e
+	err := retryx.Do(ctx.Config.Retry, func() error {
+		tryT, tryResp, tryErr := fn()
+		resp = tryResp
+		result = tryT
+		return tryErr
 	}, func(err error) bool {
-		code := 0
-		if resp != nil {
-			code = resp.StatusCode
+		if resp == nil {
+			return retryx.IsRetriableHTTPError(0, err)
 		}
-		return retryx.IsRetriableHTTPError(code, err)
+		return retryx.IsRetriableHTTPError(resp.StatusCode, err)
 	})
 	return result, resp, err
 }
