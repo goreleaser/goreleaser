@@ -27,11 +27,12 @@ type giteaClient struct {
 var _ Client = &giteaClient{}
 
 func giteaDo[T any](ctx *context.Context, fn func() (T, *gitea.Response, error)) (T, *gitea.Response, error) {
+	var result T
 	var resp *gitea.Response
-	result, err := retryx.DoWithData(ctx.Config.Retry, func() (T, error) {
-		r, re, e := fn()
-		resp = re
-		return r, e
+	err := retryx.Do(ctx.Config.Retry, func() error {
+		var err error
+		result, resp, err = fn()
+		return err
 	}, func(err error) bool {
 		code := 0
 		if resp != nil {

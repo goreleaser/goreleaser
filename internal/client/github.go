@@ -43,15 +43,15 @@ func githubDo[T any](ctx *context.Context, fn func() (T, *github.Response, error
 	var result T
 	var resp *github.Response
 	err := retryx.Do(ctx.Config.Retry, func() error {
-		tryT, tryResp, tryErr := fn()
-		resp = tryResp
-		result = tryT
-		return tryErr
+		var err error
+		result, resp, err = fn()
+		return err
 	}, func(err error) bool {
-		if resp == nil {
-			return retryx.IsRetriableHTTPError(0, err)
+		code := 0
+		if resp != nil {
+			code = resp.StatusCode
 		}
-		return retryx.IsRetriableHTTPError(resp.StatusCode, err)
+		return retryx.IsRetriableHTTPError(code, err)
 	})
 	return result, resp, err
 }

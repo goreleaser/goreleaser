@@ -37,11 +37,12 @@ type gitlabClient struct {
 
 // gitlabDo wraps a go-gitlab SDK call with retry logic.
 func gitlabDo[T any](ctx *context.Context, fn func() (T, *gitlab.Response, error)) (T, *gitlab.Response, error) {
+	var result T
 	var resp *gitlab.Response
-	result, err := retryx.DoWithData(ctx.Config.Retry, func() (T, error) {
-		r, re, e := fn()
-		resp = re
-		return r, e
+	err := retryx.Do(ctx.Config.Retry, func() error {
+		var err error
+		result, resp, err = fn()
+		return err
 	}, func(err error) bool {
 		code := 0
 		if resp != nil {
