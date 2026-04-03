@@ -12,6 +12,7 @@ import (
 
 	"github.com/caarlos0/env/v11"
 	"github.com/caarlos0/log"
+	"github.com/goreleaser/goreleaser/v2/internal/retryx"
 	"github.com/goreleaser/goreleaser/v2/internal/tmpl"
 	"github.com/goreleaser/goreleaser/v2/pkg/context"
 )
@@ -197,20 +198,27 @@ func (c client) doMutation(ctx *context.Context, payload payload) ([]byte, error
 	req.Header.Set("Personal-Token", c.token)
 	req.Header.Set("Content-Type", "application/json")
 
-	resp, err := http.DefaultClient.Do(req)
-	if err != nil {
-		return nil, fmt.Errorf("could not send request to opencollective: %w", err)
-	}
-	defer resp.Body.Close()
+	var statusCode int
+	return retryx.DoWithData(ctx.Config.Retry, func() ([]byte, error) {
+		resp, err := http.DefaultClient.Do(req)
+		if err != nil {
+			statusCode = 0
+			return nil, fmt.Errorf("could not send request to opencollective: %w", err)
+		}
+		defer resp.Body.Close()
+		statusCode = resp.StatusCode
 
-	body, err := io.ReadAll(resp.Body)
-	if err != nil {
-		return nil, fmt.Errorf("could not read response from opencollective: %w", err)
-	}
+		body, err := io.ReadAll(resp.Body)
+		if err != nil {
+			return nil, fmt.Errorf("could not read response from opencollective: %w", err)
+		}
 
-	if resp.StatusCode != http.StatusOK {
-		return nil, fmt.Errorf("incorrect response from opencollective: %s — %s", resp.Status, string(body))
-	}
+		if resp.StatusCode != http.StatusOK {
+			return nil, fmt.Errorf("incorrect response from opencollective: %s — %s", resp.Status, string(body))
+		}
 
-	return body, nil
+		return body, nil
+	}, func(err error) bool {
+		return retryx.IsRetriableHTTPError(statusCode, err)
+	})
 }

@@ -6,6 +6,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+	"github.com/goreleaser/goreleaser/v2/internal/retryx"
 	"net/url"
 	"strconv"
 
@@ -98,17 +99,24 @@ func (p Pipe) Announce(ctx *context.Context) error {
 	}
 	req.Header.Set("Content-Type", "application/json")
 
-	resp, err := http.DefaultClient.Do(req)
-	if err != nil {
-		return err
-	}
-	defer resp.Body.Close()
+	var statusCode int
+	return retryx.Do(ctx.Config.Retry, func() error {
+		resp, err := http.DefaultClient.Do(req)
+		if err != nil {
+			statusCode = 0
+			return err
+		}
+		defer resp.Body.Close()
+		statusCode = resp.StatusCode
 
-	if resp.StatusCode != 204 && resp.StatusCode != 200 {
-		return fmt.Errorf("%s", resp.Status)
-	}
+		if resp.StatusCode != 204 && resp.StatusCode != 200 {
+			return fmt.Errorf("%s", resp.Status)
+		}
 
-	return nil
+		return nil
+	}, func(err error) bool {
+		return retryx.IsRetriableHTTPError(statusCode, err)
+	})
 }
 
 type WebhookMessageCreate struct {

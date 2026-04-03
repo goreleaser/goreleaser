@@ -9,6 +9,7 @@ import (
 	"net/http"
 
 	"github.com/caarlos0/env/v11"
+	"github.com/goreleaser/goreleaser/v2/internal/retryx"
 	"github.com/goreleaser/goreleaser/v2/internal/tmpl"
 	"github.com/goreleaser/goreleaser/v2/pkg/context"
 )
@@ -96,15 +97,22 @@ func (p Pipe) Announce(ctx *context.Context) error {
 	req.Header.Set("Api-Username", ctx.Config.Announce.Discourse.Username)
 	req.Header.Set("Api-Key", cfg.APIKey)
 
-	resp, err := http.DefaultClient.Do(req)
-	if err != nil {
-		return err
-	}
-	defer resp.Body.Close()
+	var statusCode int
+	return retryx.Do(ctx.Config.Retry, func() error {
+		resp, err := http.DefaultClient.Do(req)
+		if err != nil {
+			statusCode = 0
+			return err
+		}
+		defer resp.Body.Close()
+		statusCode = resp.StatusCode
 
-	if resp.StatusCode < 200 || resp.StatusCode > 299 {
-		return fmt.Errorf("error posting to Discourse, check your config again, HTTP code: %d", resp.StatusCode)
-	}
+		if resp.StatusCode < 200 || resp.StatusCode > 299 {
+			return fmt.Errorf("error posting to Discourse, check your config again, HTTP code: %d", resp.StatusCode)
+		}
 
-	return nil
+		return nil
+	}, func(err error) bool {
+		return retryx.IsRetriableHTTPError(statusCode, err)
+	})
 }

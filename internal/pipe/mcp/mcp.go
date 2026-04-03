@@ -13,6 +13,7 @@ import (
 	"github.com/goreleaser/goreleaser/v2/internal/deprecate"
 	"github.com/goreleaser/goreleaser/v2/internal/logext"
 	"github.com/goreleaser/goreleaser/v2/internal/skips"
+	"github.com/goreleaser/goreleaser/v2/internal/retryx"
 	"github.com/goreleaser/goreleaser/v2/internal/tmpl"
 	"github.com/goreleaser/goreleaser/v2/pkg/context"
 	"github.com/modelcontextprotocol/registry/cmd/publisher/auth"
@@ -157,32 +158,39 @@ func (p Pipe) Publish(ctx *context.Context) error {
 	req.Header.Set("Authorization", "Bearer "+token)
 
 	client := &http.Client{}
-	resp, err := client.Do(req)
-	if err != nil {
-		return fmt.Errorf("could not send request: %w", err)
-	}
-	defer resp.Body.Close()
+	var statusCode int
+	return retryx.Do(ctx.Config.Retry, func() error {
+		resp, err := client.Do(req)
+		if err != nil {
+			statusCode = 0
+			return fmt.Errorf("could not send request: %w", err)
+		}
+		defer resp.Body.Close()
+		statusCode = resp.StatusCode
 
-	body, err := io.ReadAll(resp.Body)
-	if err != nil {
-		return fmt.Errorf("could not read response: %w", err)
-	}
+		body, err := io.ReadAll(resp.Body)
+		if err != nil {
+			return fmt.Errorf("could not read response: %w", err)
+		}
 
-	if resp.StatusCode != http.StatusCreated && resp.StatusCode != http.StatusOK {
-		return fmt.Errorf("got status code %d: %s", resp.StatusCode, string(body))
-	}
+		if resp.StatusCode != http.StatusCreated && resp.StatusCode != http.StatusOK {
+			return fmt.Errorf("got status code %d: %s", resp.StatusCode, string(body))
+		}
 
-	var serverResponse apiv0.ServerResponse
-	if err := json.Unmarshal(body, &serverResponse); err != nil {
-		return fmt.Errorf("could not parse response: %w", err)
-	}
+		var serverResponse apiv0.ServerResponse
+		if err := json.Unmarshal(body, &serverResponse); err != nil {
+			return fmt.Errorf("could not parse response: %w", err)
+		}
 
-	log.
-		WithField("name", server.Name).
-		WithField("status", serverResponse.Meta.Official.Status).
-		Info("published to MCP registry")
+		log.
+			WithField("name", server.Name).
+			WithField("status", serverResponse.Meta.Official.Status).
+			Info("published to MCP registry")
 
-	return nil
+		return nil
+	}, func(err error) bool {
+		return retryx.IsRetriableHTTPError(statusCode, err)
+	})
 }
 
 func authProvider(registryURL, method, token string) (auth.Provider, error) {

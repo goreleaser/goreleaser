@@ -11,6 +11,7 @@ import (
 	"github.com/caarlos0/env/v11"
 	"github.com/caarlos0/log"
 
+	"github.com/goreleaser/goreleaser/v2/internal/retryx"
 	"github.com/goreleaser/goreleaser/v2/internal/tmpl"
 	"github.com/goreleaser/goreleaser/v2/pkg/context"
 )
@@ -99,13 +100,20 @@ func postWebhook(ctx *context.Context, url string, msg *incomingWebhookRequest) 
 	}
 	req.Header.Set("Content-Type", "application/json")
 
-	r, err := http.DefaultClient.Do(req)
-	if err != nil {
-		return err
-	}
-	closeBody(r)
+	var statusCode int
+	return retryx.Do(ctx.Config.Retry, func() error {
+		r, err := http.DefaultClient.Do(req)
+		if err != nil {
+			statusCode = 0
+			return err
+		}
+		statusCode = r.StatusCode
+		closeBody(r)
 
-	return nil
+		return nil
+	}, func(err error) bool {
+		return retryx.IsRetriableHTTPError(statusCode, err)
+	})
 }
 
 func closeBody(r *http.Response) {

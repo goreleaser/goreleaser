@@ -13,6 +13,7 @@ import (
 
 	"github.com/caarlos0/env/v11"
 	"github.com/caarlos0/log"
+	"github.com/goreleaser/goreleaser/v2/internal/retryx"
 	"github.com/goreleaser/goreleaser/v2/internal/tmpl"
 	"github.com/goreleaser/goreleaser/v2/pkg/context"
 )
@@ -113,19 +114,26 @@ func (p Pipe) Announce(ctx *context.Context) error {
 		log.Debugf("Header Key %s / Value %s", key, value)
 		req.Header.Add(key, value)
 	}
-	resp, err := client.Do(req)
-	if err != nil {
-		return err
-	}
-	defer resp.Body.Close()
+	var statusCode int
+	return retryx.Do(ctx.Config.Retry, func() error {
+		resp, err := client.Do(req)
+		if err != nil {
+			statusCode = 0
+			return err
+		}
+		defer resp.Body.Close()
+		statusCode = resp.StatusCode
 
-	if !slices.Contains(ctx.Config.Announce.Webhook.ExpectedStatusCodes, resp.StatusCode) {
-		_, _ = io.Copy(io.Discard, resp.Body)
-		return fmt.Errorf("request failed with status %v", resp.Status)
-	}
+		if !slices.Contains(ctx.Config.Announce.Webhook.ExpectedStatusCodes, resp.StatusCode) {
+			_, _ = io.Copy(io.Discard, resp.Body)
+			return fmt.Errorf("request failed with status %v", resp.Status)
+		}
 
-	body, _ := io.ReadAll(resp.Body)
-	log.Infof("Post OK: '%v'", resp.StatusCode)
-	log.Infof("Response : %v\n", string(body))
-	return nil
+		body, _ := io.ReadAll(resp.Body)
+		log.Infof("Post OK: '%v'", resp.StatusCode)
+		log.Infof("Response : %v\n", string(body))
+		return nil
+	}, func(err error) bool {
+		return retryx.IsRetriableHTTPError(statusCode, err)
+	})
 }
