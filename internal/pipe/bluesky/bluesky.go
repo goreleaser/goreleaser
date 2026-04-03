@@ -12,6 +12,7 @@ import (
 	butil "github.com/bluesky-social/indigo/util"
 	"github.com/bluesky-social/indigo/xrpc"
 	"github.com/caarlos0/env/v11"
+	"github.com/goreleaser/goreleaser/v2/internal/retryx"
 	"github.com/goreleaser/goreleaser/v2/internal/tmpl"
 	"github.com/goreleaser/goreleaser/v2/pkg/context"
 )
@@ -99,7 +100,9 @@ func (p Pipe) Announce(ctx *context.Context) error {
 		Password:   cfg.Password,
 	}
 
-	authResult, err := atproto.ServerCreateSession(ctx, xrpcClient, loginInput)
+	authResult, err := retryx.DoWithData(ctx.Config.Retry, func() (*atproto.ServerCreateSession_Output, error) {
+		return atproto.ServerCreateSession(ctx, xrpcClient, loginInput)
+	}, retryx.IsNetworkError)
 	if err != nil {
 		return fmt.Errorf("could not log in to Bluesky: %w", err)
 	}
@@ -111,13 +114,15 @@ func (p Pipe) Announce(ctx *context.Context) error {
 		Did:        authResult.Did,
 	}
 
-	_, err = atproto.RepoCreateRecord(ctx, xrpcClient, &atproto.RepoCreateRecord_Input{
-		Collection: "app.bsky.feed.post",
-		Repo:       xrpcClient.Auth.Did,
-		Record: &util.LexiconTypeDecoder{
-			Val: &post,
-		},
-	})
+	_, err = retryx.DoWithData(ctx.Config.Retry, func() (*atproto.RepoCreateRecord_Output, error) {
+		return atproto.RepoCreateRecord(ctx, xrpcClient, &atproto.RepoCreateRecord_Input{
+			Collection: "app.bsky.feed.post",
+			Repo:       xrpcClient.Auth.Did,
+			Record: &util.LexiconTypeDecoder{
+				Val: &post,
+			},
+		})
+	}, retryx.IsNetworkError)
 
 	return err
 }

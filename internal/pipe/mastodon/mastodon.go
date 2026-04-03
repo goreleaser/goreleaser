@@ -4,6 +4,7 @@ package mastodon
 import (
 	"github.com/caarlos0/env/v11"
 	"github.com/caarlos0/log"
+	"github.com/goreleaser/goreleaser/v2/internal/retryx"
 	"github.com/goreleaser/goreleaser/v2/internal/tmpl"
 	"github.com/goreleaser/goreleaser/v2/pkg/context"
 	"github.com/mattn/go-mastodon"
@@ -52,9 +53,12 @@ func (p Pipe) Announce(ctx *context.Context) error {
 	})
 
 	log.Infof("posting: '%s'", msg)
-	if _, err := client.PostStatus(ctx, &mastodon.Toot{
-		Status: msg,
-	}); err != nil {
+	if err := retryx.Do(ctx.Config.Retry, func() error {
+		_, err := client.PostStatus(ctx, &mastodon.Toot{
+			Status: msg,
+		})
+		return err
+	}, retryx.IsNetworkError); err != nil {
 		return err
 	}
 	return nil

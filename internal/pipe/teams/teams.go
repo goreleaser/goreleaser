@@ -6,6 +6,7 @@ import (
 	"github.com/atc0005/go-teams-notify/v2/messagecard"
 	"github.com/caarlos0/env/v11"
 	"github.com/caarlos0/log"
+	"github.com/goreleaser/goreleaser/v2/internal/retryx"
 	"github.com/goreleaser/goreleaser/v2/internal/tmpl"
 	"github.com/goreleaser/goreleaser/v2/pkg/context"
 )
@@ -77,5 +78,7 @@ func (p Pipe) Announce(ctx *context.Context) error {
 	if err != nil {
 		return err
 	}
-	return client.Send(cfg.Webhook, msgCard)
+	return retryx.Do(ctx.Config.Retry, func() error {
+		return client.Send(cfg.Webhook, msgCard)
+	}, retryx.IsNetworkError)
 }

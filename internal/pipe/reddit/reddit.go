@@ -5,6 +5,7 @@ import (
 	"github.com/caarlos0/env/v11"
 	"github.com/caarlos0/go-reddit/v3/reddit"
 	"github.com/caarlos0/log"
+	"github.com/goreleaser/goreleaser/v2/internal/retryx"
 	"github.com/goreleaser/goreleaser/v2/internal/tmpl"
 	"github.com/goreleaser/goreleaser/v2/pkg/context"
 )
@@ -67,8 +68,12 @@ func (p Pipe) Announce(ctx *context.Context) error {
 		return err
 	}
 
-	post, _, err := client.Post.SubmitLink(ctx, linkRequest)
-	if err != nil {
+	var post *reddit.Submitted
+	if err := retryx.Do(ctx.Config.Retry, func() error {
+		var err error
+		post, _, err = client.Post.SubmitLink(ctx, linkRequest)
+		return err
+	}, retryx.IsNetworkError); err != nil {
 		return err
 	}
 
