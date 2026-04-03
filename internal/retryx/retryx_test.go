@@ -143,3 +143,44 @@ func TestDoWithDataRetryIf(t *testing.T) {
 	require.Empty(t, val)
 	require.Equal(t, int32(2), calls.Load())
 }
+
+func TestIsRetriableHTTPError(t *testing.T) {
+	t.Run("network error", func(t *testing.T) {
+		require.True(t, IsRetriableHTTPError(0, errors.New("connection reset")))
+	})
+	t.Run("500", func(t *testing.T) {
+		require.True(t, IsRetriableHTTPError(500, errors.New("internal server error")))
+	})
+	t.Run("502", func(t *testing.T) {
+		require.True(t, IsRetriableHTTPError(502, errors.New("bad gateway")))
+	})
+	t.Run("503", func(t *testing.T) {
+		require.True(t, IsRetriableHTTPError(503, errors.New("service unavailable")))
+	})
+	t.Run("429", func(t *testing.T) {
+		require.True(t, IsRetriableHTTPError(429, errors.New("rate limited")))
+	})
+	t.Run("404 not retriable", func(t *testing.T) {
+		require.False(t, IsRetriableHTTPError(404, errors.New("not found")))
+	})
+	t.Run("422 not retriable", func(t *testing.T) {
+		require.False(t, IsRetriableHTTPError(422, errors.New("unprocessable")))
+	})
+	t.Run("200 no error", func(t *testing.T) {
+		require.False(t, IsRetriableHTTPError(200, nil))
+	})
+	t.Run("0 no error", func(t *testing.T) {
+		require.False(t, IsRetriableHTTPError(0, nil))
+	})
+}
+
+func TestUnrecoverable(t *testing.T) {
+	err := Unrecoverable(errors.New("permanent"))
+	var calls atomic.Int32
+	result := Do(fastRetry(5), func() error {
+		calls.Add(1)
+		return err
+	}, nil)
+	require.ErrorContains(t, result, "permanent")
+	require.Equal(t, int32(1), calls.Load())
+}

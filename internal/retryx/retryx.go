@@ -2,6 +2,7 @@
 package retryx
 
 import (
+	"net/http"
 	"strings"
 
 	retry "github.com/avast/retry-go/v4"
@@ -21,8 +22,12 @@ func Do(c config.Retry, retryableFunc func() error, retryIf func(error) bool) er
 }
 
 func opts(c config.Retry, retryIf func(error) bool) []retry.Option {
+	attempts := c.Attempts
+	if attempts == 0 {
+		attempts = 1
+	}
 	opts := []retry.Option{
-		retry.Attempts(c.Attempts),
+		retry.Attempts(attempts),
 		retry.DelayType(retry.BackOffDelay),
 		retry.Delay(c.Delay),
 		retry.MaxDelay(c.MaxDelay),
@@ -51,4 +56,18 @@ func IsNetworkError(err error) bool {
 		strings.Contains(s, "connection refused") ||
 		strings.Contains(s, "tls handshake timeout") ||
 		strings.Contains(s, "i/o timeout")
+}
+
+// IsRetriableHTTPError returns true if the status code or error indicates a
+// transient HTTP failure worth retrying.
+func IsRetriableHTTPError(statusCode int, err error) bool {
+	if IsNetworkError(err) {
+		return true
+	}
+	return statusCode >= 500 || statusCode == http.StatusTooManyRequests
+}
+
+// Unrecoverable wraps an error so that the retry loop stops immediately.
+func Unrecoverable(err error) error {
+	return retry.Unrecoverable(err)
 }
