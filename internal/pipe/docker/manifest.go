@@ -75,7 +75,7 @@ func (ManifestPipe) Default(ctx *context.Context) error {
 		if manifest.Retry.Attempts > 0 ||
 			manifest.Retry.MaxDelay > 0 ||
 			manifest.Retry.Delay > 0 {
-			deprecate.Notice(ctx, "manifests.docker_retry")
+			deprecate.Notice(ctx, "docker_manifests.retry")
 		}
 		manifest.Retry.Attempts = cmp.Or(manifest.Retry.Attempts, ctx.Config.Retry.Attempts)
 		manifest.Retry.Delay = cmp.Or(manifest.Retry.Delay, ctx.Config.Retry.Delay)
