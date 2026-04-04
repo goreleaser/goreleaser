@@ -68,12 +68,11 @@ func (p Pipe) Announce(ctx *context.Context) error {
 		return err
 	}
 
-	var post *reddit.Submitted
-	if err := retryx.Do(ctx.Config.Retry, func() error {
-		var err error
-		post, _, err = client.Post.SubmitLink(ctx, linkRequest)
-		return err
-	}, retryx.IsNetworkError); err != nil {
+	post, err := retryx.DoWithData(ctx.Config.Retry, func() (*reddit.Submitted, error) {
+		post, _, err := client.Post.SubmitLink(ctx, linkRequest)
+		return post, err
+	}, retryx.IsNetworkError)
+	if err != nil {
 		return err
 	}
 
