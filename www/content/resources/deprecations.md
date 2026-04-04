@@ -53,7 +53,7 @@ foo: bar
 
 > since v2.15.3
 
-All retry configuration were moved to the root of the configuration file:
+All retry configuration was moved to the root of the configuration file:
 
 {{< tabs >}}
 {{< tab "Before" >}}
@@ -83,7 +83,7 @@ retry:
 
 > since v2.15.3
 
-All retry configuration were moved to the root of the configuration file:
+All retry configuration was moved to the root of the configuration file:
 
 {{< tabs >}}
 {{< tab "Before" >}}
@@ -113,7 +113,7 @@ retry:
 
 > since v2.15.3
 
-All retry configuration were moved to the root of the configuration file:
+All retry configuration was moved to the root of the configuration file:
 
 {{< tabs >}}
 {{< tab "Before" >}}

@@ -64,12 +64,12 @@ func (Pipe) Announce(ctx *context.Context) error {
 		return err
 	}
 
-	var b bytes.Buffer
-	if err := json.NewEncoder(&b).Encode(args); err != nil {
+	payload, err := json.Marshal(args)
+	if err != nil {
 		return err
 	}
 
-	request, err := http.NewRequestWithContext(ctx, http.MethodPost, fmt.Sprintf("https://api.telegram.org/bot%s/sendMessage", cfg.ConsumerToken), &b)
+	request, err := http.NewRequestWithContext(ctx, http.MethodPost, fmt.Sprintf("https://api.telegram.org/bot%s/sendMessage", cfg.ConsumerToken), bytes.NewReader(payload))
 	if err != nil {
 		return err
 	}
