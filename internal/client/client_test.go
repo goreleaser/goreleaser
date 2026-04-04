@@ -5,6 +5,7 @@ import (
 	"math/rand/v2"
 	"net/http"
 	"net/http/httptest"
+	"strings"
 	"testing"
 
 	"github.com/goreleaser/goreleaser/v2/internal/testctx"
@@ -109,6 +110,22 @@ func TestCheckBodyMaxLength(t *testing.T) {
 	}
 	out := truncateReleaseBody(string(b))
 	require.Len(t, out, maxReleaseBodyLength)
+}
+
+func TestTruncateReleaseBodyPreservesStart(t *testing.T) {
+	t.Parallel()
+	body := "A" + strings.Repeat("B", maxReleaseBodyLength)
+	out := truncateReleaseBody(body)
+	require.Len(t, out, maxReleaseBodyLength)
+	require.True(t, strings.HasPrefix(out, "A"), "first character should be preserved")
+	require.True(t, strings.HasSuffix(out, ellipsis), "truncated body should end with ellipsis")
+}
+
+func TestTruncateReleaseBodyNoTruncation(t *testing.T) {
+	t.Parallel()
+	body := "short body"
+	out := truncateReleaseBody(body)
+	require.Equal(t, body, out)
 }
 
 func TestNewIfToken(t *testing.T) {
