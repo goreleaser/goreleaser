@@ -6,6 +6,7 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/goreleaser/goreleaser/v2/internal/retryx"
 	"github.com/goreleaser/goreleaser/v2/internal/testctx"
 	"github.com/goreleaser/goreleaser/v2/internal/testlib"
 	"github.com/goreleaser/goreleaser/v2/pkg/config"
@@ -431,12 +432,15 @@ func TestIsRetriableGitError(t *testing.T) {
 		{"connection reset", "Connection reset by peer", true},
 		{"network unreachable", "Network is unreachable", true},
 		{"connection closed", "Connection closed by 192.0.2.1 port 22", true},
+		{"connection refused", "connection refused", true},
+		{"tls handshake timeout", "tls handshake timeout", true},
+		{"io timeout", "i/o timeout", true},
 		{"other error", "permission denied (publickey)", false},
 		{"unrelated error", "repository not found", false},
 	} {
 		t.Run(tt.name, func(t *testing.T) {
 			t.Parallel()
-			require.Equal(t, tt.expected, isRetriableGitError(errors.New(tt.err)))
+			require.Equal(t, tt.expected, retryx.IsNetworkError(errors.New(tt.err)))
 		})
 	}
 }

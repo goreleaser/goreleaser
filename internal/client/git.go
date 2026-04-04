@@ -220,12 +220,6 @@ func isPasswordError(err error) bool {
 	return errors.As(err, &kerr)
 }
 
-func isRetriableGitError(err error) bool {
-	return strings.Contains(err.Error(), "Connection reset") ||
-		strings.Contains(err.Error(), "Network is unreachable") ||
-		strings.Contains(err.Error(), "Connection closed")
-}
-
 func cloneRepo(ctx *context.Context, parent, url, name string, env []string) error {
 	if err := retryx.Do(
 		ctx.Config.Retry,
@@ -241,7 +235,7 @@ func cloneRepo(ctx *context.Context, parent, url, name string, env []string) err
 				Info("cloning")
 			return runGitCmds(ctx, parent, env, [][]string{{"clone", url, name}})
 		},
-		isRetriableGitError,
+		retryx.IsNetworkError,
 	); err != nil {
 		return fmt.Errorf("failed to clone local repository: %w", err)
 	}
@@ -254,7 +248,7 @@ func pushRepo(ctx *context.Context, cwd string, env []string) error {
 		func() error {
 			return runGitCmds(ctx, cwd, env, [][]string{{"push", "origin", "HEAD"}})
 		},
-		isRetriableGitError,
+		retryx.IsNetworkError,
 	)
 }
 
