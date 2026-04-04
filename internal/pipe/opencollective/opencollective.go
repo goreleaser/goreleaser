@@ -191,15 +191,15 @@ func (c client) doMutation(ctx *context.Context, payload payload) ([]byte, error
 		return nil, fmt.Errorf("could not marshal payload: %w", err)
 	}
 
-	req, err := http.NewRequestWithContext(ctx, http.MethodPost, c.endpoint, bytes.NewReader(p))
-	if err != nil {
-		return nil, fmt.Errorf("could not create request: %w", err)
-	}
-	req.Header.Set("Personal-Token", c.token)
-	req.Header.Set("Content-Type", "application/json")
-
 	var statusCode int
 	return retryx.DoWithData(ctx.Config.Retry, func() ([]byte, error) {
+		req, err := http.NewRequestWithContext(ctx, http.MethodPost, c.endpoint, bytes.NewReader(p))
+		if err != nil {
+			return nil, retryx.Unrecoverable(fmt.Errorf("could not create request: %w", err))
+		}
+		req.Header.Set("Personal-Token", c.token)
+		req.Header.Set("Content-Type", "application/json")
+
 		resp, err := http.DefaultClient.Do(req)
 		if err != nil {
 			statusCode = 0

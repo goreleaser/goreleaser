@@ -87,18 +87,17 @@ func (p Pipe) Announce(ctx *context.Context) error {
 		return err
 	}
 
-	req, err := http.NewRequestWithContext(ctx, http.MethodPost, endpoint, bytes.NewReader(payload))
-	if err != nil {
-		return err
-	}
-
-	req.Header.Set("Content-Type", "application/json")
-	req.Header.Set("User-Agent", "goreleaser/v2")
-	req.Header.Set("Api-Username", ctx.Config.Announce.Discourse.Username)
-	req.Header.Set("Api-Key", cfg.APIKey)
-
 	var statusCode int
 	return retryx.Do(ctx.Config.Retry, func() error {
+		req, err := http.NewRequestWithContext(ctx, http.MethodPost, endpoint, bytes.NewReader(payload))
+		if err != nil {
+			return retryx.Unrecoverable(err)
+		}
+		req.Header.Set("Content-Type", "application/json")
+		req.Header.Set("User-Agent", "goreleaser/v2")
+		req.Header.Set("Api-Username", ctx.Config.Announce.Discourse.Username)
+		req.Header.Set("Api-Key", cfg.APIKey)
+
 		resp, err := http.DefaultClient.Do(req)
 		if err != nil {
 			statusCode = 0

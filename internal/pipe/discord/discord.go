@@ -94,14 +94,14 @@ func (p Pipe) Announce(ctx *context.Context) error {
 		return err
 	}
 
-	req, err := http.NewRequestWithContext(ctx, http.MethodPost, u.String(), bytes.NewReader(bts))
-	if err != nil {
-		return err
-	}
-	req.Header.Set("Content-Type", "application/json")
-
 	var statusCode int
 	return retryx.Do(ctx.Config.Retry, func() error {
+		req, err := http.NewRequestWithContext(ctx, http.MethodPost, u.String(), bytes.NewReader(bts))
+		if err != nil {
+			return retryx.Unrecoverable(err)
+		}
+		req.Header.Set("Content-Type", "application/json")
+
 		resp, err := http.DefaultClient.Do(req)
 		if err != nil {
 			statusCode = 0

@@ -69,15 +69,15 @@ func (Pipe) Announce(ctx *context.Context) error {
 		return err
 	}
 
-	request, err := http.NewRequestWithContext(ctx, http.MethodPost, fmt.Sprintf("https://api.telegram.org/bot%s/sendMessage", cfg.ConsumerToken), bytes.NewReader(payload))
-	if err != nil {
-		return err
-	}
-	request.Header.Set("Content-Type", "application/json")
-
 	log.Infof("posting: '%s'", args["text"])
 	var statusCode int
 	return retryx.Do(ctx.Config.Retry, func() error {
+		request, err := http.NewRequestWithContext(ctx, http.MethodPost, fmt.Sprintf("https://api.telegram.org/bot%s/sendMessage", cfg.ConsumerToken), bytes.NewReader(payload))
+		if err != nil {
+			return retryx.Unrecoverable(err)
+		}
+		request.Header.Set("Content-Type", "application/json")
+
 		resp, err := http.DefaultClient.Do(request)
 		if err != nil {
 			statusCode = 0

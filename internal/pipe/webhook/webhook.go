@@ -95,27 +95,28 @@ func (p Pipe) Announce(ctx *context.Context) error {
 		Transport: customTransport,
 	}
 
-	req, err := http.NewRequestWithContext(ctx, http.MethodPost, endpointURL.String(), strings.NewReader(msg))
-	if err != nil {
-		return err
-	}
-	req.Header.Add(ContentTypeHeaderKey, ctx.Config.Announce.Webhook.ContentType)
-	req.Header.Add(UserAgentHeaderKey, UserAgentHeaderValue)
-
-	if cfg.BasicAuthHeader != "" {
-		log.Debugf("set basic auth header")
-		req.Header.Add(AuthorizationHeaderKey, cfg.BasicAuthHeader)
-	} else if cfg.BearerTokenHeader != "" {
-		log.Debugf("set bearer token header")
-		req.Header.Add(AuthorizationHeaderKey, cfg.BearerTokenHeader)
-	}
-
-	for key, value := range ctx.Config.Announce.Webhook.Headers {
-		log.Debugf("Header Key %s / Value %s", key, value)
-		req.Header.Add(key, value)
-	}
 	var statusCode int
 	return retryx.Do(ctx.Config.Retry, func() error {
+		req, err := http.NewRequestWithContext(ctx, http.MethodPost, endpointURL.String(), strings.NewReader(msg))
+		if err != nil {
+			return retryx.Unrecoverable(err)
+		}
+		req.Header.Add(ContentTypeHeaderKey, ctx.Config.Announce.Webhook.ContentType)
+		req.Header.Add(UserAgentHeaderKey, UserAgentHeaderValue)
+
+		if cfg.BasicAuthHeader != "" {
+			log.Debugf("set basic auth header")
+			req.Header.Add(AuthorizationHeaderKey, cfg.BasicAuthHeader)
+		} else if cfg.BearerTokenHeader != "" {
+			log.Debugf("set bearer token header")
+			req.Header.Add(AuthorizationHeaderKey, cfg.BearerTokenHeader)
+		}
+
+		for key, value := range ctx.Config.Announce.Webhook.Headers {
+			log.Debugf("Header Key %s / Value %s", key, value)
+			req.Header.Add(key, value)
+		}
+
 		resp, err := client.Do(req)
 		if err != nil {
 			statusCode = 0

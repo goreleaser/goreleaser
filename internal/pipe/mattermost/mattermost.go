@@ -94,14 +94,14 @@ func postWebhook(ctx *context.Context, url string, msg *incomingWebhookRequest) 
 		return fmt.Errorf("failed to marshal the message: %w", err)
 	}
 
-	req, err := http.NewRequestWithContext(ctx, http.MethodPost, url, bytes.NewReader(payload))
-	if err != nil {
-		return fmt.Errorf("failed new request: %w", err)
-	}
-	req.Header.Set("Content-Type", "application/json")
-
 	var statusCode int
 	return retryx.Do(ctx.Config.Retry, func() error {
+		req, err := http.NewRequestWithContext(ctx, http.MethodPost, url, bytes.NewReader(payload))
+		if err != nil {
+			return retryx.Unrecoverable(fmt.Errorf("failed new request: %w", err))
+		}
+		req.Header.Set("Content-Type", "application/json")
+
 		r, err := http.DefaultClient.Do(req)
 		if err != nil {
 			statusCode = 0
