@@ -394,7 +394,7 @@ func (c *gitlabClient) CreateFile(
 		updateOpts.StartBranch = &defaultBranch
 	}
 
-	updateFileInfo, updateRes, err := gitlabDo(ctx, func() (*gitlab.FileInfo, *gitlab.Response, error) {
+	updateFileInfo, res, err := gitlabDo(ctx, func() (*gitlab.FileInfo, *gitlab.Response, error) {
 		return c.client.RepositoryFiles.UpdateFile(projectID, fileName, updateOpts)
 	})
 	if err != nil {
@@ -402,8 +402,8 @@ func (c *gitlabClient) CreateFile(
 			WithField("fileName", fileName).
 			WithField("branch", branch).
 			WithField("projectID", projectID)
-		if updateRes != nil {
-			log = log.WithField("statusCode", updateRes.StatusCode)
+		if res != nil {
+			log = log.WithField("statusCode", res.StatusCode)
 		}
 		log.WithError(err).
 			Error("error updating file")
@@ -415,8 +415,8 @@ func (c *gitlabClient) CreateFile(
 		WithField("branch", branch).
 		WithField("projectID", projectID).
 		WithField("filePath", updateFileInfo.FilePath)
-	if updateRes != nil {
-		log = log.WithField("statusCode", updateRes.StatusCode)
+	if res != nil {
+		log = log.WithField("statusCode", res.StatusCode)
 	}
 	log.Debug("updated file")
 	return nil
