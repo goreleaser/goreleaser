@@ -161,7 +161,7 @@ func NewIfToken(ctx *context.Context, cli Client, token string) (Client, error) 
 
 func truncateReleaseBody(body string) string {
 	if len(body) > maxReleaseBodyLength {
-		body = body[1:(maxReleaseBodyLength-len(ellipsis))] + ellipsis
+		body = body[:(maxReleaseBodyLength-len(ellipsis))] + ellipsis
 	}
 	return body
 }
