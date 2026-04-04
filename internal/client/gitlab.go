@@ -626,6 +626,7 @@ func (c *gitlabClient) Upload(
 			opt,
 		)
 		if err != nil {
+			// this status means the asset already exists
 			if resp != nil && resp.StatusCode == http.StatusBadRequest && releaseLink != nil {
 				if !ctx.Config.Release.ReplaceExistingArtifacts {
 					return retryx.Unrecoverable(err)

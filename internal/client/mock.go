@@ -34,7 +34,6 @@ type Mock struct {
 	ReleasePublished     bool
 	UploadedFileNames    []string
 	UploadedFilePaths    map[string]string
-	FailFirstUpload      bool
 	Lock                 sync.Mutex
 	ClosedMilestone      string
 	FailToCloseMilestone bool
@@ -118,10 +117,6 @@ func (c *Mock) Upload(_ *context.Context, _ string, artifact *artifact.Artifact)
 	}
 	if c.FailToUpload {
 		return errors.New("upload failed")
-	}
-	if c.FailFirstUpload {
-		c.FailFirstUpload = false
-		// Real clients retry internally via retryx; mock simulates success after internal retry.
 	}
 	c.UploadedFile = true
 	c.UploadedFileNames = append(c.UploadedFileNames, artifact.Name)
