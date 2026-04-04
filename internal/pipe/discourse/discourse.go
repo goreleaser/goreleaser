@@ -87,7 +87,6 @@ func (p Pipe) Announce(ctx *context.Context) error {
 		return err
 	}
 
-	var statusCode int
 	return retryx.Do(ctx.Config.Retry, func() error {
 		req, err := http.NewRequestWithContext(ctx, http.MethodPost, endpoint, bytes.NewReader(payload))
 		if err != nil {
@@ -100,18 +99,14 @@ func (p Pipe) Announce(ctx *context.Context) error {
 
 		resp, err := http.DefaultClient.Do(req)
 		if err != nil {
-			statusCode = 0
-			return err
+			return retryx.HTTP(err, resp)
 		}
 		defer resp.Body.Close()
-		statusCode = resp.StatusCode
 
 		if resp.StatusCode < 200 || resp.StatusCode > 299 {
-			return fmt.Errorf("error posting to Discourse, check your config again, HTTP code: %d", resp.StatusCode)
+			return retryx.HTTP(fmt.Errorf("error posting to Discourse, check your config again, HTTP code: %d", resp.StatusCode), resp)
 		}
 
 		return nil
-	}, func(err error) bool {
-		return retryx.IsRetriableHTTPError(statusCode, err)
-	})
+	}, retryx.IsRetriable)
 }

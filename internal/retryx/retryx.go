@@ -2,6 +2,7 @@
 package retryx
 
 import (
+	"errors"
 	"net/http"
 	"strings"
 
@@ -9,6 +10,41 @@ import (
 	"github.com/caarlos0/log"
 	"github.com/goreleaser/goreleaser/v2/pkg/config"
 )
+
+// HTTPError carries an HTTP status code alongside the original error.
+type HTTPError struct {
+	Err    error
+	Status int
+}
+
+func (e HTTPError) Error() string { return e.Err.Error() }
+func (e HTTPError) Unwrap() error { return e.Err }
+
+// HTTP wraps err with the status code from resp.
+// A nil resp yields Status 0 (network-level failure).
+func HTTP(err error, resp *http.Response) error {
+	if err == nil {
+		return nil
+	}
+	status := 0
+	if resp != nil {
+		status = resp.StatusCode
+	}
+	return HTTPError{Err: err, Status: status}
+}
+
+// IsRetriable returns true if the error represents a transient failure worth
+// retrying: network errors, 5xx, or 429.
+func IsRetriable(err error) bool {
+	if IsNetworkError(err) {
+		return true
+	}
+	var he HTTPError
+	if errors.As(err, &he) {
+		return he.Status >= 500 || he.Status == http.StatusTooManyRequests
+	}
+	return false
+}
 
 // DoWithData retries the given retryableFunc with the given configuration,
 // following retryIf, and returns the data from retryableFunc.
@@ -54,15 +90,6 @@ func IsNetworkError(err error) bool {
 		strings.Contains(s, "connection refused") ||
 		strings.Contains(s, "tls handshake timeout") ||
 		strings.Contains(s, "i/o timeout")
-}
-
-// IsRetriableHTTPError returns true if the status code or error indicates a
-// transient HTTP failure worth retrying.
-func IsRetriableHTTPError(statusCode int, err error) bool {
-	if IsNetworkError(err) {
-		return true
-	}
-	return statusCode >= 500 || statusCode == http.StatusTooManyRequests
 }
 
 // Unrecoverable wraps an error so that the retry loop stops immediately.

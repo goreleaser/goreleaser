@@ -32,10 +32,11 @@ func giteaDo[T any](ctx *context.Context, fn func() (T, *gitea.Response, error))
 	err := retryx.Do(ctx.Config.Retry, func() error {
 		var err error
 		result, resp, err = fn()
-		return err
-	}, func(err error) bool {
-		return retryx.IsRetriableHTTPError(giteaStatusCode(resp), err)
-	})
+		if err != nil {
+			return retryx.HTTPError{Err: err, Status: giteaStatusCode(resp)}
+		}
+		return nil
+	}, retryx.IsRetriable)
 	return result, resp, err
 }
 

@@ -70,7 +70,6 @@ func (Pipe) Announce(ctx *context.Context) error {
 	}
 
 	log.Infof("posting: '%s'", args["text"])
-	var statusCode int
 	return retryx.Do(ctx.Config.Retry, func() error {
 		request, err := http.NewRequestWithContext(ctx, http.MethodPost, fmt.Sprintf("https://api.telegram.org/bot%s/sendMessage", cfg.ConsumerToken), bytes.NewReader(payload))
 		if err != nil {
@@ -80,14 +79,12 @@ func (Pipe) Announce(ctx *context.Context) error {
 
 		resp, err := http.DefaultClient.Do(request)
 		if err != nil {
-			statusCode = 0
-			return err
+			return retryx.HTTP(err, resp)
 		}
 		defer resp.Body.Close()
-		statusCode = resp.StatusCode
 
 		if resp.StatusCode != http.StatusOK {
-			return fmt.Errorf("status code %d", resp.StatusCode)
+			return retryx.HTTP(fmt.Errorf("status code %d", resp.StatusCode), resp)
 		}
 
 		var telegramResponse SendMessageResponse
@@ -101,9 +98,7 @@ func (Pipe) Announce(ctx *context.Context) error {
 
 		log.Debug("message sent")
 		return nil
-	}, func(err error) bool {
-		return retryx.IsRetriableHTTPError(statusCode, err)
-	})
+	}, retryx.IsRetriable)
 }
 
 func getMessageDetails(ctx *context.Context) (map[string]any, error) {

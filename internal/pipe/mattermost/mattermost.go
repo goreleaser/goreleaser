@@ -94,7 +94,6 @@ func postWebhook(ctx *context.Context, url string, msg *incomingWebhookRequest) 
 		return fmt.Errorf("failed to marshal the message: %w", err)
 	}
 
-	var statusCode int
 	return retryx.Do(ctx.Config.Retry, func() error {
 		req, err := http.NewRequestWithContext(ctx, http.MethodPost, url, bytes.NewReader(payload))
 		if err != nil {
@@ -104,16 +103,12 @@ func postWebhook(ctx *context.Context, url string, msg *incomingWebhookRequest) 
 
 		r, err := http.DefaultClient.Do(req)
 		if err != nil {
-			statusCode = 0
-			return err
+			return retryx.HTTP(err, r)
 		}
-		statusCode = r.StatusCode
 		closeBody(r)
 
 		return nil
-	}, func(err error) bool {
-		return retryx.IsRetriableHTTPError(statusCode, err)
-	})
+	}, retryx.IsRetriable)
 }
 
 func closeBody(r *http.Response) {

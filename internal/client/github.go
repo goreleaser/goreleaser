@@ -45,10 +45,11 @@ func githubDo[T any](ctx *context.Context, fn func() (T, *github.Response, error
 	err := retryx.Do(ctx.Config.Retry, func() error {
 		var err error
 		result, resp, err = fn()
-		return err
-	}, func(err error) bool {
-		return retryx.IsRetriableHTTPError(githubStatusCode(resp), err)
-	})
+		if err != nil {
+			return retryx.HTTPError{Err: err, Status: githubStatusCode(resp)}
+		}
+		return nil
+	}, retryx.IsRetriable)
 	return result, resp, err
 }
 
@@ -673,15 +674,17 @@ func (c *githubClient) deleteReleaseArtifact(ctx *context.Context, releaseID int
 			continue
 		}
 		resp, err := retryx.DoWithData(ctx.Config.Retry, func() (*github.Response, error) {
-			return c.client.Repositories.DeleteReleaseAsset(
+			r, err := c.client.Repositories.DeleteReleaseAsset(
 				ctx,
 				ctx.Config.Release.GitHub.Owner,
 				ctx.Config.Release.GitHub.Name,
 				asset.GetID(),
 			)
-		}, func(err error) bool {
-			return retryx.IsRetriableHTTPError(githubStatusCode(resp), err)
-		})
+			if err != nil {
+				return r, retryx.HTTPError{Err: err, Status: githubStatusCode(r)}
+			}
+			return r, nil
+		}, retryx.IsRetriable)
 		if err != nil {
 			githubErrLogger(resp, err).
 				WithField("release-id", releaseID).

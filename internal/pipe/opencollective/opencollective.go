@@ -191,7 +191,6 @@ func (c client) doMutation(ctx *context.Context, payload payload) ([]byte, error
 		return nil, fmt.Errorf("could not marshal payload: %w", err)
 	}
 
-	var statusCode int
 	return retryx.DoWithData(ctx.Config.Retry, func() ([]byte, error) {
 		req, err := http.NewRequestWithContext(ctx, http.MethodPost, c.endpoint, bytes.NewReader(p))
 		if err != nil {
@@ -202,11 +201,9 @@ func (c client) doMutation(ctx *context.Context, payload payload) ([]byte, error
 
 		resp, err := http.DefaultClient.Do(req)
 		if err != nil {
-			statusCode = 0
-			return nil, fmt.Errorf("could not send request to opencollective: %w", err)
+			return nil, retryx.HTTP(fmt.Errorf("could not send request to opencollective: %w", err), resp)
 		}
 		defer resp.Body.Close()
-		statusCode = resp.StatusCode
 
 		body, err := io.ReadAll(resp.Body)
 		if err != nil {
@@ -214,11 +211,9 @@ func (c client) doMutation(ctx *context.Context, payload payload) ([]byte, error
 		}
 
 		if resp.StatusCode != http.StatusOK {
-			return nil, fmt.Errorf("incorrect response from opencollective: %s — %s", resp.Status, string(body))
+			return nil, retryx.HTTP(fmt.Errorf("incorrect response from opencollective: %s — %s", resp.Status, string(body)), resp)
 		}
 
 		return body, nil
-	}, func(err error) bool {
-		return retryx.IsRetriableHTTPError(statusCode, err)
-	})
+	}, retryx.IsRetriable)
 }

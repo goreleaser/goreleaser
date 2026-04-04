@@ -42,10 +42,11 @@ func gitlabDo[T any](ctx *context.Context, fn func() (T, *gitlab.Response, error
 	err := retryx.Do(ctx.Config.Retry, func() error {
 		var err error
 		result, resp, err = fn()
-		return err
-	}, func(err error) bool {
-		return retryx.IsRetriableHTTPError(gitlabStatusCode(resp), err)
-	})
+		if err != nil {
+			return retryx.HTTPError{Err: err, Status: gitlabStatusCode(resp)}
+		}
+		return nil
+	}, retryx.IsRetriable)
 	return result, resp, err
 }
 

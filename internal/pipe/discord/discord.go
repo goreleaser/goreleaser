@@ -94,7 +94,6 @@ func (p Pipe) Announce(ctx *context.Context) error {
 		return err
 	}
 
-	var statusCode int
 	return retryx.Do(ctx.Config.Retry, func() error {
 		req, err := http.NewRequestWithContext(ctx, http.MethodPost, u.String(), bytes.NewReader(bts))
 		if err != nil {
@@ -104,20 +103,16 @@ func (p Pipe) Announce(ctx *context.Context) error {
 
 		resp, err := http.DefaultClient.Do(req)
 		if err != nil {
-			statusCode = 0
-			return err
+			return retryx.HTTP(err, resp)
 		}
 		defer resp.Body.Close()
-		statusCode = resp.StatusCode
 
 		if resp.StatusCode != 204 && resp.StatusCode != 200 {
-			return fmt.Errorf("%s", resp.Status)
+			return retryx.HTTP(fmt.Errorf("%s", resp.Status), resp)
 		}
 
 		return nil
-	}, func(err error) bool {
-		return retryx.IsRetriableHTTPError(statusCode, err)
-	})
+	}, retryx.IsRetriable)
 }
 
 type WebhookMessageCreate struct {

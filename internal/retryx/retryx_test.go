@@ -2,6 +2,7 @@ package retryx
 
 import (
 	"errors"
+	"net/http"
 	"sync/atomic"
 	"testing"
 	"testing/synctest"
@@ -161,33 +162,49 @@ func TestDoWithDataRetryIf(t *testing.T) {
 	})
 }
 
-func TestIsRetriableHTTPError(t *testing.T) {
+func TestHTTPError(t *testing.T) {
 	t.Run("network error", func(t *testing.T) {
-		require.True(t, IsRetriableHTTPError(0, errors.New("connection reset")))
+		err := HTTP(errors.New("connection reset"), nil)
+		require.True(t, IsRetriable(err))
 	})
 	t.Run("500", func(t *testing.T) {
-		require.True(t, IsRetriableHTTPError(500, errors.New("internal server error")))
+		err := HTTP(errors.New("internal server error"), &http.Response{StatusCode: 500})
+		require.True(t, IsRetriable(err))
 	})
 	t.Run("502", func(t *testing.T) {
-		require.True(t, IsRetriableHTTPError(502, errors.New("bad gateway")))
+		err := HTTP(errors.New("bad gateway"), &http.Response{StatusCode: 502})
+		require.True(t, IsRetriable(err))
 	})
 	t.Run("503", func(t *testing.T) {
-		require.True(t, IsRetriableHTTPError(503, errors.New("service unavailable")))
+		err := HTTP(errors.New("service unavailable"), &http.Response{StatusCode: 503})
+		require.True(t, IsRetriable(err))
 	})
 	t.Run("429", func(t *testing.T) {
-		require.True(t, IsRetriableHTTPError(429, errors.New("rate limited")))
+		err := HTTP(errors.New("rate limited"), &http.Response{StatusCode: 429})
+		require.True(t, IsRetriable(err))
 	})
 	t.Run("404 not retriable", func(t *testing.T) {
-		require.False(t, IsRetriableHTTPError(404, errors.New("not found")))
+		err := HTTP(errors.New("not found"), &http.Response{StatusCode: 404})
+		require.False(t, IsRetriable(err))
 	})
 	t.Run("422 not retriable", func(t *testing.T) {
-		require.False(t, IsRetriableHTTPError(422, errors.New("unprocessable")))
+		err := HTTP(errors.New("unprocessable"), &http.Response{StatusCode: 422})
+		require.False(t, IsRetriable(err))
 	})
-	t.Run("200 no error", func(t *testing.T) {
-		require.False(t, IsRetriableHTTPError(200, nil))
+	t.Run("nil error", func(t *testing.T) {
+		require.NoError(t, HTTP(nil, &http.Response{StatusCode: 500}))
 	})
-	t.Run("0 no error", func(t *testing.T) {
-		require.False(t, IsRetriableHTTPError(0, nil))
+	t.Run("nil resp", func(t *testing.T) {
+		err := HTTP(errors.New("dial failed"), nil)
+		require.Equal(t, 0, err.(HTTPError).Status)
+	})
+	t.Run("unwrap", func(t *testing.T) {
+		inner := errors.New("inner")
+		err := HTTP(inner, &http.Response{StatusCode: 503})
+		require.ErrorIs(t, err, inner)
+	})
+	t.Run("plain error not retriable", func(t *testing.T) {
+		require.False(t, IsRetriable(errors.New("something")))
 	})
 }
 

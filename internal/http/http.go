@@ -368,14 +368,11 @@ func uploadAssetToServer(ctx *context.Context, upload *config.Upload, target, us
 		}
 
 		resp, err = executeHTTPRequest(ctx, upload, req, check) //nolint:bodyclose // closed by executeHTTPRequest
-		return err
-	}, func(err error) bool {
-		code := 0
-		if resp != nil {
-			code = resp.StatusCode
+		if err != nil {
+			return retryx.HTTP(err, resp)
 		}
-		return retryx.IsRetriableHTTPError(code, err)
-	})
+		return nil
+	}, retryx.IsRetriable)
 	return resp, err
 }
 

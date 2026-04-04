@@ -151,7 +151,6 @@ func (p Pipe) Publish(ctx *context.Context) error {
 	publishURL := p.registry + "/v0/publish"
 
 	client := &http.Client{}
-	var statusCode int
 	return retryx.Do(ctx.Config.Retry, func() error {
 		req, err := http.NewRequestWithContext(ctx, http.MethodPost, publishURL, bytes.NewReader(jsonData))
 		if err != nil {
@@ -162,11 +161,9 @@ func (p Pipe) Publish(ctx *context.Context) error {
 
 		resp, err := client.Do(req)
 		if err != nil {
-			statusCode = 0
-			return fmt.Errorf("could not send request: %w", err)
+			return retryx.HTTP(fmt.Errorf("could not send request: %w", err), resp)
 		}
 		defer resp.Body.Close()
-		statusCode = resp.StatusCode
 
 		body, err := io.ReadAll(resp.Body)
 		if err != nil {
@@ -174,7 +171,7 @@ func (p Pipe) Publish(ctx *context.Context) error {
 		}
 
 		if resp.StatusCode != http.StatusCreated && resp.StatusCode != http.StatusOK {
-			return fmt.Errorf("got status code %d: %s", resp.StatusCode, string(body))
+			return retryx.HTTP(fmt.Errorf("got status code %d: %s", resp.StatusCode, string(body)), resp)
 		}
 
 		var serverResponse apiv0.ServerResponse
@@ -188,9 +185,7 @@ func (p Pipe) Publish(ctx *context.Context) error {
 			Info("published to MCP registry")
 
 		return nil
-	}, func(err error) bool {
-		return retryx.IsRetriableHTTPError(statusCode, err)
-	})
+	}, retryx.IsRetriable)
 }
 
 func authProvider(registryURL, method, token string) (auth.Provider, error) {
