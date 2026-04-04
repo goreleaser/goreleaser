@@ -212,7 +212,7 @@ func TestGitLabURLsDownloadTemplate(t *testing.T) {
 			}
 
 			if first.CompareAndSwap(false, true) {
-				http.Error(w, `{"message":{"name":["has already been taken"]}}`, http.StatusBadRequest)
+				http.Error(w, `{"error":"service unavailable"}`, http.StatusServiceUnavailable)
 				return
 			}
 

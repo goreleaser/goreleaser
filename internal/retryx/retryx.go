@@ -33,10 +33,26 @@ func HTTP(err error, resp *http.Response) error {
 	return HTTPError{Err: err, Status: status}
 }
 
+type retriableError struct{ error }
+
+func (e retriableError) Unwrap() error { return e.error }
+
+// Retriable wraps err so IsRetriable returns true unconditionally.
+func Retriable(err error) error {
+	if err == nil {
+		return nil
+	}
+	return retriableError{err}
+}
+
 // IsRetriable returns true if the error represents a transient failure worth
-// retrying: network errors, 5xx, or 429.
+// retrying: network errors, 5xx, 429, or explicitly marked retriable.
 func IsRetriable(err error) bool {
 	if IsNetworkError(err) {
+		return true
+	}
+	var re retriableError
+	if errors.As(err, &re) {
 		return true
 	}
 	var he HTTPError

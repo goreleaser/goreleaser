@@ -556,7 +556,7 @@ func (c *gitlabClient) Upload(
 		var linkURL string
 		if ctx.Config.GitLabURLs.UsePackageRegistry || c.authType == gitlab.JobToken {
 			log.WithField("file", file.Name()).Debug("uploading file as generic package")
-			if _, _, err := c.client.GenericPackages.PublishPackageFile(
+			if _, resp, err := c.client.GenericPackages.PublishPackageFile(
 				projectID,
 				ctx.Config.ProjectName,
 				ctx.Version,
@@ -564,7 +564,7 @@ func (c *gitlabClient) Upload(
 				file,
 				nil,
 			); err != nil {
-				return err
+				return retryx.HTTP(err, must(resp).Response)
 			}
 
 			baseLinkURL, err = c.client.GenericPackages.FormatPackageURL(
@@ -579,14 +579,14 @@ func (c *gitlabClient) Upload(
 			linkURL = c.client.BaseURL().String() + baseLinkURL
 		} else {
 			log.WithField("file", file.Name()).Debug("uploading file as attachment")
-			projectFile, _, err := c.client.ProjectMarkdownUploads.UploadProjectMarkdown(
+			projectFile, resp, err := c.client.ProjectMarkdownUploads.UploadProjectMarkdown(
 				projectID,
 				file,
 				filepath.Base(file.Name()),
 				nil,
 			)
 			if err != nil {
-				return err
+				return retryx.HTTP(err, must(resp).Response)
 			}
 
 			baseLinkURL = projectFile.URL
@@ -634,8 +634,9 @@ func (c *gitlabClient) Upload(
 				); err != nil {
 					return retryx.Unrecoverable(err)
 				}
+				return retryx.Retriable(err)
 			}
-			return err
+			return retryx.HTTP(err, must(resp).Response)
 		}
 
 		log.WithField("id", releaseLink.ID).
@@ -648,7 +649,7 @@ func (c *gitlabClient) Upload(
 		}
 
 		return nil
-	}, nil)
+	}, retryx.IsRetriable)
 }
 
 // getMilestoneByTitle returns a milestone by title.

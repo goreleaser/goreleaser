@@ -738,13 +738,14 @@ func (c *githubClient) Upload(
 				return retryx.Unrecoverable(err)
 			}
 			// if the user allowed to delete assets, we delete it, and return
-			// the previous error, so we try again.
+			// a retriable error so we try again.
 			if delErr := c.deleteReleaseArtifact(ctx, githubReleaseID, artifact.Name, 1); delErr != nil {
 				return retryx.Unrecoverable(delErr)
 			}
+			return retryx.Retriable(err)
 		}
-		return err
-	}, nil)
+		return retryx.HTTP(err, must(resp).Response)
+	}, retryx.IsRetriable)
 }
 
 // getMilestoneByTitle returns a milestone by title.

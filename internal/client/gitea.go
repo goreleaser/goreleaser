@@ -375,7 +375,7 @@ func (c *giteaClient) Upload(
 			return retryx.Unrecoverable(err)
 		}
 		defer file.Close()
-		_, _, err = c.client.CreateReleaseAttachment(owner, repoName, giteaReleaseID, file, artifact.Name)
-		return err
-	}, nil)
+		_, resp, err := c.client.CreateReleaseAttachment(owner, repoName, giteaReleaseID, file, artifact.Name)
+		return retryx.HTTP(err, must(resp).Response)
+	}, retryx.IsRetriable)
 }

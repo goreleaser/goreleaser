@@ -208,6 +208,26 @@ func TestHTTPError(t *testing.T) {
 	})
 }
 
+func TestRetriable(t *testing.T) {
+	t.Run("nil passthrough", func(t *testing.T) {
+		require.NoError(t, Retriable(nil))
+	})
+	t.Run("is retriable", func(t *testing.T) {
+		err := Retriable(errors.New("retry me"))
+		require.True(t, IsRetriable(err))
+	})
+	t.Run("unwrap", func(t *testing.T) {
+		inner := errors.New("inner")
+		err := Retriable(inner)
+		require.ErrorIs(t, err, inner)
+	})
+	t.Run("overrides 422", func(t *testing.T) {
+		// A 422 wrapped in Retriable should still be retriable
+		err := Retriable(HTTP(errors.New("exists"), &http.Response{StatusCode: 422}))
+		require.True(t, IsRetriable(err))
+	})
+}
+
 func TestUnrecoverable(t *testing.T) {
 	synctest.Test(t, func(t *testing.T) {
 		err := Unrecoverable(errors.New("permanent"))
