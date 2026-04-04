@@ -358,9 +358,14 @@ func (c *githubClient) SyncFork(ctx *context.Context, head, base Repo) error {
 		branch = def
 	}
 	res, resp, err := githubDo(ctx, func() (*github.RepoMergeUpstreamResult, *github.Response, error) {
-		return c.client.Repositories.MergeUpstream(ctx, head.Owner, head.Name, &github.RepoMergeUpstreamRequest{
-			Branch: &branch,
-		})
+		return c.client.Repositories.MergeUpstream(
+			ctx,
+			head.Owner,
+			head.Name,
+			&github.RepoMergeUpstreamRequest{
+				Branch: &branch,
+			},
+		)
 	})
 	if err != nil {
 		return fmt.Errorf("%w: %s", err, bodyOf(resp))
@@ -466,7 +471,7 @@ func (c *githubClient) CreateFile(
 	if file != nil {
 		options.SHA = file.SHA
 	}
-	_, _, err = githubDo(ctx, func() (*github.RepositoryContentResponse, *github.Response, error) {
+	if _, _, err := githubDo(ctx, func() (*github.RepositoryContentResponse, *github.Response, error) {
 		return c.client.Repositories.UpdateFile(
 			ctx,
 			repo.Owner,
@@ -474,8 +479,7 @@ func (c *githubClient) CreateFile(
 			path,
 			options,
 		)
-	})
-	if err != nil {
+	}); err != nil {
 		return fmt.Errorf("could not update %q: %w", path, err)
 	}
 	return nil
@@ -626,7 +630,7 @@ func (c *githubClient) updateRelease(ctx *context.Context, id int64, data *githu
 		WithField("release-id", release.GetID()).
 		WithField("request-id", resp.Header.Get("X-GitHub-Request-Id")).
 		Debug("release updated")
-	return release, err
+	return release, nil
 }
 
 func (c *githubClient) ReleaseURLTemplate(ctx *context.Context) (string, error) {
@@ -668,25 +672,18 @@ func (c *githubClient) deleteReleaseArtifact(ctx *context.Context, releaseID int
 		if asset.GetName() != name {
 			continue
 		}
-		var deleteResp *github.Response
-		err := retryx.Do(ctx.Config.Retry, func() error {
-			r, err := c.client.Repositories.DeleteReleaseAsset(
+		resp, err := retryx.DoWithData(ctx.Config.Retry, func() (*github.Response, error) {
+			return c.client.Repositories.DeleteReleaseAsset(
 				ctx,
 				ctx.Config.Release.GitHub.Owner,
 				ctx.Config.Release.GitHub.Name,
 				asset.GetID(),
 			)
-			deleteResp = r
-			return err
 		}, func(err error) bool {
-			code := 0
-			if deleteResp != nil {
-				code = deleteResp.StatusCode
-			}
-			return retryx.IsRetriableHTTPError(code, err)
+			return retryx.IsRetriableHTTPError(githubStatusCode(resp), err)
 		})
 		if err != nil {
-			githubErrLogger(deleteResp, err).
+			githubErrLogger(resp, err).
 				WithField("release-id", releaseID).
 				WithField("id", asset.GetID()).
 				WithField("name", name).
@@ -725,7 +722,9 @@ func (c *githubClient) Upload(
 			ctx.Config.Release.GitHub.Owner,
 			ctx.Config.Release.GitHub.Name,
 			githubReleaseID,
-			&github.UploadOptions{Name: artifact.Name},
+			&github.UploadOptions{
+				Name: artifact.Name,
+			},
 			file,
 		)
 		if err == nil {
