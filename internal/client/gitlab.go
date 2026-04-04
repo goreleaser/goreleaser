@@ -630,6 +630,8 @@ func (c *gitlabClient) Upload(
 				if !ctx.Config.Release.ReplaceExistingArtifacts {
 					return retryx.Unrecoverable(err)
 				}
+				// if the user allowed to delete assets, we delete it, and return a
+				// retriable error.
 				if _, _, err := c.client.ReleaseLinks.DeleteReleaseLink(
 					projectID,
 					releaseID,
