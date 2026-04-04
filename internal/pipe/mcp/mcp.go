@@ -150,7 +150,7 @@ func (p Pipe) Publish(ctx *context.Context) error {
 
 	publishURL := p.registry + "/v0/publish"
 
-	req, err := http.NewRequestWithContext(ctx, http.MethodPost, publishURL, bytes.NewBuffer(jsonData))
+	req, err := http.NewRequestWithContext(ctx, http.MethodPost, publishURL, bytes.NewReader(jsonData))
 	if err != nil {
 		return fmt.Errorf("could not create request: %w", err)
 	}

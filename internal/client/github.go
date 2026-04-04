@@ -184,7 +184,7 @@ func (c *githubClient) Changelog(ctx *context.Context, repo Repo, prev, current 
 				Authors: authors,
 			}))
 		}
-		if resp.NextPage == 0 {
+		if resp == nil || resp.NextPage == 0 {
 			break
 		}
 		opts.Page = resp.NextPage
@@ -619,6 +619,9 @@ func (c *githubClient) updateRelease(ctx *context.Context, id int64, data *githu
 			data,
 		)
 	})
+	if err != nil {
+		return nil, err
+	}
 	log.WithField("name", data.GetName()).
 		WithField("release-id", release.GetID()).
 		WithField("request-id", resp.Header.Get("X-GitHub-Request-Id")).
