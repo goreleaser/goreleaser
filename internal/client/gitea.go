@@ -33,18 +33,11 @@ func giteaDo[T any](ctx *context.Context, fn func() (T, *gitea.Response, error))
 		var err error
 		result, resp, err = fn()
 		if err != nil {
-			return retryx.HTTPError{Err: err, Status: giteaStatusCode(resp)}
+			return retryx.HTTP(err, must(resp).Response)
 		}
 		return nil
 	}, retryx.IsRetriable)
 	return result, resp, err
-}
-
-func giteaStatusCode(resp *gitea.Response) int {
-	if resp == nil {
-		return 0
-	}
-	return resp.StatusCode
 }
 
 func getInstanceURL(ctx *context.Context) (string, error) {

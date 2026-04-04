@@ -46,18 +46,11 @@ func githubDo[T any](ctx *context.Context, fn func() (T, *github.Response, error
 		var err error
 		result, resp, err = fn()
 		if err != nil {
-			return retryx.HTTPError{Err: err, Status: githubStatusCode(resp)}
+			return retryx.HTTP(err, must(resp).Response)
 		}
 		return nil
 	}, retryx.IsRetriable)
 	return result, resp, err
-}
-
-func githubStatusCode(resp *github.Response) int {
-	if resp == nil {
-		return 0
-	}
-	return resp.StatusCode
 }
 
 // NewGitHubReleaseNotesGenerator returns a GitHub client that can generate
@@ -681,7 +674,7 @@ func (c *githubClient) deleteReleaseArtifact(ctx *context.Context, releaseID int
 				asset.GetID(),
 			)
 			if err != nil {
-				return r, retryx.HTTPError{Err: err, Status: githubStatusCode(r)}
+				return r, retryx.HTTP(err, must(r).Response)
 			}
 			return r, nil
 		}, retryx.IsRetriable)

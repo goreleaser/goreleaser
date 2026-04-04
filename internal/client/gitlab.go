@@ -43,18 +43,11 @@ func gitlabDo[T any](ctx *context.Context, fn func() (T, *gitlab.Response, error
 		var err error
 		result, resp, err = fn()
 		if err != nil {
-			return retryx.HTTPError{Err: err, Status: gitlabStatusCode(resp)}
+			return retryx.HTTP(err, must(resp).Response)
 		}
 		return nil
 	}, retryx.IsRetriable)
 	return result, resp, err
-}
-
-func gitlabStatusCode(resp *gitlab.Response) int {
-	if resp == nil {
-		return 0
-	}
-	return resp.StatusCode
 }
 
 // newGitLab returns a gitlab client implementation.

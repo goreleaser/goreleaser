@@ -2,6 +2,7 @@
 package client
 
 import (
+	"cmp"
 	"errors"
 	"fmt"
 
@@ -186,4 +187,8 @@ func fillDeprecated(i ChangelogItem) ChangelogItem {
 	i.AuthorUsername = author.Username
 	i.AuthorEmail = author.Email
 	return i
+}
+
+func must[T any](t *T) *T {
+	return cmp.Or(t, new(T))
 }
