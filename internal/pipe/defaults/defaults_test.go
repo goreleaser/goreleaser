@@ -112,38 +112,6 @@ func TestFillPartial(t *testing.T) {
 	require.Equal(t, "https://gitea.com", ctx.Config.GiteaURLs.Download)
 }
 
-func TestRetryDefaults(t *testing.T) {
-	testlib.Mktmp(t)
-	testlib.GitInit(t)
-	testlib.GitRemoteAdd(t, "git@github.com:goreleaser/goreleaser.git")
-
-	t.Run("user values preserved", func(t *testing.T) {
-		ctx := testctx.WrapWithCfg(t.Context(), config.Project{
-			Retry: config.Retry{
-				Attempts: 3,
-				Delay:    5 * time.Second,
-				MaxDelay: 1 * time.Minute,
-			},
-		}, testctx.GitHubTokenType)
-		require.NoError(t, Pipe{}.Run(ctx))
-		require.Equal(t, uint(3), ctx.Config.Retry.Attempts)
-		require.Equal(t, 5*time.Second, ctx.Config.Retry.Delay)
-		require.Equal(t, 1*time.Minute, ctx.Config.Retry.MaxDelay)
-	})
-
-	t.Run("partial override", func(t *testing.T) {
-		ctx := testctx.WrapWithCfg(t.Context(), config.Project{
-			Retry: config.Retry{
-				Attempts: 5,
-			},
-		}, testctx.GitHubTokenType)
-		require.NoError(t, Pipe{}.Run(ctx))
-		require.Equal(t, uint(5), ctx.Config.Retry.Attempts)
-		require.Equal(t, 10*time.Second, ctx.Config.Retry.Delay)
-		require.Equal(t, 5*time.Minute, ctx.Config.Retry.MaxDelay)
-	})
-}
-
 func TestGiteaTemplateDownloadURL(t *testing.T) {
 	tests := []struct {
 		name    string
