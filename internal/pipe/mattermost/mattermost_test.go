@@ -105,3 +105,39 @@ func TestPostWebhook(t *testing.T) {
 	require.NoError(t, Pipe{}.Default(ctx))
 	require.NoError(t, Pipe{}.Announce(ctx))
 }
+
+func TestPostWebhookCustomColor(t *testing.T) {
+	customColor := "#FF5733"
+	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		rc := &incomingWebhookRequest{}
+
+		body, _ := io.ReadAll(r.Body)
+		err := json.Unmarshal(body, rc)
+		assert.NoError(t, err)
+		assert.Equal(t, customColor, rc.Attachments[0].Color)
+
+		w.WriteHeader(200)
+		_, err = w.Write([]byte{})
+		assert.NoError(t, err)
+	}))
+	defer ts.Close()
+
+	ctx := testctx.WrapWithCfg(t.Context(), config.Project{
+		ProjectName: "Honk",
+		Announce: config.Announce{
+			Mattermost: config.Mattermost{
+				Enabled: "true",
+				Color:   customColor,
+			},
+		},
+	})
+
+	ctx.Git.CurrentTag = "v1.0.0"
+	ctx.ReleaseURL = "https://github.com/honk/honk/releases/tag/v1.0.0"
+	ctx.Git.URL = "https://github.com/honk/honk"
+
+	t.Setenv("MATTERMOST_WEBHOOK", ts.URL)
+
+	require.NoError(t, Pipe{}.Default(ctx))
+	require.NoError(t, Pipe{}.Announce(ctx))
+}
