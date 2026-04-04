@@ -2,6 +2,7 @@ package defaults
 
 import (
 	"testing"
+	"time"
 
 	"github.com/goreleaser/goreleaser/v2/internal/testctx"
 	"github.com/goreleaser/goreleaser/v2/internal/testlib"
@@ -34,6 +35,9 @@ func TestFillBasicData(t *testing.T) {
 	require.NotEmpty(t, ctx.Config.Archives[0].NameTemplate)
 	require.NotEmpty(t, ctx.Config.Builds[0].Ldflags)
 	require.NotEmpty(t, ctx.Config.Archives[0].Files)
+	require.Equal(t, uint(10), ctx.Config.Retry.Attempts)
+	require.Equal(t, 10*time.Second, ctx.Config.Retry.Delay)
+	require.Equal(t, 5*time.Minute, ctx.Config.Retry.MaxDelay)
 }
 
 func TestFillPartial(t *testing.T) {
@@ -94,6 +98,9 @@ func TestFillPartial(t *testing.T) {
 	require.NotEmpty(t, ctx.Config.Dockers[0].Dockerfile)
 	require.Equal(t, "disttt", ctx.Config.Dist)
 	require.NotEqual(t, "https://github.com", ctx.Config.GitHubURLs.Download)
+	require.Equal(t, uint(10), ctx.Config.Retry.Attempts)
+	require.Equal(t, 10*time.Second, ctx.Config.Retry.Delay)
+	require.Equal(t, 5*time.Minute, ctx.Config.Retry.MaxDelay)
 
 	ctx = testctx.WrapWithCfg(t.Context(), config.Project{
 		GiteaURLs: config.GiteaURLs{
@@ -103,6 +110,38 @@ func TestFillPartial(t *testing.T) {
 
 	require.NoError(t, Pipe{}.Run(ctx))
 	require.Equal(t, "https://gitea.com", ctx.Config.GiteaURLs.Download)
+}
+
+func TestRetryDefaults(t *testing.T) {
+	testlib.Mktmp(t)
+	testlib.GitInit(t)
+	testlib.GitRemoteAdd(t, "git@github.com:goreleaser/goreleaser.git")
+
+	t.Run("user values preserved", func(t *testing.T) {
+		ctx := testctx.WrapWithCfg(t.Context(), config.Project{
+			Retry: config.Retry{
+				Attempts: 3,
+				Delay:    5 * time.Second,
+				MaxDelay: 1 * time.Minute,
+			},
+		}, testctx.GitHubTokenType)
+		require.NoError(t, Pipe{}.Run(ctx))
+		require.Equal(t, uint(3), ctx.Config.Retry.Attempts)
+		require.Equal(t, 5*time.Second, ctx.Config.Retry.Delay)
+		require.Equal(t, 1*time.Minute, ctx.Config.Retry.MaxDelay)
+	})
+
+	t.Run("partial override", func(t *testing.T) {
+		ctx := testctx.WrapWithCfg(t.Context(), config.Project{
+			Retry: config.Retry{
+				Attempts: 5,
+			},
+		}, testctx.GitHubTokenType)
+		require.NoError(t, Pipe{}.Run(ctx))
+		require.Equal(t, uint(5), ctx.Config.Retry.Attempts)
+		require.Equal(t, 10*time.Second, ctx.Config.Retry.Delay)
+		require.Equal(t, 5*time.Minute, ctx.Config.Retry.MaxDelay)
+	})
 }
 
 func TestGiteaTemplateDownloadURL(t *testing.T) {
