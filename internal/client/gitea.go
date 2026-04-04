@@ -177,7 +177,6 @@ func (c *giteaClient) CreateFile(
 	log.
 		WithField("repository", repo.String()).
 		WithField("name", repo.Name).
-		WithField("name", repo.Name).
 		Info("pushing")
 
 	currentFile, resp, err := c.client.GetContents(repo.Owner, repo.Name, branch, path)
