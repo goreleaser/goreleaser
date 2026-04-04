@@ -1169,6 +1169,11 @@ func TestNoDockerWithoutImageName(t *testing.T) {
 
 func TestDefault(t *testing.T) {
 	ctx := testctx.WrapWithCfg(t.Context(), config.Project{
+		Retry: config.Retry{
+			Attempts: 10,
+			Delay:    10 * time.Second,
+			MaxDelay: 5 * time.Minute,
+		},
 		Dockers: []config.Docker{
 			{
 				IDs: []string{"aa"},
