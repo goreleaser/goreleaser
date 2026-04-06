@@ -537,12 +537,7 @@ func TestGitLabChangelog(t *testing.T) {
 	t.Parallel()
 	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		if strings.HasSuffix(r.URL.Path, "projects/someone/something/repository/compare") {
-			r, err := os.Open("testdata/gitlab/compare.json")
-			if assert.NoError(t, err) {
-				defer r.Close()
-				_, err = io.Copy(w, r)
-				assert.NoError(t, err)
-			}
+			serveTestFile(t, w, "testdata/gitlab/compare.json")
 			return
 		}
 		defer r.Body.Close()
@@ -712,20 +707,10 @@ func TestGitLabCloseMilestone(t *testing.T) {
 	t.Parallel()
 	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		if strings.HasSuffix(r.URL.Path, "projects/someone/something/milestones") {
-			r, err := os.Open("testdata/gitlab/milestones.json")
-			if assert.NoError(t, err) {
-				defer r.Close()
-				_, err = io.Copy(w, r)
-				assert.NoError(t, err)
-			}
+			serveTestFile(t, w, "testdata/gitlab/milestones.json")
 			return
 		} else if strings.HasSuffix(r.URL.Path, "projects/someone/something/milestones/12") {
-			r, err := os.Open("testdata/gitlab/milestone.json")
-			if assert.NoError(t, err) {
-				defer r.Close()
-				_, err = io.Copy(w, r)
-				assert.NoError(t, err)
-			}
+			serveTestFile(t, w, "testdata/gitlab/milestone.json")
 			return
 		}
 		defer r.Body.Close()
