@@ -226,3 +226,73 @@ func fakeGitea(tb testing.TB) *httptest.Server {
 	tb.Cleanup(srv.Close)
 	return srv
 }
+
+func TestErrNoMilestoneFoundError(t *testing.T) {
+	t.Parallel()
+	err := ErrNoMilestoneFound{Title: "v1.0.0"}
+	require.EqualError(t, err, "no milestone found: v1.0.0")
+}
+
+func TestRetriableError(t *testing.T) {
+	t.Parallel()
+	inner := fmt.Errorf("something broke")
+	err := RetriableError{Err: inner}
+	require.EqualError(t, err, "something broke")
+}
+
+func TestFillDeprecated(t *testing.T) {
+	t.Parallel()
+	t.Run("with authors", func(t *testing.T) {
+		t.Parallel()
+		item := fillDeprecated(ChangelogItem{
+			SHA:     "abc123",
+			Message: "some message",
+			Authors: []Author{{
+				Name:     "John",
+				Email:    "john@example.com",
+				Username: "johndoe",
+			}},
+		})
+		require.Equal(t, "John", item.AuthorName)
+		require.Equal(t, "john@example.com", item.AuthorEmail)
+		require.Equal(t, "johndoe", item.AuthorUsername)
+	})
+
+	t.Run("no authors", func(t *testing.T) {
+		t.Parallel()
+		item := fillDeprecated(ChangelogItem{
+			SHA:     "abc123",
+			Message: "some message",
+		})
+		require.Empty(t, item.AuthorName)
+		require.Empty(t, item.AuthorEmail)
+		require.Empty(t, item.AuthorUsername)
+	})
+}
+
+func TestRepoString(t *testing.T) {
+	t.Parallel()
+	t.Run("with owner and name", func(t *testing.T) {
+		t.Parallel()
+		repo := Repo{Owner: "owner", Name: "name"}
+		require.Equal(t, "owner/name", repo.String())
+	})
+
+	t.Run("empty", func(t *testing.T) {
+		t.Parallel()
+		repo := Repo{}
+		require.Empty(t, repo.String())
+	})
+
+	t.Run("only owner", func(t *testing.T) {
+		t.Parallel()
+		repo := Repo{Owner: "owner"}
+		require.Equal(t, "owner/", repo.String())
+	})
+
+	t.Run("only name", func(t *testing.T) {
+		t.Parallel()
+		repo := Repo{Name: "name"}
+		require.Equal(t, "/name", repo.String())
+	})
+}

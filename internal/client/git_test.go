@@ -160,8 +160,9 @@ func TestGitClient(t *testing.T) {
 		})
 
 		repo := Repo{
-			GitURL:     "git@localhost:nope/nopenopenopenope",
-			PrivateKey: sshKey,
+			GitURL:        "git@localhost:nope/nopenopenopenope",
+			PrivateKey:    sshKey,
+			GitSSHCommand: `ssh -i "{{ .KeyPath }}" -o StrictHostKeyChecking=accept-new -o ConnectTimeout=1 -o BatchMode=yes -F /dev/null`,
 		}
 		cli := NewGitUploadClient(repo.Branch)
 		err := cli.CreateFile(
