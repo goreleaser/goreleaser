@@ -198,7 +198,6 @@ func (c *giteaClient) CreateFile(
 	log.
 		WithField("repository", repo.String()).
 		WithField("name", repo.Name).
-		WithField("name", repo.Name).
 		Info("pushing")
 
 	currentFile, getResp, err := giteaDo(ctx, func() (*gitea.ContentsResponse, *gitea.Response, error) {

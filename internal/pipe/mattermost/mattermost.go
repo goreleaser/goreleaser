@@ -46,8 +46,8 @@ func (Pipe) Default(ctx *context.Context) error {
 	if ctx.Config.Announce.Mattermost.Username == "" {
 		ctx.Config.Announce.Mattermost.Username = defaultUsername
 	}
-	if ctx.Config.Announce.Teams.Color == "" {
-		ctx.Config.Announce.Teams.Color = defaultColor
+	if ctx.Config.Announce.Mattermost.Color == "" {
+		ctx.Config.Announce.Mattermost.Color = defaultColor
 	}
 
 	return nil
@@ -80,7 +80,7 @@ func (p Pipe) Announce(ctx *context.Context) error {
 			{
 				Title: title,
 				Text:  msg,
-				Color: ctx.Config.Announce.Teams.Color,
+				Color: ctx.Config.Announce.Mattermost.Color,
 			},
 		},
 	}
