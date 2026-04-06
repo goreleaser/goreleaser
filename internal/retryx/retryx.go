@@ -72,12 +72,8 @@ func Do(c config.Retry, retryableFunc func() error, retryIf func(error) bool) er
 }
 
 func opts(c config.Retry, retryIf func(error) bool) []retry.Option {
-	attempts := c.Attempts
-	if attempts == 0 {
-		attempts = 1
-	}
 	opts := []retry.Option{
-		retry.Attempts(attempts),
+		retry.Attempts(max(c.Attempts, 1)),
 		retry.DelayType(retry.BackOffDelay),
 		retry.Delay(c.Delay),
 		retry.MaxDelay(c.MaxDelay),

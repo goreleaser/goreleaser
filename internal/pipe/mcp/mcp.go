@@ -150,7 +150,6 @@ func (p Pipe) Publish(ctx *context.Context) error {
 
 	publishURL := p.registry + "/v0/publish"
 
-	client := &http.Client{}
 	return retryx.Do(ctx.Config.Retry, func() error {
 		req, err := http.NewRequestWithContext(ctx, http.MethodPost, publishURL, bytes.NewReader(jsonData))
 		if err != nil {
@@ -159,7 +158,7 @@ func (p Pipe) Publish(ctx *context.Context) error {
 		req.Header.Set("Content-Type", "application/json")
 		req.Header.Set("Authorization", "Bearer "+token)
 
-		resp, err := client.Do(req)
+		resp, err := http.DefaultClient.Do(req)
 		if err != nil {
 			return retryx.HTTP(fmt.Errorf("could not send request: %w", err), resp)
 		}

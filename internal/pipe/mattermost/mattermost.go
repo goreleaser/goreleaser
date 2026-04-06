@@ -5,7 +5,6 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
-	"io"
 	"net/http"
 
 	"github.com/caarlos0/env/v11"
@@ -105,17 +104,10 @@ func postWebhook(ctx *context.Context, url string, msg *incomingWebhookRequest) 
 		if err != nil {
 			return retryx.HTTP(err, r)
 		}
-		closeBody(r)
+		defer r.Body.Close()
 
 		return nil
 	}, retryx.IsRetriable)
-}
-
-func closeBody(r *http.Response) {
-	if r.Body != nil {
-		_, _ = io.Copy(io.Discard, r.Body)
-		_ = r.Body.Close()
-	}
 }
 
 type incomingWebhookRequest struct {

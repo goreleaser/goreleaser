@@ -46,7 +46,6 @@ func (Pipe) Default(ctx *context.Context) error {
 	}
 	switch ctx.Config.Announce.Telegram.ParseMode {
 	case parseModeHTML, parseModeMarkdown:
-		break
 	default:
 		ctx.Config.Announce.Telegram.ParseMode = parseModeMarkdown
 	}
