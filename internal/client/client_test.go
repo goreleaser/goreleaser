@@ -2,9 +2,11 @@ package client
 
 import (
 	"fmt"
+	"io"
 	"math/rand/v2"
 	"net/http"
 	"net/http/httptest"
+	"os"
 	"strings"
 	"testing"
 
@@ -14,6 +16,32 @@ import (
 	"github.com/goreleaser/goreleaser/v2/pkg/context"
 	"github.com/stretchr/testify/require"
 )
+
+// githubTestServer creates a test HTTP server with automatic rate_limit handling
+// and cleanup. The provided handler is called for all non-rate-limit requests.
+func githubTestServer(t *testing.T, handler http.HandlerFunc) *httptest.Server {
+	t.Helper()
+	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if r.URL.Path == "/api/v3/rate_limit" {
+			w.WriteHeader(http.StatusOK)
+			fmt.Fprint(w, `{"resources":{"core":{"remaining":120},"search":{"remaining":10}}}`)
+			return
+		}
+		handler(w, r)
+	}))
+	t.Cleanup(srv.Close)
+	return srv
+}
+
+// serveTestFile serves a file from testdata as the HTTP response body.
+func serveTestFile(t *testing.T, w http.ResponseWriter, path string) {
+	t.Helper()
+	f, err := os.Open(path)
+	require.NoError(t, err)
+	defer f.Close()
+	_, err = io.Copy(w, f)
+	require.NoError(t, err)
+}
 
 func TestClientEmpty(t *testing.T) {
 	t.Parallel()
