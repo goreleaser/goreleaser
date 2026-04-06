@@ -1034,3 +1034,512 @@ func TestGitLabVersionEnv(t *testing.T) {
 		require.False(t, isV17(nil))
 	})
 }
+
+func TestGitLabCreateFileNewFile(t *testing.T) {
+	t.Parallel()
+	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		defer r.Body.Close()
+		switch {
+		case strings.HasPrefix(r.URL.Path, "/api/v4/version"):
+			fmt.Fprint(w, `{"version":"18.0.0"}`)
+		case strings.HasSuffix(r.URL.Path, "/repository/branches/main"):
+			fmt.Fprint(w, `{"name":"main"}`)
+		case strings.Contains(r.URL.Path, "/repository/files/") && r.Method == http.MethodGet:
+			w.WriteHeader(http.StatusNotFound)
+			fmt.Fprint(w, `{"message":"404 File Not Found"}`)
+		case strings.Contains(r.URL.Path, "/repository/files/") && r.Method == http.MethodPost:
+			w.WriteHeader(http.StatusCreated)
+			fmt.Fprint(w, `{"file_path":"test.rb","branch":"main"}`)
+		default:
+			w.WriteHeader(http.StatusOK)
+			fmt.Fprint(w, "{}")
+		}
+	}))
+	t.Cleanup(srv.Close)
+	ctx := testctx.WrapWithCfg(t.Context(), config.Project{GitLabURLs: config.GitLabURLs{API: srv.URL}})
+	client, err := newGitLab(ctx, "test-token")
+	require.NoError(t, err)
+	err = client.CreateFile(ctx, config.CommitAuthor{Name: "user", Email: "u@e.com"}, Repo{Owner: "someone", Name: "something", Branch: "main"}, []byte("content"), "test.rb", "add test")
+	require.NoError(t, err)
+}
+
+func TestGitLabCreateFileUpdateExisting(t *testing.T) {
+	t.Parallel()
+	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		defer r.Body.Close()
+		switch {
+		case strings.HasPrefix(r.URL.Path, "/api/v4/version"):
+			fmt.Fprint(w, `{"version":"18.0.0"}`)
+		case strings.HasSuffix(r.URL.Path, "/repository/branches/main"):
+			fmt.Fprint(w, `{"name":"main"}`)
+		case strings.Contains(r.URL.Path, "/repository/files/") && r.Method == http.MethodGet:
+			fmt.Fprint(w, `{"file_name":"test.rb","file_path":"test.rb","size":7,"encoding":"base64","content":"Y29udGVudA==","ref":"main"}`)
+		case strings.Contains(r.URL.Path, "/repository/files/") && r.Method == http.MethodPut:
+			fmt.Fprint(w, `{"file_path":"test.rb","branch":"main"}`)
+		default:
+			w.WriteHeader(http.StatusOK)
+			fmt.Fprint(w, "{}")
+		}
+	}))
+	t.Cleanup(srv.Close)
+	ctx := testctx.WrapWithCfg(t.Context(), config.Project{GitLabURLs: config.GitLabURLs{API: srv.URL}})
+	client, err := newGitLab(ctx, "test-token")
+	require.NoError(t, err)
+	err = client.CreateFile(ctx, config.CommitAuthor{Name: "user", Email: "u@e.com"}, Repo{Owner: "someone", Name: "something", Branch: "main"}, []byte("updated"), "test.rb", "update test")
+	require.NoError(t, err)
+}
+
+func TestGitLabCreateFileNewBranch(t *testing.T) {
+	t.Parallel()
+	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		defer r.Body.Close()
+		switch {
+		case strings.HasPrefix(r.URL.Path, "/api/v4/version"):
+			fmt.Fprint(w, `{"version":"18.0.0"}`)
+		case strings.HasSuffix(r.URL.Path, "/repository/branches/new-branch"):
+			w.WriteHeader(http.StatusNotFound)
+			fmt.Fprint(w, `{"message":"404 Branch Not Found"}`)
+		case strings.HasSuffix(r.URL.Path, "projects/someone/something"):
+			fmt.Fprint(w, `{"id":1,"default_branch":"main"}`)
+		case strings.Contains(r.URL.Path, "/repository/files/") && r.Method == http.MethodGet:
+			w.WriteHeader(http.StatusNotFound)
+			fmt.Fprint(w, `{"message":"404 File Not Found"}`)
+		case strings.Contains(r.URL.Path, "/repository/files/") && r.Method == http.MethodPost:
+			w.WriteHeader(http.StatusCreated)
+			fmt.Fprint(w, `{"file_path":"test.rb","branch":"new-branch"}`)
+		default:
+			w.WriteHeader(http.StatusOK)
+			fmt.Fprint(w, "{}")
+		}
+	}))
+	t.Cleanup(srv.Close)
+	ctx := testctx.WrapWithCfg(t.Context(), config.Project{GitLabURLs: config.GitLabURLs{API: srv.URL}})
+	client, err := newGitLab(ctx, "test-token")
+	require.NoError(t, err)
+	err = client.CreateFile(ctx, config.CommitAuthor{Name: "user", Email: "u@e.com"}, Repo{Owner: "someone", Name: "something", Branch: "new-branch"}, []byte("content"), "test.rb", "add test")
+	require.NoError(t, err)
+}
+
+func TestGitLabCreateFileGetFileError(t *testing.T) {
+	t.Parallel()
+	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		defer r.Body.Close()
+		switch {
+		case strings.HasPrefix(r.URL.Path, "/api/v4/version"):
+			fmt.Fprint(w, `{"version":"18.0.0"}`)
+		case strings.HasSuffix(r.URL.Path, "/repository/branches/main"):
+			fmt.Fprint(w, `{"name":"main"}`)
+		case strings.Contains(r.URL.Path, "/repository/files/"):
+			w.WriteHeader(http.StatusInternalServerError)
+			fmt.Fprint(w, `{"error":"server error"}`)
+		default:
+			w.WriteHeader(http.StatusOK)
+			fmt.Fprint(w, "{}")
+		}
+	}))
+	t.Cleanup(srv.Close)
+	ctx := testctx.WrapWithCfg(t.Context(), config.Project{GitLabURLs: config.GitLabURLs{API: srv.URL}})
+	client, err := newGitLab(ctx, "test-token", gitlab.WithoutRetries())
+	require.NoError(t, err)
+	err = client.CreateFile(ctx, config.CommitAuthor{Name: "user", Email: "u@e.com"}, Repo{Owner: "someone", Name: "something", Branch: "main"}, []byte("content"), "test.rb", "add test")
+	require.Error(t, err)
+}
+
+func TestGitLabCreateFileCreateError(t *testing.T) {
+	t.Parallel()
+	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		defer r.Body.Close()
+		switch {
+		case strings.HasPrefix(r.URL.Path, "/api/v4/version"):
+			fmt.Fprint(w, `{"version":"18.0.0"}`)
+		case strings.HasSuffix(r.URL.Path, "/repository/branches/main"):
+			fmt.Fprint(w, `{"name":"main"}`)
+		case strings.Contains(r.URL.Path, "/repository/files/") && r.Method == http.MethodGet:
+			w.WriteHeader(http.StatusNotFound)
+			fmt.Fprint(w, `{"message":"404 File Not Found"}`)
+		case strings.Contains(r.URL.Path, "/repository/files/") && r.Method == http.MethodPost:
+			w.WriteHeader(http.StatusInternalServerError)
+			fmt.Fprint(w, `{"error":"server error"}`)
+		default:
+			w.WriteHeader(http.StatusOK)
+			fmt.Fprint(w, "{}")
+		}
+	}))
+	t.Cleanup(srv.Close)
+	ctx := testctx.WrapWithCfg(t.Context(), config.Project{GitLabURLs: config.GitLabURLs{API: srv.URL}})
+	client, err := newGitLab(ctx, "test-token", gitlab.WithoutRetries())
+	require.NoError(t, err)
+	err = client.CreateFile(ctx, config.CommitAuthor{Name: "user", Email: "u@e.com"}, Repo{Owner: "someone", Name: "something", Branch: "main"}, []byte("content"), "test.rb", "add test")
+	require.Error(t, err)
+}
+
+func TestGitLabCreateFileUpdateError(t *testing.T) {
+	t.Parallel()
+	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		defer r.Body.Close()
+		switch {
+		case strings.HasPrefix(r.URL.Path, "/api/v4/version"):
+			fmt.Fprint(w, `{"version":"18.0.0"}`)
+		case strings.HasSuffix(r.URL.Path, "/repository/branches/main"):
+			fmt.Fprint(w, `{"name":"main"}`)
+		case strings.Contains(r.URL.Path, "/repository/files/") && r.Method == http.MethodGet:
+			fmt.Fprint(w, `{"file_name":"test.rb","file_path":"test.rb"}`)
+		case strings.Contains(r.URL.Path, "/repository/files/") && r.Method == http.MethodPut:
+			w.WriteHeader(http.StatusInternalServerError)
+			fmt.Fprint(w, `{"error":"server error"}`)
+		default:
+			w.WriteHeader(http.StatusOK)
+			fmt.Fprint(w, "{}")
+		}
+	}))
+	t.Cleanup(srv.Close)
+	ctx := testctx.WrapWithCfg(t.Context(), config.Project{GitLabURLs: config.GitLabURLs{API: srv.URL}})
+	client, err := newGitLab(ctx, "test-token", gitlab.WithoutRetries())
+	require.NoError(t, err)
+	err = client.CreateFile(ctx, config.CommitAuthor{Name: "user", Email: "u@e.com"}, Repo{Owner: "someone", Name: "something", Branch: "main"}, []byte("updated"), "test.rb", "update test")
+	require.Error(t, err)
+}
+
+func TestGitLabOpenPullRequestGetProjectError(t *testing.T) {
+	t.Parallel()
+	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		defer r.Body.Close()
+		switch {
+		case strings.HasPrefix(r.URL.Path, "/api/v4/version"):
+			fmt.Fprint(w, `{"version":"18.0.0"}`)
+		case strings.HasSuffix(r.URL.Path, "projects/someone/something") && !strings.Contains(r.URL.Path, "merge_requests"):
+			w.WriteHeader(http.StatusInternalServerError)
+			fmt.Fprint(w, `{"error":"server error"}`)
+		default:
+			w.WriteHeader(http.StatusOK)
+			fmt.Fprint(w, "{}")
+		}
+	}))
+	t.Cleanup(srv.Close)
+	ctx := testctx.WrapWithCfg(t.Context(), config.Project{GitLabURLs: config.GitLabURLs{API: srv.URL}})
+	client, err := newGitLab(ctx, "test-token", gitlab.WithoutRetries())
+	require.NoError(t, err)
+	err = client.OpenPullRequest(ctx, Repo{Owner: "someone", Name: "something", Branch: "main"}, Repo{Owner: "someoneelse", Name: "something", Branch: "feature"}, "test PR", false)
+	require.Error(t, err)
+}
+
+func TestGitLabOpenPullRequestDefaultBranchError(t *testing.T) {
+	t.Parallel()
+	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		defer r.Body.Close()
+		switch {
+		case strings.HasPrefix(r.URL.Path, "/api/v4/version"):
+			fmt.Fprint(w, `{"version":"18.0.0"}`)
+		case strings.HasSuffix(r.URL.Path, "projects/someone/something"):
+			w.WriteHeader(http.StatusInternalServerError)
+			fmt.Fprint(w, `{"error":"server error"}`)
+		default:
+			w.WriteHeader(http.StatusOK)
+			fmt.Fprint(w, "{}")
+		}
+	}))
+	t.Cleanup(srv.Close)
+	ctx := testctx.WrapWithCfg(t.Context(), config.Project{GitLabURLs: config.GitLabURLs{API: srv.URL}})
+	client, err := newGitLab(ctx, "test-token", gitlab.WithoutRetries())
+	require.NoError(t, err)
+	err = client.OpenPullRequest(ctx, Repo{}, Repo{Owner: "someone", Name: "something", Branch: "feature"}, "test PR", false)
+	require.Error(t, err)
+}
+
+func TestGitLabOpenPullRequestCreateError(t *testing.T) {
+	t.Parallel()
+	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		defer r.Body.Close()
+		switch {
+		case strings.HasPrefix(r.URL.Path, "/api/v4/version"):
+			fmt.Fprint(w, `{"version":"18.0.0"}`)
+		case strings.HasSuffix(r.URL.Path, "projects/someone/something") && !strings.Contains(r.URL.Path, "merge_requests"):
+			fmt.Fprint(w, `{"id":123,"default_branch":"main"}`)
+		case strings.Contains(r.URL.Path, "merge_requests"):
+			w.WriteHeader(http.StatusInternalServerError)
+			fmt.Fprint(w, `{"error":"server error"}`)
+		default:
+			w.WriteHeader(http.StatusOK)
+			fmt.Fprint(w, "{}")
+		}
+	}))
+	t.Cleanup(srv.Close)
+	ctx := testctx.WrapWithCfg(t.Context(), config.Project{GitLabURLs: config.GitLabURLs{API: srv.URL}})
+	client, err := newGitLab(ctx, "test-token", gitlab.WithoutRetries())
+	require.NoError(t, err)
+	err = client.OpenPullRequest(ctx, Repo{Owner: "someone", Name: "something", Branch: "main"}, Repo{Owner: "someone", Name: "something", Branch: "feature"}, "test PR", false)
+	require.Error(t, err)
+	require.Contains(t, err.Error(), "could not create pull request")
+}
+
+func TestGitLabCreateReleaseHeaderTemplateError(t *testing.T) {
+	t.Setenv("CI_SERVER_VERSION", "18.0.0")
+	ctx := testctx.WrapWithCfg(t.Context(), config.Project{Release: config.Release{Header: "{{ .NoKeyLikeThat }}"}})
+	client, err := newGitLab(ctx, "test-token")
+	require.NoError(t, err)
+	_, err = client.CreateRelease(ctx, "body")
+	require.Error(t, err)
+}
+
+func TestGitLabCreateReleaseFooterTemplateError(t *testing.T) {
+	t.Setenv("CI_SERVER_VERSION", "18.0.0")
+	ctx := testctx.WrapWithCfg(t.Context(), config.Project{Release: config.Release{Footer: "{{ .NoKeyLikeThat }}"}})
+	client, err := newGitLab(ctx, "test-token")
+	require.NoError(t, err)
+	_, err = client.CreateRelease(ctx, "body")
+	require.Error(t, err)
+}
+
+func TestGitLabReleaseURLTemplateNameError(t *testing.T) {
+	t.Setenv("CI_SERVER_VERSION", "18.0.0")
+	ctx := testctx.WrapWithCfg(t.Context(), config.Project{Release: config.Release{GitLab: config.Repo{Name: "{{ .NoKeyLikeThat }}"}}})
+	client, err := newGitLab(ctx, "test-token")
+	require.NoError(t, err)
+	_, err = client.ReleaseURLTemplate(ctx)
+	require.Error(t, err)
+}
+
+func TestGitLabUploadNameTemplateError(t *testing.T) {
+	t.Setenv("CI_SERVER_VERSION", "18.0.0")
+	ctx := testctx.WrapWithCfg(t.Context(), config.Project{Release: config.Release{GitLab: config.Repo{Name: "{{ .NoKeyLikeThat }}"}}})
+	client, err := newGitLab(ctx, "test-token")
+	require.NoError(t, err)
+	f, err := os.Open("testdata/gitlab/milestone.json")
+	require.NoError(t, err)
+	t.Cleanup(func() { f.Close() })
+	err = client.Upload(ctx, "v1.0.0", &artifact.Artifact{Name: "test.tar.gz"}, f)
+	require.Error(t, err)
+}
+
+func TestGitLabUploadPackageRegistryError(t *testing.T) {
+	t.Parallel()
+	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		defer r.Body.Close()
+		switch {
+		case strings.HasPrefix(r.URL.Path, "/api/v4/version"):
+			fmt.Fprint(w, `{"version":"18.0.0"}`)
+		default:
+			w.WriteHeader(http.StatusInternalServerError)
+			fmt.Fprint(w, `{"error":"server error"}`)
+		}
+	}))
+	t.Cleanup(srv.Close)
+	ctx := testctx.WrapWithCfg(t.Context(), config.Project{
+		ProjectName: "myproject",
+		GitLabURLs:  config.GitLabURLs{API: srv.URL, UsePackageRegistry: true},
+		Release:     config.Release{GitLab: config.Repo{Owner: "someone", Name: "something"}},
+	}, testctx.WithVersion("1.0.0"))
+	client, err := newGitLab(ctx, "test-token", gitlab.WithoutRetries())
+	require.NoError(t, err)
+	f, err := os.Open("testdata/gitlab/milestone.json")
+	require.NoError(t, err)
+	t.Cleanup(func() { f.Close() })
+	err = client.Upload(ctx, "v1.0.0", &artifact.Artifact{Name: "test.tar.gz"}, f)
+	require.Error(t, err)
+}
+
+func TestGitLabUploadMarkdownError(t *testing.T) {
+	t.Parallel()
+	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		defer r.Body.Close()
+		switch {
+		case strings.HasPrefix(r.URL.Path, "/api/v4/version"):
+			fmt.Fprint(w, `{"version":"18.0.0"}`)
+		default:
+			w.WriteHeader(http.StatusInternalServerError)
+			fmt.Fprint(w, `{"error":"server error"}`)
+		}
+	}))
+	t.Cleanup(srv.Close)
+	ctx := testctx.WrapWithCfg(t.Context(), config.Project{
+		GitLabURLs: config.GitLabURLs{API: srv.URL},
+		Release:    config.Release{GitLab: config.Repo{Owner: "someone", Name: "something"}},
+	})
+	client, err := newGitLab(ctx, "test-token", gitlab.WithoutRetries())
+	require.NoError(t, err)
+	f, err := os.Open("testdata/gitlab/milestone.json")
+	require.NoError(t, err)
+	t.Cleanup(func() { f.Close() })
+	err = client.Upload(ctx, "v1.0.0", &artifact.Artifact{Name: "test.tar.gz"}, f)
+	require.Error(t, err)
+}
+
+func TestGitLabUploadPackageRegistry(t *testing.T) {
+	t.Parallel()
+	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		defer r.Body.Close()
+		switch {
+		case strings.HasPrefix(r.URL.Path, "/api/v4/version"):
+			fmt.Fprint(w, `{"version":"18.0.0"}`)
+		case strings.Contains(r.URL.Path, "packages/generic") && r.Method == http.MethodPut:
+			w.WriteHeader(http.StatusCreated)
+			fmt.Fprint(w, `{"message":"201 Created"}`)
+		case strings.Contains(r.URL.Path, "assets/links") && r.Method == http.MethodPost:
+			w.WriteHeader(http.StatusCreated)
+			fmt.Fprint(w, `{"id":1,"name":"test.tar.gz","direct_asset_url":"http://example.com/test.tar.gz"}`)
+		default:
+			w.WriteHeader(http.StatusOK)
+			fmt.Fprint(w, "{}")
+		}
+	}))
+	t.Cleanup(srv.Close)
+	ctx := testctx.WrapWithCfg(t.Context(), config.Project{
+		ProjectName: "myproject",
+		GitLabURLs:  config.GitLabURLs{API: srv.URL, UsePackageRegistry: true},
+		Release:     config.Release{GitLab: config.Repo{Owner: "someone", Name: "something"}},
+	}, testctx.WithVersion("1.0.0"), testctx.WithCurrentTag("v1.0.0"))
+	client, err := newGitLab(ctx, "test-token")
+	require.NoError(t, err)
+	f, err := os.Open("testdata/gitlab/milestone.json")
+	require.NoError(t, err)
+	t.Cleanup(func() { f.Close() })
+	err = client.Upload(ctx, "v1.0.0", &artifact.Artifact{Name: "test.tar.gz"}, f)
+	require.NoError(t, err)
+}
+
+func TestGitLabCreateReleaseCreateError(t *testing.T) {
+	t.Parallel()
+	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		defer r.Body.Close()
+		switch {
+		case strings.HasPrefix(r.URL.Path, "/api/v4/version"):
+			fmt.Fprint(w, `{"version":"18.0.0"}`)
+		case strings.Contains(r.URL.Path, "/releases") && r.Method == http.MethodGet:
+			w.WriteHeader(http.StatusNotFound)
+			fmt.Fprint(w, `{"message":"404 Not Found"}`)
+		case strings.Contains(r.URL.Path, "/releases") && r.Method == http.MethodPost:
+			w.WriteHeader(http.StatusInternalServerError)
+			fmt.Fprint(w, `{"error":"server error"}`)
+		default:
+			fmt.Fprint(w, `{}`)
+		}
+	}))
+	t.Cleanup(srv.Close)
+	ctx := testctx.WrapWithCfg(t.Context(), config.Project{
+		GitLabURLs: config.GitLabURLs{API: srv.URL},
+		Release:    config.Release{GitLab: config.Repo{Owner: "someone", Name: "something"}},
+	}, testctx.WithCurrentTag("v1.0.0"), testctx.WithCommit("abc123"))
+	client, err := newGitLab(ctx, "test-token", gitlab.WithoutRetries())
+	require.NoError(t, err)
+	_, err = client.CreateRelease(ctx, "release body")
+	require.Error(t, err)
+}
+
+func TestGitLabCreateReleaseUpdateError(t *testing.T) {
+	t.Parallel()
+	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		defer r.Body.Close()
+		switch {
+		case strings.HasPrefix(r.URL.Path, "/api/v4/version"):
+			fmt.Fprint(w, `{"version":"18.0.0"}`)
+		case strings.Contains(r.URL.Path, "/releases") && r.Method == http.MethodGet:
+			fmt.Fprint(w, `{"tag_name":"v1.0.0","name":"Release","description":"old body"}`)
+		case strings.Contains(r.URL.Path, "/releases") && r.Method == http.MethodPut:
+			w.WriteHeader(http.StatusInternalServerError)
+			fmt.Fprint(w, `{"error":"server error"}`)
+		default:
+			fmt.Fprint(w, `{}`)
+		}
+	}))
+	t.Cleanup(srv.Close)
+	ctx := testctx.WrapWithCfg(t.Context(), config.Project{
+		GitLabURLs: config.GitLabURLs{API: srv.URL},
+		Release:    config.Release{GitLab: config.Repo{Owner: "someone", Name: "something"}},
+	}, testctx.WithCurrentTag("v1.0.0"))
+	client, err := newGitLab(ctx, "test-token", gitlab.WithoutRetries())
+	require.NoError(t, err)
+	_, err = client.CreateRelease(ctx, "new body")
+	require.Error(t, err)
+}
+
+func TestGitLabGetMilestoneByTitlePagination(t *testing.T) {
+	t.Parallel()
+	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		defer r.Body.Close()
+		switch {
+		case strings.HasPrefix(r.URL.Path, "/api/v4/version"):
+			fmt.Fprint(w, `{"version":"18.0.0"}`)
+		case strings.HasSuffix(r.URL.Path, "milestones"):
+			page := r.URL.Query().Get("page")
+			switch page {
+			case "", "1":
+				w.Header().Set("X-Next-Page", "2")
+				w.Header().Set("X-Page", "1")
+				fmt.Fprint(w, `[{"id":1,"title":"v0.9.0"}]`)
+			case "2":
+				w.Header().Set("X-Page", "2")
+				fmt.Fprint(w, `[{"id":2,"title":"v1.0.0"}]`)
+			}
+		default:
+			w.WriteHeader(http.StatusOK)
+			fmt.Fprint(w, "{}")
+		}
+	}))
+	t.Cleanup(srv.Close)
+	ctx := testctx.WrapWithCfg(t.Context(), config.Project{GitLabURLs: config.GitLabURLs{API: srv.URL}})
+	client, err := newGitLab(ctx, "test-token")
+	require.NoError(t, err)
+	milestone, err := client.getMilestoneByTitle(Repo{Owner: "someone", Name: "something"}, "v1.0.0")
+	require.NoError(t, err)
+	require.NotNil(t, milestone)
+	require.Equal(t, "v1.0.0", milestone.Title)
+}
+
+func TestGitLabPublishRelease(t *testing.T) {
+	t.Parallel()
+	client := &gitlabClient{}
+	ctx := testctx.Wrap(t.Context())
+	require.NoError(t, client.PublishRelease(ctx, "123"))
+}
+
+func TestGitLabUploadReleaseLinkExists(t *testing.T) {
+	t.Parallel()
+	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		defer r.Body.Close()
+		if strings.HasPrefix(r.URL.Path, "/api/v4/version") {
+			fmt.Fprint(w, `{"version":"18.0.0"}`)
+			return
+		}
+		if strings.Contains(r.URL.Path, "uploads") && r.Method == http.MethodPost {
+			fmt.Fprint(w, `{"alt":"test","url":"/uploads/abc/test.tar.gz","full_path":"someone/something/uploads/abc/test.tar.gz","markdown":"[test](/uploads/abc/test.tar.gz)"}`)
+			return
+		}
+		if strings.Contains(r.URL.Path, "assets/links") && r.Method == http.MethodPost {
+			w.WriteHeader(http.StatusBadRequest)
+			fmt.Fprint(w, `{"id":1,"name":"test.tar.gz","direct_asset_url":"http://example.com/test.tar.gz"}`)
+			return
+		}
+		if strings.Contains(r.URL.Path, "assets/links") && r.Method == http.MethodDelete {
+			w.WriteHeader(http.StatusOK)
+			fmt.Fprint(w, `{}`)
+			return
+		}
+		w.WriteHeader(http.StatusOK)
+		fmt.Fprint(w, "{}")
+	}))
+	t.Cleanup(srv.Close)
+
+	ctx := testctx.WrapWithCfg(t.Context(), config.Project{
+		GitLabURLs: config.GitLabURLs{
+			API:      srv.URL,
+			Download: srv.URL,
+		},
+		Release: config.Release{
+			GitLab: config.Repo{
+				Owner: "someone",
+				Name:  "something",
+			},
+			ReplaceExistingArtifacts: true,
+		},
+	}, testctx.WithVersion("1.0.0"), testctx.WithCurrentTag("v1.0.0"))
+	client, err := newGitLab(ctx, "test-token")
+	require.NoError(t, err)
+
+	f, err := os.Open("testdata/gitlab/milestone.json")
+	require.NoError(t, err)
+	t.Cleanup(func() { f.Close() })
+
+	a := &artifact.Artifact{Name: "test.tar.gz"}
+	err = client.Upload(ctx, "v1.0.0", a, f)
+	require.ErrorAs(t, err, &RetriableError{})
+}
