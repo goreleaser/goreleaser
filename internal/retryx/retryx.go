@@ -51,12 +51,10 @@ func IsRetriable(err error) bool {
 	if IsNetworkError(err) {
 		return true
 	}
-	var re retriableError
-	if errors.As(err, &re) {
+	if _, ok := errors.AsType[retriableError](err); ok {
 		return true
 	}
-	var he HTTPError
-	if errors.As(err, &he) {
+	if he, ok := errors.AsType[HTTPError](err); ok {
 		return he.Status >= 500 || he.Status == http.StatusTooManyRequests
 	}
 	return false
