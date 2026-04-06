@@ -1304,10 +1304,7 @@ func TestGitLabUploadNameTemplateError(t *testing.T) {
 	ctx := testctx.WrapWithCfg(t.Context(), config.Project{Release: config.Release{GitLab: config.Repo{Name: "{{ .NoKeyLikeThat }}"}}})
 	client, err := newGitLab(ctx, "test-token")
 	require.NoError(t, err)
-	f, err := os.Open("testdata/gitlab/milestone.json")
-	require.NoError(t, err)
-	t.Cleanup(func() { f.Close() })
-	err = client.Upload(ctx, "v1.0.0", &artifact.Artifact{Name: "test.tar.gz"}, f)
+	err = client.Upload(ctx, "v1.0.0", &artifact.Artifact{Name: "test.tar.gz", Path: "testdata/gitlab/milestone.json"})
 	require.Error(t, err)
 }
 
@@ -1331,10 +1328,7 @@ func TestGitLabUploadPackageRegistryError(t *testing.T) {
 	}, testctx.WithVersion("1.0.0"))
 	client, err := newGitLab(ctx, "test-token", gitlab.WithoutRetries())
 	require.NoError(t, err)
-	f, err := os.Open("testdata/gitlab/milestone.json")
-	require.NoError(t, err)
-	t.Cleanup(func() { f.Close() })
-	err = client.Upload(ctx, "v1.0.0", &artifact.Artifact{Name: "test.tar.gz"}, f)
+	err = client.Upload(ctx, "v1.0.0", &artifact.Artifact{Name: "test.tar.gz", Path: "testdata/gitlab/milestone.json"})
 	require.Error(t, err)
 }
 
@@ -1357,10 +1351,7 @@ func TestGitLabUploadMarkdownError(t *testing.T) {
 	})
 	client, err := newGitLab(ctx, "test-token", gitlab.WithoutRetries())
 	require.NoError(t, err)
-	f, err := os.Open("testdata/gitlab/milestone.json")
-	require.NoError(t, err)
-	t.Cleanup(func() { f.Close() })
-	err = client.Upload(ctx, "v1.0.0", &artifact.Artifact{Name: "test.tar.gz"}, f)
+	err = client.Upload(ctx, "v1.0.0", &artifact.Artifact{Name: "test.tar.gz", Path: "testdata/gitlab/milestone.json"})
 	require.Error(t, err)
 }
 
@@ -1390,10 +1381,7 @@ func TestGitLabUploadPackageRegistry(t *testing.T) {
 	}, testctx.WithVersion("1.0.0"), testctx.WithCurrentTag("v1.0.0"))
 	client, err := newGitLab(ctx, "test-token")
 	require.NoError(t, err)
-	f, err := os.Open("testdata/gitlab/milestone.json")
-	require.NoError(t, err)
-	t.Cleanup(func() { f.Close() })
-	err = client.Upload(ctx, "v1.0.0", &artifact.Artifact{Name: "test.tar.gz"}, f)
+	err = client.Upload(ctx, "v1.0.0", &artifact.Artifact{Name: "test.tar.gz", Path: "testdata/gitlab/milestone.json"})
 	require.NoError(t, err)
 }
 
@@ -1479,7 +1467,7 @@ func TestGitLabGetMilestoneByTitlePagination(t *testing.T) {
 	ctx := testctx.WrapWithCfg(t.Context(), config.Project{GitLabURLs: config.GitLabURLs{API: srv.URL}})
 	client, err := newGitLab(ctx, "test-token")
 	require.NoError(t, err)
-	milestone, err := client.getMilestoneByTitle(Repo{Owner: "someone", Name: "something"}, "v1.0.0")
+	milestone, err := client.getMilestoneByTitle(ctx, Repo{Owner: "someone", Name: "something"}, "v1.0.0")
 	require.NoError(t, err)
 	require.NotNil(t, milestone)
 	require.Equal(t, "v1.0.0", milestone.Title)
@@ -1535,11 +1523,7 @@ func TestGitLabUploadReleaseLinkExists(t *testing.T) {
 	client, err := newGitLab(ctx, "test-token")
 	require.NoError(t, err)
 
-	f, err := os.Open("testdata/gitlab/milestone.json")
-	require.NoError(t, err)
-	t.Cleanup(func() { f.Close() })
-
-	a := &artifact.Artifact{Name: "test.tar.gz"}
-	err = client.Upload(ctx, "v1.0.0", a, f)
-	require.ErrorAs(t, err, &RetriableError{})
+	a := &artifact.Artifact{Name: "test.tar.gz", Path: "testdata/gitlab/milestone.json"}
+	err = client.Upload(ctx, "v1.0.0", a)
+	require.Error(t, err)
 }
