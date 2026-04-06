@@ -3,11 +3,13 @@ package client
 import (
 	"encoding/base64"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io"
 	"net/http"
 	"net/http/httptest"
 	"os"
+	"strings"
 	"sync/atomic"
 	"testing"
 	"text/template"
@@ -1585,5 +1587,1374 @@ func TestGitHubAuthorsLookup(t *testing.T) {
 	})
 }
 
-// TODO: test create upload file to release
-// TODO: test create PR
+func TestGitHubPublishRelease(t *testing.T) {
+	t.Parallel()
+
+	t.Run("draft stays draft", func(t *testing.T) {
+		t.Parallel()
+		srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			defer r.Body.Close()
+			if r.URL.Path == "/api/v3/rate_limit" {
+				w.WriteHeader(http.StatusOK)
+				fmt.Fprint(w, `{"resources":{"core":{"remaining":120}}}`)
+				return
+			}
+			t.Error("unhandled request: " + r.Method + " " + r.URL.Path)
+		}))
+		t.Cleanup(srv.Close)
+		ctx := testctx.WrapWithCfg(t.Context(), config.Project{
+			GitHubURLs: config.GitHubURLs{API: srv.URL},
+			Release: config.Release{
+				GitHub: config.Repo{Owner: "owner", Name: "name"},
+				Draft:  true,
+			},
+		})
+		client, err := newGitHub(ctx, "test-token")
+		require.NoError(t, err)
+		require.NoError(t, client.PublishRelease(ctx, "123"))
+	})
+
+	t.Run("happy path publish", func(t *testing.T) {
+		t.Parallel()
+		var requestBody string
+		srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			defer r.Body.Close()
+			if r.URL.Path == "/api/v3/rate_limit" {
+				w.WriteHeader(http.StatusOK)
+				fmt.Fprint(w, `{"resources":{"core":{"remaining":120}}}`)
+				return
+			}
+			if r.URL.Path == "/api/v3/repos/owner/name/releases/123" && r.Method == http.MethodPatch {
+				bts, _ := io.ReadAll(r.Body)
+				requestBody = string(bts)
+				w.WriteHeader(http.StatusOK)
+				fmt.Fprint(w, `{"id":123,"html_url":"https://github.com/owner/name/releases/tag/v1.0.0"}`)
+				return
+			}
+			t.Error("unhandled request: " + r.Method + " " + r.URL.Path)
+		}))
+		t.Cleanup(srv.Close)
+		ctx := testctx.WrapWithCfg(t.Context(), config.Project{
+			GitHubURLs: config.GitHubURLs{API: srv.URL},
+			Release: config.Release{
+				GitHub: config.Repo{Owner: "owner", Name: "name"},
+				Draft:  false,
+			},
+		})
+		client, err := newGitHub(ctx, "test-token")
+		require.NoError(t, err)
+		require.NoError(t, client.PublishRelease(ctx, "123"))
+		require.Contains(t, requestBody, `"draft":false`)
+	})
+
+	t.Run("with make latest", func(t *testing.T) {
+		t.Parallel()
+		var requestBody string
+		srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			defer r.Body.Close()
+			if r.URL.Path == "/api/v3/rate_limit" {
+				w.WriteHeader(http.StatusOK)
+				fmt.Fprint(w, `{"resources":{"core":{"remaining":120}}}`)
+				return
+			}
+			if r.URL.Path == "/api/v3/repos/owner/name/releases/123" && r.Method == http.MethodPatch {
+				bts, _ := io.ReadAll(r.Body)
+				requestBody = string(bts)
+				w.WriteHeader(http.StatusOK)
+				fmt.Fprint(w, `{"id":123,"html_url":"https://github.com/owner/name/releases/tag/v1.0.0"}`)
+				return
+			}
+			t.Error("unhandled request: " + r.Method + " " + r.URL.Path)
+		}))
+		t.Cleanup(srv.Close)
+		ctx := testctx.WrapWithCfg(t.Context(), config.Project{
+			GitHubURLs: config.GitHubURLs{API: srv.URL},
+			Release: config.Release{
+				GitHub:     config.Repo{Owner: "owner", Name: "name"},
+				Draft:      false,
+				MakeLatest: "true",
+			},
+		})
+		client, err := newGitHub(ctx, "test-token")
+		require.NoError(t, err)
+		require.NoError(t, client.PublishRelease(ctx, "123"))
+		require.Contains(t, requestBody, `"make_latest":"true"`)
+	})
+
+	t.Run("with discussion category", func(t *testing.T) {
+		t.Parallel()
+		var requestBody string
+		srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			defer r.Body.Close()
+			if r.URL.Path == "/api/v3/rate_limit" {
+				w.WriteHeader(http.StatusOK)
+				fmt.Fprint(w, `{"resources":{"core":{"remaining":120}}}`)
+				return
+			}
+			if r.URL.Path == "/api/v3/repos/owner/name/releases/123" && r.Method == http.MethodPatch {
+				bts, _ := io.ReadAll(r.Body)
+				requestBody = string(bts)
+				w.WriteHeader(http.StatusOK)
+				fmt.Fprint(w, `{"id":123,"html_url":"https://github.com/owner/name/releases/tag/v1.0.0"}`)
+				return
+			}
+			t.Error("unhandled request: " + r.Method + " " + r.URL.Path)
+		}))
+		t.Cleanup(srv.Close)
+		ctx := testctx.WrapWithCfg(t.Context(), config.Project{
+			GitHubURLs: config.GitHubURLs{API: srv.URL},
+			Release: config.Release{
+				GitHub:                 config.Repo{Owner: "owner", Name: "name"},
+				Draft:                  false,
+				DiscussionCategoryName: "General",
+			},
+		})
+		client, err := newGitHub(ctx, "test-token")
+		require.NoError(t, err)
+		require.NoError(t, client.PublishRelease(ctx, "123"))
+		require.Contains(t, requestBody, `"discussion_category_name":"General"`)
+	})
+
+	t.Run("bad release id", func(t *testing.T) {
+		t.Parallel()
+		srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			defer r.Body.Close()
+			if r.URL.Path == "/api/v3/rate_limit" {
+				w.WriteHeader(http.StatusOK)
+				fmt.Fprint(w, `{"resources":{"core":{"remaining":120}}}`)
+				return
+			}
+			t.Error("unhandled request: " + r.Method + " " + r.URL.Path)
+		}))
+		t.Cleanup(srv.Close)
+		ctx := testctx.WrapWithCfg(t.Context(), config.Project{
+			GitHubURLs: config.GitHubURLs{API: srv.URL},
+			Release: config.Release{
+				GitHub: config.Repo{Owner: "owner", Name: "name"},
+				Draft:  false,
+			},
+		})
+		client, err := newGitHub(ctx, "test-token")
+		require.NoError(t, err)
+		err = client.PublishRelease(ctx, "not-a-number")
+		require.Error(t, err)
+		require.Contains(t, err.Error(), "non-numeric release ID")
+	})
+}
+
+func TestGitHubPublishReleaseBadMakeLatestTemplate(t *testing.T) {
+	t.Parallel()
+	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		defer r.Body.Close()
+		if r.URL.Path == "/api/v3/rate_limit" {
+			w.WriteHeader(http.StatusOK)
+			fmt.Fprint(w, `{"resources":{"core":{"remaining":120}}}`)
+			return
+		}
+		t.Error("unhandled request: " + r.Method + " " + r.URL.Path)
+	}))
+	t.Cleanup(srv.Close)
+	ctx := testctx.WrapWithCfg(t.Context(), config.Project{
+		GitHubURLs: config.GitHubURLs{API: srv.URL},
+		Release: config.Release{
+			GitHub:     config.Repo{Owner: "owner", Name: "name"},
+			Draft:      false,
+			MakeLatest: "{{ .Env.NOPE }}",
+		},
+	})
+	client, err := newGitHub(ctx, "test-token")
+	require.NoError(t, err)
+	err = client.PublishRelease(ctx, "123")
+	require.Error(t, err)
+	require.Contains(t, err.Error(), "templating GitHub make_latest")
+}
+
+func TestGitHubSyncFork(t *testing.T) {
+	t.Parallel()
+
+	t.Run("happy path", func(t *testing.T) {
+		t.Parallel()
+		srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			defer r.Body.Close()
+			if r.URL.Path == "/api/v3/rate_limit" {
+				w.WriteHeader(http.StatusOK)
+				fmt.Fprint(w, `{"resources":{"core":{"remaining":120}}}`)
+				return
+			}
+			if r.URL.Path == "/api/v3/repos/headowner/headname/merge-upstream" && r.Method == http.MethodPost {
+				w.WriteHeader(http.StatusOK)
+				fmt.Fprint(w, `{"merge_type":"fast-forward","base_branch":"main","message":"Successfully fetched"}`)
+				return
+			}
+			t.Error("unhandled request: " + r.Method + " " + r.URL.Path)
+		}))
+		t.Cleanup(srv.Close)
+		ctx := testctx.WrapWithCfg(t.Context(), config.Project{
+			GitHubURLs: config.GitHubURLs{API: srv.URL},
+		})
+		client, err := newGitHub(ctx, "test-token")
+		require.NoError(t, err)
+		err = client.SyncFork(ctx,
+			Repo{Owner: "headowner", Name: "headname"},
+			Repo{Owner: "baseowner", Name: "basename", Branch: "main"},
+		)
+		require.NoError(t, err)
+	})
+
+	t.Run("error", func(t *testing.T) {
+		t.Parallel()
+		srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			defer r.Body.Close()
+			if r.URL.Path == "/api/v3/rate_limit" {
+				w.WriteHeader(http.StatusOK)
+				fmt.Fprint(w, `{"resources":{"core":{"remaining":120}}}`)
+				return
+			}
+			if r.URL.Path == "/api/v3/repos/headowner/headname/merge-upstream" && r.Method == http.MethodPost {
+				w.WriteHeader(http.StatusUnprocessableEntity)
+				fmt.Fprint(w, `{"message":"merge conflict"}`)
+				return
+			}
+			t.Error("unhandled request: " + r.Method + " " + r.URL.Path)
+		}))
+		t.Cleanup(srv.Close)
+		ctx := testctx.WrapWithCfg(t.Context(), config.Project{
+			GitHubURLs: config.GitHubURLs{API: srv.URL},
+		})
+		client, err := newGitHub(ctx, "test-token")
+		require.NoError(t, err)
+		err = client.SyncFork(ctx,
+			Repo{Owner: "headowner", Name: "headname"},
+			Repo{Owner: "baseowner", Name: "basename", Branch: "main"},
+		)
+		require.Error(t, err)
+	})
+
+	t.Run("no base branch uses default", func(t *testing.T) {
+		t.Parallel()
+		srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			defer r.Body.Close()
+			if r.URL.Path == "/api/v3/rate_limit" {
+				w.WriteHeader(http.StatusOK)
+				fmt.Fprint(w, `{"resources":{"core":{"remaining":120}}}`)
+				return
+			}
+			if r.URL.Path == "/api/v3/repos/baseowner/basename" && r.Method == http.MethodGet {
+				w.WriteHeader(http.StatusOK)
+				fmt.Fprint(w, `{"default_branch":"develop"}`)
+				return
+			}
+			if r.URL.Path == "/api/v3/repos/headowner/headname/merge-upstream" && r.Method == http.MethodPost {
+				w.WriteHeader(http.StatusOK)
+				fmt.Fprint(w, `{"merge_type":"fast-forward","base_branch":"develop","message":"Successfully fetched"}`)
+				return
+			}
+			t.Error("unhandled request: " + r.Method + " " + r.URL.Path)
+		}))
+		t.Cleanup(srv.Close)
+		ctx := testctx.WrapWithCfg(t.Context(), config.Project{
+			GitHubURLs: config.GitHubURLs{API: srv.URL},
+		})
+		client, err := newGitHub(ctx, "test-token")
+		require.NoError(t, err)
+		err = client.SyncFork(ctx,
+			Repo{Owner: "headowner", Name: "headname"},
+			Repo{Owner: "baseowner", Name: "basename"},
+		)
+		require.NoError(t, err)
+	})
+}
+
+func TestGitHubCloseMilestoneNotFound(t *testing.T) {
+	t.Parallel()
+	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		defer r.Body.Close()
+		if r.URL.Path == "/api/v3/repos/someone/something/milestones" {
+			w.WriteHeader(http.StatusOK)
+			fmt.Fprint(w, `[]`)
+			return
+		}
+		if r.URL.Path == "/api/v3/rate_limit" {
+			w.WriteHeader(http.StatusOK)
+			fmt.Fprint(w, `{"resources":{"core":{"remaining":120}}}`)
+			return
+		}
+		t.Error("unhandled request: " + r.Method + " " + r.URL.Path)
+	}))
+	t.Cleanup(srv.Close)
+	ctx := testctx.WrapWithCfg(t.Context(), config.Project{
+		GitHubURLs: config.GitHubURLs{
+			API: srv.URL,
+		},
+	})
+	client, err := newGitHub(ctx, "test-token")
+	require.NoError(t, err)
+	repo := Repo{
+		Owner: "someone",
+		Name:  "something",
+	}
+	err = client.CloseMilestone(ctx, repo, "v9.9.9")
+	require.ErrorAs(t, err, &ErrNoMilestoneFound{})
+}
+
+func TestGitHubUploadReplaceExisting(t *testing.T) {
+	t.Parallel()
+	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		defer r.Body.Close()
+		if r.URL.Path == "/api/v3/rate_limit" {
+			w.WriteHeader(http.StatusOK)
+			fmt.Fprint(w, `{"resources":{"core":{"remaining":120}}}`)
+			return
+		}
+		if strings.HasSuffix(r.URL.Path, "/releases/123/assets") && r.Method == http.MethodPost {
+			w.WriteHeader(http.StatusUnprocessableEntity)
+			fmt.Fprint(w, `{"message":"already exists"}`)
+			return
+		}
+		if r.URL.Path == "/api/v3/repos/owner/name/releases/123/assets" && r.Method == http.MethodGet {
+			w.WriteHeader(http.StatusOK)
+			fmt.Fprint(w, `[{"id":456,"name":"test-file.txt"}]`)
+			return
+		}
+		if r.URL.Path == "/api/v3/repos/owner/name/releases/assets/456" && r.Method == http.MethodDelete {
+			w.WriteHeader(http.StatusNoContent)
+			return
+		}
+		t.Error("unhandled request: " + r.Method + " " + r.URL.Path)
+	}))
+	t.Cleanup(srv.Close)
+	ctx := testctx.WrapWithCfg(t.Context(), config.Project{
+		GitHubURLs: config.GitHubURLs{
+			API:    srv.URL,
+			Upload: srv.URL,
+		},
+		Release: config.Release{
+			GitHub:                   config.Repo{Owner: "owner", Name: "name"},
+			ReplaceExistingArtifacts: true,
+		},
+	})
+	client, err := newGitHub(ctx, "test-token")
+	require.NoError(t, err)
+	f, err := os.CreateTemp(t.TempDir(), "upload-test")
+	require.NoError(t, err)
+	fmt.Fprint(f, "test content")
+	_, err = f.Seek(0, 0)
+	require.NoError(t, err)
+	err = client.Upload(ctx, "123", &artifact.Artifact{Name: "test-file.txt"}, f)
+	require.ErrorAs(t, err, &RetriableError{})
+}
+
+func TestGitHubUploadNoReplace(t *testing.T) {
+	t.Parallel()
+	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		defer r.Body.Close()
+		if r.URL.Path == "/api/v3/rate_limit" {
+			w.WriteHeader(http.StatusOK)
+			fmt.Fprint(w, `{"resources":{"core":{"remaining":120}}}`)
+			return
+		}
+		if strings.HasSuffix(r.URL.Path, "/releases/123/assets") && r.Method == http.MethodPost {
+			w.WriteHeader(http.StatusUnprocessableEntity)
+			fmt.Fprint(w, `{"message":"already exists"}`)
+			return
+		}
+		t.Error("unhandled request: " + r.Method + " " + r.URL.Path)
+	}))
+	t.Cleanup(srv.Close)
+	ctx := testctx.WrapWithCfg(t.Context(), config.Project{
+		GitHubURLs: config.GitHubURLs{
+			API:    srv.URL,
+			Upload: srv.URL,
+		},
+		Release: config.Release{
+			GitHub:                   config.Repo{Owner: "owner", Name: "name"},
+			ReplaceExistingArtifacts: false,
+		},
+	})
+	client, err := newGitHub(ctx, "test-token")
+	require.NoError(t, err)
+	f, err := os.CreateTemp(t.TempDir(), "upload-test")
+	require.NoError(t, err)
+	fmt.Fprint(f, "test content")
+	_, err = f.Seek(0, 0)
+	require.NoError(t, err)
+	err = client.Upload(ctx, "123", &artifact.Artifact{Name: "test-file.txt"}, f)
+	require.Error(t, err)
+	require.False(t, errors.As(err, &RetriableError{}))
+}
+
+func TestHeadString(t *testing.T) {
+	t.Parallel()
+
+	t.Run("head wins over base", func(t *testing.T) {
+		t.Parallel()
+		result := headString(
+			Repo{Owner: "base-owner", Name: "base-name", Branch: "base-branch"},
+			Repo{Owner: "head-owner", Name: "head-name", Branch: "head-branch"},
+		)
+		require.Equal(t, "head-owner:head-name:head-branch", result)
+	})
+
+	t.Run("base used when head empty", func(t *testing.T) {
+		t.Parallel()
+		result := headString(
+			Repo{Owner: "base-owner", Name: "base-name", Branch: "base-branch"},
+			Repo{},
+		)
+		require.Equal(t, "base-owner:base-name:base-branch", result)
+	})
+
+	t.Run("mixed", func(t *testing.T) {
+		t.Parallel()
+		result := headString(
+			Repo{Owner: "base-owner", Name: "base-name", Branch: "base-branch"},
+			Repo{Owner: "head-owner"},
+		)
+		require.Equal(t, "head-owner:base-name:base-branch", result)
+	})
+}
+
+func TestBodyOf(t *testing.T) {
+	t.Parallel()
+
+	t.Run("nil response", func(t *testing.T) {
+		t.Parallel()
+		require.Equal(t, "no response", bodyOf(nil))
+	})
+
+	t.Run("nil body", func(t *testing.T) {
+		t.Parallel()
+		resp := &github.Response{
+			Response: &http.Response{},
+		}
+		require.Equal(t, "no response", bodyOf(resp))
+	})
+
+	t.Run("with body content", func(t *testing.T) {
+		t.Parallel()
+		resp := &github.Response{
+			Response: &http.Response{
+				Body: io.NopCloser(strings.NewReader("hello world")),
+			},
+		}
+		require.Equal(t, "hello world", bodyOf(resp))
+	})
+}
+
+func TestGitHubChangelogError(t *testing.T) {
+	t.Parallel()
+	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		defer r.Body.Close()
+		if r.URL.Path == "/api/v3/rate_limit" {
+			w.WriteHeader(http.StatusOK)
+			fmt.Fprint(w, `{"resources":{"core":{"remaining":120}}}`)
+			return
+		}
+		if r.URL.Path == "/api/v3/repos/someone/something/compare/v1.0.0...v1.1.0" {
+			w.WriteHeader(http.StatusInternalServerError)
+			return
+		}
+		t.Error("unhandled request: " + r.Method + " " + r.URL.Path)
+	}))
+	t.Cleanup(srv.Close)
+
+	ctx := testctx.WrapWithCfg(t.Context(), config.Project{
+		GitHubURLs: config.GitHubURLs{
+			API: srv.URL,
+		},
+	})
+	client, err := newGitHub(ctx, "test-token")
+	require.NoError(t, err)
+	repo := Repo{
+		Owner: "someone",
+		Name:  "something",
+	}
+
+	result, err := client.Changelog(ctx, repo, "v1.0.0", "v1.1.0")
+	require.Error(t, err)
+	require.Nil(t, result)
+}
+
+func TestGitHubCloseMilestoneError(t *testing.T) {
+	t.Parallel()
+	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		defer r.Body.Close()
+		if r.URL.Path == "/api/v3/rate_limit" {
+			w.WriteHeader(http.StatusOK)
+			fmt.Fprint(w, `{"resources":{"core":{"remaining":120}}}`)
+			return
+		}
+		if r.URL.Path == "/api/v3/repos/someone/something/milestones" {
+			w.WriteHeader(http.StatusInternalServerError)
+			return
+		}
+		t.Error("unhandled request: " + r.Method + " " + r.URL.Path)
+	}))
+	t.Cleanup(srv.Close)
+
+	ctx := testctx.WrapWithCfg(t.Context(), config.Project{
+		GitHubURLs: config.GitHubURLs{
+			API: srv.URL,
+		},
+	})
+	client, err := newGitHub(ctx, "test-token")
+	require.NoError(t, err)
+	repo := Repo{
+		Owner: "someone",
+		Name:  "something",
+	}
+
+	err = client.CloseMilestone(ctx, repo, "v1.0.0")
+	require.Error(t, err)
+}
+
+func TestGitHubOpenPullRequestDefaultBranchError(t *testing.T) {
+	t.Parallel()
+	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		defer r.Body.Close()
+		if r.URL.Path == "/api/v3/rate_limit" {
+			w.WriteHeader(http.StatusOK)
+			fmt.Fprint(w, `{"resources":{"core":{"remaining":120}}}`)
+			return
+		}
+		if r.URL.Path == "/api/v3/repos/someone/something" && r.Method == http.MethodGet {
+			w.WriteHeader(http.StatusInternalServerError)
+			return
+		}
+		t.Error("unhandled request: " + r.Method + " " + r.URL.Path)
+	}))
+	t.Cleanup(srv.Close)
+
+	ctx := testctx.WrapWithCfg(t.Context(), config.Project{
+		GitHubURLs: config.GitHubURLs{
+			API: srv.URL,
+		},
+	})
+	client, err := newGitHub(ctx, "test-token")
+	require.NoError(t, err)
+
+	err = client.OpenPullRequest(ctx,
+		Repo{Owner: "someone", Name: "something"},
+		Repo{Branch: "foo"},
+		"some title", false,
+	)
+	require.Error(t, err)
+}
+
+func TestGitHubOpenPullRequest422(t *testing.T) {
+	t.Parallel()
+	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		defer r.Body.Close()
+		if r.URL.Path == "/api/v3/rate_limit" {
+			w.WriteHeader(http.StatusOK)
+			fmt.Fprint(w, `{"resources":{"core":{"remaining":120}}}`)
+			return
+		}
+		if r.URL.Path == "/api/v3/repos/someone/something/contents/.github/PULL_REQUEST_TEMPLATE.md" {
+			w.WriteHeader(http.StatusNotFound)
+			return
+		}
+		if r.URL.Path == "/api/v3/repos/someone/something/pulls" && r.Method == http.MethodPost {
+			w.WriteHeader(http.StatusUnprocessableEntity)
+			fmt.Fprint(w, `{"message":"Validation Failed"}`)
+			return
+		}
+		t.Error("unhandled request: " + r.Method + " " + r.URL.Path)
+	}))
+	t.Cleanup(srv.Close)
+
+	ctx := testctx.WrapWithCfg(t.Context(), config.Project{
+		GitHubURLs: config.GitHubURLs{
+			API: srv.URL,
+		},
+	})
+	client, err := newGitHub(ctx, "test-token")
+	require.NoError(t, err)
+
+	err = client.OpenPullRequest(ctx,
+		Repo{Owner: "someone", Name: "something", Branch: "main"},
+		Repo{Branch: "foo"},
+		"some title", false,
+	)
+	require.NoError(t, err)
+}
+
+func TestGitHubSyncForkDefaultBranchError(t *testing.T) {
+	t.Parallel()
+	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		defer r.Body.Close()
+		if r.URL.Path == "/api/v3/rate_limit" {
+			w.WriteHeader(http.StatusOK)
+			fmt.Fprint(w, `{"resources":{"core":{"remaining":120}}}`)
+			return
+		}
+		if r.URL.Path == "/api/v3/repos/baseowner/basename" && r.Method == http.MethodGet {
+			w.WriteHeader(http.StatusInternalServerError)
+			return
+		}
+		t.Error("unhandled request: " + r.Method + " " + r.URL.Path)
+	}))
+	t.Cleanup(srv.Close)
+
+	ctx := testctx.WrapWithCfg(t.Context(), config.Project{
+		GitHubURLs: config.GitHubURLs{
+			API: srv.URL,
+		},
+	})
+	client, err := newGitHub(ctx, "test-token")
+	require.NoError(t, err)
+
+	err = client.SyncFork(ctx,
+		Repo{Owner: "headowner", Name: "headname"},
+		Repo{Owner: "baseowner", Name: "basename"},
+	)
+	require.Error(t, err)
+}
+
+func TestGitHubCreateFileDefaultBranchError(t *testing.T) {
+	t.Parallel()
+	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		defer r.Body.Close()
+		if r.URL.Path == "/api/v3/rate_limit" {
+			w.WriteHeader(http.StatusOK)
+			fmt.Fprint(w, `{"resources":{"core":{"remaining":120}}}`)
+			return
+		}
+		if r.URL.Path == "/api/v3/repos/someone/something" && r.Method == http.MethodGet {
+			w.WriteHeader(http.StatusInternalServerError)
+			return
+		}
+		t.Error("unhandled request: " + r.Method + " " + r.URL.Path)
+	}))
+	t.Cleanup(srv.Close)
+
+	ctx := testctx.WrapWithCfg(t.Context(), config.Project{
+		GitHubURLs: config.GitHubURLs{
+			API: srv.URL,
+		},
+	})
+	client, err := newGitHub(ctx, "test-token")
+	require.NoError(t, err)
+	repo := Repo{
+		Owner: "someone",
+		Name:  "something",
+	}
+
+	err = client.CreateFile(ctx, config.CommitAuthor{}, repo, []byte("content"), "file.txt", "message")
+	require.Error(t, err)
+	require.Contains(t, err.Error(), "could not get default branch")
+}
+
+func TestGitHubCreateFileBranchNotFoundCreatesRef(t *testing.T) {
+	t.Parallel()
+	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		defer r.Body.Close()
+		if r.URL.Path == "/api/v3/rate_limit" {
+			w.WriteHeader(http.StatusOK)
+			fmt.Fprint(w, `{"resources":{"core":{"remaining":120}}}`)
+			return
+		}
+		if r.URL.Path == "/api/v3/repos/someone/something" && r.Method == http.MethodGet {
+			w.WriteHeader(http.StatusOK)
+			fmt.Fprint(w, `{"default_branch": "main"}`)
+			return
+		}
+		if r.URL.Path == "/api/v3/repos/someone/something/branches/newbranch" && r.Method == http.MethodGet {
+			w.WriteHeader(http.StatusNotFound)
+			return
+		}
+		if r.URL.Path == "/api/v3/repos/someone/something/git/ref/heads/main" && r.Method == http.MethodGet {
+			fmt.Fprint(w, `{"ref":"refs/heads/main","object":{"sha":"abc123"}}`)
+			return
+		}
+		if r.URL.Path == "/api/v3/repos/someone/something/git/refs" && r.Method == http.MethodPost {
+			w.WriteHeader(http.StatusCreated)
+			fmt.Fprint(w, `{"ref":"refs/heads/newbranch","object":{"sha":"abc123"}}`)
+			return
+		}
+		if r.URL.Path == "/api/v3/repos/someone/something/contents/file.txt" && r.Method == http.MethodGet {
+			w.WriteHeader(http.StatusNotFound)
+			return
+		}
+		if r.URL.Path == "/api/v3/repos/someone/something/contents/file.txt" && r.Method == http.MethodPut {
+			w.WriteHeader(http.StatusOK)
+			return
+		}
+		t.Error("unhandled request: " + r.Method + " " + r.URL.Path)
+	}))
+	t.Cleanup(srv.Close)
+
+	ctx := testctx.WrapWithCfg(t.Context(), config.Project{
+		GitHubURLs: config.GitHubURLs{
+			API: srv.URL,
+		},
+	})
+	client, err := newGitHub(ctx, "test-token")
+	require.NoError(t, err)
+	repo := Repo{
+		Owner:  "someone",
+		Name:   "something",
+		Branch: "newbranch",
+	}
+
+	require.NoError(t, client.CreateFile(ctx, config.CommitAuthor{}, repo, []byte("content"), "file.txt", "message"))
+}
+
+func TestGitHubCreateFileGetContentsError(t *testing.T) {
+	t.Parallel()
+	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		defer r.Body.Close()
+		if r.URL.Path == "/api/v3/rate_limit" {
+			w.WriteHeader(http.StatusOK)
+			fmt.Fprint(w, `{"resources":{"core":{"remaining":120}}}`)
+			return
+		}
+		if r.URL.Path == "/api/v3/repos/someone/something" && r.Method == http.MethodGet {
+			w.WriteHeader(http.StatusOK)
+			fmt.Fprint(w, `{"default_branch": "main"}`)
+			return
+		}
+		if r.URL.Path == "/api/v3/repos/someone/something/contents/file.txt" && r.Method == http.MethodGet {
+			w.WriteHeader(http.StatusInternalServerError)
+			return
+		}
+		t.Error("unhandled request: " + r.Method + " " + r.URL.Path)
+	}))
+	t.Cleanup(srv.Close)
+
+	ctx := testctx.WrapWithCfg(t.Context(), config.Project{
+		GitHubURLs: config.GitHubURLs{
+			API: srv.URL,
+		},
+	})
+	client, err := newGitHub(ctx, "test-token")
+	require.NoError(t, err)
+	repo := Repo{
+		Owner: "someone",
+		Name:  "something",
+	}
+
+	err = client.CreateFile(ctx, config.CommitAuthor{}, repo, []byte("content"), "file.txt", "message")
+	require.Error(t, err)
+	require.Contains(t, err.Error(), "could not get")
+}
+
+func TestGitHubCreateFileUpdateError(t *testing.T) {
+	t.Parallel()
+	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		defer r.Body.Close()
+		if r.URL.Path == "/api/v3/rate_limit" {
+			w.WriteHeader(http.StatusOK)
+			fmt.Fprint(w, `{"resources":{"core":{"remaining":120}}}`)
+			return
+		}
+		if r.URL.Path == "/api/v3/repos/someone/something" && r.Method == http.MethodGet {
+			w.WriteHeader(http.StatusOK)
+			fmt.Fprint(w, `{"default_branch": "main"}`)
+			return
+		}
+		if r.URL.Path == "/api/v3/repos/someone/something/contents/file.txt" && r.Method == http.MethodGet {
+			w.WriteHeader(http.StatusOK)
+			fmt.Fprint(w, `{"sha": "existing-sha"}`)
+			return
+		}
+		if r.URL.Path == "/api/v3/repos/someone/something/contents/file.txt" && r.Method == http.MethodPut {
+			w.WriteHeader(http.StatusInternalServerError)
+			return
+		}
+		t.Error("unhandled request: " + r.Method + " " + r.URL.Path)
+	}))
+	t.Cleanup(srv.Close)
+
+	ctx := testctx.WrapWithCfg(t.Context(), config.Project{
+		GitHubURLs: config.GitHubURLs{
+			API: srv.URL,
+		},
+	})
+	client, err := newGitHub(ctx, "test-token")
+	require.NoError(t, err)
+	repo := Repo{
+		Owner: "someone",
+		Name:  "something",
+	}
+
+	err = client.CreateFile(ctx, config.CommitAuthor{}, repo, []byte("content"), "file.txt", "message")
+	require.Error(t, err)
+	require.Contains(t, err.Error(), "could not update")
+}
+
+func TestGitHubCreateReleaseDeleteDraftError(t *testing.T) {
+	t.Parallel()
+	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		defer r.Body.Close()
+		if r.URL.Path == "/api/v3/rate_limit" {
+			w.WriteHeader(http.StatusOK)
+			fmt.Fprint(w, `{"resources":{"core":{"remaining":120}}}`)
+			return
+		}
+		if r.URL.Path == "/api/v3/repos/goreleaser/test/releases" && r.Method == http.MethodGet {
+			w.WriteHeader(http.StatusInternalServerError)
+			return
+		}
+		t.Error("unhandled request: " + r.Method + " " + r.URL.Path)
+	}))
+	t.Cleanup(srv.Close)
+
+	ctx := testctx.WrapWithCfg(t.Context(),
+		config.Project{
+			GitHubURLs: config.GitHubURLs{
+				API: srv.URL,
+			},
+			Release: config.Release{
+				NameTemplate:         "v1.0.0",
+				Draft:                true,
+				ReplaceExistingDraft: true,
+				GitHub: config.Repo{
+					Owner: "goreleaser",
+					Name:  "test",
+				},
+			},
+		},
+		testctx.WithGitInfo(context.GitInfo{
+			CurrentTag: "v1.0.0",
+		}),
+	)
+
+	client, err := newGitHub(ctx, "test-token")
+	require.NoError(t, err)
+
+	_, err = client.CreateRelease(ctx, "test release")
+	require.Error(t, err)
+}
+
+func TestGitHubCreateReleaseTargetCommitishBadTemplate(t *testing.T) {
+	t.Parallel()
+	ctx := testctx.WrapWithCfg(t.Context(),
+		config.Project{
+			Release: config.Release{
+				NameTemplate:    "v1.0.0",
+				TargetCommitish: "{{ .NoKeyLikeThat }}",
+				GitHub: config.Repo{
+					Owner: "goreleaser",
+					Name:  "test",
+				},
+			},
+		},
+		testctx.WithGitInfo(context.GitInfo{
+			CurrentTag: "v1.0.0",
+		}),
+	)
+
+	client, err := newGitHub(ctx, ctx.Token)
+	require.NoError(t, err)
+
+	_, err = client.CreateRelease(ctx, "test release")
+	require.Error(t, err)
+	testlib.RequireTemplateError(t, err)
+}
+
+func TestGitHubCreateReleaseCreateError(t *testing.T) {
+	t.Parallel()
+	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		defer r.Body.Close()
+		if r.URL.Path == "/api/v3/rate_limit" {
+			w.WriteHeader(http.StatusOK)
+			fmt.Fprint(w, `{"resources":{"core":{"remaining":120}}}`)
+			return
+		}
+		if r.URL.Path == "/api/v3/repos/goreleaser/test/releases/tags/v1.0.0" {
+			w.WriteHeader(http.StatusNotFound)
+			return
+		}
+		if r.URL.Path == "/api/v3/repos/goreleaser/test/releases" && r.Method == http.MethodPost {
+			w.WriteHeader(http.StatusInternalServerError)
+			return
+		}
+		t.Error("unhandled request: " + r.Method + " " + r.URL.Path)
+	}))
+	t.Cleanup(srv.Close)
+
+	ctx := testctx.WrapWithCfg(t.Context(),
+		config.Project{
+			GitHubURLs: config.GitHubURLs{
+				API: srv.URL,
+			},
+			Release: config.Release{
+				NameTemplate: "v1.0.0",
+				GitHub: config.Repo{
+					Owner: "goreleaser",
+					Name:  "test",
+				},
+			},
+		},
+		testctx.WithGitInfo(context.GitInfo{
+			CurrentTag: "v1.0.0",
+		}),
+	)
+
+	client, err := newGitHub(ctx, "test-token")
+	require.NoError(t, err)
+
+	_, err = client.CreateRelease(ctx, "test release")
+	require.Error(t, err)
+	require.Contains(t, err.Error(), "could not release")
+}
+
+func TestGitHubCreateOrUpdateReleaseUpdate(t *testing.T) {
+	t.Parallel()
+	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		defer r.Body.Close()
+		if r.URL.Path == "/api/v3/rate_limit" {
+			w.WriteHeader(http.StatusOK)
+			fmt.Fprint(w, `{"resources":{"core":{"remaining":120}}}`)
+			return
+		}
+		if r.URL.Path == "/api/v3/repos/goreleaser/test/releases/tags/v1.0.0" {
+			w.WriteHeader(http.StatusOK)
+			fmt.Fprint(w, `{"id": 42, "name": "v1.0.0", "body": "old body", "draft": true}`)
+			return
+		}
+		if r.URL.Path == "/api/v3/repos/goreleaser/test/releases/42" && r.Method == http.MethodPatch {
+			w.WriteHeader(http.StatusOK)
+			fmt.Fprint(w, `{"id": 42, "name": "v1.0.0", "body": "updated body"}`)
+			return
+		}
+		t.Error("unhandled request: " + r.Method + " " + r.URL.Path)
+	}))
+	t.Cleanup(srv.Close)
+
+	ctx := testctx.WrapWithCfg(t.Context(),
+		config.Project{
+			GitHubURLs: config.GitHubURLs{
+				API: srv.URL,
+			},
+			Release: config.Release{
+				GitHub: config.Repo{
+					Owner: "goreleaser",
+					Name:  "test",
+				},
+			},
+		},
+		testctx.WithGitInfo(context.GitInfo{
+			CurrentTag: "v1.0.0",
+		}),
+	)
+
+	client, err := newGitHub(ctx, "test-token")
+	require.NoError(t, err)
+
+	data := &github.RepositoryRelease{
+		TagName: new("v1.0.0"),
+		Name:    new("v1.0.0"),
+		Body:    new("new body"),
+		Draft:   new(true),
+	}
+	release, err := client.createOrUpdateRelease(ctx, data, "new body")
+	require.NoError(t, err)
+	require.Equal(t, int64(42), release.GetID())
+}
+
+func TestGitHubDeleteReleaseArtifactListError(t *testing.T) {
+	t.Parallel()
+	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		defer r.Body.Close()
+		if r.URL.Path == "/api/v3/rate_limit" {
+			w.WriteHeader(http.StatusOK)
+			fmt.Fprint(w, `{"resources":{"core":{"remaining":120}}}`)
+			return
+		}
+		if r.URL.Path == "/api/v3/repos/owner/name/releases/123/assets" && r.Method == http.MethodGet {
+			w.WriteHeader(http.StatusInternalServerError)
+			return
+		}
+		t.Error("unhandled request: " + r.Method + " " + r.URL.Path)
+	}))
+	t.Cleanup(srv.Close)
+
+	ctx := testctx.WrapWithCfg(t.Context(), config.Project{
+		GitHubURLs: config.GitHubURLs{
+			API: srv.URL,
+		},
+		Release: config.Release{
+			GitHub: config.Repo{Owner: "owner", Name: "name"},
+		},
+	})
+	client, err := newGitHub(ctx, "test-token")
+	require.NoError(t, err)
+
+	err = client.deleteReleaseArtifact(ctx, 123, "artifact.tar.gz", 1)
+	require.Error(t, err)
+}
+
+func TestGitHubDeleteReleaseArtifactDeleteError(t *testing.T) {
+	t.Parallel()
+	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		defer r.Body.Close()
+		if r.URL.Path == "/api/v3/rate_limit" {
+			w.WriteHeader(http.StatusOK)
+			fmt.Fprint(w, `{"resources":{"core":{"remaining":120}}}`)
+			return
+		}
+		if r.URL.Path == "/api/v3/repos/owner/name/releases/123/assets" && r.Method == http.MethodGet {
+			w.WriteHeader(http.StatusOK)
+			fmt.Fprint(w, `[{"id":456,"name":"artifact.tar.gz"}]`)
+			return
+		}
+		if r.URL.Path == "/api/v3/repos/owner/name/releases/assets/456" && r.Method == http.MethodDelete {
+			w.WriteHeader(http.StatusInternalServerError)
+			return
+		}
+		t.Error("unhandled request: " + r.Method + " " + r.URL.Path)
+	}))
+	t.Cleanup(srv.Close)
+
+	ctx := testctx.WrapWithCfg(t.Context(), config.Project{
+		GitHubURLs: config.GitHubURLs{
+			API: srv.URL,
+		},
+		Release: config.Release{
+			GitHub: config.Repo{Owner: "owner", Name: "name"},
+		},
+	})
+	client, err := newGitHub(ctx, "test-token")
+	require.NoError(t, err)
+
+	err = client.deleteReleaseArtifact(ctx, 123, "artifact.tar.gz", 1)
+	require.Error(t, err)
+}
+
+func TestGitHubDeleteReleaseArtifactNotFound(t *testing.T) {
+	t.Parallel()
+	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		defer r.Body.Close()
+		if r.URL.Path == "/api/v3/rate_limit" {
+			w.WriteHeader(http.StatusOK)
+			fmt.Fprint(w, `{"resources":{"core":{"remaining":120}}}`)
+			return
+		}
+		if r.URL.Path == "/api/v3/repos/owner/name/releases/123/assets" && r.Method == http.MethodGet {
+			w.WriteHeader(http.StatusOK)
+			fmt.Fprint(w, `[{"id":456,"name":"other-file.tar.gz"}]`)
+			return
+		}
+		t.Error("unhandled request: " + r.Method + " " + r.URL.Path)
+	}))
+	t.Cleanup(srv.Close)
+
+	ctx := testctx.WrapWithCfg(t.Context(), config.Project{
+		GitHubURLs: config.GitHubURLs{
+			API: srv.URL,
+		},
+		Release: config.Release{
+			GitHub: config.Repo{Owner: "owner", Name: "name"},
+		},
+	})
+	client, err := newGitHub(ctx, "test-token")
+	require.NoError(t, err)
+
+	err = client.deleteReleaseArtifact(ctx, 123, "artifact.tar.gz", 1)
+	require.NoError(t, err)
+}
+
+func TestGitHubDeleteReleaseArtifactPagination(t *testing.T) {
+	t.Parallel()
+	var srvURL string
+	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		defer r.Body.Close()
+		if r.URL.Path == "/api/v3/rate_limit" {
+			w.WriteHeader(http.StatusOK)
+			fmt.Fprint(w, `{"resources":{"core":{"remaining":120}}}`)
+			return
+		}
+		if r.URL.Path == "/api/v3/repos/owner/name/releases/123/assets" && r.Method == http.MethodGet {
+			page := r.URL.Query().Get("page")
+			if page == "" || page == "1" {
+				w.Header().Set("Link", fmt.Sprintf(`<%s/api/v3/repos/owner/name/releases/123/assets?page=2>; rel="next"`, srvURL))
+				w.WriteHeader(http.StatusOK)
+				fmt.Fprint(w, `[{"id":456,"name":"other-file.tar.gz"}]`)
+				return
+			}
+			if page == "2" {
+				w.WriteHeader(http.StatusOK)
+				fmt.Fprint(w, `[{"id":789,"name":"artifact.tar.gz"}]`)
+				return
+			}
+		}
+		if r.URL.Path == "/api/v3/repos/owner/name/releases/assets/789" && r.Method == http.MethodDelete {
+			w.WriteHeader(http.StatusNoContent)
+			return
+		}
+		t.Error("unhandled request: " + r.Method + " " + r.URL.Path)
+	}))
+	srvURL = srv.URL
+	t.Cleanup(srv.Close)
+
+	ctx := testctx.WrapWithCfg(t.Context(), config.Project{
+		GitHubURLs: config.GitHubURLs{
+			API: srv.URL,
+		},
+		Release: config.Release{
+			GitHub: config.Repo{Owner: "owner", Name: "name"},
+		},
+	})
+	client, err := newGitHub(ctx, "test-token")
+	require.NoError(t, err)
+
+	err = client.deleteReleaseArtifact(ctx, 123, "artifact.tar.gz", 1)
+	require.NoError(t, err)
+}
+
+func TestGitHubFindDraftReleaseError(t *testing.T) {
+	t.Parallel()
+	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		defer r.Body.Close()
+		if r.URL.Path == "/api/v3/rate_limit" {
+			w.WriteHeader(http.StatusOK)
+			fmt.Fprint(w, `{"resources":{"core":{"remaining":120}}}`)
+			return
+		}
+		if r.URL.Path == "/api/v3/repos/goreleaser/test/releases" && r.Method == http.MethodGet {
+			w.WriteHeader(http.StatusInternalServerError)
+			return
+		}
+		t.Error("unhandled request: " + r.Method + " " + r.URL.Path)
+	}))
+	t.Cleanup(srv.Close)
+
+	ctx := testctx.WrapWithCfg(t.Context(), config.Project{
+		GitHubURLs: config.GitHubURLs{
+			API: srv.URL,
+		},
+		Release: config.Release{
+			GitHub: config.Repo{Owner: "goreleaser", Name: "test"},
+		},
+	})
+	client, err := newGitHub(ctx, "test-token")
+	require.NoError(t, err)
+
+	_, err = client.findDraftRelease(ctx, "v1.0.0")
+	require.Error(t, err)
+	require.Contains(t, err.Error(), "could not list existing drafts")
+}
+
+func TestGitHubFindDraftReleasePagination(t *testing.T) {
+	t.Parallel()
+	var srvURL string
+	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		defer r.Body.Close()
+		if r.URL.Path == "/api/v3/rate_limit" {
+			w.WriteHeader(http.StatusOK)
+			fmt.Fprint(w, `{"resources":{"core":{"remaining":120}}}`)
+			return
+		}
+		if r.URL.Path == "/api/v3/repos/goreleaser/test/releases" && r.Method == http.MethodGet {
+			page := r.URL.Query().Get("page")
+			if page == "" || page == "1" {
+				w.Header().Set("Link", fmt.Sprintf(`<%s/api/v3/repos/goreleaser/test/releases?page=2>; rel="next"`, srvURL))
+				w.WriteHeader(http.StatusOK)
+				fmt.Fprint(w, `[{"id":10,"name":"v0.9.0","draft":false}]`)
+				return
+			}
+			if page == "2" {
+				w.WriteHeader(http.StatusOK)
+				fmt.Fprint(w, `[{"id":20,"name":"v1.0.0","draft":true}]`)
+				return
+			}
+		}
+		t.Error("unhandled request: " + r.Method + " " + r.URL.Path)
+	}))
+	srvURL = srv.URL
+	t.Cleanup(srv.Close)
+
+	ctx := testctx.WrapWithCfg(t.Context(), config.Project{
+		GitHubURLs: config.GitHubURLs{
+			API: srv.URL,
+		},
+		Release: config.Release{
+			GitHub: config.Repo{Owner: "goreleaser", Name: "test"},
+		},
+	})
+	client, err := newGitHub(ctx, "test-token")
+	require.NoError(t, err)
+
+	release, err := client.findDraftRelease(ctx, "v1.0.0")
+	require.NoError(t, err)
+	require.NotNil(t, release)
+	require.Equal(t, int64(20), release.GetID())
+}
+
+func TestGitHubDeleteExistingDraftReleaseFindError(t *testing.T) {
+	t.Parallel()
+	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		defer r.Body.Close()
+		if r.URL.Path == "/api/v3/rate_limit" {
+			w.WriteHeader(http.StatusOK)
+			fmt.Fprint(w, `{"resources":{"core":{"remaining":120}}}`)
+			return
+		}
+		if r.URL.Path == "/api/v3/repos/goreleaser/test/releases" && r.Method == http.MethodGet {
+			w.WriteHeader(http.StatusInternalServerError)
+			return
+		}
+		t.Error("unhandled request: " + r.Method + " " + r.URL.Path)
+	}))
+	t.Cleanup(srv.Close)
+
+	ctx := testctx.WrapWithCfg(t.Context(), config.Project{
+		GitHubURLs: config.GitHubURLs{
+			API: srv.URL,
+		},
+		Release: config.Release{
+			GitHub: config.Repo{Owner: "goreleaser", Name: "test"},
+		},
+	})
+	client, err := newGitHub(ctx, "test-token")
+	require.NoError(t, err)
+
+	err = client.deleteExistingDraftRelease(ctx, "v1.0.0")
+	require.Error(t, err)
+	require.Contains(t, err.Error(), "could not delete existing drafts")
+}
+
+func TestGitHubDeleteExistingDraftReleaseDeleteError(t *testing.T) {
+	t.Parallel()
+	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		defer r.Body.Close()
+		if r.URL.Path == "/api/v3/rate_limit" {
+			w.WriteHeader(http.StatusOK)
+			fmt.Fprint(w, `{"resources":{"core":{"remaining":120}}}`)
+			return
+		}
+		if r.URL.Path == "/api/v3/repos/goreleaser/test/releases" && r.Method == http.MethodGet {
+			w.WriteHeader(http.StatusOK)
+			fmt.Fprint(w, `[{"id":1,"name":"v1.0.0","draft":true}]`)
+			return
+		}
+		if r.URL.Path == "/api/v3/repos/goreleaser/test/releases/1" && r.Method == http.MethodDelete {
+			w.WriteHeader(http.StatusInternalServerError)
+			return
+		}
+		t.Error("unhandled request: " + r.Method + " " + r.URL.Path)
+	}))
+	t.Cleanup(srv.Close)
+
+	ctx := testctx.WrapWithCfg(t.Context(), config.Project{
+		GitHubURLs: config.GitHubURLs{
+			API: srv.URL,
+		},
+		Release: config.Release{
+			GitHub: config.Repo{Owner: "goreleaser", Name: "test"},
+		},
+	})
+	client, err := newGitHub(ctx, "test-token")
+	require.NoError(t, err)
+
+	err = client.deleteExistingDraftRelease(ctx, "v1.0.0")
+	require.Error(t, err)
+	require.Contains(t, err.Error(), "could not delete previous draft release")
+}
+
+func TestGitHubGetMilestoneByTitlePagination(t *testing.T) {
+	t.Parallel()
+	var srvURL string
+	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		defer r.Body.Close()
+		if r.URL.Path == "/api/v3/rate_limit" {
+			w.WriteHeader(http.StatusOK)
+			fmt.Fprint(w, `{"resources":{"core":{"remaining":120}}}`)
+			return
+		}
+		if r.URL.Path == "/api/v3/repos/someone/something/milestones" && r.Method == http.MethodGet {
+			page := r.URL.Query().Get("page")
+			if page == "" || page == "1" {
+				w.Header().Set("Link", fmt.Sprintf(`<%s/api/v3/repos/someone/something/milestones?page=2>; rel="next"`, srvURL))
+				w.WriteHeader(http.StatusOK)
+				fmt.Fprint(w, `[{"number":1,"title":"v0.9.0"}]`)
+				return
+			}
+			if page == "2" {
+				w.WriteHeader(http.StatusOK)
+				fmt.Fprint(w, `[{"number":2,"title":"v1.0.0"}]`)
+				return
+			}
+		}
+		t.Error("unhandled request: " + r.Method + " " + r.URL.Path)
+	}))
+	srvURL = srv.URL
+	t.Cleanup(srv.Close)
+
+	ctx := testctx.WrapWithCfg(t.Context(), config.Project{
+		GitHubURLs: config.GitHubURLs{
+			API: srv.URL,
+		},
+	})
+	client, err := newGitHub(ctx, "test-token")
+	require.NoError(t, err)
+	repo := Repo{
+		Owner: "someone",
+		Name:  "something",
+	}
+
+	milestone, err := client.getMilestoneByTitle(ctx, repo, "v1.0.0")
+	require.NoError(t, err)
+	require.NotNil(t, milestone)
+	require.Equal(t, "v1.0.0", milestone.GetTitle())
+}
+
+func TestGitHubGetMilestoneByTitleError(t *testing.T) {
+	t.Parallel()
+	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		defer r.Body.Close()
+		if r.URL.Path == "/api/v3/rate_limit" {
+			w.WriteHeader(http.StatusOK)
+			fmt.Fprint(w, `{"resources":{"core":{"remaining":120}}}`)
+			return
+		}
+		if r.URL.Path == "/api/v3/repos/someone/something/milestones" && r.Method == http.MethodGet {
+			w.WriteHeader(http.StatusInternalServerError)
+			return
+		}
+		t.Error("unhandled request: " + r.Method + " " + r.URL.Path)
+	}))
+	t.Cleanup(srv.Close)
+
+	ctx := testctx.WrapWithCfg(t.Context(), config.Project{
+		GitHubURLs: config.GitHubURLs{
+			API: srv.URL,
+		},
+	})
+	client, err := newGitHub(ctx, "test-token")
+	require.NoError(t, err)
+	repo := Repo{
+		Owner: "someone",
+		Name:  "something",
+	}
+
+	_, err = client.getMilestoneByTitle(ctx, repo, "v1.0.0")
+	require.Error(t, err)
+}
+
+func TestGitHubUploadParseError(t *testing.T) {
+	t.Parallel()
+	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		defer r.Body.Close()
+		if r.URL.Path == "/api/v3/rate_limit" {
+			w.WriteHeader(http.StatusOK)
+			fmt.Fprint(w, `{"resources":{"core":{"remaining":120}}}`)
+			return
+		}
+	}))
+	t.Cleanup(srv.Close)
+
+	ctx := testctx.WrapWithCfg(t.Context(), config.Project{
+		GitHubURLs: config.GitHubURLs{
+			API: srv.URL,
+		},
+	})
+	client, err := newGitHub(ctx, "test-token")
+	require.NoError(t, err)
+
+	err = client.Upload(ctx, "not-a-number", &artifact.Artifact{}, nil)
+	require.Error(t, err)
+	require.Contains(t, err.Error(), "parsing")
+}
