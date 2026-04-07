@@ -64,8 +64,7 @@ func (Pipe) Dependencies(ctx *context.Context) []string {
 
 func (Pipe) Healthcheck(ctx *context.Context) error {
 	for _, s := range ctx.Config.Dockers {
-		switch s.Use {
-		case useBuildx:
+		if s.Use == useBuildx {
 			vb := v2.Base{}
 			if err := vb.Healthcheck(ctx); err != nil {
 				return err
