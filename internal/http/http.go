@@ -34,25 +34,7 @@ type asset struct {
 	Size       int64
 }
 
-type assetOpenFunc func(string, *artifact.Artifact) (*asset, error)
-
-//nolint:gochecknoglobals
-var assetOpen assetOpenFunc
-
-// TODO: fix this.
-//
-//nolint:gochecknoinits
-func init() {
-	assetOpenReset()
-}
-
-func assetOpenReset() {
-	assetOpen = assetOpenDefault
-}
-
-// TODO: this should probably return a func()error always so we can properly
-// handle closing the file.
-func assetOpenDefault(kind string, a *artifact.Artifact) (*asset, error) {
+func assetOpen(kind string, a *artifact.Artifact) (*asset, error) {
 	f, err := os.Open(a.Path)
 	if err != nil {
 		return nil, err
