@@ -309,6 +309,11 @@ func uploadAsset(ctx *context.Context, upload *config.Upload, artifact *artifact
 		return fmt.Errorf("%s: %s: error while building target URL: %w", upload.Name, kind, err)
 	}
 
+	// Validate the artifact is not a directory before doing any other work.
+	if s, err := os.Stat(artifact.Path); err == nil && s.IsDir() {
+		return fmt.Errorf("%s: upload failed: the asset to upload can't be a directory", kind)
+	}
+
 	// target url need to contain the artifact name unless the custom
 	// artifact name is used
 	if !upload.CustomArtifactName {
