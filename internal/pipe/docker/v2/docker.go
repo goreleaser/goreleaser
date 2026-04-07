@@ -203,7 +203,8 @@ func buildImage(ctx *context.Context, d config.DockerV2, extraArgs ...string) er
 	}
 
 	log.WithField("id", d.ID).
-		WithField("images", strings.Join(appendDigest(images, digest), "\n")).
+		WithField("images", strings.Join(images, "\n")).
+		WithField("digest", digest).
 		Info("created images")
 
 	for _, img := range images {
@@ -219,14 +220,6 @@ func buildImage(ctx *context.Context, d config.DockerV2, extraArgs ...string) er
 	}
 
 	return nil
-}
-
-func appendDigest(images []string, digest string) []string {
-	result := make([]string, 0, len(images))
-	for _, img := range images {
-		result = append(result, img+"@"+digest)
-	}
-	return result
 }
 
 func doBuild(ctx *context.Context, d config.DockerV2, wd string, arg []string) (string, error) {
