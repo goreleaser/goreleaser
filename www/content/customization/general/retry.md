@@ -25,7 +25,7 @@ The configuration is as follows:
 ```yaml {filename=".goreleaser.yml"}
 retry:
   # Set max retry count.
-  # Setting to 0 disables retries (single attempt).
+  # Setting to 1 disables retries (single attempt).
   #
   # Default: 10
   attempts: 15
