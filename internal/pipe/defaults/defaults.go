@@ -3,8 +3,10 @@
 package defaults
 
 import (
+	"cmp"
 	"fmt"
 	"strings"
+	"time"
 
 	"github.com/goreleaser/goreleaser/v2/internal/client"
 	"github.com/goreleaser/goreleaser/v2/internal/middleware/errhandler"
@@ -34,6 +36,11 @@ func (Pipe) Run(ctx *context.Context) error {
 
 		ctx.Config.GiteaURLs.Download = strings.TrimSuffix(strings.ReplaceAll(apiURL, "/api/v1", ""), "/")
 	}
+
+	ctx.Config.Retry.Attempts = cmp.Or(ctx.Config.Retry.Attempts, 10)
+	ctx.Config.Retry.Delay = cmp.Or(ctx.Config.Retry.Delay, 10*time.Second)
+	ctx.Config.Retry.MaxDelay = cmp.Or(ctx.Config.Retry.MaxDelay, 5*time.Minute)
+
 	for _, defaulter := range defaults.Defaulters {
 		if err := errhandler.Handle(defaulter.Default)(ctx); err != nil {
 			return fmt.Errorf("%s: %w", defaulter.String(), err)

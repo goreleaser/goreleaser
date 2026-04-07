@@ -8,15 +8,15 @@ import (
 	"slices"
 	"strings"
 	"sync"
-	"time"
 
 	"github.com/agnivade/levenshtein"
-	"github.com/avast/retry-go/v4"
 	"github.com/caarlos0/log"
 	"github.com/goreleaser/goreleaser/v2/internal/artifact"
+	"github.com/goreleaser/goreleaser/v2/internal/deprecate"
 	"github.com/goreleaser/goreleaser/v2/internal/ids"
 	"github.com/goreleaser/goreleaser/v2/internal/logext"
 	"github.com/goreleaser/goreleaser/v2/internal/pipe"
+	"github.com/goreleaser/goreleaser/v2/internal/retryx"
 	"github.com/goreleaser/goreleaser/v2/internal/semerrgroup"
 	"github.com/goreleaser/goreleaser/v2/internal/skips"
 	"github.com/goreleaser/goreleaser/v2/internal/tmpl"
@@ -73,9 +73,16 @@ func (ManifestPipe) Default(ctx *context.Context) error {
 		if manifest.Use == "" {
 			manifest.Use = useDocker
 		}
-		manifest.Retry.Attempts = cmp.Or(manifest.Retry.Attempts, 10)
-		manifest.Retry.Delay = cmp.Or(manifest.Retry.Delay, 10*time.Second)
-		manifest.Retry.MaxDelay = cmp.Or(manifest.Retry.MaxDelay, 5*time.Minute)
+
+		if manifest.Retry.Attempts > 0 ||
+			manifest.Retry.MaxDelay > 0 ||
+			manifest.Retry.Delay > 0 {
+			deprecate.Notice(ctx, "docker_manifests.retry")
+		}
+		manifest.Retry.Attempts = cmp.Or(manifest.Retry.Attempts, ctx.Config.Retry.Attempts)
+		manifest.Retry.Delay = cmp.Or(manifest.Retry.Delay, ctx.Config.Retry.Delay)
+		manifest.Retry.MaxDelay = cmp.Or(manifest.Retry.MaxDelay, ctx.Config.Retry.MaxDelay)
+
 		if err := validateManifester(manifest.Use); err != nil {
 			return err
 		}
@@ -111,18 +118,16 @@ func (ManifestPipe) Publish(ctx *context.Context) error {
 			}
 
 			manifester := manifesters[manifest.Use]
-			if err := retry.Do(
+			if err := retryx.Do(
+				ctx,
+				manifest.Retry,
 				func() error {
 					log.WithField("manifest", name).
 						WithField("images", images).
 						Info("creating manifest")
 					return manifester.Create(ctx, name, images, manifest.CreateFlags)
 				},
-				retry.RetryIf(isRetriableManifestCreate),
-				retry.Attempts(manifest.Retry.Attempts),
-				retry.Delay(manifest.Retry.Delay),
-				retry.MaxDelay(manifest.Retry.MaxDelay),
-				retry.LastErrorOnly(true),
+				isRetriableManifestCreate,
 			); err != nil {
 				return err
 			}
@@ -136,16 +141,14 @@ func (ManifestPipe) Publish(ctx *context.Context) error {
 				art.Extra[artifact.ExtraID] = manifest.ID
 			}
 
-			digest, err := retry.DoWithData(
+			digest, err := retryx.DoWithData(
+				ctx,
+				manifest.Retry,
 				func() (string, error) {
 					log.WithField("manifest", name).Info("pushing manifest")
 					return manifester.Push(ctx, name, manifest.PushFlags)
 				},
-				retry.RetryIf(isRetriablePush),
-				retry.Attempts(manifest.Retry.Attempts),
-				retry.Delay(manifest.Retry.Delay),
-				retry.MaxDelay(manifest.Retry.MaxDelay),
-				retry.LastErrorOnly(true),
+				isRetriablePush,
 			)
 			if err != nil {
 				return err

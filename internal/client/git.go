@@ -9,12 +9,11 @@ import (
 	"path/filepath"
 	"strings"
 	"sync"
-	"time"
 
-	"github.com/avast/retry-go/v4"
 	"github.com/caarlos0/log"
 	"github.com/goreleaser/goreleaser/v2/internal/git"
 	"github.com/goreleaser/goreleaser/v2/internal/pipe"
+	"github.com/goreleaser/goreleaser/v2/internal/retryx"
 	"github.com/goreleaser/goreleaser/v2/internal/tmpl"
 	"github.com/goreleaser/goreleaser/v2/pkg/config"
 	"github.com/goreleaser/goreleaser/v2/pkg/context"
@@ -221,14 +220,10 @@ func isPasswordError(err error) bool {
 	return errors.As(err, &kerr)
 }
 
-func isRetriableGitError(err error) bool {
-	return strings.Contains(err.Error(), "Connection reset") ||
-		strings.Contains(err.Error(), "Network is unreachable") ||
-		strings.Contains(err.Error(), "Connection closed")
-}
-
 func cloneRepo(ctx *context.Context, parent, url, name string, env []string) error {
-	if err := retry.Do(
+	if err := retryx.Do(
+		ctx,
+		ctx.Config.Retry,
 		func() error {
 			dir := filepath.Join(parent, name)
 			// Remove any leftover directory from a previous failed clone
@@ -241,10 +236,7 @@ func cloneRepo(ctx *context.Context, parent, url, name string, env []string) err
 				Info("cloning")
 			return runGitCmds(ctx, parent, env, [][]string{{"clone", url, name}})
 		},
-		retry.RetryIf(isRetriableGitError),
-		retry.Attempts(10),
-		retry.Delay(time.Second),
-		retry.LastErrorOnly(true),
+		retryx.IsNetworkError,
 	); err != nil {
 		return fmt.Errorf("failed to clone local repository: %w", err)
 	}
@@ -252,14 +244,13 @@ func cloneRepo(ctx *context.Context, parent, url, name string, env []string) err
 }
 
 func pushRepo(ctx *context.Context, cwd string, env []string) error {
-	return retry.Do(
+	return retryx.Do(
+		ctx,
+		ctx.Config.Retry,
 		func() error {
 			return runGitCmds(ctx, cwd, env, [][]string{{"push", "origin", "HEAD"}})
 		},
-		retry.RetryIf(isRetriableGitError),
-		retry.Attempts(10),
-		retry.Delay(time.Second),
-		retry.LastErrorOnly(true),
+		retryx.IsNetworkError,
 	)
 }
 

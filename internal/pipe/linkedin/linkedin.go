@@ -3,6 +3,7 @@ package linkedin
 import (
 	"github.com/caarlos0/env/v11"
 	"github.com/caarlos0/log"
+	"github.com/goreleaser/goreleaser/v2/internal/retryx"
 	"github.com/goreleaser/goreleaser/v2/internal/tmpl"
 	"github.com/goreleaser/goreleaser/v2/pkg/context"
 )
@@ -48,7 +49,9 @@ func (p Pipe) Announce(ctx *context.Context) error {
 		return err
 	}
 
-	url, err := c.Share(ctx, message)
+	url, err := retryx.DoWithData(ctx, ctx.Config.Retry, func() (string, error) {
+		return c.Share(ctx, message)
+	}, retryx.IsRetriable)
 	if err != nil {
 		return err
 	}

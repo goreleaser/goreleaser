@@ -8,6 +8,8 @@ import (
 	"net/http"
 	"strconv"
 
+	"github.com/goreleaser/goreleaser/v2/internal/retryx"
+
 	"github.com/caarlos0/env/v11"
 	"github.com/caarlos0/log"
 	"github.com/goreleaser/goreleaser/v2/internal/tmpl"
@@ -44,7 +46,6 @@ func (Pipe) Default(ctx *context.Context) error {
 	}
 	switch ctx.Config.Announce.Telegram.ParseMode {
 	case parseModeHTML, parseModeMarkdown:
-		break
 	default:
 		ctx.Config.Announce.Telegram.ParseMode = parseModeMarkdown
 	}
@@ -62,39 +63,41 @@ func (Pipe) Announce(ctx *context.Context) error {
 		return err
 	}
 
-	var b bytes.Buffer
-	if err := json.NewEncoder(&b).Encode(args); err != nil {
-		return err
-	}
-
-	request, err := http.NewRequestWithContext(ctx, http.MethodPost, fmt.Sprintf("https://api.telegram.org/bot%s/sendMessage", cfg.ConsumerToken), &b)
+	payload, err := json.Marshal(args)
 	if err != nil {
 		return err
 	}
-	request.Header.Set("Content-Type", "application/json")
 
 	log.Infof("posting: '%s'", args["text"])
-	resp, err := http.DefaultClient.Do(request)
-	if err != nil {
-		return err
-	}
-	defer resp.Body.Close()
+	return retryx.Do(ctx, ctx.Config.Retry, func() error {
+		request, err := http.NewRequestWithContext(ctx, http.MethodPost, fmt.Sprintf("https://api.telegram.org/bot%s/sendMessage", cfg.ConsumerToken), bytes.NewReader(payload))
+		if err != nil {
+			return retryx.Unrecoverable(err)
+		}
+		request.Header.Set("Content-Type", "application/json")
 
-	if resp.StatusCode != http.StatusOK {
-		return fmt.Errorf("status code %d", resp.StatusCode)
-	}
+		resp, err := http.DefaultClient.Do(request)
+		if err != nil {
+			return retryx.HTTP(err, resp)
+		}
+		defer resp.Body.Close()
 
-	var telegramResponse SendMessageResponse
-	if err := json.NewDecoder(resp.Body).Decode(&telegramResponse); err != nil {
-		return err
-	}
+		if resp.StatusCode != http.StatusOK {
+			return retryx.HTTP(fmt.Errorf("status code %d", resp.StatusCode), resp)
+		}
 
-	if !telegramResponse.Ok {
-		return fmt.Errorf("send failed with error code %d: %s", telegramResponse.ErrorCode, telegramResponse.Description)
-	}
+		var telegramResponse SendMessageResponse
+		if err := json.NewDecoder(resp.Body).Decode(&telegramResponse); err != nil {
+			return err
+		}
 
-	log.Debug("message sent")
-	return nil
+		if !telegramResponse.Ok {
+			return fmt.Errorf("send failed with error code %d: %s", telegramResponse.ErrorCode, telegramResponse.Description)
+		}
+
+		log.Debug("message sent")
+		return nil
+	}, retryx.IsRetriable)
 }
 
 func getMessageDetails(ctx *context.Context) (map[string]any, error) {

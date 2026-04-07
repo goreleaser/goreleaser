@@ -45,7 +45,7 @@ func newHealthcheckCmd() *healthcheckCmd {
 			}
 			ctx := context.Wrap(cmd.Context(), cfg)
 
-			log.Info(boldStyle.Render("checking tools..."))
+			log.Info(boldStyle.Render("checking health..."))
 
 			if err := (defaults.Pipe{}).Run(ctx); err != nil {
 				return err

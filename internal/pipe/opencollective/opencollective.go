@@ -12,6 +12,7 @@ import (
 
 	"github.com/caarlos0/env/v11"
 	"github.com/caarlos0/log"
+	"github.com/goreleaser/goreleaser/v2/internal/retryx"
 	"github.com/goreleaser/goreleaser/v2/internal/tmpl"
 	"github.com/goreleaser/goreleaser/v2/pkg/context"
 )
@@ -190,27 +191,29 @@ func (c client) doMutation(ctx *context.Context, payload payload) ([]byte, error
 		return nil, fmt.Errorf("could not marshal payload: %w", err)
 	}
 
-	req, err := http.NewRequestWithContext(ctx, http.MethodPost, c.endpoint, bytes.NewReader(p))
-	if err != nil {
-		return nil, fmt.Errorf("could not create request: %w", err)
-	}
-	req.Header.Set("Personal-Token", c.token)
-	req.Header.Set("Content-Type", "application/json")
+	return retryx.DoWithData(ctx, ctx.Config.Retry, func() ([]byte, error) {
+		req, err := http.NewRequestWithContext(ctx, http.MethodPost, c.endpoint, bytes.NewReader(p))
+		if err != nil {
+			return nil, retryx.Unrecoverable(fmt.Errorf("could not create request: %w", err))
+		}
+		req.Header.Set("Personal-Token", c.token)
+		req.Header.Set("Content-Type", "application/json")
 
-	resp, err := http.DefaultClient.Do(req)
-	if err != nil {
-		return nil, fmt.Errorf("could not send request to opencollective: %w", err)
-	}
-	defer resp.Body.Close()
+		resp, err := http.DefaultClient.Do(req)
+		if err != nil {
+			return nil, retryx.HTTP(fmt.Errorf("could not send request to opencollective: %w", err), resp)
+		}
+		defer resp.Body.Close()
 
-	body, err := io.ReadAll(resp.Body)
-	if err != nil {
-		return nil, fmt.Errorf("could not read response from opencollective: %w", err)
-	}
+		body, err := io.ReadAll(resp.Body)
+		if err != nil {
+			return nil, fmt.Errorf("could not read response from opencollective: %w", err)
+		}
 
-	if resp.StatusCode != http.StatusOK {
-		return nil, fmt.Errorf("incorrect response from opencollective: %s — %s", resp.Status, string(body))
-	}
+		if resp.StatusCode != http.StatusOK {
+			return nil, retryx.HTTP(fmt.Errorf("incorrect response from opencollective: %s — %s", resp.Status, string(body)), resp)
+		}
 
-	return body, nil
+		return body, nil
+	}, retryx.IsRetriable)
 }

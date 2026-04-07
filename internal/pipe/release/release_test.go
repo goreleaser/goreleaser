@@ -323,34 +323,6 @@ func TestRunPipeExtraOverride(t *testing.T) {
 	require.True(t, strings.HasSuffix(client.UploadedFilePaths["f1"], "testdata/upload_same_name/f1"))
 }
 
-func TestRunPipeUploadRetry(t *testing.T) {
-	folder := t.TempDir()
-	tarfile, err := os.Create(filepath.Join(folder, "bin.tar.gz"))
-	require.NoError(t, err)
-	require.NoError(t, tarfile.Close())
-	config := config.Project{
-		Release: config.Release{
-			GitHub: config.Repo{
-				Owner: "test",
-				Name:  "test",
-			},
-		},
-	}
-	ctx := testctx.WrapWithCfg(t.Context(), config, testctx.WithCurrentTag("v1.0.0"))
-	ctx.Artifacts.Add(&artifact.Artifact{
-		Type: artifact.UploadableArchive,
-		Name: "bin.tar.gz",
-		Path: tarfile.Name(),
-	})
-	client := &client.Mock{
-		FailFirstUpload: true,
-	}
-	require.NoError(t, doPublish(ctx, client))
-	require.True(t, client.CreatedRelease)
-	require.True(t, client.UploadedFile)
-	require.True(t, client.ReleasePublished)
-}
-
 func TestDefault(t *testing.T) {
 	testlib.Mktmp(t)
 	testlib.GitInit(t)

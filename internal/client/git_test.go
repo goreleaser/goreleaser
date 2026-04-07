@@ -1,7 +1,6 @@
 package client
 
 import (
-	"errors"
 	"os"
 	"strings"
 	"testing"
@@ -160,8 +159,9 @@ func TestGitClient(t *testing.T) {
 		})
 
 		repo := Repo{
-			GitURL:     "git@localhost:nope/nopenopenopenope",
-			PrivateKey: sshKey,
+			GitURL:        "git@localhost:nope/nopenopenopenope",
+			PrivateKey:    sshKey,
+			GitSSHCommand: `ssh -i "{{ .KeyPath }}" -o StrictHostKeyChecking=accept-new -o ConnectTimeout=1 -o BatchMode=yes -F /dev/null`,
 		}
 		cli := NewGitUploadClient(repo.Branch)
 		err := cli.CreateFile(
@@ -421,36 +421,19 @@ func TestGitClientWithSigning(t *testing.T) {
 	})
 }
 
-func TestIsRetriableGitError(t *testing.T) {
+func TestRepoFromURL(t *testing.T) {
 	t.Parallel()
 	for _, tt := range []struct {
-		name     string
-		err      string
-		expected bool
+		name string
+		url  string
 	}{
-		{"connection reset", "Connection reset by peer", true},
-		{"network unreachable", "Network is unreachable", true},
-		{"connection closed", "Connection closed by 192.0.2.1 port 22", true},
-		{"other error", "permission denied (publickey)", false},
-		{"unrelated error", "repository not found", false},
+		{"goreleaser", "git@github.com:goreleaser/goreleaser.git"},
+		{"nfpm", "https://github.com/goreleaser/nfpm"},
+		{"test", "https://myserver.git/foo/test.git"},
 	} {
 		t.Run(tt.name, func(t *testing.T) {
 			t.Parallel()
-			require.Equal(t, tt.expected, isRetriableGitError(errors.New(tt.err)))
-		})
-	}
-}
-
-func TestRepoFromURL(t *testing.T) {
-	t.Parallel()
-	for k, v := range map[string]string{
-		"goreleaser": "git@github.com:goreleaser/goreleaser.git",
-		"nfpm":       "https://github.com/goreleaser/nfpm",
-		"test":       "https://myserver.git/foo/test.git",
-	} {
-		t.Run(k, func(t *testing.T) {
-			t.Parallel()
-			require.Equal(t, k, nameFromURL(v))
+			require.Equal(t, tt.name, nameFromURL(tt.url))
 		})
 	}
 }

@@ -206,7 +206,7 @@ func (s *GetExistingReleaseSuite) TestNoReleases() {
 	t := s.T()
 	httpmock.RegisterResponder("GET", s.releasesURL, httpmock.NewStringResponder(200, "[]"))
 
-	release, err := s.client.getExistingRelease(s.owner, s.repoName, s.tag)
+	release, err := s.client.getExistingRelease(s.ctx, s.owner, s.repoName, s.tag)
 	require.Nil(t, release)
 	require.NoError(t, err)
 }
@@ -215,7 +215,7 @@ func (s *GetExistingReleaseSuite) TestNoRepo() {
 	t := s.T()
 	httpmock.RegisterResponder("GET", s.releasesURL, httpmock.NewStringResponder(404, ""))
 
-	release, err := s.client.getExistingRelease(s.owner, s.repoName, s.tag)
+	release, err := s.client.getExistingRelease(s.ctx, s.owner, s.repoName, s.tag)
 	require.Nil(t, release)
 	require.Error(t, err)
 }
@@ -227,7 +227,7 @@ func (s *GetExistingReleaseSuite) TestReleaseExists() {
 	require.NoError(t, err)
 	httpmock.RegisterResponder("GET", s.releasesURL, resp)
 
-	result, err := s.client.getExistingRelease(s.owner, s.repoName, s.tag)
+	result, err := s.client.getExistingRelease(s.ctx, s.owner, s.repoName, s.tag)
 	require.NotNil(t, result)
 	require.Equal(t, *result, release)
 	require.NoError(t, err)
@@ -275,10 +275,6 @@ func TestGiteacreateReleaseSuite(t *testing.T) {
 
 type GiteaupdateReleaseSuite struct {
 	GiteaReleasesTestSuite
-}
-
-func (s *GiteaupdateReleaseSuite) SetupTest() {
-	s.GiteaReleasesTestSuite.SetupTest()
 }
 
 func (s *GiteaupdateReleaseSuite) TestSuccess() {
@@ -426,32 +422,27 @@ func TestGiteaCreateReleaseSuite(t *testing.T) {
 type GiteaUploadSuite struct {
 	GiteaReleasesTestSuite
 	artifact              *artifact.Artifact
-	file                  *os.File
 	releaseAttachmentsURL string
 }
 
 func (s *GiteaUploadSuite) SetupTest() {
 	t := s.T()
 	s.GiteaReleasesTestSuite.SetupTest()
-	s.artifact = &artifact.Artifact{Name: "ArtifactName"}
 	file, err := os.CreateTemp(t.TempDir(), "gitea_test_tempfile")
 	require.NoError(t, err)
 	require.NotNil(t, file)
-	t.Cleanup(func() {
-		_ = file.Close()
-	})
-	s.file = file
+	_ = file.Close()
+	s.artifact = &artifact.Artifact{Name: "ArtifactName", Path: file.Name()}
 	s.releaseAttachmentsURL = fmt.Sprintf("%v/assets", s.releaseURL)
 }
 
 func (s *GiteaUploadSuite) TearDownTest() {
 	s.GiteaReleasesTestSuite.TearDownTest()
-	s.Require().NoError(s.file.Close())
 }
 
 func (s *GiteaUploadSuite) TestErrorParsingReleaseID() {
 	t := s.T()
-	err := s.client.Upload(s.ctx, "notint", s.artifact, s.file)
+	err := s.client.Upload(s.ctx, "notint", s.artifact)
 	require.EqualError(t, err, "strconv.ParseInt: parsing \"notint\": invalid syntax")
 }
 
@@ -459,7 +450,7 @@ func (s *GiteaUploadSuite) TestErrorCreatingReleaseAttachment() {
 	t := s.T()
 	httpmock.RegisterResponder("POST", s.releaseAttachmentsURL, httpmock.NewStringResponder(400, ""))
 
-	err := s.client.Upload(s.ctx, fmt.Sprint(s.releaseID), s.artifact, s.file)
+	err := s.client.Upload(s.ctx, fmt.Sprint(s.releaseID), s.artifact)
 	require.ErrorContains(t, err, "unknown API error: 400")
 }
 
@@ -470,7 +461,7 @@ func (s *GiteaUploadSuite) TestSuccess() {
 	require.NoError(t, err)
 	httpmock.RegisterResponder("POST", s.releaseAttachmentsURL, resp)
 
-	err = s.client.Upload(s.ctx, fmt.Sprint(s.releaseID), s.artifact, s.file)
+	err = s.client.Upload(s.ctx, fmt.Sprint(s.releaseID), s.artifact)
 	require.NoError(t, err)
 }
 
@@ -700,4 +691,297 @@ func TestGiteatGetInstanceURL(t *testing.T) {
 	url, err := getInstanceURL(ctx)
 	require.NoError(t, err)
 	require.Equal(t, "http://our.internal.gitea.media", url)
+}
+
+func TestGiteaGetInstanceURLTemplateError(t *testing.T) {
+	t.Parallel()
+	ctx := testctx.WrapWithCfg(t.Context(), config.Project{GiteaURLs: config.GiteaURLs{API: "{{ .NoKeyLikeThat }}"}})
+	_, err := getInstanceURL(ctx)
+	require.Error(t, err)
+}
+
+func TestGiteaGetInstanceURLEmpty(t *testing.T) {
+	t.Parallel()
+	ctx := testctx.WrapWithCfg(t.Context(), config.Project{GiteaURLs: config.GiteaURLs{API: ""}})
+	_, err := getInstanceURL(ctx)
+	require.Error(t, err)
+}
+
+func TestGiteaNewGiteaInstanceURLError(t *testing.T) {
+	t.Parallel()
+	ctx := testctx.WrapWithCfg(t.Context(), config.Project{GiteaURLs: config.GiteaURLs{API: "{{ .NoKeyLikeThat }}"}})
+	_, err := newGitea(ctx, "giteatoken")
+	require.Error(t, err)
+}
+
+func TestGiteaCreateFileNewFile(t *testing.T) {
+	t.Parallel()
+	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		defer r.Body.Close()
+		switch {
+		case r.URL.Path == "/api/v1/version":
+			fmt.Fprint(w, `{"version":"1.12.0"}`)
+		case strings.HasPrefix(r.URL.Path, "/api/v1/repos/owner/repo/contents/") && r.Method == http.MethodGet:
+			w.WriteHeader(http.StatusNotFound)
+			fmt.Fprint(w, `{"message":"not found"}`)
+		case strings.HasPrefix(r.URL.Path, "/api/v1/repos/owner/repo/contents/") && r.Method == http.MethodPost:
+			w.WriteHeader(http.StatusCreated)
+			fmt.Fprint(w, `{"content":{"name":"test.rb","path":"test.rb"}}`)
+		default:
+			w.WriteHeader(http.StatusOK)
+			fmt.Fprint(w, "{}")
+		}
+	}))
+	t.Cleanup(srv.Close)
+	ctx := testctx.WrapWithCfg(t.Context(), config.Project{GiteaURLs: config.GiteaURLs{API: srv.URL}})
+	client, err := newGitea(ctx, "giteatoken")
+	require.NoError(t, err)
+	err = client.CreateFile(ctx, config.CommitAuthor{Name: "user", Email: "u@e.com"}, Repo{Owner: "owner", Name: "repo", Branch: "main"}, []byte("content"), "test.rb", "add test")
+	require.NoError(t, err)
+}
+
+func TestGiteaCreateFileUpdateExisting(t *testing.T) {
+	t.Parallel()
+	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		defer r.Body.Close()
+		switch {
+		case r.URL.Path == "/api/v1/version":
+			fmt.Fprint(w, `{"version":"1.12.0"}`)
+		case strings.HasPrefix(r.URL.Path, "/api/v1/repos/owner/repo/contents/") && r.Method == http.MethodGet:
+			fmt.Fprint(w, `{"name":"test.rb","path":"test.rb","sha":"abc123","type":"file","content":"Y29udGVudA=="}`)
+		case strings.HasPrefix(r.URL.Path, "/api/v1/repos/owner/repo/contents/") && r.Method == http.MethodPut:
+			fmt.Fprint(w, `{"content":{"name":"test.rb","path":"test.rb"}}`)
+		default:
+			w.WriteHeader(http.StatusOK)
+			fmt.Fprint(w, "{}")
+		}
+	}))
+	t.Cleanup(srv.Close)
+	ctx := testctx.WrapWithCfg(t.Context(), config.Project{GiteaURLs: config.GiteaURLs{API: srv.URL}})
+	client, err := newGitea(ctx, "giteatoken")
+	require.NoError(t, err)
+	err = client.CreateFile(ctx, config.CommitAuthor{Name: "user", Email: "u@e.com"}, Repo{Owner: "owner", Name: "repo", Branch: "main"}, []byte("new content"), "test.rb", "update test")
+	require.NoError(t, err)
+}
+
+func TestGiteaCreateFileGetContentsError(t *testing.T) {
+	t.Parallel()
+	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		defer r.Body.Close()
+		switch {
+		case r.URL.Path == "/api/v1/version":
+			fmt.Fprint(w, `{"version":"1.12.0"}`)
+		case strings.HasPrefix(r.URL.Path, "/api/v1/repos/owner/repo/contents/"):
+			w.WriteHeader(http.StatusInternalServerError)
+			fmt.Fprint(w, `{"error":"server error"}`)
+		default:
+			w.WriteHeader(http.StatusOK)
+			fmt.Fprint(w, "{}")
+		}
+	}))
+	t.Cleanup(srv.Close)
+	ctx := testctx.WrapWithCfg(t.Context(), config.Project{GiteaURLs: config.GiteaURLs{API: srv.URL}})
+	client, err := newGitea(ctx, "giteatoken")
+	require.NoError(t, err)
+	err = client.CreateFile(ctx, config.CommitAuthor{Name: "user", Email: "u@e.com"}, Repo{Owner: "owner", Name: "repo", Branch: "main"}, []byte("content"), "test.rb", "add test")
+	require.Error(t, err)
+}
+
+func TestGiteaCreateFileUpdateError(t *testing.T) {
+	t.Parallel()
+	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		defer r.Body.Close()
+		switch {
+		case r.URL.Path == "/api/v1/version":
+			fmt.Fprint(w, `{"version":"1.12.0"}`)
+		case strings.HasPrefix(r.URL.Path, "/api/v1/repos/owner/repo/contents/") && r.Method == http.MethodGet:
+			fmt.Fprint(w, `{"name":"test.rb","path":"test.rb","sha":"abc123","type":"file","content":"Y29udGVudA=="}`)
+		case strings.HasPrefix(r.URL.Path, "/api/v1/repos/owner/repo/contents/") && r.Method == http.MethodPut:
+			w.WriteHeader(http.StatusInternalServerError)
+			fmt.Fprint(w, `{"error":"server error"}`)
+		default:
+			w.WriteHeader(http.StatusOK)
+			fmt.Fprint(w, "{}")
+		}
+	}))
+	t.Cleanup(srv.Close)
+	ctx := testctx.WrapWithCfg(t.Context(), config.Project{GiteaURLs: config.GiteaURLs{API: srv.URL}})
+	client, err := newGitea(ctx, "giteatoken")
+	require.NoError(t, err)
+	err = client.CreateFile(ctx, config.CommitAuthor{Name: "user", Email: "u@e.com"}, Repo{Owner: "owner", Name: "repo", Branch: "main"}, []byte("updated"), "test.rb", "update test")
+	require.Error(t, err)
+}
+
+func TestGiteaCreateFileCreateError(t *testing.T) {
+	t.Parallel()
+	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		defer r.Body.Close()
+		switch {
+		case r.URL.Path == "/api/v1/version":
+			fmt.Fprint(w, `{"version":"1.12.0"}`)
+		case strings.HasPrefix(r.URL.Path, "/api/v1/repos/owner/repo/contents/") && r.Method == http.MethodGet:
+			w.WriteHeader(http.StatusNotFound)
+			fmt.Fprint(w, `{"message":"not found"}`)
+		case strings.HasPrefix(r.URL.Path, "/api/v1/repos/owner/repo/contents/") && r.Method == http.MethodPost:
+			w.WriteHeader(http.StatusInternalServerError)
+			fmt.Fprint(w, `{"error":"server error"}`)
+		default:
+			w.WriteHeader(http.StatusOK)
+			fmt.Fprint(w, "{}")
+		}
+	}))
+	t.Cleanup(srv.Close)
+	ctx := testctx.WrapWithCfg(t.Context(), config.Project{GiteaURLs: config.GiteaURLs{API: srv.URL}})
+	client, err := newGitea(ctx, "giteatoken")
+	require.NoError(t, err)
+	err = client.CreateFile(ctx, config.CommitAuthor{Name: "user", Email: "u@e.com"}, Repo{Owner: "owner", Name: "repo", Branch: "main"}, []byte("content"), "test.rb", "add test")
+	require.Error(t, err)
+}
+
+func TestGiteaCreateFileDefaultBranchFallback(t *testing.T) {
+	t.Parallel()
+	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		defer r.Body.Close()
+		switch {
+		case r.URL.Path == "/api/v1/version":
+			fmt.Fprint(w, `{"version":"1.12.0"}`)
+		case r.URL.Path == "/api/v1/repos/owner/repo" && r.Method == http.MethodGet:
+			w.WriteHeader(http.StatusInternalServerError)
+			fmt.Fprint(w, `{"error":"server error"}`)
+		case strings.HasPrefix(r.URL.Path, "/api/v1/repos/owner/repo/contents/") && r.Method == http.MethodGet:
+			w.WriteHeader(http.StatusNotFound)
+			fmt.Fprint(w, `{"message":"not found"}`)
+		case strings.HasPrefix(r.URL.Path, "/api/v1/repos/owner/repo/contents/") && r.Method == http.MethodPost:
+			w.WriteHeader(http.StatusCreated)
+			fmt.Fprint(w, `{"content":{"name":"test.rb","path":"test.rb"}}`)
+		default:
+			w.WriteHeader(http.StatusOK)
+			fmt.Fprint(w, "{}")
+		}
+	}))
+	t.Cleanup(srv.Close)
+	ctx := testctx.WrapWithCfg(t.Context(), config.Project{GiteaURLs: config.GiteaURLs{API: srv.URL}})
+	client, err := newGitea(ctx, "giteatoken")
+	require.NoError(t, err)
+	err = client.CreateFile(ctx, config.CommitAuthor{Name: "user", Email: "u@e.com"}, Repo{Owner: "owner", Name: "repo"}, []byte("content"), "test.rb", "add test")
+	require.NoError(t, err)
+}
+
+func TestGiteaCreateFileDefaultBranchError(t *testing.T) {
+	t.Parallel()
+	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		defer r.Body.Close()
+		if r.URL.Path == "/api/v1/version" {
+			w.WriteHeader(http.StatusOK)
+			fmt.Fprint(w, `{"version":"1.12.0"}`)
+			return
+		}
+		if strings.HasSuffix(r.URL.Path, "/repos/someone/something") && r.Method == http.MethodGet {
+			w.WriteHeader(http.StatusInternalServerError)
+			fmt.Fprint(w, `{"error":"server error"}`)
+			return
+		}
+		if strings.Contains(r.URL.Path, "/contents/newfile.txt") {
+			if r.Method == http.MethodGet {
+				w.WriteHeader(http.StatusNotFound)
+				return
+			}
+			if r.Method == http.MethodPost {
+				w.WriteHeader(http.StatusCreated)
+				fmt.Fprint(w, `{"content":{"name":"newfile.txt","path":"newfile.txt","sha":"abc123"}}`)
+				return
+			}
+		}
+		w.WriteHeader(http.StatusOK)
+		fmt.Fprint(w, "{}")
+	}))
+	t.Cleanup(srv.Close)
+
+	ctx := testctx.WrapWithCfg(t.Context(), config.Project{
+		GiteaURLs: config.GiteaURLs{API: srv.URL},
+	})
+	client, err := newGitea(ctx, "giteatoken")
+	require.NoError(t, err)
+
+	// No branch specified, getDefaultBranch will fail, falls back to master
+	repo := Repo{Owner: "someone", Name: "something"}
+	err = client.CreateFile(ctx, config.CommitAuthor{Name: "test", Email: "test@test.com"}, repo, []byte("content"), "newfile.txt", "test commit")
+	require.NoError(t, err)
+}
+
+func TestGiteaCloseMilestoneSuccess(t *testing.T) {
+	t.Parallel()
+	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		defer r.Body.Close()
+		if r.URL.Path == "/api/v1/version" {
+			w.WriteHeader(http.StatusOK)
+			fmt.Fprint(w, `{"version":"1.12.0"}`)
+			return
+		}
+		if strings.HasSuffix(r.URL.Path, "/milestones") && r.Method == http.MethodGet {
+			w.WriteHeader(http.StatusOK)
+			fmt.Fprint(w, `[{"id":1,"title":"v1.0.0","state":"open"}]`)
+			return
+		}
+		if strings.Contains(r.URL.Path, "/milestones/") && r.Method == http.MethodPatch {
+			w.WriteHeader(http.StatusOK)
+			fmt.Fprint(w, `{"id":1,"title":"v1.0.0","state":"closed"}`)
+			return
+		}
+		w.WriteHeader(http.StatusOK)
+		fmt.Fprint(w, "{}")
+	}))
+	t.Cleanup(srv.Close)
+
+	ctx := testctx.WrapWithCfg(t.Context(), config.Project{
+		GiteaURLs: config.GiteaURLs{API: srv.URL},
+	})
+	client, err := newGitea(ctx, "giteatoken")
+	require.NoError(t, err)
+
+	repo := Repo{Owner: "someone", Name: "something"}
+	err = client.CloseMilestone(ctx, repo, "v1.0.0")
+	require.NoError(t, err)
+}
+
+func TestGiteaCloseMilestoneNotFound(t *testing.T) {
+	t.Parallel()
+	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		defer r.Body.Close()
+		if r.URL.Path == "/api/v1/version" {
+			w.WriteHeader(http.StatusOK)
+			fmt.Fprint(w, `{"version":"1.12.0"}`)
+			return
+		}
+		if strings.HasSuffix(r.URL.Path, "/milestones") && r.Method == http.MethodGet {
+			w.WriteHeader(http.StatusOK)
+			fmt.Fprint(w, `[{"id":1,"title":"v1.0.0","state":"open"}]`)
+			return
+		}
+		if strings.Contains(r.URL.Path, "/milestones/") && r.Method == http.MethodPatch {
+			w.WriteHeader(http.StatusNotFound)
+			fmt.Fprint(w, `{"message":"milestone not found"}`)
+			return
+		}
+		w.WriteHeader(http.StatusOK)
+		fmt.Fprint(w, "{}")
+	}))
+	t.Cleanup(srv.Close)
+
+	ctx := testctx.WrapWithCfg(t.Context(), config.Project{
+		GiteaURLs: config.GiteaURLs{API: srv.URL},
+	})
+	client, err := newGitea(ctx, "giteatoken")
+	require.NoError(t, err)
+
+	repo := Repo{Owner: "someone", Name: "something"}
+	err = client.CloseMilestone(ctx, repo, "v1.0.0")
+	require.ErrorAs(t, err, &ErrNoMilestoneFound{})
+}
+
+func TestGiteaPublishRelease(t *testing.T) {
+	t.Parallel()
+	client := &giteaClient{}
+	ctx := testctx.Wrap(t.Context())
+	require.NoError(t, client.PublishRelease(ctx, "123"))
 }

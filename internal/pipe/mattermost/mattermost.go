@@ -5,12 +5,12 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
-	"io"
 	"net/http"
 
 	"github.com/caarlos0/env/v11"
 	"github.com/caarlos0/log"
 
+	"github.com/goreleaser/goreleaser/v2/internal/retryx"
 	"github.com/goreleaser/goreleaser/v2/internal/tmpl"
 	"github.com/goreleaser/goreleaser/v2/pkg/context"
 )
@@ -45,8 +45,8 @@ func (Pipe) Default(ctx *context.Context) error {
 	if ctx.Config.Announce.Mattermost.Username == "" {
 		ctx.Config.Announce.Mattermost.Username = defaultUsername
 	}
-	if ctx.Config.Announce.Teams.Color == "" {
-		ctx.Config.Announce.Teams.Color = defaultColor
+	if ctx.Config.Announce.Mattermost.Color == "" {
+		ctx.Config.Announce.Mattermost.Color = defaultColor
 	}
 
 	return nil
@@ -79,7 +79,7 @@ func (p Pipe) Announce(ctx *context.Context) error {
 			{
 				Title: title,
 				Text:  msg,
-				Color: ctx.Config.Announce.Teams.Color,
+				Color: ctx.Config.Announce.Mattermost.Color,
 			},
 		},
 	}
@@ -93,26 +93,28 @@ func postWebhook(ctx *context.Context, url string, msg *incomingWebhookRequest) 
 		return fmt.Errorf("failed to marshal the message: %w", err)
 	}
 
-	req, err := http.NewRequestWithContext(ctx, http.MethodPost, url, bytes.NewReader(payload))
-	if err != nil {
-		return fmt.Errorf("failed new request: %w", err)
-	}
-	req.Header.Set("Content-Type", "application/json")
+	return retryx.Do(ctx, ctx.Config.Retry, func() error {
+		req, err := http.NewRequestWithContext(ctx, http.MethodPost, url, bytes.NewReader(payload))
+		if err != nil {
+			return retryx.Unrecoverable(fmt.Errorf("failed new request: %w", err))
+		}
+		req.Header.Set("Content-Type", "application/json")
 
-	r, err := http.DefaultClient.Do(req)
-	if err != nil {
-		return err
-	}
-	closeBody(r)
+		r, err := http.DefaultClient.Do(req)
+		if err != nil {
+			return retryx.HTTP(err, r)
+		}
+		defer r.Body.Close()
 
-	return nil
-}
+		if r.StatusCode >= http.StatusBadRequest {
+			return retryx.HTTP(
+				fmt.Errorf("unexpected status code: %d %s", r.StatusCode, http.StatusText(r.StatusCode)),
+				r,
+			)
+		}
 
-func closeBody(r *http.Response) {
-	if r.Body != nil {
-		_, _ = io.Copy(io.Discard, r.Body)
-		_ = r.Body.Close()
-	}
+		return nil
+	}, retryx.IsRetriable)
 }
 
 type incomingWebhookRequest struct {

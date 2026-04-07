@@ -5,9 +5,7 @@ import (
 	"fmt"
 	"io/fs"
 	"os"
-	"time"
 
-	"github.com/avast/retry-go/v4"
 	"github.com/caarlos0/log"
 	"github.com/goreleaser/goreleaser/v2/internal/artifact"
 	"github.com/goreleaser/goreleaser/v2/internal/client"
@@ -169,7 +167,9 @@ func doPublish(ctx *context.Context, client client.Client) error {
 	g := semerrgroup.New(ctx.Parallelism)
 	for _, artifact := range ctx.Artifacts.Filter(filters).List() {
 		g.Go(func() error {
-			if err := upload(ctx, client, releaseID, artifact); err != nil {
+			log.WithField("name", artifact.Name).
+				Info("uploading to release")
+			if err := client.Upload(ctx, releaseID, artifact); err != nil {
 				return fmt.Errorf("failed to upload %s: %w", artifact.Name, err)
 			}
 			return nil
@@ -180,23 +180,4 @@ func doPublish(ctx *context.Context, client client.Client) error {
 	}
 
 	return client.PublishRelease(ctx, releaseID)
-}
-
-func upload(ctx *context.Context, cli client.Client, releaseID string, artifact *artifact.Artifact) error {
-	return retry.Do(
-		func() error {
-			log.WithField("name", artifact.Name).
-				Info("uploading to release")
-			file, err := os.Open(artifact.Path)
-			if err != nil {
-				return err
-			}
-			defer file.Close()
-			return cli.Upload(ctx, releaseID, artifact, file)
-		},
-		retry.Attempts(10),
-		retry.Delay(50*time.Millisecond),
-		retry.LastErrorOnly(true),
-		retry.RetryIf(func(err error) bool { return errors.As(err, &client.RetriableError{}) }),
-	)
 }

@@ -14,6 +14,7 @@ import (
 	"github.com/caarlos0/log"
 	"github.com/goreleaser/goreleaser/v2/internal/artifact"
 	"github.com/goreleaser/goreleaser/v2/internal/changelog"
+	"github.com/goreleaser/goreleaser/v2/internal/retryx"
 	"github.com/goreleaser/goreleaser/v2/internal/tmpl"
 	"github.com/goreleaser/goreleaser/v2/pkg/config"
 	"github.com/goreleaser/goreleaser/v2/pkg/context"
@@ -32,6 +33,21 @@ type gitlabClient struct {
 	authType gitlab.AuthType
 
 	isV17OrLater bool
+}
+
+// gitlabDo wraps a go-gitlab SDK call with retry logic.
+func gitlabDo[T any](ctx *context.Context, fn func() (T, *gitlab.Response, error)) (T, *gitlab.Response, error) {
+	var result T
+	var resp *gitlab.Response
+	err := retryx.Do(ctx, ctx.Config.Retry, func() error {
+		var err error
+		result, resp, err = fn()
+		if err != nil {
+			return retryx.HTTP(err, must(resp).Response)
+		}
+		return nil
+	}, retryx.IsRetriable)
+	return result, resp, err
 }
 
 // newGitLab returns a gitlab client implementation.
@@ -103,7 +119,7 @@ func (c *gitlabClient) checkIsPrivateToken() error {
 	return errors.New("the necessary APIs are not available when using CI_JOB_TOKEN")
 }
 
-func (c *gitlabClient) Changelog(_ *context.Context, repo Repo, prev, current string) ([]ChangelogItem, error) {
+func (c *gitlabClient) Changelog(ctx *context.Context, repo Repo, prev, current string) ([]ChangelogItem, error) {
 	if err := c.checkIsPrivateToken(); err != nil {
 		return nil, fmt.Errorf("changelog: %w", err)
 	}
@@ -111,7 +127,9 @@ func (c *gitlabClient) Changelog(_ *context.Context, repo Repo, prev, current st
 		From: &prev,
 		To:   &current,
 	}
-	result, _, err := c.client.Repositories.Compare(repo.String(), cmpOpts)
+	result, _, err := gitlabDo(ctx, func() (*gitlab.Compare, *gitlab.Response, error) {
+		return c.client.Repositories.Compare(repo.String(), cmpOpts)
+	})
 	var log []ChangelogItem
 	if err != nil {
 		return nil, err
@@ -134,7 +152,7 @@ func (c *gitlabClient) Changelog(_ *context.Context, repo Repo, prev, current st
 }
 
 // getDefaultBranch get the default branch
-func (c *gitlabClient) getDefaultBranch(_ *context.Context, repo Repo) (string, error) {
+func (c *gitlabClient) getDefaultBranch(ctx *context.Context, repo Repo) (string, error) {
 	if branch := os.Getenv("CI_DEFAULT_BRANCH"); branch != "" {
 		return branch, nil
 	}
@@ -142,7 +160,9 @@ func (c *gitlabClient) getDefaultBranch(_ *context.Context, repo Repo) (string, 
 		return "", fmt.Errorf("get default branch: %w", err)
 	}
 	projectID := repo.String()
-	p, res, err := c.client.Projects.GetProject(projectID, nil)
+	p, res, err := gitlabDo(ctx, func() (*gitlab.Project, *gitlab.Response, error) {
+		return c.client.Projects.GetProject(projectID, nil)
+	})
 	if err != nil {
 		log := log.WithField("projectID", projectID)
 		if res != nil {
@@ -155,26 +175,27 @@ func (c *gitlabClient) getDefaultBranch(_ *context.Context, repo Repo) (string, 
 }
 
 // checkBranchExists checks if a branch exists
-func (c *gitlabClient) checkBranchExists(_ *context.Context, repo Repo, branch string) (bool, error) {
+func (c *gitlabClient) checkBranchExists(ctx *context.Context, repo Repo, branch string) (bool, error) {
 	projectID := repo.Name
 	if repo.Owner != "" {
 		projectID = repo.Owner + "/" + projectID
 	}
 
-	// Verify if branch exists
-	_, res, err := c.client.Branches.GetBranch(projectID, branch)
-	if err != nil && res.StatusCode != 404 {
+	_, res, err := gitlabDo(ctx, func() (*gitlab.Branch, *gitlab.Response, error) {
+		return c.client.Branches.GetBranch(projectID, branch)
+	})
+	if err != nil && (res == nil || res.StatusCode != 404) {
 		log.WithError(err).
 			Error("error verify branch existence")
 		return false, err
 	}
 
-	return res.StatusCode != 404, nil
+	return res != nil && res.StatusCode != 404, nil
 }
 
 // CloseMilestone closes a given milestone.
-func (c *gitlabClient) CloseMilestone(_ *context.Context, repo Repo, title string) error {
-	milestone, err := c.getMilestoneByTitle(repo, title)
+func (c *gitlabClient) CloseMilestone(ctx *context.Context, repo Repo, title string) error {
+	milestone, err := c.getMilestoneByTitle(ctx, repo, title)
 	if err != nil {
 		return err
 	}
@@ -193,11 +214,13 @@ func (c *gitlabClient) CloseMilestone(_ *context.Context, repo Repo, title strin
 		Title:       &milestone.Title,
 	}
 
-	_, _, err = c.client.Milestones.UpdateMilestone(
-		repo.String(),
-		milestone.ID,
-		opts,
-	)
+	_, _, err = gitlabDo(ctx, func() (*gitlab.Milestone, *gitlab.Response, error) {
+		return c.client.Milestones.UpdateMilestone(
+			repo.String(),
+			milestone.ID,
+			opts,
+		)
+	})
 
 	return err
 }
@@ -274,7 +297,10 @@ func (c *gitlabClient) CreateFile(
 	}
 
 	// Check if the file already exists
-	_, res, err := c.client.RepositoryFiles.GetFile(projectID, fileName, opts)
+	var res *gitlab.Response
+	_, res, err = gitlabDo(ctx, func() (*gitlab.File, *gitlab.Response, error) {
+		return c.client.RepositoryFiles.GetFile(projectID, fileName, opts)
+	})
 	if err != nil && (res == nil || res.StatusCode != 404) {
 		log := log.
 			WithField("fileName", fileName).
@@ -317,7 +343,9 @@ func (c *gitlabClient) CreateFile(
 			createOpts.StartBranch = &defaultBranch
 		}
 
-		fileInfo, res, err := c.client.RepositoryFiles.CreateFile(projectID, fileName, createOpts)
+		fileInfo, _, err := gitlabDo(ctx, func() (*gitlab.FileInfo, *gitlab.Response, error) {
+			return c.client.RepositoryFiles.CreateFile(projectID, fileName, createOpts)
+		})
 		if err != nil {
 			log := log.
 				WithField("fileName", fileName).
@@ -360,7 +388,9 @@ func (c *gitlabClient) CreateFile(
 		updateOpts.StartBranch = &defaultBranch
 	}
 
-	updateFileInfo, res, err := c.client.RepositoryFiles.UpdateFile(projectID, fileName, updateOpts)
+	updateFileInfo, res, err := gitlabDo(ctx, func() (*gitlab.FileInfo, *gitlab.Response, error) {
+		return c.client.RepositoryFiles.UpdateFile(projectID, fileName, updateOpts)
+	})
 	if err != nil {
 		log := log.
 			WithField("fileName", fileName).
@@ -409,12 +439,14 @@ func (c *gitlabClient) CreateRelease(ctx *context.Context, body string) (release
 
 	name := title
 	tagName := ctx.Git.CurrentTag
-	release, resp, err := c.client.Releases.GetRelease(projectID, tagName)
+	release, resp, err := gitlabDo(ctx, func() (*gitlab.Release, *gitlab.Response, error) {
+		return c.client.Releases.GetRelease(projectID, tagName)
+	})
 	if err != nil && (resp == nil || (resp.StatusCode != 403 && resp.StatusCode != 404)) {
 		return "", err
 	}
 
-	if resp.StatusCode == 403 || resp.StatusCode == 404 {
+	if resp != nil && (resp.StatusCode == 403 || resp.StatusCode == 404) {
 		log.WithError(err).Debug("get release")
 
 		description := body
@@ -427,11 +459,13 @@ func (c *gitlabClient) CreateRelease(ctx *context.Context, body string) (release
 			WithField("ref", ref).
 			WithField("url", gitURL).
 			Debug("creating release")
-		release, _, err = c.client.Releases.CreateRelease(projectID, &gitlab.CreateReleaseOptions{
-			Name:        &name,
-			Description: &description,
-			Ref:         &ref,
-			TagName:     &tagName,
+		release, _, err = gitlabDo(ctx, func() (*gitlab.Release, *gitlab.Response, error) {
+			return c.client.Releases.CreateRelease(projectID, &gitlab.CreateReleaseOptions{
+				Name:        &name,
+				Description: &description,
+				Ref:         &ref,
+				TagName:     &tagName,
+			})
 		})
 		if err != nil {
 			log.WithError(err).Debug("error creating release")
@@ -444,9 +478,11 @@ func (c *gitlabClient) CreateRelease(ctx *context.Context, body string) (release
 			desc = getReleaseNotes(release.Description, body, ctx.Config.Release.ReleaseNotesMode)
 		}
 
-		release, _, err = c.client.Releases.UpdateRelease(projectID, tagName, &gitlab.UpdateReleaseOptions{
-			Name:        &name,
-			Description: &desc,
+		release, _, err = gitlabDo(ctx, func() (*gitlab.Release, *gitlab.Response, error) {
+			return c.client.Releases.UpdateRelease(projectID, tagName, &gitlab.UpdateReleaseOptions{
+				Name:        &name,
+				Description: &desc,
+			})
 		})
 		if err != nil {
 			log.WithError(err).Debug("error updating release")
@@ -497,7 +533,6 @@ func (c *gitlabClient) Upload(
 	ctx *context.Context,
 	releaseID string,
 	artifact *artifact.Artifact,
-	file *os.File,
 ) error {
 	// create new template and apply name field
 	gitlabName, err := tmpl.New(ctx).Apply(ctx.Config.Release.GitLab.Name)
@@ -510,113 +545,123 @@ func (c *gitlabClient) Upload(
 		projectID = ctx.Config.Release.GitLab.Owner + "/" + projectID
 	}
 
-	var baseLinkURL string
-	var linkURL string
-	if ctx.Config.GitLabURLs.UsePackageRegistry || c.authType == gitlab.JobToken {
-		log.WithField("file", file.Name()).Debug("uploading file as generic package")
-		if _, _, err := c.client.GenericPackages.PublishPackageFile(
-			projectID,
-			ctx.Config.ProjectName,
-			ctx.Version,
-			artifact.Name,
-			file,
-			nil,
-		); err != nil {
-			return err
-		}
-
-		baseLinkURL, err = c.client.GenericPackages.FormatPackageURL(
-			projectID,
-			ctx.Config.ProjectName,
-			ctx.Version,
-			artifact.Name,
-		)
+	return retryx.Do(ctx, ctx.Config.Retry, func() error {
+		file, err := os.Open(artifact.Path)
 		if err != nil {
-			return err
+			return retryx.Unrecoverable(err)
 		}
-		linkURL = c.client.BaseURL().String() + baseLinkURL
-	} else {
-		log.WithField("file", file.Name()).Debug("uploading file as attachment")
-		projectFile, _, err := c.client.ProjectMarkdownUploads.UploadProjectMarkdown(
-			projectID,
-			file,
-			filepath.Base(file.Name()),
-			nil,
-		)
-		if err != nil {
-			return err
-		}
+		defer file.Close()
 
-		baseLinkURL = projectFile.URL
-		gitlabBaseURL, err := tmpl.New(ctx).Apply(ctx.Config.GitLabURLs.Download)
-		if err != nil {
-			return fmt.Errorf("templating GitLab Download URL: %w", err)
-		}
-
-		linkURL = gitlabBaseURL + "/" + projectFile.FullPath
-	}
-
-	log.WithField("file", file.Name()).
-		WithField("url", baseLinkURL).
-		Debug("uploaded file")
-
-	name := artifact.Name
-	filename := "/" + name
-	opt := &gitlab.CreateReleaseLinkOptions{
-		Name: &name,
-		URL:  &linkURL,
-	}
-	if c.isV17OrLater {
-		opt.DirectAssetPath = &filename
-	} else {
-		opt.FilePath = &filename
-	}
-
-	releaseLink, resp, err := c.client.ReleaseLinks.CreateReleaseLink(
-		projectID,
-		releaseID,
-		opt,
-	)
-	if err != nil {
-		// this status means the asset already exists
-		if resp != nil && resp.StatusCode == http.StatusBadRequest && releaseLink != nil {
-			if !ctx.Config.Release.ReplaceExistingArtifacts {
-				return err
-			}
-			// if the user allowed to delete assets, we delete it, and return a
-			// retriable error.
-			if _, _, err := c.client.ReleaseLinks.DeleteReleaseLink(
+		var baseLinkURL string
+		var linkURL string
+		if ctx.Config.GitLabURLs.UsePackageRegistry || c.authType == gitlab.JobToken {
+			log.WithField("file", file.Name()).Debug("uploading file as generic package")
+			if _, resp, err := c.client.GenericPackages.PublishPackageFile(
 				projectID,
-				releaseID,
-				releaseLink.ID,
+				ctx.Config.ProjectName,
+				ctx.Version,
+				artifact.Name,
+				file,
+				nil,
 			); err != nil {
-				return err
+				return retryx.HTTP(err, must(resp).Response)
 			}
-			return RetriableError{err}
+
+			baseLinkURL, err = c.client.GenericPackages.FormatPackageURL(
+				projectID,
+				ctx.Config.ProjectName,
+				ctx.Version,
+				artifact.Name,
+			)
+			if err != nil {
+				return retryx.Unrecoverable(err)
+			}
+			linkURL = c.client.BaseURL().String() + baseLinkURL
+		} else {
+			log.WithField("file", file.Name()).Debug("uploading file as attachment")
+			projectFile, resp, err := c.client.ProjectMarkdownUploads.UploadProjectMarkdown(
+				projectID,
+				file,
+				filepath.Base(file.Name()),
+				nil,
+			)
+			if err != nil {
+				return retryx.HTTP(err, must(resp).Response)
+			}
+
+			baseLinkURL = projectFile.URL
+			gitlabBaseURL, err := tmpl.New(ctx).Apply(ctx.Config.GitLabURLs.Download)
+			if err != nil {
+				return retryx.Unrecoverable(err)
+			}
+
+			linkURL = gitlabBaseURL + "/" + projectFile.FullPath
 		}
-		return RetriableError{err}
-	}
 
-	log.WithField("id", releaseLink.ID).
-		WithField("url", releaseLink.DirectAssetURL).
-		Debug("created release link")
+		log.WithField("file", file.Name()).
+			WithField("url", baseLinkURL).
+			Debug("uploaded file")
 
-	// for checksums.txt the field is nil, so we initialize it
-	if artifact.Extra == nil {
-		artifact.Extra = make(map[string]any)
-	}
+		name := artifact.Name
+		filename := "/" + name
+		opt := &gitlab.CreateReleaseLinkOptions{
+			Name: &name,
+			URL:  &linkURL,
+		}
+		if c.isV17OrLater {
+			opt.DirectAssetPath = &filename
+		} else {
+			opt.FilePath = &filename
+		}
 
-	return nil
+		releaseLink, resp, err := c.client.ReleaseLinks.CreateReleaseLink(
+			projectID,
+			releaseID,
+			opt,
+		)
+		if err != nil {
+			// this status means the asset already exists
+			if resp != nil && resp.StatusCode == http.StatusBadRequest && releaseLink != nil {
+				if !ctx.Config.Release.ReplaceExistingArtifacts {
+					return retryx.Unrecoverable(err)
+				}
+				// if the user allowed to delete assets, we delete it, and return a
+				// retriable error.
+				if _, _, err := c.client.ReleaseLinks.DeleteReleaseLink(
+					projectID,
+					releaseID,
+					releaseLink.ID,
+				); err != nil {
+					return retryx.Unrecoverable(err)
+				}
+				return retryx.Retriable(err)
+			}
+			return retryx.HTTP(err, must(resp).Response)
+		}
+
+		log.WithField("id", releaseLink.ID).
+			WithField("url", releaseLink.DirectAssetURL).
+			Debug("created release link")
+
+		// for checksums.txt the field is nil, so we initialize it
+		if artifact.Extra == nil {
+			artifact.Extra = make(map[string]any)
+		}
+
+		return nil
+	}, retryx.IsRetriable)
 }
 
 // getMilestoneByTitle returns a milestone by title.
-func (c *gitlabClient) getMilestoneByTitle(repo Repo, title string) (*gitlab.Milestone, error) {
+func (c *gitlabClient) getMilestoneByTitle(ctx *context.Context, repo Repo, title string) (*gitlab.Milestone, error) {
 	opts := &gitlab.ListMilestonesOptions{
 		Title: &title,
 	}
 
 	for {
-		milestones, resp, err := c.client.Milestones.ListMilestones(repo.String(), opts)
+		milestones, resp, err := gitlabDo(ctx, func() ([]*gitlab.Milestone, *gitlab.Response, error) {
+			return c.client.Milestones.ListMilestones(repo.String(), opts)
+		})
 		if err != nil {
 			return nil, err
 		}
@@ -627,7 +672,7 @@ func (c *gitlabClient) getMilestoneByTitle(repo Repo, title string) (*gitlab.Mil
 			}
 		}
 
-		if resp.NextPage == 0 {
+		if resp == nil || resp.NextPage == 0 {
 			break
 		}
 
@@ -672,7 +717,9 @@ func (c *gitlabClient) OpenPullRequest(
 	if base.Owner != "" {
 		fullProjectPath := fmt.Sprintf("%s/%s", base.Owner, base.Name)
 
-		p, res, err := c.client.Projects.GetProject(fullProjectPath, nil)
+		p, res, err := gitlabDo(ctx, func() (*gitlab.Project, *gitlab.Response, error) {
+			return c.client.Projects.GetProject(fullProjectPath, nil)
+		})
 		if err != nil {
 			log := log.WithField("project", fullProjectPath)
 			if res != nil {
@@ -715,7 +762,9 @@ func (c *gitlabClient) OpenPullRequest(
 		mrOptions.TargetProjectID = &targetProjectID
 	}
 
-	pr, _, err := c.client.MergeRequests.CreateMergeRequest(fmt.Sprintf("%s/%s", head.Owner, head.Name), mrOptions)
+	pr, _, err := gitlabDo(ctx, func() (*gitlab.MergeRequest, *gitlab.Response, error) {
+		return c.client.MergeRequests.CreateMergeRequest(fmt.Sprintf("%s/%s", head.Owner, head.Name), mrOptions)
+	})
 	if err != nil {
 		return fmt.Errorf("could not create pull request: %w", err)
 	}
