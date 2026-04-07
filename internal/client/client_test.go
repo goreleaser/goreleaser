@@ -88,8 +88,7 @@ func TestClientNewGitea(t *testing.T) {
 	}, testctx.GiteaTokenType)
 	client, err := New(ctx)
 	require.NoError(t, err)
-	_, ok := client.(*giteaClient)
-	require.True(t, ok)
+	require.IsType(t, &giteaClient{}, client)
 }
 
 func TestClientNewGiteaInvalidURL(t *testing.T) {
@@ -109,8 +108,7 @@ func TestClientNewGitLab(t *testing.T) {
 	ctx := testctx.Wrap(t.Context(), testctx.GitLabTokenType)
 	client, err := New(ctx)
 	require.NoError(t, err)
-	_, ok := client.(*gitlabClient)
-	require.True(t, ok)
+	require.IsType(t, &gitlabClient{}, client)
 }
 
 func TestCheckBodyMaxLength(t *testing.T) {
@@ -146,8 +144,7 @@ func TestNewIfToken(t *testing.T) {
 		ctx := testctx.Wrap(t.Context(), testctx.GitLabTokenType)
 		client, err := New(ctx)
 		require.NoError(t, err)
-		_, ok := client.(*gitlabClient)
-		require.True(t, ok)
+		require.IsType(t, &gitlabClient{}, client)
 
 		ctx = testctx.WrapWithCfg(t.Context(), config.Project{
 			Env: []string{"VAR=giteatoken"},
@@ -157,8 +154,7 @@ func TestNewIfToken(t *testing.T) {
 		}, testctx.GiteaTokenType)
 		client, err = NewIfToken(ctx, client, "{{ .Env.VAR }}")
 		require.NoError(t, err)
-		_, ok = client.(*giteaClient)
-		require.True(t, ok)
+		require.IsType(t, &giteaClient{}, client)
 	})
 
 	t.Run("empty", func(t *testing.T) {
@@ -169,8 +165,7 @@ func TestNewIfToken(t *testing.T) {
 
 		client, err = NewIfToken(ctx, client, "")
 		require.NoError(t, err)
-		_, ok := client.(*gitlabClient)
-		require.True(t, ok)
+		require.IsType(t, &gitlabClient{}, client)
 	})
 
 	t.Run("invalid tmpl", func(t *testing.T) {
@@ -190,8 +185,7 @@ func TestNewWithToken(t *testing.T) {
 		cli, err := newWithToken(ctx, "{{ .Env.TK }}")
 		require.NoError(t, err)
 
-		_, ok := cli.(*gitlabClient)
-		require.True(t, ok)
+		require.IsType(t, &gitlabClient{}, cli)
 	})
 
 	t.Run("gitea", func(t *testing.T) {
@@ -205,8 +199,7 @@ func TestNewWithToken(t *testing.T) {
 		cli, err := newWithToken(ctx, "{{ .Env.TK }}")
 		require.NoError(t, err)
 
-		_, ok := cli.(*giteaClient)
-		require.True(t, ok)
+		require.IsType(t, &giteaClient{}, cli)
 	})
 
 	t.Run("invalid", func(t *testing.T) {

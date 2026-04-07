@@ -444,14 +444,17 @@ func TestIsRetriableGitError(t *testing.T) {
 
 func TestRepoFromURL(t *testing.T) {
 	t.Parallel()
-	for k, v := range map[string]string{
-		"goreleaser": "git@github.com:goreleaser/goreleaser.git",
-		"nfpm":       "https://github.com/goreleaser/nfpm",
-		"test":       "https://myserver.git/foo/test.git",
+	for _, tt := range []struct {
+		name string
+		url  string
+	}{
+		{"goreleaser", "git@github.com:goreleaser/goreleaser.git"},
+		{"nfpm", "https://github.com/goreleaser/nfpm"},
+		{"test", "https://myserver.git/foo/test.git"},
 	} {
-		t.Run(k, func(t *testing.T) {
+		t.Run(tt.name, func(t *testing.T) {
 			t.Parallel()
-			require.Equal(t, k, nameFromURL(v))
+			require.Equal(t, tt.name, nameFromURL(tt.url))
 		})
 	}
 }
